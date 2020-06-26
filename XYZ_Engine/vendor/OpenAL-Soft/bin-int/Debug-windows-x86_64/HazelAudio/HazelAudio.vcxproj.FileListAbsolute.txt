@@ -1,0 +1,2 @@
+D:\Cpp_projects\HazelAudio\bin\Debug-windows-x86_64\HazelAudio\HazelAudio.pdb
+D:\Cpp_projects\HazelAudio\bin-int\Debug-windows-x86_64\HazelAudio\HazelAudio.pdb
