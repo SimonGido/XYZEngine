@@ -29,6 +29,21 @@ namespace XYZ {
 		m_Rotation += rotation;
 		m_Updated = true;
 	}
+	void Transform2D::SetTranslation(const glm::vec3& translation)
+	{
+		m_Position = translation;
+		m_Updated = true;
+	}
+	void Transform2D::SetScale(const glm::vec2& scale)
+	{
+		m_Scale = scale;
+		m_Updated = true;
+	}
+	void Transform2D::SetRotation(float rotation)
+	{
+		m_Rotation = rotation;
+		m_Updated = true;
+	}
 	void Transform2D::InheritParent(const Transform2D& parent)
 	{
 		if (m_Parent && m_Parent->m_Updated)

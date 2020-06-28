@@ -26,13 +26,11 @@ namespace XYZ {
 		
 		if (!m_Opaque.empty())
 		{
-			bool flushed = false;
 			std::shared_ptr<Material> material = m_Opaque[0].Renderable->MaterialIns;
 			for (size_t i = 0; i < m_Opaque.size(); ++i)
 			{
 				if (material->GetSortKey() == m_Opaque[i].Renderable->MaterialIns->GetSortKey())
 				{
-					 flushed = false;
 					 auto& elem = m_Opaque[i];
 					 auto quads = elem.Renderable->GetRenderData();
 					 for (size_t i = 0; i < elem.Renderable->GetCountQuads(); ++i)			 
@@ -41,29 +39,27 @@ namespace XYZ {
 				}
 				else
 				{
-					flushed = true;
 					material->Bind();
 					Renderer2D::Flush();
 					material = m_Opaque[i].Renderable->MaterialIns;
+					auto& elem = m_Opaque[i];
+					auto quads = elem.Renderable->GetRenderData();
+					for (size_t i = 0; i < elem.Renderable->GetCountQuads(); ++i)
+						Renderer2D::SubmitQuad(elem.Transform->GetTransformation(), quads[i]);
 				}
 			}
-			if (!flushed)
-			{
-				material->Bind();
-				Renderer2D::Flush();
-			}
+			material->Bind();
+			Renderer2D::Flush();
 		}
 		
 		
 		if (!m_Transparent.empty())
 		{
-			bool flushed = false;
 			std::shared_ptr<Material> material = m_Transparent[0].Renderable->MaterialIns;
 			for (size_t i = 0; i < m_Transparent.size(); ++i)
 			{
 				if (material->GetSortKey() == m_Transparent[i].Renderable->MaterialIns->GetSortKey())
 				{
-					flushed = false;
 					auto& elem = m_Transparent[i];
 					auto quads = elem.Renderable->GetRenderData();
 					for (size_t i = 0; i < elem.Renderable->GetCountQuads(); ++i)
@@ -71,17 +67,19 @@ namespace XYZ {
 				}
 				else
 				{
-					flushed = true;
 					material->Bind();
 					Renderer2D::Flush();
 					material = m_Transparent[i].Renderable->MaterialIns;
+					
+					auto& elem = m_Transparent[i];
+					auto quads = elem.Renderable->GetRenderData();
+					for (size_t i = 0; i < elem.Renderable->GetCountQuads(); ++i)
+						Renderer2D::SubmitQuad(elem.Transform->GetTransformation(), quads[i]);
 				}
 			}
-			if (!flushed)
-			{
-				material->Bind();
-				Renderer2D::Flush();
-			}
+			
+			material->Bind();
+			Renderer2D::Flush();
 		}
 
 		m_Opaque.clear();

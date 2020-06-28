@@ -18,6 +18,7 @@ namespace XYZ {
 	struct Quad
 	{
 		Quad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, int32_t textureID);
+		Quad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, int32_t textureID,bool centered);
 		Quad(const Vertex* vertices);
 
 		Vertex Vertices[4];

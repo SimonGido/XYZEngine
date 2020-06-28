@@ -42,3 +42,8 @@
 #include "XYZ/Gui/Font.h"
 
 #include "XYZ/Renderer/SpriteRenderComponent.h"
+
+
+
+//------UI-------//
+#include "XYZ/Gui/Text.h"

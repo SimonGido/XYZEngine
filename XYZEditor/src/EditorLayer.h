@@ -50,5 +50,10 @@ namespace XYZ {
 		Tree<SceneObject> m_SceneGraph;
 
 		Ref<Font> m_Font;
+
+		Entity m_Text;
+		RenderComponent* m_TextRenderable;
+		Transform2D* m_TextTransform;
+		Ref<Material> m_TextMaterial;
 	};
 }

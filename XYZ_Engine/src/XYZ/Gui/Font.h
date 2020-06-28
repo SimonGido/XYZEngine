@@ -17,7 +17,8 @@ namespace XYZ {
 	struct FontData
 	{
 		std::string Name;
-		uint32_t Size;
+		uint32_t ScaleW;
+		uint32_t ScaleH;
 		uint32_t LineHeight;
 		uint32_t NumCharacters;
 		uint32_t PaddingWidth;
@@ -30,7 +31,7 @@ namespace XYZ {
 		Font(const std::string& configPath);
 
 		const FontData& GetData() const { return m_Data; }
-		const Character& GetCharacter(uint8_t ch) const { return m_Characters.find(ch)->second; }
+		const Character& GetCharacter(uint8_t ch) const;
 	private:
 		void parseHeaderInfo(const std::string& source);
 		void parseCharacters(const std::string& source);

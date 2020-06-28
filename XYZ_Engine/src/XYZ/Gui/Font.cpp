@@ -29,6 +29,16 @@ namespace XYZ {
 			m_Data.LineHeight = static_cast<uint32_t>(std::stoul((source.substr(pos, endWord - pos))));
 		}
 		{
+			size_t pos = endOfToken("scaleW=", source, 0);
+			size_t endWord = source.find_first_of(" ", pos);
+			m_Data.ScaleW = static_cast<uint32_t>(std::stoul((source.substr(pos, endWord - pos))));
+		}
+		{
+			size_t pos = endOfToken("scaleH=", source, 0);
+			size_t endWord = source.find_first_of(" ", pos);
+			m_Data.ScaleH = static_cast<uint32_t>(std::stoul((source.substr(pos, endWord - pos))));
+		}
+		{
 			size_t pos = endOfToken("chars count=", source, 0);
 			size_t endWord = source.find_first_of(" ", pos);
 			m_Data.NumCharacters = static_cast<uint32_t>(std::stoul((source.substr(pos, endWord - pos))));
@@ -133,5 +143,13 @@ namespace XYZ {
 	}
 
 
+	const Character& Font::GetCharacter(uint8_t ch) const
+	{
+		auto character = m_Characters.find(ch);
+		if (character != m_Characters.end())
+			return character->second;
+		
+		return m_Characters.begin()->second;
+	}
 	
 }

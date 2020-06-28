@@ -13,6 +13,11 @@ namespace XYZ {
 		void Translate(const glm::vec3& translation);
 		void Scale(const glm::vec2& scale);
 		void Rotate(float rotation);
+
+		void SetTranslation(const glm::vec3& translation);
+		void SetScale(const glm::vec2& scale);
+		void SetRotation(float rotation);
+
 		void InheritParent(const Transform2D& parent);
 		void SetParent(Transform2D* parent) { m_Parent = parent; };
 		void CalculateWorldTransformation();
