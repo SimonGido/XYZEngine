@@ -1,8 +1,7 @@
 #pragma once
+#include "XYZ/ECS/Component.h"
 #include "XYZ/Renderer/VertexArray.h"
-#include "XYZ/Renderer/Renderable2D.h"
 #include "XYZ/Renderer/Material.h"
-#include "XYZ/Utils/DataStructures/FreeList.h"
 
 #include <glm/glm.hpp>
 #include <set>

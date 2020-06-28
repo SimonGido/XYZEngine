@@ -1,7 +1,6 @@
 #pragma once
 #include "Window.h"
 #include "LayerStack.h"
-#include "Event/EventManager.h"
 #include "XYZ/ImGui/ImGuiLayer.h"
 #include <vector>
 
@@ -52,6 +51,9 @@ namespace XYZ {
 		*/
 		void PopLayer(Layer* layer);
 
+
+		void OnEvent(Event& event);
+
 		/**
 		* Return handler of the main Window
 		* @param[out] reference to the Window
@@ -70,21 +72,8 @@ namespace XYZ {
 		* @param[out] pointer to the Application
 		*/
 		static Application* CreateApplication();
-	private:
-		/**
-		* Handler function for the Window Close Event 
-		* @param event shared_ptr of type Event
-		*/
-		void OnWindowClose(event_ptr event);
 
-		/**
-		* Handler function for the Window Resize Event
-		* @param event shared_ptr of type Event
-		*/
-		void OnWindowResize(event_ptr event);
 	private:
-		HandlerID m_WindowResize;
-		HandlerID m_WindowClose;
 
 		LayerStack m_LayerStack;
 		std::unique_ptr<Window> m_Window;

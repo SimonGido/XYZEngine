@@ -47,6 +47,7 @@ namespace XYZ {
 	}
 	void OpenGLFrameBuffer::Bind() const
 	{
+		XYZ_ASSERT(m_ColorAttachments.empty() || m_DepthAttachments.empty(), "Binding framebuffer without any attachments");
 		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 	}
 	void OpenGLFrameBuffer::Unbind() const

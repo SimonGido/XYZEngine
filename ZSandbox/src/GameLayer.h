@@ -3,44 +3,6 @@
 #include <XYZ.h>
 
 
-
-struct Propagate
-{
-	Propagate(XYZ::Transform2D& parent, XYZ::Transform2D& child)
-	{
-		child.SetParent(&parent);
-	}
-	Propagate() = default;
-
-	void operator ()(XYZ::Transform2D& parent, XYZ::Transform2D& child)
-	{
-		if (parent.Updated())
-			child.InheritParent(parent);
-
-		std::cout << child.GetPosition().x << std::endl;
-	}
-};
-
-
-struct TransformPropagate
-{
-	// Setup
-	TransformPropagate(XYZ::Transform2D* parent, XYZ::Transform2D* child)
-	{
-		if (parent && child)
-			child->SetParent(parent);
-	}
-	TransformPropagate() = default;
-	// Update
-	void operator ()(XYZ::Transform2D* parent, XYZ::Transform2D* child)
-	{
-		child->CalculateWorldTransformation();
-		// Should call rendering functions
-	}
-
-};
-
-
 class GameLayer : public XYZ::Layer
 {
 public:
@@ -50,12 +12,14 @@ public:
 	virtual void OnAttach() override;
 	virtual void OnDetach() override;
 	virtual void OnUpdate(float ts) override;
+	virtual void OnEvent(XYZ::Event& event) override;
 	virtual void OnImGuiRender() override;
 
 private:
 
 	void InitBackgroundParticles(XYZ::Entity entity);
 private:
+	std::shared_ptr<XYZ::SpriteRenderer> m_RendererSystem;
 	std::shared_ptr<XYZ::PhysicsSystem> m_PhysicsSystem;
 	std::shared_ptr<XYZ::ParticleSystem2D> m_ParticleSystem;
 	std::shared_ptr<XYZ::SpriteSystem> m_SpriteSystem;
@@ -75,11 +39,15 @@ private:
 	XYZ::Entity m_ParticleEntity;
 
 
-	XYZ::Tree<XYZ::Transform2D*, TransformPropagate> m_TransformTree;
+	XYZ::Tree<XYZ::Transform2D*> m_TransformTree;
 	XYZ::Transform2D* m_WorldTransform;
 	XYZ::Transform2D* m_PlayerTransform;
 	XYZ::Transform2D* m_PlayerChildTransform;
 	XYZ::Transform2D* m_PlayerChildTransform2;
+
+	XYZ::Renderable2D* m_PlayerRenderable;
+	XYZ::Renderable2D* m_PlayerChildRenderable;
+	XYZ::Renderable2D* m_PlayerChildRenderable2;
 
 	int m_PlayableArea = 20;
 
@@ -88,4 +56,35 @@ private:
 
 	std::shared_ptr<XYZ::Material> m_FluidMaterial;
 	std::shared_ptr<XYZ::FrameBuffer> m_FrameBuffer;
+
+
+	struct SceneObject
+	{
+		XYZ::Renderable2D* Renderable;
+		XYZ::Transform2D* Transform;
+	};
+
+
+	struct SceneSetup
+	{
+		void operator()(SceneObject& parent, SceneObject& child)
+		{
+			child.Transform->SetParent(parent.Transform);
+		}
+	};
+
+	struct ScenePropagation
+	{
+		std::shared_ptr<XYZ::SpriteRenderer> RendererSystem;
+
+		void operator()(SceneObject& parent, SceneObject& child)
+		{
+			child.Transform->CalculateWorldTransformation();
+			RendererSystem->PushRenderable(child.Renderable, child.Transform);
+		}
+	};
+
+	ScenePropagation m_Propagation;
+	XYZ::Tree<SceneObject> m_SceneTree;
+
 };

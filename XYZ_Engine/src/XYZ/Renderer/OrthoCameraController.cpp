@@ -11,14 +11,11 @@ namespace XYZ {
 		m_Bounds({ -m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel }),
 		m_Camera(-m_AspectRatio * m_ZoomLevel, m_AspectRatio* m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel), m_Rotation(rotation)
 	{
-		m_MouseScroll = EventManager::Get().AddHandler(EventType::MouseScroll, std::bind(&OrthoCameraController::OnMouseScrolled, this, std::placeholders::_1));
-		m_WindowResize = EventManager::Get().AddHandler(EventType::WindowResized, std::bind(&OrthoCameraController::OnWindowResized, this, std::placeholders::_1));
 	}
 
 	OrthoCameraController::~OrthoCameraController()
 	{
-		EventManager::Get().RemoveHandler(EventType::MouseScroll, m_MouseScroll);
-		EventManager::Get().RemoveHandler(EventType::WindowResized, m_WindowResize);
+		
 	}
 
 	void OrthoCameraController::OnUpdate(float dt)
@@ -65,18 +62,30 @@ namespace XYZ {
 		m_CameraTranslationSpeed = m_ZoomLevel;
 	}
 
-	void OrthoCameraController::OnMouseScrolled(event_ptr event)
+	void OrthoCameraController::OnEvent(Event& event)
 	{
-		std::shared_ptr<MouseScrollEvent> e = std::static_pointer_cast<MouseScrollEvent>(event);
-		m_ZoomLevel -= (float)e->GetOffsetY() * 0.25f;
+		if (event.GetEventType() == EventType::MouseScroll)
+		{
+			MouseScrollEvent& e = (MouseScrollEvent&)event;
+			OnMouseScrolled(e);
+		}
+		else if (event.GetEventType() == EventType::WindowResized)
+		{
+			WindowResizeEvent& e = (WindowResizeEvent&)event;
+			OnWindowResized(e);
+		}
+	} 
+
+	void OrthoCameraController::OnMouseScrolled(MouseScrollEvent& event)
+	{	
+		m_ZoomLevel -= (float)event.GetOffsetY() * 0.25f;
 		m_ZoomLevel = std::max(m_ZoomLevel, 0.25f);
 		m_Camera.SetProjection(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
 	}
 
-	void OrthoCameraController::OnWindowResized(event_ptr event)
+	void OrthoCameraController::OnWindowResized(WindowResizeEvent& event)
 	{
-		std::shared_ptr<WindowResizeEvent> e = std::static_pointer_cast<WindowResizeEvent>(event);
-		m_AspectRatio = (float)e->GetWidth() / (float)e->GetHeight();
+		m_AspectRatio = (float)event.GetWidth() / (float)event.GetHeight();
 		m_Camera.SetProjection(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
 	}
 }

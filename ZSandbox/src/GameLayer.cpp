@@ -17,6 +17,7 @@ GameLayer::~GameLayer()
 void GameLayer::OnAttach()
 {
 	XYZ::Audio::Init();
+	m_RendererSystem = std::make_shared<XYZ::SpriteRenderer>();
 	m_PhysicsSystem = XYZ::ECSManager::Get().RegisterSystem<XYZ::PhysicsSystem>();
 	m_InterSystem = XYZ::ECSManager::Get().RegisterSystem<XYZ::InterpolatedMovementSystem>();
 	m_GridCollisionSystem = XYZ::ECSManager::Get().RegisterSystem<XYZ::GridCollisionSystem>();
@@ -59,43 +60,7 @@ void GameLayer::OnAttach()
 	//m_Audio->Play();
 
 
-
-	//m_FluidMaterial = XYZ::Material::Create(XYZ::Shader::Create("Assets/Shaders/FluidShader.glsl"));
-	//m_FluidMaterial->Set("u_Texture", XYZ::Texture2D::Create(XYZ::TextureWrap::Clamp, "Assets/Textures/background.png"));
-
-
 	
-	// EXAMPLE HOW TREE WORKS //
-	XYZ::Tree<XYZ::Transform2D, Propagate> m_Tree;
-
-	m_Tree.InsertNode(XYZ::Node<XYZ::Transform2D, Propagate>("Root", XYZ::Transform2D(glm::vec3(1, 1, 1))));
-	m_Tree.Reserve(10);
-	for (int i = 1; i < 7; ++i)
-	{
-		m_Tree.InsertNode(XYZ::Node<XYZ::Transform2D, Propagate>("Root child", XYZ::Transform2D(glm::vec3(1, 1, 1))));
-	}
-	for (int i = 7; i < 10; ++i)
-	{
-		m_Tree.InsertNode(XYZ::Node<XYZ::Transform2D, Propagate>("Four child", XYZ::Transform2D(glm::vec3(1, 1, 1))));
-	}
-	for (int i = 1; i < 7; ++i)
-	{
-		m_Tree.SetParent(0, i);
-	}
-	m_Tree.SetParent(4, 9);
-	m_Tree.SetParent(9, 8);
-	m_Tree.SetParent(9, 7);
-	//m_Tree.DeleteNode(4);
-	
-	m_Tree.SetRoot(0);
-	m_Tree.Propagate();
-	std::cout << "-------------------------" << std::endl;
-	auto& data = m_Tree.GetFlatData();
-	for (auto& it : data)
-		 it.GetData().GetTransformation(); // Must call to set updated to false
-	m_Tree.Propagate();
-	////////////////////////////////////////////////////////////////////////////
-
 
 	m_World = XYZ::ECSManager::Get().CreateEntity();
 	XYZ::ECSManager::Get().AddComponent<XYZ::Transform2D>(m_World, XYZ::Transform2D{
@@ -107,8 +72,8 @@ void GameLayer::OnAttach()
 		m_Material,
 		std::make_shared<XYZ::SubTexture2D>(texture,glm::vec2(0,0),glm::vec2(texture->GetWidth()/8,texture->GetHeight()/3)),
 		glm::vec4(1,1,1,1),
-		true,
-		3
+		3,
+		true
 		});
 
 	XYZ::ECSManager::Get().AddComponent<XYZ::Transform2D>(m_Player, XYZ::Transform2D{
@@ -120,8 +85,8 @@ void GameLayer::OnAttach()
 		m_Material,
 		std::make_shared<XYZ::SubTexture2D>(texture,glm::vec2(0,0),glm::vec2(texture->GetWidth() / 8,texture->GetHeight() / 3)),
 		glm::vec4(1,1,1,1),
-		true,
-		3
+		3,
+		true
 		});
 
 	XYZ::ECSManager::Get().AddComponent<XYZ::Transform2D>(m_PlayerChild, XYZ::Transform2D{
@@ -133,30 +98,13 @@ void GameLayer::OnAttach()
 		m_Material,
 		std::make_shared<XYZ::SubTexture2D>(texture,glm::vec2(0,0),glm::vec2(texture->GetWidth() / 8,texture->GetHeight() / 3)),
 		glm::vec4(1,1,1,1),
-		true,
-		3
+		3,
+		true
 		});
 
 	XYZ::ECSManager::Get().AddComponent<XYZ::Transform2D>(m_PlayerChild2, XYZ::Transform2D{
 		glm::vec3(3,3,0)
 		});
-
-
-
-	m_WorldTransform = XYZ::ECSManager::Get().GetComponent<XYZ::Transform2D>(m_World);
-	m_PlayerTransform = XYZ::ECSManager::Get().GetComponent<XYZ::Transform2D>(m_Player);
-	m_PlayerChildTransform = XYZ::ECSManager::Get().GetComponent<XYZ::Transform2D>(m_PlayerChild);
-	m_PlayerChildTransform2 = XYZ::ECSManager::Get().GetComponent<XYZ::Transform2D>(m_PlayerChild2);
-
-	m_TransformTree.InsertNode(XYZ::Node<XYZ::Transform2D*, TransformPropagate>("World", m_WorldTransform));
-	m_TransformTree.InsertNode(XYZ::Node<XYZ::Transform2D*, TransformPropagate>("Player",m_PlayerTransform));
-	m_TransformTree.InsertNode(XYZ::Node<XYZ::Transform2D*, TransformPropagate>("Player Child", m_PlayerChildTransform));
-	m_TransformTree.InsertNode(XYZ::Node<XYZ::Transform2D*, TransformPropagate>("Player Child2", m_PlayerChildTransform2));
-
-	m_TransformTree.SetRoot(0);
-	m_TransformTree.SetParent(0, 1);
-	m_TransformTree.SetParent(1, 2);
-	m_TransformTree.SetParent(2, 3);
 
 
 	m_FrameBuffer = XYZ::FrameBuffer::Create(XYZ::FrameBufferSpecs{ 100,100 });
@@ -165,6 +113,27 @@ void GameLayer::OnAttach()
 	m_FrameBuffer->CreateColorAttachment(XYZ::FrameBufferFormat::RGBA16F);
 	m_FrameBuffer->CreateColorAttachment(XYZ::FrameBufferFormat::RGBA16F);
 	m_FrameBuffer->Resize();
+
+	m_WorldTransform = XYZ::ECSManager::Get().GetComponent<XYZ::Transform2D>(m_World);
+	m_PlayerTransform = XYZ::ECSManager::Get().GetComponent<XYZ::Transform2D>(m_Player);
+	m_PlayerChildTransform = XYZ::ECSManager::Get().GetComponent<XYZ::Transform2D>(m_PlayerChild);
+	m_PlayerChildTransform2 = XYZ::ECSManager::Get().GetComponent<XYZ::Transform2D>(m_PlayerChild2);
+
+	m_PlayerRenderable = XYZ::ECSManager::Get().GetComponent<XYZ::Renderable2D>(m_Player);
+	m_PlayerChildRenderable = XYZ::ECSManager::Get().GetComponent<XYZ::Renderable2D>(m_PlayerChild);
+	m_PlayerChildRenderable2 = XYZ::ECSManager::Get().GetComponent<XYZ::Renderable2D>(m_PlayerChild2);
+	
+	m_SceneTree.InsertNode(XYZ::Node<SceneObject>({ nullptr, m_WorldTransform }));
+	m_SceneTree.InsertNode(XYZ::Node<SceneObject>({ m_PlayerRenderable,m_PlayerTransform }));
+	m_SceneTree.InsertNode(XYZ::Node<SceneObject>({ m_PlayerChildRenderable,m_PlayerChildTransform }));
+	m_SceneTree.InsertNode(XYZ::Node<SceneObject>({ m_PlayerChildRenderable2,m_PlayerChildTransform2 }));
+
+	m_SceneTree.SetRoot(0);
+	m_SceneTree.SetParent(0, 1, SceneSetup());
+	m_SceneTree.SetParent(1, 2, SceneSetup());
+	m_SceneTree.SetParent(2, 3, SceneSetup());
+	
+	m_Propagation.RendererSystem = m_RendererSystem;
 }
 
 void GameLayer::OnDetach()
@@ -236,15 +205,13 @@ void GameLayer::OnUpdate(float dt)
 		m_PlayerChildTransform->Rotate(-0.05);
 	}
 
+	m_SceneTree.Propagate(m_Propagation, 0);
 
-
-	m_TransformTree.Propagate();
+	
 
 	XYZ::RenderCommand::Clear();
 	XYZ::RenderCommand::SetClearColor(glm::vec4(0.2, 0.2, 0.5, 1));
-	XYZ::Renderer2D::BeginScene(m_CameraController->GetCamera());
-	XYZ::Renderer2D::Flush();
-	XYZ::Renderer2D::EndScene();
+	m_RendererSystem->SubmitToRenderer();
 
 	
 	m_CameraController->OnUpdate(dt);
@@ -261,6 +228,11 @@ void GameLayer::OnUpdate(float dt)
 	m_ParticleMaterial->Set("u_ViewProjection", m_CameraController->GetCamera().GetViewProjectionMatrix());
 		
 
+}
+
+void GameLayer::OnEvent(XYZ::Event& event)
+{
+	m_CameraController->OnEvent(event);
 }
 
 void GameLayer::InitBackgroundParticles(XYZ::Entity entity)

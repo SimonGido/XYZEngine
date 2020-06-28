@@ -21,14 +21,6 @@ namespace XYZ
 		void Begin(const float ts);
 		void End();
 
-	private:
-		bool OnMouseButtonPressedEvent(event_ptr e);
-		bool OnMouseButtonReleasedEvent(event_ptr e);
-		bool OnMouseMovedEvent(event_ptr e);
-		bool OnMouseScrolledEvent(event_ptr e);
-		bool OnWindowResizedEvent(event_ptr e);
-		bool OnKeyPressedEvent(event_ptr e);
-		bool OnKeyReleasedEvent(event_ptr e);
-		bool OnKeyTypedEvent(event_ptr e);
+
 	};
 };

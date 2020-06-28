@@ -1,0 +1,441 @@
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowResizeEvent::WindowResizeEvent: Window: Resized window width: 958 height: 1008
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLShader::readFile: Could not open file Assets/Shaders/DefaultShader.glsl
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLShader::readFile: Could not open file Assets/Shaders/DefaultShader.glsl
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLShader::readFile: Could not open file Assets/Shaders/DefaultShader.glsl
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLShader::readFile: Could not open file Assets/Shaders/DefaultShader.glsl
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::Font::convertToType: Assertion Failed: Cannot convert string to type
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 442.59
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed

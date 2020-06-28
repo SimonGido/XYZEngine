@@ -52,9 +52,7 @@ namespace XYZ {
 	bool PhysicsSystem::Contains(Entity entity)
 	{
 		auto it = std::find(m_Components.begin(), m_Components.end(), entity);
-		if (it != m_Components.end())
-			return true;
-		return false;
+		return (it != m_Components.end());
 	}
 
 }

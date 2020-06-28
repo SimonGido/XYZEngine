@@ -17,14 +17,6 @@
 XYZ::ImGuiLayer::ImGuiLayer()
     : Layer()
 {
-    EventManager::Get().AddHandler(EventType::KeyPressed, std::bind(&ImGuiLayer::OnKeyPressedEvent, this, std::placeholders::_1));
-    EventManager::Get().AddHandler(EventType::KeyReleased, std::bind(&ImGuiLayer::OnKeyReleasedEvent, this, std::placeholders::_1));
-    EventManager::Get().AddHandler(EventType::KeyTyped, std::bind(&ImGuiLayer::OnKeyTypedEvent, this, std::placeholders::_1));
-    EventManager::Get().AddHandler(EventType::MouseButtonPressed, std::bind(&ImGuiLayer::OnMouseButtonPressedEvent, this, std::placeholders::_1));
-    EventManager::Get().AddHandler(EventType::MouseButtonReleased, std::bind(&ImGuiLayer::OnMouseButtonReleasedEvent, this, std::placeholders::_1));
-    EventManager::Get().AddHandler(EventType::MouseMoved, std::bind(&ImGuiLayer::OnMouseMovedEvent, this, std::placeholders::_1));
-    EventManager::Get().AddHandler(EventType::MouseScroll, std::bind(&ImGuiLayer::OnMouseScrolledEvent, this, std::placeholders::_1));
-    EventManager::Get().AddHandler(EventType::WindowResized, std::bind(&ImGuiLayer::OnWindowResizedEvent, this, std::placeholders::_1));
 }
 
 XYZ::ImGuiLayer::~ImGuiLayer()
@@ -93,81 +85,4 @@ void XYZ::ImGuiLayer::End()
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-bool XYZ::ImGuiLayer::OnMouseButtonPressedEvent(event_ptr e)
-{
-    auto ecast = std::static_pointer_cast<MouseButtonPressEvent>(e);
-    auto& io = ImGui::GetIO();
-    io.MouseDown[ecast->GetButton()] = true;
-    return false;
-}
 
-bool XYZ::ImGuiLayer::OnMouseButtonReleasedEvent(event_ptr e)
-{
-    auto ecast = std::static_pointer_cast<MouseButtonReleaseEvent>(e);
-    auto& io = ImGui::GetIO();
-    io.MouseDown[ecast->GetButton()] = false;
-    return false;
-}
-
-bool XYZ::ImGuiLayer::OnMouseMovedEvent(event_ptr e)
-{
-    auto ecast = std::static_pointer_cast<MouseMovedEvent>(e);
-    auto& io = ImGui::GetIO();
-    io.MousePos = ImVec2(ecast->GetX(), ecast->GetY());
-    return false;
-}
-
-bool XYZ::ImGuiLayer::OnMouseScrolledEvent(event_ptr e)
-{
-    auto ecast = std::static_pointer_cast<MouseScrollEvent>(e);
-    auto& io = ImGui::GetIO();
-    io.MouseWheel += (float)ecast->GetOffsetX();
-    io.MouseWheelH += (float)ecast->GetOffsetY();
-    return false;
-}
-
-bool XYZ::ImGuiLayer::OnWindowResizedEvent(event_ptr e)
-{
-    auto ecast = std::static_pointer_cast<WindowResizeEvent>(e);
-    auto& io = ImGui::GetIO();
-    io.DisplaySize = ImVec2(ecast->GetWidth(), ecast->GetWidth());
-    io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
-    RenderCommand::SetViewPort(0, 0, ecast->GetWidth(), ecast->GetHeight());
-    return false;
-}
-
-bool XYZ::ImGuiLayer::OnKeyPressedEvent(event_ptr e)
-{
-    auto ecast = std::static_pointer_cast<KeyPressedEvent>(e);
-    auto& io = ImGui::GetIO();
-    io.KeysDown[ecast->GetKey()] = true;
-
-    io.KeyCtrl = io.KeysDown[XYZ::KeyCode::XYZ_KEY_LEFT_CONTROL] || io.KeysDown[XYZ::KeyCode::XYZ_KEY_RIGHT_CONTROL];
-    io.KeyAlt = io.KeysDown[XYZ::KeyCode::XYZ_KEY_LEFT_ALT] || io.KeysDown[XYZ::KeyCode::XYZ_KEY_RIGHT_ALT];
-    io.KeyShift = io.KeysDown[XYZ::KeyCode::XYZ_KEY_LEFT_SHIFT] || io.KeysDown[XYZ::KeyCode::XYZ_KEY_RIGHT_SHIFT];
-    io.KeySuper = io.KeysDown[XYZ::KeyCode::XYZ_KEY_LEFT_SUPER] || io.KeysDown[XYZ::KeyCode::XYZ_KEY_RIGHT_SUPER];
-    return false;
-}
-
-bool XYZ::ImGuiLayer::OnKeyReleasedEvent(event_ptr e)
-{
-    auto ecast = std::static_pointer_cast<KeyReleasedEvent>(e);
-    auto& io = ImGui::GetIO();
-    io.KeysDown[ecast->GetKey()] = false;
-
-    io.KeyCtrl = io.KeysDown[XYZ::KeyCode::XYZ_KEY_LEFT_CONTROL] || io.KeysDown[XYZ::KeyCode::XYZ_KEY_RIGHT_CONTROL];
-    io.KeyAlt = io.KeysDown[XYZ::KeyCode::XYZ_KEY_LEFT_ALT] || io.KeysDown[XYZ::KeyCode::XYZ_KEY_RIGHT_ALT];
-    io.KeyShift = io.KeysDown[XYZ::KeyCode::XYZ_KEY_LEFT_SHIFT] || io.KeysDown[XYZ::KeyCode::XYZ_KEY_RIGHT_SHIFT];
-    io.KeySuper = io.KeysDown[XYZ::KeyCode::XYZ_KEY_LEFT_SUPER] || io.KeysDown[XYZ::KeyCode::XYZ_KEY_RIGHT_SUPER];
-    return false;
-}
-
-bool XYZ::ImGuiLayer::OnKeyTypedEvent(event_ptr e)
-{
-    auto ecast = std::static_pointer_cast<KeyTypedEvent>(e);
-    auto& io = ImGui::GetIO();
-    int kc = ecast->GetKey();
-    if (kc > 0 && kc < 0x10000)
-        io.AddInputCharacter((unsigned short)kc);
-    return false;
-}

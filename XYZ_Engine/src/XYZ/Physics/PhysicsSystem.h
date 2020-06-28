@@ -2,8 +2,6 @@
 #include "XYZ/ECS/ECSManager.h"
 #include "PhysicsComponent.h"
 
-#include "XYZ/Renderer/Renderable2D.h"
-
 
 namespace XYZ {
 	/**
@@ -17,7 +15,7 @@ namespace XYZ {
 		* Construct
 		*/
 		PhysicsSystem();
-		~PhysicsSystem();
+		virtual ~PhysicsSystem();
 
 		virtual void Update(float dt);
 		virtual void Add(Entity entity) override;

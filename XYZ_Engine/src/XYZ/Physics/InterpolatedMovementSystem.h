@@ -1,6 +1,7 @@
 #pragma once
 #include "XYZ/ECS/ECSManager.h"
 #include "PhysicsComponent.h"
+#include "Transform.h"
 
 
 namespace XYZ {

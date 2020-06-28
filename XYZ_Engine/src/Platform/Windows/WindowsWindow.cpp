@@ -3,8 +3,6 @@
 #include "XYZ/Core/Event/Event.h"
 
 
-#include "XYZ/Core/Event/EventManager.h"
-
 namespace XYZ {
 	static bool GLFWInitialized = false;
 
@@ -56,19 +54,19 @@ namespace XYZ {
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			data.Width = width;
 			data.Height = height;
-			EventManager::Get().FireEvent(std::make_shared<WindowResizeEvent>(width, height));
+			data.EventCallback(WindowResizeEvent(width, height));
 		});
 
 		glfwSetWindowCloseCallback(m_Window, [](GLFWwindow* window)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-			EventManager::Get().FireEvent(std::make_shared<WindowCloseEvent>());
+			data.EventCallback(WindowCloseEvent());
 		});
 
 		glfwSetCharCallback(m_Window, [](GLFWwindow* window, unsigned int key)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-			EventManager::Get().FireEvent(std::make_shared<KeyTypedEvent>(key));
+			data.EventCallback(KeyTypedEvent(key));
 		});
 
 		glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -79,12 +77,12 @@ namespace XYZ {
 			{
 			case GLFW_PRESS:
 			{
-				EventManager::Get().FireEvent(std::make_shared<KeyPressedEvent>(key, mods));
+				data.EventCallback(KeyPressedEvent(key, mods));
 				break;
 			}
 			case GLFW_RELEASE:
 			{
-				EventManager::Get().FireEvent(std::make_shared<KeyReleasedEvent>(key));
+				data.EventCallback(KeyReleasedEvent(key));
 				break;
 			}
 
@@ -98,12 +96,12 @@ namespace XYZ {
 			{
 			case GLFW_PRESS:
 			{
-				EventManager::Get().FireEvent(std::make_shared<MouseButtonPressEvent>(button));
+				data.EventCallback(MouseButtonPressEvent(button));
 				break;
 			}
 			case GLFW_RELEASE:
 			{
-				EventManager::Get().FireEvent(std::make_shared<MouseButtonReleaseEvent>(button));
+				data.EventCallback(MouseButtonReleaseEvent(button));
 				break;
 			}
 
@@ -113,13 +111,13 @@ namespace XYZ {
 		glfwSetScrollCallback(m_Window, [](GLFWwindow* window, double xOffset, double yOffset)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-			EventManager::Get().FireEvent(std::make_shared<MouseScrollEvent>((float)xOffset, (float)yOffset));
+			data.EventCallback(MouseScrollEvent((float)xOffset, (float)yOffset));
 		});
 
 		glfwSetCursorPosCallback(m_Window, [](GLFWwindow* window, double xPos, double yPos)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-			EventManager::Get().FireEvent(std::make_shared<MouseMovedEvent>((float)xPos, (float)yPos));
+			data.EventCallback(MouseMovedEvent((float)xPos, (float)yPos));
 		});
 	}
 

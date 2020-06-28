@@ -4,3 +4,5 @@ D:\Cpp_projects\PrersonalXYZdev\game-engine\XYZ_Engine\vendor\OpenAL-Soft\bin\De
 D:\Cpp_projects\PrersonalXYZdev\game-engine\XYZ_Engine\vendor\OpenAL-Soft\bin-int\Debug-windows-x86_64\OpenAL-Soft\OpenAL-Soft.pdb
 C:\Users\Gido\Desktop\PrersonalXYZdev\game-engine\XYZ_Engine\vendor\OpenAL-Soft\bin\Debug-windows-x86_64\OpenAL-Soft\OpenAL-Soft.pdb
 C:\Users\Gido\Desktop\PrersonalXYZdev\game-engine\XYZ_Engine\vendor\OpenAL-Soft\bin-int\Debug-windows-x86_64\OpenAL-Soft\OpenAL-Soft.pdb
+C:\Users\Gido\Desktop\GameDev\XYZ_Engine\vendor\OpenAL-Soft\bin\Debug-windows-x86_64\OpenAL-Soft\OpenAL-Soft.pdb
+C:\Users\Gido\Desktop\GameDev\XYZ_Engine\vendor\OpenAL-Soft\bin-int\Debug-windows-x86_64\OpenAL-Soft\OpenAL-Soft.pdb

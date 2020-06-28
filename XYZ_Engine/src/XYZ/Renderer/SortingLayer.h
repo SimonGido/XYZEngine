@@ -1,33 +1,39 @@
 #pragma once
-#include "XYZ/Utils/DataStructures/FreeList.h"
+
+#include "XYZ/Core/Singleton.h"
 
 
 namespace XYZ {
 
-	using SortingLayerID = int;
+	using SortLayerID = int32_t;
+
 
 	/*! @class SortingLayer
 	*	@brief Takes care of sorting layer IDs
 	*/
-	class SortingLayer
+	class SortingLayer : public Singleton<SortingLayer>
 	{
 	public:
-		SortingLayer(const SortingLayer&) = delete;
-		void CreateLayer(const std::string& name,int order);
+		SortingLayer(token);
+
+		void CreateLayer(const std::string& name);
 		void DeleteLayer(const std::string& name);
+		void SetOrderOfLayer(const std::string& name,size_t order);
 
-		SortingLayerID GetOrderValueByName(const std::string& name);
-		SortingLayerID GetOrderValueByID(SortingLayerID id);
+		SortLayerID GetOrderValue(const std::string& name) const;
 
-		int GetNumberOfLayers() { return m_Layers.Range(); }
+		size_t GetNumberOfLayers() { return m_Layers.size(); }	
+	private:	
+		
+		struct Layer
+		{
+			std::string Name;
+		};
 
-		static SortingLayer& Get() { return s_Instance; }
-	private:
-		SortingLayer();
-		// Currently ID is also sorting value , might change in future
-		FreeList<int> m_Layers;
-		std::unordered_map<std::string, SortingLayerID> m_LookUp;
+		int32_t m_Next = 0;
+		std::vector<Layer> m_Layers;
 
-		static SortingLayer s_Instance;
+		static constexpr int32_t sc_MaxNumberOfLayers = 31;
+
 	};
 }

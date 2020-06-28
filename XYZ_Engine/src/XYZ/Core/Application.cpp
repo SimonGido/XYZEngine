@@ -20,9 +20,8 @@ namespace XYZ {
 
 		m_Window = Window::Create();
 		m_Window->SetVSync(false);
+		m_Window->SetEventCallback(BIND_EVENT_FN(OnEvent));
 
-		m_WindowResize = EventManager::Get().AddHandler(EventType::WindowResized, std::bind(&Application::OnWindowResize, this, std::placeholders::_1));
-		m_WindowClose = EventManager::Get().AddHandler(EventType::WindowClosed, std::bind(&Application::OnWindowClose, this, std::placeholders::_1));
 		// Push default layers
 		m_ImGuiLayer = new ImGuiLayer();
 		PushOverlay(m_ImGuiLayer);
@@ -74,14 +73,25 @@ namespace XYZ {
 		m_Running = false;
 	}
 
-	void Application::OnWindowClose(event_ptr event)
-	{
-		m_Running = false;
-	}
 
-	void Application::OnWindowResize(event_ptr event)
+	void Application::OnEvent(Event& event)
 	{
-		std::shared_ptr<WindowResizeEvent> resize = std::static_pointer_cast<WindowResizeEvent>(event);
-		Renderer::OnWindowResize(resize->GetWidth(), resize->GetHeight());
+		if (event.GetEventType() == EventType::WindowResized)
+		{
+			WindowResizeEvent& resize = (WindowResizeEvent&)event;
+			Renderer::OnWindowResize(resize.GetWidth(), resize.GetHeight());
+		}
+		else if (event.GetEventType() == EventType::WindowClosed)
+		{
+			WindowCloseEvent& close = (WindowCloseEvent&)event;
+			m_Running = false;
+		}
+		for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)
+		{
+			(*it)->OnEvent(event);
+			if (event.IsHandled())
+				break;
+		}
 	}
+	
 }

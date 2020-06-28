@@ -1,7 +1,7 @@
 #pragma once
 
 #include "XYZ/Renderer/OrthoCamera.h"
-#include "XYZ/Core/Event/EventManager.h"
+#include "XYZ/Core/Event/Event.h"
 
 
 namespace XYZ {
@@ -49,6 +49,7 @@ namespace XYZ {
 		*/
 		void OnUpdate(float dt);
 
+		void OnEvent(Event& event);
 		/**
 		* @return reference to the orthocamera
 		*/
@@ -79,17 +80,15 @@ namespace XYZ {
 		* Handler for the mouse scrolled event
 		* @param[in] event shared_ptr to the Event
 		*/
-		void OnMouseScrolled(event_ptr event);
+		void OnMouseScrolled(MouseScrollEvent& event);
 
 		/**
 		* Handler for the window resized event
 		* @param[in] event shared_ptr to the Event
 		*/
-		void OnWindowResized(event_ptr event);
+		void OnWindowResized(WindowResizeEvent& event);
 	private:
-		HandlerID m_MouseScroll;
-		HandlerID m_WindowResize;
-
+		
 		float m_AspectRatio;
 		float m_ZoomLevel = 1.0f;
 		OrthoCamera m_Camera;

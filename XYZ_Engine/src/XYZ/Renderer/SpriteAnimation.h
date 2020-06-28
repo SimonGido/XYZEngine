@@ -1,7 +1,6 @@
 #pragma once
 #include "XYZ/ECS/Component.h"
 #include "SubTexture2D.h"
-#include "Renderable2D.h"
 
 namespace XYZ {
 

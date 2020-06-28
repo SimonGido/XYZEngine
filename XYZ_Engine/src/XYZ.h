@@ -20,7 +20,7 @@
 #include "XYZ/Renderer/SpriteSystem.h"
 #include "XYZ/Renderer/MaterialManager.h"
 #include "XYZ/Renderer/Framebuffer.h"
-
+#include "XYZ/Renderer/RenderSortSystem.h"
 
 //------ECS-----//
 #include "XYZ/ECS/ECSManager.h"
@@ -39,3 +39,6 @@
 #include "XYZ/Audio/Audio.h"
 
 #include "XYZ/Utils/DataStructures/Tree.h"
+#include "XYZ/Gui/Font.h"
+
+#include "XYZ/Renderer/SpriteRenderComponent.h"

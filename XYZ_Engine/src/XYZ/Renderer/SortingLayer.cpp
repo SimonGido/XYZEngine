@@ -2,30 +2,60 @@
 #include "SortingLayer.h"
 
 namespace XYZ {
-	SortingLayer SortingLayer::s_Instance;
-
-	void SortingLayer::CreateLayer(const std::string& name, int order)
+	SortingLayer::SortingLayer(token)
 	{
-		m_LookUp[name] = m_Layers.Insert(order);
+		CreateLayer("Default");
+	}
+
+	void SortingLayer::CreateLayer(const std::string& name)
+	{
+		XYZ_ASSERT(m_Layers.size() <= sc_MaxNumberOfLayers, "Maximum number of layers exceeded");
+		m_Layers.push_back(Layer{ name });
+		m_Next++;
 	}
 	void SortingLayer::DeleteLayer(const std::string& name)
 	{
-		XYZ_ASSERT(m_LookUp.find(name) != m_LookUp.end(), "Sorting layer does not exist");
-		int index = m_LookUp[name];
-		m_Layers.Erase(index);
-		m_LookUp.erase(name);
+		for (size_t i = 0; i < m_Layers.size(); ++i)
+		{
+			if (m_Layers[i].Name == name)
+			{
+				m_Layers.erase(m_Layers.begin() + i);
+				return;
+			}
+		}
+		XYZ_ASSERT(false, "Trying to remove not existing sorting layer");
 	}
-	SortingLayerID SortingLayer::GetOrderValueByName(const std::string& name)
+
+	template <typename t> void move(std::vector<t>& v, size_t oldIndex, size_t newIndex)
 	{
-		XYZ_ASSERT(m_LookUp.find(name) != m_LookUp.end(), "Sorting layer does not exist");
-		return m_LookUp[name];
+		if (oldIndex > newIndex)
+			std::rotate(v.rend() - oldIndex - 1, v.rend() - oldIndex, v.rend() - newIndex);
+		else
+			std::rotate(v.begin() + oldIndex, v.begin() + oldIndex + 1, v.begin() + newIndex + 1);
 	}
-	SortingLayerID SortingLayer::GetOrderValueByID(SortingLayerID id)
+
+	void SortingLayer::SetOrderOfLayer(const std::string& name, size_t order)
 	{
-		return m_Layers[id];
+		XYZ_ASSERT(order >= 0 && order <= sc_MaxNumberOfLayers, "Attempting to set order of sorting layer out of boundaries");
+		for (size_t i = 0; i < m_Layers.size(); ++i)
+		{
+			if (m_Layers[i].Name == name)
+			{
+				move(m_Layers, i, order);
+				return;
+			}
+		}
 	}
-	SortingLayer::SortingLayer()
+	SortLayerID SortingLayer::GetOrderValue(const std::string& name) const
 	{
-		m_LookUp["default"] = m_Layers.Insert(0);
+		for (size_t i = 0; i < m_Layers.size(); ++i)
+		{
+			if (m_Layers[i].Name == name)
+			{
+				return (1 << static_cast<int>(i));
+			}
+		}
+		XYZ_ASSERT(false, "Trying to access not existing sorting layer");
 	}
+	
 }

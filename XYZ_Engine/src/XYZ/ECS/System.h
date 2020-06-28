@@ -1,6 +1,8 @@
 #pragma once
 #include "Component.h"
 #include "ComponentStorage.h"
+#include "XYZ/Core/Event/Event.h"
+
 
 namespace XYZ {
 	class SystemManager;
@@ -30,6 +32,8 @@ namespace XYZ {
 		*/
 		virtual void EntityUpdated(Entity entity) {};
 		
+
+		virtual void OnEvent(Event& event) {};
 		/**
 		* Check if system contains entity
 		* @param[in] entity

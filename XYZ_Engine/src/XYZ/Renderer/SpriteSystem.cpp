@@ -6,14 +6,14 @@ namespace XYZ {
 	SpriteSystem::SpriteSystem()
 	{
 		m_Signature.set(ECSManager::Get().GetComponentType<SpriteAnimation>());
-		m_Signature.set(ECSManager::Get().GetComponentType<Renderable2D>());
+		m_Signature.set(ECSManager::Get().GetComponentType<SpriteRenderComponent>());
 	}
 	void SpriteSystem::Update(float dt)
 	{
 		for (auto it : m_Components)
 		{
 			it.Animation->Update(dt);
-			it.Renderable->SubTexture = it.Animation->GetCurrentKeyFrame();
+			it.Renderable->SetSubTexture(it.Animation->GetCurrentKeyFrame());
 		}
 	}
 	void SpriteSystem::Add(Entity entity)
@@ -22,7 +22,7 @@ namespace XYZ {
 	
 		Component component;
 		component.Animation = ECSManager::Get().GetComponent<SpriteAnimation>(entity);
-		component.Renderable = ECSManager::Get().GetComponent<Renderable2D>(entity);
+		component.Renderable = ECSManager::Get().GetComponent<SpriteRenderComponent>(entity);
 		component.Ent = entity;
 
 		m_Components.push_back(component);

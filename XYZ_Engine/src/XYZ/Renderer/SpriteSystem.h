@@ -2,6 +2,8 @@
 #include "XYZ/ECS/ECSManager.h"
 #include "SpriteAnimation.h"
 
+#include "SpriteRenderComponent.h"
+
 namespace XYZ {
 
 	/**
@@ -40,7 +42,7 @@ namespace XYZ {
 		struct Component : public System::Component
 		{
 			SpriteAnimation* Animation;
-			Renderable2D* Renderable;
+			SpriteRenderComponent* Renderable;
 		};
 
 		std::vector<Component> m_Components;
