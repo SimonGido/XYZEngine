@@ -20,7 +20,7 @@ namespace XYZ {
 
 		m_Window = Window::Create();
 		m_Window->SetVSync(false);
-		m_Window->SetEventCallback(BIND_EVENT_FN(OnEvent));
+		m_Window->SetEventCallback(Hook(&Application::OnEvent, this));
 
 		// Push default layers
 		m_ImGuiLayer = new ImGuiLayer();

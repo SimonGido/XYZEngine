@@ -7,6 +7,7 @@ namespace XYZ {
 		const glm::vec2& size,
 		const glm::vec4& color,
 		int32_t textureID,
+		Ref<SubTexture2D> subTexture,
 		Ref<Material> material,
 		SortLayerID layer,
 		bool visible
@@ -15,6 +16,7 @@ namespace XYZ {
 		m_Quad(position, size, color,textureID),
 		RenderComponent(material,layer, visible)
 	{
+		SetSubTexture(subTexture);
 	}
 	void SpriteRenderComponent::SetSubTexture(Ref<SubTexture2D> subTexture)
 	{

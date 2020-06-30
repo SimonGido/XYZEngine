@@ -1,14 +1,14 @@
 #pragma once
 #include "XYZ/ECS/ECSManager.h"
-#include "RenderComponent.h"
+#include "XYZ/Renderer/RenderComponent.h"
 
 
 namespace XYZ {
 
-	class SpriteRenderComponent : public RenderComponent ,Type<SpriteRenderComponent>
+	class Image : public RenderComponent, Type<Image>
 	{
 	public:
-		SpriteRenderComponent(
+		Image(
 			const glm::vec2& position,
 			const glm::vec2& size,
 			const glm::vec4& color,
@@ -16,17 +16,17 @@ namespace XYZ {
 			Ref<SubTexture2D> subTexture,
 			Ref<Material> material,
 			SortLayerID layer,
-			bool visible	
+			bool visible
 		);
-		virtual ~SpriteRenderComponent() = default;
+
+		virtual ~Image() = default;
 
 		void SetSubTexture(Ref<SubTexture2D> subTexture);
-		void SetQuad(const Quad& quad);
+		void SetQuad(const Quad & quad);
 
-		virtual const Quad* GetRenderData() const { return &m_Quad; };
 	private:
 		Quad m_Quad;
 		Ref<SubTexture2D> m_SubTexture;
-	};
 
+	};
 }

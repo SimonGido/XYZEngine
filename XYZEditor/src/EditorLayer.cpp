@@ -28,8 +28,11 @@ namespace XYZ {
 		
 
 		m_TextMaterial = Material::Create(XYZ::Shader::Create("TextShader", "Assets/Shaders/TextShader.glsl"));
-		m_TextMaterial->Set("u_Texture", XYZ::Texture2D::Create(XYZ::TextureWrap::Clamp, "Assets/Font/Calibri.png"), 0);
+		m_TextMaterial->Set("u_Texture", XYZ::Texture2D::Create(XYZ::TextureWrap::Clamp, "Assets/Font/Arial.png"), 0);
 		m_TextMaterial->SetFlags(XYZ::RenderFlags::TransparentFlag);
+
+		Ref<SubTexture2D> subTexture = CreateRef<SubTexture2D>(texture, glm::vec2(0, 0), glm::vec2(texture->GetWidth() / 8, texture->GetHeight() / 3));
+
 
 		m_TestObject = ECSManager::Get().CreateEntity();;
 		ECSManager::Get().AddComponent<SpriteRenderComponent>(m_TestObject, SpriteRenderComponent(
@@ -37,6 +40,7 @@ namespace XYZ {
 			glm::vec2(1,1),
 			glm::vec4(1),
 			3,
+			subTexture,
 			m_Material,
 			SortingLayer::Get().GetOrderValue("Default"),
 			true
@@ -55,6 +59,7 @@ namespace XYZ {
 			glm::vec2(1, 1),
 			glm::vec4(1),
 			3,
+			subTexture,
 			m_Material,
 			SortingLayer::Get().GetOrderValue("Default"),
 			true
@@ -71,6 +76,7 @@ namespace XYZ {
 			glm::vec2(1, 1),
 			glm::vec4(1),
 			3,
+			subTexture,
 			m_Material,
 			SortingLayer::Get().GetOrderValue("Default"),
 			true
@@ -83,18 +89,14 @@ namespace XYZ {
 		m_WorldTransform = new Transform2D(glm::vec3(0, 0, 0));
 		m_Transform = ECSManager::Get().GetComponent<Transform2D>(m_TestObject);
 		m_Renderable = ECSManager::Get().GetComponent<SpriteRenderComponent>(m_TestObject);
-		((SpriteRenderComponent*)m_Renderable)->SetSubTexture(CreateRef<SubTexture2D>(texture, glm::vec2(0, 0), glm::vec2(texture->GetWidth() / 8, texture->GetHeight() / 3)));
 	
 
 		m_ChildTransform = ECSManager::Get().GetComponent<Transform2D>(m_TestChild);
 		m_ChildRenderable = ECSManager::Get().GetComponent<SpriteRenderComponent>(m_TestChild);
-		((SpriteRenderComponent*)m_ChildRenderable)->SetSubTexture(CreateRef<SubTexture2D>(texture, glm::vec2(0, 0), glm::vec2(texture->GetWidth() / 8, texture->GetHeight() / 3)));
 		
-
 
 		m_ChildTransform2 = ECSManager::Get().GetComponent<Transform2D>(m_TestChild2);
 		m_ChildRenderable2 = ECSManager::Get().GetComponent<SpriteRenderComponent>(m_TestChild2);
-		((SpriteRenderComponent*)m_ChildRenderable2)->SetSubTexture(CreateRef<SubTexture2D>(texture, glm::vec2(0, 0), glm::vec2(texture->GetWidth() / 8, texture->GetHeight() / 3)));
 
 
 
@@ -108,7 +110,7 @@ namespace XYZ {
 		m_SceneGraph.SetParent(1, 2, SceneSetup());
 		m_SceneGraph.SetParent(1, 3, SceneSetup());
 		
-		m_Font = CreateRef<Font>("Assets/Font/Calibri.fnt");
+		m_Font = CreateRef<Font>("Assets/Font/Arial.fnt");
 
 
 		m_Text = ECSManager::Get().CreateEntity();
@@ -130,6 +132,9 @@ namespace XYZ {
 		m_TextTransform->SetScale(glm::vec2(1.0f / 60.0f, 1.0f / 60.0f));
 		m_SceneGraph.InsertNode(Node<SceneObject>({ m_TextRenderable,m_TextTransform }));
 		m_SceneGraph.SetParent(1, 4, SceneSetup());
+
+		m_ButtonTest.ReceiveEvent(Release());
+		m_ButtonTest.ReceiveEvent(Click());
 	}
 	void EditorLayer::OnDetach()
 	{

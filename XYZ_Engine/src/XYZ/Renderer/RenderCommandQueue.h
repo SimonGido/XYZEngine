@@ -29,7 +29,7 @@ namespace XYZ {
 		* @param[in] func	 Pointer to the void function
 		* @arg[in]	 args	 Variadic parameter pack
 		*/
-		Command(void(*func)(Args...), Args ... args)
+		Command(void(*func)(Args...), Args&& ... args)
 		{
 			m_Func = func;
 			m_Args = std::forward_as_tuple(args...);

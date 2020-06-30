@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <functional>
 
 #ifdef _WIN32
 
@@ -16,6 +17,15 @@
 #endif
 
 #define BIND_EVENT_FN(x) std::bind(&Application::x, this, std::placeholders::_1)
+
+
+template<typename R, typename T, typename U, typename... Args>
+std::function<R(Args...)> Hook(R(T::* f)(Args...), U p)
+{
+	return [p, f](Args... args)->R { return (p->*f)(args...); };
+};
+
+
 
 #ifdef XYZ_ENABLE_ASSERTS
 #define XYZ_ASSERT(x, ...) { if(!(x)) { XYZ_LOG_ERR("Assertion Failed: ", __VA_ARGS__ ); __debugbreak(); } }
@@ -35,4 +45,4 @@ template <typename T, typename ...Args>
 constexpr Ref<T> CreateRef(Args&&...args)
 {
 	return std::make_shared<T>(std::forward<Args>(args)...);
-}
+};

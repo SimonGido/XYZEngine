@@ -55,5 +55,8 @@ namespace XYZ {
 		RenderComponent* m_TextRenderable;
 		Transform2D* m_TextTransform;
 		Ref<Material> m_TextMaterial;
+
+
+		Button m_ButtonTest;
 	};
 }
