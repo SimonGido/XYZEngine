@@ -15,6 +15,8 @@ namespace XYZ {
 		virtual void OnUpdate(float ts) override;
 		virtual void OnEvent(Event& event) override;
 		virtual void OnImGuiRender() override;
+
+
 	private:
 		Ref<OrthoCameraController> m_CameraController;
 		Ref<RenderSortSystem> m_SortSystem;
@@ -58,5 +60,6 @@ namespace XYZ {
 
 
 		Button m_ButtonTest;
+
 	};
 }

@@ -1,5 +1,6 @@
 #pragma once
-#include "Event/Event.h"
+#include "XYZ/Event/Event.h"
+
 
 
 namespace XYZ {
@@ -10,6 +11,8 @@ namespace XYZ {
 	/*! @class Layer
 	*	@brief Layers are used to handle events
 	*/
+
+
 	class Layer
 	{
 		friend class LayerStack;
@@ -22,8 +25,11 @@ namespace XYZ {
 		virtual void OnUpdate(float ts) {} //Update
 		virtual void OnEvent(Event& event) {};
 		virtual void OnImGuiRender() {}
+		
+
 
 	protected:
+
 		int32_t m_Key;
 	};
 

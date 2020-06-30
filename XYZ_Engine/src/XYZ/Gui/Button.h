@@ -10,6 +10,14 @@
 namespace XYZ {
 	class Button : public Type<Button>
 	{
+		struct Clicked;
+		struct Released;
+		struct Hoovered;
+
+		
+		friend struct Clicked;
+		friend struct Released;
+		friend struct Hoovered;
 	public:
 		using Callback = std::function<void()>;
 
@@ -18,7 +26,7 @@ namespace XYZ {
 		void RemoveCallback(size_t index);
 		void SetHighlightColor(const glm::vec4& color);
 		void SetPressColor(const glm::vec4& color);
-		void OnClick();
+		
 
 
 		template <typename Event>
@@ -28,41 +36,29 @@ namespace XYZ {
 		}
 	
 	private:
+		void OnClick();
+
+	private:
 		glm::vec4 m_HighlightColor;
 		glm::vec4 m_PressColor;
 		std::vector<Callback> m_Callbacks;
 		
-	private:
-		
-		struct Released;
-		struct Hoovered;
-
+	private:	
 		struct Clicked : public Setup<Default<Nothing>,
 								On<Release, TransitionTo<Released>>>
 		{
-			Clicked(Button* button)
-				: Btn(button)
-			{}
-
-			void OnEnter(const Release&)
-			{
-				Btn->OnClick();
-				std::cout << "Clicked" << std::endl;
-			}
+			Clicked(Button* button);
+			void OnEnter(const Click&);
+		
 			Button* Btn;
 		};
 
 		struct Released : public Setup<Default<Nothing>,
 								 On<Hoover, TransitionTo<Hoovered>>>
 		{
-			Released(Button* button)
-				: Btn(button)
-			{}
-
-			void OnEnter(const Release&)
-			{
-				std::cout << "Released" << std::endl;
-			}
+			Released(Button* button);
+			void OnEnter(const Release&);
+			
 			Button* Btn;
 		};
 		
@@ -70,14 +66,9 @@ namespace XYZ {
 								 On<Click, TransitionTo<Clicked>>,
 								 On<UnHoover, TransitionTo<Released>>>
 		{
-			Hoovered(Button* button)
-				: Btn(button)
-			{}
-
-			void OnEnter(const Hoover&)
-			{
-				std::cout << "Hoovered" << std::endl;
-			}
+			Hoovered(Button* button);
+			void OnEnter(const Hoover&);
+			
 			Button* Btn;
 		};
 

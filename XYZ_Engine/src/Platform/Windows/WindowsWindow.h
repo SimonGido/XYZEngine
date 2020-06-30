@@ -1,6 +1,9 @@
 #pragma once
 #include "XYZ/Renderer/APIContext.h"
 #include "XYZ/Core/Window.h"
+#include "XYZ/Event/EventHandler.h"
+#include "XYZ/Event/Event.h"
+#include "XYZ/Event/EventSystem.h"
 
 #include <GLFW/glfw3.h>
 
@@ -20,13 +23,16 @@ namespace XYZ {
 		virtual void SetVSync(bool enabled) override;
 		virtual bool IsClosed() override;
 
+		
+
 		inline void SetEventCallback(const EventCallbackFn& callback) override { m_Data.EventCallback = callback; }
 		inline virtual void* GetNativeWindow() const { return m_Window; }
 
 		inline virtual uint32_t GetWidth() const override { return m_Data.Width; }
 		inline virtual uint32_t GetHeight() const override { return m_Data.Height; }
+
 	private:
-		virtual void Destroy();
+		void Destroy();
 
 		GLFWwindow* m_Window;
 		std::unique_ptr<APIContext> m_Context;
@@ -39,8 +45,10 @@ namespace XYZ {
 			bool VSync = false;
 
 			EventCallbackFn EventCallback;
+			WindowsWindow* This = nullptr;
 		};
 
 		WindowData m_Data;
+		
 	};
 }

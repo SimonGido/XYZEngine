@@ -133,8 +133,10 @@ namespace XYZ {
 		m_SceneGraph.InsertNode(Node<SceneObject>({ m_TextRenderable,m_TextTransform }));
 		m_SceneGraph.SetParent(1, 4, SceneSetup());
 
+		m_ButtonTest.ReceiveEvent(Hoover());
 		m_ButtonTest.ReceiveEvent(Release());
 		m_ButtonTest.ReceiveEvent(Click());
+		m_ButtonTest.ReceiveEvent(Release());
 	}
 	void EditorLayer::OnDetach()
 	{

@@ -1,7 +1,7 @@
 #pragma once
 #include "Component.h"
 #include "ComponentStorage.h"
-#include "XYZ/Core/Event/Event.h"
+#include "XYZ/Event/Event.h"
 
 
 namespace XYZ {

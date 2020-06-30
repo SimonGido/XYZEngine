@@ -31,6 +31,8 @@ namespace XYZ {
 		Custom
 	};
 
+	template <typename Type>
+	using EventCallback = std::function<void(Type)>;
 
 	/*! @class Event
 	*	@brief Describes an event and its handlers
@@ -48,8 +50,6 @@ namespace XYZ {
 	};
 
 
-	using event_ptr = std::shared_ptr<Event>;
-
 	/*! @class WindowResizeEvent
 	*	@brief Occurs when a window is resized
 	*/
@@ -63,6 +63,7 @@ namespace XYZ {
 			m_Type = EventType::WindowResized;
 		}
 
+
 		virtual std::pair<int, int> GetWinSize() const { return { (int)m_Width, (int)m_Height }; }
 		inline int GetWidth() const { return m_Width; }
 		inline int GetHeight() const { return m_Height; }
@@ -71,6 +72,7 @@ namespace XYZ {
 		int m_Width;
 		int m_Height;
 
+		//std::vector<EventCallback<WindowResizeEvent>> m_Callbacks;
 	};
 
 	/*! @class WindowCloseEvent

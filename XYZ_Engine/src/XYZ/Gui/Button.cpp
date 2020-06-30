@@ -4,7 +4,10 @@
 
 namespace XYZ {
 	Button::Button()
-		: m_StateMachine(Released{ this }, Clicked{ this }, Hoovered{ this })
+		:
+		m_HighlightColor(glm::vec4(1)),
+		m_PressColor(glm::vec4(1)),
+		m_StateMachine(Released{ this }, Clicked{ this }, Hoovered{ this })
 	{
 	}
 	void Button::AddCallback(const Callback& callback)
@@ -31,5 +34,35 @@ namespace XYZ {
 			callback();
 	}
 
+
+	Button::Clicked::Clicked(Button* button)
+		: Btn(button)
+	{}
+
+	void Button::Clicked::OnEnter(const Click&)
+	{
+		Btn->OnClick();
+		std::cout << "Clicked" << std::endl;
+	}
+
+	Button::Released::Released(Button* button)
+		: Btn(button)
+	{
+	}
+
+	void Button::Released::OnEnter(const Release&)
+	{
+		std::cout << "Released" << std::endl;
+	}
+
+	Button::Hoovered::Hoovered(Button* button)
+		: Btn(button)
+	{
+	}
+
+	void Button::Hoovered::OnEnter(const Hoover&)
+	{
+		std::cout << "Hoovered" << std::endl;
+	}
 
 }

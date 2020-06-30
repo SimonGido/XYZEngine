@@ -19,12 +19,6 @@
 #define BIND_EVENT_FN(x) std::bind(&Application::x, this, std::placeholders::_1)
 
 
-template<typename R, typename T, typename U, typename... Args>
-std::function<R(Args...)> Hook(R(T::* f)(Args...), U p)
-{
-	return [p, f](Args... args)->R { return (p->*f)(args...); };
-};
-
 
 
 #ifdef XYZ_ENABLE_ASSERTS
@@ -38,11 +32,22 @@ std::function<R(Args...)> Hook(R(T::* f)(Args...), U p)
 #define __FUNCTION__ "Function:"
 #endif
 
-template <typename T>
-using Ref = std::shared_ptr<T>;
 
-template <typename T, typename ...Args>
-constexpr Ref<T> CreateRef(Args&&...args)
-{
-	return std::make_shared<T>(std::forward<Args>(args)...);
-};
+namespace XYZ {
+	template <typename T>
+	using Ref = std::shared_ptr<T>;
+
+	template <typename T, typename ...Args>
+	constexpr Ref<T> CreateRef(Args&&...args)
+	{
+		return std::make_shared<T>(std::forward<Args>(args)...);
+	};
+
+
+	template<typename R, typename T, typename U, typename... Args>
+	constexpr std::function<R(Args...)> Hook(R(T::* f)(Args...), U p)
+	{
+		return [p, f](Args... args)->R { return (p->*f)(args...); };
+	};
+
+}

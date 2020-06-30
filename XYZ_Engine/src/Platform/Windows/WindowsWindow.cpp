@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "WindowsWindow.h"
-#include "XYZ/Core/Event/Event.h"
+
 
 
 namespace XYZ {
@@ -21,6 +21,7 @@ namespace XYZ {
 			GLFWInitialized = true;
 		}
 
+		m_Data.This = this;
 		const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 		int width = mode->width;
 		int height = mode->height;
@@ -54,19 +55,25 @@ namespace XYZ {
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			data.Width = width;
 			data.Height = height;
-			data.EventCallback(WindowResizeEvent(width, height));
+			WindowResizeEvent e(width, height);
+			data.EventCallback(e);
+			data.This->Execute(e);
 		});
 
 		glfwSetWindowCloseCallback(m_Window, [](GLFWwindow* window)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-			data.EventCallback(WindowCloseEvent());
+			WindowCloseEvent e;
+			data.EventCallback(e);
+			data.This->Execute(e);
 		});
 
 		glfwSetCharCallback(m_Window, [](GLFWwindow* window, unsigned int key)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-			data.EventCallback(KeyTypedEvent(key));
+			KeyTypedEvent e(key);
+			data.EventCallback(e);
+			data.This->Execute(e);
 		});
 
 		glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -77,12 +84,16 @@ namespace XYZ {
 			{
 			case GLFW_PRESS:
 			{
-				data.EventCallback(KeyPressedEvent(key, mods));
+				KeyPressedEvent e(key, mods);
+				data.EventCallback(e);
+				data.This->Execute(e);
 				break;
 			}
 			case GLFW_RELEASE:
 			{
-				data.EventCallback(KeyReleasedEvent(key));
+				KeyReleasedEvent e(key);
+				data.EventCallback(e);
+				data.This->Execute(e);
 				break;
 			}
 
@@ -96,12 +107,16 @@ namespace XYZ {
 			{
 			case GLFW_PRESS:
 			{
-				data.EventCallback(MouseButtonPressEvent(button));
+				MouseButtonPressEvent e(button);
+				data.EventCallback(e);
+				data.This->Execute(e);
 				break;
 			}
 			case GLFW_RELEASE:
 			{
-				data.EventCallback(MouseButtonReleaseEvent(button));
+				MouseButtonReleaseEvent e(button);
+				data.EventCallback(e);
+				data.This->Execute(e);
 				break;
 			}
 
@@ -111,13 +126,17 @@ namespace XYZ {
 		glfwSetScrollCallback(m_Window, [](GLFWwindow* window, double xOffset, double yOffset)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-			data.EventCallback(MouseScrollEvent((float)xOffset, (float)yOffset));
+			MouseScrollEvent e((float)xOffset, (float)yOffset);
+			data.EventCallback(e);
+			data.This->Execute(e);
 		});
 
 		glfwSetCursorPosCallback(m_Window, [](GLFWwindow* window, double xPos, double yPos)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-			data.EventCallback(MouseMovedEvent((float)xPos, (float)yPos));
+			MouseMovedEvent e((float)xPos, (float)yPos);
+			data.EventCallback(e);
+			data.This->Execute(e);
 		});
 	}
 

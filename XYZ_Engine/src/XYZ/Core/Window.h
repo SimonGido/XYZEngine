@@ -1,5 +1,6 @@
 #pragma once
-#include "Event/Event.h"
+#include "XYZ/Event/Event.h"
+#include "XYZ/Event/EventSystem.h"
 #include <functional>
 
 namespace XYZ {
@@ -26,7 +27,15 @@ namespace XYZ {
 		}
 	};
 
-	class Window
+	class Window : public EventSystem<WindowResizeEvent,
+									  WindowCloseEvent,
+									  KeyTypedEvent,
+									  KeyPressedEvent,
+									  KeyReleasedEvent,
+									  MouseButtonPressEvent,
+									  MouseButtonReleaseEvent,
+									  MouseScrollEvent,
+									  MouseMovedEvent>
 	{
 	public:
 		using EventCallbackFn = std::function<void(Event&)>;
@@ -40,10 +49,12 @@ namespace XYZ {
 		// Window attributes
 		virtual void SetEventCallback(const EventCallbackFn& callback) = 0;
 		virtual void SetVSync(bool enabled) = 0;
+		
 		virtual bool IsClosed() = 0;
 		virtual void* GetNativeWindow() const = 0;
 
 		static std::unique_ptr<Window> Create(const WindowProperties& props = WindowProperties());
+
 	};
 
 }

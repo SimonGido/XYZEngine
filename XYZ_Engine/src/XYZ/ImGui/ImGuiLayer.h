@@ -1,7 +1,6 @@
 #pragma once
 
 #include "XYZ/Core/Layer.h"
-#include "XYZ/Core/Event/Event.h"
 
 namespace XYZ
 {

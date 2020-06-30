@@ -54,6 +54,7 @@ namespace XYZ {
 
 		void OnEvent(Event& event);
 
+		
 		/**
 		* Return handler of the main Window
 		* @param[out] reference to the Window
