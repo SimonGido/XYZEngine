@@ -2,11 +2,17 @@
 
 //-----Core-----//
 #include "XYZ/Core/Application.h"
-//#include "XYZ/Core/Layer.h"
 #include "XYZ/Core/Input.h"
 #include "XYZ/Core/KeyCodes.h"
 #include "XYZ/Core/MouseCodes.h" 
 #include "XYZ/Timer.h"
+
+
+//-----Events-----//
+#include "XYZ/Event/ApplicationEvent.h"
+#include "XYZ/Event/InputEvent.h"
+#include "XYZ/Event/GuiEvent.h"
+
 
 //-----Renderer-----//
 #include "XYZ/Renderer/OrthoCamera.h"
@@ -48,3 +54,5 @@
 //------UI-------//
 #include "XYZ/Gui/Text.h"
 #include "XYZ/Gui/Button.h"
+#include "XYZ/Gui/Image.h"
+#include "XYZ/Gui/GuiSystem.h"

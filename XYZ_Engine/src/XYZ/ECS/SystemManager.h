@@ -101,6 +101,15 @@ namespace XYZ {
 			}
 		}
 
+		void OnEvent(Event& event)
+		{
+			for (auto const& pair : m_Systems)
+			{
+				if (event.Handled)
+					break;
+				pair.second->OnEvent(event);
+			}
+		}
 	private:
 		std::unordered_map<uint16_t, std::shared_ptr<System>> m_Systems;
 	};

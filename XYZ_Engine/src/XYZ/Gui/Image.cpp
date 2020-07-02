@@ -8,11 +8,20 @@ namespace XYZ {
 		m_Quad(position, size, color, textureID),
 		RenderComponent(material, layer, visible)
 	{
+		SetSubTexture(subTexture);
 	}
 	void Image::SetSubTexture(Ref<SubTexture2D> subTexture)
 	{
+		m_SubTexture = subTexture;
+		auto& texcoords = subTexture->GetTexCoords();
+
+		m_Quad.Vertices[0].TexCoord = { texcoords.x,texcoords.y };
+		m_Quad.Vertices[1].TexCoord = { texcoords.z,texcoords.y };
+		m_Quad.Vertices[2].TexCoord = { texcoords.z,texcoords.w };
+		m_Quad.Vertices[3].TexCoord = { texcoords.x,texcoords.w };
 	}
 	void Image::SetQuad(const Quad& quad)
 	{
+		m_Quad = quad;
 	}
 }

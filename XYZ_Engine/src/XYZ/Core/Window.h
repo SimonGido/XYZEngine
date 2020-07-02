@@ -1,6 +1,9 @@
 #pragma once
 #include "XYZ/Event/Event.h"
+#include "XYZ/Event/InputEvent.h"
+#include "XYZ/Event/ApplicationEvent.h"
 #include "XYZ/Event/EventSystem.h"
+
 #include <functional>
 
 namespace XYZ {

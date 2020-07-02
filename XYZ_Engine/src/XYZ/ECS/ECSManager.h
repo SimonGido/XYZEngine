@@ -3,6 +3,7 @@
 #include "EntityManager.h"
 #include "SystemManager.h"
 #include "XYZ/Core/Singleton.h"
+#include "XYZ/Event/Event.h"
 
 #include <memory>
 
@@ -23,17 +24,19 @@ namespace XYZ {
 			m_ComponentManager->UnRegisterComponent<T>();
 		}
 		template<typename T>
-		void AddComponent(Entity entity,const T& component)
+		T* AddComponent(Entity entity,const T& component)
 		{
-			m_ComponentManager->AddComponent<T>(entity, component);
+			auto c = m_ComponentManager->AddComponent<T>(entity, component);
 
 			auto active = m_ComponentManager->GetComponent<ActiveComponent>(entity);
 			auto signature = m_EntityManager->GetSignature(entity);
 			signature.set(m_ComponentManager->GetComponentType<T>(), 1);
-			active.ActiveComponents.set(m_ComponentManager->GetComponentType<T>(), 1);
+			active->ActiveComponents.set(m_ComponentManager->GetComponentType<T>(), 1);
 
 			m_EntityManager->SetSignature(entity, signature);
 			m_SystemManager->EntitySignatureChanged(entity, signature);
+			
+			return c;
 		}
 		template<typename T>
 		void RemoveComponent(Entity entity)
@@ -69,7 +72,7 @@ namespace XYZ {
 		template<typename T>
 		T *GetComponent(Entity entity)
 		{
-			return &m_ComponentManager->GetComponent<T>(entity);
+			return m_ComponentManager->GetComponent<T>(entity);
 		}
 
 		template <typename T>
@@ -89,6 +92,11 @@ namespace XYZ {
 		bool Contains(Entity entity)
 		{
 			return m_ComponentManager->Contains<T>(entity);
+		}
+
+		void OnEvent(Event& event)
+		{
+			m_SystemManager->OnEvent(event);
 		}
 
 		void DestroyEntity(Entity entity)

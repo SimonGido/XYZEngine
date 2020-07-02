@@ -54,10 +54,12 @@ namespace XYZ {
 		* @param[in] entity
 		* @tparam[in] component
 		*/
-		void AddComponent(Entity entity,const T& component)
+		T* AddComponent(Entity entity,const T& component)
 		{
 			XYZ_ASSERT(m_Lookup.find(entity) == m_Lookup.end(), "Entity ",entity," already contains component");	
-			m_Lookup[entity] = m_Components.Insert(component);
+			int index = m_Components.Insert(component);
+			m_Lookup[entity] = index;
+			return &m_Components[index];
 		}
 
 		/**
@@ -87,10 +89,10 @@ namespace XYZ {
 		* @param[in] entity
 		* @return pointer to the component
 		*/
-		T& GetComponent(Entity entity)
+		T* GetComponent(Entity entity)
 		{
 			XYZ_ASSERT(m_Lookup.find(entity) != m_Lookup.end(), "Retrieving non-existent component.");
-			return m_Components[m_Lookup[entity]];
+			return &m_Components[m_Lookup[entity]];
 		}
 
 		/**

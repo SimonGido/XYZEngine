@@ -10,15 +10,7 @@ namespace XYZ {
 		m_StateMachine(Released{ this }, Clicked{ this }, Hoovered{ this })
 	{
 	}
-	void Button::AddCallback(const Callback& callback)
-	{
-		m_Callbacks.push_back(callback);
-	}
-	void Button::RemoveCallback(size_t index)
-	{
-		XYZ_ASSERT(index < m_Callbacks.size(), "Attemptint to remove callback out of range");
-		m_Callbacks.erase(m_Callbacks.begin() + index);
-	}
+	
 	void Button::SetHighlightColor(const glm::vec4& color)
 	{
 		m_HighlightColor = color;
@@ -28,20 +20,36 @@ namespace XYZ {
 		m_PressColor = color;
 	}
 	
-	void Button::OnClick()
+	void Button::OnClick(const ClickEvent& e)
 	{
-		for (auto& callback : m_Callbacks)
-			callback();
+		Execute(ClickEvent{});
 	}
 
+	void Button::OnRelease(const ReleaseEvent& event)
+	{
+		Execute(ReleaseEvent{});
+	}
+
+	void Button::OnHoover(const HooverEvent& event)
+	{
+		Execute(HooverEvent{});
+	}
+
+	void Button::OnEvent(Event& event)
+	{
+		EventDispatcher dispatcher(event);
+		dispatcher.Dispatch<ClickEvent>(Hook(&Button::receiveEvent<ClickEvent>, this));
+		dispatcher.Dispatch<ReleaseEvent>(Hook(&Button::receiveEvent<ReleaseEvent>, this));
+		dispatcher.Dispatch<HooverEvent>(Hook(&Button::receiveEvent<HooverEvent>, this));
+	}
 
 	Button::Clicked::Clicked(Button* button)
 		: Btn(button)
 	{}
 
-	void Button::Clicked::OnEnter(const Click&)
+	void Button::Clicked::OnEnter(const ClickEvent& e)
 	{
-		Btn->OnClick();
+		Btn->OnClick(e);
 		std::cout << "Clicked" << std::endl;
 	}
 
@@ -50,8 +58,9 @@ namespace XYZ {
 	{
 	}
 
-	void Button::Released::OnEnter(const Release&)
+	void Button::Released::OnEnter(const ReleaseEvent& e)
 	{
+		Btn->OnRelease(e);
 		std::cout << "Released" << std::endl;
 	}
 
@@ -60,8 +69,9 @@ namespace XYZ {
 	{
 	}
 
-	void Button::Hoovered::OnEnter(const Hoover&)
+	void Button::Hoovered::OnEnter(const HooverEvent& e)
 	{
+		Btn->OnHoover(e);
 		std::cout << "Hoovered" << std::endl;
 	}
 

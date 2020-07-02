@@ -1,74 +1,77 @@
 #pragma once
 #include "XYZ/ECS/ECSManager.h"
 #include "XYZ/FSM/StateMachine.h"
-#include "GuiStates.h"
+#include "XYZ/FSM/Setup.h"
+#include "XYZ/FSM/TransitionTo.h"
+
+#include "XYZ/Event/GuiEvent.h"
+#include "XYZ/Event/EventSystem.h"
+#include "Widget.h"
 
 #include <glm/glm.hpp>
 
 #include <functional>
 
 namespace XYZ {
-	class Button : public Type<Button>
+	class Button : public Widget,
+				   public EventSystem<ClickEvent,ReleaseEvent,HooverEvent>,
+				   Type<Button>
 	{
-		struct Clicked;
-		struct Released;
-		struct Hoovered;
-
-		
-		friend struct Clicked;
-		friend struct Released;
-		friend struct Hoovered;
 	public:
-		using Callback = std::function<void()>;
-
 		Button();
-		void AddCallback(const Callback& callback);
-		void RemoveCallback(size_t index);
+
 		void SetHighlightColor(const glm::vec4& color);
 		void SetPressColor(const glm::vec4& color);
 		
+		void OnClick(const ClickEvent& event);
+		void OnRelease(const ReleaseEvent& event);
+		void OnHoover(const HooverEvent& event);
+	
 
-
+		virtual void OnEvent(Event& event) override;
+	private:
 		template <typename Event>
-		void ReceiveEvent(Event& e)
+		void receiveEvent(Event& e)
 		{
 			m_StateMachine.Handle(e);
 		}
-	
-	private:
-		void OnClick();
-
 	private:
 		glm::vec4 m_HighlightColor;
 		glm::vec4 m_PressColor;
-		std::vector<Callback> m_Callbacks;
 		
 	private:	
+		struct Released;
+		struct Hoovered;
+		struct Clicked;
+
 		struct Clicked : public Setup<Default<Nothing>,
-								On<Release, TransitionTo<Released>>>
+									  On<ReleaseEvent, TransitionTo<Released>>>
 		{
 			Clicked(Button* button);
-			void OnEnter(const Click&);
-		
+			void OnEnter(const ClickEvent& e);
+
+		private:
 			Button* Btn;
 		};
 
 		struct Released : public Setup<Default<Nothing>,
-								 On<Hoover, TransitionTo<Hoovered>>>
+									   On<HooverEvent, TransitionTo<Hoovered>>>
 		{
 			Released(Button* button);
-			void OnEnter(const Release&);
-			
+			void OnEnter(const ReleaseEvent& );
+
+		private:
 			Button* Btn;
 		};
 		
 		struct Hoovered : public Setup<Default<Nothing>,
-								 On<Click, TransitionTo<Clicked>>,
-								 On<UnHoover, TransitionTo<Released>>>
+									   On<ClickEvent, TransitionTo<Clicked>>,
+									   On<ReleaseEvent,  TransitionTo<Released>>>
 		{
 			Hoovered(Button* button);
-			void OnEnter(const Hoover&);
+			void OnEnter(const HooverEvent& e);
 			
+		private:
 			Button* Btn;
 		};
 

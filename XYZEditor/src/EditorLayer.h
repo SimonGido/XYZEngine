@@ -61,5 +61,12 @@ namespace XYZ {
 
 		Button m_ButtonTest;
 
+
+		Entity m_Button;
+		RenderComponent* m_ButtonRenderable;
+		Button* m_ButtonComponent;
+		Transform2D* m_ButtonTransform;
+
+		Ref<GuiSystem> m_GuiSystem;
 	};
 }

@@ -12,7 +12,7 @@ namespace XYZ {
 	{
 		Renderer::Init();
 		m_SortSystem = CreateRef<RenderSortSystem>();
-
+		m_GuiSystem = ECSManager::Get().RegisterSystem<GuiSystem>();
 		m_CameraController = CreateRef<OrthoCameraController>(16.0f / 8.0f, false);
 		m_Material = Material::Create(XYZ::Shader::Create("TextureShader", "Assets/Shaders/DefaultShader.glsl"));
 	
@@ -114,7 +114,7 @@ namespace XYZ {
 
 
 		m_Text = ECSManager::Get().CreateEntity();
-		ECSManager::Get().AddComponent<Text>(m_Text, Text(
+		m_TextRenderable = ECSManager::Get().AddComponent<Text>(m_Text, Text(
 			"A sample string of text!",
 			glm::vec2(0,0),
 			glm::vec4(1),
@@ -124,19 +124,38 @@ namespace XYZ {
 			SortingLayer::Get().GetOrderValue("Default"),
 			true
 		));
-		ECSManager::Get().AddComponent <Transform2D>(m_Text, Transform2D(
+		m_TextTransform = ECSManager::Get().AddComponent <Transform2D>(m_Text, Transform2D(
 			glm::vec3(1,1,0) 
 		));
-		m_TextTransform = ECSManager::Get().GetComponent<Transform2D>(m_Text);
-		m_TextRenderable = ECSManager::Get().GetComponent<Text>(m_Text);
-		m_TextTransform->SetScale(glm::vec2(1.0f / 60.0f, 1.0f / 60.0f));
+
+		m_TextTransform->SetScale(glm::vec2(1.0f, 1.0f));
 		m_SceneGraph.InsertNode(Node<SceneObject>({ m_TextRenderable,m_TextTransform }));
 		m_SceneGraph.SetParent(1, 4, SceneSetup());
+	
 
-		m_ButtonTest.ReceiveEvent(Hoover());
-		m_ButtonTest.ReceiveEvent(Release());
-		m_ButtonTest.ReceiveEvent(Click());
-		m_ButtonTest.ReceiveEvent(Release());
+
+
+		m_Button = ECSManager::Get().CreateEntity();
+		m_ButtonTransform = ECSManager::Get().AddComponent<Transform2D>(m_Button, Transform2D(
+			glm::vec3(4, 1, 0)
+		));
+
+		m_ButtonRenderable = ECSManager::Get().AddComponent<Image>(m_Button, Image(
+			glm::vec2(0, 0),
+			glm::vec2(1, 1),
+			glm::vec4(1),
+			3,
+			subTexture,
+			m_Material,
+			SortingLayer::Get().GetOrderValue("Default"),
+			true
+		));
+
+		m_ButtonComponent = ECSManager::Get().AddComponent<Button>(m_Button, Button());
+
+		m_SceneGraph.InsertNode(Node<SceneObject>({ m_ButtonRenderable,m_ButtonTransform }));
+		m_SceneGraph.SetParent(4, 5, SceneSetup());
+
 	}
 	void EditorLayer::OnDetach()
 	{
@@ -148,6 +167,7 @@ namespace XYZ {
 		m_CameraController->OnUpdate(ts);
 		m_Material->Set("u_ViewProjection", m_CameraController->GetCamera().GetViewProjectionMatrix());
 		m_TextMaterial->Set("u_ViewProjection", m_CameraController->GetCamera().GetViewProjectionMatrix());
+		
 		m_SceneGraph.RestartIterator();
 		while (m_SceneGraph.Next())
 		{
@@ -177,6 +197,7 @@ namespace XYZ {
 	void EditorLayer::OnEvent(Event& event)
 	{
 		m_CameraController->OnEvent(event);
+		ECSManager::Get().OnEvent(event);
 	}
 	void EditorLayer::OnImGuiRender()
 	{

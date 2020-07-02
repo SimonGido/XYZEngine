@@ -28,12 +28,12 @@ namespace XYZ {
 		* @tparam[in] component
 		*/
 		template<typename T>
-		void AddComponent(Entity entity,const T& component)
+		T* AddComponent(Entity entity,const T& component)
 		{
 			uint16_t id = IComponent::GetID<T>();
 			if(m_Components.find(id) == m_Components.end())
 				RegisterComponent<T>();
-			GetComponentStorage<T>()->AddComponent(entity, component);
+			return GetComponentStorage<T>()->AddComponent(entity, component);
 		}
 
 		/**
@@ -66,7 +66,7 @@ namespace XYZ {
 		* @return reference to the component of entity
 		*/
 		template<typename T>
-		T& GetComponent(Entity entity)
+		T* GetComponent(Entity entity)
 		{
 			return GetComponentStorage<T>()->GetComponent(entity);
 		}

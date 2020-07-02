@@ -25,6 +25,10 @@ namespace XYZ {
 		// Push default layers
 		m_ImGuiLayer = new ImGuiLayer();
 		PushOverlay(m_ImGuiLayer);
+
+
+		m_Window->RegisterCallback<WindowCloseEvent>(Hook(&Application::onWindowClosed, this));
+		m_Window->RegisterCallback<WindowResizeEvent>(Hook(&Application::onWindowResized, this));
 	}
 
 	Application::~Application()
@@ -73,23 +77,33 @@ namespace XYZ {
 		m_Running = false;
 	}
 
+	void Application::onWindowResized(WindowResizeEvent& event)
+	{
+		Renderer::OnWindowResize(event.GetWidth(), event.GetHeight());
+	}
+
+	void Application::onWindowClosed(WindowCloseEvent& event)
+	{
+		m_Running = false;
+	}
+
 
 	void Application::OnEvent(Event& event)
 	{
-		if (event.GetEventType() == EventType::WindowResized)
-		{
-			WindowResizeEvent& resize = (WindowResizeEvent&)event;
-			Renderer::OnWindowResize(resize.GetWidth(), resize.GetHeight());
-		}
-		else if (event.GetEventType() == EventType::WindowClosed)
-		{
-			WindowCloseEvent& close = (WindowCloseEvent&)event;
-			m_Running = false;
-		}
+		//if (event.GetEventType() == EventType::WindowResized)
+		//{
+		//	WindowResizeEvent& resize = (WindowResizeEvent&)event;
+		//	Renderer::OnWindowResize(resize.GetWidth(), resize.GetHeight());
+		//}
+		//else if (event.GetEventType() == EventType::WindowClosed)
+		//{
+		//	WindowCloseEvent& close = (WindowCloseEvent&)event;
+		//	m_Running = false;
+		//}
 		for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)
 		{
 			(*it)->OnEvent(event);
-			if (event.IsHandled())
+			if (event.Handled)
 				break;
 		}
 	}

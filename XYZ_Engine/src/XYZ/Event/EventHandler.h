@@ -19,9 +19,14 @@ namespace XYZ {
 
 		void RemoveCallback(const EventCallback<Event>& func)
 		{
-			auto it = std::find(m_Callbacks.begin(), m_Callbacks.end(), func);
-			if (it != m_Callbacks.end())
-				m_Callbacks.erase(it);
+			for (size_t i = 0; i < m_Callbacks.size(); ++i)
+			{
+				if (getAddress(m_Callbacks[i]) == getAddress(func))
+				{
+					m_Callbacks.erase(m_Callbacks.begin() + i);
+					break;
+				}
+			}
 		}
 
 		void ExecuteCallbacks(Event& event)
@@ -29,6 +34,17 @@ namespace XYZ {
 			for (auto& callback : m_Callbacks)
 				callback(event);
 		}
+
+	private:
+		// Little hack for comparison 
+		template<typename T, typename... U>
+		size_t getAddress(std::function<T(U...)> f) 
+		{
+			typedef T(fnType)(U...);
+			fnType** fnPointer = f.template target<fnType*>();
+			return (size_t)*fnPointer;
+		}
+
 
 	private:
 		std::vector<EventCallback<Event>> m_Callbacks;

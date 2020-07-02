@@ -75,7 +75,10 @@ namespace XYZ {
 		static Application* CreateApplication();
 
 	private:
+		void onWindowResized(WindowResizeEvent& event);
+		void onWindowClosed(WindowCloseEvent& event);
 
+	private:
 		LayerStack m_LayerStack;
 		std::unique_ptr<Window> m_Window;
 		ImGuiLayer * m_ImGuiLayer;

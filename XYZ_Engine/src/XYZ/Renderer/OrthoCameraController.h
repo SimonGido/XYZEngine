@@ -2,6 +2,8 @@
 
 #include "XYZ/Renderer/OrthoCamera.h"
 #include "XYZ/Event/Event.h"
+#include "XYZ/Event/InputEvent.h"
+#include "XYZ/Event/ApplicationEvent.h"
 
 
 namespace XYZ {

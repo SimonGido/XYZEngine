@@ -222,30 +222,30 @@ namespace XYZ {
 		
 		void RestartIterator() 
 		{ 
-			m_Iterator = &m_Data[m_Root];
 			m_CurrentIndex = m_Root;
+			m_Stack.clear();
 		}
 		bool Next()
 		{
-			XYZ_ASSERT(m_CurrentIndex != Node<T>::sc_NullIndex, "Tree index out of range");
 			if (m_Data[m_CurrentIndex].HasChild())
 			{
-				m_CurrentIndex = m_Data[m_CurrentIndex].m_FirstChild;
-				m_Iterator = &m_Data[m_CurrentIndex];
-				return true;
+				m_Stack.push_back(m_Data[m_CurrentIndex].m_FirstChild);
 			}
-			else if (m_Data[m_CurrentIndex].HasNextSibling())
+			if (m_Data[m_CurrentIndex].HasNextSibling())
 			{
 				m_CurrentIndex = m_Data[m_CurrentIndex].m_NextSibling;
-				m_Iterator = &m_Data[m_CurrentIndex];
 				return true;
 			}
-			
+			else if (!m_Stack.empty())
+			{
+				m_CurrentIndex = m_Stack[m_Stack.size() - 1];
+				m_Stack.pop_back();
+				return true;
+			}
 			return false;
 		}
 
-
-		Node<T>* GetIterator() { return m_Iterator; }
+		Node<T>* GetIterator() { return &m_Data[m_CurrentIndex]; }
 		Node<T>* GetElement(int16_t index) { return m_Data[index].GetData(); }
 
 		size_t GetSize() const { return m_Data.size(); }
@@ -270,10 +270,10 @@ namespace XYZ {
 
 	private:
 		uint16_t m_CurrentIndex = 0;
-		Node<T> *m_Iterator = nullptr;
 
 		// Reference to vector of nodes
 		std::vector<Node<T>> m_Data;
+		std::vector<uint16_t> m_Stack;
 
 		// Root by default null
 		uint16_t m_Root = sc_MaxNumberOfElements;

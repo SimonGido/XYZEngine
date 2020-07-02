@@ -23,6 +23,7 @@ namespace XYZ {
 
 		void SetSubTexture(Ref<SubTexture2D> subTexture);
 		void SetQuad(const Quad & quad);
+		virtual const Quad* GetRenderData() const override { return &m_Quad; }
 
 	private:
 		Quad m_Quad;
