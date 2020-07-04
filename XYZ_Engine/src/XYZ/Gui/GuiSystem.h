@@ -1,10 +1,12 @@
 #pragma once
 #include "XYZ/ECS/ECSManager.h"
+#include "XYZ/Utils/DataStructures/HashGrid2D.h"
 #include "XYZ/Utils/DataStructures/Tree.h"
 #include "XYZ/Physics/Transform.h"
+#include "XYZ/Event/InputEvent.h"
+
 #include "Widget.h"
 #include "Canvas.h"
-
 
 namespace XYZ {
 
@@ -21,29 +23,22 @@ namespace XYZ {
 		virtual void OnEvent(Event& event) override;
 
 	private:
+		void onMouseButtonPress(MouseButtonPressEvent& event);
+		void onMouseButtonRelease(MouseButtonReleaseEvent& event);
+		void onMouseMove(MouseMovedEvent& event);
+		void onMouseScroll(MouseScrollEvent& event);
+
+		bool collide(const glm::vec2& pos,const glm::vec2& size,const glm::vec2& point);
+	private:
 		struct Component : public System::Component
 		{
 			Transform2D* Transform;
-			Widget* Widg;
+			Widget* UI;
 		};
+
+		size_t m_Pressed = 0;
 
 		std::vector<Component> m_Components;
-	private:
-		struct Setup
-		{
-			void operator ()(Component& parent, Component& child)
-			{
-				child.Transform->SetParent(parent.Transform);
-			}
-		};
-	
-		struct Propagate
-		{
-			void operator ()(Component& parent, Component& child)
-			{
-				child.Transform->CalculateWorldTransformation();
-			}
-		};
-
+		HashGrid2D<size_t> m_Grid;
 	};
 }

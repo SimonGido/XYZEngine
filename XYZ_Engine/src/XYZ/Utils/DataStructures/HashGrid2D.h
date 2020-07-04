@@ -19,6 +19,7 @@ namespace XYZ {
 		/** Inserts an element into the hashgrid */
 		void Insert(const T& element, const glm::vec2& pos, const glm::vec2& size)
 		{
+			XYZ_ASSERT(pos.x >= 0 && pos.y >= 0, "");
 			for (int i = (int)pos.x; i < int(pos.x + size.x); ++i)
 			{
 				for (int j = (int)pos.y; j < int(pos.y + size.y); ++j)
@@ -32,6 +33,7 @@ namespace XYZ {
 		/** Removes an element from the hashgrid */
 		void Remove(const T& element, const glm::vec2& pos, const glm::vec2& size)
 		{
+			XYZ_ASSERT(pos.x >= 0 && pos.y >= 0, "");
 			for (int i = (int)pos.x; i < int(pos.x + size.x); ++i)
 			{
 				for (int j = (int)pos.y; j < int(pos.y + size.y); ++j)
@@ -47,6 +49,7 @@ namespace XYZ {
 		/** Returns the element count */
 		size_t GetElements(T** buffer, const glm::vec2& pos, const glm::vec2& size)
 		{
+			XYZ_ASSERT(pos.x >= 0 && pos.y >= 0, "");
 			std::vector<size_t> indices;
 			size_t count = 0;
 			for (int i = (int)pos.x; i < int(pos.x + size.x); ++i)
@@ -59,15 +62,17 @@ namespace XYZ {
 				}
 			}
 
-			*buffer = new T[count * sizeof(int)];
-			int* ptr = *buffer;
-			for (auto it : indices)
+			if (count)
 			{
-				size_t elementsSize = m_Table[it].elements.size();
-				memcpy(ptr, m_Table[it].elements.data(), elementsSize * sizeof(T));
-				ptr += elementsSize;
+				*buffer = new T[count * sizeof(T)];
+				T* ptr = *buffer;
+				for (auto it : indices)
+				{
+					size_t elementsCount = m_Table[it].elements.size();
+					memcpy(ptr, m_Table[it].elements.data(), elementsCount * sizeof(T));
+					ptr += elementsCount;
+				}
 			}
-
 			return count;
 		}
 

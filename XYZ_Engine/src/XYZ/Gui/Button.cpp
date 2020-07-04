@@ -7,7 +7,16 @@ namespace XYZ {
 		:
 		m_HighlightColor(glm::vec4(1)),
 		m_PressColor(glm::vec4(1)),
-		m_StateMachine(Released{ this }, Clicked{ this }, Hoovered{ this })
+		m_StateMachine(Hoovered{ this },Released{ this }, Clicked{ this })
+	{
+		m_StateMachine.Handle(HooverEvent{});
+	}
+
+	Button::Button(const Button& other)
+		:
+		m_HighlightColor(other.m_HighlightColor),
+		m_PressColor(other.m_PressColor),
+		m_StateMachine(Hoovered{this}, Released{ this }, Clicked{ this })
 	{
 	}
 	
@@ -37,10 +46,16 @@ namespace XYZ {
 
 	void Button::OnEvent(Event& event)
 	{
+		//if (event.GetEventType() == ClickEvent::GetStaticType())
+		//{
+		//	m_StateMachine = StateMachine(Hoovered{ this }, Released{ this }, Clicked{ this });
+		//	m_StateMachine.Handle(ClickEvent{});
+		//	//Execute(ClickEvent{});
+		//}
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<ClickEvent>(Hook(&Button::receiveEvent<ClickEvent>, this));
 		dispatcher.Dispatch<ReleaseEvent>(Hook(&Button::receiveEvent<ReleaseEvent>, this));
-		dispatcher.Dispatch<HooverEvent>(Hook(&Button::receiveEvent<HooverEvent>, this));
+		dispatcher.Dispatch<HooverEvent>(Hook(&Button::receiveEvent<HooverEvent> , this));
 	}
 
 	Button::Clicked::Clicked(Button* button)

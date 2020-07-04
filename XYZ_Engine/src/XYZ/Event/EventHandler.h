@@ -11,7 +11,7 @@ namespace XYZ {
 	template <typename Event>
 	class EventHandler
 	{
-	public:
+	public:	
 		void AddCallback(const EventCallback<Event>& func)
 		{
 			m_Callbacks.push_back(func);

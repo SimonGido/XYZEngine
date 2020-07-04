@@ -15,10 +15,11 @@
 namespace XYZ {
 	class Button : public Widget,
 				   public EventSystem<ClickEvent,ReleaseEvent,HooverEvent>,
-				   Type<Button>
+				   Type<Widget>
 	{
 	public:
 		Button();
+		Button(const Button& other);
 
 		void SetHighlightColor(const glm::vec4& color);
 		void SetPressColor(const glm::vec4& color);
@@ -29,12 +30,15 @@ namespace XYZ {
 	
 
 		virtual void OnEvent(Event& event) override;
+		virtual WidgetType GetWidgetType() override { return WidgetType::Button; }
+
 	private:
 		template <typename Event>
 		void receiveEvent(Event& e)
 		{
 			m_StateMachine.Handle(e);
 		}
+
 	private:
 		glm::vec4 m_HighlightColor;
 		glm::vec4 m_PressColor;
@@ -55,7 +59,8 @@ namespace XYZ {
 		};
 
 		struct Released : public Setup<Default<Nothing>,
-									   On<HooverEvent, TransitionTo<Hoovered>>>
+									   On<HooverEvent, TransitionTo<Hoovered>>,
+									   On<ClickEvent,TransitionTo<Clicked>>>
 		{
 			Released(Button* button);
 			void OnEnter(const ReleaseEvent& );
@@ -75,7 +80,7 @@ namespace XYZ {
 			Button* Btn;
 		};
 
-		StateMachine <Released, Clicked, Hoovered > m_StateMachine;
+		StateMachine <Hoovered,Released, Clicked> m_StateMachine;
 
 	};
 }

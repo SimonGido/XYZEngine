@@ -137,7 +137,7 @@ namespace XYZ {
 
 		m_Button = ECSManager::Get().CreateEntity();
 		m_ButtonTransform = ECSManager::Get().AddComponent<Transform2D>(m_Button, Transform2D(
-			glm::vec3(4, 1, 0)
+			glm::vec3(0, 0, 0)
 		));
 
 		m_ButtonRenderable = ECSManager::Get().AddComponent<Image>(m_Button, Image(
@@ -151,17 +151,22 @@ namespace XYZ {
 			true
 		));
 
+		
 		m_ButtonComponent = ECSManager::Get().AddComponent<Button>(m_Button, Button());
-
+		ECSManager::Get().AddComponent<UI>(m_Button, UI(WidgetType::Button));
 		m_SceneGraph.InsertNode(Node<SceneObject>({ m_ButtonRenderable,m_ButtonTransform }));
 		m_SceneGraph.SetParent(4, 5, SceneSetup());
 
+		
 	}
 	void EditorLayer::OnDetach()
 	{
 	}
 	void EditorLayer::OnUpdate(float ts)
 	{
+		m_ButtonComponent->Execute(ClickEvent{});
+		m_ButtonComponent->Execute(ReleaseEvent{});
+
 		RenderCommand::Clear();
 		RenderCommand::SetClearColor(glm::vec4(0.2, 0.2, 0.5, 1));
 		m_CameraController->OnUpdate(ts);

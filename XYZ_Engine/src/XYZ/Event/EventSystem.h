@@ -4,7 +4,7 @@
 
 namespace XYZ {
 
-	template <typename ...Event>
+	template <typename ...Events>
 	class EventSystem
 	{
 	public:
@@ -15,6 +15,8 @@ namespace XYZ {
 			handler.ExecuteCallbacks(event);
 		}
 
+		virtual ~EventSystem() = default;
+		
 		template <typename Event>
 		void RegisterCallback(const EventCallback<Event>& func)
 		{
@@ -30,7 +32,7 @@ namespace XYZ {
 		}
 
 	private:
-		std::tuple<EventHandler<Event>...> m_Events;
+		std::tuple<EventHandler<Events>...> m_Events;
 
 	};
 }
