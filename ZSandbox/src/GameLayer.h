@@ -13,7 +13,6 @@ public:
 	virtual void OnDetach() override;
 	virtual void OnUpdate(float ts) override;
 	virtual void OnEvent(XYZ::Event& event) override;
-	virtual void OnImGuiRender() override;
 
 private:
 

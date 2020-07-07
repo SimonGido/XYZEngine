@@ -10,16 +10,8 @@ namespace XYZ {
 		Button,
 		Text,
 		Slider,
-		CheckBox
-	};
-
-
-	struct UI : Type<UI>
-	{
-		UI(WidgetType type)
-			: Type(type)
-		{}
-		WidgetType Type;
+		CheckBox,
+		Image
 	};
 
 	class Widget

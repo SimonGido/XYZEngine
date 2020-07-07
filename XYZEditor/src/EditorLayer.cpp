@@ -10,13 +10,21 @@ namespace XYZ {
 
 	void EditorLayer::OnAttach()
 	{
+		// TEMPORARY
+		m_GuiLayer = new GuiLayer();	
+		Application::Get().PushOverlay(m_GuiLayer);
+		/////////////////////////
+
 		Renderer::Init();
 		m_SortSystem = CreateRef<RenderSortSystem>();
-		m_GuiSystem = ECSManager::Get().RegisterSystem<GuiSystem>();
+		
 		m_CameraController = CreateRef<OrthoCameraController>(16.0f / 8.0f, false);
+		m_GuiLayer->SetCamera(&m_CameraController->GetCamera());
+
 		m_Material = Material::Create(XYZ::Shader::Create("TextureShader", "Assets/Shaders/DefaultShader.glsl"));
 	
-		m_Material->Set("u_Texture", XYZ::Texture2D::Create(XYZ::TextureWrap::Clamp, "Assets/Textures/wall.png"), 0);
+		Ref<Texture2D> guiTexture = XYZ::Texture2D::Create(XYZ::TextureWrap::Clamp, "Assets/Textures/Gui/TexturePack.png");
+		m_Material->Set("u_Texture", guiTexture, 0);
 		m_Material->Set("u_Texture", XYZ::Texture2D::Create(XYZ::TextureWrap::Clamp, "Assets/Textures/wall.png"), 1);
 		m_Material->Set("u_Texture", XYZ::Texture2D::Create(XYZ::TextureWrap::Repeat, "Assets/Textures/background.png"), 2);
 		
@@ -137,36 +145,37 @@ namespace XYZ {
 
 		m_Button = ECSManager::Get().CreateEntity();
 		m_ButtonTransform = ECSManager::Get().AddComponent<Transform2D>(m_Button, Transform2D(
-			glm::vec3(0, 0, 0)
+			glm::vec3(0, 0, 0),
+			glm::vec2(1, 1)
 		));
 
+		Ref<SubTexture2D> buttonSubTexture = CreateRef<SubTexture2D>(guiTexture, glm::vec2(1, 0), glm::vec2(guiTexture->GetWidth() / 4, guiTexture->GetHeight() / 4));
 		m_ButtonRenderable = ECSManager::Get().AddComponent<Image>(m_Button, Image(
 			glm::vec2(0, 0),
 			glm::vec2(1, 1),
 			glm::vec4(1),
-			3,
-			subTexture,
+			0,
+			buttonSubTexture,
 			m_Material,
 			SortingLayer::Get().GetOrderValue("Default"),
 			true
 		));
 
-		
-		m_ButtonComponent = ECSManager::Get().AddComponent<Button>(m_Button, Button());
-		ECSManager::Get().AddComponent<UI>(m_Button, UI(WidgetType::Button));
+
 		m_SceneGraph.InsertNode(Node<SceneObject>({ m_ButtonRenderable,m_ButtonTransform }));
 		m_SceneGraph.SetParent(4, 5, SceneSetup());
-
 		
+		m_ButtonComponent = ECSManager::Get().AddComponent<Button>(m_Button, Button());		
+		((Image*)m_ButtonRenderable)->SetClickColor(glm::vec4(1, 0, 0, 1));
+		m_ButtonComponent->RegisterCallback<ClickEvent>(Hook(&Image::ClickCallback, ((Image*)m_ButtonRenderable)));
+		m_ButtonComponent->RegisterCallback<ReleaseEvent>(Hook(&Image::ReleaseCallback, (Image*)m_ButtonRenderable));
+
 	}
 	void EditorLayer::OnDetach()
 	{
 	}
 	void EditorLayer::OnUpdate(float ts)
 	{
-		m_ButtonComponent->Execute(ClickEvent{});
-		m_ButtonComponent->Execute(ReleaseEvent{});
-
 		RenderCommand::Clear();
 		RenderCommand::SetClearColor(glm::vec4(0.2, 0.2, 0.5, 1));
 		m_CameraController->OnUpdate(ts);
@@ -177,8 +186,8 @@ namespace XYZ {
 		while (m_SceneGraph.Next())
 		{
 			auto it = m_SceneGraph.GetIterator();
-			it->GetData().Transform->CalculateWorldTransformation();
-			m_SortSystem->PushRenderData(it->GetData().Renderable, it->GetData().Transform);
+			it.GetData().Transform->CalculateWorldTransformation();
+			m_SortSystem->PushRenderData(it.GetData().Renderable, it.GetData().Transform);
 		}
 		m_SortSystem->SubmitToRenderer();
 
@@ -202,9 +211,6 @@ namespace XYZ {
 	void EditorLayer::OnEvent(Event& event)
 	{
 		m_CameraController->OnEvent(event);
-		ECSManager::Get().OnEvent(event);
 	}
-	void EditorLayer::OnImGuiRender()
-	{
-	}
+	
 }

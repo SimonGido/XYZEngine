@@ -5,6 +5,26 @@
 
 
 namespace XYZ {
+
+	/**
+	* @class OrthoCameraBound
+	* @brief represents boundaries of view frustum of the camera
+	*/
+	struct OrthoCameraBounds
+	{
+		float Left, Right;
+		float Bottom, Top;
+
+		/**
+		* @return width
+		*/
+		float GetWidth() const { return Right - Left; }
+		/**
+		* @return height
+		*/
+		float GetHeight() const { return Top - Bottom; }
+	};
+
 	/**
 	* @class OrthoCamera
 	* @brief represents camera for 2D scene, calculates projection and view matrix 
@@ -82,7 +102,10 @@ namespace XYZ {
 		*/
 		inline const glm::mat4& GetViewProjectionMatrix() const { return m_ViewProjectionMatrix; }
 
-
+		/**
+		* @return bounds of view frustum of the camera
+		*/
+		const OrthoCameraBounds& GetBounds() const { return m_Bounds; }
 	private:
 		/**
 		* Recalculate view matrix of the camera dependent on it's position and rotation
@@ -97,6 +120,7 @@ namespace XYZ {
 		glm::vec3 m_Position;
 		float m_Rotation = 0.0f;
 
+		OrthoCameraBounds m_Bounds;
 		std::shared_ptr<FrameBuffer> m_RenderTarget;
 	};
 

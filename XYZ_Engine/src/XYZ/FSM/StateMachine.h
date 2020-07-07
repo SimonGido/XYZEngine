@@ -27,22 +27,22 @@ namespace XYZ {
         }
 
         template <typename Event>
-        void Handle(const Event& event)
+        bool Handle(const Event& event)
         {
-            handleBy(event, *this);
+            return handleBy(event, *this);
         }
 
 
     private:
         template <typename Event, typename Machine>
-        void handleBy(const Event& event, Machine& machine)
+        bool handleBy(const Event& event, Machine& machine)
         {
             auto passEventToState = [&machine, &event](auto statePtr) {
                 auto action = statePtr->Handle(event);
                 // Transition to another state handled by action
-                action.Execute(machine, *statePtr, event);
+               return action.Execute(machine, *statePtr, event);
             };
-            std::visit(passEventToState, m_CurrentState);
+            return std::visit(passEventToState, m_CurrentState);
         }
 
     private:

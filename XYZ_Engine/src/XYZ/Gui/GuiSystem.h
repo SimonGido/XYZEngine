@@ -20,14 +20,12 @@ namespace XYZ {
 		virtual void Add(Entity entity) override;
 		virtual void Remove(Entity entity) override;
 		virtual bool Contains(Entity entity) override;
-		virtual void OnEvent(Event& event) override;
 
+		bool OnMouseButtonPress(const glm::vec2& mousePos);
+		bool OnMouseButtonRelease(const glm::vec2& mousePos);
+		bool OnMouseMove(const glm::vec2& mousePos);
+		bool OnMouseScroll(const glm::vec2& mousePos);
 	private:
-		void onMouseButtonPress(MouseButtonPressEvent& event);
-		void onMouseButtonRelease(MouseButtonReleaseEvent& event);
-		void onMouseMove(MouseMovedEvent& event);
-		void onMouseScroll(MouseScrollEvent& event);
-
 		bool collide(const glm::vec2& pos,const glm::vec2& size,const glm::vec2& point);
 	private:
 		struct Component : public System::Component
@@ -36,7 +34,7 @@ namespace XYZ {
 			Widget* UI;
 		};
 
-		size_t m_Pressed = 0;
+		Widget* m_LastPressed = nullptr;
 
 		std::vector<Component> m_Components;
 		HashGrid2D<size_t> m_Grid;

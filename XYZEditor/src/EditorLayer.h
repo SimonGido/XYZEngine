@@ -14,8 +14,9 @@ namespace XYZ {
 		virtual void OnDetach() override;
 		virtual void OnUpdate(float ts) override;
 		virtual void OnEvent(Event& event) override;
-		virtual void OnImGuiRender() override;
 
+	private:
+		GuiLayer* m_GuiLayer;
 
 	private:
 		Ref<OrthoCameraController> m_CameraController;
@@ -67,6 +68,5 @@ namespace XYZ {
 		Button* m_ButtonComponent;
 		Transform2D* m_ButtonTransform;
 
-		Ref<GuiSystem> m_GuiSystem;
 	};
 }

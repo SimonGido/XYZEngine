@@ -19,7 +19,7 @@ namespace XYZ {
 		void SetRotation(float rotation);
 
 		void InheritParent(const Transform2D& parent);
-		void SetParent(Transform2D* parent) { m_Parent = parent; };
+		void SetParent(Transform2D* parent);
 		void CalculateWorldTransformation();
 
 		void DetachParent();
@@ -29,7 +29,8 @@ namespace XYZ {
 		const glm::vec2& GetScale() const { return m_Scale; };
 		float GetRotation() const { return m_Rotation; };
 
-
+		const glm::vec3 GetWorldPosition() const;
+		const glm::vec2 GetWorldScale() const;
 
 		const glm::mat4& GetTransformation() const;
 

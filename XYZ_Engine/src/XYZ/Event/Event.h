@@ -30,7 +30,8 @@ namespace XYZ {
 
 		Click,
 		Release,
-		Hoover
+		Hoover,
+		UnHoover
 	};
 
 #define EVENT_CLASS_TYPE(type) static EventType GetStaticType() { return EventType::type; }
@@ -66,8 +67,8 @@ namespace XYZ {
 		{
 			if (m_Event.GetEventType() == T::GetStaticType())
 			{
-				func(static_cast<T&>(m_Event));
-				return true;
+				m_Event.Handled = func(static_cast<T&>(m_Event));
+				return m_Event.Handled;
 			}
 			return false;
 		}

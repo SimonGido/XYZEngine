@@ -141,10 +141,7 @@ void GameLayer::OnDetach()
 	XYZ::Renderer2D::Shutdown();
 }
 
-void GameLayer::OnImGuiRender()
-{
-	
-}
+
 
 void GameLayer::OnUpdate(float dt)
 {

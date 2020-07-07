@@ -93,12 +93,6 @@ namespace XYZ {
 		{
 			return m_ComponentManager->Contains<T>(entity);
 		}
-
-		void OnEvent(Event& event)
-		{
-			m_SystemManager->OnEvent(event);
-		}
-
 		void DestroyEntity(Entity entity)
 		{
 			auto signature = GetEntitySignature(entity);

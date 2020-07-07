@@ -8,11 +8,12 @@ namespace XYZ {
     {
     public:
         template <typename Machine, typename State, typename Event>
-        void Execute(Machine& machine, State& prevState, const Event& event)
+        bool Execute(Machine& machine, State& prevState, const Event& event)
         {
             leave(prevState, event);
             TargetState& newState = machine.template TransitionTo<TargetState>();
             enter(newState, event);
+            return true;
         }
 
     private:
@@ -34,6 +35,17 @@ namespace XYZ {
         auto enter(State& state, const Event& event) -> decltype(state.OnEnter(event))
         {
             return state.OnEnter(event);
+        }
+    };
+
+
+
+    struct Nothing
+    {
+        template <typename Machine, typename State, typename Event>
+        bool Execute(Machine&, State&, const Event&)
+        {
+            return false;
         }
     };
 }

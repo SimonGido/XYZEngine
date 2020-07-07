@@ -8,8 +8,8 @@ namespace XYZ {
 	OrthoCameraController::OrthoCameraController(float aspectRatio, bool rotation)
 		:
 		m_AspectRatio(aspectRatio),
-		m_Bounds({ -m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel }),
-		m_Camera(-m_AspectRatio * m_ZoomLevel, m_AspectRatio* m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel), m_Rotation(rotation)
+		m_Camera(-m_AspectRatio * m_ZoomLevel, m_AspectRatio* m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel), 
+		m_Rotation(rotation)
 	{
 	}
 

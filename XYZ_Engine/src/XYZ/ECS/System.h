@@ -33,7 +33,6 @@ namespace XYZ {
 		virtual void EntityUpdated(Entity entity) {};
 		
 
-		virtual void OnEvent(Event& event) {};
 		/**
 		* Check if system contains entity
 		* @param[in] entity

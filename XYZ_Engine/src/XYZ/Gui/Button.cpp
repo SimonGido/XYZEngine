@@ -4,90 +4,31 @@
 
 namespace XYZ {
 	Button::Button()
-		:
-		m_HighlightColor(glm::vec4(1)),
-		m_PressColor(glm::vec4(1)),
-		m_StateMachine(Hoovered{ this },Released{ this }, Clicked{ this })
 	{
-		m_StateMachine.Handle(HooverEvent{});
-	}
-
-	Button::Button(const Button& other)
-		:
-		m_HighlightColor(other.m_HighlightColor),
-		m_PressColor(other.m_PressColor),
-		m_StateMachine(Hoovered{this}, Released{ this }, Clicked{ this })
-	{
-	}
-	
-	void Button::SetHighlightColor(const glm::vec4& color)
-	{
-		m_HighlightColor = color;
-	}
-	void Button::SetPressColor(const glm::vec4& color)
-	{
-		m_PressColor = color;
-	}
-	
-	void Button::OnClick(const ClickEvent& e)
-	{
-		Execute(ClickEvent{});
-	}
-
-	void Button::OnRelease(const ReleaseEvent& event)
-	{
-		Execute(ReleaseEvent{});
-	}
-
-	void Button::OnHoover(const HooverEvent& event)
-	{
-		Execute(HooverEvent{});
 	}
 
 	void Button::OnEvent(Event& event)
 	{
-		//if (event.GetEventType() == ClickEvent::GetStaticType())
-		//{
-		//	m_StateMachine = StateMachine(Hoovered{ this }, Released{ this }, Clicked{ this });
-		//	m_StateMachine.Handle(ClickEvent{});
-		//	//Execute(ClickEvent{});
-		//}
 		EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<ClickEvent>(Hook(&Button::receiveEvent<ClickEvent>, this));
-		dispatcher.Dispatch<ReleaseEvent>(Hook(&Button::receiveEvent<ReleaseEvent>, this));
-		dispatcher.Dispatch<HooverEvent>(Hook(&Button::receiveEvent<HooverEvent> , this));
+		if (dispatcher.Dispatch<ClickEvent>(Hook(&Button::receiveEvent<ClickEvent>, this)))
+		{
+			std::cout << "Clicked" << std::endl;
+			Execute(ClickEvent{});
+		}
+		else if (dispatcher.Dispatch<ReleaseEvent>(Hook(&Button::receiveEvent<ReleaseEvent>, this)))
+		{
+			std::cout << "Released" << std::endl;
+			Execute(ReleaseEvent{});
+		}
+		else if (dispatcher.Dispatch<HooverEvent>(Hook(&Button::receiveEvent<HooverEvent>, this)))
+		{
+			std::cout << "Hoover" << std::endl;
+			Execute(HooverEvent{});
+		}
+		else if (dispatcher.Dispatch<UnHooverEvent>(Hook(&Button::receiveEvent<UnHooverEvent>, this)))
+		{
+			std::cout << "UnHoover" << std::endl;
+			Execute(UnHooverEvent{});
+		}
 	}
-
-	Button::Clicked::Clicked(Button* button)
-		: Btn(button)
-	{}
-
-	void Button::Clicked::OnEnter(const ClickEvent& e)
-	{
-		Btn->OnClick(e);
-		std::cout << "Clicked" << std::endl;
-	}
-
-	Button::Released::Released(Button* button)
-		: Btn(button)
-	{
-	}
-
-	void Button::Released::OnEnter(const ReleaseEvent& e)
-	{
-		Btn->OnRelease(e);
-		std::cout << "Released" << std::endl;
-	}
-
-	Button::Hoovered::Hoovered(Button* button)
-		: Btn(button)
-	{
-	}
-
-	void Button::Hoovered::OnEnter(const HooverEvent& e)
-	{
-		Btn->OnHoover(e);
-		std::cout << "Hoovered" << std::endl;
-	}
-
 }

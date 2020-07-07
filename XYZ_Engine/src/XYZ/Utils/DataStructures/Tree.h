@@ -34,6 +34,7 @@ namespace XYZ {
 
 		const T& GetData() const { return m_Data; }
 
+		T& GetData() { return m_Data; }
 	private:
 		void setIndex(uint16_t index)
 		{
@@ -245,8 +246,8 @@ namespace XYZ {
 			return false;
 		}
 
-		Node<T>* GetIterator() { return &m_Data[m_CurrentIndex]; }
-		Node<T>* GetElement(int16_t index) { return m_Data[index].GetData(); }
+		Node<T>& GetIterator() { return m_Data[m_CurrentIndex]; }
+		T& GetElement(int16_t index) { return m_Data[index].GetData(); }
 
 		size_t GetSize() const { return m_Data.size(); }
 

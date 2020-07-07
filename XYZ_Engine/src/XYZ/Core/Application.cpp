@@ -22,9 +22,7 @@ namespace XYZ {
 		m_Window->SetVSync(false);
 		m_Window->SetEventCallback(Hook(&Application::OnEvent, this));
 
-		// Push default layers
-		m_ImGuiLayer = new ImGuiLayer();
-		PushOverlay(m_ImGuiLayer);
+	
 
 
 		m_Window->RegisterCallback<WindowCloseEvent>(Hook(&Application::onWindowClosed, this));
@@ -48,10 +46,10 @@ namespace XYZ {
 				for (Layer* layer : m_LayerStack)	
 					layer->OnUpdate(timestep);
 				
-				m_ImGuiLayer->Begin(timestep);
-				for (Layer* layer : m_LayerStack)
-					layer->OnImGuiRender();
-				m_ImGuiLayer->End();
+				//m_GuiLayer->Begin(timestep);
+				//for (Layer* layer : m_LayerStack)
+				//	layer->OnImGuiRender();
+				//m_ImGuiLayer->End();
 			}
 			m_Window->Update();
 		}

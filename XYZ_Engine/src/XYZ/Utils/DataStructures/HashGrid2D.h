@@ -19,12 +19,11 @@ namespace XYZ {
 		/** Inserts an element into the hashgrid */
 		void Insert(const T& element, const glm::vec2& pos, const glm::vec2& size)
 		{
-			XYZ_ASSERT(pos.x >= 0 && pos.y >= 0, "");
-			for (int i = (int)pos.x; i < int(pos.x + size.x); ++i)
+			for (int i = (int)std::floor(pos.x); i < (int)std::ceil(pos.x) + (int)std::ceil(size.x); ++i)
 			{
-				for (int j = (int)pos.y; j < int(pos.y + size.y); ++j)
+				for (int j = (int)std::floor(pos.y); j < (int)std::ceil(pos.y) + (int)std::ceil(size.y); ++j)
 				{
-					size_t index = ((size_t)floor(i / m_CellSize) + (size_t)floor(j / m_CellSize)) % m_TableSize;
+					size_t index = ((size_t)floor(abs(i) / m_CellSize) + (size_t)floor(abs(j) / m_CellSize)) % m_TableSize;
 					m_Table[index].elements.push_back(element);
 				}
 			}
@@ -33,12 +32,11 @@ namespace XYZ {
 		/** Removes an element from the hashgrid */
 		void Remove(const T& element, const glm::vec2& pos, const glm::vec2& size)
 		{
-			XYZ_ASSERT(pos.x >= 0 && pos.y >= 0, "");
-			for (int i = (int)pos.x; i < int(pos.x + size.x); ++i)
+			for (int i = (int)std::floor(pos.x); i < (int)std::ceil(pos.x) + (int)std::ceil(size.x); ++i)
 			{
-				for (int j = (int)pos.y; j < int(pos.y + size.y); ++j)
+				for (int j = (int)std::floor(pos.y); j < (int)std::ceil(pos.y) + (int)std::ceil(size.y); ++j)
 				{
-					size_t index = ((size_t)floor(i / m_CellSize) + (size_t)floor(j / m_CellSize)) % m_TableSize;
+					size_t index = ((size_t)floor(abs(i) / m_CellSize) + (size_t)floor(abs(j) / m_CellSize)) % m_TableSize;
 					auto it = std::find(m_Table[index].elements.begin(), m_Table[index].elements.end(), element);
 					if (it != m_Table[index].elements.end())
 						m_Table[index].elements.erase(it);
@@ -49,14 +47,13 @@ namespace XYZ {
 		/** Returns the element count */
 		size_t GetElements(T** buffer, const glm::vec2& pos, const glm::vec2& size)
 		{
-			XYZ_ASSERT(pos.x >= 0 && pos.y >= 0, "");
 			std::vector<size_t> indices;
 			size_t count = 0;
-			for (int i = (int)pos.x; i < int(pos.x + size.x); ++i)
+			for (int i = (int)std::floor(pos.x); i < (int)std::ceil(pos.x) + (int)std::ceil(size.x); ++i)
 			{
-				for (int j = (int)pos.y; j < int(pos.y + size.y); ++j)
+				for (int j = (int)std::floor(pos.y); j < (int)std::ceil(pos.y) + (int)std::ceil(size.y); ++j)
 				{
-					size_t index = ((size_t)floor(i / m_CellSize) + (size_t)floor(j / m_CellSize)) % m_TableSize;
+					size_t index = ((size_t)floor(abs(i) / m_CellSize) + (size_t)floor(abs(j) / m_CellSize)) % m_TableSize;
 					count += m_Table[index].elements.size();
 					indices.push_back(index);
 				}
@@ -76,6 +73,13 @@ namespace XYZ {
 			return count;
 		}
 
+		void Clear()
+		{
+			for (auto& cell : m_Table)
+			{
+				cell.elements.clear();
+			}
+		}
 	private:
 		struct Cell
 		{

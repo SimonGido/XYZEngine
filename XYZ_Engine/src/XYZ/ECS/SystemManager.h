@@ -93,21 +93,11 @@ namespace XYZ {
 				{
 					if (!system->Contains(entity))
 						system->Add(entity);
-					
+
 				}
-				else 
+				else
 					system->Remove(entity);
 
-			}
-		}
-
-		void OnEvent(Event& event)
-		{
-			for (auto const& pair : m_Systems)
-			{
-				if (event.Handled)
-					break;
-				pair.second->OnEvent(event);
 			}
 		}
 	private:

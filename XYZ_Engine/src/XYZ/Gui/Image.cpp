@@ -6,7 +6,10 @@ namespace XYZ {
 	Image::Image(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, int32_t textureID, Ref<SubTexture2D> subTexture, Ref<Material> material, SortLayerID layer, bool visible)
 		:
 		m_Quad(position, size, color, textureID),
-		RenderComponent(material, layer, visible)
+		RenderComponent(material, layer, visible),
+		m_ClickColor(color),
+		m_HooverColor(color),
+		m_NormalColor(color)
 	{
 		SetSubTexture(subTexture);
 	}
@@ -23,5 +26,10 @@ namespace XYZ {
 	void Image::SetQuad(const Quad& quad)
 	{
 		m_Quad = quad;
+	}
+	void Image::SetColor(const glm::vec4& color)
+	{
+		for (size_t i = 0; i < 4; ++i)
+			m_Quad.Vertices[i].Color = color;
 	}
 }

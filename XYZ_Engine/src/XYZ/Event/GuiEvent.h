@@ -54,4 +54,18 @@ namespace XYZ {
 		EventType m_Type;
 	};
 
+	struct UnHooverEvent : public Event
+	{
+		UnHooverEvent()
+			: m_Type(EventType::UnHoover)
+		{
+		}
+		virtual EventType GetEventType() const override { return m_Type; }
+		static EventType GetStaticType()
+		{
+			return EventType::UnHoover;
+		}
+	private:
+		EventType m_Type;
+	};
 }

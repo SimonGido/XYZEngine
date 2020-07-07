@@ -2,6 +2,7 @@
 
 #include "stdafx.h"
 #include "Scene.h"
+#include "XYZ/Core/Singleton.h"
 
 namespace XYZ
 {
@@ -19,27 +20,26 @@ namespace XYZ
 	/*! @class SceneManager
 	*	@brief Contains all Scenes and manages adding and removing scenes and switching between them
 	*/
-	class SceneManager
+	class SceneManager : public Singleton<SceneManager>
 	{	
 	public:
-		SceneManager() {};
+		SceneManager(token) {};
 		~SceneManager() {};
 
 		void Add(Scene& scene);
-		void Add(std::shared_ptr<Scene> scene);
+		void Add(Ref<Scene> scene);
 		bool Remove(const std::string& name);
 
 		/** Sets scene as active. This will mark the scene for rendering */
 		bool SetActive(const std::string& name);
 
-		/** Adds an entity into the active scene */
-		void AddEntityToActive(const Entity& item);
+		/** Adds an object into the active scene */
+		uint16_t AddObjectToActive(const SceneObject& object);
 
-		inline std::shared_ptr<Scene> GetActive() const { return m_RendererIDticeScene; }
-
-
+		inline Ref<Scene> GetActive() const { return m_CurrentScene; }
+		
 	private:
-		std::shared_ptr<Scene> m_RendererIDticeScene;
-		std::unordered_map<std::string, std::shared_ptr<Scene>> m_Scenes;
+		Ref<Scene> m_CurrentScene;
+		std::unordered_map<std::string, Ref<Scene>> m_Scenes;
 	};
 }

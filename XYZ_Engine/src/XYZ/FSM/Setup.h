@@ -28,11 +28,4 @@ namespace XYZ {
 		}
 	};
 
-	struct Nothing
-	{
-		template <typename Machine, typename State, typename Event>
-		void Execute(Machine&, State&, const Event&)
-		{
-		}
-	};
 }

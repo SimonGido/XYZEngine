@@ -50,6 +50,12 @@ namespace XYZ {
 			m_Transformation = m_Parent->m_Transformation * calculateTransform();
 	}
 
+	void Transform2D::SetParent(Transform2D* parent)
+	{
+		m_Parent = parent;
+		m_Transformation = m_Parent->m_Transformation * calculateTransform();
+	}
+
 	void Transform2D::CalculateWorldTransformation()
 	{
 		// If has parent
@@ -79,6 +85,24 @@ namespace XYZ {
 		}
 		else
 			XYZ_LOG_WARN("Transform has no parent to detach");
+	}
+
+
+	const glm::vec3 Transform2D::GetWorldPosition() const
+	{
+		return {
+			m_Transformation[3][0],
+			m_Transformation[3][1],
+			m_Transformation[3][2]
+		};
+	}
+
+	const glm::vec2 Transform2D::GetWorldScale() const
+	{
+		return {
+			glm::length(m_Transformation[3][0]),
+			glm::length(m_Transformation[3][1])
+		};
 	}
 
 
