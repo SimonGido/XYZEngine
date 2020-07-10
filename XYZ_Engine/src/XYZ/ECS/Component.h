@@ -52,12 +52,4 @@ namespace XYZ {
 		Signature ActiveComponents;
 	};
 
-	struct Relationship : public Type<Relationship>
-	{
-		size_t NumChildren = 0;
-		Entity Parent = NULL_ENTITY;
-		Entity Previous = NULL_ENTITY;
-		Entity Next = NULL_ENTITY;
-		Entity First = NULL_ENTITY;
-	};
 }

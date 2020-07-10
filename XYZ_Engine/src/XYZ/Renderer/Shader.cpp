@@ -6,7 +6,7 @@
 
 
 namespace XYZ {
-	std::shared_ptr<Shader> Shader::Create(const std::string& path)
+	Ref<Shader> Shader::Create(const std::string& path)
 	{
 		switch (Renderer::GetAPI())
 		{
@@ -17,14 +17,14 @@ namespace XYZ {
 		}
 		case RendererAPI::API::OpenGL:
 		{
-			return std::make_shared<OpenGLShader>(path);
+			return CreateRef<OpenGLShader>(path);
 		}
 		}
 
 		XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
 		return nullptr;
 	}
-	std::shared_ptr<Shader> Shader::Create(const std::string& name, const std::string& path)
+	Ref<Shader> Shader::Create(const std::string& name, const std::string& path)
 	{
 		switch (Renderer::GetAPI())
 		{
@@ -35,7 +35,7 @@ namespace XYZ {
 		}
 		case RendererAPI::API::OpenGL:
 		{
-			return std::make_shared<OpenGLShader>(name, path);
+			return CreateRef<OpenGLShader>(name, path);
 		}
 		}
 
@@ -67,7 +67,7 @@ namespace XYZ {
 	{
 		if (Exists(name)) return m_Shaders[name];
 		XYZ_ASSERT(false, "Shader does not exist.");
-		return std::shared_ptr<Shader>();
+		return Ref<Shader>();
 	}
 	bool ShaderLibrary::Exists(const std::string& name)
 	{

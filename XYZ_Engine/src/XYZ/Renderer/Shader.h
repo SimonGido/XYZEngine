@@ -10,7 +10,7 @@
 namespace XYZ {
 
 	/**
-	* enum class represents uniform data types
+	* enum class represents uniform data Components
 	*/
 	enum class UniformDataType
 	{
@@ -30,13 +30,13 @@ namespace XYZ {
 	*/
 	struct Uniform
 	{
-		std::string name;
-		UniformDataType type;
-		uint32_t location;
-		unsigned int offset;
-		unsigned int size;
-		unsigned int count;
-		bool isArray;
+		std::string Name;
+		UniformDataType Type;
+		uint32_t Location;
+		unsigned int Offset;
+		unsigned int Size;
+		unsigned int Count;
+		bool IsArray;
 	};
 
 	struct UniformBuffer
@@ -50,10 +50,10 @@ namespace XYZ {
 	*/
 	struct TextureUniform
 	{
-		std::string name;
-		uint32_t location;
-		unsigned int slot;
-		unsigned int count;
+		std::string Name;
+		uint32_t Location;
+		uint32_t Slot;
+		uint32_t Count;
 	};
 
 	/**
@@ -62,9 +62,9 @@ namespace XYZ {
 	*/
 	struct SubRoutine
 	{
-		unsigned int shaderType;
-		unsigned int index;
-		std::string name;
+		uint32_t ShaderType;
+		uint32_t Index;
+		std::string Name;
 	};
 
 	/**
@@ -73,8 +73,8 @@ namespace XYZ {
 	*/
 	struct Routine
 	{
-		std::vector<SubRoutine> subRoutines;
-		SubRoutine activeSubRoutine;
+		std::vector<SubRoutine> SubRoutines;
+		SubRoutine ActiveSubRoutine;
 	};
 
 
@@ -90,7 +90,7 @@ namespace XYZ {
 		~Shader() = default;
 
 		virtual void Bind() const = 0;
-		virtual void Compute(unsigned int groupX, unsigned int groupY = 1, unsigned int groupZ = 1) const = 0;
+		virtual void Compute(uint32_t groupX, uint32_t groupY = 1, uint32_t groupZ = 1) const = 0;
 		virtual void Unbind() const = 0;
 		virtual void SetUniforms(unsigned char* buffer) = 0;
 		virtual void SetSubRoutine(const std::string& name) = 0;
@@ -118,7 +118,7 @@ namespace XYZ {
 		* @param[in] path	File path to the glsl code
 		* @return shared_ptr to Shader
 		*/
-		static std::shared_ptr<Shader> Create(const std::string& path);
+		static Ref<Shader> Create(const std::string& path);
 
 		/**
 		* Create Shader
@@ -126,7 +126,7 @@ namespace XYZ {
 		* @param[in] path	File path to the glsl code
 		* @return shared_ptr to Shader
 		*/
-		static std::shared_ptr<Shader> Create(const std::string& name, const std::string& path);
+		static Ref<Shader> Create(const std::string& name, const std::string& path);
 
 	protected:
 		enum class ShaderProgramType

@@ -83,6 +83,8 @@ namespace XYZ {
 		LayerStack m_LayerStack;
 		std::unique_ptr<Window> m_Window;
 
+		GuiLayer* m_GuiLayer;
+
 		bool m_Running;
 		float m_LastFrameTime = 0.0f;
 

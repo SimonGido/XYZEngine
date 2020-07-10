@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "ShaderGraph.h"
+#include "Slider.h"
 
 
 namespace XYZ {

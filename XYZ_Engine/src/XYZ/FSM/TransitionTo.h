@@ -22,7 +22,7 @@ namespace XYZ {
         }
 
         template <typename State, typename Event>
-        auto leave(State& state, const Event& event) -> decltype(state.OnLeave(event))
+        auto leave(State& state, const Event& event) -> declComponent(state.OnLeave(event))
         {
             return state.OnLeave(event);
         }
@@ -32,7 +32,7 @@ namespace XYZ {
         }
 
         template <typename State, typename Event>
-        auto enter(State& state, const Event& event) -> decltype(state.OnEnter(event))
+        auto enter(State& state, const Event& event) -> declComponent(state.OnEnter(event))
         {
             return state.OnEnter(event);
         }

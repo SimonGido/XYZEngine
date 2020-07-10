@@ -16,9 +16,9 @@ namespace XYZ {
 
 		void CreateGrid(int width, int height, int cellSize);
 		virtual void Update(float dt);
-		virtual void Add(Entity entity) override;
-		virtual void Remove(Entity entity) override;
-		virtual bool Contains(Entity entity) override;
+		virtual void Add(uint32_t entity) override;
+		virtual void Remove(uint32_t entity) override;
+		virtual bool Contains(uint32_t entity) override;
 
 
 	private:

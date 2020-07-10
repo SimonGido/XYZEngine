@@ -8,7 +8,7 @@
 namespace XYZ {
 	ParticleSystem2D::ParticleSystem2D()
 	{
-		m_Signature.set(XYZ::ECSManager::Get().GetComponentType<XYZ::ParticleEffect2D>());	
+		m_Signature.set(XYZ::ECSManager::GetComponentType<XYZ::ParticleEffect2D>());
 	}
 
 	void ParticleSystem2D::Update(float dt)
@@ -33,20 +33,20 @@ namespace XYZ {
 		}
 	}
 
-	void ParticleSystem2D::Add(Entity entity)
+	void ParticleSystem2D::Add(uint32_t entity)
 	{
 		XYZ_LOG_INFO("Entity with id ", entity, " added");
 
 		Component component;
-		component.ActiveComponent = ECSManager::Get().GetComponent<ActiveComponent>(entity);
-		component.Effect = ECSManager::Get().GetComponent<ParticleEffect2D>(entity);
+		component.ActiveComponent = ECSManager::GetComponent<ActiveComponent>(entity);
+		component.Effect = ECSManager::GetComponent<ParticleEffect2D>(entity);
 		component.Ent = entity;
 
 		m_Components.push_back(component);
 		m_Sorted = false;
 	}
 
-	void ParticleSystem2D::Remove(Entity entity)
+	void ParticleSystem2D::Remove(uint32_t entity)
 	{
 		auto it = std::find(m_Components.begin(), m_Components.end(), entity);
 		if (it != m_Components.end())
@@ -58,7 +58,7 @@ namespace XYZ {
 		}
 	}
 
-	bool ParticleSystem2D::Contains(Entity entity)
+	bool ParticleSystem2D::Contains(uint32_t entity)
 	{
 		auto it = std::find(m_Components.begin(), m_Components.end(), entity);
 		if (it != m_Components.end())

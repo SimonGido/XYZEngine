@@ -20,7 +20,7 @@ namespace XYZ {
 		return str;
 	}
 
-	static GLenum ShaderTypeFromString(const std::string& type)
+	static GLenum ShaderComponentFromString(const std::string& type)
 	{
 		if (type == "vertex")
 			return GL_VERTEX_SHADER;
@@ -77,7 +77,7 @@ namespace XYZ {
 	{
 		for (size_t i = 0; i < m_Uniforms.size(); ++i)
 		{
-			if (m_Uniforms[i].name == name)
+			if (m_Uniforms[i].Name == name)
 				return &m_Uniforms[i];
 		}
 		return nullptr;
@@ -88,7 +88,7 @@ namespace XYZ {
 	{
 		for (size_t i = 0; i < m_Textures.size(); ++i)
 		{
-			if (m_Textures[i].name == name)
+			if (m_Textures[i].Name == name)
 				return &m_Textures[i];
 		}
 		return nullptr;
@@ -102,23 +102,23 @@ namespace XYZ {
 			if (type == UniformDataType::SAMPLER2D)
 			{
 				TextureUniform texture;
-				texture.count = count;
-				texture.location = id;
-				texture.name = name;
-				texture.slot = m_NumTakenTexSlots;
+				texture.Count = count;
+				texture.Location = id;
+				texture.Name = name;
+				texture.Slot = m_NumTakenTexSlots;
 
-				XYZ_ASSERT(texture.slot + (count - 1) < sc_MaxTextureSlots, "It is possible to have only ", sc_MaxTextureSlots, " textures per shader");
+				XYZ_ASSERT(texture.Slot + (count - 1) < sc_MaxTextureSlots, "It is possible to have only ", sc_MaxTextureSlots, " textures per shader");
 				glUseProgram(m_RendererID);
 				if (count > 1)
 				{
-					texture.name = CutArrayIndexing(texture.name);
+					texture.Name = CutArrayIndexing(texture.Name);
 					int32_t slots[32];
-					for (int32_t i = (int32_t)texture.slot; i < (int32_t)count + (int32_t)texture.slot; ++i)
+					for (int32_t i = (int32_t)texture.Slot; i < (int32_t)count + (int32_t)texture.Slot; ++i)
 						slots[i] = i;
-					glUniform1iv(texture.location, texture.count, &slots[texture.slot]);
+					glUniform1iv(texture.Location, texture.Count, &slots[texture.Slot]);
 				}
 				else
-					glUniform1i(id, texture.slot);
+					glUniform1i(id, texture.Slot);
 
 
 				m_NumTakenTexSlots += count;
@@ -127,91 +127,91 @@ namespace XYZ {
 			else
 			{
 				Uniform uniform;
-				uniform.size = size;
-				uniform.offset = offset;
-				uniform.type = type;
-				uniform.location = id;
-				uniform.name = name;
-				uniform.count = count;
+				uniform.Size = size;
+				uniform.Offset = offset;
+				uniform.Type = type;
+				uniform.Location = id;
+				uniform.Name = name;
+				uniform.Count = count;
 
-				if (uniform.count > 1)
-					uniform.isArray = true;
+				if (uniform.Count > 1)
+					uniform.IsArray = true;
 				else
-					uniform.isArray = false;
+					uniform.IsArray = false;
 				m_Uniforms.push_back(uniform);
 			}
 		}
 	}
 
-	void OpenGLShader::parseSource(unsigned int type,const std::string& source)
+	void OpenGLShader::parseSource(unsigned int Component,const std::string& source)
 	{		
 		const char* versionToken = "#version";
 		size_t versionTokenLength = strlen(versionToken);
-		size_t verPos = m_ShaderSources[type].find(versionToken, 0);
+		size_t verPos = m_ShaderSources[Component].find(versionToken, 0);
 		size_t sourcePos = verPos + versionTokenLength + 1;
 		size_t sourceEol = source.find_first_of("\r\n", sourcePos);
 
-		const char* typeToken = "#type";
-		size_t typeTokenLength = strlen(typeToken);
-		size_t pos = source.find(typeToken, 0);
+		const char* ComponentToken = "#type";
+		size_t ComponentTokenLength = strlen(ComponentToken);
+		size_t pos = source.find(ComponentToken, 0);
 		while (pos != std::string::npos)
 		{
 			size_t eol = source.find_first_of("\r\n", pos);
 			XYZ_ASSERT(eol != std::string::npos, "Syntax error");
-			size_t begin = pos + typeTokenLength + 1;
+			size_t begin = pos + ComponentTokenLength + 1;
 
 			size_t nextLinePos = source.find_first_not_of("\r\n", eol);
-			pos = source.find(typeToken, nextLinePos);
-			m_ShaderSources[type].insert(sourceEol + 2 ,source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos)));
+			pos = source.find(ComponentToken, nextLinePos);
+			m_ShaderSources[Component].insert(sourceEol + 2 ,source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos)));
 		}
 	}
 
 	void OpenGLShader::setUniform(Uniform* uniform, unsigned char* data)
 	{
-		switch (uniform->type)
+		switch (uniform->Type)
 		{
 		case UniformDataType::FLOAT:
-			uploadFloat(uniform->location, *(float*)& data[uniform->offset]);
+			uploadFloat(uniform->Location, *(float*)& data[uniform->Offset]);
 			break;
 		case UniformDataType::FLOAT_VEC2:
-			uploadFloat2(uniform->location, *(glm::vec2*) & data[uniform->offset]);
+			uploadFloat2(uniform->Location, *(glm::vec2*) & data[uniform->Offset]);
 			break;
 		case UniformDataType::FLOAT_VEC3:
-			uploadFloat3(uniform->location, *(glm::vec3*) & data[uniform->offset]);
+			uploadFloat3(uniform->Location, *(glm::vec3*) & data[uniform->Offset]);
 			break;
 		case UniformDataType::FLOAT_VEC4:
-			uploadFloat4(uniform->location, *(glm::vec4*) & data[uniform->offset]);
+			uploadFloat4(uniform->Location, *(glm::vec4*) & data[uniform->Offset]);
 			break;
 		case UniformDataType::INT:
-			uploadInt(uniform->location, *(int*)& data[uniform->offset]);
+			uploadInt(uniform->Location, *(int*)& data[uniform->Offset]);
 			break;
 		case UniformDataType::FLOAT_MAT4:
-			uploadMat4(uniform->location, *(glm::mat4*) & data[uniform->offset]);
+			uploadMat4(uniform->Location, *(glm::mat4*) & data[uniform->Offset]);
 			break;
 		};
 	}
 
 	void OpenGLShader::setUniformArr(Uniform* uniform, unsigned char* data)
 	{
-		switch (uniform->type)
+		switch (uniform->Type)
 		{
 		case UniformDataType::FLOAT:
-			uploadFloatArr(uniform->location, (float*)& data[uniform->offset], uniform->count);
+			uploadFloatArr(uniform->Location, (float*)& data[uniform->Offset], uniform->Count);
 			break;
 		case UniformDataType::FLOAT_VEC2:
-			uploadFloat2Arr(uniform->location, *(glm::vec2*) & data[uniform->offset], uniform->count);
+			uploadFloat2Arr(uniform->Location, *(glm::vec2*) & data[uniform->Offset], uniform->Count);
 			break;
 		case UniformDataType::FLOAT_VEC3:
-			uploadFloat3Arr(uniform->location, *(glm::vec3*) & data[uniform->offset], uniform->count);
+			uploadFloat3Arr(uniform->Location, *(glm::vec3*) & data[uniform->Offset], uniform->Count);
 			break;
 		case UniformDataType::FLOAT_VEC4:
-			uploadFloat4Arr(uniform->location, *(glm::vec4*) & data[uniform->offset], uniform->count);
+			uploadFloat4Arr(uniform->Location, *(glm::vec4*) & data[uniform->Offset], uniform->Count);
 			break;
 		case UniformDataType::INT:
-			uploadIntArr(uniform->location, (int*)& data[uniform->offset], uniform->count);
+			uploadIntArr(uniform->Location, (int*)& data[uniform->Offset], uniform->Count);
 			break;
 		case UniformDataType::FLOAT_MAT4:
-			uploadMat4Arr(uniform->location, *(glm::mat4*) & data[uniform->offset], uniform->count);
+			uploadMat4Arr(uniform->Location, *(glm::mat4*) & data[uniform->Offset], uniform->Count);
 			break;
 		};
 	}
@@ -220,7 +220,7 @@ namespace XYZ {
 	{
 		for (auto &uniform : m_Uniforms)
 		{
-			if (uniform.isArray)
+			if (uniform.IsArray)
 				setUniformArr(&uniform, (unsigned char*)data);
 			else
 				setUniform(&uniform, (unsigned char*)data);
@@ -232,13 +232,13 @@ namespace XYZ {
 	{
 		for (auto& routine : m_Routines)
 		{
-			if (routine.activeSubRoutine.name == name)
+			if (routine.ActiveSubRoutine.Name == name)
 				return;
-			for (auto& sub : routine.subRoutines)
+			for (auto& sub : routine.SubRoutines)
 			{
-				if (sub.name == name)
+				if (sub.Name == name)
 				{
-					routine.activeSubRoutine = sub;
+					routine.ActiveSubRoutine = sub;
 					return;
 				}
 			}
@@ -250,8 +250,8 @@ namespace XYZ {
 	{
 		for (size_t i = 0; i < m_Routines.size(); ++i)
 		{
-			SubRoutine routine = m_Routines[i].activeSubRoutine;
-			glUniformSubroutinesuiv(routine.shaderType, 1, &routine.index);
+			SubRoutine routine = m_Routines[i].ActiveSubRoutine;
+			glUniformSubroutinesuiv(routine.ShaderType, 1, &routine.Index);
 		}
 	}
 
@@ -301,16 +301,16 @@ namespace XYZ {
 	void OpenGLShader::AddSource(const std::string& filepath)
 	{
 		std::string source = readFile(filepath);
-		const char* typeToken = "#type";
-		size_t typeTokenLength = strlen(typeToken);
-		size_t pos = source.find(typeToken, 0);
+		const char* ComponentToken = "#type";
+		size_t ComponentTokenLength = strlen(ComponentToken);
+		size_t pos = source.find(ComponentToken, 0);
 		
 		size_t eol = source.find_first_of("\r\n", pos);
 		XYZ_ASSERT(eol != std::string::npos, "Syntax error");
-		size_t begin = pos + typeTokenLength + 1;
-		std::string type = source.substr(begin, eol - begin);
+		size_t begin = pos + ComponentTokenLength + 1;
+		std::string Component = source.substr(begin, eol - begin);
 
-		parseSource(ShaderTypeFromString(type),source);
+		parseSource(ShaderComponentFromString(Component),source);
 	}
 
 	void OpenGLShader::SetFloat(const std::string& name, float value)
@@ -411,21 +411,21 @@ namespace XYZ {
 	}
 	std::unordered_map<unsigned int, std::string> OpenGLShader::preProcess(const std::string& source)
 	{
-		const char* typeToken = "#type";
-		size_t typeTokenLength = strlen(typeToken);
-		size_t pos = source.find(typeToken, 0);
+		const char* TypeToken = "#type";
+		size_t TypeTokenLength = strlen(TypeToken);
+		size_t pos = source.find(TypeToken, 0);
 		while (pos != std::string::npos)
 		{
 			size_t eol = source.find_first_of("\r\n", pos);
 			XYZ_ASSERT(eol != std::string::npos, "Syntax error");
-			size_t begin = pos + typeTokenLength + 1;
-			std::string type = source.substr(begin, eol - begin);
-			XYZ_ASSERT(ShaderTypeFromString(type), "Invalid shader type specified");
+			size_t begin = pos + TypeTokenLength + 1;
+			std::string Type = source.substr(begin, eol - begin);
+			XYZ_ASSERT(ShaderComponentFromString(Type), "Invalid shader Component specified");
 
 			size_t nextLinePos = source.find_first_not_of("\r\n", eol);
-			pos = source.find(typeToken, nextLinePos);
-			m_ShaderSources[ShaderTypeFromString(type)] = source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos));
-			if (type == "compute")
+			pos = source.find(TypeToken, nextLinePos);
+			m_ShaderSources[ShaderComponentFromString(Type)] = source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos));
+			if (Type == "compute")
 				m_Type = ShaderProgramType::COMPUTE;
 			else
 				m_Type = ShaderProgramType::RENDER;
@@ -442,10 +442,10 @@ namespace XYZ {
 		int glShaderIDIndex = 0;
 		for (auto& kv : shaderSources)
 		{
-			GLenum type = kv.first;
+			GLenum Component = kv.first;
 			const std::string& source = kv.second;
 
-			GLuint shader = glCreateShader(type);
+			GLuint shader = glCreateShader(Component);
 
 			const GLchar* sourceCStr = source.c_str();
 			glShaderSource(shader, 1, &sourceCStr, 0);
@@ -487,18 +487,18 @@ namespace XYZ {
 		{
 			GLint maxLength = 0;
 			glGetProgramiv(m_RendererID, GL_INFO_LOG_LENGTH, &maxLength);
-
+		
 			// The maxLength includes the NULL character
 			std::vector<GLchar> infoLog(maxLength);
 			glGetProgramInfoLog(m_RendererID, maxLength, &maxLength, &infoLog[0]);
-
+		
 			// We don't need the program anymore.
 			glDeleteProgram(m_RendererID);
-
+		
 			for (size_t i = 0; i < glShaderIDIndex; ++i)
 				glDeleteShader(glShaderIDs[i]);
-
-
+		
+		
 			XYZ_LOG_ERR(infoLog.data());
 			XYZ_ASSERT(false, "Shader link failure!");
 			return;
@@ -514,7 +514,7 @@ namespace XYZ {
 	{
 		GLint count;
 		GLint size;
-		GLenum type;
+		GLenum Type;
 		const GLsizei bufSize = 50;
 		GLchar name[bufSize];
 		GLsizei length;
@@ -526,9 +526,9 @@ namespace XYZ {
 		for (int i = 0; i < count; i++)
 		{
 			int sizeUni = 0;
-			glGetActiveUniform(m_RendererID, (GLuint)i, bufSize, &length, &size, &type, name);
+			glGetActiveUniform(m_RendererID, (GLuint)i, bufSize, &length, &size, &Type, name);
 			UniformDataType uniType = UniformDataType::NONE;
-			switch (type)
+			switch (Type)
 			{
 			case GL_FLOAT:	    uniType = UniformDataType::FLOAT;
 				sizeUni = sizeof(float);
@@ -586,19 +586,19 @@ namespace XYZ {
 		int len;
 		int numCompS;
 
-		unsigned int types[4] = { GL_VERTEX_SHADER,GL_FRAGMENT_SHADER,GL_GEOMETRY_SHADER,GL_COMPUTE_SHADER };
-		for (auto type : types)
+		unsigned int Components[4] = { GL_VERTEX_SHADER,GL_FRAGMENT_SHADER,GL_GEOMETRY_SHADER,GL_COMPUTE_SHADER };
+		for (auto Component : Components)
 		{
-			glGetProgramStageiv(m_RendererID, type, GL_ACTIVE_SUBROUTINE_UNIFORMS, &countActiveSU);
+			glGetProgramStageiv(m_RendererID, Component, GL_ACTIVE_SUBROUTINE_UNIFORMS, &countActiveSU);
 			for (int i = 0; i < countActiveSU; ++i)
 			{
-				glGetActiveSubroutineUniformiv(m_RendererID, type, i, GL_NUM_COMPATIBLE_SUBROUTINES, &numCompS);
+				glGetActiveSubroutineUniformiv(m_RendererID, Component, i, GL_NUM_COMPATIBLE_SUBROUTINES, &numCompS);
 				Routine routine;
 				for (int j = 0; j < numCompS; ++j)
 				{
-					glGetActiveSubroutineName(m_RendererID, type, j, 256, &len, name);
-					GLuint id = glGetSubroutineIndex(m_RendererID, type, name);
-					routine.subRoutines.push_back(SubRoutine{ type,id,std::string(name) });
+					glGetActiveSubroutineName(m_RendererID, Component, j, 256, &len, name);
+					GLuint id = glGetSubroutineIndex(m_RendererID, Component, name);
+					routine.SubRoutines.push_back(SubRoutine{ Component,id,std::string(name) });
 				}
 				m_Routines.push_back(routine);
 			}

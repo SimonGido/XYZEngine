@@ -36,19 +36,19 @@ namespace XYZ {
 		m_Quads.reserve(m_Text.size());
 		for (auto c : m_Text)
 		{
-			auto &character = m_Font->GetCharacter(c);
+			auto& character = m_Font->GetCharacter(c);
 			glm::vec2 position = {
 				m_Position.x + m_CursorX + character.XOffset,
 				m_Position.y + m_CursorY + (-character.YOffset - (int32_t)character.Height)
 			};
-			
+
 
 			glm::vec2 size = { character.Width, character.Height };
 			Quad quad(position, size, m_Color, m_TextureID, true);
-			
-				
+
+
 			glm::vec2 coords = { character.XCoord, fontData.ScaleH - character.YCoord - character.Height };
-			glm::vec2 scale =  { fontData.ScaleW, fontData.ScaleH };
+			glm::vec2 scale = { fontData.ScaleW, fontData.ScaleH };
 
 			quad.Vertices[0].TexCoord = (coords) / scale;
 			quad.Vertices[1].TexCoord = (coords + glm::vec2(character.Width, 0)) / scale;

@@ -7,8 +7,8 @@ namespace XYZ {
 		:
 		m_NumCols(1),m_NumRows(1),m_CellSize(1)
 	{		
-		m_Signature.set(XYZ::ECSManager::Get().GetComponentType<RealGridBody>());
-		m_Signature.set(XYZ::ECSManager::Get().GetComponentType<RigidBody2D>());
+		m_Signature.set(XYZ::ECSManager::GetComponentType<RealGridBody>());
+		m_Signature.set(XYZ::ECSManager::GetComponentType<RigidBody2D>());
 	}
 	RealGridCollisionSystem::~RealGridCollisionSystem()
 	{
@@ -67,17 +67,17 @@ namespace XYZ {
 			}
 		}
 	}
-	void RealGridCollisionSystem::Add(Entity entity)
+	void RealGridCollisionSystem::Add(uint32_t entity)
 	{
 		Component component;
-		component.ActiveComponent = ECSManager::Get().GetComponent<ActiveComponent>(entity);
-		component.RealGridBody = ECSManager::Get().GetComponent<RealGridBody>(entity);
-		component.RigidBody = ECSManager::Get().GetComponent<RigidBody2D>(entity);
+		component.ActiveComponent = ECSManager::GetComponent<ActiveComponent>(entity);
+		component.RealGridBody = ECSManager::GetComponent<RealGridBody>(entity);
+		component.RigidBody = ECSManager::GetComponent<RigidBody2D>(entity);
 		component.Ent = entity;
 
 		int index = m_Components.Insert(component);
 
-		auto body = ECSManager::Get().GetComponent<RealGridBody>(entity);
+		auto body = ECSManager::GetComponent<RealGridBody>(entity);
 		auto gridLeft = (int)floor(body->Left / m_CellSize);
 		auto gridRight = (int)floor(body->Right / m_CellSize);
 		auto gridTop = (int)floor(body->Top / m_CellSize);
@@ -92,11 +92,11 @@ namespace XYZ {
 		}
 		XYZ_LOG_INFO("Entity with ID ", entity, " added");
 	}
-	void RealGridCollisionSystem::Remove(Entity entity)
+	void RealGridCollisionSystem::Remove(uint32_t entity)
 	{
-		if (ECSManager::Get().Contains<RealGridBody>(entity))
+		if (ECSManager::Contains<RealGridBody>(entity))
 		{
-			auto body = ECSManager::Get().GetComponent<RealGridBody>(entity);
+			auto body = ECSManager::GetComponent<RealGridBody>(entity);
 
 			auto gridLeft = (int)floor(body->Left / m_CellSize);
 			auto gridRight = (int)floor(body->Right / m_CellSize);
@@ -121,11 +121,11 @@ namespace XYZ {
 			}
 		}
 	}
-	bool RealGridCollisionSystem::Contains(Entity entity)
+	bool RealGridCollisionSystem::Contains(uint32_t entity)
 	{
-		//if (ECSManager::Get().Contains<RealGridBody>(entity))
+		//if (ECSManager::Contains<RealGridBody>(entity))
 		//{
-		//	auto body = ECSManager::Get().GetComponent<RealGridBody>(entity);
+		//	auto body = ECSManager::GetComponent<RealGridBody>(entity);
 		//
 		//	auto gridLeft = (int)floor(body->left / m_CellSize);
 		//	auto gridRight = (int)floor(body->right / m_CellSize);

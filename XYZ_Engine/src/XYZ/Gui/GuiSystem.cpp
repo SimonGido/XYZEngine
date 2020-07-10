@@ -6,28 +6,30 @@
 #include "XYZ/Event/GuiEvent.h"
 
 #include "Button.h"
+#include "Checkbox.h"
 
 namespace XYZ {
 	GuiSystem::GuiSystem()
 		:
 		m_Grid(1,50)
 	{
-		m_Signature.set(ECSManager::Get().GetComponentType<Transform2D>());
-		m_Signature.set(ECSManager::Get().GetComponentType<Button>());
+		m_Signature.set(ECSManager::GetComponentType<Transform2D>());
+		m_Signature.set(ECSManager::GetComponentType<Checkbox>());
 	}
 	GuiSystem::~GuiSystem()
 	{
 	}
 	void GuiSystem::Update(float dt)
 	{
-		
+		for (auto& component : m_Components)
+			component.UI->OnUpdate(dt);
 	}
-	void GuiSystem::Add(Entity entity)
+	void GuiSystem::Add(uint32_t entity)
 	{
 		Component component;
-		component.ActiveComponent = ECSManager::Get().GetComponent<ActiveComponent>(entity);
-		component.Transform = ECSManager::Get().GetComponent<Transform2D>(entity);
-		component.UI = ECSManager::Get().GetComponent<Button>(entity);
+		component.ActiveComponent = ECSManager::GetComponent<ActiveComponent>(entity);
+		component.Transform = ECSManager::GetComponent<Transform2D>(entity);
+		component.UI = ECSManager::GetComponent<Checkbox>(entity);
 		
 
 		m_Components.push_back(component);
@@ -36,11 +38,11 @@ namespace XYZ {
 		
 		XYZ_LOG_INFO("Entity with ID ", entity, " added");
 	}
-	void GuiSystem::Remove(Entity entity)
+	void GuiSystem::Remove(uint32_t entity)
 	{
 		
 	}
-	bool GuiSystem::Contains(Entity entity)
+	bool GuiSystem::Contains(uint32_t entity)
 	{
 		auto it = std::find(m_Components.begin(), m_Components.end(), entity);
 		if (it != m_Components.end())
@@ -83,6 +85,8 @@ namespace XYZ {
 		size_t* buffer = nullptr;
 		size_t count = m_Grid.GetElements(&buffer, { fabs(mousePos.x),fabs(mousePos.y) }, { 1,1 });
 
+		if (m_LastHoovered)
+			m_LastHoovered->OnEvent(UnHooverEvent{});
 
 		for (size_t i = 0; i < count; ++i)
 		{
@@ -90,6 +94,7 @@ namespace XYZ {
 			if (collide(transform->GetWorldPosition(), transform->GetWorldScale(), mousePos))
 			{
 				m_Components[buffer[i]].UI->OnEvent(HooverEvent{});
+				m_LastHoovered = m_Components[buffer[i]].UI;
 				delete[]buffer;
 				return true;
 			}

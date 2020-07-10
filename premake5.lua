@@ -19,14 +19,12 @@ IncludeDir = {}
 IncludeDir["GLFW"] = "XYZ_Engine/vendor/GLFW/include"
 IncludeDir["GLEW"] = "XYZ_Engine/vendor/GLEW/include"
 IncludeDir["glm"] = "XYZ_Engine/vendor/glm"
-IncludeDir["ImGui"] = "XYZ_Engine/vendor/imgui"
 IncludeDir["OpenAL"] = "XYZ_Engine/vendor/OpenAL-Soft"
 IncludeDir["MiniMp3"] = "XYZ_Engine/vendor/minimp3"
 
 
 include "XYZ_Engine/vendor/GLFW"
 include "XYZ_Engine/vendor/GLEW"
-include "XYZ_Engine/vendor/imgui"
 include "XYZ_Engine/vendor/OpenAL-Soft"
 
 project "XYZ_Engine"
@@ -65,7 +63,6 @@ project "XYZ_Engine"
 			"%{prj.name}/src",
 			"%{IncludeDir.GLFW}",
 			"%{IncludeDir.GLEW}",
-			"%{IncludeDir.ImGui}",
 			"%{IncludeDir.glm}",
 			"%{IncludeDir.OpenAL}/include",
 			"%{IncludeDir.OpenAL}/src",
@@ -78,7 +75,6 @@ project "XYZ_Engine"
 		{
 			"GLEW",
 			"GLFW",
-			"ImGui",
 			"OpenAL-Soft",
 			"opengl32"
 		}

@@ -9,22 +9,22 @@ namespace XYZ {
 	{
 	public:
 		KeyPressedEvent(int key, int mod)
-			:m_Key(key), m_Mod(mod),m_Type(EventType::KeyPressed)
+			:m_Key(key), m_Mod(mod),m_Component(EventComponent::KeyPressed)
 		{
 		}
 		virtual int GetKey() const { return m_Key; }
 		virtual int GetMod() const { return m_Mod; }
 
-		virtual EventType GetEventType() const override { return m_Type; }
+		virtual EventComponent GetEventComponent() const override { return m_Component; }
 
-		static EventType GetStaticType()
+		static EventComponent GetStaticComponent()
 		{
-			return EventType::KeyPressed;
+			return EventComponent::KeyPressed;
 		}
 	private:
 		int m_Key;
 		int m_Mod;
-		EventType m_Type;
+		EventComponent m_Component;
 	};
 
 	/*! @class KeyReleasedEvent
@@ -34,42 +34,42 @@ namespace XYZ {
 	{
 	public:
 		KeyReleasedEvent(int key)
-			:m_Key(key),m_Type(EventType::KeyReleased)
+			:m_Key(key),m_Component(EventComponent::KeyReleased)
 		{
 		
 		}
 		virtual int GetKey() const { return m_Key; }
 
-		virtual EventType GetEventType() const override { return m_Type; }
-		static EventType GetStaticType()
+		virtual EventComponent GetEventComponent() const override { return m_Component; }
+		static EventComponent GetStaticComponent()
 		{
-			return EventType::KeyReleased;
+			return EventComponent::KeyReleased;
 		}
 	private:
 		int m_Key;
-		EventType m_Type;
+		EventComponent m_Component;
 	};
 
-	/*! @class KeyTypedEvent
+	/*! @class KeyComponentdEvent
 	*	@brief Occurs when a key is pressed and then released
 	*/
-	class KeyTypedEvent : public Event
+	class KeyComponentdEvent : public Event
 	{
 	public:
-		KeyTypedEvent(int key)
-			:m_Key(key),m_Type(EventType::KeyTyped)
+		KeyComponentdEvent(int key)
+			:m_Key(key),m_Component(EventComponent::KeyComponentd)
 		{
 		}
 		virtual int GetKey() const { return m_Key; }
-		virtual EventType GetEventType() const override { return m_Type; }
+		virtual EventComponent GetEventComponent() const override { return m_Component; }
 
-		static EventType GetStaticType()
+		static EventComponent GetStaticComponent()
 		{
-			return EventType::KeyTyped;
+			return EventComponent::KeyComponentd;
 		}
 	private:
 		int m_Key;
-		EventType m_Type;
+		EventComponent m_Component;
 	};
 
 	/*! @class MouseMovedEvent
@@ -79,21 +79,21 @@ namespace XYZ {
 	{
 	public:
 		MouseMovedEvent(int x, int y)
-			: m_X(x), m_Y(y), m_Type(EventType::MouseMoved)
+			: m_X(x), m_Y(y), m_Component(EventComponent::MouseMoved)
 		{
 			
 		}
 		virtual int GetX() const { return m_X; }
 		virtual int GetY() const { return m_Y; }
 
-		virtual EventType GetEventType() const override { return m_Type; }
-		static EventType GetStaticType()
+		virtual EventComponent GetEventComponent() const override { return m_Component; }
+		static EventComponent GetStaticComponent()
 		{
-			return EventType::MouseMoved;
+			return EventComponent::MouseMoved;
 		}
 	private:
 		int m_X, m_Y;
-		EventType m_Type;
+		EventComponent m_Component;
 	};
 
 	/*! @class MouseButtonPressEvent
@@ -103,20 +103,20 @@ namespace XYZ {
 	{
 	public:
 		MouseButtonPressEvent(int button)
-			:m_Button(button), m_Type(EventType::MouseButtonPressed)
+			:m_Button(button), m_Component(EventComponent::MouseButtonPressed)
 		{
 			
 		};
 
 		inline int GetButton() const { return m_Button; }
-		virtual EventType GetEventType() const override { return m_Type; }
-		static EventType GetStaticType()
+		virtual EventComponent GetEventComponent() const override { return m_Component; }
+		static EventComponent GetStaticComponent()
 		{
-			return EventType::MouseButtonPressed;
+			return EventComponent::MouseButtonPressed;
 		}
 	private:
 		int m_Button;
-		EventType m_Type;
+		EventComponent m_Component;
 	};
 
 	/*! @class MouseButtonReleaseEvent
@@ -126,20 +126,20 @@ namespace XYZ {
 	{
 	public:
 		MouseButtonReleaseEvent(int button)
-			:m_Button(button),m_Type(EventType::MouseButtonReleased)
+			:m_Button(button),m_Component(EventComponent::MouseButtonReleased)
 		{
 		};
 
 		inline int GetButton() const { return m_Button; }
-		virtual EventType GetEventType() const override { return m_Type; }
+		virtual EventComponent GetEventComponent() const override { return m_Component; }
 		
-		static EventType GetStaticType()
+		static EventComponent GetStaticComponent()
 		{
-			return EventType::MouseButtonReleased;
+			return EventComponent::MouseButtonReleased;
 		}
 	private:
 		int m_Button;
-		EventType m_Type;
+		EventComponent m_Component;
 	};
 
 	/*! @class MouseScrollEvent
@@ -149,22 +149,22 @@ namespace XYZ {
 	{
 	public:
 		MouseScrollEvent(float xOffset, float yOffset)
-			:m_XOffset(xOffset), m_YOffset(yOffset),m_Type(EventType::MouseScroll)
+			:m_XOffset(xOffset), m_YOffset(yOffset),m_Component(EventComponent::MouseScroll)
 		{
 		};
 
 		inline double GetOffsetX() const { return m_XOffset; }
 		inline double GetOffsetY() const { return m_YOffset; }
 
-		virtual EventType GetEventType() const override { return m_Type; }
+		virtual EventComponent GetEventComponent() const override { return m_Component; }
 
-		static EventType GetStaticType()
+		static EventComponent GetStaticComponent()
 		{
-			return EventType::MouseScroll;
+			return EventComponent::MouseScroll;
 		}
 	private:
 		float m_XOffset;
 		float m_YOffset;
-		EventType m_Type;
+		EventComponent m_Component;
 	};
 }

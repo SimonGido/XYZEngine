@@ -18,7 +18,7 @@ namespace XYZ {
 		* and stores shared_ptr to the Shader
 		* @param[in] shader 
 		*/
-		Material(const std::shared_ptr<Shader>& shader);
+		Material(const Ref<Shader>& shader);
 
 		/**
 		* Destructor, removes itself from MaterialManager,
@@ -37,8 +37,8 @@ namespace XYZ {
 		{
 			auto uni = m_Shader->FindUniform(name);
 			XYZ_ASSERT(uni, "Material uniform does not exist ", name.c_str());
-			XYZ_ASSERT(uni->offset + uni->size <= m_Shader->GetUniformSize(), "Material uniform buffer out of range");
-			memcpy(m_Buffer + uni->offset, (unsigned char*)& val, uni->size);
+			XYZ_ASSERT(uni->Offset + uni->Size <= m_Shader->GetUniformSize(), "Material uniform buffer out of range");
+			memcpy(m_Buffer + uni->Offset, (unsigned char*)& val, uni->Size);
 
 			for (auto& it : m_MaterialInstances)
 				it->UpdateMaterialValue(uni);
@@ -56,9 +56,9 @@ namespace XYZ {
 		{
 			auto uni = m_Shader->FindUniform(name);
 			XYZ_ASSERT(uni, "Material uniform does not exist ", name.c_str());
-			XYZ_ASSERT(uni->offset + uni->size <= m_Shader->GetUniformSize(), "Material uniform buffer out of range");
-			XYZ_ASSERT(size + offset < uni->size, "Material uniform out of range");
-			memcpy(m_Buffer + uni->offset + offset, (unsigned char*)& val, size);
+			XYZ_ASSERT(uni->Offset + uni->Size <= m_Shader->GetUniformSize(), "Material uniform buffer out of range");
+			XYZ_ASSERT(size + offset < uni->Size, "Material uniform out of range");
+			memcpy(m_Buffer + uni->Offset + offset, (unsigned char*)& val, size);
 
 			for (auto& it : m_MaterialInstances)
 				it->UpdateMaterialValue(uni);
@@ -75,11 +75,11 @@ namespace XYZ {
 			auto tex = m_Shader->FindTexture(name);
 			XYZ_ASSERT(tex, "Material texture does not exist ", name.c_str());
 
-			if ((int)m_Textures.size() <= tex->slot + index)
-				m_Textures.resize((size_t)tex->slot + 1 + index);
+			if ((int)m_Textures.size() <= tex->Slot + index)
+				m_Textures.resize((size_t)tex->Slot + 1 + index);
 
 
-			m_Textures[size_t(tex->slot) + size_t(index)] = texture;
+			m_Textures[size_t(tex->Slot) + size_t(index)] = texture;
 		}
 
 		/**
@@ -108,14 +108,21 @@ namespace XYZ {
 		/**
 		* @return sort key
 		*/
-		const int64_t GetSortKey() const { return m_Key; }
+		const int64_t GetSortKey() const 
+		{ 
+			return m_Key; 
+		}
 
+		bool GetFlag(RenderFlags flag) const
+		{
+			return m_Key & flag;
+		}
 
 		//TODO TEMPORARY
 		/**
 		* @return shared_ptr to the Shader
 		*/
-		std::shared_ptr<Shader> GetShader() { return m_Shader; }
+		Ref<Shader> GetShader() { return m_Shader; }
 		//////////////////////
 
 
@@ -123,7 +130,7 @@ namespace XYZ {
 		* @param[in] shader
 		* @return shared_ptr to the Material
 		*/
-		static std::shared_ptr<Material> Create(const std::shared_ptr<Shader>& shader);
+		static Ref<Material> Create(const std::shared_ptr<Shader>& shader);
 
 		//TODO TEMPORARY
 		void ReloadShader() { m_Shader->Reload(); };
@@ -135,9 +142,9 @@ namespace XYZ {
 		void OnShaderReload();
 
 	private:
-		std::shared_ptr<Shader>	   m_Shader;
+		Ref<Shader>	   m_Shader;
 		std::unordered_set<MaterialInstance*> m_MaterialInstances;
-		std::vector<std::shared_ptr<Texture>> m_Textures;
+		std::vector<Ref<Texture>> m_Textures;
 
 		unsigned char* m_Buffer;
 		int64_t m_Key = 0;
@@ -210,7 +217,7 @@ namespace XYZ {
 		* @param[in] material
 		* @return shared_ptr to the MaterialInstance
 		*/
-		static std::shared_ptr<MaterialInstance> Create(const std::shared_ptr<Material>& material);
+		static Ref<MaterialInstance> Create(const Ref<Material>& material);
 
 	private:
 		/**
@@ -225,7 +232,7 @@ namespace XYZ {
 		void UpdateMaterialValue(const Uniform* uni);
 
 	private:
-		std::shared_ptr<Material> m_Material;
+		Ref<Material> m_Material;
 
 
 		unsigned char* m_Buffer;

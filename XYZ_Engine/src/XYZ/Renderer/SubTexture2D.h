@@ -10,6 +10,7 @@ namespace XYZ {
 	public:
 		SubTexture2D(std::shared_ptr<Texture2D> texture, const glm::vec2& coords, const glm::vec2& size);
 
+		void SetCoords(const glm::vec2& coords,const glm::vec2& size);
 		const glm::vec4& GetTexCoords() const { return m_TexCoords; }
 	private:
 		std::shared_ptr<Texture2D> m_Texture;

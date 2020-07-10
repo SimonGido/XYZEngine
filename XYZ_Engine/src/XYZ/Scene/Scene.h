@@ -1,14 +1,15 @@
 #pragma once
 
 #include "XYZ/ECS/ECSManager.h"
-#include "XYZ/Renderer/OrthoCamera.h"
 #include "XYZ/AssetManager/AssetManager.h"
+#include "XYZ/Event/Event.h"
 
 #include "XYZ/Utils/DataStructures/HashGrid2D.h"
 #include "XYZ/Utils/DataStructures/Tree.h"
 
+#include "SceneCamera.h"
 #include "SceneObject.h"
-
+#include "Components.h"
 
 namespace XYZ
 {
@@ -18,12 +19,13 @@ namespace XYZ
     class Scene
     {
     public:
-        Scene(std::string& name);
+        Scene(const std::string& name);
         ~Scene();
 
       
-        /** Adds an scene object to the scene */
-        uint16_t AddObject(const SceneObject& object);
+        Entity CreateEntity(const std::string& name);
+
+        void DestroyEntity(Entity entity);
 
         /** Triggers when the scene is being rendered */
         void OnRender();
@@ -33,22 +35,26 @@ namespace XYZ
         /** Triggers when the scene is attached */
         void OnAttach();
 
+        void OnEvent(Event& e);
+
         /** Triggers when the scene is detached */
         void OnDetach();
 
         SceneObject& GetObject(uint16_t index);
 
         inline const std::string& GetName() const { return m_Name; }
-        inline const OrthoCamera& GetCamera() const { return m_Camera; }
+        inline const SceneCamera& GetMainCamera() const { return m_MainCamera->Camera; }
 
         inline const Tree<SceneObject>& GetSceneGraph() const { return m_SceneGraph; }
-    private:
-  
+    private: 
         std::string m_Name;
-        OrthoCamera m_Camera;
+        CameraComponent* m_MainCamera;
 
         uint16_t m_Root;
+        Entity m_MainCameraEntity;
         SceneObject m_World;
+
         Tree<SceneObject> m_SceneGraph;
+        std::unordered_map<uint32_t, uint16_t> m_GraphMap;
     };
 }

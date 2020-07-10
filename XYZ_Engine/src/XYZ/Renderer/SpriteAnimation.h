@@ -22,7 +22,7 @@ namespace XYZ {
 		float m_FrameLength;
 		size_t m_CurrentKey;
 		unsigned int m_FPS;
-		std::vector<std::shared_ptr<SubTexture2D>> m_KeyFrames;
+		std::vector<Ref<SubTexture2D>> m_KeyFrames;
 	};
 
 }

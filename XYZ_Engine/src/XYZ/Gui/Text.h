@@ -5,10 +5,10 @@
 
 namespace XYZ {
 
-	class Text : public RenderComponent , Type<Text>
+	class Text : public RenderComponent, Type<Text>
 	{
 	public:
-		Text( 	
+		Text(
 			const std::string& text,
 			const glm::vec2& position,
 			const glm::vec4& color,
@@ -20,7 +20,7 @@ namespace XYZ {
 		);
 
 		virtual ~Text() = default;
-		
+
 		void Pop();
 		void Push(char c);
 		void Push(const std::string& text);

@@ -7,65 +7,84 @@ namespace XYZ {
 	struct ClickEvent : public Event
 	{
 		ClickEvent()	
-			: m_Type(EventType::Click)
+			: m_Component(EventComponent::Click)
 		{
 		}
 
-		virtual EventType GetEventType() const override { return m_Type; }
+		virtual EventComponent GetEventComponent() const override { return m_Component; }
 
-		static EventType GetStaticType()
+		static EventComponent GetStaticComponent()
 		{
-			return EventType::Click;
+			return EventComponent::Click;
 		}
 
 	private:
-		EventType m_Type;
+		EventComponent m_Component;
+	};
+
+	struct CheckedEvent : public Event
+	{
+		CheckedEvent()
+			: m_Component(EventComponent::Checked)
+		{
+		}
+
+		virtual EventComponent GetEventComponent() const override { return m_Component; }
+
+		static EventComponent GetStaticComponent()
+		{
+			return EventComponent::Checked;
+		}
+
+	private:
+		EventComponent m_Component;
 	};
 
 	struct ReleaseEvent : public Event
 	{
 		ReleaseEvent()
-			: m_Type(EventType::Release)
+			: m_Component(EventComponent::Release)
 		{
 		}
 
-		virtual EventType GetEventType() const override { return m_Type; }
-		static EventType GetStaticType()
+		virtual EventComponent GetEventComponent() const override { return m_Component; }
+		static EventComponent GetStaticComponent()
 		{
-			return EventType::Release;
+			return EventComponent::Release;
 		}
 
 	private:
-		EventType m_Type;
+		EventComponent m_Component;
 	};
+
 
 	struct HooverEvent : public Event
 	{
 		HooverEvent()
-			: m_Type(EventType::Hoover)
+			: m_Component(EventComponent::Hoover)
 		{
 		}
-		virtual EventType GetEventType() const override { return m_Type; }
-		static EventType GetStaticType()
+		virtual EventComponent GetEventComponent() const override { return m_Component; }
+		static EventComponent GetStaticComponent()
 		{
-			return EventType::Hoover;
+			return EventComponent::Hoover;
 		}
 	private:
-		EventType m_Type;
+		EventComponent m_Component;
 	};
 
 	struct UnHooverEvent : public Event
 	{
 		UnHooverEvent()
-			: m_Type(EventType::UnHoover)
+			: m_Component(EventComponent::UnHoover)
 		{
 		}
-		virtual EventType GetEventType() const override { return m_Type; }
-		static EventType GetStaticType()
+		virtual EventComponent GetEventComponent() const override { return m_Component; }
+		static EventComponent GetStaticComponent()
 		{
-			return EventType::UnHoover;
+			return EventComponent::UnHoover;
 		}
 	private:
-		EventType m_Type;
+		EventComponent m_Component;
 	};
 }

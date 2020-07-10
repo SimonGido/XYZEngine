@@ -17,9 +17,9 @@ namespace XYZ {
 		virtual ~GuiSystem();
 
 		virtual void Update(float dt);
-		virtual void Add(Entity entity) override;
-		virtual void Remove(Entity entity) override;
-		virtual bool Contains(Entity entity) override;
+		virtual void Add(uint32_t entity) override;
+		virtual void Remove(uint32_t entity) override;
+		virtual bool Contains(uint32_t entity) override;
 
 		bool OnMouseButtonPress(const glm::vec2& mousePos);
 		bool OnMouseButtonRelease(const glm::vec2& mousePos);
@@ -35,7 +35,7 @@ namespace XYZ {
 		};
 
 		Widget* m_LastPressed = nullptr;
-
+		Widget* m_LastHoovered = nullptr;
 		std::vector<Component> m_Components;
 		HashGrid2D<size_t> m_Grid;
 	};

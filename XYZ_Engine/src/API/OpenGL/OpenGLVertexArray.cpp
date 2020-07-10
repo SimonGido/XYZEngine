@@ -5,24 +5,24 @@
 
 
 namespace XYZ {
-	static GLenum ShaderDataTypeToOpenGLBaseType(ShaderDataType type)
+	static GLenum ShaderDataComponentToOpenGLBaseComponent(ShaderDataComponent Component)
 	{
-		switch (type)
+		switch (Component)
 		{
-		case ShaderDataType::Bool:   return GL_BOOL;
-		case ShaderDataType::Float:  return GL_FLOAT;
-		case ShaderDataType::Float2: return GL_FLOAT;
-		case ShaderDataType::Float3: return GL_FLOAT;
-		case ShaderDataType::Float4: return GL_FLOAT;
-		case ShaderDataType::Int:    return GL_INT;
-		case ShaderDataType::Int2:   return GL_INT;
-		case ShaderDataType::Int3:   return GL_INT;
-		case ShaderDataType::Int4:   return GL_INT;
-		case ShaderDataType::Mat3:   return GL_FLOAT;
-		case ShaderDataType::Mat4:   return GL_FLOAT;
+		case ShaderDataComponent::Bool:   return GL_BOOL;
+		case ShaderDataComponent::Float:  return GL_FLOAT;
+		case ShaderDataComponent::Float2: return GL_FLOAT;
+		case ShaderDataComponent::Float3: return GL_FLOAT;
+		case ShaderDataComponent::Float4: return GL_FLOAT;
+		case ShaderDataComponent::Int:    return GL_INT;
+		case ShaderDataComponent::Int2:   return GL_INT;
+		case ShaderDataComponent::Int3:   return GL_INT;
+		case ShaderDataComponent::Int4:   return GL_INT;
+		case ShaderDataComponent::Mat3:   return GL_FLOAT;
+		case ShaderDataComponent::Mat4:   return GL_FLOAT;
 		}
 
-		XYZ_ASSERT(false, "ShaderDataTypeSize(ShaderDataType::None)");
+		XYZ_ASSERT(false, "ShaderDataComponentSize(ShaderDataComponent::None)");
 		return GL_NONE;
 	}
 
@@ -56,7 +56,7 @@ namespace XYZ {
 			glEnableVertexAttribArray(element.Index);
 			glVertexAttribPointer(element.Index,
 				element.GetComponentCount(),
-				ShaderDataTypeToOpenGLBaseType(element.Type),
+				ShaderDataComponentToOpenGLBaseComponent(element.Component),
 				//element.m_Normalized ? GL_TRUE : GL_FALSE,
 				GL_FALSE,
 				vbl.GetStride(),
@@ -81,7 +81,7 @@ namespace XYZ {
 			glEnableVertexAttribArray(element.Index);
 			glVertexAttribPointer(element.Index,
 				element.GetComponentCount(),
-				ShaderDataTypeToOpenGLBaseType(element.Type),
+				ShaderDataComponentToOpenGLBaseComponent(element.Component),
 				//element.m_Normalized ? GL_TRUE : GL_FALSE,
 				GL_FALSE,
 				vbl.GetStride(),

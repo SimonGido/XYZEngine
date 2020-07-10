@@ -32,7 +32,7 @@ namespace XYZ {
 
 	class Window : public EventSystem<WindowResizeEvent,
 									  WindowCloseEvent,
-									  KeyTypedEvent,
+									  KeyComponentdEvent,
 									  KeyPressedEvent,
 									  KeyReleasedEvent,
 									  MouseButtonPressEvent,

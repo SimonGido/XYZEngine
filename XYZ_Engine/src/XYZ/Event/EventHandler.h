@@ -40,8 +40,8 @@ namespace XYZ {
 		template<typename T, typename... U>
 		size_t getAddress(std::function<T(U...)> f) 
 		{
-			typedef T(fnType)(U...);
-			fnType** fnPointer = f.template target<fnType*>();
+			Componentdef T(fnComponent)(U...);
+			fnComponent** fnPointer = f.template target<fnComponent*>();
 			return (size_t)*fnPointer;
 		}
 

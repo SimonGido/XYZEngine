@@ -6,8 +6,8 @@ namespace XYZ {
 	GridCollisionSystem::GridCollisionSystem()
 		: m_NumRows(1), m_NumCols(1), m_CellSize(1), m_PositionX(0), m_PositionY(0)
 	{
-		m_Signature.set(XYZ::ECSManager::Get().GetComponentType<GridBody>());
-		m_Signature.set(XYZ::ECSManager::Get().GetComponentType<CollisionComponent>());
+		m_Signature.set(XYZ::ECSManager::GetComponentType<GridBody>());
+		m_Signature.set(XYZ::ECSManager::GetComponentType<CollisionComponent>());
 	}
 	void GridCollisionSystem::ClearGrid()
 	{
@@ -62,12 +62,12 @@ namespace XYZ {
 		}
 
 	}
-	void GridCollisionSystem::Add(Entity entity)
+	void GridCollisionSystem::Add(uint32_t entity)
 	{
 		Component component;
-		component.ActiveComponent = ECSManager::Get().GetComponent<ActiveComponent>(entity);
-		component.GridBody = ECSManager::Get().GetComponent<GridBody>(entity);
-		component.Collision = ECSManager::Get().GetComponent<CollisionComponent>(entity);
+		component.ActiveComponent = ECSManager::GetComponent<ActiveComponent>(entity);
+		component.GridBody = ECSManager::GetComponent<GridBody>(entity);
+		component.Collision = ECSManager::GetComponent<CollisionComponent>(entity);
 		component.Ent = entity;
 
 		auto layer = component.Collision->Layer;
@@ -80,7 +80,7 @@ namespace XYZ {
 		else
 			XYZ_LOG_WARN("Entity with ID ", entity, " not added");
 	}
-	void GridCollisionSystem::Remove(Entity entity)
+	void GridCollisionSystem::Remove(uint32_t entity)
 	{
 		auto it = std::find(m_Components.begin(), m_Components.end(), entity);
 		if (it != m_Components.end())
@@ -92,7 +92,7 @@ namespace XYZ {
 			m_Components.pop_back();
 		}
 	}
-	bool GridCollisionSystem::Contains(Entity entity)
+	bool GridCollisionSystem::Contains(uint32_t entity)
 	{
 		auto it = std::find(m_Components.begin(), m_Components.end(), entity);
 		if (it != m_Components.end())

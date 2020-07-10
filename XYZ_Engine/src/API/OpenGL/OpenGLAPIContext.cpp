@@ -11,7 +11,7 @@ namespace XYZ {
 #ifdef XYZ_DEBUG
 	void APIENTRY openglCallbackFunction(
 		GLenum source,
-		GLenum type,
+		GLenum Component,
 		GLuint id,
 		GLenum severity,
 		GLsizei length,
@@ -33,7 +33,7 @@ namespace XYZ {
 			break;
 		}
 
-		switch (type)
+		switch (Component)
 		{
 		case GL_DEBUG_TYPE_ERROR:
 			XYZ_LOG_API("ERROR ", message);

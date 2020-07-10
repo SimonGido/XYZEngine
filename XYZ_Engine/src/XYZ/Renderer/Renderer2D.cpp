@@ -48,10 +48,10 @@ namespace XYZ {
 			QuadVertexArray = VertexArray::Create();
 			QuadVertexBuffer = VertexBuffer::Create(MaxVertices * sizeof(Vertex2D));
 			QuadVertexBuffer->SetLayout(BufferLayout{
-			{0, XYZ::ShaderDataType::Float4, "a_Color" },
-			{1, XYZ::ShaderDataType::Float3, "a_Position" },
-			{2, XYZ::ShaderDataType::Float2, "a_TexCoord" },
-			{3, XYZ::ShaderDataType::Float,  "a_TextureID" },
+			{0, XYZ::ShaderDataComponent::Float4, "a_Color" },
+			{1, XYZ::ShaderDataComponent::Float3, "a_Position" },
+			{2, XYZ::ShaderDataComponent::Float2, "a_TexCoord" },
+			{3, XYZ::ShaderDataComponent::Float,  "a_TextureID" },
 				});
 			QuadVertexArray->AddVertexBuffer(QuadVertexBuffer);
 
@@ -91,7 +91,7 @@ namespace XYZ {
 	
 	}
 
-	void Renderer2D::BeginScene(const OrthoCamera& camera)
+	void Renderer2D::BeginScene(const Camera& camera)
 	{
 		
 	}

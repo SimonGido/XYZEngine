@@ -40,7 +40,7 @@ namespace XYZ {
 		void parseSubRoutines();
 		void addUniform(UniformDataType type, unsigned int size, unsigned int offset, const std::string& name, unsigned int count = 0);
 
-		void parseSource(unsigned int type,const std::string& source);
+		void parseSource(unsigned int Component,const std::string& source);
 
 		void setUniform(Uniform* uniform, unsigned char* data);
 		void setUniformArr(Uniform* uniform, unsigned char* data);

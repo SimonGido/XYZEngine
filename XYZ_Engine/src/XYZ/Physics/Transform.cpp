@@ -65,14 +65,12 @@ namespace XYZ {
 			if (m_Parent->m_Updated || m_Updated)
 			{
 				m_Transformation = m_Parent->m_Transformation * calculateTransform();
-				m_Updated = true;
 			}
 		}
 		// If does not have parent
 		else if (m_Updated)
 		{
 			m_Transformation = calculateTransform();
-			m_Updated = true;
 		}
 	}
 
@@ -100,8 +98,8 @@ namespace XYZ {
 	const glm::vec2 Transform2D::GetWorldScale() const
 	{
 		return {
-			glm::length(m_Transformation[3][0]),
-			glm::length(m_Transformation[3][1])
+			glm::length(m_Transformation[0]),
+			glm::length(m_Transformation[1])
 		};
 	}
 

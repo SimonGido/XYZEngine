@@ -279,6 +279,6 @@ namespace XYZ {
 		// Root by default null
 		uint16_t m_Root = sc_MaxNumberOfElements;
 		// Last value is used as null indicator
-		static constexpr uint16_t sc_MaxNumberOfElements = (2 ^ 16) - 1;
+		static constexpr uint16_t sc_MaxNumberOfElements = 65000;
 	};
 }

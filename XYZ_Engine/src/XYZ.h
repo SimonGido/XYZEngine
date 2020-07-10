@@ -15,8 +15,7 @@
 
 
 //-----Renderer-----//
-#include "XYZ/Renderer/OrthoCamera.h"
-#include "XYZ/Renderer/OrthoCameraController.h"
+#include "XYZ/Editor/EditorCamera.h"
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Renderer/RenderCommand.h"
@@ -28,8 +27,14 @@
 #include "XYZ/Renderer/Framebuffer.h"
 #include "XYZ/Renderer/RenderSortSystem.h"
 
+//-----Scene-----//
+#include "XYZ/Scene/SceneCamera.h"
+#include "XYZ/Scene/SceneManager.h"
+
+
 //------ECS-----//
 #include "XYZ/ECS/ECSManager.h"
+#include "XYZ/ECS/Entity.h"
 
 //-----Systems-----//
 #include "XYZ/Physics/PhysicsSystem.h"
@@ -56,4 +61,5 @@
 #include "XYZ/Gui/Text.h"
 #include "XYZ/Gui/Button.h"
 #include "XYZ/Gui/Image.h"
+#include "XYZ/Gui/Checkbox.h"
 #include "XYZ/Gui/GuiSystem.h"

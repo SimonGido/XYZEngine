@@ -44,14 +44,14 @@ namespace XYZ {
 			m_MaxParticles = maxParticles;
 
 		BufferLayout buflayout = {
-				{2, ShaderDataType::Float4, "a_IColor",			  1},
-				{3, ShaderDataType::Float4, "a_IPosition",		  1},
-				{4, ShaderDataType::Float2, "a_ITexCoordOffset",  1},
-				{5, ShaderDataType::Float2, "a_ISize",			  1},
-				{6, ShaderDataType::Float,  "a_IAngle",			  1},
-				{7, ShaderDataType::Float,  "a_IAlignment",		  1},
-				{8, ShaderDataType::Float,  "a_IAlignment2",	  1},
-				{9, ShaderDataType::Float,  "a_IAlignment3",	  1}
+				{2, ShaderDataComponent::Float4, "a_IColor",			  1},
+				{3, ShaderDataComponent::Float4, "a_IPosition",		  1},
+				{4, ShaderDataComponent::Float2, "a_ITexCoordOffset",  1},
+				{5, ShaderDataComponent::Float2, "a_ISize",			  1},
+				{6, ShaderDataComponent::Float,  "a_IAngle",			  1},
+				{7, ShaderDataComponent::Float,  "a_IAlignment",		  1},
+				{8, ShaderDataComponent::Float,  "a_IAlignment2",	  1},
+				{9, ShaderDataComponent::Float,  "a_IAlignment3",	  1}
 		};
 		m_VertexStorage = ShaderStorageBuffer::Create((uint32_t)m_MaxParticles * (uint32_t)sizeof(ParticleVertex));
 		m_VertexStorage->SetLayout(buflayout);
@@ -71,8 +71,8 @@ namespace XYZ {
 		std::shared_ptr<XYZ::VertexBuffer> squareVBpar;
 		squareVBpar = XYZ::VertexBuffer::Create(vert, sizeof(vert));
 		squareVBpar->SetLayout({
-			{  0, XYZ::ShaderDataType::Float3, "a_Position" },
-			{  1, XYZ::ShaderDataType::Float2, "a_TexCoord" }
+			{  0, XYZ::ShaderDataComponent::Float3, "a_Position" },
+			{  1, XYZ::ShaderDataComponent::Float2, "a_TexCoord" }
 			});
 		m_Renderable.VertexArray->AddVertexBuffer(squareVBpar);
 

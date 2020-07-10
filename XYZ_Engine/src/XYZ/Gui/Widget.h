@@ -19,6 +19,7 @@ namespace XYZ {
 	public:
 		virtual ~Widget() = default;
 
+		virtual void OnUpdate(float dt) {};
 		virtual void OnEvent(Event& event) {};
 		virtual WidgetType GetWidgetType() { return WidgetType::None; }
 	};

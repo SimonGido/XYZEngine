@@ -71,7 +71,7 @@ namespace XYZ {
 		glfwSetCharCallback(m_Window, [](GLFWwindow* window, unsigned int key)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-			KeyTypedEvent e(key);
+			KeyComponentdEvent e(key);
 			data.EventCallback(e);
 			data.This->Execute(e);
 		});

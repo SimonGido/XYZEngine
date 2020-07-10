@@ -4,7 +4,7 @@
 
 namespace XYZ {
 
-	enum class ParticleModuleType
+	enum class ParticleModuleComponent
 	{
 		Renderer,
 		Emission,

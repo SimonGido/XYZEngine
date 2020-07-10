@@ -1,6 +1,6 @@
 #pragma once
 #include "XYZ/Core/Layer.h"
-#include "XYZ/Renderer/OrthoCamera.h"
+
 #include "XYZ/Renderer/RenderSortSystem.h"
 #include "XYZ/Event/ApplicationEvent.h"
 #include "XYZ/Event/InputEvent.h"
@@ -18,7 +18,6 @@ namespace XYZ {
 		virtual void OnUpdate(float dt) override;
 		virtual void OnEvent(Event& event) override;
 
-		void SetCamera(OrthoCamera* camera) { m_Camera = camera; };
 	private:
 		bool onMouseButtonPress(MouseButtonPressEvent& event);
 		bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
@@ -30,7 +29,6 @@ namespace XYZ {
 		Ref<GuiSystem> m_GuiSystem;
 		Ref<RenderSortSystem> m_SortSystem;
 
-		// TODO temporary
-		OrthoCamera* m_Camera = nullptr;
+	
 	};
 }

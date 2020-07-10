@@ -16,12 +16,12 @@ namespace XYZ {
 		virtual void OnEvent(Event& event) override;
 
 	private:
-		GuiLayer* m_GuiLayer;
+
+
 
 	private:
-		Ref<OrthoCameraController> m_CameraController;
 		Ref<RenderSortSystem> m_SortSystem;
-
+		EditorCamera m_EditorCamera;
 		Entity m_TestObject;
 		Entity m_TestChild;
 		Entity m_TestChild2;
@@ -67,6 +67,15 @@ namespace XYZ {
 		RenderComponent* m_ButtonRenderable;
 		Button* m_ButtonComponent;
 		Transform2D* m_ButtonTransform;
+
+
+
+		Entity m_Checkbox;
+		RenderComponent* m_CheckboxRenderable;
+		Checkbox* m_CheckboxComponent;
+		Transform2D* m_CheckboxTransform;
+		Ref<SubTexture2D> m_CheckboxSubTexture;
+		Ref<Texture2D> m_GuiTexture;
 
 	};
 }

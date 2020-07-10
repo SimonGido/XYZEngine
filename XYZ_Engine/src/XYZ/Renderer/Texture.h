@@ -45,7 +45,7 @@ namespace XYZ {
 	public:
 		/**
 		* @param[in] format Format of the texture
-		* @param[in] wrap   Type of wrapping of the texture
+		* @param[in] wrap   Component of wrapping of the texture
 		* @param[in] width  Width of the texture
 		* @param[in] height Height of the texture
 		* @return shared_ptr to empty Texture2D
@@ -54,7 +54,7 @@ namespace XYZ {
 		
 		
 		/**
-		* @param[in] wrap   Type of wrapping of the texture
+		* @param[in] wrap   Component of wrapping of the texture
 		* @param[in] path	File path to the image
 		* @return shared_ptr to Texture2D
 		*/

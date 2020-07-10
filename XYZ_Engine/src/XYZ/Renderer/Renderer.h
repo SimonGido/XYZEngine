@@ -1,9 +1,8 @@
 #pragma once
 #include <memory>
-#include <inttypes.h>
 
 #include "Shader.h"
-#include "OrthoCamera.h"
+#include "Camera.h"
 #include "VertexArray.h"
 #include "RendererAPI.h"
 #include "RenderCommandQueue.h"
@@ -52,7 +51,7 @@ namespace XYZ {
 		* Initial setup before rendering
 		* @param[in] camera		Reference to the camera
 		*/
-		static void BeginScene(OrthoCamera& camera);
+		static void BeginScene(Camera& camera);
 
 		/**
 		* Clean up after rendering

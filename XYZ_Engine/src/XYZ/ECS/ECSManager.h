@@ -8,113 +8,117 @@
 #include <memory>
 
 namespace XYZ {
-	class ECSManager : public Singleton<ECSManager>
+
+	struct ECSCoreData
+	{
+		ComponentManager ComponentManager;
+		EntityManager    EntityManager;
+		SystemManager	 SystemManager;
+	};
+
+	class ECSManager
 	{
 	public:
-		ECSManager(token);
-		
 		template<typename T>
-		std::shared_ptr<T> RegisterSystem()
+		static std::shared_ptr<T> RegisterSystem()
 		{	
-			return m_SystemManager->RegisterSystem<T>();
+			return s_Data.SystemManager.RegisterSystem<T>();
 		}
 		template<typename T>
-		void UnRegisterComponent()
+		static void UnRegisterComponent()
 		{
-			m_ComponentManager->UnRegisterComponent<T>();
+			s_Data.ComponentManager.UnRegisterComponent<T>();
 		}
 		template<typename T>
-		T* AddComponent(Entity entity,const T& component)
+		static T* AddComponent(uint32_t entity,const T& component)
 		{
-			auto c = m_ComponentManager->AddComponent<T>(entity, component);
+			auto c = s_Data.ComponentManager.AddComponent<T>(entity, component);
 
-			auto active = m_ComponentManager->GetComponent<ActiveComponent>(entity);
-			auto signature = m_EntityManager->GetSignature(entity);
-			signature.set(m_ComponentManager->GetComponentType<T>(), 1);
-			active->ActiveComponents.set(m_ComponentManager->GetComponentType<T>(), 1);
+			auto active = s_Data.ComponentManager.GetComponent<ActiveComponent>(entity);
+			auto signature = s_Data.EntityManager.GetSignature(entity);
+			signature.set(s_Data.ComponentManager.GetComponentType<T>(), 1);
+			active->ActiveComponents.set(s_Data.ComponentManager.GetComponentType<T>(), 1);
 
-			m_EntityManager->SetSignature(entity, signature);
-			m_SystemManager->EntitySignatureChanged(entity, signature);
+			s_Data.EntityManager.SetSignature(entity, signature);
+			s_Data.SystemManager.EntitySignatureChanged(entity, signature);
 			
 			return c;
 		}
 		template<typename T>
-		void RemoveComponent(Entity entity)
+		static void RemoveComponent(uint32_t entity)
 		{
-			m_ComponentManager->RemoveComponent<T>(entity);
+			s_Data.ComponentManager.RemoveComponent<T>(entity);
 
-			auto active = m_ComponentManager->GetComponent<ActiveComponent>(entity);
-			auto signature = m_EntityManager->GetSignature(entity);
-			signature.set(m_ComponentManager->GetComponentType<T>(), 0);
-			active->activeComponents.set(m_ComponentManager->GetComponentType<T>(), 0);
+			auto active = s_Data.ComponentManager.GetComponent<ActiveComponent>(entity);
+			auto signature = s_Data.EntityManager.GetSignature(entity);
+			signature.set(s_Data.ComponentManager.GetComponentComponent<T>(), 0);
+			active->activeComponents.set(s_Data.ComponentManager.GetComponentType<T>(), 0);
 
-			m_EntityManager->SetSignature(entity, signature);
-			m_SystemManager->EntitySignatureChanged(entity, signature);
+			s_Data.EntityManager.SetSignature(entity, signature);
+			s_Data.SystemManager.EntitySignatureChanged(entity, signature);
 		}
 
 		template<typename T>
-		void SetSystemSignature(Signature signature)
+		static void SetSystemSignature(Signature signature)
 		{
-			m_SystemManager->SetSignature<T>(signature);
+			s_Data.SystemManager.SetSignature<T>(signature);
 		}
 		template<typename T>
-		ComponentType GetComponentType()
+		static ComponentType GetComponentType()
 		{
-			return m_ComponentManager->GetComponentType<T>();
+			return s_Data.ComponentManager.GetComponentType<T>();
 		}
 
 		template<typename T> 
-		std::shared_ptr<ComponentStorage<T>> GetComponentStorage()
+		static std::shared_ptr<ComponentStorage<T>> GetComponentStorage()
 		{
-			return m_ComponentManager->GetComponentStorage<T>();
+			return s_Data.ComponentManager.GetComponentStorage<T>();
 		}
 
 		template<typename T>
-		T *GetComponent(Entity entity)
+		static T *GetComponent(uint32_t entity)
 		{
-			return m_ComponentManager->GetComponent<T>(entity);
+			return s_Data.ComponentManager.GetComponent<T>(entity);
 		}
 
 		template <typename T>
-		int GetComponentIndex(Entity entity)
+		static int GetComponentIndex(uint32_t entity)
 		{
-			return m_ComponentManager->GetComponentIndex<T>(entity);
+			return s_Data.ComponentManager.GetComponentIndex<T>(entity);
 		}
 
 		template<typename T>
-		std::shared_ptr<T> GetSystem()
+		static std::shared_ptr<T> GetSystem()
 		{
-			return std::static_pointer_cast<T>(m_SystemManager->GetSystem<T>());
+			return std::static_pointer_cast<T>(s_Data.SystemManager.GetSystem<T>());
 		}
 
 
 		template <typename T>
-		bool Contains(Entity entity)
+		static bool Contains(uint32_t entity)
 		{
-			return m_ComponentManager->Contains<T>(entity);
+			return s_Data.ComponentManager.Contains<T>(entity);
 		}
-		void DestroyEntity(Entity entity)
+		static void DestroyEntity(uint32_t entity)
 		{
 			auto signature = GetEntitySignature(entity);
-			m_SystemManager->EntityDestroyed(entity, signature);
-			m_ComponentManager->EntityDestroyed(entity);
-			m_EntityManager->DestroyEntity(entity);
+			s_Data.SystemManager.EntityDestroyed(entity, signature);
+			s_Data.ComponentManager.EntityDestroyed(entity);
+			s_Data.EntityManager.DestroyEntity(entity);
 		}
-		Signature GetEntitySignature(Entity entity)
+		static Signature GetEntitySignature(uint32_t entity)
 		{
-			return m_EntityManager->GetSignature(entity);
+			return s_Data.EntityManager.GetSignature(entity);
 		}
-		Entity CreateEntity()
+		static uint32_t CreateEntity()
 		{
-			Entity entity = m_EntityManager->CreateEntity();
+			uint32_t entity = s_Data.EntityManager.CreateEntity();
 			AddComponent(entity, ActiveComponent{});
 			return entity;
 		}
 
 	private:
-		std::unique_ptr<ComponentManager> m_ComponentManager;
-		std::unique_ptr<EntityManager>	  m_EntityManager;
-		std::unique_ptr<SystemManager>	  m_SystemManager;
+		static ECSCoreData s_Data;
 		
 	};
 

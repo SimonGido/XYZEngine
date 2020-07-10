@@ -18,9 +18,9 @@ namespace XYZ {
 		RenderCommand::SetViewPort(0, 0, width, height);
 	}
 
-	void Renderer::BeginScene(OrthoCamera& camera)
+	void Renderer::BeginScene(Camera& camera)
 	{
-		s_SceneData->ViewProjectionMatrix = camera.GetViewProjectionMatrix();
+		
 	}
 	void Renderer::EndScene()
 	{

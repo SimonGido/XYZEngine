@@ -4,7 +4,7 @@
 #include "MaterialManager.h"
 namespace XYZ {
 
-	Material::Material(const std::shared_ptr<Shader>& shader)
+	Material::Material(const Ref<Shader>& shader)
 	{
 		m_Shader = shader;
 		m_Buffer = new unsigned char[shader->GetUniformSize()];
@@ -33,9 +33,9 @@ namespace XYZ {
 	}
 
 
-	std::shared_ptr<Material> Material::Create(const std::shared_ptr<Shader>& shader)
+	Ref<Material> Material::Create(const std::shared_ptr<Shader>& shader)
 	{
-		auto material = std::make_shared<Material>(shader);
+		auto material = CreateRef<Material>(shader);
 		material->m_Key = (int64_t)MaterialManager::Get().RegisterMaterial(material);
 		return material;
 	}
@@ -68,9 +68,9 @@ namespace XYZ {
 		m_Material->m_Shader->SetUniforms(m_Buffer);
 	}
 
-	std::shared_ptr<MaterialInstance> MaterialInstance::Create(const std::shared_ptr<Material>& material)
+	Ref<MaterialInstance> MaterialInstance::Create(const std::shared_ptr<Material>& material)
 	{
-		return std::make_shared<MaterialInstance>(material);
+		return CreateRef<MaterialInstance>(material);
 	}
 
 	void MaterialInstance::OnShaderReload()
@@ -81,9 +81,9 @@ namespace XYZ {
 
 	void MaterialInstance::UpdateMaterialValue(const Uniform* uni)
 	{
-		if (m_UpdatedValues.find(uni->name) == m_UpdatedValues.end())
+		if (m_UpdatedValues.find(uni->Name) == m_UpdatedValues.end())
 		{
-			memcpy(m_Buffer + uni->offset, m_Material->m_Buffer + uni->offset, uni->size);
+			memcpy(m_Buffer + uni->Offset, m_Material->m_Buffer + uni->Offset, uni->Size);
 		}
 	}
 

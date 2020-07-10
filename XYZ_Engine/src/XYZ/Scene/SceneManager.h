@@ -26,20 +26,19 @@ namespace XYZ
 		SceneManager(token) {};
 		~SceneManager() {};
 
-		void Add(Scene& scene);
-		void Add(Ref<Scene> scene);
+		Ref<Scene> CreateScene(const std::string& name);
+	
 		bool Remove(const std::string& name);
 
 		/** Sets scene as active. This will mark the scene for rendering */
 		bool SetActive(const std::string& name);
 
-		/** Adds an object into the active scene */
-		uint16_t AddObjectToActive(const SceneObject& object);
 
 		inline Ref<Scene> GetActive() const { return m_CurrentScene; }
 		
 	private:
 		Ref<Scene> m_CurrentScene;
+
 		std::unordered_map<std::string, Ref<Scene>> m_Scenes;
 	};
 }

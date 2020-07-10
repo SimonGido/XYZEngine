@@ -23,7 +23,7 @@ namespace XYZ {
 	{
 		std::sort(m_Opaque.begin(), m_Opaque.end(), OpaqueComparator());
 		std::sort(m_Transparent.begin(), m_Transparent.end(), TransparentComparator());
-		
+
 		if (!m_Opaque.empty())
 		{
 			std::shared_ptr<Material> material = m_Opaque[0].Renderable->MaterialIns;
@@ -31,11 +31,11 @@ namespace XYZ {
 			{
 				if (material->GetSortKey() == m_Opaque[i].Renderable->MaterialIns->GetSortKey())
 				{
-					 auto& elem = m_Opaque[i];
-					 auto quads = elem.Renderable->GetRenderData();
-					 for (size_t i = 0; i < elem.Renderable->GetCountQuads(); ++i)			 
-						 Renderer2D::SubmitQuad(elem.Transform->GetTransformation(), quads[i]);
-					 
+					auto& elem = m_Opaque[i];
+					auto quads = elem.Renderable->GetRenderData();
+					for (size_t i = 0; i < elem.Renderable->GetCountQuads(); ++i)
+						Renderer2D::SubmitQuad(elem.Transform->GetTransformation(), quads[i]);
+
 				}
 				else
 				{
@@ -51,8 +51,8 @@ namespace XYZ {
 			material->Bind();
 			Renderer2D::Flush();
 		}
-		
-		
+
+
 		if (!m_Transparent.empty())
 		{
 			std::shared_ptr<Material> material = m_Transparent[0].Renderable->MaterialIns;
@@ -70,14 +70,14 @@ namespace XYZ {
 					material->Bind();
 					Renderer2D::Flush();
 					material = m_Transparent[i].Renderable->MaterialIns;
-					
+
 					auto& elem = m_Transparent[i];
 					auto quads = elem.Renderable->GetRenderData();
 					for (size_t i = 0; i < elem.Renderable->GetCountQuads(); ++i)
 						Renderer2D::SubmitQuad(elem.Transform->GetTransformation(), quads[i]);
 				}
 			}
-			
+
 			material->Bind();
 			Renderer2D::Flush();
 		}

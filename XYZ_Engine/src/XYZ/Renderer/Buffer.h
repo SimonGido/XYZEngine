@@ -4,35 +4,35 @@
 namespace XYZ {
 
 	/**
-	* Represents data types in shader program
+	* Represents data Components in shader program
 	*/
-	enum class ShaderDataType
+	enum class ShaderDataComponent
 	{
 		None = 0, Float, Float2, Float3, Float4, Mat3, Mat4, Int, Int2, Int3, Int4, Bool
 	};
 
 	/**
-	* Return size of specified shader data type
-	* @param[in] type   ShaderDataType
-	* @return a size of the type
+	* Return size of specified shader data Component
+	* @param[in] Component   ShaderDataComponent
+	* @return a size of the Component
 	*/
-	static unsigned int ShaderDataTypeSize(ShaderDataType type)
+	static unsigned int ShaderDataComponentSize(ShaderDataComponent Component)
 	{
-		switch (type)
+		switch (Component)
 		{
-		case ShaderDataType::Float:		return 4;
-		case ShaderDataType::Float2:	return 4 * 2;
-		case ShaderDataType::Float3:	return 4 * 3;
-		case ShaderDataType::Float4:	return 4 * 4;
-		case ShaderDataType::Mat3:		return 4 * 3 * 3;
-		case ShaderDataType::Mat4:		return 4 * 4 * 4;
-		case ShaderDataType::Int:		return 4;
-		case ShaderDataType::Int2:		return 4 * 2;
-		case ShaderDataType::Int3:		return 4 * 3;
-		case ShaderDataType::Int4:		return 4 * 4;
-		case ShaderDataType::Bool:		return 1;
+		case ShaderDataComponent::Float:		return 4;
+		case ShaderDataComponent::Float2:	return 4 * 2;
+		case ShaderDataComponent::Float3:	return 4 * 3;
+		case ShaderDataComponent::Float4:	return 4 * 4;
+		case ShaderDataComponent::Mat3:		return 4 * 3 * 3;
+		case ShaderDataComponent::Mat4:		return 4 * 4 * 4;
+		case ShaderDataComponent::Int:		return 4;
+		case ShaderDataComponent::Int2:		return 4 * 2;
+		case ShaderDataComponent::Int3:		return 4 * 3;
+		case ShaderDataComponent::Int4:		return 4 * 4;
+		case ShaderDataComponent::Bool:		return 1;
 		}
-		XYZ_ASSERT(false, "Buffer: Unknown ShaderDataType");
+		XYZ_ASSERT(false, "Buffer: Unknown ShaderDataComponent");
 		return 0;
 	}
 
@@ -42,46 +42,46 @@ namespace XYZ {
 	* 
 	* Each element contains information about it's size in vertex buffer.
 	* The vertex buffers can store only raw data, the buffer element let us use
-	* custom ShaderDataType values in the vertex buffers.
+	* custom ShaderDataComponent values in the vertex buffers.
 	*/
 	struct BufferElement
 	{
 		/**
 		* Constructor
 		* @param[in] index		Index of element in buffer
-		* @param[in] type		Shader data type
+		* @param[in] Component		Shader data Component
 		* @param[in] name		Name of element represented in shader
 		* @param[in] divisior	Specify how is data split between instances, default 0
 		*/
-		BufferElement(unsigned int index, ShaderDataType type, const std::string& name, unsigned int divisor = 0)
-			: Index(index), Type(type), Divisor(divisor), Size(ShaderDataTypeSize(type)), Offset(0)
+		BufferElement(unsigned int index, ShaderDataComponent Component, const std::string& name, unsigned int divisor = 0)
+			: Index(index), Component(Component), Divisor(divisor), Size(ShaderDataComponentSize(Component)), Offset(0)
 		{}
 
 		/**
-		* Split ShaderDataType to four byte values and return count
+		* Split ShaderDataComponent to four byte values and return count
 		* @return a count of four byte values after split
 		*/
 		uint32_t GetComponentCount() const
 		{
-			switch (Type)
+			switch (Component)
 			{
-			case ShaderDataType::Bool:   return 1;
-			case ShaderDataType::Float:  return 1;
-			case ShaderDataType::Float2: return 2;
-			case ShaderDataType::Float3: return 3;
-			case ShaderDataType::Float4: return 4;
-			case ShaderDataType::Int:    return 1;
-			case ShaderDataType::Int2:   return 2;
-			case ShaderDataType::Int3:   return 3;
-			case ShaderDataType::Int4:   return 4;
-			case ShaderDataType::Mat3:   return 9;
-			case ShaderDataType::Mat4:   return 16;
+			case ShaderDataComponent::Bool:   return 1;
+			case ShaderDataComponent::Float:  return 1;
+			case ShaderDataComponent::Float2: return 2;
+			case ShaderDataComponent::Float3: return 3;
+			case ShaderDataComponent::Float4: return 4;
+			case ShaderDataComponent::Int:    return 1;
+			case ShaderDataComponent::Int2:   return 2;
+			case ShaderDataComponent::Int3:   return 3;
+			case ShaderDataComponent::Int4:   return 4;
+			case ShaderDataComponent::Mat3:   return 9;
+			case ShaderDataComponent::Mat4:   return 16;
 			}
-			XYZ_ASSERT(false, "ShaderDataTypeSize(ShaderDataType::None)");
+			XYZ_ASSERT(false, "ShaderDataComponentSize(ShaderDataComponent::None)");
 			return 0;
 		}
 
-		ShaderDataType Type;
+		ShaderDataComponent Component;
 		unsigned int   Size;
 		unsigned int   Offset;
 		unsigned int   Index;
@@ -149,22 +149,22 @@ namespace XYZ {
 		};
 
 		/**
-		* If element Type equals ShaderDataType::Mat4 ,it must create three additional elements,
-		* and set for the element and the three additional elements ShaderDataType::Float4.
+		* If element Component equals ShaderDataComponent::Mat4 ,it must create three additional elements,
+		* and set for the element and the three additional elements ShaderDataComponent::Float4.
 		*/
 		inline void CreateMat4()
 		{
 			for (auto& element : m_Elements)
 			{
-				if (element.Type == ShaderDataType::Mat4)
+				if (element.Component == ShaderDataComponent::Mat4)
 				{
-					element.Type = ShaderDataType::Float4;
+					element.Component = ShaderDataComponent::Float4;
 					element.Size = 4 * 4;
 
 					BufferElement tmpElement = element;
-					m_Elements.push_back(BufferElement(tmpElement.Index + 1, tmpElement.Type, "", tmpElement.Divisor));
-					m_Elements.push_back(BufferElement(tmpElement.Index + 2, tmpElement.Type, "", tmpElement.Divisor));
-					m_Elements.push_back(BufferElement(tmpElement.Index + 3, tmpElement.Type, "", tmpElement.Divisor));
+					m_Elements.push_back(BufferElement(tmpElement.Index + 1, tmpElement.Component, "", tmpElement.Divisor));
+					m_Elements.push_back(BufferElement(tmpElement.Index + 2, tmpElement.Component, "", tmpElement.Divisor));
+					m_Elements.push_back(BufferElement(tmpElement.Index + 3, tmpElement.Component, "", tmpElement.Divisor));
 				}
 			}
 		}

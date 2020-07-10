@@ -19,14 +19,14 @@ namespace XYZ {
 		* virtual destructor
 		*/
 		virtual ~IComponentStorage() = default;
-		virtual void EntityDestroyed(Entity entity) = 0;
+		virtual void EntityDestroyed(uint32_t entity) = 0;
 
 	};
 	
 	
 
 	/*! @class ComponentStorage
-	* @brief storage for new type of components
+	* @brief storage for new Component of components
 	*/
 	template<typename T>
 	class ComponentStorage : public IComponentStorage
@@ -44,7 +44,7 @@ namespace XYZ {
 		* @param[in] entity
 		* @return
 		*/
-		bool Contains(Entity entity)
+		bool Contains(uint32_t entity)
 		{
 			return m_Lookup.find(entity) != m_Lookup.end();
 		}
@@ -54,7 +54,7 @@ namespace XYZ {
 		* @param[in] entity
 		* @tparam[in] component
 		*/
-		T* AddComponent(Entity entity,const T& component)
+		T* AddComponent(uint32_t entity,const T& component)
 		{
 			XYZ_ASSERT(m_Lookup.find(entity) == m_Lookup.end(), "Entity ",entity," already contains component");	
 			int index = m_Components.Insert(component);
@@ -66,7 +66,7 @@ namespace XYZ {
 		* Remove component from the entity
 		* @param[in] entity
 		*/
-		void RemoveComponent(Entity entity)
+		void RemoveComponent(uint32_t entity)
 		{
 			XYZ_ASSERT(m_Lookup.find(entity) != m_Lookup.end(), "Removing non-existent component");
 
@@ -79,7 +79,7 @@ namespace XYZ {
 		* @param[in] entity
 		* @return index of component in the storage
 		*/
-		int GetComponentIndex(Entity entity)
+		int GetComponentIndex(uint32_t entity)
 		{
 			XYZ_ASSERT(m_Lookup.find(entity) != m_Lookup.end(), "Retrieving non-existent component.");
 			return m_Lookup[entity];
@@ -89,7 +89,7 @@ namespace XYZ {
 		* @param[in] entity
 		* @return pointer to the component
 		*/
-		T* GetComponent(Entity entity)
+		T* GetComponent(uint32_t entity)
 		{
 			XYZ_ASSERT(m_Lookup.find(entity) != m_Lookup.end(), "Retrieving non-existent component.");
 			return &m_Components[m_Lookup[entity]];
@@ -99,7 +99,7 @@ namespace XYZ {
 		* Remove entity from storage if entity is destroyed
 		* @param[in] entity
 		*/
-		virtual void EntityDestroyed(Entity entity) override
+		virtual void EntityDestroyed(uint32_t entity) override
 		{
 			if (Contains(entity))
 				RemoveComponent(entity);
@@ -112,7 +112,7 @@ namespace XYZ {
 
 	private:
 		FreeList<T> m_Components;
-		std::unordered_map<Entity, int> m_Lookup;
+		std::unordered_map<uint32_t, int> m_Lookup;
 	};
 
 	

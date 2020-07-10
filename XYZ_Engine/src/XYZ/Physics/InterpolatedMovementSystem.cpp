@@ -7,9 +7,9 @@
 namespace XYZ {
 	InterpolatedMovementSystem::InterpolatedMovementSystem()
 	{
-		m_Signature.set(XYZ::ECSManager::Get().GetComponentType<InterpolatedMovement>());
-		m_Signature.set(XYZ::ECSManager::Get().GetComponentType<Transform2D>());
-		m_Signature.set(XYZ::ECSManager::Get().GetComponentType<GridBody>());
+		m_Signature.set(XYZ::ECSManager::GetComponentType<InterpolatedMovement>());
+		m_Signature.set(XYZ::ECSManager::GetComponentType<Transform2D>());
+		m_Signature.set(XYZ::ECSManager::GetComponentType<GridBody>());
 	}
 	void InterpolatedMovementSystem::Update(float dt)
 	{
@@ -54,19 +54,19 @@ namespace XYZ {
 			}
 		}
 	}
-	void InterpolatedMovementSystem::Add(Entity entity)
+	void InterpolatedMovementSystem::Add(uint32_t entity)
 	{
 		Component component;
-		component.ActiveComponent = ECSManager::Get().GetComponent<ActiveComponent>(entity);
-		component.GridBody = ECSManager::Get().GetComponent<GridBody>(entity);
-		component.Transform = ECSManager::Get().GetComponent<Transform2D>(entity);
-		component.Interpolated = ECSManager::Get().GetComponent<InterpolatedMovement>(entity);
+		component.ActiveComponent = ECSManager::GetComponent<ActiveComponent>(entity);
+		component.GridBody = ECSManager::GetComponent<GridBody>(entity);
+		component.Transform = ECSManager::GetComponent<Transform2D>(entity);
+		component.Interpolated = ECSManager::GetComponent<InterpolatedMovement>(entity);
 		component.Ent = entity;
 
 		m_Components.push_back(component);
 		XYZ_LOG_INFO("Entity with ID ", entity, " added");
 	}
-	void InterpolatedMovementSystem::Remove(Entity entity)
+	void InterpolatedMovementSystem::Remove(uint32_t entity)
 	{
 		auto it = std::find(m_Components.begin(), m_Components.end(), entity);
 		if (it != m_Components.end())
@@ -76,7 +76,7 @@ namespace XYZ {
 			m_Components.pop_back();
 		}
 	}
-	bool InterpolatedMovementSystem::Contains(Entity entity)
+	bool InterpolatedMovementSystem::Contains(uint32_t entity)
 	{
 		auto it = std::find(m_Components.begin(), m_Components.end(), entity);
 		if (it != m_Components.end())

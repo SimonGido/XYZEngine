@@ -24,6 +24,8 @@ namespace XYZ {
 
 	
 
+		//m_GuiLayer = new GuiLayer();
+		//PushOverlay(m_GuiLayer);
 
 		m_Window->RegisterCallback<WindowCloseEvent>(Hook(&Application::onWindowClosed, this));
 		m_Window->RegisterCallback<WindowResizeEvent>(Hook(&Application::onWindowResized, this));
@@ -88,12 +90,12 @@ namespace XYZ {
 
 	void Application::OnEvent(Event& event)
 	{
-		//if (event.GetEventType() == EventType::WindowResized)
+		//if (event.GetEventComponent() == EventComponent::WindowResized)
 		//{
 		//	WindowResizeEvent& resize = (WindowResizeEvent&)event;
 		//	Renderer::OnWindowResize(resize.GetWidth(), resize.GetHeight());
 		//}
-		//else if (event.GetEventType() == EventType::WindowClosed)
+		//else if (event.GetEventComponent() == EventComponent::WindowClosed)
 		//{
 		//	WindowCloseEvent& close = (WindowCloseEvent&)event;
 		//	m_Running = false;

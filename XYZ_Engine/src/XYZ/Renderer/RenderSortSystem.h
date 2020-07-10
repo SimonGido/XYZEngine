@@ -7,7 +7,7 @@ namespace XYZ {
 	class RenderSortSystem
 	{
 	public:
-		void PushRenderData(const RenderComponent* renderable,const Transform2D* transform);
+		void PushRenderData(const RenderComponent* renderable, const Transform2D* transform);
 		void SubmitToRenderer();
 
 	private:

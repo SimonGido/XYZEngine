@@ -28,15 +28,15 @@ namespace XYZ {
 		* Add entity to the vector of components
 		* @param[in] entity
 		*/
-		virtual void Add(Entity entity) override;
+		virtual void Add(uint32_t entity) override;
 		/**
 		* Remove entity from the vector of components
 		*/
-		virtual void Remove(Entity entity) override;
+		virtual void Remove(uint32_t entity) override;
 		/**
 		* @return true if the vector of components contains entity
 		*/
-		virtual bool Contains(Entity entity) override;
+		virtual bool Contains(uint32_t entity) override;
 
 	private:
 		struct Component : public System::Component

@@ -10,13 +10,13 @@ namespace XYZ {
 	void AudioSystem::Update(float dt)
 	{
 	}
-	void AudioSystem::Add(Entity entity)
+	void AudioSystem::Add(uint32_t entity)
 	{
 	}
-	void AudioSystem::Remove(Entity entity)
+	void AudioSystem::Remove(uint32_t entity)
 	{
 	}
-	bool AudioSystem::Contains(Entity entity)
+	bool AudioSystem::Contains(uint32_t entity)
 	{
 		return false;
 	}

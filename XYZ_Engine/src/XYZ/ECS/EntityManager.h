@@ -21,27 +21,27 @@ namespace XYZ {
 		* Creates new entity
 		* @return new entity
 		*/
-		Entity CreateEntity();
+		uint32_t CreateEntity();
 
 		/**
 		* @param[in] entity
 		* @return signature of the entity
 		*/
-		Signature GetSignature(Entity entity);
+		Signature GetSignature(uint32_t entity);
 		/**
 		* Destroy entity
 		* @param[in] entity
 		*/
-		void DestroyEntity(Entity entity);
+		void DestroyEntity(uint32_t entity);
 		/**
 		* Set new signature for the entity
 		* @param[in] entity
 		* @param[in] signature
 		*/
-		void SetSignature(Entity entity, Signature signature);
+		void SetSignature(uint32_t entity, Signature signature);
 
 	private:
-		unsigned int m_EntitiesInUse;
+		uint32_t m_EntitiesInUse;
 
 		// Every entity has Signature representing components that it contains
 		// System with same signatures will use entity

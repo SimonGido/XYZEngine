@@ -1,6 +1,6 @@
 #pragma once
 
-#include "OrthoCamera.h"
+#include "Camera.h"
 #include "RenderComponent.h"
 #include "RenderCommandQueue.h"
 
@@ -24,7 +24,7 @@ namespace XYZ {
 		* Initial setup before rendering
 		* @param[in] camera		Reference to the camera 
 		*/
-		static void BeginScene(const OrthoCamera& camera);
+		static void BeginScene(const Camera& camera);
 
 		/**
 		* Submit command to the command queue

@@ -8,10 +8,10 @@
 
 namespace XYZ {
 
-	/*! @class EventType
-	*	@brief Types of events that can be triggered in the engine. User-defined events are classified as 'Custom'
+	/*! @class EventComponent
+	*	@brief Components of events that can be triggered in the engine. User-defined events are classified as 'Custom'
 	*/
-	enum class EventType
+	enum class EventComponent
 	{
 		None = 0,
 
@@ -20,7 +20,7 @@ namespace XYZ {
 
 		KeyPressed,
 		KeyReleased,
-		KeyTyped,
+		KeyComponentd,
 
 		MouseButtonPressed,
 		MouseButtonReleased,
@@ -30,16 +30,17 @@ namespace XYZ {
 
 		Click,
 		Release,
+		Checked,
 		Hoover,
 		UnHoover
 	};
 
-#define EVENT_CLASS_TYPE(type) static EventType GetStaticType() { return EventType::type; }
+#define EVENT_CLASS_Component(Component) static EventComponent GetStaticComponent() { return EventComponent::Component; }
 								
 
 
-	template <typename Type>
-	using EventCallback = std::function<void(Type)>;
+	template <typename Component>
+	using EventCallback = std::function<void(Component)>;
 
 	/*! @class Event
 	*	@brief Describes an event and its handlers
@@ -47,7 +48,7 @@ namespace XYZ {
 	class Event
 	{
 	public:
-		virtual EventType GetEventType() const = 0;
+		virtual EventComponent GetEventComponent() const = 0;
 
 		bool Handled = false;
 	};
@@ -65,7 +66,7 @@ namespace XYZ {
 		template <typename T, typename F>
 		bool Dispatch(const F& func)
 		{
-			if (m_Event.GetEventType() == T::GetStaticType())
+			if (m_Event.GetEventComponent() == T::GetStaticComponent())
 			{
 				m_Event.Handled = func(static_cast<T&>(m_Event));
 				return m_Event.Handled;

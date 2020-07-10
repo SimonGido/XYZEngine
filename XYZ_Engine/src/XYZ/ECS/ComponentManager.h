@@ -19,7 +19,7 @@ namespace XYZ {
 		void UnRegisterComponent()
 		{
 			uint16_t id = IComponent::GetID<T>();
-			XYZ_ASSERT(m_Components.find(id) != m_Components.end(), "Unregistering not existing componet type.");
+			XYZ_ASSERT(m_Components.find(id) != m_Components.end(), "Unregistering not existing componet Component.");
 			m_Components.erase(id);
 		}
 		/**
@@ -28,7 +28,7 @@ namespace XYZ {
 		* @tparam[in] component
 		*/
 		template<typename T>
-		T* AddComponent(Entity entity,const T& component)
+		T* AddComponent(uint32_t entity,const T& component)
 		{
 			uint16_t id = IComponent::GetID<T>();
 			if(m_Components.find(id) == m_Components.end())
@@ -66,7 +66,7 @@ namespace XYZ {
 		* @return reference to the component of entity
 		*/
 		template<typename T>
-		T* GetComponent(Entity entity)
+		T* GetComponent(uint32_t entity)
 		{
 			return GetComponentStorage<T>()->GetComponent(entity);
 		}
@@ -76,7 +76,7 @@ namespace XYZ {
 		* @return index of the component of the entity
 		*/
 		template <typename T>
-		int GetComponentIndex(Entity entity)
+		int GetComponentIndex(uint32_t entity)
 		{
 			return GetComponentStorage<T>()->GetComponentIndex(entity);
 		}
@@ -86,7 +86,7 @@ namespace XYZ {
 		* @return component of the entity
 		*/
 		template<typename T>
-		void RemoveComponent(Entity entity)
+		void RemoveComponent(uint32_t entity)
 		{
 			auto c = GetComponent(entity);
 			GetComponentStorage<T>()->RemoveComponent(entity);
@@ -98,7 +98,7 @@ namespace XYZ {
 		* @return
 		*/
 		template <typename T>
-		bool Contains(Entity entity)
+		bool Contains(uint32_t entity)
 		{
 			return GetComponentStorage<T>()->Contains(entity);
 		}
@@ -107,7 +107,7 @@ namespace XYZ {
 		* Delete all the components of the entity
 		* @param[in] entity
 		*/
-		void EntityDestroyed(Entity entity)
+		void EntityDestroyed(uint32_t entity)
 		{
 			for (auto const& it : m_Components)
 			{

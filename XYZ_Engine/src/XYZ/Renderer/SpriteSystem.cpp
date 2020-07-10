@@ -5,8 +5,8 @@
 namespace XYZ {
 	SpriteSystem::SpriteSystem()
 	{
-		m_Signature.set(ECSManager::Get().GetComponentType<SpriteAnimation>());
-		m_Signature.set(ECSManager::Get().GetComponentType<SpriteRenderComponent>());
+		m_Signature.set(ECSManager::GetComponentType<SpriteAnimation>());
+		m_Signature.set(ECSManager::GetComponentType<SpriteRenderComponent>());
 	}
 	void SpriteSystem::Update(float dt)
 	{
@@ -16,18 +16,18 @@ namespace XYZ {
 			it.Renderable->SetSubTexture(it.Animation->GetCurrentKeyFrame());
 		}
 	}
-	void SpriteSystem::Add(Entity entity)
+	void SpriteSystem::Add(uint32_t entity)
 	{
 		XYZ_LOG_INFO("Entity with ID ", entity, " added");
 	
 		Component component;
-		component.Animation = ECSManager::Get().GetComponent<SpriteAnimation>(entity);
-		component.Renderable = ECSManager::Get().GetComponent<SpriteRenderComponent>(entity);
+		component.Animation = ECSManager::GetComponent<SpriteAnimation>(entity);
+		component.Renderable = ECSManager::GetComponent<SpriteRenderComponent>(entity);
 		component.Ent = entity;
 
 		m_Components.push_back(component);
 	}
-	void SpriteSystem::Remove(Entity entity)
+	void SpriteSystem::Remove(uint32_t entity)
 	{
 		auto it = std::find(m_Components.begin(), m_Components.end(), entity);
 		if (it != m_Components.end())
@@ -37,7 +37,7 @@ namespace XYZ {
 			m_Components.pop_back();
 		}
 	}
-	bool SpriteSystem::Contains(Entity entity)
+	bool SpriteSystem::Contains(uint32_t entity)
 	{
 		auto it = std::find(m_Components.begin(), m_Components.end(), entity);
 		if (it != m_Components.end())

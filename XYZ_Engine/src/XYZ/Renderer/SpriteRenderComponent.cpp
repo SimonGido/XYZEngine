@@ -13,15 +13,15 @@ namespace XYZ {
 		bool visible
 	)
 		:
-		m_Quad(position, size, color,textureID),
-		RenderComponent(material,layer, visible)
+		m_Quad(position, size, color, textureID),
+		RenderComponent(material, layer, visible)
 	{
 		SetSubTexture(subTexture);
 	}
 	void SpriteRenderComponent::SetSubTexture(Ref<SubTexture2D> subTexture)
 	{
 		m_SubTexture = subTexture;
-		auto &texcoords = subTexture->GetTexCoords();
+		auto& texcoords = subTexture->GetTexCoords();
 
 		m_Quad.Vertices[0].TexCoord = { texcoords.x,texcoords.y };
 		m_Quad.Vertices[1].TexCoord = { texcoords.z,texcoords.y };

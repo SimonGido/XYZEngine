@@ -18,19 +18,19 @@ namespace XYZ {
 		* Add entity to the system
 		* @param[in] entity
 		*/
-		virtual void Add(Entity entity) {};
+		virtual void Add(uint32_t entity) {};
 
 		/**
 		* Remove entity from the system
 		* @param[in] entity
 		*/
-		virtual void Remove(Entity entity) {};
+		virtual void Remove(uint32_t entity) {};
 		
 		/**
 		* Remove/Add entity from the system
 		* @param[in] entity
 		*/
-		virtual void EntityUpdated(Entity entity) {};
+		virtual void EntityUpdated(uint32_t entity) {};
 		
 
 		/**
@@ -38,7 +38,7 @@ namespace XYZ {
 		* @param[in] entity
 		* @return 
 		*/
-		virtual bool Contains(Entity entity) = 0;
+		virtual bool Contains(uint32_t entity) = 0;
 
 	protected:
 		Signature m_Signature;
@@ -46,21 +46,21 @@ namespace XYZ {
 		struct Component
 		{
 			ActiveComponent* ActiveComponent;
-			Entity Ent;
+			uint32_t Ent;
 
 			bool operator()(const Component& a, const Component& b)
 			{
 				return (a.Ent < b.Ent);
 			}
-			bool operator ==(const Entity other) const
+			bool operator ==(const uint32_t other) const
 			{
 				return Ent == other;
 			}
-			bool operator <(const Entity other) const
+			bool operator <(const uint32_t other) const
 			{
 				return Ent < other;
 			}
-			bool operator >(const Entity other) const
+			bool operator >(const uint32_t other) const
 			{
 				return Ent > other;
 			}
@@ -69,14 +69,14 @@ namespace XYZ {
 		template <typename T>
 		static uint16_t GetID()
 		{
-			static uint16_t compType = getNextID();
-			return compType;
+			static uint16_t compComponent = getNextID();
+			return compComponent;
 		}
 	private:
 		static uint16_t getNextID()
 		{
-			static uint16_t nextType = 0;
-			return ++nextType;
+			static uint16_t nextComponent = 0;
+			return ++nextComponent;
 		}
 	};
 

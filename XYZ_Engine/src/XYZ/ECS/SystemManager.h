@@ -16,7 +16,7 @@ namespace XYZ {
 	{
 	public:
 		/**
-		* Register system of new type T
+		* Register system of new Component T
 		*/
 		template<typename T>
 		std::shared_ptr<T> RegisterSystem()
@@ -44,7 +44,7 @@ namespace XYZ {
 		}
 
 		/**
-		* Return the system of type
+		* Return the system of Component
 		* @return shared_ptr o system
 		*/
 		template<typename T>
@@ -60,14 +60,14 @@ namespace XYZ {
 		* @param[in] entity
 		* @param[in] entitySignature
 		*/
-		void EntityDestroyed(Entity entity, Signature entitySignature)
+		void EntityDestroyed(uint32_t entity, Signature entitySignature)
 		{
 			// Erase a destroyed entity from all system lists
 			for (auto const& it : m_Systems)
 			{
-				auto const& type = it.first;
+				auto const& Component = it.first;
 				auto const& system = it.second;
-				auto const& systemSignature = m_Systems[type]->m_Signature;
+				auto const& systemSignature = m_Systems[Component]->m_Signature;
 				
 				if ((entitySignature & systemSignature) == systemSignature)
 				{	
@@ -81,13 +81,13 @@ namespace XYZ {
 		* @param[in] entity
 		* @param[in] entitySignature
 		*/
-		void EntitySignatureChanged(Entity entity, Signature entitySignature)
+		void EntitySignatureChanged(uint32_t entity, Signature entitySignature)
 		{
 			for (auto const& pair : m_Systems)
 			{
-				auto const& type = pair.first;
+				auto const& component = pair.first;
 				auto const& system = pair.second;
-				auto const& systemSignature = m_Systems[type]->m_Signature;
+				auto const& systemSignature = m_Systems[component]->m_Signature;
 
 				if ((entitySignature & systemSignature) == systemSignature)
 				{

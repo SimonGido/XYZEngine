@@ -11,14 +11,11 @@ namespace XYZ {
 		return ((std::string)"Removing active scene (").append(m_Exception).append(")!").c_str();
 	}
 
-	void SceneManager::Add(Scene& scene)
-	{
-		m_Scenes[scene.GetName()] = std::make_shared<Scene>(scene);
-	}
 
-	void SceneManager::Add(Ref<Scene> scene)
+	Ref<Scene> SceneManager::CreateScene(const std::string& name)
 	{
-		m_Scenes[scene->GetName()] = scene;
+		m_Scenes.insert({ name,CreateRef<Scene>(name) });
+		return m_Scenes[name];
 	}
 
 	bool SceneManager::Remove(const std::string& name)
@@ -33,12 +30,8 @@ namespace XYZ {
 	bool SceneManager::SetActive(const std::string& name)
 	{
 		if (m_Scenes.count(name) == 0) return false;
+		m_CurrentScene->OnDetach();
 		m_CurrentScene = m_Scenes[name];
+		m_CurrentScene->OnAttach();
 	}
-
-	uint16_t SceneManager::AddObjectToActive(const SceneObject& object)
-	{
-		return m_CurrentScene->AddObject(object);
-	}
-
 }

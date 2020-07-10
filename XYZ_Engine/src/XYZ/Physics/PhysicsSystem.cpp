@@ -7,8 +7,8 @@
 namespace XYZ {
 	PhysicsSystem::PhysicsSystem()
 	{
-		m_Signature.set(XYZ::ECSManager::Get().GetComponentType<XYZ::RigidBody2D>());
-		m_Signature.set(XYZ::ECSManager::Get().GetComponentType<XYZ::InterpolatedMovement>());
+		m_Signature.set(XYZ::ECSManager::GetComponentType<XYZ::RigidBody2D>());
+		m_Signature.set(XYZ::ECSManager::GetComponentType<XYZ::InterpolatedMovement>());
 	}
 	PhysicsSystem::~PhysicsSystem()
 	{
@@ -25,19 +25,19 @@ namespace XYZ {
 		}
 	}
 
-	void PhysicsSystem::Add(Entity entity)
+	void PhysicsSystem::Add(uint32_t entity)
 	{
 		Component component;
-		component.RigidBody = ECSManager::Get().GetComponent<RigidBody2D>(entity);
-		component.Interpolated = ECSManager::Get().GetComponent<InterpolatedMovement>(entity);
-		component.ActiveComponent = ECSManager::Get().GetComponent<ActiveComponent>(entity);
+		component.RigidBody = ECSManager::GetComponent<RigidBody2D>(entity);
+		component.Interpolated = ECSManager::GetComponent<InterpolatedMovement>(entity);
+		component.ActiveComponent = ECSManager::GetComponent<ActiveComponent>(entity);
 
 
 		m_Components.push_back(component);
 		XYZ_LOG_INFO("Entity with ID ", entity, " added");
 	}
 
-	void PhysicsSystem::Remove(Entity entity)
+	void PhysicsSystem::Remove(uint32_t entity)
 	{
 		auto it = std::find(m_Components.begin(), m_Components.end(), entity);
 		if (it != m_Components.end())
@@ -49,7 +49,7 @@ namespace XYZ {
 		}
 	}
 
-	bool PhysicsSystem::Contains(Entity entity)
+	bool PhysicsSystem::Contains(uint32_t entity)
 	{
 		auto it = std::find(m_Components.begin(), m_Components.end(), entity);
 		return (it != m_Components.end());

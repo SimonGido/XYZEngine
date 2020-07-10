@@ -7,7 +7,7 @@ namespace XYZ {
 	{
 
 	}
-	Entity EntityManager::CreateEntity()
+	uint32_t EntityManager::CreateEntity()
 	{
 		XYZ_ASSERT(m_EntitiesInUse < MAX_ENTITIES, "Too many entities in existence.");
 
@@ -15,12 +15,12 @@ namespace XYZ {
 		m_EntitiesInUse++;
 		return m_Signatures.Insert(Signature());
 	}
-	Signature EntityManager::GetSignature(Entity entity)
+	Signature EntityManager::GetSignature(uint32_t entity)
 	{
 		XYZ_ASSERT(entity < MAX_ENTITIES, "Entity out of range.");
 		return m_Signatures[entity];
 	}
-	void EntityManager::DestroyEntity(Entity entity)
+	void EntityManager::DestroyEntity(uint32_t entity)
 	{
 		XYZ_ASSERT(entity < MAX_ENTITIES, "Entity out of range.");
 
@@ -30,7 +30,7 @@ namespace XYZ {
 		m_Signatures.Erase(entity);
 		m_EntitiesInUse--;
 	}
-	void EntityManager::SetSignature(Entity entity, Signature signature)
+	void EntityManager::SetSignature(uint32_t entity, Signature signature)
 	{
 		XYZ_ASSERT(entity < MAX_ENTITIES, "Entity out of range.");
 

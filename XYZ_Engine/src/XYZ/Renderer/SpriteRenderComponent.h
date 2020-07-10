@@ -5,7 +5,7 @@
 
 namespace XYZ {
 
-	class SpriteRenderComponent : public RenderComponent ,Type<SpriteRenderComponent>
+	class SpriteRenderComponent : public RenderComponent, Type<SpriteRenderComponent>
 	{
 	public:
 		SpriteRenderComponent(
@@ -16,7 +16,7 @@ namespace XYZ {
 			Ref<SubTexture2D> subTexture,
 			Ref<Material> material,
 			SortLayerID layer,
-			bool visible	
+			bool visible
 		);
 		virtual ~SpriteRenderComponent() = default;
 
