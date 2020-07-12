@@ -44,11 +44,6 @@ namespace XYZ {
 		m_Rotation = rotation;
 		m_Updated = true;
 	}
-	void Transform2D::InheritParent(const Transform2D& parent)
-	{
-		if (m_Parent && m_Parent->m_Updated)
-			m_Transformation = m_Parent->m_Transformation * calculateTransform();
-	}
 
 	void Transform2D::SetParent(Transform2D* parent)
 	{

@@ -113,6 +113,11 @@ namespace XYZ {
 			return m_Key; 
 		}
 
+		bool IsSet(RenderFlags flag)
+		{
+			return (m_Key & flag);
+		}
+
 		bool GetFlag(RenderFlags flag) const
 		{
 			return m_Key & flag;

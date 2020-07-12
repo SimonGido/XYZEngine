@@ -18,7 +18,6 @@ namespace XYZ {
 		void SetScale(const glm::vec2& scale);
 		void SetRotation(float rotation);
 
-		void InheritParent(const Transform2D& parent);
 		void SetParent(Transform2D* parent);
 		void CalculateWorldTransformation();
 
@@ -39,15 +38,15 @@ namespace XYZ {
 		glm::mat4 calculateTransform() const;
 
 	private:
+		glm::mat4 m_Transformation = glm::mat4(1);
+
 		glm::vec3 m_Position;
 		glm::vec2 m_Scale;
 		float m_Rotation;
 
-		// It is required to be mutable , we use GetTransformation in functions 
-		// that are not allowed to modify passed references
-		mutable glm::mat4 m_Transformation = glm::mat4(1);
 
 		Transform2D* m_Parent = nullptr;
+
 		// It is required to be mutable , we use GetTransformation in functions 
 		// that are not allowed to modify passed references
 		mutable bool m_Updated = true;

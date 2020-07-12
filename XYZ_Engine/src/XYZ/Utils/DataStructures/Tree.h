@@ -226,6 +226,7 @@ namespace XYZ {
 			m_CurrentIndex = m_Root;
 			m_Stack.clear();
 		}
+
 		bool Next()
 		{
 			if (m_Data[m_CurrentIndex].HasChild())
@@ -243,10 +244,12 @@ namespace XYZ {
 				m_Stack.pop_back();
 				return true;
 			}
+
+			RestartIterator();
 			return false;
 		}
 
-		Node<T>& GetIterator() { return m_Data[m_CurrentIndex]; }
+		Node<T>* Iterator() { return &m_Data[m_CurrentIndex]; }
 		T& GetElement(int16_t index) { return m_Data[index].GetData(); }
 
 		size_t GetSize() const { return m_Data.size(); }

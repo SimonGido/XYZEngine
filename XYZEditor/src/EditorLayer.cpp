@@ -11,6 +11,10 @@ namespace XYZ {
 	void EditorLayer::OnAttach()
 	{
 		Renderer::Init();
+		m_Scene = SceneManager::Get().CreateScene("Test");
+
+
+		
 		m_SortSystem = CreateRef<RenderSortSystem>();
 		
 		m_Material = Material::Create(XYZ::Shader::Create("TextureShader", "Assets/Shaders/DefaultShader.glsl"));
@@ -227,24 +231,19 @@ namespace XYZ {
 		RenderCommand::SetClearColor(glm::vec4(0.2, 0.2, 0.5, 1));
 
 		m_EditorCamera.OnUpdate(ts);
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), m_EditorCamera.GetPosition())*
-			glm::rotate(glm::mat4(1.0f), glm::radians(m_EditorCamera.GetRotation()), glm::vec3(0, 0, 1));
-
-		glm::mat4 viewProjectionMatrix = m_EditorCamera.GetProjectionMatrix() * glm::inverse(transform);
-		m_Material->Set("u_ViewProjection", viewProjectionMatrix);
-		m_TextMaterial->Set("u_ViewProjection", viewProjectionMatrix);
-		
-			
-		m_SceneGraph.RestartIterator();
+	
+		Renderer2D::BeginScene(m_EditorCamera.GetViewProjectionMatrix());
 		while (m_SceneGraph.Next())
 		{
-			auto it = m_SceneGraph.GetIterator();
-			it.GetData().Transform->CalculateWorldTransformation();
-			m_SortSystem->PushRenderData(it.GetData().Renderable, it.GetData().Transform);
+			auto it = m_SceneGraph.Iterator();
+			it->GetData().Transform->CalculateWorldTransformation();
+			if (it->GetData().Renderable)
+				m_SortSystem->PushRenderData(it->GetData().Renderable, it->GetData().Transform);
 		}
 		
-		
 		m_SortSystem->SubmitToRenderer();
+		Renderer2D::EndScene();
+
 
 		if (Input::IsKeyPressed(KeyCode::XYZ_KEY_UP))
 		{
@@ -261,6 +260,24 @@ namespace XYZ {
 		else if (XYZ::Input::IsKeyPressed(KeyCode::XYZ_KEY_RIGHT))
 		{
 			m_Transform->Translate(glm::vec3(0.005, 0, 0));
+		}
+		
+		if (XYZ::Input::IsKeyPressed(KeyCode::XYZ_KEY_1))
+		{
+			m_Transform->Rotate(0.1f);
+		}
+		else if (XYZ::Input::IsKeyPressed(KeyCode::XYZ_KEY_2))
+		{
+			m_Transform->Rotate(-0.1f);
+		}
+
+		if (XYZ::Input::IsKeyPressed(KeyCode::XYZ_KEY_3))
+		{
+			m_Transform->Scale({ 0.01,0.01 });
+		}
+		else if (XYZ::Input::IsKeyPressed(KeyCode::XYZ_KEY_4))
+		{
+			m_Transform->Scale({ -0.01,-0.01 });
 		}
 	}
 	void EditorLayer::OnEvent(Event& event)

@@ -12,16 +12,25 @@ namespace XYZ {
 		m_Font(font),
 		RenderComponent(material, layer, visible)
 	{
-		rebuild();
+		m_Quads.reserve(m_Text.size());
+		build(m_Text);
 	}
-	void Text::Pop()
+	void Text::Pop(size_t count)
 	{
+		for (size_t i = 0; i < count; ++i)
+		{
+			char c = m_Text.back();
+			auto& character = m_Font->GetCharacter(c);
+			m_CursorX -= character.XAdvance;
+			m_Quads.pop_back();
+			m_Text.pop_back();
+		}
 	}
-	void Text::Push(char c)
-	{
-	}
+
 	void Text::Push(const std::string& text)
 	{
+		m_Text.append(text);
+		build(text);
 	}
 	void Text::Clear()
 	{
@@ -30,11 +39,10 @@ namespace XYZ {
 		m_CursorX = 0;
 		m_CursorY = 0;
 	}
-	void Text::rebuild()
+	void Text::build(const std::string& text)
 	{
-		auto& fontData = m_Font->GetData();
-		m_Quads.reserve(m_Text.size());
-		for (auto c : m_Text)
+		auto& fontData = m_Font->GetData();	
+		for (auto c : text)
 		{
 			auto& character = m_Font->GetCharacter(c);
 			glm::vec2 position = {

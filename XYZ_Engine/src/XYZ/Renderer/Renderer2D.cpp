@@ -8,6 +8,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace XYZ {	
+	struct Renderer2DStats
+	{
+		uint32_t DrawCalls = 0;
+	};
+
 	struct Vertex2D
 	{
 		glm::vec4 Color;
@@ -19,6 +24,8 @@ namespace XYZ {
 	struct Renderer2DData
 	{
 		void Reset();
+		glm::mat4 ViewProjectionMatrix = glm::mat4(1);
+		Ref<Material> Material;
 
 		const uint32_t MaxQuads = 10000;
 		const uint32_t MaxVertices = MaxQuads * 4;
@@ -39,7 +46,10 @@ namespace XYZ {
 			{ -0.5f,  0.5f, 0.0f, 1.0f }
 		};
 
+		Renderer2DStats Stats;
 	};
+
+
 	void Renderer2DData::Reset()
 	{
 		if (!BufferBase)
@@ -91,16 +101,18 @@ namespace XYZ {
 	
 	}
 
-	void Renderer2D::BeginScene(const Camera& camera)
+	void Renderer2D::BeginScene(const glm::mat4& viewProjMatrix)
 	{
-		
+		s_Data.ViewProjectionMatrix = viewProjMatrix;
 	}
 
-	void Renderer2D::Submit(CommandI& command, unsigned int size)
+	void Renderer2D::SetMaterial(const Ref<Material>& material)
 	{
-		
-	}
+		if (s_Data.Material && material.get() != s_Data.Material.get())
+			Flush();
 
+		s_Data.Material = material;
+	}
 
 	void Renderer2D::SubmitQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, uint32_t textureID, const glm::vec4& color)
 	{
@@ -222,14 +234,20 @@ namespace XYZ {
 	void Renderer2D::Flush()
 	{
 		uint32_t dataSize = (uint8_t*)s_Data.BufferPtr - (uint8_t*)s_Data.BufferBase;
-		s_Data.QuadVertexBuffer->Update(s_Data.BufferBase, dataSize);
-		s_Data.QuadVertexArray->Bind();
-		RenderCommand::DrawIndexed(s_Data.QuadVertexArray, s_Data.IndexCount);
-		s_Data.Reset();
+		if (dataSize)
+		{
+			s_Data.Material->Set("u_ViewProjection", s_Data.ViewProjectionMatrix);
+			s_Data.Material->Bind();
+			s_Data.QuadVertexBuffer->Update(s_Data.BufferBase, dataSize);
+			s_Data.QuadVertexArray->Bind();
+			RenderCommand::DrawIndexed(s_Data.QuadVertexArray, s_Data.IndexCount);
+			s_Data.Reset();
+			s_Data.Stats.DrawCalls++;
+		}
 	}
 
 	void Renderer2D::EndScene()
 	{
+		s_Data.Stats.DrawCalls = 0;
 	}
-
 }

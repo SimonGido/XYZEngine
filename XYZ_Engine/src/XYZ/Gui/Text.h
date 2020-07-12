@@ -21,15 +21,14 @@ namespace XYZ {
 
 		virtual ~Text() = default;
 
-		void Pop();
-		void Push(char c);
+		void Pop(size_t count);
 		void Push(const std::string& text);
 		void Clear();
 
 		virtual size_t GetCountQuads() const { return m_Quads.size(); }
 		virtual const Quad* GetRenderData() const override { return m_Quads.data(); }
 	private:
-		void rebuild();
+		void build(const std::string& text);
 
 	private:
 		Ref<Font> m_Font;

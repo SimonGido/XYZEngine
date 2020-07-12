@@ -17,9 +17,11 @@ namespace XYZ {
 
 		const glm::vec3& GetPosition() const { return m_CameraPosition; }
 		float GetRotation() const { return m_CameraRotation; }
+
+		const glm::mat4& GetViewProjectionMatrix() const { return m_ViewProjectionMatrix; }
 	private:
 
-		void recalculateViewMatrix();
+		void recalculate();
 		/**
 		* Handler for the mouse scrolled event
 		* @param[in] event shared_ptr to the Event

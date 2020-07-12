@@ -16,7 +16,7 @@ namespace XYZ {
 		virtual void OnEvent(Event& event) override;
 
 	private:
-
+		Ref<Scene> m_Scene;
 
 
 	private:
@@ -37,11 +37,6 @@ namespace XYZ {
 		Transform2D* m_ChildTransform2;
 		RenderComponent* m_ChildRenderable2;
 
-		struct SceneObject
-		{
-			RenderComponent* Renderable;
-			Transform2D* Transform;
-		};
 		struct SceneSetup
 		{
 			void operator()(SceneObject& parent, SceneObject& child)

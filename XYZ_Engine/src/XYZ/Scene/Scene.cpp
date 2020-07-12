@@ -20,10 +20,22 @@ namespace XYZ {
 			entity.AddComponent(Transform2D{glm::vec3(0,0,0)}),
 			entity
 		};
+		
 		m_Root = m_SceneGraph.InsertNode(Node<SceneObject>(m_World));
 		m_SceneGraph.SetRoot(0);
 
 		m_MainCamera = m_MainCameraEntity.AddComponent<CameraComponent>(CameraComponent{});
+		m_MainCameraTransform = m_MainCameraEntity.AddComponent<Transform2D>(Transform2D{ {0,0,0} });
+		
+		SceneObject cameraObject = {
+			nullptr,
+			m_MainCameraTransform,
+			m_MainCameraEntity
+		};
+		
+		uint16_t id = m_SceneGraph.InsertNode(cameraObject);
+		m_GraphMap.insert({ m_MainCameraEntity.GetID(),id });
+
 		m_MainCamera->Camera.SetOrthographic(4);
 		m_MainCamera->Camera.SetViewportSize(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
 	}
@@ -63,17 +75,6 @@ namespace XYZ {
 		m_GraphMap.erase(it);		
 	}
 
-	void Scene::OnRender()
-	{
-		RenderCommand::Clear();
-		RenderCommand::SetClearColor(glm::vec4(0.2, 0.2, 0.5, 1));
-
-		//Renderer2D::BeginScene(m_Camera);
-
-		Renderer2D::Flush();
-		Renderer2D::EndScene();
-	}
-
 	void Scene::SetParent(uint16_t parent, uint16_t child)
 	{
 		m_SceneGraph.SetParent(parent, child);
@@ -90,12 +91,48 @@ namespace XYZ {
 
 	void Scene::OnDetach()
 	{
-		m_SceneGraph.RestartIterator();
 		while (m_SceneGraph.Next())
 		{
-			auto it = m_SceneGraph.GetIterator();
-			it.GetData().Entity.Destroy();
+			auto it = m_SceneGraph.Iterator();
+			it->GetData().Entity.Destroy();
 		}
+	}
+
+	void Scene::OnRender()
+	{	
+		glm::mat4 viewProjectionMatrix = m_MainCamera->Camera.GetProjectionMatrix() 
+			* glm::inverse(m_MainCameraTransform->GetTransformation());
+
+		Renderer2D::BeginScene(viewProjectionMatrix);
+		while (m_SceneGraph.Next())
+		{
+			auto it = m_SceneGraph.Iterator();
+			auto transform = it->GetData().Transform;
+			auto renderable = it->GetData().Renderable;
+			transform->CalculateWorldTransformation();
+			
+			if (renderable)
+				m_SortSystem.PushRenderData(renderable, transform);
+		}
+		m_SortSystem.SubmitToRenderer();
+		Renderer2D::EndScene();
+	}
+
+	void Scene::OnRenderEditor(float dt, const glm::mat4& viewProjectionMatrix)
+	{
+		Renderer2D::BeginScene(viewProjectionMatrix);
+		while (m_SceneGraph.Next())
+		{
+			auto it = m_SceneGraph.Iterator();
+			auto transform = it->GetData().Transform;
+			auto renderable = it->GetData().Renderable;
+			transform->CalculateWorldTransformation();
+
+			if (renderable)
+				m_SortSystem.PushRenderData(renderable, transform);
+		}
+		m_SortSystem.SubmitToRenderer();
+		Renderer2D::EndScene();
 	}
 
 }

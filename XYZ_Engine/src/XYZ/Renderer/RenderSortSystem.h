@@ -2,6 +2,8 @@
 #include "XYZ/Physics/Transform.h"
 #include "RenderComponent.h"
 
+#include "XYZ/Scene/SceneObject.h"
+#include "XYZ/Utils/DataStructures/Tree.h"
 
 namespace XYZ {
 	class RenderSortSystem
@@ -10,12 +12,14 @@ namespace XYZ {
 		void PushRenderData(const RenderComponent* renderable, const Transform2D* transform);
 		void SubmitToRenderer();
 
+
 	private:
 		struct Data
 		{
 			const RenderComponent* Renderable;
 			const Transform2D* Transform;
 		};
+
 
 		struct OpaqueComparator
 		{
