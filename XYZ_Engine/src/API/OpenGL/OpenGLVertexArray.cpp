@@ -42,7 +42,7 @@ namespace XYZ {
 		glBindVertexArray(m_RendererID);
 	}
 
-	void OpenGLVertexArray::AddVertexBuffer(const std::shared_ptr<VertexBuffer>& vertexBuffer)
+	void OpenGLVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 	{
 		if (vertexBuffer->GetLayout().GetElements().size() == 0)
 			XYZ_ASSERT(false, "vertexBuffer->GetLayout().GetElements().size() = 0");
@@ -67,7 +67,7 @@ namespace XYZ {
 		m_VertexBuffers.push_back(vertexBuffer);
 	}
 
-	void OpenGLVertexArray::AddShaderStorageBuffer(const std::shared_ptr<ShaderStorageBuffer>& shaderBuffer)
+	void OpenGLVertexArray::AddShaderStorageBuffer(const Ref<ShaderStorageBuffer>& shaderBuffer)
 	{
 		if (shaderBuffer->GetLayout().GetElements().size() == 0)
 			XYZ_ASSERT(false, "vertexBuffer->GetLayout().GetElements().size() = 0");
@@ -92,7 +92,7 @@ namespace XYZ {
 		m_ShaderStorageBuffers.push_back(shaderBuffer);
 	}
 
-	void OpenGLVertexArray::SetIndexBuffer(const std::shared_ptr<IndexBuffer>& indexBuffer)
+	void OpenGLVertexArray::SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
 	{
 		glBindVertexArray(m_RendererID);
 		indexBuffer->Bind();

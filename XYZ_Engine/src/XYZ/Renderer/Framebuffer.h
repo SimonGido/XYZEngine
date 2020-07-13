@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 
+#include "XYZ/Core/Ref.h"
 
 namespace XYZ {
 	/*! @class FrameBufferFormat
@@ -37,7 +38,7 @@ namespace XYZ {
 	/*! @class FrameBuffer
 	*	@brief Framebuffer for texture operations
 	*/
-	class FrameBuffer
+	class FrameBuffer : public RefCount
 	{
 	public:
 		virtual ~FrameBuffer() = default;

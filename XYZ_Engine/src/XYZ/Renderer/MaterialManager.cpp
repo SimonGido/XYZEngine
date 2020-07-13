@@ -5,7 +5,7 @@
 
 namespace XYZ {
 
-	std::shared_ptr<Material> MaterialManager::GetMaterial(int16_t id)
+	Ref<Material> MaterialManager::GetMaterial(int16_t id)
 	{
 		return m_Materials[id];
 	}
@@ -17,7 +17,7 @@ namespace XYZ {
 			m_AvailableIDs.push(id);
 		}
 	}
-	int16_t MaterialManager::RegisterMaterial(std::shared_ptr<Material> material)
+	int16_t MaterialManager::RegisterMaterial(const Ref<Material>& material)
 	{
 		XYZ_ASSERT(m_MaterialsInExistence < sc_MaxNumberOfMaterials, "Too many materials in existence");
 		int16_t id = m_AvailableIDs.front();

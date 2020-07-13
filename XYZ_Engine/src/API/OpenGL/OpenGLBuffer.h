@@ -46,9 +46,9 @@ namespace XYZ {
 	public:
 		OpenGLShaderStorageBuffer(float* data, uint32_t size, BufferUsage usage);
 		virtual ~OpenGLShaderStorageBuffer();
-		virtual void BindBase(uint32_t index) override;
-		virtual void BindRange(uint32_t offset, uint32_t size, uint32_t index) override;
-		virtual void Bind() override;
+		virtual void BindBase(uint32_t index) const override;
+		virtual void BindRange(uint32_t offset, uint32_t size, uint32_t index)const override;
+		virtual void Bind()const override;
 		virtual void Update(const void* data, uint32_t size, uint32_t offset = 0) override;
 		virtual void Resize(const void* data, uint32_t size) override;
 		virtual void GetSubData(void* buffer, uint32_t size, uint32_t offset = 0) override;
@@ -71,7 +71,7 @@ namespace XYZ {
 		virtual ~OpenGLAtomicCounter();
 
 		virtual void Reset() override;
-		virtual void BindBase(uint32_t index) override;
+		virtual void BindBase(uint32_t index)const override;
 		virtual void Update(uint32_t* data, uint32_t count, uint32_t offset) override;
 		virtual uint32_t* GetCounters();
 		virtual uint32_t GetNumCounters() { return m_NumberOfCounters; }
@@ -90,7 +90,7 @@ namespace XYZ {
 		OpenGLIndirectBuffer(void* drawCommand, uint32_t size);
 		virtual ~OpenGLIndirectBuffer();
 
-		virtual void Bind() override;
+		virtual void Bind()const override;
 		virtual void BindBase(uint32_t index) override;
 	private:
 		uint32_t m_RendererID;

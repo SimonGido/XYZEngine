@@ -3,7 +3,7 @@
 
 
 namespace XYZ {
-	SpriteAnimation::SpriteAnimation(unsigned int framesPerSecond, const std::initializer_list<std::shared_ptr<SubTexture2D>>& keyFrames)
+	SpriteAnimation::SpriteAnimation(unsigned int framesPerSecond, const std::initializer_list<Ref<SubTexture2D>>& keyFrames)
 		:
 		m_CurrentTime(0.0f),
 		m_FrameLength(0.0f),
@@ -30,7 +30,7 @@ namespace XYZ {
 		XYZ_ASSERT(index < m_KeyFrames.size(), "Deleting frame out of range");
 		m_KeyFrames.erase(m_KeyFrames.begin() + index);
 	}
-	std::shared_ptr<SubTexture2D> SpriteAnimation::GetKeyFrame(size_t index) const
+	const Ref<SubTexture2D>& SpriteAnimation::GetKeyFrame(size_t index) const
 	{
 		XYZ_ASSERT(index < m_KeyFrames.size(), "Frame index out of range");
 		return m_KeyFrames[index];

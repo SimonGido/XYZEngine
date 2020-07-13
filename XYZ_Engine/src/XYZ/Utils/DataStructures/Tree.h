@@ -30,20 +30,31 @@ namespace XYZ {
 			return m_PreviousSibling != sc_NullIndex;
 		}
 
-		uint16_t GetParentIndex() const { return m_Parent; }
+		uint16_t GetParentIndex() const 
+		{ 
+			return m_Parent; 
+		}
 
-		const T& GetData() const { return m_Data; }
+		const T& GetData() const 
+		{
+			return m_Data; 
+		}
 
-		T& GetData() { return m_Data; }
+		T& GetData()
+		{ 
+			return m_Data; 
+		}
+
 	private:
 		void setIndex(uint16_t index)
 		{
 			m_Index = index;
 		}
-
 		void setParent(uint16_t parent, std::vector<Node<T>>& vector)
 		{
-			// Assing parent
+			if (m_Parent == parent)
+				return;
+
 			m_Parent = parent;
 
 			// Assign to first child previous sibling this
@@ -62,7 +73,18 @@ namespace XYZ {
 		template <typename Setup>
 		void setParent(uint16_t parent, std::vector<Node<T>>& vector, Setup& func )
 		{
-			// Assing parent
+			if (m_Parent == parent)
+				return;
+
+			if (m_Parent != sc_NullIndex)
+			{
+				if (m_PreviousSibling != sc_NullIndex)
+					vector[m_PreviousSibling].m_NextSibling = m_NextSibling;
+				else
+					vector[m_Parent].m_FirstChild = m_NextSibling;
+			}
+			
+			// Assign parent
 			m_Parent = parent;
 
 			// Assign to first child previous sibling this
@@ -210,59 +232,46 @@ namespace XYZ {
 			if (index == Node<T>::sc_NullIndex)
 				index = m_Root;
 			
+			func(nullptr, &m_Data[index].m_Data);
 			while (index != Node<T>::sc_NullIndex)
 			{
 				if (m_Data[index].HasChild())
 				{
 					uint16_t firstChild = m_Data[index].m_FirstChild;
-					propagate(m_Data[index].m_Data,firstChild,func);
+					propagate(m_Data[index].m_Data, firstChild, func);
 				}
 				index = m_Data[index].m_NextSibling;
 			}
 		}
 		
-		void RestartIterator() 
+		size_t GetSize() const 
 		{ 
-			m_CurrentIndex = m_Root;
-			m_Stack.clear();
+			return m_Data.size(); 
 		}
 
-		bool Next()
+		std::vector<Node<T>>& GetFlatData()
+		{ 
+			return m_Data; 
+		}
+
+		T& operator [](uint16_t index)
 		{
-			if (m_Data[m_CurrentIndex].HasChild())
-			{
-				m_Stack.push_back(m_Data[m_CurrentIndex].m_FirstChild);
-			}
-			if (m_Data[m_CurrentIndex].HasNextSibling())
-			{
-				m_CurrentIndex = m_Data[m_CurrentIndex].m_NextSibling;
-				return true;
-			}
-			else if (!m_Stack.empty())
-			{
-				m_CurrentIndex = m_Stack[m_Stack.size() - 1];
-				m_Stack.pop_back();
-				return true;
-			}
-
-			RestartIterator();
-			return false;
+			XYZ_ASSERT(index >= 0 && index < m_Data.size(), "Index out range");
+			return m_Data[index].m_Data;
 		}
 
-		Node<T>* Iterator() { return &m_Data[m_CurrentIndex]; }
-		T& GetElement(int16_t index) { return m_Data[index].GetData(); }
-
-		size_t GetSize() const { return m_Data.size(); }
-
-		std::vector<Node<T>>& GetFlatData() { return m_Data; }
-
+		const T& operator [](uint16_t index) const
+		{
+			XYZ_ASSERT(index >= 0 && index < m_Data.size(), "Index out range");
+			return m_Data[index].m_Data;
+		}
 	private:
 		template <typename Function>
 		void propagate(T& parentValue,uint16_t index,Function& func)
 		{
 			while (index != Node<T>::sc_NullIndex)
 			{
-				func(parentValue, m_Data[index].m_Data);
+				func(&parentValue, &m_Data[index].m_Data);
 				if (m_Data[index].HasChild())
 				{
 					uint16_t firstChild = m_Data[index].m_FirstChild;
@@ -273,8 +282,6 @@ namespace XYZ {
 		}
 
 	private:
-		uint16_t m_CurrentIndex = 0;
-
 		// Reference to vector of nodes
 		std::vector<Node<T>> m_Data;
 		std::vector<uint16_t> m_Stack;

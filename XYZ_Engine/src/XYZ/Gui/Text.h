@@ -10,7 +10,6 @@ namespace XYZ {
 	public:
 		Text(
 			const std::string& text,
-			const glm::vec2& position,
 			const glm::vec4& color,
 			int32_t textureID,
 			Ref<Font> font,
@@ -34,7 +33,6 @@ namespace XYZ {
 		Ref<Font> m_Font;
 		std::string m_Text;
 
-		glm::vec2 m_Position;
 		glm::vec4 m_Color;
 		int32_t m_TextureID;
 

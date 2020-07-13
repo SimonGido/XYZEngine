@@ -5,81 +5,81 @@
 #include "Renderer.h"
 
 namespace XYZ {
-	std::shared_ptr<VertexBuffer> VertexBuffer::Create(uint32_t size)
+	Ref<VertexBuffer> VertexBuffer::Create(uint32_t size)
 	{
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::API::None:    XYZ_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-		case RendererAPI::API::OpenGL:  return std::make_shared<OpenGLVertexBuffer>(size);
+		case RendererAPI::API::OpenGL:  return Ref<OpenGLVertexBuffer>::Create(size);
 		}
 
 		XYZ_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
 	}
-	std::shared_ptr<VertexBuffer> VertexBuffer::Create(float* vertices, uint32_t size, BufferUsage usage)
+	Ref<VertexBuffer> VertexBuffer::Create(float* vertices, uint32_t size, BufferUsage usage)
 	{
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::API::None:    XYZ_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-		case RendererAPI::API::OpenGL:  return std::make_shared<OpenGLVertexBuffer>(vertices, size, usage);
-		}
-
-		XYZ_ASSERT(false, "Unknown RendererAPI!");
-		return nullptr;
-	}
-
-	std::shared_ptr<IndexBuffer> IndexBuffer::Create(uint32_t* indices, uint32_t count)
-	{
-		switch (Renderer::GetAPI())
-		{
-		case RendererAPI::API::None:    XYZ_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-		case RendererAPI::API::OpenGL:  return std::make_shared<OpenGLIndexBuffer>(indices, count);
+		case RendererAPI::API::OpenGL:  return Ref<OpenGLVertexBuffer>::Create(vertices, size, usage);
 		}
 
 		XYZ_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
 	}
 
-	std::shared_ptr<ShaderStorageBuffer> ShaderStorageBuffer::Create(uint32_t size)
+	Ref<IndexBuffer> IndexBuffer::Create(uint32_t* indices, uint32_t count)
 	{
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::API::None:    XYZ_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-		case RendererAPI::API::OpenGL:  return std::make_shared<OpenGLShaderStorageBuffer>((float*)NULL, size, BufferUsage::Dynamic);
+		case RendererAPI::API::OpenGL:  return Ref<OpenGLIndexBuffer>::Create(indices, count);
 		}
 
 		XYZ_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
 	}
 
-	std::shared_ptr<ShaderStorageBuffer> ShaderStorageBuffer::Create(float* vertices, uint32_t size, BufferUsage usage)
+	Ref<ShaderStorageBuffer> ShaderStorageBuffer::Create(uint32_t size)
 	{
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::API::None:    XYZ_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-		case RendererAPI::API::OpenGL:  return std::make_shared<OpenGLShaderStorageBuffer>(vertices, size, usage);
+		case RendererAPI::API::OpenGL:  return Ref<OpenGLShaderStorageBuffer>::Create((float*)NULL, size, BufferUsage::Dynamic);
 		}
 
 		XYZ_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
 	}
-	std::shared_ptr<AtomicCounter> AtomicCounter::Create(uint32_t size)
+
+	Ref<ShaderStorageBuffer> ShaderStorageBuffer::Create(float* vertices, uint32_t size, BufferUsage usage)
 	{
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::API::None:    XYZ_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-		case RendererAPI::API::OpenGL:  return std::make_shared<OpenGLAtomicCounter>(size);
+		case RendererAPI::API::OpenGL:  return Ref<OpenGLShaderStorageBuffer>::Create(vertices, size, usage);
 		}
 
 		XYZ_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
 	}
-	std::shared_ptr<IndirectBuffer> IndirectBuffer::Create(void* drawCommand, uint32_t size)
+	Ref<AtomicCounter> AtomicCounter::Create(uint32_t size)
 	{
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::API::None:    XYZ_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-		case RendererAPI::API::OpenGL:  return std::make_shared<OpenGLIndirectBuffer>(drawCommand, size);
+		case RendererAPI::API::OpenGL:  return Ref<OpenGLAtomicCounter>::Create(size);
+		}
+
+		XYZ_ASSERT(false, "Unknown RendererAPI!");
+		return nullptr;
+	}
+	Ref<IndirectBuffer> IndirectBuffer::Create(void* drawCommand, uint32_t size)
+	{
+		switch (Renderer::GetAPI())
+		{
+		case RendererAPI::API::None:    XYZ_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
+		case RendererAPI::API::OpenGL:  return Ref<OpenGLIndirectBuffer>::Create(drawCommand, size);
 		}
 
 		XYZ_ASSERT(false, "Unknown RendererAPI!");

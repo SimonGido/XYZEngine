@@ -14,7 +14,7 @@ namespace XYZ {
 		:
 		m_Name(name)
 	{
-		Entity entity;
+		Entity entity(this);
 		m_World = {
 			nullptr,
 			entity.AddComponent(Transform2D{glm::vec3(0,0,0)}),
@@ -23,6 +23,8 @@ namespace XYZ {
 		
 		m_Root = m_SceneGraph.InsertNode(Node<SceneObject>(m_World));
 		m_SceneGraph.SetRoot(0);
+		m_SceneGraph[0].Transform->CalculateWorldTransformation();
+		m_SceneGraph[0].Transform->GetTransformation();
 
 		m_MainCamera = m_MainCameraEntity.AddComponent<CameraComponent>(CameraComponent{});
 		m_MainCameraTransform = m_MainCameraEntity.AddComponent<Transform2D>(Transform2D{ {0,0,0} });
@@ -34,7 +36,7 @@ namespace XYZ {
 		};
 		
 		uint16_t id = m_SceneGraph.InsertNode(cameraObject);
-		m_GraphMap.insert({ m_MainCameraEntity.GetID(),id });
+		m_GraphMap.insert({ m_MainCameraEntity,id });
 
 		m_MainCamera->Camera.SetOrthographic(4);
 		m_MainCamera->Camera.SetViewportSize(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
@@ -47,12 +49,13 @@ namespace XYZ {
 
 	SceneObject& Scene::GetObject(uint16_t index)
 	{
-		return m_SceneGraph.GetElement(index);
+		return m_SceneGraph[index];
 	}
+
 
 	Entity Scene::CreateEntity(const std::string& name)
 	{
-		Entity entity;
+		Entity entity(this);
 		entity.AddComponent<SceneTagComponent>({ name });
 
 		SceneObject object = {
@@ -61,14 +64,16 @@ namespace XYZ {
 			entity
 		};
 		uint16_t index = m_SceneGraph.InsertNode(Node<SceneObject>(object));
-		m_GraphMap.insert({ entity.GetID(),index });
+		m_SceneGraph.SetParent(0, index, SceneSetup());
+
+		m_GraphMap.insert({ entity,index });
 
 		return entity;
 	}
 
 	void Scene::DestroyEntity(Entity entity)
 	{
-		auto it = m_GraphMap.find(entity.GetID());
+		auto it = m_GraphMap.find(entity);
 		XYZ_ASSERT(it != m_GraphMap.end(), "");
 		
 		m_SceneGraph.DeleteNode((*it).second);
@@ -77,7 +82,7 @@ namespace XYZ {
 
 	void Scene::SetParent(uint16_t parent, uint16_t child)
 	{
-		m_SceneGraph.SetParent(parent, child);
+		m_SceneGraph.SetParent(parent, child, SceneSetup());
 	}
 
 	void Scene::OnAttach()
@@ -91,10 +96,9 @@ namespace XYZ {
 
 	void Scene::OnDetach()
 	{
-		while (m_SceneGraph.Next())
+		for (auto& it : m_SceneGraph.GetFlatData())
 		{
-			auto it = m_SceneGraph.Iterator();
-			it->GetData().Entity.Destroy();
+			it.GetData().Entity.Destroy();
 		}
 	}
 
@@ -104,16 +108,13 @@ namespace XYZ {
 			* glm::inverse(m_MainCameraTransform->GetTransformation());
 
 		Renderer2D::BeginScene(viewProjectionMatrix);
-		while (m_SceneGraph.Next())
-		{
-			auto it = m_SceneGraph.Iterator();
-			auto transform = it->GetData().Transform;
-			auto renderable = it->GetData().Renderable;
-			transform->CalculateWorldTransformation();
-			
-			if (renderable)
-				m_SortSystem.PushRenderData(renderable, transform);
-		}
+		m_SceneGraph.Propagate([this](SceneObject* parent, SceneObject* child) {
+
+			child->Transform->CalculateWorldTransformation();
+			if (child->Renderable)
+				m_SortSystem.PushRenderData(child->Renderable, child->Transform);
+		});
+
 		m_SortSystem.SubmitToRenderer();
 		Renderer2D::EndScene();
 	}
@@ -121,16 +122,13 @@ namespace XYZ {
 	void Scene::OnRenderEditor(float dt, const glm::mat4& viewProjectionMatrix)
 	{
 		Renderer2D::BeginScene(viewProjectionMatrix);
-		while (m_SceneGraph.Next())
-		{
-			auto it = m_SceneGraph.Iterator();
-			auto transform = it->GetData().Transform;
-			auto renderable = it->GetData().Renderable;
-			transform->CalculateWorldTransformation();
+		m_SceneGraph.Propagate([this](SceneObject* parent, SceneObject* child) {
 
-			if (renderable)
-				m_SortSystem.PushRenderData(renderable, transform);
-		}
+			child->Transform->CalculateWorldTransformation();
+			if (child->Renderable)
+				m_SortSystem.PushRenderData(child->Renderable, child->Transform);
+		});
+
 		m_SortSystem.SubmitToRenderer();
 		Renderer2D::EndScene();
 	}

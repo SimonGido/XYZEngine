@@ -33,9 +33,9 @@ namespace XYZ {
 	}
 
 
-	Ref<Material> Material::Create(const std::shared_ptr<Shader>& shader)
+	Ref<Material> Material::Create(const Ref<Shader>& shader)
 	{
-		auto material = CreateRef<Material>(shader);
+		auto material = Ref<Material>::Create(shader);
 		material->m_Key = (int64_t)MaterialManager::Get().RegisterMaterial(material);
 		return material;
 	}
@@ -49,12 +49,12 @@ namespace XYZ {
 			it->OnShaderReload();
 	}
 
-	MaterialInstance::MaterialInstance(const std::shared_ptr<Material>& material)
+	MaterialInstance::MaterialInstance(const Ref<Material>& material)
 		: m_Material(material)
 	{
 		m_Buffer = new unsigned char[m_Material->m_Shader->GetUniformSize()];
-		material->m_MaterialInstances.insert(this);
-		memcpy(m_Buffer, material->m_Buffer, m_Material->m_Shader->GetUniformSize());
+		m_Material->m_MaterialInstances.insert(this);
+		memcpy(m_Buffer, m_Material->m_Buffer, m_Material->m_Shader->GetUniformSize());
 	}
 
 	MaterialInstance::~MaterialInstance()
@@ -68,9 +68,9 @@ namespace XYZ {
 		m_Material->m_Shader->SetUniforms(m_Buffer);
 	}
 
-	Ref<MaterialInstance> MaterialInstance::Create(const std::shared_ptr<Material>& material)
+	Ref<MaterialInstance> MaterialInstance::Create(const Ref<Material>& material)
 	{
-		return CreateRef<MaterialInstance>(material);
+		return Ref<MaterialInstance>::Create(material);
 	}
 
 	void MaterialInstance::OnShaderReload()

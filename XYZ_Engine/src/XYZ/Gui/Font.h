@@ -1,4 +1,5 @@
 #pragma once
+#include "XYZ/Core/Ref.h"
 
 #include <unordered_map>
 
@@ -25,7 +26,7 @@ namespace XYZ {
 		uint32_t PaddingHeight;
 	};
 
-	class Font
+	class Font : public RefCount
 	{
 	public:
 		Font(const std::string& configPath);

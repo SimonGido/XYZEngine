@@ -14,7 +14,7 @@ namespace XYZ {
 
 	Ref<Scene> SceneManager::CreateScene(const std::string& name)
 	{
-		m_Scenes.insert({ name,CreateRef<Scene>(name) });
+		m_Scenes.insert({ name,Ref<Scene>::Create(name) });
 		return m_Scenes[name];
 	}
 

@@ -2,7 +2,6 @@
 #include "XYZ/Physics/Transform.h"
 #include "RenderComponent.h"
 
-#include "XYZ/Scene/SceneObject.h"
 #include "XYZ/Utils/DataStructures/Tree.h"
 
 namespace XYZ {

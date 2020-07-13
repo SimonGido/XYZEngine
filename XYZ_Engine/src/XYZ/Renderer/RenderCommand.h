@@ -1,6 +1,7 @@
 #include <memory>
 #include <glm/glm.hpp>
 
+#include "XYZ/Core/Ref.h"
 #include "RendererAPI.h"
 
 
@@ -54,7 +55,7 @@ namespace XYZ {
 		* @param[in] vertexArray
 		* @param[in] indexCount		Count of the indices, if zero function takes count of the indices from the vertex array
 		*/
-		inline static void DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t indexCount = 0)
+		inline static void DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount = 0)
 		{
 			s_RendererAPI->DrawIndexed(vertexArray, indexCount);
 		}
@@ -64,7 +65,7 @@ namespace XYZ {
 		* @param[in] vertexArray
 		* @param[in] count		Count of the instances
 		*/
-		inline static void DrawInstanced(const std::shared_ptr<VertexArray>& vertexArray, uint32_t count,uint32_t offset =0)
+		inline static void DrawInstanced(const Ref<VertexArray>& vertexArray, uint32_t count,uint32_t offset =0)
 		{
 			s_RendererAPI->DrawInstanced(vertexArray, count,offset);
 		}

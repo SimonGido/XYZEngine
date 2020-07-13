@@ -1,4 +1,6 @@
 #pragma once
+#include "XYZ/Core/Ref.h"
+
 #include <memory>
 
 namespace XYZ {
@@ -190,7 +192,7 @@ namespace XYZ {
 	* Storage of data for rendering. Send the data to the GPU for further processing. Vertices are rendered by shader program.
 	* VertexArray stores VertexBuffers, must have BufferLayout set before being stored.
 	*/
-	class VertexBuffer
+	class VertexBuffer : public RefCount
 	{
 	public:
 		virtual ~VertexBuffer() = default;
@@ -206,7 +208,7 @@ namespace XYZ {
 		* @param size	Size of the buffer in bytes
 		* @return shared_ptr to VertexBuffer
 		*/
-		static std::shared_ptr<VertexBuffer> Create(uint32_t size);
+		static Ref<VertexBuffer> Create(uint32_t size);
 
 		/**
 		* Create VertexBuffer
@@ -215,7 +217,7 @@ namespace XYZ {
 		* @param[in] usage  Data in the buffer will be static or dynamic , default Static
 		* @return shared_ptr to VertexBuffer
 		*/
-		static std::shared_ptr<VertexBuffer> Create(float* vertices, uint32_t size, BufferUsage usage = BufferUsage::Static);
+		static Ref<VertexBuffer> Create(float* vertices, uint32_t size, BufferUsage usage = BufferUsage::Static);
 	};
 
 	/**
@@ -224,14 +226,14 @@ namespace XYZ {
 	* Storage of the indices, send them to the GPU for further processing. 
 	* The GPU use stored indices for indexing the vertices in the vertex buffer
 	*/
-	class IndexBuffer
+	class IndexBuffer : public RefCount
 	{
 	public:
 		virtual ~IndexBuffer() = default;
 		virtual void Bind() const = 0;
 		virtual void UnBind() const = 0;
 
-		virtual unsigned int GetCount() const = 0;
+		virtual uint32_t GetCount() const = 0;
 
 		/**
 		* Create IndexBuffer
@@ -239,7 +241,7 @@ namespace XYZ {
 		* @param[in] count		Count of the indices
 		* @return shared_ptr to IndexBuffer
 		*/
-		static std::shared_ptr<IndexBuffer> Create(uint32_t* indices, unsigned int count);
+		static Ref<IndexBuffer> Create(uint32_t* indices, uint32_t count);
 	};
 
 
@@ -248,13 +250,13 @@ namespace XYZ {
 	* pure virtual (interface) class.
 	* Storage of the data, can be processed by compute shaders.
 	*/
-	class ShaderStorageBuffer
+	class ShaderStorageBuffer : public RefCount
 	{
 	public:
 		virtual ~ShaderStorageBuffer() = default;
-		virtual void BindBase(uint32_t index) = 0;
-		virtual void BindRange(uint32_t offset, uint32_t size, uint32_t index) = 0;
-		virtual void Bind() = 0;
+		virtual void BindBase(uint32_t index) const = 0;
+		virtual void BindRange(uint32_t offset, uint32_t size, uint32_t index) const = 0;
+		virtual void Bind() const = 0;
 		
 		virtual void Update(const void* vertices, uint32_t size, uint32_t offset = 0) = 0;
 		virtual void Resize(const void* vertices, uint32_t size) = 0;
@@ -267,7 +269,7 @@ namespace XYZ {
 		* @param[in] size	Size of the buffer in bytes
 		* @return shared_ptr to ShaderStorageBuffer
 		*/
-		static std::shared_ptr<ShaderStorageBuffer> Create(uint32_t size);
+		static Ref<ShaderStorageBuffer> Create(uint32_t size);
 
 
 		/**
@@ -277,22 +279,22 @@ namespace XYZ {
 		* @param[in] usage  Data in the buffer will be static or dynamic , default Dynamic
 		* @return shared_ptr to ShaderStoageBuffer
 		*/
-		static std::shared_ptr<ShaderStorageBuffer> Create(float* vertices, uint32_t size, BufferUsage usage = BufferUsage::Dynamic);
+		static Ref<ShaderStorageBuffer> Create(float* vertices, uint32_t size, BufferUsage usage = BufferUsage::Dynamic);
 	};
 
 
-	class AtomicCounter
+	class AtomicCounter : public RefCount
 	{
 	public:
 		virtual ~AtomicCounter() = default;
 
 		virtual void Reset() = 0;
-		virtual void BindBase(uint32_t index) = 0;
+		virtual void BindBase(uint32_t index) const = 0;
 		virtual void Update(uint32_t* data, uint32_t count, uint32_t offset) = 0;
 		virtual uint32_t* GetCounters() = 0;
 		virtual uint32_t GetNumCounters() = 0;
 
-		static std::shared_ptr<AtomicCounter> Create(uint32_t size);
+		static Ref<AtomicCounter> Create(uint32_t size);
 	};
 
 
@@ -314,14 +316,14 @@ namespace XYZ {
 	};
 	
 
-	class IndirectBuffer
+	class IndirectBuffer : public RefCount
 	{
 	public:
 		virtual ~IndirectBuffer() = default;
 		
-		virtual void Bind() = 0;
+		virtual void Bind() const = 0;
 		virtual void BindBase(uint32_t index) = 0;
 
-		static std::shared_ptr<IndirectBuffer> Create(void * drawCommand,uint32_t size);
+		static Ref<IndirectBuffer> Create(void * drawCommand,uint32_t size);
 	};
 }

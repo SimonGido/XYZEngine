@@ -26,8 +26,8 @@ namespace XYZ {
 		bool onWindowResized(WindowResizeEvent& event);
 
 	private:
-		Ref<GuiSystem> m_GuiSystem;
-		Ref<RenderSortSystem> m_SortSystem;
+		std::shared_ptr<GuiSystem> m_GuiSystem;
+		std::shared_ptr<RenderSortSystem> m_SortSystem;
 
 	
 	};

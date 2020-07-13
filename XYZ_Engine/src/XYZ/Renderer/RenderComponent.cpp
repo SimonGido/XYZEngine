@@ -3,7 +3,7 @@
 
 
 namespace XYZ {
-	Quad::Quad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, int32_t textureID)
+	Quad::Quad(int32_t textureID, const glm::vec4& color, const glm::vec2& position, const glm::vec2& size)
 	{
 		Vertices[0].Position = { position.x - (size.x / 2), position.y - (size.y / 2), 0.0f, 1.0f };
 		Vertices[1].Position = { position.x + (size.x / 2), position.y - (size.y / 2), 0.0f, 1.0f };
@@ -42,7 +42,7 @@ namespace XYZ {
 		for (size_t i = 0; i < 4; ++i)
 			Vertices[i] = vertices[i];
 	}
-	RenderComponent::RenderComponent(Ref<Material> material, SortLayerID layer, bool visible)
+	RenderComponent::RenderComponent(const Ref<Material>& material, SortLayerID layer, bool visible)
 		:
 		MaterialIns(material),
 		Layer(layer),

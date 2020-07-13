@@ -1,7 +1,8 @@
 #pragma once
-#include "XYZ/ECS/Component.h"
 #include "XYZ/Renderer/VertexArray.h"
 #include "XYZ/Renderer/Material.h"
+#include "XYZ/Core/Ref.h"
+
 
 #include <glm/glm.hpp>
 #include <set>
@@ -43,7 +44,7 @@ namespace XYZ {
 	/* !@class ParticleEffect2D 
 	* @brief gpu based particle effect
 	*/
-	class ParticleEffect2D : public Type<ParticleEffect2D>
+	class ParticleEffect2D : public RefCount
 	{
 	public:
 		/**
@@ -52,7 +53,7 @@ namespace XYZ {
 		* @param[in] material
 		* @param[in] renderMaterial
 		*/
-		ParticleEffect2D(uint32_t maxParticles, std::shared_ptr<Material> material, std::shared_ptr<Material> renderMaterial);
+		ParticleEffect2D(uint32_t maxParticles, const Ref<Material>& material, const Ref<Material>& renderMaterial);
 		
 		~ParticleEffect2D();
 
@@ -68,7 +69,7 @@ namespace XYZ {
 		void Update(float dt);
 
 
-		const std::shared_ptr<Material> GetMaterial() { return m_Material; }
+		const Ref<Material>& GetMaterial() { return m_Material; }
 		
 
 		/**
@@ -115,9 +116,9 @@ namespace XYZ {
 		
 		struct Renderable
 		{
-			std::shared_ptr<VertexArray> VertexArray;
-			std::shared_ptr<IndirectBuffer> IndirectBuffer;
-			std::shared_ptr<Material> Material;
+			Ref<VertexArray> VertexArray;
+			Ref<IndirectBuffer> IndirectBuffer;
+			Ref<Material> Material;
 		};
 		Renderable m_Renderable;
 
@@ -132,22 +133,20 @@ namespace XYZ {
 		};
 
 	private:
-		std::shared_ptr<Material> m_Material;
-		std::shared_ptr<Shader> m_Shader;
+		Ref<Material> m_Material;
+		Ref<Shader> m_Shader;
+		Ref<ShaderStorageBuffer> m_VertexStorage;
+		Ref<ShaderStorageBuffer> m_PropsStorage;
+		Ref<AtomicCounter> m_Counter;
 
-		uint32_t m_MaxParticles = 0;
-
+	
 		std::vector<ParticleVertex> m_Vertices;
 		std::vector<ParticleInformation> m_Data;
-
-		std::shared_ptr<ShaderStorageBuffer> m_VertexStorage;
-		std::shared_ptr<ShaderStorageBuffer> m_PropsStorage;
-
-		std::shared_ptr<AtomicCounter> m_Counter;
-
-		bool m_Loop = true;
-		float m_LifeTime = 3.0f;
+	
+		uint32_t m_MaxParticles = 0;
 		double m_PlayTime = 0.0f;
+		float m_LifeTime = 3.0f;
+		bool m_Loop = true;
 		static constexpr size_t sc_MaxParticlesPerEffect = 10000;
 	};
 

@@ -24,8 +24,9 @@ namespace XYZ {
 			if (currentKey != newKey)
 			{
 				currentKey = newKey;
-				it.Effect->GetMaterial()->Set("u_Time", dt);
-				it.Effect->GetMaterial()->Bind();
+				auto material = it.Effect->GetMaterial();
+				material->Set("u_Time", dt);
+				material->Bind();
 			}
 
 			it.Effect->Update(dt);

@@ -26,7 +26,6 @@ namespace XYZ
 		SceneManager(token) {};
 		~SceneManager() {};
 
-		Ref<Scene> CreateScene(const std::string& name);
 	
 		bool Remove(const std::string& name);
 
@@ -36,6 +35,7 @@ namespace XYZ
 
 		inline Ref<Scene> GetActive() const { return m_CurrentScene; }
 		
+		Ref<Scene> CreateScene(const std::string& name);
 	private:
 		Ref<Scene> m_CurrentScene;
 

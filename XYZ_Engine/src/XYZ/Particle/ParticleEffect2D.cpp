@@ -6,7 +6,7 @@
 
 namespace XYZ {
 
-	void RenderInstanced(std::shared_ptr<VertexArray> vao,std::shared_ptr<IndirectBuffer> ibo)
+	void RenderInstanced(const Ref<VertexArray>& vao,const Ref<IndirectBuffer>& ibo)
 	{
 		vao->Bind();
 		ibo->Bind();
@@ -14,7 +14,7 @@ namespace XYZ {
 	}
 
 
-	ParticleEffect2D::ParticleEffect2D(uint32_t maxParticles, std::shared_ptr<Material> material, std::shared_ptr<Material> renderMaterial)
+	ParticleEffect2D::ParticleEffect2D(uint32_t maxParticles, const Ref<Material>& material, const Ref<Material>& renderMaterial)
 		: 
 		m_Material(material),
 		m_Renderable{
@@ -68,7 +68,7 @@ namespace XYZ {
 			-0.5f,  0.5f, 0.0f, 0.0f, 1.0f
 		};
 
-		std::shared_ptr<XYZ::VertexBuffer> squareVBpar;
+		Ref<VertexBuffer> squareVBpar;
 		squareVBpar = XYZ::VertexBuffer::Create(vert, sizeof(vert));
 		squareVBpar->SetLayout({
 			{  0, XYZ::ShaderDataComponent::Float3, "a_Position" },
@@ -77,7 +77,7 @@ namespace XYZ {
 		m_Renderable.VertexArray->AddVertexBuffer(squareVBpar);
 
 		uint32_t squareIndpar[] = { 0, 1, 2, 2, 3, 0 };
-		std::shared_ptr<XYZ::IndexBuffer> squareIBpar;
+		Ref<XYZ::IndexBuffer> squareIBpar;
 		squareIBpar = XYZ::IndexBuffer::Create(squareIndpar, sizeof(squareIndpar) / sizeof(uint32_t));
 		m_Renderable.VertexArray->SetIndexBuffer(squareIBpar);
 

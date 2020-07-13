@@ -26,14 +26,14 @@ namespace XYZ {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
-	void OpenGLRendererAPI::DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t indexCount)
+	void OpenGLRendererAPI::DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount)
 	{
 		uint32_t count = indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount();
 		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
-	void OpenGLRendererAPI::DrawInstanced(const std::shared_ptr<VertexArray>& vertexArray, uint32_t count, uint32_t offset)
+	void OpenGLRendererAPI::DrawInstanced(const Ref<VertexArray>& vertexArray, uint32_t count, uint32_t offset)
 	{
 		glDrawElementsInstancedBaseInstance(GL_TRIANGLES, vertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, 0, count,offset);
 	}

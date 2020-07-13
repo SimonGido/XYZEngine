@@ -8,15 +8,15 @@ namespace XYZ {
 	class SpriteAnimation : public Type<SpriteAnimation>
 	{
 	public:
-		SpriteAnimation(unsigned int framesPerSecond,const std::initializer_list<std::shared_ptr<SubTexture2D>>& keyFrames);
+		SpriteAnimation(unsigned int framesPerSecond,const std::initializer_list<Ref<SubTexture2D>>& keyFrames);
 
 		void Update(float dt);
 		void SetFPS(unsigned int fps);
 		void DeleteKeyFrame(size_t index);
 
-		std::shared_ptr<SubTexture2D> GetKeyFrame(size_t index) const;
-		std::shared_ptr<SubTexture2D> GetCurrentKeyFrame() const { return m_KeyFrames[m_CurrentKey]; }
-		const std::vector<std::shared_ptr<SubTexture2D>>& GetKeyFrames() const { return m_KeyFrames; }
+		const Ref<SubTexture2D>& GetKeyFrame(size_t index) const;
+		const Ref<SubTexture2D>& GetCurrentKeyFrame() const { return m_KeyFrames[m_CurrentKey]; }
+		const std::vector<Ref<SubTexture2D>>& GetKeyFrames() const { return m_KeyFrames; }
 	private:
 		float m_CurrentTime;
 		float m_FrameLength;

@@ -31,7 +31,7 @@ namespace XYZ {
 		inline virtual std::string GetPath() const override { return m_Path; };
 		inline virtual std::string GetName() const override { return m_Name; }
 
-		virtual unsigned int GetUniformSize() { return m_UniformsSize; };
+		virtual uint32_t GetUniformSize() const { return m_UniformsSize; };
 	private:
 		std::string readFile(const std::string& filepath);
 		std::unordered_map<unsigned int, std::string> preProcess(const std::string& source);

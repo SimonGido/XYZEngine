@@ -3,9 +3,9 @@
 
 
 namespace XYZ {
-	Image::Image(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, int32_t textureID, Ref<SubTexture2D> subTexture, Ref<Material> material, SortLayerID layer, bool visible)
+	Image::Image(int32_t textureID, const glm::vec4& color, Ref<SubTexture2D> subTexture, Ref<Material> material, SortLayerID layer, bool visible)
 		:
-		m_Quad(position, size, color, textureID),
+		m_Quad(textureID,color),
 		RenderComponent(material, layer, visible)
 	{
 		SetSubTexture(subTexture);

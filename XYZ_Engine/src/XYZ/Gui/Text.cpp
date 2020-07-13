@@ -3,10 +3,9 @@
 
 
 namespace XYZ {
-	Text::Text(const std::string& text, const glm::vec2& position, const glm::vec4& color, int32_t textureID, Ref<Font> font, Ref<Material> material, SortLayerID layer, bool visible)
+	Text::Text(const std::string& text, const glm::vec4& color, int32_t textureID, Ref<Font> font, Ref<Material> material, SortLayerID layer, bool visible)
 		:
 		m_Text(text),
-		m_Position(position),
 		m_Color(color),
 		m_TextureID(textureID),
 		m_Font(font),
@@ -46,8 +45,8 @@ namespace XYZ {
 		{
 			auto& character = m_Font->GetCharacter(c);
 			glm::vec2 position = {
-				m_Position.x + m_CursorX + character.XOffset,
-				m_Position.y + m_CursorY + (-character.YOffset - (int32_t)character.Height)
+				m_CursorX + character.XOffset,
+				m_CursorY + (-character.YOffset - (int32_t)character.Height)
 			};
 
 

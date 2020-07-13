@@ -3,22 +3,20 @@
 
 namespace XYZ {
 	SpriteRenderComponent::SpriteRenderComponent(
-		const glm::vec2& position,
-		const glm::vec2& size,
-		const glm::vec4& color,
 		int32_t textureID,
-		Ref<SubTexture2D> subTexture,
-		Ref<Material> material,
+		const glm::vec4& color,
+		const Ref<SubTexture2D>& subTexture,
+		const Ref<Material>& material,
 		SortLayerID layer,
 		bool visible
 	)
 		:
-		m_Quad(position, size, color, textureID),
+		m_Quad(textureID, color),
 		RenderComponent(material, layer, visible)
 	{
 		SetSubTexture(subTexture);
 	}
-	void SpriteRenderComponent::SetSubTexture(Ref<SubTexture2D> subTexture)
+	void SpriteRenderComponent::SetSubTexture(const Ref<SubTexture2D>& subTexture)
 	{
 		m_SubTexture = subTexture;
 		auto& texcoords = subTexture->GetTexCoords();

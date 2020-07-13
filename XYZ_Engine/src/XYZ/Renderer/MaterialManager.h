@@ -1,5 +1,6 @@
 #pragma once
 #include "Material.h"
+#include "XYZ/Core/Ref.h"
 #include "XYZ/Core/Singleton.h"
 
 #include <queue>
@@ -19,7 +20,7 @@ namespace XYZ {
 		* @param[in] material
 		* @return 16 bit unique id
 		*/
-		int16_t RegisterMaterial(std::shared_ptr<Material> material);
+		int16_t RegisterMaterial(const Ref<Material>& material);
 
 
 		/**
@@ -35,14 +36,14 @@ namespace XYZ {
 		* @param[in] id		Id of the material
 		* @return shared_ptr to the Material
 		*/
-		std::shared_ptr<Material> GetMaterial(int16_t id);
+		Ref<Material> GetMaterial(int16_t id);
 
 	private:
 		int16_t m_MaterialsInExistence = 0;
 		std::queue<int16_t> m_AvailableIDs{};
 
 		// Temporary untill we have asset manager
-		std::unordered_map<int16_t, std::shared_ptr<Material>> m_Materials;
+		std::unordered_map<int16_t, Ref<Material>> m_Materials;
 
 		static constexpr int16_t sc_MaxNumberOfMaterials = 2 ^ (sizeof(int16_t) * 8);
 	};

@@ -1,7 +1,7 @@
 #pragma once
 #include "APIContext.h"
+#include "XYZ/Core/Ref.h"
 #include "XYZ/Renderer/VertexArray.h"
-
 
 namespace XYZ {
 	/**
@@ -21,8 +21,8 @@ namespace XYZ {
 		virtual void SetClearColor(const glm::vec4& color) = 0;
 		virtual void Clear() = 0;
 
-		virtual void DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray, uint32_t indexCount = 0) = 0;
-		virtual void DrawInstanced(const std::shared_ptr<VertexArray>& vertexArray, uint32_t count,uint32_t offset=0) = 0;
+		virtual void DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount = 0) = 0;
+		virtual void DrawInstanced(const Ref<VertexArray>& vertexArray, uint32_t count,uint32_t offset=0) = 0;
 		virtual void DrawInstancedIndirect(void* indirect) = 0;
 
 

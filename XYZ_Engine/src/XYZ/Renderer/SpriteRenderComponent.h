@@ -5,22 +5,21 @@
 
 namespace XYZ {
 
-	class SpriteRenderComponent : public RenderComponent, Type<SpriteRenderComponent>
+	class SpriteRenderComponent : public RenderComponent, 
+								  public Type<SpriteRenderComponent>
 	{
 	public:
 		SpriteRenderComponent(
-			const glm::vec2& position,
-			const glm::vec2& size,
-			const glm::vec4& color,
 			int32_t textureID,
-			Ref<SubTexture2D> subTexture,
-			Ref<Material> material,
+			const glm::vec4& color,
+			const Ref<SubTexture2D>& subTexture,
+			const Ref<Material>& material,
 			SortLayerID layer,
-			bool visible
+			bool visible = true
 		);
 		virtual ~SpriteRenderComponent() = default;
 
-		void SetSubTexture(Ref<SubTexture2D> subTexture);
+		void SetSubTexture(const Ref<SubTexture2D>& subTexture);
 		void SetQuad(const Quad& quad);
 
 		virtual const Quad* GetRenderData() const { return &m_Quad; };

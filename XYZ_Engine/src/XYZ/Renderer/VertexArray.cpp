@@ -6,14 +6,14 @@
 
 
 namespace XYZ {
-	std::shared_ptr<VertexArray> VertexArray::Create()
+	Ref<VertexArray> VertexArray::Create()
 	{
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::API::None:   XYZ_ASSERT(false, "Unknown API!");
-		case RendererAPI::API::OpenGL: return std::make_shared<OpenGLVertexArray>();
+		case RendererAPI::API::OpenGL: return Ref<OpenGLVertexArray>::Create();
 		}
-		return std::shared_ptr<VertexArray>();
+		return nullptr;
 	}
 
 }

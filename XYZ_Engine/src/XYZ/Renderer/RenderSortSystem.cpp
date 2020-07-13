@@ -7,10 +7,10 @@
 namespace XYZ {
 	void RenderSortSystem::PushRenderData(const RenderComponent* renderable, const Transform2D* transform)
 	{
-		auto key = renderable->MaterialIns->GetSortKey();
-		if (!(key & RenderFlags::InstancedFlag))
+		auto material = renderable->MaterialIns;
+		if (!material->IsSet(RenderFlags::InstancedFlag))
 		{
-			if (renderable->MaterialIns->IsSet(RenderFlags::TransparentFlag))
+			if (material->IsSet(RenderFlags::TransparentFlag))
 			{
 				m_Transparent.push_back({ renderable,transform });
 			}

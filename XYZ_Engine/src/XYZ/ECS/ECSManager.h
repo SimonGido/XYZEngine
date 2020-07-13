@@ -32,6 +32,7 @@ namespace XYZ {
 		template<typename T>
 		static T* AddComponent(uint32_t entity,const T& component)
 		{
+			static_assert(std::is_base_of<Type<T>, T>::value, "Trying to add component that has no type");
 			auto c = s_Data.ComponentManager.AddComponent<T>(entity, component);
 
 			auto active = s_Data.ComponentManager.GetComponent<ActiveComponent>(entity);

@@ -101,19 +101,19 @@ namespace XYZ {
 		glDeleteBuffers(1, &m_RendererID);
 	}
 
-	void OpenGLShaderStorageBuffer::BindBase(uint32_t index)
+	void OpenGLShaderStorageBuffer::BindBase(uint32_t index)const
 	{
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_RendererID);
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, m_RendererID);
 	}
 
 
-	void OpenGLShaderStorageBuffer::BindRange(uint32_t offset, uint32_t size, uint32_t index)
+	void OpenGLShaderStorageBuffer::BindRange(uint32_t offset, uint32_t size, uint32_t index)const
 	{		
 		glBindBufferRange(GL_SHADER_STORAGE_BUFFER, index, m_RendererID, offset, size);
 	}
 
-	void OpenGLShaderStorageBuffer::Bind()
+	void OpenGLShaderStorageBuffer::Bind()const
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
 	}
@@ -161,7 +161,7 @@ namespace XYZ {
 		glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, m_RendererID);
 		glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(uint32_t) * m_NumberOfCounters, m_Counters);
 	}
-	void OpenGLAtomicCounter::BindBase(uint32_t index)
+	void OpenGLAtomicCounter::BindBase(uint32_t index)const
 	{
 		glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, m_RendererID);
 		glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER,index, m_RendererID);
@@ -190,7 +190,7 @@ namespace XYZ {
 	{
 		glDeleteBuffers(1, &m_RendererID);
 	}
-	void OpenGLIndirectBuffer::Bind()
+	void OpenGLIndirectBuffer::Bind()const
 	{
 		glBindBuffer(GL_DRAW_INDIRECT_BUFFER, m_RendererID);
 	}

@@ -17,7 +17,7 @@ namespace XYZ {
 		}
 		case RendererAPI::API::OpenGL:
 		{
-			return CreateRef<OpenGLShader>(path);
+			return  Ref<OpenGLShader>::Create(path);
 		}
 		}
 
@@ -35,14 +35,14 @@ namespace XYZ {
 		}
 		case RendererAPI::API::OpenGL:
 		{
-			return CreateRef<OpenGLShader>(name, path);
+			return Ref<OpenGLShader>::Create(name, path);
 		}
 		}
 
 		XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
 		return nullptr;
 	}
-	void ShaderLibrary::Add(const std::shared_ptr<Shader>& shader)
+	void ShaderLibrary::Add(const Ref<Shader>& shader)
 	{
 		auto& name = shader->GetName();
 		if (m_Shaders.find(name) == m_Shaders.end())
@@ -51,19 +51,19 @@ namespace XYZ {
 		}
 		else XYZ_ASSERT(false, "Shader name already exists.");
 	}
-	std::shared_ptr<Shader> ShaderLibrary::Load(const std::string& path)
+	Ref<Shader> ShaderLibrary::Load(const std::string& path)
 	{
 		auto shader = Shader::Create(path);
 		Add(shader);
 		return shader;
 	}
-	std::shared_ptr<Shader> ShaderLibrary::Load(const std::string& name, const std::string& path)
+	Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::string& path)
 	{
 		auto shader = Shader::Create(name, path);
 		Add(shader);
 		return shader;
 	}
-	std::shared_ptr<Shader> ShaderLibrary::Get(const std::string& name)
+	Ref<Shader> ShaderLibrary::Get(const std::string& name)
 	{
 		if (Exists(name)) return m_Shaders[name];
 		XYZ_ASSERT(false, "Shader does not exist.");

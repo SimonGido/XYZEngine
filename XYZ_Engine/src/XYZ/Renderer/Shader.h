@@ -1,5 +1,7 @@
 #pragma once
 
+#include "XYZ/Core/Ref.h"
+
 #include <unordered_map>
 #include <memory>
 #include <string>
@@ -84,7 +86,7 @@ namespace XYZ {
 	* @brief Shader encapsulates graphics API shader program.
 	* Creates abstraction above shader programs
 	*/
-	class Shader
+	class Shader : public RefCount
 	{
 	public:
 		~Shader() = default;
@@ -110,7 +112,7 @@ namespace XYZ {
 		virtual const Uniform* FindUniform(const std::string& name) = 0;
 		virtual const TextureUniform* FindTexture(const std::string& name) = 0;
 
-		virtual unsigned int GetUniformSize() = 0;
+		virtual uint32_t GetUniformSize() const = 0;
 
 
 		/**
@@ -139,14 +141,14 @@ namespace XYZ {
 
 	class ShaderLibrary
 	{
-		std::unordered_map<std::string, std::shared_ptr<Shader>> m_Shaders;
+		std::unordered_map<std::string, Ref<Shader>> m_Shaders;
 	public:
-		void Add(const std::shared_ptr<Shader>& shader);
+		void Add(const Ref<Shader>& shader);
 		//void Add(const std::string& name, const Ref<Shader>& shader);
 
-		std::shared_ptr<Shader> Load(const std::string& path);
-		std::shared_ptr<Shader> Load(const std::string& name, const std::string& path);
-		std::shared_ptr<Shader> Get(const std::string& name);
+		Ref<Shader> Load(const std::string& path);
+		Ref<Shader> Load(const std::string& name, const std::string& path);
+		Ref<Shader> Get(const std::string& name);
 		bool Exists(const std::string& name);
 	};
 

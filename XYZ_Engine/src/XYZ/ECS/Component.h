@@ -14,7 +14,6 @@ namespace XYZ {
 	public:
 		virtual uint16_t GetComponentID() const = 0;
 
-	protected:
 		// Unique static ID
 		template <typename T>
 		static uint16_t GetID()

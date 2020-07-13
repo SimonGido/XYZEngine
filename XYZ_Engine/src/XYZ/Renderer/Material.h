@@ -2,6 +2,7 @@
 #include "Shader.h"
 #include "Texture.h"
 #include "RenderFlags.h"
+#include "XYZ/Core/Ref.h"
 
 #include <queue>
 #include <bitset>
@@ -9,7 +10,7 @@
 
 namespace XYZ {
 
-	class Material
+	class Material : public RefCount
 	{
 		friend class MaterialInstance;
 	public:
@@ -70,7 +71,7 @@ namespace XYZ {
 		* @param[in] texture	shared_ptr to the Texture2D
 		* @param[in] index		Binding index of the texture
 		*/
-		void Set(const std::string& name, std::shared_ptr<Texture2D> texture, uint32_t index = 0)
+		void Set(const std::string& name, const Ref<Texture2D>& texture, uint32_t index = 0)
 		{
 			auto tex = m_Shader->FindTexture(name);
 			XYZ_ASSERT(tex, "Material texture does not exist ", name.c_str());
@@ -127,7 +128,7 @@ namespace XYZ {
 		/**
 		* @return shared_ptr to the Shader
 		*/
-		Ref<Shader> GetShader() { return m_Shader; }
+		const Ref<Shader>& GetShader() { return m_Shader; }
 		//////////////////////
 
 
@@ -135,7 +136,7 @@ namespace XYZ {
 		* @param[in] shader
 		* @return shared_ptr to the Material
 		*/
-		static Ref<Material> Create(const std::shared_ptr<Shader>& shader);
+		static Ref<Material> Create(const Ref<Shader>& shader);
 
 		//TODO TEMPORARY
 		void ReloadShader() { m_Shader->Reload(); };
@@ -156,7 +157,7 @@ namespace XYZ {
 	};
 
 
-	class MaterialInstance
+	class MaterialInstance : public RefCount
 	{
 		friend class Material;
 	public:
@@ -165,7 +166,7 @@ namespace XYZ {
 		* to the Material and insert itself to the material instances
 		* @param[in] material
 		*/
-		MaterialInstance(const std::shared_ptr<Material>& material);
+		MaterialInstance(const Ref<Material>& material);
 
 		/**
 		* Destructor, deletes memory for the shader uniforms and erase itself from the Material's instances
@@ -216,7 +217,7 @@ namespace XYZ {
 		* @return shared_ptr to the Material used in constructor
 		*/
 		int64_t GetSortKey() const { return m_Material->m_Key; }
-		const std::shared_ptr<Material> GetParentMaterial() { return m_Material; }
+		const Ref<Material>& GetParentMaterial() { return m_Material; }
 
 		/**
 		* @param[in] material

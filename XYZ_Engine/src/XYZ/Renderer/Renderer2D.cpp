@@ -31,8 +31,8 @@ namespace XYZ {
 		const uint32_t MaxVertices = MaxQuads * 4;
 		const uint32_t MaxIndices = MaxQuads * 6;
 
-		std::shared_ptr<VertexArray> QuadVertexArray;
-		std::shared_ptr<VertexBuffer> QuadVertexBuffer;
+		Ref<VertexArray> QuadVertexArray;
+		Ref<VertexBuffer> QuadVertexBuffer;
 
 		uint32_t IndexCount = 0;
 		Vertex2D* BufferBase = nullptr;
@@ -80,7 +80,7 @@ namespace XYZ {
 
 				offset += 4;
 			}
-			std::shared_ptr<IndexBuffer> quadIB = IndexBuffer::Create(quadIndices, MaxIndices);
+			Ref<IndexBuffer> quadIB = IndexBuffer::Create(quadIndices, MaxIndices);
 			QuadVertexArray->SetIndexBuffer(quadIB);
 			delete[] quadIndices;
 		}
@@ -108,7 +108,7 @@ namespace XYZ {
 
 	void Renderer2D::SetMaterial(const Ref<Material>& material)
 	{
-		if (s_Data.Material && material.get() != s_Data.Material.get())
+		if (s_Data.Material && material.Raw() != s_Data.Material.Raw())
 			Flush();
 
 		s_Data.Material = material;

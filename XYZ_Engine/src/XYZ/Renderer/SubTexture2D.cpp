@@ -3,7 +3,7 @@
 
 
 namespace XYZ {
-	SubTexture2D::SubTexture2D(std::shared_ptr<Texture2D> texture, const glm::vec2& coords, const glm::vec2& size)
+	SubTexture2D::SubTexture2D(const Ref<Texture2D>& texture, const glm::vec2& coords, const glm::vec2& size)
 		: m_Texture(texture)
 	{
 		glm::vec2 min = { (coords.x * size.x) / texture->GetWidth(), (coords.y * size.y) / texture->GetHeight() };
