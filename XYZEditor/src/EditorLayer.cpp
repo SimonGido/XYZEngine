@@ -59,7 +59,7 @@ namespace XYZ {
 
 			auto transform = entity.GetComponent<Transform2D>();
 			transform->Translate({ i,0,0 });
-			m_Scene->SetParent(2, i + 2);
+			m_Scene->SetParent(m_TestEntity, entity);
 		}
 	}
 	void EditorLayer::OnDetach()
@@ -101,11 +101,11 @@ namespace XYZ {
 
 		if (XYZ::Input::IsKeyPressed(KeyCode::XYZ_KEY_3))
 		{
-			m_Transform->Scale({ 0.01,0.01 });
+			m_Transform->Scale({ 0.1,0.1 });
 		}
 		else if (XYZ::Input::IsKeyPressed(KeyCode::XYZ_KEY_4))
 		{
-			m_Transform->Scale({ -0.01,-0.01 });
+			m_Transform->Scale({ -0.1,-0.1 });
 		}
 	}
 	void EditorLayer::OnEvent(Event& event)

@@ -18,12 +18,7 @@
 
 namespace XYZ {
 
-    struct SceneObject
-    {
-        RenderComponent* Renderable;
-        Transform2D* Transform;
-        Entity Entity;
-    };
+   
     enum class SceneState
     {
         Play,
@@ -43,7 +38,7 @@ namespace XYZ {
 
         void DestroyEntity(Entity entity);
 
-        void SetParent(uint16_t parent, uint16_t child);
+        void SetParent(Entity parent, Entity child);
 
         void SetState(SceneState state) { m_State = state; }
 
@@ -60,12 +55,10 @@ namespace XYZ {
         void OnRenderEditor(float dt, const glm::mat4& viewProjectionMatrix);
 
         SceneState GetState() const { return m_State; }
-        SceneObject& GetObject(uint16_t index);
+
         inline const std::string& GetName() const { return m_Name; }
         inline const SceneCamera& GetMainCamera() const { return m_MainCamera->Camera; }
-
-        inline const Tree<SceneObject>& GetSceneGraph() const { return m_SceneGraph; }
-   
+ 
     private:        
         template <typename T>
         void onEntityModified(T* component, Entity entity)
@@ -76,12 +69,19 @@ namespace XYZ {
                 id == IComponent::GetID<Text>()                  ||
                 id == IComponent::GetID<Image>())
             {
-                uint16_t index = m_GraphMap[entity];
+                uint16_t index = m_SceneGraphMap[entity];
                 m_SceneGraph[index].Renderable = (RenderComponent*)component;
             }
         }
 
     private:
+        struct SceneObject
+        {
+            RenderComponent* Renderable = nullptr;
+            Transform2D* Transform = nullptr;
+            Entity Entity;
+        };
+
         struct SceneSetup
         {
             void operator()(SceneObject& parent, SceneObject& child)
@@ -89,7 +89,6 @@ namespace XYZ {
                 child.Transform->SetParent(parent.Transform);
             }
         };
-
     private:
         std::string m_Name;
         SceneState m_State = SceneState::Edit;
@@ -99,12 +98,12 @@ namespace XYZ {
         Transform2D* m_MainCameraTransform;
 
         uint16_t m_Root;
-        SceneObject m_World;
+        SceneObject m_SceneWorld;
 
         Tree<SceneObject> m_SceneGraph;
         RenderSortSystem m_SortSystem;
 
-        std::unordered_map<uint32_t, uint16_t> m_GraphMap;
+        std::unordered_map<uint32_t, uint16_t> m_SceneGraphMap;
 
 
         friend class Entity;

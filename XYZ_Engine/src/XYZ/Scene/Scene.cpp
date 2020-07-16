@@ -15,16 +15,17 @@ namespace XYZ {
 		m_Name(name)
 	{
 		Entity entity(this);
-		m_World = {
+		
+		m_SceneWorld = {
 			nullptr,
 			entity.AddComponent(Transform2D{glm::vec3(0,0,0)}),
 			entity
 		};
 		
-		m_Root = m_SceneGraph.InsertNode(Node<SceneObject>(m_World));
-		m_SceneGraph.SetRoot(0);
-		m_SceneGraph[0].Transform->CalculateWorldTransformation();
-		m_SceneGraph[0].Transform->GetTransformation();
+		m_Root = m_SceneGraph.InsertNode(Node<SceneObject>(m_SceneWorld));
+		m_SceneGraph.SetRoot(m_Root);
+		m_SceneGraph[m_Root].Transform->CalculateWorldTransformation();
+		m_SceneGraph[m_Root].Transform->GetTransformation();
 
 		m_MainCamera = m_MainCameraEntity.AddComponent<CameraComponent>(CameraComponent{});
 		m_MainCameraTransform = m_MainCameraEntity.AddComponent<Transform2D>(Transform2D{ {0,0,0} });
@@ -35,10 +36,10 @@ namespace XYZ {
 			m_MainCameraEntity
 		};
 		
-		uint16_t id = m_SceneGraph.InsertNode(cameraObject);
-		m_GraphMap.insert({ m_MainCameraEntity,id });
+		uint16_t cameraIndex = m_SceneGraph.InsertNode(cameraObject);
+		m_SceneGraphMap.insert({ m_MainCameraEntity,cameraIndex });
 
-		m_MainCamera->Camera.SetOrthographic(4);
+		m_MainCamera->Camera.SetOrthographic(4.0f);
 		m_MainCamera->Camera.SetViewportSize(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
 	}
 
@@ -46,12 +47,6 @@ namespace XYZ {
 	{
 
 	}
-
-	SceneObject& Scene::GetObject(uint16_t index)
-	{
-		return m_SceneGraph[index];
-	}
-
 
 	Entity Scene::CreateEntity(const std::string& name)
 	{
@@ -63,26 +58,33 @@ namespace XYZ {
 			entity.AddComponent<Transform2D>({glm::vec3(0)}),
 			entity
 		};
-		uint16_t index = m_SceneGraph.InsertNode(Node<SceneObject>(object));
-		m_SceneGraph.SetParent(0, index, SceneSetup());
 
-		m_GraphMap.insert({ entity,index });
+		uint16_t id = m_SceneGraph.InsertNode(Node<SceneObject>(object));	
+		m_SceneGraph.SetParent(m_Root, id, SceneSetup());
+		m_SceneGraphMap.insert({ entity,id });
 
 		return entity;
 	}
 
 	void Scene::DestroyEntity(Entity entity)
 	{
-		auto it = m_GraphMap.find(entity);
-		XYZ_ASSERT(it != m_GraphMap.end(), "");
+		auto it = m_SceneGraphMap.find(entity);
+		XYZ_ASSERT(it != m_SceneGraphMap.end(), "");
 		
 		m_SceneGraph.DeleteNode((*it).second);
-		m_GraphMap.erase(it);		
+		m_SceneGraphMap.erase(it);		
 	}
 
-	void Scene::SetParent(uint16_t parent, uint16_t child)
+	void Scene::SetParent(Entity parent, Entity child)
 	{
-		m_SceneGraph.SetParent(parent, child, SceneSetup());
+		auto itParent = m_SceneGraphMap.find(parent);
+		XYZ_ASSERT(itParent != m_SceneGraphMap.end(), "Parent entity does not exist");
+		auto itChild = m_SceneGraphMap.find(child);
+		XYZ_ASSERT(itChild != m_SceneGraphMap.end(), "Child entity does not exist");
+
+		uint16_t parentIndex = itParent->second;
+		uint16_t childIndex = itChild->second;
+		m_SceneGraph.SetParent(parentIndex, childIndex, SceneSetup());
 	}
 
 	void Scene::OnAttach()

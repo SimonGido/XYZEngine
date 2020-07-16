@@ -13,8 +13,10 @@ namespace XYZ {
 		SceneTagComponent(const SceneTagComponent& other)
 			: Name(other.Name)
 		{}
-	};
 
+		operator std::string& () { return Name; }
+		operator const  std::string& () const { return Name; }
+	};
 
 	struct CameraComponent : public Type<CameraComponent>
 	{

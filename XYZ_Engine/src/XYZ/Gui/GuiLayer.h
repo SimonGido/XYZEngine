@@ -27,7 +27,6 @@ namespace XYZ {
 
 	private:
 		std::shared_ptr<GuiSystem> m_GuiSystem;
-		std::shared_ptr<RenderSortSystem> m_SortSystem;
 
 	
 	};

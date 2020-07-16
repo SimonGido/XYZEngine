@@ -45,7 +45,8 @@ namespace XYZ {
 		T* AddComponent(const T& component)
 		{
 			auto addedComponent = ECSManager::AddComponent<T>(m_ID, component);
-			m_Scene->onEntityModified<T>(addedComponent,*this);
+			if (m_Scene)
+				m_Scene->onEntityModified<T>(addedComponent,*this);
 			return addedComponent;
 		}
 
