@@ -11,6 +11,8 @@ namespace XYZ {
 	void EditorLayer::OnAttach()
 	{
 		Renderer::Init();
+		SortLayer::CreateLayer("Default");
+
 		m_Scene = SceneManager::Get().CreateScene("Test");
 
 		m_Material = Material::Create(XYZ::Shader::Create("TextureShader", "Assets/Shaders/DefaultShader.glsl"));
@@ -35,13 +37,11 @@ namespace XYZ {
 
 
 		m_TestEntity = m_Scene->CreateEntity("Test Entity");
-		m_TestEntity.AddComponent(SpriteRenderComponent{
-			0,
-			glm::vec4(1),
-			m_CharacterSubTexture,
+		m_TestEntity.AddComponent(RenderComponent2D{
 			m_Material,
-			SortingLayer::Get().GetOrderValue("Default")
-			});
+			MeshFactory::CreateSprite({1,1,1,1},m_CharacterSubTexture->GetTexCoords(),0),
+			SortLayer::GetOrderValue("Default")
+		});
 
 		m_Transform = m_TestEntity.GetComponent<Transform2D>();
 
@@ -49,18 +49,31 @@ namespace XYZ {
 		for (int i = 1; i < 50; ++i)
 		{
 			Entity entity = m_Scene->CreateEntity("Test Child");
-			entity.AddComponent(SpriteRenderComponent{
-				0,
-				glm::vec4(1),
-				m_CharacterSubTexture,
+			entity.AddComponent(RenderComponent2D{
 				m_Material,
-				SortingLayer::Get().GetOrderValue("Default")
-				});
+				MeshFactory::CreateSprite({1,1,1,1},m_CharacterSubTexture->GetTexCoords(),0),
+				SortLayer::GetOrderValue("Default")
+			});
 
 			auto transform = entity.GetComponent<Transform2D>();
 			transform->Translate({ i,0,0 });
 			m_Scene->SetParent(m_TestEntity, entity);
 		}
+
+		m_TextEntity = m_Scene->CreateEntity("Text Entity");
+		auto text = m_TextEntity.AddComponent(TextUI{
+			"Hello world!",
+			m_Font
+		});
+
+		m_TextEntity.AddComponent(RenderComponent2D{
+			m_TextMaterial,
+			MeshFactory::CreateTextMesh(*text,{1,1,1,1}),
+			SortLayer::GetOrderValue("Default")
+		});
+
+		m_Scene->SetParent(m_TestEntity, m_TextEntity);
+
 	}
 	void EditorLayer::OnDetach()
 	{

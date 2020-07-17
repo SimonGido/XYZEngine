@@ -213,22 +213,20 @@ namespace XYZ {
 		s_Data.IndexCount += 6;
 	}
 
-	void Renderer2D::SubmitQuad(const glm::mat4& transform, const Quad& quad)
+	void Renderer2D::SubmitMesh(const glm::mat4& transform, const Ref<Mesh>& mesh)
 	{
-		constexpr size_t quadVertexCount = 4;
-		if (s_Data.IndexCount >= s_Data.MaxIndices)
+		if (s_Data.IndexCount + mesh->Indices.size() >= s_Data.MaxIndices)
 			Flush();
 
-		for (size_t i = 0; i < quadVertexCount; ++i)
+		for (auto& vertex : mesh->Vertices)
 		{
-			s_Data.BufferPtr->Position = transform * quad.Vertices[i].Position;
-			s_Data.BufferPtr->Color = quad.Vertices[i].Color;
-			s_Data.BufferPtr->TexCoord = quad.Vertices[i].TexCoord;
-			s_Data.BufferPtr->TextureID = (float)quad.Vertices[i].TextureID;
+			s_Data.BufferPtr->Position = transform * vertex.Position;
+			s_Data.BufferPtr->Color = vertex.Color;
+			s_Data.BufferPtr->TexCoord = vertex.TexCoord;
+			s_Data.BufferPtr->TextureID = (float)mesh->TextureID;
 			s_Data.BufferPtr++;
 		}
-
-		s_Data.IndexCount += 6;
+		s_Data.IndexCount += mesh->Indices.size();
 	}
 
 	void Renderer2D::Flush()

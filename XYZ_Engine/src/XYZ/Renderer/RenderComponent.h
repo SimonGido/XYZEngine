@@ -1,48 +1,34 @@
 #pragma once
+#include "XYZ/ECS/Component.h"
+
 #include "SubTexture2D.h"
-#include "SortingLayer.h"
+#include "SortLayer.h"
 #include "Material.h"
+#include "Mesh.h"
 
 #include <glm/glm.hpp>
 
 namespace XYZ {
 
-	struct Vertex
+
+	struct RenderComponent2D : public Type<RenderComponent2D>
 	{
-		glm::vec4 Color;
-		glm::vec4 Position;
-		glm::vec2 TexCoord;
-		int32_t	  TextureID;
+		RenderComponent2D(Ref<Material> material,
+						  Ref<Mesh> mesh,
+						  SortLayerID layer,
+						  bool isVisible = true)
+			:
+			Material(material),
+			Mesh(mesh),
+			Layer(layer),
+			IsVisible(isVisible)
+		{}
+		RenderComponent2D() = default;
+
+		Ref<Material> Material;
+		Ref<Mesh> Mesh;
+
+		SortLayerID Layer = 0;
+		bool IsVisible = true;
 	};
-
-	struct Quad
-	{
-		Quad(int32_t textureID, const glm::vec4& color, const glm::vec2& position = glm::vec2(0), const glm::vec2& size = glm::vec2(1));
-		Quad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, int32_t textureID, bool centered);
-		Quad(const Vertex* vertices);
-
-		Vertex Vertices[4];
-	};
-
-	class RenderComponent
-	{
-	public:
-		RenderComponent(
-			const Ref<Material>& material,
-			SortLayerID layer,
-			bool visible
-		);
-
-		virtual ~RenderComponent() {};
-		// Sort data
-		Ref<Material> MaterialIns;
-		SortLayerID Layer;
-		bool IsVisible;
-
-
-		// Get render data
-		virtual const Quad* GetRenderData() const = 0;
-		virtual size_t GetCountQuads() const { return 1; }
-	};
-
 }

@@ -6,9 +6,7 @@
 #include "XYZ/Utils/DataStructures/HashGrid2D.h"
 #include "XYZ/Utils/DataStructures/Tree.h"
 #include "XYZ/Renderer/RenderSortSystem.h"
-#include "XYZ/Renderer/SpriteRenderComponent.h"
-#include "XYZ/Gui/Text.h"
-#include "XYZ/Gui/Image.h"
+
 
 #include "XYZ/Renderer/Camera.h"
 
@@ -65,19 +63,17 @@ namespace XYZ {
         {
             static_assert(std::is_base_of<Type<T>, T>::value, "Trying to add component that has no type");
             uint16_t id = IComponent::GetID<T>();
-            if (id == IComponent::GetID<SpriteRenderComponent>() ||
-                id == IComponent::GetID<Text>()                  ||
-                id == IComponent::GetID<Image>())
+            if (id == IComponent::GetID<RenderComponent2D>())
             {
                 uint16_t index = m_SceneGraphMap[entity];
-                m_SceneGraph[index].Renderable = (RenderComponent*)component;
+                m_SceneGraph[index].Renderable = (RenderComponent2D*)component;
             }
         }
 
     private:
         struct SceneObject
         {
-            RenderComponent* Renderable = nullptr;
+            RenderComponent2D* Renderable = nullptr;
             Transform2D* Transform = nullptr;
             Entity Entity;
         };
@@ -99,10 +95,9 @@ namespace XYZ {
 
         uint16_t m_Root;
         SceneObject m_SceneWorld;
-
-        Tree<SceneObject> m_SceneGraph;
         RenderSortSystem m_SortSystem;
 
+        Tree<SceneObject> m_SceneGraph;
         std::unordered_map<uint32_t, uint16_t> m_SceneGraphMap;
 
 

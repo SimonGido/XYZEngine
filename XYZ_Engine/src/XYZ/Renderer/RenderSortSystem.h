@@ -8,14 +8,14 @@ namespace XYZ {
 	class RenderSortSystem
 	{
 	public:
-		void PushRenderData(const RenderComponent* renderable, const Transform2D* transform);
+		void PushRenderData(const RenderComponent2D* renderable, const Transform2D* transform);
 		void SubmitToRenderer();
 
 
 	private:
 		struct Data
 		{
-			const RenderComponent* Renderable;
+			const RenderComponent2D* Renderable;
 			const Transform2D* Transform;
 		};
 
@@ -24,11 +24,11 @@ namespace XYZ {
 		{
 			bool operator()(const Data& a, const Data& b) const
 			{
-				if (a.Renderable->MaterialIns->GetSortKey() == b.Renderable->MaterialIns->GetSortKey())
+				if (a.Renderable->Material->GetSortKey() == b.Renderable->Material->GetSortKey())
 				{
 					return a.Renderable->Layer < b.Renderable->Layer;
 				}
-				a.Renderable->MaterialIns->GetSortKey() < b.Renderable->MaterialIns->GetSortKey();
+				a.Renderable->Material->GetSortKey() < b.Renderable->Material->GetSortKey();
 			}
 		};
 
@@ -38,7 +38,7 @@ namespace XYZ {
 			{
 				if (a.Renderable->Layer == b.Renderable->Layer)
 				{
-					return a.Renderable->MaterialIns->GetSortKey() < b.Renderable->MaterialIns->GetSortKey();
+					return a.Renderable->Material->GetSortKey() < b.Renderable->Material->GetSortKey();
 				}
 				return a.Renderable->Layer > b.Renderable->Layer;
 			}

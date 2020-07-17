@@ -1,8 +1,7 @@
 #pragma once
 #include "XYZ/ECS/ECSManager.h"
 #include "SpriteAnimation.h"
-
-#include "SpriteRenderComponent.h"
+#include "RenderComponent.h"
 
 namespace XYZ {
 
@@ -42,7 +41,7 @@ namespace XYZ {
 		struct Component : public System::Component
 		{
 			SpriteAnimation* Animation;
-			SpriteRenderComponent* Renderable;
+			RenderComponent2D* Renderable;
 		};
 
 		std::vector<Component> m_Components;

@@ -27,6 +27,7 @@
 #include "XYZ/Renderer/MaterialManager.h"
 #include "XYZ/Renderer/Framebuffer.h"
 #include "XYZ/Renderer/RenderSortSystem.h"
+#include "XYZ/Renderer/MeshFactory.h"
 
 //-----Scene-----//
 #include "XYZ/Scene/SceneCamera.h"
@@ -53,14 +54,11 @@
 
 #include "XYZ/Utils/DataStructures/Tree.h"
 #include "XYZ/Gui/Font.h"
-#include "XYZ/Renderer/SpriteRenderComponent.h"
-
 
 
 
 //------UI-------//
 #include "XYZ/Gui/Text.h"
 #include "XYZ/Gui/Button.h"
-#include "XYZ/Gui/Image.h"
 #include "XYZ/Gui/Checkbox.h"
 #include "XYZ/Gui/GuiSystem.h"

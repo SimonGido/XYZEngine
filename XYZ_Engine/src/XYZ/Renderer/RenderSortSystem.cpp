@@ -5,9 +5,9 @@
 
 
 namespace XYZ {
-	void RenderSortSystem::PushRenderData(const RenderComponent* renderable, const Transform2D* transform)
+	void RenderSortSystem::PushRenderData(const RenderComponent2D* renderable, const Transform2D* transform)
 	{
-		auto material = renderable->MaterialIns;
+		auto material = renderable->Material;
 		if (!material->IsSet(RenderFlags::InstancedFlag))
 		{
 			if (material->IsSet(RenderFlags::TransparentFlag))
@@ -27,18 +27,14 @@ namespace XYZ {
 	
 		for (auto& elem : m_Opaque)
 		{
-			Renderer2D::SetMaterial(elem.Renderable->MaterialIns);
-			auto quads = elem.Renderable->GetRenderData();
-			for (size_t i = 0; i < elem.Renderable->GetCountQuads(); ++i)
-				Renderer2D::SubmitQuad(elem.Transform->GetTransformation(), quads[i]);
+			Renderer2D::SetMaterial(elem.Renderable->Material);
+			Renderer2D::SubmitMesh(elem.Transform->GetTransformation(), elem.Renderable->Mesh);
 		}
 		Renderer2D::Flush();
 		for (auto& elem : m_Transparent)
 		{
-			Renderer2D::SetMaterial(elem.Renderable->MaterialIns);
-			auto quads = elem.Renderable->GetRenderData();
-			for (size_t i = 0; i < elem.Renderable->GetCountQuads(); ++i)
-				Renderer2D::SubmitQuad(elem.Transform->GetTransformation(), quads[i]);
+			Renderer2D::SetMaterial(elem.Renderable->Material);
+			Renderer2D::SubmitMesh(elem.Transform->GetTransformation(), elem.Renderable->Mesh);
 		}
 		Renderer2D::Flush();
 

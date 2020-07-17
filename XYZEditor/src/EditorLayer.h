@@ -30,6 +30,8 @@ namespace XYZ {
 
 	private:
 		Entity m_TestEntity;
+		Entity m_TextEntity;
+
 		Transform2D* m_Transform;
 	};
 }

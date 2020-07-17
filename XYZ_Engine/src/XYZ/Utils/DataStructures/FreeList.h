@@ -54,7 +54,6 @@ namespace XYZ {
 			}
 		}
 
-
 		// Erases the nth element
 		void Erase(int index)
 		{
