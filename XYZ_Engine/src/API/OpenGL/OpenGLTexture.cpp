@@ -101,5 +101,10 @@ namespace XYZ {
 		glBindTextureUnit(slot, m_RendererID);
 	}
 
+	void OpenGLTexture2D::Bind(uint32_t rendererID,uint32_t slot)
+	{
+		glBindTextureUnit(slot, rendererID);
+	}
+
 
 }

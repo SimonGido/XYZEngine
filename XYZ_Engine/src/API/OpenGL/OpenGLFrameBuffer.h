@@ -27,7 +27,7 @@ namespace XYZ {
 
 		virtual const FrameBufferSpecs& GetSpecification() const override { return m_Specification; }
 	private:
-		void setupColorAttachment(ColorAttachment& attachment);
+		void setupColorAttachment(ColorAttachment& attachment, uint32_t index);
 		void setupDepthAttachment(DepthAttachment& attachment);
 
 	private:

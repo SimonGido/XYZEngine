@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "InGuiLayer.h"
 
-#include "InGuiCore.h"
+#include "InGui.h"
 #include "XYZ/Core/Input.h"
 #include "XYZ/Core/MouseCodes.h"
 #include "XYZ/Core/KeyCodes.h"

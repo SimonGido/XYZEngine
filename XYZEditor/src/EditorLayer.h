@@ -28,6 +28,8 @@ namespace XYZ {
 		Ref<SubTexture2D> m_CheckboxSubTexture;
 
 
+		Ref<FrameBuffer> m_FBO;
+
 	private:
 		Entity m_TestEntity;
 		Entity m_TextEntity;

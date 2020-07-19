@@ -36,6 +36,8 @@ namespace XYZ {
 		virtual void SetData(void* data, uint32_t size) = 0;
 
 		virtual void Bind(uint32_t slot = 0) const = 0;
+
+	
 	};
 
 	/**
@@ -61,5 +63,8 @@ namespace XYZ {
 		* @return shared_ptr to Texture2D
 		*/
 		static Ref<Texture2D> Create(TextureWrap wrap, const std::string& path);
+
+		static void Bind(uint32_t rendererID, uint32_t slot);
 	};
+
 }

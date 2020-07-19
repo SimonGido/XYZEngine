@@ -33,9 +33,11 @@ namespace XYZ {
 		{
 			glCreateFramebuffers(1, &m_RendererID);
 			glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
+			uint32_t counter = 0;
 			for (auto& attachment : m_ColorAttachments)
 			{
-				setupColorAttachment(attachment);
+				setupColorAttachment(attachment, counter);
+				counter++;
 			}
 			for (auto attachment : m_DepthAttachments)
 			{
@@ -47,7 +49,7 @@ namespace XYZ {
 	}
 	void OpenGLFrameBuffer::Bind() const
 	{
-		XYZ_ASSERT(m_ColorAttachments.empty() || m_DepthAttachments.empty(), "Binding framebuffer without any attachments");
+		XYZ_ASSERT(!m_ColorAttachments.empty() || !m_DepthAttachments.empty(), "Binding framebuffer without any attachments");
 		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 	}
 	void OpenGLFrameBuffer::Unbind() const
@@ -66,7 +68,7 @@ namespace XYZ {
 		glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 		ColorAttachment attachment;
 		attachment.Format = format;
-		setupColorAttachment(attachment);
+		setupColorAttachment(attachment, m_ColorAttachments.size());
 		m_ColorAttachments.push_back(attachment);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
@@ -80,7 +82,7 @@ namespace XYZ {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
-	void OpenGLFrameBuffer::setupColorAttachment(ColorAttachment& attachment)
+	void OpenGLFrameBuffer::setupColorAttachment(ColorAttachment& attachment, uint32_t index)
 	{
 		glCreateTextures(GL_TEXTURE_2D, 1, &attachment.RendererID);
 		glBindTexture(GL_TEXTURE_2D, attachment.RendererID);
@@ -99,7 +101,9 @@ namespace XYZ {
 		}
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + m_ColorAttachments.size(), GL_TEXTURE_2D, attachment.RendererID, 0);
+
+
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, GL_TEXTURE_2D, attachment.RendererID, 0);
 	}
 
 	void OpenGLFrameBuffer::setupDepthAttachment(DepthAttachment& attachment)

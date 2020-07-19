@@ -5,8 +5,9 @@
 #include "RenderCommand.h"
 #include "XYZ/Renderer/Mesh.h"
 
-
 #include <glm/gtc/matrix_transform.hpp>
+#include <array>
+
 namespace XYZ {
 
 	struct Vertex2D
@@ -17,15 +18,24 @@ namespace XYZ {
 		float	  TextureID;
 	};
 
+	struct TexturePair
+	{
+		uint32_t RendererID;
+		uint32_t Slot;
+	};
+
 	struct RendererUIData
 	{
 		void Reset();
 
 		Ref<Material> Material;
 
-		const uint32_t MaxQuads = 10000;
-		const uint32_t MaxVertices = MaxQuads * 4;
-		const uint32_t MaxIndices = MaxQuads * 6;
+		static const uint32_t MaxTextures = 32;
+		static const uint32_t MaxQuads = 10000;
+		static const uint32_t MaxVertices = MaxQuads * 4;
+		static const uint32_t MaxIndices = MaxQuads * 6;
+
+		std::vector<TexturePair> Textures;
 
 		Ref<VertexArray> QuadVertexArray;
 		Ref<VertexBuffer> QuadVertexBuffer;
@@ -61,6 +71,52 @@ namespace XYZ {
 		constexpr size_t quadVertexCount = 4;
 		if (s_UIData.IndexCount + 6 > s_UIData.MaxIndices)
 			Flush();
+
+		glm::vec2 texCoords[quadVertexCount] = {
+			{texCoord.x,texCoord.y},
+			{texCoord.z,texCoord.y},
+			{texCoord.z,texCoord.w},
+			{texCoord.x,texCoord.w}
+		};
+		glm::vec4 quadVertexPositions[4] = {
+			{ position.x - (size.x / 2.0f),position.y - (size.y / 2.0f), 0.0f, 1.0f },
+			{ position.x + (size.x / 2.0f),position.y - (size.y / 2.0f), 0.0f, 1.0f },
+			{ position.x + (size.x / 2.0f),position.y + (size.y / 2.0f), 0.0f, 1.0f },
+			{ position.x - (size.x / 2.0f),position.y + (size.y / 2.0f), 0.0f, 1.0f }
+		};
+
+		for (size_t i = 0; i < quadVertexCount; ++i)
+		{
+			s_UIData.BufferPtr->Position = quadVertexPositions[i];
+			s_UIData.BufferPtr->Color = color;
+			s_UIData.BufferPtr->TexCoord = texCoords[i];
+			s_UIData.BufferPtr->TextureID = (float)textureID;
+			s_UIData.BufferPtr++;
+		}
+		s_UIData.IndexCount += 6;
+	}
+
+	void InGuiRenderer::SubmitUI(uint32_t rendererID, const glm::vec2& position, const glm::vec2& size, const glm::vec4& texCoord, const glm::vec4& color)
+	{	
+		constexpr size_t quadVertexCount = 4;
+		if (s_UIData.IndexCount + 6 > s_UIData.MaxIndices ||
+			s_UIData.Textures.size() + s_UIData.Material->GetNumberOfTextures() >= s_UIData.MaxTextures)
+			Flush();
+
+		uint32_t textureID = 0;
+		for (uint32_t i = 0; i < s_UIData.Textures.size(); ++i)
+		{
+			if (s_UIData.Textures[i].RendererID == rendererID)
+			{
+				textureID = s_UIData.Textures[i].Slot;
+				break;
+			}
+		}
+		if (!textureID)
+		{
+			textureID += s_UIData.Material->GetNumberOfTextures();
+			s_UIData.Textures.push_back({ rendererID, textureID });
+		}
 
 		glm::vec2 texCoords[quadVertexCount] = {
 			{texCoord.x,texCoord.y},
@@ -199,6 +255,12 @@ namespace XYZ {
 			s_UIData.Material->Set("u_ViewportSize", s_UIData.Data.ViewportSize);
 
 			s_UIData.Material->Bind();
+			
+			for (auto& pair : s_UIData.Textures)
+			{
+				Texture2D::Bind(pair.RendererID, pair.Slot);
+			}
+			
 			s_UIData.QuadVertexBuffer->Update(s_UIData.BufferBase, dataSize);
 			s_UIData.QuadVertexArray->Bind();
 			RenderCommand::DrawIndexed(s_UIData.QuadVertexArray, s_UIData.IndexCount);
@@ -245,5 +307,6 @@ namespace XYZ {
 		}
 		BufferPtr = BufferBase;
 		IndexCount = 0;
+		Textures.clear();
 	}
 }

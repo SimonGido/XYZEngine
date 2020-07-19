@@ -13,6 +13,11 @@ namespace XYZ {
 		Renderer::Init();
 		SortLayer::CreateLayer("Default");
 
+		m_FBO = FrameBuffer::Create({ 800,800 });
+		m_FBO->CreateColorAttachment(FrameBufferFormat::RGBA16F);
+		m_FBO->CreateDepthAttachment();
+		m_FBO->Resize();
+
 		m_Scene = SceneManager::Get().CreateScene("Test");
 
 		m_Material = Material::Create(XYZ::Shader::Create("TextureShader", "Assets/Shaders/DefaultShader.glsl"));
@@ -70,9 +75,16 @@ namespace XYZ {
 		RenderCommand::SetClearColor(glm::vec4(0.2, 0.2, 0.5, 1));
 
 	
+		
 		m_EditorCamera.OnUpdate(ts);
 		glm::vec2 winSize = { Input::GetWindowSize().first, Input::GetWindowSize().second };
+		
+		m_FBO->Bind();
+		RenderCommand::Clear();
+		RenderCommand::SetClearColor(glm::vec4(0.2, 0.2, 0.5, 1));
 		m_Scene->OnRenderEditor(ts, { m_EditorCamera.GetViewProjectionMatrix(),winSize });
+		m_FBO->Unbind();
+
 
 		if (Input::IsKeyPressed(KeyCode::XYZ_KEY_UP))
 		{
@@ -129,6 +141,11 @@ namespace XYZ {
 		if (InGui::Slider("Slider", { -100,-100 }, { 200,15 }, m_TestValue))
 		{
 			std::cout << m_TestValue << std::endl;
+		}
+
+		if (InGui::Image(m_FBO->GetColorAttachment(0).RendererID, { 100,100 }, { 200,200 }))
+		{
+
 		}
 	}
 	

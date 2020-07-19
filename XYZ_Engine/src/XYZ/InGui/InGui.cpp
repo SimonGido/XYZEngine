@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "InGuiCore.h"
+#include "InGui.h"
 
 #include "XYZ/Core/Input.h"
 #include "XYZ/Renderer/InGuiRenderer.h"
@@ -131,6 +131,13 @@ namespace XYZ {
 		InGuiRenderer::SubmitCenteredText(name, s_InGuiRenderData.Font, { position.x,position.y + (size.y / 2) }, { 0.7,0.7 }, s_InGuiRenderData.FontTextureID, s_InGuiRenderData.TextColor, InGuiRenderer::Middle | InGuiRenderer::Top);
 		
 		return modified;
+	}
+
+	bool InGui::Image(uint32_t rendererID, const glm::vec2& position, const glm::vec2& size)
+	{
+		glm::vec4 color = { 0.5,1,1,1 };
+		InGuiRenderer::SubmitUI(rendererID, position, size, { 0,0,1,1 }, color);
+		return false;
 	}
 
 	InGuiFrameData& InGui::GetData()

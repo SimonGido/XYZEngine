@@ -27,4 +27,16 @@ namespace XYZ {
 		XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
 		return nullptr;
 	}
+
+	void Texture2D::Bind(uint32_t rendererID, uint32_t slot)
+	{
+		switch (Renderer::GetAPI())
+		{
+		case RendererAPI::API::None: XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
+		case RendererAPI::API::OpenGL: OpenGLTexture2D::Bind(rendererID, slot); return;
+		}
+
+		XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
+	}
+	
 }

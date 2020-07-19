@@ -42,7 +42,7 @@ namespace XYZ {
 		static bool Button(const std::string& name, const glm::vec2& position, const glm::vec2& size);
 		static bool Checkbox(const std::string& name, const glm::vec2& position, const glm::vec2& size);
 		static bool Slider(const std::string& name, const glm::vec2& position, const glm::vec2& size, float& value);
-		static bool Image(const glm::vec2& position, const glm::vec2& size,);
+		static bool Image(uint32_t rendererID,const glm::vec2& position, const glm::vec2& size);
 
 		static InGuiFrameData& GetData();
 	};

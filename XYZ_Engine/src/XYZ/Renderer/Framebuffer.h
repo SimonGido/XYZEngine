@@ -61,7 +61,7 @@ namespace XYZ {
 
 		virtual const FrameBufferSpecs& GetSpecification() const = 0;
 
-		static std::shared_ptr<FrameBuffer> Create(const FrameBufferSpecs& specs);
+		static Ref<FrameBuffer> Create(const FrameBufferSpecs& specs);
 	};
 
 }

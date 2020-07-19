@@ -138,7 +138,10 @@ namespace XYZ {
 			return m_Shader; 
 		}
 		//////////////////////
-
+		size_t GetNumberOfTextures() const
+		{
+			return m_Textures.size();
+		}
 
 		/**
 		* @param[in] shader
