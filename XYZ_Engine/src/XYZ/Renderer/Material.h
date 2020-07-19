@@ -124,11 +124,19 @@ namespace XYZ {
 			return m_Key & flag;
 		}
 
+		bool ContainsProperty(const std::string& name) const
+		{
+			auto uni = m_Shader->FindUniform(name);
+			return uni;
+		}
 		//TODO TEMPORARY
 		/**
 		* @return shared_ptr to the Shader
 		*/
-		const Ref<Shader>& GetShader() { return m_Shader; }
+		const Ref<Shader>& GetShader() 
+		{
+			return m_Shader; 
+		}
 		//////////////////////
 
 

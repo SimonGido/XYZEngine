@@ -2,6 +2,7 @@
 #include "Renderer.h"
 #include "RenderCommand.h"
 #include "Renderer2D.h"
+#include "InGuiRenderer.h"
 
 namespace XYZ {
 	Renderer* Renderer::s_Instance = new Renderer;
@@ -11,6 +12,7 @@ namespace XYZ {
 	{
 		RenderCommand::Init();
 		Renderer2D::Init();
+		InGuiRenderer::Init();
 	}
 
 	void Renderer::OnWindowResize(uint32_t width, uint32_t height)

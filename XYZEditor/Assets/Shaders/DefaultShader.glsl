@@ -13,14 +13,14 @@ out vec4 v_Color;
 out vec2 v_TexCoord;
 out float v_TextureID;
 
-uniform mat4 u_ViewProjection;
+uniform mat4 u_ViewProjectionMatrix;
 
 void main()
 {
 	v_Color = a_Color;
 	v_TexCoord = a_TexCoord;
 	v_TextureID = a_TextureID;
-	gl_Position = u_ViewProjection * vec4(a_Position.xy, 0.0, 1.0);
+	gl_Position = u_ViewProjectionMatrix * vec4(a_Position.xy, 0.0, 1.0);
 }
 
 #type fragment

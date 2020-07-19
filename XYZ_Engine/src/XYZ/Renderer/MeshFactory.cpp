@@ -23,7 +23,7 @@ namespace XYZ {
 			glm::vec2 scale =  { fontData.ScaleW, fontData.ScaleH };
 
 			Vertex vertices[4] = {
-				{ { position.x ,         position.y,         0.0f, 1.0f }, color, coords / scale},
+				{ { position.x ,         position.y,          0.0f, 1.0f }, color, coords / scale},
 				{ { position.x + size.x, position.y,          0.0f, 1.0f }, color, (coords + glm::vec2(character.Width,                0)) / scale},
 				{ { position.x + size.x, position.y + size.y, 0.0f, 1.0f }, color, (coords + glm::vec2(character.Width, character.Height)) / scale},
 				{ { position.x ,         position.y + size.y, 0.0f, 1.0f }, color, (coords + glm::vec2(0,               character.Height)) / scale}
@@ -67,4 +67,5 @@ namespace XYZ {
 
 		return mesh;
 	}
+	
 }

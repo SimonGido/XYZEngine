@@ -14,7 +14,7 @@ namespace XYZ {
 		virtual void OnDetach() override;
 		virtual void OnUpdate(float ts) override;
 		virtual void OnEvent(Event& event) override;
-
+		virtual void OnInGuiRender() override;
 
 	private:
 		EditorCamera m_EditorCamera;
@@ -33,5 +33,9 @@ namespace XYZ {
 		Entity m_TextEntity;
 
 		Transform2D* m_Transform;
+
+
+		float m_TestValue = 0.0f;
+
 	};
 }

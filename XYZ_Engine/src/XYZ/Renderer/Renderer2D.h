@@ -8,6 +8,12 @@
 
 namespace XYZ {
 
+	struct SceneRenderData
+	{
+		glm::mat4 ViewProjectionMatrix;
+		glm::vec2 ViewportSize;
+	};
+
 	class Renderer2D
 	{
 	public:
@@ -25,7 +31,7 @@ namespace XYZ {
 		* Initial setup before rendering
 		* @param[in] camera		Reference to the camera 
 		*/
-		static void BeginScene(const glm::mat4& viewProjMatrix);
+		static void BeginScene(const SceneRenderData& data);
 
 		static void SetMaterial(const Ref<Material>& material);
 	

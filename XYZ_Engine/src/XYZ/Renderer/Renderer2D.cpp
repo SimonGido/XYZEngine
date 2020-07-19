@@ -24,7 +24,7 @@ namespace XYZ {
 	struct Renderer2DData
 	{
 		void Reset();
-		glm::mat4 ViewProjectionMatrix = glm::mat4(1);
+		
 		Ref<Material> Material;
 
 		const uint32_t MaxQuads = 10000;
@@ -46,6 +46,7 @@ namespace XYZ {
 			{ -0.5f,  0.5f, 0.0f, 1.0f }
 		};
 
+		SceneRenderData Data;
 		Renderer2DStats Stats;
 	};
 
@@ -101,9 +102,9 @@ namespace XYZ {
 	
 	}
 
-	void Renderer2D::BeginScene(const glm::mat4& viewProjMatrix)
+	void Renderer2D::BeginScene(const SceneRenderData& data)
 	{
-		s_Data.ViewProjectionMatrix = viewProjMatrix;
+		s_Data.Data = data;
 	}
 
 	void Renderer2D::SetMaterial(const Ref<Material>& material)
@@ -233,8 +234,8 @@ namespace XYZ {
 	{
 		uint32_t dataSize = (uint8_t*)s_Data.BufferPtr - (uint8_t*)s_Data.BufferBase;
 		if (dataSize)
-		{
-			s_Data.Material->Set("u_ViewProjection", s_Data.ViewProjectionMatrix);
+		{		
+			s_Data.Material->Set("u_ViewProjectionMatrix", s_Data.Data.ViewProjectionMatrix);
 			s_Data.Material->Bind();
 			s_Data.QuadVertexBuffer->Update(s_Data.BufferBase, dataSize);
 			s_Data.QuadVertexArray->Bind();

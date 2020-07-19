@@ -1,7 +1,7 @@
 #pragma once
 #include "Window.h"
 #include "LayerStack.h"
-#include "XYZ/Gui/GuiLayer.h"
+#include "XYZ/InGui/InGuiLayer.h"
 
 #include <vector>
 
@@ -83,7 +83,7 @@ namespace XYZ {
 		LayerStack m_LayerStack;
 		std::unique_ptr<Window> m_Window;
 
-		GuiLayer* m_GuiLayer;
+		InGuiLayer* m_InGuiLayer;
 
 		bool m_Running;
 		float m_LastFrameTime = 0.0f;

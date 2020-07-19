@@ -7,8 +7,8 @@
 
 namespace XYZ {
 	class Checkbox : public Widget,
-				   public EventSystem<ClickEvent, ReleaseEvent, HooverEvent, UnHooverEvent, CheckedEvent>,
-				   public Type<Checkbox>
+				     public EventSystem<ClickEvent, ReleaseEvent, HooverEvent, UnHooverEvent, CheckedEvent>,
+				     public Type<Checkbox>
 	{
 	public:
 		Checkbox();

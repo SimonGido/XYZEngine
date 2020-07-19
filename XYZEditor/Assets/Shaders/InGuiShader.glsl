@@ -20,7 +20,7 @@ void main()
 	v_Color = a_Color;
 	v_TexCoord = a_TexCoord;
 	v_TextureID = a_TextureID;
-	gl_Position = vec4(a_Position.xy / u_ViewportSize, 0.0, 1.0);
+	gl_Position = vec4(a_Position.xy / (u_ViewportSize / 2), 0.0, 1.0);
 }
 
 #type fragment
@@ -37,8 +37,8 @@ in float v_TextureID;
 
 
 
-const float width = 0.2;
-const float edge = 0.4;
+const float width = 0.1;
+const float edge = 0.5;
 
 // Temporary
 uniform sampler2D u_Texture[32];
@@ -47,7 +47,7 @@ out vec4 FragColor;
 void main()
 {
 	float distance = 1.0 - texture(u_Texture[int(v_TextureID)], v_TexCoord).a;
-	float alpha = 1.0 - smoothstep(width, width + edge, distance);
-	FragColor = vec4(texture(u_Texture[int(v_TextureID)], v_TexCoord).xyz, alpha) * v_Color;
+	float alpha = 1.0 - smoothstep(width, width + edge, distance);	
+	FragColor = vec4(texture(u_Texture[int(v_TextureID)], v_TexCoord).xyz, alpha) * v_Color;	
 }
 

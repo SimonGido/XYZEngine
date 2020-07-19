@@ -73,7 +73,7 @@ namespace XYZ {
 		glUseProgram(0);
 	}
 
-	const Uniform* OpenGLShader::FindUniform(const std::string& name)
+	const Uniform* OpenGLShader::FindUniform(const std::string& name) const
 	{
 		for (size_t i = 0; i < m_Uniforms.size(); ++i)
 		{
@@ -84,7 +84,7 @@ namespace XYZ {
 	}
 
 
-	const TextureUniform* OpenGLShader::FindTexture(const std::string& name)
+	const TextureUniform* OpenGLShader::FindTexture(const std::string& name) const
 	{
 		for (size_t i = 0; i < m_Textures.size(); ++i)
 		{

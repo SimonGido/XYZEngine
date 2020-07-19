@@ -25,8 +25,8 @@ namespace XYZ {
 		virtual void SetInt(const std::string& name, int value) override;
 		virtual void SetMat4(const std::string& name, const glm::mat4& value) override;
 
-		virtual const Uniform* FindUniform(const std::string& name) override;
-		virtual const TextureUniform* FindTexture(const std::string& name) override;
+		virtual const Uniform* FindUniform(const std::string& name) const override;
+		virtual const TextureUniform* FindTexture(const std::string& name) const override;
 
 		inline virtual std::string GetPath() const override { return m_Path; };
 		inline virtual std::string GetName() const override { return m_Name; }

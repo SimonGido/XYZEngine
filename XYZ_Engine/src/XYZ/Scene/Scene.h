@@ -5,9 +5,9 @@
 
 #include "XYZ/Utils/DataStructures/HashGrid2D.h"
 #include "XYZ/Utils/DataStructures/Tree.h"
+
 #include "XYZ/Renderer/RenderSortSystem.h"
-
-
+#include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/Camera.h"
 
 #include "XYZ/ECS/Entity.h"
@@ -50,7 +50,7 @@ namespace XYZ {
 
         void OnRender();
 
-        void OnRenderEditor(float dt, const glm::mat4& viewProjectionMatrix);
+        void OnRenderEditor(float dt, const SceneRenderData& renderData);
 
         SceneState GetState() const { return m_State; }
 

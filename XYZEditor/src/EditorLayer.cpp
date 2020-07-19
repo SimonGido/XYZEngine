@@ -51,30 +51,16 @@ namespace XYZ {
 			Entity entity = m_Scene->CreateEntity("Test Child");
 			entity.AddComponent(RenderComponent2D{
 				m_Material,
-				MeshFactory::CreateSprite({1,1,1,1},m_CharacterSubTexture->GetTexCoords(),0),
+				MeshFactory::CreateSprite({1,1,1,1},m_CharacterSubTexture->GetTexCoords(),0),	
 				SortLayer::GetOrderValue("Default")
 			});
 
 			auto transform = entity.GetComponent<Transform2D>();
 			transform->Translate({ i,0,0 });
 			m_Scene->SetParent(m_TestEntity, entity);
-		}
-
-		m_TextEntity = m_Scene->CreateEntity("Text Entity");
-		auto text = m_TextEntity.AddComponent(TextUI{
-			"Hello world!",
-			m_Font
-		});
-
-		m_TextEntity.AddComponent(RenderComponent2D{
-			m_TextMaterial,
-			MeshFactory::CreateTextMesh(*text,{1,1,1,1}),
-			SortLayer::GetOrderValue("Default")
-		});
-
-		m_Scene->SetParent(m_TestEntity, m_TextEntity);
-
+		}		
 	}
+
 	void EditorLayer::OnDetach()
 	{
 	}
@@ -83,8 +69,10 @@ namespace XYZ {
 		RenderCommand::Clear();
 		RenderCommand::SetClearColor(glm::vec4(0.2, 0.2, 0.5, 1));
 
+	
 		m_EditorCamera.OnUpdate(ts);
-		m_Scene->OnRenderEditor(ts, m_EditorCamera.GetViewProjectionMatrix());
+		glm::vec2 winSize = { Input::GetWindowSize().first, Input::GetWindowSize().second };
+		m_Scene->OnRenderEditor(ts, { m_EditorCamera.GetViewProjectionMatrix(),winSize });
 
 		if (Input::IsKeyPressed(KeyCode::XYZ_KEY_UP))
 		{
@@ -124,6 +112,24 @@ namespace XYZ {
 	void EditorLayer::OnEvent(Event& event)
 	{
 		m_EditorCamera.OnEvent(event);
+	}
+
+	void EditorLayer::OnInGuiRender()
+	{
+		if (InGui::Button("Button", { 0,0 }, { 100,25 }))
+		{
+			std::cout << "Opica" << std::endl;
+		}
+
+		if (InGui::Checkbox("Checkbox", { -100,0 }, { 50,50 }))
+		{
+			std::cout << "Wtf" << std::endl;
+		}
+
+		if (InGui::Slider("Slider", { -100,-100 }, { 200,15 }, m_TestValue))
+		{
+			std::cout << m_TestValue << std::endl;
+		}
 	}
 	
 }

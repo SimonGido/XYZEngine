@@ -22,10 +22,8 @@ namespace XYZ {
 		m_Window->SetVSync(false);
 		m_Window->SetEventCallback(Hook(&Application::OnEvent, this));
 
-	
-
-		//m_GuiLayer = new GuiLayer();
-		//PushOverlay(m_GuiLayer);
+		m_InGuiLayer = new InGuiLayer();
+		m_LayerStack.PushLayer(m_InGuiLayer);
 
 		m_Window->RegisterCallback<WindowCloseEvent>(Hook(&Application::onWindowClosed, this));
 		m_Window->RegisterCallback<WindowResizeEvent>(Hook(&Application::onWindowResized, this));
@@ -48,10 +46,10 @@ namespace XYZ {
 				for (Layer* layer : m_LayerStack)	
 					layer->OnUpdate(timestep);
 				
-				//m_GuiLayer->Begin(timestep);
-				//for (Layer* layer : m_LayerStack)
-				//	layer->OnImGuiRender();
-				//m_ImGuiLayer->End();
+				m_InGuiLayer->Begin();
+				for (Layer* layer : m_LayerStack)
+					layer->OnInGuiRender();
+				m_InGuiLayer->End();
 			}
 			m_Window->Update();
 		}

@@ -1,9 +1,10 @@
 #include "stdafx.h"
 #include "Scene.h"
 
+#include "XYZ/Core/Input.h"
 #include "XYZ/Core/Application.h"
 #include "XYZ/Renderer/Renderer.h"
-#include "XYZ/Renderer/Renderer2D.h"
+
 #include "XYZ/Renderer/RenderCommand.h"
 
 
@@ -106,10 +107,12 @@ namespace XYZ {
 
 	void Scene::OnRender()
 	{	
-		glm::mat4 viewProjectionMatrix = m_MainCamera->Camera.GetProjectionMatrix() 
+		glm::mat4 viewProjMatrix = m_MainCamera->Camera.GetProjectionMatrix() 
 			* glm::inverse(m_MainCameraTransform->GetTransformation());
 
-		Renderer2D::BeginScene(viewProjectionMatrix);
+		glm::vec2 winSize = { Input::GetWindowSize().first, Input::GetWindowSize().second };
+
+		Renderer2D::BeginScene({ viewProjMatrix ,winSize });
 		m_SceneGraph.Propagate([this](SceneObject* parent, SceneObject* child) {
 
 			child->Transform->CalculateWorldTransformation();
@@ -121,9 +124,9 @@ namespace XYZ {
 		Renderer2D::EndScene();
 	}
 
-	void Scene::OnRenderEditor(float dt, const glm::mat4& viewProjectionMatrix)
+	void Scene::OnRenderEditor(float dt, const SceneRenderData& renderData)
 	{
-		Renderer2D::BeginScene(viewProjectionMatrix);
+		Renderer2D::BeginScene(renderData);
 		m_SceneGraph.Propagate([this](SceneObject* parent, SceneObject* child) {
 
 			child->Transform->CalculateWorldTransformation();

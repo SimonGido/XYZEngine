@@ -109,8 +109,8 @@ namespace XYZ {
 
 		virtual std::string GetPath() const = 0;
 		virtual std::string GetName() const = 0;
-		virtual const Uniform* FindUniform(const std::string& name) = 0;
-		virtual const TextureUniform* FindTexture(const std::string& name) = 0;
+		virtual const Uniform* FindUniform(const std::string& name) const = 0;
+		virtual const TextureUniform* FindTexture(const std::string& name) const = 0;
 
 		virtual uint32_t GetUniformSize() const = 0;
 

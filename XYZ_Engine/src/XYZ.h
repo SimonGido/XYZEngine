@@ -62,3 +62,7 @@
 #include "XYZ/Gui/Button.h"
 #include "XYZ/Gui/Checkbox.h"
 #include "XYZ/Gui/GuiSystem.h"
+
+
+//------InUI-------//
+#include "XYZ/InGui/InGuiCore.h"
