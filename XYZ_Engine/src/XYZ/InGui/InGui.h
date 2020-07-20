@@ -37,6 +37,8 @@ namespace XYZ {
 		bool ColapsedPanel;
 		int32_t ModifiedPanel;
 	};
+
+
 	// Instant Gui
 	class InGui
 	{

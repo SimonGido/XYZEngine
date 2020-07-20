@@ -2,6 +2,7 @@
 #include "InGui.h"
 
 #include "XYZ/Core/Input.h"
+#include "XYZ/Renderer/Mesh.h"
 #include "XYZ/Renderer/InGuiRenderer.h"
 #include "ini.h"
 
@@ -14,6 +15,13 @@ namespace XYZ {
 		bool Collapsed;
 	};
 
+	struct InGuiText
+	{
+		std::vector<Vertex> Vertices;
+		int32_t Width = 0;
+		int32_t Height = 0;
+	};
+
 	static InGuiFrameData s_InGuiData;
 	static InGuiRenderData s_InGuiRenderData;
 	static int32_t s_WindowCount = 0;
@@ -21,6 +29,38 @@ namespace XYZ {
 
 	static std::unordered_map<std::string, bool> m_CacheStates;
 	static std::unordered_map<std::string, InGuiWindow> m_InGuiWindows;
+
+
+	static void GenerateInGuiText(InGuiText& text, const Ref<Font>& font, const std::string& str, const glm::vec2& position, const glm::vec2& scale, const glm::vec4& color = { 1,1,1,1 })
+	{
+		auto& fontData = font->GetData();
+		int32_t cursorX = 0, cursorY = 0;
+
+		text.Vertices.reserve(str.size() * 4);
+		for (auto c : str)
+		{
+			auto& character = font->GetCharacter(c);
+			glm::vec2 pos = {
+				cursorX + character.XOffset + position.x,
+				cursorY + position.y
+			};
+
+			glm::vec2 size = { character.Width * scale.x, character.Height * scale.y };
+			glm::vec2 coords = { character.XCoord, fontData.ScaleH - character.YCoord - character.Height };
+			glm::vec2 scaleFont = { fontData.ScaleW, fontData.ScaleH };
+
+			text.Vertices.push_back({ { pos.x , pos.y, 0.0f, 1.0f }, color,  coords / scaleFont });
+			text.Vertices.push_back({ { pos.x + size.x, pos.y, 0.0f, 1.0f }, color, (coords + glm::vec2(character.Width, 0)) / scaleFont });
+			text.Vertices.push_back({ { pos.x + size.x, pos.y + size.y, 0.0f, 1.0f }, color, (coords + glm::vec2(character.Width, character.Height)) / scaleFont });
+			text.Vertices.push_back({ { pos.x ,pos.y + size.y, 0.0f, 1.0f }, color, (coords + glm::vec2(0,character.Height)) / scaleFont });
+
+			if (size.y > text.Height)
+				text.Height = size.y;
+
+			text.Width += character.XAdvance * scale.x;
+			cursorX += character.XAdvance * scale.x;
+		}
+	}
 
 	static glm::vec2 StringToVec2(const std::string& src)
 	{
@@ -161,7 +201,9 @@ namespace XYZ {
 		s_InGuiData.CurrentPanelPosition = it->second.Position;
 		
 		InGuiRenderer::SubmitUI(panelPos, { it->second.Size.x ,panelSize }, s_InGuiRenderData.SliderSubTexture->GetTexCoords(), s_InGuiRenderData.TextureID, panelColor);
-		InGuiRenderer::SubmitCenteredText(name, s_InGuiRenderData.Font, panelPos, { 0.7,0.7 }, s_InGuiRenderData.FontTextureID, s_InGuiRenderData.TextColor);
+		InGuiText text;
+		GenerateInGuiText(text, s_InGuiRenderData.Font, name, panelPos, { 0.7,0.7 });
+		InGuiRenderer::SubmitUI({ -text.Width / 2,-text.Height / 2 }, text.Vertices.data(), text.Vertices.size(), s_InGuiRenderData.FontTextureID);
 		InGuiRenderer::SubmitUI(minButtonPos, { panelSize ,panelSize }, s_InGuiRenderData.MinimizeButtonSubTexture->GetTexCoords(), s_InGuiRenderData.TextureID, { 1,1,1,1 });
 
 		if (!it->second.Collapsed)
@@ -185,24 +227,25 @@ namespace XYZ {
 		bool pressed = false;
 		glm::vec4 color = { 1,1,1,1 };
 		glm::vec2 offset = s_InGuiData.CurrentPanelPosition;
-
-		if (s_InGuiData.ActivePanel && !s_InGuiData.ColapsedPanel)
-		{
-			if (Collide(position + offset, size, s_InGuiData.MousePosition))
-			{
-				color = s_InGuiRenderData.HooverColor;
-				if (!s_InGuiData.ActiveWidget)
-				{
-					pressed = s_InGuiData.LeftMouseButtonDown;
-					s_InGuiData.ActiveWidget = pressed;
-				}
-			}
-		}
-
+		
 		if (!s_InGuiData.ColapsedPanel)
 		{
+			if (s_InGuiData.ActivePanel)
+			{
+				if (Collide(position + offset, size, s_InGuiData.MousePosition))
+				{
+					color = s_InGuiRenderData.HooverColor;
+					if (!s_InGuiData.ActiveWidget)
+					{
+						pressed = s_InGuiData.LeftMouseButtonDown;
+						s_InGuiData.ActiveWidget = pressed;
+					}
+				}
+			}
 			InGuiRenderer::SubmitUI(position + offset, size, s_InGuiRenderData.ButtonSubTexture->GetTexCoords(), s_InGuiRenderData.TextureID, color);
-			InGuiRenderer::SubmitCenteredText(name, s_InGuiRenderData.Font, position + offset, { 0.7,0.7 }, s_InGuiRenderData.FontTextureID, s_InGuiRenderData.TextColor);
+			InGuiText text;
+			GenerateInGuiText(text, s_InGuiRenderData.Font, name, { position.x + offset.x,position.y + offset.y }, { 0.7,0.7 });
+			InGuiRenderer::SubmitUI({ -text.Width/2,-text.Height / 2 }, text.Vertices.data(), text.Vertices.size(), s_InGuiRenderData.FontTextureID);
 		}
 		return pressed;
 	}
@@ -221,28 +264,30 @@ namespace XYZ {
 			it = m_CacheStates.find(name);
 		}
 
-		if (s_InGuiData.ActivePanel && !s_InGuiData.ColapsedPanel)
-		{
-			if (Collide(position + offset, size, s_InGuiData.MousePosition))
-			{
-				color = s_InGuiRenderData.HooverColor;
-				if (s_InGuiData.LeftMouseButtonDown && !s_InGuiData.ActiveWidget)
-				{
-					it->second = !it->second;
-					s_InGuiData.ActiveWidget = true;
-				}
-			}
-		}
 
 		if (!s_InGuiData.ColapsedPanel)
 		{
+			if (s_InGuiData.ActivePanel)
+			{
+				if (Collide(position + offset, size, s_InGuiData.MousePosition))
+				{
+					color = s_InGuiRenderData.HooverColor;
+					if (s_InGuiData.LeftMouseButtonDown && !s_InGuiData.ActiveWidget)
+					{
+						it->second = !it->second;
+						s_InGuiData.ActiveWidget = true;
+					}
+				}
+			}
+
 			if (it->second)
 				InGuiRenderer::SubmitUI(position + offset, size, s_InGuiRenderData.CheckboxSubTextureChecked->GetTexCoords(), s_InGuiRenderData.TextureID, color);
 			else
 				InGuiRenderer::SubmitUI(position + offset, size, s_InGuiRenderData.CheckboxSubTextureUnChecked->GetTexCoords(), s_InGuiRenderData.TextureID, color);
 
-			InGuiRenderer::SubmitCenteredText(name, s_InGuiRenderData.Font, { position.x + size.x / 2 + offset.x + 10,position.y + offset.y }, { 0.7,0.7 }, s_InGuiRenderData.FontTextureID, s_InGuiRenderData.TextColor, InGuiRenderer::Middle | InGuiRenderer::Right);
-			//InGuiRenderer::SubmitCenteredText(name, s_InGuiRenderData.Font, { position.x + offset.x,position.y + (size.y / 2) + offset.y }, { 0.7,0.7 }, s_InGuiRenderData.FontTextureID, s_InGuiRenderData.TextColor, InGuiRenderer::Middle | InGuiRenderer::Top);
+			InGuiText text;
+			GenerateInGuiText(text, s_InGuiRenderData.Font, name, { position.x + offset.x,position.y + offset.y }, { 0.7,0.7 });
+			InGuiRenderer::SubmitUI({ (size.x / 2) + 10,-text.Height / 2 }, text.Vertices.data(), text.Vertices.size(), s_InGuiRenderData.FontTextureID);
 		}
 		return it->second;
 	}
@@ -258,27 +303,28 @@ namespace XYZ {
 		glm::vec2 handleSize = { size.y, size.y * 2 };
 		bool modified = false;
 
-		if (s_InGuiData.ActivePanel && !s_InGuiData.ColapsedPanel)
-		{
-			if (Collide(position + offset, size, s_InGuiData.MousePosition))
-			{
-				color = s_InGuiRenderData.HooverColor;
-				modified = s_InGuiData.LeftMouseButtonDown;
-				if (modified && !s_InGuiData.ActiveWidget)
-				{
-					float start = position.x + offset.x - size.x / 2.0f;
-					value = MouseToWorld(s_InGuiData.MousePosition).x - start;
-				}
-			}
-		}
-
 		if (!s_InGuiData.ColapsedPanel)
 		{
+			if (s_InGuiData.ActivePanel)
+			{
+				if (Collide(position + offset, size, s_InGuiData.MousePosition))
+				{
+					color = s_InGuiRenderData.HooverColor;
+					modified = s_InGuiData.LeftMouseButtonDown;
+					if (modified && !s_InGuiData.ActiveWidget)
+					{
+						float start = position.x + offset.x - size.x / 2.0f;
+						value = MouseToWorld(s_InGuiData.MousePosition).x - start;
+					}
+				}
+			}
+		
 			InGuiRenderer::SubmitUI(position + offset, size, s_InGuiRenderData.SliderSubTexture->GetTexCoords(), s_InGuiRenderData.TextureID, color);
 			InGuiRenderer::SubmitUI(handlePos + offset, handleSize, s_InGuiRenderData.SliderHandleSubTexture->GetTexCoords(), s_InGuiRenderData.TextureID, color);
 
-			InGuiRenderer::SubmitCenteredText(name, s_InGuiRenderData.Font, { position.x + size.x / 2 + offset.x + 10,position.y + offset.y }, { 0.7,0.7 }, s_InGuiRenderData.FontTextureID, s_InGuiRenderData.TextColor, InGuiRenderer::Middle | InGuiRenderer::Right);
-			//InGuiRenderer::SubmitCenteredText(name, s_InGuiRenderData.Font, { position.x + offset.x,position.y + (size.y / 2) + offset.y }, { 0.7,0.7 }, s_InGuiRenderData.FontTextureID, s_InGuiRenderData.TextColor, InGuiRenderer::Middle | InGuiRenderer::Top);
+			InGuiText text;
+			GenerateInGuiText(text, s_InGuiRenderData.Font, name, { position.x + offset.x,position.y + offset.y }, { 0.7,0.7 });
+			InGuiRenderer::SubmitUI({(size.x/2) + 10,-text.Height/2},text.Vertices.data(), text.Vertices.size(), s_InGuiRenderData.FontTextureID);
 		}
 		return modified;
 	}
@@ -291,17 +337,18 @@ namespace XYZ {
 		glm::vec2 offset = s_InGuiData.CurrentPanelPosition;
 		glm::vec4 color = { 1,1,1,1 };
 
-		if (s_InGuiData.ActivePanel && !s_InGuiData.ColapsedPanel)
-		{
-			if (Collide(position + offset, size, s_InGuiData.MousePosition))
-			{
-				color = s_InGuiRenderData.HooverColor;
-			}
-		}
-
 		if (!s_InGuiData.ColapsedPanel)
+		{
+			if (s_InGuiData.ActivePanel)
+			{
+				if (Collide(position + offset, size, s_InGuiData.MousePosition))
+				{
+					color = s_InGuiRenderData.HooverColor;
+				}
+			}
+
 			InGuiRenderer::SubmitUI(rendererID, position + offset, size, { 0,0,1,1 }, color);
-		
+		}
 		return false;
 	}
 
@@ -358,7 +405,9 @@ namespace XYZ {
 		
 
 		InGuiRenderer::SubmitUI(panelPos, { size.x,panelSize }, s_InGuiRenderData.SliderSubTexture->GetTexCoords(), s_InGuiRenderData.TextureID, panelColor);
-		InGuiRenderer::SubmitCenteredText(name, s_InGuiRenderData.Font, panelPos, { 0.7,0.7 }, s_InGuiRenderData.FontTextureID, s_InGuiRenderData.TextColor, InGuiRenderer::Middle);
+		InGuiText text;
+		GenerateInGuiText(text, s_InGuiRenderData.Font, name,  panelPos, { 0.7,0.7 });
+		InGuiRenderer::SubmitUI({ -text.Width / 2,-text.Height / 2 }, text.Vertices.data(), text.Vertices.size(), s_InGuiRenderData.FontTextureID);
 		InGuiRenderer::SubmitUI(minButtonPos, { panelSize ,panelSize }, s_InGuiRenderData.MinimizeButtonSubTexture->GetTexCoords(), s_InGuiRenderData.TextureID, { 1,1,1,1 });
 		
 		if (!it->second.Collapsed)

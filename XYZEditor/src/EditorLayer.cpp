@@ -51,7 +51,7 @@ namespace XYZ {
 		m_Transform = m_TestEntity.GetComponent<Transform2D>();
 
 
-		for (int i = 1; i < 50000; ++i)
+		for (int i = 1; i < 5; ++i)
 		{
 			Entity entity = m_Scene->CreateEntity("Test Child");
 			entity.AddComponent(RenderComponent2D{

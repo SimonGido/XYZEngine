@@ -142,114 +142,23 @@ namespace XYZ {
 		s_UIData.IndexCount += 6;
 	}
 
-	void InGuiRenderer::SubmitText(const std::string& text,const Ref<Font>& font, const glm::vec2& position, const glm::vec2& scale, uint32_t textureID, const glm::vec4& color)
+	void InGuiRenderer::SubmitUI(const glm::vec2& position, const Vertex* vertex, size_t count, uint32_t textureID)
 	{
-		if (s_UIData.IndexCount + (text.size() * 6) > s_UIData.MaxIndices)
+		uint32_t indexCount = (count / 4) * 6;
+		if (s_UIData.IndexCount +  indexCount > s_UIData.MaxIndices)
 			Flush();
 
-		auto& fontData = font->GetData();
-		int32_t cursorX = 0, cursorY = 0;
-		
-		for (auto c : text)
+		for (size_t i = 0; i < count; ++i)
 		{
-			auto& character = font->GetCharacter(c);
-			glm::vec2 pos = {
-				cursorX + character.XOffset + position.x,
-				cursorY + position.y
-			};
-
-
-			glm::vec2 size = { character.Width * scale.x, character.Height * scale.y };
-			glm::vec2 coords = { character.XCoord, fontData.ScaleH - character.YCoord - character.Height };
-			glm::vec2 scaleFont = { fontData.ScaleW, fontData.ScaleH };
-
-			Vertex vertices[4] = {
-				{ { pos.x ,         pos.y,          0.0f, 1.0f }, color,  coords / scaleFont},
-				{ { pos.x + size.x, pos.y,          0.0f, 1.0f }, color, (coords + glm::vec2(character.Width,                0)) / scaleFont},
-				{ { pos.x + size.x, pos.y + size.y, 0.0f, 1.0f }, color, (coords + glm::vec2(character.Width, character.Height)) / scaleFont},
-				{ { pos.x ,         pos.y + size.y, 0.0f, 1.0f }, color, (coords + glm::vec2(0,               character.Height)) / scaleFont}
-			};
-
-			cursorX += character.XAdvance * scale.x;
-			for (auto& vertex : vertices)
-			{
-				s_UIData.BufferPtr->Position = vertex.Position;
-				s_UIData.BufferPtr->Color = color;
-				s_UIData.BufferPtr->TexCoord = vertex.TexCoord;
-				s_UIData.BufferPtr->TextureID = (float)textureID;
-				s_UIData.BufferPtr++;
-			}
-			s_UIData.IndexCount += 6;
-		}
-	}
-
-	void InGuiRenderer::SubmitCenteredText(const std::string& text, const Ref<Font>& font, const glm::vec2& position, const glm::vec2& scale, uint32_t textureID, const glm::vec4& color, int centered)
-	{
-		if (s_UIData.IndexCount + (text.size() * 6) > s_UIData.MaxIndices)
-			Flush();
-
-		auto& fontData = font->GetData();
-		int32_t cursorX = 0, cursorY = 0;
-		int32_t width = 0;
-		int32_t height = 0;
-
-		std::vector<Vertex> vertices;
-		vertices.reserve(text.size() * 4);
-		for (auto c : text)
-		{
-			auto& character = font->GetCharacter(c);
-			glm::vec2 pos = {
-				cursorX + character.XOffset + position.x,
-				cursorY + position.y
-			};
-
-			glm::vec2 size = { character.Width * scale.x, character.Height * scale.y };
-			glm::vec2 coords = { character.XCoord, fontData.ScaleH - character.YCoord - character.Height };
-			glm::vec2 scaleFont = { fontData.ScaleW, fontData.ScaleH };
-
-			vertices.push_back({ { pos.x , pos.y, 0.0f, 1.0f }, color,  coords / scaleFont });
-			vertices.push_back({ { pos.x + size.x, pos.y, 0.0f, 1.0f }, color, (coords + glm::vec2(character.Width, 0)) / scaleFont });
-			vertices.push_back({ { pos.x + size.x, pos.y + size.y, 0.0f, 1.0f }, color, (coords + glm::vec2(character.Width, character.Height)) / scaleFont });
-			vertices.push_back({ { pos.x ,pos.y + size.y, 0.0f, 1.0f }, color, (coords + glm::vec2(0,character.Height)) / scaleFont });
-
-			if (size.y > height)
-				height = size.y;
-
-			width += character.XAdvance * scale.x;
-			cursorX += character.XAdvance * scale.x;
-		}
-
-		if (centered == (Middle | Top))
-		{
-			width = -width / 2;
-		}
-		else if (centered == (Middle | Bottom))
-		{
-			
-		}
-		else if (centered == Middle)
-		{
-			width = -width / 2;
-			height = -height / 2;
-		}
-		else if (centered == (Middle | Right))
-		{
-			height = -height / 2;
-			width = 0;
-		}
-
-		for (auto& vertex : vertices)
-		{
-			vertex.Position.x += width;
-			vertex.Position.y += height;
-			s_UIData.BufferPtr->Position = vertex.Position;
-			s_UIData.BufferPtr->Color = color;
-			s_UIData.BufferPtr->TexCoord = vertex.TexCoord;
+			s_UIData.BufferPtr->Position = vertex[i].Position + glm::vec4(position.x, position.y, 0, 0);
+			s_UIData.BufferPtr->Color = vertex[i].Color;
+			s_UIData.BufferPtr->TexCoord = vertex[i].TexCoord;
 			s_UIData.BufferPtr->TextureID = (float)textureID;
 			s_UIData.BufferPtr++;
 		}
-		s_UIData.IndexCount += 6 * text.size();
+		s_UIData.IndexCount += indexCount;
 	}
+
 	
 	void InGuiRenderer::Flush()
 	{
