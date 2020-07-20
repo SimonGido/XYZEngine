@@ -39,5 +39,6 @@ namespace XYZ {
 
 		float m_TestValue = 0.0f;
 
+		bool m_ActiveWindow = false;
 	};
 }

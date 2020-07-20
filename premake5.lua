@@ -19,6 +19,7 @@ IncludeDir = {}
 IncludeDir["GLFW"] = "XYZ_Engine/vendor/GLFW/include"
 IncludeDir["GLEW"] = "XYZ_Engine/vendor/GLEW/include"
 IncludeDir["glm"] = "XYZ_Engine/vendor/glm"
+IncludeDir["mini"] = "XYZ_Engine/vendor/mini"
 IncludeDir["OpenAL"] = "XYZ_Engine/vendor/OpenAL-Soft"
 IncludeDir["MiniMp3"] = "XYZ_Engine/vendor/minimp3"
 
@@ -46,6 +47,7 @@ project "XYZ_Engine"
 			"%{prj.name}/src/**.cpp",
 			"%{prj.name}/vendor/glm/glm/**.hpp",
 			"%{prj.name}/vendor/glm/glm/**.inl",
+			"%{prj.name}/vendor/mini/ini.h",
 			"%{prj.name}/vendor/stb_image/**.h",
 			"%{prj.name}/vendor/stb_image/**.cpp"
 		}
@@ -64,6 +66,7 @@ project "XYZ_Engine"
 			"%{IncludeDir.GLFW}",
 			"%{IncludeDir.GLEW}",
 			"%{IncludeDir.glm}",
+			"%{IncludeDir.mini}",
 			"%{IncludeDir.OpenAL}/include",
 			"%{IncludeDir.OpenAL}/src",
 			"%{IncludeDir.OpenAL}/src/common",
@@ -94,6 +97,46 @@ project "XYZ_Engine"
 				runtime "Release"
 				optimize "on"
 
+project "XYZEditor"
+		location "XYZEditor"
+		kind "ConsoleApp"
+		language "C++"
+		cppdialect "C++17"
+		staticruntime "on"
+
+		targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+		objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+
+		files
+		{
+			"%{prj.name}/src/**.h",
+			"%{prj.name}/src/**.cpp"
+		}
+
+		includedirs
+		{
+			"XYZ_Engine/vendor",
+			"XYZ_Engine/src",
+			"%{IncludeDir.glm}"
+		}
+
+		links
+		{
+			"XYZ_Engine"
+		}
+
+		filter "system:windows"
+				systemversion "latest"
+
+		filter "configurations:Debug"
+				defines "XYZ_DEBUG"
+				runtime "Debug"
+				symbols "on"
+
+		filter "configurations:Release"
+				defines "XYZ_RELEASE"
+				runtime "Release"
+				optimize "on"
 
 
 project "ZSandbox"
@@ -139,43 +182,3 @@ project "ZSandbox"
 				
 
 
-project "XYZEditor"
-		location "XYZEditor"
-		kind "ConsoleApp"
-		language "C++"
-		cppdialect "C++17"
-		staticruntime "on"
-
-		targetdir ("bin/" .. outputdir .. "/%{prj.name}")
-		objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-
-		files
-		{
-			"%{prj.name}/src/**.h",
-			"%{prj.name}/src/**.cpp"
-		}
-
-		includedirs
-		{
-			"XYZ_Engine/vendor",
-			"XYZ_Engine/src",
-			"%{IncludeDir.glm}"
-		}
-
-		links
-		{
-			"XYZ_Engine"
-		}
-
-		filter "system:windows"
-				systemversion "latest"
-
-		filter "configurations:Debug"
-				defines "XYZ_DEBUG"
-				runtime "Debug"
-				symbols "on"
-
-		filter "configurations:Release"
-				defines "XYZ_RELEASE"
-				runtime "Release"
-				optimize "on"

@@ -225,14 +225,18 @@ namespace XYZ {
 		}
 		else if (centered == (Middle | Bottom))
 		{
-
+			
 		}
 		else if (centered == Middle)
 		{
 			width = -width / 2;
 			height = -height / 2;
 		}
-		
+		else if (centered == (Middle | Right))
+		{
+			height = -height / 2;
+			width = 0;
+		}
 
 		for (auto& vertex : vertices)
 		{

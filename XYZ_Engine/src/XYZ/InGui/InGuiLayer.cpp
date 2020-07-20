@@ -32,12 +32,15 @@ namespace XYZ {
 			Ref<SubTexture2D>::Create(texture, glm::vec2(0, 1), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4)),
 			Ref<SubTexture2D>::Create(texture, glm::vec2(0, 0), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4)),
 			Ref<SubTexture2D>::Create(texture, glm::vec2(1, 2), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4)),
+			Ref<SubTexture2D>::Create(texture, glm::vec2(0, 3), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4)),
+			Ref<SubTexture2D>::Create(texture, glm::vec2(2, 3), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4)),
 		});
 
 		
 	}
 	void InGuiLayer::OnDetach()
 	{
+		InGui::Shutdown();
 	}
 	void InGuiLayer::OnUpdate(float dt)
 	{
@@ -85,6 +88,7 @@ namespace XYZ {
 		else if (e.GetButton() == MouseCode::XYZ_MOUSE_BUTTON_RIGHT)
 		{
 			InGui::GetData().RightMouseButtonDown = false;
+			InGui::GetData().ModifiedPanel = -1;
 		}
 
 		return false;
