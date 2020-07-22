@@ -44,6 +44,8 @@ const float edge = 0.5;
 uniform sampler2D u_Texture[32];
 out vec4 FragColor;
 
+
+
 void main()
 {
 	float distance = 1.0 - texture(u_Texture[int(v_TextureID)], v_TexCoord).a;

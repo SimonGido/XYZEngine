@@ -49,7 +49,7 @@ namespace XYZ {
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 		SetVSync(true);
 
-
+		
 		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
@@ -158,6 +158,20 @@ namespace XYZ {
 	bool WindowsWindow::IsClosed()
 	{
 		return glfwWindowShouldClose(m_Window);
+	}
+
+	void WindowsWindow::SetCursor(WindowCursor cursor)
+	{
+		if (cursor != m_Current)
+		{
+			m_Current = cursor;
+			if (m_Cursor)
+				glfwDestroyCursor(m_Cursor);
+
+			int casted = static_cast<std::underlying_type_t<WindowCursor>>(cursor);
+			m_Cursor = glfwCreateStandardCursor(casted);
+			glfwSetCursor(m_Window, m_Cursor);
+		}
 	}
 
 

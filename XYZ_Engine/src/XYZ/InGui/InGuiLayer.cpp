@@ -88,7 +88,7 @@ namespace XYZ {
 		else if (e.GetButton() == MouseCode::XYZ_MOUSE_BUTTON_RIGHT)
 		{
 			InGui::GetData().RightMouseButtonDown = false;
-			InGui::GetData().ModifiedPanel = -1;
+			InGui::GetData().IsWindowModified = false;
 		}
 
 		return false;

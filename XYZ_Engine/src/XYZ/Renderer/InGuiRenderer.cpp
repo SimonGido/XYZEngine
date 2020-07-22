@@ -78,11 +78,12 @@ namespace XYZ {
 			{texCoord.z,texCoord.w},
 			{texCoord.x,texCoord.w}
 		};
+	
 		glm::vec4 quadVertexPositions[4] = {
-			{ position.x - (size.x / 2.0f),position.y - (size.y / 2.0f), 0.0f, 1.0f },
-			{ position.x + (size.x / 2.0f),position.y - (size.y / 2.0f), 0.0f, 1.0f },
-			{ position.x + (size.x / 2.0f),position.y + (size.y / 2.0f), 0.0f, 1.0f },
-			{ position.x - (size.x / 2.0f),position.y + (size.y / 2.0f), 0.0f, 1.0f }
+			{ position.x ,		  position.y , 0.0f, 1.0f },
+			{ position.x + size.x,position.y , 0.0f, 1.0f },
+			{ position.x + size.x,position.y + size.y, 0.0f, 1.0f },
+			{ position.x ,        position.y + size.y, 0.0f, 1.0f }
 		};
 
 		for (size_t i = 0; i < quadVertexCount; ++i)
@@ -124,12 +125,14 @@ namespace XYZ {
 			{texCoord.z,texCoord.w},
 			{texCoord.x,texCoord.w}
 		};
+		
 		glm::vec4 quadVertexPositions[4] = {
-			{ position.x - (size.x / 2.0f),position.y - (size.y / 2.0f), 0.0f, 1.0f },
-			{ position.x + (size.x / 2.0f),position.y - (size.y / 2.0f), 0.0f, 1.0f },
-			{ position.x + (size.x / 2.0f),position.y + (size.y / 2.0f), 0.0f, 1.0f },
-			{ position.x - (size.x / 2.0f),position.y + (size.y / 2.0f), 0.0f, 1.0f }
+			{ position.x ,		  position.y , 0.0f, 1.0f },
+			{ position.x + size.x,position.y , 0.0f, 1.0f },
+			{ position.x + size.x,position.y + size.y, 0.0f, 1.0f },
+			{ position.x ,        position.y + size.y, 0.0f, 1.0f }
 		};
+
 
 		for (size_t i = 0; i < quadVertexCount; ++i)
 		{

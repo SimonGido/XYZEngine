@@ -1,7 +1,7 @@
 #pragma once
 
 namespace XYZ {
-	enum KeyCode
+	enum class KeyCode
 	{
 		XYZ_KEY_SPACE = 32,
 		XYZ_KEY_APOSTROPHE = 39,

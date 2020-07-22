@@ -3,6 +3,7 @@
 #include "XYZ/Event/InputEvent.h"
 #include "XYZ/Event/ApplicationEvent.h"
 #include "XYZ/Event/EventSystem.h"
+#include "WindowCodes.h"
 
 #include <functional>
 
@@ -52,7 +53,8 @@ namespace XYZ {
 		// Window attributes
 		virtual void SetEventCallback(const EventCallbackFn& callback) = 0;
 		virtual void SetVSync(bool enabled) = 0;
-		
+		virtual void SetCursor(WindowCursor cursor) = 0;
+
 		virtual bool IsClosed() = 0;
 		virtual void* GetNativeWindow() const = 0;
 

@@ -133,7 +133,7 @@ namespace XYZ {
 
 	void EditorLayer::OnInGuiRender()
 	{
-		if (InGui::RenderWindow("Scene", m_FBO->GetColorAttachment(0).RendererID, { 100,100 }, { 800,800 }, 25.0f))
+		if (InGui::RenderWindow("Scene", m_FBO->GetColorAttachment(0).RendererID, { 0,-300 }, { 800,800 }, 25.0f))
 		{
 			m_ActiveWindow = true;
 		}
@@ -143,19 +143,84 @@ namespace XYZ {
 		}
 	
 		InGui::Begin("Test Panel", { 0,0 }, { 500,500 }, 25.0f);
-		if (InGui::Button("Button", { -50 , 50 }, { 100,25 }))
+		if (InGui::Button("Button", { 100,25 }))
 		{
 			std::cout << "Opica" << std::endl;
 		}
-
-		if (InGui::Checkbox("Checkbox", { -50,0 }, { 50,50 }))
+		if (InGui::Button("Button", { 100,25 }))
+		{
+			std::cout << "Opica" << std::endl;
+		}
+		if (InGui::Button("Button", { 100,25 }))
+		{
+			std::cout << "Opica" << std::endl;
+		}
+		if (InGui::Checkbox("Checkbox",  { 50,50 }))
 		{
 			std::cout << "Wtf" << std::endl;
 		}
-
-		if (InGui::Slider("Slider", { -50,-100 }, { 200,15 }, m_TestValue))
+		if (InGui::Checkbox("Checkbox", { 50,50 }))
+		{
+			std::cout << "Wtf" << std::endl;
+		}
+		if (InGui::Checkbox("Checkbox", { 50,50 }))
+		{
+			std::cout << "Wtf" << std::endl;
+		}
+		if (InGui::Checkbox("Checkbox", { 50,50 }))
+		{
+			std::cout << "Wtf" << std::endl;
+		}
+		if (InGui::Checkbox("Checkbox", { 50,50 }))
+		{
+			std::cout << "Wtf" << std::endl;
+		}
+		if (InGui::Checkbox("Checkbox", { 50,50 }))
+		{
+			std::cout << "Wtf" << std::endl;
+		}
+		if (InGui::Checkbox("Checkbox", { 50,50 }))
+		{
+			std::cout << "Wtf" << std::endl;
+		}
+		if (InGui::Checkbox("Checkbox", { 50,50 }))
+		{
+			std::cout << "Wtf" << std::endl;
+		}
+		if (InGui::Checkbox("Checkbox", { 50,50 }))
+		{
+			std::cout << "Wtf" << std::endl;
+		}
+		if (InGui::Checkbox("Checkasasasasasasbox", { 50,50 }))
+		{
+			std::cout << "Wtf" << std::endl;
+		}
+		if (InGui::Checkbox("Checkbox", { 50,50 }))
+		{
+			std::cout << "Wtf" << std::endl;
+		}
+		if (InGui::Slider("Slider", { 200,15 }, m_TestValue))
 		{
 			std::cout << m_TestValue << std::endl;
+		}
+		if (InGui::Slider("Slider", { 200,15 }, m_TestValue))
+		{
+			std::cout << m_TestValue << std::endl;
+		}
+		if (InGui::Slider("Slider", { 200,15 }, m_TestValue))
+		{
+			std::cout << m_TestValue << std::endl;
+		}
+		if (InGui::Checkbox("Checkbox", { 50,50 }))
+		{
+			std::cout << "Wtf" << std::endl;
+		}if (InGui::Checkbox("Checkbox", { 50,50 }))
+		{
+			std::cout << "Wtf" << std::endl;
+		}
+		if (InGui::Checkbox("Checkbox", { 50,50 }))
+		{
+			std::cout << "Wtf" << std::endl;
 		}
 		InGui::End();
 	}
