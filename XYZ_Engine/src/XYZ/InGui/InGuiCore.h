@@ -8,12 +8,21 @@
 
 namespace XYZ {
 	namespace InGui {
+
+		enum InGuiWindowFlags
+		{
+			Collapsed = 1 << 0,
+			Moved	  = 1 << 1,
+			Resized	  = 1 << 2,
+			Hoovered  = 1 << 3
+		};
+
 		struct InGuiWindow
 		{
 			glm::vec2 Position;
 			glm::vec2 Size;
-			bool Collapsed;
-			bool Modified = false;
+			uint8_t Flags;
+			static constexpr float PanelSize = 25.0f;
 		};
 
 		struct InGuiRenderData
@@ -50,11 +59,8 @@ namespace XYZ {
 			// Todo swap for bitset
 			bool LeftMouseButtonDown;
 			bool RightMouseButtonDown;
-			bool IsWindowModified;
 
-			bool ActiveWidget;
-			bool ActiveWindow;
-
+			bool ClickHandled;
 		};
 
 		struct InGuiContext
@@ -66,5 +72,18 @@ namespace XYZ {
 		};
 
 
+		void Init(const InGuiRenderData& renderData);
+		void Shutdown();
+
+		void BeginFrame();
+		void EndFrame();
+
+
+		void OnLeftMouseButtonRelease();
+		void OnRightMouseButtonRelease();
+		void OnLeftMouseButtonPress();
+		void OnRightMouseButtonPress();
+
+		InGuiFrameData& GetData();
 	}
 }

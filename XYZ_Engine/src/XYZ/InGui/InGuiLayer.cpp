@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "InGuiLayer.h"
 
-#include "InGui.h"
+#include "InGuiCore.h"
 #include "XYZ/Core/Input.h"
 #include "XYZ/Core/MouseCodes.h"
 #include "XYZ/Core/KeyCodes.h"
@@ -69,11 +69,11 @@ namespace XYZ {
 	{
 		if (e.GetButton() == MouseCode::XYZ_MOUSE_BUTTON_LEFT)
 		{
-			InGui::GetData().LeftMouseButtonDown = true;
+			InGui::OnLeftMouseButtonPress();
 		}
 		else if (e.GetButton() == MouseCode::XYZ_MOUSE_BUTTON_RIGHT)
 		{
-			InGui::GetData().RightMouseButtonDown = true;
+			InGui::OnRightMouseButtonPress();
 		}
 
 		return false;
@@ -82,15 +82,11 @@ namespace XYZ {
 	{
 		if (e.GetButton() == MouseCode::XYZ_MOUSE_BUTTON_LEFT)
 		{
-			InGui::GetData().LeftMouseButtonDown = false;
-			InGui::GetData().ActiveWidget = false;
-			InGui::GetData().IsResizing = 0;
+			InGui::OnLeftMouseButtonRelease();
 		}
 		else if (e.GetButton() == MouseCode::XYZ_MOUSE_BUTTON_RIGHT)
 		{
-			InGui::GetData().RightMouseButtonDown = false;
-			InGui::GetData().IsWindowModified = false;
-			
+			InGui::OnRightMouseButtonRelease();
 		}
 
 		return false;

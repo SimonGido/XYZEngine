@@ -142,7 +142,7 @@ namespace XYZ {
 			m_ActiveWindow = false;
 		}
 	
-		InGui::Begin("Test Panel", { 0,0 }, { 500,500 }, 25.0f);
+		InGui::Begin("Test Panel", { 0,0 }, { 500,500 });
 		if (InGui::Button("Button", { 100,25 }))
 		{
 			std::cout << "Opica" << std::endl;

@@ -55,30 +55,88 @@ namespace XYZ {
 					pos.y		   <= point.y);
 		}
 
-		void DetectResize(const InGuiWindow& window)
+		bool DetectResize(const InGuiWindow& window)
 		{
 			glm::vec2 offset = { 10,10 };
 			bool mouseButtonDown = g_InContext->InGuiData.LeftMouseButtonDown;
 			auto& mousePos = g_InContext->InGuiData.MousePosition;
 
 			if (mouseButtonDown)
-			{		
+			{
 				// Right side
 				if (mousePos.x >= window.Position.x + window.Size.x - offset.x)
 					g_InContext->InGuiData.IsResizing |= 1;
-				
+
 				// Left side
 				if (mousePos.x <= window.Position.x + offset.x)
 					g_InContext->InGuiData.IsResizing |= (1 << 1);
-				
-				
+
+
 				// Bottom side
 				if (mousePos.y <= window.Position.y + offset.y)
 					g_InContext->InGuiData.IsResizing |= (1 << 2);
-				
+
 				// Top side
 				if (mousePos.y >= window.Position.y + window.Size.y - offset.y)
 					g_InContext->InGuiData.IsResizing |= (1 << 3);
+
+				if (g_InContext->InGuiData.IsResizing)
+				{
+					return true;
+				}
+			}		
+			return false;
+		}
+
+
+		bool DetectCollapse(const InGuiWindow& window)
+		{
+			glm::vec2 minButtonPos = { 
+				window.Position.x + window.Size.x - InGuiWindow::PanelSize, 
+				window.Position.y + window.Size.y 
+			};
+			glm::vec2 minButtonSize = { InGuiWindow::PanelSize,InGuiWindow::PanelSize };
+
+			if (Collide(minButtonPos, minButtonSize, g_InContext->InGuiData.MousePosition))
+			{
+				return true;
+			}
+			return false;
+		}
+
+		void HandleMouseInput(InGuiWindow& window)
+		{
+			if (Collide(window.Position, { window.Size.x,window.Size.y + InGuiWindow::PanelSize }, g_InContext->InGuiData.MousePosition)
+				&& !g_InContext->InGuiData.ClickHandled)
+			{
+				window.Flags |= Hoovered;
+
+				if (g_InContext->InGuiData.RightMouseButtonDown)
+				{
+					if (!(window.Flags & Moved))
+					{
+						window.Flags |= Moved;
+						g_InContext->InGuiData.ClickHandled = true;
+						g_InContext->InGuiData.ModifiedWindowMouseOffset = g_InContext->InGuiData.MousePosition - window.Position - glm::vec2{ 0, window.Size.y };
+					}
+				}
+				else if (g_InContext->InGuiData.LeftMouseButtonDown)
+				{		
+					if (DetectCollapse(window))
+					{
+						window.Flags ^= Collapsed;
+						g_InContext->InGuiData.ClickHandled = true;
+					}
+					else if (DetectResize(window))
+					{
+						window.Flags |= Resized;
+						g_InContext->InGuiData.ClickHandled = true;
+					}
+				}
+			}
+			else
+			{
+				window.Flags &= ~Hoovered;
 			}
 		}
 
@@ -87,37 +145,55 @@ namespace XYZ {
 			auto& app = Application::Get();
 			auto& mousePos = g_InContext->InGuiData.MousePosition;
 
-			if (g_InContext->InGuiData.IsResizing & 1)
+			if (g_InContext->InGuiData.LeftMouseButtonDown && (window.Flags & Resized))
 			{
-				app.GetWindow().SetCursor(WindowCursor::XYZ_HRESIZE_CURSOR);
-				window.Size.x = mousePos.x - window.Position.x;
+				if (g_InContext->InGuiData.IsResizing & 1)
+				{
+					app.GetWindow().SetCursor(WindowCursor::XYZ_HRESIZE_CURSOR);
+					window.Size.x = mousePos.x - window.Position.x;
+				}
+				else if (g_InContext->InGuiData.IsResizing & (1 << 1))
+				{
+					app.GetWindow().SetCursor(WindowCursor::XYZ_HRESIZE_CURSOR);
+					window.Size.x = window.Position.x + window.Size.x - mousePos.x;
+					window.Position.x = mousePos.x;
+				}
+
+
+				if (g_InContext->InGuiData.IsResizing & (1 << 2))
+				{
+					app.GetWindow().SetCursor(WindowCursor::XYZ_VRESIZE_CURSOR);
+					window.Size.y = window.Position.y + window.Size.y - mousePos.y;
+					window.Position.y = mousePos.y;
+				}
+				else if (g_InContext->InGuiData.IsResizing & (1 << 3))
+				{
+					app.GetWindow().SetCursor(WindowCursor::XYZ_VRESIZE_CURSOR);
+					window.Size.y = mousePos.y - window.Position.y;
+				}
 			}
-			else if (g_InContext->InGuiData.IsResizing & (1 << 1))
+			else
 			{
-				app.GetWindow().SetCursor(WindowCursor::XYZ_HRESIZE_CURSOR);
-				window.Size.x = window.Position.x + window.Size.x - mousePos.x;
-				window.Position.x = mousePos.x;
+				window.Flags &= ~Resized;
+				if (!g_InContext->InGuiData.IsResizing)
+					app.GetWindow().SetCursor(WindowCursor::XYZ_ARROW_CURSOR);
 			}
 			
-			
-			if (g_InContext->InGuiData.IsResizing & (1 << 2))
-			{
-				app.GetWindow().SetCursor(WindowCursor::XYZ_VRESIZE_CURSOR);
-				window.Size.y = window.Position.y + window.Size.y - mousePos.y;
-				window.Position.y = mousePos.y;
-			}
-			else if (g_InContext->InGuiData.IsResizing & (1 << 3))
-			{
-				app.GetWindow().SetCursor(WindowCursor::XYZ_VRESIZE_CURSOR);
-				window.Size.y = mousePos.y - window.Position.y;
-			}
-			
-			if (g_InContext->InGuiData.IsResizing == 0)
-			{
-				app.GetWindow().SetCursor(WindowCursor::XYZ_ARROW_CURSOR);
-			}
 		}
 
+		void HandleMove(InGuiWindow& window)
+		{
+			if (g_InContext->InGuiData.RightMouseButtonDown)
+			{
+				glm::vec2 pos = g_InContext->InGuiData.MousePosition - g_InContext->InGuiData.ModifiedWindowMouseOffset;
+				window.Position = { pos.x, pos.y - window.Size.y };
+			}
+			else
+			{
+				window.Flags &= ~(Moved);
+			}
+		}
+	
 		void GenerateInGuiText(InGuiText& text, const Ref<Font>& font, const std::string& str, const glm::vec2& position, const glm::vec2& scale, float length, const glm::vec4& color)
 		{
 			auto& fontData = font->GetData();
