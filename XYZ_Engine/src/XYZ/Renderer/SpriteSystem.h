@@ -15,7 +15,7 @@ namespace XYZ {
 		/**
 		* Construct a sprite system, set signature
 		*/
-		SpriteSystem();
+		SpriteSystem(ECSManager*ecs);
 
 		/**
 		* Update stored animations
@@ -43,6 +43,7 @@ namespace XYZ {
 			SpriteAnimation* Animation;
 			RenderComponent2D* Renderable;
 		};
+		ECSManager* m_ECS;
 
 		std::vector<Component> m_Components;
 	};

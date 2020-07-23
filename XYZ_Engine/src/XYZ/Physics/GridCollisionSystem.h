@@ -11,7 +11,7 @@ namespace XYZ {
 	class GridCollisionSystem : public System
 	{
 	public:
-		GridCollisionSystem();
+		GridCollisionSystem(ECSManager * ecs);
 
 		/**
 		* Clear all cells in the grid
@@ -39,6 +39,7 @@ namespace XYZ {
 		
 
 	private:
+		ECSManager* m_ECS;
 		/** Grid cell */
 		struct Cell
 		{

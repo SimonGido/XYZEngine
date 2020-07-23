@@ -3,12 +3,13 @@
 
 
 namespace XYZ {
-	RealGridCollisionSystem::RealGridCollisionSystem()
+	RealGridCollisionSystem::RealGridCollisionSystem(ECSManager* ecs)
 		:
+		m_ECS(ecs),
 		m_NumCols(1),m_NumRows(1),m_CellSize(1)
 	{		
-		m_Signature.set(XYZ::ECSManager::GetComponentType<RealGridBody>());
-		m_Signature.set(XYZ::ECSManager::GetComponentType<RigidBody2D>());
+		m_Signature.set(m_ECS->GetComponentType<RealGridBody>());
+		m_Signature.set(m_ECS->GetComponentType<RigidBody2D>());
 	}
 	RealGridCollisionSystem::~RealGridCollisionSystem()
 	{
@@ -70,14 +71,14 @@ namespace XYZ {
 	void RealGridCollisionSystem::Add(uint32_t entity)
 	{
 		Component component;
-		component.ActiveComponent = ECSManager::GetComponent<ActiveComponent>(entity);
-		component.RealGridBody = ECSManager::GetComponent<RealGridBody>(entity);
-		component.RigidBody = ECSManager::GetComponent<RigidBody2D>(entity);
+		component.ActiveComponent = m_ECS->GetComponent<ActiveComponent>(entity);
+		component.RealGridBody = m_ECS->GetComponent<RealGridBody>(entity);
+		component.RigidBody = m_ECS->GetComponent<RigidBody2D>(entity);
 		component.Ent = entity;
 
 		int index = m_Components.Insert(component);
 
-		auto body = ECSManager::GetComponent<RealGridBody>(entity);
+		auto body = m_ECS->GetComponent<RealGridBody>(entity);
 		auto gridLeft = (int)floor(body->Left / m_CellSize);
 		auto gridRight = (int)floor(body->Right / m_CellSize);
 		auto gridTop = (int)floor(body->Top / m_CellSize);
@@ -94,9 +95,9 @@ namespace XYZ {
 	}
 	void RealGridCollisionSystem::Remove(uint32_t entity)
 	{
-		if (ECSManager::Contains<RealGridBody>(entity))
+		if (m_ECS->Contains<RealGridBody>(entity))
 		{
-			auto body = ECSManager::GetComponent<RealGridBody>(entity);
+			auto body = m_ECS->GetComponent<RealGridBody>(entity);
 
 			auto gridLeft = (int)floor(body->Left / m_CellSize);
 			auto gridRight = (int)floor(body->Right / m_CellSize);

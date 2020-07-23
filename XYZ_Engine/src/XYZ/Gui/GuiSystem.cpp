@@ -9,12 +9,13 @@
 #include "Checkbox.h"
 
 namespace XYZ {
-	GuiSystem::GuiSystem()
+	GuiSystem::GuiSystem(ECSManager* ecs)
 		:
+		m_ECS(ecs),
 		m_Grid(1,50)
 	{
-		m_Signature.set(ECSManager::GetComponentType<Transform2D>());
-		m_Signature.set(ECSManager::GetComponentType<Checkbox>());
+		m_Signature.set(m_ECS->GetComponentType<Transform2D>());
+		m_Signature.set(m_ECS->GetComponentType<Checkbox>());
 	}
 	GuiSystem::~GuiSystem()
 	{
@@ -27,9 +28,9 @@ namespace XYZ {
 	void GuiSystem::Add(uint32_t entity)
 	{
 		Component component;
-		component.ActiveComponent = ECSManager::GetComponent<ActiveComponent>(entity);
-		component.Transform = ECSManager::GetComponent<Transform2D>(entity);
-		component.UI = ECSManager::GetComponent<Checkbox>(entity);
+		component.ActiveComponent = m_ECS->GetComponent<ActiveComponent>(entity);
+		component.Transform = m_ECS->GetComponent<Transform2D>(entity);
+		component.UI = m_ECS->GetComponent<Checkbox>(entity);
 		
 
 		m_Components.push_back(component);

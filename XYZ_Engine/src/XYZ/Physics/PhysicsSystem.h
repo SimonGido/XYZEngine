@@ -14,7 +14,7 @@ namespace XYZ {
 		/**
 		* Construct
 		*/
-		PhysicsSystem();
+		PhysicsSystem(ECSManager * ecs);
 		virtual ~PhysicsSystem();
 
 		virtual void Update(float dt);
@@ -31,6 +31,8 @@ namespace XYZ {
 
 
 	private:
+		ECSManager* m_ECS;
+
 		std::vector<Component> m_Components;
 
 	};

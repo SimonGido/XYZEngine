@@ -11,7 +11,7 @@ namespace XYZ {
 	class RealGridCollisionSystem : public System
 	{
 	public:
-		RealGridCollisionSystem();
+		RealGridCollisionSystem(ECSManager* ecs);
 		~RealGridCollisionSystem();
 
 		void CreateGrid(int width, int height, int cellSize);
@@ -33,6 +33,8 @@ namespace XYZ {
 			// Change to raw array on heap int*
 			std::vector<int> indices;
 		};
+
+		ECSManager* m_ECS;
 
 		int m_NumRows;
 		int m_NumCols;

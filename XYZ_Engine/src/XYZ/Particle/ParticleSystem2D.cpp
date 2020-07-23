@@ -6,9 +6,11 @@
 #include "XYZ/Renderer/RenderCommandQueue.h"
 
 namespace XYZ {
-	ParticleSystem2D::ParticleSystem2D()
+	ParticleSystem2D::ParticleSystem2D(ECSManager* ecs)
+		:
+		m_ECS(ecs)
 	{
-		m_Signature.set(XYZ::ECSManager::GetComponentType<XYZ::ParticleEffect2D>());
+		m_Signature.set(m_ECS->GetComponentType<XYZ::ParticleEffect2D>());
 	}
 
 	void ParticleSystem2D::Update(float dt)
@@ -39,8 +41,8 @@ namespace XYZ {
 		XYZ_LOG_INFO("Entity with id ", entity, " added");
 
 		Component component;
-		component.ActiveComponent = ECSManager::GetComponent<ActiveComponent>(entity);
-		component.Effect = ECSManager::GetComponent<ParticleEffect2D>(entity);
+		component.ActiveComponent = m_ECS->GetComponent<ActiveComponent>(entity);
+		component.Effect = m_ECS->GetComponent<ParticleEffect2D>(entity);
 		component.Ent = entity;
 
 		m_Components.push_back(component);

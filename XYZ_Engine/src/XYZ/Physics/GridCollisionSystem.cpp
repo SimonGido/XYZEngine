@@ -3,11 +3,11 @@
 
 #define OUT_OF_GRID (1 << 31)
 namespace XYZ {
-	GridCollisionSystem::GridCollisionSystem()
-		: m_NumRows(1), m_NumCols(1), m_CellSize(1), m_PositionX(0), m_PositionY(0)
+	GridCollisionSystem::GridCollisionSystem(ECSManager* ecs)
+		: m_ECS(ecs),m_NumRows(1), m_NumCols(1), m_CellSize(1), m_PositionX(0), m_PositionY(0)
 	{
-		m_Signature.set(XYZ::ECSManager::GetComponentType<GridBody>());
-		m_Signature.set(XYZ::ECSManager::GetComponentType<CollisionComponent>());
+		m_Signature.set(m_ECS->GetComponentType<GridBody>());
+		m_Signature.set(m_ECS->GetComponentType<CollisionComponent>());
 	}
 	void GridCollisionSystem::ClearGrid()
 	{
@@ -65,9 +65,9 @@ namespace XYZ {
 	void GridCollisionSystem::Add(uint32_t entity)
 	{
 		Component component;
-		component.ActiveComponent = ECSManager::GetComponent<ActiveComponent>(entity);
-		component.GridBody = ECSManager::GetComponent<GridBody>(entity);
-		component.Collision = ECSManager::GetComponent<CollisionComponent>(entity);
+		component.ActiveComponent = m_ECS->GetComponent<ActiveComponent>(entity);
+		component.GridBody = m_ECS->GetComponent<GridBody>(entity);
+		component.Collision = m_ECS->GetComponent<CollisionComponent>(entity);
 		component.Ent = entity;
 
 		auto layer = component.Collision->Layer;

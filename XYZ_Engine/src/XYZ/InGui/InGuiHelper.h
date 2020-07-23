@@ -25,7 +25,9 @@ namespace XYZ {
 		glm::vec2 HandleWindowSpacing(const glm::vec2& uiSize);
 
 		bool Collide(const glm::vec2& pos, const glm::vec2& size, const glm::vec2& point);
-		void HandleResize(glm::vec2& position, glm::vec2& size, const glm::vec2& mousePos);
+		void DetectResize(const InGuiWindow& window);
+		void HandleResize(InGuiWindow& window);
+
 		void GenerateInGuiText(InGuiText& text, const Ref<Font>& font, const std::string& str, const glm::vec2& position, const glm::vec2& scale, float length, const glm::vec4& color = { 1,1,1,1 });
 	}
 }

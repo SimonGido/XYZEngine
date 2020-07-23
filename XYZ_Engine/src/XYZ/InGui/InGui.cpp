@@ -33,7 +33,9 @@ namespace XYZ {
 			g_InContext->InGuiRenderData = renderData;
 			g_InContext->InGuiData.CurrentWindow = nullptr;
 			g_InContext->InGuiData.MaxHeightInRow = 0.0f;
-
+			g_InContext->InGuiData.IsResizing = 0;
+			g_InContext->InGuiData.RightMouseButtonDown = false;
+			g_InContext->InGuiData.LeftMouseButtonDown = false;
 
 			mINI::INIFile file("ingui.ini");
 			mINI::INIStructure ini;
@@ -73,11 +75,9 @@ namespace XYZ {
 		void BeginFrame()
 		{
 			XYZ_ASSERT(!g_InContext->InGuiData.CurrentWindow, "Missing end call for window");
-			g_InContext->InGuiData.MousePosition.x = Input::GetMouseX();
-			g_InContext->InGuiData.MousePosition.y = Input::GetMouseY();
 			g_InContext->InGuiData.WindowSizeX = Input::GetWindowSize().first;
 			g_InContext->InGuiData.WindowSizeY = Input::GetWindowSize().second;
-
+			g_InContext->InGuiData.MousePosition = MouseToWorld({ Input::GetMouseX(),Input::GetMouseY() });
 
 			InGuiRenderer::BeginScene({ {g_InContext->InGuiData.WindowSizeX,g_InContext->InGuiData.WindowSizeY} });
 			InGuiRenderer::SetMaterial(g_InContext->InGuiRenderData.Material);
@@ -119,7 +119,7 @@ namespace XYZ {
 			{
 				it->second.Modified = true;
 				g_InContext->InGuiData.IsWindowModified = true;
-				g_InContext->InGuiData.ModifiedWindowMouseOffset = MouseToWorld(g_InContext->InGuiData.MousePosition) - panelPos;
+				g_InContext->InGuiData.ModifiedWindowMouseOffset = g_InContext->InGuiData.MousePosition - panelPos;
 			}
 			// If this window is modified modify it
 			else if (it->second.Modified)
@@ -128,7 +128,7 @@ namespace XYZ {
 				if (g_InContext->InGuiData.RightMouseButtonDown)
 				{
 					panelColor = g_InContext->InGuiRenderData.HooverColor;
-					panelPos = MouseToWorld(g_InContext->InGuiData.MousePosition) - g_InContext->InGuiData.ModifiedWindowMouseOffset;
+					panelPos = g_InContext->InGuiData.MousePosition - g_InContext->InGuiData.ModifiedWindowMouseOffset;
 					minButtonPos = { panelPos.x + it->second.Size.x - panelSize, panelPos.y };
 					it->second.Position = { panelPos.x, panelPos.y - it->second.Size.y };
 				}
@@ -139,7 +139,7 @@ namespace XYZ {
 			// If hoover over window set as active
 			else if (Collide(it->second.Position, it->second.Size, g_InContext->InGuiData.MousePosition))
 			{
-				HandleResize(it->second.Position,it->second.Size, MouseToWorld(g_InContext->InGuiData.MousePosition));
+				DetectResize(it->second);
 				g_InContext->InGuiData.ActiveWindow = true;
 			}
 			// Handle colapsing
@@ -151,6 +151,7 @@ namespace XYZ {
 				g_InContext->InGuiData.ActiveWidget = true;
 			}
 
+			HandleResize(it->second);
 			g_InContext->InGuiData.CurrentWindow = &it->second;
 			g_InContext->InGuiData.MaxHeightInRow = 0.0f;
 
@@ -275,7 +276,7 @@ namespace XYZ {
 					if (modified && !g_InContext->InGuiData.ActiveWidget)
 					{
 						float start = position.x;
-						value = MouseToWorld(g_InContext->InGuiData.MousePosition).x - start;
+						value = g_InContext->InGuiData.MousePosition.x - start;
 					}
 				}
 
@@ -341,7 +342,7 @@ namespace XYZ {
 			{
 				it->second.Modified = true;
 				g_InContext->InGuiData.IsWindowModified = true;
-				g_InContext->InGuiData.ModifiedWindowMouseOffset = MouseToWorld(g_InContext->InGuiData.MousePosition) - panelPos;
+				g_InContext->InGuiData.ModifiedWindowMouseOffset = g_InContext->InGuiData.MousePosition - panelPos;
 			}
 			// If this window is modified modify it
 			else if (it->second.Modified)
@@ -350,7 +351,7 @@ namespace XYZ {
 				if (g_InContext->InGuiData.RightMouseButtonDown)
 				{
 					panelColor = g_InContext->InGuiRenderData.HooverColor;
-					panelPos = MouseToWorld(g_InContext->InGuiData.MousePosition) - g_InContext->InGuiData.ModifiedWindowMouseOffset;
+					panelPos = g_InContext->InGuiData.MousePosition - g_InContext->InGuiData.ModifiedWindowMouseOffset;
 					minButtonPos = { panelPos.x + it->second.Size.x - panelSize, panelPos.y };
 					it->second.Position = { panelPos.x, panelPos.y - it->second.Size.y };
 				}

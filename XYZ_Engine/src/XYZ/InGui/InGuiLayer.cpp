@@ -84,11 +84,13 @@ namespace XYZ {
 		{
 			InGui::GetData().LeftMouseButtonDown = false;
 			InGui::GetData().ActiveWidget = false;
+			InGui::GetData().IsResizing = 0;
 		}
 		else if (e.GetButton() == MouseCode::XYZ_MOUSE_BUTTON_RIGHT)
 		{
 			InGui::GetData().RightMouseButtonDown = false;
 			InGui::GetData().IsWindowModified = false;
+			
 		}
 
 		return false;

@@ -13,7 +13,7 @@ namespace XYZ {
 	class GuiSystem : public System
 	{
 	public:
-		GuiSystem();
+		GuiSystem(ECSManager* ecs);
 		virtual ~GuiSystem();
 
 		virtual void Update(float dt);
@@ -28,6 +28,7 @@ namespace XYZ {
 	private:
 		bool collide(const glm::vec2& pos,const glm::vec2& size,const glm::vec2& point);
 	private:
+		ECSManager* m_ECS;
 		struct Component : public System::Component
 		{
 			Transform2D* Transform;

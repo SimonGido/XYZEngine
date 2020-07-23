@@ -45,6 +45,9 @@ namespace XYZ {
 
 			float MaxHeightInRow;
 
+			uint8_t IsResizing;
+
+			// Todo swap for bitset
 			bool LeftMouseButtonDown;
 			bool RightMouseButtonDown;
 			bool IsWindowModified;

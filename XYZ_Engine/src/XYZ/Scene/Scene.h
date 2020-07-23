@@ -10,7 +10,6 @@
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/Camera.h"
 
-#include "XYZ/ECS/Entity.h"
 #include "SceneCamera.h"
 #include "Components.h"
 
@@ -26,6 +25,8 @@ namespace XYZ {
     /*! @class Scene
     *	@brief Holds all data relevant to a Scene
     */
+
+    class Entity;
     class Scene : public RefCount
     {
     public:
@@ -75,7 +76,7 @@ namespace XYZ {
         {
             RenderComponent2D* Renderable = nullptr;
             Transform2D* Transform = nullptr;
-            Entity Entity;
+            uint32_t Entity;
         };
 
         struct SceneSetup
@@ -86,10 +87,12 @@ namespace XYZ {
             }
         };
     private:
+        std::shared_ptr<ECSManager> m_ECS;
+
         std::string m_Name;
         SceneState m_State = SceneState::Edit;
 
-        Entity m_MainCameraEntity;
+        uint32_t m_MainCameraEntity;
         CameraComponent* m_MainCamera;
         Transform2D* m_MainCameraTransform;
 
@@ -100,6 +103,7 @@ namespace XYZ {
         Tree<SceneObject> m_SceneGraph;
         std::unordered_map<uint32_t, uint16_t> m_SceneGraphMap;
 
+       
 
         friend class Entity;
     };

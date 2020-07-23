@@ -30,14 +30,14 @@ namespace XYZ {
 	}
 	void GuiLayer::OnAttach()
 	{
-		m_GuiSystem = ECSManager::RegisterSystem<GuiSystem>();
+		
 	}
 	void GuiLayer::OnDetach()
 	{
 	}
 	void GuiLayer::OnUpdate(float dt)
 	{
-		m_GuiSystem->Update(dt);
+		//m_GuiSystem->Update(dt);
 	}
 	void GuiLayer::OnEvent(Event& event)
 	{

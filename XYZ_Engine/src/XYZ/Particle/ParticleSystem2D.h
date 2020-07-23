@@ -13,13 +13,15 @@ namespace XYZ {
 	class ParticleSystem2D : public System
 	{
 	public:
-		ParticleSystem2D();
+		ParticleSystem2D(ECSManager* ecs);
 		void Update(float dt);
 		virtual void Add(uint32_t entity) override;
 		virtual void Remove(uint32_t entity) override;
 		virtual bool Contains(uint32_t entity) override;
 
 	private:
+		ECSManager* m_ECS;
+
 		struct Component : public System::Component
 		{
 			ParticleEffect2D* Effect;

@@ -11,13 +11,14 @@ namespace XYZ {
 	class InterpolatedMovementSystem : public System
 	{
 	public:
-		InterpolatedMovementSystem();
+		InterpolatedMovementSystem(ECSManager *ecs);
 		virtual void Update(float dt);
 		virtual void Add(uint32_t entity) override;
 		virtual void Remove(uint32_t entity) override;
 		virtual bool Contains(uint32_t entity) override;
 
 	private:
+		ECSManager* m_ECS;
 		struct Component : public System::Component
 		{
 			InterpolatedMovement* Interpolated;

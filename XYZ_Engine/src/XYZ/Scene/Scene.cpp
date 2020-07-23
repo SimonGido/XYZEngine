@@ -6,6 +6,7 @@
 #include "XYZ/Renderer/Renderer.h"
 
 #include "XYZ/Renderer/RenderCommand.h"
+#include "XYZ/ECS/Entity.h"
 
 
 namespace XYZ {
@@ -15,11 +16,12 @@ namespace XYZ {
 		:
 		m_Name(name)
 	{
-		Entity entity(this);
-		
+		m_ECS = std::make_shared<ECSManager>();
+
+		uint32_t entity = m_ECS->CreateEntity();
 		m_SceneWorld = {
 			nullptr,
-			entity.AddComponent(Transform2D{glm::vec3(0,0,0)}),
+			m_ECS->AddComponent(entity,Transform2D{glm::vec3(0,0,0)}),
 			entity
 		};
 		
@@ -28,8 +30,9 @@ namespace XYZ {
 		m_SceneGraph[m_Root].Transform->CalculateWorldTransformation();
 		m_SceneGraph[m_Root].Transform->GetTransformation();
 
-		m_MainCamera = m_MainCameraEntity.AddComponent<CameraComponent>(CameraComponent{});
-		m_MainCameraTransform = m_MainCameraEntity.AddComponent<Transform2D>(Transform2D{ {0,0,0} });
+		m_MainCameraEntity = m_ECS->CreateEntity();
+		m_MainCamera = m_ECS->AddComponent<CameraComponent>(m_MainCameraEntity, CameraComponent{});
+		m_MainCameraTransform = m_ECS->AddComponent<Transform2D>(m_MainCameraEntity, Transform2D{ {0,0,0} });
 		
 		SceneObject cameraObject = {
 			nullptr,
@@ -101,7 +104,7 @@ namespace XYZ {
 	{
 		for (auto& it : m_SceneGraph.GetFlatData())
 		{
-			it.GetData().Entity.Destroy();
+			m_ECS->DestroyEntity(it.GetData().Entity);
 		}
 	}
 

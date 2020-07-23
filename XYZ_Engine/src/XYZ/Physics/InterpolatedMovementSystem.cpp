@@ -5,11 +5,13 @@
 
 
 namespace XYZ {
-	InterpolatedMovementSystem::InterpolatedMovementSystem()
+	InterpolatedMovementSystem::InterpolatedMovementSystem(ECSManager* ecs)
+		:
+		m_ECS(ecs)
 	{
-		m_Signature.set(XYZ::ECSManager::GetComponentType<InterpolatedMovement>());
-		m_Signature.set(XYZ::ECSManager::GetComponentType<Transform2D>());
-		m_Signature.set(XYZ::ECSManager::GetComponentType<GridBody>());
+		m_Signature.set(m_ECS->GetComponentType<InterpolatedMovement>());
+		m_Signature.set(m_ECS->GetComponentType<Transform2D>());
+		m_Signature.set(m_ECS->GetComponentType<GridBody>());
 	}
 	void InterpolatedMovementSystem::Update(float dt)
 	{
@@ -57,10 +59,10 @@ namespace XYZ {
 	void InterpolatedMovementSystem::Add(uint32_t entity)
 	{
 		Component component;
-		component.ActiveComponent = ECSManager::GetComponent<ActiveComponent>(entity);
-		component.GridBody = ECSManager::GetComponent<GridBody>(entity);
-		component.Transform = ECSManager::GetComponent<Transform2D>(entity);
-		component.Interpolated = ECSManager::GetComponent<InterpolatedMovement>(entity);
+		component.ActiveComponent = m_ECS->GetComponent<ActiveComponent>(entity);
+		component.GridBody = m_ECS->GetComponent<GridBody>(entity);
+		component.Transform = m_ECS->GetComponent<Transform2D>(entity);
+		component.Interpolated = m_ECS->GetComponent<InterpolatedMovement>(entity);
 		component.Ent = entity;
 
 		m_Components.push_back(component);

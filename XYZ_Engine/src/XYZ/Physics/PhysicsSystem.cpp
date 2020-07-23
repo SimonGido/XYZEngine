@@ -5,10 +5,12 @@
 #include "XYZ/Timer.h"
 
 namespace XYZ {
-	PhysicsSystem::PhysicsSystem()
+	PhysicsSystem::PhysicsSystem(ECSManager* ecs)
+		:
+		m_ECS(ecs)
 	{
-		m_Signature.set(XYZ::ECSManager::GetComponentType<XYZ::RigidBody2D>());
-		m_Signature.set(XYZ::ECSManager::GetComponentType<XYZ::InterpolatedMovement>());
+		m_Signature.set(m_ECS->GetComponentType<XYZ::RigidBody2D>());
+		m_Signature.set(m_ECS->GetComponentType<XYZ::InterpolatedMovement>());
 	}
 	PhysicsSystem::~PhysicsSystem()
 	{
@@ -28,9 +30,9 @@ namespace XYZ {
 	void PhysicsSystem::Add(uint32_t entity)
 	{
 		Component component;
-		component.RigidBody = ECSManager::GetComponent<RigidBody2D>(entity);
-		component.Interpolated = ECSManager::GetComponent<InterpolatedMovement>(entity);
-		component.ActiveComponent = ECSManager::GetComponent<ActiveComponent>(entity);
+		component.RigidBody = m_ECS->GetComponent<RigidBody2D>(entity);
+		component.Interpolated = m_ECS->GetComponent<InterpolatedMovement>(entity);
+		component.ActiveComponent = m_ECS->GetComponent<ActiveComponent>(entity);
 
 
 		m_Components.push_back(component);

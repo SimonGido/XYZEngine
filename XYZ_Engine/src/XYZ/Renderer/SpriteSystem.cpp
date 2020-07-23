@@ -12,10 +12,12 @@ namespace XYZ {
 		renderable->Mesh->Vertices[3].TexCoord = { texCoord.x, texCoord.w };		 
 	}
 
-	SpriteSystem::SpriteSystem()
+	SpriteSystem::SpriteSystem(ECSManager* ecs)
+		:
+		m_ECS(ecs)
 	{
-		m_Signature.set(ECSManager::GetComponentType<SpriteAnimation>());
-		m_Signature.set(ECSManager::GetComponentType<RenderComponent2D>());
+		m_Signature.set(m_ECS->GetComponentType<SpriteAnimation>());
+		m_Signature.set(m_ECS->GetComponentType<RenderComponent2D>());
 	}
 	void SpriteSystem::Update(float dt)
 	{
@@ -30,8 +32,8 @@ namespace XYZ {
 		XYZ_LOG_INFO("Entity with ID ", entity, " added");
 	
 		Component component;
-		component.Animation = ECSManager::GetComponent<SpriteAnimation>(entity);
-		component.Renderable = ECSManager::GetComponent<RenderComponent2D>(entity);
+		component.Animation = m_ECS->GetComponent<SpriteAnimation>(entity);
+		component.Renderable = m_ECS->GetComponent<RenderComponent2D>(entity);
 		component.Ent = entity;
 
 		m_Components.push_back(component);

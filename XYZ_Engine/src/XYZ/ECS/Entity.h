@@ -1,26 +1,26 @@
 #pragma once
 
 #include "ECSManager.h"
-
+#include "XYZ/Scene/Scene.h"
 
 namespace XYZ {
 
-	class Scene;
 	class Entity
 	{
 	public:
 		Entity()
 			:
-			m_ID(ECSManager::CreateEntity()),
+			m_ID(NULL_ENTITY),
 			m_Scene(nullptr)
 		{
 		}
 
 		Entity(Scene* scene)
 			: 
-			m_ID(ECSManager::CreateEntity()),
-			m_Scene(scene)
+			m_Scene(scene),
+			m_ID(m_Scene->m_ECS->CreateEntity())
 		{
+			
 		}
 
 		Entity(const Entity& other)
@@ -32,19 +32,19 @@ namespace XYZ {
 		template<typename T>
 		T* GetComponent()
 		{
-			return ECSManager::GetComponent<T>(m_ID);
+			return m_Scene->m_ECS->GetComponent<T>(m_ID);
 		}
 
 		template <typename T>
 		const T* GetComponent() const
 		{
-			return ECSManager::GetComponent<T>(m_ID);
+			return m_Scene->m_ECS->GetComponent<T>(m_ID);
 		}
 
 		template <typename T>
 		T* AddComponent(const T& component)
 		{
-			auto addedComponent = ECSManager::AddComponent<T>(m_ID, component);
+			auto addedComponent = m_Scene->m_ECS->AddComponent<T>(m_ID, component);
 			if (m_Scene)
 				m_Scene->onEntityModified<T>(addedComponent,*this);
 			return addedComponent;
@@ -53,12 +53,12 @@ namespace XYZ {
 		template <typename T>
 		bool HasComponent()
 		{
-			return ECSManager::Contains<T>(m_ID);
+			return m_Scene->m_ECS->Contains<T>(m_ID);
 		}
 
 		void Destroy()
 		{
-			ECSManager::DestroyEntity(m_ID);
+			m_Scene->m_ECS->DestroyEntity(m_ID);
 		}
 
 		Entity& operator =(const Entity& other)
@@ -76,8 +76,8 @@ namespace XYZ {
 		operator uint32_t () const { return m_ID; }
 
 	private:
-		uint32_t m_ID;
 		Scene* m_Scene;
+		uint32_t m_ID;
 
 
 		friend class Scene;
