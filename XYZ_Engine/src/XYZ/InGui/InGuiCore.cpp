@@ -24,15 +24,15 @@ namespace XYZ {
 			return val;
 		}
 
-		void Init(const InGuiRenderData& renderData)
+		void Init(const InGuiRenderData& renderData, const InGuiConfig& config)
 		{
 			g_InContext = new InGuiContext;
 			g_InContext->InGuiRenderData = renderData;
+			g_InContext->InGuiConfig = config;
 			g_InContext->InGuiData.CurrentWindow = nullptr;
 			g_InContext->InGuiData.MaxHeightInRow = 0.0f;
-			g_InContext->InGuiData.IsResizing = 0;
-			g_InContext->InGuiData.RightMouseButtonDown = false;
-			g_InContext->InGuiData.LeftMouseButtonDown = false;
+			g_InContext->InGuiData.Flags = 0;
+			
 
 			mINI::INIFile file("ingui.ini");
 			mINI::INIStructure ini;
@@ -89,28 +89,23 @@ namespace XYZ {
 
 		void OnLeftMouseButtonRelease()
 		{
-			g_InContext->InGuiData.LeftMouseButtonDown = false;
-			g_InContext->InGuiData.ClickHandled = false;
-
-			g_InContext->InGuiData.IsResizing = 0;
+			g_InContext->InGuiData.Flags = 0;
 		}
 
 		void OnRightMouseButtonRelease()
 		{
-			g_InContext->InGuiData.RightMouseButtonDown = false;
-			g_InContext->InGuiData.ClickHandled = false;
+			g_InContext->InGuiData.Flags = 0;
 		}
 
 		void OnLeftMouseButtonPress()
 		{
-			g_InContext->InGuiData.LeftMouseButtonDown = true;
+			g_InContext->InGuiData.Flags |= LeftMouseButtonDown;
 		}
 
 		void OnRightMouseButtonPress()
 		{
-			g_InContext->InGuiData.RightMouseButtonDown = true;
+			g_InContext->InGuiData.Flags |= RightMouseButtonDown;
 		}
-
 
 		InGuiFrameData& InGui::GetData()
 		{

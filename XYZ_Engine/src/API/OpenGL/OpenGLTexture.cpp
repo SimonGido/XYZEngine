@@ -17,6 +17,7 @@ namespace XYZ {
 		XYZ_ASSERT(data, "Failed to load image!");
 		m_Width = width;
 		m_Height = height;
+		m_Channels = channels;
 
 		GLenum internalFormat = 0, dataFormat = 0;
 		if (channels == 4)
@@ -94,6 +95,15 @@ namespace XYZ {
 		uint32_t bpp = m_DataFormat == GL_RGBA ? 4 : 3;
 		XYZ_ASSERT(size == m_Width * m_Height * bpp, "Data must be entire texture!");
 		glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
+	}
+
+	uint8_t* OpenGLTexture2D::GetData()
+	{
+		uint8_t* buffer = new uint8_t[m_Width * m_Height * m_Channels * sizeof(uint8_t)];
+		glBindTexture(GL_TEXTURE_2D, m_RendererID);
+		glGetTexImage(GL_TEXTURE_2D, 0, m_DataFormat, GL_UNSIGNED_BYTE, buffer);
+
+		return buffer;
 	}
 
 	void OpenGLTexture2D::Bind(uint32_t slot) const

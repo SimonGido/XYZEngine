@@ -36,7 +36,7 @@ namespace XYZ {
 
 		Transform2D* m_Transform;
 
-
+		glm::vec4 m_Color = { 0,0,0,0 };
 		float m_TestValue = 0.0f;
 
 		bool m_ActiveWindow = false;

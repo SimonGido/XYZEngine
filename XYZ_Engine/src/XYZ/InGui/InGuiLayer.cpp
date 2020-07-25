@@ -11,21 +11,24 @@ namespace XYZ {
 	{
 		Ref<Shader> shader = Shader::Create("Assets/Shaders/InGuiShader.glsl");
 		Ref<Texture2D> texture = Texture2D::Create(TextureWrap::Clamp, "Assets/Textures/Gui/TexturePack.png");
+		Ref<Texture2D> colorPickerTexture = Texture2D::Create(TextureWrap::Clamp, "Assets/Textures/Gui/ColorPicker.png");
 		m_Material = Material::Create(shader);
 
 		uint32_t textureID = 0;
 		uint32_t fontTextureID = 1;
+		uint32_t colorPickerTextureID = 2;
 
 		m_Material->Set("u_Texture", texture, textureID);
 		m_Material->Set("u_Texture", Texture2D::Create(TextureWrap::Clamp, "Assets/Font/Arial.png"), fontTextureID);
-		
+		m_Material->Set("u_Texture", colorPickerTexture, colorPickerTextureID);
 		m_Material->Set("u_ViewportSize", glm::vec2(Input::GetWindowSize().first, Input::GetWindowSize().second));
 		InGui::Init({
-			{0.8f,0.0f,0.2f,1.0f},
-			{1.0f,1.0f,1.0f,1.0f},
 			textureID,
 			fontTextureID,
+			colorPickerTextureID,
 			m_Material,
+			texture,
+			colorPickerTexture,
 			Ref<Font>::Create("Assets/Font/Arial.fnt"),
 			Ref<SubTexture2D>::Create(texture, glm::vec2(0, 0), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4)),
 			Ref<SubTexture2D>::Create(texture, glm::vec2(1, 1), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4)),
@@ -34,6 +37,13 @@ namespace XYZ {
 			Ref<SubTexture2D>::Create(texture, glm::vec2(1, 2), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4)),
 			Ref<SubTexture2D>::Create(texture, glm::vec2(0, 3), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4)),
 			Ref<SubTexture2D>::Create(texture, glm::vec2(2, 3), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4)),
+			Ref<SubTexture2D>::Create(texture, glm::vec2(0, 0), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4)),
+		},
+		{
+			{1.0f,1.0f,1.0f,1.0f},
+			{0.8f,0.0f,0.2f,1.0f},
+			{0.7f,0.7f},
+			1000.f
 		});
 
 		

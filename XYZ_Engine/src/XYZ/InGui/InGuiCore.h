@@ -14,7 +14,19 @@ namespace XYZ {
 			Collapsed = 1 << 0,
 			Moved	  = 1 << 1,
 			Resized	  = 1 << 2,
-			Hoovered  = 1 << 3
+			Hoovered  = 1 << 3,
+			Docked	  = 1 << 4
+		};
+
+		enum InGuiFrameDataFlags
+		{
+			WindowRightResize    = 1 << 0,
+			WindowLeftResize     = 1 << 1,
+			WindowBottomResize   = 1 << 2,
+			WindowTopResize      = 1 << 3,
+			LeftMouseButtonDown  = 1 << 4,
+			RightMouseButtonDown = 1 << 5,
+			ClickHandled         = 1 << 6
 		};
 
 		struct InGuiWindow
@@ -25,13 +37,15 @@ namespace XYZ {
 			static constexpr float PanelSize = 25.0f;
 		};
 
+
 		struct InGuiRenderData
 		{
-			glm::vec4 HooverColor;
-			glm::vec4 TextColor;
 			uint32_t TextureID;
 			uint32_t FontTextureID;
+			uint32_t ColorPickerTextureID;
 			Ref<Material> Material;
+			Ref<Texture2D> GuiTexture;
+			Ref<Texture2D> ColorPickerTexture;
 			Ref<Font> Font;
 			Ref<SubTexture2D> ButtonSubTexture;
 			Ref<SubTexture2D> CheckboxSubTextureChecked;
@@ -40,11 +54,13 @@ namespace XYZ {
 			Ref<SubTexture2D> SliderHandleSubTexture;
 			Ref<SubTexture2D> WindowSubTexture;
 			Ref<SubTexture2D> MinimizeButtonSubTexture;
+			Ref<SubTexture2D> DockSpaceSubTexture;
 		};
 
 		struct InGuiFrameData
 		{
 			InGuiWindow* CurrentWindow;
+
 			uint32_t WindowSizeX;
 			uint32_t WindowSizeY;
 
@@ -54,25 +70,30 @@ namespace XYZ {
 
 			float MaxHeightInRow;
 
-			uint8_t IsResizing;
+			uint8_t Flags;		
+		};
 
-			// Todo swap for bitset
-			bool LeftMouseButtonDown;
-			bool RightMouseButtonDown;
+		struct InGuiConfig
+		{
+			glm::vec4 DefaultColor;
+			glm::vec4 HooverColor;
 
-			bool ClickHandled;
+			glm::vec2 NameScale;
+			float MaxTextLength;
 		};
 
 		struct InGuiContext
 		{
 			InGuiFrameData InGuiData;
 			InGuiRenderData InGuiRenderData;
+			InGuiConfig InGuiConfig;
+
 			std::unordered_map<std::string, bool> CacheStates;
 			std::unordered_map<std::string, InGuiWindow> InGuiWindows;
 		};
 
 
-		void Init(const InGuiRenderData& renderData);
+		void Init(const InGuiRenderData& renderData,const InGuiConfig& config);
 		void Shutdown();
 
 		void BeginFrame();
