@@ -227,25 +227,33 @@ namespace XYZ {
 			return false;
 		}
 
-		bool ColorPicker4(const std::string& name, const glm::vec2 & size, const glm::vec4& pallete, glm::vec4& color)
+		bool ColorPicker4(const std::string& name, const glm::vec2 & size, glm::vec4& pallete, glm::vec4& color)
 		{
 			if (!g_InContext)
 				return false;
+			XYZ_ASSERT(g_InContext->InGuiData.CurrentWindow, "Missing begin call");
+
 
 			glm::vec2 position = HandleWindowSpacing(size);
 			
-			XYZ_ASSERT(g_InContext->InGuiData.CurrentWindow, "Missing begin call");
-
+			
 			bool modified = false;
 			bool activeWindow = g_InContext->InGuiData.CurrentWindow->Flags & Hoovered;
 			if (activeWindow && Collide(position, size, g_InContext->InGuiData.MousePosition))
-			{
+			{		
 				modified = g_InContext->InGuiData.Flags & LeftMouseButtonDown;
 				if (modified)
-				{				
+				{
 					color = CalculatePixelColor(pallete, position, size);
 				}
 			}
+
+			Separator();
+			if (ColorPallete4("test", { size.x, 25.0f }, pallete))
+			{
+				modified = true;
+			}
+			Separator();
 		
 			Vertex vertices[4] = {
 				{ {0,0,0,1},		  {0,0,0,1}, {0,0} },
@@ -255,17 +263,14 @@ namespace XYZ {
 			};	
 			InGuiRenderer::SubmitUI(position, vertices, 4, g_InContext->InGuiRenderData.ColorPickerTextureID);
 			
-			Separator();
-			ColorPallete4("test", { size.x, 25.0f }, color);
-			Separator();
-
-			if (Slider("R: " + std::to_string(color.x), { 255,15 }, color.x, 255.0f))
+			
+			if (Slider("R: " + std::to_string(color.x), { size.x,15 }, color.x, size.x))
 				modified = true;
 			Separator();
-			if (Slider("G: " + std::to_string(color.y), { 255,15 }, color.y, 255.0f))
+			if (Slider("G: " + std::to_string(color.y), { size.x,15 }, color.y, size.x))
 				modified = true;
 			Separator();
-			if (Slider("B: " + std::to_string(color.z), { 255,15 }, color.z, 255.0f))
+			if (Slider("B: " + std::to_string(color.z), { size.x,15 }, color.z, size.x))
 				modified = true;
 			Separator();
 
@@ -277,13 +282,25 @@ namespace XYZ {
 			if (!g_InContext)
 				return false;
 
+			static constexpr uint32_t numVertices = 24;
+
 			glm::vec2 position = HandleWindowSpacing(size);
 
-			Vertex vertices[20];
-			Generate5SegmentColorRectangle(size, vertices);
-		
-			InGuiRenderer::SubmitUI(position, vertices, 20, g_InContext->InGuiRenderData.ColorPickerTextureID);
-			return false;
+			Vertex vertices[numVertices];
+			Generate6SegmentColorRectangle(size, vertices);
+			bool modified = false;
+			bool activeWindow = g_InContext->InGuiData.CurrentWindow->Flags & Hoovered;
+			if (activeWindow && Collide(position, size, g_InContext->InGuiData.MousePosition))
+			{
+				if (g_InContext->InGuiData.Flags & LeftMouseButtonDown)
+				{
+					modified = true;
+					color = ColorFrom6SegmentColorRectangle(position, size);
+				}
+			}
+
+			InGuiRenderer::SubmitUI(position, vertices, numVertices, g_InContext->InGuiRenderData.ColorPickerTextureID);
+			return modified;
 		}
 
 		bool RenderWindow(const std::string& name, uint32_t rendererID, const glm::vec2& position, const glm::vec2& size, float panelSize)

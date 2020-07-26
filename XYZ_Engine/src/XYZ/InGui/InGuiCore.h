@@ -3,6 +3,7 @@
 
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Renderer/SubTexture2D.h"
+#include "XYZ/Renderer/Mesh.h"
 
 #include <glm/glm.hpp>
 

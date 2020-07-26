@@ -7,6 +7,14 @@
 namespace XYZ {
 	namespace InGui {
 
+		static enum Color
+		{
+			RedToGreen,
+			GreenToBlue,
+			BlueToRed,
+			None
+		};
+
 		glm::vec2 MouseToWorld(const glm::vec2& point)
 		{
 			glm::vec2 offset = { g_InContext->InGuiData.WindowSizeX / 2,g_InContext->InGuiData.WindowSizeY / 2 };
@@ -62,14 +70,29 @@ namespace XYZ {
 			return result;
 		}
 
-		glm::vec4 ColorFrom5SegmentColorRectangle(const glm::vec2& position, const glm::vec2& size)
+		glm::vec4 ColorFrom6SegmentColorRectangle(const glm::vec2& position, const glm::vec2& size)
 		{
-			const uint32_t numSegments = 5;
-			uint32_t numVertices = numSegments * 4;
-			float segmentSize = size.x / numSegments;
-		
+			static constexpr uint32_t numColorSegments = 3;
 			
-			return glm::vec4();
+			float segmentSize = size.x / numColorSegments;
+			float pos = g_InContext->InGuiData.MousePosition.x - position.x;
+			uint32_t segment = (uint32_t)floor(pos / segmentSize);
+			float distance = (pos - (segment * segmentSize)) / segmentSize;
+			
+
+			switch (segment)
+			{
+			case RedToGreen:
+				return { 1.0f - distance, distance,0.0f,1.0f };
+			case GreenToBlue:
+				return { 0.0f, 1.0f - distance, distance, 1.0f };
+			case BlueToRed:
+				return { distance,0.0f,1.0f - distance,1.0f };
+			case None:
+				return { distance,0.0f,1.0f - distance,1.0f };
+			}
+			
+			return { 0,1,0,1 };
 		}
 
 		bool Collide(const glm::vec2& pos, const glm::vec2& size, const glm::vec2& point)
@@ -227,10 +250,10 @@ namespace XYZ {
 			static constexpr glm::vec2 dockSignSize = { 50,40 };
 		}
 	
-		void Generate5SegmentColorRectangle(const glm::vec2& size, Vertex* buffer)
+		void Generate6SegmentColorRectangle(const glm::vec2& size, Vertex* buffer)
 		{
-			const uint32_t numSegments = 5;
-			uint32_t numVertices = numSegments * 4;
+			static constexpr uint32_t numSegments = 6;
+			static constexpr uint32_t numVertices = numSegments * 4;
 			float segmentSize = size.x / numSegments;
 
 			uint32_t counter = 0;
@@ -279,6 +302,11 @@ namespace XYZ {
 			buffer[17].Color = { 1,0,1,1 };
 			buffer[18].Color = { 1,0,1,1 };
 			buffer[19].Color = { 0,0,1,1 };
+			//////////////////////////////
+			buffer[20].Color = { 1,0,1,1 };
+			buffer[21].Color = { 1,0,0,1 };
+			buffer[22].Color = { 1,0,0,1 };
+			buffer[23].Color = { 1,0,1,1 };
 		}
 
 		void GenerateInGuiText(InGuiText& text, const Ref<Font>& font, const std::string& str, const glm::vec2& position, const glm::vec2& scale, float length, const glm::vec4& color)

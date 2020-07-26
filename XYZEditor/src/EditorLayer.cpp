@@ -145,8 +145,8 @@ namespace XYZ {
 		
 		if (InGui::Begin("Test Panel", { 0,0 }, { 500,500 }))
 		{		
-			glm::vec4 pallete = { 0,1,0,1 };
-			InGui::ColorPicker4("color picker", { 255,255 },pallete, m_Color);
+			
+			InGui::ColorPicker4("color picker", { 255,255 },m_Pallete, m_Color);
 			if (InGui::Button("Button", { 100,25 }))
 			{
 				std::cout << "Opica" << std::endl;

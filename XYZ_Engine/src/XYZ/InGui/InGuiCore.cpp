@@ -9,9 +9,9 @@
 
 namespace XYZ {
 	namespace InGui {
-	#ifndef g_InContext
-			InGuiContext* g_InContext = nullptr;
-	#endif
+#ifndef g_InContext
+		InGuiContext* g_InContext = nullptr;
+#endif
 
 		static glm::vec2 StringToVec2(const std::string& src)
 		{
@@ -24,6 +24,61 @@ namespace XYZ {
 			return val;
 		}
 
+
+		static void Generate5SegmentColorRectangle(const glm::vec2& size, Vertex* buffer)
+		{
+			const uint32_t numSegments = 5;
+			uint32_t numVertices = numSegments * 4;
+			float segmentSize = size.x / numSegments;
+
+			uint32_t counter = 0;
+
+			float offset = 0.0f;
+			while (counter < numVertices)
+			{
+				buffer[counter].Position = { offset, 0.0f, 0.0f, 1.0f };
+				buffer[counter].TexCoord = { 0,0 };
+
+				buffer[counter + 1].Position = { offset + segmentSize,0.0f , 0.0f ,1.0f };
+				buffer[counter + 1].TexCoord = { 1,0 };
+
+				buffer[counter + 2].Position = { offset + segmentSize,size.y , 0.0f ,1.0f };
+				buffer[counter + 2].TexCoord = { 1,1 };
+
+
+				buffer[counter + 3].Position = { offset , size.y , 0.0f ,1.0f };
+				buffer[counter + 3].TexCoord = { 0,1 };
+
+				offset += segmentSize;
+				counter += 4;
+			}
+
+			buffer[0].Color = { 1,0,0,1 };
+			buffer[1].Color = { 1,1,0,1 };
+			buffer[2].Color = { 1,1,0,1 };
+			buffer[3].Color = { 1,0,0,1 };
+			//////////////////////////////
+			buffer[4].Color = { 1,1,0,1 };
+			buffer[5].Color = { 0,1,0,1 };
+			buffer[6].Color = { 0,1,0,1 };
+			buffer[7].Color = { 1,1,0,1 };
+			//////////////////////////////
+			buffer[8].Color = { 0,1,0,1 };
+			buffer[9].Color = { 0,1,1,1 };
+			buffer[10].Color = { 0,1,1,1 };
+			buffer[11].Color = { 0,1,0,1 };
+			//////////////////////////////
+			buffer[12].Color = { 0,1,1,1 };
+			buffer[13].Color = { 0,0,1,1 };
+			buffer[14].Color = { 0,0,1,1 };
+			buffer[15].Color = { 0,1,1,1 };
+			//////////////////////////////
+			buffer[16].Color = { 0,0,1,1 };
+			buffer[17].Color = { 1,0,1,1 };
+			buffer[18].Color = { 1,0,1,1 };
+			buffer[19].Color = { 0,0,1,1 };
+		}
+
 		void Init(const InGuiRenderData& renderData, const InGuiConfig& config)
 		{
 			g_InContext = new InGuiContext;
@@ -32,8 +87,7 @@ namespace XYZ {
 			g_InContext->InGuiData.CurrentWindow = nullptr;
 			g_InContext->InGuiData.MaxHeightInRow = 0.0f;
 			g_InContext->InGuiData.Flags = 0;
-			
-
+		
 			mINI::INIFile file("ingui.ini");
 			mINI::INIStructure ini;
 			if (file.read(ini))
