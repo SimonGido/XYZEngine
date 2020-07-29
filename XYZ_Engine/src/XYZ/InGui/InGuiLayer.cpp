@@ -23,9 +23,6 @@ namespace XYZ {
 		m_Material->Set("u_Texture", colorPickerTexture, colorPickerTextureID);
 		m_Material->Set("u_ViewportSize", glm::vec2(Input::GetWindowSize().first, Input::GetWindowSize().second));
 		InGui::Init({
-			textureID,
-			fontTextureID,
-			colorPickerTextureID,
 			m_Material,
 			texture,
 			colorPickerTexture,
@@ -38,15 +35,20 @@ namespace XYZ {
 			Ref<SubTexture2D>::Create(texture, glm::vec2(0, 3), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4)),
 			Ref<SubTexture2D>::Create(texture, glm::vec2(2, 3), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4)),
 			Ref<SubTexture2D>::Create(texture, glm::vec2(0, 0), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4)),
+			textureID,
+			fontTextureID,
+			colorPickerTextureID,
 		},
 		{
 			{1.0f,1.0f,1.0f,1.0f},
 			{0.8f,0.0f,0.2f,1.0f},
+			{0.8f,0.0f,0.2f,0.6f},
 			{0.7f,0.7f},
 			1000.f
-		});
+		});	
 
-		
+
+		InGui::EnableDockSpace();
 	}
 	void InGuiLayer::OnDetach()
 	{
@@ -103,13 +105,12 @@ namespace XYZ {
 	}
 	bool InGuiLayer::onMouseMove(MouseMovedEvent& e)
 	{
-		InGui::GetData().MousePosition = { e.GetX(),e.GetY() };
+		InGui::OnMouseMove({ e.GetX(),e.GetY() });
 		return false;
 	}
 	bool InGuiLayer::onWindowResize(WindowResizeEvent& e)
 	{
-		InGui::GetData().WindowSizeX = e.GetWidth();
-		InGui::GetData().WindowSizeY = e.GetHeight();
+		InGui::OnWindowResize({ e.GetWidth(),e.GetHeight() });
 
 		m_Material->Set("u_ViewportSize", glm::vec2(e.GetWidth(), e.GetHeight()));
 		return false;

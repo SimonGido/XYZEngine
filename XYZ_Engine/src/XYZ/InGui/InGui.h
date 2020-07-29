@@ -8,13 +8,14 @@ namespace XYZ {
 	namespace InGui {
 
 		extern InGuiContext* g_InContext;
-				
-		
+			
+
 		bool Begin(const std::string & name, const glm::vec2 & position, const glm::vec2 & size);
 		void End();
 
+
 		bool Button(const std::string & name, const glm::vec2 & size);
-		bool Checkbox(const std::string & name, const glm::vec2 & size);
+		bool Checkbox(const std::string & name, const glm::vec2 & size, bool& value);
 		bool Slider(const std::string & name, const glm::vec2 & size, float& value, float valueScale = 1.0f);
 		bool Image(const std::string & name, uint32_t rendererID, const glm::vec2 & size);
 
@@ -25,5 +26,7 @@ namespace XYZ {
 		bool RenderWindow(const std::string & name, uint32_t rendererID, const glm::vec2 & position, const glm::vec2 & size, float panelSize);
 		
 		void Separator();
+
+		glm::vec4 Selector();
 	}
 }

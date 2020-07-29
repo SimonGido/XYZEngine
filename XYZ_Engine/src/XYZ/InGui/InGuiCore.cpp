@@ -81,89 +81,170 @@ namespace XYZ {
 
 		void Init(const InGuiRenderData& renderData, const InGuiConfig& config)
 		{
-			g_InContext = new InGuiContext;
-			g_InContext->InGuiRenderData = renderData;
-			g_InContext->InGuiConfig = config;
-			g_InContext->InGuiData.CurrentWindow = nullptr;
-			g_InContext->InGuiData.MaxHeightInRow = 0.0f;
-			g_InContext->InGuiData.Flags = 0;
-		
+			g_InContext = new InGuiContext(renderData,config);		
+		}
+
+		void EnableDockSpace()
+		{
+			g_InContext->FrameData.Flags |= DockingEnabled;
+			g_InContext->DockSpace.Root[LeftNode] = new InGuiDockNode({ 0,0 }, g_InContext->FrameData.WindowSize);
+			g_InContext->DockSpace.Root[RightNode] = new InGuiDockNode({ 0,0 }, { 0,0 });
+		}
+
+		void Shutdown()
+		{
+			delete g_InContext;
+			g_InContext = nullptr;
+		}
+
+		void BeginFrame()
+		{
+			XYZ_ASSERT(!g_InContext->FrameData.CurrentWindow, "Missing end call for window");
+			g_InContext->FrameData.WindowSize.x = Input::GetWindowSize().first;
+			g_InContext->FrameData.WindowSize.y = Input::GetWindowSize().second;
+
+			
+			
+
+			InGuiRenderer::BeginScene({ g_InContext->FrameData.WindowSize });
+			InGuiRenderer::SetMaterial(g_InContext->RenderData.Material);
+		}
+		void EndFrame()
+		{
+			InGuiRenderer::Flush();
+			g_InContext->FrameData.CurrentWindow = nullptr;
+		}
+
+		void OnLeftMouseButtonRelease()
+		{
+			g_InContext->FrameData.Flags &= ~LeftMouseButtonDown;
+			g_InContext->FrameData.Flags &= ~ClickHandled;
+			
+			g_InContext->FrameData.Flags &= ~WindowBottomResize;
+			g_InContext->FrameData.Flags &= ~WindowTopResize;
+			g_InContext->FrameData.Flags &= ~WindowRightResize;
+			g_InContext->FrameData.Flags &= ~WindowLeftResize;
+		}
+
+		void OnRightMouseButtonRelease()
+		{
+			g_InContext->FrameData.Flags &= ~RightMouseButtonDown;
+			g_InContext->FrameData.Flags &= ~ClickHandled;
+
+			g_InContext->FrameData.Flags &= ~WindowBottomResize;
+			g_InContext->FrameData.Flags &= ~WindowTopResize;
+			g_InContext->FrameData.Flags &= ~WindowRightResize;
+			g_InContext->FrameData.Flags &= ~WindowLeftResize;
+		}
+
+		void OnLeftMouseButtonPress()
+		{
+			g_InContext->FrameData.Flags |= LeftMouseButtonDown;
+			g_InContext->FrameData.SelectedPoint = g_InContext->FrameData.MousePosition;
+		}
+
+		void OnRightMouseButtonPress()
+		{
+			g_InContext->FrameData.Flags |= RightMouseButtonDown;
+		}
+
+		void OnWindowResize(const glm::vec2& size)
+		{
+			g_InContext->FrameData.WindowSize = size;
+		}
+
+		void OnMouseMove(const glm::vec2& position)
+		{
+			g_InContext->FrameData.MousePosition = MouseToWorld(position);
+		}
+
+		InGuiContext::InGuiContext(const InGuiRenderData& renderData, const InGuiConfig& config)
+			: RenderData(renderData), ConfigData(config)
+		{
 			mINI::INIFile file("ingui.ini");
 			mINI::INIStructure ini;
 			if (file.read(ini))
 			{
 				for (auto& it : ini)
 				{
-					g_InContext->InGuiWindows[it.first].Position = StringToVec2(it.second.get("position"));
-					g_InContext->InGuiWindows[it.first].Size = StringToVec2(it.second.get("size"));
+					InGuiWindows[it.first] = new InGuiWindow();
+					InGuiWindows[it.first]->Position = StringToVec2(it.second.get("position"));
+					InGuiWindows[it.first]->Size = StringToVec2(it.second.get("size"));
 					if ((bool)atoi(it.second.get("collapsed").c_str()))
-						g_InContext->InGuiWindows[it.first].Flags |= Collapsed;
+						InGuiWindows[it.first]->Flags |= Collapsed;
 				}
 			}
 			else
 			{
 				file.generate(ini);
 			}
-		}
 
-		void Shutdown()
+			FrameData.WindowSize.x = (float)Input::GetWindowSize().first;
+			FrameData.WindowSize.y = (float)Input::GetWindowSize().second;
+		}
+		InGuiContext::~InGuiContext()
 		{
 			mINI::INIFile file("ingui.ini");
 			mINI::INIStructure ini;
 			for (auto& it : g_InContext->InGuiWindows)
 			{
-				std::string pos = std::to_string(it.second.Position.x) + "," + std::to_string(it.second.Position.y);
-				std::string size = std::to_string(it.second.Size.x) + "," + std::to_string(it.second.Size.y);
+				std::string pos = std::to_string(it.second->Position.x) + "," + std::to_string(it.second->Position.y);
+				std::string size = std::to_string(it.second->Size.x) + "," + std::to_string(it.second->Size.y);
 				ini[it.first]["position"] = pos;
 				ini[it.first]["size"] = size;
-				bool collapsed = (it.second.Flags & Collapsed);
+				bool collapsed = (it.second->Flags & Collapsed);
 				ini[it.first]["collapsed"] = std::to_string(collapsed);
+				delete it.second;
 			}
 
 			file.write(ini);
-
-			delete g_InContext;
 		}
 
-		void BeginFrame()
+		InGuiWindow* InGuiContext::GetWindow(const std::string& name)
 		{
-			XYZ_ASSERT(!g_InContext->InGuiData.CurrentWindow, "Missing end call for window");
-			g_InContext->InGuiData.WindowSizeX = Input::GetWindowSize().first;
-			g_InContext->InGuiData.WindowSizeY = Input::GetWindowSize().second;
-			g_InContext->InGuiData.MousePosition = MouseToWorld({ Input::GetMouseX(),Input::GetMouseY() });
-
-			InGuiRenderer::BeginScene({ {g_InContext->InGuiData.WindowSizeX,g_InContext->InGuiData.WindowSizeY} });
-			InGuiRenderer::SetMaterial(g_InContext->InGuiRenderData.Material);
+			auto& it = g_InContext->InGuiWindows.find(name);
+			if (it == g_InContext->InGuiWindows.end())
+			{
+				return nullptr;
+			}
+			g_InContext->FrameData.CurrentWindow = it->second;
+			return it->second;
 		}
-		void EndFrame()
+		InGuiWindow* InGuiContext::CreateWindow(const std::string& name, const glm::vec2& position, const glm::vec2& size)
 		{
-			InGuiRenderer::Flush();
-			g_InContext->InGuiData.CurrentWindow = nullptr;
+			g_InContext->InGuiWindows[name] = new InGuiWindow{ position,size };
+			g_InContext->FrameData.CurrentWindow = g_InContext->InGuiWindows[name];
+			return g_InContext->FrameData.CurrentWindow;
 		}
-
-		void OnLeftMouseButtonRelease()
+		
+		
+		InGuiDockSpace::InGuiDockSpace()
 		{
-			g_InContext->InGuiData.Flags = 0;
-		}
-
-		void OnRightMouseButtonRelease()
-		{
-			g_InContext->InGuiData.Flags = 0;
+			Root[LeftNode] = nullptr;
+			Root[RightNode] = nullptr;
 		}
 
-		void OnLeftMouseButtonPress()
+		InGuiDockSpace::~InGuiDockSpace()
 		{
-			g_InContext->InGuiData.Flags |= LeftMouseButtonDown;
+			if (Root[LeftNode])
+				destroy(Root[LeftNode]);
+			if (Root[RightNode])
+				destroy(Root[RightNode]);
 		}
+		
+		void InGuiDockSpace::destroy(InGuiDockNode* node)
+		{
+			if (node->Children[LeftNode])
+				destroy(node->Children[LeftNode]);
+			if (node->Children[RightNode])
+				destroy(node->Children[RightNode]);
 
-		void OnRightMouseButtonPress()
-		{
-			g_InContext->InGuiData.Flags |= RightMouseButtonDown;
+			delete node;
 		}
-
-		InGuiFrameData& InGui::GetData()
+		void InGuiDockNode::InsertWindow(InGuiWindow* window, uint8_t docked)
 		{
-			return g_InContext->InGuiData;
+			
 		}
-	}
+		
+}
 }

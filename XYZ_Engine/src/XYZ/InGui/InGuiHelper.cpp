@@ -2,7 +2,7 @@
 #include "InGuiHelper.h"
 
 #include "XYZ/Core/Application.h"
-
+#include "XYZ/Renderer/InGuiRenderer.h"
 
 namespace XYZ {
 	namespace InGui {
@@ -17,49 +17,49 @@ namespace XYZ {
 
 		glm::vec2 MouseToWorld(const glm::vec2& point)
 		{
-			glm::vec2 offset = { g_InContext->InGuiData.WindowSizeX / 2,g_InContext->InGuiData.WindowSizeY / 2 };
+			glm::vec2 offset = { g_InContext->FrameData.WindowSize.x / 2,g_InContext->FrameData.WindowSize.y / 2 };
 			return { point.x - offset.x, offset.y - point.y };
 		}
 
 		glm::vec2 HandleWindowSpacing(const glm::vec2& uiSize)
 		{
-			XYZ_ASSERT(g_InContext->InGuiData.CurrentWindow, "Missing begin call");
+			XYZ_ASSERT(g_InContext->FrameData.CurrentWindow, "Missing begin call");
 
 			// Set position to the position of current window
-			glm::vec2 position = g_InContext->InGuiData.CurrentWindow->Position;
+			glm::vec2 position = g_InContext->FrameData.CurrentWindow->Position;
 			glm::vec2 offset = { 10, 10 };
 
 			// Find the highest widget in row
-			if (uiSize.y > g_InContext->InGuiData.MaxHeightInRow)
-				g_InContext->InGuiData.MaxHeightInRow = uiSize.y;
+			if (uiSize.y > g_InContext->FrameData.MaxHeightInRow)
+				g_InContext->FrameData.MaxHeightInRow = uiSize.y;
 
 
 			// If widget position is going to be outside of the window
-			if (g_InContext->InGuiData.CurrentWindow->Size.x <= g_InContext->InGuiData.WindowSpaceOffset.x + uiSize.x)
+			if (g_InContext->FrameData.CurrentWindow->Size.x <= g_InContext->FrameData.WindowSpaceOffset.x + uiSize.x)
 			{
 				// Set window offset x to zero
-				g_InContext->InGuiData.WindowSpaceOffset.x = 0.0f;
+				g_InContext->FrameData.WindowSpaceOffset.x = 0.0f;
 
 				// Subtract the highest widget in row and offset y from window offset y 
-				g_InContext->InGuiData.WindowSpaceOffset.y -= g_InContext->InGuiData.MaxHeightInRow + offset.y;
+				g_InContext->FrameData.WindowSpaceOffset.y -= g_InContext->FrameData.MaxHeightInRow + offset.y;
 
-				g_InContext->InGuiData.MaxHeightInRow = uiSize.y;
+				g_InContext->FrameData.MaxHeightInRow = uiSize.y;
 			}
 
 			// Subtract from position widget size y
 			position.y -= uiSize.y;
 			// Add to position window space offset and offset
-			position += g_InContext->InGuiData.WindowSpaceOffset + glm::vec2{ offset.x,-offset.y };
+			position += g_InContext->FrameData.WindowSpaceOffset + glm::vec2{ offset.x,-offset.y };
 
 
-			g_InContext->InGuiData.WindowSpaceOffset.x += uiSize.x + offset.x;
+			g_InContext->FrameData.WindowSpaceOffset.x += uiSize.x + offset.x;
 
 			return position;
 		}
 
 		glm::vec4 CalculatePixelColor(const glm::vec4& pallete, const glm::vec2& position, const glm::vec2& size)
 		{
-			glm::vec2 pos = g_InContext->InGuiData.MousePosition - position;
+			glm::vec2 pos = g_InContext->FrameData.MousePosition - position;
 			glm::vec2 scale = pos / size;
 
 			glm::vec4 diff = pallete - glm::vec4{1, 1, 1, 1};
@@ -75,7 +75,7 @@ namespace XYZ {
 			static constexpr uint32_t numColorSegments = 3;
 			
 			float segmentSize = size.x / numColorSegments;
-			float pos = g_InContext->InGuiData.MousePosition.x - position.x;
+			float pos = g_InContext->FrameData.MousePosition.x - position.x;
 			uint32_t segment = (uint32_t)floor(pos / segmentSize);
 			float distance = (pos - (segment * segmentSize)) / segmentSize;
 			
@@ -103,30 +103,48 @@ namespace XYZ {
 					pos.y		   <= point.y);
 		}
 
+		bool DetectMove(const InGuiWindow& window)
+		{
+			return (g_InContext->FrameData.MousePosition.y >= window.Position.y + window.Size.y
+				&& !(window.Flags & Moved));
+		}
+
+		bool CollideSquares(const glm::vec2& pos, const glm::vec2& size, const glm::vec2& otherPos, const glm::vec2& otherSize)
+		{
+			if (pos.x >= otherPos.x + otherSize.x || otherPos.x >= pos.x + size.x)
+				return false;
+
+			if (pos.y + size.y <= otherPos.y || otherPos.y + otherSize.y <= pos.y)
+				return false;
+
+
+			return true;
+		}
+
 		bool DetectResize(const InGuiWindow& window)
 		{
 			glm::vec2 offset = { 10,10 };
-			auto& mousePos = g_InContext->InGuiData.MousePosition;
+			auto& mousePos = g_InContext->FrameData.MousePosition;
 		
 			// Right side
 			if (mousePos.x >= window.Position.x + window.Size.x - offset.x)
-				g_InContext->InGuiData.Flags |= WindowRightResize;
+				g_InContext->FrameData.Flags |= WindowRightResize;
 
 			// Left side
 			if (mousePos.x <= window.Position.x + offset.x)
-				g_InContext->InGuiData.Flags |= WindowLeftResize;
+				g_InContext->FrameData.Flags |= WindowLeftResize;
 
 
 			// Bottom side
-			if (mousePos.y <= window.Position.y + offset.y )
-				g_InContext->InGuiData.Flags |= WindowBottomResize;
+			if (mousePos.y <= window.Position.y + offset.y)
+				g_InContext->FrameData.Flags |= WindowBottomResize;
 
 			// Top side
 			if (mousePos.y >= window.Position.y + window.Size.y - offset.y + InGuiWindow::PanelSize)
-				g_InContext->InGuiData.Flags |= WindowTopResize;
+				g_InContext->FrameData.Flags |= WindowTopResize;
 
 
-			if (g_InContext->InGuiData.Flags 
+			if (g_InContext->FrameData.Flags 
 				& (WindowRightResize | WindowLeftResize | WindowBottomResize | WindowTopResize))
 			{
 				return true;
@@ -144,41 +162,73 @@ namespace XYZ {
 			};
 			glm::vec2 minButtonSize = { InGuiWindow::PanelSize,InGuiWindow::PanelSize };
 
-			if (Collide(minButtonPos, minButtonSize, g_InContext->InGuiData.MousePosition))
+			if (Collide(minButtonPos, minButtonSize, g_InContext->FrameData.MousePosition))
 			{
 				return true;
 			}
 			return false;
 		}
 
-	
+
+		void ShowDockNode(InGuiDockNode* node)
+		{
+			glm::vec2 size = { 50,50 };
+			glm::vec2 middlePos = node->Position;
+			glm::vec2 leftPos = node->Position - glm::vec2(node->Size.x / 2, 0);
+			glm::vec2 rightPos = node->Position + glm::vec2((node->Size.x / 2) - size.x, 0);
+			glm::vec2 topPos = node->Position + glm::vec2(0, (node->Size.y / 2) - size.y);
+			glm::vec2 bottomPos = node->Position - glm::vec2(0, (node->Size.y / 2));
+
+
+			InGuiRenderer::SubmitUI(middlePos, size, g_InContext->RenderData.SliderHandleSubTexture->GetTexCoords(), g_InContext->RenderData.TextureID, { 1,1,1,1 });
+			InGuiRenderer::SubmitUI(leftPos, size, g_InContext->RenderData.SliderHandleSubTexture->GetTexCoords(), g_InContext->RenderData.TextureID, { 1,1,1,1 });
+			InGuiRenderer::SubmitUI(rightPos, size, g_InContext->RenderData.SliderHandleSubTexture->GetTexCoords(), g_InContext->RenderData.TextureID, { 1,1,1,1 });
+			InGuiRenderer::SubmitUI(topPos, size, g_InContext->RenderData.SliderHandleSubTexture->GetTexCoords(), g_InContext->RenderData.TextureID, { 1,1,1,1 });
+			InGuiRenderer::SubmitUI(bottomPos, size, g_InContext->RenderData.SliderHandleSubTexture->GetTexCoords(), g_InContext->RenderData.TextureID, { 1,1,1,1 });
+		}
+
+		
+
+		void HandleDocking(InGuiDockNode* node)
+		{
+			
+		}
+
 		void HandleMouseInput(InGuiWindow& window)
 		{
-			if (Collide(window.Position, { window.Size.x,window.Size.y + InGuiWindow::PanelSize }, g_InContext->InGuiData.MousePosition)
-				&& !(g_InContext->InGuiData.Flags & ClickHandled))
+			glm::vec2 size = { window.Size.x,window.Size.y + InGuiWindow::PanelSize };
+			glm::vec2 position = window.Position;
+			if (window.Flags & Collapsed)
+			{
+				size.y -= window.Size.y;
+				position.y += window.Size.y;
+			}
+
+			if (Collide(position, size, g_InContext->FrameData.MousePosition)
+				&& !(g_InContext->FrameData.Flags & ClickHandled))
 			{
 				window.Flags |= Hoovered;
 
-				if (g_InContext->InGuiData.Flags & RightMouseButtonDown)
+				if (g_InContext->FrameData.Flags & RightMouseButtonDown)
 				{
 					if (DetectResize(window))
 					{
 						window.Flags |= Resized;
-						g_InContext->InGuiData.Flags |= ClickHandled;
+						g_InContext->FrameData.Flags |= ClickHandled;
 					}
-					else if (!(window.Flags & Moved))
+					else if (DetectMove(window))
 					{
 						window.Flags |= Moved;
-						g_InContext->InGuiData.Flags |= ClickHandled;
-						g_InContext->InGuiData.ModifiedWindowMouseOffset = g_InContext->InGuiData.MousePosition - window.Position - glm::vec2{ 0, window.Size.y };
+						g_InContext->FrameData.Flags |= ClickHandled;
+						g_InContext->FrameData.ModifiedWindowMouseOffset = g_InContext->FrameData.MousePosition - window.Position - glm::vec2{ 0, window.Size.y };
 					}
 				}
-				else if (g_InContext->InGuiData.Flags & LeftMouseButtonDown)
+				else if (g_InContext->FrameData.Flags & LeftMouseButtonDown)
 				{		
 					if (DetectCollapse(window))
 					{
 						window.Flags ^= Collapsed;
-						g_InContext->InGuiData.Flags |= ClickHandled;
+						g_InContext->FrameData.Flags |= ClickHandled;
 					}
 				}
 			}
@@ -191,18 +241,17 @@ namespace XYZ {
 		void HandleResize(InGuiWindow& window)
 		{
 			auto& app = Application::Get();
-			auto& mousePos = g_InContext->InGuiData.MousePosition;
+			auto& mousePos = g_InContext->FrameData.MousePosition;
 
-			if ((g_InContext->InGuiData.Flags & RightMouseButtonDown) 
-			 && (window.Flags & Resized)
-			 && !(window.Flags & Docked))
+			if ((g_InContext->FrameData.Flags & RightMouseButtonDown) 
+			 && (window.Flags & Resized))
 			{
-				if (g_InContext->InGuiData.Flags & WindowRightResize)
+				if (g_InContext->FrameData.Flags & WindowRightResize)
 				{
 					app.GetWindow().SetCursor(WindowCursor::XYZ_HRESIZE_CURSOR);
 					window.Size.x = mousePos.x - window.Position.x;
 				}
-				else if (g_InContext->InGuiData.Flags & WindowLeftResize)
+				else if (g_InContext->FrameData.Flags & WindowLeftResize)
 				{
 					app.GetWindow().SetCursor(WindowCursor::XYZ_HRESIZE_CURSOR);
 					window.Size.x = window.Position.x + window.Size.x - mousePos.x;
@@ -210,13 +259,13 @@ namespace XYZ {
 				}
 
 
-				if (g_InContext->InGuiData.Flags & WindowBottomResize)
+				if (g_InContext->FrameData.Flags & WindowBottomResize)
 				{
 					app.GetWindow().SetCursor(WindowCursor::XYZ_VRESIZE_CURSOR);
 					window.Size.y = window.Position.y + window.Size.y - mousePos.y;
 					window.Position.y = mousePos.y;
 				}
-				else if (g_InContext->InGuiData.Flags & WindowTopResize)
+				else if (g_InContext->FrameData.Flags & WindowTopResize)
 				{
 					app.GetWindow().SetCursor(WindowCursor::XYZ_VRESIZE_CURSOR);
 					window.Size.y = mousePos.y - window.Position.y - InGuiWindow::PanelSize;
@@ -225,7 +274,7 @@ namespace XYZ {
 			else
 			{
 				window.Flags &= ~Resized;
-				if (!(g_InContext->InGuiData.Flags 
+				if (!(g_InContext->FrameData.Flags 
 				& (WindowRightResize | WindowLeftResize | WindowBottomResize | WindowTopResize)))
 					app.GetWindow().SetCursor(WindowCursor::XYZ_ARROW_CURSOR);
 			}
@@ -234,20 +283,16 @@ namespace XYZ {
 
 		void HandleMove(InGuiWindow& window)
 		{
-			if (g_InContext->InGuiData.Flags & RightMouseButtonDown)
+			if (g_InContext->FrameData.Flags & RightMouseButtonDown
+				&& (window.Flags & Moved))
 			{
-				glm::vec2 pos = g_InContext->InGuiData.MousePosition - g_InContext->InGuiData.ModifiedWindowMouseOffset;
+				glm::vec2 pos = g_InContext->FrameData.MousePosition - g_InContext->FrameData.ModifiedWindowMouseOffset;
 				window.Position = { pos.x, pos.y - window.Size.y };
 			}
 			else
 			{
 				window.Flags &= ~(Moved);
 			}
-		}
-
-		void HandleDocking(InGuiWindow& window)
-		{
-			static constexpr glm::vec2 dockSignSize = { 50,40 };
 		}
 	
 		void Generate6SegmentColorRectangle(const glm::vec2& size, Vertex* buffer)
@@ -342,6 +387,41 @@ namespace XYZ {
 				text.Width += character.XAdvance * scale.x;
 				cursorX += character.XAdvance * scale.x;
 			}
+		}
+		void InsertWindowInDockSpace(InGuiWindow& window)
+		{
+			auto node = g_InContext->DockSpace.Root;
+			if (CollideSquares(node[LeftNode]->Position, node[LeftNode]->Size, window.Position, window.Size))
+			{
+				if (node[LeftNode]->SplitAxis == NoneAxis)
+				{
+					node[LeftNode]->Windows.insert(&window);
+				}
+		
+			}
+		}
+		void RemoveWindowFromDockSpace(InGuiWindow& window)
+		{
+
+		}
+		void SplitDockNode(InGuiDockNode* node, uint8_t axis)
+		{
+			if (axis == VerticalAxis)
+			{
+				glm::vec2 halfSize = { node->Size.x / 2,node->Size.y};
+				node->Children[LeftNode] = new InGuiDockNode(node->Position, halfSize);
+				node->Children[RightNode] = new InGuiDockNode(node->Position + halfSize, halfSize);
+			}
+			else if (axis == HorizontalAxis)
+			{
+				glm::vec2 halfSize = { node->Size.x,node->Size.y / 2 };
+				node->Children[LeftNode] = new InGuiDockNode(node->Position, halfSize);
+				node->Children[RightNode] = new InGuiDockNode(node->Position + halfSize, halfSize);
+			}
+		}
+		void UnSplitDockNode(InGuiDockNode* node)
+		{
+			
 		}
 	}
 }

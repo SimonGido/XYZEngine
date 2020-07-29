@@ -127,8 +127,7 @@ namespace XYZ {
 	}
 	void EditorLayer::OnEvent(Event& event)
 	{
-		if (m_ActiveWindow)
-			m_EditorCamera.OnEvent(event);
+		m_EditorCamera.OnEvent(event);
 	}
 
 	void EditorLayer::OnInGuiRender()
@@ -136,13 +135,13 @@ namespace XYZ {
 		if (InGui::RenderWindow("Scene", m_FBO->GetColorAttachment(0).RendererID, { 0,-300 }, { 800,800 }, 25.0f))
 		{
 			m_ActiveWindow = true;
+			InGui::Selector();
 		}
 		else
 		{
 			m_ActiveWindow = false;
 		}
 	
-		
 		if (InGui::Begin("Test Panel", { 0,0 }, { 500,500 }))
 		{		
 			
@@ -159,7 +158,7 @@ namespace XYZ {
 			{
 				std::cout << "Opica" << std::endl;
 			}
-			if (InGui::Checkbox("Checkbox", { 50,50 }))
+			if (InGui::Checkbox("Checkbox", { 50,50 }, m_CheckboxVal))
 			{
 				std::cout << "Wtf" << std::endl;
 			}
@@ -175,18 +174,19 @@ namespace XYZ {
 			{
 				std::cout << m_TestValue << std::endl;
 			}
-			if (InGui::Checkbox("Checkbox", { 50,50 }))
+			if (InGui::Checkbox("Checkbox", { 50,50 }, m_CheckboxVal))
 			{
 				std::cout << "Wtf" << std::endl;
 			}
-			if (InGui::Checkbox("Checkbox", { 50,50 }))
+			if (InGui::Checkbox("Checkbox", { 50,50 }, m_CheckboxVal))
 			{
 				std::cout << "Wtf" << std::endl;
 			}
-			if (InGui::Checkbox("Checkbox", { 50,50 }))
+			if (InGui::Checkbox("Checkbox", { 50,50 }, m_CheckboxVal))
 			{
 				std::cout << "Wtf" << std::endl;
 			}
+
 		}
 		InGui::End();
 		

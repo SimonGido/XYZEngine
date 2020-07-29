@@ -39,7 +39,7 @@ namespace XYZ {
 		glm::vec4 m_Color = { 0,0,0,0 };
 		glm::vec4 m_Pallete = { 0,1,0,1 };
 		float m_TestValue = 0.0f;
-
+		bool m_CheckboxVal = false;
 		bool m_ActiveWindow = false;
 	};
 }
