@@ -170,30 +170,7 @@ namespace XYZ {
 		}
 
 
-		void ShowDockNode(InGuiDockNode* node)
-		{
-			glm::vec2 size = { 50,50 };
-			glm::vec2 middlePos = node->Position;
-			glm::vec2 leftPos = node->Position - glm::vec2(node->Size.x / 2, 0);
-			glm::vec2 rightPos = node->Position + glm::vec2((node->Size.x / 2) - size.x, 0);
-			glm::vec2 topPos = node->Position + glm::vec2(0, (node->Size.y / 2) - size.y);
-			glm::vec2 bottomPos = node->Position - glm::vec2(0, (node->Size.y / 2));
-
-
-			InGuiRenderer::SubmitUI(middlePos, size, g_InContext->RenderData.SliderHandleSubTexture->GetTexCoords(), g_InContext->RenderData.TextureID, { 1,1,1,1 });
-			InGuiRenderer::SubmitUI(leftPos, size, g_InContext->RenderData.SliderHandleSubTexture->GetTexCoords(), g_InContext->RenderData.TextureID, { 1,1,1,1 });
-			InGuiRenderer::SubmitUI(rightPos, size, g_InContext->RenderData.SliderHandleSubTexture->GetTexCoords(), g_InContext->RenderData.TextureID, { 1,1,1,1 });
-			InGuiRenderer::SubmitUI(topPos, size, g_InContext->RenderData.SliderHandleSubTexture->GetTexCoords(), g_InContext->RenderData.TextureID, { 1,1,1,1 });
-			InGuiRenderer::SubmitUI(bottomPos, size, g_InContext->RenderData.SliderHandleSubTexture->GetTexCoords(), g_InContext->RenderData.TextureID, { 1,1,1,1 });
-		}
-
-		
-
-		void HandleDocking(InGuiDockNode* node)
-		{
-			
-		}
-
+	
 		void HandleMouseInput(InGuiWindow& window)
 		{
 			glm::vec2 size = { window.Size.x,window.Size.y + InGuiWindow::PanelSize };
@@ -288,10 +265,23 @@ namespace XYZ {
 			{
 				glm::vec2 pos = g_InContext->FrameData.MousePosition - g_InContext->FrameData.ModifiedWindowMouseOffset;
 				window.Position = { pos.x, pos.y - window.Size.y };
+				g_InContext->DockSpace->RemoveWindow(&window);
 			}
 			else
 			{
+				window.Flags &= ~(Docked);
 				window.Flags &= ~(Moved);
+			}
+		}
+
+		void HandleDocking(InGuiWindow& window)
+		{
+			if ((g_InContext->FrameData.Flags & DockingHandled) 
+				&& (window.Flags & Moved))
+			{
+				
+				g_InContext->DockSpace->InsertWindow(&window, g_InContext->FrameData.MousePosition);			
+				g_InContext->FrameData.Flags &= ~DockingHandled;
 			}
 		}
 	
@@ -387,41 +377,6 @@ namespace XYZ {
 				text.Width += character.XAdvance * scale.x;
 				cursorX += character.XAdvance * scale.x;
 			}
-		}
-		void InsertWindowInDockSpace(InGuiWindow& window)
-		{
-			auto node = g_InContext->DockSpace.Root;
-			if (CollideSquares(node[LeftNode]->Position, node[LeftNode]->Size, window.Position, window.Size))
-			{
-				if (node[LeftNode]->SplitAxis == NoneAxis)
-				{
-					node[LeftNode]->Windows.insert(&window);
-				}
-		
-			}
-		}
-		void RemoveWindowFromDockSpace(InGuiWindow& window)
-		{
-
-		}
-		void SplitDockNode(InGuiDockNode* node, uint8_t axis)
-		{
-			if (axis == VerticalAxis)
-			{
-				glm::vec2 halfSize = { node->Size.x / 2,node->Size.y};
-				node->Children[LeftNode] = new InGuiDockNode(node->Position, halfSize);
-				node->Children[RightNode] = new InGuiDockNode(node->Position + halfSize, halfSize);
-			}
-			else if (axis == HorizontalAxis)
-			{
-				glm::vec2 halfSize = { node->Size.x,node->Size.y / 2 };
-				node->Children[LeftNode] = new InGuiDockNode(node->Position, halfSize);
-				node->Children[RightNode] = new InGuiDockNode(node->Position + halfSize, halfSize);
-			}
-		}
-		void UnSplitDockNode(InGuiDockNode* node)
-		{
-			
 		}
 	}
 }

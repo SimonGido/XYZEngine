@@ -31,19 +31,17 @@ namespace XYZ {
 				currentWindow = g_InContext->CreateWindow(copyName, position, size);
 			}
 
+			
 			HandleMouseInput(*currentWindow);		
 			HandleResize(*currentWindow);
+			HandleDocking(*currentWindow);
 			HandleMove(*currentWindow);
 
 			glm::vec2 winPos = currentWindow->Position;
 			glm::vec2 winSize = currentWindow->Size;
 			
-			if (currentWindow->Flags & Moved)
-			{
-				panelColor = g_InContext->ConfigData.HooverColor;
-			}
-			else
-				panelColor = g_InContext->ConfigData.DefaultColor;
+	
+			
 		
 			g_InContext->FrameData.MaxHeightInRow = 0.0f;
 			g_InContext->FrameData.WindowSpaceOffset = { 0, winSize.y };
@@ -60,7 +58,13 @@ namespace XYZ {
 			if (!(currentWindow->Flags & Collapsed))
 				InGuiRenderer::SubmitUI(winPos, winSize, g_InContext->RenderData.WindowSubTexture->GetTexCoords(), g_InContext->RenderData.TextureID, color);
 
-
+			if (currentWindow->Flags & Moved)
+			{
+				panelColor = g_InContext->ConfigData.HooverColor;
+				g_InContext->DockSpace->ShowDockSpace();
+			}
+			else
+				panelColor = g_InContext->ConfigData.DefaultColor;
 
 			return !(currentWindow->Flags & Collapsed);
 		}
@@ -304,7 +308,7 @@ namespace XYZ {
 				return false;
 
 			glm::vec4 color = g_InContext->ConfigData.DefaultColor;
-			glm::vec4 panelColor = g_InContext->ConfigData.DefaultColor;
+			static glm::vec4 panelColor = g_InContext->ConfigData.DefaultColor;
 			std::string copyName = name;
 			std::transform(copyName.begin(), copyName.end(), copyName.begin(), ::tolower);
 
@@ -316,15 +320,14 @@ namespace XYZ {
 	
 			HandleMouseInput(*currentWindow);
 			HandleResize(*currentWindow);
+			HandleDocking(*currentWindow);
 			HandleMove(*currentWindow);	
-			if (currentWindow->Flags & Moved)
-				panelColor = g_InContext->ConfigData.HooverColor;
-	
+
 
 			glm::vec2 panelPos = { currentWindow->Position.x, currentWindow->Position.y + currentWindow->Size.y };
 			glm::vec2 minButtonPos = { panelPos.x + currentWindow->Size.x - InGuiWindow::PanelSize, panelPos.y };
 
-			//HandleResize(it->second);
+
 			InGuiRenderer::SubmitUI(panelPos, { currentWindow->Size.x ,panelSize }, g_InContext->RenderData.SliderSubTexture->GetTexCoords(), g_InContext->RenderData.TextureID, panelColor);
 			InGuiText text;
 			GenerateInGuiText(text, g_InContext->RenderData.Font, name, panelPos, g_InContext->ConfigData.NameScale, currentWindow->Size.x);
@@ -333,6 +336,14 @@ namespace XYZ {
 
 			if (!(currentWindow->Flags & Collapsed))
 				InGuiRenderer::SubmitUI(rendererID, currentWindow->Position, currentWindow->Size, { 0,0,1,1 }, color);
+
+			if (currentWindow->Flags & Moved)
+			{
+				panelColor = g_InContext->ConfigData.HooverColor;
+				g_InContext->DockSpace->ShowDockSpace();
+			}
+			else
+				panelColor = g_InContext->ConfigData.DefaultColor;
 
 			return (currentWindow->Flags & Hoovered);
 		}

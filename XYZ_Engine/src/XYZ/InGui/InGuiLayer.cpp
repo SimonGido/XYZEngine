@@ -2,10 +2,10 @@
 #include "InGuiLayer.h"
 
 #include "InGuiCore.h"
+
 #include "XYZ/Core/Input.h"
 #include "XYZ/Core/MouseCodes.h"
 #include "XYZ/Core/KeyCodes.h"
-
 namespace XYZ {
 	void InGuiLayer::OnAttach()
 	{
@@ -47,8 +47,6 @@ namespace XYZ {
 			1000.f
 		});	
 
-
-		InGui::EnableDockSpace();
 	}
 	void InGuiLayer::OnDetach()
 	{
@@ -56,6 +54,7 @@ namespace XYZ {
 	}
 	void InGuiLayer::OnUpdate(float dt)
 	{
+		
 	}
 	void InGuiLayer::OnEvent(Event& event)
 	{

@@ -5,25 +5,13 @@
 #include "XYZ/Renderer/SubTexture2D.h"
 #include "XYZ/Renderer/Mesh.h"
 
+
 #include <glm/glm.hpp>
 #include <unordered_set>
 
 namespace XYZ {
 	namespace InGui {
-		enum Node
-		{
-			LeftNode,
-			RightNode,
-			NumNodes
-		};
-
-		enum InGuiAxis
-		{
-			NoneAxis = 0,
-			VerticalAxis = 1,
-			HorizontalAxis = 2
-		};
-
+		
 		enum InGuiWindowFlags
 		{
 			Collapsed    = 1 << 0,
@@ -42,24 +30,18 @@ namespace XYZ {
 			LeftMouseButtonDown  = 1 << 4,
 			RightMouseButtonDown = 1 << 5,
 			ClickHandled         = 1 << 6,
-			DockingEnabled		 = 1 << 7
+			DockingHandled		 = 1 << 7,
+			DockingEnabled		 = 1 << 8
 		};
 
-		enum InGuiDocked
-		{
-			DockedLeft   = 0,
-			DockedRight  = 1,
-			DockedBottom = 2,
-			DockedTop	 = 3,
-			DockedMiddle = 4
-		};
-
+		struct InGuiDockNode;
 		struct InGuiWindow
 		{
 			glm::vec2 Position;
 			glm::vec2 Size;
 			uint8_t Flags;
-		
+			
+			InGuiDockNode* DockNode = nullptr;
 			static constexpr float PanelSize = 25.0f;
 		};
 
@@ -91,42 +73,6 @@ namespace XYZ {
 			uint32_t ColorPickerTextureID = 0;
 		};
 
-		
-
-		struct InGuiDockNode
-		{
-			InGuiDockNode(const glm::vec2& position, const glm::vec2& size)
-				: Position(position), Size(size)
-			{
-				Parent = nullptr;
-				Children[LeftNode] = nullptr;
-				Children[RightNode] = nullptr;
-			}
-
-			void InsertWindow(InGuiWindow* window, uint8_t docked);
-
-			InGuiDockNode* Parent;
-			InGuiDockNode* Children[2];
-			std::unordered_set<InGuiWindow*> Windows;
-
-			glm::vec2 Position;
-			glm::vec2 Size;
-
-			uint8_t SplitAxis = NoneAxis;
-		};
-
-
-		struct InGuiDockSpace
-		{
-			InGuiDockSpace();
-			~InGuiDockSpace();
-
-			InGuiDockNode* Root[NumNodes];
-
-		private:
-			void destroy(InGuiDockNode* node);
-
-		};
 
 		// Frame data used in functions
 		struct InGuiFrameData
@@ -141,7 +87,7 @@ namespace XYZ {
 
 			float MaxHeightInRow = 0.0f;
 
-			uint8_t Flags = 0;
+			uint16_t Flags = 0;
 		};
 
 
@@ -155,6 +101,78 @@ namespace XYZ {
 			float MaxTextLength;
 		};
 
+		enum class SplitAxis
+		{
+			None,
+			Vertical,
+			Horizontal
+		};
+
+		enum class DockPosition
+		{
+			None,
+			Left,
+			Right,
+			Bottom,
+			Top,
+			Middle
+		};
+
+		struct InGuiDockNode
+		{
+			InGuiDockNode(const glm::vec2& pos, const glm::vec2& size, InGuiDockNode* parent = nullptr)
+				:
+				Position(pos), Size(size), Parent(parent)
+			{
+				Children[0] = nullptr;
+				Children[1] = nullptr;
+			}
+
+			glm::vec2 Position;
+			glm::vec2 Size;
+
+			InGuiDockNode* Parent;
+			InGuiDockNode* Children[2];
+			std::vector<InGuiWindow*> Windows;
+
+			SplitAxis Split = SplitAxis::None;
+		};
+
+
+		class InGuiDockSpace
+		{
+		public:
+			InGuiDockSpace(const glm::vec2& pos, const glm::vec2& size);
+			~InGuiDockSpace();
+
+			void InsertWindow(InGuiWindow* window, const glm::vec2& mousePos);
+			void RemoveWindow(InGuiWindow* window);
+
+			void Resize(const glm::vec2& size);
+			void ShowDockSpace();
+
+			void Update();
+
+		private:
+			void insertWindow(InGuiWindow* window, const glm::vec2& mousePos, InGuiDockNode* node);
+			void destroy(InGuiDockNode** node);
+			void resize(const glm::vec2& scale, InGuiDockNode* node);
+			void splitNode(InGuiDockNode* node,SplitAxis axis);
+			void unsplitNode(InGuiDockNode* node);
+			void update(InGuiDockNode* node);
+
+			void showNode(InGuiDockNode* node, const glm::vec2& mousePos);
+			DockPosition collideWithMarker(InGuiDockNode* node, const glm::vec2& mousePos);
+
+		private:
+			InGuiDockNode* m_Root;
+
+
+			static constexpr glm::vec2 sc_QuadSize = { 50,50 };
+		};
+
+
+
 		struct InGuiContext
 		{
 			InGuiContext(const InGuiRenderData& renderData, const InGuiConfig& config);
@@ -167,7 +185,7 @@ namespace XYZ {
 			InGuiFrameData FrameData;
 			InGuiRenderData RenderData;
 			InGuiConfig ConfigData;
-			InGuiDockSpace DockSpace;
+			InGuiDockSpace *DockSpace;
 
 		private:
 			std::unordered_map<std::string, InGuiWindow*> InGuiWindows;
@@ -176,7 +194,7 @@ namespace XYZ {
 
 
 		void Init(const InGuiRenderData& renderData,const InGuiConfig& config);
-		void EnableDockSpace();
+	
 
 		void Shutdown();
 
