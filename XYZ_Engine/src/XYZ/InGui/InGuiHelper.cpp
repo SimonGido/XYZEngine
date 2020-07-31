@@ -123,33 +123,35 @@ namespace XYZ {
 
 		bool DetectResize(const InGuiWindow& window)
 		{
-			glm::vec2 offset = { 10,10 };
-			auto& mousePos = g_InContext->FrameData.MousePosition;
-		
-			// Right side
-			if (mousePos.x >= window.Position.x + window.Size.x - offset.x)
-				g_InContext->FrameData.Flags |= WindowRightResize;
-
-			// Left side
-			if (mousePos.x <= window.Position.x + offset.x)
-				g_InContext->FrameData.Flags |= WindowLeftResize;
-
-
-			// Bottom side
-			if (mousePos.y <= window.Position.y + offset.y)
-				g_InContext->FrameData.Flags |= WindowBottomResize;
-
-			// Top side
-			if (mousePos.y >= window.Position.y + window.Size.y - offset.y + InGuiWindow::PanelSize)
-				g_InContext->FrameData.Flags |= WindowTopResize;
-
-
-			if (g_InContext->FrameData.Flags 
-				& (WindowRightResize | WindowLeftResize | WindowBottomResize | WindowTopResize))
+			if (!(window.Flags & Docked))
 			{
-				return true;
+				glm::vec2 offset = { 10,10 };
+				auto& mousePos = g_InContext->FrameData.MousePosition;
+
+				// Right side
+				if (mousePos.x >= window.Position.x + window.Size.x - offset.x)
+					g_InContext->FrameData.Flags |= WindowRightResize;
+
+				// Left side
+				else if (mousePos.x <= window.Position.x + offset.x)
+					g_InContext->FrameData.Flags |= WindowLeftResize;
+
+
+				// Bottom side
+				if (mousePos.y <= window.Position.y + offset.y)
+					g_InContext->FrameData.Flags |= WindowBottomResize;
+
+				// Top side
+				else if (mousePos.y >= window.Position.y + window.Size.y - offset.y + InGuiWindow::PanelSize)
+					g_InContext->FrameData.Flags |= WindowTopResize;
+
+
+				if (g_InContext->FrameData.Flags
+					& (WindowRightResize | WindowLeftResize | WindowBottomResize | WindowTopResize))
+				{
+					return true;
+				}
 			}
-					
 			return false;
 		}
 
@@ -277,13 +279,14 @@ namespace XYZ {
 		void HandleDocking(InGuiWindow& window)
 		{
 			if ((g_InContext->FrameData.Flags & DockingHandled) 
-				&& (window.Flags & Moved))
-			{
-				
+				&& (window.Flags & Moved)
+				&& !(window.Flags & Docked))
+			{		
 				g_InContext->DockSpace->InsertWindow(&window, g_InContext->FrameData.MousePosition);			
 				g_InContext->FrameData.Flags &= ~DockingHandled;
 			}
 		}
+
 	
 		void Generate6SegmentColorRectangle(const glm::vec2& size, Vertex* buffer)
 		{

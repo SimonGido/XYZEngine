@@ -104,6 +104,8 @@ namespace XYZ {
 		}
 		void EndFrame()
 		{
+			if (g_InContext->FrameData.Flags & RightMouseButtonDown)
+				g_InContext->DockSpace->ShowDockSpace();
 			InGuiRenderer::Flush();
 			g_InContext->FrameData.CurrentWindow = nullptr;
 			g_InContext->DockSpace->Update();
@@ -148,7 +150,7 @@ namespace XYZ {
 		void OnWindowResize(const glm::vec2& size)
 		{
 			g_InContext->FrameData.WindowSize = size;	
-			g_InContext->DockSpace->Resize(size);
+			g_InContext->DockSpace->FitToWindow(size);
 		}
 
 		void OnMouseMove(const glm::vec2& position)
@@ -165,10 +167,10 @@ namespace XYZ {
 		{
 			destroy(&m_Root);
 		}
-		void InGuiDockSpace::Resize(const glm::vec2& size)
+		void InGuiDockSpace::FitToWindow(const glm::vec2& size)
 		{
 			glm::vec2 scale = size / m_Root->Size;
-			resize(scale, m_Root);
+			rescale(scale, m_Root);
 		}
 
 		void InGuiDockSpace::InsertWindow(InGuiWindow* window, const glm::vec2& mousePos)
@@ -193,27 +195,138 @@ namespace XYZ {
 					}			
 				}
 				window->DockNode = nullptr;
+				window->Flags &= ~Docked;
 			}
 		}
 
 		void InGuiDockSpace::ShowDockSpace()
 		{
-			showNode(m_Root, g_InContext->FrameData.MousePosition);
+			showNode(m_Root, g_InContext->FrameData.MousePosition);	
 		}
 
 		void InGuiDockSpace::Update()
 		{
 			update(m_Root);
+			if (g_InContext->FrameData.Flags & RightMouseButtonDown
+			&& !(g_InContext->FrameData.Flags & ClickHandled))
+				detectResize(m_Root);
+
+			resize();		
+		}
+
+		void InGuiDockSpace::resize()
+		{
+			if (m_ResizedNode)
+			{
+				if (m_ResizedNode->Split == SplitAxis::Vertical)
+				{
+					glm::vec2 leftOld = m_ResizedNode->Children[0]->Size;
+					glm::vec2 rightOld = m_ResizedNode->Children[1]->Size;
+					glm::vec2 leftNew = { g_InContext->FrameData.MousePosition.x - m_ResizedNode->Position.x ,m_ResizedNode->Children[0]->Size.y };
+					glm::vec2 rightNew = { (m_ResizedNode->Position.x + m_ResizedNode->Size.x) - m_ResizedNode->Children[1]->Position.x ,m_ResizedNode->Children[1]->Size.y };
+
+					m_ResizedNode->Children[0]->Size.x = leftNew.x;
+					m_ResizedNode->Children[1]->Position.x = m_ResizedNode->Position.x + m_ResizedNode->Children[0]->Size.x;
+					m_ResizedNode->Children[1]->Size.x = rightNew.x;
+					adjustChildrenProps(m_ResizedNode->Children[0]);
+					adjustChildrenProps(m_ResizedNode->Children[1]);
+				}
+				else if (m_ResizedNode->Split == SplitAxis::Horizontal)
+				{
+					m_ResizedNode->Children[0]->Size.y = g_InContext->FrameData.MousePosition.y - m_ResizedNode->Position.y;
+					m_ResizedNode->Children[1]->Position.y = m_ResizedNode->Position.y + m_ResizedNode->Children[0]->Size.y;
+					m_ResizedNode->Children[1]->Size.y = (m_ResizedNode->Position.y + m_ResizedNode->Size.y) - m_ResizedNode->Children[1]->Position.y;
+					adjustChildrenProps(m_ResizedNode->Children[0]);
+					adjustChildrenProps(m_ResizedNode->Children[1]);
+				}
+
+				if (!(g_InContext->FrameData.Flags & RightMouseButtonDown))
+					m_ResizedNode = nullptr;
+			}
+		}
+
+		void InGuiDockSpace::adjustChildrenProps(InGuiDockNode* node)
+		{
+			XYZ_ASSERT(node, "Adjusting null node!");
+			if (node->Split == SplitAxis::Vertical)
+			{
+				glm::vec2 halfSize = { node->Size.x / 2, node->Size.y };
+				glm::vec2 leftPos = { node->Position.x ,node->Position.y };
+				glm::vec2 rightPos = { node->Position.x + halfSize.x,node->Position.y };
+				
+				node->Children[0]->Position = leftPos;
+				node->Children[1]->Position = rightPos;
+				node->Children[0]->Size.y = halfSize.y;
+				node->Children[1]->Size.y = halfSize.y;
+
+				
+				adjustChildrenProps(node->Children[0]);
+				adjustChildrenProps(node->Children[1]);
+			}
+			else if (node->Split == SplitAxis::Horizontal)
+			{
+				glm::vec2 halfSize = { node->Size.x ,node->Size.y / 2 };
+				glm::vec2 bottomPos = { node->Position.x ,node->Position.y };
+				glm::vec2 topPos = { node->Position.x ,node->Position.y + halfSize.y };
+				
+				node->Children[0]->Position = bottomPos;
+				node->Children[1]->Position = topPos;
+				node->Children[0]->Size.x = halfSize.x;
+				node->Children[1]->Size.x = halfSize.x;
+		
+				adjustChildrenProps(node->Children[0]);
+				adjustChildrenProps(node->Children[1]);
+			}
+		}
+
+		void InGuiDockSpace::detectResize(InGuiDockNode* node)
+		{
+			glm::vec2 offset = { 5,5 };
+			glm::vec2& mousePos = g_InContext->FrameData.MousePosition;
+			if (node->Split != SplitAxis::None)
+			{
+				if (Collide(node->Position, node->Size, mousePos))
+				{
+					detectResize(node->Children[0]);
+					detectResize(node->Children[1]);
+				}
+			}
+			else
+			{
+				auto parent = node->Parent;
+				if (parent)
+				{
+					if (parent->Split == SplitAxis::Vertical)
+					{
+						if (mousePos.x >= parent->Children[0]->Position.x + parent->Children[0]->Size.x - offset.x
+							&& mousePos.x <= parent->Children[0]->Position.x + parent->Children[0]->Size.x + offset.x)
+						{
+							m_ResizedNode = parent;
+							g_InContext->FrameData.Flags |= ClickHandled;
+						}
+					}
+					else if (parent->Split == SplitAxis::Horizontal)
+					{
+						if (mousePos.y >= parent->Children[0]->Position.y + parent->Children[0]->Size.y - offset.y
+							&& mousePos.y <= parent->Children[0]->Position.y + parent->Children[0]->Size.y + offset.y)
+						{
+							m_ResizedNode = parent;
+							g_InContext->FrameData.Flags |= ClickHandled;
+						}
+					}
+				}		
+			}
 		}
 
 		void InGuiDockSpace::insertWindow(InGuiWindow* window, const glm::vec2& mousePos, InGuiDockNode* node)
 		{
-			XYZ_ASSERT(node, "node null");
+			XYZ_ASSERT(node, "Inserting window to node null!");
 			if (Collide(node->Position, node->Size, mousePos))
 			{
 				if (node->Split == SplitAxis::None)
 				{
-					auto pos = collideWithMarker(node, mousePos);			
+					auto pos = collideWithMarker(node, mousePos);		
+	
 					if (pos == DockPosition::Middle)
 					{
 						XYZ_ASSERT(!window->DockNode, "Window is already docked");
@@ -225,6 +338,15 @@ namespace XYZ {
 					{
 						XYZ_ASSERT(!window->DockNode, "Window is already docked");
 						splitNode(node, SplitAxis::Vertical);
+						if (!node->Windows.empty())
+						{
+							for (auto win : node->Windows)
+							{
+								node->Children[1]->Windows.push_back(win);
+								win->DockNode = node->Children[1];
+							}
+							node->Windows.clear();
+						}
 						node->Children[0]->Windows.push_back(window);
 						window->DockNode = node->Children[0];
 						window->Flags |= Docked;
@@ -233,6 +355,15 @@ namespace XYZ {
 					{
 						XYZ_ASSERT(!window->DockNode, "Window is already docked");
 						splitNode(node, SplitAxis::Vertical);
+						if (!node->Windows.empty())
+						{
+							for (auto win : node->Windows)
+							{
+								node->Children[0]->Windows.push_back(win);
+								win->DockNode = node->Children[0];
+							}
+							node->Windows.clear();
+						}
 						node->Children[1]->Windows.push_back(window);
 						window->DockNode = node->Children[1];
 						window->Flags |= Docked;
@@ -241,6 +372,15 @@ namespace XYZ {
 					{
 						XYZ_ASSERT(!window->DockNode, "Window is already docked");
 						splitNode(node, SplitAxis::Horizontal);
+						if (!node->Windows.empty())
+						{
+							for (auto win : node->Windows)
+							{
+								node->Children[1]->Windows.push_back(win);
+								win->DockNode = node->Children[1];
+							}
+							node->Windows.clear();
+						}
 						node->Children[0]->Windows.push_back(window);
 						window->DockNode = node->Children[0];
 						window->Flags |= Docked;
@@ -249,6 +389,15 @@ namespace XYZ {
 					{
 						XYZ_ASSERT(!window->DockNode, "Window is already docked");
 						splitNode(node, SplitAxis::Horizontal);
+						if (!node->Windows.empty())
+						{
+							for (auto win : node->Windows)
+							{
+								node->Children[0]->Windows.push_back(win);
+								win->DockNode = node->Children[0];
+							}
+							node->Windows.clear();
+						}
 						node->Children[1]->Windows.push_back(window);
 						window->DockNode = node->Children[1];
 						window->Flags |= Docked;
@@ -275,14 +424,14 @@ namespace XYZ {
 			delete *node;
 			*node = nullptr;
 		}
-		void InGuiDockSpace::resize(const glm::vec2& scale, InGuiDockNode* node)
+		void InGuiDockSpace::rescale(const glm::vec2& scale, InGuiDockNode* node)
 		{
 			node->Size *= scale;
 			node->Position *= scale;
 			if (node->Children[0])
-				resize(scale, node->Children[0]);
+				rescale(scale, node->Children[0]);
 			if (node->Children[1])
-				resize(scale, node->Children[1]);
+				rescale(scale, node->Children[1]);
 		}
 		void InGuiDockSpace::splitNode(InGuiDockNode* node, SplitAxis axis)
 		{

@@ -31,7 +31,8 @@ namespace XYZ {
 			RightMouseButtonDown = 1 << 5,
 			ClickHandled         = 1 << 6,
 			DockingHandled		 = 1 << 7,
-			DockingEnabled		 = 1 << 8
+			DockingEnabled		 = 1 << 8,
+			DockspaceResized     = 1 << 9
 		};
 
 		struct InGuiDockNode;
@@ -148,15 +149,18 @@ namespace XYZ {
 			void InsertWindow(InGuiWindow* window, const glm::vec2& mousePos);
 			void RemoveWindow(InGuiWindow* window);
 
-			void Resize(const glm::vec2& size);
+			void FitToWindow(const glm::vec2& size);
 			void ShowDockSpace();
 
 			void Update();
 
 		private:
+			void resize();
+			void adjustChildrenProps(InGuiDockNode* node);
+			void detectResize(InGuiDockNode* node);
 			void insertWindow(InGuiWindow* window, const glm::vec2& mousePos, InGuiDockNode* node);
 			void destroy(InGuiDockNode** node);
-			void resize(const glm::vec2& scale, InGuiDockNode* node);
+			void rescale(const glm::vec2& scale, InGuiDockNode* node);
 			void splitNode(InGuiDockNode* node,SplitAxis axis);
 			void unsplitNode(InGuiDockNode* node);
 			void update(InGuiDockNode* node);
@@ -167,6 +171,7 @@ namespace XYZ {
 		private:
 			InGuiDockNode* m_Root;
 
+			InGuiDockNode* m_ResizedNode = nullptr;
 
 			static constexpr glm::vec2 sc_QuadSize = { 50,50 };
 		};

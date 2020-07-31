@@ -61,7 +61,6 @@ namespace XYZ {
 			if (currentWindow->Flags & Moved)
 			{
 				panelColor = g_InContext->ConfigData.HooverColor;
-				g_InContext->DockSpace->ShowDockSpace();
 			}
 			else
 				panelColor = g_InContext->ConfigData.DefaultColor;
@@ -340,7 +339,6 @@ namespace XYZ {
 			if (currentWindow->Flags & Moved)
 			{
 				panelColor = g_InContext->ConfigData.HooverColor;
-				g_InContext->DockSpace->ShowDockSpace();
 			}
 			else
 				panelColor = g_InContext->ConfigData.DefaultColor;
