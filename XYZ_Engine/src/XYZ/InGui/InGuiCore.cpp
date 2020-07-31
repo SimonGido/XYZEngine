@@ -96,19 +96,18 @@ namespace XYZ {
 			g_InContext->FrameData.WindowSize.x = Input::GetWindowSize().first;
 			g_InContext->FrameData.WindowSize.y = Input::GetWindowSize().second;
 
-			
-			
+				
+			g_InContext->DockSpace->Begin();
 
 			InGuiRenderer::BeginScene({ g_InContext->FrameData.WindowSize });
 			InGuiRenderer::SetMaterial(g_InContext->RenderData.Material);
 		}
 		void EndFrame()
 		{
-			if (g_InContext->FrameData.Flags & RightMouseButtonDown)
-				g_InContext->DockSpace->ShowDockSpace();
+			g_InContext->DockSpace->End();
 			InGuiRenderer::Flush();
 			g_InContext->FrameData.CurrentWindow = nullptr;
-			g_InContext->DockSpace->Update();
+			
 		}
 
 		void OnLeftMouseButtonRelease()
@@ -204,14 +203,23 @@ namespace XYZ {
 			showNode(m_Root, g_InContext->FrameData.MousePosition);	
 		}
 
-		void InGuiDockSpace::Update()
-		{
-			update(m_Root);
-			if (g_InContext->FrameData.Flags & RightMouseButtonDown
+		void InGuiDockSpace::Begin()
+		{	
+			if (g_InContext->FrameData.Flags & RightMouseButtonDown	
 			&& !(g_InContext->FrameData.Flags & ClickHandled))
+			{
 				detectResize(m_Root);
+			}		
+		}
 
-			resize();		
+		void InGuiDockSpace::End()
+		{
+			if (g_InContext->FrameData.Flags & RightMouseButtonDown)
+			{
+				g_InContext->DockSpace->ShowDockSpace();
+			}
+			update(m_Root);
+			resize();
 		}
 
 		void InGuiDockSpace::resize()
@@ -228,6 +236,7 @@ namespace XYZ {
 					m_ResizedNode->Children[0]->Size.x = leftNew.x;
 					m_ResizedNode->Children[1]->Position.x = m_ResizedNode->Position.x + m_ResizedNode->Children[0]->Size.x;
 					m_ResizedNode->Children[1]->Size.x = rightNew.x;
+
 					adjustChildrenProps(m_ResizedNode->Children[0]);
 					adjustChildrenProps(m_ResizedNode->Children[1]);
 				}
@@ -236,6 +245,7 @@ namespace XYZ {
 					m_ResizedNode->Children[0]->Size.y = g_InContext->FrameData.MousePosition.y - m_ResizedNode->Position.y;
 					m_ResizedNode->Children[1]->Position.y = m_ResizedNode->Position.y + m_ResizedNode->Children[0]->Size.y;
 					m_ResizedNode->Children[1]->Size.y = (m_ResizedNode->Position.y + m_ResizedNode->Size.y) - m_ResizedNode->Children[1]->Position.y;
+					
 					adjustChildrenProps(m_ResizedNode->Children[0]);
 					adjustChildrenProps(m_ResizedNode->Children[1]);
 				}
@@ -256,10 +266,10 @@ namespace XYZ {
 				
 				node->Children[0]->Position = leftPos;
 				node->Children[1]->Position = rightPos;
+
 				node->Children[0]->Size.y = halfSize.y;
 				node->Children[1]->Size.y = halfSize.y;
-
-				
+		
 				adjustChildrenProps(node->Children[0]);
 				adjustChildrenProps(node->Children[1]);
 			}
@@ -267,7 +277,7 @@ namespace XYZ {
 			{
 				glm::vec2 halfSize = { node->Size.x ,node->Size.y / 2 };
 				glm::vec2 bottomPos = { node->Position.x ,node->Position.y };
-				glm::vec2 topPos = { node->Position.x ,node->Position.y + halfSize.y };
+				glm::vec2 topPos = { node->Position.x ,node->Position.y + node->Children[0]->Size.y };
 				
 				node->Children[0]->Position = bottomPos;
 				node->Children[1]->Position = topPos;

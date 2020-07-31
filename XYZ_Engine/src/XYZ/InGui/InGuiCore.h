@@ -79,7 +79,8 @@ namespace XYZ {
 		struct InGuiFrameData
 		{
 			InGuiWindow* CurrentWindow = nullptr;
-		
+			InGuiWindow* LastActiveWindow = nullptr;
+
 			glm::vec2 ModifiedWindowMouseOffset = { 0,0 };
 			glm::vec2 WindowSpaceOffset = { 0,0 };
 			glm::vec2 WindowSize = { 0,0 };
@@ -152,7 +153,8 @@ namespace XYZ {
 			void FitToWindow(const glm::vec2& size);
 			void ShowDockSpace();
 
-			void Update();
+			void Begin();
+			void End();
 
 		private:
 			void resize();
