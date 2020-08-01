@@ -20,8 +20,8 @@ namespace XYZ {
 
 	struct TexturePair
 	{
+		uint32_t TextureID;
 		uint32_t RendererID;
-		uint32_t Slot;
 	};
 
 	struct RendererUIData
@@ -78,7 +78,7 @@ namespace XYZ {
 			{texCoord.z,texCoord.w},
 			{texCoord.x,texCoord.w}
 		};
-	
+
 		glm::vec4 quadVertexPositions[4] = {
 			{ position.x ,		  position.y , 0.0f, 1.0f },
 			{ position.x + size.x,position.y , 0.0f, 1.0f },
@@ -98,7 +98,7 @@ namespace XYZ {
 	}
 
 	void InGuiRenderer::SubmitUI(uint32_t rendererID, const glm::vec2& position, const glm::vec2& size, const glm::vec4& texCoord, const glm::vec4& color)
-	{	
+	{
 		constexpr size_t quadVertexCount = 4;
 		if (s_UIData.IndexCount + 6 > s_UIData.MaxIndices ||
 			s_UIData.Textures.size() + s_UIData.Material->GetNumberOfTextures() >= s_UIData.MaxTextures)
@@ -109,14 +109,14 @@ namespace XYZ {
 		{
 			if (s_UIData.Textures[i].RendererID == rendererID)
 			{
-				textureID = s_UIData.Textures[i].Slot;
+				textureID = s_UIData.Textures[i].TextureID;
 				break;
 			}
 		}
 		if (!textureID)
 		{
 			textureID += s_UIData.Material->GetNumberOfTextures();
-			s_UIData.Textures.push_back({ rendererID, textureID });
+			s_UIData.Textures.push_back({ textureID, rendererID });
 		}
 
 		glm::vec2 texCoords[quadVertexCount] = {
@@ -125,7 +125,7 @@ namespace XYZ {
 			{texCoord.z,texCoord.w},
 			{texCoord.x,texCoord.w}
 		};
-		
+
 		glm::vec4 quadVertexPositions[4] = {
 			{ position.x ,		  position.y , 0.0f, 1.0f },
 			{ position.x + size.x,position.y , 0.0f, 1.0f },
@@ -148,7 +148,7 @@ namespace XYZ {
 	void InGuiRenderer::SubmitUI(const glm::vec2& position, const Vertex* vertex, size_t count, uint32_t textureID)
 	{
 		uint32_t indexCount = (count / 4) * 6;
-		if (s_UIData.IndexCount +  indexCount > s_UIData.MaxIndices)
+		if (s_UIData.IndexCount + indexCount > s_UIData.MaxIndices)
 			Flush();
 
 		for (size_t i = 0; i < count; ++i)
@@ -162,7 +162,30 @@ namespace XYZ {
 		s_UIData.IndexCount += indexCount;
 	}
 
-	
+	void InGuiRenderer::SubmitUI(const InGuiMesh& mesh,uint8_t renderPriority)
+	{
+		uint32_t indexCount = (mesh.Vertices.size() / 4) * 6;
+		if (s_UIData.IndexCount + indexCount > s_UIData.MaxIndices ||
+			s_UIData.Textures.size() + s_UIData.Material->GetNumberOfTextures() + mesh.TexturePairs.size() 
+			>= s_UIData.MaxTextures)
+			Flush();
+
+		for (auto pair : mesh.TexturePairs)
+		{	
+			s_UIData.Textures.push_back({ pair.TextureID, pair.RendererID });
+		}
+		for (auto & vertex : mesh.Vertices)
+		{
+			s_UIData.BufferPtr->Position = vertex.Position;
+			s_UIData.BufferPtr->Color = vertex.Color;
+			s_UIData.BufferPtr->TexCoord = vertex.TexCoord;
+			s_UIData.BufferPtr->TextureID = (float)vertex.TextureID;
+			s_UIData.BufferPtr++;
+		}
+		s_UIData.IndexCount += indexCount;
+	}
+
+
 	void InGuiRenderer::Flush()
 	{
 		uint32_t dataSize = (uint8_t*)s_UIData.BufferPtr - (uint8_t*)s_UIData.BufferBase;
@@ -171,12 +194,12 @@ namespace XYZ {
 			s_UIData.Material->Set("u_ViewportSize", s_UIData.Data.ViewportSize);
 
 			s_UIData.Material->Bind();
-			
+
 			for (auto& pair : s_UIData.Textures)
 			{
-				Texture2D::Bind(pair.RendererID, pair.Slot);
+				Texture2D::Bind(pair.RendererID, pair.TextureID);
 			}
-			
+
 			s_UIData.QuadVertexBuffer->Update(s_UIData.BufferBase, dataSize);
 			s_UIData.QuadVertexArray->Bind();
 			RenderCommand::DrawIndexed(s_UIData.QuadVertexArray, s_UIData.IndexCount);

@@ -4,53 +4,50 @@
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Renderer/SubTexture2D.h"
 #include "XYZ/Renderer/Mesh.h"
-
+#include "XYZ/Renderer/InGuiRenderer.h"
 
 #include <glm/glm.hpp>
 #include <unordered_set>
 
 namespace XYZ {
 	namespace InGui {
-		
+
 		enum InGuiWindowFlags
 		{
-			Collapsed    = 1 << 0,
-			Moved	     = 1 << 1,
-			Resized	     = 1 << 2,
-			Hoovered     = 1 << 3,
-			Docked		 = 1 << 4
+			Collapsed = 1 << 0,
+			Moved = 1 << 1,
+			Resized = 1 << 2,
+			Hoovered = 1 << 3,
+			Docked = 1 << 4,
+			Modified = 1 << 5
 		};
 
 		enum InGuiFrameDataFlags
 		{
-			WindowRightResize    = 1 << 0,
-			WindowLeftResize     = 1 << 1,
-			WindowBottomResize   = 1 << 2,
-			WindowTopResize      = 1 << 3,
-			LeftMouseButtonDown  = 1 << 4,
+			WindowRightResize = 1 << 0,
+			WindowLeftResize = 1 << 1,
+			WindowBottomResize = 1 << 2,
+			WindowTopResize = 1 << 3,
+			LeftMouseButtonDown = 1 << 4,
 			RightMouseButtonDown = 1 << 5,
-			ClickHandled         = 1 << 6,
-			DockingHandled		 = 1 << 7,
-			DockingEnabled		 = 1 << 8,
-			DockspaceResized     = 1 << 9
+			ClickHandled = 1 << 6,
+			DockingHandled = 1 << 7,
+			DockingEnabled = 1 << 8,
+			DockspaceResized = 1 << 9
 		};
 
 		struct InGuiDockNode;
 		struct InGuiWindow
 		{
-			glm::vec2 Position;
-			glm::vec2 Size;
-			uint8_t Flags;
-			
+			std::string Name;
+			glm::vec2 Position = { 0,0 };
+			glm::vec2 Size = { 0,0 };
+			float MinimalWidth = 0.0f;
+			uint8_t Flags = 0;
+
+			InGuiMesh Mesh;
 			InGuiDockNode* DockNode = nullptr;
 			static constexpr float PanelSize = 25.0f;
-		};
-
-		struct InGuiText
-		{
-			std::vector<Vertex> Vertices;
-			int32_t Width = 0;
-			int32_t Height = 0;
 		};
 
 		// Render data
@@ -72,6 +69,9 @@ namespace XYZ {
 			uint32_t TextureID = 0;
 			uint32_t FontTextureID = 0;
 			uint32_t ColorPickerTextureID = 0;
+
+			static constexpr uint32_t DefaultTextureCount = 3;
+			uint32_t NumTexturesInUse = DefaultTextureCount;
 		};
 
 
@@ -194,6 +194,8 @@ namespace XYZ {
 			InGuiConfig ConfigData;
 			InGuiDockSpace *DockSpace;
 
+		private:
+			void generateWindow(InGuiWindow* window,const std::string& name);
 		private:
 			std::unordered_map<std::string, InGuiWindow*> InGuiWindows;
 		};

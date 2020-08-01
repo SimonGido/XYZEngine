@@ -141,7 +141,8 @@ namespace XYZ {
 		{
 			m_ActiveWindow = false;
 		}
-	
+		InGui::End();
+
 		if (InGui::Begin("Test Panel", { 0,0 }, { 500,500 }))
 		{		
 			
@@ -186,7 +187,7 @@ namespace XYZ {
 			{
 				std::cout << "Wtf" << std::endl;
 			}
-
+			InGui::Image("test image", m_FBO->GetColorAttachment(0).RendererID, { 100,100 });
 		}
 		InGui::End();
 		

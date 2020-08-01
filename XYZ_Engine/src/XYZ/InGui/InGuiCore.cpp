@@ -24,61 +24,6 @@ namespace XYZ {
 			return val;
 		}
 
-
-		static void Generate5SegmentColorRectangle(const glm::vec2& size, Vertex* buffer)
-		{
-			const uint32_t numSegments = 5;
-			uint32_t numVertices = numSegments * 4;
-			float segmentSize = size.x / numSegments;
-
-			uint32_t counter = 0;
-
-			float offset = 0.0f;
-			while (counter < numVertices)
-			{
-				buffer[counter].Position = { offset, 0.0f, 0.0f, 1.0f };
-				buffer[counter].TexCoord = { 0,0 };
-
-				buffer[counter + 1].Position = { offset + segmentSize,0.0f , 0.0f ,1.0f };
-				buffer[counter + 1].TexCoord = { 1,0 };
-
-				buffer[counter + 2].Position = { offset + segmentSize,size.y , 0.0f ,1.0f };
-				buffer[counter + 2].TexCoord = { 1,1 };
-
-
-				buffer[counter + 3].Position = { offset , size.y , 0.0f ,1.0f };
-				buffer[counter + 3].TexCoord = { 0,1 };
-
-				offset += segmentSize;
-				counter += 4;
-			}
-
-			buffer[0].Color = { 1,0,0,1 };
-			buffer[1].Color = { 1,1,0,1 };
-			buffer[2].Color = { 1,1,0,1 };
-			buffer[3].Color = { 1,0,0,1 };
-			//////////////////////////////
-			buffer[4].Color = { 1,1,0,1 };
-			buffer[5].Color = { 0,1,0,1 };
-			buffer[6].Color = { 0,1,0,1 };
-			buffer[7].Color = { 1,1,0,1 };
-			//////////////////////////////
-			buffer[8].Color = { 0,1,0,1 };
-			buffer[9].Color = { 0,1,1,1 };
-			buffer[10].Color = { 0,1,1,1 };
-			buffer[11].Color = { 0,1,0,1 };
-			//////////////////////////////
-			buffer[12].Color = { 0,1,1,1 };
-			buffer[13].Color = { 0,0,1,1 };
-			buffer[14].Color = { 0,0,1,1 };
-			buffer[15].Color = { 0,1,1,1 };
-			//////////////////////////////
-			buffer[16].Color = { 0,0,1,1 };
-			buffer[17].Color = { 1,0,1,1 };
-			buffer[18].Color = { 1,0,1,1 };
-			buffer[19].Color = { 0,0,1,1 };
-		}
-
 		void Init(const InGuiRenderData& renderData, const InGuiConfig& config)
 		{
 			g_InContext = new InGuiContext(renderData,config);		
@@ -107,7 +52,7 @@ namespace XYZ {
 			g_InContext->DockSpace->End();
 			InGuiRenderer::Flush();
 			g_InContext->FrameData.CurrentWindow = nullptr;
-			
+			g_InContext->RenderData.NumTexturesInUse = InGuiRenderData::DefaultTextureCount;
 		}
 
 		void OnLeftMouseButtonRelease()
@@ -236,6 +181,11 @@ namespace XYZ {
 					m_ResizedNode->Children[0]->Size.x = leftNew.x;
 					m_ResizedNode->Children[1]->Position.x = m_ResizedNode->Position.x + m_ResizedNode->Children[0]->Size.x;
 					m_ResizedNode->Children[1]->Size.x = rightNew.x;
+					
+					for (auto win : m_ResizedNode->Children[0]->Windows)
+						win->Flags |= Modified;
+					for (auto win : m_ResizedNode->Children[1]->Windows)
+						win->Flags |= Modified;
 
 					adjustChildrenProps(m_ResizedNode->Children[0]);
 					adjustChildrenProps(m_ResizedNode->Children[1]);
@@ -245,7 +195,10 @@ namespace XYZ {
 					m_ResizedNode->Children[0]->Size.y = g_InContext->FrameData.MousePosition.y - m_ResizedNode->Position.y;
 					m_ResizedNode->Children[1]->Position.y = m_ResizedNode->Position.y + m_ResizedNode->Children[0]->Size.y;
 					m_ResizedNode->Children[1]->Size.y = (m_ResizedNode->Position.y + m_ResizedNode->Size.y) - m_ResizedNode->Children[1]->Position.y;
-					
+					for (auto win : m_ResizedNode->Children[0]->Windows)
+						win->Flags |= Modified;
+					for (auto win : m_ResizedNode->Children[1]->Windows)
+						win->Flags |= Modified;
 					adjustChildrenProps(m_ResizedNode->Children[0]);
 					adjustChildrenProps(m_ResizedNode->Children[1]);
 				}
@@ -270,6 +223,11 @@ namespace XYZ {
 				node->Children[0]->Size.y = halfSize.y;
 				node->Children[1]->Size.y = halfSize.y;
 		
+				for (auto win : node->Children[0]->Windows)
+					win->Flags |= Modified;
+				for (auto win : node->Children[1]->Windows)
+					win->Flags |= Modified;
+
 				adjustChildrenProps(node->Children[0]);
 				adjustChildrenProps(node->Children[1]);
 			}
@@ -284,6 +242,12 @@ namespace XYZ {
 				node->Children[0]->Size.x = halfSize.x;
 				node->Children[1]->Size.x = halfSize.x;
 		
+
+				for (auto win : node->Children[0]->Windows)
+					win->Flags |= Modified;
+				for (auto win : node->Children[1]->Windows)
+					win->Flags |= Modified;
+
 				adjustChildrenProps(node->Children[0]);
 				adjustChildrenProps(node->Children[1]);
 			}
@@ -438,6 +402,12 @@ namespace XYZ {
 		{
 			node->Size *= scale;
 			node->Position *= scale;
+			for (auto win : node->Windows)
+			{
+				win->Size = { node->Size.x,node->Size.y - InGuiWindow::PanelSize };
+				win->Position = node->Position;
+				win->Flags |= Modified;
+			}
 			if (node->Children[0])
 				rescale(scale, node->Children[0]);
 			if (node->Children[1])
@@ -557,10 +527,14 @@ namespace XYZ {
 				for (auto& it : ini)
 				{
 					InGuiWindows[it.first] = new InGuiWindow();
+					InGuiWindows[it.first]->Name = it.first;
 					InGuiWindows[it.first]->Position = StringToVec2(it.second.get("position"));
 					InGuiWindows[it.first]->Size = StringToVec2(it.second.get("size"));
 					if ((bool)atoi(it.second.get("collapsed").c_str()))
 						InGuiWindows[it.first]->Flags |= Collapsed;
+					
+					
+					generateWindow(InGuiWindows[it.first], it.first);;
 				}
 			}
 			else
@@ -609,9 +583,32 @@ namespace XYZ {
 		}
 		InGuiWindow* InGuiContext::CreateWindow(const std::string& name, const glm::vec2& position, const glm::vec2& size)
 		{
-			g_InContext->InGuiWindows[name] = new InGuiWindow{ position,size };
+			g_InContext->InGuiWindows[name] = new InGuiWindow{name, position,size };
 			g_InContext->FrameData.CurrentWindow = g_InContext->InGuiWindows[name];
 			return g_InContext->FrameData.CurrentWindow;
+		}
+
+		void InGuiContext::generateWindow(InGuiWindow* window, const std::string& name)
+		{
+			glm::vec4 color = ConfigData.DefaultColor;
+			glm::vec2 winPos = window->Position;
+			glm::vec2 winSize = window->Size;
+			glm::vec2 panelPos = { winPos.x, winPos.y + winSize.y };
+			glm::vec2 minButtonPos = { panelPos.x + winSize.x - InGuiWindow::PanelSize, panelPos.y };
+
+			size_t lastFrameSize = window->Mesh.Vertices.size();
+			window->Mesh.TexturePairs.clear();
+			window->Mesh.Vertices.clear();
+			window->Mesh.Vertices.reserve(lastFrameSize);
+
+			GenerateInGuiQuad(window->Mesh, panelPos, { winSize.x ,InGuiWindow::PanelSize }, RenderData.SliderSubTexture->GetTexCoords(), RenderData.TextureID, color);
+			auto [width, height] = GenerateInGuiText(window->Mesh, RenderData.Font, name, panelPos, ConfigData.NameScale, window->Size.x, RenderData.FontTextureID);
+			window->MinimalWidth = width + InGuiWindow::PanelSize;
+			MoveVertices(window->Mesh, { 5, height / 2 }, 4, name.size() * 4);
+
+			GenerateInGuiQuad(window->Mesh, minButtonPos, { InGuiWindow::PanelSize ,InGuiWindow::PanelSize }, RenderData.MinimizeButtonSubTexture->GetTexCoords(), RenderData.TextureID);
+			if (!(window->Flags & Collapsed))
+				GenerateInGuiQuad(window->Mesh, winPos, winSize, RenderData.WindowSubTexture->GetTexCoords(), RenderData.TextureID, color);
 		}
 		
 		

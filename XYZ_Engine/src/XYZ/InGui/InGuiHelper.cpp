@@ -187,7 +187,6 @@ namespace XYZ {
 				&& !(g_InContext->FrameData.Flags & ClickHandled))
 			{
 				window.Flags |= Hoovered;
-
 				if (g_InContext->FrameData.Flags & RightMouseButtonDown)
 				{
 					if (DetectResize(window))
@@ -211,6 +210,10 @@ namespace XYZ {
 					}
 				}
 			}
+			else if (window.Flags & Modified)
+			{
+				window.Flags |= Hoovered;
+			}
 			else
 			{
 				window.Flags &= ~Hoovered;
@@ -225,16 +228,25 @@ namespace XYZ {
 			if ((g_InContext->FrameData.Flags & RightMouseButtonDown) 
 			 && (window.Flags & Resized))
 			{
-				if (g_InContext->FrameData.Flags & WindowRightResize)
+				if (window.Size.x > window.MinimalWidth)
 				{
-					app.GetWindow().SetCursor(WindowCursor::XYZ_HRESIZE_CURSOR);
-					window.Size.x = mousePos.x - window.Position.x;
+					if (g_InContext->FrameData.Flags & WindowRightResize)
+					{
+						app.GetWindow().SetCursor(WindowCursor::XYZ_HRESIZE_CURSOR);
+						window.Size.x = mousePos.x - window.Position.x;
+					}
+					else if (g_InContext->FrameData.Flags & WindowLeftResize)
+					{
+						app.GetWindow().SetCursor(WindowCursor::XYZ_HRESIZE_CURSOR);
+						window.Size.x = window.Position.x + window.Size.x - mousePos.x;
+						window.Position.x = mousePos.x;
+					}
 				}
-				else if (g_InContext->FrameData.Flags & WindowLeftResize)
+				else
 				{
-					app.GetWindow().SetCursor(WindowCursor::XYZ_HRESIZE_CURSOR);
-					window.Size.x = window.Position.x + window.Size.x - mousePos.x;
-					window.Position.x = mousePos.x;
+					window.Size.x += 5;
+					g_InContext->FrameData.Flags &= ~WindowLeftResize;
+					g_InContext->FrameData.Flags &= ~WindowRightResize;
 				}
 
 
@@ -249,6 +261,8 @@ namespace XYZ {
 					app.GetWindow().SetCursor(WindowCursor::XYZ_VRESIZE_CURSOR);
 					window.Size.y = mousePos.y - window.Position.y - InGuiWindow::PanelSize;
 				}
+
+				window.Flags |= Hoovered;
 			}
 			else
 			{
@@ -267,6 +281,7 @@ namespace XYZ {
 			{
 				glm::vec2 pos = g_InContext->FrameData.MousePosition - g_InContext->FrameData.ModifiedWindowMouseOffset;
 				window.Position = { pos.x, pos.y - window.Size.y };
+				window.Flags |= Hoovered;
 				g_InContext->DockSpace->RemoveWindow(&window);
 			}
 			else
@@ -284,79 +299,131 @@ namespace XYZ {
 			{		
 				g_InContext->DockSpace->InsertWindow(&window, g_InContext->FrameData.MousePosition);			
 				g_InContext->FrameData.Flags &= ~DockingHandled;
+
+				if (window.DockNode)
+				{
+					window.Size = { window.DockNode->Size.x, window.DockNode->Size.y - InGuiWindow::PanelSize };
+					window.Position = window.DockNode->Position;
+				}		
+			}
+		}
+
+		void HandleModified(InGuiWindow& window)
+		{
+			if (window.Flags & Hoovered)
+			{
+				window.Flags |= Modified;
 			}
 		}
 
 	
-		void Generate6SegmentColorRectangle(const glm::vec2& size, Vertex* buffer)
+		void Generate6SegmentColorRectangle(InGuiMesh& mesh, const glm::vec2& position, const glm::vec2& size, uint32_t textureID)
 		{
 			static constexpr uint32_t numSegments = 6;
 			static constexpr uint32_t numVertices = numSegments * 4;
 			float segmentSize = size.x / numSegments;
 
+			size_t vertexOffset = mesh.Vertices.size();
 			uint32_t counter = 0;
 			
 			float offset = 0.0f;
 			while (counter < numVertices)
 			{
-				buffer[counter].Position = { offset, 0.0f, 0.0f, 1.0f };
-				buffer[counter].TexCoord = { 0,0 };
-
-				buffer[counter + 1].Position = { offset + segmentSize,0.0f , 0.0f ,1.0f };
-				buffer[counter + 1].TexCoord = { 1,0 };
+				mesh.Vertices.push_back({ { 1,1,1,1 }, {position.x + offset, position.y, 0.0f },                 { 0,0 }, textureID });
+				mesh.Vertices.push_back({ { 1,1,1,1 }, {position.x + offset + segmentSize, position.y, 0.0f },   { 1,0 }, textureID });
+				mesh.Vertices.push_back({ { 1,1,1,1 }, {position.x + offset + segmentSize,position.y + size.y, 0.0f }, { 1,1 }, textureID });
+				mesh.Vertices.push_back({ { 1,1,1,1 }, {position.x + offset,position.y + size.y, 0.0f },               { 0,1 }, textureID });
 				
-				buffer[counter + 2].Position = { offset + segmentSize,size.y , 0.0f ,1.0f };
-				buffer[counter + 2].TexCoord = { 1,1 };
-
-
-				buffer[counter + 3].Position = { offset , size.y , 0.0f ,1.0f };
-				buffer[counter + 3].TexCoord = { 0,1 };
-
 				offset += segmentSize;
 				counter += 4;
 			}
 
-			buffer[0].Color = { 1,0,0,1 };
-			buffer[1].Color = { 1,1,0,1 };
-			buffer[2].Color = { 1,1,0,1 };
-			buffer[3].Color = { 1,0,0,1 };
+			mesh.Vertices[vertexOffset + 0].Color = { 1,0,0,1 };
+			mesh.Vertices[vertexOffset + 1].Color = { 1,1,0,1 };
+			mesh.Vertices[vertexOffset + 2].Color = { 1,1,0,1 };
+			mesh.Vertices[vertexOffset + 3].Color = { 1,0,0,1 };
 			//////////////////////////////
-			buffer[4].Color = { 1,1,0,1 };
-			buffer[5].Color = { 0,1,0,1 };
-			buffer[6].Color = { 0,1,0,1 };
-			buffer[7].Color = { 1,1,0,1 };
+			mesh.Vertices[vertexOffset + 4].Color = { 1,1,0,1 };
+			mesh.Vertices[vertexOffset + 5].Color = { 0,1,0,1 };
+			mesh.Vertices[vertexOffset + 6].Color = { 0,1,0,1 };
+			mesh.Vertices[vertexOffset + 7].Color = { 1,1,0,1 };
 			//////////////////////////////
-			buffer[8].Color =  { 0,1,0,1 };
-			buffer[9].Color =  { 0,1,1,1 };
-			buffer[10].Color = { 0,1,1,1 };
-			buffer[11].Color = { 0,1,0,1 };
+			mesh.Vertices[vertexOffset + 8].Color =  { 0,1,0,1 };
+			mesh.Vertices[vertexOffset + 9].Color =  { 0,1,1,1 };
+			mesh.Vertices[vertexOffset + 10].Color = { 0,1,1,1 };
+			mesh.Vertices[vertexOffset + 11].Color = { 0,1,0,1 };
 			//////////////////////////////
-			buffer[12].Color = { 0,1,1,1 };
-			buffer[13].Color = { 0,0,1,1 };
-			buffer[14].Color = { 0,0,1,1 };
-			buffer[15].Color = { 0,1,1,1 };
+			mesh.Vertices[vertexOffset + 12].Color = { 0,1,1,1 };
+			mesh.Vertices[vertexOffset + 13].Color = { 0,0,1,1 };
+			mesh.Vertices[vertexOffset + 14].Color = { 0,0,1,1 };
+			mesh.Vertices[vertexOffset + 15].Color = { 0,1,1,1 };
 			//////////////////////////////
-			buffer[16].Color = { 0,0,1,1 };
-			buffer[17].Color = { 1,0,1,1 };
-			buffer[18].Color = { 1,0,1,1 };
-			buffer[19].Color = { 0,0,1,1 };
+			mesh.Vertices[vertexOffset + 16].Color = { 0,0,1,1 };
+			mesh.Vertices[vertexOffset + 17].Color = { 1,0,1,1 };
+			mesh.Vertices[vertexOffset + 18].Color = { 1,0,1,1 };
+			mesh.Vertices[vertexOffset + 19].Color = { 0,0,1,1 };
 			//////////////////////////////
-			buffer[20].Color = { 1,0,1,1 };
-			buffer[21].Color = { 1,0,0,1 };
-			buffer[22].Color = { 1,0,0,1 };
-			buffer[23].Color = { 1,0,1,1 };
+			mesh.Vertices[vertexOffset + 20].Color = { 1,0,1,1 };
+			mesh.Vertices[vertexOffset + 21].Color = { 1,0,0,1 };
+			mesh.Vertices[vertexOffset + 22].Color = { 1,0,0,1 };
+			mesh.Vertices[vertexOffset + 23].Color = { 1,0,1,1 };
 		}
+		void GenerateInGuiQuad(InGuiMesh& mesh, InGuiVertex* vertices, size_t count)
+		{
+			for (size_t i = 0; i < count; ++i)
+				mesh.Vertices.push_back(vertices[i]);
+		}
+		void GenerateInGuiQuad(InGuiMesh& mesh, const glm::vec2& position, const glm::vec2& size, const glm::vec4& texCoord, uint32_t textureID, const glm::vec4& color)
+		{
+			constexpr size_t quadVertexCount = 4;
+			glm::vec2 texCoords[quadVertexCount] = {
+			{texCoord.x,texCoord.y},
+			{texCoord.z,texCoord.y},
+			{texCoord.z,texCoord.w},
+			{texCoord.x,texCoord.w}
+			};
 
-		void GenerateInGuiText(InGuiText& text, const Ref<Font>& font, const std::string& str, const glm::vec2& position, const glm::vec2& scale, float length, const glm::vec4& color)
+			glm::vec4 quadVertexPositions[4] = {
+				{ position.x ,		  position.y , 0.0f, 1.0f },
+				{ position.x + size.x,position.y , 0.0f, 1.0f },
+				{ position.x + size.x,position.y + size.y, 0.0f, 1.0f },
+				{ position.x ,        position.y + size.y, 0.0f, 1.0f }
+			};
+
+			for (size_t i = 0; i < quadVertexCount; ++i)
+			{
+				mesh.Vertices.push_back({ color, quadVertexPositions[i], texCoords[i], textureID });
+			}
+		}
+		void GenerateInGuiImage(InGuiMesh& mesh, uint32_t rendererID, const glm::vec2& position, const glm::vec2& size, const glm::vec4& texCoord, const glm::vec4& color)
+		{
+			uint32_t textureID = 0;
+			for (auto& pair : mesh.TexturePairs)
+			{
+				if (pair.RendererID == rendererID)
+				{
+					textureID = pair.TextureID;
+				}
+			}
+			if (!textureID)
+			{
+				textureID = g_InContext->RenderData.NumTexturesInUse;
+				g_InContext->RenderData.NumTexturesInUse++;
+			}
+			GenerateInGuiQuad(mesh, position, size, texCoord, textureID, color);
+			mesh.TexturePairs.push_back({ textureID,rendererID });
+		}
+		std::pair<int32_t, int32_t> GenerateInGuiText(InGuiMesh& mesh, const Ref<Font>& font, const std::string& str, const glm::vec2& position, const glm::vec2& scale, float length, uint32_t textureID, const glm::vec4& color)
 		{
 			auto& fontData = font->GetData();
 			int32_t cursorX = 0, cursorY = 0;
 
-			text.Vertices.reserve(str.size() * 4);
+			int32_t width = 0;
+			int32_t height = 0;
 			for (auto c : str)
 			{
 				auto& character = font->GetCharacter(c);
-				if (text.Width + (character.XAdvance * scale.x) >= length)
+				if (width + (character.XAdvance * scale.x) >= length)
 					break;
 
 				glm::vec2 pos = {
@@ -368,17 +435,27 @@ namespace XYZ {
 				glm::vec2 coords = { character.XCoord, fontData.ScaleH - character.YCoord - character.Height };
 				glm::vec2 scaleFont = { fontData.ScaleW, fontData.ScaleH };
 
-				text.Vertices.push_back({ { pos.x , pos.y, 0.0f, 1.0f }, color,  coords / scaleFont });
-				text.Vertices.push_back({ { pos.x + size.x, pos.y, 0.0f, 1.0f }, color, (coords + glm::vec2(character.Width, 0)) / scaleFont });
-				text.Vertices.push_back({ { pos.x + size.x, pos.y + size.y, 0.0f, 1.0f }, color, (coords + glm::vec2(character.Width, character.Height)) / scaleFont });
-				text.Vertices.push_back({ { pos.x ,pos.y + size.y, 0.0f, 1.0f }, color, (coords + glm::vec2(0,character.Height)) / scaleFont });
+				mesh.Vertices.push_back({color, { pos.x , pos.y, 0.0f }, coords / scaleFont ,textureID });
+				mesh.Vertices.push_back({color, { pos.x + size.x, pos.y, 0.0f, }, (coords + glm::vec2(character.Width, 0)) / scaleFont,textureID });
+				mesh.Vertices.push_back({color, { pos.x + size.x, pos.y + size.y, 0.0f }, (coords + glm::vec2(character.Width, character.Height)) / scaleFont,textureID });
+				mesh.Vertices.push_back({color, { pos.x ,pos.y + size.y, 0.0f}, (coords + glm::vec2(0,character.Height)) / scaleFont,textureID });
 
-				if (size.y > text.Height)
-					text.Height = size.y;
+				if (size.y > height)
+					height = size.y;
 
 
-				text.Width += character.XAdvance * scale.x;
+				width += character.XAdvance * scale.x;
 				cursorX += character.XAdvance * scale.x;
+			}
+			return std::pair<int32_t, int32_t>(width, height);
+		}
+		void MoveVertices(InGuiMesh& mesh, const glm::vec2& position, size_t offset, size_t count)
+		{
+			XYZ_ASSERT(offset + count <= mesh.Vertices.size(), "Moving vertices out of range");
+			for (size_t i = offset; i < count + offset; ++i)
+			{
+				mesh.Vertices[i].Position.x += position.x;
+				mesh.Vertices[i].Position.y += position.y;
 			}
 		}
 	}

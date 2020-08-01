@@ -1,9 +1,9 @@
 #pragma once
 
+#include "XYZ/Renderer/InGuiRenderer.h"
 #include "XYZ/Renderer/Mesh.h"
 #include "XYZ/Gui/Font.h"
 #include "InGuiCore.h"
-
 #include <glm/glm.hpp>
 
 
@@ -30,8 +30,15 @@ namespace XYZ {
 		void HandleResize(InGuiWindow& window);
 		void HandleMove(InGuiWindow& window);
 		void HandleDocking(InGuiWindow& window);
+		void HandleModified(InGuiWindow& window);
 
-		void Generate6SegmentColorRectangle(const glm::vec2& size, Vertex* buffer);
-		void GenerateInGuiText(InGuiText& text, const Ref<Font>& font, const std::string& str, const glm::vec2& position, const glm::vec2& scale, float length, const glm::vec4& color = { 1,1,1,1 });
+		void Generate6SegmentColorRectangle(InGuiMesh& mesh,const glm::vec2& position, const glm::vec2& size, uint32_t textureID);
+		void GenerateInGuiQuad(InGuiMesh& mesh, InGuiVertex* vertices, size_t count);
+		void GenerateInGuiQuad(InGuiMesh& mesh, const glm::vec2& position, const glm::vec2& size,const glm::vec4& texCoord, uint32_t textureID, const glm::vec4& color = { 1,1,1,1 });
+		void GenerateInGuiImage(InGuiMesh& mesh,uint32_t rendererID, const glm::vec2& position, const glm::vec2& size, const glm::vec4& texCoord = { 0,0,1,1 }, const glm::vec4& color = { 1,1,1,1 });
+
+		std::pair<int32_t, int32_t> GenerateInGuiText(InGuiMesh& mesh, const Ref<Font>& font, const std::string& str, const glm::vec2& position, const glm::vec2& scale, float length, uint32_t textureID, const glm::vec4& color = { 1,1,1,1 });
+	
+		void MoveVertices(InGuiMesh& mesh, const glm::vec2& position, size_t offset, size_t count);
 	}
 }
