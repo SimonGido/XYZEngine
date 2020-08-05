@@ -2,6 +2,7 @@
 #include "InGuiCore.h"
 
 #include "InGuiHelper.h"
+#include "XYZ/Core/Application.h"
 #include "XYZ/Core/Input.h"
 #include "XYZ/Renderer/InGuiRenderer.h"
 
@@ -48,9 +49,18 @@ namespace XYZ {
 			InGuiRenderer::SetMaterial(g_InContext->RenderData.Material);
 		}
 		void EndFrame()
-		{
+		{	
+			HandleMouseInput(g_InContext->FrameData.LastActiveWindow);
+			HandleMove(g_InContext->FrameData.LastActiveWindow);
+			HandleResize(g_InContext->FrameData.LastActiveWindow);
+
 			g_InContext->DockSpace->End();
-			InGuiRenderer::Flush();
+			g_InContext->SubmitToRenderer();
+			
+			if (!(g_InContext->FrameData.Flags & RightMouseButtonDown) 
+			 && !(g_InContext->FrameData.Flags & LeftMouseButtonDown))
+				g_InContext->FrameData.LastActiveWindow = nullptr;
+			
 			g_InContext->FrameData.CurrentWindow = nullptr;
 			g_InContext->RenderData.NumTexturesInUse = InGuiRenderData::DefaultTextureCount;
 		}
@@ -64,6 +74,7 @@ namespace XYZ {
 			g_InContext->FrameData.Flags &= ~WindowTopResize;
 			g_InContext->FrameData.Flags &= ~WindowRightResize;
 			g_InContext->FrameData.Flags &= ~WindowLeftResize;
+
 		}
 
 		void OnRightMouseButtonRelease()
@@ -78,6 +89,8 @@ namespace XYZ {
 			g_InContext->FrameData.Flags &= ~WindowTopResize;
 			g_InContext->FrameData.Flags &= ~WindowRightResize;
 			g_InContext->FrameData.Flags &= ~WindowLeftResize;
+
+			
 		}
 
 		void OnLeftMouseButtonPress()
@@ -103,9 +116,17 @@ namespace XYZ {
 		}
 
 
+		InGuiDockSpace::InGuiDockSpace(InGuiDockNode* root)
+			:
+			m_Root(root)
+		{
+			m_NodeCount++;
+		}
+
 		InGuiDockSpace::InGuiDockSpace(const glm::vec2& pos, const glm::vec2& size)
 		{
-			m_Root = new InGuiDockNode(pos, size);
+			m_Root = new InGuiDockNode(pos, size, m_NodeCount);;
+			m_NodeCount++;
 		}
 		InGuiDockSpace::~InGuiDockSpace()
 		{
@@ -131,12 +152,8 @@ namespace XYZ {
 					window->DockNode->Windows.erase(it);
 
 				if (window->DockNode->Parent)
-				{
-					if (window->DockNode->Parent->Children[0]->Windows.empty()
-					 && window->DockNode->Parent->Children[1]->Windows.empty())
-					{
-						unsplitNode(window->DockNode->Parent);
-					}			
+				{			
+					unsplitNode(window->DockNode->Parent);		
 				}
 				window->DockNode = nullptr;
 				window->Flags &= ~Docked;
@@ -171,6 +188,8 @@ namespace XYZ {
 		{
 			if (m_ResizedNode)
 			{
+				for (auto win : m_ResizedNode->Windows)
+					win->Flags |= Modified;
 				if (m_ResizedNode->Split == SplitAxis::Vertical)
 				{
 					glm::vec2 leftOld = m_ResizedNode->Children[0]->Size;
@@ -181,7 +200,7 @@ namespace XYZ {
 					m_ResizedNode->Children[0]->Size.x = leftNew.x;
 					m_ResizedNode->Children[1]->Position.x = m_ResizedNode->Position.x + m_ResizedNode->Children[0]->Size.x;
 					m_ResizedNode->Children[1]->Size.x = rightNew.x;
-					
+
 					for (auto win : m_ResizedNode->Children[0]->Windows)
 						win->Flags |= Modified;
 					for (auto win : m_ResizedNode->Children[1]->Windows)
@@ -204,7 +223,11 @@ namespace XYZ {
 				}
 
 				if (!(g_InContext->FrameData.Flags & RightMouseButtonDown))
+				{
+					auto& app = Application::Get();
+					app.GetWindow().SetCursor(XYZ_ARROW_CURSOR);
 					m_ResizedNode = nullptr;
+				}
 			}
 		}
 
@@ -261,12 +284,15 @@ namespace XYZ {
 			{
 				if (Collide(node->Position, node->Size, mousePos))
 				{
-					detectResize(node->Children[0]);
-					detectResize(node->Children[1]);
+					if (node->Children[0])
+						detectResize(node->Children[0]);
+					if (node->Children[1])
+						detectResize(node->Children[1]);
 				}
 			}
 			else
 			{
+				auto& app = Application::Get();
 				auto parent = node->Parent;
 				if (parent)
 				{
@@ -275,6 +301,7 @@ namespace XYZ {
 						if (mousePos.x >= parent->Children[0]->Position.x + parent->Children[0]->Size.x - offset.x
 							&& mousePos.x <= parent->Children[0]->Position.x + parent->Children[0]->Size.x + offset.x)
 						{
+							app.GetWindow().SetCursor(XYZ_HRESIZE_CURSOR);
 							m_ResizedNode = parent;
 							g_InContext->FrameData.Flags |= ClickHandled;
 						}
@@ -284,6 +311,7 @@ namespace XYZ {
 						if (mousePos.y >= parent->Children[0]->Position.y + parent->Children[0]->Size.y - offset.y
 							&& mousePos.y <= parent->Children[0]->Position.y + parent->Children[0]->Size.y + offset.y)
 						{
+							app.GetWindow().SetCursor(XYZ_VRESIZE_CURSOR);
 							m_ResizedNode = parent;
 							g_InContext->FrameData.Flags |= ClickHandled;
 						}
@@ -311,7 +339,8 @@ namespace XYZ {
 					else if (pos == DockPosition::Left)
 					{
 						XYZ_ASSERT(!window->DockNode, "Window is already docked");
-						splitNode(node, SplitAxis::Vertical);
+						glm::vec2 halfSize = { node->Size.x / 2, node->Size.y };
+						splitNodeProportional(node, SplitAxis::Vertical, halfSize);
 						if (!node->Windows.empty())
 						{
 							for (auto win : node->Windows)
@@ -328,7 +357,8 @@ namespace XYZ {
 					else if (pos == DockPosition::Right)
 					{
 						XYZ_ASSERT(!window->DockNode, "Window is already docked");
-						splitNode(node, SplitAxis::Vertical);
+						glm::vec2 halfSize = { node->Size.x / 2, node->Size.y };
+						splitNodeProportional(node, SplitAxis::Vertical,halfSize);
 						if (!node->Windows.empty())
 						{
 							for (auto win : node->Windows)
@@ -345,7 +375,8 @@ namespace XYZ {
 					else if (pos == DockPosition::Bottom)
 					{
 						XYZ_ASSERT(!window->DockNode, "Window is already docked");
-						splitNode(node, SplitAxis::Horizontal);
+						glm::vec2 halfSize = { node->Size.x ,node->Size.y / 2 };
+						splitNodeProportional(node, SplitAxis::Horizontal, halfSize);
 						if (!node->Windows.empty())
 						{
 							for (auto win : node->Windows)
@@ -362,7 +393,8 @@ namespace XYZ {
 					else if (pos == DockPosition::Top)
 					{
 						XYZ_ASSERT(!window->DockNode, "Window is already docked");
-						splitNode(node, SplitAxis::Horizontal);
+						glm::vec2 halfSize = { node->Size.x ,node->Size.y / 2 };
+						splitNodeProportional(node, SplitAxis::Horizontal,halfSize);
 						if (!node->Windows.empty())
 						{
 							for (auto win : node->Windows)
@@ -388,13 +420,17 @@ namespace XYZ {
 		void InGuiDockSpace::destroy(InGuiDockNode** node)
 		{
 			if ((*node)->Children[0])
-				destroy(&((*node)->Children[0]));
+			{
+				destroy(&((*node)->Children[0]));			
+			}
 			if ((*node)->Children[1])
+			{
 				destroy(&((*node)->Children[1]));
-
+			}
 			for (auto win : (*node)->Windows)
 				win->DockNode = nullptr;
 
+			m_NodeCount--;
 			delete *node;
 			*node = nullptr;
 		}
@@ -413,26 +449,39 @@ namespace XYZ {
 			if (node->Children[1])
 				rescale(scale, node->Children[1]);
 		}
-		void InGuiDockSpace::splitNode(InGuiDockNode* node, SplitAxis axis)
+	
+		void InGuiDockSpace::splitNodeProportional(InGuiDockNode* node, SplitAxis axis, const glm::vec2& firstSize)
 		{
 			if (node->Split == SplitAxis::None)
 			{
 				node->Split = axis;
 				if (node->Split == SplitAxis::Vertical)
 				{
-					glm::vec2 halfSize = { node->Size.x / 2, node->Size.y };
+					glm::vec2 otherSize = { node->Size.x - firstSize.x, node->Size.y};
 					glm::vec2 leftPos = { node->Position.x ,node->Position.y };
-					glm::vec2 rightPos = { node->Position.x + halfSize.x,node->Position.y };
-					node->Children[0] = new InGuiDockNode(leftPos, halfSize,node);
-					node->Children[1] = new InGuiDockNode(rightPos, halfSize,node);
+					glm::vec2 rightPos = { node->Position.x + otherSize.x,node->Position.y };
+
+					node->Children[0] = new InGuiDockNode(leftPos, firstSize, m_NodeCount, node);
+					node->Children[0]->Dock = DockPosition::Left;
+					m_NodeCount++;
+
+					node->Children[1] = new InGuiDockNode(rightPos, otherSize, m_NodeCount, node);
+					node->Children[1]->Dock = DockPosition::Right;
+					m_NodeCount++;
 				}
 				else if (node->Split == SplitAxis::Horizontal)
 				{
-					glm::vec2 halfSize = { node->Size.x ,node->Size.y / 2 };
+					glm::vec2 otherSize = { node->Size.x ,node->Size.y - firstSize.y };
 					glm::vec2 bottomPos = { node->Position.x ,node->Position.y };
-					glm::vec2 topPos = { node->Position.x ,node->Position.y + halfSize.y };
-					node->Children[0] = new InGuiDockNode(bottomPos, halfSize, node);
-					node->Children[1] = new InGuiDockNode(topPos, halfSize, node);
+					glm::vec2 topPos = { node->Position.x ,node->Position.y + otherSize.y };
+
+					node->Children[0] = new InGuiDockNode(bottomPos, firstSize, m_NodeCount, node);
+					node->Children[0]->Dock = DockPosition::Bottom;
+					m_NodeCount++;
+
+					node->Children[1] = new InGuiDockNode(topPos, otherSize, m_NodeCount, node);
+					node->Children[1]->Dock = DockPosition::Top;
+					m_NodeCount++;
 				}
 			}
 		}
@@ -441,11 +490,20 @@ namespace XYZ {
 		{
 			if (node)
 			{
-				node->Split = SplitAxis::None;
-				if (node->Children[0])
-					destroy(&node->Children[0]);
-				if (node->Children[1])
-					destroy(&node->Children[1]);
+				if (node->Children[0] && node->Children[1])
+				{
+					if (   node->Children[0]->Windows.empty()
+						&& node->Children[1]->Windows.empty()
+						&& node->Children[0]->Split == SplitAxis::None
+						&& node->Children[1]->Split == SplitAxis::None)
+					{
+
+						node->Split = SplitAxis::None;
+						destroy(&node->Children[0]);	
+						destroy(&node->Children[1]);
+					}
+				}
+				unsplitNode(node->Parent);
 			}
 		}
 
@@ -517,40 +575,119 @@ namespace XYZ {
 			return DockPosition::None;
 		}
 
+	
 		InGuiContext::InGuiContext(const InGuiRenderData& renderData, const InGuiConfig& config)
 			: RenderData(renderData), ConfigData(config)
 		{
+			static constexpr uint32_t numPropertiesDockNode = 5;
 			mINI::INIFile file("ingui.ini");
 			mINI::INIStructure ini;
-			if (file.read(ini))
-			{
-				for (auto& it : ini)
-				{
-					InGuiWindows[it.first] = new InGuiWindow();
-					InGuiWindows[it.first]->Name = it.first;
-					InGuiWindows[it.first]->Position = StringToVec2(it.second.get("position"));
-					InGuiWindows[it.first]->Size = StringToVec2(it.second.get("size"));
-					if ((bool)atoi(it.second.get("collapsed").c_str()))
-						InGuiWindows[it.first]->Flags |= Collapsed;
-					
-					
-					generateWindow(InGuiWindows[it.first], it.first);;
-				}
-			}
-			else
-			{
-				file.generate(ini);
-			}
-
 			FrameData.WindowSize.x = (float)Input::GetWindowSize().first;
 			FrameData.WindowSize.y = (float)Input::GetWindowSize().second;
 
-			DockSpace = new InGuiDockSpace({ -FrameData.WindowSize.x/2,-FrameData.WindowSize.y/2 }, FrameData.WindowSize);
+			if (file.read(ini))
+			{
+				std::unordered_map<uint32_t, InGuiWindow*> windowMap;
+				
+				// Load windows
+				auto it = ini.begin();
+				while (it->first != "dockspace" && it != ini.end())
+				{
+					InGuiWindows[it->first] = new InGuiWindow();
+					InGuiWindows[it->first]->Name = it->first;
+					InGuiWindows[it->first]->Position = StringToVec2(it->second.get("position"));
+					InGuiWindows[it->first]->Size = StringToVec2(it->second.get("size"));
+					int32_t id = atoi(it->second.get("docknode").c_str());
+					if (id != -1)
+						windowMap[id] = InGuiWindows[it->first];
+
+					if ((bool)atoi(it->second.get("collapsed").c_str()))
+						InGuiWindows[it->first]->Flags |= Collapsed;
+					
+					InGuiWindows[it->first]->Flags |= Modified;
+
+					it++;
+				}
+
+
+				std::unordered_map<uint32_t, InGuiDockNode*> dockMap;
+				std::unordered_map<uint32_t, int32_t> parentMap;
+				uint32_t id = 0;
+
+				// Load dockspace
+				auto el = it->second.begin();
+				while (el != it->second.end())
+				{
+					std::string nodeID = std::to_string(id);
+					glm::vec2 pos = StringToVec2(it->second.get("node position " + nodeID));
+					glm::vec2 size = StringToVec2(it->second.get("node size " + nodeID));
+					int32_t parentID = atoi(it->second.get("node parent " + nodeID).c_str());
+					if (parentID != -1)
+						parentMap[id] = parentID;
+					
+					dockMap[id] = new InGuiDockNode(pos,size, id);
+					dockMap[id]->Split = (SplitAxis)atoi(it->second.get("node split " + nodeID).c_str());
+					dockMap[id]->Dock =  (DockPosition)atoi(it->second.get("node dockposition " + nodeID).c_str());
+
+					id++;
+					el+= numPropertiesDockNode;
+				}
+
+				// Setup tree
+				for (auto id : parentMap)
+				{
+					dockMap[id.first]->Parent = dockMap[id.second];
+					if (dockMap[id.first]->Dock == DockPosition::Left || dockMap[id.first]->Dock == DockPosition::Bottom)
+						dockMap[id.first]->Parent->Children[0] = dockMap[id.first];
+					else if (dockMap[id.first]->Dock != DockPosition::None)
+						dockMap[id.first]->Parent->Children[1] = dockMap[id.first];
+				}
+				// Setup windows
+				for (auto win : windowMap)
+				{
+					win.second->DockNode = dockMap[win.first];
+					dockMap[win.first]->Windows.push_back(win.second);
+				}
+
+				// Setup new dockspace and root
+				DockSpace = new InGuiDockSpace(dockMap[0]);
+				DockSpace->m_NodeCount = dockMap.size();
+			}
+			else
+			{
+				DockSpace = new InGuiDockSpace({ -FrameData.WindowSize.x / 2,-FrameData.WindowSize.y / 2 }, FrameData.WindowSize);
+			}
 		}
+
+
+		static void SaveDockSpace(mINI::INIStructure& ini, InGuiDockNode* node)
+		{
+			std::string nodeID = std::to_string(node->ID);
+			ini["Dockspace"]["node position " + nodeID] = std::to_string(node->Position.x) + "," + std::to_string(node->Position.y);
+			ini["Dockspace"]["node size " + nodeID] = std::to_string(node->Size.x) + "," + std::to_string(node->Size.y);
+			ini["Dockspace"]["node split " + nodeID] = std::to_string(ToUnderlying<SplitAxis>(node->Split));
+			ini["Dockspace"]["node dockposition " + nodeID] = std::to_string(ToUnderlying<DockPosition>(node->Dock));
+
+			if (node->Parent)
+				ini["Dockspace"]["node parent " + nodeID] = std::to_string(node->Parent->ID);
+			else
+				ini["Dockspace"]["node parent " + nodeID] = std::to_string(-1);
+
+
+			if (node->Children[0])
+				SaveDockSpace(ini, node->Children[0]);
+
+			if (node->Children[1])
+				SaveDockSpace(ini, node->Children[1]);
+		}
+
+
 		InGuiContext::~InGuiContext()
 		{
 			mINI::INIFile file("ingui.ini");
 			mINI::INIStructure ini;
+			file.generate(ini);
+			
 			for (auto& it : g_InContext->InGuiWindows)
 			{
 				std::string pos = std::to_string(it.second->Position.x) + "," + std::to_string(it.second->Position.y);
@@ -559,8 +696,16 @@ namespace XYZ {
 				ini[it.first]["size"] = size;
 				bool collapsed = (it.second->Flags & Collapsed);
 				ini[it.first]["collapsed"] = std::to_string(collapsed);
+				if (it.second->DockNode)
+					ini[it.first]["Docknode"] = std::to_string(it.second->DockNode->ID);
+				else
+					ini[it.first]["Docknode"] = std::to_string(-1);
+
 				delete it.second;
 			}
+
+
+			SaveDockSpace(ini, DockSpace->m_Root);
 
 			file.write(ini);
 
@@ -588,6 +733,20 @@ namespace XYZ {
 			return g_InContext->FrameData.CurrentWindow;
 		}
 
+		void InGuiContext::SubmitToRenderer()
+		{
+			
+			for (auto it : InGuiWindows)
+			{
+				uint8_t priority = 0;
+				if (it.second == FrameData.LastActiveWindow)
+					priority = 5;
+
+				RenderQueue.Push(&it.second->Mesh, priority);
+			}
+			RenderQueue.SubmitToRenderer();
+		}
+
 		void InGuiContext::generateWindow(InGuiWindow* window, const std::string& name)
 		{
 			glm::vec4 color = ConfigData.DefaultColor;
@@ -604,7 +763,7 @@ namespace XYZ {
 			GenerateInGuiQuad(window->Mesh, panelPos, { winSize.x ,InGuiWindow::PanelSize }, RenderData.SliderSubTexture->GetTexCoords(), RenderData.TextureID, color);
 			auto [width, height] = GenerateInGuiText(window->Mesh, RenderData.Font, name, panelPos, ConfigData.NameScale, window->Size.x, RenderData.FontTextureID);
 			window->MinimalWidth = width + InGuiWindow::PanelSize;
-			MoveVertices(window->Mesh, { 5, height / 2 }, 4, name.size() * 4);
+			MoveVertices(window->Mesh.Vertices.data(), { 5, height / 2 }, 4, name.size() * 4);
 
 			GenerateInGuiQuad(window->Mesh, minButtonPos, { InGuiWindow::PanelSize ,InGuiWindow::PanelSize }, RenderData.MinimizeButtonSubTexture->GetTexCoords(), RenderData.TextureID);
 			if (!(window->Flags & Collapsed))

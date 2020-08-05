@@ -5,9 +5,11 @@
 #include "XYZ/Renderer/SubTexture2D.h"
 #include "XYZ/Renderer/Mesh.h"
 #include "XYZ/Renderer/InGuiRenderer.h"
+#include "InGuiRenderQueue.h"
 
 #include <glm/glm.hpp>
 #include <unordered_set>
+
 
 namespace XYZ {
 	namespace InGui {
@@ -19,7 +21,9 @@ namespace XYZ {
 			Resized = 1 << 2,
 			Hoovered = 1 << 3,
 			Docked = 1 << 4,
-			Modified = 1 << 5
+			Modified = 1 << 5,
+			MenuEnabled = 1 << 6,
+			MenuActive = 1 << 7
 		};
 
 		enum InGuiFrameDataFlags
@@ -84,10 +88,12 @@ namespace XYZ {
 			glm::vec2 ModifiedWindowMouseOffset = { 0,0 };
 			glm::vec2 WindowSpaceOffset = { 0,0 };
 			glm::vec2 WindowSize = { 0,0 };
+			glm::vec2 MenuBarOffset = { 0,0 };
 			glm::vec2 MousePosition = { 0,0 };
 			glm::vec2 SelectedPoint = { 0,0 };
 
 			float MaxHeightInRow = 0.0f;
+			float LastMenuBarWidth = 0.0f;
 
 			uint16_t Flags = 0;
 		};
@@ -122,9 +128,9 @@ namespace XYZ {
 
 		struct InGuiDockNode
 		{
-			InGuiDockNode(const glm::vec2& pos, const glm::vec2& size, InGuiDockNode* parent = nullptr)
+			InGuiDockNode(const glm::vec2& pos, const glm::vec2& size,uint32_t id, InGuiDockNode* parent = nullptr)
 				:
-				Position(pos), Size(size), Parent(parent)
+				Position(pos), Size(size),ID(id), Parent(parent)
 			{
 				Children[0] = nullptr;
 				Children[1] = nullptr;
@@ -136,14 +142,16 @@ namespace XYZ {
 			InGuiDockNode* Parent;
 			InGuiDockNode* Children[2];
 			std::vector<InGuiWindow*> Windows;
-
+			uint32_t ID;
 			SplitAxis Split = SplitAxis::None;
+			DockPosition Dock = DockPosition::None;
 		};
-
 
 		class InGuiDockSpace
 		{
+			friend class InGuiContext;
 		public:
+			InGuiDockSpace(InGuiDockNode* root);
 			InGuiDockSpace(const glm::vec2& pos, const glm::vec2& size);
 			~InGuiDockSpace();
 
@@ -156,6 +164,9 @@ namespace XYZ {
 			void Begin();
 			void End();
 
+
+			
+
 		private:
 			void resize();
 			void adjustChildrenProps(InGuiDockNode* node);
@@ -163,7 +174,7 @@ namespace XYZ {
 			void insertWindow(InGuiWindow* window, const glm::vec2& mousePos, InGuiDockNode* node);
 			void destroy(InGuiDockNode** node);
 			void rescale(const glm::vec2& scale, InGuiDockNode* node);
-			void splitNode(InGuiDockNode* node,SplitAxis axis);
+			void splitNodeProportional(InGuiDockNode* node, SplitAxis axis, const glm::vec2& firstSize);
 			void unsplitNode(InGuiDockNode* node);
 			void update(InGuiDockNode* node);
 
@@ -175,6 +186,7 @@ namespace XYZ {
 
 			InGuiDockNode* m_ResizedNode = nullptr;
 
+			uint32_t m_NodeCount = 0;
 			static constexpr glm::vec2 sc_QuadSize = { 50,50 };
 		};
 
@@ -187,17 +199,19 @@ namespace XYZ {
 
 			InGuiWindow* GetWindow(const std::string& name);
 			InGuiWindow* CreateWindow(const std::string& name, const glm::vec2& position, const glm::vec2& size);
-			
+			void SubmitToRenderer();
+
 
 			InGuiFrameData FrameData;
 			InGuiRenderData RenderData;
-			InGuiConfig ConfigData;
+			InGuiConfig ConfigData;		
 			InGuiDockSpace *DockSpace;
 
 		private:
 			void generateWindow(InGuiWindow* window,const std::string& name);
 		private:
 			std::unordered_map<std::string, InGuiWindow*> InGuiWindows;
+			InGuiRenderQueue RenderQueue;
 		};
 
 

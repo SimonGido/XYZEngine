@@ -10,7 +10,7 @@ namespace XYZ {
 	{
 	public:
 		WindowResizeEvent(int width, int height)
-			:m_Width(width), m_Height(height),m_Component(EventComponent::WindowResized)
+			:m_Width(width), m_Height(height),m_Type(EventType::WindowResized)
 		{
 			XYZ_LOG_INFO("Window: Resized window width: ", width, " height: ", height);
 		}
@@ -20,16 +20,16 @@ namespace XYZ {
 		inline int GetWidth() const { return m_Width; }
 		inline int GetHeight() const { return m_Height; }
 
-		virtual EventComponent GetEventComponent() const override { return m_Component; }
-		static EventComponent GetStaticComponent()
+		virtual EventType GetEventType() const override { return m_Type; }
+		static EventType GetStaticType()
 		{
-			return EventComponent::WindowResized;
+			return EventType::WindowResized;
 		}
 
 	private:
 		int m_Width;
 		int m_Height;
-		EventComponent m_Component;
+		EventType m_Type;
 	};
 
 	/*! @class WindowCloseEvent
@@ -39,20 +39,20 @@ namespace XYZ {
 	{
 	public:
 		WindowCloseEvent()
-			: m_Component(EventComponent::WindowClosed)
+			: m_Type(EventType::WindowClosed)
 		{
 			XYZ_LOG_INFO("Window: Window closed");
 		}
 
-		virtual EventComponent GetEventComponent() const override { return m_Component; }
+		virtual EventType GetEventType() const override { return m_Type; }
 
-		static EventComponent GetStaticComponent() 
+		static EventType GetStaticType() 
 		{
-			return EventComponent::WindowClosed;
+			return EventType::WindowClosed;
 		}
 
 	private:
-		EventComponent m_Component;
+		EventType m_Type;
 	};
 
 }

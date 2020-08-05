@@ -97,10 +97,10 @@ namespace XYZ {
 
 		bool Collide(const glm::vec2& pos, const glm::vec2& size, const glm::vec2& point)
 		{
-			return (pos.x + size.x >= point.x &&
-					pos.x		   <= point.x &&
-					pos.y + size.y >=  point.y &&
-					pos.y		   <= point.y);
+			return (pos.x + size.x > point.x &&
+					pos.x		   < point.x &&
+					pos.y + size.y >  point.y &&
+					pos.y		   < point.y);
 		}
 
 		bool DetectMove(const InGuiWindow& window)
@@ -123,29 +123,39 @@ namespace XYZ {
 
 		bool DetectResize(const InGuiWindow& window)
 		{
-			if (!(window.Flags & Docked))
+			if (!(window.Flags & Docked) && !(window.Flags & Moved))
 			{
+				auto& app = Application::Get();
 				glm::vec2 offset = { 10,10 };
 				auto& mousePos = g_InContext->FrameData.MousePosition;
 
 				// Right side
 				if (mousePos.x >= window.Position.x + window.Size.x - offset.x)
+				{
 					g_InContext->FrameData.Flags |= WindowRightResize;
-
+					app.GetWindow().SetCursor(XYZ_HRESIZE_CURSOR);
+				}
 				// Left side
 				else if (mousePos.x <= window.Position.x + offset.x)
+				{
 					g_InContext->FrameData.Flags |= WindowLeftResize;
+					app.GetWindow().SetCursor(XYZ_HRESIZE_CURSOR);
 
-
+				}
 				// Bottom side
 				if (mousePos.y <= window.Position.y + offset.y)
+				{
 					g_InContext->FrameData.Flags |= WindowBottomResize;
+					app.GetWindow().SetCursor(XYZ_VRESIZE_CURSOR);
 
+				}
 				// Top side
 				else if (mousePos.y >= window.Position.y + window.Size.y - offset.y + InGuiWindow::PanelSize)
+				{
 					g_InContext->FrameData.Flags |= WindowTopResize;
+					app.GetWindow().SetCursor(XYZ_VRESIZE_CURSOR);
 
-
+				}
 				if (g_InContext->FrameData.Flags
 					& (WindowRightResize | WindowLeftResize | WindowBottomResize | WindowTopResize))
 				{
@@ -173,78 +183,64 @@ namespace XYZ {
 
 
 	
-		void HandleMouseInput(InGuiWindow& window)
+		void HandleMouseInput(InGuiWindow* window)
 		{
-			glm::vec2 size = { window.Size.x,window.Size.y + InGuiWindow::PanelSize };
-			glm::vec2 position = window.Position;
-			if (window.Flags & Collapsed)
+			if (window && !(g_InContext->FrameData.Flags & ClickHandled))
 			{
-				size.y -= window.Size.y;
-				position.y += window.Size.y;
-			}
+				glm::vec2 size = { window->Size.x,window->Size.y + InGuiWindow::PanelSize };
+				glm::vec2 position = window->Position;
+				if (window->Flags & Collapsed)
+				{
+					size.y -= window->Size.y;
+					position.y += window->Size.y;
+				}
 
-			if (Collide(position, size, g_InContext->FrameData.MousePosition)
-				&& !(g_InContext->FrameData.Flags & ClickHandled))
-			{
-				window.Flags |= Hoovered;
 				if (g_InContext->FrameData.Flags & RightMouseButtonDown)
 				{
-					if (DetectResize(window))
+					if (DetectResize(*window))
 					{
-						window.Flags |= Resized;
+						window->Flags |= Resized;
 						g_InContext->FrameData.Flags |= ClickHandled;
 					}
-					else if (DetectMove(window))
+					else if (DetectMove(*window))
 					{
-						window.Flags |= Moved;
+						window->Flags |= Moved;
 						g_InContext->FrameData.Flags |= ClickHandled;
-						g_InContext->FrameData.ModifiedWindowMouseOffset = g_InContext->FrameData.MousePosition - window.Position - glm::vec2{ 0, window.Size.y };
+						g_InContext->FrameData.ModifiedWindowMouseOffset = g_InContext->FrameData.MousePosition - window->Position - glm::vec2{ 0, window->Size.y };
 					}
 				}
 				else if (g_InContext->FrameData.Flags & LeftMouseButtonDown)
-				{		
-					if (DetectCollapse(window))
+				{
+					if (DetectCollapse(*window))
 					{
-						window.Flags ^= Collapsed;
+						window->Flags ^= Collapsed;
 						g_InContext->FrameData.Flags |= ClickHandled;
 					}
 				}
 			}
-			else if (window.Flags & Modified)
-			{
-				window.Flags |= Hoovered;
-			}
-			else
-			{
-				window.Flags &= ~Hoovered;
-			}
 		}
 
-		void HandleResize(InGuiWindow& window)
-		{
-			auto& app = Application::Get();
+		void HandleResize(InGuiWindow* window)
+		{		
 			auto& mousePos = g_InContext->FrameData.MousePosition;
-
-			if ((g_InContext->FrameData.Flags & RightMouseButtonDown) 
-			 && (window.Flags & Resized))
+			if (window && (window->Flags & Resized))
 			{
-				if (window.Size.x > window.MinimalWidth)
+				window->Flags |= Modified;
+				if (window->Size.x > window->MinimalWidth)
 				{
 					if (g_InContext->FrameData.Flags & WindowRightResize)
 					{
-						app.GetWindow().SetCursor(WindowCursor::XYZ_HRESIZE_CURSOR);
-						window.Size.x = mousePos.x - window.Position.x;
+						window->Size.x = mousePos.x - window->Position.x;
 					}
 					else if (g_InContext->FrameData.Flags & WindowLeftResize)
 					{
-						app.GetWindow().SetCursor(WindowCursor::XYZ_HRESIZE_CURSOR);
-						window.Size.x = window.Position.x + window.Size.x - mousePos.x;
-						window.Position.x = mousePos.x;
+						window->Size.x = window->Position.x + window->Size.x - mousePos.x;
+						window->Position.x = mousePos.x;
 					}
 				}
 				else
 				{
-					window.Size.x += 5;
+					window->Size.x += 5;
 					g_InContext->FrameData.Flags &= ~WindowLeftResize;
 					g_InContext->FrameData.Flags &= ~WindowRightResize;
 				}
@@ -252,70 +248,92 @@ namespace XYZ {
 
 				if (g_InContext->FrameData.Flags & WindowBottomResize)
 				{
-					app.GetWindow().SetCursor(WindowCursor::XYZ_VRESIZE_CURSOR);
-					window.Size.y = window.Position.y + window.Size.y - mousePos.y;
-					window.Position.y = mousePos.y;
+					window->Size.y = window->Position.y + window->Size.y - mousePos.y;
+					window->Position.y = mousePos.y;
 				}
 				else if (g_InContext->FrameData.Flags & WindowTopResize)
 				{
-					app.GetWindow().SetCursor(WindowCursor::XYZ_VRESIZE_CURSOR);
-					window.Size.y = mousePos.y - window.Position.y - InGuiWindow::PanelSize;
+					window->Size.y = mousePos.y - window->Position.y - InGuiWindow::PanelSize;
 				}
 
-				window.Flags |= Hoovered;
-			}
-			else
-			{
-				window.Flags &= ~Resized;
-				if (!(g_InContext->FrameData.Flags 
-				& (WindowRightResize | WindowLeftResize | WindowBottomResize | WindowTopResize)))
-					app.GetWindow().SetCursor(WindowCursor::XYZ_ARROW_CURSOR);
-			}
 			
+				if (!(g_InContext->FrameData.Flags & RightMouseButtonDown))
+				{
+					auto& app = Application::Get();
+					app.GetWindow().SetCursor(XYZ_ARROW_CURSOR);
+					window->Flags &= ~(Resized);
+				}
+			}
 		}
 
-		void HandleMove(InGuiWindow& window)
+		void HandleMove(InGuiWindow* window)
 		{
-			if (g_InContext->FrameData.Flags & RightMouseButtonDown
-				&& (window.Flags & Moved))
+			if (window && (window->Flags & Moved))
 			{
 				glm::vec2 pos = g_InContext->FrameData.MousePosition - g_InContext->FrameData.ModifiedWindowMouseOffset;
-				window.Position = { pos.x, pos.y - window.Size.y };
-				window.Flags |= Hoovered;
-				g_InContext->DockSpace->RemoveWindow(&window);
+				window->Position = { pos.x, pos.y - window->Size.y };
+				g_InContext->DockSpace->RemoveWindow(window);
+				window->Flags |= Modified;
+				
+				
+				if (!(g_InContext->FrameData.Flags & RightMouseButtonDown))
+				{
+					window->Flags &= ~(Docked);			
+					if (g_InContext->FrameData.Flags & DockingHandled)
+					{
+						HandleDocking(window);
+					}
+					window->Flags &= ~(Moved);
+				}	
+			}
+		}
+
+		void HandleDocking(InGuiWindow* window)
+		{
+			if (window)
+			{
+				if ((g_InContext->FrameData.Flags & DockingHandled)
+					&& (window->Flags & Moved)
+					&& !(window->Flags & Docked))
+				{
+					g_InContext->DockSpace->InsertWindow(window, g_InContext->FrameData.MousePosition);
+					g_InContext->FrameData.Flags &= ~DockingHandled;
+
+					if (window->DockNode)
+					{
+						window->Size = { window->DockNode->Size.x, window->DockNode->Size.y - InGuiWindow::PanelSize };
+						window->Position = window->DockNode->Position;
+					}
+				}
+			}
+		}
+
+		void HandleActivity(InGuiWindow* window)
+		{
+			glm::vec2 size = { window->Size.x,window->Size.y + InGuiWindow::PanelSize };
+			glm::vec2 position = window->Position;
+			if (window->Flags & Collapsed)
+			{
+				size.y -= window->Size.y;
+				position.y += window->Size.y;
+			}
+
+			if (Collide(position, size, g_InContext->FrameData.MousePosition) && !g_InContext->FrameData.LastActiveWindow)
+			{
+				window->Flags |= Hoovered;
+				window->Flags |= Modified;
+
+				if (g_InContext->FrameData.Flags & LeftMouseButtonDown
+				 || g_InContext->FrameData.Flags & RightMouseButtonDown)
+				{
+					g_InContext->FrameData.LastActiveWindow = window;
+				}
 			}
 			else
 			{
-				window.Flags &= ~(Docked);
-				window.Flags &= ~(Moved);
+				window->Flags &= ~Hoovered;
 			}
 		}
-
-		void HandleDocking(InGuiWindow& window)
-		{
-			if ((g_InContext->FrameData.Flags & DockingHandled) 
-				&& (window.Flags & Moved)
-				&& !(window.Flags & Docked))
-			{		
-				g_InContext->DockSpace->InsertWindow(&window, g_InContext->FrameData.MousePosition);			
-				g_InContext->FrameData.Flags &= ~DockingHandled;
-
-				if (window.DockNode)
-				{
-					window.Size = { window.DockNode->Size.x, window.DockNode->Size.y - InGuiWindow::PanelSize };
-					window.Position = window.DockNode->Position;
-				}		
-			}
-		}
-
-		void HandleModified(InGuiWindow& window)
-		{
-			if (window.Flags & Hoovered)
-			{
-				window.Flags |= Modified;
-			}
-		}
-
 	
 		void Generate6SegmentColorRectangle(InGuiMesh& mesh, const glm::vec2& position, const glm::vec2& size, uint32_t textureID)
 		{
@@ -420,15 +438,17 @@ namespace XYZ {
 
 			int32_t width = 0;
 			int32_t height = 0;
+			
 			for (auto c : str)
 			{
 				auto& character = font->GetCharacter(c);
 				if (width + (character.XAdvance * scale.x) >= length)
 					break;
 
+				float yOffset = (fontData.LineHeight - character.YOffset - character.Height) * scale.y;
 				glm::vec2 pos = {
 					cursorX + character.XOffset + position.x,
-					cursorY + position.y
+					cursorY + yOffset + position.y
 				};
 
 				glm::vec2 size = { character.Width * scale.x, character.Height * scale.y };
@@ -449,13 +469,51 @@ namespace XYZ {
 			}
 			return std::pair<int32_t, int32_t>(width, height);
 		}
-		void MoveVertices(InGuiMesh& mesh, const glm::vec2& position, size_t offset, size_t count)
+		std::pair<int32_t, int32_t> GenerateInGuiText(InGuiVertex* vertices, const Ref<Font>& font, const std::string& str, const glm::vec2& position, const glm::vec2& scale, float length, uint32_t textureID, const glm::vec4& color)
 		{
-			XYZ_ASSERT(offset + count <= mesh.Vertices.size(), "Moving vertices out of range");
+			auto& fontData = font->GetData();
+			int32_t cursorX = 0, cursorY = 0;
+
+			int32_t width = 0;
+			int32_t height = 0;
+			uint32_t counter = 0;
+			for (auto c : str)
+			{
+				auto& character = font->GetCharacter(c);
+				if (width + (character.XAdvance * scale.x) >= length)
+					break;
+
+				float yOffset = (fontData.LineHeight - character.YOffset - character.Height) * scale.y;
+				glm::vec2 pos = {
+					cursorX + character.XOffset + position.x,
+					cursorY + yOffset + position.y
+				};
+
+				glm::vec2 size = { character.Width * scale.x, character.Height * scale.y };
+				glm::vec2 coords = { character.XCoord, fontData.ScaleH - character.YCoord - character.Height };
+				glm::vec2 scaleFont = { fontData.ScaleW, fontData.ScaleH };
+
+				vertices[counter+0] = { color, { pos.x , pos.y, 0.0f }, coords / scaleFont ,textureID };
+				vertices[counter+1] = { color, { pos.x + size.x, pos.y, 0.0f, }, (coords + glm::vec2(character.Width, 0)) / scaleFont,textureID };
+				vertices[counter+2] = { color, { pos.x + size.x, pos.y + size.y, 0.0f }, (coords + glm::vec2(character.Width, character.Height)) / scaleFont,textureID };
+				vertices[counter+3] = { color, { pos.x ,pos.y + size.y, 0.0f}, (coords + glm::vec2(0,character.Height)) / scaleFont,textureID };
+				counter += 4;
+
+				if (size.y > height)
+					height = size.y;
+
+
+				width += character.XAdvance * scale.x;
+				cursorX += character.XAdvance * scale.x;
+			}
+			return std::pair<int32_t, int32_t>(width, height);
+		}
+		void MoveVertices(InGuiVertex* vertices, const glm::vec2& position, size_t offset, size_t count)
+		{
 			for (size_t i = offset; i < count + offset; ++i)
 			{
-				mesh.Vertices[i].Position.x += position.x;
-				mesh.Vertices[i].Position.y += position.y;
+				vertices[i].Position.x += position.x;
+				vertices[i].Position.y += position.y;
 			}
 		}
 	}

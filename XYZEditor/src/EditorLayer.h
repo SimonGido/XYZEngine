@@ -17,6 +17,9 @@ namespace XYZ {
 		virtual void OnInGuiRender() override;
 
 	private:
+		bool onWindowResized(WindowResizeEvent& event);
+
+	private:
 		EditorCamera m_EditorCamera;
 		Ref<Scene> m_Scene;
 		Ref<Material> m_Material;
@@ -41,5 +44,6 @@ namespace XYZ {
 		float m_TestValue = 0.0f;
 		bool m_CheckboxVal = false;
 		bool m_ActiveWindow = false;
+		bool m_MenuOpen = false;
 	};
 }

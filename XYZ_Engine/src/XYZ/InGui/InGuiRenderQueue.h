@@ -8,11 +8,16 @@ namespace XYZ {
 		class InGuiRenderQueue
 		{
 		public:
-			
-
+			void Push(InGuiMesh* mesh,uint8_t priority);
+			void SubmitToRenderer();
 
 		private:
-			std::vector<InGuiMesh> m_DrawList;
+			struct InGuiDrawable
+			{
+				InGuiMesh* Mesh;
+				uint8_t Priority;
+			};
+			std::vector<InGuiDrawable> m_DrawList;
 		};
 		
 	}

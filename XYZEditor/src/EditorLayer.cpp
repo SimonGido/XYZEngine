@@ -13,7 +13,8 @@ namespace XYZ {
 		Renderer::Init();
 		SortLayer::CreateLayer("Default");
 
-		m_FBO = FrameBuffer::Create({ 800,800 });
+		auto& app = Application::Get();
+		m_FBO = FrameBuffer::Create({ app.GetWindow().GetWidth(),app.GetWindow().GetHeight() });
 		m_FBO->CreateColorAttachment(FrameBufferFormat::RGBA16F);
 		m_FBO->CreateDepthAttachment();
 		m_FBO->Resize();
@@ -85,7 +86,6 @@ namespace XYZ {
 		m_Scene->OnRenderEditor(ts, { m_EditorCamera.GetViewProjectionMatrix(),winSize });
 		m_FBO->Unbind();
 
-
 		if (m_ActiveWindow)
 		{
 			m_EditorCamera.OnUpdate(ts);
@@ -127,11 +127,14 @@ namespace XYZ {
 	}
 	void EditorLayer::OnEvent(Event& event)
 	{
+		EventDispatcher dispatcher(event);
+		dispatcher.Dispatch<WindowResizeEvent>(Hook(&EditorLayer::onWindowResized, this));
 		m_EditorCamera.OnEvent(event);
 	}
 
 	void EditorLayer::OnInGuiRender()
 	{
+
 		if (InGui::RenderWindow("Scene", m_FBO->GetColorAttachment(0).RendererID, { 0,-300 }, { 800,800 }, 25.0f))
 		{
 			m_ActiveWindow = true;
@@ -142,7 +145,25 @@ namespace XYZ {
 			m_ActiveWindow = false;
 		}
 		InGui::End();
+		if (InGui::Begin("Test", { 0,0 }, { 500,500 }))
+		{
+		}
+		if (InGui::MenuBar("File", m_MenuOpen))
+		{
+			if (InGui::MenuItem("Test", { 80,25 })) std::cout << "Menu item" << std::endl;
+			if (InGui::MenuItem("Test2", { 80,25 })) std::cout << "Menu item" << std::endl;
+		}
+		InGui::MenuEnd();
+		
+		InGui::MenuBar("Settings", m_MenuOpen);
+		InGui::MenuEnd();
 
+		InGui::MenuBar("Settingass", m_MenuOpen);
+		InGui::MenuEnd();
+		InGui::MenuBar("Settingasdas", m_MenuOpen);
+		InGui::MenuEnd();
+
+		InGui::End();
 		if (InGui::Begin("Test Panel", { 0,0 }, { 500,500 }))
 		{		
 			
@@ -191,6 +212,17 @@ namespace XYZ {
 		}
 		InGui::End();
 		
+	}
+
+	bool EditorLayer::onWindowResized(WindowResizeEvent& event)
+	{
+		auto specs = m_FBO->GetSpecification();
+		specs.Width = event.GetWidth();
+		specs.Height = event.GetHeight();
+		m_FBO->SetSpecification(specs);
+		m_FBO->Resize();
+
+		return false;
 	}
 	
 	

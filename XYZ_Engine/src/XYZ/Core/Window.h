@@ -25,7 +25,7 @@ namespace XYZ {
 		WindowProperties(const std::string& title = "Engine",
 			uint32_t width = 1024,
 			uint32_t height = 840,
-			int flags = WindowFlags::NONE)
+			int flags = WindowFlags::MAXIMIZED)
 			: Title(title), Width(width), Height(height), Flags(flags)
 		{
 		}
@@ -33,7 +33,7 @@ namespace XYZ {
 
 	class Window : public EventSystem<WindowResizeEvent,
 									  WindowCloseEvent,
-									  KeyComponentdEvent,
+									  KeyTypedEvent,
 									  KeyPressedEvent,
 									  KeyReleasedEvent,
 									  MouseButtonPressEvent,
@@ -53,7 +53,7 @@ namespace XYZ {
 		// Window attributes
 		virtual void SetEventCallback(const EventCallbackFn& callback) = 0;
 		virtual void SetVSync(bool enabled) = 0;
-		virtual void SetCursor(WindowCursor cursor) = 0;
+		virtual void SetCursor(uint8_t cursor) = 0;
 
 		virtual bool IsClosed() = 0;
 		virtual void* GetNativeWindow() const = 0;

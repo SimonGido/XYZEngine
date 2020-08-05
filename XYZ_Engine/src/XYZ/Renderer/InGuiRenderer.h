@@ -52,7 +52,7 @@ namespace XYZ {
 		static void SubmitUI(uint32_t rendererID, const glm::vec2& position, const glm::vec2& size, const glm::vec4& texCoord, const glm::vec4& color = glm::vec4(1));
 		static void SubmitUI(const glm::vec2& position, const Vertex* vertex, size_t count, uint32_t textureID);
 
-		static void SubmitUI(const InGuiMesh& mesh,uint8_t renderPriority = 0);
+		static void SubmitUI(const InGuiMesh& mesh);
 
 		/**
 		* Execute the command queue

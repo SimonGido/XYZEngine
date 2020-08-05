@@ -26,11 +26,11 @@ namespace XYZ {
 		bool DetectCollapse(const InGuiWindow& window);
 
 
-		void HandleMouseInput(InGuiWindow& window);
-		void HandleResize(InGuiWindow& window);
-		void HandleMove(InGuiWindow& window);
-		void HandleDocking(InGuiWindow& window);
-		void HandleModified(InGuiWindow& window);
+		void HandleMouseInput(InGuiWindow* window);
+		void HandleMove(InGuiWindow* window);
+		void HandleResize(InGuiWindow* window);
+		void HandleDocking(InGuiWindow* window);
+		void HandleActivity(InGuiWindow* window);
 
 		void Generate6SegmentColorRectangle(InGuiMesh& mesh,const glm::vec2& position, const glm::vec2& size, uint32_t textureID);
 		void GenerateInGuiQuad(InGuiMesh& mesh, InGuiVertex* vertices, size_t count);
@@ -38,7 +38,7 @@ namespace XYZ {
 		void GenerateInGuiImage(InGuiMesh& mesh,uint32_t rendererID, const glm::vec2& position, const glm::vec2& size, const glm::vec4& texCoord = { 0,0,1,1 }, const glm::vec4& color = { 1,1,1,1 });
 
 		std::pair<int32_t, int32_t> GenerateInGuiText(InGuiMesh& mesh, const Ref<Font>& font, const std::string& str, const glm::vec2& position, const glm::vec2& scale, float length, uint32_t textureID, const glm::vec4& color = { 1,1,1,1 });
-	
-		void MoveVertices(InGuiMesh& mesh, const glm::vec2& position, size_t offset, size_t count);
+		std::pair<int32_t, int32_t> GenerateInGuiText(InGuiVertex* vertices, const Ref<Font>& font, const std::string& str, const glm::vec2& position, const glm::vec2& scale, float length, uint32_t textureID, const glm::vec4& color = { 1,1,1,1 });
+		void MoveVertices(InGuiVertex* vertices, const glm::vec2& position, size_t offset, size_t count);
 	}
 }

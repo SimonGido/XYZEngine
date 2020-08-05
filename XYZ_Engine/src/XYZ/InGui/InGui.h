@@ -14,6 +14,10 @@ namespace XYZ {
 		void End();
 
 
+		bool MenuBar(const std::string& name, bool& open);
+		bool MenuItem(const std::string& name, const glm::vec2& size);
+		void MenuEnd();
+
 		bool Button(const std::string & name, const glm::vec2 & size);
 		bool Checkbox(const std::string & name, const glm::vec2 & size, bool& value);
 		bool Slider(const std::string & name, const glm::vec2 & size, float& value, float valueScale = 1.0f);

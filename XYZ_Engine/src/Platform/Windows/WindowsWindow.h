@@ -8,6 +8,7 @@
 #include <GLFW/glfw3.h>
 
 
+
 namespace XYZ {
 /**	@class WindowsWindow
  *	Enables window management on Windows
@@ -22,7 +23,7 @@ namespace XYZ {
 		virtual void Update() override;
 		virtual void SetVSync(bool enabled) override;
 		virtual bool IsClosed() override;
-		virtual void SetCursor(WindowCursor cursor) override;
+		virtual void SetCursor(uint8_t cursor) override;
 		
 
 		inline void SetEventCallback(const EventCallbackFn& callback) override { m_Data.EventCallback = callback; }
@@ -35,8 +36,9 @@ namespace XYZ {
 		void Destroy();
 
 		GLFWwindow* m_Window;
-		GLFWcursor* m_Cursor = nullptr;
-		WindowCursor m_Current = WindowCursor::XYZ_ARROW_CURSOR;
+
+		uint8_t m_CurrentCursor = XYZ_ARROW_CURSOR;
+		GLFWcursor* m_Cursors[NUM_CURSORS];
 
 		std::unique_ptr<APIContext> m_Context;
 

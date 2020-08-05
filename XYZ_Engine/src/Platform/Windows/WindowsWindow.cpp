@@ -2,7 +2,6 @@
 #include "WindowsWindow.h"
 
 
-
 namespace XYZ {
 	static bool GLFWInitialized = false;
 
@@ -22,9 +21,9 @@ namespace XYZ {
 		}
 
 		m_Data.This = this;
-		const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-		int width = mode->width;
-		int height = mode->height;
+		GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
+		const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
+
 
 		m_Data.Width = props.Width;
 		m_Data.Height = props.Height;
@@ -32,11 +31,11 @@ namespace XYZ {
 		if (props.Flags & WindowFlags::MAXIMIZED)
 		{
 			glfwWindowHint(GLFW_MAXIMIZED, true);
-			m_Window = glfwCreateWindow(width, height, props.Title.c_str(), NULL, NULL);
+			m_Window = glfwCreateWindow(mode->width, mode->width, props.Title.c_str(), NULL, NULL);	
 		}
 		else if (props.Flags & WindowFlags::FULLSCREEN)
 		{
-			m_Window = glfwCreateWindow(width, height, props.Title.c_str(), glfwGetPrimaryMonitor(), NULL);
+			m_Window = glfwCreateWindow(mode->width, mode->width, props.Title.c_str(), glfwGetPrimaryMonitor(), NULL);
 		}
 		else
 		{
@@ -71,7 +70,7 @@ namespace XYZ {
 		glfwSetCharCallback(m_Window, [](GLFWwindow* window, unsigned int key)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-			KeyComponentdEvent e(key);
+			KeyTypedEvent e(key);
 			data.EventCallback(e);
 			data.This->Execute(e);
 		});
@@ -138,6 +137,21 @@ namespace XYZ {
 			data.EventCallback(e);
 			data.This->Execute(e);
 		});
+
+
+		m_Cursors[XYZ_ARROW_CURSOR] = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
+		m_Cursors[XYZ_IBEAM_CURSOR] = glfwCreateStandardCursor(GLFW_IBEAM_CURSOR);
+		m_Cursors[XYZ_CROSSHAIR_CURSOR] = glfwCreateStandardCursor(GLFW_CROSSHAIR_CURSOR);
+		m_Cursors[XYZ_HAND_CURSOR] = glfwCreateStandardCursor(GLFW_HAND_CURSOR);
+		m_Cursors[XYZ_HRESIZE_CURSOR] = glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR);
+		m_Cursors[XYZ_VRESIZE_CURSOR] = glfwCreateStandardCursor(GLFW_VRESIZE_CURSOR);
+
+		{
+			int width, height;
+			glfwGetWindowSize(m_Window, &width, &height);
+			m_Data.Width = width;
+			m_Data.Height = height;
+		}
 	}
 
 	WindowsWindow::~WindowsWindow()
@@ -160,17 +174,13 @@ namespace XYZ {
 		return glfwWindowShouldClose(m_Window);
 	}
 
-	void WindowsWindow::SetCursor(WindowCursor cursor)
+	void WindowsWindow::SetCursor(uint8_t cursor)
 	{
-		if (cursor != m_Current)
+		XYZ_ASSERT(cursor < NUM_CURSORS, "Invalid cursor");
+		if (cursor != m_CurrentCursor)
 		{
-			m_Current = cursor;
-			if (m_Cursor)
-				glfwDestroyCursor(m_Cursor);
-
-			int casted = static_cast<std::underlying_type_t<WindowCursor>>(cursor);
-			m_Cursor = glfwCreateStandardCursor(casted);
-			glfwSetCursor(m_Window, m_Cursor);
+			m_CurrentCursor = cursor;
+			glfwSetCursor(m_Window, m_Cursors[cursor]);
 		}
 	}
 

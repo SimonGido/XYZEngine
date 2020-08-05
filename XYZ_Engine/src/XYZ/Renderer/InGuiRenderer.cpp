@@ -162,7 +162,7 @@ namespace XYZ {
 		s_UIData.IndexCount += indexCount;
 	}
 
-	void InGuiRenderer::SubmitUI(const InGuiMesh& mesh,uint8_t renderPriority)
+	void InGuiRenderer::SubmitUI(const InGuiMesh& mesh)
 	{
 		uint32_t indexCount = (mesh.Vertices.size() / 4) * 6;
 		if (s_UIData.IndexCount + indexCount > s_UIData.MaxIndices ||
