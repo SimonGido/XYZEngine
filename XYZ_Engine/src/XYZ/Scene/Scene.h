@@ -75,7 +75,7 @@ namespace XYZ {
         struct SceneObject
         {
             RenderComponent2D* Renderable = nullptr;
-            Transform2D* Transform = nullptr;
+            Transform* Transform = nullptr;
             uint32_t Entity;
         };
 
@@ -94,7 +94,7 @@ namespace XYZ {
 
         uint32_t m_MainCameraEntity;
         CameraComponent* m_MainCamera;
-        Transform2D* m_MainCameraTransform;
+        Transform* m_MainCameraTransform;
 
         uint16_t m_Root;
         SceneObject m_SceneWorld;

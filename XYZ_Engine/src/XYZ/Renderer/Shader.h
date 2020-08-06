@@ -113,7 +113,7 @@ namespace XYZ {
 		virtual const TextureUniform* FindTexture(const std::string& name) const = 0;
 
 		virtual uint32_t GetUniformSize() const = 0;
-
+		virtual const std::vector<Uniform>& GetUniforms() const = 0;
 
 		/**
 		* Create Shader

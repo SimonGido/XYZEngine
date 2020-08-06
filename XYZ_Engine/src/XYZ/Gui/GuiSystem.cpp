@@ -14,7 +14,7 @@ namespace XYZ {
 		m_ECS(ecs),
 		m_Grid(1,50)
 	{
-		m_Signature.set(m_ECS->GetComponentType<Transform2D>());
+		m_Signature.set(m_ECS->GetComponentType<Transform>());
 		m_Signature.set(m_ECS->GetComponentType<Checkbox>());
 	}
 	GuiSystem::~GuiSystem()
@@ -29,7 +29,7 @@ namespace XYZ {
 	{
 		Component component;
 		component.ActiveComponent = m_ECS->GetComponent<ActiveComponent>(entity);
-		component.Transform = m_ECS->GetComponent<Transform2D>(entity);
+		component.Transform = m_ECS->GetComponent<Transform>(entity);
 		component.UI = m_ECS->GetComponent<Checkbox>(entity);
 		
 

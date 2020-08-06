@@ -12,7 +12,7 @@ namespace XYZ {
 	{
 		Renderer::Init();
 		SortLayer::CreateLayer("Default");
-
+		
 		auto& app = Application::Get();
 		m_FBO = FrameBuffer::Create({ app.GetWindow().GetWidth(),app.GetWindow().GetHeight() });
 		m_FBO->CreateColorAttachment(FrameBufferFormat::RGBA16F);
@@ -23,6 +23,7 @@ namespace XYZ {
 
 		m_Material = Material::Create(XYZ::Shader::Create("TextureShader", "Assets/Shaders/DefaultShader.glsl"));
 
+		
 		m_GuiTexture = XYZ::Texture2D::Create(XYZ::TextureWrap::Clamp, "Assets/Textures/Gui/TexturePack.png");
 		m_Material->Set("u_Texture", m_GuiTexture, 0);
 		m_Material->Set("u_Texture", XYZ::Texture2D::Create(XYZ::TextureWrap::Clamp, "Assets/Textures/wall.png"), 1);
@@ -49,7 +50,7 @@ namespace XYZ {
 			SortLayer::GetOrderValue("Default")
 		});
 
-		m_Transform = m_TestEntity.GetComponent<Transform2D>();
+		m_Transform = m_TestEntity.GetComponent<Transform>();
 
 
 		for (int i = 1; i < 5; ++i)
@@ -61,10 +62,17 @@ namespace XYZ {
 				SortLayer::GetOrderValue("Default")
 			});
 
-			auto transform = entity.GetComponent<Transform2D>();
+			auto transform = entity.GetComponent<Transform>();
 			transform->Translate({ i,0,0 });
 			m_Scene->SetParent(m_TestEntity, entity);
-		}		
+		}	
+
+
+		m_Material->Set("u_Color", glm::vec4(0.8, 1, 1, 1));
+
+		m_Material = m_AssetManager.GetAsset<Material>("material.mat");
+		//m_AssetManager.RegisterAsset("material.mat", m_Material);
+
 	}
 
 	void EditorLayer::OnDetach()

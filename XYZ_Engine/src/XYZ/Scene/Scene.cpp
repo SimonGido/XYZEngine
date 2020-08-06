@@ -21,7 +21,7 @@ namespace XYZ {
 		uint32_t entity = m_ECS->CreateEntity();
 		m_SceneWorld = {
 			nullptr,
-			m_ECS->AddComponent(entity,Transform2D{glm::vec3(0,0,0)}),
+			m_ECS->AddComponent(entity,Transform{glm::vec3(0,0,0)}),
 			entity
 		};
 		
@@ -32,7 +32,7 @@ namespace XYZ {
 
 		m_MainCameraEntity = m_ECS->CreateEntity();
 		m_MainCamera = m_ECS->AddComponent<CameraComponent>(m_MainCameraEntity, CameraComponent{});
-		m_MainCameraTransform = m_ECS->AddComponent<Transform2D>(m_MainCameraEntity, Transform2D{ {0,0,0} });
+		m_MainCameraTransform = m_ECS->AddComponent<Transform>(m_MainCameraEntity, Transform{ {0,0,0} });
 		
 		SceneObject cameraObject = {
 			nullptr,
@@ -59,7 +59,7 @@ namespace XYZ {
 
 		SceneObject object = {
 			nullptr,
-			entity.AddComponent<Transform2D>({glm::vec3(0)}),
+			entity.AddComponent<Transform>({glm::vec3(0)}),
 			entity
 		};
 

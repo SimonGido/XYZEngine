@@ -2,8 +2,11 @@
 #include "Material.h"
 
 #include "MaterialManager.h"
-namespace XYZ {
 
+
+
+namespace XYZ {
+	
 	Material::Material(const Ref<Shader>& shader)
 	{
 		m_Shader = shader;

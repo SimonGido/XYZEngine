@@ -23,7 +23,7 @@ namespace XYZ {
 		{
 			InterpolatedMovement* Interpolated;
 			GridBody* GridBody;
-			Transform2D* Transform;
+			Transform* Transform;
 		};
 
 		std::vector<Component> m_Components;

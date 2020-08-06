@@ -1,0 +1,6 @@
+Material: material name
+ShaderAssetPath: Assets/Shaders/DefaultShader.glsl
+Textures:
+  []
+Values:
+  - u_Color: [0.800000012, 1, 1, 1]

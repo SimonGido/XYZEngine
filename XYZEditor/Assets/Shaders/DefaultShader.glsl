@@ -39,10 +39,10 @@ in float v_TextureID;
 uniform sampler2D u_Texture[32];
 out vec4 FragColor;
 
-
+uniform vec4 u_Color;
 
 void main()
 {
-	FragColor = texture(u_Texture[int(v_TextureID)], v_TexCoord) * v_Color;
+	FragColor = texture(u_Texture[int(v_TextureID)], v_TexCoord) * v_Color * u_Color;
 }
 

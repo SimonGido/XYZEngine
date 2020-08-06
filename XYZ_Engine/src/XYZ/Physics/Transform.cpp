@@ -5,7 +5,7 @@
 #include <glm/gtx/transform.hpp>
 
 namespace XYZ {
-	Transform2D::Transform2D(const glm::vec3& pos, const glm::vec2& scale, float rot)
+	Transform::Transform(const glm::vec3& pos, const glm::vec2& scale, float rot)
 		:
 		m_Position(pos),
 		m_Scale(scale),
@@ -14,44 +14,44 @@ namespace XYZ {
 		m_Transformation = calculateTransform();
 	}
 
-	void Transform2D::Translate(const glm::vec3& translation)
+	void Transform::Translate(const glm::vec3& translation)
 	{
 		m_Position += translation;
 		m_Updated = true;
 	}
-	void Transform2D::Scale(const glm::vec2& scale)
+	void Transform::Scale(const glm::vec2& scale)
 	{
 		m_Scale += scale;
 		m_Updated = true;
 	}
-	void Transform2D::Rotate(float rotation)
+	void Transform::Rotate(float rotation)
 	{
 		m_Rotation += rotation;
 		m_Updated = true;
 	}
-	void Transform2D::SetTranslation(const glm::vec3& translation)
+	void Transform::SetTranslation(const glm::vec3& translation)
 	{
 		m_Position = translation;
 		m_Updated = true;
 	}
-	void Transform2D::SetScale(const glm::vec2& scale)
+	void Transform::SetScale(const glm::vec2& scale)
 	{
 		m_Scale = scale;
 		m_Updated = true;
 	}
-	void Transform2D::SetRotation(float rotation)
+	void Transform::SetRotation(float rotation)
 	{
 		m_Rotation = rotation;
 		m_Updated = true;
 	}
 
-	void Transform2D::SetParent(Transform2D* parent)
+	void Transform::SetParent(Transform* parent)
 	{
 		m_Parent = parent;
 		m_Transformation = m_Parent->m_Transformation * calculateTransform();
 	}
 
-	void Transform2D::CalculateWorldTransformation()
+	void Transform::CalculateWorldTransformation()
 	{
 		// If has parent
 		if (m_Parent)
@@ -69,7 +69,7 @@ namespace XYZ {
 		}
 	}
 
-	void Transform2D::DetachParent()
+	void Transform::DetachParent()
 	{
 		if (m_Parent)
 		{
@@ -81,7 +81,7 @@ namespace XYZ {
 	}
 
 
-	const glm::vec3 Transform2D::GetWorldPosition() const
+	const glm::vec3 Transform::GetWorldPosition() const
 	{
 		return {
 			m_Transformation[3][0],
@@ -90,7 +90,7 @@ namespace XYZ {
 		};
 	}
 
-	const glm::vec2 Transform2D::GetWorldScale() const
+	const glm::vec2 Transform::GetWorldScale() const
 	{
 		return {
 			glm::length(m_Transformation[0]),
@@ -99,14 +99,14 @@ namespace XYZ {
 	}
 
 
-	const glm::mat4& Transform2D::GetTransformation() const
+	const glm::mat4& Transform::GetTransformation() const
 	{
 		m_Updated = false;
 		return m_Transformation;
 	}
 
 
-	glm::mat4 Transform2D::calculateTransform() const
+	glm::mat4 Transform::calculateTransform() const
 	{
 		glm::mat4 posMatrix = glm::translate(m_Position);
 		glm::mat4 rotMatrix = glm::rotate(m_Rotation, glm::vec3(0, 0, 1));

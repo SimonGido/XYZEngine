@@ -37,7 +37,7 @@ namespace XYZ {
 		Entity m_TestEntity;
 		Entity m_TextEntity;
 
-		Transform2D* m_Transform;
+		Transform* m_Transform;
 
 		glm::vec4 m_Color = { 0,0,0,0 };
 		glm::vec4 m_Pallete = { 0,1,0,1 };
@@ -45,5 +45,8 @@ namespace XYZ {
 		bool m_CheckboxVal = false;
 		bool m_ActiveWindow = false;
 		bool m_MenuOpen = false;
+	
+	
+		AssetManager m_AssetManager;
 	};
 }

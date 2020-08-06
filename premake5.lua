@@ -49,7 +49,12 @@ project "XYZ_Engine"
 			"%{prj.name}/vendor/glm/glm/**.inl",
 			"%{prj.name}/vendor/mini/ini.h",
 			"%{prj.name}/vendor/stb_image/**.h",
-			"%{prj.name}/vendor/stb_image/**.cpp"
+			"%{prj.name}/vendor/stb_image/**.cpp",
+
+			"%{prj.name}/vendor/yaml-cpp/src/**.cpp",
+			"%{prj.name}/vendor/yaml-cpp/src/**.h",
+			"%{prj.name}/vendor/yaml-cpp/include/**.h"
+
 		}
 
 		defines
@@ -71,7 +76,8 @@ project "XYZ_Engine"
 			"%{IncludeDir.OpenAL}/src",
 			"%{IncludeDir.OpenAL}/src/common",
 			"%{IncludeDir.MiniMp3}",		
-			"%{prj.name}/vendor/stb_image"
+			"%{prj.name}/vendor/stb_image",
+			"%{prj.name}/vendor/yaml-cpp/include"
 		}
 
 		links
@@ -81,7 +87,8 @@ project "XYZ_Engine"
 			"OpenAL-Soft",
 			"opengl32"
 		}
-
+		flags { "NoPCH" }
+		
 		filter "system:windows"
 				systemversion "latest"
 

@@ -31,7 +31,7 @@ namespace XYZ {
 		ECSManager* m_ECS;
 		struct Component : public System::Component
 		{
-			Transform2D* Transform;
+			Transform* Transform;
 			Widget* UI;
 		};
 

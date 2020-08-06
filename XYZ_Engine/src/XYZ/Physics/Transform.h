@@ -5,10 +5,10 @@
 
 namespace XYZ {
 
-	class Transform2D : public Type<Transform2D>
+	class Transform : public Type<Transform>
 	{
 	public:
-		Transform2D(const glm::vec3& pos, const glm::vec2& scale = glm::vec2(1), float rot = 0.0f);
+		Transform(const glm::vec3& pos, const glm::vec2& scale = glm::vec2(1), float rot = 0.0f);
 
 		void Translate(const glm::vec3& translation);
 		void Scale(const glm::vec2& scale);
@@ -18,7 +18,7 @@ namespace XYZ {
 		void SetScale(const glm::vec2& scale);
 		void SetRotation(float rotation);
 
-		void SetParent(Transform2D* parent);
+		void SetParent(Transform* parent);
 		void CalculateWorldTransformation();
 
 		void DetachParent();
@@ -45,7 +45,7 @@ namespace XYZ {
 		float m_Rotation;
 
 
-		Transform2D* m_Parent = nullptr;
+		Transform* m_Parent = nullptr;
 
 		// It is required to be mutable , we use GetTransformation in functions 
 		// that are not allowed to modify passed references

@@ -32,6 +32,8 @@
 //-----Scene-----//
 #include "XYZ/Scene/SceneCamera.h"
 #include "XYZ/Scene/SceneManager.h"
+#include "XYZ/Scene/Serializer.h"
+#include "XYZ/Scene/AssetManager.h"
 
 
 //------ECS-----//

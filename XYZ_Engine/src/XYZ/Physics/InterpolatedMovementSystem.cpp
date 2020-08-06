@@ -10,7 +10,7 @@ namespace XYZ {
 		m_ECS(ecs)
 	{
 		m_Signature.set(m_ECS->GetComponentType<InterpolatedMovement>());
-		m_Signature.set(m_ECS->GetComponentType<Transform2D>());
+		m_Signature.set(m_ECS->GetComponentType<Transform>());
 		m_Signature.set(m_ECS->GetComponentType<GridBody>());
 	}
 	void InterpolatedMovementSystem::Update(float dt)
@@ -61,7 +61,7 @@ namespace XYZ {
 		Component component;
 		component.ActiveComponent = m_ECS->GetComponent<ActiveComponent>(entity);
 		component.GridBody = m_ECS->GetComponent<GridBody>(entity);
-		component.Transform = m_ECS->GetComponent<Transform2D>(entity);
+		component.Transform = m_ECS->GetComponent<Transform>(entity);
 		component.Interpolated = m_ECS->GetComponent<InterpolatedMovement>(entity);
 		component.Ent = entity;
 

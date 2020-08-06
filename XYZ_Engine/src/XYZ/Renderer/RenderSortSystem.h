@@ -8,7 +8,7 @@ namespace XYZ {
 	class RenderSortSystem
 	{
 	public:
-		void PushRenderData(const RenderComponent2D* renderable, const Transform2D* transform);
+		void PushRenderData(const RenderComponent2D* renderable, const Transform* transform);
 		void SubmitToRenderer();
 
 
@@ -16,7 +16,7 @@ namespace XYZ {
 		struct Data
 		{
 			const RenderComponent2D* Renderable;
-			const Transform2D* Transform;
+			const Transform* Transform;
 		};
 
 

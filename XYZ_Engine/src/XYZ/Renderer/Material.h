@@ -101,53 +101,41 @@ namespace XYZ {
 			m_Key |= renderFlags;
 		}
 		
+
 		/**
 		* Bind the shader of the material, set the uniforms in the shader, bind textures
 		*/
 		void Bind();
-
-		/**
-		* @return sort key
-		*/
-		const int64_t GetSortKey() const 
-		{ 
-			return m_Key; 
-		}
-
-		bool IsSet(RenderFlags flag)
-		{
-			return (m_Key & flag);
-		}
-
-		bool GetFlag(RenderFlags flag) const
-		{
-			return m_Key & flag;
-		}
 
 		bool ContainsProperty(const std::string& name) const
 		{
 			auto uni = m_Shader->FindUniform(name);
 			return uni;
 		}
-		//TODO TEMPORARY
+
+		bool IsSet(RenderFlags flag) const { return ( m_Key & flag); }
 		/**
-		* @return shared_ptr to the Shader
+		* @return sort key
 		*/
-		const Ref<Shader>& GetShader() 
-		{
-			return m_Shader; 
-		}
-		//////////////////////
-		size_t GetNumberOfTextures() const
-		{
-			return m_Textures.size();
-		}
+		const int64_t GetSortKey() const { return m_Key; }
+
+
+		const Ref<Shader>& GetShader() const{ return m_Shader; }
+		
+
+		size_t GetNumberOfTextures() const{ return m_Textures.size(); }
+
+
+		const unsigned char* GetBuffer() const { return m_Buffer; }
+
+		const std::vector<Ref<Texture>>& GetTextures() const { return m_Textures; }
 
 		/**
 		* @param[in] shader
 		* @return shared_ptr to the Material
 		*/
 		static Ref<Material> Create(const Ref<Shader>& shader);
+
 
 		//TODO TEMPORARY
 		void ReloadShader() { m_Shader->Reload(); };

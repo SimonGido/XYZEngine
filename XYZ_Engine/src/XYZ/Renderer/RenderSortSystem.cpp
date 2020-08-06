@@ -5,7 +5,7 @@
 
 
 namespace XYZ {
-	void RenderSortSystem::PushRenderData(const RenderComponent2D* renderable, const Transform2D* transform)
+	void RenderSortSystem::PushRenderData(const RenderComponent2D* renderable, const Transform* transform)
 	{
 		auto material = renderable->Material;
 		if (!material->IsSet(RenderFlags::InstancedFlag))
