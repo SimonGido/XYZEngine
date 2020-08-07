@@ -21,6 +21,16 @@ namespace XYZ {
 		Repeat = 2
 	};
 
+
+	struct TextureSpecs
+	{
+		uint32_t Width;
+		uint32_t Height;
+		uint32_t Channels;
+		TextureWrap Wrap;
+		TextureFormat Format = TextureFormat::None;
+	};
+
 	/**
 	* @interface Texture
 	* pure virtual (interface) class.
@@ -37,10 +47,9 @@ namespace XYZ {
  		virtual void SetData(void* data, uint32_t size) = 0;
 		virtual uint8_t* GetData() = 0;
 		virtual const std::string& GetPath() const = 0;
-
+		virtual const TextureSpecs& GetSpecification() const = 0;
 		virtual void Bind(uint32_t slot = 0) const = 0;
 
-	
 	};
 
 	/**

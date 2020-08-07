@@ -21,24 +21,16 @@ namespace XYZ {
 
 		m_Scene = SceneManager::Get().CreateScene("Test");
 
-		m_Material = Material::Create(XYZ::Shader::Create("TextureShader", "Assets/Shaders/DefaultShader.glsl"));
-
-		
-		m_GuiTexture = XYZ::Texture2D::Create(XYZ::TextureWrap::Clamp, "Assets/Textures/Gui/TexturePack.png");
-		m_Material->Set("u_Texture", m_GuiTexture, 0);
-		m_Material->Set("u_Texture", XYZ::Texture2D::Create(XYZ::TextureWrap::Clamp, "Assets/Textures/wall.png"), 1);
-		m_Material->Set("u_Texture", XYZ::Texture2D::Create(XYZ::TextureWrap::Repeat, "Assets/Textures/background.png"), 2);
-
-
-		m_CharacterTexture = Texture2D::Create(XYZ::TextureWrap::Clamp, "Assets/Textures/player_sprite.png");
-		m_Material->Set("u_Texture", m_CharacterTexture, 0);
+		m_Material = m_AssetManager.GetAsset<Material>("Assets/Materials/material.mat");
 		m_Material->SetFlags(XYZ::RenderFlags::TransparentFlag);
 
 
 		m_TextMaterial = Material::Create(XYZ::Shader::Create("TextShader", "Assets/Shaders/TextShader.glsl"));
 		m_TextMaterial->Set("u_Texture", XYZ::Texture2D::Create(XYZ::TextureWrap::Clamp, "Assets/Font/Arial.png"), 0);
 		m_TextMaterial->SetFlags(XYZ::RenderFlags::TransparentFlag);
-
+		
+		
+		m_CharacterTexture = Texture2D::Create(XYZ::TextureWrap::Clamp, "Assets/Textures/player_sprite.png");
 		m_CharacterSubTexture = Ref<SubTexture2D>::Create(m_CharacterTexture, glm::vec2(0, 0), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
 		m_Font = Ref<Font>::Create("Assets/Font/Arial.fnt");
 
@@ -67,16 +59,11 @@ namespace XYZ {
 			m_Scene->SetParent(m_TestEntity, entity);
 		}	
 
-
-		m_Material->Set("u_Color", glm::vec4(0.8, 1, 1, 1));
-
-		m_Material = m_AssetManager.GetAsset<Material>("material.mat");
-		//m_AssetManager.RegisterAsset("material.mat", m_Material);
-
 	}
 
 	void EditorLayer::OnDetach()
 	{
+
 	}
 	void EditorLayer::OnUpdate(float ts)
 	{

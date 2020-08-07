@@ -1,0 +1,11 @@
+Material: material name
+ShaderAssetPath: Assets/Shaders/DefaultShader.glsl
+Textures:
+  - TextureAssetPath: Assets/Textures/player_sprite.png
+    TextureIndex: 0
+  - TextureAssetPath: Assets/Textures/wall.png
+    TextureIndex: 1
+  - TextureAssetPath: Assets/Textures/background.png
+    TextureIndex: 2
+Values:
+  - u_Color: [0.800000012, 0, 0, 1]

@@ -21188,3 +21188,219 @@ XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
 XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
 XYZ::Asset<class XYZ::Material>::deserialize: Deserializing material material.mat
 XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::deserialize: Deserializing material material.mat
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::deserialize: Deserializing material material.mat
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::deserialize: Deserializing material material.mat
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::deserialize: Deserializing material material.mat
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::deserialize: Deserializing material material.mat
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Material>::serialize: Serializing material material.mat
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::deserialize: Deserializing material material.mat
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material material.mat
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material material.mat
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material material.mat
+XYZ::Asset<class XYZ::Texture>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture>::Deserialize: Missing texture meta data, setting default
+XYZ::Asset<class XYZ::Texture>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture>::Deserialize: Missing texture meta data, setting default
+XYZ::Asset<class XYZ::Texture>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture>::Deserialize: Missing texture meta data, setting default
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material material.mat
+XYZ::Asset<class XYZ::Texture>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material material.mat
+XYZ::Asset<class XYZ::Texture>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture>::Deserialize: Missing texture meta data, setting default
+XYZ::Asset<class XYZ::Texture>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture>::Deserialize: Missing texture meta data, setting default
+XYZ::Asset<class XYZ::Texture>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture>::Deserialize: Missing texture meta data, setting default
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material material.mat
+XYZ::Asset<class XYZ::Texture>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material material.mat
+XYZ::Asset<class XYZ::Texture>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture>::Deserialize: Missing texture meta data, setting default
+XYZ::Asset<class XYZ::Texture>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture>::Deserialize: Missing texture meta data, setting default
+XYZ::Asset<class XYZ::Texture>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture>::Deserialize: Missing texture meta data, setting default
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material material.mat
+XYZ::Asset<class XYZ::Texture>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material material.mat
+XYZ::Asset<class XYZ::Texture>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture>::Deserialize: Missing texture meta data, setting default
+XYZ::Asset<class XYZ::Texture>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture>::Deserialize: Missing texture meta data, setting default
+XYZ::Asset<class XYZ::Texture>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture>::Deserialize: Missing texture meta data, setting default
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material material.mat
+XYZ::Asset<class XYZ::Texture>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material material.mat
+XYZ::Asset<class XYZ::Texture>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture>::Deserialize: Missing texture meta data, setting default
+XYZ::Asset<class XYZ::Texture>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture>::Deserialize: Missing texture meta data, setting default
+XYZ::Asset<class XYZ::Texture>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture>::Deserialize: Missing texture meta data, setting default
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material material.mat
+XYZ::Asset<class XYZ::Texture>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material material.mat
+XYZ::Asset<class XYZ::Texture>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material material.mat
+XYZ::Asset<class XYZ::Texture>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material material.mat
+XYZ::Asset<class XYZ::Texture>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material material.mat
+XYZ::Asset<class XYZ::Texture>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material material.mat
+XYZ::Asset<class XYZ::Texture>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture>::Deserialize: Deserializing texture 0
+XYZ::Asset<class XYZ::Texture>::Deserialize: Missing texture meta data, setting default
+XYZ::OpenGLTexture2D::OpenGLTexture2D: Assertion Failed: Failed to load image!
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material material.mat
+XYZ::Asset<class XYZ::Texture>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material material.mat
+XYZ::Asset<class XYZ::Texture>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png

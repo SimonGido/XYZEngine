@@ -25,7 +25,6 @@ namespace XYZ {
 		Ref<Material> m_Material;
 		Ref<Font> m_Font;
 		Ref<Material> m_TextMaterial;
-		Ref<Texture2D> m_GuiTexture;
 		Ref<Texture2D> m_CharacterTexture;
 		Ref<SubTexture2D> m_CharacterSubTexture;
 		Ref<SubTexture2D> m_CheckboxSubTexture;

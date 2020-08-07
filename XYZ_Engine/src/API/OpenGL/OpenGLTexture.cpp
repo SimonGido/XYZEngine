@@ -15,9 +15,10 @@ namespace XYZ {
 			data = stbi_load(path.c_str(), &width, &height, &channels, 0);
 		}
 		XYZ_ASSERT(data, "Failed to load image!");
-		m_Width = width;
-		m_Height = height;
-		m_Channels = channels;
+		m_Specification.Width = width;
+		m_Specification.Height = height;
+		m_Specification.Channels = channels;
+		m_Specification.Wrap = wrap;
 
 		GLenum internalFormat = 0, dataFormat = 0;
 		if (channels == 4)
@@ -42,7 +43,7 @@ namespace XYZ {
 		XYZ_ASSERT(internalFormat & dataFormat, "Format not supported!");
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
-		glTextureStorage2D(m_RendererID, 1, internalFormat, m_Width, m_Height);
+		glTextureStorage2D(m_RendererID, 1, internalFormat, m_Specification.Width, m_Specification.Height);
 		
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -57,18 +58,22 @@ namespace XYZ {
 			glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		}
-		glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, dataFormat, GL_UNSIGNED_BYTE, data);
+		glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Specification.Width, m_Specification.Height, dataFormat, GL_UNSIGNED_BYTE, data);
 		stbi_image_free(data);
 	}
 
 	OpenGLTexture2D::OpenGLTexture2D(TextureFormat format, TextureWrap wrap, uint32_t width, uint32_t height)
-		: m_Width(width), m_Height(height)
 	{
+		m_Specification.Width = width;
+		m_Specification.Height = height;
+		m_Specification.Wrap = wrap;
+		m_Specification.Format = format;
+
 		m_InternalFormat = GL_RGBA8;
 		m_DataFormat = GL_RGBA;
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
-		glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
+		glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Specification.Width, m_Specification.Height);
 
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -93,13 +98,13 @@ namespace XYZ {
 	void OpenGLTexture2D::SetData(void* data, uint32_t size)
 	{
 		uint32_t bpp = m_DataFormat == GL_RGBA ? 4 : 3;
-		XYZ_ASSERT(size == m_Width * m_Height * bpp, "Data must be entire texture!");
-		glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
+		XYZ_ASSERT(size == m_Specification.Width * m_Specification.Height * bpp, "Data must be entire texture!");
+		glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Specification.Width, m_Specification.Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
 	}
 
 	uint8_t* OpenGLTexture2D::GetData()
 	{
-		uint8_t* buffer = new uint8_t[m_Width * m_Height * m_Channels * sizeof(uint8_t)];
+		uint8_t* buffer = new uint8_t[m_Specification.Width * m_Specification.Height * m_Specification.Channels * sizeof(uint8_t)];
 		glBindTexture(GL_TEXTURE_2D, m_RendererID);
 		glGetTexImage(GL_TEXTURE_2D, 0, m_DataFormat, GL_UNSIGNED_BYTE, buffer);
 

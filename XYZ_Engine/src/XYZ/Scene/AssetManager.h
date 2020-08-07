@@ -12,18 +12,10 @@ namespace XYZ {
 		std::string Filepath;
 		Ref<T> Handle;
 		
-		void Serialize()
-		{
-			serialize(Handle, Filepath);
-		}
-		void Deserialize(AssetManager& manager)
-		{
-			Handle = deserialize(Filepath);
-		}
-	private:
-		void serialize(const Ref<T>& handle, const std::string& filepath);
 
-		Ref<T> deserialize(const std::string& filepath);
+		void Serialize();
+
+		void Deserialize(AssetManager& manager);
 	};
 
 	class IAssetList
@@ -62,13 +54,15 @@ namespace XYZ {
 			m_Assets.erase(it);
 		}
 
-		const Ref<T>& GetAsset(const std::string& key)
+		Ref<T> GetAsset(const std::string& key)
 		{
-			XYZ_ASSERT(m_Assets.find(key) != m_Assets.end(), "Get non existing asset");
-			return m_Assets[key].Handle;
+			auto it = m_Assets.find(key);
+			if (it == m_Assets.end())
+				return Ref<T>();
+			return it->second.Handle;
 		}
 
-		bool Contains(const std::string& key) const { return m_Assets.find(key) != m_Assets.end(); }
+		bool Contains(const std::string& filepath) const { return m_Assets.find(filepath) != m_Assets.end(); }
 
 	protected:
 		virtual size_t GetSize() const override { return m_Assets.size(); };
@@ -86,13 +80,26 @@ namespace XYZ {
 		void Serialize();
 
 		template <typename T>
-		void RegisterAsset(const std::string& filepath, const Ref<T>& asset)
+		void LoadAsset(const std::string& filepath)
 		{
 			size_t id = typeid(T).hash_code();
 			auto storage = GetStorage<T>(id);
 			if (!storage->Contains(filepath))
 			{
-				Asset<T> asset = { filepath,asset };
+				Asset<T> asset = { filepath };
+				asset.Deserialize(*this);
+				storage->Insert(asset);
+			}
+		}
+
+		template <typename T>
+		void RegisterAsset(const std::string& filepath, const Ref<T>& handle)
+		{
+			size_t id = typeid(T).hash_code();
+			auto storage = GetStorage<T>(id);
+			if (!storage->Contains(filepath))
+			{
+				Asset<T> asset = { filepath,handle };
 				asset.Serialize();
 				storage->Insert(asset);
 			}
@@ -104,8 +111,9 @@ namespace XYZ {
 			size_t id = typeid(T).hash_code();
 			auto storage = GetStorage<T>(id);
 
-			if (storage->Contains(filepath))
-				return storage->GetAsset(filepath);
+			auto handle = storage->GetAsset(filepath);
+			if (handle)
+				return handle;
 			else
 			{
 				Asset<T> asset = { filepath };

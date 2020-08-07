@@ -2,7 +2,7 @@
 #include "AssetManager.h"
 
 #include "XYZ/Renderer/Material.h"
-
+#include "XYZ/Renderer/Texture.h"
 
 #include <yaml-cpp/yaml.h>
 
@@ -111,9 +111,6 @@ namespace YAML {
 			return true;
 		}
 	};
-
-
-
 }
 
 
@@ -154,6 +151,19 @@ namespace XYZ {
 		return FieldType::None;
 	}
 
+	static TextureWrap StringToTextureWrap(const std::string& str)
+	{
+		
+		if (str == "Clamp")
+			return TextureWrap::Clamp;
+		if (str == "Repeat")
+			return TextureWrap::Repeat;
+		
+
+		return TextureWrap::None;
+	}
+
+
 	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec2& v)
 	{
 		out << YAML::Flow;
@@ -190,9 +200,57 @@ namespace XYZ {
 
 		return { translation, orientation, scale };
 	}
-	template <>
-	void Asset<Material>::serialize(const Ref<Material>& material, const std::string& filepath)
+
+	template<>
+	void Asset<Texture2D>::Serialize()
 	{
+		XYZ_LOG_INFO("Serializing texture ", Filepath);
+		auto& texture = Handle;
+
+		YAML::Emitter out;
+		out << YAML::BeginMap; // Texture
+		out << YAML::Key << "Texture" << YAML::Value << "texture name";
+
+		out << YAML::Key << "Wrap" << YAML::Value << ToUnderlying(texture->GetSpecification().Wrap);
+
+		out << YAML::EndMap; // Texture
+
+		std::ofstream fout(Filepath + ".meta");
+		fout << out.c_str();
+	}
+
+
+	template<>
+	void Asset<Texture2D>::Deserialize(AssetManager& manager)
+	{
+		XYZ_LOG_INFO("Deserializing texture ", Filepath);
+		TextureWrap wrap = TextureWrap::None;
+
+		std::ifstream stream(Filepath + ".meta");
+		if (stream.is_open())
+		{
+			std::stringstream strStream;
+			strStream << stream.rdbuf();
+
+			YAML::Node data = YAML::Load(strStream.str());
+
+			XYZ_ASSERT(data["Texture"], "Incorrect file format");
+			wrap = StringToTextureWrap(data["Wrap"].as<std::string>());
+		}
+		else
+		{
+			XYZ_LOG_WARN("Missing texture meta data, setting default");
+		}
+
+		Handle = Texture2D::Create(wrap, Filepath);
+	}
+
+
+	template <>
+	void Asset<Material>::Serialize()
+	{
+		auto& material = Handle;
+		XYZ_LOG_INFO("Serializing material ", Filepath);
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		out << YAML::Key << "Material" << YAML::Value << "material name";
@@ -201,11 +259,14 @@ namespace XYZ {
 
 		out << YAML::Key << "Textures";
 		out << YAML::Value << YAML::BeginSeq;
+		uint32_t counter = 0;
 		for (auto& texture : material->GetTextures())
 		{
 			out << YAML::BeginMap;
 			out << YAML::Key << "TextureAssetPath";
 			out << YAML::Value << texture->GetPath();
+			out << YAML::Key << "TextureIndex";
+			out << YAML::Value << counter++;
 			out << YAML::EndMap;
 		}
 		out << YAML::EndSeq;
@@ -255,14 +316,14 @@ namespace XYZ {
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
 
-		std::ofstream fout(filepath);
+		std::ofstream fout(Filepath);
 		fout << out.c_str();
 	}
 
 	template <>
-	Ref<Material> Asset<Material>::deserialize(const std::string& filepath)
+	void Asset<Material>::Deserialize(AssetManager& manager)
 	{
-		std::ifstream stream(filepath);
+		std::ifstream stream(Filepath);
 		std::stringstream strStream;
 		strStream << stream.rdbuf();
 
@@ -270,7 +331,7 @@ namespace XYZ {
 
 		XYZ_ASSERT(data["Material"], "Incorrect file format");
 
-		XYZ_LOG_INFO("Deserializing material ", filepath);
+		XYZ_LOG_INFO("Deserializing material ", Filepath);
 
 
 		auto shader = Shader::Create(data["ShaderAssetPath"].as<std::string>());
@@ -278,11 +339,12 @@ namespace XYZ {
 
 		for (auto& seq : data["Textures"])
 		{
-			for (auto& val : seq)
-			{
-
-			}
+			std::string path = seq["TextureAssetPath"].as<std::string>();
+			uint32_t index = seq["TextureIndex"].as<uint32_t>();
+			manager.LoadAsset<Texture2D>(path);
+			material->Set("u_Texture", manager.GetAsset<Texture2D>(path), index);
 		}
+
 		for (auto& seq : data["Values"])
 		{
 			for (auto& val : seq)
@@ -310,13 +372,15 @@ namespace XYZ {
 
 			}
 		}
-
-		return material;
+		Handle = material;
 	}
 	AssetManager::~AssetManager()
 	{
 		for (auto storage : m_AssetStorages)
+		{
+			storage.second->Serialize();
 			delete storage.second;
+		}
 	}
 	void AssetManager::Serialize()
 	{
