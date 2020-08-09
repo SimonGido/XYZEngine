@@ -114,6 +114,8 @@ namespace XYZ {
 			T element;
 			int next;
 		};
+
+
 		std::vector<FreeElement> m_Data;
 		int m_FirstFree;
 	};

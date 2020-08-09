@@ -40,6 +40,7 @@ namespace XYZ {
 		*/
 		void SetSignature(uint32_t entity, Signature signature);
 
+		uint32_t GetNumEntitiesInUse() const { return m_EntitiesInUse; }
 	private:
 		uint32_t m_EntitiesInUse;
 

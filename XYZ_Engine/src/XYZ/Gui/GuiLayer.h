@@ -1,7 +1,6 @@
 #pragma once
 #include "XYZ/Core/Layer.h"
 
-#include "XYZ/Renderer/RenderSortSystem.h"
 #include "XYZ/Event/ApplicationEvent.h"
 #include "XYZ/Event/InputEvent.h"
 

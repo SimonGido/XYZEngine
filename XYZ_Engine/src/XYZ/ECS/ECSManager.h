@@ -2,6 +2,8 @@
 #include "ComponentManager.h"
 #include "EntityManager.h"
 #include "SystemManager.h"
+#include "ComponentGroup.h"
+
 #include "XYZ/Core/Singleton.h"
 #include "XYZ/Event/Event.h"
 
@@ -37,12 +39,19 @@ namespace XYZ {
 
 			auto active = s_Data.ComponentManager.GetComponent<ActiveComponent>(entity);
 			auto signature = s_Data.EntityManager.GetSignature(entity);
+
+			// Remove from old group
+			s_Data.ComponentManager.RemoveFromGroup(entity, signature);
+
 			signature.set(s_Data.ComponentManager.GetComponentType<T>(), 1);
 			active->ActiveComponents.set(s_Data.ComponentManager.GetComponentType<T>(), 1);
 
 			s_Data.EntityManager.SetSignature(entity, signature);
 			s_Data.SystemManager.EntitySignatureChanged(entity, signature);
-			
+
+			// Add to new group
+			s_Data.ComponentManager.AddToGroup(entity, signature);
+
 			return c;
 		}
 		template<typename T>
@@ -52,11 +61,18 @@ namespace XYZ {
 
 			auto active = s_Data.ComponentManager.GetComponent<ActiveComponent>(entity);
 			auto signature = s_Data.EntityManager.GetSignature(entity);
+
+			// Remove from old group
+			s_Data.ComponentManager.RemoveFromGroup(entity, signature);
+
 			signature.set(s_Data.ComponentManager.GetComponentComponent<T>(), 0);
 			active->activeComponents.set(s_Data.ComponentManager.GetComponentType<T>(), 0);
 
 			s_Data.EntityManager.SetSignature(entity, signature);
 			s_Data.SystemManager.EntitySignatureChanged(entity, signature);
+
+			// Add to new group
+			s_Data.ComponentManager.AddToGroup(entity, signature);
 		}
 
 		template<typename T>
@@ -116,6 +132,17 @@ namespace XYZ {
 			uint32_t entity = s_Data.EntityManager.CreateEntity();
 			AddComponent(entity, ActiveComponent{});
 			return entity;
+		}
+
+		template <typename ...Types>
+		void CreateGroup()
+		{
+			s_Data.ComponentManager.CreateGroup<Types...>(this);
+		}
+		template <typename ...Types>
+		ComponentGroup<Types...>* GetGroup()
+		{
+			return s_Data.ComponentManager.GetGroup<Types...>();
 		}
 
 	private:

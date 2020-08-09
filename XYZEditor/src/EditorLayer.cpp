@@ -19,46 +19,48 @@ namespace XYZ {
 		m_FBO->CreateDepthAttachment();
 		m_FBO->Resize();
 
-		m_Scene = SceneManager::Get().CreateScene("Test");
+		m_Scene = m_AssetManager.GetAsset<Scene>("Assets/Scenes/scene.xyz");
+		
 
 		m_Material = m_AssetManager.GetAsset<Material>("Assets/Materials/material.mat");
 		m_Material->SetFlags(XYZ::RenderFlags::TransparentFlag);
 
 
-		m_TextMaterial = Material::Create(XYZ::Shader::Create("TextShader", "Assets/Shaders/TextShader.glsl"));
-		m_TextMaterial->Set("u_Texture", XYZ::Texture2D::Create(XYZ::TextureWrap::Clamp, "Assets/Font/Arial.png"), 0);
-		m_TextMaterial->SetFlags(XYZ::RenderFlags::TransparentFlag);
+		//m_TextMaterial = Material::Create(XYZ::Shader::Create("TextShader", "Assets/Shaders/TextShader.glsl"));
+		//m_TextMaterial->Set("u_Texture", XYZ::Texture2D::Create(XYZ::TextureWrap::Clamp, "Assets/Font/Arial.png"), 0);
+		//m_TextMaterial->SetFlags(XYZ::RenderFlags::TransparentFlag);
 		
 		
-		m_CharacterTexture = Texture2D::Create(XYZ::TextureWrap::Clamp, "Assets/Textures/player_sprite.png");
-		m_CharacterSubTexture = Ref<SubTexture2D>::Create(m_CharacterTexture, glm::vec2(0, 0), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
-		m_Font = Ref<Font>::Create("Assets/Font/Arial.fnt");
-
-
-		m_TestEntity = m_Scene->CreateEntity("Test Entity");
-		m_TestEntity.AddComponent(RenderComponent2D{
-			m_Material,
-			MeshFactory::CreateSprite({1,1,1,1},m_CharacterSubTexture->GetTexCoords(),0),
-			SortLayer::GetOrderValue("Default")
-		});
-
-		m_Transform = m_TestEntity.GetComponent<Transform>();
-
-
-		for (int i = 1; i < 5; ++i)
-		{
-			Entity entity = m_Scene->CreateEntity("Test Child");
-			entity.AddComponent(RenderComponent2D{
-				m_Material,
-				MeshFactory::CreateSprite({1,1,1,1},m_CharacterSubTexture->GetTexCoords(),0),	
-				SortLayer::GetOrderValue("Default")
-			});
-
-			auto transform = entity.GetComponent<Transform>();
-			transform->Translate({ i,0,0 });
-			m_Scene->SetParent(m_TestEntity, entity);
-		}	
-
+		//m_CharacterTexture = Texture2D::Create(XYZ::TextureWrap::Clamp, "Assets/Textures/player_sprite.png");
+		//m_CharacterSubTexture = Ref<SubTexture2D>::Create(m_CharacterTexture, glm::vec2(0, 0), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
+		//m_Font = Ref<Font>::Create("Assets/Font/Arial.fnt");
+		//
+		//m_TestEntity = m_Scene->CreateEntity("Test Entity");
+		//m_TestEntity.AddComponent(SpriteRenderer{
+		//		m_Material,
+		//		m_CharacterSubTexture,
+		//		0,
+		//		SortLayer::GetOrderValue("Default")
+		//});
+		//
+		//m_Transform = m_TestEntity.GetComponent<Transform>();
+		//
+		//
+		//
+		//for (int i = 1; i < 50000; ++i)
+		//{
+		//	Entity entity = m_Scene->CreateEntity("Test Child");
+		//	entity.AddComponent(SpriteRenderer{
+		//		m_Material,
+		//		m_CharacterSubTexture,	
+		//		0,
+		//		SortLayer::GetOrderValue("Default")
+		//	});
+		//
+		//	auto transform = entity.GetComponent<Transform>();
+		//	transform->Translate({ i,0,0 });
+		//	m_Scene->SetParent(m_TestEntity, entity);
+		//}	
 	}
 
 	void EditorLayer::OnDetach()
@@ -84,40 +86,40 @@ namespace XYZ {
 		if (m_ActiveWindow)
 		{
 			m_EditorCamera.OnUpdate(ts);
-			if (Input::IsKeyPressed(KeyCode::XYZ_KEY_UP))
-			{
-				m_Transform->Translate(glm::vec3(0, 0.005, 0));
-			}
-			else if (XYZ::Input::IsKeyPressed(KeyCode::XYZ_KEY_DOWN))
-			{
-				m_Transform->Translate(glm::vec3(0, -0.005, 0));
-			}
-			if (XYZ::Input::IsKeyPressed(KeyCode::XYZ_KEY_LEFT))
-			{
-				m_Transform->Translate(glm::vec3(-0.005, 0, 0));
-			}
-			else if (XYZ::Input::IsKeyPressed(KeyCode::XYZ_KEY_RIGHT))
-			{
-				m_Transform->Translate(glm::vec3(0.005, 0, 0));
-			}
-
-			if (XYZ::Input::IsKeyPressed(KeyCode::XYZ_KEY_1))
-			{
-				m_Transform->Rotate(0.1f);
-			}
-			else if (XYZ::Input::IsKeyPressed(KeyCode::XYZ_KEY_2))
-			{
-				m_Transform->Rotate(-0.1f);
-			}
-
-			if (XYZ::Input::IsKeyPressed(KeyCode::XYZ_KEY_3))
-			{
-				m_Transform->Scale({ 0.1,0.1 });
-			}
-			else if (XYZ::Input::IsKeyPressed(KeyCode::XYZ_KEY_4))
-			{
-				m_Transform->Scale({ -0.1,-0.1 });
-			}
+			//if (Input::IsKeyPressed(KeyCode::XYZ_KEY_UP))
+			//{
+			//	m_Transform->Translate(glm::vec3(0, 0.005, 0));
+			//}
+			//else if (XYZ::Input::IsKeyPressed(KeyCode::XYZ_KEY_DOWN))
+			//{
+			//	m_Transform->Translate(glm::vec3(0, -0.005, 0));
+			//}
+			//if (XYZ::Input::IsKeyPressed(KeyCode::XYZ_KEY_LEFT))
+			//{
+			//	m_Transform->Translate(glm::vec3(-0.005, 0, 0));
+			//}
+			//else if (XYZ::Input::IsKeyPressed(KeyCode::XYZ_KEY_RIGHT))
+			//{
+			//	m_Transform->Translate(glm::vec3(0.005, 0, 0));
+			//}
+			//
+			//if (XYZ::Input::IsKeyPressed(KeyCode::XYZ_KEY_1))
+			//{
+			//	m_Transform->Rotate(0.1f);
+			//}
+			//else if (XYZ::Input::IsKeyPressed(KeyCode::XYZ_KEY_2))
+			//{
+			//	m_Transform->Rotate(-0.1f);
+			//}
+			//
+			//if (XYZ::Input::IsKeyPressed(KeyCode::XYZ_KEY_3))
+			//{
+			//	m_Transform->Scale({ 0.1,0.1,0});
+			//}
+			//else if (XYZ::Input::IsKeyPressed(KeyCode::XYZ_KEY_4))
+			//{
+			//	m_Transform->Scale({ -0.1,-0.1,0 });
+			//}
 		}
 	}
 	void EditorLayer::OnEvent(Event& event)

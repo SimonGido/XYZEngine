@@ -26,13 +26,12 @@
 #include "XYZ/Renderer/SpriteSystem.h"
 #include "XYZ/Renderer/MaterialManager.h"
 #include "XYZ/Renderer/Framebuffer.h"
-#include "XYZ/Renderer/RenderSortSystem.h"
 #include "XYZ/Renderer/MeshFactory.h"
+#include "XYZ/Renderer/SpriteRenderer.h"
 
 //-----Scene-----//
 #include "XYZ/Scene/SceneCamera.h"
 #include "XYZ/Scene/SceneManager.h"
-#include "XYZ/Scene/Serializer.h"
 #include "XYZ/Scene/AssetManager.h"
 
 

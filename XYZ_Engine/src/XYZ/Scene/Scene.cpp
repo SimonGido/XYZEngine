@@ -8,6 +8,7 @@
 #include "XYZ/Renderer/RenderCommand.h"
 #include "XYZ/ECS/Entity.h"
 
+#include "XYZ/Timer.h"
 
 namespace XYZ {
 
@@ -16,14 +17,15 @@ namespace XYZ {
 		:
 		m_Name(name)
 	{
-		m_ECS = std::make_shared<ECSManager>();
+		m_ECS = new ECSManager();
+		m_ECS->CreateGroup<Transform, SpriteRenderer>();
+		m_RenderGroup = m_ECS->GetGroup<Transform, SpriteRenderer>();
+
 
 		uint32_t entity = m_ECS->CreateEntity();
-		m_SceneWorld = {
-			nullptr,
-			m_ECS->AddComponent(entity,Transform{glm::vec3(0,0,0)}),
-			entity
-		};
+		m_SceneWorld.Transform = m_ECS->AddComponent(entity, Transform{ glm::vec3(0,0,0) });
+		m_SceneWorld.Entity = entity;
+			
 		
 		m_Root = m_SceneGraph.InsertNode(Node<SceneObject>(m_SceneWorld));
 		m_SceneGraph.SetRoot(m_Root);
@@ -34,12 +36,10 @@ namespace XYZ {
 		m_MainCamera = m_ECS->AddComponent<CameraComponent>(m_MainCameraEntity, CameraComponent{});
 		m_MainCameraTransform = m_ECS->AddComponent<Transform>(m_MainCameraEntity, Transform{ {0,0,0} });
 		
-		SceneObject cameraObject = {
-			nullptr,
-			m_MainCameraTransform,
-			m_MainCameraEntity
-		};
-		
+		SceneObject cameraObject;
+		cameraObject.Entity = m_MainCameraEntity;
+		cameraObject.Transform = m_MainCameraTransform;
+
 		uint16_t cameraIndex = m_SceneGraph.InsertNode(cameraObject);
 		m_SceneGraphMap.insert({ m_MainCameraEntity,cameraIndex });
 
@@ -49,7 +49,7 @@ namespace XYZ {
 
 	Scene::~Scene() 
 	{
-
+		delete m_ECS;
 	}
 
 	Entity Scene::CreateEntity(const std::string& name)
@@ -57,14 +57,15 @@ namespace XYZ {
 		Entity entity(this);
 		entity.AddComponent<SceneTagComponent>({ name });
 
-		SceneObject object = {
-			nullptr,
-			entity.AddComponent<Transform>({glm::vec3(0)}),
-			entity
-		};
+		SceneObject object;
+		object.Transform = entity.AddComponent<Transform>({ glm::vec3(0) });
+		object.Entity = entity;
+		
 
 		uint16_t id = m_SceneGraph.InsertNode(Node<SceneObject>(object));	
-		m_SceneGraph.SetParent(m_Root, id, SceneSetup());
+		m_SceneGraph.SetParent(m_Root, id, [](SceneObject& parent, SceneObject& child) {
+			child.Transform->SetParent(parent.Transform);
+		});
 		m_SceneGraphMap.insert({ entity,id });
 
 		return entity;
@@ -88,7 +89,11 @@ namespace XYZ {
 
 		uint16_t parentIndex = itParent->second;
 		uint16_t childIndex = itChild->second;
-		m_SceneGraph.SetParent(parentIndex, childIndex, SceneSetup());
+		
+		m_SceneGraph[childIndex].Parent = parentIndex;
+		m_SceneGraph.SetParent(parentIndex, childIndex, [](SceneObject& parent, SceneObject& child) {
+			child.Transform->SetParent(parent.Transform);
+		});
 	}
 
 	void Scene::OnAttach()
@@ -109,36 +114,53 @@ namespace XYZ {
 	}
 
 	void Scene::OnRender()
-	{	
+	{		
 		glm::mat4 viewProjMatrix = m_MainCamera->Camera.GetProjectionMatrix() 
 			* glm::inverse(m_MainCameraTransform->GetTransformation());
 
 		glm::vec2 winSize = { Input::GetWindowSize().first, Input::GetWindowSize().second };
 
-		Renderer2D::BeginScene({ viewProjMatrix ,winSize });
+		
 		m_SceneGraph.Propagate([this](SceneObject* parent, SceneObject* child) {
-
 			child->Transform->CalculateWorldTransformation();
-			if (child->Renderable)
-				m_SortSystem.PushRenderData(child->Renderable, child->Transform);
 		});
+		
+		// 3D part here
 
-		m_SortSystem.SubmitToRenderer();
+		///////////////
+
+		Renderer2D::BeginScene({ viewProjMatrix ,winSize });
+		for (int i = 0; i < m_RenderGroup->Size(); ++i)
+		{
+			auto [transform, sprite] = (*m_RenderGroup)[i];
+			Renderer2D::SetMaterial(sprite->Material);
+			Renderer2D::SubmitQuad(transform->GetTransformation(), sprite->SubTexture->GetTexCoords(), sprite->TextureID);
+		}
+		Renderer2D::Flush();
 		Renderer2D::EndScene();
 	}
 
 	void Scene::OnRenderEditor(float dt, const SceneRenderData& renderData)
-	{
-		Renderer2D::BeginScene(renderData);
+	{	
 		m_SceneGraph.Propagate([this](SceneObject* parent, SceneObject* child) {
-
 			child->Transform->CalculateWorldTransformation();
-			if (child->Renderable)
-				m_SortSystem.PushRenderData(child->Renderable, child->Transform);
 		});
 
-		m_SortSystem.SubmitToRenderer();
+		// 3D part here
+
+		///////////////
+
+	
+		Renderer2D::BeginScene(renderData);
+		for (int i = 0; i < m_RenderGroup->Size(); ++i)
+		{
+			auto [transform, sprite] = (*m_RenderGroup)[i];
+			Renderer2D::SetMaterial(sprite->Material);
+			Renderer2D::SubmitQuad(transform->GetTransformation(), sprite->SubTexture->GetTexCoords(), sprite->TextureID);
+		}
+		Renderer2D::Flush();
 		Renderer2D::EndScene();
+			
 	}
 
 }

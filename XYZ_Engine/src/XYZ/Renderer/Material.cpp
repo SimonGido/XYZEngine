@@ -43,6 +43,8 @@ namespace XYZ {
 		return material;
 	}
 
+
+
 	void Material::OnShaderReload()
 	{
 		delete[] m_Buffer;

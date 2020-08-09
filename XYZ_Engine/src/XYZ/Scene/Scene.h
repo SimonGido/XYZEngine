@@ -6,9 +6,11 @@
 #include "XYZ/Utils/DataStructures/HashGrid2D.h"
 #include "XYZ/Utils/DataStructures/Tree.h"
 
-#include "XYZ/Renderer/RenderSortSystem.h"
 #include "XYZ/Renderer/Renderer2D.h"
+#include "XYZ/Renderer/SpriteRenderer.h"
+#include "XYZ/Physics/Transform.h"
 #include "XYZ/Renderer/Camera.h"
+#include "Serializable.h"
 
 #include "SceneCamera.h"
 #include "Components.h"
@@ -25,9 +27,11 @@ namespace XYZ {
     /*! @class Scene
     *	@brief Holds all data relevant to a Scene
     */
-
+    template <typename T>
+    class Asset;
     class Entity;
-    class Scene : public RefCount
+    class Scene : public RefCount,
+                  public Serializable
     {
     public:
         Scene(const std::string& name);
@@ -58,36 +62,49 @@ namespace XYZ {
         inline const std::string& GetName() const { return m_Name; }
         inline const SceneCamera& GetMainCamera() const { return m_MainCamera->Camera; }
  
-    private:        
-        template <typename T>
-        void onEntityModified(T* component, Entity entity)
-        {
-            static_assert(std::is_base_of<Type<T>, T>::value, "Trying to add component that has no type");
-            uint16_t id = IComponent::GetID<T>();
-            if (id == IComponent::GetID<RenderComponent2D>())
-            {
-                uint16_t index = m_SceneGraphMap[entity];
-                m_SceneGraph[index].Renderable = (RenderComponent2D*)component;
-            }
-        }
-
+   
     private:
         struct SceneObject
         {
-            RenderComponent2D* Renderable = nullptr;
             Transform* Transform = nullptr;
+            size_t DrawListIndex;
             uint32_t Entity;
+            int32_t Parent = -1;
         };
 
-        struct SceneSetup
+       
+        struct RenderComparator
         {
-            void operator()(SceneObject& parent, SceneObject& child)
+            bool operator()(const SpriteRenderer& a, const SpriteRenderer& b) const
             {
-                child.Transform->SetParent(parent.Transform);
+                bool aTransparent = a.Material->IsSet(RenderFlags::TransparentFlag);
+                bool bTransparent = b.Material->IsSet(RenderFlags::TransparentFlag);
+
+                if (aTransparent && !bTransparent)
+                    return false;
+
+                if (!aTransparent && bTransparent)
+                    return true;
+
+                if (aTransparent && bTransparent)
+                {
+                    if (a.Layer == b.Layer)
+                        return a.Material->GetSortKey() < b.Material->GetSortKey();
+                    return a.Layer > b.Layer;
+                }
+                else
+                {
+                    if (a.Material->GetSortKey() == b.Material->GetSortKey())
+                        return a.Layer < b.Layer;
+                    return a.Material->GetSortKey() < b.Material->GetSortKey();
+                }
             }
         };
+
+
     private:
-        std::shared_ptr<ECSManager> m_ECS;
+        ECSManager* m_ECS = nullptr;
+        ComponentGroup<Transform, SpriteRenderer>* m_RenderGroup = nullptr;
 
         std::string m_Name;
         SceneState m_State = SceneState::Edit;
@@ -98,13 +115,13 @@ namespace XYZ {
 
         uint16_t m_Root;
         SceneObject m_SceneWorld;
-        RenderSortSystem m_SortSystem;
 
         Tree<SceneObject> m_SceneGraph;
         std::unordered_map<uint32_t, uint16_t> m_SceneGraphMap;
 
-       
+     
 
         friend class Entity;
+        friend class Asset<Scene>;
     };
 }

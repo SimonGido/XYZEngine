@@ -43,6 +43,9 @@ namespace XYZ {
 		{
 			return IComponent::GetID<Derived>();
 		}
+
+		static void SetID(Signature& signature) { signature.set(IComponent::GetID<Derived>()); }
+		static uint16_t GetID() { return IComponent::GetID<Derived>(); }
 	};
 
 

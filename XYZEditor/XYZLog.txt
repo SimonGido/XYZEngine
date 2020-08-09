@@ -21404,3 +21404,2135 @@ XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Material
 XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
 XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
 XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material 
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::ComponentStorage<struct XYZ::SceneTagComponent>::GetComponent: Assertion Failed: Retrieving non-existent component.
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material 
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::WindowResizeEvent::WindowResizeEvent: Window: Resized window width: 1920 height: 1017
+XYZ::WindowResizeEvent::WindowResizeEvent: Window: Resized window width: 1920 height: 1017
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material 
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material 
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material 
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material 
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Scene Name
+XYZ::Asset<class XYZ::Material>::Deserialize: Assertion Failed: Incorrect file format
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Scene Name
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material 
+XYZ::Asset<class XYZ::Material>::Deserialize: Assertion Failed: Incorrect file format 
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/New Material
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/New Material
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/New Material
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/New Material
+XYZ::WindowResizeEvent::WindowResizeEvent: Window: Resized window width: 1920 height: 1017
+XYZ::WindowResizeEvent::WindowResizeEvent: Window: Resized window width: 1920 height: 1017
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/New Material
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/New Material
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/New Material
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/New Material.mat
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/New Material.mat
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/New Material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/New Material.mat
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/New Material.mat
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/New Material.mat
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/New Material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Scene Name
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/New Material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/New Material.mat
+XYZ::AssetList<class XYZ::Material>::Insert: Assertion Failed: Inserting twice asset with same key
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Scene Name
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/New Material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/New Material.mat
+XYZ::AssetList<class XYZ::Material>::Insert: Assertion Failed: Inserting twice asset with same key
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Scene Name
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/New Material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Scene Name
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/New Material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Scene Name
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/New Material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/New Material.mat
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Assertion Failed: Incorrect file format
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Serialize: Serializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::SubTexture2D>::Serialize: Serializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::SubTexture2D>::Serialize: Serializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::SubTexture2D>::Serialize: Serializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::SubTexture2D>::Serialize: Serializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::SubTexture2D>::Serialize: Serializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::SubTexture2D>::Serialize: Serializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::SubTexture2D>::Serialize: Serializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::SubTexture2D>::Serialize: Serializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::SubTexture2D>::Serialize: Serializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::SubTexture2D>::Serialize: Serializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::SubTexture2D>::Serialize: Serializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::SubTexture2D>::Serialize: Serializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Scene::SetParent: Assertion Failed: Parent entity does not exist
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce 940M/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 451.48
+XYZ::Asset<class XYZ::Scene>::Deserialize: Deserializing scene Test Scene
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Entity
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Entity
+XYZ::Asset<class XYZ::Material>::Deserialize: Deserializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::Texture2D>::Deserialize: Deserializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::SubTexture2D>::Deserialize: Deserializing subtexture Assets/SubTextures/CharacterSubTexture.subtex
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding transform to entity Test Child
+XYZ::Asset<class XYZ::Scene>::Deserialize: Adding sprite renderer to entity Test Child
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Asset<class XYZ::Scene>::Serialize: Serializing scene Assets/Scenes/scene.xyz
+XYZ::Asset<class XYZ::Material>::Serialize: Serializing material Assets/Materials/material.mat
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/player_sprite.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/background.png
+XYZ::Asset<class XYZ::Texture2D>::Serialize: Serializing texture Assets/Textures/wall.png
+XYZ::Asset<class XYZ::SubTexture2D>::Serialize: Serializing subtexture Assets/SubTextures/CharacterSubTexture.subtex

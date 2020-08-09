@@ -35,6 +35,9 @@ namespace XYZ {
 			return m_Parent; 
 		}
 
+		operator const T& () const { return m_Data; }
+		operator T& () { return m_Data; }
+
 		const T& GetData() const 
 		{
 			return m_Data; 
@@ -248,6 +251,7 @@ namespace XYZ {
 		{ 
 			return m_Data.size(); 
 		}
+		
 
 		std::vector<Node<T>>& GetFlatData()
 		{ 

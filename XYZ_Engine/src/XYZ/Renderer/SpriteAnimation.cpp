@@ -3,7 +3,7 @@
 
 
 namespace XYZ {
-	SpriteAnimation::SpriteAnimation(unsigned int framesPerSecond, const std::initializer_list<Ref<SubTexture2D>>& keyFrames)
+	SpriteAnimation::SpriteAnimation(uint32_t framesPerSecond, const std::initializer_list<KeyFrame>& keyFrames)
 		:
 		m_CurrentTime(0.0f),
 		m_FrameLength(0.0f),
@@ -15,12 +15,12 @@ namespace XYZ {
 	void SpriteAnimation::Update(float dt)
 	{
 		m_CurrentTime += dt;
-		if (m_CurrentTime > m_KeyFrames.size() * m_FrameLength)
+		if (m_CurrentTime >= m_KeyFrames.size() * m_FrameLength)
 			m_CurrentTime = 0.0f;
 
-		m_CurrentKey = (size_t)std::floor(m_CurrentTime/m_FrameLength);
+		m_CurrentKey = (size_t)std::floor((m_CurrentTime / m_FrameLength) * m_KeyFrames.size());
 	}
-	void SpriteAnimation::SetFPS(unsigned int fps)
+	void SpriteAnimation::SetFPS(uint32_t fps)
 	{
 		m_FPS = fps;
 		m_FrameLength = 1.0f / m_FPS;
@@ -30,7 +30,7 @@ namespace XYZ {
 		XYZ_ASSERT(index < m_KeyFrames.size(), "Deleting frame out of range");
 		m_KeyFrames.erase(m_KeyFrames.begin() + index);
 	}
-	const Ref<SubTexture2D>& SpriteAnimation::GetKeyFrame(size_t index) const
+	const KeyFrame& SpriteAnimation::GetKeyFrame(size_t index) const
 	{
 		XYZ_ASSERT(index < m_KeyFrames.size(), "Frame index out of range");
 		return m_KeyFrames[index];

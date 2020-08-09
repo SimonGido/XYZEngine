@@ -19,7 +19,6 @@ namespace XYZ {
 		inline virtual uint32_t GetRendererID() const override { return m_RendererID; }
 		virtual void SetData(void* data, uint32_t size) override;
 		virtual uint8_t* GetData() override;
-		virtual const std::string& GetPath() const override { return m_Path; }
 		virtual const TextureSpecs& GetSpecification() const { return m_Specification; };
 		virtual void Bind(uint32_t slot = 0) const override;
 
@@ -28,7 +27,6 @@ namespace XYZ {
 		uint32_t m_RendererID;
 
 		TextureSpecs m_Specification;
-		std::string m_Path;
 		GLenum m_DataFormat, m_InternalFormat;
 	};
 

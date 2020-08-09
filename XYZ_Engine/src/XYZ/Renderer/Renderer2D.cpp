@@ -115,32 +115,6 @@ namespace XYZ {
 		s_Data.Material = material;
 	}
 
-	void Renderer2D::SubmitQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, uint32_t textureID, const glm::vec4& color)
-	{
-		constexpr size_t quadVertexCount = 4;
-		if (s_Data.IndexCount >= s_Data.MaxIndices)
-			Flush();
-
-		glm::vec2 texCoords[quadVertexCount] = {
-			{texCoord.x,texCoord.y},
-			{texCoord.z,texCoord.y},
-			{texCoord.z,texCoord.w},
-			{texCoord.x,texCoord.w}
-		};
-
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
-			* glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
-
-		for (size_t i = 0; i < quadVertexCount; ++i)
-		{
-			s_Data.BufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
-			s_Data.BufferPtr->Color = color;
-			s_Data.BufferPtr->TexCoord = texCoords[i];
-			s_Data.BufferPtr->TextureID = (float)textureID;
-			s_Data.BufferPtr++;
-		}
-		s_Data.IndexCount += 6;
-	}
 
 	void Renderer2D::SubmitQuad(const glm::mat4& transform, const glm::vec4& color)
 	{
@@ -228,6 +202,10 @@ namespace XYZ {
 			s_Data.BufferPtr++;
 		}
 		s_Data.IndexCount += mesh->Indices.size();
+	}
+
+	void Renderer2D::SubmitLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color)
+	{
 	}
 
 	void Renderer2D::Flush()

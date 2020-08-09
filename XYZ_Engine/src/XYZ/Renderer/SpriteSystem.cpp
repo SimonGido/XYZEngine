@@ -4,27 +4,20 @@
 
 namespace XYZ {
 
-	static void FillTexCoords(const glm::vec4& texCoord, RenderComponent2D* renderable)
-	{
-		renderable->Mesh->Vertices[0].TexCoord = { texCoord.x, texCoord.y };
-		renderable->Mesh->Vertices[1].TexCoord = { texCoord.z, texCoord.y };
-		renderable->Mesh->Vertices[2].TexCoord = { texCoord.z, texCoord.w };
-		renderable->Mesh->Vertices[3].TexCoord = { texCoord.x, texCoord.w };		 
-	}
 
 	SpriteSystem::SpriteSystem(ECSManager* ecs)
 		:
 		m_ECS(ecs)
 	{
 		m_Signature.set(m_ECS->GetComponentType<SpriteAnimation>());
-		m_Signature.set(m_ECS->GetComponentType<RenderComponent2D>());
+		m_Signature.set(m_ECS->GetComponentType<SpriteRenderer>());
 	}
 	void SpriteSystem::Update(float dt)
 	{
 		for (auto it : m_Components)
 		{
 			it.Animation->Update(dt);
-			FillTexCoords(it.Animation->GetCurrentKeyFrame()->GetTexCoords(), it.Renderable);
+			it.Renderable->SubTexture = it.Animation->GetCurrentKeyFrame().SubTexture;
 		}
 	}
 	void SpriteSystem::Add(uint32_t entity)
@@ -33,7 +26,7 @@ namespace XYZ {
 	
 		Component component;
 		component.Animation = m_ECS->GetComponent<SpriteAnimation>(entity);
-		component.Renderable = m_ECS->GetComponent<RenderComponent2D>(entity);
+		component.Renderable = m_ECS->GetComponent<SpriteRenderer>(entity);
 		component.Ent = entity;
 
 		m_Components.push_back(component);

@@ -1,9 +1,9 @@
 #pragma once
 
 #include "Camera.h"
-#include "RenderComponent.h"
 #include "RenderCommandQueue.h"
 #include "Material.h"
+#include "Mesh.h"
 
 
 namespace XYZ {
@@ -36,12 +36,11 @@ namespace XYZ {
 		static void SetMaterial(const Ref<Material>& material);
 	
 
-		static void SubmitQuad(const glm::vec3& position,const glm::vec2& size, const glm::vec4& texCoord, uint32_t textureID, const glm::vec4& color = glm::vec4(1));
 		static void SubmitQuad(const glm::mat4& transform, const glm::vec4& color);
 		static void SubmitQuad(const glm::mat4& transform, const glm::vec4& texCoord, uint32_t textureID, const glm::vec4& color = glm::vec4(1));
 		static void SubmitQuad(const glm::mat4& transform, const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, uint32_t textureID, const glm::vec4& color = glm::vec4(1));
-		
 		static void SubmitMesh(const glm::mat4& transform, const Ref<Mesh>& mesh);
+		static void SubmitLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color = glm::vec4(1.0f));
 		/**
 		* Execute the command queue
 		*/

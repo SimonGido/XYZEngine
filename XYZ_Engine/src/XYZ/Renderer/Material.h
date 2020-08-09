@@ -3,6 +3,8 @@
 #include "Texture.h"
 #include "RenderFlags.h"
 #include "XYZ/Core/Ref.h"
+#include "XYZ/Scene/Serializable.h"
+
 
 #include <queue>
 #include <bitset>
@@ -10,7 +12,8 @@
 
 namespace XYZ {
 
-	class Material : public RefCount
+	class Material : public RefCount,
+					 public Serializable
 	{
 		friend class MaterialInstance;
 	public:
@@ -128,6 +131,7 @@ namespace XYZ {
 
 		const unsigned char* GetBuffer() const { return m_Buffer; }
 
+		
 		const std::vector<Ref<Texture>>& GetTextures() const { return m_Textures; }
 
 		/**
@@ -147,7 +151,7 @@ namespace XYZ {
 		void OnShaderReload();
 
 	private:
-		Ref<Shader>	   m_Shader;
+		Ref<Shader> m_Shader;
 		std::unordered_set<MaterialInstance*> m_MaterialInstances;
 		std::vector<Ref<Texture>> m_Textures;
 

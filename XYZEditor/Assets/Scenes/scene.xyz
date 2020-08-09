@@ -1,0 +1,52 @@
+Scene: Test Scene
+Entities:
+  - Entity: Test Entity
+    Parent: -1
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [1, 0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRenderer:
+      MaterialAssetPath: Assets/Materials/material.mat
+      SubTextureAssetPath: Assets/SubTextures/CharacterSubTexture.subtex
+      IsVisible: true
+  - Entity: Test Child
+    Parent: -1
+    TransformComponent:
+      Position: [1, 0, 0]
+      Rotation: [1, 0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRenderer:
+      MaterialAssetPath: Assets/Materials/material.mat
+      SubTextureAssetPath: Assets/SubTextures/CharacterSubTexture.subtex
+      IsVisible: true
+  - Entity: Test Child
+    Parent: -1
+    TransformComponent:
+      Position: [2, 0, 0]
+      Rotation: [1, 0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRenderer:
+      MaterialAssetPath: Assets/Materials/material.mat
+      SubTextureAssetPath: Assets/SubTextures/CharacterSubTexture.subtex
+      IsVisible: true
+  - Entity: Test Child
+    Parent: -1
+    TransformComponent:
+      Position: [3, 0, 0]
+      Rotation: [1, 0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRenderer:
+      MaterialAssetPath: Assets/Materials/material.mat
+      SubTextureAssetPath: Assets/SubTextures/CharacterSubTexture.subtex
+      IsVisible: true
+  - Entity: Test Child
+    Parent: -1
+    TransformComponent:
+      Position: [4, 0, 0]
+      Rotation: [1, 0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRenderer:
+      MaterialAssetPath: Assets/Materials/material.mat
+      SubTextureAssetPath: Assets/SubTextures/CharacterSubTexture.subtex
+      IsVisible: true

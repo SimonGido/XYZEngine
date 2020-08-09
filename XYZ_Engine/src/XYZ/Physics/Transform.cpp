@@ -5,7 +5,7 @@
 #include <glm/gtx/transform.hpp>
 
 namespace XYZ {
-	Transform::Transform(const glm::vec3& pos, const glm::vec2& scale, float rot)
+	Transform::Transform(const glm::vec3& pos, const glm::vec3& scale, float rot)
 		:
 		m_Position(pos),
 		m_Scale(scale),
@@ -19,7 +19,7 @@ namespace XYZ {
 		m_Position += translation;
 		m_Updated = true;
 	}
-	void Transform::Scale(const glm::vec2& scale)
+	void Transform::Scale(const glm::vec3& scale)
 	{
 		m_Scale += scale;
 		m_Updated = true;
@@ -34,7 +34,7 @@ namespace XYZ {
 		m_Position = translation;
 		m_Updated = true;
 	}
-	void Transform::SetScale(const glm::vec2& scale)
+	void Transform::SetScale(const glm::vec3& scale)
 	{
 		m_Scale = scale;
 		m_Updated = true;
@@ -110,7 +110,7 @@ namespace XYZ {
 	{
 		glm::mat4 posMatrix = glm::translate(m_Position);
 		glm::mat4 rotMatrix = glm::rotate(m_Rotation, glm::vec3(0, 0, 1));
-		glm::mat4 scaleMatrix = glm::scale(glm::vec3(m_Scale, 1));
+		glm::mat4 scaleMatrix = glm::scale(m_Scale);
 		return posMatrix * rotMatrix * scaleMatrix;
 	}
 }

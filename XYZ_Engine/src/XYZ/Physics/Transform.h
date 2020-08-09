@@ -8,14 +8,15 @@ namespace XYZ {
 	class Transform : public Type<Transform>
 	{
 	public:
-		Transform(const glm::vec3& pos, const glm::vec2& scale = glm::vec2(1), float rot = 0.0f);
+		Transform(const glm::vec3& pos, const glm::vec3& scale = glm::vec3(1), float rot = 0.0f);
+		Transform() = default;
 
 		void Translate(const glm::vec3& translation);
-		void Scale(const glm::vec2& scale);
+		void Scale(const glm::vec3& scale);
 		void Rotate(float rotation);
 
 		void SetTranslation(const glm::vec3& translation);
-		void SetScale(const glm::vec2& scale);
+		void SetScale(const glm::vec3& scale);
 		void SetRotation(float rotation);
 
 		void SetParent(Transform* parent);
@@ -41,7 +42,7 @@ namespace XYZ {
 		glm::mat4 m_Transformation = glm::mat4(1);
 
 		glm::vec3 m_Position;
-		glm::vec2 m_Scale;
+		glm::vec3 m_Scale;
 		float m_Rotation;
 
 

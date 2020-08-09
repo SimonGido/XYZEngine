@@ -1,8 +1,11 @@
 #include "stdafx.h"
 #include "AssetManager.h"
 
+#include "XYZ/ECS/Entity.h"
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Renderer/Texture.h"
+#include "XYZ/Scene/Scene.h"
+#include "XYZ/Renderer/MeshFactory.h"
 
 #include <yaml-cpp/yaml.h>
 
@@ -178,7 +181,6 @@ namespace XYZ {
 		return out;
 	}
 
-
 	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec4& v)
 	{
 		out << YAML::Flow;
@@ -202,10 +204,10 @@ namespace XYZ {
 	}
 
 	template<>
-	void Asset<Texture2D>::Serialize()
+	void Asset<Texture2D>::Serialize(AssetManager& manager)
 	{
-		XYZ_LOG_INFO("Serializing texture ", Filepath);
 		auto& texture = Handle;
+		XYZ_LOG_INFO("Serializing texture ", texture->GetFilepath());
 
 		YAML::Emitter out;
 		out << YAML::BeginMap; // Texture
@@ -215,18 +217,18 @@ namespace XYZ {
 
 		out << YAML::EndMap; // Texture
 
-		std::ofstream fout(Filepath + ".meta");
+		std::ofstream fout(texture->GetFilepath() + ".meta");
 		fout << out.c_str();
 	}
 
 
 	template<>
-	void Asset<Texture2D>::Deserialize(AssetManager& manager)
+	void Asset<Texture2D>::Deserialize(const std::string& filepath, AssetManager& manager)
 	{
-		XYZ_LOG_INFO("Deserializing texture ", Filepath);
+		XYZ_LOG_INFO("Deserializing texture ",filepath);
 		TextureWrap wrap = TextureWrap::None;
 
-		std::ifstream stream(Filepath + ".meta");
+		std::ifstream stream(filepath + ".meta");
 		if (stream.is_open())
 		{
 			std::stringstream strStream;
@@ -242,15 +244,52 @@ namespace XYZ {
 			XYZ_LOG_WARN("Missing texture meta data, setting default");
 		}
 
-		Handle = Texture2D::Create(wrap, Filepath);
+		Handle = Texture2D::Create(wrap, filepath);
+	}
+
+	template <>
+	void Asset<SubTexture2D>::Serialize(AssetManager& manager)
+	{
+		auto subTexture = Handle;
+		XYZ_LOG_INFO("Serializing subtexture ", subTexture->GetFilepath());
+
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+		out << YAML::Key << "SubTexture" << YAML::Value << "Subtexture name";
+		out << YAML::Key << "TextureAssetPath" << YAML::Value << subTexture->GetTexture()->GetFilepath();
+		out << YAML::Key << "TexCoords" << YAML::Value << subTexture->GetTexCoords();
+		out << YAML::EndMap;
+
+		std::ofstream fout(subTexture->GetFilepath());
+		fout << out.c_str();
 	}
 
 
 	template <>
-	void Asset<Material>::Serialize()
+	void Asset<SubTexture2D>::Deserialize(const std::string& filepath,AssetManager& manager)
+	{
+		std::ifstream stream(filepath);
+		std::stringstream strStream;
+		strStream << stream.rdbuf();
+
+		YAML::Node data = YAML::Load(strStream.str());
+
+		XYZ_LOG_INFO("Deserializing subtexture ", filepath);
+		XYZ_ASSERT(data["SubTexture"], "Incorrect file format ");
+
+		std::string path = data["TextureAssetPath"].as<std::string>();
+		manager.LoadAsset<Texture2D>(path);
+
+		glm::vec4 texCoords = data["TexCoords"].as<glm::vec4>();
+
+		Handle = Ref<SubTexture2D>::Create(manager.GetAsset<Texture2D>(path), texCoords);
+	}
+
+	template <>
+	void Asset<Material>::Serialize(AssetManager& manager)
 	{
 		auto& material = Handle;
-		XYZ_LOG_INFO("Serializing material ", Filepath);
+		XYZ_LOG_INFO("Serializing material ", material->GetFilepath());
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		out << YAML::Key << "Material" << YAML::Value << "material name";
@@ -264,7 +303,7 @@ namespace XYZ {
 		{
 			out << YAML::BeginMap;
 			out << YAML::Key << "TextureAssetPath";
-			out << YAML::Value << texture->GetPath();
+			out << YAML::Value << texture->GetFilepath();
 			out << YAML::Key << "TextureIndex";
 			out << YAML::Value << counter++;
 			out << YAML::EndMap;
@@ -316,22 +355,22 @@ namespace XYZ {
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
 
-		std::ofstream fout(Filepath);
+		std::ofstream fout(material->GetFilepath());
 		fout << out.c_str();
 	}
 
 	template <>
-	void Asset<Material>::Deserialize(AssetManager& manager)
+	void Asset<Material>::Deserialize(const std::string& filepath, AssetManager& manager)
 	{
-		std::ifstream stream(Filepath);
+		std::ifstream stream(filepath);
 		std::stringstream strStream;
 		strStream << stream.rdbuf();
 
 		YAML::Node data = YAML::Load(strStream.str());
 
-		XYZ_ASSERT(data["Material"], "Incorrect file format");
+		XYZ_LOG_INFO("Deserializing material ", filepath);
+		XYZ_ASSERT(data["Material"], "Incorrect file format ");
 
-		XYZ_LOG_INFO("Deserializing material ", Filepath);
 
 
 		auto shader = Shader::Create(data["ShaderAssetPath"].as<std::string>());
@@ -374,11 +413,154 @@ namespace XYZ {
 		}
 		Handle = material;
 	}
+
+
+	static void SerializeEntity(YAML::Emitter& out, AssetManager& manager, Entity entity, int32_t parentIndex)
+	{
+		if (entity.HasComponent<SceneTagComponent>())
+		{
+			SceneTagComponent* tag = entity.GetComponent<SceneTagComponent>();
+			out << YAML::BeginMap;
+			out << YAML::Key << "Entity";
+			out << YAML::Value << tag->Name;
+
+			out << YAML::Key << "Parent";
+			out << YAML::Value << parentIndex;
+
+			if (entity.HasComponent<Transform>())
+			{
+				out << YAML::Key << "TransformComponent";
+				out << YAML::BeginMap;
+				auto& transform = entity.GetComponent<Transform>()->GetTransformation();
+
+				auto [pos, rot, scale] = GetTransformDecomposition(transform);
+				out << YAML::Key << "Position" << YAML::Value << pos;
+				out << YAML::Key << "Rotation" << YAML::Value << rot;
+				out << YAML::Key << "Scale" << YAML::Value << scale;
+
+				out << YAML::EndMap; // TransformComponent
+			}
+			if (entity.HasComponent<SpriteRenderer>())
+			{
+				out << YAML::Key << "SpriteRenderer";
+				out << YAML::BeginMap; // RenderComponent2D
+				auto renderComponent = entity.GetComponent<SpriteRenderer>();
+				auto& materialPath = renderComponent->Material->GetFilepath();
+				if (materialPath.empty())
+				{
+					manager.RegisterAsset<Material>("Assets/Materials/New Material.mat", renderComponent->Material);
+				}
+				else if (!manager.IsRegistered<Material>(materialPath))
+				{
+					manager.RegisterAsset<Material>(materialPath, renderComponent->Material);
+				}
+
+
+				auto& subtexturePath = renderComponent->SubTexture->GetFilepath();
+				if (subtexturePath.empty())
+				{
+					manager.RegisterAsset<SubTexture2D>("Assets/SubTextures/New SubTexture.subtex", renderComponent->SubTexture);
+				}
+				else if (!manager.IsRegistered<SubTexture2D>(subtexturePath))
+				{
+					manager.RegisterAsset<SubTexture2D>(subtexturePath, renderComponent->SubTexture);
+				}
+
+				out << YAML::Key << "MaterialAssetPath" << YAML::Value << materialPath;
+				out << YAML::Key << "SubTextureAssetPath" << YAML::Value << subtexturePath;
+				out << YAML::Key << "IsVisible" << YAML::Value << renderComponent->IsVisible;
+				out << YAML::EndMap; // RendererComponent2D
+			}
+
+			out << YAML::EndMap; // Entity
+		}
+	}
+
+	template <>
+	void Asset<Scene>::Serialize(AssetManager& manager)
+	{
+		Ref<Scene> scene = Handle;
+		XYZ_LOG_INFO("Serializing scene ", scene->GetFilepath());
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+		out << YAML::Key << "Scene";
+		out << YAML::Value << scene->GetName();
+
+		out << YAML::Key << "Entities";
+		out << YAML::Value << YAML::BeginSeq;
+		for (auto& object : scene->m_SceneGraph.GetFlatData())
+		{
+			Entity entity = { object.GetData().Entity,scene.Raw() };
+			SerializeEntity(out,manager, entity, object.GetData().Parent);
+		}
+		out << YAML::EndSeq;
+		out << YAML::EndMap;
+		std::ofstream fout(scene->GetFilepath());
+		fout << out.c_str();
+	}
+
+	template <>
+	void Asset<Scene>::Deserialize(const std::string& filepath, AssetManager& manager)
+	{
+		std::ifstream stream(filepath);
+		std::stringstream strStream;
+		strStream << stream.rdbuf();
+
+		YAML::Node data = YAML::Load(strStream.str());
+		XYZ_ASSERT(data["Scene"], "Incorrect file format");
+	
+
+		std::string sceneName = data["Scene"].as<std::string>();
+		XYZ_LOG_INFO("Deserializing scene ", sceneName);
+		
+		Handle = Ref<Scene>::Create(sceneName);
+
+		auto entities = data["Entities"];
+		if (entities)
+		{
+			for (auto entity : entities)
+			{
+				SceneTagComponent tag(entity["Entity"].as<std::string>());
+				Entity ent = Handle->CreateEntity(tag);
+				
+				auto transformComponent = entity["TransformComponent"];
+				if (transformComponent)
+				{
+					XYZ_LOG_INFO("Adding transform to entity ", tag.Name);
+					auto transform = ent.GetComponent<Transform>();
+					glm::vec3 translation = transformComponent["Position"].as<glm::vec3>();
+					glm::quat rotation = transformComponent["Rotation"].as<glm::quat>();
+					glm::vec3 scale = transformComponent["Scale"].as<glm::vec3>();
+
+					transform->SetTranslation(translation);
+					transform->SetScale(scale);
+				}
+				auto spriteRenderer = entity["SpriteRenderer"];
+				if (spriteRenderer)
+				{
+					XYZ_LOG_INFO("Adding sprite renderer to entity ", tag.Name);
+					std::string materialPath = spriteRenderer["MaterialAssetPath"].as<std::string>();
+					std::string subtexturePath = spriteRenderer["SubTextureAssetPath"].as<std::string>();
+					manager.LoadAsset<Material>(materialPath);
+					manager.LoadAsset<SubTexture2D>(subtexturePath);
+					auto material = manager.GetAsset<Material>(materialPath);
+					auto subTexture = manager.GetAsset<SubTexture2D>(subtexturePath);
+					ent.AddComponent(SpriteRenderer{
+						material,
+						subTexture,
+						0,
+						SortLayer::GetOrderValue("Default")
+					});
+				}
+			}
+		}
+	}
+
 	AssetManager::~AssetManager()
 	{
+		Serialize();
 		for (auto storage : m_AssetStorages)
 		{
-			storage.second->Serialize();
 			delete storage.second;
 		}
 	}
@@ -386,7 +568,7 @@ namespace XYZ {
 	{
 		for (auto storage : m_AssetStorages)
 		{
-			storage.second->Serialize();
+			storage.second->Serialize(*this);
 		}
 	}
 }

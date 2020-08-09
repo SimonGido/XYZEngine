@@ -2,6 +2,8 @@
 #include "Types.h"
 #include "Component.h"
 #include "ComponentStorage.h"
+#include "ComponentGroup.h"
+
 #include "XYZ/Core/Core.h"
 
 #include <unordered_map>
@@ -14,7 +16,67 @@ namespace XYZ {
 	class ComponentManager
 	{
 	public:
-		
+		~ComponentManager()
+		{
+			for (auto group : m_ComponentGroups)
+				delete group;
+		}
+
+		template <typename ...Types>
+		void CreateGroup(ECSManager * ecs)
+		{
+			IComponentGroup* newGroup = new ComponentGroup<Types...>(ecs);
+			for (auto group : m_ComponentGroups)
+			{
+				XYZ_ASSERT(group->GetSignature() != newGroup->GetSignature(), "Creating same group twice");
+			}
+			
+			m_ComponentGroups.push_back(newGroup);
+		}
+
+		template <typename ...Types>
+		ComponentGroup<Types...>* GetGroup()
+		{
+			Signature signature;
+			std::initializer_list<uint16_t> componentTypes{ Types::GetID()... };
+			for (auto it : componentTypes)
+				signature.set(it);
+
+			for (auto group : m_ComponentGroups)
+			{
+				if ((group->GetSignature() & signature) == group->GetSignature())
+				{
+					return (ComponentGroup<Types...>*)group;
+				}
+			}
+			XYZ_ASSERT(false, "Accessing non existing group");
+			return nullptr;		
+		}
+
+		void AddToGroup(uint32_t entity, Signature signature)
+		{
+			for (auto group : m_ComponentGroups)
+			{
+				if ((group->GetSignature() & signature) == group->GetSignature())
+				{
+					group->AddEntity(entity);
+					break;
+				}
+			}
+		}
+
+		void RemoveFromGroup(uint32_t entity, Signature signature)
+		{
+			for (auto group : m_ComponentGroups)
+			{
+				if ((group->GetSignature() & signature) == group->GetSignature())
+				{
+					group->RemoveEntity(entity);
+					break;
+				}
+			}
+		}
+
 		template<typename T>
 		void UnRegisterComponent()
 		{
@@ -133,6 +195,7 @@ namespace XYZ {
 	private:
 		std::unordered_map<uint16_t, std::shared_ptr<IComponentStorage> > m_Components;
 
+		std::vector<IComponentGroup*> m_ComponentGroups;
 		
 	};
 

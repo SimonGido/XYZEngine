@@ -12,6 +12,11 @@ namespace XYZ {
 		m_TexCoords = { min, max };
 	}
 
+	SubTexture2D::SubTexture2D(const Ref<Texture2D>& texture, const glm::vec4& texCoords)
+		: m_Texture(texture), m_TexCoords(texCoords)
+	{
+	}
+
 
 
 	void SubTexture2D::SetCoords(const glm::vec2& coords, const glm::vec2& size)

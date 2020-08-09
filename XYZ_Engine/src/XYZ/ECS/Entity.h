@@ -29,6 +29,14 @@ namespace XYZ {
 			m_Scene(other.m_Scene)
 		{}
 
+		Entity(uint32_t id, Scene* scene)
+			:
+			m_ID(id), 
+			m_Scene(scene)
+		{
+
+		}
+
 		template<typename T>
 		T* GetComponent()
 		{
@@ -44,10 +52,7 @@ namespace XYZ {
 		template <typename T>
 		T* AddComponent(const T& component)
 		{
-			auto addedComponent = m_Scene->m_ECS->AddComponent<T>(m_ID, component);
-			if (m_Scene)
-				m_Scene->onEntityModified<T>(addedComponent,*this);
-			return addedComponent;
+			return m_Scene->m_ECS->AddComponent<T>(m_ID, component);
 		}
 
 		template <typename T>

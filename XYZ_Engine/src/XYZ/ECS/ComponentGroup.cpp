@@ -1,8 +1,7 @@
 #include "stdafx.h"
-#include "RenderComponent.h"
+#include "ComponentGroup.h"
 
 
 namespace XYZ {
-	
 
 }
