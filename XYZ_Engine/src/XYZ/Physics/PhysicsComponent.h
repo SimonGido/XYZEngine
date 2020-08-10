@@ -45,17 +45,7 @@ namespace XYZ {
 		}
 	};
 
-	struct InterpolatedMovement : public Type<InterpolatedMovement>
-	{
-		InterpolatedMovement(const glm::vec2& velocity)
-			: Distance(glm::vec2(0)), Velocity(velocity), InProgress(false)
-		{}
-
-		glm::vec2 Distance = glm::vec2(0);
-		glm::vec2 Velocity = glm::vec2(0);
-		bool InProgress = false;
-	};
-
+	
 	struct CollisionComponent : public Type<CollisionComponent>
 	{
 		CollisionComponent(int32_t layer, int32_t collisionLayers)

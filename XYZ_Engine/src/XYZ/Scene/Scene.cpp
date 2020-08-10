@@ -18,23 +18,22 @@ namespace XYZ {
 		m_Name(name)
 	{
 		m_ECS = new ECSManager();
-		m_ECS->CreateGroup<Transform, SpriteRenderer>();
-		m_RenderGroup = m_ECS->GetGroup<Transform, SpriteRenderer>();
+		m_ECS->CreateGroup<TransformComponent, SpriteRenderer>();
+		m_RenderGroup = m_ECS->GetGroup<TransformComponent, SpriteRenderer>();
 
 
 		uint32_t entity = m_ECS->CreateEntity();
-		m_SceneWorld.Transform = m_ECS->AddComponent(entity, Transform{ glm::vec3(0,0,0) });
+		m_SceneWorld.Transform = m_ECS->EmplaceComponent<TransformComponent>(entity);
 		m_SceneWorld.Entity = entity;
 			
 		
 		m_Root = m_SceneGraph.InsertNode(Node<SceneObject>(m_SceneWorld));
 		m_SceneGraph.SetRoot(m_Root);
-		m_SceneGraph[m_Root].Transform->CalculateWorldTransformation();
-		m_SceneGraph[m_Root].Transform->GetTransformation();
+
 
 		m_MainCameraEntity = m_ECS->CreateEntity();
-		m_MainCamera = m_ECS->AddComponent<CameraComponent>(m_MainCameraEntity, CameraComponent{});
-		m_MainCameraTransform = m_ECS->AddComponent<Transform>(m_MainCameraEntity, Transform{ {0,0,0} });
+		m_MainCamera = m_ECS->EmplaceComponent<CameraComponent>(m_MainCameraEntity);
+		m_MainCameraTransform = m_ECS->EmplaceComponent<TransformComponent>(m_MainCameraEntity);
 		
 		SceneObject cameraObject;
 		cameraObject.Entity = m_MainCameraEntity;
@@ -55,16 +54,16 @@ namespace XYZ {
 	Entity Scene::CreateEntity(const std::string& name)
 	{
 		Entity entity(this);
-		entity.AddComponent<SceneTagComponent>({ name });
+		entity.EmplaceComponent<SceneTagComponent>( name );
 
 		SceneObject object;
-		object.Transform = entity.AddComponent<Transform>({ glm::vec3(0) });
+		object.Transform = entity.EmplaceComponent<TransformComponent>();
 		object.Entity = entity;
 		
 
 		uint16_t id = m_SceneGraph.InsertNode(Node<SceneObject>(object));	
 		m_SceneGraph.SetParent(m_Root, id, [](SceneObject& parent, SceneObject& child) {
-			child.Transform->SetParent(parent.Transform);
+			//child.Transform->SetParent(parent.Transform);
 		});
 		m_SceneGraphMap.insert({ entity,id });
 
@@ -92,7 +91,7 @@ namespace XYZ {
 		
 		m_SceneGraph[childIndex].Parent = parentIndex;
 		m_SceneGraph.SetParent(parentIndex, childIndex, [](SceneObject& parent, SceneObject& child) {
-			child.Transform->SetParent(parent.Transform);
+			//child.Transform->SetParent(parent.Transform);
 		});
 	}
 
@@ -116,13 +115,13 @@ namespace XYZ {
 	void Scene::OnRender()
 	{		
 		glm::mat4 viewProjMatrix = m_MainCamera->Camera.GetProjectionMatrix() 
-			* glm::inverse(m_MainCameraTransform->GetTransformation());
+			* glm::inverse(m_MainCameraTransform->Transform);
 
 		glm::vec2 winSize = { Input::GetWindowSize().first, Input::GetWindowSize().second };
 
 		
 		m_SceneGraph.Propagate([this](SceneObject* parent, SceneObject* child) {
-			child->Transform->CalculateWorldTransformation();
+			//child->Transform->CalculateWorldTransformation();
 		});
 		
 		// 3D part here
@@ -134,7 +133,7 @@ namespace XYZ {
 		{
 			auto [transform, sprite] = (*m_RenderGroup)[i];
 			Renderer2D::SetMaterial(sprite->Material);
-			Renderer2D::SubmitQuad(transform->GetTransformation(), sprite->SubTexture->GetTexCoords(), sprite->TextureID);
+			Renderer2D::SubmitQuad(*transform, sprite->SubTexture->GetTexCoords(), sprite->TextureID, sprite->Color);
 		}
 		Renderer2D::Flush();
 		Renderer2D::EndScene();
@@ -143,7 +142,7 @@ namespace XYZ {
 	void Scene::OnRenderEditor(float dt, const SceneRenderData& renderData)
 	{	
 		m_SceneGraph.Propagate([this](SceneObject* parent, SceneObject* child) {
-			child->Transform->CalculateWorldTransformation();
+			//child->Transform->CalculateWorldTransformation();
 		});
 
 		// 3D part here
@@ -156,11 +155,16 @@ namespace XYZ {
 		{
 			auto [transform, sprite] = (*m_RenderGroup)[i];
 			Renderer2D::SetMaterial(sprite->Material);
-			Renderer2D::SubmitQuad(transform->GetTransformation(), sprite->SubTexture->GetTexCoords(), sprite->TextureID);
+			Renderer2D::SubmitQuad(*transform, sprite->SubTexture->GetTexCoords(), sprite->TextureID, sprite->Color);
 		}
 		Renderer2D::Flush();
 		Renderer2D::EndScene();
 			
+	}
+
+	Entity Scene::GetEntity(uint16_t index)
+	{
+		return { m_SceneGraph[index].Entity,this };
 	}
 
 }

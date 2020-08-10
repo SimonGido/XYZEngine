@@ -1,42 +1,80 @@
 #include "stdafx.h"
 #include "Animation.h"
 
+#include "XYZ/Renderer/SubTexture2D.h"
+
 #include <glm/glm.hpp>
 
 namespace XYZ {
 
-
-	static glm::vec3 TransitionVec3(const KeyFrame<glm::vec3>& begin, const KeyFrame<glm::vec3>& end, float currentTime)
+	static float TransitionFloat(const Property<float>::KeyFrame& begin, const Property<float>::KeyFrame& end, float currentTime)
 	{
-		float endBeginDiff = end.Time - begin.Time;
-		float beginTimeDiff = currentTime - begin.Time;
-		float scale = endBeginDiff / beginTimeDiff;
-		
-		glm::vec3 valueDiff = end.Value - begin.Value;
+		float scale = (currentTime - begin.Time) / (end.Time - begin.Time);
+		float valueDiff = end.Value - begin.Value;
+	
+		return begin.Value + (valueDiff * scale);
+	}
 
-		glm::vec3 result;
-		result.x = (begin.Value.x + valueDiff.x) * scale;
-		result.y = (begin.Value.y + valueDiff.y) * scale;
-		result.z = (begin.Value.z + valueDiff.z) * scale;
+	static glm::vec3 TransitionVec3(const Property<glm::vec3>::KeyFrame& begin, const Property<glm::vec3>::KeyFrame& end, float currentTime)
+	{
+		float scale = (currentTime - begin.Time) / (end.Time - begin.Time);
+		glm::vec3 valueDiff = end.Value - begin.Value;
+		
+		glm::vec3 result = { 0,0,0 };
+		result.x = begin.Value.x + (valueDiff.x * scale);
+		result.y = begin.Value.y + (valueDiff.y * scale);
+		result.z = begin.Value.z + (valueDiff.z * scale);
 
 		return result;
 	}
 
-	void Property<glm::vec3>::Transition(float time, uint32_t fps)
+	static glm::vec4 TransitionVec4(const Property<glm::vec4>::KeyFrame& begin, const Property<glm::vec4>::KeyFrame& end, float currentTime)
 	{
-		if (CurrentFrame < KeyFrames.size() - 1 && time >= KeyFrames[CurrentFrame].Time)
-		{
-			if (ModifiedValue)
-				*ModifiedValue = TransitionVec3(KeyFrames[CurrentFrame], KeyFrames[CurrentFrame + 1], time);
-			
-			
-			CurrentFrame++;
+		float scale = (currentTime - begin.Time) / (end.Time - begin.Time);
+		glm::vec4 valueDiff = end.Value - begin.Value;
+
+		glm::vec4 result = { 0, 0, 0 ,0 };
+		result.x = begin.Value.x + (valueDiff.x * scale);
+		result.y = begin.Value.y + (valueDiff.y * scale);
+		result.z = begin.Value.z + (valueDiff.z * scale);
+		result.w = begin.Value.w + (valueDiff.w * scale);
+
+		return result;
+	}
+
+	void Property<glm::vec3>::Transition(float currentTime)
+	{
+		if (CurrentFrame < KeyFrames.size() - 1)
+		{					
+			ModifiedValue = TransitionVec3(KeyFrames[CurrentFrame], KeyFrames[CurrentFrame + 1], currentTime);
+			if (currentTime >= KeyFrames[CurrentFrame + 1].Time)
+				CurrentFrame++;
 		}
 	}
-	Animation::Animation(float animLength, uint32_t fps, bool repeat)
+
+	void Property<glm::vec4>::Transition(float currentTime)
+	{
+		if (CurrentFrame < KeyFrames.size() - 1)
+		{
+			ModifiedValue = TransitionVec4(KeyFrames[CurrentFrame], KeyFrames[CurrentFrame + 1], currentTime);
+			if (currentTime >= KeyFrames[CurrentFrame + 1].Time)
+				CurrentFrame++;
+		}
+	}
+
+	void Property <Ref<SubTexture2D>>::Transition(float currentTime)
+	{
+		if (CurrentFrame < KeyFrames.size() - 1)
+		{
+			ModifiedValue = KeyFrames[CurrentFrame].Value;
+			if (currentTime >= KeyFrames[CurrentFrame + 1].Time)
+				CurrentFrame++;
+		}
+	}
+
+	Animation::Animation(float animLength, bool repeat)
 		:
 		m_AnimationLength(animLength),
-		m_FPS(fps),
 		m_Repeat(repeat)
 	{
 	}
@@ -51,7 +89,7 @@ namespace XYZ {
 		{
 			m_CurrentTime += dt;
 			for (auto prop : m_Properties)
-				prop->Transition(dt, m_FPS);
+				prop->Transition(m_CurrentTime);
 		}
 		else if (m_Repeat)
 		{

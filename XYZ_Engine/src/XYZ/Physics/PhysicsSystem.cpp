@@ -10,7 +10,6 @@ namespace XYZ {
 		m_ECS(ecs)
 	{
 		m_Signature.set(m_ECS->GetComponentType<XYZ::RigidBody2D>());
-		m_Signature.set(m_ECS->GetComponentType<XYZ::InterpolatedMovement>());
 	}
 	PhysicsSystem::~PhysicsSystem()
 	{
@@ -31,7 +30,6 @@ namespace XYZ {
 	{
 		Component component;
 		component.RigidBody = m_ECS->GetComponent<RigidBody2D>(entity);
-		component.Interpolated = m_ECS->GetComponent<InterpolatedMovement>(entity);
 		component.ActiveComponent = m_ECS->GetComponent<ActiveComponent>(entity);
 
 

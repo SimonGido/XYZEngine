@@ -1,6 +1,7 @@
 #include "EditorLayer.h"
 
-#include <glm/gtc/matrix_transform.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtx/transform.hpp>
 
 namespace XYZ {
 	EditorLayer::~EditorLayer()
@@ -11,8 +12,7 @@ namespace XYZ {
 	void EditorLayer::OnAttach()
 	{
 		Renderer::Init();
-		SortLayer::CreateLayer("Default");
-		
+
 		auto& app = Application::Get();
 		m_FBO = FrameBuffer::Create({ app.GetWindow().GetWidth(),app.GetWindow().GetHeight() });
 		m_FBO->CreateColorAttachment(FrameBufferFormat::RGBA16F);
@@ -20,19 +20,25 @@ namespace XYZ {
 		m_FBO->Resize();
 
 		m_Scene = m_AssetManager.GetAsset<Scene>("Assets/Scenes/scene.xyz");
-		
+
 
 		m_Material = m_AssetManager.GetAsset<Material>("Assets/Materials/material.mat");
 		m_Material->SetFlags(XYZ::RenderFlags::TransparentFlag);
 
+		m_TestEntity = m_Scene->GetEntity(2);
+		m_SpriteRenderer = m_TestEntity.GetComponent<SpriteRenderer>();
+		m_Transform = m_TestEntity.GetComponent<TransformComponent>();
 
 		//m_TextMaterial = Material::Create(XYZ::Shader::Create("TextShader", "Assets/Shaders/TextShader.glsl"));
 		//m_TextMaterial->Set("u_Texture", XYZ::Texture2D::Create(XYZ::TextureWrap::Clamp, "Assets/Font/Arial.png"), 0);
 		//m_TextMaterial->SetFlags(XYZ::RenderFlags::TransparentFlag);
-		
-		
-		//m_CharacterTexture = Texture2D::Create(XYZ::TextureWrap::Clamp, "Assets/Textures/player_sprite.png");
-		//m_CharacterSubTexture = Ref<SubTexture2D>::Create(m_CharacterTexture, glm::vec2(0, 0), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
+
+
+		m_CharacterTexture = Texture2D::Create(XYZ::TextureWrap::Clamp, "Assets/Textures/player_sprite.png");
+		m_CharacterSubTexture = Ref<SubTexture2D>::Create(m_CharacterTexture, glm::vec2(0, 0), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
+		m_CharacterSubTexture2 = Ref<SubTexture2D>::Create(m_CharacterTexture, glm::vec2(1, 2), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
+		m_CharacterSubTexture3 = Ref<SubTexture2D>::Create(m_CharacterTexture, glm::vec2(2, 2), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
+
 		//m_Font = Ref<Font>::Create("Assets/Font/Arial.fnt");
 		//
 		//m_TestEntity = m_Scene->CreateEntity("Test Entity");
@@ -61,20 +67,53 @@ namespace XYZ {
 		//	transform->Translate({ i,0,0 });
 		//	m_Scene->SetParent(m_TestEntity, entity);
 		//}	
+
+
+
+		m_Animation = new Animation(3.0f);
+
+		Property<glm::vec4>* prop = new Property<glm::vec4>(m_SpriteRenderer->Color);
+		Property<glm::vec3>* posProperty = new Property<glm::vec3>(m_Position);
+		Property<glm::vec3>* rotProperty = new Property<glm::vec3>(m_Rotation);
+		Property<Ref<SubTexture2D>>* spriteProperty = new Property<Ref<SubTexture2D>>(m_SpriteRenderer->SubTexture);
+
+		prop->KeyFrames.push_back({ {1,0,0,1},0.0f });
+		prop->KeyFrames.push_back({ {0,1,0,1},1.0f });
+		prop->KeyFrames.push_back({ {0,0,1,1},2.0f });
+		prop->KeyFrames.push_back({ {1,0,0,1},3.0f });
+
+
+		posProperty->KeyFrames.push_back({ {0,0,0},0.0f });
+		posProperty->KeyFrames.push_back({ {-1,0,0},1.0f });
+		posProperty->KeyFrames.push_back({ {0,1,0},2.0f });
+		posProperty->KeyFrames.push_back({ {0,0,0},3.0f });
+
+		rotProperty->KeyFrames.push_back({ {0,0,0},0.0f });
+		rotProperty->KeyFrames.push_back({ {0,0,1.5},1.0f });
+		rotProperty->KeyFrames.push_back({ {0,0,2},2.0f });
+		rotProperty->KeyFrames.push_back({ {0,0,0},3.0f });
+
+		spriteProperty->KeyFrames.push_back({ m_CharacterSubTexture,0.0f });
+		spriteProperty->KeyFrames.push_back({ m_CharacterSubTexture2,1.0f });
+		spriteProperty->KeyFrames.push_back({ m_CharacterSubTexture3,2.0f });
+		spriteProperty->KeyFrames.push_back({ m_CharacterSubTexture,3.0f });
+
+		m_Animation->AddProperty(prop);
+		m_Animation->AddProperty(posProperty);
+		m_Animation->AddProperty(rotProperty);
+		m_Animation->AddProperty(spriteProperty);
 	}
 
 	void EditorLayer::OnDetach()
 	{
-
+		delete m_Animation;
 	}
 	void EditorLayer::OnUpdate(float ts)
 	{
 		RenderCommand::Clear();
 		RenderCommand::SetClearColor(glm::vec4(0.2, 0.2, 0.5, 1));
 
-	
-		
-		
+			
 		glm::vec2 winSize = { Input::GetWindowSize().first, Input::GetWindowSize().second };
 		
 		m_FBO->Bind();
@@ -85,42 +124,12 @@ namespace XYZ {
 
 		if (m_ActiveWindow)
 		{
-			m_EditorCamera.OnUpdate(ts);
-			//if (Input::IsKeyPressed(KeyCode::XYZ_KEY_UP))
-			//{
-			//	m_Transform->Translate(glm::vec3(0, 0.005, 0));
-			//}
-			//else if (XYZ::Input::IsKeyPressed(KeyCode::XYZ_KEY_DOWN))
-			//{
-			//	m_Transform->Translate(glm::vec3(0, -0.005, 0));
-			//}
-			//if (XYZ::Input::IsKeyPressed(KeyCode::XYZ_KEY_LEFT))
-			//{
-			//	m_Transform->Translate(glm::vec3(-0.005, 0, 0));
-			//}
-			//else if (XYZ::Input::IsKeyPressed(KeyCode::XYZ_KEY_RIGHT))
-			//{
-			//	m_Transform->Translate(glm::vec3(0.005, 0, 0));
-			//}
-			//
-			//if (XYZ::Input::IsKeyPressed(KeyCode::XYZ_KEY_1))
-			//{
-			//	m_Transform->Rotate(0.1f);
-			//}
-			//else if (XYZ::Input::IsKeyPressed(KeyCode::XYZ_KEY_2))
-			//{
-			//	m_Transform->Rotate(-0.1f);
-			//}
-			//
-			//if (XYZ::Input::IsKeyPressed(KeyCode::XYZ_KEY_3))
-			//{
-			//	m_Transform->Scale({ 0.1,0.1,0});
-			//}
-			//else if (XYZ::Input::IsKeyPressed(KeyCode::XYZ_KEY_4))
-			//{
-			//	m_Transform->Scale({ -0.1,-0.1,0 });
-			//}
+			m_EditorCamera.OnUpdate(ts);		
 		}
+
+		m_Animation->Update(ts);
+		*m_Transform = glm::translate(glm::mat4(1.0f), m_Position) *
+			glm::rotate(m_Rotation.z, glm::vec3(0, 0, 1)) * glm::scale(glm::mat4(1.0f), { 1,1,1 });
 	}
 	void EditorLayer::OnEvent(Event& event)
 	{

@@ -54,6 +54,31 @@ namespace XYZ {
 
 			return c;
 		}
+
+		template <typename T,typename ...Args>
+		T* EmplaceComponent(uint32_t entity, Args&& ... args)
+		{
+			static_assert(std::is_base_of<Type<T>, T>::value, "Trying to add component that has no type");
+			auto c = s_Data.ComponentManager.EmplaceComponent<T>(entity, std::forward<Args>(args)...);
+
+			auto active = s_Data.ComponentManager.GetComponent<ActiveComponent>(entity);
+			auto signature = s_Data.EntityManager.GetSignature(entity);
+
+			// Remove from old group
+			s_Data.ComponentManager.RemoveFromGroup(entity, signature);
+
+			signature.set(s_Data.ComponentManager.GetComponentType<T>(), 1);
+			active->ActiveComponents.set(s_Data.ComponentManager.GetComponentType<T>(), 1);
+
+			s_Data.EntityManager.SetSignature(entity, signature);
+			s_Data.SystemManager.EntitySignatureChanged(entity, signature);
+
+			// Add to new group
+			s_Data.ComponentManager.AddToGroup(entity, signature);
+
+			return c;
+		}
+
 		template<typename T>
 		void RemoveComponent(uint32_t entity)
 		{

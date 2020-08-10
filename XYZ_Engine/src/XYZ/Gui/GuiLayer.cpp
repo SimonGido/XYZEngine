@@ -37,7 +37,7 @@ namespace XYZ {
 	}
 	void GuiLayer::OnUpdate(float dt)
 	{
-		//m_GuiSystem->Update(dt);
+		
 	}
 	void GuiLayer::OnEvent(Event& event)
 	{

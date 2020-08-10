@@ -20,13 +20,19 @@ namespace XYZ {
 		bool onWindowResized(WindowResizeEvent& event);
 
 	private:
+		Animation *m_Animation;
+
 		EditorCamera m_EditorCamera;
 		Ref<Scene> m_Scene;
 		Ref<Material> m_Material;
 		Ref<Font> m_Font;
 		Ref<Material> m_TextMaterial;
 		Ref<Texture2D> m_CharacterTexture;
+
 		Ref<SubTexture2D> m_CharacterSubTexture;
+		Ref<SubTexture2D> m_CharacterSubTexture2;
+		Ref<SubTexture2D> m_CharacterSubTexture3;
+
 		Ref<SubTexture2D> m_CheckboxSubTexture;
 
 
@@ -36,7 +42,11 @@ namespace XYZ {
 		Entity m_TestEntity;
 		Entity m_TextEntity;
 
-		Transform* m_Transform;
+		SpriteRenderer* m_SpriteRenderer;
+		TransformComponent* m_Transform;
+
+		glm::vec3 m_Position = { 0,0,0 };
+		glm::vec3 m_Rotation = { 0,0,0 };
 
 		glm::vec4 m_Color = { 0,0,0,0 };
 		glm::vec4 m_Pallete = { 0,1,0,1 };

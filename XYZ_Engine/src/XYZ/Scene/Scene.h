@@ -8,9 +8,9 @@
 
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/SpriteRenderer.h"
-#include "XYZ/Physics/Transform.h"
 #include "XYZ/Renderer/Camera.h"
 #include "Serializable.h"
+
 
 #include "SceneCamera.h"
 #include "Components.h"
@@ -59,16 +59,20 @@ namespace XYZ {
 
         SceneState GetState() const { return m_State; }
 
+        Entity GetEntity(uint16_t index);
+
         inline const std::string& GetName() const { return m_Name; }
+
         inline const SceneCamera& GetMainCamera() const { return m_MainCamera->Camera; }
  
    
     private:
         struct SceneObject
         {
-            Transform* Transform = nullptr;
+            TransformComponent* Transform = nullptr;
             size_t DrawListIndex;
             uint32_t Entity;
+            // Temporary
             int32_t Parent = -1;
         };
 
@@ -88,14 +92,14 @@ namespace XYZ {
 
                 if (aTransparent && bTransparent)
                 {
-                    if (a.Layer == b.Layer)
+                    if (a.SortLayer == b.SortLayer)
                         return a.Material->GetSortKey() < b.Material->GetSortKey();
-                    return a.Layer > b.Layer;
+                    return a.SortLayer > b.SortLayer;
                 }
                 else
                 {
                     if (a.Material->GetSortKey() == b.Material->GetSortKey())
-                        return a.Layer < b.Layer;
+                        return a.SortLayer < b.SortLayer;
                     return a.Material->GetSortKey() < b.Material->GetSortKey();
                 }
             }
@@ -104,14 +108,14 @@ namespace XYZ {
 
     private:
         ECSManager* m_ECS = nullptr;
-        ComponentGroup<Transform, SpriteRenderer>* m_RenderGroup = nullptr;
+        ComponentGroup<TransformComponent, SpriteRenderer>* m_RenderGroup = nullptr;
 
         std::string m_Name;
         SceneState m_State = SceneState::Edit;
 
         uint32_t m_MainCameraEntity;
         CameraComponent* m_MainCamera;
-        Transform* m_MainCameraTransform;
+        TransformComponent* m_MainCameraTransform;
 
         uint16_t m_Root;
         SceneObject m_SceneWorld;

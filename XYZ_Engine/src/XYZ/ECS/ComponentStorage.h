@@ -62,6 +62,14 @@ namespace XYZ {
 			return &m_Components[index];
 		}
 
+		template<typename T, typename ...Args>
+		T* EmplaceComponent(uint32_t entity, Args&&... args)
+		{
+			XYZ_ASSERT(m_Lookup.find(entity) == m_Lookup.end(), "Entity ", entity, " already contains component");
+			int index = m_Components.Emplace(std::forward<Args>(args)...);
+			m_Lookup[entity] = index;
+			return &m_Components[index];
+		}
 		/**
 		* Remove component from the entity
 		* @param[in] entity

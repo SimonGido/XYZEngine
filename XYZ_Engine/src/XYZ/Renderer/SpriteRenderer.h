@@ -2,7 +2,6 @@
 #include "XYZ/ECS/Component.h"
 
 #include "SubTexture2D.h"
-#include "SortLayer.h"
 #include "Material.h"
 
 
@@ -11,26 +10,30 @@ namespace XYZ {
 
 	struct SpriteRenderer : public Type<SpriteRenderer>
 	{
-		SpriteRenderer(Ref<Material> material,
-					   Ref<SubTexture2D> subTexture,
-					   uint32_t textureID,
-					   SortLayerID layer,
-					   bool isVisible = true)
-			:
-			Material(material),
-			SubTexture(subTexture),
-			TextureID(textureID),
-			Layer(layer),
-			IsVisible(isVisible)
-		{
-		}
+		SpriteRenderer(
+			Ref<Material> material,
+			Ref<SubTexture2D> subTexture,
+			const glm::vec4& color,
+			uint32_t textureID,
+			uint16_t sortLayer,
+			bool isVisible = true
+		);
+			
+		SpriteRenderer(const SpriteRenderer& other);
+		SpriteRenderer(SpriteRenderer&& other) noexcept;
+			
+
+		SpriteRenderer& operator =(const SpriteRenderer& other);
+		
+
 		SpriteRenderer() = default;
 
 		Ref<Material> Material;
 		Ref<SubTexture2D> SubTexture;
+		glm::vec4 Color;
 
 		uint32_t TextureID;
-		SortLayerID Layer = 0;
+		uint16_t SortLayer = 0;
 		bool IsVisible = true;
 	};
 }

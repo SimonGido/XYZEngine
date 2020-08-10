@@ -43,13 +43,30 @@ namespace XYZ {
 			if (m_FirstFree != -1)
 			{
 				int index = m_FirstFree;
-				m_FirstFree = m_Data[m_FirstFree].next;
-				m_Data[index].element = elem;
+				m_FirstFree = m_Data[m_FirstFree].Next;
+				m_Data[index].Element = elem;
 				return index;
 			}
 			else
 			{
-				m_Data.emplace_back(elem);
+				m_Data.push_back(elem);
+				return static_cast<int>(m_Data.size() - 1);
+			}
+		}
+
+		template <typename... Args>
+		int Emplace(Args&&... args)
+		{
+			if (m_FirstFree != -1)
+			{
+				int index = m_FirstFree;
+				m_FirstFree = m_Data[m_FirstFree].Next;
+				m_Data[index].Element = T(std::forward<Args>(args)...);
+				return index;
+			}
+			else
+			{
+				m_Data.emplace_back(T(std::forward<Args>(args)...));
 				return static_cast<int>(m_Data.size() - 1);
 			}
 		}
@@ -57,7 +74,7 @@ namespace XYZ {
 		// Erases the nth element
 		void Erase(int index)
 		{
-			m_Data[index].next = m_FirstFree;
+			m_Data[index].Next = m_FirstFree;
 			m_FirstFree = index;
 		}
 		
@@ -86,13 +103,13 @@ namespace XYZ {
 		// Returns the nth element.
 		T& operator[](int index)
 		{
-			return m_Data[index].element;
+			return m_Data[index].Element;
 		}
 
 		// Returns the nth element.
 		const T& operator[](int index) const
 		{
-			return m_Data[index].element;
+			return m_Data[index].Element;
 		}
 
 	private:
@@ -103,16 +120,26 @@ namespace XYZ {
 				memset(this, 0, sizeof(FreeElement));
 			}
 			FreeElement(const T& el)
-				: element(el)
+				: Element(el)
 			{}
 			FreeElement(const FreeElement& other)
-				: element(other.element)
+				: Element(other.Element)
 			{}
+			FreeElement(FreeElement&& other)
+				: Element(other.Element)
+			{}
+
 			~FreeElement()
 			{}
 
-			T element;
-			int next;
+			FreeElement& operator =(const FreeElement& other)
+			{
+				Element = other.Element;
+				return *this;
+			}
+
+			T Element;
+			int Next;
 		};
 
 

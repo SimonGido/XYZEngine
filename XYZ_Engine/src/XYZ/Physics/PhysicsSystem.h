@@ -26,7 +26,6 @@ namespace XYZ {
 		struct Component : public System::Component
 		{
 			RigidBody2D* RigidBody;
-			InterpolatedMovement* Interpolated;
 		};
 
 

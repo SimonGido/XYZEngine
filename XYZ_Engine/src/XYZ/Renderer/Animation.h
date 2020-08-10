@@ -3,16 +3,9 @@
 
 namespace XYZ {
 
-	template <typename T>
-	struct KeyFrame
-	{
-		T Value;
-		float Time;
-	};
-
 	struct IProperty
 	{
-		virtual void Transition(float time, uint32_t fps) = 0;
+		virtual void Transition(float currentTime) = 0;
 
 		size_t CurrentFrame = 0;
 	};
@@ -20,16 +13,26 @@ namespace XYZ {
 	template <typename T>
 	struct Property : public IProperty
 	{
-		virtual void Transition(float time, uint32_t fps) override;
+		Property(T& modified)
+			: ModifiedValue(modified)
+		{}
+			
+		virtual void Transition(float currentTime) override;
 
-		T* ModifiedValue = nullptr;;
-		std::vector<KeyFrame<T>> KeyFrames;
+		struct KeyFrame
+		{
+			T Value;
+			float Time;
+		};
+
+		T& ModifiedValue;
+		std::vector<KeyFrame> KeyFrames;
 	};
 
 	class Animation
 	{
 	public:
-		Animation(float animLength, uint32_t fps, bool repeat = true);
+		Animation(float animLength,  bool repeat = true);
 		~Animation();
 
 		void Update(float dt);
@@ -38,7 +41,6 @@ namespace XYZ {
 
 		float m_CurrentTime = 0.0f;
 		float m_AnimationLength;
-		uint32_t m_FPS;
 		bool m_Repeat;
 
 	private:

@@ -4,7 +4,6 @@
 #include "XYZ/Event/ApplicationEvent.h"
 #include "XYZ/Event/InputEvent.h"
 
-#include "GuiSystem.h"
 
 namespace XYZ {
 
@@ -23,10 +22,6 @@ namespace XYZ {
 		bool onMouseMove(MouseMovedEvent& event);
 		bool onMouseScroll(MouseScrollEvent& event);
 		bool onWindowResized(WindowResizeEvent& event);
-
-	private:
-		std::shared_ptr<GuiSystem> m_GuiSystem;
-
 	
 	};
 }

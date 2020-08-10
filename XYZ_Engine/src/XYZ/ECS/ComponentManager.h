@@ -98,6 +98,16 @@ namespace XYZ {
 			return GetComponentStorage<T>()->AddComponent(entity, component);
 		}
 
+
+		template<typename T, typename ...Args>
+		T* EmplaceComponent(uint32_t entity, Args&&... args)
+		{
+			uint16_t id = IComponent::GetID<T>();
+			if (m_Components.find(id) == m_Components.end())
+				RegisterComponent<T>();
+			return GetComponentStorage<T>()->EmplaceComponent<T>(entity, std::forward<Args>(args)...);
+		}
+
 		/**
 		* @return id representation of the component
 		*/

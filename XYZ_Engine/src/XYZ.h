@@ -21,13 +21,12 @@
 #include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Renderer/RenderCommand.h"
 #include "XYZ/Renderer/Material.h"
-#include "XYZ/Renderer/SpriteAnimation.h"
-#include "XYZ/Renderer/SpriteAnimationController.h"
-#include "XYZ/Renderer/SpriteSystem.h"
+
 #include "XYZ/Renderer/MaterialManager.h"
 #include "XYZ/Renderer/Framebuffer.h"
 #include "XYZ/Renderer/MeshFactory.h"
 #include "XYZ/Renderer/SpriteRenderer.h"
+#include "XYZ/Renderer/Animation.h"
 
 //-----Scene-----//
 #include "XYZ/Scene/SceneCamera.h"
@@ -43,7 +42,6 @@
 #include "XYZ/Physics/PhysicsSystem.h"
 #include "XYZ/Physics/GridCollisionSystem.h"
 #include "XYZ/Physics/RealGridCollisionSystem.h"
-#include "XYZ/Physics/InterpolatedMovementSystem.h"
 #include "XYZ/Particle/ParticleSystem2D.h"
 
 
@@ -62,7 +60,6 @@
 #include "XYZ/Gui/Text.h"
 #include "XYZ/Gui/Button.h"
 #include "XYZ/Gui/Checkbox.h"
-#include "XYZ/Gui/GuiSystem.h"
 
 
 //------InUI-------//

@@ -55,6 +55,12 @@ namespace XYZ {
 			return m_Scene->m_ECS->AddComponent<T>(m_ID, component);
 		}
 
+		template <typename T, typename ...Args>
+		T* EmplaceComponent(Args&&...args)
+		{
+			return m_Scene->m_ECS->EmplaceComponent<T>(m_ID, std::forward<Args>(args)...);
+		}
+
 		template <typename T>
 		bool HasComponent()
 		{
