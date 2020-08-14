@@ -21,6 +21,7 @@ namespace XYZ {
 
 	private:
 		Animation *m_Animation;
+		Animation* m_RunAnimation;
 
 		EditorCamera m_EditorCamera;
 		Ref<Scene> m_Scene;
@@ -57,5 +58,8 @@ namespace XYZ {
 	
 	
 		AssetManager m_AssetManager;
+
+
+		Machine<Animation*> *m_Machine;
 	};
 }

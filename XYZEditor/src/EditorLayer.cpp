@@ -72,11 +72,12 @@ namespace XYZ {
 
 		m_Animation = new Animation(3.0f);
 
-		Property<glm::vec4>* prop = new Property<glm::vec4>(m_SpriteRenderer->Color);
-		Property<glm::vec3>* posProperty = new Property<glm::vec3>(m_Position);
-		Property<glm::vec3>* rotProperty = new Property<glm::vec3>(m_Rotation);
-		Property<Ref<SubTexture2D>>* spriteProperty = new Property<Ref<SubTexture2D>>(m_SpriteRenderer->SubTexture);
 
+		auto prop = m_Animation->AddProperty<glm::vec4>(m_SpriteRenderer->Color);
+		auto posProperty = m_Animation->AddProperty<glm::vec3>(m_Position);
+		auto rotProperty = m_Animation->AddProperty<glm::vec3>(m_Rotation);
+		auto spriteProperty = m_Animation->AddProperty<Ref<SubTexture2D>>(m_SpriteRenderer->SubTexture);
+		
 		prop->KeyFrames.push_back({ {1,0,0,1},0.0f });
 		prop->KeyFrames.push_back({ {0,1,0,1},1.0f });
 		prop->KeyFrames.push_back({ {0,0,1,1},2.0f });
@@ -98,15 +99,33 @@ namespace XYZ {
 		spriteProperty->KeyFrames.push_back({ m_CharacterSubTexture3,2.0f });
 		spriteProperty->KeyFrames.push_back({ m_CharacterSubTexture,3.0f });
 
-		m_Animation->AddProperty(prop);
-		m_Animation->AddProperty(posProperty);
-		m_Animation->AddProperty(rotProperty);
-		m_Animation->AddProperty(spriteProperty);
+
+		m_RunAnimation = new Animation(3.0f);
+		auto posProperty2 = m_RunAnimation->AddProperty<glm::vec3>(m_Position);
+		posProperty2->KeyFrames.push_back({ {0,0,0},0.0f });
+		posProperty2->KeyFrames.push_back({ {-1,0,0},1.0f });
+		posProperty2->KeyFrames.push_back({ {0,1,0},2.0f });
+		posProperty2->KeyFrames.push_back({ {0,0,0},3.0f });
+
+
+		auto spriteProperty2 = m_RunAnimation->AddProperty<Ref<SubTexture2D>>(m_SpriteRenderer->SubTexture);
+		spriteProperty2->KeyFrames.push_back({ m_CharacterSubTexture,0.0f });
+		spriteProperty2->KeyFrames.push_back({ m_CharacterSubTexture2,1.0f });
+		spriteProperty2->KeyFrames.push_back({ m_CharacterSubTexture3,2.0f });
+		spriteProperty2->KeyFrames.push_back({ m_CharacterSubTexture,3.0f });
+
+		m_Machine = new Machine<Animation*>("Idle", m_Animation);
+		m_Machine->AddState("Run", m_RunAnimation);
+
+		m_Machine->SetStateTransition("Idle", "Run");
+		//m_Machine->SetStateTransition("Run", "Idle");
 	}
 
 	void EditorLayer::OnDetach()
 	{
 		delete m_Animation;
+		delete m_RunAnimation;
+		delete m_Machine;
 	}
 	void EditorLayer::OnUpdate(float ts)
 	{
@@ -127,7 +146,17 @@ namespace XYZ {
 			m_EditorCamera.OnUpdate(ts);		
 		}
 
-		m_Animation->Update(ts);
+		if (Input::IsKeyPressed(KeyCode::XYZ_KEY_LEFT))
+		{
+			m_Machine->TransitionTo("Run");
+		}
+		else if (Input::IsKeyPressed(KeyCode::XYZ_KEY_RIGHT))
+		{
+			m_Machine->TransitionTo("Idle");
+		}
+
+		//m_Animation->Update(ts);
+		m_Machine->GetCurrentState().Value->Update(ts);
 		*m_Transform = glm::translate(glm::mat4(1.0f), m_Position) *
 			glm::rotate(m_Rotation.z, glm::vec3(0, 0, 1)) * glm::scale(glm::mat4(1.0f), { 1,1,1 });
 	}
@@ -156,8 +185,21 @@ namespace XYZ {
 		}
 		if (InGui::MenuBar("File", m_MenuOpen))
 		{
-			if (InGui::MenuItem("Test", { 80,25 })) std::cout << "Menu item" << std::endl;
-			if (InGui::MenuItem("Test2", { 80,25 })) std::cout << "Menu item" << std::endl;
+			if (InGui::MenuItem("Load Scene", { 100,25 }))
+			{
+				auto& app = Application::Get();
+				std::string filepath = app.OpenFile("(*.xyz)\0*.xyz\0");
+				if (!filepath.empty())
+				{
+					m_Scene = m_AssetManager.GetAsset<Scene>(filepath);
+				}
+				m_MenuOpen = false;
+			}
+			if (InGui::MenuItem("Test2", { 100,25 }))
+			{
+				std::cout << "Menu item" << std::endl;
+				m_MenuOpen = false;
+			}
 		}
 		InGui::MenuEnd();
 		

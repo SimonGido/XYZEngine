@@ -1,0 +1,12 @@
+D:\DATA\Owncloud\Skola\III\S2\SISP\game-engine\XYZ_Engine\vendor\GLEW\bin\Debug-windows-x86_64\GLEW\GLEW.pdb
+D:\DATA\Owncloud\Skola\III\S2\SISP\game-engine\XYZ_Engine\vendor\GLEW\bin-int\Debug-windows-x86_64\GLEW\GLEW.pdb
+D:\Cpp_projects\PrersonalXYZdev\game-engine\XYZ_Engine\vendor\GLEW\bin\Debug-windows-x86_64\GLEW\GLEW.pdb
+D:\Cpp_projects\PrersonalXYZdev\game-engine\XYZ_Engine\vendor\GLEW\bin-int\Debug-windows-x86_64\GLEW\GLEW.pdb
+D:\Cpp_projects\game-engine\XYZ_Engine\vendor\GLEW\bin\Debug-windows-x86_64\GLEW\GLEW.pdb
+D:\Cpp_projects\game-engine\XYZ_Engine\vendor\GLEW\bin-int\Debug-windows-x86_64\GLEW\GLEW.pdb
+C:\Users\Gido\Desktop\PrersonalXYZdev\game-engine\XYZ_Engine\vendor\GLEW\bin\Debug-windows-x86_64\GLEW\GLEW.pdb
+C:\Users\Gido\Desktop\PrersonalXYZdev\game-engine\XYZ_Engine\vendor\GLEW\bin-int\Debug-windows-x86_64\GLEW\GLEW.pdb
+C:\Users\Gido\Desktop\GameDev\XYZ_Engine\vendor\GLEW\bin\Debug-windows-x86_64\GLEW\GLEW.pdb
+C:\Users\Gido\Desktop\GameDev\XYZ_Engine\vendor\GLEW\bin-int\Debug-windows-x86_64\GLEW\GLEW.pdb
+C:\Users\Gido\Desktop\GameDev\XYZEngine\vendor\GLEW\bin\Debug-windows-x86_64\GLEW\GLEW.pdb
+C:\Users\Gido\Desktop\GameDev\XYZEngine\vendor\GLEW\bin-int\Debug-windows-x86_64\GLEW\GLEW.pdb

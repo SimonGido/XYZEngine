@@ -1,4 +1,4 @@
-workspace "XYZ_Engine"
+workspace "XYZEngine"
 		architecture "x64"
 		startproject "XYZEditor"
 
@@ -16,20 +16,23 @@ workspace "XYZ_Engine"
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 IncludeDir = {}
-IncludeDir["GLFW"] = "XYZ_Engine/vendor/GLFW/include"
-IncludeDir["GLEW"] = "XYZ_Engine/vendor/GLEW/include"
-IncludeDir["glm"] = "XYZ_Engine/vendor/glm"
-IncludeDir["mini"] = "XYZ_Engine/vendor/mini"
-IncludeDir["OpenAL"] = "XYZ_Engine/vendor/OpenAL-Soft"
-IncludeDir["MiniMp3"] = "XYZ_Engine/vendor/minimp3"
+IncludeDir["GLFW"] = "XYZEngine/vendor/GLFW/include"
+IncludeDir["GLEW"] = "XYZEngine/vendor/GLEW/include"
+IncludeDir["glm"] = "XYZEngine/vendor/glm"
+IncludeDir["mini"] = "XYZEngine/vendor/mini"
+IncludeDir["OpenAL"] = "XYZEngine/vendor/OpenAL-Soft"
+IncludeDir["MiniMp3"] = "XYZEngine/vendor/minimp3"
+IncludeDir["mono"] = "XYZEngine/vendor/mono/include"
 
+LibraryDir = {}
+LibraryDir["mono"] = "vendor/mono/lib/Debug/mono-2.0-sgen.lib"
 
-include "XYZ_Engine/vendor/GLFW"
-include "XYZ_Engine/vendor/GLEW"
-include "XYZ_Engine/vendor/OpenAL-Soft"
+include "XYZEngine/vendor/GLFW"
+include "XYZEngine/vendor/GLEW"
+include "XYZEngine/vendor/OpenAL-Soft"
 
-project "XYZ_Engine"
-		location "XYZ_Engine"
+project "XYZEngine"
+		location "XYZEngine"
 		kind "StaticLib"
 		language "C++"
 		cppdialect "C++17"
@@ -39,7 +42,7 @@ project "XYZ_Engine"
 		objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
 		pchheader "stdafx.h"
-		pchsource "XYZ_Engine/src/stdafx.cpp"
+		pchsource "XYZEngine/src/stdafx.cpp"
 
 		files
 		{
@@ -75,7 +78,8 @@ project "XYZ_Engine"
 			"%{IncludeDir.OpenAL}/include",
 			"%{IncludeDir.OpenAL}/src",
 			"%{IncludeDir.OpenAL}/src/common",
-			"%{IncludeDir.MiniMp3}",		
+			"%{IncludeDir.MiniMp3}",
+			"%{IncludeDir.mono}",		
 			"%{prj.name}/vendor/stb_image",
 			"%{prj.name}/vendor/yaml-cpp/include"
 		}
@@ -85,7 +89,8 @@ project "XYZ_Engine"
 			"GLEW",
 			"GLFW",
 			"OpenAL-Soft",
-			"opengl32"
+			"opengl32",
+			"%{LibraryDir.mono}"
 		}
 		flags { "NoPCH" }
 		
@@ -122,14 +127,14 @@ project "XYZEditor"
 
 		includedirs
 		{
-			"XYZ_Engine/vendor",
-			"XYZ_Engine/src",
+			"XYZEngine/vendor",
+			"XYZEngine/src",
 			"%{IncludeDir.glm}"
 		}
 
 		links
 		{
-			"XYZ_Engine"
+			"XYZEngine"
 		}
 
 		filter "system:windows"
@@ -140,11 +145,20 @@ project "XYZEditor"
 				runtime "Debug"
 				symbols "on"
 
+		postbuildcommands 
+		{
+			'{COPY} "../XYZEngine/vendor/mono/bin/Debug/mono-2.0-sgen.dll" "%{cfg.targetdir}"'
+		}
+
 		filter "configurations:Release"
 				defines "XYZ_RELEASE"
 				runtime "Release"
 				optimize "on"
 
+		postbuildcommands 
+		{
+			'{COPY} "../XYZEngine/vendor/mono/bin/Debug/mono-2.0-sgen.dll" "%{cfg.targetdir}"'
+		}
 
 project "ZSandbox"
 		location "ZSandbox"
@@ -171,7 +185,7 @@ project "ZSandbox"
 
 		links
 		{
-			"XYZ_Engine"
+			"XYZEngine"
 		}
 
 		filter "system:windows"
@@ -189,3 +203,15 @@ project "ZSandbox"
 				
 
 
+project "XYZScriptCore"
+		location "XYZScriptCore"
+		kind "SharedLib"
+		language "C#"
+			
+		targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+		objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+			
+		files 
+		{
+			"%{prj.name}/src/**.cs", 
+		}
