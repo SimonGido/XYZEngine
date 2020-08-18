@@ -147,11 +147,12 @@ namespace XYZ {
 
 	void Scene::OnUpdate(float dt)
 	{
-		
+		Entity ent = GetEntity(2);
 		for (int i = 0; i < m_ScriptGroup->Size(); ++i)
 		{
-			auto [script] = (*m_ScriptGroup)[i];		
+			auto [script] = (*m_ScriptGroup)[i];
 			script->ScriptableEntity->OnUpdate(dt);
+
 		}
 	}
 

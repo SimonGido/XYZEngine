@@ -122,10 +122,10 @@ project "XYZEngine"
 
 project "NativeScript"
 		location "NativeScript"
-		kind "StaticLib"
+		kind "SharedLib"
 		language "C++"
 		cppdialect "C++17"
-		staticruntime "on"
+		staticruntime "off"
 				
 		
 		targetdir("bin/" .. outputdir .. "/%{prj.name}")
@@ -146,10 +146,7 @@ project "NativeScript"
 			"%{IncludeDir.RCC}"
 		}
 
-		links
-		{
-			"XYZEngine"
-		}
+		
 
 project "XYZEditor"
 		location "XYZEditor"

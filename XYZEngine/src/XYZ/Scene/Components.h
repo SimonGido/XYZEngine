@@ -66,4 +66,6 @@ namespace XYZ {
 
 		ScriptableEntity* ScriptableEntity = nullptr;
 	};
+
+	
 }

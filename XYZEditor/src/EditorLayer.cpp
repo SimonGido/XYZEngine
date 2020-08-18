@@ -5,7 +5,7 @@
 #include <glm/gtx/transform.hpp>
 
 
-#include "XYZ/NativeScript/NativeScriptCore.h"
+//#include "XYZ/NativeScript/NativeScriptCore.h"
 #include "NativeScript.h"
 
 
@@ -28,6 +28,7 @@ namespace XYZ {
 
 		m_Scene = m_AssetManager.GetAsset<Scene>("Assets/Scenes/scene.xyz");
 		SceneManager::Get().SetActive(m_Scene);
+		NativeScriptCore::SetScene(m_Scene.Raw());
 
 		m_Material = m_AssetManager.GetAsset<Material>("Assets/Materials/material.mat");
 		m_Material->SetFlags(XYZ::RenderFlags::TransparentFlag);
@@ -144,11 +145,16 @@ namespace XYZ {
 	void EditorLayer::OnUpdate(float ts)
 	{
 		NativeScriptCore::Update(ts);
+		PerModuleInterface::g_pSystemTable->MainLoop->MainLoop();
 		auto storage = m_Scene->GetECS()->GetComponentStorage<NativeScriptComponent>();
 		for (int i = 0; i < storage->Size(); ++i)
 		{
 			(*storage)[i].ScriptableEntity = NativeScriptCore::GetScriptClass<Testik>();
 			(*storage)[i].ScriptableEntity->Entity = m_TestEntity;
+			if ((*storage)[i].ScriptableEntity->Lol())
+			{
+				(*storage)[i].ScriptableEntity->OnUpdate(ts);
+			}
 		}
 		RenderCommand::Clear();
 		RenderCommand::SetClearColor(glm::vec4(0.2, 0.2, 0.5, 1));
@@ -178,7 +184,7 @@ namespace XYZ {
 		}
 
 		//m_Animation->Update(ts);
-		m_Machine->GetCurrentState().Value->Update(ts);
+		//m_Machine->GetCurrentState().Value->Update(ts);
 		*m_Transform = glm::translate(glm::mat4(1.0f), m_Position) *
 			glm::rotate(m_Rotation.z, glm::vec3(0, 0, 1)) * glm::scale(glm::mat4(1.0f), { 1,1,1 });
 	}

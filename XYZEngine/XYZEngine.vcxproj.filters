@@ -339,7 +339,13 @@
     <ClInclude Include="src\XYZ\InGui\InGuiRenderQueue.h">
       <Filter>src\XYZ\InGui</Filter>
     </ClInclude>
+    <ClInclude Include="src\XYZ\NativeScript\Haha.h">
+      <Filter>src\XYZ\NativeScript</Filter>
+    </ClInclude>
     <ClInclude Include="src\XYZ\NativeScript\NativeScriptCore.h">
+      <Filter>src\XYZ\NativeScript</Filter>
+    </ClInclude>
+    <ClInclude Include="src\XYZ\NativeScript\NativeScriptWrappers.h">
       <Filter>src\XYZ\NativeScript</Filter>
     </ClInclude>
     <ClInclude Include="src\XYZ\NativeScript\ScriptableEntity.h">
@@ -2012,6 +2018,15 @@
     <ClCompile Include="src\XYZ\InGui\InGuiRenderQueue.cpp">
       <Filter>src\XYZ\InGui</Filter>
     </ClCompile>
+    <ClCompile Include="src\XYZ\NativeScript\Haha.cpp">
+      <Filter>src\XYZ\NativeScript</Filter>
+    </ClCompile>
+    <ClCompile Include="src\XYZ\NativeScript\NativeScriptCore.cpp">
+      <Filter>src\XYZ\NativeScript</Filter>
+    </ClCompile>
+    <ClCompile Include="src\XYZ\NativeScript\NativeScriptWrappers.cpp">
+      <Filter>src\XYZ\NativeScript</Filter>
+    </ClCompile>
     <ClCompile Include="src\XYZ\Particle\ParticleEffect2D.cpp">
       <Filter>src\XYZ\Particle</Filter>
     </ClCompile>
@@ -2276,7 +2291,6 @@
     <ClCompile Include="vendor\yaml-cpp\src\tag.cpp">
       <Filter>vendor\yaml-cpp\src</Filter>
     </ClCompile>
-    <ClCompile Include="src\XYZ\NativeScript\NativeScriptCore.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="vendor\RCC\RuntimeCompiler\SimpleFileWatcher\FileWatcherLinux.cpp~">

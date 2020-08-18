@@ -5,39 +5,41 @@
 
 #include "XYZ/NativeScript/ScriptableEntity.h"
 #include "XYZ/Scene/SceneManager.h"
-
+#include "Haha.h"
 namespace XYZ {
 
 
 	IRuntimeObjectSystem* NativeScriptCore::s_pRuntimeObjectSystem;
 	StdioLogSystem        NativeScriptCore::s_Logger;
-
+	SystemTable			  NativeScriptCore::s_SystemTable;
 
 	void NativeScriptCore::Init()
 	{
 		s_pRuntimeObjectSystem = new RuntimeObjectSystem;
-		if (!s_pRuntimeObjectSystem->Initialise(&s_Logger, NULL))
+		if (!s_pRuntimeObjectSystem->Initialise(&s_Logger, &s_SystemTable))
 		{
 			delete s_pRuntimeObjectSystem;
 			s_pRuntimeObjectSystem = NULL;
 		}
 
-
+		s_SystemTable.SetColor = &SetColor;
 		s_pRuntimeObjectSystem->AddIncludeDir("../XYZEngine/src/");
 		s_pRuntimeObjectSystem->AddIncludeDir("../XYZEngine/vendor/glm/");
 		s_pRuntimeObjectSystem->AddIncludeDir("../XYZEngine/vendor/RCC/");
 
 		s_pRuntimeObjectSystem->SetAdditionalCompileOptions("/std:c++17");
-		s_pRuntimeObjectSystem->SetAdditionalLinkOptions("../bin/Debug-windows-x86_64/XYZEngine/XYZEngine.lib");
-
-
-
+		//s_pRuntimeObjectSystem->SetAdditionalLinkOptions("../bin/Debug-windows-x86_64/XYZEngine/XYZEngine.lib");
 	}
 
 	void NativeScriptCore::Destroy()
 	{
 		s_pRuntimeObjectSystem->CleanObjectFiles();
 		delete s_pRuntimeObjectSystem;
+	}
+
+	void NativeScriptCore::SetScene(Scene* scene)
+	{
+		PerModuleInterface::g_pSystemTable->CurrentScene = scene;
 	}
 
 	void NativeScriptCore::AddModule(const std::string& dir)
@@ -91,4 +93,10 @@ namespace XYZ {
 		//	}
 		//}
 	}
+
+	IRuntimeObjectSystem* NativeScriptCore::GetObjectSystem()
+	{
+		return s_pRuntimeObjectSystem;
+	}
+	
 }

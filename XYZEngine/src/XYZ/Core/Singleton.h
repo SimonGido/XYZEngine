@@ -12,7 +12,7 @@ namespace XYZ {
         Singleton(Singleton&&) = delete;
         Singleton& operator=(Singleton&&) = delete;
     
-        static T& Get() 
+        static T& Get()
         {
             static T instance(token{});
             return instance;

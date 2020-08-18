@@ -154,7 +154,7 @@ void Compiler::RunCompile(const std::vector<FileSystemUtils::Path>& filesToCompi
 	m_pImplData->m_CmdProcess.m_bIsComplete = false;
 	//optimization and c runtime
 #ifdef _DEBUG
-	std::string flags = "/nologo /Z7 /FC /MTd /LDd ";
+	std::string flags = "/nologo /Z7 /FC /MDd /LDd ";
 #else
 	std::string flags = "/nologo /Z7 /FC /MD /LD ";	//also need debug information in release
 #endif
