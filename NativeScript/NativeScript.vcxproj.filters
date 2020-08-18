@@ -9,9 +9,6 @@
     <ClInclude Include="NativeScript.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\MainLoop.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\Test.cpp">
       <Filter>src</Filter>
     </ClCompile>

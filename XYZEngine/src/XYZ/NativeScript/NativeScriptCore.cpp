@@ -2,10 +2,10 @@
 #include "stdafx.h"
 #include "NativeScriptCore.h"
 
-
-#include "XYZ/NativeScript/ScriptableEntity.h"
-#include "XYZ/Scene/SceneManager.h"
 #include "Haha.h"
+
+#include <RuntimeObjectSystem/ObjectInterfacePerModule.h>
+
 namespace XYZ {
 
 
@@ -28,7 +28,7 @@ namespace XYZ {
 		s_pRuntimeObjectSystem->AddIncludeDir("../XYZEngine/vendor/RCC/");
 
 		s_pRuntimeObjectSystem->SetAdditionalCompileOptions("/std:c++17");
-		//s_pRuntimeObjectSystem->SetAdditionalLinkOptions("../bin/Debug-windows-x86_64/XYZEngine/XYZEngine.lib");
+		s_pRuntimeObjectSystem->SetAdditionalLinkOptions("../bin/Debug-windows-x86_64/XYZEngine/XYZEngine.lib");
 	}
 
 	void NativeScriptCore::Destroy()
@@ -53,50 +53,19 @@ namespace XYZ {
 	}
 
 
-
-	void NativeScriptCore::Update(float dt)
+	bool NativeScriptCore::Update(float dt)
 	{
 		if (s_pRuntimeObjectSystem->GetIsCompiledComplete())
 		{
 			// load module when compile complete
 			s_pRuntimeObjectSystem->LoadCompiledModule();
+			return true;
 		}
 
 		if (!s_pRuntimeObjectSystem->GetIsCompiling())
 		{
 			s_pRuntimeObjectSystem->GetFileChangeNotifier()->Update(dt);
 		}
-
-		//IObject* kuk;
-		//
-		//
-		//AUDynArray<IObjectConstructor*> constructors;
-		//s_pRuntimeObjectSystem->GetObjectFactorySystem()->GetAll(constructors);
-		//
-		//IObjectConstructor* pCtor = s_pRuntimeObjectSystem->GetObjectFactorySystem()->GetConstructor("Testik");
-		//if (pCtor)
-		//{
-		//	IObject* pObj = pCtor->Construct();
-		//	pObj->GetInterface(&kuk);
-		//	if (0 == kuk)
-		//	{
-		//		delete pObj;
-		//		s_Logger.LogError("Error - no updateable interface found\n");
-		//	}
-		//	else
-		//	{
-		//		ScriptableEntity* testik = (ScriptableEntity*)kuk;
-		//		testik->Entity = { 3, SceneManager::Get().GetActive().Raw() };
-		//		testik->OnUpdate(dt);
-		//
-		//		delete testik;
-		//	}
-		//}
+		return false;
 	}
-
-	IRuntimeObjectSystem* NativeScriptCore::GetObjectSystem()
-	{
-		return s_pRuntimeObjectSystem;
-	}
-	
 }

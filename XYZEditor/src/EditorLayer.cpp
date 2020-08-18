@@ -144,16 +144,14 @@ namespace XYZ {
 	}
 	void EditorLayer::OnUpdate(float ts)
 	{
-		NativeScriptCore::Update(ts);
-		PerModuleInterface::g_pSystemTable->MainLoop->MainLoop();
-		auto storage = m_Scene->GetECS()->GetComponentStorage<NativeScriptComponent>();
-		for (int i = 0; i < storage->Size(); ++i)
+		if (NativeScriptCore::Update(ts))
 		{
-			(*storage)[i].ScriptableEntity = NativeScriptCore::GetScriptClass<Testik>();
-			(*storage)[i].ScriptableEntity->Entity = m_TestEntity;
-			if ((*storage)[i].ScriptableEntity->Lol())
+			// After compilation set new Scriptable Entity pointers
+			auto storage = m_Scene->GetECS()->GetComponentStorage<NativeScriptComponent>();
+			for (int i = 0; i < storage->Size(); ++i)
 			{
-				(*storage)[i].ScriptableEntity->OnUpdate(ts);
+				(*storage)[i].ScriptableEntity = NativeScriptCore::GetScriptClass<Testik>();
+				(*storage)[i].ScriptableEntity->Entity = m_TestEntity;
 			}
 		}
 		RenderCommand::Clear();

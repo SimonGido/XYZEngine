@@ -2,7 +2,6 @@
 
 #include "XYZ/Core/Logger.h"
 
-#include <RuntimeObjectSystem/ObjectInterfacePerModule.h>
 #include <RuntimeObjectSystem/IObject.h>
 #include <RuntimeObjectSystem/RuntimeObjectSystem.h>
 #include <RuntimeObjectSystem/ObjectFactorySystem/ObjectFactorySystem.h>
@@ -14,8 +13,7 @@ struct RCCppMainLoopI;
 struct SystemTable
 {
 	XYZ::Scene* CurrentScene = nullptr;
-	RCCppMainLoopI* MainLoop = nullptr;
-	std::function<void(uint32_t)> SetColor;
+	std::function<void(const glm::vec4&, uint32_t)> SetColor;
 };
 
 namespace XYZ {
@@ -34,9 +32,8 @@ namespace XYZ {
 		static void SetScene(Scene* scene);
 		static void AddModule(const std::string& dir);
 		static void RemoveModule(const std::string& dir);
-		static void Update(float dt);
+		static bool Update(float dt);
 
-		static IRuntimeObjectSystem* GetObjectSystem();
 		
 		template <typename T>
 		static T* GetScriptClass()
@@ -71,5 +68,5 @@ namespace XYZ {
 
 #define REGISTERMODULE(filepath) NativeScriptCore::AddModule(filepath)
 #define REMOVEMODULE(filepath) NativeScriptCore::RemoveModule(filepath)
-
+#define NATIVE PerModuleInterface::g_pSystemTable->
 }

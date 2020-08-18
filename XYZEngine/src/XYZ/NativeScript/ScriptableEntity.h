@@ -9,7 +9,6 @@
 #include "NativeScriptCore.h"
 
 
-
 namespace XYZ {
 
 	class ScriptableEntity : public TInterface<ID_SCRIPTABLE_ENTITY, IObject>
@@ -19,10 +18,6 @@ namespace XYZ {
 		virtual void OnUpdate(float dt) {};
 		virtual void OnDestroy() {};
 
-		virtual void Test(Scene* scene) {};
-
-
-		virtual bool Lol() { return true; };
 		Entity Entity;
 	};
 
