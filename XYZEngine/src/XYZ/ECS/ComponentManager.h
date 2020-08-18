@@ -61,7 +61,6 @@ namespace XYZ {
 				if ((group->GetSignature() & signature) == group->GetSignature())
 				{
 					group->AddEntity(entity);
-					break;
 				}
 			}
 		}
@@ -73,7 +72,6 @@ namespace XYZ {
 				if ((group->GetSignature() & signature) == group->GetSignature())
 				{
 					group->RemoveEntity(entity);
-					break;
 				}
 			}
 		}

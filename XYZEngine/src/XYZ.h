@@ -1,5 +1,4 @@
 #pragma once
-
 //-----Core-----//
 #include "XYZ/Core/Application.h"
 #include "XYZ/Core/Input.h"
@@ -32,7 +31,6 @@
 #include "XYZ/Scene/SceneCamera.h"
 #include "XYZ/Scene/SceneManager.h"
 #include "XYZ/Scene/AssetManager.h"
-
 
 //------ECS-----//
 #include "XYZ/ECS/ECSManager.h"
@@ -67,3 +65,7 @@
 
 
 #include "XYZ/FSM/Machine.h"
+
+
+//------NativeScript-------//
+#include "XYZ/NativeScript/ScriptableEntity.h"

@@ -46,6 +46,9 @@
     <Filter Include="src\XYZ\InGui">
       <UniqueIdentifier>{722483E2-DEE4-FE18-A71F-4896139F43F5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\XYZ\NativeScript">
+      <UniqueIdentifier>{F203639E-DE92-EC67-87B1-0063731FFD0D}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\XYZ\Particle">
       <UniqueIdentifier>{8A51F47C-764A-13CF-9F7C-F8538BD4F2DA}</UniqueIdentifier>
     </Filter>
@@ -58,6 +61,9 @@
     <Filter Include="src\XYZ\Scene">
       <UniqueIdentifier>{049032E3-7050-AE19-398B-F796A50AF3F5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\XYZ\Script">
+      <UniqueIdentifier>{0B9E8B49-F76B-7F4F-E0FF-EF75CC6C5BB4}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\XYZ\Utils">
       <UniqueIdentifier>{472460E3-B3E4-DB19-7C1F-2597E89E20F6}</UniqueIdentifier>
     </Filter>
@@ -66,6 +72,36 @@
     </Filter>
     <Filter Include="vendor">
       <UniqueIdentifier>{B3738122-9F15-ACF8-88D0-BF4C74113349}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\FileWatcher">
+      <UniqueIdentifier>{F0B249A7-DC96-0AFD-45F7-045031FAF47E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\FileWatcher\include">
+      <UniqueIdentifier>{63CA1296-4FDA-BE66-B893-2385A4C2ADFF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\FileWatcher\include\FileWatcher">
+      <UniqueIdentifier>{A091E27A-8CE3-B96A-7502-F77A61F3D253}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\FileWatcher\source">
+      <UniqueIdentifier>{102732F5-7CE9-657F-C599-F40B319B3E5D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\RCC">
+      <UniqueIdentifier>{BA40C5A8-A6F8-06F6-0F00-E051FBD6A1E6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\RCC\RuntimeCompiler">
+      <UniqueIdentifier>{28856F42-1495-1B13-7D4E-8031697D0AAC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\RCC\RuntimeCompiler\SimpleFileWatcher">
+      <UniqueIdentifier>{0F947051-FBA6-70AA-A490-4D9790820DF8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\RCC\RuntimeObjectSystem">
+      <UniqueIdentifier>{693AC278-5560-8CDF-3EA6-11AB2A6BB1AB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\RCC\RuntimeObjectSystem\ObjectFactorySystem">
+      <UniqueIdentifier>{CC549DD8-B8E8-9280-21AD-EC340D60CD72}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\RCC\RuntimeObjectSystem\SimpleSerializer">
+      <UniqueIdentifier>{7C9B2012-E8D6-80D5-F1CB-FD645D860506}</UniqueIdentifier>
     </Filter>
     <Filter Include="vendor\glm">
       <UniqueIdentifier>{829FC5A8-6E57-07F6-D75E-E051C335A2E6}</UniqueIdentifier>
@@ -192,6 +228,9 @@
     <ClInclude Include="src\XYZ\Core\Singleton.h">
       <Filter>src\XYZ\Core</Filter>
     </ClInclude>
+    <ClInclude Include="src\XYZ\Core\Timestep.h">
+      <Filter>src\XYZ\Core</Filter>
+    </ClInclude>
     <ClInclude Include="src\XYZ\Core\Window.h">
       <Filter>src\XYZ\Core</Filter>
     </ClInclude>
@@ -249,6 +288,9 @@
     <ClInclude Include="src\XYZ\Event\InputEvent.h">
       <Filter>src\XYZ\Event</Filter>
     </ClInclude>
+    <ClInclude Include="src\XYZ\FSM\Machine.h">
+      <Filter>src\XYZ\FSM</Filter>
+    </ClInclude>
     <ClInclude Include="src\XYZ\FSM\Setup.h">
       <Filter>src\XYZ\FSM</Filter>
     </ClInclude>
@@ -296,6 +338,12 @@
     </ClInclude>
     <ClInclude Include="src\XYZ\InGui\InGuiRenderQueue.h">
       <Filter>src\XYZ\InGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\XYZ\NativeScript\NativeScriptCore.h">
+      <Filter>src\XYZ\NativeScript</Filter>
+    </ClInclude>
+    <ClInclude Include="src\XYZ\NativeScript\ScriptableEntity.h">
+      <Filter>src\XYZ\NativeScript</Filter>
     </ClInclude>
     <ClInclude Include="src\XYZ\Particle\ParticleEffect2D.h">
       <Filter>src\XYZ\Particle</Filter>
@@ -416,6 +464,108 @@
     </ClInclude>
     <ClInclude Include="src\stdafx.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\FileWatcher\include\FileWatcher\FileWatcher.h">
+      <Filter>vendor\FileWatcher\include\FileWatcher</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\FileWatcher\include\FileWatcher\FileWatcherImpl.h">
+      <Filter>vendor\FileWatcher\include\FileWatcher</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\FileWatcher\include\FileWatcher\FileWatcherLinux.h">
+      <Filter>vendor\FileWatcher\include\FileWatcher</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\FileWatcher\include\FileWatcher\FileWatcherOSX.h">
+      <Filter>vendor\FileWatcher\include\FileWatcher</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\FileWatcher\include\FileWatcher\FileWatcherWin32.h">
+      <Filter>vendor\FileWatcher\include\FileWatcher</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\RCC\RuntimeCompiler\AUArray.h">
+      <Filter>vendor\RCC\RuntimeCompiler</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\RCC\RuntimeCompiler\BuildTool.h">
+      <Filter>vendor\RCC\RuntimeCompiler</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\RCC\RuntimeCompiler\CompileOptions.h">
+      <Filter>vendor\RCC\RuntimeCompiler</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\RCC\RuntimeCompiler\Compiler.h">
+      <Filter>vendor\RCC\RuntimeCompiler</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\RCC\RuntimeCompiler\FileChangeNotifier.h">
+      <Filter>vendor\RCC\RuntimeCompiler</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\RCC\RuntimeCompiler\FileSystemUtils.h">
+      <Filter>vendor\RCC\RuntimeCompiler</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\RCC\RuntimeCompiler\ICompilerLogger.h">
+      <Filter>vendor\RCC\RuntimeCompiler</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\RCC\RuntimeCompiler\IFileChangeNotifier.h">
+      <Filter>vendor\RCC\RuntimeCompiler</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\RCC\RuntimeCompiler\SimpleFileWatcher\FileWatcher.h">
+      <Filter>vendor\RCC\RuntimeCompiler\SimpleFileWatcher</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\RCC\RuntimeCompiler\SimpleFileWatcher\FileWatcherImpl.h">
+      <Filter>vendor\RCC\RuntimeCompiler\SimpleFileWatcher</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\RCC\RuntimeCompiler\SimpleFileWatcher\FileWatcherLinux.h">
+      <Filter>vendor\RCC\RuntimeCompiler\SimpleFileWatcher</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\RCC\RuntimeCompiler\SimpleFileWatcher\FileWatcherOSX.h">
+      <Filter>vendor\RCC\RuntimeCompiler\SimpleFileWatcher</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\RCC\RuntimeCompiler\SimpleFileWatcher\FileWatcherWin32.h">
+      <Filter>vendor\RCC\RuntimeCompiler\SimpleFileWatcher</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\RCC\RuntimeCompiler\SimpleFileWatcher\FileWatcherWin32_AltImpl.h">
+      <Filter>vendor\RCC\RuntimeCompiler\SimpleFileWatcher</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\RCC\RuntimeCompiler\StdioLogSystem.h">
+      <Filter>vendor\RCC\RuntimeCompiler</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\RCC\RuntimeObjectSystem\IObject.h">
+      <Filter>vendor\RCC\RuntimeObjectSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\RCC\RuntimeObjectSystem\IObjectFactorySystem.h">
+      <Filter>vendor\RCC\RuntimeObjectSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\RCC\RuntimeObjectSystem\IRuntimeObjectSystem.h">
+      <Filter>vendor\RCC\RuntimeObjectSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\RCC\RuntimeObjectSystem\ISimpleSerializer.h">
+      <Filter>vendor\RCC\RuntimeObjectSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\RCC\RuntimeObjectSystem\ObjectFactorySystem\ObjectFactorySystem.h">
+      <Filter>vendor\RCC\RuntimeObjectSystem\ObjectFactorySystem</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\RCC\RuntimeObjectSystem\ObjectInterface.h">
+      <Filter>vendor\RCC\RuntimeObjectSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\RCC\RuntimeObjectSystem\ObjectInterfacePerModule.h">
+      <Filter>vendor\RCC\RuntimeObjectSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\RCC\RuntimeObjectSystem\RuntimeInclude.h">
+      <Filter>vendor\RCC\RuntimeObjectSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\RCC\RuntimeObjectSystem\RuntimeLinkLibrary.h">
+      <Filter>vendor\RCC\RuntimeObjectSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\RCC\RuntimeObjectSystem\RuntimeObjectSystem.h">
+      <Filter>vendor\RCC\RuntimeObjectSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\RCC\RuntimeObjectSystem\RuntimeProtector.h">
+      <Filter>vendor\RCC\RuntimeObjectSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\RCC\RuntimeObjectSystem\RuntimeSourceDependency.h">
+      <Filter>vendor\RCC\RuntimeObjectSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\RCC\RuntimeObjectSystem\RuntimeTracking.h">
+      <Filter>vendor\RCC\RuntimeObjectSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\RCC\RuntimeObjectSystem\SimpleSerializer\SimpleSerializer.h">
+      <Filter>vendor\RCC\RuntimeObjectSystem\SimpleSerializer</Filter>
     </ClInclude>
     <ClInclude Include="vendor\glm\glm\common.hpp">
       <Filter>vendor\glm\glm</Filter>
@@ -1740,7 +1890,6 @@
     <ClInclude Include="vendor\yaml-cpp\src\token.h">
       <Filter>vendor\yaml-cpp\src</Filter>
     </ClInclude>
-    <ClInclude Include="src\XYZ\FSM\Machine.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\API\OpenGL\OpenGLAPIContext.cpp">
@@ -1823,6 +1972,9 @@
     </ClCompile>
     <ClCompile Include="src\XYZ\Editor\EditorCamera.cpp">
       <Filter>src\XYZ\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\XYZ\FSM\Machine.cpp">
+      <Filter>src\XYZ\FSM</Filter>
     </ClCompile>
     <ClCompile Include="src\XYZ\Gui\Button.cpp">
       <Filter>src\XYZ\Gui</Filter>
@@ -1971,6 +2123,63 @@
     <ClCompile Include="src\stdafx.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="vendor\FileWatcher\source\FileWatcher.cpp">
+      <Filter>vendor\FileWatcher\source</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\FileWatcher\source\FileWatcherLinux.cpp">
+      <Filter>vendor\FileWatcher\source</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\FileWatcher\source\FileWatcherOSX.cpp">
+      <Filter>vendor\FileWatcher\source</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\FileWatcher\source\FileWatcherWin32.cpp">
+      <Filter>vendor\FileWatcher\source</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\RCC\RuntimeCompiler\BuildTool.cpp">
+      <Filter>vendor\RCC\RuntimeCompiler</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\RCC\RuntimeCompiler\Compiler_PlatformPosix.cpp">
+      <Filter>vendor\RCC\RuntimeCompiler</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\RCC\RuntimeCompiler\Compiler_PlatformWindows.cpp">
+      <Filter>vendor\RCC\RuntimeCompiler</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\RCC\RuntimeCompiler\FileChangeNotifier.cpp">
+      <Filter>vendor\RCC\RuntimeCompiler</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\RCC\RuntimeCompiler\SimpleFileWatcher\FileWatcher.cpp">
+      <Filter>vendor\RCC\RuntimeCompiler\SimpleFileWatcher</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\RCC\RuntimeCompiler\SimpleFileWatcher\FileWatcherLinux.cpp">
+      <Filter>vendor\RCC\RuntimeCompiler\SimpleFileWatcher</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\RCC\RuntimeCompiler\SimpleFileWatcher\FileWatcherOSX.cpp">
+      <Filter>vendor\RCC\RuntimeCompiler\SimpleFileWatcher</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\RCC\RuntimeCompiler\SimpleFileWatcher\FileWatcherWin32.cpp">
+      <Filter>vendor\RCC\RuntimeCompiler\SimpleFileWatcher</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\RCC\RuntimeCompiler\StdioLogSystem.cpp">
+      <Filter>vendor\RCC\RuntimeCompiler</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\RCC\RuntimeObjectSystem\ObjectFactorySystem\ObjectFactorySystem.cpp">
+      <Filter>vendor\RCC\RuntimeObjectSystem\ObjectFactorySystem</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\RCC\RuntimeObjectSystem\ObjectInterfacePerModuleSource.cpp">
+      <Filter>vendor\RCC\RuntimeObjectSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\RCC\RuntimeObjectSystem\RuntimeObjectSystem.cpp">
+      <Filter>vendor\RCC\RuntimeObjectSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\RCC\RuntimeObjectSystem\RuntimeObjectSystem_PlatformPosix.cpp">
+      <Filter>vendor\RCC\RuntimeObjectSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\RCC\RuntimeObjectSystem\RuntimeObjectSystem_PlatformWindows.cpp">
+      <Filter>vendor\RCC\RuntimeObjectSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\RCC\RuntimeObjectSystem\SimpleSerializer\SimpleSerializer.cpp">
+      <Filter>vendor\RCC\RuntimeObjectSystem\SimpleSerializer</Filter>
+    </ClCompile>
     <ClCompile Include="vendor\stb_image\stb_image.cpp">
       <Filter>vendor\stb_image</Filter>
     </ClCompile>
@@ -2067,6 +2276,11 @@
     <ClCompile Include="vendor\yaml-cpp\src\tag.cpp">
       <Filter>vendor\yaml-cpp\src</Filter>
     </ClCompile>
-    <ClCompile Include="src\XYZ\FSM\Machine.cpp" />
+    <ClCompile Include="src\XYZ\NativeScript\NativeScriptCore.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="vendor\RCC\RuntimeCompiler\SimpleFileWatcher\FileWatcherLinux.cpp~">
+      <Filter>vendor\RCC\RuntimeCompiler\SimpleFileWatcher</Filter>
+    </None>
   </ItemGroup>
 </Project>

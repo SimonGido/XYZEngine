@@ -726,7 +726,7 @@ namespace XYZ {
 			g_InContext->FrameData.CurrentWindow = it->second;
 			return it->second;
 		}
-		InGuiWindow* InGuiContext::CreateWindow(const std::string& name, const glm::vec2& position, const glm::vec2& size)
+		InGuiWindow* InGuiContext::CreateWin(const std::string& name, const glm::vec2& position, const glm::vec2& size)
 		{
 			g_InContext->InGuiWindows[name] = new InGuiWindow{name, position,size };
 			g_InContext->FrameData.CurrentWindow = g_InContext->InGuiWindows[name];

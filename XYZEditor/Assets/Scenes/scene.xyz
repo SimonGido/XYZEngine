@@ -2,13 +2,13 @@ Scene: Test Scene
 Entities:
   - Entity: Test Entity
     TransformComponent:
-      Position: [-0.182811737, 0, 0]
-      Rotation: [0.570787668, 0, 0, 0.821097672]
+      Position: [-0.624387741, 0, 0]
+      Rotation: [0.892341018, 0, 0, 0.451361775]
       Scale: [1, 1, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/material.mat
       SubTextureAssetPath: Assets/SubTextures/New SubTexture.subtex
-      Color: [0, 0.146673918, 0.853326082, 1]
+      Color: [0.375612259, 0.624387741, 0, 1]
       TextureID: 0
       SortLayer: 0
       IsVisible: true

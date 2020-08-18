@@ -1,9 +1,10 @@
 #pragma once
 
-#include "ECSManager.h"
 #include "XYZ/Scene/Scene.h"
 
+
 namespace XYZ {
+	
 
 	class Entity
 	{
@@ -54,7 +55,7 @@ namespace XYZ {
 		{
 			return m_Scene->m_ECS->AddComponent<T>(m_ID, component);
 		}
-
+		
 		template <typename T, typename ...Args>
 		T* EmplaceComponent(Args&&...args)
 		{

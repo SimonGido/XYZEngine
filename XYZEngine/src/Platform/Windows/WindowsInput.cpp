@@ -1,4 +1,6 @@
 #include "stdafx.h"
+
+#ifdef _WIN64
 #include "XYZ/Core/Input.h"
 
 #include "XYZ/Core/Application.h"
@@ -49,3 +51,5 @@ namespace XYZ {
 		return std::pair<int, int>(width, height);
 	}
 }
+
+#endif

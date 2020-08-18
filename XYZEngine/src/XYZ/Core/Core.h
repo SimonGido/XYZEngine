@@ -2,6 +2,8 @@
 #include <memory>
 #include <functional>
 
+#define _AMD64_
+
 #ifdef _WIN32
 
 #ifdef _WIN64

@@ -4,8 +4,8 @@ workspace "XYZEngine"
 
 		configurations
 		{
-				"Debug",
-				"Release"
+			"Debug",
+			"Release"
 		}
 
 		flags
@@ -19,6 +19,8 @@ IncludeDir = {}
 IncludeDir["GLFW"] = "XYZEngine/vendor/GLFW/include"
 IncludeDir["GLEW"] = "XYZEngine/vendor/GLEW/include"
 IncludeDir["glm"] = "XYZEngine/vendor/glm"
+IncludeDir["FW"] = "XYZEngine/vendor/FileWatcher/include"
+IncludeDir["RCC"] = "XYZEngine/vendor/RCC"
 IncludeDir["mini"] = "XYZEngine/vendor/mini"
 IncludeDir["OpenAL"] = "XYZEngine/vendor/OpenAL-Soft"
 IncludeDir["MiniMp3"] = "XYZEngine/vendor/minimp3"
@@ -56,8 +58,13 @@ project "XYZEngine"
 
 			"%{prj.name}/vendor/yaml-cpp/src/**.cpp",
 			"%{prj.name}/vendor/yaml-cpp/src/**.h",
-			"%{prj.name}/vendor/yaml-cpp/include/**.h"
+			"%{prj.name}/vendor/yaml-cpp/include/**.h",
 
+			"%{prj.name}/vendor/FileWatcher/**.h",
+			"%{prj.name}/vendor/FileWatcher/**.cpp",
+
+			"%{prj.name}/vendor/RCC/**.h",
+			"%{prj.name}/vendor/RCC/**.cpp"
 		}
 
 		defines
@@ -74,6 +81,8 @@ project "XYZEngine"
 			"%{IncludeDir.GLFW}",
 			"%{IncludeDir.GLEW}",
 			"%{IncludeDir.glm}",
+			"%{IncludeDir.FW}",
+			"%{IncludeDir.RCC}",
 			"%{IncludeDir.mini}",
 			"%{IncludeDir.OpenAL}/include",
 			"%{IncludeDir.OpenAL}/src",
@@ -92,6 +101,7 @@ project "XYZEngine"
 			"opengl32",
 			"%{LibraryDir.mono}"
 		}
+		
 		flags { "NoPCH" }
 		
 		filter "system:windows"
@@ -108,6 +118,38 @@ project "XYZEngine"
 				defines "XYZ_RELEASE"
 				runtime "Release"
 				optimize "on"
+
+
+project "NativeScript"
+		location "NativeScript"
+		kind "StaticLib"
+		language "C++"
+		cppdialect "C++17"
+		staticruntime "on"
+				
+		
+		targetdir("bin/" .. outputdir .. "/%{prj.name}")
+		objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+				
+		
+		files
+		{
+			"%{prj.name}/**.h",
+			"%{prj.name}/**.cpp"
+		}
+
+		includedirs
+		{
+			"XYZEngine/vendor",
+			"XYZEngine/src",
+			"%{IncludeDir.glm}",
+			"%{IncludeDir.RCC}"
+		}
+
+		links
+		{
+			"XYZEngine"
+		}
 
 project "XYZEditor"
 		location "XYZEditor"
@@ -129,7 +171,9 @@ project "XYZEditor"
 		{
 			"XYZEngine/vendor",
 			"XYZEngine/src",
-			"%{IncludeDir.glm}"
+			"NativeScript",
+			"%{IncludeDir.glm}",
+			"%{IncludeDir.RCC}"
 		}
 
 		links
@@ -147,7 +191,7 @@ project "XYZEditor"
 
 		postbuildcommands 
 		{
-			'{COPY} "../XYZEngine/vendor/mono/bin/Debug/mono-2.0-sgen.dll" "%{cfg.targetdir}"'
+			'{COPY} "../XYZEngine/vendor/mono/bin/Debug/mono-2.0-sgen.dll" "%{cfg.targetdir}"',
 		}
 
 		filter "configurations:Release"
@@ -159,48 +203,6 @@ project "XYZEditor"
 		{
 			'{COPY} "../XYZEngine/vendor/mono/bin/Debug/mono-2.0-sgen.dll" "%{cfg.targetdir}"'
 		}
-
-project "ZSandbox"
-		location "ZSandbox"
-		kind "ConsoleApp"
-		language "C++"
-		cppdialect "C++17"
-		staticruntime "on"
-		
-		targetdir ("bin/" .. outputdir .. "/%{prj.name}")
-		objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-		
-		files
-		{
-			"%{prj.name}/src/**.h",
-			"%{prj.name}/src/**.cpp"
-		}
-				
-		includedirs
-		{
-			"XYZ_Engine/vendor",
-			"XYZ_Engine/src",
-			"%{IncludeDir.glm}"
-		}
-
-		links
-		{
-			"XYZEngine"
-		}
-
-		filter "system:windows"
-				systemversion "latest"
-
-		filter "configurations:Debug"
-				defines "XYZ_DEBUG"
-				runtime "Debug"
-				symbols "on"
-
-		filter "configurations:Release"
-				defines "XYZ_RELEASE"
-				runtime "Release"
-				optimize "on"				
-				
 
 
 project "XYZScriptCore"
@@ -215,3 +217,4 @@ project "XYZScriptCore"
 		{
 			"%{prj.name}/src/**.cs", 
 		}
+

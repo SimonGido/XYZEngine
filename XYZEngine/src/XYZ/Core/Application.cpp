@@ -5,6 +5,7 @@
 #include "XYZ/Timer.h"
 #include "XYZ/Renderer/Renderer.h"
 
+
 #include <GLFW/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
@@ -31,10 +32,13 @@ namespace XYZ {
 
 		m_Window->RegisterCallback<WindowCloseEvent>(Hook(&Application::onWindowClosed, this));
 		m_Window->RegisterCallback<WindowResizeEvent>(Hook(&Application::onWindowResized, this));
+		
+		
 	}
 
 	Application::~Application()
 	{
+		
 	}
 
 	void Application::Run()

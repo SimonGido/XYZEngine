@@ -30,8 +30,24 @@ namespace XYZ {
 	bool SceneManager::SetActive(const std::string& name)
 	{
 		if (m_Scenes.count(name) == 0) return false;
-		m_CurrentScene->OnDetach();
+		if (m_CurrentScene)
+			m_CurrentScene->OnDetach();
 		m_CurrentScene = m_Scenes[name];
 		m_CurrentScene->OnAttach();
+	}
+	bool SceneManager::SetActive(Ref<Scene> scene)
+	{
+		auto it = m_Scenes.find(scene->GetName());
+		if (m_CurrentScene)
+			m_CurrentScene->OnDetach();
+		
+		if (it == m_Scenes.end())
+		{
+			m_Scenes.insert({ scene->GetName(),scene });
+		}
+		m_CurrentScene = scene;
+		m_CurrentScene->OnAttach();
+	
+		return true;
 	}
 }

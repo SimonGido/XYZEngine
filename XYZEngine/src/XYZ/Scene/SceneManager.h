@@ -24,7 +24,7 @@ namespace XYZ
 	{	
 	public:
 		SceneManager(token) {};
-		~SceneManager() {};
+		~SceneManager() { };
 
 	
 		bool Remove(const std::string& name);
@@ -32,9 +32,12 @@ namespace XYZ
 		/** Sets scene as active. This will mark the scene for rendering */
 		bool SetActive(const std::string& name);
 
+		bool SetActive(Ref<Scene> scene);
 
 		inline Ref<Scene> GetActive() const { return m_CurrentScene; }
 		
+		std::unordered_map<std::string, Ref<Scene>>& GetScenes() { return m_Scenes; }
+
 		Ref<Scene> CreateScene(const std::string& name);
 	private:
 		Ref<Scene> m_CurrentScene;

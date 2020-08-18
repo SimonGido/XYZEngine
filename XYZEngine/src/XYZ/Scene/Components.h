@@ -6,6 +6,7 @@
 
 
 namespace XYZ {
+	class ScriptableEntity;
 
 	class TransformComponent : public Type<TransformComponent>
 	{
@@ -52,5 +53,17 @@ namespace XYZ {
 	{
 		SceneCamera Camera;
 		CameraComponent() = default;
+	};
+
+
+	struct NativeScriptComponent : public Type<NativeScriptComponent>
+	{
+		NativeScriptComponent() = default;
+		NativeScriptComponent(ScriptableEntity* scriptableEntity)
+			:
+			ScriptableEntity(scriptableEntity)
+		{}
+
+		ScriptableEntity* ScriptableEntity = nullptr;
 	};
 }

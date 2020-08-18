@@ -31,7 +31,7 @@ namespace XYZ {
 			InGuiWindow* window = g_InContext->GetWindow(copyName);
 			if (window == nullptr)
 			{
-				window = g_InContext->CreateWindow(copyName, position, size);
+				window = g_InContext->CreateWin(copyName, position, size);
 			}
 			
 			HandleActivity(window);
@@ -475,7 +475,7 @@ namespace XYZ {
 			InGuiWindow* window = g_InContext->GetWindow(copyName);
 			if (window == nullptr)
 			{
-				window = g_InContext->CreateWindow(copyName, position, size);
+				window = g_InContext->CreateWin(copyName, position, size);
 			}		
 			HandleActivity(window);
 			

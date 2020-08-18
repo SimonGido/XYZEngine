@@ -1,6 +1,7 @@
 #pragma once
 #include "Types.h"
 #include "XYZ/Utils/DataStructures/FreeList.h"
+#include "XYZ/Core/Core.h"
 
 #include <unordered_map>
 #include <array>
@@ -116,6 +117,11 @@ namespace XYZ {
 		T& operator [](int index)
 		{
 			return m_Components[index];
+		}
+		
+		int Size() const
+		{
+			return m_Components.Range();
 		}
 
 	private:

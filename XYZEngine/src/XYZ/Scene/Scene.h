@@ -55,7 +55,9 @@ namespace XYZ {
 
         void OnRender();
 
-        void OnRenderEditor(float dt, const SceneRenderData& renderData);
+        void OnUpdate(float dt);
+
+        void OnRenderEditor(const SceneRenderData& renderData);
 
         SceneState GetState() const { return m_State; }
 
@@ -65,7 +67,7 @@ namespace XYZ {
 
         inline const SceneCamera& GetMainCamera() const { return m_MainCamera->Camera; }
  
-   
+        ECSManager* GetECS() { return m_ECS; }
     private:
         struct SceneObject
         {
@@ -108,6 +110,7 @@ namespace XYZ {
     private:
         ECSManager* m_ECS = nullptr;
         ComponentGroup<TransformComponent, SpriteRenderer>* m_RenderGroup = nullptr;
+        ComponentGroup<NativeScriptComponent>* m_ScriptGroup = nullptr;
 
         std::string m_Name;
         SceneState m_State = SceneState::Edit;

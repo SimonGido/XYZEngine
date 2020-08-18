@@ -198,7 +198,7 @@ namespace XYZ {
 			~InGuiContext();
 
 			InGuiWindow* GetWindow(const std::string& name);
-			InGuiWindow* CreateWindow(const std::string& name, const glm::vec2& position, const glm::vec2& size);
+			InGuiWindow* CreateWin(const std::string& name, const glm::vec2& position, const glm::vec2& size);
 			void SubmitToRenderer();
 
 

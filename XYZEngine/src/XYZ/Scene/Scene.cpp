@@ -6,6 +6,7 @@
 #include "XYZ/Renderer/Renderer.h"
 
 #include "XYZ/Renderer/RenderCommand.h"
+#include "XYZ/NativeScript/ScriptableEntity.h"
 #include "XYZ/ECS/Entity.h"
 
 #include "XYZ/Timer.h"
@@ -19,6 +20,7 @@ namespace XYZ {
 	{
 		m_ECS = new ECSManager();
 		m_RenderGroup = m_ECS->CreateGroup<TransformComponent, SpriteRenderer>();
+		m_ScriptGroup = m_ECS->CreateGroup<NativeScriptComponent>();
 
 		uint32_t entity = m_ECS->CreateEntity();
 		m_SceneWorld.Transform = m_ECS->EmplaceComponent<TransformComponent>(entity);
@@ -41,8 +43,9 @@ namespace XYZ {
 		m_SceneGraphMap.insert({ m_MainCameraEntity,cameraIndex });
 
 		m_MainCamera->Camera.SetOrthographic(4.0f);
+		
 		m_MainCamera->Camera.SetViewportSize(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
-
+	
 	}
 
 	Scene::~Scene() 
@@ -142,8 +145,18 @@ namespace XYZ {
 		Renderer2D::EndScene();
 	}
 
-	void Scene::OnRenderEditor(float dt, const SceneRenderData& renderData)
-	{	
+	void Scene::OnUpdate(float dt)
+	{
+		
+		for (int i = 0; i < m_ScriptGroup->Size(); ++i)
+		{
+			auto [script] = (*m_ScriptGroup)[i];		
+			script->ScriptableEntity->OnUpdate(dt);
+		}
+	}
+
+	void Scene::OnRenderEditor(const SceneRenderData& renderData)
+	{
 		m_SceneGraph.Propagate([this](SceneObject* parent, SceneObject* child) {
 			//child->Transform->CalculateWorldTransformation();
 		});
