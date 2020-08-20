@@ -152,7 +152,6 @@ namespace XYZ {
 		{
 			auto [script] = (*m_ScriptGroup)[i];
 			script->ScriptableEntity->OnUpdate(dt);
-
 		}
 	}
 

@@ -40,7 +40,10 @@ namespace XYZ {
 		Ref<FrameBuffer> m_FBO;
 
 	private:
+
+		std::vector<Entity> m_StoredEntitiesWithScript;
 		Entity m_TestEntity;
+		Entity m_TestEntity2;
 		Entity m_TextEntity;
 
 		SpriteRenderer* m_SpriteRenderer;

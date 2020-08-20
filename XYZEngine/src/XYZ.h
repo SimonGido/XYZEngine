@@ -69,4 +69,4 @@
 
 //------NativeScript-------//
 #include "XYZ/NativeScript/ScriptableEntity.h"
-#include "XYZ/NativeScript/NativeScriptCore.h"
+

@@ -59,12 +59,14 @@ namespace XYZ {
 	struct NativeScriptComponent : public Type<NativeScriptComponent>
 	{
 		NativeScriptComponent() = default;
-		NativeScriptComponent(ScriptableEntity* scriptableEntity)
+		NativeScriptComponent(ScriptableEntity* scriptableEntity, const std::string& scriptObjectName)
 			:
-			ScriptableEntity(scriptableEntity)
+			ScriptableEntity(scriptableEntity),
+			ScriptObjectName(scriptObjectName)
 		{}
 
 		ScriptableEntity* ScriptableEntity = nullptr;
+		std::string ScriptObjectName;
 	};
 
 	

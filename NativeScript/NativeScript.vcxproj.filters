@@ -12,5 +12,6 @@
     <ClCompile Include="src\Test.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Another.cpp" />
   </ItemGroup>
 </Project>

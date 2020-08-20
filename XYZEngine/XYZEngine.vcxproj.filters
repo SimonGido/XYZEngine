@@ -61,9 +61,6 @@
     <Filter Include="src\XYZ\Scene">
       <UniqueIdentifier>{049032E3-7050-AE19-398B-F796A50AF3F5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\XYZ\Script">
-      <UniqueIdentifier>{0B9E8B49-F76B-7F4F-E0FF-EF75CC6C5BB4}</UniqueIdentifier>
-    </Filter>
     <Filter Include="src\XYZ\Utils">
       <UniqueIdentifier>{472460E3-B3E4-DB19-7C1F-2597E89E20F6}</UniqueIdentifier>
     </Filter>
@@ -72,18 +69,6 @@
     </Filter>
     <Filter Include="vendor">
       <UniqueIdentifier>{B3738122-9F15-ACF8-88D0-BF4C74113349}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="vendor\FileWatcher">
-      <UniqueIdentifier>{F0B249A7-DC96-0AFD-45F7-045031FAF47E}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="vendor\FileWatcher\include">
-      <UniqueIdentifier>{63CA1296-4FDA-BE66-B893-2385A4C2ADFF}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="vendor\FileWatcher\include\FileWatcher">
-      <UniqueIdentifier>{A091E27A-8CE3-B96A-7502-F77A61F3D253}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="vendor\FileWatcher\source">
-      <UniqueIdentifier>{102732F5-7CE9-657F-C599-F40B319B3E5D}</UniqueIdentifier>
     </Filter>
     <Filter Include="vendor\RCC">
       <UniqueIdentifier>{BA40C5A8-A6F8-06F6-0F00-E051FBD6A1E6}</UniqueIdentifier>
@@ -339,12 +324,6 @@
     <ClInclude Include="src\XYZ\InGui\InGuiRenderQueue.h">
       <Filter>src\XYZ\InGui</Filter>
     </ClInclude>
-    <ClInclude Include="src\XYZ\NativeScript\Haha.h">
-      <Filter>src\XYZ\NativeScript</Filter>
-    </ClInclude>
-    <ClInclude Include="src\XYZ\NativeScript\NativeScriptCore.h">
-      <Filter>src\XYZ\NativeScript</Filter>
-    </ClInclude>
     <ClInclude Include="src\XYZ\NativeScript\NativeScriptWrappers.h">
       <Filter>src\XYZ\NativeScript</Filter>
     </ClInclude>
@@ -470,21 +449,6 @@
     </ClInclude>
     <ClInclude Include="src\stdafx.h">
       <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\FileWatcher\include\FileWatcher\FileWatcher.h">
-      <Filter>vendor\FileWatcher\include\FileWatcher</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\FileWatcher\include\FileWatcher\FileWatcherImpl.h">
-      <Filter>vendor\FileWatcher\include\FileWatcher</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\FileWatcher\include\FileWatcher\FileWatcherLinux.h">
-      <Filter>vendor\FileWatcher\include\FileWatcher</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\FileWatcher\include\FileWatcher\FileWatcherOSX.h">
-      <Filter>vendor\FileWatcher\include\FileWatcher</Filter>
-    </ClInclude>
-    <ClInclude Include="vendor\FileWatcher\include\FileWatcher\FileWatcherWin32.h">
-      <Filter>vendor\FileWatcher\include\FileWatcher</Filter>
     </ClInclude>
     <ClInclude Include="vendor\RCC\RuntimeCompiler\AUArray.h">
       <Filter>vendor\RCC\RuntimeCompiler</Filter>
@@ -1896,6 +1860,8 @@
     <ClInclude Include="vendor\yaml-cpp\src\token.h">
       <Filter>vendor\yaml-cpp\src</Filter>
     </ClInclude>
+    <ClInclude Include="src\XYZ\NativeScript\NativeScriptEngine.h" />
+    <ClInclude Include="src\XYZ\NativeScript\NativeScriptLogger.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\API\OpenGL\OpenGLAPIContext.cpp">
@@ -2018,12 +1984,6 @@
     <ClCompile Include="src\XYZ\InGui\InGuiRenderQueue.cpp">
       <Filter>src\XYZ\InGui</Filter>
     </ClCompile>
-    <ClCompile Include="src\XYZ\NativeScript\Haha.cpp">
-      <Filter>src\XYZ\NativeScript</Filter>
-    </ClCompile>
-    <ClCompile Include="src\XYZ\NativeScript\NativeScriptCore.cpp">
-      <Filter>src\XYZ\NativeScript</Filter>
-    </ClCompile>
     <ClCompile Include="src\XYZ\NativeScript\NativeScriptWrappers.cpp">
       <Filter>src\XYZ\NativeScript</Filter>
     </ClCompile>
@@ -2137,18 +2097,6 @@
     </ClCompile>
     <ClCompile Include="src\stdafx.cpp">
       <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\FileWatcher\source\FileWatcher.cpp">
-      <Filter>vendor\FileWatcher\source</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\FileWatcher\source\FileWatcherLinux.cpp">
-      <Filter>vendor\FileWatcher\source</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\FileWatcher\source\FileWatcherOSX.cpp">
-      <Filter>vendor\FileWatcher\source</Filter>
-    </ClCompile>
-    <ClCompile Include="vendor\FileWatcher\source\FileWatcherWin32.cpp">
-      <Filter>vendor\FileWatcher\source</Filter>
     </ClCompile>
     <ClCompile Include="vendor\RCC\RuntimeCompiler\BuildTool.cpp">
       <Filter>vendor\RCC\RuntimeCompiler</Filter>
@@ -2291,6 +2239,8 @@
     <ClCompile Include="vendor\yaml-cpp\src\tag.cpp">
       <Filter>vendor\yaml-cpp\src</Filter>
     </ClCompile>
+    <ClCompile Include="src\XYZ\NativeScript\NativeScriptEngine.cpp" />
+    <ClCompile Include="src\XYZ\NativeScript\NativeScriptLogger.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="vendor\RCC\RuntimeCompiler\SimpleFileWatcher\FileWatcherLinux.cpp~">

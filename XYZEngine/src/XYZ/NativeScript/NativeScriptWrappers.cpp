@@ -2,14 +2,24 @@
 #include "NativeScriptWrappers.h"
 
 
-#include "XYZ/ECS/Entity.h"
-#include "XYZ/Scene/Components.h"
 #include "XYZ/Scene/SceneManager.h"
-
-#include "XYZ/NativeScript/NativeScriptCore.h"
 
 namespace XYZ {
 	namespace Script {
 
 	}
+	SpriteRenderer* GetSpriteRenderer(uint32_t entity)
+	{
+		Scene* scene = SceneManager::Get().GetActive().Raw();
+		Entity ent({ entity, scene });
+		return ent.GetComponent<SpriteRenderer>();
+	}
+
+	TransformComponent* GetTransformComponent(uint32_t entity)
+	{
+		Scene* scene = SceneManager::Get().GetActive().Raw();
+		Entity ent({ entity, scene });
+		return ent.GetComponent<TransformComponent>();
+	}
+	
 }

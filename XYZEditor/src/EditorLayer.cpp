@@ -4,10 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
-
-//#include "XYZ/NativeScript/NativeScriptCore.h"
 #include "NativeScript.h"
-
 
 namespace XYZ {
 	EditorLayer::~EditorLayer()
@@ -18,7 +15,26 @@ namespace XYZ {
 	void EditorLayer::OnAttach()
 	{
 		Renderer::Init();
-		NativeScriptCore::Init();
+		NativeScriptEngine::Init();
+
+		NativeScriptEngine::SetOnReloadCallback([this] {
+			auto storage = m_Scene->GetECS()->GetComponentStorage<NativeScriptComponent>();
+			for (int i = 0; i < storage->Size(); ++i)
+			{
+				(*storage)[i].ScriptableEntity = (ScriptableEntity*)NativeScriptEngine::CreateScriptObject((*storage)[i].ScriptObjectName);
+				(*storage)[i].ScriptableEntity->Entity = m_StoredEntitiesWithScript[i];
+				(*storage)[i].ScriptableEntity->OnCreate();
+			}
+		});
+
+		NativeScriptEngine::SetOnRecompileCallback([this]() {		
+			auto storage = m_Scene->GetECS()->GetComponentStorage<NativeScriptComponent>();
+			for (int i = 0; i < storage->Size(); ++i)
+			{
+				m_StoredEntitiesWithScript.push_back((*storage)[i].ScriptableEntity->Entity);
+			}
+		});
+		
 
 		auto& app = Application::Get();
 		m_FBO = FrameBuffer::Create({ app.GetWindow().GetWidth(),app.GetWindow().GetHeight() });
@@ -28,7 +44,6 @@ namespace XYZ {
 
 		m_Scene = m_AssetManager.GetAsset<Scene>("Assets/Scenes/scene.xyz");
 		SceneManager::Get().SetActive(m_Scene);
-		NativeScriptCore::SetScene(m_Scene.Raw());
 
 		m_Material = m_AssetManager.GetAsset<Material>("Assets/Materials/material.mat");
 		m_Material->SetFlags(XYZ::RenderFlags::TransparentFlag);
@@ -37,10 +52,19 @@ namespace XYZ {
 		m_SpriteRenderer = m_TestEntity.GetComponent<SpriteRenderer>();
 		m_Transform = m_TestEntity.GetComponent<TransformComponent>();
 		
-		ScriptableEntity *scriptableEntity = NativeScriptCore::GetScriptClass<Testik>();
-		NativeScriptComponent comp(scriptableEntity);
+		ScriptableEntity* scriptableEntity = (ScriptableEntity*)NativeScriptEngine::CreateScriptObject("Testik");
+		NativeScriptComponent comp(scriptableEntity, "Testik");
 		comp.ScriptableEntity->Entity = m_TestEntity;
+		comp.ScriptableEntity->OnCreate();
 		m_TestEntity.AddComponent<NativeScriptComponent>(comp);
+
+
+		m_TestEntity2 = m_Scene->GetEntity(3);
+		ScriptableEntity* scriptableEntity2 = (ScriptableEntity*)NativeScriptEngine::CreateScriptObject("Another");
+		NativeScriptComponent comp2(scriptableEntity2, "Another");
+		comp2.ScriptableEntity->Entity = m_TestEntity2;
+		comp2.ScriptableEntity->OnCreate();
+		m_TestEntity2.AddComponent<NativeScriptComponent>(comp2);
 
 		//m_TextMaterial = Material::Create(XYZ::Shader::Create("TextShader", "Assets/Shaders/TextShader.glsl"));
 		//m_TextMaterial->Set("u_Texture", XYZ::Texture2D::Create(XYZ::TextureWrap::Clamp, "Assets/Font/Arial.png"), 0);
@@ -80,7 +104,6 @@ namespace XYZ {
 		//	transform->Translate({ i,0,0 });
 		//	m_Scene->SetParent(m_TestEntity, entity);
 		//}	
-
 
 
 		m_Animation = new Animation(3.0f);
@@ -140,20 +163,14 @@ namespace XYZ {
 		delete m_RunAnimation;
 		delete m_Machine;
 
-		NativeScriptCore::Destroy();
+		NativeScriptEngine::Shutdown();
 	}
 	void EditorLayer::OnUpdate(float ts)
 	{
-		if (NativeScriptCore::Update(ts))
-		{
-			// After compilation set new Scriptable Entity pointers
-			auto storage = m_Scene->GetECS()->GetComponentStorage<NativeScriptComponent>();
-			for (int i = 0; i < storage->Size(); ++i)
-			{
-				(*storage)[i].ScriptableEntity = NativeScriptCore::GetScriptClass<Testik>();
-				(*storage)[i].ScriptableEntity->Entity = m_TestEntity;
-			}
-		}
+		NativeScriptEngine::Update(ts);
+		
+		
+	
 		RenderCommand::Clear();
 		RenderCommand::SetClearColor(glm::vec4(0.2, 0.2, 0.5, 1));
 
@@ -298,6 +315,4 @@ namespace XYZ {
 
 		return false;
 	}
-	
-	
 }

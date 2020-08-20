@@ -156,7 +156,7 @@ void Compiler::RunCompile(const std::vector<FileSystemUtils::Path>& filesToCompi
 #ifdef _DEBUG
 	std::string flags = "/nologo /Z7 /FC /MTd /LDd ";
 #else
-	std::string flags = "/nologo /Z7 /FC /MD /LD ";	//also need debug information in release
+	std::string flags = "/nologo /Z7 /FC /MT /LD ";	//also need debug information in release
 #endif
 
 	RCppOptimizationLevel optimizationLevel = GetActualOptimizationLevel(compilerOptions_.optimizationLevel);

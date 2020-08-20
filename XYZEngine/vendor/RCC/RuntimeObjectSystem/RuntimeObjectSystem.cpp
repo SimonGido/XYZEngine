@@ -400,6 +400,7 @@ bool RuntimeObjectSystem::LoadCompiledModule()
 	}
 
     GETPerModuleInterface_PROC pPerModuleInterfaceProcAdd = 0;
+
 #ifdef _WIN32
     pPerModuleInterfaceProcAdd = (GETPerModuleInterface_PROC) GetProcAddress(module, "GetPerModuleInterface");
 #else

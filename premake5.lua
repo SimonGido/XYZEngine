@@ -19,7 +19,6 @@ IncludeDir = {}
 IncludeDir["GLFW"] = "XYZEngine/vendor/GLFW/include"
 IncludeDir["GLEW"] = "XYZEngine/vendor/GLEW/include"
 IncludeDir["glm"] = "XYZEngine/vendor/glm"
-IncludeDir["FW"] = "XYZEngine/vendor/FileWatcher/include"
 IncludeDir["RCC"] = "XYZEngine/vendor/RCC"
 IncludeDir["mini"] = "XYZEngine/vendor/mini"
 IncludeDir["OpenAL"] = "XYZEngine/vendor/OpenAL-Soft"
@@ -60,9 +59,6 @@ project "XYZEngine"
 			"%{prj.name}/vendor/yaml-cpp/src/**.h",
 			"%{prj.name}/vendor/yaml-cpp/include/**.h",
 
-			"%{prj.name}/vendor/FileWatcher/**.h",
-			"%{prj.name}/vendor/FileWatcher/**.cpp",
-
 			"%{prj.name}/vendor/RCC/**.h",
 			"%{prj.name}/vendor/RCC/**.cpp"
 		}
@@ -81,7 +77,6 @@ project "XYZEngine"
 			"%{IncludeDir.GLFW}",
 			"%{IncludeDir.GLEW}",
 			"%{IncludeDir.glm}",
-			"%{IncludeDir.FW}",
 			"%{IncludeDir.RCC}",
 			"%{IncludeDir.mini}",
 			"%{IncludeDir.OpenAL}/include",
@@ -120,12 +115,13 @@ project "XYZEngine"
 				optimize "on"
 
 
+
 project "NativeScript"
 		location "NativeScript"
-		kind "SharedLib"
+		kind "StaticLib"
 		language "C++"
 		cppdialect "C++17"
-		staticruntime "off"
+		staticruntime "on"
 				
 		
 		targetdir("bin/" .. outputdir .. "/%{prj.name}")
@@ -140,14 +136,17 @@ project "NativeScript"
 
 		includedirs
 		{
-			"XYZEngine/vendor",
 			"XYZEngine/src",
 			"%{IncludeDir.glm}",
 			"%{IncludeDir.RCC}"
 		}
 
-		
+		links
+		{
+			"XYZEngine"
+		}
 
+		
 project "XYZEditor"
 		location "XYZEditor"
 		kind "ConsoleApp"

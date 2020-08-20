@@ -18,6 +18,7 @@
 // ObjectInterfaceOerDllSource.cpp : Defines the entry point for the DLL application.
 #include "ObjectInterfacePerModule.h"
 
+
 PerModuleInterface* PerModuleInterface::ms_pObjectManager = NULL;
 
 SystemTable* PerModuleInterface::g_pSystemTable = 0;

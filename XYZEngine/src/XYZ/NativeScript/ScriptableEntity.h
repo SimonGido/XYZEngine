@@ -1,24 +1,31 @@
 #pragma once
 #include <RuntimeObjectSystem/ObjectInterfacePerModule.h>
+#include <RuntimeObjectSystem/ObjectFactorySystem/ObjectFactorySystem.h>
 #include <RuntimeObjectSystem/IObject.h>
 
 
-#include "XYZ/Scene/Components.h"
-#include "XYZ/Core/Core.h"
-#include "XYZ/ECS/Entity.h"
-#include "NativeScriptCore.h"
 
+#include "NativeScriptWrappers.h"
+#include "NativeScriptEngine.h"
 
 namespace XYZ {
 
 	class ScriptableEntity : public TInterface<ID_SCRIPTABLE_ENTITY, IObject>
 	{
 	public:
+		ScriptableEntity()
+			:
+			API(PerModuleInterface::g_pSystemTable->NativeAPI)
+		{}
+
+		virtual ~ScriptableEntity() { std::cout << "Deleted" << std::endl; };
+
 		virtual void OnCreate() {};
 		virtual void OnUpdate(float dt) {};
 		virtual void OnDestroy() {};
 
 		Entity Entity;
+		const XYZ::Script::NativeAPI& API;
 	};
 
 		

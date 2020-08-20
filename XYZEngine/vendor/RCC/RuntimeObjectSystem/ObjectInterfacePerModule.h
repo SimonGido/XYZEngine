@@ -43,7 +43,6 @@ public:
 	static IRuntimeObjectSystem* g_pRuntimeObjectSystem;
 
 	void AddConstructor( IObjectConstructor* pConstructor );
-
 	virtual std::vector<IObjectConstructor*>& GetConstructors();
     virtual void SetProjectIdForAllConstructors( unsigned short projectId_ );
 	virtual void SetSystemTable( SystemTable* pSystemTable );
