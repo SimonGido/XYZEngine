@@ -12,7 +12,7 @@ namespace XYZ {
 
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
-		virtual void OnUpdate(float ts) override;
+		virtual void OnUpdate(Timestep ts) override;
 		virtual void OnEvent(Event& event) override;
 		virtual void OnInGuiRender() override;
 
@@ -40,7 +40,6 @@ namespace XYZ {
 		Ref<FrameBuffer> m_FBO;
 
 	private:
-
 		std::vector<Entity> m_StoredEntitiesWithScript;
 		Entity m_TestEntity;
 		Entity m_TestEntity2;
@@ -58,8 +57,9 @@ namespace XYZ {
 		bool m_CheckboxVal = false;
 		bool m_ActiveWindow = false;
 		bool m_MenuOpen = false;
-	
-	
+		bool m_PopupOpen = false;
+		std::string m_Text = "0";
+		bool m_Modified = false;
 		AssetManager m_AssetManager;
 
 

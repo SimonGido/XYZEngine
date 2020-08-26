@@ -62,7 +62,10 @@ namespace XYZ {
 				g_InContext->FrameData.LastActiveWindow = nullptr;
 			
 			g_InContext->FrameData.CurrentWindow = nullptr;
+			g_InContext->FrameData.KeyMode = -1;
+			g_InContext->FrameData.PressedKey = -1;
 			g_InContext->RenderData.NumTexturesInUse = InGuiRenderData::DefaultTextureCount;
+
 		}
 
 		void OnLeftMouseButtonRelease()
@@ -113,6 +116,12 @@ namespace XYZ {
 		void OnMouseMove(const glm::vec2& position)
 		{
 			g_InContext->FrameData.MousePosition = MouseToWorld(position);
+		}
+
+		void OnKeyPressed(int key, int mode)
+		{
+			g_InContext->FrameData.PressedKey = key;
+			g_InContext->FrameData.KeyMode = mode;
 		}
 
 

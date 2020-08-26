@@ -48,4 +48,7 @@ namespace XYZ {
 	{
 		return static_cast<std::underlying_type_t<E>>(e);
 	}
+
+
+
 }

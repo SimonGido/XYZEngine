@@ -13,7 +13,7 @@ namespace XYZ {
 	public:
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
-		virtual void OnUpdate(float dt) override;
+		virtual void OnUpdate(Timestep ts) override;
 		virtual void OnEvent(Event& event) override;
 		void Begin();
 		void End();
@@ -22,6 +22,7 @@ namespace XYZ {
 		bool onMouseButtonRelease(MouseButtonReleaseEvent& e);
 		bool onMouseMove(MouseMovedEvent& e);
 		bool onWindowResize(WindowResizeEvent& e);
+		bool onKeyPressed(KeyPressedEvent& e);
 
 	private:
 		Ref<Material> m_Material;

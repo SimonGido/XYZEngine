@@ -40,5 +40,8 @@ namespace XYZ {
 		std::pair<int32_t, int32_t> GenerateInGuiText(InGuiMesh& mesh, const Ref<Font>& font, const std::string& str, const glm::vec2& position, const glm::vec2& scale, float length, uint32_t textureID, const glm::vec4& color = { 1,1,1,1 });
 		std::pair<int32_t, int32_t> GenerateInGuiText(InGuiVertex* vertices, const Ref<Font>& font, const std::string& str, const glm::vec2& position, const glm::vec2& scale, float length, uint32_t textureID, const glm::vec4& color = { 1,1,1,1 });
 		void MoveVertices(InGuiVertex* vertices, const glm::vec2& position, size_t offset, size_t count);
+		
+		void HandleInputText(std::string& text);
+		void HandleInputNumber(std::string& text);
 	}
 }

@@ -129,6 +129,7 @@ namespace XYZ {
 		ofn.nFilterIndex = 1;
 		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 
+		
 		if (GetOpenFileNameA(&ofn) == TRUE)
 		{
 			return ofn.lpstrFile;
@@ -156,8 +157,44 @@ namespace XYZ {
 		{
 			return ofn.lpstrFile;
 		}
+
+	
 		return std::string();
 
+	}
+
+	std::string Application::CreateNewFile(const char* filter) const
+	{
+		HANDLE hFile = INVALID_HANDLE_VALUE;
+		OPENFILENAMEA ofn;       // common dialog box structure
+		CHAR szFile[260] = { 0 };       // if using TCHAR macros
+
+		// Initialize OPENFILENAME
+		ZeroMemory(&ofn, sizeof(OPENFILENAME));
+		ofn.lStructSize = sizeof(OPENFILENAME);
+		ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)m_Window->GetNativeWindow());
+		ofn.lpstrFile = szFile;
+		ofn.nMaxFile = sizeof(szFile);
+		ofn.lpstrFilter = filter;
+		ofn.nFilterIndex = 1;
+		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+
+		if (GetSaveFileNameA(&ofn) == TRUE)
+		{
+			hFile = CreateFileA(ofn.lpstrFile, // file name 
+				GENERIC_WRITE | GENERIC_READ,        // open for write / read 
+				1,                    // do share 
+				NULL,                 // default security 
+				CREATE_ALWAYS,        // overwrite existing
+				FILE_ATTRIBUTE_NORMAL,// normal file 
+				NULL
+			);                // no template 
+		
+			CloseHandle(hFile);
+			return ofn.lpstrFile;
+		}
+		CloseHandle(hFile);
+		return std::string();
 	}
 	
 }

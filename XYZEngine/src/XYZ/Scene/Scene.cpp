@@ -11,6 +11,7 @@
 
 #include "XYZ/Timer.h"
 
+
 namespace XYZ {
 
 	
@@ -145,13 +146,13 @@ namespace XYZ {
 		Renderer2D::EndScene();
 	}
 
-	void Scene::OnUpdate(float dt)
+	void Scene::OnUpdate(Timestep ts)
 	{
 		Entity ent = GetEntity(2);
 		for (int i = 0; i < m_ScriptGroup->Size(); ++i)
 		{
 			auto [script] = (*m_ScriptGroup)[i];
-			script->ScriptableEntity->OnUpdate(dt);
+			script->ScriptableEntity->OnUpdate(ts);
 		}
 	}
 

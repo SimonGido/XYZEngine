@@ -114,39 +114,7 @@ project "XYZEngine"
 				runtime "Release"
 				optimize "on"
 
-
-
-project "NativeScript"
-		location "NativeScript"
-		kind "StaticLib"
-		language "C++"
-		cppdialect "C++17"
-		staticruntime "on"
-				
-		
-		targetdir("bin/" .. outputdir .. "/%{prj.name}")
-		objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-				
-		
-		files
-		{
-			"%{prj.name}/**.h",
-			"%{prj.name}/**.cpp"
-		}
-
-		includedirs
-		{
-			"XYZEngine/src",
-			"%{IncludeDir.glm}",
-			"%{IncludeDir.RCC}"
-		}
-
-		links
-		{
-			"XYZEngine"
-		}
-
-		
+	
 project "XYZEditor"
 		location "XYZEditor"
 		kind "ConsoleApp"

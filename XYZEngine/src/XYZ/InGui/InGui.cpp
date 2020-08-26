@@ -3,6 +3,7 @@
 
 
 #include "XYZ/Core/Application.h"
+
 #include "XYZ/Core/WindowCodes.h"
 #include "XYZ/Renderer/Mesh.h"
 #include "XYZ/Renderer/InGuiRenderer.h"
@@ -82,6 +83,127 @@ namespace XYZ {
 			g_InContext->FrameData.CurrentWindow = nullptr;
 		}
 
+		bool BeginPopup(const std::string& name, const glm::vec2& size, bool& open)
+		{
+			if (!g_InContext)
+				return false;
+
+			XYZ_ASSERT(g_InContext->FrameData.CurrentWindow, "Missing begin call");
+
+			InGuiFrameData& frameData = g_InContext->FrameData;
+			InGuiRenderData& renderData = g_InContext->RenderData;
+			InGuiConfig& configData = g_InContext->ConfigData;
+
+			InGuiWindow* window = frameData.CurrentWindow;
+
+			bool pressed = false;
+
+			if (window->Flags & Modified)
+			{
+				glm::vec4 color = configData.DefaultColor;
+				glm::vec2 position = HandleWindowSpacing(size);
+
+				if (Collide(position, size, frameData.MousePosition))
+				{
+					color = configData.HooverColor;
+					if ((frameData.Flags & LeftMouseButtonDown)
+						&& !(frameData.Flags & ClickHandled))
+					{
+						open = !open;
+						frameData.Flags |= ClickHandled;
+					}
+				}
+				if (window->Flags & Moved)
+				{
+					color = configData.HooverColor;
+				}
+
+				GenerateInGuiQuad(window->Mesh, position, size, renderData.ButtonSubTexture->GetTexCoords(), renderData.TextureID, color);
+				size_t offset = window->Mesh.Vertices.size();
+				auto [width, height] = GenerateInGuiText(window->Mesh, renderData.Font, name, {}, configData.NameScale, size.x, renderData.FontTextureID);
+				glm::vec2 textOffset = { (size.x / 2) - (width / 2),(height / 2) };
+				MoveVertices(window->Mesh.Vertices.data(), position + textOffset, offset, name.size() * 4);
+			
+				frameData.PopupSpaceOffset.x = position.x;
+				frameData.PopupSpaceOffset.y = position.y - size.y;
+			}
+			return open;
+		}
+
+		bool PopupItem(const std::string& name, const glm::vec2& size)
+		{
+			if (!g_InContext)
+				return false;
+
+			XYZ_ASSERT(g_InContext->FrameData.CurrentWindow, "Missing begin call");
+
+			InGuiFrameData& frameData = g_InContext->FrameData;
+			InGuiRenderData& renderData = g_InContext->RenderData;
+			InGuiConfig& configData = g_InContext->ConfigData;
+
+			InGuiWindow* window = frameData.CurrentWindow;
+
+			if (window->Flags & Modified)
+			{		
+				bool pressed = false;
+				float xOffset = 10.0f;
+				glm::vec4 color = configData.DefaultColor;
+				glm::vec2 pos = { frameData.PopupSpaceOffset.x, frameData.PopupSpaceOffset.y };
+
+				std::vector<InGuiVertex> textVertices(name.size() * 4);
+				auto [width, height] = GenerateInGuiText(textVertices.data(), renderData.Font, name, pos, configData.NameScale, window->Size.x, renderData.FontTextureID);
+				MoveVertices(textVertices.data(), { xOffset, height / 2 }, 0, name.size() * 4);
+				width += xOffset * 2;
+
+				if (Collide(pos, size, frameData.MousePosition))
+				{
+					color = configData.HooverColor;
+					if (!(frameData.Flags & ClickHandled))
+					{
+						pressed = frameData.Flags & LeftMouseButtonDown;
+						if (pressed)
+							frameData.Flags |= ClickHandled;
+					}
+				}
+
+				GenerateInGuiQuad(window->Mesh, pos, size, renderData.SliderSubTexture->GetTexCoords(), renderData.TextureID, color);
+				for (auto& vertex : textVertices)
+					window->Mesh.Vertices.push_back(vertex);
+
+				frameData.PopupSpaceOffset.y -= size.y;
+
+				return pressed;
+			}
+			return false;
+		}
+
+		void EndPopup()
+		{
+			if (!g_InContext)
+				return;
+
+			g_InContext->FrameData.PopupSpaceOffset = { 0,0 };
+		}
+
+
+		void BeginMenu()
+		{
+			if (!g_InContext)
+				return;
+
+			XYZ_ASSERT(g_InContext->FrameData.CurrentWindow, "Missing begin call");
+
+			InGuiFrameData& frameData = g_InContext->FrameData;
+			InGuiRenderData& renderData = g_InContext->RenderData;
+			InGuiConfig& configData = g_InContext->ConfigData;
+
+			InGuiWindow* window = frameData.CurrentWindow;
+
+			if (window->Flags & Modified)
+			{
+				frameData.MenuBarOffset = { window->Position.x + frameData.MenuBarOffset.x, window->Position.y + window->Size.y };
+			}
+		}
 
 		bool MenuBar(const std::string& name, bool& open)
 		{
@@ -100,7 +222,7 @@ namespace XYZ {
 			{
 				float xOffset = 10.0f;
 				glm::vec4 color = configData.DefaultColor;
-				glm::vec2 pos = { window->Position.x + frameData.MenuBarOffset.x, window->Position.y + window->Size.y };
+				glm::vec2 pos = { frameData.MenuBarOffset.x, window->Position.y + window->Size.y };
 		
 				std::vector<InGuiVertex> textVertices(name.size() * 4);
 				auto [width, height] = GenerateInGuiText(textVertices.data(), renderData.Font, name, pos, configData.NameScale, window->Size.x,renderData.FontTextureID);
@@ -114,6 +236,7 @@ namespace XYZ {
 						&& !(frameData.Flags & ClickHandled))
 					{
 						open = !open;
+						frameData.Flags |= ClickHandled;
 					}
 				}
 				if (window->Flags & Moved)
@@ -127,6 +250,8 @@ namespace XYZ {
 					window->Mesh.Vertices.push_back(vertex);
 
 				
+				frameData.MenuBarOffset.x = pos.x;
+				frameData.MenuBarOffset.y = pos.y - InGuiWindow::PanelSize;
 				frameData.LastMenuBarWidth = width;
 			}
 
@@ -147,12 +272,11 @@ namespace XYZ {
 			InGuiWindow* window = frameData.CurrentWindow;
 			
 			if (window->Flags & Modified)
-			{
-				g_InContext->FrameData.MenuBarOffset.y += size.y;
+			{		
 				bool pressed = false;
 				float xOffset = 10.0f;
 				glm::vec4 color = configData.DefaultColor;
-				glm::vec2 pos = { window->Position.x + frameData.MenuBarOffset.x, window->Position.y + window->Size.y - frameData.MenuBarOffset.y };
+				glm::vec2 pos = { frameData.MenuBarOffset.x,frameData.MenuBarOffset.y };
 
 				std::vector<InGuiVertex> textVertices(name.size() * 4);
 				auto [width, height] = GenerateInGuiText(textVertices.data(), renderData.Font, name, pos, configData.NameScale, window->Size.x, renderData.FontTextureID);
@@ -165,6 +289,8 @@ namespace XYZ {
 					if (!(frameData.Flags & ClickHandled))
 					{
 						pressed = frameData.Flags & LeftMouseButtonDown;
+						if (pressed)
+							frameData.Flags |= ClickHandled;
 					}
 				}
 
@@ -173,23 +299,28 @@ namespace XYZ {
 					window->Mesh.Vertices.push_back(vertex);
 
 				
-
+				frameData.MenuBarOffset.y -= size.y;
 				return pressed;
 			}		
 			return false;
 		}
 
-		void MenuEnd()
+		void MenuBarEnd()
 		{
 			if (!g_InContext)
 				return;
 
-			XYZ_ASSERT(g_InContext->FrameData.CurrentWindow, "Missing begin call");
 			InGuiWindow* window = g_InContext->FrameData.CurrentWindow;
-
 			window->Flags &= ~MenuEnabled;
-
 			g_InContext->FrameData.MenuBarOffset.x += g_InContext->FrameData.LastMenuBarWidth;
+		}
+
+		void EndMenu()
+		{
+			if (!g_InContext)
+				return;
+
+			g_InContext->FrameData.MenuBarOffset = { 0,0 };
 		}
 
 		bool Button(const std::string& name, const glm::vec2& size)
@@ -226,7 +357,7 @@ namespace XYZ {
 				GenerateInGuiQuad(window->Mesh, position, size, renderData.ButtonSubTexture->GetTexCoords(), renderData.TextureID, color);
 				size_t offset = window->Mesh.Vertices.size();
 				auto [width, height] = GenerateInGuiText(window->Mesh, renderData.Font, name, {}, configData.NameScale, size.x, renderData.FontTextureID);
-				glm::vec2 textOffset = { (size.x / 2) - (width / 2),(size.y / 2) - (height / 2) };
+				glm::vec2 textOffset = { (size.x / 2) - (width / 2),(height / 2) };
 				MoveVertices(window->Mesh.Vertices.data(), position + textOffset, offset, name.size() * 4);
 			}
 			
@@ -344,6 +475,49 @@ namespace XYZ {
 			}	
 			return false;
 		}
+
+		bool TextArea(std::string& text, const glm::vec2& size, bool& modified)
+		{
+			if (!g_InContext)
+				return false;
+
+			XYZ_ASSERT(g_InContext->FrameData.CurrentWindow, "Missing begin call");
+			InGuiFrameData& frameData = g_InContext->FrameData;
+			InGuiRenderData& renderData = g_InContext->RenderData;
+			InGuiConfig& configData = g_InContext->ConfigData;
+
+			InGuiWindow* window = frameData.CurrentWindow;
+
+			if (window->Flags & Modified)
+			{
+				glm::vec4 color = configData.DefaultColor;
+				glm::vec2 position = HandleWindowSpacing(size);
+
+				if (Collide(position, size, frameData.MousePosition))
+				{
+					color = configData.HooverColor;
+					if ((frameData.Flags & LeftMouseButtonDown)
+						&& !(frameData.Flags & ClickHandled))
+					{
+						modified = !modified;
+						frameData.Flags |= ClickHandled;
+					}
+				}
+				if (modified)
+				{
+					color = configData.HooverColor;
+					HandleInputText(text);
+				}
+				GenerateInGuiQuad(window->Mesh, position, size, renderData.ButtonSubTexture->GetTexCoords(), renderData.TextureID, color);
+				size_t offset = window->Mesh.Vertices.size();
+				auto [width, height] = GenerateInGuiText(window->Mesh, renderData.Font, text, {}, configData.NameScale, size.x, renderData.FontTextureID);
+				glm::vec2 textOffset = { (size.x / 2) - (width / 2),(height / 2) };
+				MoveVertices(window->Mesh.Vertices.data(), position + textOffset, offset, text.size() * 4);
+			}
+			return modified;
+		}
+
+		
 
 		bool Text(const std::string& text, const glm::vec2& scale)
 		{

@@ -13,7 +13,7 @@ namespace XYZ {
 		GuiLayer();
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
-		virtual void OnUpdate(float dt) override;
+		virtual void OnUpdate(Timestep ts) override;
 		virtual void OnEvent(Event& event) override;
 
 	private:

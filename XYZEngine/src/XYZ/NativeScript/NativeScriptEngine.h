@@ -1,11 +1,35 @@
 #pragma once
-
+#include "XYZ/Core/Timestep.h"
+#include "XYZ/Core/Reflect.h"
+#include "NativeScriptWrappers.h"
 
 #include <RuntimeObjectSystem/ObjectFactorySystem/ObjectFactorySystem.h>
 #include <RuntimeObjectSystem/RuntimeObjectSystem.h>
 #include <RuntimeObjectSystem/IObject.h>
 
-#include "NativeScriptWrappers.h"
+
+namespace XYZ {
+	enum class FieldTypes
+	{
+		INT,
+		FLOAT,
+		DOUBLE,
+		BOOL,
+		STRING
+	};
+
+	struct ScriptInfoI
+	{
+		
+	};
+
+	template <typename ...Args>
+	struct ScriptInfo
+	{
+		std::tuple<Args...> Data;
+	};
+
+}
 
 struct SystemTable
 {
@@ -13,13 +37,14 @@ struct SystemTable
 };
 
 namespace XYZ {
+
 	class NativeScriptEngine
 	{
 	public:
 		static void Init();
 		static void Shutdown();
 
-		static void Update(float dt);
+		static void Update(Timestep ts);
 
 		static void SetOnRecompileCallback(const std::function<void()>& func);
 		static void SetOnReloadCallback(const std::function<void()>& func);
@@ -42,4 +67,5 @@ namespace XYZ {
 
 		static IObject* CreateScriptObject(const std::string& name);		
 	};
+
 }

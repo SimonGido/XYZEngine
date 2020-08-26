@@ -35,7 +35,7 @@ namespace XYZ {
 	void GuiLayer::OnDetach()
 	{
 	}
-	void GuiLayer::OnUpdate(float dt)
+	void GuiLayer::OnUpdate(Timestep ts)
 	{
 		
 	}

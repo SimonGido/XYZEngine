@@ -2,6 +2,7 @@
 #include "InGuiHelper.h"
 
 #include "XYZ/Core/Application.h"
+#include "XYZ/Core/Input.h"
 #include "XYZ/Renderer/InGuiRenderer.h"
 
 namespace XYZ {
@@ -514,6 +515,96 @@ namespace XYZ {
 			{
 				vertices[i].Position.x += position.x;
 				vertices[i].Position.y += position.y;
+			}
+		}
+		void HandleInputText(std::string& text)
+		{
+			InGuiFrameData& frameData = g_InContext->FrameData;
+
+			switch (frameData.PressedKey)
+			{
+			case ToUnderlying(KeyCode::XYZ_KEY_BACKSPACE):
+				if (!text.empty())
+					text.pop_back(); 
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_0):
+				text.push_back('0');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_1):
+				text.push_back('1');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_2):
+				text.push_back('2');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_3):
+				text.push_back('3');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_4):
+				text.push_back('4');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_5):
+				text.push_back('5');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_6):
+				text.push_back('6');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_7):
+				text.push_back('7');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_8):
+				text.push_back('8');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_9):
+				text.push_back('9');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_PERIOD):
+				text.push_back('.');
+				break;
+			}	
+		}
+		void HandleInputNumber(std::string& text)
+		{
+			InGuiFrameData& frameData = g_InContext->FrameData;
+
+			switch (frameData.PressedKey)
+			{
+			case ToUnderlying(KeyCode::XYZ_KEY_BACKSPACE):
+				if (!text.empty())
+					text.pop_back();
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_0):
+				text.push_back('0');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_1):
+				text.push_back('1');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_2):
+				text.push_back('2');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_3):
+				text.push_back('3');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_4):
+				text.push_back('4');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_5):
+				text.push_back('5');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_6):
+				text.push_back('6');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_7):
+				text.push_back('7');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_8):
+				text.push_back('8');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_9):
+				text.push_back('9');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_PERIOD):
+				text.push_back('.');
+				break;
 			}
 		}
 	}

@@ -4,9 +4,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
-#include "NativeScript.h"
 
 namespace XYZ {
+
 	EditorLayer::~EditorLayer()
 	{
 	}
@@ -14,6 +14,7 @@ namespace XYZ {
 
 	void EditorLayer::OnAttach()
 	{
+
 		Renderer::Init();
 		NativeScriptEngine::Init();
 
@@ -49,22 +50,11 @@ namespace XYZ {
 		m_Material->SetFlags(XYZ::RenderFlags::TransparentFlag);
 
 		m_TestEntity = m_Scene->GetEntity(2);
+		m_TestEntity2 = m_Scene->GetEntity(3);
 		m_SpriteRenderer = m_TestEntity.GetComponent<SpriteRenderer>();
 		m_Transform = m_TestEntity.GetComponent<TransformComponent>();
 		
-		ScriptableEntity* scriptableEntity = (ScriptableEntity*)NativeScriptEngine::CreateScriptObject("Testik");
-		NativeScriptComponent comp(scriptableEntity, "Testik");
-		comp.ScriptableEntity->Entity = m_TestEntity;
-		comp.ScriptableEntity->OnCreate();
-		m_TestEntity.AddComponent<NativeScriptComponent>(comp);
-
-
-		m_TestEntity2 = m_Scene->GetEntity(3);
-		ScriptableEntity* scriptableEntity2 = (ScriptableEntity*)NativeScriptEngine::CreateScriptObject("Another");
-		NativeScriptComponent comp2(scriptableEntity2, "Another");
-		comp2.ScriptableEntity->Entity = m_TestEntity2;
-		comp2.ScriptableEntity->OnCreate();
-		m_TestEntity2.AddComponent<NativeScriptComponent>(comp2);
+		
 
 		//m_TextMaterial = Material::Create(XYZ::Shader::Create("TextShader", "Assets/Shaders/TextShader.glsl"));
 		//m_TextMaterial->Set("u_Texture", XYZ::Texture2D::Create(XYZ::TextureWrap::Clamp, "Assets/Font/Arial.png"), 0);
@@ -165,11 +155,10 @@ namespace XYZ {
 
 		NativeScriptEngine::Shutdown();
 	}
-	void EditorLayer::OnUpdate(float ts)
+	void EditorLayer::OnUpdate(Timestep ts)
 	{
 		NativeScriptEngine::Update(ts);
-		
-		
+			
 	
 		RenderCommand::Clear();
 		RenderCommand::SetClearColor(glm::vec4(0.2, 0.2, 0.5, 1));
@@ -200,8 +189,8 @@ namespace XYZ {
 
 		//m_Animation->Update(ts);
 		//m_Machine->GetCurrentState().Value->Update(ts);
-		*m_Transform = glm::translate(glm::mat4(1.0f), m_Position) *
-			glm::rotate(m_Rotation.z, glm::vec3(0, 0, 1)) * glm::scale(glm::mat4(1.0f), { 1,1,1 });
+		//*m_Transform = glm::translate(glm::mat4(1.0f), m_Position) *
+		//	glm::rotate(m_Rotation.z, glm::vec3(0, 0, 1)) * glm::scale(glm::mat4(1.0f), { 1,1,1 });
 	}
 	void EditorLayer::OnEvent(Event& event)
 	{
@@ -225,10 +214,26 @@ namespace XYZ {
 		InGui::End();
 		if (InGui::Begin("Test", { 0,0 }, { 500,500 }))
 		{
+			if (InGui::BeginPopup("Add Component", { 150,25 }, m_PopupOpen))
+			{
+				if (InGui::PopupItem("Add Transform", { 150,25 }))
+				{
+					std::cout << "Adding transform" << std::endl;
+					m_PopupOpen = false;
+				}
+			}
+			InGui::EndPopup();
+
+			if (InGui::TextArea(m_Text, { 150,25 }, m_Modified))
+			{
+				std::cout << atof(m_Text.c_str()) << std::endl;
+			}
 		}
+
+		InGui::BeginMenu();
 		if (InGui::MenuBar("File", m_MenuOpen))
 		{
-			if (InGui::MenuItem("Load Scene", { 100,25 }))
+			if (InGui::MenuItem("Load Scene", { 150,25 }))
 			{
 				auto& app = Application::Get();
 				std::string filepath = app.OpenFile("(*.xyz)\0*.xyz\0");
@@ -238,34 +243,55 @@ namespace XYZ {
 				}
 				m_MenuOpen = false;
 			}
-			if (InGui::MenuItem("Test2", { 100,25 }))
+			else if (InGui::MenuItem("Create Script", { 150,25 }))
 			{
-				std::cout << "Menu item" << std::endl;
+				auto& app = Application::Get();
+				std::string filepath = app.CreateNewFile("(*.cpp)\0*.cpp\0");
+				if (!filepath.empty())
+				{
+					PerModuleInterface::g_pRuntimeObjectSystem->AddToRuntimeFileList(filepath.c_str());
+				}
+				m_MenuOpen = false;
+			}
+			else if (InGui::MenuItem("Load Script", { 150,25 }))
+			{
+				auto& app = Application::Get();
+				std::string filepath = app.OpenFile("(*.cpp)\0*.cpp\0");
+				if (!filepath.empty())
+				{
+					PerModuleInterface::g_pRuntimeObjectSystem->AddToRuntimeFileList(filepath.c_str());
+				}
 				m_MenuOpen = false;
 			}
 		}
-		InGui::MenuEnd();
-		
+		InGui::MenuBarEnd();
 		InGui::MenuBar("Settings", m_MenuOpen);
-		InGui::MenuEnd();
+		InGui::MenuBarEnd();
 
 		InGui::MenuBar("Settingass", m_MenuOpen);
-		InGui::MenuEnd();
+		InGui::MenuBarEnd();
 		InGui::MenuBar("Settingasdas", m_MenuOpen);
-		InGui::MenuEnd();
+		InGui::MenuBarEnd();
+		InGui::EndMenu();
 
+
+		
+	
 		InGui::End();
 		if (InGui::Begin("Test Panel", { 0,0 }, { 500,500 }))
-		{		
-			
+		{			
 			InGui::ColorPicker4("color picker", { 255,255 },m_Pallete, m_Color);
-			if (InGui::Button("Button", { 100,25 }))
+			if (InGui::Button("Compile", { 100,25 }))
 			{
-				std::cout << "Opica" << std::endl;
+				PerModuleInterface::g_pRuntimeObjectSystem->CompileAll(true);
 			}
-			if (InGui::Button("Button", { 100,25 }))
+			if (InGui::Button("Add Script", { 150,25 }))
 			{
-				std::cout << "Opica" << std::endl;
+				ScriptableEntity* scriptableEntity = (ScriptableEntity*)NativeScriptEngine::CreateScriptObject("Testik");
+				NativeScriptComponent comp(scriptableEntity, "Testik");
+				comp.ScriptableEntity->Entity = m_TestEntity;
+				comp.ScriptableEntity->OnCreate();
+				m_TestEntity.AddComponent<NativeScriptComponent>(comp);
 			}
 			if (InGui::Button("Button", { 100,25 }))
 			{
@@ -302,7 +328,6 @@ namespace XYZ {
 			InGui::Image("test image", m_FBO->GetColorAttachment(0).RendererID, { 100,100 });
 		}
 		InGui::End();
-		
 	}
 
 	bool EditorLayer::onWindowResized(WindowResizeEvent& event)

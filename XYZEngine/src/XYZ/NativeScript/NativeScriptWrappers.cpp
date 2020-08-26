@@ -21,5 +21,17 @@ namespace XYZ {
 		Entity ent({ entity, scene });
 		return ent.GetComponent<TransformComponent>();
 	}
-	
+	CameraComponent* GetCameraComponent(uint32_t entity)
+	{
+		Scene* scene = SceneManager::Get().GetActive().Raw();
+		Entity ent({ entity, scene });
+		return ent.GetComponent<CameraComponent>();
+	}
+	SceneTagComponent* GetSceneTagComponent(uint32_t entity)
+	{
+		Scene* scene = SceneManager::Get().GetActive().Raw();
+		Entity ent({ entity, scene });
+		return ent.GetComponent<SceneTagComponent>();
+	}
+
 }

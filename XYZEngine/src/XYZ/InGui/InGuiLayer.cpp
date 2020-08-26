@@ -52,7 +52,7 @@ namespace XYZ {
 	{
 		InGui::Shutdown();
 	}
-	void InGuiLayer::OnUpdate(float dt)
+	void InGuiLayer::OnUpdate(Timestep ts)
 	{
 		
 	}
@@ -66,6 +66,8 @@ namespace XYZ {
 		else if (dispatcher.Dispatch<MouseMovedEvent>(Hook(&InGuiLayer::onMouseMove, this)))
 		{}
 		else if (dispatcher.Dispatch<WindowResizeEvent>(Hook(&InGuiLayer::onWindowResize,this)))
+		{}
+		else if (dispatcher.Dispatch<KeyPressedEvent>(Hook(&InGuiLayer::onKeyPressed, this)))
 		{}
 	}
 	void InGuiLayer::Begin()
@@ -112,6 +114,11 @@ namespace XYZ {
 		InGui::OnWindowResize({ e.GetWidth(),e.GetHeight() });
 
 		m_Material->Set("u_ViewportSize", glm::vec2(e.GetWidth(), e.GetHeight()));
+		return false;
+	}
+	bool InGuiLayer::onKeyPressed(KeyPressedEvent& e)
+	{
+		InGui::OnKeyPressed(e.GetKey(), e.GetMod());
 		return false;
 	}
 }

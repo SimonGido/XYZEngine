@@ -87,6 +87,7 @@ namespace XYZ {
 
 			glm::vec2 ModifiedWindowMouseOffset = { 0,0 };
 			glm::vec2 WindowSpaceOffset = { 0,0 };
+			glm::vec2 PopupSpaceOffset = { 0,0 };
 			glm::vec2 WindowSize = { 0,0 };
 			glm::vec2 MenuBarOffset = { 0,0 };
 			glm::vec2 MousePosition = { 0,0 };
@@ -96,6 +97,9 @@ namespace XYZ {
 			float LastMenuBarWidth = 0.0f;
 
 			uint16_t Flags = 0;
+
+			int PressedKey = -1;
+			int KeyMode = -1;
 		};
 
 
@@ -231,5 +235,6 @@ namespace XYZ {
 		void OnRightMouseButtonPress();
 		void OnWindowResize(const glm::vec2& size);
 		void OnMouseMove(const glm::vec2& position);
+		void OnKeyPressed(int key,int mode);
 	}
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include "XYZ/Core/Ref.h"
+#include "XYZ/Core/Timestep.h"
 #include "XYZ/ECS/ECSManager.h"
 #include "XYZ/Event/Event.h"
 
@@ -55,7 +56,7 @@ namespace XYZ {
 
         void OnRender();
 
-        void OnUpdate(float dt);
+        void OnUpdate(Timestep ts);
 
         void OnRenderEditor(const SceneRenderData& renderData);
 

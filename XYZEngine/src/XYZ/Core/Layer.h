@@ -1,6 +1,6 @@
 #pragma once
 #include "XYZ/Event/Event.h"
-
+#include "Timestep.h"
 
 
 namespace XYZ {
@@ -22,7 +22,7 @@ namespace XYZ {
 
 		virtual void OnAttach() {} //Init
 		virtual void OnDetach() {} //Destroy
-		virtual void OnUpdate(float ts) {} //Update
+		virtual void OnUpdate(Timestep ts) {} //Update
 		virtual void OnEvent(Event& event) {};
 		virtual void OnInGuiRender() {};
 

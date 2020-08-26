@@ -3,18 +3,20 @@
 
 #include "NativeScriptLogger.h"
 
-
-
-
 namespace XYZ {
+
+
+
 	static IRuntimeObjectSystem* s_pRuntimeObjectSystem;
 	static NativeScriptLogger    s_Logger;
 	static SystemTable			 s_SystemTable;
 	static std::function<void()> s_OnRecompileCallback;
 	static std::function<void()> s_OnReloadCallback;
 
-	std::vector<IObject*> s_ObjectsCreated;
+	static std::vector<IObject*> s_ObjectsCreated;
 	
+
+
 	void NativeScriptEngine::Init()
 	{
 		s_pRuntimeObjectSystem = new RuntimeObjectSystem;
@@ -36,7 +38,7 @@ namespace XYZ {
 		delete s_pRuntimeObjectSystem;
 	}
 
-	void NativeScriptEngine::Update(float dt)
+	void NativeScriptEngine::Update(Timestep ts)
 	{
 		if (s_pRuntimeObjectSystem->GetIsCompiledComplete())
 		{
@@ -59,7 +61,7 @@ namespace XYZ {
 
 		if (!s_pRuntimeObjectSystem->GetIsCompiling())
 		{
-			s_pRuntimeObjectSystem->GetFileChangeNotifier()->Update(dt);
+			s_pRuntimeObjectSystem->GetFileChangeNotifier()->Update(ts);
 		}
 	}
 
@@ -86,4 +88,5 @@ namespace XYZ {
 		return object;
 	}
 
+	
 }

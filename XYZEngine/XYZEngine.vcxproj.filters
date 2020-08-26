@@ -324,6 +324,12 @@
     <ClInclude Include="src\XYZ\InGui\InGuiRenderQueue.h">
       <Filter>src\XYZ\InGui</Filter>
     </ClInclude>
+    <ClInclude Include="src\XYZ\NativeScript\NativeScriptEngine.h">
+      <Filter>src\XYZ\NativeScript</Filter>
+    </ClInclude>
+    <ClInclude Include="src\XYZ\NativeScript\NativeScriptLogger.h">
+      <Filter>src\XYZ\NativeScript</Filter>
+    </ClInclude>
     <ClInclude Include="src\XYZ\NativeScript\NativeScriptWrappers.h">
       <Filter>src\XYZ\NativeScript</Filter>
     </ClInclude>
@@ -1860,8 +1866,7 @@
     <ClInclude Include="vendor\yaml-cpp\src\token.h">
       <Filter>vendor\yaml-cpp\src</Filter>
     </ClInclude>
-    <ClInclude Include="src\XYZ\NativeScript\NativeScriptEngine.h" />
-    <ClInclude Include="src\XYZ\NativeScript\NativeScriptLogger.h" />
+    <ClInclude Include="src\XYZ\Editor\EntityEditor.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\API\OpenGL\OpenGLAPIContext.cpp">
@@ -1983,6 +1988,12 @@
     </ClCompile>
     <ClCompile Include="src\XYZ\InGui\InGuiRenderQueue.cpp">
       <Filter>src\XYZ\InGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\XYZ\NativeScript\NativeScriptEngine.cpp">
+      <Filter>src\XYZ\NativeScript</Filter>
+    </ClCompile>
+    <ClCompile Include="src\XYZ\NativeScript\NativeScriptLogger.cpp">
+      <Filter>src\XYZ\NativeScript</Filter>
     </ClCompile>
     <ClCompile Include="src\XYZ\NativeScript\NativeScriptWrappers.cpp">
       <Filter>src\XYZ\NativeScript</Filter>
@@ -2239,8 +2250,7 @@
     <ClCompile Include="vendor\yaml-cpp\src\tag.cpp">
       <Filter>vendor\yaml-cpp\src</Filter>
     </ClCompile>
-    <ClCompile Include="src\XYZ\NativeScript\NativeScriptEngine.cpp" />
-    <ClCompile Include="src\XYZ\NativeScript\NativeScriptLogger.cpp" />
+    <ClCompile Include="src\XYZ\Editor\EntityEditor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="vendor\RCC\RuntimeCompiler\SimpleFileWatcher\FileWatcherLinux.cpp~">

@@ -58,7 +58,7 @@ namespace XYZ {
 		
 		std::string OpenFile(const char* filter = "All\0*.*\0") const;
 		std::string SaveFile(const char* filter = "All\0*.*\0") const;
-
+		std::string CreateNewFile(const char* filter = "All\0*.*\0") const;
 
 		/**
 		* Return handler of the main Window

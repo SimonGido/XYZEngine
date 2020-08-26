@@ -21,7 +21,7 @@ namespace XYZ {
 		virtual ~ScriptableEntity() { std::cout << "Deleted" << std::endl; };
 
 		virtual void OnCreate() {};
-		virtual void OnUpdate(float dt) {};
+		virtual void OnUpdate(Timestep ts) {};
 		virtual void OnDestroy() {};
 
 		Entity Entity;
