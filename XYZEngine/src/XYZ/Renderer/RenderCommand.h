@@ -6,6 +6,8 @@
 
 
 namespace XYZ {
+
+	
 	/**
 	* @class RenderCommand
 	* @brief holds RendererAPI, provide static functions to call RendererAPI function
@@ -55,9 +57,9 @@ namespace XYZ {
 		* @param[in] vertexArray
 		* @param[in] indexCount		Count of the indices, if zero function takes count of the indices from the vertex array
 		*/
-		inline static void DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount = 0)
+		inline static void DrawIndexed(PrimitiveType type, uint32_t indexCount = 0)
 		{
-			s_RendererAPI->DrawIndexed(vertexArray, indexCount);
+			s_RendererAPI->DrawIndexed(type, indexCount);
 		}
 
 		/**

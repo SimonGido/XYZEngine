@@ -1,6 +1,10 @@
 #pragma once
 
 namespace XYZ {
+	enum class KeyMode
+	{
+
+	};
 	enum class KeyCode
 	{
 		XYZ_KEY_SPACE = 32,

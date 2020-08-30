@@ -9,6 +9,8 @@ namespace XYZ {
 		{
 		public:
 			void Push(InGuiMesh* mesh,uint8_t priority);
+			void Push(InGuiLineMesh* mesh);
+
 			void SubmitToRenderer();
 
 		private:

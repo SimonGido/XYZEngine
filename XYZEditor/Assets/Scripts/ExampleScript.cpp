@@ -18,13 +18,13 @@ public:
 	}
 	virtual void OnUpdate(XYZ::Timestep ts) override
 	{
-		m_SpriteRenderer->Color = { 1,0,1,1 };
+		m_SpriteRenderer->Color = { 1,1,1,1 };
 
 		m_TransformComponent->Transform[3][0] = m_Position.x;
 		m_TransformComponent->Transform[3][1] = m_Position.y;
 
-		m_Position.y -= 0.0005;
-		m_Position.x -= 0.0005;
+		m_Position.y += 0.0005;
+		m_Position.x += 0.0005;
 	}
 
 private:	

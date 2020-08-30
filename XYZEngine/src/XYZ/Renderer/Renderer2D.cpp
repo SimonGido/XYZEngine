@@ -99,7 +99,7 @@ namespace XYZ {
 
 	void Renderer2D::Shutdown()
 	{
-	
+		delete[] s_Data.BufferBase;
 	}
 
 	void Renderer2D::BeginScene(const SceneRenderData& data)
@@ -217,7 +217,7 @@ namespace XYZ {
 			s_Data.Material->Bind();
 			s_Data.QuadVertexBuffer->Update(s_Data.BufferBase, dataSize);
 			s_Data.QuadVertexArray->Bind();
-			RenderCommand::DrawIndexed(s_Data.QuadVertexArray, s_Data.IndexCount);
+			RenderCommand::DrawIndexed(PrimitiveType::Triangles, s_Data.IndexCount);
 			s_Data.Reset();
 			s_Data.Stats.DrawCalls++;
 		}

@@ -26,6 +26,7 @@
 #include "XYZ/Renderer/MeshFactory.h"
 #include "XYZ/Renderer/SpriteRenderer.h"
 #include "XYZ/Renderer/Animation.h"
+#include "XYZ/Renderer/SubTexture2D.h"
 
 //-----Scene-----//
 #include "XYZ/Scene/SceneCamera.h"
@@ -62,6 +63,7 @@
 
 //------InUI-------//
 #include "XYZ/InGui/InGui.h"
+#include "XYZ/InGui/InGuiCore.h"
 
 
 #include "XYZ/FSM/Machine.h"

@@ -63,9 +63,10 @@ namespace XYZ {
 		}
 
 		template <typename T>
-		bool HasComponent()
+		bool HasComponent() const
 		{
-			return m_Scene->m_ECS->Contains<T>(m_ID);
+			auto signature = m_Scene->m_ECS->GetEntitySignature(m_ID);
+			return signature.test(T::GetID());
 		}
 
 		void Destroy()

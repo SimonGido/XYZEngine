@@ -17,6 +17,11 @@ namespace XYZ {
 		glm::vec2 TexCoord;
 		float	  TextureID;
 	};
+	struct LineVertex
+	{
+		glm::vec3 Position;
+		glm::vec4 Color;
+	};
 
 	struct TexturePair
 	{
@@ -29,11 +34,18 @@ namespace XYZ {
 		void Reset();
 
 		Ref<Material> Material;
+		Ref<Shader> LineShader;
 
 		static const uint32_t MaxTextures = 32;
 		static const uint32_t MaxQuads = 10000;
 		static const uint32_t MaxVertices = MaxQuads * 4;
 		static const uint32_t MaxIndices = MaxQuads * 6;
+
+
+		static const uint32_t MaxLines = 10000;
+		static const uint32_t MaxLineVertices = MaxLines * 2;
+		static const uint32_t MaxLineIndices = MaxLines * 6;
+
 
 		std::vector<TexturePair> Textures;
 
@@ -43,6 +55,14 @@ namespace XYZ {
 		uint32_t IndexCount = 0;
 		Vertex2D* BufferBase = nullptr;
 		Vertex2D* BufferPtr = nullptr;
+
+		Ref<VertexArray> LineVertexArray;
+		Ref<VertexBuffer> LineVertexBuffer;
+
+		uint32_t LineIndexCount = 0;
+		LineVertex* LineBufferBase = nullptr;
+		LineVertex* LineBufferPtr = nullptr;
+
 
 		UIRenderData Data;
 	};
@@ -54,6 +74,8 @@ namespace XYZ {
 	}
 	void InGuiRenderer::Shutdown()
 	{
+		delete[] s_UIData.BufferBase;
+		delete[]s_UIData.LineBufferBase;
 	}
 	void InGuiRenderer::BeginScene(const UIRenderData& data)
 	{
@@ -185,6 +207,37 @@ namespace XYZ {
 		s_UIData.IndexCount += indexCount;
 	}
 
+	void InGuiRenderer::SubmitLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color)
+	{
+		if (s_UIData.LineIndexCount >= RendererUIData::MaxLineIndices)
+			FlushLines();
+
+		s_UIData.LineBufferPtr->Position = p0;
+		s_UIData.LineBufferPtr->Color = color;
+		s_UIData.LineBufferPtr++;
+
+		s_UIData.LineBufferPtr->Position = p1;
+		s_UIData.LineBufferPtr->Color = color;
+		s_UIData.LineBufferPtr++;
+
+		s_UIData.LineIndexCount += 2;
+	}
+
+	void InGuiRenderer::SubmitLineMesh(const InGuiLineMesh& mesh)
+	{
+		if (mesh.Vertices.size() + s_UIData.LineIndexCount > RendererUIData::MaxLineIndices)
+			FlushLines();
+
+		for (auto& vertex : mesh.Vertices)
+		{
+			s_UIData.LineBufferPtr->Position = vertex.Position;
+			s_UIData.LineBufferPtr->Color = vertex.Color;
+			s_UIData.LineBufferPtr++;
+
+			s_UIData.LineIndexCount++;
+		}
+	}
+
 
 	void InGuiRenderer::Flush()
 	{
@@ -202,12 +255,32 @@ namespace XYZ {
 
 			s_UIData.QuadVertexBuffer->Update(s_UIData.BufferBase, dataSize);
 			s_UIData.QuadVertexArray->Bind();
-			RenderCommand::DrawIndexed(s_UIData.QuadVertexArray, s_UIData.IndexCount);
-			s_UIData.Reset();
+			RenderCommand::DrawIndexed(PrimitiveType::Triangles, s_UIData.IndexCount);		
 		}
+
+		s_UIData.BufferPtr = s_UIData.BufferBase;
+		s_UIData.IndexCount = 0;
+		s_UIData.Textures.clear();
+	}
+	void InGuiRenderer::FlushLines()
+	{	
+		uint32_t dataSize = (uint8_t*)s_UIData.LineBufferPtr - (uint8_t*)s_UIData.LineBufferBase;
+		if (dataSize)
+		{
+			s_UIData.LineShader->Bind();
+			s_UIData.LineShader->SetFloat2("u_ViewportSize", s_UIData.Data.ViewportSize);
+
+			s_UIData.LineVertexBuffer->Update(s_UIData.LineBufferBase, dataSize);
+			s_UIData.LineVertexArray->Bind();
+			RenderCommand::DrawIndexed(PrimitiveType::Lines, s_UIData.LineIndexCount);
+
+		}
+		s_UIData.LineBufferPtr = s_UIData.LineBufferBase;
+		s_UIData.LineIndexCount = 0;
 	}
 	void InGuiRenderer::EndScene()
 	{
+		
 	}
 
 	void RendererUIData::Reset()
@@ -243,9 +316,32 @@ namespace XYZ {
 			Ref<IndexBuffer> quadIB = IndexBuffer::Create(quadIndices, MaxIndices);
 			QuadVertexArray->SetIndexBuffer(quadIB);
 			delete[] quadIndices;
+
+			LineVertexArray = VertexArray::Create();
+
+			// Lines
+			LineShader = Shader::Create("Assets/Shaders/LineShader.glsl");
+			LineVertexBuffer = VertexBuffer::Create(MaxLineVertices * sizeof(LineVertex));
+			LineVertexBuffer->SetLayout({
+				{0, XYZ::ShaderDataComponent::Float3, "a_Position" },
+				{1, XYZ::ShaderDataComponent::Float4, "a_Color" },
+			});
+			LineBufferBase = new LineVertex[MaxLineVertices];
+
+			LineVertexArray->AddVertexBuffer(LineVertexBuffer);
+			uint32_t* lineIndices = new uint32_t[MaxLineIndices];
+			for (uint32_t i = 0; i < MaxLineIndices; i++)
+				lineIndices[i] = i;
+
+			Ref<IndexBuffer> lineIndexBuffer = IndexBuffer::Create(lineIndices, MaxLineIndices);
+			LineVertexArray->SetIndexBuffer(lineIndexBuffer);
+			delete[] lineIndices;
 		}
 		BufferPtr = BufferBase;
+		LineBufferPtr = LineBufferBase;
 		IndexCount = 0;
+		LineIndexCount = 0;
+
 		Textures.clear();
 	}
 }

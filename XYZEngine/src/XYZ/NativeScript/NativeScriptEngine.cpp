@@ -30,6 +30,7 @@ namespace XYZ {
 		s_pRuntimeObjectSystem->AddIncludeDir("../XYZEngine/vendor/glm/");
 		s_pRuntimeObjectSystem->AddIncludeDir("../XYZEngine/vendor/RCC/");
 		s_pRuntimeObjectSystem->SetAdditionalCompileOptions("/std:c++17");
+		s_pRuntimeObjectSystem->SetAdditionalLinkOptions("../bin/Debug-windows-x86_64/XYZEngine/XYZEngine.lib");
 	}
 
 	void NativeScriptEngine::Shutdown()
@@ -79,7 +80,7 @@ namespace XYZ {
 	{
 		IObject* object;
 		IObjectConstructor* pCtor = s_pRuntimeObjectSystem->GetObjectFactorySystem()->GetConstructor(name.c_str());
-		XYZ_ASSERT(pCtor, "Native script class is not registered ", name);
+		XYZ_ASSERT(pCtor, "Script object does not exist");
 
 		IObject* pObj = pCtor->Construct();
 		pObj->GetInterface(&object);

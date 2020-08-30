@@ -26,10 +26,21 @@ namespace XYZ {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
-	void OpenGLRendererAPI::DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount)
+	void OpenGLRendererAPI::DrawIndexed(PrimitiveType type, uint32_t indexCount)
 	{
-		uint32_t count = indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount();
-		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
+		switch (type)
+		{
+		case XYZ::PrimitiveType::None:
+			XYZ_ASSERT(false, "Primitive type is none");
+			break;
+		case XYZ::PrimitiveType::Triangles:
+			glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr);
+			break;
+		case XYZ::PrimitiveType::Lines:
+			glDrawElements(GL_LINES, indexCount, GL_UNSIGNED_INT, nullptr);
+			break;
+		}
+		
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 

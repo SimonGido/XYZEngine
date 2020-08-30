@@ -4,6 +4,14 @@
 #include "XYZ/Renderer/VertexArray.h"
 
 namespace XYZ {
+
+	enum class PrimitiveType
+	{
+		None,
+		Triangles,
+		Lines
+	};
+
 	/**
 	* @interface RendererAPI
 	* pure virtual (interface) class.
@@ -21,7 +29,7 @@ namespace XYZ {
 		virtual void SetClearColor(const glm::vec4& color) = 0;
 		virtual void Clear() = 0;
 
-		virtual void DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount = 0) = 0;
+		virtual void DrawIndexed(PrimitiveType type, uint32_t indexCount) = 0;
 		virtual void DrawInstanced(const Ref<VertexArray>& vertexArray, uint32_t count,uint32_t offset=0) = 0;
 		virtual void DrawInstancedIndirect(void* indirect) = 0;
 

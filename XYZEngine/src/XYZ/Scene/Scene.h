@@ -130,5 +130,6 @@ namespace XYZ {
 
         friend class Entity;
         friend class Asset<Scene>;
+        friend class SceneHierarchyPanel;
     };
 }

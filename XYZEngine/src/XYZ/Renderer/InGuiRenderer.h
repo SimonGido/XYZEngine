@@ -17,6 +17,11 @@ namespace XYZ {
 		glm::vec2 TexCoord;
 		uint32_t TextureID;
 	};
+	struct InGuiLineVertex
+	{
+		glm::vec3 Position;
+		glm::vec4 Color;
+	};
 
 	struct TextureRendererIDPair
 	{
@@ -28,6 +33,11 @@ namespace XYZ {
 		std::vector<InGuiVertex> Vertices;
 		std::vector<TextureRendererIDPair> TexturePairs;
 	};
+	struct InGuiLineMesh
+	{
+		std::vector<InGuiLineVertex> Vertices;
+	};
+
 	class InGuiRenderer
 	{
 	public:
@@ -53,11 +63,13 @@ namespace XYZ {
 		static void SubmitUI(const glm::vec2& position, const Vertex* vertex, size_t count, uint32_t textureID);
 
 		static void SubmitUI(const InGuiMesh& mesh);
-
+		static void SubmitLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color);
+		static void SubmitLineMesh(const InGuiLineMesh& mesh);
 		/**
 		* Execute the command queue
 		*/
 		static void Flush();
+		static void FlushLines();
 
 		/**
 		* Clean up after rendering

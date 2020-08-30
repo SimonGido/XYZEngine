@@ -50,6 +50,7 @@ namespace XYZ {
 			uint8_t Flags = 0;
 
 			InGuiMesh Mesh;
+			InGuiLineMesh LineMesh;
 			InGuiDockNode* DockNode = nullptr;
 			static constexpr float PanelSize = 25.0f;
 		};
@@ -87,19 +88,22 @@ namespace XYZ {
 
 			glm::vec2 ModifiedWindowMouseOffset = { 0,0 };
 			glm::vec2 WindowSpaceOffset = { 0,0 };
-			glm::vec2 PopupSpaceOffset = { 0,0 };
 			glm::vec2 WindowSize = { 0,0 };
+			
 			glm::vec2 MenuBarOffset = { 0,0 };
+			glm::vec2 PopupOffset = { 0,0 };
+			
 			glm::vec2 MousePosition = { 0,0 };
 			glm::vec2 SelectedPoint = { 0,0 };
 
 			float MaxHeightInRow = 0.0f;
 			float LastMenuBarWidth = 0.0f;
 
-			uint16_t Flags = 0;
-
 			int PressedKey = -1;
 			int KeyMode = -1;
+			bool CapslockEnabled = false;
+
+			uint16_t Flags = 0;
 		};
 
 
@@ -236,5 +240,7 @@ namespace XYZ {
 		void OnWindowResize(const glm::vec2& size);
 		void OnMouseMove(const glm::vec2& position);
 		void OnKeyPressed(int key,int mode);
+
+		// TODO: When window is loaded from file but not used in code it remains in existence 
 	}
 }

@@ -10,7 +10,7 @@ namespace XYZ {
 	void InGuiLayer::OnAttach()
 	{
 		Ref<Shader> shader = Shader::Create("Assets/Shaders/InGuiShader.glsl");
-		Ref<Texture2D> texture = Texture2D::Create(TextureWrap::Clamp, "Assets/Textures/Gui/TexturePack.png");
+		Ref<Texture2D> texture = Texture2D::Create(TextureWrap::Clamp, "Assets/Textures/Gui/TexturePack_Dark.png");
 		Ref<Texture2D> colorPickerTexture = Texture2D::Create(TextureWrap::Clamp, "Assets/Textures/Gui/ColorPicker.png");
 		m_Material = Material::Create(shader);
 
@@ -41,7 +41,7 @@ namespace XYZ {
 		},
 		{
 			{1.0f,1.0f,1.0f,1.0f},
-			{0.8f,0.0f,0.2f,1.0f},
+			{0.4f,1.8f,1.7f,1.0f},
 			{0.8f,0.0f,0.2f,0.6f},
 			{0.7f,0.7f},
 			1000.f

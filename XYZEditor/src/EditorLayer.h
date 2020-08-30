@@ -2,6 +2,9 @@
 
 #include <XYZ.h>
 
+#include "Panels/SceneHierarchyPanel.h"
+#include "Panels/EntityComponentsPanel.h"
+
 
 namespace XYZ {
 
@@ -20,6 +23,9 @@ namespace XYZ {
 		bool onWindowResized(WindowResizeEvent& event);
 
 	private:
+		SceneHierarchyPanel m_SceneHierarchyPanel;
+		EntityComponentPanel m_EntityComponentPanel;
+
 		Animation *m_Animation;
 		Animation* m_RunAnimation;
 

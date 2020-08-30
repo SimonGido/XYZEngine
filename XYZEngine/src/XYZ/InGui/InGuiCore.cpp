@@ -54,8 +54,8 @@ namespace XYZ {
 			HandleMove(g_InContext->FrameData.LastActiveWindow);
 			HandleResize(g_InContext->FrameData.LastActiveWindow);
 
-			g_InContext->DockSpace->End();
 			g_InContext->SubmitToRenderer();
+			g_InContext->DockSpace->End();
 			
 			if (!(g_InContext->FrameData.Flags & RightMouseButtonDown) 
 			 && !(g_InContext->FrameData.Flags & LeftMouseButtonDown))
@@ -66,6 +66,9 @@ namespace XYZ {
 			g_InContext->FrameData.PressedKey = -1;
 			g_InContext->RenderData.NumTexturesInUse = InGuiRenderData::DefaultTextureCount;
 
+			InGuiRenderer::Flush();
+			InGuiRenderer::FlushLines();
+			InGuiRenderer::EndScene();
 		}
 
 		void OnLeftMouseButtonRelease()
@@ -122,6 +125,8 @@ namespace XYZ {
 		{
 			g_InContext->FrameData.PressedKey = key;
 			g_InContext->FrameData.KeyMode = mode;
+			if (key == ToUnderlying(KeyCode::XYZ_KEY_CAPS_LOCK))
+				g_InContext->FrameData.CapslockEnabled = !g_InContext->FrameData.CapslockEnabled;
 		}
 
 
@@ -200,7 +205,7 @@ namespace XYZ {
 				for (auto win : m_ResizedNode->Windows)
 					win->Flags |= Modified;
 				if (m_ResizedNode->Split == SplitAxis::Vertical)
-				{
+				{			
 					glm::vec2 leftOld = m_ResizedNode->Children[0]->Size;
 					glm::vec2 rightOld = m_ResizedNode->Children[1]->Size;
 					glm::vec2 leftNew = { g_InContext->FrameData.MousePosition.x - m_ResizedNode->Position.x ,m_ResizedNode->Children[0]->Size.y };
@@ -210,6 +215,7 @@ namespace XYZ {
 					m_ResizedNode->Children[1]->Position.x = m_ResizedNode->Position.x + m_ResizedNode->Children[0]->Size.x;
 					m_ResizedNode->Children[1]->Size.x = rightNew.x;
 
+				
 					for (auto win : m_ResizedNode->Children[0]->Windows)
 						win->Flags |= Modified;
 					for (auto win : m_ResizedNode->Children[1]->Windows)
@@ -223,6 +229,7 @@ namespace XYZ {
 					m_ResizedNode->Children[0]->Size.y = g_InContext->FrameData.MousePosition.y - m_ResizedNode->Position.y;
 					m_ResizedNode->Children[1]->Position.y = m_ResizedNode->Position.y + m_ResizedNode->Children[0]->Size.y;
 					m_ResizedNode->Children[1]->Size.y = (m_ResizedNode->Position.y + m_ResizedNode->Size.y) - m_ResizedNode->Children[1]->Position.y;
+					
 					for (auto win : m_ResizedNode->Children[0]->Windows)
 						win->Flags |= Modified;
 					for (auto win : m_ResizedNode->Children[1]->Windows)
@@ -245,16 +252,12 @@ namespace XYZ {
 			XYZ_ASSERT(node, "Adjusting null node!");
 			if (node->Split == SplitAxis::Vertical)
 			{
-				glm::vec2 halfSize = { node->Size.x / 2, node->Size.y };
-				glm::vec2 leftPos = { node->Position.x ,node->Position.y };
-				glm::vec2 rightPos = { node->Position.x + halfSize.x,node->Position.y };
-				
-				node->Children[0]->Position = leftPos;
-				node->Children[1]->Position = rightPos;
+			
+				node->Children[0]->Position = node->Position;
+				node->Children[0]->Size.x = node->Children[1]->Position.x - node->Children[0]->Position.x;
+				node->Children[0]->Size.y = node->Size.y;
+				node->Children[1]->Size.y = node->Size.y;
 
-				node->Children[0]->Size.y = halfSize.y;
-				node->Children[1]->Size.y = halfSize.y;
-		
 				for (auto win : node->Children[0]->Windows)
 					win->Flags |= Modified;
 				for (auto win : node->Children[1]->Windows)
@@ -271,8 +274,8 @@ namespace XYZ {
 				
 				node->Children[0]->Position = bottomPos;
 				node->Children[1]->Position = topPos;
-				node->Children[0]->Size.x = halfSize.x;
-				node->Children[1]->Size.x = halfSize.x;
+				node->Children[0]->Size.x = node->Size.x;
+				node->Children[1]->Size.x = node->Size.x;
 		
 
 				for (auto win : node->Children[0]->Windows)
@@ -285,47 +288,42 @@ namespace XYZ {
 			}
 		}
 
+		
+
 		void InGuiDockSpace::detectResize(InGuiDockNode* node)
 		{
 			glm::vec2 offset = { 5,5 };
 			glm::vec2& mousePos = g_InContext->FrameData.MousePosition;
-			if (node->Split != SplitAxis::None)
+			auto& app = Application::Get();
+
+			if (node->Children[0] && node->Children[1])
 			{
-				if (Collide(node->Position, node->Size, mousePos))
-				{
-					if (node->Children[0])
-						detectResize(node->Children[0]);
-					if (node->Children[1])
-						detectResize(node->Children[1]);
+				if (node->Split == SplitAxis::Vertical)
+				{		
+					if (mousePos.x >= node->Children[0]->Position.x + node->Children[0]->Size.x - offset.x
+						&& mousePos.x <= node->Children[0]->Position.x + node->Children[0]->Size.x + offset.x)
+					{
+						app.GetWindow().SetCursor(XYZ_HRESIZE_CURSOR);
+						m_ResizedNode = node;
+						g_InContext->FrameData.Flags |= ClickHandled;
+						return;
+					}
 				}
-			}
-			else
-			{
-				auto& app = Application::Get();
-				auto parent = node->Parent;
-				if (parent)
+				else if (node->Split == SplitAxis::Horizontal)
 				{
-					if (parent->Split == SplitAxis::Vertical)
+					if (mousePos.y >= node->Children[0]->Position.y + node->Children[0]->Size.y - offset.y
+						&& mousePos.y <= node->Children[0]->Position.y + node->Children[0]->Size.y + offset.y)
 					{
-						if (mousePos.x >= parent->Children[0]->Position.x + parent->Children[0]->Size.x - offset.x
-							&& mousePos.x <= parent->Children[0]->Position.x + parent->Children[0]->Size.x + offset.x)
-						{
-							app.GetWindow().SetCursor(XYZ_HRESIZE_CURSOR);
-							m_ResizedNode = parent;
-							g_InContext->FrameData.Flags |= ClickHandled;
-						}
+						app.GetWindow().SetCursor(XYZ_VRESIZE_CURSOR);
+						m_ResizedNode = node;
+						g_InContext->FrameData.Flags |= ClickHandled;		
+						return;
 					}
-					else if (parent->Split == SplitAxis::Horizontal)
-					{
-						if (mousePos.y >= parent->Children[0]->Position.y + parent->Children[0]->Size.y - offset.y
-							&& mousePos.y <= parent->Children[0]->Position.y + parent->Children[0]->Size.y + offset.y)
-						{
-							app.GetWindow().SetCursor(XYZ_VRESIZE_CURSOR);
-							m_ResizedNode = parent;
-							g_InContext->FrameData.Flags |= ClickHandled;
-						}
-					}
-				}		
+				}
+
+				detectResize(node->Children[0]);
+				detectResize(node->Children[1]);
+				
 			}
 		}
 
@@ -732,7 +730,7 @@ namespace XYZ {
 			{
 				return nullptr;
 			}
-			g_InContext->FrameData.CurrentWindow = it->second;
+			
 			return it->second;
 		}
 		InGuiWindow* InGuiContext::CreateWin(const std::string& name, const glm::vec2& position, const glm::vec2& size)
@@ -743,8 +741,7 @@ namespace XYZ {
 		}
 
 		void InGuiContext::SubmitToRenderer()
-		{
-			
+		{		
 			for (auto it : InGuiWindows)
 			{
 				uint8_t priority = 0;
@@ -752,6 +749,7 @@ namespace XYZ {
 					priority = 5;
 
 				RenderQueue.Push(&it.second->Mesh, priority);
+				RenderQueue.Push(&it.second->LineMesh);
 			}
 			RenderQueue.SubmitToRenderer();
 		}

@@ -145,6 +145,9 @@ namespace XYZ {
 
 		m_Machine->SetStateTransition("Idle", "Run");
 		m_Machine->SetStateTransition("Run", "Idle");
+
+
+		m_SceneHierarchyPanel.SetContext(m_Scene);
 	}
 
 	void EditorLayer::OnDetach()
@@ -201,6 +204,9 @@ namespace XYZ {
 
 	void EditorLayer::OnInGuiRender()
 	{
+		m_SceneHierarchyPanel.OnInGuiRender();
+		m_EntityComponentPanel.SetContext(m_SceneHierarchyPanel.GetSelectedEntity());
+		m_EntityComponentPanel.OnInGuiRender();
 
 		if (InGui::RenderWindow("Scene", m_FBO->GetColorAttachment(0).RendererID, { 0,-300 }, { 800,800 }, 25.0f))
 		{
@@ -223,13 +229,13 @@ namespace XYZ {
 				}
 			}
 			InGui::EndPopup();
-
-			if (InGui::TextArea(m_Text, { 150,25 }, m_Modified))
+		
+			if (InGui::TextArea("Test",m_Text, { 150,25 }, m_Modified))
 			{
 				std::cout << atof(m_Text.c_str()) << std::endl;
 			}
 		}
-
+		
 		InGui::BeginMenu();
 		if (InGui::MenuBar("File", m_MenuOpen))
 		{
@@ -267,16 +273,16 @@ namespace XYZ {
 		InGui::MenuBarEnd();
 		InGui::MenuBar("Settings", m_MenuOpen);
 		InGui::MenuBarEnd();
-
+		
 		InGui::MenuBar("Settingass", m_MenuOpen);
 		InGui::MenuBarEnd();
 		InGui::MenuBar("Settingasdas", m_MenuOpen);
 		InGui::MenuBarEnd();
 		InGui::EndMenu();
-
-
 		
-	
+		
+		
+		
 		InGui::End();
 		if (InGui::Begin("Test Panel", { 0,0 }, { 500,500 }))
 		{			

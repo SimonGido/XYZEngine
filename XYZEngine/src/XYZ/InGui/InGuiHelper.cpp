@@ -21,7 +21,6 @@ namespace XYZ {
 			glm::vec2 offset = { g_InContext->FrameData.WindowSize.x / 2,g_InContext->FrameData.WindowSize.y / 2 };
 			return { point.x - offset.x, offset.y - point.y };
 		}
-
 		glm::vec2 HandleWindowSpacing(const glm::vec2& uiSize)
 		{
 			XYZ_ASSERT(g_InContext->FrameData.CurrentWindow, "Missing begin call");
@@ -57,7 +56,6 @@ namespace XYZ {
 
 			return position;
 		}
-
 		glm::vec4 CalculatePixelColor(const glm::vec4& pallete, const glm::vec2& position, const glm::vec2& size)
 		{
 			glm::vec2 pos = g_InContext->FrameData.MousePosition - position;
@@ -520,13 +518,13 @@ namespace XYZ {
 		void HandleInputText(std::string& text)
 		{
 			InGuiFrameData& frameData = g_InContext->FrameData;
-
+			size_t currentSize = text.size();
 			switch (frameData.PressedKey)
 			{
 			case ToUnderlying(KeyCode::XYZ_KEY_BACKSPACE):
 				if (!text.empty())
-					text.pop_back(); 
-				break;
+					text.pop_back();
+				return;
 			case ToUnderlying(KeyCode::XYZ_KEY_0):
 				text.push_back('0');
 				break;
@@ -560,7 +558,88 @@ namespace XYZ {
 			case ToUnderlying(KeyCode::XYZ_KEY_PERIOD):
 				text.push_back('.');
 				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_A):
+				text.push_back('a');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_B):
+				text.push_back('b');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_C):
+				text.push_back('c');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_D):
+				text.push_back('d');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_E):
+				text.push_back('e');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_F):
+				text.push_back('f');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_G):
+				text.push_back('g');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_H):
+				text.push_back('h');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_I):
+				text.push_back('i');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_J):
+				text.push_back('j');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_K):
+				text.push_back('k');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_L):
+				text.push_back('l');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_M):
+				text.push_back('m');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_O):
+				text.push_back('o');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_P):
+				text.push_back('p');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_Q):
+				text.push_back('q');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_R):
+				text.push_back('r');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_S):
+				text.push_back('s');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_T):
+				text.push_back('t');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_U):
+				text.push_back('u');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_V):
+				text.push_back('v');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_W):
+				text.push_back('w');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_X):
+				text.push_back('x');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_Y):
+				text.push_back('y');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_Z):
+				text.push_back('z');
+				break;
 			}	
+
+			// Shift / Capslock
+			if ((frameData.KeyMode == 1 || frameData.CapslockEnabled) && currentSize < text.size())
+			{
+				text[currentSize] = std::toupper(text[currentSize]);
+			}
 		}
 		void HandleInputNumber(std::string& text)
 		{

@@ -10,6 +10,10 @@ namespace XYZ {
 			XYZ_ASSERT(mesh, "Pushing null pointer to mesh");
 			m_DrawList.push_back({ mesh,priority });
 		}
+		void InGuiRenderQueue::Push(InGuiLineMesh* mesh)
+		{
+			InGuiRenderer::SubmitLineMesh(*mesh);
+		}
 		void InGuiRenderQueue::SubmitToRenderer()
 		{
 			std::sort(m_DrawList.begin(), m_DrawList.end(),[](const InGuiDrawable& a, const InGuiDrawable& b) {
@@ -20,8 +24,7 @@ namespace XYZ {
 			{
 				InGuiRenderer::SubmitUI(*it.Mesh);
 			}
-			InGuiRenderer::Flush();
-
+		
 			size_t oldSize = m_DrawList.size();
 			m_DrawList.clear();
 			m_DrawList.reserve(oldSize);

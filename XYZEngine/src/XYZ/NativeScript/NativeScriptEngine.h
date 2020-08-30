@@ -1,6 +1,5 @@
 #pragma once
 #include "XYZ/Core/Timestep.h"
-#include "XYZ/Core/Reflect.h"
 #include "NativeScriptWrappers.h"
 
 #include <RuntimeObjectSystem/ObjectFactorySystem/ObjectFactorySystem.h>
