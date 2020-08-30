@@ -33,6 +33,10 @@ namespace XYZ {
 			m_XScale = std::to_string(scale.x).substr(0, 4);
 			m_YScale = std::to_string(scale.y).substr(0, 4);
 			m_ZScale = std::to_string(scale.z).substr(0, 4);
+
+			if (context.HasComponent<NativeScriptComponent>())
+				m_NativeScriptObject = context.GetComponent<NativeScriptComponent>()->ScriptObjectName;
+
 			InGui::g_InContext->GetWindow("entity")->Flags |= InGui::Modified;
 		}
 		m_Context = context;
@@ -110,7 +114,18 @@ namespace XYZ {
 					InGui::Text("Native Script Component", { 0.8f,0.8f }, { 1,0.5,1,1 });
 					InGui::Separator();		
 					auto nativeScript = m_Context.GetComponent<NativeScriptComponent>();
-					InGui::TextArea("Script Name",nativeScript->ScriptObjectName, { 150,25 }, m_NativeScriptModified);
+					if (InGui::TextArea("Script Name", m_NativeScriptObject, { 150,25 }, m_NativeScriptModified))
+					{
+						ScriptableEntity* scriptableEntity = (ScriptableEntity*)NativeScriptEngine::CreateScriptObject(m_NativeScriptObject);
+						if (scriptableEntity)
+						{
+							auto scriptComponent = m_Context.GetComponent<NativeScriptComponent>();
+							scriptComponent->ScriptObjectName = m_NativeScriptObject;
+							scriptComponent->ScriptableEntity = scriptableEntity;
+							scriptComponent->ScriptableEntity->Entity = m_Context;
+							scriptComponent->ScriptableEntity->OnCreate();
+						}
+					}
 					InGui::Separator();
 					InGui::EndGroup();
 				}
@@ -172,7 +187,7 @@ namespace XYZ {
 								comp.ScriptableEntity->Entity = m_Context;
 								comp.ScriptableEntity->OnCreate();
 								m_Context.AddComponent<NativeScriptComponent>(comp);
-								
+								m_NativeScriptObject = constructors[i]->GetName();
 								m_ScriptsOpen = false;
 								m_ChooseScript = false;
 							}

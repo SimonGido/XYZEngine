@@ -43,6 +43,7 @@ namespace XYZ {
 		std::string m_YScale;
 		std::string m_ZScale;
 
+		std::string m_NativeScriptObject;
 	private:
 		Ref<Material> m_DefaultMaterial;
 		Ref<SubTexture2D> m_DefaultSubTexture;

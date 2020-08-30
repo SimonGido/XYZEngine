@@ -80,7 +80,8 @@ namespace XYZ {
 	{
 		IObject* object;
 		IObjectConstructor* pCtor = s_pRuntimeObjectSystem->GetObjectFactorySystem()->GetConstructor(name.c_str());
-		XYZ_ASSERT(pCtor, "Script object does not exist");
+		if (!pCtor)
+			return nullptr;
 
 		IObject* pObj = pCtor->Construct();
 		pObj->GetInterface(&object);

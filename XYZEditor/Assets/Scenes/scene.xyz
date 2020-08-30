@@ -2,33 +2,33 @@ Scene: Test Scene
 Entities:
   - Entity: Test Entity
     TransformComponent:
-      Position: [1.60000002, 1.74296498, 0]
+      Position: [4.41699457, 4.5600276, 0]
       Rotation: [1, 0, 0, 0]
       Scale: [1, 1, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/material.mat
       SubTextureAssetPath: Assets/SubTextures/New SubTexture.subtex
-      Color: [1, 0, 1, 1]
+      Color: [1, 1, 1, 1]
       TextureID: 0
       SortLayer: 0
       IsVisible: true
   - Entity: 00zcz
     Parent: 2
     TransformComponent:
-      Position: [1, 0, 0]
+      Position: [3.47182083, 2.47191215, 0]
       Rotation: [1, 0, 0, 0]
       Scale: [0.99999994, 0.99999994, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/material.mat
       SubTextureAssetPath: Assets/SubTextures/CharacterSubTexture.subtex
-      Color: [0, 1, 0, 1]
+      Color: [1, 1, 1, 1]
       TextureID: 0
       SortLayer: 0
       IsVisible: true
   - Entity: Testadsdwasd
     Parent: 2
     TransformComponent:
-      Position: [2, 1.5, 0]
+      Position: [7.49676847, 6.99653006, 0]
       Rotation: [1, 0, 0, 0]
       Scale: [0.99999994, 0.99999994, 1]
     SpriteRenderer:
@@ -41,20 +41,20 @@ Entities:
   - Entity: Test HoHO
     Parent: 2
     TransformComponent:
-      Position: [3, 0, 0]
+      Position: [-2.08231401, -5.08273888, 0]
       Rotation: [1, 0, 0, 0]
       Scale: [0.99999994, 0.99999994, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/material.mat
       SubTextureAssetPath: Assets/SubTextures/CharacterSubTexture.subtex
-      Color: [1, 1, 1, 1]
+      Color: [0, 1, 1, 1]
       TextureID: 0
       SortLayer: 0
       IsVisible: true
   - Entity: Test CUHAASa
     Parent: 2
     TransformComponent:
-      Position: [5.00090456, 1.00051868, 0]
+      Position: [6.56303596, 2.56190562, 0]
       Rotation: [1, 0, 0, 0]
       Scale: [0.99999994, 0.99999994, 1]
     SpriteRenderer:

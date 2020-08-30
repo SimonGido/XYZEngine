@@ -21,7 +21,7 @@ namespace XYZ {
 		NativeScriptEngine::SetOnReloadCallback([this] {
 			auto storage = m_Scene->GetECS()->GetComponentStorage<NativeScriptComponent>();
 			for (int i = 0; i < storage->Size(); ++i)
-			{
+			{		
 				(*storage)[i].ScriptableEntity = (ScriptableEntity*)NativeScriptEngine::CreateScriptObject((*storage)[i].ScriptObjectName);
 				(*storage)[i].ScriptableEntity->Entity = m_StoredEntitiesWithScript[i];
 				(*storage)[i].ScriptableEntity->OnCreate();
