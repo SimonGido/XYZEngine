@@ -21,10 +21,13 @@ namespace XYZ {
 		NativeScriptEngine::SetOnReloadCallback([this] {
 			auto storage = m_Scene->GetECS()->GetComponentStorage<NativeScriptComponent>();
 			for (int i = 0; i < storage->Size(); ++i)
-			{		
+			{
 				(*storage)[i].ScriptableEntity = (ScriptableEntity*)NativeScriptEngine::CreateScriptObject((*storage)[i].ScriptObjectName);
-				(*storage)[i].ScriptableEntity->Entity = m_StoredEntitiesWithScript[i];
-				(*storage)[i].ScriptableEntity->OnCreate();
+				if ((*storage)[i].ScriptableEntity)
+				{
+					(*storage)[i].ScriptableEntity->Entity = m_StoredEntitiesWithScript[i];
+					(*storage)[i].ScriptableEntity->OnCreate();
+				}
 			}
 		});
 
@@ -32,7 +35,10 @@ namespace XYZ {
 			auto storage = m_Scene->GetECS()->GetComponentStorage<NativeScriptComponent>();
 			for (int i = 0; i < storage->Size(); ++i)
 			{
-				m_StoredEntitiesWithScript.push_back((*storage)[i].ScriptableEntity->Entity);
+				if ((*storage)[i].ScriptableEntity)
+				{
+					m_StoredEntitiesWithScript.push_back((*storage)[i].ScriptableEntity->Entity);
+				}
 			}
 		});
 		

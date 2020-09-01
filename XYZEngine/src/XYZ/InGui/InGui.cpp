@@ -170,7 +170,7 @@ namespace XYZ {
 						frameData.Flags |= ClickHandled;
 					}
 				}
-
+	
 				GenerateInGuiQuad(window->Mesh, pos, size, renderData.SliderSubTexture->GetTexCoords(), renderData.TextureID, color);
 				for (auto& vertex : textVertices)
 					window->Mesh.Vertices.push_back(vertex);
@@ -325,24 +325,46 @@ namespace XYZ {
 			g_InContext->FrameData.MenuBarOffset = { 0,0 };
 		}
 
-		void BeginGroup()
+		bool BeginGroup(const std::string& name,bool& open)
 		{
+			if (!g_InContext)
+				return false;
+
 			XYZ_ASSERT(g_InContext->FrameData.CurrentWindow, "Missing begin call");
+
+			InGuiFrameData& frameData = g_InContext->FrameData;
+			InGuiRenderData& renderData = g_InContext->RenderData;
+			InGuiConfig& configData = g_InContext->ConfigData;
 			InGuiWindow* window = g_InContext->FrameData.CurrentWindow;
 			if (window->Flags & Modified)
 			{
-				glm::vec2 lineStart = { window->Position.x,window->Position.y + g_InContext->FrameData.WindowSpaceOffset.y };
-				glm::vec2 lineEnd = { lineStart.x + window->Size.x,lineStart.y };
+				glm::vec2 winPos = window->Position;
+				glm::vec2 winSize = window->Size;
+				glm::vec2 panelPos = { winPos.x, HandleWindowSpacing({winSize.x - 5,InGuiWindow::PanelSize}).y };
+				glm::vec2 minButtonPos = { panelPos.x + 5, panelPos.y };
+				glm::vec4 color = configData.DefaultColor;
 
-				window->LineMesh.Vertices.push_back({
-					{ lineStart, 0 },
-					{1,1,1,1}
-					});
-				window->LineMesh.Vertices.push_back({
-					{ lineEnd, 0 },
-					{1,1,1,1}
-					});
+				if (Collide(minButtonPos, { InGuiWindow::PanelSize,InGuiWindow::PanelSize }, frameData.MousePosition))
+				{
+					color = configData.HooverColor;
+					if ((frameData.Flags & LeftMouseButtonDown)
+						&& !(frameData.Flags & ClickHandled))
+					{
+						open = !open;
+						frameData.Flags |= ClickHandled;
+					}
+				}
+				GenerateInGuiQuad(window->Mesh, panelPos, { winSize.x ,InGuiWindow::PanelSize }, renderData.SliderSubTexture->GetTexCoords(), renderData.TextureID);
+				size_t offset = window->Mesh.Vertices.size();
+				auto [width, height] = GenerateInGuiText(window->Mesh, renderData.Font, name, { minButtonPos.x + InGuiWindow::PanelSize, panelPos.y }, configData.NameScale, window->Size.x, renderData.FontTextureID, color);
+				MoveVertices(window->Mesh.Vertices.data(), { 5, height / 2 }, offset, name.size() * 4);
+				
+				if (open)
+					GenerateInGuiQuad(window->Mesh, minButtonPos, { InGuiWindow::PanelSize ,InGuiWindow::PanelSize }, renderData.DownArrowButtonSubTexture->GetTexCoords(), renderData.TextureID, color);
+				else
+					GenerateInGuiQuad(window->Mesh, minButtonPos, { InGuiWindow::PanelSize ,InGuiWindow::PanelSize }, renderData.RightArrowButtonSubTexture->GetTexCoords(), renderData.TextureID, color);
 			}
+			return open;
 		}
 
 		void EndGroup()

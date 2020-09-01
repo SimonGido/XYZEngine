@@ -26,7 +26,7 @@ public:
 		m_Position.y -= 0.0005;
 		m_Position.x -= 0.0005;
 	}
-
+	
 private:	
 	XYZ::SpriteRenderer* m_SpriteRenderer;
 	XYZ::TransformComponent* m_TransformComponent;

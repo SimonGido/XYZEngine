@@ -34,9 +34,18 @@ namespace XYZ {
 			m_YScale = std::to_string(scale.y).substr(0, 4);
 			m_ZScale = std::to_string(scale.z).substr(0, 4);
 
+			if (context.HasComponent<SpriteRenderer>())
+			{
+				auto spriteRenderer = context.GetComponent<SpriteRenderer>();
+				m_RColor = std::to_string(spriteRenderer->Color.x).substr(0, 4);
+				m_GColor = std::to_string(spriteRenderer->Color.y).substr(0, 4);
+				m_BColor = std::to_string(spriteRenderer->Color.z).substr(0, 4);
+				m_AColor = std::to_string(spriteRenderer->Color.w).substr(0, 4);
+			}
 			if (context.HasComponent<NativeScriptComponent>())
+			{
 				m_NativeScriptObject = context.GetComponent<NativeScriptComponent>()->ScriptObjectName;
-
+			}
 			InGui::g_InContext->GetWindow("entity")->Flags |= InGui::Modified;
 		}
 		m_Context = context;
@@ -50,97 +59,124 @@ namespace XYZ {
 				if (m_Context.HasComponent<SceneTagComponent>())
 				{
 					auto sceneTag = m_Context.GetComponent<SceneTagComponent>();
-					InGui::BeginGroup();
-					InGui::Text("Scene Tag Component", { 0.8f,0.8f }, {1,0.5,1,1});
-					InGui::Separator();
-					InGui::TextArea("Name",sceneTag->Name, { 150,25 }, m_SceneTagModified);
-					InGui::Separator();
-					InGui::EndGroup();
+					if (InGui::BeginGroup("Scene Tag Component", m_SceneTagOpen))
+					{
+						InGui::TextArea("Name", sceneTag->Name, { 150,25 }, m_SceneTagModified);
+					}
 				}
 
 				if (m_Context.HasComponent<TransformComponent>())
 				{
 					auto transformComponent = m_Context.GetComponent<TransformComponent>();
-					InGui::BeginGroup();
-					InGui::Text("Transform Component", { 0.8f,0.8f }, { 1,0.5,1,1 });
-					InGui::Separator();
-					InGui::Text("Position", { 0.7f,0.7f });
-					if (InGui::TextArea("X",m_XPos, { 50,25 }, m_XPosModified))
-					{
-						transformComponent->Transform[3][0] = atof(m_XPos.c_str());
-					}
-					if (InGui::TextArea("Y",m_YPos, { 50,25 }, m_YPosModified))
-					{
-						transformComponent->Transform[3][1] = atof(m_YPos.c_str());
-					}
-					if (InGui::TextArea("Z",m_ZPos, { 50,25 }, m_ZPosModified))
-					{
-						transformComponent->Transform[3][2] = atof(m_ZPos.c_str());
-					}		
-					InGui::Separator();
-					InGui::Text("Rotation", { 0.7f,0.7f });
-					if (InGui::TextArea("X",m_XRot, { 50,25 }, m_XRotModified))
-					{
-						
-					}
-					if (InGui::TextArea("Y",m_YRot, { 50,25 }, m_YRotModified))
-					{
-						
-					}
-					if (InGui::TextArea("Z",m_ZRot, { 50,25 }, m_ZRotModified))
-					{
-				
-					}		
-					InGui::Separator();
-					InGui::Text("Scale", { 0.7f,0.7f });
-					if (InGui::TextArea("X",m_XScale, { 50,25 }, m_XScaleModified))
-					{
-						
-					}
-					if (InGui::TextArea("Y",m_YScale, { 50,25 }, m_YScaleModified))
-					{
-						
-					}
-					if (InGui::TextArea("Z",m_ZScale, { 50,25 }, m_ZScaleModified))
-					{
-
-					}
-					InGui::Separator();
-					InGui::EndGroup();
-				}
-				if (m_Context.HasComponent<NativeScriptComponent>())
-				{
-					InGui::BeginGroup();
-					InGui::Text("Native Script Component", { 0.8f,0.8f }, { 1,0.5,1,1 });
-					InGui::Separator();		
-					auto nativeScript = m_Context.GetComponent<NativeScriptComponent>();
-					if (InGui::TextArea("Script Name", m_NativeScriptObject, { 150,25 }, m_NativeScriptModified))
-					{
-						ScriptableEntity* scriptableEntity = (ScriptableEntity*)NativeScriptEngine::CreateScriptObject(m_NativeScriptObject);
-						if (scriptableEntity)
+					if (InGui::BeginGroup("Transform Component", m_TransformOpen))
+					{						
+						if (InGui::TextArea("X", m_XPos, { 50,25 }, m_XPosModified))
 						{
-							auto scriptComponent = m_Context.GetComponent<NativeScriptComponent>();
-							scriptComponent->ScriptObjectName = m_NativeScriptObject;
-							scriptComponent->ScriptableEntity = scriptableEntity;
-							scriptComponent->ScriptableEntity->Entity = m_Context;
-							scriptComponent->ScriptableEntity->OnCreate();
+							transformComponent->Transform[3][0] = atof(m_XPos.c_str());
 						}
+						if (InGui::TextArea("Y", m_YPos, { 50,25 }, m_YPosModified))
+						{
+							transformComponent->Transform[3][1] = atof(m_YPos.c_str());
+						}
+						if (InGui::TextArea("Z", m_ZPos, { 50,25 }, m_ZPosModified))
+						{
+							transformComponent->Transform[3][2] = atof(m_ZPos.c_str());
+						}
+						InGui::Text("Position", { 0.7f,0.7f });
+						InGui::Separator();				
+						if (InGui::TextArea("X", m_XRot, { 50,25 }, m_XRotModified))
+						{
+
+						}
+						if (InGui::TextArea("Y", m_YRot, { 50,25 }, m_YRotModified))
+						{
+
+						}
+						if (InGui::TextArea("Z", m_ZRot, { 50,25 }, m_ZRotModified))
+						{
+
+						}
+						InGui::Text("Rotation", { 0.7f,0.7f });
+						InGui::Separator();			
+						if (InGui::TextArea("X", m_XScale, { 50,25 }, m_XScaleModified))
+						{
+
+						}
+						if (InGui::TextArea("Y", m_YScale, { 50,25 }, m_YScaleModified))
+						{
+
+						}
+						if (InGui::TextArea("Z", m_ZScale, { 50,25 }, m_ZScaleModified))
+						{
+
+						}
+						InGui::Text("Scale", { 0.7f,0.7f });
 					}
-					InGui::Separator();
-					InGui::EndGroup();
 				}
+				
 				if (m_Context.HasComponent<SpriteRenderer>())
 				{
-					InGui::BeginGroup();
-					InGui::Text("Sprite Renderer", { 0.8f,0.8f }, { 1,0.5,1,1 });
-					InGui::Separator();
-					InGui::EndGroup();
+					if (InGui::BeginGroup("Sprite Renderer", m_SpriteRendererOpen))
+					{
+						auto spriteRenderer = m_Context.GetComponent<SpriteRenderer>();
+						if (InGui::TextArea("R", m_RColor, { 50,25 }, m_RColorModified))
+						{
+							spriteRenderer->Color.x = atof(m_RColor.c_str());
+						}
+						if (InGui::TextArea("G", m_GColor, { 50,25 }, m_GColorModified))
+						{
+							spriteRenderer->Color.y = atof(m_GColor.c_str());
+						}
+						if (InGui::TextArea("B", m_BColor, { 50,25 }, m_BColorModified))
+						{
+							spriteRenderer->Color.z = atof(m_BColor.c_str());
+						}
+						if (InGui::TextArea("A", m_AColor, { 50,25 }, m_AColorModified))
+						{
+							spriteRenderer->Color.w = atof(m_AColor.c_str());
+						}
+						InGui::Text("Color", { 0.7f,0.7f });
+
+						if (InGui::Checkbox("Pick Color", { 25,25 }, m_PickColor))
+						{
+							InGui::ColorPicker4("Color", { 255,255 }, m_ColorPallete, spriteRenderer->Color);
+						}
+					}
+					if (m_Context.HasComponent<NativeScriptComponent>())
+					{
+						if (InGui::BeginGroup("Native Script Component", m_NativeScriptOpen))
+						{
+							auto nativeScript = m_Context.GetComponent<NativeScriptComponent>();
+							if (InGui::BeginPopup("Script", { 150,25 }, m_ScriptsOpen))
+							{
+								AUDynArray<IObjectConstructor*> constructors;
+								PerModuleInterface::g_pRuntimeObjectSystem->GetObjectFactorySystem()->GetAll(constructors);
+								for (size_t i = 0; i < constructors.Size(); ++i)
+								{
+									if (InGui::PopupItem(constructors[i]->GetName(), { 150,25 }))
+									{
+										ScriptableEntity* scriptableEntity = (ScriptableEntity*)NativeScriptEngine::CreateScriptObject(constructors[i]->GetName());
+										auto scriptComponent = m_Context.GetComponent<NativeScriptComponent>();
+										scriptComponent->ScriptObjectName = m_NativeScriptObject;
+										scriptComponent->ScriptableEntity = scriptableEntity;
+										scriptComponent->ScriptableEntity->Entity = m_Context;
+										scriptComponent->ScriptableEntity->OnCreate();
+										m_ScriptsOpen = false;
+									}
+								}
+							}
+							InGui::EndPopup();
+						}
+					}
 				}
-				if (InGui::BeginPopup("Add Component", { 150,25 }, m_AddComponentOpen))
+		
+				InGui::Separator();
+				InGui::BeginMenu();
+				if (InGui::MenuBar("Add Component", m_AddComponentOpen))
 				{
 					if (!m_Context.HasComponent<TransformComponent>())
 					{
-						if (InGui::PopupItem("Add Transform", { 150,25 }))
+						if (InGui::MenuItem("Add Transform", { 150,25 }))
 						{
 							m_Context.EmplaceComponent<TransformComponent>();
 							m_AddComponentOpen = false;
@@ -148,7 +184,7 @@ namespace XYZ {
 					}
 					if (!m_Context.HasComponent<SpriteRenderer>())
 					{
-						if (InGui::PopupItem("Add SpriteRenderer", { 150,25 }))
+						if (InGui::MenuItem("Add SpriteRenderer", { 150,25 }))
 						{
 							glm::vec4 color = { 1,1,1,1 };
 							m_Context.EmplaceComponent<SpriteRenderer>(
@@ -163,38 +199,15 @@ namespace XYZ {
 					}
 					if (!m_Context.HasComponent<NativeScriptComponent>())
 					{
-						if (InGui::PopupItem("Add Native Script", { 150,25 }))
+						if (InGui::MenuItem("Add Native Script", { 150,25 }))
 						{
-							m_ChooseScript = true;
+							m_Context.EmplaceComponent<NativeScriptComponent>(nullptr, "");
 							m_AddComponentOpen = false;
 						}
 					}
 				}
-				InGui::EndPopup();
-
-				if (m_ChooseScript)
-				{
-					if (InGui::BeginPopup("Script", { 150,25 }, m_ScriptsOpen))
-					{
-						AUDynArray<IObjectConstructor*> constructors;
-						PerModuleInterface::g_pRuntimeObjectSystem->GetObjectFactorySystem()->GetAll(constructors);
-						for (size_t i = 0; i < constructors.Size(); ++i)
-						{
-							if (InGui::PopupItem(constructors[i]->GetName(), { 150,25 }))
-							{
-								ScriptableEntity* scriptableEntity = (ScriptableEntity*)NativeScriptEngine::CreateScriptObject(constructors[i]->GetName());
-								NativeScriptComponent comp(scriptableEntity, constructors[i]->GetName());
-								comp.ScriptableEntity->Entity = m_Context;
-								comp.ScriptableEntity->OnCreate();
-								m_Context.AddComponent<NativeScriptComponent>(comp);
-								m_NativeScriptObject = constructors[i]->GetName();
-								m_ScriptsOpen = false;
-								m_ChooseScript = false;
-							}
-						}
-					}
-					InGui::EndPopup();
-				}
+				InGui::MenuBarEnd();
+				InGui::EndMenu();
 			}
 		}
 		InGui::End();

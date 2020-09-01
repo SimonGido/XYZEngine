@@ -34,6 +34,8 @@ namespace XYZ {
 			Ref<SubTexture2D>::Create(texture, glm::vec2(1, 2), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4)),
 			Ref<SubTexture2D>::Create(texture, glm::vec2(0, 3), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4)),
 			Ref<SubTexture2D>::Create(texture, glm::vec2(2, 3), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4)),
+			Ref<SubTexture2D>::Create(texture, glm::vec2(3, 3), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4)),
+			Ref<SubTexture2D>::Create(texture, glm::vec2(2, 2), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4)),
 			Ref<SubTexture2D>::Create(texture, glm::vec2(0, 0), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4)),
 			textureID,
 			fontTextureID,

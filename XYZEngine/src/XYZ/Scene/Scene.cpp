@@ -152,7 +152,8 @@ namespace XYZ {
 		for (int i = 0; i < m_ScriptGroup->Size(); ++i)
 		{
 			auto [script] = (*m_ScriptGroup)[i];
-			script->ScriptableEntity->OnUpdate(ts);
+			if (script->ScriptableEntity)
+				script->ScriptableEntity->OnUpdate(ts);
 		}
 	}
 

@@ -18,7 +18,7 @@ namespace XYZ {
 			API(PerModuleInterface::g_pSystemTable->NativeAPI)
 		{}
 
-		virtual ~ScriptableEntity() { std::cout << "Deleted" << std::endl; };
+		virtual ~ScriptableEntity() {};
 
 		virtual void OnCreate() {};
 		virtual void OnUpdate(Timestep ts) {};

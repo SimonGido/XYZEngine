@@ -23,7 +23,7 @@ namespace XYZ {
 		void MenuBarEnd();
 		void EndMenu();
 
-		void BeginGroup();
+		bool BeginGroup(const std::string& name, bool& open);
 		void EndGroup();
 
 		bool Button(const std::string & name, const glm::vec2 & size);

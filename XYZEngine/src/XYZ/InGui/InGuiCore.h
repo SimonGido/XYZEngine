@@ -69,6 +69,8 @@ namespace XYZ {
 			Ref<SubTexture2D> SliderHandleSubTexture;
 			Ref<SubTexture2D> WindowSubTexture;
 			Ref<SubTexture2D> MinimizeButtonSubTexture;
+			Ref<SubTexture2D> DownArrowButtonSubTexture;
+			Ref<SubTexture2D> RightArrowButtonSubTexture;
 			Ref<SubTexture2D> DockSpaceSubTexture;
 
 			uint32_t TextureID = 0;

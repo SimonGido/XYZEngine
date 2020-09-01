@@ -12,12 +12,10 @@ namespace XYZ {
 		void OnInGuiRender();
 	private:
 		Entity m_Context;
-		bool m_ChooseScript = false;
 		bool m_ScriptsOpen = false;
 		bool m_AddComponentOpen = false;
 
 		bool m_SceneTagModified = false;
-		bool m_NativeScriptModified = false;
 
 		bool m_XPosModified = false;
 		bool m_YPosModified = false;
@@ -31,6 +29,19 @@ namespace XYZ {
 		bool m_YScaleModified = false;
 		bool m_ZScaleModified = false;
 
+		bool m_SceneTagOpen = false;
+		bool m_TransformOpen = false;
+		bool m_SpriteRendererOpen = false;
+		bool m_NativeScriptOpen = false;
+		
+
+		glm::vec4 m_ColorPallete = { 0,1,1,1 };
+		bool m_PickColor = false;
+		bool m_RColorModified = false;
+		bool m_GColorModified = false;
+		bool m_BColorModified = false;
+		bool m_AColorModified = false;
+
 		std::string m_XPos;
 		std::string m_YPos;
 		std::string m_ZPos;
@@ -42,6 +53,12 @@ namespace XYZ {
 		std::string m_XScale;
 		std::string m_YScale;
 		std::string m_ZScale;
+
+		std::string m_RColor;
+		std::string m_GColor;
+		std::string m_BColor;
+		std::string m_AColor;
+
 
 		std::string m_NativeScriptObject;
 	private:
