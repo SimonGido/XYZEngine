@@ -174,9 +174,7 @@ namespace XYZ {
 			void Begin();
 			void End();
 
-
-			
-
+			void SetLock(bool lock) { m_Locked = lock; }
 		private:
 			void resize();
 			void adjustChildrenProps(InGuiDockNode* node);
@@ -197,6 +195,8 @@ namespace XYZ {
 			InGuiDockNode* m_ResizedNode = nullptr;
 
 			uint32_t m_NodeCount = 0;
+			
+			bool m_Locked = false;
 			static constexpr glm::vec2 sc_QuadSize = { 50,50 };
 		};
 
@@ -242,6 +242,9 @@ namespace XYZ {
 		void OnWindowResize(const glm::vec2& size);
 		void OnMouseMove(const glm::vec2& position);
 		void OnKeyPressed(int key,int mode);
+		void SetLockDockSpace(bool lock);
+
+		InGuiWindow* GetWindow(const std::string& name);
 
 		// TODO: When window is loaded from file but not used in code it remains in existence 
 	}

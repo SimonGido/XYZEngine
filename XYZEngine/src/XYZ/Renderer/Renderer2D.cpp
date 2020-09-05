@@ -11,6 +11,7 @@ namespace XYZ {
 	struct Renderer2DStats
 	{
 		uint32_t DrawCalls = 0;
+		uint32_t LineDrawCalls = 0;
 	};
 
 	struct Vertex2D
@@ -21,15 +22,28 @@ namespace XYZ {
 		float	  TextureID;
 	};
 
+	struct LineVertex
+	{
+		glm::vec3 Position;
+		glm::vec4 Color;
+	};
+
 	struct Renderer2DData
 	{
 		void Reset();
+		void ResetLines();
 		
 		Ref<Material> Material;
+		Ref<Shader> LineShader;
 
 		const uint32_t MaxQuads = 10000;
 		const uint32_t MaxVertices = MaxQuads * 4;
 		const uint32_t MaxIndices = MaxQuads * 6;
+
+
+		const uint32_t MaxLines = 10000;
+		const uint32_t MaxLineVertices = MaxLines * 2;
+		const uint32_t MaxLineIndices = MaxLines * 6;
 
 		Ref<VertexArray> QuadVertexArray;
 		Ref<VertexBuffer> QuadVertexBuffer;
@@ -45,6 +59,13 @@ namespace XYZ {
 			{  0.5f,  0.5f, 0.0f, 1.0f },
 			{ -0.5f,  0.5f, 0.0f, 1.0f }
 		};
+
+		Ref<VertexArray> LineVertexArray;
+		Ref<VertexBuffer> LineVertexBuffer;
+
+		uint32_t LineIndexCount = 0;
+		LineVertex* LineBufferBase = nullptr;
+		LineVertex* LineBufferPtr = nullptr;
 
 		SceneRenderData Data;
 		Renderer2DStats Stats;
@@ -85,21 +106,49 @@ namespace XYZ {
 			QuadVertexArray->SetIndexBuffer(quadIB);
 			delete[] quadIndices;
 		}
-		BufferPtr = BufferBase;
-		IndexCount = 0;
+		BufferPtr = BufferBase;	
+		IndexCount = 0;	
 	}
+	void Renderer2DData::ResetLines()
+	{
+		if (!LineBufferBase)
+		{	// Lines
+			LineVertexArray = VertexArray::Create();
 
+			LineShader = Shader::Create("Assets/Shaders/LineShader.glsl");
+			LineVertexBuffer = VertexBuffer::Create(MaxLineVertices * sizeof(LineVertex));
+			LineVertexBuffer->SetLayout({
+				{0, XYZ::ShaderDataComponent::Float3, "a_Position" },
+				{1, XYZ::ShaderDataComponent::Float4, "a_Color" },
+				});
+			LineBufferBase = new LineVertex[MaxLineVertices];
+
+			LineVertexArray->AddVertexBuffer(LineVertexBuffer);
+			uint32_t* lineIndices = new uint32_t[MaxLineIndices];
+			for (uint32_t i = 0; i < MaxLineIndices; i++)
+				lineIndices[i] = i;
+
+			Ref<IndexBuffer> lineIndexBuffer = IndexBuffer::Create(lineIndices, MaxLineIndices);
+			LineVertexArray->SetIndexBuffer(lineIndexBuffer);
+			delete[] lineIndices;
+		}
+
+		LineBufferPtr = LineBufferBase;
+		LineIndexCount = 0;
+	}
 
 	static Renderer2DData s_Data;
 
 	void Renderer2D::Init()
 	{
 		s_Data.Reset();
+		s_Data.ResetLines();
 	}
 
 	void Renderer2D::Shutdown()
 	{
 		delete[] s_Data.BufferBase;
+		delete[] s_Data.LineBufferBase;
 	}
 
 	void Renderer2D::BeginScene(const SceneRenderData& data)
@@ -206,25 +255,55 @@ namespace XYZ {
 
 	void Renderer2D::SubmitLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color)
 	{
+		if (s_Data.LineIndexCount >= s_Data.MaxLineIndices)
+			FlushLines();
+
+		s_Data.LineBufferPtr->Position = p0;
+		s_Data.LineBufferPtr->Color = color;
+		s_Data.LineBufferPtr++;
+
+		s_Data.LineBufferPtr->Position = p1;
+		s_Data.LineBufferPtr->Color = color;
+		s_Data.LineBufferPtr++;
+
+		s_Data.LineIndexCount += 2;
 	}
 
 	void Renderer2D::Flush()
-	{
+	{	
 		uint32_t dataSize = (uint8_t*)s_Data.BufferPtr - (uint8_t*)s_Data.BufferBase;
 		if (dataSize)
-		{		
+		{
 			s_Data.Material->Set("u_ViewProjectionMatrix", s_Data.Data.ViewProjectionMatrix);
 			s_Data.Material->Bind();
 			s_Data.QuadVertexBuffer->Update(s_Data.BufferBase, dataSize);
 			s_Data.QuadVertexArray->Bind();
 			RenderCommand::DrawIndexed(PrimitiveType::Triangles, s_Data.IndexCount);
-			s_Data.Reset();
 			s_Data.Stats.DrawCalls++;
-		}
+			s_Data.Reset();
+		}	
+	}
+
+	void Renderer2D::FlushLines()
+	{	
+		uint32_t dataSize = (uint8_t*)s_Data.LineBufferPtr - (uint8_t*)s_Data.LineBufferBase;
+		if (dataSize)
+		{
+			s_Data.LineShader->Bind();
+			s_Data.LineShader->SetMat4("u_ViewProjectionMatrix", s_Data.Data.ViewProjectionMatrix);
+
+			s_Data.LineVertexBuffer->Update(s_Data.LineBufferBase, dataSize);
+			s_Data.LineVertexArray->Bind();
+			RenderCommand::DrawIndexed(PrimitiveType::Lines, s_Data.LineIndexCount);
+
+			s_Data.Stats.LineDrawCalls++;
+			s_Data.ResetLines();
+		}	
 	}
 
 	void Renderer2D::EndScene()
 	{
 		s_Data.Stats.DrawCalls = 0;
+		s_Data.Stats.LineDrawCalls = 0;
 	}
 }

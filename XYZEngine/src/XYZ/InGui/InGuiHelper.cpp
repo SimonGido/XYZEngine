@@ -7,6 +7,7 @@
 
 namespace XYZ {
 	namespace InGui {
+		extern InGuiContext* g_InContext;
 
 		static enum Color
 		{
@@ -222,7 +223,7 @@ namespace XYZ {
 		void HandleResize(InGuiWindow* window)
 		{		
 			auto& mousePos = g_InContext->FrameData.MousePosition;
-			if (window && (window->Flags & Resized))
+			if (window && (window->Flags & Resized) && !(window->Flags & Docked))
 			{
 				window->Flags |= Modified;
 				if (window->Size.x > window->MinimalWidth)
@@ -307,7 +308,7 @@ namespace XYZ {
 			}
 		}
 
-		void HandleActivity(InGuiWindow* window)
+		void HandleWindowActivity(InGuiWindow* window)
 		{
 			glm::vec2 size = { window->Size.x,window->Size.y + InGuiWindow::PanelSize };
 			glm::vec2 position = window->Position;

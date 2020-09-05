@@ -10,9 +10,6 @@
 namespace XYZ {
 	namespace InGui {
 
-		extern InGuiContext* g_InContext;
-
-	
 		glm::vec2 MouseToWorld(const glm::vec2& point);
 		glm::vec2 StringToVec2(const std::string& src);
 		glm::vec2 HandleWindowSpacing(const glm::vec2& uiSize);
@@ -30,7 +27,7 @@ namespace XYZ {
 		void HandleMove(InGuiWindow* window);
 		void HandleResize(InGuiWindow* window);
 		void HandleDocking(InGuiWindow* window);
-		void HandleActivity(InGuiWindow* window);
+		void HandleWindowActivity(InGuiWindow* window);
 
 		void Generate6SegmentColorRectangle(InGuiMesh& mesh,const glm::vec2& position, const glm::vec2& size, uint32_t textureID);
 		void GenerateInGuiQuad(InGuiMesh& mesh, InGuiVertex* vertices, size_t count);

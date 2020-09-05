@@ -252,9 +252,6 @@
     <ClInclude Include="src\XYZ\ECS\Types.h">
       <Filter>src\XYZ\ECS</Filter>
     </ClInclude>
-    <ClInclude Include="src\XYZ\Editor\EditorCamera.h">
-      <Filter>src\XYZ\Editor</Filter>
-    </ClInclude>
     <ClInclude Include="src\XYZ\Event\ApplicationEvent.h">
       <Filter>src\XYZ\Event</Filter>
     </ClInclude>
@@ -1945,9 +1942,6 @@
     </ClCompile>
     <ClCompile Include="src\XYZ\ECS\SystemManager.cpp">
       <Filter>src\XYZ\ECS</Filter>
-    </ClCompile>
-    <ClCompile Include="src\XYZ\Editor\EditorCamera.cpp">
-      <Filter>src\XYZ\Editor</Filter>
     </ClCompile>
     <ClCompile Include="src\XYZ\FSM\Machine.cpp">
       <Filter>src\XYZ\FSM</Filter>

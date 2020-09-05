@@ -15,7 +15,8 @@
 namespace XYZ {
 
 	namespace InGui {
-	
+		extern InGuiContext* g_InContext;
+
 		bool Begin(const std::string& name, const glm::vec2& position, const glm::vec2& size)
 		{
 			if (!g_InContext)
@@ -36,7 +37,7 @@ namespace XYZ {
 				window = g_InContext->CreateWin(copyName, position, size);
 			}
 			
-			HandleActivity(window);
+			HandleWindowActivity(window);
 
 			frameData.MaxHeightInRow = 0.0f;
 			frameData.WindowSpaceOffset = { 0, window->Size.y };
@@ -733,13 +734,12 @@ namespace XYZ {
 			{
 				window = g_InContext->CreateWin(copyName, position, size);
 			}		
-			HandleActivity(window);
+			HandleWindowActivity(window);
 			
 			if (window->Flags & Moved)
 			{
 				panelColor = configData.HooverColor;
 			}
-
 			if (window->Flags & Modified)
 			{
 				glm::vec2 winPos = window->Position;
@@ -762,7 +762,6 @@ namespace XYZ {
 				if (!(window->Flags & Collapsed))
 					GenerateInGuiImage(window->Mesh, rendererID, winPos, winSize, { 0,0,1,1 });
 			}
-
 
 			return (window->Flags & Hoovered);
 		}

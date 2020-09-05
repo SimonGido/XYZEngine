@@ -1,5 +1,6 @@
 #pragma once
 #include "Event.h"
+#include "XYZ/Core/KeyCodes.h"
 
 namespace XYZ {
 	/*! @class KeyPressedEvent
@@ -14,6 +15,7 @@ namespace XYZ {
 		}
 		virtual int GetKey() const { return m_Key; }
 		virtual int GetMod() const { return m_Mod; }
+		virtual bool IsKeyPressed(KeyCode code) const { return m_Key == ToUnderlying(code); }
 
 		virtual EventType GetEventType() const override { return m_Type; }
 
@@ -36,10 +38,9 @@ namespace XYZ {
 		KeyReleasedEvent(int key)
 			:m_Key(key),m_Type(EventType::KeyReleased)
 		{
-		
 		}
 		virtual int GetKey() const { return m_Key; }
-
+		virtual bool IsKeyReleased(KeyCode code) const { return m_Key == ToUnderlying(code); }
 		virtual EventType GetEventType() const override { return m_Type; }
 		static EventType GetStaticType()
 		{

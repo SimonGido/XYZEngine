@@ -13,33 +13,33 @@ namespace XYZ {
 	void EditorCamera::OnUpdate(float dt)
 	{
 		bool modified = false;
-		if (Input::IsKeyPressed(KeyCode::XYZ_KEY_A))
+		if (Input::IsKeyPressed(KeyCode::XYZ_KEY_LEFT))
 		{
 			m_CameraPosition.x -= cos(glm::radians(m_CameraRotation)) * m_CameraTranslationSpeed * dt;
 			m_CameraPosition.y -= sin(glm::radians(m_CameraRotation)) * m_CameraTranslationSpeed * dt;
 			modified = true;
 		}
-		else if (Input::IsKeyPressed(KeyCode::XYZ_KEY_D))
+		else if (Input::IsKeyPressed(KeyCode::XYZ_KEY_RIGHT))
 		{
 			m_CameraPosition.x += cos(glm::radians(m_CameraRotation)) * m_CameraTranslationSpeed * dt;
 			m_CameraPosition.y += sin(glm::radians(m_CameraRotation)) * m_CameraTranslationSpeed * dt;
 			modified = true;
 		}
 
-		if (Input::IsKeyPressed(KeyCode::XYZ_KEY_W))
+		if (Input::IsKeyPressed(KeyCode::XYZ_KEY_UP))
 		{
 			m_CameraPosition.x += -sin(glm::radians(m_CameraRotation)) * m_CameraTranslationSpeed * dt;
 			m_CameraPosition.y += cos(glm::radians(m_CameraRotation)) * m_CameraTranslationSpeed * dt;
 			modified = true;
 		}
-		else if (Input::IsKeyPressed(KeyCode::XYZ_KEY_S))
+		else if (Input::IsKeyPressed(KeyCode::XYZ_KEY_DOWN))
 		{
 			m_CameraPosition.x -= -sin(glm::radians(m_CameraRotation)) * m_CameraTranslationSpeed * dt;
 			m_CameraPosition.y -= cos(glm::radians(m_CameraRotation)) * m_CameraTranslationSpeed * dt;
 			modified = true;
 		}
 
-		
+
 		if (Input::IsKeyPressed(KeyCode::XYZ_KEY_Q))
 		{
 			m_CameraRotation += m_CameraRotationSpeed * dt;
@@ -61,6 +61,21 @@ namespace XYZ {
 			modified = true;
 		}
 
+		//if (m_MouseMoving)
+		//{
+		//	auto [mx,my] = Input::GetMousePosition();
+		//
+		//	glm::vec3 translation;
+		//	translation.x = m_CameraPosition.x + (mx - m_StartMousePos.x);
+		//	translation.y = m_CameraPosition.y + (my - m_StartMousePos.y);
+		//
+		//	glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation) *
+		//		glm::rotate(glm::mat4(1.0f), glm::radians(m_CameraRotation), glm::vec3(0, 0, 1));
+		//
+		//	m_ViewMatrix = glm::inverse(transform);
+		//	m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
+		//}
+
 		m_CameraTranslationSpeed = m_ZoomLevel;
 
 		if (modified)
@@ -71,6 +86,8 @@ namespace XYZ {
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<MouseScrollEvent>(Hook(&EditorCamera::onMouseScrolled, this));
 		dispatcher.Dispatch<WindowResizeEvent>(Hook(&EditorCamera::onWindowResized, this));
+		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&EditorCamera::onMouseButtonPress, this));
+		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorCamera::onMouseButtonRelease, this));
 	}
 	void EditorCamera::recalculate()
 	{
@@ -88,6 +105,24 @@ namespace XYZ {
 		m_ProjectionMatrix = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, m_AspectRatio * -m_ZoomLevel, m_AspectRatio * m_ZoomLevel);
 		m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
 
+		return false;
+	}
+	bool EditorCamera::onMouseButtonPress(MouseButtonPressEvent& event)
+	{
+		if (event.GetButton() == MouseCode::XYZ_MOUSE_BUTTON_RIGHT)
+		{
+			m_MouseMoving = true;
+			auto [mx, my] = Input::GetMousePosition();
+			m_StartMousePos = { mx, my };
+		}
+		return false;
+	}
+	bool EditorCamera::onMouseButtonRelease(MouseButtonReleaseEvent& event)
+	{
+		if (event.GetButton() == MouseCode::XYZ_MOUSE_BUTTON_RIGHT)
+		{
+			m_MouseMoving = false;
+		}
 		return false;
 	}
 	bool EditorCamera::onWindowResized(WindowResizeEvent& event)

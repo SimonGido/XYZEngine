@@ -45,7 +45,7 @@ namespace XYZ {
 		* Execute the command queue
 		*/
 		static void Flush();
-
+		static void FlushLines();
 		/**
 		* Clean up after rendering
 		*/

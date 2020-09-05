@@ -15,7 +15,6 @@
 
 
 //-----Renderer-----//
-#include "XYZ/Editor/EditorCamera.h"
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Renderer/RenderCommand.h"

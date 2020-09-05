@@ -7,12 +7,13 @@ layout(location = 1) in vec4 a_Color;
 
 out vec4 v_Color;
 
-uniform mat4 u_ViewProjectionMatrix;
+
+uniform vec2 u_ViewportSize;
 
 void main()
 {
 	v_Color = a_Color;
-	gl_Position = u_ViewProjectionMatrix * vec4(a_Position.xy, 0.0, 1.0);
+	gl_Position = vec4(a_Position.xy / (u_ViewportSize / 2), 0.0, 1.0);
 }
 
 #type fragment

@@ -7,7 +7,7 @@ namespace XYZ {
 	// Instant Gui
 	namespace InGui {
 
-		extern InGuiContext* g_InContext;
+		
 			
 
 		bool Begin(const std::string & name, const glm::vec2 & position, const glm::vec2 & size);

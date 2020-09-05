@@ -2,24 +2,32 @@
 
 #include <XYZ.h>
 
+#include "../Tools/EditorCamera.h"
 namespace XYZ {
 
 	class SceneHierarchyPanel
 	{
 	public:
-		SceneHierarchyPanel() = default;
+		SceneHierarchyPanel();
 		SceneHierarchyPanel(const Ref<Scene>& context);
 
 		void SetContext(const Ref<Scene>& context);
 
 		void OnInGuiRender();
 
-		Entity GetSelectedEntity() const { return m_SelectedEntity; }
+		void SelectEntity(const glm::vec2& position);
+		
+		void RemoveEntity(Entity entity);
+		void InsertEntity(Entity entity);
+
+		inline Entity GetSelectedEntity() const { return m_SelectedEntity; }
 	private:
 		void drawEntity(Entity entity);
-	
+
 	private:
 		Ref<Scene> m_Context;
 		Entity m_SelectedEntity;
+
+		HashGrid2D<Entity> m_Entities;
 	};
 }

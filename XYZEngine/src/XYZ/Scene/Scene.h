@@ -68,7 +68,7 @@ namespace XYZ {
 
         inline const SceneCamera& GetMainCamera() const { return m_MainCamera->Camera; }
  
-        ECSManager* GetECS() { return m_ECS; }
+        ECSManager& GetECS() { return m_ECS; }
     private:
         struct SceneObject
         {
@@ -109,7 +109,7 @@ namespace XYZ {
 
 
     private:
-        ECSManager* m_ECS = nullptr;
+        ECSManager m_ECS;
         ComponentGroup<TransformComponent, SpriteRenderer>* m_RenderGroup = nullptr;
         ComponentGroup<NativeScriptComponent>* m_ScriptGroup = nullptr;
 

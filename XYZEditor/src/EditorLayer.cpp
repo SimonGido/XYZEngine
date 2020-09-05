@@ -5,21 +5,36 @@
 #include <glm/gtx/transform.hpp>
 
 
+
 namespace XYZ {
+
+	static glm::vec2 GetWorldPositionFromInGui(const InGui::InGuiWindow &window, const EditorCamera& camera)
+	{
+		auto [x, y] = Input::GetMousePosition();
+		auto [width, height] = Input::GetWindowSize();
+
+		x -= (((float)width / 2) + window.Position.x);
+
+		float boundWidth = (camera.GetZoomLevel() * camera.GetAspectRatio()) * 2;
+		float boundHeight = (camera.GetZoomLevel() * camera.GetAspectRatio()) * 2;
+
+		x = (x / window.Size.x) * boundWidth - boundWidth * 0.5f;
+		y = boundHeight * 0.5f - (y / (window.Size.y + InGui::InGuiWindow::PanelSize)) * boundHeight;
+
+		return { x + camera.GetPosition().x ,y + camera.GetPosition().y };
+	}
 
 	EditorLayer::~EditorLayer()
 	{
 	}
 
-
 	void EditorLayer::OnAttach()
 	{
-
 		Renderer::Init();
 		NativeScriptEngine::Init();
 
 		NativeScriptEngine::SetOnReloadCallback([this] {
-			auto storage = m_Scene->GetECS()->GetComponentStorage<NativeScriptComponent>();
+			auto storage = m_Scene->GetECS().GetComponentStorage<NativeScriptComponent>();
 			for (int i = 0; i < storage->Size(); ++i)
 			{
 				(*storage)[i].ScriptableEntity = (ScriptableEntity*)NativeScriptEngine::CreateScriptObject((*storage)[i].ScriptObjectName);
@@ -32,7 +47,7 @@ namespace XYZ {
 		});
 
 		NativeScriptEngine::SetOnRecompileCallback([this]() {		
-			auto storage = m_Scene->GetECS()->GetComponentStorage<NativeScriptComponent>();
+			auto storage = m_Scene->GetECS().GetComponentStorage<NativeScriptComponent>();
 			for (int i = 0; i < storage->Size(); ++i)
 			{
 				if ((*storage)[i].ScriptableEntity)
@@ -60,48 +75,13 @@ namespace XYZ {
 		m_SpriteRenderer = m_TestEntity.GetComponent<SpriteRenderer>();
 		m_Transform = m_TestEntity.GetComponent<TransformComponent>();
 		
-		
-
-		//m_TextMaterial = Material::Create(XYZ::Shader::Create("TextShader", "Assets/Shaders/TextShader.glsl"));
-		//m_TextMaterial->Set("u_Texture", XYZ::Texture2D::Create(XYZ::TextureWrap::Clamp, "Assets/Font/Arial.png"), 0);
-		//m_TextMaterial->SetFlags(XYZ::RenderFlags::TransparentFlag);
-
 
 		m_CharacterTexture = Texture2D::Create(XYZ::TextureWrap::Clamp, "Assets/Textures/player_sprite.png");
 		m_CharacterSubTexture = Ref<SubTexture2D>::Create(m_CharacterTexture, glm::vec2(0, 0), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
 		m_CharacterSubTexture2 = Ref<SubTexture2D>::Create(m_CharacterTexture, glm::vec2(1, 2), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
 		m_CharacterSubTexture3 = Ref<SubTexture2D>::Create(m_CharacterTexture, glm::vec2(2, 2), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
 
-		//m_Font = Ref<Font>::Create("Assets/Font/Arial.fnt");
-		//
-		//m_TestEntity = m_Scene->CreateEntity("Test Entity");
-		//m_TestEntity.AddComponent(SpriteRenderer{
-		//		m_Material,
-		//		m_CharacterSubTexture,
-		//		0,
-		//		SortLayer::GetOrderValue("Default")
-		//});
-		//
-		//m_Transform = m_TestEntity.GetComponent<Transform>();
-		//
-		//
-		//
-		//for (int i = 1; i < 50000; ++i)
-		//{
-		//	Entity entity = m_Scene->CreateEntity("Test Child");
-		//	entity.AddComponent(SpriteRenderer{
-		//		m_Material,
-		//		m_CharacterSubTexture,	
-		//		0,
-		//		SortLayer::GetOrderValue("Default")
-		//	});
-		//
-		//	auto transform = entity.GetComponent<Transform>();
-		//	transform->Translate({ i,0,0 });
-		//	m_Scene->SetParent(m_TestEntity, entity);
-		//}	
-
-
+		
 		m_Animation = new Animation(3.0f);
 
 
@@ -181,7 +161,8 @@ namespace XYZ {
 		m_Scene->OnUpdate(ts);
 		m_Scene->OnRenderEditor({ m_EditorCamera.GetViewProjectionMatrix(),winSize });
 		m_FBO->Unbind();
-
+		
+		
 		if (m_ActiveWindow)
 		{
 			m_EditorCamera.OnUpdate(ts);		
@@ -196,6 +177,44 @@ namespace XYZ {
 			m_Machine->TransitionTo("Idle");
 		}
 
+
+		if (m_ScalingEntity)
+		{		
+			auto mousePos = GetWorldPositionFromInGui(*InGui::GetWindow("scene"), m_EditorCamera);
+		
+			glm::vec3 scale;	
+			scale.x = fabs(m_Scale.x + (mousePos.x - m_StartMousePos.x));
+			scale.y = fabs(m_Scale.y + (mousePos.y - m_StartMousePos.y));
+			scale.z = m_Scale.z;
+			glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), m_Translation) *
+				glm::toMat4(m_Orientation) * glm::scale(glm::mat4(1.0f), scale);
+
+			m_ModifiedTransform->Transform = transformMatrix;
+		}
+		else if (m_MovingEntity)
+		{
+			auto mousePos = GetWorldPositionFromInGui(*InGui::GetWindow("scene"), m_EditorCamera);
+			
+			glm::vec3 translation;
+			translation.x = m_Translation.x + (mousePos.x - m_StartMousePos.x);
+			translation.y = m_Translation.y + (mousePos.y - m_StartMousePos.y);
+			translation.z = m_Translation.z;
+			glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), translation) *
+				glm::toMat4(m_Orientation) * glm::scale(glm::mat4(1.0f), m_Scale);
+
+			m_ModifiedTransform->Transform = transformMatrix;
+		}
+		else if (m_RotatingEntity)
+		{
+			auto mousePos = GetWorldPositionFromInGui(*InGui::GetWindow("scene"), m_EditorCamera);
+
+			float rotation;
+			rotation = m_Orientation.x + (mousePos.x - m_StartMousePos.x);
+			glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), m_Translation) *
+				glm::rotate(rotation, glm::vec3{ 0,0,1 }) *glm::scale(glm::mat4(1.0f), m_Scale);
+
+			m_ModifiedTransform->Transform = transformMatrix;
+		}
 		//m_Animation->Update(ts);
 		//m_Machine->GetCurrentState().Value->Update(ts);
 		//*m_Transform = glm::translate(glm::mat4(1.0f), m_Position) *
@@ -205,14 +224,23 @@ namespace XYZ {
 	{
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<WindowResizeEvent>(Hook(&EditorLayer::onWindowResized, this));
+		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&EditorLayer::onMouseButtonPress, this));
+		dispatcher.Dispatch<KeyPressedEvent>(Hook(&EditorLayer::onKeyPress, this));
+		dispatcher.Dispatch<KeyReleasedEvent>(Hook(&EditorLayer::onKeyRelease, this));
 		m_EditorCamera.OnEvent(event);
 	}
 
 	void EditorLayer::OnInGuiRender()
 	{
+		if ((uint32_t)m_SelectedEntity != (uint32_t)m_SceneHierarchyPanel.GetSelectedEntity())
+		{
+			m_SelectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+			m_EntityComponentPanel.SetContext(m_SelectedEntity);		
+		}
+
 		m_SceneHierarchyPanel.OnInGuiRender();
-		m_EntityComponentPanel.SetContext(m_SceneHierarchyPanel.GetSelectedEntity());
 		m_EntityComponentPanel.OnInGuiRender();
+		
 
 		if (InGui::RenderWindow("Scene", m_FBO->GetColorAttachment(0).RendererID, { 0,-300 }, { 800,800 }, 25.0f))
 		{
@@ -239,6 +267,10 @@ namespace XYZ {
 			if (InGui::TextArea("Test",m_Text, { 150,25 }, m_Modified))
 			{
 				std::cout << atof(m_Text.c_str()) << std::endl;
+			}
+			if (InGui::Checkbox("Ingui lock", { 50,50 }, m_Lock))
+			{
+				InGui::SetLockDockSpace(m_Lock);
 			}
 		}
 		
@@ -275,6 +307,7 @@ namespace XYZ {
 				}
 				m_MenuOpen = false;
 			}
+			
 		}
 		InGui::MenuBarEnd();
 		InGui::MenuBar("Settings", m_MenuOpen);
@@ -350,6 +383,76 @@ namespace XYZ {
 		m_FBO->SetSpecification(specs);
 		m_FBO->Resize();
 
+		return false;
+	}
+	bool EditorLayer::onMouseButtonPress(MouseButtonPressEvent& event)
+	{
+		if (event.GetButton() == MouseCode::XYZ_MOUSE_BUTTON_LEFT)
+		{
+			glm::vec2 relativeMousePos = GetWorldPositionFromInGui(*InGui::GetWindow("scene"), m_EditorCamera);
+			m_SceneHierarchyPanel.SelectEntity(relativeMousePos);	
+		}
+		return false;
+	}
+	bool EditorLayer::onKeyPress(KeyPressedEvent& event)
+	{
+		if (event.IsKeyPressed(KeyCode::XYZ_KEY_S))
+		{
+			m_StartMousePos = GetWorldPositionFromInGui(*InGui::GetWindow("scene"), m_EditorCamera);
+			m_ScalingEntity = true;
+			m_ModifiedTransform = m_SelectedEntity.GetComponent<TransformComponent>();
+
+			auto& transform = m_ModifiedTransform->Transform;
+			glm::vec3 skew;
+			glm::vec4 perspective;
+			glm::decompose(transform, m_Scale, m_Orientation, m_Translation, skew, perspective);
+
+			// Remove entity;
+			m_SceneHierarchyPanel.RemoveEntity(m_SelectedEntity);
+		}
+		else if (event.IsKeyPressed(KeyCode::XYZ_KEY_G))
+		{
+			m_StartMousePos = GetWorldPositionFromInGui(*InGui::GetWindow("scene"), m_EditorCamera);
+			m_MovingEntity = true;
+			m_ModifiedTransform = m_SelectedEntity.GetComponent<TransformComponent>();
+
+			auto& transform = m_ModifiedTransform->Transform;
+			glm::vec3 skew;
+			glm::vec4 perspective;
+			glm::decompose(transform, m_Scale, m_Orientation, m_Translation, skew, perspective);
+			
+			// Remove entity;
+			m_SceneHierarchyPanel.RemoveEntity(m_SelectedEntity);
+		}
+		else if (event.IsKeyPressed(KeyCode::XYZ_KEY_R))
+		{
+			m_StartMousePos = GetWorldPositionFromInGui(*InGui::GetWindow("scene"), m_EditorCamera);
+			m_RotatingEntity = true;
+			m_ModifiedTransform = m_SelectedEntity.GetComponent<TransformComponent>();
+
+			auto& transform = m_ModifiedTransform->Transform;
+			glm::vec3 skew;
+			glm::vec4 perspective;
+			glm::decompose(transform, m_Scale, m_Orientation, m_Translation, skew, perspective);
+		}
+		return false;
+	}
+	bool EditorLayer::onKeyRelease(KeyReleasedEvent& event)
+	{
+		if (event.IsKeyReleased(KeyCode::XYZ_KEY_S))
+		{
+			m_ScalingEntity = false;		
+			m_SceneHierarchyPanel.InsertEntity(m_SelectedEntity);
+		}
+		else if (event.IsKeyReleased(KeyCode::XYZ_KEY_G))
+		{
+			m_MovingEntity = false;
+			m_SceneHierarchyPanel.InsertEntity(m_SelectedEntity);
+		}
+		else if (event.IsKeyReleased(KeyCode::XYZ_KEY_R))
+		{
+			m_RotatingEntity = false;
+		}
 		return false;
 	}
 }

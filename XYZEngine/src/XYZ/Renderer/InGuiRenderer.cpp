@@ -32,6 +32,7 @@ namespace XYZ {
 	struct RendererUIData
 	{
 		void Reset();
+		void ResetLines();
 
 		Ref<Material> Material;
 		Ref<Shader> LineShader;
@@ -71,6 +72,7 @@ namespace XYZ {
 	void InGuiRenderer::Init()
 	{
 		s_UIData.Reset();
+		s_UIData.ResetLines();
 	}
 	void InGuiRenderer::Shutdown()
 	{
@@ -256,11 +258,9 @@ namespace XYZ {
 			s_UIData.QuadVertexBuffer->Update(s_UIData.BufferBase, dataSize);
 			s_UIData.QuadVertexArray->Bind();
 			RenderCommand::DrawIndexed(PrimitiveType::Triangles, s_UIData.IndexCount);		
+		
+			s_UIData.Reset();
 		}
-
-		s_UIData.BufferPtr = s_UIData.BufferBase;
-		s_UIData.IndexCount = 0;
-		s_UIData.Textures.clear();
 	}
 	void InGuiRenderer::FlushLines()
 	{	
@@ -274,9 +274,8 @@ namespace XYZ {
 			s_UIData.LineVertexArray->Bind();
 			RenderCommand::DrawIndexed(PrimitiveType::Lines, s_UIData.LineIndexCount);
 
+			s_UIData.ResetLines();
 		}
-		s_UIData.LineBufferPtr = s_UIData.LineBufferBase;
-		s_UIData.LineIndexCount = 0;
 	}
 	void InGuiRenderer::EndScene()
 	{
@@ -315,17 +314,24 @@ namespace XYZ {
 			}
 			Ref<IndexBuffer> quadIB = IndexBuffer::Create(quadIndices, MaxIndices);
 			QuadVertexArray->SetIndexBuffer(quadIB);
-			delete[] quadIndices;
+			delete[] quadIndices;		
+		}
+		BufferPtr = BufferBase;
+		IndexCount = 0;
 
+		Textures.clear();
+	}
+	void RendererUIData::ResetLines()
+	{
+		if (!LineBufferBase)
+		{
 			LineVertexArray = VertexArray::Create();
-
-			// Lines
-			LineShader = Shader::Create("Assets/Shaders/LineShader.glsl");
+			LineShader = Shader::Create("Assets/Shaders/LineInGuiShader.glsl");
 			LineVertexBuffer = VertexBuffer::Create(MaxLineVertices * sizeof(LineVertex));
 			LineVertexBuffer->SetLayout({
 				{0, XYZ::ShaderDataComponent::Float3, "a_Position" },
 				{1, XYZ::ShaderDataComponent::Float4, "a_Color" },
-			});
+				});
 			LineBufferBase = new LineVertex[MaxLineVertices];
 
 			LineVertexArray->AddVertexBuffer(LineVertexBuffer);
@@ -337,11 +343,8 @@ namespace XYZ {
 			LineVertexArray->SetIndexBuffer(lineIndexBuffer);
 			delete[] lineIndices;
 		}
-		BufferPtr = BufferBase;
 		LineBufferPtr = LineBufferBase;
-		IndexCount = 0;
 		LineIndexCount = 0;
-
-		Textures.clear();
 	}
+
 }

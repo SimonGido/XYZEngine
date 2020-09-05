@@ -19,12 +19,11 @@ namespace XYZ {
 		:
 		m_Name(name)
 	{
-		m_ECS = new ECSManager();
-		m_RenderGroup = m_ECS->CreateGroup<TransformComponent, SpriteRenderer>();
-		m_ScriptGroup = m_ECS->CreateGroup<NativeScriptComponent>();
+		m_RenderGroup = m_ECS.CreateGroup<TransformComponent, SpriteRenderer>();
+		m_ScriptGroup = m_ECS.CreateGroup<NativeScriptComponent>();
 
-		uint32_t entity = m_ECS->CreateEntity();
-		m_SceneWorld.Transform = m_ECS->EmplaceComponent<TransformComponent>(entity);
+		uint32_t entity = m_ECS.CreateEntity();
+		m_SceneWorld.Transform = m_ECS.EmplaceComponent<TransformComponent>(entity);
 		m_SceneWorld.Entity = entity;
 			
 		
@@ -32,9 +31,9 @@ namespace XYZ {
 		m_SceneGraph.SetRoot(m_Root);
 
 
-		m_MainCameraEntity = m_ECS->CreateEntity();
-		m_MainCamera = m_ECS->EmplaceComponent<CameraComponent>(m_MainCameraEntity);
-		m_MainCameraTransform = m_ECS->EmplaceComponent<TransformComponent>(m_MainCameraEntity);
+		m_MainCameraEntity = m_ECS.CreateEntity();
+		m_MainCamera = m_ECS.EmplaceComponent<CameraComponent>(m_MainCameraEntity);
+		m_MainCameraTransform = m_ECS.EmplaceComponent<TransformComponent>(m_MainCameraEntity);
 		
 		SceneObject cameraObject;
 		cameraObject.Entity = m_MainCameraEntity;
@@ -51,7 +50,7 @@ namespace XYZ {
 
 	Scene::~Scene() 
 	{
-		delete m_ECS;
+
 	}
 
 	Entity Scene::CreateEntity(const std::string& name)
@@ -115,7 +114,7 @@ namespace XYZ {
 	{
 		for (auto& it : m_SceneGraph.GetFlatData())
 		{
-			m_ECS->DestroyEntity(it.GetData().Entity);
+			m_ECS.DestroyEntity(it.GetData().Entity);
 		}
 	}
 
@@ -143,6 +142,7 @@ namespace XYZ {
 			Renderer2D::SubmitQuad(*transform, sprite->SubTexture->GetTexCoords(), sprite->TextureID, sprite->Color);
 		}
 		Renderer2D::Flush();
+		Renderer2D::FlushLines();
 		Renderer2D::EndScene();
 	}
 
@@ -176,6 +176,7 @@ namespace XYZ {
 			Renderer2D::SubmitQuad(*transform, sprite->SubTexture->GetTexCoords(), sprite->TextureID, sprite->Color);
 		}
 		Renderer2D::Flush();
+		Renderer2D::FlushLines();
 		Renderer2D::EndScene();
 			
 	}

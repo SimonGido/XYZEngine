@@ -129,6 +129,16 @@ namespace XYZ {
 				g_InContext->FrameData.CapslockEnabled = !g_InContext->FrameData.CapslockEnabled;
 		}
 
+		void SetLockDockSpace(bool lock)
+		{
+			g_InContext->DockSpace->SetLock(lock);
+		}
+
+		InGuiWindow* GetWindow(const std::string& name)
+		{
+			return g_InContext->GetWindow(name);
+		}
+
 
 		InGuiDockSpace::InGuiDockSpace(InGuiDockNode* root)
 			:
@@ -154,12 +164,13 @@ namespace XYZ {
 
 		void InGuiDockSpace::InsertWindow(InGuiWindow* window, const glm::vec2& mousePos)
 		{
-			insertWindow(window, mousePos, m_Root);
+			if (!m_Locked)
+				insertWindow(window, mousePos, m_Root);
 		}
 
 		void InGuiDockSpace::RemoveWindow(InGuiWindow* window)
 		{
-			if (window->DockNode)
+			if (window->DockNode && !m_Locked)
 			{
 				auto it = std::find(window->DockNode->Windows.begin(), window->DockNode->Windows.end(), window);
 				if (it != window->DockNode->Windows.end())
@@ -175,27 +186,36 @@ namespace XYZ {
 		}
 
 		void InGuiDockSpace::ShowDockSpace()
-		{
-			showNode(m_Root, g_InContext->FrameData.MousePosition);	
+		{		
+			showNode(m_Root, g_InContext->FrameData.MousePosition);
 		}
 
 		void InGuiDockSpace::Begin()
 		{	
-			if (g_InContext->FrameData.Flags & RightMouseButtonDown	
-			&& !(g_InContext->FrameData.Flags & ClickHandled))
+			if (!m_Locked)
 			{
-				detectResize(m_Root);
-			}		
+				if (g_InContext->FrameData.Flags & RightMouseButtonDown
+					&& !(g_InContext->FrameData.Flags & ClickHandled))
+				{
+					detectResize(m_Root);
+				}
+			}
 		}
 
 		void InGuiDockSpace::End()
 		{
-			if (g_InContext->FrameData.Flags & RightMouseButtonDown)
+			if (!m_Locked)
 			{
-				g_InContext->DockSpace->ShowDockSpace();
+				if (g_InContext->FrameData.Flags & RightMouseButtonDown)
+				{
+					auto lastActive = g_InContext->FrameData.LastActiveWindow;
+					if (lastActive && (lastActive->Flags & Moved))
+						g_InContext->DockSpace->ShowDockSpace();
+
+					update(m_Root);
+				}
+				resize();
 			}
-			update(m_Root);
-			resize();
 		}
 
 		void InGuiDockSpace::resize()
@@ -301,7 +321,9 @@ namespace XYZ {
 				if (node->Split == SplitAxis::Vertical)
 				{		
 					if (mousePos.x >= node->Children[0]->Position.x + node->Children[0]->Size.x - offset.x
-						&& mousePos.x <= node->Children[0]->Position.x + node->Children[0]->Size.x + offset.x)
+						&& mousePos.x <= node->Children[0]->Position.x + node->Children[0]->Size.x + offset.x
+						&& mousePos.y <= node->Children[0]->Position.y + node->Children[0]->Size.y
+						&& mousePos.y >= node->Children[0]->Position.y)
 					{
 						app.GetWindow().SetCursor(XYZ_HRESIZE_CURSOR);
 						m_ResizedNode = node;
@@ -312,7 +334,9 @@ namespace XYZ {
 				else if (node->Split == SplitAxis::Horizontal)
 				{
 					if (mousePos.y >= node->Children[0]->Position.y + node->Children[0]->Size.y - offset.y
-						&& mousePos.y <= node->Children[0]->Position.y + node->Children[0]->Size.y + offset.y)
+						&& mousePos.y <= node->Children[0]->Position.y + node->Children[0]->Size.y + offset.y
+						&& mousePos.x <= node->Children[0]->Position.x + node->Children[0]->Size.x
+						&& mousePos.x >= node->Children[0]->Position.x)
 					{
 						app.GetWindow().SetCursor(XYZ_VRESIZE_CURSOR);
 						m_ResizedNode = node;
@@ -652,6 +676,7 @@ namespace XYZ {
 				// Setup windows
 				for (auto win : windowMap)
 				{
+					win.second->Flags |= Docked;
 					win.second->DockNode = dockMap[win.first];
 					dockMap[win.first]->Windows.push_back(win.second);
 				}

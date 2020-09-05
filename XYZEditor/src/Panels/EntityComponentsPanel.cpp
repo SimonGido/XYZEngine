@@ -46,7 +46,7 @@ namespace XYZ {
 			{
 				m_NativeScriptObject = context.GetComponent<NativeScriptComponent>()->ScriptObjectName;
 			}
-			InGui::g_InContext->GetWindow("entity")->Flags |= InGui::Modified;
+			InGui::GetWindow("entity")->Flags |= InGui::Modified;
 		}
 		m_Context = context;
 	}
