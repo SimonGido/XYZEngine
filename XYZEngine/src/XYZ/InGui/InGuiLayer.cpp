@@ -84,11 +84,11 @@ namespace XYZ {
 	{
 		if (e.GetButton() == MouseCode::XYZ_MOUSE_BUTTON_LEFT)
 		{
-			InGui::OnLeftMouseButtonPress();
+			return InGui::OnLeftMouseButtonPress();
 		}
 		else if (e.GetButton() == MouseCode::XYZ_MOUSE_BUTTON_RIGHT)
 		{
-			InGui::OnRightMouseButtonPress();
+			return InGui::OnRightMouseButtonPress();
 		}
 
 		return false;

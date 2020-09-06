@@ -44,39 +44,36 @@ namespace XYZ {
 		{
 			m_CameraRotation += m_CameraRotationSpeed * dt;
 			modified = true;
+
+
+			if (m_CameraRotation > 180.0f)
+				m_CameraRotation -= 360.0f;
+			else if (m_CameraRotation <= -180.0f)
+				m_CameraRotation += 360.0f;
 		}
 		if (Input::IsKeyPressed(KeyCode::XYZ_KEY_E))
 		{
 			m_CameraRotation -= m_CameraRotationSpeed * dt;
 			modified = true;
+
+			if (m_CameraRotation > 180.0f)
+				m_CameraRotation -= 360.0f;	
+			else if (m_CameraRotation <= -180.0f)
+				m_CameraRotation += 360.0f;
 		}
-		if (m_CameraRotation > 180.0f)
+		
+
+		if (m_MouseMoving)
 		{
-			m_CameraRotation -= 360.0f;
-			modified = true;
-		}
-		else if (m_CameraRotation <= -180.0f)
-		{
-			m_CameraRotation += 360.0f;
+			auto [mx,my] = Input::GetMousePosition();
+		
+			m_CameraPosition.x = m_OldPosition.x - ((mx - m_StartMousePos.x) * m_CameraMouseMoveSpeed * m_CameraTranslationSpeed);
+			m_CameraPosition.y = m_OldPosition.y + ((my - m_StartMousePos.y) * m_CameraMouseMoveSpeed * m_CameraTranslationSpeed);
+			
 			modified = true;
 		}
 
-		//if (m_MouseMoving)
-		//{
-		//	auto [mx,my] = Input::GetMousePosition();
-		//
-		//	glm::vec3 translation;
-		//	translation.x = m_CameraPosition.x + (mx - m_StartMousePos.x);
-		//	translation.y = m_CameraPosition.y + (my - m_StartMousePos.y);
-		//
-		//	glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation) *
-		//		glm::rotate(glm::mat4(1.0f), glm::radians(m_CameraRotation), glm::vec3(0, 0, 1));
-		//
-		//	m_ViewMatrix = glm::inverse(transform);
-		//	m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
-		//}
-
-		m_CameraTranslationSpeed = m_ZoomLevel;
+		
 
 		if (modified)
 			recalculate();
@@ -101,6 +98,8 @@ namespace XYZ {
 	{
 		m_ZoomLevel -= (float)event.GetOffsetY() * 0.25f;
 		m_ZoomLevel = std::max(m_ZoomLevel, 0.25f);
+		m_CameraTranslationSpeed = m_ZoomLevel;
+
 
 		m_ProjectionMatrix = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, m_AspectRatio * -m_ZoomLevel, m_AspectRatio * m_ZoomLevel);
 		m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
@@ -114,6 +113,7 @@ namespace XYZ {
 			m_MouseMoving = true;
 			auto [mx, my] = Input::GetMousePosition();
 			m_StartMousePos = { mx, my };
+			m_OldPosition = m_CameraPosition;
 		}
 		return false;
 	}

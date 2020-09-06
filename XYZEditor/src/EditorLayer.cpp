@@ -244,6 +244,8 @@ namespace XYZ {
 
 		if (InGui::RenderWindow("Scene", m_FBO->GetColorAttachment(0).RendererID, { 0,-300 }, { 800,800 }, 25.0f))
 		{
+			// Scene window should not block events for this layer;
+			InGui::GetWindow("scene")->Flags &= ~InGui::EventReceiver;
 			m_ActiveWindow = true;
 			InGui::Selector();
 		}
@@ -270,8 +272,9 @@ namespace XYZ {
 			}
 			if (InGui::Checkbox("Ingui lock", { 50,50 }, m_Lock))
 			{
-				InGui::SetLockDockSpace(m_Lock);
+				
 			}
+			InGui::SetLock(m_Lock);
 		}
 		
 		InGui::BeginMenu();

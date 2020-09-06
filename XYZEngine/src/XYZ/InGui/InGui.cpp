@@ -31,11 +31,11 @@ namespace XYZ {
 			InGuiConfig& configData = g_InContext->ConfigData;
 
 			InGuiWindow* window = g_InContext->GetWindow(copyName);
-			frameData.CurrentWindow = window;
 			if (window == nullptr)
 			{
 				window = g_InContext->CreateWin(copyName, position, size);
 			}
+			frameData.CurrentWindow = window;
 			
 			HandleWindowActivity(window);
 
@@ -729,11 +729,12 @@ namespace XYZ {
 			InGuiConfig& configData = g_InContext->ConfigData;
 
 			InGuiWindow* window = g_InContext->GetWindow(copyName);
-			frameData.CurrentWindow = window;
 			if (window == nullptr)
 			{
 				window = g_InContext->CreateWin(copyName, position, size);
 			}		
+			frameData.CurrentWindow = window;
+
 			HandleWindowActivity(window);
 			
 			if (window->Flags & Moved)

@@ -16,14 +16,15 @@ namespace XYZ {
 
 		enum InGuiWindowFlags
 		{
-			Collapsed	= BIT(0),
-			Moved		= BIT(1),
-			Resized		= BIT(2),
-			Hoovered	= BIT(3),
-			Docked		= BIT(4),
-			Modified	= BIT(5),
-			MenuEnabled = BIT(6),
-			MenuActive	= BIT(7)
+			Collapsed	  = BIT(0),
+			Moved		  = BIT(1),
+			Resized		  = BIT(2),
+			Hoovered	  = BIT(3),
+			Docked		  = BIT(4),
+			Modified	  = BIT(5),
+			MenuEnabled   = BIT(6),
+			MenuActive	  = BIT(7),
+			EventReceiver = BIT(8)
 		};
 
 		enum InGuiFrameDataFlags
@@ -47,7 +48,7 @@ namespace XYZ {
 			glm::vec2 Position = { 0,0 };
 			glm::vec2 Size = { 0,0 };
 			float MinimalWidth = 0.0f;
-			uint8_t Flags = 0;
+			uint16_t Flags = 0;
 
 			InGuiMesh Mesh;
 			InGuiLineMesh LineMesh;
@@ -174,7 +175,6 @@ namespace XYZ {
 			void Begin();
 			void End();
 
-			void SetLock(bool lock) { m_Locked = lock; }
 		private:
 			void resize();
 			void adjustChildrenProps(InGuiDockNode* node);
@@ -195,8 +195,7 @@ namespace XYZ {
 			InGuiDockNode* m_ResizedNode = nullptr;
 
 			uint32_t m_NodeCount = 0;
-			
-			bool m_Locked = false;
+		
 			static constexpr glm::vec2 sc_QuadSize = { 50,50 };
 		};
 
@@ -211,17 +210,19 @@ namespace XYZ {
 			InGuiWindow* CreateWin(const std::string& name, const glm::vec2& position, const glm::vec2& size);
 			void SubmitToRenderer();
 
+			const std::unordered_map<std::string, InGuiWindow*>& GetWindows() const { return m_InGuiWindows; }
 
 			InGuiFrameData FrameData;
 			InGuiRenderData RenderData;
 			InGuiConfig ConfigData;		
 			InGuiDockSpace *DockSpace;
+			bool Locked = false;
 
 		private:
 			void generateWindow(InGuiWindow* window,const std::string& name);
 		private:
-			std::unordered_map<std::string, InGuiWindow*> InGuiWindows;
-			InGuiRenderQueue RenderQueue;
+			InGuiRenderQueue m_RenderQueue;
+			std::unordered_map<std::string, InGuiWindow*> m_InGuiWindows;
 		};
 
 
@@ -234,15 +235,15 @@ namespace XYZ {
 		void BeginFrame();
 		void EndFrame();
 
+		void SetLock(bool lock);
 
-		void OnLeftMouseButtonRelease();
-		void OnRightMouseButtonRelease();
-		void OnLeftMouseButtonPress();
-		void OnRightMouseButtonPress();
-		void OnWindowResize(const glm::vec2& size);
-		void OnMouseMove(const glm::vec2& position);
-		void OnKeyPressed(int key,int mode);
-		void SetLockDockSpace(bool lock);
+		bool OnLeftMouseButtonRelease();
+		bool OnRightMouseButtonRelease();
+		bool OnLeftMouseButtonPress();
+		bool OnRightMouseButtonPress();
+		bool OnWindowResize(const glm::vec2& size);
+		bool OnMouseMove(const glm::vec2& position);
+		bool OnKeyPressed(int key,int mode);
 
 		InGuiWindow* GetWindow(const std::string& name);
 

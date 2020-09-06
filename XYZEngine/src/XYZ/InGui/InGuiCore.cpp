@@ -42,21 +42,23 @@ namespace XYZ {
 			g_InContext->FrameData.WindowSize.x = Input::GetWindowSize().first;
 			g_InContext->FrameData.WindowSize.y = Input::GetWindowSize().second;
 
-				
-			g_InContext->DockSpace->Begin();
+			if (!g_InContext->Locked)
+				g_InContext->DockSpace->Begin();
 
 			InGuiRenderer::BeginScene({ g_InContext->FrameData.WindowSize });
 			InGuiRenderer::SetMaterial(g_InContext->RenderData.Material);
 		}
 		void EndFrame()
-		{	
-			HandleMouseInput(g_InContext->FrameData.LastActiveWindow);
-			HandleMove(g_InContext->FrameData.LastActiveWindow);
-			HandleResize(g_InContext->FrameData.LastActiveWindow);
-
+		{
 			g_InContext->SubmitToRenderer();
-			g_InContext->DockSpace->End();
-			
+			if (!g_InContext->Locked)
+			{
+				HandleMouseInput(g_InContext->FrameData.LastActiveWindow);
+				HandleMove(g_InContext->FrameData.LastActiveWindow);
+				HandleResize(g_InContext->FrameData.LastActiveWindow);
+				g_InContext->DockSpace->End();
+			}
+	
 			if (!(g_InContext->FrameData.Flags & RightMouseButtonDown) 
 			 && !(g_InContext->FrameData.Flags & LeftMouseButtonDown))
 				g_InContext->FrameData.LastActiveWindow = nullptr;
@@ -71,7 +73,7 @@ namespace XYZ {
 			InGuiRenderer::EndScene();
 		}
 
-		void OnLeftMouseButtonRelease()
+		bool OnLeftMouseButtonRelease()
 		{
 			g_InContext->FrameData.Flags &= ~LeftMouseButtonDown;
 			g_InContext->FrameData.Flags &= ~ClickHandled;
@@ -81,9 +83,10 @@ namespace XYZ {
 			g_InContext->FrameData.Flags &= ~WindowRightResize;
 			g_InContext->FrameData.Flags &= ~WindowLeftResize;
 
+			return false;
 		}
 
-		void OnRightMouseButtonRelease()
+		bool OnRightMouseButtonRelease()
 		{
 			g_InContext->FrameData.Flags |= DockingHandled;
 
@@ -96,42 +99,71 @@ namespace XYZ {
 			g_InContext->FrameData.Flags &= ~WindowRightResize;
 			g_InContext->FrameData.Flags &= ~WindowLeftResize;
 
-			
+			return false;
 		}
 
-		void OnLeftMouseButtonPress()
+		bool OnLeftMouseButtonPress()
 		{
 			g_InContext->FrameData.Flags |= LeftMouseButtonDown;
 			g_InContext->FrameData.SelectedPoint = g_InContext->FrameData.MousePosition;
+
+			for (auto win : g_InContext->GetWindows())
+			{
+				if ((win.second->Flags & EventReceiver) 
+				&& Collide(win.second->Position, win.second->Size, g_InContext->FrameData.MousePosition))
+				{
+					g_InContext->FrameData.LastActiveWindow = win.second;
+					return true;
+				}
+			}
+			return false;
 		}
 
-		void OnRightMouseButtonPress()
+		bool OnRightMouseButtonPress()
 		{
 			g_InContext->FrameData.Flags |= RightMouseButtonDown;
+
+			for (auto win : g_InContext->GetWindows())
+			{
+				if ((win.second->Flags & EventReceiver)
+					&& Collide(win.second->Position, win.second->Size, g_InContext->FrameData.MousePosition))
+				{
+					g_InContext->FrameData.LastActiveWindow = win.second;
+					return true;
+				}
+			}
+			return false;
 		}
 
-		void OnWindowResize(const glm::vec2& size)
+		bool OnWindowResize(const glm::vec2& size)
 		{
 			g_InContext->FrameData.WindowSize = size;	
 			g_InContext->DockSpace->FitToWindow(size);
+
+			return false;
 		}
 
-		void OnMouseMove(const glm::vec2& position)
+		bool OnMouseMove(const glm::vec2& position)
 		{
 			g_InContext->FrameData.MousePosition = MouseToWorld(position);
+
+			return false;
 		}
 
-		void OnKeyPressed(int key, int mode)
+		bool OnKeyPressed(int key, int mode)
 		{
 			g_InContext->FrameData.PressedKey = key;
 			g_InContext->FrameData.KeyMode = mode;
 			if (key == ToUnderlying(KeyCode::XYZ_KEY_CAPS_LOCK))
 				g_InContext->FrameData.CapslockEnabled = !g_InContext->FrameData.CapslockEnabled;
+
+			return false;
 		}
 
-		void SetLockDockSpace(bool lock)
+
+		void SetLock(bool lock)
 		{
-			g_InContext->DockSpace->SetLock(lock);
+			g_InContext->Locked = lock;
 		}
 
 		InGuiWindow* GetWindow(const std::string& name)
@@ -164,13 +196,12 @@ namespace XYZ {
 
 		void InGuiDockSpace::InsertWindow(InGuiWindow* window, const glm::vec2& mousePos)
 		{
-			if (!m_Locked)
-				insertWindow(window, mousePos, m_Root);
+			insertWindow(window, mousePos, m_Root);
 		}
 
 		void InGuiDockSpace::RemoveWindow(InGuiWindow* window)
 		{
-			if (window->DockNode && !m_Locked)
+			if (window->DockNode)
 			{
 				auto it = std::find(window->DockNode->Windows.begin(), window->DockNode->Windows.end(), window);
 				if (it != window->DockNode->Windows.end())
@@ -191,31 +222,25 @@ namespace XYZ {
 		}
 
 		void InGuiDockSpace::Begin()
-		{	
-			if (!m_Locked)
+		{		
+			if (g_InContext->FrameData.Flags & RightMouseButtonDown
+				&& !(g_InContext->FrameData.Flags & ClickHandled))
 			{
-				if (g_InContext->FrameData.Flags & RightMouseButtonDown
-					&& !(g_InContext->FrameData.Flags & ClickHandled))
-				{
-					detectResize(m_Root);
-				}
-			}
+				detectResize(m_Root);
+			}		
 		}
 
 		void InGuiDockSpace::End()
-		{
-			if (!m_Locked)
+		{		
+			if (g_InContext->FrameData.Flags & RightMouseButtonDown)
 			{
-				if (g_InContext->FrameData.Flags & RightMouseButtonDown)
-				{
-					auto lastActive = g_InContext->FrameData.LastActiveWindow;
-					if (lastActive && (lastActive->Flags & Moved))
-						g_InContext->DockSpace->ShowDockSpace();
+				auto lastActive = g_InContext->FrameData.LastActiveWindow;
+				if (lastActive && (lastActive->Flags & Moved))
+					g_InContext->DockSpace->ShowDockSpace();
 
-					update(m_Root);
-				}
-				resize();
+				update(m_Root);
 			}
+			resize();		
 		}
 
 		void InGuiDockSpace::resize()
@@ -624,18 +649,19 @@ namespace XYZ {
 				auto it = ini.begin();
 				while (it->first != "dockspace" && it != ini.end())
 				{
-					InGuiWindows[it->first] = new InGuiWindow();
-					InGuiWindows[it->first]->Name = it->first;
-					InGuiWindows[it->first]->Position = StringToVec2(it->second.get("position"));
-					InGuiWindows[it->first]->Size = StringToVec2(it->second.get("size"));
+					m_InGuiWindows[it->first] = new InGuiWindow();
+					m_InGuiWindows[it->first]->Name = it->first;
+					m_InGuiWindows[it->first]->Position = StringToVec2(it->second.get("position"));
+					m_InGuiWindows[it->first]->Size = StringToVec2(it->second.get("size"));
 					int32_t id = atoi(it->second.get("docknode").c_str());
 					if (id != -1)
-						windowMap[id] = InGuiWindows[it->first];
+						windowMap[id] = m_InGuiWindows[it->first];
 
 					if ((bool)atoi(it->second.get("collapsed").c_str()))
-						InGuiWindows[it->first]->Flags |= Collapsed;
+						m_InGuiWindows[it->first]->Flags |= Collapsed;
 					
-					InGuiWindows[it->first]->Flags |= Modified;
+					m_InGuiWindows[it->first]->Flags |= Modified;
+					m_InGuiWindows[it->first]->Flags |= EventReceiver;
 
 					it++;
 				}
@@ -720,7 +746,7 @@ namespace XYZ {
 			mINI::INIStructure ini;
 			file.generate(ini);
 			
-			for (auto& it : g_InContext->InGuiWindows)
+			for (auto& it : g_InContext->m_InGuiWindows)
 			{
 				std::string pos = std::to_string(it.second->Position.x) + "," + std::to_string(it.second->Position.y);
 				std::string size = std::to_string(it.second->Size.x) + "," + std::to_string(it.second->Size.y);
@@ -750,8 +776,8 @@ namespace XYZ {
 
 		InGuiWindow* InGuiContext::GetWindow(const std::string& name)
 		{
-			auto& it = g_InContext->InGuiWindows.find(name);
-			if (it == g_InContext->InGuiWindows.end())
+			auto& it = g_InContext->m_InGuiWindows.find(name);
+			if (it == g_InContext->m_InGuiWindows.end())
 			{
 				return nullptr;
 			}
@@ -760,23 +786,22 @@ namespace XYZ {
 		}
 		InGuiWindow* InGuiContext::CreateWin(const std::string& name, const glm::vec2& position, const glm::vec2& size)
 		{
-			g_InContext->InGuiWindows[name] = new InGuiWindow{name, position,size };
-			g_InContext->FrameData.CurrentWindow = g_InContext->InGuiWindows[name];
-			return g_InContext->FrameData.CurrentWindow;
+			g_InContext->m_InGuiWindows[name] = new InGuiWindow{name, position,size };
+			return g_InContext->m_InGuiWindows[name];
 		}
 
 		void InGuiContext::SubmitToRenderer()
 		{		
-			for (auto it : InGuiWindows)
+			for (auto it : m_InGuiWindows)
 			{
 				uint8_t priority = 0;
 				if (it.second == FrameData.LastActiveWindow)
 					priority = 5;
 
-				RenderQueue.Push(&it.second->Mesh, priority);
-				RenderQueue.Push(&it.second->LineMesh);
+				m_RenderQueue.Push(&it.second->Mesh, priority);
+				m_RenderQueue.Push(&it.second->LineMesh);
 			}
-			RenderQueue.SubmitToRenderer();
+			m_RenderQueue.SubmitToRenderer();
 		}
 
 		void InGuiContext::generateWindow(InGuiWindow* window, const std::string& name)

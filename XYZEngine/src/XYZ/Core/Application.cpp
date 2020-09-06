@@ -28,8 +28,7 @@ namespace XYZ {
 		m_Window->SetEventCallback(Hook(&Application::OnEvent, this));
 
 		m_InGuiLayer = new InGuiLayer();
-		m_LayerStack.PushLayer(m_InGuiLayer);
-
+		m_LayerStack.PushOverlay(m_InGuiLayer);
 		m_Window->RegisterCallback<WindowCloseEvent>(Hook(&Application::onWindowClosed, this));
 		m_Window->RegisterCallback<WindowResizeEvent>(Hook(&Application::onWindowResized, this));
 		
