@@ -55,8 +55,8 @@ Entities:
     Parent: 2
     TransformComponent:
       Position: [-7.13763428, 19.0997391, 0]
-      Rotation: [0.998845994, 0, 0, -0.0480275676]
-      Scale: [23.9548473, 33.2744179, 1]
+      Rotation: [0.998845994, 0, 0, -0.0480275638]
+      Scale: [23.9548492, 33.2744179, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/material.mat
       SubTextureAssetPath: Assets/SubTextures/CharacterSubTexture.subtex

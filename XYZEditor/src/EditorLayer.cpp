@@ -8,21 +8,21 @@
 
 namespace XYZ {
 
-	static glm::vec2 GetWorldPositionFromInGui(const InGui::InGuiWindow &window, const EditorCamera& camera)
-	{
-		auto [x, y] = Input::GetMousePosition();
-		auto [width, height] = Input::GetWindowSize();
-
-		x -= (((float)width / 2) + window.Position.x);
-
-		float boundWidth = (camera.GetZoomLevel() * camera.GetAspectRatio()) * 2;
-		float boundHeight = (camera.GetZoomLevel() * camera.GetAspectRatio()) * 2;
-
-		x = (x / window.Size.x) * boundWidth - boundWidth * 0.5f;
-		y = boundHeight * 0.5f - (y / (window.Size.y + InGui::InGuiWindow::PanelSize)) * boundHeight;
-
-		return { x + camera.GetPosition().x ,y + camera.GetPosition().y };
-	}
+	//static glm::vec2 GetWorldPositionFromInGui(const InGui::InGuiWindow &window, const EditorCamera& camera)
+	//{
+	//	auto [x, y] = Input::GetMousePosition();
+	//	auto [width, height] = Input::GetWindowSize();
+	//
+	//	x -= (((float)width / 2) + window.Position.x);
+	//
+	//	float boundWidth = (camera.GetZoomLevel() * camera.GetAspectRatio()) * 2;
+	//	float boundHeight = (camera.GetZoomLevel() * camera.GetAspectRatio()) * 2;
+	//
+	//	x = (x / window.Size.x) * boundWidth - boundWidth * 0.5f;
+	//	y = boundHeight * 0.5f - (y / (window.Size.y + InGui::InGuiWindow::PanelSize)) * boundHeight;
+	//
+	//	return { x + camera.GetPosition().x ,y + camera.GetPosition().y };
+	//}
 
 	EditorLayer::~EditorLayer()
 	{
@@ -134,6 +134,8 @@ namespace XYZ {
 
 
 		m_SceneHierarchyPanel.SetContext(m_Scene);
+
+		InGui::SetWindowFlags("scene", 0);
 	}
 
 	void EditorLayer::OnDetach()
@@ -161,7 +163,10 @@ namespace XYZ {
 		m_Scene->OnUpdate(ts);
 		m_Scene->OnRenderEditor({ m_EditorCamera.GetViewProjectionMatrix(),winSize });
 		m_FBO->Unbind();
-		
+		RenderCommand::Clear();
+		RenderCommand::SetClearColor(glm::vec4(0.2, 0.2, 0.2, 1));
+		m_Scene->OnUpdate(ts);
+		m_Scene->OnRenderEditor({ m_EditorCamera.GetViewProjectionMatrix(),winSize });
 		
 		if (m_ActiveWindow)
 		{
@@ -178,43 +183,7 @@ namespace XYZ {
 		}
 
 
-		if (m_ScalingEntity)
-		{		
-			auto mousePos = GetWorldPositionFromInGui(*InGui::GetWindow("scene"), m_EditorCamera);
-		
-			glm::vec3 scale;	
-			scale.x = fabs(m_Scale.x + (mousePos.x - m_StartMousePos.x));
-			scale.y = fabs(m_Scale.y + (mousePos.y - m_StartMousePos.y));
-			scale.z = m_Scale.z;
-			glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), m_Translation) *
-				glm::toMat4(m_Orientation) * glm::scale(glm::mat4(1.0f), scale);
 
-			m_ModifiedTransform->Transform = transformMatrix;
-		}
-		else if (m_MovingEntity)
-		{
-			auto mousePos = GetWorldPositionFromInGui(*InGui::GetWindow("scene"), m_EditorCamera);
-			
-			glm::vec3 translation;
-			translation.x = m_Translation.x + (mousePos.x - m_StartMousePos.x);
-			translation.y = m_Translation.y + (mousePos.y - m_StartMousePos.y);
-			translation.z = m_Translation.z;
-			glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), translation) *
-				glm::toMat4(m_Orientation) * glm::scale(glm::mat4(1.0f), m_Scale);
-
-			m_ModifiedTransform->Transform = transformMatrix;
-		}
-		else if (m_RotatingEntity)
-		{
-			auto mousePos = GetWorldPositionFromInGui(*InGui::GetWindow("scene"), m_EditorCamera);
-
-			float rotation;
-			rotation = m_Orientation.x + (mousePos.x - m_StartMousePos.x);
-			glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), m_Translation) *
-				glm::rotate(rotation, glm::vec3{ 0,0,1 }) *glm::scale(glm::mat4(1.0f), m_Scale);
-
-			m_ModifiedTransform->Transform = transformMatrix;
-		}
 		//m_Animation->Update(ts);
 		//m_Machine->GetCurrentState().Value->Update(ts);
 		//*m_Transform = glm::translate(glm::mat4(1.0f), m_Position) *
@@ -232,148 +201,61 @@ namespace XYZ {
 
 	void EditorLayer::OnInGuiRender()
 	{
-		if ((uint32_t)m_SelectedEntity != (uint32_t)m_SceneHierarchyPanel.GetSelectedEntity())
+		if (InGui::Begin("Scene hierarchy", { 0,0 }, { 200,200 }))
 		{
-			m_SelectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
-			m_EntityComponentPanel.SetContext(m_SelectedEntity);		
+			bool test = false;
+			if (InGui::Checkbox("test", { 50,50 }, test))
+			{
+				std::cout << "Clicked" << std::endl;
+			}
+			if (InGui::Button("test", { 50,30 }))
+			{
+				std::cout << "Clicked" << std::endl;
+			}
+			if (InGui::Button("test", { 50,50 }))
+			{
+				std::cout << "Clicked" << std::endl;
+			}
+			if (InGui::Button("test", { 50,50 }))
+			{
+				std::cout << "Clicked" << std::endl;
+			}
+			if (InGui::Button("test", { 50,50 }))
+			{
+				std::cout << "Clicked" << std::endl;
+			}
+			if (InGui::Slider("Slider", { 150,15 }, m_H))
+			{
+				std::cout << m_H << std::endl;
+			}
 		}
+		InGui::End();
 
-		m_SceneHierarchyPanel.OnInGuiRender();
-		m_EntityComponentPanel.OnInGuiRender();
-		
-
-		if (InGui::RenderWindow("Scene", m_FBO->GetColorAttachment(0).RendererID, { 0,-300 }, { 800,800 }, 25.0f))
+		if (InGui::Begin("Entity", { 0,0 }, { 200,200 }))
 		{
-			// Scene window should not block events for this layer;
-			InGui::GetWindow("scene")->Flags &= ~InGui::EventReceiver;
+
+		}
+		InGui::End();
+
+		if (InGui::RenderWindow("Scene", m_FBO->GetColorAttachment(0).RendererID, { 0,0 }, { 200,200 }, 25.0f))
+		{
 			m_ActiveWindow = true;
-			InGui::Selector();
 		}
 		else
 		{
 			m_ActiveWindow = false;
 		}
 		InGui::End();
-		if (InGui::Begin("Test", { 0,0 }, { 500,500 }))
+
+		if (InGui::Begin("Test panel", { 0,0 }, { 200,200 }))
 		{
-			if (InGui::BeginPopup("Add Component", { 150,25 }, m_PopupOpen))
-			{
-				if (InGui::PopupItem("Add Transform", { 150,25 }))
-				{
-					std::cout << "Adding transform" << std::endl;
-					m_PopupOpen = false;
-				}
-			}
-			InGui::EndPopup();
-		
-			if (InGui::TextArea("Test",m_Text, { 150,25 }, m_Modified))
-			{
-				std::cout << atof(m_Text.c_str()) << std::endl;
-			}
-			if (InGui::Checkbox("Ingui lock", { 50,50 }, m_Lock))
-			{
-				
-			}
-			InGui::SetLock(m_Lock);
+
 		}
-		
-		InGui::BeginMenu();
-		if (InGui::MenuBar("File", m_MenuOpen))
-		{
-			if (InGui::MenuItem("Load Scene", { 150,25 }))
-			{
-				auto& app = Application::Get();
-				std::string filepath = app.OpenFile("(*.xyz)\0*.xyz\0");
-				if (!filepath.empty())
-				{
-					m_Scene = m_AssetManager.GetAsset<Scene>(filepath);
-				}
-				m_MenuOpen = false;
-			}
-			else if (InGui::MenuItem("Create Script", { 150,25 }))
-			{
-				auto& app = Application::Get();
-				std::string filepath = app.CreateNewFile("(*.cpp)\0*.cpp\0");
-				if (!filepath.empty())
-				{
-					PerModuleInterface::g_pRuntimeObjectSystem->AddToRuntimeFileList(filepath.c_str());
-				}
-				m_MenuOpen = false;
-			}
-			else if (InGui::MenuItem("Load Script", { 150,25 }))
-			{
-				auto& app = Application::Get();
-				std::string filepath = app.OpenFile("(*.cpp)\0*.cpp\0");
-				if (!filepath.empty())
-				{
-					PerModuleInterface::g_pRuntimeObjectSystem->AddToRuntimeFileList(filepath.c_str());
-				}
-				m_MenuOpen = false;
-			}
-			
-		}
-		InGui::MenuBarEnd();
-		InGui::MenuBar("Settings", m_MenuOpen);
-		InGui::MenuBarEnd();
-		
-		InGui::MenuBar("Settingass", m_MenuOpen);
-		InGui::MenuBarEnd();
-		InGui::MenuBar("Settingasdas", m_MenuOpen);
-		InGui::MenuBarEnd();
-		InGui::EndMenu();
-		
-		
-		
-		
 		InGui::End();
-		if (InGui::Begin("Test Panel", { 0,0 }, { 500,500 }))
-		{			
-			InGui::ColorPicker4("color picker", { 255,255 },m_Pallete, m_Color);
-			if (InGui::Button("Compile", { 100,25 }))
-			{
-				PerModuleInterface::g_pRuntimeObjectSystem->CompileAll(true);
-			}
-			if (InGui::Button("Add Script", { 150,25 }))
-			{
-				ScriptableEntity* scriptableEntity = (ScriptableEntity*)NativeScriptEngine::CreateScriptObject("Testik");
-				NativeScriptComponent comp(scriptableEntity, "Testik");
-				comp.ScriptableEntity->Entity = m_TestEntity;
-				comp.ScriptableEntity->OnCreate();
-				m_TestEntity.AddComponent<NativeScriptComponent>(comp);
-			}
-			if (InGui::Button("Button", { 100,25 }))
-			{
-				std::cout << "Opica" << std::endl;
-			}
-			if (InGui::Checkbox("Checkbox", { 50,50 }, m_CheckboxVal))
-			{
-				std::cout << "Wtf" << std::endl;
-			}
-			if (InGui::Slider("Slider", { 200,15 }, m_TestValue))
-			{
-				std::cout << m_TestValue << std::endl;
-			}
-			if (InGui::Slider("Slider", { 200,15 }, m_TestValue))
-			{
-				std::cout << m_TestValue << std::endl;
-			}
-			if (InGui::Slider("Slider", { 200,15 }, m_TestValue))
-			{
-				std::cout << m_TestValue << std::endl;
-			}
-			if (InGui::Checkbox("Checkbox", { 50,50 }, m_CheckboxVal))
-			{
-				std::cout << "Wtf" << std::endl;
-			}
-			if (InGui::Checkbox("Checkbox", { 50,50 }, m_CheckboxVal))
-			{
-				std::cout << "Wtf" << std::endl;
-			}
-			if (InGui::Checkbox("Checkbox", { 50,50 }, m_CheckboxVal))
-			{
-				std::cout << "Wtf" << std::endl;
-			}
-			InGui::Image("test image", m_FBO->GetColorAttachment(0).RendererID, { 100,100 });
+
+		if (InGui::Begin("Test", { 0,0 }, { 200,200 }))
+		{
+
 		}
 		InGui::End();
 	}
@@ -390,10 +272,9 @@ namespace XYZ {
 	}
 	bool EditorLayer::onMouseButtonPress(MouseButtonPressEvent& event)
 	{
-		if (event.GetButton() == MouseCode::XYZ_MOUSE_BUTTON_LEFT)
+		if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_LEFT))
 		{
-			glm::vec2 relativeMousePos = GetWorldPositionFromInGui(*InGui::GetWindow("scene"), m_EditorCamera);
-			m_SceneHierarchyPanel.SelectEntity(relativeMousePos);	
+				
 		}
 		return false;
 	}
@@ -401,42 +282,15 @@ namespace XYZ {
 	{
 		if (event.IsKeyPressed(KeyCode::XYZ_KEY_S))
 		{
-			m_StartMousePos = GetWorldPositionFromInGui(*InGui::GetWindow("scene"), m_EditorCamera);
-			m_ScalingEntity = true;
-			m_ModifiedTransform = m_SelectedEntity.GetComponent<TransformComponent>();
-
-			auto& transform = m_ModifiedTransform->Transform;
-			glm::vec3 skew;
-			glm::vec4 perspective;
-			glm::decompose(transform, m_Scale, m_Orientation, m_Translation, skew, perspective);
-
-			// Remove entity;
-			m_SceneHierarchyPanel.RemoveEntity(m_SelectedEntity);
+			
 		}
 		else if (event.IsKeyPressed(KeyCode::XYZ_KEY_G))
 		{
-			m_StartMousePos = GetWorldPositionFromInGui(*InGui::GetWindow("scene"), m_EditorCamera);
-			m_MovingEntity = true;
-			m_ModifiedTransform = m_SelectedEntity.GetComponent<TransformComponent>();
-
-			auto& transform = m_ModifiedTransform->Transform;
-			glm::vec3 skew;
-			glm::vec4 perspective;
-			glm::decompose(transform, m_Scale, m_Orientation, m_Translation, skew, perspective);
 			
-			// Remove entity;
-			m_SceneHierarchyPanel.RemoveEntity(m_SelectedEntity);
 		}
 		else if (event.IsKeyPressed(KeyCode::XYZ_KEY_R))
 		{
-			m_StartMousePos = GetWorldPositionFromInGui(*InGui::GetWindow("scene"), m_EditorCamera);
-			m_RotatingEntity = true;
-			m_ModifiedTransform = m_SelectedEntity.GetComponent<TransformComponent>();
-
-			auto& transform = m_ModifiedTransform->Transform;
-			glm::vec3 skew;
-			glm::vec4 perspective;
-			glm::decompose(transform, m_Scale, m_Orientation, m_Translation, skew, perspective);
+			
 		}
 		return false;
 	}

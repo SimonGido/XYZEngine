@@ -32,6 +32,7 @@ namespace XYZ {
 	{
 		std::vector<InGuiVertex> Vertices;
 		std::vector<TextureRendererIDPair> TexturePairs;
+		Ref<Material> Material;
 	};
 	struct InGuiLineMesh
 	{

@@ -306,21 +306,6 @@
     <ClInclude Include="src\XYZ\Gui\Widget.h">
       <Filter>src\XYZ\Gui</Filter>
     </ClInclude>
-    <ClInclude Include="src\XYZ\InGui\InGui.h">
-      <Filter>src\XYZ\InGui</Filter>
-    </ClInclude>
-    <ClInclude Include="src\XYZ\InGui\InGuiCore.h">
-      <Filter>src\XYZ\InGui</Filter>
-    </ClInclude>
-    <ClInclude Include="src\XYZ\InGui\InGuiHelper.h">
-      <Filter>src\XYZ\InGui</Filter>
-    </ClInclude>
-    <ClInclude Include="src\XYZ\InGui\InGuiLayer.h">
-      <Filter>src\XYZ\InGui</Filter>
-    </ClInclude>
-    <ClInclude Include="src\XYZ\InGui\InGuiRenderQueue.h">
-      <Filter>src\XYZ\InGui</Filter>
-    </ClInclude>
     <ClInclude Include="src\XYZ\NativeScript\NativeScriptEngine.h">
       <Filter>src\XYZ\NativeScript</Filter>
     </ClInclude>
@@ -1863,6 +1848,10 @@
     <ClInclude Include="vendor\yaml-cpp\src\token.h">
       <Filter>vendor\yaml-cpp\src</Filter>
     </ClInclude>
+    <ClInclude Include="src\XYZ\InGuiTemp\InGui.h" />
+    <ClInclude Include="src\XYZ\InGuiTemp\InGuiFactory.h" />
+    <ClInclude Include="src\XYZ\InGuiTemp\InGuiStructures.h" />
+    <ClInclude Include="src\XYZ\InGui\InGuiLayer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\API\OpenGL\OpenGLAPIContext.cpp">
@@ -1966,21 +1955,6 @@
     </ClCompile>
     <ClCompile Include="src\XYZ\Gui\Text.cpp">
       <Filter>src\XYZ\Gui</Filter>
-    </ClCompile>
-    <ClCompile Include="src\XYZ\InGui\InGui.cpp">
-      <Filter>src\XYZ\InGui</Filter>
-    </ClCompile>
-    <ClCompile Include="src\XYZ\InGui\InGuiCore.cpp">
-      <Filter>src\XYZ\InGui</Filter>
-    </ClCompile>
-    <ClCompile Include="src\XYZ\InGui\InGuiHelper.cpp">
-      <Filter>src\XYZ\InGui</Filter>
-    </ClCompile>
-    <ClCompile Include="src\XYZ\InGui\InGuiLayer.cpp">
-      <Filter>src\XYZ\InGui</Filter>
-    </ClCompile>
-    <ClCompile Include="src\XYZ\InGui\InGuiRenderQueue.cpp">
-      <Filter>src\XYZ\InGui</Filter>
     </ClCompile>
     <ClCompile Include="src\XYZ\NativeScript\NativeScriptEngine.cpp">
       <Filter>src\XYZ\NativeScript</Filter>
@@ -2243,6 +2217,10 @@
     <ClCompile Include="vendor\yaml-cpp\src\tag.cpp">
       <Filter>vendor\yaml-cpp\src</Filter>
     </ClCompile>
+    <ClCompile Include="src\XYZ\InGuiTemp\InGui.cpp" />
+    <ClCompile Include="src\XYZ\InGuiTemp\InGuiFactory.cpp" />
+    <ClCompile Include="src\XYZ\InGuiTemp\InGuiStructures.cpp" />
+    <ClCompile Include="src\XYZ\InGui\InGuiLayer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="vendor\RCC\RuntimeCompiler\SimpleFileWatcher\FileWatcherLinux.cpp~">

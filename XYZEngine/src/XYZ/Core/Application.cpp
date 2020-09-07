@@ -31,8 +31,7 @@ namespace XYZ {
 		m_LayerStack.PushOverlay(m_InGuiLayer);
 		m_Window->RegisterCallback<WindowCloseEvent>(Hook(&Application::onWindowClosed, this));
 		m_Window->RegisterCallback<WindowResizeEvent>(Hook(&Application::onWindowResized, this));
-		
-		
+			
 	}
 
 	Application::~Application()

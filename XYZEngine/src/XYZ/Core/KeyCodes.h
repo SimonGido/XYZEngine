@@ -1,12 +1,10 @@
 #pragma once
 
 namespace XYZ {
-	enum class KeyMode
-	{
-
-	};
+	
 	enum class KeyCode
 	{
+		XYZ_KEY_NONE = 0,
 		XYZ_KEY_SPACE = 32,
 		XYZ_KEY_APOSTROPHE = 39,
 		XYZ_KEY_COMMA = 44,
@@ -130,5 +128,11 @@ namespace XYZ {
 
 		XYZ_MOD_SHIFT = 0x0001,
 		XYZ_MOD_CAPS_LOCK = 0x0010
+	};
+
+	enum class KeyMode
+	{
+		XYZ_MOD_NONE = 0,
+		XYZ_MOD_SHIFT = 0x0001
 	};
 }

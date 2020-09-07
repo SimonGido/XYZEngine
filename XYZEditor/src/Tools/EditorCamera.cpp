@@ -108,7 +108,7 @@ namespace XYZ {
 	}
 	bool EditorCamera::onMouseButtonPress(MouseButtonPressEvent& event)
 	{
-		if (event.GetButton() == MouseCode::XYZ_MOUSE_BUTTON_RIGHT)
+		if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_MIDDLE))
 		{
 			m_MouseMoving = true;
 			auto [mx, my] = Input::GetMousePosition();
@@ -119,7 +119,7 @@ namespace XYZ {
 	}
 	bool EditorCamera::onMouseButtonRelease(MouseButtonReleaseEvent& event)
 	{
-		if (event.GetButton() == MouseCode::XYZ_MOUSE_BUTTON_RIGHT)
+		if (event.IsButtonReleased(MouseCode::XYZ_MOUSE_BUTTON_MIDDLE))
 		{
 			m_MouseMoving = false;
 		}

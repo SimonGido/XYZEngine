@@ -55,7 +55,7 @@ namespace XYZ {
 		AssetManager m_AssetManager;
 		std::vector<Entity> m_StoredEntitiesWithScript;
 		bool m_Lock = false;
-	
+		float m_H = 0.0f;
 	private:	
 		Entity m_TestEntity;
 		Entity m_TestEntity2;

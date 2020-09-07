@@ -55,18 +55,7 @@ namespace XYZ {
 	
 	void SceneHierarchyPanel::OnInGuiRender()
 	{
-		if (InGui::Begin("Scene Hierarchy", { 0,0 }, { 400,300 }))
-		{
-			if (m_Context)
-			{
-				for (auto ent : m_Context->m_SceneGraph.GetFlatData())
-				{
-					Entity entity = { ent.GetData().Entity,m_Context.Raw() };
-					drawEntity(entity);
-				}
-			}
-		}
-		InGui::End();
+		
 	}
 	void SceneHierarchyPanel::SelectEntity(const glm::vec2& position)
 	{
@@ -79,7 +68,7 @@ namespace XYZ {
 			{
 				if (Collide(buffer[i].GetComponent<TransformComponent>()->Transform, position))
 				{
-					InGui::GetWindow("scene hierarchy")->Flags |= InGui::Modified;
+					//InGui::GetWindow("scene hierarchy")->Flags |= InGui::Modified;
 					m_SelectedEntity = buffer[i];
 				}
 			}
@@ -131,12 +120,6 @@ namespace XYZ {
 				Renderer2D::SubmitLine(bottomRight, bottomLeft);
 				Renderer2D::SubmitLine(bottomLeft, topLeft);
 			}
-			if (InGui::Text(tag, { 1,1 }, textColor))
-			{
-				m_SelectedEntity = entity;
-				InGui::GetWindow("scene hierarchy")->Flags |= InGui::Modified;
-			}
-			InGui::Separator();
 		}
 	}
 }

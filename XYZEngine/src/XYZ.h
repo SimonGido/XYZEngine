@@ -59,10 +59,8 @@
 #include "XYZ/Gui/Button.h"
 #include "XYZ/Gui/Checkbox.h"
 
-
-//------InUI-------//
-#include "XYZ/InGui/InGui.h"
-#include "XYZ/InGui/InGuiCore.h"
+//------InGui-------//
+#include "XYZ/InGuiTemp/InGui.h"
 
 
 #include "XYZ/FSM/Machine.h"
