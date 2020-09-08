@@ -28,7 +28,7 @@ namespace XYZ {
 		static void MenuBarEnd();
 		static void EndMenu();
 
-		static bool BeginGroup(const std::string& name, bool& open);
+		static bool BeginGroup(const std::string& name, bool& open, const InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration);
 		static void EndGroup();
 
 		static bool Button(const std::string& name, const glm::vec2& size, const InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration);
@@ -42,9 +42,9 @@ namespace XYZ {
 		static bool ColorPallete4(const std::string& name, const glm::vec2& size, glm::vec4& color, const InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration);
 		static bool RenderWindow(const std::string& name, uint32_t rendererID, const glm::vec2& position, const glm::vec2& size, float panelSize, InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration);
 
-		void Separator();
+		static void Separator();
 
-		glm::vec4 Selector();
+		static glm::vec4 Selector();
 
 
 		static bool OnWindowResize(const glm::vec2& winSize);
@@ -53,8 +53,11 @@ namespace XYZ {
 
 		static bool OnLeftMouseButtonRelease();
 		static bool OnRightMouseButtonRelease();
-
-		static void SetWindowFlags(const std::string& name, uint16_t flags) { s_Context->Windows[name]->Flags = flags; }
+		static bool OnKeyPress(int key, int mod);
+		static bool OnKeyRelease();
+		
+		static const InGuiWindow& GetWindow(const std::string& name) { return *s_Context->Windows[name]; }
+		static void SetWindowFlags(const std::string& name, uint16_t flags) { s_Context->Windows[name]->Flags |= flags; }
 	private:
 		static InGuiWindow* getWindow(const std::string& name);
 		static InGuiWindow* createWindow(const std::string& name,const glm::vec2& position, const glm::vec2& size);

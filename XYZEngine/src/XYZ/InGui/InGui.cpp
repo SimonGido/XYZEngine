@@ -10,6 +10,186 @@
 namespace XYZ {
 	InGuiContext* InGui::s_Context = nullptr;
 
+
+	static enum Color
+	{
+		RedToGreen,
+		GreenToBlue,
+		BlueToRed,
+		None
+	};
+	static glm::vec4 ColorFrom6SegmentColorRectangle(const glm::vec2& position, const glm::vec2& size, const glm::vec2& mousePos)
+	{
+		static constexpr uint32_t numColorSegments = 3;
+
+		float segmentSize = size.x / numColorSegments;
+		float pos = mousePos.x - position.x;
+		uint32_t segment = (uint32_t)floor(pos / segmentSize);
+		float distance = (pos - (segment * segmentSize)) / segmentSize;
+
+
+		switch (segment)
+		{
+		case RedToGreen:
+			return { 1.0f - distance, distance,0.0f,1.0f };
+		case GreenToBlue:
+			return { 0.0f, 1.0f - distance, distance, 1.0f };
+		case BlueToRed:
+			return { distance,0.0f,1.0f - distance,1.0f };
+		case None:
+			return { distance,0.0f,1.0f - distance,1.0f };
+		}
+
+		return { 0,1,0,1 };
+	}
+	static glm::vec4 CalculatePixelColor(const glm::vec4& pallete, const glm::vec2& position, const glm::vec2& size, const InGuiPerFrameData& frameData)
+	{
+		glm::vec2 pos = frameData.MousePosition - position;
+		glm::vec2 scale = pos / size;
+
+		glm::vec4 diff = pallete - glm::vec4{ 1, 1, 1, 1 };
+
+		glm::vec4 result = { scale.y,scale.y, scale.y,1 };
+		result += glm::vec4(scale.y * scale.x * diff.x, scale.y * scale.x * diff.y, scale.y * scale.x * diff.z, 0);
+
+		return result;
+	}
+
+	static void MoveVertices(InGuiVertex* vertices, const glm::vec2& position, size_t offset, size_t count)
+	{
+		for (size_t i = offset; i < count + offset; ++i)
+		{
+			vertices[i].Position.x += position.x;
+			vertices[i].Position.y += position.y;
+		}
+	}
+	static void HandleInputText(std::string& text, int code, int mode ,bool capslock)
+	{
+		size_t currentSize = text.size();
+		switch (code)
+		{
+		case ToUnderlying(KeyCode::XYZ_KEY_BACKSPACE):
+			if (!text.empty())
+				text.pop_back();
+			return;
+		case ToUnderlying(KeyCode::XYZ_KEY_0):
+			text.push_back('0');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_1):
+			text.push_back('1');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_2):
+			text.push_back('2');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_3):
+			text.push_back('3');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_4):
+			text.push_back('4');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_5):
+			text.push_back('5');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_6):
+			text.push_back('6');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_7):
+			text.push_back('7');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_8):
+			text.push_back('8');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_9):
+			text.push_back('9');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_PERIOD):
+			text.push_back('.');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_A):
+			text.push_back('a');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_B):
+			text.push_back('b');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_C):
+			text.push_back('c');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_D):
+			text.push_back('d');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_E):
+			text.push_back('e');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_F):
+			text.push_back('f');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_G):
+			text.push_back('g');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_H):
+			text.push_back('h');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_I):
+			text.push_back('i');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_J):
+			text.push_back('j');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_K):
+			text.push_back('k');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_L):
+			text.push_back('l');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_M):
+			text.push_back('m');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_O):
+			text.push_back('o');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_P):
+			text.push_back('p');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_Q):
+			text.push_back('q');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_R):
+			text.push_back('r');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_S):
+			text.push_back('s');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_T):
+			text.push_back('t');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_U):
+			text.push_back('u');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_V):
+			text.push_back('v');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_W):
+			text.push_back('w');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_X):
+			text.push_back('x');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_Y):
+			text.push_back('y');
+			break;
+		case ToUnderlying(KeyCode::XYZ_KEY_Z):
+			text.push_back('z');
+			break;
+		}
+
+		// Shift / Capslock
+		if ((mode == ToUnderlying(KeyMode::XYZ_MOD_SHIFT) || capslock) && currentSize < text.size())
+		{
+			text[currentSize] = std::toupper(text[currentSize]);
+		}
+	}
+
+
 	static glm::vec2 HandleWindowSpacing(const glm::vec2& uiSize, InGuiPerFrameData& frameData)
 	{
 		// Set position to the position of current window
@@ -107,14 +287,24 @@ namespace XYZ {
 			InGuiRenderer::SetMaterial(mesh->Material);
 			InGuiRenderer::SubmitUI(*mesh);
 		}
+		for (auto window : s_Context->Windows)
+		{
+			InGuiRenderer::SubmitLineMesh(window.second->LineMesh);
+		}
 		s_Context->DockSpace->End(s_Context->PerFrameData.MousePosition, s_Context->RenderConfiguration);
 		InGuiRenderer::Flush();
+		InGuiRenderer::FlushLines();
 		InGuiRenderer::EndScene();
 
 		s_Context->RenderConfiguration.NumTexturesInUse = InGuiRenderConfiguration::DefaultTextureCount;
 		size_t numMeshes = s_Context->RenderQueue.size();
 		s_Context->RenderQueue.clear();
 		s_Context->RenderQueue.reserve(numMeshes);
+
+		// Clean codes
+		s_Context->PerFrameData.KeyCode = ToUnderlying(KeyCode::XYZ_KEY_NONE);
+		s_Context->PerFrameData.Mode = ToUnderlying(KeyMode::XYZ_MOD_NONE);
+		s_Context->PerFrameData.Code = ToUnderlying(MouseCode::XYZ_MOUSE_NONE);
 	}
 	bool InGui::Begin(const std::string& name, const glm::vec2& position, const glm::vec2& size, const InGuiRenderConfiguration& renderConfig)
 	{
@@ -127,6 +317,7 @@ namespace XYZ {
 		if (!window)
 			window = createWindow(name, position, size);
 		frameData.CurrentWindow = window;
+		frameData.WindowSpaceOffset.y = window->Size.y;
 		window->Mesh.Material = renderConfig.Material;
 
 		// Check if window is hoovered
@@ -193,9 +384,34 @@ namespace XYZ {
 	{
 	}
 
-	bool InGui::BeginGroup(const std::string& name, bool& open)
+	bool InGui::BeginGroup(const std::string& name, bool& open, const InGuiRenderConfiguration& renderConfig)
 	{
-		return false;
+		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
+
+		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiWindow* window = frameData.CurrentWindow;
+		
+		if (window->Flags & Modified)
+		{
+			glm::vec2 winPos = window->Position;
+			glm::vec2 winSize = window->Size;
+			glm::vec2 panelPos = { winPos.x, HandleWindowSpacing({winSize.x - 5,InGuiWindow::PanelSize},frameData).y };
+			glm::vec2 minButtonPos = { panelPos.x + 5, panelPos.y };
+			glm::vec4 color = renderConfig.DefaultColor;
+			if (Collide(minButtonPos, { InGuiWindow::PanelSize,InGuiWindow::PanelSize }, frameData.MousePosition))
+			{
+				color = renderConfig.HooverColor;
+				if ((frameData.Flags & LeftMouseButtonPressed)
+					&& !(frameData.Flags & ClickHandled))
+				{
+					open = !open;
+					frameData.Flags |= ClickHandled;
+				}
+			}
+			InGuiFactory::GenerateGroup(panelPos, color, name, open, frameData, renderConfig);
+		}
+
+		return open;
 	}
 
 	void InGui::EndGroup()
@@ -238,7 +454,13 @@ namespace XYZ {
 		if (window->Flags & Modified)
 		{
 			glm::vec4 color = renderConfig.DefaultColor;
-			glm::vec2 position = HandleWindowSpacing(size, frameData);
+
+			size_t offset = window->Mesh.Vertices.size();
+			auto [width, height] = InGuiFactory::GenerateText({ 0.7f,0.7f }, color, name, frameData, renderConfig);
+			glm::vec2 position = HandleWindowSpacing({ size.x + width + 5,size.y }, frameData);
+			glm::vec2 textOffset = { size.x + 5,(size.y / 2) - (height / 2) };
+			MoveVertices(window->Mesh.Vertices.data(), position + textOffset, offset, name.size() * 4);
+
 			if (Collide(position, size, frameData.MousePosition))
 			{
 				color = renderConfig.HooverColor;
@@ -249,7 +471,7 @@ namespace XYZ {
 						value = !value;
 				}
 			}
-			InGuiFactory::GenerateCheckbox(position, size, color, name,value, frameData, renderConfig);
+			InGuiFactory::GenerateCheckbox(position, size, color, name, value, frameData, renderConfig);
 		}
 
 		return value;
@@ -265,7 +487,7 @@ namespace XYZ {
 		if (window->Flags & Modified)
 		{
 			glm::vec4 color = renderConfig.DefaultColor;
-			glm::vec2 position = HandleWindowSpacing(size, frameData);
+			glm::vec2 position = HandleWindowSpacing({ size.x,size.y * 2 }, frameData);
 			if (Collide(position, size, frameData.MousePosition))
 			{
 				color = renderConfig.HooverColor;
@@ -284,26 +506,161 @@ namespace XYZ {
 
 	bool InGui::Image(const std::string& name, uint32_t rendererID, const glm::vec2& size, const InGuiRenderConfiguration& renderConfig)
 	{
-		return false;
+		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
+
+		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiWindow* window = frameData.CurrentWindow;
+		bool pressed = false;
+		if (window->Flags & Modified)
+		{
+			glm::vec4 color = renderConfig.DefaultColor;
+			glm::vec2 position = HandleWindowSpacing(size, frameData);
+			if (Collide(position, size, frameData.MousePosition))
+			{
+				color = renderConfig.HooverColor;
+				if (!(frameData.Flags & ClickHandled))
+				{
+					pressed = (frameData.Flags & LeftMouseButtonPressed);
+					if (pressed)
+						frameData.Flags |= ClickHandled;
+				}
+			}
+			InGuiFactory::GenerateImage(position, size, color, rendererID, frameData, renderConfig);
+		}
+
+		return pressed;
 	}
 
 	bool InGui::TextArea(const std::string& name, std::string& text, const glm::vec2& size, bool& modified, const InGuiRenderConfiguration& renderConfig)
 	{
-		return false;
+		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
+
+		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiWindow* window = frameData.CurrentWindow;
+
+		if (window->Flags & Modified)
+		{
+			glm::vec4 color = renderConfig.DefaultColor;		
+			glm::vec2 position = HandleWindowSpacing(size, frameData);
+		
+			if (Collide(position, size, frameData.MousePosition))
+			{		
+				if (!(frameData.Flags & ClickHandled))
+				{
+					if (frameData.Flags & LeftMouseButtonPressed)
+					{
+						frameData.Flags |= ClickHandled;
+						modified = !modified;
+					}			
+				}
+			}
+			if (modified)
+			{
+				color = renderConfig.HooverColor;
+				HandleInputText(text, frameData.KeyCode, frameData.Mode, frameData.CapslockEnabled);
+			}
+			InGuiFactory::GenerateTextArea(position, size, color, name, text, frameData, renderConfig);
+		}
+		
+		return modified;
 	}
 
 	bool InGui::Text(const std::string& text, const glm::vec2& scale, const glm::vec4& color, const InGuiRenderConfiguration& renderConfig)
 	{
+		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
+
+		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiWindow* window = frameData.CurrentWindow;
+
+		if (window->Flags & Modified)
+		{
+			size_t offset = window->Mesh.Vertices.size();
+			auto [width, height] = InGuiFactory::GenerateText(scale, color, text, frameData, renderConfig);
+			glm::vec2 size = { width,height };
+			glm::vec2 position = HandleWindowSpacing(size, frameData);
+			MoveVertices(window->Mesh.Vertices.data(), position, offset, text.size() * 4);
+			if (Collide(position, size, frameData.MousePosition))
+			{
+				if (!(frameData.Flags & ClickHandled))
+				{
+					
+					if (frameData.Flags & LeftMouseButtonPressed)
+					{
+						frameData.Flags |= ClickHandled;
+						return true;
+					}
+				}
+			}
+		}
+
 		return false;
 	}
 
 	bool InGui::ColorPicker4(const std::string& name, const glm::vec2& size, glm::vec4& pallete, glm::vec4& color, const InGuiRenderConfiguration& renderConfig)
 	{
+		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiWindow* window = frameData.CurrentWindow;
+
+		if (window->Flags & Modified)
+		{
+			glm::vec2 position = HandleWindowSpacing(size, frameData);
+
+			bool modified = false;
+
+			Separator();
+			if (ColorPallete4("", { size.x, 25.0f }, pallete))
+			{
+				modified = true;
+			}
+			InGuiFactory::GenerateColorPicker4(position, size, pallete, frameData, renderConfig);
+			Separator();
+			if (Slider("R: " + std::to_string(color.x), { size.x,15 }, color.x, size.x))
+				modified = true;
+			Separator();
+			if (Slider("G: " + std::to_string(color.y), { size.x,15 }, color.y, size.x))
+				modified = true;
+			Separator();
+			if (Slider("B: " + std::to_string(color.z), { size.x,15 }, color.z, size.x))
+				modified = true;
+			Separator();
+
+			if (Collide(position, size, frameData.MousePosition))
+			{
+				if (!(frameData.Flags & ClickHandled))
+				{
+					if (frameData.Flags & LeftMouseButtonPressed)
+					{
+						frameData.Flags |= ClickHandled;
+
+						modified = true;
+						color = CalculatePixelColor(pallete, position, size, frameData);
+					}
+				}
+			}
+			return modified;
+		}
 		return false;
 	}
 
 	bool InGui::ColorPallete4(const std::string& name, const glm::vec2& size, glm::vec4& color, const InGuiRenderConfiguration& renderConfig)
 	{
+		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
+
+		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiWindow* window = frameData.CurrentWindow;
+		if (window->Flags & Modified)
+		{
+			glm::vec2 position = HandleWindowSpacing(size, frameData);
+			InGuiFactory::Generate6SegmentColorRectangle(position, size, frameData, renderConfig);
+			if (Collide(position, size, frameData.MousePosition))
+			{
+				if (frameData.Flags & LeftMouseButtonPressed)
+				{
+					color = ColorFrom6SegmentColorRectangle(position, size, frameData.MousePosition);
+					return true;
+				}
+			}
+		}
 		return false;
 	}
 
@@ -353,12 +710,14 @@ namespace XYZ {
 	bool InGui::OnWindowResize(const glm::vec2& winSize)
 	{
 		s_Context->PerFrameData.WindowSize = winSize;
+		s_Context->DockSpace->OnWindowResize(winSize);
 		return false;
 	}
 
 	bool InGui::OnLeftMouseButtonPress()
 	{
 		s_Context->DockSpace->OnLeftMouseButtonPress();
+		s_Context->PerFrameData.Code = ToUnderlying(MouseCode::XYZ_MOUSE_BUTTON_LEFT);
 		s_Context->PerFrameData.Flags |= LeftMouseButtonPressed;
 		s_Context->PerFrameData.Flags &= ~ClickHandled;
 		InGuiWindow* window = s_Context->PerFrameData.EventReceivingWindow;
@@ -377,9 +736,11 @@ namespace XYZ {
 
 	bool InGui::OnRightMouseButtonPress()
 	{
-		s_Context->DockSpace->OnRightMouseButtonPress(s_Context->PerFrameData.MousePosition);
+		s_Context->PerFrameData.Code = ToUnderlying(MouseCode::XYZ_MOUSE_BUTTON_RIGHT);
 		s_Context->PerFrameData.Flags |= RightMouseButtonPressed;
 		s_Context->PerFrameData.Flags &= ~ClickHandled;
+		if (s_Context->DockSpace->OnRightMouseButtonPress(s_Context->PerFrameData.MousePosition))
+			return true;
 		InGuiWindow* window = s_Context->PerFrameData.EventReceivingWindow;
 		if (window)
 		{
@@ -402,6 +763,7 @@ namespace XYZ {
 	bool InGui::OnLeftMouseButtonRelease()
 	{
 		s_Context->PerFrameData.Flags &= ~LeftMouseButtonPressed;
+		s_Context->PerFrameData.Code = ToUnderlying(MouseCode::XYZ_MOUSE_NONE);
 		if (s_Context->PerFrameData.ModifiedWindow)
 		{
 			s_Context->PerFrameData.ModifiedWindow->Flags &= ~(Moved | LeftResizing | RightResizing | TopResizing | BottomResizing);
@@ -413,6 +775,7 @@ namespace XYZ {
 
 	bool InGui::OnRightMouseButtonRelease()
 	{
+		s_Context->PerFrameData.Code = ToUnderlying(MouseCode::XYZ_MOUSE_NONE);
 		s_Context->DockSpace->OnRightMouseButtonRelease(s_Context->PerFrameData.ModifiedWindow, s_Context->PerFrameData.MousePosition);
 		s_Context->PerFrameData.Flags &= ~RightMouseButtonPressed;
 		if (s_Context->PerFrameData.ModifiedWindow)
@@ -423,6 +786,23 @@ namespace XYZ {
 			app.GetWindow().SetCursor(XYZ_ARROW_CURSOR);
 		}
 		
+		return false;
+	}
+
+	bool InGui::OnKeyPress(int key, int mod)
+	{
+		if (mod == ToUnderlying(KeyMode::XYZ_MOD_CAPS_LOCK))
+			s_Context->PerFrameData.CapslockEnabled = !s_Context->PerFrameData.CapslockEnabled;
+
+		s_Context->PerFrameData.KeyCode = key;
+		s_Context->PerFrameData.Mode = mod;
+		return false;
+	}
+
+	bool InGui::OnKeyRelease()
+	{
+		s_Context->PerFrameData.KeyCode = ToUnderlying(KeyCode::XYZ_KEY_NONE);
+		s_Context->PerFrameData.Mode = ToUnderlying(KeyMode::XYZ_MOD_NONE);
 		return false;
 	}
 
@@ -562,6 +942,7 @@ namespace XYZ {
 			glm::vec2 pos = frameData.MousePosition - frameData.ModifiedWindowMouseOffset;
 			window.Position = { pos.x, pos.y - window.Size.y };
 			s_Context->DockSpace->RemoveWindow(&window);
+			s_Context->DockSpace->m_DockSpaceVisible = true;
 			window.Flags |= Modified;
 		}
 	}

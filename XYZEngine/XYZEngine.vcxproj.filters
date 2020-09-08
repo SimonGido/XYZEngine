@@ -1848,10 +1848,10 @@
     <ClInclude Include="vendor\yaml-cpp\src\token.h">
       <Filter>vendor\yaml-cpp\src</Filter>
     </ClInclude>
-    <ClInclude Include="src\XYZ\InGuiTemp\InGui.h" />
-    <ClInclude Include="src\XYZ\InGuiTemp\InGuiFactory.h" />
-    <ClInclude Include="src\XYZ\InGuiTemp\InGuiStructures.h" />
     <ClInclude Include="src\XYZ\InGui\InGuiLayer.h" />
+    <ClInclude Include="src\XYZ\InGui\InGui.h" />
+    <ClInclude Include="src\XYZ\InGui\InGuiFactory.h" />
+    <ClInclude Include="src\XYZ\InGui\InGuiStructures.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\API\OpenGL\OpenGLAPIContext.cpp">
@@ -2217,10 +2217,10 @@
     <ClCompile Include="vendor\yaml-cpp\src\tag.cpp">
       <Filter>vendor\yaml-cpp\src</Filter>
     </ClCompile>
-    <ClCompile Include="src\XYZ\InGuiTemp\InGui.cpp" />
-    <ClCompile Include="src\XYZ\InGuiTemp\InGuiFactory.cpp" />
-    <ClCompile Include="src\XYZ\InGuiTemp\InGuiStructures.cpp" />
     <ClCompile Include="src\XYZ\InGui\InGuiLayer.cpp" />
+    <ClCompile Include="src\XYZ\InGui\InGui.cpp" />
+    <ClCompile Include="src\XYZ\InGui\InGuiFactory.cpp" />
+    <ClCompile Include="src\XYZ\InGui\InGuiStructures.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="vendor\RCC\RuntimeCompiler\SimpleFileWatcher\FileWatcherLinux.cpp~">

@@ -126,13 +126,13 @@ namespace XYZ {
 		XYZ_KEY_RIGHT_SUPER = 347,
 		XYZ_KEY_MENU = 348,
 
-		XYZ_MOD_SHIFT = 0x0001,
-		XYZ_MOD_CAPS_LOCK = 0x0010
+		
 	};
 
 	enum class KeyMode
 	{
 		XYZ_MOD_NONE = 0,
-		XYZ_MOD_SHIFT = 0x0001
+		XYZ_MOD_SHIFT = 0x0001,
+		XYZ_MOD_CAPS_LOCK = 0x0010
 	};
 }

@@ -54,10 +54,10 @@ namespace XYZ {
 		glm::vec4 DefaultColor = { 1.0f,1.0f,1.0f,1.0f };
 		glm::vec4 HooverColor = { 0.4f, 1.8f, 1.7f, 1.0f };
 		glm::vec4 SelectColor = { 0.8f,0.0f,0.2f,0.6f };
-
+		glm::vec4 LineColor = { 0.2f,0.2f,0.5f,1.0f };
 
 		static constexpr uint32_t DefaultTextureCount = 3;
-		uint32_t NumTexturesInUse = DefaultTextureCount;
+		mutable uint32_t NumTexturesInUse = DefaultTextureCount;
 
 
 		friend class InGui;
@@ -67,6 +67,7 @@ namespace XYZ {
 	struct InGuiWindow
 	{
 		InGuiMesh Mesh;
+		InGuiLineMesh LineMesh;
 		std::string Name;
 
 		glm::vec2 Position;
@@ -126,14 +127,13 @@ namespace XYZ {
 		void InsertWindow(InGuiWindow* window, const glm::vec2& mousePos);
 		void RemoveWindow(InGuiWindow* window);
 
-		void FitToViewPort(const glm::vec2& size);
-
 		void Begin();
 		void End(const glm::vec2& mousePos, const InGuiRenderConfiguration& renderConfig);
 
 		bool OnRightMouseButtonPress(const glm::vec2& mousePos);
 		bool OnLeftMouseButtonPress();
 		bool OnRightMouseButtonRelease(InGuiWindow* window, const glm::vec2& mousePos);
+		bool OnWindowResize(const glm::vec2& winSize);
 
 	private:
 		void resize(const glm::vec2& mousePos);
@@ -184,11 +184,10 @@ namespace XYZ {
 		float MaxHeightInRow;
 		float LastMenuBarWidth;
 
-		MouseCode Code;
-		KeyCode Key;
-		KeyMode Mode;
-
-		bool CapslockEnabled;	
+		int Code;
+		int KeyCode;
+		int Mode;	
+		bool CapslockEnabled;
 
 		uint16_t Flags = 0;
 	};

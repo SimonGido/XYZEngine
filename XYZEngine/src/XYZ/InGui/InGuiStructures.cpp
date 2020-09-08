@@ -45,11 +45,7 @@ namespace XYZ {
 			window->Flags &= ~Docked;
 		}
 	}
-	void InGuiDockSpace::FitToViewPort(const glm::vec2& size)
-	{
-		glm::vec2 scale = size / m_Root->Size;
-		rescale(scale, m_Root);
-	}
+	
 	
 	void InGuiDockSpace::Begin()
 	{
@@ -67,8 +63,8 @@ namespace XYZ {
 	bool InGuiDockSpace::OnRightMouseButtonPress(const glm::vec2& mousePos)
 	{
 		detectResize(m_Root, mousePos);
-		if (!m_ResizedNode)
-			m_DockSpaceVisible = true;
+		if (m_ResizedNode)
+			return true;
 		return false;
 	}
 
@@ -88,6 +84,14 @@ namespace XYZ {
 		return false;
 	}
 
+	bool InGuiDockSpace::OnWindowResize(const glm::vec2& winSize)
+	{
+		glm::vec2 scale = winSize / m_Root->Size;
+		rescale(scale, m_Root);
+		return false;
+	}
+
+	
 	void InGuiDockSpace::resize(const glm::vec2& mousePos)
 	{
 		if (m_ResizedNode)
@@ -486,21 +490,17 @@ namespace XYZ {
 		ModifiedWindow = nullptr;
 		CurrentWindow = nullptr;
 		ModifiedWindowMouseOffset = { 0,0 };
-		Key = KeyCode::XYZ_KEY_NONE;
-		Mode = KeyMode::XYZ_MOD_NONE;
-		Code = MouseCode::XYZ_MOUSE_NONE;
+		KeyCode = ToUnderlying(KeyCode::XYZ_KEY_NONE);
+		Mode = ToUnderlying(KeyMode::XYZ_MOD_NONE);
+		Code = ToUnderlying(MouseCode::XYZ_MOUSE_NONE);
 		CapslockEnabled = false;
 
 		ResetWindowData();
 	}
 
 	void InGuiPerFrameData::ResetWindowData()
-	{
-		if (CurrentWindow)
-			WindowSpaceOffset = { 0, CurrentWindow->Size.y };
-		else
-			WindowSpaceOffset = { 0,0 };
-
+	{	
+		WindowSpaceOffset = { 0,0 };
 		CurrentWindow = nullptr;
 		
 		MenuBarOffset = { 0,0 };
@@ -510,5 +510,4 @@ namespace XYZ {
 		MaxHeightInRow = 0.0f;
 		LastMenuBarWidth = 0.0f;
 	}
-
 }

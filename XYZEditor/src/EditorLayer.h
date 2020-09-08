@@ -56,6 +56,7 @@ namespace XYZ {
 		std::vector<Entity> m_StoredEntitiesWithScript;
 		bool m_Lock = false;
 		float m_H = 0.0f;
+		std::string m_Trala;
 	private:	
 		Entity m_TestEntity;
 		Entity m_TestEntity2;

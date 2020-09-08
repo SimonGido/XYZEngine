@@ -1,11 +1,13 @@
 #include "stdafx.h"
 #include "InGuiLayer.h"
 
-#include "XYZ/InGuiTemp/InGui.h"
+#include "InGui.h"
 
 #include "XYZ/Core/Input.h"
 #include "XYZ/Core/MouseCodes.h"
 #include "XYZ/Core/KeyCodes.h"
+
+
 namespace XYZ {
 	void InGuiLayer::OnAttach()
 	{	
@@ -75,14 +77,12 @@ namespace XYZ {
 	}
 	bool InGuiLayer::onWindowResize(WindowResizeEvent& e)
 	{
-		//InGui::OnWindowResize({ e.GetWidth(),e.GetHeight() });
-
-		m_Material->Set("u_ViewportSize", glm::vec2(e.GetWidth(), e.GetHeight()));
+		InGui::OnWindowResize({ e.GetWidth(),e.GetHeight() });
 		return false;
 	}
 	bool InGuiLayer::onKeyPressed(KeyPressedEvent& e)
 	{
-		//InGui::OnKeyPressed(e.GetKey(), e.GetMod());
+		InGui::OnKeyPress(e.GetKey(), e.GetMod());
 		return false;
 	}
 }
