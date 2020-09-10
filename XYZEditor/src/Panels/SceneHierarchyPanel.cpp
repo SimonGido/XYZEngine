@@ -26,6 +26,8 @@ namespace XYZ {
 		:
 		m_Entities(50, 100)
 	{
+		//InGui::Begin("Scene Hierarchy", { 0,0 }, { 400,300 });
+		//InGui::End();
 	}
 
 	SceneHierarchyPanel::SceneHierarchyPanel(const Ref<Scene>& context)
@@ -33,6 +35,8 @@ namespace XYZ {
 		m_Context(context),
 		m_Entities(50, 100)
 	{
+		//InGui::Begin("Scene Hierarchy", { 0,0 }, { 400,300 });
+		//InGui::End();
 	}
 	void SceneHierarchyPanel::SetContext(const Ref<Scene>& context)
 	{

@@ -508,6 +508,6 @@ namespace XYZ {
 		SelectedPoint = { 0,0 };
 
 		MaxHeightInRow = 0.0f;
-		LastMenuBarWidth = 0.0f;
+		MenuItemOffset = 0.0f;
 	}
 }

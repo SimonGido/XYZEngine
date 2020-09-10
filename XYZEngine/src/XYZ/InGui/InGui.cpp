@@ -350,38 +350,137 @@ namespace XYZ {
 
 	bool InGui::BeginPopup(const std::string& name, const glm::vec2& size, bool& open, const InGuiRenderConfiguration& renderConfig)
 	{
-		return false;
+		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
+
+		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiWindow* window = frameData.CurrentWindow;
+	
+		if (window->Flags & Modified)
+		{
+			glm::vec4 color = renderConfig.DefaultColor;
+			glm::vec2 position = HandleWindowSpacing(size, frameData);
+			if (Collide(position, size, frameData.MousePosition))
+			{
+				color = renderConfig.HooverColor;
+				if (!(frameData.Flags & ClickHandled))
+				{
+					if (frameData.Flags & LeftMouseButtonPressed)
+					{
+						frameData.Flags |= ClickHandled;
+						open = !open;
+					}
+				}
+			}
+			InGuiFactory::GenerateButton(position, size, color, name, frameData, renderConfig);
+			frameData.PopupOffset.x = position.x;
+			frameData.PopupOffset.y = position.y - size.y;
+		}
+
+		return open;
 	}
 
 	bool InGui::PopupItem(const std::string& name, const glm::vec2& size, const InGuiRenderConfiguration& renderConfig)
 	{
-		return false;
+		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
+
+		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiWindow* window = frameData.CurrentWindow;
+		bool pressed = false;
+		if (window->Flags & Modified)
+		{
+			glm::vec4 color = renderConfig.DefaultColor;
+			glm::vec2 position = { frameData.PopupOffset.x, frameData.PopupOffset.y };
+			if (Collide(position, size, frameData.MousePosition))
+			{
+				color = renderConfig.HooverColor;
+				if (!(frameData.Flags & ClickHandled))
+				{
+					if (frameData.Flags & LeftMouseButtonPressed)
+					{
+						frameData.Flags |= ClickHandled;
+						pressed = true;
+					}
+				}
+			}
+			InGuiFactory::GenerateButton(position, size, color, name, frameData, renderConfig);
+		}
+		frameData.PopupOffset.y -= size.y;
+		return pressed;
 	}
 
 	void InGui::EndPopup()
 	{
+		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
+		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		frameData.PopupOffset = { 0,0 };
 	}
 
-	void InGui::BeginMenu()
-	{
-	}
 
-	bool InGui::MenuBar(const std::string& name, bool& open, const InGuiRenderConfiguration& renderConfig)
+	bool InGui::MenuBar(const std::string& name, float width, bool& open, const InGuiRenderConfiguration& renderConfig)
 	{
-		return false;
+		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
+
+		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiWindow* window = frameData.CurrentWindow;
+		if (window->Flags & Modified)
+		{
+			if (window->Flags & MenuEnabled)
+			{
+				glm::vec4 color = renderConfig.DefaultColor;
+				glm::vec2 size = { width,InGuiWindow::PanelSize };
+				glm::vec2 position = { window->Position.x + frameData.MenuBarOffset.x, window->Position.y + window->Size.y };
+				if (Collide(position, size, frameData.MousePosition))
+				{
+					color = renderConfig.HooverColor;
+					if (!(frameData.Flags & ClickHandled))
+					{
+						if (frameData.Flags & LeftMouseButtonPressed)
+						{
+							frameData.Flags |= ClickHandled;
+							open = !open;
+						}
+					}
+				}
+				InGuiFactory::GenerateMenuBar(position, size, color, name, frameData, renderConfig);
+
+				frameData.MenuBarOffset.x += width;
+				frameData.MenuBarOffset.y = position.y - InGuiWindow::PanelSize;
+				frameData.MenuItemOffset = position.x;
+			}
+		}
+		return open;
 	}
 
 	bool InGui::MenuItem(const std::string& name, const glm::vec2& size, const InGuiRenderConfiguration& renderConfig)
 	{
-		return false;
-	}
+		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
 
-	void InGui::MenuBarEnd()
-	{
-	}
-
-	void InGui::EndMenu()
-	{
+		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiWindow* window = frameData.CurrentWindow;
+		bool pressed = false;
+		if (window->Flags & Modified)
+		{
+			if (window->Flags & MenuEnabled)
+			{
+				glm::vec4 color = renderConfig.DefaultColor;
+				glm::vec2 position = { frameData.MenuItemOffset,frameData.MenuBarOffset.y };
+				if (Collide(position, size, frameData.MousePosition))
+				{
+					color = renderConfig.HooverColor;
+					if (!(frameData.Flags & ClickHandled))
+					{
+						if (frameData.Flags & LeftMouseButtonPressed)
+						{
+							frameData.Flags |= ClickHandled;
+							pressed = true;
+						}
+					}
+				}
+				InGuiFactory::GenerateMenuBar(position, size, color, name, frameData, renderConfig);
+				frameData.MenuBarOffset.y -= size.y;
+			}
+		}
+		return pressed;
 	}
 
 	bool InGui::BeginGroup(const std::string& name, bool& open, const InGuiRenderConfiguration& renderConfig)
@@ -434,8 +533,11 @@ namespace XYZ {
 				color = renderConfig.HooverColor;
 				if (!(frameData.Flags & ClickHandled))
 				{
-					frameData.Flags |= ClickHandled;
-					pressed = (frameData.Flags & LeftMouseButtonPressed);
+					if ((frameData.Flags & LeftMouseButtonPressed))
+					{
+						frameData.Flags |= ClickHandled;
+						pressed = true;
+					}
 				}
 			}
 			InGuiFactory::GenerateButton(position, size, color, name, frameData, renderConfig);
@@ -466,9 +568,11 @@ namespace XYZ {
 				color = renderConfig.HooverColor;
 				if (!(frameData.Flags & ClickHandled))
 				{
-					frameData.Flags |= ClickHandled;
 					if (frameData.Flags & LeftMouseButtonPressed)
+					{
+						frameData.Flags |= ClickHandled;
 						value = !value;
+					}
 				}
 			}
 			InGuiFactory::GenerateCheckbox(position, size, color, name, value, frameData, renderConfig);
@@ -728,9 +832,10 @@ namespace XYZ {
 			{
 				if (detectCollapse(*window))
 				{}
-			}
-		}
 		
+				return true;
+			}
+		}	
 		return false;
 	}
 
@@ -754,6 +859,7 @@ namespace XYZ {
 				
 
 				s_Context->PerFrameData.ModifiedWindow = window;
+				
 				return true;
 			}
 		}		

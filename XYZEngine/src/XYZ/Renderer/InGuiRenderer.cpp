@@ -189,7 +189,7 @@ namespace XYZ {
 	void InGuiRenderer::SubmitUI(const InGuiMesh& mesh)
 	{
 		uint32_t indexCount = (mesh.Vertices.size() / 4) * 6;
-		if (s_UIData.IndexCount + indexCount > s_UIData.MaxIndices ||
+		if (s_UIData.IndexCount + indexCount >= s_UIData.MaxIndices ||
 			s_UIData.Textures.size() + s_UIData.Material->GetNumberOfTextures() + mesh.TexturePairs.size() 
 			>= s_UIData.MaxTextures)
 			Flush();

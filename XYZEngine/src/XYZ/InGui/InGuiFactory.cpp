@@ -92,7 +92,44 @@ namespace XYZ {
 		}
 		return std::pair<int32_t, int32_t>(width, height);
 	}
+	static std::pair<int32_t, int32_t> GenerateInGuiText(InGuiVertex* vertices, const Ref<Font>& font, const std::string& str, const glm::vec2& position, const glm::vec2& scale, float length, uint32_t textureID, const glm::vec4& color)
+	{
+		auto& fontData = font->GetData();
+		int32_t cursorX = 0, cursorY = 0;
 
+		int32_t width = 0;
+		int32_t height = 0;
+		uint32_t counter = 0;
+		for (auto c : str)
+		{
+			auto& character = font->GetCharacter(c);
+			if (width + (character.XAdvance * scale.x) >= length)
+				break;
+
+			float yOffset = (fontData.LineHeight - character.YOffset - character.Height) * scale.y;
+			glm::vec2 pos = {
+				cursorX + character.XOffset + position.x,
+				cursorY + yOffset + position.y
+			};
+
+			glm::vec2 size = { character.Width * scale.x, character.Height * scale.y };
+			glm::vec2 coords = { character.XCoord, fontData.ScaleH - character.YCoord - character.Height };
+			glm::vec2 scaleFont = { fontData.ScaleW, fontData.ScaleH };
+
+			vertices[counter++] = { color, { pos.x , pos.y, 0.0f }, coords / scaleFont ,textureID };
+			vertices[counter++] = { color, { pos.x + size.x, pos.y, 0.0f, }, (coords + glm::vec2(character.Width, 0)) / scaleFont,textureID };
+			vertices[counter++] = { color, { pos.x + size.x, pos.y + size.y, 0.0f }, (coords + glm::vec2(character.Width, character.Height)) / scaleFont,textureID };
+			vertices[counter++] = { color, { pos.x ,pos.y + size.y, 0.0f}, (coords + glm::vec2(0,character.Height)) / scaleFont,textureID };
+
+			if (size.y > height)
+				height = size.y;
+
+
+			width += character.XAdvance * scale.x;
+			cursorX += character.XAdvance * scale.x;
+		}
+		return std::pair<int32_t, int32_t>(width, height);
+	}
 	static void MoveVertices(InGuiVertex* vertices, const glm::vec2& position, size_t offset, size_t count)
 	{
 		for (size_t i = offset; i < count + offset; ++i)
@@ -328,6 +365,22 @@ namespace XYZ {
 			GenerateInGuiQuad(window->Mesh, minButtonPos, { InGuiWindow::PanelSize ,InGuiWindow::PanelSize }, renderConfig.DownArrowButtonSubTexture->GetTexCoords(), renderConfig.TextureID, color);
 		else
 			GenerateInGuiQuad(window->Mesh, minButtonPos, { InGuiWindow::PanelSize ,InGuiWindow::PanelSize }, renderConfig.RightArrowButtonSubTexture->GetTexCoords(), renderConfig.TextureID, color);
+	}
+
+	void InGuiFactory::GenerateQuad(const glm::vec2& position,const glm::vec2& size, const glm::vec4& color, InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig)
+	{
+		auto window = frameData.CurrentWindow;
+		GenerateInGuiQuad(window->Mesh, position, size, renderConfig.ButtonSubTexture->GetTexCoords(), renderConfig.TextureID, color);
+	}
+
+	void InGuiFactory::GenerateMenuBar(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const std::string& name, InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig)
+	{
+		auto window = frameData.CurrentWindow;
+		GenerateInGuiQuad(window->Mesh, position, size, renderConfig.ButtonSubTexture->GetTexCoords(), renderConfig.TextureID, color);
+		size_t offset = window->Mesh.Vertices.size();
+		auto [width, height] = GenerateInGuiText(window->Mesh, renderConfig.Font, name, {}, { 0.7,0.7 }, size.x, renderConfig.FontTextureID, { 1,1,1,1 });
+		glm::vec2 textOffset = { (size.x / 2) - (width / 2),(size.y / 2.0f) - ((float)height / 1.5f) };
+		MoveVertices(window->Mesh.Vertices.data(), position + textOffset, offset, name.size() * 4);
 	}
 
 	

@@ -22,11 +22,8 @@ namespace XYZ {
 		static bool PopupItem(const std::string& name, const glm::vec2& size, const InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration);
 		static void EndPopup();
 
-		static void BeginMenu();
-		static bool MenuBar(const std::string& name, bool& open, const InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration);
+		static bool MenuBar(const std::string& name,float width, bool& open, const InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration);
 		static bool MenuItem(const std::string& name, const glm::vec2& size, const InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration);
-		static void MenuBarEnd();
-		static void EndMenu();
 
 		static bool BeginGroup(const std::string& name, bool& open, const InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration);
 		static void EndGroup();
@@ -57,7 +54,8 @@ namespace XYZ {
 		static bool OnKeyRelease();
 		
 		static const InGuiWindow& GetWindow(const std::string& name) { return *s_Context->Windows[name]; }
-		static void SetWindowFlags(const std::string& name, uint16_t flags) { s_Context->Windows[name]->Flags |= flags; }
+		static void SetWindowFlags(const std::string& name, uint16_t flags) { s_Context->Windows[name]->Flags = flags; }
+		static uint16_t& GetWindowFlags(const std::string& name) { return s_Context->Windows[name]->Flags; }
 	private:
 		static InGuiWindow* getWindow(const std::string& name);
 		static InGuiWindow* createWindow(const std::string& name,const glm::vec2& position, const glm::vec2& size);

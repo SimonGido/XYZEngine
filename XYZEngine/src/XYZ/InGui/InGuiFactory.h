@@ -18,5 +18,7 @@ namespace XYZ {
 		static void GenerateColorPicker4(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig);
 		static void Generate6SegmentColorRectangle(const glm::vec2& position, const glm::vec2& size, InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig);
 		static void GenerateGroup(const glm::vec2& position,const glm::vec4& color, const std::string& name, bool open, InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig);
+		static void GenerateQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig);
+		static void GenerateMenuBar(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const std::string& name, InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig);
 	};
 }

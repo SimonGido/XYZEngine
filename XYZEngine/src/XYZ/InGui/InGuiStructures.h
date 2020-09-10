@@ -182,7 +182,7 @@ namespace XYZ {
 		glm::vec2 SelectedPoint;
 
 		float MaxHeightInRow;
-		float LastMenuBarWidth;
+		float MenuItemOffset;
 
 		int Code;
 		int KeyCode;

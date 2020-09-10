@@ -135,7 +135,7 @@ namespace XYZ {
 
 		m_SceneHierarchyPanel.SetContext(m_Scene);
 
-		InGui::SetWindowFlags("scene", 0);
+		
 	}
 
 	void EditorLayer::OnDetach()
@@ -244,7 +244,7 @@ namespace XYZ {
 		}
 		m_SceneHierarchyPanel.OnInGuiRender();
 		m_EntityComponentPanel.OnInGuiRender();
-
+		InGui::SetWindowFlags("scene", 0);
 		if (InGui::RenderWindow("Scene", m_FBO->GetColorAttachment(0).RendererID, { 0,0 }, { 200,200 }, 25.0f))
 		{
 			m_ActiveWindow = true;
@@ -262,9 +262,52 @@ namespace XYZ {
 		}
 		InGui::End();
 
+		InGui::SetWindowFlags("test", MenuEnabled);
 		if (InGui::Begin("Test", { 0,0 }, { 200,200 }))
 		{
+			
+		}
+		if (InGui::MenuBar("File", 70, m_MenuOpen))
+		{
+			if (InGui::MenuItem("Load Scene", { 150,25 }))
+			{
+				auto& app = Application::Get();
+				std::cout << "WTF" << std::endl;
+				std::string filepath = app.OpenFile("(*.xyz)\0*.xyz\0");
+				if (!filepath.empty())
+				{
+					m_Scene = m_AssetManager.GetAsset<Scene>(filepath);
+				}
+				m_MenuOpen = false;
+			}
+			else if (InGui::MenuItem("Create Script", { 150,25 }))
+			{
+				auto& app = Application::Get();
+				std::string filepath = app.CreateNewFile("(*.cpp)\0*.cpp\0");
+				if (!filepath.empty())
+				{
+					PerModuleInterface::g_pRuntimeObjectSystem->AddToRuntimeFileList(filepath.c_str());
+				}
+				m_MenuOpen = false;
+			}
+			else if (InGui::MenuItem("Load Script", { 150,25 }))
+			{
+				auto& app = Application::Get();
+				std::string filepath = app.OpenFile("(*.cpp)\0*.cpp\0");
+				if (!filepath.empty())
+				{
+					PerModuleInterface::g_pRuntimeObjectSystem->AddToRuntimeFileList(filepath.c_str());
+				}
+				m_MenuOpen = false;
+			}
 
+		}
+		InGui::MenuBar("Settings", 100, m_MenuOpen);
+		InGui::MenuBar("Settingass", 120, m_MenuOpen);
+		InGui::MenuBar("Settingasdas", 120, m_MenuOpen);
+		if (InGui::Button("Compile", { 100,25 }))
+		{
+			PerModuleInterface::g_pRuntimeObjectSystem->CompileAll(true);
 		}
 		InGui::End();
 	}

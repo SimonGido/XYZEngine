@@ -14,6 +14,9 @@ namespace XYZ {
 		m_DefaultMaterial = Material::Create(Shader::Create("Assets/Shaders/DefaultShader.glsl"));
 		auto characterTexture = Texture2D::Create(XYZ::TextureWrap::Clamp, "Assets/Textures/player_sprite.png");
 		m_DefaultSubTexture = Ref<SubTexture2D>::Create(characterTexture, glm::vec2(0, 0), glm::vec2(characterTexture->GetWidth() / 8, characterTexture->GetHeight() / 3));
+	
+		InGui::Begin("Entity", { 0,-100 }, { 300,400 }); // To make sure it exists;
+		InGui::End();
 	}
 	void EntityComponentPanel::SetContext(Entity context)
 	{
@@ -46,7 +49,7 @@ namespace XYZ {
 			{
 				m_NativeScriptObject = context.GetComponent<NativeScriptComponent>()->ScriptObjectName;
 			}
-			InGui::SetWindowFlags("entity", Modified);
+			InGui::SetWindowFlags("entity", Modified | MenuEnabled);
 		}
 		m_Context = context;
 	}
@@ -171,8 +174,7 @@ namespace XYZ {
 				}
 
 				InGui::Separator();
-				InGui::BeginMenu();
-				if (InGui::MenuBar("Add Component", m_AddComponentOpen))
+				if (InGui::MenuBar("Add Component",150 , m_AddComponentOpen))
 				{
 					if (!m_Context.HasComponent<TransformComponent>())
 					{
@@ -206,8 +208,6 @@ namespace XYZ {
 						}
 					}
 				}
-				InGui::MenuBarEnd();
-				InGui::EndMenu();
 			}
 		}
 		InGui::End();

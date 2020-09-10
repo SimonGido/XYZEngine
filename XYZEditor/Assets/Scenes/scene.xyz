@@ -16,7 +16,7 @@ Entities:
     Parent: 2
     TransformComponent:
       Position: [26.6585464, 0.732521057, 0]
-      Rotation: [0.998845816, 0, 0, 0.0480314046]
+      Rotation: [0.998845816, 0, 0, 0.0480313711]
       Scale: [20.4135818, 32.5886917, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/material.mat
@@ -41,13 +41,13 @@ Entities:
   - Entity: Test HoHO
     Parent: 2
     TransformComponent:
-      Position: [-6.68001556, 50.202179, -107374176]
+      Position: [-5.31996584, 51.5609322, -107374176]
       Rotation: [0.786433041, 0, 0, 0.617675543]
       Scale: [40.4168701, 66.9406586, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/material.mat
       SubTextureAssetPath: Assets/SubTextures/CharacterSubTexture.subtex
-      Color: [0.129150331, 0.968627453, 0.968627453, 1]
+      Color: [1, 1, 1, 1]
       TextureID: 0
       SortLayer: 0
       IsVisible: true
@@ -60,7 +60,7 @@ Entities:
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/material.mat
       SubTextureAssetPath: Assets/SubTextures/CharacterSubTexture.subtex
-      Color: [0.558490038, 0.251410961, 0.649783731, 1]
+      Color: [0.996078432, 0.251410961, 0.649783731, 1]
       TextureID: 0
       SortLayer: 0
       IsVisible: true
