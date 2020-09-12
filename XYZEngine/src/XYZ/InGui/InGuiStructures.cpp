@@ -12,7 +12,82 @@ namespace XYZ {
 			pos.y + size.y >  point.y &&
 			pos.y < point.y);
 	}
+	static std::pair<int32_t, int32_t> GenerateInGuiText(InGuiMesh& mesh, const Ref<Font>& font, const std::string& str, const glm::vec2& position, const glm::vec2& scale, float length, uint32_t textureID, const glm::vec4& color)
+	{
+		auto& fontData = font->GetData();
+		int32_t cursorX = 0, cursorY = 0;
 
+		int32_t width = 0;
+		int32_t height = 0;
+
+		for (auto c : str)
+		{
+			auto& character = font->GetCharacter(c);
+			if (width + (character.XAdvance * scale.x) >= length)
+				break;
+
+			float yOffset = (fontData.LineHeight - character.YOffset - character.Height) * scale.y;
+			glm::vec2 pos = {
+				cursorX + character.XOffset + position.x,
+				cursorY + yOffset + position.y
+			};
+
+			glm::vec2 size = { character.Width * scale.x, character.Height * scale.y };
+			glm::vec2 coords = { character.XCoord, fontData.ScaleH - character.YCoord - character.Height };
+			glm::vec2 scaleFont = { fontData.ScaleW, fontData.ScaleH };
+
+			mesh.Vertices.push_back({ color, { pos.x , pos.y, 0.0f }, coords / scaleFont ,textureID });
+			mesh.Vertices.push_back({ color, { pos.x + size.x, pos.y, 0.0f, }, (coords + glm::vec2(character.Width, 0)) / scaleFont,textureID });
+			mesh.Vertices.push_back({ color, { pos.x + size.x, pos.y + size.y, 0.0f }, (coords + glm::vec2(character.Width, character.Height)) / scaleFont,textureID });
+			mesh.Vertices.push_back({ color, { pos.x ,pos.y + size.y, 0.0f}, (coords + glm::vec2(0,character.Height)) / scaleFont,textureID });
+
+			if (size.y > height)
+				height = size.y;
+
+
+			width += character.XAdvance * scale.x;
+			cursorX += character.XAdvance * scale.x;
+		}
+		return std::pair<int32_t, int32_t>(width, height);
+	}
+	static void GenerateInGuiQuad(InGuiMesh& mesh, const glm::vec2& position, const glm::vec2& size, const glm::vec4& texCoord, uint32_t textureID, const glm::vec4& color)
+	{
+		constexpr size_t quadVertexCount = 4;
+		glm::vec2 texCoords[quadVertexCount] = {
+		{texCoord.x,texCoord.y},
+		{texCoord.z,texCoord.y},
+		{texCoord.z,texCoord.w},
+		{texCoord.x,texCoord.w}
+		};
+
+		glm::vec4 quadVertexPositions[4] = {
+			{ position.x ,		  position.y , 0.0f, 1.0f },
+			{ position.x + size.x,position.y , 0.0f, 1.0f },
+			{ position.x + size.x,position.y + size.y, 0.0f, 1.0f },
+			{ position.x ,        position.y + size.y, 0.0f, 1.0f }
+		};
+
+		for (size_t i = 0; i < quadVertexCount; ++i)
+		{
+			mesh.Vertices.push_back({ color, quadVertexPositions[i], texCoords[i], textureID });
+		}
+	}
+	static void MoveVertices(InGuiVertex* vertices, const glm::vec2& position, size_t offset, size_t count)
+	{
+		for (size_t i = offset; i < count + offset; ++i)
+		{
+			vertices[i].Position.x += position.x;
+			vertices[i].Position.y += position.y;
+		}
+	}
+	static void GenerateWindowsPanel(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const std::string& name,InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig)
+	{
+		GenerateInGuiQuad(mesh, position, size, renderConfig.ButtonSubTexture->GetTexCoords(), renderConfig.TextureID, color);
+		size_t offset = mesh.Vertices.size();
+		auto [width, height] = GenerateInGuiText(mesh, renderConfig.Font, name, {}, { 0.7,0.7 }, size.x, renderConfig.FontTextureID, { 1,1,1,1 });
+		glm::vec2 textOffset = { (size.x / 2) - (width / 2),(size.y / 2.0f) - ((float)height / 1.5f) };
+		MoveVertices(mesh.Vertices.data(), position + textOffset, offset, name.size() * 4);
+	}
 	InGuiDockSpace::InGuiDockSpace(InGuiDockNode* root)
 		:
 		m_Root(root)
@@ -52,12 +127,13 @@ namespace XYZ {
 
 	}
 
-	void InGuiDockSpace::End(const glm::vec2& mousePos, const InGuiRenderConfiguration& renderConfig)
+	void InGuiDockSpace::End(const glm::vec2& mousePos, InGuiContext& context)
 	{
 		if (m_DockSpaceVisible)
-			showNode(m_Root, mousePos, renderConfig);
+			showNode(m_Root, mousePos, context.RenderConfiguration);
 		update(m_Root);
 		resize(mousePos);
+		showNodeWindows(m_Root, mousePos, context.PerFrameData, context.RenderConfiguration);
 	}
 
 	bool InGuiDockSpace::OnRightMouseButtonPress(const glm::vec2& mousePos)
@@ -396,13 +472,39 @@ namespace XYZ {
 	{
 		for (auto win : node->Windows)
 		{
-			win->Size = { node->Size.x, node->Size.y - InGuiWindow::PanelSize };
+			win->Size = { node->Size.x, node->Size.y - (2*InGuiWindow::PanelSize) };
 			win->Position = node->Position;
 		}
 		if (node->Children[0])
 			update(node->Children[0]);
 		if (node->Children[1])
 			update(node->Children[1]);
+	}
+	void InGuiDockSpace::showNodeWindows(InGuiDockNode* node, const glm::vec2& mousePos, const InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig)
+	{
+		InGuiMesh mesh;
+		float widthPerWindow = node->Size.x / node->Windows.size();
+		uint32_t counter = 0;
+		for (auto win : node->Windows)
+		{
+			glm::vec2 position = node->Position + glm::vec2{ counter * widthPerWindow ,node->Size.y - InGuiWindow::PanelSize };
+			glm::vec2 size = { widthPerWindow,InGuiWindow::PanelSize };
+			glm::vec4 color = renderConfig.DefaultColor;
+			if (Collide(position, size, mousePos) || (win->Flags & Visible))
+			{
+				color = renderConfig.HooverColor;
+				if ((frameData.Flags & LeftMouseButtonPressed) && !(frameData.Flags & ClickHandled))
+				{
+					win->Flags |= Visible;
+				}
+			}
+			GenerateWindowsPanel(position, size, color , win->Name, mesh, renderConfig);
+			InGuiRenderer::SubmitUI(mesh);
+		}
+		if (node->Children[0])
+			showNodeWindows(node->Children[0],mousePos,frameData, renderConfig);
+		if (node->Children[1])
+			showNodeWindows(node->Children[1],mousePos,frameData, renderConfig);
 	}
 	void InGuiDockSpace::showNode(InGuiDockNode* node, const glm::vec2& mousePos, const InGuiRenderConfiguration& renderConfig)
 	{

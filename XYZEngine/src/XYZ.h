@@ -63,7 +63,7 @@
 #include "XYZ/InGui/InGui.h"
 
 
-#include "XYZ/FSM/Machine.h"
+#include "XYZ/FSM/StateMachine.h"
 
 
 //------NativeScript-------//

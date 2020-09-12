@@ -270,16 +270,7 @@
     <ClInclude Include="src\XYZ\Event\InputEvent.h">
       <Filter>src\XYZ\Event</Filter>
     </ClInclude>
-    <ClInclude Include="src\XYZ\FSM\Machine.h">
-      <Filter>src\XYZ\FSM</Filter>
-    </ClInclude>
-    <ClInclude Include="src\XYZ\FSM\Setup.h">
-      <Filter>src\XYZ\FSM</Filter>
-    </ClInclude>
     <ClInclude Include="src\XYZ\FSM\StateMachine.h">
-      <Filter>src\XYZ\FSM</Filter>
-    </ClInclude>
-    <ClInclude Include="src\XYZ\FSM\TransitionTo.h">
       <Filter>src\XYZ\FSM</Filter>
     </ClInclude>
     <ClInclude Include="src\XYZ\Gui\Button.h">
@@ -1932,9 +1923,6 @@
     <ClCompile Include="src\XYZ\ECS\SystemManager.cpp">
       <Filter>src\XYZ\ECS</Filter>
     </ClCompile>
-    <ClCompile Include="src\XYZ\FSM\Machine.cpp">
-      <Filter>src\XYZ\FSM</Filter>
-    </ClCompile>
     <ClCompile Include="src\XYZ\Gui\Button.cpp">
       <Filter>src\XYZ\Gui</Filter>
     </ClCompile>
@@ -2221,6 +2209,7 @@
     <ClCompile Include="src\XYZ\InGui\InGui.cpp" />
     <ClCompile Include="src\XYZ\InGui\InGuiFactory.cpp" />
     <ClCompile Include="src\XYZ\InGui\InGuiStructures.cpp" />
+    <ClCompile Include="src\XYZ\FSM\StateMachine.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="vendor\RCC\RuntimeCompiler\SimpleFileWatcher\FileWatcherLinux.cpp~">

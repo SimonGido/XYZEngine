@@ -291,7 +291,7 @@ namespace XYZ {
 		{
 			InGuiRenderer::SubmitLineMesh(window.second->LineMesh);
 		}
-		s_Context->DockSpace->End(s_Context->PerFrameData.MousePosition, s_Context->RenderConfiguration);
+		s_Context->DockSpace->End(s_Context->PerFrameData.MousePosition, *s_Context);
 		InGuiRenderer::Flush();
 		InGuiRenderer::FlushLines();
 		InGuiRenderer::EndScene();
@@ -316,7 +316,11 @@ namespace XYZ {
 		InGuiWindow* window = getWindow(copyName);
 		if (!window)
 			window = createWindow(name, position, size);
+
 		frameData.CurrentWindow = window;
+		if (!(window->Flags & Visible))
+			return false;
+
 		frameData.WindowSpaceOffset.y = window->Size.y;
 		window->Mesh.Material = renderConfig.Material;
 
@@ -778,7 +782,11 @@ namespace XYZ {
 		InGuiWindow* window = getWindow(copyName);
 		if (!window)
 			window = createWindow(name, position, size);
+		
 		frameData.CurrentWindow = window;
+		if (!(window->Flags & Visible))
+			return false;
+
 		window->Mesh.Material = renderConfig.Material;
 
 		// Check if window is hoovered
@@ -930,6 +938,7 @@ namespace XYZ {
 		window->Name = name;
 		window->Flags |= Modified;
 		window->Flags |= EventListener;
+		window->Flags |= Visible;
 		s_Context->Windows.insert({ copyName,window });
 		return window;
 	}
@@ -1087,6 +1096,7 @@ namespace XYZ {
 
 				windows[it->first]->Flags |= Modified;
 				windows[it->first]->Flags |= EventListener;
+				windows[it->first]->Flags |= Visible;
 
 				it++;
 			}

@@ -21,7 +21,8 @@ namespace XYZ {
 		RightResizing  = BIT(7),
 		TopResizing    = BIT(8),
 		BottomResizing = BIT(9),
-		Docked		   = BIT(10)
+		Visible		   = BIT(10),
+		Docked		   = BIT(11)
 	};
 
 	enum InGuiPerFrameFlags
@@ -80,6 +81,35 @@ namespace XYZ {
 		static constexpr float PanelSize = 25.0f;
 	};
 
+	struct InGuiPerFrameData
+	{
+		InGuiPerFrameData();
+		void ResetWindowData();
+
+		InGuiWindow* EventReceivingWindow;
+		InGuiWindow* ModifiedWindow;
+		InGuiWindow* CurrentWindow;
+
+		glm::vec2 WindowSize;
+		glm::vec2 ModifiedWindowMouseOffset;
+		glm::vec2 WindowSpaceOffset;
+		glm::vec2 MenuBarOffset;
+		glm::vec2 PopupOffset;
+
+		glm::vec2 MousePosition;
+		glm::vec2 SelectedPoint;
+
+		float MaxHeightInRow;
+		float MenuItemOffset;
+
+		int Code;
+		int KeyCode;
+		int Mode;
+		bool CapslockEnabled;
+
+		uint16_t Flags = 0;
+	};
+
 	enum class SplitAxis
 	{
 		None,
@@ -104,6 +134,7 @@ namespace XYZ {
 		{
 			Children[0] = nullptr;
 			Children[1] = nullptr;
+			VisibleWindow = nullptr;
 		}
 
 		glm::vec2 Position;
@@ -111,6 +142,7 @@ namespace XYZ {
 
 		InGuiDockNode* Parent;
 		InGuiDockNode* Children[2];
+		InGuiWindow* VisibleWindow;
 		std::vector<InGuiWindow*> Windows;
 		uint32_t ID;
 		SplitAxis Split = SplitAxis::None;
@@ -128,7 +160,7 @@ namespace XYZ {
 		void RemoveWindow(InGuiWindow* window);
 
 		void Begin();
-		void End(const glm::vec2& mousePos, const InGuiRenderConfiguration& renderConfig);
+		void End(const glm::vec2& mousePos, InGuiContext & context);
 
 		bool OnRightMouseButtonPress(const glm::vec2& mousePos);
 		bool OnLeftMouseButtonPress();
@@ -145,7 +177,7 @@ namespace XYZ {
 		void splitNodeProportional(InGuiDockNode* node, SplitAxis axis, const glm::vec2& firstSize);
 		void unsplitNode(InGuiDockNode* node);
 		void update(InGuiDockNode* node);
-
+		void showNodeWindows(InGuiDockNode* node, const glm::vec2& mousePos,const InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig);
 		void showNode(InGuiDockNode* node, const glm::vec2& mousePos, const InGuiRenderConfiguration& renderConfig);
 		DockPosition collideWithMarker(InGuiDockNode* node, const glm::vec2& mousePos);
 
@@ -163,34 +195,7 @@ namespace XYZ {
 	};
 
 
-	struct InGuiPerFrameData
-	{
-		InGuiPerFrameData();
-		void ResetWindowData();
-
-		InGuiWindow* EventReceivingWindow;
-		InGuiWindow* ModifiedWindow;
-		InGuiWindow* CurrentWindow;
-
-		glm::vec2 WindowSize;
-		glm::vec2 ModifiedWindowMouseOffset;
-		glm::vec2 WindowSpaceOffset;
-		glm::vec2 MenuBarOffset;
-		glm::vec2 PopupOffset;
-
-		glm::vec2 MousePosition;
-		glm::vec2 SelectedPoint;
-
-		float MaxHeightInRow;
-		float MenuItemOffset;
-
-		int Code;
-		int KeyCode;
-		int Mode;	
-		bool CapslockEnabled;
-
-		uint16_t Flags = 0;
-	};
+	
 
 
 	using InGuiWindowMap = std::unordered_map<std::string, InGuiWindow*>;

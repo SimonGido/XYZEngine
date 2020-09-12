@@ -14,7 +14,7 @@ namespace XYZ {
 		virtual ~Serializable() {};
 
 		void SetFilepath(const std::string& filepath) { m_Filepath = filepath; }
-	
+
 		const std::string& GetFilepath() const { return m_Filepath; }
 
 	protected:

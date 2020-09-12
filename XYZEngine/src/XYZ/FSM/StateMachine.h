@@ -1,53 +1,48 @@
 #pragma once
-// Following tutorial https://sii.pl/blog/implementing-a-state-machine-in-c17-part-2/
 
-
-#include <tuple>
-#include <variant>
-
+#include <queue>
 
 namespace XYZ {
-    template <typename... States>
-    class StateMachine
-    {
-    public:
-        StateMachine() = default;
 
-        StateMachine(States... states)
-            : m_States(std::move(states)...)
-        {
-        }
+	class State
+	{
+	public:
+		void SetAllowedTransitions(uint32_t allowedTransitionsTo);
 
-        template <typename State>
-        State& TransitionTo()
-        {
-            State& state = std::get<State>(m_States);
-            m_CurrentState = &state;
-            return state;
-        }
+		uint32_t GetAllowedTransitions() const { return m_AllowedTransitionsTo; }
 
-        template <typename Event>
-        bool Handle(const Event& event)
-        {
-            return handleBy(event, *this);
-        }
+		uint32_t GetID() const { return m_ID; }
+
+	private:
+		uint32_t m_ID = 0;
+		uint32_t m_AllowedTransitionsTo = 0;
+
+		friend class StateMachine;
+	};
 
 
-    private:
-        template <typename Event, typename Machine>
-        bool handleBy(const Event& event, Machine& machine)
-        {
-            auto passEventToState = [&machine, &event](auto statePtr) {
-                auto action = statePtr->Handle(event);
-                // Transition to another state handled by action
-               return action.Execute(machine, *statePtr, event);
-            };
-            return std::visit(passEventToState, m_CurrentState);
-        }
+	class StateMachine
+	{
+	public:
+		State CreateState(const std::string& name);
 
-    private:
-        std::tuple<States...> m_States;
-        std::variant<States*...> m_CurrentState{ &std::get<0>(m_States) };
-    };
+		bool TransitionTo(const State& state);
+
+		void SetDefaultState(const State& state);
+
+		const State& GetCurrentState() const { return m_CurrentState; }
+
+		static uint32_t GetAny() { return sc_Any; }
+	private:
+		State m_CurrentState;
+
+		uint32_t m_NextFreeBit = 0;
+
+		std::unordered_map<std::string, State> m_StatesMap;
+
+		static constexpr uint32_t sc_MaxBit = 31;
+		static constexpr uint32_t sc_Any = (1 << 31);
+	};
+
 
 }

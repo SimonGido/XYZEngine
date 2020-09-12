@@ -49,7 +49,7 @@ namespace XYZ {
 
 		EditorCamera m_EditorCamera;
 		Ref<Scene> m_Scene;
-		
+		StateMachine m_StateMachine;
 
 		Ref<FrameBuffer> m_FBO;
 		AssetManager m_AssetManager;
@@ -91,7 +91,5 @@ namespace XYZ {
 		Ref<SubTexture2D> m_CharacterSubTexture3;
 
 		Ref<SubTexture2D> m_CheckboxSubTexture;
-
-		Machine<Animation*> *m_Machine;
 	};
 }

@@ -126,23 +126,25 @@ namespace XYZ {
 		spriteProperty2->KeyFrames.push_back({ m_CharacterSubTexture3,2.0f });
 		spriteProperty2->KeyFrames.push_back({ m_CharacterSubTexture,3.0f });
 
-		m_Machine = new Machine<Animation*>("Idle", m_Animation);
-		m_Machine->AddState("Run", m_RunAnimation);
-
-		m_Machine->SetStateTransition("Idle", "Run");
-		m_Machine->SetStateTransition("Run", "Idle");
-
+	
 
 		m_SceneHierarchyPanel.SetContext(m_Scene);
 
 		
+		InGui::RenderWindow("Scene", m_FBO->GetColorAttachment(0).RendererID, { 0,0 }, { 200,200 }, 25.0f);
+		InGui::End();
+		InGui::SetWindowFlags("scene", Visible);
+
+		InGui::Begin("Test", { 0,0 }, { 200,200 });
+		InGui::End();
+		InGui::SetWindowFlags("test", (MenuEnabled | Visible));
 	}
 
 	void EditorLayer::OnDetach()
 	{
 		delete m_Animation;
 		delete m_RunAnimation;
-		delete m_Machine;
+		
 
 		NativeScriptEngine::Shutdown();
 	}
@@ -175,11 +177,11 @@ namespace XYZ {
 
 		if (Input::IsKeyPressed(KeyCode::XYZ_KEY_LEFT))
 		{
-			m_Machine->TransitionTo("Run");
+			//m_Machine->TransitionTo("Run");
 		}
 		else if (Input::IsKeyPressed(KeyCode::XYZ_KEY_RIGHT))
 		{
-			m_Machine->TransitionTo("Idle");
+			//m_Machine->TransitionTo("Idle");
 		}
 		if (m_ScalingEntity)
 		{
@@ -244,7 +246,6 @@ namespace XYZ {
 		}
 		m_SceneHierarchyPanel.OnInGuiRender();
 		m_EntityComponentPanel.OnInGuiRender();
-		InGui::SetWindowFlags("scene", 0);
 		if (InGui::RenderWindow("Scene", m_FBO->GetColorAttachment(0).RendererID, { 0,0 }, { 200,200 }, 25.0f))
 		{
 			m_ActiveWindow = true;
@@ -262,7 +263,6 @@ namespace XYZ {
 		}
 		InGui::End();
 
-		InGui::SetWindowFlags("test", MenuEnabled);
 		if (InGui::Begin("Test", { 0,0 }, { 200,200 }))
 		{
 			
