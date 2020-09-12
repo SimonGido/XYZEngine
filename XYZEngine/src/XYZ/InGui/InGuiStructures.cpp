@@ -108,10 +108,20 @@ namespace XYZ {
 	{
 		if (window->DockNode)
 		{
-			auto it = std::find(window->DockNode->Windows.begin(), window->DockNode->Windows.end(), window);
+			auto node = window->DockNode;
+			auto it = std::find(node->Windows.begin(), node->Windows.end(), window);
 			if (it != window->DockNode->Windows.end())
-				window->DockNode->Windows.erase(it);
+			{
+				if (*it == node->VisibleWindow)
+					node->VisibleWindow = nullptr;
+				node->Windows.erase(it);
 
+				if (node->Windows.size())
+				{
+					node->VisibleWindow = node->Windows.back();
+					node->VisibleWindow->Flags |= Visible;
+				}
+			}
 			if (window->DockNode->Parent)
 			{
 				unsplitNode(window->DockNode->Parent);
@@ -131,9 +141,9 @@ namespace XYZ {
 	{
 		if (m_DockSpaceVisible)
 			showNode(m_Root, mousePos, context.RenderConfiguration);
-		update(m_Root);
-		resize(mousePos);
 		showNodeWindows(m_Root, mousePos, context.PerFrameData, context.RenderConfiguration);
+		resize(mousePos);
+		update(m_Root);
 	}
 
 	bool InGuiDockSpace::OnRightMouseButtonPress(const glm::vec2& mousePos)
@@ -373,6 +383,13 @@ namespace XYZ {
 					window->DockNode = node->Children[1];
 					window->Flags |= Docked;
 				}
+
+				// If only one window in node set it to visible
+				if (node->Windows.size() == 1)
+				{
+					node->VisibleWindow = window;
+					node->VisibleWindow->Flags |= Visible;
+				}
 			}
 			else
 			{
@@ -470,17 +487,19 @@ namespace XYZ {
 	}
 	void InGuiDockSpace::update(InGuiDockNode* node)
 	{
-		for (auto win : node->Windows)
+		if (node->VisibleWindow)
 		{
-			win->Size = { node->Size.x, node->Size.y - (2*InGuiWindow::PanelSize) };
+			auto win = node->VisibleWindow;
+			win->Size = { node->Size.x, node->Size.y - (2 * InGuiWindow::PanelSize) };
 			win->Position = node->Position;
+			win->Flags |= Visible;
 		}
 		if (node->Children[0])
 			update(node->Children[0]);
 		if (node->Children[1])
 			update(node->Children[1]);
 	}
-	void InGuiDockSpace::showNodeWindows(InGuiDockNode* node, const glm::vec2& mousePos, const InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig)
+	void InGuiDockSpace::showNodeWindows(InGuiDockNode* node, const glm::vec2& mousePos, InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig)
 	{
 		InGuiMesh mesh;
 		float widthPerWindow = node->Size.x / node->Windows.size();
@@ -490,16 +509,23 @@ namespace XYZ {
 			glm::vec2 position = node->Position + glm::vec2{ counter * widthPerWindow ,node->Size.y - InGuiWindow::PanelSize };
 			glm::vec2 size = { widthPerWindow,InGuiWindow::PanelSize };
 			glm::vec4 color = renderConfig.DefaultColor;
-			if (Collide(position, size, mousePos) || (win->Flags & Visible))
+
+			if (Collide(position, size, mousePos))
 			{
 				color = renderConfig.HooverColor;
 				if ((frameData.Flags & LeftMouseButtonPressed) && !(frameData.Flags & ClickHandled))
 				{
-					win->Flags |= Visible;
+					if (node->VisibleWindow)
+						node->VisibleWindow->Flags &= ~Visible;
+
+					frameData.Flags |= ClickHandled;
+					node->VisibleWindow = win;
+					win->Flags |= Modified;
 				}
 			}
 			GenerateWindowsPanel(position, size, color , win->Name, mesh, renderConfig);
 			InGuiRenderer::SubmitUI(mesh);
+			counter++;
 		}
 		if (node->Children[0])
 			showNodeWindows(node->Children[0],mousePos,frameData, renderConfig);

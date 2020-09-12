@@ -137,7 +137,7 @@ namespace XYZ {
 
 		InGui::Begin("Test", { 0,0 }, { 200,200 });
 		InGui::End();
-		InGui::SetWindowFlags("test", (MenuEnabled | Visible));
+		InGui::SetWindowFlags("test", (MenuEnabled | Visible | EventListener));
 	}
 
 	void EditorLayer::OnDetach()
@@ -257,7 +257,7 @@ namespace XYZ {
 		}
 		InGui::End();
 
-		if (InGui::Begin("Test panel", { 0,0 }, { 200,200 }))
+		if (InGui::Begin("Test Panel", { 0,0 }, { 200,200 }))
 		{
 
 		}

@@ -277,19 +277,19 @@ namespace XYZ {
 		}
 
 		
-		std::sort(s_Context->RenderQueue.begin(), s_Context->RenderQueue.end(), [](const InGuiMesh* a, const InGuiMesh* b) {
+		std::sort(s_Context->RenderQueue.InGuiMeshes.begin(), s_Context->RenderQueue.InGuiMeshes.end(), [](const InGuiMesh* a, const InGuiMesh* b) {
 			return a->Material->GetSortKey() < b->Material->GetSortKey();
 		});
 
 		InGuiRenderer::BeginScene({ s_Context->PerFrameData.WindowSize });
-		for (auto mesh : s_Context->RenderQueue)
+		for (auto mesh : s_Context->RenderQueue.InGuiMeshes)
 		{
 			InGuiRenderer::SetMaterial(mesh->Material);
 			InGuiRenderer::SubmitUI(*mesh);
 		}
-		for (auto window : s_Context->Windows)
+		for (auto mesh : s_Context->RenderQueue.InGuiLineMeshes)
 		{
-			InGuiRenderer::SubmitLineMesh(window.second->LineMesh);
+			InGuiRenderer::SubmitLineMesh(*mesh);
 		}
 		s_Context->DockSpace->End(s_Context->PerFrameData.MousePosition, *s_Context);
 		InGuiRenderer::Flush();
@@ -297,9 +297,11 @@ namespace XYZ {
 		InGuiRenderer::EndScene();
 
 		s_Context->RenderConfiguration.NumTexturesInUse = InGuiRenderConfiguration::DefaultTextureCount;
-		size_t numMeshes = s_Context->RenderQueue.size();
-		s_Context->RenderQueue.clear();
-		s_Context->RenderQueue.reserve(numMeshes);
+		size_t numMeshes = s_Context->RenderQueue.InGuiMeshes.size();
+		s_Context->RenderQueue.InGuiMeshes.clear();
+		s_Context->RenderQueue.InGuiLineMeshes.clear();
+		s_Context->RenderQueue.InGuiMeshes.reserve(numMeshes);
+		s_Context->RenderQueue.InGuiLineMeshes.reserve(numMeshes);
 
 		// Clean codes
 		s_Context->PerFrameData.KeyCode = ToUnderlying(KeyCode::XYZ_KEY_NONE);
@@ -338,8 +340,8 @@ namespace XYZ {
 			InGuiFactory::GenerateWindow(*window, renderConfig);
 		
 		// Push to render queue
-		s_Context->RenderQueue.push_back(&window->Mesh);
-
+		s_Context->RenderQueue.InGuiMeshes.push_back(&window->Mesh);
+		s_Context->RenderQueue.InGuiLineMeshes.push_back(&window->LineMesh);
 
 		return !(window->Flags & Collapsed);
 	}
@@ -803,7 +805,8 @@ namespace XYZ {
 			InGuiFactory::GenerateRenderWindow(*window, rendererID, renderConfig);
 
 		// Push to render queue
-		s_Context->RenderQueue.push_back(&window->Mesh);
+		s_Context->RenderQueue.InGuiMeshes.push_back(&window->Mesh);
+		s_Context->RenderQueue.InGuiLineMeshes.push_back(&window->LineMesh);
 
 
 		return (window->Flags & Hoovered);
@@ -833,7 +836,7 @@ namespace XYZ {
 		s_Context->PerFrameData.Flags |= LeftMouseButtonPressed;
 		s_Context->PerFrameData.Flags &= ~ClickHandled;
 		InGuiWindow* window = s_Context->PerFrameData.EventReceivingWindow;
-		if (window)
+		if (window && (window->Flags & Visible))
 		{
 			glm::vec2 size = window->Size + glm::vec2(InGuiWindow::PanelSize, InGuiWindow::PanelSize);
 			if (Collide(window->Position, size, s_Context->PerFrameData.MousePosition))
@@ -855,7 +858,7 @@ namespace XYZ {
 		if (s_Context->DockSpace->OnRightMouseButtonPress(s_Context->PerFrameData.MousePosition))
 			return true;
 		InGuiWindow* window = s_Context->PerFrameData.EventReceivingWindow;
-		if (window)
+		if (window && (window->Flags & Visible))
 		{
 			glm::vec2 size = window->Size + glm::vec2(0, InGuiWindow::PanelSize);
 			if (Collide(window->Position, size, s_Context->PerFrameData.MousePosition))
@@ -1062,6 +1065,23 @@ namespace XYZ {
 		}
 	}
 
+	std::string GetID(const std::string& src)
+	{
+		bool found = false;
+		size_t split = 0;
+		
+		for (int64_t i = src.size() - 1; i >= 0; --i)
+		{
+			if (src[i] == ' ')
+			{
+				split = (size_t)i;
+				found = true;
+				break;
+			}
+		}
+		XYZ_ASSERT(found, "Id was not found");
+		return src.substr(split + 1, src.size() - split);
+	}
 
 	void InGui::loadDockSpace()
 	{
@@ -1077,19 +1097,19 @@ namespace XYZ {
 
 		if (file.read(ini))
 		{
-			std::unordered_map<uint32_t, InGuiWindow*> windowMap;
+			std::unordered_map<uint32_t, std::vector<InGuiWindow*>> windowMap;
 
 			// Load windows
 			auto it = ini.begin();
 			while (it->first != "dockspace" && it != ini.end())
 			{
 				windows[it->first] = new InGuiWindow();
-				windows[it->first]->Name = it->first;
+				windows[it->first]->Name = it->second.get("name");
 				windows[it->first]->Position = StringToVec2(it->second.get("position"));
 				windows[it->first]->Size = StringToVec2(it->second.get("size"));
 				int32_t id = atoi(it->second.get("docknode").c_str());
 				if (id != -1)
-					windowMap[id] = windows[it->first];
+					windowMap[id].push_back(windows[it->first]);
 
 				if ((bool)atoi(it->second.get("collapsed").c_str()))
 					windows[it->first]->Flags |= Collapsed;
@@ -1104,13 +1124,13 @@ namespace XYZ {
 
 			std::unordered_map<uint32_t, InGuiDockNode*> dockMap;
 			std::unordered_map<uint32_t, int32_t> parentMap;
-			uint32_t id = 0;
 
 			// Load dockspace
 			auto el = it->second.begin();
 			while (el != it->second.end())
 			{
-				std::string nodeID = std::to_string(id);
+				std::string nodeID = GetID(el->first);
+				uint32_t id = atoi(nodeID.c_str());
 				glm::vec2 pos = StringToVec2(it->second.get("node position " + nodeID));
 				glm::vec2 size = StringToVec2(it->second.get("node size " + nodeID));
 				int32_t parentID = atoi(it->second.get("node parent " + nodeID).c_str());
@@ -1121,7 +1141,6 @@ namespace XYZ {
 				dockMap[id]->Split = (SplitAxis)atoi(it->second.get("node split " + nodeID).c_str());
 				dockMap[id]->Dock = (DockPosition)atoi(it->second.get("node dockposition " + nodeID).c_str());
 
-				id++;
 				el += numPropertiesDockNode;
 			}
 
@@ -1135,13 +1154,18 @@ namespace XYZ {
 					dockMap[id.first]->Parent->Children[1] = dockMap[id.first];
 			}
 			// Setup windows
-			for (auto win : windowMap)
+			for (auto winVector : windowMap)
 			{
-				win.second->Flags |= Docked;
-				win.second->DockNode = dockMap[win.first];
-				dockMap[win.first]->Windows.push_back(win.second);
+				for (auto win : winVector.second)
+				{
+					win->Flags |= Docked;
+					win->Flags |= Visible;
+					win->DockNode = dockMap[winVector.first];
+					win->DockNode->VisibleWindow = win;
+					win->DockNode->Windows.push_back(win);
+				}
 			}
-
+			
 			// Setup new dockspace and root
 			s_Context->DockSpace = new InGuiDockSpace(dockMap[0]);
 			s_Context->DockSpace->m_NodeCount = dockMap.size();
@@ -1184,6 +1208,7 @@ namespace XYZ {
 		{
 			std::string pos = std::to_string(it.second->Position.x) + "," + std::to_string(it.second->Position.y);
 			std::string size = std::to_string(it.second->Size.x) + "," + std::to_string(it.second->Size.y);
+			ini[it.first]["name"] = it.second->Name;
 			ini[it.first]["position"] = pos;
 			ini[it.first]["size"] = size;
 			bool collapsed = (it.second->Flags & Collapsed);

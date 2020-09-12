@@ -177,7 +177,7 @@ namespace XYZ {
 		void splitNodeProportional(InGuiDockNode* node, SplitAxis axis, const glm::vec2& firstSize);
 		void unsplitNode(InGuiDockNode* node);
 		void update(InGuiDockNode* node);
-		void showNodeWindows(InGuiDockNode* node, const glm::vec2& mousePos,const InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig);
+		void showNodeWindows(InGuiDockNode* node, const glm::vec2& mousePos,InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig);
 		void showNode(InGuiDockNode* node, const glm::vec2& mousePos, const InGuiRenderConfiguration& renderConfig);
 		DockPosition collideWithMarker(InGuiDockNode* node, const glm::vec2& mousePos);
 
@@ -200,7 +200,12 @@ namespace XYZ {
 
 	using InGuiWindowMap = std::unordered_map<std::string, InGuiWindow*>;
 	using InGuiEventListeners = std::vector<InGuiWindow*>;
-	using InGuiRenderQueue = std::vector<InGuiMesh*>;
+
+	struct InGuiRenderQueue
+	{
+		std::vector<InGuiMesh*> InGuiMeshes;
+		std::vector<InGuiLineMesh*> InGuiLineMeshes;
+	};
 
 	struct InGuiContext
 	{
