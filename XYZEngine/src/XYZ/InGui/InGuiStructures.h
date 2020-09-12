@@ -4,8 +4,9 @@
 #include "XYZ/Gui/Font.h"
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Renderer/SubTexture2D.h"
-
+#include "XYZ/Renderer/Framebuffer.h"
 #include "XYZ/Renderer/InGuiRenderer.h"
+#include "InGuiCamera.h"
 
 
 namespace XYZ {
@@ -35,8 +36,10 @@ namespace XYZ {
 	struct InGuiRenderConfiguration
 	{
 		InGuiRenderConfiguration();
+
 		Ref<Font>		  Font;
-		Ref<Material>	  Material;
+		Ref<Material>	  InMaterial;
+		Ref<Material>	  NodeMaterial;
 		Ref<SubTexture2D> ButtonSubTexture;
 		Ref<SubTexture2D> CheckboxSubTextureChecked;
 		Ref<SubTexture2D> CheckboxSubTextureUnChecked;
@@ -48,9 +51,7 @@ namespace XYZ {
 		Ref<SubTexture2D> RightArrowButtonSubTexture;
 		Ref<SubTexture2D> DockSpaceSubTexture;
 
-		uint32_t TextureID = 0;
-		uint32_t FontTextureID = 1;
-		uint32_t ColorPickerTextureID = 2;
+	
 
 		glm::vec4 DefaultColor = { 1.0f,1.0f,1.0f,1.0f };
 		glm::vec4 HooverColor = { 0.4f, 1.8f, 1.7f, 1.0f };
@@ -60,6 +61,9 @@ namespace XYZ {
 		static constexpr uint32_t DefaultTextureCount = 3;
 		mutable uint32_t NumTexturesInUse = DefaultTextureCount;
 
+		static constexpr uint32_t TextureID = 0;
+		static constexpr uint32_t FontTextureID = 1;
+		static constexpr uint32_t ColorPickerTextureID = 2;
 
 		friend class InGui;
 	};
@@ -81,6 +85,14 @@ namespace XYZ {
 		static constexpr float PanelSize = 25.0f;
 	};
 
+	struct InGuiNodeWindow
+	{
+		InGuiCamera InCamera;
+		InGuiWindow* RenderWindow;
+		Ref<FrameBuffer> FBO;
+		Ref<MaterialInstance> MaterialInstance;
+	};
+
 	struct InGuiPerFrameData
 	{
 		InGuiPerFrameData();
@@ -89,6 +101,7 @@ namespace XYZ {
 		InGuiWindow* EventReceivingWindow;
 		InGuiWindow* ModifiedWindow;
 		InGuiWindow* CurrentWindow;
+		InGuiNodeWindow* CurrentNodeWindow;
 
 		glm::vec2 WindowSize;
 		glm::vec2 ModifiedWindowMouseOffset;
@@ -108,6 +121,7 @@ namespace XYZ {
 		bool CapslockEnabled;
 
 		uint16_t Flags = 0;
+		std::vector<TextureRendererIDPair> TexturePairs;
 	};
 
 	enum class SplitAxis
@@ -199,6 +213,7 @@ namespace XYZ {
 
 
 	using InGuiWindowMap = std::unordered_map<std::string, InGuiWindow*>;
+	using InGuiNodeWindowMap = std::unordered_map<std::string, InGuiNodeWindow*>;
 	using InGuiEventListeners = std::vector<InGuiWindow*>;
 
 	struct InGuiRenderQueue
@@ -212,6 +227,7 @@ namespace XYZ {
 		InGuiRenderConfiguration RenderConfiguration;
 		InGuiPerFrameData PerFrameData;
 		InGuiWindowMap Windows;
+		InGuiNodeWindowMap NodeWindows;
 		InGuiRenderQueue RenderQueue;
 		InGuiDockSpace* DockSpace = nullptr;
 	};

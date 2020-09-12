@@ -588,18 +588,28 @@ namespace XYZ {
 	InGuiRenderConfiguration::InGuiRenderConfiguration()
 	{
 		Ref<Shader> shader = Shader::Create("Assets/Shaders/InGuiShader.glsl");
+		Ref<Shader> nodeShader = Shader::Create("Assets/Shaders/InGuiNodeShader.glsl");
 		Ref<Texture2D> texture = Texture2D::Create(TextureWrap::Clamp, "Assets/Textures/Gui/TexturePack_Dark.png");
+		Ref<Texture2D> fontTexture = Texture2D::Create(TextureWrap::Clamp, "Assets/Font/Arial.png");
 		Ref<Texture2D> colorPickerTexture = Texture2D::Create(TextureWrap::Clamp, "Assets/Textures/Gui/ColorPicker.png");
 
 		Font = Ref<XYZ::Font>::Create("Assets/Font/Arial.fnt");
 
-		Material = Material::Create(shader);
-		Material->Set("u_Texture", texture, TextureID);
-		Material->Set("u_Texture", Texture2D::Create(TextureWrap::Clamp, "Assets/Font/Arial.png"), FontTextureID);
-		Material->Set("u_Texture", colorPickerTexture, ColorPickerTextureID);
-		Material->Set("u_ViewportSize", glm::vec2(Input::GetWindowSize().first, Input::GetWindowSize().second));
 
+		NodeMaterial = Material::Create(nodeShader);
+		NodeMaterial->Set("u_Texture", texture, TextureID);
+		NodeMaterial->Set("u_Texture", fontTexture, FontTextureID);
+		NodeMaterial->Set("u_Texture", colorPickerTexture, ColorPickerTextureID);
+		NodeMaterial->Set("u_ViewportSize", glm::vec2(Input::GetWindowSize().first, Input::GetWindowSize().second));
 
+		InMaterial = Material::Create(shader);
+		InMaterial->Set("u_Texture", texture, TextureID);
+		InMaterial->Set("u_Texture", fontTexture, FontTextureID);
+		InMaterial->Set("u_Texture", colorPickerTexture, ColorPickerTextureID);
+		InMaterial->Set("u_ViewportSize", glm::vec2(Input::GetWindowSize().first, Input::GetWindowSize().second));
+		
+		
+		
 		ButtonSubTexture = Ref<SubTexture2D>::Create(texture, glm::vec2(0, 0), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4));
 		CheckboxSubTextureChecked = Ref<SubTexture2D>::Create(texture, glm::vec2(1, 1), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4));
 		CheckboxSubTextureUnChecked = Ref<SubTexture2D>::Create(texture, glm::vec2(0, 1), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4));
@@ -617,6 +627,7 @@ namespace XYZ {
 		EventReceivingWindow = nullptr;
 		ModifiedWindow = nullptr;
 		CurrentWindow = nullptr;
+		CurrentNodeWindow = nullptr;
 		ModifiedWindowMouseOffset = { 0,0 };
 		KeyCode = ToUnderlying(KeyCode::XYZ_KEY_NONE);
 		Mode = ToUnderlying(KeyMode::XYZ_MOD_NONE);

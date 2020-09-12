@@ -83,6 +83,13 @@ namespace XYZ {
 	{
 		s_UIData.Data = data;
 	}
+	void InGuiRenderer::SetTexturePairs(const std::vector<TextureRendererIDPair>& texturePairs)
+	{
+		for (auto pair : texturePairs)
+		{
+			s_UIData.Textures.push_back({ pair.TextureID, pair.RendererID });
+		}
+	}
 	void InGuiRenderer::SetMaterial(const Ref<Material>& material)
 	{
 		if (s_UIData.Material && material.Raw() != s_UIData.Material.Raw())
@@ -190,14 +197,11 @@ namespace XYZ {
 	{
 		uint32_t indexCount = (mesh.Vertices.size() / 4) * 6;
 		if (s_UIData.IndexCount + indexCount >= s_UIData.MaxIndices ||
-			s_UIData.Textures.size() + s_UIData.Material->GetNumberOfTextures() + mesh.TexturePairs.size() 
+			s_UIData.Textures.size() + s_UIData.Material->GetNumberOfTextures()
 			>= s_UIData.MaxTextures)
 			Flush();
 
-		for (auto pair : mesh.TexturePairs)
-		{	
-			s_UIData.Textures.push_back({ pair.TextureID, pair.RendererID });
-		}
+	
 		for (auto & vertex : mesh.Vertices)
 		{
 			s_UIData.BufferPtr->Position = vertex.Position;

@@ -5,11 +5,11 @@
 #include "XYZ/Event/ApplicationEvent.h"
 
 namespace XYZ {
-	class EditorCamera : public Camera
+	class InGuiCamera : public Camera
 	{
 	public:
-		EditorCamera() = default;
-		EditorCamera(const glm::mat4 projectionMatrix);
+		InGuiCamera() = default;
+		InGuiCamera(const glm::mat4 projectionMatrix);
 
 
 		void OnUpdate(float dt);
@@ -49,13 +49,13 @@ namespace XYZ {
 
 		float m_AspectRatio = 16.0f / 9.0f;
 		float m_ZoomLevel = 1.0f;
-	
+
 		float m_CameraRotation = 0.0f; //In degrees, in the anti-clockwise direction
 		float m_CameraTranslationSpeed = 5.0f;
 		float m_CameraRotationSpeed = 180.0f;
 		float m_CameraMouseMoveSpeed = 0.005f;
-		
-		glm::vec2 m_StartMousePos = { 0,0 };
+
+		glm::vec2 m_StartMousePos = { 0,0};
 		glm::vec3 m_OldPosition = { 0,0,0 };
 		bool m_MouseMoving = false;
 	};

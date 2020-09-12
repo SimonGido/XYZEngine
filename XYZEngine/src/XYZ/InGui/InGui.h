@@ -39,6 +39,9 @@ namespace XYZ {
 		static bool ColorPallete4(const std::string& name, const glm::vec2& size, glm::vec4& color, const InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration);
 		static bool RenderWindow(const std::string& name, uint32_t rendererID, const glm::vec2& position, const glm::vec2& size, float panelSize, InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration);
 
+		static bool NodeWindow(const std::string& name, const glm::vec2& position, const glm::vec2& size,float dt, InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration);
+		static void NodeWindowEnd();
+
 		static void Separator();
 
 		static glm::vec4 Selector();
@@ -59,6 +62,8 @@ namespace XYZ {
 	private:
 		static InGuiWindow* getWindow(const std::string& name);
 		static InGuiWindow* createWindow(const std::string& name,const glm::vec2& position, const glm::vec2& size);
+		static InGuiNodeWindow* getNodeWindow(const std::string& name);
+		static InGuiNodeWindow* createNodeWindow(const std::string& name, const glm::vec2& position, const glm::vec2& size);
 
 		static bool detectResize(InGuiWindow& window);
 		static bool detectMoved(InGuiWindow& window);

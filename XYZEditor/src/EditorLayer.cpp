@@ -133,7 +133,9 @@ namespace XYZ {
 		
 		InGui::RenderWindow("Scene", m_FBO->GetColorAttachment(0).RendererID, { 0,0 }, { 200,200 }, 25.0f);
 		InGui::End();
-		InGui::SetWindowFlags("scene", Visible);
+		auto flags = InGui::GetWindowFlags("scene");
+		flags &= ~EventListener;
+		InGui::SetWindowFlags("scene", flags);
 
 		InGui::Begin("Test", { 0,0 }, { 200,200 });
 		InGui::End();
@@ -150,25 +152,22 @@ namespace XYZ {
 	}
 	void EditorLayer::OnUpdate(Timestep ts)
 	{
+		RenderCommand::SetClearColor(glm::vec4(0.2, 0.2, 0.2, 1));
+		RenderCommand::Clear();
 		NativeScriptEngine::Update(ts);
 			
 	
-		RenderCommand::Clear();
-		RenderCommand::SetClearColor(glm::vec4(0.2, 0.2, 0.5, 1));
-
-			
 		glm::vec2 winSize = { Input::GetWindowSize().first, Input::GetWindowSize().second };
-		
-		m_FBO->Bind();
+	
+		m_FBO->Bind();	
+		RenderCommand::SetClearColor(glm::vec4(0.2, 0.2, 0.5, 1));
 		RenderCommand::Clear();
-		RenderCommand::SetClearColor(glm::vec4(0.2, 0.2, 0.2, 1));
 		m_Scene->OnUpdate(ts);
 		m_Scene->OnRenderEditor({ m_EditorCamera.GetViewProjectionMatrix(),winSize });
 		m_FBO->Unbind();
-		RenderCommand::Clear();
-		RenderCommand::SetClearColor(glm::vec4(0.2, 0.2, 0.2, 1));
-		m_Scene->OnUpdate(ts);
-		m_Scene->OnRenderEditor({ m_EditorCamera.GetViewProjectionMatrix(),winSize });
+		
+		//m_Scene->OnUpdate(ts);
+		//m_Scene->OnRenderEditor({ m_EditorCamera.GetViewProjectionMatrix(),winSize });
 		
 		if (m_ActiveWindow)
 		{
@@ -237,7 +236,7 @@ namespace XYZ {
 		m_EditorCamera.OnEvent(event);
 	}
 
-	void EditorLayer::OnInGuiRender()
+	void EditorLayer::OnInGuiRender(Timestep ts)
 	{
 		if ((uint32_t)m_SelectedEntity != (uint32_t)m_SceneHierarchyPanel.GetSelectedEntity())
 		{
@@ -256,6 +255,13 @@ namespace XYZ {
 			m_ActiveWindow = false;
 		}
 		InGui::End();
+
+
+		if (InGui::NodeWindow("Node panel", { -100,-100 }, { 200,200 }, ts))
+		{
+		
+		}
+		InGui::NodeWindowEnd();
 
 		if (InGui::Begin("Test Panel", { 0,0 }, { 200,200 }))
 		{

@@ -1843,6 +1843,7 @@
     <ClInclude Include="src\XYZ\InGui\InGui.h" />
     <ClInclude Include="src\XYZ\InGui\InGuiFactory.h" />
     <ClInclude Include="src\XYZ\InGui\InGuiStructures.h" />
+    <ClInclude Include="src\XYZ\InGui\InGuiCamera.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\API\OpenGL\OpenGLAPIContext.cpp">
@@ -2210,6 +2211,7 @@
     <ClCompile Include="src\XYZ\InGui\InGuiFactory.cpp" />
     <ClCompile Include="src\XYZ\InGui\InGuiStructures.cpp" />
     <ClCompile Include="src\XYZ\FSM\StateMachine.cpp" />
+    <ClCompile Include="src\XYZ\InGui\InGuiCamera.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="vendor\RCC\RuntimeCompiler\SimpleFileWatcher\FileWatcherLinux.cpp~">

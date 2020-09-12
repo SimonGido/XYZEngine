@@ -31,7 +31,6 @@ namespace XYZ {
 	struct InGuiMesh
 	{
 		std::vector<InGuiVertex> Vertices;
-		std::vector<TextureRendererIDPair> TexturePairs;
 		Ref<Material> Material;
 	};
 	struct InGuiLineMesh
@@ -58,6 +57,7 @@ namespace XYZ {
 		*/
 		static void BeginScene(const UIRenderData& data);
 
+		static void SetTexturePairs(const std::vector< TextureRendererIDPair>& texturePairs);
 		static void SetMaterial(const Ref<Material>& material);
 		static void SubmitUI(const glm::vec2& position, const glm::vec2& size, const glm::vec4& texCoord, uint32_t textureID, const glm::vec4& color = glm::vec4(1));
 		static void SubmitUI(uint32_t rendererID, const glm::vec2& position, const glm::vec2& size, const glm::vec4& texCoord, const glm::vec4& color = glm::vec4(1));

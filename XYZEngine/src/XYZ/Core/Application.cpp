@@ -54,7 +54,7 @@ namespace XYZ {
 				
 				m_InGuiLayer->Begin();
 				for (Layer* layer : m_LayerStack)
-					layer->OnInGuiRender();
+					layer->OnInGuiRender(timestep);
 				m_InGuiLayer->End();
 			}
 			m_Window->Update();

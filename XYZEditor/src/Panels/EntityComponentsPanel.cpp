@@ -49,7 +49,9 @@ namespace XYZ {
 			{
 				m_NativeScriptObject = context.GetComponent<NativeScriptComponent>()->ScriptObjectName;
 			}
-			InGui::SetWindowFlags("entity", (Modified | MenuEnabled | Visible | EventListener));
+			auto flags = InGui::GetWindowFlags("entity");
+			flags |= Modified;
+			InGui::SetWindowFlags("entity", flags);
 		}
 		m_Context = context;
 	}

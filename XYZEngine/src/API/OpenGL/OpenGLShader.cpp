@@ -43,6 +43,7 @@ namespace XYZ {
 		compile(shaderSources);
 		parseUniforms();
 		parseSubRoutines();
+		glUseProgram(0);
 	}
 	OpenGLShader::OpenGLShader(const std::string& name, const std::string& path)
 		: m_Name(name), m_NumTakenTexSlots(0), m_UniformsSize(0), m_Textures(0), m_Path(path)
@@ -53,6 +54,7 @@ namespace XYZ {
 		compile(shaderSources);
 		parseUniforms();
 		parseSubRoutines();
+		glUseProgram(0);
 	}
 	OpenGLShader::~OpenGLShader()
 	{

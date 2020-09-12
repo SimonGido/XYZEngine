@@ -3,6 +3,7 @@
 
 #include "XYZ/Core/Input.h"
 #include "XYZ/Core/Application.h"
+#include "XYZ/Renderer/RenderCommand.h"
 #include "InGuiFactory.h"
 
 #include <ini.h>
@@ -281,7 +282,9 @@ namespace XYZ {
 			return a->Material->GetSortKey() < b->Material->GetSortKey();
 		});
 
-		InGuiRenderer::BeginScene({ s_Context->PerFrameData.WindowSize });
+		InGuiRenderer::BeginScene({ s_Context->PerFrameData.WindowSize });	
+		InGuiRenderer::SetTexturePairs(s_Context->PerFrameData.TexturePairs);
+		InGuiRenderer::SetMaterial(s_Context->RenderConfiguration.InMaterial);
 		for (auto mesh : s_Context->RenderQueue.InGuiMeshes)
 		{
 			InGuiRenderer::SetMaterial(mesh->Material);
@@ -297,11 +300,14 @@ namespace XYZ {
 		InGuiRenderer::EndScene();
 
 		s_Context->RenderConfiguration.NumTexturesInUse = InGuiRenderConfiguration::DefaultTextureCount;
+		s_Context->PerFrameData.TexturePairs.clear();
+
 		size_t numMeshes = s_Context->RenderQueue.InGuiMeshes.size();
 		s_Context->RenderQueue.InGuiMeshes.clear();
 		s_Context->RenderQueue.InGuiLineMeshes.clear();
 		s_Context->RenderQueue.InGuiMeshes.reserve(numMeshes);
 		s_Context->RenderQueue.InGuiLineMeshes.reserve(numMeshes);
+		
 
 		// Clean codes
 		s_Context->PerFrameData.KeyCode = ToUnderlying(KeyCode::XYZ_KEY_NONE);
@@ -324,7 +330,7 @@ namespace XYZ {
 			return false;
 
 		frameData.WindowSpaceOffset.y = window->Size.y;
-		window->Mesh.Material = renderConfig.Material;
+		window->Mesh.Material = renderConfig.InMaterial;
 
 		// Check if window is hoovered
 		glm::vec2 winSize = window->Size + glm::vec2(InGuiWindow::PanelSize, InGuiWindow::PanelSize);
@@ -789,7 +795,7 @@ namespace XYZ {
 		if (!(window->Flags & Visible))
 			return false;
 
-		window->Mesh.Material = renderConfig.Material;
+		window->Mesh.Material = renderConfig.InMaterial;
 
 		// Check if window is hoovered
 		glm::vec2 winSize = window->Size + glm::vec2(InGuiWindow::PanelSize, InGuiWindow::PanelSize);
@@ -797,12 +803,12 @@ namespace XYZ {
 		{
 			window->Flags |= Modified;
 			window->Flags |= Hoovered;
+
 			if (window->Flags & EventListener)
 				s_Context->PerFrameData.EventReceivingWindow = window;
 		}
-		// Check if was modified
-		if (window->Flags & Modified)
-			InGuiFactory::GenerateRenderWindow(*window, rendererID, renderConfig);
+		// Does not have to be modified to regenerate
+		InGuiFactory::GenerateRenderWindow(*window, rendererID,frameData, renderConfig);
 
 		// Push to render queue
 		s_Context->RenderQueue.InGuiMeshes.push_back(&window->Mesh);
@@ -810,6 +816,52 @@ namespace XYZ {
 
 
 		return (window->Flags & Hoovered);
+	}
+
+	bool InGui::NodeWindow(const std::string& name, const glm::vec2& position, const glm::vec2& size,float dt, InGuiRenderConfiguration& renderConfig)
+	{
+		XYZ_ASSERT(!s_Context->PerFrameData.CurrentNodeWindow, "Missing end call");
+		std::string copyName = name;
+		std::transform(copyName.begin(), copyName.end(), copyName.begin(), ::tolower);
+
+		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiNodeWindow* nodeWindow = getNodeWindow(copyName);
+		if (!nodeWindow)
+			nodeWindow = createNodeWindow(name, position, size);
+		frameData.CurrentNodeWindow = nodeWindow;
+		
+		
+		
+		nodeWindow->FBO->Bind();	
+		RenderCommand::SetClearColor(glm::vec4(0.8, 0.2, 0.2, 1));
+		RenderCommand::Clear();
+		
+			
+		bool result = RenderWindow(name, nodeWindow->FBO->GetColorAttachment(0).RendererID, position, size, 25.0f, renderConfig);
+		if (result)
+		{
+			nodeWindow->InCamera.OnUpdate(dt);
+			renderConfig.NodeMaterial->Set("u_ViewProjection", nodeWindow->InCamera.GetViewProjectionMatrix());
+		}
+		End();
+
+		InGuiMesh mesh;
+		InGuiFactory::GenerateTestButton({ -300,0 }, { 500,500 }, { 1,1,1,1 }, "Mr button", mesh, renderConfig);
+
+		InGuiRenderer::BeginScene({ frameData.WindowSize });
+		InGuiRenderer::SetTexturePairs(frameData.TexturePairs);
+		InGuiRenderer::SetMaterial(renderConfig.NodeMaterial);
+		InGuiRenderer::SubmitUI(mesh);
+		InGuiRenderer::Flush();
+		return result;
+	}
+
+	void InGui::NodeWindowEnd()
+	{
+		XYZ_ASSERT(s_Context->PerFrameData.CurrentNodeWindow, "Missing begin call");
+		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		frameData.CurrentNodeWindow->FBO->Unbind();
+		frameData.CurrentNodeWindow = nullptr;
 	}
 
 	void InGui::Separator()
@@ -825,6 +877,8 @@ namespace XYZ {
 	bool InGui::OnWindowResize(const glm::vec2& winSize)
 	{
 		s_Context->PerFrameData.WindowSize = winSize;
+		s_Context->RenderConfiguration.InMaterial->Set("u_ViewportSize", s_Context->PerFrameData.WindowSize);
+		s_Context->RenderConfiguration.NodeMaterial->Set("u_ViewportSize", s_Context->PerFrameData.WindowSize);
 		s_Context->DockSpace->OnWindowResize(winSize);
 		return false;
 	}
@@ -943,6 +997,36 @@ namespace XYZ {
 		window->Flags |= EventListener;
 		window->Flags |= Visible;
 		s_Context->Windows.insert({ copyName,window });
+		return window;
+	}
+	InGuiNodeWindow* InGui::getNodeWindow(const std::string& name)
+	{
+		auto it = s_Context->NodeWindows.find(name);
+		if (it != s_Context->NodeWindows.end())
+			return it->second;
+		return nullptr;
+	}
+	InGuiNodeWindow* InGui::createNodeWindow(const std::string& name, const glm::vec2& position, const glm::vec2& size)
+	{
+		std::string copyName = name;
+		std::transform(copyName.begin(), copyName.end(), copyName.begin(), ::tolower);
+
+		InGuiNodeWindow* window = new InGuiNodeWindow;
+		window->FBO = FrameBuffer::Create({ 800,800 });
+		window->FBO->CreateColorAttachment(FrameBufferFormat::RGBA16F);
+		window->FBO->CreateDepthAttachment();
+		window->FBO->Resize();
+		window->MaterialInstance = MaterialInstance::Create(s_Context->RenderConfiguration.NodeMaterial);
+
+		window->RenderWindow = new InGuiWindow;
+		window->RenderWindow->Position = position;
+		window->RenderWindow->Size = size;
+		window->RenderWindow->Name = name;
+		window->RenderWindow->Flags |= Modified;
+		window->RenderWindow->Flags |= EventListener;
+		window->RenderWindow->Flags |= Visible;
+		s_Context->NodeWindows.insert({ copyName,window });
+		s_Context->Windows.insert({ copyName,window->RenderWindow });
 		return window;
 	}
 	bool InGui::detectResize(InGuiWindow& window)
@@ -1159,11 +1243,12 @@ namespace XYZ {
 				for (auto win : winVector.second)
 				{
 					win->Flags |= Docked;
-					win->Flags |= Visible;
+					win->Flags &= ~Visible;
 					win->DockNode = dockMap[winVector.first];
 					win->DockNode->VisibleWindow = win;
 					win->DockNode->Windows.push_back(win);
 				}
+				
 			}
 			
 			// Setup new dockspace and root

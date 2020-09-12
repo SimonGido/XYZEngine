@@ -8,7 +8,7 @@ namespace XYZ {
 	{
 	public:
 		static void GenerateWindow(InGuiWindow& window, const InGuiRenderConfiguration& renderConfig);
-		static void GenerateRenderWindow(InGuiWindow& window,uint32_t rendererID, const InGuiRenderConfiguration& renderConfig);
+		static void GenerateRenderWindow(InGuiWindow& window,uint32_t rendererID, InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig);
 		static void GenerateButton(const glm::vec2& position, const glm::vec2& size,const glm::vec4& color,const std::string& name,InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig);
 		static void GenerateCheckbox(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const std::string& name, bool value, InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig);
 		static void GenerateSlider(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const std::string& name,float value, InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig);
@@ -20,5 +20,9 @@ namespace XYZ {
 		static void GenerateGroup(const glm::vec2& position,const glm::vec4& color, const std::string& name, bool open, InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig);
 		static void GenerateQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig);
 		static void GenerateMenuBar(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const std::string& name, InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig);
+	
+	
+		
+		static void GenerateTestButton(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const std::string& name, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig);
 	};
 }
