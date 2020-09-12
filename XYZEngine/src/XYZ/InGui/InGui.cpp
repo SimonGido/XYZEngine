@@ -1012,21 +1012,18 @@ namespace XYZ {
 		std::transform(copyName.begin(), copyName.end(), copyName.begin(), ::tolower);
 
 		InGuiNodeWindow* window = new InGuiNodeWindow;
-		window->FBO = FrameBuffer::Create({ 800,800 });
+		window->FBO = FrameBuffer::Create({ (uint32_t)633, (uint32_t)458 });
 		window->FBO->CreateColorAttachment(FrameBufferFormat::RGBA16F);
 		window->FBO->CreateDepthAttachment();
 		window->FBO->Resize();
 		window->MaterialInstance = MaterialInstance::Create(s_Context->RenderConfiguration.NodeMaterial);
 
-		window->RenderWindow = new InGuiWindow;
-		window->RenderWindow->Position = position;
-		window->RenderWindow->Size = size;
-		window->RenderWindow->Name = name;
-		window->RenderWindow->Flags |= Modified;
-		window->RenderWindow->Flags |= EventListener;
-		window->RenderWindow->Flags |= Visible;
+		window->RenderWindow = getWindow(copyName);
+		if (!window->RenderWindow)
+			window->RenderWindow = createWindow(name, position, size);
+
 		s_Context->NodeWindows.insert({ copyName,window });
-		s_Context->Windows.insert({ copyName,window->RenderWindow });
+	
 		return window;
 	}
 	bool InGui::detectResize(InGuiWindow& window)
@@ -1209,12 +1206,16 @@ namespace XYZ {
 			std::unordered_map<uint32_t, InGuiDockNode*> dockMap;
 			std::unordered_map<uint32_t, int32_t> parentMap;
 
+			uint32_t maxID = 0;
 			// Load dockspace
 			auto el = it->second.begin();
 			while (el != it->second.end())
 			{
 				std::string nodeID = GetID(el->first);
 				uint32_t id = atoi(nodeID.c_str());
+				if (id > maxID)
+					maxID = id;
+
 				glm::vec2 pos = StringToVec2(it->second.get("node position " + nodeID));
 				glm::vec2 size = StringToVec2(it->second.get("node size " + nodeID));
 				int32_t parentID = atoi(it->second.get("node parent " + nodeID).c_str());
@@ -1253,7 +1254,7 @@ namespace XYZ {
 			
 			// Setup new dockspace and root
 			s_Context->DockSpace = new InGuiDockSpace(dockMap[0]);
-			s_Context->DockSpace->m_NodeCount = dockMap.size();
+			s_Context->DockSpace->m_NextNodeID = maxID + 1;
 		}
 		else
 		{

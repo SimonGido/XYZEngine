@@ -200,7 +200,7 @@ namespace XYZ {
 
 		InGuiDockNode* m_ResizedNode = nullptr;
 
-		uint32_t m_NodeCount = 0;
+		uint32_t m_NextNodeID = 0;
 		bool m_DockSpaceVisible = false;
 		static constexpr glm::vec2 sc_QuadSize = { 50,50 };
 

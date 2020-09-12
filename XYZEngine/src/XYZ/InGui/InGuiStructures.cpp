@@ -92,7 +92,7 @@ namespace XYZ {
 		:
 		m_Root(root)
 	{
-		m_NodeCount++;
+		m_NextNodeID++;
 	}
 	InGuiDockSpace::~InGuiDockSpace()
 	{
@@ -122,7 +122,7 @@ namespace XYZ {
 					node->VisibleWindow->Flags |= Visible;
 				}
 			}
-			if (window->DockNode->Parent)
+			if (node->Parent && node->Windows.empty())
 			{
 				unsplitNode(window->DockNode->Parent);
 			}
@@ -307,9 +307,12 @@ namespace XYZ {
 				if (pos == DockPosition::Middle)
 				{
 					XYZ_ASSERT(!window->DockNode, "Window is already docked");
+					if (node->Windows.empty())
+						node->VisibleWindow = window;
 					node->Windows.push_back(window);
 					window->DockNode = node;
 					window->Flags |= Docked;
+					window->Flags |= Modified;
 				}
 				else if (pos == DockPosition::Left)
 				{
@@ -325,9 +328,13 @@ namespace XYZ {
 						}
 						node->Windows.clear();
 					}
+
+					if (node->Children[0]->Windows.empty())
+						node->Children[0]->VisibleWindow = window;
 					node->Children[0]->Windows.push_back(window);
 					window->DockNode = node->Children[0];
 					window->Flags |= Docked;
+					window->Flags |= Modified;
 				}
 				else if (pos == DockPosition::Right)
 				{
@@ -343,9 +350,12 @@ namespace XYZ {
 						}
 						node->Windows.clear();
 					}
+					if (node->Children[1]->Windows.empty())
+						node->Children[1]->VisibleWindow = window;
 					node->Children[1]->Windows.push_back(window);
 					window->DockNode = node->Children[1];
 					window->Flags |= Docked;
+					window->Flags |= Modified;
 				}
 				else if (pos == DockPosition::Bottom)
 				{
@@ -361,9 +371,12 @@ namespace XYZ {
 						}
 						node->Windows.clear();
 					}
+					if (node->Children[0]->Windows.empty())
+						node->Children[0]->VisibleWindow = window;
 					node->Children[0]->Windows.push_back(window);
 					window->DockNode = node->Children[0];
 					window->Flags |= Docked;
+					window->Flags |= Modified;
 				}
 				else if (pos == DockPosition::Top)
 				{
@@ -379,9 +392,12 @@ namespace XYZ {
 						}
 						node->Windows.clear();
 					}
+					if (node->Children[1]->Windows.empty())
+						node->Children[1]->VisibleWindow = window;
 					node->Children[1]->Windows.push_back(window);
 					window->DockNode = node->Children[1];
 					window->Flags |= Docked;
+					window->Flags |= Modified;
 				}
 
 				// If only one window in node set it to visible
@@ -411,7 +427,6 @@ namespace XYZ {
 		for (auto win : (*node)->Windows)
 			win->DockNode = nullptr;
 
-		m_NodeCount--;
 		delete* node;
 		*node = nullptr;
 	}
@@ -441,13 +456,13 @@ namespace XYZ {
 				glm::vec2 leftPos = { node->Position.x ,node->Position.y };
 				glm::vec2 rightPos = { node->Position.x + otherSize.x,node->Position.y };
 
-				node->Children[0] = new InGuiDockNode(leftPos, firstSize, m_NodeCount, node);
+				node->Children[0] = new InGuiDockNode(leftPos, firstSize, m_NextNodeID, node);
 				node->Children[0]->Dock = DockPosition::Left;
-				m_NodeCount++;
+				m_NextNodeID++;
 
-				node->Children[1] = new InGuiDockNode(rightPos, otherSize, m_NodeCount, node);
+				node->Children[1] = new InGuiDockNode(rightPos, otherSize, m_NextNodeID, node);
 				node->Children[1]->Dock = DockPosition::Right;
-				m_NodeCount++;
+				m_NextNodeID++;
 			}
 			else if (node->Split == SplitAxis::Horizontal)
 			{
@@ -455,13 +470,13 @@ namespace XYZ {
 				glm::vec2 bottomPos = { node->Position.x ,node->Position.y };
 				glm::vec2 topPos = { node->Position.x ,node->Position.y + otherSize.y };
 
-				node->Children[0] = new InGuiDockNode(bottomPos, firstSize, m_NodeCount, node);
+				node->Children[0] = new InGuiDockNode(bottomPos, firstSize, m_NextNodeID, node);
 				node->Children[0]->Dock = DockPosition::Bottom;
-				m_NodeCount++;
+				m_NextNodeID++;
 
-				node->Children[1] = new InGuiDockNode(topPos, otherSize, m_NodeCount, node);
+				node->Children[1] = new InGuiDockNode(topPos, otherSize, m_NextNodeID, node);
 				node->Children[1]->Dock = DockPosition::Top;
-				m_NodeCount++;
+				m_NextNodeID++;
 			}
 		}
 	}
