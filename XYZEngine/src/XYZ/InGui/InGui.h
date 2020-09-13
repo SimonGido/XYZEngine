@@ -18,7 +18,7 @@ namespace XYZ {
 		static void End();
 
 
-		static bool BeginPopup(const std::string& name, const glm::vec2& size, bool& open, const InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration);
+		static bool BeginPopup(const std::string& name, glm::vec2& position, const glm::vec2& size, bool& open, const InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration);
 		static bool PopupItem(const std::string& name, const glm::vec2& size, const InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration);
 		static void EndPopup();
 
@@ -42,6 +42,7 @@ namespace XYZ {
 		static bool NodeWindow(const std::string& name, const glm::vec2& position, const glm::vec2& size,float dt, InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration);
 		static void NodeWindowEnd();
 
+		
 		static void Separator();
 
 		static glm::vec4 Selector();
@@ -64,7 +65,8 @@ namespace XYZ {
 		static InGuiWindow* createWindow(const std::string& name,const glm::vec2& position, const glm::vec2& size);
 		static InGuiNodeWindow* getNodeWindow(const std::string& name);
 		static InGuiNodeWindow* createNodeWindow(const std::string& name, const glm::vec2& position, const glm::vec2& size);
-
+		static InGuiNode* createNode(const std::string& name, const glm::vec2& position, const glm::vec2& size);
+		
 		static bool detectResize(InGuiWindow& window);
 		static bool detectMoved(InGuiWindow& window);
 		static bool detectCollapse(InGuiWindow& window);

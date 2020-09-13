@@ -152,7 +152,8 @@ namespace XYZ {
 						if (InGui::BeginGroup("Native Script Component", m_NativeScriptOpen))
 						{
 							auto nativeScript = m_Context.GetComponent<NativeScriptComponent>();
-							if (InGui::BeginPopup("Script", { 150,25 }, m_ScriptsOpen))
+							glm::vec2 pos = { 0,0 };
+							if (InGui::BeginPopup("Script", pos, { 150, 25 }, m_ScriptsOpen))
 							{
 								AUDynArray<IObjectConstructor*> constructors;
 								PerModuleInterface::g_pRuntimeObjectSystem->GetObjectFactorySystem()->GetAll(constructors);

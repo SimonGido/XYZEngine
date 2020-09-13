@@ -23,6 +23,6 @@ namespace XYZ {
 	
 	
 		
-		static void GenerateTestButton(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const std::string& name, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig);
+		static void GenerateNode(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const std::string& name, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig);
 	};
 }

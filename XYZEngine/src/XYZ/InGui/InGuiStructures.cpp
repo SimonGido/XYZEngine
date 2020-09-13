@@ -127,6 +127,7 @@ namespace XYZ {
 				unsplitNode(window->DockNode->Parent);
 			}
 			window->DockNode = nullptr;
+			window->Flags |= Visible;
 			window->Flags &= ~Docked;
 		}
 	}
@@ -307,8 +308,8 @@ namespace XYZ {
 				if (pos == DockPosition::Middle)
 				{
 					XYZ_ASSERT(!window->DockNode, "Window is already docked");
-					if (node->Windows.empty())
-						node->VisibleWindow = window;
+					
+					node->VisibleWindow = window;
 					node->Windows.push_back(window);
 					window->DockNode = node;
 					window->Flags |= Docked;
@@ -327,10 +328,8 @@ namespace XYZ {
 							win->DockNode = node->Children[1];
 						}
 						node->Windows.clear();
-					}
-
-					if (node->Children[0]->Windows.empty())
-						node->Children[0]->VisibleWindow = window;
+					}	
+					node->Children[0]->VisibleWindow = window;
 					node->Children[0]->Windows.push_back(window);
 					window->DockNode = node->Children[0];
 					window->Flags |= Docked;
@@ -350,8 +349,8 @@ namespace XYZ {
 						}
 						node->Windows.clear();
 					}
-					if (node->Children[1]->Windows.empty())
-						node->Children[1]->VisibleWindow = window;
+					
+					node->Children[1]->VisibleWindow = window;
 					node->Children[1]->Windows.push_back(window);
 					window->DockNode = node->Children[1];
 					window->Flags |= Docked;
@@ -371,8 +370,8 @@ namespace XYZ {
 						}
 						node->Windows.clear();
 					}
-					if (node->Children[0]->Windows.empty())
-						node->Children[0]->VisibleWindow = window;
+		
+					node->Children[0]->VisibleWindow = window;
 					node->Children[0]->Windows.push_back(window);
 					window->DockNode = node->Children[0];
 					window->Flags |= Docked;
@@ -392,19 +391,12 @@ namespace XYZ {
 						}
 						node->Windows.clear();
 					}
-					if (node->Children[1]->Windows.empty())
-						node->Children[1]->VisibleWindow = window;
+				
+					node->Children[1]->VisibleWindow = window;
 					node->Children[1]->Windows.push_back(window);
 					window->DockNode = node->Children[1];
 					window->Flags |= Docked;
 					window->Flags |= Modified;
-				}
-
-				// If only one window in node set it to visible
-				if (node->Windows.size() == 1)
-				{
-					node->VisibleWindow = window;
-					node->VisibleWindow->Flags |= Visible;
 				}
 			}
 			else
@@ -427,6 +419,7 @@ namespace XYZ {
 		for (auto win : (*node)->Windows)
 			win->DockNode = nullptr;
 
+		m_FreeIDs.push((*node)->ID);
 		delete* node;
 		*node = nullptr;
 	}
@@ -456,27 +449,57 @@ namespace XYZ {
 				glm::vec2 leftPos = { node->Position.x ,node->Position.y };
 				glm::vec2 rightPos = { node->Position.x + otherSize.x,node->Position.y };
 
-				node->Children[0] = new InGuiDockNode(leftPos, firstSize, m_NextNodeID, node);
+				uint32_t nextID = 0;
+				if (!m_FreeIDs.empty())
+				{
+					nextID = m_FreeIDs.back();
+					m_FreeIDs.pop();
+				}
+				else
+					nextID = m_NextNodeID++;
+				
+				node->Children[0] = new InGuiDockNode(leftPos, firstSize, nextID, node);
 				node->Children[0]->Dock = DockPosition::Left;
-				m_NextNodeID++;
-
-				node->Children[1] = new InGuiDockNode(rightPos, otherSize, m_NextNodeID, node);
+	
+				if (!m_FreeIDs.empty())
+				{
+					nextID = m_FreeIDs.back();
+					m_FreeIDs.pop();
+				}
+				else
+					nextID = m_NextNodeID++;
+				
+				node->Children[1] = new InGuiDockNode(rightPos, otherSize, nextID, node);
 				node->Children[1]->Dock = DockPosition::Right;
-				m_NextNodeID++;
+				
 			}
 			else if (node->Split == SplitAxis::Horizontal)
 			{
 				glm::vec2 otherSize = { node->Size.x ,node->Size.y - firstSize.y };
 				glm::vec2 bottomPos = { node->Position.x ,node->Position.y };
 				glm::vec2 topPos = { node->Position.x ,node->Position.y + otherSize.y };
-
-				node->Children[0] = new InGuiDockNode(bottomPos, firstSize, m_NextNodeID, node);
+				
+				uint32_t nextID = 0;
+				if (!m_FreeIDs.empty())
+				{
+					nextID = m_FreeIDs.back();
+					m_FreeIDs.pop();
+				}
+				else
+					nextID = m_NextNodeID++;
+				node->Children[0] = new InGuiDockNode(bottomPos, firstSize, nextID, node);
 				node->Children[0]->Dock = DockPosition::Bottom;
-				m_NextNodeID++;
-
-				node->Children[1] = new InGuiDockNode(topPos, otherSize, m_NextNodeID, node);
+				
+				if (!m_FreeIDs.empty())
+				{
+					nextID = m_FreeIDs.back();
+					m_FreeIDs.pop();
+				}
+				else
+					nextID = m_NextNodeID++;
+				node->Children[1] = new InGuiDockNode(topPos, otherSize, nextID, node);
 				node->Children[1]->Dock = DockPosition::Top;
-				m_NextNodeID++;
+				
 			}
 		}
 	}
@@ -603,19 +626,11 @@ namespace XYZ {
 	InGuiRenderConfiguration::InGuiRenderConfiguration()
 	{
 		Ref<Shader> shader = Shader::Create("Assets/Shaders/InGuiShader.glsl");
-		Ref<Shader> nodeShader = Shader::Create("Assets/Shaders/InGuiNodeShader.glsl");
 		Ref<Texture2D> texture = Texture2D::Create(TextureWrap::Clamp, "Assets/Textures/Gui/TexturePack_Dark.png");
 		Ref<Texture2D> fontTexture = Texture2D::Create(TextureWrap::Clamp, "Assets/Font/Arial.png");
 		Ref<Texture2D> colorPickerTexture = Texture2D::Create(TextureWrap::Clamp, "Assets/Textures/Gui/ColorPicker.png");
 
 		Font = Ref<XYZ::Font>::Create("Assets/Font/Arial.fnt");
-
-
-		NodeMaterial = Material::Create(nodeShader);
-		NodeMaterial->Set("u_Texture", texture, TextureID);
-		NodeMaterial->Set("u_Texture", fontTexture, FontTextureID);
-		NodeMaterial->Set("u_Texture", colorPickerTexture, ColorPickerTextureID);
-		NodeMaterial->Set("u_ViewportSize", glm::vec2(Input::GetWindowSize().first, Input::GetWindowSize().second));
 
 		InMaterial = Material::Create(shader);
 		InMaterial->Set("u_Texture", texture, TextureID);

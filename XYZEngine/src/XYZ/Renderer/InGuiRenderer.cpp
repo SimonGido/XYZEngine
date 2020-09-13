@@ -251,6 +251,7 @@ namespace XYZ {
 		if (dataSize)
 		{
 			s_UIData.Material->Set("u_ViewportSize", s_UIData.Data.ViewportSize);
+			s_UIData.Material->Set("u_ViewProjection", s_UIData.Data.ViewProjection);
 
 			s_UIData.Material->Bind();
 
@@ -273,6 +274,7 @@ namespace XYZ {
 		{
 			s_UIData.LineShader->Bind();
 			s_UIData.LineShader->SetFloat2("u_ViewportSize", s_UIData.Data.ViewportSize);
+			s_UIData.LineShader->SetMat4("u_ViewProjection", s_UIData.Data.ViewProjection);
 
 			s_UIData.LineVertexBuffer->Update(s_UIData.LineBufferBase, dataSize);
 			s_UIData.LineVertexArray->Bind();

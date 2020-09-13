@@ -23,14 +23,18 @@ namespace XYZ {
 		TopResizing    = BIT(8),
 		BottomResizing = BIT(9),
 		Visible		   = BIT(10),
-		Docked		   = BIT(11)
+		AutoPosition   = BIT(11),
+		Docked		   = BIT(12)
 	};
 
 	enum InGuiPerFrameFlags
 	{
-		LeftMouseButtonPressed  = BIT(0),
-		RightMouseButtonPressed = BIT(1),
-		ClickHandled			= BIT(2)
+		LeftMouseButtonPressed   = BIT(0),
+		RightMouseButtonPressed  = BIT(1),
+		LeftMouseButtonReleased  = BIT(2),
+		RightMouseButtonReleased = BIT(3),
+		ClickHandled			 = BIT(4),
+		ReleaseHandled			 = BIT(5)
 	};
 
 	struct InGuiRenderConfiguration
@@ -39,7 +43,6 @@ namespace XYZ {
 
 		Ref<Font>		  Font;
 		Ref<Material>	  InMaterial;
-		Ref<Material>	  NodeMaterial;
 		Ref<SubTexture2D> ButtonSubTexture;
 		Ref<SubTexture2D> CheckboxSubTextureChecked;
 		Ref<SubTexture2D> CheckboxSubTextureUnChecked;
@@ -56,7 +59,7 @@ namespace XYZ {
 		glm::vec4 DefaultColor = { 1.0f,1.0f,1.0f,1.0f };
 		glm::vec4 HooverColor = { 0.4f, 1.8f, 1.7f, 1.0f };
 		glm::vec4 SelectColor = { 0.8f,0.0f,0.2f,0.6f };
-		glm::vec4 LineColor = { 0.2f,0.2f,0.5f,1.0f };
+		glm::vec4 LineColor = { 0.4f,0.2f,0.5f,1.0f };
 
 		static constexpr uint32_t DefaultTextureCount = 3;
 		mutable uint32_t NumTexturesInUse = DefaultTextureCount;
@@ -85,12 +88,33 @@ namespace XYZ {
 		static constexpr float PanelSize = 25.0f;
 	};
 
+	struct InGuiNode;
+	struct InGuiNodeConnection
+	{
+		InGuiNode* ConnectedNode;
+	};
+
+	struct InGuiNode
+	{
+		std::string Name;
+		glm::vec2 Position;
+		glm::vec2 Size;
+		uint32_t ID;
+		std::vector<InGuiNodeConnection> Connections;
+	};
+
 	struct InGuiNodeWindow
 	{
 		InGuiCamera InCamera;
+		InGuiMesh Mesh;
+		InGuiLineMesh LineMesh;
 		InGuiWindow* RenderWindow;
 		Ref<FrameBuffer> FBO;
-		Ref<MaterialInstance> MaterialInstance;
+
+		bool PopupEnabled = false;
+		glm::vec2 PopupPosition = { 0,0 };
+		std::vector<InGuiNode*> Nodes;
+		InGuiNode* SelectedNode = nullptr;
 	};
 
 	struct InGuiPerFrameData
@@ -201,6 +225,8 @@ namespace XYZ {
 		InGuiDockNode* m_ResizedNode = nullptr;
 
 		uint32_t m_NextNodeID = 0;
+		std::queue<uint32_t> m_FreeIDs;
+
 		bool m_DockSpaceVisible = false;
 		static constexpr glm::vec2 sc_QuadSize = { 50,50 };
 

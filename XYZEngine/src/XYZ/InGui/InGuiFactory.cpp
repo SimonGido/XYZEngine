@@ -3,6 +3,7 @@
 
 
 namespace XYZ {
+	
 	static void GenerateInGuiQuad(InGuiMesh& mesh, const glm::vec2& position, const glm::vec2& size, const glm::vec4& texCoord, const uint32_t textureID, const glm::vec4& color)
 	{
 		constexpr size_t quadVertexCount = 4;
@@ -224,6 +225,7 @@ namespace XYZ {
 			window.LineMesh.Vertices.push_back({ { window.Position.x,window.Position.y,0 }, renderConfig.LineColor }); // Down left
 		}
 	}
+	
 	void InGuiFactory::GenerateButton(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const std::string& name, InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig)
 	{
 		auto window = frameData.CurrentWindow;
@@ -381,7 +383,7 @@ namespace XYZ {
 		MoveVertices(window->Mesh.Vertices.data(), position + textOffset, offset, name.size() * 4);
 	}
 
-	void InGuiFactory::GenerateTestButton(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const std::string& name, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig)
+	void InGuiFactory::GenerateNode(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const std::string& name, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig)
 	{
 		GenerateInGuiQuad(mesh, position, size, renderConfig.ButtonSubTexture->GetTexCoords(), renderConfig.TextureID, color);
 		size_t offset = mesh.Vertices.size();

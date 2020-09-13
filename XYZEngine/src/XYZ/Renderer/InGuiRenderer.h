@@ -7,6 +7,7 @@ namespace XYZ {
 
 	struct UIRenderData
 	{
+		glm::mat4 ViewProjection;
 		glm::vec2 ViewportSize;
 	};
 
