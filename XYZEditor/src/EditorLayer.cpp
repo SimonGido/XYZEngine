@@ -339,44 +339,47 @@ namespace XYZ {
 	}
 	bool EditorLayer::onKeyPress(KeyPressedEvent& event)
 	{
-		if (event.IsKeyPressed(KeyCode::XYZ_KEY_S))
+		if (m_SelectedEntity)
 		{
-			m_StartMousePos = GetWorldPositionFromInGui(InGui::GetWindow("scene"), m_EditorCamera);
-			m_ScalingEntity = true;
-			m_ModifiedTransform = m_SelectedEntity.GetComponent<TransformComponent>();
+			if (event.IsKeyPressed(KeyCode::XYZ_KEY_S))
+			{
+				m_StartMousePos = GetWorldPositionFromInGui(InGui::GetWindow("scene"), m_EditorCamera);
+				m_ScalingEntity = true;
+				m_ModifiedTransform = m_SelectedEntity.GetComponent<TransformComponent>();
 
-			auto& transform = m_ModifiedTransform->Transform;
-			glm::vec3 skew;
-			glm::vec4 perspective;
-			glm::decompose(transform, m_Scale, m_Orientation, m_Translation, skew, perspective);
+				auto& transform = m_ModifiedTransform->Transform;
+				glm::vec3 skew;
+				glm::vec4 perspective;
+				glm::decompose(transform, m_Scale, m_Orientation, m_Translation, skew, perspective);
 
-			// Remove entity;
-			m_SceneHierarchyPanel.RemoveEntity(m_SelectedEntity);
-		}
-		else if (event.IsKeyPressed(KeyCode::XYZ_KEY_G))
-		{
-			m_StartMousePos = GetWorldPositionFromInGui(InGui::GetWindow("scene"), m_EditorCamera);
-			m_MovingEntity = true;
-			m_ModifiedTransform = m_SelectedEntity.GetComponent<TransformComponent>();
+				// Remove entity;
+				m_SceneHierarchyPanel.RemoveEntity(m_SelectedEntity);
+			}
+			else if (event.IsKeyPressed(KeyCode::XYZ_KEY_G))
+			{
+				m_StartMousePos = GetWorldPositionFromInGui(InGui::GetWindow("scene"), m_EditorCamera);
+				m_MovingEntity = true;
+				m_ModifiedTransform = m_SelectedEntity.GetComponent<TransformComponent>();
 
-			auto& transform = m_ModifiedTransform->Transform;
-			glm::vec3 skew;
-			glm::vec4 perspective;
-			glm::decompose(transform, m_Scale, m_Orientation, m_Translation, skew, perspective);
+				auto& transform = m_ModifiedTransform->Transform;
+				glm::vec3 skew;
+				glm::vec4 perspective;
+				glm::decompose(transform, m_Scale, m_Orientation, m_Translation, skew, perspective);
 
-			// Remove entity;
-			m_SceneHierarchyPanel.RemoveEntity(m_SelectedEntity);
-		}
-		else if (event.IsKeyPressed(KeyCode::XYZ_KEY_R))
-		{
-			m_StartMousePos = GetWorldPositionFromInGui(InGui::GetWindow("scene"), m_EditorCamera);
-			m_RotatingEntity = true;
-			m_ModifiedTransform = m_SelectedEntity.GetComponent<TransformComponent>();
+				// Remove entity;
+				m_SceneHierarchyPanel.RemoveEntity(m_SelectedEntity);
+			}
+			else if (event.IsKeyPressed(KeyCode::XYZ_KEY_R))
+			{
+				m_StartMousePos = GetWorldPositionFromInGui(InGui::GetWindow("scene"), m_EditorCamera);
+				m_RotatingEntity = true;
+				m_ModifiedTransform = m_SelectedEntity.GetComponent<TransformComponent>();
 
-			auto& transform = m_ModifiedTransform->Transform;
-			glm::vec3 skew;
-			glm::vec4 perspective;
-			glm::decompose(transform, m_Scale, m_Orientation, m_Translation, skew, perspective);
+				auto& transform = m_ModifiedTransform->Transform;
+				glm::vec3 skew;
+				glm::vec4 perspective;
+				glm::decompose(transform, m_Scale, m_Orientation, m_Translation, skew, perspective);
+			}
 		}
 		return false;
 	}
@@ -384,13 +387,15 @@ namespace XYZ {
 	{
 		if (event.IsKeyReleased(KeyCode::XYZ_KEY_S))
 		{
-			m_ScalingEntity = false;		
-			m_SceneHierarchyPanel.InsertEntity(m_SelectedEntity);
+			m_ScalingEntity = false;	
+			if (m_SelectedEntity)
+				m_SceneHierarchyPanel.InsertEntity(m_SelectedEntity);
 		}
 		else if (event.IsKeyReleased(KeyCode::XYZ_KEY_G))
 		{
 			m_MovingEntity = false;
-			m_SceneHierarchyPanel.InsertEntity(m_SelectedEntity);
+			if (m_SelectedEntity)
+				m_SceneHierarchyPanel.InsertEntity(m_SelectedEntity);
 		}
 		else if (event.IsKeyReleased(KeyCode::XYZ_KEY_R))
 		{

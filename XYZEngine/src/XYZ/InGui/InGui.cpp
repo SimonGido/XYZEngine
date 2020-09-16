@@ -88,6 +88,7 @@ namespace XYZ {
 	}
 	static void HandleInputText(std::string& text, int code, int mode ,bool capslock)
 	{
+
 		size_t currentSize = text.size();
 		switch (code)
 		{
@@ -715,6 +716,8 @@ namespace XYZ {
 				color = renderConfig.HooverColor;
 				HandleInputText(text, frameData.KeyCode, frameData.Mode, frameData.CapslockEnabled);
 			}
+			
+					
 			InGuiFactory::GenerateTextArea(position, size, color, name, text, frameData, renderConfig);
 		}
 		
