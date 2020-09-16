@@ -123,7 +123,6 @@ namespace XYZ {
 		glm::vec2 PopupPosition = { 0,0 };
 		bool PopupEnabled = false;
 		bool Resized = false;
-		
 	};
 
 	struct InGuiPerFrameData

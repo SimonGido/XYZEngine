@@ -975,7 +975,11 @@ namespace XYZ {
 				}
 				else if (frameData.KeyCode == ToUnderlying(KeyCode::XYZ_KEY_DELETE))
 				{
-					nodeWindow->Nodes.erase(nodeWindow->Nodes.begin() + nodeWindow->SelectedNode->ID);
+					auto it = nodeWindow->Nodes.begin() + nodeWindow->SelectedNode->ID;
+					nodeWindow->Nodes.back()->ID = nodeWindow->SelectedNode->ID;
+					*it = std::move(nodeWindow->Nodes.back());
+					nodeWindow->Nodes.pop_back();
+
 					for (auto node : nodeWindow->Nodes)
 					{
 						for (auto it = node->Connections.begin(); it != node->Connections.end();)
