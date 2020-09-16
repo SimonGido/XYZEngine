@@ -198,10 +198,18 @@ namespace XYZ {
 
 
 				for (auto win : m_ResizedNode->Children[0]->Windows)
+				{
 					win->Flags |= Modified;
+					if (win->NodeWindow)
+						win->NodeWindow->Resized = true;
+				}
 				for (auto win : m_ResizedNode->Children[1]->Windows)
+				{
 					win->Flags |= Modified;
-
+					if (win->NodeWindow)
+						win->NodeWindow->Resized = true;
+				}
+				
 				adjustChildrenProps(m_ResizedNode->Children[0]);
 				adjustChildrenProps(m_ResizedNode->Children[1]);
 			}
@@ -212,9 +220,17 @@ namespace XYZ {
 				m_ResizedNode->Children[1]->Size.y = (m_ResizedNode->Position.y + m_ResizedNode->Size.y) - m_ResizedNode->Children[1]->Position.y;
 
 				for (auto win : m_ResizedNode->Children[0]->Windows)
+				{
 					win->Flags |= Modified;
+					if (win->NodeWindow)
+						win->NodeWindow->Resized = true;
+				}
 				for (auto win : m_ResizedNode->Children[1]->Windows)
+				{
 					win->Flags |= Modified;
+					if (win->NodeWindow)
+						win->NodeWindow->Resized = true;
+				}
 				adjustChildrenProps(m_ResizedNode->Children[0]);
 				adjustChildrenProps(m_ResizedNode->Children[1]);
 			}
@@ -232,9 +248,17 @@ namespace XYZ {
 			node->Children[1]->Size.y = node->Size.y;
 
 			for (auto win : node->Children[0]->Windows)
+			{
 				win->Flags |= Modified;
+				if (win->NodeWindow)
+					win->NodeWindow->Resized = true;
+			}
 			for (auto win : node->Children[1]->Windows)
+			{
 				win->Flags |= Modified;
+				if (win->NodeWindow)
+					win->NodeWindow->Resized = true;
+			}
 
 			adjustChildrenProps(node->Children[0]);
 			adjustChildrenProps(node->Children[1]);
@@ -251,9 +275,17 @@ namespace XYZ {
 			node->Children[1]->Size.x = node->Size.x;
 
 			for (auto win : node->Children[0]->Windows)
+			{
 				win->Flags |= Modified;
+				if (win->NodeWindow)
+					win->NodeWindow->Resized = true;
+			}
 			for (auto win : node->Children[1]->Windows)
+			{
 				win->Flags |= Modified;
+				if (win->NodeWindow)
+					win->NodeWindow->Resized = true;
+			}
 
 			adjustChildrenProps(node->Children[0]);
 			adjustChildrenProps(node->Children[1]);
@@ -658,6 +690,7 @@ namespace XYZ {
 		ModifiedWindow = nullptr;
 		CurrentWindow = nullptr;
 		CurrentNodeWindow = nullptr;
+
 		ModifiedWindowMouseOffset = { 0,0 };
 		KeyCode = ToUnderlying(KeyCode::XYZ_KEY_NONE);
 		Mode = ToUnderlying(KeyMode::XYZ_MOD_NONE);
@@ -678,5 +711,16 @@ namespace XYZ {
 
 		MaxHeightInRow = 0.0f;
 		MenuItemOffset = 0.0f;
+	}
+	InGuiNode::InGuiNode()
+	{
+		Color = { 1,1,1,1 };
+		Position = { 0,0 };
+		Size = { 0,0 };
+		ID = 0;
+		Modified = false;
+	}
+	InGuiNodeWindow::InGuiNodeWindow()
+	{
 	}
 }

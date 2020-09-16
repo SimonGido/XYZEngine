@@ -383,6 +383,22 @@ namespace XYZ {
 		MoveVertices(window->Mesh.Vertices.data(), position + textOffset, offset, name.size() * 4);
 	}
 
+	void InGuiFactory::GenerateFrame(InGuiWindow& window, const glm::vec2& position, const glm::vec2& size, const InGuiRenderConfiguration& renderConfig)
+	{
+		window.LineMesh.Vertices.push_back({ { position.x,position.y,0 }, renderConfig.LineColor }); // Down left
+		window.LineMesh.Vertices.push_back({ { position.x + size.x, position.y,0 }, renderConfig.LineColor }); // Down right
+
+		window.LineMesh.Vertices.push_back({ { position.x + size.x,position.y,0 }, renderConfig.LineColor }); // Down right
+		window.LineMesh.Vertices.push_back({ { position.x + size.x,position.y + size.y,0 }, renderConfig.LineColor }); // Top right
+
+
+		window.LineMesh.Vertices.push_back({ { position.x + size.x, position.y + size.y,0 }, renderConfig.LineColor }); // Top right
+		window.LineMesh.Vertices.push_back({ { position.x, position.y + size.y,0 }, renderConfig.LineColor }); // Top left
+
+		window.LineMesh.Vertices.push_back({ { position.x,position.y + size.y,0 }, renderConfig.LineColor }); // Top left
+		window.LineMesh.Vertices.push_back({ { position.x,position.y,0 }, renderConfig.LineColor }); // Down left
+	}
+
 	void InGuiFactory::GenerateNode(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const std::string& name, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig)
 	{
 		GenerateInGuiQuad(mesh, position, size, renderConfig.ButtonSubTexture->GetTexCoords(), renderConfig.TextureID, color);

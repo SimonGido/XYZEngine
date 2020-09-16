@@ -20,6 +20,8 @@ namespace XYZ {
 	}
 	void OpenGLFrameBuffer::Resize()
 	{
+		if (m_Specification.Width == 0 || m_Specification.Height == 0)
+			return;
 		if (m_RendererID)
 		{
 			glDeleteFramebuffers(1, &m_RendererID);		
@@ -31,6 +33,7 @@ namespace XYZ {
 
 		if (!m_ColorAttachments.empty() || !m_DepthAttachments.empty())
 		{
+			
 			glCreateFramebuffers(1, &m_RendererID);
 			glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 			uint32_t counter = 0;

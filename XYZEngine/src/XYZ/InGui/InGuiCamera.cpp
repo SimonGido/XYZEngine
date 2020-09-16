@@ -39,30 +39,6 @@ namespace XYZ {
 			modified = true;
 		}
 
-
-		if (Input::IsKeyPressed(KeyCode::XYZ_KEY_Q))
-		{
-			m_CameraRotation += m_CameraRotationSpeed * dt;
-			modified = true;
-
-
-			if (m_CameraRotation > 180.0f)
-				m_CameraRotation -= 360.0f;
-			else if (m_CameraRotation <= -180.0f)
-				m_CameraRotation += 360.0f;
-		}
-		if (Input::IsKeyPressed(KeyCode::XYZ_KEY_E))
-		{
-			m_CameraRotation -= m_CameraRotationSpeed * dt;
-			modified = true;
-
-			if (m_CameraRotation > 180.0f)
-				m_CameraRotation -= 360.0f;
-			else if (m_CameraRotation <= -180.0f)
-				m_CameraRotation += 360.0f;
-		}
-
-
 		if (m_MouseMoving)
 		{
 			auto [mx, my] = Input::GetMousePosition();

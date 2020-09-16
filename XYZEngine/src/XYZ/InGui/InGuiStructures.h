@@ -71,6 +71,7 @@ namespace XYZ {
 		friend class InGui;
 	};
 
+	struct InGuiNodeWindow;
 	struct InGuiDockNode;
 	struct InGuiWindow
 	{
@@ -85,36 +86,44 @@ namespace XYZ {
 		uint16_t Flags = 0;
 
 		InGuiDockNode* DockNode = nullptr;
+		InGuiNodeWindow* NodeWindow = nullptr;
 		static constexpr float PanelSize = 25.0f;
 	};
 
 	struct InGuiNode;
 	struct InGuiNodeConnection
 	{
-		InGuiNode* ConnectedNode;
+		InGuiNode* ConnectedNode = nullptr;;
 	};
 
 	struct InGuiNode
 	{
+		InGuiNode();
 		std::string Name;
+		glm::vec4 Color;
 		glm::vec2 Position;
 		glm::vec2 Size;
 		uint32_t ID;
+		bool Modified;
 		std::vector<InGuiNodeConnection> Connections;
 	};
 
 	struct InGuiNodeWindow
 	{
+		InGuiNodeWindow();
+		Ref<FrameBuffer> FBO;
 		InGuiCamera InCamera;
 		InGuiMesh Mesh;
 		InGuiLineMesh LineMesh;
-		InGuiWindow* RenderWindow;
-		Ref<FrameBuffer> FBO;
 
-		bool PopupEnabled = false;
-		glm::vec2 PopupPosition = { 0,0 };
 		std::vector<InGuiNode*> Nodes;
 		InGuiNode* SelectedNode = nullptr;
+		InGuiWindow* RenderWindow = nullptr;
+		
+		glm::vec2 PopupPosition = { 0,0 };
+		bool PopupEnabled = false;
+		bool Resized = false;
+		
 	};
 
 	struct InGuiPerFrameData

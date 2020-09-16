@@ -20,7 +20,7 @@ namespace XYZ {
 		static void GenerateGroup(const glm::vec2& position,const glm::vec4& color, const std::string& name, bool open, InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig);
 		static void GenerateQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig);
 		static void GenerateMenuBar(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const std::string& name, InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig);
-	
+		static void GenerateFrame(InGuiWindow& window, const glm::vec2& position, const glm::vec2& size, const InGuiRenderConfiguration& renderConfig);
 	
 		
 		static void GenerateNode(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const std::string& name, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig);

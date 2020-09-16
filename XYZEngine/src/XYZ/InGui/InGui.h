@@ -49,7 +49,7 @@ namespace XYZ {
 
 
 		static bool OnWindowResize(const glm::vec2& winSize);
-		static bool OnLeftMouseButtonPress();
+		static bool OnLeftMouseButtonPress();                                                                                                    
 		static bool OnRightMouseButtonPress();
 
 		static bool OnLeftMouseButtonRelease();

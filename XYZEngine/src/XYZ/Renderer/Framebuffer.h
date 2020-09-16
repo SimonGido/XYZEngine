@@ -60,7 +60,7 @@ namespace XYZ {
 		virtual size_t GetNumberDepthAttachments() const = 0;
 
 		virtual const FrameBufferSpecs& GetSpecification() const = 0;
-
+		virtual FrameBufferSpecs& GetSpecification() = 0;
 		static Ref<FrameBuffer> Create(const FrameBufferSpecs& specs);
 	};
 
