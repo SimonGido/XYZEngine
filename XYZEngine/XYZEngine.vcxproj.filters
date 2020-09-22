@@ -333,9 +333,6 @@
     <ClInclude Include="src\XYZ\Renderer\APIContext.h">
       <Filter>src\XYZ\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\XYZ\Renderer\Animation.h">
-      <Filter>src\XYZ\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="src\XYZ\Renderer\Buffer.h">
       <Filter>src\XYZ\Renderer</Filter>
     </ClInclude>
@@ -1844,6 +1841,9 @@
     <ClInclude Include="src\XYZ\InGui\InGuiFactory.h" />
     <ClInclude Include="src\XYZ\InGui\InGuiStructures.h" />
     <ClInclude Include="src\XYZ\InGui\InGuiCamera.h" />
+    <ClInclude Include="src\XYZ\Scene\Animation.h">
+      <Filter>src\XYZ\Renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\API\OpenGL\OpenGLAPIContext.cpp">
@@ -1976,9 +1976,6 @@
       <Filter>src\XYZ\Physics</Filter>
     </ClCompile>
     <ClCompile Include="src\XYZ\Renderer\APIContext.cpp">
-      <Filter>src\XYZ\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\XYZ\Renderer\Animation.cpp">
       <Filter>src\XYZ\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\XYZ\Renderer\Buffer.cpp">
@@ -2212,6 +2209,9 @@
     <ClCompile Include="src\XYZ\InGui\InGuiStructures.cpp" />
     <ClCompile Include="src\XYZ\FSM\StateMachine.cpp" />
     <ClCompile Include="src\XYZ\InGui\InGuiCamera.cpp" />
+    <ClCompile Include="src\XYZ\Scene\Animation.cpp">
+      <Filter>src\XYZ\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="vendor\RCC\RuntimeCompiler\SimpleFileWatcher\FileWatcherLinux.cpp~">

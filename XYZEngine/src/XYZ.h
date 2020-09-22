@@ -24,13 +24,13 @@
 #include "XYZ/Renderer/Framebuffer.h"
 #include "XYZ/Renderer/MeshFactory.h"
 #include "XYZ/Renderer/SpriteRenderer.h"
-#include "XYZ/Renderer/Animation.h"
 #include "XYZ/Renderer/SubTexture2D.h"
 
 //-----Scene-----//
 #include "XYZ/Scene/SceneCamera.h"
 #include "XYZ/Scene/SceneManager.h"
 #include "XYZ/Scene/AssetManager.h"
+#include "XYZ/Scene/Animation.h"
 
 //------ECS-----//
 #include "XYZ/ECS/ECSManager.h"

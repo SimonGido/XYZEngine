@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "InGuiFactory.h"
 
+#include <glm/gtx/transform.hpp>
 
 namespace XYZ {
 	
@@ -383,20 +384,47 @@ namespace XYZ {
 		MoveVertices(window->Mesh.Vertices.data(), position + textOffset, offset, name.size() * 4);
 	}
 
-	void InGuiFactory::GenerateFrame(InGuiWindow& window, const glm::vec2& position, const glm::vec2& size, const InGuiRenderConfiguration& renderConfig)
+	void InGuiFactory::GenerateFrame(InGuiLineMesh& mesh, const glm::vec2& position, const glm::vec2& size, const InGuiRenderConfiguration& renderConfig)
 	{
-		window.LineMesh.Vertices.push_back({ { position.x,position.y,0 }, renderConfig.LineColor }); // Down left
-		window.LineMesh.Vertices.push_back({ { position.x + size.x, position.y,0 }, renderConfig.LineColor }); // Down right
+		mesh.Vertices.push_back({ { position.x,position.y,0 }, renderConfig.LineColor }); // Down left
+		mesh.Vertices.push_back({ { position.x + size.x, position.y,0 }, renderConfig.LineColor }); // Down right
 
-		window.LineMesh.Vertices.push_back({ { position.x + size.x,position.y,0 }, renderConfig.LineColor }); // Down right
-		window.LineMesh.Vertices.push_back({ { position.x + size.x,position.y + size.y,0 }, renderConfig.LineColor }); // Top right
+		mesh.Vertices.push_back({ { position.x + size.x,position.y,0 }, renderConfig.LineColor }); // Down right
+		mesh.Vertices.push_back({ { position.x + size.x,position.y + size.y,0 }, renderConfig.LineColor }); // Top right
 
 
-		window.LineMesh.Vertices.push_back({ { position.x + size.x, position.y + size.y,0 }, renderConfig.LineColor }); // Top right
-		window.LineMesh.Vertices.push_back({ { position.x, position.y + size.y,0 }, renderConfig.LineColor }); // Top left
+		mesh.Vertices.push_back({ { position.x + size.x, position.y + size.y,0 }, renderConfig.LineColor }); // Top right
+		mesh.Vertices.push_back({ { position.x, position.y + size.y,0 }, renderConfig.LineColor }); // Top left
 
-		window.LineMesh.Vertices.push_back({ { position.x,position.y + size.y,0 }, renderConfig.LineColor }); // Top left
-		window.LineMesh.Vertices.push_back({ { position.x,position.y,0 }, renderConfig.LineColor }); // Down left
+		mesh.Vertices.push_back({ { position.x,position.y + size.y,0 }, renderConfig.LineColor }); // Top left
+		mesh.Vertices.push_back({ { position.x,position.y,0 }, renderConfig.LineColor }); // Down left
+	}
+
+	void InGuiFactory::GenerateArrowLine(InGuiMesh& mesh, InGuiLineMesh& lineMesh, const glm::vec2& p0, const glm::vec2& p1, const glm::vec2& size, const InGuiRenderConfiguration& renderConfig)
+	{
+		lineMesh.Vertices.push_back({ { p0.x, p0.y, 0 }, renderConfig.LineColor });
+		lineMesh.Vertices.push_back({ { p1.x, p1.y, 0 }, renderConfig.LineColor });
+
+
+		glm::vec4 half = glm::vec4(p1.x - ((p1.x - p0.x) / 2), p1.y - ((p1.y - p0.y) / 2), 0, 0);
+
+
+		size_t offset = mesh.Vertices.size();
+		glm::vec2 dir = p1 - p0;
+		glm::vec2 defaultV = { 0,-1 };
+
+		float dot = dir.x * defaultV.x + dir.y * defaultV.y;
+		float det = dir.x * defaultV.y - dir.y * defaultV.x;
+		float angle = atan2(det, dot);
+		
+
+		glm::vec2 arrowOffset = { -cos(angle) * (size.x / 2), -sin(angle) * (size.y / 2) };
+		glm::mat4 translation = glm::translate(glm::vec3{ half.x + arrowOffset.x, half.y - arrowOffset.y ,0 });
+		glm::mat4 rotation = glm::rotate(-angle, glm::vec3{ 0,0,1 });
+	
+		GenerateInGuiQuad(mesh, { 0,0 }, size, renderConfig.DownArrowButtonSubTexture->GetTexCoords(), renderConfig.TextureID, renderConfig.DefaultColor);
+		for (size_t i = offset; i < mesh.Vertices.size(); ++i)
+			mesh.Vertices[i].Position = translation * rotation * glm::vec4(mesh.Vertices[i].Position, 1);
 	}
 
 	void InGuiFactory::GenerateNode(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const std::string& name, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig)

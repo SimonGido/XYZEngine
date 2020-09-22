@@ -32,6 +32,11 @@ namespace XYZ {
 		bool onMouseButtonPress(MouseButtonPressEvent& event);
 		bool onKeyPress(KeyPressedEvent& event);
 		bool onKeyRelease(KeyReleasedEvent& event);
+
+		void onResizeSceneWindow(const glm::vec2& size);
+		void onNodePanelConnectionCreated(uint32_t startNode, uint32_t endNode);
+		void onNodePanelConnectionDestroyed(uint32_t startNode, uint32_t endNode);
+
 	private:
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		EntityComponentPanel m_EntityComponentPanel;

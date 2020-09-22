@@ -24,7 +24,8 @@ namespace XYZ {
 		BottomResizing = BIT(9),
 		Visible		   = BIT(10),
 		AutoPosition   = BIT(11),
-		Docked		   = BIT(12)
+		Docked		   = BIT(12),
+		Resized		   = BIT(13)
 	};
 
 	enum InGuiPerFrameFlags
@@ -87,6 +88,7 @@ namespace XYZ {
 
 		InGuiDockNode* DockNode = nullptr;
 		InGuiNodeWindow* NodeWindow = nullptr;
+		std::function<void(const glm::vec2&)> OnResizeCallback;
 		static constexpr float PanelSize = 25.0f;
 	};
 
@@ -117,12 +119,15 @@ namespace XYZ {
 		InGuiLineMesh LineMesh;
 
 		std::vector<InGuiNode*> Nodes;
+
 		InGuiNode* SelectedNode = nullptr;
 		InGuiWindow* RenderWindow = nullptr;
-		
+
+		std::function<void(uint32_t, uint32_t)> OnConnectionCreated;
+		std::function<void(uint32_t, uint32_t)> OnConnectionDestroyed;
+
 		glm::vec2 PopupPosition = { 0,0 };
 		bool PopupEnabled = false;
-		bool Resized = false;
 	};
 
 	struct InGuiPerFrameData

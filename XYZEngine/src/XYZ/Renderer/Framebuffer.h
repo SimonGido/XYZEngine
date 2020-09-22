@@ -61,6 +61,7 @@ namespace XYZ {
 
 		virtual const FrameBufferSpecs& GetSpecification() const = 0;
 		virtual FrameBufferSpecs& GetSpecification() = 0;
+		
 		static Ref<FrameBuffer> Create(const FrameBufferSpecs& specs);
 	};
 

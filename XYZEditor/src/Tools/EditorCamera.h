@@ -15,6 +15,9 @@ namespace XYZ {
 		void OnUpdate(float dt);
 		void OnEvent(Event& event);
 
+		void SetAspectRatio(float aspectRatio);
+
+
 		const glm::vec3& GetPosition() const { return m_CameraPosition; }
 		float GetRotation() const { return m_CameraRotation; }
 		float GetZoomLevel() const { return m_ZoomLevel; };

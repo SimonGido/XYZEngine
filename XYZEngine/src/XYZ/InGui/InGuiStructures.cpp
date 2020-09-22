@@ -200,14 +200,12 @@ namespace XYZ {
 				for (auto win : m_ResizedNode->Children[0]->Windows)
 				{
 					win->Flags |= Modified;
-					if (win->NodeWindow)
-						win->NodeWindow->Resized = true;
+					win->Flags |= Resized;
 				}
 				for (auto win : m_ResizedNode->Children[1]->Windows)
 				{
 					win->Flags |= Modified;
-					if (win->NodeWindow)
-						win->NodeWindow->Resized = true;
+					win->Flags |= Resized;
 				}
 				
 				adjustChildrenProps(m_ResizedNode->Children[0]);
@@ -222,14 +220,12 @@ namespace XYZ {
 				for (auto win : m_ResizedNode->Children[0]->Windows)
 				{
 					win->Flags |= Modified;
-					if (win->NodeWindow)
-						win->NodeWindow->Resized = true;
+					win->Flags |= Resized;
 				}
 				for (auto win : m_ResizedNode->Children[1]->Windows)
 				{
 					win->Flags |= Modified;
-					if (win->NodeWindow)
-						win->NodeWindow->Resized = true;
+					win->Flags |= Resized;
 				}
 				adjustChildrenProps(m_ResizedNode->Children[0]);
 				adjustChildrenProps(m_ResizedNode->Children[1]);
@@ -250,14 +246,12 @@ namespace XYZ {
 			for (auto win : node->Children[0]->Windows)
 			{
 				win->Flags |= Modified;
-				if (win->NodeWindow)
-					win->NodeWindow->Resized = true;
+				win->Flags |= Resized;
 			}
 			for (auto win : node->Children[1]->Windows)
 			{
 				win->Flags |= Modified;
-				if (win->NodeWindow)
-					win->NodeWindow->Resized = true;
+				win->Flags |= Resized;
 			}
 
 			adjustChildrenProps(node->Children[0]);
@@ -277,14 +271,12 @@ namespace XYZ {
 			for (auto win : node->Children[0]->Windows)
 			{
 				win->Flags |= Modified;
-				if (win->NodeWindow)
-					win->NodeWindow->Resized = true;
+				win->Flags |= Resized;
 			}
 			for (auto win : node->Children[1]->Windows)
 			{
 				win->Flags |= Modified;
-				if (win->NodeWindow)
-					win->NodeWindow->Resized = true;
+				win->Flags |= Resized;
 			}
 
 			adjustChildrenProps(node->Children[0]);

@@ -40,8 +40,10 @@ namespace XYZ {
 		static bool RenderWindow(const std::string& name, uint32_t rendererID, const glm::vec2& position, const glm::vec2& size, float panelSize, InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration);
 
 		static bool NodeWindow(const std::string& name, const glm::vec2& position, const glm::vec2& size,float dt, InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration);
+		static bool BeginNode(uint32_t id);
+		static void EndNode();
+		
 		static void NodeWindowEnd();
-
 		
 		static void Separator();
 
@@ -57,9 +59,10 @@ namespace XYZ {
 		static bool OnKeyPress(int key, int mod);
 		static bool OnKeyRelease();
 		
-		static const InGuiWindow& GetWindow(const std::string& name) { return *s_Context->Windows[name]; }
-		static void SetWindowFlags(const std::string& name, uint16_t flags) { s_Context->Windows[name]->Flags = flags; }
-		static uint16_t& GetWindowFlags(const std::string& name) { return s_Context->Windows[name]->Flags; }
+
+		static InGuiNodeWindow& GetNodeWindow(const std::string& name) { return *s_Context->NodeWindows[name]; }
+		static InGuiWindow& GetWindow(const std::string& name) { return *s_Context->Windows[name]; }
+		
 	private:
 		static InGuiWindow* getWindow(const std::string& name);
 		static InGuiWindow* createWindow(const std::string& name,const glm::vec2& position, const glm::vec2& size);

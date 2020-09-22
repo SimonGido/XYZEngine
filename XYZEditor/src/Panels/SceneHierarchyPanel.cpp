@@ -83,9 +83,8 @@ namespace XYZ {
 			{
 				if (Collide(buffer[i].GetComponent<TransformComponent>()->Transform, position))
 				{
-					auto flags = InGui::GetWindowFlags("scene hierarchy");
+					auto &flags = InGui::GetWindow("scene hierarchy").Flags;
 					flags |= Modified;
-					InGui::SetWindowFlags("scene hierarchy", flags);
 					m_SelectedEntity = buffer[i];
 				}
 			}
@@ -140,9 +139,8 @@ namespace XYZ {
 			if (InGui::Text(tag, { 1,1 }, textColor))
 			{
 				m_SelectedEntity = entity;
-				auto flags = InGui::GetWindowFlags("scene hierarchy");
+				auto &flags = InGui::GetWindow("scene hierarchy").Flags;
 				flags |= Modified;
-				InGui::SetWindowFlags("scene hierarchy", flags);
 			}
 			InGui::Separator();
 		}

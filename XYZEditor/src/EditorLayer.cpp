@@ -7,21 +7,23 @@
 
 
 namespace XYZ {
-
+	
 	static glm::vec2 GetWorldPositionFromInGui(const InGuiWindow &window, const EditorCamera& camera)
 	{
 		auto [x, y] = Input::GetMousePosition();
 		auto [width, height] = Input::GetWindowSize();
-	
-		x -= (((float)width / 2) + window.Position.x);
-	
-		float boundWidth = (camera.GetZoomLevel() * camera.GetAspectRatio()) * 2;
-		float boundHeight = (camera.GetZoomLevel() * camera.GetAspectRatio()) * 2;
-	
-		x = (x / window.Size.x) * boundWidth - boundWidth * 0.5f;
-		y = boundHeight * 0.5f - (y / (window.Size.y + InGuiWindow::PanelSize)) * boundHeight;
-	
-		return { x + camera.GetPosition().x ,y + camera.GetPosition().y };
+
+		float cameraBound = (camera.GetAspectRatio() * camera.GetZoomLevel()) * 2;
+		auto pos = camera.GetPosition();
+
+		
+		x -= window.Position.x + ((float)width / 2);
+		y += ((float)height / 2) + window.Position.y;
+
+		x = (x / width) * cameraBound - cameraBound * 0.5f;
+		y = cameraBound * 0.5f - (y / height) * cameraBound;
+
+		return { x + pos.x, y + pos.y };
 	}
 
 	EditorLayer::~EditorLayer()
@@ -58,11 +60,7 @@ namespace XYZ {
 		});
 		
 
-		auto& app = Application::Get();
-		m_FBO = FrameBuffer::Create({ app.GetWindow().GetWidth(),app.GetWindow().GetHeight() });
-		m_FBO->CreateColorAttachment(FrameBufferFormat::RGBA16F);
-		m_FBO->CreateDepthAttachment();
-		m_FBO->Resize();
+		
 
 		m_Scene = m_AssetManager.GetAsset<Scene>("Assets/Scenes/scene.xyz");
 		SceneManager::Get().SetActive(m_Scene);
@@ -131,15 +129,32 @@ namespace XYZ {
 		m_SceneHierarchyPanel.SetContext(m_Scene);
 
 		
+		auto& app = Application::Get();
+		m_FBO = FrameBuffer::Create({ app.GetWindow().GetWidth(),app.GetWindow().GetHeight() });
+		m_FBO->CreateColorAttachment(FrameBufferFormat::RGBA16F);
+		m_FBO->CreateDepthAttachment();
+		m_FBO->Resize();
+
 		InGui::RenderWindow("Scene", m_FBO->GetColorAttachment(0).RendererID, { 0,0 }, { 200,200 }, 25.0f);
 		InGui::End();
-		auto flags = InGui::GetWindowFlags("scene");
-		flags &= ~EventListener;
-		InGui::SetWindowFlags("scene", flags);
+		InGui::GetWindow("scene").Flags &= ~EventListener;
+		auto& spec = m_FBO->GetSpecification();
+		spec.Width =  (uint32_t)InGui::GetWindow("scene").Size.x;
+		spec.Height = (uint32_t)InGui::GetWindow("scene").Size.y;
+		m_FBO->Resize();
+		m_EditorCamera.SetAspectRatio((float)spec.Width / (float)spec.Height);
 
 		InGui::Begin("Test", { 0,0 }, { 200,200 });
 		InGui::End();
-		InGui::SetWindowFlags("test", (MenuEnabled | Visible | EventListener));
+		InGui::GetWindow("test").Flags |= (MenuEnabled | Visible | EventListener);
+
+		InGui::GetWindow("scene").OnResizeCallback = Hook(&EditorLayer::onResizeSceneWindow, this);
+
+		InGui::NodeWindow("Node panel", { -100,-100 }, { 200,200 }, 0.0f);
+		InGui::NodeWindowEnd();
+		InGui::GetNodeWindow("node panel").OnConnectionCreated = Hook(&EditorLayer::onNodePanelConnectionCreated, this);
+		InGui::GetNodeWindow("node panel").OnConnectionDestroyed = Hook(&EditorLayer::onNodePanelConnectionDestroyed, this);
+
 	}
 
 	void EditorLayer::OnDetach()
@@ -259,13 +274,13 @@ namespace XYZ {
 
 		if (InGui::NodeWindow("Node panel", { -100,-100 }, { 200,200 }, ts))
 		{
-		
+			
 		}
 		InGui::NodeWindowEnd();
 
 		if (InGui::Begin("Test Panel", { 0,0 }, { 200,200 }))
 		{
-
+			
 		}
 		InGui::End();
 
@@ -278,7 +293,6 @@ namespace XYZ {
 			if (InGui::MenuItem("Load Scene", { 150,25 }))
 			{
 				auto& app = Application::Get();
-				std::cout << "WTF" << std::endl;
 				std::string filepath = app.OpenFile("(*.xyz)\0*.xyz\0");
 				if (!filepath.empty())
 				{
@@ -320,12 +334,7 @@ namespace XYZ {
 
 	bool EditorLayer::onWindowResized(WindowResizeEvent& event)
 	{
-		auto specs = m_FBO->GetSpecification();
-		specs.Width = event.GetWidth();
-		specs.Height = event.GetHeight();
-		m_FBO->SetSpecification(specs);
-		m_FBO->Resize();
-
+	
 		return false;
 	}
 	bool EditorLayer::onMouseButtonPress(MouseButtonPressEvent& event)
@@ -402,5 +411,22 @@ namespace XYZ {
 			m_RotatingEntity = false;
 		}
 		return false;
+	}
+	void EditorLayer::onResizeSceneWindow(const glm::vec2& size)
+	{
+		auto spec = m_FBO->GetSpecification();
+		spec.Width = (uint32_t)size.x;
+		spec.Height = (uint32_t)size.y;
+
+		m_FBO->SetSpecification(spec);
+		m_FBO->Resize();
+	}
+	void EditorLayer::onNodePanelConnectionCreated(uint32_t startNode, uint32_t endNode)
+	{
+		std::cout << "connection created " << startNode << " " << endNode << std::endl;
+	}
+	void EditorLayer::onNodePanelConnectionDestroyed(uint32_t startNode, uint32_t endNode)
+	{
+		std::cout << "connection destroyed " << startNode << " " << endNode << std::endl;
 	}
 }

@@ -8,6 +8,12 @@
 
 #include <ini.h>
 
+
+#include <glm/glm.hpp>
+#include <glm/gtx/transform.hpp>
+
+
+
 namespace XYZ {
 	InGuiContext* InGui::s_Context = nullptr;
 
@@ -23,22 +29,6 @@ namespace XYZ {
 	static glm::vec2 ConvertToCamera(const glm::vec2& mousePos,const glm::vec2& winSize, const InGuiCamera& camera)
 	{
 		return { mousePos.x + (winSize.x/2 * camera.GetPosition().x), mousePos.y + (winSize.y/2 * camera.GetPosition().y) };
-	}
-
-	static glm::vec2 GetWorldPositionFromInGui(const InGuiWindow& window, const InGuiCamera& camera)
-	{
-		auto [x, y] = Input::GetMousePosition();
-		auto [width, height] = Input::GetWindowSize();
-
-		x -= (((float)width / 2) + window.Position.x);
-
-		float boundWidth = (camera.GetZoomLevel() * camera.GetAspectRatio()) * 2;
-		float boundHeight = (camera.GetZoomLevel() * camera.GetAspectRatio()) * 2;
-
-		x = (x / window.Size.x) * boundWidth - boundWidth * 0.5f;
-		y = boundHeight * 0.5f - (y / (window.Size.y + InGuiWindow::PanelSize)) * boundHeight;
-
-		return { x + camera.GetPosition().x ,y + camera.GetPosition().y };
 	}
 
 	static glm::vec4 ColorFrom6SegmentColorRectangle(const glm::vec2& position, const glm::vec2& size, const glm::vec2& mousePos)
@@ -88,7 +78,6 @@ namespace XYZ {
 	}
 	static void HandleInputText(std::string& text, int code, int mode ,bool capslock)
 	{
-
 		size_t currentSize = text.size();
 		switch (code)
 		{
@@ -292,8 +281,13 @@ namespace XYZ {
 		for (auto window : s_Context->Windows)
 			delete window.second;
 		for (auto nodeWindow : s_Context->NodeWindows)
+		{
+			for (auto node : nodeWindow.second->Nodes)
+			{
+				delete node;
+			}
 			delete nodeWindow.second;
-
+		}
 		delete s_Context->DockSpace;
 		delete s_Context;
 	}
@@ -844,8 +838,7 @@ namespace XYZ {
 		// Check if window is hoovered
 		glm::vec2 winSize = window->Size + glm::vec2(InGuiWindow::PanelSize, InGuiWindow::PanelSize);
 		if (Collide(window->Position, winSize, frameData.MousePosition))
-		{
-			
+		{		
 			window->Flags |= Hoovered;
 
 			if (window->Flags & EventListener)
@@ -862,6 +855,137 @@ namespace XYZ {
 
 
 		return (window->Flags & Hoovered);
+	}
+
+
+	static bool HandleNodeConnection(uint32_t& startNode, uint32_t& endNode, const glm::vec2& mousePosition,InGuiNodeWindow& nodeWindow, InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig)
+	{
+		bool connected = false;
+
+		// Highlight selected node and generate new line
+		if (nodeWindow.SelectedNode)
+		{
+			InGuiFactory::GenerateFrame(nodeWindow.LineMesh, nodeWindow.SelectedNode->Position, nodeWindow.SelectedNode->Size, renderConfig);
+			if (frameData.Flags & LeftMouseButtonPressed)
+			{
+				glm::vec2 startPos = nodeWindow.SelectedNode->Position + glm::vec2(nodeWindow.SelectedNode->Size.x / 2, nodeWindow.SelectedNode->Size.y / 2);
+				InGuiFactory::GenerateArrowLine(nodeWindow.Mesh, nodeWindow.LineMesh, startPos, mousePosition, { 50,50 }, renderConfig);
+			}
+		}
+
+		// Render nodes and connections
+		for (auto node : nodeWindow.Nodes)
+		{
+			glm::vec4 color = renderConfig.DefaultColor;
+			if (InGui::TextArea("", node->Name, { 150,30 }, node->Modified))
+			{
+			}
+			InGui::Separator();
+			if (Collide(node->Position, node->Size, mousePosition))
+			{
+				color = renderConfig.HooverColor;
+			}
+			InGuiFactory::GenerateNode(node->Position, node->Size, color, node->Name, nodeWindow.Mesh, renderConfig);
+			glm::vec2 startPos = node->Position + glm::vec2(node->Size.x / 2, node->Size.y / 2);
+			for (auto connection : node->Connections)
+			{
+				glm::vec2 endPos = connection.ConnectedNode->Position + glm::vec2(connection.ConnectedNode->Size.x / 2, connection.ConnectedNode->Size.y / 2);
+				InGuiFactory::GenerateArrowLine(nodeWindow.Mesh, nodeWindow.LineMesh, startPos, endPos, { 50,50 }, renderConfig);
+			}
+		}
+
+
+
+		// Handle creating new connection
+		if (frameData.Flags & LeftMouseButtonReleased
+			&& nodeWindow.SelectedNode
+			&& !(frameData.Flags & ReleaseHandled))
+		{
+			frameData.Flags |= ReleaseHandled;
+			for (auto node : nodeWindow.Nodes)
+			{
+				if (Collide(node->Position, node->Size, mousePosition))
+				{
+					if (nodeWindow.SelectedNode->ID != node->ID) // Cant create connection with itself
+					{
+						nodeWindow.SelectedNode->Connections.push_back({ node });
+						startNode = nodeWindow.SelectedNode->ID;
+						endNode = node->ID;
+						connected = true;
+
+						if (nodeWindow.OnConnectionCreated)
+							nodeWindow.OnConnectionCreated(nodeWindow.SelectedNode->ID, node->ID);
+					}
+					break;
+				}
+			}
+		}
+		
+		return connected;
+	}
+
+	static void HandleNodeDelete(uint32_t& nodeStart, InGuiNodeWindow& nodeWindow, InGuiPerFrameData& frameData)
+	{
+		if (nodeWindow.SelectedNode)
+		{
+			if (frameData.KeyCode == ToUnderlying(KeyCode::XYZ_KEY_DELETE))
+			{
+				for (auto node : nodeWindow.Nodes)
+				{
+					for (auto it = node->Connections.begin(); it != node->Connections.end();)
+					{
+						if (it->ConnectedNode->ID == nodeWindow.SelectedNode->ID)
+						{
+							if (nodeWindow.OnConnectionDestroyed)
+								nodeWindow.OnConnectionDestroyed(node->ID, it->ConnectedNode->ID);
+
+							it = node->Connections.erase(it);
+						}
+						else
+							++it;
+					}
+				}
+
+
+				auto it = nodeWindow.Nodes.begin() + nodeWindow.SelectedNode->ID;
+				nodeWindow.Nodes.back()->ID = nodeWindow.SelectedNode->ID;
+				*it = std::move(nodeWindow.Nodes.back());
+				nodeWindow.Nodes.pop_back();
+
+				nodeStart = nodeWindow.SelectedNode->ID;
+
+				delete nodeWindow.SelectedNode;
+				nodeWindow.SelectedNode = nullptr;
+			}
+		}
+	}
+
+	static void HandleNodeSelectAndPopup(const glm::vec2& mousePosition, InGuiNodeWindow& nodeWindow, InGuiPerFrameData& frameData)
+	{
+		if (!(frameData.Flags & ClickHandled))
+		{
+			if (frameData.Flags & LeftMouseButtonPressed)
+			{
+				nodeWindow.SelectedNode = nullptr;
+				nodeWindow.PopupEnabled = false;
+				for (auto node : nodeWindow.Nodes)
+				{
+					if (Collide(node->Position, node->Size, mousePosition))
+					{
+						frameData.Flags |= ClickHandled;
+						nodeWindow.SelectedNode = node;
+						break;
+					}
+				}
+			}
+			else if (frameData.Flags & RightMouseButtonPressed)
+			{
+				nodeWindow.SelectedNode = nullptr;
+				frameData.Flags |= ClickHandled;
+				nodeWindow.PopupEnabled = !nodeWindow.PopupEnabled;
+				nodeWindow.PopupPosition = frameData.MousePosition;
+			}
+		}
 	}
 
 	bool InGui::NodeWindow(const std::string& name, const glm::vec2& position, const glm::vec2& size,float dt, InGuiRenderConfiguration& renderConfig)
@@ -885,16 +1009,10 @@ namespace XYZ {
 			
 		bool result = RenderWindow(name, nodeWindow->FBO->GetColorAttachment(0).RendererID, position, size, 25.0f, renderConfig);
 		auto mousePosition = ConvertToCamera(frameData.MousePosition, frameData.WindowSize, nodeWindow->InCamera);
-		for (auto node : nodeWindow->Nodes)
-		{
-			if (TextArea("", node->Name, { 150,30 }, node->Modified))
-			{
-			}
-			Separator();
-		}
+
 		if (nodeWindow->PopupEnabled)
 		{
-			if (!nodeWindow->Resized)
+			if (!(nodeWindow->RenderWindow->Flags & Resized))
 			{
 				bool open = true;
 				if (InGui::BeginPopup("Node", nodeWindow->PopupPosition, { 150,25 }, open))
@@ -919,93 +1037,13 @@ namespace XYZ {
 			nodeWindow->Mesh.Vertices.clear();
 			nodeWindow->LineMesh.Vertices.clear();
 			nodeWindow->InCamera.OnUpdate(dt);
-
-			if (!(frameData.Flags & ClickHandled))
-			{
-				if (frameData.Flags & LeftMouseButtonPressed)
-				{
-					nodeWindow->SelectedNode = nullptr;
-					nodeWindow->PopupEnabled = false;
-				}
-				else if (frameData.Flags & RightMouseButtonPressed)
-				{
-					frameData.Flags |= ClickHandled;
-					nodeWindow->PopupEnabled = !nodeWindow->PopupEnabled;
-					nodeWindow->PopupPosition = frameData.MousePosition;
-				}
-			}
-			for (auto node : nodeWindow->Nodes)
-			{
-				glm::vec4 color = renderConfig.DefaultColor;
-				if (Collide(node->Position, node->Size, mousePosition))
-				{
-					color = renderConfig.HooverColor;
-					if (frameData.Flags & LeftMouseButtonPressed 
-						&& !(frameData.Flags & ClickHandled))
-					{
-						frameData.Flags |= ClickHandled;
-						nodeWindow->SelectedNode = node;
-						nodeWindow->PopupEnabled = false;
-					}
-					if (frameData.Flags & LeftMouseButtonReleased
-						&& nodeWindow->SelectedNode
-						&& !(frameData.Flags & ReleaseHandled))
-					{
-						frameData.Flags |= ReleaseHandled;
-						nodeWindow->SelectedNode->Connections.push_back({ node });
-					}
-				}
-
-				InGuiFactory::GenerateNode(node->Position, node->Size, color, node->Name, nodeWindow->Mesh, renderConfig);
-				glm::vec2 startPos = node->Position + glm::vec2(node->Size.x / 2, node->Size.y / 2);
-				for (auto connection : node->Connections)
-				{
-					glm::vec2 endPos = connection.ConnectedNode->Position + glm::vec2(connection.ConnectedNode->Size.x / 2, connection.ConnectedNode->Size.y / 2);
-					nodeWindow->LineMesh.Vertices.push_back({ { startPos.x, startPos.y, 0 }, renderConfig.LineColor });
-					nodeWindow->LineMesh.Vertices.push_back({ { endPos.x, endPos.y, 0 }, renderConfig.LineColor });
-				}
-			}
-			
-			
-			if (nodeWindow->SelectedNode)
-			{
-				InGuiFactory::GenerateFrame(*nodeWindow->RenderWindow, nodeWindow->SelectedNode->Position, nodeWindow->SelectedNode->Size, renderConfig);
-				if (frameData.Flags & LeftMouseButtonPressed)
-				{
-					glm::vec2 startPos = nodeWindow->SelectedNode->Position + glm::vec2(nodeWindow->SelectedNode->Size.x / 2, nodeWindow->SelectedNode->Size.y / 2);
-					nodeWindow->LineMesh.Vertices.push_back({ {startPos.x, startPos.y,0 }, renderConfig.LineColor });
-					nodeWindow->LineMesh.Vertices.push_back({ { mousePosition.x,mousePosition.y, 0 }, renderConfig.LineColor });
-				}
-				else if (frameData.KeyCode == ToUnderlying(KeyCode::XYZ_KEY_DELETE))
-				{
-					auto it = nodeWindow->Nodes.begin() + nodeWindow->SelectedNode->ID;
-					nodeWindow->Nodes.back()->ID = nodeWindow->SelectedNode->ID;
-					*it = std::move(nodeWindow->Nodes.back());
-					nodeWindow->Nodes.pop_back();
-
-					for (auto node : nodeWindow->Nodes)
-					{
-						for (auto it = node->Connections.begin(); it != node->Connections.end();)
-						{
-							if (it->ConnectedNode->ID == nodeWindow->SelectedNode->ID)
-							{
-								it = node->Connections.erase(it);
-							}
-							else
-							{
-								++it;
-							}
-						}
-					}
-					delete nodeWindow->SelectedNode;
-					nodeWindow->SelectedNode = nullptr;
-				}
-			}
-
+			HandleNodeSelectAndPopup(mousePosition, *nodeWindow, frameData);
+			uint32_t startNode, endNode;
+			HandleNodeConnection(startNode, endNode, mousePosition, *nodeWindow, frameData, renderConfig);
+			uint32_t deletedNode;
+			HandleNodeDelete(deletedNode, *nodeWindow, frameData);
 		}
-		
-		End();
-
+	
 		InGuiRenderer::BeginScene({ nodeWindow->InCamera.GetViewProjectionMatrix(), frameData.WindowSize });
 		InGuiRenderer::SetMaterial(renderConfig.InMaterial);
 			
@@ -1013,8 +1051,18 @@ namespace XYZ {
 		return result;
 	}
 
+	bool InGui::BeginNode(uint32_t id)
+	{
+		return false;
+	}
+
+	void InGui::EndNode()
+	{
+	}
+
 	void InGui::NodeWindowEnd()
 	{
+		End();
 		XYZ_ASSERT(s_Context->PerFrameData.CurrentNodeWindow, "Missing begin call");
 		InGuiPerFrameData& frameData = s_Context->PerFrameData;
 		
@@ -1027,6 +1075,7 @@ namespace XYZ {
 		frameData.CurrentNodeWindow->FBO->Unbind();
 		frameData.CurrentNodeWindow = nullptr;
 	}
+
 
 	void InGui::Separator()
 	{
@@ -1129,16 +1178,20 @@ namespace XYZ {
 			auto& app = Application::Get();
 			app.GetWindow().SetCursor(XYZ_ARROW_CURSOR);
 		}
-		for (auto nodeWindow : s_Context->NodeWindows)
+		for (auto window : s_Context->Windows)
 		{
-			if (nodeWindow.second->Resized)
+			if ((window.second->Flags & Resized) && window.second->OnResizeCallback)
 			{
-				auto& spec = nodeWindow.second->FBO->GetSpecification();
-				spec.Width = nodeWindow.second->RenderWindow->Size.x;
-				spec.Height = nodeWindow.second->RenderWindow->Size.y;
-				nodeWindow.second->FBO->Resize();
-				nodeWindow.second->Resized = false;
+				window.second->OnResizeCallback(window.second->Size);	
 			}
+			if (window.second->NodeWindow)
+			{
+				auto& spec = window.second->NodeWindow->FBO->GetSpecification();
+				spec.Width = window.second->Size.x;
+				spec.Height = window.second->Size.y;
+				window.second->NodeWindow->FBO->Resize();
+			}
+			window.second->Flags &= ~Resized;
 		}
 		return false;
 	}
@@ -1159,6 +1212,8 @@ namespace XYZ {
 		s_Context->PerFrameData.Mode = ToUnderlying(KeyMode::XYZ_MOD_NONE);
 		return false;
 	}
+
+
 
 	InGuiWindow* InGui::getWindow(const std::string& name)
 	{
