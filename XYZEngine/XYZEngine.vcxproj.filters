@@ -1844,6 +1844,7 @@
     <ClInclude Include="src\XYZ\Scene\Animation.h">
       <Filter>src\XYZ\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="src\XYZ\Renderer\MeshRenderer2D.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\API\OpenGL\OpenGLAPIContext.cpp">
@@ -2212,6 +2213,7 @@
     <ClCompile Include="src\XYZ\Scene\Animation.cpp">
       <Filter>src\XYZ\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="src\XYZ\Renderer\MeshRenderer2D.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="vendor\RCC\RuntimeCompiler\SimpleFileWatcher\FileWatcherLinux.cpp~">

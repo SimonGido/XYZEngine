@@ -38,6 +38,15 @@ namespace XYZ {
 		ReleaseHandled			 = BIT(5)
 	};
 
+
+	enum InGuiNodeFlags
+	{
+		NodeMoved		= BIT(0),
+		NodeModified	= BIT(1),
+		NodeHoovered	= BIT(2)
+	};
+
+
 	struct InGuiRenderConfiguration
 	{
 		InGuiRenderConfiguration();
@@ -80,10 +89,10 @@ namespace XYZ {
 		InGuiLineMesh LineMesh;
 		std::string Name;
 
-		glm::vec2 Position;
-		glm::vec2 Size;
+		glm::vec2 Position = { 0.0f,0.0f };
+		glm::vec2 Size = { 0.0f,0.0f };
 
-		float MinimalWidth;
+		float MinimalWidth = 0.0f;
 		uint16_t Flags = 0;
 
 		InGuiDockNode* DockNode = nullptr;
@@ -92,33 +101,26 @@ namespace XYZ {
 		static constexpr float PanelSize = 25.0f;
 	};
 
-	struct InGuiNode;
-	struct InGuiNodeConnection
-	{
-		InGuiNode* ConnectedNode = nullptr;;
-	};
-
 	struct InGuiNode
 	{
-		InGuiNode();
-		std::string Name;
-		glm::vec4 Color;
-		glm::vec2 Position;
-		glm::vec2 Size;
-		uint32_t ID;
-		bool Modified;
-		std::vector<InGuiNodeConnection> Connections;
+		glm::vec4 Color = { 1,1,1,1 };
+		glm::vec2 Position = { 0,0 };
+		glm::vec2 Size = { 0,0 };
+		uint32_t ID = 0;
+		uint8_t Flags = 0;
+		std::unordered_map<uint32_t, uint32_t> OutputInputMap;
 	};
 
 	struct InGuiNodeWindow
 	{
 		InGuiNodeWindow();
+		~InGuiNodeWindow();
+		
+
 		Ref<FrameBuffer> FBO;
 		InGuiCamera InCamera;
 		InGuiMesh Mesh;
 		InGuiLineMesh LineMesh;
-
-		std::vector<InGuiNode*> Nodes;
 
 		InGuiNode* SelectedNode = nullptr;
 		InGuiWindow* RenderWindow = nullptr;
@@ -126,6 +128,9 @@ namespace XYZ {
 		std::function<void(uint32_t, uint32_t)> OnConnectionCreated;
 		std::function<void(uint32_t, uint32_t)> OnConnectionDestroyed;
 
+		std::unordered_map<uint32_t, InGuiNode*> Nodes;
+
+		glm::vec2 RelativeMousePosition = { 0,0 };
 		glm::vec2 PopupPosition = { 0,0 };
 		bool PopupEnabled = false;
 	};
@@ -139,12 +144,16 @@ namespace XYZ {
 		InGuiWindow* ModifiedWindow;
 		InGuiWindow* CurrentWindow;
 		InGuiNodeWindow* CurrentNodeWindow;
+		InGuiNode* CurrentNode;
 
 		glm::vec2 WindowSize;
 		glm::vec2 ModifiedWindowMouseOffset;
 		glm::vec2 WindowSpaceOffset;
 		glm::vec2 MenuBarOffset;
 		glm::vec2 PopupOffset;
+		
+		float LeftNodePinOffset;
+		float RightNodePinOffset;
 
 		glm::vec2 MousePosition;
 		glm::vec2 SelectedPoint;

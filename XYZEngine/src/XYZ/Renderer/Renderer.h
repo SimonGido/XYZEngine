@@ -34,6 +34,8 @@ namespace XYZ {
 		*/
 		static void Init();
 
+
+		static void Shutdown();
 		/**
 		* Function handling window resizing
 		* @param[in] width   Width of the window
@@ -47,11 +49,8 @@ namespace XYZ {
 		inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
 
 
-		/**
-		* Initial setup before rendering
-		* @param[in] camera		Reference to the camera
-		*/
-		static void BeginScene(Camera& camera);
+		
+		static void BeginScene(const SceneData& sceneData);
 
 		/**
 		* Clean up after rendering
@@ -74,6 +73,7 @@ namespace XYZ {
 		static Renderer* s_Instance;
 
 		static SceneData* s_SceneData;
+
 		RenderCommandQueue m_CommandQueue;
 	};
 

@@ -164,6 +164,7 @@ namespace XYZ {
 		
 
 		NativeScriptEngine::Shutdown();
+		Renderer::Shutdown();
 	}
 	void EditorLayer::OnUpdate(Timestep ts)
 	{
@@ -274,7 +275,14 @@ namespace XYZ {
 
 		if (InGui::NodeWindow("Node panel", { -100,-100 }, { 200,200 }, ts))
 		{
-			
+			InGui::BeginNode(0, "Test", { -600,0 }, { 200,100 });
+			InGui::BeginInput(1, { 20,20 }, "Inputik");
+			InGui::EndInput();
+			InGui::BeginInput(1, { 20,20 }, "Inputik");
+			InGui::EndInput();
+			InGui::BeginOutput(1, { 20,20 }, "Inputik");
+			InGui::EndOutput();
+			InGui::EndNode();
 		}
 		InGui::NodeWindowEnd();
 
@@ -322,9 +330,7 @@ namespace XYZ {
 			}
 
 		}
-		InGui::MenuBar("Settings", 100, m_MenuOpen);
-		InGui::MenuBar("Settingass", 120, m_MenuOpen);
-		InGui::MenuBar("Settingasdas", 120, m_MenuOpen);
+		
 		if (InGui::Button("Compile", { 100,25 }))
 		{
 			PerModuleInterface::g_pRuntimeObjectSystem->CompileAll(true);

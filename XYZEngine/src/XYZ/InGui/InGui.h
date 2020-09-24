@@ -14,35 +14,41 @@ namespace XYZ {
 		static void BeginFrame();
 		static void EndFrame();
 
-		static bool Begin(const std::string& name, const glm::vec2& position, const glm::vec2& size, const InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration);
+		static bool Begin(const std::string& name, const glm::vec2& position, const glm::vec2& size);
 		static void End();
 
 
-		static bool BeginPopup(const std::string& name, glm::vec2& position, const glm::vec2& size, bool& open, const InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration);
-		static bool PopupItem(const std::string& name, const glm::vec2& size, const InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration);
+		static bool BeginPopup(const std::string& name, glm::vec2& position, const glm::vec2& size, bool& open);
+		static bool PopupItem(const std::string& name, const glm::vec2& size);
 		static void EndPopup();
 
-		static bool MenuBar(const std::string& name,float width, bool& open, const InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration);
-		static bool MenuItem(const std::string& name, const glm::vec2& size, const InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration);
+		static bool MenuBar(const std::string& name,float width, bool& open);
+		static bool MenuItem(const std::string& name, const glm::vec2& size);
 
-		static bool BeginGroup(const std::string& name, bool& open, const InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration);
+		static bool BeginGroup(const std::string& name, bool& open);
 		static void EndGroup();
 
-		static bool Button(const std::string& name, const glm::vec2& size, const InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration);
-		static bool Checkbox(const std::string& name, const glm::vec2& size, bool& value, const InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration);
-		static bool Slider(const std::string& name, const glm::vec2& size, float& value, float valueScale = 1.0f, const InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration);
-		static bool Image(const std::string& name, uint32_t rendererID, const glm::vec2& size, const InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration);
-		static bool TextArea(const std::string& name, std::string& text, const glm::vec2& size, bool& modified, const InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration);
+		static bool Button(const std::string& name, const glm::vec2& size);
+		static bool Checkbox(const std::string& name, const glm::vec2& size, bool& value);
+		static bool Slider(const std::string& name, const glm::vec2& size, float& value, float valueScale = 1.0f);
+		static bool Image(const std::string& name, uint32_t rendererID, const glm::vec2& size);
+		static bool TextArea(const std::string& name, std::string& text, const glm::vec2& size, bool& modified);
 
-		static bool Text(const std::string& text, const glm::vec2& scale, const glm::vec4& color = { 1,1,1,1 }, const InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration);
-		static bool ColorPicker4(const std::string& name, const glm::vec2& size, glm::vec4& pallete, glm::vec4& color, const InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration);
-		static bool ColorPallete4(const std::string& name, const glm::vec2& size, glm::vec4& color, const InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration);
-		static bool RenderWindow(const std::string& name, uint32_t rendererID, const glm::vec2& position, const glm::vec2& size, float panelSize, InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration);
+		static bool Text(const std::string& text, const glm::vec2& scale, const glm::vec4& color = { 1,1,1,1 });
+		static bool ColorPicker4(const std::string& name, const glm::vec2& size, glm::vec4& pallete, glm::vec4& color);
+		static bool ColorPallete4(const std::string& name, const glm::vec2& size, glm::vec4& color);
+		static bool RenderWindow(const std::string& name, uint32_t rendererID, const glm::vec2& position, const glm::vec2& size, float panelSize);
 
-		static bool NodeWindow(const std::string& name, const glm::vec2& position, const glm::vec2& size,float dt, InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration);
-		static bool BeginNode(uint32_t id);
+		static bool NodeWindow(const std::string& name, const glm::vec2& position, const glm::vec2& size,float dt);
+		static bool BeginNode(uint32_t id,const std::string& name, const glm::vec2& position, const glm::vec2& size);
 		static void EndNode();
-		
+
+		static bool BeginInput(uint32_t id, const glm::vec2& size, const std::string& name);
+		static void EndInput();
+
+		static bool BeginOutput(uint32_t id, const glm::vec2& size, const std::string& name);
+		static void EndOutput();
+
 		static void NodeWindowEnd();
 		
 		static void Separator();
@@ -62,14 +68,15 @@ namespace XYZ {
 
 		static InGuiNodeWindow& GetNodeWindow(const std::string& name) { return *s_Context->NodeWindows[name]; }
 		static InGuiWindow& GetWindow(const std::string& name) { return *s_Context->Windows[name]; }
-		
+		static glm::vec2& MouseRelativePosition(const InGuiWindow& window, const glm::vec3& cameraPos);
 	private:
 		static InGuiWindow* getWindow(const std::string& name);
 		static InGuiWindow* createWindow(const std::string& name,const glm::vec2& position, const glm::vec2& size);
 		static InGuiNodeWindow* getNodeWindow(const std::string& name);
 		static InGuiNodeWindow* createNodeWindow(const std::string& name, const glm::vec2& position, const glm::vec2& size);
-		static InGuiNode* createNode(const std::string& name, const glm::vec2& position, const glm::vec2& size);
-		
+		static InGuiNode* createNode(uint32_t id, const glm::vec2& position, const glm::vec2& size);
+		static InGuiNode* getNode(uint32_t id);
+
 		static bool detectResize(InGuiWindow& window);
 		static bool detectMoved(InGuiWindow& window);
 		static bool detectCollapse(InGuiWindow& window);

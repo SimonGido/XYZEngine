@@ -1,20 +1,20 @@
 #pragma once
 
 namespace XYZ {
-	
+
 	template <typename T>
 	class Tree;
 
 	template <typename T>
 	class Node
-	{	
+	{
 		friend class Tree<T>;
 	public:
 		Node(const T& data)
 			:
 			m_Data(data)
 		{}
-	
+
 		bool HasChild() const
 		{
 			return m_FirstChild != sc_NullIndex;
@@ -30,22 +30,36 @@ namespace XYZ {
 			return m_PreviousSibling != sc_NullIndex;
 		}
 
-		uint16_t GetParentIndex() const 
-		{ 
-			return m_Parent; 
+		uint16_t GetIndex() const
+		{
+			return m_Index;
+		}
+		uint16_t GetParentIndex() const
+		{
+			return m_Parent;
+		}
+		uint16_t GetFirstChildIndex() const
+		{
+			return m_FirstChild;
+		}
+		uint16_t GetNextSiblingIndex() const
+		{
+			return m_NextSibling;
+		}
+		uint16_t GetPreviousSiblingIndex() const
+		{
+			return m_PreviousSibling;
 		}
 
-		operator const T& () const { return m_Data; }
-		operator T& () { return m_Data; }
 
-		const T& GetData() const 
+		const T& GetData() const
 		{
-			return m_Data; 
+			return m_Data;
 		}
 
 		T& GetData()
-		{ 
-			return m_Data; 
+		{
+			return m_Data;
 		}
 
 	private:
@@ -74,7 +88,7 @@ namespace XYZ {
 		}
 
 		template <typename Setup>
-		void setParent(uint16_t parent, std::vector<Node<T>>& vector, Setup& func )
+		void setParent(uint16_t parent, std::vector<Node<T>>& vector, Setup& func)
 		{
 			if (m_Parent == parent)
 				return;
@@ -86,7 +100,7 @@ namespace XYZ {
 				else
 					vector[m_Parent].m_FirstChild = m_NextSibling;
 			}
-			
+
 			// Assign parent
 			m_Parent = parent;
 
@@ -103,7 +117,7 @@ namespace XYZ {
 			vector[parent].m_FirstChild = m_Index;
 
 			// Call user setup
-			func(vector[m_Parent].m_Data, m_Data);
+			func(&vector[m_Parent], this);
 		}
 		void detachFromTree(std::vector<Node<T>>& vector)
 		{
@@ -141,7 +155,7 @@ namespace XYZ {
 				uint16_t next = vector[m_Index].m_NextSibling;
 				vector[next].m_PreviousSibling = newIndex;
 			}
-			
+
 			// Reconnect with children
 			uint16_t child = vector[m_Index].m_FirstChild;
 			while (child != sc_NullIndex)
@@ -199,9 +213,9 @@ namespace XYZ {
 		void SetParent(uint16_t parent, uint16_t child, Func& func)
 		{
 			XYZ_ASSERT(parent < m_Data.size() && child < m_Data.size(), "Index out of range");
-			m_Data[child].setParent(parent,m_Data,func);
+			m_Data[child].setParent(parent, m_Data, func);
 		}
-		
+
 		void DeleteNode(uint16_t index)
 		{
 			XYZ_ASSERT(index < m_Data.size(), "Index out of range");
@@ -230,32 +244,32 @@ namespace XYZ {
 
 
 		template <typename Function>
-		void Propagate(Function& func,uint16_t index = Node<T>::sc_NullIndex)
+		void Propagate(Function& func, uint16_t index = Node<T>::sc_NullIndex)
 		{
 			if (index == Node<T>::sc_NullIndex)
 				index = m_Root;
-			
-			func(nullptr, &m_Data[index].m_Data);
+
+			func(nullptr, &m_Data[index]);
 			while (index != Node<T>::sc_NullIndex)
 			{
 				if (m_Data[index].HasChild())
 				{
 					uint16_t firstChild = m_Data[index].m_FirstChild;
-					propagate(m_Data[index].m_Data, firstChild, func);
+					propagate(m_Data[index], firstChild, func);
 				}
 				index = m_Data[index].m_NextSibling;
 			}
 		}
-		
-		size_t GetSize() const 
-		{ 
-			return m_Data.size(); 
+
+		size_t GetSize() const
+		{
+			return m_Data.size();
 		}
-		
+
 
 		std::vector<Node<T>>& GetFlatData()
-		{ 
-			return m_Data; 
+		{
+			return m_Data;
 		}
 
 		T& operator [](uint16_t index)
@@ -271,15 +285,15 @@ namespace XYZ {
 		}
 	private:
 		template <typename Function>
-		void propagate(T& parentValue,uint16_t index,Function& func)
+		void propagate(Node<T>& parentValue, uint16_t index, Function& func)
 		{
 			while (index != Node<T>::sc_NullIndex)
 			{
-				func(&parentValue, &m_Data[index].m_Data);
+				func(&parentValue, &m_Data[index]);
 				if (m_Data[index].HasChild())
 				{
 					uint16_t firstChild = m_Data[index].m_FirstChild;
-					propagate(m_Data[index].m_Data,firstChild,func);
+					propagate(m_Data[index], firstChild, func);
 				}
 				index = m_Data[index].m_NextSibling;
 			}

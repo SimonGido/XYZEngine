@@ -173,8 +173,11 @@ namespace XYZ {
 
 	bool InGuiDockSpace::OnWindowResize(const glm::vec2& winSize)
 	{
-		glm::vec2 scale = winSize / m_Root->Size;
-		rescale(scale, m_Root);
+		if (winSize.x > 1.0f && winSize.y > 1.0f)
+		{
+			glm::vec2 scale = winSize / m_Root->Size;
+			rescale(scale, m_Root);
+		}
 		return false;
 	}
 
@@ -682,13 +685,17 @@ namespace XYZ {
 		ModifiedWindow = nullptr;
 		CurrentWindow = nullptr;
 		CurrentNodeWindow = nullptr;
+		CurrentNode = nullptr;
 
 		ModifiedWindowMouseOffset = { 0,0 };
+		LeftNodePinOffset = 0.0f;
+		RightNodePinOffset = 0.0f;
+
 		KeyCode = ToUnderlying(KeyCode::XYZ_KEY_NONE);
 		Mode = ToUnderlying(KeyMode::XYZ_MOD_NONE);
 		Code = ToUnderlying(MouseCode::XYZ_MOUSE_NONE);
 		CapslockEnabled = false;
-
+		
 		ResetWindowData();
 	}
 
@@ -704,15 +711,13 @@ namespace XYZ {
 		MaxHeightInRow = 0.0f;
 		MenuItemOffset = 0.0f;
 	}
-	InGuiNode::InGuiNode()
-	{
-		Color = { 1,1,1,1 };
-		Position = { 0,0 };
-		Size = { 0,0 };
-		ID = 0;
-		Modified = false;
-	}
+
 	InGuiNodeWindow::InGuiNodeWindow()
 	{
+	}
+	InGuiNodeWindow::~InGuiNodeWindow()
+	{
+		for (auto node : Nodes)
+			delete node.second;
 	}
 }

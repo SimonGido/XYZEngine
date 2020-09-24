@@ -237,22 +237,6 @@ namespace XYZ {
 		s_Data.IndexCount += 6;
 	}
 
-	void Renderer2D::SubmitMesh(const glm::mat4& transform, const Ref<Mesh>& mesh)
-	{
-		if (s_Data.IndexCount + mesh->Indices.size() >= s_Data.MaxIndices)
-			Flush();
-
-		for (auto& vertex : mesh->Vertices)
-		{
-			s_Data.BufferPtr->Position = transform * vertex.Position;
-			s_Data.BufferPtr->Color = vertex.Color;
-			s_Data.BufferPtr->TexCoord = vertex.TexCoord;
-			s_Data.BufferPtr->TextureID = (float)mesh->TextureID;
-			s_Data.BufferPtr++;
-		}
-		s_Data.IndexCount += mesh->Indices.size();
-	}
-
 	void Renderer2D::SubmitLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color)
 	{
 		if (s_Data.LineIndexCount >= s_Data.MaxLineIndices)
