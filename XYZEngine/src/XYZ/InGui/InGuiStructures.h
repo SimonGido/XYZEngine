@@ -162,7 +162,6 @@ namespace XYZ {
 		float MaxHeightInRow;
 		float MenuItemOffset;
 
-		float ScrollOffset;
 		int Code;
 		int KeyCode;
 		int Mode;

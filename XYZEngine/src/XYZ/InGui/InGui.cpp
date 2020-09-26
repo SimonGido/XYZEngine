@@ -370,7 +370,6 @@ namespace XYZ {
 		
 
 		// Clean codes
-		s_Context->PerFrameData.ScrollOffset = 0.0f;
 		s_Context->PerFrameData.KeyCode = ToUnderlying(KeyCode::XYZ_KEY_NONE);
 		s_Context->PerFrameData.Mode = ToUnderlying(KeyMode::XYZ_MOD_NONE);
 		s_Context->PerFrameData.Code = ToUnderlying(MouseCode::XYZ_MOUSE_NONE);
@@ -1134,10 +1133,7 @@ namespace XYZ {
 		InGuiRenderer::SubmitLineMesh(nodeWindow->LineMesh);
 		InGuiRenderer::FlushLines();
 		InGuiRenderer::Flush();
-
-		if (fabs(frameData.ScrollOffset) > 0.0f)
-			nodeWindow->InCamera.OnScroll(frameData.ScrollOffset);
-		
+	
 
 		frameData.CurrentNodeWindow->FBO->Unbind();
 		frameData.CurrentNodeWindow = nullptr;
@@ -1282,11 +1278,6 @@ namespace XYZ {
 		return false;
 	}
 
-	bool InGui::OnScroll(float offset)
-	{
-		s_Context->PerFrameData.ScrollOffset = offset;
-		return false;
-	}
 
 	bool InGui::IsKeyPressed(int key)
 	{

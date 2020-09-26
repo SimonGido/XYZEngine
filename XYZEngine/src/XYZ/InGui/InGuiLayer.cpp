@@ -96,7 +96,6 @@ namespace XYZ {
 	}
 	bool InGuiLayer::onMouseScroll(MouseScrollEvent& e)
 	{
-		InGui::OnScroll((float)e.GetOffsetY());
 		return false;
 	}
 }

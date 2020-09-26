@@ -66,7 +66,6 @@ namespace XYZ {
 		static bool OnRightMouseButtonRelease();
 		static bool OnKeyPress(int key, int mod);
 		static bool OnKeyRelease();
-		static bool OnScroll(float offset);
 		static bool IsKeyPressed(int key);
 
 		static InGuiWindow* GetCurrentWindow();
