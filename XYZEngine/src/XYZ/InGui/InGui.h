@@ -1,9 +1,17 @@
 #pragma once
 #include "InGuiStructures.h"
-
+#include "InGuiDockSpace.h"
 
 namespace XYZ {
-
+	struct InGuiContext
+	{
+		InGuiRenderConfiguration RenderConfiguration;
+		InGuiPerFrameData PerFrameData;
+		InGuiWindowMap Windows;
+		InGuiNodeWindowMap NodeWindows;
+		InGuiRenderQueue RenderQueue;
+		InGuiDockSpace* DockSpace = nullptr;
+	};
 
 	class InGui
 	{
@@ -88,6 +96,10 @@ namespace XYZ {
 		static void resolveResize(InGuiWindow& window);
 		static void resolveMove(InGuiWindow& window);
 
+		static bool resolveLeftClick(bool handle = true);
+		static bool resolveRightClick(bool handle = true);
+		static bool resolveLeftRelease(bool handle = true);
+		static bool resolveRightRelease(bool handle = true);
 
 		static void loadDockSpace();
 		static void saveDockSpace();

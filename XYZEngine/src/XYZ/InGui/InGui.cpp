@@ -354,7 +354,7 @@ namespace XYZ {
 		{
 			InGuiRenderer::SubmitLineMesh(*mesh);
 		}
-		s_Context->DockSpace->End(s_Context->PerFrameData.MousePosition, *s_Context);
+		s_Context->DockSpace->End(s_Context->PerFrameData.MousePosition, s_Context->PerFrameData, s_Context->RenderConfiguration);
 		InGuiRenderer::Flush();
 		InGuiRenderer::FlushLines();
 		InGuiRenderer::EndScene();
@@ -440,13 +440,9 @@ namespace XYZ {
 			if (Collide(position, size, frameData.MousePosition))
 			{
 				color = renderConfig.HooverColor;
-				if (!(frameData.Flags & ClickHandled))
+				if (resolveLeftClick())
 				{
-					if (frameData.Flags & LeftMouseButtonPressed)
-					{
-						frameData.Flags |= ClickHandled;
-						open = !open;
-					}
+					open = !open;
 				}
 			}
 			
@@ -473,13 +469,9 @@ namespace XYZ {
 			if (Collide(position, size, frameData.MousePosition))
 			{
 				color = renderConfig.HooverColor;
-				if (!(frameData.Flags & ClickHandled))
+				if (resolveLeftClick())
 				{
-					if (frameData.Flags & LeftMouseButtonPressed)
-					{
-						frameData.Flags |= ClickHandled;
-						pressed = true;
-					}
+					pressed = true;
 				}
 			}
 			InGuiFactory::GenerateButton(position, size, color, name, window->Mesh, renderConfig);
@@ -513,20 +505,16 @@ namespace XYZ {
 				if (Collide(position, size, frameData.MousePosition))
 				{
 					color = renderConfig.HooverColor;
-					if (!(frameData.Flags & ClickHandled))
+					if (resolveLeftClick())
 					{
-						if (frameData.Flags & LeftMouseButtonPressed)
-						{
-							frameData.Flags |= ClickHandled;
-							open = !open;
-						}
+						open = !open;
 					}
 				}
-				else if ((frameData.Flags & LeftMouseButtonPressed) 
-					  || (frameData.Flags & RightMouseButtonPressed))
+				else if (resolveLeftClick(false) || resolveRightClick(false)) 
 				{
 					open = false;
 				}
+
 				InGuiFactory::GenerateMenuBar(position, size, color, name, frameData, renderConfig);
 
 				frameData.MenuBarOffset.x += width;
@@ -554,13 +542,9 @@ namespace XYZ {
 				if (Collide(position, size, frameData.MousePosition))
 				{
 					color = renderConfig.HooverColor;
-					if (!(frameData.Flags & ClickHandled))
+					if (resolveLeftClick())
 					{
-						if (frameData.Flags & LeftMouseButtonPressed)
-						{
-							frameData.Flags |= ClickHandled;
-							pressed = true;
-						}
+						pressed = true;
 					}
 				}
 				InGuiFactory::GenerateMenuBar(position, size, color, name, frameData, renderConfig);
@@ -588,11 +572,9 @@ namespace XYZ {
 			if (Collide(minButtonPos, { InGuiWindow::PanelSize,InGuiWindow::PanelSize }, frameData.MousePosition))
 			{
 				color = renderConfig.HooverColor;
-				if ((frameData.Flags & LeftMouseButtonPressed)
-					&& !(frameData.Flags & ClickHandled))
+				if (resolveLeftClick())
 				{
 					open = !open;
-					frameData.Flags |= ClickHandled;
 				}
 			}
 			InGuiFactory::GenerateGroup(panelPos, color, name, open, frameData, renderConfig);
@@ -620,13 +602,9 @@ namespace XYZ {
 			if (Collide(position, size, frameData.MousePosition))
 			{
 				color = renderConfig.HooverColor;
-				if (!(frameData.Flags & ClickHandled))
+				if (resolveLeftClick())
 				{
-					if ((frameData.Flags & LeftMouseButtonPressed))
-					{
-						frameData.Flags |= ClickHandled;
-						pressed = true;
-					}
+					pressed = true;
 				}
 			}
 			InGuiFactory::GenerateButton(position, size, color, name, window->Mesh, renderConfig);
@@ -656,13 +634,9 @@ namespace XYZ {
 			if (Collide(position, size, frameData.MousePosition))
 			{
 				color = renderConfig.HooverColor;
-				if (!(frameData.Flags & ClickHandled))
-				{
-					if (frameData.Flags & LeftMouseButtonPressed)
-					{
-						frameData.Flags |= ClickHandled;
-						value = !value;
-					}
+				if (resolveLeftClick())
+				{		
+					value = !value;
 				}
 			}
 			InGuiFactory::GenerateCheckbox(position, size, color, name, value, window->Mesh, renderConfig);
@@ -686,7 +660,7 @@ namespace XYZ {
 			if (Collide(position, size, frameData.MousePosition))
 			{
 				color = renderConfig.HooverColor;
-				modified = (frameData.Flags & LeftMouseButtonPressed);
+				modified = resolveLeftClick(false);
 				if (modified)
 				{
 					float start = position.x;
@@ -714,12 +688,7 @@ namespace XYZ {
 			if (Collide(position, size, frameData.MousePosition))
 			{
 				color = renderConfig.HooverColor;
-				if (!(frameData.Flags & ClickHandled))
-				{
-					pressed = (frameData.Flags & LeftMouseButtonPressed);
-					if (pressed)
-						frameData.Flags |= ClickHandled;
-				}
+				pressed = resolveLeftClick();
 			}
 			InGuiFactory::GenerateImage(position, size, color, rendererID, window->Mesh,frameData.TexturePairs, renderConfig);
 		}
@@ -742,17 +711,12 @@ namespace XYZ {
 		
 			if (Collide(position, size, frameData.MousePosition))
 			{		
-				if (!(frameData.Flags & ClickHandled))
+				if (resolveLeftClick())
 				{
-					if (frameData.Flags & LeftMouseButtonPressed)
-					{
-						frameData.Flags |= ClickHandled;
-						modified = !modified;
-					}			
+					modified = !modified;		
 				}
 			}
-			else if (frameData.Flags & LeftMouseButtonPressed || 
-				     frameData.Flags & RightMouseButtonPressed)
+			else if (resolveLeftClick(false) || resolveRightClick(false))
 			{
 				modified = false;
 			}
@@ -787,14 +751,7 @@ namespace XYZ {
 			MoveVertices(window->Mesh.Vertices.data(), position, offset, text.size() * 4);
 			if (Collide(position, size, frameData.MousePosition))
 			{
-				if (!(frameData.Flags & ClickHandled))
-				{		
-					if (frameData.Flags & LeftMouseButtonPressed)
-					{
-						frameData.Flags |= ClickHandled;
-						return true;
-					}
-				}
+				return resolveLeftClick();
 			}
 		}
 
@@ -832,15 +789,10 @@ namespace XYZ {
 
 			if (Collide(position, size, frameData.MousePosition))
 			{
-				if (!(frameData.Flags & ClickHandled))
-				{
-					if (frameData.Flags & LeftMouseButtonPressed)
-					{
-						frameData.Flags |= ClickHandled;
-
-						modified = true;
-						color = CalculatePixelColor(pallete, position, size, frameData);
-					}
+				if (resolveLeftClick())
+				{			
+					modified = true;
+					color = CalculatePixelColor(pallete, position, size, frameData);
 				}
 			}
 			return modified;
@@ -861,7 +813,7 @@ namespace XYZ {
 			InGuiFactory::Generate6SegmentColorRectangle(position, size, window->Mesh, renderConfig);
 			if (Collide(position, size, frameData.MousePosition))
 			{
-				if (frameData.Flags & LeftMouseButtonPressed)
+				if (resolveLeftClick())
 				{
 					color = ColorFrom6SegmentColorRectangle(position, size, frameData.MousePosition);
 					return true;
@@ -941,9 +893,7 @@ namespace XYZ {
 			nodeWindow->Mesh.Vertices.clear();
 			nodeWindow->LineMesh.Vertices.clear();
 			nodeWindow->InCamera.OnUpdate(dt);
-			if (!(frameData.Flags & ClickHandled)
-				&& (frameData.Flags & LeftMouseButtonPressed)
-				|| (frameData.Flags & RightMouseButtonPressed))
+			if (resolveLeftClick(false) || resolveRightClick(false))
 			{
 				if (nodeWindow->SelectedNode)
 					nodeWindow->SelectedNode->Color = renderConfig.DefaultColor;
@@ -996,13 +946,10 @@ namespace XYZ {
 			glm::vec4 color = renderConfig.DefaultColor;
 			if (Collide(node->Position, node->Size, nodeWindow->RelativeMousePosition))
 			{
-				node->Flags |= NodeHoovered;
-				if ((frameData.Flags & LeftMouseButtonPressed)
-				&& !(frameData.Flags & ClickHandled))
+				if (resolveLeftClick())
 				{
 					nodeWindow->SelectedNode = node;
 					node->Color = renderConfig.HooverColor;
-					frameData.Flags |= ClickHandled;
 					pressed = true;
 				}
 				
@@ -1023,14 +970,11 @@ namespace XYZ {
 		if (nodeWindow->SelectedNode)
 		{
 			InGuiNode* selected = nodeWindow->SelectedNode;
-			
-			if (frameData.Flags & LeftMouseButtonPressed)
-			{
-				glm::vec2 p0 = selected->Position + (selected->Size / 2.0f);
-				InGuiFactory::GenerateArrowLine(nodeWindow->Mesh, nodeWindow->LineMesh, p0, nodeWindow->RelativeMousePosition, { 50.0f,50.0f }, s_Context->RenderConfiguration);
-			}
-			else if (frameData.Flags & LeftMouseButtonReleased
-				&& !(frameData.Flags & ReleaseHandled))
+					
+			glm::vec2 p0 = selected->Position + (selected->Size / 2.0f);
+			InGuiFactory::GenerateArrowLine(nodeWindow->Mesh, nodeWindow->LineMesh, p0, nodeWindow->RelativeMousePosition, { 50.0f,50.0f }, s_Context->RenderConfiguration);
+
+			if (resolveLeftRelease(false))
 			{
 				for (auto node : nodeWindow->Nodes)
 				{
@@ -1104,8 +1048,7 @@ namespace XYZ {
 		if (Collide(position, size, nodeWindow->RelativeMousePosition))
 		{
 			color = renderConfig.HooverColor;
-			if (!(frameData.Flags & ClickHandled) &&
-				frameData.Flags & LeftMouseButtonPressed)
+			if (resolveLeftClick())
 			{
 				
 			}
@@ -1494,6 +1437,54 @@ namespace XYZ {
 			s_Context->DockSpace->m_DockSpaceVisible = true;
 			window.Flags |= Modified;
 		}
+	}
+
+	bool InGui::resolveLeftClick(bool handle)
+	{
+		if ((s_Context->PerFrameData.Flags & LeftMouseButtonPressed) && 
+			!(s_Context->PerFrameData.Flags & ClickHandled))
+		{
+			if (handle)
+				s_Context->PerFrameData.Flags |= ClickHandled;
+			return true;
+		}	
+		return false;
+	}
+
+	bool InGui::resolveRightClick(bool handle)
+	{
+		if ((s_Context->PerFrameData.Flags & RightMouseButtonPressed) && 
+			!(s_Context->PerFrameData.Flags & ClickHandled))
+		{
+			if (handle)
+				s_Context->PerFrameData.Flags |= ClickHandled;
+			return true;
+		}
+		return false;
+	}
+
+	bool InGui::resolveLeftRelease(bool handle)
+	{
+		if ((s_Context->PerFrameData.Flags & LeftMouseButtonReleased) &&
+			!(s_Context->PerFrameData.Flags & ReleaseHandled))
+		{
+			if (handle)
+				s_Context->PerFrameData.Flags |= ReleaseHandled;
+			return true;
+		}
+		return false;
+	}
+
+	bool InGui::resolveRightRelease(bool handle)
+	{
+		if ((s_Context->PerFrameData.Flags & RightMouseButtonReleased) &&
+			!(s_Context->PerFrameData.Flags & ReleaseHandled))
+		{
+			if (handle)
+				s_Context->PerFrameData.Flags |= ReleaseHandled;
+			return true;
+		}
+		return false;
 	}
 
 	std::string GetID(const std::string& src)

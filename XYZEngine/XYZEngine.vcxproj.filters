@@ -1855,6 +1855,7 @@
       <Filter>vendor\yaml-cpp\src</Filter>
     </ClInclude>
     <ClInclude Include="src\XYZ\Utils\DataStructures\Graph.h" />
+    <ClInclude Include="src\XYZ\InGui\InGuiDockSpace.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\API\OpenGL\OpenGLAPIContext.cpp">
@@ -2239,6 +2240,7 @@
       <Filter>vendor\yaml-cpp\src</Filter>
     </ClCompile>
     <ClCompile Include="src\XYZ\Utils\DataStructures\Graph.cpp" />
+    <ClCompile Include="src\XYZ\InGui\InGuiDockSpace.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="vendor\RCC\RuntimeCompiler\SimpleFileWatcher\FileWatcherLinux.cpp~">
