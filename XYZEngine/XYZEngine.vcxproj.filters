@@ -31,9 +31,6 @@
     <Filter Include="src\XYZ\ECS">
       <UniqueIdentifier>{71311159-DDE6-894E-66DB-8325D28F8052}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\XYZ\Editor">
-      <UniqueIdentifier>{FDBCF028-E98A-E42E-D21E-5555BE8BC093}</UniqueIdentifier>
-    </Filter>
     <Filter Include="src\XYZ\Event">
       <UniqueIdentifier>{38A43FE2-A464-BB18-6D9F-0496D91E00F5}</UniqueIdentifier>
     </Filter>
@@ -297,6 +294,21 @@
     <ClInclude Include="src\XYZ\Gui\Widget.h">
       <Filter>src\XYZ\Gui</Filter>
     </ClInclude>
+    <ClInclude Include="src\XYZ\InGui\InGui.h">
+      <Filter>src\XYZ\InGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\XYZ\InGui\InGuiCamera.h">
+      <Filter>src\XYZ\InGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\XYZ\InGui\InGuiFactory.h">
+      <Filter>src\XYZ\InGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\XYZ\InGui\InGuiLayer.h">
+      <Filter>src\XYZ\InGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\XYZ\InGui\InGuiStructures.h">
+      <Filter>src\XYZ\InGui</Filter>
+    </ClInclude>
     <ClInclude Include="src\XYZ\NativeScript\NativeScriptEngine.h">
       <Filter>src\XYZ\NativeScript</Filter>
     </ClInclude>
@@ -357,6 +369,9 @@
     <ClInclude Include="src\XYZ\Renderer\MeshFactory.h">
       <Filter>src\XYZ\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="src\XYZ\Renderer\MeshRenderer2D.h">
+      <Filter>src\XYZ\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="src\XYZ\Renderer\RenderCommand.h">
       <Filter>src\XYZ\Renderer</Filter>
     </ClInclude>
@@ -389,6 +404,9 @@
     </ClInclude>
     <ClInclude Include="src\XYZ\Renderer\VertexArray.h">
       <Filter>src\XYZ\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\XYZ\Scene\Animation.h">
+      <Filter>src\XYZ\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\XYZ\Scene\AssetManager.h">
       <Filter>src\XYZ\Scene</Filter>
@@ -1836,15 +1854,7 @@
     <ClInclude Include="vendor\yaml-cpp\src\token.h">
       <Filter>vendor\yaml-cpp\src</Filter>
     </ClInclude>
-    <ClInclude Include="src\XYZ\InGui\InGuiLayer.h" />
-    <ClInclude Include="src\XYZ\InGui\InGui.h" />
-    <ClInclude Include="src\XYZ\InGui\InGuiFactory.h" />
-    <ClInclude Include="src\XYZ\InGui\InGuiStructures.h" />
-    <ClInclude Include="src\XYZ\InGui\InGuiCamera.h" />
-    <ClInclude Include="src\XYZ\Scene\Animation.h">
-      <Filter>src\XYZ\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\XYZ\Renderer\MeshRenderer2D.h" />
+    <ClInclude Include="src\XYZ\Utils\DataStructures\Graph.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\API\OpenGL\OpenGLAPIContext.cpp">
@@ -1925,6 +1935,9 @@
     <ClCompile Include="src\XYZ\ECS\SystemManager.cpp">
       <Filter>src\XYZ\ECS</Filter>
     </ClCompile>
+    <ClCompile Include="src\XYZ\FSM\StateMachine.cpp">
+      <Filter>src\XYZ\FSM</Filter>
+    </ClCompile>
     <ClCompile Include="src\XYZ\Gui\Button.cpp">
       <Filter>src\XYZ\Gui</Filter>
     </ClCompile>
@@ -1945,6 +1958,21 @@
     </ClCompile>
     <ClCompile Include="src\XYZ\Gui\Text.cpp">
       <Filter>src\XYZ\Gui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\XYZ\InGui\InGui.cpp">
+      <Filter>src\XYZ\InGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\XYZ\InGui\InGuiCamera.cpp">
+      <Filter>src\XYZ\InGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\XYZ\InGui\InGuiFactory.cpp">
+      <Filter>src\XYZ\InGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\XYZ\InGui\InGuiLayer.cpp">
+      <Filter>src\XYZ\InGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\XYZ\InGui\InGuiStructures.cpp">
+      <Filter>src\XYZ\InGui</Filter>
     </ClCompile>
     <ClCompile Include="src\XYZ\NativeScript\NativeScriptEngine.cpp">
       <Filter>src\XYZ\NativeScript</Filter>
@@ -2003,6 +2031,9 @@
     <ClCompile Include="src\XYZ\Renderer\MeshFactory.cpp">
       <Filter>src\XYZ\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="src\XYZ\Renderer\MeshRenderer2D.cpp">
+      <Filter>src\XYZ\Renderer</Filter>
+    </ClCompile>
     <ClCompile Include="src\XYZ\Renderer\RenderCommand.cpp">
       <Filter>src\XYZ\Renderer</Filter>
     </ClCompile>
@@ -2035,6 +2066,9 @@
     </ClCompile>
     <ClCompile Include="src\XYZ\Renderer\VertexArray.cpp">
       <Filter>src\XYZ\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\XYZ\Scene\Animation.cpp">
+      <Filter>src\XYZ\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\XYZ\Scene\AssetManager.cpp">
       <Filter>src\XYZ\Scene</Filter>
@@ -2204,16 +2238,7 @@
     <ClCompile Include="vendor\yaml-cpp\src\tag.cpp">
       <Filter>vendor\yaml-cpp\src</Filter>
     </ClCompile>
-    <ClCompile Include="src\XYZ\InGui\InGuiLayer.cpp" />
-    <ClCompile Include="src\XYZ\InGui\InGui.cpp" />
-    <ClCompile Include="src\XYZ\InGui\InGuiFactory.cpp" />
-    <ClCompile Include="src\XYZ\InGui\InGuiStructures.cpp" />
-    <ClCompile Include="src\XYZ\FSM\StateMachine.cpp" />
-    <ClCompile Include="src\XYZ\InGui\InGuiCamera.cpp" />
-    <ClCompile Include="src\XYZ\Scene\Animation.cpp">
-      <Filter>src\XYZ\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\XYZ\Renderer\MeshRenderer2D.cpp" />
+    <ClCompile Include="src\XYZ\Utils\DataStructures\Graph.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="vendor\RCC\RuntimeCompiler\SimpleFileWatcher\FileWatcherLinux.cpp~">

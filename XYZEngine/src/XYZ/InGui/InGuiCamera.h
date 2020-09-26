@@ -13,7 +13,8 @@ namespace XYZ {
 
 
 		void OnUpdate(float dt);
-		void OnEvent(Event& event);
+		void OnScroll(float offset);
+
 
 		const glm::vec3& GetPosition() const { return m_CameraPosition; }
 		float GetRotation() const { return m_CameraRotation; }
@@ -24,23 +25,8 @@ namespace XYZ {
 		const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
 		const glm::mat4& GetViewProjectionMatrix() const { return m_ViewProjectionMatrix; }
 	private:
-
 		void recalculate();
-		/**
-		* Handler for the mouse scrolled event
-		* @param[in] event shared_ptr to the Event
-		*/
-		bool onMouseScrolled(MouseScrollEvent& event);
 
-
-		bool onMouseButtonPress(MouseButtonPressEvent& event);
-
-		bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
-		/**
-		* Handler for the window resized event
-		* @param[in] event shared_ptr to the Event
-		*/
-		bool onWindowResized(WindowResizeEvent& event);
 
 	private:
 		glm::mat4 m_ViewProjectionMatrix = glm::mat4(1.0f);

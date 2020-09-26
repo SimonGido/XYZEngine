@@ -54,9 +54,16 @@ namespace XYZ {
 		frameData.RightNodePinOffset += uiSize.y;
 		return position;
 	}
-	static glm::vec2 ConvertToCamera(const glm::vec2& mousePos,const glm::vec2& winSize, const InGuiCamera& camera)
+	static glm::vec2 ConvertToCamera(const glm::vec2& mousePos,const glm::vec2& winPos, const glm::vec2& winSize, const InGuiCamera& camera)
 	{
-		return { mousePos.x + (winSize.x/2 * camera.GetPosition().x), mousePos.y + (winSize.y/2 * camera.GetPosition().y) };
+		glm::vec2 offset = { winSize.x / 2,winSize.y / 2 };
+		glm::vec2 pos = { mousePos.x - offset.x, mousePos.y - offset.y };
+
+		pos.x += (winSize.x / 2 * camera.GetPosition().x) - winPos.x;
+		pos.y += (winSize.y / 2 * camera.GetPosition().y) - winPos.y;
+		return pos;
+
+		return { mousePos.x + winPos.x + (winSize.x/2 * camera.GetPosition().x) , mousePos.y + winPos.y + (winSize.y/2 * camera.GetPosition().y) };
 	}
 
 	static glm::vec4 ColorFrom6SegmentColorRectangle(const glm::vec2& position, const glm::vec2& size, const glm::vec2& mousePos)
@@ -363,6 +370,7 @@ namespace XYZ {
 		
 
 		// Clean codes
+		s_Context->PerFrameData.ScrollOffset = 0.0f;
 		s_Context->PerFrameData.KeyCode = ToUnderlying(KeyCode::XYZ_KEY_NONE);
 		s_Context->PerFrameData.Mode = ToUnderlying(KeyMode::XYZ_MOD_NONE);
 		s_Context->PerFrameData.Code = ToUnderlying(MouseCode::XYZ_MOUSE_NONE);
@@ -387,13 +395,14 @@ namespace XYZ {
 		window->Mesh.Material = renderConfig.InMaterial;
 
 		// Check if window is hoovered
-		glm::vec2 winSize = window->Size + glm::vec2(InGuiWindow::PanelSize, InGuiWindow::PanelSize);
+		glm::vec2 winSize = window->Size + glm::vec2(0.0f, InGuiWindow::PanelSize);
 		if (Collide(window->Position, winSize, frameData.MousePosition))
 		{
 			window->Flags |= Modified;
 			window->Flags |= Hoovered;
+
 			if (window->Flags & EventListener)
-				s_Context->PerFrameData.EventReceivingWindow = window;
+				frameData.EventReceivingWindow = window;
 		}
 		// Check if was modified
 		if (window->Flags & Modified)
@@ -411,6 +420,8 @@ namespace XYZ {
 		
 		s_Context->PerFrameData.CurrentWindow->Flags &= ~Modified;
 		s_Context->PerFrameData.CurrentWindow->Flags &= ~Hoovered;
+		s_Context->PerFrameData.CurrentWindow->Flags &= ~LeftClicked;
+		s_Context->PerFrameData.CurrentWindow->Flags &= ~RightClicked;
 		s_Context->PerFrameData.ResetWindowData();
 	}
 
@@ -439,6 +450,7 @@ namespace XYZ {
 					}
 				}
 			}
+			
 			InGuiFactory::GenerateButton(position, size, color, name, window->Mesh, renderConfig);
 			frameData.PopupOffset.x = position.x;
 			frameData.PopupOffset.y = position.y - size.y;
@@ -777,8 +789,7 @@ namespace XYZ {
 			if (Collide(position, size, frameData.MousePosition))
 			{
 				if (!(frameData.Flags & ClickHandled))
-				{
-					
+				{		
 					if (frameData.Flags & LeftMouseButtonPressed)
 					{
 						frameData.Flags |= ClickHandled;
@@ -881,7 +892,7 @@ namespace XYZ {
 		window->Mesh.Material = renderConfig.InMaterial;
 
 		// Check if window is hoovered
-		glm::vec2 winSize = window->Size + glm::vec2(InGuiWindow::PanelSize, InGuiWindow::PanelSize);
+		glm::vec2 winSize = window->Size + glm::vec2(0.0f, InGuiWindow::PanelSize);
 		if (Collide(window->Position, winSize, frameData.MousePosition))
 		{		
 			window->Flags |= Hoovered;
@@ -927,10 +938,18 @@ namespace XYZ {
 		bool result = RenderWindow(name, nodeWindow->FBO->GetColorAttachment(0).RendererID, position, size, 25.0f);
 		if (result)
 		{
-			nodeWindow->RelativeMousePosition = ConvertToCamera(frameData.MousePosition, frameData.WindowSize, nodeWindow->InCamera);
+			nodeWindow->RelativeMousePosition = ConvertToCamera(frameData.MousePosition,nodeWindow->RenderWindow->Position, frameData.WindowSize, nodeWindow->InCamera);
 			nodeWindow->Mesh.Vertices.clear();
 			nodeWindow->LineMesh.Vertices.clear();
 			nodeWindow->InCamera.OnUpdate(dt);
+			if (!(frameData.Flags & ClickHandled)
+				&& (frameData.Flags & LeftMouseButtonPressed)
+				|| (frameData.Flags & RightMouseButtonPressed))
+			{
+				if (nodeWindow->SelectedNode)
+					nodeWindow->SelectedNode->Color = renderConfig.DefaultColor;
+				nodeWindow->SelectedNode = nullptr;
+			}
 		}
 	
 		InGuiRenderer::BeginScene({ nodeWindow->InCamera.GetViewProjectionMatrix(), frameData.WindowSize });
@@ -938,6 +957,23 @@ namespace XYZ {
 			
 		
 		return result;
+	}
+
+	void InGui::PushConnection(uint32_t start, uint32_t end)
+	{
+		XYZ_ASSERT(s_Context->PerFrameData.CurrentNodeWindow, "Missing node window end call");
+
+		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiNodeWindow* nodeWindow = frameData.CurrentNodeWindow;
+		InGuiWindow* window = frameData.CurrentWindow;
+		if (window->Flags & Modified)
+		{
+			auto startNode = nodeWindow->Nodes[start];
+			auto endNode = nodeWindow->Nodes[end];
+			glm::vec2 p0 = startNode->Position + (startNode->Size / 2.0f);
+			glm::vec2 p1 = endNode->Position + (endNode->Size / 2.0f);
+			InGuiFactory::GenerateArrowLine(nodeWindow->Mesh, nodeWindow->LineMesh, p0, p1, { 50.0f,50.0f }, s_Context->RenderConfiguration);
+		}
 	}
 
 	bool InGui::BeginNode(uint32_t id, const std::string& name, const glm::vec2& position, const glm::vec2& size)
@@ -961,13 +997,63 @@ namespace XYZ {
 			glm::vec4 color = renderConfig.DefaultColor;
 			if (Collide(node->Position, node->Size, nodeWindow->RelativeMousePosition))
 			{
-				node->Flags |= NodeHoovered;	
-				color = renderConfig.HooverColor;
+				node->Flags |= NodeHoovered;
+				if ((frameData.Flags & LeftMouseButtonPressed)
+				&& !(frameData.Flags & ClickHandled))
+				{
+					nodeWindow->SelectedNode = node;
+					node->Color = renderConfig.HooverColor;
+					frameData.Flags |= ClickHandled;
+					pressed = true;
+				}
+				
 			}
 			
-			InGuiFactory::GenerateNode(position, size, color, name, nodeWindow->Mesh, renderConfig);
+			InGuiFactory::GenerateNode(node->Position, node->Size, node->Color, name, nodeWindow->Mesh, renderConfig);
 		}
-		return false;
+		return pressed;
+	}
+
+	bool InGui::BeginConnection(std::pair<uint32_t, uint32_t>& connection)
+	{
+		XYZ_ASSERT(s_Context->PerFrameData.CurrentNodeWindow, "Missing node window end call");
+		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiNodeWindow* nodeWindow = frameData.CurrentNodeWindow;
+
+		bool connected = false;
+		if (nodeWindow->SelectedNode)
+		{
+			InGuiNode* selected = nodeWindow->SelectedNode;
+			
+			if (frameData.Flags & LeftMouseButtonPressed)
+			{
+				glm::vec2 p0 = selected->Position + (selected->Size / 2.0f);
+				InGuiFactory::GenerateArrowLine(nodeWindow->Mesh, nodeWindow->LineMesh, p0, nodeWindow->RelativeMousePosition, { 50.0f,50.0f }, s_Context->RenderConfiguration);
+			}
+			else if (frameData.Flags & LeftMouseButtonReleased
+				&& !(frameData.Flags & ReleaseHandled))
+			{
+				for (auto node : nodeWindow->Nodes)
+				{
+					if (Collide(node.second->Position, node.second->Size, nodeWindow->RelativeMousePosition))
+					{
+						frameData.Flags |= ReleaseHandled;
+						if (node.second->ID != selected->ID)
+						{
+							connection.first = selected->ID;
+							connection.second = node.second->ID;
+							connected = true;
+							break;
+						}
+					}
+				}		
+				nodeWindow->SelectedNode->Color = s_Context->RenderConfiguration.DefaultColor;
+				nodeWindow->SelectedNode = nullptr;
+			}
+			
+			
+		}
+		return connected;
 	}
 
 	void InGui::EndNode()
@@ -1042,13 +1128,17 @@ namespace XYZ {
 		End();
 		XYZ_ASSERT(s_Context->PerFrameData.CurrentNodeWindow, "Missing begin call");
 		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiNodeWindow* nodeWindow = frameData.CurrentNodeWindow;
 		
-		InGuiRenderer::SubmitUI(frameData.CurrentNodeWindow->Mesh);
-		InGuiRenderer::SubmitLineMesh(frameData.CurrentNodeWindow->LineMesh);
+		InGuiRenderer::SubmitUI(nodeWindow->Mesh);
+		InGuiRenderer::SubmitLineMesh(nodeWindow->LineMesh);
 		InGuiRenderer::FlushLines();
 		InGuiRenderer::Flush();
 
+		if (fabs(frameData.ScrollOffset) > 0.0f)
+			nodeWindow->InCamera.OnScroll(frameData.ScrollOffset);
 		
+
 		frameData.CurrentNodeWindow->FBO->Unbind();
 		frameData.CurrentNodeWindow = nullptr;
 	}
@@ -1082,10 +1172,11 @@ namespace XYZ {
 
 		InGuiWindow* window = s_Context->PerFrameData.EventReceivingWindow;
 		if (window && (window->Flags & Visible))
-		{
+		{		
 			glm::vec2 size = window->Size + glm::vec2(InGuiWindow::PanelSize, InGuiWindow::PanelSize);
 			if (Collide(window->Position, size, s_Context->PerFrameData.MousePosition))
 			{
+				window->Flags |= LeftClicked;
 				if (detectCollapse(*window))
 				{}
 		
@@ -1109,6 +1200,7 @@ namespace XYZ {
 			glm::vec2 size = window->Size + glm::vec2(0, InGuiWindow::PanelSize);
 			if (Collide(window->Position, size, s_Context->PerFrameData.MousePosition))
 			{
+				window->Flags |= RightClicked;
 				if (detectResize(*window))
 				{
 					s_Context->PerFrameData.Flags |= ClickHandled;
@@ -1190,7 +1282,26 @@ namespace XYZ {
 		return false;
 	}
 
+	bool InGui::OnScroll(float offset)
+	{
+		s_Context->PerFrameData.ScrollOffset = offset;
+		return false;
+	}
 
+	bool InGui::IsKeyPressed(int key)
+	{
+		return s_Context->PerFrameData.KeyCode == key;
+	}
+
+	InGuiWindow* InGui::GetCurrentWindow()
+	{
+		return s_Context->PerFrameData.CurrentWindow;
+	}
+
+	InGuiNodeWindow* InGui::GetCurrentNodeWindow()
+	{
+		return s_Context->PerFrameData.CurrentNodeWindow;
+	}
 
 	glm::vec2& InGui::MouseRelativePosition(const InGuiWindow& window, const glm::vec3& cameraPos)
 	{
@@ -1240,6 +1351,7 @@ namespace XYZ {
 			window->RenderWindow = createWindow(name, position, size);
 
 		window->RenderWindow->NodeWindow = window;
+
 		window->FBO = FrameBuffer::Create({ (uint32_t)window->RenderWindow->Size.x, (uint32_t)window->RenderWindow->Size.y });
 		window->FBO->CreateColorAttachment(FrameBufferFormat::RGBA16F);
 		window->FBO->CreateDepthAttachment();

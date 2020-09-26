@@ -279,7 +279,7 @@ namespace XYZ {
 	}
 	std::pair<int32_t, int32_t> InGuiFactory::GenerateText(const glm::vec2& scale, const glm::vec4& color, const std::string& text, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig)
 	{
-		return GenerateInGuiText(mesh, renderConfig.Font, text, {}, scale, 100.0f, renderConfig.FontTextureID, color);
+		return GenerateInGuiText(mesh, renderConfig.Font, text, {}, scale, 1000.0f, renderConfig.FontTextureID, color);
 	}
 	void InGuiFactory::GenerateColorPicker4(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig)
 	{
@@ -422,11 +422,12 @@ namespace XYZ {
 		glm::vec2 panelPos = { position.x, position.y + size.y };
 
 		GenerateInGuiQuad(mesh, panelPos, { size.x ,InGuiWindow::PanelSize }, renderConfig.SliderSubTexture->GetTexCoords(), renderConfig.TextureID, color);
-	
-		auto [width, height] = GenerateInGuiText(mesh, renderConfig.Font, name, panelPos, { 0.7f,0.7f }, size.x, renderConfig.FontTextureID, { 1,1,1,1 });
-		MoveVertices(mesh.Vertices.data(), { 5, height / 2 }, 4, name.size() * 4);
 		
-		GenerateInGuiQuad(mesh, position, size, renderConfig.WindowSubTexture->GetTexCoords(), renderConfig.TextureID, renderConfig.DefaultColor);
+		size_t offset = mesh.Vertices.size();
+		auto [width, height] = GenerateInGuiText(mesh, renderConfig.Font, name, panelPos, { 0.7f,0.7f }, size.x, renderConfig.FontTextureID, { 1,1,1,1 });
+		MoveVertices(mesh.Vertices.data(), { 5, height / 2 }, offset, name.size() * 4);
+		
+		GenerateInGuiQuad(mesh, position, size, renderConfig.WindowSubTexture->GetTexCoords(), renderConfig.TextureID, color);
 	}
 
 	

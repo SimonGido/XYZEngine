@@ -3,7 +3,11 @@
 #include <XYZ.h>
 
 #include "Panels/SceneHierarchyPanel.h"
-#include "Panels/EntityComponentsPanel.h"
+#include "Panels/InspectorPanel.h"
+#include "Panels/GraphPanel.h"
+#include "InspectorLayout/EntityInspectorLayout.h"
+#include "InspectorLayout/AnimatorInspectorLayout.h"
+#include "GraphLayout/AnimatorGraphLayout.h"
 
 #include "Tools/EditorCamera.h"
 
@@ -39,7 +43,16 @@ namespace XYZ {
 
 	private:
 		SceneHierarchyPanel m_SceneHierarchyPanel;
-		EntityComponentPanel m_EntityComponentPanel;
+		
+		InspectorPanel m_InspectorPanel;
+		EntityInspectorLayout m_EntityInspectorLayout;
+		AnimatorInspectorLayout m_AnimatorInspectorLayout;
+
+		GraphPanel m_GraphPanel;
+		AnimatorGraphLayout m_AnimatorGraphLayout;
+		Graph m_NodeGraph;
+
+
 		Entity m_SelectedEntity;
 		glm::vec2 m_StartMousePos;
 		bool m_ScalingEntity = false;
@@ -96,5 +109,8 @@ namespace XYZ {
 		Ref<SubTexture2D> m_CharacterSubTexture3;
 
 		Ref<SubTexture2D> m_CheckboxSubTexture;
+
+
+		
 	};
 }

@@ -23,6 +23,7 @@ namespace XYZ {
 		bool onMouseMove(MouseMovedEvent& e);
 		bool onWindowResize(WindowResizeEvent& e);
 		bool onKeyPressed(KeyPressedEvent& e);
+		bool onMouseScroll(MouseScrollEvent& e);
 
 	private:
 		Ref<Material> m_Material;

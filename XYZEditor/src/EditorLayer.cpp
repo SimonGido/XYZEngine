@@ -155,6 +155,11 @@ namespace XYZ {
 		InGui::GetNodeWindow("node panel").OnConnectionCreated = Hook(&EditorLayer::onNodePanelConnectionCreated, this);
 		InGui::GetNodeWindow("node panel").OnConnectionDestroyed = Hook(&EditorLayer::onNodePanelConnectionDestroyed, this);
 
+
+		m_AnimatorGraphLayout.SetContext(&m_StateMachine, &m_NodeGraph);
+		m_AnimatorInspectorLayout.SetContext(&m_StateMachine, &m_NodeGraph);
+		m_InspectorPanel.SetInspectorLayout(&m_EntityInspectorLayout);
+		m_GraphPanel.SetGraphLayout(&m_AnimatorGraphLayout);
 	}
 
 	void EditorLayer::OnDetach()
@@ -181,9 +186,7 @@ namespace XYZ {
 		m_Scene->OnUpdate(ts);
 		m_Scene->OnRenderEditor({ m_EditorCamera.GetViewProjectionMatrix(),winSize });
 		m_FBO->Unbind();
-		
-		//m_Scene->OnUpdate(ts);
-		//m_Scene->OnRenderEditor({ m_EditorCamera.GetViewProjectionMatrix(),winSize });
+	
 		
 		if (m_ActiveWindow)
 		{
@@ -257,10 +260,12 @@ namespace XYZ {
 		if ((uint32_t)m_SelectedEntity != (uint32_t)m_SceneHierarchyPanel.GetSelectedEntity())
 		{
 			m_SelectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
-			m_EntityComponentPanel.SetContext(m_SelectedEntity);
+			m_EntityInspectorLayout.SetContext(m_SelectedEntity);
 		}
 		m_SceneHierarchyPanel.OnInGuiRender();
-		m_EntityComponentPanel.OnInGuiRender();
+		m_InspectorPanel.OnInGuiRender();
+		m_GraphPanel.OnInGuiRender(ts);
+
 		if (InGui::RenderWindow("Scene", m_FBO->GetColorAttachment(0).RendererID, { 0,0 }, { 200,200 }, 25.0f))
 		{
 			m_ActiveWindow = true;
@@ -272,19 +277,6 @@ namespace XYZ {
 		}
 		InGui::End();
 
-
-		if (InGui::NodeWindow("Node panel", { -100,-100 }, { 200,200 }, ts))
-		{
-			InGui::BeginNode(0, "Test", { -600,0 }, { 200,100 });
-			InGui::BeginInput(1, { 20,20 }, "Inputik");
-			InGui::EndInput();
-			InGui::BeginInput(1, { 20,20 }, "Inputik");
-			InGui::EndInput();
-			InGui::BeginOutput(1, { 20,20 }, "Inputik");
-			InGui::EndOutput();
-			InGui::EndNode();
-		}
-		InGui::NodeWindowEnd();
 
 		if (InGui::Begin("Test Panel", { 0,0 }, { 200,200 }))
 		{
@@ -340,7 +332,7 @@ namespace XYZ {
 
 	bool EditorLayer::onWindowResized(WindowResizeEvent& event)
 	{
-	
+		
 		return false;
 	}
 	bool EditorLayer::onMouseButtonPress(MouseButtonPressEvent& event)
@@ -354,6 +346,14 @@ namespace XYZ {
 	}
 	bool EditorLayer::onKeyPress(KeyPressedEvent& event)
 	{
+		if (event.IsKeyPressed(KeyCode::XYZ_KEY_M))
+		{
+			m_InspectorPanel.SetInspectorLayout(&m_AnimatorInspectorLayout);
+		}
+		else if (event.IsKeyPressed(KeyCode::XYZ_KEY_N))
+		{
+			m_InspectorPanel.SetInspectorLayout(&m_EntityInspectorLayout);
+		}
 		if (m_SelectedEntity)
 		{
 			if (event.IsKeyPressed(KeyCode::XYZ_KEY_S))

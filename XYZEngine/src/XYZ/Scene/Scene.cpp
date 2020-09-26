@@ -27,7 +27,7 @@ namespace XYZ {
 		m_SceneWorld.Entity = entity;
 			
 		
-		m_Root = m_SceneGraph.InsertNode(Node<SceneObject>(m_SceneWorld));
+		m_Root = m_SceneGraph.InsertNode(Node<SceneObject,uint16_t>(m_SceneWorld));
 		m_SceneGraph.SetRoot(m_Root);
 
 
@@ -63,8 +63,8 @@ namespace XYZ {
 		object.Entity = entity;
 		
 
-		uint16_t id = m_SceneGraph.InsertNode(Node<SceneObject>(object));	
-		m_SceneGraph.SetParent(m_Root, id, [](Node<SceneObject>* parent, Node<SceneObject>* child) {
+		uint16_t id = m_SceneGraph.InsertNode(Node<SceneObject, uint16_t>(object));
+		m_SceneGraph.SetParent(m_Root, id, [](Node<SceneObject, uint16_t>* parent, Node<SceneObject, uint16_t>* child) {
 			//child.Transform->SetParent(parent.Transform);
 		});
 		m_SceneGraphMap.insert({ entity,id });
@@ -96,7 +96,7 @@ namespace XYZ {
 		uint16_t childIndex = itChild->second;
 		
 		m_SceneGraph[childIndex].Parent = parentIndex;
-		m_SceneGraph.SetParent(parentIndex, childIndex, [](Node<SceneObject>* parent, Node<SceneObject>* child) {
+		m_SceneGraph.SetParent(parentIndex, childIndex, [](Node<SceneObject, uint16_t>* parent, Node<SceneObject, uint16_t>* child) {
 			//child.Transform->SetParent(parent.Transform);
 		});
 	}
@@ -126,7 +126,7 @@ namespace XYZ {
 		glm::vec2 winSize = { Input::GetWindowSize().first, Input::GetWindowSize().second };
 
 		
-		m_SceneGraph.Propagate([this](Node<SceneObject>* parent, Node<SceneObject>* child) {
+		m_SceneGraph.Propagate([this](Node<SceneObject, uint16_t>* parent, Node<SceneObject, uint16_t>* child) {
 			//child->Transform->CalculateWorldTransformation();
 		});
 		
@@ -159,7 +159,7 @@ namespace XYZ {
 
 	void Scene::OnRenderEditor(const SceneRenderData& renderData)
 	{
-		m_SceneGraph.Propagate([this](Node<SceneObject>* parent, Node<SceneObject>* child) {
+		m_SceneGraph.Propagate([this](Node<SceneObject, uint16_t>* parent, Node<SceneObject, uint16_t>* child) {
 			//child->Transform->CalculateWorldTransformation();
 		});
 

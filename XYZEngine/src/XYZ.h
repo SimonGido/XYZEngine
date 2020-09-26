@@ -50,6 +50,8 @@
 
 
 #include "XYZ/Utils/DataStructures/Tree.h"
+#include "XYZ/Utils/DataStructures/Graph.h"
+
 #include "XYZ/Gui/Font.h"
 
 

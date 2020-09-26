@@ -1,15 +1,17 @@
 #pragma once
 #include <XYZ.h>
 
+#include "../Panels/InspectorPanel.h"
+
 namespace XYZ {
-	class EntityComponentPanel
+	class EntityInspectorLayout : public InspectorLayout
 	{
 	public:
-		EntityComponentPanel() = default;
-		EntityComponentPanel(Entity context);
+		EntityInspectorLayout() = default;
+		EntityInspectorLayout(Entity context);
 
 		void SetContext(Entity context);
-		void OnInGuiRender();
+		virtual void OnInGuiRender() override;
 	private:
 		Entity m_Context;
 		bool m_ScriptsOpen = false;
@@ -33,7 +35,7 @@ namespace XYZ {
 		bool m_TransformOpen = false;
 		bool m_SpriteRendererOpen = false;
 		bool m_NativeScriptOpen = false;
-		
+
 
 		glm::vec4 m_ColorPallete = { 0,1,1,1 };
 		bool m_PickColor = false;

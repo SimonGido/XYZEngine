@@ -25,7 +25,9 @@ namespace XYZ {
 		Visible		   = BIT(10),
 		AutoPosition   = BIT(11),
 		Docked		   = BIT(12),
-		Resized		   = BIT(13)
+		Resized		   = BIT(13),
+		LeftClicked	   = BIT(14),
+		RightClicked   = BIT(15)
 	};
 
 	enum InGuiPerFrameFlags
@@ -108,7 +110,6 @@ namespace XYZ {
 		glm::vec2 Size = { 0,0 };
 		uint32_t ID = 0;
 		uint8_t Flags = 0;
-		std::unordered_map<uint32_t, uint32_t> OutputInputMap;
 	};
 
 	struct InGuiNodeWindow
@@ -161,6 +162,7 @@ namespace XYZ {
 		float MaxHeightInRow;
 		float MenuItemOffset;
 
+		float ScrollOffset;
 		int Code;
 		int KeyCode;
 		int Mode;

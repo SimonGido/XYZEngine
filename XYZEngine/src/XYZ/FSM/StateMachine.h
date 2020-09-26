@@ -8,6 +8,7 @@ namespace XYZ {
 	{
 	public:
 		void SetAllowedTransitions(uint32_t allowedTransitionsTo);
+		void AllowTransition(uint32_t transition);
 
 		uint32_t GetAllowedTransitions() const { return m_AllowedTransitionsTo; }
 
@@ -20,6 +21,11 @@ namespace XYZ {
 		friend class StateMachine;
 	};
 
+	struct StatePair
+	{
+		State State;
+		std::string Name;
+	};
 
 	class StateMachine
 	{
@@ -33,12 +39,18 @@ namespace XYZ {
 		const State& GetCurrentState() const { return m_CurrentState; }
 
 		static uint32_t GetAny() { return sc_Any; }
+
+		State& GetState(uint32_t id) { return m_StatesMap[id].State; }
+		const std::string& GetStateName(uint32_t id) { return m_StatesMap[id].Name; }
+
+		const std::unordered_map<uint32_t, StatePair>& GetStatesMap() const { return m_StatesMap; }
+		std::unordered_map<uint32_t, StatePair>& GetStatesMap() { return m_StatesMap; }
 	private:
 		State m_CurrentState;
 
 		uint32_t m_NextFreeBit = 0;
 
-		std::unordered_map<std::string, State> m_StatesMap;
+		std::unordered_map<uint32_t, StatePair> m_StatesMap;
 
 		static constexpr uint32_t sc_MaxBit = 31;
 		static constexpr uint32_t sc_Any = (1 << 31);

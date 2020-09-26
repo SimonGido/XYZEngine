@@ -691,6 +691,7 @@ namespace XYZ {
 		LeftNodePinOffset = 0.0f;
 		RightNodePinOffset = 0.0f;
 
+		ScrollOffset = 0.0f;
 		KeyCode = ToUnderlying(KeyCode::XYZ_KEY_NONE);
 		Mode = ToUnderlying(KeyMode::XYZ_MOD_NONE);
 		Code = ToUnderlying(MouseCode::XYZ_MOUSE_NONE);

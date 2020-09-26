@@ -17,7 +17,6 @@ namespace XYZ {
 		static bool Begin(const std::string& name, const glm::vec2& position, const glm::vec2& size);
 		static void End();
 
-
 		static bool BeginPopup(const std::string& name, glm::vec2& position, const glm::vec2& size, bool& open);
 		static bool PopupItem(const std::string& name, const glm::vec2& size);
 		static void EndPopup();
@@ -39,8 +38,11 @@ namespace XYZ {
 		static bool ColorPallete4(const std::string& name, const glm::vec2& size, glm::vec4& color);
 		static bool RenderWindow(const std::string& name, uint32_t rendererID, const glm::vec2& position, const glm::vec2& size, float panelSize);
 
-		static bool NodeWindow(const std::string& name, const glm::vec2& position, const glm::vec2& size,float dt);
+		static bool NodeWindow(const std::string& name, const glm::vec2& position, const glm::vec2& size, float dt);
+		static void PushConnection(uint32_t start, uint32_t end);
 		static bool BeginNode(uint32_t id,const std::string& name, const glm::vec2& position, const glm::vec2& size);
+		static bool BeginConnection(std::pair<uint32_t, uint32_t>& connection);
+
 		static void EndNode();
 
 		static bool BeginInput(uint32_t id, const glm::vec2& size, const std::string& name);
@@ -64,8 +66,11 @@ namespace XYZ {
 		static bool OnRightMouseButtonRelease();
 		static bool OnKeyPress(int key, int mod);
 		static bool OnKeyRelease();
-		
+		static bool OnScroll(float offset);
+		static bool IsKeyPressed(int key);
 
+		static InGuiWindow* GetCurrentWindow();
+		static InGuiNodeWindow* GetCurrentNodeWindow();
 		static InGuiNodeWindow& GetNodeWindow(const std::string& name) { return *s_Context->NodeWindows[name]; }
 		static InGuiWindow& GetWindow(const std::string& name) { return *s_Context->Windows[name]; }
 		static glm::vec2& MouseRelativePosition(const InGuiWindow& window, const glm::vec3& cameraPos);

@@ -26,15 +26,24 @@ namespace XYZ {
 		EventDispatcher dispatcher(event);
 		
 		if (dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&InGuiLayer::onMouseButtonPress, this)))
-		{}
-		else if (dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&InGuiLayer::onMouseButtonRelease,this)))
-		{}
+		{
+		}
+		else if (dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&InGuiLayer::onMouseButtonRelease, this)))
+		{
+		}
 		else if (dispatcher.Dispatch<MouseMovedEvent>(Hook(&InGuiLayer::onMouseMove, this)))
-		{}
-		else if (dispatcher.Dispatch<WindowResizeEvent>(Hook(&InGuiLayer::onWindowResize,this)))
-		{}
+		{
+		}
+		else if (dispatcher.Dispatch<WindowResizeEvent>(Hook(&InGuiLayer::onWindowResize, this)))
+		{
+		}
 		else if (dispatcher.Dispatch<KeyPressedEvent>(Hook(&InGuiLayer::onKeyPressed, this)))
-		{}
+		{
+		}
+		else if (dispatcher.Dispatch<MouseScrollEvent>(Hook(&InGuiLayer::onMouseScroll, this)))
+		{
+
+		}
 	}
 	void InGuiLayer::Begin()
 	{
@@ -83,6 +92,11 @@ namespace XYZ {
 	bool InGuiLayer::onKeyPressed(KeyPressedEvent& e)
 	{
 		InGui::OnKeyPress(e.GetKey(), e.GetMod());
+		return false;
+	}
+	bool InGuiLayer::onMouseScroll(MouseScrollEvent& e)
+	{
+		InGui::OnScroll((float)e.GetOffsetY());
 		return false;
 	}
 }

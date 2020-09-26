@@ -9,15 +9,27 @@ namespace XYZ {
 		m_AllowedTransitionsTo = allowedTransitionsTo;
 	}
 
+	void State::AllowTransition(uint32_t transition)
+	{
+		m_AllowedTransitionsTo |= transition;
+	}
 
 	State StateMachine::CreateState(const std::string& name)
 	{
-		XYZ_ASSERT(m_StatesMap.find(name) == m_StatesMap.end(), "Creating state with same name");
+		for (auto state : m_StatesMap)
+		{
+			if (state.second.Name == name)
+			{
+				XYZ_LOG_ERR("State with name ", name, " already exists");
+				break;
+			}
+		}
+		
 		XYZ_ASSERT(m_NextFreeBit < sc_MaxBit, "State machine can has only %d states", sc_MaxBit);
 		State state;
 		state.m_ID = m_NextFreeBit++;
-		m_StatesMap[name] = state;
-		
+		m_StatesMap[state.m_ID].Name = name;
+		m_StatesMap[state.m_ID].State = state;
 		return state;
 	}
 

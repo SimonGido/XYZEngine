@@ -123,7 +123,7 @@ namespace XYZ {
         uint16_t m_Root;
         SceneObject m_SceneWorld;
 
-        Tree<SceneObject> m_SceneGraph;
+        Tree<SceneObject,uint16_t> m_SceneGraph;
         std::unordered_map<uint32_t, uint16_t> m_SceneGraphMap;
 
      

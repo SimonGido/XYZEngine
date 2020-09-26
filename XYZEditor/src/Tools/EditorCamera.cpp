@@ -86,6 +86,7 @@ namespace XYZ {
 		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&EditorCamera::onMouseButtonPress, this));
 		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorCamera::onMouseButtonRelease, this));
 	}
+
 	void EditorCamera::SetAspectRatio(float aspectRatio)
 	{
 		m_AspectRatio = aspectRatio;
