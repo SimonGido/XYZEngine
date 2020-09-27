@@ -46,6 +46,14 @@ namespace XYZ {
 		return false;
 	}
 
+
+	void StateMachine::RenameState(uint32_t id, const std::string& name)
+	{
+		auto it = m_StatesMap.find(id);
+		if (it != m_StatesMap.end())
+			it->second.Name = name;
+	}
+
 	void StateMachine::SetDefaultState(const State& state)
 	{
 		XYZ_ASSERT(state.m_ID < m_NextFreeBit, "State was not registered in this state machine");

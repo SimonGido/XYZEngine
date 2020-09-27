@@ -21,5 +21,6 @@ namespace XYZ {
 	private:
 		GraphLayout* m_Layout = nullptr;
 
+		const uint32_t m_GraphID = 3;
 	};
 }

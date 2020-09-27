@@ -10,44 +10,48 @@
 
 
 namespace XYZ {
-	enum InGuiWindowFlags
+	namespace InGuiWindowFlag {
+		enum InGuiWindowFlags
 	{
-		Moved		   = BIT(0),
-		Collapsed	   = BIT(1),
-		MenuEnabled	   = BIT(2),
-		Modified	   = BIT(3),
-		EventListener  = BIT(4),
-		Hoovered	   = BIT(5),
-		LeftResizing   = BIT(6),
-		RightResizing  = BIT(7),
-		TopResizing    = BIT(8),
-		BottomResizing = BIT(9),
-		Visible		   = BIT(10),
-		AutoPosition   = BIT(11),
-		Docked		   = BIT(12),
-		Resized		   = BIT(13),
-		LeftClicked	   = BIT(14),
-		RightClicked   = BIT(15)
-	};
+			Moved			= BIT(0),
+			Collapsed		= BIT(1),
+			MenuEnabled		= BIT(2),
+			Modified		= BIT(3),
+			EventListener	= BIT(4),
+			Hoovered		= BIT(5),
+			LeftResizing	= BIT(6),
+			RightResizing	= BIT(7),
+			TopResizing		= BIT(8),
+			BottomResizing	= BIT(9),
+			Visible			= BIT(10),
+			AutoPosition	= BIT(11),
+			Docked			= BIT(12),
+			Resized			= BIT(13),
+			LeftClicked		= BIT(14),
+			RightClicked	= BIT(15)
+		};
+	}
 
-	enum InGuiPerFrameFlags
-	{
-		LeftMouseButtonPressed   = BIT(0),
-		RightMouseButtonPressed  = BIT(1),
-		LeftMouseButtonReleased  = BIT(2),
-		RightMouseButtonReleased = BIT(3),
-		ClickHandled			 = BIT(4),
-		ReleaseHandled			 = BIT(5)
-	};
+	namespace InGuiPerFameFlag {
+		enum InGuiPerFrameFlags
+		{
+			LeftMouseButtonPressed	 = BIT(0),
+			RightMouseButtonPressed	 = BIT(1),
+			LeftMouseButtonReleased	 = BIT(2),
+			RightMouseButtonReleased = BIT(3),
+			ClickHandled			 = BIT(4),
+			ReleaseHandled			 = BIT(5)
+		};
+	}
 
-
-	enum InGuiNodeFlags
-	{
-		NodeMoved		= BIT(0),
-		NodeModified	= BIT(1),
-		NodeHoovered	= BIT(2)
-	};
-
+	namespace InGuiNodeFlag {
+		enum InGuiNodeFlags
+		{
+			NodeMoved		= BIT(0),
+			NodeModified	= BIT(1),
+			NodeHoovered	= BIT(2)
+		};
+	}
 
 	struct InGuiRenderConfiguration
 	{
@@ -89,16 +93,19 @@ namespace XYZ {
 	{
 		InGuiMesh Mesh;
 		InGuiLineMesh LineMesh;
-		std::string Name;
 
 		glm::vec2 Position = { 0.0f,0.0f };
 		glm::vec2 Size = { 0.0f,0.0f };
 
 		float MinimalWidth = 0.0f;
 		uint16_t Flags = 0;
+		uint32_t ID = 0;
+
+		const char* Name = nullptr;
 
 		InGuiDockNode* DockNode = nullptr;
 		InGuiNodeWindow* NodeWindow = nullptr;
+
 		std::function<void(const glm::vec2&)> OnResizeCallback;
 		static constexpr float PanelSize = 25.0f;
 	};
@@ -211,8 +218,8 @@ namespace XYZ {
 	};
 
 
-	using InGuiWindowMap = std::unordered_map<std::string, InGuiWindow*>;
-	using InGuiNodeWindowMap = std::unordered_map<std::string, InGuiNodeWindow*>;
+	using InGuiWindowMap = std::unordered_map<uint32_t, InGuiWindow*>;
+	using InGuiNodeWindowMap = std::unordered_map<uint32_t, InGuiNodeWindow*>;
 	using InGuiEventListeners = std::vector<InGuiWindow*>;
 
 	struct InGuiRenderQueue

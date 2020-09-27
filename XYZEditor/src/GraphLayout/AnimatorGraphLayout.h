@@ -3,6 +3,7 @@
 
 namespace XYZ {
 
+
 	class AnimatorGraphLayout : public GraphLayout
 	{
 	public:
@@ -12,10 +13,12 @@ namespace XYZ {
 		void SetContext(StateMachine* context, Graph* graph) { m_Context = context; m_Graph = graph; }
 	private:
 		StateMachine* m_Context = nullptr;
-		Graph* m_Graph = nullptr;;
+		Graph* m_Graph = nullptr;
 
 		glm::vec2 m_PopupPosition = { 0,0 };
 		bool m_PopupEnabled = false;
 		bool m_PopupOpen = false;
+
+		std::unordered_map<uint32_t, bool> m_ModifiedMap;
 	};
 }

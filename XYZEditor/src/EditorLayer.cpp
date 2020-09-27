@@ -135,25 +135,20 @@ namespace XYZ {
 		m_FBO->CreateDepthAttachment();
 		m_FBO->Resize();
 
-		InGui::RenderWindow("Scene", m_FBO->GetColorAttachment(0).RendererID, { 0,0 }, { 200,200 }, 25.0f);
+		InGui::RenderWindow(m_SceneID, "Scene", m_FBO->GetColorAttachment(0).RendererID, { 0,0 }, { 200,200 }, 25.0f);
 		InGui::End();
-		InGui::GetWindow("scene").Flags &= ~EventListener;
+		InGui::GetWindow(m_SceneID).Flags &= ~InGuiWindowFlag::EventListener;
 		auto& spec = m_FBO->GetSpecification();
-		spec.Width =  (uint32_t)InGui::GetWindow("scene").Size.x;
-		spec.Height = (uint32_t)InGui::GetWindow("scene").Size.y;
+		spec.Width =  (uint32_t)InGui::GetWindow(0).Size.x;
+		spec.Height = (uint32_t)InGui::GetWindow(0).Size.y;
 		m_FBO->Resize();
 		m_EditorCamera.SetAspectRatio((float)spec.Width / (float)spec.Height);
 
-		InGui::Begin("Test", { 0,0 }, { 200,200 });
+		InGui::Begin(m_TestID, "Test", { 0,0 }, { 200,200 });
 		InGui::End();
-		InGui::GetWindow("test").Flags |= (MenuEnabled | Visible | EventListener);
+		InGui::GetWindow(m_TestID).Flags |= (InGuiWindowFlag::MenuEnabled | InGuiWindowFlag::Visible | InGuiWindowFlag::EventListener);
 
-		InGui::GetWindow("scene").OnResizeCallback = Hook(&EditorLayer::onResizeSceneWindow, this);
-
-		InGui::NodeWindow("Node panel", { -100,-100 }, { 200,200 }, 0.0f);
-		InGui::NodeWindowEnd();
-		InGui::GetNodeWindow("node panel").OnConnectionCreated = Hook(&EditorLayer::onNodePanelConnectionCreated, this);
-		InGui::GetNodeWindow("node panel").OnConnectionDestroyed = Hook(&EditorLayer::onNodePanelConnectionDestroyed, this);
+		InGui::GetWindow(m_SceneID).OnResizeCallback = Hook(&EditorLayer::onResizeSceneWindow, this);
 
 
 		m_AnimatorGraphLayout.SetContext(&m_StateMachine, &m_NodeGraph);
@@ -203,7 +198,7 @@ namespace XYZ {
 		}
 		if (m_ScalingEntity)
 		{
-			auto mousePos = GetWorldPositionFromInGui(InGui::GetWindow("scene"), m_EditorCamera);
+			auto mousePos = GetWorldPositionFromInGui(InGui::GetWindow(m_SceneID), m_EditorCamera);
 
 			glm::vec3 scale;
 			scale.x = fabs(m_Scale.x + (mousePos.x - m_StartMousePos.x));
@@ -216,7 +211,7 @@ namespace XYZ {
 		}
 		else if (m_MovingEntity)
 		{
-			auto mousePos = GetWorldPositionFromInGui(InGui::GetWindow("scene"), m_EditorCamera);
+			auto mousePos = GetWorldPositionFromInGui(InGui::GetWindow(m_SceneID), m_EditorCamera);
 
 			glm::vec3 translation;
 			translation.x = m_Translation.x + (mousePos.x - m_StartMousePos.x);
@@ -229,7 +224,7 @@ namespace XYZ {
 		}
 		else if (m_RotatingEntity)
 		{
-			auto mousePos = GetWorldPositionFromInGui(InGui::GetWindow("scene"), m_EditorCamera);
+			auto mousePos = GetWorldPositionFromInGui(InGui::GetWindow(m_SceneID), m_EditorCamera);
 
 			float rotation;
 			rotation = m_Orientation.x + (mousePos.x - m_StartMousePos.x);
@@ -266,7 +261,7 @@ namespace XYZ {
 		m_InspectorPanel.OnInGuiRender();
 		m_GraphPanel.OnInGuiRender(ts);
 
-		if (InGui::RenderWindow("Scene", m_FBO->GetColorAttachment(0).RendererID, { 0,0 }, { 200,200 }, 25.0f))
+		if (InGui::RenderWindow(0, "Scene", m_FBO->GetColorAttachment(0).RendererID, { 0,0 }, { 200,200 }, 25.0f))
 		{
 			m_ActiveWindow = true;
 			InGui::Selector();
@@ -278,13 +273,13 @@ namespace XYZ {
 		InGui::End();
 
 
-		if (InGui::Begin("Test Panel", { 0,0 }, { 200,200 }))
+		if (InGui::Begin(m_TestPanelID, "Test Panel", { 0,0 }, { 200,200 }))
 		{
 			
 		}
 		InGui::End();
 
-		if (InGui::Begin("Test", { 0,0 }, { 200,200 }))
+		if (InGui::Begin(m_TestID, "Test", { 0,0 }, { 200,200 }))
 		{
 			
 		}
@@ -339,7 +334,7 @@ namespace XYZ {
 	{
 		if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_LEFT))
 		{
-			glm::vec2 relativeMousePos = GetWorldPositionFromInGui(InGui::GetWindow("scene"), m_EditorCamera);
+			glm::vec2 relativeMousePos = GetWorldPositionFromInGui(InGui::GetWindow(m_SceneID), m_EditorCamera);
 			m_SceneHierarchyPanel.SelectEntity(relativeMousePos);
 		}
 		return false;
@@ -358,7 +353,7 @@ namespace XYZ {
 		{
 			if (event.IsKeyPressed(KeyCode::XYZ_KEY_S))
 			{
-				m_StartMousePos = GetWorldPositionFromInGui(InGui::GetWindow("scene"), m_EditorCamera);
+				m_StartMousePos = GetWorldPositionFromInGui(InGui::GetWindow(m_SceneID), m_EditorCamera);
 				m_ScalingEntity = true;
 				m_ModifiedTransform = m_SelectedEntity.GetComponent<TransformComponent>();
 
@@ -372,7 +367,7 @@ namespace XYZ {
 			}
 			else if (event.IsKeyPressed(KeyCode::XYZ_KEY_G))
 			{
-				m_StartMousePos = GetWorldPositionFromInGui(InGui::GetWindow("scene"), m_EditorCamera);
+				m_StartMousePos = GetWorldPositionFromInGui(InGui::GetWindow(m_SceneID), m_EditorCamera);
 				m_MovingEntity = true;
 				m_ModifiedTransform = m_SelectedEntity.GetComponent<TransformComponent>();
 
@@ -386,7 +381,7 @@ namespace XYZ {
 			}
 			else if (event.IsKeyPressed(KeyCode::XYZ_KEY_R))
 			{
-				m_StartMousePos = GetWorldPositionFromInGui(InGui::GetWindow("scene"), m_EditorCamera);
+				m_StartMousePos = GetWorldPositionFromInGui(InGui::GetWindow(m_SceneID), m_EditorCamera);
 				m_RotatingEntity = true;
 				m_ModifiedTransform = m_SelectedEntity.GetComponent<TransformComponent>();
 

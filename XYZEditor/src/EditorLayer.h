@@ -18,6 +18,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 
+// TODO: solve fragmentation
 namespace XYZ {
 
 	class EditorLayer : public Layer
@@ -90,7 +91,11 @@ namespace XYZ {
 
 		glm::vec4 m_Color = { 0,0,0,0 };
 		glm::vec4 m_Pallete = { 0,1,0,1 };
-		float m_TestValue = 0.0f;
+
+		const uint32_t m_SceneID = 0;
+		const uint32_t m_TestPanelID = 1;
+		const uint32_t m_TestID = 5;
+
 		bool m_CheckboxVal = false;
 		bool m_ActiveWindow = false;
 		bool m_MenuOpen = false;

@@ -13,6 +13,9 @@ namespace XYZ {
 		void SetContext(Entity context);
 		virtual void OnInGuiRender() override;
 	private:
+
+		const uint32_t m_InspectorID = 2;
+
 		Entity m_Context;
 		bool m_ScriptsOpen = false;
 		bool m_AddComponentOpen = false;

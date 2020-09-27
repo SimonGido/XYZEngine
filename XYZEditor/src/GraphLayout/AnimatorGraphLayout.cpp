@@ -20,10 +20,13 @@ namespace XYZ {
 					if (InGui::PopupItem("Empty Node", { 150,25 }))
 					{
 						auto state = m_Context->CreateState("Empty State " + std::to_string(++s_NextID));
-						InGui::BeginNode(state.GetID(), "Empty State " + std::to_string(s_NextID), InGui::GetCurrentNodeWindow()->RelativeMousePosition, { 150, 100 });
+						bool tmpModified = false;
+						InGui::BeginNode(state.GetID(), "Empty State " + std::to_string(s_NextID), InGui::GetCurrentNodeWindow()->RelativeMousePosition, { 150, 100 }, tmpModified);
 						InGui::EndNode();
 						m_PopupEnabled = false;
 						m_PopupOpen = false;
+
+						m_ModifiedMap.insert({ state.GetID(),false });
 					}
 				}
 				InGui::EndPopup();
@@ -38,7 +41,8 @@ namespace XYZ {
 
 			for (auto& state : m_Context->GetStatesMap())
 			{
-				InGui::BeginNode(state.second.State.GetID(), state.second.Name, { 0,0 }, { 150,100 });			
+				uint32_t id = state.second.State.GetID();
+				InGui::BeginNode(id, state.second.Name, { 0,0 }, { 150,100 }, m_ModifiedMap[id]);
 				InGui::EndNode();
 			}
 
@@ -47,7 +51,7 @@ namespace XYZ {
 				InGui::PushConnection(connection.Start, connection.End);
 			}
 
-			if (InGui::GetCurrentWindow()->Flags & RightClicked)
+			if (InGui::GetCurrentWindow()->Flags & InGuiWindowFlag::RightClicked)
 			{
 				auto [width, height] = Input::GetWindowSize();
 				auto [mx, my] = Input::GetMousePosition();

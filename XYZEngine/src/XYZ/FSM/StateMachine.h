@@ -36,6 +36,8 @@ namespace XYZ {
 
 		void SetDefaultState(const State& state);
 
+		void RenameState(uint32_t id, const std::string& name);
+
 		const State& GetCurrentState() const { return m_CurrentState; }
 
 		static uint32_t GetAny() { return sc_Any; }

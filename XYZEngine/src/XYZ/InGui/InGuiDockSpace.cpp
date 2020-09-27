@@ -80,13 +80,13 @@ namespace XYZ {
 			vertices[i].Position.y += position.y;
 		}
 	}
-	static void GenerateWindowsPanel(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const std::string& name, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig)
+	static void GenerateWindowsPanel(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const char* name, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig)
 	{
 		GenerateInGuiQuad(mesh, position, size, renderConfig.ButtonSubTexture->GetTexCoords(), renderConfig.TextureID, color);
 		size_t offset = mesh.Vertices.size();
 		auto [width, height] = GenerateInGuiText(mesh, renderConfig.Font, name, {}, { 0.7,0.7 }, size.x, renderConfig.FontTextureID, { 1,1,1,1 });
 		glm::vec2 textOffset = { (size.x / 2) - (width / 2),(size.y / 2.0f) - ((float)height / 1.5f) };
-		MoveVertices(mesh.Vertices.data(), position + textOffset, offset, name.size() * 4);
+		MoveVertices(mesh.Vertices.data(), position + textOffset, offset, strlen(name) * 4);
 	}
 	InGuiDockSpace::InGuiDockSpace(InGuiDockNode* root)
 		:
@@ -119,7 +119,7 @@ namespace XYZ {
 				if (node->Windows.size())
 				{
 					node->VisibleWindow = node->Windows.back();
-					node->VisibleWindow->Flags |= Visible;
+					node->VisibleWindow->Flags |= InGuiWindowFlag::Visible;
 				}
 			}
 			if (node->Parent && node->Windows.empty())
@@ -127,8 +127,8 @@ namespace XYZ {
 				unsplitNode(window->DockNode->Parent);
 			}
 			window->DockNode = nullptr;
-			window->Flags |= Visible;
-			window->Flags &= ~Docked;
+			window->Flags |=  InGuiWindowFlag::Visible;
+			window->Flags &= ~InGuiWindowFlag::Docked;
 		}
 	}
 
@@ -187,7 +187,7 @@ namespace XYZ {
 		if (m_ResizedNode)
 		{
 			for (auto win : m_ResizedNode->Windows)
-				win->Flags |= Modified;
+				win->Flags |= InGuiWindowFlag::Modified;
 			if (m_ResizedNode->Split == SplitAxis::Vertical)
 			{
 				glm::vec2 leftOld = m_ResizedNode->Children[0]->Size;
@@ -202,13 +202,13 @@ namespace XYZ {
 
 				for (auto win : m_ResizedNode->Children[0]->Windows)
 				{
-					win->Flags |= Modified;
-					win->Flags |= Resized;
+					win->Flags |= InGuiWindowFlag::Modified;
+					win->Flags |= InGuiWindowFlag::Resized;
 				}
 				for (auto win : m_ResizedNode->Children[1]->Windows)
 				{
-					win->Flags |= Modified;
-					win->Flags |= Resized;
+					win->Flags |= InGuiWindowFlag::Modified;
+					win->Flags |= InGuiWindowFlag::Resized;
 				}
 
 				adjustChildrenProps(m_ResizedNode->Children[0]);
@@ -222,13 +222,13 @@ namespace XYZ {
 
 				for (auto win : m_ResizedNode->Children[0]->Windows)
 				{
-					win->Flags |= Modified;
-					win->Flags |= Resized;
+					win->Flags |= InGuiWindowFlag::Modified;
+					win->Flags |= InGuiWindowFlag::Resized;
 				}
 				for (auto win : m_ResizedNode->Children[1]->Windows)
 				{
-					win->Flags |= Modified;
-					win->Flags |= Resized;
+					win->Flags |= InGuiWindowFlag::Modified;
+					win->Flags |= InGuiWindowFlag::Resized;
 				}
 				adjustChildrenProps(m_ResizedNode->Children[0]);
 				adjustChildrenProps(m_ResizedNode->Children[1]);
@@ -248,13 +248,13 @@ namespace XYZ {
 
 			for (auto win : node->Children[0]->Windows)
 			{
-				win->Flags |= Modified;
-				win->Flags |= Resized;
+				win->Flags |= InGuiWindowFlag::Modified;
+				win->Flags |= InGuiWindowFlag::Resized;
 			}
 			for (auto win : node->Children[1]->Windows)
 			{
-				win->Flags |= Modified;
-				win->Flags |= Resized;
+				win->Flags |= InGuiWindowFlag::Modified;
+				win->Flags |= InGuiWindowFlag::Resized;
 			}
 
 			adjustChildrenProps(node->Children[0]);
@@ -273,13 +273,13 @@ namespace XYZ {
 
 			for (auto win : node->Children[0]->Windows)
 			{
-				win->Flags |= Modified;
-				win->Flags |= Resized;
+				win->Flags |= InGuiWindowFlag::Modified;
+				win->Flags |= InGuiWindowFlag::Resized;
 			}
 			for (auto win : node->Children[1]->Windows)
 			{
-				win->Flags |= Modified;
-				win->Flags |= Resized;
+				win->Flags |= InGuiWindowFlag::Modified;
+				win->Flags |= InGuiWindowFlag::Resized;
 			}
 
 			adjustChildrenProps(node->Children[0]);
@@ -339,8 +339,8 @@ namespace XYZ {
 					node->VisibleWindow = window;
 					node->Windows.push_back(window);
 					window->DockNode = node;
-					window->Flags |= Docked;
-					window->Flags |= Modified;
+					window->Flags |= InGuiWindowFlag::Docked;
+					window->Flags |= InGuiWindowFlag::Modified;
 				}
 				else if (pos == DockPosition::Left)
 				{
@@ -359,8 +359,8 @@ namespace XYZ {
 					node->Children[0]->VisibleWindow = window;
 					node->Children[0]->Windows.push_back(window);
 					window->DockNode = node->Children[0];
-					window->Flags |= Docked;
-					window->Flags |= Modified;
+					window->Flags |= InGuiWindowFlag::Docked;
+					window->Flags |= InGuiWindowFlag::Modified;
 				}
 				else if (pos == DockPosition::Right)
 				{
@@ -380,8 +380,8 @@ namespace XYZ {
 					node->Children[1]->VisibleWindow = window;
 					node->Children[1]->Windows.push_back(window);
 					window->DockNode = node->Children[1];
-					window->Flags |= Docked;
-					window->Flags |= Modified;
+					window->Flags |= InGuiWindowFlag::Docked;
+					window->Flags |= InGuiWindowFlag::Modified;
 				}
 				else if (pos == DockPosition::Bottom)
 				{
@@ -401,8 +401,8 @@ namespace XYZ {
 					node->Children[0]->VisibleWindow = window;
 					node->Children[0]->Windows.push_back(window);
 					window->DockNode = node->Children[0];
-					window->Flags |= Docked;
-					window->Flags |= Modified;
+					window->Flags |= InGuiWindowFlag::Docked;
+					window->Flags |= InGuiWindowFlag::Modified;
 				}
 				else if (pos == DockPosition::Top)
 				{
@@ -422,8 +422,8 @@ namespace XYZ {
 					node->Children[1]->VisibleWindow = window;
 					node->Children[1]->Windows.push_back(window);
 					window->DockNode = node->Children[1];
-					window->Flags |= Docked;
-					window->Flags |= Modified;
+					window->Flags |= InGuiWindowFlag::Docked;
+					window->Flags |= InGuiWindowFlag::Modified;
 				}
 			}
 			else
@@ -458,7 +458,7 @@ namespace XYZ {
 		{
 			win->Size = { node->Size.x,node->Size.y - InGuiWindow::PanelSize };
 			win->Position = node->Position;
-			win->Flags |= Modified;
+			win->Flags |= InGuiWindowFlag::Modified;
 		}
 		if (node->Children[0])
 			rescale(scale, node->Children[0]);
@@ -557,7 +557,7 @@ namespace XYZ {
 			auto win = node->VisibleWindow;
 			win->Size = { node->Size.x, node->Size.y - (2 * InGuiWindow::PanelSize) };
 			win->Position = node->Position;
-			win->Flags |= Visible;
+			win->Flags |= InGuiWindowFlag::Visible;
 		}
 		if (node->Children[0])
 			update(node->Children[0]);
@@ -578,14 +578,14 @@ namespace XYZ {
 			if (Collide(position, size, mousePos))
 			{
 				color = renderConfig.HooverColor;
-				if ((frameData.Flags & LeftMouseButtonPressed) && !(frameData.Flags & ClickHandled))
+				if ((frameData.Flags & InGuiPerFameFlag::LeftMouseButtonPressed) && !(frameData.Flags & InGuiPerFameFlag::ClickHandled))
 				{
 					if (node->VisibleWindow)
-						node->VisibleWindow->Flags &= ~Visible;
+						node->VisibleWindow->Flags &= ~InGuiWindowFlag::Visible;
 
-					frameData.Flags |= ClickHandled;
+					frameData.Flags |= InGuiPerFameFlag::ClickHandled;
 					node->VisibleWindow = win;
-					win->Flags |= Modified;
+					win->Flags |= InGuiWindowFlag::Modified;
 				}
 			}
 			GenerateWindowsPanel(position, size, color, win->Name, mesh, renderConfig);

@@ -2,7 +2,7 @@ Scene: Test Scene
 Entities:
   - Entity: Test Entity
     TransformComponent:
-      Position: [-22.7034569, -7.98384666, -107374176]
+      Position: [-22.7034569, -7.98384666, 0]
       Rotation: [0.999562562, 0, 0, 0.0295742173]
       Scale: [7.24259949, 11.4536161, 1]
     SpriteRenderer:
@@ -28,7 +28,7 @@ Entities:
   - Entity: ssasda
     Parent: 2
     TransformComponent:
-      Position: [14.8290396, -2.80051422, -107374176]
+      Position: [14.8290396, -2.80051422, 0]
       Rotation: [1, 0, 0, 0]
       Scale: [13.7456112, 13.9681406, 1]
     SpriteRenderer:
@@ -41,7 +41,7 @@ Entities:
   - Entity: Test HoHO
     Parent: 2
     TransformComponent:
-      Position: [-43.172245, 73.3768539, -107374176]
+      Position: [-43.172245, 73.3768539, 0]
       Rotation: [0.786433041, 0, 0, 0.617675543]
       Scale: [40.4168701, 66.9406586, 1]
     SpriteRenderer:

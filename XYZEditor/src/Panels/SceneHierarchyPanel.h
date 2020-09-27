@@ -30,5 +30,7 @@ namespace XYZ {
 		Entity m_SelectedEntity;
 
 		HashGrid2D<Entity> m_Entities;
+
+		const uint32_t m_SceneHierarchyID = 4;
 	};
 }

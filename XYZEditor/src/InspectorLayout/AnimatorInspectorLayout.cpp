@@ -6,7 +6,7 @@ namespace XYZ {
 	{   
         if (m_Context && m_Graph)
         {
-            if (InGui::GetCurrentWindow()->Flags & LeftClicked)
+            if (InGui::GetCurrentWindow()->Flags & InGuiWindowFlag::LeftClicked)
             {
                 m_SelectedConnection = -1;
             }
@@ -18,6 +18,7 @@ namespace XYZ {
                     m_SelectedConnection = -1;
                 }
             }
+          
             uint32_t count = 0;
             for (auto& connection : m_Graph->GetConnections())
             {     
@@ -25,18 +26,16 @@ namespace XYZ {
                 
                 if (m_SelectedConnection == count)
                 {
-                    InGui::Text(result, { 0.8f,0.8f }, { 0,1,1,1 });
+                    InGui::Text(result.c_str(), { 0.8f,0.8f }, { 0,1,1,1 });
                 }
-                else if (InGui::Text(result, { 0.8f,0.8f }))
+                else if (InGui::Text(result.c_str(), { 0.8f,0.8f }))
                 {
                     m_SelectedConnection = (int)count;                   
                 }
                 
                 InGui::Separator();
                 count++;
-            }
-
-          
+            }          
         }
 	}
 }
