@@ -825,6 +825,22 @@ namespace XYZ {
 		return false;
 	}
 
+	static void SubmitTexture(uint32_t rendererID, std::vector<TextureRendererIDPair>& texturePairs,const InGuiRenderConfiguration& renderConfig)
+	{
+		uint32_t textureID = 0;
+		for (auto& pair : texturePairs)
+		{
+			if (pair.RendererID == rendererID)
+				textureID = pair.TextureID;
+		}
+		if (!textureID)
+		{
+			textureID = renderConfig.NumTexturesInUse;
+			renderConfig.NumTexturesInUse++;
+		}
+		texturePairs.push_back({ textureID,rendererID });
+	}
+
 	bool InGui::RenderWindow(uint32_t id,const char* name, uint32_t rendererID, const glm::vec2& position, const glm::vec2& size, float panelSize)
 	{
 		XYZ_ASSERT(!s_Context->PerFrameData.CurrentWindow, "Missing end call");
@@ -850,14 +866,17 @@ namespace XYZ {
 		if (Collide(window->Position, winSize, frameData.MousePosition))
 		{		
 			window->Flags |= InGuiWindowFlag::Hoovered;
+			window->Flags |= InGuiWindowFlag::Modified;
 
 			if (window->Flags & InGuiWindowFlag::EventListener)
 				s_Context->PerFrameData.EventReceivingWindow = window;
 		}
-		// It is always modified
-		window->Flags |= InGuiWindowFlag::Modified;
-		// Does not have to be modified to regenerate
-		InGuiFactory::GenerateRenderWindow(name, *window, rendererID, frameData, renderConfig);
+	
+		if (window->Flags & InGuiWindowFlag::Modified)
+			InGuiFactory::GenerateRenderWindow(name, *window, rendererID, frameData, renderConfig);
+		else
+			SubmitTexture(rendererID, frameData.TexturePairs, renderConfig);
+		
 
 		// Push to render queue
 		s_Context->RenderQueue.InGuiMeshes.push_back(&window->Mesh);
