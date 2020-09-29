@@ -300,6 +300,9 @@
     <ClInclude Include="src\XYZ\InGui\InGuiCamera.h">
       <Filter>src\XYZ\InGui</Filter>
     </ClInclude>
+    <ClInclude Include="src\XYZ\InGui\InGuiDockSpace.h">
+      <Filter>src\XYZ\InGui</Filter>
+    </ClInclude>
     <ClInclude Include="src\XYZ\InGui\InGuiFactory.h">
       <Filter>src\XYZ\InGui</Filter>
     </ClInclude>
@@ -430,6 +433,9 @@
       <Filter>src\XYZ</Filter>
     </ClInclude>
     <ClInclude Include="src\XYZ\Utils\DataStructures\FreeList.h">
+      <Filter>src\XYZ\Utils\DataStructures</Filter>
+    </ClInclude>
+    <ClInclude Include="src\XYZ\Utils\DataStructures\Graph.h">
       <Filter>src\XYZ\Utils\DataStructures</Filter>
     </ClInclude>
     <ClInclude Include="src\XYZ\Utils\DataStructures\HashGrid2D.h">
@@ -1854,8 +1860,6 @@
     <ClInclude Include="vendor\yaml-cpp\src\token.h">
       <Filter>vendor\yaml-cpp\src</Filter>
     </ClInclude>
-    <ClInclude Include="src\XYZ\Utils\DataStructures\Graph.h" />
-    <ClInclude Include="src\XYZ\InGui\InGuiDockSpace.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\API\OpenGL\OpenGLAPIContext.cpp">
@@ -1964,6 +1968,9 @@
       <Filter>src\XYZ\InGui</Filter>
     </ClCompile>
     <ClCompile Include="src\XYZ\InGui\InGuiCamera.cpp">
+      <Filter>src\XYZ\InGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\XYZ\InGui\InGuiDockSpace.cpp">
       <Filter>src\XYZ\InGui</Filter>
     </ClCompile>
     <ClCompile Include="src\XYZ\InGui\InGuiFactory.cpp">
@@ -2084,6 +2091,9 @@
       <Filter>src\XYZ\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\XYZ\Utils\DataStructures\FreeList.cpp">
+      <Filter>src\XYZ\Utils\DataStructures</Filter>
+    </ClCompile>
+    <ClCompile Include="src\XYZ\Utils\DataStructures\Graph.cpp">
       <Filter>src\XYZ\Utils\DataStructures</Filter>
     </ClCompile>
     <ClCompile Include="src\XYZ\Utils\DataStructures\HashGrid2D.cpp">
@@ -2239,12 +2249,5 @@
     <ClCompile Include="vendor\yaml-cpp\src\tag.cpp">
       <Filter>vendor\yaml-cpp\src</Filter>
     </ClCompile>
-    <ClCompile Include="src\XYZ\Utils\DataStructures\Graph.cpp" />
-    <ClCompile Include="src\XYZ\InGui\InGuiDockSpace.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="vendor\RCC\RuntimeCompiler\SimpleFileWatcher\FileWatcherLinux.cpp~">
-      <Filter>vendor\RCC\RuntimeCompiler\SimpleFileWatcher</Filter>
-    </None>
   </ItemGroup>
 </Project>

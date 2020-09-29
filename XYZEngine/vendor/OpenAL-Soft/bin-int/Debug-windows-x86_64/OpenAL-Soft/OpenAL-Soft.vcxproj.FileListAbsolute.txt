@@ -8,3 +8,5 @@ C:\Users\Gido\Desktop\GameDev\XYZ_Engine\vendor\OpenAL-Soft\bin\Debug-windows-x8
 C:\Users\Gido\Desktop\GameDev\XYZ_Engine\vendor\OpenAL-Soft\bin-int\Debug-windows-x86_64\OpenAL-Soft\OpenAL-Soft.pdb
 C:\Users\Gido\Desktop\GameDev\XYZEngine\vendor\OpenAL-Soft\bin\Debug-windows-x86_64\OpenAL-Soft\OpenAL-Soft.pdb
 C:\Users\Gido\Desktop\GameDev\XYZEngine\vendor\OpenAL-Soft\bin-int\Debug-windows-x86_64\OpenAL-Soft\OpenAL-Soft.pdb
+C:\Users\Gido\Projects\GameDev\XYZEngine\vendor\OpenAL-Soft\bin\Debug-windows-x86_64\OpenAL-Soft\OpenAL-Soft.pdb
+C:\Users\Gido\Projects\GameDev\XYZEngine\vendor\OpenAL-Soft\bin-int\Debug-windows-x86_64\OpenAL-Soft\OpenAL-Soft.pdb

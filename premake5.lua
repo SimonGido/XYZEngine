@@ -23,10 +23,7 @@ IncludeDir["RCC"] = "XYZEngine/vendor/RCC"
 IncludeDir["mini"] = "XYZEngine/vendor/mini"
 IncludeDir["OpenAL"] = "XYZEngine/vendor/OpenAL-Soft"
 IncludeDir["MiniMp3"] = "XYZEngine/vendor/minimp3"
-IncludeDir["mono"] = "XYZEngine/vendor/mono/include"
 
-LibraryDir = {}
-LibraryDir["mono"] = "vendor/mono/lib/Debug/mono-2.0-sgen.lib"
 
 include "XYZEngine/vendor/GLFW"
 include "XYZEngine/vendor/GLEW"
@@ -82,8 +79,7 @@ project "XYZEngine"
 			"%{IncludeDir.OpenAL}/include",
 			"%{IncludeDir.OpenAL}/src",
 			"%{IncludeDir.OpenAL}/src/common",
-			"%{IncludeDir.MiniMp3}",
-			"%{IncludeDir.mono}",		
+			"%{IncludeDir.MiniMp3}",	
 			"%{prj.name}/vendor/stb_image",
 			"%{prj.name}/vendor/yaml-cpp/include"
 		}
@@ -93,8 +89,7 @@ project "XYZEngine"
 			"GLEW",
 			"GLFW",
 			"OpenAL-Soft",
-			"opengl32",
-			"%{LibraryDir.mono}"
+			"opengl32"
 		}
 		
 		flags { "NoPCH" }
@@ -153,20 +148,11 @@ project "XYZEditor"
 				runtime "Debug"
 				symbols "on"
 
-		postbuildcommands 
-		{
-			'{COPY} "../XYZEngine/vendor/mono/bin/Debug/mono-2.0-sgen.dll" "%{cfg.targetdir}"',
-		}
 
 		filter "configurations:Release"
 				defines "XYZ_RELEASE"
 				runtime "Release"
 				optimize "on"
-
-		postbuildcommands 
-		{
-			'{COPY} "../XYZEngine/vendor/mono/bin/Debug/mono-2.0-sgen.dll" "%{cfg.targetdir}"'
-		}
 
 
 project "XYZScriptCore"
