@@ -2,7 +2,7 @@ Scene: Test Scene
 Entities:
   - Entity: Test Entity
     TransformComponent:
-      Position: [-22.7034569, -7.98384666, 0]
+      Position: [7.77475739, 27.2851582, 0]
       Rotation: [0.999562562, 0, 0, 0.0295742173]
       Scale: [7.24259949, 11.4536161, 1]
     SpriteRenderer:
@@ -17,7 +17,7 @@ Entities:
     TransformComponent:
       Position: [26.6585464, 0.732521057, 0]
       Rotation: [0.998845816, 0, 0, 0.0480313711]
-      Scale: [20.4135818, 32.5886917, 1]
+      Scale: [41.1941833, 61.6428528, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/material.mat
       SubTextureAssetPath: Assets/SubTextures/CharacterSubTexture.subtex
@@ -30,7 +30,7 @@ Entities:
     TransformComponent:
       Position: [14.8290396, -2.80051422, 0]
       Rotation: [1, 0, 0, 0]
-      Scale: [13.7456112, 13.9681406, 1]
+      Scale: [19.7236385, 41.7825546, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/material.mat
       SubTextureAssetPath: Assets/SubTextures/CharacterSubTexture.subtex
@@ -55,8 +55,8 @@ Entities:
     Parent: 2
     TransformComponent:
       Position: [-7.13763428, 19.0997391, 0]
-      Rotation: [0.998845994, 0, 0, -0.0480275638]
-      Scale: [23.9548492, 33.2744179, 1]
+      Rotation: [0.191220462, 0, 0, 0.981547117]
+      Scale: [23.9548492, 33.2744179, 0.99999994]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/material.mat
       SubTextureAssetPath: Assets/SubTextures/CharacterSubTexture.subtex
