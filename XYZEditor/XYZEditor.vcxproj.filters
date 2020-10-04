@@ -37,6 +37,7 @@
     <ClInclude Include="src\Tools\EditorCamera.h">
       <Filter>Tools</Filter>
     </ClInclude>
+    <ClInclude Include="src\Panels\SpriteEditorPanel.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\EditorLayer.cpp" />
@@ -62,5 +63,6 @@
       <Filter>Tools</Filter>
     </ClCompile>
     <ClCompile Include="src\ZEditorApp.cpp" />
+    <ClCompile Include="src\Panels\SpriteEditorPanel.cpp" />
   </ItemGroup>
 </Project>

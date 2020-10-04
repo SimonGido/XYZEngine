@@ -20,6 +20,7 @@ namespace XYZ {
 		glm::vec3 Position;
 		glm::vec2 TexCoord;
 		float	  TextureID;
+		float	  TilingFactor;
 	};
 
 	struct LineVertex
@@ -84,6 +85,7 @@ namespace XYZ {
 			{1, XYZ::ShaderDataComponent::Float3, "a_Position" },
 			{2, XYZ::ShaderDataComponent::Float2, "a_TexCoord" },
 			{3, XYZ::ShaderDataComponent::Float,  "a_TextureID" },
+			{4, XYZ::ShaderDataComponent::Float,  "a_TilingFactor" },
 				});
 			QuadVertexArray->AddVertexBuffer(QuadVertexBuffer);
 
@@ -165,7 +167,7 @@ namespace XYZ {
 	}
 
 
-	void Renderer2D::SubmitQuad(const glm::mat4& transform, const glm::vec4& color)
+	void Renderer2D::SubmitQuad(const glm::mat4& transform, const glm::vec4& color, float tilingFactor)
 	{
 		constexpr size_t quadVertexCount = 4;
 		if (s_Data.IndexCount >= s_Data.MaxIndices)
@@ -176,12 +178,13 @@ namespace XYZ {
 			s_Data.BufferPtr->Color = color;
 			s_Data.BufferPtr->TexCoord = glm::vec2(0);
 			s_Data.BufferPtr->TextureID = 0.0f;
+			s_Data.BufferPtr->TilingFactor = tilingFactor;
 			s_Data.BufferPtr++;
 		}
 		s_Data.IndexCount += 6;
 	}
 
-	void Renderer2D::SubmitQuad(const glm::mat4& transform, const glm::vec4& texCoord, uint32_t textureID, const glm::vec4& color)
+	void Renderer2D::SubmitQuad(const glm::mat4& transform, const glm::vec4& texCoord, uint32_t textureID, const glm::vec4& color, float tilingFactor)
 	{
 		constexpr size_t quadVertexCount = 4;
 
@@ -200,12 +203,13 @@ namespace XYZ {
 			s_Data.BufferPtr->Color = color;
 			s_Data.BufferPtr->TexCoord = texCoords[i];
 			s_Data.BufferPtr->TextureID = (float)textureID;
+			s_Data.BufferPtr->TilingFactor = tilingFactor;
 			s_Data.BufferPtr++;
 		}
 		s_Data.IndexCount += 6;
 	}
 
-	void Renderer2D::SubmitQuad(const glm::mat4& transform, const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, uint32_t textureID, const glm::vec4& color)
+	void Renderer2D::SubmitQuad(const glm::mat4& transform, const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, uint32_t textureID, const glm::vec4& color, float tilingFactor)
 	{
 		constexpr size_t quadVertexCount = 4;
 
@@ -232,6 +236,7 @@ namespace XYZ {
 			s_Data.BufferPtr->Color = color;
 			s_Data.BufferPtr->TexCoord = texCoords[i];
 			s_Data.BufferPtr->TextureID = (float)textureID;
+			s_Data.BufferPtr->TilingFactor = tilingFactor;
 			s_Data.BufferPtr++;
 		}
 		s_Data.IndexCount += 6;

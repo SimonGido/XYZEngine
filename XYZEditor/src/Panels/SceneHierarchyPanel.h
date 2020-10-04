@@ -14,7 +14,7 @@ namespace XYZ {
 
 		void SetContext(const Ref<Scene>& context);
 
-		void OnInGuiRender();
+		bool OnInGuiRender();
 
 		void SelectEntity(const glm::vec2& position);
 		

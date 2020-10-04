@@ -1,5 +1,6 @@
 #pragma once
-
+#include "XYZ/Core/Ref.h"
+#include "XYZ/Scene/Serializable.h"
 
 namespace XYZ {
 
@@ -29,7 +30,8 @@ namespace XYZ {
 		std::vector<KeyFrame> KeyFrames;
 	};
 
-	class Animation
+	class Animation : public RefCount,
+					  public Serializable
 	{
 	public:
 		Animation(float animLength,  bool repeat = true);

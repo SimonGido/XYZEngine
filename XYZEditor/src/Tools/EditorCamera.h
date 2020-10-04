@@ -14,6 +14,7 @@ namespace XYZ {
 
 		void OnUpdate(float dt);
 		void OnEvent(Event& event);
+		void OnResize(const glm::vec2& size);
 
 		void SetAspectRatio(float aspectRatio);
 

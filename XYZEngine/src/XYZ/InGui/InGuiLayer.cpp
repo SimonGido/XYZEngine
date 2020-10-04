@@ -70,18 +70,17 @@ namespace XYZ {
 	{
 		if (e.IsButtonReleased(MouseCode::XYZ_MOUSE_BUTTON_LEFT))
 		{
-			InGui::OnLeftMouseButtonRelease();
+			return InGui::OnLeftMouseButtonRelease();
 		}
 		else if (e.IsButtonReleased(MouseCode::XYZ_MOUSE_BUTTON_RIGHT))
 		{
-			InGui::OnRightMouseButtonRelease();
+			return InGui::OnRightMouseButtonRelease();
 		}
 
 		return false;
 	}
 	bool InGuiLayer::onMouseMove(MouseMovedEvent& e)
 	{
-		//InGui::OnMouseMove({ e.GetX(),e.GetY() });
 		return false;
 	}
 	bool InGuiLayer::onWindowResize(WindowResizeEvent& e)
@@ -96,6 +95,6 @@ namespace XYZ {
 	}
 	bool InGuiLayer::onMouseScroll(MouseScrollEvent& e)
 	{
-		return false;
+		return InGui::OnMouseScroll();
 	}
 }

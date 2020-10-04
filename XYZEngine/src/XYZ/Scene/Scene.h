@@ -111,6 +111,7 @@ namespace XYZ {
     private:
         ECSManager m_ECS;
         ComponentGroup<TransformComponent, SpriteRenderer>* m_RenderGroup = nullptr;
+        ComponentGroup<AnimatorComponent>* m_AnimateGroup = nullptr;
         ComponentGroup<NativeScriptComponent>* m_ScriptGroup = nullptr;
 
         std::string m_Name;

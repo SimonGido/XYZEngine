@@ -87,6 +87,13 @@ namespace XYZ {
 		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorCamera::onMouseButtonRelease, this));
 	}
 
+	void EditorCamera::OnResize(const glm::vec2& size)
+	{
+		m_AspectRatio = size.x / size.y;
+		m_ProjectionMatrix = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, m_AspectRatio * -m_ZoomLevel, m_AspectRatio * m_ZoomLevel);
+		recalculate();
+	}
+
 	void EditorCamera::SetAspectRatio(float aspectRatio)
 	{
 		m_AspectRatio = aspectRatio;

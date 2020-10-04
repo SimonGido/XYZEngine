@@ -1,6 +1,6 @@
 #pragma once
 #include "XYZ/Core/Layer.h"
-#include "XYZ/Gui/Font.h"
+#include "XYZ/Renderer/Font.h"
 #include "XYZ/Renderer/Material.h"
 
 

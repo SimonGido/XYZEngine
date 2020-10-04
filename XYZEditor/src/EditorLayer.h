@@ -5,6 +5,8 @@
 #include "Panels/SceneHierarchyPanel.h"
 #include "Panels/InspectorPanel.h"
 #include "Panels/GraphPanel.h"
+#include "Panels/SpriteEditorPanel.h"
+
 #include "InspectorLayout/EntityInspectorLayout.h"
 #include "InspectorLayout/AnimatorInspectorLayout.h"
 #include "GraphLayout/AnimatorGraphLayout.h"
@@ -44,6 +46,7 @@ namespace XYZ {
 
 	private:
 		SceneHierarchyPanel m_SceneHierarchyPanel;
+		SpriteEditorPanel m_SpriteEditorPanel;
 		
 		InspectorPanel m_InspectorPanel;
 		EntityInspectorLayout m_EntityInspectorLayout;
@@ -68,7 +71,6 @@ namespace XYZ {
 
 		EditorCamera m_EditorCamera;
 		Ref<Scene> m_Scene;
-		StateMachine m_StateMachine;
 
 		Ref<FrameBuffer> m_FBO;
 		AssetManager m_AssetManager;
@@ -83,8 +85,10 @@ namespace XYZ {
 
 		SpriteRenderer* m_SpriteRenderer;
 		TransformComponent* m_Transform;
-		Animation* m_Animation;
-		Animation* m_RunAnimation;
+		AnimatorComponent* m_Animator;
+		Ref<AnimationController> m_AnimationController;
+		Ref<Animation> m_IdleAnimation;
+		Ref<Animation> m_RunAnimation;
 
 		glm::vec3 m_Position = { 0,0,0 };
 		glm::vec3 m_Rotation = { 0,0,0 };
@@ -100,6 +104,7 @@ namespace XYZ {
 		bool m_ActiveWindow = false;
 		bool m_MenuOpen = false;
 		bool m_PopupOpen = false;
+		bool m_Selecting = false;
 		std::string m_Text = "0";
 		bool m_Modified = false;
 	

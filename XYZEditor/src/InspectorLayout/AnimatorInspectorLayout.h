@@ -9,7 +9,6 @@ namespace XYZ {
 	class AnimatorInspectorLayout : public InspectorLayout
 	{
 	public:
-
 		virtual void OnInGuiRender() override;
 		void SetContext(StateMachine* context, Graph* graph) { m_Context = context; m_Graph = graph; }
 

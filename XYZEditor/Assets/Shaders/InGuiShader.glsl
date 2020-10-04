@@ -6,12 +6,13 @@ layout(location = 0) in vec4  a_Color;
 layout(location = 1) in vec3  a_Position;
 layout(location = 2) in vec2  a_TexCoord;
 layout(location = 3) in float a_TextureID;
-
+layout(location = 4) in float a_TilingFactor;
 
 
 out vec4 v_Color;
 out vec2 v_TexCoord;
 out float v_TextureID;
+out float v_TilingFactor;
 
 uniform vec2 u_ViewportSize;
 uniform mat4 u_ViewProjection;
@@ -21,6 +22,7 @@ void main()
 	v_Color = a_Color;
 	v_TexCoord = a_TexCoord;
 	v_TextureID = a_TextureID;
+	v_TilingFactor = a_TilingFactor;
 	gl_Position = u_ViewProjection * vec4(a_Position.xy / (u_ViewportSize / 2), 0.0, 1.0);
 }
 
@@ -35,6 +37,7 @@ void main()
 in vec4 v_Color;
 in vec2 v_TexCoord;
 in float v_TextureID;
+in float v_TilingFactor;
 
 
 
@@ -49,8 +52,9 @@ out vec4 FragColor;
 
 void main()
 {
-	float distance = 1.0 - texture(u_Texture[int(v_TextureID)], v_TexCoord).a;
+	vec2 tiledTexCoord = v_TexCoord * v_TilingFactor;
+	float distance = 1.0 - texture(u_Texture[int(v_TextureID)], tiledTexCoord).a;
 	float alpha = 1.0 - smoothstep(width, width + edge, distance);	
-	FragColor = vec4(texture(u_Texture[int(v_TextureID)], v_TexCoord).xyz, alpha) * v_Color;	
+	FragColor = vec4(texture(u_Texture[int(v_TextureID)], tiledTexCoord).xyz, alpha) * v_Color;	
 }
 

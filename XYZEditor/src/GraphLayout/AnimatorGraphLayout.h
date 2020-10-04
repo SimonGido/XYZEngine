@@ -10,7 +10,7 @@ namespace XYZ {
 		virtual void OnInGuiRender() override;
 
 		// TODO: probably create controller component
-		void SetContext(StateMachine* context, Graph* graph) { m_Context = context; m_Graph = graph; }
+		void SetContext(StateMachine* context, Graph* graph);
 	private:
 		StateMachine* m_Context = nullptr;
 		Graph* m_Graph = nullptr;

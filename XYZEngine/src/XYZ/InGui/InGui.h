@@ -38,7 +38,7 @@ namespace XYZ {
 		static bool Button(const char* name, const glm::vec2& size);
 		static bool Checkbox(const char* name, const glm::vec2& size, bool& value);
 		static bool Slider(const char* name, const glm::vec2& size, float& value, float valueScale = 1.0f);
-		static bool Image(const char* name, uint32_t rendererID, const glm::vec2& size);
+		static bool Image(const char* name, uint32_t rendererID, const glm::vec2& size, const glm::vec2& position, float tilingFactor = 1.0f);
 		static bool TextArea(const char* name, std::string& text, const glm::vec2& size, bool& modified);
 
 		static bool Text(const char* text, const glm::vec2& scale, const glm::vec4& color = { 1,1,1,1 });
@@ -63,28 +63,28 @@ namespace XYZ {
 		
 		static void Separator();
 
-		static glm::vec4 Selector();
-
+		static glm::vec4 Selector(bool & selecting);
+		static void Selection(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
 
 		static bool OnWindowResize(const glm::vec2& winSize);
 		static bool OnLeftMouseButtonPress();                                                                                                    
 		static bool OnRightMouseButtonPress();
-
 		static bool OnLeftMouseButtonRelease();
 		static bool OnRightMouseButtonRelease();
+		static bool OnMouseScroll();
+		
 		static bool OnKeyPress(int key, int mod);
 		static bool OnKeyRelease();
 		static bool IsKeyPressed(int key);
 
 		static InGuiWindow* GetCurrentWindow();
 		static InGuiNodeWindow* GetCurrentNodeWindow();
-		static InGuiNodeWindow& GetNodeWindow(uint32_t id) { return *s_Context->NodeWindows[id]; }
-		static InGuiWindow& GetWindow(uint32_t id) { return *s_Context->Windows[id]; }
+		static InGuiNodeWindow* GetNodeWindow(uint32_t id);	
+		static InGuiWindow* GetWindow(uint32_t id);
+
 		static glm::vec2& MouseRelativePosition(const InGuiWindow& window, const glm::vec3& cameraPos);
 	private:
-		static InGuiWindow* getWindow(uint32_t id);
 		static InGuiWindow* createWindow(uint32_t id, const glm::vec2& position, const glm::vec2& size);
-		static InGuiNodeWindow* getNodeWindow(uint32_t id);
 		static InGuiNodeWindow* createNodeWindow(uint32_t id, const glm::vec2& position, const glm::vec2& size);
 		static InGuiNode* createNode(uint32_t id, const glm::vec2& position, const glm::vec2& size);
 		static InGuiNode* getNode(uint32_t id);

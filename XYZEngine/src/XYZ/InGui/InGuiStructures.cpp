@@ -44,6 +44,7 @@ namespace XYZ {
 		CurrentNode = nullptr;
 
 		ModifiedWindowMouseOffset = { 0,0 };
+		SelectedPoint = { 0,0 };
 		LeftNodePinOffset = 0.0f;
 		RightNodePinOffset = 0.0f;
 
@@ -62,7 +63,6 @@ namespace XYZ {
 		
 		MenuBarOffset = { 0,0 };
 		PopupOffset = { 0,0 };
-		SelectedPoint = { 0,0 };
 
 		MaxHeightInRow = 0.0f;
 		MenuItemOffset = 0.0f;
@@ -75,5 +75,33 @@ namespace XYZ {
 	{
 		for (auto node : Nodes)
 			delete node.second;
+	}
+	void InGuiRenderQueue::PushOverlay(InGuiMesh* mesh, InGuiLineMesh* lineMesh)
+	{
+		if (!m_NumOverLayers)
+		{
+			m_InGuiMeshes.push_back(mesh);
+			m_InGuiLineMeshes.push_back(lineMesh);
+			m_NumOverLayers++;
+		}
+		else
+		{
+			m_InGuiMeshes.insert(m_InGuiMeshes.end() - m_NumOverLayers, mesh);
+			m_InGuiLineMeshes.insert(m_InGuiLineMeshes.end() - m_NumOverLayers, lineMesh);
+		}
+	}
+	void InGuiRenderQueue::Push(InGuiMesh* mesh, InGuiLineMesh* lineMesh)
+	{
+		m_InGuiMeshes.insert(m_InGuiMeshes.end() - m_NumOverLayers, mesh);
+		m_InGuiLineMeshes.insert(m_InGuiLineMeshes.end() - m_NumOverLayers, lineMesh);
+	}
+	void InGuiRenderQueue::Reset()
+	{
+		size_t numMeshes = m_InGuiMeshes.size();
+		m_InGuiMeshes.clear();
+		m_InGuiLineMeshes.clear();
+		m_InGuiMeshes.reserve(numMeshes);
+		m_InGuiLineMeshes.reserve(numMeshes);
+		m_NumOverLayers = 0;
 	}
 }

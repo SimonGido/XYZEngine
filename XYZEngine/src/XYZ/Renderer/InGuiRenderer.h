@@ -1,7 +1,7 @@
 #pragma once
 #include "Material.h"
 #include "Mesh.h"
-#include "XYZ/Gui/Font.h"
+#include "XYZ/Renderer/Font.h"
 
 namespace XYZ {
 
@@ -16,7 +16,8 @@ namespace XYZ {
 		glm::vec4 Color;
 		glm::vec3 Position;
 		glm::vec2 TexCoord;
-		uint32_t TextureID;
+		float	  TextureID;
+		float     TilingFactor = 1.0f;
 	};
 	struct InGuiLineVertex
 	{

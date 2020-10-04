@@ -14,12 +14,14 @@ namespace XYZ {
 	public:
 		GraphPanel();
 
-		void OnInGuiRender(float dt);
-		void SetGraphLayout(GraphLayout* layout) { m_Layout = layout; }
+		bool OnInGuiRender(float dt);
+		void OnEvent(Event& event);
 
+		void SetGraphLayout(GraphLayout* layout) { m_Layout = layout; }
 
 	private:
 		GraphLayout* m_Layout = nullptr;
+		InGuiNodeWindow* m_GraphWindow = nullptr;
 
 		const uint32_t m_GraphID = 3;
 	};

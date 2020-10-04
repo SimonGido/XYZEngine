@@ -42,6 +42,7 @@ namespace XYZ {
 
 	private:
 		FontData m_Data;
-		std::unordered_map<uint8_t, Character> m_Characters;
+		static constexpr uint8_t sc_NumCharacters = 128;
+		Character m_Characters[sc_NumCharacters];
 	};
 }

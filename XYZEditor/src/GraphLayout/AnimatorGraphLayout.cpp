@@ -38,12 +38,24 @@ namespace XYZ {
 				m_Graph->Connect({ connection.first,connection.second });
 				m_Context->GetState(connection.first).AllowTransition(connection.second);
 			}
+			
 
+			uint32_t counter = 0;
+			float x = -500;
 			for (auto& state : m_Context->GetStatesMap())
 			{
+				float y = 0;
+				if (counter % 1)
+					y = 200.0f;
+				else if (counter % 2)
+					y = -200.0f;
+
 				uint32_t id = state.second.State.GetID();
-				InGui::BeginNode(id, state.second.Name, { 0,0 }, { 150,100 }, m_ModifiedMap[id]);
+				InGui::BeginNode(id, state.second.Name, { x,y }, { 150,100 }, m_ModifiedMap[id]);
 				InGui::EndNode();
+
+				x += 300;
+				counter++;
 			}
 
 			for (auto& connection : m_Graph->GetConnections())
@@ -60,5 +72,10 @@ namespace XYZ {
 				m_PopupPosition = MouseToWorld({ mx,my }, { width,height });
 			}
 		}
+	}
+	void AnimatorGraphLayout::SetContext(StateMachine* context, Graph* graph)
+	{ 
+		m_Context = context; 
+		m_Graph = graph;
 	}
 }

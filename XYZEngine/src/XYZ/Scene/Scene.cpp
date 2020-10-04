@@ -20,6 +20,7 @@ namespace XYZ {
 		m_Name(name)
 	{
 		m_RenderGroup = m_ECS.CreateGroup<TransformComponent, SpriteRenderer>();
+		m_AnimateGroup = m_ECS.CreateGroup<AnimatorComponent>();
 		m_ScriptGroup = m_ECS.CreateGroup<NativeScriptComponent>();
 
 		uint32_t entity = m_ECS.CreateEntity();
@@ -133,7 +134,7 @@ namespace XYZ {
 		// 3D part here
 
 		///////////////
-
+		
 		Renderer2D::BeginScene({ viewProjMatrix ,winSize });
 		for (int i = 0; i < m_RenderGroup->Size(); ++i)
 		{
@@ -148,7 +149,11 @@ namespace XYZ {
 
 	void Scene::OnUpdate(Timestep ts)
 	{
-		Entity ent = GetEntity(2);
+		for (int i = 0; i < m_AnimateGroup->Size(); ++i)
+		{
+			auto [animator] = (*m_AnimateGroup)[i];
+			animator->Controller->Update(ts);
+		}
 		for (int i = 0; i < m_ScriptGroup->Size(); ++i)
 		{
 			auto [script] = (*m_ScriptGroup)[i];

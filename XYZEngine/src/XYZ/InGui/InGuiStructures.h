@@ -1,7 +1,7 @@
 #pragma once
 #include "XYZ/Core/KeyCodes.h"
 #include "XYZ/Core/MouseCodes.h"
-#include "XYZ/Gui/Font.h"
+#include "XYZ/Renderer/Font.h"
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Renderer/SubTexture2D.h"
 #include "XYZ/Renderer/Framebuffer.h"
@@ -28,7 +28,8 @@ namespace XYZ {
 			Docked			= BIT(12),
 			Resized			= BIT(13),
 			LeftClicked		= BIT(14),
-			RightClicked	= BIT(15)
+			RightClicked	= BIT(15),
+			Initialized		= BIT(16)
 		};
 	}
 
@@ -53,6 +54,13 @@ namespace XYZ {
 		};
 	}
 
+
+	struct TextInfo
+	{
+		glm::vec2 Size = { 0.0f,0.0f };
+		uint32_t Count = 0;
+	};
+
 	struct InGuiRenderConfiguration
 	{
 		InGuiRenderConfiguration();
@@ -76,6 +84,7 @@ namespace XYZ {
 		glm::vec4 HooverColor = { 0.4f, 1.8f, 1.7f, 1.0f };
 		glm::vec4 SelectColor = { 0.8f,0.0f,0.2f,0.6f };
 		glm::vec4 LineColor = { 0.4f,0.2f,0.5f,1.0f };
+		glm::vec4 SelectorColor = { 0.2f,0.2f,0.5f,0.3f };
 
 		static constexpr uint32_t DefaultTextureCount = 3;
 		mutable uint32_t NumTexturesInUse = DefaultTextureCount;
@@ -97,9 +106,9 @@ namespace XYZ {
 		glm::vec2 Position = { 0.0f,0.0f };
 		glm::vec2 Size = { 0.0f,0.0f };
 
-		float MinimalWidth = 0.0f;
-		uint16_t Flags = 0;
+		uint32_t Flags = 0;
 		uint32_t ID = 0;
+		float MinimalWidth = 0.0f;
 
 		const char* Name = nullptr;
 
@@ -222,10 +231,19 @@ namespace XYZ {
 	using InGuiNodeWindowMap = std::unordered_map<uint32_t, InGuiNodeWindow*>;
 	using InGuiEventListeners = std::vector<InGuiWindow*>;
 
-	struct InGuiRenderQueue
+	class InGuiRenderQueue
 	{
-		std::vector<InGuiMesh*> InGuiMeshes;
-		std::vector<InGuiLineMesh*> InGuiLineMeshes;
+	public:
+		void PushOverlay(InGuiMesh* mesh, InGuiLineMesh* lineMesh);
+		void Push(InGuiMesh* mesh, InGuiLineMesh* lineMesh);
+		void Reset();
+
+		const std::vector<InGuiMesh*>& GetMeshes() const { return m_InGuiMeshes; }
+		const std::vector<InGuiLineMesh*>& GetLineMeshes() const { return m_InGuiLineMeshes; }
+	private:
+		std::vector<InGuiMesh*> m_InGuiMeshes;
+		std::vector<InGuiLineMesh*> m_InGuiLineMeshes;
+		uint32_t m_NumOverLayers = 0;
 	};
 
 }

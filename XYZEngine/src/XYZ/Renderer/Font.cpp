@@ -145,11 +145,8 @@ namespace XYZ {
 
 	const Character& Font::GetCharacter(uint8_t ch) const
 	{
-		auto character = m_Characters.find(ch);
-		if (character != m_Characters.end())
-			return character->second;
-		
-		return m_Characters.begin()->second;
+		XYZ_ASSERT(ch < sc_NumCharacters, "Character index out of range");
+		return m_Characters[ch];
 	}
 	
 }

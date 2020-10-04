@@ -2,7 +2,8 @@
 
 
 namespace XYZ {
-	void AnimatorInspectorLayout::OnInGuiRender()
+    
+    void AnimatorInspectorLayout::OnInGuiRender()
 	{   
         if (m_Context && m_Graph)
         {

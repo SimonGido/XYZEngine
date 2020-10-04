@@ -57,8 +57,9 @@ namespace XYZ {
 		}
 	}
 
-	void SceneHierarchyPanel::OnInGuiRender()
+	bool SceneHierarchyPanel::OnInGuiRender()
 	{
+		bool active = false;
 		if (InGui::Begin(m_SceneHierarchyID, "Scene Hierarchy", { 0,0 }, { 400,300 }))
 		{
 			if (m_Context)
@@ -69,8 +70,11 @@ namespace XYZ {
 					drawEntity(entity);
 				}
 			}
+			active = true;
 		}
 		InGui::End();
+
+		return active;
 	}
 	void SceneHierarchyPanel::SelectEntity(const glm::vec2& position)
 	{
@@ -83,7 +87,7 @@ namespace XYZ {
 			{
 				if (Collide(buffer[i].GetComponent<TransformComponent>()->Transform, position))
 				{
-					auto &flags = InGui::GetWindow(m_SceneHierarchyID).Flags;
+					auto &flags = InGui::GetWindow(m_SceneHierarchyID)->Flags;
 					flags |= InGuiWindowFlag::Modified;
 					m_SelectedEntity = buffer[i];
 				}
@@ -120,26 +124,11 @@ namespace XYZ {
 			if ((uint32_t)m_SelectedEntity == (uint32_t)entity)
 			{
 				textColor = { 0,1,1,1 };
-				auto transformComponent = entity.GetComponent<TransformComponent>();
-				glm::vec3 scale, translation, skew;
-				glm::vec4 perspective;
-				glm::quat orientation;
-				glm::decompose(transformComponent->Transform, scale, orientation, translation, skew, perspective);
-
-				glm::vec3 topLeft = { translation.x - scale.x / 2,translation.y + scale.y / 2,1 };
-				glm::vec3 topRight = { translation.x + scale.x / 2,translation.y + scale.y / 2,1 };
-				glm::vec3 bottomLeft = { translation.x - scale.x / 2,translation.y - scale.y / 2,1 };
-				glm::vec3 bottomRight = { translation.x + scale.x / 2,translation.y - scale.y / 2,1 };
-
-				Renderer2D::SubmitLine(topLeft, topRight);
-				Renderer2D::SubmitLine(topRight, bottomRight);
-				Renderer2D::SubmitLine(bottomRight, bottomLeft);
-				Renderer2D::SubmitLine(bottomLeft, topLeft);
 			}
 			if (InGui::Text(tag.c_str(), { 1,1 }, textColor))
 			{
 				m_SelectedEntity = entity;
-				auto &flags = InGui::GetWindow(m_SceneHierarchyID).Flags;
+				auto &flags = InGui::GetWindow(m_SceneHierarchyID)->Flags;
 				flags |= InGuiWindowFlag::Modified;
 			}
 			InGui::Separator();

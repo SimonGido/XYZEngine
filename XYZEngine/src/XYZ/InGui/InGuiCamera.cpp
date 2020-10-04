@@ -55,16 +55,15 @@ namespace XYZ {
 			recalculate();
 	}
 
-	void InGuiCamera::OnScroll(float offset)
+	void InGuiCamera::OnEvent(Event& event)
 	{
-		m_ZoomLevel -= offset * 0.05f;
-		m_ZoomLevel = std::max(m_ZoomLevel, 0.05f);
-		m_CameraTranslationSpeed = m_ZoomLevel;
-
-
-		m_ProjectionMatrix = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, m_AspectRatio * -m_ZoomLevel, m_AspectRatio * m_ZoomLevel);
-		m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
+		EventDispatcher dispatcher(event);
+		dispatcher.Dispatch<MouseScrollEvent>(Hook(&InGuiCamera::onMouseScrolled, this));
+		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&InGuiCamera::onMouseButtonPress, this));
+		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&InGuiCamera::onMouseButtonRelease, this));
 	}
+
+	
 	void InGuiCamera::recalculate()
 	{
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), m_CameraPosition) *
@@ -72,6 +71,40 @@ namespace XYZ {
 
 		m_ViewMatrix = glm::inverse(transform);
 		m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
+	}
+
+	bool InGuiCamera::onMouseScrolled(MouseScrollEvent& event)
+	{
+		//m_ZoomLevel -= (float)event.GetOffsetY() * 0.25f;
+		//m_ZoomLevel = std::max(m_ZoomLevel, 0.25f);
+		//m_CameraTranslationSpeed = m_ZoomLevel;
+		//
+		//
+		//m_ProjectionMatrix = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, m_AspectRatio * -m_ZoomLevel, m_AspectRatio * m_ZoomLevel);
+		//m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
+
+		return false;
+	}
+
+	bool InGuiCamera::onMouseButtonPress(MouseButtonPressEvent& event)
+	{
+		if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_MIDDLE))
+		{
+			m_MouseMoving = true;
+			auto [mx, my] = Input::GetMousePosition();
+			m_StartMousePos = { mx, my };
+			m_OldPosition = m_CameraPosition;
+		}
+		return false;
+	}
+
+	bool InGuiCamera::onMouseButtonRelease(MouseButtonReleaseEvent& event)
+	{
+		if (event.IsButtonReleased(MouseCode::XYZ_MOUSE_BUTTON_MIDDLE))
+		{
+			m_MouseMoving = false;
+		}
+		return false;
 	}
 
 }

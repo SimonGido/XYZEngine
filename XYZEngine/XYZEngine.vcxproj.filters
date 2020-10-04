@@ -279,9 +279,6 @@
     <ClInclude Include="src\XYZ\Gui\Checkbox.h">
       <Filter>src\XYZ\Gui</Filter>
     </ClInclude>
-    <ClInclude Include="src\XYZ\Gui\Font.h">
-      <Filter>src\XYZ\Gui</Filter>
-    </ClInclude>
     <ClInclude Include="src\XYZ\Gui\GuiLayer.h">
       <Filter>src\XYZ\Gui</Filter>
     </ClInclude>
@@ -352,6 +349,9 @@
       <Filter>src\XYZ\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\XYZ\Renderer\Camera.h">
+      <Filter>src\XYZ\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\XYZ\Renderer\Font.h">
       <Filter>src\XYZ\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\XYZ\Renderer\Framebuffer.h">
@@ -1860,6 +1860,7 @@
     <ClInclude Include="vendor\yaml-cpp\src\token.h">
       <Filter>vendor\yaml-cpp\src</Filter>
     </ClInclude>
+    <ClInclude Include="src\XYZ\Scene\AnimationController.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\API\OpenGL\OpenGLAPIContext.cpp">
@@ -1952,9 +1953,6 @@
     <ClCompile Include="src\XYZ\Gui\Checkbox.cpp">
       <Filter>src\XYZ\Gui</Filter>
     </ClCompile>
-    <ClCompile Include="src\XYZ\Gui\Font.cpp">
-      <Filter>src\XYZ\Gui</Filter>
-    </ClCompile>
     <ClCompile Include="src\XYZ\Gui\GuiLayer.cpp">
       <Filter>src\XYZ\Gui</Filter>
     </ClCompile>
@@ -2019,6 +2017,9 @@
       <Filter>src\XYZ\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\XYZ\Renderer\Camera.cpp">
+      <Filter>src\XYZ\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\XYZ\Renderer\Font.cpp">
       <Filter>src\XYZ\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\XYZ\Renderer\Framebuffer.cpp">
@@ -2249,5 +2250,6 @@
     <ClCompile Include="vendor\yaml-cpp\src\tag.cpp">
       <Filter>vendor\yaml-cpp\src</Filter>
     </ClCompile>
+    <ClCompile Include="src\XYZ\Scene\AnimationController.cpp" />
   </ItemGroup>
 </Project>

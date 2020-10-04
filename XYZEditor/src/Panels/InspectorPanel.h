@@ -13,8 +13,8 @@ namespace XYZ {
 	{
 	public:
 		InspectorPanel();
-		void OnInGuiRender();
-		void SetInspectorLayout(InspectorLayout* layout) { m_Layout = layout; }
+		bool OnInGuiRender();
+		void SetInspectorLayout(InspectorLayout* layout);
 
 
 	private:

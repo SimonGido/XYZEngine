@@ -52,7 +52,6 @@ namespace XYZ {
 				for (Layer* layer : m_LayerStack)	
 					layer->OnUpdate(timestep);
 				
-				Stopwatch watch;
 				m_InGuiLayer->Begin();
 				for (Layer* layer : m_LayerStack)
 					layer->OnInGuiRender(timestep);

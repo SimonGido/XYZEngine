@@ -30,6 +30,7 @@ namespace XYZ {
 		void splitNodeProportional(InGuiDockNode* node, SplitAxis axis, const glm::vec2& firstSize);
 		void unsplitNode(InGuiDockNode* node);
 		void update(InGuiDockNode* node);
+		void updateAll(InGuiDockNode* node);
 		void showNodeWindows(InGuiDockNode* node, const glm::vec2& mousePos, InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig);
 		void showNode(InGuiDockNode* node, const glm::vec2& mousePos, const InGuiRenderConfiguration& renderConfig);
 		DockPosition collideWithMarker(InGuiDockNode* node, const glm::vec2& mousePos);
