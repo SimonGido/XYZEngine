@@ -7,6 +7,7 @@
 #include "Panels/GraphPanel.h"
 #include "Panels/SpriteEditorPanel.h"
 
+#include "InspectorLayout/SpriteEditorInspectorLayout.h"
 #include "InspectorLayout/EntityInspectorLayout.h"
 #include "InspectorLayout/AnimatorInspectorLayout.h"
 #include "GraphLayout/AnimatorGraphLayout.h"
@@ -51,6 +52,7 @@ namespace XYZ {
 		InspectorPanel m_InspectorPanel;
 		EntityInspectorLayout m_EntityInspectorLayout;
 		AnimatorInspectorLayout m_AnimatorInspectorLayout;
+		SpriteEditorInspectorLayout m_SpriteEditorInspectorLayout;
 
 		GraphPanel m_GraphPanel;
 		AnimatorGraphLayout m_AnimatorGraphLayout;

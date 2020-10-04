@@ -267,14 +267,15 @@ namespace XYZ {
 	}
 	void EditorLayer::OnEvent(Event& event)
 	{
+		m_EditorCamera.OnEvent(event);
+		m_GraphPanel.OnEvent(event);
+		m_SpriteEditorPanel.OnEvent(event);
+
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<WindowResizeEvent>(Hook(&EditorLayer::onWindowResized, this));
 		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&EditorLayer::onMouseButtonPress, this));
 		dispatcher.Dispatch<KeyPressedEvent>(Hook(&EditorLayer::onKeyPress, this));
 		dispatcher.Dispatch<KeyReleasedEvent>(Hook(&EditorLayer::onKeyRelease, this));
-		m_EditorCamera.OnEvent(event);
-		m_GraphPanel.OnEvent(event);
-		m_SpriteEditorPanel.OnEvent(event);
 	}
 
 	void EditorLayer::OnInGuiRender(Timestep ts)
@@ -288,6 +289,10 @@ namespace XYZ {
 		if (m_GraphPanel.OnInGuiRender(ts))
 		{
 			m_InspectorPanel.SetInspectorLayout(&m_AnimatorInspectorLayout);
+		}
+		if (m_SpriteEditorPanel.OnInGuiRender())
+		{
+			m_InspectorPanel.SetInspectorLayout(&m_SpriteEditorInspectorLayout);
 		}
 		m_SceneHierarchyPanel.OnInGuiRender();
 		m_InspectorPanel.OnInGuiRender();
@@ -380,6 +385,11 @@ namespace XYZ {
 			if (Collide(win->Position, win->Size, mousePos))
 				m_SceneHierarchyPanel.SelectEntity(relativeMousePos);
 		}
+		else if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_RIGHT))
+		{
+			m_SpriteEditorInspectorLayout.SetContext(m_SpriteEditorPanel.GetSelectedSprite());
+		}
+		
 		return false;
 	}
 	bool EditorLayer::onKeyPress(KeyPressedEvent& event)

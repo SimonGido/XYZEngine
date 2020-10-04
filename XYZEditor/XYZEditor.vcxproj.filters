@@ -38,6 +38,7 @@
       <Filter>Tools</Filter>
     </ClInclude>
     <ClInclude Include="src\Panels\SpriteEditorPanel.h" />
+    <ClInclude Include="src\InspectorLayout\SpriteEditorInspectorLayout.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\EditorLayer.cpp" />
@@ -64,5 +65,6 @@
     </ClCompile>
     <ClCompile Include="src\ZEditorApp.cpp" />
     <ClCompile Include="src\Panels\SpriteEditorPanel.cpp" />
+    <ClCompile Include="src\InspectorLayout\SpriteEditorInspectorLayout.cpp" />
   </ItemGroup>
 </Project>

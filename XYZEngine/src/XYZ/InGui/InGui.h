@@ -32,13 +32,13 @@ namespace XYZ {
 		static bool MenuBar(const char* name,float width, bool& open);
 		static bool MenuItem(const char* name, const glm::vec2& size);
 
-		static bool BeginGroup(const char* name, bool& open);
+		static bool BeginGroup(const char* name,const glm::vec2& position, bool& open);
 		static void EndGroup();
 
 		static bool Button(const char* name, const glm::vec2& size);
 		static bool Checkbox(const char* name, const glm::vec2& size, bool& value);
 		static bool Slider(const char* name, const glm::vec2& size, float& value, float valueScale = 1.0f);
-		static bool Image(const char* name, uint32_t rendererID, const glm::vec2& size, const glm::vec2& position, float tilingFactor = 1.0f);
+		static bool Image(const char* name, uint32_t rendererID, const glm::vec2& size, const glm::vec2& position, const glm::vec4& texCoords = { 0,0,1,1 }, float tilingFactor = 1.0f);
 		static bool TextArea(const char* name, std::string& text, const glm::vec2& size, bool& modified);
 
 		static bool Text(const char* text, const glm::vec2& scale, const glm::vec4& color = { 1,1,1,1 });

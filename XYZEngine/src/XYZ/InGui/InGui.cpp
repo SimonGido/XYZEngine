@@ -26,6 +26,23 @@ namespace XYZ {
 		None
 	};
 
+
+
+	static void SubmitTexture(uint32_t rendererID, std::vector<TextureRendererIDPair>& texturePairs, const InGuiRenderConfiguration& renderConfig)
+	{
+		uint32_t textureID = 0;
+		for (auto& pair : texturePairs)
+		{
+			if (pair.RendererID == rendererID)
+				textureID = pair.TextureID;
+		}
+		if (!textureID)
+		{
+			textureID = renderConfig.NumTexturesInUse;
+			renderConfig.NumTexturesInUse++;
+		}
+		texturePairs.push_back({ textureID,rendererID });
+	}
 	static glm::vec2 HandlePinInputSpacing(const glm::vec2& uiSize, InGuiPerFrameData& frameData)
 	{
 		// Set position to the position of current window
@@ -276,6 +293,18 @@ namespace XYZ {
 
 		return position;
 	}
+
+	static glm::vec2 ResolveText(InGuiMesh& mesh, const char* text, const glm::vec2& size, const glm::vec4& color, const InGuiRenderConfiguration& renderConfig, InGuiPerFrameData& frameData)
+	{
+		size_t offset = mesh.Vertices.size();
+		auto info = InGuiFactory::GenerateText({ 0.7f,0.7f }, color, text, mesh, renderConfig);
+		glm::vec2 position = HandleWindowSpacing({ size.x + info.Size.x + 5,size.y * 2 }, frameData);
+		glm::vec2 textOffset = { size.x + 5,(size.y / 2) - ((float)info.Size.y / 1.5f) };
+		MoveVertices(mesh.Vertices.data(), position + textOffset, offset, info.Count * 4);
+
+		return position;
+	}
+
 	static glm::vec2 StringToVec2(const std::string& src)
 	{
 		glm::vec2 val;
@@ -549,7 +578,7 @@ namespace XYZ {
 		return pressed;
 	}
 
-	bool InGui::BeginGroup(const char* name, bool& open)
+	bool InGui::BeginGroup(const char* name, const glm::vec2& position, bool& open)
 	{
 		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
 
@@ -561,7 +590,9 @@ namespace XYZ {
 		{
 			glm::vec2 winPos = window->Position;
 			glm::vec2 winSize = window->Size;
-			glm::vec2 panelPos = { winPos.x, HandleWindowSpacing({winSize.x - 5,InGuiWindow::PanelSize},frameData).y };
+			glm::vec2 panelPos = position;
+			if (window->Flags & InGuiWindowFlag::AutoPosition)
+				panelPos = { winPos.x, HandleWindowSpacing({winSize.x - 5,InGuiWindow::PanelSize},frameData).y };
 			glm::vec2 minButtonPos = { panelPos.x + 5, panelPos.y };
 			glm::vec4 color = renderConfig.DefaultColor;
 			if (Collide(minButtonPos, { InGuiWindow::PanelSize,InGuiWindow::PanelSize }, frameData.MousePosition))
@@ -620,11 +651,7 @@ namespace XYZ {
 		{
 			glm::vec4 color = renderConfig.DefaultColor;
 
-			size_t offset = window->Mesh.Vertices.size();
-			auto info = InGuiFactory::GenerateText({ 0.7f,0.7f }, color, name, window->Mesh, renderConfig);
-			glm::vec2 position = HandleWindowSpacing({ size.x + info.Size.x + 5,size.y }, frameData);
-			glm::vec2 textOffset = { size.x + 5,(size.y / 2) - (info.Size.y / 2) };
-			MoveVertices(window->Mesh.Vertices.data(), position + textOffset, offset, info.Count * 4);
+			glm::vec2 position = ResolveText(window->Mesh, name, size, color, renderConfig, frameData);
 
 			if (Collide(position, size, frameData.MousePosition))
 			{
@@ -651,7 +678,9 @@ namespace XYZ {
 		if (window->Flags & InGuiWindowFlag::Modified)
 		{
 			glm::vec4 color = renderConfig.DefaultColor;
-			glm::vec2 position = HandleWindowSpacing({ size.x,size.y * 2 }, frameData);
+			
+			glm::vec2 position = ResolveText(window->Mesh, name, size, color, renderConfig, frameData);
+
 			if (Collide(position, size, frameData.MousePosition))
 			{
 				color = renderConfig.HooverColor;
@@ -668,7 +697,7 @@ namespace XYZ {
 		return modified;
 	}
 
-	bool InGui::Image(const char* name, uint32_t rendererID, const glm::vec2& size, const glm::vec2& position, float tilingFactor)
+	bool InGui::Image(const char* name, uint32_t rendererID, const glm::vec2& size, const glm::vec2& position, const glm::vec4& texCoords, float tilingFactor)
 	{
 		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
 
@@ -685,7 +714,11 @@ namespace XYZ {
 			{
 				pressed = resolveLeftClick(false);
 			}
-			InGuiFactory::GenerateImage(pos, size, renderConfig.DefaultColor, rendererID, window->Mesh, frameData.TexturePairs, renderConfig, tilingFactor);
+			InGuiFactory::GenerateImage(pos, size, renderConfig.DefaultColor, texCoords, rendererID, window->Mesh, frameData.TexturePairs, renderConfig, tilingFactor);
+		}
+		else
+		{
+			SubmitTexture(rendererID, frameData.TexturePairs, renderConfig);
 		}
 
 		return pressed;
@@ -701,9 +734,10 @@ namespace XYZ {
 
 		if (window->Flags & InGuiWindowFlag::Modified)
 		{
-			glm::vec4 color = renderConfig.DefaultColor;		
-			glm::vec2 position = HandleWindowSpacing(size, frameData);
-		
+			glm::vec4 color = renderConfig.DefaultColor;
+
+			glm::vec2 position = ResolveText(window->Mesh, name, size, color, renderConfig, frameData);
+	
 			if (Collide(position, size, frameData.MousePosition))
 			{		
 				if (resolveLeftClick())
@@ -819,21 +853,7 @@ namespace XYZ {
 		return false;
 	}
 
-	static void SubmitTexture(uint32_t rendererID, std::vector<TextureRendererIDPair>& texturePairs,const InGuiRenderConfiguration& renderConfig)
-	{
-		uint32_t textureID = 0;
-		for (auto& pair : texturePairs)
-		{
-			if (pair.RendererID == rendererID)
-				textureID = pair.TextureID;
-		}
-		if (!textureID)
-		{
-			textureID = renderConfig.NumTexturesInUse;
-			renderConfig.NumTexturesInUse++;
-		}
-		texturePairs.push_back({ textureID,rendererID });
-	}
+	
 
 	bool InGui::RenderWindow(uint32_t id,const char* name, uint32_t rendererID, const glm::vec2& position, const glm::vec2& size, float panelSize)
 	{

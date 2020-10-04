@@ -59,7 +59,7 @@ namespace XYZ {
 			if (m_Context.HasComponent<SceneTagComponent>())
 			{
 				auto sceneTag = m_Context.GetComponent<SceneTagComponent>();
-				if (InGui::BeginGroup("Scene Tag Component", m_SceneTagOpen))
+				if (InGui::BeginGroup("Scene Tag Component", {0,0}, m_SceneTagOpen))
 				{
 					InGui::TextArea("Name", sceneTag->Name, { 150,25 }, m_SceneTagModified);
 				}
@@ -68,7 +68,7 @@ namespace XYZ {
 			if (m_Context.HasComponent<TransformComponent>())
 			{
 				auto transformComponent = m_Context.GetComponent<TransformComponent>();
-				if (InGui::BeginGroup("Transform Component", m_TransformOpen))
+				if (InGui::BeginGroup("Transform Component", { 0,0 }, m_TransformOpen))
 				{
 					if (InGui::TextArea("X", m_XPos, { 50,25 }, m_XPosModified))
 					{
@@ -116,7 +116,7 @@ namespace XYZ {
 
 			if (m_Context.HasComponent<SpriteRenderer>())
 			{
-				if (InGui::BeginGroup("Sprite Renderer", m_SpriteRendererOpen))
+				if (InGui::BeginGroup("Sprite Renderer", { 0,0 }, m_SpriteRendererOpen))
 				{
 					auto spriteRenderer = m_Context.GetComponent<SpriteRenderer>();
 					if (InGui::TextArea("R", m_RColor, { 50,25 }, m_RColorModified))
@@ -144,7 +144,7 @@ namespace XYZ {
 				}
 				if (m_Context.HasComponent<NativeScriptComponent>())
 				{
-					if (InGui::BeginGroup("Native Script Component", m_NativeScriptOpen))
+					if (InGui::BeginGroup("Native Script Component", { 0,0 }, m_NativeScriptOpen))
 					{
 						auto nativeScript = m_Context.GetComponent<NativeScriptComponent>();
 						glm::vec2 pos = { 0,0 };

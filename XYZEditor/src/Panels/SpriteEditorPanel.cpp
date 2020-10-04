@@ -4,6 +4,16 @@
 
 namespace XYZ {
 
+	static glm::vec4 SelectionToTexCoords(const glm::vec2& contextSize, const glm::vec2& contextPos, const glm::vec4& selection)
+	{
+		glm::vec4 select = { selection.x - contextPos.x, selection.y - contextPos.y, selection.z - contextPos.x, selection.w - contextPos.y };
+		glm::vec4 result = {
+			select.x / contextSize.x,  select.y / contextSize.y,
+			select.z / contextSize.x,  select.w / contextSize.y
+		};
+		return result;
+	}
+
 	static glm::vec2 MouseToWorld(const glm::vec2& point, const glm::vec2& windowSize)
 	{
 		glm::vec2 offset = { windowSize.x / 2,windowSize.y / 2 };
@@ -41,10 +51,11 @@ namespace XYZ {
 	}
 	bool SpriteEditorPanel::OnInGuiRender()
 	{
-		bool active = false;
-		if (InGui::Begin(m_SpriteEditorID, "Sprite Editor", { -200,-200 }, { 300,300 }))
-		{
-			InGui::Image("Background", m_BackgroundTexture->GetRendererID(), m_Window->Size, m_Window->Position, 1.0f);
+		bool active = InGui::Begin(m_SpriteEditorID, "Sprite Editor", { -200,-200 }, { 300,300 });
+		
+		InGui::Image("Background", m_BackgroundTexture->GetRendererID(), m_Window->Size, m_Window->Position, { 0,0,1,1 }, 1.0f);
+		if (active)
+		{		
 			if (m_Context)
 			{
 				glm::vec2 size = m_ContextSize;
@@ -75,14 +86,14 @@ namespace XYZ {
 				else if (InGui::MenuItem("Reset Selections", { 150,25 }))
 				{
 					m_Selections.clear();
+					m_Sprites.clear();
 					m_SelectedSelection = sc_InvalidSelection;
 					m_MenuOpen = false;
 				}
 			}
-
-			active = true;
 			m_NewSelection = InGui::Selector(m_Selecting);
 		}
+
 		InGui::End();
 		return active;
 	}
@@ -91,6 +102,14 @@ namespace XYZ {
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&SpriteEditorPanel::onMouseButtonRelease, this));
 		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&SpriteEditorPanel::onMouseButtonPress, this));
+	}
+	Ref<SubTexture2D> SpriteEditorPanel::GetSelectedSprite() const
+	{
+		if (m_SelectedSelection != sc_InvalidSelection)
+		{
+			return m_Sprites[m_SelectedSelection];
+		}
+		return nullptr;	
 	}
 	bool SpriteEditorPanel::onMouseButtonRelease(MouseButtonReleaseEvent& event)
 	{
@@ -112,6 +131,11 @@ namespace XYZ {
 					m_NewSelection.w = tmp;
 				}
 				
+				glm::vec2 size = m_ContextSize;
+				glm::vec2 position = m_Window->Position + (m_Window->Size / 2.0f) - (size / 2.0f);
+				glm::vec4 texCoords = SelectionToTexCoords(m_ContextSize, position, m_NewSelection);
+
+				m_Sprites.push_back(Ref<SubTexture2D>::Create(m_Context, texCoords));
 				m_Selections.push_back(m_NewSelection);		
 			}
 		}
@@ -119,13 +143,13 @@ namespace XYZ {
 	}
 	bool SpriteEditorPanel::onMouseButtonPress(MouseButtonPressEvent& event)
 	{
+		m_SelectedSelection = sc_InvalidSelection;
 		if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_RIGHT))
 		{
 			auto [mx, my] = Input::GetMousePosition();
 			auto [width, height] = Input::GetWindowSize();
 			glm::vec2 mousePos = MouseToWorld({ mx,my }, { width,height });
-
-			m_SelectedSelection = sc_InvalidSelection;
+			
 			uint32_t counter = 0;
 			for (auto& selection : m_Selections)
 			{	
@@ -134,6 +158,7 @@ namespace XYZ {
 				if (Collide(pos, size, mousePos))
 				{
 					m_SelectedSelection = counter;
+
 					break;
 				}
 				counter++;
