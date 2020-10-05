@@ -14,56 +14,46 @@ namespace XYZ {
 		virtual void OnInGuiRender() override;
 	private:
 
+		enum Axis
+		{
+			X,
+			Y,
+			Z,
+			W,
+			NUM_AXIS
+		};
+
 		const uint32_t m_InspectorID = 2;
 
 		Entity m_Context;
 		bool m_ScriptsOpen = false;
 		bool m_AddComponentOpen = false;
-
 		bool m_SceneTagModified = false;
 
-		bool m_XPosModified = false;
-		bool m_YPosModified = false;
-		bool m_ZPosModified = false;
-
-		bool m_XRotModified = false;
-		bool m_YRotModified = false;
-		bool m_ZRotModified = false;
-
-		bool m_XScaleModified = false;
-		bool m_YScaleModified = false;
-		bool m_ZScaleModified = false;
 
 		bool m_SceneTagOpen = false;
 		bool m_TransformOpen = false;
 		bool m_SpriteRendererOpen = false;
 		bool m_NativeScriptOpen = false;
 
-
 		glm::vec4 m_ColorPallete = { 0,1,1,1 };
 		bool m_PickColor = false;
-		bool m_RColorModified = false;
-		bool m_GColorModified = false;
-		bool m_BColorModified = false;
-		bool m_AColorModified = false;
 
-		std::string m_XPos;
-		std::string m_YPos;
-		std::string m_ZPos;
+		float m_Color[NUM_AXIS];
+		int m_ColorLengths[NUM_AXIS] = { 4,4,4,4 };
+		int m_ColorSelected = -1;
 
-		std::string m_XRot;
-		std::string m_YRot;
-		std::string m_ZRot;
+		float m_Position[W];
+		int m_PositionLengths[W] = { 4,4,4 };
+		int m_PositionSelected = -1;
 
-		std::string m_XScale;
-		std::string m_YScale;
-		std::string m_ZScale;
-
-		std::string m_RColor;
-		std::string m_GColor;
-		std::string m_BColor;
-		std::string m_AColor;
-
+		float m_Rotation[W];
+		int m_RotationLengths[W] = { 4,4,4 };
+		int m_RotationSelected = -1;
+		
+		float m_Scale[W];
+		int m_ScaleLengths[W] = { 4,4,4 };
+		int m_ScaleSelected = -1;
 
 		std::string m_NativeScriptObject;
 	private:

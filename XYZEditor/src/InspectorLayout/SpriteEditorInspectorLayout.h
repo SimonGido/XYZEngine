@@ -16,17 +16,11 @@ namespace XYZ {
 		bool m_FinishedModifying = false;
 		bool m_SpriteOpen = false;
 
-		bool m_XModified = false;
-		bool m_YModified = false;
-		bool m_ZModified = false;
-		bool m_WModified = false;
-
-		std::string m_X;
-		std::string m_Y;
-		std::string m_Z;
-		std::string m_W;
-
 		Ref<SubTexture2D> m_Context;
+
+		int m_Selected = -1;
+		float m_Values[4];
+		int m_Lengths[4] = { 4,4,4,4 };
 	};
 
 }

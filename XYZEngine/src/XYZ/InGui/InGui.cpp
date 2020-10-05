@@ -18,6 +18,9 @@ namespace XYZ {
 	InGuiContext* InGui::s_Context = nullptr;
 
 
+	static int s_NoneSelection = -1;
+	static constexpr size_t sc_TextBufferSize = 32;
+
 	static enum Color
 	{
 		RedToGreen,
@@ -25,8 +28,6 @@ namespace XYZ {
 		BlueToRed,
 		None
 	};
-
-
 
 	static void SubmitTexture(uint32_t rendererID, std::vector<TextureRendererIDPair>& texturePairs, const InGuiRenderConfiguration& renderConfig)
 	{
@@ -253,6 +254,8 @@ namespace XYZ {
 			break;
 		}
 
+
+
 		// Shift / Capslock
 		if ((mode == ToUnderlying(KeyMode::XYZ_MOD_SHIFT) || capslock) && currentSize < text.size())
 		{
@@ -260,43 +263,102 @@ namespace XYZ {
 		}
 	}
 
+
+	static void HandleInputNumber(char* text, int & length, int code, int mode, bool capslock)
+	{
+		int currentSize = length;
+
+		switch (code)
+		{
+		case ToUnderlying(KeyCode::XYZ_KEY_BACKSPACE):
+			if (length)
+				length--;
+		}
+		if (length < sc_TextBufferSize)
+		{
+			switch (code)
+			{
+			case ToUnderlying(KeyCode::XYZ_KEY_0):
+				text[length++] = ('0');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_1):
+				text[length++] = ('1');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_2):
+				text[length++] = ('2');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_3):
+				text[length++] = ('3');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_4):
+				text[length++] = ('4');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_5):
+				text[length++] = ('5');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_6):
+				text[length++] = ('6');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_7):
+				text[length++] = ('7');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_8):
+				text[length++] = ('8');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_9):
+				text[length++] = ('9');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_PERIOD):
+				text[length++] = ('.');
+				break;
+			}
+		}	
+
+		if (currentSize != length)
+			text[length] = '\0';
+	}
+
+
 	static glm::vec2 HandleWindowSpacing(const glm::vec2& uiSize, InGuiPerFrameData& frameData)
 	{
 		// Set position to the position of current window
 		auto window = frameData.CurrentWindow;
 		glm::vec2 position = window->Position;
 		glm::vec2 offset = { 10, 10 };
-
+	
 		// If widget position is going to be outside of the window
 		if (frameData.CurrentWindow->Size.x <= frameData.WindowSpaceOffset.x + uiSize.x)
 		{
 			// Set window offset x to zero
 			frameData.WindowSpaceOffset.x = 0.0f;
-
+	
 			// Subtract the highest widget in row and offset y from window offset y 
 			frameData.WindowSpaceOffset.y -= frameData.MaxHeightInRow + offset.y;
-
+	
 			frameData.MaxHeightInRow = uiSize.y;
 		}
 		// Find the highest widget in row
 		else if (uiSize.y > frameData.MaxHeightInRow)
 			frameData.MaxHeightInRow = uiSize.y;
 
+	
 		// Subtract from position widget size y
 		position.y -= uiSize.y;
 		// Add to position window space offset and offset
 		position += frameData.WindowSpaceOffset + glm::vec2{ offset.x,-offset.y };
-
-
+	
+	
 		frameData.WindowSpaceOffset.x += uiSize.x + offset.x;
 
 		return position;
 	}
 
+
+
 	static glm::vec2 ResolveSpaceWithText(InGuiMesh& mesh, const char* text,const glm::vec2& pos, const glm::vec2& size, const glm::vec4& color, const InGuiRenderConfiguration& renderConfig, InGuiPerFrameData& frameData, bool autoSpace)
 	{
 		size_t offset = mesh.Vertices.size();
-		auto info = InGuiFactory::GenerateText({ 0.7f,0.7f }, color, text, mesh, renderConfig);
+		auto info = InGuiFactory::GenerateText({ 0.7f,0.7f }, color, text, 1000.0f, mesh, renderConfig);
 		glm::vec2 position = pos;
 		if (autoSpace)
 			position = HandleWindowSpacing({ size.x + info.Size.x + 5, size.y }, frameData);
@@ -760,6 +822,54 @@ namespace XYZ {
 		return modified;
 	}
 
+	bool InGui::Float(uint32_t count, const char* name, float* values, int* lengths, const glm::vec2& position, const glm::vec2& size, int& selected)
+	{
+		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
+
+		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration;
+		InGuiWindow* window = frameData.CurrentWindow;
+
+		if (window->Flags & InGuiWindowFlag::Modified)
+		{
+			float offset = 5.0f;
+			glm::vec4 color = renderConfig.DefaultColor;
+			glm::vec2 pos = ResolveSpaceWithText(window->Mesh, name, position, { (size.x + offset) * count,size.y } , color, renderConfig, frameData, (window->Flags & InGuiWindowFlag::AutoPosition));
+
+			if (resolveLeftClick(false))
+			{
+				selected = s_NoneSelection;
+				glm::vec2 tmpPos = pos;
+				for (int i = 0; i < count; ++i)
+				{
+					if (Collide(tmpPos, size, frameData.MousePosition))
+					{		
+						frameData.Flags |= InGuiPerFameFlag::ClickHandled;
+						selected = i;			
+						break;
+					}
+					tmpPos.x += size.x + offset;
+				}
+			}	
+			for (int i = 0; i < count; ++i)
+			{
+				glm::vec4 color = renderConfig.DefaultColor;
+				char buffer[sc_TextBufferSize];
+				int ret = snprintf(buffer, sizeof(buffer), "%f", values[i]);
+				buffer[lengths[i]] = '\0';
+				if (i == selected)
+				{
+					color = renderConfig.HooverColor;	
+					HandleInputNumber(buffer, lengths[i], frameData.KeyCode, frameData.Mode, frameData.CapslockEnabled);
+					values[i] = atof(buffer);
+				}
+				InGuiFactory::GenerateTextArea(pos, size, color, name, buffer, frameData.WindowSpaceOffset, window->Mesh, renderConfig);
+				pos.x += size.x + offset;
+			}
+		}
+		return (selected != s_NoneSelection);
+	}
+
 	bool InGui::Text(const char* text, const glm::vec2& scale, const glm::vec4& color)
 	{
 		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
@@ -771,7 +881,7 @@ namespace XYZ {
 		if (window->Flags & InGuiWindowFlag::Modified)
 		{
 			size_t offset = window->Mesh.Vertices.size();
-			auto info = InGuiFactory::GenerateText(scale, color, text, window->Mesh, renderConfig);
+			auto info = InGuiFactory::GenerateText(scale, color, text, 1000.0f, window->Mesh, renderConfig);
 			glm::vec2 position = HandleWindowSpacing(info.Size, frameData);
 			MoveVertices(window->Mesh.Vertices.data(), position, offset, info.Count * 4);
 			if (Collide(position, info.Size, frameData.MousePosition))
@@ -1079,7 +1189,7 @@ namespace XYZ {
 			color = renderConfig.HooverColor;
 		}
 		size_t offset = nodeWindow->Mesh.Vertices.size();
-		auto [width, height] = InGuiFactory::GenerateText({ 0.7f,0.7f }, color, name, nodeWindow->Mesh, renderConfig);
+		auto [width, height] = InGuiFactory::GenerateText({ 0.7f,0.7f }, color, name, 1000.0f, nodeWindow->Mesh, renderConfig);
 		glm::vec2 textOffset = { size.x + 5,(size.y / 2) - (height / 2) };
 		MoveVertices(nodeWindow->Mesh.Vertices.data(), position + textOffset, offset, strlen(name) * 4);
 		InGuiFactory::GenerateQuad(position, size, color, nodeWindow->Mesh, renderConfig);
@@ -1110,7 +1220,7 @@ namespace XYZ {
 			}
 		}
 		size_t offset = nodeWindow->Mesh.Vertices.size();
-		auto info = InGuiFactory::GenerateText({ 0.7f,0.7f }, color, name, nodeWindow->Mesh, renderConfig);
+		auto info = InGuiFactory::GenerateText({ 0.7f,0.7f }, color, name, 1000.0f, nodeWindow->Mesh, renderConfig);
 		glm::vec2 textOffset = { -( 5 + info.Size.x), (size.y / 2) - (info.Size.y / 2) };
 		MoveVertices(nodeWindow->Mesh.Vertices.data(), position + textOffset, offset, info.Count * 4);
 		InGuiFactory::GenerateQuad(position, size, color, nodeWindow->Mesh, renderConfig);

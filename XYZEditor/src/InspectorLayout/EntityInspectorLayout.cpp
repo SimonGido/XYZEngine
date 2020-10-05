@@ -26,21 +26,21 @@ namespace XYZ {
 			glm::decompose(transformComponent->Transform, scale, orientation, translation, skew, perspective);
 
 
-			m_XPos = std::to_string(translation.x).substr(0, 4);
-			m_YPos = std::to_string(translation.y).substr(0, 4);
-			m_ZPos = std::to_string(translation.z).substr(0, 4);
+			m_Position[X] = translation.x;
+			m_Position[Y] = translation.y;
+			m_Position[Z] = translation.z;
 
-			m_XScale = std::to_string(scale.x).substr(0, 4);
-			m_YScale = std::to_string(scale.y).substr(0, 4);
-			m_ZScale = std::to_string(scale.z).substr(0, 4);
+			m_Scale[X] = scale.x;
+			m_Scale[Y] = scale.y;
+			m_Scale[Z] = scale.z;
 
 			if (context.HasComponent<SpriteRenderer>())
 			{
 				auto spriteRenderer = context.GetComponent<SpriteRenderer>();
-				m_RColor = std::to_string(spriteRenderer->Color.x).substr(0, 4);
-				m_GColor = std::to_string(spriteRenderer->Color.y).substr(0, 4);
-				m_BColor = std::to_string(spriteRenderer->Color.z).substr(0, 4);
-				m_AColor = std::to_string(spriteRenderer->Color.w).substr(0, 4);
+				m_Color[X] = spriteRenderer->Color.x;
+				m_Color[Y] = spriteRenderer->Color.y;
+				m_Color[Z] = spriteRenderer->Color.z;
+				m_Color[W] = spriteRenderer->Color.w;
 			}
 			if (context.HasComponent<NativeScriptComponent>())
 			{
@@ -70,47 +70,25 @@ namespace XYZ {
 				auto transformComponent = m_Context.GetComponent<TransformComponent>();
 				if (InGui::BeginGroup("Transform Component", { 0,0 }, m_TransformOpen))
 				{
-					if (InGui::TextArea("X", m_XPos, {}, { 50,25 },  m_XPosModified))
+					if (InGui::Float(3, "Position", m_Position, m_PositionLengths, {}, { 50.0f, 25.0f }, m_PositionSelected))
 					{
-						transformComponent->Transform[3][0] = atof(m_XPos.c_str());
+						transformComponent->Transform[3][X] = m_Position[X];
+						transformComponent->Transform[3][Y] = m_Position[Y];
+						transformComponent->Transform[3][Z] = m_Position[Z];
 					}
-					if (InGui::TextArea("Y", m_YPos, {}, { 50,25 }, m_YPosModified))
-					{
-						transformComponent->Transform[3][1] = atof(m_YPos.c_str());
-					}
-					if (InGui::TextArea("Z", m_ZPos, {}, { 50,25 },  m_ZPosModified))
-					{
-						transformComponent->Transform[3][2] = atof(m_ZPos.c_str());
-					}
-					InGui::Text("Position", { 0.7f,0.7f });
+				
 					InGui::Separator();
-					if (InGui::TextArea("X", m_XRot, {}, { 50,25 }, m_XRotModified))
+					if (InGui::Float(3, "Rotation", m_Rotation, m_RotationLengths, {}, { 50.0f, 25.0f }, m_PositionSelected))
 					{
-
+						
 					}
-					if (InGui::TextArea("Y", m_YRot, {}, { 50,25 }, m_YRotModified))
-					{
 
-					}
-					if (InGui::TextArea("Z", m_ZRot, {}, { 50,25 }, m_ZRotModified))
-					{
-
-					}
-					InGui::Text("Rotation", { 0.7f,0.7f });
 					InGui::Separator();
-					if (InGui::TextArea("X", m_XScale, {}, { 50,25 },  m_XScaleModified))
-					{
 
-					}
-					if (InGui::TextArea("Y", m_YScale, {}, { 50,25 },  m_YScaleModified))
+					if (InGui::Float(3, "Scale", m_Scale, m_ScaleLengths, {}, { 50.0f, 25.0f }, m_ScaleSelected))
 					{
-
+						
 					}
-					if (InGui::TextArea("Z", m_ZScale, {}, { 50,25 },m_ZScaleModified))
-					{
-
-					}
-					InGui::Text("Scale", { 0.7f,0.7f });
 				}
 			}
 
@@ -119,23 +97,13 @@ namespace XYZ {
 				if (InGui::BeginGroup("Sprite Renderer", { 0,0 }, m_SpriteRendererOpen))
 				{
 					auto spriteRenderer = m_Context.GetComponent<SpriteRenderer>();
-					if (InGui::TextArea("R", m_RColor, {}, { 50,25 }, m_RColorModified))
+					if (InGui::Float(4, "Color", m_Color, m_ColorLengths, {}, { 50.0f, 25.0f }, m_ColorSelected))
 					{
-						spriteRenderer->Color.x = atof(m_RColor.c_str());
+						spriteRenderer->Color.x = m_Color[X];
+						spriteRenderer->Color.y = m_Color[Y];
+						spriteRenderer->Color.z = m_Color[Z];
+						spriteRenderer->Color.w = m_Color[W];
 					}
-					if (InGui::TextArea("G", m_GColor, {}, { 50,25 },  m_GColorModified))
-					{
-						spriteRenderer->Color.y = atof(m_GColor.c_str());
-					}
-					if (InGui::TextArea("B", m_BColor, {}, { 50,25 },  m_BColorModified))
-					{
-						spriteRenderer->Color.z = atof(m_BColor.c_str());
-					}
-					if (InGui::TextArea("A", m_AColor, {}, { 50,25 }, m_AColorModified))
-					{
-						spriteRenderer->Color.w = atof(m_AColor.c_str());
-					}
-					InGui::Text("Color", { 0.7f,0.7f });
 
 					if (InGui::Checkbox("Pick Color", {}, { 25,25 }, m_PickColor))
 					{

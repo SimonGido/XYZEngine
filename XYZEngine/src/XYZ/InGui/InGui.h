@@ -40,6 +40,9 @@ namespace XYZ {
 		static bool Slider(const char* name, const glm::vec2 position, const glm::vec2& size, float& value, float valueScale = 1.0f);
 		static bool Image(const char* name, uint32_t rendererID, const glm::vec2& position, const glm::vec2& size, const glm::vec4& texCoords = { 0,0,1,1 }, float tilingFactor = 1.0f);
 		static bool TextArea(const char* name, std::string& text, const glm::vec2& position, const glm::vec2& size, bool& modified);
+		
+
+		static bool Float(uint32_t count, const char* name, float* values, int * lengths, const glm::vec2& position, const glm::vec2& size, int& selected);
 
 		static bool Text(const char* text, const glm::vec2& scale, const glm::vec4& color = { 1,1,1,1 });
 		static bool ColorPicker4(const char* name, const glm::vec2& size, glm::vec4& pallete, glm::vec4& color);

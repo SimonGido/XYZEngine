@@ -62,7 +62,9 @@ namespace XYZ {
 		int32_t cursorX = 0, cursorY = 0;
 
 		TextInfo textInfo;
-		for (size_t i = 0; i < strlen(str); ++i)
+
+		uint32_t i = 0;
+		while (str[i] != '\0')
 		{
 			auto& character = font->GetCharacter(str[i]);
 			if (textInfo.Size.x + (character.XAdvance * scale.x) >= length)
@@ -90,6 +92,8 @@ namespace XYZ {
 			textInfo.Size.x += character.XAdvance * scale.x;
 			textInfo.Count++;
 			cursorX += character.XAdvance * scale.x;
+
+			i++;
 		}
 		return textInfo;
 	}
@@ -261,9 +265,9 @@ namespace XYZ {
 		glm::vec2 textOffset = { (size.x / 2) - (info.Size.x / 2),(info.Size.y / 1.5f) };
 		MoveVertices(mesh.Vertices.data(), position + textOffset, offset, info.Count * 4);	
 	}
-	TextInfo InGuiFactory::GenerateText(const glm::vec2& scale, const glm::vec4& color, const char* text, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig)
+	TextInfo InGuiFactory::GenerateText(const glm::vec2& scale, const glm::vec4& color, const char* text, float length, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig)
 	{
-		return GenerateInGuiText(mesh, renderConfig.Font, text, {}, scale, 1000.0f, renderConfig.FontTextureID, color);
+		return GenerateInGuiText(mesh, renderConfig.Font, text, {}, scale, length, renderConfig.FontTextureID, color);
 	}
 	void InGuiFactory::GenerateColorPicker4(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig)
 	{
