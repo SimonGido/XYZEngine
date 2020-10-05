@@ -259,17 +259,13 @@ namespace XYZ {
 			text[currentSize] = std::toupper(text[currentSize]);
 		}
 	}
+
 	static glm::vec2 HandleWindowSpacing(const glm::vec2& uiSize, InGuiPerFrameData& frameData)
 	{
 		// Set position to the position of current window
 		auto window = frameData.CurrentWindow;
 		glm::vec2 position = window->Position;
 		glm::vec2 offset = { 10, 10 };
-
-		// Find the highest widget in row
-		if (uiSize.y > frameData.MaxHeightInRow)
-			frameData.MaxHeightInRow = uiSize.y;
-
 
 		// If widget position is going to be outside of the window
 		if (frameData.CurrentWindow->Size.x <= frameData.WindowSpaceOffset.x + uiSize.x)
@@ -282,6 +278,9 @@ namespace XYZ {
 
 			frameData.MaxHeightInRow = uiSize.y;
 		}
+		// Find the highest widget in row
+		else if (uiSize.y > frameData.MaxHeightInRow)
+			frameData.MaxHeightInRow = uiSize.y;
 
 		// Subtract from position widget size y
 		position.y -= uiSize.y;
@@ -294,11 +293,13 @@ namespace XYZ {
 		return position;
 	}
 
-	static glm::vec2 ResolveText(InGuiMesh& mesh, const char* text, const glm::vec2& size, const glm::vec4& color, const InGuiRenderConfiguration& renderConfig, InGuiPerFrameData& frameData)
+	static glm::vec2 ResolveSpaceWithText(InGuiMesh& mesh, const char* text,const glm::vec2& pos, const glm::vec2& size, const glm::vec4& color, const InGuiRenderConfiguration& renderConfig, InGuiPerFrameData& frameData, bool autoSpace)
 	{
 		size_t offset = mesh.Vertices.size();
 		auto info = InGuiFactory::GenerateText({ 0.7f,0.7f }, color, text, mesh, renderConfig);
-		glm::vec2 position = HandleWindowSpacing({ size.x + info.Size.x + 5,size.y * 2 }, frameData);
+		glm::vec2 position = pos;
+		if (autoSpace)
+			position = HandleWindowSpacing({ size.x + info.Size.x + 5, size.y }, frameData);
 		glm::vec2 textOffset = { size.x + 5,(size.y / 2) - ((float)info.Size.y / 1.5f) };
 		MoveVertices(mesh.Vertices.data(), position + textOffset, offset, info.Count * 4);
 
@@ -639,7 +640,7 @@ namespace XYZ {
 		return pressed;
 	}
 
-	bool InGui::Checkbox(const char* name, const glm::vec2& size, bool& value)
+	bool InGui::Checkbox(const char* name, const glm::vec2 position, const glm::vec2& size, bool& value)
 	{
 		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
 
@@ -650,10 +651,9 @@ namespace XYZ {
 		if (window->Flags & InGuiWindowFlag::Modified)
 		{
 			glm::vec4 color = renderConfig.DefaultColor;
+			glm::vec2 pos = ResolveSpaceWithText(window->Mesh, name, position, size, color, renderConfig, frameData, (window->Flags & InGuiWindowFlag::AutoPosition));
 
-			glm::vec2 position = ResolveText(window->Mesh, name, size, color, renderConfig, frameData);
-
-			if (Collide(position, size, frameData.MousePosition))
+			if (Collide(pos, size, frameData.MousePosition))
 			{
 				color = renderConfig.HooverColor;
 				if (resolveLeftClick())
@@ -661,13 +661,13 @@ namespace XYZ {
 					value = !value;
 				}
 			}
-			InGuiFactory::GenerateCheckbox(position, size, color, name, value, window->Mesh, renderConfig);
+			InGuiFactory::GenerateCheckbox(pos, size, color, name, value, window->Mesh, renderConfig);
 		}
 
 		return value;
 	}
 
-	bool InGui::Slider(const char* name, const glm::vec2& size, float& value, float valueScale)
+	bool InGui::Slider(const char* name, const glm::vec2 position, const glm::vec2& size, float& value, float valueScale)
 	{
 		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
 
@@ -677,27 +677,25 @@ namespace XYZ {
 		bool modified = false;
 		if (window->Flags & InGuiWindowFlag::Modified)
 		{
-			glm::vec4 color = renderConfig.DefaultColor;
-			
-			glm::vec2 position = ResolveText(window->Mesh, name, size, color, renderConfig, frameData);
-
-			if (Collide(position, size, frameData.MousePosition))
+			glm::vec4 color = renderConfig.DefaultColor;	
+			glm::vec2 pos = ResolveSpaceWithText(window->Mesh, name, position, size, color, renderConfig, frameData, (window->Flags & InGuiWindowFlag::AutoPosition));
+			if (Collide(pos, size, frameData.MousePosition))
 			{
 				color = renderConfig.HooverColor;
 				modified = resolveLeftClick(false);
 				if (modified)
 				{
-					float start = position.x;
+					float start = pos.x;
 					value = (frameData.MousePosition.x - start) / valueScale;
 				}
 			}
-			InGuiFactory::GenerateSlider(position, size, color, name,value * valueScale,frameData.WindowSpaceOffset, window->Mesh, renderConfig);
+			InGuiFactory::GenerateSlider(pos, size, color, name,value * valueScale,frameData.WindowSpaceOffset, window->Mesh, renderConfig);
 		}
 
 		return modified;
 	}
 
-	bool InGui::Image(const char* name, uint32_t rendererID, const glm::vec2& size, const glm::vec2& position, const glm::vec4& texCoords, float tilingFactor)
+	bool InGui::Image(const char* name, uint32_t rendererID,const glm::vec2& position, const glm::vec2& size,  const glm::vec4& texCoords, float tilingFactor)
 	{
 		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
 
@@ -724,7 +722,7 @@ namespace XYZ {
 		return pressed;
 	}
 
-	bool InGui::TextArea(const char* name, std::string& text, const glm::vec2& size, bool& modified)
+	bool InGui::TextArea(const char* name, std::string& text, const glm::vec2& position, const glm::vec2& size, bool& modified)
 	{
 		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
 
@@ -735,10 +733,9 @@ namespace XYZ {
 		if (window->Flags & InGuiWindowFlag::Modified)
 		{
 			glm::vec4 color = renderConfig.DefaultColor;
-
-			glm::vec2 position = ResolveText(window->Mesh, name, size, color, renderConfig, frameData);
+			glm::vec2 pos = ResolveSpaceWithText(window->Mesh, name, position, size, color, renderConfig, frameData, (window->Flags & InGuiWindowFlag::AutoPosition));
 	
-			if (Collide(position, size, frameData.MousePosition))
+			if (Collide(pos, size, frameData.MousePosition))
 			{		
 				if (resolveLeftClick())
 				{
@@ -757,7 +754,7 @@ namespace XYZ {
 			}
 			
 					
-			InGuiFactory::GenerateTextArea(position, size, color, name, text.c_str(), frameData.WindowSpaceOffset, window->Mesh, renderConfig);
+			InGuiFactory::GenerateTextArea(pos, size, color, name, text.c_str(), frameData.WindowSpaceOffset, window->Mesh, renderConfig);
 		}
 		
 		return modified;
@@ -807,13 +804,13 @@ namespace XYZ {
 			Separator();
 
 	
-			if (Slider("R:", { size.x,15 }, color.x, size.x))
+			if (Slider("R:", {}, { size.x,15 }, color.x, size.x))
 				modified = true;
 			Separator();
-			if (Slider("G:", { size.x,15 }, color.y, size.x))
+			if (Slider("G:", {}, { size.x,15 }, color.y, size.x))
 				modified = true;
 			Separator();
-			if (Slider("B:", { size.x,15 }, color.z, size.x))
+			if (Slider("B:", {}, { size.x,15 }, color.z, size.x))
 				modified = true;
 			Separator();
 
@@ -1146,6 +1143,7 @@ namespace XYZ {
 	{
 		s_Context->PerFrameData.WindowSpaceOffset.x = s_Context->PerFrameData.CurrentWindow->Size.x;
 	}
+
 
 	glm::vec4 InGui::Selector(bool& selecting)
 	{

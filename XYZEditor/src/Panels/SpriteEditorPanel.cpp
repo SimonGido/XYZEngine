@@ -53,14 +53,14 @@ namespace XYZ {
 	{
 		bool active = InGui::Begin(m_SpriteEditorID, "Sprite Editor", { -200,-200 }, { 300,300 });
 		
-		InGui::Image("Background", m_BackgroundTexture->GetRendererID(), m_Window->Size, m_Window->Position, { 0,0,1,1 }, 1.0f);
+		InGui::Image("Background", m_BackgroundTexture->GetRendererID(), m_Window->Position, m_Window->Size,  { 0,0,1,1 }, 1.0f);
 		if (active)
 		{		
 			if (m_Context)
 			{
 				glm::vec2 size = m_ContextSize;
 				glm::vec2 position = m_Window->Position + (m_Window->Size / 2.0f) - (size / 2.0f);
-				InGui::Image("Context", m_Context->GetRendererID(), size, position);
+				InGui::Image("Context", m_Context->GetRendererID(), position, size);
 			}
 
 			for (auto& selection : m_Selections)

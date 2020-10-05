@@ -61,7 +61,7 @@ namespace XYZ {
 				auto sceneTag = m_Context.GetComponent<SceneTagComponent>();
 				if (InGui::BeginGroup("Scene Tag Component", {0,0}, m_SceneTagOpen))
 				{
-					InGui::TextArea("Name", sceneTag->Name, { 150,25 }, m_SceneTagModified);
+					InGui::TextArea("Name", sceneTag->Name, {}, { 150, 25 }, m_SceneTagModified);
 				}
 			}
 
@@ -70,43 +70,43 @@ namespace XYZ {
 				auto transformComponent = m_Context.GetComponent<TransformComponent>();
 				if (InGui::BeginGroup("Transform Component", { 0,0 }, m_TransformOpen))
 				{
-					if (InGui::TextArea("X", m_XPos, { 50,25 }, m_XPosModified))
+					if (InGui::TextArea("X", m_XPos, {}, { 50,25 },  m_XPosModified))
 					{
 						transformComponent->Transform[3][0] = atof(m_XPos.c_str());
 					}
-					if (InGui::TextArea("Y", m_YPos, { 50,25 }, m_YPosModified))
+					if (InGui::TextArea("Y", m_YPos, {}, { 50,25 }, m_YPosModified))
 					{
 						transformComponent->Transform[3][1] = atof(m_YPos.c_str());
 					}
-					if (InGui::TextArea("Z", m_ZPos, { 50,25 }, m_ZPosModified))
+					if (InGui::TextArea("Z", m_ZPos, {}, { 50,25 },  m_ZPosModified))
 					{
 						transformComponent->Transform[3][2] = atof(m_ZPos.c_str());
 					}
 					InGui::Text("Position", { 0.7f,0.7f });
 					InGui::Separator();
-					if (InGui::TextArea("X", m_XRot, { 50,25 }, m_XRotModified))
+					if (InGui::TextArea("X", m_XRot, {}, { 50,25 }, m_XRotModified))
 					{
 
 					}
-					if (InGui::TextArea("Y", m_YRot, { 50,25 }, m_YRotModified))
+					if (InGui::TextArea("Y", m_YRot, {}, { 50,25 }, m_YRotModified))
 					{
 
 					}
-					if (InGui::TextArea("Z", m_ZRot, { 50,25 }, m_ZRotModified))
+					if (InGui::TextArea("Z", m_ZRot, {}, { 50,25 }, m_ZRotModified))
 					{
 
 					}
 					InGui::Text("Rotation", { 0.7f,0.7f });
 					InGui::Separator();
-					if (InGui::TextArea("X", m_XScale, { 50,25 }, m_XScaleModified))
+					if (InGui::TextArea("X", m_XScale, {}, { 50,25 },  m_XScaleModified))
 					{
 
 					}
-					if (InGui::TextArea("Y", m_YScale, { 50,25 }, m_YScaleModified))
+					if (InGui::TextArea("Y", m_YScale, {}, { 50,25 },  m_YScaleModified))
 					{
 
 					}
-					if (InGui::TextArea("Z", m_ZScale, { 50,25 }, m_ZScaleModified))
+					if (InGui::TextArea("Z", m_ZScale, {}, { 50,25 },m_ZScaleModified))
 					{
 
 					}
@@ -119,25 +119,25 @@ namespace XYZ {
 				if (InGui::BeginGroup("Sprite Renderer", { 0,0 }, m_SpriteRendererOpen))
 				{
 					auto spriteRenderer = m_Context.GetComponent<SpriteRenderer>();
-					if (InGui::TextArea("R", m_RColor, { 50,25 }, m_RColorModified))
+					if (InGui::TextArea("R", m_RColor, {}, { 50,25 }, m_RColorModified))
 					{
 						spriteRenderer->Color.x = atof(m_RColor.c_str());
 					}
-					if (InGui::TextArea("G", m_GColor, { 50,25 }, m_GColorModified))
+					if (InGui::TextArea("G", m_GColor, {}, { 50,25 },  m_GColorModified))
 					{
 						spriteRenderer->Color.y = atof(m_GColor.c_str());
 					}
-					if (InGui::TextArea("B", m_BColor, { 50,25 }, m_BColorModified))
+					if (InGui::TextArea("B", m_BColor, {}, { 50,25 },  m_BColorModified))
 					{
 						spriteRenderer->Color.z = atof(m_BColor.c_str());
 					}
-					if (InGui::TextArea("A", m_AColor, { 50,25 }, m_AColorModified))
+					if (InGui::TextArea("A", m_AColor, {}, { 50,25 }, m_AColorModified))
 					{
 						spriteRenderer->Color.w = atof(m_AColor.c_str());
 					}
 					InGui::Text("Color", { 0.7f,0.7f });
 
-					if (InGui::Checkbox("Pick Color", { 25,25 }, m_PickColor))
+					if (InGui::Checkbox("Pick Color", {}, { 25,25 }, m_PickColor))
 					{
 						InGui::ColorPicker4("Color", { 255,255 }, m_ColorPallete, spriteRenderer->Color);
 					}
