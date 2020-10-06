@@ -125,6 +125,8 @@ namespace XYZ {
 			{
 				textColor = { 0,1,1,1 };
 			}
+			
+		
 			if (InGui::Text(tag.c_str(), { 1,1 }, textColor))
 			{
 				m_SelectedEntity = entity;

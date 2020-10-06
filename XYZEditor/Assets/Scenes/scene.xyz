@@ -8,7 +8,7 @@ Entities:
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/material.mat
       SubTextureAssetPath: Assets/SubTextures/New SubTexture.subtex
-      Color: [0.417333603, 0, 0.582666397, 1]
+      Color: [0.0274509806, 0.196078435, 0.200000003, 1]
       TextureID: 0
       SortLayer: 0
       IsVisible: true

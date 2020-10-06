@@ -30,6 +30,7 @@ namespace XYZ {
 					}
 				}
 				InGui::EndPopup();
+				InGui::Separator();
 			}
 
 			std::pair<uint32_t, uint32_t> connection;

@@ -158,6 +158,7 @@ namespace XYZ {
 		m_FBO->Resize();
 		m_EditorCamera.SetAspectRatio((float)spec.Width / (float)spec.Height);
 
+		InGui::SetUIOffset(10.0f);
 		InGui::Begin(m_TestID, "Test", { 0,0 }, { 200,200 });
 		InGui::End();
 		InGui::GetWindow(m_TestID)->Flags |= (InGuiWindowFlag::MenuEnabled | InGuiWindowFlag::Visible | InGuiWindowFlag::EventListener);

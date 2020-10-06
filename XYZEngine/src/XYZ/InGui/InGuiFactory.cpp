@@ -269,6 +269,49 @@ namespace XYZ {
 	{
 		return GenerateInGuiText(mesh, renderConfig.Font, text, {}, scale, length, renderConfig.FontTextureID, color);
 	}
+	TextInfo InGuiFactory::GenerateText(const glm::vec2& scale, const glm::vec4& color, const char* text, float length, InGuiVertex* vertices, const InGuiRenderConfiguration& renderConfig)
+	{
+		auto& fontData = renderConfig.Font->GetData();
+		int32_t cursorX = 0, cursorY = 0;
+		float textureID = renderConfig.FontTextureID;
+
+		TextInfo textInfo;
+
+		uint32_t i = 0;
+		uint32_t counter = 0;
+		while (text[i] != '\0')
+		{
+			auto& character = renderConfig.Font->GetCharacter(text[i]);
+			if (textInfo.Size.x + (character.XAdvance * scale.x) >= length)
+				break;
+
+			float yOffset = (fontData.LineHeight - character.YOffset - character.Height) * scale.y;
+			glm::vec2 pos = {
+				cursorX + character.XOffset,
+				cursorY + yOffset
+			};
+
+			glm::vec2 size = { character.Width * scale.x, character.Height * scale.y };
+			glm::vec2 coords = { character.XCoord, fontData.ScaleH - character.YCoord - character.Height };
+			glm::vec2 scaleFont = { fontData.ScaleW, fontData.ScaleH };
+
+			vertices[counter++] = { color, { pos.x , pos.y, 0.0f }, coords / scaleFont ,textureID };
+			vertices[counter++] = { color, { pos.x + size.x, pos.y, 0.0f, }, (coords + glm::vec2(character.Width, 0)) / scaleFont,textureID };
+			vertices[counter++] = { color, { pos.x + size.x, pos.y + size.y, 0.0f }, (coords + glm::vec2(character.Width, character.Height)) / scaleFont,textureID };
+			vertices[counter++] = { color, { pos.x ,pos.y + size.y, 0.0f}, (coords + glm::vec2(0,character.Height)) / scaleFont,textureID };
+
+			if (size.y > textInfo.Size.y)
+				textInfo.Size.y = size.y;
+
+
+			textInfo.Size.x += character.XAdvance * scale.x;
+			textInfo.Count++;
+			cursorX += character.XAdvance * scale.x;
+
+			i++;
+		}
+		return textInfo;
+	}
 	void InGuiFactory::GenerateColorPicker4(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig)
 	{
 		InGuiVertex vertices[4] = {
