@@ -934,14 +934,15 @@ namespace XYZ {
 				if (!HandleRowPosition(frameData, size, pos))
 					return false;
 
+			Separator();
 			bool modified = false;
 			if (ColorPallete4("", { size.x, 25.0f }, pallete))
 			{
 				modified = true;
 			}
 			Separator();
-			
 			InGuiFactory::GenerateColorPicker4(pos, size, pallete, window->Mesh, renderConfig);
+			
 			if (Slider("R:", {}, { size.x,15 }, color.x, size.x))
 				modified = true;
 			Separator();

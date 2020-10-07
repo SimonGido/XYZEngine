@@ -25,6 +25,9 @@
     <ClInclude Include="src\InspectorLayout\EntityInspectorLayout.h">
       <Filter>InspectorLayout</Filter>
     </ClInclude>
+    <ClInclude Include="src\InspectorLayout\SpriteEditorInspectorLayout.h">
+      <Filter>InspectorLayout</Filter>
+    </ClInclude>
     <ClInclude Include="src\Panels\GraphPanel.h">
       <Filter>Panels</Filter>
     </ClInclude>
@@ -34,11 +37,12 @@
     <ClInclude Include="src\Panels\SceneHierarchyPanel.h">
       <Filter>Panels</Filter>
     </ClInclude>
+    <ClInclude Include="src\Panels\SpriteEditorPanel.h">
+      <Filter>Panels</Filter>
+    </ClInclude>
     <ClInclude Include="src\Tools\EditorCamera.h">
       <Filter>Tools</Filter>
     </ClInclude>
-    <ClInclude Include="src\Panels\SpriteEditorPanel.h" />
-    <ClInclude Include="src\InspectorLayout\SpriteEditorInspectorLayout.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\EditorLayer.cpp" />
@@ -51,6 +55,9 @@
     <ClCompile Include="src\InspectorLayout\EntityInspectorLayout.cpp">
       <Filter>InspectorLayout</Filter>
     </ClCompile>
+    <ClCompile Include="src\InspectorLayout\SpriteEditorInspectorLayout.cpp">
+      <Filter>InspectorLayout</Filter>
+    </ClCompile>
     <ClCompile Include="src\Panels\GraphPanel.cpp">
       <Filter>Panels</Filter>
     </ClCompile>
@@ -60,11 +67,12 @@
     <ClCompile Include="src\Panels\SceneHierarchyPanel.cpp">
       <Filter>Panels</Filter>
     </ClCompile>
+    <ClCompile Include="src\Panels\SpriteEditorPanel.cpp">
+      <Filter>Panels</Filter>
+    </ClCompile>
     <ClCompile Include="src\Tools\EditorCamera.cpp">
       <Filter>Tools</Filter>
     </ClCompile>
     <ClCompile Include="src\ZEditorApp.cpp" />
-    <ClCompile Include="src\Panels\SpriteEditorPanel.cpp" />
-    <ClCompile Include="src\InspectorLayout\SpriteEditorInspectorLayout.cpp" />
   </ItemGroup>
 </Project>

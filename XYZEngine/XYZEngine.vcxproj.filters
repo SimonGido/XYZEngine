@@ -411,6 +411,9 @@
     <ClInclude Include="src\XYZ\Scene\Animation.h">
       <Filter>src\XYZ\Scene</Filter>
     </ClInclude>
+    <ClInclude Include="src\XYZ\Scene\AnimationController.h">
+      <Filter>src\XYZ\Scene</Filter>
+    </ClInclude>
     <ClInclude Include="src\XYZ\Scene\AssetManager.h">
       <Filter>src\XYZ\Scene</Filter>
     </ClInclude>
@@ -1860,7 +1863,6 @@
     <ClInclude Include="vendor\yaml-cpp\src\token.h">
       <Filter>vendor\yaml-cpp\src</Filter>
     </ClInclude>
-    <ClInclude Include="src\XYZ\Scene\AnimationController.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\API\OpenGL\OpenGLAPIContext.cpp">
@@ -2079,6 +2081,9 @@
     <ClCompile Include="src\XYZ\Scene\Animation.cpp">
       <Filter>src\XYZ\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="src\XYZ\Scene\AnimationController.cpp">
+      <Filter>src\XYZ\Scene</Filter>
+    </ClCompile>
     <ClCompile Include="src\XYZ\Scene\AssetManager.cpp">
       <Filter>src\XYZ\Scene</Filter>
     </ClCompile>
@@ -2250,6 +2255,5 @@
     <ClCompile Include="vendor\yaml-cpp\src\tag.cpp">
       <Filter>vendor\yaml-cpp\src</Filter>
     </ClCompile>
-    <ClCompile Include="src\XYZ\Scene\AnimationController.cpp" />
   </ItemGroup>
 </Project>

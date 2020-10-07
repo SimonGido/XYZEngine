@@ -1,6 +1,6 @@
 #pragma once
 #include "XYZ/ECS/ECSManager.h"
-#include "Font.h"
+#include "XYZ/Renderer/Font.h"
 
 namespace XYZ {
 
