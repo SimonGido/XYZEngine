@@ -168,6 +168,11 @@ namespace XYZ {
 	}
 	void SpriteEditorPanel::onInGuiWindowResize(const glm::vec2& size)
 	{
+		if (m_SelectedSelection != sc_InvalidSelection)
+		{
+			// TODO: calculate new size of selections
+			m_Selections[m_SelectedSelection].x += size.x - m_ContextSize.x;
+		}
 		m_ContextSize += glm::vec2(size.x - m_ContextSize.x, size.y - m_ContextSize.y);
 	}
 }

@@ -28,7 +28,7 @@ Entities:
   - Entity: ssasda
     Parent: 2
     TransformComponent:
-      Position: [7.02365017, -8.57750702, 0]
+      Position: [15.6312437, 10.321991, 0]
       Rotation: [1, 0, 0, 0]
       Scale: [19.7236385, 41.7825546, 1]
     SpriteRenderer:

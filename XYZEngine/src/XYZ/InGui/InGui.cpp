@@ -19,7 +19,7 @@ namespace XYZ {
 
 
 	static int s_NoneSelection = -1;
-	static constexpr size_t sc_TextBufferSize = 32;
+	static constexpr size_t sc_TextBufferSize = 64;
 
 	static enum Color
 	{
@@ -657,7 +657,7 @@ namespace XYZ {
 
 	static bool ResolveSpaceWithText(const char* text, const glm::vec2 size,const glm::vec2& scale, const glm::vec4& color, glm::vec2& position, const InGuiRenderConfiguration& renderConfig, InGuiPerFrameData& frameData)
 	{
-		XYZ_ASSERT(strlen(text) < sc_TextBufferSize * 4, "Maximum length of text is ", sc_TextBufferSize);
+		XYZ_ASSERT(strlen(text) < sc_TextBufferSize, "Maximum length of text is ", sc_TextBufferSize);
 		InGuiWindow* window = frameData.CurrentWindow;
 		InGuiMesh& mesh = frameData.CurrentWindow->Mesh;
 		InGuiVertex vertices[sc_TextBufferSize * 4];
@@ -891,7 +891,7 @@ namespace XYZ {
 	bool InGui::Text(const char* text, const glm::vec2& scale, const glm::vec4& color)
 	{
 		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
-		XYZ_ASSERT(strlen(text) < sc_TextBufferSize * 4, "Maximum length of text is ", sc_TextBufferSize);
+		XYZ_ASSERT(strlen(text) < sc_TextBufferSize, "Maximum length of text is ", sc_TextBufferSize);
 
 		InGuiPerFrameData& frameData = s_Context->PerFrameData;
 		InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration;
@@ -902,7 +902,7 @@ namespace XYZ {
 			InGuiVertex vertices[sc_TextBufferSize * 4];
 			auto info = InGuiFactory::GenerateText(scale, color, text, 1000.0f, vertices, renderConfig);
 
-			glm::vec2 pos;
+			glm::vec2 pos = { 0,0 };
 			if (window->Flags & InGuiWindowFlag::AutoPosition)
 				if (!HandleRowPosition(frameData, info.Size, pos))
 					return false;
@@ -929,7 +929,7 @@ namespace XYZ {
 
 		if (window->Flags & InGuiWindowFlag::Modified)
 		{
-			glm::vec2 pos;
+			glm::vec2 pos = { 0,0 };
 			if (window->Flags & InGuiWindowFlag::AutoPosition)
 				if (!HandleRowPosition(frameData, size, pos))
 					return false;
@@ -975,7 +975,7 @@ namespace XYZ {
 		InGuiWindow* window = frameData.CurrentWindow;
 		if (window->Flags & InGuiWindowFlag::Modified)
 		{
-			glm::vec2 pos;
+			glm::vec2 pos = { 0,0 };
 			if (window->Flags & InGuiWindowFlag::AutoPosition)
 				if (!HandleRowPosition(frameData, size, pos))
 					return false;
