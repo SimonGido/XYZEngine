@@ -381,8 +381,9 @@ namespace XYZ {
 		glm::vec2 minButtonPos = { position.x + 5, position.y };
 		GenerateInGuiQuad(window->Mesh, position, { window->Size.x ,InGuiWindow::PanelSize }, renderConfig.SliderSubTexture->GetTexCoords(), renderConfig.TextureID, color);
 		size_t offset = window->Mesh.Vertices.size();
-		auto [width, height] = GenerateInGuiText(window->Mesh, renderConfig.Font, name, { minButtonPos.x + InGuiWindow::PanelSize, position.y }, { 0.7f,0.7f }, window->Size.x, renderConfig.FontTextureID, color);
-		MoveVertices(window->Mesh.Vertices.data(), { 5, height / 2 }, offset, strlen(name) * 4);
+		auto info = GenerateInGuiText(window->Mesh, renderConfig.Font, name, { minButtonPos.x + InGuiWindow::PanelSize, position.y }, { 0.7f,0.7f }, window->Size.x, renderConfig.FontTextureID, color);
+		glm::vec2 textOffset = { 5.0f, (info.Size.y / 1.5f) };
+		MoveVertices(window->Mesh.Vertices.data(), textOffset, offset, info.Count * 4);
 
 		if (open)
 			GenerateInGuiQuad(window->Mesh, minButtonPos, { InGuiWindow::PanelSize ,InGuiWindow::PanelSize }, renderConfig.DownArrowButtonSubTexture->GetTexCoords(), renderConfig.TextureID, color);

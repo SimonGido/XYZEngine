@@ -2,33 +2,33 @@ Scene: Test Scene
 Entities:
   - Entity: Test Entity
     TransformComponent:
-      Position: [43.6158791, 63.1251678, 0]
-      Rotation: [0.999562562, 0, 0, 0.0295742173]
+      Position: [14.031292, 58.885498, 0]
+      Rotation: [1, 0, 0, 0]
       Scale: [7.24259949, 11.4536161, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/material.mat
       SubTextureAssetPath: Assets/SubTextures/New SubTexture.subtex
-      Color: [0.0274509806, 0.196078435, 0.200000003, 1]
+      Color: [0.881285608, 0.882082462, 0.948222756, 1]
       TextureID: 0
       SortLayer: 0
       IsVisible: true
   - Entity: 00zcz
     Parent: 2
     TransformComponent:
-      Position: [-19.7498512, 63.4404526, 0]
+      Position: [-28.4450722, 54.7452316, 0]
       Rotation: [0.998845816, 0, 0, 0.0480313711]
       Scale: [41.1941833, 61.6428528, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/material.mat
       SubTextureAssetPath: Assets/SubTextures/CharacterSubTexture.subtex
-      Color: [0.258823276, 0.980392158, 0.980392158, 1]
+      Color: [0, 1, 1, 1]
       TextureID: 0
       SortLayer: 0
       IsVisible: true
   - Entity: ssasda
     Parent: 2
     TransformComponent:
-      Position: [0.351050377, -38.3820267, 0]
+      Position: [7.02365017, -8.57750702, 0]
       Rotation: [1, 0, 0, 0]
       Scale: [19.7236385, 41.7825546, 1]
     SpriteRenderer:
@@ -54,13 +54,13 @@ Entities:
   - Entity: assss
     Parent: 2
     TransformComponent:
-      Position: [5.19791985, 19.2059326, 0]
+      Position: [-32.999073, 12.3844471, 0]
       Rotation: [0.191220462, 0, 0, 0.981547117]
       Scale: [23.9548492, 33.2744179, 0.99999994]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/material.mat
       SubTextureAssetPath: Assets/SubTextures/CharacterSubTexture.subtex
-      Color: [0.996078432, 0.251410961, 0.649783731, 1]
+      Color: [1, 1, 1, 1]
       TextureID: 0
       SortLayer: 0
       IsVisible: true

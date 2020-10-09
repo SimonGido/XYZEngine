@@ -320,46 +320,44 @@ namespace XYZ {
 
 		if (InGui::Begin(m_TestID, "Test", { 0,0 }, { 200,200 }))
 		{
-			
-		}
-		if (InGui::MenuBar("File", 70, m_MenuOpen))
-		{
-			if (InGui::MenuItem("Load Scene", { 150,25 }))
+			if (InGui::Button("Compile", { 100,25 }))
 			{
-				auto& app = Application::Get();
-				std::string filepath = app.OpenFile("(*.xyz)\0*.xyz\0");
-				if (!filepath.empty())
-				{
-					m_Scene = m_AssetManager.GetAsset<Scene>(filepath);
-				}
-				m_MenuOpen = false;
+				PerModuleInterface::g_pRuntimeObjectSystem->CompileAll(true);
 			}
-			else if (InGui::MenuItem("Create Script", { 150,25 }))
+			if (InGui::MenuBar("File", 70, m_MenuOpen))
 			{
-				auto& app = Application::Get();
-				std::string filepath = app.CreateNewFile("(*.cpp)\0*.cpp\0");
-				if (!filepath.empty())
+				if (InGui::MenuItem("Load Scene", { 150,25 }))
 				{
-					PerModuleInterface::g_pRuntimeObjectSystem->AddToRuntimeFileList(filepath.c_str());
+					auto& app = Application::Get();
+					std::string filepath = app.OpenFile("(*.xyz)\0*.xyz\0");
+					if (!filepath.empty())
+					{
+						m_Scene = m_AssetManager.GetAsset<Scene>(filepath);
+					}
+					m_MenuOpen = false;
 				}
-				m_MenuOpen = false;
-			}
-			else if (InGui::MenuItem("Load Script", { 150,25 }))
-			{
-				auto& app = Application::Get();
-				std::string filepath = app.OpenFile("(*.cpp)\0*.cpp\0");
-				if (!filepath.empty())
+				else if (InGui::MenuItem("Create Script", { 150,25 }))
 				{
-					PerModuleInterface::g_pRuntimeObjectSystem->AddToRuntimeFileList(filepath.c_str());
+					auto& app = Application::Get();
+					std::string filepath = app.CreateNewFile("(*.cpp)\0*.cpp\0");
+					if (!filepath.empty())
+					{
+						PerModuleInterface::g_pRuntimeObjectSystem->AddToRuntimeFileList(filepath.c_str());
+					}
+					m_MenuOpen = false;
 				}
-				m_MenuOpen = false;
-			}
+				else if (InGui::MenuItem("Load Script", { 150,25 }))
+				{
+					auto& app = Application::Get();
+					std::string filepath = app.OpenFile("(*.cpp)\0*.cpp\0");
+					if (!filepath.empty())
+					{
+						PerModuleInterface::g_pRuntimeObjectSystem->AddToRuntimeFileList(filepath.c_str());
+					}
+					m_MenuOpen = false;
+				}
 
-		}
-		
-		if (InGui::Button("Compile", { 100,25 }))
-		{
-			PerModuleInterface::g_pRuntimeObjectSystem->CompileAll(true);
+			}
 		}
 		InGui::End();
 	}
