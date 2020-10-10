@@ -45,7 +45,7 @@ namespace XYZ {
 		static bool Text(const char* text, const glm::vec2& scale, const glm::vec4& color = { 1,1,1,1 });
 		static bool ColorPicker4(const char* name, const glm::vec2& size, glm::vec4& pallete, glm::vec4& color);
 		static bool ColorPallete4(const char* name, const glm::vec2& size, glm::vec4& color);
-		static bool RenderWindow(uint32_t id, const char* name, uint32_t rendererID, const glm::vec2& position, const glm::vec2& size, float panelSize);
+		static bool RenderWindow(uint32_t id, const char* name, uint32_t rendererID, const glm::vec2& position, const glm::vec2& size);
 
 		static bool NodeWindow(uint32_t id, const char* name, const glm::vec2& position, const glm::vec2& size, float dt);
 		static void PushConnection(uint32_t start, uint32_t end);

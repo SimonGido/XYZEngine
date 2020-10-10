@@ -996,7 +996,7 @@ namespace XYZ {
 
 	
 
-	bool InGui::RenderWindow(uint32_t id,const char* name, uint32_t rendererID, const glm::vec2& position, const glm::vec2& size, float panelSize)
+	bool InGui::RenderWindow(uint32_t id,const char* name, uint32_t rendererID, const glm::vec2& position, const glm::vec2& size)
 	{
 		XYZ_ASSERT(!s_Context->PerFrameData.CurrentWindow, "Missing end call");
 
@@ -1064,7 +1064,7 @@ namespace XYZ {
 		RenderCommand::Clear();
 		
 			
-		bool result = RenderWindow(id, name, nodeWindow->FBO->GetColorAttachment(0).RendererID, position, size, 25.0f);
+		bool result = RenderWindow(id, name, nodeWindow->FBO->GetColorAttachment(0).RendererID, position, size);
 		if (result)
 		{
 			nodeWindow->RelativeMousePosition = ConvertToCamera(frameData.MousePosition,nodeWindow->RenderWindow->Position, frameData.WindowSize, nodeWindow->InCamera);

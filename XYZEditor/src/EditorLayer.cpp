@@ -149,7 +149,7 @@ namespace XYZ {
 		m_FBO->CreateDepthAttachment();
 		m_FBO->Resize();
 
-		InGui::RenderWindow(m_SceneID, "Scene", m_FBO->GetColorAttachment(0).RendererID, { 0,0 }, { 200,200 }, 25.0f);
+		InGui::RenderWindow(m_SceneID, "Scene", m_FBO->GetColorAttachment(0).RendererID, { 0,0 }, { 200,200 });
 		InGui::End();
 		InGui::GetWindow(m_SceneID)->Flags &= ~InGuiWindowFlag::EventListener;
 		auto& spec = m_FBO->GetSpecification();
@@ -195,10 +195,6 @@ namespace XYZ {
 		m_FBO->Unbind();
 	
 		
-
-		
-
-
 
 		if (m_ActiveWindow)
 		{
@@ -291,15 +287,14 @@ namespace XYZ {
 		{
 			m_InspectorPanel.SetInspectorLayout(&m_AnimatorInspectorLayout);
 		}
-		if (m_SpriteEditorPanel.OnInGuiRender())
+		if (m_SpriteEditorPanel.OnInGuiRender(ts))
 		{
 			m_InspectorPanel.SetInspectorLayout(&m_SpriteEditorInspectorLayout);
 		}
 		m_SceneHierarchyPanel.OnInGuiRender();
 		m_InspectorPanel.OnInGuiRender();
-		m_SpriteEditorPanel.OnInGuiRender();
 
-		if (InGui::RenderWindow(0, "Scene", m_FBO->GetColorAttachment(0).RendererID, { 0,0 }, { 200,200 }, 25.0f))
+		if (InGui::RenderWindow(0, "Scene", m_FBO->GetColorAttachment(0).RendererID, { 0,0 }, { 200,200 }))
 		{
 			m_ActiveWindow = true;
 			m_InspectorPanel.SetInspectorLayout(&m_EntityInspectorLayout);

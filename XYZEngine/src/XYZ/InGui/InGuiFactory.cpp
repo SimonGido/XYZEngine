@@ -164,7 +164,7 @@ namespace XYZ {
 		GenerateInGuiQuad(window.Mesh, panelPos, { winSize.x ,InGuiWindow::PanelSize }, renderConfig.SliderSubTexture->GetTexCoords(), renderConfig.TextureID, panelColor);
 	
 		if (!(window.Flags & InGuiWindowFlag::MenuEnabled))
-		{
+		{			
 			auto info = GenerateInGuiText(window.Mesh, renderConfig.Font, name, panelPos, { 0.7f,0.7f }, window.Size.x, renderConfig.FontTextureID, { 1,1,1,1 });
 			window.MinimalWidth = info.Size.x + InGuiWindow::PanelSize;
 			MoveVertices(window.Mesh.Vertices.data(), { 5, info.Size.y / 2 }, 4, info.Count * 4);

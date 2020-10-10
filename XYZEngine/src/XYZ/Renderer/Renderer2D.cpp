@@ -294,5 +294,6 @@ namespace XYZ {
 	{
 		s_Data.Stats.DrawCalls = 0;
 		s_Data.Stats.LineDrawCalls = 0;
+		s_Data.Material = nullptr;
 	}
 }

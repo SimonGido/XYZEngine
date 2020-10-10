@@ -15,7 +15,10 @@ namespace XYZ {
 					m_FinishedModifying = true;
 					modyfing = true;
 				}
-					
+				InGui::Separator();
+				if (m_Context)
+					InGui::Image("Preview", m_Context->GetTexture()->GetRendererID(), { 0,0 }, { 100,100 }, { m_Values[0],m_Values[1],m_Values[2],m_Values[3] });
+
 				InGui::Separator();
 
 				if (m_FinishedModifying && !modyfing)
