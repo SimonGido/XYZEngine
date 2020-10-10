@@ -413,6 +413,7 @@ namespace XYZ {
 		{
 			InGuiRenderer::SubmitLineMesh(*mesh);
 		}
+		
 		s_Context->DockSpace->End(s_Context->PerFrameData.MousePosition, s_Context->PerFrameData, s_Context->RenderConfiguration);
 		InGuiRenderer::Flush();
 		InGuiRenderer::FlushLines();
@@ -860,7 +861,7 @@ namespace XYZ {
 					{
 						if (Collide(tmpPos, size, frameData.MousePosition))
 						{
-							frameData.Flags |= InGuiPerFameFlag::ClickHandled;
+							frameData.Flags |= InGuiPerFrameFlag::ClickHandled;
 							selected = i;
 							break;
 						}
@@ -1131,12 +1132,12 @@ namespace XYZ {
 					pressed = true;
 					modified = false;
 					
-					frameData.Flags |= InGuiPerFameFlag::ClickHandled;
+					frameData.Flags |= InGuiPerFrameFlag::ClickHandled;
 				}
 				else if (Collide(node->Position + glm::vec2(0, node->Size.y), { node->Size.x, InGuiWindow::PanelSize }, nodeWindow->RelativeMousePosition))
 				{
 					modified = !modified;
-					frameData.Flags |= InGuiPerFameFlag::ClickHandled;
+					frameData.Flags |= InGuiPerFrameFlag::ClickHandled;
 				}
 				else
 				{
@@ -1179,7 +1180,7 @@ namespace XYZ {
 				{
 					if (Collide(node.second->Position, node.second->Size, nodeWindow->RelativeMousePosition))
 					{
-						frameData.Flags |= InGuiPerFameFlag::ReleaseHandled;
+						frameData.Flags |= InGuiPerFrameFlag::ReleaseHandled;
 						if (node.second->ID != selected->ID)
 						{
 							connection.first = selected->ID;
@@ -1299,7 +1300,7 @@ namespace XYZ {
 
 		InGuiWindow* window = frameData.CurrentWindow;
 
-		if (window->Flags & InGuiWindowFlag::Modified)
+		if (window->Flags & InGuiWindowFlag::Hoovered)
 		{
 			if (resolveLeftClick())
 			{
@@ -1345,9 +1346,9 @@ namespace XYZ {
 		if (s_Context->DockSpace->OnLeftMouseButtonPress())
 			return true;
 		s_Context->PerFrameData.Code = ToUnderlying(MouseCode::XYZ_MOUSE_BUTTON_LEFT);
-		s_Context->PerFrameData.Flags |= InGuiPerFameFlag::LeftMouseButtonPressed;
-		s_Context->PerFrameData.Flags &= ~InGuiPerFameFlag::ClickHandled;
-		s_Context->PerFrameData.Flags &= ~InGuiPerFameFlag::LeftMouseButtonReleased;
+		s_Context->PerFrameData.Flags |= InGuiPerFrameFlag::LeftMouseButtonPressed;
+		s_Context->PerFrameData.Flags &= ~InGuiPerFrameFlag::ClickHandled;
+		s_Context->PerFrameData.Flags &= ~InGuiPerFrameFlag::LeftMouseButtonReleased;
 
 		InGuiWindow* window = s_Context->PerFrameData.EventReceivingWindow;
 		if (window
@@ -1371,21 +1372,21 @@ namespace XYZ {
 		if (s_Context->DockSpace->OnRightMouseButtonPress(s_Context->PerFrameData.MousePosition))
 			return true;
 		s_Context->PerFrameData.Code = ToUnderlying(MouseCode::XYZ_MOUSE_BUTTON_RIGHT);
-		s_Context->PerFrameData.Flags |=  InGuiPerFameFlag::RightMouseButtonPressed;
-		s_Context->PerFrameData.Flags &= ~InGuiPerFameFlag::ClickHandled;
-		s_Context->PerFrameData.Flags &= ~InGuiPerFameFlag::RightMouseButtonReleased;
+		s_Context->PerFrameData.Flags |=  InGuiPerFrameFlag::RightMouseButtonPressed;
+		s_Context->PerFrameData.Flags &= ~InGuiPerFrameFlag::ClickHandled;
+		s_Context->PerFrameData.Flags &= ~InGuiPerFrameFlag::RightMouseButtonReleased;
 		
 		InGuiWindow* window = s_Context->PerFrameData.EventReceivingWindow;
 		if (window && (window->Flags & InGuiWindowFlag::Visible))
 		{		
 			if (detectResize(*window))
 			{
-				s_Context->PerFrameData.Flags |= InGuiPerFameFlag::ClickHandled;
+				s_Context->PerFrameData.Flags |= InGuiPerFrameFlag::ClickHandled;
 				s_Context->PerFrameData.ModifiedWindow = window;
 			}
 			else if(detectMoved(*window))
 			{
-				s_Context->PerFrameData.Flags |= InGuiPerFameFlag::ClickHandled;
+				s_Context->PerFrameData.Flags |= InGuiPerFrameFlag::ClickHandled;
 				s_Context->PerFrameData.ModifiedWindow = window;
 			}		
 			else
@@ -1400,9 +1401,9 @@ namespace XYZ {
 
 	bool InGui::OnLeftMouseButtonRelease()
 	{
-		s_Context->PerFrameData.Flags |=  InGuiPerFameFlag::LeftMouseButtonReleased;
-		s_Context->PerFrameData.Flags &= ~InGuiPerFameFlag::ReleaseHandled;
-		s_Context->PerFrameData.Flags &= ~InGuiPerFameFlag::LeftMouseButtonPressed;
+		s_Context->PerFrameData.Flags |=  InGuiPerFrameFlag::LeftMouseButtonReleased;
+		s_Context->PerFrameData.Flags &= ~InGuiPerFrameFlag::ReleaseHandled;
+		s_Context->PerFrameData.Flags &= ~InGuiPerFrameFlag::LeftMouseButtonPressed;
 		s_Context->PerFrameData.Code = ToUnderlying(MouseCode::XYZ_MOUSE_NONE);
 		if (s_Context->PerFrameData.ModifiedWindow)
 		{
@@ -1413,13 +1414,34 @@ namespace XYZ {
 		return false;
 	}
 
+	static void handleRightMouseButtonRelease(InGuiWindowMap& windows)
+	{
+		for (auto window : windows)
+		{
+			if ((window.second->Flags & InGuiWindowFlag::Resized))
+			{
+				if (window.second->OnResizeCallback)
+				{
+					window.second->OnResizeCallback(window.second->Size);
+				}
+				if (window.second->NodeWindow)
+				{
+					auto& spec = window.second->NodeWindow->FBO->GetSpecification();
+					spec.Width = window.second->Size.x;
+					spec.Height = window.second->Size.y;
+					window.second->NodeWindow->FBO->Resize();
+				}
+				window.second->Flags &= ~InGuiWindowFlag::Resized;
+			}
+		}
+	}
 	bool InGui::OnRightMouseButtonRelease()
 	{
 		s_Context->PerFrameData.Code = ToUnderlying(MouseCode::XYZ_MOUSE_NONE);
 		s_Context->DockSpace->OnRightMouseButtonRelease(s_Context->PerFrameData.ModifiedWindow, s_Context->PerFrameData.MousePosition);
-		s_Context->PerFrameData.Flags &= ~InGuiPerFameFlag::RightMouseButtonPressed;
-		s_Context->PerFrameData.Flags &= ~InGuiPerFameFlag::ReleaseHandled;
-		s_Context->PerFrameData.Flags |=  InGuiPerFameFlag::RightMouseButtonReleased;
+		s_Context->PerFrameData.Flags &= ~InGuiPerFrameFlag::RightMouseButtonPressed;
+		s_Context->PerFrameData.Flags &= ~InGuiPerFrameFlag::ReleaseHandled;
+		s_Context->PerFrameData.Flags |=  InGuiPerFrameFlag::RightMouseButtonReleased;
 		if (s_Context->PerFrameData.ModifiedWindow)
 		{
 			s_Context->PerFrameData.ModifiedWindow->Flags &= ~(InGuiWindowFlag::Moved | InGuiWindowFlag::LeftResizing | InGuiWindowFlag::RightResizing | InGuiWindowFlag::TopResizing | InGuiWindowFlag::BottomResizing);
@@ -1427,21 +1449,8 @@ namespace XYZ {
 			auto& app = Application::Get();
 			app.GetWindow().SetCursor(XYZ_ARROW_CURSOR);
 		}
-		for (auto window : s_Context->Windows)
-		{
-			if ((window.second->Flags & InGuiWindowFlag::Resized) && window.second->OnResizeCallback)
-			{
-				window.second->OnResizeCallback(window.second->Size);	
-			}
-			if (window.second->NodeWindow)
-			{
-				auto& spec = window.second->NodeWindow->FBO->GetSpecification();
-				spec.Width = window.second->Size.x;
-				spec.Height = window.second->Size.y;
-				window.second->NodeWindow->FBO->Resize();
-			}
-			window.second->Flags &= ~InGuiWindowFlag::Resized;
-		}
+		handleRightMouseButtonRelease(s_Context->Windows);
+
 		return false;
 	}
 
@@ -1549,7 +1558,6 @@ namespace XYZ {
 		window->FBO->CreateDepthAttachment();
 		window->FBO->Resize();
 
-
 		s_Context->NodeWindows.insert({ id,window });
 	
 		return window;
@@ -1615,6 +1623,7 @@ namespace XYZ {
 				app.GetWindow().SetCursor(XYZ_VRESIZE_CURSOR);
 				resized = true;
 			}
+			
 			return resized;
 		}
 		return false;
@@ -1699,11 +1708,11 @@ namespace XYZ {
 
 	bool InGui::resolveLeftClick(bool handle)
 	{
-		if ((s_Context->PerFrameData.Flags & InGuiPerFameFlag::LeftMouseButtonPressed) &&
-			!(s_Context->PerFrameData.Flags & InGuiPerFameFlag::ClickHandled))
+		if ((s_Context->PerFrameData.Flags & InGuiPerFrameFlag::LeftMouseButtonPressed) &&
+			!(s_Context->PerFrameData.Flags & InGuiPerFrameFlag::ClickHandled))
 		{
 			if (handle)
-				s_Context->PerFrameData.Flags |= InGuiPerFameFlag::ClickHandled;
+				s_Context->PerFrameData.Flags |= InGuiPerFrameFlag::ClickHandled;
 			return true;
 		}	
 		return false;
@@ -1711,11 +1720,11 @@ namespace XYZ {
 
 	bool InGui::resolveRightClick(bool handle)
 	{
-		if ((s_Context->PerFrameData.Flags & InGuiPerFameFlag::RightMouseButtonPressed) &&
-			!(s_Context->PerFrameData.Flags & InGuiPerFameFlag::ClickHandled))
+		if ((s_Context->PerFrameData.Flags & InGuiPerFrameFlag::RightMouseButtonPressed) &&
+			!(s_Context->PerFrameData.Flags & InGuiPerFrameFlag::ClickHandled))
 		{
 			if (handle)
-				s_Context->PerFrameData.Flags |= InGuiPerFameFlag::ClickHandled;
+				s_Context->PerFrameData.Flags |= InGuiPerFrameFlag::ClickHandled;
 			return true;
 		}
 		return false;
@@ -1723,11 +1732,11 @@ namespace XYZ {
 
 	bool InGui::resolveLeftRelease(bool handle)
 	{
-		if ((s_Context->PerFrameData.Flags & InGuiPerFameFlag::LeftMouseButtonReleased) &&
-			!(s_Context->PerFrameData.Flags & InGuiPerFameFlag::ReleaseHandled))
+		if ((s_Context->PerFrameData.Flags & InGuiPerFrameFlag::LeftMouseButtonReleased) &&
+			!(s_Context->PerFrameData.Flags & InGuiPerFrameFlag::ReleaseHandled))
 		{
 			if (handle)
-				s_Context->PerFrameData.Flags |= InGuiPerFameFlag::ReleaseHandled;
+				s_Context->PerFrameData.Flags |= InGuiPerFrameFlag::ReleaseHandled;
 			return true;
 		}
 		return false;
@@ -1735,11 +1744,11 @@ namespace XYZ {
 
 	bool InGui::resolveRightRelease(bool handle)
 	{
-		if ((s_Context->PerFrameData.Flags & InGuiPerFameFlag::RightMouseButtonReleased) &&
-			!(s_Context->PerFrameData.Flags & InGuiPerFameFlag::ReleaseHandled))
+		if ((s_Context->PerFrameData.Flags & InGuiPerFrameFlag::RightMouseButtonReleased) &&
+			!(s_Context->PerFrameData.Flags & InGuiPerFrameFlag::ReleaseHandled))
 		{
 			if (handle)
-				s_Context->PerFrameData.Flags |= InGuiPerFameFlag::ReleaseHandled;
+				s_Context->PerFrameData.Flags |= InGuiPerFrameFlag::ReleaseHandled;
 			return true;
 		}
 		return false;
@@ -1763,14 +1772,107 @@ namespace XYZ {
 		return src.substr(split + 1, src.size() - split);
 	}
 
-	void InGui::loadDockSpace()
+	static void LoadWindowMaps(
+		mINI::INIStructure::const_iterator& it,
+		std::unordered_map<uint32_t, InGuiWindow*>& windowMap,
+		std::unordered_map<uint32_t, std::vector<InGuiWindow*>>& windowDockMap,
+		const mINI::INIStructure& ini)
+	{
+		while (it->first != "dockspace" && it != ini.end())
+		{
+			uint32_t windowID = atoi(it->first.c_str());
+			windowMap[windowID] = new InGuiWindow();
+			windowMap[windowID]->Position = StringToVec2(it->second.get("position"));
+			windowMap[windowID]->Size = StringToVec2(it->second.get("size"));
+			int32_t id = atoi(it->second.get("docknode").c_str());
+
+			if (id != -1)
+				windowDockMap[id].push_back(windowMap[windowID]);
+
+			if ((bool)atoi(it->second.get("collapsed").c_str()))
+				windowMap[windowID]->Flags |= InGuiWindowFlag::Collapsed;
+
+			windowMap[windowID]->Flags |= InGuiWindowFlag::Modified;
+			windowMap[windowID]->Flags |= InGuiWindowFlag::EventListener;
+			windowMap[windowID]->Flags |= InGuiWindowFlag::Visible;
+			windowMap[windowID]->Flags |= InGuiWindowFlag::AutoPosition;
+
+			it++;
+		}
+	}
+
+	static uint32_t LoadAndSetupDockSpaceMaps(
+		mINI::INIStructure::const_iterator& it,
+		std::unordered_map<uint32_t, InGuiDockNode*>& dockMap,
+		std::unordered_map<uint32_t, int32_t>& parentMap
+	)
 	{
 		static constexpr uint32_t numPropertiesDockNode = 5;
+		uint32_t maxID = 0;
+		// Load dockspace
+		auto el = it->second.begin();
+		while (el != it->second.end())
+		{
+			std::string nodeID = GetID(el->first);
+			uint32_t id = atoi(nodeID.c_str());
+			if (id > maxID)
+				maxID = id;
+
+			glm::vec2 pos = StringToVec2(it->second.get("node position " + nodeID));
+			glm::vec2 size = StringToVec2(it->second.get("node size " + nodeID));
+			int32_t parentID = atoi(it->second.get("node parent " + nodeID).c_str());
+			if (parentID != -1)
+				parentMap[id] = parentID;
+
+			dockMap[id] = new InGuiDockNode(pos, size, id);
+			dockMap[id]->Split = (SplitAxis)atoi(it->second.get("node split " + nodeID).c_str());
+			dockMap[id]->Dock = (DockPosition)atoi(it->second.get("node dockposition " + nodeID).c_str());
+
+			el += numPropertiesDockNode;
+		}
+
+		// Setup tree
+		for (auto id : parentMap)
+		{
+			dockMap[id.first]->Parent = dockMap[id.second];
+			if (dockMap[id.first]->Dock == DockPosition::Left || dockMap[id.first]->Dock == DockPosition::Bottom)
+				dockMap[id.first]->Parent->Children[0] = dockMap[id.first];
+			else if (dockMap[id.first]->Dock != DockPosition::None)
+				dockMap[id.first]->Parent->Children[1] = dockMap[id.first];
+		}
+		return maxID;
+	}
+
+
+	static void SetupWindowMap(
+		std::unordered_map<uint32_t, std::vector<InGuiWindow*>>& windowMap,
+		std::unordered_map<uint32_t, InGuiDockNode*>& dockMap
+		)
+	{
+		// Setup windows
+		for (auto winVector : windowMap)
+		{
+			for (auto win : winVector.second)
+			{
+				win->Flags |= InGuiWindowFlag::Docked;
+				win->Flags &= ~InGuiWindowFlag::Visible;
+				win->DockNode = dockMap[winVector.first];
+				win->DockNode->VisibleWindow = win;
+				win->DockNode->Windows.push_back(win);
+			}
+			// Set last set window to visible
+			dockMap[winVector.first]->VisibleWindow->Flags |= InGuiWindowFlag::Visible;
+		}
+	}
+
+	void InGui::loadDockSpace()
+	{
+		
 		mINI::INIFile file("ingui.ini");
 		mINI::INIStructure ini;
 
 		auto& frameData = s_Context->PerFrameData;
-		auto& windows = s_Context->Windows;
+		
 
 		frameData.WindowSize.x = (float)Input::GetWindowSize().first;
 		frameData.WindowSize.y = (float)Input::GetWindowSize().second;
@@ -1778,85 +1880,20 @@ namespace XYZ {
 		if (file.read(ini))
 		{
 			std::unordered_map<uint32_t, std::vector<InGuiWindow*>> windowMap;
-
-			// Load windows
-			auto it = ini.begin();
-			while (it->first != "dockspace" && it != ini.end())
-			{
-				uint32_t windowID = atoi(it->first.c_str());
-				windows[windowID] = new InGuiWindow();
-				windows[windowID]->Position = StringToVec2(it->second.get("position"));
-				windows[windowID]->Size = StringToVec2(it->second.get("size"));
-				int32_t id = atoi(it->second.get("docknode").c_str());
-				
-				if (id != -1)
-					windowMap[id].push_back(windows[windowID]);
-
-				if ((bool)atoi(it->second.get("collapsed").c_str()))
-					windows[windowID]->Flags |= InGuiWindowFlag::Collapsed;
-
-				windows[windowID]->Flags |= InGuiWindowFlag::Modified;
-				windows[windowID]->Flags |= InGuiWindowFlag::EventListener;
-				windows[windowID]->Flags |= InGuiWindowFlag::Visible;
-				windows[windowID]->Flags |= InGuiWindowFlag::AutoPosition;
-				
-				it++;
-			}
-
-
 			std::unordered_map<uint32_t, InGuiDockNode*> dockMap;
 			std::unordered_map<uint32_t, int32_t> parentMap;
 
-			uint32_t maxID = 0;
-			// Load dockspace
-			auto el = it->second.begin();
-			while (el != it->second.end())
-			{
-				std::string nodeID = GetID(el->first);
-				uint32_t id = atoi(nodeID.c_str());
-				if (id > maxID)
-					maxID = id;
-
-				glm::vec2 pos = StringToVec2(it->second.get("node position " + nodeID));
-				glm::vec2 size = StringToVec2(it->second.get("node size " + nodeID));
-				int32_t parentID = atoi(it->second.get("node parent " + nodeID).c_str());
-				if (parentID != -1)
-					parentMap[id] = parentID;
-
-				dockMap[id] = new InGuiDockNode(pos, size, id);
-				dockMap[id]->Split = (SplitAxis)atoi(it->second.get("node split " + nodeID).c_str());
-				dockMap[id]->Dock = (DockPosition)atoi(it->second.get("node dockposition " + nodeID).c_str());
-
-				el += numPropertiesDockNode;
-			}
-
-			// Setup tree
-			for (auto id : parentMap)
-			{
-				dockMap[id.first]->Parent = dockMap[id.second];
-				if (dockMap[id.first]->Dock == DockPosition::Left || dockMap[id.first]->Dock == DockPosition::Bottom)
-					dockMap[id.first]->Parent->Children[0] = dockMap[id.first];
-				else if (dockMap[id.first]->Dock != DockPosition::None)
-					dockMap[id.first]->Parent->Children[1] = dockMap[id.first];
-			}
-			// Setup windows
-			for (auto winVector : windowMap)
-			{
-				for (auto win : winVector.second)
-				{
-					win->Flags |= InGuiWindowFlag::Docked;
-					win->Flags &= ~InGuiWindowFlag::Visible;
-					win->DockNode = dockMap[winVector.first];
-					win->DockNode->VisibleWindow = win;
-					win->DockNode->Windows.push_back(win);
-				}	
-				// Set last set window to visible
-				dockMap[winVector.first]->VisibleWindow->Flags |= InGuiWindowFlag::Visible;
-			}
-			
+			auto it = ini.begin();
+			LoadWindowMaps(it, s_Context->Windows, windowMap, ini);
+			uint32_t maxID = LoadAndSetupDockSpaceMaps(it, dockMap, parentMap);		
+			SetupWindowMap(windowMap, dockMap);
+				
 			// Setup new dockspace and root
 			s_Context->DockSpace = new InGuiDockSpace(dockMap[0]);
 			s_Context->DockSpace->m_NextNodeID = maxID + 1;
+
+			glm::vec2 scale = s_Context->PerFrameData.WindowSize / s_Context->DockSpace->m_Root->Size;
+			s_Context->DockSpace->rescale(scale, s_Context->DockSpace->m_Root);
 		}
 		else
 		{

@@ -5,6 +5,43 @@
 #include "XYZ/Core/Application.h"
 
 namespace XYZ {
+
+	// It is called while window is visible
+	static void WindowOnNodeUpdate(const glm::vec2& nodePos,const glm::vec2& nodeSize, InGuiWindow& window)
+	{
+		window.Position = nodePos;
+		window.Size = nodeSize - glm::vec2(0, 2 * InGuiWindow::PanelSize);
+	}
+	
+	// It is called after node is resized
+	static void WindowOnNodeResized(InGuiDockNode* node)
+	{
+		for (auto window : node->Windows)
+		{
+			window->Flags |= InGuiWindowFlag::Modified;
+			window->Flags |= InGuiWindowFlag::Resized;
+			window->Position = node->Position;
+			window->Size = node->Size - glm::vec2(0, 2 * InGuiWindow::PanelSize);
+			if (window->OnResizeCallback)
+				window->OnResizeCallback(window->Size);
+		}				
+		if (node->Children[0])
+			WindowOnNodeResized(node->Children[0]);
+		if (node->Children[1])
+			WindowOnNodeResized(node->Children[1]);
+	}
+
+	// It is called after window is set visible
+	static void WindowOnSetVisible(const glm::vec2& nodePos, const glm::vec2& nodeSize, InGuiWindow& window)
+	{
+		window.Flags |= InGuiWindowFlag::Visible;
+		window.Flags |= InGuiWindowFlag::Modified;
+		window.Position = nodePos;
+		window.Size = nodeSize - glm::vec2(0, 2 * InGuiWindow::PanelSize);
+		if (window.OnResizeCallback)
+			window.OnResizeCallback(window.Size);
+	}
+
 	static bool Collide(const glm::vec2& pos, const glm::vec2& size, const glm::vec2& point)
 	{
 		return (pos.x + size.x > point.x &&
@@ -148,6 +185,7 @@ namespace XYZ {
 
 	bool InGuiDockSpace::OnRightMouseButtonPress(const glm::vec2& mousePos)
 	{
+		m_ResizedNode = nullptr;
 		detectResize(m_Root, mousePos);
 		if (m_ResizedNode)
 			return true;
@@ -163,7 +201,11 @@ namespace XYZ {
 	{
 		auto& app = Application::Get();
 		app.GetWindow().SetCursor(XYZ_ARROW_CURSOR);
-		m_ResizedNode = nullptr;
+		if (m_ResizedNode)
+		{
+			WindowOnNodeResized(m_ResizedNode);
+			m_ResizedNode = nullptr;
+		}
 		m_DockSpaceVisible = false;
 		if (window)
 			insertWindow(window, mousePos, m_Root);
@@ -196,39 +238,22 @@ namespace XYZ {
 
 				m_ResizedNode->Children[0]->Size.x = leftNew.x;
 				m_ResizedNode->Children[1]->Position.x = m_ResizedNode->Position.x + m_ResizedNode->Children[0]->Size.x;
-				m_ResizedNode->Children[1]->Size.x = rightNew.x;
-
-
-				for (auto win : m_ResizedNode->Children[0]->Windows)
-				{
-					win->Flags |= InGuiWindowFlag::Modified;
-					win->Flags |= InGuiWindowFlag::Resized;
-				}
-				for (auto win : m_ResizedNode->Children[1]->Windows)
-				{
-					win->Flags |= InGuiWindowFlag::Modified;
-					win->Flags |= InGuiWindowFlag::Resized;
-				}
-
-				adjustChildrenProps(m_ResizedNode->Children[0]);
-				adjustChildrenProps(m_ResizedNode->Children[1]);
+				m_ResizedNode->Children[1]->Size.x = rightNew.x;			
 			}
 			else if (m_ResizedNode->Split == SplitAxis::Horizontal)
 			{
 				m_ResizedNode->Children[0]->Size.y = mousePos.y - m_ResizedNode->Position.y;
 				m_ResizedNode->Children[1]->Position.y = m_ResizedNode->Position.y + m_ResizedNode->Children[0]->Size.y;
 				m_ResizedNode->Children[1]->Size.y = (m_ResizedNode->Position.y + m_ResizedNode->Size.y) - m_ResizedNode->Children[1]->Position.y;
-
+			}
+			if (m_ResizedNode->Split != SplitAxis::None)
+			{
 				for (auto win : m_ResizedNode->Children[0]->Windows)
-				{
 					win->Flags |= InGuiWindowFlag::Modified;
-					win->Flags |= InGuiWindowFlag::Resized;
-				}
+				
 				for (auto win : m_ResizedNode->Children[1]->Windows)
-				{
 					win->Flags |= InGuiWindowFlag::Modified;
-					win->Flags |= InGuiWindowFlag::Resized;
-				}
+				
 				adjustChildrenProps(m_ResizedNode->Children[0]);
 				adjustChildrenProps(m_ResizedNode->Children[1]);
 			}
@@ -243,21 +268,7 @@ namespace XYZ {
 			node->Children[0]->Position = node->Position;
 			node->Children[0]->Size.x = node->Children[1]->Position.x - node->Children[0]->Position.x;
 			node->Children[0]->Size.y = node->Size.y;
-			node->Children[1]->Size.y = node->Size.y;
-
-			for (auto win : node->Children[0]->Windows)
-			{
-				win->Flags |= InGuiWindowFlag::Modified;
-				win->Flags |= InGuiWindowFlag::Resized;
-			}
-			for (auto win : node->Children[1]->Windows)
-			{
-				win->Flags |= InGuiWindowFlag::Modified;
-				win->Flags |= InGuiWindowFlag::Resized;
-			}
-
-			adjustChildrenProps(node->Children[0]);
-			adjustChildrenProps(node->Children[1]);
+			node->Children[1]->Size.y = node->Size.y;		
 		}
 		else if (node->Split == SplitAxis::Horizontal)
 		{
@@ -269,18 +280,15 @@ namespace XYZ {
 			node->Children[1]->Position = topPos;
 			node->Children[0]->Size.x = node->Size.x;
 			node->Children[1]->Size.x = node->Size.x;
-
+		}
+		if (node->Split != SplitAxis::None)
+		{
 			for (auto win : node->Children[0]->Windows)
-			{
 				win->Flags |= InGuiWindowFlag::Modified;
-				win->Flags |= InGuiWindowFlag::Resized;
-			}
+			
 			for (auto win : node->Children[1]->Windows)
-			{
 				win->Flags |= InGuiWindowFlag::Modified;
-				win->Flags |= InGuiWindowFlag::Resized;
-			}
-
+			
 			adjustChildrenProps(node->Children[0]);
 			adjustChildrenProps(node->Children[1]);
 		}
@@ -444,9 +452,11 @@ namespace XYZ {
 		node->Position *= scale;
 		for (auto win : node->Windows)
 		{
-			win->Size = { node->Size.x,node->Size.y - InGuiWindow::PanelSize };
+			win->Size = { node->Size.x,node->Size.y - (2 * InGuiWindow::PanelSize) };
 			win->Position = node->Position;
 			win->Flags |= InGuiWindowFlag::Modified;
+			if (win->OnResizeCallback)
+				win->OnResizeCallback(win->Size);
 		}
 		if (node->Children[0])
 			rescale(scale, node->Children[0]);
@@ -541,12 +551,7 @@ namespace XYZ {
 	void InGuiDockSpace::update(InGuiDockNode* node)
 	{
 		if (node->VisibleWindow)
-		{
-			auto win = node->VisibleWindow;
-			win->Size = { node->Size.x, node->Size.y - (2 * InGuiWindow::PanelSize) };
-			win->Position = node->Position;
-			win->Flags |= InGuiWindowFlag::Visible;
-		}
+			WindowOnNodeUpdate(node->Position, node->Size, *node->VisibleWindow);
 		if (node->Children[0])
 			update(node->Children[0]);
 		if (node->Children[1])
@@ -578,15 +583,16 @@ namespace XYZ {
 			if (Collide(position, size, mousePos))
 			{
 				color = renderConfig.HooverColor;
-				if ((frameData.Flags & InGuiPerFameFlag::LeftMouseButtonPressed) 
-				&& !(frameData.Flags & InGuiPerFameFlag::ClickHandled))
+				if ((frameData.Flags & InGuiPerFrameFlag::LeftMouseButtonPressed) 
+				&& !(frameData.Flags & InGuiPerFrameFlag::ClickHandled))
 				{
 					if (node->VisibleWindow)
 						node->VisibleWindow->Flags &= ~InGuiWindowFlag::Visible;
 					
-					frameData.Flags |= InGuiPerFameFlag::ClickHandled;
+					frameData.Flags |= InGuiPerFrameFlag::ClickHandled;
 					node->VisibleWindow = win;
-					win->Flags |= InGuiWindowFlag::Modified;
+					win->Flags |= InGuiWindowFlag::Visible;
+					WindowOnSetVisible(node->Position, node->Size, *win);
 				}
 			}
 			GenerateWindowsPanel(position, size, color, win->Name, mesh, renderConfig);

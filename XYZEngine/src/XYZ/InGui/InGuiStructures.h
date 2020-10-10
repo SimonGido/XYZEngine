@@ -33,7 +33,7 @@ namespace XYZ {
 		};
 	}
 
-	namespace InGuiPerFameFlag {
+	namespace InGuiPerFrameFlag {
 		enum InGuiPerFrameFlags
 		{
 			LeftMouseButtonPressed	 = BIT(0),
