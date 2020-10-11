@@ -118,7 +118,7 @@ namespace XYZ {
 	}
 	static void GenerateWindowsPanel(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const char* name, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig)
 	{
-		GenerateInGuiQuad(mesh, position, size, renderConfig.ButtonSubTexture->GetTexCoords(), renderConfig.TextureID, color);
+		GenerateInGuiQuad(mesh, position, size, renderConfig.SubTexture[InGuiRenderConfiguration::BUTTON]->GetTexCoords(), renderConfig.TextureID, color);
 		size_t offset = mesh.Vertices.size();
 		auto info = GenerateInGuiText(mesh, renderConfig.Font, name, {}, { 0.7,0.7 }, size.x, renderConfig.FontTextureID, { 1,1,1,1 });
 		glm::vec2 textOffset = { (size.x / 2) - (info.Size.x / 2),(size.y / 2.0f) - ((float)info.Size.y / 1.5f) };
@@ -578,11 +578,11 @@ namespace XYZ {
 		{
 			glm::vec2 position = node->Position + glm::vec2{ counter * widthPerWindow ,node->Size.y - InGuiWindow::PanelSize };
 			glm::vec2 size = { widthPerWindow,InGuiWindow::PanelSize };
-			glm::vec4 color = renderConfig.DefaultColor;
+			glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];
 
 			if (Collide(position, size, mousePos))
 			{
-				color = renderConfig.HooverColor;
+				color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
 				if ((frameData.Flags & InGuiPerFrameFlag::LeftMouseButtonPressed) 
 				&& !(frameData.Flags & InGuiPerFrameFlag::ClickHandled))
 				{
@@ -618,11 +618,11 @@ namespace XYZ {
 				glm::vec2 topPos = { node->Position.x + halfSize.x - (sc_QuadSize.x / 2),node->Position.y + node->Size.y - sc_QuadSize.y };
 				glm::vec2 middlePos = { node->Position.x + halfSize.x - (sc_QuadSize.x / 2), node->Position.y + halfSize.y - (sc_QuadSize.y / 2) };
 
-				InGuiRenderer::SubmitUI(leftPos, sc_QuadSize, renderConfig.ButtonSubTexture->GetTexCoords(), renderConfig.TextureID, renderConfig.SelectColor);
-				InGuiRenderer::SubmitUI(rightPos, sc_QuadSize, renderConfig.ButtonSubTexture->GetTexCoords(), renderConfig.TextureID, renderConfig.SelectColor);
-				InGuiRenderer::SubmitUI(bottomPos, sc_QuadSize, renderConfig.ButtonSubTexture->GetTexCoords(), renderConfig.TextureID, renderConfig.SelectColor);
-				InGuiRenderer::SubmitUI(topPos, sc_QuadSize, renderConfig.ButtonSubTexture->GetTexCoords(), renderConfig.TextureID, renderConfig.SelectColor);
-				InGuiRenderer::SubmitUI(middlePos, sc_QuadSize, renderConfig.ButtonSubTexture->GetTexCoords(), renderConfig.TextureID, renderConfig.SelectColor);
+				InGuiRenderer::SubmitUI(leftPos, sc_QuadSize, renderConfig.SubTexture[InGuiRenderConfiguration::BUTTON]->GetTexCoords(), renderConfig.TextureID, renderConfig.Color[InGuiRenderConfiguration::SELECT_COLOR]);
+				InGuiRenderer::SubmitUI(rightPos, sc_QuadSize, renderConfig.SubTexture[InGuiRenderConfiguration::BUTTON]->GetTexCoords(), renderConfig.TextureID, renderConfig.Color[InGuiRenderConfiguration::SELECT_COLOR]);
+				InGuiRenderer::SubmitUI(bottomPos, sc_QuadSize, renderConfig.SubTexture[InGuiRenderConfiguration::BUTTON]->GetTexCoords(), renderConfig.TextureID, renderConfig.Color[InGuiRenderConfiguration::SELECT_COLOR]);
+				InGuiRenderer::SubmitUI(topPos, sc_QuadSize, renderConfig.SubTexture[InGuiRenderConfiguration::BUTTON]->GetTexCoords(), renderConfig.TextureID, renderConfig.Color[InGuiRenderConfiguration::SELECT_COLOR]);
+				InGuiRenderer::SubmitUI(middlePos, sc_QuadSize, renderConfig.SubTexture[InGuiRenderConfiguration::BUTTON]->GetTexCoords(), renderConfig.TextureID, renderConfig.Color[InGuiRenderConfiguration::SELECT_COLOR]);
 			}
 			else
 			{

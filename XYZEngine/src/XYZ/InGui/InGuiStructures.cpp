@@ -21,18 +21,23 @@ namespace XYZ {
 		InMaterial->Set("u_Texture", colorPickerTexture, ColorPickerTextureID);
 		InMaterial->Set("u_ViewportSize", glm::vec2(Input::GetWindowSize().first, Input::GetWindowSize().second));
 		
-		
-		
-		ButtonSubTexture = Ref<SubTexture2D>::Create(texture, glm::vec2(0, 0), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4));
-		CheckboxSubTextureChecked = Ref<SubTexture2D>::Create(texture, glm::vec2(1, 1), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4));
-		CheckboxSubTextureUnChecked = Ref<SubTexture2D>::Create(texture, glm::vec2(0, 1), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4));
-		SliderSubTexture = Ref<SubTexture2D>::Create(texture, glm::vec2(0, 0), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4));
-		SliderHandleSubTexture = Ref<SubTexture2D>::Create(texture, glm::vec2(1, 2), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4));
-		WindowSubTexture = Ref<SubTexture2D>::Create(texture, glm::vec2(0, 3), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4));
-		MinimizeButtonSubTexture = Ref<SubTexture2D>::Create(texture, glm::vec2(2, 3), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4));
-		DownArrowButtonSubTexture = Ref<SubTexture2D>::Create(texture, glm::vec2(3, 3), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4));
-		RightArrowButtonSubTexture = Ref<SubTexture2D>::Create(texture, glm::vec2(2, 2), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4));
-		DockSpaceSubTexture = Ref<SubTexture2D>::Create(texture, glm::vec2(0, 0), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4));
+		SubTexture[BUTTON] = Ref<SubTexture2D>::Create(texture, glm::vec2(0, 0), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4));
+		SubTexture[CHECKBOX_CHECKED] = Ref<SubTexture2D>::Create(texture, glm::vec2(1, 1), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4));
+		SubTexture[CHECKBOX_UNCHECKED] = Ref<SubTexture2D>::Create(texture, glm::vec2(0, 1), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4));
+		SubTexture[SLIDER] = Ref<SubTexture2D>::Create(texture, glm::vec2(0, 0), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4));
+		SubTexture[SLIDER_HANDLE] = Ref<SubTexture2D>::Create(texture, glm::vec2(1, 2), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4));
+		SubTexture[WINDOW] = Ref<SubTexture2D>::Create(texture, glm::vec2(0, 3), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4));
+		SubTexture[MIN_BUTTON] = Ref<SubTexture2D>::Create(texture, glm::vec2(2, 3), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4));
+		SubTexture[DOWN_ARROW] = Ref<SubTexture2D>::Create(texture, glm::vec2(3, 3), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4));
+		SubTexture[RIGHT_ARROW] = Ref<SubTexture2D>::Create(texture, glm::vec2(2, 2), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4));
+		SubTexture[DOCKSPACE] = Ref<SubTexture2D>::Create(texture, glm::vec2(0, 0), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4));
+	
+	
+		Color[DEFAULT_COLOR] = { 1.0f,1.0f,1.0f,1.0f };
+		Color[HOOVER_COLOR] = { 0.4f, 1.8f, 1.7f, 1.0f };
+		Color[SELECT_COLOR] = { 0.8f,0.0f,0.2f,0.6f };
+		Color[LINE_COLOR] = { 0.4f,0.2f,0.5f,1.0f };
+		Color[SELECTOR_COLOR] = { 1.0f,1.0f,1.0f,1.0f };
 	}
 
 	InGuiPerFrameData::InGuiPerFrameData()

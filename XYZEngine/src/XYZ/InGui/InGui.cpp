@@ -505,7 +505,7 @@ namespace XYZ {
 	
 		if (window->Flags & InGuiWindowFlag::Modified)
 		{
-			glm::vec4 color = renderConfig.DefaultColor;
+			glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];
 			if (window->Flags & InGuiWindowFlag::AutoPosition)
 				if (!HandleRowPosition(frameData, size, position))
 					return false;
@@ -513,7 +513,7 @@ namespace XYZ {
 		
 			if (Collide(position, size, frameData.MousePosition))
 			{
-				color = renderConfig.HooverColor;
+				color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
 				if (resolveLeftClick())
 				{
 					open = !open;
@@ -538,11 +538,11 @@ namespace XYZ {
 		bool pressed = false;
 		if (window->Flags & InGuiWindowFlag::Modified)
 		{
-			glm::vec4 color = renderConfig.DefaultColor;
+			glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];
 			glm::vec2 position = { frameData.PopupOffset.x, frameData.PopupOffset.y };
 			if (Collide(position, size, frameData.MousePosition))
 			{
-				color = renderConfig.HooverColor;
+				color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
 				if (resolveLeftClick())
 				{
 					pressed = true;
@@ -574,12 +574,12 @@ namespace XYZ {
 		{		
 			if (window->Flags & InGuiWindowFlag::MenuEnabled)
 			{
-				glm::vec4 color = renderConfig.DefaultColor;
+				glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];
 				glm::vec2 size = { width,InGuiWindow::PanelSize };
 				glm::vec2 position = { window->Position.x + frameData.MenuBarOffset.x, window->Position.y + window->Size.y };
 				if (Collide(position, size, frameData.MousePosition))
 				{
-					color = renderConfig.HooverColor;
+					color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
 					if (resolveLeftClick())
 					{
 						open = !open;
@@ -612,11 +612,11 @@ namespace XYZ {
 		{
 			if (window->Flags & InGuiWindowFlag::MenuEnabled)
 			{
-				glm::vec4 color = renderConfig.DefaultColor;
+				glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];
 				glm::vec2 position = { frameData.MenuItemOffset,frameData.MenuBarOffset.y };
 				if (Collide(position, size, frameData.MousePosition))
 				{
-					color = renderConfig.HooverColor;
+					color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
 					if (resolveLeftClick())
 					{
 						pressed = true;
@@ -647,10 +647,10 @@ namespace XYZ {
 			panelPos = { winPos.x, frameData.WindowSpaceOffset.y };
 
 			glm::vec2 minButtonPos = { panelPos.x + 5, panelPos.y };
-			glm::vec4 color = renderConfig.DefaultColor;
+			glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];
 			if (Collide(minButtonPos, { InGuiWindow::PanelSize,InGuiWindow::PanelSize }, frameData.MousePosition))
 			{
-				color = renderConfig.HooverColor;
+				color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
 				if (resolveLeftClick())
 				{
 					open = !open;
@@ -702,13 +702,13 @@ namespace XYZ {
 		bool pressed = false;
 		if (window->Flags & InGuiWindowFlag::Modified)
 		{
-			glm::vec4 color = renderConfig.DefaultColor;
+			glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];
 			glm::vec2 position; //= HandleWindowSpacing(size, frameData);
 			if (HandleRowPosition(frameData, size, position))
 			{
 				if (Collide(position, size, frameData.MousePosition))
 				{
-					color = renderConfig.HooverColor;
+					color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
 					if (resolveLeftClick())
 					{
 						pressed = true;
@@ -731,13 +731,13 @@ namespace XYZ {
 
 		if (window->Flags & InGuiWindowFlag::Modified)
 		{
-			glm::vec4 color = renderConfig.DefaultColor;
+			glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];
 			glm::vec2 pos = position;
 			if (ResolveSpaceWithText(name, size, { 0.7f,0.7f }, color, pos, renderConfig, frameData))
 			{
 				if (Collide(pos, size, frameData.MousePosition))
 				{
-					color = renderConfig.HooverColor;
+					color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
 						if (resolveLeftClick())
 						{
 							value = !value;
@@ -760,14 +760,14 @@ namespace XYZ {
 		bool modified = false;
 		if (window->Flags & InGuiWindowFlag::Modified)
 		{
-			glm::vec4 color = renderConfig.DefaultColor;	
+			glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];	
 			glm::vec2 handleSize = { size.x , size.y * 2 };
 			glm::vec2 pos = position;
 			if (ResolveSpaceWithText(name, handleSize, { 0.7f,0.7f }, color, pos, renderConfig, frameData))
 			{
 				if (Collide(pos, handleSize, frameData.MousePosition))
 				{
-					color = renderConfig.HooverColor;
+					color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
 					modified = resolveLeftClick(false);
 					if (modified)
 					{
@@ -801,7 +801,7 @@ namespace XYZ {
 			{
 				pressed = resolveLeftClick(false);
 			}
-			InGuiFactory::GenerateImage(pos, size, renderConfig.DefaultColor, texCoords, rendererID, window->Mesh, frameData.TexturePairs, renderConfig, tilingFactor);		
+			InGuiFactory::GenerateImage(pos, size, renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR], texCoords, rendererID, window->Mesh, frameData.TexturePairs, renderConfig, tilingFactor);		
 		}
 		else
 		{
@@ -821,7 +821,7 @@ namespace XYZ {
 
 		if (window->Flags & InGuiWindowFlag::Modified)
 		{
-			glm::vec4 color = renderConfig.DefaultColor;
+			glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];
 			glm::vec2 pos = position;
 			if (ResolveSpaceWithText(name, size, { 0.7f,0.7f }, color, pos, renderConfig, frameData))
 			{
@@ -839,7 +839,7 @@ namespace XYZ {
 
 				if (modified)
 				{
-					color = renderConfig.HooverColor;
+					color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
 					HandleInputText(text, frameData.KeyCode, frameData.Mode, frameData.CapslockEnabled);
 				}
 
@@ -862,7 +862,7 @@ namespace XYZ {
 		if (window->Flags & InGuiWindowFlag::Modified)
 		{
 			float offset = 5.0f;
-			glm::vec4 color = renderConfig.DefaultColor;
+			glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];
 			glm::vec2 pos = position;
 			if (ResolveSpaceWithText(name, { (size.x + offset) * count, size.y }, { 0.7f,0.7f }, color, pos, renderConfig, frameData))
 			{
@@ -883,13 +883,13 @@ namespace XYZ {
 				}
 				for (int i = 0; i < count; ++i)
 				{
-					glm::vec4 color = renderConfig.DefaultColor;
+					glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];
 					char buffer[sc_TextBufferSize];
 					int ret = snprintf(buffer, sizeof(buffer), "%f", values[i]);
 					buffer[lengths[i]] = '\0';
 					if (i == selected)
 					{
-						color = renderConfig.HooverColor;
+						color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
 						HandleInputNumber(buffer, lengths[i], frameData.KeyCode, frameData.Mode, frameData.CapslockEnabled);
 						values[i] = atof(buffer);
 					}
@@ -1088,7 +1088,7 @@ namespace XYZ {
 			if (resolveLeftClick(false) || resolveRightClick(false))
 			{
 				if (nodeWindow->SelectedNode)
-					nodeWindow->SelectedNode->Color = renderConfig.DefaultColor;
+					nodeWindow->SelectedNode->Color = renderConfig.Color[InGuiRenderConfiguration::InGuiRenderConfiguration::DEFAULT_COLOR];
 				nodeWindow->SelectedNode = nullptr;
 			}
 		}
@@ -1135,14 +1135,14 @@ namespace XYZ {
 				node = createNode(id, position, size);
 
 			frameData.CurrentNode = node;
-			glm::vec4 color = renderConfig.DefaultColor;
+			glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];
 			
 			if (resolveLeftClick(false))
 			{
 				if (Collide(node->Position, node->Size, nodeWindow->RelativeMousePosition))
 				{
 					nodeWindow->SelectedNode = node;
-					node->Color = renderConfig.HooverColor;
+					node->Color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
 					pressed = true;
 					modified = false;
 					
@@ -1165,7 +1165,7 @@ namespace XYZ {
 
 			if (modified)
 			{
-				color = renderConfig.HooverColor;
+				color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
 				HandleInputText(name, frameData.KeyCode, frameData.Mode, frameData.CapslockEnabled);
 			}
 
@@ -1204,7 +1204,7 @@ namespace XYZ {
 						}
 					}
 				}		
-				nodeWindow->SelectedNode->Color = s_Context->RenderConfiguration.DefaultColor;
+				nodeWindow->SelectedNode->Color = s_Context->RenderConfiguration.Color[InGuiRenderConfiguration::DEFAULT_COLOR];
 				nodeWindow->SelectedNode = nullptr;
 			}
 			
@@ -1231,10 +1231,10 @@ namespace XYZ {
 		
 		glm::vec2 position = HandlePinInputSpacing(size, frameData);
 
-		glm::vec4 color = renderConfig.DefaultColor;
+		glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];
 		if (Collide(position, size, nodeWindow->RelativeMousePosition))
 		{
-			color = renderConfig.HooverColor;
+			color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
 		}
 		size_t offset = nodeWindow->Mesh.Vertices.size();
 		auto [width, height] = InGuiFactory::GenerateText({ 0.7f,0.7f }, color, name, 1000.0f, nodeWindow->Mesh, renderConfig);
@@ -1258,10 +1258,10 @@ namespace XYZ {
 
 		glm::vec2 position = HandlePinOutputSpacing(size, frameData);
 
-		glm::vec4 color = renderConfig.DefaultColor;
+		glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];
 		if (Collide(position, size, nodeWindow->RelativeMousePosition))
 		{
-			color = renderConfig.HooverColor;
+			color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
 			if (resolveLeftClick())
 			{
 				
@@ -1327,7 +1327,7 @@ namespace XYZ {
 					selecting = false;
 
 				glm::vec2 size = frameData.MousePosition - frameData.SelectedPoint;	
-				InGuiFactory::GenerateFrame(window->LineMesh, frameData.SelectedPoint, size, renderConfig.LineColor);
+				InGuiFactory::GenerateFrame(window->LineMesh, frameData.SelectedPoint, size, renderConfig.Color[InGuiRenderConfiguration::LINE_COLOR]);
 				return glm::vec4(frameData.SelectedPoint, frameData.SelectedPoint + size);
 			}
 		}
@@ -1506,6 +1506,11 @@ namespace XYZ {
 	InGuiNodeWindow* InGui::GetCurrentNodeWindow()
 	{
 		return s_Context->PerFrameData.CurrentNodeWindow;
+	}
+
+	InGuiRenderConfiguration& InGui::GetRenderConfiguration()
+	{
+		return s_Context->RenderConfiguration;
 	}
 
 	glm::vec2& InGui::MouseRelativePosition(const InGuiWindow& window, const glm::vec3& cameraPos)

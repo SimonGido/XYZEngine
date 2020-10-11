@@ -61,30 +61,40 @@ namespace XYZ {
 		uint32_t Count = 0;
 	};
 
+
 	struct InGuiRenderConfiguration
 	{
 		InGuiRenderConfiguration();
 
 		Ref<Font>		  Font;
 		Ref<Material>	  InMaterial;
-		Ref<SubTexture2D> ButtonSubTexture;
-		Ref<SubTexture2D> CheckboxSubTextureChecked;
-		Ref<SubTexture2D> CheckboxSubTextureUnChecked;
-		Ref<SubTexture2D> SliderSubTexture;
-		Ref<SubTexture2D> SliderHandleSubTexture;
-		Ref<SubTexture2D> WindowSubTexture;
-		Ref<SubTexture2D> MinimizeButtonSubTexture;
-		Ref<SubTexture2D> DownArrowButtonSubTexture;
-		Ref<SubTexture2D> RightArrowButtonSubTexture;
-		Ref<SubTexture2D> DockSpaceSubTexture;
 
-	
+		enum
+		{
+			BUTTON,
+			CHECKBOX_CHECKED,
+			CHECKBOX_UNCHECKED,
+			SLIDER,
+			SLIDER_HANDLE,
+			WINDOW,
+			MIN_BUTTON,
+			DOWN_ARROW,
+			RIGHT_ARROW,
+			DOCKSPACE,
+			NUM_SUBTEXTURES
+		};
+		enum
+		{
+			DEFAULT_COLOR,
+			HOOVER_COLOR,
+			SELECT_COLOR,
+			LINE_COLOR,
+			SELECTOR_COLOR,
+			NUM_COLORS
+		};
 
-		glm::vec4 DefaultColor = { 1.0f,1.0f,1.0f,1.0f };
-		glm::vec4 HooverColor = { 0.4f, 1.8f, 1.7f, 1.0f };
-		glm::vec4 SelectColor = { 0.8f,0.0f,0.2f,0.6f };
-		glm::vec4 LineColor = { 0.4f,0.2f,0.5f,1.0f };
-		glm::vec4 SelectorColor = { 0.2f,0.2f,0.5f,0.3f };
+		Ref<SubTexture2D> SubTexture[NUM_SUBTEXTURES];
+		glm::vec4 Color[NUM_COLORS];
 
 		static constexpr uint32_t DefaultTextureCount = 3;
 		mutable uint32_t NumTexturesInUse = DefaultTextureCount;

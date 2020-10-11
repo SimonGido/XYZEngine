@@ -83,6 +83,7 @@ namespace XYZ {
 		static InGuiNodeWindow* GetNodeWindow(uint32_t id);	
 		static InGuiWindow* GetWindow(uint32_t id);
 
+		static InGuiRenderConfiguration& GetRenderConfiguration();
 		static glm::vec2& MouseRelativePosition(const InGuiWindow& window, const glm::vec3& cameraPos);
 	private:
 		static InGuiWindow* createWindow(uint32_t id, const glm::vec2& position, const glm::vec2& size);
