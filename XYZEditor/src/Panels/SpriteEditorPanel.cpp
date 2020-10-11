@@ -9,16 +9,17 @@ namespace XYZ {
 	static glm::vec4 TexCoordsFromSelection(const glm::vec4& selection,const glm::vec2& contextPos, const glm::vec2 contextScale)
 	{
 		glm::vec2 selectionSize = { selection.z - selection.x, selection.w - selection.y };
-		glm::vec2 offsetLeft =  { fabs(selection.x - contextPos.x), fabs(selection.y - contextPos.y) };
-		glm::vec2 offsetRight = { fabs(selection.z - contextPos.x), fabs(selection.w - contextPos.y) };
-		glm::vec4 texCoords = { 
+		glm::vec2 offsetLeft =  { selection.x + fabs(contextPos.x), selection.y + fabs(contextPos.y) };
+		glm::vec2 offsetRight = { selection.z + fabs(contextPos.x), selection.w + fabs(contextPos.y) };
+		offsetLeft.x /= contextScale.x;
+		offsetRight.x /= contextScale.x;
+
+		return { 
 				 offsetLeft.x, 
 				 offsetLeft.y,
 				 offsetRight.x,
 				 offsetRight.y 
 		};
-
- 		return texCoords;
 	}
 
 	static glm::vec2 GetWorldPositionFromInGui(const InGuiWindow& window, const EditorCamera& camera)
@@ -48,7 +49,9 @@ namespace XYZ {
 			pos.y < point.y);
 	}
 
-	SpriteEditorPanel::SpriteEditorPanel()
+	SpriteEditorPanel::SpriteEditorPanel(AssetManager& assetManager)
+		:
+		m_AssetManager(assetManager)
 	{
 		m_FBO = FrameBuffer::Create({ 300,300 });
 		m_FBO->CreateColorAttachment(FrameBufferFormat::RGBA16F);
@@ -69,7 +72,7 @@ namespace XYZ {
 		InGui::End();
 		
 		m_Window = InGui::GetWindow(m_SpriteEditorID);
-		m_Window->Flags &= ~InGuiWindowFlag::AutoPosition;
+		//m_Window->Flags &= ~InGuiWindowFlag::AutoPosition;
 		m_Window->Flags &= ~InGuiWindowFlag::EventListener;
 		m_Window->Flags |= InGuiWindowFlag::MenuEnabled;
 		m_Window->OnResizeCallback = Hook(&SpriteEditorPanel::onInGuiWindowResize, this);
@@ -77,10 +80,7 @@ namespace XYZ {
 				
 		m_FBO->SetSpecification({ (uint32_t)m_Window->Size.x,(uint32_t)m_Window->Size.y });
 		m_FBO->Resize();
-		m_Transform = glm::translate(glm::mat4(1.0f), { 0,0,0 }) *
-			glm::rotate(0.0f, glm::vec3{ 0,0,1 }) *
-			glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-
+		m_Transform = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 		m_Camera.SetAspectRatio(m_Window->Size.x / m_Window->Size.y);
 	}
 	void SpriteEditorPanel::SetContext(const Ref<Texture2D>& context)
@@ -91,10 +91,7 @@ namespace XYZ {
 		float scale = (float)context->GetWidth() / (float)context->GetHeight();
 		m_ContextScale = { scale, 1.0f };
 		m_ContextPos = { -scale / 2.0f, -0.5f };
-		m_Transform = 
-			glm::translate(glm::mat4(1.0f), { 0.0f,0.0f,0.0f }) *
-			glm::rotate(0.0f, glm::vec3{ 0.0f,0.0f,1.0f }) *
-			glm::scale(glm::mat4(1.0f), glm::vec3(scale, 1.0f, 1.0f));
+		m_Transform = glm::scale(glm::mat4(1.0f), glm::vec3(scale, 1.0f, 1.0f));
 	}
 	bool SpriteEditorPanel::OnInGuiRender(Timestep ts)
 	{
@@ -109,19 +106,41 @@ namespace XYZ {
 				m_NewSelection.z = relativeMousePos.x;
 				m_NewSelection.w = relativeMousePos.y;
 			}
+			
 		}
-		if (InGui::MenuBar("Selection", 90.0f, m_MenuOpen))
+		if (InGui::MenuBar("File", 90.0f, m_ExportOpen))
 		{
-			if (InGui::MenuItem("Auto Selection", { 150,25 }))
+			m_SelectionOpen = false;
+			if (InGui::MenuItem("Export All", { 150.0f, 25.0f }))
 			{
-				m_MenuOpen = false;
+				if (!m_Sprites.empty())
+				{
+					auto& app = Application::Get();
+					std::string filepath = app.OpenFolder();
+					if (!filepath.empty())
+					{
+						uint32_t counter = 1;
+						for (auto sprite : m_Sprites)
+						{
+							m_AssetManager.RegisterAsset(filepath + "\\Subtexture" + std::to_string(counter++) + ".subtex", sprite);
+						}
+					}
+				}
 			}
-			else if (InGui::MenuItem("Reset Selections", { 150,25 }))
+		}
+		if (InGui::MenuBar("Selection", 90.0f, m_SelectionOpen))
+		{
+			m_ExportOpen = false;
+			if (InGui::MenuItem("Auto Selection", { 150.0f, 25.0f }))
+			{
+				m_SelectionOpen = false;
+			}
+			else if (InGui::MenuItem("Reset Selections", { 150.0f, 25.0f }))
 			{
 				m_Selections.clear();
 				m_Sprites.clear();
 				m_SelectedSelection = sc_InvalidSelection;
-				m_MenuOpen = false;
+				m_SelectionOpen = false;
 			}
 		}
 		InGui::End();
@@ -150,23 +169,26 @@ namespace XYZ {
 	{
 		if (event.IsButtonReleased(MouseCode::XYZ_MOUSE_BUTTON_LEFT))
 		{
+			if (m_Selecting)
+			{
+				// Flip
+				if (m_NewSelection.x > m_NewSelection.z)
+				{
+					float tmp = m_NewSelection.x;
+					m_NewSelection.x = m_NewSelection.z;
+					m_NewSelection.z = tmp;
+				}
+				if (m_NewSelection.y > m_NewSelection.w)
+				{
+					float tmp = m_NewSelection.y;
+					m_NewSelection.y = m_NewSelection.w;
+					m_NewSelection.w = tmp;
+				}
+
+				m_Sprites.push_back(Ref<SubTexture2D>::Create(m_Context, TexCoordsFromSelection(m_NewSelection, m_ContextPos, m_ContextScale)));
+				m_Selections.push_back(m_NewSelection);
+			}
 			m_Selecting = false;
-			// Flip
-			if (m_NewSelection.x > m_NewSelection.z)
-			{
-				float tmp = m_NewSelection.x;
-				m_NewSelection.x = m_NewSelection.z;
-				m_NewSelection.z = tmp;
-			}
-			if (m_NewSelection.y > m_NewSelection.w)
-			{
-				float tmp = m_NewSelection.y;
-				m_NewSelection.y = m_NewSelection.w;
-				m_NewSelection.w = tmp;
-			}
-			
-			m_Sprites.push_back(Ref<SubTexture2D>::Create(m_Context, TexCoordsFromSelection(m_NewSelection, m_ContextPos, m_ContextScale)));
-			m_Selections.push_back(m_NewSelection);				
 		}
 		return false;
 	}
@@ -175,13 +197,16 @@ namespace XYZ {
 		m_SelectedSelection = sc_InvalidSelection;
 		if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_LEFT))
 		{
-			glm::vec2 relativeMousePos = GetWorldPositionFromInGui(*m_Window, m_Camera);
+			if (!m_SelectionOpen && !m_ExportOpen)
+			{
+				glm::vec2 relativeMousePos = GetWorldPositionFromInGui(*m_Window, m_Camera);
 
-			m_NewSelection.x = relativeMousePos.x;
-			m_NewSelection.y = relativeMousePos.y;
-			
-			m_Selecting = true;
-			m_SelectedSelection = sc_InvalidSelection;
+				m_NewSelection.x = relativeMousePos.x;
+				m_NewSelection.y = relativeMousePos.y;
+
+				m_Selecting = true;
+				m_SelectedSelection = sc_InvalidSelection;
+			}
 		}
 		else if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_RIGHT))
 		{

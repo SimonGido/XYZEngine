@@ -560,8 +560,9 @@ namespace XYZ {
 		InGuiPerFrameData& frameData = s_Context->PerFrameData;
 		InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration;
 		InGuiWindow* window = frameData.CurrentWindow;
+		bool openTmp = open;
 		if (window->Flags & InGuiWindowFlag::Modified)
-		{
+		{		
 			if (window->Flags & InGuiWindowFlag::MenuEnabled)
 			{
 				glm::vec4 color = renderConfig.DefaultColor;
@@ -573,8 +574,11 @@ namespace XYZ {
 					if (resolveLeftClick())
 					{
 						open = !open;
+						openTmp = open;
 					}
 				}
+				else if (resolveLeftClick(false) || resolveRightClick(false))
+					open = false;
 				
 
 				InGuiFactory::GenerateMenuBar(position, size, color, name, frameData, renderConfig);
@@ -584,7 +588,7 @@ namespace XYZ {
 				frameData.MenuItemOffset = position.x;
 			}
 		}
-		return open;
+		return openTmp;
 	}
 
 	bool InGui::MenuItem(const char* name, const glm::vec2& size)
@@ -1013,7 +1017,8 @@ namespace XYZ {
 		if (!(window->Flags & InGuiWindowFlag::Visible))
 			return false;
 
-		frameData.WindowSpaceOffset.y = window->Size.y;
+		frameData.WindowSpaceOffset.x = window->Position.x;
+		frameData.WindowSpaceOffset.y = window->Position.y + window->Size.y;
 		window->Mesh.Material = renderConfig.InMaterial;
 
 		// Check if window is hoovered

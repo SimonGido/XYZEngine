@@ -38,6 +38,12 @@ namespace XYZ {
 		return { x + pos.x, y + pos.y };
 	}
 
+	EditorLayer::EditorLayer()
+		:
+		m_SpriteEditorPanel(m_AssetManager)
+	{
+	}
+
 	EditorLayer::~EditorLayer()
 	{
 	}

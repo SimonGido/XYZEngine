@@ -33,8 +33,6 @@ namespace XYZ {
 
 					m_Context->SetCoords(texCoords);
 				}
-
-				//InGui::Image("Context", m_Context->GetTexture()->GetRendererID(), { 0,0 }, { 150,150 },  m_Context->GetTexCoords());
 			}
 		}
 	}

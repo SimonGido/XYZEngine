@@ -27,6 +27,7 @@ namespace XYZ {
 	class EditorLayer : public Layer
 	{
 	public:
+		EditorLayer();
 		virtual ~EditorLayer();
 
 		virtual void OnAttach() override;

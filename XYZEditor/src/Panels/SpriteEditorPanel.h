@@ -8,7 +8,7 @@ namespace XYZ {
 	class SpriteEditorPanel
 	{
 	public:
-		SpriteEditorPanel();
+		SpriteEditorPanel(AssetManager& assetManager);
 
 		void SetContext(const Ref<Texture2D>& context);
 
@@ -26,6 +26,7 @@ namespace XYZ {
 		void submitSelection(const glm::vec4& selection, const glm::vec4& color);
 		void onRender(Timestep ts);
 	private:
+		AssetManager& m_AssetManager;
 		enum TextureID
 		{
 			BACKGROUND = 0,
@@ -42,9 +43,10 @@ namespace XYZ {
 		glm::mat4 m_Transform;
 
 		InGuiWindow* m_Window;
-		bool m_Selecting = false;
-		bool m_MenuOpen = false;
+		bool m_SelectionOpen = false;
+		bool m_ExportOpen = false;
 		bool m_ActiveWindow = false;
+		bool m_Selecting = false;
 
 		int m_SelectedSelection;
 		glm::vec4 m_NewSelection;

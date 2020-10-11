@@ -10,7 +10,9 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 #include <Windows.h>
+#include <shlobj.h>
 
+#include <filesystem>
 
 namespace XYZ {
 	Application* Application::s_Application = nullptr;
@@ -115,8 +117,8 @@ namespace XYZ {
 	std::string Application::OpenFile(const char* filter) const
 	{
 		OPENFILENAMEA ofn;       // common dialog box structure
-		CHAR szFile[260] = { 0 };       // if using TCHAR macros
-
+		CHAR szFile[MAX_PATH] = { 0 };       // if using TCHAR macros
+		
 		// Initialize OPENFILENAME
 		ZeroMemory(&ofn, sizeof(OPENFILENAME));
 		ofn.lStructSize = sizeof(OPENFILENAME);
@@ -139,7 +141,7 @@ namespace XYZ {
 	std::string Application::SaveFile(const char* filter) const
 	{
 		OPENFILENAMEA ofn;       // common dialog box structure
-		CHAR szFile[260] = { 0 };       // if using TCHAR macros
+		CHAR szFile[MAX_PATH] = { 0 };       // if using TCHAR macros
 
 		// Initialize OPENFILENAME
 		ZeroMemory(&ofn, sizeof(OPENFILENAME));
@@ -165,7 +167,7 @@ namespace XYZ {
 	{
 		HANDLE hFile = INVALID_HANDLE_VALUE;
 		OPENFILENAMEA ofn;       // common dialog box structure
-		CHAR szFile[260] = { 0 };       // if using TCHAR macros
+		CHAR szFile[MAX_PATH] = { 0 };       // if using TCHAR macros
 
 		// Initialize OPENFILENAME
 		ZeroMemory(&ofn, sizeof(OPENFILENAME));
@@ -176,7 +178,7 @@ namespace XYZ {
 		ofn.lpstrFilter = filter;
 		ofn.nFilterIndex = 1;
 		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
-
+	
 		if (GetSaveFileNameA(&ofn) == TRUE)
 		{
 			hFile = CreateFileA(ofn.lpstrFile, // file name 
@@ -193,6 +195,48 @@ namespace XYZ {
 		}
 		CloseHandle(hFile);
 		return std::string();
+	}
+
+	static LPITEMIDLIST ConvertPathToLpItemIdList(const char* pszPath)
+	{
+		LPITEMIDLIST  pidl = NULL;
+		LPSHELLFOLDER pDesktopFolder = NULL;
+		OLECHAR       olePath[MAX_PATH];
+		HRESULT       hr;
+
+		if (SUCCEEDED(SHGetDesktopFolder(&pDesktopFolder)))
+		{
+			MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, pszPath, -1, olePath, MAX_PATH);		
+			hr = pDesktopFolder->ParseDisplayName(NULL, NULL, olePath, NULL, &pidl, NULL);
+			pDesktopFolder->Release();
+			return pidl;
+		}
+		return NULL;
+	}
+
+	std::string Application::OpenFolder() const
+	{
+		std::string path(std::filesystem::current_path().u8string());
+		BROWSEINFOA bi;
+		bi.hwndOwner = glfwGetWin32Window((GLFWwindow*)m_Window->GetNativeWindow());
+		bi.pidlRoot = ConvertPathToLpItemIdList(path.c_str());
+		bi.pszDisplayName = NULL;
+		bi.lpszTitle = NULL;
+		bi.ulFlags = BIF_DONTGOBELOWDOMAIN | BIF_RETURNONLYFSDIRS | BIF_STATUSTEXT | BIF_USENEWUI;
+		bi.lpfn = NULL;
+		bi.iImage = 0;
+
+		
+		LPITEMIDLIST pidl = SHBrowseForFolderA(&bi);
+		if (pidl == NULL)
+		{
+			return std::string();
+		}
+	
+		CHAR strFolder[MAX_PATH];
+		SHGetPathFromIDListA(pidl, strFolder);
+		
+		return strFolder;
 	}
 	
 }
