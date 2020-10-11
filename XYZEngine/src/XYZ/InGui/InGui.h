@@ -71,7 +71,6 @@ namespace XYZ {
 		static bool OnRightMouseButtonPress();
 		static bool OnLeftMouseButtonRelease();
 		static bool OnRightMouseButtonRelease();
-		static bool OnMouseScroll();
 		
 		static bool OnKeyPress(int key, int mod);
 		static bool OnKeyRelease();

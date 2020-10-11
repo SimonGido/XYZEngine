@@ -57,10 +57,21 @@ namespace XYZ {
 
 	void InGuiCamera::OnEvent(Event& event)
 	{
+		if (event.GetEventType() == EventType::MouseScroll)
+		{
+			std::cout << "l";
+		}
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<MouseScrollEvent>(Hook(&InGuiCamera::onMouseScrolled, this));
 		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&InGuiCamera::onMouseButtonPress, this));
 		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&InGuiCamera::onMouseButtonRelease, this));
+	}
+
+	void InGuiCamera::OnResize(const glm::vec2& size)
+	{
+		m_AspectRatio = size.x / size.y;
+		m_ProjectionMatrix = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, m_AspectRatio * -m_ZoomLevel, m_AspectRatio * m_ZoomLevel);
+		recalculate();
 	}
 
 	
@@ -75,13 +86,13 @@ namespace XYZ {
 
 	bool InGuiCamera::onMouseScrolled(MouseScrollEvent& event)
 	{
-		//m_ZoomLevel -= (float)event.GetOffsetY() * 0.25f;
-		//m_ZoomLevel = std::max(m_ZoomLevel, 0.25f);
-		//m_CameraTranslationSpeed = m_ZoomLevel;
-		//
-		//
-		//m_ProjectionMatrix = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, m_AspectRatio * -m_ZoomLevel, m_AspectRatio * m_ZoomLevel);
-		//m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
+		m_ZoomLevel -= (float)event.GetOffsetY() * 0.25f;
+		m_ZoomLevel = std::max(m_ZoomLevel, 0.25f);
+		m_CameraTranslationSpeed = m_ZoomLevel;
+		
+		
+		m_ProjectionMatrix = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, m_AspectRatio * -m_ZoomLevel, m_AspectRatio * m_ZoomLevel);
+		m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
 
 		return false;
 	}

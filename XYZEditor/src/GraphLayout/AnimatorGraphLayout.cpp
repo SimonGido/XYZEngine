@@ -52,10 +52,10 @@ namespace XYZ {
 					y = -200.0f;
 
 				uint32_t id = state.second.State.GetID();
-				InGui::BeginNode(id, state.second.Name, { x,y }, { 150,100 }, m_ModifiedMap[id]);
+				InGui::BeginNode(id, state.second.Name, { x,y }, { 200,120 }, m_ModifiedMap[id]);
 				InGui::EndNode();
 
-				x += 300;
+				x += 400;
 				counter++;
 			}
 

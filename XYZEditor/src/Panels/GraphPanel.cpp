@@ -9,19 +9,20 @@ namespace XYZ {
 	}
 	bool GraphPanel::OnInGuiRender(float dt)
 	{
-		bool active = false;
+		m_ActiveWindow = false;
 		if (InGui::NodeWindow(m_GraphID, "Graph", { 0,0 }, { 100,100 }, dt))
 		{
 			if (m_Layout)
 				m_Layout->OnInGuiRender();
 
-			active = true;
+			m_ActiveWindow = true;
 		}
 		InGui::NodeWindowEnd();
-		return active;
+		return m_ActiveWindow;
 	}
 	void GraphPanel::OnEvent(Event& event)
 	{
-		m_GraphWindow->InCamera.OnEvent(event);
+		if (m_ActiveWindow)
+			m_GraphWindow->InCamera.OnEvent(event);
 	}
 }

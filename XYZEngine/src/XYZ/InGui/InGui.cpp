@@ -72,16 +72,25 @@ namespace XYZ {
 		frameData.RightNodePinOffset += uiSize.y;
 		return position;
 	}
-	static glm::vec2 ConvertToCamera(const glm::vec2& mousePos,const glm::vec2& winPos, const glm::vec2& winSize, const InGuiCamera& camera)
+
+	static glm::vec2 GetInGuiWorldPositionFromInGui(const InGuiWindow& window, const InGuiCamera& camera)
 	{
-		glm::vec2 offset = { winSize.x / 2,winSize.y / 2 };
-		glm::vec2 pos = { mousePos.x - offset.x, mousePos.y - offset.y };
+		auto [x, y] = Input::GetMousePosition();
+		auto [width, height] = Input::GetWindowSize();
+		x -= ((float)width / 2.0f) - fabs(window.Position.x);
+		y -= ((float)height / 2.0f) - window.Position.y - window.Size.y;
 
-		pos.x += (winSize.x / 2 * camera.GetPosition().x) - winPos.x;
-		pos.y += (winSize.y / 2 * camera.GetPosition().y) - winPos.y;
-		return pos;
+		float cameraBound = (camera.GetAspectRatio() * camera.GetZoomLevel()) * 2;
+		auto pos = camera.GetPosition();
 
-		return { mousePos.x + winPos.x + (winSize.x/2 * camera.GetPosition().x) , mousePos.y + winPos.y + (winSize.y/2 * camera.GetPosition().y) };
+		x = (x / window.Size.x) * cameraBound - cameraBound * 0.5f;
+		y = cameraBound * 0.5f - (y / window.Size.y) * cameraBound;
+		
+		x *= ((float)width /  2.0f);
+		y *= ((float)height / 2.0f);
+		x += pos.x * ((float)width / 2.0f);
+		y += pos.y * ((float)height / 2.0f);
+		return { x + pos.x , y + pos.y };
 	}
 
 	static glm::vec4 ColorFrom6SegmentColorRectangle(const glm::vec2& position, const glm::vec2& size, const glm::vec2& mousePos)
@@ -1072,7 +1081,7 @@ namespace XYZ {
 		bool result = RenderWindow(id, name, nodeWindow->FBO->GetColorAttachment(0).RendererID, position, size);
 		if (result)
 		{
-			nodeWindow->RelativeMousePosition = ConvertToCamera(frameData.MousePosition,nodeWindow->RenderWindow->Position, frameData.WindowSize, nodeWindow->InCamera);
+			nodeWindow->RelativeMousePosition = GetInGuiWorldPositionFromInGui(*nodeWindow->RenderWindow, nodeWindow->InCamera);
 			nodeWindow->Mesh.Vertices.clear();
 			nodeWindow->LineMesh.Vertices.clear();
 			nodeWindow->InCamera.OnUpdate(dt);
@@ -1421,6 +1430,7 @@ namespace XYZ {
 
 	static void handleRightMouseButtonRelease(InGuiWindowMap& windows)
 	{
+		auto [width, height] = Input::GetWindowSize();
 		for (auto window : windows)
 		{
 			if ((window.second->Flags & InGuiWindowFlag::Resized))
@@ -1432,9 +1442,10 @@ namespace XYZ {
 				if (window.second->NodeWindow)
 				{
 					auto& spec = window.second->NodeWindow->FBO->GetSpecification();
-					spec.Width = window.second->Size.x;
-					spec.Height = window.second->Size.y;
+					spec.Width = (uint32_t)width;
+					spec.Height = (uint32_t)height;
 					window.second->NodeWindow->FBO->Resize();
+					window.second->NodeWindow->InCamera.OnResize(window.second->Size);
 				}
 				window.second->Flags &= ~InGuiWindowFlag::Resized;
 			}
@@ -1456,16 +1467,6 @@ namespace XYZ {
 		}
 		handleRightMouseButtonRelease(s_Context->Windows);
 
-		return false;
-	}
-
-	bool InGui::OnMouseScroll()
-	{
-		InGuiWindow* window = s_Context->PerFrameData.EventReceivingWindow;
-		if (window && (window->Flags & InGuiWindowFlag::Visible))
-		{
-			return true;
-		}
 		return false;
 	}
 
@@ -1558,11 +1559,12 @@ namespace XYZ {
 
 		window->RenderWindow->NodeWindow = window;
 
-		window->FBO = FrameBuffer::Create({ (uint32_t)window->RenderWindow->Size.x, (uint32_t)window->RenderWindow->Size.y });
+		auto [width, height] = Input::GetWindowSize();
+		window->FBO = FrameBuffer::Create({ (uint32_t)width, (uint32_t)height });
 		window->FBO->CreateColorAttachment(FrameBufferFormat::RGBA16F);
 		window->FBO->CreateDepthAttachment();
 		window->FBO->Resize();
-
+		window->InCamera.OnResize(window->RenderWindow->Size);
 		s_Context->NodeWindows.insert({ id,window });
 	
 		return window;

@@ -20,20 +20,21 @@ namespace XYZ {
 			pos.y + size.y >  point.y &&
 			pos.y < point.y);
 	}
-	static glm::vec2 GetWorldPositionFromInGui(const InGuiWindow &window, const EditorCamera& camera)
+	static glm::vec2 GetWorldPositionFromInGui(const InGuiWindow& window, const EditorCamera& camera)
 	{
 		auto [x, y] = Input::GetMousePosition();
 		auto [width, height] = Input::GetWindowSize();
+		x -= ((float)width / 2.0f) - fabs(window.Position.x);
+		y -= ((float)height / 2.0f) - window.Position.y - window.Size.y;
 
 		float cameraBound = (camera.GetAspectRatio() * camera.GetZoomLevel()) * 2;
 		auto pos = camera.GetPosition();
-		
-		x = (x / width) * cameraBound - cameraBound * 0.5f;
-		y = cameraBound * 0.5f - (y / height) * cameraBound;
 
-		return { x + pos.x, y + pos.y };
+		x = (x / window.Size.x) * cameraBound - cameraBound * 0.5f;
+		y = cameraBound * 0.5f - (y / window.Size.y) * cameraBound;
+
+		return { x + pos.x , y + pos.y };
 	}
-
 	EditorLayer::EditorLayer()
 		:
 		m_SpriteEditorPanel(m_AssetManager)
@@ -184,15 +185,8 @@ namespace XYZ {
 		NativeScriptEngine::Update(ts);
 			
 	
-		glm::vec2 winSize = { Input::GetWindowSize().first, Input::GetWindowSize().second };
 	
-		m_FBO->Bind();	
-		RenderCommand::SetClearColor(glm::vec4(0.2, 0.2, 0.5, 1));
-		RenderCommand::Clear();
-		m_Scene->OnUpdate(ts);
-		m_Scene->OnRenderEditor({ m_EditorCamera.GetViewProjectionMatrix(),winSize });
-		m_FBO->Unbind();
-	
+		
 	
 		if (m_ActiveWindow)
 		{
@@ -254,11 +248,13 @@ namespace XYZ {
 			m_ModifiedTransform->Transform = transformMatrix;
 		}
 
-
-		//m_Animation->Update(ts);
-		//m_Machine->GetCurrentState().Value->Update(ts);
-		//*m_Transform = glm::translate(glm::mat4(1.0f), m_Position) *
-		//	glm::rotate(m_Rotation.z, glm::vec3(0, 0, 1)) * glm::scale(glm::mat4(1.0f), { 1,1,1 });
+		glm::vec2 winSize = { Input::GetWindowSize().first, Input::GetWindowSize().second };
+		m_FBO->Bind();
+		RenderCommand::SetClearColor(glm::vec4(0.2, 0.2, 0.5, 1));
+		RenderCommand::Clear();
+		m_Scene->OnUpdate(ts);
+		m_Scene->OnRenderEditor({ m_EditorCamera.GetViewProjectionMatrix(),winSize });
+		m_FBO->Unbind();
 	}
 	void EditorLayer::OnEvent(Event& event)
 	{
@@ -361,7 +357,6 @@ namespace XYZ {
 		m_FBO->SetSpecification({ (uint32_t)(event.GetWidth()), (uint32_t)(event.GetHeight()) });
 		m_FBO->Resize();
 		m_EditorCamera.OnResize(m_SceneWindow->Size);
-		//m_EditorCamera.SetAspectRatio(m_SceneWindow->Size.x / m_SceneWindow->Size.y);
 		return false;
 	}
 	bool EditorLayer::onMouseButtonPress(MouseButtonPressEvent& event)
@@ -371,9 +366,10 @@ namespace XYZ {
 			auto win = InGui::GetWindow(m_SceneID);
 			auto [mx, my] = Input::GetMousePosition();
 			auto [width, height] = Input::GetWindowSize();
+			
 			glm::vec2 mousePos = MouseToWorld({ mx,my }, { width,height });
 			glm::vec2 relativeMousePos = GetWorldPositionFromInGui(*win, m_EditorCamera);
-			std::cout << relativeMousePos.x << " " << relativeMousePos.y << std::endl;
+	
 			if (Collide(win->Position, win->Size, mousePos))
 				m_SceneHierarchyPanel.SelectEntity(relativeMousePos);
 		}

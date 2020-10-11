@@ -25,19 +25,17 @@ namespace XYZ {
 	static glm::vec2 GetWorldPositionFromInGui(const InGuiWindow& window, const EditorCamera& camera)
 	{
 		auto [x, y] = Input::GetMousePosition();
-		auto [width, height] = Input::GetWindowSize();
+		auto [width, height] = Input::GetWindowSize();	
+		x -= ((float)width / 2.0f) - fabs(window.Position.x);
+		y -= ((float)height / 2.0f) - window.Position.y - window.Size.y;
 
 		float cameraBound = (camera.GetAspectRatio() * camera.GetZoomLevel()) * 2;
 		auto pos = camera.GetPosition();
-
-
-		x -= window.Position.x + ((float)width / 2);
-		y += ((float)height / 2) + window.Position.y;
-
-		x = (x / width) * cameraBound - cameraBound * 0.5f;
-		y = cameraBound * 0.5f - (y / height) * cameraBound;
-
-		return { x + pos.x, y + pos.y };
+	
+		x = (x / window.Size.x) * cameraBound - cameraBound * 0.5f;
+		y = cameraBound * 0.5f - (y / window.Size.y) * cameraBound;	
+	
+		return { x + pos.x , y + pos.y };
 	}
 
 
@@ -82,7 +80,7 @@ namespace XYZ {
 		m_FBO->Resize();
 		m_Transform = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 		m_Camera.SetAspectRatio(m_Window->Size.x / m_Window->Size.y);
-	
+		m_Camera.SetCameraMouseMoveSpeed(0.008f);
 	}
 	void SpriteEditorPanel::SetContext(const Ref<Texture2D>& context)
 	{
@@ -203,7 +201,6 @@ namespace XYZ {
 			if (!m_SelectionOpen && !m_ExportOpen)
 			{
 				glm::vec2 relativeMousePos = GetWorldPositionFromInGui(*m_Window, m_Camera);
-
 				m_NewSelection.x = relativeMousePos.x;
 				m_NewSelection.y = relativeMousePos.y;
 

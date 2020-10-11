@@ -14,7 +14,7 @@ namespace XYZ {
 
 		void OnUpdate(float dt);
 		void OnEvent(Event& event);
-
+		void OnResize(const glm::vec2& size);
 
 		const glm::vec3& GetPosition() const { return m_CameraPosition; }
 		float GetRotation() const { return m_CameraRotation; }

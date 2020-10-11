@@ -95,6 +95,6 @@ namespace XYZ {
 	}
 	bool InGuiLayer::onMouseScroll(MouseScrollEvent& e)
 	{
-		return InGui::OnMouseScroll();
+		return false;
 	}
 }
