@@ -77,11 +77,12 @@ namespace XYZ {
 		m_Window->Flags |= InGuiWindowFlag::MenuEnabled;
 		m_Window->OnResizeCallback = Hook(&SpriteEditorPanel::onInGuiWindowResize, this);
 		
-				
-		m_FBO->SetSpecification({ (uint32_t)m_Window->Size.x,(uint32_t)m_Window->Size.y });
+		auto [width, height] = Input::GetWindowSize();
+		m_FBO->SetSpecification({ (uint32_t)width,(uint32_t)height });
 		m_FBO->Resize();
 		m_Transform = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
 		m_Camera.SetAspectRatio(m_Window->Size.x / m_Window->Size.y);
+	
 	}
 	void SpriteEditorPanel::SetContext(const Ref<Texture2D>& context)
 	{
@@ -95,10 +96,11 @@ namespace XYZ {
 	}
 	bool SpriteEditorPanel::OnInGuiRender(Timestep ts)
 	{
+		keepCameraOnContext();
+		onRender(ts);
 		m_ActiveWindow = false;
 		if (InGui::RenderWindow(m_SpriteEditorID, "Sprite Editor", m_FBO->GetColorAttachment(0).RendererID, { -200,-200 }, { 300,300 }))
 		{
-			onRender(ts);
 			m_ActiveWindow = true;
 			if (m_Selecting)
 			{
@@ -149,9 +151,10 @@ namespace XYZ {
 	
 	void SpriteEditorPanel::OnEvent(Event& event)
 	{
+		EventDispatcher dispatcher(event);
+		dispatcher.Dispatch<WindowResizeEvent>(Hook(&SpriteEditorPanel::onWindowResize, this));
 		if (m_ActiveWindow)
 		{
-			EventDispatcher dispatcher(event);
 			dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&SpriteEditorPanel::onMouseButtonRelease, this));
 			dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&SpriteEditorPanel::onMouseButtonPress, this));
 			m_Camera.OnEvent(event);
@@ -227,9 +230,16 @@ namespace XYZ {
 		}
 		return false;
 	}
+	bool SpriteEditorPanel::onWindowResize(WindowResizeEvent& event)
+	{
+		m_FBO->SetSpecification({ (uint32_t)(event.GetWidth()), (uint32_t)(event.GetHeight()) });
+		m_FBO->Resize();
+		m_Camera.SetAspectRatio(m_Window->Size.x / m_Window->Size.y);
+		return false;
+	}
 	void SpriteEditorPanel::onInGuiWindowResize(const glm::vec2& size)
 	{
-		m_FBO->SetSpecification({ (uint32_t)size.x , (uint32_t)size.y });
+		m_Camera.OnResize(size);
 	}
 	void SpriteEditorPanel::submitSelection(const glm::vec4& selection, const glm::vec4& color)
 	{
@@ -261,5 +271,32 @@ namespace XYZ {
 		Renderer2D::EndScene();
 		m_FBO->Unbind();
 		
+	}
+	void SpriteEditorPanel::keepCameraOnContext()
+	{
+		float xBorder = m_ContextScale.x / 2.0f;
+		float yBorder = m_ContextScale.y / 2.0f;
+		if (m_Camera.GetPosition().x < -xBorder)
+		{
+			float difX = (-xBorder) - m_Camera.GetPosition().x;
+			m_Camera.Translate({ difX,0,0 });
+		}
+		else if (m_Camera.GetPosition().x > xBorder)
+		{
+			float difX = xBorder - m_Camera.GetPosition().x;
+			m_Camera.Translate({ difX,0,0 });
+		}
+
+		if (m_Camera.GetPosition().y < -yBorder)
+		{
+			float dify = (-yBorder) - m_Camera.GetPosition().y;
+			m_Camera.Translate({ 0,dify,0 });
+		}
+		else if (m_Camera.GetPosition().y > yBorder)
+		{
+			float dify = yBorder - m_Camera.GetPosition().y;
+			m_Camera.Translate({ 0,dify,0 });
+		}
+
 	}
 }

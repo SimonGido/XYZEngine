@@ -67,8 +67,8 @@ namespace XYZ {
 		{
 			auto [mx,my] = Input::GetMousePosition();
 		
-			m_CameraPosition.x = m_OldPosition.x - ((mx - m_StartMousePos.x) * m_CameraMouseMoveSpeed * m_CameraTranslationSpeed);
-			m_CameraPosition.y = m_OldPosition.y + ((my - m_StartMousePos.y) * m_CameraMouseMoveSpeed * m_CameraTranslationSpeed);
+			m_CameraPosition.x = m_OldPosition.x - ((mx - m_StartMousePos.x) * m_CameraMouseMoveSpeed);
+			m_CameraPosition.y = m_OldPosition.y + ((my - m_StartMousePos.y) * m_CameraMouseMoveSpeed);
 			
 			modified = true;
 		}
@@ -99,6 +99,16 @@ namespace XYZ {
 		m_AspectRatio = aspectRatio;
 		m_ProjectionMatrix = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, m_AspectRatio * -m_ZoomLevel, m_AspectRatio * m_ZoomLevel);
 		m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
+	}
+	void EditorCamera::SetPosition(const glm::vec3& pos)
+	{
+		m_CameraPosition = pos;
+		recalculate();
+	}
+	void EditorCamera::Translate(const glm::vec3& translation)
+	{
+		m_CameraPosition += translation;
+		recalculate();
 	}
 	void EditorCamera::recalculate()
 	{

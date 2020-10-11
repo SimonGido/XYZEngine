@@ -21,10 +21,12 @@ namespace XYZ {
 	private:
 		bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
 		bool onMouseButtonPress(MouseButtonPressEvent& event);
+		bool onWindowResize(WindowResizeEvent& event);
 
 		void onInGuiWindowResize(const glm::vec2& size);
 		void submitSelection(const glm::vec4& selection, const glm::vec4& color);
 		void onRender(Timestep ts);
+		void keepCameraOnContext();
 	private:
 		AssetManager& m_AssetManager;
 		enum TextureID

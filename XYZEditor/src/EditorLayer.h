@@ -6,6 +6,7 @@
 #include "Panels/InspectorPanel.h"
 #include "Panels/GraphPanel.h"
 #include "Panels/SpriteEditorPanel.h"
+#include "Panels/ProjectBrowserPanel.h"
 
 #include "InspectorLayout/SpriteEditorInspectorLayout.h"
 #include "InspectorLayout/EntityInspectorLayout.h"
@@ -47,9 +48,11 @@ namespace XYZ {
 		void onNodePanelConnectionDestroyed(uint32_t startNode, uint32_t endNode);
 
 	private:
+		InGuiWindow* m_SceneWindow = nullptr;
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		SpriteEditorPanel m_SpriteEditorPanel;
-		
+		ProjectBrowserPanel m_ProjectBrowserPanel;
+
 		InspectorPanel m_InspectorPanel;
 		EntityInspectorLayout m_EntityInspectorLayout;
 		AnimatorInspectorLayout m_AnimatorInspectorLayout;

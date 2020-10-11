@@ -27,11 +27,7 @@ namespace XYZ {
 
 		float cameraBound = (camera.GetAspectRatio() * camera.GetZoomLevel()) * 2;
 		auto pos = camera.GetPosition();
-
 		
-		x -= window.Position.x + ((float)width / 2);
-		y += ((float)height / 2) + window.Position.y;
-
 		x = (x / width) * cameraBound - cameraBound * 0.5f;
 		y = cameraBound * 0.5f - (y / height) * cameraBound;
 
@@ -157,12 +153,9 @@ namespace XYZ {
 
 		InGui::RenderWindow(m_SceneID, "Scene", m_FBO->GetColorAttachment(0).RendererID, { 0,0 }, { 200,200 });
 		InGui::End();
-		InGui::GetWindow(m_SceneID)->Flags &= ~InGuiWindowFlag::EventListener;
-		auto& spec = m_FBO->GetSpecification();
-		spec.Width =  (uint32_t)InGui::GetWindow(0)->Size.x;
-		spec.Height = (uint32_t)InGui::GetWindow(0)->Size.y;
-		m_FBO->Resize();
-		m_EditorCamera.SetAspectRatio((float)spec.Width / (float)spec.Height);
+		m_SceneWindow = InGui::GetWindow(m_SceneID);
+		m_SceneWindow->Flags &= ~InGuiWindowFlag::EventListener;
+		m_EditorCamera.SetAspectRatio(m_SceneWindow->Size.x / m_SceneWindow->Size.y);
 
 		InGui::SetUIOffset(10.0f);
 		InGui::Begin(m_TestID, "Test", { 0,0 }, { 200,200 });
@@ -200,8 +193,7 @@ namespace XYZ {
 		m_Scene->OnRenderEditor({ m_EditorCamera.GetViewProjectionMatrix(),winSize });
 		m_FBO->Unbind();
 	
-		
-
+	
 		if (m_ActiveWindow)
 		{
 			m_EditorCamera.OnUpdate(ts);		
@@ -299,6 +291,7 @@ namespace XYZ {
 		}
 		m_SceneHierarchyPanel.OnInGuiRender();
 		m_InspectorPanel.OnInGuiRender();
+		m_ProjectBrowserPanel.OnInGuiRender();
 
 		if (InGui::RenderWindow(0, "Scene", m_FBO->GetColorAttachment(0).RendererID, { 0,0 }, { 200,200 }))
 		{
@@ -365,12 +358,10 @@ namespace XYZ {
 
 	bool EditorLayer::onWindowResized(WindowResizeEvent& event)
 	{
-		//auto spec = m_FBO->GetSpecification();
-		//spec.Width = event.GetWidth();
-		//spec.Height = event.GetHeight();
-		//
-		//m_FBO->SetSpecification(spec);
-		//m_FBO->Resize();
+		m_FBO->SetSpecification({ (uint32_t)(event.GetWidth()), (uint32_t)(event.GetHeight()) });
+		m_FBO->Resize();
+		m_EditorCamera.OnResize(m_SceneWindow->Size);
+		//m_EditorCamera.SetAspectRatio(m_SceneWindow->Size.x / m_SceneWindow->Size.y);
 		return false;
 	}
 	bool EditorLayer::onMouseButtonPress(MouseButtonPressEvent& event)
@@ -382,6 +373,7 @@ namespace XYZ {
 			auto [width, height] = Input::GetWindowSize();
 			glm::vec2 mousePos = MouseToWorld({ mx,my }, { width,height });
 			glm::vec2 relativeMousePos = GetWorldPositionFromInGui(*win, m_EditorCamera);
+			std::cout << relativeMousePos.x << " " << relativeMousePos.y << std::endl;
 			if (Collide(win->Position, win->Size, mousePos))
 				m_SceneHierarchyPanel.SelectEntity(relativeMousePos);
 		}
@@ -460,13 +452,6 @@ namespace XYZ {
 	}
 	void EditorLayer::onResizeSceneWindow(const glm::vec2& size)
 	{
-		auto spec = m_FBO->GetSpecification();
-		spec.Width = (uint32_t)size.x;
-		spec.Height = (uint32_t)size.y;
-		
-		m_FBO->SetSpecification(spec);
-		m_FBO->Resize();
-
 		m_EditorCamera.OnResize(size);
 	}
 	void EditorLayer::onNodePanelConnectionCreated(uint32_t startNode, uint32_t endNode)

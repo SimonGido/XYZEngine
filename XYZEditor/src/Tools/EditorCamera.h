@@ -17,7 +17,8 @@ namespace XYZ {
 		void OnResize(const glm::vec2& size);
 
 		void SetAspectRatio(float aspectRatio);
-
+		void SetPosition(const glm::vec3& pos);
+		void Translate(const glm::vec3& translation);
 
 		const glm::vec3& GetPosition() const { return m_CameraPosition; }
 		float GetRotation() const { return m_CameraRotation; }
@@ -57,7 +58,7 @@ namespace XYZ {
 		float m_CameraRotation = 0.0f; //In degrees, in the anti-clockwise direction
 		float m_CameraTranslationSpeed = 5.0f;
 		float m_CameraRotationSpeed = 180.0f;
-		float m_CameraMouseMoveSpeed = 0.005f;
+		float m_CameraMouseMoveSpeed = 0.05f;
 		
 		glm::vec2 m_StartMousePos = { 0,0 };
 		glm::vec3 m_OldPosition = { 0,0,0 };

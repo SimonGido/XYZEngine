@@ -7,7 +7,7 @@ Entities:
       Scale: [7.24259949, 11.4536161, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/material.mat
-      SubTextureAssetPath: Assets/SubTextures/New SubTexture.subtex
+      SubTextureAssetPath: Assets/SubTextures/New_SubTexture.subtex
       Color: [0.881285608, 0.882082462, 0.948222756, 1]
       TextureID: 0
       SortLayer: 0
