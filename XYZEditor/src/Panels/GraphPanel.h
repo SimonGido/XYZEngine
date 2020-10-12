@@ -18,6 +18,8 @@ namespace XYZ {
 		void OnEvent(Event& event);
 
 		void SetGraphLayout(GraphLayout* layout) { m_Layout = layout; }
+	private:
+		bool onWindowResize(WindowResizeEvent& event);
 
 	private:
 		GraphLayout* m_Layout = nullptr;

@@ -70,7 +70,7 @@ namespace XYZ {
 	void InGuiCamera::OnResize(const glm::vec2& size)
 	{
 		m_AspectRatio = size.x / size.y;
-		m_ProjectionMatrix = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, m_AspectRatio * -m_ZoomLevel, m_AspectRatio * m_ZoomLevel);
+		m_ProjectionMatrix = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
 		recalculate();
 	}
 
@@ -91,7 +91,7 @@ namespace XYZ {
 		m_CameraTranslationSpeed = m_ZoomLevel;
 		
 		
-		m_ProjectionMatrix = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, m_AspectRatio * -m_ZoomLevel, m_AspectRatio * m_ZoomLevel);
+		m_ProjectionMatrix = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
 		m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
 
 		return false;

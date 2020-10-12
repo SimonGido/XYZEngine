@@ -17,7 +17,6 @@ namespace XYZ {
 		void OnResize(const glm::vec2& size);
 
 		void SetCameraMouseMoveSpeed(float speed) { m_CameraMouseMoveSpeed = speed; }
-		void SetAspectRatio(float aspectRatio);
 		void SetPosition(const glm::vec3& pos);
 		void Translate(const glm::vec3& translation);
 

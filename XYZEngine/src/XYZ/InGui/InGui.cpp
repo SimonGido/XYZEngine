@@ -81,16 +81,18 @@ namespace XYZ {
 		x -= ((float)width / 2.0f) - fabs(window.Position.x);
 		y -= ((float)height / 2.0f) - window.Position.y - window.Size.y;
 
-		float cameraBound = (camera.GetAspectRatio() * camera.GetZoomLevel()) * 2;
+		float cameraBoundWidth = (camera.GetAspectRatio() * camera.GetZoomLevel()) * 2;
+		float cameraBoundHeight = camera.GetZoomLevel() * 2;
 		auto pos = camera.GetPosition();
 
-		x = (x / window.Size.x) * cameraBound - cameraBound * 0.5f;
-		y = cameraBound * 0.5f - (y / window.Size.y) * cameraBound;
+		x = (x / window.Size.x) * cameraBoundWidth - cameraBoundWidth * 0.5f;
+		y = cameraBoundHeight * 0.5f - (y / window.Size.y) * cameraBoundHeight;
 		
 		x *= ((float)width /  2.0f);
 		y *= ((float)height / 2.0f);
 		x += pos.x * ((float)width / 2.0f);
 		y += pos.y * ((float)height / 2.0f);
+		
 		return { x + pos.x , y + pos.y };
 	}
 
@@ -1435,29 +1437,6 @@ namespace XYZ {
 		return false;
 	}
 
-	static void handleRightMouseButtonRelease(InGuiWindowMap& windows)
-	{
-		auto [width, height] = Input::GetWindowSize();
-		for (auto window : windows)
-		{
-			if ((window.second->Flags & InGuiWindowFlag::Resized))
-			{
-				if (window.second->OnResizeCallback)
-				{
-					window.second->OnResizeCallback(window.second->Size);
-				}
-				if (window.second->NodeWindow)
-				{
-					auto& spec = window.second->NodeWindow->FBO->GetSpecification();
-					spec.Width = (uint32_t)width;
-					spec.Height = (uint32_t)height;
-					window.second->NodeWindow->FBO->Resize();
-					window.second->NodeWindow->InCamera.OnResize(window.second->Size);
-				}
-				window.second->Flags &= ~InGuiWindowFlag::Resized;
-			}
-		}
-	}
 	bool InGui::OnRightMouseButtonRelease()
 	{
 		s_Context->PerFrameData.Code = ToUnderlying(MouseCode::XYZ_MOUSE_NONE);
@@ -1472,7 +1451,6 @@ namespace XYZ {
 			auto& app = Application::Get();
 			app.GetWindow().SetCursor(XYZ_ARROW_CURSOR);
 		}
-		handleRightMouseButtonRelease(s_Context->Windows);
 
 		return false;
 	}

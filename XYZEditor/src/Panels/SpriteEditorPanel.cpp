@@ -25,16 +25,17 @@ namespace XYZ {
 	static glm::vec2 GetWorldPositionFromInGui(const InGuiWindow& window, const EditorCamera& camera)
 	{
 		auto [x, y] = Input::GetMousePosition();
-		auto [width, height] = Input::GetWindowSize();	
+		auto [width, height] = Input::GetWindowSize();
 		x -= ((float)width / 2.0f) - fabs(window.Position.x);
 		y -= ((float)height / 2.0f) - window.Position.y - window.Size.y;
 
-		float cameraBound = (camera.GetAspectRatio() * camera.GetZoomLevel()) * 2;
+		float cameraBoundWidth = (camera.GetAspectRatio() * camera.GetZoomLevel()) * 2;
+		float cameraBoundHeight = camera.GetZoomLevel() * 2;
 		auto pos = camera.GetPosition();
-	
-		x = (x / window.Size.x) * cameraBound - cameraBound * 0.5f;
-		y = cameraBound * 0.5f - (y / window.Size.y) * cameraBound;	
-	
+
+		x = (x / window.Size.x) * cameraBoundWidth - cameraBoundWidth * 0.5f;
+		y = cameraBoundHeight * 0.5f - (y / window.Size.y) * cameraBoundHeight;
+
 		return { x + pos.x , y + pos.y };
 	}
 
@@ -79,7 +80,7 @@ namespace XYZ {
 		m_FBO->SetSpecification({ (uint32_t)width,(uint32_t)height });
 		m_FBO->Resize();
 		m_Transform = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-		m_Camera.SetAspectRatio(m_Window->Size.x / m_Window->Size.y);
+		m_Camera.OnResize(m_Window->Size);
 		m_Camera.SetCameraMouseMoveSpeed(0.008f);
 	}
 	void SpriteEditorPanel::SetContext(const Ref<Texture2D>& context)
@@ -231,7 +232,7 @@ namespace XYZ {
 	{
 		m_FBO->SetSpecification({ (uint32_t)(event.GetWidth()), (uint32_t)(event.GetHeight()) });
 		m_FBO->Resize();
-		m_Camera.SetAspectRatio(m_Window->Size.x / m_Window->Size.y);
+		m_Camera.OnResize(m_Window->Size);
 		return false;
 	}
 	void SpriteEditorPanel::onInGuiWindowResize(const glm::vec2& size)

@@ -6,6 +6,9 @@ namespace XYZ {
 		InGui::NodeWindow(m_GraphID, "Graph", { 0,0 }, { 100,100 }, 0.0f);
 		InGui::NodeWindowEnd();
 		m_GraphWindow = InGui::GetNodeWindow(m_GraphID);
+		m_GraphWindow->RenderWindow->OnResizeCallback = [&](const glm::vec2& size) {
+			m_GraphWindow->InCamera.OnResize(size);
+		};
 	}
 	bool GraphPanel::OnInGuiRender(float dt)
 	{
@@ -24,5 +27,16 @@ namespace XYZ {
 	{
 		if (m_ActiveWindow)
 			m_GraphWindow->InCamera.OnEvent(event);
+
+		EventDispatcher dispatcher(event);
+		dispatcher.Dispatch<WindowResizeEvent>(Hook(&GraphPanel::onWindowResize, this));
+	}
+	bool GraphPanel::onWindowResize(WindowResizeEvent& event)
+	{
+		auto& spec = m_GraphWindow->FBO->GetSpecification();
+		spec.Width  = (uint32_t)event.GetWidth();
+		spec.Height = (uint32_t)event.GetHeight();
+		m_GraphWindow->FBO->Resize();
+		return false;
 	}
 }

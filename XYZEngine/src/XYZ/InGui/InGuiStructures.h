@@ -152,9 +152,6 @@ namespace XYZ {
 		InGuiNode* SelectedNode = nullptr;
 		InGuiWindow* RenderWindow = nullptr;
 
-		std::function<void(uint32_t, uint32_t)> OnConnectionCreated;
-		std::function<void(uint32_t, uint32_t)> OnConnectionDestroyed;
-
 		std::unordered_map<uint32_t, InGuiNode*> Nodes;
 
 		glm::vec2 RelativeMousePosition = { 0,0 };

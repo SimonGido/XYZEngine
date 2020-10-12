@@ -90,16 +90,10 @@ namespace XYZ {
 	void EditorCamera::OnResize(const glm::vec2& size)
 	{
 		m_AspectRatio = size.x / size.y;
-		m_ProjectionMatrix = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, m_AspectRatio * -m_ZoomLevel, m_AspectRatio * m_ZoomLevel);
+		m_ProjectionMatrix = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
 		recalculate();
 	}
 
-	void EditorCamera::SetAspectRatio(float aspectRatio)
-	{
-		m_AspectRatio = aspectRatio;
-		m_ProjectionMatrix = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, m_AspectRatio * -m_ZoomLevel, m_AspectRatio * m_ZoomLevel);
-		m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
-	}
 	void EditorCamera::SetPosition(const glm::vec3& pos)
 	{
 		m_CameraPosition = pos;
@@ -125,7 +119,7 @@ namespace XYZ {
 		m_CameraTranslationSpeed = m_ZoomLevel;
 
 
-		m_ProjectionMatrix = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, m_AspectRatio * -m_ZoomLevel, m_AspectRatio * m_ZoomLevel);
+		m_ProjectionMatrix = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
 		m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
 
 		return false;
@@ -152,7 +146,7 @@ namespace XYZ {
 	bool EditorCamera::onWindowResized(WindowResizeEvent& event)
 	{
 		m_AspectRatio = (float)event.GetWidth() / (float)event.GetHeight();
-		m_ProjectionMatrix = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, m_AspectRatio * -m_ZoomLevel, m_AspectRatio * m_ZoomLevel);
+		m_ProjectionMatrix = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
 		m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
 		return false;
 	}
