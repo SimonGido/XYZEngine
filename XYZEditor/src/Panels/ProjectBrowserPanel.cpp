@@ -4,7 +4,11 @@
 #include <filesystem>
 
 namespace XYZ {
-
+	static glm::vec2 MouseToWorld(const glm::vec2& point, const glm::vec2& windowSize)
+	{
+		glm::vec2 offset = { windowSize.x / 2,windowSize.y / 2 };
+		return { point.x - offset.x, offset.y - point.y };
+	}
 	static bool HasExtension(const std::string& path, const char* extension)
 	{
 		auto lastDot = path.rfind('.');
@@ -17,6 +21,25 @@ namespace XYZ {
 		return false;
 	}
 
+	static void CreateUnique(std::string& path)
+	{
+		uint32_t counter = 0;
+		if (std::filesystem::exists(path))
+		{
+			std::string numStr = std::to_string(counter);
+			uint32_t digits = numStr.size();
+			path += numStr;
+			while (std::filesystem::exists(path))
+			{
+				path.erase(path.end() - digits);
+				numStr = std::to_string(counter++);
+				digits = numStr.size();
+				path += numStr;
+			}
+		}
+		std::filesystem::create_directory(path);
+	}
+
 	ProjectBrowserPanel::ProjectBrowserPanel()
 	{
 		m_PathLength = 0;
@@ -27,7 +50,8 @@ namespace XYZ {
 		
 		InGui::Begin(s_ProjectPanelID, "Project", { -200,-200 }, { 300,300 });
 		InGui::End();
-		InGui::GetWindow(s_ProjectPanelID)->Flags |= InGuiWindowFlag::ForceNewLine;
+		m_Window = InGui::GetWindow(s_ProjectPanelID);
+		m_Window->Flags |= InGuiWindowFlag::ForceNewLine;
 
 		auto& renderConfig = InGui::GetRenderConfiguration();
 		renderConfig.SubTexture[FOLDER] = Ref<SubTexture2D>::Create(renderConfig.InTexture, glm::vec2(2, 1), glm::vec2(renderConfig.InTexture->GetWidth() / 4, renderConfig.InTexture->GetHeight() / 4));
@@ -52,10 +76,10 @@ namespace XYZ {
 		
 				m_ProjectPath[m_PathLength + m_DirectoryPathLength] = '\0';
 			}
-			InGui::Text(m_ProjectPath, { 0.7f,0.7f }, { 0.7f,0.7f,0.7f,1.0f });
+			InGui::Text(m_ProjectPath, { 0.7f,0.7f }, { 0.9f,0.9f,0.9f,1.0f });
 			InGui::Separator();
 
-
+			
 			uint32_t offset = m_PathLength + m_DirectoryPathLength;
 			for (const auto& entry : std::filesystem::directory_iterator(m_ProjectPath))
 			{	
@@ -85,7 +109,46 @@ namespace XYZ {
 					InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[TEXTURE], renderConfig.TextureID);
 				}
 			}
-		}
+
+			if (m_PopupEnabled)
+			{
+				m_Window->Flags &= ~InGuiWindowFlag::AutoPosition;
+				if (InGui::BeginPopup("Create", m_PopupPosition, glm::vec2{ 150,25 }, m_PopupEnabled))
+				{		
+					if (InGui::PopupItem("New Folder", { 150,25 }))
+					{
+						std::string tmpDir = m_ProjectPath;
+						tmpDir += "\\New Folder";
+						CreateUnique(tmpDir);
+						m_PopupEnabled = false;
+					}
+					else if (InGui::PopupItem("New Material", { 150,25 }))
+					{
+						std::string tmpDir = m_ProjectPath;
+						tmpDir += "\\New Material";
+						CreateUnique(tmpDir);
+						m_PopupEnabled = false;
+					}		
+				}
+				InGui::EndPopup();
+				InGui::Separator();
+				m_Window->Flags |= InGuiWindowFlag::AutoPosition;
+			}
+
+
+			if (m_Window->Flags & InGuiWindowFlag::RightClicked)
+			{
+				auto [width, height] = Input::GetWindowSize();
+				auto [mx, my] = Input::GetMousePosition();
+
+				m_PopupEnabled = !m_PopupEnabled;
+				m_PopupPosition = MouseToWorld({ mx,my }, { width,height });
+			}
+			else if (m_Window->Flags & InGuiWindowFlag::LeftClicked)
+			{
+				m_PopupEnabled = false;
+			}
+		}	
 		InGui::End();
 
 		return active;

@@ -57,10 +57,6 @@ namespace XYZ {
 
 	void InGuiCamera::OnEvent(Event& event)
 	{
-		if (event.GetEventType() == EventType::MouseScroll)
-		{
-			std::cout << "l";
-		}
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<MouseScrollEvent>(Hook(&InGuiCamera::onMouseScrolled, this));
 		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&InGuiCamera::onMouseButtonPress, this));
