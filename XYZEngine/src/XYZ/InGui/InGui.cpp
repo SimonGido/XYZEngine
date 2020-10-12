@@ -20,7 +20,7 @@ namespace XYZ {
 
 	static int s_NoneSelection = -1;
 	static constexpr uint32_t sc_SliderFloatSize = 5;
-	static constexpr size_t sc_TextBufferSize = 64;
+	static constexpr size_t sc_TextBufferSize = 260; // Windows max size of path
 
 	static enum Color
 	{
@@ -332,21 +332,32 @@ namespace XYZ {
 
 	static bool HandleRowPosition(InGuiPerFrameData& frameData, const glm::vec2& uiSize, glm::vec2& position)
 	{
-		float offset = uiSize.x + frameData.WindowSpaceOffset.x + frameData.ItemOffset;
+		float offsetX = uiSize.x + frameData.WindowSpaceOffset.x + frameData.ItemOffset;
+		float offsetY = frameData.WindowSpaceOffset.y - uiSize.y;
+
 		float windowRightSide = frameData.CurrentWindow->Position.x + frameData.CurrentWindow->Size.x;
-		
-		if (offset <= windowRightSide)
+		float windowBottomSide = frameData.CurrentWindow->Position.y;
+
+		if (offsetY <= windowBottomSide)
+			return false;
+
+		if (offsetX <= windowRightSide)
 		{
 			if (uiSize.y > frameData.MaxHeightInRow)
 				frameData.MaxHeightInRow = uiSize.y;
 
 			position.x = (frameData.WindowSpaceOffset.x + frameData.ItemOffset);
 			position.y = (frameData.WindowSpaceOffset.y - uiSize.y - frameData.ItemOffset);
-			
+
 			frameData.WindowSpaceOffset.x += (uiSize.x + frameData.ItemOffset);
 			return true;
 		}
-		
+		else if (frameData.CurrentWindow->Flags & InGuiWindowFlag::ForceNewLine)
+		{
+			InGui::Separator();
+			return HandleRowPosition(frameData, uiSize, position);
+		}
+
 		return false;
 	}
 
@@ -680,8 +691,7 @@ namespace XYZ {
 		InGuiVertex vertices[sc_TextBufferSize * 4];
 
 		auto info = InGuiFactory::GenerateText(scale, color, text, 1000.0f, vertices, renderConfig);
-
-		
+	
 		if (window->Flags & InGuiWindowFlag::AutoPosition)
 		{
 			if (!HandleRowPosition(frameData, { size.x + info.Size.x + 5, size.y }, position))
@@ -902,6 +912,64 @@ namespace XYZ {
 			}
 		}
 		return (selected != s_NoneSelection);
+	}
+
+	bool InGui::Icon(const glm::vec2& position, const glm::vec2& size, const Ref<SubTexture2D>& subTexture, uint32_t textureID)
+	{
+		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
+
+		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration;
+		InGuiWindow* window = frameData.CurrentWindow;
+		
+		bool pressed = false;
+		if (window->Flags & InGuiWindowFlag::Modified)
+		{
+			glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];
+			glm::vec2 pos = { 0,0 };
+			if (HandleRowPosition(frameData, size, pos))
+			{
+				if (Collide(pos, size, frameData.MousePosition))
+				{
+					color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
+					if (resolveLeftClick(true))
+					{
+						pressed = true;
+					}
+				}
+				InGuiFactory::GenerateIcon(window->Mesh, pos, size, color, subTexture, textureID);
+			}
+		}
+		return pressed;
+	}
+
+	bool InGui::Icon(const char* name, const glm::vec2& position, const glm::vec2& size, const Ref<SubTexture2D>& subTexture, uint32_t textureID)
+	{
+		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
+
+		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration;
+		InGuiWindow* window = frameData.CurrentWindow;
+
+		bool pressed = false;
+		if (window->Flags & InGuiWindowFlag::Modified)
+		{
+			glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];
+			glm::vec2 pos = { 0,0 };
+			if (ResolveSpaceWithText(name, size, { 0.7f,0.7f }, color, pos, renderConfig, frameData))
+			{
+				if (Collide(pos, size, frameData.MousePosition))
+				{
+					color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
+					if (resolveLeftClick(true))
+					{
+						pressed = true;
+					}
+				}
+				InGuiFactory::GenerateIcon(window->Mesh, pos, size, color, subTexture, textureID);
+			}
+		}
+		return pressed;
 	}
 
 
@@ -1496,6 +1564,23 @@ namespace XYZ {
 	InGuiRenderConfiguration& InGui::GetRenderConfiguration()
 	{
 		return s_Context->RenderConfiguration;
+	}
+
+	glm::vec2 InGui::GetWorldPosition(const InGuiWindow& window, const glm::vec3& cameraPos, float aspectRatio, float zoomLevel)
+	{
+		auto [x, y] = Input::GetMousePosition();
+		auto [width, height] = Input::GetWindowSize();
+		x -= ((float)width / 2.0f) - fabs(window.Position.x);
+		y -= ((float)height / 2.0f) - window.Position.y - window.Size.y;
+
+		float cameraBoundWidth = (aspectRatio * zoomLevel) * 2;
+		float cameraBoundHeight = zoomLevel * 2;
+		auto pos = cameraPos;
+
+		x = (x / window.Size.x) * cameraBoundWidth - cameraBoundWidth * 0.5f;
+		y = cameraBoundHeight * 0.5f - (y / window.Size.y) * cameraBoundHeight;
+
+		return { x + pos.x , y + pos.y };
 	}
 
 	glm::vec2& InGui::MouseRelativePosition(const InGuiWindow& window, const glm::vec3& cameraPos)

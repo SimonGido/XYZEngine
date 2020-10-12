@@ -22,24 +22,6 @@ namespace XYZ {
 		};
 	}
 
-	static glm::vec2 GetWorldPositionFromInGui(const InGuiWindow& window, const EditorCamera& camera)
-	{
-		auto [x, y] = Input::GetMousePosition();
-		auto [width, height] = Input::GetWindowSize();
-		x -= ((float)width / 2.0f) - fabs(window.Position.x);
-		y -= ((float)height / 2.0f) - window.Position.y - window.Size.y;
-
-		float cameraBoundWidth = (camera.GetAspectRatio() * camera.GetZoomLevel()) * 2;
-		float cameraBoundHeight = camera.GetZoomLevel() * 2;
-		auto pos = camera.GetPosition();
-
-		x = (x / window.Size.x) * cameraBoundWidth - cameraBoundWidth * 0.5f;
-		y = cameraBoundHeight * 0.5f - (y / window.Size.y) * cameraBoundHeight;
-
-		return { x + pos.x , y + pos.y };
-	}
-
-
 	static bool Collide(const glm::vec2& pos, const glm::vec2& size, const glm::vec2& point)
 	{
 		return (pos.x + size.x > point.x &&
@@ -103,7 +85,8 @@ namespace XYZ {
 			m_ActiveWindow = true;
 			if (m_Selecting)
 			{
-				glm::vec2 relativeMousePos = GetWorldPositionFromInGui(*m_Window, m_Camera);
+				
+				glm::vec2 relativeMousePos = InGui::GetWorldPosition(*m_Window, m_Camera.GetPosition(), m_Camera.GetAspectRatio(), m_Camera.GetZoomLevel());
 				m_NewSelection.z = relativeMousePos.x;
 				m_NewSelection.w = relativeMousePos.y;
 			}
@@ -201,7 +184,7 @@ namespace XYZ {
 		{
 			if (!m_SelectionOpen && !m_ExportOpen)
 			{
-				glm::vec2 relativeMousePos = GetWorldPositionFromInGui(*m_Window, m_Camera);
+				glm::vec2 relativeMousePos = InGui::GetWorldPosition(*m_Window, m_Camera.GetPosition(), m_Camera.GetAspectRatio(), m_Camera.GetZoomLevel());
 				m_NewSelection.x = relativeMousePos.x;
 				m_NewSelection.y = relativeMousePos.y;
 
@@ -211,7 +194,7 @@ namespace XYZ {
 		}
 		else if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_RIGHT))
 		{
-			glm::vec2 mousePos = GetWorldPositionFromInGui(*m_Window, m_Camera);
+			glm::vec2 mousePos = InGui::GetWorldPosition(*m_Window, m_Camera.GetPosition(), m_Camera.GetAspectRatio(), m_Camera.GetZoomLevel());
 			uint32_t counter = 0;
 			for (auto& selection : m_Selections)
 			{	

@@ -23,7 +23,7 @@ namespace XYZ {
 		static void GenerateMenuBar(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const char* name, InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig);
 		static void GenerateFrame(InGuiLineMesh& mesh, const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
 		static void GenerateArrowLine(InGuiMesh& mesh,InGuiLineMesh& lineMesh, const glm::vec2& p0, const glm::vec2& p1,const glm::vec2& size, const InGuiRenderConfiguration& renderConfig);
-		
+		static void GenerateIcon(InGuiMesh& mesh, const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const Ref<SubTexture2D>& subTexture, uint32_t textureID);
 		static void GenerateNode(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const glm::vec4& panelColor, const char* name, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig);
 	};
 }

@@ -29,7 +29,8 @@ namespace XYZ {
 			Resized			= BIT(13),
 			LeftClicked		= BIT(14),
 			RightClicked	= BIT(15),
-			Initialized		= BIT(16)
+			Initialized		= BIT(16),
+			ForceNewLine	= BIT(17)
 		};
 	}
 
@@ -67,11 +68,12 @@ namespace XYZ {
 		InGuiRenderConfiguration();
 
 		Ref<Font>		  Font;
+		Ref<Texture2D>	  InTexture;
 		Ref<Material>	  InMaterial;
 
 		enum
 		{
-			BUTTON,
+			BUTTON = 0,
 			CHECKBOX_CHECKED,
 			CHECKBOX_UNCHECKED,
 			SLIDER,
@@ -81,7 +83,7 @@ namespace XYZ {
 			DOWN_ARROW,
 			RIGHT_ARROW,
 			DOCKSPACE,
-			NUM_SUBTEXTURES
+			NUM_SUBTEXTURES = 32
 		};
 		enum
 		{

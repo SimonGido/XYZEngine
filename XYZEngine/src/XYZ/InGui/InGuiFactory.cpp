@@ -449,6 +449,11 @@ namespace XYZ {
 			mesh.Vertices[i].Position = translation * rotation * glm::vec4(mesh.Vertices[i].Position, 1);
 	}
 
+	void InGuiFactory::GenerateIcon(InGuiMesh& mesh, const glm::vec2& position, const glm::vec2& size,const glm::vec4& color, const Ref<SubTexture2D>& subTexture, uint32_t textureID)
+	{
+		GenerateInGuiQuad(mesh, position, size, subTexture->GetTexCoords(), textureID, color);
+	}
+
 	void InGuiFactory::GenerateNode(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const glm::vec4& panelColor, const char* name, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig)
 	{	
 		glm::vec2 panelPos = { position.x, position.y + size.y };

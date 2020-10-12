@@ -10,6 +10,7 @@ namespace XYZ {
 	{
 		Ref<Shader> shader = Shader::Create("Assets/Shaders/InGuiShader.glsl");
 		Ref<Texture2D> texture = Texture2D::Create(TextureWrap::Clamp, "Assets/Textures/Gui/TexturePack_Dark.png");
+		InTexture = texture;
 		Ref<Texture2D> fontTexture = Texture2D::Create(TextureWrap::Clamp, "Assets/Font/Arial.png");
 		Ref<Texture2D> colorPickerTexture = Texture2D::Create(TextureWrap::Clamp, "Assets/Textures/Gui/ColorPicker.png");
 

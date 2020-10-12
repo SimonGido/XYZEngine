@@ -20,22 +20,7 @@ namespace XYZ {
 			pos.y + size.y >  point.y &&
 			pos.y < point.y);
 	}
-	static glm::vec2 GetWorldPositionFromInGui(const InGuiWindow& window, const EditorCamera& camera)
-	{
-		auto [x, y] = Input::GetMousePosition();
-		auto [width, height] = Input::GetWindowSize();
-		x -= ((float)width / 2.0f) - fabs(window.Position.x);
-		y -= ((float)height / 2.0f) - window.Position.y - window.Size.y;
-
-		float cameraBoundWidth = (camera.GetAspectRatio() * camera.GetZoomLevel()) * 2;
-		float cameraBoundHeight = camera.GetZoomLevel() * 2;
-		auto pos = camera.GetPosition();
-
-		x = (x / window.Size.x) * cameraBoundWidth - cameraBoundWidth * 0.5f;
-		y = cameraBoundHeight * 0.5f - (y / window.Size.y) * cameraBoundHeight;
-
-		return { x + pos.x , y + pos.y };
-	}
+	
 	EditorLayer::EditorLayer()
 		:
 		m_SpriteEditorPanel(m_AssetManager)
@@ -213,7 +198,7 @@ namespace XYZ {
 		}
 		if (m_ScalingEntity)
 		{
-			auto mousePos = GetWorldPositionFromInGui(*InGui::GetWindow(m_SceneID), m_EditorCamera);
+			auto mousePos = InGui::GetWorldPosition(*InGui::GetWindow(m_SceneID), m_EditorCamera.GetPosition(), m_EditorCamera.GetAspectRatio(), m_EditorCamera.GetZoomLevel());
 
 			glm::vec3 scale;
 			scale.x = fabs(m_Scale.x + (mousePos.x - m_StartMousePos.x));
@@ -226,7 +211,7 @@ namespace XYZ {
 		}
 		else if (m_MovingEntity)
 		{
-			auto mousePos = GetWorldPositionFromInGui(*InGui::GetWindow(m_SceneID), m_EditorCamera);
+			auto mousePos = InGui::GetWorldPosition(*InGui::GetWindow(m_SceneID), m_EditorCamera.GetPosition(), m_EditorCamera.GetAspectRatio(), m_EditorCamera.GetZoomLevel());
 
 			glm::vec3 translation;
 			translation.x = m_Translation.x + (mousePos.x - m_StartMousePos.x);
@@ -239,7 +224,7 @@ namespace XYZ {
 		}
 		else if (m_RotatingEntity)
 		{
-			auto mousePos = GetWorldPositionFromInGui(*InGui::GetWindow(m_SceneID), m_EditorCamera);
+			auto mousePos = InGui::GetWorldPosition(*InGui::GetWindow(m_SceneID), m_EditorCamera.GetPosition(), m_EditorCamera.GetAspectRatio(), m_EditorCamera.GetZoomLevel());
 
 			float rotation;
 			rotation = m_Orientation.x + (mousePos.x - m_StartMousePos.x);
@@ -369,7 +354,7 @@ namespace XYZ {
 			auto [width, height] = Input::GetWindowSize();
 			
 			glm::vec2 mousePos = MouseToWorld({ mx,my }, { width,height });
-			glm::vec2 relativeMousePos = GetWorldPositionFromInGui(*win, m_EditorCamera);
+			glm::vec2 relativeMousePos = InGui::GetWorldPosition(*win, m_EditorCamera.GetPosition(), m_EditorCamera.GetAspectRatio(), m_EditorCamera.GetZoomLevel());
 	
 			if (Collide(win->Position, win->Size, mousePos))
 				m_SceneHierarchyPanel.SelectEntity(relativeMousePos);
@@ -387,7 +372,7 @@ namespace XYZ {
 		{
 			if (event.IsKeyPressed(KeyCode::XYZ_KEY_S))
 			{
-				m_StartMousePos = GetWorldPositionFromInGui(*InGui::GetWindow(m_SceneID), m_EditorCamera);
+				m_StartMousePos = InGui::GetWorldPosition(*InGui::GetWindow(m_SceneID), m_EditorCamera.GetPosition(), m_EditorCamera.GetAspectRatio(), m_EditorCamera.GetZoomLevel());
 				m_ScalingEntity = true;
 				m_ModifiedTransform = m_SelectedEntity.GetComponent<TransformComponent>();
 
@@ -401,7 +386,7 @@ namespace XYZ {
 			}
 			else if (event.IsKeyPressed(KeyCode::XYZ_KEY_G))
 			{
-				m_StartMousePos = GetWorldPositionFromInGui(*InGui::GetWindow(m_SceneID), m_EditorCamera);
+				m_StartMousePos = InGui::GetWorldPosition(*InGui::GetWindow(m_SceneID), m_EditorCamera.GetPosition(), m_EditorCamera.GetAspectRatio(), m_EditorCamera.GetZoomLevel());
 				m_MovingEntity = true;
 				m_ModifiedTransform = m_SelectedEntity.GetComponent<TransformComponent>();
 
@@ -415,7 +400,7 @@ namespace XYZ {
 			}
 			else if (event.IsKeyPressed(KeyCode::XYZ_KEY_R))
 			{
-				m_StartMousePos = GetWorldPositionFromInGui(*InGui::GetWindow(m_SceneID), m_EditorCamera);
+				m_StartMousePos = InGui::GetWorldPosition(*InGui::GetWindow(m_SceneID), m_EditorCamera.GetPosition(), m_EditorCamera.GetAspectRatio(), m_EditorCamera.GetZoomLevel());
 				m_RotatingEntity = true;
 				m_ModifiedTransform = m_SelectedEntity.GetComponent<TransformComponent>();
 
