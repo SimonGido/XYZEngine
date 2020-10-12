@@ -19,6 +19,7 @@ namespace XYZ {
 
 
 	static int s_NoneSelection = -1;
+	static constexpr uint32_t sc_SliderFloatSize = 5;
 	static constexpr size_t sc_TextBufferSize = 64;
 
 	static enum Color
@@ -957,13 +958,19 @@ namespace XYZ {
 			Separator();
 			InGuiFactory::GenerateColorPicker4(pos, size, pallete, window->Mesh, renderConfig);
 			
-			if (Slider("R:", {}, { size.x,15 }, color.x, size.x))
+			char buffer[sc_SliderFloatSize + 6];
+			sprintf(buffer, "R: %.*f", sc_SliderFloatSize, color.x);
+			if (Slider(buffer, {}, { size.x,15 }, color.x, size.x))
 				modified = true;
 			Separator();
-			if (Slider("G:", {}, { size.x,15 }, color.y, size.x))
+
+			sprintf(buffer, "G: %.*f", sc_SliderFloatSize, color.y);
+			if (Slider(buffer, {}, { size.x,15 }, color.y, size.x))
 				modified = true;
 			Separator();
-			if (Slider("B:", {}, { size.x,15 }, color.z, size.x))
+
+			sprintf(buffer, "B: %.*f", sc_SliderFloatSize, color.z);
+			if (Slider(buffer, {}, { size.x,15 }, color.z, size.x))
 				modified = true;
 			Separator();
 
