@@ -21,7 +21,7 @@ namespace XYZ {
 		return false;
 	}
 
-	static void CreateUnique(std::string& path)
+	static void CreateUniqueFolder(std::string& path)
 	{
 		uint32_t counter = 0;
 		if (std::filesystem::exists(path))
@@ -38,6 +38,29 @@ namespace XYZ {
 			}
 		}
 		std::filesystem::create_directory(path);
+	}
+	static void CreateUniqueFile(std::string& path, const char* extension)
+	{
+		uint32_t counter = 0;
+		if (std::filesystem::exists(path + "." + extension))
+		{
+			std::string numStr = std::to_string(counter);
+			uint32_t digits = numStr.size();
+			path += numStr;
+			while (std::filesystem::exists(path + "." + extension))
+			{
+				path.erase(path.end() - digits);
+				numStr = std::to_string(counter++);
+				digits = numStr.size();
+				path += numStr;
+			}
+		}
+		path += ".";
+		path += extension;
+
+		std::ofstream ofs(path);
+		ofs << "Test";
+		ofs.close();
 	}
 
 	ProjectBrowserPanel::ProjectBrowserPanel()
@@ -124,16 +147,30 @@ namespace XYZ {
 					{
 						std::string tmpDir = m_ProjectPath;
 						tmpDir += "\\New Folder";
-						CreateUnique(tmpDir);
+						CreateUniqueFolder(tmpDir);
 						m_PopupEnabled = false;
 					}
 					else if (InGui::PopupItem("New Material", { 150,25 }))
 					{
 						std::string tmpDir = m_ProjectPath;
 						tmpDir += "\\New Material";
-						CreateUnique(tmpDir);
+						CreateUniqueFile(tmpDir,"mat");
 						m_PopupEnabled = false;
 					}		
+					else if (InGui::PopupItem("New Shader", { 150,25 }))
+					{
+						std::string tmpDir = m_ProjectPath;
+						tmpDir += "\\New Shader";
+						CreateUniqueFile(tmpDir,"glsl");
+						m_PopupEnabled = false;
+					}
+					else if (InGui::PopupItem("New Subtexture", { 150,25 }))
+					{
+						std::string tmpDir = m_ProjectPath;
+						tmpDir += "\\New Subtexture";
+						CreateUniqueFile(tmpDir,"subtex");
+						m_PopupEnabled = false;
+					}
 				}
 				InGui::EndPopup();
 				InGui::Separator();
