@@ -80,6 +80,7 @@ namespace XYZ {
 			InGui::Separator();
 
 			
+			
 			uint32_t offset = m_PathLength + m_DirectoryPathLength;
 			for (const auto& entry : std::filesystem::directory_iterator(m_ProjectPath))
 			{	
