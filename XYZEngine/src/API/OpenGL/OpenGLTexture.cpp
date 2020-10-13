@@ -5,7 +5,7 @@
 
 
 namespace XYZ {
-	OpenGLTexture2D::OpenGLTexture2D(TextureWrap wrap, const std::string& path)
+	OpenGLTexture2D::OpenGLTexture2D(TextureWrap wrap, TextureParam min, TextureParam max, const std::string& path)
 	{
 		m_Filepath = path;
 		int width, height, channels;
@@ -19,6 +19,8 @@ namespace XYZ {
 		m_Specification.Height = height;
 		m_Specification.Channels = channels;
 		m_Specification.Wrap = wrap;
+		m_Specification.MinParam = min;
+		m_Specification.MagParam = max;
 
 		GLenum internalFormat = 0, dataFormat = 0;
 		if (channels == 4)
@@ -45,8 +47,23 @@ namespace XYZ {
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 		glTextureStorage2D(m_RendererID, 1, internalFormat, m_Specification.Width, m_Specification.Height);
 		
-		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		if (m_Specification.MinParam == TextureParam::Linear)
+		{
+			glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		}
+		else if (m_Specification.MinParam == TextureParam::Nearest)
+		{
+			glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		}
+		
+		if (m_Specification.MagParam == TextureParam::Linear)
+		{
+			glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		}
+		else if (m_Specification.MagParam == TextureParam::Nearest)
+		{
+			glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		}
 
 		if (wrap == TextureWrap::Repeat)
 		{
@@ -62,12 +79,12 @@ namespace XYZ {
 		stbi_image_free(data);
 	}
 
-	OpenGLTexture2D::OpenGLTexture2D(TextureFormat format, TextureWrap wrap, uint32_t width, uint32_t height)
+	OpenGLTexture2D::OpenGLTexture2D(const TextureSpecs& specs)
 	{
-		m_Specification.Width = width;
-		m_Specification.Height = height;
-		m_Specification.Wrap = wrap;
-		m_Specification.Format = format;
+		m_Specification.Width = specs.Width;
+		m_Specification.Height = specs.Height;
+		m_Specification.Wrap = specs.Wrap;
+		m_Specification.Format = specs.Format;
 
 		m_InternalFormat = GL_RGBA8;
 		m_DataFormat = GL_RGBA;
@@ -75,15 +92,29 @@ namespace XYZ {
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 		glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Specification.Width, m_Specification.Height);
 
-		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		if (specs.MinParam == TextureParam::Linear)
+		{
+			glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		}
+		else if (specs.MinParam == TextureParam::Nearest)
+		{
+			glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		}
+		if (specs.MagParam == TextureParam::Linear)
+		{
+			glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		}
+		else if (specs.MagParam == TextureParam::Nearest)
+		{
+			glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		}
 
-		if (wrap == TextureWrap::Repeat)
+		if (specs.Wrap == TextureWrap::Repeat)
 		{
 			glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
 			glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		}
-		else if (wrap == TextureWrap::Clamp)
+		else if (specs.Wrap == TextureWrap::Clamp)
 		{
 			glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);

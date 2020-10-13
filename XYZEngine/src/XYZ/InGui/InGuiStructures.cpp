@@ -9,10 +9,10 @@ namespace XYZ {
 	InGuiRenderConfiguration::InGuiRenderConfiguration()
 	{
 		Ref<Shader> shader = Shader::Create("Assets/Shaders/InGuiShader.glsl");
-		Ref<Texture2D> texture = Texture2D::Create(TextureWrap::Clamp, "Assets/Textures/Gui/TexturePack_Dark.png");
+		Ref<Texture2D> texture = Texture2D::Create(TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest, "Assets/Textures/Gui/TexturePack_Dark.png");
 		InTexture = texture;
-		Ref<Texture2D> fontTexture = Texture2D::Create(TextureWrap::Clamp, "Assets/Font/Arial.png");
-		Ref<Texture2D> colorPickerTexture = Texture2D::Create(TextureWrap::Clamp, "Assets/Textures/Gui/ColorPicker.png");
+		Ref<Texture2D> fontTexture = Texture2D::Create(TextureWrap::Clamp, TextureParam::Linear, TextureParam::Linear, "Assets/Font/Arial.png");
+		Ref<Texture2D> colorPickerTexture = Texture2D::Create(TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest, "Assets/Textures/Gui/ColorPicker.png");
 
 		Font = Ref<XYZ::Font>::Create("Assets/Font/Arial.fnt");
 
@@ -28,16 +28,16 @@ namespace XYZ {
 		SubTexture[SLIDER] = Ref<SubTexture2D>::Create(texture, glm::vec2(0, 0), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4));
 		SubTexture[SLIDER_HANDLE] = Ref<SubTexture2D>::Create(texture, glm::vec2(1, 2), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4));
 		SubTexture[WINDOW] = Ref<SubTexture2D>::Create(texture, glm::vec2(0, 3), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4));
-		SubTexture[MIN_BUTTON] = Ref<SubTexture2D>::Create(texture, glm::vec2(2, 3), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4));
+		SubTexture[MIN_BUTTON] = Ref<SubTexture2D>::Create(texture, glm::vec2(1, 3), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4));
 		SubTexture[DOWN_ARROW] = Ref<SubTexture2D>::Create(texture, glm::vec2(3, 3), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4));
 		SubTexture[RIGHT_ARROW] = Ref<SubTexture2D>::Create(texture, glm::vec2(2, 2), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4));
 		SubTexture[DOCKSPACE] = Ref<SubTexture2D>::Create(texture, glm::vec2(0, 0), glm::vec2(texture->GetWidth() / 4, texture->GetHeight() / 4));
 	
 	
 		Color[DEFAULT_COLOR] = { 1.0f,1.0f,1.0f,1.0f };
-		Color[HOOVER_COLOR] = { 0.4f, 1.8f, 1.7f, 1.0f };
+		Color[HOOVER_COLOR] = { 1.0f, 2.5f, 2.8f, 1.0f };
 		Color[SELECT_COLOR] = { 0.8f,0.0f,0.2f,0.6f };
-		Color[LINE_COLOR] = { 0.4f,0.2f,0.5f,1.0f };
+		Color[LINE_COLOR] = { 0.4f,0.5f,0.8f,1.0f };
 		Color[SELECTOR_COLOR] = { 1.0f,1.0f,1.0f,1.0f };
 	}
 

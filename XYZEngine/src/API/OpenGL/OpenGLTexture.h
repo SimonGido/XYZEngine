@@ -7,8 +7,8 @@ namespace XYZ {
 	class OpenGLTexture2D : public Texture2D
 	{
 	public:
-		OpenGLTexture2D(TextureWrap wrap, const std::string& path);
-		OpenGLTexture2D(TextureFormat format, TextureWrap wrap, uint32_t width, uint32_t height);
+		OpenGLTexture2D(TextureWrap wrap, TextureParam min, TextureParam max, const std::string& path);
+		OpenGLTexture2D(const TextureSpecs& specs);
 
 
 		virtual ~OpenGLTexture2D();

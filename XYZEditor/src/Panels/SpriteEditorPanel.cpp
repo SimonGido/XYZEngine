@@ -39,7 +39,7 @@ namespace XYZ {
 		m_FBO->CreateDepthAttachment();
 		m_FBO->Resize();
 
-		m_BackgroundTexture = Texture2D::Create(TextureWrap::Repeat, "Assets/Textures/checkerboard.png");
+		m_BackgroundTexture = Texture2D::Create(TextureWrap::Repeat, TextureParam::Nearest, TextureParam::Nearest, "Assets/Textures/checkerboard.png");
 		m_Material = Material::Create(Shader::Create("Assets/Shaders/DefaultShader.glsl"));
 		m_Material->Set("u_Texture", m_BackgroundTexture);
 		m_Material->Set("u_Color", glm::vec4(1, 1, 1, 1));

@@ -21,7 +21,7 @@ namespace XYZ {
 					{
 						auto state = m_Context->CreateState("Empty State " + std::to_string(++s_NextID));
 						bool tmpModified = false;
-						InGui::BeginNode(state.GetID(), "Empty State " + std::to_string(s_NextID), InGui::GetCurrentNodeWindow()->RelativeMousePosition, { 150, 100 }, tmpModified);
+						InGui::BeginNode(state.GetID(), "Empty State " + std::to_string(s_NextID), InGui::GetCurrentNodeWindow()->RelativeMousePosition, { 200, 70 }, tmpModified);
 						InGui::EndNode();
 						m_PopupEnabled = false;
 						m_PopupOpen = false;
@@ -52,7 +52,7 @@ namespace XYZ {
 					y = -200.0f;
 
 				uint32_t id = state.second.State.GetID();
-				InGui::BeginNode(id, state.second.Name, { x,y }, { 200,120 }, m_ModifiedMap[id]);
+				InGui::BeginNode(id, state.second.Name, { x,y }, { 200,70 }, m_ModifiedMap[id]);
 				InGui::EndNode();
 
 				x += 400;

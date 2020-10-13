@@ -164,16 +164,26 @@ namespace XYZ {
 		return FieldType::None;
 	}
 
-	static TextureWrap StringToTextureWrap(const std::string& str)
+	static TextureWrap IntToTextureWrap(int wrap)
 	{
 		
-		if (str == "Clamp")
+		if (wrap == ToUnderlying(TextureWrap::Clamp))
 			return TextureWrap::Clamp;
-		if (str == "Repeat")
+		if (wrap == ToUnderlying(TextureWrap::Repeat))
 			return TextureWrap::Repeat;
 		
 
 		return TextureWrap::None;
+	}
+
+	static TextureParam IntToTextureParam(int param)
+	{
+		if (param == ToUnderlying(TextureParam::Nearest))
+			return TextureParam::Nearest;
+		if (param == ToUnderlying(TextureParam::Linear))
+			return TextureParam::Linear;
+		
+		return TextureParam::None;
 	}
 
 
@@ -224,6 +234,8 @@ namespace XYZ {
 		out << YAML::Key << "Texture" << YAML::Value << ExtractNameFromFilePath(texture->GetFilepath());
 
 		out << YAML::Key << "Wrap" << YAML::Value << ToUnderlying(texture->GetSpecification().Wrap);
+		out << YAML::Key << "Param Min" << YAML::Value << ToUnderlying(texture->GetSpecification().MinParam);
+		out << YAML::Key << "Param Max" << YAML::Value << ToUnderlying(texture->GetSpecification().MagParam);
 
 		out << YAML::EndMap; // Texture
 
@@ -237,6 +249,8 @@ namespace XYZ {
 	{
 		XYZ_LOG_INFO("Deserializing texture ",filepath);
 		TextureWrap wrap = TextureWrap::None;
+		TextureParam min = TextureParam::None;
+		TextureParam max = TextureParam::None;
 
 		std::ifstream stream(filepath + ".meta");
 		if (stream.is_open())
@@ -247,14 +261,17 @@ namespace XYZ {
 			YAML::Node data = YAML::Load(strStream.str());
 
 			XYZ_ASSERT(data["Texture"], "Incorrect file format");
-			wrap = StringToTextureWrap(data["Wrap"].as<std::string>());
+			wrap = IntToTextureWrap(data["Wrap"].as<int>());
+			min = IntToTextureParam(data["Param Min"].as<int>());
+			max = IntToTextureParam(data["Param Max"].as<int>());
+
 		}
 		else
 		{
 			XYZ_LOG_WARN("Missing texture meta data, setting default");
 		}
 
-		Handle = Texture2D::Create(wrap, filepath);
+		Handle = Texture2D::Create(wrap, min, max, filepath);
 	}
 
 	template <>
