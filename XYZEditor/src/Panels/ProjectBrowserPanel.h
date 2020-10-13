@@ -19,6 +19,7 @@ namespace XYZ {
 			SPRITE,
 			TEXTURE,
 			MATERIAL,
+			SHADER,
 			BACK_ARROW
 		};
 

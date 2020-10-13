@@ -54,11 +54,12 @@ namespace XYZ {
 		m_Window->Flags |= InGuiWindowFlag::ForceNewLine;
 
 		auto& renderConfig = InGui::GetRenderConfiguration();
-		renderConfig.SubTexture[FOLDER] = Ref<SubTexture2D>::Create(renderConfig.InTexture, glm::vec2(2, 1), glm::vec2(renderConfig.InTexture->GetWidth() / 4, renderConfig.InTexture->GetHeight() / 4));
-		renderConfig.SubTexture[SPRITE] = Ref<SubTexture2D>::Create(renderConfig.InTexture, glm::vec2(3, 1), glm::vec2(renderConfig.InTexture->GetWidth() / 4, renderConfig.InTexture->GetHeight() / 4));
-		renderConfig.SubTexture[TEXTURE] = Ref<SubTexture2D>::Create(renderConfig.InTexture, glm::vec2(2, 0), glm::vec2(renderConfig.InTexture->GetWidth() / 4, renderConfig.InTexture->GetHeight() / 4));
-		renderConfig.SubTexture[MATERIAL] = Ref<SubTexture2D>::Create(renderConfig.InTexture, glm::vec2(3, 0), glm::vec2(renderConfig.InTexture->GetWidth() / 4, renderConfig.InTexture->GetHeight() / 4));
-		renderConfig.SubTexture[BACK_ARROW] = Ref<SubTexture2D>::Create(renderConfig.InTexture, glm::vec2(3, 2), glm::vec2(renderConfig.InTexture->GetWidth() / 4, renderConfig.InTexture->GetHeight() / 4));
+		renderConfig.SubTexture[FOLDER] = Ref<SubTexture2D>::Create(renderConfig.InTexture, glm::vec2(2, 1), glm::vec2(renderConfig.InTexture->GetWidth() / 8, renderConfig.InTexture->GetHeight() / 4));
+		renderConfig.SubTexture[SPRITE] = Ref<SubTexture2D>::Create(renderConfig.InTexture, glm::vec2(3, 1), glm::vec2(renderConfig.InTexture->GetWidth() / 8, renderConfig.InTexture->GetHeight() / 4));
+		renderConfig.SubTexture[TEXTURE] = Ref<SubTexture2D>::Create(renderConfig.InTexture, glm::vec2(2, 0), glm::vec2(renderConfig.InTexture->GetWidth() / 8, renderConfig.InTexture->GetHeight() / 4));
+		renderConfig.SubTexture[MATERIAL] = Ref<SubTexture2D>::Create(renderConfig.InTexture, glm::vec2(3, 0), glm::vec2(renderConfig.InTexture->GetWidth() / 8, renderConfig.InTexture->GetHeight() / 4));
+		renderConfig.SubTexture[SHADER] = Ref<SubTexture2D>::Create(renderConfig.InTexture, glm::vec2(4, 0), glm::vec2(renderConfig.InTexture->GetWidth() / 8, renderConfig.InTexture->GetHeight() / 4));
+		renderConfig.SubTexture[BACK_ARROW] = Ref<SubTexture2D>::Create(renderConfig.InTexture, glm::vec2(3, 2), glm::vec2(renderConfig.InTexture->GetWidth() / 8, renderConfig.InTexture->GetHeight() / 4));
 	}
 	bool ProjectBrowserPanel::OnInGuiRender()
 	{
@@ -69,14 +70,13 @@ namespace XYZ {
 			active = true;
 			
 
-			if (InGui::Icon({}, { 50,25 }, renderConfig.SubTexture[BACK_ARROW], renderConfig.TextureID))
+			if (InGui::Icon(m_ProjectPath, {}, { 30,30 }, renderConfig.SubTexture[BACK_ARROW], renderConfig.TextureID))
 			{
 				while (m_ProjectPath[m_PathLength + m_DirectoryPathLength] != '\\' && m_DirectoryPathLength)
 					m_DirectoryPathLength--;	
 		
 				m_ProjectPath[m_PathLength + m_DirectoryPathLength] = '\0';
 			}
-			InGui::Text(m_ProjectPath, { 0.7f,0.7f }, { 0.9f,0.9f,0.9f,1.0f });
 			InGui::Separator();
 
 			
@@ -107,6 +107,10 @@ namespace XYZ {
 				else if (HasExtension(entry.path().u8string(), "png"))
 				{
 					InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[TEXTURE], renderConfig.TextureID);
+				}
+				else if (HasExtension(entry.path().u8string(), "glsl"))
+				{
+					InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[SHADER], renderConfig.TextureID);
 				}
 			}
 
