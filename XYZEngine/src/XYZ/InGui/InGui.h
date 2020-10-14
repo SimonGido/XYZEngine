@@ -44,7 +44,7 @@ namespace XYZ {
 		static bool TextArea(const char* name, std::string& text, const glm::vec2& position, const glm::vec2& size, bool& modified);
 		static bool Float(uint32_t count, const char* name, float* values, int * lengths, const glm::vec2& position, const glm::vec2& size, int& selected);
 		static bool Icon(const glm::vec2& position, const glm::vec2& size, const Ref<SubTexture2D>& subTexture, uint32_t textureID);
-		static bool Icon(const char* name, const glm::vec2& position, const glm::vec2& size, const Ref<SubTexture2D>& subTexture, uint32_t textureID);
+		static bool Icon(const char* name, const glm::vec2& position, const glm::vec2& size, const Ref<SubTexture2D>& subTexture, uint32_t textureID, bool hightlight = false);
 
 		static bool Text(const char* text, const glm::vec2& scale, const glm::vec4& color = { 1,1,1,1 });
 		static bool ColorPicker4(const char* name, const glm::vec2& size, glm::vec4& pallete, glm::vec4& color);
@@ -81,6 +81,10 @@ namespace XYZ {
 		static bool IsKeyPressed(int key);
 
 		static void SetUIOffset(float offset);
+		static bool ResolveLeftClick(bool handle = true);
+		static bool ResolveRightClick(bool handle = true);
+		static bool ResolveLeftRelease(bool handle = true);
+		static bool ResolveRightRelease(bool handle = true);
 
 		static InGuiWindow* GetCurrentWindow();
 		static InGuiNodeWindow* GetCurrentNodeWindow();
@@ -103,10 +107,8 @@ namespace XYZ {
 		static void resolveResize(InGuiWindow& window);
 		static void resolveMove(InGuiWindow& window);
 
-		static bool resolveLeftClick(bool handle = true);
-		static bool resolveRightClick(bool handle = true);
-		static bool resolveLeftRelease(bool handle = true);
-		static bool resolveRightRelease(bool handle = true);
+	public:
+		
 
 		static void loadDockSpace();
 		static void saveDockSpace();

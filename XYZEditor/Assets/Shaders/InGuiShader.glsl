@@ -49,7 +49,6 @@ uniform sampler2D u_Texture[32];
 out vec4 FragColor;
 
 
-
 void main()
 {
 	vec2 tiledTexCoord = v_TexCoord * v_TilingFactor;

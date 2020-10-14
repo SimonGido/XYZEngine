@@ -528,7 +528,7 @@ namespace XYZ {
 			if (Collide(position, size, frameData.MousePosition))
 			{
 				color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
-				if (resolveLeftClick())
+				if (ResolveLeftClick())
 				{
 					open = !open;
 				}
@@ -559,7 +559,7 @@ namespace XYZ {
 			if (Collide(position, frameData.PopupSize, frameData.MousePosition))
 			{
 				color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
-				if (resolveLeftClick())
+				if (ResolveLeftClick())
 				{
 					pressed = true;
 				}
@@ -588,7 +588,7 @@ namespace XYZ {
 			if (Collide(position, frameData.PopupSize, frameData.MousePosition))
 			{
 				color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
-				if (resolveLeftClick())
+				if (ResolveLeftClick())
 				{
 					open = !open;
 				}
@@ -637,13 +637,13 @@ namespace XYZ {
 				if (Collide(position, size, frameData.MousePosition))
 				{
 					color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
-					if (resolveLeftClick())
+					if (ResolveLeftClick())
 					{
 						open = !open;
 						openTmp = open;
 					}
 				}
-				else if (resolveLeftClick(false) || resolveRightClick(false))
+				else if (ResolveLeftClick(false) || ResolveRightClick(false))
 					open = false;
 				
 
@@ -674,7 +674,7 @@ namespace XYZ {
 				if (Collide(position, size, frameData.MousePosition))
 				{
 					color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
-					if (resolveLeftClick())
+					if (ResolveLeftClick())
 					{
 						pressed = true;
 					}
@@ -708,7 +708,7 @@ namespace XYZ {
 			if (Collide(minButtonPos, { InGuiWindow::PanelSize,InGuiWindow::PanelSize }, frameData.MousePosition))
 			{
 				color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
-				if (resolveLeftClick())
+				if (ResolveLeftClick())
 				{
 					open = !open;
 				}
@@ -731,9 +731,8 @@ namespace XYZ {
 		XYZ_ASSERT(strlen(text) < sc_TextBufferSize, "Maximum length of text is ", sc_TextBufferSize);
 		InGuiWindow* window = frameData.CurrentWindow;
 		InGuiMesh& mesh = frameData.CurrentWindow->Mesh;
-		InGuiVertex vertices[sc_TextBufferSize * 4];
 
-		auto info = InGuiFactory::GenerateText(scale, color, text, 1000.0f, vertices, renderConfig);
+		auto info = InGuiFactory::GenerateText(scale, color, text, 1000.0f, frameData.TempVertices, renderConfig);
 	
 		if (window->Flags & InGuiWindowFlag::AutoPosition)
 		{
@@ -741,9 +740,9 @@ namespace XYZ {
 				return false;
 		}
 		glm::vec2 textOffset = { size.x + 5,(size.y / 2) - ((float)info.Size.y / 1.5f) };
-		MoveVertices(vertices, position + textOffset, 0, info.Count * 4);
+		MoveVertices(frameData.TempVertices, position + textOffset, 0, info.Count * 4);
 		for (uint32_t i = 0; i < info.Count * 4; ++i)
-			mesh.Vertices.push_back(vertices[i]);
+			mesh.Vertices.push_back(frameData.TempVertices[i]);
 
 		return true;
 	}
@@ -765,7 +764,7 @@ namespace XYZ {
 				if (Collide(position, size, frameData.MousePosition))
 				{
 					color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
-					if (resolveLeftClick())
+					if (ResolveLeftClick())
 					{
 						pressed = true;
 					}
@@ -794,7 +793,7 @@ namespace XYZ {
 				if (Collide(pos, size, frameData.MousePosition))
 				{
 					color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
-						if (resolveLeftClick())
+						if (ResolveLeftClick())
 						{
 							value = !value;
 						}
@@ -824,7 +823,7 @@ namespace XYZ {
 				if (Collide(pos, handleSize, frameData.MousePosition))
 				{
 					color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
-					modified = resolveLeftClick(false);
+					modified = ResolveLeftClick(false);
 					if (modified)
 					{
 						float start = pos.x;
@@ -855,7 +854,7 @@ namespace XYZ {
 					
 			if (Collide(pos, size, frameData.MousePosition))
 			{
-				pressed = resolveLeftClick(false);
+				pressed = ResolveLeftClick(false);
 			}
 			InGuiFactory::GenerateImage(pos, size, renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR], texCoords, rendererID, window->Mesh, frameData.TexturePairs, renderConfig, tilingFactor);		
 		}
@@ -883,12 +882,12 @@ namespace XYZ {
 			{
 				if (Collide(pos, size, frameData.MousePosition))
 				{
-					if (resolveLeftClick())
+					if (ResolveLeftClick())
 					{
 						modified = !modified;
 					}
 				}
-				else if (resolveLeftClick(false) || resolveRightClick(false))
+				else if (ResolveLeftClick(false) || ResolveRightClick(false))
 				{
 					modified = false;
 				}
@@ -922,7 +921,7 @@ namespace XYZ {
 			glm::vec2 pos = position;
 			if (ResolveSpaceWithText(name, { (size.x + offset) * count, size.y }, { 0.7f,0.7f }, color, pos, renderConfig, frameData))
 			{
-				if (resolveLeftClick(false))
+				if (ResolveLeftClick(false))
 				{
 					selected = s_NoneSelection;
 					glm::vec2 tmpPos = pos;
@@ -975,7 +974,7 @@ namespace XYZ {
 				if (Collide(pos, size, frameData.MousePosition))
 				{
 					color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
-					if (resolveLeftClick(true))
+					if (ResolveLeftClick(true))
 					{
 						pressed = true;
 					}
@@ -986,7 +985,7 @@ namespace XYZ {
 		return pressed;
 	}
 
-	bool InGui::Icon(const char* name, const glm::vec2& position, const glm::vec2& size, const Ref<SubTexture2D>& subTexture, uint32_t textureID)
+	bool InGui::Icon(const char* name, const glm::vec2& position, const glm::vec2& size, const Ref<SubTexture2D>& subTexture, uint32_t textureID, bool hightlight)
 	{
 		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
 
@@ -1004,11 +1003,13 @@ namespace XYZ {
 				if (Collide(pos, size, frameData.MousePosition))
 				{
 					color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
-					if (resolveLeftClick(true))
+					if (ResolveLeftClick(true))
 					{
 						pressed = true;
 					}
 				}
+				else if (hightlight)
+					InGuiFactory::GenerateQuad(pos, size, color, window->Mesh, renderConfig);
 				InGuiFactory::GenerateIcon(window->Mesh, pos, size, color, subTexture, textureID);
 			}
 		}
@@ -1027,8 +1028,7 @@ namespace XYZ {
 
 		if (window->Flags & InGuiWindowFlag::Modified)
 		{
-			InGuiVertex vertices[sc_TextBufferSize * 4];
-			auto info = InGuiFactory::GenerateText(scale, color, text, 1000.0f, vertices, renderConfig);
+			auto info = InGuiFactory::GenerateText(scale, color, text, 1000.0f, frameData.TempVertices, renderConfig);
 
 			glm::vec2 pos = { 0,0 };
 			if (window->Flags & InGuiWindowFlag::AutoPosition)
@@ -1036,13 +1036,13 @@ namespace XYZ {
 					return false;
 
 			
-			MoveVertices(vertices, pos, 0, info.Count * 4);
+			MoveVertices(frameData.TempVertices, pos, 0, info.Count * 4);
 			for (uint32_t i = 0; i < info.Count * 4; ++i)
-				window->Mesh.Vertices.push_back(vertices[i]);
+				window->Mesh.Vertices.push_back(frameData.TempVertices[i]);
 
 			if (Collide(pos, info.Size, frameData.MousePosition))
 			{
-				return resolveLeftClick();
+				return ResolveLeftClick();
 			}		
 		}
 
@@ -1089,7 +1089,7 @@ namespace XYZ {
 
 			if (Collide(pos, size, frameData.MousePosition))
 			{
-				if (resolveLeftClick())
+				if (ResolveLeftClick())
 				{
 					modified = true;
 					color = CalculatePixelColor(pallete, pos, size, frameData);
@@ -1117,7 +1117,7 @@ namespace XYZ {
 			InGuiFactory::Generate6SegmentColorRectangle(pos, size, window->Mesh, renderConfig);
 			if (Collide(pos, size, frameData.MousePosition))
 			{
-				if (resolveLeftClick())
+				if (ResolveLeftClick())
 				{
 					color = ColorFrom6SegmentColorRectangle(pos, size, frameData.MousePosition);
 					return true;
@@ -1205,7 +1205,7 @@ namespace XYZ {
 			nodeWindow->Mesh.Vertices.clear();
 			nodeWindow->LineMesh.Vertices.clear();
 			nodeWindow->InCamera.OnUpdate(dt);
-			if (resolveLeftClick(false) || resolveRightClick(false))
+			if (ResolveLeftClick(false) || ResolveRightClick(false))
 			{
 				if (nodeWindow->SelectedNode)
 					nodeWindow->SelectedNode->Color = renderConfig.Color[InGuiRenderConfiguration::InGuiRenderConfiguration::DEFAULT_COLOR];
@@ -1257,7 +1257,7 @@ namespace XYZ {
 			frameData.CurrentNode = node;
 			glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];
 			
-			if (resolveLeftClick(false))
+			if (ResolveLeftClick(false))
 			{
 				if (Collide(node->Position, node->Size, nodeWindow->RelativeMousePosition))
 				{
@@ -1278,7 +1278,7 @@ namespace XYZ {
 					modified = false;
 				}
 			}
-			else if (resolveRightClick(false))
+			else if (ResolveRightClick(false))
 			{
 				modified = false;
 			}
@@ -1308,7 +1308,7 @@ namespace XYZ {
 			glm::vec2 p0 = selected->Position + (selected->Size / 2.0f);
 			InGuiFactory::GenerateArrowLine(nodeWindow->Mesh, nodeWindow->LineMesh, p0, nodeWindow->RelativeMousePosition, { 50.0f,50.0f }, s_Context->RenderConfiguration);
 
-			if (resolveLeftRelease(false))
+			if (ResolveLeftRelease(false))
 			{
 				for (auto node : nodeWindow->Nodes)
 				{
@@ -1382,7 +1382,7 @@ namespace XYZ {
 		if (Collide(position, size, nodeWindow->RelativeMousePosition))
 		{
 			color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
-			if (resolveLeftClick())
+			if (ResolveLeftClick())
 			{
 				
 			}
@@ -1436,14 +1436,14 @@ namespace XYZ {
 
 		if (window->Flags & InGuiWindowFlag::Hoovered)
 		{
-			if (resolveLeftClick())
+			if (ResolveLeftClick())
 			{
 				frameData.SelectedPoint = frameData.MousePosition;
 				selecting = true;
 			}
 			if (selecting)
 			{
-				if (resolveLeftRelease(false) || (frameData.MousePosition.y >= window->Position.y + window->Size.y))
+				if (ResolveLeftRelease(false) || (frameData.MousePosition.y >= window->Position.y + window->Size.y))
 					selecting = false;
 
 				glm::vec2 size = frameData.MousePosition - frameData.SelectedPoint;	
@@ -1662,6 +1662,7 @@ namespace XYZ {
 		window->Flags |= InGuiWindowFlag::Visible;
 		window->Flags |= InGuiWindowFlag::AutoPosition;
 		window->Flags |= InGuiWindowFlag::Initialized;
+		window->Flags |= InGuiWindowFlag::Dockable;
 
 		s_Context->Windows.insert({ id,window });
 		return window;
@@ -1826,12 +1827,13 @@ namespace XYZ {
 			glm::vec2 pos = frameData.MousePosition - frameData.ModifiedWindowMouseOffset;
 			window.Position = { pos.x, pos.y - window.Size.y };
 			s_Context->DockSpace->RemoveWindow(&window);
-			s_Context->DockSpace->m_DockSpaceVisible = true;
+			if (window.Flags & InGuiWindowFlag::Dockable)
+				s_Context->DockSpace->m_DockSpaceVisible = true;
 			window.Flags |= InGuiWindowFlag::Modified;
 		}
 	}
 
-	bool InGui::resolveLeftClick(bool handle)
+	bool InGui::ResolveLeftClick(bool handle)
 	{
 		if ((s_Context->PerFrameData.Flags & InGuiPerFrameFlag::LeftMouseButtonPressed) &&
 			!(s_Context->PerFrameData.Flags & InGuiPerFrameFlag::ClickHandled))
@@ -1843,7 +1845,7 @@ namespace XYZ {
 		return false;
 	}
 
-	bool InGui::resolveRightClick(bool handle)
+	bool InGui::ResolveRightClick(bool handle)
 	{
 		if ((s_Context->PerFrameData.Flags & InGuiPerFrameFlag::RightMouseButtonPressed) &&
 			!(s_Context->PerFrameData.Flags & InGuiPerFrameFlag::ClickHandled))
@@ -1855,7 +1857,7 @@ namespace XYZ {
 		return false;
 	}
 
-	bool InGui::resolveLeftRelease(bool handle)
+	bool InGui::ResolveLeftRelease(bool handle)
 	{
 		if ((s_Context->PerFrameData.Flags & InGuiPerFrameFlag::LeftMouseButtonReleased) &&
 			!(s_Context->PerFrameData.Flags & InGuiPerFrameFlag::ReleaseHandled))
@@ -1867,7 +1869,7 @@ namespace XYZ {
 		return false;
 	}
 
-	bool InGui::resolveRightRelease(bool handle)
+	bool InGui::ResolveRightRelease(bool handle)
 	{
 		if ((s_Context->PerFrameData.Flags & InGuiPerFrameFlag::RightMouseButtonReleased) &&
 			!(s_Context->PerFrameData.Flags & InGuiPerFrameFlag::ReleaseHandled))
@@ -1979,6 +1981,7 @@ namespace XYZ {
 		{
 			for (auto win : winVector.second)
 			{
+				win->Flags |= InGuiWindowFlag::Dockable;
 				win->Flags |= InGuiWindowFlag::Docked;
 				win->Flags &= ~InGuiWindowFlag::Visible;
 				win->DockNode = dockMap[winVector.first];
@@ -1991,8 +1994,7 @@ namespace XYZ {
 	}
 
 	void InGui::loadDockSpace()
-	{
-		
+	{	
 		mINI::INIFile file("ingui.ini");
 		mINI::INIStructure ini;
 

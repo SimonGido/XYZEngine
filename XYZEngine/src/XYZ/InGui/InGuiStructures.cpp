@@ -9,10 +9,10 @@ namespace XYZ {
 	InGuiRenderConfiguration::InGuiRenderConfiguration()
 	{
 		Ref<Shader> shader = Shader::Create("Assets/Shaders/InGuiShader.glsl");
-		Ref<Texture2D> texture = Texture2D::Create(TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest, "Assets/Textures/Gui/TexturePack_Dark.png");
+		Ref<Texture2D> texture = Texture2D::Create(TextureWrap::Clamp, TextureParam::Linear, TextureParam::Linear, "Assets/Textures/Gui/TexturePack_Dark.png");
 		InTexture = texture;
 		Ref<Texture2D> fontTexture = Texture2D::Create(TextureWrap::Clamp, TextureParam::Linear, TextureParam::Linear, "Assets/Font/Arial.png");
-		Ref<Texture2D> colorPickerTexture = Texture2D::Create(TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest, "Assets/Textures/Gui/ColorPicker.png");
+		Ref<Texture2D> colorPickerTexture = Texture2D::Create(TextureWrap::Clamp, TextureParam::Linear, TextureParam::Linear, "Assets/Textures/Gui/ColorPicker.png");
 
 		Font = Ref<XYZ::Font>::Create("Assets/Font/Arial.fnt");
 
@@ -21,17 +21,19 @@ namespace XYZ {
 		InMaterial->Set("u_Texture", fontTexture, FontTextureID);
 		InMaterial->Set("u_Texture", colorPickerTexture, ColorPickerTextureID);
 		InMaterial->Set("u_ViewportSize", glm::vec2(Input::GetWindowSize().first, Input::GetWindowSize().second));
-		
-		SubTexture[BUTTON] = Ref<SubTexture2D>::Create(texture, glm::vec2(0, 0), glm::vec2(texture->GetWidth() / 8, texture->GetHeight() / 4));
-		SubTexture[CHECKBOX_CHECKED] = Ref<SubTexture2D>::Create(texture, glm::vec2(1, 1), glm::vec2(texture->GetWidth() / 8, texture->GetHeight() / 4));
-		SubTexture[CHECKBOX_UNCHECKED] = Ref<SubTexture2D>::Create(texture, glm::vec2(0, 1), glm::vec2(texture->GetWidth() / 8, texture->GetHeight() / 4));
-		SubTexture[SLIDER] = Ref<SubTexture2D>::Create(texture, glm::vec2(0, 0), glm::vec2(texture->GetWidth() / 8, texture->GetHeight() / 4));
-		SubTexture[SLIDER_HANDLE] = Ref<SubTexture2D>::Create(texture, glm::vec2(1, 2), glm::vec2(texture->GetWidth() / 8, texture->GetHeight() / 4));
-		SubTexture[WINDOW] = Ref<SubTexture2D>::Create(texture, glm::vec2(0, 3), glm::vec2(texture->GetWidth() / 8, texture->GetHeight() / 4));
-		SubTexture[MIN_BUTTON] = Ref<SubTexture2D>::Create(texture, glm::vec2(1, 3), glm::vec2(texture->GetWidth() / 8, texture->GetHeight() / 4));
-		SubTexture[DOWN_ARROW] = Ref<SubTexture2D>::Create(texture, glm::vec2(2, 3), glm::vec2(texture->GetWidth() / 8, texture->GetHeight() / 4));
-		SubTexture[RIGHT_ARROW] = Ref<SubTexture2D>::Create(texture, glm::vec2(2, 2), glm::vec2(texture->GetWidth() / 8, texture->GetHeight() / 4));
-		SubTexture[DOCKSPACE] = Ref<SubTexture2D>::Create(texture, glm::vec2(0, 0), glm::vec2(texture->GetWidth() / 8, texture->GetHeight() / 4));
+		float divisor = 8.0f;
+
+		SubTexture[BUTTON] = Ref<SubTexture2D>::Create(texture, glm::vec2(0, 0), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
+		SubTexture[CHECKBOX_CHECKED] = Ref<SubTexture2D>::Create(texture, glm::vec2(1, 1), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
+		SubTexture[CHECKBOX_UNCHECKED] = Ref<SubTexture2D>::Create(texture, glm::vec2(0, 1), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
+		SubTexture[SLIDER] = Ref<SubTexture2D>::Create(texture, glm::vec2(0, 0), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
+		SubTexture[SLIDER_HANDLE] = Ref<SubTexture2D>::Create(texture, glm::vec2(1, 2), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
+		SubTexture[WINDOW] = Ref<SubTexture2D>::Create(texture, glm::vec2(0, 3), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
+		SubTexture[MIN_BUTTON] = Ref<SubTexture2D>::Create(texture, glm::vec2(1, 3), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
+		SubTexture[DOWN_ARROW] = Ref<SubTexture2D>::Create(texture, glm::vec2(2, 3), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
+		SubTexture[RIGHT_ARROW] = Ref<SubTexture2D>::Create(texture, glm::vec2(2, 2), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
+		SubTexture[LEFT_ARROW] = Ref<SubTexture2D>::Create(texture, glm::vec2(3, 2), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
+		SubTexture[DOCKSPACE] = Ref<SubTexture2D>::Create(texture, glm::vec2(0, 0), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
 	
 	
 		Color[DEFAULT_COLOR] = { 1.0f,1.0f,1.0f,1.0f };
@@ -48,6 +50,7 @@ namespace XYZ {
 		CurrentWindow = nullptr;
 		CurrentNodeWindow = nullptr;
 		CurrentNode = nullptr;
+		TempVertices = new InGuiVertex[260 * 4];
 
 		ModifiedWindowMouseOffset = { 0,0 };
 		SelectedPoint = { 0,0 };
@@ -61,6 +64,11 @@ namespace XYZ {
 		CapslockEnabled = false;
 		
 		ResetWindowData();
+	}
+
+	InGuiPerFrameData::~InGuiPerFrameData()
+	{
+		delete[] TempVertices;
 	}
 
 	void InGuiPerFrameData::ResetWindowData()

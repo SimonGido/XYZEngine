@@ -30,7 +30,8 @@ namespace XYZ {
 			LeftClicked		= BIT(14),
 			RightClicked	= BIT(15),
 			Initialized		= BIT(16),
-			ForceNewLine	= BIT(17)
+			ForceNewLine	= BIT(17),
+			Dockable		= BIT(18)
 		};
 	}
 
@@ -82,6 +83,7 @@ namespace XYZ {
 			MIN_BUTTON,
 			DOWN_ARROW,
 			RIGHT_ARROW,
+			LEFT_ARROW,
 			DOCKSPACE,
 			NUM_SUBTEXTURES = 32
 		};
@@ -164,6 +166,8 @@ namespace XYZ {
 	struct InGuiPerFrameData
 	{
 		InGuiPerFrameData();
+		~InGuiPerFrameData();
+
 		void ResetWindowData();
 
 		InGuiWindow* EventReceivingWindow;
@@ -171,6 +175,8 @@ namespace XYZ {
 		InGuiWindow* CurrentWindow;
 		InGuiNodeWindow* CurrentNodeWindow;
 		InGuiNode* CurrentNode;
+
+		InGuiVertex* TempVertices;
 
 		glm::vec2 WindowSize;
 		glm::vec2 PopupSize;

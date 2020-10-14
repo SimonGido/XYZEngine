@@ -247,6 +247,7 @@ namespace XYZ {
 		m_EditorCamera.OnEvent(event);
 		m_GraphPanel.OnEvent(event);
 		m_SpriteEditorPanel.OnEvent(event);
+		m_ProjectBrowserPanel.OnEvent(event);
 
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<WindowResizeEvent>(Hook(&EditorLayer::onWindowResized, this));

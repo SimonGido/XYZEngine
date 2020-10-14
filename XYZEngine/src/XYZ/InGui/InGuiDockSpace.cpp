@@ -207,7 +207,7 @@ namespace XYZ {
 			m_ResizedNode = nullptr;
 		}
 		m_DockSpaceVisible = false;
-		if (window)
+		if (window && window->Flags & InGuiWindowFlag::Dockable)
 			insertWindow(window, mousePos, m_Root);
 		return false;
 	}

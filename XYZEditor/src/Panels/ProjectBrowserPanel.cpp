@@ -63,6 +63,35 @@ namespace XYZ {
 		ofs.close();
 	}
 
+	void ProjectBrowserPanel::deleteTemplate()
+	{
+		auto& renderConfig = InGui::GetRenderConfiguration();
+		m_DeleteDialogWindow->Position = { -150,-60 };
+		m_DeleteDialogWindow->Size = { 300,120 };
+		if (InGui::Begin(s_DeletePanelID, "Delete selected file?", { -150,-60 }, { 300,120 }))
+		{
+			if (InGui::Button("Delete", { 75,40 }))
+			{
+				std::filesystem::remove(m_SelectedFile);
+				m_SelectedFile.clear();
+				m_SelectedFileIndex = sc_InvalidIndex;
+				m_DeleteDialog = false;
+				m_Window->Flags |= InGuiWindowFlag::Modified;
+			}		
+			if (InGui::Button("Cancel", { 75,40 }))
+			{
+				m_DeleteDialog = false;
+			}		
+			InGui::Icon({}, { 100,100 }, renderConfig.SubTexture[LOGO], renderConfig.TextureID);
+		}
+		// Prevent user from clicking anything else before choosing some option
+		InGui::ResolveLeftClick();
+		InGui::ResolveRightClick();
+		InGui::End();
+	}
+
+	
+
 	ProjectBrowserPanel::ProjectBrowserPanel()
 	{
 		m_PathLength = 0;
@@ -70,30 +99,39 @@ namespace XYZ {
 		for (auto c : std::filesystem::current_path().u8string())
 			m_ProjectPath[m_PathLength++] = c;
 		m_ProjectPath[m_PathLength] = '\0';
-		
+		InGui::Begin(s_DeletePanelID, "Delete selected file?", { -150,-60 }, { 300,120 });
+		InGui::End();
+		m_DeleteDialogWindow = InGui::GetWindow(s_DeletePanelID);
+		m_DeleteDialogWindow->Flags &= ~InGuiWindowFlag::Dockable;
+
 		InGui::Begin(s_ProjectPanelID, "Project", { -200,-200 }, { 300,300 });
 		InGui::End();
 		m_Window = InGui::GetWindow(s_ProjectPanelID);
 		m_Window->Flags |= InGuiWindowFlag::ForceNewLine;
 
 		auto& renderConfig = InGui::GetRenderConfiguration();
-		renderConfig.SubTexture[FOLDER] = Ref<SubTexture2D>::Create(renderConfig.InTexture, glm::vec2(2, 1), glm::vec2(renderConfig.InTexture->GetWidth() / 8, renderConfig.InTexture->GetHeight() / 4));
-		renderConfig.SubTexture[SPRITE] = Ref<SubTexture2D>::Create(renderConfig.InTexture, glm::vec2(3, 1), glm::vec2(renderConfig.InTexture->GetWidth() / 8, renderConfig.InTexture->GetHeight() / 4));
-		renderConfig.SubTexture[TEXTURE] = Ref<SubTexture2D>::Create(renderConfig.InTexture, glm::vec2(2, 0), glm::vec2(renderConfig.InTexture->GetWidth() / 8, renderConfig.InTexture->GetHeight() / 4));
-		renderConfig.SubTexture[MATERIAL] = Ref<SubTexture2D>::Create(renderConfig.InTexture, glm::vec2(3, 0), glm::vec2(renderConfig.InTexture->GetWidth() / 8, renderConfig.InTexture->GetHeight() / 4));
-		renderConfig.SubTexture[SHADER] = Ref<SubTexture2D>::Create(renderConfig.InTexture, glm::vec2(4, 0), glm::vec2(renderConfig.InTexture->GetWidth() / 8, renderConfig.InTexture->GetHeight() / 4));
-		renderConfig.SubTexture[BACK_ARROW] = Ref<SubTexture2D>::Create(renderConfig.InTexture, glm::vec2(3, 2), glm::vec2(renderConfig.InTexture->GetWidth() / 8, renderConfig.InTexture->GetHeight() / 4));
+		float divisor = 4.0f;
+		renderConfig.SubTexture[FOLDER] =   Ref<SubTexture2D>::Create(renderConfig.InTexture, glm::vec2(0, 3), glm::vec2(renderConfig.InTexture->GetWidth() / divisor, renderConfig.InTexture->GetHeight() / divisor));
+		renderConfig.SubTexture[SPRITE] =   Ref<SubTexture2D>::Create(renderConfig.InTexture, glm::vec2(0, 2), glm::vec2(renderConfig.InTexture->GetWidth() / divisor, renderConfig.InTexture->GetHeight() / divisor));
+		renderConfig.SubTexture[TEXTURE] =  Ref<SubTexture2D>::Create(renderConfig.InTexture, glm::vec2(2, 3), glm::vec2(renderConfig.InTexture->GetWidth() / divisor, renderConfig.InTexture->GetHeight() / divisor));
+		renderConfig.SubTexture[MATERIAL] = Ref<SubTexture2D>::Create(renderConfig.InTexture, glm::vec2(3, 3), glm::vec2(renderConfig.InTexture->GetWidth() / divisor, renderConfig.InTexture->GetHeight() / divisor));
+		renderConfig.SubTexture[SHADER] =   Ref<SubTexture2D>::Create(renderConfig.InTexture, glm::vec2(1, 3), glm::vec2(renderConfig.InTexture->GetWidth() / divisor, renderConfig.InTexture->GetHeight() / divisor));
+		renderConfig.SubTexture[LOGO] =		Ref<SubTexture2D>::Create(renderConfig.InTexture, glm::vec2(1, 0), glm::vec2(renderConfig.InTexture->GetWidth() / (divisor / 2), renderConfig.InTexture->GetHeight() / (divisor / 2)));
 	}
 	bool ProjectBrowserPanel::OnInGuiRender()
 	{
 		bool active = false;
+
+		if (m_DeleteDialog)
+			deleteTemplate();
+
 		if (InGui::Begin(s_ProjectPanelID, "Project", { -200,-200 }, { 300,300 }))
 		{
 			auto& renderConfig = InGui::GetRenderConfiguration();
 			active = true;
 			
 
-			if (InGui::Icon(m_ProjectPath, {}, { 30,30 }, renderConfig.SubTexture[BACK_ARROW], renderConfig.TextureID))
+			if (InGui::Icon(m_ProjectPath, {}, { 30,30 }, renderConfig.SubTexture[InGuiRenderConfiguration::LEFT_ARROW], renderConfig.TextureID))
 			{
 				while (m_ProjectPath[m_PathLength + m_DirectoryPathLength] != '\\' && m_DirectoryPathLength)
 					m_DirectoryPathLength--;	
@@ -102,13 +140,18 @@ namespace XYZ {
 			}
 			InGui::Separator();
 
-			
-			
+					
 			uint32_t offset = m_PathLength + m_DirectoryPathLength;
+			uint32_t counter = 0;
 			for (const auto& entry : std::filesystem::directory_iterator(m_ProjectPath))
 			{	
 				size_t count = entry.path().u8string().size() - offset - 1;
  				std::string path(entry.path().u8string().c_str() + offset + 1, count);
+
+				bool highlight = false;
+				if (m_SelectedFileIndex == counter)
+					highlight = true;
+
 				if (entry.is_directory())
 				{
 					if (InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[FOLDER], renderConfig.TextureID))
@@ -122,28 +165,56 @@ namespace XYZ {
 				}
 				else if (HasExtension(entry.path().u8string(), "subtex"))
 				{
-					InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[SPRITE], renderConfig.TextureID);
+					if (InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[SPRITE], renderConfig.TextureID, highlight))
+					{
+						m_SelectedFile = entry.path().u8string();
+						m_SelectedFileIndex = counter;
+					}
 				}
 				else if (HasExtension(entry.path().u8string(), "mat"))
 				{
-					InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[MATERIAL], renderConfig.TextureID);
+					if (InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[MATERIAL], renderConfig.TextureID, highlight))
+					{
+						m_SelectedFile = entry.path().u8string();
+						m_SelectedFileIndex = counter;
+					}
 				}
 				else if (HasExtension(entry.path().u8string(), "png"))
 				{
-					InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[TEXTURE], renderConfig.TextureID);
+					if (InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[TEXTURE], renderConfig.TextureID, highlight))
+					{
+						m_SelectedFile = entry.path().u8string();
+						m_SelectedFileIndex = counter;
+					}
 				}
 				else if (HasExtension(entry.path().u8string(), "glsl"))
 				{
-					InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[SHADER], renderConfig.TextureID);
+					if (InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[SHADER], renderConfig.TextureID, highlight))
+					{
+						m_SelectedFile = entry.path().u8string();
+						m_SelectedFileIndex = counter;
+					}
 				}
-			}
+				if ((m_Window->Flags & InGuiWindowFlag::Hoovered) && InGui::ResolveRightClick())
+				{
+					auto [width, height] = Input::GetWindowSize();
+					auto [mx, my] = Input::GetMousePosition();
 
+					m_SelectedFile.clear();
+					m_SelectedFileIndex = sc_InvalidIndex;
+					m_PopupEnabled = !m_PopupEnabled;
+					m_PopupPosition = MouseToWorld({ mx,my }, { width,height });
+				}
+				
+				counter++;
+			}
+		
 			if (m_PopupEnabled)
 			{
 				m_Window->Flags &= ~InGuiWindowFlag::AutoPosition;
 				if (InGui::BeginPopup("New", m_PopupPosition, glm::vec2{ 150,25 }, m_PopupEnabled))
 				{
-					if (InGui::PopupExpandItem("Tools -->", m_NewOpen))
+					if (InGui::PopupExpandItem("File -->", m_NewOpen))
 					{
 						if (InGui::PopupItem("New Folder"))
 						{	
@@ -191,26 +262,42 @@ namespace XYZ {
 						m_PopupEnabled = false;
 						m_NewOpen = false;
 					}
+
+					
 				}
+				
 				InGui::EndPopup();
 				InGui::Separator();
 				m_Window->Flags |= InGuiWindowFlag::AutoPosition;
 			}
-
-
-			if (m_Window->Flags & InGuiWindowFlag::RightClicked)
+			if (InGui::ResolveLeftClick())
 			{
-				auto [width, height] = Input::GetWindowSize();
-				auto [mx, my] = Input::GetMousePosition();
-
+				m_SelectedFile.clear();
+				m_SelectedFileIndex = sc_InvalidIndex;
+				m_PopupEnabled = false;
 				m_NewOpen = false;
-				m_PopupEnabled = !m_PopupEnabled;
-				m_PopupPosition = MouseToWorld({ mx,my }, { width,height });
 			}
 		}	
 		InGui::End();
 
 		return active;
 	}
-	
+
+	void ProjectBrowserPanel::OnEvent(Event& event)
+	{
+		EventDispatcher dispatcher(event);
+		dispatcher.Dispatch<KeyPressedEvent>(Hook(&ProjectBrowserPanel::onKeyPress, this));
+	}
+	bool ProjectBrowserPanel::onKeyPress(KeyPressedEvent& event)
+	{
+		if (event.IsKeyPressed(KeyCode::XYZ_KEY_DELETE))
+		{
+			if (!m_SelectedFile.empty())
+			{
+				m_DeleteDialog = true;
+				m_DeleteDialogWindow->Flags |= InGuiWindowFlag::Modified;
+			}
+		}
+		return false;
+	}
 }
