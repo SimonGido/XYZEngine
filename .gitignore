@@ -80,6 +80,7 @@ StyleCopReport.xml
 *.tmp
 *.tmp_proj
 *_wpftmp.csproj
+*.vcxproj.filters
 *.log
 *.vspscc
 *.vssscc
@@ -339,18 +340,10 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
-/Engine.sln
 /bin-int/Debug-windows-x86_64
 /bin-int/Release-windows-x86_64
-/Engine/Engine.vcxproj
-/Engine/Engine.vcxproj.filters
-/Sandbox/Sandbox.vcxproj
-/Sandbox/results.json
-/Sandbox/Log.txt
-/ZSandbox/results.json
-/ZSandbox/Log.txt
+/XYZEditor/XYZLog.txt
+/XYZEditor/results.json
 *.sln
 *.vcxproj
-/XYZ_Engine/XYZ_Engine.vcxproj.filters
-/XYZ_Engine/vendor/imgui/bin-int/Release-windows-x86_64/ImGui
-/ZSandbox/ZSandbox.vcxproj.filters
+*.filters
