@@ -31,9 +31,6 @@
     <Filter Include="src\XYZ\ECS">
       <UniqueIdentifier>{71311159-DDE6-894E-66DB-8325D28F8052}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\XYZ\Editor">
-      <UniqueIdentifier>{FDBCF028-E98A-E42E-D21E-5555BE8BC093}</UniqueIdentifier>
-    </Filter>
     <Filter Include="src\XYZ\Event">
       <UniqueIdentifier>{38A43FE2-A464-BB18-6D9F-0496D91E00F5}</UniqueIdentifier>
     </Filter>
@@ -2243,10 +2240,5 @@
     <ClCompile Include="vendor\yaml-cpp\src\tag.cpp">
       <Filter>vendor\yaml-cpp\src</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="vendor\RCC\RuntimeCompiler\SimpleFileWatcher\FileWatcherLinux.cpp~">
-      <Filter>vendor\RCC\RuntimeCompiler\SimpleFileWatcher</Filter>
-    </None>
   </ItemGroup>
 </Project>

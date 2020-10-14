@@ -80,6 +80,7 @@ StyleCopReport.xml
 *.tmp
 *.tmp_proj
 *_wpftmp.csproj
+*.vcxproj.filters
 *.log
 *.vspscc
 *.vssscc
@@ -339,7 +340,7 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
-/Engine.sln
+.sln
 /bin-int/Debug-windows-x86_64
 /bin-int/Release-windows-x86_64
 /Engine/Engine.vcxproj
