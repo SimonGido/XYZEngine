@@ -103,7 +103,7 @@ namespace XYZ {
 		InGui::End();
 		m_DeleteDialogWindow = InGui::GetWindow(s_DeletePanelID);
 		m_DeleteDialogWindow->Flags &= ~InGuiWindowFlag::Dockable;
-
+		m_DeleteDialogWindow->Flags |= InGuiWindowFlag::ForceNewLine;
 		InGui::Begin(s_ProjectPanelID, "Project", { -200,-200 }, { 300,300 });
 		InGui::End();
 		m_Window = InGui::GetWindow(s_ProjectPanelID);

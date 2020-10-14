@@ -46,7 +46,6 @@ namespace XYZ {
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 		glTextureStorage2D(m_RendererID, 1, internalFormat, m_Specification.Width, m_Specification.Height);
-		
 		if (m_Specification.MinParam == TextureParam::Linear)
 		{
 			glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

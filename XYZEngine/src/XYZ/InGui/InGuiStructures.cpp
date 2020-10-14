@@ -9,10 +9,10 @@ namespace XYZ {
 	InGuiRenderConfiguration::InGuiRenderConfiguration()
 	{
 		Ref<Shader> shader = Shader::Create("Assets/Shaders/InGuiShader.glsl");
-		Ref<Texture2D> texture = Texture2D::Create(TextureWrap::Clamp, TextureParam::Linear, TextureParam::Linear, "Assets/Textures/Gui/TexturePack_Dark.png");
+		Ref<Texture2D> texture = Texture2D::Create(TextureWrap::Clamp, TextureParam::Linear, TextureParam::Nearest, "Assets/Textures/Gui/TexturePack_Dark.png");
 		InTexture = texture;
 		Ref<Texture2D> fontTexture = Texture2D::Create(TextureWrap::Clamp, TextureParam::Linear, TextureParam::Linear, "Assets/Font/Arial.png");
-		Ref<Texture2D> colorPickerTexture = Texture2D::Create(TextureWrap::Clamp, TextureParam::Linear, TextureParam::Linear, "Assets/Textures/Gui/ColorPicker.png");
+		Ref<Texture2D> colorPickerTexture = Texture2D::Create(TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest, "Assets/Textures/Gui/ColorPicker.png");
 
 		Font = Ref<XYZ::Font>::Create("Assets/Font/Arial.fnt");
 
