@@ -141,35 +141,55 @@ namespace XYZ {
 			if (m_PopupEnabled)
 			{
 				m_Window->Flags &= ~InGuiWindowFlag::AutoPosition;
-				if (InGui::BeginPopup("Create", m_PopupPosition, glm::vec2{ 150,25 }, m_PopupEnabled))
-				{		
-					if (InGui::PopupItem("New Folder", { 150,25 }))
+				if (InGui::BeginPopup("New", m_PopupPosition, glm::vec2{ 150,25 }, m_PopupEnabled))
+				{
+					if (InGui::PopupExpandItem("Tools -->", m_NewOpen))
 					{
-						std::string tmpDir = m_ProjectPath;
-						tmpDir += "\\New Folder";
-						CreateUniqueFolder(tmpDir);
-						m_PopupEnabled = false;
+						if (InGui::PopupItem("New Folder"))
+						{	
+							std::string tmpDir = m_ProjectPath;
+							tmpDir += "\\New Folder";
+							CreateUniqueFolder(tmpDir);
+							m_PopupEnabled = false;
+							m_NewOpen = false;
+						}
+						else if (InGui::PopupItem("New Material"))
+						{
+							std::string tmpDir = m_ProjectPath;
+							tmpDir += "\\New Material";
+							CreateUniqueFile(tmpDir, "mat");
+							m_PopupEnabled = false;
+							m_NewOpen = false;
+						}
+						else if (InGui::PopupItem("New Shader"))
+						{
+							std::string tmpDir = m_ProjectPath;
+							tmpDir += "\\New Shader";
+							CreateUniqueFile(tmpDir, "glsl");
+							m_PopupEnabled = false;
+							m_NewOpen = false;
+						}
+						else if (InGui::PopupItem("New Subtexture"))
+						{
+							std::string tmpDir = m_ProjectPath;
+							tmpDir += "\\New Subtexture";
+							CreateUniqueFile(tmpDir, "subtex");
+							m_PopupEnabled = false;
+							m_NewOpen = false;
+						}			
+						
 					}
-					else if (InGui::PopupItem("New Material", { 150,25 }))
+					InGui::PopupExpandEnd();
+				
+					if (InGui::PopupItem("Test"))
 					{
-						std::string tmpDir = m_ProjectPath;
-						tmpDir += "\\New Material";
-						CreateUniqueFile(tmpDir,"mat");
 						m_PopupEnabled = false;
-					}		
-					else if (InGui::PopupItem("New Shader", { 150,25 }))
-					{
-						std::string tmpDir = m_ProjectPath;
-						tmpDir += "\\New Shader";
-						CreateUniqueFile(tmpDir,"glsl");
-						m_PopupEnabled = false;
+						m_NewOpen = false;
 					}
-					else if (InGui::PopupItem("New Subtexture", { 150,25 }))
+					if (InGui::PopupItem("Test"))
 					{
-						std::string tmpDir = m_ProjectPath;
-						tmpDir += "\\New Subtexture";
-						CreateUniqueFile(tmpDir,"subtex");
 						m_PopupEnabled = false;
+						m_NewOpen = false;
 					}
 				}
 				InGui::EndPopup();
@@ -183,12 +203,9 @@ namespace XYZ {
 				auto [width, height] = Input::GetWindowSize();
 				auto [mx, my] = Input::GetMousePosition();
 
+				m_NewOpen = false;
 				m_PopupEnabled = !m_PopupEnabled;
 				m_PopupPosition = MouseToWorld({ mx,my }, { width,height });
-			}
-			else if (m_Window->Flags & InGuiWindowFlag::LeftClicked)
-			{
-				m_PopupEnabled = false;
 			}
 		}	
 		InGui::End();

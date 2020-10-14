@@ -535,6 +535,8 @@ namespace XYZ {
 			}
 
 			InGuiFactory::GenerateButton(position, size, color, name, window->Mesh, renderConfig);
+			
+			frameData.PopupSize = size;
 			frameData.PopupOffset.x = position.x;
 			frameData.PopupOffset.y = position.y - size.y;
 			
@@ -542,7 +544,7 @@ namespace XYZ {
 		return open;
 	}
 
-	bool InGui::PopupItem(const char* name,const glm::vec2& size)
+	bool InGui::PopupItem(const char* name)
 	{
 		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
 
@@ -554,7 +556,7 @@ namespace XYZ {
 		{
 			glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];
 			glm::vec2 position = { frameData.PopupOffset.x, frameData.PopupOffset.y };
-			if (Collide(position, size, frameData.MousePosition))
+			if (Collide(position, frameData.PopupSize, frameData.MousePosition))
 			{
 				color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
 				if (resolveLeftClick())
@@ -562,17 +564,58 @@ namespace XYZ {
 					pressed = true;
 				}
 			}
-			InGuiFactory::GenerateButton(position, size, color, name, window->Mesh, renderConfig);
+			InGuiFactory::GenerateButton(position, frameData.PopupSize, color, name, window->Mesh, renderConfig);
 		}
-		frameData.PopupOffset.y -= size.y;
+		
+		frameData.PopupItemCount++;
+		frameData.PopupOffset.y -= frameData.PopupSize.y;
 		return pressed;
+	}
+
+	bool InGui::PopupExpandItem(const char* name, bool& open)
+	{
+		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
+
+		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration;
+		InGuiWindow* window = frameData.CurrentWindow;
+		frameData.PopupItemCount = 0;
+		
+		if (window->Flags & InGuiWindowFlag::Modified)
+		{
+			glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];
+			glm::vec2 position = { frameData.PopupOffset.x, frameData.PopupOffset.y };
+			if (Collide(position, frameData.PopupSize, frameData.MousePosition))
+			{
+				color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
+				if (resolveLeftClick())
+				{
+					open = !open;
+				}
+			}
+			
+			frameData.PopupOffset.x += frameData.PopupSize.x;
+			
+			InGuiFactory::GenerateButton(position, frameData.PopupSize, color, name, window->Mesh, renderConfig);
+		}
+		return open;
+	}
+
+	void InGui::PopupExpandEnd()
+	{
+		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
+		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+	
+		frameData.PopupOffset.x -= frameData.PopupSize.x;
+		frameData.PopupOffset.y += frameData.PopupSize.y * ((int)frameData.PopupItemCount - 1);
+		frameData.PopupItemCount = 0;
 	}
 
 	void InGui::EndPopup()
 	{
 		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
 		InGuiPerFrameData& frameData = s_Context->PerFrameData;
-		frameData.PopupOffset = { 0,0 };
+		frameData.PopupOffset = { 0, 0 };
 	}
 
 

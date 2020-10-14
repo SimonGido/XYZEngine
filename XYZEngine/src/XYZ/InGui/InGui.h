@@ -26,7 +26,9 @@ namespace XYZ {
 		static void End();
 
 		static bool BeginPopup(const char* name, glm::vec2& position, const glm::vec2& size, bool& open);
-		static bool PopupItem(const char* name, const glm::vec2& size);
+		static bool PopupItem(const char* name);
+		static bool PopupExpandItem(const char* name, bool & open);
+		static void PopupExpandEnd();
 		static void EndPopup();
 
 		static bool MenuBar(const char* name,float width, bool& open);

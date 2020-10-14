@@ -135,7 +135,7 @@ namespace XYZ {
 						PerModuleInterface::g_pRuntimeObjectSystem->GetObjectFactorySystem()->GetAll(constructors);
 						for (size_t i = 0; i < constructors.Size(); ++i)
 						{
-							if (InGui::PopupItem(constructors[i]->GetName(), { 150,25 }))
+							if (InGui::PopupItem(constructors[i]->GetName()))
 							{
 								ScriptableEntity* scriptableEntity = (ScriptableEntity*)NativeScriptEngine::CreateScriptObject(constructors[i]->GetName());
 								auto scriptComponent = m_Context.GetComponent<NativeScriptComponent>();

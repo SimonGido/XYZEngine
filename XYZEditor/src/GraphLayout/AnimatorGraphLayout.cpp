@@ -17,7 +17,7 @@ namespace XYZ {
 			{
 				if (InGui::BeginPopup("Create Node", m_PopupPosition, glm::vec2{ 150,25 }, m_PopupOpen))
 				{
-					if (InGui::PopupItem("Empty Node", { 150,25 }))
+					if (InGui::PopupItem("Empty Node"))
 					{
 						auto state = m_Context->CreateState("Empty State " + std::to_string(++s_NextID));
 						bool tmpModified = false;

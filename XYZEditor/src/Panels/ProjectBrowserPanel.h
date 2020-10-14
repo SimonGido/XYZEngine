@@ -29,6 +29,7 @@ namespace XYZ {
 
 
 		bool m_PopupEnabled = false;
+		bool m_NewOpen = false;
 		glm::vec2 m_PopupPosition = glm::vec2(0);
 
 		const uint32_t s_ProjectPanelID = 7;

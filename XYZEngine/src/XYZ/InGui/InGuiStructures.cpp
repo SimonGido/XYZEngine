@@ -70,6 +70,7 @@ namespace XYZ {
 		
 		MenuBarOffset = { 0,0 };
 		PopupOffset = { 0,0 };
+		PopupSize = { 0,0 };
 
 		MaxHeightInRow = 0.0f;
 		MenuItemOffset = 0.0f;

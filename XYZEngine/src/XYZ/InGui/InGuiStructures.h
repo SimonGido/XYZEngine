@@ -173,6 +173,7 @@ namespace XYZ {
 		InGuiNode* CurrentNode;
 
 		glm::vec2 WindowSize;
+		glm::vec2 PopupSize;
 		glm::vec2 ModifiedWindowMouseOffset;
 		glm::vec2 WindowSpaceOffset;
 		glm::vec2 MenuBarOffset;
@@ -194,6 +195,7 @@ namespace XYZ {
 		int Mode;
 		bool CapslockEnabled;
 
+		uint32_t PopupItemCount = 0;
 		uint16_t Flags = 0;
 		std::vector<TextureRendererIDPair> TexturePairs;
 	};
