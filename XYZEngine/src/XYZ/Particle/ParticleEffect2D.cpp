@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "ParticleEffect2D.h"
 #include "XYZ/Renderer/Renderer2D.h"
-#include "XYZ/Renderer/RenderCommand.h"
+#include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Renderer/MaterialManager.h"
 
 namespace XYZ {
@@ -10,7 +10,7 @@ namespace XYZ {
 	{
 		vao->Bind();
 		ibo->Bind();
-		RenderCommand::DrawElementsIndirect(nullptr);
+		Renderer::DrawElementsIndirect(nullptr);
 	}
 
 
@@ -98,7 +98,7 @@ namespace XYZ {
 		m_Renderable.Material->Bind();
 		m_Renderable.VertexArray->Bind();
 		m_Renderable.IndirectBuffer->Bind();
-		RenderCommand::DrawElementsIndirect(nullptr);
+		Renderer::DrawElementsIndirect(nullptr);
 		
 		//Command<std::shared_ptr<VertexArray>,std::shared_ptr<IndirectBuffer>>cmd(RenderInstanced, m_Renderable.VertexArray, m_Renderable.IndirectBuffer);
 		//Renderer2D::Submit(cmd, sizeof(cmd));		

@@ -2,7 +2,7 @@
 #include "Renderer2D.h"
 
 #include "VertexArray.h"
-#include "RenderCommand.h"
+#include "Renderer.h"
 
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -267,7 +267,7 @@ namespace XYZ {
 			s_Data.Material->Bind();
 			s_Data.QuadVertexBuffer->Update(s_Data.BufferBase, dataSize);
 			s_Data.QuadVertexArray->Bind();
-			RenderCommand::DrawIndexed(PrimitiveType::Triangles, s_Data.IndexCount);
+			Renderer::DrawIndexed(PrimitiveType::Triangles, s_Data.IndexCount);
 			s_Data.Stats.DrawCalls++;
 			s_Data.Reset();
 		}	
@@ -283,7 +283,7 @@ namespace XYZ {
 
 			s_Data.LineVertexBuffer->Update(s_Data.LineBufferBase, dataSize);
 			s_Data.LineVertexArray->Bind();
-			RenderCommand::DrawIndexed(PrimitiveType::Lines, s_Data.LineIndexCount);
+			Renderer::DrawIndexed(PrimitiveType::Lines, s_Data.LineIndexCount);
 
 			s_Data.Stats.LineDrawCalls++;
 			s_Data.ResetLines();

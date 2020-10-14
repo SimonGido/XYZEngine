@@ -60,6 +60,7 @@ namespace XYZ {
 		virtual const TextureSpecs& GetSpecification() const = 0;
 		virtual void Bind(uint32_t slot = 0) const = 0;
 
+		static uint32_t CalculateMipMapCount(uint32_t width, uint32_t height);
 	};
 
 	/**

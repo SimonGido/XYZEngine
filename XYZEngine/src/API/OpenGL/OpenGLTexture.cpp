@@ -45,10 +45,11 @@ namespace XYZ {
 		XYZ_ASSERT(internalFormat & dataFormat, "Format not supported!");
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
+		int levels = Texture::CalculateMipMapCount(m_Specification.Width, m_Specification.Height);
 		glTextureStorage2D(m_RendererID, 1, internalFormat, m_Specification.Width, m_Specification.Height);
 		if (m_Specification.MinParam == TextureParam::Linear)
 		{
-			glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, levels > 1 ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 		}
 		else if (m_Specification.MinParam == TextureParam::Nearest)
 		{
@@ -75,6 +76,7 @@ namespace XYZ {
 			glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		}
 		glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Specification.Width, m_Specification.Height, dataFormat, GL_UNSIGNED_BYTE, data);
+		glGenerateTextureMipmap(m_RendererID);
 		stbi_image_free(data);
 	}
 

@@ -85,7 +85,7 @@ namespace XYZ {
 
 	void Application::onWindowResized(WindowResizeEvent& event)
 	{
-		Renderer::OnWindowResize(event.GetWidth(), event.GetHeight());
+		Renderer::SetViewPort(0, 0, event.GetWidth(), event.GetHeight());
 	}
 
 	void Application::onWindowClosed(WindowCloseEvent& event)

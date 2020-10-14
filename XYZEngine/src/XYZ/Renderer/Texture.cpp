@@ -39,4 +39,14 @@ namespace XYZ {
 		XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
 	}
 	
+	uint32_t Texture::CalculateMipMapCount(uint32_t width, uint32_t height)
+	{
+		uint32_t levels = 1;
+		while ((width | height) >> levels)
+			levels++;
+
+		return levels;
+
+	}
+
 }

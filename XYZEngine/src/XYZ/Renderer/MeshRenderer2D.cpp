@@ -2,7 +2,7 @@
 #include "MeshRenderer2D.h"
 
 #include "VertexArray.h"
-#include "RenderCommand.h"
+#include "Renderer.h"
 
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -137,7 +137,7 @@ namespace XYZ {
 			Ref<IndexBuffer> quadIB = IndexBuffer::Create(s_Data.IndexBufferBase, s_Data.IndexCount);
 			s_Data.QuadVertexArray->SetIndexBuffer(quadIB);
 
-			RenderCommand::DrawIndexed(PrimitiveType::Triangles, s_Data.IndexCount);
+			Renderer::DrawIndexed(PrimitiveType::Triangles, s_Data.IndexCount);
 			s_Data.Stats.DrawCalls++;
 			s_Data.Reset();
 		}

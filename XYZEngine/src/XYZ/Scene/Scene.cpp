@@ -5,7 +5,6 @@
 #include "XYZ/Core/Application.h"
 #include "XYZ/Renderer/Renderer.h"
 
-#include "XYZ/Renderer/RenderCommand.h"
 #include "XYZ/NativeScript/ScriptableEntity.h"
 #include "XYZ/ECS/Entity.h"
 

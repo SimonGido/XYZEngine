@@ -3,11 +3,10 @@
 
 namespace XYZ {
 	RenderCommandQueue::RenderCommandQueue()
-		: m_CommandCount(0),m_CommandSize(0)
 	{
-		m_CommandBuffer = new unsigned char[sc_MaxBufferSize]; // 10mb buffer
+		m_CommandBuffer = new uint8_t[10 * 1024 * 1024]; // 10mb buffer
 		m_CommandBufferPtr = m_CommandBuffer;
-		memset(m_CommandBuffer, 0, sc_MaxBufferSize);
+		memset(m_CommandBuffer, 0, 10 * 1024 * 1024);
 	}
 
 	RenderCommandQueue::~RenderCommandQueue()
@@ -15,28 +14,34 @@ namespace XYZ {
 		delete[] m_CommandBuffer;
 	}
 
-	void RenderCommandQueue::Allocate(CommandI* cmd, unsigned int size)
+	void* RenderCommandQueue::Allocate(RenderCommandFn fn, uint32_t size)
 	{
-		*(int*)m_CommandBufferPtr = size;
-		m_CommandSize += size;
-		XYZ_ASSERT(m_CommandSize < sc_MaxBufferSize, "Command buffer overflow");
-		m_CommandBufferPtr += sizeof(unsigned int);
+		// TODO: alignment
+		*(RenderCommandFn*)m_CommandBufferPtr = fn;
+		m_CommandBufferPtr += sizeof(RenderCommandFn);
 
-		//  copy command
-		memcpy(m_CommandBufferPtr, cmd, size);
+		*(uint32_t*)m_CommandBufferPtr = size;
+		m_CommandBufferPtr += sizeof(uint32_t);
+
+		void* memory = m_CommandBufferPtr;
 		m_CommandBufferPtr += size;
 
 		m_CommandCount++;
+		return memory;
 	}
+
 	void RenderCommandQueue::Execute()
 	{
-		unsigned char* buffer = m_CommandBuffer;
-		for (unsigned int i = 0; i < m_CommandCount; i++)
+		uint8_t* buffer = m_CommandBuffer;
+
+		for (uint32_t i = 0; i < m_CommandCount; i++)
 		{
-			unsigned int size = *(int*)buffer;
-			buffer += sizeof(unsigned int);
-			auto func = reinterpret_cast<CommandI*>(buffer);
-			func->Execute();
+			RenderCommandFn function = *(RenderCommandFn*)buffer;
+			buffer += sizeof(RenderCommandFn);
+
+			uint32_t size = *(uint32_t*)buffer;
+			buffer += sizeof(uint32_t);
+			function(buffer);
 			buffer += size;
 		}
 
@@ -44,12 +49,6 @@ namespace XYZ {
 		m_CommandCount = 0;
 	}
 
-	void RenderCommandQueue::Clear()
-	{
-		memset(m_CommandBuffer, 0, 10 * 1024 * 1024);
-		m_CommandBufferPtr = m_CommandBuffer;
-		memset(m_CommandBuffer, 0, 10 * 1024 * 1024);
-	}
 
 
 }

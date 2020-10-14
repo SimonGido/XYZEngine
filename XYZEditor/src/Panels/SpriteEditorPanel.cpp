@@ -234,8 +234,9 @@ namespace XYZ {
 		m_Camera.OnUpdate(ts);
 		glm::vec2 winSize = { Input::GetWindowSize().first, Input::GetWindowSize().second };
 		m_FBO->Bind();
-		RenderCommand::SetClearColor(glm::vec4(0.1, 0.1, 0.1, 1));
-		RenderCommand::Clear();
+		Renderer::SetClearColor(glm::vec4(0.1, 0.1, 0.1, 1));
+		Renderer::Clear();
+
 		Renderer2D::BeginScene({ m_Camera.GetViewProjectionMatrix(), winSize });
 		Renderer2D::SetMaterial(m_Material);
 		Renderer2D::SubmitQuad(m_Transform, { 0.0f,0.0f,m_ContextScale.x, m_ContextScale.y }, BACKGROUND, { 1.0f, 1.0f, 1.0f, 1.0f });

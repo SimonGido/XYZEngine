@@ -12,10 +12,17 @@ namespace XYZ {
 		Lines
 	};
 
-	/**
-	* @interface RendererAPI
-	* pure virtual (interface) class.
-	*/
+	struct RenderAPICapabilities
+	{
+		std::string Vendor;
+		std::string Renderer;
+		std::string Version;
+
+		int MaxSamples = 0;
+		float MaxAnisotropy = 0.0f;
+		int MaxTextureUnits = 0;
+	};
+
 	class RendererAPI
 	{
 	public:
@@ -24,21 +31,25 @@ namespace XYZ {
 			None = 0, OpenGL = 1
 		};
 	public:
-		virtual void Init() = 0;
-		virtual void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) = 0;
-		virtual void SetClearColor(const glm::vec4& color) = 0;
-		virtual void Clear() = 0;
+		static void Init();
+		static void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
+		static void SetClearColor(const glm::vec4& color);
+		static void Clear();
 
-		virtual void DrawIndexed(PrimitiveType type, uint32_t indexCount) = 0;
-		virtual void DrawInstanced(const Ref<VertexArray>& vertexArray, uint32_t count,uint32_t offset=0) = 0;
-		virtual void DrawInstancedIndirect(void* indirect) = 0;
+		static void DrawIndexed(PrimitiveType type, uint32_t indexCount);
+		static void DrawInstanced(const Ref<VertexArray>& vertexArray, uint32_t count, uint32_t offset = 0);
+		static void DrawInstancedIndirect(void* indirect);
 
-
-		inline static API GetAPI() { return s_API; }
+		static RenderAPICapabilities& GetCapabilities()
+		{
+			static RenderAPICapabilities caps;
+			return caps;
+		}
+		
+		static API GetAPI() { return s_API; }
 		/**
 		* @return unique_ptr to RendererAPI 
 		*/
-		static std::unique_ptr<RendererAPI> Create();
 	private:
 		static API s_API;
 	};

@@ -3,7 +3,7 @@
 
 #include "XYZ/Core/Input.h"
 #include "XYZ/Core/Application.h"
-#include "XYZ/Renderer/RenderCommand.h"
+#include "XYZ/Renderer/Renderer.h"
 #include "InGuiFactory.h"
 
 #include <ini.h>
@@ -1194,8 +1194,8 @@ namespace XYZ {
 		
 		
 		nodeWindow->FBO->Bind();	
-		RenderCommand::SetClearColor(glm::vec4(0.1, 0.1, 0.1, 1));
-		RenderCommand::Clear();
+		Renderer::SetClearColor(glm::vec4(0.1, 0.1, 0.1, 1));
+		Renderer::Clear();
 		
 			
 		bool result = RenderWindow(id, name, nodeWindow->FBO->GetColorAttachment(0).RendererID, position, size);

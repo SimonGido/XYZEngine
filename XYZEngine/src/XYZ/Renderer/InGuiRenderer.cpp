@@ -2,7 +2,7 @@
 #include "InGuiRenderer.h"
 
 #include "VertexArray.h"
-#include "RenderCommand.h"
+#include "Renderer.h"
 #include "XYZ/Renderer/Mesh.h"
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -244,7 +244,7 @@ namespace XYZ {
 
 			s_UIData.QuadVertexBuffer->Update(s_UIData.BufferBase, dataSize);
 			s_UIData.QuadVertexArray->Bind();
-			RenderCommand::DrawIndexed(PrimitiveType::Triangles, s_UIData.IndexCount);		
+			Renderer::DrawIndexed(PrimitiveType::Triangles, s_UIData.IndexCount);		
 		
 			s_UIData.Reset();
 		}
@@ -260,7 +260,7 @@ namespace XYZ {
 
 			s_UIData.LineVertexBuffer->Update(s_UIData.LineBufferBase, dataSize);
 			s_UIData.LineVertexArray->Bind();
-			RenderCommand::DrawIndexed(PrimitiveType::Lines, s_UIData.LineIndexCount);
+			Renderer::DrawIndexed(PrimitiveType::Lines, s_UIData.LineIndexCount);
 
 			s_UIData.ResetLines();
 		}

@@ -166,8 +166,8 @@ namespace XYZ {
 	}
 	void EditorLayer::OnUpdate(Timestep ts)
 	{
-		RenderCommand::SetClearColor(glm::vec4(0.2, 0.2, 0.2, 1));
-		RenderCommand::Clear();
+		Renderer::SetClearColor(glm::vec4(0.2, 0.2, 0.2, 1));
+		Renderer::Clear();
 		NativeScriptEngine::Update(ts);
 			
 	
@@ -236,8 +236,8 @@ namespace XYZ {
 
 		glm::vec2 winSize = { Input::GetWindowSize().first, Input::GetWindowSize().second };
 		m_FBO->Bind();
-		RenderCommand::SetClearColor(glm::vec4(0.2, 0.2, 0.5, 1));
-		RenderCommand::Clear();
+		Renderer::SetClearColor(glm::vec4(0.2, 0.2, 0.5, 1));
+		Renderer::Clear();
 		m_Scene->OnUpdate(ts);
 		m_Scene->OnRenderEditor({ m_EditorCamera.GetViewProjectionMatrix(),winSize });
 		m_FBO->Unbind();

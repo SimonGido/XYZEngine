@@ -24,57 +24,48 @@ namespace XYZ {
 	*/
 	class Renderer
 	{
-		struct SceneData
-		{
-			glm::mat4 ViewProjectionMatrix;
-		};
 	public:
 		/**
 		* Initialize RenderCommand and Renderer2D
 		*/
 		static void Init();
-
-
 		static void Shutdown();
-		/**
-		* Function handling window resizing
-		* @param[in] width   Width of the window
-		* @param[in] height  Height of the window
-		*/
-		static void OnWindowResize(uint32_t width, uint32_t height);
+
+		static void Clear();
+		static void SetClearColor(const glm::vec4& color);
+		static void SetViewPort(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
+
+		static void DrawIndexed(PrimitiveType type, uint32_t indexCount = 0);
+		static void DrawInstanced(const Ref<VertexArray>& vertexArray, uint32_t count, uint32_t offset = 0);
+		static void DrawElementsIndirect(void* indirect);
+		
+
+		template<typename FuncT>
+		static void Submit(FuncT&& func)
+		{
+			auto renderCmd = [](void* ptr) {
+				auto pFunc = (FuncT*)ptr;
+				(*pFunc)();
+
+				pFunc->~FuncT(); // Call destructor
+			};
+			auto storageBuffer = GetRenderCommandQueue().Allocate(renderCmd, sizeof(func));
+			new (storageBuffer) FuncT(std::forward<FuncT>(func));
+		}
+
 
 		/**
 		* @return RendererAPI
 		*/
-		inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
-
-
-		
-		static void BeginScene(const SceneData& sceneData);
-
-		/**
-		* Clean up after rendering
-		*/
-		static void EndScene();
-
-
-		/**
-		* Submit command to the command queue
-		* @param[in] command	Reference to the command
-		* @param[in] size		Size of the command
-		*/
-		static void Submit(CommandI& command, unsigned int size);
+		static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
 
 		/**
 		* Execute the command queue
 		*/
 		static void Flush();
+
 	private:
-		static Renderer* s_Instance;
-
-		static SceneData* s_SceneData;
-
-		RenderCommandQueue m_CommandQueue;
+		static RenderCommandQueue& GetRenderCommandQueue();
 	};
 
 }

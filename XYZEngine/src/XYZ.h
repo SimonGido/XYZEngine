@@ -15,9 +15,8 @@
 
 
 //-----Renderer-----//
-#include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/Renderer.h"
-#include "XYZ/Renderer/RenderCommand.h"
+#include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/Material.h"
 
 #include "XYZ/Renderer/MaterialManager.h"
