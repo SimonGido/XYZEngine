@@ -28,6 +28,8 @@ namespace XYZ {
 
 		TextureSpecs m_Specification;
 		GLenum m_DataFormat, m_InternalFormat;
+
+		uint8_t* m_LocalData = nullptr;
 	};
 
 }

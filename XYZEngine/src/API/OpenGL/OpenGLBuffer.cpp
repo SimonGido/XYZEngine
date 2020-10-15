@@ -25,36 +25,37 @@ namespace XYZ {
 		: m_Size(size), m_Usage(BufferUsage::Dynamic)
 	{
 		m_LocalData = new float[size];
-		Renderer::Submit([=]() {glCreateBuffers(1, &m_RendererID);
-		glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
-		glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
+		Renderer::Submit([this]() {
+			glCreateBuffers(1, &m_RendererID);
+			glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
+			glBufferData(GL_ARRAY_BUFFER, m_Size, nullptr, GL_DYNAMIC_DRAW);
 			});
 	}
 
 	OpenGLVertexBuffer::~OpenGLVertexBuffer()
 	{
 		delete[]m_LocalData;
-		Renderer::Submit([=]() {
+		Renderer::Submit([this]() {
 			glDeleteBuffers(1, &m_RendererID); 
 			});
 	}
 
 	void OpenGLVertexBuffer::Bind() const
 	{
-		Renderer::Submit([=]() {
+		Renderer::Submit([this]() {
 			glBindBuffer(GL_ARRAY_BUFFER, m_RendererID); 
 			});
 	}
 
 	void OpenGLVertexBuffer::UnBind() const
 	{
-		Renderer::Submit([=]() {glBindBuffer(GL_ARRAY_BUFFER, 0); });
+		Renderer::Submit([]() {glBindBuffer(GL_ARRAY_BUFFER, 0); });
 	}
 
 	void OpenGLVertexBuffer::Update(void* vertices, uint32_t size, uint32_t offset)
 	{
 		memcpy(m_LocalData + offset, vertices, size);
-		Renderer::Submit([=]() {
+		Renderer::Submit([this, offset, size]() {
 			XYZ_ASSERT(m_Usage == BufferUsage::Dynamic, "Buffer does not have dynamic usage");
 			glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
 			glBufferSubData(GL_ARRAY_BUFFER, offset, size, m_LocalData);
@@ -79,17 +80,17 @@ namespace XYZ {
 	{
 		m_LocalData = new uint32_t[count];
 		memcpy(m_LocalData, indices, count * sizeof(uint32_t));
-		Renderer::Submit([=]() {
+		Renderer::Submit([this]() {
 			glCreateBuffers(1, &m_RendererID);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(unsigned int), m_LocalData, GL_STATIC_DRAW);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_Count * sizeof(unsigned int), m_LocalData, GL_STATIC_DRAW);
 			});
 	}
 
 	OpenGLIndexBuffer::~OpenGLIndexBuffer()
 	{
 		delete[]m_LocalData;
-		Renderer::Submit([=]() {
+		Renderer::Submit([this]() {
 			glDeleteBuffers(1, &m_RendererID); 
 			});
 	}

@@ -13,7 +13,7 @@ namespace XYZ {
 	}
 	OpenGLFrameBuffer::~OpenGLFrameBuffer()
 	{
-		Renderer::Submit([=]() {
+		Renderer::Submit([this]() {
 			glDeleteFramebuffers(1, &m_RendererID);
 			for (auto it : m_ColorAttachments)
 				glDeleteTextures(1, &it.RendererID);
@@ -29,7 +29,7 @@ namespace XYZ {
 			return;
 		}
 
-		Renderer::Submit([=]() {
+		Renderer::Submit([this]() {
 			if (m_RendererID)
 			{
 				glDeleteFramebuffers(1, &m_RendererID);
@@ -81,7 +81,7 @@ namespace XYZ {
 	{
 		m_ColorAttachments.push_back({});
 		m_ColorAttachments.back().Format = format;
-		Renderer::Submit([=]() {
+		Renderer::Submit([this, format]() {
 			glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 			ColorAttachment &attachment = m_ColorAttachments.back();
 			attachment.Format = format;
@@ -94,7 +94,7 @@ namespace XYZ {
 	void OpenGLFrameBuffer::CreateDepthAttachment()
 	{
 		m_DepthAttachments.push_back({});
-		Renderer::Submit([=]() {
+		Renderer::Submit([this]() {
 			glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 			DepthAttachment &attachment = m_DepthAttachments.back();
 			setupDepthAttachment(attachment);

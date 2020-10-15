@@ -32,17 +32,17 @@ namespace XYZ {
 
 	OpenGLVertexArray::OpenGLVertexArray()
 	{
-		Renderer::Submit([=]() {glCreateVertexArrays(1, &m_RendererID); });
+		Renderer::Submit([this]() {glCreateVertexArrays(1, &m_RendererID); });
 	}
 
 	OpenGLVertexArray::~OpenGLVertexArray()
 	{
-		Renderer::Submit([=]() {glDeleteVertexArrays(1, &m_RendererID); });
+		Renderer::Submit([this]() {glDeleteVertexArrays(1, &m_RendererID); });
 	}
 
 	void OpenGLVertexArray::Bind() const
 	{
-		Renderer::Submit([=]() {glBindVertexArray(m_RendererID); });
+		Renderer::Submit([this]() {glBindVertexArray(m_RendererID); });
 	}
 
 	void OpenGLVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
@@ -50,7 +50,7 @@ namespace XYZ {
 		if (vertexBuffer->GetLayout().GetElements().size() == 0)
 			XYZ_ASSERT(false, "vertexBuffer->GetLayout().GetElements().size() = 0");
 
-		Renderer::Submit([=]() {
+		Renderer::Submit([this, vertexBuffer]() {
 			glBindVertexArray(m_RendererID);
 			vertexBuffer->Bind();
 
@@ -77,7 +77,7 @@ namespace XYZ {
 		if (shaderBuffer->GetLayout().GetElements().size() == 0)
 			XYZ_ASSERT(false, "vertexBuffer->GetLayout().GetElements().size() = 0");
 
-		Renderer::Submit([=]() {
+		Renderer::Submit([this, shaderBuffer] () {
 			glBindVertexArray(m_RendererID);
 			shaderBuffer->Bind();
 
@@ -102,7 +102,7 @@ namespace XYZ {
 	void OpenGLVertexArray::SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
 	{
 		m_IndexBuffer = indexBuffer;
-		Renderer::Submit([=]() {
+		Renderer::Submit([this, indexBuffer] () {
 			glBindVertexArray(m_RendererID);
 			indexBuffer->Bind();
 			});
