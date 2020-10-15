@@ -19,7 +19,7 @@ namespace XYZ {
 		virtual inline const std::vector<Ref<VertexBuffer>>& GetVertexBuffer() const override { return m_VertexBuffers; };
 	
 	private:
-		uint32_t m_RendererID;
+		uint32_t m_RendererID = 0;
 		Ref<IndexBuffer> m_IndexBuffer;
 		std::vector<Ref<VertexBuffer>> m_VertexBuffers;
 		std::vector<Ref<ShaderStorageBuffer>> m_ShaderStorageBuffers;

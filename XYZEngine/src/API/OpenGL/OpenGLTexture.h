@@ -24,7 +24,7 @@ namespace XYZ {
 
 		static void Bind(uint32_t rendererID, uint32_t slot);
 	private:
-		uint32_t m_RendererID;
+		uint32_t m_RendererID = 0;
 
 		TextureSpecs m_Specification;
 		GLenum m_DataFormat, m_InternalFormat;

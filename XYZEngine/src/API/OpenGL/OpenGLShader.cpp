@@ -6,6 +6,7 @@
 #include <array>
 #include <GL/glew.h>
 
+#include "XYZ/Renderer/Renderer.h"
 
 namespace XYZ {
 
@@ -58,21 +59,29 @@ namespace XYZ {
 	}
 	OpenGLShader::~OpenGLShader()
 	{
-		glDeleteProgram(m_RendererID);
+		Renderer::Submit([=]() {
+			glDeleteProgram(m_RendererID); 
+			});
 	}
 	void OpenGLShader::Bind() const
 	{
-		glUseProgram(m_RendererID);
+		Renderer::Submit([=]() {
+			glUseProgram(m_RendererID); 
+			});
 	}
 	void OpenGLShader::Compute(unsigned int groupX, unsigned int groupY, unsigned int groupZ) const
 	{
 		XYZ_ASSERT(m_Type == ShaderProgramType::COMPUTE, "Calling compute on non compute shader");
-		glDispatchCompute(groupX, groupY, groupZ);
-		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+		Renderer::Submit([=]() {
+			glDispatchCompute(groupX, groupY, groupZ);
+			glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+		});
 	}
 	void OpenGLShader::Unbind() const
 	{
-		glUseProgram(0);
+		Renderer::Submit([=]() {
+			glUseProgram(0);
+			});
 	}
 
 	const Uniform* OpenGLShader::FindUniform(const std::string& name) const
@@ -168,7 +177,7 @@ namespace XYZ {
 		}
 	}
 
-	void OpenGLShader::setUniform(Uniform* uniform, unsigned char* data)
+	void OpenGLShader::setUniform(const Uniform* uniform, unsigned char* data)
 	{
 		switch (uniform->Type)
 		{
@@ -193,7 +202,7 @@ namespace XYZ {
 		};
 	}
 
-	void OpenGLShader::setUniformArr(Uniform* uniform, unsigned char* data)
+	void OpenGLShader::setUniformArr(const Uniform* uniform, unsigned char* data)
 	{
 		switch (uniform->Type)
 		{
@@ -220,12 +229,20 @@ namespace XYZ {
 
 	void OpenGLShader::SetUniforms(unsigned char* data)
 	{
-		for (auto &uniform : m_Uniforms)
+		for (auto& uniform : m_Uniforms)
 		{
 			if (uniform.IsArray)
-				setUniformArr(&uniform, (unsigned char*)data);
+			{
+				Renderer::Submit([=]() {
+					setUniformArr(&uniform, (unsigned char*)data);
+					});
+			}
 			else
-				setUniform(&uniform, (unsigned char*)data);
+			{
+				Renderer::Submit([=]() {
+					setUniform(&uniform, (unsigned char*)data);
+					});
+			}
 		}
 	}
 
@@ -253,7 +270,9 @@ namespace XYZ {
 		for (size_t i = 0; i < m_Routines.size(); ++i)
 		{
 			SubRoutine routine = m_Routines[i].ActiveSubRoutine;
-			glUniformSubroutinesuiv(routine.ShaderType, 1, &routine.Index);
+			Renderer::Submit([=]() {
+				glUniformSubroutinesuiv(routine.ShaderType, 1, &routine.Index);
+				});
 		}
 	}
 
@@ -317,30 +336,56 @@ namespace XYZ {
 
 	void OpenGLShader::SetFloat(const std::string& name, float value)
 	{
-		auto location = glGetUniformLocation(m_RendererID, name.c_str());
-		XYZ_ASSERT(location != -1, "Uniform ",name," does not exist");
-		uploadFloat(location, value);
+		Renderer::Submit([=]() {
+			auto location = glGetUniformLocation(m_RendererID, name.c_str());
+			XYZ_ASSERT(location != -1, "Uniform ", name, " does not exist");
+			uploadFloat(location, value);
+			});
 	}
 
 	void OpenGLShader::SetFloat2(const std::string& name, const glm::vec2& value)
 	{
-		auto location = glGetUniformLocation(m_RendererID, name.c_str());
-		XYZ_ASSERT(location != -1, "Uniform ", name, " does not exist");
-		uploadFloat2(location, value);
+		Renderer::Submit([=]() {
+			auto location = glGetUniformLocation(m_RendererID, name.c_str());
+			XYZ_ASSERT(location != -1, "Uniform ", name, " does not exist");
+			uploadFloat2(location, value);
+			});
+	}
+
+	void OpenGLShader::SetFloat3(const std::string& name, const glm::vec3& value)
+	{
+		Renderer::Submit([=]() {
+			auto location = glGetUniformLocation(m_RendererID, name.c_str());
+			XYZ_ASSERT(location != -1, "Uniform ", name, " does not exist");
+			uploadFloat3(location, value);
+			});
+	}
+
+	void OpenGLShader::SetFloat4(const std::string& name, const glm::vec4& value)
+	{
+		Renderer::Submit([=]() {
+			auto location = glGetUniformLocation(m_RendererID, name.c_str());
+			XYZ_ASSERT(location != -1, "Uniform ", name, " does not exist");
+			uploadFloat4(location, value);
+			});
 	}
 
 	void OpenGLShader::SetInt(const std::string& name, int value)
 	{
-		auto location = glGetUniformLocation(m_RendererID, name.c_str());
-		XYZ_ASSERT(location != -1, "Uniform ", name, " does not exist");
-		uploadInt(location, value);
+		Renderer::Submit([=]() {
+			auto location = glGetUniformLocation(m_RendererID, name.c_str());
+			XYZ_ASSERT(location != -1, "Uniform ", name, " does not exist");
+			uploadInt(location, value);
+			});
 	}
 
 	void OpenGLShader::SetMat4(const std::string& name, const glm::mat4& value)
 	{
-		auto location = glGetUniformLocation(m_RendererID, name.c_str());
-		XYZ_ASSERT(location != -1, "Uniform ", name, " does not exist");
-		uploadMat4(location, value);
+		Renderer::Submit([=]() {
+			auto location = glGetUniformLocation(m_RendererID, name.c_str());
+			XYZ_ASSERT(location != -1, "Uniform ", name, " does not exist");
+			uploadMat4(location, value);
+			});
 	}
 
 	void OpenGLShader::uploadInt(uint32_t loc, int value)
@@ -414,7 +459,6 @@ namespace XYZ {
 		}
 		else
 			XYZ_LOG_ERR("Could not open file ", filepath.c_str());
-
 
 		return result;
 	}
@@ -579,8 +623,7 @@ namespace XYZ {
 
 			if (size > 1)
 				sizeUni *= size;
-
-			
+		
 			addUniform(uniType, sizeUni, offset, name, size);
 			offset += sizeUni;
 			m_UniformsSize += sizeUni;

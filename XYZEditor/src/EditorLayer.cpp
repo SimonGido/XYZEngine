@@ -170,10 +170,6 @@ namespace XYZ {
 		Renderer::Clear();
 		NativeScriptEngine::Update(ts);
 			
-	
-	
-		
-	
 		if (m_ActiveWindow)
 		{
 			m_EditorCamera.OnUpdate(ts);		
@@ -241,6 +237,7 @@ namespace XYZ {
 		m_Scene->OnUpdate(ts);
 		m_Scene->OnRenderEditor({ m_EditorCamera.GetViewProjectionMatrix(),winSize });
 		m_FBO->Unbind();
+		
 	}
 	void EditorLayer::OnEvent(Event& event)
 	{

@@ -21,9 +21,9 @@ namespace XYZ {
 	private:
 		BufferUsage m_Usage;
 		uint32_t m_Size;
-		uint32_t m_RendererID;
+		uint32_t m_RendererID = 0;
 		BufferLayout m_Layout;
-
+		float* m_LocalData;
 	};
 
 	class OpenGLIndexBuffer : public IndexBuffer
@@ -37,8 +37,9 @@ namespace XYZ {
 
 		virtual uint32_t GetCount() const override { return m_Count; }
 	private:
-		uint32_t m_RendererID;
+		uint32_t m_RendererID = 0;
 		uint32_t m_Count;
+		uint32_t* m_LocalData;
 	};
 
 	class OpenGLShaderStorageBuffer : public ShaderStorageBuffer
@@ -57,9 +58,9 @@ namespace XYZ {
 		virtual const BufferLayout& GetLayout() const override { return m_Layout; };
 
 	private:
+		uint32_t m_RendererID = 0;
 		BufferUsage m_Usage;
 		uint32_t m_Size;
-		uint32_t m_RendererID;
 		BufferLayout m_Layout;
 	};
 
@@ -77,9 +78,9 @@ namespace XYZ {
 		virtual uint32_t GetNumCounters() { return m_NumberOfCounters; }
 
 	private:
+		uint32_t m_RendererID = 0;
 		uint32_t m_NumberOfCounters;
 		uint32_t* m_Counters;
-		uint32_t m_RendererID;
 	};
 
 
@@ -93,7 +94,7 @@ namespace XYZ {
 		virtual void Bind()const override;
 		virtual void BindBase(uint32_t index) override;
 	private:
-		uint32_t m_RendererID;
+		uint32_t m_RendererID = 0;
 		uint32_t m_Size;
 	};
 

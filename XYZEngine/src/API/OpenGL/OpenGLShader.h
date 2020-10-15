@@ -23,6 +23,8 @@ namespace XYZ {
 
 		virtual void SetFloat(const std::string& name, float value) override;
 		virtual void SetFloat2(const std::string& name, const glm::vec2& value) override;
+		virtual void SetFloat3(const std::string& name, const glm::vec3& value) override;
+		virtual void SetFloat4(const std::string& name, const glm::vec4& value) override;
 		virtual void SetInt(const std::string& name, int value) override;
 		virtual void SetMat4(const std::string& name, const glm::mat4& value) override;
 
@@ -44,8 +46,8 @@ namespace XYZ {
 
 		void parseSource(unsigned int Component,const std::string& source);
 
-		void setUniform(Uniform* uniform, unsigned char* data);
-		void setUniformArr(Uniform* uniform, unsigned char* data);
+		void setUniform(const Uniform* uniform, unsigned char* data);
+		void setUniformArr(const Uniform* uniform, unsigned char* data);
 
 		void uploadInt(uint32_t loc, int value);
 		void uploadFloat(uint32_t loc, float value);
