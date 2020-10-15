@@ -1218,7 +1218,22 @@ namespace XYZ {
 		
 		return result;
 	}
+	void InGui::NodeWindowEnd()
+	{
+		End();
+		XYZ_ASSERT(s_Context->PerFrameData.CurrentNodeWindow, "Missing begin call");
+		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiNodeWindow* nodeWindow = frameData.CurrentNodeWindow;
 
+		InGuiRenderer::SubmitUI(nodeWindow->Mesh);
+		InGuiRenderer::SubmitLineMesh(nodeWindow->LineMesh);
+		InGuiRenderer::FlushLines();
+		InGuiRenderer::Flush();
+		Renderer::Flush();
+
+		frameData.CurrentNodeWindow->FBO->Unbind();
+		frameData.CurrentNodeWindow = nullptr;
+	}
 	void InGui::PushConnection(uint32_t start, uint32_t end)
 	{
 		XYZ_ASSERT(s_Context->PerFrameData.CurrentNodeWindow, "Missing node window end call");
@@ -1398,22 +1413,7 @@ namespace XYZ {
 	{
 	}
 
-	void InGui::NodeWindowEnd()
-	{
-		End();
-		XYZ_ASSERT(s_Context->PerFrameData.CurrentNodeWindow, "Missing begin call");
-		InGuiPerFrameData& frameData = s_Context->PerFrameData;
-		InGuiNodeWindow* nodeWindow = frameData.CurrentNodeWindow;
-		
-		InGuiRenderer::SubmitUI(nodeWindow->Mesh);
-		InGuiRenderer::SubmitLineMesh(nodeWindow->LineMesh);
-		InGuiRenderer::FlushLines();
-		InGuiRenderer::Flush();
-	
 
-		frameData.CurrentNodeWindow->FBO->Unbind();
-		frameData.CurrentNodeWindow = nullptr;
-	}
 
 
 	void InGui::Separator()

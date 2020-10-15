@@ -54,6 +54,7 @@ namespace XYZ {
 	void OpenGLVertexBuffer::Update(void* vertices, uint32_t size, uint32_t offset)
 	{
 		m_LocalData.Write(vertices, size, offset);
+		Ref<OpenGLVertexBuffer> instance = this;
 		Renderer::Submit([this, offset, size]() {
 			XYZ_ASSERT(m_Usage == BufferUsage::Dynamic, "Buffer does not have dynamic usage");
 			glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);

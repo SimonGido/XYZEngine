@@ -250,7 +250,8 @@ namespace XYZ {
 
 		Renderer2D::Flush();
 		Renderer2D::FlushLines();
-		//Renderer2D::EndScene();
+		Renderer2D::EndScene();
+		Renderer::Flush();
 		m_FBO->Unbind();
 		
 	}

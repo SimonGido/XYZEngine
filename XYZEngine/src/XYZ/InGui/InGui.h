@@ -52,6 +52,7 @@ namespace XYZ {
 		static bool RenderWindow(uint32_t id, const char* name, uint32_t rendererID, const glm::vec2& position, const glm::vec2& size);
 
 		static bool NodeWindow(uint32_t id, const char* name, const glm::vec2& position, const glm::vec2& size, float dt);
+		static void NodeWindowEnd();
 		static void PushConnection(uint32_t start, uint32_t end);
 		static bool BeginNode(uint32_t id, std::string& name, const glm::vec2& position, const glm::vec2& size, bool &modified);
 		static bool BeginConnection(std::pair<uint32_t, uint32_t>& connection);
@@ -63,7 +64,7 @@ namespace XYZ {
 		static bool BeginOutput(uint32_t id, const glm::vec2& size, const char* name);
 		static void EndOutput();
 
-		static void NodeWindowEnd();
+		
 		
 		static void Separator();
 
