@@ -9,6 +9,7 @@ namespace XYZ {
 
 	struct RendererData
 	{
+		Ref<RenderPass> ActiveRenderPass;
 		RenderCommandQueue CommandQueue;
 	};
 
@@ -70,10 +71,34 @@ namespace XYZ {
 	}
 
 
-	void Renderer::Flush()
+	void Renderer::BeginRenderPass(const Ref<RenderPass>& renderPass, bool clear)
+	{
+		XYZ_ASSERT(renderPass, "Render pass can not be null");
+		s_Data.ActiveRenderPass = renderPass;
+		s_Data.ActiveRenderPass->GetSpecification().TargetFramebuffer->Bind();
+
+		if (clear)
+		{
+			const glm::vec4& clearColor = renderPass->GetSpecification().TargetFramebuffer->GetSpecification().ClearColor;
+			Renderer::Submit([=]() {
+				RendererAPI::SetClearColor(clearColor);
+				RendererAPI::Clear();
+				});
+		}
+	}
+
+	void Renderer::EndRenderPass()
+	{
+		XYZ_ASSERT(s_Data.ActiveRenderPass, "No active render pass! Have you called Renderer::EndRenderPass twice?");
+		s_Data.ActiveRenderPass->GetSpecification().TargetFramebuffer->Unbind();
+		s_Data.ActiveRenderPass = nullptr;
+	}
+
+	void Renderer::WaitAndRender()
 	{
 		s_Data.CommandQueue.Execute();
 	}
+
 	RenderCommandQueue& Renderer::GetRenderCommandQueue()
 	{
 		return s_Data.CommandQueue;

@@ -58,8 +58,7 @@ namespace XYZ {
 				for (Layer* layer : m_LayerStack)
 					layer->OnInGuiRender(timestep);
 				m_InGuiLayer->End();
-
-				Renderer::Flush();
+				
 			}
 			m_Window->Update();
 		}

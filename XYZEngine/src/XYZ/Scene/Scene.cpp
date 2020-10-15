@@ -133,7 +133,6 @@ namespace XYZ {
 		// 3D part here
 
 		///////////////
-		
 		Renderer2D::BeginScene({ viewProjMatrix ,winSize });
 		for (int i = 0; i < m_RenderGroup->Size(); ++i)
 		{
@@ -171,7 +170,6 @@ namespace XYZ {
 
 		///////////////
 
-	
 		Renderer2D::BeginScene(renderData);
 		for (int i = 0; i < m_RenderGroup->Size(); ++i)
 		{
@@ -181,8 +179,7 @@ namespace XYZ {
 		}
 		Renderer2D::Flush();
 		Renderer2D::FlushLines();
-		Renderer2D::EndScene();
-			
+		Renderer2D::EndScene();		
 	}
 
 	Entity Scene::GetEntity(uint16_t index)

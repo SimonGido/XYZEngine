@@ -3,6 +3,8 @@
 
 #include "XYZ/Core/Ref.h"
 
+#include <glm/glm.hpp>
+
 namespace XYZ {
 	/*! @class FrameBufferFormat
 	*	@brief Describes the color format of the FrameBuffer
@@ -30,6 +32,7 @@ namespace XYZ {
 	{
 		uint32_t Width;
 		uint32_t Height;
+		glm::vec4 ClearColor;
 		uint32_t Samples = 1;
 		FrameBufferFormat Format = FrameBufferFormat::RGBA16F;
 		bool SwapChainTarget = false; 

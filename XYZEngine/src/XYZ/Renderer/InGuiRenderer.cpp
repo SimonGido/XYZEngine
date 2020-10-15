@@ -260,8 +260,8 @@ namespace XYZ {
 
 			s_UIData.LineVertexBuffer->Update(s_UIData.LineBufferBase, dataSize);
 			s_UIData.LineVertexArray->Bind();
-			Renderer::DrawIndexed(PrimitiveType::Lines, s_UIData.LineIndexCount);
 
+			Renderer::DrawIndexed(PrimitiveType::Lines, s_UIData.LineIndexCount);
 			s_UIData.ResetLines();
 		}
 	}

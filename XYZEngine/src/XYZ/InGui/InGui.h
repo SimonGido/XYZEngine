@@ -8,7 +8,6 @@ namespace XYZ {
 		InGuiRenderConfiguration RenderConfiguration;
 		InGuiPerFrameData PerFrameData;
 		InGuiWindowMap Windows;
-		InGuiNodeWindowMap NodeWindows;
 		InGuiRenderQueue RenderQueue;
 		InGuiDockSpace* DockSpace = nullptr;
 	};
@@ -51,21 +50,7 @@ namespace XYZ {
 		static bool ColorPallete4(const char* name, const glm::vec2& size, glm::vec4& color);
 		static bool RenderWindow(uint32_t id, const char* name, uint32_t rendererID, const glm::vec2& position, const glm::vec2& size);
 
-		static bool NodeWindow(uint32_t id, const char* name, const glm::vec2& position, const glm::vec2& size, float dt);
-		static void NodeWindowEnd();
-		static void PushConnection(uint32_t start, uint32_t end);
-		static bool BeginNode(uint32_t id, std::string& name, const glm::vec2& position, const glm::vec2& size, bool &modified);
-		static bool BeginConnection(std::pair<uint32_t, uint32_t>& connection);
-		static void EndNode();
 
-		static bool BeginInput(uint32_t id, const glm::vec2& size, const char* name);
-		static void EndInput();
-
-		static bool BeginOutput(uint32_t id, const glm::vec2& size, const char* name);
-		static void EndOutput();
-
-		
-		
 		static void Separator();
 
 		static glm::vec4 Selector(bool & selecting);
@@ -88,8 +73,7 @@ namespace XYZ {
 		static bool ResolveRightRelease(bool handle = true);
 
 		static InGuiWindow* GetCurrentWindow();
-		static InGuiNodeWindow* GetCurrentNodeWindow();
-		static InGuiNodeWindow* GetNodeWindow(uint32_t id);	
+		
 		static InGuiWindow* GetWindow(uint32_t id);
 
 		static InGuiRenderConfiguration& GetRenderConfiguration();
@@ -97,9 +81,6 @@ namespace XYZ {
 		static glm::vec2 GetWorldPosition(const InGuiWindow& window, const glm::vec3& cameraPos, float aspectRatio, float zoomLevel);
 	private:
 		static InGuiWindow* createWindow(uint32_t id, const glm::vec2& position, const glm::vec2& size);
-		static InGuiNodeWindow* createNodeWindow(uint32_t id, const glm::vec2& position, const glm::vec2& size);
-		static InGuiNode* createNode(uint32_t id, const glm::vec2& position, const glm::vec2& size);
-		static InGuiNode* getNode(uint32_t id);
 
 		static bool detectResize(InGuiWindow& window);
 		static bool detectMoved(InGuiWindow& window);

@@ -23,9 +23,10 @@ namespace XYZ {
 
 	private:
 		GraphLayout* m_Layout = nullptr;
-		InGuiNodeWindow* m_GraphWindow = nullptr;
-		bool m_ActiveWindow = false;
+		InGuiWindow* m_GraphWindow = nullptr;
+		Ref<FrameBuffer> m_FBO;
 
+		bool m_ActiveWindow = false;
 		const uint32_t m_GraphID = 3;
 	};
 }

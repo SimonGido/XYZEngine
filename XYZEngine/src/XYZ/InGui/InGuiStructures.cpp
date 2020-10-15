@@ -48,8 +48,6 @@ namespace XYZ {
 		EventReceivingWindow = nullptr;
 		ModifiedWindow = nullptr;
 		CurrentWindow = nullptr;
-		CurrentNodeWindow = nullptr;
-		CurrentNode = nullptr;
 		TempVertices = new InGuiVertex[260 * 4];
 
 		ModifiedWindowMouseOffset = { 0,0 };
@@ -84,14 +82,6 @@ namespace XYZ {
 		MenuItemOffset = 0.0f;
 	}
 
-	InGuiNodeWindow::InGuiNodeWindow()
-	{
-	}
-	InGuiNodeWindow::~InGuiNodeWindow()
-	{
-		for (auto node : Nodes)
-			delete node.second;
-	}
 	void InGuiRenderQueue::PushOverlay(InGuiMesh* mesh, InGuiLineMesh* lineMesh)
 	{
 		if (!m_NumOverLayers)

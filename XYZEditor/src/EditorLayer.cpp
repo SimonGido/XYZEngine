@@ -133,10 +133,11 @@ namespace XYZ {
 
 		
 		auto& app = Application::Get();
-		m_FBO = FrameBuffer::Create({ app.GetWindow().GetWidth(),app.GetWindow().GetHeight() });
+		m_FBO = FrameBuffer::Create({ app.GetWindow().GetWidth(),app.GetWindow().GetHeight(),{0.4f,0.4f,0.4f,1.0f} });
 		m_FBO->CreateColorAttachment(FrameBufferFormat::RGBA16F);
 		m_FBO->CreateDepthAttachment();
 		m_FBO->Resize();
+		m_RenderPass = RenderPass::Create({ m_FBO });
 
 		InGui::RenderWindow(m_SceneID, "Scene", m_FBO->GetColorAttachment(0).RendererID, { 0,0 }, { 200,200 });
 		InGui::End();
@@ -229,15 +230,14 @@ namespace XYZ {
 
 			m_ModifiedTransform->Transform = transformMatrix;
 		}
-
 		glm::vec2 winSize = { Input::GetWindowSize().first, Input::GetWindowSize().second };
-		m_FBO->Bind();
-		Renderer::SetClearColor(glm::vec4(0.2, 0.2, 0.5, 1));
-		Renderer::Clear();
+		
+		Renderer::BeginRenderPass(m_RenderPass, true);
 		m_Scene->OnUpdate(ts);
 		m_Scene->OnRenderEditor({ m_EditorCamera.GetViewProjectionMatrix(),winSize });
-		m_FBO->Unbind();
-		
+		Renderer::EndRenderPass();	
+		Renderer::WaitAndRender();
+	
 	}
 	void EditorLayer::OnEvent(Event& event)
 	{

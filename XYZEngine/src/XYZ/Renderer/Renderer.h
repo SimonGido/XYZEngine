@@ -6,17 +6,9 @@
 #include "VertexArray.h"
 #include "RendererAPI.h"
 #include "RenderCommandQueue.h"
-
+#include "RenderPass.h"
 
 namespace XYZ {
-
-	struct RendererSubmitData
-	{
-		const std::shared_ptr<Shader> m_Shader;
-		const std::shared_ptr<VertexArray> m_VertexArray;
-
-		RendererSubmitData(const std::shared_ptr<Shader>& shader, const std::shared_ptr<VertexArray> vertexArray) : m_Shader(shader), m_VertexArray(vertexArray) {};
-	};
 
 	/**
 	* @class Renderer
@@ -53,6 +45,8 @@ namespace XYZ {
 			new (storageBuffer) FuncT(std::forward<FuncT>(func));
 		}
 
+		static void BeginRenderPass(const Ref<RenderPass>& renderPass, bool clear);
+		static void EndRenderPass();
 
 		/**
 		* @return RendererAPI
@@ -62,7 +56,7 @@ namespace XYZ {
 		/**
 		* Execute the command queue
 		*/
-		static void Flush();
+		static void WaitAndRender();
 
 	private:
 		static RenderCommandQueue& GetRenderCommandQueue();

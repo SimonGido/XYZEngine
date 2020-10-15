@@ -13,57 +13,6 @@ namespace XYZ {
 	{
 		if (m_Context && m_Graph)
 		{		
-			if (m_PopupEnabled)
-			{
-				if (InGui::BeginPopup("Create Node", m_PopupPosition, glm::vec2{ 150,25 }, m_PopupOpen))
-				{
-					if (InGui::PopupItem("Empty Node"))
-					{
-						auto state = m_Context->CreateState("Empty State " + std::to_string(++s_NextID));
-						bool tmpModified = false;
-						InGui::BeginNode(state.GetID(), "Empty State " + std::to_string(s_NextID), InGui::GetCurrentNodeWindow()->RelativeMousePosition, { 200, 70 }, tmpModified);
-						InGui::EndNode();
-						m_PopupEnabled = false;
-						m_PopupOpen = false;
-
-						m_ModifiedMap.insert({ state.GetID(),false });
-					}
-				}
-				InGui::EndPopup();
-				InGui::Separator();
-			}
-
-			std::pair<uint32_t, uint32_t> connection;
-			if (InGui::BeginConnection(connection))
-			{
-				m_Graph->Connect({ connection.first,connection.second });
-				m_Context->GetState(connection.first).AllowTransition(connection.second);
-			}
-			
-
-			uint32_t counter = 0;
-			float x = -500;
-			for (auto& state : m_Context->GetStatesMap())
-			{
-				float y = 0;
-				if (counter % 1)
-					y = 200.0f;
-				else if (counter % 2)
-					y = -200.0f;
-
-				uint32_t id = state.second.State.GetID();
-				InGui::BeginNode(id, state.second.Name, { x,y }, { 200,70 }, m_ModifiedMap[id]);
-				InGui::EndNode();
-
-				x += 400;
-				counter++;
-			}
-
-			for (auto& connection : m_Graph->GetConnections())
-			{
-				InGui::PushConnection(connection.Start, connection.End);
-			}
-
 			if (InGui::GetCurrentWindow()->Flags & InGuiWindowFlag::RightClicked)
 			{
 				auto [width, height] = Input::GetWindowSize();

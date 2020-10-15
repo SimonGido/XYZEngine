@@ -251,9 +251,8 @@ namespace XYZ {
 		Renderer2D::Flush();
 		Renderer2D::FlushLines();
 		Renderer2D::EndScene();
-		Renderer::Flush();
-		m_FBO->Unbind();
-		
+		m_FBO->Unbind();	
+		Renderer::WaitAndRender();
 	}
 	void SpriteEditorPanel::keepCameraOnContext()
 	{

@@ -6,7 +6,6 @@
 #include "XYZ/Renderer/SubTexture2D.h"
 #include "XYZ/Renderer/Framebuffer.h"
 #include "XYZ/Renderer/InGuiRenderer.h"
-#include "InGuiCamera.h"
 
 
 namespace XYZ {
@@ -110,7 +109,6 @@ namespace XYZ {
 		friend class InGui;
 	};
 
-	struct InGuiNodeWindow;
 	struct InGuiDockNode;
 	struct InGuiWindow
 	{
@@ -127,40 +125,9 @@ namespace XYZ {
 		const char* Name = nullptr;
 
 		InGuiDockNode* DockNode = nullptr;
-		InGuiNodeWindow* NodeWindow = nullptr;
 
 		std::function<void(const glm::vec2&)> OnResizeCallback;
 		static constexpr float PanelSize = 25.0f;
-	};
-
-	struct InGuiNode
-	{
-		glm::vec4 Color = { 1,1,1,1 };
-		glm::vec2 Position = { 0,0 };
-		glm::vec2 Size = { 0,0 };
-		uint32_t ID = 0;
-		uint8_t Flags = 0;
-	};
-
-	struct InGuiNodeWindow
-	{
-		InGuiNodeWindow();
-		~InGuiNodeWindow();
-		
-
-		Ref<FrameBuffer> FBO;
-		InGuiCamera InCamera;
-		InGuiMesh Mesh;
-		InGuiLineMesh LineMesh;
-
-		InGuiNode* SelectedNode = nullptr;
-		InGuiWindow* RenderWindow = nullptr;
-
-		std::unordered_map<uint32_t, InGuiNode*> Nodes;
-
-		glm::vec2 RelativeMousePosition = { 0,0 };
-		glm::vec2 PopupPosition = { 0,0 };
-		bool PopupEnabled = false;
 	};
 
 	struct InGuiPerFrameData
@@ -173,8 +140,7 @@ namespace XYZ {
 		InGuiWindow* EventReceivingWindow;
 		InGuiWindow* ModifiedWindow;
 		InGuiWindow* CurrentWindow;
-		InGuiNodeWindow* CurrentNodeWindow;
-		InGuiNode* CurrentNode;
+	
 
 		InGuiVertex* TempVertices;
 
@@ -247,7 +213,6 @@ namespace XYZ {
 
 
 	using InGuiWindowMap = std::unordered_map<uint32_t, InGuiWindow*>;
-	using InGuiNodeWindowMap = std::unordered_map<uint32_t, InGuiNodeWindow*>;
 	using InGuiEventListeners = std::vector<InGuiWindow*>;
 
 	class InGuiRenderQueue

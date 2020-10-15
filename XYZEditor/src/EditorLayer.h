@@ -77,7 +77,7 @@ namespace XYZ {
 
 		EditorCamera m_EditorCamera;
 		Ref<Scene> m_Scene;
-
+		Ref<RenderPass> m_RenderPass;
 		Ref<FrameBuffer> m_FBO;
 		AssetManager m_AssetManager;
 		std::vector<Entity> m_StoredEntitiesWithScript;
