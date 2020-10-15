@@ -270,7 +270,7 @@ namespace XYZ {
 				InGui::Separator();
 				m_Window->Flags |= InGuiWindowFlag::AutoPosition;
 			}
-			if (InGui::ResolveLeftClick())
+			if (InGui::ResolveLeftClick(false))
 			{
 				m_SelectedFile.clear();
 				m_SelectedFileIndex = sc_InvalidIndex;

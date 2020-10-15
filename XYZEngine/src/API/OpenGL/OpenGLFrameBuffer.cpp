@@ -55,20 +55,21 @@ namespace XYZ {
 				}
 				XYZ_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer is not complete");
 				glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 			}
 		});
 	}
 	void OpenGLFrameBuffer::Bind() const
 	{
-		Renderer::Submit([=]() {
+		Renderer::Submit([this]() {
 			XYZ_ASSERT(!m_ColorAttachments.empty() || !m_DepthAttachments.empty(), "Binding framebuffer without any attachments");
 			glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 			});
 	}
 	void OpenGLFrameBuffer::Unbind() const
 	{
-		Renderer::Submit([=]() {glBindFramebuffer(GL_FRAMEBUFFER, 0); });
+		Renderer::Submit([this]() {
+			glBindFramebuffer(GL_FRAMEBUFFER, 0); 
+		});
 	}
 	
 	void OpenGLFrameBuffer::SetSpecification(const FrameBufferSpecs& specs)
@@ -127,6 +128,8 @@ namespace XYZ {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, GL_TEXTURE_2D, attachment.RendererID, 0);
+		
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
 	void OpenGLFrameBuffer::setupDepthAttachment(DepthAttachment& attachment)

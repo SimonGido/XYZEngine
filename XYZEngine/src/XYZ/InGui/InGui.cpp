@@ -1192,7 +1192,6 @@ namespace XYZ {
 		frameData.CurrentNodeWindow = nodeWindow;
 		nodeWindow->RenderWindow->Flags &= ~InGuiWindowFlag::AutoPosition;
 		
-		
 		nodeWindow->FBO->Bind();	
 		Renderer::SetClearColor(glm::vec4(0.1, 0.1, 0.1, 1));
 		Renderer::Clear();

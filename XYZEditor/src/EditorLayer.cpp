@@ -260,7 +260,6 @@ namespace XYZ {
 			m_SelectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
 			m_EntityInspectorLayout.SetContext(m_SelectedEntity);
 		}
-	
 		if (m_GraphPanel.OnInGuiRender(ts))
 		{
 			m_InspectorPanel.SetInspectorLayout(&m_AnimatorInspectorLayout);
