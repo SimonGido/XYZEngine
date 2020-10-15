@@ -12,7 +12,7 @@
 * pure virtual (interface) class.
 */
 namespace XYZ {
-	class APIContext
+	class APIContext : public RefCount
 	{
 	public:
 		/**	
@@ -32,6 +32,6 @@ namespace XYZ {
 		* param[in] window     Pointer to the window handler
 		* @return a unique pointer to APIContext
 		*/
-		static std::unique_ptr<APIContext> Create(void* window);
+		static Ref<APIContext> Create(void* window);
 	};
 }
