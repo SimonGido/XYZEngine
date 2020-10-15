@@ -1,6 +1,8 @@
 #pragma once
 
 #include "XYZ/Renderer/Texture.h"
+#include "XYZ/Utils/DataStructures/ByteBuffer.h"
+
 #include <GL/glew.h>
 
 namespace XYZ {
@@ -29,7 +31,7 @@ namespace XYZ {
 		TextureSpecs m_Specification;
 		GLenum m_DataFormat, m_InternalFormat;
 
-		uint8_t* m_LocalData = nullptr;
+		ByteBuffer m_LocalData;
 	};
 
 }

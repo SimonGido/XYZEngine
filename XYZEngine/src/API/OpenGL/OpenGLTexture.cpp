@@ -12,8 +12,8 @@ namespace XYZ {
 		m_Filepath = path;
 		int width, height, channels;
 		stbi_set_flip_vertically_on_load(1);	
-		m_LocalData = stbi_load(path.c_str(), &width, &height, &channels, 0);
-		
+		m_LocalData = (uint8_t*)stbi_load(path.c_str(), &width, &height, &channels, 0);
+
 		XYZ_ASSERT(m_LocalData, "Failed to load image!");
 		m_Specification.Width = width;
 		m_Specification.Height = height;
@@ -79,6 +79,7 @@ namespace XYZ {
 			glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Specification.Width, m_Specification.Height, m_DataFormat, GL_UNSIGNED_BYTE, m_LocalData);
 			glGenerateTextureMipmap(m_RendererID);
 			stbi_image_free(m_LocalData);
+			m_LocalData = nullptr;
 		});
 	}
 
@@ -91,6 +92,8 @@ namespace XYZ {
 
 		m_InternalFormat = GL_RGBA8;
 		m_DataFormat = GL_RGBA;
+		m_LocalData.Allocate(m_Specification.Width * m_Specification.Height * m_Specification.Channels);
+
 
 		Renderer::Submit([this]() {
 			glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
@@ -128,6 +131,7 @@ namespace XYZ {
 
 	OpenGLTexture2D::~OpenGLTexture2D()
 	{
+		delete[]m_LocalData;
 		Renderer::Submit([=]() {glDeleteTextures(1, &m_RendererID); });
 	}
 
@@ -142,11 +146,11 @@ namespace XYZ {
 
 	uint8_t* OpenGLTexture2D::GetData()
 	{
-		uint8_t* buffer = new uint8_t[m_Specification.Width * m_Specification.Height * m_Specification.Channels * sizeof(uint8_t)];
+		m_LocalData.Allocate(m_Specification.Width * m_Specification.Height * m_Specification.Channels);
 		glBindTexture(GL_TEXTURE_2D, m_RendererID);
-		glGetTexImage(GL_TEXTURE_2D, 0, m_DataFormat, GL_UNSIGNED_BYTE, buffer);
+		glGetTexImage(GL_TEXTURE_2D, 0, m_DataFormat, GL_UNSIGNED_BYTE, m_LocalData);
 
-		return buffer;
+		return m_LocalData;
 	}
 
 	void OpenGLTexture2D::Bind(uint32_t slot) const

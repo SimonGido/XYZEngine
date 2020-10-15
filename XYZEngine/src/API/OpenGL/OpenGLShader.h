@@ -71,8 +71,8 @@ namespace XYZ {
 		std::string m_Name;
 		std::string m_Path;
 
-		unsigned int m_NumTakenTexSlots;
-		unsigned int m_UniformsSize;
+		uint32_t m_NumTakenTexSlots;
+		uint32_t m_UniformsSize;
 
 		std::vector<Uniform> m_Uniforms;
 		std::vector<TextureUniform> m_Textures;
@@ -82,7 +82,7 @@ namespace XYZ {
 		std::unordered_map<unsigned int, std::string> m_ShaderSources;
 
 		// Temporary, in future we will get that information from the GPU
-		static constexpr int sc_MaxTextureSlots = 32;
+		static constexpr uint32_t sc_MaxTextureSlots = 32;
 	};
 
 }

@@ -9,8 +9,7 @@ namespace XYZ {
 	OpenGLVertexBuffer::OpenGLVertexBuffer(float* vertices, uint32_t size, BufferUsage usage)
 		: m_Size(size), m_Usage(usage)
 	{
-		m_LocalData = new float[size];
-		memcpy(m_LocalData, vertices, size * sizeof(float));
+		m_LocalData = ByteBuffer::Copy(vertices, size);
 		Renderer::Submit([=]() {glCreateBuffers(1, &m_RendererID);
 				glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
 				switch (usage)
@@ -24,7 +23,7 @@ namespace XYZ {
 	OpenGLVertexBuffer::OpenGLVertexBuffer(uint32_t size)
 		: m_Size(size), m_Usage(BufferUsage::Dynamic)
 	{
-		m_LocalData = new float[size];
+		m_LocalData.Allocate(size);
 		Renderer::Submit([this]() {
 			glCreateBuffers(1, &m_RendererID);
 			glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
@@ -54,7 +53,7 @@ namespace XYZ {
 
 	void OpenGLVertexBuffer::Update(void* vertices, uint32_t size, uint32_t offset)
 	{
-		memcpy(m_LocalData + offset, vertices, size);
+		m_LocalData.Write(vertices, size, offset);
 		Renderer::Submit([this, offset, size]() {
 			XYZ_ASSERT(m_Usage == BufferUsage::Dynamic, "Buffer does not have dynamic usage");
 			glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
@@ -78,7 +77,7 @@ namespace XYZ {
 	OpenGLIndexBuffer::OpenGLIndexBuffer(uint32_t* indices, uint32_t count)
 		: m_Count(count)
 	{
-		m_LocalData = new uint32_t[count];
+		m_LocalData = ByteBuffer::Copy(indices, count * sizeof(uint32_t));
 		memcpy(m_LocalData, indices, count * sizeof(uint32_t));
 		Renderer::Submit([this]() {
 			glCreateBuffers(1, &m_RendererID);
@@ -114,7 +113,7 @@ namespace XYZ {
 	OpenGLShaderStorageBuffer::OpenGLShaderStorageBuffer(float* data, uint32_t size, BufferUsage usage)
 		:m_Size(size), m_Usage(usage)
 	{
-		
+		m_LocalData = ByteBuffer::Copy(data, size);
 		Renderer::Submit([=]() {glGenBuffers(1, &m_RendererID);
 			glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_RendererID);
 			switch (m_Usage)
@@ -128,6 +127,7 @@ namespace XYZ {
 
 	OpenGLShaderStorageBuffer::~OpenGLShaderStorageBuffer()
 	{
+		delete[]m_LocalData;
 		Renderer::Submit([=]() {
 			glDeleteBuffers(1, &m_RendererID);
 			});
@@ -152,16 +152,18 @@ namespace XYZ {
 		Renderer::Submit([=]() {glBindBuffer(GL_ARRAY_BUFFER, m_RendererID); });
 	}
 
-	void OpenGLShaderStorageBuffer::Update(const void* data, uint32_t size, uint32_t offset)
+	void OpenGLShaderStorageBuffer::Update(void* data, uint32_t size, uint32_t offset)
 	{
+		m_LocalData.Write(data, size, offset);
 		Renderer::Submit([=]() {
 			glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
 			glBufferSubData(GL_ARRAY_BUFFER, offset, size, data);
 			});
 	}
 
-	void OpenGLShaderStorageBuffer::Resize(const void* data, uint32_t size)
+	void OpenGLShaderStorageBuffer::Resize(void* data, uint32_t size)
 	{
+		m_LocalData.Write(data, size);
 		Renderer::Submit([=]() {
 			glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
 			switch (m_Usage)
