@@ -342,6 +342,7 @@ ASALocalRun/
 healthchecksdb
 /bin-int/Debug-windows-x86_64
 /bin-int/Release-windows-x86_64
+
 /XYZEditor/XYZLog.txt
 /XYZEditor/results.json
 *.sln
