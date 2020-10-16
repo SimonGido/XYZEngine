@@ -5,7 +5,6 @@
 #include "XYZ/Core/Application.h"
 #include "XYZ/Renderer/Renderer.h"
 
-#include "XYZ/Renderer/RenderCommand.h"
 #include "XYZ/NativeScript/ScriptableEntity.h"
 #include "XYZ/ECS/Entity.h"
 
@@ -20,6 +19,7 @@ namespace XYZ {
 		m_Name(name)
 	{
 		m_RenderGroup = m_ECS.CreateGroup<TransformComponent, SpriteRenderer>();
+		m_AnimateGroup = m_ECS.CreateGroup<AnimatorComponent>();
 		m_ScriptGroup = m_ECS.CreateGroup<NativeScriptComponent>();
 
 		uint32_t entity = m_ECS.CreateEntity();
@@ -27,7 +27,7 @@ namespace XYZ {
 		m_SceneWorld.Entity = entity;
 			
 		
-		m_Root = m_SceneGraph.InsertNode(Node<SceneObject>(m_SceneWorld));
+		m_Root = m_SceneGraph.InsertNode(Node<SceneObject,uint16_t>(m_SceneWorld));
 		m_SceneGraph.SetRoot(m_Root);
 
 
@@ -63,8 +63,8 @@ namespace XYZ {
 		object.Entity = entity;
 		
 
-		uint16_t id = m_SceneGraph.InsertNode(Node<SceneObject>(object));	
-		m_SceneGraph.SetParent(m_Root, id, [](SceneObject& parent, SceneObject& child) {
+		uint16_t id = m_SceneGraph.InsertNode(Node<SceneObject, uint16_t>(object));
+		m_SceneGraph.SetParent(m_Root, id, [](Node<SceneObject, uint16_t>* parent, Node<SceneObject, uint16_t>* child) {
 			//child.Transform->SetParent(parent.Transform);
 		});
 		m_SceneGraphMap.insert({ entity,id });
@@ -96,7 +96,7 @@ namespace XYZ {
 		uint16_t childIndex = itChild->second;
 		
 		m_SceneGraph[childIndex].Parent = parentIndex;
-		m_SceneGraph.SetParent(parentIndex, childIndex, [](SceneObject& parent, SceneObject& child) {
+		m_SceneGraph.SetParent(parentIndex, childIndex, [](Node<SceneObject, uint16_t>* parent, Node<SceneObject, uint16_t>* child) {
 			//child.Transform->SetParent(parent.Transform);
 		});
 	}
@@ -126,14 +126,13 @@ namespace XYZ {
 		glm::vec2 winSize = { Input::GetWindowSize().first, Input::GetWindowSize().second };
 
 		
-		m_SceneGraph.Propagate([this](SceneObject* parent, SceneObject* child) {
+		m_SceneGraph.Propagate([this](Node<SceneObject, uint16_t>* parent, Node<SceneObject, uint16_t>* child) {
 			//child->Transform->CalculateWorldTransformation();
 		});
 		
 		// 3D part here
 
 		///////////////
-
 		Renderer2D::BeginScene({ viewProjMatrix ,winSize });
 		for (int i = 0; i < m_RenderGroup->Size(); ++i)
 		{
@@ -148,7 +147,11 @@ namespace XYZ {
 
 	void Scene::OnUpdate(Timestep ts)
 	{
-		Entity ent = GetEntity(2);
+		for (int i = 0; i < m_AnimateGroup->Size(); ++i)
+		{
+			auto [animator] = (*m_AnimateGroup)[i];
+			animator->Controller->Update(ts);
+		}
 		for (int i = 0; i < m_ScriptGroup->Size(); ++i)
 		{
 			auto [script] = (*m_ScriptGroup)[i];
@@ -159,7 +162,7 @@ namespace XYZ {
 
 	void Scene::OnRenderEditor(const SceneRenderData& renderData)
 	{
-		m_SceneGraph.Propagate([this](SceneObject* parent, SceneObject* child) {
+		m_SceneGraph.Propagate([this](Node<SceneObject, uint16_t>* parent, Node<SceneObject, uint16_t>* child) {
 			//child->Transform->CalculateWorldTransformation();
 		});
 
@@ -167,7 +170,6 @@ namespace XYZ {
 
 		///////////////
 
-	
 		Renderer2D::BeginScene(renderData);
 		for (int i = 0; i < m_RenderGroup->Size(); ++i)
 		{
@@ -177,8 +179,7 @@ namespace XYZ {
 		}
 		Renderer2D::Flush();
 		Renderer2D::FlushLines();
-		Renderer2D::EndScene();
-			
+		Renderer2D::EndScene();		
 	}
 
 	Entity Scene::GetEntity(uint16_t index)

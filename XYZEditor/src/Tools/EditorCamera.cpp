@@ -67,8 +67,8 @@ namespace XYZ {
 		{
 			auto [mx,my] = Input::GetMousePosition();
 		
-			m_CameraPosition.x = m_OldPosition.x - ((mx - m_StartMousePos.x) * m_CameraMouseMoveSpeed * m_CameraTranslationSpeed);
-			m_CameraPosition.y = m_OldPosition.y + ((my - m_StartMousePos.y) * m_CameraMouseMoveSpeed * m_CameraTranslationSpeed);
+			m_CameraPosition.x = m_OldPosition.x - ((mx - m_StartMousePos.x) * m_CameraMouseMoveSpeed);
+			m_CameraPosition.y = m_OldPosition.y + ((my - m_StartMousePos.y) * m_CameraMouseMoveSpeed);
 			
 			modified = true;
 		}
@@ -86,6 +86,24 @@ namespace XYZ {
 		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&EditorCamera::onMouseButtonPress, this));
 		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorCamera::onMouseButtonRelease, this));
 	}
+
+	void EditorCamera::OnResize(const glm::vec2& size)
+	{
+		m_AspectRatio = size.x / size.y;
+		m_ProjectionMatrix = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
+		recalculate();
+	}
+
+	void EditorCamera::SetPosition(const glm::vec3& pos)
+	{
+		m_CameraPosition = pos;
+		recalculate();
+	}
+	void EditorCamera::Translate(const glm::vec3& translation)
+	{
+		m_CameraPosition += translation;
+		recalculate();
+	}
 	void EditorCamera::recalculate()
 	{
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), m_CameraPosition) *
@@ -101,14 +119,14 @@ namespace XYZ {
 		m_CameraTranslationSpeed = m_ZoomLevel;
 
 
-		m_ProjectionMatrix = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, m_AspectRatio * -m_ZoomLevel, m_AspectRatio * m_ZoomLevel);
+		m_ProjectionMatrix = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
 		m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
 
 		return false;
 	}
 	bool EditorCamera::onMouseButtonPress(MouseButtonPressEvent& event)
 	{
-		if (event.GetButton() == MouseCode::XYZ_MOUSE_BUTTON_RIGHT)
+		if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_MIDDLE))
 		{
 			m_MouseMoving = true;
 			auto [mx, my] = Input::GetMousePosition();
@@ -119,7 +137,7 @@ namespace XYZ {
 	}
 	bool EditorCamera::onMouseButtonRelease(MouseButtonReleaseEvent& event)
 	{
-		if (event.GetButton() == MouseCode::XYZ_MOUSE_BUTTON_RIGHT)
+		if (event.IsButtonReleased(MouseCode::XYZ_MOUSE_BUTTON_MIDDLE))
 		{
 			m_MouseMoving = false;
 		}
@@ -128,7 +146,7 @@ namespace XYZ {
 	bool EditorCamera::onWindowResized(WindowResizeEvent& event)
 	{
 		m_AspectRatio = (float)event.GetWidth() / (float)event.GetHeight();
-		m_ProjectionMatrix = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, m_AspectRatio * -m_ZoomLevel, m_AspectRatio * m_ZoomLevel);
+		m_ProjectionMatrix = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
 		m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
 		return false;
 	}

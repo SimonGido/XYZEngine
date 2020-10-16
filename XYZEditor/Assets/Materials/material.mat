@@ -1,4 +1,4 @@
-Material: material name
+Material: material
 ShaderAssetPath: Assets/Shaders/DefaultShader.glsl
 Textures:
   - TextureAssetPath: Assets/Textures/player_sprite.png

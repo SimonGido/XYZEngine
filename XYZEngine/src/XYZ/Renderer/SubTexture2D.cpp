@@ -18,7 +18,6 @@ namespace XYZ {
 	}
 
 
-
 	void SubTexture2D::SetCoords(const glm::vec2& coords, const glm::vec2& size)
 	{
 		glm::vec2 min = { (coords.x * size.x) / m_Texture->GetWidth(), (coords.y * size.y) / m_Texture->GetHeight() };

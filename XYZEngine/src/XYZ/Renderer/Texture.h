@@ -22,6 +22,13 @@ namespace XYZ {
 		Repeat = 2
 	};
 
+	enum class TextureParam
+	{
+		None = 0,
+		Nearest = 1,
+		Linear = 2
+	};
+
 
 	struct TextureSpecs
 	{
@@ -30,6 +37,8 @@ namespace XYZ {
 		uint32_t Channels;
 		TextureWrap Wrap;
 		TextureFormat Format = TextureFormat::None;
+		TextureParam MinParam = TextureParam::None;
+		TextureParam MagParam = TextureParam::None;
 	};
 
 	/**
@@ -51,6 +60,7 @@ namespace XYZ {
 		virtual const TextureSpecs& GetSpecification() const = 0;
 		virtual void Bind(uint32_t slot = 0) const = 0;
 
+		static uint32_t CalculateMipMapCount(uint32_t width, uint32_t height);
 	};
 
 	/**
@@ -67,7 +77,7 @@ namespace XYZ {
 		* @param[in] height Height of the texture
 		* @return shared_ptr to empty Texture2D
 		*/
-		static Ref<Texture2D> Create(TextureFormat format, TextureWrap wrap, uint32_t width, uint32_t height);
+		static Ref<Texture2D> Create(const TextureSpecs& specs);
 		
 		
 		/**
@@ -75,7 +85,7 @@ namespace XYZ {
 		* @param[in] path	File path to the image
 		* @return shared_ptr to Texture2D
 		*/
-		static Ref<Texture2D> Create(TextureWrap wrap, const std::string& path);
+		static Ref<Texture2D> Create(TextureWrap wrap, TextureParam min, TextureParam max, const std::string& path);
 
 		static void Bind(uint32_t rendererID, uint32_t slot);
 	};

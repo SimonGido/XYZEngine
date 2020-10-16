@@ -26,6 +26,7 @@ namespace XYZ {
 		virtual size_t GetNumberDepthAttachments() const override { return m_DepthAttachments.size(); }
 
 		virtual const FrameBufferSpecs& GetSpecification() const override { return m_Specification; }
+		virtual FrameBufferSpecs& GetSpecification() override { return m_Specification; }
 	private:
 		void setupColorAttachment(ColorAttachment& attachment, uint32_t index);
 		void setupDepthAttachment(DepthAttachment& attachment);

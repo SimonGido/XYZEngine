@@ -187,8 +187,8 @@ namespace XYZ {
 		{
 			auto uni = m_Material->m_Shader->FindUniform(name);
 			XYZ_ASSERT(uni, "Material uniform does not exist");
-			XYZ_ASSERT(uni->offset + uni->size <= m_Material->m_Shader->GetUniformSize(), "Material uniform buffer out of range");
-			memcpy(m_Buffer + uni->offset, (unsigned char*)& val, uni->size);
+			XYZ_ASSERT(uni->Offset + uni->Size <= m_Material->m_Shader->GetUniformSize(), "Material uniform buffer out of range");
+			memcpy(m_Buffer + uni->Offset, (unsigned char*)& val, uni->Size);
 			m_UpdatedValues.insert(name);
 		}
 
@@ -205,9 +205,9 @@ namespace XYZ {
 		{
 			auto uni = m_Material->m_Shader->FindUniform(name);
 			XYZ_ASSERT(uni, "Material uniform does not exist ", name.c_str());
-			XYZ_ASSERT(uni->offset + uni->size <= m_Material->m_Shader->GetUniformSize(), "Material uniform buffer out of range");
-			XYZ_ASSERT(size + offset < uni->size, "Material uniform out of range");
-			memcpy(m_Buffer + uni->offset + offset, (unsigned char*)& val, size);
+			XYZ_ASSERT(uni->Offset + uni->Size <= m_Material->m_Shader->GetUniformSize(), "Material uniform buffer out of range");
+			XYZ_ASSERT(size + Offset < uni->Size, "Material uniform out of range");
+			memcpy(m_Buffer + uni->Offset + offset, (unsigned char*)& val, size);
 			m_UpdatedValues.insert(name);
 		}
 

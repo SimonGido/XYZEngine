@@ -15,22 +15,22 @@
 
 
 //-----Renderer-----//
-#include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/Renderer.h"
-#include "XYZ/Renderer/RenderCommand.h"
+#include "XYZ/Renderer/Renderer2D.h"
+#include "XYZ/Renderer/RenderPass.h"
 #include "XYZ/Renderer/Material.h"
 
 #include "XYZ/Renderer/MaterialManager.h"
 #include "XYZ/Renderer/Framebuffer.h"
 #include "XYZ/Renderer/MeshFactory.h"
 #include "XYZ/Renderer/SpriteRenderer.h"
-#include "XYZ/Renderer/Animation.h"
 #include "XYZ/Renderer/SubTexture2D.h"
 
 //-----Scene-----//
 #include "XYZ/Scene/SceneCamera.h"
 #include "XYZ/Scene/SceneManager.h"
 #include "XYZ/Scene/AssetManager.h"
+#include "XYZ/Scene/Animation.h"
 
 //------ECS-----//
 #include "XYZ/ECS/ECSManager.h"
@@ -50,7 +50,9 @@
 
 
 #include "XYZ/Utils/DataStructures/Tree.h"
-#include "XYZ/Gui/Font.h"
+#include "XYZ/Utils/DataStructures/Graph.h"
+
+#include "XYZ/Renderer/Font.h"
 
 
 
@@ -59,13 +61,11 @@
 #include "XYZ/Gui/Button.h"
 #include "XYZ/Gui/Checkbox.h"
 
-
-//------InUI-------//
+//------InGui-------//
 #include "XYZ/InGui/InGui.h"
-#include "XYZ/InGui/InGuiCore.h"
 
 
-#include "XYZ/FSM/Machine.h"
+#include "XYZ/FSM/StateMachine.h"
 
 
 //------NativeScript-------//

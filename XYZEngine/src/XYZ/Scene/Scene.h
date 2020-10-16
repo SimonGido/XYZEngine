@@ -111,6 +111,7 @@ namespace XYZ {
     private:
         ECSManager m_ECS;
         ComponentGroup<TransformComponent, SpriteRenderer>* m_RenderGroup = nullptr;
+        ComponentGroup<AnimatorComponent>* m_AnimateGroup = nullptr;
         ComponentGroup<NativeScriptComponent>* m_ScriptGroup = nullptr;
 
         std::string m_Name;
@@ -123,7 +124,7 @@ namespace XYZ {
         uint16_t m_Root;
         SceneObject m_SceneWorld;
 
-        Tree<SceneObject> m_SceneGraph;
+        Tree<SceneObject,uint16_t> m_SceneGraph;
         std::unordered_map<uint32_t, uint16_t> m_SceneGraphMap;
 
      

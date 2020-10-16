@@ -1,14 +1,16 @@
 #pragma once
 
 #include "XYZ/Renderer/Texture.h"
+#include "XYZ/Utils/DataStructures/ByteBuffer.h"
+
 #include <GL/glew.h>
 
 namespace XYZ {
 	class OpenGLTexture2D : public Texture2D
 	{
 	public:
-		OpenGLTexture2D(TextureWrap wrap, const std::string& path);
-		OpenGLTexture2D(TextureFormat format, TextureWrap wrap, uint32_t width, uint32_t height);
+		OpenGLTexture2D(TextureWrap wrap, TextureParam min, TextureParam max, const std::string& path);
+		OpenGLTexture2D(const TextureSpecs& specs);
 
 
 		virtual ~OpenGLTexture2D();
@@ -24,10 +26,12 @@ namespace XYZ {
 
 		static void Bind(uint32_t rendererID, uint32_t slot);
 	private:
-		uint32_t m_RendererID;
+		uint32_t m_RendererID = 0;
 
 		TextureSpecs m_Specification;
 		GLenum m_DataFormat, m_InternalFormat;
+
+		ByteBuffer m_LocalData;
 	};
 
 }

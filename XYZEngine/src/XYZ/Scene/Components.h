@@ -1,6 +1,7 @@
 #pragma once
 #include "XYZ/ECS/Component.h"
 #include "SceneCamera.h"
+#include "AnimationController.h"
 
 #include <glm/glm.hpp>
 
@@ -69,5 +70,11 @@ namespace XYZ {
 		std::string ScriptObjectName;
 	};
 
+	struct AnimatorComponent : public Type<AnimatorComponent>
+	{
+		AnimatorComponent() = default;
+		
+		Ref<AnimationController> Controller;
+	};
 	
 }

@@ -1,6 +1,6 @@
 #pragma once
 #include "XYZ/Renderer/Buffer.h"
-
+#include "XYZ/Utils/DataStructures/ByteBuffer.h"
 
 namespace XYZ {
 	class OpenGLVertexBuffer : public VertexBuffer
@@ -19,11 +19,11 @@ namespace XYZ {
 
 		virtual const BufferLayout& GetLayout() const override { return m_Layout; };
 	private:
-		BufferUsage m_Usage;
+		uint32_t m_RendererID = 0;
 		uint32_t m_Size;
-		uint32_t m_RendererID;
+		BufferUsage m_Usage;
 		BufferLayout m_Layout;
-
+		ByteBuffer m_LocalData;
 	};
 
 	class OpenGLIndexBuffer : public IndexBuffer
@@ -37,8 +37,9 @@ namespace XYZ {
 
 		virtual uint32_t GetCount() const override { return m_Count; }
 	private:
-		uint32_t m_RendererID;
+		uint32_t m_RendererID = 0;
 		uint32_t m_Count;
+		ByteBuffer m_LocalData;
 	};
 
 	class OpenGLShaderStorageBuffer : public ShaderStorageBuffer
@@ -49,18 +50,19 @@ namespace XYZ {
 		virtual void BindBase(uint32_t index) const override;
 		virtual void BindRange(uint32_t offset, uint32_t size, uint32_t index)const override;
 		virtual void Bind()const override;
-		virtual void Update(const void* data, uint32_t size, uint32_t offset = 0) override;
-		virtual void Resize(const void* data, uint32_t size) override;
+		virtual void Update(void* data, uint32_t size, uint32_t offset = 0) override;
+		virtual void Resize(void* data, uint32_t size) override;
 		virtual void GetSubData(void* buffer, uint32_t size, uint32_t offset = 0) override;
 
 		virtual void SetLayout(const BufferLayout& layout) override { m_Layout = layout; };;
 		virtual const BufferLayout& GetLayout() const override { return m_Layout; };
 
 	private:
-		BufferUsage m_Usage;
+		uint32_t m_RendererID = 0;
 		uint32_t m_Size;
-		uint32_t m_RendererID;
+		BufferUsage m_Usage;
 		BufferLayout m_Layout;
+		ByteBuffer m_LocalData;
 	};
 
 
@@ -77,9 +79,9 @@ namespace XYZ {
 		virtual uint32_t GetNumCounters() { return m_NumberOfCounters; }
 
 	private:
+		uint32_t m_RendererID = 0;
 		uint32_t m_NumberOfCounters;
 		uint32_t* m_Counters;
-		uint32_t m_RendererID;
 	};
 
 
@@ -93,7 +95,7 @@ namespace XYZ {
 		virtual void Bind()const override;
 		virtual void BindBase(uint32_t index) override;
 	private:
-		uint32_t m_RendererID;
+		uint32_t m_RendererID = 0;
 		uint32_t m_Size;
 	};
 

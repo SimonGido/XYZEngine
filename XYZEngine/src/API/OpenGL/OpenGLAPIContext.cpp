@@ -9,7 +9,7 @@
 namespace XYZ {
 
 #ifdef XYZ_DEBUG
-	void APIENTRY openglCallbackFunction(
+	void APIENTRY OpenglCallbackFunction(
 		GLenum source,
 		GLenum Component,
 		GLuint id,
@@ -105,7 +105,7 @@ namespace XYZ {
 			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 			glEnable(GL_DEBUG_OUTPUT);
 
-			glDebugMessageCallback(openglCallbackFunction, nullptr);
+			glDebugMessageCallback(OpenglCallbackFunction, nullptr);
 			GLuint unusedIds = 0;
 			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, &unusedIds, true);
 		}

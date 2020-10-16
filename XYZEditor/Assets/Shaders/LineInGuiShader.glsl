@@ -9,11 +9,12 @@ out vec4 v_Color;
 
 
 uniform vec2 u_ViewportSize;
+uniform mat4 u_ViewProjection;
 
 void main()
 {
 	v_Color = a_Color;
-	gl_Position = vec4(a_Position.xy / (u_ViewportSize / 2), 0.0, 1.0);
+	gl_Position = u_ViewProjection * vec4(a_Position.xy / (u_ViewportSize / 2), 0.0, 1.0);
 }
 
 #type fragment

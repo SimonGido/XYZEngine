@@ -1,6 +1,7 @@
 #pragma once
 #include "Event.h"
 #include "XYZ/Core/KeyCodes.h"
+#include "XYZ/Core/MouseCodes.h"
 
 namespace XYZ {
 	/*! @class KeyPressedEvent
@@ -110,6 +111,7 @@ namespace XYZ {
 		};
 
 		inline int GetButton() const { return m_Button; }
+		bool IsButtonPressed(MouseCode code) const { return m_Button == ToUnderlying(code); }
 		virtual EventType GetEventType() const override { return m_Type; }
 		static EventType GetStaticType()
 		{
@@ -132,6 +134,7 @@ namespace XYZ {
 		};
 
 		inline int GetButton() const { return m_Button; }
+		bool IsButtonReleased(MouseCode code) const { return m_Button == ToUnderlying(code); }
 		virtual EventType GetEventType() const override { return m_Type; }
 		
 		static EventType GetStaticType()

@@ -2,32 +2,13 @@
 #include "InGuiRenderer.h"
 
 #include "VertexArray.h"
-#include "RenderCommand.h"
+#include "Renderer.h"
 #include "XYZ/Renderer/Mesh.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <array>
 
 namespace XYZ {
-
-	struct Vertex2D
-	{
-		glm::vec4 Color;
-		glm::vec3 Position;
-		glm::vec2 TexCoord;
-		float	  TextureID;
-	};
-	struct LineVertex
-	{
-		glm::vec3 Position;
-		glm::vec4 Color;
-	};
-
-	struct TexturePair
-	{
-		uint32_t TextureID;
-		uint32_t RendererID;
-	};
 
 	struct RendererUIData
 	{
@@ -48,21 +29,21 @@ namespace XYZ {
 		static const uint32_t MaxLineIndices = MaxLines * 6;
 
 
-		std::vector<TexturePair> Textures;
+		std::vector<TextureRendererIDPair> Textures;
 
 		Ref<VertexArray> QuadVertexArray;
 		Ref<VertexBuffer> QuadVertexBuffer;
 
 		uint32_t IndexCount = 0;
-		Vertex2D* BufferBase = nullptr;
-		Vertex2D* BufferPtr = nullptr;
+		InGuiVertex* BufferBase = nullptr;
+		InGuiVertex* BufferPtr = nullptr;
 
 		Ref<VertexArray> LineVertexArray;
 		Ref<VertexBuffer> LineVertexBuffer;
 
 		uint32_t LineIndexCount = 0;
-		LineVertex* LineBufferBase = nullptr;
-		LineVertex* LineBufferPtr = nullptr;
+		InGuiLineVertex* LineBufferBase = nullptr;
+		InGuiLineVertex* LineBufferPtr = nullptr;
 
 
 		UIRenderData Data;
@@ -82,6 +63,13 @@ namespace XYZ {
 	void InGuiRenderer::BeginScene(const UIRenderData& data)
 	{
 		s_UIData.Data = data;
+	}
+	void InGuiRenderer::SetTexturePairs(const std::vector<TextureRendererIDPair>& texturePairs)
+	{
+		for (auto pair : texturePairs)
+		{
+			s_UIData.Textures.push_back({ pair.TextureID, pair.RendererID });
+		}
 	}
 	void InGuiRenderer::SetMaterial(const Ref<Material>& material)
 	{
@@ -189,21 +177,19 @@ namespace XYZ {
 	void InGuiRenderer::SubmitUI(const InGuiMesh& mesh)
 	{
 		uint32_t indexCount = (mesh.Vertices.size() / 4) * 6;
-		if (s_UIData.IndexCount + indexCount > s_UIData.MaxIndices ||
-			s_UIData.Textures.size() + s_UIData.Material->GetNumberOfTextures() + mesh.TexturePairs.size() 
+		if (s_UIData.IndexCount + indexCount >= s_UIData.MaxIndices ||
+			s_UIData.Textures.size() + s_UIData.Material->GetNumberOfTextures()
 			>= s_UIData.MaxTextures)
 			Flush();
 
-		for (auto pair : mesh.TexturePairs)
-		{	
-			s_UIData.Textures.push_back({ pair.TextureID, pair.RendererID });
-		}
+	
 		for (auto & vertex : mesh.Vertices)
 		{
 			s_UIData.BufferPtr->Position = vertex.Position;
 			s_UIData.BufferPtr->Color = vertex.Color;
 			s_UIData.BufferPtr->TexCoord = vertex.TexCoord;
-			s_UIData.BufferPtr->TextureID = (float)vertex.TextureID;
+			s_UIData.BufferPtr->TextureID = vertex.TextureID;
+			s_UIData.BufferPtr->TilingFactor = vertex.TilingFactor;
 			s_UIData.BufferPtr++;
 		}
 		s_UIData.IndexCount += indexCount;
@@ -247,6 +233,7 @@ namespace XYZ {
 		if (dataSize)
 		{
 			s_UIData.Material->Set("u_ViewportSize", s_UIData.Data.ViewportSize);
+			s_UIData.Material->Set("u_ViewProjection", s_UIData.Data.ViewProjection);
 
 			s_UIData.Material->Bind();
 
@@ -257,7 +244,7 @@ namespace XYZ {
 
 			s_UIData.QuadVertexBuffer->Update(s_UIData.BufferBase, dataSize);
 			s_UIData.QuadVertexArray->Bind();
-			RenderCommand::DrawIndexed(PrimitiveType::Triangles, s_UIData.IndexCount);		
+			Renderer::DrawIndexed(PrimitiveType::Triangles, s_UIData.IndexCount);		
 		
 			s_UIData.Reset();
 		}
@@ -269,11 +256,12 @@ namespace XYZ {
 		{
 			s_UIData.LineShader->Bind();
 			s_UIData.LineShader->SetFloat2("u_ViewportSize", s_UIData.Data.ViewportSize);
+			s_UIData.LineShader->SetMat4("u_ViewProjection", s_UIData.Data.ViewProjection);
 
 			s_UIData.LineVertexBuffer->Update(s_UIData.LineBufferBase, dataSize);
 			s_UIData.LineVertexArray->Bind();
-			RenderCommand::DrawIndexed(PrimitiveType::Lines, s_UIData.LineIndexCount);
 
+			Renderer::DrawIndexed(PrimitiveType::Lines, s_UIData.LineIndexCount);
 			s_UIData.ResetLines();
 		}
 	}
@@ -286,14 +274,15 @@ namespace XYZ {
 	{
 		if (!BufferBase)
 		{
-			BufferBase = new Vertex2D[MaxVertices];
+			BufferBase = new InGuiVertex[MaxVertices];
 			QuadVertexArray = VertexArray::Create();
-			QuadVertexBuffer = VertexBuffer::Create(MaxVertices * sizeof(Vertex2D));
+			QuadVertexBuffer = VertexBuffer::Create(MaxVertices * sizeof(InGuiVertex));
 			QuadVertexBuffer->SetLayout(BufferLayout{
 			{0, XYZ::ShaderDataComponent::Float4, "a_Color" },
 			{1, XYZ::ShaderDataComponent::Float3, "a_Position" },
 			{2, XYZ::ShaderDataComponent::Float2, "a_TexCoord" },
 			{3, XYZ::ShaderDataComponent::Float,  "a_TextureID" },
+			{4, XYZ::ShaderDataComponent::Float,  "a_TilingFactor" },
 				});
 			QuadVertexArray->AddVertexBuffer(QuadVertexBuffer);
 
@@ -327,12 +316,12 @@ namespace XYZ {
 		{
 			LineVertexArray = VertexArray::Create();
 			LineShader = Shader::Create("Assets/Shaders/LineInGuiShader.glsl");
-			LineVertexBuffer = VertexBuffer::Create(MaxLineVertices * sizeof(LineVertex));
+			LineVertexBuffer = VertexBuffer::Create(MaxLineVertices * sizeof(InGuiLineVertex));
 			LineVertexBuffer->SetLayout({
 				{0, XYZ::ShaderDataComponent::Float3, "a_Position" },
 				{1, XYZ::ShaderDataComponent::Float4, "a_Color" },
 				});
-			LineBufferBase = new LineVertex[MaxLineVertices];
+			LineBufferBase = new InGuiLineVertex[MaxLineVertices];
 
 			LineVertexArray->AddVertexBuffer(LineVertexBuffer);
 			uint32_t* lineIndices = new uint32_t[MaxLineIndices];

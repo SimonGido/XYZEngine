@@ -1,44 +1,100 @@
 #pragma once
-#include "InGuiCore.h"
-
-#include <glm/glm.hpp>
+#include "InGuiStructures.h"
+#include "InGuiDockSpace.h"
 
 namespace XYZ {
-	// Instant Gui
-	namespace InGui {
+	struct InGuiContext
+	{
+		InGuiRenderConfiguration RenderConfiguration;
+		InGuiPerFrameData PerFrameData;
+		InGuiWindowMap Windows;
+		InGuiRenderQueue RenderQueue;
+		InGuiDockSpace* DockSpace = nullptr;
+	};
 
+	class InGui
+	{
+	public:
+		static void Init(const InGuiRenderConfiguration& renderConfig);
+		static void Destroy();
+
+		static void BeginFrame();
+		static void EndFrame();
+
+		static bool Begin(uint32_t id, const char* name, const glm::vec2& position, const glm::vec2& size);
+		static void End();
+
+		static bool BeginPopup(const char* name, glm::vec2& position, const glm::vec2& size, bool& open);
+		static bool PopupItem(const char* name);
+		static bool PopupExpandItem(const char* name, bool & open);
+		static void PopupExpandEnd();
+		static void EndPopup();
+
+		static bool MenuBar(const char* name,float width, bool& open);
+		static bool MenuItem(const char* name, const glm::vec2& size);
+
+		static bool BeginGroup(const char* name,const glm::vec2& position, bool& open);
+		static void EndGroup();
+
+		static bool Button(const char* name, const glm::vec2& size);
+		static bool Checkbox(const char* name,const glm::vec2 position, const glm::vec2& size, bool& value);
+		static bool Slider(const char* name, const glm::vec2 position, const glm::vec2& size, float& value, float valueScale = 1.0f);
+		static bool Image(const char* name, uint32_t rendererID, const glm::vec2& position, const glm::vec2& size, const glm::vec4& texCoords = { 0,0,1,1 }, float tilingFactor = 1.0f);
+		static bool TextArea(const char* name, std::string& text, const glm::vec2& position, const glm::vec2& size, bool& modified);
+		static bool Float(uint32_t count, const char* name, float* values, int * lengths, const glm::vec2& position, const glm::vec2& size, int& selected);
+		static bool Icon(const glm::vec2& position, const glm::vec2& size, const Ref<SubTexture2D>& subTexture, uint32_t textureID);
+		static bool Icon(const char* name, const glm::vec2& position, const glm::vec2& size, const Ref<SubTexture2D>& subTexture, uint32_t textureID, bool hightlight = false);
+
+		static bool Text(const char* text, const glm::vec2& scale, const glm::vec4& color = { 1,1,1,1 });
+		static bool ColorPicker4(const char* name, const glm::vec2& size, glm::vec4& pallete, glm::vec4& color);
+		static bool ColorPallete4(const char* name, const glm::vec2& size, glm::vec4& color);
+		static bool RenderWindow(uint32_t id, const char* name, uint32_t rendererID, const glm::vec2& position, const glm::vec2& size);
+
+
+		static void Separator();
+
+		static glm::vec4 Selector(bool & selecting);
+		static void Selection(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
+
+		static bool OnWindowResize(const glm::vec2& winSize);
+		static bool OnLeftMouseButtonPress();                                                                                                    
+		static bool OnRightMouseButtonPress();
+		static bool OnLeftMouseButtonRelease();
+		static bool OnRightMouseButtonRelease();
 		
-			
+		static bool OnKeyPress(int key, int mod);
+		static bool OnKeyRelease();
+		static bool IsKeyPressed(int key);
 
-		bool Begin(const std::string & name, const glm::vec2 & position, const glm::vec2 & size);
-		void End();
+		static void SetUIOffset(float offset);
+		static bool ResolveLeftClick(bool handle = true);
+		static bool ResolveRightClick(bool handle = true);
+		static bool ResolveLeftRelease(bool handle = true);
+		static bool ResolveRightRelease(bool handle = true);
 
-		bool BeginPopup(const std::string& name, const glm::vec2& size, bool& open);
-		bool PopupItem(const std::string& name, const glm::vec2& size);
-		void EndPopup();
-
-		void BeginMenu();
-		bool MenuBar(const std::string& name, bool& open);
-		bool MenuItem(const std::string& name, const glm::vec2& size);
-		void MenuBarEnd();
-		void EndMenu();
-
-		bool BeginGroup(const std::string& name, bool& open);
-		void EndGroup();
-
-		bool Button(const std::string & name, const glm::vec2 & size);
-		bool Checkbox(const std::string & name, const glm::vec2 & size, bool& value);
-		bool Slider(const std::string & name, const glm::vec2 & size, float& value, float valueScale = 1.0f);
-		bool Image(const std::string & name, uint32_t rendererID, const glm::vec2 & size);
-		bool TextArea(const std::string& name,std::string& text, const glm::vec2& size, bool& modified);
+		static InGuiWindow* GetCurrentWindow();
 		
-		bool Text(const std::string& text, const glm::vec2& scale, const glm::vec4& color = { 1,1,1,1 });
-		bool ColorPicker4(const std::string& name,const glm::vec2& size, glm::vec4& pallete, glm::vec4& color);
-		bool ColorPallete4(const std::string& name, const glm::vec2& size, glm::vec4& color);
-		bool RenderWindow(const std::string & name, uint32_t rendererID, const glm::vec2 & position, const glm::vec2 & size, float panelSize);
-		
-		void Separator();
+		static InGuiWindow* GetWindow(uint32_t id);
 
-		glm::vec4 Selector();
-	}
+		static InGuiRenderConfiguration& GetRenderConfiguration();
+		static glm::vec2& MouseRelativePosition(const InGuiWindow& window, const glm::vec3& cameraPos);
+		static glm::vec2 GetWorldPosition(const InGuiWindow& window, const glm::vec3& cameraPos, float aspectRatio, float zoomLevel);
+	private:
+		static InGuiWindow* createWindow(uint32_t id, const glm::vec2& position, const glm::vec2& size);
+
+		static bool detectResize(InGuiWindow& window);
+		static bool detectMoved(InGuiWindow& window);
+		static bool detectCollapse(InGuiWindow& window);
+
+		static void resolveResize(InGuiWindow& window);
+		static void resolveMove(InGuiWindow& window);
+
+	public:
+		
+
+		static void loadDockSpace();
+		static void saveDockSpace();
+	private:
+		static InGuiContext* s_Context;
+	};
 }

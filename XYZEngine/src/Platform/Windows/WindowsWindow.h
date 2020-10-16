@@ -40,7 +40,7 @@ namespace XYZ {
 		uint8_t m_CurrentCursor = XYZ_ARROW_CURSOR;
 		GLFWcursor* m_Cursors[NUM_CURSORS];
 
-		std::unique_ptr<APIContext> m_Context;
+		Ref<APIContext> m_Context;
 
 		struct WindowData
 		{

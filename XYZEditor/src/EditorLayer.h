@@ -3,7 +3,15 @@
 #include <XYZ.h>
 
 #include "Panels/SceneHierarchyPanel.h"
-#include "Panels/EntityComponentsPanel.h"
+#include "Panels/InspectorPanel.h"
+#include "Panels/GraphPanel.h"
+#include "Panels/SpriteEditorPanel.h"
+#include "Panels/ProjectBrowserPanel.h"
+
+#include "InspectorLayout/SpriteEditorInspectorLayout.h"
+#include "InspectorLayout/EntityInspectorLayout.h"
+#include "InspectorLayout/AnimatorInspectorLayout.h"
+#include "GraphLayout/AnimatorGraphLayout.h"
 
 #include "Tools/EditorCamera.h"
 
@@ -14,27 +22,47 @@
 #include <glm/gtc/type_ptr.hpp>
 
 
+// TODO: solve fragmentation
 namespace XYZ {
 
 	class EditorLayer : public Layer
 	{
 	public:
+		EditorLayer();
 		virtual ~EditorLayer();
 
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
 		virtual void OnUpdate(Timestep ts) override;
 		virtual void OnEvent(Event& event) override;
-		virtual void OnInGuiRender() override;
+		virtual void OnInGuiRender(Timestep ts) override;
 
 	private:
 		bool onWindowResized(WindowResizeEvent& event);
 		bool onMouseButtonPress(MouseButtonPressEvent& event);
 		bool onKeyPress(KeyPressedEvent& event);
 		bool onKeyRelease(KeyReleasedEvent& event);
+
+		void onResizeSceneWindow(const glm::vec2& size);
+		void onNodePanelConnectionCreated(uint32_t startNode, uint32_t endNode);
+		void onNodePanelConnectionDestroyed(uint32_t startNode, uint32_t endNode);
+
 	private:
+		InGuiWindow* m_SceneWindow = nullptr;
 		SceneHierarchyPanel m_SceneHierarchyPanel;
-		EntityComponentPanel m_EntityComponentPanel;
+		SpriteEditorPanel m_SpriteEditorPanel;
+		ProjectBrowserPanel m_ProjectBrowserPanel;
+
+		InspectorPanel m_InspectorPanel;
+		EntityInspectorLayout m_EntityInspectorLayout;
+		AnimatorInspectorLayout m_AnimatorInspectorLayout;
+		SpriteEditorInspectorLayout m_SpriteEditorInspectorLayout;
+
+		GraphPanel m_GraphPanel;
+		AnimatorGraphLayout m_AnimatorGraphLayout;
+		Graph m_NodeGraph;
+
+
 		Entity m_SelectedEntity;
 		glm::vec2 m_StartMousePos;
 		bool m_ScalingEntity = false;
@@ -49,13 +77,13 @@ namespace XYZ {
 
 		EditorCamera m_EditorCamera;
 		Ref<Scene> m_Scene;
-		
-
+		Ref<RenderPass> m_RenderPass;
 		Ref<FrameBuffer> m_FBO;
 		AssetManager m_AssetManager;
 		std::vector<Entity> m_StoredEntitiesWithScript;
 		bool m_Lock = false;
-	
+		float m_H = 0.0f;
+		std::string m_Trala;
 	private:	
 		Entity m_TestEntity;
 		Entity m_TestEntity2;
@@ -63,19 +91,26 @@ namespace XYZ {
 
 		SpriteRenderer* m_SpriteRenderer;
 		TransformComponent* m_Transform;
-		Animation* m_Animation;
-		Animation* m_RunAnimation;
+		AnimatorComponent* m_Animator;
+		Ref<AnimationController> m_AnimationController;
+		Ref<Animation> m_IdleAnimation;
+		Ref<Animation> m_RunAnimation;
 
 		glm::vec3 m_Position = { 0,0,0 };
 		glm::vec3 m_Rotation = { 0,0,0 };
 
 		glm::vec4 m_Color = { 0,0,0,0 };
 		glm::vec4 m_Pallete = { 0,1,0,1 };
-		float m_TestValue = 0.0f;
+
+		const uint32_t m_SceneID = 0;
+		const uint32_t m_TestPanelID = 1;
+		const uint32_t m_TestID = 5;
+
 		bool m_CheckboxVal = false;
 		bool m_ActiveWindow = false;
 		bool m_MenuOpen = false;
 		bool m_PopupOpen = false;
+		bool m_Selecting = false;
 		std::string m_Text = "0";
 		bool m_Modified = false;
 	
@@ -91,6 +126,7 @@ namespace XYZ {
 
 		Ref<SubTexture2D> m_CheckboxSubTexture;
 
-		Machine<Animation*> *m_Machine;
+
+		
 	};
 }

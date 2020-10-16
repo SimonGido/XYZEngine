@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include "OpenGLVertexArray.h"
 
+
+#include "XYZ/Renderer/Renderer.h"
+
 #include <GL/glew.h>
 
 
@@ -29,17 +32,17 @@ namespace XYZ {
 
 	OpenGLVertexArray::OpenGLVertexArray()
 	{
-		glCreateVertexArrays(1, &m_RendererID);
+		Renderer::Submit([this]() {glCreateVertexArrays(1, &m_RendererID); });
 	}
 
 	OpenGLVertexArray::~OpenGLVertexArray()
 	{
-		glDeleteVertexArrays(1, &m_RendererID);
+		Renderer::Submit([this]() {glDeleteVertexArrays(1, &m_RendererID); });
 	}
 
 	void OpenGLVertexArray::Bind() const
 	{
-		glBindVertexArray(m_RendererID);
+		Renderer::Submit([this]() {glBindVertexArray(m_RendererID); });
 	}
 
 	void OpenGLVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
@@ -47,24 +50,26 @@ namespace XYZ {
 		if (vertexBuffer->GetLayout().GetElements().size() == 0)
 			XYZ_ASSERT(false, "vertexBuffer->GetLayout().GetElements().size() = 0");
 
-		glBindVertexArray(m_RendererID);
-		vertexBuffer->Bind();
+		Renderer::Submit([this, vertexBuffer]() {
+			glBindVertexArray(m_RendererID);
+			vertexBuffer->Bind();
 
-		auto& vbl = vertexBuffer->GetLayout();
-		for (const auto& element : vbl)
-		{
-			glEnableVertexAttribArray(element.Index);
-			glVertexAttribPointer(element.Index,
-				element.GetComponentCount(),
-				ShaderDataComponentToOpenGLBaseComponent(element.Component),
-				//element.m_Normalized ? GL_TRUE : GL_FALSE,
-				GL_FALSE,
-				vbl.GetStride(),
-				(const void*)element.Offset);
-			glVertexAttribDivisor(element.Index, element.Divisor);
-		}
+			auto& vbl = vertexBuffer->GetLayout();
+			for (const auto& element : vbl)
+			{
+				glEnableVertexAttribArray(element.Index);
+				glVertexAttribPointer(element.Index,
+					element.GetComponentCount(),
+					ShaderDataComponentToOpenGLBaseComponent(element.Component),
+					//element.m_Normalized ? GL_TRUE : GL_FALSE,
+					GL_FALSE,
+					vbl.GetStride(),
+					(const void*)element.Offset);
+				glVertexAttribDivisor(element.Index, element.Divisor);
+			}
 
-		m_VertexBuffers.push_back(vertexBuffer);
+			m_VertexBuffers.push_back(vertexBuffer);
+			});
 	}
 
 	void OpenGLVertexArray::AddShaderStorageBuffer(const Ref<ShaderStorageBuffer>& shaderBuffer)
@@ -72,32 +77,35 @@ namespace XYZ {
 		if (shaderBuffer->GetLayout().GetElements().size() == 0)
 			XYZ_ASSERT(false, "vertexBuffer->GetLayout().GetElements().size() = 0");
 
-		glBindVertexArray(m_RendererID);
-		shaderBuffer->Bind();
+		Renderer::Submit([this, shaderBuffer] () {
+			glBindVertexArray(m_RendererID);
+			shaderBuffer->Bind();
 
-		auto& vbl = shaderBuffer->GetLayout();
-		for (const auto& element : vbl)
-		{
-			glEnableVertexAttribArray(element.Index);
-			glVertexAttribPointer(element.Index,
-				element.GetComponentCount(),
-				ShaderDataComponentToOpenGLBaseComponent(element.Component),
-				//element.m_Normalized ? GL_TRUE : GL_FALSE,
-				GL_FALSE,
-				vbl.GetStride(),
-				(const void*)element.Offset);
-			glVertexAttribDivisor(element.Index, element.Divisor);
-		}
+			auto& vbl = shaderBuffer->GetLayout();
+			for (const auto& element : vbl)
+			{
+				glEnableVertexAttribArray(element.Index);
+				glVertexAttribPointer(element.Index,
+					element.GetComponentCount(),
+					ShaderDataComponentToOpenGLBaseComponent(element.Component),
+					//element.m_Normalized ? GL_TRUE : GL_FALSE,
+					GL_FALSE,
+					vbl.GetStride(),
+					(const void*)element.Offset);
+				glVertexAttribDivisor(element.Index, element.Divisor);
+			}
 
-		m_ShaderStorageBuffers.push_back(shaderBuffer);
+			m_ShaderStorageBuffers.push_back(shaderBuffer);
+			});
 	}
 
 	void OpenGLVertexArray::SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
 	{
-		glBindVertexArray(m_RendererID);
-		indexBuffer->Bind();
-
 		m_IndexBuffer = indexBuffer;
+		Renderer::Submit([this, indexBuffer] () {
+			glBindVertexArray(m_RendererID);
+			indexBuffer->Bind();
+			});
 	}
 
 }

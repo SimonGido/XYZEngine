@@ -1,25 +1,27 @@
 #include "stdafx.h"
 #include "OpenGLTexture.h" 
 
+#include "XYZ/Renderer/Renderer.h"
+
 #include <stb_image.h>
 
 
 namespace XYZ {
-	OpenGLTexture2D::OpenGLTexture2D(TextureWrap wrap, const std::string& path)
+	OpenGLTexture2D::OpenGLTexture2D(TextureWrap wrap, TextureParam min, TextureParam max, const std::string& path)
 	{
 		m_Filepath = path;
 		int width, height, channels;
-		stbi_set_flip_vertically_on_load(1);
-		stbi_uc* data = nullptr;
-		{
-			data = stbi_load(path.c_str(), &width, &height, &channels, 0);
-		}
-		XYZ_ASSERT(data, "Failed to load image!");
+		stbi_set_flip_vertically_on_load(1);	
+		m_LocalData = (uint8_t*)stbi_load(path.c_str(), &width, &height, &channels, 0);
+
+		XYZ_ASSERT(m_LocalData, "Failed to load image!");
 		m_Specification.Width = width;
 		m_Specification.Height = height;
 		m_Specification.Channels = channels;
 		m_Specification.Wrap = wrap;
-
+		m_Specification.MinParam = min;
+		m_Specification.MagParam = max;
+	
 		GLenum internalFormat = 0, dataFormat = 0;
 		if (channels == 4)
 		{
@@ -42,83 +44,123 @@ namespace XYZ {
 
 		XYZ_ASSERT(internalFormat & dataFormat, "Format not supported!");
 
-		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
-		glTextureStorage2D(m_RendererID, 1, internalFormat, m_Specification.Width, m_Specification.Height);
-		
-		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		Renderer::Submit([this]() {
+			glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
+			int levels = Texture::CalculateMipMapCount(m_Specification.Width, m_Specification.Height);
+			glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Specification.Width, m_Specification.Height);
+			if (m_Specification.MinParam == TextureParam::Linear)
+			{
+				glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, levels > 1 ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
+			}
+			else if (m_Specification.MinParam == TextureParam::Nearest)
+			{
+				glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			}
 
-		if (wrap == TextureWrap::Repeat)
-		{
-			glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
-			glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		}
-		else if (wrap == TextureWrap::Clamp)
-		{
-			glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		}
-		glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Specification.Width, m_Specification.Height, dataFormat, GL_UNSIGNED_BYTE, data);
-		stbi_image_free(data);
+			if (m_Specification.MagParam == TextureParam::Linear)
+			{
+				glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			}
+			else if (m_Specification.MagParam == TextureParam::Nearest)
+			{
+				glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			}
+
+			if (m_Specification.Wrap == TextureWrap::Repeat)
+			{
+				glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
+				glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+			}
+			else if (m_Specification.Wrap == TextureWrap::Clamp)
+			{
+				glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			}
+			glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Specification.Width, m_Specification.Height, m_DataFormat, GL_UNSIGNED_BYTE, m_LocalData);
+			glGenerateTextureMipmap(m_RendererID);
+			stbi_image_free(m_LocalData);
+			m_LocalData = nullptr;
+		});
 	}
 
-	OpenGLTexture2D::OpenGLTexture2D(TextureFormat format, TextureWrap wrap, uint32_t width, uint32_t height)
+	OpenGLTexture2D::OpenGLTexture2D(const TextureSpecs& specs)
 	{
-		m_Specification.Width = width;
-		m_Specification.Height = height;
-		m_Specification.Wrap = wrap;
-		m_Specification.Format = format;
+		m_Specification.Width = specs.Width;
+		m_Specification.Height = specs.Height;
+		m_Specification.Wrap = specs.Wrap;
+		m_Specification.Format = specs.Format;
 
 		m_InternalFormat = GL_RGBA8;
 		m_DataFormat = GL_RGBA;
+		m_LocalData.Allocate(m_Specification.Width * m_Specification.Height * m_Specification.Channels);
 
-		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
-		glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Specification.Width, m_Specification.Height);
 
-		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		Renderer::Submit([this]() {
+			glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
+			glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Specification.Width, m_Specification.Height);
 
-		if (wrap == TextureWrap::Repeat)
-		{
-			glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
-			glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		}
-		else if (wrap == TextureWrap::Clamp)
-		{
-			glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		}
+			if (m_Specification.MinParam == TextureParam::Linear)
+			{
+				glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			}
+			else if (m_Specification.MinParam == TextureParam::Nearest)
+			{
+				glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			}
+			if (m_Specification.MagParam == TextureParam::Linear)
+			{
+				glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			}
+			else if (m_Specification.MagParam == TextureParam::Nearest)
+			{
+				glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			}
+
+			if (m_Specification.Wrap == TextureWrap::Repeat)
+			{
+				glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
+				glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+			}
+			else if (m_Specification.Wrap == TextureWrap::Clamp)
+			{
+				glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			}
+		});
 	}
 
 	OpenGLTexture2D::~OpenGLTexture2D()
 	{
-		glDeleteTextures(1, &m_RendererID);
+		delete[]m_LocalData;
+		Renderer::Submit([=]() {glDeleteTextures(1, &m_RendererID); });
 	}
 
 	void OpenGLTexture2D::SetData(void* data, uint32_t size)
 	{
-		uint32_t bpp = m_DataFormat == GL_RGBA ? 4 : 3;
-		XYZ_ASSERT(size == m_Specification.Width * m_Specification.Height * bpp, "Data must be entire texture!");
-		glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Specification.Width, m_Specification.Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
+		Renderer::Submit([=]() {
+			uint32_t bpp = m_DataFormat == GL_RGBA ? 4 : 3;
+			XYZ_ASSERT(size == m_Specification.Width * m_Specification.Height * bpp, "Data must be entire texture!");
+			glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Specification.Width, m_Specification.Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
+			});
 	}
 
 	uint8_t* OpenGLTexture2D::GetData()
 	{
-		uint8_t* buffer = new uint8_t[m_Specification.Width * m_Specification.Height * m_Specification.Channels * sizeof(uint8_t)];
+		m_LocalData.Allocate(m_Specification.Width * m_Specification.Height * m_Specification.Channels);
 		glBindTexture(GL_TEXTURE_2D, m_RendererID);
-		glGetTexImage(GL_TEXTURE_2D, 0, m_DataFormat, GL_UNSIGNED_BYTE, buffer);
+		glGetTexImage(GL_TEXTURE_2D, 0, m_DataFormat, GL_UNSIGNED_BYTE, m_LocalData);
 
-		return buffer;
+		return m_LocalData;
 	}
 
 	void OpenGLTexture2D::Bind(uint32_t slot) const
 	{
-		glBindTextureUnit(slot, m_RendererID);
+		Renderer::Submit([=]() {glBindTextureUnit(slot, m_RendererID); });
 	}
 
 	void OpenGLTexture2D::Bind(uint32_t rendererID,uint32_t slot)
 	{
-		glBindTextureUnit(slot, rendererID);
+		Renderer::Submit([=]() {glBindTextureUnit(slot, rendererID); });
 	}
 
 

@@ -1,6 +1,6 @@
 #pragma once
 #include "XYZ/Core/Layer.h"
-#include "XYZ/Gui/Font.h"
+#include "XYZ/Renderer/Font.h"
 #include "XYZ/Renderer/Material.h"
 
 
@@ -23,6 +23,7 @@ namespace XYZ {
 		bool onMouseMove(MouseMovedEvent& e);
 		bool onWindowResize(WindowResizeEvent& e);
 		bool onKeyPressed(KeyPressedEvent& e);
+		bool onMouseScroll(MouseScrollEvent& e);
 
 	private:
 		Ref<Material> m_Material;

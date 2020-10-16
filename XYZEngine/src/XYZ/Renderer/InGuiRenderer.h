@@ -1,12 +1,13 @@
 #pragma once
 #include "Material.h"
 #include "Mesh.h"
-#include "XYZ/Gui/Font.h"
+#include "XYZ/Renderer/Font.h"
 
 namespace XYZ {
 
 	struct UIRenderData
 	{
+		glm::mat4 ViewProjection;
 		glm::vec2 ViewportSize;
 	};
 
@@ -15,7 +16,8 @@ namespace XYZ {
 		glm::vec4 Color;
 		glm::vec3 Position;
 		glm::vec2 TexCoord;
-		uint32_t TextureID;
+		float	  TextureID;
+		float     TilingFactor = 1.0f;
 	};
 	struct InGuiLineVertex
 	{
@@ -31,7 +33,7 @@ namespace XYZ {
 	struct InGuiMesh
 	{
 		std::vector<InGuiVertex> Vertices;
-		std::vector<TextureRendererIDPair> TexturePairs;
+		Ref<Material> Material;
 	};
 	struct InGuiLineMesh
 	{
@@ -57,6 +59,7 @@ namespace XYZ {
 		*/
 		static void BeginScene(const UIRenderData& data);
 
+		static void SetTexturePairs(const std::vector< TextureRendererIDPair>& texturePairs);
 		static void SetMaterial(const Ref<Material>& material);
 		static void SubmitUI(const glm::vec2& position, const glm::vec2& size, const glm::vec4& texCoord, uint32_t textureID, const glm::vec4& color = glm::vec4(1));
 		static void SubmitUI(uint32_t rendererID, const glm::vec2& position, const glm::vec2& size, const glm::vec4& texCoord, const glm::vec4& color = glm::vec4(1));

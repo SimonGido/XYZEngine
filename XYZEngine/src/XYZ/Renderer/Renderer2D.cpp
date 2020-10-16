@@ -2,7 +2,7 @@
 #include "Renderer2D.h"
 
 #include "VertexArray.h"
-#include "RenderCommand.h"
+#include "Renderer.h"
 
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -20,6 +20,7 @@ namespace XYZ {
 		glm::vec3 Position;
 		glm::vec2 TexCoord;
 		float	  TextureID;
+		float	  TilingFactor;
 	};
 
 	struct LineVertex
@@ -84,6 +85,7 @@ namespace XYZ {
 			{1, XYZ::ShaderDataComponent::Float3, "a_Position" },
 			{2, XYZ::ShaderDataComponent::Float2, "a_TexCoord" },
 			{3, XYZ::ShaderDataComponent::Float,  "a_TextureID" },
+			{4, XYZ::ShaderDataComponent::Float,  "a_TilingFactor" },
 				});
 			QuadVertexArray->AddVertexBuffer(QuadVertexBuffer);
 
@@ -165,7 +167,7 @@ namespace XYZ {
 	}
 
 
-	void Renderer2D::SubmitQuad(const glm::mat4& transform, const glm::vec4& color)
+	void Renderer2D::SubmitQuad(const glm::mat4& transform, const glm::vec4& color, float tilingFactor)
 	{
 		constexpr size_t quadVertexCount = 4;
 		if (s_Data.IndexCount >= s_Data.MaxIndices)
@@ -176,12 +178,13 @@ namespace XYZ {
 			s_Data.BufferPtr->Color = color;
 			s_Data.BufferPtr->TexCoord = glm::vec2(0);
 			s_Data.BufferPtr->TextureID = 0.0f;
+			s_Data.BufferPtr->TilingFactor = tilingFactor;
 			s_Data.BufferPtr++;
 		}
 		s_Data.IndexCount += 6;
 	}
 
-	void Renderer2D::SubmitQuad(const glm::mat4& transform, const glm::vec4& texCoord, uint32_t textureID, const glm::vec4& color)
+	void Renderer2D::SubmitQuad(const glm::mat4& transform, const glm::vec4& texCoord, uint32_t textureID, const glm::vec4& color, float tilingFactor)
 	{
 		constexpr size_t quadVertexCount = 4;
 
@@ -200,12 +203,13 @@ namespace XYZ {
 			s_Data.BufferPtr->Color = color;
 			s_Data.BufferPtr->TexCoord = texCoords[i];
 			s_Data.BufferPtr->TextureID = (float)textureID;
+			s_Data.BufferPtr->TilingFactor = tilingFactor;
 			s_Data.BufferPtr++;
 		}
 		s_Data.IndexCount += 6;
 	}
 
-	void Renderer2D::SubmitQuad(const glm::mat4& transform, const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, uint32_t textureID, const glm::vec4& color)
+	void Renderer2D::SubmitQuad(const glm::mat4& transform, const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, uint32_t textureID, const glm::vec4& color, float tilingFactor)
 	{
 		constexpr size_t quadVertexCount = 4;
 
@@ -232,25 +236,10 @@ namespace XYZ {
 			s_Data.BufferPtr->Color = color;
 			s_Data.BufferPtr->TexCoord = texCoords[i];
 			s_Data.BufferPtr->TextureID = (float)textureID;
+			s_Data.BufferPtr->TilingFactor = tilingFactor;
 			s_Data.BufferPtr++;
 		}
 		s_Data.IndexCount += 6;
-	}
-
-	void Renderer2D::SubmitMesh(const glm::mat4& transform, const Ref<Mesh>& mesh)
-	{
-		if (s_Data.IndexCount + mesh->Indices.size() >= s_Data.MaxIndices)
-			Flush();
-
-		for (auto& vertex : mesh->Vertices)
-		{
-			s_Data.BufferPtr->Position = transform * vertex.Position;
-			s_Data.BufferPtr->Color = vertex.Color;
-			s_Data.BufferPtr->TexCoord = vertex.TexCoord;
-			s_Data.BufferPtr->TextureID = (float)mesh->TextureID;
-			s_Data.BufferPtr++;
-		}
-		s_Data.IndexCount += mesh->Indices.size();
 	}
 
 	void Renderer2D::SubmitLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color)
@@ -278,7 +267,7 @@ namespace XYZ {
 			s_Data.Material->Bind();
 			s_Data.QuadVertexBuffer->Update(s_Data.BufferBase, dataSize);
 			s_Data.QuadVertexArray->Bind();
-			RenderCommand::DrawIndexed(PrimitiveType::Triangles, s_Data.IndexCount);
+			Renderer::DrawIndexed(PrimitiveType::Triangles, s_Data.IndexCount);
 			s_Data.Stats.DrawCalls++;
 			s_Data.Reset();
 		}	
@@ -294,7 +283,7 @@ namespace XYZ {
 
 			s_Data.LineVertexBuffer->Update(s_Data.LineBufferBase, dataSize);
 			s_Data.LineVertexArray->Bind();
-			RenderCommand::DrawIndexed(PrimitiveType::Lines, s_Data.LineIndexCount);
+			Renderer::DrawIndexed(PrimitiveType::Lines, s_Data.LineIndexCount);
 
 			s_Data.Stats.LineDrawCalls++;
 			s_Data.ResetLines();
@@ -305,5 +294,6 @@ namespace XYZ {
 	{
 		s_Data.Stats.DrawCalls = 0;
 		s_Data.Stats.LineDrawCalls = 0;
+		s_Data.Material = nullptr;
 	}
 }

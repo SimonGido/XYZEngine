@@ -151,7 +151,7 @@ namespace XYZ {
 			if (m_AssetStorages.find(id) == m_AssetStorages.end())
 			{
 				AssetList<T>* list = new AssetList<T>();
-				m_AssetStorages[id] = list;
+				m_AssetStorages.insert({ id,list });
 				return list;
 			}
 			return (AssetList<T>*)(m_AssetStorages[id]);

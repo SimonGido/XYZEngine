@@ -3,6 +3,7 @@
 #include <XYZ.h>
 
 #include "../Tools/EditorCamera.h"
+
 namespace XYZ {
 
 	class SceneHierarchyPanel
@@ -13,7 +14,7 @@ namespace XYZ {
 
 		void SetContext(const Ref<Scene>& context);
 
-		void OnInGuiRender();
+		bool OnInGuiRender();
 
 		void SelectEntity(const glm::vec2& position);
 		
@@ -29,5 +30,7 @@ namespace XYZ {
 		Entity m_SelectedEntity;
 
 		HashGrid2D<Entity> m_Entities;
+
+		const uint32_t m_SceneHierarchyID = 4;
 	};
 }
