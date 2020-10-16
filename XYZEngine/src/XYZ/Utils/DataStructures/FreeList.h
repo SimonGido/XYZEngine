@@ -55,11 +55,11 @@ namespace XYZ {
 		}
 
 		template <typename... Args>
-		int Emplace(Args&&... args)
+		int32_t Emplace(Args&&... args)
 		{
 			if (m_FirstFree != -1)
 			{
-				int index = m_FirstFree;
+				int32_t index = m_FirstFree;
 				m_FirstFree = m_Data[m_FirstFree].Next;
 				m_Data[index].Element = T(std::forward<Args>(args)...);
 				return index;
@@ -72,14 +72,14 @@ namespace XYZ {
 		}
 
 		// Erases the nth element
-		void Erase(int index)
+		void Erase(int32_t index)
 		{
 			m_Data[index].Next = m_FirstFree;
 			m_FirstFree = index;
 		}
 		
 		// Shrinks the list to the given size
-		void Shrink(int size)
+		void Shrink(int32_t size)
 		{
 			if (size <= m_FirstFree)
 				m_FirstFree = -1;
@@ -97,17 +97,17 @@ namespace XYZ {
 		// Returns the range of valid indices.
 		int Range() const
 		{
-			return static_cast<int>(m_Data.size());
+			return static_cast<int32_t>(m_Data.size());
 		}
 
 		// Returns the nth element.
-		T& operator[](int index)
+		T& operator[](int32_t index)
 		{
 			return m_Data[index].Element;
 		}
 
 		// Returns the nth element.
-		const T& operator[](int index) const
+		const T& operator[](int32_t index) const
 		{
 			return m_Data[index].Element;
 		}
@@ -139,11 +139,11 @@ namespace XYZ {
 			}
 
 			T Element;
-			int Next;
+			int32_t Next;
 		};
 
 
 		std::vector<FreeElement> m_Data;
-		int m_FirstFree;
+		int32_t m_FirstFree;
 	};
 }
