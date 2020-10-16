@@ -280,6 +280,16 @@ namespace XYZ {
 			text[length] = '\0';
 	}
 
+	static bool IsOutside(const InGuiWindow& window, const glm::vec2& size, const glm::vec2& position)
+	{
+		return !(position.x > window.Position.x && position.x + size.x < window.Position.x + window.Size.x
+			 && position.y > window.Position.y && position.y + size.y < window.Position.y + window.Size.y);
+	}
+	static bool IsPointOutside(const InGuiWindow& window, const glm::vec2& point)
+	{
+		return !(point.x > window.Position.x && point.x < window.Position.x + window.Size.x
+			&& point.y > window.Position.y && point.y < window.Position.y + window.Size.y);
+	}
 	static bool HandleRowPosition(InGuiPerFrameData& frameData, const glm::vec2& uiSize, glm::vec2& position)
 	{
 		float offsetX = uiSize.x + frameData.WindowSpaceOffset.x + frameData.ItemOffset;
@@ -384,7 +394,8 @@ namespace XYZ {
 			InGuiRenderer::SubmitLineMesh(*mesh);
 		}
 		
-		s_Context->DockSpace->End(s_Context->PerFrameData.MousePosition, s_Context->PerFrameData, s_Context->RenderConfiguration);
+		s_Context->DockSpace->Render(s_Context->PerFrameData.MousePosition, s_Context->PerFrameData, s_Context->RenderConfiguration);
+		s_Context->DockSpace->Update(s_Context->PerFrameData.MousePosition);
 		InGuiRenderer::Flush();
 		InGuiRenderer::FlushLines();
 		InGuiRenderer::EndScene();
@@ -1125,12 +1136,60 @@ namespace XYZ {
 		return (window->Flags & InGuiWindowFlag::Hoovered);
 	}
 
+
 	void InGui::Separator()
 	{
 		auto& frameData = s_Context->PerFrameData;
 		frameData.WindowSpaceOffset.x = frameData.CurrentWindow->Position.x;
 		frameData.WindowSpaceOffset.y -= frameData.MaxHeightInRow + frameData.ItemOffset;
 		frameData.MaxHeightInRow = 0.0f;
+	}
+
+	bool InGui::BeginNode(const char* name, const glm::vec2& position, const glm::vec2& size)
+	{
+		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
+
+		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration;
+		InGuiWindow* window = frameData.CurrentWindow;
+		bool pressed = false;
+		if (window->Flags & InGuiWindowFlag::Modified)
+		{
+			glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];
+			glm::vec2 pos = position;
+			if (window->Flags & InGuiWindowFlag::AutoPosition)
+			{
+				if (!HandleRowPosition(frameData, size, pos))
+					return false;
+			}
+			else if (IsOutside(*window, size, position))
+				return false;	
+
+			if (Collide(position, size, frameData.MousePosition))
+			{
+				color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
+				if (ResolveLeftClick())
+				{
+					pressed = true;
+				}
+			}
+			InGuiFactory::GenerateButton(pos, size, color, name, window->Mesh, renderConfig);	
+		}
+		return pressed;
+	}
+
+	void InGui::PushArrow(const glm::vec2& p0, const glm::vec2& p1, const glm::vec2& size)
+	{
+		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing node window end call");
+
+		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiWindow* window = frameData.CurrentWindow;
+		if (window->Flags & InGuiWindowFlag::Modified)
+		{
+			if (IsPointOutside(*window, p0) || IsPointOutside(*window, p1))
+				return;
+			InGuiFactory::GenerateArrowLine(window->Mesh, window->LineMesh, p0, p1, size, s_Context->RenderConfiguration);
+		}
 	}
 
 

@@ -94,8 +94,13 @@ namespace XYZ {
 			m_FirstFree = -1;
 		}
 
+		bool Valid(int32_t index) const
+		{
+			return m_Data[index].Next != -1;
+		}
+
 		// Returns the range of valid indices.
-		int Range() const
+		int32_t Range() const
 		{
 			return static_cast<int32_t>(m_Data.size());
 		}
@@ -106,6 +111,7 @@ namespace XYZ {
 			return m_Data[index].Element;
 		}
 
+	
 		// Returns the nth element.
 		const T& operator[](int32_t index) const
 		{

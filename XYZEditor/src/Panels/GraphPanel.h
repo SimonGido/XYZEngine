@@ -1,12 +1,16 @@
 #pragma once
 #include <XYZ.h>
 
+#include "../Tools/EditorCamera.h"
+
 namespace XYZ {
 
 	class GraphLayout
 	{
 	public:
 		virtual void OnInGuiRender() {};
+		virtual void OnUpdate(Timestep ts) {};
+		virtual void OnEvent(Event& event) {};
 	};
 
 	class GraphPanel
@@ -14,17 +18,14 @@ namespace XYZ {
 	public:
 		GraphPanel();
 
-		bool OnInGuiRender(float dt);
-		void OnEvent(Event& event);
-
+		bool OnInGuiRender(Timestep ts);
 		void SetGraphLayout(GraphLayout* layout) { m_Layout = layout; }
-	private:
-		bool onWindowResize(WindowResizeEvent& event);
-
+		void OnEvent(Event& event);
 	private:
 		GraphLayout* m_Layout = nullptr;
 		InGuiWindow* m_GraphWindow = nullptr;
-		Ref<FrameBuffer> m_FBO;
+
+		glm::vec2 m_TestPosition = { 0,0 };
 
 		bool m_ActiveWindow = false;
 		const uint32_t m_GraphID = 3;

@@ -23,7 +23,8 @@ namespace XYZ {
 	
 	EditorLayer::EditorLayer()
 		:
-		m_SpriteEditorPanel(m_AssetManager)
+		m_SpriteEditorPanel(m_AssetManager),
+		m_NodeGraph(false)
 	{
 	}
 
@@ -126,7 +127,13 @@ namespace XYZ {
 		m_AnimationController = Ref<AnimationController>::Create();
 		m_AnimationController->AddAnimation("Idle", m_IdleAnimation);
 		m_AnimationController->AddAnimation("Run", m_RunAnimation);
-		
+		m_AnimationController->AddAnimation("Test1", m_RunAnimation);
+		m_AnimationController->AddAnimation("Test2", m_RunAnimation);
+		m_AnimationController->AddAnimation("Test3", m_RunAnimation);
+		m_AnimationController->AddAnimation("Test4", m_RunAnimation);
+		m_AnimationController->AddAnimation("Test5", m_RunAnimation);
+		m_AnimationController->AddAnimation("Test6", m_RunAnimation);
+
 		m_Animator->Controller = m_AnimationController;
 		m_Animator->Controller->SetDefaultAnimation("Run");
 
@@ -138,7 +145,7 @@ namespace XYZ {
 		m_FBO->CreateColorAttachment(FrameBufferFormat::RGBA16F);
 		m_FBO->CreateDepthAttachment();
 		m_FBO->Resize();
-		m_RenderPass = RenderPass::Create({ m_FBO });
+		m_RenderPass =  RenderPass::Create({ m_FBO });
 
 		InGui::RenderWindow(m_SceneID, "Scene", m_FBO->GetColorAttachment(0).RendererID, { 0,0 }, { 200,200 });
 		InGui::End();
@@ -155,8 +162,8 @@ namespace XYZ {
 
 
 		m_SpriteEditorPanel.SetContext(m_CharacterTexture);
-		m_AnimatorGraphLayout.SetContext(&m_AnimationController->GetStateMachine(), &m_NodeGraph);
-		m_AnimatorInspectorLayout.SetContext(&m_AnimationController->GetStateMachine(), &m_NodeGraph);
+		m_AnimatorInspectorLayout.SetContext(m_AnimationController);
+		m_AnimatorGraphLayout.SetContext(m_AnimationController);
 		m_InspectorPanel.SetInspectorLayout(&m_EntityInspectorLayout);
 		m_GraphPanel.SetGraphLayout(&m_AnimatorGraphLayout);
 	}

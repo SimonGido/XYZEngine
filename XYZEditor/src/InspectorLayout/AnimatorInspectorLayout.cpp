@@ -2,10 +2,10 @@
 
 
 namespace XYZ {
-    
+
     void AnimatorInspectorLayout::OnInGuiRender()
 	{   
-        if (m_Context && m_Graph)
+        if (m_Context)
         {
             if (InGui::GetCurrentWindow()->Flags & InGuiWindowFlag::LeftClicked)
             {
@@ -15,28 +15,29 @@ namespace XYZ {
             {
                 if (InGui::IsKeyPressed(ToUnderlying(KeyCode::XYZ_KEY_DELETE)))
                 {
-                    m_Graph->Disconnect((uint32_t)m_SelectedConnection);
                     m_SelectedConnection = -1;
                 }
             }
-          
-            uint32_t count = 0;
-            for (auto& connection : m_Graph->GetConnections())
-            {     
-                std::string result = m_Context->GetStateName(connection.Start) + " ----> " + m_Context->GetStateName(connection.End);
-               
-               
-                if (m_SelectedConnection == count)
-                { 
-                    InGui::Text(result.c_str(), { 0.8f,0.8f }, { 0,1,1,1 });
-                }
-                else if (InGui::Text(result.c_str(), { 0.8f,0.8f }))
+
+            auto& machine = m_Context->GetStateMachine();
+            for (auto& [index, pairN] : machine.GetStatesMap())
+            {
+                for (auto& [index2, pairK] : machine.GetStatesMap())
                 {
-                    m_SelectedConnection = (int)count;                   
+                    auto& source = pairN.State;
+                    auto& destination = pairK.State;
+                    if (source.CanTransitTo(destination.GetID()))
+                    {
+                        std::string result = machine.GetStateName(source.GetID()) + " ----> " + machine.GetStateName(destination.GetID());
+                        InGui::Text(result.c_str(), { 0.8f,0.8f });
+                        InGui::Separator();
+                    }
                 }
-                InGui::Separator();
-                count++;
-            }          
+            }
         }
 	}
+    void AnimatorInspectorLayout::SetContext(const Ref<AnimationController>& context)
+    {
+        m_Context = context; 
+    }
 }

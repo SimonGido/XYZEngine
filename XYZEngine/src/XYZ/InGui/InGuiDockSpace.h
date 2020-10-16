@@ -13,7 +13,8 @@ namespace XYZ {
 		void RemoveWindow(InGuiWindow* window);
 
 		void Begin();
-		void End(const glm::vec2& mousePos, InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig);
+		void Update(const glm::vec2& mousePos);
+		void Render(const glm::vec2& mousePos, InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig);
 
 		bool OnRightMouseButtonPress(const glm::vec2& mousePos);
 		bool OnLeftMouseButtonPress();

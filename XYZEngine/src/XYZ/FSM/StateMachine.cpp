@@ -4,14 +4,19 @@
 
 namespace XYZ {
 
-	void State::SetAllowedTransitions(uint32_t allowedTransitionsTo)
+	void State::SetAllowedTransitions(uint32_t allowedTransitionsToBitset)
 	{
-		m_AllowedTransitionsTo = allowedTransitionsTo;
+		m_AllowedTransitionsTo = allowedTransitionsToBitset;
 	}
 
-	void State::AllowTransition(uint32_t transition)
+	void State::AllowTransition(uint32_t stateIndex)
 	{
-		m_AllowedTransitionsTo |= transition;
+		m_AllowedTransitionsTo |= BIT(stateIndex);
+	}
+
+	bool State::CanTransitTo(uint32_t stateIndex)
+	{
+		return m_AllowedTransitionsTo & BIT(stateIndex);
 	}
 
 	State StateMachine::CreateState(const std::string& name)
@@ -37,7 +42,8 @@ namespace XYZ {
 	{
 		// Check if id of state is in allowed transitions of the current state or check if the current state has allowed any transitions;
 		XYZ_ASSERT(state.m_ID < m_NextFreeBit, "State was not registered in this state machine");
-		if ((state.m_ID & m_CurrentState.m_AllowedTransitionsTo) || (m_CurrentState.m_AllowedTransitionsTo & sc_Any))
+		if ((BIT(state.m_ID) & m_CurrentState.m_AllowedTransitionsTo) 
+		 || (m_CurrentState.m_AllowedTransitionsTo & sc_Any))
 		{
 			m_CurrentState = state;
 			return true;

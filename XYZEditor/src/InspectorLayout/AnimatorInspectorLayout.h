@@ -10,13 +10,12 @@ namespace XYZ {
 	{
 	public:
 		virtual void OnInGuiRender() override;
-		void SetContext(StateMachine* context, Graph* graph) { m_Context = context; m_Graph = graph; }
+		void SetContext(const Ref<AnimationController>& context);
 
 
 	private:
-		StateMachine* m_Context = nullptr;
-		Graph* m_Graph = nullptr;
+		Ref<AnimationController> m_Context = nullptr;
 
-		int m_SelectedConnection = -1;
+		int32_t m_SelectedConnection = -1;
 	};
 }

@@ -3,6 +3,7 @@
 #include "InGuiDockSpace.h"
 
 namespace XYZ {
+
 	struct InGuiContext
 	{
 		InGuiRenderConfiguration RenderConfiguration;
@@ -12,6 +13,7 @@ namespace XYZ {
 		InGuiDockSpace* DockSpace = nullptr;
 	};
 
+	// TODO: Create new type of window for rendering InGui to framebuffer
 	class InGui
 	{
 	public:
@@ -49,9 +51,10 @@ namespace XYZ {
 		static bool ColorPicker4(const char* name, const glm::vec2& size, glm::vec4& pallete, glm::vec4& color);
 		static bool ColorPallete4(const char* name, const glm::vec2& size, glm::vec4& color);
 		static bool RenderWindow(uint32_t id, const char* name, uint32_t rendererID, const glm::vec2& position, const glm::vec2& size);
-
-
 		static void Separator();
+
+		static bool BeginNode(const char* name, const glm::vec2& position, const glm::vec2& size);
+		static void PushArrow(const glm::vec2& p0, const glm::vec2& p1, const glm::vec2& size);
 
 		static glm::vec4 Selector(bool & selecting);
 		static void Selection(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);

@@ -8,12 +8,13 @@ namespace XYZ {
 		m_BothDirrections(bothDirrections)
 	{
 	}
-	int32_t Graph::AddVertex()
+	int32_t Graph::AddVertex(uint32_t index)
 	{
-		return m_Vertices.Insert({ });
+		return m_Vertices.Insert({ index });
 	}
 	void Graph::AddEdge(int32_t start, int32_t end)
 	{
+		XYZ_ASSERT(start < m_Vertices.Range() && end < m_Vertices.Range(), "Edge out of range");
 		m_Vertices[start].Connections.push_back({ end });
 		if (m_BothDirrections)
 			m_Vertices[end].Connections.push_back({ start });
@@ -56,5 +57,9 @@ namespace XYZ {
 			// TODO
 		}
 		m_Vertices.Erase(index);
+	}
+	void Graph::Clear()
+	{
+		m_Vertices.Clear();
 	}
 }

@@ -230,4 +230,9 @@ namespace XYZ {
 		uint32_t m_NumOverLayers = 0;
 	};
 
+	struct FrameData
+	{
+		InGuiPerFrameData PerFrameData;
+		InGuiRenderQueue RenderQueue;
+	};
 }

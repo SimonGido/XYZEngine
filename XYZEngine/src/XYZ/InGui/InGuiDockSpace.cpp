@@ -174,13 +174,17 @@ namespace XYZ {
 
 	}
 
-	void InGuiDockSpace::End(const glm::vec2& mousePos, InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig)
+	void InGuiDockSpace::Update(const glm::vec2& mousePos)
+	{
+		resize(mousePos);
+		update(m_Root);
+	}
+
+	void InGuiDockSpace::Render(const glm::vec2& mousePos, InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig)
 	{
 		if (m_DockSpaceVisible)
 			showNode(m_Root, mousePos, renderConfig);
 		showNodeWindows(m_Root, mousePos, frameData, renderConfig);
-		resize(mousePos);
-		update(m_Root);
 	}
 
 	bool InGuiDockSpace::OnRightMouseButtonPress(const glm::vec2& mousePos)

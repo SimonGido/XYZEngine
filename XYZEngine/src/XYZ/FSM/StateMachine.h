@@ -7,8 +7,10 @@ namespace XYZ {
 	class State
 	{
 	public:
-		void SetAllowedTransitions(uint32_t allowedTransitionsTo);
-		void AllowTransition(uint32_t transition);
+		void SetAllowedTransitions(uint32_t allowedTransitionsToBitset);
+		void AllowTransition(uint32_t stateIndex);
+
+		bool CanTransitTo(uint32_t stateIndex);
 
 		uint32_t GetAllowedTransitions() const { return m_AllowedTransitionsTo; }
 
@@ -21,14 +23,14 @@ namespace XYZ {
 		friend class StateMachine;
 	};
 
-	struct StatePair
-	{
-		State State;
-		std::string Name;
-	};
-
 	class StateMachine
 	{
+	public:
+		struct StatePair
+		{
+			State State;
+			std::string Name;
+		};
 	public:
 		State CreateState(const std::string& name);
 

@@ -454,11 +454,11 @@ namespace XYZ {
 		GenerateInGuiQuad(mesh, position, size, subTexture->GetTexCoords(), textureID, color);
 	}
 
-	void InGuiFactory::GenerateNode(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const glm::vec4& panelColor, const char* name, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig)
+	void InGuiFactory::GenerateNode(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const char* name, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig)
 	{	
 		glm::vec2 panelPos = { position.x, position.y + size.y };
 
-		GenerateInGuiQuad(mesh, panelPos, { size.x ,InGuiWindow::PanelSize }, renderConfig.SubTexture[InGuiRenderConfiguration::SLIDER]->GetTexCoords(), renderConfig.TextureID, panelColor);
+		GenerateInGuiQuad(mesh, panelPos, { size.x ,InGuiWindow::PanelSize }, renderConfig.SubTexture[InGuiRenderConfiguration::SLIDER]->GetTexCoords(), renderConfig.TextureID, color);
 		
 		size_t offset = mesh.Vertices.size();
 		auto [width, height] = GenerateInGuiText(mesh, renderConfig.Font, name, panelPos, { 0.7f,0.7f }, size.x, renderConfig.FontTextureID, { 1,1,1,1 });
