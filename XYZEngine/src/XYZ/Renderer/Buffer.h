@@ -217,7 +217,7 @@ namespace XYZ {
 		* @param[in] usage  Data in the buffer will be static or dynamic , default Static
 		* @return shared_ptr to VertexBuffer
 		*/
-		static Ref<VertexBuffer> Create(float* vertices, uint32_t size, BufferUsage usage = BufferUsage::Static);
+		static Ref<VertexBuffer> Create(void* vertices, uint32_t size, BufferUsage usage = BufferUsage::Static);
 	};
 
 	/**

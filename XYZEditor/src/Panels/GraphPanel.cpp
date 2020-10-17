@@ -1,6 +1,7 @@
 #include "GraphPanel.h"
 
 namespace XYZ {
+
 	GraphPanel::GraphPanel()
 	{
 		auto& app = Application::Get();
@@ -46,8 +47,13 @@ namespace XYZ {
 			{
 				m_Layout->OnUpdate(ts);
 			}
+			
 			InGui::EndSubFrame();
 			Renderer::EndRenderPass();
+		}
+		else
+		{
+			m_Camera.Stop();
 		}
 		return m_ActiveWindow;
 	}

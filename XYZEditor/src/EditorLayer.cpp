@@ -7,6 +7,7 @@
 
 
 namespace XYZ {
+
 	static glm::vec2 MouseToWorld(const glm::vec2& point, const glm::vec2& windowSize)
 	{
 		glm::vec2 offset = { windowSize.x / 2,windowSize.y / 2 };
@@ -241,8 +242,13 @@ namespace XYZ {
 		glm::vec2 winSize = { Input::GetWindowSize().first, Input::GetWindowSize().second };
 		
 		Renderer::BeginRenderPass(m_RenderPass, true);
+	
+		float cameraWidth = m_EditorCamera.GetAspectRatio() * m_EditorCamera.GetZoomLevel() * 2.0f;
+		float cameraHeight = m_EditorCamera.GetAspectRatio() * m_EditorCamera.GetZoomLevel() * 2.0f;
+	
 		m_Scene->OnUpdate(ts);
-		m_Scene->OnRenderEditor({ m_EditorCamera.GetViewProjectionMatrix(),winSize });
+		m_Scene->OnRenderEditor({ m_EditorCamera.GetViewProjectionMatrix() });
+		Renderer2D::ShowGrid(glm::mat4(1.0f));
 		Renderer::EndRenderPass();	
 		Renderer::WaitAndRender();
 	

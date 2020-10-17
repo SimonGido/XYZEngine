@@ -6,7 +6,7 @@ namespace XYZ {
 	class OpenGLVertexBuffer : public VertexBuffer
 	{
 	public:
-		OpenGLVertexBuffer(float* vertices, uint32_t size, BufferUsage usage);
+		OpenGLVertexBuffer(void* vertices, uint32_t size, BufferUsage usage);
 		OpenGLVertexBuffer(uint32_t size);
 		virtual ~OpenGLVertexBuffer();
 

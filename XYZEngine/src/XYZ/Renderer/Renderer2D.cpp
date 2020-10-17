@@ -34,7 +34,8 @@ namespace XYZ {
 		void Reset();
 		void ResetLines();
 		
-		Ref<Material> Material;
+		Ref<Material> QuadMaterial;
+		Ref<Material> GridMaterial;
 		Ref<Shader> LineShader;
 
 		const uint32_t MaxQuads = 10000;
@@ -46,8 +47,10 @@ namespace XYZ {
 		const uint32_t MaxLineVertices = MaxLines * 2;
 		const uint32_t MaxLineIndices = MaxLines * 6;
 
+		Ref<VertexArray> GridVertexArray;
 		Ref<VertexArray> QuadVertexArray;
 		Ref<VertexBuffer> QuadVertexBuffer;
+
 
 		uint32_t IndexCount = 0;
 		Vertex2D* BufferBase = nullptr;
@@ -89,7 +92,6 @@ namespace XYZ {
 				});
 			QuadVertexArray->AddVertexBuffer(QuadVertexBuffer);
 
-
 			uint32_t* quadIndices = new uint32_t[MaxIndices];
 			uint32_t offset = 0;
 			for (uint32_t i = 0; i < MaxIndices; i += 6)
@@ -107,6 +109,45 @@ namespace XYZ {
 			Ref<IndexBuffer> quadIB = IndexBuffer::Create(quadIndices, MaxIndices);
 			QuadVertexArray->SetIndexBuffer(quadIB);
 			delete[] quadIndices;
+
+			// Grid setup
+			GridMaterial = Material::Create(Shader::Create("Assets/Shaders/Grid.glsl"));
+			GridMaterial->Set("u_Scale", 16.025f);
+			GridMaterial->Set("u_Res", 0.025f);
+			struct QuadVertex
+			{
+				glm::vec3 Position;
+				glm::vec2 TexCoord;
+			};
+			float x = -1;
+			float y = -1;
+			float width = 2, height = 2;
+
+			QuadVertex data[4];
+			data[0].Position = glm::vec3(x, y, 0.0f);
+			data[0].TexCoord = glm::vec2(0, 0);
+			
+			data[1].Position = glm::vec3(x + width, y, 0.0f);
+			data[1].TexCoord = glm::vec2(1, 0);
+
+			data[2].Position = glm::vec3(x + width, y + height, 0.0f);
+			data[2].TexCoord = glm::vec2(1, 1);
+
+			data[3].Position = glm::vec3(x, y + height, 0.0f);
+			data[3].TexCoord = glm::vec2(0, 1);
+
+			GridVertexArray = VertexArray::Create();
+			auto gridVB = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
+			gridVB->SetLayout({
+				{0, ShaderDataComponent::Float3, "a_Position" },
+				{1, ShaderDataComponent::Float2, "a_TexCoord" }
+			});
+			GridVertexArray->AddVertexBuffer(gridVB);
+
+			uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
+			auto gridIB = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
+	
+			GridVertexArray->SetIndexBuffer(gridIB);
 		}
 		BufferPtr = BufferBase;	
 		IndexCount = 0;	
@@ -160,10 +201,10 @@ namespace XYZ {
 
 	void Renderer2D::SetMaterial(const Ref<Material>& material)
 	{
-		if (s_Data.Material && material.Raw() != s_Data.Material.Raw())
+		if (s_Data.QuadMaterial && material.Raw() != s_Data.QuadMaterial.Raw())
 			Flush();
 
-		s_Data.Material = material;
+		s_Data.QuadMaterial = material;
 	}
 
 
@@ -258,13 +299,24 @@ namespace XYZ {
 		s_Data.LineIndexCount += 2;
 	}
 
+	void Renderer2D::ShowGrid(const glm::mat4& transform)
+	{
+		auto shader = s_Data.GridMaterial->GetShader();
+		s_Data.GridMaterial->Bind();
+		shader->SetMat4("u_ViewProjectionMatrix", s_Data.Data.ViewProjectionMatrix);
+		shader->SetMat4("u_Transform", transform);
+		
+		s_Data.GridVertexArray->Bind();
+		Renderer::DrawIndexed(PrimitiveType::Triangles, 6);
+	}
+
 	void Renderer2D::Flush()
 	{	
 		uint32_t dataSize = (uint8_t*)s_Data.BufferPtr - (uint8_t*)s_Data.BufferBase;
 		if (dataSize)
 		{
-			s_Data.Material->Set("u_ViewProjectionMatrix", s_Data.Data.ViewProjectionMatrix);
-			s_Data.Material->Bind();
+			s_Data.QuadMaterial->Set("u_ViewProjectionMatrix", s_Data.Data.ViewProjectionMatrix);
+			s_Data.QuadMaterial->Bind();
 			s_Data.QuadVertexBuffer->Update(s_Data.BufferBase, dataSize);
 			s_Data.QuadVertexArray->Bind();
 			Renderer::DrawIndexed(PrimitiveType::Triangles, s_Data.IndexCount);
@@ -294,6 +346,6 @@ namespace XYZ {
 	{
 		s_Data.Stats.DrawCalls = 0;
 		s_Data.Stats.LineDrawCalls = 0;
-		s_Data.Material = nullptr;
+		s_Data.QuadMaterial = nullptr;
 	}
 }

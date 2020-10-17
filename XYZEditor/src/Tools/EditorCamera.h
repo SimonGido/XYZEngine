@@ -19,6 +19,7 @@ namespace XYZ {
 		void SetCameraMouseMoveSpeed(float speed) { m_CameraMouseMoveSpeed = speed; }
 		void SetPosition(const glm::vec3& pos);
 		void Translate(const glm::vec3& translation);
+		void Stop();
 
 		const glm::vec3& GetPosition() const { return m_CameraPosition; }
 		float GetRotation() const { return m_CameraRotation; }

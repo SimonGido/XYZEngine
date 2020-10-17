@@ -29,6 +29,7 @@ namespace XYZ {
 		InGuiWindow* m_GraphWindow = nullptr;
 		Ref<FrameBuffer> m_FBO;
 		Ref<RenderPass> m_RenderPass;
+
 		EditorCamera m_Camera;
 		InGuiMesh m_Mesh;
 		InGuiLineMesh m_LineMesh;

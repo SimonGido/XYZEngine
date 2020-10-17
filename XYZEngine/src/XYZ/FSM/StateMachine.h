@@ -4,6 +4,7 @@
 
 namespace XYZ {
 
+	
 	class State
 	{
 	public:
@@ -23,6 +24,7 @@ namespace XYZ {
 		friend class StateMachine;
 	};
 
+	// TODO: use maybe std::bitset instead of uint32_t , it will result in more states
 	class StateMachine
 	{
 	public:

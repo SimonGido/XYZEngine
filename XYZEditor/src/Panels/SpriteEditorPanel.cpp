@@ -89,8 +89,11 @@ namespace XYZ {
 				glm::vec2 relativeMousePos = InGui::GetWorldPosition(*m_Window, m_Camera.GetPosition(), m_Camera.GetAspectRatio(), m_Camera.GetZoomLevel());
 				m_NewSelection.z = relativeMousePos.x;
 				m_NewSelection.w = relativeMousePos.y;
-			}
-			
+			}	
+		}
+		else
+		{
+			m_Camera.Stop();
 		}
 		if (InGui::MenuBar("File", 90.0f, m_ExportOpen))
 		{
@@ -232,12 +235,11 @@ namespace XYZ {
 	void SpriteEditorPanel::onRender(Timestep ts)
 	{
 		m_Camera.OnUpdate(ts);
-		glm::vec2 winSize = { Input::GetWindowSize().first, Input::GetWindowSize().second };
 		m_FBO->Bind();
 		Renderer::SetClearColor(glm::vec4(0.1, 0.1, 0.1, 1));
 		Renderer::Clear();
 
-		Renderer2D::BeginScene({ m_Camera.GetViewProjectionMatrix(), winSize });
+		Renderer2D::BeginScene({ m_Camera.GetViewProjectionMatrix() });
 		Renderer2D::SetMaterial(m_Material);
 		Renderer2D::SubmitQuad(m_Transform, { 0.0f,0.0f,m_ContextScale.x, m_ContextScale.y }, BACKGROUND, { 1.0f, 1.0f, 1.0f, 1.0f });
 		Renderer2D::SubmitQuad(m_Transform, { 0.0f,0.0f,1.0f,1.0f }, CONTEXT, { 1.0f, 1.0f, 1.0f, 1.0f });

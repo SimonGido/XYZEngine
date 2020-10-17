@@ -104,6 +104,10 @@ namespace XYZ {
 		m_CameraPosition += translation;
 		recalculate();
 	}
+	void EditorCamera::Stop()
+	{
+		m_MouseMoving = false;
+	}
 	void EditorCamera::recalculate()
 	{
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), m_CameraPosition) *

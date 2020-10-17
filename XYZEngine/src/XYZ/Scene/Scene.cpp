@@ -123,9 +123,6 @@ namespace XYZ {
 		glm::mat4 viewProjMatrix = m_MainCamera->Camera.GetProjectionMatrix() 
 			* glm::inverse(m_MainCameraTransform->Transform);
 
-		glm::vec2 winSize = { Input::GetWindowSize().first, Input::GetWindowSize().second };
-
-		
 		m_SceneGraph.Propagate([this](Node<SceneObject, uint16_t>* parent, Node<SceneObject, uint16_t>* child) {
 			//child->Transform->CalculateWorldTransformation();
 		});
@@ -133,7 +130,7 @@ namespace XYZ {
 		// 3D part here
 
 		///////////////
-		Renderer2D::BeginScene({ viewProjMatrix ,winSize });
+		Renderer2D::BeginScene({ viewProjMatrix });
 		for (int i = 0; i < m_RenderGroup->Size(); ++i)
 		{
 			auto [transform, sprite] = (*m_RenderGroup)[i];

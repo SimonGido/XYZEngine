@@ -41,7 +41,7 @@ Entities:
   - Entity: Test HoHO
     Parent: 2
     TransformComponent:
-      Position: [-43.172245, 73.3768539, 0]
+      Position: [85.0325928, 83.2810898, 0]
       Rotation: [1, 0, 0, 0]
       Scale: [40.4168701, 66.9406586, 1]
     SpriteRenderer:
