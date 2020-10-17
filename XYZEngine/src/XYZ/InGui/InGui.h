@@ -7,13 +7,22 @@ namespace XYZ {
 	struct InGuiContext
 	{
 		InGuiRenderConfiguration RenderConfiguration;
-		InGuiPerFrameData PerFrameData;
 		InGuiWindowMap Windows;
-		InGuiRenderQueue RenderQueue;
 		InGuiDockSpace* DockSpace = nullptr;
+		
+
+		void ActivateSubFrame();
+		void ActivateMainFrame() { CurrentFrameData = &MainFrameData; }
+
+		inline InGuiPerFrameData& GetPerFrameData() { return CurrentFrameData->PerFrameData; }
+		inline InGuiRenderQueue& GetRenderQueue() { return CurrentFrameData->RenderQueue; }
+	
+	private:
+		InGuiFrameData *CurrentFrameData = &MainFrameData;
+		InGuiFrameData MainFrameData;
+		InGuiFrameData SubFrameData;
 	};
 
-	// TODO: Create new type of window for rendering InGui to framebuffer
 	class InGui
 	{
 	public:
@@ -22,6 +31,9 @@ namespace XYZ {
 
 		static void BeginFrame();
 		static void EndFrame();
+
+		static void BeginSubFrame();
+		static void EndSubFrame();
 
 		static bool Begin(uint32_t id, const char* name, const glm::vec2& position, const glm::vec2& size);
 		static void End();
@@ -69,7 +81,12 @@ namespace XYZ {
 		static bool OnKeyRelease();
 		static bool IsKeyPressed(int key);
 
+		
+		static void SetInGuiMesh(InGuiMesh* mesh, InGuiLineMesh* lineMesh);
+		static void SetViewProjection(const glm::mat4& viewProjection);
+		static void SetMousePosition(const glm::vec2& mousePos);
 		static void SetUIOffset(float offset);
+
 		static bool ResolveLeftClick(bool handle = true);
 		static bool ResolveRightClick(bool handle = true);
 		static bool ResolveLeftRelease(bool handle = true);
@@ -80,8 +97,10 @@ namespace XYZ {
 		static InGuiWindow* GetWindow(uint32_t id);
 
 		static InGuiRenderConfiguration& GetRenderConfiguration();
-		static glm::vec2& MouseRelativePosition(const InGuiWindow& window, const glm::vec3& cameraPos);
+		static const glm::vec2& GetMousePosition();
+		static glm::vec2 MouseRelativePosition(const InGuiWindow& window, const glm::vec3& cameraPos);
 		static glm::vec2 GetWorldPosition(const InGuiWindow& window, const glm::vec3& cameraPos, float aspectRatio, float zoomLevel);
+		static glm::vec2 GetInGuiPosition(const InGuiWindow& window, const glm::vec3& cameraPos, float aspectRatio, float zoomLevel);
 	private:
 		static InGuiWindow* createWindow(uint32_t id, const glm::vec2& position, const glm::vec2& size);
 

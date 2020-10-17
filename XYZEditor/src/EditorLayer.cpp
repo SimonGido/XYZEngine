@@ -441,12 +441,5 @@ namespace XYZ {
 	{
 		m_EditorCamera.OnResize(size);
 	}
-	void EditorLayer::onNodePanelConnectionCreated(uint32_t startNode, uint32_t endNode)
-	{
-		std::cout << "connection created " << startNode << " " << endNode << std::endl;
-	}
-	void EditorLayer::onNodePanelConnectionDestroyed(uint32_t startNode, uint32_t endNode)
-	{
-		std::cout << "connection destroyed " << startNode << " " << endNode << std::endl;
-	}
+	
 }

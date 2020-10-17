@@ -349,8 +349,8 @@ namespace XYZ {
 	{
 		s_Context = new InGuiContext;
 		s_Context->RenderConfiguration = renderConfig;
-		s_Context->PerFrameData.WindowSize.x = Input::GetWindowSize().first;
-		s_Context->PerFrameData.WindowSize.y = Input::GetWindowSize().second;
+		s_Context->GetPerFrameData().WindowSize.x = Input::GetWindowSize().first;
+		s_Context->GetPerFrameData().WindowSize.y = Input::GetWindowSize().second;
 		loadDockSpace();
 	}
 	void InGui::Destroy()
@@ -368,55 +368,92 @@ namespace XYZ {
 	void InGui::BeginFrame()
 	{
 		auto [mx,my] = Input::GetMousePosition();
-		s_Context->PerFrameData.EventReceivingWindow = nullptr;
-		s_Context->PerFrameData.MousePosition = MouseToWorld({ mx,my }, s_Context->PerFrameData.WindowSize);
+		s_Context->GetPerFrameData().EventReceivingWindow = nullptr;
+		s_Context->GetPerFrameData().MousePosition = MouseToWorld({ mx,my }, s_Context->GetPerFrameData().WindowSize);
 		s_Context->DockSpace->Begin();
+		s_Context->ActivateMainFrame();
 	}
 	void InGui::EndFrame()
 	{
-		if (s_Context->PerFrameData.ModifiedWindow)
+		if (s_Context->GetPerFrameData().ModifiedWindow)
 		{
-			resolveResize(*s_Context->PerFrameData.ModifiedWindow);
-			resolveMove(*s_Context->PerFrameData.ModifiedWindow);
+			resolveResize(*s_Context->GetPerFrameData().ModifiedWindow);
+			resolveMove(*s_Context->GetPerFrameData().ModifiedWindow);
 		}
 
-		InGuiRenderer::BeginScene({ glm::mat4(1.0f), s_Context->PerFrameData.WindowSize });
-		InGuiRenderer::SetTexturePairs(s_Context->PerFrameData.TexturePairs);
+		InGuiRenderer::BeginScene({ s_Context->GetPerFrameData().ViewProjectionMatrix, s_Context->GetPerFrameData().WindowSize });
+		InGuiRenderer::SetTexturePairs(s_Context->GetPerFrameData().TexturePairs);
 		InGuiRenderer::SetMaterial(s_Context->RenderConfiguration.InMaterial);
 		
-		for (auto mesh : s_Context->RenderQueue.GetMeshes())
+		for (auto mesh : s_Context->GetRenderQueue().GetMeshes())
 		{
 			InGuiRenderer::SetMaterial(mesh->Material);
 			InGuiRenderer::SubmitUI(*mesh);
 		}
-		for (auto mesh : s_Context->RenderQueue.GetLineMeshes())
+		for (auto mesh : s_Context->GetRenderQueue().GetLineMeshes())
 		{
 			InGuiRenderer::SubmitLineMesh(*mesh);
 		}
 		
-		s_Context->DockSpace->Render(s_Context->PerFrameData.MousePosition, s_Context->PerFrameData, s_Context->RenderConfiguration);
-		s_Context->DockSpace->Update(s_Context->PerFrameData.MousePosition);
+		s_Context->DockSpace->Render(s_Context->GetPerFrameData().MousePosition, s_Context->GetPerFrameData(), s_Context->RenderConfiguration);
+		s_Context->DockSpace->Update(s_Context->GetPerFrameData().MousePosition);
 		InGuiRenderer::Flush();
 		InGuiRenderer::FlushLines();
 		InGuiRenderer::EndScene();
 		Renderer::WaitAndRender();
 
 		s_Context->RenderConfiguration.NumTexturesInUse = InGuiRenderConfiguration::DefaultTextureCount;
-		s_Context->PerFrameData.TexturePairs.clear();
+		s_Context->GetPerFrameData().TexturePairs.clear();
 	
-		s_Context->RenderQueue.Reset();
+		s_Context->GetRenderQueue().Reset();
 		
 		
 		// Clean codes
-		s_Context->PerFrameData.KeyCode = ToUnderlying(KeyCode::XYZ_KEY_NONE);
-		s_Context->PerFrameData.Mode = ToUnderlying(KeyMode::XYZ_MOD_NONE);
-		s_Context->PerFrameData.Code = ToUnderlying(MouseCode::XYZ_MOUSE_NONE);
+		s_Context->GetPerFrameData().KeyCode = ToUnderlying(KeyCode::XYZ_KEY_NONE);
+		s_Context->GetPerFrameData().Mode = ToUnderlying(KeyMode::XYZ_MOD_NONE);
+		s_Context->GetPerFrameData().Code = ToUnderlying(MouseCode::XYZ_MOUSE_NONE);
+	}
+	void InGui::BeginSubFrame()
+	{
+		s_Context->ActivateSubFrame();
+	}
+	void InGui::EndSubFrame()
+	{
+		InGuiRenderer::BeginScene({ s_Context->GetPerFrameData().ViewProjectionMatrix, s_Context->GetPerFrameData().WindowSize });
+		InGuiRenderer::SetTexturePairs(s_Context->GetPerFrameData().TexturePairs);
+		InGuiRenderer::SetMaterial(s_Context->RenderConfiguration.InMaterial);
+
+		for (auto mesh : s_Context->GetRenderQueue().GetMeshes())
+		{
+			InGuiRenderer::SetMaterial(mesh->Material);
+			InGuiRenderer::SubmitUI(*mesh);
+		}
+		for (auto mesh : s_Context->GetRenderQueue().GetLineMeshes())
+		{
+			InGuiRenderer::SubmitLineMesh(*mesh);
+		}
+
+		InGuiRenderer::FlushLines();
+		InGuiRenderer::Flush();
+		InGuiRenderer::EndScene();
+		Renderer::WaitAndRender();
+
+		s_Context->RenderConfiguration.NumTexturesInUse = InGuiRenderConfiguration::DefaultTextureCount;
+		
+		s_Context->GetPerFrameData().TexturePairs.clear();
+		s_Context->GetRenderQueue().Reset();
+
+		// Clean codes
+		s_Context->GetPerFrameData().KeyCode = ToUnderlying(KeyCode::XYZ_KEY_NONE);
+		s_Context->GetPerFrameData().Mode = ToUnderlying(KeyMode::XYZ_MOD_NONE);
+		s_Context->GetPerFrameData().Code = ToUnderlying(MouseCode::XYZ_MOUSE_NONE);
+		s_Context->ActivateMainFrame();
 	}
 	bool InGui::Begin(uint32_t id, const char* name, const glm::vec2& position, const glm::vec2& size)
 	{
-		XYZ_ASSERT(!s_Context->PerFrameData.CurrentWindow, "Missing end call");
+		XYZ_ASSERT(!s_Context->GetPerFrameData().CurrentWindow, "Missing end call");
 	
-		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiPerFrameData& frameData = s_Context->GetPerFrameData();
 		InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration;
 		InGuiWindow* window = GetWindow(id);
 		if (!window)
@@ -425,13 +462,15 @@ namespace XYZ {
 		window->Name = name;
 
 		frameData.CurrentWindow = window;
+		frameData.ActiveMesh = &window->Mesh;
+		frameData.ActiveLineMesh = &window->LineMesh;
+		
 		if (!(window->Flags & InGuiWindowFlag::Visible))
 			return false;
 
 		frameData.WindowSpaceOffset.x = window->Position.x;
 		frameData.WindowSpaceOffset.y = window->Position.y + window->Size.y;
-
-		window->Mesh.Material = renderConfig.InMaterial;
+		frameData.ActiveMesh->Material = renderConfig.InMaterial;
 
 		// Check if window is hoovered
 		glm::vec2 winSize = window->Size + glm::vec2(0.0f, InGuiWindow::PanelSize);
@@ -441,14 +480,14 @@ namespace XYZ {
 			window->Flags |= InGuiWindowFlag::Hoovered;
 
 			if (frameData.MousePosition.y < window->Position.y + window->Size.y)
-				s_Context->RenderQueue.Push(&window->Mesh, &window->LineMesh);
+				s_Context->GetRenderQueue().Push(&*frameData.ActiveMesh, frameData.ActiveLineMesh);
 			else
-				s_Context->RenderQueue.PushOverlay(&window->Mesh, &window->LineMesh);
+				s_Context->GetRenderQueue().PushOverlay(&*frameData.ActiveMesh, frameData.ActiveLineMesh);
 			if (window->Flags & InGuiWindowFlag::EventListener)
 				frameData.EventReceivingWindow = window;
 		}	
 		else
-			s_Context->RenderQueue.Push(&window->Mesh, &window->LineMesh);
+			s_Context->GetRenderQueue().Push(frameData.ActiveMesh, frameData.ActiveLineMesh);
 		
 
 		// Check if was modified
@@ -459,20 +498,20 @@ namespace XYZ {
 	}
 	void InGui::End()
 	{
-		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
+		XYZ_ASSERT(s_Context->GetPerFrameData().CurrentWindow, "Missing begin call");
 		
-		s_Context->PerFrameData.CurrentWindow->Flags &= ~InGuiWindowFlag::Modified;
-		s_Context->PerFrameData.CurrentWindow->Flags &= ~InGuiWindowFlag::Hoovered;
-		s_Context->PerFrameData.CurrentWindow->Flags &= ~InGuiWindowFlag::LeftClicked;
-		s_Context->PerFrameData.CurrentWindow->Flags &= ~InGuiWindowFlag::RightClicked;
-		s_Context->PerFrameData.ResetWindowData();
+		s_Context->GetPerFrameData().CurrentWindow->Flags &= ~InGuiWindowFlag::Modified;
+		s_Context->GetPerFrameData().CurrentWindow->Flags &= ~InGuiWindowFlag::Hoovered;
+		s_Context->GetPerFrameData().CurrentWindow->Flags &= ~InGuiWindowFlag::LeftClicked;
+		s_Context->GetPerFrameData().CurrentWindow->Flags &= ~InGuiWindowFlag::RightClicked;
+		s_Context->GetPerFrameData().ResetWindowData();
 	}
 
 	bool InGui::BeginPopup(const char* name, glm::vec2& position, const glm::vec2& size, bool& open)
 	{
-		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
+		XYZ_ASSERT(s_Context->GetPerFrameData().CurrentWindow, "Missing begin call");
 
-		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiPerFrameData& frameData = s_Context->GetPerFrameData();
 		InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration;
 		InGuiWindow* window = frameData.CurrentWindow;
 	
@@ -493,7 +532,7 @@ namespace XYZ {
 				}
 			}
 
-			InGuiFactory::GenerateButton(position, size, color, name, window->Mesh, renderConfig);
+			InGuiFactory::GenerateButton(position, size, color, name, *frameData.ActiveMesh, renderConfig);
 			
 			frameData.PopupSize = size;
 			frameData.PopupOffset.x = position.x;
@@ -505,9 +544,9 @@ namespace XYZ {
 
 	bool InGui::PopupItem(const char* name)
 	{
-		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
+		XYZ_ASSERT(s_Context->GetPerFrameData().CurrentWindow, "Missing begin call");
 
-		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiPerFrameData& frameData = s_Context->GetPerFrameData();
 		InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration;
 		InGuiWindow* window = frameData.CurrentWindow;
 		bool pressed = false;
@@ -523,7 +562,7 @@ namespace XYZ {
 					pressed = true;
 				}
 			}
-			InGuiFactory::GenerateButton(position, frameData.PopupSize, color, name, window->Mesh, renderConfig);
+			InGuiFactory::GenerateButton(position, frameData.PopupSize, color, name, *frameData.ActiveMesh, renderConfig);
 		}
 		
 		frameData.PopupItemCount++;
@@ -533,9 +572,9 @@ namespace XYZ {
 
 	bool InGui::PopupExpandItem(const char* name, bool& open)
 	{
-		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
+		XYZ_ASSERT(s_Context->GetPerFrameData().CurrentWindow, "Missing begin call");
 
-		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiPerFrameData& frameData = s_Context->GetPerFrameData();
 		InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration;
 		InGuiWindow* window = frameData.CurrentWindow;
 		frameData.PopupItemCount = 0;
@@ -555,15 +594,15 @@ namespace XYZ {
 			
 			frameData.PopupOffset.x += frameData.PopupSize.x;
 			
-			InGuiFactory::GenerateButton(position, frameData.PopupSize, color, name, window->Mesh, renderConfig);
+			InGuiFactory::GenerateButton(position, frameData.PopupSize, color, name, *frameData.ActiveMesh, renderConfig);
 		}
 		return open;
 	}
 
 	void InGui::PopupExpandEnd()
 	{
-		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
-		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		XYZ_ASSERT(s_Context->GetPerFrameData().CurrentWindow, "Missing begin call");
+		InGuiPerFrameData& frameData = s_Context->GetPerFrameData();
 	
 		frameData.PopupOffset.x -= frameData.PopupSize.x;
 		frameData.PopupOffset.y += frameData.PopupSize.y * ((int)frameData.PopupItemCount - 1);
@@ -572,17 +611,17 @@ namespace XYZ {
 
 	void InGui::EndPopup()
 	{
-		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
-		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		XYZ_ASSERT(s_Context->GetPerFrameData().CurrentWindow, "Missing begin call");
+		InGuiPerFrameData& frameData = s_Context->GetPerFrameData();
 		frameData.PopupOffset = { 0, 0 };
 	}
 
 
 	bool InGui::MenuBar(const char* name, float width, bool& open)
 	{
-		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
+		XYZ_ASSERT(s_Context->GetPerFrameData().CurrentWindow, "Missing begin call");
 
-		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiPerFrameData& frameData = s_Context->GetPerFrameData();
 		InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration;
 		InGuiWindow* window = frameData.CurrentWindow;
 		bool openTmp = open;
@@ -618,9 +657,9 @@ namespace XYZ {
 
 	bool InGui::MenuItem(const char* name, const glm::vec2& size)
 	{
-		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
+		XYZ_ASSERT(s_Context->GetPerFrameData().CurrentWindow, "Missing begin call");
 
-		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiPerFrameData& frameData = s_Context->GetPerFrameData();
 		InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration;
 		InGuiWindow* window = frameData.CurrentWindow;
 		bool pressed = false;
@@ -647,9 +686,9 @@ namespace XYZ {
 
 	bool InGui::BeginGroup(const char* name, const glm::vec2& position, bool& open)
 	{
-		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
+		XYZ_ASSERT(s_Context->GetPerFrameData().CurrentWindow, "Missing begin call");
 
-		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiPerFrameData& frameData = s_Context->GetPerFrameData();
 		InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration;
 		InGuiWindow* window = frameData.CurrentWindow;
 		
@@ -680,7 +719,7 @@ namespace XYZ {
 
 	void InGui::EndGroup()
 	{
-		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiPerFrameData& frameData = s_Context->GetPerFrameData();
 		frameData.WindowSpaceOffset.y -= InGuiWindow::PanelSize;
 	}
 
@@ -689,7 +728,7 @@ namespace XYZ {
 	{
 		XYZ_ASSERT(strlen(text) < sc_TextBufferSize, "Maximum length of text is ", sc_TextBufferSize);
 		InGuiWindow* window = frameData.CurrentWindow;
-		InGuiMesh& mesh = frameData.CurrentWindow->Mesh;
+		InGuiMesh& mesh = *frameData.ActiveMesh;
 
 		auto info = InGuiFactory::GenerateText(scale, color, text, 1000.0f, frameData.TempVertices, renderConfig);
 	
@@ -708,9 +747,9 @@ namespace XYZ {
 
 	bool InGui::Button(const char* name, const glm::vec2& size)
 	{
-		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
+		XYZ_ASSERT(s_Context->GetPerFrameData().CurrentWindow, "Missing begin call");
 
-		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiPerFrameData& frameData = s_Context->GetPerFrameData();
 		InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration;
 		InGuiWindow* window = frameData.CurrentWindow;
 		bool pressed = false;
@@ -728,7 +767,7 @@ namespace XYZ {
 						pressed = true;
 					}
 				}
-				InGuiFactory::GenerateButton(position, size, color, name, window->Mesh, renderConfig);
+				InGuiFactory::GenerateButton(position, size, color, name, *frameData.ActiveMesh, renderConfig);
 			}
 		}
 
@@ -737,9 +776,9 @@ namespace XYZ {
 
 	bool InGui::Checkbox(const char* name, const glm::vec2 position, const glm::vec2& size, bool& value)
 	{
-		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
+		XYZ_ASSERT(s_Context->GetPerFrameData().CurrentWindow, "Missing begin call");
 
-		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiPerFrameData& frameData = s_Context->GetPerFrameData();
 		InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration;
 		InGuiWindow* window = frameData.CurrentWindow;
 
@@ -757,7 +796,7 @@ namespace XYZ {
 							value = !value;
 						}
 				}
-				InGuiFactory::GenerateCheckbox(pos, size, color, name, value, window->Mesh, renderConfig);
+				InGuiFactory::GenerateCheckbox(pos, size, color, name, value, *frameData.ActiveMesh, renderConfig);
 			}
 		}
 
@@ -766,9 +805,9 @@ namespace XYZ {
 
 	bool InGui::Slider(const char* name, const glm::vec2 position, const glm::vec2& size, float& value, float valueScale)
 	{
-		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
+		XYZ_ASSERT(s_Context->GetPerFrameData().CurrentWindow, "Missing begin call");
 
-		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiPerFrameData& frameData = s_Context->GetPerFrameData();
 		InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration;
 		InGuiWindow* window = frameData.CurrentWindow;
 		bool modified = false;
@@ -790,7 +829,7 @@ namespace XYZ {
 					}
 				}
 			}
-			InGuiFactory::GenerateSlider(pos, size, color, name,value * valueScale,frameData.WindowSpaceOffset, window->Mesh, renderConfig);
+			InGuiFactory::GenerateSlider(pos, size, color, name,value * valueScale,frameData.WindowSpaceOffset, *frameData.ActiveMesh, renderConfig);
 		}
 
 		return modified;
@@ -798,9 +837,9 @@ namespace XYZ {
 
 	bool InGui::Image(const char* name, uint32_t rendererID,const glm::vec2& position, const glm::vec2& size,  const glm::vec4& texCoords, float tilingFactor)
 	{
-		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
+		XYZ_ASSERT(s_Context->GetPerFrameData().CurrentWindow, "Missing begin call");
 
-		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiPerFrameData& frameData = s_Context->GetPerFrameData();
 		InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration;
 		InGuiWindow* window = frameData.CurrentWindow;
 		bool pressed = false;
@@ -815,7 +854,7 @@ namespace XYZ {
 			{
 				pressed = ResolveLeftClick(false);
 			}
-			InGuiFactory::GenerateImage(pos, size, renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR], texCoords, rendererID, window->Mesh, frameData.TexturePairs, renderConfig, tilingFactor);		
+			InGuiFactory::GenerateImage(pos, size, renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR], texCoords, rendererID, *frameData.ActiveMesh, frameData.TexturePairs, renderConfig, tilingFactor);		
 		}
 		else
 		{
@@ -827,9 +866,9 @@ namespace XYZ {
 
 	bool InGui::TextArea(const char* name, std::string& text, const glm::vec2& position, const glm::vec2& size, bool& modified)
 	{
-		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
+		XYZ_ASSERT(s_Context->GetPerFrameData().CurrentWindow, "Missing begin call");
 
-		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiPerFrameData& frameData = s_Context->GetPerFrameData();
 		InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration;
 		InGuiWindow* window = frameData.CurrentWindow;
 
@@ -858,7 +897,7 @@ namespace XYZ {
 				}
 
 
-				InGuiFactory::GenerateTextArea(pos, size, color, name, text.c_str(), frameData.WindowSpaceOffset, window->Mesh, renderConfig);
+				InGuiFactory::GenerateTextArea(pos, size, color, name, text.c_str(), frameData.WindowSpaceOffset, *frameData.ActiveMesh, renderConfig);
 			}
 		}
 		
@@ -867,9 +906,9 @@ namespace XYZ {
 
 	bool InGui::Float(uint32_t count, const char* name, float* values, int* lengths, const glm::vec2& position, const glm::vec2& size, int& selected)
 	{
-		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
+		XYZ_ASSERT(s_Context->GetPerFrameData().CurrentWindow, "Missing begin call");
 
-		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiPerFrameData& frameData = s_Context->GetPerFrameData();
 		InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration;
 		InGuiWindow* window = frameData.CurrentWindow;
 
@@ -907,7 +946,7 @@ namespace XYZ {
 						HandleInputNumber(buffer, lengths[i], frameData.KeyCode, frameData.Mode, frameData.CapslockEnabled);
 						values[i] = atof(buffer);
 					}
-					InGuiFactory::GenerateTextArea(pos, size, color, name, buffer, frameData.WindowSpaceOffset, window->Mesh, renderConfig);
+					InGuiFactory::GenerateTextArea(pos, size, color, name, buffer, frameData.WindowSpaceOffset, *frameData.ActiveMesh, renderConfig);
 					pos.x += size.x + offset;
 				}
 			}
@@ -917,9 +956,9 @@ namespace XYZ {
 
 	bool InGui::Icon(const glm::vec2& position, const glm::vec2& size, const Ref<SubTexture2D>& subTexture, uint32_t textureID)
 	{
-		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
+		XYZ_ASSERT(s_Context->GetPerFrameData().CurrentWindow, "Missing begin call");
 
-		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiPerFrameData& frameData = s_Context->GetPerFrameData();
 		InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration;
 		InGuiWindow* window = frameData.CurrentWindow;
 		
@@ -938,7 +977,7 @@ namespace XYZ {
 						pressed = true;
 					}
 				}
-				InGuiFactory::GenerateIcon(window->Mesh, pos, size, color, subTexture, textureID);
+				InGuiFactory::GenerateIcon(*frameData.ActiveMesh, pos, size, color, subTexture, textureID);
 			}
 		}
 		return pressed;
@@ -946,9 +985,9 @@ namespace XYZ {
 
 	bool InGui::Icon(const char* name, const glm::vec2& position, const glm::vec2& size, const Ref<SubTexture2D>& subTexture, uint32_t textureID, bool hightlight)
 	{
-		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
+		XYZ_ASSERT(s_Context->GetPerFrameData().CurrentWindow, "Missing begin call");
 
-		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiPerFrameData& frameData = s_Context->GetPerFrameData();
 		InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration;
 		InGuiWindow* window = frameData.CurrentWindow;
 
@@ -968,8 +1007,8 @@ namespace XYZ {
 					}
 				}
 				else if (hightlight)
-					InGuiFactory::GenerateQuad(pos, size, color, window->Mesh, renderConfig);
-				InGuiFactory::GenerateIcon(window->Mesh, pos, size, color, subTexture, textureID);
+					InGuiFactory::GenerateQuad(pos, size, color, *frameData.ActiveMesh, renderConfig);
+				InGuiFactory::GenerateIcon(*frameData.ActiveMesh, pos, size, color, subTexture, textureID);
 			}
 		}
 		return pressed;
@@ -978,10 +1017,10 @@ namespace XYZ {
 
 	bool InGui::Text(const char* text, const glm::vec2& scale, const glm::vec4& color)
 	{
-		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
+		XYZ_ASSERT(s_Context->GetPerFrameData().CurrentWindow, "Missing begin call");
 		XYZ_ASSERT(strlen(text) < sc_TextBufferSize, "Maximum length of text is ", sc_TextBufferSize);
 
-		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiPerFrameData& frameData = s_Context->GetPerFrameData();
 		InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration;
 		InGuiWindow* window = frameData.CurrentWindow;
 
@@ -997,7 +1036,7 @@ namespace XYZ {
 			
 			MoveVertices(frameData.TempVertices, pos, 0, info.Count * 4);
 			for (uint32_t i = 0; i < info.Count * 4; ++i)
-				window->Mesh.Vertices.push_back(frameData.TempVertices[i]);
+				frameData.ActiveMesh->Vertices.push_back(frameData.TempVertices[i]);
 
 			if (Collide(pos, info.Size, frameData.MousePosition))
 			{
@@ -1010,7 +1049,7 @@ namespace XYZ {
 
 	bool InGui::ColorPicker4(const char* name, const glm::vec2& size, glm::vec4& pallete, glm::vec4& color)
 	{
-		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiPerFrameData& frameData = s_Context->GetPerFrameData();
 		InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration;
 		InGuiWindow* window = frameData.CurrentWindow;
 
@@ -1028,7 +1067,7 @@ namespace XYZ {
 				modified = true;
 			}
 			Separator();
-			InGuiFactory::GenerateColorPicker4(pos, size, pallete, window->Mesh, renderConfig);
+			InGuiFactory::GenerateColorPicker4(pos, size, pallete, *frameData.ActiveMesh, renderConfig);
 			
 			char buffer[sc_SliderFloatSize + 6];
 			sprintf(buffer, "R: %.*f", sc_SliderFloatSize, color.x);
@@ -1061,9 +1100,9 @@ namespace XYZ {
 
 	bool InGui::ColorPallete4(const char* name, const glm::vec2& size, glm::vec4& color)
 	{
-		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
+		XYZ_ASSERT(s_Context->GetPerFrameData().CurrentWindow, "Missing begin call");
 
-		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiPerFrameData& frameData = s_Context->GetPerFrameData();
 		InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration;
 		InGuiWindow* window = frameData.CurrentWindow;
 		if (window->Flags & InGuiWindowFlag::Modified)
@@ -1073,7 +1112,7 @@ namespace XYZ {
 				if (!HandleRowPosition(frameData, size, pos))
 					return false;
 			
-			InGuiFactory::Generate6SegmentColorRectangle(pos, size, window->Mesh, renderConfig);
+			InGuiFactory::Generate6SegmentColorRectangle(pos, size, *frameData.ActiveMesh, renderConfig);
 			if (Collide(pos, size, frameData.MousePosition))
 			{
 				if (ResolveLeftClick())
@@ -1090,24 +1129,25 @@ namespace XYZ {
 
 	bool InGui::RenderWindow(uint32_t id,const char* name, uint32_t rendererID, const glm::vec2& position, const glm::vec2& size)
 	{
-		XYZ_ASSERT(!s_Context->PerFrameData.CurrentWindow, "Missing end call");
+		XYZ_ASSERT(!s_Context->GetPerFrameData().CurrentWindow, "Missing end call");
 
 
-		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiPerFrameData& frameData = s_Context->GetPerFrameData();
 		InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration;
 		InGuiWindow* window = GetWindow(id);
 		if (!window)
 			window = createWindow(id, position, size);
 		
 		window->Name = name;
-
 		frameData.CurrentWindow = window;
+		frameData.ActiveMesh = &window->Mesh;
+		frameData.ActiveLineMesh = &window->LineMesh;
 		if (!(window->Flags & InGuiWindowFlag::Visible))
 			return false;
 
 		frameData.WindowSpaceOffset.x = window->Position.x;
 		frameData.WindowSpaceOffset.y = window->Position.y + window->Size.y;
-		window->Mesh.Material = renderConfig.InMaterial;
+		frameData.ActiveMesh->Material = renderConfig.InMaterial;
 
 		// Check if window is hoovered
 		glm::vec2 winSize = window->Size + glm::vec2(0.0f, InGuiWindow::PanelSize);
@@ -1116,16 +1156,16 @@ namespace XYZ {
 			window->Flags |= InGuiWindowFlag::Modified;
 			window->Flags |= InGuiWindowFlag::Hoovered;
 			if (frameData.MousePosition.y < window->Position.y + window->Size.y)
-				s_Context->RenderQueue.Push(&window->Mesh, &window->LineMesh);
+				s_Context->GetRenderQueue().Push(frameData.ActiveMesh, frameData.ActiveLineMesh);
 			else
-				s_Context->RenderQueue.PushOverlay(&window->Mesh, &window->LineMesh);
+				s_Context->GetRenderQueue().PushOverlay(&*frameData.ActiveMesh, frameData.ActiveLineMesh);
 
 
 			if (window->Flags & InGuiWindowFlag::EventListener)
 				frameData.EventReceivingWindow = window;
 		}
 		else
-			s_Context->RenderQueue.Push(&window->Mesh, &window->LineMesh);
+			s_Context->GetRenderQueue().Push(&*frameData.ActiveMesh, frameData.ActiveLineMesh);
 		
 	
 		if (window->Flags & InGuiWindowFlag::Modified)
@@ -1139,7 +1179,7 @@ namespace XYZ {
 
 	void InGui::Separator()
 	{
-		auto& frameData = s_Context->PerFrameData;
+		auto& frameData = s_Context->GetPerFrameData();
 		frameData.WindowSpaceOffset.x = frameData.CurrentWindow->Position.x;
 		frameData.WindowSpaceOffset.y -= frameData.MaxHeightInRow + frameData.ItemOffset;
 		frameData.MaxHeightInRow = 0.0f;
@@ -1147,56 +1187,35 @@ namespace XYZ {
 
 	bool InGui::BeginNode(const char* name, const glm::vec2& position, const glm::vec2& size)
 	{
-		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
-
-		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		InGuiPerFrameData& frameData = s_Context->GetPerFrameData();
 		InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration;
-		InGuiWindow* window = frameData.CurrentWindow;
 		bool pressed = false;
-		if (window->Flags & InGuiWindowFlag::Modified)
+			
+		glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];
+		if (Collide(position, size, frameData.MousePosition))
 		{
-			glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];
-			glm::vec2 pos = position;
-			if (window->Flags & InGuiWindowFlag::AutoPosition)
+			color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
+			if (ResolveLeftClick())
 			{
-				if (!HandleRowPosition(frameData, size, pos))
-					return false;
+				pressed = true;
 			}
-			else if (IsOutside(*window, size, position))
-				return false;	
-
-			if (Collide(position, size, frameData.MousePosition))
-			{
-				color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
-				if (ResolveLeftClick())
-				{
-					pressed = true;
-				}
-			}
-			InGuiFactory::GenerateButton(pos, size, color, name, window->Mesh, renderConfig);	
 		}
+		InGuiFactory::GenerateButton(position, size, color, name, *frameData.ActiveMesh, renderConfig);	
+		
 		return pressed;
 	}
 
 	void InGui::PushArrow(const glm::vec2& p0, const glm::vec2& p1, const glm::vec2& size)
 	{
-		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing node window end call");
-
-		InGuiPerFrameData& frameData = s_Context->PerFrameData;
-		InGuiWindow* window = frameData.CurrentWindow;
-		if (window->Flags & InGuiWindowFlag::Modified)
-		{
-			if (IsPointOutside(*window, p0) || IsPointOutside(*window, p1))
-				return;
-			InGuiFactory::GenerateArrowLine(window->Mesh, window->LineMesh, p0, p1, size, s_Context->RenderConfiguration);
-		}
+		InGuiPerFrameData& frameData = s_Context->GetPerFrameData();	
+		InGuiFactory::GenerateArrowLine(*frameData.ActiveMesh, *frameData.ActiveLineMesh, p0, p1, size, s_Context->RenderConfiguration);
 	}
 
 
 	glm::vec4 InGui::Selector(bool& selecting)
 	{
-		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
-		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		XYZ_ASSERT(s_Context->GetPerFrameData().CurrentWindow, "Missing begin call");
+		InGuiPerFrameData& frameData = s_Context->GetPerFrameData();
 		InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration;
 
 		InGuiWindow* window = frameData.CurrentWindow;
@@ -1214,7 +1233,7 @@ namespace XYZ {
 					selecting = false;
 
 				glm::vec2 size = frameData.MousePosition - frameData.SelectedPoint;	
-				InGuiFactory::GenerateFrame(window->LineMesh, frameData.SelectedPoint, size, renderConfig.Color[InGuiRenderConfiguration::LINE_COLOR]);
+				InGuiFactory::GenerateFrame(*frameData.ActiveLineMesh, frameData.SelectedPoint, size, renderConfig.Color[InGuiRenderConfiguration::LINE_COLOR]);
 				return glm::vec4(frameData.SelectedPoint, frameData.SelectedPoint + size);
 			}
 		}
@@ -1223,21 +1242,21 @@ namespace XYZ {
 
 	void InGui::Selection(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
 	{
-		XYZ_ASSERT(s_Context->PerFrameData.CurrentWindow, "Missing begin call");
-		InGuiPerFrameData& frameData = s_Context->PerFrameData;
+		XYZ_ASSERT(s_Context->GetPerFrameData().CurrentWindow, "Missing begin call");
+		InGuiPerFrameData& frameData = s_Context->GetPerFrameData();
 		InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration;
 		InGuiWindow* window = frameData.CurrentWindow;
 
 		if (window->Flags & InGuiWindowFlag::Modified)
 		{
-			InGuiFactory::GenerateFrame(window->LineMesh, position, size, color);
+			InGuiFactory::GenerateFrame(*frameData.ActiveLineMesh, position, size, color);
 		}
 	}
 	
 	bool InGui::OnWindowResize(const glm::vec2& winSize)
 	{
-		s_Context->PerFrameData.WindowSize = winSize;
-		s_Context->RenderConfiguration.InMaterial->Set("u_ViewportSize", s_Context->PerFrameData.WindowSize);
+		s_Context->GetPerFrameData().WindowSize = winSize;
+		s_Context->RenderConfiguration.InMaterial->Set("u_ViewportSize", s_Context->GetPerFrameData().WindowSize);
 		s_Context->DockSpace->OnWindowResize(winSize);
 		return false;
 	}
@@ -1246,12 +1265,12 @@ namespace XYZ {
 	{
 		if (s_Context->DockSpace->OnLeftMouseButtonPress())
 			return true;
-		s_Context->PerFrameData.Code = ToUnderlying(MouseCode::XYZ_MOUSE_BUTTON_LEFT);
-		s_Context->PerFrameData.Flags |= InGuiPerFrameFlag::LeftMouseButtonPressed;
-		s_Context->PerFrameData.Flags &= ~InGuiPerFrameFlag::ClickHandled;
-		s_Context->PerFrameData.Flags &= ~InGuiPerFrameFlag::LeftMouseButtonReleased;
+		s_Context->GetPerFrameData().Code = ToUnderlying(MouseCode::XYZ_MOUSE_BUTTON_LEFT);
+		s_Context->GetPerFrameData().Flags |= InGuiPerFrameFlag::LeftMouseButtonPressed;
+		s_Context->GetPerFrameData().Flags &= ~InGuiPerFrameFlag::ClickHandled;
+		s_Context->GetPerFrameData().Flags &= ~InGuiPerFrameFlag::LeftMouseButtonReleased;
 
-		InGuiWindow* window = s_Context->PerFrameData.EventReceivingWindow;
+		InGuiWindow* window = s_Context->GetPerFrameData().EventReceivingWindow;
 		if (window
 			&& (window->Flags & InGuiWindowFlag::Visible))
 		{		
@@ -1270,25 +1289,25 @@ namespace XYZ {
 
 	bool InGui::OnRightMouseButtonPress()
 	{
-		if (s_Context->DockSpace->OnRightMouseButtonPress(s_Context->PerFrameData.MousePosition))
+		if (s_Context->DockSpace->OnRightMouseButtonPress(s_Context->GetPerFrameData().MousePosition))
 			return true;
-		s_Context->PerFrameData.Code = ToUnderlying(MouseCode::XYZ_MOUSE_BUTTON_RIGHT);
-		s_Context->PerFrameData.Flags |=  InGuiPerFrameFlag::RightMouseButtonPressed;
-		s_Context->PerFrameData.Flags &= ~InGuiPerFrameFlag::ClickHandled;
-		s_Context->PerFrameData.Flags &= ~InGuiPerFrameFlag::RightMouseButtonReleased;
+		s_Context->GetPerFrameData().Code = ToUnderlying(MouseCode::XYZ_MOUSE_BUTTON_RIGHT);
+		s_Context->GetPerFrameData().Flags |=  InGuiPerFrameFlag::RightMouseButtonPressed;
+		s_Context->GetPerFrameData().Flags &= ~InGuiPerFrameFlag::ClickHandled;
+		s_Context->GetPerFrameData().Flags &= ~InGuiPerFrameFlag::RightMouseButtonReleased;
 		
-		InGuiWindow* window = s_Context->PerFrameData.EventReceivingWindow;
+		InGuiWindow* window = s_Context->GetPerFrameData().EventReceivingWindow;
 		if (window && (window->Flags & InGuiWindowFlag::Visible))
 		{		
 			if (detectResize(*window))
 			{
-				s_Context->PerFrameData.Flags |= InGuiPerFrameFlag::ClickHandled;
-				s_Context->PerFrameData.ModifiedWindow = window;
+				s_Context->GetPerFrameData().Flags |= InGuiPerFrameFlag::ClickHandled;
+				s_Context->GetPerFrameData().ModifiedWindow = window;
 			}
 			else if(detectMoved(*window))
 			{
-				s_Context->PerFrameData.Flags |= InGuiPerFrameFlag::ClickHandled;
-				s_Context->PerFrameData.ModifiedWindow = window;
+				s_Context->GetPerFrameData().Flags |= InGuiPerFrameFlag::ClickHandled;
+				s_Context->GetPerFrameData().ModifiedWindow = window;
 			}		
 			else
 			{
@@ -1302,14 +1321,14 @@ namespace XYZ {
 
 	bool InGui::OnLeftMouseButtonRelease()
 	{
-		s_Context->PerFrameData.Flags |=  InGuiPerFrameFlag::LeftMouseButtonReleased;
-		s_Context->PerFrameData.Flags &= ~InGuiPerFrameFlag::ReleaseHandled;
-		s_Context->PerFrameData.Flags &= ~InGuiPerFrameFlag::LeftMouseButtonPressed;
-		s_Context->PerFrameData.Code = ToUnderlying(MouseCode::XYZ_MOUSE_NONE);
-		if (s_Context->PerFrameData.ModifiedWindow)
+		s_Context->GetPerFrameData().Flags |=  InGuiPerFrameFlag::LeftMouseButtonReleased;
+		s_Context->GetPerFrameData().Flags &= ~InGuiPerFrameFlag::ReleaseHandled;
+		s_Context->GetPerFrameData().Flags &= ~InGuiPerFrameFlag::LeftMouseButtonPressed;
+		s_Context->GetPerFrameData().Code = ToUnderlying(MouseCode::XYZ_MOUSE_NONE);
+		if (s_Context->GetPerFrameData().ModifiedWindow)
 		{
-			s_Context->PerFrameData.ModifiedWindow->Flags &= ~(InGuiWindowFlag::Moved | InGuiWindowFlag::LeftResizing | InGuiWindowFlag::RightResizing | InGuiWindowFlag::TopResizing | InGuiWindowFlag::BottomResizing);
-			s_Context->PerFrameData.ModifiedWindow = nullptr;
+			s_Context->GetPerFrameData().ModifiedWindow->Flags &= ~(InGuiWindowFlag::Moved | InGuiWindowFlag::LeftResizing | InGuiWindowFlag::RightResizing | InGuiWindowFlag::TopResizing | InGuiWindowFlag::BottomResizing);
+			s_Context->GetPerFrameData().ModifiedWindow = nullptr;
 		}
 	
 		return false;
@@ -1317,15 +1336,15 @@ namespace XYZ {
 
 	bool InGui::OnRightMouseButtonRelease()
 	{
-		s_Context->PerFrameData.Code = ToUnderlying(MouseCode::XYZ_MOUSE_NONE);
-		s_Context->DockSpace->OnRightMouseButtonRelease(s_Context->PerFrameData.ModifiedWindow, s_Context->PerFrameData.MousePosition);
-		s_Context->PerFrameData.Flags &= ~InGuiPerFrameFlag::RightMouseButtonPressed;
-		s_Context->PerFrameData.Flags &= ~InGuiPerFrameFlag::ReleaseHandled;
-		s_Context->PerFrameData.Flags |=  InGuiPerFrameFlag::RightMouseButtonReleased;
-		if (s_Context->PerFrameData.ModifiedWindow)
+		s_Context->GetPerFrameData().Code = ToUnderlying(MouseCode::XYZ_MOUSE_NONE);
+		s_Context->DockSpace->OnRightMouseButtonRelease(s_Context->GetPerFrameData().ModifiedWindow, s_Context->GetPerFrameData().MousePosition);
+		s_Context->GetPerFrameData().Flags &= ~InGuiPerFrameFlag::RightMouseButtonPressed;
+		s_Context->GetPerFrameData().Flags &= ~InGuiPerFrameFlag::ReleaseHandled;
+		s_Context->GetPerFrameData().Flags |=  InGuiPerFrameFlag::RightMouseButtonReleased;
+		if (s_Context->GetPerFrameData().ModifiedWindow)
 		{
-			s_Context->PerFrameData.ModifiedWindow->Flags &= ~(InGuiWindowFlag::Moved | InGuiWindowFlag::LeftResizing | InGuiWindowFlag::RightResizing | InGuiWindowFlag::TopResizing | InGuiWindowFlag::BottomResizing);
-			s_Context->PerFrameData.ModifiedWindow = nullptr;
+			s_Context->GetPerFrameData().ModifiedWindow->Flags &= ~(InGuiWindowFlag::Moved | InGuiWindowFlag::LeftResizing | InGuiWindowFlag::RightResizing | InGuiWindowFlag::TopResizing | InGuiWindowFlag::BottomResizing);
+			s_Context->GetPerFrameData().ModifiedWindow = nullptr;
 			auto& app = Application::Get();
 			app.GetWindow().SetCursor(XYZ_ARROW_CURSOR);
 		}
@@ -1336,40 +1355,64 @@ namespace XYZ {
 	bool InGui::OnKeyPress(int key, int mod)
 	{
 		if (mod == ToUnderlying(KeyMode::XYZ_MOD_CAPS_LOCK))
-			s_Context->PerFrameData.CapslockEnabled = !s_Context->PerFrameData.CapslockEnabled;
+			s_Context->GetPerFrameData().CapslockEnabled = !s_Context->GetPerFrameData().CapslockEnabled;
 
-		s_Context->PerFrameData.KeyCode = key;
-		s_Context->PerFrameData.Mode = mod;
+		s_Context->GetPerFrameData().KeyCode = key;
+		s_Context->GetPerFrameData().Mode = mod;
 		return false;
 	}
 
 	bool InGui::OnKeyRelease()
 	{
-		s_Context->PerFrameData.KeyCode = ToUnderlying(KeyCode::XYZ_KEY_NONE);
-		s_Context->PerFrameData.Mode = ToUnderlying(KeyMode::XYZ_MOD_NONE);
+		s_Context->GetPerFrameData().KeyCode = ToUnderlying(KeyCode::XYZ_KEY_NONE);
+		s_Context->GetPerFrameData().Mode = ToUnderlying(KeyMode::XYZ_MOD_NONE);
 		return false;
 	}
 
 
 	bool InGui::IsKeyPressed(int key)
 	{
-		return s_Context->PerFrameData.KeyCode == key;
+		return s_Context->GetPerFrameData().KeyCode == key;
+	}
+
+	void InGui::SetInGuiMesh(InGuiMesh* mesh, InGuiLineMesh* lineMesh)
+	{
+		XYZ_ASSERT(mesh && lineMesh, "Meshes can not be null");
+		mesh->Material = s_Context->RenderConfiguration.InMaterial;
+		s_Context->GetPerFrameData().ActiveMesh = mesh;
+		s_Context->GetPerFrameData().ActiveLineMesh = lineMesh;
+		s_Context->GetRenderQueue().Push(mesh, lineMesh);
+	}
+
+	void InGui::SetViewProjection(const glm::mat4& viewProjection)
+	{
+		s_Context->GetPerFrameData().ViewProjectionMatrix = viewProjection;
+	}
+
+	void InGui::SetMousePosition(const glm::vec2& mousePos)
+	{
+		s_Context->GetPerFrameData().MousePosition = mousePos;
 	}
 
 	void InGui::SetUIOffset(float offset)
 	{
-		s_Context->PerFrameData.ItemOffset = offset;
+		s_Context->GetPerFrameData().ItemOffset = offset;
 	}
 
 	InGuiWindow* InGui::GetCurrentWindow()
 	{
-		return s_Context->PerFrameData.CurrentWindow;
+		return s_Context->GetPerFrameData().CurrentWindow;
 	}
 
 
 	InGuiRenderConfiguration& InGui::GetRenderConfiguration()
 	{
 		return s_Context->RenderConfiguration;
+	}
+
+	const glm::vec2& InGui::GetMousePosition()
+	{
+		return s_Context->GetPerFrameData().MousePosition;
 	}
 
 	glm::vec2 InGui::GetWorldPosition(const InGuiWindow& window, const glm::vec3& cameraPos, float aspectRatio, float zoomLevel)
@@ -1389,9 +1432,30 @@ namespace XYZ {
 		return { x + pos.x , y + pos.y };
 	}
 
-	glm::vec2& InGui::MouseRelativePosition(const InGuiWindow& window, const glm::vec3& cameraPos)
+	glm::vec2 InGui::GetInGuiPosition(const InGuiWindow& window, const glm::vec3& cameraPos, float aspectRatio, float zoomLevel)
 	{
-		auto& mousePos = s_Context->PerFrameData.MousePosition;
+		auto [x, y] = Input::GetMousePosition();
+		auto [width, height] = Input::GetWindowSize();
+		x -= ((float)width / 2.0f) - fabs(window.Position.x);
+		y -= ((float)height / 2.0f) - window.Position.y - window.Size.y;
+
+		float cameraBoundWidth = (aspectRatio * zoomLevel) * 2;
+		float cameraBoundHeight = zoomLevel * 2;
+		auto pos = cameraPos;
+
+		x = (x / window.Size.x) * cameraBoundWidth - cameraBoundWidth * 0.5f;
+		y = cameraBoundHeight * 0.5f - (y / window.Size.y) * cameraBoundHeight;
+		x *= ((float)width / 2.0f);
+		y *= ((float)height / 2.0f);
+		x += pos.x * ((float)width / 2.0f);
+		y += pos.y * ((float)height / 2.0f);
+
+		return { x + pos.x , y + pos.y };
+	}
+
+	glm::vec2 InGui::MouseRelativePosition(const InGuiWindow& window, const glm::vec3& cameraPos)
+	{
+		auto& mousePos = s_Context->GetPerFrameData().MousePosition;
 		return glm::vec2{ mousePos.x + (window.Size.x / 2 * cameraPos.x), mousePos.y + (window.Size.y / 2 * cameraPos.y) };
 	}
 	
@@ -1430,7 +1494,7 @@ namespace XYZ {
 		if (!(window.Flags & InGuiWindowFlag::Docked) && !(window.Flags & InGuiWindowFlag::Moved))
 		{
 			auto& app = Application::Get();
-			auto& frameData = s_Context->PerFrameData;
+			auto& frameData = s_Context->GetPerFrameData();
 			glm::vec2 offset = { 10,10 };
 			auto& mousePos = frameData.MousePosition;
 			bool resized = false;
@@ -1470,12 +1534,12 @@ namespace XYZ {
 	}
 	bool InGui::detectMoved(InGuiWindow& window)
 	{
-		if (s_Context->PerFrameData.MousePosition.y >= window.Position.y + window.Size.y
+		if (s_Context->GetPerFrameData().MousePosition.y >= window.Position.y + window.Size.y
 			&& !(window.Flags & InGuiWindowFlag::Moved))
 		{
 			window.Flags |= InGuiWindowFlag::Moved;
 			window.Flags |= InGuiWindowFlag::Modified;
-			s_Context->PerFrameData.ModifiedWindowMouseOffset = s_Context->PerFrameData.MousePosition - window.Position - glm::vec2{ 0, window.Size.y };
+			s_Context->GetPerFrameData().ModifiedWindowMouseOffset = s_Context->GetPerFrameData().MousePosition - window.Position - glm::vec2{ 0, window.Size.y };
 			return true;
 		}
 		return false;
@@ -1488,7 +1552,7 @@ namespace XYZ {
 		};
 		glm::vec2 minButtonSize = { InGuiWindow::PanelSize,InGuiWindow::PanelSize };
 
-		if (Collide(minButtonPos, minButtonSize, s_Context->PerFrameData.MousePosition))
+		if (Collide(minButtonPos, minButtonSize, s_Context->GetPerFrameData().MousePosition))
 		{
 			window.Flags ^= InGuiWindowFlag::Collapsed;
 			window.Flags |= InGuiWindowFlag::Modified;
@@ -1498,8 +1562,8 @@ namespace XYZ {
 	}
 	void InGui::resolveResize(InGuiWindow& window)
 	{
-		auto& mousePos = s_Context->PerFrameData.MousePosition;
-		auto& frameData = s_Context->PerFrameData;
+		auto& mousePos = s_Context->GetPerFrameData().MousePosition;
+		auto& frameData = s_Context->GetPerFrameData();
 		if (!(window.Flags & InGuiWindowFlag::Docked))
 		{
 			window.Flags |= InGuiWindowFlag::Modified;
@@ -1537,7 +1601,7 @@ namespace XYZ {
 	{
 		if (window.Flags & InGuiWindowFlag::Moved)
 		{
-			auto& frameData = s_Context->PerFrameData;
+			auto& frameData = s_Context->GetPerFrameData();
 			glm::vec2 pos = frameData.MousePosition - frameData.ModifiedWindowMouseOffset;
 			window.Position = { pos.x, pos.y - window.Size.y };
 			s_Context->DockSpace->RemoveWindow(&window);
@@ -1549,11 +1613,11 @@ namespace XYZ {
 
 	bool InGui::ResolveLeftClick(bool handle)
 	{
-		if ((s_Context->PerFrameData.Flags & InGuiPerFrameFlag::LeftMouseButtonPressed) &&
-			!(s_Context->PerFrameData.Flags & InGuiPerFrameFlag::ClickHandled))
+		if ((s_Context->GetPerFrameData().Flags & InGuiPerFrameFlag::LeftMouseButtonPressed) &&
+			!(s_Context->GetPerFrameData().Flags & InGuiPerFrameFlag::ClickHandled))
 		{
 			if (handle)
-				s_Context->PerFrameData.Flags |= InGuiPerFrameFlag::ClickHandled;
+				s_Context->GetPerFrameData().Flags |= InGuiPerFrameFlag::ClickHandled;
 			return true;
 		}	
 		return false;
@@ -1561,11 +1625,11 @@ namespace XYZ {
 
 	bool InGui::ResolveRightClick(bool handle)
 	{
-		if ((s_Context->PerFrameData.Flags & InGuiPerFrameFlag::RightMouseButtonPressed) &&
-			!(s_Context->PerFrameData.Flags & InGuiPerFrameFlag::ClickHandled))
+		if ((s_Context->GetPerFrameData().Flags & InGuiPerFrameFlag::RightMouseButtonPressed) &&
+			!(s_Context->GetPerFrameData().Flags & InGuiPerFrameFlag::ClickHandled))
 		{
 			if (handle)
-				s_Context->PerFrameData.Flags |= InGuiPerFrameFlag::ClickHandled;
+				s_Context->GetPerFrameData().Flags |= InGuiPerFrameFlag::ClickHandled;
 			return true;
 		}
 		return false;
@@ -1573,11 +1637,11 @@ namespace XYZ {
 
 	bool InGui::ResolveLeftRelease(bool handle)
 	{
-		if ((s_Context->PerFrameData.Flags & InGuiPerFrameFlag::LeftMouseButtonReleased) &&
-			!(s_Context->PerFrameData.Flags & InGuiPerFrameFlag::ReleaseHandled))
+		if ((s_Context->GetPerFrameData().Flags & InGuiPerFrameFlag::LeftMouseButtonReleased) &&
+			!(s_Context->GetPerFrameData().Flags & InGuiPerFrameFlag::ReleaseHandled))
 		{
 			if (handle)
-				s_Context->PerFrameData.Flags |= InGuiPerFrameFlag::ReleaseHandled;
+				s_Context->GetPerFrameData().Flags |= InGuiPerFrameFlag::ReleaseHandled;
 			return true;
 		}
 		return false;
@@ -1585,11 +1649,11 @@ namespace XYZ {
 
 	bool InGui::ResolveRightRelease(bool handle)
 	{
-		if ((s_Context->PerFrameData.Flags & InGuiPerFrameFlag::RightMouseButtonReleased) &&
-			!(s_Context->PerFrameData.Flags & InGuiPerFrameFlag::ReleaseHandled))
+		if ((s_Context->GetPerFrameData().Flags & InGuiPerFrameFlag::RightMouseButtonReleased) &&
+			!(s_Context->GetPerFrameData().Flags & InGuiPerFrameFlag::ReleaseHandled))
 		{
 			if (handle)
-				s_Context->PerFrameData.Flags |= InGuiPerFrameFlag::ReleaseHandled;
+				s_Context->GetPerFrameData().Flags |= InGuiPerFrameFlag::ReleaseHandled;
 			return true;
 		}
 		return false;
@@ -1712,7 +1776,7 @@ namespace XYZ {
 		mINI::INIFile file("ingui.ini");
 		mINI::INIStructure ini;
 
-		auto& frameData = s_Context->PerFrameData;
+		auto& frameData = s_Context->GetPerFrameData();
 		
 
 		frameData.WindowSize.x = (float)Input::GetWindowSize().first;
@@ -1733,7 +1797,7 @@ namespace XYZ {
 			s_Context->DockSpace = new InGuiDockSpace(dockMap[0]);
 			s_Context->DockSpace->m_NextNodeID = maxID + 1;
 
-			glm::vec2 scale = s_Context->PerFrameData.WindowSize / s_Context->DockSpace->m_Root->Size;
+			glm::vec2 scale = s_Context->GetPerFrameData().WindowSize / s_Context->DockSpace->m_Root->Size;
 			s_Context->DockSpace->rescale(scale, s_Context->DockSpace->m_Root);
 		}
 		else
@@ -1792,4 +1856,14 @@ namespace XYZ {
 		file.write(ini);
 	}
 	
+	void InGuiContext::ActivateSubFrame()
+	{
+		XYZ_ASSERT(!MainFrameData.PerFrameData.CurrentWindow, "Current window must be ended");
+		// Copy main frame data
+		SubFrameData.PerFrameData.WindowSize = MainFrameData.PerFrameData.WindowSize;
+		SubFrameData.PerFrameData.MousePosition = MainFrameData.PerFrameData.MousePosition;
+		SubFrameData.PerFrameData.Flags = MainFrameData.PerFrameData.Flags;
+		CurrentFrameData = &SubFrameData;
+	}
+
 }

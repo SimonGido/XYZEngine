@@ -48,7 +48,11 @@ namespace XYZ {
 		EventReceivingWindow = nullptr;
 		ModifiedWindow = nullptr;
 		CurrentWindow = nullptr;
+		ActiveMesh = nullptr;
+		ActiveLineMesh = nullptr;
+
 		TempVertices = new InGuiVertex[260 * 4];
+		ViewProjectionMatrix = glm::mat4(1.0f);
 
 		ModifiedWindowMouseOffset = { 0,0 };
 		SelectedPoint = { 0,0 };

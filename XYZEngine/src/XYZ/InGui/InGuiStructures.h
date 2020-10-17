@@ -140,10 +140,12 @@ namespace XYZ {
 		InGuiWindow* EventReceivingWindow;
 		InGuiWindow* ModifiedWindow;
 		InGuiWindow* CurrentWindow;
-	
+		InGuiMesh* ActiveMesh;
+		InGuiLineMesh* ActiveLineMesh;
 
 		InGuiVertex* TempVertices;
 
+		glm::mat4 ViewProjectionMatrix;
 		glm::vec2 WindowSize;
 		glm::vec2 PopupSize;
 		glm::vec2 ModifiedWindowMouseOffset;
@@ -230,7 +232,7 @@ namespace XYZ {
 		uint32_t m_NumOverLayers = 0;
 	};
 
-	struct FrameData
+	struct InGuiFrameData
 	{
 		InGuiPerFrameData PerFrameData;
 		InGuiRenderQueue RenderQueue;

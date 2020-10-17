@@ -58,7 +58,7 @@ namespace XYZ {
 		float m_CameraRotation = 0.0f; //In degrees, in the anti-clockwise direction
 		float m_CameraTranslationSpeed = 5.0f;
 		float m_CameraRotationSpeed = 180.0f;
-		float m_CameraMouseMoveSpeed = 0.1f;
+		float m_CameraMouseMoveSpeed = 0.01f;
 		
 		glm::vec2 m_StartMousePos = { 0,0 };
 		glm::vec3 m_OldPosition = { 0,0,0 };

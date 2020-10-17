@@ -34,60 +34,47 @@ namespace XYZ {
 				m_PopupEnabled = !m_PopupEnabled;
 				m_PopupPosition = MouseToWorld({ mx,my }, { width,height });
 			}
+		}
+	}
 
-		
+	void AnimatorGraphLayout::OnUpdate(Timestep ts)
+	{
+		if (m_Context)
+		{
+			m_MousePosition = InGui::GetMousePosition();
 			auto& machine = m_Context->GetStateMachine();
 			m_Graph.TraverseAll([&](int32_t source, int32_t destination, int32_t sourceIndex, int32_t destinationIndex, bool isConnected) {
+				
 				if (!isConnected)
 				{
-					glm::vec2 pos = m_NodeMap[source].Position + m_ScreenOffset;
+					glm::vec2 pos = m_NodeMap[source].Position;
 					InGui::BeginNode(machine.GetStateName(sourceIndex).c_str(), pos, sc_NodeSize);
 					pos += sc_NodeSize / 2.0f;
-					
 				}
 				else
 				{
-					glm::vec2 sourcePos = m_NodeMap[source].Position + m_ScreenOffset;
+					glm::vec2 sourcePos = m_NodeMap[source].Position;
 					InGui::BeginNode(machine.GetStateName(sourceIndex).c_str(), sourcePos, sc_NodeSize);
-					glm::vec2 destPos = m_NodeMap[destination].Position + m_ScreenOffset;
+					glm::vec2 destPos = m_NodeMap[destination].Position;
 					InGui::BeginNode(machine.GetStateName(destinationIndex).c_str(), destPos, sc_NodeSize);
-					
+
 					sourcePos += sc_NodeSize / 2.0f;
 					destPos += sc_NodeSize / 2.0f;
 					InGui::PushArrow(sourcePos, destPos, { 50,50 });
-				}		
-			});
+				}
+				});
 
 			if (m_SelectedNode != sc_InvalidIndex)
 			{
-				auto [width, height] = Input::GetWindowSize();
-				auto [mx, my] = Input::GetMousePosition();
-				auto mousePos = MouseToWorld({ mx,my }, { width,height });
-				
-				InGui::PushArrow(m_ArrowStartPos, mousePos, { 50,50 });
+				InGui::PushArrow(m_ArrowStartPos, m_MousePosition, { 50,50 });
+			}
+			else if (m_MovedNode != sc_InvalidIndex)
+			{
+				m_NodeMap[m_MovedNode].Position = m_MousePosition + m_MouseMovedNodeDiff;
 			}
 		}
 	}
-	void AnimatorGraphLayout::OnUpdate(Timestep ts)
-	{
-		if (Input::IsKeyPressed(KeyCode::XYZ_KEY_A))
-		{
-			m_ScreenOffset.x += m_Speed * ts;
-		}
-		else if (Input::IsKeyPressed(KeyCode::XYZ_KEY_D))
-		{
-			m_ScreenOffset.x -= m_Speed * ts;
-		}
 
-		if (Input::IsKeyPressed(KeyCode::XYZ_KEY_W))
-		{
-			m_ScreenOffset.y -= m_Speed * ts;
-		}
-		else if (Input::IsKeyPressed(KeyCode::XYZ_KEY_S))
-		{
-			m_ScreenOffset.y += m_Speed * ts;
-		}
-	}
 	void AnimatorGraphLayout::OnEvent(Event& event)
 	{
 		EventDispatcher dispatcher(event);
@@ -100,100 +87,125 @@ namespace XYZ {
 
 		glm::vec2 pos = { -400,0 };
 		uint32_t counter = 0;
+		
 		auto& machine = m_Context->GetStateMachine();
-		m_NodeMap.resize(machine.GetStatesMap().size());
-		for (auto it : machine.GetStatesMap())
+		for (uint32_t i = 0; i < machine.GetNumStates(); ++i)
 		{
-			int32_t index = m_Graph.AddVertex(it.second.State.GetID());
-			m_NodeMap[index] = { pos };
-			pos.x += 150;
-			pos.y += 150;
-			if (counter++ % 2)
-				pos.y -= 500;
-		}
-		for (auto& [index, pairN] : machine.GetStatesMap())
-		{
-			for (auto& [index2, pairK] : machine.GetStatesMap())
+			if (machine.IsStateInitialized(i))
 			{
-				auto& source = pairN.State;
-				auto& destination = pairK.State;
-				if (source.CanTransitTo(destination.GetID()))
+				int32_t index = m_Graph.AddVertex(machine.GetState(i).GetID());
+				m_NodeMap[index] = { pos };
+				pos.x += 150;
+				pos.y += 150;
+				if (counter++ % 2)
+					pos.y -= 500;
+			}
+		}
+
+		for (uint32_t i = 0; i < machine.GetNumStates(); ++i)
+		{
+			if (machine.IsStateInitialized(i))
+			{
+				for (uint32_t j = 0; j < machine.GetNumStates(); ++j)
 				{
-					m_Graph.AddEdge(source.GetID(), destination.GetID());
+					if (machine.IsStateInitialized(j))
+					{
+						auto& source = machine.GetState(i);
+						auto& destination = machine.GetState(j);
+						if (source.CanTransitTo(destination.GetID()))
+						{
+							m_Graph.AddEdge(source.GetID(), destination.GetID());
+						}
+					}
 				}
 			}
 		}
 	}
 	bool AnimatorGraphLayout::onMouseButtonPress(MouseButtonPressEvent& event)
 	{
-		if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_LEFT))
-		{
-			auto [mx, my] = Input::GetMousePosition();
-			auto [width, height] = Input::GetWindowSize();
-			glm::vec2 mousePos = MouseToWorld({ mx,my }, { width,height });
-			m_Graph.TraverseAll([&](int32_t source, int32_t destination, int32_t sourceIndex, int32_t destinationIndex, bool isConnected) {
-				
-				if (!isConnected)
+		m_Graph.TraverseAll([&](int32_t source, int32_t destination, int32_t sourceIndex, int32_t destinationIndex, bool isConnected) {
+
+			if (!isConnected)
+			{
+				if (Collide(m_NodeMap[source].Position, sc_NodeSize, m_MousePosition))
 				{
-					glm::vec2 pos = m_NodeMap[source].Position + m_ScreenOffset;
-					if (Collide(pos, sc_NodeSize, mousePos))
+					if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_LEFT))
 					{
 						m_SelectedNode = sourceIndex;
-						m_ArrowStartPos = pos + sc_NodeSize / 2.0f;
+						m_ArrowStartPos = m_NodeMap[source].Position + sc_NodeSize / 2.0f;
+					}
+					else if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_RIGHT))
+					{
+						m_MovedNode = sourceIndex;
+						m_MouseMovedNodeDiff = m_NodeMap[m_MovedNode].Position - m_MousePosition;
 					}
 				}
-				else
+			}
+			else
+			{
+				if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_LEFT))
 				{
-					glm::vec2 sourcePos = m_NodeMap[source].Position + m_ScreenOffset;
-					glm::vec2 destPos = m_NodeMap[destination].Position + m_ScreenOffset;
-					if (Collide(sourcePos, sc_NodeSize, mousePos))
+					if (Collide(m_NodeMap[source].Position, sc_NodeSize, m_MousePosition))
 					{
 						m_SelectedNode = sourceIndex;
-						m_ArrowStartPos = sourcePos + sc_NodeSize / 2.0f;
+						m_ArrowStartPos = m_NodeMap[source].Position + sc_NodeSize / 2.0f;
 					}
-					else if (Collide(destPos, sc_NodeSize, mousePos))
+					else if (Collide(m_NodeMap[destination].Position, sc_NodeSize, m_MousePosition))
 					{
 						m_SelectedNode = destinationIndex;
-						m_ArrowStartPos = destPos + sc_NodeSize / 2.0f;
+						m_ArrowStartPos = m_NodeMap[destination].Position + sc_NodeSize / 2.0f;
 					}
 				}
-
-			});
-		}
+				else if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_RIGHT))
+				{
+					if (Collide(m_NodeMap[source].Position, sc_NodeSize, m_MousePosition))
+					{
+						m_MovedNode = sourceIndex;
+						m_MouseMovedNodeDiff = m_NodeMap[m_MovedNode].Position - m_MousePosition;
+					}
+					else if (Collide(m_NodeMap[destination].Position, sc_NodeSize, m_MousePosition))
+					{
+						m_MovedNode = destinationIndex;
+						m_MouseMovedNodeDiff = m_NodeMap[m_MovedNode].Position - m_MousePosition;
+					}
+				}
+			}
+		});	
 		return false;
 	}
 	bool AnimatorGraphLayout::onMouseButtonRelease(MouseButtonReleaseEvent& event)
 	{
 		if (event.IsButtonReleased(MouseCode::XYZ_MOUSE_BUTTON_LEFT))
 		{
-			auto [mx, my] = Input::GetMousePosition();
-			auto [width, height] = Input::GetWindowSize();
-			glm::vec2 mousePos = MouseToWorld({ mx,my }, { width,height });
 			int32_t endIndex = sc_InvalidIndex;
 			m_Graph.TraverseAll([&](int32_t source, int32_t destination, int32_t sourceIndex, int32_t destinationIndex, bool isConnected) {
 
 				if (!isConnected)
 				{
-					glm::vec2 pos = m_NodeMap[source].Position + m_ScreenOffset;
-					if (Collide(pos, sc_NodeSize, mousePos))
+					glm::vec2 pos = m_NodeMap[source].Position;
+					if (Collide(pos, sc_NodeSize, m_MousePosition))
 						endIndex = sourceIndex;
 				}
 				else
 				{
-					glm::vec2 sourcePos = m_NodeMap[source].Position + m_ScreenOffset;
-					glm::vec2 destPos = m_NodeMap[destination].Position + m_ScreenOffset;
-					if (Collide(sourcePos, sc_NodeSize, mousePos))
+					glm::vec2 sourcePos = m_NodeMap[source].Position;
+					glm::vec2 destPos = m_NodeMap[destination].Position;
+					if (Collide(sourcePos, sc_NodeSize, m_MousePosition))
 						endIndex = sourceIndex;
-					else if (Collide(destPos, sc_NodeSize, mousePos))
+					else if (Collide(destPos, sc_NodeSize, m_MousePosition))
 						endIndex = destinationIndex;
 				}
 			});
-			if (endIndex != sc_InvalidIndex && m_SelectedNode != sc_InvalidIndex)
+			if (endIndex != sc_InvalidIndex && m_SelectedNode != sc_InvalidIndex && endIndex != m_SelectedNode)
 			{
 				m_Graph.AddEdge(m_SelectedNode, endIndex);
 				m_Context->GetStateMachine().GetState(m_SelectedNode).AllowTransition(endIndex);
 			}
 			m_SelectedNode = sc_InvalidIndex;
+		}
+		else if (event.IsButtonReleased(MouseCode::XYZ_MOUSE_BUTTON_RIGHT))
+		{
+			m_MovedNode = sc_InvalidIndex;
 		}
 		return false;
 	}

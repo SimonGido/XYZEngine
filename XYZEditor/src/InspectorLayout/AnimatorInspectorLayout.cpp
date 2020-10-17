@@ -7,37 +7,38 @@ namespace XYZ {
 	{   
         if (m_Context)
         {
-            if (InGui::GetCurrentWindow()->Flags & InGuiWindowFlag::LeftClicked)
-            {
-                m_SelectedConnection = -1;
-            }
-            else if (m_SelectedConnection != -1)
-            {
-                if (InGui::IsKeyPressed(ToUnderlying(KeyCode::XYZ_KEY_DELETE)))
-                {
-                    m_SelectedConnection = -1;
-                }
-            }
-
             auto& machine = m_Context->GetStateMachine();
-            for (auto& [index, pairN] : machine.GetStatesMap())
+            for (uint32_t i = 0; i < machine.GetNumStates(); ++i)
             {
-                for (auto& [index2, pairK] : machine.GetStatesMap())
+                if (machine.IsStateInitialized(i))
                 {
-                    auto& source = pairN.State;
-                    auto& destination = pairK.State;
-                    if (source.CanTransitTo(destination.GetID()))
+                    for (uint32_t j = 0; j < machine.GetNumStates(); ++j)
                     {
-                        std::string result = machine.GetStateName(source.GetID()) + " ----> " + machine.GetStateName(destination.GetID());
-                        InGui::Text(result.c_str(), { 0.8f,0.8f });
-                        InGui::Separator();
+                        if (machine.IsStateInitialized(j))
+                        {
+                            auto& source = machine.GetState(i);
+                            auto& destination = machine.GetState(j);
+                            if (source.CanTransitTo(destination.GetID()))
+                            {
+                                std::string result = machine.GetStateName(source.GetID()) + " ----> " + machine.GetStateName(destination.GetID());
+                                glm::vec4 color = sc_DefaultColor;
+                                if (m_SelectedConnection == machine.GetNumStates() * j + i)
+                                    color = sc_SelectColor;
+                                if (InGui::Text(result.c_str(), { 0.8f,0.8f }, color))
+                                {
+                                    m_SelectedConnection = machine.GetNumStates() * j + i;
+                                }
+                                InGui::Separator();
+                            }
+                        }
                     }
                 }
             }
         }
 	}
+ 
     void AnimatorInspectorLayout::SetContext(const Ref<AnimationController>& context)
     {
         m_Context = context; 
-    }
+    }  
 }

@@ -67,8 +67,8 @@ namespace XYZ {
 		{
 			auto [mx,my] = Input::GetMousePosition();
 		
-			m_CameraPosition.x = m_OldPosition.x - ((mx - m_StartMousePos.x) * m_CameraMouseMoveSpeed);
-			m_CameraPosition.y = m_OldPosition.y + ((my - m_StartMousePos.y) * m_CameraMouseMoveSpeed);
+			m_CameraPosition.x = m_OldPosition.x - ((mx - m_StartMousePos.x) * m_CameraMouseMoveSpeed * m_ZoomLevel);
+			m_CameraPosition.y = m_OldPosition.y + ((my - m_StartMousePos.y) * m_CameraMouseMoveSpeed * m_ZoomLevel);
 			
 			modified = true;
 		}

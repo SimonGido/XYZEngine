@@ -40,24 +40,35 @@ namespace XYZ {
 
 		void RenameState(uint32_t id, const std::string& name);
 
-		const State& GetCurrentState() const { return m_CurrentState; }
+		inline const State& GetCurrentState() const { return m_CurrentState; }
+
+		inline State& GetState(uint32_t id) 
+		{ 
+			XYZ_ASSERT(m_StatesInitialized & BIT(id), "State with id ", id, "is not initialized");
+			return m_StatesMap[id].State; 
+		}
+
+		inline const std::string& GetStateName(uint32_t id) 
+		{
+			XYZ_ASSERT(m_StatesInitialized & BIT(id), "State with id ", id, "is not initialized");
+			return m_StatesMap[id].Name; 
+		}
+		inline uint32_t GetNumStates() const { return m_NextFreeBit; }
+
+		bool IsStateInitialized(uint32_t id) const { return m_StatesInitialized & BIT(id); }
 
 		static uint32_t GetAny() { return sc_Any; }
-
-		State& GetState(uint32_t id) { return m_StatesMap[id].State; }
-		const std::string& GetStateName(uint32_t id) { return m_StatesMap[id].Name; }
-
-		const std::unordered_map<uint32_t, StatePair>& GetStatesMap() const { return m_StatesMap; }
-		std::unordered_map<uint32_t, StatePair>& GetStatesMap() { return m_StatesMap; }
+		static constexpr uint32_t GetMaxBit() { return sc_MaxBit; }
 	private:
+		static constexpr uint32_t sc_MaxBit = 31;
+		static constexpr uint32_t sc_Any = (1 << 31);
+
 		State m_CurrentState;
 
 		uint32_t m_NextFreeBit = 0;
+		uint32_t m_StatesInitialized = 0;
 
-		std::unordered_map<uint32_t, StatePair> m_StatesMap;
-
-		static constexpr uint32_t sc_MaxBit = 31;
-		static constexpr uint32_t sc_Any = (1 << 31);
+		StatePair m_StatesMap[sc_MaxBit];
 	};
 
 
