@@ -23,11 +23,13 @@ IncludeDir["RCC"] = "XYZEngine/vendor/RCC"
 IncludeDir["mini"] = "XYZEngine/vendor/mini"
 IncludeDir["OpenAL"] = "XYZEngine/vendor/OpenAL-Soft"
 IncludeDir["MiniMp3"] = "XYZEngine/vendor/minimp3"
+IncludeDir["FreeType"] = "XYZEngine/vendor/freetype-2.10.1"
 
 
 include "XYZEngine/vendor/GLFW"
 include "XYZEngine/vendor/GLEW"
 include "XYZEngine/vendor/OpenAL-Soft"
+include "XYZEngine/vendor/freetype-2.10.1"
 
 project "XYZEngine"
 		location "XYZEngine"
@@ -81,7 +83,8 @@ project "XYZEngine"
 			"%{IncludeDir.OpenAL}/src/common",
 			"%{IncludeDir.MiniMp3}",	
 			"%{prj.name}/vendor/stb_image",
-			"%{prj.name}/vendor/yaml-cpp/include"
+			"%{prj.name}/vendor/yaml-cpp/include",
+			"%{IncludeDir.FreeType}/include"
 		}
 
 		links
@@ -89,6 +92,7 @@ project "XYZEngine"
 			"GLEW",
 			"GLFW",
 			"OpenAL-Soft",
+			"FreeType",
 			"opengl32"
 		}
 		

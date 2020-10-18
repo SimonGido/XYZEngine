@@ -142,7 +142,7 @@ namespace XYZ {
 
 		
 		auto& app = Application::Get();
-		m_FBO = FrameBuffer::Create({ app.GetWindow().GetWidth(),app.GetWindow().GetHeight(),{0.4f,0.4f,0.4f,1.0f} });
+		m_FBO = FrameBuffer::Create({ app.GetWindow().GetWidth(),app.GetWindow().GetHeight(),{0.2f,0.2f,0.2f,1.0f} });
 		m_FBO->CreateColorAttachment(FrameBufferFormat::RGBA16F);
 		m_FBO->CreateDepthAttachment();
 		m_FBO->Resize();
@@ -167,6 +167,8 @@ namespace XYZ {
 		m_AnimatorGraphLayout.SetContext(m_AnimationController);
 		m_InspectorPanel.SetInspectorLayout(&m_EntityInspectorLayout);
 		m_GraphPanel.SetGraphLayout(&m_AnimatorGraphLayout);
+
+		
 	}
 
 	void EditorLayer::OnDetach()
@@ -179,10 +181,10 @@ namespace XYZ {
 		Renderer::SetClearColor(glm::vec4(0.2, 0.2, 0.2, 1));
 		Renderer::Clear();
 		NativeScriptEngine::Update(ts);
-			
+
 		if (m_ActiveWindow)
 		{
-			m_EditorCamera.OnUpdate(ts);		
+			m_EditorCamera.OnUpdate(ts);
 		}
 		if (m_SelectedEntity)
 		{
@@ -239,19 +241,14 @@ namespace XYZ {
 
 			m_ModifiedTransform->Transform = transformMatrix;
 		}
-		glm::vec2 winSize = { Input::GetWindowSize().first, Input::GetWindowSize().second };
-		
+	
 		Renderer::BeginRenderPass(m_RenderPass, true);
-	
-		float cameraWidth = m_EditorCamera.GetAspectRatio() * m_EditorCamera.GetZoomLevel() * 2.0f;
-		float cameraHeight = m_EditorCamera.GetAspectRatio() * m_EditorCamera.GetZoomLevel() * 2.0f;
-	
+		
 		m_Scene->OnUpdate(ts);
-		m_Scene->OnRenderEditor({ m_EditorCamera.GetViewProjectionMatrix() });
-		Renderer2D::ShowGrid(glm::mat4(1.0f));
+		m_Scene->OnRenderEditor(m_EditorCamera); 
+
 		Renderer::EndRenderPass();	
 		Renderer::WaitAndRender();
-	
 	}
 	void EditorLayer::OnEvent(Event& event)
 	{

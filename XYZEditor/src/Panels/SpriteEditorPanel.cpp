@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "SpriteEditorPanel.h"
 
+
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
@@ -240,6 +241,11 @@ namespace XYZ {
 		Renderer::Clear();
 
 		Renderer2D::BeginScene({ m_Camera.GetViewProjectionMatrix() });
+		float cameraWidth = m_Camera.GetZoomLevel() * m_Camera.GetAspectRatio() * 2;
+		float cameraHeight = m_Camera.GetZoomLevel() * 2;
+		glm::mat4 gridTransform = glm::translate(glm::mat4(1.0f), m_Camera.GetPosition()) * glm::scale(glm::mat4(1.0f), { cameraWidth,cameraHeight,1.0f });
+		Renderer2D::ShowGrid(gridTransform);
+		
 		Renderer2D::SetMaterial(m_Material);
 		Renderer2D::SubmitQuad(m_Transform, { 0.0f,0.0f,m_ContextScale.x, m_ContextScale.y }, BACKGROUND, { 1.0f, 1.0f, 1.0f, 1.0f });
 		Renderer2D::SubmitQuad(m_Transform, { 0.0f,0.0f,1.0f,1.0f }, CONTEXT, { 1.0f, 1.0f, 1.0f, 1.0f });

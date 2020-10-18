@@ -39,6 +39,7 @@ namespace XYZ {
 			dataFormat = GL_RED;
 		}
 
+
 		m_InternalFormat = internalFormat;
 		m_DataFormat = dataFormat;
 
@@ -89,13 +90,34 @@ namespace XYZ {
 		m_Specification.Height = specs.Height;
 		m_Specification.Wrap = specs.Wrap;
 		m_Specification.Format = specs.Format;
+		m_Specification.Channels = specs.Channels;
 
-		m_InternalFormat = GL_RGBA8;
-		m_DataFormat = GL_RGBA;
+		if (specs.Channels == 4)
+		{
+			m_InternalFormat = GL_RGBA8;
+			m_DataFormat = GL_RGBA;
+		}
+		else if (specs.Channels == 3)
+		{
+			m_InternalFormat = GL_RGB8;
+			m_DataFormat = GL_RGB;
+		}
+		else if (specs.Channels == 1)
+		{
+			m_InternalFormat = GL_R8;
+			m_DataFormat = GL_RED;
+		}
+		else
+		{
+			XYZ_ASSERT("Channel is not supported ", specs.Channels);
+		}
+		
 		m_LocalData.Allocate(m_Specification.Width * m_Specification.Height * m_Specification.Channels);
 
-
 		Renderer::Submit([this]() {
+
+			if (m_Specification.Channels == 1)
+				glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 			glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 			glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Specification.Width, m_Specification.Height);
 
@@ -137,10 +159,10 @@ namespace XYZ {
 
 	void OpenGLTexture2D::SetData(void* data, uint32_t size)
 	{
-		Renderer::Submit([=]() {
-			uint32_t bpp = m_DataFormat == GL_RGBA ? 4 : 3;
-			XYZ_ASSERT(size == m_Specification.Width * m_Specification.Height * bpp, "Data must be entire texture!");
-			glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Specification.Width, m_Specification.Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
+		m_LocalData.Write(data, size, 0);
+		Renderer::Submit([this,size]() {
+			XYZ_ASSERT(size == m_Specification.Width * m_Specification.Height * m_Specification.Channels, "Data must be entire texture!");
+			glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Specification.Width, m_Specification.Height, m_DataFormat, GL_UNSIGNED_BYTE, m_LocalData);
 			});
 	}
 

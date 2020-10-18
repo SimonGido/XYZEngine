@@ -10,10 +10,12 @@
 
 #include "XYZ/Timer.h"
 
+#include <glm/glm.hpp>
+#include <glm/gtx/transform.hpp>
+
 
 namespace XYZ {
 
-	
 	Scene::Scene(const std::string& name)
 		:
 		m_Name(name)
@@ -157,7 +159,7 @@ namespace XYZ {
 		}
 	}
 
-	void Scene::OnRenderEditor(const SceneRenderData& renderData)
+	void Scene::OnRenderEditor(const EditorCamera& camera)
 	{
 		m_SceneGraph.Propagate([this](Node<SceneObject, uint16_t>* parent, Node<SceneObject, uint16_t>* child) {
 			//child->Transform->CalculateWorldTransformation();
@@ -166,14 +168,22 @@ namespace XYZ {
 		// 3D part here
 
 		///////////////
+		
+		
+		float cameraWidth = camera.GetZoomLevel() * camera.GetAspectRatio() * 2;
+		float cameraHeight = camera.GetZoomLevel() * 2;
+		glm::mat4 gridTransform = glm::translate(glm::mat4(1.0f), camera.GetPosition()) * glm::scale(glm::mat4(1.0f), { cameraWidth,cameraHeight,1.0f });
 
-		Renderer2D::BeginScene(renderData);
+		Renderer2D::BeginScene({camera.GetViewProjectionMatrix()});
+		Renderer2D::ShowGrid(gridTransform);
+		
 		for (int i = 0; i < m_RenderGroup->Size(); ++i)
 		{
 			auto [transform, sprite] = (*m_RenderGroup)[i];
 			Renderer2D::SetMaterial(sprite->Material);
 			Renderer2D::SubmitQuad(*transform, sprite->SubTexture->GetTexCoords(), sprite->TextureID, sprite->Color);
 		}
+		
 		Renderer2D::Flush();
 		Renderer2D::FlushLines();
 		Renderer2D::EndScene();		

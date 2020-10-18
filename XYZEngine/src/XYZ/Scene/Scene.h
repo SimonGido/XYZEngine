@@ -10,6 +10,7 @@
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/SpriteRenderer.h"
 #include "XYZ/Renderer/Camera.h"
+#include "EditorCamera.h"
 #include "Serializable.h"
 
 
@@ -58,7 +59,7 @@ namespace XYZ {
 
         void OnUpdate(Timestep ts);
 
-        void OnRenderEditor(const SceneRenderData& renderData);
+        void OnRenderEditor(const EditorCamera& camera);
 
         SceneState GetState() const { return m_State; }
 

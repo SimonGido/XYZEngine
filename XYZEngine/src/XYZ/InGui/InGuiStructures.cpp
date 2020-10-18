@@ -14,8 +14,10 @@ namespace XYZ {
 		Ref<Texture2D> fontTexture = Texture2D::Create(TextureWrap::Clamp, TextureParam::Linear, TextureParam::Linear, "Assets/Font/Arial.png");
 		Ref<Texture2D> colorPickerTexture = Texture2D::Create(TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest, "Assets/Textures/Gui/ColorPicker.png");
 
+		
 		Font = Ref<XYZ::Font>::Create("Assets/Font/Arial.fnt");
-
+		TestFont = new FreeTypeFont(50, 50, "Assets/Fonts/arial.ttf");
+		auto testtexture = TestFont->GetTexture();
 		InMaterial = Material::Create(shader);
 		InMaterial->Set("u_Texture", texture, TextureID);
 		InMaterial->Set("u_Texture", fontTexture, FontTextureID);

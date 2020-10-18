@@ -13,9 +13,6 @@
 #include "InspectorLayout/AnimatorInspectorLayout.h"
 #include "GraphLayout/AnimatorGraphLayout.h"
 
-#include "Tools/EditorCamera.h"
-
-
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/matrix_decompose.hpp>

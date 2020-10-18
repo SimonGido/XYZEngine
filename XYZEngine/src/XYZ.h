@@ -25,12 +25,13 @@
 #include "XYZ/Renderer/MeshFactory.h"
 #include "XYZ/Renderer/SpriteRenderer.h"
 #include "XYZ/Renderer/SubTexture2D.h"
-
+#include "XYZ/Renderer/FreeTypeFont.h"
 //-----Scene-----//
 #include "XYZ/Scene/SceneCamera.h"
 #include "XYZ/Scene/SceneManager.h"
 #include "XYZ/Scene/AssetManager.h"
 #include "XYZ/Scene/Animation.h"
+#include "XYZ/Scene/EditorCamera.h"
 
 //------ECS-----//
 #include "XYZ/ECS/ECSManager.h"

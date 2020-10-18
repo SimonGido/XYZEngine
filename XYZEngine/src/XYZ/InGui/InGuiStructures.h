@@ -6,6 +6,7 @@
 #include "XYZ/Renderer/SubTexture2D.h"
 #include "XYZ/Renderer/Framebuffer.h"
 #include "XYZ/Renderer/InGuiRenderer.h"
+#include "XYZ/Renderer/FreeTypeFont.h"
 
 
 namespace XYZ {
@@ -68,6 +69,7 @@ namespace XYZ {
 		InGuiRenderConfiguration();
 
 		Ref<Font>		  Font;
+		FreeTypeFont *     TestFont;
 		Ref<Texture2D>	  InTexture;
 		Ref<Material>	  InMaterial;
 

@@ -1,11 +1,16 @@
 #include "GraphPanel.h"
 
+
+
+#include <glm/glm.hpp>
+#include <glm/gtx/transform.hpp>
+
 namespace XYZ {
 
 	GraphPanel::GraphPanel()
 	{
 		auto& app = Application::Get();
-		m_FBO = FrameBuffer::Create({ app.GetWindow().GetWidth(),app.GetWindow().GetHeight(),{0.4f,0.4f,0.4f,1.0f} });
+		m_FBO = FrameBuffer::Create({ app.GetWindow().GetWidth(),app.GetWindow().GetHeight(),{0.2f,0.2f,0.2f,1.0f} });
 		m_FBO->CreateColorAttachment(FrameBufferFormat::RGBA16F);
 		m_FBO->CreateDepthAttachment();
 		m_FBO->Resize();
@@ -37,7 +42,18 @@ namespace XYZ {
 		{
 			m_Mesh.Vertices.clear();
 			m_LineMesh.Vertices.clear();
+			
 			Renderer::BeginRenderPass(m_RenderPass, true);
+			Renderer2D::BeginScene({ m_Camera.GetViewProjectionMatrix() });
+			float cameraWidth = m_Camera.GetZoomLevel() * m_Camera.GetAspectRatio() * 2;
+			float cameraHeight = m_Camera.GetZoomLevel() * 2;
+			glm::mat4 gridTransform = glm::translate(glm::mat4(1.0f), m_Camera.GetPosition()) * glm::scale(glm::mat4(1.0f), { cameraWidth,cameraHeight,1.0f });
+			Renderer2D::ShowGrid(gridTransform);
+			Renderer2D::Flush();
+			Renderer2D::FlushLines();
+			Renderer2D::EndScene();
+
+
 			InGui::BeginSubFrame();
 			InGui::SetViewProjection(m_Camera.GetViewProjectionMatrix());
 			InGui::SetInGuiMesh(&m_Mesh, &m_LineMesh);

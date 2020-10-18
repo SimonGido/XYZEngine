@@ -2,7 +2,6 @@
 
 #include <XYZ.h>
 
-#include "../Tools/EditorCamera.h"
 
 namespace XYZ {
 	class SpriteEditorPanel

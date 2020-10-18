@@ -113,7 +113,7 @@ namespace XYZ {
 			// Grid setup
 			GridMaterial = Material::Create(Shader::Create("Assets/Shaders/Grid.glsl"));
 			GridMaterial->Set("u_Scale", 16.025f);
-			GridMaterial->Set("u_Res", 0.025f);
+			GridMaterial->Set("u_LineWidth", 0.025f);
 			struct QuadVertex
 			{
 				glm::vec3 Position;
@@ -305,7 +305,7 @@ namespace XYZ {
 		s_Data.GridMaterial->Bind();
 		shader->SetMat4("u_ViewProjectionMatrix", s_Data.Data.ViewProjectionMatrix);
 		shader->SetMat4("u_Transform", transform);
-		
+
 		s_Data.GridVertexArray->Bind();
 		Renderer::DrawIndexed(PrimitiveType::Triangles, 6);
 	}

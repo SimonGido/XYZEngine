@@ -1,8 +1,6 @@
 #pragma once
 #include <XYZ.h>
 
-#include "../Tools/EditorCamera.h"
-
 namespace XYZ {
 
 	class GraphLayout
