@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "ProjectBrowserPanel.h"
 
+#include "Panel.h"
+
 #include <filesystem>
 
 namespace XYZ {
@@ -68,7 +70,7 @@ namespace XYZ {
 		auto& renderConfig = InGui::GetRenderConfiguration();
 		m_DeleteDialogWindow->Position = { -150,-60 };
 		m_DeleteDialogWindow->Size = { 300,120 };
-		if (InGui::Begin(s_DeletePanelID, "Delete selected file?", { -150,-60 }, { 300,120 }))
+		if (InGui::Begin(PanelID::DeletePanel, "Delete selected file?", { -150,-60 }, { 300,120 }))
 		{
 			if (InGui::Button("Delete", { 75,40 }))
 			{
@@ -99,14 +101,14 @@ namespace XYZ {
 		for (auto c : std::filesystem::current_path().u8string())
 			m_ProjectPath[m_PathLength++] = c;
 		m_ProjectPath[m_PathLength] = '\0';
-		InGui::Begin(s_DeletePanelID, "Delete selected file?", { -150,-60 }, { 300,120 });
+		InGui::Begin(PanelID::DeletePanel, "Delete selected file?", { -150,-60 }, { 300,120 });
 		InGui::End();
-		m_DeleteDialogWindow = InGui::GetWindow(s_DeletePanelID);
+		m_DeleteDialogWindow = InGui::GetWindow(PanelID::DeletePanel);
 		m_DeleteDialogWindow->Flags &= ~InGuiWindowFlag::Dockable;
 		m_DeleteDialogWindow->Flags |= InGuiWindowFlag::ForceNewLine;
-		InGui::Begin(s_ProjectPanelID, "Project", { -200,-200 }, { 300,300 });
+		InGui::Begin(PanelID::ProjectBrowser, "Project", { -200,-200 }, { 300,300 });
 		InGui::End();
-		m_Window = InGui::GetWindow(s_ProjectPanelID);
+		m_Window = InGui::GetWindow(PanelID::ProjectBrowser);
 		m_Window->Flags |= InGuiWindowFlag::ForceNewLine;
 
 		auto& renderConfig = InGui::GetRenderConfiguration();
@@ -125,7 +127,7 @@ namespace XYZ {
 		if (m_DeleteDialog)
 			deleteTemplate();
 
-		if (InGui::Begin(s_ProjectPanelID, "Project", { -200,-200 }, { 300,300 }))
+		if (InGui::Begin(PanelID::ProjectBrowser, "Project", { -200,-200 }, { 300,300 }))
 		{
 			auto& renderConfig = InGui::GetRenderConfiguration();
 			active = true;

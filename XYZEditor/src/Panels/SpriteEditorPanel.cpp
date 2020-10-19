@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "SpriteEditorPanel.h"
 
+#include "Panel.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
@@ -50,10 +51,10 @@ namespace XYZ {
 		m_ContextScale = glm::vec4(0.0f);
 		m_ContextPos = glm::vec4(0.0f);
 
-		InGui::RenderWindow(m_SpriteEditorID, "Sprite Editor", m_FBO->GetColorAttachment(0).RendererID, { -200,-200 }, { 300,300 });
+		InGui::RenderWindow(PanelID::SpriteEditor, "Sprite Editor", m_FBO->GetColorAttachment(0).RendererID, { -200,-200 }, { 300,300 });
 		InGui::End();
 		
-		m_Window = InGui::GetWindow(m_SpriteEditorID);
+		m_Window = InGui::GetWindow(PanelID::SpriteEditor);
 		//m_Window->Flags &= ~InGuiWindowFlag::AutoPosition;
 		m_Window->Flags &= ~InGuiWindowFlag::EventListener;
 		m_Window->Flags |= InGuiWindowFlag::MenuEnabled;
@@ -81,7 +82,7 @@ namespace XYZ {
 		keepCameraOnContext();
 		onRender(ts);
 		m_ActiveWindow = false;
-		if (InGui::RenderWindow(m_SpriteEditorID, "Sprite Editor", m_FBO->GetColorAttachment(0).RendererID, { -200,-200 }, { 300,300 }))
+		if (InGui::RenderWindow(PanelID::SpriteEditor, "Sprite Editor", m_FBO->GetColorAttachment(0).RendererID, { -200,-200 }, { 300,300 }))
 		{
 			m_ActiveWindow = true;
 			if (m_Selecting)
@@ -244,7 +245,7 @@ namespace XYZ {
 		float cameraWidth = m_Camera.GetZoomLevel() * m_Camera.GetAspectRatio() * 2;
 		float cameraHeight = m_Camera.GetZoomLevel() * 2;
 		glm::mat4 gridTransform = glm::translate(glm::mat4(1.0f), m_Camera.GetPosition()) * glm::scale(glm::mat4(1.0f), { cameraWidth,cameraHeight,1.0f });
-		Renderer2D::ShowGrid(gridTransform);
+		Renderer2D::ShowGrid(gridTransform, glm::vec2(16.025f * m_Camera.GetAspectRatio(), 16.025f));
 		
 		Renderer2D::SetMaterial(m_Material);
 		Renderer2D::SubmitQuad(m_Transform, { 0.0f,0.0f,m_ContextScale.x, m_ContextScale.y }, BACKGROUND, { 1.0f, 1.0f, 1.0f, 1.0f });

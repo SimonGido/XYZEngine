@@ -1,6 +1,6 @@
 #include "GraphPanel.h"
 
-
+#include "Panel.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
@@ -16,9 +16,9 @@ namespace XYZ {
 		m_FBO->Resize();
 		m_RenderPass = RenderPass::Create({ m_FBO });
 
-		InGui::RenderWindow(m_GraphID, "Graph", m_FBO->GetColorAttachment(0).RendererID, { 0,0 }, { 100,100 });
+		InGui::RenderWindow(PanelID::GraphPanel, "Graph", m_FBO->GetColorAttachment(0).RendererID, { 0,0 }, { 100,100 });
 		InGui::End();
-		m_GraphWindow = InGui::GetWindow(m_GraphID);
+		m_GraphWindow = InGui::GetWindow(PanelID::GraphPanel);
 		m_GraphWindow->Flags &= ~InGuiWindowFlag::AutoPosition;
 		m_GraphWindow->Flags &= ~InGuiWindowFlag::EventListener;
 		m_GraphWindow->OnResizeCallback = [this](const glm::vec2& size) {
@@ -29,7 +29,7 @@ namespace XYZ {
 	bool GraphPanel::OnInGuiRender(Timestep ts)
 	{	
 		m_ActiveWindow = false;
-		if (InGui::RenderWindow(m_GraphID, "Graph",m_FBO->GetColorAttachment(0).RendererID, { 0,0 }, { 100,100 }))
+		if (InGui::RenderWindow(PanelID::GraphPanel, "Graph",m_FBO->GetColorAttachment(0).RendererID, { 0,0 }, { 100,100 }))
 		{
 			m_Camera.OnUpdate(ts);
 			if (m_Layout)
@@ -48,7 +48,7 @@ namespace XYZ {
 			float cameraWidth = m_Camera.GetZoomLevel() * m_Camera.GetAspectRatio() * 2;
 			float cameraHeight = m_Camera.GetZoomLevel() * 2;
 			glm::mat4 gridTransform = glm::translate(glm::mat4(1.0f), m_Camera.GetPosition()) * glm::scale(glm::mat4(1.0f), { cameraWidth,cameraHeight,1.0f });
-			Renderer2D::ShowGrid(gridTransform);
+			Renderer2D::ShowGrid(gridTransform, glm::vec2(16.025f * m_Camera.GetAspectRatio(), 16.025f));
 			Renderer2D::Flush();
 			Renderer2D::FlushLines();
 			Renderer2D::EndScene();

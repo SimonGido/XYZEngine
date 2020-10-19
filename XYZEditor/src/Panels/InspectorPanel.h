@@ -19,7 +19,5 @@ namespace XYZ {
 
 	private:
 		InspectorLayout* m_Layout = nullptr;
-
-		const uint32_t m_InspectorID = 2;
 	};
 }

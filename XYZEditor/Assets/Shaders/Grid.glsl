@@ -22,7 +22,7 @@ void main()
 
 layout(location = 0) out vec4 color;
 
-uniform float u_Scale;
+uniform vec2 u_Scale;
 uniform float u_LineWidth;
 
 in vec2 v_TexCoord;

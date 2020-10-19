@@ -15,9 +15,9 @@ Entities:
   - Entity: 00zcz
     Parent: 2
     TransformComponent:
-      Position: [-28.4450722, 54.7452316, 0]
-      Rotation: [0.998845816, 0, 0, 0.0480313711]
-      Scale: [41.1941833, 61.6428528, 1]
+      Position: [-2.39276505, 40.2248344, 0]
+      Rotation: [0.981974244, 0, 0, 0.189014867]
+      Scale: [42.0815964, 66.3334579, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/material.mat
       SubTextureAssetPath: Assets/SubTextures/CharacterSubTexture.subtex
@@ -28,9 +28,9 @@ Entities:
   - Entity: ssasda
     Parent: 2
     TransformComponent:
-      Position: [28.0570183, 3.80916977, 0]
+      Position: [23.5446167, 35.0201607, 0]
       Rotation: [1, 0, 0, 0]
-      Scale: [19.7236385, 41.7825546, 1]
+      Scale: [35.9514771, 49.7444305, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/material.mat
       SubTextureAssetPath: Assets/SubTextures/CharacterSubTexture.subtex
@@ -41,9 +41,9 @@ Entities:
   - Entity: Test HoHO
     Parent: 2
     TransformComponent:
-      Position: [85.0325928, 83.2810898, 0]
+      Position: [61.3730164, 83.6507721, 0]
       Rotation: [1, 0, 0, 0]
-      Scale: [40.4168701, 66.9406586, 1]
+      Scale: [89.721817, 99.72789, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/material.mat
       SubTextureAssetPath: Assets/SubTextures/CharacterSubTexture.subtex
@@ -54,7 +54,7 @@ Entities:
   - Entity: assss
     Parent: 2
     TransformComponent:
-      Position: [-32.999073, 12.3844471, 0]
+      Position: [-45.5496063, 44.8383484, 0]
       Rotation: [0.191220462, 0, 0, 0.981547117]
       Scale: [23.9548492, 33.2744179, 0.99999994]
     SpriteRenderer:

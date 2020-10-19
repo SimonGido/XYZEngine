@@ -59,8 +59,8 @@ namespace XYZ {
 
 		const glm::vec4 m_SelectionsColor = { 0.2f,0.0f,1.0f,1.0f };
 		const glm::vec4 m_NewSelectionColor = { 0.0f,1.0f,1.0f,1.0f };
-		const uint32_t m_SpriteEditorID = 6;
 
-		static constexpr int sc_InvalidSelection = -1;
+
+		static constexpr int32_t sc_InvalidSelection = -1;
 	};
 }

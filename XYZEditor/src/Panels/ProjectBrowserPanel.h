@@ -43,8 +43,5 @@ namespace XYZ {
 		bool m_DeleteDialog = false;
 
 		glm::vec2 m_PopupPosition = glm::vec2(0);
-
-		const uint32_t s_ProjectPanelID = 7;
-		const uint32_t s_DeletePanelID = 8;
 	};
 }

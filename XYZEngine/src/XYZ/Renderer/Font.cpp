@@ -91,7 +91,7 @@ namespace XYZ {
 			});
 
 		m_Texture->SetData(pngData, pngData.GetSize());
-		stbi_write_png("font_output.png", texWidth, texHeight, 4, pngData, texWidth * 4);
+		//stbi_write_png("font_output.png", texWidth, texHeight, 4, pngData, texWidth * 4);
 
 		FT_Done_Face(face);
 		FT_Done_FreeType(ft);

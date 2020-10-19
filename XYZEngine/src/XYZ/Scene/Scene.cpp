@@ -175,7 +175,7 @@ namespace XYZ {
 		glm::mat4 gridTransform = glm::translate(glm::mat4(1.0f), camera.GetPosition()) * glm::scale(glm::mat4(1.0f), { cameraWidth,cameraHeight,1.0f });
 
 		Renderer2D::BeginScene({camera.GetViewProjectionMatrix()});
-		Renderer2D::ShowGrid(gridTransform);
+		Renderer2D::ShowGrid(gridTransform, glm::vec2(16.025f * camera.GetAspectRatio(), 16.025f ));
 		
 		for (int i = 0; i < m_RenderGroup->Size(); ++i)
 		{

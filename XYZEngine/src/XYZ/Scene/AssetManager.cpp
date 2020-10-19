@@ -128,16 +128,6 @@ namespace XYZ {
 		None
 	};
 
-
-	static std::string ExtractNameFromFilePath(const std::string filepath)
-	{
-		auto lastSlash = filepath.find_last_of("/\\");
-		lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
-		auto lastDot = filepath.rfind('.');
-		auto count = lastDot == std::string::npos ? filepath.size() - lastSlash : lastDot - lastSlash;
-		return filepath.substr(lastSlash, count);
-	}
-
 	static FieldType FindType(const std::string& str)
 	{
 		char tokenComma = ',';
@@ -231,7 +221,7 @@ namespace XYZ {
 
 		YAML::Emitter out;
 		out << YAML::BeginMap; // Texture
-		out << YAML::Key << "Texture" << YAML::Value << ExtractNameFromFilePath(texture->GetFilepath());
+		out << YAML::Key << "Texture" << YAML::Value << texture->GetName();
 
 		out << YAML::Key << "Wrap" << YAML::Value << ToUnderlying(texture->GetSpecification().Wrap);
 		out << YAML::Key << "Param Min" << YAML::Value << ToUnderlying(texture->GetSpecification().MinParam);
@@ -282,7 +272,7 @@ namespace XYZ {
 
 		YAML::Emitter out;
 		out << YAML::BeginMap;
-		out << YAML::Key << "SubTexture" << YAML::Value << ExtractNameFromFilePath(subTexture->GetFilepath());
+		out << YAML::Key << "SubTexture" << YAML::Value << subTexture->GetName();
 		out << YAML::Key << "TextureAssetPath" << YAML::Value << subTexture->GetTexture()->GetFilepath();
 		out << YAML::Key << "TexCoords" << YAML::Value << subTexture->GetTexCoords();
 		out << YAML::EndMap;
@@ -319,7 +309,7 @@ namespace XYZ {
 		XYZ_LOG_INFO("Serializing material ", material->GetFilepath());
 		YAML::Emitter out;
 		out << YAML::BeginMap;
-		out << YAML::Key << "Material" << YAML::Value << ExtractNameFromFilePath(material->GetFilepath());
+		out << YAML::Key << "Material" << YAML::Value << material->GetName();
 		out << YAML::Key << "ShaderAssetPath" << YAML::Value << material->GetShader()->GetPath();
 
 

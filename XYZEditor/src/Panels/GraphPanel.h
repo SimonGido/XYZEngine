@@ -35,6 +35,5 @@ namespace XYZ {
 		glm::vec2 m_TestPosition = { 0,0 };
 
 		bool m_ActiveWindow = false;
-		const uint32_t m_GraphID = 3;
 	};
 }

@@ -13,6 +13,15 @@ namespace XYZ {
 		void SetContext(Entity context);
 		virtual void OnInGuiRender() override;
 	private:
+		enum
+		{
+			FOLDER = InGuiRenderConfiguration::DOCKSPACE + 1,
+			SPRITE,
+			TEXTURE,
+			MATERIAL,
+			SHADER,
+			LOGO
+		};
 
 		enum Axis
 		{
@@ -36,8 +45,12 @@ namespace XYZ {
 		bool m_SpriteRendererOpen = false;
 		bool m_NativeScriptOpen = false;
 
+
+
 		glm::vec4 m_ColorPallete = { 0,1,1,1 };
 		bool m_PickColor = false;
+		bool m_SpriteModified = false;
+		bool m_MaterialModified = false;
 
 		float m_Color[NUM_AXIS];
 		int m_ColorLengths[NUM_AXIS] = { 4,4,4,4 };
@@ -56,6 +69,8 @@ namespace XYZ {
 		int m_ScaleSelected = -1;
 
 		std::string m_NativeScriptObject;
+		std::string m_Sprite;
+		std::string m_Material;
 	private:
 		Ref<Material> m_DefaultMaterial;
 		Ref<SubTexture2D> m_DefaultSubTexture;

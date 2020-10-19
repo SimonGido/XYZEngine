@@ -17,7 +17,7 @@ namespace XYZ {
 	}
 	void EntityInspectorLayout::SetContext(Entity context)
 	{
-		if (context && context.HasComponent<TransformComponent>() && (uint32_t)context != (uint32_t)m_Context)
+		if (context && context.HasComponent<TransformComponent>() )
 		{
 			auto transformComponent = context.GetComponent<TransformComponent>();
 			glm::vec3 scale, translation, skew;
@@ -41,6 +41,8 @@ namespace XYZ {
 				m_Color[Y] = spriteRenderer->Color.y;
 				m_Color[Z] = spriteRenderer->Color.z;
 				m_Color[W] = spriteRenderer->Color.w;
+				m_Sprite = spriteRenderer->SubTexture->GetName();
+				m_Material = spriteRenderer->Material->GetName();
 			}
 			if (context.HasComponent<NativeScriptComponent>())
 			{
@@ -101,7 +103,20 @@ namespace XYZ {
 			{
 				if (InGui::BeginGroup("Sprite Renderer", { 0,0 }, m_SpriteRendererOpen))
 				{
+					auto& renderConfig = InGui::GetRenderConfiguration();
 					auto spriteRenderer = m_Context.GetComponent<SpriteRenderer>();
+					InGui::Icon({}, { 30.0f,30.0f }, renderConfig.SubTexture[SPRITE], renderConfig.TextureID);
+					if (InGui::TextArea("Sprite", m_Sprite, {}, { 250.0f,25.0f }, m_SpriteModified))
+					{
+
+					}
+					InGui::Separator();
+					InGui::Icon({}, { 30.0f,30.0f }, renderConfig.SubTexture[MATERIAL], renderConfig.TextureID);
+					if (InGui::TextArea("Material", m_Material, {}, { 250.0f,25.0f }, m_MaterialModified))
+					{
+
+					}
+					InGui::Separator();
 					if (InGui::Float(4, "Color", m_Color, m_ColorLengths, {}, { 50.0f, 25.0f }, m_ColorSelected))
 					{
 						spriteRenderer->Color.x = m_Color[X];

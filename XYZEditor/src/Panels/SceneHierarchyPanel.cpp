@@ -1,5 +1,6 @@
 #include "SceneHierarchyPanel.h"
 
+#include "Panel.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
@@ -60,7 +61,7 @@ namespace XYZ {
 	bool SceneHierarchyPanel::OnInGuiRender()
 	{
 		bool active = false;
-		if (InGui::Begin(m_SceneHierarchyID, "Scene Hierarchy", { 0,0 }, { 400,300 }))
+		if (InGui::Begin(PanelID::SceneHierarchy, "Scene Hierarchy", { 0,0 }, { 400,300 }))
 		{
 			if (m_Context)
 			{
@@ -87,7 +88,7 @@ namespace XYZ {
 			{
 				if (Collide(buffer[i].GetComponent<TransformComponent>()->Transform, position))
 				{
-					auto &flags = InGui::GetWindow(m_SceneHierarchyID)->Flags;
+					auto &flags = InGui::GetWindow(PanelID::SceneHierarchy)->Flags;
 					flags |= InGuiWindowFlag::Modified;
 					m_SelectedEntity = buffer[i];
 				}
@@ -130,7 +131,7 @@ namespace XYZ {
 			if (InGui::Text(tag.c_str(), { 1,1 }, textColor))
 			{
 				m_SelectedEntity = entity;
-				auto &flags = InGui::GetWindow(m_SceneHierarchyID)->Flags;
+				auto &flags = InGui::GetWindow(PanelID::SceneHierarchy)->Flags;
 				flags |= InGuiWindowFlag::Modified;
 			}
 			InGui::Separator();

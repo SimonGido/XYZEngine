@@ -112,7 +112,7 @@ namespace XYZ {
 
 			// Grid setup
 			GridMaterial = Material::Create(Shader::Create("Assets/Shaders/Grid.glsl"));
-			GridMaterial->Set("u_Scale", 16.025f);
+			GridMaterial->Set("u_Scale", glm::vec2{ 16.025f,16.025f });
 			GridMaterial->Set("u_LineWidth", 0.025f);
 			struct QuadVertex
 			{
@@ -299,12 +299,14 @@ namespace XYZ {
 		s_Data.LineIndexCount += 2;
 	}
 
-	void Renderer2D::ShowGrid(const glm::mat4& transform)
+
+	void Renderer2D::ShowGrid(const glm::mat4& transform, const glm::vec2& scale)
 	{
 		auto shader = s_Data.GridMaterial->GetShader();
 		s_Data.GridMaterial->Bind();
 		shader->SetMat4("u_ViewProjectionMatrix", s_Data.Data.ViewProjectionMatrix);
 		shader->SetMat4("u_Transform", transform);
+		shader->SetFloat2("u_Scale", scale);
 
 		s_Data.GridVertexArray->Bind();
 		Renderer::DrawIndexed(PrimitiveType::Triangles, 6);

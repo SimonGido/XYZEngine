@@ -97,9 +97,6 @@ namespace XYZ {
 		glm::vec4 m_Color = { 0,0,0,0 };
 		glm::vec4 m_Pallete = { 0,1,0,1 };
 
-		const uint32_t m_SceneID = 0;
-		const uint32_t m_TestPanelID = 1;
-		const uint32_t m_TestID = 5;
 
 		bool m_CheckboxVal = false;
 		bool m_ActiveWindow = false;
