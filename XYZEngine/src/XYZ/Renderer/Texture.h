@@ -87,7 +87,7 @@ namespace XYZ {
 		*/
 		static Ref<Texture2D> Create(TextureWrap wrap, TextureParam min, TextureParam max, const std::string& path);
 
-		static void Bind(uint32_t rendererID, uint32_t slot);
+		static void BindStatic(uint32_t rendererID, uint32_t slot);
 	};
 
 }

@@ -4,41 +4,6 @@
 
 namespace XYZ {
 
-	Ref<Mesh> MeshFactory::CreateTextMesh(const TextUI& text, const glm::vec4& color)
-	{
-		auto& fontData = text.Font->GetData();
-		Ref<Mesh> mesh = Ref<Mesh>::Create();
-		int32_t cursorX = 0, cursorY = 0;
-
-		for (auto c : text.Text)
-		{
-			auto& character = text.Font->GetCharacter(c);
-			glm::vec2 position = {
-				cursorX + character.XOffset,
-				cursorY
-			};
-
-			glm::vec2 size =   { character.Width, character.Height };
-			glm::vec2 coords = { character.XCoord, fontData.ScaleH - character.YCoord - character.Height };
-			glm::vec2 scale =  { fontData.ScaleW, fontData.ScaleH };
-
-			Vertex vertices[4] = {
-				{ { position.x ,         position.y,          0.0f, 1.0f }, color, coords / scale},
-				{ { position.x + size.x, position.y,          0.0f, 1.0f }, color, (coords + glm::vec2(character.Width,                0)) / scale},
-				{ { position.x + size.x, position.y + size.y, 0.0f, 1.0f }, color, (coords + glm::vec2(character.Width, character.Height)) / scale},
-				{ { position.x ,         position.y + size.y, 0.0f, 1.0f }, color, (coords + glm::vec2(0,               character.Height)) / scale}
-			};
-
-			cursorX += character.XAdvance;
-
-			for (auto& vertex : vertices)
-				mesh->Vertices.push_back(vertex);
-		}
-
-		mesh->Indices.resize(text.Text.size() * 6);
-
-		return mesh;
-	}
 
 	Ref<Mesh> MeshFactory::CreateSprite(const glm::vec4& color, const glm::vec4& texCoord,int32_t textureID)
 	{

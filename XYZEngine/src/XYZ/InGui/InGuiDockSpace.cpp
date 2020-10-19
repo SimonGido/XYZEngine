@@ -49,40 +49,38 @@ namespace XYZ {
 			pos.y + size.y >  point.y &&
 			pos.y < point.y);
 	}
-	static TextInfo GenerateInGuiText(InGuiMesh& mesh, const Ref<Font>& font, const std::string& str, const glm::vec2& position, const glm::vec2& scale, float length, uint32_t textureID, const glm::vec4& color)
+	static TextInfo GenerateInGuiText(InGuiMesh& mesh, const Ref<Font>& font, const char* str, const glm::vec2& position, float length, uint32_t textureID, const glm::vec4& color)
 	{
-		auto& fontData = font->GetData();
-		int32_t cursorX = 0, cursorY = 0;
-
 		TextInfo textInfo;
-		for (auto c : str)
+		float xCursor = 0.0f;
+		float yCursor = 0.0f;
+		uint32_t i = 0;
+		while (str[i] != '\0')
 		{
-			auto& character = font->GetCharacter(c);
-			if (textInfo.Size.x + (character.XAdvance * scale.x) >= length)
-				break;
-
-			float yOffset = (fontData.LineHeight - character.YOffset - character.Height) * scale.y;
-			glm::vec2 pos = {
-				cursorX + character.XOffset + position.x,
-				cursorY + yOffset + position.y
+			auto& character = font->GetCharacter(str[i]);
+			glm::vec2 size = {
+				character.X1Coord - character.X0Coord,
+				character.Y1Coord - character.Y0Coord
 			};
-
-			glm::vec2 size = { character.Width * scale.x, character.Height * scale.y };
-			glm::vec2 coords = { character.XCoord, fontData.ScaleH - character.YCoord - character.Height };
-			glm::vec2 scaleFont = { fontData.ScaleW, fontData.ScaleH };
-
-			mesh.Vertices.push_back({ color, { pos.x , pos.y, 0.0f }, coords / scaleFont ,(float)textureID });
-			mesh.Vertices.push_back({ color, { pos.x + size.x, pos.y, 0.0f, }, (coords + glm::vec2(character.Width, 0)) / scaleFont,(float)textureID });
-			mesh.Vertices.push_back({ color, { pos.x + size.x, pos.y + size.y, 0.0f }, (coords + glm::vec2(character.Width, character.Height)) / scaleFont,(float)textureID });
-			mesh.Vertices.push_back({ color, { pos.x ,pos.y + size.y, 0.0f}, (coords + glm::vec2(0,character.Height)) / scaleFont,(float)textureID });
-
-			if (size.y > textInfo.Size.y)
+			if (xCursor + size.x >= length)
+				break;
+			glm::vec2 offset = { 0.0f, size.y - character.YOffset };
+			glm::vec2 pos = { position.x + xCursor - offset.x, position.y + yCursor - offset.y };
+			glm::vec4 coords = {
+				(float)character.X0Coord / (float)font->GetWidth(), (float)character.Y0Coord / (float)font->GetHeight(),
+				(float)character.X1Coord / (float)font->GetWidth(), (float)character.Y1Coord / (float)font->GetHeight()
+			};
+			mesh.Vertices.push_back({ color, { pos.x , pos.y, 0.0f },                  {coords.x, coords.w}, (float)textureID });
+			mesh.Vertices.push_back({ color, { pos.x + size.x, pos.y, 0.0f, },         {coords.z, coords.w}, (float)textureID });
+			mesh.Vertices.push_back({ color, { pos.x + size.x, pos.y + size.y, 0.0f }, {coords.z, coords.y}, (float)textureID });
+			mesh.Vertices.push_back({ color, { pos.x ,pos.y + size.y, 0.0f},           {coords.x, coords.y}, (float)textureID });
+			xCursor += size.x;
+			textInfo.Size.x += size.x;
+			textInfo.Count++;
+			if (textInfo.Size.y < size.y)
 				textInfo.Size.y = size.y;
 
-
-			textInfo.Size.x += character.XAdvance * scale.x;
-			textInfo.Count++;
-			cursorX += character.XAdvance * scale.x;
+			i++;
 		}
 		return textInfo;
 	}
@@ -120,7 +118,7 @@ namespace XYZ {
 	{
 		GenerateInGuiQuad(mesh, position, size, renderConfig.SubTexture[InGuiRenderConfiguration::BUTTON]->GetTexCoords(), renderConfig.TextureID, color);
 		size_t offset = mesh.Vertices.size();
-		auto info = GenerateInGuiText(mesh, renderConfig.Font, name, {}, { 0.7,0.7 }, size.x, renderConfig.FontTextureID, { 1,1,1,1 });
+		auto info = GenerateInGuiText(mesh, renderConfig.Font, name, {}, size.x, renderConfig.FontTextureID, { 1,1,1,1 });
 		glm::vec2 textOffset = { (size.x / 2) - (info.Size.x / 2),(size.y / 2.0f) - ((float)info.Size.y / 1.5f) };
 		MoveVertices(mesh.Vertices.data(), position + textOffset, offset, info.Count * 4);
 	}

@@ -1,48 +1,37 @@
 #pragma once
 #include "XYZ/Core/Ref.h"
+#include "XYZ/Renderer/Texture.h"
 
-#include <unordered_map>
+
 
 namespace XYZ {
+
 	struct Character
 	{
-		uint32_t XCoord;
-		uint32_t YCoord;
-		uint32_t Width;
-		uint32_t Height;
+		uint32_t X0Coord;
+		uint32_t Y0Coord;
+		uint32_t X1Coord;
+		uint32_t Y1Coord;
+		uint32_t XOffset;
+		uint32_t YOffset;
 		uint32_t XAdvance;
-		int32_t XOffset;
-		int32_t YOffset;
-	};
-
-	struct FontData
-	{
-		std::string Name;
-		uint32_t ScaleW;
-		uint32_t ScaleH;
-		uint32_t LineHeight;
-		uint32_t NumCharacters;
-		uint32_t PaddingWidth;
-		uint32_t PaddingHeight;
 	};
 
 	class Font : public RefCount
 	{
 	public:
-		Font(const std::string& configPath);
+		Font(uint32_t pixelSize, const std::string& path);
 
-		const FontData& GetData() const { return m_Data; }
-		const Character& GetCharacter(uint8_t ch) const;
+		const Ref<Texture2D>& GetTexture() const { return m_Texture; }
+		const Character& GetCharacter(uint8_t index) const { return m_Characters[index]; }
+		const uint32_t GetWidth() const { return m_Texture->GetWidth(); }
+		const uint32_t GetHeight() const { return m_Texture->GetHeight(); }	
 	private:
-		void parseHeaderInfo(const std::string& source);
-		void parseCharacters(const std::string& source);
+		uint32_t m_PixelSize;
+		Ref<Texture2D> m_Texture;
+		std::vector<Character> m_Characters;
 
-		size_t endOfToken(const char* token, const std::string& source, size_t pos);
-		std::string readFile(const std::string& filepath);
-
-	private:
-		FontData m_Data;
-		static constexpr uint8_t sc_NumCharacters = 128;
-		Character m_Characters[sc_NumCharacters];
+		static constexpr uint32_t sc_NumGlyphs = 128;
 	};
+	
 }

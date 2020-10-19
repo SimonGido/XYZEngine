@@ -28,7 +28,7 @@ namespace XYZ {
 		return nullptr;
 	}
 
-	void Texture2D::Bind(uint32_t rendererID, uint32_t slot)
+	void Texture2D::BindStatic(uint32_t rendererID, uint32_t slot)
 	{
 		switch (Renderer::GetAPI())
 		{

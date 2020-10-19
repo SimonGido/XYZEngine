@@ -45,7 +45,6 @@ namespace XYZ {
 		InGuiLineVertex* LineBufferBase = nullptr;
 		InGuiLineVertex* LineBufferPtr = nullptr;
 
-
 		UIRenderData Data;
 	};
 	static RendererUIData s_UIData;
@@ -239,7 +238,7 @@ namespace XYZ {
 
 			for (auto& pair : s_UIData.Textures)
 			{
-				Texture2D::Bind(pair.RendererID, pair.TextureID);
+				Texture2D::BindStatic(pair.RendererID, pair.TextureID);
 			}
 
 			s_UIData.QuadVertexBuffer->Update(s_UIData.BufferBase, dataSize);

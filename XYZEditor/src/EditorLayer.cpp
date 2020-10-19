@@ -167,8 +167,6 @@ namespace XYZ {
 		m_AnimatorGraphLayout.SetContext(m_AnimationController);
 		m_InspectorPanel.SetInspectorLayout(&m_EntityInspectorLayout);
 		m_GraphPanel.SetGraphLayout(&m_AnimatorGraphLayout);
-
-		
 	}
 
 	void EditorLayer::OnDetach()

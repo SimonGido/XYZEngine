@@ -1,152 +1,101 @@
 #include "stdafx.h"
 #include "Font.h"
 
+#include "XYZ/Utils/DataStructures/ByteBuffer.h"
+
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <stbi_image_write.h>
 
 namespace XYZ {
-	Font::Font(const std::string& configPath)
+
+	Font::Font(uint32_t pixelSize, const std::string& path)
+		:
+		m_PixelSize(pixelSize)
 	{
-		std::string source = readFile(configPath);
-		parseHeaderInfo(source);
-		parseCharacters(source);
+		FT_Library ft;
+		XYZ_ASSERT(!FT_Init_FreeType(&ft), "Could not init FreeType library");
+
+		FT_Face face;
+		XYZ_ASSERT(!FT_New_Face(ft, path.c_str(), 0, &face), "Failed to load font ", path);
+
+		XYZ_ASSERT(!FT_Set_Pixel_Sizes(face, 0, pixelSize), "Unsupported pixel size")
+			m_Characters.resize(sc_NumGlyphs);
+
+		// quick and dirty max texture size estimate
+		uint32_t maxDim = (1 + (face->size->metrics.height >> 6)) * ceilf(sqrtf(sc_NumGlyphs));
+		uint32_t texWidth = 1;
+		while (texWidth < maxDim)
+			texWidth <<= 1;
+		uint32_t texHeight = texWidth;
+
+		ByteBuffer pixelData;
+		pixelData.Allocate(texWidth * texHeight * 1);
+		pixelData.ZeroInitialize();
+
+		uint32_t penX = 0, penY = 0;
+		for (uint8_t c = 0; c < sc_NumGlyphs; c++)
+		{
+			if (FT_Load_Char(face, c, FT_LOAD_RENDER))
+			{
+				XYZ_LOG_ERR("Failed to load char ", c);
+				return;
+			}
+			FT_Bitmap* bmp = &face->glyph->bitmap;
+			if (penX + bmp->width >= texWidth)
+			{
+				penX = 0;
+				penY += ((face->size->metrics.height >> 6) + 1);
+			}
+
+			for (uint32_t row = 0; row < bmp->rows; ++row)
+			{
+				for (uint32_t col = 0; col < bmp->width; ++col)
+				{
+					uint32_t x = penX + col;
+					uint32_t y = penY + row;
+					pixelData[y * texWidth + x] = bmp->buffer[row * bmp->pitch + col];
+				}
+			}
+
+			m_Characters[c].X0Coord = penX;
+			m_Characters[c].Y0Coord = penY;
+			m_Characters[c].X1Coord = penX + bmp->width;
+			m_Characters[c].Y1Coord = penY + bmp->rows;
+			m_Characters[c].XOffset = face->glyph->bitmap_left;
+			m_Characters[c].YOffset = face->glyph->bitmap_top;
+			m_Characters[c].XAdvance = face->glyph->advance.x >> 6;
+
+			penX += bmp->width + 1;
+		}
+
+		ByteBuffer pngData;
+		pngData.Allocate(texWidth * texHeight * 4);
+		for (int i = 0; i < (texWidth * texHeight); ++i)
+		{
+			pngData[i * 4 + 0] |= pixelData[i];
+			pngData[i * 4 + 1] |= pixelData[i];
+			pngData[i * 4 + 2] |= pixelData[i];
+			pngData[i * 4 + 3] = pixelData[i];
+		}
+
+		m_Texture = Texture2D::Create({
+			texWidth,texHeight,4,
+			TextureWrap::Clamp,
+			TextureFormat::RGB,
+			TextureParam::Linear,
+			TextureParam::Linear
+			});
+
+		m_Texture->SetData(pngData, pngData.GetSize());
+		//stbi_write_png("font_output.png", texWidth, texHeight, 4, pngData, texWidth * 4);
+
+		FT_Done_Face(face);
+		FT_Done_FreeType(ft);
+
+		delete[]pixelData;
+		delete[]pngData;
 	}
-
-	void Font::parseHeaderInfo(const std::string& source)
-	{
-		{
-			size_t pos = endOfToken("face=\"", source, 0);
-			size_t endWord = source.find_first_of("\"", pos);
-			m_Data.Name = source.substr(pos, endWord - pos);
-		}
-		{
-			size_t pos = endOfToken("padding=", source, 0);
-			size_t endWord = source.find_first_of(",", pos);
-			m_Data.PaddingWidth = static_cast<uint32_t>(std::stoul((source.substr(pos, endWord - pos))));
-			m_Data.PaddingHeight = static_cast<uint32_t>(std::stoul((source.substr(pos+2, endWord - pos))));
-		}
-		{
-			size_t pos = endOfToken("lineHeight=", source, 0);
-			size_t endWord = source.find_first_of(" ", pos);
-			m_Data.LineHeight = static_cast<uint32_t>(std::stoul((source.substr(pos, endWord - pos))));
-		}
-		{
-			size_t pos = endOfToken("scaleW=", source, 0);
-			size_t endWord = source.find_first_of(" ", pos);
-			m_Data.ScaleW = static_cast<uint32_t>(std::stoul((source.substr(pos, endWord - pos))));
-		}
-		{
-			size_t pos = endOfToken("scaleH=", source, 0);
-			size_t endWord = source.find_first_of(" ", pos);
-			m_Data.ScaleH = static_cast<uint32_t>(std::stoul((source.substr(pos, endWord - pos))));
-		}
-		{
-			size_t pos = endOfToken("chars count=", source, 0);
-			size_t endWord = source.find_first_of(" ", pos);
-			m_Data.NumCharacters = static_cast<uint32_t>(std::stoul((source.substr(pos, endWord - pos))));
-		}
-
-	}
-
-	void Font::parseCharacters(const std::string& source)
-	{
-		size_t pos = 0;
-		uint32_t counter = 0;
-		while (pos != std::string::npos && counter != m_Data.NumCharacters)
-		{
-			// ID
-			uint8_t id = 0;
-			Character character;
-			{
-				size_t eofToken = endOfToken("char id=", source, pos);
-				size_t endWord = source.find_first_of(" ", eofToken);
-				id = static_cast<uint8_t>(std::stoul((source.substr(eofToken, endWord - eofToken))));
-				pos = endWord;
-			}
-			// X
-			{
-				size_t eofToken = endOfToken("x=", source, pos);
-				size_t endWord = source.find_first_of(" ", eofToken);	 
-				character.XCoord = static_cast<uint32_t>(std::stoul((source.substr(eofToken, endWord - eofToken))));
-				pos = endWord;
-			}
-			// Y
-			{
-				size_t eofToken = endOfToken("y=", source, pos);
-				size_t endWord = source.find_first_of(" ", eofToken);
-				character.YCoord = static_cast<uint32_t>(std::stoul((source.substr(eofToken, endWord - eofToken))));
-				pos = endWord;
-			}
-			// Width
-			{
-				size_t eofToken = endOfToken("width=", source, pos);
-				size_t endWord = source.find_first_of(" ", eofToken);
-				character.Width = static_cast<uint32_t>(std::stoul((source.substr(eofToken, endWord - eofToken))));
-				pos = endWord;
-			}
-			// Height
-			{
-				size_t eofToken = endOfToken("height=", source, pos);
-				size_t endWord = source.find_first_of(" ", eofToken);
-				character.Height = static_cast<uint32_t>(std::stoul((source.substr(eofToken, endWord - eofToken))));
-				pos = endWord;
-			}
-			// XOffset
-			{
-				size_t eofToken = endOfToken("xoffset=", source, pos);
-				size_t endWord = source.find_first_of(" ", eofToken);
-				character.XOffset = static_cast<int32_t>(std::stoi((source.substr(eofToken, endWord - eofToken))));
-				pos = endWord;
-			}
-			// YOffset
-			{
-				size_t eofToken = endOfToken("yoffset=", source, pos);
-				size_t endWord = source.find_first_of(" ", eofToken);
-				character.YOffset = static_cast<int32_t>(std::stoi((source.substr(eofToken, endWord - eofToken))));
-				pos = endWord;
-			}
-
-			// XAdvance
-			{
-				size_t eofToken = endOfToken("xadvance=", source, pos);
-				size_t endWord = source.find_first_of(" ", eofToken);
-				character.XAdvance = static_cast<uint32_t>(std::stoul((source.substr(eofToken, endWord - eofToken))));
-				pos = endWord;
-			}
-
-			m_Characters[id] = character;
-			counter++;
-		}
-
-	}
-
-	size_t Font::endOfToken(const char* token, const std::string& source, size_t pos)
-	{
-		return source.find(token, pos) + strlen(token);
-	}
-
-	std::string Font::readFile(const std::string& filepath)
-	{
-		std::string result;
-		std::ifstream in(filepath, std::ios::in | std::ios::binary);
-		if (in)
-		{
-			in.seekg(0, std::ios::end);
-			result.resize(in.tellg());
-			in.seekg(0, std::ios::beg);
-			in.read(&result[0], result.size());
-			in.close();
-		}
-		else
-			XYZ_LOG_ERR("Could not open file ", filepath.c_str());
-
-
-		return result;
-	}
-
-
-	const Character& Font::GetCharacter(uint8_t ch) const
-	{
-		XYZ_ASSERT(ch < sc_NumCharacters, "Character index out of range");
-		return m_Characters[ch];
-	}
-	
 }

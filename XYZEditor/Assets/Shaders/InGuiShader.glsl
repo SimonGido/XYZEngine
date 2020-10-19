@@ -40,20 +40,12 @@ in float v_TextureID;
 in float v_TilingFactor;
 
 
-
-const float width = 0.1;
-const float edge = 0.5;
-
-// Temporary
 uniform sampler2D u_Texture[32];
 out vec4 FragColor;
-
 
 void main()
 {
 	vec2 tiledTexCoord = v_TexCoord * v_TilingFactor;
-	float distance = 1.0 - texture(u_Texture[int(v_TextureID)], tiledTexCoord).a;
-	float alpha = 1.0 - smoothstep(width, width + edge, distance);	
-	FragColor = vec4(texture(u_Texture[int(v_TextureID)], tiledTexCoord).xyz, alpha) * v_Color;	
+	FragColor = vec4(texture(u_Texture[int(v_TextureID)], tiledTexCoord)) * v_Color;	
 }
 

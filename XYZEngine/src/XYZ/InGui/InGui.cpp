@@ -83,9 +83,9 @@ namespace XYZ {
 		return result;
 	}
 
-	static void MoveVertices(InGuiVertex* vertices, const glm::vec2& position, size_t offset, size_t count)
+	static void MoveVertices(InGuiVertex* vertices, const glm::vec2& position, uint32_t offset, uint32_t count)
 	{
-		for (size_t i = offset; i < count + offset; ++i)
+		for (uint32_t i = offset; i < count + offset; ++i)
 		{
 			vertices[i].Position.x += position.x;
 			vertices[i].Position.y += position.y;
@@ -397,6 +397,7 @@ namespace XYZ {
 		
 		s_Context->DockSpace->Render(s_Context->GetPerFrameData().MousePosition, s_Context->GetPerFrameData(), s_Context->RenderConfiguration);
 		s_Context->DockSpace->Update(s_Context->GetPerFrameData().MousePosition);
+
 		InGuiRenderer::Flush();
 		InGuiRenderer::FlushLines();
 		InGuiRenderer::EndScene();
@@ -489,11 +490,13 @@ namespace XYZ {
 		else
 			s_Context->GetRenderQueue().Push(frameData.ActiveMesh, frameData.ActiveLineMesh);
 		
+	
 
 		// Check if was modified
 		if (window->Flags & InGuiWindowFlag::Modified)
 			InGuiFactory::GenerateWindow(name, *window, renderConfig);
 
+		
 		return !(window->Flags & InGuiWindowFlag::Collapsed);
 	}
 	void InGui::End()
@@ -724,13 +727,13 @@ namespace XYZ {
 	}
 
 
-	static bool ResolveSpaceWithText(const char* text, const glm::vec2 size,const glm::vec2& scale, const glm::vec4& color, glm::vec2& position, const InGuiRenderConfiguration& renderConfig, InGuiPerFrameData& frameData)
+	static bool ResolveSpaceWithText(const char* text, const glm::vec2 size, const glm::vec4& color, glm::vec2& position, const InGuiRenderConfiguration& renderConfig, InGuiPerFrameData& frameData)
 	{
 		XYZ_ASSERT(strlen(text) < sc_TextBufferSize, "Maximum length of text is ", sc_TextBufferSize);
 		InGuiWindow* window = frameData.CurrentWindow;
 		InGuiMesh& mesh = *frameData.ActiveMesh;
 
-		auto info = InGuiFactory::GenerateText(scale, color, text, 1000.0f, frameData.TempVertices, renderConfig);
+		auto info = InGuiFactory::GenerateText(color, text, 1000.0f, frameData.TempVertices, renderConfig);
 	
 		if (window->Flags & InGuiWindowFlag::AutoPosition)
 		{
@@ -752,6 +755,7 @@ namespace XYZ {
 		InGuiPerFrameData& frameData = s_Context->GetPerFrameData();
 		InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration;
 		InGuiWindow* window = frameData.CurrentWindow;
+
 		bool pressed = false;
 		if (window->Flags & InGuiWindowFlag::Modified)
 		{
@@ -786,7 +790,7 @@ namespace XYZ {
 		{
 			glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];
 			glm::vec2 pos = position;
-			if (ResolveSpaceWithText(name, size, { 0.7f,0.7f }, color, pos, renderConfig, frameData))
+			if (ResolveSpaceWithText(name, size, color, pos, renderConfig, frameData))
 			{
 				if (Collide(pos, size, frameData.MousePosition))
 				{
@@ -816,7 +820,7 @@ namespace XYZ {
 			glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];	
 			glm::vec2 handleSize = { size.x , size.y * 2 };
 			glm::vec2 pos = position;
-			if (ResolveSpaceWithText(name, handleSize, { 0.7f,0.7f }, color, pos, renderConfig, frameData))
+			if (ResolveSpaceWithText(name, handleSize, color, pos, renderConfig, frameData))
 			{
 				if (Collide(pos, handleSize, frameData.MousePosition))
 				{
@@ -876,7 +880,7 @@ namespace XYZ {
 		{
 			glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];
 			glm::vec2 pos = position;
-			if (ResolveSpaceWithText(name, size, { 0.7f,0.7f }, color, pos, renderConfig, frameData))
+			if (ResolveSpaceWithText(name, size, color, pos, renderConfig, frameData))
 			{
 				if (Collide(pos, size, frameData.MousePosition))
 				{
@@ -917,7 +921,7 @@ namespace XYZ {
 			float offset = 5.0f;
 			glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];
 			glm::vec2 pos = position;
-			if (ResolveSpaceWithText(name, { (size.x + offset) * count, size.y }, { 0.7f,0.7f }, color, pos, renderConfig, frameData))
+			if (ResolveSpaceWithText(name, { (size.x + offset) * count, size.y }, color, pos, renderConfig, frameData))
 			{
 				if (ResolveLeftClick(false))
 				{
@@ -996,7 +1000,7 @@ namespace XYZ {
 		{
 			glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];
 			glm::vec2 pos = { 0,0 };
-			if (ResolveSpaceWithText(name, size, { 0.7f,0.7f }, color, pos, renderConfig, frameData))
+			if (ResolveSpaceWithText(name, size, color, pos, renderConfig, frameData))
 			{
 				if (Collide(pos, size, frameData.MousePosition))
 				{
@@ -1026,7 +1030,7 @@ namespace XYZ {
 
 		if (window->Flags & InGuiWindowFlag::Modified)
 		{
-			auto info = InGuiFactory::GenerateText(scale, color, text, 1000.0f, frameData.TempVertices, renderConfig);
+			auto info = InGuiFactory::GenerateText(color, text, 1000.0f, frameData.TempVertices, renderConfig);
 
 			glm::vec2 pos = { 0,0 };
 			if (window->Flags & InGuiWindowFlag::AutoPosition)

@@ -45,7 +45,7 @@ namespace XYZ {
 
 		XYZ_ASSERT(internalFormat & dataFormat, "Format not supported!");
 
-		Renderer::Submit([this]() {
+		Renderer::Submit([=]() {
 			glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 			int levels = Texture::CalculateMipMapCount(m_Specification.Width, m_Specification.Height);
 			glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Specification.Width, m_Specification.Height);
@@ -78,7 +78,7 @@ namespace XYZ {
 				glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 			}
 			glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Specification.Width, m_Specification.Height, m_DataFormat, GL_UNSIGNED_BYTE, m_LocalData);
-			glGenerateTextureMipmap(m_RendererID);
+		//	glGenerateTextureMipmap(m_RendererID);
 			stbi_image_free(m_LocalData);
 			m_LocalData = nullptr;
 		});
@@ -159,11 +159,12 @@ namespace XYZ {
 
 	void OpenGLTexture2D::SetData(void* data, uint32_t size)
 	{
+		m_LocalData.ZeroInitialize();
 		m_LocalData.Write(data, size, 0);
 		Renderer::Submit([this,size]() {
 			XYZ_ASSERT(size == m_Specification.Width * m_Specification.Height * m_Specification.Channels, "Data must be entire texture!");
 			glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Specification.Width, m_Specification.Height, m_DataFormat, GL_UNSIGNED_BYTE, m_LocalData);
-			});
+		});
 	}
 
 	uint8_t* OpenGLTexture2D::GetData()
@@ -177,7 +178,7 @@ namespace XYZ {
 
 	void OpenGLTexture2D::Bind(uint32_t slot) const
 	{
-		Renderer::Submit([=]() {glBindTextureUnit(slot, m_RendererID); });
+		Renderer::Submit([this,slot ]() {glBindTextureUnit(slot, m_RendererID); });
 	}
 
 	void OpenGLTexture2D::Bind(uint32_t rendererID,uint32_t slot)

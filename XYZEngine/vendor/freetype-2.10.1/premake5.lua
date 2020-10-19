@@ -15,7 +15,7 @@ project "FreeType"
         "src/base/ftbase.c",
         "src/base/ftbitmap.c",
         "src/cache/ftcache.c",
-        "builds/windows/ftdebug.c",
+       
         "src/base/ftfstype.c",
         "src/base/ftglyph.c",
         "src/gzip/ftgzip.c",
@@ -45,13 +45,17 @@ project "FreeType"
         "src/truetype/truetype.c",
         "src/type1/type1.c",
         "src/cid/type1cid.c",
-        "src/type42/type42.c",
-        "src/winfonts/winfnt.c",        
+        "src/type42/type42.c",              
     }
     
 	filter "system:windows"
 		systemversion "latest"
-    	
+        
+        files
+        {
+            "src/winfonts/winfnt.c", 
+            "builds/windows/ftdebug.c"
+        }
 		defines
     	{
         		"WIN32",
@@ -75,7 +79,7 @@ project "FreeType"
 		    defines
             {
                 "NDEBUG"
-         }
+            }
         
      
         

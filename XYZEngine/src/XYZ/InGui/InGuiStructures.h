@@ -6,7 +6,7 @@
 #include "XYZ/Renderer/SubTexture2D.h"
 #include "XYZ/Renderer/Framebuffer.h"
 #include "XYZ/Renderer/InGuiRenderer.h"
-#include "XYZ/Renderer/FreeTypeFont.h"
+
 
 
 namespace XYZ {
@@ -69,7 +69,6 @@ namespace XYZ {
 		InGuiRenderConfiguration();
 
 		Ref<Font>		  Font;
-		FreeTypeFont *     TestFont;
 		Ref<Texture2D>	  InTexture;
 		Ref<Material>	  InMaterial;
 
@@ -97,7 +96,6 @@ namespace XYZ {
 			SELECTOR_COLOR,
 			NUM_COLORS
 		};
-
 		Ref<SubTexture2D> SubTexture[NUM_SUBTEXTURES];
 		glm::vec4 Color[NUM_COLORS];
 

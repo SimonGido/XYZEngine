@@ -6,25 +6,22 @@
 
 namespace XYZ {
 	
-	InGuiRenderConfiguration::InGuiRenderConfiguration()
+	InGuiRenderConfiguration::InGuiRenderConfiguration()	
 	{
 		Ref<Shader> shader = Shader::Create("Assets/Shaders/InGuiShader.glsl");
 		Ref<Texture2D> texture = Texture2D::Create(TextureWrap::Clamp, TextureParam::Linear, TextureParam::Nearest, "Assets/Textures/Gui/TexturePack_Dark.png");
 		InTexture = texture;
-		Ref<Texture2D> fontTexture = Texture2D::Create(TextureWrap::Clamp, TextureParam::Linear, TextureParam::Linear, "Assets/Font/Arial.png");
 		Ref<Texture2D> colorPickerTexture = Texture2D::Create(TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest, "Assets/Textures/Gui/ColorPicker.png");
 
-		
-		Font = Ref<XYZ::Font>::Create("Assets/Font/Arial.fnt");
-		TestFont = new FreeTypeFont(50, 50, "Assets/Fonts/arial.ttf");
-		auto testtexture = TestFont->GetTexture();
+		Font = Ref<XYZ::Font>::Create(14, "Assets/Fonts/arial.ttf");
 		InMaterial = Material::Create(shader);
 		InMaterial->Set("u_Texture", texture, TextureID);
-		InMaterial->Set("u_Texture", fontTexture, FontTextureID);
+		InMaterial->Set("u_Texture", Font->GetTexture(), FontTextureID);
 		InMaterial->Set("u_Texture", colorPickerTexture, ColorPickerTextureID);
 		InMaterial->Set("u_ViewportSize", glm::vec2(Input::GetWindowSize().first, Input::GetWindowSize().second));
+		
+	
 		float divisor = 8.0f;
-
 		SubTexture[BUTTON] = Ref<SubTexture2D>::Create(texture, glm::vec2(0, 0), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
 		SubTexture[CHECKBOX_CHECKED] = Ref<SubTexture2D>::Create(texture, glm::vec2(1, 1), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
 		SubTexture[CHECKBOX_UNCHECKED] = Ref<SubTexture2D>::Create(texture, glm::vec2(0, 1), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
@@ -116,4 +113,5 @@ namespace XYZ {
 		m_InGuiLineMeshes.reserve(numMeshes);
 		m_NumOverLayers = 0;
 	}
+
 }
