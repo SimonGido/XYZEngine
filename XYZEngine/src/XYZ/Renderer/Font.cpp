@@ -59,7 +59,7 @@ namespace XYZ {
 					pixelData[y * texWidth + x] = bmp->buffer[row * bmp->pitch + col];
 				}
 			}
-
+	
 			m_Characters[c].X0Coord = penX;
 			m_Characters[c].Y0Coord = penY;
 			m_Characters[c].X1Coord = penX + bmp->width;
@@ -70,6 +70,12 @@ namespace XYZ {
 
 			penX += bmp->width + 1;
 		}
+
+		// Alternative for space TODO: fix this
+		uint8_t dash = (uint8_t)'_';
+		uint8_t space = (uint8_t)' ';
+
+		m_Characters[space] = m_Characters[dash];
 
 		ByteBuffer pngData;
 		pngData.Allocate(texWidth * texHeight * 4);
@@ -90,7 +96,7 @@ namespace XYZ {
 			});
 
 		m_Texture->SetData(pngData, pngData.GetSize());
-		//stbi_write_png("font_output.png", texWidth, texHeight, 4, pngData, texWidth * 4);
+		stbi_write_png("font_output.png", texWidth, texHeight, 4, pngData, texWidth * 4);
 
 		FT_Done_Face(face);
 		FT_Done_FreeType(ft);

@@ -63,6 +63,7 @@ namespace XYZ {
 		while (str[i] != '\0')
 		{
 			auto& character = font->GetCharacter(str[i]);
+			
 			glm::vec2 size = {
 				character.X1Coord - character.X0Coord,
 				character.Y1Coord - character.Y0Coord

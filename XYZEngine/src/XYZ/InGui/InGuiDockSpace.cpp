@@ -62,6 +62,7 @@ namespace XYZ {
 				character.X1Coord - character.X0Coord,
 				character.Y1Coord - character.Y0Coord
 			};
+
 			if (xCursor + size.x >= length)
 				break;
 			glm::vec2 offset = { 0.0f, size.y - character.YOffset };
