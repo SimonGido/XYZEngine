@@ -8,13 +8,13 @@ namespace XYZ {
 
 	struct Character
 	{
-		uint32_t X0Coord;
-		uint32_t Y0Coord;
-		uint32_t X1Coord;
-		uint32_t Y1Coord;
-		uint32_t XOffset;
-		uint32_t YOffset;
-		uint32_t XAdvance;
+		int32_t X0Coord;
+		int32_t Y0Coord;
+		int32_t X1Coord;
+		int32_t Y1Coord;
+		int32_t XOffset;
+		int32_t YOffset;
+		int32_t XAdvance;
 	};
 
 	class Font : public RefCount

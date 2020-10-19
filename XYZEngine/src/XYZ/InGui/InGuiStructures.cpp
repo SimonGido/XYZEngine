@@ -13,7 +13,7 @@ namespace XYZ {
 		InTexture = texture;
 		Ref<Texture2D> colorPickerTexture = Texture2D::Create(TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest, "Assets/Textures/Gui/ColorPicker.png");
 
-		Font = Ref<XYZ::Font>::Create(12, "Assets/Fonts/arial.ttf");
+		Font = Ref<XYZ::Font>::Create(14, "Assets/Fonts/arial.ttf");
 		InMaterial = Material::Create(shader);
 		InMaterial->Set("u_Texture", texture, TextureID);
 		InMaterial->Set("u_Texture", Font->GetTexture(), FontTextureID);

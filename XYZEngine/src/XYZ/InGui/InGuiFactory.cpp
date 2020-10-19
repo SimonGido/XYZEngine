@@ -63,16 +63,15 @@ namespace XYZ {
 		while (str[i] != '\0')
 		{
 			auto& character = font->GetCharacter(str[i]);
-			
 			glm::vec2 size = {
 				character.X1Coord - character.X0Coord,
 				character.Y1Coord - character.Y0Coord
 			};
+
 			if (xCursor + size.x >= length)
 				break;
-
-			glm::vec2 offset = { 0.0f, size.y - character.YOffset };
-			glm::vec2 pos = {position.x +  xCursor - offset.x, position.y + yCursor - offset.y };
+			glm::vec2 offset = { character.XOffset, size.y - character.YOffset };
+			glm::vec2 pos = { position.x + xCursor + offset.x, position.y + yCursor - offset.y };
 			glm::vec4 coords = {
 				(float)character.X0Coord / (float)font->GetWidth(), (float)character.Y0Coord / (float)font->GetHeight(),
 				(float)character.X1Coord / (float)font->GetWidth(), (float)character.Y1Coord / (float)font->GetHeight()
@@ -80,10 +79,10 @@ namespace XYZ {
 			mesh.Vertices.push_back({ color, { pos.x , pos.y, 0.0f },                  {coords.x, coords.w}, (float)textureID });
 			mesh.Vertices.push_back({ color, { pos.x + size.x, pos.y, 0.0f, },         {coords.z, coords.w}, (float)textureID });
 			mesh.Vertices.push_back({ color, { pos.x + size.x, pos.y + size.y, 0.0f }, {coords.z, coords.y}, (float)textureID });
-			mesh.Vertices.push_back({ color, { pos.x ,pos.y + size.y, 0.0f},           {coords.x, coords.y}, (float)textureID });
+			mesh.Vertices.push_back({ color, { pos.x , pos.y + size.y, 0.0f},          {coords.x, coords.y}, (float)textureID });
 			
-			xCursor += size.x;
-			textInfo.Size.x += size.x;
+			xCursor += character.XAdvance;
+			textInfo.Size.x = xCursor;
 			textInfo.Count++;
 			if (textInfo.Size.y < size.y)
 				textInfo.Size.y = size.y;
@@ -245,8 +244,8 @@ namespace XYZ {
 			if (xCursor + size.x >= length)
 				break;
 
-			glm::vec2 offset = { 0.0f, size.y - character.YOffset };
-			glm::vec2 pos = { xCursor - offset.x, yCursor - offset.y };
+			glm::vec2 offset = { character.XOffset, size.y - character.YOffset };
+			glm::vec2 pos = { xCursor + offset.x, yCursor - offset.y };
 			glm::vec4 coords = {
 				(float)character.X0Coord / (float)font->GetWidth(), (float)character.Y0Coord / (float)font->GetHeight(),
 				(float)character.X1Coord / (float)font->GetWidth(), (float)character.Y1Coord / (float)font->GetHeight()
@@ -255,8 +254,8 @@ namespace XYZ {
 			vertices[counter++] = { color, { pos.x + size.x, pos.y, 0.0f, },         {coords.z, coords.w}, (float)renderConfig.FontTextureID };
 			vertices[counter++] = { color, { pos.x + size.x, pos.y + size.y, 0.0f }, {coords.z, coords.y}, (float)renderConfig.FontTextureID };
 			vertices[counter++] = { color, { pos.x ,pos.y + size.y, 0.0f},           {coords.x, coords.y}, (float)renderConfig.FontTextureID };
-			xCursor += size.x;
-			textInfo.Size.x += size.x;
+			xCursor += character.XAdvance;
+			textInfo.Size.x = xCursor;
 			textInfo.Count++;
 			if (textInfo.Size.y < size.y)
 				textInfo.Size.y = size.y;

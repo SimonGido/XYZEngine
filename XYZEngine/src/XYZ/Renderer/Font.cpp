@@ -25,17 +25,17 @@ namespace XYZ {
 			m_Characters.resize(sc_NumGlyphs);
 
 		// quick and dirty max texture size estimate
-		uint32_t maxDim = (1 + (face->size->metrics.height >> 6)) * ceilf(sqrtf(sc_NumGlyphs));
-		uint32_t texWidth = 1;
+		int32_t maxDim = (1 + (face->size->metrics.height >> 6)) * ceilf(sqrtf(sc_NumGlyphs));
+		int32_t texWidth = 1;
 		while (texWidth < maxDim)
 			texWidth <<= 1;
-		uint32_t texHeight = texWidth;
+		int32_t texHeight = texWidth;
 
 		ByteBuffer pixelData;
 		pixelData.Allocate(texWidth * texHeight * 1);
 		pixelData.ZeroInitialize();
 
-		uint32_t penX = 0, penY = 0;
+		int32_t penX = 0, penY = 0;
 		for (uint8_t c = 0; c < sc_NumGlyphs; c++)
 		{
 			if (FT_Load_Char(face, c, FT_LOAD_RENDER))
@@ -50,12 +50,12 @@ namespace XYZ {
 				penY += ((face->size->metrics.height >> 6) + 1);
 			}
 
-			for (uint32_t row = 0; row < bmp->rows; ++row)
+			for (int32_t row = 0; row < bmp->rows; ++row)
 			{
-				for (uint32_t col = 0; col < bmp->width; ++col)
+				for (int32_t col = 0; col < bmp->width; ++col)
 				{
-					uint32_t x = penX + col;
-					uint32_t y = penY + row;
+					int32_t x = penX + col;
+					int32_t y = penY + row;
 					pixelData[y * texWidth + x] = bmp->buffer[row * bmp->pitch + col];
 				}
 			}
@@ -71,15 +71,10 @@ namespace XYZ {
 			penX += bmp->width + 1;
 		}
 
-		// Alternative for space TODO: fix this
-		uint8_t dash = (uint8_t)'_';
-		uint8_t space = (uint8_t)' ';
-
-		m_Characters[space] = m_Characters[dash];
 
 		ByteBuffer pngData;
 		pngData.Allocate(texWidth * texHeight * 4);
-		for (int i = 0; i < (texWidth * texHeight); ++i)
+		for (int32_t i = 0; i < (texWidth * texHeight); ++i)
 		{
 			pngData[i * 4 + 0] |= pixelData[i];
 			pngData[i * 4 + 1] |= pixelData[i];
@@ -88,7 +83,7 @@ namespace XYZ {
 		}
 
 		m_Texture = Texture2D::Create({
-			texWidth,texHeight,4,
+			(uint32_t)texWidth,(uint32_t)texHeight,4,
 			TextureWrap::Clamp,
 			TextureFormat::RGB,
 			TextureParam::Linear,
