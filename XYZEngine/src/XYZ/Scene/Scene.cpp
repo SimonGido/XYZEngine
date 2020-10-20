@@ -123,7 +123,7 @@ namespace XYZ {
 	void Scene::OnRender()
 	{		
 		glm::mat4 viewProjMatrix = m_MainCamera->Camera.GetProjectionMatrix() 
-			* glm::inverse(m_MainCameraTransform->Transform);
+			* glm::inverse(m_MainCameraTransform->GetTransform());
 
 		m_SceneGraph.Propagate([this](Node<SceneObject, uint16_t>* parent, Node<SceneObject, uint16_t>* child) {
 			//child->Transform->CalculateWorldTransformation();
@@ -137,7 +137,7 @@ namespace XYZ {
 		{
 			auto [transform, sprite] = (*m_RenderGroup)[i];
 			Renderer2D::SetMaterial(sprite->Material);
-			Renderer2D::SubmitQuad(*transform, sprite->SubTexture->GetTexCoords(), sprite->TextureID, sprite->Color);
+			Renderer2D::SubmitQuad(transform->GetTransform(), sprite->SubTexture->GetTexCoords(), sprite->TextureID, sprite->Color);
 		}
 		Renderer2D::Flush();
 		Renderer2D::FlushLines();
@@ -181,7 +181,7 @@ namespace XYZ {
 		{
 			auto [transform, sprite] = (*m_RenderGroup)[i];
 			Renderer2D::SetMaterial(sprite->Material);
-			Renderer2D::SubmitQuad(*transform, sprite->SubTexture->GetTexCoords(), sprite->TextureID, sprite->Color);
+			Renderer2D::SubmitQuad(transform->GetTransform(), sprite->SubTexture->GetTexCoords(), sprite->TextureID, sprite->Color);
 		}
 		
 		Renderer2D::Flush();

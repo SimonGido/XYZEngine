@@ -452,10 +452,9 @@ namespace XYZ {
 				out << YAML::BeginMap;
 				auto transform = entity.GetComponent<TransformComponent>();
 
-				auto [pos, rot, scale] = GetTransformDecomposition(*transform);
-				out << YAML::Key << "Position" << YAML::Value << pos;
-				out << YAML::Key << "Rotation" << YAML::Value << rot;
-				out << YAML::Key << "Scale" << YAML::Value << scale;
+				out << YAML::Key << "Position" << YAML::Value << transform->Translation;
+				out << YAML::Key << "Rotation" << YAML::Value << transform->Rotation;
+				out << YAML::Key << "Scale" << YAML::Value << transform->Scale;
 
 				out << YAML::EndMap; // TransformComponent
 			}
@@ -562,13 +561,12 @@ namespace XYZ {
 					XYZ_LOG_INFO("Adding transform to entity ", tag.Name);
 					auto transform = ent.GetComponent<TransformComponent>();
 					glm::vec3 translation = transformComponent["Position"].as<glm::vec3>();
-					glm::quat rotation = transformComponent["Rotation"].as<glm::quat>();
+					glm::vec3 rotation = transformComponent["Rotation"].as<glm::vec3>();
 					glm::vec3 scale = transformComponent["Scale"].as<glm::vec3>();
 
-					glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), translation) *
-						glm::toMat4(rotation) * glm::scale(glm::mat4(1.0f), scale);
-					
-					*transform = transformMatrix;
+					transform->Translation = translation;
+					transform->Rotation = rotation;
+					transform->Scale = scale;
 				}
 				auto spriteRenderer = entity["SpriteRenderer"];
 				if (spriteRenderer)

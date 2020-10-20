@@ -20,27 +20,11 @@ namespace XYZ {
 		if (context && context.HasComponent<TransformComponent>() )
 		{
 			auto transformComponent = context.GetComponent<TransformComponent>();
-			glm::vec3 scale, translation, skew;
-			glm::vec4 perspective;
-			glm::quat orientation;
-			glm::decompose(transformComponent->Transform, scale, orientation, translation, skew, perspective);
-
-
-			m_Position[X] = translation.x;
-			m_Position[Y] = translation.y;
-			m_Position[Z] = translation.z;
-
-			m_Scale[X] = scale.x;
-			m_Scale[Y] = scale.y;
-			m_Scale[Z] = scale.z;
-
+			
+		
 			if (context.HasComponent<SpriteRenderer>())
 			{
 				auto spriteRenderer = context.GetComponent<SpriteRenderer>();
-				m_Color[X] = spriteRenderer->Color.x;
-				m_Color[Y] = spriteRenderer->Color.y;
-				m_Color[Z] = spriteRenderer->Color.z;
-				m_Color[W] = spriteRenderer->Color.w;
 				m_Sprite = spriteRenderer->SubTexture->GetName();
 				m_Material = spriteRenderer->Material->GetName();
 			}
@@ -75,21 +59,20 @@ namespace XYZ {
 				auto transformComponent = m_Context.GetComponent<TransformComponent>();
 				if (InGui::BeginGroup("Transform Component", { 0,0 }, m_TransformOpen))
 				{
-					if (InGui::Float(3, "Position", m_Position, m_PositionLengths, {}, { 50.0f, 25.0f }, m_PositionSelected))
-					{
-						transformComponent->Transform[3][X] = m_Position[X];
-						transformComponent->Transform[3][Y] = m_Position[Y];
-						transformComponent->Transform[3][Z] = m_Position[Z];
-					}
-					InGui::Separator();
-
-					if (InGui::Float(3, "Rotation", m_Rotation, m_RotationLengths, {}, { 50.0f, 25.0f }, m_PositionSelected))
+					float* translationPtr = (float*)&transformComponent->Translation.x;
+					if (InGui::Float(3, "Position", glm::value_ptr(transformComponent->Translation), m_PositionLengths, {}, { 50.0f, 25.0f }, m_PositionSelected))
 					{
 						
 					}
 					InGui::Separator();
 
-					if (InGui::Float(3, "Scale", m_Scale, m_ScaleLengths, {}, { 50.0f, 25.0f }, m_ScaleSelected))
+					if (InGui::Float(3, "Rotation", glm::value_ptr(transformComponent->Rotation), m_RotationLengths, {}, { 50.0f, 25.0f }, m_PositionSelected))
+					{
+						
+					}
+					InGui::Separator();
+
+					if (InGui::Float(3, "Scale", glm::value_ptr(transformComponent->Scale), m_ScaleLengths, {}, { 50.0f, 25.0f }, m_ScaleSelected))
 					{
 						
 					}
@@ -117,12 +100,9 @@ namespace XYZ {
 
 					}
 					InGui::Separator();
-					if (InGui::Float(4, "Color", m_Color, m_ColorLengths, {}, { 50.0f, 25.0f }, m_ColorSelected))
+					if (InGui::Float(4, "Color", glm::value_ptr(spriteRenderer->Color), m_ColorLengths, {}, { 50.0f, 25.0f }, m_ColorSelected))
 					{
-						spriteRenderer->Color.x = m_Color[X];
-						spriteRenderer->Color.y = m_Color[Y];
-						spriteRenderer->Color.z = m_Color[Z];
-						spriteRenderer->Color.w = m_Color[W];
+						
 					}
 					InGui::Separator();
 

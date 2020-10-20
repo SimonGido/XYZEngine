@@ -3,7 +3,7 @@ Entities:
   - Entity: Test Entity
     TransformComponent:
       Position: [14.031292, 58.885498, 0]
-      Rotation: [1, 0, 0, 0]
+      Rotation: [1, 0, 0]
       Scale: [7.24259949, 11.4536161, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/material.mat
@@ -15,8 +15,8 @@ Entities:
   - Entity: 00zcz
     Parent: 2
     TransformComponent:
-      Position: [-2.39276505, 40.2248344, 0]
-      Rotation: [0.981974244, 0, 0, 0.189014867]
+      Position: [-70.7269592, 41.6888351, 0]
+      Rotation: [0.981974244, 0, 0.189014867]
       Scale: [42.0815964, 66.3334579, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/material.mat
@@ -29,7 +29,7 @@ Entities:
     Parent: 2
     TransformComponent:
       Position: [23.5446167, 35.0201607, 0]
-      Rotation: [1, 0, 0, 0]
+      Rotation: [1, 0, 0]
       Scale: [35.9514771, 49.7444305, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/material.mat
@@ -41,8 +41,8 @@ Entities:
   - Entity: Test HoHO
     Parent: 2
     TransformComponent:
-      Position: [61.3730164, 83.6507721, 0]
-      Rotation: [1, 0, 0, 0]
+      Position: [14.6808395, -36.1436195, 0]
+      Rotation: [1, 0, 0]
       Scale: [89.721817, 99.72789, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/material.mat
@@ -54,9 +54,9 @@ Entities:
   - Entity: assss
     Parent: 2
     TransformComponent:
-      Position: [-45.5496063, 44.8383484, 0]
-      Rotation: [0.191220462, 0, 0, 0.981547117]
-      Scale: [23.9548492, 33.2744179, 0.99999994]
+      Position: [-81.0212708, 0.17464447, 0]
+      Rotation: [0.191220462, 0, -6.31941509]
+      Scale: [33.4796715, 40.870163, 0.99999994]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/material.mat
       SubTextureAssetPath: Assets/SubTextures/CharacterSubTexture.subtex

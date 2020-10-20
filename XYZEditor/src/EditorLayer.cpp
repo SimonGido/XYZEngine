@@ -188,10 +188,8 @@ namespace XYZ {
 		if (m_SelectedEntity)
 		{
 			auto transformComponent = m_SelectedEntity.GetComponent<TransformComponent>();
-			glm::vec3 scale, translation, skew;
-			glm::vec4 perspective;
-			glm::quat orientation;
-			glm::decompose(transformComponent->Transform, scale, orientation, translation, skew, perspective);
+			auto& translation = transformComponent->Translation;
+			auto& scale = transformComponent->Scale;
 
 			glm::vec3 topLeft = { translation.x - scale.x / 2,translation.y + scale.y / 2,1 };
 			glm::vec3 topRight = { translation.x + scale.x / 2,translation.y + scale.y / 2,1 };
@@ -207,40 +205,31 @@ namespace XYZ {
 		{
 			auto mousePos = InGui::GetWorldPosition(*InGui::GetWindow(PanelID::Scene), m_EditorCamera.GetPosition(), m_EditorCamera.GetAspectRatio(), m_EditorCamera.GetZoomLevel());
 
-			glm::vec3 scale;
-			scale.x = fabs(m_Scale.x + (mousePos.x - m_StartMousePos.x));
-			scale.y = fabs(m_Scale.y + (mousePos.y - m_StartMousePos.y));
-			scale.z = m_Scale.z;
-			glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), m_Translation) *
-				glm::toMat4(m_Orientation) * glm::scale(glm::mat4(1.0f), scale);
-
-			m_ModifiedTransform->Transform = transformMatrix;
+			glm::vec3 scale = m_ModifiedScale;
+			scale.x += fabs(mousePos.x - m_StartMousePos.x);
+			scale.y += fabs(mousePos.y - m_StartMousePos.y);
+	
+			m_ModifiedTransform->Scale = scale;	
 			m_EntityInspectorLayout.SetContext(m_SelectedEntity);
 		}
 		else if (m_MovingEntity)
 		{
 			auto mousePos = InGui::GetWorldPosition(*InGui::GetWindow(PanelID::Scene), m_EditorCamera.GetPosition(), m_EditorCamera.GetAspectRatio(), m_EditorCamera.GetZoomLevel());
 
-			glm::vec3 translation;
-			translation.x = m_Translation.x + (mousePos.x - m_StartMousePos.x);
-			translation.y = m_Translation.y + (mousePos.y - m_StartMousePos.y);
-			translation.z = m_Translation.z;
-			glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), translation) *
-				glm::toMat4(m_Orientation) * glm::scale(glm::mat4(1.0f), m_Scale);
-
-			m_ModifiedTransform->Transform = transformMatrix;
+			glm::vec3 translation = m_ModifiedTranslation;
+			translation.x +=  (mousePos.x - m_StartMousePos.x);
+			translation.y +=  (mousePos.y - m_StartMousePos.y);
+			
+			m_ModifiedTransform->Translation = translation;
 			m_EntityInspectorLayout.SetContext(m_SelectedEntity);
 		}
 		else if (m_RotatingEntity)
 		{
 			auto mousePos = InGui::GetWorldPosition(*InGui::GetWindow(PanelID::Scene), m_EditorCamera.GetPosition(), m_EditorCamera.GetAspectRatio(), m_EditorCamera.GetZoomLevel());
 
-			float rotation;
-			rotation = m_Orientation.x + (mousePos.x - m_StartMousePos.x);
-			glm::mat4 transformMatrix = glm::translate(glm::mat4(1.0f), m_Translation) *
-				glm::rotate(rotation, glm::vec3{ 0,0,1 }) * glm::scale(glm::mat4(1.0f), m_Scale);
-
-			m_ModifiedTransform->Transform = transformMatrix;
+			float rotation = m_ModifiedRotation.x + (mousePos.x - m_StartMousePos.x);
+		
+			m_ModifiedTransform->Rotation.z = rotation;
 			m_EntityInspectorLayout.SetContext(m_SelectedEntity);
 		}
 	
@@ -386,10 +375,9 @@ namespace XYZ {
 				m_ScalingEntity = true;
 				m_ModifiedTransform = m_SelectedEntity.GetComponent<TransformComponent>();
 
-				auto& transform = m_ModifiedTransform->Transform;
-				glm::vec3 skew;
-				glm::vec4 perspective;
-				glm::decompose(transform, m_Scale, m_Orientation, m_Translation, skew, perspective);
+				m_ModifiedTranslation = m_ModifiedTransform->Translation;
+				m_ModifiedScale = m_ModifiedTransform->Scale;
+				m_ModifiedRotation = m_ModifiedTransform->Rotation;
 
 				// Remove entity;
 				m_SceneHierarchyPanel.RemoveEntity(m_SelectedEntity);
@@ -400,10 +388,9 @@ namespace XYZ {
 				m_MovingEntity = true;
 				m_ModifiedTransform = m_SelectedEntity.GetComponent<TransformComponent>();
 
-				auto& transform = m_ModifiedTransform->Transform;
-				glm::vec3 skew;
-				glm::vec4 perspective;
-				glm::decompose(transform, m_Scale, m_Orientation, m_Translation, skew, perspective);
+				m_ModifiedTranslation = m_ModifiedTransform->Translation;
+				m_ModifiedScale = m_ModifiedTransform->Scale;
+				m_ModifiedRotation = m_ModifiedTransform->Rotation;
 
 				// Remove entity;
 				m_SceneHierarchyPanel.RemoveEntity(m_SelectedEntity);
@@ -413,11 +400,9 @@ namespace XYZ {
 				m_StartMousePos = InGui::GetWorldPosition(*InGui::GetWindow(PanelID::Scene), m_EditorCamera.GetPosition(), m_EditorCamera.GetAspectRatio(), m_EditorCamera.GetZoomLevel());
 				m_RotatingEntity = true;
 				m_ModifiedTransform = m_SelectedEntity.GetComponent<TransformComponent>();
-
-				auto& transform = m_ModifiedTransform->Transform;
-				glm::vec3 skew;
-				glm::vec4 perspective;
-				glm::decompose(transform, m_Scale, m_Orientation, m_Translation, skew, perspective);
+				m_ModifiedTranslation = m_ModifiedTransform->Translation;
+				m_ModifiedScale = m_ModifiedTransform->Scale;
+				m_ModifiedRotation = m_ModifiedTransform->Rotation;
 			}
 		}
 		return false;

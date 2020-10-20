@@ -10,13 +10,8 @@
 
 namespace XYZ {
 
-	static bool Collide(const glm::mat4& transform, const glm::vec2& mousePos)
+	static bool Collide(const glm::vec3& translation, const glm::vec3& scale, const glm::vec2& mousePos)
 	{
-		glm::vec3 scale, translation, skew;
-		glm::vec4 perspective;
-		glm::quat orientation;
-		glm::decompose(transform, scale, orientation, translation, skew, perspective);
-
 		return (
 			mousePos.x > translation.x - scale.x / 2 && mousePos.x < translation.x + scale.x / 2 &&
 			mousePos.y > translation.y - scale.y / 2 && mousePos.y < translation.y + scale.y / 2
@@ -47,13 +42,9 @@ namespace XYZ {
 			Entity entity = { ent.GetData().Entity,m_Context.Raw() };
 			if (entity.HasComponent<SceneTagComponent>())
 			{
-				auto& transform = entity.GetComponent<TransformComponent>()->Transform;
-				glm::vec3 scale, translation, skew;
-				glm::vec4 perspective;
-				glm::quat orientation;
-				glm::decompose(transform, scale, orientation, translation, skew, perspective);
-
-				m_Entities.Insert(entity, { translation.x,translation.y }, { scale.x,scale.y });
+				auto transform = entity.GetComponent<TransformComponent>();
+				
+				m_Entities.Insert(entity, transform->Translation, transform->Scale);
 			}
 		}
 	}
@@ -86,7 +77,8 @@ namespace XYZ {
 		{
 			for (size_t i = 0; i < count; ++i)
 			{
-				if (Collide(buffer[i].GetComponent<TransformComponent>()->Transform, position))
+				auto transform = buffer[i].GetComponent<TransformComponent>();
+				if (Collide(transform->Translation, transform->Scale, position))
 				{
 					auto &flags = InGui::GetWindow(PanelID::SceneHierarchy)->Flags;
 					flags |= InGuiWindowFlag::Modified;
@@ -98,23 +90,13 @@ namespace XYZ {
 	}
 	void SceneHierarchyPanel::RemoveEntity(Entity entity)
 	{
-		auto& transform = entity.GetComponent<TransformComponent>()->Transform;
-		glm::vec3 scale, translation, skew;
-		glm::vec4 perspective;
-		glm::quat orientation;
-		glm::decompose(transform, scale, orientation, translation, skew, perspective);
-
-		m_Entities.Remove(entity, { translation.x,translation.y }, { scale.x,scale.y });
+		auto transform = entity.GetComponent<TransformComponent>();	
+		m_Entities.Remove(entity, transform->Translation, transform->Scale);
 	}
 	void SceneHierarchyPanel::InsertEntity(Entity entity)
 	{
-		auto& transform = entity.GetComponent<TransformComponent>()->Transform;
-		glm::vec3 scale, translation, skew;
-		glm::vec4 perspective;
-		glm::quat orientation;
-		glm::decompose(transform, scale, orientation, translation, skew, perspective);
-
-		m_Entities.Insert(entity, { translation.x,translation.y }, { scale.x,scale.y });
+		auto transform = entity.GetComponent<TransformComponent>();
+		m_Entities.Insert(entity, transform->Translation, transform->Scale);
 	}
 	void SceneHierarchyPanel::drawEntity(Entity entity)
 	{

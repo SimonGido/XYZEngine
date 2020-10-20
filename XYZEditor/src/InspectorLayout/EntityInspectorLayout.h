@@ -46,25 +46,20 @@ namespace XYZ {
 		bool m_NativeScriptOpen = false;
 
 
-
 		glm::vec4 m_ColorPallete = { 0,1,1,1 };
 		bool m_PickColor = false;
 		bool m_SpriteModified = false;
 		bool m_MaterialModified = false;
 
-		float m_Color[NUM_AXIS];
 		int m_ColorLengths[NUM_AXIS] = { 4,4,4,4 };
 		int m_ColorSelected = -1;
 
-		float m_Position[W];
 		int m_PositionLengths[W] = { 4,4,4 };
 		int m_PositionSelected = -1;
 
-		float m_Rotation[W];
 		int m_RotationLengths[W] = { 4,4,4 };
 		int m_RotationSelected = -1;
 		
-		float m_Scale[W];
 		int m_ScaleLengths[W] = { 4,4,4 };
 		int m_ScaleSelected = -1;
 

@@ -65,9 +65,9 @@ namespace XYZ {
 		bool m_RotatingEntity = false;
 
 		TransformComponent* m_ModifiedTransform = nullptr;
-		glm::vec3 m_Scale;
-		glm::vec3 m_Translation;
-		glm::quat m_Orientation;
+		glm::vec3 m_ModifiedTranslation;
+		glm::vec3 m_ModifiedRotation;
+		glm::vec3 m_ModifiedScale;
 
 
 		EditorCamera m_EditorCamera;
@@ -103,11 +103,10 @@ namespace XYZ {
 		bool m_MenuOpen = false;
 		bool m_PopupOpen = false;
 		bool m_Selecting = false;
-		std::string m_Text = "0";
 		bool m_Modified = false;
+		std::string m_Text = "0";
 	
 		
-
 
 		Ref<Material> m_Material;
 		Ref<Texture2D> m_CharacterTexture;
