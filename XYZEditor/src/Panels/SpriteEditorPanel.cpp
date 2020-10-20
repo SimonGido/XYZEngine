@@ -7,7 +7,11 @@
 #include <glm/gtx/transform.hpp>
 
 namespace XYZ {
-
+	static glm::vec2 MouseToWorld(const glm::vec2& point, const glm::vec2& windowSize)
+	{
+		glm::vec2 offset = { windowSize.x / 2,windowSize.y / 2 };
+		return { point.x - offset.x, offset.y - point.y };
+	}
 	static glm::vec4 TexCoordsFromSelection(const glm::vec4& selection,const glm::vec2& contextPos, const glm::vec2 contextScale)
 	{
 		glm::vec2 selectionSize = { selection.z - selection.x, selection.w - selection.y };
@@ -58,6 +62,7 @@ namespace XYZ {
 		//m_Window->Flags &= ~InGuiWindowFlag::AutoPosition;
 		m_Window->Flags &= ~InGuiWindowFlag::EventListener;
 		m_Window->Flags |= InGuiWindowFlag::MenuEnabled;
+
 		m_Window->OnResizeCallback = Hook(&SpriteEditorPanel::onInGuiWindowResize, this);
 		
 		auto [width, height] = Input::GetWindowSize();
@@ -87,7 +92,6 @@ namespace XYZ {
 			m_ActiveWindow = true;
 			if (m_Selecting)
 			{
-				
 				glm::vec2 relativeMousePos = InGui::GetWorldPosition(*m_Window, m_Camera.GetPosition(), m_Camera.GetAspectRatio(), m_Camera.GetZoomLevel());
 				m_NewSelection.z = relativeMousePos.x;
 				m_NewSelection.w = relativeMousePos.y;
@@ -97,10 +101,11 @@ namespace XYZ {
 		{
 			m_Camera.Stop();
 		}
-		if (InGui::MenuBar("File", 90.0f, m_ExportOpen))
+		InGui::MenuBar("File", 90.0f, m_ExportOpen);
+		if (m_ExportOpen)
 		{
 			m_SelectionOpen = false;
-			if (InGui::MenuItem("Export All", { 150.0f, 25.0f }))
+			if (InGui::MenuItem("Export All", { 150.0f, 25.0f }) & InGuiReturnType::Clicked)
 			{
 				if (!m_Sprites.empty())
 				{
@@ -117,14 +122,15 @@ namespace XYZ {
 				}
 			}
 		}
-		if (InGui::MenuBar("Selection", 90.0f, m_SelectionOpen))
+		InGui::MenuBar("Selection", 90.0f, m_SelectionOpen);
+		if (m_SelectionOpen)
 		{
 			m_ExportOpen = false;
-			if (InGui::MenuItem("Auto Selection", { 150.0f, 25.0f }))
+			if (InGui::MenuItem("Auto Selection", { 150.0f, 25.0f }) & InGuiReturnType::Clicked)
 			{
 				m_SelectionOpen = false;
 			}
-			else if (InGui::MenuItem("Reset Selections", { 150.0f, 25.0f }))
+			else if (InGui::MenuItem("Reset Selections", { 150.0f, 25.0f }) & InGuiReturnType::Clicked)
 			{
 				m_Selections.clear();
 				m_Sprites.clear();
@@ -189,12 +195,18 @@ namespace XYZ {
 		{
 			if (!m_SelectionOpen && !m_ExportOpen)
 			{
-				glm::vec2 relativeMousePos = InGui::GetWorldPosition(*m_Window, m_Camera.GetPosition(), m_Camera.GetAspectRatio(), m_Camera.GetZoomLevel());
-				m_NewSelection.x = relativeMousePos.x;
-				m_NewSelection.y = relativeMousePos.y;
+				auto [mx, my] = Input::GetMousePosition();
+				auto [width, height] = Input::GetWindowSize();
+				auto mouseToWorld = MouseToWorld({ mx,my }, { width,height });
+				if (Collide(m_Window->Position, m_Window->Size, mouseToWorld))
+				{
+					glm::vec2 relativeMousePos = InGui::GetWorldPosition(*m_Window, m_Camera.GetPosition(), m_Camera.GetAspectRatio(), m_Camera.GetZoomLevel());
+					m_NewSelection.x = relativeMousePos.x;
+					m_NewSelection.y = relativeMousePos.y;
 
-				m_Selecting = true;
-				m_SelectedSelection = sc_InvalidSelection;
+					m_Selecting = true;
+					m_SelectedSelection = sc_InvalidSelection;
+				}
 			}
 		}
 		else if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_RIGHT))

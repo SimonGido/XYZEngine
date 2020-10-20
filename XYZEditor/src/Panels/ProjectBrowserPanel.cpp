@@ -65,42 +65,21 @@ namespace XYZ {
 		ofs.close();
 	}
 
-	void ProjectBrowserPanel::deleteTemplate()
-	{
-		auto& renderConfig = InGui::GetRenderConfiguration();
-		m_DeleteDialogWindow->Position = { -150,-60 };
-		m_DeleteDialogWindow->Size = { 300,120 };
-		if (InGui::Begin(PanelID::DeletePanel, "Delete selected file?", { -150,-60 }, { 300,120 }))
-		{
-			if (InGui::Button("Delete", { 75,40 }))
-			{
-				std::filesystem::remove(m_SelectedFile);
-				m_SelectedFile.clear();
-				m_SelectedFileIndex = sc_InvalidIndex;
-				m_DeleteDialog = false;
-				m_Window->Flags |= InGuiWindowFlag::Modified;
-			}		
-			if (InGui::Button("Cancel", { 75,40 }))
-			{
-				m_DeleteDialog = false;
-			}		
-			InGui::Icon({}, { 100,100 }, renderConfig.SubTexture[LOGO], renderConfig.TextureID);
-		}
-		// Prevent user from clicking anything else before choosing some option
-		InGui::ResolveLeftClick();
-		InGui::ResolveRightClick();
-		InGui::End();
+	std::string ProjectBrowserPanel::GetSelectedFileFullPath() const
+	{		
+		return std::filesystem::current_path().u8string()+ "\\" + m_SelectedFile;
 	}
-
-	
 
 	ProjectBrowserPanel::ProjectBrowserPanel()
 	{
 		m_PathLength = 0;
 		m_DirectoryPathLength = 0;
-		for (auto c : std::filesystem::current_path().u8string())
-			m_ProjectPath[m_PathLength++] = c;
+
+		std::string projectPath = "Assets";
+		for (auto c : projectPath)
+			m_ProjectPath[m_PathLength++] = c; 
 		m_ProjectPath[m_PathLength] = '\0';
+
 		InGui::Begin(PanelID::DeletePanel, "Delete selected file?", { -150,-60 }, { 300,120 });
 		InGui::End();
 		m_DeleteDialogWindow = InGui::GetWindow(PanelID::DeletePanel);
@@ -110,6 +89,7 @@ namespace XYZ {
 		InGui::End();
 		m_Window = InGui::GetWindow(PanelID::ProjectBrowser);
 		m_Window->Flags |= InGuiWindowFlag::ForceNewLine;
+		m_Window->Flags &= ~InGuiWindowFlag::EventBlocking;
 
 		auto& renderConfig = InGui::GetRenderConfiguration();
 		float divisor = 4.0f;
@@ -123,17 +103,12 @@ namespace XYZ {
 	bool ProjectBrowserPanel::OnInGuiRender()
 	{
 		bool active = false;
-
-		if (m_DeleteDialog)
-			deleteTemplate();
-
+		auto& renderConfig = InGui::GetRenderConfiguration();
 		if (InGui::Begin(PanelID::ProjectBrowser, "Project", { -200,-200 }, { 300,300 }))
-		{
-			auto& renderConfig = InGui::GetRenderConfiguration();
+		{	
 			active = true;
 			
-
-			if (InGui::Icon(m_ProjectPath, {}, { 30,30 }, renderConfig.SubTexture[InGuiRenderConfiguration::LEFT_ARROW], renderConfig.TextureID))
+			if (InGui::Icon(m_ProjectPath, {}, { 30,30 }, renderConfig.SubTexture[InGuiRenderConfiguration::LEFT_ARROW], renderConfig.TextureID) & InGuiReturnType::Clicked)
 			{
 				while (m_ProjectPath[m_PathLength + m_DirectoryPathLength] != '\\' && m_DirectoryPathLength)
 					m_DirectoryPathLength--;	
@@ -145,6 +120,7 @@ namespace XYZ {
 					
 			uint32_t offset = m_PathLength + m_DirectoryPathLength;
 			uint32_t counter = 0;
+			
 			for (const auto& entry : std::filesystem::directory_iterator(m_ProjectPath))
 			{	
 				size_t count = entry.path().u8string().size() - offset - 1;
@@ -156,7 +132,7 @@ namespace XYZ {
 
 				if (entry.is_directory())
 				{
-					if (InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[FOLDER], renderConfig.TextureID))
+					if (InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[FOLDER], renderConfig.TextureID) & InGuiReturnType::Clicked)
 					{
 						m_ProjectPath[offset++] = '\\';
 						m_DirectoryPathLength++;
@@ -167,7 +143,7 @@ namespace XYZ {
 				}
 				else if (HasExtension(entry.path().u8string(), "subtex"))
 				{
-					if (InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[SPRITE], renderConfig.TextureID, highlight))
+					if (InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[SPRITE], renderConfig.TextureID, highlight) & InGuiReturnType::Clicked)
 					{
 						m_SelectedFile = entry.path().u8string();
 						m_SelectedFileIndex = counter;
@@ -175,7 +151,7 @@ namespace XYZ {
 				}
 				else if (HasExtension(entry.path().u8string(), "mat"))
 				{
-					if (InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[MATERIAL], renderConfig.TextureID, highlight))
+					if (InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[MATERIAL], renderConfig.TextureID, highlight) & InGuiReturnType::Clicked)
 					{
 						m_SelectedFile = entry.path().u8string();
 						m_SelectedFileIndex = counter;
@@ -183,7 +159,7 @@ namespace XYZ {
 				}
 				else if (HasExtension(entry.path().u8string(), "png"))
 				{
-					if (InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[TEXTURE], renderConfig.TextureID, highlight))
+					if (InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[TEXTURE], renderConfig.TextureID, highlight) & InGuiReturnType::Clicked)
 					{
 						m_SelectedFile = entry.path().u8string();
 						m_SelectedFileIndex = counter;
@@ -191,12 +167,13 @@ namespace XYZ {
 				}
 				else if (HasExtension(entry.path().u8string(), "glsl"))
 				{
-					if (InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[SHADER], renderConfig.TextureID, highlight))
+					if (InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[SHADER], renderConfig.TextureID, highlight) & InGuiReturnType::Clicked)
 					{
 						m_SelectedFile = entry.path().u8string();
 						m_SelectedFileIndex = counter;
 					}
 				}
+
 				if ((m_Window->Flags & InGuiWindowFlag::Hoovered) && InGui::ResolveRightClick())
 				{
 					auto [width, height] = Input::GetWindowSize();
@@ -211,14 +188,18 @@ namespace XYZ {
 				counter++;
 			}
 		
+
+			
 			if (m_PopupEnabled)
 			{
 				m_Window->Flags &= ~InGuiWindowFlag::AutoPosition;
-				if (InGui::BeginPopup("New", m_PopupPosition, glm::vec2{ 150,25 }, m_PopupEnabled))
+				InGui::BeginPopup("New", m_PopupPosition, glm::vec2{ 150,25 }, m_PopupEnabled);
+				if (m_PopupEnabled)
 				{
-					if (InGui::PopupExpandItem("File -->", m_NewOpen))
+					InGui::PopupExpandItem("File -->", m_NewOpen);
+					if (m_NewOpen)
 					{
-						if (InGui::PopupItem("New Folder"))
+						if (InGui::PopupItem("New Folder") & InGuiReturnType::Clicked)
 						{	
 							std::string tmpDir = m_ProjectPath;
 							tmpDir += "\\New Folder";
@@ -226,7 +207,7 @@ namespace XYZ {
 							m_PopupEnabled = false;
 							m_NewOpen = false;
 						}
-						else if (InGui::PopupItem("New Material"))
+						else if (InGui::PopupItem("New Material") & InGuiReturnType::Clicked)
 						{
 							std::string tmpDir = m_ProjectPath;
 							tmpDir += "\\New Material";
@@ -234,7 +215,7 @@ namespace XYZ {
 							m_PopupEnabled = false;
 							m_NewOpen = false;
 						}
-						else if (InGui::PopupItem("New Shader"))
+						else if (InGui::PopupItem("New Shader") & InGuiReturnType::Clicked)
 						{
 							std::string tmpDir = m_ProjectPath;
 							tmpDir += "\\New Shader";
@@ -242,7 +223,7 @@ namespace XYZ {
 							m_PopupEnabled = false;
 							m_NewOpen = false;
 						}
-						else if (InGui::PopupItem("New Subtexture"))
+						else if (InGui::PopupItem("New Subtexture") & InGuiReturnType::Clicked)
 						{
 							std::string tmpDir = m_ProjectPath;
 							tmpDir += "\\New Subtexture";
@@ -254,34 +235,37 @@ namespace XYZ {
 					}
 					InGui::PopupExpandEnd();
 				
-					if (InGui::PopupItem("Test"))
+					if (InGui::PopupItem("Test") & InGuiReturnType::Clicked)
 					{
 						m_PopupEnabled = false;
 						m_NewOpen = false;
 					}
-					if (InGui::PopupItem("Test"))
+					if (InGui::PopupItem("Test") & InGuiReturnType::Clicked)
 					{
 						m_PopupEnabled = false;
 						m_NewOpen = false;
-					}
-
-					
+					}	
 				}
 				
 				InGui::EndPopup();
-				InGui::Separator();
+				InGui::Separator();	
 				m_Window->Flags |= InGuiWindowFlag::AutoPosition;
-			}
-			if (InGui::ResolveLeftClick(false))
-			{
-				m_SelectedFile.clear();
-				m_SelectedFileIndex = sc_InvalidIndex;
-				m_PopupEnabled = false;
-				m_NewOpen = false;
 			}
 		}	
 		InGui::End();
 
+		if (InGui::ResolveLeftClick(false))
+		{
+			m_SelectedFile.clear();
+			m_SelectedFileIndex = sc_InvalidIndex;
+			m_PopupEnabled = false;
+			m_NewOpen = false;
+		}
+		if (InGui::ResolveLeftRelease(false))
+		{
+			m_SelectedFile.clear();
+			m_SelectedFileIndex = sc_InvalidIndex;
+		}
 		return active;
 	}
 
@@ -290,13 +274,14 @@ namespace XYZ {
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<KeyPressedEvent>(Hook(&ProjectBrowserPanel::onKeyPress, this));
 	}
+	
+
 	bool ProjectBrowserPanel::onKeyPress(KeyPressedEvent& event)
 	{
 		if (event.IsKeyPressed(KeyCode::XYZ_KEY_DELETE))
 		{
 			if (!m_SelectedFile.empty())
 			{
-				m_DeleteDialog = true;
 				m_DeleteDialogWindow->Flags |= InGuiWindowFlag::Modified;
 			}
 		}

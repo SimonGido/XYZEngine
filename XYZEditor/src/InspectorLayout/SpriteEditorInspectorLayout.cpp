@@ -7,10 +7,11 @@ namespace XYZ {
 	{
 		if (m_Context)
 		{
-			if (InGui::BeginGroup("Sprite", { 0,0 }, m_SpriteOpen))
+			InGui::BeginGroup("Sprite", { 0,0 }, m_SpriteOpen);
+			if (m_SpriteOpen)
 			{
 				bool modyfing = false;
-				if (InGui::Float(4, "Position", m_Values, m_Lengths, {}, { 60.0f,25.0f }, m_Selected))
+				if (InGui::Float(4, "Position", m_Values, m_Lengths, {}, { 60.0f,25.0f }, m_Selected) & InGuiReturnType::Clicked)
 				{
 					m_FinishedModifying = true;
 					modyfing = true;

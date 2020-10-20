@@ -11,6 +11,8 @@ namespace XYZ {
 		EntityInspectorLayout(Entity context);
 
 		void SetContext(Entity context);
+		void AttemptSetAsset(const std::string& filepath, AssetManager& assetManager);
+
 		virtual void OnInGuiRender() override;
 	private:
 		enum
@@ -51,17 +53,20 @@ namespace XYZ {
 		bool m_SpriteModified = false;
 		bool m_MaterialModified = false;
 
-		int m_ColorLengths[NUM_AXIS] = { 4,4,4,4 };
-		int m_ColorSelected = -1;
+		int32_t m_ColorLengths[NUM_AXIS] = { 4,4,4,4 };
+		int32_t m_ColorSelected = -1;
 
-		int m_PositionLengths[W] = { 4,4,4 };
-		int m_PositionSelected = -1;
+		int32_t m_PositionLengths[W] = { 4,4,4 };
+		int32_t m_PositionSelected = -1;
 
-		int m_RotationLengths[W] = { 4,4,4 };
-		int m_RotationSelected = -1;
+		int32_t m_RotationLengths[W] = { 4,4,4 };
+		int32_t m_RotationSelected = -1;
 		
-		int m_ScaleLengths[W] = { 4,4,4 };
-		int m_ScaleSelected = -1;
+		int32_t m_ScaleLengths[W] = { 4,4,4 };
+		int32_t m_ScaleSelected = -1;
+
+		uint8_t m_MaterialTextFlags = 0;
+		uint8_t m_SpriteTextFlags = 0;
 
 		std::string m_NativeScriptObject;
 		std::string m_Sprite;

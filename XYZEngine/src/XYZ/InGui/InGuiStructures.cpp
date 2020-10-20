@@ -76,6 +76,8 @@ namespace XYZ {
 	{	
 		WindowSpaceOffset = { 0,0 };
 		CurrentWindow = nullptr;
+		ActiveMesh = nullptr;
+		ActiveLineMesh = nullptr;
 		
 		MenuBarOffset = { 0,0 };
 		PopupOffset = { 0,0 };
@@ -86,7 +88,7 @@ namespace XYZ {
 	}
 
 	void InGuiRenderQueue::PushOverlay(InGuiMesh* mesh, InGuiLineMesh* lineMesh)
-	{
+	{		
 		if (!m_NumOverLayers)
 		{
 			m_InGuiMeshes.push_back(mesh);

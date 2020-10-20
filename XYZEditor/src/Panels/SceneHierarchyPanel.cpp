@@ -110,7 +110,7 @@ namespace XYZ {
 			}
 			
 		
-			if (InGui::Text(tag.c_str(), { 1,1 }, textColor))
+			if (InGui::Text(tag.c_str(), { 1,1 }, textColor) & InGuiReturnType::Clicked)
 			{
 				m_SelectedEntity = entity;
 				auto &flags = InGui::GetWindow(PanelID::SceneHierarchy)->Flags;

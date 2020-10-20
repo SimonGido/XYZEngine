@@ -13,13 +13,16 @@ namespace XYZ {
 		bool OnInGuiRender();
 		void OnEvent(Event& event);
 
+		int32_t GetSelectedFileIndex() const { return m_SelectedFileIndex; }
+		const std::string& GetSelectedFilePath() const { return m_SelectedFile; }
+		std::string GetSelectedFileFullPath() const;
 	private:
-		void deleteTemplate();
-
 		bool onKeyPress(KeyPressedEvent& event);
+
 	private:
 		InGuiWindow* m_Window;
 		InGuiWindow* m_DeleteDialogWindow;
+
 		enum
 		{
 			FOLDER = InGuiRenderConfiguration::DOCKSPACE + 1,
@@ -40,7 +43,6 @@ namespace XYZ {
 
 		bool m_PopupEnabled = false;
 		bool m_NewOpen = false;
-		bool m_DeleteDialog = false;
 
 		glm::vec2 m_PopupPosition = glm::vec2(0);
 	};

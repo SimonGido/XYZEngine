@@ -17,7 +17,7 @@ namespace XYZ {
 			Collapsed		= BIT(1),
 			MenuEnabled		= BIT(2),
 			Modified		= BIT(3),
-			EventListener	= BIT(4),
+			EventListener	= BIT(4), // It will not receive event
 			Hoovered		= BIT(5),
 			LeftResizing	= BIT(6),
 			RightResizing	= BIT(7),
@@ -31,7 +31,8 @@ namespace XYZ {
 			RightClicked	= BIT(15),
 			Initialized		= BIT(16),
 			ForceNewLine	= BIT(17),
-			Dockable		= BIT(18)
+			Dockable		= BIT(18),
+			EventBlocking	= BIT(19) // It will receive event but wont set it to handled
 		};
 	}
 
@@ -53,6 +54,14 @@ namespace XYZ {
 			NodeMoved		= BIT(0),
 			NodeModified	= BIT(1),
 			NodeHoovered	= BIT(2)
+		};
+	}
+
+	namespace InGuiReturnType {
+		enum InGuiReturnType
+		{
+			Clicked		= BIT(0), // Widget was clicked, set , modified
+			Hoovered	= BIT(1)  // Widget was hoovered
 		};
 	}
 

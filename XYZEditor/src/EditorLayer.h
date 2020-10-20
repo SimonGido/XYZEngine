@@ -37,12 +37,23 @@ namespace XYZ {
 	private:
 		bool onWindowResized(WindowResizeEvent& event);
 		bool onMouseButtonPress(MouseButtonPressEvent& event);
+		bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
 		bool onKeyPress(KeyPressedEvent& event);
 		bool onKeyRelease(KeyReleasedEvent& event);
 
 		void onResizeSceneWindow(const glm::vec2& size);
 
 	private:
+		enum
+		{
+			FOLDER = InGuiRenderConfiguration::DOCKSPACE + 1,
+			SPRITE,
+			TEXTURE,
+			MATERIAL,
+			SHADER,
+			LOGO
+		};
+
 		InGuiWindow* m_SceneWindow = nullptr;
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		SpriteEditorPanel m_SpriteEditorPanel;
@@ -57,12 +68,15 @@ namespace XYZ {
 		AnimatorGraphLayout m_AnimatorGraphLayout;
 		Graph m_NodeGraph;
 
+		InGuiMesh m_InGuiMesh;
+		InGuiLineMesh m_InGuiLineMesh;
 
 		Entity m_SelectedEntity;
 		glm::vec2 m_StartMousePos;
 		bool m_ScalingEntity = false;
 		bool m_MovingEntity = false;
 		bool m_RotatingEntity = false;
+		bool m_Dragging = false;
 
 		TransformComponent* m_ModifiedTransform = nullptr;
 		glm::vec3 m_ModifiedTranslation;

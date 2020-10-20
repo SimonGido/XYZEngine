@@ -251,12 +251,26 @@ namespace XYZ {
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<WindowResizeEvent>(Hook(&EditorLayer::onWindowResized, this));
 		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&EditorLayer::onMouseButtonPress, this));
+		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorLayer::onMouseButtonRelease, this));
 		dispatcher.Dispatch<KeyPressedEvent>(Hook(&EditorLayer::onKeyPress, this));
 		dispatcher.Dispatch<KeyReleasedEvent>(Hook(&EditorLayer::onKeyRelease, this));
 	}
 
 	void EditorLayer::OnInGuiRender(Timestep ts)
 	{
+		if (m_ProjectBrowserPanel.GetSelectedFileIndex() != -1 && m_Dragging)
+		{
+			auto& renderConfig = InGui::GetRenderConfiguration();
+			auto [mx, my] = Input::GetMousePosition();
+			auto [width, height] = Input::GetWindowSize();
+			glm::vec2 size = { 25.0f,25.0f };
+			glm::vec2 position = MouseToWorld({ mx,my }, { width,height }) - (size / 2.0f);
+			m_InGuiMesh.Vertices.clear();
+			m_InGuiLineMesh.Vertices.clear();
+			InGui::SetInGuiMesh(&m_InGuiMesh, &m_InGuiLineMesh);
+			InGui::Preview(position, size, renderConfig.SubTexture[SPRITE], renderConfig.TextureID);
+		}
+
 		if ((uint32_t)m_SelectedEntity != (uint32_t)m_SceneHierarchyPanel.GetSelectedEntity())
 		{
 			m_SelectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
@@ -295,13 +309,14 @@ namespace XYZ {
 
 		if (InGui::Begin(PanelID::Test, "Test", { 0,0 }, { 200,200 }))
 		{
-			if (InGui::Button("Compile", { 100,25 }))
+			if (InGui::Button("Compile", { 100,25 }) & InGuiReturnType::Clicked)
 			{
 				PerModuleInterface::g_pRuntimeObjectSystem->CompileAll(true);
 			}
-			if (InGui::MenuBar("File", 70, m_MenuOpen))
+			InGui::MenuBar("File", 70, m_MenuOpen);
+			if (m_MenuOpen)
 			{
-				if (InGui::MenuItem("Load Scene", { 150,25 }))
+				if (InGui::MenuItem("Load Scene", { 150,25 }) & InGuiReturnType::Clicked)
 				{
 					auto& app = Application::Get();
 					std::string filepath = app.OpenFile("(*.xyz)\0*.xyz\0");
@@ -311,7 +326,7 @@ namespace XYZ {
 					}
 					m_MenuOpen = false;
 				}
-				else if (InGui::MenuItem("Create Script", { 150,25 }))
+				else if (InGui::MenuItem("Create Script", { 150,25 }) & InGuiReturnType::Clicked)
 				{
 					auto& app = Application::Get();
 					std::string filepath = app.CreateNewFile("(*.cpp)\0*.cpp\0");
@@ -321,7 +336,7 @@ namespace XYZ {
 					}
 					m_MenuOpen = false;
 				}
-				else if (InGui::MenuItem("Load Script", { 150,25 }))
+				else if (InGui::MenuItem("Load Script", { 150,25 }) & InGuiReturnType::Clicked)
 				{
 					auto& app = Application::Get();
 					std::string filepath = app.OpenFile("(*.cpp)\0*.cpp\0");
@@ -357,12 +372,23 @@ namespace XYZ {
 	
 			if (Collide(win->Position, win->Size, mousePos))
 				m_SceneHierarchyPanel.SelectEntity(relativeMousePos);
+
+			m_Dragging = true;
 		}
 		else if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_RIGHT))
 		{
 			m_SpriteEditorInspectorLayout.SetContext(m_SpriteEditorPanel.GetSelectedSprite());
 		}
 		
+		return false;
+	}
+	bool EditorLayer::onMouseButtonRelease(MouseButtonReleaseEvent& event)
+	{
+		if (event.IsButtonReleased(MouseCode::XYZ_MOUSE_BUTTON_LEFT))
+		{
+			m_Dragging = false;
+			m_EntityInspectorLayout.AttemptSetAsset(m_ProjectBrowserPanel.GetSelectedFilePath(), m_AssetManager);
+		}
 		return false;
 	}
 	bool EditorLayer::onKeyPress(KeyPressedEvent& event)
@@ -404,6 +430,7 @@ namespace XYZ {
 				m_ModifiedScale = m_ModifiedTransform->Scale;
 				m_ModifiedRotation = m_ModifiedTransform->Rotation;
 			}
+			
 		}
 		return false;
 	}
