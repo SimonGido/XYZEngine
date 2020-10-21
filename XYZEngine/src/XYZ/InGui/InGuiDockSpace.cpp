@@ -205,7 +205,7 @@ namespace XYZ {
 	bool InGuiDockSpace::OnRightMouseButtonRelease(InGuiWindow* window, const glm::vec2& mousePos)
 	{
 		auto& app = Application::Get();
-		app.GetWindow().SetCursor(XYZ_ARROW_CURSOR);
+		app.GetWindow().SetStandardCursor(XYZ_ARROW_CURSOR);
 		if (m_ResizedNode)
 		{
 			WindowOnNodeResized(m_ResizedNode);
@@ -313,7 +313,7 @@ namespace XYZ {
 					&& mousePos.y <= node->Children[0]->Position.y + node->Children[0]->Size.y
 					&& mousePos.y >= node->Children[0]->Position.y)
 				{
-					app.GetWindow().SetCursor(XYZ_HRESIZE_CURSOR);
+					app.GetWindow().SetStandardCursor(XYZ_HRESIZE_CURSOR);
 					m_ResizedNode = node;
 					return;
 				}
@@ -325,7 +325,7 @@ namespace XYZ {
 					&& mousePos.x <= node->Children[0]->Position.x + node->Children[0]->Size.x
 					&& mousePos.x >= node->Children[0]->Position.x)
 				{
-					app.GetWindow().SetCursor(XYZ_VRESIZE_CURSOR);
+					app.GetWindow().SetStandardCursor(XYZ_VRESIZE_CURSOR);
 					m_ResizedNode = node;
 					return;
 				}

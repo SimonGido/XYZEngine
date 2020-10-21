@@ -13,6 +13,8 @@
 #include <glm/gtx/transform.hpp>
 
 
+#include <stb_image.h>
+
 
 namespace XYZ {
 	InGuiContext* InGui::s_Context = nullptr;
@@ -353,6 +355,14 @@ namespace XYZ {
 		s_Context->GetPerFrameData().WindowSize.y = Input::GetWindowSize().second;
 		s_Context->GetPerFrameData().Flags |= InGuiPerFrameFlag::ClickHandled;
 		loadDockSpace();
+
+		int width, height, channels;
+		uint8_t* pixels = (uint8_t*)stbi_load("Assets/Textures/bubble.png", &width, &height, &channels, 0);
+		s_Context->CustomCursor = Application::Get().GetWindow().CreateCustomCursor(pixels, width, height);
+		if (s_Context->CustomCursor)
+		{
+			Application::Get().GetWindow().SetCustomCursor(s_Context->CustomCursor);
+		}
 	}
 	void InGui::Destroy()
 	{
@@ -1045,25 +1055,6 @@ namespace XYZ {
 		return result;
 	}
 
-	void InGui::Preview(const glm::vec2& position, const glm::vec2& size, const Ref<SubTexture2D>& subTexture, uint32_t textureID)
-	{
-		XYZ_ASSERT(s_Context->GetPerFrameData().ActiveMesh, "No active mesh");
-		XYZ_ASSERT(!s_Context->GetPerFrameData().CurrentWindow, "Node can not be related to window, set mesh");
-		InGuiPerFrameData& frameData = s_Context->GetPerFrameData();
-		InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration;
-
-		uint8_t result = 0;	
-		glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];
-		if (Collide(position, size, frameData.MousePosition))
-		{
-			if (ResolveLeftClick(true))
-			{
-				result |= InGuiReturnType::Clicked;
-			}
-		}
-		InGuiFactory::GenerateIcon(*frameData.ActiveMesh, position, size, color, subTexture, textureID);
-	}
-
 
 	uint8_t InGui::Text(const char* text, const glm::vec2& scale, const glm::vec4& color)
 	{
@@ -1401,7 +1392,7 @@ namespace XYZ {
 			s_Context->GetPerFrameData().ModifiedWindow->Flags &= ~(InGuiWindowFlag::Moved | InGuiWindowFlag::LeftResizing | InGuiWindowFlag::RightResizing | InGuiWindowFlag::TopResizing | InGuiWindowFlag::BottomResizing);
 			s_Context->GetPerFrameData().ModifiedWindow = nullptr;
 			auto& app = Application::Get();
-			app.GetWindow().SetCursor(XYZ_ARROW_CURSOR);
+			app.GetWindow().SetStandardCursor(XYZ_ARROW_CURSOR);
 		}
 
 		return false;
@@ -1562,28 +1553,28 @@ namespace XYZ {
 			if (mousePos.x >= window.Position.x + window.Size.x - offset.x)
 			{
 				window.Flags |= InGuiWindowFlag::RightResizing;
-				app.GetWindow().SetCursor(XYZ_HRESIZE_CURSOR);
+				app.GetWindow().SetStandardCursor(XYZ_HRESIZE_CURSOR);
 				resized = true;
 			}
 			// Left side
 			else if (mousePos.x <= window.Position.x + offset.x)
 			{
 				window.Flags |= InGuiWindowFlag::LeftResizing;
-				app.GetWindow().SetCursor(XYZ_HRESIZE_CURSOR);
+				app.GetWindow().SetStandardCursor(XYZ_HRESIZE_CURSOR);
 				resized = true;
 			}
 			// Bottom side
 			if (mousePos.y <= window.Position.y + offset.y)
 			{
 				window.Flags |= InGuiWindowFlag::BottomResizing;
-				app.GetWindow().SetCursor(XYZ_VRESIZE_CURSOR);
+				app.GetWindow().SetStandardCursor(XYZ_VRESIZE_CURSOR);
 				resized = true;
 			}
 			// Top side
 			else if (mousePos.y >= window.Position.y + window.Size.y - offset.y + InGuiWindow::PanelSize)
 			{
 				window.Flags |= InGuiWindowFlag::TopResizing;
-				app.GetWindow().SetCursor(XYZ_VRESIZE_CURSOR);
+				app.GetWindow().SetStandardCursor(XYZ_VRESIZE_CURSOR);
 				resized = true;
 			}
 			

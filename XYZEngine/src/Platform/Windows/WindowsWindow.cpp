@@ -174,7 +174,7 @@ namespace XYZ {
 		return glfwWindowShouldClose(m_Window);
 	}
 
-	void WindowsWindow::SetCursor(uint8_t cursor)
+	void WindowsWindow::SetStandardCursor(uint8_t cursor)
 	{
 		XYZ_ASSERT(cursor < NUM_CURSORS, "Invalid cursor");
 		if (cursor != m_CurrentCursor)
@@ -182,6 +182,22 @@ namespace XYZ {
 			m_CurrentCursor = cursor;
 			glfwSetCursor(m_Window, m_Cursors[cursor]);
 		}
+	}
+
+	void WindowsWindow::SetCustomCursor(void* cursor)
+	{
+		m_CurrentCursor = NUM_CURSORS; // Set current cursor to invalid
+		GLFWcursor* cur = static_cast<GLFWcursor*>(cursor);
+		glfwSetCursor(m_Window, cur);
+	}
+
+	void* WindowsWindow::CreateCustomCursor(uint8_t* pixels, uint32_t width, uint32_t height, uint32_t xOffset, uint32_t yOffset)
+	{
+		GLFWimage image;
+		image.pixels = pixels;
+		image.width = width;
+		image.height = height;
+		return glfwCreateCursor(&image, xOffset, yOffset);
 	}
 
 

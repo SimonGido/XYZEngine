@@ -265,10 +265,7 @@ namespace XYZ {
 			auto [width, height] = Input::GetWindowSize();
 			glm::vec2 size = { 25.0f,25.0f };
 			glm::vec2 position = MouseToWorld({ mx,my }, { width,height }) - (size / 2.0f);
-			m_InGuiMesh.Vertices.clear();
-			m_InGuiLineMesh.Vertices.clear();
-			InGui::SetInGuiMesh(&m_InGuiMesh, &m_InGuiLineMesh);
-			InGui::Preview(position, size, renderConfig.SubTexture[SPRITE], renderConfig.TextureID);
+			// SET custom cursor
 		}
 
 		if ((uint32_t)m_SelectedEntity != (uint32_t)m_SceneHierarchyPanel.GetSelectedEntity())

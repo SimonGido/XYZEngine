@@ -10,6 +10,7 @@ namespace XYZ {
 		InGuiWindowMap Windows;
 		InGuiDockSpace* DockSpace = nullptr;
 		
+		void* CustomCursor = nullptr;
 
 		void ActivateSubFrame();
 		void ActivateMainFrame() { CurrentFrameData = &MainFrameData; }
@@ -58,8 +59,7 @@ namespace XYZ {
 		static uint8_t Float(uint32_t count, const char* name, float* values, int32_t * lengths, const glm::vec2& position, const glm::vec2& size, int32_t& selected);
 		static uint8_t Icon(const glm::vec2& position, const glm::vec2& size, const Ref<SubTexture2D>& subTexture, uint32_t textureID);
 		static uint8_t Icon(const char* name, const glm::vec2& position, const glm::vec2& size, const Ref<SubTexture2D>& subTexture, uint32_t textureID, bool hightlight = false);
-		static void Preview(const glm::vec2& position, const glm::vec2& size, const Ref<SubTexture2D>& subTexture, uint32_t textureID);
-
+		
 		static uint8_t Text(const char* text, const glm::vec2& scale, const glm::vec4& color = { 1,1,1,1 });
 		static uint8_t ColorPicker4(const char* name, const glm::vec2& size, glm::vec4& pallete, glm::vec4& color);
 		static uint8_t ColorPallete4(const char* name, const glm::vec2& size, glm::vec4& color);

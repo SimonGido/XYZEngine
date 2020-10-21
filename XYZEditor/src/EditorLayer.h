@@ -68,9 +68,6 @@ namespace XYZ {
 		AnimatorGraphLayout m_AnimatorGraphLayout;
 		Graph m_NodeGraph;
 
-		InGuiMesh m_InGuiMesh;
-		InGuiLineMesh m_InGuiLineMesh;
-
 		Entity m_SelectedEntity;
 		glm::vec2 m_StartMousePos;
 		bool m_ScalingEntity = false;
@@ -90,9 +87,7 @@ namespace XYZ {
 		Ref<FrameBuffer> m_FBO;
 		AssetManager m_AssetManager;
 		std::vector<Entity> m_StoredEntitiesWithScript;
-		bool m_Lock = false;
-		float m_H = 0.0f;
-		std::string m_Trala;
+
 	private:	
 		Entity m_TestEntity;
 		Entity m_TestEntity2;
@@ -101,6 +96,7 @@ namespace XYZ {
 		SpriteRenderer* m_SpriteRenderer;
 		TransformComponent* m_Transform;
 		AnimatorComponent* m_Animator;
+		
 		Ref<AnimationController> m_AnimationController;
 		Ref<Animation> m_IdleAnimation;
 		Ref<Animation> m_RunAnimation;
@@ -108,30 +104,18 @@ namespace XYZ {
 		glm::vec3 m_Position = { 0,0,0 };
 		glm::vec3 m_Rotation = { 0,0,0 };
 
-		glm::vec4 m_Color = { 0,0,0,0 };
-		glm::vec4 m_Pallete = { 0,1,0,1 };
 
-
-		bool m_CheckboxVal = false;
 		bool m_ActiveWindow = false;
 		bool m_MenuOpen = false;
-		bool m_PopupOpen = false;
 		bool m_Selecting = false;
-		bool m_Modified = false;
-		std::string m_Text = "0";
-	
-		
 
+	
+	
 		Ref<Material> m_Material;
 		Ref<Texture2D> m_CharacterTexture;
 
 		Ref<SubTexture2D> m_CharacterSubTexture;
 		Ref<SubTexture2D> m_CharacterSubTexture2;
 		Ref<SubTexture2D> m_CharacterSubTexture3;
-
-		Ref<SubTexture2D> m_CheckboxSubTexture;
-
-
-		
 	};
 }
