@@ -5,7 +5,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
-
+#include <stb_image/stb_image.h>
 
 namespace XYZ {
 
@@ -36,6 +36,12 @@ namespace XYZ {
 
 	void EditorLayer::OnAttach()
 	{
+		int width, height, channels;
+		stbi_set_flip_vertically_on_load(1);
+		uint8_t* pixels = (uint8_t*)stbi_load("Assets/Textures/Gui/Prohibited.png", &width, &height, &channels, 0);
+		m_ProhibitedCursor = Application::Get().GetWindow().CreateCustomCursor(pixels, width, height, width / 2.0f, height / 2.0f);
+		
+
 		Renderer::Init();
 		NativeScriptEngine::Init();
 
@@ -258,14 +264,17 @@ namespace XYZ {
 
 	void EditorLayer::OnInGuiRender(Timestep ts)
 	{
-		if (m_ProjectBrowserPanel.GetSelectedFileIndex() != -1 && m_Dragging)
+		if (m_Dragging && m_ProjectBrowserPanel.GetSelectedFileIndex() != -1)
 		{
 			auto& renderConfig = InGui::GetRenderConfiguration();
 			auto [mx, my] = Input::GetMousePosition();
 			auto [width, height] = Input::GetWindowSize();
 			glm::vec2 size = { 25.0f,25.0f };
 			glm::vec2 position = MouseToWorld({ mx,my }, { width,height }) - (size / 2.0f);
-			// SET custom cursor
+			if (m_ProhibitedCursor && !m_EntityInspectorLayout.ValidExtension(m_ProjectBrowserPanel.GetSelectedFilePath()))
+				Application::Get().GetWindow().SetCustomCursor(m_ProhibitedCursor);
+			else
+				Application::Get().GetWindow().SetStandardCursor(WindowCursors::XYZ_ARROW_CURSOR);
 		}
 
 		if ((uint32_t)m_SelectedEntity != (uint32_t)m_SceneHierarchyPanel.GetSelectedEntity())
@@ -363,12 +372,13 @@ namespace XYZ {
 			auto win = InGui::GetWindow(PanelID::Scene);
 			auto [mx, my] = Input::GetMousePosition();
 			auto [width, height] = Input::GetWindowSize();
-			
+
 			glm::vec2 mousePos = MouseToWorld({ mx,my }, { width,height });
 			glm::vec2 relativeMousePos = InGui::GetWorldPosition(*win, m_EditorCamera.GetPosition(), m_EditorCamera.GetAspectRatio(), m_EditorCamera.GetZoomLevel());
-	
+
 			if (Collide(win->Position, win->Size, mousePos))
 				m_SceneHierarchyPanel.SelectEntity(relativeMousePos);
+
 
 			m_Dragging = true;
 		}
@@ -384,6 +394,7 @@ namespace XYZ {
 		if (event.IsButtonReleased(MouseCode::XYZ_MOUSE_BUTTON_LEFT))
 		{
 			m_Dragging = false;
+			Application::Get().GetWindow().SetStandardCursor(WindowCursors::XYZ_ARROW_CURSOR);
 			m_EntityInspectorLayout.AttemptSetAsset(m_ProjectBrowserPanel.GetSelectedFilePath(), m_AssetManager);
 		}
 		return false;

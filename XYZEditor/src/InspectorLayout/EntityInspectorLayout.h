@@ -12,6 +12,7 @@ namespace XYZ {
 
 		void SetContext(Entity context);
 		void AttemptSetAsset(const std::string& filepath, AssetManager& assetManager);
+		bool ValidExtension(const std::string& filepath);
 
 		virtual void OnInGuiRender() override;
 	private:

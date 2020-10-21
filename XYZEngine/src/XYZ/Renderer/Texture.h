@@ -36,7 +36,6 @@ namespace XYZ {
 		uint32_t Height;
 		uint32_t Channels;
 		TextureWrap Wrap;
-		TextureFormat Format = TextureFormat::None;
 		TextureParam MinParam = TextureParam::None;
 		TextureParam MagParam = TextureParam::None;
 	};

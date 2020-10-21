@@ -117,5 +117,9 @@ namespace XYZ {
 		Ref<SubTexture2D> m_CharacterSubTexture;
 		Ref<SubTexture2D> m_CharacterSubTexture2;
 		Ref<SubTexture2D> m_CharacterSubTexture3;
+
+
+
+		void* m_ProhibitedCursor = nullptr;
 	};
 }

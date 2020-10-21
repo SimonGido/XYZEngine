@@ -57,9 +57,9 @@ namespace XYZ {
 			if (m_Context.HasComponent<SpriteRenderer>())
 			{
 				auto spriteRenderer = m_Context.GetComponent<SpriteRenderer>();
-				if (HasExtension(filepath, "subtex"))
+				if (m_SpriteTextFlags & InGuiReturnType::Hoovered)
 				{
-					if (m_SpriteTextFlags & InGuiReturnType::Hoovered)
+					if (HasExtension(filepath, "subtex"))
 					{
 						auto newSubTexture = assetManager.GetAsset<SubTexture2D>(filepath);
 						spriteRenderer->SubTexture = newSubTexture;
@@ -68,6 +68,24 @@ namespace XYZ {
 				}
 			}
 		}
+	}
+	bool EntityInspectorLayout::ValidExtension(const std::string& filepath)
+	{
+		if (m_Context)
+		{
+			if (m_Context.HasComponent<SpriteRenderer>())
+			{
+				auto spriteRenderer = m_Context.GetComponent<SpriteRenderer>();
+				if (m_SpriteTextFlags & InGuiReturnType::Hoovered)
+				{
+					if (HasExtension(filepath, "subtex"))
+					{
+						return true;
+					}
+				}
+			}
+		}
+		return false;
 	}
 	void EntityInspectorLayout::OnInGuiRender()
 	{	

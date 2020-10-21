@@ -80,11 +80,7 @@ namespace XYZ {
 			m_ProjectPath[m_PathLength++] = c; 
 		m_ProjectPath[m_PathLength] = '\0';
 
-		InGui::Begin(PanelID::DeletePanel, "Delete selected file?", { -150,-60 }, { 300,120 });
-		InGui::End();
-		m_DeleteDialogWindow = InGui::GetWindow(PanelID::DeletePanel);
-		m_DeleteDialogWindow->Flags &= ~InGuiWindowFlag::Dockable;
-		m_DeleteDialogWindow->Flags |= InGuiWindowFlag::ForceNewLine;
+
 		InGui::Begin(PanelID::ProjectBrowser, "Project", { -200,-200 }, { 300,300 });
 		InGui::End();
 		m_Window = InGui::GetWindow(PanelID::ProjectBrowser);
@@ -126,9 +122,6 @@ namespace XYZ {
 				size_t count = entry.path().u8string().size() - offset - 1;
  				std::string path(entry.path().u8string().c_str() + offset + 1, count);
 
-				bool highlight = false;
-				if (m_SelectedFileIndex == counter)
-					highlight = true;
 
 				if (entry.is_directory())
 				{
@@ -143,38 +136,77 @@ namespace XYZ {
 				}
 				else if (HasExtension(entry.path().u8string(), "subtex"))
 				{
-					if (InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[SPRITE], renderConfig.TextureID, highlight) & InGuiReturnType::Clicked)
+					uint8_t flags = InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[SPRITE], renderConfig.TextureID);
+					if (flags & InGuiReturnType::Clicked)
 					{
 						m_SelectedFile = entry.path().u8string();
 						m_SelectedFileIndex = counter;
+					}
+					else if ((flags & InGuiReturnType::Hoovered) && InGui::ResolveRightClick())
+					{
+						m_DeletePopupEnabled = true;
+						m_DeleteSelectedFile = entry.path().u8string();
+						auto [width, height] = Input::GetWindowSize();
+						auto [mx, my] = Input::GetMousePosition();
+						m_PopupPosition = MouseToWorld({ mx,my }, { width,height });
 					}
 				}
 				else if (HasExtension(entry.path().u8string(), "mat"))
 				{
-					if (InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[MATERIAL], renderConfig.TextureID, highlight) & InGuiReturnType::Clicked)
+					uint8_t flags = InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[MATERIAL], renderConfig.TextureID);
+					if (flags & InGuiReturnType::Clicked)
 					{
 						m_SelectedFile = entry.path().u8string();
 						m_SelectedFileIndex = counter;
+					}
+					else if ((flags & InGuiReturnType::Hoovered) && InGui::ResolveRightClick())
+					{
+						m_DeletePopupEnabled = true;
+						m_DeleteSelectedFile = entry.path().u8string();
+						auto [width, height] = Input::GetWindowSize();
+						auto [mx, my] = Input::GetMousePosition();
+						m_PopupPosition = MouseToWorld({ mx,my }, { width,height });
 					}
 				}
 				else if (HasExtension(entry.path().u8string(), "png"))
 				{
-					if (InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[TEXTURE], renderConfig.TextureID, highlight) & InGuiReturnType::Clicked)
+					uint8_t flags = InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[TEXTURE], renderConfig.TextureID);
+					if (flags & InGuiReturnType::Clicked)
 					{
 						m_SelectedFile = entry.path().u8string();
 						m_SelectedFileIndex = counter;
+					}
+					else if ((flags & InGuiReturnType::Hoovered) && InGui::ResolveRightClick())
+					{
+						m_DeletePopupEnabled = true;
+						m_DeleteSelectedFile = entry.path().u8string();
+						auto [width, height] = Input::GetWindowSize();
+						auto [mx, my] = Input::GetMousePosition();
+						m_PopupPosition = MouseToWorld({ mx,my }, { width,height });
 					}
 				}
 				else if (HasExtension(entry.path().u8string(), "glsl"))
 				{
-					if (InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[SHADER], renderConfig.TextureID, highlight) & InGuiReturnType::Clicked)
+					uint8_t flags = InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[SHADER], renderConfig.TextureID);
+					if (flags & InGuiReturnType::Clicked)
 					{
 						m_SelectedFile = entry.path().u8string();
 						m_SelectedFileIndex = counter;
 					}
-				}
-
-				if ((m_Window->Flags & InGuiWindowFlag::Hoovered) && InGui::ResolveRightClick())
+					else if ((flags & InGuiReturnType::Hoovered) && InGui::ResolveRightClick())
+					{
+						m_DeletePopupEnabled = true;
+						m_DeleteSelectedFile = entry.path().u8string();
+						auto [width, height] = Input::GetWindowSize();
+						auto [mx, my] = Input::GetMousePosition();
+						m_PopupPosition = MouseToWorld({ mx,my }, { width,height });
+					}
+				}	
+				counter++;
+			}
+			if (m_Window->Flags & InGuiWindowFlag::Hoovered)
+			{
+				if (InGui::ResolveRightClick())
 				{
 					auto [width, height] = Input::GetWindowSize();
 					auto [mx, my] = Input::GetMousePosition();
@@ -184,12 +216,21 @@ namespace XYZ {
 					m_PopupEnabled = !m_PopupEnabled;
 					m_PopupPosition = MouseToWorld({ mx,my }, { width,height });
 				}
-				
-				counter++;
 			}
-		
-
-			
+			if (m_DeletePopupEnabled)
+			{
+				m_Window->Flags &= ~InGuiWindowFlag::AutoPosition;
+				InGui::BeginPopup("Action",m_PopupPosition, glm::vec2{ 150,25 }, m_DeletePopupEnabled);
+				if (m_DeletePopupEnabled)
+				{
+					if (InGui::PopupItem("Delete") & InGuiReturnType::Clicked)
+					{
+						std::filesystem::remove(std::filesystem::current_path().u8string() + "\\" + m_DeleteSelectedFile);
+						m_DeletePopupEnabled = false;
+					}
+				}
+				m_Window->Flags |= InGuiWindowFlag::AutoPosition;
+			}
 			if (m_PopupEnabled)
 			{
 				m_Window->Flags &= ~InGuiWindowFlag::AutoPosition;
@@ -259,6 +300,7 @@ namespace XYZ {
 			m_SelectedFile.clear();
 			m_SelectedFileIndex = sc_InvalidIndex;
 			m_PopupEnabled = false;
+			m_DeletePopupEnabled = false;
 			m_NewOpen = false;
 		}
 		if (InGui::ResolveLeftRelease(false))
@@ -282,7 +324,7 @@ namespace XYZ {
 		{
 			if (!m_SelectedFile.empty())
 			{
-				m_DeleteDialogWindow->Flags |= InGuiWindowFlag::Modified;
+			
 			}
 		}
 		return false;

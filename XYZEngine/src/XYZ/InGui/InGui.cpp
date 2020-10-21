@@ -355,14 +355,6 @@ namespace XYZ {
 		s_Context->GetPerFrameData().WindowSize.y = Input::GetWindowSize().second;
 		s_Context->GetPerFrameData().Flags |= InGuiPerFrameFlag::ClickHandled;
 		loadDockSpace();
-
-		int width, height, channels;
-		uint8_t* pixels = (uint8_t*)stbi_load("Assets/Textures/bubble.png", &width, &height, &channels, 0);
-		s_Context->CustomCursor = Application::Get().GetWindow().CreateCustomCursor(pixels, width, height);
-		if (s_Context->CustomCursor)
-		{
-			Application::Get().GetWindow().SetCustomCursor(s_Context->CustomCursor);
-		}
 	}
 	void InGui::Destroy()
 	{
@@ -1023,7 +1015,7 @@ namespace XYZ {
 		return result;
 	}
 
-	uint8_t InGui::Icon(const char* name, const glm::vec2& position, const glm::vec2& size, const Ref<SubTexture2D>& subTexture, uint32_t textureID, bool hightlight)
+	uint8_t InGui::Icon(const char* name, const glm::vec2& position, const glm::vec2& size, const Ref<SubTexture2D>& subTexture, uint32_t textureID)
 	{
 		XYZ_ASSERT(s_Context->GetPerFrameData().CurrentWindow, "Missing begin call");
 
@@ -1047,8 +1039,6 @@ namespace XYZ {
 						result |= InGuiReturnType::Clicked;
 					}
 				}
-				else if (hightlight)
-					InGuiFactory::GenerateQuad(pos, size, color, *frameData.ActiveMesh, renderConfig);
 				InGuiFactory::GenerateIcon(*frameData.ActiveMesh, pos, size, color, subTexture, textureID);
 			}
 		}
@@ -1531,7 +1521,6 @@ namespace XYZ {
 		window->Flags |= InGuiWindowFlag::EventListener;
 		window->Flags |= InGuiWindowFlag::Visible;
 		window->Flags |= InGuiWindowFlag::AutoPosition;
-		window->Flags |= InGuiWindowFlag::Initialized;
 		window->Flags |= InGuiWindowFlag::Dockable;
 		window->Flags |= InGuiWindowFlag::EventBlocking;
 

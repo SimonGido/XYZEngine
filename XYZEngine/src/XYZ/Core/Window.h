@@ -56,7 +56,7 @@ namespace XYZ {
 		virtual void SetStandardCursor(uint8_t cursor) = 0;
 		virtual void SetCustomCursor(void* cursor) = 0;
 
-		virtual void* CreateCustomCursor(uint8_t* pixels, uint32_t width, uint32_t height, uint32_t xOffset = 0, uint32_t yOffset = 0) = 0;
+		virtual void* CreateCustomCursor(uint8_t* pixels, uint32_t width, uint32_t height, int32_t xOffset = 0, int32_t yOffset = 0) = 0;
 		virtual bool IsClosed() = 0;
 		virtual void* GetNativeWindow() const = 0;
 

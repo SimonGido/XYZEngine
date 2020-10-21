@@ -21,8 +21,6 @@ namespace XYZ {
 
 	private:
 		InGuiWindow* m_Window;
-		InGuiWindow* m_DeleteDialogWindow;
-
 		enum
 		{
 			FOLDER = InGuiRenderConfiguration::DOCKSPACE + 1,
@@ -34,6 +32,7 @@ namespace XYZ {
 		};
 		static constexpr int32_t sc_InvalidIndex = -1;
 
+		std::string m_DeleteSelectedFile;
 		std::string m_SelectedFile;
 		int32_t m_SelectedFileIndex = sc_InvalidIndex;
 
@@ -42,6 +41,7 @@ namespace XYZ {
 		char m_ProjectPath[260]; // This is windows max path value
 
 		bool m_PopupEnabled = false;
+		bool m_DeletePopupEnabled = false;
 		bool m_NewOpen = false;
 
 		glm::vec2 m_PopupPosition = glm::vec2(0);

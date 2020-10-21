@@ -25,7 +25,7 @@ namespace XYZ {
 		virtual bool IsClosed() override;
 		virtual void SetStandardCursor(uint8_t cursor) override;
 		virtual void SetCustomCursor(void* cursor) override;
-		virtual void* CreateCustomCursor(uint8_t* pixels, uint32_t width, uint32_t height, uint32_t xOffset = 0, uint32_t yOffset = 0) override;
+		virtual void* CreateCustomCursor(uint8_t* pixels, uint32_t width, uint32_t height, int32_t xOffset = 0, int32_t yOffset = 0) override;
 
 		inline void SetEventCallback(const EventCallbackFn& callback) override { m_Data.EventCallback = callback; }
 		inline virtual void* GetNativeWindow() const { return m_Window; }

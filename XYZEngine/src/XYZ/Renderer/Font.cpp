@@ -85,9 +85,8 @@ namespace XYZ {
 		m_Texture = Texture2D::Create({
 			(uint32_t)texWidth,(uint32_t)texHeight,4,
 			TextureWrap::Clamp,
-			TextureFormat::RGB,
 			TextureParam::Linear,
-			TextureParam::Linear
+			TextureParam::Nearest
 			});
 
 		m_Texture->SetData(pngData, pngData.GetSize());

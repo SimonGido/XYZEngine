@@ -191,7 +191,7 @@ namespace XYZ {
 		glfwSetCursor(m_Window, cur);
 	}
 
-	void* WindowsWindow::CreateCustomCursor(uint8_t* pixels, uint32_t width, uint32_t height, uint32_t xOffset, uint32_t yOffset)
+	void* WindowsWindow::CreateCustomCursor(uint8_t* pixels, uint32_t width, uint32_t height, int32_t xOffset, int32_t yOffset)
 	{
 		GLFWimage image;
 		image.pixels = pixels;

@@ -78,7 +78,7 @@ namespace XYZ {
 				glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 			}
 			glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Specification.Width, m_Specification.Height, m_DataFormat, GL_UNSIGNED_BYTE, m_LocalData);
-		//	glGenerateTextureMipmap(m_RendererID);
+			glGenerateTextureMipmap(m_RendererID);
 			stbi_image_free(m_LocalData);
 			m_LocalData = nullptr;
 		});
@@ -89,8 +89,9 @@ namespace XYZ {
 		m_Specification.Width = specs.Width;
 		m_Specification.Height = specs.Height;
 		m_Specification.Wrap = specs.Wrap;
-		m_Specification.Format = specs.Format;
 		m_Specification.Channels = specs.Channels;
+		m_DataFormat = 0;
+		m_InternalFormat = 0;
 
 		if (specs.Channels == 4)
 		{
