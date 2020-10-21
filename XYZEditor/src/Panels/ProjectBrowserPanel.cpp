@@ -3,7 +3,6 @@
 
 #include "Panel.h"
 
-#include <filesystem>
 
 namespace XYZ {
 	static glm::vec2 MouseToWorld(const glm::vec2& point, const glm::vec2& windowSize)
@@ -122,7 +121,6 @@ namespace XYZ {
 				size_t count = entry.path().u8string().size() - offset - 1;
  				std::string path(entry.path().u8string().c_str() + offset + 1, count);
 
-
 				if (entry.is_directory())
 				{
 					if (InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[FOLDER], renderConfig.TextureID) & InGuiReturnType::Clicked)
@@ -136,71 +134,19 @@ namespace XYZ {
 				}
 				else if (HasExtension(entry.path().u8string(), "subtex"))
 				{
-					uint8_t flags = InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[SPRITE], renderConfig.TextureID);
-					if (flags & InGuiReturnType::Clicked)
-					{
-						m_SelectedFile = entry.path().u8string();
-						m_SelectedFileIndex = counter;
-					}
-					else if ((flags & InGuiReturnType::Hoovered) && InGui::ResolveRightClick())
-					{
-						m_DeletePopupEnabled = true;
-						m_DeleteSelectedFile = entry.path().u8string();
-						auto [width, height] = Input::GetWindowSize();
-						auto [mx, my] = Input::GetMousePosition();
-						m_PopupPosition = MouseToWorld({ mx,my }, { width,height });
-					}
+					handleFile(path.c_str(), entry, counter, SPRITE);
 				}
 				else if (HasExtension(entry.path().u8string(), "mat"))
 				{
-					uint8_t flags = InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[MATERIAL], renderConfig.TextureID);
-					if (flags & InGuiReturnType::Clicked)
-					{
-						m_SelectedFile = entry.path().u8string();
-						m_SelectedFileIndex = counter;
-					}
-					else if ((flags & InGuiReturnType::Hoovered) && InGui::ResolveRightClick())
-					{
-						m_DeletePopupEnabled = true;
-						m_DeleteSelectedFile = entry.path().u8string();
-						auto [width, height] = Input::GetWindowSize();
-						auto [mx, my] = Input::GetMousePosition();
-						m_PopupPosition = MouseToWorld({ mx,my }, { width,height });
-					}
+					handleFile(path.c_str(), entry, counter, MATERIAL);
 				}
 				else if (HasExtension(entry.path().u8string(), "png"))
 				{
-					uint8_t flags = InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[TEXTURE], renderConfig.TextureID);
-					if (flags & InGuiReturnType::Clicked)
-					{
-						m_SelectedFile = entry.path().u8string();
-						m_SelectedFileIndex = counter;
-					}
-					else if ((flags & InGuiReturnType::Hoovered) && InGui::ResolveRightClick())
-					{
-						m_DeletePopupEnabled = true;
-						m_DeleteSelectedFile = entry.path().u8string();
-						auto [width, height] = Input::GetWindowSize();
-						auto [mx, my] = Input::GetMousePosition();
-						m_PopupPosition = MouseToWorld({ mx,my }, { width,height });
-					}
+					handleFile(path.c_str(), entry, counter, TEXTURE);
 				}
 				else if (HasExtension(entry.path().u8string(), "glsl"))
 				{
-					uint8_t flags = InGui::Icon(path.c_str(), {}, { 50,50 }, renderConfig.SubTexture[SHADER], renderConfig.TextureID);
-					if (flags & InGuiReturnType::Clicked)
-					{
-						m_SelectedFile = entry.path().u8string();
-						m_SelectedFileIndex = counter;
-					}
-					else if ((flags & InGuiReturnType::Hoovered) && InGui::ResolveRightClick())
-					{
-						m_DeletePopupEnabled = true;
-						m_DeleteSelectedFile = entry.path().u8string();
-						auto [width, height] = Input::GetWindowSize();
-						auto [mx, my] = Input::GetMousePosition();
-						m_PopupPosition = MouseToWorld({ mx,my }, { width,height });
-					}
+					handleFile(path.c_str(), entry, counter, SHADER);
 				}	
 				counter++;
 			}
@@ -303,7 +249,7 @@ namespace XYZ {
 			m_DeletePopupEnabled = false;
 			m_NewOpen = false;
 		}
-		if (InGui::ResolveLeftRelease(false))
+		else if (InGui::ResolveLeftRelease(false))
 		{
 			m_SelectedFile.clear();
 			m_SelectedFileIndex = sc_InvalidIndex;
@@ -317,6 +263,25 @@ namespace XYZ {
 		dispatcher.Dispatch<KeyPressedEvent>(Hook(&ProjectBrowserPanel::onKeyPress, this));
 	}
 	
+
+	void ProjectBrowserPanel::handleFile(const char* name, const std::filesystem::directory_entry& entry, uint32_t counter, uint32_t subTextureIndex)
+	{
+		auto& renderConfig = InGui::GetRenderConfiguration();
+		uint8_t flags = InGui::Icon(name, {}, { 50,50 }, renderConfig.SubTexture[subTextureIndex], renderConfig.TextureID);
+		if (flags & InGuiReturnType::Clicked)
+		{
+			m_SelectedFile = entry.path().u8string();
+			m_SelectedFileIndex = counter;
+		}
+		else if ((flags & InGuiReturnType::Hoovered) && InGui::ResolveRightClick())
+		{
+			m_DeletePopupEnabled = true;
+			m_DeleteSelectedFile = entry.path().u8string();
+			auto [width, height] = Input::GetWindowSize();
+			auto [mx, my] = Input::GetMousePosition();
+			m_PopupPosition = MouseToWorld({ mx,my }, { width,height });
+		}
+	}
 
 	bool ProjectBrowserPanel::onKeyPress(KeyPressedEvent& event)
 	{

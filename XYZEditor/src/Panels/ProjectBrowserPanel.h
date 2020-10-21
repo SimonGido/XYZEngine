@@ -1,7 +1,7 @@
 #pragma once
 #include <XYZ.h>
 
-
+#include <filesystem>
 
 
 namespace XYZ {
@@ -17,6 +17,7 @@ namespace XYZ {
 		const std::string& GetSelectedFilePath() const { return m_SelectedFile; }
 		std::string GetSelectedFileFullPath() const;
 	private:
+		void handleFile(const char* name,const std::filesystem::directory_entry& entry, uint32_t counter, uint32_t subTextureIndex);
 		bool onKeyPress(KeyPressedEvent& event);
 
 	private:
