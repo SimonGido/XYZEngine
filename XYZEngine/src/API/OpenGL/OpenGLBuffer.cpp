@@ -54,13 +54,14 @@ namespace XYZ {
 
 	void OpenGLVertexBuffer::Update(void* vertices, uint32_t size, uint32_t offset)
 	{
-		ByteBuffer data = ByteBuffer::Copy(vertices, size);
+		m_LocalData = ByteBuffer::Copy(vertices, size);
+		ByteBuffer data = m_LocalData;
+
 		Ref<OpenGLVertexBuffer> instance = this;
 		Renderer::Submit([this, data, size, offset]() {		
 			XYZ_ASSERT(m_Usage == BufferUsage::Dynamic, "Buffer does not have dynamic usage");
 			glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
 			glBufferSubData(GL_ARRAY_BUFFER, offset, size, data);
-			delete[] data;
 		});
 	}
 
