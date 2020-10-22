@@ -9,6 +9,11 @@
 
 
 namespace XYZ {
+	static glm::vec2 MouseToWorld(const glm::vec2& point, const glm::vec2& windowSize)
+	{
+		glm::vec2 offset = { windowSize.x / 2,windowSize.y / 2 };
+		return { point.x - offset.x, offset.y - point.y };
+	}
 
 	static bool Collide(const glm::vec3& translation, const glm::vec3& scale, const glm::vec2& mousePos)
 	{
@@ -22,8 +27,9 @@ namespace XYZ {
 		:
 		m_Entities(50, 100)
 	{
-		//InGui::Begin("Scene Hierarchy", { 0,0 }, { 400,300 });
-		//InGui::End();
+		InGui::Begin(PanelID::SceneHierarchy, "Scene Hierarchy", { 0,0 }, { 400,300 });
+		InGui::End();
+		m_Window = InGui::GetWindow(PanelID::SceneHierarchy);
 	}
 
 	SceneHierarchyPanel::SceneHierarchyPanel(const Ref<Scene>& context)
@@ -61,6 +67,28 @@ namespace XYZ {
 					Entity entity = { ent.GetData().Entity,m_Context.Raw() };
 					drawEntity(entity);
 				}
+			}
+			if ((m_Window->Flags & InGuiWindowFlag::Hoovered) && InGui::ResolveRightClick())
+			{
+				auto [width, height] = Input::GetWindowSize();
+				auto [mx, my] = Input::GetMousePosition();
+		
+				m_PopupEnabled = !m_PopupEnabled;
+				m_PopupPosition = MouseToWorld({ mx,my }, { width,height });
+			}
+			if (m_PopupEnabled)
+			{
+				m_Window->Flags &= ~InGuiWindowFlag::AutoPosition;
+				InGui::BeginPopup("New...", m_PopupPosition, { 150.0f,25.0f }, m_PopupEnabled);
+
+				if (InGui::PopupItem("Empty Entity") & InGuiReturnType::Clicked)
+				{
+					auto entity = m_Context->CreateEntity("New Entity");
+					auto transform = entity.GetComponent<TransformComponent>();
+					m_Entities.Insert(entity, transform->Translation, transform->Scale);
+				}
+
+				m_Window->Flags |= InGuiWindowFlag::AutoPosition;
 			}
 			active = true;
 		}

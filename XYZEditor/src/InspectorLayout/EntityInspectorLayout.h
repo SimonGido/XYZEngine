@@ -7,7 +7,7 @@ namespace XYZ {
 	class EntityInspectorLayout : public InspectorLayout
 	{
 	public:
-		EntityInspectorLayout() = default;
+		EntityInspectorLayout();
 		EntityInspectorLayout(Entity context);
 
 		void SetContext(Entity context);

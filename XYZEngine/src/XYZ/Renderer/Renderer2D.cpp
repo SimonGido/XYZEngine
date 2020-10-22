@@ -326,7 +326,6 @@ namespace XYZ {
 			s_Data.Reset();
 		}	
 	}
-
 	void Renderer2D::FlushLines()
 	{	
 		uint32_t dataSize = (uint8_t*)s_Data.LineBufferPtr - (uint8_t*)s_Data.LineBufferBase;

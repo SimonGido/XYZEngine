@@ -166,78 +166,75 @@ namespace XYZ {
 			if (m_DeletePopupEnabled)
 			{
 				m_Window->Flags &= ~InGuiWindowFlag::AutoPosition;
-				InGui::BeginPopup("Action",m_PopupPosition, glm::vec2{ 150,25 }, m_DeletePopupEnabled);
-				if (m_DeletePopupEnabled)
+				InGui::BeginPopup("Action",m_PopupPosition, glm::vec2{ 150,25 }, m_DeletePopupEnabled);	
+				if (InGui::PopupItem("Delete") & InGuiReturnType::Clicked)
 				{
-					if (InGui::PopupItem("Delete") & InGuiReturnType::Clicked)
-					{
-						std::filesystem::remove(std::filesystem::current_path().u8string() + "\\" + m_DeleteSelectedFile);
-						m_DeletePopupEnabled = false;
-					}
+					std::filesystem::remove(std::filesystem::current_path().u8string() + "\\" + m_DeleteSelectedFile);
+					m_DeletePopupEnabled = false;
 				}
+				
 				m_Window->Flags |= InGuiWindowFlag::AutoPosition;
 			}
 			if (m_PopupEnabled)
 			{
 				m_Window->Flags &= ~InGuiWindowFlag::AutoPosition;
 				InGui::BeginPopup("New", m_PopupPosition, glm::vec2{ 150,25 }, m_PopupEnabled);
-				if (m_PopupEnabled)
+				
+				InGui::PopupExpandItem("File -->", m_NewOpen);
+				if (m_NewOpen)
 				{
-					InGui::PopupExpandItem("File -->", m_NewOpen);
-					if (m_NewOpen)
-					{
-						if (InGui::PopupItem("New Folder") & InGuiReturnType::Clicked)
-						{	
-							std::string tmpDir = m_ProjectPath;
-							tmpDir += "\\New Folder";
-							CreateUniqueFolder(tmpDir);
-							m_PopupEnabled = false;
-							m_NewOpen = false;
-						}
-						else if (InGui::PopupItem("New Material") & InGuiReturnType::Clicked)
-						{
-							std::string tmpDir = m_ProjectPath;
-							tmpDir += "\\New Material";
-							CreateUniqueFile(tmpDir, "mat");
-							m_PopupEnabled = false;
-							m_NewOpen = false;
-						}
-						else if (InGui::PopupItem("New Shader") & InGuiReturnType::Clicked)
-						{
-							std::string tmpDir = m_ProjectPath;
-							tmpDir += "\\New Shader";
-							CreateUniqueFile(tmpDir, "glsl");
-							m_PopupEnabled = false;
-							m_NewOpen = false;
-						}
-						else if (InGui::PopupItem("New Subtexture") & InGuiReturnType::Clicked)
-						{
-							std::string tmpDir = m_ProjectPath;
-							tmpDir += "\\New Subtexture";
-							CreateUniqueFile(tmpDir, "subtex");
-							m_PopupEnabled = false;
-							m_NewOpen = false;
-						}			
-						
-					}
-					InGui::PopupExpandEnd();
-				
-					if (InGui::PopupItem("Test") & InGuiReturnType::Clicked)
-					{
+					if (InGui::PopupItem("New Folder") & InGuiReturnType::Clicked)
+					{	
+						std::string tmpDir = m_ProjectPath;
+						tmpDir += "\\New Folder";
+						CreateUniqueFolder(tmpDir);
 						m_PopupEnabled = false;
 						m_NewOpen = false;
 					}
-					if (InGui::PopupItem("Test") & InGuiReturnType::Clicked)
+					else if (InGui::PopupItem("New Material") & InGuiReturnType::Clicked)
 					{
+						std::string tmpDir = m_ProjectPath;
+						tmpDir += "\\New Material";
+						CreateUniqueFile(tmpDir, "mat");
 						m_PopupEnabled = false;
 						m_NewOpen = false;
-					}	
+					}
+					else if (InGui::PopupItem("New Shader") & InGuiReturnType::Clicked)
+					{
+						std::string tmpDir = m_ProjectPath;
+						tmpDir += "\\New Shader";
+						CreateUniqueFile(tmpDir, "glsl");
+						m_PopupEnabled = false;
+						m_NewOpen = false;
+					}
+					else if (InGui::PopupItem("New Subtexture") & InGuiReturnType::Clicked)
+					{
+						std::string tmpDir = m_ProjectPath;
+						tmpDir += "\\New Subtexture";
+						CreateUniqueFile(tmpDir, "subtex");
+						m_PopupEnabled = false;
+						m_NewOpen = false;
+					}			
+					
 				}
-				
-				InGui::EndPopup();
-				InGui::Separator();	
-				m_Window->Flags |= InGuiWindowFlag::AutoPosition;
+				InGui::PopupExpandEnd();
+			
+				if (InGui::PopupItem("Test") & InGuiReturnType::Clicked)
+				{
+					m_PopupEnabled = false;
+					m_NewOpen = false;
+				}
+				if (InGui::PopupItem("Test") & InGuiReturnType::Clicked)
+				{
+					m_PopupEnabled = false;
+					m_NewOpen = false;
+				}	
 			}
+			
+			InGui::EndPopup();
+			InGui::Separator();	
+			m_Window->Flags |= InGuiWindowFlag::AutoPosition;
+		
 		}	
 		InGui::End();
 

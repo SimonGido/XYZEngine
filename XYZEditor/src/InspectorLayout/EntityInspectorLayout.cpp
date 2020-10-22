@@ -19,13 +19,24 @@ namespace XYZ {
 		return false;
 	}
 
+	EntityInspectorLayout::EntityInspectorLayout()
+	{
+		m_DefaultMaterial = Material::Create(Shader::Create("Assets/Shaders/DefaultShader.glsl"));
+		auto characterTexture = Texture2D::Create(XYZ::TextureWrap::Clamp, TextureParam::Linear, TextureParam::Nearest, "Assets/Textures/player_sprite.png");
+		m_DefaultSubTexture = Ref<SubTexture2D>::Create(characterTexture, glm::vec2(0, 0), glm::vec2((float)characterTexture->GetWidth() / 8.0f, (float)characterTexture->GetHeight() / 3.0f));
+		m_DefaultMaterial->Set("u_Texture", characterTexture);
+		m_DefaultMaterial->Set("u_Color", glm::vec4(1, 1, 1, 1));
+	}
+
 	EntityInspectorLayout::EntityInspectorLayout(Entity context)
 		:
 		m_Context(context)
 	{
 		m_DefaultMaterial = Material::Create(Shader::Create("Assets/Shaders/DefaultShader.glsl"));
 		auto characterTexture = Texture2D::Create(XYZ::TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest, "Assets/Textures/player_sprite.png");
-		m_DefaultSubTexture = Ref<SubTexture2D>::Create(characterTexture, glm::vec2(0, 0), glm::vec2(characterTexture->GetWidth() / 8, characterTexture->GetHeight() / 3));
+		m_DefaultSubTexture = Ref<SubTexture2D>::Create(characterTexture, glm::vec2(0, 0), glm::vec2((float)characterTexture->GetWidth() / 8.0f, (float)characterTexture->GetHeight() / 3.0f));
+		m_DefaultMaterial->Set("u_Texture", characterTexture);
+		m_DefaultMaterial->Set("u_Color", glm::vec4(1, 1, 1, 1));
 	}
 	void EntityInspectorLayout::SetContext(Entity context)
 	{
@@ -33,7 +44,6 @@ namespace XYZ {
 		{
 			auto transformComponent = context.GetComponent<TransformComponent>();
 			
-		
 			if (context.HasComponent<SpriteRenderer>())
 			{
 				auto spriteRenderer = context.GetComponent<SpriteRenderer>();
@@ -64,6 +74,15 @@ namespace XYZ {
 						auto newSubTexture = assetManager.GetAsset<SubTexture2D>(filepath);
 						spriteRenderer->SubTexture = newSubTexture;
 						m_Sprite = spriteRenderer->SubTexture->GetName();
+					}			
+				}
+				else if (m_MaterialTextFlags & InGuiReturnType::Hoovered)
+				{
+					if (HasExtension(filepath, "mat"))
+					{
+						auto newMaterial = assetManager.GetAsset<Material>(filepath);
+						spriteRenderer->Material = newMaterial;
+						m_Material = newMaterial->GetName();
 					}
 				}
 			}

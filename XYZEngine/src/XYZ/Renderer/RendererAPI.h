@@ -35,6 +35,7 @@ namespace XYZ {
 		static void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 		static void SetClearColor(const glm::vec4& color);
 		static void Clear();
+		static void ReadPixels(uint32_t xCoord, uint32_t yCoord, uint32_t width, uint32_t height, uint8_t* data);
 
 		static void DrawIndexed(PrimitiveType type, uint32_t indexCount);
 		static void DrawInstanced(const Ref<VertexArray>& vertexArray, uint32_t count, uint32_t offset = 0);

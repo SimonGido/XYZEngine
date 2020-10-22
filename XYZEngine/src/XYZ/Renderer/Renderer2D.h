@@ -41,9 +41,8 @@ namespace XYZ {
 		static void SubmitLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color = glm::vec4(1.0f));
 		
 		static void ShowGrid(const glm::mat4& transform, const glm::vec2& scale);
-		/**
-		* Execute the command queue
-		*/
+	
+
 		static void Flush();
 		static void FlushLines();
 		/**

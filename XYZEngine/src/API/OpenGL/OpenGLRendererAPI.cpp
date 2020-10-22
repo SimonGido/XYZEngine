@@ -38,6 +38,11 @@ namespace XYZ {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
+	void RendererAPI::ReadPixels(uint32_t xCoord, uint32_t yCoord, uint32_t width, uint32_t height, uint8_t* data)
+	{
+		glReadPixels(xCoord, yCoord, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	}
+
 	void RendererAPI::DrawIndexed(PrimitiveType type, uint32_t indexCount)
 	{
 		switch (type)
@@ -65,4 +70,5 @@ namespace XYZ {
 		glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
 		glDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, indirect);
 	}
+
 }

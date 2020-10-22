@@ -61,7 +61,7 @@ namespace XYZ {
 		entity.EmplaceComponent<SceneTagComponent>( name );
 
 		SceneObject object;
-		object.Transform = entity.EmplaceComponent<TransformComponent>();
+		object.Transform = entity.EmplaceComponent<TransformComponent>(glm::vec3(0.0f, 0.0f, 0.0f));
 		object.Entity = entity;
 		
 
@@ -183,6 +183,7 @@ namespace XYZ {
 			Renderer2D::SetMaterial(sprite->Material);
 			Renderer2D::SubmitQuad(transform->GetTransform(), sprite->SubTexture->GetTexCoords(), sprite->TextureID, sprite->Color);
 		}
+
 		
 		Renderer2D::Flush();
 		Renderer2D::FlushLines();

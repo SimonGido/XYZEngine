@@ -26,8 +26,12 @@ namespace XYZ {
 
 	private:
 		Ref<Scene> m_Context;
-		Entity m_SelectedEntity;
 
+		InGuiWindow* m_Window;
+		bool m_PopupEnabled = false;
+		glm::vec2 m_PopupPosition = { 0,0 };
+
+		Entity m_SelectedEntity;
 		HashGrid2D<Entity> m_Entities;
 	};
 }
