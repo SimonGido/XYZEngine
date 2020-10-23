@@ -102,6 +102,13 @@ namespace XYZ {
 						return true;
 					}
 				}
+				else if (m_MaterialTextFlags & InGuiReturnType::Hoovered)
+				{
+					if (HasExtension(filepath, "mat"))
+					{
+						return true;
+					}
+				}
 			}
 		}
 		return false;

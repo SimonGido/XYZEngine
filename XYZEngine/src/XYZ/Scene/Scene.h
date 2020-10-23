@@ -63,7 +63,7 @@ namespace XYZ {
 
         SceneState GetState() const { return m_State; }
 
-        Entity GetEntity(uint16_t index);
+        Entity GetEntity(uint32_t index);
 
         inline const std::string& GetName() const { return m_Name; }
 
@@ -71,14 +71,6 @@ namespace XYZ {
  
         ECSManager& GetECS() { return m_ECS; }
     private:
-        struct SceneObject
-        {
-            TransformComponent* Transform = nullptr;
-            uint32_t Entity;
-            // Temporary
-            int32_t Parent = -1;
-        };
-
        
         struct RenderComparator
         {
@@ -122,14 +114,10 @@ namespace XYZ {
         CameraComponent* m_MainCamera;
         TransformComponent* m_MainCameraTransform;
 
-        uint16_t m_Root;
-        SceneObject m_SceneWorld;
-
-        Tree<SceneObject,uint16_t> m_SceneGraph;
-        std::unordered_map<uint32_t, uint16_t> m_SceneGraphMap;
+        std::vector<uint32_t> m_Entities;
+        std::unordered_map<uint32_t, uint32_t> m_SceneGraphMap;
 
      
-
         friend class Entity;
         friend class Asset<Scene>;
         friend class SceneHierarchyPanel;

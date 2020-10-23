@@ -90,8 +90,7 @@ namespace XYZ {
 
 	private:	
 		Entity m_TestEntity;
-		Entity m_TestEntity2;
-		Entity m_TextEntity;
+
 
 		SpriteRenderer* m_SpriteRenderer;
 		TransformComponent* m_Transform;

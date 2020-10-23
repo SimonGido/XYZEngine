@@ -38,11 +38,11 @@ namespace XYZ {
 		}
 		
 		// Inserts an element to the free list and returns an index to it.
-		int Insert(const T& elem)
+		int32_t Insert(const T& elem)
 		{
 			if (m_FirstFree != -1)
 			{
-				int index = m_FirstFree;
+				int32_t index = m_FirstFree;
 				m_FirstFree = m_Data[m_FirstFree].Next;
 				m_Data[index].Element = elem;
 				return index;
@@ -50,7 +50,7 @@ namespace XYZ {
 			else
 			{
 				m_Data.push_back(elem);
-				return static_cast<int>(m_Data.size() - 1);
+				return static_cast<int32_t>(m_Data.size() - 1);
 			}
 		}
 

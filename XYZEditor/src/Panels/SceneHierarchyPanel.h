@@ -16,10 +16,11 @@ namespace XYZ {
 		bool OnInGuiRender();
 
 		void SelectEntity(const glm::vec2& position);
-		
+		void InvalidateEntity();
+
 		void RemoveEntity(Entity entity);
 		void InsertEntity(Entity entity);
-
+	
 		inline Entity GetSelectedEntity() const { return m_SelectedEntity; }
 	private:
 		void drawEntity(Entity entity);

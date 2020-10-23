@@ -78,7 +78,6 @@ namespace XYZ {
 		m_Material->SetFlags(XYZ::RenderFlags::TransparentFlag);
 
 		m_TestEntity = m_Scene->GetEntity(2);
-		m_TestEntity2 = m_Scene->GetEntity(3);
 		m_SpriteRenderer = m_TestEntity.GetComponent<SpriteRenderer>();
 		m_Transform = m_TestEntity.GetComponent<TransformComponent>();
 		m_Animator = m_TestEntity.EmplaceComponent<AnimatorComponent>();
@@ -400,10 +399,19 @@ namespace XYZ {
 		return false;
 	}
 	bool EditorLayer::onKeyPress(KeyPressedEvent& event)
-	{
+	{	
 		if (m_SelectedEntity)
 		{
-			if (event.IsKeyPressed(KeyCode::XYZ_KEY_S))
+			if (event.IsKeyPressed(KeyCode::XYZ_KEY_DELETE))
+			{
+				m_SceneHierarchyPanel.RemoveEntity(m_SelectedEntity);
+				m_SceneHierarchyPanel.InvalidateEntity();
+				m_EntityInspectorLayout.SetContext(Entity());
+				m_Scene->DestroyEntity(m_SelectedEntity);
+				m_SelectedEntity = Entity();
+				InGui::GetWindow(PanelID::SceneHierarchy)->Flags |= InGuiWindowFlag::Modified;
+			}
+			else if (event.IsKeyPressed(KeyCode::XYZ_KEY_S))
 			{
 				m_StartMousePos = InGui::GetWorldPosition(*InGui::GetWindow(PanelID::Scene), m_EditorCamera.GetPosition(), m_EditorCamera.GetAspectRatio(), m_EditorCamera.GetZoomLevel());
 				m_ScalingEntity = true;

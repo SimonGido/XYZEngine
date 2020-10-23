@@ -37,15 +37,16 @@ namespace XYZ {
 		m_Context(context),
 		m_Entities(50, 100)
 	{
-		//InGui::Begin("Scene Hierarchy", { 0,0 }, { 400,300 });
-		//InGui::End();
+		InGui::Begin(PanelID::SceneHierarchy, "Scene Hierarchy", { 0,0 }, { 400,300 });
+		InGui::End();
+		m_Window = InGui::GetWindow(PanelID::SceneHierarchy);
 	}
 	void SceneHierarchyPanel::SetContext(const Ref<Scene>& context)
 	{
 		m_Context = context;
-		for (auto ent : m_Context->m_SceneGraph.GetFlatData())
+		for (auto ent : m_Context->m_Entities)
 		{
-			Entity entity = { ent.GetData().Entity,m_Context.Raw() };
+			Entity entity = { ent,m_Context.Raw() };
 			if (entity.HasComponent<SceneTagComponent>())
 			{
 				auto transform = entity.GetComponent<TransformComponent>();
@@ -62,20 +63,13 @@ namespace XYZ {
 		{
 			if (m_Context)
 			{
-				for (auto ent : m_Context->m_SceneGraph.GetFlatData())
+				for (auto ent : m_Context->m_Entities)
 				{
-					Entity entity = { ent.GetData().Entity,m_Context.Raw() };
+					Entity entity = { ent,m_Context.Raw() };
 					drawEntity(entity);
 				}
 			}
-			if ((m_Window->Flags & InGuiWindowFlag::Hoovered) && InGui::ResolveRightClick())
-			{
-				auto [width, height] = Input::GetWindowSize();
-				auto [mx, my] = Input::GetMousePosition();
-		
-				m_PopupEnabled = !m_PopupEnabled;
-				m_PopupPosition = MouseToWorld({ mx,my }, { width,height });
-			}
+			
 			if (m_PopupEnabled)
 			{
 				m_Window->Flags &= ~InGuiWindowFlag::AutoPosition;
@@ -86,9 +80,27 @@ namespace XYZ {
 					auto entity = m_Context->CreateEntity("New Entity");
 					auto transform = entity.GetComponent<TransformComponent>();
 					m_Entities.Insert(entity, transform->Translation, transform->Scale);
+					m_PopupEnabled = false;
 				}
 
 				m_Window->Flags |= InGuiWindowFlag::AutoPosition;
+			}
+
+			if (m_Window->Flags & InGuiWindowFlag::Hoovered)
+			{
+				if (InGui::ResolveRightClick())
+				{
+					auto [width, height] = Input::GetWindowSize();
+					auto [mx, my] = Input::GetMousePosition();
+
+					m_PopupEnabled = !m_PopupEnabled;
+					m_PopupPosition = MouseToWorld({ mx,my }, { width,height });
+				}
+				else if (InGui::ResolveLeftClick())
+				{
+					m_PopupEnabled = false;
+					m_SelectedEntity = Entity(); // Basically invalidated
+				}
 			}
 			active = true;
 		}
@@ -116,16 +128,23 @@ namespace XYZ {
 			delete[]buffer;
 		}
 	}
+	void SceneHierarchyPanel::InvalidateEntity()
+	{
+		m_SelectedEntity = Entity();
+	}
+
 	void SceneHierarchyPanel::RemoveEntity(Entity entity)
 	{
 		auto transform = entity.GetComponent<TransformComponent>();	
-		m_Entities.Remove(entity, transform->Translation, transform->Scale);
+		if (!m_Entities.Remove(entity, transform->Translation, transform->Scale))
+				XYZ_LOG_ERR("Entity was not removed from hash grid");		
 	}
 	void SceneHierarchyPanel::InsertEntity(Entity entity)
 	{
 		auto transform = entity.GetComponent<TransformComponent>();
 		m_Entities.Insert(entity, transform->Translation, transform->Scale);
 	}
+
 	void SceneHierarchyPanel::drawEntity(Entity entity)
 	{
 		if (entity.HasComponent<SceneTagComponent>())

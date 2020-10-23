@@ -11,8 +11,8 @@ namespace XYZ {
 	public:
 		Entity()
 			:
-			m_ID(NULL_ENTITY),
-			m_Scene(nullptr)
+			m_Scene(nullptr),
+			m_ID(NULL_ENTITY)
 		{
 		}
 
@@ -26,14 +26,14 @@ namespace XYZ {
 
 		Entity(const Entity& other)
 			: 
-			m_ID(other.m_ID),
-			m_Scene(other.m_Scene)
+			m_Scene(other.m_Scene),
+			m_ID(other.m_ID)
 		{}
 
 		Entity(uint32_t id, Scene* scene)
 			:
-			m_ID(id), 
-			m_Scene(scene)
+			m_Scene(scene),
+			m_ID(id)
 		{
 
 		}
@@ -76,8 +76,8 @@ namespace XYZ {
 
 		Entity& operator =(const Entity& other)
 		{
-			m_ID = other.m_ID;
 			m_Scene = other.m_Scene;
+			m_ID = other.m_ID;
 			return *this;
 		}
 

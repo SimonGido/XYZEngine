@@ -104,8 +104,8 @@ namespace XYZ {
 				// If previous sibling does not exist assign this next sibling directly as first child of parent
 				vector[m_Parent].m_FirstChild = vector[m_Index].m_NextSibling;
 			}
-			m_Parent = sc_NullIndex;
-			m_NextSibling = sc_NullIndex;
+			//m_Parent = sc_NullIndex;
+			//m_NextSibling = sc_NullIndex;
 		}
 
 		void reconnectToTree(std::vector<Node<T, IndexType>>& vector, IndexType newIndex)

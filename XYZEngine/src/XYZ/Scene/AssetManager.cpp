@@ -513,10 +513,10 @@ namespace XYZ {
 
 		out << YAML::Key << "Entities";
 		out << YAML::Value << YAML::BeginSeq;
-		for (auto& object : scene->m_SceneGraph.GetFlatData())
+		for (auto ent : scene->m_Entities)
 		{
-			Entity entity = { object.GetData().Entity,scene.Raw() };
-			SerializeEntity(out,manager, entity, object.GetData().Parent);
+			Entity entity = { ent,scene.Raw() };
+			SerializeEntity(out, manager, entity, -1);
 		}
 		out << YAML::EndSeq;
 		out << YAML::EndMap;

@@ -46,29 +46,44 @@ namespace XYZ {
 		virtual void AddEntity(uint32_t entity) override
 		{
 			auto it = m_EntityIndexMap.find(entity);
-			XYZ_ASSERT(it == m_EntityIndexMap.end(), "Entity already belong to the group");
-			
-			int index = m_IndexGroups.Insert({});
-			m_EntityIndexMap.insert({ entity,index });
-			
-			m_IndexGroups[index].Elements = { m_ECS->GetComponentIndex<T>(entity)... };
+			if (it == m_EntityIndexMap.end())
+			{
+				m_IndexGroups.push_back({});
+				uint32_t index = m_IndexGroups.size() - 1;
+				m_EntityIndexMap.insert({ entity,index });
+
+				m_IndexGroups[index].Entity = entity;
+				m_IndexGroups[index].Elements = { m_ECS->GetComponentIndex<T>(entity)... };
+			}
 		}
 
 		virtual void RemoveEntity(uint32_t entity) override
 		{
 			auto it = m_EntityIndexMap.find(entity);
-			XYZ_ASSERT(it != m_EntityIndexMap.end(), "Entity does not belong to the group");
-
-			m_IndexGroups.Erase(it->second);
-			m_EntityIndexMap.erase(it->first);
+			if (it != m_EntityIndexMap.end())
+			{
+				if (it->second != m_IndexGroups.size() - 1)
+				{
+					m_IndexGroups[it->second] = std::move(m_IndexGroups.back());
+					m_IndexGroups.pop_back();
+					uint32_t movedEntity = m_IndexGroups[it->second].Entity;
+					m_EntityIndexMap[movedEntity] = it->second;
+					m_EntityIndexMap.erase(it);
+				}
+				else
+				{
+					m_IndexGroups.pop_back();
+					m_EntityIndexMap.erase(it);
+				}
+			}
 		}
 
-		auto operator[] (int index)
+		auto operator[] (size_t index)
 		{
 			return std::tuple<T*...>{ &get<T>(index)... };
 		}		
 		
-		int Size() const { return m_IndexGroups.Range(); }
+		size_t Size() const { return m_IndexGroups.size(); }
 
 	private:
 
@@ -85,21 +100,22 @@ namespace XYZ {
 		{
 			Element() = default;
 
-			Element(int index)
+			Element(int32_t index)
 				: Index(index)
 			{}
 
-			int Index = 0;
+			int32_t Index = 0;
 		};
 
 		struct IndexGroup
 		{
 			std::tuple<Element<T>...> Elements;
+			uint32_t Entity;
 		};
 
 		ECSManager* m_ECS;	
-		FreeList<IndexGroup> m_IndexGroups;
-		std::unordered_map<uint32_t, int> m_EntityIndexMap;
+		std::vector<IndexGroup> m_IndexGroups;
+		std::unordered_map<uint32_t, uint32_t> m_EntityIndexMap;
 		std::tuple <std::shared_ptr<ComponentStorage<T>>...> m_Storages;
 
 		static constexpr size_t sc_ElementsPerGroup = sizeof...(T);

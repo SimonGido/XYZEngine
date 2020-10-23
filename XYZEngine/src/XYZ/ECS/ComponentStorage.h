@@ -58,7 +58,7 @@ namespace XYZ {
 		T* AddComponent(uint32_t entity,const T& component)
 		{
 			XYZ_ASSERT(m_Lookup.find(entity) == m_Lookup.end(), "Entity ",entity," already contains component");	
-			int index = m_Components.Insert(component);
+			int32_t index = m_Components.Insert(component);
 			m_Lookup[entity] = index;
 			return &m_Components[index];
 		}
@@ -67,7 +67,7 @@ namespace XYZ {
 		T* EmplaceComponent(uint32_t entity, Args&&... args)
 		{
 			XYZ_ASSERT(m_Lookup.find(entity) == m_Lookup.end(), "Entity ", entity, " already contains component");
-			int index = m_Components.Emplace(std::forward<Args>(args)...);
+			int32_t index = m_Components.Emplace(std::forward<Args>(args)...);
 			m_Lookup[entity] = index;
 			return &m_Components[index];
 		}
@@ -79,7 +79,7 @@ namespace XYZ {
 		{
 			XYZ_ASSERT(m_Lookup.find(entity) != m_Lookup.end(), "Removing non-existent component");
 
-			int removeIndex = m_Lookup[entity];
+			int32_t removeIndex = m_Lookup[entity];
 			m_Components.Erase(removeIndex);
 			m_Lookup.erase(entity);
 		}
@@ -114,7 +114,7 @@ namespace XYZ {
 				RemoveComponent(entity);
 		}
 
-		T& operator [](int index)
+		T& operator [](int32_t index)
 		{
 			return m_Components[index];
 		}
@@ -126,7 +126,7 @@ namespace XYZ {
 
 	private:
 		FreeList<T> m_Components;
-		std::unordered_map<uint32_t, int> m_Lookup;
+		std::unordered_map<uint32_t, int32_t> m_Lookup;
 	};
 
 	

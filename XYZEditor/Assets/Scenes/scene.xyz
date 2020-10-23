@@ -13,7 +13,6 @@ Entities:
       SortLayer: 0
       IsVisible: true
   - Entity: 00zcz
-    Parent: 2
     TransformComponent:
       Position: [-83.370575, 89.5097656, 0]
       Rotation: [0.981974244, 0, 0.0777155161]
@@ -26,7 +25,6 @@ Entities:
       SortLayer: 0
       IsVisible: true
   - Entity: ssasda
-    Parent: 2
     TransformComponent:
       Position: [33.1563187, 22.9439201, 0]
       Rotation: [1, 0, 0]
@@ -39,20 +37,18 @@ Entities:
       SortLayer: 0
       IsVisible: true
   - Entity: Test HoHO
-    Parent: 2
     TransformComponent:
-      Position: [43.9060059, -8.08332443, 0]
+      Position: [140.713516, 73.1602936, 0]
       Rotation: [1, 0, 0]
       Scale: [89.721817, 99.72789, 1]
     SpriteRenderer:
-      MaterialAssetPath: Assets/Materials/material.mat
+      MaterialAssetPath: Assets\Materials\New_Material.mat
       SubTextureAssetPath: Assets/SubTextures/Subtexture1.subtex
       Color: [1, 1, 1, 1]
       TextureID: 0
       SortLayer: 0
       IsVisible: true
   - Entity: assss
-    Parent: 2
     TransformComponent:
       Position: [-81.0212708, 0.17464447, 0]
       Rotation: [0.191220462, 0, -6.31941509]
@@ -100,7 +96,7 @@ Entities:
       TextureID: 0
       SortLayer: 0
       IsVisible: true
-  - Entity: New Entity
+  - Entity: New Opica
     TransformComponent:
       Position: [82.872345, 74.148941, 0]
       Rotation: [0, 0, 0]
@@ -114,7 +110,7 @@ Entities:
       IsVisible: true
   - Entity: New Entity
     TransformComponent:
-      Position: [110.591308, -5.78546143, 0]
+      Position: [110.591309, -5.78546143, 0]
       Rotation: [0, 0, 0]
       Scale: [58.1870575, 42.8333321, 1]
     SpriteRenderer:
@@ -162,7 +158,7 @@ Entities:
       IsVisible: true
   - Entity: New Entity
     TransformComponent:
-      Position: [50.9734001, 20.2056732, 0]
+      Position: [67.8839264, 21.2004242, 0]
       Rotation: [0, 0, 0]
       Scale: [67.3572845, 67.5868835, 1]
     SpriteRenderer:

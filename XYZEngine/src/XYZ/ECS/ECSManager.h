@@ -145,6 +145,8 @@ namespace XYZ {
 		{
 			auto signature = GetEntitySignature(entity);
 			s_Data.SystemManager.EntityDestroyed(entity, signature);
+			// Remove from group
+			s_Data.ComponentManager.RemoveFromGroup(entity, signature);
 			s_Data.ComponentManager.EntityDestroyed(entity);
 			s_Data.EntityManager.DestroyEntity(entity);
 		}
