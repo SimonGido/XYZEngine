@@ -114,7 +114,7 @@ Entities:
       IsVisible: true
   - Entity: New Entity
     TransformComponent:
-      Position: [110.591309, -5.78546143, 0]
+      Position: [110.591308, -5.78546143, 0]
       Rotation: [0, 0, 0]
       Scale: [58.1870575, 42.8333321, 1]
     SpriteRenderer:

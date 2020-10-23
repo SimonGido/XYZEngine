@@ -16,14 +16,14 @@ namespace XYZ {
 		m_PixelSize(pixelSize)
 	{
 		FT_Library ft;
-		if (!FT_Init_FreeType(&ft))
+		if (FT_Init_FreeType(&ft))
 			XYZ_ASSERT(false, "Could not initialize free type");
 
 		FT_Face face;
-		if (!FT_New_Face(ft, path.c_str(), 0, &face))
+		if (FT_New_Face(ft, path.c_str(), 0, &face))
 			XYZ_ASSERT(false, "Coult not load face");
 
-		if (!FT_Set_Pixel_Sizes(face, 0, pixelSize))
+		if (FT_Set_Pixel_Sizes(face, 0, pixelSize))
 			XYZ_ASSERT(false, "Could not set pixel size");
 		
 		m_Characters.resize(sc_NumGlyphs);
