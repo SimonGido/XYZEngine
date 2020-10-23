@@ -238,9 +238,9 @@ namespace XYZ {
 	void Asset<Texture2D>::Deserialize(const std::string& filepath, AssetManager& manager)
 	{
 		XYZ_LOG_INFO("Deserializing texture ",filepath);
-		TextureWrap wrap = TextureWrap::None;
-		TextureParam min = TextureParam::None;
-		TextureParam max = TextureParam::None;
+		TextureWrap wrap = TextureWrap::Clamp;
+		TextureParam min = TextureParam::Linear;
+		TextureParam max = TextureParam::Nearest;
 
 		std::ifstream stream(filepath + ".meta");
 		if (stream.is_open())
