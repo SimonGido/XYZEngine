@@ -35,6 +35,8 @@ namespace XYZ {
 	OpenGLVertexBuffer::~OpenGLVertexBuffer()
 	{
 		delete[]m_LocalData;
+		for (auto data : m_DataPool)
+			delete[]data;
 		Renderer::Submit([this]() {
 			glDeleteBuffers(1, &m_RendererID);
 			});
@@ -54,13 +56,26 @@ namespace XYZ {
 
 	void OpenGLVertexBuffer::Update(void* vertices, uint32_t size, uint32_t offset)
 	{
-		ByteBuffer data = ByteBuffer::Copy(vertices, size);
-		Ref<OpenGLVertexBuffer> instance = this;
+		ByteBuffer data;	
+		if (!m_DataPool.empty())
+		{
+			data = m_DataPool[m_DataPool.size() - 1];
+			m_DataPool.pop_back();
+			data.Write(vertices, size, offset);
+		}
+		else
+		{
+			data.Allocate(m_Size);
+			data.Write(vertices, size, offset);
+		}
+
 		Renderer::Submit([this, data, size, offset]() {		
 			XYZ_ASSERT(m_Usage == BufferUsage::Dynamic, "Buffer does not have dynamic usage");
 			glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
 			glBufferSubData(GL_ARRAY_BUFFER, offset, size, data);
-			delete[]data;
+
+			// Return data to pool
+			m_DataPool.push_back(data);
 		});
 	}
 
