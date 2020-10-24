@@ -54,6 +54,9 @@ namespace XYZ {
 		bool m_SpriteModified = false;
 		bool m_MaterialModified = false;
 
+		int32_t m_SortLayer = 0;
+		int32_t m_SortLayerSelected = -1;
+
 		int32_t m_ColorLengths[NUM_AXIS] = { 4,4,4,4 };
 		int32_t m_ColorSelected = -1;
 

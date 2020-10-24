@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "SpriteRenderer.h"
 
-XYZ::SpriteRenderer::SpriteRenderer(XYZ::Ref<XYZ::Material> material, Ref<XYZ::SubTexture2D> subTexture, const glm::vec4& color, uint32_t textureID, uint16_t sortLayer, bool isVisible)
+XYZ::SpriteRenderer::SpriteRenderer(XYZ::Ref<XYZ::Material> material, Ref<XYZ::SubTexture2D> subTexture, const glm::vec4& color, uint32_t textureID, int32_t sortLayer, bool isVisible)
 	:
 	Material(material),
 	SubTexture(subTexture),

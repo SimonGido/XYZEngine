@@ -99,7 +99,7 @@ namespace XYZ {
 				else if (InGui::ResolveLeftClick())
 				{
 					m_PopupEnabled = false;
-					m_SelectedEntity = Entity(); // Basically invalidated
+					m_SelectedEntity = Entity();
 				}
 			}
 			active = true;
@@ -112,7 +112,7 @@ namespace XYZ {
 	{
 		Entity* buffer = nullptr;
 		size_t count = m_Entities.GetElements(&buffer, position, { 50,50 });
-
+		m_SelectedEntity = Entity();
 		if (buffer)
 		{
 			for (size_t i = 0; i < count; ++i)
@@ -123,6 +123,7 @@ namespace XYZ {
 					auto &flags = InGui::GetWindow(PanelID::SceneHierarchy)->Flags;
 					flags |= InGuiWindowFlag::Modified;
 					m_SelectedEntity = buffer[i];
+					break;
 				}
 			}
 			delete[]buffer;

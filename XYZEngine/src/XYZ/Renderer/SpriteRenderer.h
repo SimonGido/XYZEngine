@@ -17,7 +17,7 @@ namespace XYZ {
 			Ref<SubTexture2D> subTexture,
 			const glm::vec4& color,
 			uint32_t textureID,
-			uint16_t sortLayer,
+			int32_t sortLayer,
 			bool isVisible = true
 		);
 			
@@ -35,7 +35,7 @@ namespace XYZ {
 		glm::vec4 Color;
 
 		uint32_t TextureID;
-		uint16_t SortLayer = 0;
+		int32_t SortLayer = 0;
 		bool IsVisible = true;
 	};
 }

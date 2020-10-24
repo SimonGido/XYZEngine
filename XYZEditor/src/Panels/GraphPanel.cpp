@@ -48,7 +48,7 @@ namespace XYZ {
 			float cameraWidth = m_Camera.GetZoomLevel() * m_Camera.GetAspectRatio() * 2;
 			float cameraHeight = m_Camera.GetZoomLevel() * 2;
 			glm::mat4 gridTransform = glm::translate(glm::mat4(1.0f), m_Camera.GetPosition()) * glm::scale(glm::mat4(1.0f), { cameraWidth,cameraHeight,1.0f });
-			Renderer2D::ShowGrid(gridTransform, glm::vec2(16.025f * m_Camera.GetAspectRatio(), 16.025f));
+			Renderer2D::SubmitGrid(gridTransform, glm::vec2(16.025f * m_Camera.GetAspectRatio(), 16.025f), 0.025f);
 			Renderer2D::Flush();
 			Renderer2D::FlushLines();
 			Renderer2D::EndScene();

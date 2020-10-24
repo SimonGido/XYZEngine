@@ -5,6 +5,13 @@
 
 namespace XYZ {
 	
+	struct GridProperties
+	{
+		glm::mat4 Transform;
+		glm::vec2 Scale;
+		float LineWidth;
+	};
+
 	struct SceneRendererOptions
 	{
 		bool ShowGrid = true;
@@ -28,6 +35,8 @@ namespace XYZ {
 		static void EndScene();
 
 		static void SubmitSprite(SpriteRenderer* sprite, const glm::mat4& transform);
+
+		static void SetGridProperties(const GridProperties& props);
 
 		static Ref<RenderPass> GetFinalRenderPass();
 	

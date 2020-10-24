@@ -4,6 +4,7 @@
 #include "XYZ/Core/Input.h"
 #include "XYZ/Core/Application.h"
 #include "XYZ/Renderer/Renderer.h"
+#include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/SceneRenderer.h"
 
 #include "XYZ/NativeScript/ScriptableEntity.h"
@@ -134,32 +135,58 @@ namespace XYZ {
 	}
 
 	void Scene::OnRenderEditor(const EditorCamera& camera)
-	{	
+	{
 
 		// 3D part here
 
 		///////////////
-		
 		float cameraWidth = camera.GetZoomLevel() * camera.GetAspectRatio() * 2;
 		float cameraHeight = camera.GetZoomLevel() * 2;
 		glm::mat4 gridTransform = glm::translate(glm::mat4(1.0f), camera.GetPosition()) * glm::scale(glm::mat4(1.0f), { cameraWidth,cameraHeight,1.0f });
-
+		Renderer2D::SubmitGrid(gridTransform, glm::vec2(16.025f * camera.GetAspectRatio(), 16.025f), 0.025f);
 
 		SceneRendererCamera renderCamera;
 		renderCamera.Camera = camera;
 		renderCamera.ViewMatrix = camera.GetViewMatrix();
+		SceneRenderer::SetGridProperties({ gridTransform,{8.025f * (cameraWidth / camera.GetZoomLevel()), 8.025f * (cameraHeight / camera.GetZoomLevel())},0.025f });
 		SceneRenderer::BeginScene(this, renderCamera);
 		for (int i = 0; i < m_RenderGroup->Size(); ++i)
 		{
 			auto [transform, sprite] = (*m_RenderGroup)[i];
 			SceneRenderer::SubmitSprite(sprite, transform->GetTransform());
 		}
+		if (m_SelectedEntity < MAX_ENTITIES)
+		{
+			showSelection(m_SelectedEntity);
+		}
 		SceneRenderer::EndScene();
+	}
+
+	void Scene::SetViewportSize(uint32_t width, uint32_t height)
+	{
+		SceneRenderer::SetViewportSize(width, height);
 	}
 
 	Entity Scene::GetEntity(uint32_t index)
 	{
 		return { m_Entities[index],this };
+	}
+
+	void Scene::showSelection(uint32_t entity)
+	{
+		auto transformComponent = m_ECS.GetComponent<TransformComponent>(entity);
+		auto& translation = transformComponent->Translation;
+		auto& scale = transformComponent->Scale;
+
+		glm::vec3 topLeft = { translation.x - scale.x / 2,translation.y + scale.y / 2,1 };
+		glm::vec3 topRight = { translation.x + scale.x / 2,translation.y + scale.y / 2,1 };
+		glm::vec3 bottomLeft = { translation.x - scale.x / 2,translation.y - scale.y / 2,1 };
+		glm::vec3 bottomRight = { translation.x + scale.x / 2,translation.y - scale.y / 2,1 };
+
+		Renderer2D::SubmitLine(topLeft, topRight);
+		Renderer2D::SubmitLine(topRight, bottomRight);
+		Renderer2D::SubmitLine(bottomRight, bottomLeft);
+		Renderer2D::SubmitLine(bottomLeft, topLeft);
 	}
 
 }

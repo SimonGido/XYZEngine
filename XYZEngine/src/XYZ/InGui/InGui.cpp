@@ -984,6 +984,58 @@ namespace XYZ {
 		return result;
 	}
 
+	uint8_t InGui::Int(uint32_t count, const char* name, int32_t* values, int32_t* lengths, const glm::vec2& position, const glm::vec2& size, int32_t& selected)
+	{
+		XYZ_ASSERT(s_Context->GetPerFrameData().CurrentWindow, "Missing begin call");
+
+		InGuiPerFrameData& frameData = s_Context->GetPerFrameData();
+		InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration;
+		InGuiWindow* window = frameData.CurrentWindow;
+
+		uint8_t result = 0;
+		if (window->Flags & InGuiWindowFlag::Modified)
+		{
+			float offset = 5.0f;
+			glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];
+			glm::vec2 pos = position;
+			if (ResolveSpaceWithText(name, { (size.x + offset) * count, size.y }, color, pos, renderConfig, frameData))
+			{
+				if (ResolveLeftClick(false))
+				{
+					selected = s_NoneSelection;
+					glm::vec2 tmpPos = pos;
+					for (int i = 0; i < count; ++i)
+					{
+						if (Collide(tmpPos, size, frameData.MousePosition))
+						{
+							result |= (InGuiReturnType::Clicked & InGuiReturnType::Hoovered);
+							frameData.Flags |= InGuiPerFrameFlag::ClickHandled;
+							selected = i;
+							break;
+						}
+						tmpPos.x += size.x + offset;
+					}
+				}
+				for (int i = 0; i < count; ++i)
+				{
+					glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];
+					char buffer[sc_TextBufferSize];
+					int ret = snprintf(buffer, sizeof(buffer), "%d", values[i]);
+					buffer[lengths[i]] = '\0';
+					if (i == selected)
+					{
+						color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
+						HandleInputNumber(buffer, lengths[i], frameData.KeyCode, frameData.Mode, frameData.CapslockEnabled);
+						values[i] = atof(buffer);
+					}
+					InGuiFactory::GenerateTextArea(pos, size, color, name, buffer, frameData.WindowSpaceOffset, *frameData.ActiveMesh, renderConfig);
+					pos.x += size.x + offset;
+				}
+			}
+		}
+		return result;
+	}
+
 	uint8_t InGui::Icon(const glm::vec2& position, const glm::vec2& size, const Ref<SubTexture2D>& subTexture, uint32_t textureID)
 	{
 		XYZ_ASSERT(s_Context->GetPerFrameData().CurrentWindow, "Missing begin call");

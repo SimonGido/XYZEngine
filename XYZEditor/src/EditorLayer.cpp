@@ -70,8 +70,10 @@ namespace XYZ {
 		});
 		
 
-		
+		uint32_t windowWidth = Application::Get().GetWindow().GetWidth();
+		uint32_t windowHeight = Application::Get().GetWindow().GetHeight();
 		m_Scene = m_AssetManager.GetAsset<Scene>("Assets/Scenes/scene.xyz");
+		m_Scene->SetViewportSize(windowWidth, windowHeight);
 		SceneManager::Get().SetActive(m_Scene);
 
 		m_Material = m_AssetManager.GetAsset<Material>("Assets/Materials/material.mat");
@@ -183,22 +185,14 @@ namespace XYZ {
 		{
 			m_EditorCamera.OnUpdate(ts);
 		}
-		if (m_SelectedEntity)
+		
+		if ((uint32_t)m_SelectedEntity != (uint32_t)m_SceneHierarchyPanel.GetSelectedEntity())
 		{
-			auto transformComponent = m_SelectedEntity.GetComponent<TransformComponent>();
-			auto& translation = transformComponent->Translation;
-			auto& scale = transformComponent->Scale;
-
-			glm::vec3 topLeft = { translation.x - scale.x / 2,translation.y + scale.y / 2,1 };
-			glm::vec3 topRight = { translation.x + scale.x / 2,translation.y + scale.y / 2,1 };
-			glm::vec3 bottomLeft = { translation.x - scale.x / 2,translation.y - scale.y / 2,1 };
-			glm::vec3 bottomRight = { translation.x + scale.x / 2,translation.y - scale.y / 2,1 };
-
-			Renderer2D::SubmitLine(topLeft, topRight);
-			Renderer2D::SubmitLine(topRight, bottomRight);
-			Renderer2D::SubmitLine(bottomRight, bottomLeft);
-			Renderer2D::SubmitLine(bottomLeft, topLeft);
+			m_SelectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+			m_EntityInspectorLayout.SetContext(m_SelectedEntity);
+			m_Scene->SetSelectedEntity(m_SelectedEntity);
 		}
+			
 		if (m_ScalingEntity)
 		{
 			auto mousePos = InGui::GetWorldPosition(*InGui::GetWindow(PanelID::Scene), m_EditorCamera.GetPosition(), m_EditorCamera.GetAspectRatio(), m_EditorCamera.GetZoomLevel());
@@ -264,11 +258,6 @@ namespace XYZ {
 				Application::Get().GetWindow().SetStandardCursor(WindowCursors::XYZ_ARROW_CURSOR);
 		}
 
-		if ((uint32_t)m_SelectedEntity != (uint32_t)m_SceneHierarchyPanel.GetSelectedEntity())
-		{
-			m_SelectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
-			m_EntityInspectorLayout.SetContext(m_SelectedEntity);
-		}
 		if (m_GraphPanel.OnInGuiRender(ts))
 		{
 			m_InspectorPanel.SetInspectorLayout(&m_AnimatorInspectorLayout);
@@ -347,7 +336,7 @@ namespace XYZ {
 
 	bool EditorLayer::onWindowResized(WindowResizeEvent& event)
 	{
-		SceneRenderer::SetViewportSize((uint32_t)(event.GetWidth()), (uint32_t)(event.GetHeight()));
+		m_Scene->SetViewportSize((uint32_t)(event.GetWidth()), (uint32_t)(event.GetHeight()));
 		m_EditorCamera.OnResize(m_SceneWindow->Size);
 		return false;
 	}
@@ -364,8 +353,7 @@ namespace XYZ {
 
 			if (Collide(win->Position, win->Size, mousePos))
 				m_SceneHierarchyPanel.SelectEntity(relativeMousePos);
-
-
+		
 			m_Dragging = true;
 		}
 		else if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_RIGHT))

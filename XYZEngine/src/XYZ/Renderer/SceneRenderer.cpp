@@ -14,6 +14,8 @@ namespace XYZ {
 		
 		SceneRendererCamera SceneCamera;
 		SceneRendererOptions Options;
+		GridProperties GridProps;
+
 		Ref<RenderPass> GeometryPass;
 
 		struct SpriteDrawCommand
@@ -60,6 +62,11 @@ namespace XYZ {
 	{
 		s_Data.DrawList.push_back({ sprite,transform });
 	}
+	void SceneRenderer::SetGridProperties(const GridProperties& props)
+	{
+		s_Data.GridProps = props;
+	}
+
 	Ref<RenderPass> SceneRenderer::GetFinalRenderPass()
 	{
 		return s_Data.GeometryPass;
@@ -87,9 +94,7 @@ namespace XYZ {
 		
 		if (s_Data.Options.ShowGrid)
 		{
-			glm::mat4 gridTransform = glm::translate(glm::mat4(1.0f), { 0,0,0 }) * glm::scale(glm::mat4(1.0f), { 32.0f,32.0f,1.0f });
-			glm::vec2 scale = { 32.025f, 32.025f };
-			Renderer2D::ShowGrid(gridTransform, scale);
+			Renderer2D::SubmitGrid(s_Data.GridProps.Transform, s_Data.GridProps.Scale, s_Data.GridProps.LineWidth);
 		}
 
 		std::sort(s_Data.DrawList.begin(), s_Data.DrawList.end(), 

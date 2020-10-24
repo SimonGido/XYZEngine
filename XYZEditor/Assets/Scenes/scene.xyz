@@ -38,9 +38,9 @@ Entities:
       IsVisible: true
   - Entity: New Entity
     TransformComponent:
-      Position: [-131.072708, 53.9893494, 0]
+      Position: [-131.787979, 54.1569214, 0]
       Rotation: [0, 0, 0]
-      Scale: [68.7659607, 46.8288956, 1]
+      Scale: [1, 1, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/material.mat
       SubTextureAssetPath: Assets/SubTextures/New_SubTexture.subtex
@@ -50,7 +50,7 @@ Entities:
       IsVisible: true
   - Entity: assss
     TransformComponent:
-      Position: [-81.0212708, 0.17464447, 0]
+      Position: [-54.1676178, 3.83318138, 0]
       Rotation: [0.191220462, 0, -6.31941509]
       Scale: [33.4796715, 40.870163, 0.99999994]
     SpriteRenderer:
@@ -62,7 +62,7 @@ Entities:
       IsVisible: true
   - Entity: New Entity
     TransformComponent:
-      Position: [-36.2260628, 30.7287254, 0]
+      Position: [-12.546978, 36.1827927, 0]
       Rotation: [0, 0, 0]
       Scale: [28.909584, 36.803196, 1]
     SpriteRenderer:
@@ -70,7 +70,7 @@ Entities:
       SubTextureAssetPath: Assets/SubTextures/New_SubTexture.subtex
       Color: [1, 1, 1, 1]
       TextureID: 0
-      SortLayer: 0
+      SortLayer: 6
       IsVisible: true
   - Entity: New Entity
     TransformComponent:
@@ -86,7 +86,7 @@ Entities:
       IsVisible: true
   - Entity: New Entity
     TransformComponent:
-      Position: [33.8239365, 22.9031944, 0]
+      Position: [18.8545303, 25.6986866, 0]
       Rotation: [0, 0, 0]
       Scale: [50, 50, 1]
     SpriteRenderer:
@@ -94,5 +94,5 @@ Entities:
       SubTextureAssetPath: Assets/SubTextures/New_SubTexture.subtex
       Color: [1, 1, 1, 1]
       TextureID: 0
-      SortLayer: 0
+      SortLayer: 5
       IsVisible: true

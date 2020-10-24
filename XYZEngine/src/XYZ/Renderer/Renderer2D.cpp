@@ -300,13 +300,14 @@ namespace XYZ {
 	}
 
 
-	void Renderer2D::ShowGrid(const glm::mat4& transform, const glm::vec2& scale)
+	void Renderer2D::SubmitGrid(const glm::mat4& transform, const glm::vec2& scale, float lineWidth)
 	{
 		auto shader = s_Data.GridMaterial->GetShader();
 		s_Data.GridMaterial->Bind();
 		shader->SetMat4("u_ViewProjectionMatrix", s_Data.ViewProjectionMatrix);
 		shader->SetMat4("u_Transform", transform);
 		shader->SetFloat2("u_Scale", scale);
+		shader->SetFloat(("u_LineWidth"), lineWidth);
 
 		s_Data.GridVertexArray->Bind();
 		Renderer::DrawIndexed(PrimitiveType::Triangles, 6);

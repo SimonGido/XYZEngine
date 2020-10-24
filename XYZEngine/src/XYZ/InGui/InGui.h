@@ -57,6 +57,8 @@ namespace XYZ {
 		static uint8_t Image(const char* name, uint32_t rendererID, const glm::vec2& position, const glm::vec2& size, const glm::vec4& texCoords = { 0,0,1,1 }, float tilingFactor = 1.0f);
 		static uint8_t TextArea(const char* name, std::string& text, const glm::vec2& position, const glm::vec2& size, bool& modified);
 		static uint8_t Float(uint32_t count, const char* name, float* values, int32_t * lengths, const glm::vec2& position, const glm::vec2& size, int32_t& selected);
+		static uint8_t Int(uint32_t count, const char* name, int32_t* values, int32_t* lengths, const glm::vec2& position, const glm::vec2& size, int32_t& selected);
+		
 		static uint8_t Icon(const glm::vec2& position, const glm::vec2& size, const Ref<SubTexture2D>& subTexture, uint32_t textureID);
 		static uint8_t Icon(const char* name, const glm::vec2& position, const glm::vec2& size, const Ref<SubTexture2D>& subTexture, uint32_t textureID);
 		

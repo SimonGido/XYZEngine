@@ -51,11 +51,13 @@ namespace XYZ {
 
         void OnEvent(Event& e);
 
-        void OnRender();
 
         void OnUpdate(Timestep ts);
 
+        void OnRender();
         void OnRenderEditor(const EditorCamera& camera);
+
+        void SetViewportSize(uint32_t width, uint32_t height);
 
         SceneState GetState() const { return m_State; }
 
@@ -66,36 +68,11 @@ namespace XYZ {
         inline const SceneCamera& GetMainCamera() const { return m_MainCamera->Camera; }
  
         ECSManager& GetECS() { return m_ECS; }
+
+        void SetSelectedEntity(uint32_t entity) { m_SelectedEntity = entity; }
+
     private:
-       
-        struct RenderComparator
-        {
-            bool operator()(const SpriteRenderer& a, const SpriteRenderer& b) const
-            {
-                bool aTransparent = a.Material->IsSet(RenderFlags::TransparentFlag);
-                bool bTransparent = b.Material->IsSet(RenderFlags::TransparentFlag);
-
-                if (aTransparent && !bTransparent)
-                    return false;
-
-                if (!aTransparent && bTransparent)
-                    return true;
-
-                if (aTransparent && bTransparent)
-                {
-                    if (a.SortLayer == b.SortLayer)
-                        return a.Material->GetSortKey() < b.Material->GetSortKey();
-                    return a.SortLayer > b.SortLayer;
-                }
-                else
-                {
-                    if (a.Material->GetSortKey() == b.Material->GetSortKey())
-                        return a.SortLayer < b.SortLayer;
-                    return a.Material->GetSortKey() < b.Material->GetSortKey();
-                }
-            }
-        };
-
+        void showSelection(uint32_t entity);
 
     private:
         ECSManager m_ECS;
@@ -106,6 +83,7 @@ namespace XYZ {
         std::string m_Name;
         SceneState m_State = SceneState::Edit;
 
+        uint32_t m_SelectedEntity;
         uint32_t m_MainCameraEntity;
         CameraComponent* m_MainCamera;
         TransformComponent* m_MainCameraTransform;
