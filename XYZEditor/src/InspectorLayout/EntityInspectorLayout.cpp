@@ -145,7 +145,7 @@ namespace XYZ {
 					}
 					InGui::Separator();
 
-					InGui::Float(3, "Rotation", glm::value_ptr(transformComponent->Rotation), m_RotationLengths, {}, { 50.0f, 25.0f }, m_PositionSelected);
+					InGui::Float(3, "Rotation", glm::value_ptr(transformComponent->Rotation), m_RotationLengths, {}, { 50.0f, 25.0f }, m_RotationSelected);
 					if (m_RotationSelected != -1)
 					{
 						
@@ -185,9 +185,8 @@ namespace XYZ {
 					}
 					InGui::Separator();
 					InGui::Int(1, "Sort Layer", &spriteRenderer->SortLayer, &m_SortLayer, {}, { 50.0f,25.0f }, m_SortLayerSelected);
-					
-
 					InGui::Separator();
+					
 					InGui::Float(4, "Color", glm::value_ptr(spriteRenderer->Color), m_ColorLengths, {}, { 50.0f, 25.0f }, m_ColorSelected);
 					if (m_ColorSelected != -1)
 					{
@@ -202,6 +201,27 @@ namespace XYZ {
 						InGui::ColorPicker4("Color", { 255,255 }, m_ColorPallete, spriteRenderer->Color);
 					}
 					InGui::Separator();
+
+					static bool textureIdOpen = false;
+					InGui::BeginPopup("Texture ID", glm::vec2{}, glm::vec2{ 90.0f,25.0f }, textureIdOpen);
+					if (textureIdOpen)
+					{
+						for (uint32_t i = 0; i < spriteRenderer->Material->GetTextures().size(); ++i)
+						{
+							char buffer[5];
+							sprintf(buffer, "%d", i);
+							if (InGui::PopupItem(buffer) & InGuiReturnType::Clicked)
+							{
+								spriteRenderer->TextureID = i;
+								textureIdOpen = false;
+							}
+							InGui::Separator();
+						}
+					}
+					InGui::EndPopup();
+
+					InGui::Separator();
+
 
 					InGui::EndGroup();
 				}

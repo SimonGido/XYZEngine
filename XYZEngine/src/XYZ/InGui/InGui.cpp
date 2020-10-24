@@ -1342,7 +1342,6 @@ namespace XYZ {
 	bool InGui::OnWindowResize(const glm::vec2& winSize)
 	{
 		s_Context->GetPerFrameData().WindowSize = winSize;
-		s_Context->RenderConfiguration.Material->Set("u_ViewportSize", s_Context->GetPerFrameData().WindowSize);
 		s_Context->DockSpace->OnWindowResize(winSize);
 		return false;
 	}

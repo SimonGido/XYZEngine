@@ -163,7 +163,8 @@ namespace XYZ {
 		InGui::GetWindow(PanelID::Scene)->OnResizeCallback = Hook(&EditorLayer::onResizeSceneWindow, this);
 
 
-		m_SpriteEditorPanel.SetContext(m_CharacterTexture);
+		auto backgroundTexture = m_AssetManager.GetAsset<Texture2D>("Assets/Textures/Backgroundfield.png");
+		m_SpriteEditorPanel.SetContext(backgroundTexture);
 		m_AnimatorInspectorLayout.SetContext(m_AnimationController);
 		m_AnimatorGraphLayout.SetContext(m_AnimationController);
 		m_InspectorPanel.SetInspectorLayout(&m_EntityInspectorLayout);
@@ -198,8 +199,8 @@ namespace XYZ {
 			auto mousePos = InGui::GetWorldPosition(*InGui::GetWindow(PanelID::Scene), m_EditorCamera.GetPosition(), m_EditorCamera.GetAspectRatio(), m_EditorCamera.GetZoomLevel());
 
 			glm::vec3 scale = m_ModifiedScale;
-			scale.x += fabs(mousePos.x - m_StartMousePos.x);
-			scale.y += fabs(mousePos.y - m_StartMousePos.y);
+			scale.x += mousePos.x - m_StartMousePos.x;
+			scale.y += mousePos.y - m_StartMousePos.y;
 	
 			m_ModifiedTransform->Scale = scale;	
 			m_EntityInspectorLayout.SetContext(m_SelectedEntity);
@@ -383,6 +384,7 @@ namespace XYZ {
 				m_SceneHierarchyPanel.InvalidateEntity();
 				m_EntityInspectorLayout.SetContext(Entity());
 				m_Scene->DestroyEntity(m_SelectedEntity);
+				m_Scene->SetSelectedEntity(Entity());
 				m_SelectedEntity = Entity();
 				InGui::GetWindow(PanelID::SceneHierarchy)->Flags |= InGuiWindowFlag::Modified;
 			}
