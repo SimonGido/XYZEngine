@@ -4,18 +4,14 @@
 #include "XYZ/ECS/ECSManager.h"
 #include "XYZ/Event/Event.h"
 
-#include "XYZ/Utils/DataStructures/HashGrid2D.h"
-#include "XYZ/Utils/DataStructures/Tree.h"
-
-#include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/SpriteRenderer.h"
 #include "XYZ/Renderer/Camera.h"
+
 #include "EditorCamera.h"
-#include "Serializable.h"
-
-
 #include "SceneCamera.h"
 #include "Components.h"
+#include "Serializable.h"
+
 
 namespace XYZ {
 

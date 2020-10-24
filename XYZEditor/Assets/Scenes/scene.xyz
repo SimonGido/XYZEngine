@@ -24,26 +24,26 @@ Entities:
       TextureID: 0
       SortLayer: 0
       IsVisible: true
-  - Entity: ssasda
+  - Entity: New Entity
     TransformComponent:
-      Position: [33.1563187, 22.9439201, 0]
-      Rotation: [1, 0, 0]
-      Scale: [35.9514771, 49.7444305, 1]
+      Position: [-48.5088654, 117.711868, 0]
+      Rotation: [0, 0, 0]
+      Scale: [33.042572, 52.4015961, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/material.mat
-      SubTextureAssetPath: Assets/SubTextures/Subtexture2.subtex
+      SubTextureAssetPath: Assets/SubTextures/New_SubTexture.subtex
       Color: [1, 1, 1, 1]
       TextureID: 0
       SortLayer: 0
       IsVisible: true
-  - Entity: Test HoHO
+  - Entity: New Entity
     TransformComponent:
-      Position: [140.713516, 73.1602936, 0]
-      Rotation: [1, 0, 0]
-      Scale: [89.721817, 99.72789, 1]
+      Position: [-131.072708, 53.9893494, 0]
+      Rotation: [0, 0, 0]
+      Scale: [68.7659607, 46.8288956, 1]
     SpriteRenderer:
-      MaterialAssetPath: Assets\Materials\New_Material.mat
-      SubTextureAssetPath: Assets/SubTextures/Subtexture1.subtex
+      MaterialAssetPath: Assets/Materials/material.mat
+      SubTextureAssetPath: Assets/SubTextures/New_SubTexture.subtex
       Color: [1, 1, 1, 1]
       TextureID: 0
       SortLayer: 0
@@ -74,66 +74,6 @@ Entities:
       IsVisible: true
   - Entity: New Entity
     TransformComponent:
-      Position: [4.12677002, 69.0691452, 0]
-      Rotation: [0, 0, 0]
-      Scale: [45.3085175, 49.4352875, 1]
-    SpriteRenderer:
-      MaterialAssetPath: Assets/Materials/material.mat
-      SubTextureAssetPath: Assets/SubTextures/New_SubTexture.subtex
-      Color: [1, 1, 1, 1]
-      TextureID: 0
-      SortLayer: 0
-      IsVisible: true
-  - Entity: New Entity
-    TransformComponent:
-      Position: [-131.072708, 53.9893494, 0]
-      Rotation: [0, 0, 0]
-      Scale: [68.7659607, 46.8288956, 1]
-    SpriteRenderer:
-      MaterialAssetPath: Assets/Materials/material.mat
-      SubTextureAssetPath: Assets/SubTextures/New_SubTexture.subtex
-      Color: [1, 1, 1, 1]
-      TextureID: 0
-      SortLayer: 0
-      IsVisible: true
-  - Entity: New Opica
-    TransformComponent:
-      Position: [82.872345, 74.148941, 0]
-      Rotation: [0, 0, 0]
-      Scale: [65.5531921, 47.4521255, 1]
-    SpriteRenderer:
-      MaterialAssetPath: Assets/Materials/material.mat
-      SubTextureAssetPath: Assets/SubTextures/New_SubTexture.subtex
-      Color: [1, 1, 1, 1]
-      TextureID: 0
-      SortLayer: 0
-      IsVisible: true
-  - Entity: New Entity
-    TransformComponent:
-      Position: [110.591309, -5.78546143, 0]
-      Rotation: [0, 0, 0]
-      Scale: [58.1870575, 42.8333321, 1]
-    SpriteRenderer:
-      MaterialAssetPath: Assets/Materials/material.mat
-      SubTextureAssetPath: Assets/SubTextures/New_SubTexture.subtex
-      Color: [1, 1, 1, 1]
-      TextureID: 0
-      SortLayer: 0
-      IsVisible: true
-  - Entity: New Entity
-    TransformComponent:
-      Position: [-48.5088654, 117.711868, 0]
-      Rotation: [0, 0, 0]
-      Scale: [33.042572, 52.4015961, 1]
-    SpriteRenderer:
-      MaterialAssetPath: Assets/Materials/material.mat
-      SubTextureAssetPath: Assets/SubTextures/New_SubTexture.subtex
-      Color: [1, 1, 1, 1]
-      TextureID: 0
-      SortLayer: 0
-      IsVisible: true
-  - Entity: New Entity
-    TransformComponent:
       Position: [-80.9636688, 7.06116867, 0]
       Rotation: [0, 0, 0]
       Scale: [40.8306732, 50.6214523, 1]
@@ -146,23 +86,11 @@ Entities:
       IsVisible: true
   - Entity: New Entity
     TransformComponent:
-      Position: [-5.13829041, -22.1170197, 0]
+      Position: [33.8239365, 22.9031944, 0]
       Rotation: [0, 0, 0]
-      Scale: [71.9929047, 67.8971558, 1]
+      Scale: [50, 50, 1]
     SpriteRenderer:
-      MaterialAssetPath: Assets/Materials/material.mat
-      SubTextureAssetPath: Assets/SubTextures/New_SubTexture.subtex
-      Color: [1, 1, 1, 1]
-      TextureID: 0
-      SortLayer: 0
-      IsVisible: true
-  - Entity: New Entity
-    TransformComponent:
-      Position: [67.8839264, 21.2004242, 0]
-      Rotation: [0, 0, 0]
-      Scale: [67.3572845, 67.5868835, 1]
-    SpriteRenderer:
-      MaterialAssetPath: Assets/Materials/material.mat
+      MaterialAssetPath: Assets/Materials/New_Material.mat
       SubTextureAssetPath: Assets/SubTextures/New_SubTexture.subtex
       Color: [1, 1, 1, 1]
       TextureID: 0

@@ -17,11 +17,12 @@
 
 //-----Renderer-----//
 #include "XYZ/Renderer/Renderer.h"
+#include "XYZ/Renderer/SceneRenderer.h"
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/RenderPass.h"
 #include "XYZ/Renderer/Material.h"
 
-#include "XYZ/Renderer/MaterialManager.h"
+
 #include "XYZ/Renderer/Framebuffer.h"
 #include "XYZ/Renderer/MeshFactory.h"
 #include "XYZ/Renderer/SpriteRenderer.h"
@@ -73,3 +74,6 @@
 //------NativeScript-------//
 #include "XYZ/NativeScript/ScriptableEntity.h"
 
+//------Utils-------//
+#include "XYZ/Utils/DataStructures/HashGrid2D.h"
+#include "XYZ/Utils/DataStructures/ByteBuffer.h"

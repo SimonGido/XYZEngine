@@ -147,14 +147,7 @@ namespace XYZ {
 		m_SceneHierarchyPanel.SetContext(m_Scene);
 
 		
-		auto& app = Application::Get();
-		m_FBO = FrameBuffer::Create({ app.GetWindow().GetWidth(),app.GetWindow().GetHeight(),{0.2f,0.2f,0.2f,1.0f} });
-		m_FBO->CreateColorAttachment(FrameBufferFormat::RGBA16F);
-		m_FBO->CreateDepthAttachment();
-		m_FBO->Resize();
-		m_RenderPass =  RenderPass::Create({ m_FBO });
-
-		InGui::RenderWindow(PanelID::Scene, "Scene", m_FBO->GetColorAttachment(0).RendererID, { 0,0 }, { 200,200 });
+		InGui::RenderWindow(PanelID::Scene, "Scene", 0, { 0,0 }, { 200,200 });
 		InGui::End();
 		m_SceneWindow = InGui::GetWindow(PanelID::Scene);
 		m_SceneWindow->Flags &= ~InGuiWindowFlag::EventListener;
@@ -238,13 +231,8 @@ namespace XYZ {
 			m_EntityInspectorLayout.SetContext(m_SelectedEntity);
 		}
 	
-		Renderer::BeginRenderPass(m_RenderPass, true);
-		
 		m_Scene->OnUpdate(ts);
 		m_Scene->OnRenderEditor(m_EditorCamera); 
-
-		Renderer::EndRenderPass();	
-		Renderer::WaitAndRender();
 	}
 	void EditorLayer::OnEvent(Event& event)
 	{
@@ -293,7 +281,7 @@ namespace XYZ {
 		m_InspectorPanel.OnInGuiRender();
 		m_ProjectBrowserPanel.OnInGuiRender();
 
-		if (InGui::RenderWindow(0, "Scene", m_FBO->GetColorAttachment(0).RendererID, { 0,0 }, { 200,200 }))
+		if (InGui::RenderWindow(0, "Scene", SceneRenderer::GetFinalColorBufferRendererID(), { 0,0 }, { 200,200 }))
 		{
 			m_ActiveWindow = true;
 			m_InspectorPanel.SetInspectorLayout(&m_EntityInspectorLayout);
@@ -359,8 +347,7 @@ namespace XYZ {
 
 	bool EditorLayer::onWindowResized(WindowResizeEvent& event)
 	{
-		m_FBO->SetSpecification({ (uint32_t)(event.GetWidth()), (uint32_t)(event.GetHeight()) });
-		m_FBO->Resize();
+		SceneRenderer::SetViewportSize((uint32_t)(event.GetWidth()), (uint32_t)(event.GetHeight()));
 		m_EditorCamera.OnResize(m_SceneWindow->Size);
 		return false;
 	}

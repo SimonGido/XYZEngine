@@ -2,7 +2,7 @@
 #include "ParticleEffect2D.h"
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/Renderer.h"
-#include "XYZ/Renderer/MaterialManager.h"
+
 
 namespace XYZ {
 

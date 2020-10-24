@@ -71,7 +71,7 @@ namespace XYZ {
 		LineVertex* LineBufferBase = nullptr;
 		LineVertex* LineBufferPtr = nullptr;
 
-		SceneRenderData Data;
+		glm::mat4 ViewProjectionMatrix;
 		Renderer2DStats Stats;
 	};
 
@@ -111,7 +111,7 @@ namespace XYZ {
 			delete[] quadIndices;
 
 			// Grid setup
-			GridMaterial = Material::Create(Shader::Create("Assets/Shaders/Grid.glsl"));
+			GridMaterial = Ref<Material>::Create(Shader::Create("Assets/Shaders/Grid.glsl"));
 			GridMaterial->Set("u_Scale", glm::vec2{ 16.025f,16.025f });
 			GridMaterial->Set("u_LineWidth", 0.025f);
 			struct QuadVertex
@@ -194,9 +194,9 @@ namespace XYZ {
 		delete[] s_Data.LineBufferBase;
 	}
 
-	void Renderer2D::BeginScene(const SceneRenderData& data)
+	void Renderer2D::BeginScene(const glm::mat4& viewProjectionMatrix)
 	{
-		s_Data.Data = data;
+		s_Data.ViewProjectionMatrix = viewProjectionMatrix;
 	}
 
 	void Renderer2D::SetMaterial(const Ref<Material>& material)
@@ -304,7 +304,7 @@ namespace XYZ {
 	{
 		auto shader = s_Data.GridMaterial->GetShader();
 		s_Data.GridMaterial->Bind();
-		shader->SetMat4("u_ViewProjectionMatrix", s_Data.Data.ViewProjectionMatrix);
+		shader->SetMat4("u_ViewProjectionMatrix", s_Data.ViewProjectionMatrix);
 		shader->SetMat4("u_Transform", transform);
 		shader->SetFloat2("u_Scale", scale);
 
@@ -317,7 +317,7 @@ namespace XYZ {
 		uint32_t dataSize = (uint8_t*)s_Data.BufferPtr - (uint8_t*)s_Data.BufferBase;
 		if (dataSize)
 		{
-			s_Data.QuadMaterial->Set("u_ViewProjectionMatrix", s_Data.Data.ViewProjectionMatrix);
+			s_Data.QuadMaterial->Set("u_ViewProjectionMatrix", s_Data.ViewProjectionMatrix);
 			s_Data.QuadMaterial->Bind();
 			s_Data.QuadVertexBuffer->Update(s_Data.BufferBase, dataSize);
 			s_Data.QuadVertexArray->Bind();
@@ -332,7 +332,7 @@ namespace XYZ {
 		if (dataSize)
 		{
 			s_Data.LineShader->Bind();
-			s_Data.LineShader->SetMat4("u_ViewProjectionMatrix", s_Data.Data.ViewProjectionMatrix);
+			s_Data.LineShader->SetMat4("u_ViewProjectionMatrix", s_Data.ViewProjectionMatrix);
 
 			s_Data.LineVertexBuffer->Update(s_Data.LineBufferBase, dataSize);
 			s_Data.LineVertexArray->Bind();

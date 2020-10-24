@@ -21,7 +21,7 @@ namespace XYZ {
 
 	EntityInspectorLayout::EntityInspectorLayout()
 	{
-		m_DefaultMaterial = Material::Create(Shader::Create("Assets/Shaders/DefaultShader.glsl"));
+		m_DefaultMaterial = Ref<Material>::Create(Shader::Create("Assets/Shaders/DefaultShader.glsl"));
 		auto characterTexture = Texture2D::Create(XYZ::TextureWrap::Clamp, TextureParam::Linear, TextureParam::Nearest, "Assets/Textures/player_sprite.png");
 		m_DefaultSubTexture = Ref<SubTexture2D>::Create(characterTexture, glm::vec2(0, 0), glm::vec2((float)characterTexture->GetWidth() / 8.0f, (float)characterTexture->GetHeight() / 3.0f));
 		m_DefaultMaterial->Set("u_Texture", characterTexture);
@@ -32,7 +32,7 @@ namespace XYZ {
 		:
 		m_Context(context)
 	{
-		m_DefaultMaterial = Material::Create(Shader::Create("Assets/Shaders/DefaultShader.glsl"));
+		m_DefaultMaterial = Ref<Material>::Create(Shader::Create("Assets/Shaders/DefaultShader.glsl"));
 		auto characterTexture = Texture2D::Create(XYZ::TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest, "Assets/Textures/player_sprite.png");
 		m_DefaultSubTexture = Ref<SubTexture2D>::Create(characterTexture, glm::vec2(0, 0), glm::vec2((float)characterTexture->GetWidth() / 8.0f, (float)characterTexture->GetHeight() / 3.0f));
 		m_DefaultMaterial->Set("u_Texture", characterTexture);

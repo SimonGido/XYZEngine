@@ -4,6 +4,7 @@
 #include "XYZ/Core/Input.h"
 #include "XYZ/Core/Application.h"
 #include "XYZ/Renderer/Renderer.h"
+#include "XYZ/Renderer/SceneRenderer.h"
 
 #include "XYZ/NativeScript/ScriptableEntity.h"
 #include "XYZ/ECS/Entity.h"
@@ -81,7 +82,7 @@ namespace XYZ {
 
 	void Scene::OnAttach()
 	{
-		Renderer::Init();
+
 	}
 
 	void Scene::OnEvent(Event& e)
@@ -105,16 +106,16 @@ namespace XYZ {
 		// 3D part here
 
 		///////////////
-		Renderer2D::BeginScene({ viewProjMatrix });
+		SceneRendererCamera renderCamera;
+		renderCamera.Camera = m_MainCamera->Camera;
+		renderCamera.ViewMatrix = glm::inverse(m_MainCameraTransform->GetTransform());
+		SceneRenderer::BeginScene(this, renderCamera);
 		for (int i = 0; i < m_RenderGroup->Size(); ++i)
 		{
 			auto [transform, sprite] = (*m_RenderGroup)[i];
-			Renderer2D::SetMaterial(sprite->Material);
-			Renderer2D::SubmitQuad(transform->GetTransform(), sprite->SubTexture->GetTexCoords(), sprite->TextureID, sprite->Color);
+			SceneRenderer::SubmitSprite(sprite, transform->GetTransform());
 		}
-		Renderer2D::Flush();
-		Renderer2D::FlushLines();
-		Renderer2D::EndScene();
+		SceneRenderer::EndScene();
 	}
 
 	void Scene::OnUpdate(Timestep ts)
@@ -139,25 +140,21 @@ namespace XYZ {
 
 		///////////////
 		
-		
 		float cameraWidth = camera.GetZoomLevel() * camera.GetAspectRatio() * 2;
 		float cameraHeight = camera.GetZoomLevel() * 2;
 		glm::mat4 gridTransform = glm::translate(glm::mat4(1.0f), camera.GetPosition()) * glm::scale(glm::mat4(1.0f), { cameraWidth,cameraHeight,1.0f });
 
-		Renderer2D::BeginScene({camera.GetViewProjectionMatrix()});
-		Renderer2D::ShowGrid(gridTransform, glm::vec2(16.025f * camera.GetAspectRatio(), 16.025f ));
-		
+
+		SceneRendererCamera renderCamera;
+		renderCamera.Camera = camera;
+		renderCamera.ViewMatrix = camera.GetViewMatrix();
+		SceneRenderer::BeginScene(this, renderCamera);
 		for (int i = 0; i < m_RenderGroup->Size(); ++i)
 		{
 			auto [transform, sprite] = (*m_RenderGroup)[i];
-			Renderer2D::SetMaterial(sprite->Material);
-			Renderer2D::SubmitQuad(transform->GetTransform(), sprite->SubTexture->GetTexCoords(), sprite->TextureID, sprite->Color);
+			SceneRenderer::SubmitSprite(sprite, transform->GetTransform());
 		}
-
-		
-		Renderer2D::Flush();
-		Renderer2D::FlushLines();
-		Renderer2D::EndScene();		
+		SceneRenderer::EndScene();
 	}
 
 	Entity Scene::GetEntity(uint32_t index)

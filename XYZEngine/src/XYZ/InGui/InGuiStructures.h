@@ -77,9 +77,9 @@ namespace XYZ {
 	{
 		InGuiRenderConfiguration();
 
-		Ref<Font>		  Font;
-		Ref<Texture2D>	  InTexture;
-		Ref<Material>	  InMaterial;
+		Ref<Font>		   Font;
+		Ref<Texture2D>	   Texture;
+		Ref<XYZ::Material> Material;
 
 		enum
 		{

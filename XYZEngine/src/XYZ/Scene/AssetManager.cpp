@@ -389,9 +389,8 @@ namespace XYZ {
 		XYZ_ASSERT(data["Material"], "Incorrect file format ");
 
 
-
 		auto shader = Shader::Create(data["ShaderAssetPath"].as<std::string>());
-		Ref<Material> material = Material::Create(shader);
+		Ref<Material> material = Ref<Material>::Create(shader);
 
 		for (auto& seq : data["Textures"])
 		{

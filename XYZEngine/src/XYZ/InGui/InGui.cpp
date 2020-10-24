@@ -347,10 +347,9 @@ namespace XYZ {
 			pos.y < point.y);
 	}
 
-	void InGui::Init(const InGuiRenderConfiguration& renderConfig)
+	void InGui::Init()
 	{
 		s_Context = new InGuiContext;
-		s_Context->RenderConfiguration = renderConfig;
 		s_Context->GetPerFrameData().WindowSize.x = Input::GetWindowSize().first;
 		s_Context->GetPerFrameData().WindowSize.y = Input::GetWindowSize().second;
 		s_Context->GetPerFrameData().Flags |= InGuiPerFrameFlag::ClickHandled;
@@ -386,7 +385,7 @@ namespace XYZ {
 
 		InGuiRenderer::BeginScene({ s_Context->GetPerFrameData().ViewProjectionMatrix, s_Context->GetPerFrameData().WindowSize });
 		InGuiRenderer::SetTexturePairs(s_Context->GetPerFrameData().TexturePairs);
-		InGuiRenderer::SetMaterial(s_Context->RenderConfiguration.InMaterial);
+		InGuiRenderer::SetMaterial(s_Context->RenderConfiguration.Material);
 		
 		for (auto mesh : s_Context->GetRenderQueue().GetMeshes())
 		{
@@ -425,7 +424,7 @@ namespace XYZ {
 	{
 		InGuiRenderer::BeginScene({ s_Context->GetPerFrameData().ViewProjectionMatrix, s_Context->GetPerFrameData().WindowSize });
 		InGuiRenderer::SetTexturePairs(s_Context->GetPerFrameData().TexturePairs);
-		InGuiRenderer::SetMaterial(s_Context->RenderConfiguration.InMaterial);
+		InGuiRenderer::SetMaterial(s_Context->RenderConfiguration.Material);
 
 		for (auto mesh : s_Context->GetRenderQueue().GetMeshes())
 		{
@@ -473,7 +472,7 @@ namespace XYZ {
 
 		frameData.WindowSpaceOffset.x = window->Position.x;
 		frameData.WindowSpaceOffset.y = window->Position.y + window->Size.y;
-		frameData.ActiveMesh->Material = renderConfig.InMaterial;
+		frameData.ActiveMesh->Material = renderConfig.Material;
 
 		// Check if window is hoovered
 		glm::vec2 winSize = window->Size + glm::vec2(0.0f, InGuiWindow::PanelSize);
@@ -1183,7 +1182,7 @@ namespace XYZ {
 
 		frameData.WindowSpaceOffset.x = window->Position.x;
 		frameData.WindowSpaceOffset.y = window->Position.y + window->Size.y;
-		frameData.ActiveMesh->Material = renderConfig.InMaterial;
+		frameData.ActiveMesh->Material = renderConfig.Material;
 
 		// Check if window is hoovered
 		glm::vec2 winSize = window->Size + glm::vec2(0.0f, InGuiWindow::PanelSize);
@@ -1291,7 +1290,7 @@ namespace XYZ {
 	bool InGui::OnWindowResize(const glm::vec2& winSize)
 	{
 		s_Context->GetPerFrameData().WindowSize = winSize;
-		s_Context->RenderConfiguration.InMaterial->Set("u_ViewportSize", s_Context->GetPerFrameData().WindowSize);
+		s_Context->RenderConfiguration.Material->Set("u_ViewportSize", s_Context->GetPerFrameData().WindowSize);
 		s_Context->DockSpace->OnWindowResize(winSize);
 		return false;
 	}
@@ -1414,7 +1413,7 @@ namespace XYZ {
 	void InGui::SetInGuiMesh(InGuiMesh* mesh, InGuiLineMesh* lineMesh, bool overlay)
 	{
 		XYZ_ASSERT(mesh && lineMesh, "Meshes can not be null");
-		mesh->Material = s_Context->RenderConfiguration.InMaterial;
+		mesh->Material = s_Context->RenderConfiguration.Material;
 		s_Context->GetPerFrameData().ActiveMesh = mesh;
 		s_Context->GetPerFrameData().ActiveLineMesh = lineMesh;
 		if (overlay)

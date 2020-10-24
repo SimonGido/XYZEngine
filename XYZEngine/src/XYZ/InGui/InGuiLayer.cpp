@@ -11,7 +11,7 @@
 namespace XYZ {
 	void InGuiLayer::OnAttach()
 	{	
-		InGui::Init({});
+		InGui::Init();
 	}
 	void InGuiLayer::OnDetach()
 	{

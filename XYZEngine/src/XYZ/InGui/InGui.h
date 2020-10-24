@@ -27,7 +27,7 @@ namespace XYZ {
 	class InGui
 	{
 	public:
-		static void Init(const InGuiRenderConfiguration& renderConfig);
+		static void Init();
 		static void Destroy();
 
 		static void BeginFrame();

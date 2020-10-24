@@ -88,12 +88,12 @@ namespace XYZ {
 
 		auto& renderConfig = InGui::GetRenderConfiguration();
 		float divisor = 4.0f;
-		renderConfig.SubTexture[FOLDER] =   Ref<SubTexture2D>::Create(renderConfig.InTexture, glm::vec2(0, 3), glm::vec2(renderConfig.InTexture->GetWidth() / divisor, renderConfig.InTexture->GetHeight() / divisor));
-		renderConfig.SubTexture[SPRITE] =   Ref<SubTexture2D>::Create(renderConfig.InTexture, glm::vec2(0, 2), glm::vec2(renderConfig.InTexture->GetWidth() / divisor, renderConfig.InTexture->GetHeight() / divisor));
-		renderConfig.SubTexture[TEXTURE] =  Ref<SubTexture2D>::Create(renderConfig.InTexture, glm::vec2(2, 3), glm::vec2(renderConfig.InTexture->GetWidth() / divisor, renderConfig.InTexture->GetHeight() / divisor));
-		renderConfig.SubTexture[MATERIAL] = Ref<SubTexture2D>::Create(renderConfig.InTexture, glm::vec2(3, 3), glm::vec2(renderConfig.InTexture->GetWidth() / divisor, renderConfig.InTexture->GetHeight() / divisor));
-		renderConfig.SubTexture[SHADER] =   Ref<SubTexture2D>::Create(renderConfig.InTexture, glm::vec2(1, 3), glm::vec2(renderConfig.InTexture->GetWidth() / divisor, renderConfig.InTexture->GetHeight() / divisor));
-		renderConfig.SubTexture[LOGO] =		Ref<SubTexture2D>::Create(renderConfig.InTexture, glm::vec2(1, 0), glm::vec2(renderConfig.InTexture->GetWidth() / (divisor / 2), renderConfig.InTexture->GetHeight() / (divisor / 2)));
+		renderConfig.SubTexture[FOLDER] =   Ref<SubTexture2D>::Create(renderConfig.Texture, glm::vec2(0, 3), glm::vec2(renderConfig.Texture->GetWidth() / divisor, renderConfig.Texture->GetHeight() / divisor));
+		renderConfig.SubTexture[SPRITE] =   Ref<SubTexture2D>::Create(renderConfig.Texture, glm::vec2(0, 2), glm::vec2(renderConfig.Texture->GetWidth() / divisor, renderConfig.Texture->GetHeight() / divisor));
+		renderConfig.SubTexture[TEXTURE] =  Ref<SubTexture2D>::Create(renderConfig.Texture, glm::vec2(2, 3), glm::vec2(renderConfig.Texture->GetWidth() / divisor, renderConfig.Texture->GetHeight() / divisor));
+		renderConfig.SubTexture[MATERIAL] = Ref<SubTexture2D>::Create(renderConfig.Texture, glm::vec2(3, 3), glm::vec2(renderConfig.Texture->GetWidth() / divisor, renderConfig.Texture->GetHeight() / divisor));
+		renderConfig.SubTexture[SHADER] =   Ref<SubTexture2D>::Create(renderConfig.Texture, glm::vec2(1, 3), glm::vec2(renderConfig.Texture->GetWidth() / divisor, renderConfig.Texture->GetHeight() / divisor));
+		renderConfig.SubTexture[LOGO] =		Ref<SubTexture2D>::Create(renderConfig.Texture, glm::vec2(1, 0), glm::vec2(renderConfig.Texture->GetWidth() / (divisor / 2), renderConfig.Texture->GetHeight() / (divisor / 2)));
 	}
 	bool ProjectBrowserPanel::OnInGuiRender()
 	{

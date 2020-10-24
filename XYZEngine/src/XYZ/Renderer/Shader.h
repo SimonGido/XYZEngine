@@ -117,7 +117,7 @@ namespace XYZ {
 
 		virtual uint32_t GetUniformSize() const = 0;
 		virtual const std::vector<Uniform>& GetUniforms() const = 0;
-
+		virtual uint32_t GetRendererID() const = 0;
 		/**
 		* Create Shader
 		* @param[in] path	File path to the glsl code

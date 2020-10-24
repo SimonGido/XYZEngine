@@ -1,22 +1,19 @@
 #include "stdafx.h"
 #include "Material.h"
 
-#include "MaterialManager.h"
-
-
 
 namespace XYZ {
 	
 	Material::Material(const Ref<Shader>& shader)
 	{
 		m_Shader = shader;
-		m_Buffer = new unsigned char[shader->GetUniformSize()];
+		m_Buffer.Allocate(shader->GetUniformSize());
 		m_Shader->AddReloadCallback(std::bind(&Material::OnShaderReload, this));
+		m_Key = m_Shader->GetRendererID();
 	}
 
 	Material::~Material()
 	{
-		int16_t key = (int16_t)m_Key;
 		delete[] m_Buffer;
 	}
 
@@ -28,27 +25,17 @@ namespace XYZ {
 			auto& texture = m_Textures[i];
 			if (texture)
 				texture->Bind(i);
-
 		}
 
 		m_Shader->SetUniforms(m_Buffer);
 		m_Shader->UploadRoutines();
 	}
 
-
-	Ref<Material> Material::Create(const Ref<Shader>& shader)
-	{
-		auto material = Ref<Material>::Create(shader);
-		material->m_Key = (int64_t)MaterialManager::Get().RegisterMaterial(material);
-		return material;
-	}
-
-
-
 	void Material::OnShaderReload()
 	{
 		delete[] m_Buffer;
-		m_Buffer = new unsigned char[m_Shader->GetUniformSize()];
+		m_Buffer.Allocate(m_Shader->GetUniformSize());
+		m_Key = m_Shader->GetRendererID();
 
 		for (auto& it : m_MaterialInstances)
 			it->OnShaderReload();
@@ -59,7 +46,7 @@ namespace XYZ {
 	{
 		m_Buffer = new unsigned char[m_Material->m_Shader->GetUniformSize()];
 		m_Material->m_MaterialInstances.insert(this);
-		memcpy(m_Buffer, m_Material->m_Buffer, m_Material->m_Shader->GetUniformSize());
+		m_Buffer = ByteBuffer::Copy(m_Material->m_Buffer, m_Material->m_Shader->GetUniformSize());
 	}
 
 	MaterialInstance::~MaterialInstance()
@@ -81,14 +68,15 @@ namespace XYZ {
 	void MaterialInstance::OnShaderReload()
 	{
 		delete[] m_Buffer;
-		m_Buffer = new unsigned char[m_Material->m_Shader->GetUniformSize()];
+		m_Buffer.Allocate(m_Material->m_Shader->GetUniformSize());
 	}
 
 	void MaterialInstance::UpdateMaterialValue(const Uniform* uni)
 	{
 		if (m_UpdatedValues.find(uni->Name) == m_UpdatedValues.end())
 		{
-			memcpy(m_Buffer + uni->Offset, m_Material->m_Buffer + uni->Offset, uni->Size);
+			auto data = (uint8_t*)m_Material->m_Buffer + uni->Offset;
+			m_Buffer.Write(data, uni->Size, uni->Offset);
 		}
 	}
 

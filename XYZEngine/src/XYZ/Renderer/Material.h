@@ -4,7 +4,7 @@
 #include "RenderFlags.h"
 #include "XYZ/Core/Ref.h"
 #include "XYZ/Scene/Serializable.h"
-
+#include "XYZ/Utils/DataStructures/ByteBuffer.h"
 
 #include <queue>
 #include <bitset>
@@ -42,8 +42,9 @@ namespace XYZ {
 			auto uni = m_Shader->FindUniform(name);
 			XYZ_ASSERT(uni, "Material uniform does not exist ", name.c_str());
 			XYZ_ASSERT(uni->Offset + uni->Size <= m_Shader->GetUniformSize(), "Material uniform buffer out of range");
-			memcpy(m_Buffer + uni->Offset, (unsigned char*)& val, uni->Size);
+			
 
+			m_Buffer.Write((unsigned char*)&val, uni->Size, uni->Offset);
 			for (auto& it : m_MaterialInstances)
 				it->UpdateMaterialValue(uni);
 		}
@@ -56,14 +57,14 @@ namespace XYZ {
 		* @param[in] offset Offset in the shader array uniform
 		*/
 		template<typename T>
-		void Set(const std::string& name, const T& val, int size, int offset)
+		void Set(const std::string& name, const T& val, uint32_t size, uint32_t offset)
 		{
 			auto uni = m_Shader->FindUniform(name);
 			XYZ_ASSERT(uni, "Material uniform does not exist ", name.c_str());
 			XYZ_ASSERT(uni->Offset + uni->Size <= m_Shader->GetUniformSize(), "Material uniform buffer out of range");
 			XYZ_ASSERT(size + offset < uni->Size, "Material uniform out of range");
-			memcpy(m_Buffer + uni->Offset + offset, (unsigned char*)& val, size);
-
+	
+			m_Buffer.Write((unsigned char*)&val, size, uni->Offset + offset);
 			for (auto& it : m_MaterialInstances)
 				it->UpdateMaterialValue(uni);
 		}
@@ -79,7 +80,7 @@ namespace XYZ {
 			auto tex = m_Shader->FindTexture(name);
 			XYZ_ASSERT(tex, "Material texture does not exist ", name.c_str());
 
-			if ((int)m_Textures.size() <= tex->Slot + index)
+			if ((uint32_t)m_Textures.size() <= tex->Slot + index)
 				m_Textures.resize((size_t)tex->Slot + 1 + index);
 
 
@@ -110,12 +111,12 @@ namespace XYZ {
 		*/
 		void Bind();
 
-		bool ContainsProperty(const std::string& name) const
+		bool ContainsProperty(const std::string& name) const 
 		{
 			auto uni = m_Shader->FindUniform(name);
 			return uni;
 		}
-
+	
 		bool IsSet(RenderFlags flag) const { return ( m_Key & flag); }
 		/**
 		* @return sort key
@@ -134,12 +135,6 @@ namespace XYZ {
 		
 		const std::vector<Ref<Texture>>& GetTextures() const { return m_Textures; }
 
-		/**
-		* @param[in] shader
-		* @return shared_ptr to the Material
-		*/
-		static Ref<Material> Create(const Ref<Shader>& shader);
-
 
 		//TODO TEMPORARY
 		void ReloadShader() { m_Shader->Reload(); };
@@ -155,7 +150,7 @@ namespace XYZ {
 		std::unordered_set<MaterialInstance*> m_MaterialInstances;
 		std::vector<Ref<Texture>> m_Textures;
 
-		unsigned char* m_Buffer;
+		ByteBuffer m_Buffer;
 		int64_t m_Key = 0;
 	};
 
@@ -244,7 +239,7 @@ namespace XYZ {
 		Ref<Material> m_Material;
 
 
-		unsigned char* m_Buffer;
+		ByteBuffer m_Buffer;
 		std::unordered_set<std::string> m_UpdatedValues;
 	};
 

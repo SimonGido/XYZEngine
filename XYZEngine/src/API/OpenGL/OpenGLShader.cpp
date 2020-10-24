@@ -619,6 +619,7 @@ namespace XYZ {
 				break;
 			}
 
+			// Array
 			if (size > 1)
 				sizeUni *= size;
 		
