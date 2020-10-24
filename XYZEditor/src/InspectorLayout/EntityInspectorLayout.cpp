@@ -49,7 +49,6 @@ namespace XYZ {
 				auto spriteRenderer = context.GetComponent<SpriteRenderer>();
 				m_Sprite = spriteRenderer->SubTexture->GetName();
 				m_Material = spriteRenderer->Material->GetName();
-				m_SortLayer = spriteRenderer->SortLayer;
 			}
 			if (context.HasComponent<NativeScriptComponent>())
 			{
@@ -184,7 +183,7 @@ namespace XYZ {
 
 					}
 					InGui::Separator();
-					InGui::Int(1, "Sort Layer", &spriteRenderer->SortLayer, &m_SortLayer, {}, { 50.0f,25.0f }, m_SortLayerSelected);
+					InGui::Int(1, "Sort Layer", &spriteRenderer->SortLayer, &m_SortLayerLength, {}, { 50.0f,25.0f }, m_SortLayerSelected);
 					InGui::Separator();
 					
 					InGui::Float(4, "Color", glm::value_ptr(spriteRenderer->Color), m_ColorLengths, {}, { 50.0f, 25.0f }, m_ColorSelected);

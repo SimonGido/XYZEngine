@@ -46,5 +46,5 @@ Entities:
       SubTextureAssetPath: Assets\SubTextures\Backgroundfield.subtex
       Color: [1, 1, 1, 1]
       TextureID: 1
-      SortLayer: 0
+      SortLayer: 14
       IsVisible: true

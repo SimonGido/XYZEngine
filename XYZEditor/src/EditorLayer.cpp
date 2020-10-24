@@ -14,7 +14,17 @@ namespace XYZ {
 		glm::vec2 offset = { windowSize.x / 2,windowSize.y / 2 };
 		return { point.x - offset.x, offset.y - point.y };
 	}
+	static bool HasExtension(const std::string& path, const char* extension)
+	{
+		auto lastDot = path.rfind('.');
+		auto count = path.size() - lastDot;
 
+		std::string_view view(path.c_str() + lastDot + 1, count);
+
+		if (!view.compare(0, view.size() - 1, extension))
+			return true;
+		return false;
+	}
 	static bool Collide(const glm::vec2& pos, const glm::vec2& size, const glm::vec2& point)
 	{
 		return (pos.x + size.x > point.x &&
@@ -253,10 +263,16 @@ namespace XYZ {
 			auto [width, height] = Input::GetWindowSize();
 			glm::vec2 size = { 25.0f,25.0f };
 			glm::vec2 position = MouseToWorld({ mx,my }, { width,height }) - (size / 2.0f);
+			
+			
 			if (m_ProhibitedCursor && !m_EntityInspectorLayout.ValidExtension(m_ProjectBrowserPanel.GetSelectedFilePath()))
+			{
 				Application::Get().GetWindow().SetCustomCursor(m_ProhibitedCursor);
+			}
 			else
+			{
 				Application::Get().GetWindow().SetStandardCursor(WindowCursors::XYZ_ARROW_CURSOR);
+			}
 		}
 
 		if (m_GraphPanel.OnInGuiRender(ts))
@@ -370,7 +386,18 @@ namespace XYZ {
 		{
 			m_Dragging = false;
 			Application::Get().GetWindow().SetStandardCursor(WindowCursors::XYZ_ARROW_CURSOR);
-			m_EntityInspectorLayout.AttemptSetAsset(m_ProjectBrowserPanel.GetSelectedFilePath(), m_AssetManager);
+			m_EntityInspectorLayout.AttemptSetAsset(m_ProjectBrowserPanel.GetSelectedFilePath(), m_AssetManager);	
+			if (HasExtension(m_ProjectBrowserPanel.GetSelectedFilePath(), "png"))
+			{
+				auto texture = m_AssetManager.GetAsset<Texture2D>(m_ProjectBrowserPanel.GetSelectedFilePath());
+				auto spriteEditor = InGui::GetWindow(PanelID::SpriteEditor);
+				auto [mx, my] = Input::GetMousePosition();
+				auto [width, height] = Input::GetWindowSize();
+
+				glm::vec2 mousePos = MouseToWorld({ mx,my }, { width,height });
+				if (Collide(spriteEditor->Position, spriteEditor->Size, mousePos))
+					m_SpriteEditorPanel.SetContext(texture);
+			}
 		}
 		return false;
 	}
