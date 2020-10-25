@@ -28,7 +28,7 @@ namespace XYZ {
 		
 		m_Characters.resize(sc_NumGlyphs);
 		// quick and dirty max texture size estimate
-		int32_t maxDim = (1 + (face->size->metrics.height >> 6)) * ceilf(sqrtf(sc_NumGlyphs));
+		int32_t maxDim = (1 + (face->size->metrics.height >> 6)) * (int32_t)ceilf(sqrtf(sc_NumGlyphs));
 		int32_t texWidth = 1;
 		while (texWidth < maxDim)
 			texWidth <<= 1;
@@ -89,7 +89,7 @@ namespace XYZ {
 			(uint32_t)texWidth,(uint32_t)texHeight,4,
 			TextureWrap::Clamp,
 			TextureParam::Linear,
-			TextureParam::Nearest
+			TextureParam::Linear
 			});
 
 		m_Texture->SetData(pngData, pngData.GetSize());

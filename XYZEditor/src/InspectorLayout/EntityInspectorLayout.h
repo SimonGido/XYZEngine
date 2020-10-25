@@ -76,8 +76,10 @@ namespace XYZ {
 		int32_t m_SizeSelected = -1;
 		int32_t m_FarPlaneSelected = -1;
 		int32_t m_NearPlaneSelected = -1;
-		int32_t m_CameraPropsLength = 7;
 		
+		int32_t m_CameraSizeLength = 7;
+		int32_t m_CameraFarLength = 7;
+		int32_t m_CameraNearLength = 7;
 
 		uint8_t m_MaterialTextFlags = 0;
 		uint8_t m_SpriteTextFlags = 0;

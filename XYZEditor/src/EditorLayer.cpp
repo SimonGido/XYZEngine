@@ -171,7 +171,11 @@ namespace XYZ {
 		InGui::GetWindow(PanelID::Test)->Flags |= (InGuiWindowFlag::MenuEnabled | InGuiWindowFlag::Visible | InGuiWindowFlag::EventListener);
 
 		InGui::GetWindow(PanelID::Scene)->OnResizeCallback = Hook(&EditorLayer::onResizeSceneWindow, this);
-
+		
+		float divisor = 8.0f;
+		auto& renderConfig = InGui::GetRenderConfiguration();
+		renderConfig.SubTexture[PLAY] = Ref<SubTexture2D>::Create(renderConfig.Texture, glm::vec2(2, 2), glm::vec2(renderConfig.Texture->GetWidth() / divisor, renderConfig.Texture->GetHeight() / divisor));
+		renderConfig.SubTexture[PAUSE] = Ref<SubTexture2D>::Create(renderConfig.Texture, glm::vec2(2, 1), glm::vec2(renderConfig.Texture->GetWidth() / divisor, renderConfig.Texture->GetHeight() / divisor));
 
 		auto backgroundTexture = m_AssetManager.GetAsset<Texture2D>("Assets/Textures/Backgroundfield.png");
 		m_SpriteEditorPanel.SetContext(backgroundTexture);
@@ -237,7 +241,11 @@ namespace XYZ {
 		}
 	
 		m_Scene->OnUpdate(ts);
-		m_Scene->OnRenderEditor(m_EditorCamera); 
+
+		if (m_Scene->GetState() == SceneState::Edit)
+			m_Scene->OnRenderEditor(m_EditorCamera); 
+		else if (m_Scene->GetState() == SceneState::Play)
+			m_Scene->OnRender();
 	}
 	void EditorLayer::OnEvent(Event& event)
 	{
@@ -291,6 +299,17 @@ namespace XYZ {
 		{
 			m_ActiveWindow = true;
 			m_InspectorPanel.SetInspectorLayout(&m_EntityInspectorLayout);
+			auto& renderConfig = InGui::GetRenderConfiguration();
+			
+			if (InGui::Icon({}, glm::vec2(40.0f, 40.0f), renderConfig.SubTexture[PLAY], renderConfig.TextureID) & InGuiReturnType::Clicked)
+			{
+				m_Scene->OnPlay();
+				m_Scene->SetState(SceneState::Play);
+			}
+			if (InGui::Icon({}, glm::vec2(40.0f, 40.0f), renderConfig.SubTexture[PAUSE], renderConfig.TextureID) & InGuiReturnType::Clicked)
+			{
+				m_Scene->SetState(SceneState::Edit);
+			}
 			InGui::Selector(m_Selecting);
 		}
 		else

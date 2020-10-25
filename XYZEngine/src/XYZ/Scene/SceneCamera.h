@@ -32,12 +32,19 @@ namespace XYZ {
 
 		const SceneCameraPerspectiveProperties& GetPerspectiveProperties() const { return m_PerspectiveProperties; }
 		const SceneCameraOrthographicProperties& GetOrthographicProperties() const { return m_OrthographicProperties; }
+	
 
 		CameraProjectionType GetProjectionType() const { return m_ProjectionType; }
+	private:
+		void recalculate();
+
 	private:
 		CameraProjectionType m_ProjectionType = CameraProjectionType::Orthographic;
 
 		SceneCameraPerspectiveProperties m_PerspectiveProperties;
 		SceneCameraOrthographicProperties m_OrthographicProperties;
+
+		uint32_t m_ViewportWidth = 0;
+		uint32_t m_ViewportHeight = 0;
 	};
 }

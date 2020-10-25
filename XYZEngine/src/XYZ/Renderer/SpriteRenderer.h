@@ -28,8 +28,6 @@ namespace XYZ {
 		SpriteRenderer& operator =(const SpriteRenderer& other);
 		
 
-		
-
 		Ref<Material> Material;
 		Ref<SubTexture2D> SubTexture;
 		glm::vec4 Color;

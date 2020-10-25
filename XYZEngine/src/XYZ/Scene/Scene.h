@@ -36,45 +36,29 @@ namespace XYZ {
         ~Scene();
     
         Entity CreateEntity(const std::string& name);
-
         void DestroyEntity(Entity entity);
-
         void SetParent(Entity parent, Entity child);
-
         void SetState(SceneState state) { m_State = state; }
+        void SetViewportSize(uint32_t width, uint32_t height);
+        void SetSelectedEntity(uint32_t entity) { m_SelectedEntity = entity; }
 
-        /** Triggers when the scene is attached */
         void OnAttach();
-
         void OnPlay();
-
-        /** Triggers when the scene is detached */
         void OnDetach();
-
         void OnEvent(Event& e);
-
-
         void OnUpdate(Timestep ts);
-
         void OnRender();
         void OnRenderEditor(const EditorCamera& camera);
 
-        void SetViewportSize(uint32_t width, uint32_t height);
 
         SceneState GetState() const { return m_State; }
-
         Entity GetEntity(uint32_t index);
-
-        inline const std::string& GetName() const { return m_Name; }
-
-        inline const SceneCamera& GetMainCamera() const { return m_MainCamera->Camera; }
- 
         ECSManager& GetECS() { return m_ECS; }
-
-        void SetSelectedEntity(uint32_t entity) { m_SelectedEntity = entity; }
-
+        inline const std::string& GetName() const { return m_Name; }
+        inline const SceneCamera& GetMainCamera() const { return m_MainCamera->Camera; }
     private:
         void showSelection(uint32_t entity);
+        void showCamera(uint32_t entity);
 
     private:
         ECSManager m_ECS;
@@ -94,7 +78,16 @@ namespace XYZ {
         std::vector<uint32_t> m_Entities;
         std::unordered_map<uint32_t, uint32_t> m_SceneGraphMap;
 
-     
+        uint32_t m_ViewportWidth;
+        uint32_t m_ViewportHeight;
+        
+
+        Ref<Material> m_CameraMaterial;
+        Ref<Texture2D> m_CameraTexture;
+        Ref<SubTexture2D> m_CameraSubTexture;
+        SpriteRenderer* m_CameraSprite;
+         
+
         friend class Entity;
         friend class Asset<Scene>;
         friend class SceneHierarchyPanel;

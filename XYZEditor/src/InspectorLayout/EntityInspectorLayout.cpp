@@ -205,6 +205,9 @@ namespace XYZ {
 				if (m_CameraOpen)
 				{
 					auto& camera = m_Context.GetComponent<CameraComponent>()->Camera;
+					auto& scale = m_Context.GetComponent<TransformComponent>()->Scale;
+					scale.x = 1.0f;
+					scale.y = 1.0f;
 					InGui::BeginPopup("Projection Type", glm::vec2{}, glm::vec2{ 150, 25 }, m_CameraTypeOpen);
 					if (m_CameraTypeOpen)
 					{
@@ -224,11 +227,11 @@ namespace XYZ {
 						InGui::Text("Orthographic");
 						InGui::Separator();
 						auto props = camera.GetOrthographicProperties();
-						InGui::Float(1, "Size", &props.OrthographicSize, &m_CameraPropsLength, glm::vec2{}, glm::vec2{ 150.0f,25.0f }, m_SizeSelected);
+						InGui::Float(1, "Size", &props.OrthographicSize, &m_CameraSizeLength, glm::vec2{}, glm::vec2{ 150.0f,25.0f }, m_SizeSelected);
 						InGui::Separator();
-						InGui::Float(1, "Near Plane", &props.OrthographicNear, &m_CameraPropsLength, glm::vec2{}, glm::vec2{ 150.0f,25.0f }, m_NearPlaneSelected);
+						InGui::Float(1, "Near Plane", &props.OrthographicNear, &m_CameraNearLength, glm::vec2{}, glm::vec2{ 150.0f,25.0f }, m_NearPlaneSelected);
 						InGui::Separator();
-						InGui::Float(1, "Far Plane", &props.OrthographicFar, &m_CameraPropsLength, glm::vec2{}, glm::vec2{ 150.0f,25.0f }, m_FarPlaneSelected);
+						InGui::Float(1, "Far Plane", &props.OrthographicFar, &m_CameraFarLength, glm::vec2{}, glm::vec2{ 150.0f,25.0f }, m_FarPlaneSelected);
 						InGui::Separator();
 						camera.SetOrthographic(props);
 					}
@@ -239,9 +242,9 @@ namespace XYZ {
 						auto props = camera.GetPerspectiveProperties();	
 						InGui::Slider("Field of View", glm::vec2(), glm::vec2{ 180.0f,15.0f }, props.PerspectiveFOV);
 						InGui::Separator();
-						InGui::Float(1, "Near Plane", &props.PerspectiveNear, &m_CameraPropsLength, glm::vec2{}, glm::vec2{ 150.0f,25.0f }, m_NearPlaneSelected);
+						InGui::Float(1, "Near Plane", &props.PerspectiveNear, &m_CameraNearLength, glm::vec2{}, glm::vec2{ 150.0f,25.0f }, m_NearPlaneSelected);
 						InGui::Separator();
-						InGui::Float(1, "Far Plane", &props.PerspectiveFar, &m_CameraPropsLength, glm::vec2{}, glm::vec2{ 150.0f,25.0f }, m_FarPlaneSelected);
+						InGui::Float(1, "Far Plane", &props.PerspectiveFar, &m_CameraFarLength, glm::vec2{}, glm::vec2{ 150.0f,25.0f }, m_FarPlaneSelected);
 						InGui::Separator();
 						camera.SetPerspective(props);
 					}

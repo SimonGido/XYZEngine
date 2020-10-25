@@ -51,7 +51,9 @@ namespace XYZ {
 			TEXTURE,
 			MATERIAL,
 			SHADER,
-			LOGO
+			LOGO,
+			PLAY,
+			PAUSE
 		};
 
 		InGuiWindow* m_SceneWindow = nullptr;

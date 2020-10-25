@@ -7,8 +7,8 @@ namespace XYZ {
 
 	struct UIRenderData
 	{
-		glm::mat4 ViewProjection;
-		glm::vec2 ViewportSize;
+		glm::mat4 ViewProjection = glm::mat4(1.0f);
+		glm::vec2 ViewportSize = glm::vec2(1.0f);
 	};
 
 	struct InGuiVertex

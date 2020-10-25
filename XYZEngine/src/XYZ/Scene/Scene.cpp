@@ -30,11 +30,28 @@ namespace XYZ {
 
 		m_MainCamera = nullptr;
 		m_MainCameraTransform = nullptr;
+
+		m_ViewportWidth  = 0;
+		m_ViewportHeight = 0;
+
+		m_CameraMaterial = Ref<Material>::Create(Shader::Create("Assets/Shaders/DefaultShader.glsl"));
+		m_CameraTexture = Texture2D::Create(TextureWrap::Clamp, TextureParam::Linear, TextureParam::Nearest, "Assets/Textures/Gui/Camera.png");
+		m_CameraSubTexture = Ref<SubTexture2D>::Create(m_CameraTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+		m_CameraMaterial->Set("u_Color", glm::vec4(1.0f));
+		m_CameraMaterial->Set("u_Texture", m_CameraTexture);
+
+		m_CameraSprite = new SpriteRenderer(
+			m_CameraMaterial,
+			m_CameraSubTexture,
+			glm::vec4(1.0f),
+			0,
+			100
+		);
 	}
 
 	Scene::~Scene() 
 	{
-
+		delete m_CameraSprite;
 	}
 
 	Entity Scene::CreateEntity(const std::string& name)
@@ -78,8 +95,7 @@ namespace XYZ {
 	}
 
 	void Scene::OnPlay()
-	{
-		
+	{	
 		for (int i = 0; i < m_CameraGroup->Size(); ++i)
 		{
 			auto [transform, camera] = (*m_CameraGroup)[i];
@@ -93,8 +109,7 @@ namespace XYZ {
 		}
 		else
 		{
-			m_MainCamera->Camera.SetOrthographic({ 4.0f });
-			m_MainCamera->Camera.SetViewportSize(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
+			m_MainCamera->Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 		}
 	}
 
@@ -111,17 +126,14 @@ namespace XYZ {
 	}
 
 	void Scene::OnRender()
-	{		
-		glm::mat4 viewProjMatrix = m_MainCamera->Camera.GetProjectionMatrix() 
-			* glm::inverse(m_MainCameraTransform->GetTransform());
-
-
+	{	
 		// 3D part here
 
 		///////////////
 		SceneRendererCamera renderCamera;
 		renderCamera.Camera = m_MainCamera->Camera;
 		renderCamera.ViewMatrix = glm::inverse(m_MainCameraTransform->GetTransform());
+		SceneRenderer::GetOptions().ShowGrid = false;
 		SceneRenderer::BeginScene(this, renderCamera);
 		for (int i = 0; i < m_RenderGroup->Size(); ++i)
 		{
@@ -152,14 +164,16 @@ namespace XYZ {
 		// 3D part here
 
 		///////////////
+
 		float cameraWidth = camera.GetZoomLevel() * camera.GetAspectRatio() * 2;
 		float cameraHeight = camera.GetZoomLevel() * 2;
 		glm::mat4 gridTransform = glm::translate(glm::mat4(1.0f), camera.GetPosition()) * glm::scale(glm::mat4(1.0f), { cameraWidth,cameraHeight,1.0f });
-		Renderer2D::SubmitGrid(gridTransform, glm::vec2(16.025f * camera.GetAspectRatio(), 16.025f), 0.025f);
 
 		SceneRendererCamera renderCamera;
 		renderCamera.Camera = camera;
 		renderCamera.ViewMatrix = camera.GetViewMatrix();
+		
+		SceneRenderer::GetOptions().ShowGrid = true;
 		SceneRenderer::SetGridProperties({ gridTransform,{8.025f * (cameraWidth / camera.GetZoomLevel()), 8.025f * (cameraHeight / camera.GetZoomLevel())},0.025f });
 		SceneRenderer::BeginScene(this, renderCamera);
 		for (int i = 0; i < m_RenderGroup->Size(); ++i)
@@ -169,14 +183,24 @@ namespace XYZ {
 		}
 		if (m_SelectedEntity < MAX_ENTITIES)
 		{
-			showSelection(m_SelectedEntity);
+			if (m_ECS.Contains<CameraComponent>(m_SelectedEntity))
+			{
+				showCamera(m_SelectedEntity);
+			}
+			else
+			{
+				showSelection(m_SelectedEntity);
+			}
 		}
 		SceneRenderer::EndScene();
+
 	}
 
 	void Scene::SetViewportSize(uint32_t width, uint32_t height)
 	{
 		SceneRenderer::SetViewportSize(width, height);
+		m_ViewportWidth = width;
+		m_ViewportHeight = height;
 	}
 
 	Entity Scene::GetEntity(uint32_t index)
@@ -199,6 +223,33 @@ namespace XYZ {
 		Renderer2D::SubmitLine(topRight, bottomRight);
 		Renderer2D::SubmitLine(bottomRight, bottomLeft);
 		Renderer2D::SubmitLine(bottomLeft, topLeft);
+	}
+
+	void Scene::showCamera(uint32_t entity)
+	{
+		auto& camera = m_ECS.GetComponent<CameraComponent>(entity)->Camera;
+		auto transformComponent = m_ECS.GetComponent<TransformComponent>(entity);
+	
+		SceneRenderer::SubmitSprite(m_CameraSprite, transformComponent->GetTransform());
+
+		auto& translation = transformComponent->Translation;
+		if (camera.GetProjectionType() == CameraProjectionType::Orthographic)
+		{
+			float size = camera.GetOrthographicProperties().OrthographicSize;
+			float aspect = (float)m_ViewportWidth / (float)m_ViewportHeight;
+			float width = size * aspect;
+			float height = size;
+
+			glm::vec3 topLeft = { translation.x - width / 2.0f,translation.y + height / 2.0f,1.0f };
+			glm::vec3 topRight = { translation.x + width / 2.0f,translation.y + height / 2.0f,1.0f };
+			glm::vec3 bottomLeft = { translation.x - width / 2.0f,translation.y - height / 2.0f,1.0f };
+			glm::vec3 bottomRight = { translation.x + width / 2.0f,translation.y - height / 2.0f,1.0f };
+
+			Renderer2D::SubmitLine(topLeft, topRight);
+			Renderer2D::SubmitLine(topRight, bottomRight);
+			Renderer2D::SubmitLine(bottomRight, bottomLeft);
+			Renderer2D::SubmitLine(bottomLeft, topLeft);
+		}
 	}
 
 }
