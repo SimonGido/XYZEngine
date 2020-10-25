@@ -74,7 +74,7 @@ namespace XYZ {
 						auto newSubTexture = assetManager.GetAsset<SubTexture2D>(filepath);
 						spriteRenderer->SubTexture = newSubTexture;
 						m_Sprite = spriteRenderer->SubTexture->GetName();
-					}			
+					}
 				}
 				else if (m_MaterialTextFlags & InGuiReturnType::Hoovered)
 				{
@@ -114,13 +114,50 @@ namespace XYZ {
 		return false;
 	}
 	void EntityInspectorLayout::OnInGuiRender()
-	{	
+	{
 		if (m_Context)
 		{
+			InGui::MenuBar("Add Component", 150, m_AddComponentOpen);
+			if (m_AddComponentOpen)
+			{
+				if (!m_Context.HasComponent<TransformComponent>())
+				{
+					if (InGui::MenuItem("Add Transform", { 150,25 }) & InGuiReturnType::Clicked)
+					{
+						m_Context.EmplaceComponent<TransformComponent>();
+						m_AddComponentOpen = false;
+					}
+				}
+				if (!m_Context.HasComponent<SpriteRenderer>())
+				{
+					if (InGui::MenuItem("Add SpriteRenderer", { 150,25 }) & InGuiReturnType::Clicked)
+					{
+						glm::vec4 color = { 1,1,1,1 };
+						m_Context.EmplaceComponent<SpriteRenderer>(
+							m_DefaultMaterial,
+							m_DefaultSubTexture,
+							color,
+							0,
+							0
+							);
+						m_AddComponentOpen = false;
+					}
+				}
+				if (!m_Context.HasComponent<NativeScriptComponent>())
+				{
+					if (InGui::MenuItem("Add Native Script", { 150,25 }) & InGuiReturnType::Clicked)
+					{
+						m_Context.EmplaceComponent<NativeScriptComponent>(nullptr, "");
+						m_AddComponentOpen = false;
+					}
+				}
+			}
+
+
 			if (m_Context.HasComponent<SceneTagComponent>())
 			{
 				auto sceneTag = m_Context.GetComponent<SceneTagComponent>();
-				InGui::BeginGroup("Scene Tag Component", {0,0}, m_SceneTagOpen);
+				InGui::BeginGroup("Scene Tag Component", { 0,0 }, m_SceneTagOpen);
 				if (m_SceneTagOpen)
 				{
 					InGui::TextArea("Name", sceneTag->Name, {}, { 150, 25 }, m_SceneTagModified);
@@ -140,25 +177,74 @@ namespace XYZ {
 					InGui::Float(3, "Position", glm::value_ptr(transformComponent->Translation), m_PositionLengths, {}, { 50.0f, 25.0f }, m_PositionSelected);
 					if (m_PositionSelected != -1)
 					{
-						
+
 					}
 					InGui::Separator();
 
 					InGui::Float(3, "Rotation", glm::value_ptr(transformComponent->Rotation), m_RotationLengths, {}, { 50.0f, 25.0f }, m_RotationSelected);
 					if (m_RotationSelected != -1)
 					{
-						
+
 					}
 					InGui::Separator();
 
 					InGui::Float(3, "Scale", glm::value_ptr(transformComponent->Scale), m_ScaleLengths, {}, { 50.0f, 25.0f }, m_ScaleSelected);
 					if (m_ScaleSelected != -1)
 					{
-						
+
 					}
 					InGui::Separator();
 
 					InGui::EndGroup();
+				}
+			}
+
+			if (m_Context.HasComponent<CameraComponent>())
+			{
+				InGui::BeginGroup("Camera Component", { 0,0 }, m_CameraOpen);
+				if (m_CameraOpen)
+				{
+					auto& camera = m_Context.GetComponent<CameraComponent>()->Camera;
+					InGui::BeginPopup("Projection Type", glm::vec2{}, glm::vec2{ 150, 25 }, m_CameraTypeOpen);
+					if (m_CameraTypeOpen)
+					{
+						if (InGui::PopupItem("Orthographic") & InGuiReturnType::Clicked)
+						{
+							camera.SetProjectionType(CameraProjectionType::Orthographic);
+							m_CameraTypeOpen = false;
+						}
+						if (InGui::PopupItem("Perspective") & InGuiReturnType::Clicked)
+						{
+							camera.SetProjectionType(CameraProjectionType::Perspective);
+							m_CameraTypeOpen = false;
+						}
+					}
+					if (camera.GetProjectionType() == CameraProjectionType::Orthographic)
+					{
+						InGui::Text("Orthographic");
+						InGui::Separator();
+						auto props = camera.GetOrthographicProperties();
+						InGui::Float(1, "Size", &props.OrthographicSize, &m_CameraPropsLength, glm::vec2{}, glm::vec2{ 150.0f,25.0f }, m_SizeSelected);
+						InGui::Separator();
+						InGui::Float(1, "Near Plane", &props.OrthographicNear, &m_CameraPropsLength, glm::vec2{}, glm::vec2{ 150.0f,25.0f }, m_NearPlaneSelected);
+						InGui::Separator();
+						InGui::Float(1, "Far Plane", &props.OrthographicFar, &m_CameraPropsLength, glm::vec2{}, glm::vec2{ 150.0f,25.0f }, m_FarPlaneSelected);
+						InGui::Separator();
+						camera.SetOrthographic(props);
+					}
+					else if (camera.GetProjectionType() == CameraProjectionType::Perspective)
+					{
+						InGui::Text("Perspective");
+						InGui::Separator();
+						auto props = camera.GetPerspectiveProperties();	
+						InGui::Slider("Field of View", glm::vec2(), glm::vec2{ 180.0f,15.0f }, props.PerspectiveFOV);
+						InGui::Separator();
+						InGui::Float(1, "Near Plane", &props.PerspectiveNear, &m_CameraPropsLength, glm::vec2{}, glm::vec2{ 150.0f,25.0f }, m_NearPlaneSelected);
+						InGui::Separator();
+						InGui::Float(1, "Far Plane", &props.PerspectiveFar, &m_CameraPropsLength, glm::vec2{}, glm::vec2{ 150.0f,25.0f }, m_FarPlaneSelected);
+						InGui::Separator();
+						camera.SetPerspective(props);
+					}
 				}
 			}
 
@@ -183,9 +269,24 @@ namespace XYZ {
 
 					}
 					InGui::Separator();
+					
 					InGui::Int(1, "Sort Layer", &spriteRenderer->SortLayer, &m_SortLayerLength, {}, { 50.0f,25.0f }, m_SortLayerSelected);
 					InGui::Separator();
 					
+					InGui::Int(1, "Texture ID", (int32_t*)&spriteRenderer->TextureID, &m_TextureIDLength, {}, { 50.0f,25.0f }, m_TextureIDSelected);
+					if (spriteRenderer->Material->GetNumberOfTextures() <= spriteRenderer->TextureID)
+					{
+						if (spriteRenderer->Material->GetNumberOfTextures())
+						{
+							spriteRenderer->TextureID = spriteRenderer->Material->GetNumberOfTextures() - 1;
+						}
+						else
+						{
+							spriteRenderer->TextureID = 0;
+						}
+					}
+					InGui::Separator();
+
 					InGui::Float(4, "Color", glm::value_ptr(spriteRenderer->Color), m_ColorLengths, {}, { 50.0f, 25.0f }, m_ColorSelected);
 					if (m_ColorSelected != -1)
 					{
@@ -200,27 +301,6 @@ namespace XYZ {
 						InGui::ColorPicker4("Color", { 255,255 }, m_ColorPallete, spriteRenderer->Color);
 					}
 					InGui::Separator();
-
-					static bool textureIdOpen = false;
-					InGui::BeginPopup("Texture ID", glm::vec2{}, glm::vec2{ 90.0f,25.0f }, textureIdOpen);
-					if (textureIdOpen)
-					{
-						for (uint32_t i = 0; i < spriteRenderer->Material->GetTextures().size(); ++i)
-						{
-							char buffer[5];
-							sprintf(buffer, "%d", i);
-							if (InGui::PopupItem(buffer) & InGuiReturnType::Clicked)
-							{
-								spriteRenderer->TextureID = i;
-								textureIdOpen = false;
-							}
-							InGui::Separator();
-						}
-					}
-					InGui::EndPopup();
-
-					InGui::Separator();
-
 
 					InGui::EndGroup();
 				}
@@ -257,42 +337,6 @@ namespace XYZ {
 					InGui::Separator();
 
 					InGui::EndGroup();
-				}
-			}
-
-			InGui::MenuBar("Add Component", 150, m_AddComponentOpen);
-			if (m_AddComponentOpen)
-			{
-				if (!m_Context.HasComponent<TransformComponent>())
-				{
-					if (InGui::MenuItem("Add Transform", { 150,25 }) & InGuiReturnType::Clicked)
-					{
-						m_Context.EmplaceComponent<TransformComponent>();
-						m_AddComponentOpen = false;
-					}
-				}
-				if (!m_Context.HasComponent<SpriteRenderer>())
-				{
-					if (InGui::MenuItem("Add SpriteRenderer", { 150,25 }) & InGuiReturnType::Clicked)
-					{
-						glm::vec4 color = { 1,1,1,1 };
-						m_Context.EmplaceComponent<SpriteRenderer>(
-							m_DefaultMaterial,
-							m_DefaultSubTexture,
-							color,
-							0,
-							0
-							);
-						m_AddComponentOpen = false;
-					}
-				}
-				if (!m_Context.HasComponent<NativeScriptComponent>())
-				{
-					if (InGui::MenuItem("Add Native Script", { 150,25 }) & InGuiReturnType::Clicked)
-					{
-						m_Context.EmplaceComponent<NativeScriptComponent>(nullptr, "");
-						m_AddComponentOpen = false;
-					}
 				}
 			}
 		}

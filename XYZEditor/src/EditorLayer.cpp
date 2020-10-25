@@ -308,10 +308,7 @@ namespace XYZ {
 
 		if (InGui::Begin(PanelID::Test, "Test", { 0,0 }, { 200,200 }))
 		{
-			if (InGui::Button("Compile", { 100,25 }) & InGuiReturnType::Clicked)
-			{
-				PerModuleInterface::g_pRuntimeObjectSystem->CompileAll(true);
-			}
+			
 			InGui::MenuBar("File", 70, m_MenuOpen);
 			if (m_MenuOpen)
 			{
@@ -346,6 +343,10 @@ namespace XYZ {
 					m_MenuOpen = false;
 				}
 
+			}
+			if (InGui::Button("Compile", { 100,25 }) & InGuiReturnType::Clicked)
+			{
+				PerModuleInterface::g_pRuntimeObjectSystem->CompileAll(true);
 			}
 		}
 		InGui::End();

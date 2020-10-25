@@ -20,25 +20,16 @@ namespace XYZ {
 
 	Scene::Scene(const std::string& name)
 		:
-		m_Name(name)
+		m_Name(name),
+		m_SelectedEntity(Entity())
 	{
+		m_CameraGroup = m_ECS.CreateGroup<TransformComponent, CameraComponent>();
 		m_RenderGroup = m_ECS.CreateGroup<TransformComponent, SpriteRenderer>();
 		m_AnimateGroup = m_ECS.CreateGroup<AnimatorComponent>();
 		m_ScriptGroup = m_ECS.CreateGroup<NativeScriptComponent>();
 
-	
-				
-		m_MainCameraEntity = m_ECS.CreateEntity();
-		m_MainCamera = m_ECS.EmplaceComponent<CameraComponent>(m_MainCameraEntity);
-		m_MainCameraTransform = m_ECS.EmplaceComponent<TransformComponent>(m_MainCameraEntity);
-		
-		
-		m_Entities.push_back(m_MainCameraEntity);
-		uint32_t index = m_Entities.size() - 1;
-		m_SceneGraphMap.insert({ m_MainCameraEntity, index });
-
-		m_MainCamera->Camera.SetOrthographic(4.0f);	
-		m_MainCamera->Camera.SetViewportSize(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());	
+		m_MainCamera = nullptr;
+		m_MainCameraTransform = nullptr;
 	}
 
 	Scene::~Scene() 
@@ -84,6 +75,27 @@ namespace XYZ {
 	void Scene::OnAttach()
 	{
 
+	}
+
+	void Scene::OnPlay()
+	{
+		
+		for (int i = 0; i < m_CameraGroup->Size(); ++i)
+		{
+			auto [transform, camera] = (*m_CameraGroup)[i];
+			m_MainCamera = camera;
+			m_MainCameraTransform = transform;
+			break;
+		}
+		if (!m_MainCamera)
+		{
+			XYZ_LOG_ERR("No camera found in the scene");
+		}
+		else
+		{
+			m_MainCamera->Camera.SetOrthographic({ 4.0f });
+			m_MainCamera->Camera.SetViewportSize(Application::Get().GetWindow().GetWidth(), Application::Get().GetWindow().GetHeight());
+		}
 	}
 
 	void Scene::OnEvent(Event& e)

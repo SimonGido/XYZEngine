@@ -457,10 +457,31 @@ namespace XYZ {
 
 				out << YAML::EndMap; // TransformComponent
 			}
+			if (entity.HasComponent<CameraComponent>())
+			{
+				out << YAML::Key << "CameraComponent";
+				out << YAML::BeginMap; // CameraComponent
+
+				auto camera = entity.GetComponent<CameraComponent>()->Camera;
+				
+				auto& perspectiveProps = camera.GetPerspectiveProperties();
+				auto& orthoProps = camera.GetOrthographicProperties();
+				out << YAML::Key << "ProjectionType" << YAML::Value << ToUnderlying(camera.GetProjectionType());
+				
+				out << YAML::Key << "PerspectiveFOV" << YAML::Value << perspectiveProps.PerspectiveFOV;
+				out << YAML::Key << "PerspectiveNear" << YAML::Value << perspectiveProps.PerspectiveNear;
+				out << YAML::Key << "PerspectiveFar" << YAML::Value << perspectiveProps.PerspectiveFar;
+				
+				out << YAML::Key << "OrthographicSize" << YAML::Value <<  orthoProps.OrthographicSize;
+				out << YAML::Key << "OrthographicNear" << YAML::Value << orthoProps.OrthographicNear;
+				out << YAML::Key << "OrthographicFar" << YAML::Value <<  orthoProps.OrthographicFar;
+
+				out << YAML::EndMap; // CameraComponent
+			}
 			if (entity.HasComponent<SpriteRenderer>())
 			{
 				out << YAML::Key << "SpriteRenderer";
-				out << YAML::BeginMap; // RenderComponent2D
+				out << YAML::BeginMap; // SpriteRenderer
 				auto renderComponent = entity.GetComponent<SpriteRenderer>();
 				auto materialPath = renderComponent->Material->GetFilepath();
 				if (materialPath.empty())
@@ -493,7 +514,7 @@ namespace XYZ {
 				out << YAML::Key << "TextureID" << YAML::Value << renderComponent->TextureID;
 				out << YAML::Key << "SortLayer" << YAML::Value << renderComponent->SortLayer;
 				out << YAML::Key << "IsVisible" << YAML::Value << renderComponent->IsVisible;
-				out << YAML::EndMap; // RendererComponent2D
+				out << YAML::EndMap; // SpriteRenderer
 			}
 
 			out << YAML::EndMap; // Entity
@@ -567,6 +588,38 @@ namespace XYZ {
 					transform->Rotation = rotation;
 					transform->Scale = scale;
 				}
+				auto cameraComponent = entity["CameraComponent"];
+				if (cameraComponent)
+				{
+					XYZ_LOG_INFO("Adding camera component to entity ", tag.Name);
+					SceneCameraPerspectiveProperties perspectiveProps;
+					SceneCameraOrthographicProperties orthoProps;
+					CameraProjectionType projectionType;
+
+					uint32_t type = cameraComponent["ProjectionType"].as<uint32_t>();
+					switch (type)
+					{
+					case ToUnderlying(CameraProjectionType::Orthographic):
+						projectionType = CameraProjectionType::Orthographic;
+						break;
+					case ToUnderlying(CameraProjectionType::Perspective):
+						projectionType = CameraProjectionType::Perspective;
+						break;
+					}
+					perspectiveProps.PerspectiveFOV = cameraComponent["PerspectiveFOV"].as<float>();
+					perspectiveProps.PerspectiveNear = cameraComponent["PerspectiveNear"].as<float>();
+					perspectiveProps.PerspectiveFar = cameraComponent["PerspectiveFar"].as<float>();
+
+					orthoProps.OrthographicSize = cameraComponent["OrthographicSize"].as<float>();
+					orthoProps.OrthographicNear = cameraComponent["OrthographicNear"].as<float>();
+					orthoProps.OrthographicFar = cameraComponent["OrthographicFar"].as<float>();
+
+					auto camera = ent.EmplaceComponent<CameraComponent>();
+					camera->Camera.SetProjectionType(projectionType);
+					camera->Camera.SetPerspective(perspectiveProps);
+					camera->Camera.SetOrthographic(orthoProps);
+				}
+
 				auto spriteRenderer = entity["SpriteRenderer"];
 				if (spriteRenderer)
 				{

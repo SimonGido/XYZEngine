@@ -1,5 +1,18 @@
 Scene: Test Scene
 Entities:
+  - Entity: Main Camera
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      ProjectionType: 1
+      PerspectiveFOV: 61
+      PerspectiveNear: 0.00999999978
+      PerspectiveFar: 10000
+      OrthographicSize: 4
+      OrthographicNear: -1
+      OrthographicFar: 1
   - Entity: Test Entity
     TransformComponent:
       Position: [-19.6296253, -15.8060694, 0]
@@ -8,9 +21,9 @@ Entities:
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/material.mat
       SubTextureAssetPath: Assets/SubTextures/New_SubTexture.subtex
-      Color: [0.169011921, 0.615686297, 0.615686297, 1]
+      Color: [0.169100001, 0.615686297, 0.615686297, 1]
       TextureID: 0
-      SortLayer: 1
+      SortLayer: 5
       IsVisible: true
   - Entity: 00zcz
     TransformComponent:
@@ -46,5 +59,5 @@ Entities:
       SubTextureAssetPath: Assets\SubTextures\Backgroundfield.subtex
       Color: [1, 1, 1, 1]
       TextureID: 1
-      SortLayer: 14
+      SortLayer: 1
       IsVisible: true

@@ -5,6 +5,8 @@
 
 namespace XYZ {
 
+	static constexpr uint8_t sc_MaxFloatValueBufferSize = 32;
+
 	static void GenerateInGuiQuad(InGuiMesh& mesh, const glm::vec2& position, const glm::vec2& size, const glm::vec4& texCoord, const uint32_t textureID, const glm::vec4& color, float tilingFactor = 1.0f)
 	{
 		constexpr size_t quadVertexCount = 4;
@@ -103,10 +105,10 @@ namespace XYZ {
 
 	void InGuiFactory::GenerateWindow(const char* name,InGuiWindow& window, const InGuiRenderConfiguration& renderConfig)
 	{
-		size_t lastFrameSize = window.Mesh.Vertices.size();
 		window.LineMesh.Vertices.clear();
 		window.Mesh.Vertices.clear();
-		window.Mesh.Vertices.reserve(lastFrameSize);
+		window.OverlayLineMesh.Vertices.clear();
+		window.OverlayMesh.Vertices.clear();
 
 		glm::vec4 panelColor = { 1,1,1,1 };
 		if (window.Flags & InGuiWindowFlag::Moved)
@@ -190,7 +192,7 @@ namespace XYZ {
 		GenerateInGuiQuad(mesh, position, size, renderConfig.SubTexture[InGuiRenderConfiguration::BUTTON]->GetTexCoords(), renderConfig.TextureID, color);
 		size_t offset = mesh.Vertices.size();
 		auto info = GenerateInGuiText(mesh, renderConfig.Font, name, {}, size.x, renderConfig.FontTextureID, { 1,1,1,1 });
-		glm::vec2 textOffset = { (size.x / 2) - (info.Size.x / 2),(size.y / 2.0f) - ((float)info.Size.y /1.5f) };
+		glm::vec2 textOffset = { (size.x / 2) - (info.Size.x / 2),(size.y / 2.0f) - ((float)info.Size.y /2.0f) };
 		MoveVertices(mesh.Vertices.data(), position + textOffset, offset, info.Count * 4);
 	}
 	void InGuiFactory::GenerateCheckbox(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const char* name, bool value, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig)
@@ -203,11 +205,22 @@ namespace XYZ {
 	}
 	void InGuiFactory::GenerateSlider(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const char* name,float value, glm::vec2& windowSpaceOffset, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig)
 	{
-		glm::vec2 handleSize = { size.y, size.y * 2 };
-			
+		char buffer[sc_MaxFloatValueBufferSize];
+		snprintf(buffer, sizeof(buffer), "%f", value);
+		buffer[sc_MaxFloatValueBufferSize - 1] = '\0';
+
+		glm::vec2 handleSize = { size.y, size.y * 2 };		
 		glm::vec2 handlePos = { position.x + value - handleSize.x / 2, position.y - (handleSize.x / 2) };
+		
 		GenerateInGuiQuad(mesh, position, size, renderConfig.SubTexture[InGuiRenderConfiguration::SLIDER]->GetTexCoords(), renderConfig.TextureID, color);
 		GenerateInGuiQuad(mesh, handlePos, handleSize, renderConfig.SubTexture[InGuiRenderConfiguration::SLIDER_HANDLE]->GetTexCoords(), renderConfig.TextureID, color);
+		size_t offset = mesh.Vertices.size();
+		
+		
+
+		auto info = GenerateInGuiText(mesh, renderConfig.Font, buffer, {}, size.x, renderConfig.FontTextureID, { 1,1,1,1 });
+		glm::vec2 textOffset = { (size.x / 2) - (info.Size.x / 2),(size.y / 2.0f) - ((float)info.Size.y / 2.0f) };
+		MoveVertices(mesh.Vertices.data(), position + textOffset, offset, info.Count * 4);
 	}
 	void InGuiFactory::GenerateImage(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const glm::vec4& texCoords, uint32_t rendererID, InGuiMesh& mesh,std::vector<TextureRendererIDPair>& texturePairs, const InGuiRenderConfiguration& renderConfig, float tilingFactor)
 	{
@@ -218,7 +231,7 @@ namespace XYZ {
 		GenerateInGuiQuad(mesh, position, size, renderConfig.SubTexture[InGuiRenderConfiguration::BUTTON]->GetTexCoords(), renderConfig.TextureID, color);
 		size_t offset = mesh.Vertices.size();
 		auto info = GenerateInGuiText(mesh, renderConfig.Font, text, {}, size.x, renderConfig.FontTextureID, { 1,1,1,1 });
-		glm::vec2 textOffset = { (size.x / 2) - (info.Size.x / 2),(info.Size.y / 1.5f) };
+		glm::vec2 textOffset = { (size.x / 2) - (info.Size.x / 2),(size.y / 2.0f) - ((float)info.Size.y / 2.0f) };
 		MoveVertices(mesh.Vertices.data(), position + textOffset, offset, info.Count * 4);	
 	}
 	TextInfo InGuiFactory::GenerateText(const glm::vec4& color, const char* text, float length, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig)
@@ -348,14 +361,13 @@ namespace XYZ {
 		GenerateInGuiQuad(mesh, position, size, renderConfig.SubTexture[InGuiRenderConfiguration::BUTTON]->GetTexCoords(), renderConfig.TextureID, color);
 	}
 
-	void InGuiFactory::GenerateMenuBar(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const char* name, InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig)
+	void InGuiFactory::GenerateMenuBar(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const char* name, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig)
 	{
-		auto window = frameData.CurrentWindow;
-		GenerateInGuiQuad(window->Mesh, position, size, renderConfig.SubTexture[InGuiRenderConfiguration::BUTTON]->GetTexCoords(), renderConfig.TextureID, color);
-		size_t offset = window->Mesh.Vertices.size();
-		auto info = GenerateInGuiText(window->Mesh, renderConfig.Font, name, {}, size.x, renderConfig.FontTextureID, { 1,1,1,1 });
+		GenerateInGuiQuad(mesh, position, size, renderConfig.SubTexture[InGuiRenderConfiguration::BUTTON]->GetTexCoords(), renderConfig.TextureID, color);
+		size_t offset = mesh.Vertices.size();
+		auto info = GenerateInGuiText(mesh, renderConfig.Font, name, {}, size.x, renderConfig.FontTextureID, { 1,1,1,1 });
 		glm::vec2 textOffset = { (size.x / 2) - (info.Size.x / 2),(size.y / 2.0f) - (info.Size.y / 1.5f) };
-		MoveVertices(window->Mesh.Vertices.data(), position + textOffset, offset, info.Count * 4);
+		MoveVertices(mesh.Vertices.data(), position + textOffset, offset, info.Count * 4);
 	}
 
 	void InGuiFactory::GenerateFrame(InGuiLineMesh& mesh, const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)

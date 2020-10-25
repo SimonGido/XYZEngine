@@ -33,7 +33,6 @@ namespace XYZ {
 	struct InGuiMesh
 	{
 		std::vector<InGuiVertex> Vertices;
-		Ref<Material> Material;
 	};
 	struct InGuiLineMesh
 	{

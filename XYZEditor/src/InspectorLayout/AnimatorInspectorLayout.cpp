@@ -24,7 +24,7 @@ namespace XYZ {
                                 glm::vec4 color = sc_DefaultColor;
                                 if (m_SelectedConnection == machine.GetNumStates() * j + i)
                                     color = sc_SelectColor;
-                                if (InGui::Text(result.c_str(), { 0.8f,0.8f }, color) & InGuiReturnType::Clicked)
+                                if (InGui::Text(result.c_str(), color) & InGuiReturnType::Clicked)
                                 {
                                     m_SelectedConnection = machine.GetNumStates() * j + i;
                                 }

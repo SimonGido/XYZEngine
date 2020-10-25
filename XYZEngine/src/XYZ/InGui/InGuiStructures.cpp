@@ -45,10 +45,7 @@ namespace XYZ {
 	{
 		EventReceivingWindow = nullptr;
 		ModifiedWindow = nullptr;
-		CurrentWindow = nullptr;
-		ActiveMesh = nullptr;
-		ActiveLineMesh = nullptr;
-
+		
 		TempVertices = new InGuiVertex[260 * 4];
 		ViewProjectionMatrix = glm::mat4(1.0f);
 
@@ -75,9 +72,12 @@ namespace XYZ {
 	{	
 		WindowSpaceOffset = { 0,0 };
 		CurrentWindow = nullptr;
+		
 		ActiveMesh = nullptr;
 		ActiveLineMesh = nullptr;
-		
+		ActiveOverlayMesh = nullptr;
+		ActiveOverlayLineMesh = nullptr;
+
 		MenuBarOffset = { 0,0 };
 		PopupOffset = { 0,0 };
 		PopupSize = { 0,0 };

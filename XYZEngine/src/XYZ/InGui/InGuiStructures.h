@@ -124,6 +124,9 @@ namespace XYZ {
 		InGuiMesh Mesh;
 		InGuiLineMesh LineMesh;
 
+		InGuiMesh OverlayMesh;
+		InGuiLineMesh OverlayLineMesh;
+
 		glm::vec2 Position = { 0.0f,0.0f };
 		glm::vec2 Size = { 0.0f,0.0f };
 
@@ -151,6 +154,8 @@ namespace XYZ {
 		InGuiWindow* CurrentWindow;
 		InGuiMesh* ActiveMesh;
 		InGuiLineMesh* ActiveLineMesh;
+		InGuiMesh* ActiveOverlayMesh;
+		InGuiLineMesh* ActiveOverlayLineMesh;
 
 		InGuiVertex* TempVertices;
 

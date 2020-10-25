@@ -46,6 +46,8 @@ namespace XYZ {
         /** Triggers when the scene is attached */
         void OnAttach();
 
+        void OnPlay();
+
         /** Triggers when the scene is detached */
         void OnDetach();
 
@@ -76,6 +78,7 @@ namespace XYZ {
 
     private:
         ECSManager m_ECS;
+        ComponentGroup<TransformComponent, CameraComponent>* m_CameraGroup = nullptr;
         ComponentGroup<TransformComponent, SpriteRenderer>* m_RenderGroup = nullptr;
         ComponentGroup<AnimatorComponent>* m_AnimateGroup = nullptr;
         ComponentGroup<NativeScriptComponent>* m_ScriptGroup = nullptr;
@@ -84,7 +87,7 @@ namespace XYZ {
         SceneState m_State = SceneState::Edit;
 
         uint32_t m_SelectedEntity;
-        uint32_t m_MainCameraEntity;
+
         CameraComponent* m_MainCamera;
         TransformComponent* m_MainCameraTransform;
 

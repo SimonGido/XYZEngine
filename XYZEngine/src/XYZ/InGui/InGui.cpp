@@ -388,8 +388,7 @@ namespace XYZ {
 		InGuiRenderer::SetMaterial(s_Context->RenderConfiguration.Material);
 		
 		for (auto mesh : s_Context->GetRenderQueue().GetMeshes())
-		{
-			InGuiRenderer::SetMaterial(mesh->Material);
+		{	
 			InGuiRenderer::SubmitUI(*mesh);
 		}
 		for (auto mesh : s_Context->GetRenderQueue().GetLineMeshes())
@@ -428,7 +427,6 @@ namespace XYZ {
 
 		for (auto mesh : s_Context->GetRenderQueue().GetMeshes())
 		{
-			InGuiRenderer::SetMaterial(mesh->Material);
 			InGuiRenderer::SubmitUI(*mesh);
 		}
 		for (auto mesh : s_Context->GetRenderQueue().GetLineMeshes())
@@ -466,13 +464,14 @@ namespace XYZ {
 		frameData.CurrentWindow = window;
 		frameData.ActiveMesh = &window->Mesh;
 		frameData.ActiveLineMesh = &window->LineMesh;
+		frameData.ActiveOverlayMesh = &window->OverlayMesh;
+		frameData.ActiveOverlayLineMesh = &window->OverlayLineMesh;
 		
 		if (!(window->Flags & InGuiWindowFlag::Visible))
 			return false;
 
 		frameData.WindowSpaceOffset.x = window->Position.x;
 		frameData.WindowSpaceOffset.y = window->Position.y + window->Size.y;
-		frameData.ActiveMesh->Material = renderConfig.Material;
 
 		// Check if window is hoovered
 		glm::vec2 winSize = window->Size + glm::vec2(0.0f, InGuiWindow::PanelSize);
@@ -481,14 +480,16 @@ namespace XYZ {
 			window->Flags |= InGuiWindowFlag::Modified;
 			window->Flags |= InGuiWindowFlag::Hoovered;
 
+			s_Context->GetRenderQueue().PushOverlay(&*frameData.ActiveOverlayMesh, frameData.ActiveOverlayLineMesh);
 			s_Context->GetRenderQueue().PushOverlay(&*frameData.ActiveMesh, frameData.ActiveLineMesh);
-			
 			if (window->Flags & InGuiWindowFlag::EventListener)
 				frameData.EventReceivingWindow = window;
 		}	
 		else
+		{
 			s_Context->GetRenderQueue().Push(frameData.ActiveMesh, frameData.ActiveLineMesh);
-		
+			s_Context->GetRenderQueue().Push(frameData.ActiveOverlayMesh, frameData.ActiveOverlayLineMesh);
+		}
 	
 
 		// Check if was modified
@@ -560,6 +561,7 @@ namespace XYZ {
 		{
 			glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];
 			glm::vec2 position = { frameData.PopupOffset.x, frameData.PopupOffset.y };
+
 			if (Collide(position, frameData.PopupSize, frameData.MousePosition))
 			{
 				result |= InGuiReturnType::Hoovered;
@@ -569,7 +571,7 @@ namespace XYZ {
 					result |= InGuiReturnType::Clicked;
 				}
 			}
-			InGuiFactory::GenerateButton(position, frameData.PopupSize, color, name, *frameData.ActiveMesh, renderConfig);
+			InGuiFactory::GenerateButton(position, frameData.PopupSize, color, name, *frameData.ActiveOverlayMesh, renderConfig);
 		}
 		
 		frameData.PopupItemCount++;
@@ -656,7 +658,7 @@ namespace XYZ {
 				}
 				
 
-				InGuiFactory::GenerateMenuBar(position, size, color, name, frameData, renderConfig);
+				InGuiFactory::GenerateMenuBar(position, size, color, name, *frameData.ActiveMesh, renderConfig);
 
 				frameData.MenuBarOffset.x += width;
 				frameData.MenuBarOffset.y = position.y - InGuiWindow::PanelSize;
@@ -690,7 +692,7 @@ namespace XYZ {
 						result |= InGuiReturnType::Clicked;
 					}
 				}
-				InGuiFactory::GenerateMenuBar(position, size, color, name, frameData, renderConfig);
+				InGuiFactory::GenerateMenuBar(position, size, color, name, *frameData.ActiveOverlayMesh, renderConfig);
 				frameData.MenuBarOffset.y -= size.y;
 			}
 		}
@@ -753,7 +755,7 @@ namespace XYZ {
 			if (!HandleRowPosition(frameData, { size.x + info.Size.x + 5, size.y }, position))
 				return false;
 		}
-		glm::vec2 textOffset = { size.x + 5,(size.y / 2) - ((float)info.Size.y / 1.5f) };
+		glm::vec2 textOffset = { size.x + 5, (size.y / 2) - ((float)info.Size.y / 2.0f) };
 		MoveVertices(frameData.TempVertices, position + textOffset, 0, info.Count * 4);
 		for (uint32_t i = 0; i < info.Count * 4; ++i)
 			mesh.Vertices.push_back(frameData.TempVertices[i]);
@@ -834,7 +836,7 @@ namespace XYZ {
 		if (window->Flags & InGuiWindowFlag::Modified)
 		{
 			glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];	
-			glm::vec2 handleSize = { size.x , size.y * 2 };
+			glm::vec2 handleSize = { size.x , size.y };
 			glm::vec2 pos = position;
 			if (ResolveSpaceWithText(name, handleSize, color, pos, renderConfig, frameData))
 			{
@@ -1097,7 +1099,7 @@ namespace XYZ {
 	}
 
 
-	uint8_t InGui::Text(const char* text, const glm::vec2& scale, const glm::vec4& color)
+	uint8_t InGui::Text(const char* text, const glm::vec4& color)
 	{
 		XYZ_ASSERT(s_Context->GetPerFrameData().CurrentWindow, "Missing begin call");
 		XYZ_ASSERT(strlen(text) < sc_TextBufferSize, "Maximum length of text is ", sc_TextBufferSize);
@@ -1229,12 +1231,14 @@ namespace XYZ {
 		frameData.CurrentWindow = window;
 		frameData.ActiveMesh = &window->Mesh;
 		frameData.ActiveLineMesh = &window->LineMesh;
+		frameData.ActiveOverlayMesh = &window->OverlayMesh;
+		frameData.ActiveOverlayLineMesh = &window->OverlayLineMesh;
+
 		if (!(window->Flags & InGuiWindowFlag::Visible))
 			return false;
 
 		frameData.WindowSpaceOffset.x = window->Position.x;
 		frameData.WindowSpaceOffset.y = window->Position.y + window->Size.y;
-		frameData.ActiveMesh->Material = renderConfig.Material;
 
 		// Check if window is hoovered
 		glm::vec2 winSize = window->Size + glm::vec2(0.0f, InGuiWindow::PanelSize);
@@ -1464,7 +1468,7 @@ namespace XYZ {
 	void InGui::SetInGuiMesh(InGuiMesh* mesh, InGuiLineMesh* lineMesh, bool overlay)
 	{
 		XYZ_ASSERT(mesh && lineMesh, "Meshes can not be null");
-		mesh->Material = s_Context->RenderConfiguration.Material;
+
 		s_Context->GetPerFrameData().ActiveMesh = mesh;
 		s_Context->GetPerFrameData().ActiveLineMesh = lineMesh;
 		if (overlay)
