@@ -15,13 +15,13 @@ Entities:
       OrthographicFar: 1
   - Entity: Test Entity
     TransformComponent:
-      Position: [-19.6296253, -15.8060694, 0]
+      Position: [-27.5898113, -17.0563736, 0]
       Rotation: [1, 0, 0]
-      Scale: [15.1142044, 21.0177917, 1]
+      Scale: [16.6450653, 24.8056946, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/New_Material.mat
-      SubTextureAssetPath: Assets/SubTextures/New_SubTexture.subtex
-      Color: [0.169100001, 0.615686297, 0.615686297, 1]
+      SubTextureAssetPath: Assets\SubTextures\New_SubTexture.subtex
+      Color: [0.893194914, 0.89771086, 0.936660588, 1]
       TextureID: 0
       SortLayer: 5
       IsVisible: true

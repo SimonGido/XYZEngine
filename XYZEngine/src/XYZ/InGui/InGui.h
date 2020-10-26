@@ -8,10 +8,10 @@ namespace XYZ {
 	{
 		InGuiRenderConfiguration RenderConfiguration;
 		InGuiWindowMap Windows;
+		InGuiPanelMap Panels;
 		InGuiDockSpace* DockSpace = nullptr;
+	
 		
-		
-
 		void ActivateSubFrame();
 		void ActivateMainFrame() { CurrentFrameData = &MainFrameData; }
 
@@ -38,6 +38,9 @@ namespace XYZ {
 
 		static bool Begin(uint32_t id, const char* name, const glm::vec2& position, const glm::vec2& size);
 		static void End();
+
+		static bool BeginPanel(uint32_t panelType, float thickness, bool& open);
+		static void EndPanel();
 
 		static uint8_t BeginPopup(const char* name, glm::vec2& position, const glm::vec2& size, bool& open);
 		static uint8_t PopupItem(const char* name);
@@ -84,8 +87,8 @@ namespace XYZ {
 		static bool OnKeyRelease();
 		static bool IsKeyPressed(int key);
 
-	
-		static void SetInGuiMesh(InGuiMesh* mesh, InGuiLineMesh* lineMesh, bool overlay = true);
+
+		static void SetInGuiMesh(InGuiMesh* mesh, InGuiLineMesh* lineMesh, bool overlay = true, uint8_t queueType = 0);
 		static void SetViewProjection(const glm::mat4& viewProjection);
 		static void SetMousePosition(const glm::vec2& mousePos);
 		static void SetUIOffset(float offset);
@@ -96,7 +99,6 @@ namespace XYZ {
 		static bool ResolveRightRelease(bool handle = true);
 
 		static InGuiWindow* GetCurrentWindow();
-		
 		static InGuiWindow* GetWindow(uint32_t id);
 
 		static InGuiRenderConfiguration& GetRenderConfiguration();
@@ -106,7 +108,7 @@ namespace XYZ {
 		static glm::vec2 GetInGuiPosition(const InGuiWindow& window, const glm::vec3& cameraPos, float aspectRatio, float zoomLevel);
 	private:
 		static InGuiWindow* createWindow(uint32_t id, const glm::vec2& position, const glm::vec2& size);
-
+		static void updatePanels();
 		static bool detectResize(InGuiWindow& window);
 		static bool detectMoved(InGuiWindow& window);
 		static bool detectCollapse(InGuiWindow& window);

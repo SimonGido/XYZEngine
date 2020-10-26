@@ -14,7 +14,7 @@ namespace XYZ {
 
 		void Begin();
 		void Update(const glm::vec2& mousePos);
-		void Render(const glm::vec2& mousePos, InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig);
+		void GenerateMesh(const glm::vec2& mousePos, InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig);
 
 		bool OnRightMouseButtonPress(const glm::vec2& mousePos);
 		bool OnLeftMouseButtonPress();
@@ -38,8 +38,10 @@ namespace XYZ {
 
 	private:
 		InGuiDockNode* m_Root;
-
 		InGuiDockNode* m_ResizedNode = nullptr;
+
+		InGuiMesh m_Mesh;
+		InGuiLineMesh m_LineMesh;
 
 		uint32_t m_NextNodeID = 0;
 		std::queue<uint32_t> m_FreeIDs;

@@ -264,6 +264,9 @@ namespace XYZ {
 
 	void EditorLayer::OnInGuiRender(Timestep ts)
 	{
+		
+		InGui::BeginPanel(InGuiPanelType::Left, 300.0f, m_LeftPanel);
+
 		if (m_Dragging && m_ProjectBrowserPanel.GetSelectedFileIndex() != -1)
 		{
 			auto& renderConfig = InGui::GetRenderConfiguration();
@@ -365,7 +368,8 @@ namespace XYZ {
 			}
 			if (InGui::Button("Compile", { 100,25 }) & InGuiReturnType::Clicked)
 			{
-				PerModuleInterface::g_pRuntimeObjectSystem->CompileAll(true);
+				InGui::GetWindow(PanelID::Test)->Flags |= InGuiWindowFlag::Closed;
+				//PerModuleInterface::g_pRuntimeObjectSystem->CompileAll(true);
 			}
 		}
 		InGui::End();

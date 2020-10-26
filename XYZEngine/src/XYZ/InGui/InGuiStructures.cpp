@@ -51,10 +51,10 @@ namespace XYZ {
 
 		ModifiedWindowMouseOffset = { 0,0 };
 		SelectedPoint = { 0,0 };
-		LeftNodePinOffset = 0.0f;
-		RightNodePinOffset = 0.0f;
 
+		PanelOffset = 0.0f;
 		ItemOffset = 0.0f;
+
 		KeyCode = ToUnderlying(KeyCode::XYZ_KEY_NONE);
 		Mode = ToUnderlying(KeyMode::XYZ_MOD_NONE);
 		Code = ToUnderlying(MouseCode::XYZ_MOUSE_NONE);
@@ -66,6 +66,15 @@ namespace XYZ {
 	InGuiPerFrameData::~InGuiPerFrameData()
 	{
 		delete[] TempVertices;
+	}
+
+	void InGuiPerFrameData::ResetFrameData()
+	{
+		TexturePairs.clear();
+		KeyCode = ToUnderlying(KeyCode::XYZ_KEY_NONE);
+		Mode = ToUnderlying(KeyMode::XYZ_MOD_NONE);
+		Code = ToUnderlying(MouseCode::XYZ_MOUSE_NONE);
+		PanelOffset = 0.0f;
 	}
 
 	void InGuiPerFrameData::ResetWindowData()
@@ -86,33 +95,48 @@ namespace XYZ {
 		MenuItemOffset = 0.0f;
 	}
 
-	void InGuiRenderQueue::PushOverlay(InGuiMesh* mesh, InGuiLineMesh* lineMesh)
-	{		
-		if (!m_NumOverLayers)
+	void InGuiRenderQueue::PushOverlay(InGuiMesh* mesh, InGuiLineMesh* lineMesh, uint8_t queueType)
+	{
+		XYZ_ASSERT(queueType < Type::NUM, "");
+		if (!m_Queues[queueType].NumOverLayers)
 		{
-			m_InGuiMeshes.push_back(mesh);
-			m_InGuiLineMeshes.push_back(lineMesh);
-			m_NumOverLayers++;
+			m_Queues[queueType].InGuiMeshes.push_back(mesh);
+			m_Queues[queueType].InGuiLineMeshes.push_back(lineMesh);
+			m_Queues[queueType].NumOverLayers++;
 		}
 		else
 		{
-			m_InGuiMeshes.insert(m_InGuiMeshes.end() - m_NumOverLayers, mesh);
-			m_InGuiLineMeshes.insert(m_InGuiLineMeshes.end() - m_NumOverLayers, lineMesh);
+			m_Queues[queueType].InGuiMeshes.insert(m_Queues[queueType].InGuiMeshes.end() - m_Queues[queueType].NumOverLayers, mesh);
+			m_Queues[queueType].InGuiLineMeshes.insert(m_Queues[queueType].InGuiLineMeshes.end() - m_Queues[queueType].NumOverLayers, lineMesh);
 		}
 	}
-	void InGuiRenderQueue::Push(InGuiMesh* mesh, InGuiLineMesh* lineMesh)
+	void InGuiRenderQueue::Push(InGuiMesh* mesh, InGuiLineMesh* lineMesh, uint8_t queueType)
 	{
-		m_InGuiMeshes.insert(m_InGuiMeshes.end() - m_NumOverLayers, mesh);
-		m_InGuiLineMeshes.insert(m_InGuiLineMeshes.end() - m_NumOverLayers, lineMesh);
-	}
-	void InGuiRenderQueue::Reset()
-	{
-		size_t numMeshes = m_InGuiMeshes.size();
-		m_InGuiMeshes.clear();
-		m_InGuiLineMeshes.clear();
-		m_InGuiMeshes.reserve(numMeshes);
-		m_InGuiLineMeshes.reserve(numMeshes);
-		m_NumOverLayers = 0;
+		XYZ_ASSERT(queueType < Type::NUM,"");
+		m_Queues[queueType].InGuiMeshes.insert(m_Queues[queueType].InGuiMeshes.end() - m_Queues[queueType].NumOverLayers, mesh);
+		m_Queues[queueType].InGuiLineMeshes.insert(m_Queues[queueType].InGuiLineMeshes.end() - m_Queues[queueType].NumOverLayers, lineMesh);
 	}
 
+	void InGuiRenderQueue::Submit(uint8_t queueType)
+	{
+		XYZ_ASSERT(queueType < Type::NUM, "");
+		for (uint32_t j = 0; j < m_Queues[queueType].InGuiMeshes.size(); ++j)
+		{
+			InGuiRenderer::SubmitUI(*m_Queues[queueType].InGuiMeshes[j]);
+			InGuiRenderer::SubmitLineMesh(*m_Queues[queueType].InGuiLineMeshes[j]);
+		}	
+		m_Queues[queueType].InGuiMeshes.clear();
+		m_Queues[queueType].InGuiLineMeshes.clear();
+		m_Queues[queueType].NumOverLayers = 0;
+	}
+
+	void InGuiRenderQueue::Reset()
+	{
+		for (size_t i = 0; i < Type::NUM; ++i)
+		{
+			m_Queues[i].InGuiMeshes.clear();
+			m_Queues[i].InGuiLineMeshes.clear();
+			m_Queues[i].NumOverLayers = 0;
+		}
+	}
 }

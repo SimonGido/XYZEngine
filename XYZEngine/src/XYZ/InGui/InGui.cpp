@@ -19,10 +19,10 @@
 namespace XYZ {
 	InGuiContext* InGui::s_Context = nullptr;
 
-
 	static int32_t s_NoneSelection = -1;
 	static constexpr uint32_t sc_SliderFloatSize = 5;
 	static constexpr size_t sc_TextBufferSize = 260; // Windows max size of path
+	static constexpr float sc_PanelExpansionSpeed = 0.3f;
 
 	static enum Color
 	{
@@ -32,6 +32,39 @@ namespace XYZ {
 		None
 	};
 
+	struct PanelTypeProperties
+	{
+		Ref<SubTexture2D> SubTexture;
+		glm::vec2 CollisionPosition;
+		glm::vec2 CollisionSize;
+		bool Visible;
+	};
+
+
+	static PanelTypeProperties ResolvePanelTypeProperties(uint32_t type, InGuiPanel& panel, float thickness, bool open, const InGuiRenderConfiguration& renderConfig)
+	{
+		PanelTypeProperties props;
+		if (type == InGuiPanelType::Left)
+		{
+			if (open)
+			{		
+				if (panel.Size.x < thickness)
+					panel.Size.x += sc_PanelExpansionSpeed;		
+				props.SubTexture = renderConfig.SubTexture[InGuiRenderConfiguration::LEFT_ARROW];		
+				props.CollisionSize = InGuiPanel::ArrowSize;
+				props.CollisionPosition = glm::vec2(panel.Position.x + panel.Size.x - props.CollisionSize.x, 0.0f);
+			}
+			else
+			{
+				if (panel.Size.x > 0.0f)
+					panel.Size.x -= sc_PanelExpansionSpeed;
+				props.SubTexture = renderConfig.SubTexture[InGuiRenderConfiguration::RIGHT_ARROW];
+				props.CollisionSize = InGuiPanel::ArrowSize;
+				props.CollisionPosition = glm::vec2(panel.Position.x + panel.Size.x, 0.0f);
+			}
+		}
+		return props;
+	}
 	static void SubmitTexture(uint32_t rendererID, std::vector<TextureRendererIDPair>& texturePairs, const InGuiRenderConfiguration& renderConfig)
 	{
 		uint32_t textureID = 0;
@@ -102,34 +135,34 @@ namespace XYZ {
 			if (!text.empty())
 				text.pop_back();
 			return;
-		case ToUnderlying(KeyCode::XYZ_KEY_0):
+		case ToUnderlying(KeyCode::XYZ_KEY_KP_0):
 			text.push_back('0');
 			break;
-		case ToUnderlying(KeyCode::XYZ_KEY_1):
+		case ToUnderlying(KeyCode::XYZ_KEY_KP_1):
 			text.push_back('1');
 			break;
-		case ToUnderlying(KeyCode::XYZ_KEY_2):
+		case ToUnderlying(KeyCode::XYZ_KEY_KP_2):
 			text.push_back('2');
 			break;
-		case ToUnderlying(KeyCode::XYZ_KEY_3):
+		case ToUnderlying(KeyCode::XYZ_KEY_KP_3):
 			text.push_back('3');
 			break;
-		case ToUnderlying(KeyCode::XYZ_KEY_4):
+		case ToUnderlying(KeyCode::XYZ_KEY_KP_4):
 			text.push_back('4');
 			break;
-		case ToUnderlying(KeyCode::XYZ_KEY_5):
+		case ToUnderlying(KeyCode::XYZ_KEY_KP_5):
 			text.push_back('5');
 			break;
-		case ToUnderlying(KeyCode::XYZ_KEY_6):
+		case ToUnderlying(KeyCode::XYZ_KEY_KP_6):
 			text.push_back('6');
 			break;
-		case ToUnderlying(KeyCode::XYZ_KEY_7):
+		case ToUnderlying(KeyCode::XYZ_KEY_KP_7):
 			text.push_back('7');
 			break;
-		case ToUnderlying(KeyCode::XYZ_KEY_8):
+		case ToUnderlying(KeyCode::XYZ_KEY_KP_8):
 			text.push_back('8');
 			break;
-		case ToUnderlying(KeyCode::XYZ_KEY_9):
+		case ToUnderlying(KeyCode::XYZ_KEY_KP_9):
 			text.push_back('9');
 			break;
 		case ToUnderlying(KeyCode::XYZ_KEY_PERIOD):
@@ -242,34 +275,34 @@ namespace XYZ {
 		{
 			switch (code)
 			{
-			case ToUnderlying(KeyCode::XYZ_KEY_0):
+			case ToUnderlying(KeyCode::XYZ_KEY_KP_0):
 				text[length++] = ('0');
 				break;
-			case ToUnderlying(KeyCode::XYZ_KEY_1):
+			case ToUnderlying(KeyCode::XYZ_KEY_KP_1):
 				text[length++] = ('1');
 				break;
-			case ToUnderlying(KeyCode::XYZ_KEY_2):
+			case ToUnderlying(KeyCode::XYZ_KEY_KP_2):
 				text[length++] = ('2');
 				break;
-			case ToUnderlying(KeyCode::XYZ_KEY_3):
+			case ToUnderlying(KeyCode::XYZ_KEY_KP_3):
 				text[length++] = ('3');
 				break;
-			case ToUnderlying(KeyCode::XYZ_KEY_4):
+			case ToUnderlying(KeyCode::XYZ_KEY_KP_4):
 				text[length++] = ('4');
 				break;
-			case ToUnderlying(KeyCode::XYZ_KEY_5):
+			case ToUnderlying(KeyCode::XYZ_KEY_KP_5):
 				text[length++] = ('5');
 				break;
-			case ToUnderlying(KeyCode::XYZ_KEY_6):
+			case ToUnderlying(KeyCode::XYZ_KEY_KP_6):
 				text[length++] = ('6');
 				break;
-			case ToUnderlying(KeyCode::XYZ_KEY_7):
+			case ToUnderlying(KeyCode::XYZ_KEY_KP_7):
 				text[length++] = ('7');
 				break;
-			case ToUnderlying(KeyCode::XYZ_KEY_8):
+			case ToUnderlying(KeyCode::XYZ_KEY_KP_8):
 				text[length++] = ('8');
 				break;
-			case ToUnderlying(KeyCode::XYZ_KEY_9):
+			case ToUnderlying(KeyCode::XYZ_KEY_KP_9):
 				text[length++] = ('9');
 				break;
 			case ToUnderlying(KeyCode::XYZ_KEY_PERIOD):
@@ -353,6 +386,8 @@ namespace XYZ {
 		s_Context->GetPerFrameData().WindowSize.x = Input::GetWindowSize().first;
 		s_Context->GetPerFrameData().WindowSize.y = Input::GetWindowSize().second;
 		s_Context->GetPerFrameData().Flags |= InGuiPerFrameFlag::ClickHandled;
+		
+
 		loadDockSpace();
 	}
 	void InGui::Destroy()
@@ -374,6 +409,7 @@ namespace XYZ {
 		s_Context->GetPerFrameData().MousePosition = MouseToWorld({ mx,my }, s_Context->GetPerFrameData().WindowSize);
 		s_Context->DockSpace->Begin();
 		s_Context->ActivateMainFrame();
+		updatePanels();
 	}
 	void InGui::EndFrame()
 	{
@@ -383,37 +419,28 @@ namespace XYZ {
 			resolveMove(*s_Context->GetPerFrameData().ModifiedWindow);
 		}
 
+		s_Context->DockSpace->Update(s_Context->GetPerFrameData().MousePosition);
+		s_Context->DockSpace->GenerateMesh(s_Context->GetPerFrameData().MousePosition, s_Context->GetPerFrameData(), s_Context->RenderConfiguration);
+		s_Context->GetRenderQueue().Push(&s_Context->DockSpace->m_Mesh, &s_Context->DockSpace->m_LineMesh);
+		
+		
 		InGuiRenderer::BeginScene({ s_Context->GetPerFrameData().ViewProjectionMatrix, s_Context->GetPerFrameData().WindowSize });
 		InGuiRenderer::SetTexturePairs(s_Context->GetPerFrameData().TexturePairs);
 		InGuiRenderer::SetMaterial(s_Context->RenderConfiguration.Material);
-		
-		for (auto mesh : s_Context->GetRenderQueue().GetMeshes())
-		{	
-			InGuiRenderer::SubmitUI(*mesh);
-		}
-		for (auto mesh : s_Context->GetRenderQueue().GetLineMeshes())
-		{
-			InGuiRenderer::SubmitLineMesh(*mesh);
-		}
-		
-		s_Context->DockSpace->Render(s_Context->GetPerFrameData().MousePosition, s_Context->GetPerFrameData(), s_Context->RenderConfiguration);
-		s_Context->DockSpace->Update(s_Context->GetPerFrameData().MousePosition);
-
+			
+		s_Context->GetRenderQueue().Submit(InGuiRenderQueue::BACK);
 		InGuiRenderer::Flush();
 		InGuiRenderer::FlushLines();
+
+		s_Context->GetRenderQueue().Submit(InGuiRenderQueue::FRONT);
+		InGuiRenderer::Flush();
+		InGuiRenderer::FlushLines();
+		
 		InGuiRenderer::EndScene();
 		Renderer::WaitAndRender();
 
 		s_Context->RenderConfiguration.NumTexturesInUse = InGuiRenderConfiguration::DefaultTextureCount;
-		s_Context->GetPerFrameData().TexturePairs.clear();
-	
-		s_Context->GetRenderQueue().Reset();
-		
-		
-		// Clean codes
-		s_Context->GetPerFrameData().KeyCode = ToUnderlying(KeyCode::XYZ_KEY_NONE);
-		s_Context->GetPerFrameData().Mode = ToUnderlying(KeyMode::XYZ_MOD_NONE);
-		s_Context->GetPerFrameData().Code = ToUnderlying(MouseCode::XYZ_MOUSE_NONE);
+		s_Context->GetPerFrameData().ResetFrameData();
 	}
 	void InGui::BeginSubFrame()
 	{
@@ -424,32 +451,25 @@ namespace XYZ {
 		InGuiRenderer::BeginScene({ s_Context->GetPerFrameData().ViewProjectionMatrix, s_Context->GetPerFrameData().WindowSize });
 		InGuiRenderer::SetTexturePairs(s_Context->GetPerFrameData().TexturePairs);
 		InGuiRenderer::SetMaterial(s_Context->RenderConfiguration.Material);
-
-		for (auto mesh : s_Context->GetRenderQueue().GetMeshes())
-		{
-			InGuiRenderer::SubmitUI(*mesh);
-		}
-		for (auto mesh : s_Context->GetRenderQueue().GetLineMeshes())
-		{
-			InGuiRenderer::SubmitLineMesh(*mesh);
-		}
-
+		s_Context->GetRenderQueue().Submit(InGuiRenderQueue::BACK);	
 		InGuiRenderer::FlushLines();
 		InGuiRenderer::Flush();
+
+		s_Context->GetRenderQueue().Submit(InGuiRenderQueue::FRONT);
+		InGuiRenderer::FlushLines();
+		InGuiRenderer::Flush();
+		
 		InGuiRenderer::EndScene();
 		Renderer::WaitAndRender();
 
 		s_Context->RenderConfiguration.NumTexturesInUse = InGuiRenderConfiguration::DefaultTextureCount;
-		
-		s_Context->GetPerFrameData().TexturePairs.clear();
 		s_Context->GetRenderQueue().Reset();
 
 		// Clean codes
-		s_Context->GetPerFrameData().KeyCode = ToUnderlying(KeyCode::XYZ_KEY_NONE);
-		s_Context->GetPerFrameData().Mode = ToUnderlying(KeyMode::XYZ_MOD_NONE);
-		s_Context->GetPerFrameData().Code = ToUnderlying(MouseCode::XYZ_MOUSE_NONE);
+		s_Context->GetPerFrameData().ResetFrameData();
 		s_Context->ActivateMainFrame();
 	}
+	
 	bool InGui::Begin(uint32_t id, const char* name, const glm::vec2& position, const glm::vec2& size)
 	{
 		XYZ_ASSERT(!s_Context->GetPerFrameData().CurrentWindow, "Missing end call");
@@ -460,14 +480,14 @@ namespace XYZ {
 			window = createWindow(id, position, size);
 
 		window->Name = name;
-
 		frameData.CurrentWindow = window;
 		frameData.ActiveMesh = &window->Mesh;
 		frameData.ActiveLineMesh = &window->LineMesh;
 		frameData.ActiveOverlayMesh = &window->OverlayMesh;
 		frameData.ActiveOverlayLineMesh = &window->OverlayLineMesh;
 		
-		if (!(window->Flags & InGuiWindowFlag::Visible))
+		if (!(window->Flags & InGuiWindowFlag::Visible) 
+		  || (window->Flags & InGuiWindowFlag::Closed))
 			return false;
 
 		frameData.WindowSpaceOffset.x = window->Position.x;
@@ -510,6 +530,44 @@ namespace XYZ {
 		s_Context->GetPerFrameData().ResetWindowData();
 	}
 
+	
+
+	bool InGui::BeginPanel(uint32_t panelType, float thickness, bool& open)
+	{
+		XYZ_ASSERT(!s_Context->GetPerFrameData().CurrentWindow, "Missing end call");
+		XYZ_ASSERT(panelType < InGuiPanelType::NumTypes, "Invalid panel type");
+		
+		InGuiPerFrameData& frameData = s_Context->GetPerFrameData();
+		InGuiRenderConfiguration& renderConfig = s_Context->RenderConfiguration;
+		
+		auto& panel = s_Context->Panels[panelType];
+		frameData.ActiveMesh = &panel.Mesh;
+		frameData.ActiveLineMesh = &panel.LineMesh;
+		
+		panel.Mesh.Vertices.clear();
+		panel.LineMesh.Vertices.clear();
+
+		auto props = ResolvePanelTypeProperties(panelType, panel, thickness, open, renderConfig);
+		s_Context->GetRenderQueue().Push(&panel.Mesh, &panel.LineMesh, InGuiRenderQueue::FRONT);
+		InGuiFactory::GenerateIcon(panel.Mesh, panel.Position, panel.Size, { 1,1,1,1 }, renderConfig.SubTexture[InGuiRenderConfiguration::BUTTON], renderConfig.TextureID);
+
+		if (Collide(props.CollisionPosition, props.CollisionSize, frameData.MousePosition))
+		{
+			glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::HOOVER_COLOR];
+			if (ResolveLeftClick())
+				open = !open;
+			
+			InGuiFactory::GenerateIcon(panel.Mesh, props.CollisionPosition, props.CollisionSize, color, props.SubTexture, renderConfig.TextureID);
+		}
+		
+		return open;
+	}
+
+	void InGui::EndPanel()
+	{
+		
+	}
+	
 	uint8_t InGui::BeginPopup(const char* name, glm::vec2& position, const glm::vec2& size, bool& open)
 	{
 		XYZ_ASSERT(s_Context->GetPerFrameData().CurrentWindow, "Missing begin call");
@@ -1234,7 +1292,8 @@ namespace XYZ {
 		frameData.ActiveOverlayMesh = &window->OverlayMesh;
 		frameData.ActiveOverlayLineMesh = &window->OverlayLineMesh;
 
-		if (!(window->Flags & InGuiWindowFlag::Visible))
+		if (!(window->Flags & InGuiWindowFlag::Visible)
+		  || (window->Flags & InGuiWindowFlag::Closed))
 			return false;
 
 		frameData.WindowSpaceOffset.x = window->Position.x;
@@ -1465,16 +1524,16 @@ namespace XYZ {
 		return s_Context->GetPerFrameData().KeyCode == key;
 	}
 
-	void InGui::SetInGuiMesh(InGuiMesh* mesh, InGuiLineMesh* lineMesh, bool overlay)
+	void InGui::SetInGuiMesh(InGuiMesh* mesh, InGuiLineMesh* lineMesh, bool overlay, uint8_t queueType)
 	{
 		XYZ_ASSERT(mesh && lineMesh, "Meshes can not be null");
 
 		s_Context->GetPerFrameData().ActiveMesh = mesh;
 		s_Context->GetPerFrameData().ActiveLineMesh = lineMesh;
 		if (overlay)
-			s_Context->GetRenderQueue().PushOverlay(mesh, lineMesh);
+			s_Context->GetRenderQueue().PushOverlay(mesh, lineMesh, queueType);
 		else
-			s_Context->GetRenderQueue().Push(mesh, lineMesh);
+			s_Context->GetRenderQueue().Push(mesh, lineMesh, queueType);
 	}
 
 	void InGui::SetViewProjection(const glm::mat4& viewProjection)
@@ -1580,6 +1639,14 @@ namespace XYZ {
 
 		s_Context->Windows.insert({ id,window });
 		return window;
+	}
+
+	void InGui::updatePanels()
+	{
+		auto& winSize = s_Context->GetPerFrameData().WindowSize;
+		auto& leftPanel = s_Context->Panels[InGuiPanelType::Left];
+		leftPanel.Position = -winSize / 2.0f;
+		leftPanel.Size.y = winSize.y;
 	}
 	
 	bool InGui::detectResize(InGuiWindow& window)

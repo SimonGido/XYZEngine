@@ -3,6 +3,8 @@
 
 
 #include "XYZ/Core/Application.h"
+#include "InGuiFactory.h"
+
 
 namespace XYZ {
 
@@ -181,8 +183,9 @@ namespace XYZ {
 		update(m_Root);
 	}
 
-	void InGuiDockSpace::Render(const glm::vec2& mousePos, InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig)
+	void InGuiDockSpace::GenerateMesh(const glm::vec2& mousePos, InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig)
 	{
+		m_Mesh.Vertices.clear();
 		if (m_DockSpaceVisible)
 			showNode(m_Root, mousePos, renderConfig);
 		showNodeWindows(m_Root, mousePos, frameData, renderConfig);
@@ -576,12 +579,14 @@ namespace XYZ {
 	}
 	void InGuiDockSpace::showNodeWindows(InGuiDockNode* node, const glm::vec2& mousePos, InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig)
 	{
-		InGuiMesh mesh;
 		float widthPerWindow = node->Size.x / node->Windows.size();
 		uint32_t counter = 0;
 		for (auto win : node->Windows)
 		{
-			glm::vec2 position = node->Position + glm::vec2{ counter * widthPerWindow ,node->Size.y - InGuiWindow::PanelSize };
+			if (win->Flags & InGuiWindowFlag::Closed)
+				continue;
+
+			glm::vec2 position = node->Position + glm::vec2{ counter * widthPerWindow,node->Size.y - InGuiWindow::PanelSize };
 			glm::vec2 size = { widthPerWindow,InGuiWindow::PanelSize };
 			glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];
 
@@ -600,8 +605,7 @@ namespace XYZ {
 					WindowOnSetVisible(node->Position, node->Size, *win);
 				}
 			}
-			GenerateWindowsPanel(position, size, color, win->Name, mesh, renderConfig);
-			InGuiRenderer::SubmitUI(mesh);
+			GenerateWindowsPanel(position, size, color, win->Name, m_Mesh, renderConfig);
 			counter++;
 		}
 		if (node->Children[0])
@@ -623,11 +627,11 @@ namespace XYZ {
 				glm::vec2 topPos = { node->Position.x + halfSize.x - (sc_QuadSize.x / 2),node->Position.y + node->Size.y - sc_QuadSize.y };
 				glm::vec2 middlePos = { node->Position.x + halfSize.x - (sc_QuadSize.x / 2), node->Position.y + halfSize.y - (sc_QuadSize.y / 2) };
 
-				InGuiRenderer::SubmitUI(leftPos, sc_QuadSize, renderConfig.SubTexture[InGuiRenderConfiguration::BUTTON]->GetTexCoords(), renderConfig.TextureID, renderConfig.Color[InGuiRenderConfiguration::SELECT_COLOR]);
-				InGuiRenderer::SubmitUI(rightPos, sc_QuadSize, renderConfig.SubTexture[InGuiRenderConfiguration::BUTTON]->GetTexCoords(), renderConfig.TextureID, renderConfig.Color[InGuiRenderConfiguration::SELECT_COLOR]);
-				InGuiRenderer::SubmitUI(bottomPos, sc_QuadSize, renderConfig.SubTexture[InGuiRenderConfiguration::BUTTON]->GetTexCoords(), renderConfig.TextureID, renderConfig.Color[InGuiRenderConfiguration::SELECT_COLOR]);
-				InGuiRenderer::SubmitUI(topPos, sc_QuadSize, renderConfig.SubTexture[InGuiRenderConfiguration::BUTTON]->GetTexCoords(), renderConfig.TextureID, renderConfig.Color[InGuiRenderConfiguration::SELECT_COLOR]);
-				InGuiRenderer::SubmitUI(middlePos, sc_QuadSize, renderConfig.SubTexture[InGuiRenderConfiguration::BUTTON]->GetTexCoords(), renderConfig.TextureID, renderConfig.Color[InGuiRenderConfiguration::SELECT_COLOR]);
+				InGuiFactory::GenerateQuad(leftPos, sc_QuadSize, renderConfig.Color[InGuiRenderConfiguration::SELECT_COLOR], m_Mesh, renderConfig);
+				InGuiFactory::GenerateQuad(rightPos, sc_QuadSize, renderConfig.Color[InGuiRenderConfiguration::SELECT_COLOR], m_Mesh, renderConfig);
+				InGuiFactory::GenerateQuad(bottomPos, sc_QuadSize, renderConfig.Color[InGuiRenderConfiguration::SELECT_COLOR], m_Mesh, renderConfig);
+				InGuiFactory::GenerateQuad(topPos, sc_QuadSize, renderConfig.Color[InGuiRenderConfiguration::SELECT_COLOR], m_Mesh, renderConfig);
+				InGuiFactory::GenerateQuad(middlePos, sc_QuadSize, renderConfig.Color[InGuiRenderConfiguration::SELECT_COLOR], m_Mesh, renderConfig);
 			}
 			else
 			{

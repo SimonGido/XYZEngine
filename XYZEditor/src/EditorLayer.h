@@ -91,7 +91,6 @@ namespace XYZ {
 	private:	
 		Entity m_TestEntity;
 
-
 		SpriteRenderer* m_SpriteRenderer;
 		TransformComponent* m_Transform;
 		AnimatorComponent* m_Animator;
@@ -108,7 +107,7 @@ namespace XYZ {
 		bool m_MenuOpen = false;
 		bool m_Selecting = false;
 
-	
+		bool m_LeftPanel = false;
 	
 		Ref<Material> m_Material;
 		Ref<Texture2D> m_CharacterTexture;

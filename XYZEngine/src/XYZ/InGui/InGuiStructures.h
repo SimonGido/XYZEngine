@@ -14,7 +14,7 @@ namespace XYZ {
 		enum InGuiWindowFlags
 	{
 			Moved			= BIT(0),
-			Collapsed		= BIT(1),
+			Collapsed		= BIT(1), 
 			MenuEnabled		= BIT(2),
 			Modified		= BIT(3),
 			EventListener	= BIT(4), // It will not receive event
@@ -32,7 +32,8 @@ namespace XYZ {
 			Initialized		= BIT(16),
 			ForceNewLine	= BIT(17),
 			Dockable		= BIT(18),
-			EventBlocking	= BIT(19) // It will receive event but wont set it to handled
+			EventBlocking	= BIT(19), // It will receive event but wont set it to handled
+			Closed			= BIT(20)
 		};
 	}
 
@@ -64,7 +65,16 @@ namespace XYZ {
 			Hoovered	= BIT(1)  // Widget was hoovered
 		};
 	}
-
+	namespace InGuiPanelType {
+		enum InGuiPanelType
+		{
+			Left,
+			Right,
+			Top,
+			Bottom,
+			NumTypes
+		};
+	}
 
 	struct TextInfo
 	{
@@ -118,6 +128,7 @@ namespace XYZ {
 		friend class InGui;
 	};
 
+
 	struct InGuiDockNode;
 	struct InGuiWindow
 	{
@@ -135,11 +146,24 @@ namespace XYZ {
 		float MinimalWidth = 0.0f;
 
 		const char* Name = nullptr;
-
 		InGuiDockNode* DockNode = nullptr;
-
 		std::function<void(const glm::vec2&)> OnResizeCallback;
 		static constexpr float PanelSize = 25.0f;
+	};
+
+
+	struct InGuiPanel
+	{
+		InGuiMesh Mesh;
+		InGuiLineMesh LineMesh;
+
+		InGuiMesh OverlayMesh;
+		InGuiLineMesh OverlayLineMesh;
+
+		glm::vec2 Position = { 0.0f,0.0f };
+		glm::vec2 Size = { 0.0f,0.0f };
+
+		static constexpr glm::vec2 ArrowSize = glm::vec2(25.0f, 80.0f);
 	};
 
 	struct InGuiPerFrameData
@@ -147,16 +171,17 @@ namespace XYZ {
 		InGuiPerFrameData();
 		~InGuiPerFrameData();
 
+		void ResetFrameData();
 		void ResetWindowData();
 
 		InGuiWindow* EventReceivingWindow;
 		InGuiWindow* ModifiedWindow;
 		InGuiWindow* CurrentWindow;
+
 		InGuiMesh* ActiveMesh;
 		InGuiLineMesh* ActiveLineMesh;
 		InGuiMesh* ActiveOverlayMesh;
 		InGuiLineMesh* ActiveOverlayLineMesh;
-
 		InGuiVertex* TempVertices;
 
 		glm::mat4 ViewProjectionMatrix;
@@ -166,16 +191,13 @@ namespace XYZ {
 		glm::vec2 WindowSpaceOffset;
 		glm::vec2 MenuBarOffset;
 		glm::vec2 PopupOffset;
-		
-		float LeftNodePinOffset;
-		float RightNodePinOffset;
 
 		glm::vec2 MousePosition;
 		glm::vec2 SelectedPoint;
 
 		float MaxHeightInRow;
 		float MenuItemOffset;
-
+		float PanelOffset;
 		float ItemOffset;
 
 		int Code;
@@ -194,6 +216,7 @@ namespace XYZ {
 		Vertical,
 		Horizontal	
 	};
+
 	enum class DockPosition
 	{
 		None,
@@ -228,22 +251,34 @@ namespace XYZ {
 	};
 
 
+	using InGuiPanelMap = InGuiPanel[InGuiPanelType::NumTypes];
 	using InGuiWindowMap = std::unordered_map<uint32_t, InGuiWindow*>;
 	using InGuiEventListeners = std::vector<InGuiWindow*>;
 
 	class InGuiRenderQueue
 	{
 	public:
-		void PushOverlay(InGuiMesh* mesh, InGuiLineMesh* lineMesh);
-		void Push(InGuiMesh* mesh, InGuiLineMesh* lineMesh);
+		enum Type
+		{
+			BACK  = 0,
+			FRONT = 1,
+			NUM   = 2
+		};
+
+	public:
+		void PushOverlay(InGuiMesh* mesh, InGuiLineMesh* lineMesh, uint8_t queueType = 0);
+		void Push(InGuiMesh* mesh, InGuiLineMesh* lineMesh, uint8_t queueType = 0);
+		void Submit(uint8_t queueType);
 		void Reset();
 
-		const std::vector<InGuiMesh*>& GetMeshes() const { return m_InGuiMeshes; }
-		const std::vector<InGuiLineMesh*>& GetLineMeshes() const { return m_InGuiLineMeshes; }
 	private:
-		std::vector<InGuiMesh*> m_InGuiMeshes;
-		std::vector<InGuiLineMesh*> m_InGuiLineMeshes;
-		uint32_t m_NumOverLayers = 0;
+		struct Queue
+		{
+			std::vector<InGuiMesh*> InGuiMeshes;
+			std::vector<InGuiLineMesh*> InGuiLineMeshes;
+			uint32_t NumOverLayers = 0;
+		};
+		Queue m_Queues[Type::NUM];	
 	};
 
 	struct InGuiFrameData
