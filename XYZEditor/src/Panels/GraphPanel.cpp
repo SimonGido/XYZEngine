@@ -20,7 +20,8 @@ namespace XYZ {
 		InGui::End();
 		m_GraphWindow = InGui::GetWindow(PanelID::GraphPanel);
 		m_GraphWindow->Flags &= ~InGuiWindowFlag::AutoPosition;
-		m_GraphWindow->Flags &= ~InGuiWindowFlag::EventListener;
+		m_GraphWindow->Flags &= ~InGuiWindowFlag::EventBlocking;
+
 		m_GraphWindow->OnResizeCallback = [this](const glm::vec2& size) {
 			m_Camera.OnResize(size);
 		};
@@ -76,11 +77,13 @@ namespace XYZ {
 
 	void GraphPanel::OnEvent(Event& event)
 	{
-		if (m_Layout)
-			m_Layout->OnEvent(event);
-		if (m_ActiveWindow)
-			m_Camera.OnEvent(event);
-
+		if (m_GraphWindow->Flags & InGuiWindowFlag::Hoovered)
+		{
+			if (m_Layout)
+				m_Layout->OnEvent(event);
+			if (m_ActiveWindow)
+				m_Camera.OnEvent(event);
+		}
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<WindowResizeEvent>(Hook(&GraphPanel::onWindowResize, this));
 	}

@@ -162,16 +162,15 @@ namespace XYZ {
 		InGui::RenderWindow(PanelID::Scene, "Scene", 0, { 0,0 }, { 200,200 });
 		InGui::End();
 		m_SceneWindow = InGui::GetWindow(PanelID::Scene);
-		m_SceneWindow->Flags &= ~InGuiWindowFlag::EventListener;
 		m_EditorCamera.OnResize(m_SceneWindow->Size);
 
 		InGui::SetUIOffset(10.0f);
 		InGui::Begin(PanelID::Test, "Test", { 0,0 }, { 200,200 });
 		InGui::End();
-		InGui::GetWindow(PanelID::Test)->Flags |= (InGuiWindowFlag::MenuEnabled | InGuiWindowFlag::Visible | InGuiWindowFlag::EventListener);
+		InGui::GetWindow(PanelID::Test)->Flags |= (InGuiWindowFlag::MenuEnabled | InGuiWindowFlag::Visible);
+		m_SceneWindow->OnResizeCallback = Hook(&EditorLayer::onResizeSceneWindow, this);
+		m_SceneWindow->Flags &= ~InGuiWindowFlag::EventBlocking;
 
-		InGui::GetWindow(PanelID::Scene)->OnResizeCallback = Hook(&EditorLayer::onResizeSceneWindow, this);
-		
 		float divisor = 8.0f;
 		auto& renderConfig = InGui::GetRenderConfiguration();
 		renderConfig.SubTexture[PLAY] = Ref<SubTexture2D>::Create(renderConfig.Texture, glm::vec2(2, 2), glm::vec2(renderConfig.Texture->GetWidth() / divisor, renderConfig.Texture->GetHeight() / divisor));
@@ -248,23 +247,26 @@ namespace XYZ {
 			m_Scene->OnRender();
 	}
 	void EditorLayer::OnEvent(Event& event)
-	{
-		m_EditorCamera.OnEvent(event);
+	{	
 		m_GraphPanel.OnEvent(event);
 		m_SpriteEditorPanel.OnEvent(event);
 		m_ProjectBrowserPanel.OnEvent(event);
 
 		EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<WindowResizeEvent>(Hook(&EditorLayer::onWindowResized, this));
-		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&EditorLayer::onMouseButtonPress, this));
-		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorLayer::onMouseButtonRelease, this));
-		dispatcher.Dispatch<KeyPressedEvent>(Hook(&EditorLayer::onKeyPress, this));
+		dispatcher.Dispatch<WindowResizeEvent>(Hook(&EditorLayer::onWindowResized, this));	
+		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorLayer::onMouseButtonRelease, this));	
 		dispatcher.Dispatch<KeyReleasedEvent>(Hook(&EditorLayer::onKeyRelease, this));
+		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&EditorLayer::onMouseButtonPress, this));
+		dispatcher.Dispatch<KeyPressedEvent>(Hook(&EditorLayer::onKeyPress, this));
+		
+		if (m_SceneWindow->Flags & InGuiWindowFlag::Hoovered)
+		{
+			m_EditorCamera.OnEvent(event);		
+		}
 	}
 
 	void EditorLayer::OnInGuiRender(Timestep ts)
 	{
-		
 		InGui::BeginPanel(InGuiPanelType::Left, 300.0f, m_LeftPanel);
 
 		if (m_Dragging && m_ProjectBrowserPanel.GetSelectedFileIndex() != -1)
@@ -274,8 +276,7 @@ namespace XYZ {
 			auto [width, height] = Input::GetWindowSize();
 			glm::vec2 size = { 25.0f,25.0f };
 			glm::vec2 position = MouseToWorld({ mx,my }, { width,height }) - (size / 2.0f);
-			
-			
+					
 			if (m_ProhibitedCursor && !m_EntityInspectorLayout.ValidExtension(m_ProjectBrowserPanel.GetSelectedFilePath()))
 			{
 				Application::Get().GetWindow().SetCustomCursor(m_ProhibitedCursor);

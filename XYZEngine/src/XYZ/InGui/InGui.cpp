@@ -65,18 +65,16 @@ namespace XYZ {
 		}
 		return props;
 	}
-	static void SubmitTexture(uint32_t rendererID, std::vector<TextureRendererIDPair>& texturePairs, const InGuiRenderConfiguration& renderConfig)
+	static void SubmitTexture(uint32_t rendererID, std::vector<TextureRendererIDPair>& texturePairs)
 	{
-		uint32_t textureID = 0;
+		uint32_t textureID = texturePairs.size() + InGuiRenderConfiguration::DefaultTextureCount;
 		for (auto& pair : texturePairs)
 		{
 			if (pair.RendererID == rendererID)
+			{
 				textureID = pair.TextureID;
-		}
-		if (!textureID)
-		{
-			textureID = renderConfig.NumTexturesInUse;
-			renderConfig.NumTexturesInUse++;
+				break;
+			}
 		}
 		texturePairs.push_back({ textureID,rendererID });
 	}
@@ -396,7 +394,7 @@ namespace XYZ {
 
 		for (auto window : s_Context->Windows)
 		{
-			delete window.second;
+			delete window;
 		}
 	
 		delete s_Context->DockSpace;
@@ -405,7 +403,6 @@ namespace XYZ {
 	void InGui::BeginFrame()
 	{
 		auto [mx,my] = Input::GetMousePosition();
-		s_Context->GetPerFrameData().EventReceivingWindow = nullptr;
 		s_Context->GetPerFrameData().MousePosition = MouseToWorld({ mx,my }, s_Context->GetPerFrameData().WindowSize);
 		s_Context->DockSpace->Begin();
 		s_Context->ActivateMainFrame();
@@ -422,8 +419,7 @@ namespace XYZ {
 		s_Context->DockSpace->Update(s_Context->GetPerFrameData().MousePosition);
 		s_Context->DockSpace->GenerateMesh(s_Context->GetPerFrameData().MousePosition, s_Context->GetPerFrameData(), s_Context->RenderConfiguration);
 		s_Context->GetRenderQueue().Push(&s_Context->DockSpace->m_Mesh, &s_Context->DockSpace->m_LineMesh);
-		
-		
+			
 		InGuiRenderer::BeginScene({ s_Context->GetPerFrameData().ViewProjectionMatrix, s_Context->GetPerFrameData().WindowSize });
 		InGuiRenderer::SetTexturePairs(s_Context->GetPerFrameData().TexturePairs);
 		InGuiRenderer::SetMaterial(s_Context->RenderConfiguration.Material);
@@ -439,7 +435,6 @@ namespace XYZ {
 		InGuiRenderer::EndScene();
 		Renderer::WaitAndRender();
 
-		s_Context->RenderConfiguration.NumTexturesInUse = InGuiRenderConfiguration::DefaultTextureCount;
 		s_Context->GetPerFrameData().ResetFrameData();
 	}
 	void InGui::BeginSubFrame()
@@ -451,6 +446,7 @@ namespace XYZ {
 		InGuiRenderer::BeginScene({ s_Context->GetPerFrameData().ViewProjectionMatrix, s_Context->GetPerFrameData().WindowSize });
 		InGuiRenderer::SetTexturePairs(s_Context->GetPerFrameData().TexturePairs);
 		InGuiRenderer::SetMaterial(s_Context->RenderConfiguration.Material);
+		
 		s_Context->GetRenderQueue().Submit(InGuiRenderQueue::BACK);	
 		InGuiRenderer::FlushLines();
 		InGuiRenderer::Flush();
@@ -462,10 +458,7 @@ namespace XYZ {
 		InGuiRenderer::EndScene();
 		Renderer::WaitAndRender();
 
-		s_Context->RenderConfiguration.NumTexturesInUse = InGuiRenderConfiguration::DefaultTextureCount;
 		s_Context->GetRenderQueue().Reset();
-
-		// Clean codes
 		s_Context->GetPerFrameData().ResetFrameData();
 		s_Context->ActivateMainFrame();
 	}
@@ -486,9 +479,7 @@ namespace XYZ {
 		frameData.ActiveOverlayMesh = &window->OverlayMesh;
 		frameData.ActiveOverlayLineMesh = &window->OverlayLineMesh;
 		
-		if (!(window->Flags & InGuiWindowFlag::Visible) 
-		  || (window->Flags & InGuiWindowFlag::Closed))
-			return false;
+		if (!(window->Flags & InGuiWindowFlag::Visible)) return false;
 
 		frameData.WindowSpaceOffset.x = window->Position.x;
 		frameData.WindowSpaceOffset.y = window->Position.y + window->Size.y;
@@ -499,19 +490,15 @@ namespace XYZ {
 		{
 			window->Flags |= InGuiWindowFlag::Modified;
 			window->Flags |= InGuiWindowFlag::Hoovered;
-
-			s_Context->GetRenderQueue().PushOverlay(&*frameData.ActiveOverlayMesh, frameData.ActiveOverlayLineMesh);
-			s_Context->GetRenderQueue().PushOverlay(&*frameData.ActiveMesh, frameData.ActiveLineMesh);
-			if (window->Flags & InGuiWindowFlag::EventListener)
-				frameData.EventReceivingWindow = window;
-		}	
+		}
 		else
 		{
-			s_Context->GetRenderQueue().Push(frameData.ActiveMesh, frameData.ActiveLineMesh);
-			s_Context->GetRenderQueue().Push(frameData.ActiveOverlayMesh, frameData.ActiveOverlayLineMesh);
+			window->Flags &= ~InGuiWindowFlag::Hoovered;
 		}
-	
 
+		s_Context->GetRenderQueue().Push(frameData.ActiveMesh, frameData.ActiveLineMesh);
+		s_Context->GetRenderQueue().Push(frameData.ActiveOverlayMesh, frameData.ActiveOverlayLineMesh);
+		
 		// Check if was modified
 		if (window->Flags & InGuiWindowFlag::Modified)
 			InGuiFactory::GenerateWindow(name, *window, renderConfig);
@@ -522,11 +509,7 @@ namespace XYZ {
 	void InGui::End()
 	{
 		XYZ_ASSERT(s_Context->GetPerFrameData().CurrentWindow, "Missing begin call");
-		
 		s_Context->GetPerFrameData().CurrentWindow->Flags &= ~InGuiWindowFlag::Modified;
-		s_Context->GetPerFrameData().CurrentWindow->Flags &= ~InGuiWindowFlag::Hoovered;
-		s_Context->GetPerFrameData().CurrentWindow->Flags &= ~InGuiWindowFlag::LeftClicked;
-		s_Context->GetPerFrameData().CurrentWindow->Flags &= ~InGuiWindowFlag::RightClicked;
 		s_Context->GetPerFrameData().ResetWindowData();
 	}
 
@@ -595,7 +578,6 @@ namespace XYZ {
 					result |= InGuiReturnType::Clicked;
 				}
 			}
-
 			InGuiFactory::GenerateButton(position, size, color, name, *frameData.ActiveMesh, renderConfig);
 			
 			frameData.PopupSize = size;
@@ -942,7 +924,7 @@ namespace XYZ {
 		}
 		else
 		{
-			SubmitTexture(rendererID, frameData.TexturePairs, renderConfig);
+			SubmitTexture(rendererID, frameData.TexturePairs);
 		}
 
 		return result;
@@ -1292,9 +1274,7 @@ namespace XYZ {
 		frameData.ActiveOverlayMesh = &window->OverlayMesh;
 		frameData.ActiveOverlayLineMesh = &window->OverlayLineMesh;
 
-		if (!(window->Flags & InGuiWindowFlag::Visible)
-		  || (window->Flags & InGuiWindowFlag::Closed))
-			return false;
+		if (!(window->Flags & InGuiWindowFlag::Visible)) return false;
 
 		frameData.WindowSpaceOffset.x = window->Position.x;
 		frameData.WindowSpaceOffset.y = window->Position.y + window->Size.y;
@@ -1305,19 +1285,19 @@ namespace XYZ {
 		{
 			window->Flags |= InGuiWindowFlag::Modified;
 			window->Flags |= InGuiWindowFlag::Hoovered;
-			s_Context->GetRenderQueue().PushOverlay(&*frameData.ActiveMesh, frameData.ActiveLineMesh);
-
-			if (window->Flags & InGuiWindowFlag::EventListener)
-				frameData.EventReceivingWindow = window;
 		}
 		else
-			s_Context->GetRenderQueue().Push(&*frameData.ActiveMesh, frameData.ActiveLineMesh);
+		{
+			window->Flags &= ~InGuiWindowFlag::Hoovered;
+		}
+
+		s_Context->GetRenderQueue().Push(&window->Mesh, &window->LineMesh);
+		s_Context->GetRenderQueue().Push(&window->OverlayMesh, &window->OverlayLineMesh);
 		
-	
 		if (window->Flags & InGuiWindowFlag::Modified)
 			InGuiFactory::GenerateRenderWindow(name, *window, rendererID, frameData, renderConfig);
 		else
-			SubmitTexture(rendererID, frameData.TexturePairs, renderConfig);
+			SubmitTexture(rendererID, frameData.TexturePairs);
 		
 		return (window->Flags & InGuiWindowFlag::Hoovered);
 	}
@@ -1414,25 +1394,32 @@ namespace XYZ {
 		if (s_Context->DockSpace->OnLeftMouseButtonPress())
 			return true;
 
-		s_Context->GetPerFrameData().Code = ToUnderlying(MouseCode::XYZ_MOUSE_BUTTON_LEFT);
-		s_Context->GetPerFrameData().Flags |= InGuiPerFrameFlag::LeftMouseButtonPressed;
-		s_Context->GetPerFrameData().Flags &= ~InGuiPerFrameFlag::ClickHandled;
-		s_Context->GetPerFrameData().Flags &= ~InGuiPerFrameFlag::LeftMouseButtonReleased;
+		auto& frameData = s_Context->GetPerFrameData();
+		frameData.Code = ToUnderlying(MouseCode::XYZ_MOUSE_BUTTON_LEFT);
+		frameData.Flags |= InGuiPerFrameFlag::LeftMouseButtonPressed;
+		frameData.Flags &= ~InGuiPerFrameFlag::ClickHandled;
+		frameData.Flags &= ~InGuiPerFrameFlag::LeftMouseButtonReleased;
 
-		InGuiWindow* window = s_Context->GetPerFrameData().EventReceivingWindow;
-		if (window && (window->Flags & InGuiWindowFlag::Visible))
-		{		
-			if (detectCollapse(*window))
+		auto& windows = s_Context->Windows;
+		for (auto it = windows.rbegin(); it != windows.rend(); ++it)
+		{
+			auto window = (*it);
+			if (!(window->Flags & InGuiWindowFlag::Visible)) continue;
+			
+			glm::vec2 collisionPos = window->Position;
+			glm::vec2 collisionSize = window->Size + glm::vec2(0.0f, InGuiWindow::PanelSize);
+			if (window->Flags & InGuiWindowFlag::Collapsed)
 			{
+				collisionPos.y += window->Size.y;
+				collisionSize.y = InGuiWindow::PanelSize;
+			}	
+			if (Collide(collisionPos, collisionSize, frameData.MousePosition))
+			{
+				if (detectCollapse(*window))
+				{}
 				return (window->Flags & InGuiWindowFlag::EventBlocking);
 			}
-			if (!(window->Flags & InGuiWindowFlag::Collapsed))
-			{
-				window->Flags |= InGuiWindowFlag::LeftClicked;
-			}
-
-			return (window->Flags & InGuiWindowFlag::EventBlocking);
-		}	
+		}
 		return false;
 	}
 
@@ -1440,31 +1427,41 @@ namespace XYZ {
 	{
 		if (s_Context->DockSpace->OnRightMouseButtonPress(s_Context->GetPerFrameData().MousePosition))
 			return true;
-		s_Context->GetPerFrameData().Code = ToUnderlying(MouseCode::XYZ_MOUSE_BUTTON_RIGHT);
-		s_Context->GetPerFrameData().Flags |=  InGuiPerFrameFlag::RightMouseButtonPressed;
-		s_Context->GetPerFrameData().Flags &= ~InGuiPerFrameFlag::ClickHandled;
-		s_Context->GetPerFrameData().Flags &= ~InGuiPerFrameFlag::RightMouseButtonReleased;
+
+		auto& frameData = s_Context->GetPerFrameData();
+		frameData.Code = ToUnderlying(MouseCode::XYZ_MOUSE_BUTTON_RIGHT);
+		frameData.Flags |=  InGuiPerFrameFlag::RightMouseButtonPressed;
+		frameData.Flags &= ~InGuiPerFrameFlag::ClickHandled;
+		frameData.Flags &= ~InGuiPerFrameFlag::RightMouseButtonReleased;
 		
-		InGuiWindow* window = s_Context->GetPerFrameData().EventReceivingWindow;
-		if (window && (window->Flags & InGuiWindowFlag::Visible))
-		{		
-			if (detectResize(*window))
+		auto& windows = s_Context->Windows;
+		for (auto it = windows.rbegin(); it != windows.rend(); ++it)
+		{
+			auto window = (*it);
+			if (!(window->Flags & InGuiWindowFlag::Visible)) continue;
+
+			glm::vec2 collisionPos = window->Position;
+			glm::vec2 collisionSize = window->Size + glm::vec2(0.0f, InGuiWindow::PanelSize);
+			if (window->Flags & InGuiWindowFlag::Collapsed)
 			{
-				s_Context->GetPerFrameData().Flags |= InGuiPerFrameFlag::ClickHandled;
-				s_Context->GetPerFrameData().ModifiedWindow = window;
+				collisionPos.y += window->Size.y;
+				collisionSize.y = InGuiWindow::PanelSize;
 			}
-			else if(detectMoved(*window))
+			if (Collide(collisionPos, collisionSize, frameData.MousePosition))
 			{
-				s_Context->GetPerFrameData().Flags |= InGuiPerFrameFlag::ClickHandled;
-				s_Context->GetPerFrameData().ModifiedWindow = window;
-			}		
-			else
-			{
-				window->Flags |= InGuiWindowFlag::RightClicked;
+				if (detectResize(*window))
+				{
+					frameData.Flags |= InGuiPerFrameFlag::ClickHandled;
+					frameData.ModifiedWindow = window;
+				}
+				else if (detectMoved(*window))
+				{
+					frameData.Flags |= InGuiPerFrameFlag::ClickHandled;
+					frameData.ModifiedWindow = window;
+				}		
+				return (window->Flags & InGuiWindowFlag::EventBlocking);
 			}
-			return (window->Flags & InGuiWindowFlag::EventBlocking);
-		}		
-		
+		}	
 		return false;
 	}
 
@@ -1499,6 +1496,29 @@ namespace XYZ {
 		}
 
 		return false;
+	}
+
+	bool InGui::OnMouseScroll()
+	{
+		auto& frameData = s_Context->GetPerFrameData();
+		auto& windows = s_Context->Windows;
+		for (auto it = windows.rbegin(); it != windows.rend(); ++it)
+		{
+			auto window = (*it);
+			if (!(window->Flags & InGuiWindowFlag::Visible)) continue;
+		
+			glm::vec2 collisionPos = window->Position;
+			glm::vec2 collisionSize = window->Size + glm::vec2(0.0f, InGuiWindow::PanelSize);
+			if (window->Flags & InGuiWindowFlag::Collapsed)
+			{
+				collisionPos.y += window->Size.y;
+				collisionSize.y = InGuiWindow::PanelSize;
+			}
+			if (Collide(collisionPos, collisionSize, frameData.MousePosition))
+			{
+				return (window->Flags & InGuiWindowFlag::EventBlocking);
+			}		
+		}
 	}
 
 	bool InGui::OnKeyPress(int key, int mod)
@@ -1614,13 +1634,8 @@ namespace XYZ {
 
 	InGuiWindow* InGui::GetWindow(uint32_t id)
 	{		
-		auto it = s_Context->Windows.find(id);
-		if (it != s_Context->Windows.end())
-		{
-			it->second->Flags |= InGuiWindowFlag::Initialized;
-			return it->second;
-		}
-		return nullptr;	
+		s_Context->Windows[id]->Flags |= InGuiWindowFlag::Initialized;
+		return s_Context->Windows[id];
 	}
 
 	
@@ -1631,13 +1646,12 @@ namespace XYZ {
 		window->Size = size;
 		window->ID = id;
 		window->Flags |= InGuiWindowFlag::Modified;
-		window->Flags |= InGuiWindowFlag::EventListener;
 		window->Flags |= InGuiWindowFlag::Visible;
 		window->Flags |= InGuiWindowFlag::AutoPosition;
 		window->Flags |= InGuiWindowFlag::Dockable;
 		window->Flags |= InGuiWindowFlag::EventBlocking;
 
-		s_Context->Windows.insert({ id,window });
+		s_Context->Windows.push_back(window);
 		return window;
 	}
 
@@ -1839,16 +1853,20 @@ namespace XYZ {
 
 	static void LoadWindowMaps(
 		mINI::INIStructure::const_iterator& it,
-		std::unordered_map<uint32_t, InGuiWindow*>& windowMap,
+		std::vector<InGuiWindow*>& windowMap,
 		std::unordered_map<uint32_t, std::vector<InGuiWindow*>>& windowDockMap,
 		const mINI::INIStructure& ini)
 	{
 		while (it->first != "dockspace" && it != ini.end())
 		{
 			uint32_t windowID = atoi(it->first.c_str());
+			if (windowID >= windowMap.size())
+				windowMap.resize((size_t)windowID + 1);
+
 			windowMap[windowID] = new InGuiWindow();
 			windowMap[windowID]->Position = StringToVec2(it->second.get("position"));
 			windowMap[windowID]->Size = StringToVec2(it->second.get("size"));
+			windowMap[windowID]->ID = windowID;
 			int32_t id = atoi(it->second.get("docknode").c_str());
 
 			if (id != -1)
@@ -1858,11 +1876,10 @@ namespace XYZ {
 				windowMap[windowID]->Flags |= InGuiWindowFlag::Collapsed;
 
 			windowMap[windowID]->Flags |= InGuiWindowFlag::Modified;
-			windowMap[windowID]->Flags |= InGuiWindowFlag::EventListener;
 			windowMap[windowID]->Flags |= InGuiWindowFlag::Visible;
 			windowMap[windowID]->Flags |= InGuiWindowFlag::AutoPosition;
 			windowMap[windowID]->Flags |= InGuiWindowFlag::EventBlocking;
-
+			windowMap[windowID]->Flags |= InGuiWindowFlag::Dockable;
 			it++;
 		}
 	}
@@ -1998,17 +2015,17 @@ namespace XYZ {
 
 		for (auto& it : s_Context->Windows)
 		{
-			if (it.second->Flags & InGuiWindowFlag::Initialized)
+			if (it->Flags & InGuiWindowFlag::Initialized)
 			{
-				std::string pos = std::to_string(it.second->Position.x) + "," + std::to_string(it.second->Position.y);
-				std::string size = std::to_string(it.second->Size.x) + "," + std::to_string(it.second->Size.y);
-				std::string id = std::to_string(it.first);
+				std::string pos = std::to_string(it->Position.x) + "," + std::to_string(it->Position.y);
+				std::string size = std::to_string(it->Size.x) + "," + std::to_string(it->Size.y);
+				std::string id = std::to_string(it->ID);
 				ini[id]["position"] = pos;
 				ini[id]["size"] = size;
-				bool collapsed = (it.second->Flags & InGuiWindowFlag::Collapsed);
+				bool collapsed = (it->Flags & InGuiWindowFlag::Collapsed);
 				ini[id]["collapsed"] = std::to_string(collapsed);
-				if (it.second->DockNode)
-					ini[id]["Docknode"] = std::to_string(it.second->DockNode->ID);
+				if (it->DockNode)
+					ini[id]["Docknode"] = std::to_string(it->DockNode->ID);
 				else
 					ini[id]["Docknode"] = std::to_string(-1);
 			}

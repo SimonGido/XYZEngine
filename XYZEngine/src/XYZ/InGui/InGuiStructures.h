@@ -17,7 +17,7 @@ namespace XYZ {
 			Collapsed		= BIT(1), 
 			MenuEnabled		= BIT(2),
 			Modified		= BIT(3),
-			EventListener	= BIT(4), // It will not receive event
+			Closed			= BIT(4),
 			Hoovered		= BIT(5),
 			LeftResizing	= BIT(6),
 			RightResizing	= BIT(7),
@@ -27,13 +27,10 @@ namespace XYZ {
 			AutoPosition	= BIT(11),
 			Docked			= BIT(12),
 			Resized			= BIT(13),
-			LeftClicked		= BIT(14),
-			RightClicked	= BIT(15),
-			Initialized		= BIT(16),
-			ForceNewLine	= BIT(17),
-			Dockable		= BIT(18),
-			EventBlocking	= BIT(19), // It will receive event but wont set it to handled
-			Closed			= BIT(20)
+			Initialized		= BIT(14),
+			ForceNewLine	= BIT(15),
+			Dockable		= BIT(16),
+			EventBlocking	= BIT(17), // It will receive event but wont set it to handled		
 		};
 	}
 
@@ -118,12 +115,10 @@ namespace XYZ {
 		Ref<SubTexture2D> SubTexture[NUM_SUBTEXTURES];
 		glm::vec4 Color[NUM_COLORS];
 
-		static constexpr uint32_t DefaultTextureCount = 3;
-		mutable uint32_t NumTexturesInUse = DefaultTextureCount;
-
 		static constexpr uint32_t TextureID = 0;
 		static constexpr uint32_t FontTextureID = 1;
 		static constexpr uint32_t ColorPickerTextureID = 2;
+		static constexpr uint32_t DefaultTextureCount = 3;
 
 		friend class InGui;
 	};
@@ -174,7 +169,6 @@ namespace XYZ {
 		void ResetFrameData();
 		void ResetWindowData();
 
-		InGuiWindow* EventReceivingWindow;
 		InGuiWindow* ModifiedWindow;
 		InGuiWindow* CurrentWindow;
 
@@ -252,8 +246,7 @@ namespace XYZ {
 
 
 	using InGuiPanelMap = InGuiPanel[InGuiPanelType::NumTypes];
-	using InGuiWindowMap = std::unordered_map<uint32_t, InGuiWindow*>;
-	using InGuiEventListeners = std::vector<InGuiWindow*>;
+	using InGuiWindowMap = std::vector<InGuiWindow*>;
 
 	class InGuiRenderQueue
 	{

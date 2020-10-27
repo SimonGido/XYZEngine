@@ -82,6 +82,7 @@ namespace XYZ {
 		static bool OnRightMouseButtonPress();
 		static bool OnLeftMouseButtonRelease();
 		static bool OnRightMouseButtonRelease();
+		static bool OnMouseScroll();
 		
 		static bool OnKeyPress(int key, int mod);
 		static bool OnKeyRelease();
@@ -115,12 +116,10 @@ namespace XYZ {
 
 		static void resolveResize(InGuiWindow& window);
 		static void resolveMove(InGuiWindow& window);
-
-	public:
-		
-
+	
 		static void loadDockSpace();
 		static void saveDockSpace();
+
 	private:
 		static InGuiContext* s_Context;
 	};

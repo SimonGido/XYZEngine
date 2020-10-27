@@ -343,6 +343,9 @@ namespace XYZ {
 	{
 		if (node.VisibleWindow)
 			node.VisibleWindow->Flags &= ~InGuiWindowFlag::Visible;
+		if (window.OnResizeCallback)
+			window.OnResizeCallback(node.Size);
+		
 		node.VisibleWindow = &window;
 		node.Windows.push_back(&window);
 		window.DockNode = &node;

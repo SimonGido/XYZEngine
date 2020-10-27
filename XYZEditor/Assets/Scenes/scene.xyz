@@ -56,7 +56,7 @@ Entities:
       Scale: [75, 55.2146339, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/New_Material.mat
-      SubTextureAssetPath: Assets/SubTextures/Backgroundfield.subtex
+      SubTextureAssetPath: Assets\SubTextures\Backgroundfield.subtex
       Color: [0.945790052, 0.964705884, 0.964705884, 1]
       TextureID: 1
       SortLayer: 1

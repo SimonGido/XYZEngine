@@ -43,7 +43,6 @@ namespace XYZ {
 
 	InGuiPerFrameData::InGuiPerFrameData()
 	{
-		EventReceivingWindow = nullptr;
 		ModifiedWindow = nullptr;
 		
 		TempVertices = new InGuiVertex[260 * 4];

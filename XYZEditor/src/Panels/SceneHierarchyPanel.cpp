@@ -40,6 +40,7 @@ namespace XYZ {
 		InGui::Begin(PanelID::SceneHierarchy, "Scene Hierarchy", { 0,0 }, { 400,300 });
 		InGui::End();
 		m_Window = InGui::GetWindow(PanelID::SceneHierarchy);
+		m_Window->Flags &= ~InGuiWindowFlag::EventBlocking;
 	}
 	void SceneHierarchyPanel::SetContext(const Ref<Scene>& context)
 	{

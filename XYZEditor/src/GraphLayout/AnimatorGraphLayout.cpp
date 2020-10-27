@@ -26,14 +26,7 @@ namespace XYZ {
 	{
 		if (m_Context)
 		{
-			if (InGui::GetCurrentWindow()->Flags & InGuiWindowFlag::RightClicked)
-			{
-				auto [width, height] = Input::GetWindowSize();
-				auto [mx, my] = Input::GetMousePosition();
-
-				m_PopupEnabled = !m_PopupEnabled;
-				m_PopupPosition = MouseToWorld({ mx,my }, { width,height });
-			}
+			
 		}
 	}
 
@@ -123,6 +116,15 @@ namespace XYZ {
 	}
 	bool AnimatorGraphLayout::onMouseButtonPress(MouseButtonPressEvent& event)
 	{
+		if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_RIGHT))
+		{
+			auto [width, height] = Input::GetWindowSize();
+			auto [mx, my] = Input::GetMousePosition();
+
+			m_PopupEnabled = !m_PopupEnabled;
+			m_PopupPosition = MouseToWorld({ mx,my }, { width,height });
+		}
+
 		m_Graph.TraverseAll([&](int32_t source, int32_t destination, int32_t sourceIndex, int32_t destinationIndex, bool isConnected) {
 
 			if (!isConnected)

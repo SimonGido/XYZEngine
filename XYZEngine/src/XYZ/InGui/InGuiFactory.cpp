@@ -36,23 +36,19 @@ namespace XYZ {
 			mesh.Vertices.push_back(vertices[i]);
 	}
 
-	static void GenerateInGuiImage(InGuiMesh& mesh,std::vector<TextureRendererIDPair>& texturePairs, uint32_t rendererID, const glm::vec2& position, const glm::vec2& size, const glm::vec4& texCoord, const glm::vec4& color, const InGuiRenderConfiguration& renderConfig, float tilingFactor)
+	static void GenerateInGuiImage(InGuiMesh& mesh,std::vector<TextureRendererIDPair>& texturePairs, uint32_t rendererID, const glm::vec2& position, const glm::vec2& size, const glm::vec4& texCoord, const glm::vec4& color, float tilingFactor)
 	{
-		uint32_t textureID = 0;
+		uint32_t textureID = texturePairs.size() + InGuiRenderConfiguration::DefaultTextureCount;
 		for (auto& pair : texturePairs)
 		{
 			if (pair.RendererID == rendererID)
 			{
 				textureID = pair.TextureID;
+				break;
 			}
 		}
-		if (!textureID)
-		{
-			textureID = renderConfig.NumTexturesInUse;
-			renderConfig.NumTexturesInUse++;
-		}
-		GenerateInGuiQuad(mesh, position, size, texCoord, textureID, color, tilingFactor);
 		texturePairs.push_back({ textureID,rendererID });
+		GenerateInGuiQuad(mesh, position, size, texCoord, textureID, color, tilingFactor);
 	}
 
 
@@ -147,10 +143,10 @@ namespace XYZ {
 	}
 	void InGuiFactory::GenerateRenderWindow(const char* name, InGuiWindow& window, uint32_t rendererID, InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig)
 	{
-		size_t lastFrameSize = window.Mesh.Vertices.size();
 		window.LineMesh.Vertices.clear();
 		window.Mesh.Vertices.clear();
-		window.Mesh.Vertices.reserve(lastFrameSize);
+		window.OverlayLineMesh.Vertices.clear();
+		window.OverlayMesh.Vertices.clear();
 
 		glm::vec4 panelColor = { 1,1,1,1 };
 		if (window.Flags & InGuiWindowFlag::Moved)
@@ -172,7 +168,7 @@ namespace XYZ {
 		GenerateInGuiQuad(window.Mesh, minButtonPos, { InGuiWindow::PanelSize ,InGuiWindow::PanelSize }, renderConfig.SubTexture[InGuiRenderConfiguration::MIN_BUTTON]->GetTexCoords(), renderConfig.TextureID, { 1,1,1,1 });
 		if (!(window.Flags & InGuiWindowFlag::Collapsed))
 		{
-			GenerateInGuiImage(window.Mesh, frameData.TexturePairs, rendererID, winPos, winSize, { 0,0,1,1 }, { 1,1,1,1 }, renderConfig, 1.0f);
+			GenerateInGuiImage(window.Mesh, frameData.TexturePairs, rendererID, winPos, winSize, { 0,0,1,1 }, { 1,1,1,1 }, 1.0f);
 			window.LineMesh.Vertices.push_back({ { window.Position.x,window.Position.y,0 }, renderConfig.Color[InGuiRenderConfiguration::LINE_COLOR] }); // Down left
 			window.LineMesh.Vertices.push_back({ { window.Position.x + window.Size.x,window.Position.y,0 }, renderConfig.Color[InGuiRenderConfiguration::LINE_COLOR] }); // Down right
 									
@@ -224,7 +220,7 @@ namespace XYZ {
 	}
 	void InGuiFactory::GenerateImage(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const glm::vec4& texCoords, uint32_t rendererID, InGuiMesh& mesh,std::vector<TextureRendererIDPair>& texturePairs, const InGuiRenderConfiguration& renderConfig, float tilingFactor)
 	{
-		GenerateInGuiImage(mesh, texturePairs, rendererID, position, size, texCoords, color, renderConfig, tilingFactor);
+		GenerateInGuiImage(mesh, texturePairs, rendererID, position, size, texCoords, color, tilingFactor);
 	}
 	void InGuiFactory::GenerateTextArea(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const char* name, const char* text,glm::vec2& windowSpaceOffset, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig)
 	{

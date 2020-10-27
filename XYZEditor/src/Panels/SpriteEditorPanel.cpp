@@ -59,9 +59,8 @@ namespace XYZ {
 		InGui::End();
 		
 		m_Window = InGui::GetWindow(PanelID::SpriteEditor);
-		//m_Window->Flags &= ~InGuiWindowFlag::AutoPosition;
-		m_Window->Flags &= ~InGuiWindowFlag::EventListener;
 		m_Window->Flags |= InGuiWindowFlag::MenuEnabled;
+		m_Window->Flags &= ~InGuiWindowFlag::EventBlocking;
 
 		m_Window->OnResizeCallback = Hook(&SpriteEditorPanel::onInGuiWindowResize, this);
 		
