@@ -11,8 +11,11 @@ namespace XYZ {
 		virtual void OnUpdate(Timestep ts) override;
 
 		virtual void OnEvent(Event& event) override;
+		void SetGraph(Graph* graph);
+
 		void SetContext(const Ref<AnimationController>& context);
 	private:
+		void setupGraph();
 		bool onMouseButtonPress(MouseButtonPressEvent& event);
 		bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
 
@@ -26,7 +29,7 @@ namespace XYZ {
 		static constexpr glm::vec2 sc_NodeSize = { 200,100 };
 
 		Ref<AnimationController> m_Context = nullptr;
-		Graph m_Graph;
+		Graph* m_Graph = nullptr;
 
 		int32_t m_SelectedNode = sc_InvalidIndex;
 		int32_t m_MovedNode = sc_InvalidIndex;

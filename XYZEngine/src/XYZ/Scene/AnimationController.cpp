@@ -8,7 +8,9 @@ namespace XYZ {
 		if (!m_CurrentAnimation)
 			m_CurrentAnimation = animation;
 		State state = m_StateMachine.CreateState(name);
-		m_Animations.insert({ state.GetID(), animation });
+		if (m_Animations.size() <= state.GetID())
+			m_Animations.resize((size_t)state.GetID() + 1);
+		m_Animations[state.GetID()] = animation;
 		m_StatesMap.insert({ name,state.GetID() });
 	}
 	void AnimationController::RemoveAnimation(const std::string& name)
@@ -16,7 +18,16 @@ namespace XYZ {
 		auto it = m_StatesMap.find(name);
 		if (it != m_StatesMap.end())
 		{
-			m_Animations.erase(it->second);
+			auto lastName = m_StateMachine.GetStateName(m_Animations.back());
+			auto lastState = m_StateMachine.GetState(m_Animations.back());
+
+			m_StateMachine.RenameState(it->second, lastName);
+			m_StateMachine.GetState(it->second).SetAllowedTransitions(lastState.GetAllowedTransitions());
+			
+			m_Animations[it->second] = std::move(m_Animations.back());
+			m_Animations.pop_back();
+
+			m_StatesMap[lastName] = it->second;
 			m_StatesMap.erase(it);
 		}
 	}

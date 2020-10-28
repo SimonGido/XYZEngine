@@ -66,7 +66,7 @@ namespace XYZ {
 		template <typename T, typename F>
 		bool Dispatch(const F& func)
 		{
-			if (m_Event.GetEventType() == T::GetStaticType())
+			if (m_Event.GetEventType() == T::GetStaticType() && !m_Event.Handled)
 			{
 				m_Event.Handled = func(static_cast<T&>(m_Event));
 				return m_Event.Handled;

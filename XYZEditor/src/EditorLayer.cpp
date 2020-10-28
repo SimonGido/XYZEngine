@@ -152,7 +152,7 @@ namespace XYZ {
 		m_AnimationController->AddAnimation("Test4", m_RunAnimation);
 		m_AnimationController->AddAnimation("Test5", m_RunAnimation);
 		m_AnimationController->AddAnimation("Test6", m_RunAnimation);
-
+		
 		m_Animator->Controller = m_AnimationController;
 		m_Animator->Controller->SetDefaultAnimation("Run");
 
@@ -179,7 +179,9 @@ namespace XYZ {
 		auto backgroundTexture = m_AssetManager.GetAsset<Texture2D>("Assets/Textures/Backgroundfield.png");
 		m_SpriteEditorPanel.SetContext(backgroundTexture);
 		m_AnimatorInspectorLayout.SetContext(m_AnimationController);
+		m_AnimatorInspectorLayout.SetGraph(&m_NodeGraph);
 		m_AnimatorGraphLayout.SetContext(m_AnimationController);
+		m_AnimatorGraphLayout.SetGraph(&m_NodeGraph);
 		m_InspectorPanel.SetInspectorLayout(&m_EntityInspectorLayout);
 		m_GraphPanel.SetGraphLayout(&m_AnimatorGraphLayout);
 	}
@@ -252,16 +254,19 @@ namespace XYZ {
 		{
 			m_EditorCamera.OnEvent(event);
 		}
+
 		m_GraphPanel.OnEvent(event);
 		m_SpriteEditorPanel.OnEvent(event);
 		m_ProjectBrowserPanel.OnEvent(event);
+		m_InspectorPanel.OnEvent(event);
+
 
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<WindowResizeEvent>(Hook(&EditorLayer::onWindowResized, this));	
-		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorLayer::onMouseButtonRelease, this));	
-		dispatcher.Dispatch<KeyReleasedEvent>(Hook(&EditorLayer::onKeyRelease, this));
 		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&EditorLayer::onMouseButtonPress, this));
-		dispatcher.Dispatch<KeyPressedEvent>(Hook(&EditorLayer::onKeyPress, this));	
+		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorLayer::onMouseButtonRelease, this));
+		dispatcher.Dispatch<KeyPressedEvent>(Hook(&EditorLayer::onKeyPress, this));
+		dispatcher.Dispatch<KeyReleasedEvent>(Hook(&EditorLayer::onKeyRelease, this));	
 	}
 
 	void EditorLayer::OnInGuiRender(Timestep ts)
@@ -381,14 +386,14 @@ namespace XYZ {
 	{
 		if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_LEFT))
 		{
-			auto win = InGui::GetWindow(PanelID::Scene);
 			auto [mx, my] = Input::GetMousePosition();
 			auto [width, height] = Input::GetWindowSize();
 
 			glm::vec2 mousePos = MouseToWorld({ mx,my }, { width,height });
-			glm::vec2 relativeMousePos = InGui::GetWorldPosition(*win, m_EditorCamera.GetPosition(), m_EditorCamera.GetAspectRatio(), m_EditorCamera.GetZoomLevel());
+			glm::vec2 relativeMousePos = InGui::GetWorldPosition(*m_SceneWindow, m_EditorCamera.GetPosition(), m_EditorCamera.GetAspectRatio(), m_EditorCamera.GetZoomLevel());
 
-			if (Collide(win->Position, win->Size, mousePos))
+			m_SceneHierarchyPanel.InvalidateEntity();
+			if (m_SceneWindow->Flags & InGuiWindowFlag::Hoovered)
 				m_SceneHierarchyPanel.SelectEntity(relativeMousePos);
 		
 			m_Dragging = true;
@@ -434,6 +439,8 @@ namespace XYZ {
 				m_Scene->SetSelectedEntity(Entity());
 				m_SelectedEntity = Entity();
 				InGui::GetWindow(PanelID::SceneHierarchy)->Flags |= InGuiWindowFlag::Modified;
+
+				return true;
 			}
 			else if (event.IsKeyPressed(KeyCode::XYZ_KEY_S))
 			{

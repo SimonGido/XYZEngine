@@ -10,6 +10,7 @@ namespace XYZ {
 	public:
 		void SetAllowedTransitions(uint32_t allowedTransitionsToBitset);
 		void AllowTransition(uint32_t stateIndex);
+		void DisallowTransition(uint32_t stateIndex);
 
 		bool CanTransitTo(uint32_t stateIndex);
 

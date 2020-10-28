@@ -7,6 +7,7 @@ namespace XYZ {
 	{
 		InGui::Begin(PanelID::InspectorPanel,"Inspector", { 0,-100 }, { 300,400 }); // To make sure it exists;
 		InGui::End();
+		m_Window = InGui::GetWindow(PanelID::InspectorPanel);
 	}
 	bool InspectorPanel::OnInGuiRender()
 	{
@@ -25,5 +26,13 @@ namespace XYZ {
 	{
 		m_Layout = layout;
 		InGui::GetWindow(PanelID::InspectorPanel)->Flags |= InGuiWindowFlag::Modified;
+	}
+	void InspectorPanel::OnEvent(Event& event)
+	{
+		if (m_Window->Flags & InGuiWindowFlag::Hoovered)
+		{
+			if (m_Layout)
+				m_Layout->OnEvent(event);
+		}
 	}
 }

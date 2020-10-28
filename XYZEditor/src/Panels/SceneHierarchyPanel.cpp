@@ -97,7 +97,7 @@ namespace XYZ {
 					m_PopupEnabled = !m_PopupEnabled;
 					m_PopupPosition = MouseToWorld({ mx,my }, { width,height });
 				}
-				else if (InGui::ResolveLeftClick())
+				if (InGui::ResolveLeftClick())
 				{
 					m_PopupEnabled = false;
 					m_SelectedEntity = Entity();

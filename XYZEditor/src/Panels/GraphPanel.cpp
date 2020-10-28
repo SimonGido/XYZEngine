@@ -92,6 +92,7 @@ namespace XYZ {
 		}
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<WindowResizeEvent>(Hook(&GraphPanel::onWindowResize, this));
+		dispatcher.Dispatch<KeyPressedEvent>(Hook(&GraphPanel::onKeyPress, this));
 	}
 
 	bool GraphPanel::onWindowResize(WindowResizeEvent& event)
@@ -100,6 +101,11 @@ namespace XYZ {
 		spec.Width = (uint32_t)event.GetWidth();
 		spec.Height = (uint32_t)event.GetHeight();
 		m_FBO->Resize();
+		return false;
+	}
+
+	bool GraphPanel::onKeyPress(KeyPressedEvent& event)
+	{
 		return false;
 	}
 

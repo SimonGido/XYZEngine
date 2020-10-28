@@ -19,8 +19,10 @@ namespace XYZ {
 		bool OnInGuiRender(Timestep ts);
 		void SetGraphLayout(GraphLayout* layout) { m_Layout = layout; }
 		void OnEvent(Event& event);
+
 	private:
 		bool onWindowResize(WindowResizeEvent& event);
+		bool onKeyPress(KeyPressedEvent& event);
 
 	private:
 		GraphLayout* m_Layout = nullptr;
@@ -31,8 +33,6 @@ namespace XYZ {
 		EditorCamera m_Camera;
 		InGuiMesh m_Mesh;
 		InGuiLineMesh m_LineMesh;
-
-		glm::vec2 m_TestPosition = { 0,0 };
 
 		bool m_ActiveWindow = false;
 	};

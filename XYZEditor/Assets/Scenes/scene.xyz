@@ -25,39 +25,27 @@ Entities:
       TextureID: 0
       SortLayer: 5
       IsVisible: true
-  - Entity: 00zcz
+  - Entity: Test
     TransformComponent:
-      Position: [-13.3162804, 4.47758198, 0]
-      Rotation: [0.981974244, 0, 0.0777155161]
-      Scale: [7.7225647, 10.2072754, 1]
-    SpriteRenderer:
-      MaterialAssetPath: Assets/Materials/New_Material.mat
-      SubTextureAssetPath: Assets/SubTextures/New_SubTexture.subtex
-      Color: [0, 1, 1, 1]
-      TextureID: 0
-      SortLayer: 2
-      IsVisible: true
-  - Entity: New Entity
-    TransformComponent:
-      Position: [19.3863373, -7.78778362, 0]
-      Rotation: [0, 0, 0.138339996]
-      Scale: [3.48519135, 4.7134304, 1]
+      Position: [-15.8790131, 15.2820511, 0]
+      Rotation: [0, 0, 0.477561951]
+      Scale: [8.4214859, 9.14890671, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets\Materials\New_Material.mat
       SubTextureAssetPath: Assets/SubTextures/New_SubTexture.subtex
-      Color: [0.164598227, 0.545098066, 0.545098066, 1]
+      Color: [1, 1, 1, 1]
       TextureID: 0
-      SortLayer: 2
+      SortLayer: 1
       IsVisible: true
   - Entity: Background
     TransformComponent:
-      Position: [-0.507211566, 0.40625, 0]
+      Position: [0, 0, 0]
       Rotation: [0, 0, 0]
-      Scale: [75, 55.2146339, 1]
+      Scale: [76.9326859, 46.4879799, 1]
     SpriteRenderer:
-      MaterialAssetPath: Assets/Materials/New_Material.mat
+      MaterialAssetPath: Assets\Materials\New_Material.mat
       SubTextureAssetPath: Assets\SubTextures\Backgroundfield.subtex
-      Color: [0.945790052, 0.964705884, 0.964705884, 1]
+      Color: [1, 1, 1, 1]
       TextureID: 1
-      SortLayer: 1
+      SortLayer: 0
       IsVisible: true

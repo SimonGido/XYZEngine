@@ -2,6 +2,9 @@
 
 
 namespace XYZ {
+
+	static int32_t s_NextIndex = 0;
+
 	static glm::vec2 MouseToWorld(const glm::vec2& point, const glm::vec2& windowSize)
 	{
 		glm::vec2 offset = { windowSize.x / 2,windowSize.y / 2 };
@@ -24,19 +27,33 @@ namespace XYZ {
 
 	void AnimatorGraphLayout::OnInGuiRender()
 	{
-		if (m_Context)
+		if (m_Context && m_Graph)
 		{
-	
+			if (m_PopupEnabled)
+			{
+				InGui::BeginPopup("Create Node", m_PopupPosition, glm::vec2{ 150,25 }, m_PopupOpen);	
+				if (InGui::PopupItem("Empty Node") & InGuiReturnType::Clicked)
+				{
+					auto state = m_Context->GetStateMachine().CreateState("Empty State " + std::to_string(s_NextIndex++));
+					m_Graph->AddVertex(state.GetID());
+					m_NodeMap[state.GetID()].Position = { 0,0 };
+
+					m_PopupEnabled = false;
+					m_PopupOpen = false;		
+				}
+				
+				InGui::EndPopup();
+			}
 		}
 	}
 
 	void AnimatorGraphLayout::OnUpdate(Timestep ts)
 	{
-		if (m_Context)
+		if (m_Context && m_Graph)
 		{
 			m_MousePosition = InGui::GetMousePosition();
 			auto& machine = m_Context->GetStateMachine();
-			m_Graph.TraverseAll([&](int32_t source, int32_t destination, int32_t sourceIndex, int32_t destinationIndex, bool isConnected) {
+			m_Graph->TraverseAll([&](int32_t source, int32_t destination, int32_t sourceIndex, int32_t destinationIndex, bool isConnected) {
 				
 				if (!isConnected)
 				{
@@ -74,40 +91,51 @@ namespace XYZ {
 		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&AnimatorGraphLayout::onMouseButtonPress, this));
 		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&AnimatorGraphLayout::onMouseButtonRelease, this));
 	}
+	void AnimatorGraphLayout::SetGraph(Graph* graph)
+	{
+		m_Graph = graph;
+		setupGraph();
+	}
 	void AnimatorGraphLayout::SetContext(const Ref<AnimationController>& context)
 	{ 
 		m_Context = context; 
-
-		glm::vec2 pos = { -400,0 };
-		uint32_t counter = 0;
-		
-		auto& machine = m_Context->GetStateMachine();
-		for (uint32_t i = 0; i < machine.GetNumStates(); ++i)
+		setupGraph();
+	}
+	void AnimatorGraphLayout::setupGraph()
+	{
+		if (m_Graph && m_Context)
 		{
-			if (machine.IsStateInitialized(i))
-			{
-				int32_t index = m_Graph.AddVertex(machine.GetState(i).GetID());
-				m_NodeMap[index] = { pos };
-				pos.x += 150;
-				pos.y += 150;
-				if (counter++ % 2)
-					pos.y -= 500;
-			}
-		}
+			glm::vec2 pos = { -400,0 };
+			uint32_t counter = 0;
 
-		for (uint32_t i = 0; i < machine.GetNumStates(); ++i)
-		{
-			if (machine.IsStateInitialized(i))
+			auto& machine = m_Context->GetStateMachine();
+			for (uint32_t i = 0; i < machine.GetNumStates(); ++i)
 			{
-				for (uint32_t j = 0; j < machine.GetNumStates(); ++j)
+				if (machine.IsStateInitialized(i))
 				{
-					if (machine.IsStateInitialized(j))
+					int32_t index = m_Graph->AddVertex(machine.GetState(i).GetID());
+					m_NodeMap[index] = { pos };
+					pos.x += 150;
+					pos.y += 150;
+					if (counter++ % 2)
+						pos.y -= 500;
+				}
+			}
+
+			for (uint32_t i = 0; i < machine.GetNumStates(); ++i)
+			{
+				if (machine.IsStateInitialized(i))
+				{
+					for (uint32_t j = 0; j < machine.GetNumStates(); ++j)
 					{
-						auto& source = machine.GetState(i);
-						auto& destination = machine.GetState(j);
-						if (source.CanTransitTo(destination.GetID()))
+						if (machine.IsStateInitialized(j))
 						{
-							m_Graph.AddEdge(source.GetID(), destination.GetID());
+							auto& source = machine.GetState(i);
+							auto& destination = machine.GetState(j);
+							if (source.CanTransitTo(destination.GetID()))
+							{
+								m_Graph->AddEdge(source.GetID(), destination.GetID());
+							}
 						}
 					}
 				}
@@ -115,17 +143,8 @@ namespace XYZ {
 		}
 	}
 	bool AnimatorGraphLayout::onMouseButtonPress(MouseButtonPressEvent& event)
-	{
-		if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_RIGHT))
-		{
-			auto [width, height] = Input::GetWindowSize();
-			auto [mx, my] = Input::GetMousePosition();
-
-			m_PopupEnabled = !m_PopupEnabled;
-			m_PopupPosition = MouseToWorld({ mx,my }, { width,height });
-		}
-
-		m_Graph.TraverseAll([&](int32_t source, int32_t destination, int32_t sourceIndex, int32_t destinationIndex, bool isConnected) {
+	{	
+		m_Graph->TraverseAll([&](int32_t source, int32_t destination, int32_t sourceIndex, int32_t destinationIndex, bool isConnected) {
 
 			if (!isConnected)
 			{
@@ -173,6 +192,18 @@ namespace XYZ {
 				}
 			}
 		});	
+		if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_RIGHT))
+		{
+			if (m_MovedNode == sc_InvalidIndex && m_SelectedNode == sc_InvalidIndex)
+			{
+				auto [width, height] = Input::GetWindowSize();
+				auto [mx, my] = Input::GetMousePosition();
+
+				m_PopupEnabled = !m_PopupEnabled;
+				m_PopupPosition = MouseToWorld({ mx,my }, { width,height });
+			}
+		}
+
 		return false;
 	}
 	bool AnimatorGraphLayout::onMouseButtonRelease(MouseButtonReleaseEvent& event)
@@ -180,7 +211,7 @@ namespace XYZ {
 		if (event.IsButtonReleased(MouseCode::XYZ_MOUSE_BUTTON_LEFT))
 		{
 			int32_t endIndex = sc_InvalidIndex;
-			m_Graph.TraverseAll([&](int32_t source, int32_t destination, int32_t sourceIndex, int32_t destinationIndex, bool isConnected) {
+			m_Graph->TraverseAll([&](int32_t source, int32_t destination, int32_t sourceIndex, int32_t destinationIndex, bool isConnected) {
 
 				if (!isConnected)
 				{
@@ -200,7 +231,7 @@ namespace XYZ {
 			});
 			if (endIndex != sc_InvalidIndex && m_SelectedNode != sc_InvalidIndex && endIndex != m_SelectedNode)
 			{
-				m_Graph.AddEdge(m_SelectedNode, endIndex);
+				m_Graph->AddEdge(m_SelectedNode, endIndex);
 				m_Context->GetStateMachine().GetState(m_SelectedNode).AllowTransition(endIndex);
 			}
 			m_SelectedNode = sc_InvalidIndex;

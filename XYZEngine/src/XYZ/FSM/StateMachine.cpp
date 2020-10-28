@@ -13,7 +13,10 @@ namespace XYZ {
 	{
 		m_AllowedTransitionsTo |= BIT(stateIndex);
 	}
-
+	void State::DisallowTransition(uint32_t stateIndex)
+	{
+		m_AllowedTransitionsTo &= ~BIT(stateIndex);
+	}
 	bool State::CanTransitTo(uint32_t stateIndex)
 	{
 		return m_AllowedTransitionsTo & BIT(stateIndex);

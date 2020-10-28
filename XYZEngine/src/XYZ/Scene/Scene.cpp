@@ -229,7 +229,7 @@ namespace XYZ {
 	{
 		auto& camera = m_ECS.GetComponent<CameraComponent>(entity)->Camera;
 		auto transformComponent = m_ECS.GetComponent<TransformComponent>(entity);
-	
+
 		SceneRenderer::SubmitSprite(m_CameraSprite, transformComponent->GetTransform());
 
 		auto& translation = transformComponent->Translation;

@@ -12,6 +12,7 @@ namespace XYZ {
 	public:
 		void AddAnimation(const std::string& name, const Ref<Animation>& animation);
 		void RemoveAnimation(const std::string& name);
+	
 		void SetDefaultAnimation(const std::string& name);
 		void Update(Timestep ts);
 
@@ -19,7 +20,7 @@ namespace XYZ {
 		const Ref<Animation>& GetCurrentAnimation() const;
 	private:
 		Ref<Animation> m_CurrentAnimation;
-		std::unordered_map<uint32_t, Ref<Animation>> m_Animations;
+		std::vector<Ref<Animation>> m_Animations;
 		std::unordered_map<std::string, uint32_t> m_StatesMap;
 
 		StateMachine m_StateMachine;
