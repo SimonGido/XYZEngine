@@ -110,16 +110,18 @@ namespace XYZ {
 	private:
 		static InGuiWindow* createWindow(uint32_t id, const glm::vec2& position, const glm::vec2& size);
 		static void updatePanels();
-		static bool detectResize(InGuiWindow& window);
-		static bool onMoveDetect(InGuiWindow& window);
-		static bool onCollapseDetect(InGuiWindow& window);
-		static bool onCloseDetect(InGuiWindow& window);
+
+		static uint32_t detectResize(const InGuiWindow& window);
+		static uint32_t detectMove(const InGuiWindow& window);
+
+		static uint32_t detectCollapse(const InGuiWindow& window);
+		static uint32_t detectClose(const InGuiWindow& window);
 
 		static void resolveResize(InGuiWindow& window);
 		static void resolveMove(InGuiWindow& window);
 	
-		static void loadDockSpace();
-		static void saveDockSpace();
+		static void loadFromFile();
+		static void saveToFile();
 
 	private:
 		static InGuiContext* s_Context;

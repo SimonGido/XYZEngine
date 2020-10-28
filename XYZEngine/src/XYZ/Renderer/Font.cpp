@@ -89,7 +89,7 @@ namespace XYZ {
 			(uint32_t)texWidth,(uint32_t)texHeight,4,
 			TextureWrap::Clamp,
 			TextureParam::Linear,
-			TextureParam::Linear
+			TextureParam::Nearest
 			});
 
 		m_Texture->SetData(pngData, pngData.GetSize());

@@ -195,10 +195,10 @@ namespace XYZ {
 		Renderer::Clear();
 		NativeScriptEngine::Update(ts);
 
-		if (m_ActiveWindow)
-		{
+		if (m_SceneWindow->Flags & InGuiWindowFlag::Hoovered)
 			m_EditorCamera.OnUpdate(ts);
-		}
+		else
+			m_EditorCamera.Stop();
 		
 		if ((uint32_t)m_SelectedEntity != (uint32_t)m_SceneHierarchyPanel.GetSelectedEntity())
 		{
@@ -248,6 +248,10 @@ namespace XYZ {
 	}
 	void EditorLayer::OnEvent(Event& event)
 	{	
+		if (m_SceneWindow->Flags & InGuiWindowFlag::Hoovered)
+		{
+			m_EditorCamera.OnEvent(event);
+		}
 		m_GraphPanel.OnEvent(event);
 		m_SpriteEditorPanel.OnEvent(event);
 		m_ProjectBrowserPanel.OnEvent(event);
@@ -257,12 +261,7 @@ namespace XYZ {
 		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorLayer::onMouseButtonRelease, this));	
 		dispatcher.Dispatch<KeyReleasedEvent>(Hook(&EditorLayer::onKeyRelease, this));
 		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&EditorLayer::onMouseButtonPress, this));
-		dispatcher.Dispatch<KeyPressedEvent>(Hook(&EditorLayer::onKeyPress, this));
-		
-		if (m_SceneWindow->Flags & InGuiWindowFlag::Hoovered)
-		{
-			m_EditorCamera.OnEvent(event);		
-		}
+		dispatcher.Dispatch<KeyPressedEvent>(Hook(&EditorLayer::onKeyPress, this));	
 	}
 
 	void EditorLayer::OnInGuiRender(Timestep ts)
@@ -301,7 +300,6 @@ namespace XYZ {
 
 		if (InGui::RenderWindow(0, "Scene", SceneRenderer::GetFinalColorBufferRendererID(), { 0,0 }, { 200,200 }))
 		{
-			m_ActiveWindow = true;
 			m_InspectorPanel.SetInspectorLayout(&m_EntityInspectorLayout);
 			auto& renderConfig = InGui::GetRenderConfiguration();
 			
@@ -316,10 +314,7 @@ namespace XYZ {
 			}
 			InGui::Selector(m_Selecting);
 		}
-		else
-		{
-			m_ActiveWindow = false;
-		}
+
 		InGui::End();
 
 

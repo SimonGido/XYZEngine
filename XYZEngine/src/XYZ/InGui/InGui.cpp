@@ -386,11 +386,11 @@ namespace XYZ {
 		s_Context->GetPerFrameData().Flags |= InGuiPerFrameFlag::ClickHandled;
 		
 
-		loadDockSpace();
+		loadFromFile();
 	}
 	void InGui::Destroy()
 	{
-		saveDockSpace();
+		saveToFile();
 
 		for (auto window : s_Context->Windows)
 		{
@@ -1300,7 +1300,7 @@ namespace XYZ {
 		else
 			SubmitTexture(rendererID, frameData.TexturePairs);
 		
-		return (window->Flags & InGuiWindowFlag::Hoovered);
+		return !(window->Flags & InGuiWindowFlag::Collapsed);
 	}
 
 
@@ -1410,6 +1410,7 @@ namespace XYZ {
 			
 			glm::vec2 collisionPos = window->Position;
 			glm::vec2 collisionSize = window->Size + glm::vec2(0.0f, InGuiWindow::PanelSize);
+			
 			if (window->Flags & InGuiWindowFlag::Collapsed)
 			{
 				collisionPos.y += window->Size.y;
@@ -1417,10 +1418,15 @@ namespace XYZ {
 			}	
 			if (Collide(collisionPos, collisionSize, frameData.MousePosition))
 			{
-				if (onCollapseDetect(*window))
-				{}
-				else if (onCloseDetect(*window))
-				{}
+				if (uint32_t flags = detectCollapse(*window))
+				{
+					window->Flags = flags;
+				}
+				else if (uint32_t flags = detectClose(*window))
+				{
+					window->Flags = flags;
+					s_Context->DockSpace->RemoveWindow(window);
+				}
 
 				return (window->Flags & InGuiWindowFlag::EventBlocking);
 			}
@@ -1433,7 +1439,7 @@ namespace XYZ {
 		if (s_Context->DockSpace->OnRightMouseButtonPress(s_Context->GetPerFrameData().MousePosition))
 			return true;
 
-		auto& frameData = s_Context->GetPerFrameData();
+		auto& frameData = s_Context->GetPerFrameData();	
 		frameData.Code = ToUnderlying(MouseCode::XYZ_MOUSE_BUTTON_RIGHT);
 		frameData.Flags |=  InGuiPerFrameFlag::RightMouseButtonPressed;
 		frameData.Flags &= ~InGuiPerFrameFlag::ClickHandled;
@@ -1455,15 +1461,28 @@ namespace XYZ {
 			}
 			if (Collide(collisionPos, collisionSize, frameData.MousePosition))
 			{
-				if (detectResize(*window))
+				if (uint32_t flags = detectResize(*window))
 				{
+					window->Flags = flags;
 					frameData.Flags |= InGuiPerFrameFlag::ClickHandled;
 					frameData.ModifiedWindow = window;
 				}
-				else if (onMoveDetect(*window))
+				else if (uint32_t flags = detectMove(*window))
 				{
+					// Setup flags and modified window
+					window->Flags = flags;
 					frameData.Flags |= InGuiPerFrameFlag::ClickHandled;
 					frameData.ModifiedWindow = window;
+					frameData.ModifiedWindowMouseOffset = frameData.MousePosition - window->Position - glm::vec2{ 0, window->Size.y };
+					
+					if (window->Flags & InGuiWindowFlag::Dockable)
+						s_Context->DockSpace->m_DockSpaceVisible = true;
+
+					// Remove window from dockspace and sort event listeners by queuetype
+					s_Context->DockSpace->RemoveWindow(window);
+					std::sort(s_Context->EventListeners.begin(), s_Context->EventListeners.end(), [](const InGuiWindow* winA, const InGuiWindow* winB) {
+						return winA->QueueType < winB->QueueType;
+					});
 				}		
 				return (window->Flags & InGuiWindowFlag::EventBlocking);
 			}
@@ -1645,12 +1664,12 @@ namespace XYZ {
 		window->Position = position;
 		window->Size = size;
 		window->ID = id;
+		window->QueueType = InGuiRenderQueue::FRONT;
 		window->Flags |= InGuiWindowFlag::Modified;
 		window->Flags |= InGuiWindowFlag::Visible;
 		window->Flags |= InGuiWindowFlag::AutoPosition;
 		window->Flags |= InGuiWindowFlag::Dockable;
 		window->Flags |= InGuiWindowFlag::EventBlocking;
-
 		s_Context->EventListeners.push_back(window);
 		s_Context->Windows.push_back(window);
 		return window;
@@ -1664,71 +1683,64 @@ namespace XYZ {
 		leftPanel.Size.y = winSize.y;
 	}
 	
-	bool InGui::detectResize(InGuiWindow& window)
+	uint32_t InGui::detectResize(const InGuiWindow& window)
 	{
+		bool resized = false;
+		uint32_t result = window.Flags;
 		if (!(window.Flags & InGuiWindowFlag::Docked) && !(window.Flags & InGuiWindowFlag::Moved))
 		{
 			auto& app = Application::Get();
 			auto& frameData = s_Context->GetPerFrameData();
 			glm::vec2 offset = { 10,10 };
 			auto& mousePos = frameData.MousePosition;
-			bool resized = false;
-
 			// Right side
 			if (mousePos.x >= window.Position.x + window.Size.x - offset.x)
 			{
-				window.Flags |= InGuiWindowFlag::RightResizing;
+				result |= InGuiWindowFlag::RightResizing;
 				app.GetWindow().SetStandardCursor(XYZ_HRESIZE_CURSOR);
 				resized = true;
 			}
 			// Left side
 			else if (mousePos.x <= window.Position.x + offset.x)
 			{
-				window.Flags |= InGuiWindowFlag::LeftResizing;
+				result |= InGuiWindowFlag::LeftResizing;
 				app.GetWindow().SetStandardCursor(XYZ_HRESIZE_CURSOR);
 				resized = true;
 			}
 			// Bottom side
 			if (mousePos.y <= window.Position.y + offset.y)
 			{
-				window.Flags |= InGuiWindowFlag::BottomResizing;
+				result |= InGuiWindowFlag::BottomResizing;
 				app.GetWindow().SetStandardCursor(XYZ_VRESIZE_CURSOR);
 				resized = true;
 			}
 			// Top side
 			else if (mousePos.y >= window.Position.y + window.Size.y - offset.y + InGuiWindow::PanelSize)
 			{
-				window.Flags |= InGuiWindowFlag::TopResizing;
+				result |= InGuiWindowFlag::TopResizing;
 				app.GetWindow().SetStandardCursor(XYZ_VRESIZE_CURSOR);
 				resized = true;
 			}
-			
-			return resized;
 		}
-		return false;
+		if (resized)
+			return result;
+		return 0;
 	}
-	bool InGui::onMoveDetect(InGuiWindow& window)
+
+	uint32_t InGui::detectMove(const InGuiWindow& window)
 	{
+		uint32_t result = window.Flags;
 		if (s_Context->GetPerFrameData().MousePosition.y >= window.Position.y + window.Size.y
 			&& !(window.Flags & InGuiWindowFlag::Moved))
 		{
-			window.Flags |= InGuiWindowFlag::Moved;
-			window.Flags |= InGuiWindowFlag::Modified;
-			if (window.Flags & InGuiWindowFlag::Dockable)
-				s_Context->DockSpace->m_DockSpaceVisible = true;
-			
-			s_Context->DockSpace->RemoveWindow(&window);
-			s_Context->GetPerFrameData().ModifiedWindowMouseOffset = s_Context->GetPerFrameData().MousePosition - window.Position - glm::vec2{ 0, window.Size.y };
-			
-			std::sort(s_Context->EventListeners.begin(), s_Context->EventListeners.end(), [](const InGuiWindow* winA, const InGuiWindow* winB) {
-				return winA->QueueType < winB->QueueType;
-			});
-			
-			return true;
-		}
-		return false;
+			result |= InGuiWindowFlag::Moved;
+			result |= InGuiWindowFlag::Modified;
+			return result;
+		} 
+		return 0;
 	}
-	bool InGui::onCollapseDetect(InGuiWindow& window)
+	
+	uint32_t InGui::detectCollapse(const InGuiWindow& window)
 	{
 		glm::vec2 minButtonPos = {
 				window.Position.x + window.Size.x - (2 * InGuiWindow::PanelSize),
@@ -1736,15 +1748,16 @@ namespace XYZ {
 		};
 		glm::vec2 minButtonSize = { InGuiWindow::PanelSize,InGuiWindow::PanelSize };
 
+		uint32_t result = window.Flags;
 		if (Collide(minButtonPos, minButtonSize, s_Context->GetPerFrameData().MousePosition))
 		{
-			window.Flags ^= InGuiWindowFlag::Collapsed;
-			window.Flags |= InGuiWindowFlag::Modified;
-			return true;
+			result ^= InGuiWindowFlag::Collapsed;
+			result |= InGuiWindowFlag::Modified;
+			return result;
 		}
-		return false;
+		return 0;
 	}
-	bool InGui::onCloseDetect(InGuiWindow& window)
+	uint32_t InGui::detectClose(const InGuiWindow& window)
 	{
 		glm::vec2 closeButtonPos = {
 				window.Position.x + window.Size.x - InGuiWindow::PanelSize,
@@ -1752,13 +1765,13 @@ namespace XYZ {
 		};
 		glm::vec2 closeButtonSize = { InGuiWindow::PanelSize,InGuiWindow::PanelSize };
 
+		uint32_t result = window.Flags;
 		if (Collide(closeButtonPos,closeButtonSize, s_Context->GetPerFrameData().MousePosition))
 		{
-			window.Flags |= InGuiWindowFlag::Closed;
-			s_Context->DockSpace->RemoveWindow(&window);
-			return true;
+			result |= InGuiWindowFlag::Closed;
+			return result;
 		}
-		return false;
+		return 0;
 	}
 	void InGui::resolveResize(InGuiWindow& window)
 	{
@@ -1877,6 +1890,7 @@ namespace XYZ {
 	static void LoadWindowMaps(
 		mINI::INIStructure::const_iterator& it,
 		std::vector<InGuiWindow*>& windowMap,
+		std::vector<InGuiWindow*>& eventListenersMap,
 		std::unordered_map<uint32_t, std::vector<InGuiWindow*>>& windowDockMap,
 		const mINI::INIStructure& ini)
 	{
@@ -1886,15 +1900,22 @@ namespace XYZ {
 			if (windowID >= windowMap.size())
 				windowMap.resize((size_t)windowID + 1);
 
+
 			windowMap[windowID] = new InGuiWindow();
 			windowMap[windowID]->Position = StringToVec2(it->second.get("position"));
 			windowMap[windowID]->Size = StringToVec2(it->second.get("size"));
 			windowMap[windowID]->ID = windowID;
-			int32_t id = atoi(it->second.get("docknode").c_str());
+			int32_t dockNodeId = atoi(it->second.get("docknode").c_str());
 
-			if (id != -1)
-				windowDockMap[id].push_back(windowMap[windowID]);
-
+			if (dockNodeId != -1)
+			{
+				windowDockMap[dockNodeId].push_back(windowMap[windowID]);
+				windowMap[windowID]->QueueType = InGuiRenderQueue::BACK;
+			}
+			else
+			{
+				windowMap[windowID]->QueueType = InGuiRenderQueue::FRONT;
+			}
 			if ((bool)atoi(it->second.get("collapsed").c_str()))
 				windowMap[windowID]->Flags |= InGuiWindowFlag::Collapsed;
 
@@ -1905,6 +1926,10 @@ namespace XYZ {
 			windowMap[windowID]->Flags |= InGuiWindowFlag::Dockable;
 			it++;
 		}
+		eventListenersMap = windowMap;
+		std::sort(eventListenersMap.begin(), eventListenersMap.end(), [](const InGuiWindow* winA, const InGuiWindow* winB) {
+			return winA->QueueType < winB->QueueType;
+		});
 	}
 
 	static uint32_t LoadAndSetupDockSpaceMaps(
@@ -1972,14 +1997,13 @@ namespace XYZ {
 		}
 	}
 
-	void InGui::loadDockSpace()
+	void InGui::loadFromFile()
 	{	
 		mINI::INIFile file("ingui.ini");
 		mINI::INIStructure ini;
 
 		auto& frameData = s_Context->GetPerFrameData();
 		
-
 		frameData.WindowSize.x = (float)Input::GetWindowSize().first;
 		frameData.WindowSize.y = (float)Input::GetWindowSize().second;
 
@@ -1990,9 +2014,8 @@ namespace XYZ {
 			std::unordered_map<uint32_t, int32_t> parentMap;
 
 			auto it = ini.begin();
-			LoadWindowMaps(it, s_Context->Windows, windowMap, ini);
-			s_Context->EventListeners = s_Context->Windows;
-
+			LoadWindowMaps(it, s_Context->Windows, s_Context->EventListeners, windowMap, ini);
+			
 			uint32_t maxID = LoadAndSetupDockSpaceMaps(it, dockMap, parentMap);		
 			SetupWindowMap(windowMap, dockMap);
 				
@@ -2003,7 +2026,7 @@ namespace XYZ {
 			glm::vec2 scale = s_Context->GetPerFrameData().WindowSize / s_Context->DockSpace->m_Root->Size;
 			s_Context->DockSpace->rescale(scale, s_Context->DockSpace->m_Root);
 		}
-		else
+		else // No dockspace exist so create new one
 		{
 			InGuiDockNode* root = new InGuiDockNode({ -frameData.WindowSize.x / 2,-frameData.WindowSize.y / 2 }, frameData.WindowSize, 0);
 			s_Context->DockSpace = new InGuiDockSpace(root);
@@ -2023,7 +2046,6 @@ namespace XYZ {
 		else
 			ini["Dockspace"]["node parent " + nodeID] = std::to_string(-1);
 
-
 		if (node->Children[0])
 			SaveDockSpace(ini, node->Children[0]);
 
@@ -2031,13 +2053,14 @@ namespace XYZ {
 			SaveDockSpace(ini, node->Children[1]);
 	}
 
-	void InGui::saveDockSpace()
+	void InGui::saveToFile()
 	{
 		mINI::INIFile file("ingui.ini");
 		mINI::INIStructure ini;
 		file.generate(ini);
 		s_Context->DockSpace->updateAll(s_Context->DockSpace->m_Root);
 
+		// Save windows
 		for (auto& it : s_Context->Windows)
 		{
 			if (it->Flags & InGuiWindowFlag::Initialized)
@@ -2055,6 +2078,7 @@ namespace XYZ {
 					ini[id]["Docknode"] = std::to_string(-1);
 			}
 		}
+		// Save dockspaec
 		SaveDockSpace(ini, s_Context->DockSpace->m_Root);
 		file.write(ini);
 	}

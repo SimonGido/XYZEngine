@@ -103,10 +103,8 @@ namespace XYZ {
 		glm::vec3 m_Rotation = { 0,0,0 };
 
 
-		bool m_ActiveWindow = false;
 		bool m_MenuOpen = false;
 		bool m_Selecting = false;
-
 		bool m_LeftPanel = false;
 	
 		Ref<Material> m_Material;

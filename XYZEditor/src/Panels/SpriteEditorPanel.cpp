@@ -84,11 +84,20 @@ namespace XYZ {
 	bool SpriteEditorPanel::OnInGuiRender(Timestep ts)
 	{
 		keepCameraOnContext();
-		onRender(ts);
-		m_ActiveWindow = false;
-		if (InGui::RenderWindow(PanelID::SpriteEditor, "Sprite Editor", m_FBO->GetColorAttachment(0).RendererID, { -200,-200 }, { 300,300 }))
+		if (m_Window->Flags & InGuiWindowFlag::Hoovered)
 		{
 			m_ActiveWindow = true;
+			m_Camera.OnUpdate(ts);
+		}
+		else
+		{
+			m_ActiveWindow = false;
+			m_Camera.Stop();
+		}
+		onRender(ts);	
+		if (InGui::RenderWindow(PanelID::SpriteEditor, "Sprite Editor", m_FBO->GetColorAttachment(0).RendererID, { -200,-200 }, { 300,300 }))
+		{
+			
 			if (m_Selecting)
 			{
 				glm::vec2 relativeMousePos = InGui::GetWorldPosition(*m_Window, m_Camera.GetPosition(), m_Camera.GetAspectRatio(), m_Camera.GetZoomLevel());
@@ -96,10 +105,7 @@ namespace XYZ {
 				m_NewSelection.w = relativeMousePos.y;
 			}	
 		}
-		else
-		{
-			m_Camera.Stop();
-		}
+
 		InGui::MenuBar("File", 90.0f, m_ExportOpen);
 		if (m_ExportOpen)
 		{
@@ -145,7 +151,7 @@ namespace XYZ {
 	{
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<WindowResizeEvent>(Hook(&SpriteEditorPanel::onWindowResize, this));
-		if (m_ActiveWindow)
+		if (m_Window->Flags & InGuiWindowFlag::Hoovered)
 		{
 			dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&SpriteEditorPanel::onMouseButtonRelease, this));
 			dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&SpriteEditorPanel::onMouseButtonPress, this));
@@ -247,7 +253,6 @@ namespace XYZ {
 	}
 	void SpriteEditorPanel::onRender(Timestep ts)
 	{
-		m_Camera.OnUpdate(ts);
 		m_FBO->Bind();
 		Renderer::SetClearColor(glm::vec4(0.1, 0.1, 0.1, 1));
 		Renderer::Clear();

@@ -29,15 +29,24 @@ namespace XYZ {
 	}
 	bool GraphPanel::OnInGuiRender(Timestep ts)
 	{	
-		m_ActiveWindow = false;
 		if (InGui::RenderWindow(PanelID::GraphPanel, "Graph",m_FBO->GetColorAttachment(0).RendererID, { 0,0 }, { 100,100 }))
-		{
-			m_Camera.OnUpdate(ts);
+		{		
 			if (m_Layout)
 				m_Layout->OnInGuiRender();
-			m_ActiveWindow = true;
 		}
 		InGui::End();
+
+		if (m_GraphWindow->Flags & InGuiWindowFlag::Hoovered)
+		{
+			m_ActiveWindow = true;
+			m_Camera.OnUpdate(ts);
+		}
+		else
+		{
+			m_ActiveWindow = false;
+			m_Camera.Stop();
+		}
+
 
 		if (m_ActiveWindow)
 		{
@@ -68,10 +77,7 @@ namespace XYZ {
 			InGui::EndSubFrame();
 			Renderer::EndRenderPass();
 		}
-		else
-		{
-			m_Camera.Stop();
-		}
+	
 		return m_ActiveWindow;
 	}
 

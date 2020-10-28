@@ -73,8 +73,6 @@ namespace XYZ {
 			modified = true;
 		}
 
-		
-
 		if (modified)
 			recalculate();
 	}
@@ -129,7 +127,7 @@ namespace XYZ {
 		return false;
 	}
 	bool EditorCamera::onMouseButtonPress(MouseButtonPressEvent& event)
-	{
+	{		
 		if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_MIDDLE))
 		{
 			m_MouseMoving = true;
