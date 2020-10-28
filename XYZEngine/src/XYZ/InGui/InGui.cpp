@@ -486,15 +486,13 @@ namespace XYZ {
 		frameData.WindowSpaceOffset.y = window->Position.y + window->Size.y;
 
 		// Check if window is hoovered
-		glm::vec2 winSize = window->Size + glm::vec2(0.0f, InGuiWindow::PanelSize);
-		if (Collide(window->Position, winSize, frameData.MousePosition))
+		glm::vec2 winWithPanelSize = window->Size + glm::vec2(0.0f, InGuiWindow::PanelSize);
+		window->Flags &= ~InGuiWindowFlag::Hoovered;
+		if (Collide(window->Position, winWithPanelSize, frameData.MousePosition))
 		{
 			window->Flags |= InGuiWindowFlag::Modified;
-			window->Flags |= InGuiWindowFlag::Hoovered;
-		}
-		else
-		{
-			window->Flags &= ~InGuiWindowFlag::Hoovered;
+			if (frameData.MousePosition.y <= window->Position.y + window->Size.y)
+				window->Flags |= InGuiWindowFlag::Hoovered;
 		}
 
 		s_Context->GetRenderQueue().Push(frameData.ActiveMesh, frameData.ActiveLineMesh, window->QueueType);
@@ -1282,16 +1280,15 @@ namespace XYZ {
 		frameData.WindowSpaceOffset.y = window->Position.y + window->Size.y;
 
 		// Check if window is hoovered
-		glm::vec2 winSize = window->Size + glm::vec2(0.0f, InGuiWindow::PanelSize);
-		if (Collide(window->Position, winSize, frameData.MousePosition))
+		glm::vec2 winWithPanelSize = window->Size + glm::vec2(0.0f, InGuiWindow::PanelSize);
+		window->Flags &= ~InGuiWindowFlag::Hoovered;
+		if (Collide(window->Position, winWithPanelSize, frameData.MousePosition))
 		{
 			window->Flags |= InGuiWindowFlag::Modified;
-			window->Flags |= InGuiWindowFlag::Hoovered;
+			if (frameData.MousePosition.y <= window->Position.y + window->Size.y)
+				window->Flags |= InGuiWindowFlag::Hoovered;
 		}
-		else
-		{
-			window->Flags &= ~InGuiWindowFlag::Hoovered;
-		}
+	
 		s_Context->GetRenderQueue().Push(&window->Mesh, &window->LineMesh, window->QueueType);
 		s_Context->GetRenderQueue().Push(&window->OverlayMesh, &window->OverlayLineMesh, window->QueueType);
 		
