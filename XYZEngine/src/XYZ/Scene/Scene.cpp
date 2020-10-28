@@ -208,6 +208,11 @@ namespace XYZ {
 		return { m_Entities[index],this };
 	}
 
+	Entity Scene::GetSelectedEntity()
+	{
+		return { m_SelectedEntity, this };
+	}
+
 	void Scene::showSelection(uint32_t entity)
 	{
 		auto transformComponent = m_ECS.GetComponent<TransformComponent>(entity);

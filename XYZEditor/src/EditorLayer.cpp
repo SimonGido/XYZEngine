@@ -36,7 +36,9 @@ namespace XYZ {
 	EditorLayer::EditorLayer()
 		:
 		m_SpriteEditorPanel(m_AssetManager),
-		m_NodeGraph(false)
+		m_NodeGraph(false),
+		m_ScenePanel(PanelID::Scene),
+		m_SceneHierarchyPanel(PanelID::SceneHierarchy)
 	{
 	}
 
@@ -85,6 +87,8 @@ namespace XYZ {
 		m_Scene = m_AssetManager.GetAsset<Scene>("Assets/Scenes/scene.xyz");
 		m_Scene->SetViewportSize(windowWidth, windowHeight);
 		SceneManager::Get().SetActive(m_Scene);
+		m_ScenePanel.SetContext(m_Scene);
+		m_SceneHierarchyPanel.SetContext(m_Scene);
 
 		m_Material = m_AssetManager.GetAsset<Material>("Assets/Materials/material.mat");
 		m_Material->SetFlags(XYZ::RenderFlags::TransparentFlag);
@@ -158,18 +162,12 @@ namespace XYZ {
 
 		m_SceneHierarchyPanel.SetContext(m_Scene);
 
-		
-		InGui::RenderWindow(PanelID::Scene, "Scene", 0, { 0,0 }, { 200,200 });
-		InGui::End();
-		m_SceneWindow = InGui::GetWindow(PanelID::Scene);
-		m_EditorCamera.OnResize(m_SceneWindow->Size);
 
 		InGui::SetUIOffset(10.0f);
 		InGui::Begin(PanelID::Test, "Test", { 0,0 }, { 200,200 });
 		InGui::End();
 		InGui::GetWindow(PanelID::Test)->Flags |= (InGuiWindowFlag::MenuEnabled | InGuiWindowFlag::Visible);
-		m_SceneWindow->OnResizeCallback = Hook(&EditorLayer::onResizeSceneWindow, this);
-		m_SceneWindow->Flags &= ~InGuiWindowFlag::EventBlocking;
+
 
 		float divisor = 8.0f;
 		auto& renderConfig = InGui::GetRenderConfiguration();
@@ -197,80 +195,28 @@ namespace XYZ {
 		Renderer::Clear();
 		NativeScriptEngine::Update(ts);
 
-		if (m_SceneWindow->Flags & InGuiWindowFlag::Hoovered)
-			m_EditorCamera.OnUpdate(ts);
-		else
-			m_EditorCamera.Stop();
-		
-		if ((uint32_t)m_SelectedEntity != (uint32_t)m_SceneHierarchyPanel.GetSelectedEntity())
-		{
-			m_SelectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
-			m_EntityInspectorLayout.SetContext(m_SelectedEntity);
-			m_Scene->SetSelectedEntity(m_SelectedEntity);
-		}
-			
-		if (m_ScalingEntity)
-		{
-			auto mousePos = InGui::GetWorldPosition(*InGui::GetWindow(PanelID::Scene), m_EditorCamera.GetPosition(), m_EditorCamera.GetAspectRatio(), m_EditorCamera.GetZoomLevel());
-
-			glm::vec3 scale = m_ModifiedScale;
-			scale.x += mousePos.x - m_StartMousePos.x;
-			scale.y += mousePos.y - m_StartMousePos.y;
-	
-			m_ModifiedTransform->Scale = scale;	
-			m_EntityInspectorLayout.SetContext(m_SelectedEntity);
-		}
-		else if (m_MovingEntity)
-		{
-			auto mousePos = InGui::GetWorldPosition(*InGui::GetWindow(PanelID::Scene), m_EditorCamera.GetPosition(), m_EditorCamera.GetAspectRatio(), m_EditorCamera.GetZoomLevel());
-
-			glm::vec3 translation = m_ModifiedTranslation;
-			translation.x +=  (mousePos.x - m_StartMousePos.x);
-			translation.y +=  (mousePos.y - m_StartMousePos.y);
-			
-			m_ModifiedTransform->Translation = translation;
-			m_EntityInspectorLayout.SetContext(m_SelectedEntity);
-		}
-		else if (m_RotatingEntity)
-		{
-			auto mousePos = InGui::GetWorldPosition(*InGui::GetWindow(PanelID::Scene), m_EditorCamera.GetPosition(), m_EditorCamera.GetAspectRatio(), m_EditorCamera.GetZoomLevel());
-
-			float rotation = m_ModifiedRotation.x + (mousePos.x - m_StartMousePos.x);
-		
-			m_ModifiedTransform->Rotation.z = rotation;
-			m_EntityInspectorLayout.SetContext(m_SelectedEntity);
-		}
-	
-		m_Scene->OnUpdate(ts);
-
-		if (m_Scene->GetState() == SceneState::Edit)
-			m_Scene->OnRenderEditor(m_EditorCamera); 
-		else if (m_Scene->GetState() == SceneState::Play)
-			m_Scene->OnRender();
+		m_ScenePanel.OnUpdate(ts);
+		m_SceneHierarchyPanel.OnUpdate(ts);
 	}
 	void EditorLayer::OnEvent(Event& event)
-	{	
-		if (m_SceneWindow->Flags & InGuiWindowFlag::Hoovered)
-		{
-			m_EditorCamera.OnEvent(event);
-		}
-
+	{		
 		m_GraphPanel.OnEvent(event);
 		m_SpriteEditorPanel.OnEvent(event);
 		m_ProjectBrowserPanel.OnEvent(event);
 		m_InspectorPanel.OnEvent(event);
-
+		m_ScenePanel.OnEvent(event);
+		m_SceneHierarchyPanel.OnEvent(event);
 
 		EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<WindowResizeEvent>(Hook(&EditorLayer::onWindowResized, this));	
 		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&EditorLayer::onMouseButtonPress, this));
-		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorLayer::onMouseButtonRelease, this));
-		dispatcher.Dispatch<KeyPressedEvent>(Hook(&EditorLayer::onKeyPress, this));
-		dispatcher.Dispatch<KeyReleasedEvent>(Hook(&EditorLayer::onKeyRelease, this));	
+		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorLayer::onMouseButtonRelease, this));	
 	}
 
 	void EditorLayer::OnInGuiRender(Timestep ts)
 	{
+		m_ScenePanel.OnInGuiRender();
+		m_SceneHierarchyPanel.OnInGuiRender();
+
 		InGui::BeginPanel(InGuiPanelType::Left, 300.0f, m_LeftPanel);
 
 		if (m_Dragging && m_ProjectBrowserPanel.GetSelectedFileIndex() != -1)
@@ -299,29 +245,9 @@ namespace XYZ {
 		{
 			m_InspectorPanel.SetInspectorLayout(&m_SpriteEditorInspectorLayout);
 		}
-		m_SceneHierarchyPanel.OnInGuiRender();
 		m_InspectorPanel.OnInGuiRender();
 		m_ProjectBrowserPanel.OnInGuiRender();
-
-		if (InGui::RenderWindow(0, "Scene", SceneRenderer::GetFinalColorBufferRendererID(), { 0,0 }, { 200,200 }))
-		{
-			m_InspectorPanel.SetInspectorLayout(&m_EntityInspectorLayout);
-			auto& renderConfig = InGui::GetRenderConfiguration();
-			
-			if (InGui::Icon({}, glm::vec2(40.0f, 40.0f), renderConfig.SubTexture[PLAY], renderConfig.TextureID) & InGuiReturnType::Clicked)
-			{
-				m_Scene->OnPlay();
-				m_Scene->SetState(SceneState::Play);
-			}
-			if (InGui::Icon({}, glm::vec2(40.0f, 40.0f), renderConfig.SubTexture[PAUSE], renderConfig.TextureID) & InGuiReturnType::Clicked)
-			{
-				m_Scene->SetState(SceneState::Edit);
-			}
-			InGui::Selector(m_Selecting);
-		}
-
-		InGui::End();
-
+	
 
 		if (InGui::Begin(PanelID::TestPanel, "Test Panel", { 0,0 }, { 200,200 }))
 		{
@@ -376,27 +302,12 @@ namespace XYZ {
 		InGui::End();
 	}
 
-	bool EditorLayer::onWindowResized(WindowResizeEvent& event)
-	{
-		m_Scene->SetViewportSize((uint32_t)(event.GetWidth()), (uint32_t)(event.GetHeight()));
-		m_EditorCamera.OnResize(m_SceneWindow->Size);
-		return false;
-	}
+
 	bool EditorLayer::onMouseButtonPress(MouseButtonPressEvent& event)
 	{
 		if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_LEFT))
 		{
-			auto [mx, my] = Input::GetMousePosition();
-			auto [width, height] = Input::GetWindowSize();
-
-			glm::vec2 mousePos = MouseToWorld({ mx,my }, { width,height });
-			glm::vec2 relativeMousePos = InGui::GetWorldPosition(*m_SceneWindow, m_EditorCamera.GetPosition(), m_EditorCamera.GetAspectRatio(), m_EditorCamera.GetZoomLevel());
-
-			m_SceneHierarchyPanel.InvalidateEntity();
-			if (m_SceneWindow->Flags & InGuiWindowFlag::Hoovered)
-				m_SceneHierarchyPanel.SelectEntity(relativeMousePos);
-		
-			m_Dragging = true;
+			
 		}
 		else if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_RIGHT))
 		{
@@ -426,84 +337,7 @@ namespace XYZ {
 		}
 		return false;
 	}
-	bool EditorLayer::onKeyPress(KeyPressedEvent& event)
-	{	
-		if (m_SelectedEntity)
-		{
-			if (event.IsKeyPressed(KeyCode::XYZ_KEY_DELETE))
-			{
-				m_SceneHierarchyPanel.RemoveEntity(m_SelectedEntity);
-				m_SceneHierarchyPanel.InvalidateEntity();
-				m_EntityInspectorLayout.SetContext(Entity());
-				m_Scene->DestroyEntity(m_SelectedEntity);
-				m_Scene->SetSelectedEntity(Entity());
-				m_SelectedEntity = Entity();
-				InGui::GetWindow(PanelID::SceneHierarchy)->Flags |= InGuiWindowFlag::Modified;
 
-				return true;
-			}
-			else if (event.IsKeyPressed(KeyCode::XYZ_KEY_S))
-			{
-				m_StartMousePos = InGui::GetWorldPosition(*InGui::GetWindow(PanelID::Scene), m_EditorCamera.GetPosition(), m_EditorCamera.GetAspectRatio(), m_EditorCamera.GetZoomLevel());
-				m_ScalingEntity = true;
-				m_ModifiedTransform = m_SelectedEntity.GetComponent<TransformComponent>();
-
-				m_ModifiedTranslation = m_ModifiedTransform->Translation;
-				m_ModifiedScale = m_ModifiedTransform->Scale;
-				m_ModifiedRotation = m_ModifiedTransform->Rotation;
-
-				// Remove entity;
-				m_SceneHierarchyPanel.RemoveEntity(m_SelectedEntity);
-			}
-			else if (event.IsKeyPressed(KeyCode::XYZ_KEY_G))
-			{
-				m_StartMousePos = InGui::GetWorldPosition(*InGui::GetWindow(PanelID::Scene), m_EditorCamera.GetPosition(), m_EditorCamera.GetAspectRatio(), m_EditorCamera.GetZoomLevel());
-				m_MovingEntity = true;
-				m_ModifiedTransform = m_SelectedEntity.GetComponent<TransformComponent>();
-
-				m_ModifiedTranslation = m_ModifiedTransform->Translation;
-				m_ModifiedScale = m_ModifiedTransform->Scale;
-				m_ModifiedRotation = m_ModifiedTransform->Rotation;
-
-				// Remove entity;
-				m_SceneHierarchyPanel.RemoveEntity(m_SelectedEntity);
-			}
-			else if (event.IsKeyPressed(KeyCode::XYZ_KEY_R))
-			{
-				m_StartMousePos = InGui::GetWorldPosition(*InGui::GetWindow(PanelID::Scene), m_EditorCamera.GetPosition(), m_EditorCamera.GetAspectRatio(), m_EditorCamera.GetZoomLevel());
-				m_RotatingEntity = true;
-				m_ModifiedTransform = m_SelectedEntity.GetComponent<TransformComponent>();
-				m_ModifiedTranslation = m_ModifiedTransform->Translation;
-				m_ModifiedScale = m_ModifiedTransform->Scale;
-				m_ModifiedRotation = m_ModifiedTransform->Rotation;
-			}
-			
-		}
-		return false;
-	}
-	bool EditorLayer::onKeyRelease(KeyReleasedEvent& event)
-	{
-		if (event.IsKeyReleased(KeyCode::XYZ_KEY_S))
-		{
-			m_ScalingEntity = false;	
-			if (m_SelectedEntity)
-				m_SceneHierarchyPanel.InsertEntity(m_SelectedEntity);
-		}
-		else if (event.IsKeyReleased(KeyCode::XYZ_KEY_G))
-		{
-			m_MovingEntity = false;
-			if (m_SelectedEntity)
-				m_SceneHierarchyPanel.InsertEntity(m_SelectedEntity);
-		}
-		else if (event.IsKeyReleased(KeyCode::XYZ_KEY_R))
-		{
-			m_RotatingEntity = false;
-		}
-		return false;
-	}
-	void EditorLayer::onResizeSceneWindow(const glm::vec2& size)
-	{
-		m_EditorCamera.OnResize(size);
-	}
+	
 	
 }

@@ -23,6 +23,7 @@ namespace XYZ {
 	private:
 		bool onWindowResize(WindowResizeEvent& event);
 		bool onKeyPress(KeyPressedEvent& event);
+		
 
 	private:
 		GraphLayout* m_Layout = nullptr;

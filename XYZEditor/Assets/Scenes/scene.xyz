@@ -15,9 +15,9 @@ Entities:
       OrthographicFar: 1
   - Entity: Test Entity
     TransformComponent:
-      Position: [-27.5898113, -17.0563736, 0]
-      Rotation: [1, 0, 0]
-      Scale: [16.6450653, 24.8056946, 1]
+      Position: [-30.784153, -5.93986177, 0]
+      Rotation: [1, 0, -0.0101356506]
+      Scale: [10.8511467, 23.6469116, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/New_Material.mat
       SubTextureAssetPath: Assets\SubTextures\New_SubTexture.subtex
@@ -29,7 +29,7 @@ Entities:
     TransformComponent:
       Position: [-15.8790131, 15.2820511, 0]
       Rotation: [0, 0, 0.477561951]
-      Scale: [8.4214859, 9.14890671, 1]
+      Scale: [5.28910017, 5.69531012, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets\Materials\New_Material.mat
       SubTextureAssetPath: Assets/SubTextures/New_SubTexture.subtex

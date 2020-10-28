@@ -88,7 +88,7 @@ namespace XYZ {
 
 		operator bool () const
 		{
-			return m_Scene;
+			return m_Scene && m_ID != NULL_ENTITY;
 		}
 
 		operator uint32_t () const { return m_ID; }

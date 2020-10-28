@@ -1,38 +1,29 @@
 #pragma once
 
-#include <XYZ.h>
-
+#include "Panel.h"
 
 namespace XYZ {
 
-	class SceneHierarchyPanel
+	class SceneHierarchyPanel : public Panel
 	{
 	public:
-		SceneHierarchyPanel();
-		SceneHierarchyPanel(const Ref<Scene>& context);
-
+		SceneHierarchyPanel(uint32_t id);
+		virtual void OnInGuiRender() override;
+		virtual void OnUpdate(Timestep ts) override;
+		virtual void OnEvent(Event& event) override;
 		void SetContext(const Ref<Scene>& context);
 
-		bool OnInGuiRender();
-
-		void SelectEntity(const glm::vec2& position);
-		void InvalidateEntity();
-
-		void RemoveEntity(Entity entity);
-		void InsertEntity(Entity entity);
-	
-		inline Entity GetSelectedEntity() const { return m_SelectedEntity; }
 	private:
-		void drawEntity(Entity entity);
+		bool onMouseButtonPress(MouseButtonPressEvent& event);
+		bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
+		bool onKeyPress(KeyPressedEvent& event);
+		bool onKeyRelease(KeyReleasedEvent& event);
 
+		void drawEntity(Entity entity);
 	private:
 		Ref<Scene> m_Context;
 
-		InGuiWindow* m_Window;
-		bool m_PopupEnabled = false;
 		glm::vec2 m_PopupPosition = { 0,0 };
-
-		Entity m_SelectedEntity;
-		HashGrid2D<Entity> m_Entities;
+		bool m_PopupEnabled = false;
 	};
 }

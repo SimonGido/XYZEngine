@@ -22,6 +22,7 @@ namespace XYZ {
         Edit,
         Pause
     };
+
     /*! @class Scene
     *	@brief Holds all data relevant to a Scene
     */
@@ -54,6 +55,8 @@ namespace XYZ {
         SceneState GetState() const { return m_State; }
         Entity GetEntity(uint32_t index);
         ECSManager& GetECS() { return m_ECS; }
+        Entity GetSelectedEntity();
+
         inline const std::string& GetName() const { return m_Name; }
         inline const SceneCamera& GetMainCamera() const { return m_MainCamera->Camera; }
     private:
@@ -91,5 +94,6 @@ namespace XYZ {
         friend class Entity;
         friend class Asset<Scene>;
         friend class SceneHierarchyPanel;
+        friend class ScenePanel;
     };
 }

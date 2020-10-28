@@ -7,12 +7,12 @@
 #include "Panels/GraphPanel.h"
 #include "Panels/SpriteEditorPanel.h"
 #include "Panels/ProjectBrowserPanel.h"
+#include "Panels/ScenePanel.h"
 
 #include "InspectorLayout/SpriteEditorInspectorLayout.h"
 #include "InspectorLayout/EntityInspectorLayout.h"
 #include "InspectorLayout/AnimatorInspectorLayout.h"
 #include "GraphLayout/AnimatorGraphLayout.h"
-
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
@@ -35,13 +35,9 @@ namespace XYZ {
 		virtual void OnInGuiRender(Timestep ts) override;
 
 	private:
-		bool onWindowResized(WindowResizeEvent& event);
 		bool onMouseButtonPress(MouseButtonPressEvent& event);
 		bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
-		bool onKeyPress(KeyPressedEvent& event);
-		bool onKeyRelease(KeyReleasedEvent& event);
-
-		void onResizeSceneWindow(const glm::vec2& size);
+	
 
 	private:
 		enum
@@ -56,7 +52,6 @@ namespace XYZ {
 			PAUSE
 		};
 
-		InGuiWindow* m_SceneWindow = nullptr;
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		SpriteEditorPanel m_SpriteEditorPanel;
 		ProjectBrowserPanel m_ProjectBrowserPanel;
@@ -69,21 +64,11 @@ namespace XYZ {
 		GraphPanel m_GraphPanel;
 		AnimatorGraphLayout m_AnimatorGraphLayout;
 		Graph m_NodeGraph;
+		ScenePanel m_ScenePanel;
 
-		Entity m_SelectedEntity;
-		glm::vec2 m_StartMousePos;
-		bool m_ScalingEntity = false;
-		bool m_MovingEntity = false;
-		bool m_RotatingEntity = false;
+		
 		bool m_Dragging = false;
 
-		TransformComponent* m_ModifiedTransform = nullptr;
-		glm::vec3 m_ModifiedTranslation;
-		glm::vec3 m_ModifiedRotation;
-		glm::vec3 m_ModifiedScale;
-
-
-		EditorCamera m_EditorCamera;
 		Ref<Scene> m_Scene;
 		AssetManager m_AssetManager;
 		std::vector<Entity> m_StoredEntitiesWithScript;
