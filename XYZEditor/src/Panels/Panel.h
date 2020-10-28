@@ -15,4 +15,12 @@ namespace XYZ {
 			DeletePanel
 		};
 	}
+
+
+	class Panel
+	{
+	public:
+		v
+
+	};
 }

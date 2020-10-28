@@ -2,7 +2,7 @@ Scene: Test Scene
 Entities:
   - Entity: Main Camera
     TransformComponent:
-      Position: [0.248401642, -8.17708588, 0]
+      Position: [3.48151207, -3.77337265, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     CameraComponent:
