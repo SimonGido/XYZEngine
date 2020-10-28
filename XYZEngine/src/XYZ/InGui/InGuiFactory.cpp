@@ -113,8 +113,8 @@ namespace XYZ {
 		glm::vec2 winPos = window.Position;
 		glm::vec2 winSize = window.Size;
 		glm::vec2 panelPos = { winPos.x, winPos.y + winSize.y };
-		glm::vec2 minButtonPos = { panelPos.x + winSize.x - InGuiWindow::PanelSize, panelPos.y };
-
+		glm::vec2 closeButtonPos = { panelPos.x + winSize.x - InGuiWindow::PanelSize, panelPos.y };
+		glm::vec2 minButtonPos = closeButtonPos - glm::vec2(InGuiWindow::PanelSize, 0.0f);
 		GenerateInGuiQuad(window.Mesh, panelPos, { winSize.x ,InGuiWindow::PanelSize }, renderConfig.SubTexture[InGuiRenderConfiguration::SLIDER]->GetTexCoords(), renderConfig.TextureID, panelColor);
 	
 		if (!(window.Flags & InGuiWindowFlag::MenuEnabled))
@@ -123,6 +123,7 @@ namespace XYZ {
 			window.MinimalWidth = info.Size.x + InGuiWindow::PanelSize;
 			MoveVertices(window.Mesh.Vertices.data(), { 5, info.Size.y / 2 }, 4, info.Count * 4);
 		}
+		GenerateInGuiQuad(window.Mesh, closeButtonPos, { InGuiWindow::PanelSize ,InGuiWindow::PanelSize }, renderConfig.SubTexture[InGuiRenderConfiguration::CLOSE_BUTTON]->GetTexCoords(), renderConfig.TextureID, { 1,1,1,1 });
 		GenerateInGuiQuad(window.Mesh, minButtonPos, { InGuiWindow::PanelSize ,InGuiWindow::PanelSize }, renderConfig.SubTexture[InGuiRenderConfiguration::MIN_BUTTON]->GetTexCoords(), renderConfig.TextureID, { 1,1,1,1 });
 		if (!(window.Flags & InGuiWindowFlag::Collapsed))
 		{
@@ -155,17 +156,19 @@ namespace XYZ {
 		glm::vec2 winPos = window.Position;
 		glm::vec2 winSize = window.Size;
 		glm::vec2 panelPos = { winPos.x, winPos.y + winSize.y };
-		glm::vec2 minButtonPos = { panelPos.x + winSize.x - InGuiWindow::PanelSize, panelPos.y };
-
+		glm::vec2 closeButtonPos = { panelPos.x + winSize.x - InGuiWindow::PanelSize, panelPos.y };
+		glm::vec2 minButtonPos = closeButtonPos - glm::vec2(InGuiWindow::PanelSize, 0.0f);
 		GenerateInGuiQuad(window.Mesh, panelPos, { winSize.x ,InGuiWindow::PanelSize }, renderConfig.SubTexture[InGuiRenderConfiguration::SLIDER]->GetTexCoords(), renderConfig.TextureID, panelColor);
 
 		if (!(window.Flags & InGuiWindowFlag::MenuEnabled))
 		{
-			auto info = GenerateInGuiText(window.Mesh, renderConfig.Font, name, panelPos,  window.Size.x, renderConfig.FontTextureID, { 1,1,1,1 });
+			auto info = GenerateInGuiText(window.Mesh, renderConfig.Font, name, panelPos, window.Size.x, renderConfig.FontTextureID, { 1,1,1,1 });
 			window.MinimalWidth = info.Size.x + InGuiWindow::PanelSize;
 			MoveVertices(window.Mesh.Vertices.data(), { 5, info.Size.y / 2 }, 4, info.Count * 4);
 		}
+		GenerateInGuiQuad(window.Mesh, closeButtonPos, { InGuiWindow::PanelSize ,InGuiWindow::PanelSize }, renderConfig.SubTexture[InGuiRenderConfiguration::CLOSE_BUTTON]->GetTexCoords(), renderConfig.TextureID, { 1,1,1,1 });
 		GenerateInGuiQuad(window.Mesh, minButtonPos, { InGuiWindow::PanelSize ,InGuiWindow::PanelSize }, renderConfig.SubTexture[InGuiRenderConfiguration::MIN_BUTTON]->GetTexCoords(), renderConfig.TextureID, { 1,1,1,1 });
+
 		if (!(window.Flags & InGuiWindowFlag::Collapsed))
 		{
 			GenerateInGuiImage(window.Mesh, frameData.TexturePairs, rendererID, winPos, winSize, { 0,0,1,1 }, { 1,1,1,1 }, 1.0f);

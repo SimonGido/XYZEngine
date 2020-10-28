@@ -8,6 +8,8 @@ namespace XYZ {
 	{
 		InGuiRenderConfiguration RenderConfiguration;
 		InGuiWindowMap Windows;
+		InGuiWindowMap EventListeners;
+
 		InGuiPanelMap Panels;
 		InGuiDockSpace* DockSpace = nullptr;
 	
@@ -99,9 +101,7 @@ namespace XYZ {
 		static bool ResolveLeftRelease(bool handle = true);
 		static bool ResolveRightRelease(bool handle = true);
 
-		static InGuiWindow* GetCurrentWindow();
 		static InGuiWindow* GetWindow(uint32_t id);
-
 		static InGuiRenderConfiguration& GetRenderConfiguration();
 		static const glm::vec2& GetMousePosition();
 		static glm::vec2 MouseRelativePosition(const InGuiWindow& window, const glm::vec3& cameraPos);
@@ -111,8 +111,9 @@ namespace XYZ {
 		static InGuiWindow* createWindow(uint32_t id, const glm::vec2& position, const glm::vec2& size);
 		static void updatePanels();
 		static bool detectResize(InGuiWindow& window);
-		static bool detectMoved(InGuiWindow& window);
-		static bool detectCollapse(InGuiWindow& window);
+		static bool onMoveDetect(InGuiWindow& window);
+		static bool onCollapseDetect(InGuiWindow& window);
+		static bool onCloseDetect(InGuiWindow& window);
 
 		static void resolveResize(InGuiWindow& window);
 		static void resolveMove(InGuiWindow& window);

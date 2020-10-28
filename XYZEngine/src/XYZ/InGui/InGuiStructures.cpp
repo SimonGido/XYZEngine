@@ -28,6 +28,7 @@ namespace XYZ {
 		SubTexture[SLIDER_HANDLE] = Ref<SubTexture2D>::Create(Texture, glm::vec2(1, 2), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
 		SubTexture[WINDOW] = Ref<SubTexture2D>::Create(Texture, glm::vec2(0, 3), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
 		SubTexture[MIN_BUTTON] = Ref<SubTexture2D>::Create(Texture, glm::vec2(1, 3), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
+		SubTexture[CLOSE_BUTTON] = Ref<SubTexture2D>::Create(Texture, glm::vec2(2, 0), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
 		SubTexture[DOWN_ARROW] = Ref<SubTexture2D>::Create(Texture, glm::vec2(2, 3), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
 		SubTexture[RIGHT_ARROW] = Ref<SubTexture2D>::Create(Texture, glm::vec2(2, 2), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
 		SubTexture[LEFT_ARROW] = Ref<SubTexture2D>::Create(Texture, glm::vec2(3, 2), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));

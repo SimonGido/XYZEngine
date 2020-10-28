@@ -97,6 +97,7 @@ namespace XYZ {
 			SLIDER_HANDLE,
 			WINDOW,
 			MIN_BUTTON,
+			CLOSE_BUTTON,
 			DOWN_ARROW,
 			RIGHT_ARROW,
 			LEFT_ARROW,
@@ -138,6 +139,7 @@ namespace XYZ {
 
 		uint32_t Flags = 0;
 		uint32_t ID = 0;
+		uint8_t  QueueType = 0;
 		float MinimalWidth = 0.0f;
 
 		const char* Name = nullptr;

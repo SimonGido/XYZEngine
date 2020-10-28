@@ -168,6 +168,7 @@ namespace XYZ {
 			window->DockNode = nullptr;
 			window->Flags |=  InGuiWindowFlag::Visible;
 			window->Flags &= ~InGuiWindowFlag::Docked;
+			window->QueueType = InGuiRenderQueue::FRONT;
 		}
 	}
 
@@ -352,91 +353,94 @@ namespace XYZ {
 		window.Flags |= InGuiWindowFlag::Docked;
 		window.Flags |= InGuiWindowFlag::Modified;
 		window.Flags |= InGuiWindowFlag::Visible;
+		window.QueueType = InGuiRenderQueue::BACK;
 	}
 
 	void InGuiDockSpace::insertWindow(InGuiWindow* window, const glm::vec2& mousePos, InGuiDockNode* node)
 	{
-		XYZ_ASSERT(node, "Inserting window to node null!");
-		if (Collide(node->Position, node->Size, mousePos))
-		{
-			if (node->Split == SplitAxis::None)
+		if (node)
+		{ 
+			if (Collide(node->Position, node->Size, mousePos))
 			{
-				auto pos = collideWithMarker(node, mousePos);
+				if (node->Split == SplitAxis::None)
+				{
+					auto pos = collideWithMarker(node, mousePos);
 
-				if (pos == DockPosition::Middle)
-				{
-					XYZ_ASSERT(!window->DockNode, "Window is already docked");
-					ResolveWindowInsert(*node, *window);
-				}
-				else if (pos == DockPosition::Left)
-				{
-					XYZ_ASSERT(!window->DockNode, "Window is already docked");
-					glm::vec2 halfSize = { node->Size.x / 2, node->Size.y };
-					splitNodeProportional(node, SplitAxis::Vertical, halfSize);
-					if (!node->Windows.empty())
+					if (pos == DockPosition::Middle)
 					{
-						for (auto win : node->Windows)
-						{
-							node->Children[1]->Windows.push_back(win);
-							win->DockNode = node->Children[1];
-						}
-						node->Windows.clear();
+						XYZ_ASSERT(!window->DockNode, "Window is already docked");
+						ResolveWindowInsert(*node, *window);
 					}
-					ResolveWindowInsert(*node->Children[0], *window);
-				}
-				else if (pos == DockPosition::Right)
-				{
-					XYZ_ASSERT(!window->DockNode, "Window is already docked");
-					glm::vec2 halfSize = { node->Size.x / 2, node->Size.y };
-					splitNodeProportional(node, SplitAxis::Vertical, halfSize);
-					if (!node->Windows.empty())
+					else if (pos == DockPosition::Left)
 					{
-						for (auto win : node->Windows)
+						XYZ_ASSERT(!window->DockNode, "Window is already docked");
+						glm::vec2 halfSize = { node->Size.x / 2, node->Size.y };
+						splitNodeProportional(node, SplitAxis::Vertical, halfSize);
+						if (!node->Windows.empty())
 						{
-							node->Children[0]->Windows.push_back(win);
-							win->DockNode = node->Children[0];
+							for (auto win : node->Windows)
+							{
+								node->Children[1]->Windows.push_back(win);
+								win->DockNode = node->Children[1];
+							}
+							node->Windows.clear();
 						}
-						node->Windows.clear();
+						ResolveWindowInsert(*node->Children[0], *window);
 					}
-					ResolveWindowInsert(*node->Children[1], *window);
-				}
-				else if (pos == DockPosition::Bottom)
-				{
-					XYZ_ASSERT(!window->DockNode, "Window is already docked");
-					glm::vec2 halfSize = { node->Size.x ,node->Size.y / 2 };
-					splitNodeProportional(node, SplitAxis::Horizontal, halfSize);
-					if (!node->Windows.empty())
+					else if (pos == DockPosition::Right)
 					{
-						for (auto win : node->Windows)
+						XYZ_ASSERT(!window->DockNode, "Window is already docked");
+						glm::vec2 halfSize = { node->Size.x / 2, node->Size.y };
+						splitNodeProportional(node, SplitAxis::Vertical, halfSize);
+						if (!node->Windows.empty())
 						{
-							node->Children[1]->Windows.push_back(win);
-							win->DockNode = node->Children[1];
+							for (auto win : node->Windows)
+							{
+								node->Children[0]->Windows.push_back(win);
+								win->DockNode = node->Children[0];
+							}
+							node->Windows.clear();
 						}
-						node->Windows.clear();
+						ResolveWindowInsert(*node->Children[1], *window);
 					}
-					ResolveWindowInsert(*node->Children[0], *window);
-				}
-				else if (pos == DockPosition::Top)
-				{
-					XYZ_ASSERT(!window->DockNode, "Window is already docked");
-					glm::vec2 halfSize = { node->Size.x ,node->Size.y / 2 };
-					splitNodeProportional(node, SplitAxis::Horizontal, halfSize);
-					if (!node->Windows.empty())
+					else if (pos == DockPosition::Bottom)
 					{
-						for (auto win : node->Windows)
+						XYZ_ASSERT(!window->DockNode, "Window is already docked");
+						glm::vec2 halfSize = { node->Size.x ,node->Size.y / 2 };
+						splitNodeProportional(node, SplitAxis::Horizontal, halfSize);
+						if (!node->Windows.empty())
 						{
-							node->Children[0]->Windows.push_back(win);
-							win->DockNode = node->Children[0];
+							for (auto win : node->Windows)
+							{
+								node->Children[1]->Windows.push_back(win);
+								win->DockNode = node->Children[1];
+							}
+							node->Windows.clear();
 						}
-						node->Windows.clear();
+						ResolveWindowInsert(*node->Children[0], *window);
 					}
-					ResolveWindowInsert(*node->Children[1], *window);
+					else if (pos == DockPosition::Top)
+					{
+						XYZ_ASSERT(!window->DockNode, "Window is already docked");
+						glm::vec2 halfSize = { node->Size.x ,node->Size.y / 2 };
+						splitNodeProportional(node, SplitAxis::Horizontal, halfSize);
+						if (!node->Windows.empty())
+						{
+							for (auto win : node->Windows)
+							{
+								node->Children[0]->Windows.push_back(win);
+								win->DockNode = node->Children[0];
+							}
+							node->Windows.clear();
+						}
+						ResolveWindowInsert(*node->Children[1], *window);
+					}
 				}
-			}
-			else
-			{
-				insertWindow(window, mousePos, node->Children[0]);
-				insertWindow(window, mousePos, node->Children[1]);
+				else
+				{
+					insertWindow(window, mousePos, node->Children[0]);
+					insertWindow(window, mousePos, node->Children[1]);
+				}
 			}
 		}
 	}

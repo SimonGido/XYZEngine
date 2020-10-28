@@ -479,7 +479,8 @@ namespace XYZ {
 		frameData.ActiveOverlayMesh = &window->OverlayMesh;
 		frameData.ActiveOverlayLineMesh = &window->OverlayLineMesh;
 		
-		if (!(window->Flags & InGuiWindowFlag::Visible)) return false;
+		if (!(window->Flags & InGuiWindowFlag::Visible) || (window->Flags & InGuiWindowFlag::Closed))
+			return false;
 
 		frameData.WindowSpaceOffset.x = window->Position.x;
 		frameData.WindowSpaceOffset.y = window->Position.y + window->Size.y;
@@ -496,8 +497,8 @@ namespace XYZ {
 			window->Flags &= ~InGuiWindowFlag::Hoovered;
 		}
 
-		s_Context->GetRenderQueue().Push(frameData.ActiveMesh, frameData.ActiveLineMesh);
-		s_Context->GetRenderQueue().Push(frameData.ActiveOverlayMesh, frameData.ActiveOverlayLineMesh);
+		s_Context->GetRenderQueue().Push(frameData.ActiveMesh, frameData.ActiveLineMesh, window->QueueType);
+		s_Context->GetRenderQueue().Push(frameData.ActiveOverlayMesh, frameData.ActiveOverlayLineMesh, window->QueueType);
 		
 		// Check if was modified
 		if (window->Flags & InGuiWindowFlag::Modified)
@@ -1274,7 +1275,8 @@ namespace XYZ {
 		frameData.ActiveOverlayMesh = &window->OverlayMesh;
 		frameData.ActiveOverlayLineMesh = &window->OverlayLineMesh;
 
-		if (!(window->Flags & InGuiWindowFlag::Visible)) return false;
+		if (!(window->Flags & InGuiWindowFlag::Visible) || (window->Flags & InGuiWindowFlag::Closed)) 
+			return false;
 
 		frameData.WindowSpaceOffset.x = window->Position.x;
 		frameData.WindowSpaceOffset.y = window->Position.y + window->Size.y;
@@ -1290,9 +1292,8 @@ namespace XYZ {
 		{
 			window->Flags &= ~InGuiWindowFlag::Hoovered;
 		}
-
-		s_Context->GetRenderQueue().Push(&window->Mesh, &window->LineMesh);
-		s_Context->GetRenderQueue().Push(&window->OverlayMesh, &window->OverlayLineMesh);
+		s_Context->GetRenderQueue().Push(&window->Mesh, &window->LineMesh, window->QueueType);
+		s_Context->GetRenderQueue().Push(&window->OverlayMesh, &window->OverlayLineMesh, window->QueueType);
 		
 		if (window->Flags & InGuiWindowFlag::Modified)
 			InGuiFactory::GenerateRenderWindow(name, *window, rendererID, frameData, renderConfig);
@@ -1400,11 +1401,12 @@ namespace XYZ {
 		frameData.Flags &= ~InGuiPerFrameFlag::ClickHandled;
 		frameData.Flags &= ~InGuiPerFrameFlag::LeftMouseButtonReleased;
 
-		auto& windows = s_Context->Windows;
+		auto& windows = s_Context->EventListeners;
 		for (auto it = windows.rbegin(); it != windows.rend(); ++it)
 		{
 			auto window = (*it);
-			if (!(window->Flags & InGuiWindowFlag::Visible)) continue;
+			if (!(window->Flags & InGuiWindowFlag::Visible) || (window->Flags & InGuiWindowFlag::Closed)) 
+				continue;
 			
 			glm::vec2 collisionPos = window->Position;
 			glm::vec2 collisionSize = window->Size + glm::vec2(0.0f, InGuiWindow::PanelSize);
@@ -1415,8 +1417,11 @@ namespace XYZ {
 			}	
 			if (Collide(collisionPos, collisionSize, frameData.MousePosition))
 			{
-				if (detectCollapse(*window))
+				if (onCollapseDetect(*window))
 				{}
+				else if (onCloseDetect(*window))
+				{}
+
 				return (window->Flags & InGuiWindowFlag::EventBlocking);
 			}
 		}
@@ -1434,11 +1439,12 @@ namespace XYZ {
 		frameData.Flags &= ~InGuiPerFrameFlag::ClickHandled;
 		frameData.Flags &= ~InGuiPerFrameFlag::RightMouseButtonReleased;
 		
-		auto& windows = s_Context->Windows;
+		auto& windows = s_Context->EventListeners;
 		for (auto it = windows.rbegin(); it != windows.rend(); ++it)
 		{
 			auto window = (*it);
-			if (!(window->Flags & InGuiWindowFlag::Visible)) continue;
+			if (!(window->Flags & InGuiWindowFlag::Visible) || (window->Flags & InGuiWindowFlag::Closed))
+				continue;
 
 			glm::vec2 collisionPos = window->Position;
 			glm::vec2 collisionSize = window->Size + glm::vec2(0.0f, InGuiWindow::PanelSize);
@@ -1454,7 +1460,7 @@ namespace XYZ {
 					frameData.Flags |= InGuiPerFrameFlag::ClickHandled;
 					frameData.ModifiedWindow = window;
 				}
-				else if (detectMoved(*window))
+				else if (onMoveDetect(*window))
 				{
 					frameData.Flags |= InGuiPerFrameFlag::ClickHandled;
 					frameData.ModifiedWindow = window;
@@ -1571,12 +1577,6 @@ namespace XYZ {
 		s_Context->GetPerFrameData().ItemOffset = offset;
 	}
 
-	InGuiWindow* InGui::GetCurrentWindow()
-	{
-		return s_Context->GetPerFrameData().CurrentWindow;
-	}
-
-
 	InGuiRenderConfiguration& InGui::GetRenderConfiguration()
 	{
 		return s_Context->RenderConfiguration;
@@ -1651,6 +1651,7 @@ namespace XYZ {
 		window->Flags |= InGuiWindowFlag::Dockable;
 		window->Flags |= InGuiWindowFlag::EventBlocking;
 
+		s_Context->EventListeners.push_back(window);
 		s_Context->Windows.push_back(window);
 		return window;
 	}
@@ -1706,22 +1707,31 @@ namespace XYZ {
 		}
 		return false;
 	}
-	bool InGui::detectMoved(InGuiWindow& window)
+	bool InGui::onMoveDetect(InGuiWindow& window)
 	{
 		if (s_Context->GetPerFrameData().MousePosition.y >= window.Position.y + window.Size.y
 			&& !(window.Flags & InGuiWindowFlag::Moved))
 		{
 			window.Flags |= InGuiWindowFlag::Moved;
 			window.Flags |= InGuiWindowFlag::Modified;
+			if (window.Flags & InGuiWindowFlag::Dockable)
+				s_Context->DockSpace->m_DockSpaceVisible = true;
+			
+			s_Context->DockSpace->RemoveWindow(&window);
 			s_Context->GetPerFrameData().ModifiedWindowMouseOffset = s_Context->GetPerFrameData().MousePosition - window.Position - glm::vec2{ 0, window.Size.y };
+			
+			std::sort(s_Context->EventListeners.begin(), s_Context->EventListeners.end(), [](const InGuiWindow* winA, const InGuiWindow* winB) {
+				return winA->QueueType < winB->QueueType;
+			});
+			
 			return true;
 		}
 		return false;
 	}
-	bool InGui::detectCollapse(InGuiWindow& window)
+	bool InGui::onCollapseDetect(InGuiWindow& window)
 	{
 		glm::vec2 minButtonPos = {
-				window.Position.x + window.Size.x - InGuiWindow::PanelSize,
+				window.Position.x + window.Size.x - (2 * InGuiWindow::PanelSize),
 				window.Position.y + window.Size.y
 		};
 		glm::vec2 minButtonSize = { InGuiWindow::PanelSize,InGuiWindow::PanelSize };
@@ -1730,6 +1740,22 @@ namespace XYZ {
 		{
 			window.Flags ^= InGuiWindowFlag::Collapsed;
 			window.Flags |= InGuiWindowFlag::Modified;
+			return true;
+		}
+		return false;
+	}
+	bool InGui::onCloseDetect(InGuiWindow& window)
+	{
+		glm::vec2 closeButtonPos = {
+				window.Position.x + window.Size.x - InGuiWindow::PanelSize,
+				window.Position.y + window.Size.y
+		};
+		glm::vec2 closeButtonSize = { InGuiWindow::PanelSize,InGuiWindow::PanelSize };
+
+		if (Collide(closeButtonPos,closeButtonSize, s_Context->GetPerFrameData().MousePosition))
+		{
+			window.Flags |= InGuiWindowFlag::Closed;
+			s_Context->DockSpace->RemoveWindow(&window);
 			return true;
 		}
 		return false;
@@ -1778,9 +1804,6 @@ namespace XYZ {
 			auto& frameData = s_Context->GetPerFrameData();
 			glm::vec2 pos = frameData.MousePosition - frameData.ModifiedWindowMouseOffset;
 			window.Position = { pos.x, pos.y - window.Size.y };
-			s_Context->DockSpace->RemoveWindow(&window);
-			if (window.Flags & InGuiWindowFlag::Dockable)
-				s_Context->DockSpace->m_DockSpaceVisible = true;
 			window.Flags |= InGuiWindowFlag::Modified;
 		}
 	}
@@ -1968,6 +1991,8 @@ namespace XYZ {
 
 			auto it = ini.begin();
 			LoadWindowMaps(it, s_Context->Windows, windowMap, ini);
+			s_Context->EventListeners = s_Context->Windows;
+
 			uint32_t maxID = LoadAndSetupDockSpaceMaps(it, dockMap, parentMap);		
 			SetupWindowMap(windowMap, dockMap);
 				
