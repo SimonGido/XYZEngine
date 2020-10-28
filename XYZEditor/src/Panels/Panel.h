@@ -20,7 +20,7 @@ namespace XYZ {
 	class Panel
 	{
 	public:
-		v
+		
 
 	};
 }
