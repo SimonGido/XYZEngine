@@ -101,6 +101,7 @@ namespace XYZ {
 			{
 				m_Context->DestroyEntity(entity);
 				m_Context->SetSelectedEntity(Entity());
+				Execute(EntityDeselectedEvent());
 				return true;
 			}
 		}
@@ -124,7 +125,9 @@ namespace XYZ {
 			if (InGui::Text(tag.c_str(), textColor) & InGuiReturnType::Clicked)
 			{
 				m_Context->SetSelectedEntity(entity);
-				InGui::GetWindow(PanelID::SceneHierarchy)->Flags |= InGuiWindowFlag::Modified;
+				EntitySelectedEvent e(entity);
+				Execute(e);
+				InGui::GetWindow(m_PanelID)->Flags |= InGuiWindowFlag::Modified;
 			}
 			InGui::Separator();
 		}

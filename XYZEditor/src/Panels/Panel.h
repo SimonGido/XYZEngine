@@ -20,20 +20,8 @@ namespace XYZ {
 			DeletePanel
 		};
 	}
-
-
-	class Panel
-	{
-	public:
-		Panel(uint32_t id);
-
-		virtual void OnInGuiRender() {};
-		virtual void OnUpdate(Timestep ts) {};
-		virtual void OnEvent(Event& event) {};
-		
-
-	protected:
-		enum
+	namespace EditorIcon {
+		enum EditorIcon
 		{
 			FOLDER = InGuiRenderConfiguration::DOCKSPACE + 1,
 			SPRITE,
@@ -44,6 +32,18 @@ namespace XYZ {
 			PLAY,
 			PAUSE
 		};
+	}
+	class Panel
+	{
+	public:
+		Panel(uint32_t id);
+
+		virtual void OnInGuiRender() {};
+		virtual void OnUpdate(Timestep ts) {};
+		virtual void OnEvent(Event& event) {};
+		
+
+		
 
 		const uint32_t m_PanelID;
 	};

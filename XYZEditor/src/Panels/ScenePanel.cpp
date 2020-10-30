@@ -1,5 +1,7 @@
 #include "ScenePanel.h"
 
+#include "../Event/EditorEvent.h"
+
 namespace XYZ {
 
     static bool Collide(const glm::vec3& translation, const glm::vec3& scale, const glm::vec2& mousePos)
@@ -26,12 +28,12 @@ namespace XYZ {
         if (InGui::RenderWindow(m_PanelID, "Scene", SceneRenderer::GetFinalColorBufferRendererID(), { 0,0 }, { 200,200 }))
         {
             auto& renderConfig = InGui::GetRenderConfiguration();
-            if (InGui::Icon({}, glm::vec2(40.0f, 40.0f), renderConfig.SubTexture[PLAY], renderConfig.TextureID) & InGuiReturnType::Clicked)
+            if (InGui::Icon({}, glm::vec2(40.0f, 40.0f), renderConfig.SubTexture[EditorIcon::PLAY], renderConfig.TextureID) & InGuiReturnType::Clicked)
             {
                 m_Context->OnPlay();
                 m_Context->SetState(SceneState::Play);
             }
-            if (InGui::Icon({}, glm::vec2(40.0f, 40.0f), renderConfig.SubTexture[PAUSE], renderConfig.TextureID) & InGuiReturnType::Clicked)
+            if (InGui::Icon({}, glm::vec2(40.0f, 40.0f), renderConfig.SubTexture[EditorIcon::PAUSE], renderConfig.TextureID) & InGuiReturnType::Clicked)
             {
                 m_Context->SetState(SceneState::Edit);
             }
@@ -62,7 +64,7 @@ namespace XYZ {
     {
         EventDispatcher dispatcher(event);
         dispatcher.Dispatch<WindowResizeEvent>(Hook(&ScenePanel::onWindowResized, this));
-        
+             
         // Events that should be called only when scene window is hoovered
         if (InGui::GetWindow(m_PanelID)->Flags & InGuiWindowFlag::Hoovered)
         {
@@ -102,7 +104,18 @@ namespace XYZ {
             auto [mx, my] = Input::GetMousePosition();
             auto [width, height] = Input::GetWindowSize();
             glm::vec2 relativeMousePos = InGui::GetWorldPosition(*InGui::GetWindow(m_PanelID), m_EditorCamera.GetPosition(), m_EditorCamera.GetAspectRatio(), m_EditorCamera.GetZoomLevel());
-            m_Context->SetSelectedEntity(selectEntity(relativeMousePos));
+            
+            auto entity = selectEntity(relativeMousePos);
+            m_Context->SetSelectedEntity(entity);
+            if (entity)
+            {
+                EntitySelectedEvent e(entity);
+                Execute(e);
+            }
+            else
+            {
+                Execute(EntityDeselectedEvent());
+            }
 
             return true;       
         }

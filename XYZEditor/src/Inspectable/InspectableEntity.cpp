@@ -1,4 +1,4 @@
-#include "EntityInspectorLayout.h"
+#include "InspectableEntity.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
@@ -19,7 +19,8 @@ namespace XYZ {
 		return false;
 	}
 
-	EntityInspectorLayout::EntityInspectorLayout()
+	InspectableEntity::InspectableEntity()
+
 	{
 		m_DefaultMaterial = Ref<Material>::Create(Shader::Create("Assets/Shaders/DefaultShader.glsl"));
 		auto characterTexture = Texture2D::Create(XYZ::TextureWrap::Clamp, TextureParam::Linear, TextureParam::Nearest, "Assets/Textures/player_sprite.png");
@@ -28,22 +29,12 @@ namespace XYZ {
 		m_DefaultMaterial->Set("u_Color", glm::vec4(1, 1, 1, 1));
 	}
 
-	EntityInspectorLayout::EntityInspectorLayout(Entity context)
-		:
-		m_Context(context)
+	void InspectableEntity::SetContext(Entity context)
 	{
-		m_DefaultMaterial = Ref<Material>::Create(Shader::Create("Assets/Shaders/DefaultShader.glsl"));
-		auto characterTexture = Texture2D::Create(XYZ::TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest, "Assets/Textures/player_sprite.png");
-		m_DefaultSubTexture = Ref<SubTexture2D>::Create(characterTexture, glm::vec2(0, 0), glm::vec2((float)characterTexture->GetWidth() / 8.0f, (float)characterTexture->GetHeight() / 3.0f));
-		m_DefaultMaterial->Set("u_Texture", characterTexture);
-		m_DefaultMaterial->Set("u_Color", glm::vec4(1, 1, 1, 1));
-	}
-	void EntityInspectorLayout::SetContext(Entity context)
-	{
-		if (context && context.HasComponent<TransformComponent>() )
+		if (context && context.HasComponent<TransformComponent>())
 		{
 			auto transformComponent = context.GetComponent<TransformComponent>();
-			
+
 			if (context.HasComponent<SpriteRenderer>())
 			{
 				auto spriteRenderer = context.GetComponent<SpriteRenderer>();
@@ -54,13 +45,11 @@ namespace XYZ {
 			{
 				m_NativeScriptObject = context.GetComponent<NativeScriptComponent>()->ScriptObjectName;
 			}
-			auto& flags = InGui::GetWindow(m_InspectorID)->Flags;
-			flags |= InGuiWindowFlag::Modified;
-			flags |= InGuiWindowFlag::MenuEnabled;
 		}
 		m_Context = context;
 	}
-	void EntityInspectorLayout::AttemptSetAsset(const std::string& filepath, AssetManager& assetManager)
+
+	void InspectableEntity::AttemptSetAsset(const std::string& filepath, AssetManager& assetManager)
 	{
 		if (m_Context)
 		{
@@ -88,7 +77,7 @@ namespace XYZ {
 			}
 		}
 	}
-	bool EntityInspectorLayout::ValidExtension(const std::string& filepath)
+	bool InspectableEntity::ValidExtension(const std::string& filepath)
 	{
 		if (m_Context)
 		{
@@ -113,7 +102,7 @@ namespace XYZ {
 		}
 		return false;
 	}
-	void EntityInspectorLayout::OnInGuiRender()
+	void InspectableEntity::OnInGuiRender()
 	{
 		if (m_Context)
 		{
@@ -239,7 +228,7 @@ namespace XYZ {
 					{
 						InGui::Text("Perspective");
 						InGui::Separator();
-						auto props = camera.GetPerspectiveProperties();	
+						auto props = camera.GetPerspectiveProperties();
 						InGui::Slider("Field of View", glm::vec2(), glm::vec2{ 180.0f,15.0f }, props.PerspectiveFOV);
 						InGui::Separator();
 						InGui::Float(1, "Near Plane", &props.PerspectiveNear, &m_CameraNearLength, glm::vec2{}, glm::vec2{ 150.0f,25.0f }, m_NearPlaneSelected);
@@ -258,24 +247,25 @@ namespace XYZ {
 				{
 					auto& renderConfig = InGui::GetRenderConfiguration();
 					auto spriteRenderer = m_Context.GetComponent<SpriteRenderer>();
-					InGui::Icon({}, { 30.0f,30.0f }, renderConfig.SubTexture[SPRITE], renderConfig.TextureID);
+
+					InGui::Icon({}, { 30.0f,30.0f }, renderConfig.SubTexture[EditorIcon::SPRITE], renderConfig.TextureID);
 					m_SpriteTextFlags = InGui::TextArea("Sprite", m_Sprite, {}, { 250.0f,25.0f }, m_SpriteModified);
 					if (m_SpriteModified)
 					{
 
 					}
 					InGui::Separator();
-					InGui::Icon({}, { 30.0f,30.0f }, renderConfig.SubTexture[MATERIAL], renderConfig.TextureID);
+					InGui::Icon({}, { 30.0f,30.0f }, renderConfig.SubTexture[EditorIcon::MATERIAL], renderConfig.TextureID);
 					m_MaterialTextFlags = InGui::TextArea("Material", m_Material, {}, { 250.0f,25.0f }, m_MaterialModified);
 					if (m_MaterialModified)
 					{
 
 					}
 					InGui::Separator();
-					
+
 					InGui::Int(1, "Sort Layer", &spriteRenderer->SortLayer, &m_SortLayerLength, {}, { 50.0f,25.0f }, m_SortLayerSelected);
 					InGui::Separator();
-					
+
 					InGui::Int(1, "Texture ID", (int32_t*)&spriteRenderer->TextureID, &m_TextureIDLength, {}, { 50.0f,25.0f }, m_TextureIDSelected);
 					if (spriteRenderer->Material->GetNumberOfTextures() <= spriteRenderer->TextureID)
 					{
@@ -293,7 +283,7 @@ namespace XYZ {
 					InGui::Float(4, "Color", glm::value_ptr(spriteRenderer->Color), m_ColorLengths, {}, { 50.0f, 25.0f }, m_ColorSelected);
 					if (m_ColorSelected != -1)
 					{
-						
+
 					}
 					InGui::Separator();
 
@@ -316,7 +306,7 @@ namespace XYZ {
 				{
 					auto nativeScript = m_Context.GetComponent<NativeScriptComponent>();
 					glm::vec2 pos = { 0,0 };
-					
+
 					InGui::BeginPopup("Script", pos, { 150, 25 }, m_ScriptsOpen);
 					if (m_ScriptsOpen)
 					{
@@ -343,5 +333,11 @@ namespace XYZ {
 				}
 			}
 		}
+	}
+	void InspectableEntity::OnUpdate(Timestep ts)
+	{
+	}
+	void InspectableEntity::OnEvent(Event& event)
+	{
 	}
 }

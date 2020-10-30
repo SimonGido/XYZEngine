@@ -3,20 +3,14 @@
 
 #include "../Panels/InspectorPanel.h"
 
-
 namespace XYZ {
 
-	class AnimatorInspectorLayout : public InspectorLayout
+	class InspectableAnimator : public Inspectable
 	{
 	public:
-		AnimatorInspectorLayout();
-		virtual void OnInGuiRender() override;
-		virtual void OnEvent(Event& event) override;
-
-		void SetGraph(Graph* graph);
-		void SetContext(const Ref<AnimationController>& context);
-	private:
-		bool onKeyPress(KeyPressedEvent& event);
+		virtual void OnInGuiRender();
+		virtual void OnUpdate(Timestep ts);
+		virtual void OnEvent(Event& event);
 
 	private:
 		static constexpr glm::vec4 sc_DefaultColor = { 1,1,1,1 };

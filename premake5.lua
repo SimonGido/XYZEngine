@@ -48,6 +48,7 @@ project "XYZEngine"
 		{
 			"%{prj.name}/src/**.h",
 			"%{prj.name}/src/**.cpp",
+			"%{prj.name}/src/**.def",
 			"%{prj.name}/vendor/glm/glm/**.hpp",
 			"%{prj.name}/vendor/glm/glm/**.inl",
 			"%{prj.name}/vendor/mini/ini.h",
@@ -127,7 +128,8 @@ project "XYZEditor"
 		files
 		{
 			"%{prj.name}/src/**.h",
-			"%{prj.name}/src/**.cpp"
+			"%{prj.name}/src/**.cpp",
+			"%{prj.name}/src/**.def"
 		}
 
 		includedirs

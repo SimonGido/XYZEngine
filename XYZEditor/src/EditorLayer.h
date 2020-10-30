@@ -8,9 +8,9 @@
 #include "Panels/SpriteEditorPanel.h"
 #include "Panels/ProjectBrowserPanel.h"
 #include "Panels/ScenePanel.h"
+#include "EditorProperties.h"
 
 #include "InspectorLayout/SpriteEditorInspectorLayout.h"
-#include "InspectorLayout/EntityInspectorLayout.h"
 #include "InspectorLayout/AnimatorInspectorLayout.h"
 #include "GraphLayout/AnimatorGraphLayout.h"
 #define GLM_ENABLE_EXPERIMENTAL
@@ -37,8 +37,9 @@ namespace XYZ {
 	private:
 		bool onMouseButtonPress(MouseButtonPressEvent& event);
 		bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
-	
-
+		
+		bool onEntitySelected(EntitySelectedEvent& event);
+		bool onEntityDeselected(EntityDeselectedEvent& event);
 	private:
 		enum
 		{
@@ -57,7 +58,6 @@ namespace XYZ {
 		ProjectBrowserPanel m_ProjectBrowserPanel;
 
 		InspectorPanel m_InspectorPanel;
-		EntityInspectorLayout m_EntityInspectorLayout;
 		AnimatorInspectorLayout m_AnimatorInspectorLayout;
 		SpriteEditorInspectorLayout m_SpriteEditorInspectorLayout;
 
@@ -65,8 +65,9 @@ namespace XYZ {
 		AnimatorGraphLayout m_AnimatorGraphLayout;
 		Graph m_NodeGraph;
 		ScenePanel m_ScenePanel;
+		InspectableEntity m_InspectableEntity;
 
-		
+
 		bool m_Dragging = false;
 
 		Ref<Scene> m_Scene;

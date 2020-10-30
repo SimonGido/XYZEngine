@@ -1,38 +1,65 @@
 #include "InspectorPanel.h"
 
+
+
 #include "Panel.h"
 
 namespace XYZ {
-	InspectorPanel::InspectorPanel()
+	InspectorPanel::InspectorPanel(uint32_t id)
+		:
+		Panel(id)
 	{
-		InGui::Begin(PanelID::InspectorPanel,"Inspector", { 0,-100 }, { 300,400 }); // To make sure it exists;
+		InGui::Begin(id,"Inspector", { 0,-100 }, { 300,400 }); // To make sure it exists;
 		InGui::End();
-		m_Window = InGui::GetWindow(PanelID::InspectorPanel);
 	}
-	bool InspectorPanel::OnInGuiRender()
+	void InspectorPanel::OnInGuiRender()
 	{
-		bool active = false;
-		if (InGui::Begin(PanelID::InspectorPanel, "Inspector", { 0,-100 }, { 300,400 }))
+		if (InGui::Begin(m_PanelID, "Inspector", { 0,-100 }, { 300,400 }))
 		{
-			if (m_Layout)
-				m_Layout->OnInGuiRender();
+			if (m_Inspectable)
+				m_Inspectable->OnInGuiRender();
 			
-			active = true;
 		}
 		InGui::End();
-		return active;
 	}
-	void InspectorPanel::SetInspectorLayout(InspectorLayout* layout)
+	void InspectorPanel::OnUpdate(Timestep ts)
 	{
-		m_Layout = layout;
-		InGui::GetWindow(PanelID::InspectorPanel)->Flags |= InGuiWindowFlag::Modified;
+		if (InGui::GetWindow(m_PanelID)->Flags & InGuiWindowFlag::Hoovered)
+		{
+			if (m_Inspectable)
+				m_Inspectable->OnUpdate(ts);
+		}
+	}
+
+	bool InspectorPanel::onInspectableSelected(InspectableSelectedEvent& event)
+	{
+		InGui::GetWindow(m_PanelID)->Flags |= InGuiWindowFlag::Modified;
+		m_Inspectable = event.GetInspectable();
+		return true;
+	}
+	bool InspectorPanel::onInspectableDeselected(InspectableDeselectedEvent& event)
+	{
+		InGui::GetWindow(m_PanelID)->Flags |= InGuiWindowFlag::Modified;
+		m_Inspectable = nullptr;
+		return false;
 	}
 	void InspectorPanel::OnEvent(Event& event)
 	{
-		if (m_Window->Flags & InGuiWindowFlag::Hoovered)
-		{
-			if (m_Layout)
-				m_Layout->OnEvent(event);
+		EventDispatcher dispatcher(event);
+		dispatcher.Dispatch<InspectableSelectedEvent>(Hook(&InspectorPanel::onInspectableSelected, this));
+		dispatcher.Dispatch<InspectableDeselectedEvent>(Hook(&InspectorPanel::onInspectableDeselected, this));
+
+		if (InGui::GetWindow(m_PanelID)->Flags & InGuiWindowFlag::Hoovered)
+		{	
+			if (m_Inspectable)
+				m_Inspectable->OnEvent(event);
 		}
 	}
+
+	void InspectorPanel::SetInspectable(Inspectable* inspectable)
+	{
+		m_Inspectable = inspectable;
+		InGui::GetWindow(m_PanelID)->Flags |= InGuiWindowFlag::Modified;
+	}
+	
 }

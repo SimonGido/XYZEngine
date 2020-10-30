@@ -31,19 +31,9 @@ namespace XYZ {
 		}
 	};
 
-	class Window : public EventSystem<WindowResizeEvent,
-									  WindowCloseEvent,
-									  KeyTypedEvent,
-									  KeyPressedEvent,
-									  KeyReleasedEvent,
-									  MouseButtonPressEvent,
-									  MouseButtonReleaseEvent,
-									  MouseScrollEvent,
-									  MouseMovedEvent>
+	class Window : public EventCaller
 	{
 	public:
-		using EventCallbackFn = std::function<void(Event&)>;
-
 		virtual ~Window() = default;
 		virtual void Update() = 0;
 
@@ -51,7 +41,6 @@ namespace XYZ {
 		virtual uint32_t GetHeight() const = 0;
 
 		// Window attributes
-		virtual void SetEventCallback(const EventCallbackFn& callback) = 0;
 		virtual void SetVSync(bool enabled) = 0;
 		virtual void SetStandardCursor(uint8_t cursor) = 0;
 		virtual void SetCustomCursor(void* cursor) = 0;

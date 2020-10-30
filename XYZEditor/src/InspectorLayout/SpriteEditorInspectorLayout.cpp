@@ -3,6 +3,9 @@
 
 
 namespace XYZ {
+	SpriteEditorInspectorLayout::SpriteEditorInspectorLayout()
+	{
+	}
 	void SpriteEditorInspectorLayout::OnInGuiRender()
 	{
 		if (m_Context)

@@ -1,10 +1,12 @@
 #pragma once
 
 #include "Panel.h"
+#include "../Inspectable/InspectableEntity.h"
 
 namespace XYZ {
 
-	class SceneHierarchyPanel : public Panel
+	class SceneHierarchyPanel : public Panel,
+		public EventCaller
 	{
 	public:
 		SceneHierarchyPanel(uint32_t id);

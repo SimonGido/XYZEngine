@@ -4,28 +4,18 @@
 #include "../Panels/InspectorPanel.h"
 
 namespace XYZ {
-	class EntityInspectorLayout : public InspectorLayout
+	class InspectableEntity : public Inspectable
 	{
 	public:
-		EntityInspectorLayout();
-		EntityInspectorLayout(Entity context);
-
+		InspectableEntity();
+		virtual void OnInGuiRender();
+		virtual void OnUpdate(Timestep ts);
+		virtual void OnEvent(Event& event);
+		
 		void SetContext(Entity context);
 		void AttemptSetAsset(const std::string& filepath, AssetManager& assetManager);
 		bool ValidExtension(const std::string& filepath);
-
-		virtual void OnInGuiRender() override;
 	private:
-		enum
-		{
-			FOLDER = InGuiRenderConfiguration::DOCKSPACE + 1,
-			SPRITE,
-			TEXTURE,
-			MATERIAL,
-			SHADER,
-			LOGO
-		};
-
 		enum Axis
 		{
 			X,
@@ -34,8 +24,16 @@ namespace XYZ {
 			W,
 			NUM_AXIS
 		};
-
-		const uint32_t m_InspectorID = 2;
+		enum OpenPopups
+		{
+			SCENE_TAG,
+			TRANSFORM,
+			SPRITE_RENDERER,
+			NATIVE_SCRIPT,
+			CAMERA,
+			NUM_POPUPS
+		};
+		bool m_PopupOpen[NUM_POPUPS];
 
 		Entity m_Context;
 		bool m_ScriptsOpen = false;
@@ -69,14 +67,14 @@ namespace XYZ {
 
 		int32_t m_RotationLengths[W] = { 7,7,7 };
 		int32_t m_RotationSelected = -1;
-		
+
 		int32_t m_ScaleLengths[W] = { 7,7,7 };
 		int32_t m_ScaleSelected = -1;
 
 		int32_t m_SizeSelected = -1;
 		int32_t m_FarPlaneSelected = -1;
 		int32_t m_NearPlaneSelected = -1;
-		
+
 		int32_t m_CameraSizeLength = 7;
 		int32_t m_CameraFarLength = 7;
 		int32_t m_CameraNearLength = 7;
@@ -88,10 +86,10 @@ namespace XYZ {
 		std::string m_NativeScriptObject;
 		std::string m_Sprite;
 		std::string m_Material;
+
 	private:
 		Ref<Material> m_DefaultMaterial;
 		Ref<SubTexture2D> m_DefaultSubTexture;
 
 	};
-
 }

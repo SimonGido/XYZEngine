@@ -20,7 +20,7 @@ namespace XYZ {
 		void handleFile(const char* name,const std::filesystem::directory_entry& entry, uint32_t counter, uint32_t subTextureIndex);
 		bool onKeyPress(KeyPressedEvent& event);
 
-	private:
+	private: 
 		InGuiWindow* m_Window;
 		enum
 		{

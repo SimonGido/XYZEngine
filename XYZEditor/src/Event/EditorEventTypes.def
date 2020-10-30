@@ -1,0 +1,7 @@
+#pragma once
+
+
+InspectableSelected,
+InspectableDeselected,
+EntitySelected,
+EntityDeselected

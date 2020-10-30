@@ -27,12 +27,11 @@ namespace XYZ {
 
 		m_Window = Window::Create();
 		m_Window->SetVSync(false);
-		m_Window->SetEventCallback(Hook(&Application::OnEvent, this));
+
+		m_Window->RegisterCallback(Hook(&Application::OnEvent, this));
 
 		m_InGuiLayer = new InGuiLayer();
 		m_LayerStack.PushOverlay(m_InGuiLayer);
-		m_Window->RegisterCallback<WindowCloseEvent>(Hook(&Application::onWindowClosed, this));
-		m_Window->RegisterCallback<WindowResizeEvent>(Hook(&Application::onWindowResized, this));
 			
 	}
 
@@ -84,29 +83,25 @@ namespace XYZ {
 		m_Running = false;
 	}
 
-	void Application::onWindowResized(WindowResizeEvent& event)
+	bool Application::onWindowResized(WindowResizeEvent& event)
 	{
 		Renderer::SetViewPort(0, 0, event.GetWidth(), event.GetHeight());
+		return false;
 	}
 
-	void Application::onWindowClosed(WindowCloseEvent& event)
+	bool Application::onWindowClosed(WindowCloseEvent& event)
 	{
 		m_Running = false;
+		return false;
 	}
 
 
 	void Application::OnEvent(Event& event)
 	{
-		//if (event.GetEventComponent() == EventComponent::WindowResized)
-		//{
-		//	WindowResizeEvent& resize = (WindowResizeEvent&)event;
-		//	Renderer::OnWindowResize(resize.GetWidth(), resize.GetHeight());
-		//}
-		//else if (event.GetEventComponent() == EventComponent::WindowClosed)
-		//{
-		//	WindowCloseEvent& close = (WindowCloseEvent&)event;
-		//	m_Running = false;
-		//}
+		EventDispatcher dispatcher(event);
+		dispatcher.Dispatch<WindowResizeEvent>(Hook(&Application::onWindowResized, this));
+		dispatcher.Dispatch<WindowCloseEvent>(Hook(&Application::onWindowClosed, this));
+
 		for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)
 		{
 			(*it)->OnEvent(event);

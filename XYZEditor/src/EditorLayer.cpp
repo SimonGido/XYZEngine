@@ -38,7 +38,8 @@ namespace XYZ {
 		m_SpriteEditorPanel(m_AssetManager),
 		m_NodeGraph(false),
 		m_ScenePanel(PanelID::Scene),
-		m_SceneHierarchyPanel(PanelID::SceneHierarchy)
+		m_SceneHierarchyPanel(PanelID::SceneHierarchy),
+		m_InspectorPanel(PanelID::InspectorPanel)
 	{
 	}
 
@@ -180,9 +181,11 @@ namespace XYZ {
 		m_AnimatorInspectorLayout.SetGraph(&m_NodeGraph);
 		m_AnimatorGraphLayout.SetContext(m_AnimationController);
 		m_AnimatorGraphLayout.SetGraph(&m_NodeGraph);
-		m_InspectorPanel.SetInspectorLayout(&m_EntityInspectorLayout);
 		m_GraphPanel.SetGraphLayout(&m_AnimatorGraphLayout);
-	}
+		
+		m_ScenePanel.RegisterCallback(Hook(&EditorLayer::OnEvent, this));
+		m_SceneHierarchyPanel.RegisterCallback(Hook(&EditorLayer::OnEvent, this));
+	}	
 
 	void EditorLayer::OnDetach()
 	{
@@ -203,13 +206,15 @@ namespace XYZ {
 		m_GraphPanel.OnEvent(event);
 		m_SpriteEditorPanel.OnEvent(event);
 		m_ProjectBrowserPanel.OnEvent(event);
-		m_InspectorPanel.OnEvent(event);
 		m_ScenePanel.OnEvent(event);
 		m_SceneHierarchyPanel.OnEvent(event);
+		m_InspectorPanel.OnEvent(event);
 
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&EditorLayer::onMouseButtonPress, this));
 		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorLayer::onMouseButtonRelease, this));	
+		dispatcher.Dispatch<EntitySelectedEvent>(Hook(&EditorLayer::onEntitySelected, this));
+		dispatcher.Dispatch<EntityDeselectedEvent>(Hook(&EditorLayer::onEntityDeselected, this));
 	}
 
 	void EditorLayer::OnInGuiRender(Timestep ts)
@@ -227,23 +232,23 @@ namespace XYZ {
 			glm::vec2 size = { 25.0f,25.0f };
 			glm::vec2 position = MouseToWorld({ mx,my }, { width,height }) - (size / 2.0f);
 					
-			if (m_ProhibitedCursor && !m_EntityInspectorLayout.ValidExtension(m_ProjectBrowserPanel.GetSelectedFilePath()))
-			{
-				Application::Get().GetWindow().SetCustomCursor(m_ProhibitedCursor);
-			}
-			else
-			{
-				Application::Get().GetWindow().SetStandardCursor(WindowCursors::XYZ_ARROW_CURSOR);
-			}
+			//if (m_ProhibitedCursor && !m_EntityInspectorLayout.ValidExtension(m_ProjectBrowserPanel.GetSelectedFilePath()))
+			//{
+			//	Application::Get().GetWindow().SetCustomCursor(m_ProhibitedCursor);
+			//}
+			//else
+			//{
+			//	Application::Get().GetWindow().SetStandardCursor(WindowCursors::XYZ_ARROW_CURSOR);
+			//}
 		}
 
 		if (m_GraphPanel.OnInGuiRender(ts))
 		{
-			m_InspectorPanel.SetInspectorLayout(&m_AnimatorInspectorLayout);
+			//m_InspectorPanel.SetLayout(&m_AnimatorInspectorLayout);
 		}
 		if (m_SpriteEditorPanel.OnInGuiRender(ts))
 		{
-			m_InspectorPanel.SetInspectorLayout(&m_SpriteEditorInspectorLayout);
+			//m_InspectorPanel.SetLayout(&m_SpriteEditorInspectorLayout);
 		}
 		m_InspectorPanel.OnInGuiRender();
 		m_ProjectBrowserPanel.OnInGuiRender();
@@ -322,7 +327,7 @@ namespace XYZ {
 		{
 			m_Dragging = false;
 			Application::Get().GetWindow().SetStandardCursor(WindowCursors::XYZ_ARROW_CURSOR);
-			m_EntityInspectorLayout.AttemptSetAsset(m_ProjectBrowserPanel.GetSelectedFilePath(), m_AssetManager);	
+			//m_EntityInspectorLayout.AttemptSetAsset(m_ProjectBrowserPanel.GetSelectedFilePath(), m_AssetManager);	
 			if (HasExtension(m_ProjectBrowserPanel.GetSelectedFilePath(), "png"))
 			{
 				auto texture = m_AssetManager.GetAsset<Texture2D>(m_ProjectBrowserPanel.GetSelectedFilePath());
@@ -338,6 +343,15 @@ namespace XYZ {
 		return false;
 	}
 
-	
-	
+	bool EditorLayer::onEntitySelected(EntitySelectedEvent& event)
+	{
+		m_InspectableEntity.SetContext(event.GetEntity());
+		m_InspectorPanel.SetInspectable(&m_InspectableEntity);
+		return true;
+	}
+	bool EditorLayer::onEntityDeselected(EntityDeselectedEvent& event)
+	{
+		m_InspectorPanel.SetInspectable(nullptr);
+		return true;
+	}
 }

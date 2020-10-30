@@ -27,7 +27,6 @@ namespace XYZ {
 		virtual void SetCustomCursor(void* cursor) override;
 		virtual void* CreateCustomCursor(uint8_t* pixels, uint32_t width, uint32_t height, int32_t xOffset = 0, int32_t yOffset = 0) override;
 
-		inline void SetEventCallback(const EventCallbackFn& callback) override { m_Data.EventCallback = callback; }
 		inline virtual void* GetNativeWindow() const { return m_Window; }
 
 		inline virtual uint32_t GetWidth() const override { return m_Data.Width; }
@@ -49,8 +48,6 @@ namespace XYZ {
 			uint32_t Width = 0;
 			uint32_t Height = 0;
 			bool VSync = false;
-
-			EventCallbackFn EventCallback;
 			WindowsWindow* This = nullptr;
 		};
 

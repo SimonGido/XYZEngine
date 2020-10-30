@@ -80,8 +80,8 @@ namespace XYZ {
 		static Application* CreateApplication();
 
 	private:
-		void onWindowResized(WindowResizeEvent& event);
-		void onWindowClosed(WindowCloseEvent& event);
+		bool onWindowResized(WindowResizeEvent& event);
+		bool onWindowClosed(WindowCloseEvent& event);
 
 	private:
 		LayerStack m_LayerStack;

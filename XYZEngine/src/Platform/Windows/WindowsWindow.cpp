@@ -55,7 +55,6 @@ namespace XYZ {
 			data.Width = width;
 			data.Height = height;
 			WindowResizeEvent e(width, height);
-			data.EventCallback(e);
 			data.This->Execute(e);
 		});
 
@@ -63,7 +62,6 @@ namespace XYZ {
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			WindowCloseEvent e;
-			data.EventCallback(e);
 			data.This->Execute(e);
 		});
 
@@ -71,7 +69,6 @@ namespace XYZ {
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			KeyTypedEvent e(key);
-			data.EventCallback(e);
 			data.This->Execute(e);
 		});
 
@@ -84,14 +81,12 @@ namespace XYZ {
 			case GLFW_PRESS:
 			{
 				KeyPressedEvent e(key, mods);
-				data.EventCallback(e);
 				data.This->Execute(e);
 				break;
 			}
 			case GLFW_RELEASE:
 			{
 				KeyReleasedEvent e(key);
-				data.EventCallback(e);
 				data.This->Execute(e);
 				break;
 			}
@@ -107,14 +102,12 @@ namespace XYZ {
 			case GLFW_PRESS:
 			{
 				MouseButtonPressEvent e(button);
-				data.EventCallback(e);
 				data.This->Execute(e);
 				break;
 			}
 			case GLFW_RELEASE:
 			{
 				MouseButtonReleaseEvent e(button);
-				data.EventCallback(e);
 				data.This->Execute(e);
 				break;
 			}
@@ -126,7 +119,6 @@ namespace XYZ {
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			MouseScrollEvent e((float)xOffset, (float)yOffset);
-			data.EventCallback(e);
 			data.This->Execute(e);
 		});
 
@@ -134,7 +126,6 @@ namespace XYZ {
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			MouseMovedEvent e((float)xPos, (float)yPos);
-			data.EventCallback(e);
 			data.This->Execute(e);
 		});
 

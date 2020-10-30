@@ -1,0 +1,22 @@
+#pragma once
+
+
+None = 0,
+
+WindowClosed,
+WindowResized,
+KeyPressed,
+KeyReleased,
+KeyTyped,
+
+MouseButtonPressed,
+MouseButtonReleased,
+
+MouseScroll,
+MouseMoved,
+
+Click,
+Release,
+Checked,
+Hoover,
+UnHoover,

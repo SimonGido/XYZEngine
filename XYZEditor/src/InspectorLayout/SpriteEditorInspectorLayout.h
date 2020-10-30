@@ -9,6 +9,7 @@ namespace XYZ {
 	class SpriteEditorInspectorLayout : public InspectorLayout
 	{
 	public:
+		SpriteEditorInspectorLayout();
 		virtual void OnInGuiRender() override;
 		
 		void SetContext(const Ref<SubTexture2D>& context);
