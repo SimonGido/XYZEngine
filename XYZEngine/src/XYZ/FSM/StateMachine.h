@@ -37,14 +37,18 @@ namespace XYZ {
 	public:
 		State CreateState(const std::string& name);
 
-		bool TransitionTo(const State& state);
+		bool TransitionTo(uint32_t id);
 
-		void SetDefaultState(const State& state);
+		void SetDefaultState(uint32_t id);
+
+		void SetCurrentState(uint32_t id) { m_CurrentState = id; };
 
 		void RenameState(uint32_t id, const std::string& name);
 
-		inline const State& GetCurrentState() const { return m_CurrentState; }
-
+		inline const State& GetCurrentState() const 
+		{ 
+			return m_StatesMap[m_CurrentState].State; 
+		}
 		inline State& GetState(uint32_t id) 
 		{ 
 			XYZ_ASSERT(m_StatesInitialized & BIT(id), "State with id ", id, "is not initialized");
@@ -56,6 +60,7 @@ namespace XYZ {
 			XYZ_ASSERT(m_StatesInitialized & BIT(id), "State with id ", id, "is not initialized");
 			return m_StatesMap[id].Name; 
 		}
+
 		inline uint32_t GetNumStates() const { return m_NextFreeBit; }
 
 		bool IsStateInitialized(uint32_t id) const { return m_StatesInitialized & BIT(id); }
@@ -66,7 +71,7 @@ namespace XYZ {
 		static constexpr uint32_t sc_MaxBit = 31;
 		static constexpr uint32_t sc_Any = (1 << 31);
 
-		State m_CurrentState;
+		uint32_t m_CurrentState;
 
 		uint32_t m_NextFreeBit = 0;
 		uint32_t m_StatesInitialized = 0;

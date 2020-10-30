@@ -12,7 +12,7 @@ namespace XYZ {
 			Scene,
 			TestPanel,
 			InspectorPanel,
-			GraphPanel,
+			AnimatorPanel,
 			SceneHierarchy,
 			Test,
 			SpriteEditor,

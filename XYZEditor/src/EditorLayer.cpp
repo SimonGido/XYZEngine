@@ -36,10 +36,10 @@ namespace XYZ {
 	EditorLayer::EditorLayer()
 		:
 		m_SpriteEditorPanel(m_AssetManager),
-		m_NodeGraph(false),
 		m_ScenePanel(PanelID::Scene),
 		m_SceneHierarchyPanel(PanelID::SceneHierarchy),
-		m_InspectorPanel(PanelID::InspectorPanel)
+		m_InspectorPanel(PanelID::InspectorPanel),
+		m_AnimatorPanel(PanelID::AnimatorPanel)
 	{
 	}
 
@@ -178,13 +178,11 @@ namespace XYZ {
 		auto backgroundTexture = m_AssetManager.GetAsset<Texture2D>("Assets/Textures/Backgroundfield.png");
 		m_SpriteEditorPanel.SetContext(backgroundTexture);
 		m_AnimatorInspectorLayout.SetContext(m_AnimationController);
-		m_AnimatorInspectorLayout.SetGraph(&m_NodeGraph);
-		m_AnimatorGraphLayout.SetContext(m_AnimationController);
-		m_AnimatorGraphLayout.SetGraph(&m_NodeGraph);
-		m_GraphPanel.SetGraphLayout(&m_AnimatorGraphLayout);
-		
+
+		m_AnimatorPanel.SetContext(m_AnimationController);	
 		m_ScenePanel.RegisterCallback(Hook(&EditorLayer::OnEvent, this));
 		m_SceneHierarchyPanel.RegisterCallback(Hook(&EditorLayer::OnEvent, this));
+		m_AnimatorPanel.RegisterCallback(Hook(&EditorLayer::OnEvent, this));
 	}	
 
 	void EditorLayer::OnDetach()
@@ -200,10 +198,11 @@ namespace XYZ {
 
 		m_ScenePanel.OnUpdate(ts);
 		m_SceneHierarchyPanel.OnUpdate(ts);
+		m_AnimatorPanel.OnUpdate(ts);
 	}
 	void EditorLayer::OnEvent(Event& event)
 	{		
-		m_GraphPanel.OnEvent(event);
+		m_AnimatorPanel.OnEvent(event);
 		m_SpriteEditorPanel.OnEvent(event);
 		m_ProjectBrowserPanel.OnEvent(event);
 		m_ScenePanel.OnEvent(event);
@@ -215,15 +214,17 @@ namespace XYZ {
 		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorLayer::onMouseButtonRelease, this));	
 		dispatcher.Dispatch<EntitySelectedEvent>(Hook(&EditorLayer::onEntitySelected, this));
 		dispatcher.Dispatch<EntityDeselectedEvent>(Hook(&EditorLayer::onEntityDeselected, this));
+		dispatcher.Dispatch<AnimatorSelectedEvent>(Hook(&EditorLayer::onAnimatorSelected, this));
+		dispatcher.Dispatch<AnimatorDeselectedEvent>(Hook(&EditorLayer::onAnimatorDeselected, this));
 	}
 
 	void EditorLayer::OnInGuiRender(Timestep ts)
 	{
 		m_ScenePanel.OnInGuiRender();
 		m_SceneHierarchyPanel.OnInGuiRender();
+		m_AnimatorPanel.OnInGuiRender();
 
 		InGui::BeginPanel(InGuiPanelType::Left, 300.0f, m_LeftPanel);
-
 		if (m_Dragging && m_ProjectBrowserPanel.GetSelectedFileIndex() != -1)
 		{
 			auto& renderConfig = InGui::GetRenderConfiguration();
@@ -242,10 +243,8 @@ namespace XYZ {
 			//}
 		}
 
-		if (m_GraphPanel.OnInGuiRender(ts))
-		{
-			//m_InspectorPanel.SetLayout(&m_AnimatorInspectorLayout);
-		}
+	
+		
 		if (m_SpriteEditorPanel.OnInGuiRender(ts))
 		{
 			//m_InspectorPanel.SetLayout(&m_SpriteEditorInspectorLayout);
@@ -352,6 +351,18 @@ namespace XYZ {
 	bool EditorLayer::onEntityDeselected(EntityDeselectedEvent& event)
 	{
 		m_InspectorPanel.SetInspectable(nullptr);
+		return true;
+	}
+	bool EditorLayer::onAnimatorSelected(AnimatorSelectedEvent& event)
+	{
+		m_InspectableAnimator.SetContext(event.GetController());
+		m_InspectorPanel.SetInspectable(&m_InspectableAnimator);
+		return true;
+	}
+	bool EditorLayer::onAnimatorDeselected(AnimatorDeselectedEvent& event)
+	{
+		m_InspectableAnimator.SetContext(nullptr);
+		m_InspectorPanel.SetInspectable(&m_InspectableAnimator);
 		return true;
 	}
 }

@@ -89,4 +89,45 @@ namespace XYZ {
 		EventType m_Type;
 		Entity m_Entity;
 	};
+
+
+	class AnimatorSelectedEvent : public Event
+	{
+	public:
+		AnimatorSelectedEvent(const Ref<AnimationController>& controller)
+			:
+			m_Type(EventType::AnimatorSelected),
+			m_Controller(controller)
+		{}
+		virtual EventType GetEventType() const override { return m_Type; }
+
+		Ref<AnimationController> GetController() const { return m_Controller; }
+
+		static EventType GetStaticType()
+		{
+			return EventType::AnimatorSelected;
+		}
+
+	private:
+		EventType m_Type;
+		Ref<AnimationController> m_Controller;
+	};
+
+	class AnimatorDeselectedEvent : public Event
+	{
+	public:
+		AnimatorDeselectedEvent()
+			:
+			m_Type(EventType::AnimatorDeselected)
+		{}
+		virtual EventType GetEventType() const override { return m_Type; }
+
+		static EventType GetStaticType()
+		{
+			return EventType::AnimatorDeselected;
+		}
+
+	private:
+		EventType m_Type;
+	};
 }

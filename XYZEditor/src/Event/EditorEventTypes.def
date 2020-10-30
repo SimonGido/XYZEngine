@@ -4,4 +4,6 @@
 InspectableSelected,
 InspectableDeselected,
 EntitySelected,
-EntityDeselected
+EntityDeselected,
+AnimatorSelected,
+AnimatorDeselected

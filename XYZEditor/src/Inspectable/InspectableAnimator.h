@@ -11,6 +11,7 @@ namespace XYZ {
 		virtual void OnInGuiRender();
 		virtual void OnUpdate(Timestep ts);
 		virtual void OnEvent(Event& event);
+		void SetContext(const Ref<AnimationController>& context);
 
 	private:
 		static constexpr glm::vec4 sc_DefaultColor = { 1,1,1,1 };

@@ -4,7 +4,7 @@
 
 #include "Panels/SceneHierarchyPanel.h"
 #include "Panels/InspectorPanel.h"
-#include "Panels/GraphPanel.h"
+#include "Panels/AnimatorPanel.h"
 #include "Panels/SpriteEditorPanel.h"
 #include "Panels/ProjectBrowserPanel.h"
 #include "Panels/ScenePanel.h"
@@ -12,7 +12,7 @@
 
 #include "InspectorLayout/SpriteEditorInspectorLayout.h"
 #include "InspectorLayout/AnimatorInspectorLayout.h"
-#include "GraphLayout/AnimatorGraphLayout.h"
+
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
@@ -40,6 +40,9 @@ namespace XYZ {
 		
 		bool onEntitySelected(EntitySelectedEvent& event);
 		bool onEntityDeselected(EntityDeselectedEvent& event);
+
+		bool onAnimatorSelected(AnimatorSelectedEvent& event);
+		bool onAnimatorDeselected(AnimatorDeselectedEvent& event);
 	private:
 		enum
 		{
@@ -60,13 +63,11 @@ namespace XYZ {
 		InspectorPanel m_InspectorPanel;
 		AnimatorInspectorLayout m_AnimatorInspectorLayout;
 		SpriteEditorInspectorLayout m_SpriteEditorInspectorLayout;
+		AnimatorPanel m_AnimatorPanel;
 
-		GraphPanel m_GraphPanel;
-		AnimatorGraphLayout m_AnimatorGraphLayout;
-		Graph m_NodeGraph;
 		ScenePanel m_ScenePanel;
 		InspectableEntity m_InspectableEntity;
-
+		InspectableAnimator m_InspectableAnimator;
 
 		bool m_Dragging = false;
 

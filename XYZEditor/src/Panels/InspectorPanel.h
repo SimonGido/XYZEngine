@@ -21,9 +21,7 @@ namespace XYZ {
 		virtual void OnUpdate(Timestep ts) override;
 		virtual void OnEvent(Event& event) override;
 		virtual void SetInspectable(Inspectable* inspectable);
-	private:
-		bool onInspectableSelected(InspectableSelectedEvent& event);
-		bool onInspectableDeselected(InspectableDeselectedEvent& event);
+
 	private:
 		Inspectable* m_Inspectable = nullptr;
 

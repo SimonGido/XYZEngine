@@ -30,25 +30,8 @@ namespace XYZ {
 				m_Inspectable->OnUpdate(ts);
 		}
 	}
-
-	bool InspectorPanel::onInspectableSelected(InspectableSelectedEvent& event)
-	{
-		InGui::GetWindow(m_PanelID)->Flags |= InGuiWindowFlag::Modified;
-		m_Inspectable = event.GetInspectable();
-		return true;
-	}
-	bool InspectorPanel::onInspectableDeselected(InspectableDeselectedEvent& event)
-	{
-		InGui::GetWindow(m_PanelID)->Flags |= InGuiWindowFlag::Modified;
-		m_Inspectable = nullptr;
-		return false;
-	}
 	void InspectorPanel::OnEvent(Event& event)
 	{
-		EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<InspectableSelectedEvent>(Hook(&InspectorPanel::onInspectableSelected, this));
-		dispatcher.Dispatch<InspectableDeselectedEvent>(Hook(&InspectorPanel::onInspectableDeselected, this));
-
 		if (InGui::GetWindow(m_PanelID)->Flags & InGuiWindowFlag::Hoovered)
 		{	
 			if (m_Inspectable)
