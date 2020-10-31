@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "SpriteEditorPanel.h"
 
-#include "Panel.h"
+#include "../Event/EditorEvent.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
@@ -36,9 +36,9 @@ namespace XYZ {
 			pos.y < point.y);
 	}
 
-	SpriteEditorPanel::SpriteEditorPanel(AssetManager& assetManager)
+	SpriteEditorPanel::SpriteEditorPanel(uint32_t id)
 		:
-		m_AssetManager(assetManager)
+		Panel(id)
 	{
 		m_FBO = FrameBuffer::Create({ 300,300 });
 		m_FBO->CreateColorAttachment(FrameBufferFormat::RGBA16F);
@@ -55,20 +55,19 @@ namespace XYZ {
 		m_ContextScale = glm::vec4(0.0f);
 		m_ContextPos = glm::vec4(0.0f);
 
-		InGui::RenderWindow(PanelID::SpriteEditor, "Sprite Editor", m_FBO->GetColorAttachment(0).RendererID, { -200,-200 }, { 300,300 });
+		InGui::RenderWindow(m_PanelID, "Sprite Editor", m_FBO->GetColorAttachment(0).RendererID, { -200,-200 }, { 300,300 });
 		InGui::End();
 		
-		m_Window = InGui::GetWindow(PanelID::SpriteEditor);
-		m_Window->Flags |= InGuiWindowFlag::MenuEnabled;
-		m_Window->Flags &= ~InGuiWindowFlag::EventBlocking;
+		InGui::GetWindow(m_PanelID)->Flags |= InGuiWindowFlag::MenuEnabled;
+		InGui::GetWindow(m_PanelID)->Flags &= ~InGuiWindowFlag::EventBlocking;
 
-		m_Window->OnResizeCallback = Hook(&SpriteEditorPanel::onInGuiWindowResize, this);
+		InGui::GetWindow(m_PanelID)->OnResizeCallback = Hook(&SpriteEditorPanel::onInGuiWindowResize, this);
 		
 		auto [width, height] = Input::GetWindowSize();
 		m_FBO->SetSpecification({ (uint32_t)width,(uint32_t)height });
 		m_FBO->Resize();
 		m_Transform = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
-		m_Camera.OnResize(m_Window->Size);
+		m_Camera.OnResize(InGui::GetWindow(m_PanelID)->Size);
 		m_Camera.SetCameraMouseMoveSpeed(0.008f);
 	}
 	void SpriteEditorPanel::SetContext(const Ref<Texture2D>& context)
@@ -81,77 +80,77 @@ namespace XYZ {
 		m_ContextPos = { -scale / 2.0f, -0.5f };
 		m_Transform = glm::scale(glm::mat4(1.0f), glm::vec3(scale, 1.0f, 1.0f));
 	}
-	bool SpriteEditorPanel::OnInGuiRender(Timestep ts)
-	{
-		keepCameraOnContext();
-		if (m_Window->Flags & InGuiWindowFlag::Hoovered)
+	void SpriteEditorPanel::OnInGuiRender()
+	{	
+		if (InGui::RenderWindow(m_PanelID, "Sprite Editor", m_FBO->GetColorAttachment(0).RendererID, { -200,-200 }, { 300,300 }))
 		{
-			m_ActiveWindow = true;
-			m_Camera.OnUpdate(ts);
-		}
-		else
-		{
-			m_ActiveWindow = false;
-			m_Camera.Stop();
-		}
-		onRender(ts);	
-		if (InGui::RenderWindow(PanelID::SpriteEditor, "Sprite Editor", m_FBO->GetColorAttachment(0).RendererID, { -200,-200 }, { 300,300 }))
-		{
-			
 			if (m_Selecting)
 			{
-				glm::vec2 relativeMousePos = InGui::GetWorldPosition(*m_Window, m_Camera.GetPosition(), m_Camera.GetAspectRatio(), m_Camera.GetZoomLevel());
+				glm::vec2 relativeMousePos = InGui::GetWorldPosition(*InGui::GetWindow(m_PanelID), m_Camera.GetPosition(), m_Camera.GetAspectRatio(), m_Camera.GetZoomLevel());
 				m_NewSelection.z = relativeMousePos.x;
 				m_NewSelection.w = relativeMousePos.y;
 			}	
 		}
 
-		InGui::MenuBar("File", 90.0f, m_ExportOpen);
-		if (m_ExportOpen)
-		{
-			m_SelectionOpen = false;
-			if (InGui::MenuItem("Export All", { 150.0f, 25.0f }) & InGuiReturnType::Clicked)
-			{
-				if (!m_Sprites.empty())
-				{
-					auto& app = Application::Get();
-					std::string filepath = app.OpenFolder();
-					if (!filepath.empty())
-					{
-						uint32_t counter = 1;
-						for (auto sprite : m_Sprites)
-						{
-							m_AssetManager.RegisterAsset(filepath + "\\Subtexture" + std::to_string(counter++) + ".subtex", sprite);
-						}
-					}
-				}
-			}
-		}
-		InGui::MenuBar("Selection", 90.0f, m_SelectionOpen);
-		if (m_SelectionOpen)
-		{
-			m_ExportOpen = false;
-			if (InGui::MenuItem("Auto Selection", { 150.0f, 25.0f }) & InGuiReturnType::Clicked)
-			{
-				m_SelectionOpen = false;
-			}
-			else if (InGui::MenuItem("Reset Selections", { 150.0f, 25.0f }) & InGuiReturnType::Clicked)
-			{
-				m_Selections.clear();
-				m_Sprites.clear();
-				m_SelectedSelection = sc_InvalidSelection;
-				m_SelectionOpen = false;
-			}
-		}
+		//InGui::MenuBar("File", 90.0f, m_ExportOpen);
+		//if (m_ExportOpen)
+		//{
+		//	m_SelectionOpen = false;
+		//	if (InGui::MenuItem("Export All", { 150.0f, 25.0f }) & InGuiReturnType::Clicked)
+		//	{
+		//		if (!m_Sprites.empty())
+		//		{
+		//			auto& app = Application::Get();
+		//			std::string filepath = app.OpenFolder();
+		//			if (!filepath.empty())
+		//			{
+		//				uint32_t counter = 1;
+		//				for (auto sprite : m_Sprites)
+		//				{
+		//					m_AssetManager.RegisterAsset(filepath + "\\Subtexture" + std::to_string(counter++) + ".subtex", sprite);
+		//				}
+		//			}
+		//		}
+		//	}
+		//}
+		//InGui::MenuBar("Selection", 90.0f, m_SelectionOpen);
+		//if (m_SelectionOpen)
+		//{
+		//	m_ExportOpen = false;
+		//	if (InGui::MenuItem("Auto Selection", { 150.0f, 25.0f }) & InGuiReturnType::Clicked)
+		//	{
+		//		m_SelectionOpen = false;
+		//	}
+		//	else if (InGui::MenuItem("Reset Selections", { 150.0f, 25.0f }) & InGuiReturnType::Clicked)
+		//	{
+		//		m_Selections.clear();
+		//		m_Sprites.clear();
+		//		m_SelectedSelection = sc_InvalidSelection;
+		//		m_SelectionOpen = false;
+		//	}
+		//}
 		InGui::End();
-		return m_ActiveWindow;
+	}
+
+	void SpriteEditorPanel::OnUpdate(Timestep ts)
+	{
+		keepCameraOnContext();
+		if (InGui::GetWindow(m_PanelID)->Flags & InGuiWindowFlag::Hoovered)
+		{
+			m_Camera.OnUpdate(ts);
+		}
+		else
+		{
+			m_Camera.Stop();
+		}
+		onRender(ts);	
 	}
 	
 	void SpriteEditorPanel::OnEvent(Event& event)
 	{
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<WindowResizeEvent>(Hook(&SpriteEditorPanel::onWindowResize, this));
-		if (m_Window->Flags & InGuiWindowFlag::Hoovered)
+		if (InGui::GetWindow(m_PanelID)->Flags & InGuiWindowFlag::Hoovered)
 		{
 			dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&SpriteEditorPanel::onMouseButtonRelease, this));
 			dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&SpriteEditorPanel::onMouseButtonPress, this));
@@ -203,9 +202,9 @@ namespace XYZ {
 				auto [mx, my] = Input::GetMousePosition();
 				auto [width, height] = Input::GetWindowSize();
 				auto mouseToWorld = MouseToWorld({ mx,my }, { width,height });
-				if (Collide(m_Window->Position, m_Window->Size, mouseToWorld))
+				if (Collide(InGui::GetWindow(m_PanelID)->Position, InGui::GetWindow(m_PanelID)->Size, mouseToWorld))
 				{
-					glm::vec2 relativeMousePos = InGui::GetWorldPosition(*m_Window, m_Camera.GetPosition(), m_Camera.GetAspectRatio(), m_Camera.GetZoomLevel());
+					glm::vec2 relativeMousePos = InGui::GetWorldPosition(*InGui::GetWindow(m_PanelID), m_Camera.GetPosition(), m_Camera.GetAspectRatio(), m_Camera.GetZoomLevel());
 					m_NewSelection.x = relativeMousePos.x;
 					m_NewSelection.y = relativeMousePos.y;
 
@@ -216,7 +215,7 @@ namespace XYZ {
 		}
 		else if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_RIGHT))
 		{
-			glm::vec2 mousePos = InGui::GetWorldPosition(*m_Window, m_Camera.GetPosition(), m_Camera.GetAspectRatio(), m_Camera.GetZoomLevel());
+			glm::vec2 mousePos = InGui::GetWorldPosition(*InGui::GetWindow(m_PanelID), m_Camera.GetPosition(), m_Camera.GetAspectRatio(), m_Camera.GetZoomLevel());
 			uint32_t counter = 0;
 			for (auto& selection : m_Selections)
 			{	
@@ -225,6 +224,7 @@ namespace XYZ {
 				if (Collide(pos, size, mousePos))
 				{
 					m_SelectedSelection = counter;
+					Execute(SpriteSelectedEvent(m_Sprites[m_SelectedSelection]));
 					break;
 				}
 				counter++;
@@ -237,7 +237,7 @@ namespace XYZ {
 	{
 		m_FBO->SetSpecification({ (uint32_t)(event.GetWidth()), (uint32_t)(event.GetHeight()) });
 		m_FBO->Resize();
-		m_Camera.OnResize(m_Window->Size);
+		m_Camera.OnResize(InGui::GetWindow(m_PanelID)->Size);
 		return false;
 	}
 	void SpriteEditorPanel::onInGuiWindowResize(const glm::vec2& size)

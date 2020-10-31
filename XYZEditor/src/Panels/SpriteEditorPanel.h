@@ -2,21 +2,22 @@
 
 #include <XYZ.h>
 
+#include "Panel.h"
 
 namespace XYZ {
-	class SpriteEditorPanel
+	class SpriteEditorPanel : public Panel,
+							  public EventCaller
 	{
 	public:
-		SpriteEditorPanel(AssetManager& assetManager);
+		SpriteEditorPanel(uint32_t id);
 
-		void SetContext(const Ref<Texture2D>& context);
-
-		bool OnInGuiRender(Timestep ts);
-
-		void OnEvent(Event& event);
+		virtual void OnInGuiRender() override;
+		virtual void OnUpdate(Timestep ts) override;
+		virtual void OnEvent(Event& event) override;
 
 		Ref<SubTexture2D> GetSelectedSprite() const;
 
+		void SetContext(const Ref<Texture2D>& context);
 	private:
 		bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
 		bool onMouseButtonPress(MouseButtonPressEvent& event);
@@ -27,7 +28,6 @@ namespace XYZ {
 		void onRender(Timestep ts);
 		void keepCameraOnContext();
 	private:
-		AssetManager& m_AssetManager;
 		enum TextureID
 		{
 			BACKGROUND = 0,
@@ -43,10 +43,8 @@ namespace XYZ {
 		EditorCamera m_Camera;
 		glm::mat4 m_Transform;
 
-		InGuiWindow* m_Window;
 		bool m_SelectionOpen = false;
 		bool m_ExportOpen = false;
-		bool m_ActiveWindow = false;
 		bool m_Selecting = false;
 
 		int m_SelectedSelection;

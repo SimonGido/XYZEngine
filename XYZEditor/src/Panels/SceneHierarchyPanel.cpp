@@ -101,7 +101,7 @@ namespace XYZ {
 			{
 				m_Context->DestroyEntity(entity);
 				m_Context->SetSelectedEntity(Entity());
-				Execute(EntityDeselectedEvent());
+				Execute(DeselectedEvent());
 				return true;
 			}
 		}

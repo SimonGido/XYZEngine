@@ -48,7 +48,12 @@ namespace XYZ {
 	
 	void AnimatorPanel::OnUpdate(Timestep ts)
 	{
-		m_Camera.OnUpdate(ts);
+		if (InGui::GetWindow(m_PanelID)->Flags & InGuiWindowFlag::Hoovered)
+			m_Camera.OnUpdate(ts);
+		else
+			m_Camera.Stop();
+		
+
 		m_Mesh.Vertices.clear();
 		m_LineMesh.Vertices.clear();
 		Renderer::BeginRenderPass(m_RenderPass, true);
@@ -70,26 +75,6 @@ namespace XYZ {
 		////////////////////////////////////////////////
 		m_MousePosition = InGui::GetMousePosition();
 		auto& machine = m_Context->GetStateMachine();
-		//m_Graph.TraverseAll([&](int32_t source, int32_t destination, int32_t sourceIndex, int32_t destinationIndex, bool isConnected) {
-		//
-		//	if (!isConnected)
-		//	{
-		//		glm::vec2 pos = m_NodeMap[source].Position;
-		//		InGui::BeginNode(machine.GetStateName(sourceIndex).c_str(), pos, sc_NodeSize);
-		//		pos += sc_NodeSize / 2.0f;
-		//	}
-		//	else
-		//	{
-		//		glm::vec2 sourcePos = m_NodeMap[source].Position;
-		//		InGui::BeginNode(machine.GetStateName(sourceIndex).c_str(), sourcePos, sc_NodeSize);
-		//		glm::vec2 destPos = m_NodeMap[destination].Position;
-		//		InGui::BeginNode(machine.GetStateName(destinationIndex).c_str(), destPos, sc_NodeSize);
-		//
-		//		sourcePos += sc_NodeSize / 2.0f;
-		//		destPos += sc_NodeSize / 2.0f;
-		//		InGui::PushArrow(sourcePos, destPos, { 50,50 });
-		//	}
-		//});
 
 		auto& vertices = m_Graph.GetVertices();
 		uint32_t counter = 0;
@@ -143,10 +128,7 @@ namespace XYZ {
 				InGui::EndPopup();
 			}
 		}
-		else
-		{
-			m_Camera.Stop();
-		}
+		
 		InGui::End();
 	}
 

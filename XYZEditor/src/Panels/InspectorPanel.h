@@ -5,14 +5,6 @@
 
 namespace XYZ {
 
-	class InspectorLayout
-	{
-	public:
-		virtual void OnInGuiRender() {};
-		virtual void OnUpdate(Timestep ts) {};
-		virtual void OnEvent(Event& event) {};
-	};
-
 	class InspectorPanel : public Panel
 	{
 	public:

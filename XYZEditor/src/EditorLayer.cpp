@@ -35,11 +35,12 @@ namespace XYZ {
 	
 	EditorLayer::EditorLayer()
 		:
-		m_SpriteEditorPanel(m_AssetManager),
+		m_SpriteEditorPanel(PanelID::SpriteEditor),
 		m_ScenePanel(PanelID::Scene),
 		m_SceneHierarchyPanel(PanelID::SceneHierarchy),
 		m_InspectorPanel(PanelID::InspectorPanel),
-		m_AnimatorPanel(PanelID::AnimatorPanel)
+		m_AnimatorPanel(PanelID::AnimatorPanel),
+		m_ProjectBrowserPanel(PanelID::ProjectBrowser)
 	{
 	}
 
@@ -161,7 +162,7 @@ namespace XYZ {
 		m_Animator->Controller = m_AnimationController;
 		m_Animator->Controller->SetDefaultAnimation("Run");
 
-		m_SceneHierarchyPanel.SetContext(m_Scene);
+		
 
 
 		InGui::SetUIOffset(10.0f);
@@ -176,13 +177,14 @@ namespace XYZ {
 		renderConfig.SubTexture[PAUSE] = Ref<SubTexture2D>::Create(renderConfig.Texture, glm::vec2(2, 1), glm::vec2(renderConfig.Texture->GetWidth() / divisor, renderConfig.Texture->GetHeight() / divisor));
 
 		auto backgroundTexture = m_AssetManager.GetAsset<Texture2D>("Assets/Textures/Backgroundfield.png");
+		m_SceneHierarchyPanel.SetContext(m_Scene);
 		m_SpriteEditorPanel.SetContext(backgroundTexture);
-		m_AnimatorInspectorLayout.SetContext(m_AnimationController);
-
 		m_AnimatorPanel.SetContext(m_AnimationController);	
+
 		m_ScenePanel.RegisterCallback(Hook(&EditorLayer::OnEvent, this));
 		m_SceneHierarchyPanel.RegisterCallback(Hook(&EditorLayer::OnEvent, this));
 		m_AnimatorPanel.RegisterCallback(Hook(&EditorLayer::OnEvent, this));
+		m_SpriteEditorPanel.RegisterCallback(Hook(&EditorLayer::OnEvent, this));
 	}	
 
 	void EditorLayer::OnDetach()
@@ -199,6 +201,8 @@ namespace XYZ {
 		m_ScenePanel.OnUpdate(ts);
 		m_SceneHierarchyPanel.OnUpdate(ts);
 		m_AnimatorPanel.OnUpdate(ts);
+		m_SpriteEditorPanel.OnUpdate(ts);
+		m_ProjectBrowserPanel.OnUpdate(ts);
 	}
 	void EditorLayer::OnEvent(Event& event)
 	{		
@@ -213,9 +217,9 @@ namespace XYZ {
 		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&EditorLayer::onMouseButtonPress, this));
 		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorLayer::onMouseButtonRelease, this));	
 		dispatcher.Dispatch<EntitySelectedEvent>(Hook(&EditorLayer::onEntitySelected, this));
-		dispatcher.Dispatch<EntityDeselectedEvent>(Hook(&EditorLayer::onEntityDeselected, this));
+		dispatcher.Dispatch<DeselectedEvent>(Hook(&EditorLayer::onDeselected, this));
 		dispatcher.Dispatch<AnimatorSelectedEvent>(Hook(&EditorLayer::onAnimatorSelected, this));
-		dispatcher.Dispatch<AnimatorDeselectedEvent>(Hook(&EditorLayer::onAnimatorDeselected, this));
+		dispatcher.Dispatch<SpriteSelectedEvent>(Hook(&EditorLayer::onSpriteSelected, this));
 	}
 
 	void EditorLayer::OnInGuiRender(Timestep ts)
@@ -223,36 +227,29 @@ namespace XYZ {
 		m_ScenePanel.OnInGuiRender();
 		m_SceneHierarchyPanel.OnInGuiRender();
 		m_AnimatorPanel.OnInGuiRender();
-
-		InGui::BeginPanel(InGuiPanelType::Left, 300.0f, m_LeftPanel);
-		if (m_Dragging && m_ProjectBrowserPanel.GetSelectedFileIndex() != -1)
-		{
-			auto& renderConfig = InGui::GetRenderConfiguration();
-			auto [mx, my] = Input::GetMousePosition();
-			auto [width, height] = Input::GetWindowSize();
-			glm::vec2 size = { 25.0f,25.0f };
-			glm::vec2 position = MouseToWorld({ mx,my }, { width,height }) - (size / 2.0f);
-					
-			//if (m_ProhibitedCursor && !m_EntityInspectorLayout.ValidExtension(m_ProjectBrowserPanel.GetSelectedFilePath()))
-			//{
-			//	Application::Get().GetWindow().SetCustomCursor(m_ProhibitedCursor);
-			//}
-			//else
-			//{
-			//	Application::Get().GetWindow().SetStandardCursor(WindowCursors::XYZ_ARROW_CURSOR);
-			//}
-		}
-
-	
-		
-		if (m_SpriteEditorPanel.OnInGuiRender(ts))
-		{
-			//m_InspectorPanel.SetLayout(&m_SpriteEditorInspectorLayout);
-		}
+		m_SpriteEditorPanel.OnInGuiRender();
 		m_InspectorPanel.OnInGuiRender();
 		m_ProjectBrowserPanel.OnInGuiRender();
-	
 
+
+		InGui::BeginPanel(InGuiPanelType::Left, 300.0f, m_LeftPanel);
+		//if (m_Dragging && m_ProjectBrowserPanel.GetSelectedFileIndex() != -1)
+		//{
+		//	auto& renderConfig = InGui::GetRenderConfiguration();
+		//	auto [mx, my] = Input::GetMousePosition();
+		//	auto [width, height] = Input::GetWindowSize();
+		//	glm::vec2 size = { 25.0f,25.0f };
+		//	glm::vec2 position = MouseToWorld({ mx,my }, { width,height }) - (size / 2.0f);
+		//			
+		//	//if (m_ProhibitedCursor && !m_EntityInspectorLayout.ValidExtension(m_ProjectBrowserPanel.GetSelectedFilePath()))
+		//	//{
+		//	//	Application::Get().GetWindow().SetCustomCursor(m_ProhibitedCursor);
+		//	//}
+		//	//else
+		//	//{
+		//	//	Application::Get().GetWindow().SetStandardCursor(WindowCursors::XYZ_ARROW_CURSOR);
+		//	//}
+		//}
 		if (InGui::Begin(PanelID::TestPanel, "Test Panel", { 0,0 }, { 200,200 }))
 		{
 			
@@ -309,15 +306,7 @@ namespace XYZ {
 
 	bool EditorLayer::onMouseButtonPress(MouseButtonPressEvent& event)
 	{
-		if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_LEFT))
-		{
-			
-		}
-		else if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_RIGHT))
-		{
-			m_SpriteEditorInspectorLayout.SetContext(m_SpriteEditorPanel.GetSelectedSprite());
-		}
-		
+	
 		return false;
 	}
 	bool EditorLayer::onMouseButtonRelease(MouseButtonReleaseEvent& event)
@@ -326,18 +315,18 @@ namespace XYZ {
 		{
 			m_Dragging = false;
 			Application::Get().GetWindow().SetStandardCursor(WindowCursors::XYZ_ARROW_CURSOR);
-			//m_EntityInspectorLayout.AttemptSetAsset(m_ProjectBrowserPanel.GetSelectedFilePath(), m_AssetManager);	
-			if (HasExtension(m_ProjectBrowserPanel.GetSelectedFilePath(), "png"))
-			{
-				auto texture = m_AssetManager.GetAsset<Texture2D>(m_ProjectBrowserPanel.GetSelectedFilePath());
-				auto spriteEditor = InGui::GetWindow(PanelID::SpriteEditor);
-				auto [mx, my] = Input::GetMousePosition();
-				auto [width, height] = Input::GetWindowSize();
-
-				glm::vec2 mousePos = MouseToWorld({ mx,my }, { width,height });
-				if (Collide(spriteEditor->Position, spriteEditor->Size, mousePos))
-					m_SpriteEditorPanel.SetContext(texture);
-			}
+			
+			//if (HasExtension(m_ProjectBrowserPanel.GetSelectedFilePath(), "png"))
+			//{
+			//	auto texture = m_AssetManager.GetAsset<Texture2D>(m_ProjectBrowserPanel.GetSelectedFilePath());
+			//	auto spriteEditor = InGui::GetWindow(PanelID::SpriteEditor);
+			//	auto [mx, my] = Input::GetMousePosition();
+			//	auto [width, height] = Input::GetWindowSize();
+			//
+			//	glm::vec2 mousePos = MouseToWorld({ mx,my }, { width,height });
+			//	if (Collide(spriteEditor->Position, spriteEditor->Size, mousePos))
+			//		m_SpriteEditorPanel.SetContext(texture);
+			//}
 		}
 		return false;
 	}
@@ -348,7 +337,7 @@ namespace XYZ {
 		m_InspectorPanel.SetInspectable(&m_InspectableEntity);
 		return true;
 	}
-	bool EditorLayer::onEntityDeselected(EntityDeselectedEvent& event)
+	bool EditorLayer::onDeselected(DeselectedEvent& event)
 	{
 		m_InspectorPanel.SetInspectable(nullptr);
 		return true;
@@ -359,10 +348,12 @@ namespace XYZ {
 		m_InspectorPanel.SetInspectable(&m_InspectableAnimator);
 		return true;
 	}
-	bool EditorLayer::onAnimatorDeselected(AnimatorDeselectedEvent& event)
+
+	bool EditorLayer::onSpriteSelected(SpriteSelectedEvent& event)
 	{
-		m_InspectableAnimator.SetContext(nullptr);
-		m_InspectorPanel.SetInspectable(&m_InspectableAnimator);
-		return true;
+		m_InspectableSprite.SetContext(event.GetSprite());
+		m_InspectorPanel.SetInspectable(&m_InspectableSprite);
+		return false;
 	}
+	
 }

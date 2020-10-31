@@ -1,9 +1,7 @@
 #pragma once
 
 
-InspectableSelected,
-InspectableDeselected,
+Deselected,
 EntitySelected,
-EntityDeselected,
 AnimatorSelected,
-AnimatorDeselected
+SpriteSelected,

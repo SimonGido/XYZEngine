@@ -1,12 +1,9 @@
-#include "stdafx.h"
-#include "SpriteEditorInspectorLayout.h"
+#include "Inspectable.h"
+#include "InspectableSprite.h"
 
 
 namespace XYZ {
-	SpriteEditorInspectorLayout::SpriteEditorInspectorLayout()
-	{
-	}
-	void SpriteEditorInspectorLayout::OnInGuiRender()
+	void InspectableSprite::OnInGuiRender()
 	{
 		if (m_Context)
 		{
@@ -29,7 +26,7 @@ namespace XYZ {
 				{
 					m_FinishedModifying = false;
 					auto texCoords = m_Context->GetTexCoords();
-				
+
 					texCoords.x = m_Values[0];
 					texCoords.y = m_Values[1];
 					texCoords.z = m_Values[2];
@@ -40,10 +37,16 @@ namespace XYZ {
 			}
 		}
 	}
-	void SpriteEditorInspectorLayout::SetContext(const Ref<SubTexture2D>& context)
+	void InspectableSprite::OnUpdate(Timestep ts)
+	{
+	}
+	void InspectableSprite::OnEvent(Event& event)
+	{
+	}
+	void InspectableSprite::SetContext(const Ref<SubTexture2D>& context)
 	{
 		if (context)
-		{		
+		{
 			auto texCoords = context->GetTexCoords();
 
 			m_Values[0] = texCoords.x;

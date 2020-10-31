@@ -4,49 +4,24 @@
 #include "../Inspectable/Inspectable.h"
 
 namespace XYZ {
-
-	// Inspector panel is last to receive event and rest of panels overwrite event which will hold inspectable
-	class InspectableSelectedEvent : public Event
+	class DeselectedEvent : public Event
 	{
 	public:
-		InspectableSelectedEvent(Inspectable* inspectable)
+		DeselectedEvent()
 			:
-			m_Type(EventType::InspectableSelected),
-			m_Inspectable(inspectable)
-		{}
-	
-		virtual EventType GetEventType() const override { return m_Type; }
-		inline Inspectable* GetInspectable() { return m_Inspectable; }
-
-		static EventType GetStaticType()
-		{
-			return EventType::InspectableSelected;
-		}
-	private:
-		EventType m_Type;
-		Inspectable* m_Inspectable;
-	};
-
-
-	class InspectableDeselectedEvent : public Event
-	{
-	public:
-		InspectableDeselectedEvent()
-			: m_Type(EventType::InspectableDeselected)
+			m_Type(EventType::Deselected)
 		{}
 
 		virtual EventType GetEventType() const override { return m_Type; }
 
 		static EventType GetStaticType()
 		{
-			return EventType::InspectableDeselected;
+			return EventType::Deselected;
 		}
+
 	private:
 		EventType m_Type;
 	};
-
-
-
 	class EntitySelectedEvent : public Event
 	{
 	public:
@@ -62,27 +37,6 @@ namespace XYZ {
 		static EventType GetStaticType()
 		{
 			return EventType::EntitySelected;
-		}
-
-	private:
-		EventType m_Type;
-		Entity m_Entity;
-	};
-
-
-	class EntityDeselectedEvent : public Event
-	{
-	public:
-		EntityDeselectedEvent()
-			:
-			m_Type(EventType::EntityDeselected)
-		{}
-
-		virtual EventType GetEventType() const override { return m_Type; }
-
-		static EventType GetStaticType()
-		{
-			return EventType::EntityDeselected;
 		}
 
 	private:
@@ -113,21 +67,25 @@ namespace XYZ {
 		Ref<AnimationController> m_Controller;
 	};
 
-	class AnimatorDeselectedEvent : public Event
+	class SpriteSelectedEvent : public Event
 	{
 	public:
-		AnimatorDeselectedEvent()
+		SpriteSelectedEvent(const Ref<SubTexture2D>& sprite)
 			:
-			m_Type(EventType::AnimatorDeselected)
+			m_Type(EventType::SpriteSelected),
+			m_Sprite(sprite)
 		{}
+
 		virtual EventType GetEventType() const override { return m_Type; }
+
+		Ref<SubTexture2D> GetSprite() const { return m_Sprite; }
 
 		static EventType GetStaticType()
 		{
-			return EventType::AnimatorDeselected;
+			return EventType::SpriteSelected;
 		}
-
 	private:
 		EventType m_Type;
+		Ref<SubTexture2D> m_Sprite;
 	};
 }

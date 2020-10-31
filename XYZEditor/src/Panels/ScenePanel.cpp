@@ -114,7 +114,7 @@ namespace XYZ {
             }
             else
             {
-                Execute(EntityDeselectedEvent());
+                Execute(DeselectedEvent());
             }
 
             return true;       

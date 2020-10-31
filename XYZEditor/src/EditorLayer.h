@@ -8,10 +8,9 @@
 #include "Panels/SpriteEditorPanel.h"
 #include "Panels/ProjectBrowserPanel.h"
 #include "Panels/ScenePanel.h"
-#include "EditorProperties.h"
-
-#include "InspectorLayout/SpriteEditorInspectorLayout.h"
-#include "InspectorLayout/AnimatorInspectorLayout.h"
+#include "Inspectable/InspectableSprite.h"
+#include "Inspectable/InspectableEntity.h"
+#include "Inspectable/InspectableAnimator.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
@@ -38,11 +37,11 @@ namespace XYZ {
 		bool onMouseButtonPress(MouseButtonPressEvent& event);
 		bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
 		
+		bool onDeselected(DeselectedEvent& event);
 		bool onEntitySelected(EntitySelectedEvent& event);
-		bool onEntityDeselected(EntityDeselectedEvent& event);
-
 		bool onAnimatorSelected(AnimatorSelectedEvent& event);
-		bool onAnimatorDeselected(AnimatorDeselectedEvent& event);
+		bool onSpriteSelected(SpriteSelectedEvent& event);
+
 	private:
 		enum
 		{
@@ -59,15 +58,14 @@ namespace XYZ {
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		SpriteEditorPanel m_SpriteEditorPanel;
 		ProjectBrowserPanel m_ProjectBrowserPanel;
-
-		InspectorPanel m_InspectorPanel;
-		AnimatorInspectorLayout m_AnimatorInspectorLayout;
-		SpriteEditorInspectorLayout m_SpriteEditorInspectorLayout;
 		AnimatorPanel m_AnimatorPanel;
-
 		ScenePanel m_ScenePanel;
+		InspectorPanel m_InspectorPanel;
+
+	
 		InspectableEntity m_InspectableEntity;
 		InspectableAnimator m_InspectableAnimator;
+		InspectableSprite m_InspectableSprite;
 
 		bool m_Dragging = false;
 
@@ -100,7 +98,6 @@ namespace XYZ {
 		Ref<SubTexture2D> m_CharacterSubTexture;
 		Ref<SubTexture2D> m_CharacterSubTexture2;
 		Ref<SubTexture2D> m_CharacterSubTexture3;
-
 
 
 		void* m_ProhibitedCursor = nullptr;

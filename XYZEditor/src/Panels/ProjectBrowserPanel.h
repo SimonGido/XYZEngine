@@ -1,36 +1,27 @@
 #pragma once
 #include <XYZ.h>
 
+#include "Panel.h"
+
 #include <filesystem>
 
 
 namespace XYZ {
-	class ProjectBrowserPanel
+	class ProjectBrowserPanel : public Panel
 	{
 	public:
-		ProjectBrowserPanel();
+		ProjectBrowserPanel(uint32_t id);
 
-		bool OnInGuiRender();
-		void OnEvent(Event& event);
+		virtual void OnInGuiRender() override;
+		virtual void OnUpdate(Timestep ts) override;
+		virtual void OnEvent(Event& event) override;
 
-		int32_t GetSelectedFileIndex() const { return m_SelectedFileIndex; }
-		const std::string& GetSelectedFilePath() const { return m_SelectedFile; }
-		std::string GetSelectedFileFullPath() const;
 	private:
 		void handleFile(const char* name,const std::filesystem::directory_entry& entry, uint32_t counter, uint32_t subTextureIndex);
 		bool onKeyPress(KeyPressedEvent& event);
 
 	private: 
-		InGuiWindow* m_Window;
-		enum
-		{
-			FOLDER = InGuiRenderConfiguration::DOCKSPACE + 1,
-			SPRITE,
-			TEXTURE,
-			MATERIAL,
-			SHADER,
-			LOGO
-		};
+		
 		static constexpr int32_t sc_InvalidIndex = -1;
 
 		std::string m_DeleteSelectedFile;
