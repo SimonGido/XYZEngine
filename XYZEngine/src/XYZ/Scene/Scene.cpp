@@ -25,6 +25,7 @@ namespace XYZ {
 	{
 		m_CameraGroup = m_ECS.CreateGroup<TransformComponent, CameraComponent>();
 		m_RenderGroup = m_ECS.CreateGroup<TransformComponent, SpriteRenderer>();
+		m_ParticleGroup = m_ECS.CreateGroup<TransformComponent, ParticleComponent>();
 		m_AnimateGroup = m_ECS.CreateGroup<AnimatorComponent>();
 		m_ScriptGroup = m_ECS.CreateGroup<NativeScriptComponent>();
 
@@ -140,22 +141,38 @@ namespace XYZ {
 			auto [transform, sprite] = (*m_RenderGroup)[i];
 			SceneRenderer::SubmitSprite(sprite, transform->GetTransform());
 		}
+		for (int32_t i = 0; i < m_ParticleGroup->Size(); ++i)
+		{
+			auto [transform, particle] = (*m_ParticleGroup)[i];
+			SceneRenderer::SubmitParticles(particle, transform->GetTransform());
+		}
 		SceneRenderer::EndScene();
 	}
 
 	void Scene::OnUpdate(Timestep ts)
 	{
-		for (int i = 0; i < m_AnimateGroup->Size(); ++i)
+		for (int32_t i = 0; i < m_AnimateGroup->Size(); ++i)
 		{
 			auto [animator] = (*m_AnimateGroup)[i];
 			animator->Controller->Update(ts);
 		}
-		for (int i = 0; i < m_ScriptGroup->Size(); ++i)
+		for (int32_t i = 0; i < m_ScriptGroup->Size(); ++i)
 		{
 			auto [script] = (*m_ScriptGroup)[i];
 			if (script->ScriptableEntity)
 				script->ScriptableEntity->OnUpdate(ts);
 		}
+
+		for (int32_t i = 0; i < m_ParticleGroup->Size(); ++i)
+		{
+			auto [transform, particle] = (*m_ParticleGroup)[i];
+			//particle->ComputeMaterial->Set("u_Time", ts);
+			particle->ComputeMaterial->Set("u_ParticlesInExistence", (int)std::floor(particle->ParticleEffect->GetEmittedParticles()));
+			particle->ComputeMaterial->Bind();
+			particle->ParticleEffect->Update(ts);
+			particle->ComputeMaterial->GetShader()->Compute(32, 32, 1);
+		}
+			
 	}
 
 	void Scene::OnRenderEditor(const EditorCamera& camera)
@@ -181,16 +198,18 @@ namespace XYZ {
 			auto [transform, sprite] = (*m_RenderGroup)[i];
 			SceneRenderer::SubmitSprite(sprite, transform->GetTransform());
 		}
+		for (int32_t i = 0; i < m_ParticleGroup->Size(); ++i)
+		{
+			auto [transform, particle] = (*m_ParticleGroup)[i];
+			SceneRenderer::SubmitParticles(particle, transform->GetTransform());
+		}
+
 		if (m_SelectedEntity < MAX_ENTITIES)
 		{
 			if (m_ECS.Contains<CameraComponent>(m_SelectedEntity))
-			{
 				showCamera(m_SelectedEntity);
-			}
 			else
-			{
 				showSelection(m_SelectedEntity);
-			}
 		}
 		SceneRenderer::EndScene();
 

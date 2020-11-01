@@ -43,9 +43,6 @@
 #include "XYZ/Physics/PhysicsSystem.h"
 #include "XYZ/Physics/GridCollisionSystem.h"
 #include "XYZ/Physics/RealGridCollisionSystem.h"
-#include "XYZ/Particle/ParticleSystem2D.h"
-
-
 
 //-----Audio-----//
 #include "XYZ/Audio/Audio.h"

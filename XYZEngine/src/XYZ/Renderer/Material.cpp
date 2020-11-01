@@ -8,6 +8,7 @@ namespace XYZ {
 	{
 		m_Shader = shader;
 		m_Buffer.Allocate(shader->GetUniformSize());
+		m_Buffer.ZeroInitialize();
 		m_Shader->AddReloadCallback(std::bind(&Material::OnShaderReload, this));
 		m_Key = m_Shader->GetRendererID();
 	}
@@ -44,7 +45,6 @@ namespace XYZ {
 	MaterialInstance::MaterialInstance(const Ref<Material>& material)
 		: m_Material(material)
 	{
-		m_Buffer = new unsigned char[m_Material->m_Shader->GetUniformSize()];
 		m_Material->m_MaterialInstances.insert(this);
 		m_Buffer = ByteBuffer::Copy(m_Material->m_Buffer, m_Material->m_Shader->GetUniformSize());
 	}
@@ -69,6 +69,7 @@ namespace XYZ {
 	{
 		delete[] m_Buffer;
 		m_Buffer.Allocate(m_Material->m_Shader->GetUniformSize());
+		m_Buffer.ZeroInitialize();
 	}
 
 	void MaterialInstance::UpdateMaterialValue(const Uniform* uni)

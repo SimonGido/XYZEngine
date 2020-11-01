@@ -67,7 +67,7 @@ namespace XYZ {
 			glUseProgram(m_RendererID); 
 			});
 	}
-	void OpenGLShader::Compute(unsigned int groupX, unsigned int groupY, unsigned int groupZ) const
+	void OpenGLShader::Compute(uint32_t groupX, uint32_t groupY, uint32_t groupZ) const
 	{
 		XYZ_ASSERT(m_Type == ShaderProgramType::COMPUTE, "Calling compute on non compute shader");
 		Renderer::Submit([=]() {

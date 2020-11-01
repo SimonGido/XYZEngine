@@ -2,7 +2,7 @@
 #include "XYZ/Renderer/VertexArray.h"
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Core/Ref.h"
-
+#include "XYZ/Core/Timestep.h"
 
 #include <glm/glm.hpp>
 #include <set>
@@ -30,100 +30,51 @@ namespace XYZ {
 		glm::vec2 Velocity			= glm::vec2(0);
 		glm::vec2 DefaultVelocity	= glm::vec2(0);
 		glm::vec2 DefaultPosition	= glm::vec2(0);
+
 		float SizeBegin				= 0.0f;
 		float SizeEnd				= 0.0f;
 		float Rotation				= 0.0f;
 		float LifeTime				= 0.0f;
 	private:
 		float TimeAlive 			= 0.0f;
-		int IsAlive					= true;
+		int IsAlive					= 1;
 	};
 
 
-	
-	/* !@class ParticleEffect2D 
-	* @brief gpu based particle effect
-	*/
+	struct ParticleEffectConfiguration
+	{
+		uint32_t Rate = 2;
+		uint32_t MaxParticles = 500;
+		
+		bool	 Loop = true;
+	};
+
 	class ParticleEffect2D : public RefCount
 	{
 	public:
-		/**
-		* Construct
-		* @param[in] maxParticles
-		* @param[in] material
-		* @param[in] renderMaterial
-		*/
-		ParticleEffect2D(uint32_t maxParticles, const Ref<Material>& material, const Ref<Material>& renderMaterial);
-		
+		ParticleEffect2D(const ParticleEffectConfiguration& config);	
 		~ParticleEffect2D();
 
-		/**
-		* Rendering function
-		*/
-		void Render();
-
-		/**
-		* Update data in the gpu and compute
-		* @param[in] dt
-		*/
-		void Update(float dt);
-
-
-		const Ref<Material>& GetMaterial() { return m_Material; }
-		
-
-		/**
-		* Set max number of particles
-		* @param[in] vertexBuffer
-		* @param[in] particleInfo
-		*/
+		void Update(Timestep ts);
 		void SetParticles(ParticleVertex* vertexBuffer,ParticleInformation* particleInfo);
-		
-		/**
-		* Set particles in range
-		* @param[in] vertexBuffer
-		* @param[in] particleInfo
-		*/
 		void SetParticlesRange(ParticleVertex* vertexBuffer, ParticleInformation* particleInfo, uint32_t offset, uint32_t count);
+		void SetConfiguration(const ParticleEffectConfiguration& config) { m_Configuration = config; }
 
-		/**
-		* @param[out] vertexBuffer
-		* @param[out] particleInfo
-		* @return number of particles
-		*/
-		uint32_t GetParticles(ParticleVertex* vertexBuffer, ParticleInformation* particleInfo);
-		
-		/**
-		* @param[out] vertexBuffer
-		* @param[out] particleInfo
-		* @param[in] offset
-		* @param[in] count
-		* @return number of particles
-		*/
-		uint32_t GetParticlesRange(ParticleVertex* vertexBuffer, ParticleInformation* particleInfo, uint32_t offset, uint32_t count);
-		
-		uint32_t GetNumberOfParticles() { return m_MaxParticles; }
+		void SetParticlesRangeTest(void* vertexBuffer, void* particleInfo, uint32_t offset, uint32_t count);
 
+		void GetParticles(ParticleVertex* vertexBuffer, ParticleInformation* particleInfo);
+		void GetParticlesRange(ParticleVertex* vertexBuffer, ParticleInformation* particleInfo, uint32_t offset, uint32_t count);	
+	
+		float GetPlayTime() const { return m_PlayTime; }
+		float GetEmittedParticles() const { return m_EmittedParticles; }
+
+		const Ref<VertexArray> GetVertexArray() const { return m_VertexArray; }
+		const Ref<IndirectBuffer> GetIndirectBuffer() const { return m_IndirectBuffer; }
+		const Ref<ShaderStorageBuffer> GetShaderStorage() const { return m_VertexStorage; }
+
+		const ParticleEffectConfiguration& GetConfiguration() const { return m_Configuration; }
 	private:
-
-		struct Emitter
-		{
-			int Rate = 20;
-			float EmittedParticles = 0.0f;
-			static constexpr float EmitDuration = 1.0f;
-		};
-		Emitter m_Emitter;
-		
-		struct Renderable
-		{
-			Ref<VertexArray> VertexArray;
-			Ref<IndirectBuffer> IndirectBuffer;
-			Ref<Material> Material;
-		};
-		Renderable m_Renderable;
-
-
-		enum
+		enum Bindings
 		{
 			VERTEX_BINDING,
 			PROPS_BINDING,
@@ -133,20 +84,22 @@ namespace XYZ {
 		};
 
 	private:
-		Ref<Material> m_Material;
-		Ref<Shader> m_Shader;
+		Ref<VertexArray> m_VertexArray;
+		Ref<IndirectBuffer> m_IndirectBuffer;
+
 		Ref<ShaderStorageBuffer> m_VertexStorage;
 		Ref<ShaderStorageBuffer> m_PropsStorage;
 		Ref<AtomicCounter> m_Counter;
 
-	
+
+
 		std::vector<ParticleVertex> m_Vertices;
 		std::vector<ParticleInformation> m_Data;
 	
-		uint32_t m_MaxParticles = 0;
-		double m_PlayTime = 0.0f;
-		float m_LifeTime = 3.0f;
-		bool m_Loop = true;
+		ParticleEffectConfiguration m_Configuration;
+		float m_EmittedParticles = 0.0f;
+		float m_PlayTime = 0.0f;
+
 		static constexpr size_t sc_MaxParticlesPerEffect = 10000;
 	};
 

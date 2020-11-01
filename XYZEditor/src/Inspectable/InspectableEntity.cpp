@@ -332,6 +332,10 @@ namespace XYZ {
 					InGui::EndGroup();
 				}
 			}
+			if (m_Context.HasComponent<ParticleComponent>())
+			{
+
+			}
 		}
 	}
 	void InspectableEntity::OnUpdate(Timestep ts)

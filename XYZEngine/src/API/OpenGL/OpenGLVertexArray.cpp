@@ -42,7 +42,9 @@ namespace XYZ {
 
 	void OpenGLVertexArray::Bind() const
 	{
-		Renderer::Submit([this]() {glBindVertexArray(m_RendererID); });
+		Renderer::Submit([this]() {
+			glBindVertexArray(m_RendererID); 
+		});
 	}
 
 	void OpenGLVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
@@ -52,6 +54,7 @@ namespace XYZ {
 
 		Renderer::Submit([this, vertexBuffer]() {
 			glBindVertexArray(m_RendererID);
+			
 			vertexBuffer->Bind();
 
 			auto& vbl = vertexBuffer->GetLayout();

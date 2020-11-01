@@ -1,5 +1,6 @@
 #pragma once
 #include "XYZ/ECS/Component.h"
+#include "XYZ/Particle/ParticleEffect2D.h"
 #include "SceneCamera.h"
 #include "AnimationController.h"
 
@@ -76,5 +77,13 @@ namespace XYZ {
 	};
 
 
-	
+	struct ParticleComponent : public Type<ParticleComponent>
+	{
+		ParticleComponent() = default;
+		Ref<Material> RenderMaterial;
+		Ref<Material> ComputeMaterial;
+
+		Ref<ParticleEffect2D> ParticleEffect;
+	};
+
 }

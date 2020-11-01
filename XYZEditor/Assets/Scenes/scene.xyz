@@ -2,7 +2,7 @@ Scene: Test Scene
 Entities:
   - Entity: Main Camera
     TransformComponent:
-      Position: [3.48151207, -3.77337265, 0]
+      Position: [10.6002598, -1.38274765, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     CameraComponent:
@@ -15,7 +15,7 @@ Entities:
       OrthographicFar: 1
   - Entity: Test Entity
     TransformComponent:
-      Position: [-30.784153, -5.93986177, 0]
+      Position: [-25.544281, -5.64425087, 0]
       Rotation: [1, 0, -0.0101356506]
       Scale: [10.8511467, 23.6469116, 1]
     SpriteRenderer:
@@ -39,7 +39,7 @@ Entities:
       IsVisible: true
   - Entity: Background
     TransformComponent:
-      Position: [0, 0, 0]
+      Position: [-45.5125122, 8.79740715, 0]
       Rotation: [0, 0, 0]
       Scale: [76.9326859, 46.4879799, 1]
     SpriteRenderer:

@@ -35,7 +35,7 @@ namespace XYZ {
 		static void EndScene();
 
 		static void SubmitSprite(SpriteRenderer* sprite, const glm::mat4& transform);
-
+		static void SubmitParticles(ParticleComponent* particle, const glm::mat4& transform);
 		static void SetGridProperties(const GridProperties& props);
 
 		static Ref<RenderPass> GetFinalRenderPass();

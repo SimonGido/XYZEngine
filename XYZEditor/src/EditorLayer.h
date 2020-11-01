@@ -41,7 +41,9 @@ namespace XYZ {
 		bool onEntitySelected(EntitySelectedEvent& event);
 		bool onAnimatorSelected(AnimatorSelectedEvent& event);
 		bool onSpriteSelected(SpriteSelectedEvent& event);
-
+		ParticleVertex* m_Vertices;
+		ParticleInformation* m_Data;
+		ParticleComponent* m_Particle;
 	private:
 		enum
 		{
@@ -59,8 +61,8 @@ namespace XYZ {
 		SpriteEditorPanel m_SpriteEditorPanel;
 		ProjectBrowserPanel m_ProjectBrowserPanel;
 		AnimatorPanel m_AnimatorPanel;
-		ScenePanel m_ScenePanel;
 		InspectorPanel m_InspectorPanel;
+		ScenePanel m_ScenePanel;
 
 	
 		InspectableEntity m_InspectableEntity;

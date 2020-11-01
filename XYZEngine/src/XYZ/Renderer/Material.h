@@ -183,7 +183,7 @@ namespace XYZ {
 			auto uni = m_Material->m_Shader->FindUniform(name);
 			XYZ_ASSERT(uni, "Material uniform does not exist");
 			XYZ_ASSERT(uni->Offset + uni->Size <= m_Material->m_Shader->GetUniformSize(), "Material uniform buffer out of range");
-			memcpy(m_Buffer + uni->Offset, (unsigned char*)& val, uni->Size);
+			m_Buffer.Write((unsigned char*)&val, uni->Size, uni->Offset);
 			m_UpdatedValues.insert(name);
 		}
 
@@ -196,13 +196,13 @@ namespace XYZ {
 		* @param[in] offset Offset in the shader array uniform
 		*/
 		template<typename T>
-		void Set(const std::string& name, const T& val, int size, int offset)
+		void Set(const std::string& name, const T& val, uint32_t size, uint32_t offset)
 		{
 			auto uni = m_Material->m_Shader->FindUniform(name);
 			XYZ_ASSERT(uni, "Material uniform does not exist ", name.c_str());
 			XYZ_ASSERT(uni->Offset + uni->Size <= m_Material->m_Shader->GetUniformSize(), "Material uniform buffer out of range");
 			XYZ_ASSERT(size + Offset < uni->Size, "Material uniform out of range");
-			memcpy(m_Buffer + uni->Offset + offset, (unsigned char*)& val, size);
+			m_Buffer.Write((unsigned char*)&val, uni->Size, uni->Offset);
 			m_UpdatedValues.insert(name);
 		}
 
@@ -215,7 +215,7 @@ namespace XYZ {
 		* @return shared_ptr to the Material used in constructor
 		*/
 		int64_t GetSortKey() const { return m_Material->m_Key; }
-		const Ref<Material>& GetParentMaterial() { return m_Material; }
+		Ref<Material> GetParentMaterial() { return m_Material; }
 
 		/**
 		* @param[in] material

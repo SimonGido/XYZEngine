@@ -46,7 +46,7 @@ namespace XYZ {
 	class OpenGLShaderStorageBuffer : public ShaderStorageBuffer
 	{
 	public:
-		OpenGLShaderStorageBuffer(float* data, uint32_t size, BufferUsage usage);
+		OpenGLShaderStorageBuffer(void* data, uint32_t size, BufferUsage usage);
 		virtual ~OpenGLShaderStorageBuffer();
 		virtual void BindBase(uint32_t index) const override;
 		virtual void BindRange(uint32_t offset, uint32_t size, uint32_t index)const override;

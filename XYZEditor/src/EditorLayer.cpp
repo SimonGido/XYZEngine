@@ -99,7 +99,7 @@ namespace XYZ {
 		m_SpriteRenderer = m_TestEntity.GetComponent<SpriteRenderer>();
 		m_Transform = m_TestEntity.GetComponent<TransformComponent>();
 		m_Animator = m_TestEntity.EmplaceComponent<AnimatorComponent>();
-
+		
 		m_CharacterTexture = Texture2D::Create(XYZ::TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest, "Assets/Textures/player_sprite.png");
 		m_CharacterSubTexture = Ref<SubTexture2D>::Create(m_CharacterTexture, glm::vec2(0, 0), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
 		m_CharacterSubTexture2 = Ref<SubTexture2D>::Create(m_CharacterTexture, glm::vec2(1, 2), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
@@ -185,6 +185,58 @@ namespace XYZ {
 		m_SceneHierarchyPanel.RegisterCallback(Hook(&EditorLayer::OnEvent, this));
 		m_AnimatorPanel.RegisterCallback(Hook(&EditorLayer::OnEvent, this));
 		m_SpriteEditorPanel.RegisterCallback(Hook(&EditorLayer::OnEvent, this));
+
+
+		Ref<VertexArray> test = VertexArray::Create();
+		test->Bind();
+		///////////////////////////////////////////////////////////
+		auto computeMat = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleComputeShader.glsl"));
+		computeMat->Bind();
+		m_Particle = m_TestEntity.AddComponent<ParticleComponent>(ParticleComponent());
+		m_Particle->RenderMaterial = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShader.glsl"));
+		m_Particle->ComputeMaterial = computeMat;
+		//m_Particle->RenderMaterial->Set("u_Texture", m_CharacterTexture);
+		m_Particle->ComputeMaterial->Set("u_Speed", 0.0f);
+		m_Particle->ComputeMaterial->Set("u_Gravity", 0.0f);
+		m_Particle->ComputeMaterial->Set("u_Loop", (int)true);
+		m_Particle->ComputeMaterial->Set("u_NumberRows", 0.0f);
+		m_Particle->ComputeMaterial->Set("u_NumberColumns", 0.0f);
+		m_Particle->ComputeMaterial->Set("u_ParticlesInExistence", 0.0f);
+		m_Particle->ComputeMaterial->Set("u_Time", 0.0f);
+		
+		
+		m_Particle->ParticleEffect = Ref<ParticleEffect2D>::Create(ParticleEffectConfiguration{});
+		
+	
+
+		uint32_t count = 500;
+		std::random_device rd;
+		std::mt19937 rng(rd());
+		std::uniform_real_distribution<> dist(-10, 10);
+
+		m_Vertices = new XYZ::ParticleVertex[count];
+		m_Data = new XYZ::ParticleInformation[count];
+
+		for (int i = 0; i < count; ++i)
+		{
+			m_Vertices[i].Position = glm::vec4(i, 0.0f, 0.0f, 1.0f);
+			m_Vertices[i].Color = glm::vec4(1, 1, 1, 1);
+			m_Vertices[i].Rotation = 0.0f;
+			m_Vertices[i].TexCoordOffset = glm::vec2(0);
+
+			m_Data[i].DefaultPosition.x = m_Vertices[i].Position.x;
+			m_Data[i].DefaultPosition.y = m_Vertices[i].Position.y;
+			m_Data[i].ColorBegin = m_Vertices[i].Color;
+			m_Data[i].ColorEnd = m_Vertices[i].Color;
+			m_Data[i].SizeBegin = 1.2f;
+			m_Data[i].SizeEnd = 2.2f;
+			m_Data[i].Rotation = dist(rng) * 15;
+			m_Data[i].Velocity = glm::vec2(0.5f, 0.5f);
+			m_Data[i].DefaultVelocity = m_Data[i].Velocity;
+			m_Data[i].LifeTime = fabs(dist(rng)) * 1 + 3;
+		}
+		m_Particle->ParticleEffect->SetParticlesRangeTest(m_Vertices, m_Data, 0, count);
+		///////////////////////////////////////////////////////////
 	}	
 
 	void EditorLayer::OnDetach()
@@ -203,6 +255,8 @@ namespace XYZ {
 		m_AnimatorPanel.OnUpdate(ts);
 		m_SpriteEditorPanel.OnUpdate(ts);
 		m_ProjectBrowserPanel.OnUpdate(ts);
+
+		
 	}
 	void EditorLayer::OnEvent(Event& event)
 	{		

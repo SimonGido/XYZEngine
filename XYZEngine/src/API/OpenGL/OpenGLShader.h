@@ -10,7 +10,7 @@ namespace XYZ {
 		virtual ~OpenGLShader();
 
 		virtual void Bind() const override;
-		virtual void Compute(unsigned int groupX, unsigned int groupY = 1, unsigned int groupZ = 1) const override;
+		virtual void Compute(uint32_t groupX, uint32_t groupY = 1, uint32_t groupZ = 1) const override;
 		virtual void Unbind() const override;
 		virtual void SetUniforms(unsigned char* data) override;
 		virtual void SetSubRoutine(const std::string& name) override;

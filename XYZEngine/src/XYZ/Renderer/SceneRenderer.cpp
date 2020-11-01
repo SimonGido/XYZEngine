@@ -23,7 +23,14 @@ namespace XYZ {
 			SpriteRenderer* Sprite;
 			glm::mat4 Transform;
 		};
-		std::vector<SpriteDrawCommand> DrawList;
+		struct ParticleDrawCommand
+		{
+			ParticleComponent* Particle;
+			glm::mat4 Transform;
+		};
+
+		std::vector<SpriteDrawCommand> SpriteDrawList;
+		std::vector<ParticleDrawCommand> ParticleDrawList;
 	};
 
 	static SceneRendererData s_Data;
@@ -60,7 +67,11 @@ namespace XYZ {
 	}
 	void SceneRenderer::SubmitSprite(SpriteRenderer* sprite, const glm::mat4& transform)
 	{
-		s_Data.DrawList.push_back({ sprite,transform });
+		s_Data.SpriteDrawList.push_back({ sprite,transform });
+	}
+	void SceneRenderer::SubmitParticles(ParticleComponent* particle, const glm::mat4& transform)
+	{
+		s_Data.ParticleDrawList.push_back({ particle,transform });
 	}
 	void SceneRenderer::SetGridProperties(const GridProperties& props)
 	{
@@ -83,7 +94,8 @@ namespace XYZ {
 	void SceneRenderer::FlushDrawList()
 	{
 		GeometryPass();
-		s_Data.DrawList.clear();
+		s_Data.SpriteDrawList.clear();
+		s_Data.ParticleDrawList.clear();
 	}
 	void SceneRenderer::GeometryPass()
 	{
@@ -97,23 +109,40 @@ namespace XYZ {
 			Renderer2D::SubmitGrid(s_Data.GridProps.Transform, s_Data.GridProps.Scale, s_Data.GridProps.LineWidth);
 		}
 
-		std::sort(s_Data.DrawList.begin(), s_Data.DrawList.end(), 
+		std::sort(s_Data.SpriteDrawList.begin(), s_Data.SpriteDrawList.end(), 
 			[](const SceneRendererData::SpriteDrawCommand& a, const SceneRendererData::SpriteDrawCommand& b) {
 				if (a.Sprite->SortLayer == b.Sprite->SortLayer)
 					return a.Sprite->Material->GetSortKey() < b.Sprite->Material->GetSortKey();
 				return a.Sprite->SortLayer < b.Sprite->SortLayer;
 		});
 
+		std::sort(s_Data.ParticleDrawList.begin(), s_Data.ParticleDrawList.end(),
+			[](const SceneRendererData::ParticleDrawCommand& a, const SceneRendererData::ParticleDrawCommand& b) {
+				return a.Particle->RenderMaterial->GetSortKey() < b.Particle->RenderMaterial->GetSortKey();
+			});
 		
-		for (auto& dc : s_Data.DrawList)
+		for (auto& dc : s_Data.SpriteDrawList)
 		{
 			Renderer2D::SetMaterial(dc.Sprite->Material);
 			Renderer2D::SubmitQuad(dc.Transform, dc.Sprite->SubTexture->GetTexCoords(), dc.Sprite->TextureID, dc.Sprite->Color);
 		}
+
 		Renderer2D::Flush();
 		Renderer2D::FlushLines();
-		Renderer2D::EndScene();
+		
 
+		for (auto& dc : s_Data.ParticleDrawList)
+		{
+			dc.Particle->ComputeMaterial->Set("u_ParticlesInExistence", 5);
+			dc.Particle->ComputeMaterial->Bind();
+			dc.Particle->ParticleEffect->Update(0.02f);
+			dc.Particle->RenderMaterial->Set("u_ViewProjectionMatrix", viewProjectionMatrix);
+			dc.Particle->RenderMaterial->Bind();
+			Renderer2D::SubmitParticles(dc.Transform, dc.Particle->ParticleEffect);
+		}
+
+		
+		Renderer2D::EndScene();
 		Renderer::EndRenderPass();
 		Renderer::WaitAndRender();
 	}

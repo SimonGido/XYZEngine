@@ -96,12 +96,12 @@ namespace XYZ {
 		: m_Count(count)
 	{
 		m_LocalData = ByteBuffer::Copy(indices, count * sizeof(uint32_t));
-		memcpy(m_LocalData, indices, count * sizeof(uint32_t));
+
 		Renderer::Submit([this]() {
 			glCreateBuffers(1, &m_RendererID);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_Count * sizeof(unsigned int), m_LocalData, GL_STATIC_DRAW);
-			});
+		});
 	}
 
 	OpenGLIndexBuffer::~OpenGLIndexBuffer()
@@ -128,19 +128,24 @@ namespace XYZ {
 
 
 
-	OpenGLShaderStorageBuffer::OpenGLShaderStorageBuffer(float* data, uint32_t size, BufferUsage usage)
+	OpenGLShaderStorageBuffer::OpenGLShaderStorageBuffer(void* data, uint32_t size, BufferUsage usage)
 		:m_Size(size), m_Usage(usage)
 	{
-		m_LocalData = ByteBuffer::Copy(data, size);
-		Renderer::Submit([=]() {glGenBuffers(1, &m_RendererID);
-		glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_RendererID);
-		switch (m_Usage)
-		{
-		case BufferUsage::Static:    glBufferData(GL_SHADER_STORAGE_BUFFER, size, data, GL_STATIC_DRAW); break;
-		case BufferUsage::Dynamic:   glBufferData(GL_SHADER_STORAGE_BUFFER, size, data, GL_DYNAMIC_DRAW); break;
-		}
-		glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-			});
+		if (data)
+			m_LocalData = ByteBuffer::Copy(data, size);
+		else
+			m_LocalData.Allocate(size);
+
+		Renderer::Submit([=]() {
+			glCreateBuffers(1, &m_RendererID);
+			glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_RendererID);
+			switch (m_Usage)
+			{
+			case BufferUsage::Static:    glBufferData(GL_SHADER_STORAGE_BUFFER, size, m_LocalData, GL_STATIC_DRAW); break;
+			case BufferUsage::Dynamic:   glBufferData(GL_SHADER_STORAGE_BUFFER, size, m_LocalData, GL_DYNAMIC_DRAW); break;
+			}
+			glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+		});
 	}
 
 	OpenGLShaderStorageBuffer::~OpenGLShaderStorageBuffer()
@@ -153,7 +158,7 @@ namespace XYZ {
 
 	void OpenGLShaderStorageBuffer::BindBase(uint32_t index)const
 	{
-		Renderer::Submit([=]() {
+		Renderer::Submit([this, index]() {
 			glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_RendererID);
 			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, m_RendererID);
 			});
@@ -173,10 +178,10 @@ namespace XYZ {
 	void OpenGLShaderStorageBuffer::Update(void* data, uint32_t size, uint32_t offset)
 	{
 		m_LocalData.Write(data, size, offset);
-		Renderer::Submit([=]() {
+		Renderer::Submit([this, size, offset] () {
 			glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
-			glBufferSubData(GL_ARRAY_BUFFER, offset, size, data);
-			});
+			glBufferSubData(GL_ARRAY_BUFFER, offset, size, m_LocalData);
+		});
 	}
 
 	void OpenGLShaderStorageBuffer::Resize(void* data, uint32_t size)
@@ -193,10 +198,8 @@ namespace XYZ {
 	}
 	void OpenGLShaderStorageBuffer::GetSubData(void* buffer, uint32_t size, uint32_t offset)
 	{
-		Renderer::Submit([=]() {
-			XYZ_ASSERT(size + offset < m_Size, "Accesing data out of range");
-			glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, offset, size, buffer);
-			});
+		XYZ_ASSERT(size + offset <= m_Size, "Accesing data out of range");
+		glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, offset, size, buffer);
 	}
 	OpenGLAtomicCounter::OpenGLAtomicCounter(uint32_t numOfCounters)
 		: m_NumberOfCounters(numOfCounters), m_Counters(new uint32_t[numOfCounters])
@@ -206,7 +209,7 @@ namespace XYZ {
 			for (size_t i = 0; i < numOfCounters; ++i)
 				m_Counters[i] = 0;
 
-			glGenBuffers(1, &m_RendererID);
+			glCreateBuffers(1, &m_RendererID);
 			glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, m_RendererID);
 			glBufferData(GL_ATOMIC_COUNTER_BUFFER, sizeof(uint32_t) * numOfCounters, m_Counters, GL_DYNAMIC_DRAW);
 			});
@@ -227,9 +230,9 @@ namespace XYZ {
 			glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(uint32_t) * m_NumberOfCounters, m_Counters);
 			});
 	}
-	void OpenGLAtomicCounter::BindBase(uint32_t index)const
+	void OpenGLAtomicCounter::BindBase(uint32_t index) const
 	{
-		Renderer::Submit([=]() {
+		Renderer::Submit([this,index]() {
 			glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, m_RendererID);
 			glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, index, m_RendererID);
 			});

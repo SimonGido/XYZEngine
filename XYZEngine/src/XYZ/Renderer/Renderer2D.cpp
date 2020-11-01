@@ -205,6 +205,7 @@ namespace XYZ {
 			Flush();
 
 		s_Data.QuadMaterial = material;
+		s_Data.QuadMaterial->Bind();
 	}
 
 
@@ -297,6 +298,14 @@ namespace XYZ {
 		s_Data.LineBufferPtr++;
 
 		s_Data.LineIndexCount += 2;
+	}
+
+	void Renderer2D::SubmitParticles(const glm::mat4& transform, const Ref<ParticleEffect2D>& particleEffect)
+	{
+		particleEffect->GetVertexArray()->Bind();
+		particleEffect->GetShaderStorage()->BindBase(1);
+		particleEffect->GetIndirectBuffer()->Bind();
+		Renderer::DrawElementsIndirect(nullptr);
 	}
 
 

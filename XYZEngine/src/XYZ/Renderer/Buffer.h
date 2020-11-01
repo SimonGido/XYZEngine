@@ -55,7 +55,7 @@ namespace XYZ {
 		* @param[in] name		Name of element represented in shader
 		* @param[in] divisior	Specify how is data split between instances, default 0
 		*/
-		BufferElement(unsigned int index, ShaderDataComponent Component, const std::string& name, unsigned int divisor = 0)
+		BufferElement(unsigned int index, ShaderDataComponent Component, const std::string& name, uint32_t divisor = 0)
 			: Index(index), Component(Component), Divisor(divisor), Size(ShaderDataComponentSize(Component)), Offset(0)
 		{}
 
@@ -84,10 +84,10 @@ namespace XYZ {
 		}
 
 		ShaderDataComponent Component;
-		unsigned int   Size;
-		unsigned int   Offset;
-		unsigned int   Index;
-		unsigned int   Divisor;
+		uint32_t   Size;
+		uint32_t   Offset;
+		uint32_t   Index;
+		uint32_t   Divisor;
 	};
 
 
@@ -140,7 +140,7 @@ namespace XYZ {
 		*/
 		inline void CalculateOffsetsAndStride()
 		{
-			unsigned int offset = 0;
+			uint32_t offset = 0;
 			m_Stride = 0;
 			for (auto& element : m_Elements)
 			{
@@ -173,7 +173,7 @@ namespace XYZ {
 
 	private:
 		std::vector<BufferElement> m_Elements;
-		unsigned int m_Stride = 0;
+		uint32_t m_Stride = 0;
 	};
 
 	/**

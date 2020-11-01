@@ -64,11 +64,11 @@ namespace XYZ {
     {
         EventDispatcher dispatcher(event);
         dispatcher.Dispatch<WindowResizeEvent>(Hook(&ScenePanel::onWindowResized, this));
+           m_EditorCamera.OnEvent(event);
              
         // Events that should be called only when scene window is hoovered
         if (InGui::GetWindow(m_PanelID)->Flags & InGuiWindowFlag::Hoovered)
         {
-            m_EditorCamera.OnEvent(event);
             dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&ScenePanel::onMouseButtonPress, this));
             dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&ScenePanel::onMouseButtonRelease , this));
             dispatcher.Dispatch<KeyPressedEvent>(Hook(&ScenePanel::onKeyPress, this));
