@@ -172,9 +172,6 @@ namespace XYZ {
 			//auto& config = particle->ParticleEffect->GetConfiguration();
 			materialInstance->Set("u_Time", ts);
 			materialInstance->Set("u_ParticlesInExistence", (int)std::floor(particle->ParticleEffect->GetEmittedParticles()));
-			materialInstance->Set("u_Loop", (int)true);
-			materialInstance->Set("u_Speed", 1.0f);
-			materialInstance->Set("u_Gravity", -1.0f);
 
 			material->Bind();
 			materialInstance->Bind();

@@ -19,40 +19,76 @@ namespace XYZ {
 		return false;
 	}
 
-	static void ShowMaterialInstance(Ref<MaterialInstance> materialInstace)
+	static void SetupMaterialValuesLengths(const Ref<Material>& material, std::vector<int32_t>& lengths, std::vector<int32_t>& selected)
 	{
-		auto material = materialInstace->GetParentMaterial();
+		for (auto& uniform : material->GetShader()->GetUniforms())
+		{
+			selected.push_back(-1);
+			switch (uniform.Type)
+			{
+			case UniformDataType::FLOAT:
+				lengths.push_back(5);
+				break;
+			case UniformDataType::FLOAT_VEC2:
+				for (int32_t i = 0; i < 2; ++i)
+					lengths.push_back(5);
+				break;
+			case UniformDataType::FLOAT_VEC3:
+				for (int32_t i = 0; i < 3; ++i)
+					lengths.push_back(5);
+				break;
+			case UniformDataType::FLOAT_VEC4:
+				for (int32_t i = 0; i < 4; ++i)
+					lengths.push_back(5);
+				break;
+			case UniformDataType::INT:
+				lengths.push_back(5);
+				break;
+			case UniformDataType::FLOAT_MAT4:
+				break;
+			};
+		}
+	}
+
+	static void ShowMaterialInstance(Ref<MaterialInstance> materialInstance, std::vector<int32_t>& lengths, std::vector<int32_t>& selected)
+	{
+		auto material = materialInstance->GetParentMaterial();
+		uint32_t countLengths = 0;
+		uint32_t countSelected = 0;
 		for (auto& uniform : material->GetShader()->GetUniforms())
 		{
 			switch (uniform.Type)
 			{
 			case UniformDataType::FLOAT:
-				InGui::Float(1, uniform.Name.c_str(), (float*)&material->GetBuffer()[uniform.Offset], )
-
+				InGui::Float(1, uniform.Name.c_str(), (float*)&materialInstance->GetBuffer()[uniform.Offset], &lengths[countLengths], {}, { 50.0f, 25.0f }, selected[countSelected]);
+				InGui::Separator();
+				countLengths++;
 				break;
 			case UniformDataType::FLOAT_VEC2:
-				
-				*(glm::vec2*) & material->GetBuffer()[uniform.Offset];
-		
+				InGui::Float(2, uniform.Name.c_str(), (float*) & materialInstance->GetBuffer()[uniform.Offset], &lengths[countLengths], {}, { 50.0f, 25.0f }, selected[countSelected]);
+				InGui::Separator();
+				countLengths += 2;
 				break;
 			case UniformDataType::FLOAT_VEC3:
-				
-				*(glm::vec3*) & material->GetBuffer()[uniform.Offset];
-	
+				InGui::Float(3, uniform.Name.c_str(), (float*)&materialInstance->GetBuffer()[uniform.Offset], &lengths[countLengths], {}, { 50.0f, 25.0f }, selected[countSelected]);
+				InGui::Separator();
+				countLengths += 3;
 				break;
 			case UniformDataType::FLOAT_VEC4:
-				
-				*(glm::vec4*) & material->GetBuffer()[uniform.Offset];
-		
+				InGui::Float(4, uniform.Name.c_str(), (float*)&materialInstance->GetBuffer()[uniform.Offset], &lengths[countLengths], {}, { 50.0f, 25.0f }, selected[countSelected]);
+				InGui::Separator();
+				countLengths += 4;
 				break;
-			case UniformDataType::INT:
-			
-				*(int*)&material->GetBuffer()[uniform.Offset];
-		
+			case UniformDataType::INT:		
+				InGui::Int(1, uniform.Name.c_str(), (int*)&materialInstance->GetBuffer()[uniform.Offset], &lengths[countLengths], {}, { 50.0f, 25.0f }, selected[countSelected]);
+				InGui::Separator();
+				countLengths++;
 				break;
 			case UniformDataType::FLOAT_MAT4:
 				break;
 			};
+
+			countSelected++;
 		}
 	}
 
@@ -82,6 +118,14 @@ namespace XYZ {
 			{
 				m_NativeScriptObject = context.GetComponent<NativeScriptComponent>()->ScriptObjectName;
 			}
+		}
+		if (context && context.HasComponent<ParticleComponent>())
+		{
+			auto particleComponent = context.GetComponent<ParticleComponent>();
+			auto material = particleComponent->ComputeMaterial->GetParentMaterial();
+			m_MaterialUniformLengths.clear();
+			m_MaterialUniformSelected.clear();
+			SetupMaterialValuesLengths(material, m_MaterialUniformLengths, m_MaterialUniformSelected);
 		}
 		m_Context = context;
 	}
@@ -342,6 +386,8 @@ namespace XYZ {
 				{
 					auto& renderConfig = InGui::GetRenderConfiguration();
 					auto particleComponent = m_Context.GetComponent<ParticleComponent>();
+					
+					ShowMaterialInstance(particleComponent->ComputeMaterial, m_MaterialUniformLengths, m_MaterialUniformSelected);
 				}
 			}
 			if (m_Context.HasComponent<NativeScriptComponent>())

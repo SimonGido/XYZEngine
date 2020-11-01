@@ -117,9 +117,18 @@ namespace XYZ {
 			m_UpdatedValues.insert(name);
 		}
 
+		template <typename T>
+		T& Get(const std::string& name)
+		{
+			auto uni = m_Material->m_Shader->FindUniform(name);
+			XYZ_ASSERT(uni, "Material uniform does not exist ", name.c_str());
+			return *(T*)m_Buffer[uni->Offset];
+		}
+
 		void Bind();
 
 		int64_t GetSortKey() const { return m_Material->m_Key; }
+		const uint8_t* GetBuffer() const { return m_Buffer; }
 		Ref<Material> GetParentMaterial() { return m_Material; }
 
 		static Ref<MaterialInstance> Create(const Ref<Material>& material);

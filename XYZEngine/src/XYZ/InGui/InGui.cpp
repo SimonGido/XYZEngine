@@ -306,6 +306,10 @@ namespace XYZ {
 			case ToUnderlying(KeyCode::XYZ_KEY_PERIOD):
 				text[length++] = ('.');
 				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_KP_SUBTRACT):
+				text[length++] = ('-');
+				text[length++] = ('0');
+				break;
 			}
 		}	
 
@@ -998,7 +1002,6 @@ namespace XYZ {
 						if (Collide(tmpPos, size, frameData.MousePosition))
 						{
 							result |= (InGuiReturnType::Clicked & InGuiReturnType::Hoovered);
-							frameData.Flags |= InGuiPerFrameFlag::ClickHandled;
 							selected = i;
 							break;
 						}

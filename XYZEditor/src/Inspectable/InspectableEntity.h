@@ -77,6 +77,9 @@ namespace XYZ {
 		uint8_t m_MaterialTextFlags = 0;
 		uint8_t m_SpriteTextFlags = 0;
 
+		
+		std::vector<int32_t> m_MaterialUniformLengths;
+		std::vector<int32_t> m_MaterialUniformSelected;
 
 		std::string m_NativeScriptObject;
 		std::string m_Sprite;

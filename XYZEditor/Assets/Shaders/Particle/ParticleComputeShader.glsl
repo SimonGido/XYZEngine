@@ -60,7 +60,6 @@ DrawCommandsBlock
 
 layout(binding = 3, offset = 0) uniform atomic_uint deadParticles;
 
-uniform vec4 u_Collider;
 uniform int u_Loop;
 uniform int u_ParticlesInExistence;
 uniform float u_Time;
@@ -75,17 +74,6 @@ float c_NumberOfStages = u_NumberRows * u_NumberColumns;
 float rand(vec2 co)
 {
 	return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453) * 1000.0;
-}
-
-bool DetectCollision(vec4 pos)
-{	
-	if ((pos.x >= u_Collider.x && pos.x <= u_Collider.z)
-		&& (pos.y >= u_Collider.y && pos.y <= u_Collider.w))
-	{
-		return true;
-	}
-	
-	return false;
 }
 
 subroutine vec4 colorRedBlue();
@@ -143,11 +131,6 @@ void main(void)
 	int row = int(index / u_NumberRows);
 
 	pVertex.texCoordOffset = vec2(float(column) / u_NumberColumns, float(row) / u_NumberRows);
-
-	if (DetectCollision(pVertex.position))
-	{
-		pData.velocity.y = 0;
-	}
 
 
 	if (pData.timeAlive >= pData.lifeTime)
