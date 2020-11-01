@@ -190,36 +190,35 @@ namespace XYZ {
 		Ref<VertexArray> test = VertexArray::Create();
 		test->Bind();
 		///////////////////////////////////////////////////////////
+		uint32_t count = 10;
 		auto computeMat = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleComputeShader.glsl"));
 		computeMat->Bind();
-		m_Particle = m_TestEntity.AddComponent<ParticleComponent>(ParticleComponent());
+		m_Particle = m_TestEntity.EmplaceComponent<ParticleComponent>(ParticleComponent());
 		m_Particle->RenderMaterial = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShader.glsl"));
 		m_Particle->ComputeMaterial = computeMat;
-		//m_Particle->RenderMaterial->Set("u_Texture", m_CharacterTexture);
-		m_Particle->ComputeMaterial->Set("u_Speed", 0.0f);
-		m_Particle->ComputeMaterial->Set("u_Gravity", 0.0f);
+		m_Particle->RenderMaterial->Set("u_Texture", m_CharacterTexture);
+		m_Particle->ComputeMaterial->Set("u_Speed", 2.0f);
+		m_Particle->ComputeMaterial->Set("u_Gravity", -2.8f);
 		m_Particle->ComputeMaterial->Set("u_Loop", (int)true);
-		m_Particle->ComputeMaterial->Set("u_NumberRows", 0.0f);
-		m_Particle->ComputeMaterial->Set("u_NumberColumns", 0.0f);
-		m_Particle->ComputeMaterial->Set("u_ParticlesInExistence", 0.0f);
+		m_Particle->ComputeMaterial->Set("u_NumberRows", 1.0f);
+		m_Particle->ComputeMaterial->Set("u_NumberColumns", 1.0f);
+		m_Particle->ComputeMaterial->Set("u_ParticlesInExistence", 0-.0f);
 		m_Particle->ComputeMaterial->Set("u_Time", 0.0f);
+		m_Particle->ComputeMaterial->SetRoutine("blueColor");	
+		m_Particle->ParticleEffect = Ref<ParticleEffect2D>::Create(ParticleEffectConfiguration(count, 3, true));
 		
-		
-		m_Particle->ParticleEffect = Ref<ParticleEffect2D>::Create(ParticleEffectConfiguration{});
-		
-	
 
-		uint32_t count = 500;
+		
 		std::random_device rd;
 		std::mt19937 rng(rd());
-		std::uniform_real_distribution<> dist(-10, 10);
+		std::uniform_real_distribution<> dist(-1, 1);
 
 		m_Vertices = new XYZ::ParticleVertex[count];
 		m_Data = new XYZ::ParticleInformation[count];
 
 		for (int i = 0; i < count; ++i)
 		{
-			m_Vertices[i].Position = glm::vec4(i, 0.0f, 0.0f, 1.0f);
+			m_Vertices[i].Position = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 			m_Vertices[i].Color = glm::vec4(1, 1, 1, 1);
 			m_Vertices[i].Rotation = 0.0f;
 			m_Vertices[i].TexCoordOffset = glm::vec2(0);
@@ -229,13 +228,13 @@ namespace XYZ {
 			m_Data[i].ColorBegin = m_Vertices[i].Color;
 			m_Data[i].ColorEnd = m_Vertices[i].Color;
 			m_Data[i].SizeBegin = 1.2f;
-			m_Data[i].SizeEnd = 2.2f;
+			m_Data[i].SizeEnd = 8.2f;
 			m_Data[i].Rotation = dist(rng) * 15;
-			m_Data[i].Velocity = glm::vec2(0.5f, 0.5f);
+			m_Data[i].Velocity = glm::vec2(dist(rng), 2.0f);
 			m_Data[i].DefaultVelocity = m_Data[i].Velocity;
-			m_Data[i].LifeTime = fabs(dist(rng)) * 1 + 3;
+			m_Data[i].LifeTime = fabs(dist(rng)) + 3;
 		}
-		m_Particle->ParticleEffect->SetParticlesRangeTest(m_Vertices, m_Data, 0, count);
+		m_Particle->ParticleEffect->SetParticlesRange(m_Vertices, m_Data, 0, count);
 		///////////////////////////////////////////////////////////
 	}	
 
@@ -249,14 +248,12 @@ namespace XYZ {
 		Renderer::SetClearColor(glm::vec4(0.2, 0.2, 0.2, 1));
 		Renderer::Clear();
 		NativeScriptEngine::Update(ts);
-
+		
 		m_ScenePanel.OnUpdate(ts);
 		m_SceneHierarchyPanel.OnUpdate(ts);
 		m_AnimatorPanel.OnUpdate(ts);
 		m_SpriteEditorPanel.OnUpdate(ts);
-		m_ProjectBrowserPanel.OnUpdate(ts);
-
-		
+		m_ProjectBrowserPanel.OnUpdate(ts);		
 	}
 	void EditorLayer::OnEvent(Event& event)
 	{		

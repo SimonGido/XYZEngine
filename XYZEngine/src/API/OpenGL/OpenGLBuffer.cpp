@@ -136,15 +136,15 @@ namespace XYZ {
 		else
 			m_LocalData.Allocate(size);
 
-		Renderer::Submit([=]() {
-			glCreateBuffers(1, &m_RendererID);
+		Renderer::Submit([this, size]() {
+			glGenBuffers(1, &m_RendererID);
 			glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_RendererID);
 			switch (m_Usage)
 			{
 			case BufferUsage::Static:    glBufferData(GL_SHADER_STORAGE_BUFFER, size, m_LocalData, GL_STATIC_DRAW); break;
 			case BufferUsage::Dynamic:   glBufferData(GL_SHADER_STORAGE_BUFFER, size, m_LocalData, GL_DYNAMIC_DRAW); break;
 			}
-			glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+			//glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 		});
 	}
 
@@ -161,13 +161,15 @@ namespace XYZ {
 		Renderer::Submit([this, index]() {
 			glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_RendererID);
 			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, m_RendererID);
-			});
+		});
 	}
 
 
 	void OpenGLShaderStorageBuffer::BindRange(uint32_t offset, uint32_t size, uint32_t index)const
 	{
-		Renderer::Submit([=]() {glBindBufferRange(GL_SHADER_STORAGE_BUFFER, index, m_RendererID, offset, size); });
+		Renderer::Submit([this, offset, size, index]() {
+			glBindBufferRange(GL_SHADER_STORAGE_BUFFER, index, m_RendererID, offset, size); 
+		});
 	}
 
 	void OpenGLShaderStorageBuffer::Bind()const
@@ -204,7 +206,7 @@ namespace XYZ {
 	OpenGLAtomicCounter::OpenGLAtomicCounter(uint32_t numOfCounters)
 		: m_NumberOfCounters(numOfCounters), m_Counters(new uint32_t[numOfCounters])
 	{
-		Renderer::Submit([=]() {
+		Renderer::Submit([this, numOfCounters]() {
 			// Make sure it is initialized as zero
 			for (size_t i = 0; i < numOfCounters; ++i)
 				m_Counters[i] = 0;
@@ -255,7 +257,7 @@ namespace XYZ {
 		:
 		m_Size(size)
 	{
-		Renderer::Submit([=]() {
+		Renderer::Submit([this, size, drawCommand]() {
 			glGenBuffers(1, &m_RendererID);
 			glBindBuffer(GL_DRAW_INDIRECT_BUFFER, m_RendererID);
 			glBufferData(GL_DRAW_INDIRECT_BUFFER, size, drawCommand, GL_STATIC_DRAW);
@@ -267,13 +269,13 @@ namespace XYZ {
 	}
 	void OpenGLIndirectBuffer::Bind()const
 	{
-		Renderer::Submit([=]() {glBindBuffer(GL_DRAW_INDIRECT_BUFFER, m_RendererID); });
+		Renderer::Submit([this]() {glBindBuffer(GL_DRAW_INDIRECT_BUFFER, m_RendererID); });
 	}
 	void OpenGLIndirectBuffer::BindBase(uint32_t index)
 	{
-		Renderer::Submit([=]() {
+		Renderer::Submit([this, index]() {
 			glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_RendererID);
 			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, m_RendererID);
-			});
+		});
 	}
 }

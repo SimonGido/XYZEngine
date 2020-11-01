@@ -54,9 +54,8 @@ namespace XYZ {
 
 		Renderer::Submit([this, vertexBuffer]() {
 			glBindVertexArray(m_RendererID);
-			
-			vertexBuffer->Bind();
-
+		
+			glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer->GetRendererID());
 			auto& vbl = vertexBuffer->GetLayout();
 			for (const auto& element : vbl)
 			{
@@ -68,6 +67,7 @@ namespace XYZ {
 					GL_FALSE,
 					vbl.GetStride(),
 					(const void*)element.Offset);
+			
 				glVertexAttribDivisor(element.Index, element.Divisor);
 			}
 
@@ -82,8 +82,8 @@ namespace XYZ {
 
 		Renderer::Submit([this, shaderBuffer] () {
 			glBindVertexArray(m_RendererID);
-			shaderBuffer->Bind();
-
+			glBindBuffer(GL_ARRAY_BUFFER, shaderBuffer->GetRendererID());
+	
 			auto& vbl = shaderBuffer->GetLayout();
 			for (const auto& element : vbl)
 			{
@@ -95,6 +95,7 @@ namespace XYZ {
 					GL_FALSE,
 					vbl.GetStride(),
 					(const void*)element.Offset);
+
 				glVertexAttribDivisor(element.Index, element.Divisor);
 			}
 
@@ -107,7 +108,7 @@ namespace XYZ {
 		m_IndexBuffer = indexBuffer;
 		Renderer::Submit([this, indexBuffer] () {
 			glBindVertexArray(m_RendererID);
-			indexBuffer->Bind();
+			glBindBuffer(GL_ARRAY_BUFFER, indexBuffer->GetRendererID());
 			});
 	}
 

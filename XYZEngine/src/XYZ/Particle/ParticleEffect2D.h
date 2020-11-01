@@ -43,10 +43,18 @@ namespace XYZ {
 
 	struct ParticleEffectConfiguration
 	{
-		uint32_t Rate = 2;
-		uint32_t MaxParticles = 500;
-		
-		bool	 Loop = true;
+		ParticleEffectConfiguration(uint32_t maxParticles, uint32_t rate, bool loop);
+		ParticleEffectConfiguration(
+			const BufferLayout& particleVertexLayout, 
+			const BufferLayout& particleInformationlayout,
+			uint32_t maxParticles, uint32_t rate, bool loop
+		);
+
+		BufferLayout ParticleVertexLayout;	
+		BufferLayout ParticleInformationLayout; // Per instance
+		uint32_t MaxParticles;
+		uint32_t Rate;
+		bool	 Loop;
 	};
 
 	class ParticleEffect2D : public RefCount
@@ -56,15 +64,14 @@ namespace XYZ {
 		~ParticleEffect2D();
 
 		void Update(Timestep ts);
-		void SetParticles(ParticleVertex* vertexBuffer,ParticleInformation* particleInfo);
-		void SetParticlesRange(ParticleVertex* vertexBuffer, ParticleInformation* particleInfo, uint32_t offset, uint32_t count);
-		void SetConfiguration(const ParticleEffectConfiguration& config) { m_Configuration = config; }
+		void SetParticles(void* vertexBuffer, void* particleInfo);
+		void SetParticlesRange(void* vertexBuffer, void* particleInfo, uint32_t offset, uint32_t count);
 
-		void SetParticlesRangeTest(void* vertexBuffer, void* particleInfo, uint32_t offset, uint32_t count);
+		void GetParticles(void* vertexBuffer, void* particleInfo);
+		void GetParticlesRange(void* vertexBuffer, void* particleInfo, uint32_t offset, uint32_t count);
 
-		void GetParticles(ParticleVertex* vertexBuffer, ParticleInformation* particleInfo);
-		void GetParticlesRange(ParticleVertex* vertexBuffer, ParticleInformation* particleInfo, uint32_t offset, uint32_t count);	
-	
+		void SetConfiguration(const ParticleEffectConfiguration& config) { XYZ_ASSERT(false, ""); m_Configuration = config; }
+
 		float GetPlayTime() const { return m_PlayTime; }
 		float GetEmittedParticles() const { return m_EmittedParticles; }
 
@@ -91,11 +98,6 @@ namespace XYZ {
 		Ref<ShaderStorageBuffer> m_PropsStorage;
 		Ref<AtomicCounter> m_Counter;
 
-
-
-		std::vector<ParticleVertex> m_Vertices;
-		std::vector<ParticleInformation> m_Data;
-	
 		ParticleEffectConfiguration m_Configuration;
 		float m_EmittedParticles = 0.0f;
 		float m_PlayTime = 0.0f;

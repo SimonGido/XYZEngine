@@ -14,3 +14,5 @@ C:\Users\Gido\Projects\GameDev\XYZEngine\vendor\GLEW\bin\Debug-windows-x86_64\GL
 C:\Users\Gido\Projects\GameDev\XYZEngine\vendor\GLEW\bin-int\Debug-windows-x86_64\GLEW\GLEW.pdb
 C:\Users\Simon Gido\Desktop\GameDev\XYZEngine\vendor\GLEW\bin\Debug-windows-x86_64\GLEW\GLEW.pdb
 C:\Users\Simon Gido\Desktop\GameDev\XYZEngine\vendor\GLEW\bin-int\Debug-windows-x86_64\GLEW\GLEW.pdb
+C:\Users\Gido\Projects\Test\GameDev\XYZEngine\vendor\GLEW\bin\Debug-windows-x86_64\GLEW\GLEW.pdb
+C:\Users\Gido\Projects\Test\GameDev\XYZEngine\vendor\GLEW\bin-int\Debug-windows-x86_64\GLEW\GLEW.pdb

@@ -20,7 +20,6 @@ struct ParticleVertex
 	vec2 texCoordOffset;
 	vec2 size;
 	float rotation;
-
 	float alignment;
 	float alignment2;
 	float alignment3;
@@ -61,6 +60,7 @@ DrawCommandsBlock
 
 layout(binding = 3, offset = 0) uniform atomic_uint deadParticles;
 
+uniform vec4 u_Collider;
 uniform int u_Loop;
 uniform int u_ParticlesInExistence;
 uniform float u_Time;
@@ -77,6 +77,27 @@ float rand(vec2 co)
 	return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453) * 1000.0;
 }
 
+bool DetectCollision(vec4 pos)
+{	
+	if ((pos.x >= u_Collider.x && pos.x <= u_Collider.z)
+		&& (pos.y >= u_Collider.y && pos.y <= u_Collider.w))
+	{
+		return true;
+	}
+	
+	return false;
+}
+
+subroutine vec4 colorRedBlue();
+subroutine(colorRedBlue) vec4 redColor()
+{
+	return vec4(1.0, 0.0, 0.0, 1.0);
+}
+subroutine(colorRedBlue) vec4 blueColor() {
+
+	return vec4(0.0, 0.0, 1.0, 1.0);
+}
+
 vec4 ChangeColorOverLife(ParticleData data)
 {
 	return mix(data.colorBegin, data.colorEnd, data.timeAlive / data.lifeTime);
@@ -87,6 +108,9 @@ vec2 ChangeSizeOverLife(ParticleData data)
 	vec2 end = vec2(data.sizeEnd, data.sizeEnd);
 	return mix(begin, end, data.timeAlive / data.lifeTime);
 }
+
+subroutine uniform colorRedBlue sub_BlueSelection;
+
 
 layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
 void main(void)
@@ -103,10 +127,12 @@ void main(void)
 
 	pVertex.rotation += u_Time * pData.rotation;
 	pVertex.size = ChangeSizeOverLife(pData);
-	//pVertex.color = ChangeColorOverLife(pData);
+	pVertex.color = sub_BlueSelection();
+	pVertex.color = ChangeColorOverLife(pData);
 
 	pData.velocity.y += u_Gravity * u_Time;
 	pData.timeAlive += u_Time;
+
 
 	float stageCount = u_NumberRows * u_NumberColumns;
 	float lifeFactor = pData.timeAlive / pData.lifeTime;
@@ -117,6 +143,12 @@ void main(void)
 	int row = int(index / u_NumberRows);
 
 	pVertex.texCoordOffset = vec2(float(column) / u_NumberColumns, float(row) / u_NumberRows);
+
+	if (DetectCollision(pVertex.position))
+	{
+		pData.velocity.y = 0;
+	}
+
 
 	if (pData.timeAlive >= pData.lifeTime)
 	{

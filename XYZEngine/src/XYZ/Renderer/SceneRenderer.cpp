@@ -133,9 +133,6 @@ namespace XYZ {
 
 		for (auto& dc : s_Data.ParticleDrawList)
 		{
-			dc.Particle->ComputeMaterial->Set("u_ParticlesInExistence", 5);
-			dc.Particle->ComputeMaterial->Bind();
-			dc.Particle->ParticleEffect->Update(0.02f);
 			dc.Particle->RenderMaterial->Set("u_ViewProjectionMatrix", viewProjectionMatrix);
 			dc.Particle->RenderMaterial->Bind();
 			Renderer2D::SubmitParticles(dc.Transform, dc.Particle->ParticleEffect);

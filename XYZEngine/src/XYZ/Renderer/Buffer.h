@@ -202,7 +202,7 @@ namespace XYZ {
 		virtual void Resize(float* vertices, uint32_t size) = 0;
 		virtual void SetLayout(const BufferLayout& layout) = 0;
 		virtual const BufferLayout& GetLayout() const = 0;
-		
+		virtual uint32_t GetRendererID() const = 0;
 		/**
 		* Create empty VertexBuffer, Buffer usage is Dynamic
 		* @param size	Size of the buffer in bytes
@@ -234,7 +234,7 @@ namespace XYZ {
 		virtual void UnBind() const = 0;
 
 		virtual uint32_t GetCount() const = 0;
-
+		virtual uint32_t GetRendererID() const = 0;
 		/**
 		* Create IndexBuffer
 		* @param[in] indices	Pointer to the indices
@@ -263,7 +263,7 @@ namespace XYZ {
 		virtual void GetSubData(void* buffer, uint32_t size, uint32_t offset = 0) = 0;
 		virtual void SetLayout(const BufferLayout& layout) = 0;
 		virtual const BufferLayout& GetLayout() const = 0;
-
+		virtual uint32_t GetRendererID() const = 0;
 		/**
 		* Create empty ShaderStorageBuffer, Buffer usage is Dynamic
 		* @param[in] size	Size of the buffer in bytes
