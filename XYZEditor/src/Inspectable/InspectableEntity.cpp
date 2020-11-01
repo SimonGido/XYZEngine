@@ -19,6 +19,43 @@ namespace XYZ {
 		return false;
 	}
 
+	static void ShowMaterialInstance(Ref<MaterialInstance> materialInstace)
+	{
+		auto material = materialInstace->GetParentMaterial();
+		for (auto& uniform : material->GetShader()->GetUniforms())
+		{
+			switch (uniform.Type)
+			{
+			case UniformDataType::FLOAT:
+				InGui::Float(1, uniform.Name.c_str(), (float*)&material->GetBuffer()[uniform.Offset], )
+
+				break;
+			case UniformDataType::FLOAT_VEC2:
+				
+				*(glm::vec2*) & material->GetBuffer()[uniform.Offset];
+		
+				break;
+			case UniformDataType::FLOAT_VEC3:
+				
+				*(glm::vec3*) & material->GetBuffer()[uniform.Offset];
+	
+				break;
+			case UniformDataType::FLOAT_VEC4:
+				
+				*(glm::vec4*) & material->GetBuffer()[uniform.Offset];
+		
+				break;
+			case UniformDataType::INT:
+			
+				*(int*)&material->GetBuffer()[uniform.Offset];
+		
+				break;
+			case UniformDataType::FLOAT_MAT4:
+				break;
+			};
+		}
+	}
+
 	InspectableEntity::InspectableEntity()
 
 	{
@@ -146,8 +183,8 @@ namespace XYZ {
 			if (m_Context.HasComponent<SceneTagComponent>())
 			{
 				auto sceneTag = m_Context.GetComponent<SceneTagComponent>();
-				InGui::BeginGroup("Scene Tag Component", { 0,0 }, m_SceneTagOpen);
-				if (m_SceneTagOpen)
+				InGui::BeginGroup("Scene Tag Component", { 0,0 }, m_GroupOpen[SCENE_TAG_COMPONENT]);
+				if (m_GroupOpen[SCENE_TAG_COMPONENT])
 				{
 					InGui::TextArea("Name", sceneTag->Name, {}, { 150, 25 }, m_SceneTagModified);
 
@@ -159,8 +196,8 @@ namespace XYZ {
 			if (m_Context.HasComponent<TransformComponent>())
 			{
 				auto transformComponent = m_Context.GetComponent<TransformComponent>();
-				InGui::BeginGroup("Transform Component", { 0,0 }, m_TransformOpen);
-				if (m_TransformOpen)
+				InGui::BeginGroup("Transform Component", { 0,0 }, m_GroupOpen[TRANSFORM_COMPONENT]);
+				if (m_GroupOpen[TRANSFORM_COMPONENT])
 				{
 					float* translationPtr = (float*)&transformComponent->Translation.x;
 					InGui::Float(3, "Position", glm::value_ptr(transformComponent->Translation), m_PositionLengths, {}, { 50.0f, 25.0f }, m_PositionSelected);
@@ -190,8 +227,8 @@ namespace XYZ {
 
 			if (m_Context.HasComponent<CameraComponent>())
 			{
-				InGui::BeginGroup("Camera Component", { 0,0 }, m_CameraOpen);
-				if (m_CameraOpen)
+				InGui::BeginGroup("Camera Component", { 0,0 }, m_GroupOpen[CAMERA_COMPONENT]);
+				if (m_GroupOpen[CAMERA_COMPONENT])
 				{
 					auto& camera = m_Context.GetComponent<CameraComponent>()->Camera;
 					auto& scale = m_Context.GetComponent<TransformComponent>()->Scale;
@@ -242,8 +279,8 @@ namespace XYZ {
 
 			if (m_Context.HasComponent<SpriteRenderer>())
 			{
-				InGui::BeginGroup("Sprite Renderer", { 0,0 }, m_SpriteRendererOpen);
-				if (m_SpriteRendererOpen)
+				InGui::BeginGroup("Sprite Renderer", { 0,0 }, m_GroupOpen[SPRITE_RENDERER_COMPONENT]);
+				if (m_GroupOpen[SPRITE_RENDERER_COMPONENT])
 				{
 					auto& renderConfig = InGui::GetRenderConfiguration();
 					auto spriteRenderer = m_Context.GetComponent<SpriteRenderer>();
@@ -298,11 +335,19 @@ namespace XYZ {
 					InGui::EndGroup();
 				}
 			}
-
+			if (m_Context.HasComponent<ParticleComponent>())
+			{
+				InGui::BeginGroup("Particle Component", { 0,0 }, m_GroupOpen[PARTICLE_COMPONENT]);
+				if (m_GroupOpen[PARTICLE_COMPONENT])
+				{
+					auto& renderConfig = InGui::GetRenderConfiguration();
+					auto particleComponent = m_Context.GetComponent<ParticleComponent>();
+				}
+			}
 			if (m_Context.HasComponent<NativeScriptComponent>())
 			{
-				InGui::BeginGroup("Native Script Component", { 0,0 }, m_NativeScriptOpen);
-				if (m_NativeScriptOpen)
+				InGui::BeginGroup("Native Script Component", { 0,0 }, m_GroupOpen[NATIVE_SCRIPT_COMPONENT]);
+				if (m_GroupOpen[NATIVE_SCRIPT_COMPONENT])
 				{
 					auto nativeScript = m_Context.GetComponent<NativeScriptComponent>();
 					glm::vec2 pos = { 0,0 };
@@ -332,10 +377,7 @@ namespace XYZ {
 					InGui::EndGroup();
 				}
 			}
-			if (m_Context.HasComponent<ParticleComponent>())
-			{
-
-			}
+			
 		}
 	}
 	void InspectableEntity::OnUpdate(Timestep ts)

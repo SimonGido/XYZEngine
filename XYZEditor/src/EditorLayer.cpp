@@ -187,26 +187,29 @@ namespace XYZ {
 		m_SpriteEditorPanel.RegisterCallback(Hook(&EditorLayer::OnEvent, this));
 
 
-		Ref<VertexArray> test = VertexArray::Create();
-		test->Bind();
+
+
 		///////////////////////////////////////////////////////////
-		uint32_t count = 10;
+
+		uint32_t count = 100;
 		auto computeMat = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleComputeShader.glsl"));
-		computeMat->Bind();
+		auto renderMat = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShader.glsl"));
+		
+		renderMat->Set("u_Texture", Texture2D::Create(XYZ::TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest, "Assets/Textures/bubble.png"));
+		computeMat->SetRoutine("blueColor");	
+	
 		m_Particle = m_TestEntity.EmplaceComponent<ParticleComponent>(ParticleComponent());
-		m_Particle->RenderMaterial = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShader.glsl"));
-		m_Particle->ComputeMaterial = computeMat;
-		m_Particle->RenderMaterial->Set("u_Texture", m_CharacterTexture);
+		m_Particle->RenderMaterial = Ref<MaterialInstance>::Create(renderMat);
+		m_Particle->ComputeMaterial = Ref<MaterialInstance>::Create(computeMat);
+		m_Particle->ParticleEffect = Ref<ParticleEffect>::Create(count, ParticleLayoutConfiguration());
+		
 		m_Particle->ComputeMaterial->Set("u_Speed", 2.0f);
 		m_Particle->ComputeMaterial->Set("u_Gravity", -2.8f);
 		m_Particle->ComputeMaterial->Set("u_Loop", (int)true);
 		m_Particle->ComputeMaterial->Set("u_NumberRows", 1.0f);
 		m_Particle->ComputeMaterial->Set("u_NumberColumns", 1.0f);
-		m_Particle->ComputeMaterial->Set("u_ParticlesInExistence", 0-.0f);
+		m_Particle->ComputeMaterial->Set("u_ParticlesInExistence", 0.0f);
 		m_Particle->ComputeMaterial->Set("u_Time", 0.0f);
-		m_Particle->ComputeMaterial->SetRoutine("blueColor");	
-		m_Particle->ParticleEffect = Ref<ParticleEffect2D>::Create(ParticleEffectConfiguration(count, 3, true));
-		
 
 		
 		std::random_device rd;
@@ -227,8 +230,8 @@ namespace XYZ {
 			m_Data[i].DefaultPosition.y = m_Vertices[i].Position.y;
 			m_Data[i].ColorBegin = m_Vertices[i].Color;
 			m_Data[i].ColorEnd = m_Vertices[i].Color;
-			m_Data[i].SizeBegin = 1.2f;
-			m_Data[i].SizeEnd = 8.2f;
+			m_Data[i].SizeBegin = 0.1f;
+			m_Data[i].SizeEnd = 1.0f;
 			m_Data[i].Rotation = dist(rng) * 15;
 			m_Data[i].Velocity = glm::vec2(dist(rng), 2.0f);
 			m_Data[i].DefaultVelocity = m_Data[i].Velocity;

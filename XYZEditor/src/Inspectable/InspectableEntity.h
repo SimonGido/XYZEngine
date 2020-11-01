@@ -24,16 +24,17 @@ namespace XYZ {
 			W,
 			NUM_AXIS
 		};
-		enum OpenPopups
+		enum Groups
 		{
-			SCENE_TAG,
-			TRANSFORM,
-			SPRITE_RENDERER,
-			NATIVE_SCRIPT,
-			CAMERA,
-			NUM_POPUPS
+			SCENE_TAG_COMPONENT,
+			TRANSFORM_COMPONENT,
+			SPRITE_RENDERER_COMPONENT,
+			NATIVE_SCRIPT_COMPONENT,
+			CAMERA_COMPONENT,
+			PARTICLE_COMPONENT,
+			NUM_GROUPS
 		};
-		bool m_PopupOpen[NUM_POPUPS];
+		bool m_GroupOpen[NUM_GROUPS];
 
 		Entity m_Context;
 		bool m_ScriptsOpen = false;
@@ -41,12 +42,6 @@ namespace XYZ {
 		bool m_SceneTagModified = false;
 		bool m_TextureIDOpen = false;
 		bool m_CameraTypeOpen = false;
-
-		bool m_SceneTagOpen = false;
-		bool m_TransformOpen = false;
-		bool m_SpriteRendererOpen = false;
-		bool m_NativeScriptOpen = false;
-		bool m_CameraOpen = false;
 
 		glm::vec4 m_ColorPallete = { 0,1,1,1 };
 		bool m_PickColor = false;

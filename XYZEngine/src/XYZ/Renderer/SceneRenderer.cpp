@@ -133,8 +133,13 @@ namespace XYZ {
 
 		for (auto& dc : s_Data.ParticleDrawList)
 		{
-			dc.Particle->RenderMaterial->Set("u_ViewProjectionMatrix", viewProjectionMatrix);
-			dc.Particle->RenderMaterial->Bind();
+			auto material = dc.Particle->RenderMaterial->GetParentMaterial();
+			auto materialInstace = dc.Particle->RenderMaterial;
+
+			material->Set("u_ViewProjectionMatrix", viewProjectionMatrix);
+			material->Bind();
+			materialInstace->Set("u_Transform", dc.Transform);
+			materialInstace->Bind();
 			Renderer2D::SubmitParticles(dc.Transform, dc.Particle->ParticleEffect);
 		}
 

@@ -2,7 +2,7 @@ Scene: Test Scene
 Entities:
   - Entity: Main Camera
     TransformComponent:
-      Position: [10.6002598, -1.38274765, 0]
+      Position: [0.239618301, -1.98395348, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     CameraComponent:
@@ -15,7 +15,7 @@ Entities:
       OrthographicFar: 1
   - Entity: Test Entity
     TransformComponent:
-      Position: [-25.544281, -5.64425087, 0]
+      Position: [-22.6785679, -8.67060661, 0]
       Rotation: [1, 0, -0.0101356506]
       Scale: [10.8511467, 23.6469116, 1]
     SpriteRenderer:
@@ -27,8 +27,8 @@ Entities:
       IsVisible: true
   - Entity: Test
     TransformComponent:
-      Position: [-15.8790131, 15.2820511, 0]
-      Rotation: [0, 0, 0.477561951]
+      Position: [0.742397308, -6.24915218, 0]
+      Rotation: [0, 0, 0]
       Scale: [5.28910017, 5.69531012, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets\Materials\New_Material.mat
@@ -39,7 +39,7 @@ Entities:
       IsVisible: true
   - Entity: Background
     TransformComponent:
-      Position: [-45.5125122, 8.79740715, 0]
+      Position: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [76.9326859, 46.4879799, 1]
     SpriteRenderer:

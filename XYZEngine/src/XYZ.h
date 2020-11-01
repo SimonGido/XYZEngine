@@ -25,7 +25,6 @@
 
 #include "XYZ/Renderer/Framebuffer.h"
 #include "XYZ/Renderer/MeshFactory.h"
-#include "XYZ/Renderer/SpriteRenderer.h"
 #include "XYZ/Renderer/SubTexture2D.h"
 
 //-----Scene-----//

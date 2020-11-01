@@ -41,27 +41,36 @@ namespace XYZ {
 	};
 
 
-	struct ParticleEffectConfiguration
+	struct ParticleLayoutConfiguration
 	{
-		ParticleEffectConfiguration(uint32_t maxParticles, uint32_t rate, bool loop);
-		ParticleEffectConfiguration(
-			const BufferLayout& particleVertexLayout, 
-			const BufferLayout& particleInformationlayout,
-			uint32_t maxParticles, uint32_t rate, bool loop
+		ParticleLayoutConfiguration();
+		ParticleLayoutConfiguration(
+			const BufferLayout& particleVertexLayout,
+			const BufferLayout& particleInformationlayout
 		);
-
-		BufferLayout ParticleVertexLayout;	
+		
+		BufferLayout ParticleVertexLayout;
 		BufferLayout ParticleInformationLayout; // Per instance
-		uint32_t MaxParticles;
-		uint32_t Rate;
-		bool	 Loop;
 	};
 
-	class ParticleEffect2D : public RefCount
+	struct ParticleEffectConfiguration
+	{
+		ParticleEffectConfiguration(
+			float speed,
+			float gravity,
+			int loop
+		);
+		
+		float    Speed;
+		float	 Gravity;
+		int		 Loop;
+	};
+
+	class ParticleEffect : public RefCount
 	{
 	public:
-		ParticleEffect2D(const ParticleEffectConfiguration& config);	
-		~ParticleEffect2D();
+		ParticleEffect(uint32_t maxParticles, const ParticleLayoutConfiguration& layout);
+		~ParticleEffect();
 
 		void Update(Timestep ts);
 		void SetParticles(void* vertexBuffer, void* particleInfo);
@@ -70,8 +79,9 @@ namespace XYZ {
 		void GetParticles(void* vertexBuffer, void* particleInfo);
 		void GetParticlesRange(void* vertexBuffer, void* particleInfo, uint32_t offset, uint32_t count);
 
-		void SetConfiguration(const ParticleEffectConfiguration& config) { XYZ_ASSERT(false, ""); m_Configuration = config; }
-
+		void SetLayout(const ParticleLayoutConfiguration& config);
+		
+	
 		float GetPlayTime() const { return m_PlayTime; }
 		float GetEmittedParticles() const { return m_EmittedParticles; }
 
@@ -79,7 +89,7 @@ namespace XYZ {
 		const Ref<IndirectBuffer> GetIndirectBuffer() const { return m_IndirectBuffer; }
 		const Ref<ShaderStorageBuffer> GetShaderStorage() const { return m_VertexStorage; }
 
-		const ParticleEffectConfiguration& GetConfiguration() const { return m_Configuration; }
+		const ParticleLayoutConfiguration& GetLayout() const { return m_Layout; }
 	private:
 		enum Bindings
 		{
@@ -98,7 +108,9 @@ namespace XYZ {
 		Ref<ShaderStorageBuffer> m_PropsStorage;
 		Ref<AtomicCounter> m_Counter;
 
-		ParticleEffectConfiguration m_Configuration;
+		ParticleLayoutConfiguration m_Layout;
+		uint32_t m_MaxParticles;
+
 		float m_EmittedParticles = 0.0f;
 		float m_PlayTime = 0.0f;
 

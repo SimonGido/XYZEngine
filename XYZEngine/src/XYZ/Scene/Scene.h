@@ -4,7 +4,6 @@
 #include "XYZ/ECS/ECSManager.h"
 #include "XYZ/Event/Event.h"
 
-#include "XYZ/Renderer/SpriteRenderer.h"
 #include "XYZ/Renderer/Camera.h"
 
 #include "EditorCamera.h"

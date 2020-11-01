@@ -1,8 +1,11 @@
 #pragma once
 #include "XYZ/ECS/Component.h"
-#include "XYZ/Particle/ParticleEffect2D.h"
+#include "XYZ/Particle/ParticleEffect.h"
+#include "XYZ/Renderer/SubTexture2D.h"
+
 #include "SceneCamera.h"
 #include "AnimationController.h"
+
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
@@ -49,6 +52,35 @@ namespace XYZ {
 		operator const  std::string& () const { return Name; }
 	};
 
+	struct SpriteRenderer : public Type<SpriteRenderer>
+	{
+		SpriteRenderer() = default;
+
+		SpriteRenderer(
+			Ref<Material> material,
+			Ref<SubTexture2D> subTexture,
+			const glm::vec4& color,
+			uint32_t textureID,
+			int32_t sortLayer,
+			bool isVisible = true
+		);
+
+		SpriteRenderer(const SpriteRenderer& other);
+		SpriteRenderer(SpriteRenderer&& other) noexcept;
+
+
+		SpriteRenderer& operator =(const SpriteRenderer& other);
+
+		Ref<Material> Material;
+		Ref<SubTexture2D> SubTexture;
+		glm::vec4 Color;
+
+		uint32_t TextureID;
+		int32_t SortLayer = 0;
+		bool IsVisible = true;
+	};
+
+
 	struct CameraComponent : public Type<CameraComponent>
 	{
 		SceneCamera Camera;
@@ -77,13 +109,15 @@ namespace XYZ {
 	};
 
 
+
 	struct ParticleComponent : public Type<ParticleComponent>
 	{
 		ParticleComponent() = default;
-		Ref<Material> RenderMaterial;
-		Ref<Material> ComputeMaterial;
+		Ref<MaterialInstance> RenderMaterial;
+		Ref<MaterialInstance> ComputeMaterial;
+		Ref<ParticleEffect> ParticleEffect;
 
-		Ref<ParticleEffect2D> ParticleEffect;
+		uint32_t TextureID;
 	};
 
 }

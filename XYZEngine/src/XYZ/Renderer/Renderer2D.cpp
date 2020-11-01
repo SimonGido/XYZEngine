@@ -300,7 +300,7 @@ namespace XYZ {
 		s_Data.LineIndexCount += 2;
 	}
 
-	void Renderer2D::SubmitParticles(const glm::mat4& transform, const Ref<ParticleEffect2D>& particleEffect)
+	void Renderer2D::SubmitParticles(const glm::mat4& transform, const Ref<ParticleEffect>& particleEffect)
 	{
 		particleEffect->GetVertexArray()->Bind();
 		particleEffect->GetShaderStorage()->BindBase(1);

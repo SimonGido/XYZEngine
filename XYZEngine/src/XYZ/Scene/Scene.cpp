@@ -166,11 +166,20 @@ namespace XYZ {
 		for (int32_t i = 0; i < m_ParticleGroup->Size(); ++i)
 		{
 			auto [transform, particle] = (*m_ParticleGroup)[i];
-			particle->ComputeMaterial->Set("u_Time", ts);
-			particle->ComputeMaterial->Set("u_ParticlesInExistence", (int)std::floor(particle->ParticleEffect->GetEmittedParticles()));
-			particle->ComputeMaterial->Bind();
+			auto material = particle->ComputeMaterial->GetParentMaterial();
+			auto materialInstance = particle->ComputeMaterial;
+
+			//auto& config = particle->ParticleEffect->GetConfiguration();
+			materialInstance->Set("u_Time", ts);
+			materialInstance->Set("u_ParticlesInExistence", (int)std::floor(particle->ParticleEffect->GetEmittedParticles()));
+			materialInstance->Set("u_Loop", (int)true);
+			materialInstance->Set("u_Speed", 1.0f);
+			materialInstance->Set("u_Gravity", -1.0f);
+
+			material->Bind();
+			materialInstance->Bind();
 			particle->ParticleEffect->Update(ts);
-			particle->ComputeMaterial->GetShader()->Compute(32, 32, 1);
+			material->GetShader()->Compute(32, 32, 1);
 		}
 			
 	}
