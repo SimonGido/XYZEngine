@@ -266,7 +266,7 @@ namespace XYZ {
 		switch (code)
 		{
 		case ToUnderlying(KeyCode::XYZ_KEY_BACKSPACE):
-			if (length)
+			if (length > 1)
 				length--;
 		}
 		if (length < sc_TextBufferSize)
@@ -307,8 +307,10 @@ namespace XYZ {
 				text[length++] = ('.');
 				break;
 			case ToUnderlying(KeyCode::XYZ_KEY_KP_SUBTRACT):
-				text[length++] = ('-');
-				text[length++] = ('0');
+				text[0] = ('-');
+				break;
+			case ToUnderlying(KeyCode::XYZ_KEY_KP_ADD):
+				text[0] = (' ');
 				break;
 			}
 		}	
@@ -1012,7 +1014,10 @@ namespace XYZ {
 				{
 					glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];
 					char buffer[sc_TextBufferSize];
-					int ret = snprintf(buffer, sizeof(buffer), "%f", values[i]);
+					buffer[0] = ' ';
+					if (values[i] < 0.0f)
+						buffer[0] = '-';
+					int ret = snprintf(&buffer[1], lengths[i], "%f",  fabs(values[i]));
 					buffer[lengths[i]] = '\0';
 					if (i == selected)
 					{
@@ -1064,7 +1069,10 @@ namespace XYZ {
 				{
 					glm::vec4 color = renderConfig.Color[InGuiRenderConfiguration::DEFAULT_COLOR];
 					char buffer[sc_TextBufferSize];
-					int ret = snprintf(buffer, sizeof(buffer), "%d", values[i]);
+					buffer[0] = ' ';
+					if (values[i] < 0.0f)
+						buffer[0] = '-';
+					int ret = snprintf(&buffer[1], lengths[i], "%f", fabs(values[i]));
 					buffer[lengths[i]] = '\0';
 					if (i == selected)
 					{
