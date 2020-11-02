@@ -1072,7 +1072,7 @@ namespace XYZ {
 					buffer[0] = ' ';
 					if (values[i] < 0.0f)
 						buffer[0] = '-';
-					int ret = snprintf(&buffer[1], lengths[i], "%f", fabs(values[i]));
+					int ret = snprintf(&buffer[1], lengths[i], "%d", abs(values[i]));
 					buffer[lengths[i]] = '\0';
 					if (i == selected)
 					{

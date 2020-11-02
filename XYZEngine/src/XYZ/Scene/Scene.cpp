@@ -171,7 +171,7 @@ namespace XYZ {
 
 			//auto& config = particle->ParticleEffect->GetConfiguration();
 			materialInstance->Set("u_Time", ts);
-			materialInstance->Set("u_ParticlesInExistence", (int)std::floor(particle->ParticleEffect->GetEmittedParticles()));
+			materialInstance->Set("u_ParticlesInExistence", (int)std::ceil(particle->ParticleEffect->GetEmittedParticles()));
 
 			material->Bind();
 			materialInstance->Bind();

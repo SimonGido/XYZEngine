@@ -138,9 +138,11 @@ void main(void)
 		// If looping set default values
 		if (u_Loop != 0)
 		{
+			pData.timeAlive = 0;
 			pData.velocity = pData.defaultVelocity;
 			pVertex.position.x = pData.defaultPosition.x;
 			pVertex.position.y = pData.defaultPosition.y;
+			pVertex.size = ChangeSizeOverLife(pData);
 		}
 		// If not looping consider particle dead do not restart values
 		else
@@ -148,7 +150,7 @@ void main(void)
 			atomicCounterIncrement(deadParticles);
 		}
 		pData.isAlive = u_Loop;
-		pData.timeAlive = 0;
+		
 	}
 
 	uint deadCount = atomicCounter(deadParticles);

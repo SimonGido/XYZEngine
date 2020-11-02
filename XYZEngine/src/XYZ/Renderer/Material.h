@@ -129,7 +129,7 @@ namespace XYZ {
 
 		int64_t GetSortKey() const { return m_Material->m_Key; }
 		const uint8_t* GetBuffer() const { return m_Buffer; }
-		Ref<Material> GetParentMaterial() { return m_Material; }
+		Ref<Material> GetParentMaterial() const { return m_Material; }
 
 		static Ref<MaterialInstance> Create(const Ref<Material>& material);
 	private:

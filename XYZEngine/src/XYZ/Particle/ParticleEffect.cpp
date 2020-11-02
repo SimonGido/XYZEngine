@@ -7,20 +7,22 @@
 namespace XYZ {
 
 
-	ParticleEffect::ParticleEffect(uint32_t maxParticles, const ParticleLayoutConfiguration& layout)
+	ParticleEffect::ParticleEffect(const ParticleEffectConfiguration& config, const ParticleLayoutConfiguration& layout)
 		: 
 		m_VertexArray(VertexArray::Create()),
 		m_IndirectBuffer(IndirectBuffer::Create(nullptr, sizeof(DrawElementsIndirectCommand))),
 		m_Counter(AtomicCounter::Create(1)),
-		m_Layout(layout),
-		m_MaxParticles(maxParticles)
+		m_Config(config),
+		m_Layout(layout)
 	{
 
-		if (m_MaxParticles > sc_MaxParticlesPerEffect)
+		if (m_Config.MaxParticles > sc_MaxParticlesPerEffect)
 		{
 			XYZ_LOG_WARN("Max number of particles per effect is ", sc_MaxParticlesPerEffect);
-			m_MaxParticles = sc_MaxParticlesPerEffect;
+			m_Config.MaxParticles = sc_MaxParticlesPerEffect;
 		}
+		m_DefaultVertexData.Allocate(m_Config.MaxParticles * m_Layout.ParticleVertexLayout.GetStride());
+		m_DefaultInformationData.Allocate(m_Config.MaxParticles * m_Layout.ParticleInformationLayout.GetStride());
 
 		float vert[20] = {
 			-0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
@@ -33,9 +35,9 @@ namespace XYZ {
 		squareVBpar->SetLayout(m_Layout.ParticleVertexLayout);
 		m_VertexArray->AddVertexBuffer(squareVBpar);
 
-		m_VertexStorage = ShaderStorageBuffer::Create(m_MaxParticles * m_Layout.ParticleVertexLayout.GetStride());
+		m_VertexStorage = ShaderStorageBuffer::Create(m_Config.MaxParticles * m_Layout.ParticleVertexLayout.GetStride());
 		m_VertexStorage->SetLayout(m_Layout.ParticleInformationLayout);
-		m_PropsStorage = ShaderStorageBuffer::Create(m_MaxParticles * m_Layout.ParticleInformationLayout.GetStride());
+		m_PropsStorage = ShaderStorageBuffer::Create(m_Config.MaxParticles * m_Layout.ParticleInformationLayout.GetStride());
 		m_VertexArray->AddShaderStorageBuffer(m_VertexStorage);
 	
 		uint32_t squareIndpar[] = { 0, 1, 2, 2, 3, 0 };
@@ -53,14 +55,22 @@ namespace XYZ {
 	{
 	}
 
+	void ParticleEffect::Restart()
+	{
+		m_Counter->Reset();
+		m_EmittedParticles = 0.0f;
+
+		m_VertexStorage->Update(m_DefaultVertexData, m_Config.MaxParticles * m_Layout.ParticleVertexLayout.GetStride(), 0);
+		m_PropsStorage->Update(m_DefaultInformationData, m_Config.MaxParticles * m_Layout.ParticleInformationLayout.GetStride(), 0);
+	}
+
 	void ParticleEffect::Update(Timestep ts)
 	{
-		// TODO: rate
-		float raise = 2 * ts;
-		if (m_EmittedParticles + raise <= m_MaxParticles)
+		float raise = m_Config.Rate * ts;
+		if (m_EmittedParticles + raise <= m_Config.MaxParticles)
 			m_EmittedParticles += raise;
 		
-		int emitted = (int)std::floor(m_EmittedParticles);
+		int emitted = (int)std::ceil(m_EmittedParticles);
 
 		m_PropsStorage->BindRange(0, emitted * sizeof(ParticleInformation), PROPS_BINDING);
 		m_VertexStorage->BindRange(0, emitted * sizeof(ParticleVertex), VERTEX_BINDING);
@@ -70,8 +80,14 @@ namespace XYZ {
 
 	void ParticleEffect::SetParticles(void* vertexBuffer, void* particleInfo)
 	{
-		m_VertexStorage->Update(vertexBuffer, m_MaxParticles * m_Layout.ParticleVertexLayout.GetStride(), 0);
-		m_PropsStorage->Update(particleInfo, m_MaxParticles * m_Layout.ParticleInformationLayout.GetStride(), 0);
+		m_DefaultVertexData.Write(vertexBuffer, m_Config.MaxParticles * m_Layout.ParticleVertexLayout.GetStride());
+		m_DefaultInformationData.Write(particleInfo, m_Config.MaxParticles * m_Layout.ParticleInformationLayout.GetStride());
+
+		m_DefaultVertexData = ByteBuffer::Copy(vertexBuffer, m_Config.MaxParticles * m_Layout.ParticleVertexLayout.GetStride());
+		m_DefaultInformationData = ByteBuffer::Copy(particleInfo, m_Config.MaxParticles * m_Layout.ParticleInformationLayout.GetStride());
+
+		m_VertexStorage->Update(vertexBuffer, m_Config.MaxParticles * m_Layout.ParticleVertexLayout.GetStride(), 0);
+		m_PropsStorage->Update(particleInfo, m_Config.MaxParticles * m_Layout.ParticleInformationLayout.GetStride(), 0);
 	}
 
 	void ParticleEffect::SetParticlesRange(void* vertexBuffer, void* particleInfo, uint32_t offset, uint32_t count)
@@ -79,7 +95,10 @@ namespace XYZ {
 		uint32_t vertexSize = m_Layout.ParticleVertexLayout.GetStride();
 		uint32_t infoSize = m_Layout.ParticleInformationLayout.GetStride();
 
-		XYZ_ASSERT(offset + count <= m_MaxParticles, "Attempting to set particles out of range");
+		m_DefaultVertexData.Write(vertexBuffer, count * vertexSize, offset * vertexSize);
+		m_DefaultInformationData.Write(particleInfo, count * infoSize, offset * infoSize);
+
+		XYZ_ASSERT(offset + count <= m_Config.MaxParticles, "Attempting to set particles out of range");
 		m_VertexStorage->Update(vertexBuffer, count * vertexSize, offset * vertexSize);
 		m_PropsStorage->Update(particleInfo, count * infoSize, offset * infoSize);
 	}
@@ -88,13 +107,13 @@ namespace XYZ {
 	{
 		uint32_t vertexSize = m_Layout.ParticleVertexLayout.GetStride();
 		uint32_t infoSize = m_Layout.ParticleInformationLayout.GetStride();
-		m_VertexStorage->GetSubData(vertexBuffer, m_MaxParticles * vertexSize, 0);
-		m_PropsStorage->GetSubData(particleInfo, m_MaxParticles * infoSize, 0);
+		m_VertexStorage->GetSubData(vertexBuffer, m_Config.MaxParticles * vertexSize, 0);
+		m_PropsStorage->GetSubData(particleInfo, m_Config.MaxParticles * infoSize, 0);
 	}
 
 	void ParticleEffect::GetParticlesRange(void* vertexBuffer, void* particleInfo, uint32_t offset, uint32_t count)
 	{
-		XYZ_ASSERT(offset + count <= m_MaxParticles, "Attempting to get particles out of range");
+		XYZ_ASSERT(offset + count <= m_Config.MaxParticles, "Attempting to get particles out of range");
 		uint32_t vertexSize = m_Layout.ParticleVertexLayout.GetStride();
 		uint32_t infoSize = m_Layout.ParticleInformationLayout.GetStride();
 		m_VertexStorage->GetSubData(vertexBuffer, count * vertexSize, offset * vertexSize);
@@ -107,13 +126,12 @@ namespace XYZ {
 		m_Layout = config;
 	}
 
-	
-
-	ParticleEffectConfiguration::ParticleEffectConfiguration(float speed, float gravity, int loop)
-		:
-		Speed(speed), Gravity(gravity), Loop(loop)
+	void ParticleEffect::SetConfiguration(const ParticleEffectConfiguration& config)
 	{
+		XYZ_ASSERT(m_Config.MaxParticles == config.MaxParticles, "Resize buffers");
+		m_Config = config;
 	}
+
 
 	ParticleLayoutConfiguration::ParticleLayoutConfiguration()
 	{
@@ -137,6 +155,12 @@ namespace XYZ {
 		:
 		ParticleVertexLayout(particleVertexLayout),
 		ParticleInformationLayout(particleInformationlayout)
+	{
+	}
+
+	ParticleEffectConfiguration::ParticleEffectConfiguration(uint32_t maxParticles, float rate)
+		:
+		MaxParticles(maxParticles), Rate(rate)
 	{
 	}
 

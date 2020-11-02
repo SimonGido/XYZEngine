@@ -191,7 +191,7 @@ namespace XYZ {
 
 		///////////////////////////////////////////////////////////
 
-		uint32_t count = 100;
+		uint32_t count = 5000;
 		auto computeMat = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleComputeShader.glsl"));
 		auto renderMat = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShader.glsl"));
 		
@@ -201,11 +201,11 @@ namespace XYZ {
 		m_Particle = m_TestEntity.EmplaceComponent<ParticleComponent>(ParticleComponent());
 		m_Particle->RenderMaterial = Ref<MaterialInstance>::Create(renderMat);
 		m_Particle->ComputeMaterial = Ref<MaterialInstance>::Create(computeMat);
-		m_Particle->ParticleEffect = Ref<ParticleEffect>::Create(count, ParticleLayoutConfiguration());
+		m_Particle->ParticleEffect = Ref<ParticleEffect>::Create(ParticleEffectConfiguration(count, 2.0f), ParticleLayoutConfiguration());
 		
 		m_Particle->ComputeMaterial->Set("u_Speed", 2.0f);
 		m_Particle->ComputeMaterial->Set("u_Gravity", -2.8f);
-		m_Particle->ComputeMaterial->Set("u_Loop", (int)true);
+		m_Particle->ComputeMaterial->Set("u_Loop", (int)0);
 		m_Particle->ComputeMaterial->Set("u_NumberRows", 1.0f);
 		m_Particle->ComputeMaterial->Set("u_NumberColumns", 1.0f);
 		m_Particle->ComputeMaterial->Set("u_ParticlesInExistence", 0.0f);
@@ -235,7 +235,7 @@ namespace XYZ {
 			m_Data[i].Rotation = dist(rng) * 15;
 			m_Data[i].Velocity = glm::vec2(dist(rng), 2.0f);
 			m_Data[i].DefaultVelocity = m_Data[i].Velocity;
-			m_Data[i].LifeTime = fabs(dist(rng)) + 3;
+			m_Data[i].LifeTime = fabs(dist(rng)) + 8;
 		}
 		m_Particle->ParticleEffect->SetParticlesRange(m_Vertices, m_Data, 0, count);
 		///////////////////////////////////////////////////////////
