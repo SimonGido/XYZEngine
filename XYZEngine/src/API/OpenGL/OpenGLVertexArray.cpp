@@ -37,12 +37,14 @@ namespace XYZ {
 
 	OpenGLVertexArray::~OpenGLVertexArray()
 	{
-		Renderer::Submit([this]() {glDeleteVertexArrays(1, &m_RendererID); });
+		Renderer::Submit([=]() {
+			glDeleteVertexArrays(1, &m_RendererID); 
+			});
 	}
 
 	void OpenGLVertexArray::Bind() const
 	{
-		Renderer::Submit([this]() {
+		Renderer::Submit([=]() {
 			glBindVertexArray(m_RendererID); 
 		});
 	}

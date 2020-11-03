@@ -10,11 +10,54 @@ namespace XYZ {
 
 	struct RendererData
 	{
-		Ref<RenderPass> ActiveRenderPass;
 		RenderCommandQueue CommandQueue;
+		Ref<RenderPass> ActiveRenderPass;
+		Ref<VertexArray> FullscreenQuadVertexArray;
+		Ref<VertexBuffer> FullscreenQuadVertexBuffer;
+		Ref<IndexBuffer> FullscreenQuadIndexBuffer;
+
 	};
 
 	static RendererData s_Data;
+
+	static void SetupFullscreenQuad()
+	{
+		s_Data.FullscreenQuadVertexArray = VertexArray::Create();
+		float x = -1;
+		float y = -1;
+		float width = 2, height = 2;
+		struct QuadVertex
+		{
+			glm::vec3 Position;
+			glm::vec2 TexCoord;
+		};
+
+		QuadVertex* data = new QuadVertex[4];
+
+		data[0].Position = glm::vec3(x, y, 0.1f);
+		data[0].TexCoord = glm::vec2(0, 0);
+
+		data[1].Position = glm::vec3(x + width, y, 0.1f);
+		data[1].TexCoord = glm::vec2(1, 0);
+
+		data[2].Position = glm::vec3(x + width, y + height, 0.1f);
+		data[2].TexCoord = glm::vec2(1, 1);
+
+		data[3].Position = glm::vec3(x, y + height, 0.1f);
+		data[3].TexCoord = glm::vec2(0, 1);
+
+		BufferLayout layout = {
+			{ 0, ShaderDataComponent::Float3, "a_Position" },
+			{ 1, ShaderDataComponent::Float2, "a_TexCoord" }
+		};
+		s_Data.FullscreenQuadVertexBuffer = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
+		s_Data.FullscreenQuadVertexBuffer->SetLayout(layout);
+		s_Data.FullscreenQuadVertexArray->AddVertexBuffer(s_Data.FullscreenQuadVertexBuffer);
+
+		uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
+		s_Data.FullscreenQuadIndexBuffer = IndexBuffer::Create(indices, 6);
+		s_Data.FullscreenQuadVertexArray->SetIndexBuffer(s_Data.FullscreenQuadIndexBuffer);
+	}
 
 	void Renderer::Init()
 	{
@@ -22,6 +65,7 @@ namespace XYZ {
 		SceneRenderer::Init();
 		Renderer2D::Init();
 		InGuiRenderer::Init();
+		SetupFullscreenQuad();
 	}
 
 	void Renderer::Shutdown()
@@ -70,6 +114,12 @@ namespace XYZ {
 		Renderer::Submit([=]() {
 			RendererAPI::DrawInstancedIndirect(indirect);
 		});
+	}
+
+	void Renderer::SubmitFullsceenQuad()
+	{
+		s_Data.FullscreenQuadVertexArray->Bind();
+		Renderer::DrawIndexed(PrimitiveType::Triangles, 6);
 	}
 
 

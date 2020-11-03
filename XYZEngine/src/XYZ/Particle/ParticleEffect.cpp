@@ -25,10 +25,10 @@ namespace XYZ {
 		m_DefaultInformationData.Allocate(m_Config.MaxParticles * m_Layout.ParticleInformationLayout.GetStride());
 
 		float vert[20] = {
-			-0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
-			 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
-			 0.5f,  0.5f, 0.0f, 1.0f, 1.0f,
-			-0.5f,  0.5f, 0.0f, 0.0f, 1.0f
+			-0.5f, -0.5f, 0.0f, 0.0f,        0.0f,
+			 0.5f, -0.5f, 0.0f, 1.0f / 8.0f, 0.0f,
+			 0.5f,  0.5f, 0.0f, 1.0f / 8.0f, 1.0f / 8.0f,
+			-0.5f,  0.5f, 0.0f, 0.0f,	     1.0f / 8.0f
 		};
 		Ref<VertexBuffer> squareVBpar;
 		squareVBpar = XYZ::VertexBuffer::Create(vert, sizeof(vert));

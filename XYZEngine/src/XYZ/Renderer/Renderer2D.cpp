@@ -203,8 +203,9 @@ namespace XYZ {
 	{
 		if (s_Data.QuadMaterial && material.Raw() != s_Data.QuadMaterial.Raw())
 			Flush();
-
+		
 		s_Data.QuadMaterial = material;
+		s_Data.QuadMaterial->Set("u_ViewProjectionMatrix", s_Data.ViewProjectionMatrix);
 		s_Data.QuadMaterial->Bind();
 	}
 
@@ -327,8 +328,6 @@ namespace XYZ {
 		uint32_t dataSize = (uint8_t*)s_Data.BufferPtr - (uint8_t*)s_Data.BufferBase;
 		if (dataSize)
 		{
-			s_Data.QuadMaterial->Set("u_ViewProjectionMatrix", s_Data.ViewProjectionMatrix);
-			s_Data.QuadMaterial->Bind();
 			s_Data.QuadVertexBuffer->Update(s_Data.BufferBase, dataSize);
 			s_Data.QuadVertexArray->Bind();
 			Renderer::DrawIndexed(PrimitiveType::Triangles, s_Data.IndexCount);

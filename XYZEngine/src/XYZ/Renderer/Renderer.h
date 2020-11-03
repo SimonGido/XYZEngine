@@ -30,7 +30,7 @@ namespace XYZ {
 		static void DrawIndexed(PrimitiveType type, uint32_t indexCount = 0);
 		static void DrawInstanced(const Ref<VertexArray>& vertexArray, uint32_t count, uint32_t offset = 0);
 		static void DrawElementsIndirect(void* indirect);
-		
+		static void SubmitFullsceenQuad();
 
 		template<typename FuncT>
 		static void Submit(FuncT&& func)

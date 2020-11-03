@@ -31,6 +31,7 @@ namespace XYZ {
 		void setupColorAttachment(ColorAttachment& attachment, uint32_t index);
 		void setupDepthAttachment(DepthAttachment& attachment);
 
+		void setupMultiSample(ColorAttachment& attachment, DepthAttachment& depth);
 	private:
 		uint32_t m_RendererID = 0;
 		FrameBufferSpecs m_Specification;

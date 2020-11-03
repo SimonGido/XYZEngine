@@ -29,7 +29,8 @@ void main()
 #type fragment
 #version 430
 
-layout(location = 0) out vec4 color;
+layout(location = 0) out vec4 o_Color;
+layout(location = 1) out vec4 o_BrightColor;
 
 in vec4 v_Color;
 in vec2 v_TexCoord;
@@ -41,6 +42,11 @@ uniform sampler2D u_Texture[32];
 
 void main()
 {
-	color = texture(u_Texture[int(v_TextureID)], v_TexCoord * v_TilingFactor) * v_Color * u_Color;
+	o_Color = texture(u_Texture[int(v_TextureID)], v_TexCoord * v_TilingFactor) * v_Color * u_Color;
+	float brightness = dot(o_Color.rgb, vec3(0.2126, 0.7152, 0.0722));
+	if (brightness > 0.5)
+		o_BrightColor = vec4(o_Color.rgb, 1.0);
+	else
+		o_BrightColor = vec4(0.0,0.0,0.0,1.0);
 }
 

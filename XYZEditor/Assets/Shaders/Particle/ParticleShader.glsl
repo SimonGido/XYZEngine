@@ -41,7 +41,7 @@ void main()
 
 	gl_Position = u_ViewProjectionMatrix * u_Transform * vec4(pos.x + a_IPosition.x,pos.y + a_IPosition.y, 0.0, 1.0);
 	v_Color = a_IColor;
-	v_TexCoord = a_TexCoord;
+	v_TexCoord = a_TexCoord + a_ITexCoordOffset;
 }
 
 

@@ -195,7 +195,7 @@ namespace XYZ {
 		auto computeMat = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleComputeShader.glsl"));
 		auto renderMat = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShader.glsl"));
 		
-		renderMat->Set("u_Texture", Texture2D::Create(XYZ::TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest, "Assets/Textures/bubble.png"));
+		renderMat->Set("u_Texture", Texture2D::Create(XYZ::TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest, "Assets/Textures/flame.png"));
 		computeMat->SetRoutine("blueColor");	
 	
 		m_Particle = m_TestEntity.EmplaceComponent<ParticleComponent>(ParticleComponent());
@@ -203,11 +203,11 @@ namespace XYZ {
 		m_Particle->ComputeMaterial = Ref<MaterialInstance>::Create(computeMat);
 		m_Particle->ParticleEffect = Ref<ParticleEffect>::Create(ParticleEffectConfiguration(count, 2.0f), ParticleLayoutConfiguration());
 		
-		m_Particle->ComputeMaterial->Set("u_Speed", 2.0f);
-		m_Particle->ComputeMaterial->Set("u_Gravity", -2.8f);
-		m_Particle->ComputeMaterial->Set("u_Loop", (int)0);
-		m_Particle->ComputeMaterial->Set("u_NumberRows", 1.0f);
-		m_Particle->ComputeMaterial->Set("u_NumberColumns", 1.0f);
+		m_Particle->ComputeMaterial->Set("u_Speed", 0.2f);
+		m_Particle->ComputeMaterial->Set("u_Gravity", 0.0f);
+		m_Particle->ComputeMaterial->Set("u_Loop", (int)1);
+		m_Particle->ComputeMaterial->Set("u_NumberRows", 8.0f);
+		m_Particle->ComputeMaterial->Set("u_NumberColumns", 8.0f);
 		m_Particle->ComputeMaterial->Set("u_ParticlesInExistence", 0.0f);
 		m_Particle->ComputeMaterial->Set("u_Time", 0.0f);
 
@@ -221,7 +221,7 @@ namespace XYZ {
 
 		for (int i = 0; i < count; ++i)
 		{
-			m_Vertices[i].Position = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+			m_Vertices[i].Position = glm::vec4(0.002f * i, 0.0f, 0.0f, 1.0f);
 			m_Vertices[i].Color = glm::vec4(1, 1, 1, 1);
 			m_Vertices[i].Rotation = 0.0f;
 			m_Vertices[i].TexCoordOffset = glm::vec2(0);
@@ -230,12 +230,12 @@ namespace XYZ {
 			m_Data[i].DefaultPosition.y = m_Vertices[i].Position.y;
 			m_Data[i].ColorBegin = m_Vertices[i].Color;
 			m_Data[i].ColorEnd = m_Vertices[i].Color;
-			m_Data[i].SizeBegin = 0.1f;
-			m_Data[i].SizeEnd = 1.0f;
+			m_Data[i].SizeBegin = 1.0f;
+			m_Data[i].SizeEnd = 0.1f;
 			m_Data[i].Rotation = dist(rng) * 15;
-			m_Data[i].Velocity = glm::vec2(dist(rng), 2.0f);
+			m_Data[i].Velocity = glm::vec2(0.0f, fabs(dist(rng)));
 			m_Data[i].DefaultVelocity = m_Data[i].Velocity;
-			m_Data[i].LifeTime = fabs(dist(rng)) + 8;
+			m_Data[i].LifeTime = fabs(dist(rng)) + 4;
 		}
 		m_Particle->ParticleEffect->SetParticlesRange(m_Vertices, m_Data, 0, count);
 		///////////////////////////////////////////////////////////

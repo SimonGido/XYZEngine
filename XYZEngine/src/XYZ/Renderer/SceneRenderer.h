@@ -44,7 +44,9 @@ namespace XYZ {
 		static SceneRendererOptions& GetOptions();
 	private:
 		static void FlushDrawList();
+		static void CompositePass();
 		static void GeometryPass();
-
+		static void BloomPass();
+		static void GaussianBlurPass();
 	};
 }

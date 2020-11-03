@@ -20,6 +20,7 @@ namespace XYZ {
 	struct ColorAttachment
 	{
 		uint32_t RendererID;
+		uint32_t AttachmentID;
 		FrameBufferFormat Format;
 	};
 

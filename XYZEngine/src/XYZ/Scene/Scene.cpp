@@ -217,8 +217,7 @@ namespace XYZ {
 			else
 				showSelection(m_SelectedEntity);
 		}
-		SceneRenderer::EndScene();
-
+		SceneRenderer::EndScene();	
 	}
 
 	void Scene::SetViewportSize(uint32_t width, uint32_t height)
