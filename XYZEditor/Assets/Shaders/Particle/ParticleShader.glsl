@@ -53,10 +53,12 @@ in vec2 v_TexCoord;
 
 out vec4 FragColor;
 
-uniform sampler2D u_Texture;
+uniform sampler2D u_Texture[2];
 
 void main()
 {
-	gl_FragColor = texture(u_Texture, v_TexCoord) * v_Color;
+	vec4 color = texture(u_Texture[0], v_TexCoord);
+	color.rgb += texture(u_Texture[1], v_TexCoord).rgb;
+	gl_FragColor = color * v_Color;
 }
 

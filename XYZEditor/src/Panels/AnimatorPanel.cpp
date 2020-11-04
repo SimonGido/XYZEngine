@@ -29,7 +29,7 @@ namespace XYZ {
 		m_Graph(false)
 	{
 		auto& app = Application::Get();
-		m_FBO = FrameBuffer::Create({ app.GetWindow().GetWidth(),app.GetWindow().GetHeight(),{0.2f,0.2f,0.2f,1.0f} });
+		m_FBO = FrameBuffer::Create({ app.GetWindow().GetWidth(),app.GetWindow().GetHeight(),{0.1f,0.1f,0.1f,1.0f} });
 		m_FBO->CreateColorAttachment(FrameBufferFormat::RGBA16F);
 		m_FBO->CreateDepthAttachment();
 		m_FBO->Resize();

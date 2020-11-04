@@ -2,7 +2,7 @@ Scene: Test Scene
 Entities:
   - Entity: Main Camera
     TransformComponent:
-      Position: [0.239618301, -1.98395348, 0]
+      Position: [0.907690048, -5.7060833, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     CameraComponent:
@@ -15,19 +15,19 @@ Entities:
       OrthographicFar: 1
   - Entity: Test Entity
     TransformComponent:
-      Position: [-22.677, -8.67059994, 0]
+      Position: [-25.9709148, -12.3445864, 0]
       Rotation: [1, 0, -0.0101356506]
       Scale: [10.8511467, 23.6469002, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/New_Material.mat
       SubTextureAssetPath: Assets\SubTextures\New_SubTexture.subtex
-      Color: [0.893194914, 0.89771086, 0.936660588, 1]
+      Color: [0.992172241, 0.996078432, 0.996078432, 1]
       TextureID: 0
       SortLayer: 5
       IsVisible: true
   - Entity: Test
     TransformComponent:
-      Position: [-0.494088173, -14.4586134, 0]
+      Position: [-1.11063766, -12.7525387, 0]
       Rotation: [0, 0, 0]
       Scale: [7.34991026, 6.77723455, 1]
     SpriteRenderer:

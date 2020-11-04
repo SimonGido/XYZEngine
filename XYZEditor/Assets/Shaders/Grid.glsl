@@ -20,7 +20,7 @@ void main()
 #type fragment
 #version 430
 
-layout(location = 0) out vec4 color;
+layout(location = 0) out vec4 o_Color;
 
 uniform vec2 u_Scale;
 uniform float u_LineWidth;
@@ -36,5 +36,5 @@ float grid(vec2 st, float lineWidth)
 void main()
 {
 	float x = grid(v_TexCoord * u_Scale, u_LineWidth);
-	color = vec4(vec3(0.4), 1.0) * (1.0 - x);
+	o_Color = vec4(vec3(0.2), 1.0) * (1.0 - x);
 }

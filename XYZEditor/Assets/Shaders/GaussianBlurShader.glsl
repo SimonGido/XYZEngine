@@ -27,9 +27,9 @@ uniform sampler2D u_Texture;
 
 void main()
 {             
-     vec2 tex_offset = 1.0 / vec2(256,256); // gets size of single texel
+     vec2 tex_offset = 1.0 / vec2(128,128); // gets size of single texel
      vec3 result = texture(u_Texture, v_TexCoords).rgb * weight[0];
-     if (u_Horizontal != 0)
+     if (u_Horizontal == 0)
      {
          for(int i = 1; i < 5; ++i)
          {

@@ -195,7 +195,9 @@ namespace XYZ {
 		auto computeMat = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleComputeShader.glsl"));
 		auto renderMat = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShader.glsl"));
 		
-		renderMat->Set("u_Texture", Texture2D::Create(XYZ::TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest, "Assets/Textures/flame.png"));
+		renderMat->Set("u_Texture", Texture2D::Create(XYZ::TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest, "Assets/Textures/flame.png"), 0);
+		renderMat->Set("u_Texture", Texture2D::Create(XYZ::TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest, "Assets/Textures/flame_emission.png"), 1);
+	
 		computeMat->SetRoutine("blueColor");	
 	
 		m_Particle = m_TestEntity.EmplaceComponent<ParticleComponent>(ParticleComponent());
@@ -221,8 +223,8 @@ namespace XYZ {
 
 		for (int i = 0; i < count; ++i)
 		{
-			m_Vertices[i].Position = glm::vec4(0.002f * i, 0.0f, 0.0f, 1.0f);
-			m_Vertices[i].Color = glm::vec4(1, 1, 1, 1);
+			m_Vertices[i].Position = glm::vec4(0.008f * i, 0.0f, 0.0f, 1.0f);
+			m_Vertices[i].Color = glm::vec4(0.3, 0.5, 1.0, 1);
 			m_Vertices[i].Rotation = 0.0f;
 			m_Vertices[i].TexCoordOffset = glm::vec2(0);
 
