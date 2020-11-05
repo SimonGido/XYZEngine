@@ -56,14 +56,13 @@ namespace XYZ {
 		{
 			Ref<FrameBuffer> fbo = FrameBuffer::Create({ 1280, 720,{0.1f,0.1f,0.1f,1.0f} });
 			fbo->CreateColorAttachment(FrameBufferFormat::RGBA16F); // Color
-			fbo->CreateColorAttachment(FrameBufferFormat::RGBA16F); // Bright color
 			fbo->CreateDepthAttachment();
 			fbo->Resize();
 			s_Data.GeometryPass = RenderPass::Create({ fbo });
 		}
 		// Bloom pass
 		{
-			Ref<FrameBuffer> fbo = FrameBuffer::Create({ 1280, 720,{0.1f,0.1f,0.1f,1.0f} });
+			Ref<FrameBuffer> fbo = FrameBuffer::Create({ 1280, 720,{0.0f,0.0f,0.0f,0.0f} });
 			fbo->CreateColorAttachment(FrameBufferFormat::RGBA16F); // Color
 			fbo->CreateDepthAttachment();
 			fbo->Resize();
@@ -71,15 +70,15 @@ namespace XYZ {
 		}
 		// Gausian blur pass
 		{
-			Ref<FrameBuffer> fbo = FrameBuffer::Create({ 1280, 720,{0.1f,0.1f,0.1f,1.0f} });
+			Ref<FrameBuffer> fbo = FrameBuffer::Create({ 1280, 720,{0.0f,0.0f,0.0f,0.0f} });
 			fbo->CreateColorAttachment(FrameBufferFormat::RGBA16F);
 			fbo->CreateDepthAttachment();
 			fbo->Resize();
 			s_Data.GaussianBlurPass = RenderPass::Create({ fbo });
 		}
 		s_Data.GaussianBlurShader = Shader::Create("Assets/Shaders/GaussianBlurShader.glsl");
-		s_Data.CompositeShader = Shader::Create("Assets/Shaders/CompositeShader.glsl");
 		s_Data.BloomShader = Shader::Create("Assets/Shaders/BloomShader.glsl");
+		s_Data.CompositeShader = Shader::Create("Assets/Shaders/CompositeShader.glsl");
 	}
 
 	void SceneRenderer::SetViewportSize(uint32_t width, uint32_t height)
@@ -167,8 +166,8 @@ namespace XYZ {
 			});
 
 		GeometryPass();
-		GaussianBlurPass();
 		BloomPass();
+		GaussianBlurPass();
 		CompositePass();
 		Renderer::WaitAndRender();
 		s_Data.SpriteDrawList.clear();
@@ -214,24 +213,25 @@ namespace XYZ {
 	}
 	void SceneRenderer::CompositePass()
 	{
-		Renderer::BeginRenderPass(s_Data.CompositePass, false);
+		Renderer::BeginRenderPass(s_Data.CompositePass, true);
 	
 		s_Data.CompositeShader->Bind();
-		Texture2D::BindStatic(s_Data.BloomPass->GetSpecification().TargetFramebuffer->GetColorAttachment(0).RendererID, 0);
+		Texture2D::BindStatic(s_Data.GeometryPass->GetSpecification().TargetFramebuffer->GetColorAttachment(0).RendererID, 0);
+		Texture2D::BindStatic(s_Data.GaussianBlurPass->GetSpecification().TargetFramebuffer->GetColorAttachment(0).RendererID, 1);
 
 		Renderer::SubmitFullsceenQuad();
 		Renderer::EndRenderPass();
 	}
 	void SceneRenderer::BloomPass()
 	{
-		Renderer::BeginRenderPass(s_Data.BloomPass, false);
-		float exposure = 0.8f;
+		Renderer::BeginRenderPass(s_Data.BloomPass, true);
+		float exposure = 1.0f;
 
 		s_Data.BloomShader->Bind();
 		s_Data.BloomShader->SetFloat("u_Exposure", exposure);
 
 		Texture2D::BindStatic(s_Data.GeometryPass->GetSpecification().TargetFramebuffer->GetColorAttachment(0).RendererID, 0);
-		Texture2D::BindStatic(s_Data.GaussianBlurPass->GetSpecification().TargetFramebuffer->GetColorAttachment(0).RendererID, 1);
+
 		Renderer::SubmitFullsceenQuad();
 
 		Renderer::EndRenderPass();
@@ -247,14 +247,14 @@ namespace XYZ {
 		s_Data.GaussianBlurShader->SetInt("u_Horizontal", 0);
 		for (uint32_t i = 1; i <= amount; i++)
 		{			
-			Texture2D::BindStatic(s_Data.GeometryPass->GetSpecification().TargetFramebuffer->GetColorAttachment(1).RendererID, 0);
+			Texture2D::BindStatic(s_Data.BloomPass->GetSpecification().TargetFramebuffer->GetColorAttachment(0).RendererID, 0);
 			Renderer::SubmitFullsceenQuad();
 		}
 
 		s_Data.GaussianBlurShader->SetInt("u_Horizontal", 5);
 		for (uint32_t i = 1; i <= amount; i++)
 		{		
-			Texture2D::BindStatic(s_Data.GeometryPass->GetSpecification().TargetFramebuffer->GetColorAttachment(1).RendererID, 0);
+			Texture2D::BindStatic(s_Data.BloomPass->GetSpecification().TargetFramebuffer->GetColorAttachment(0).RendererID, 0);
 			Renderer::SubmitFullsceenQuad();
 		}
 		Renderer::EndRenderPass();

@@ -45,5 +45,6 @@ void main()
              result += texture(u_Texture, v_TexCoords - vec2(0.0, tex_offset.y * i)).rgb * weight[i];
          }
      }
+
      o_Color = vec4(result, 1.0);
 }

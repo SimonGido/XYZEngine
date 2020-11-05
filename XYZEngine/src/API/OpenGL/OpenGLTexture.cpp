@@ -186,7 +186,9 @@ namespace XYZ {
 
 	void OpenGLTexture2D::Bind(uint32_t rendererID,uint32_t slot)
 	{
-		Renderer::Submit([=]() {glBindTextureUnit(slot, rendererID); });
+		Renderer::Submit([=]() {
+			glBindTextureUnit(slot, rendererID); 
+			});
 	}
 
 

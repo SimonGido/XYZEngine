@@ -23,18 +23,18 @@ in vec2 v_TexCoords;
 
 
 uniform float u_Exposure;
-uniform sampler2D u_Texture[2];
+uniform sampler2D u_Texture;
 
-
+const vec3 c_Luminance = vec3(0.2126, 0.7152, 0.0722);
 
 void main()
 {    
-    const float gamma = 2.2;
-    vec3 sceneColor = texture(u_Texture[0], v_TexCoords).rgb;      
-    vec3 bloomColor = texture(u_Texture[1], v_TexCoords).rgb;
-   
-   
-    sceneColor += bloomColor * u_Exposure;
-    
-    o_Color = vec4(sceneColor, 1.0);
+    vec4 color = texture(u_Texture, v_TexCoords);      
+
+    float brightness = dot(color.rgb, c_Luminance);
+	if (brightness > 0.6)
+		o_Color = color * u_Exposure;
+	else
+		o_Color = vec4(0.0,0.0,0.0,0.0);
+
 }
