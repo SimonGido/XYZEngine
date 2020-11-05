@@ -4,6 +4,7 @@
 #include "Renderer2D.h"
 #include "Renderer.h"
 
+#include "XYZ/Core/Input.h"
 
 #include <glm/gtx/transform.hpp>
 
@@ -17,12 +18,19 @@ namespace XYZ {
 		GridProperties GridProps;
 
 		Ref<RenderPass> CompositePass;
+		Ref<RenderPass> LightPass;
 		Ref<RenderPass> GeometryPass;
 		Ref<RenderPass> BloomPass;
 		Ref<RenderPass> GaussianBlurPass;
+
+
 		Ref<Shader> GaussianBlurShader;
 		Ref<Shader> BloomShader;
 		Ref<Shader> CompositeShader;
+		Ref<Shader> LightShader;
+
+
+		Ref<ShaderStorageBuffer> LightStorageBuffer;
 
 		struct SpriteDrawCommand
 		{
@@ -37,6 +45,11 @@ namespace XYZ {
 
 		std::vector<SpriteDrawCommand> SpriteDrawList;
 		std::vector<ParticleDrawCommand> ParticleDrawList;
+		std::vector<SceneLight> LightsList;
+		
+		glm::vec2 ViewportSize;
+
+		const uint32_t MaxNumberOfLights = 100;
 	};
 
 	static SceneRendererData s_Data;
@@ -51,6 +64,14 @@ namespace XYZ {
 			fbo->CreateDepthAttachment();
 			fbo->Resize();
 			s_Data.CompositePass = RenderPass::Create({ fbo });
+		}
+		// Light pass
+		{
+			Ref<FrameBuffer> fbo = FrameBuffer::Create({ 1280, 720,{0.0f,0.0f,0.0f,1.0f} });
+			fbo->CreateColorAttachment(FrameBufferFormat::RGBA16F); // Color
+			fbo->CreateDepthAttachment();
+			fbo->Resize();
+			s_Data.LightPass = RenderPass::Create({ fbo });
 		}
 		// Geometry pass
 		{
@@ -79,16 +100,26 @@ namespace XYZ {
 		s_Data.GaussianBlurShader = Shader::Create("Assets/Shaders/GaussianBlurShader.glsl");
 		s_Data.BloomShader = Shader::Create("Assets/Shaders/BloomShader.glsl");
 		s_Data.CompositeShader = Shader::Create("Assets/Shaders/CompositeShader.glsl");
+		s_Data.LightShader = Shader::Create("Assets/Shaders/LightShader.glsl");
+		s_Data.LightStorageBuffer = ShaderStorageBuffer::Create(s_Data.MaxNumberOfLights * sizeof(SceneLight));
 	}
 
 	void SceneRenderer::SetViewportSize(uint32_t width, uint32_t height)
 	{
+		s_Data.ViewportSize = glm::vec2(width, height);
 		// Geometry pass
 		{
 			auto& specs = s_Data.GeometryPass->GetSpecification().TargetFramebuffer->GetSpecification();
 			specs.Width = width;
 			specs.Height = height;
 			s_Data.GeometryPass->GetSpecification().TargetFramebuffer->Resize();
+		}
+		// Light pass
+		{
+			auto& specs = s_Data.LightPass->GetSpecification().TargetFramebuffer->GetSpecification();
+			specs.Width = width;
+			specs.Height = height;
+			s_Data.LightPass->GetSpecification().TargetFramebuffer->Resize();
 		}
 		// Gausian blur pass
 		{
@@ -133,6 +164,11 @@ namespace XYZ {
 	{
 		s_Data.ParticleDrawList.push_back({ particle,transform });
 	}
+	void SceneRenderer::SubmitLight(const SceneLight& light)
+	{
+		XYZ_ASSERT(s_Data.LightsList.size() + 1 < s_Data.MaxNumberOfLights, "Max number of lights per scene is ", s_Data.MaxNumberOfLights);	
+		s_Data.LightsList.push_back(light);
+	}
 	void SceneRenderer::SetGridProperties(const GridProperties& props)
 	{
 		s_Data.GridProps = props;
@@ -166,12 +202,14 @@ namespace XYZ {
 			});
 
 		GeometryPass();
+		LightPass();
 		BloomPass();
 		GaussianBlurPass();
 		CompositePass();
 		Renderer::WaitAndRender();
 		s_Data.SpriteDrawList.clear();
 		s_Data.ParticleDrawList.clear();
+		s_Data.LightsList.clear();
 	}
 	void SceneRenderer::GeometryPass()
 	{
@@ -211,17 +249,26 @@ namespace XYZ {
 		Renderer2D::EndScene();
 		Renderer::EndRenderPass();
 	}
-	void SceneRenderer::CompositePass()
-	{
-		Renderer::BeginRenderPass(s_Data.CompositePass, true);
-	
-		s_Data.CompositeShader->Bind();
-		Texture2D::BindStatic(s_Data.GeometryPass->GetSpecification().TargetFramebuffer->GetColorAttachment(0).RendererID, 0);
-		Texture2D::BindStatic(s_Data.GaussianBlurPass->GetSpecification().TargetFramebuffer->GetColorAttachment(0).RendererID, 1);
 
+	void SceneRenderer::LightPass()
+	{
+		glm::mat4 viewProjectionMatrix = s_Data.SceneCamera.Camera.GetProjectionMatrix() * s_Data.SceneCamera.ViewMatrix;
+
+		Renderer::BeginRenderPass(s_Data.LightPass, false);
+
+		s_Data.LightShader->Bind();
+		s_Data.LightShader->SetInt("u_NumberOfLights", s_Data.LightsList.size());
+		s_Data.LightShader->SetFloat2("u_ViewportSize", s_Data.ViewportSize);
+		s_Data.LightShader->SetMat4("u_ViewMatrix", s_Data.SceneCamera.ViewMatrix);
+		s_Data.LightStorageBuffer->Update(s_Data.LightsList.data(), s_Data.LightsList.size() * sizeof(SceneLight));
+		s_Data.LightStorageBuffer->BindRange(0, s_Data.LightsList.size() * sizeof(SceneLight), 0);
+
+		Texture2D::BindStatic(s_Data.GeometryPass->GetSpecification().TargetFramebuffer->GetColorAttachment(0).RendererID, 0);
 		Renderer::SubmitFullsceenQuad();
+
 		Renderer::EndRenderPass();
 	}
+
 	void SceneRenderer::BloomPass()
 	{
 		Renderer::BeginRenderPass(s_Data.BloomPass, true);
@@ -230,7 +277,7 @@ namespace XYZ {
 		s_Data.BloomShader->Bind();
 		s_Data.BloomShader->SetFloat("u_Exposure", exposure);
 
-		Texture2D::BindStatic(s_Data.GeometryPass->GetSpecification().TargetFramebuffer->GetColorAttachment(0).RendererID, 0);
+		Texture2D::BindStatic(s_Data.LightPass->GetSpecification().TargetFramebuffer->GetColorAttachment(0).RendererID, 0);
 
 		Renderer::SubmitFullsceenQuad();
 
@@ -246,17 +293,30 @@ namespace XYZ {
 		s_Data.GaussianBlurShader->Bind();
 		s_Data.GaussianBlurShader->SetInt("u_Horizontal", 0);
 		for (uint32_t i = 1; i <= amount; i++)
-		{			
+		{
 			Texture2D::BindStatic(s_Data.BloomPass->GetSpecification().TargetFramebuffer->GetColorAttachment(0).RendererID, 0);
 			Renderer::SubmitFullsceenQuad();
 		}
 
 		s_Data.GaussianBlurShader->SetInt("u_Horizontal", 5);
 		for (uint32_t i = 1; i <= amount; i++)
-		{		
+		{
 			Texture2D::BindStatic(s_Data.BloomPass->GetSpecification().TargetFramebuffer->GetColorAttachment(0).RendererID, 0);
 			Renderer::SubmitFullsceenQuad();
 		}
 		Renderer::EndRenderPass();
 	}
+
+	void SceneRenderer::CompositePass()
+	{
+		Renderer::BeginRenderPass(s_Data.CompositePass, true);
+	
+		s_Data.CompositeShader->Bind();
+		Texture2D::BindStatic(s_Data.LightPass->GetSpecification().TargetFramebuffer->GetColorAttachment(0).RendererID, 0);
+		Texture2D::BindStatic(s_Data.GaussianBlurPass->GetSpecification().TargetFramebuffer->GetColorAttachment(0).RendererID, 1);
+
+		Renderer::SubmitFullsceenQuad();
+		Renderer::EndRenderPass();
+	}
+	
 }

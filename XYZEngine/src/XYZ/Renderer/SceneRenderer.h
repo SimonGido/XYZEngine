@@ -24,6 +24,13 @@ namespace XYZ {
 		glm::mat4 ViewMatrix;
 	};
 
+	struct SceneLight
+	{
+		glm::vec4 Position;
+		glm::vec3 Color;
+		float Intensity = 1.0f;
+	};
+
 	class SceneRenderer
 	{
 	public:
@@ -36,6 +43,7 @@ namespace XYZ {
 
 		static void SubmitSprite(SpriteRenderer* sprite, const glm::mat4& transform);
 		static void SubmitParticles(ParticleComponent* particle, const glm::mat4& transform);
+		static void SubmitLight(const SceneLight& light);
 		static void SetGridProperties(const GridProperties& props);
 
 		static Ref<RenderPass> GetFinalRenderPass();
@@ -44,9 +52,10 @@ namespace XYZ {
 		static SceneRendererOptions& GetOptions();
 	private:
 		static void FlushDrawList();
-		static void CompositePass();
 		static void GeometryPass();
+		static void LightPass();
 		static void BloomPass();
 		static void GaussianBlurPass();
+		static void CompositePass();
 	};
 }

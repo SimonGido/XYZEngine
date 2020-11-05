@@ -1625,6 +1625,7 @@ namespace XYZ {
 		float cameraBoundHeight = zoomLevel * 2;
 		auto pos = cameraPos;
 
+	
 		x = (x / window.Size.x) * cameraBoundWidth - cameraBoundWidth * 0.5f;
 		y = cameraBoundHeight * 0.5f - (y / window.Size.y) * cameraBoundHeight;
 
