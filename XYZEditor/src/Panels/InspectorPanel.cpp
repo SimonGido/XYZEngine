@@ -11,6 +11,7 @@ namespace XYZ {
 	{
 		InGui::Begin(id,"Inspector", { 0,-100 }, { 300,400 }); // To make sure it exists;
 		InGui::End();
+		InGui::GetWindow(id)->Flags |= InGuiWindowFlag::MenuEnabled;
 	}
 	void InspectorPanel::OnInGuiRender()
 	{

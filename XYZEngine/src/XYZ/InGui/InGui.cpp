@@ -897,7 +897,7 @@ namespace XYZ {
 					}
 				}
 			}
-			InGuiFactory::GenerateSlider(pos, size, color, name,value * valueScale,frameData.WindowSpaceOffset, *frameData.ActiveMesh, renderConfig);
+			InGuiFactory::GenerateSlider(pos, size, color, name, value, valueScale,frameData.WindowSpaceOffset, *frameData.ActiveMesh, renderConfig);
 		}
 
 		return result;

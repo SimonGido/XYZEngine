@@ -67,6 +67,7 @@ namespace XYZ {
         ComponentGroup<TransformComponent, CameraComponent>* m_CameraGroup = nullptr;
         ComponentGroup<TransformComponent, SpriteRenderer>* m_RenderGroup = nullptr;
         ComponentGroup<TransformComponent, ParticleComponent>* m_ParticleGroup = nullptr;
+        ComponentGroup<TransformComponent, PointLight2D>* m_LightGroup = nullptr;
         ComponentGroup<AnimatorComponent>* m_AnimateGroup = nullptr;
         ComponentGroup<NativeScriptComponent>* m_ScriptGroup = nullptr;
 

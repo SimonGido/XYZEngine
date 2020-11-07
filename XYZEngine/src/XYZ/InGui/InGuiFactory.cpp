@@ -202,12 +202,13 @@ namespace XYZ {
 			GenerateInGuiQuad(mesh, position, size, renderConfig.SubTexture[InGuiRenderConfiguration::CHECKBOX_UNCHECKED]->GetTexCoords(), renderConfig.TextureID, color);
 
 	}
-	void InGuiFactory::GenerateSlider(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const char* name,float value, glm::vec2& windowSpaceOffset, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig)
+	void InGuiFactory::GenerateSlider(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const char* name,float value, float scale, glm::vec2& windowSpaceOffset, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig)
 	{
 		char buffer[sc_MaxFloatValueBufferSize];
 		snprintf(buffer, sizeof(buffer), "%f", value);
 		buffer[sc_MaxFloatValueBufferSize - 1] = '\0';
 
+		value *= scale;
 		glm::vec2 handleSize = { size.y, size.y * 2 };		
 		glm::vec2 handlePos = { position.x + value - handleSize.x / 2, position.y - (handleSize.x / 2) };
 		

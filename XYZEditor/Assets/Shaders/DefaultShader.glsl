@@ -51,4 +51,3 @@ void main()
 	o_Color = texture(u_Texture[int(v_TextureID)], v_TexCoord * v_TilingFactor) * v_Color * u_Color;
 	o_Position = vec4(v_Position, 1.0);
 }
-

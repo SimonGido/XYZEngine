@@ -10,8 +10,8 @@ out vec2 v_TexCoords;
 
 void main()
 {
-    gl_Position =  vec4(a_Position, 1.0);
-    v_TexCoords = a_TexCoord;
+	gl_Position = vec4(a_Position, 1.0);
+	v_TexCoords = a_TexCoord;
 }
 
 
@@ -27,7 +27,7 @@ struct PointLightData
 	float Intensity;
 };
 
-layout(std430, binding = 0) buffer 
+layout(std430, binding = 0) buffer
 buffer_PointLights
 {
 	PointLightData PointLights[];
@@ -39,15 +39,19 @@ uniform sampler2D u_Texture[2];
 uniform int u_NumberOfLights;
 
 void main()
-{    
-    vec4 color = texture(u_Texture[0], v_TexCoords);    			
+{
+	vec4 color = texture(u_Texture[0], v_TexCoords);
 	vec3 fragPos = texture(u_Texture[1], v_TexCoords).xyz;
 
 	for (int i = 0; i < u_NumberOfLights; ++i)
-	{		
-		float strength = (1.0 / distance(PointLights[i].Position.xy, fragPos.xy)) * PointLights[i].Intensity;
-		strength = clamp(strength, 0.0, 1.0);
-		color.rgb += PointLights[i].Color * strength;
+	{
+		float dist = length(PointLights[i].Position.xy - fragPos.xy);
+		if (dist < 100)
+		{
+			float strength = (1.0 / distance(PointLights[i].Position.xyz, fragPos.xyz)) * PointLights[i].Intensity;
+			strength = clamp(strength, 0.0, 1.0);
+			color.rgb += PointLights[i].Color * strength;
+		}
 	}
 	o_Color = color;
 }

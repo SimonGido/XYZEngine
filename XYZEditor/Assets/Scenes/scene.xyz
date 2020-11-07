@@ -2,7 +2,7 @@ Scene: Test Scene
 Entities:
   - Entity: Main Camera
     TransformComponent:
-      Position: [0.907690048, -5.7060833, 0]
+      Position: [-7.56528664, -15.2381783, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     CameraComponent:
@@ -15,9 +15,9 @@ Entities:
       OrthographicFar: 1
   - Entity: Test Entity
     TransformComponent:
-      Position: [-18.7665195, -9.73056602, 0]
-      Rotation: [1, 0, -0.0101356506]
-      Scale: [12.371418, 26.8563595, 1]
+      Position: [11.5751724, -13.1587791, 0]
+      Rotation: [0, 0, 0]
+      Scale: [7.75337791, 9.20939827, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/New_Material.mat
       SubTextureAssetPath: Assets\SubTextures\New_SubTexture.subtex
@@ -27,9 +27,9 @@ Entities:
       IsVisible: true
   - Entity: Test
     TransformComponent:
-      Position: [21.1646957, -13.5709467, 0]
+      Position: [21.0612316, -19.1210003, 0]
       Rotation: [0, 0, 0]
-      Scale: [18.6328487, 15.7257137, 1]
+      Scale: [10.1579437, 12.8600006, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets\Materials\New_Material.mat
       SubTextureAssetPath: Assets/SubTextures/New_SubTexture.subtex
@@ -39,9 +39,9 @@ Entities:
       IsVisible: true
   - Entity: Background
     TransformComponent:
-      Position: [-0.431583405, -0.978034973, 0]
+      Position: [-6.71537018, -12.3699999, 0]
       Rotation: [0, 0, 0]
-      Scale: [76.9326859, 46.4879799, 1]
+      Scale: [76, 46.4879799, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets\Materials\New_Material.mat
       SubTextureAssetPath: Assets\SubTextures\Backgroundfield.subtex
@@ -49,3 +49,13 @@ Entities:
       TextureID: 1
       SortLayer: 0
       IsVisible: true
+  - Entity: Light
+    TransformComponent:
+      Position: [-19.4020004, -4.81110001, 5]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - Entity: Light2
+    TransformComponent:
+      Position: [25.459465, 7.94594574, 2]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]

@@ -44,9 +44,16 @@ namespace XYZ {
 			glm::mat4 Transform;
 		};
 
+		struct PointLight
+		{	
+			glm::vec4 Position;
+			glm::vec3 Color;
+			float Intensity = 1.0f;
+		};
+
 		std::vector<SpriteDrawCommand> SpriteDrawList;
 		std::vector<ParticleDrawCommand> ParticleDrawList;
-		std::vector<SceneLight> LightsList;
+		std::vector<PointLight> LightsList;
 
 		glm::vec2 ViewportSize;
 
@@ -103,7 +110,7 @@ namespace XYZ {
 		s_Data.BloomShader = Shader::Create("Assets/Shaders/BloomShader.glsl");
 		s_Data.CompositeShader = Shader::Create("Assets/Shaders/CompositeShader.glsl");
 		s_Data.LightShader = Shader::Create("Assets/Shaders/LightShader.glsl");
-		s_Data.LightStorageBuffer = ShaderStorageBuffer::Create(s_Data.MaxNumberOfLights * sizeof(SceneLight));
+		s_Data.LightStorageBuffer = ShaderStorageBuffer::Create(s_Data.MaxNumberOfLights * sizeof(SceneRendererData::PointLight));
 	}
 
 	void SceneRenderer::SetViewportSize(uint32_t width, uint32_t height)
@@ -169,11 +176,16 @@ namespace XYZ {
 	{
 		s_Data.ParticleDrawList.push_back({ particle,transform });
 	}
-	void SceneRenderer::SubmitLight(const SceneLight& light)
+	void SceneRenderer::SubmitLight(PointLight2D* light, const glm::mat4& transform)
 	{
 		XYZ_ASSERT(s_Data.LightsList.size() + 1 < s_Data.MaxNumberOfLights, "Max number of lights per scene is ", s_Data.MaxNumberOfLights);
-		s_Data.LightsList.push_back(light);
+		SceneRendererData::PointLight lightData;
+		lightData.Position = glm::vec4(transform[3][0], transform[3][1], transform[3][2], 0.0f);
+		lightData.Color = light->Color;
+		lightData.Intensity = light->Intensity;
+		s_Data.LightsList.push_back(lightData);
 	}
+
 	void SceneRenderer::SetGridProperties(const GridProperties& props)
 	{
 		s_Data.GridProps = props;
@@ -260,8 +272,8 @@ namespace XYZ {
 		s_Data.LightShader->Bind();
 		s_Data.LightShader->SetInt("u_NumberOfLights", s_Data.LightsList.size());
 
-		s_Data.LightStorageBuffer->Update(s_Data.LightsList.data(), s_Data.LightsList.size() * sizeof(SceneLight));
-		s_Data.LightStorageBuffer->BindRange(0, s_Data.LightsList.size() * sizeof(SceneLight), 0);
+		s_Data.LightStorageBuffer->Update(s_Data.LightsList.data(), s_Data.LightsList.size() * sizeof(SceneRendererData::PointLight));
+		s_Data.LightStorageBuffer->BindRange(0, s_Data.LightsList.size() * sizeof(SceneRendererData::PointLight), 0);
 
 		Texture2D::BindStatic(s_Data.GeometryPass->GetSpecification().TargetFramebuffer->GetColorAttachment(0).RendererID, 0);
 		Texture2D::BindStatic(s_Data.GeometryPass->GetSpecification().TargetFramebuffer->GetColorAttachment(1).RendererID, 1);

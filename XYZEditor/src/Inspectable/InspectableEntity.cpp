@@ -148,6 +148,14 @@ namespace XYZ {
 						m_AddComponentOpen = false;
 					}
 				}
+				if (!m_Context.HasComponent<PointLight2D>())
+				{
+					if (InGui::MenuItem("Add Point Light", { 150,25 }) & InGuiReturnType::Clicked)
+					{
+						m_Context.EmplaceComponent<PointLight2D>();
+						m_AddComponentOpen = false;
+					}
+				}
 			}
 
 
@@ -245,6 +253,23 @@ namespace XYZ {
 						InGui::Separator();
 						camera.SetPerspective(props);
 					}
+				}
+			}
+
+			if (m_Context.HasComponent<PointLight2D>())
+			{
+				auto pointLight = m_Context.GetComponent<PointLight2D>();
+				InGui::BeginGroup("Transform Component", { 0,0 }, m_GroupOpen[POINT_LIGHT]);
+				if (m_GroupOpen[POINT_LIGHT])
+				{
+					InGui::Float(3, "Color", glm::value_ptr(pointLight->Color), m_LightColorLengths, {}, { 50.0f, 25.0f }, m_LightColorSelected);
+					if (m_LightColorSelected != -1)
+					{
+
+					}
+					InGui::Separator();
+					InGui::Slider("Intensity", {}, glm::vec2(150.0, 15.0f), pointLight->Intensity,  150.0f);
+					InGui::EndGroup();
 				}
 			}
 

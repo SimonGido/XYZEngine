@@ -26,6 +26,7 @@ namespace XYZ {
 		m_CameraGroup = m_ECS.CreateGroup<TransformComponent, CameraComponent>();
 		m_RenderGroup = m_ECS.CreateGroup<TransformComponent, SpriteRenderer>();
 		m_ParticleGroup = m_ECS.CreateGroup<TransformComponent, ParticleComponent>();
+		m_LightGroup = m_ECS.CreateGroup<TransformComponent, PointLight2D>();
 		m_AnimateGroup = m_ECS.CreateGroup<AnimatorComponent>();
 		m_ScriptGroup = m_ECS.CreateGroup<NativeScriptComponent>();
 
@@ -199,16 +200,6 @@ namespace XYZ {
 		SceneRenderer::GetOptions().ShowGrid = true;
 		SceneRenderer::SetGridProperties({ gridTransform,{8.025f * (cameraWidth / camera.GetZoomLevel()), 8.025f * (cameraHeight / camera.GetZoomLevel())},0.025f });
 		SceneRenderer::BeginScene(this, renderCamera);
-		
-		SceneLight light;
-		light.Position = glm::vec4(0, 0, 0, 5);
-		light.Color = glm::vec3(0.6f);
-		light.Intensity = 1.0f;
-		SceneRenderer::SubmitLight(light);
-		light.Position = glm::vec4(5, 0, 0, 5);
-		light.Color = glm::vec3(0.6f, 0.2, 1.0f);
-		light.Intensity = 1.0f;
-		SceneRenderer::SubmitLight(light);
 
 		for (int i = 0; i < m_RenderGroup->Size(); ++i)
 		{
@@ -220,7 +211,11 @@ namespace XYZ {
 			auto [transform, particle] = (*m_ParticleGroup)[i];
 			SceneRenderer::SubmitParticles(particle, transform->GetTransform());
 		}
-		
+		for (int i = 0; i < m_LightGroup->Size(); ++i)
+		{
+			auto [transform, light] = (*m_LightGroup)[i];
+			SceneRenderer::SubmitLight(light, transform->GetTransform());
+		}
 		if (m_SelectedEntity < MAX_ENTITIES)
 		{
 			if (m_ECS.Contains<CameraComponent>(m_SelectedEntity))

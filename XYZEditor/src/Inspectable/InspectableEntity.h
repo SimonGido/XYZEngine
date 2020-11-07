@@ -32,6 +32,7 @@ namespace XYZ {
 			NATIVE_SCRIPT_COMPONENT,
 			CAMERA_COMPONENT,
 			PARTICLE_COMPONENT,
+			POINT_LIGHT,
 			NUM_GROUPS
 		};
 		bool m_GroupOpen[NUM_GROUPS];
@@ -56,6 +57,9 @@ namespace XYZ {
 
 		int32_t m_ColorLengths[NUM_AXIS] = { 7,7,7,7 };
 		int32_t m_ColorSelected = -1;
+
+		int32_t m_LightColorLengths[NUM_AXIS] = { 7,7,7,7 };
+		int32_t m_LightColorSelected = -1;
 
 		int32_t m_PositionLengths[W] = { 7,7,7 };
 		int32_t m_PositionSelected = -1;

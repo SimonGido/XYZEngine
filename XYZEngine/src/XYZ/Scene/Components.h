@@ -119,4 +119,12 @@ namespace XYZ {
 
 		uint32_t TextureID = 0;
 	};
+
+	struct PointLight2D : public Type<PointLight2D>
+	{
+		PointLight2D() = default;
+
+		glm::vec3 Color = glm::vec3(1.0f);
+		float Intensity = 1.0f;
+	};
 }
