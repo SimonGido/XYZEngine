@@ -117,7 +117,6 @@ namespace XYZ {
 		Ref<MaterialInstance> ComputeMaterial;
 		Ref<ParticleEffect> ParticleEffect;
 
-		uint32_t TextureID;
+		uint32_t TextureID = 0;
 	};
-
 }

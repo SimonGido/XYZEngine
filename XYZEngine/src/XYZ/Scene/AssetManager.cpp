@@ -592,8 +592,8 @@ namespace XYZ {
 				if (cameraComponent)
 				{
 					XYZ_LOG_INFO("Adding camera component to entity ", tag.Name);
-					SceneCameraPerspectiveProperties perspectiveProps;
-					SceneCameraOrthographicProperties orthoProps;
+					CameraPerspectiveProperties perspectiveProps;
+					CameraOrthographicProperties orthoProps;
 					CameraProjectionType projectionType;
 
 					uint32_t type = cameraComponent["ProjectionType"].as<uint32_t>();

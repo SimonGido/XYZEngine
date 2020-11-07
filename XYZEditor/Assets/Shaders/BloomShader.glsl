@@ -33,7 +33,7 @@ void main()
 
     float brightness = dot(color.rgb, c_Luminance);
 	if (brightness > 1.0)
-		o_Color = color * u_Exposure;
+		o_Color = vec4(color.rgb * u_Exposure, color.a);
 	else
 		o_Color = vec4(0.0,0.0,0.0,0.0);
 

@@ -27,9 +27,9 @@ Entities:
       IsVisible: true
   - Entity: Test
     TransformComponent:
-      Position: [-1.11063766, -12.7525387, 0]
+      Position: [7.94509888, -1.87669086, 0]
       Rotation: [0, 0, 0]
-      Scale: [7.34991026, 6.77723455, 1]
+      Scale: [18.6328487, 15.7257137, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets\Materials\New_Material.mat
       SubTextureAssetPath: Assets/SubTextures/New_SubTexture.subtex
@@ -39,7 +39,7 @@ Entities:
       IsVisible: true
   - Entity: Background
     TransformComponent:
-      Position: [0, 0, 0]
+      Position: [-0.431583405, -0.978034973, 0]
       Rotation: [0, 0, 0]
       Scale: [76.9326859, 46.4879799, 1]
     SpriteRenderer:

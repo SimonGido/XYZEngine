@@ -12,10 +12,11 @@ namespace XYZ {
 	struct SceneRendererData
 	{
 		const Scene* ActiveScene = nullptr;
-		
+
 		SceneRendererCamera SceneCamera;
 		SceneRendererOptions Options;
 		GridProperties GridProps;
+		glm::mat4 ViewProjectionMatrix;
 
 		Ref<RenderPass> CompositePass;
 		Ref<RenderPass> LightPass;
@@ -46,7 +47,7 @@ namespace XYZ {
 		std::vector<SpriteDrawCommand> SpriteDrawList;
 		std::vector<ParticleDrawCommand> ParticleDrawList;
 		std::vector<SceneLight> LightsList;
-		
+
 		glm::vec2 ViewportSize;
 
 		const uint32_t MaxNumberOfLights = 100;
@@ -148,12 +149,15 @@ namespace XYZ {
 		XYZ_ASSERT(!s_Data.ActiveScene, "Missing end scene");
 		s_Data.ActiveScene = scene;
 		s_Data.SceneCamera = camera;
+		
+	
+		s_Data.ViewProjectionMatrix = s_Data.SceneCamera.Camera.GetProjectionMatrix() * s_Data.SceneCamera.ViewMatrix;
 	}
 	void SceneRenderer::EndScene()
 	{
 		XYZ_ASSERT(s_Data.ActiveScene, "Missing begin scene");
 		s_Data.ActiveScene = nullptr;
-		
+
 		FlushDrawList();
 	}
 	void SceneRenderer::SubmitSprite(SpriteRenderer* sprite, const glm::mat4& transform)
@@ -166,8 +170,11 @@ namespace XYZ {
 	}
 	void SceneRenderer::SubmitLight(const SceneLight& light)
 	{
-		XYZ_ASSERT(s_Data.LightsList.size() + 1 < s_Data.MaxNumberOfLights, "Max number of lights per scene is ", s_Data.MaxNumberOfLights);	
+		XYZ_ASSERT(s_Data.LightsList.size() + 1 < s_Data.MaxNumberOfLights, "Max number of lights per scene is ", s_Data.MaxNumberOfLights);
 		s_Data.LightsList.push_back(light);
+		auto& lastLight = s_Data.LightsList.back();
+		lastLight.Position = s_Data.ViewProjectionMatrix * lastLight.Position;
+		lastLight.Intensity /= s_Data.SceneCamera.Camera.GetOrthographicProperties().OrthographicSize;
 	}
 	void SceneRenderer::SetGridProperties(const GridProperties& props)
 	{
@@ -178,10 +185,10 @@ namespace XYZ {
 	{
 		return s_Data.CompositePass;
 	}
-	
+
 	uint32_t SceneRenderer::GetFinalColorBufferRendererID()
 	{
-		return s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetColorAttachment(0).RendererID;
+		return s_Data.LightPass->GetSpecification().TargetFramebuffer->GetColorAttachment(0).RendererID;
 	}
 	SceneRendererOptions& SceneRenderer::GetOptions()
 	{
@@ -213,11 +220,9 @@ namespace XYZ {
 	}
 	void SceneRenderer::GeometryPass()
 	{
-		glm::mat4 viewProjectionMatrix = s_Data.SceneCamera.Camera.GetProjectionMatrix() * s_Data.SceneCamera.ViewMatrix;
-		
 		Renderer::BeginRenderPass(s_Data.GeometryPass, true);
-		Renderer2D::BeginScene(viewProjectionMatrix);
-		
+		Renderer2D::BeginScene(s_Data.ViewProjectionMatrix);
+
 		if (s_Data.Options.ShowGrid)
 		{
 			Renderer2D::SubmitGrid(s_Data.GridProps.Transform, s_Data.GridProps.Scale, s_Data.GridProps.LineWidth);
@@ -231,35 +236,33 @@ namespace XYZ {
 
 		Renderer2D::Flush();
 		Renderer2D::FlushLines();
-		
+
 
 		for (auto& dc : s_Data.ParticleDrawList)
 		{
 			auto material = dc.Particle->RenderMaterial->GetParentMaterial();
 			auto materialInstace = dc.Particle->RenderMaterial;
 
-			material->Set("u_ViewProjectionMatrix", viewProjectionMatrix);
+			material->Set("u_ViewProjectionMatrix", s_Data.ViewProjectionMatrix);
 			material->Bind();
 			materialInstace->Set("u_Transform", dc.Transform);
 			materialInstace->Bind();
 			Renderer2D::SubmitParticles(dc.Transform, dc.Particle->ParticleEffect);
 		}
 
-		
+
 		Renderer2D::EndScene();
 		Renderer::EndRenderPass();
 	}
 
 	void SceneRenderer::LightPass()
 	{
-		glm::mat4 viewProjectionMatrix = s_Data.SceneCamera.Camera.GetProjectionMatrix() * s_Data.SceneCamera.ViewMatrix;
-
-		Renderer::BeginRenderPass(s_Data.LightPass, false);
+		Renderer::BeginRenderPass(s_Data.LightPass, true);
 
 		s_Data.LightShader->Bind();
 		s_Data.LightShader->SetInt("u_NumberOfLights", s_Data.LightsList.size());
 		s_Data.LightShader->SetFloat2("u_ViewportSize", s_Data.ViewportSize);
-		s_Data.LightShader->SetMat4("u_ViewMatrix", s_Data.SceneCamera.ViewMatrix);
+		//s_Data.LightShader->SetMat4("u_ViewProjectionMatrix", s_Data.ViewProjectionMatrix);
 		s_Data.LightStorageBuffer->Update(s_Data.LightsList.data(), s_Data.LightsList.size() * sizeof(SceneLight));
 		s_Data.LightStorageBuffer->BindRange(0, s_Data.LightsList.size() * sizeof(SceneLight), 0);
 
@@ -285,8 +288,6 @@ namespace XYZ {
 	}
 	void SceneRenderer::GaussianBlurPass()
 	{
-		glm::mat4 viewProjectionMatrix = s_Data.SceneCamera.Camera.GetProjectionMatrix() * s_Data.SceneCamera.ViewMatrix;
-
 		Renderer::BeginRenderPass(s_Data.GaussianBlurPass, true);
 		uint32_t amount = 2;
 
@@ -310,7 +311,7 @@ namespace XYZ {
 	void SceneRenderer::CompositePass()
 	{
 		Renderer::BeginRenderPass(s_Data.CompositePass, true);
-	
+
 		s_Data.CompositeShader->Bind();
 		Texture2D::BindStatic(s_Data.LightPass->GetSpecification().TargetFramebuffer->GetColorAttachment(0).RendererID, 0);
 		Texture2D::BindStatic(s_Data.GaussianBlurPass->GetSpecification().TargetFramebuffer->GetColorAttachment(0).RendererID, 1);
@@ -318,5 +319,5 @@ namespace XYZ {
 		Renderer::SubmitFullsceenQuad();
 		Renderer::EndRenderPass();
 	}
-	
+
 }

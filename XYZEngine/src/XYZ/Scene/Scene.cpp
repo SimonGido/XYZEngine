@@ -201,9 +201,9 @@ namespace XYZ {
 		SceneRenderer::BeginScene(this, renderCamera);
 		
 		SceneLight light;
-		light.Position = { 0,0,0,0 };
-		light.Color = { 0.5,0.5,0.5 };
-		light.Intensity = 0.3f;
+		light.Position = glm::vec4(-2, 2, 0, 1);
+		light.Color = glm::vec3(1.0f);
+		light.Intensity = 0.8f;
 		SceneRenderer::SubmitLight(light);
 
 		for (int i = 0; i < m_RenderGroup->Size(); ++i)
@@ -216,7 +216,7 @@ namespace XYZ {
 			auto [transform, particle] = (*m_ParticleGroup)[i];
 			SceneRenderer::SubmitParticles(particle, transform->GetTransform());
 		}
-
+		
 		if (m_SelectedEntity < MAX_ENTITIES)
 		{
 			if (m_ECS.Contains<CameraComponent>(m_SelectedEntity))

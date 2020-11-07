@@ -14,16 +14,6 @@ namespace XYZ {
 	{
 	}
 
-	void SceneCamera::SetPerspective(const SceneCameraPerspectiveProperties& perspectiveProps)
-	{
-		m_PerspectiveProperties = perspectiveProps;
-		//recalculate();
-	}
-	void SceneCamera::SetOrthographic(const SceneCameraOrthographicProperties& orthoProps)
-	{
-		m_OrthographicProperties = orthoProps;
-		//recalculate();
-	}
 	void SceneCamera::SetViewportSize(uint32_t width, uint32_t height)
 	{
 		m_ViewportWidth = width;

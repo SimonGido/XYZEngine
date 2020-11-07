@@ -223,7 +223,7 @@ namespace XYZ {
 
 		for (int i = 0; i < count; ++i)
 		{
-			m_Vertices[i].Position = glm::vec4(0.008f * i, 0.0f, 0.0f, 1.0f);
+			m_Vertices[i].Position = glm::vec4(0.008f * i, 0.0f, 0.0f, 0.0f);
 			m_Vertices[i].Color = glm::vec4(0.3, 0.5, 1.0, 1);
 			m_Vertices[i].Rotation = 0.0f;
 			m_Vertices[i].TexCoordOffset = glm::vec2(0);
