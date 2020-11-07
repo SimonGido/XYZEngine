@@ -66,6 +66,7 @@ namespace XYZ {
 					std::vector<uint32_t> attachments;
 					for (auto& it : m_ColorAttachments)
 						attachments.push_back(it.AttachmentID);
+				
 					glDrawBuffers(m_ColorAttachments.size(), attachments.data());
 				}
 				XYZ_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer is not complete");

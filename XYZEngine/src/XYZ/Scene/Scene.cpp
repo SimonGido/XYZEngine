@@ -201,9 +201,13 @@ namespace XYZ {
 		SceneRenderer::BeginScene(this, renderCamera);
 		
 		SceneLight light;
-		light.Position = glm::vec4(-2, 2, 0, 1);
-		light.Color = glm::vec3(1.0f);
-		light.Intensity = 0.8f;
+		light.Position = glm::vec4(0, 0, 0, 5);
+		light.Color = glm::vec3(0.6f);
+		light.Intensity = 1.0f;
+		SceneRenderer::SubmitLight(light);
+		light.Position = glm::vec4(5, 0, 0, 5);
+		light.Color = glm::vec3(0.6f, 0.2, 1.0f);
+		light.Intensity = 1.0f;
 		SceneRenderer::SubmitLight(light);
 
 		for (int i = 0; i < m_RenderGroup->Size(); ++i)

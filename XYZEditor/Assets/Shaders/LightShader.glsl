@@ -6,12 +6,12 @@ layout(location = 1) in vec2  a_TexCoord;
 
 
 out vec2 v_TexCoords;
-out vec3 v_Normal;
+
 
 void main()
 {
+    gl_Position =  vec4(a_Position, 1.0);
     v_TexCoords = a_TexCoord;
-    gl_Position = vec4(a_Position, 1.0);
 }
 
 
@@ -35,25 +35,19 @@ buffer_PointLights
 
 in vec2 v_TexCoords;
 
-uniform sampler2D u_Texture;
-
+uniform sampler2D u_Texture[2];
 uniform int u_NumberOfLights;
-uniform vec2 u_ViewportSize;
 
 void main()
 {    
-    vec4 color = texture(u_Texture, v_TexCoords);    
-	float aspect = u_ViewportSize.x / u_ViewportSize.y;
-	vec2 worldFragPos = vec2(
-		(gl_FragCoord.x - (u_ViewportSize.x / 2.0)) / (u_ViewportSize.x / 2.0),
-		(gl_FragCoord.y - (u_ViewportSize.y / 2.0)) / (u_ViewportSize.y / 2.0)
-	);
-																	
+    vec4 color = texture(u_Texture[0], v_TexCoords);    			
+	vec3 fragPos = texture(u_Texture[1], v_TexCoords).xyz;
+
 	for (int i = 0; i < u_NumberOfLights; ++i)
 	{		
-		float dist = distance(worldFragPos, PointLights[i].Position.xy);
-		float strength = (1.0 / dist) * PointLights[i].Intensity;
-		color.rgb += PointLights[i].Color * clamp(strength,0,1); 
+		float strength = (1.0 / distance(PointLights[i].Position.xy, fragPos.xy)) * PointLights[i].Intensity;
+		strength = clamp(strength, 0.0, 1.0);
+		color.rgb += PointLights[i].Color * strength;
 	}
 	o_Color = color;
 }

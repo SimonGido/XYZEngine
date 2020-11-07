@@ -77,7 +77,8 @@ namespace XYZ {
 		// Geometry pass
 		{
 			Ref<FrameBuffer> fbo = FrameBuffer::Create({ 1280, 720,{0.1f,0.1f,0.1f,1.0f} });
-			fbo->CreateColorAttachment(FrameBufferFormat::RGBA16F); // Color
+			fbo->CreateColorAttachment(FrameBufferFormat::RGBA16F); // Position color buffer
+			fbo->CreateColorAttachment(FrameBufferFormat::RGBA16F); // Position
 			fbo->CreateDepthAttachment();
 			fbo->Resize();
 			s_Data.GeometryPass = RenderPass::Create({ fbo });
@@ -172,9 +173,6 @@ namespace XYZ {
 	{
 		XYZ_ASSERT(s_Data.LightsList.size() + 1 < s_Data.MaxNumberOfLights, "Max number of lights per scene is ", s_Data.MaxNumberOfLights);
 		s_Data.LightsList.push_back(light);
-		auto& lastLight = s_Data.LightsList.back();
-		lastLight.Position = s_Data.ViewProjectionMatrix * lastLight.Position;
-		lastLight.Intensity /= s_Data.SceneCamera.Camera.GetOrthographicProperties().OrthographicSize;
 	}
 	void SceneRenderer::SetGridProperties(const GridProperties& props)
 	{
@@ -188,7 +186,7 @@ namespace XYZ {
 
 	uint32_t SceneRenderer::GetFinalColorBufferRendererID()
 	{
-		return s_Data.LightPass->GetSpecification().TargetFramebuffer->GetColorAttachment(0).RendererID;
+		return s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetColorAttachment(0).RendererID;
 	}
 	SceneRendererOptions& SceneRenderer::GetOptions()
 	{
@@ -261,12 +259,13 @@ namespace XYZ {
 
 		s_Data.LightShader->Bind();
 		s_Data.LightShader->SetInt("u_NumberOfLights", s_Data.LightsList.size());
-		s_Data.LightShader->SetFloat2("u_ViewportSize", s_Data.ViewportSize);
-		//s_Data.LightShader->SetMat4("u_ViewProjectionMatrix", s_Data.ViewProjectionMatrix);
+
 		s_Data.LightStorageBuffer->Update(s_Data.LightsList.data(), s_Data.LightsList.size() * sizeof(SceneLight));
 		s_Data.LightStorageBuffer->BindRange(0, s_Data.LightsList.size() * sizeof(SceneLight), 0);
 
 		Texture2D::BindStatic(s_Data.GeometryPass->GetSpecification().TargetFramebuffer->GetColorAttachment(0).RendererID, 0);
+		Texture2D::BindStatic(s_Data.GeometryPass->GetSpecification().TargetFramebuffer->GetColorAttachment(1).RendererID, 1);
+
 		Renderer::SubmitFullsceenQuad();
 
 		Renderer::EndRenderPass();
