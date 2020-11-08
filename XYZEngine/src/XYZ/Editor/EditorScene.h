@@ -49,7 +49,7 @@ namespace XYZ {
 		bool onMouseMove(MouseMovedEvent& event);
 
 		void markNodeDirty(Node& node);
-		void submitNode(const Node& node, const glm::vec3& parentPosition);
+		void submitNode(const Node& node, const glm::vec3& parentPosition, bool parentDirty);
 		void swapEntityNodes(Node& current, Node& newNode, EditorEntity entity);
 		Node* findEntityNode(Node& node,EditorEntity entity);
 	private:

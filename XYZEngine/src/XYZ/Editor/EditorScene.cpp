@@ -154,14 +154,16 @@ namespace XYZ {
 			markNodeDirty(it);
 	}
 
-	void EditorScene::submitNode(const Node& node, const glm::vec3& parentPosition)
+	void EditorScene::submitNode(const Node& node, const glm::vec3& parentPosition, bool parentDirty)
 	{
 		auto& rectTransform = (*m_TransformStorage)[node.RectTransformIndex];
-		if (rectTransform.Dirty)
+		if (rectTransform.Dirty || parentDirty)
 		{
+			parentDirty = true;
 			rectTransform.WorldPosition = parentPosition + rectTransform.Position;
 			rectTransform.Dirty = false;
 		}
+		
 		auto& canvasRenderer = (*m_CanvasRenderStorage)[node.CanvasRendererIndex];
 		if (canvasRenderer.IsVisible)
 		{
@@ -169,7 +171,7 @@ namespace XYZ {
 			if (canvasRenderer.Material)
 				GuiRenderer::SubmitWidget(&canvasRenderer, rectTransform.WorldPosition, rectTransform.Size);
 			for (auto& child : node.Children)
-				submitNode(child, rectTransform.WorldPosition);
+				submitNode(child, rectTransform.WorldPosition, parentDirty);
 		}
 	}
 
@@ -234,7 +236,7 @@ namespace XYZ {
 		Renderer::BeginRenderPass(m_RenderPass, false);
 		GuiRenderer::BeginScene(m_ViewportSize);
 		for (auto& child : m_Entities)
-			submitNode(child, glm::vec3(0.0f));
+			submitNode(child, glm::vec3(0.0f), false);
 
 		GuiRenderer::EndScene();
 		Renderer::EndRenderPass();
