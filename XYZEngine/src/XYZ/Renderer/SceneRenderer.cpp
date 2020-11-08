@@ -67,7 +67,7 @@ namespace XYZ {
 	{
 		// Composite pass
 		{
-			Ref<FrameBuffer> fbo = FrameBuffer::Create({ 1280, 720,{0.1f,0.1f,0.1f,1.0f} });
+			Ref<FrameBuffer> fbo = FrameBuffer::Create({ 1280, 720,{0.1f,0.1f,0.1f,1.0f},1,FrameBufferFormat::RGBA16F,true });
 			fbo->CreateColorAttachment(FrameBufferFormat::RGBA16F); // Color
 			fbo->CreateDepthAttachment();
 			fbo->Resize();
@@ -157,7 +157,7 @@ namespace XYZ {
 		XYZ_ASSERT(!s_Data.ActiveScene, "Missing end scene");
 		s_Data.ActiveScene = scene;
 		s_Data.SceneCamera = camera;
-		
+
 	
 		s_Data.ViewProjectionMatrix = s_Data.SceneCamera.Camera.GetProjectionMatrix() * s_Data.SceneCamera.ViewMatrix;
 	}
@@ -231,16 +231,29 @@ namespace XYZ {
 	void SceneRenderer::GeometryPass()
 	{
 		Renderer::BeginRenderPass(s_Data.GeometryPass, true);
-		Renderer2D::BeginScene(s_Data.ViewProjectionMatrix);
+		Renderer2D::BeginScene(s_Data.ViewProjectionMatrix, s_Data.ViewportSize);
 
 		if (s_Data.Options.ShowGrid)
 		{
 			Renderer2D::SubmitGrid(s_Data.GridProps.Transform, s_Data.GridProps.Scale, s_Data.GridProps.LineWidth);
 		}
 
+		Ref<Material> currentMaterial = nullptr;
+		if (s_Data.SpriteDrawList.size())
+		{
+			currentMaterial = s_Data.SpriteDrawList.back().Sprite->Material;
+			currentMaterial->Set("u_ViewProjectionMatrix", s_Data.ViewProjectionMatrix);
+			Renderer2D::SetMaterial(currentMaterial);
+		}
+
 		for (auto& dc : s_Data.SpriteDrawList)
 		{
-			Renderer2D::SetMaterial(dc.Sprite->Material);
+			if (currentMaterial->GetSortKey() != dc.Sprite->Material->GetSortKey())
+			{
+				currentMaterial = dc.Sprite->Material;
+				currentMaterial->Set("u_ViewProjectionMatrix", s_Data.ViewProjectionMatrix);
+				Renderer2D::SetMaterial(currentMaterial);
+			}
 			Renderer2D::SubmitQuad(dc.Transform, dc.Sprite->SubTexture->GetTexCoords(), dc.Sprite->TextureID, dc.Sprite->Color);
 		}
 

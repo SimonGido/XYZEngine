@@ -87,6 +87,16 @@ namespace XYZ {
 			glBindFramebuffer(GL_FRAMEBUFFER, 0); 
 		});
 	}
+
+	void OpenGLFrameBuffer::Blit() const
+	{
+		Renderer::Submit([this]() {
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, m_RendererID);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); // write to default framebuffer
+
+			glBlitFramebuffer(0, 0, m_Specification.Width, m_Specification.Height, 0, 0, m_Specification.Width, m_Specification.Height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+		});
+	}
 	
 	void OpenGLFrameBuffer::SetSpecification(const FrameBufferSpecs& specs)
 	{
@@ -181,5 +191,13 @@ namespace XYZ {
 		glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, m_Specification.Samples, GL_DEPTH24_STENCIL8, m_Specification.Width, m_Specification.Height, GL_FALSE);
 		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
 
+	}
+
+
+	void FrameBuffer::BindDefault()
+	{
+		Renderer::Submit([]() {
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			});
 	}
 }

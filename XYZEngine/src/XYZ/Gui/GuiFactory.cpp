@@ -1,5 +1,7 @@
 #include "stdafx.h"
-#include "Tree.h"
+#include "GuiFactory.h"
+
+
 
 namespace XYZ {
 

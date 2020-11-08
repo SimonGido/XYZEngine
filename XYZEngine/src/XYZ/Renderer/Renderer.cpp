@@ -3,7 +3,7 @@
 
 #include "SceneRenderer.h"
 #include "Renderer2D.h"
-#include "InGuiRenderer.h"
+#include "GuiRenderer.h"
 
 namespace XYZ {
 
@@ -64,14 +64,14 @@ namespace XYZ {
 		RendererAPI::Init();
 		SceneRenderer::Init();
 		Renderer2D::Init();
-		InGuiRenderer::Init();
+		GuiRenderer::Init();
+
 		SetupFullscreenQuad();
 	}
 
 	void Renderer::Shutdown()
 	{
 		Renderer2D::Shutdown();
-		InGuiRenderer::Shutdown();
 	}
 
 	void Renderer::Clear()
@@ -127,7 +127,8 @@ namespace XYZ {
 	{
 		XYZ_ASSERT(renderPass, "Render pass can not be null");
 		s_Data.ActiveRenderPass = renderPass;
-		s_Data.ActiveRenderPass->GetSpecification().TargetFramebuffer->Bind();
+		if (!s_Data.ActiveRenderPass->GetSpecification().TargetFramebuffer->GetSpecification().SwapChainTarget)
+			s_Data.ActiveRenderPass->GetSpecification().TargetFramebuffer->Bind();
 
 		if (clear)
 		{

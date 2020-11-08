@@ -22,24 +22,6 @@ namespace XYZ {
 		EventType m_Type;
 	};
 
-	struct CheckedEvent : public Event
-	{
-		CheckedEvent()
-			: m_Type(EventType::Checked)
-		{
-		}
-
-		virtual EventType GetEventType() const override { return m_Type; }
-
-		static EventType GetStaticType()
-		{
-			return EventType::Checked;
-		}
-
-	private:
-		EventType m_Type;
-	};
-
 	struct ReleaseEvent : public Event
 	{
 		ReleaseEvent()
@@ -57,6 +39,40 @@ namespace XYZ {
 		EventType m_Type;
 	};
 
+	struct CheckedEvent : public Event
+	{
+		CheckedEvent()
+			: m_Type(EventType::Checked)
+		{
+		}
+
+		virtual EventType GetEventType() const override { return m_Type; }
+
+		static EventType GetStaticType()
+		{
+			return EventType::Checked;
+		}
+
+	private:
+		EventType m_Type;
+	};
+	struct UnCheckedEvent : public Event
+	{
+		UnCheckedEvent()
+			: m_Type(EventType::UnChecked)
+		{
+		}
+
+		virtual EventType GetEventType() const override { return m_Type; }
+
+		static EventType GetStaticType()
+		{
+			return EventType::UnChecked;
+		}
+
+	private:
+		EventType m_Type;
+	};
 
 	struct HooverEvent : public Event
 	{

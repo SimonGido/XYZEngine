@@ -200,7 +200,7 @@ namespace XYZ {
 		SceneRenderer::GetOptions().ShowGrid = true;
 		SceneRenderer::SetGridProperties({ gridTransform,{8.025f * (cameraWidth / camera.GetZoomLevel()), 8.025f * (cameraHeight / camera.GetZoomLevel())},0.025f });
 		SceneRenderer::BeginScene(this, renderCamera);
-
+		
 		for (int i = 0; i < m_RenderGroup->Size(); ++i)
 		{
 			auto [transform, sprite] = (*m_RenderGroup)[i];

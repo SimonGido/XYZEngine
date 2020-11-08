@@ -6,30 +6,32 @@ namespace XYZ {
 	Checkbox::Checkbox()
 	{
 	}
-	void Checkbox::OnUpdate(float dt)
+	void Checkbox::OnUpdate(Timestep ts)
 	{
 		if (m_Checked)
 			Execute(CheckedEvent{});
 	}
 	void Checkbox::OnEvent(Event& event)
 	{
+
 		EventDispatcher dispatcher(event);
-		if (dispatcher.Dispatch<ClickEvent>(Hook(&Checkbox::executeEvent<ClickEvent>, this)))
+		if (event.GetEventType() == EventType::Click)
 		{
-			std::cout << "Clicked" << std::endl;
 			m_Checked = !m_Checked;
 			if (m_Checked)
-				Execute(ClickEvent{});
+				event.Handled = Execute(CheckedEvent{});
 			else
-				Execute(ReleaseEvent{});
-		}
-		else if (dispatcher.Dispatch<HooverEvent>(Hook(&Checkbox::executeEvent<HooverEvent>, this)))
+				event.Handled = Execute(UnCheckedEvent{});
+		}	
+		else if (event.GetEventType() == EventType::Hoover)
 		{
-			Execute(HooverEvent{});
+			event.Handled = Execute(HooverEvent{});
+			m_Hoovered = true;
 		}
-		else if (dispatcher.Dispatch<UnHooverEvent>(Hook(&Checkbox::executeEvent<UnHooverEvent>, this)))
+		else if (event.GetEventType() == EventType::UnHoover)
 		{
-			Execute(UnHooverEvent{});
+			event.Handled = Execute(UnHooverEvent{});
+			m_Hoovered = false;
 		}
 	}
 }

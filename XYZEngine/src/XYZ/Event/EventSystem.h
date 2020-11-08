@@ -9,10 +9,10 @@ namespace XYZ {
 	{
 	public:
 		template <typename Event>
-		void Execute(Event& event)
+		bool Execute(Event& event)
 		{
 			auto& handler = std::get<EventHandler<Event>>(m_Events);
-			handler.ExecuteCallbacks(event);
+			return handler.ExecuteCallbacks(event);
 		}
 
 		virtual ~EventSystem() = default;

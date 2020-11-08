@@ -51,6 +51,7 @@ namespace XYZ {
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
+		virtual void Blit() const = 0;
 
 		virtual void SetSpecification(const FrameBufferSpecs& specs) = 0;
 
@@ -66,6 +67,7 @@ namespace XYZ {
 		virtual const FrameBufferSpecs& GetSpecification() const = 0;
 		virtual FrameBufferSpecs& GetSpecification() = 0;
 		
+		static void BindDefault();
 		static Ref<FrameBuffer> Create(const FrameBufferSpecs& specs);
 	};
 

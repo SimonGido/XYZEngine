@@ -13,6 +13,7 @@ namespace XYZ {
 
 		virtual void Bind() const override;
 		virtual void Unbind() const override;
+		virtual void Blit() const override;
 
 		virtual void SetSpecification(const FrameBufferSpecs& specs) override;
 	

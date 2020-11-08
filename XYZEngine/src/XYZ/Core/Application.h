@@ -1,7 +1,6 @@
 #pragma once
 #include "Window.h"
 #include "LayerStack.h"
-#include "XYZ/InGui/InGuiLayer.h"
 
 #include <vector>
 
@@ -53,7 +52,7 @@ namespace XYZ {
 		void PopLayer(Layer* layer);
 
 
-		void OnEvent(Event& event);
+		bool OnEvent(Event& event);
 
 		
 		std::string OpenFile(const char* filter = "All\0*.*\0") const;
@@ -86,8 +85,6 @@ namespace XYZ {
 	private:
 		LayerStack m_LayerStack;
 		std::unique_ptr<Window> m_Window;
-
-		InGuiLayer* m_InGuiLayer;
 
 		bool m_Running;
 		float m_LastFrameTime = 0.0f;

@@ -3,29 +3,21 @@
 #include "XYZ/ECS/ECSManager.h"
 #include "XYZ/Event/GuiEvent.h"
 #include "XYZ/Event/EventSystem.h"
-#include "Widget.h"
+
+#include "XYZ/Core/Timestep.h"
 
 namespace XYZ {
-	class Checkbox : public Widget,
-				     public EventSystem<ClickEvent, ReleaseEvent, HooverEvent, UnHooverEvent, CheckedEvent>,
+	class Checkbox : public EventSystem<CheckedEvent, UnCheckedEvent, HooverEvent, UnHooverEvent>,
 				     public Type<Checkbox>
 	{
 	public:
 		Checkbox();
 
-		virtual void OnUpdate(float dt) override;
-		virtual void OnEvent(Event& event) override;
-		virtual WidgetType GetWidgetType() override { return WidgetType::Button; }
-
-	private:
-
-		template <typename Event>
-		bool executeEvent(Event& e)
-		{
-			return true;
-		}
+		void OnUpdate(Timestep ts);
+		void OnEvent(Event& event);
 
 	private:
 		bool m_Checked = false;
+		bool m_Hoovered = false;
 	};
 }

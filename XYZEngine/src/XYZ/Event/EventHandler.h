@@ -5,8 +5,8 @@
 
 namespace XYZ {
 
-	template <typename Event>
-	using EventCallback = std::function<void(Event)>;
+	//template <typename Event>
+	//using EventCallback = std::function<bool(Event)>;
 
 	template <typename Event>
 	class EventHandler
@@ -29,10 +29,14 @@ namespace XYZ {
 			}
 		}
 
-		void ExecuteCallbacks(Event& event)
+		bool ExecuteCallbacks(Event& event)
 		{
 			for (auto& callback : m_Callbacks)
-				callback(event);
+			{
+				if (callback(event))
+					return true;
+			}
+			return false;
 		}
 
 	private:

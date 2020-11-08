@@ -6,7 +6,7 @@
 
 #include "XYZ/Renderer/Camera.h"
 
-#include "EditorCamera.h"
+#include "XYZ/Editor/EditorCamera.h"
 #include "SceneCamera.h"
 #include "Components.h"
 #include "Serializable.h"

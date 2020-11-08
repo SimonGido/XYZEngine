@@ -1,16 +1,23 @@
 #pragma once
-#include "XYZ/Physics/PhysicsComponent.h"
-#include "XYZ/Utils/DataStructures/Tree.h"
+#include "XYZ/ECS/Component.h"
+
+#include <glm/glm.hpp>
 
 namespace XYZ {
 
+	enum class CanvasRenderMode
+	{
+		ScreenSpace,
+		RenderModes
+	};
+
 	struct Canvas : public Type<Canvas>
 	{
-		Canvas(bool overlay,bool receiveEvents)
-			: Overlay(overlay),ReceiveEvents(receiveEvents)
+		Canvas(CanvasRenderMode mode)
+			:
+			RenderMode(mode)
 		{}
 
-		bool Overlay;
-		bool ReceiveEvents;
+		CanvasRenderMode RenderMode;
 	};
 }

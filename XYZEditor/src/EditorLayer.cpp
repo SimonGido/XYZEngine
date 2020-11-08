@@ -1,7 +1,5 @@
 #include "EditorLayer.h"
 
-#include "Panels/Panel.h"
-
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
@@ -14,6 +12,13 @@ namespace XYZ {
 		glm::vec2 offset = { windowSize.x / 2,windowSize.y / 2 };
 		return { point.x - offset.x, offset.y - point.y };
 	}
+	static bool Collide(const glm::vec2& pos, const glm::vec2& size, const glm::vec2& point)
+	{
+		return (pos.x + size.x > point.x &&
+			pos.x		   < point.x&&
+			pos.y + size.y >  point.y &&
+			pos.y < point.y);
+	}
 	static bool HasExtension(const std::string& path, const char* extension)
 	{
 		auto lastDot = path.rfind('.');
@@ -25,22 +30,9 @@ namespace XYZ {
 			return true;
 		return false;
 	}
-	static bool Collide(const glm::vec2& pos, const glm::vec2& size, const glm::vec2& point)
-	{
-		return (pos.x + size.x > point.x &&
-			pos.x		   < point.x&&
-			pos.y + size.y >  point.y &&
-			pos.y < point.y);
-	}
+	
 	
 	EditorLayer::EditorLayer()
-		:
-		m_SpriteEditorPanel(PanelID::SpriteEditor),
-		m_ScenePanel(PanelID::Scene),
-		m_SceneHierarchyPanel(PanelID::SceneHierarchy),
-		m_InspectorPanel(PanelID::InspectorPanel),
-		m_AnimatorPanel(PanelID::AnimatorPanel),
-		m_ProjectBrowserPanel(PanelID::ProjectBrowser)
 	{
 	}
 
@@ -89,8 +81,7 @@ namespace XYZ {
 		m_Scene = m_AssetManager.GetAsset<Scene>("Assets/Scenes/scene.xyz");
 		m_Scene->SetViewportSize(windowWidth, windowHeight);
 		SceneManager::Get().SetActive(m_Scene);
-		m_ScenePanel.SetContext(m_Scene);
-		m_SceneHierarchyPanel.SetContext(m_Scene);
+
 
 		m_Material = m_AssetManager.GetAsset<Material>("Assets/Materials/material.mat");
 		m_Material->SetFlags(XYZ::RenderFlags::TransparentFlag);
@@ -164,29 +155,7 @@ namespace XYZ {
 
 		
 
-
-		InGui::SetUIOffset(10.0f);
-		InGui::Begin(PanelID::Test, "Test", { 0,0 }, { 200,200 });
-		InGui::End();
-		InGui::GetWindow(PanelID::Test)->Flags |= (InGuiWindowFlag::MenuEnabled | InGuiWindowFlag::Visible);
-
-
-		float divisor = 8.0f;
-		auto& renderConfig = InGui::GetRenderConfiguration();
-		renderConfig.SubTexture[PLAY] = Ref<SubTexture2D>::Create(renderConfig.Texture, glm::vec2(2, 2), glm::vec2(renderConfig.Texture->GetWidth() / divisor, renderConfig.Texture->GetHeight() / divisor));
-		renderConfig.SubTexture[PAUSE] = Ref<SubTexture2D>::Create(renderConfig.Texture, glm::vec2(2, 1), glm::vec2(renderConfig.Texture->GetWidth() / divisor, renderConfig.Texture->GetHeight() / divisor));
-
 		auto backgroundTexture = m_AssetManager.GetAsset<Texture2D>("Assets/Textures/Backgroundfield.png");
-		m_SceneHierarchyPanel.SetContext(m_Scene);
-		m_SpriteEditorPanel.SetContext(backgroundTexture);
-		m_AnimatorPanel.SetContext(m_AnimationController);	
-
-		m_ScenePanel.RegisterCallback(Hook(&EditorLayer::OnEvent, this));
-		m_SceneHierarchyPanel.RegisterCallback(Hook(&EditorLayer::OnEvent, this));
-		m_AnimatorPanel.RegisterCallback(Hook(&EditorLayer::OnEvent, this));
-		m_SpriteEditorPanel.RegisterCallback(Hook(&EditorLayer::OnEvent, this));
-
-
 
 
 		///////////////////////////////////////////////////////////
@@ -241,7 +210,38 @@ namespace XYZ {
 		}
 		m_Particle->ParticleEffect->SetParticlesRange(m_Vertices, m_Data, 0, count);
 		///////////////////////////////////////////////////////////
+
+		m_EditorScene.SetViewportSize(windowWidth, windowHeight);
+		auto material = Ref<Material>::Create(Shader::Create("Assets/Shaders/GuiShader.glsl"));
+		material->Set("u_Texture", m_CharacterTexture, 0);
+		std::vector<EditorEntity> entities;
+		for (int i = 0; i < 10; ++i)
+		{
+			EditorEntity editorEntity = m_EditorScene.CreateEntity("Test Button");
+			auto transform = editorEntity.GetComponent<RectTransform>();
+			transform->Position.x += i * 50;
+			transform->Position.y += i * 50;
+			
+			auto renderer = editorEntity.GetComponent<CanvasRenderer>();
+			renderer->Material = material;
+			renderer->SubTexture = m_CharacterSubTexture;
+			renderer->Color = glm::vec4(1.0f);
+			renderer->TextureID = 0;
+			renderer->SortLayer = 0;
+			renderer->IsVisible = true;
+
+			auto button = editorEntity.EmplaceComponent<Button>();
+			button->RegisterCallback<ClickEvent>(Hook(&EditorLayer::onButtonClickTest, this));
+			
+
+			entities.push_back(editorEntity);
+		}
+
+		entities[6].GetComponent<RectTransform>()->Position = glm::vec3(100.0f, 0.0f, 0.0f);
+		m_EditorScene.SetParent(entities[6], entities[7]);
 	}	
+
+
 
 	void EditorLayer::OnDetach()
 	{
@@ -250,166 +250,35 @@ namespace XYZ {
 	}
 	void EditorLayer::OnUpdate(Timestep ts)
 	{
-		Renderer::SetClearColor(glm::vec4(0.2, 0.2, 0.2, 1));
-		Renderer::Clear();
 		NativeScriptEngine::Update(ts);
-		
-		m_ScenePanel.OnUpdate(ts);
-		m_SceneHierarchyPanel.OnUpdate(ts);
-		m_AnimatorPanel.OnUpdate(ts);
-		m_SpriteEditorPanel.OnUpdate(ts);
-		m_ProjectBrowserPanel.OnUpdate(ts);		
+		m_EditorCamera.OnUpdate(ts);
+		m_Scene->OnUpdate(ts);
+		m_Scene->OnRenderEditor(m_EditorCamera);
+
+		m_EditorScene.OnUpdate(ts);
+		m_EditorScene.OnRender();
 	}
 	void EditorLayer::OnEvent(Event& event)
-	{		
-		m_AnimatorPanel.OnEvent(event);
-		m_SpriteEditorPanel.OnEvent(event);
-		m_ProjectBrowserPanel.OnEvent(event);
-		m_ScenePanel.OnEvent(event);
-		m_SceneHierarchyPanel.OnEvent(event);
-		m_InspectorPanel.OnEvent(event);
-
+	{			
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&EditorLayer::onMouseButtonPress, this));
 		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorLayer::onMouseButtonRelease, this));	
-		dispatcher.Dispatch<EntitySelectedEvent>(Hook(&EditorLayer::onEntitySelected, this));
-		dispatcher.Dispatch<DeselectedEvent>(Hook(&EditorLayer::onDeselected, this));
-		dispatcher.Dispatch<AnimatorSelectedEvent>(Hook(&EditorLayer::onAnimatorSelected, this));
-		dispatcher.Dispatch<SpriteSelectedEvent>(Hook(&EditorLayer::onSpriteSelected, this));
+		m_EditorCamera.OnEvent(event);
+		m_EditorScene.OnEvent(event);
 	}
 
-	void EditorLayer::OnInGuiRender(Timestep ts)
-	{
-		m_ScenePanel.OnInGuiRender();
-		m_SceneHierarchyPanel.OnInGuiRender();
-		m_AnimatorPanel.OnInGuiRender();
-		m_SpriteEditorPanel.OnInGuiRender();
-		m_InspectorPanel.OnInGuiRender();
-		m_ProjectBrowserPanel.OnInGuiRender();
-
-
-		InGui::BeginPanel(InGuiPanelType::Left, 300.0f, m_LeftPanel);
-		//if (m_Dragging && m_ProjectBrowserPanel.GetSelectedFileIndex() != -1)
-		//{
-		//	auto& renderConfig = InGui::GetRenderConfiguration();
-		//	auto [mx, my] = Input::GetMousePosition();
-		//	auto [width, height] = Input::GetWindowSize();
-		//	glm::vec2 size = { 25.0f,25.0f };
-		//	glm::vec2 position = MouseToWorld({ mx,my }, { width,height }) - (size / 2.0f);
-		//			
-		//	//if (m_ProhibitedCursor && !m_EntityInspectorLayout.ValidExtension(m_ProjectBrowserPanel.GetSelectedFilePath()))
-		//	//{
-		//	//	Application::Get().GetWindow().SetCustomCursor(m_ProhibitedCursor);
-		//	//}
-		//	//else
-		//	//{
-		//	//	Application::Get().GetWindow().SetStandardCursor(WindowCursors::XYZ_ARROW_CURSOR);
-		//	//}
-		//}
-		if (InGui::Begin(PanelID::TestPanel, "Test Panel", { 0,0 }, { 200,200 }))
-		{
-			
-		}
-		InGui::End();
-
-		if (InGui::Begin(PanelID::Test, "Test", { 0,0 }, { 200,200 }))
-		{
-			
-			InGui::MenuBar("File", 70, m_MenuOpen);
-			if (m_MenuOpen)
-			{
-				if (InGui::MenuItem("Load Scene", { 150,25 }) & InGuiReturnType::Clicked)
-				{
-					auto& app = Application::Get();
-					std::string filepath = app.OpenFile("(*.xyz)\0*.xyz\0");
-					if (!filepath.empty())
-					{
-						m_Scene = m_AssetManager.GetAsset<Scene>(filepath);
-					}
-					m_MenuOpen = false;
-				}
-				else if (InGui::MenuItem("Create Script", { 150,25 }) & InGuiReturnType::Clicked)
-				{
-					auto& app = Application::Get();
-					std::string filepath = app.CreateNewFile("(*.cpp)\0*.cpp\0");
-					if (!filepath.empty())
-					{
-						PerModuleInterface::g_pRuntimeObjectSystem->AddToRuntimeFileList(filepath.c_str());
-					}
-					m_MenuOpen = false;
-				}
-				else if (InGui::MenuItem("Load Script", { 150,25 }) & InGuiReturnType::Clicked)
-				{
-					auto& app = Application::Get();
-					std::string filepath = app.OpenFile("(*.cpp)\0*.cpp\0");
-					if (!filepath.empty())
-					{
-						PerModuleInterface::g_pRuntimeObjectSystem->AddToRuntimeFileList(filepath.c_str());
-					}
-					m_MenuOpen = false;
-				}
-
-			}
-			if (InGui::Button("Compile", { 100,25 }) & InGuiReturnType::Clicked)
-			{
-				InGui::GetWindow(PanelID::Test)->Flags |= InGuiWindowFlag::Closed;
-				//PerModuleInterface::g_pRuntimeObjectSystem->CompileAll(true);
-			}
-		}
-		InGui::End();
-	}
-
-
-	bool EditorLayer::onMouseButtonPress(MouseButtonPressEvent& event)
-	{
 	
+	bool EditorLayer::onMouseButtonPress(MouseButtonPressEvent& event)
+	{	
 		return false;
 	}
 	bool EditorLayer::onMouseButtonRelease(MouseButtonReleaseEvent& event)
 	{
-		if (event.IsButtonReleased(MouseCode::XYZ_MOUSE_BUTTON_LEFT))
-		{
-			m_Dragging = false;
-			Application::Get().GetWindow().SetStandardCursor(WindowCursors::XYZ_ARROW_CURSOR);
-			
-			//if (HasExtension(m_ProjectBrowserPanel.GetSelectedFilePath(), "png"))
-			//{
-			//	auto texture = m_AssetManager.GetAsset<Texture2D>(m_ProjectBrowserPanel.GetSelectedFilePath());
-			//	auto spriteEditor = InGui::GetWindow(PanelID::SpriteEditor);
-			//	auto [mx, my] = Input::GetMousePosition();
-			//	auto [width, height] = Input::GetWindowSize();
-			//
-			//	glm::vec2 mousePos = MouseToWorld({ mx,my }, { width,height });
-			//	if (Collide(spriteEditor->Position, spriteEditor->Size, mousePos))
-			//		m_SpriteEditorPanel.SetContext(texture);
-			//}
-		}
 		return false;
 	}
-
-	bool EditorLayer::onEntitySelected(EntitySelectedEvent& event)
+	bool EditorLayer::onButtonClickTest(ClickEvent& event)
 	{
-		m_InspectableEntity.SetContext(event.GetEntity());
-		m_InspectorPanel.SetInspectable(&m_InspectableEntity);
-		return true;
-	}
-	bool EditorLayer::onDeselected(DeselectedEvent& event)
-	{
-		m_InspectorPanel.SetInspectable(nullptr);
-		return true;
-	}
-	bool EditorLayer::onAnimatorSelected(AnimatorSelectedEvent& event)
-	{
-		m_InspectableAnimator.SetContext(event.GetController());
-		m_InspectorPanel.SetInspectable(&m_InspectableAnimator);
 		return true;
 	}
 
-	bool EditorLayer::onSpriteSelected(SpriteSelectedEvent& event)
-	{
-		m_InspectableSprite.SetContext(event.GetSprite());
-		m_InspectorPanel.SetInspectable(&m_InspectableSprite);
-		return false;
-	}
-	
 }

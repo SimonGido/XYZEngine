@@ -32,7 +32,12 @@
 #include "XYZ/Scene/SceneManager.h"
 #include "XYZ/Scene/AssetManager.h"
 #include "XYZ/Scene/Animation.h"
-#include "XYZ/Scene/EditorCamera.h"
+
+
+//---------Editor-----------//
+#include "XYZ/Editor/EditorEntity.h"
+#include "XYZ/Editor/EditorScene.h"
+#include "XYZ/Editor/EditorCamera.h"
 
 //------ECS-----//
 #include "XYZ/ECS/ECSManager.h"
@@ -46,9 +51,6 @@
 //-----Audio-----//
 #include "XYZ/Audio/Audio.h"
 
-
-
-#include "XYZ/Utils/DataStructures/Tree.h"
 #include "XYZ/Utils/DataStructures/Graph.h"
 
 #include "XYZ/Renderer/Font.h"
@@ -60,12 +62,8 @@
 #include "XYZ/Gui/Button.h"
 #include "XYZ/Gui/Checkbox.h"
 
-//------InGui-------//
-#include "XYZ/InGui/InGui.h"
-
 
 #include "XYZ/FSM/StateMachine.h"
-
 
 //------NativeScript-------//
 #include "XYZ/NativeScript/ScriptableEntity.h"
@@ -73,3 +71,5 @@
 //------Utils-------//
 #include "XYZ/Utils/DataStructures/HashGrid2D.h"
 #include "XYZ/Utils/DataStructures/ByteBuffer.h"
+
+

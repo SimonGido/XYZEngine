@@ -124,7 +124,7 @@ namespace XYZ {
 		}
 
 		template <typename T>
-		int GetComponentIndex(uint32_t entity)
+		int32_t GetComponentIndex(uint32_t entity)
 		{
 			return s_Data.ComponentManager.GetComponentIndex<T>(entity);
 		}

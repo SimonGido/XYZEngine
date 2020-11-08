@@ -19,7 +19,7 @@ namespace XYZ {
 
 
 	template <typename Type>
-	using EventCallback = std::function<void(Type)>;
+	using EventCallback = std::function<bool(Type&)>;
 
 	/*! @class Event
 	*	@brief Describes an event and its handlers
@@ -35,17 +35,17 @@ namespace XYZ {
 	class EventCaller
 	{
 	public:
-		void RegisterCallback(const std::function<void(Event&)>& callback)
+		void RegisterCallback(const EventCallback<Event>& callback)
 		{
 			m_Callback = callback;
 		}
-		void Execute(Event& event)
+		bool Execute(Event& event)
 		{
 			XYZ_ASSERT(m_Callback, "Event caller callback not initialized");
-			m_Callback(event);
+			return m_Callback(event);
 		}
 	private:
-		std::function<void(Event&)> m_Callback;
+		EventCallback<Event> m_Callback;
 	};
 	
 	class EventDispatcher

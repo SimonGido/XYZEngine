@@ -28,11 +28,7 @@ namespace XYZ {
 		m_Window = Window::Create();
 		m_Window->SetVSync(false);
 
-		m_Window->RegisterCallback(Hook(&Application::OnEvent, this));
-
-		m_InGuiLayer = new InGuiLayer();
-		m_LayerStack.PushOverlay(m_InGuiLayer);
-			
+		m_Window->RegisterCallback(Hook(&Application::OnEvent, this));		
 	}
 
 	Application::~Application()
@@ -52,12 +48,7 @@ namespace XYZ {
 				
 				for (Layer* layer : m_LayerStack)	
 					layer->OnUpdate(timestep);
-				
-				m_InGuiLayer->Begin();
-				for (Layer* layer : m_LayerStack)
-					layer->OnInGuiRender(timestep);
-				m_InGuiLayer->End();
-				
+			
 			}
 			m_Window->Update();
 		}
@@ -96,7 +87,7 @@ namespace XYZ {
 	}
 
 
-	void Application::OnEvent(Event& event)
+	bool Application::OnEvent(Event& event)
 	{
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<WindowResizeEvent>(Hook(&Application::onWindowResized, this));
@@ -106,8 +97,9 @@ namespace XYZ {
 		{
 			(*it)->OnEvent(event);
 			if (event.Handled)
-				break;
+				return true;
 		}
+		return false;
 	}
 
 	std::string Application::OpenFile(const char* filter) const
