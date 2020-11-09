@@ -5,7 +5,6 @@
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Renderer/Texture.h"
 #include "XYZ/Scene/Scene.h"
-#include "XYZ/Renderer/MeshFactory.h"
 
 #include <yaml-cpp/yaml.h>
 

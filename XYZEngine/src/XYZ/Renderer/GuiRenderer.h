@@ -17,9 +17,10 @@ namespace XYZ {
 		static void EndScene();
 
 		static void SetMaterial(const Ref<Material>& material);
-		static void SubmitWidget(CanvasRenderer* canvasRenderer, const glm::vec3& position, const glm::vec2& size);
+		static void SubmitWidget(CanvasRenderer* canvasRenderer, RectTransform* transform);
 
 	private:
 		static void flushDrawList();
+		static bool cullTest(const glm::vec3& position, const glm::vec2& scale);
 	};
 }

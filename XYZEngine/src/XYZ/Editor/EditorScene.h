@@ -12,6 +12,7 @@
 #include "XYZ/Gui/Canvas.h"
 #include "XYZ/Gui/CanvasRenderer.h"
 #include "XYZ/Gui/RectTransform.h"
+#include "XYZ/Gui/Text.h"
 
 
 #include "EditorUISpecification.h"
@@ -37,9 +38,11 @@ namespace XYZ {
 	public:
 		EditorScene(const EditorUISpecification& specs);
 
+		//TODO: Create new class UIContext or something like that
 		EditorEntity CreateCanvas(const CanvasSpecification& specs);
 		EditorEntity CreateButton(EditorEntity canvas, const ButtonSpecification& specs);
-
+		EditorEntity CreateCheckbox(EditorEntity canvas, const CheckboxSpecification& specs);
+		EditorEntity CreateText(EditorEntity canvas, const TextSpecification& specs);
 
 		void SetParent(EditorEntity parent, EditorEntity child);
 
@@ -61,7 +64,6 @@ namespace XYZ {
 		void swapEntityNodes(Node& current, Node& newNode, EditorEntity entity);
 		Node* findEntityNode(Node& node,EditorEntity entity);
 	
-	
 	private:
 		Tree m_Entities;
 		ECSManager m_ECS;
@@ -74,6 +76,7 @@ namespace XYZ {
 		ComponentGroup<Button, CanvasRenderer, RectTransform>* m_ButtonGroup;
 		ComponentGroup<Checkbox, CanvasRenderer, RectTransform>* m_CheckboxGroup;
 		ComponentGroup<Slider, CanvasRenderer, RectTransform>* m_SliderGroup;
+		ComponentGroup<Text, CanvasRenderer, RectTransform>* m_TextGroup;
 
 		glm::vec2 m_ViewportSize = glm::vec2(1280.0f, 720.0f);
 

@@ -1,6 +1,6 @@
 #pragma once
 #include "XYZ/ECS/Component.h"
-#include "XYZ/Renderer/SubTexture2D.h"
+#include "XYZ/Renderer/Mesh.h"
 #include "XYZ/Renderer/Material.h"
 
 #include <glm/glm.hpp>
@@ -10,8 +10,7 @@ namespace XYZ {
 	{
 		CanvasRenderer(
 			Ref<Material> material,
-			Ref<SubTexture2D> subTexture,
-			const glm::vec4& color,
+			const Mesh& mesh,
 			uint32_t textureID,
 			int32_t sortLayer,
 			bool isVisible = true
@@ -24,12 +23,10 @@ namespace XYZ {
 		CanvasRenderer& operator =(const CanvasRenderer& other);
 
 		Ref<Material> Material;
-		Ref<SubTexture2D> SubTexture;
-		glm::vec4 Color;
-
-		uint32_t TextureID;
-		int32_t SortLayer = 0;
-		bool IsVisible = true;
-
+		Mesh	      Mesh;
+		uint32_t      TextureID;
+		int32_t       SortLayer = 0;
+		float         TilingFactor = 1.0f;
+		bool          IsVisible = true;
 	};
 }

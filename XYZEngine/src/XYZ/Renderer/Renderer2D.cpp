@@ -308,6 +308,7 @@ namespace XYZ {
 		Renderer::DrawElementsIndirect(nullptr);
 	}
 
+
 	void Renderer2D::SubmitQuads(const Vertex* vertices, uint32_t countQuads, uint32_t textureID, float tilingFactor)
 	{
 		if (s_Data.IndexCount + countQuads * 6 >= s_Data.MaxIndices)
@@ -323,6 +324,23 @@ namespace XYZ {
 			s_Data.BufferPtr++;
 		}
 		s_Data.IndexCount += 6;
+	}
+
+	void Renderer2D::SubmitQuads(const glm::mat4& transform, const Vertex* vertices, uint32_t countQuads, uint32_t textureID, float tilingFactor)
+	{
+		if (s_Data.IndexCount + countQuads * 6 >= s_Data.MaxIndices)
+			Flush();
+
+		for (uint32_t i = 0; i < countQuads * 4; ++i)
+		{
+			s_Data.BufferPtr->Position = transform * glm::vec4(vertices[i].Position, 1.0f);
+			s_Data.BufferPtr->Color = vertices[i].Color;
+			s_Data.BufferPtr->TexCoord = vertices[i].TexCoord;
+			s_Data.BufferPtr->TextureID = (float)textureID;
+			s_Data.BufferPtr->TilingFactor = tilingFactor;
+			s_Data.BufferPtr++;
+		}
+		s_Data.IndexCount += 6 * countQuads;
 	}
 
 	void Renderer2D::SubmitGrid(const glm::mat4& transform, const glm::vec2& scale, float lineWidth)

@@ -15,8 +15,7 @@ namespace XYZ {
 		struct WidgetDrawCommand
 		{
 			CanvasRenderer* Renderer;
-			glm::vec3	    Position;
-			glm::vec2		Size;
+			RectTransform*  Transform;
 		};
 
 		std::vector<WidgetDrawCommand> WidgetDrawList;
@@ -40,9 +39,11 @@ namespace XYZ {
 	void GuiRenderer::SetMaterial(const Ref<Material>& material)
 	{
 	}
-	void GuiRenderer::SubmitWidget(CanvasRenderer* canvasRenderer, const glm::vec3& position, const glm::vec2& size)
+	void GuiRenderer::SubmitWidget(CanvasRenderer* canvasRenderer, RectTransform* transform)
 	{
-		s_Data.WidgetDrawList.push_back({ canvasRenderer, position, size });
+		// TODO: Might not work the best for text
+		if (cullTest(transform->WorldPosition, transform->Scale))
+			s_Data.WidgetDrawList.push_back({ canvasRenderer, transform });
 	}
 	void GuiRenderer::flushDrawList()
 	{
@@ -62,11 +63,20 @@ namespace XYZ {
 				currentMaterial = dc.Renderer->Material;
 				currentMaterial->Set("u_ViewportSize", s_Data.ViewportSize);
 				Renderer2D::SetMaterial(currentMaterial);
-			}		
-			Renderer2D::SubmitQuad(dc.Position, dc.Size, dc.Renderer->SubTexture->GetTexCoords(), dc.Renderer->TextureID, dc.Renderer->Color);
+			}
+			Renderer2D::SubmitQuads(dc.Transform->GetWorldTransform(), dc.Renderer->Mesh.Vertices.data(), dc.Renderer->Mesh.Vertices.size() / 4.0f, dc.Renderer->TextureID, dc.Renderer->TilingFactor);
 		}
 		Renderer2D::Flush();
 		Renderer2D::FlushLines();
 		Renderer2D::EndScene();
+	}
+	bool GuiRenderer::cullTest(const glm::vec3& position, const glm::vec2& scale)
+	{
+		if (position.x - scale.x + s_Data.ViewportSize.x / 2.0f < s_Data.ViewportSize.x 
+		 && position.x + scale.x + s_Data.ViewportSize.x / 2.0f > 0.0f
+		 && position.y - scale.y + s_Data.ViewportSize.y / 2.0f < s_Data.ViewportSize.y 
+		 && position.y + scale.y + s_Data.ViewportSize.y / 2.0f > 0.0f)
+			return true;
+		return false;
 	}
 }

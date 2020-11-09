@@ -15,7 +15,6 @@ namespace XYZ {
 	{
 		Text(const std::string& source, const Ref<Font>& font, TextAlignment alignment);
 		
-	
 		std::string   Source;
 		Ref<Font>     Font;
 		TextAlignment Alignment;

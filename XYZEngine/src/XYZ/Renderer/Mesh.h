@@ -8,16 +8,13 @@ namespace XYZ {
 
 	struct Vertex
 	{
-		glm::vec4 Position;
 		glm::vec4 Color;
+		glm::vec3 Position;
 		glm::vec2 TexCoord;
 	};
 
-	struct Mesh : public RefCount
+	struct Mesh
 	{
 		std::vector<Vertex> Vertices;
-		std::vector<uint32_t> Indices;
-		int32_t TextureID;
-		float   TilingFactor;
 	};
 }

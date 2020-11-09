@@ -211,15 +211,17 @@ namespace XYZ {
 		m_Particle->ParticleEffect->SetParticlesRange(m_Vertices, m_Data, 0, count);
 		///////////////////////////////////////////////////////////
 
-		
-		auto texture = Texture2D::Create(XYZ::TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest, "Assets/Textures/Gui/TexturePack_Dark.png");
+		Ref<Font> font = Ref<Font>::Create(16, "Assets/Fonts/arial.ttf");
+		auto texture = Texture2D::Create(XYZ::TextureWrap::Clamp, TextureParam::Linear, TextureParam::Nearest, "Assets/Textures/Gui/TexturePack_Dark.png");
 		auto material = Ref<Material>::Create(Shader::Create("Assets/Shaders/GuiShader.glsl"));
 		material->Set("u_Texture", texture, 0);
-		
+		material->Set("u_Texture", font->GetTexture(), 1);
+
 		float divisor = 8.0f;
 		EditorUISpecification specs;
 		specs.Material = material;
-		specs.SubTexture[EditorUISpecification::BUTTON] = Ref<SubTexture2D>::Create(texture, glm::vec2(2,0), glm::vec2((float)texture->GetWidth() / divisor, (float)texture->GetHeight() / divisor));
+		specs.Font = font;
+		specs.SubTexture[EditorUISpecification::BUTTON] = Ref<SubTexture2D>::Create(texture, glm::vec2(0,0), glm::vec2((float)texture->GetWidth() / divisor, (float)texture->GetHeight() / divisor));
 		
 		m_EditorScene = Ref<EditorScene>::Create(specs);
 		m_EditorScene->SetViewportSize(windowWidth, windowHeight);
@@ -248,6 +250,18 @@ namespace XYZ {
 
 		m_EditorEntities[6].GetComponent<RectTransform>()->Position = glm::vec3(100.0f, 0.0f, 0.0f);
 		m_EditorScene->SetParent(m_EditorEntities[6], m_EditorEntities[7]);
+		
+		//for (int i = 0; i < 10; ++i)
+		//{
+		//	EditorEntity editorEntity = m_EditorScene->CreateText(canvas, TextSpecification{
+		//		TextAlignment::Center,
+		//		"Test text",
+		//		glm::vec3(0.0, i * -32.0f, 0.0f),
+		//		glm::vec2(1.0f, 1.0f),
+		//		glm::vec4(1.0f)
+		//	});
+		//	m_EditorEntities.push_back(editorEntity);
+		//}
 	}	
 
 
