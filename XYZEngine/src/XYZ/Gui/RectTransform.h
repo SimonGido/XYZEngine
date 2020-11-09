@@ -13,6 +13,5 @@ namespace XYZ {
 		glm::vec3 WorldPosition;
 		glm::vec3 Position;
 		glm::vec2 Size;
-		bool	  Dirty = true;
 	};
 }

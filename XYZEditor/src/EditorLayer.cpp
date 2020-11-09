@@ -211,34 +211,43 @@ namespace XYZ {
 		m_Particle->ParticleEffect->SetParticlesRange(m_Vertices, m_Data, 0, count);
 		///////////////////////////////////////////////////////////
 
-		m_EditorScene.SetViewportSize(windowWidth, windowHeight);
+		
+		auto texture = Texture2D::Create(XYZ::TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest, "Assets/Textures/Gui/TexturePack_Dark.png");
 		auto material = Ref<Material>::Create(Shader::Create("Assets/Shaders/GuiShader.glsl"));
-		material->Set("u_Texture", m_CharacterTexture, 0);
-		std::vector<EditorEntity> entities;
+		material->Set("u_Texture", texture, 0);
+		
+		float divisor = 8.0f;
+		EditorUISpecification specs;
+		specs.Material = material;
+		specs.SubTexture[EditorUISpecification::BUTTON] = Ref<SubTexture2D>::Create(texture, glm::vec2(2,0), glm::vec2((float)texture->GetWidth() / divisor, (float)texture->GetHeight() / divisor));
+		
+		m_EditorScene = Ref<EditorScene>::Create(specs);
+		m_EditorScene->SetViewportSize(windowWidth, windowHeight);
+
+		EditorEntity canvas = m_EditorScene->CreateCanvas(CanvasSpecification(
+				CanvasRenderMode::ScreenSpace,
+				glm::vec3(0.0f),
+				glm::vec2(windowWidth, windowHeight),
+				glm::vec4(0.0f)
+		));
 		for (int i = 0; i < 10; ++i)
 		{
-			EditorEntity editorEntity = m_EditorScene.CreateEntity("Test Button");
-			auto transform = editorEntity.GetComponent<RectTransform>();
-			transform->Position.x += i * 50;
-			transform->Position.y += i * 50;
-			
-			auto renderer = editorEntity.GetComponent<CanvasRenderer>();
-			renderer->Material = material;
-			renderer->SubTexture = m_CharacterSubTexture;
-			renderer->Color = glm::vec4(1.0f);
-			renderer->TextureID = 0;
-			renderer->SortLayer = 0;
-			renderer->IsVisible = true;
+			EditorEntity editorEntity = m_EditorScene->CreateButton(canvas,
+				ButtonSpecification{
+					"Button",
+					glm::vec3(i * 50,i * 50, 0.0f),
+					glm::vec2(50.0f,50.0f),
+					glm::vec4(1.0f,1.0f,1.0f,1.0f),
+					glm::vec4(0.4f, 1.0f, 0.8f, 1.0f),
+					glm::vec4(1.0f, 0.5f, 0.8f, 1.0f)
+			});
 
-			auto button = editorEntity.EmplaceComponent<Button>();
-			button->RegisterCallback<ClickEvent>(Hook(&EditorLayer::onButtonClickTest, this));
-			
-
-			entities.push_back(editorEntity);
+			editorEntity.GetComponent<Button>()->RegisterCallback<ClickEvent>(Hook(&EditorLayer::onButtonClickTest, this));
+			m_EditorEntities.push_back(editorEntity);
 		}
 
-		entities[6].GetComponent<RectTransform>()->Position = glm::vec3(100.0f, 0.0f, 0.0f);
-		m_EditorScene.SetParent(entities[6], entities[7]);
+		m_EditorEntities[6].GetComponent<RectTransform>()->Position = glm::vec3(100.0f, 0.0f, 0.0f);
+		m_EditorScene->SetParent(m_EditorEntities[6], m_EditorEntities[7]);
 	}	
 
 
@@ -255,8 +264,8 @@ namespace XYZ {
 		m_Scene->OnUpdate(ts);
 		m_Scene->OnRenderEditor(m_EditorCamera);
 
-		m_EditorScene.OnUpdate(ts);
-		m_EditorScene.OnRender();
+		m_EditorScene->OnUpdate(ts);
+		m_EditorScene->OnRender();
 	}
 	void EditorLayer::OnEvent(Event& event)
 	{			
@@ -264,7 +273,7 @@ namespace XYZ {
 		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&EditorLayer::onMouseButtonPress, this));
 		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorLayer::onMouseButtonRelease, this));	
 		m_EditorCamera.OnEvent(event);
-		m_EditorScene.OnEvent(event);
+		m_EditorScene->OnEvent(event);
 	}
 
 	

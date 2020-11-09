@@ -27,7 +27,9 @@ namespace XYZ {
 	}
 
 
-	EditorScene::EditorScene()
+	EditorScene::EditorScene(const EditorUISpecification& specs)
+		:
+		m_Specification(specs)
 	{
 		Ref<FrameBuffer> fbo = FrameBuffer::Create({ 1280, 720,{0.1f,0.1f,0.1f,1.0f},1,FrameBufferFormat::RGBA16F,true });
 		fbo->CreateColorAttachment(FrameBufferFormat::RGBA16F); // Position color buffer
@@ -36,47 +38,67 @@ namespace XYZ {
 		m_RenderPass = RenderPass::Create({ fbo });
 
 		m_ButtonGroup = m_ECS.CreateGroup<Button, CanvasRenderer, RectTransform>();
+		m_CheckboxGroup = m_ECS.CreateGroup<Checkbox, CanvasRenderer, RectTransform>();
 		m_SliderGroup = m_ECS.CreateGroup<Slider, CanvasRenderer, RectTransform>();
+
 
 		m_TransformStorage = m_ECS.GetComponentStorage<RectTransform>();
 		m_CanvasRenderStorage = m_ECS.GetComponentStorage<CanvasRenderer>();
-
-		m_CanvasEntity = m_ECS.CreateEntity();
-		EditorEntity entity(m_CanvasEntity, this);
-
-		entity.EmplaceComponent<Canvas>(CanvasRenderMode::ScreenSpace);
-		entity.EmplaceComponent<RectTransform>(glm::vec3(0, 0, 0), m_ViewportSize);
-		auto renderer = entity.EmplaceComponent<CanvasRenderer>();
-
-		int32_t transformIndex = m_ECS.GetComponentIndex<RectTransform>(m_CanvasEntity);
-		int32_t rendererIndex = m_ECS.GetComponentIndex<CanvasRenderer>(m_CanvasEntity);
-
-		m_Entities.push_back(Node{ m_CanvasEntity, transformIndex, rendererIndex });
 	}
-	EditorEntity EditorScene::CreateEntity(const std::string& name)
+
+	EditorEntity EditorScene::CreateCanvas(const CanvasSpecification& specs)
 	{
 		EditorEntity entity(m_ECS.CreateEntity(), this);
-		entity.EmplaceComponent<RectTransform>(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec2(50.0f, 50.0f));
-		entity.EmplaceComponent<CanvasRenderer>();
+		entity.EmplaceComponent<Canvas>(specs.RenderMode);
+		entity.EmplaceComponent<RectTransform>(specs.Position, specs.Size);
+		auto renderer = entity.EmplaceComponent<CanvasRenderer>(
+			m_Specification.Material,
+			m_Specification.SubTexture[EditorUISpecification::BUTTON],
+			specs.Color,
+			0,
+			0,
+			true
+		);
 
 		int32_t transformIndex = m_ECS.GetComponentIndex<RectTransform>(entity);
 		int32_t rendererIndex = m_ECS.GetComponentIndex<CanvasRenderer>(entity);
-		
-		m_Entities[0].Children.push_back(Node{ entity, transformIndex, rendererIndex });
+
+		m_Entities.push_back(Node{ entity, transformIndex, rendererIndex });
+		return entity;
+	}
+
+	EditorEntity EditorScene::CreateButton(EditorEntity canvas, const ButtonSpecification& specs)
+	{
+		EditorEntity entity(m_ECS.CreateEntity(), this);
+		entity.EmplaceComponent<RectTransform>(specs.Position, specs.Size);
+		entity.EmplaceComponent<CanvasRenderer>(
+			m_Specification.Material,
+			m_Specification.SubTexture[EditorUISpecification::BUTTON],
+			specs.DefaultColor,
+			0,
+			0,
+			true
+		);
+		entity.EmplaceComponent<Button>(specs.DefaultColor, specs.ClickColor, specs.HooverColor);
+
+		int32_t transformIndex = m_ECS.GetComponentIndex<RectTransform>(entity);
+		int32_t rendererIndex = m_ECS.GetComponentIndex<CanvasRenderer>(entity);
+
+		auto newChildNode = findEntityNode(m_Entities.back(), canvas);
+		XYZ_ASSERT(newChildNode, "Canvas was not found");
+		newChildNode->Children.push_back(Node{ entity, transformIndex, rendererIndex });
+
 		return entity;
 	}
 	void EditorScene::SetParent(EditorEntity parent, EditorEntity child)
 	{
 		auto newChildNode = findEntityNode(m_Entities.back(), parent);
 		swapEntityNodes(m_Entities.back(), *newChildNode, child);
-		markNodeDirty(newChildNode->Children.back());
 	}
+
 	void EditorScene::SetViewportSize(uint32_t width, uint32_t height)
 	{
 		m_ViewportSize = glm::vec2(width, height);
-
-		EditorEntity canvasEntity(m_CanvasEntity, this);
-		canvasEntity.GetComponent<RectTransform>()->Size = m_ViewportSize;
 
 		auto& specs = m_RenderPass->GetSpecification().TargetFramebuffer->GetSpecification();
 		specs.Width = width;
@@ -95,6 +117,7 @@ namespace XYZ {
 				auto [button, canvasRenderer, rectTransform] = (*m_ButtonGroup)[i];
 				if (Collide(rectTransform->WorldPosition, rectTransform->Size, mousePosition))
 				{
+					canvasRenderer->Color = button->ClickColor;
 					if (button->Execute<ClickEvent>(ClickEvent{}))
 						return true;
 				}
@@ -114,6 +137,7 @@ namespace XYZ {
 				auto [button, canvasRenderer, rectTransform] = (*m_ButtonGroup)[i];
 				if (Collide(rectTransform->WorldPosition, rectTransform->Size, mousePosition))
 				{
+					canvasRenderer->Color = button->DefaultColor;
 					if (button->Execute<ReleaseEvent>(ReleaseEvent{}))
 						return true;
 				}
@@ -131,47 +155,30 @@ namespace XYZ {
 			auto [button, canvasRenderer, rectTransform] = (*m_ButtonGroup)[i];
 			if (Collide(rectTransform->WorldPosition, rectTransform->Size, mousePosition))
 			{
-				button->Hoovered = true;
-				canvasRenderer->Color = { 0,0,1,1 };
+				canvasRenderer->Color = button->HooverColor;
 				button->Execute<HooverEvent>(HooverEvent{});
 				return true;
 			}
-			else if (button->Hoovered)
+			else
 			{
-				button->Hoovered = false;
-				canvasRenderer->Color = { 1,1,1,1 };
+				canvasRenderer->Color = button->DefaultColor;
 				button->Execute<UnHooverEvent>(UnHooverEvent{});
 			}
 		}
 		return false;
 	}
 
-	void EditorScene::markNodeDirty(Node& node)
-	{
-		auto& rectTransform = (*m_TransformStorage)[node.RectTransformIndex];
-		rectTransform.Dirty = true;
-		for (auto& it : node.Children)
-			markNodeDirty(it);
-	}
 
-	void EditorScene::submitNode(const Node& node, const glm::vec3& parentPosition, bool parentDirty)
+	void EditorScene::submitNode(const Node& node, const glm::vec3& parentPosition)
 	{
 		auto& rectTransform = (*m_TransformStorage)[node.RectTransformIndex];
-		if (rectTransform.Dirty || parentDirty)
-		{
-			parentDirty = true;
-			rectTransform.WorldPosition = parentPosition + rectTransform.Position;
-			rectTransform.Dirty = false;
-		}
-		
+		rectTransform.WorldPosition = parentPosition + rectTransform.Position;
 		auto& canvasRenderer = (*m_CanvasRenderStorage)[node.CanvasRendererIndex];
 		if (canvasRenderer.IsVisible)
 		{
-			// TODO: Temporary
-			if (canvasRenderer.Material)
-				GuiRenderer::SubmitWidget(&canvasRenderer, rectTransform.WorldPosition, rectTransform.Size);
+			GuiRenderer::SubmitWidget(&canvasRenderer, rectTransform.WorldPosition, rectTransform.Size);
 			for (auto& child : node.Children)
-				submitNode(child, rectTransform.WorldPosition, parentDirty);
+				submitNode(child, rectTransform.WorldPosition);
 		}
 	}
 
@@ -236,7 +243,7 @@ namespace XYZ {
 		Renderer::BeginRenderPass(m_RenderPass, false);
 		GuiRenderer::BeginScene(m_ViewportSize);
 		for (auto& child : m_Entities)
-			submitNode(child, glm::vec3(0.0f), false);
+			submitNode(child, glm::vec3(0.0f));
 
 		GuiRenderer::EndScene();
 		Renderer::EndRenderPass();

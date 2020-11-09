@@ -8,7 +8,6 @@
 namespace XYZ {
 	struct CanvasRenderer : public Type<CanvasRenderer>
 	{
-		CanvasRenderer() = default;
 		CanvasRenderer(
 			Ref<Material> material,
 			Ref<SubTexture2D> subTexture,

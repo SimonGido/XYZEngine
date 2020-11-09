@@ -4,15 +4,20 @@
 
 namespace XYZ {
 
-	struct TextUI : public Type<TextUI>
+	enum class TextAlignment
 	{
-		TextUI(const std::string& text, const Ref<Font>& font)
-			:
-			Text(text),
-			Font(font)
-		{}
+		Left,
+		Right,
+		Center
+	};
+
+	struct Text : public Type<Text>
+	{
+		Text(const std::string& source, const Ref<Font>& font, TextAlignment alignment);
+		
 	
-		std::string Text;
-		Ref<Font> Font;
+		std::string   Source;
+		Ref<Font>     Font;
+		TextAlignment Alignment;
 	};
 }

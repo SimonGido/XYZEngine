@@ -33,13 +33,15 @@ namespace XYZ {
 		ParticleInformation* m_Data;
 		ParticleComponent* m_Particle;
 	private:
-		EditorCamera m_EditorCamera;
-		EditorScene m_EditorScene;
 
 		Ref<Scene> m_Scene;
-		AssetManager m_AssetManager;
-		std::vector<Entity> m_StoredEntitiesWithScript;
+		Ref<EditorScene> m_EditorScene;
 
+		EditorCamera m_EditorCamera;
+		AssetManager m_AssetManager;
+
+		std::vector<Entity> m_StoredEntitiesWithScript;
+		std::vector<EditorEntity> m_EditorEntities;
 	private:	
 		Entity m_TestEntity;
 

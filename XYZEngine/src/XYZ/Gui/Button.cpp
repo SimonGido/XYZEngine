@@ -3,7 +3,10 @@
 
 
 namespace XYZ {
-	Button::Button()
+	
+	Button::Button(const glm::vec4& defaultColor, const glm::vec4& clickColor, const glm::vec4& hooverColor)
+		:
+		DefaultColor(defaultColor), ClickColor(clickColor), HooverColor(hooverColor)
 	{
 	}
 }

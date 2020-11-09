@@ -13,8 +13,10 @@ namespace XYZ {
 				   public Type<Button>
 	{
 	public:
-		Button();
+		Button(const glm::vec4& defaultColor, const glm::vec4& clickColor, const glm::vec4& hooverColor);
 
-		bool Hoovered = false;
+		glm::vec4   DefaultColor;
+		glm::vec4   ClickColor;
+		glm::vec4   HooverColor;
 	};
 }
