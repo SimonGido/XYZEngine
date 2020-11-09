@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "EditorUISpecification.h"
+#include "GuiSpecification.h"
 
 
 namespace XYZ {
@@ -45,5 +45,4 @@ namespace XYZ {
 		Color(color)
 	{
 	}
-	
 }

@@ -35,14 +35,15 @@ namespace XYZ {
 	private:
 
 		Ref<Scene> m_Scene;
-		Ref<EditorScene> m_EditorScene;
 
 		EditorCamera m_EditorCamera;
 		AssetManager m_AssetManager;
 
 		std::vector<Entity> m_StoredEntitiesWithScript;
-		std::vector<EditorEntity> m_EditorEntities;
+		std::vector<uint32_t> m_EditorEntities;
 	private:	
+		ECSManager m_ECS;
+		GuiContext* m_GuiContext = nullptr;
 		Entity m_TestEntity;
 
 		SpriteRenderer* m_SpriteRenderer;

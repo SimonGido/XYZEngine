@@ -34,8 +34,6 @@
 
 
 //---------Editor-----------//
-#include "XYZ/Editor/EditorEntity.h"
-#include "XYZ/Editor/EditorScene.h"
 #include "XYZ/Editor/EditorCamera.h"
 
 //------ECS-----//

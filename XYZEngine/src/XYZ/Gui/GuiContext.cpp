@@ -1,17 +1,13 @@
 #include "stdafx.h"
-#include "EditorScene.h"
+#include "GuiContext.h"
 
 #include "XYZ/Event/InputEvent.h"
 #include "XYZ/Core/Input.h"
-
-#include "EditorEntity.h"
 #include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Renderer/GuiRenderer.h"
 
 #include <glm/gtx/transform.hpp>
-
 namespace XYZ {
-
 	static glm::vec2 MouseToWorld(const glm::vec2& point, const glm::vec2& windowSize)
 	{
 		glm::vec2 offset = { windowSize.x / 2,windowSize.y / 2 };
@@ -114,9 +110,9 @@ namespace XYZ {
 			}
 		}
 	}
-
-	EditorScene::EditorScene(const EditorUISpecification& specs)
+	GuiContext::GuiContext(ECSManager* ecs, const GuiSpecification& specs)
 		:
+		m_ECS(ecs),
 		m_Specification(specs)
 	{
 		Ref<FrameBuffer> fbo = FrameBuffer::Create({ 1280, 720,{0.1f,0.1f,0.1f,1.0f},1,FrameBufferFormat::RGBA16F,true });
@@ -125,24 +121,25 @@ namespace XYZ {
 		fbo->Resize();
 		m_RenderPass = RenderPass::Create({ fbo });
 
-		m_ButtonGroup = m_ECS.CreateGroup<Button, CanvasRenderer, RectTransform>();
-		m_CheckboxGroup = m_ECS.CreateGroup<Checkbox, CanvasRenderer, RectTransform>();
-		m_SliderGroup = m_ECS.CreateGroup<Slider, CanvasRenderer, RectTransform>();
-		m_TextGroup = m_ECS.CreateGroup<Text, CanvasRenderer, RectTransform>();
+		m_ButtonGroup = m_ECS->CreateGroup<Button, CanvasRenderer, RectTransform>();
+		m_CheckboxGroup = m_ECS->CreateGroup<Checkbox, CanvasRenderer, RectTransform>();
+		m_SliderGroup = m_ECS->CreateGroup<Slider, CanvasRenderer, RectTransform>();
+		m_TextGroup = m_ECS->CreateGroup<Text, CanvasRenderer, RectTransform>();
 
-		m_TransformStorage = m_ECS.GetComponentStorage<RectTransform>();
-		m_CanvasRenderStorage = m_ECS.GetComponentStorage<CanvasRenderer>();
+		m_TransformStorage = m_ECS->GetComponentStorage<RectTransform>();
+		m_CanvasRenderStorage = m_ECS->GetComponentStorage<CanvasRenderer>();
 	}
-
-	EditorEntity EditorScene::CreateCanvas(const CanvasSpecification& specs)
+	uint32_t GuiContext::CreateCanvas(const CanvasSpecification& specs)
 	{
-		auto& texCoords = m_Specification.SubTexture[EditorUISpecification::BUTTON]->GetTexCoords();
-		EditorEntity entity(m_ECS.CreateEntity(), this);
+		auto& texCoords = m_Specification.SubTexture[GuiSpecification::BUTTON]->GetTexCoords();
+		uint32_t entity = m_ECS->CreateEntity();
+		
 		Mesh mesh;
 		GenerateQuadMesh(texCoords, specs.Color, glm::vec2(1.0f), mesh);
-		entity.EmplaceComponent<Canvas>(specs.RenderMode);
-		entity.EmplaceComponent<RectTransform>(specs.Position, specs.Size);
-		auto renderer = entity.EmplaceComponent<CanvasRenderer>(
+		m_ECS->EmplaceComponent<Canvas>(entity, specs.RenderMode);
+		m_ECS->EmplaceComponent<RectTransform>(entity, specs.Position, specs.Size);
+		
+		m_ECS->EmplaceComponent<CanvasRenderer>( entity,
 			m_Specification.Material,
 			mesh,
 			0,
@@ -150,141 +147,136 @@ namespace XYZ {
 			true
 			);
 
-		int32_t transformIndex = m_ECS.GetComponentIndex<RectTransform>(entity);
-		int32_t rendererIndex = m_ECS.GetComponentIndex<CanvasRenderer>(entity);
+		int32_t transformIndex = m_ECS->GetComponentIndex<RectTransform>(entity);
+		int32_t rendererIndex = m_ECS->GetComponentIndex<CanvasRenderer>(entity);
 
 		m_Entities.push_back(Node{ entity, transformIndex, rendererIndex });
 		return entity;
 	}
-
-	EditorEntity EditorScene::CreateButton(EditorEntity canvas, const ButtonSpecification& specs)
+	uint32_t GuiContext::CreateButton(uint32_t canvas, const ButtonSpecification& specs)
 	{
-		auto& texCoords = m_Specification.SubTexture[EditorUISpecification::BUTTON]->GetTexCoords();
-		EditorEntity entity(m_ECS.CreateEntity(), this);
+		auto& texCoords = m_Specification.SubTexture[GuiSpecification::BUTTON]->GetTexCoords();
+		uint32_t entity = m_ECS->CreateEntity();
 		Mesh mesh;
 		GenerateQuadMesh(texCoords, specs.DefaultColor, glm::vec2(1.0f), mesh);
 
-		entity.EmplaceComponent<RectTransform>(specs.Position, specs.Size);
-		entity.EmplaceComponent<CanvasRenderer>(
+		m_ECS->EmplaceComponent<RectTransform>(entity, specs.Position, specs.Size);
+		m_ECS->EmplaceComponent<CanvasRenderer>( entity,
 			m_Specification.Material,
 			mesh,
 			0,
 			0,
 			true
 			);
-		entity.EmplaceComponent<Button>(specs.DefaultColor, specs.ClickColor, specs.HooverColor);
+		m_ECS->EmplaceComponent<Button>(entity, specs.DefaultColor, specs.ClickColor, specs.HooverColor);
 
-		int32_t transformIndex = m_ECS.GetComponentIndex<RectTransform>(entity);
-		int32_t rendererIndex = m_ECS.GetComponentIndex<CanvasRenderer>(entity);
-
-		auto newChildNode = findEntityNode(m_Entities.back(), canvas);
-		XYZ_ASSERT(newChildNode, "Canvas was not found");
-		newChildNode->Children.push_back(Node{ entity, transformIndex, rendererIndex });
-		
-		EditorEntity textEntity(m_ECS.CreateEntity(), this);	
-		Mesh textMesh;
-		GenerateTextMesh(specs.Name.c_str(), m_Specification.Font, specs.DefaultColor, textMesh,TextAlignment::Center);
-		textEntity.EmplaceComponent<RectTransform>(glm::vec3(0.0f), glm::vec2(1.0f));
-		textEntity.EmplaceComponent<CanvasRenderer>(
-			m_Specification.Material,
-			textMesh,
-			1,
-			0,
-			true
-		);
-		textEntity.EmplaceComponent<Text>(
-			specs.Name,
-			m_Specification.Font,
-			TextAlignment::Center
-		);
-		int32_t textTransformIndex = m_ECS.GetComponentIndex<RectTransform>(textEntity);
-		int32_t textRendererIndex = m_ECS.GetComponentIndex<CanvasRenderer>(textEntity);
-
-		newChildNode->Children.back().Children.push_back(Node{ entity, textTransformIndex, textRendererIndex });
-		return entity;
-	}
-	EditorEntity EditorScene::CreateCheckbox(EditorEntity canvas, const CheckboxSpecification& specs)
-	{
-		auto& texCoords = m_Specification.SubTexture[EditorUISpecification::CHECKBOX_UNCHECKED]->GetTexCoords();
-		EditorEntity entity(m_ECS.CreateEntity(), this);
-		Mesh mesh;
-		GenerateQuadMesh(texCoords, specs.DefaultColor, glm::vec2(1.0f), mesh);
-
-		entity.EmplaceComponent<RectTransform>(specs.Position, specs.Size);
-		entity.EmplaceComponent<CanvasRenderer>(
-			m_Specification.Material,
-			mesh,
-			0,
-			0,
-			true
-			);
-		entity.EmplaceComponent<Button>(specs.DefaultColor, specs.ClickColor, specs.HooverColor);
-
-		int32_t transformIndex = m_ECS.GetComponentIndex<RectTransform>(entity);
-		int32_t rendererIndex = m_ECS.GetComponentIndex<CanvasRenderer>(entity);
+		int32_t transformIndex = m_ECS->GetComponentIndex<RectTransform>(entity);
+		int32_t rendererIndex =  m_ECS->GetComponentIndex<CanvasRenderer>(entity);
 
 		auto newChildNode = findEntityNode(m_Entities.back(), canvas);
 		XYZ_ASSERT(newChildNode, "Canvas was not found");
 		newChildNode->Children.push_back(Node{ entity, transformIndex, rendererIndex });
 
-		EditorEntity textEntity(m_ECS.CreateEntity(), this);
+		uint32_t textEntity = m_ECS->CreateEntity();
 		Mesh textMesh;
 		GenerateTextMesh(specs.Name.c_str(), m_Specification.Font, specs.DefaultColor, textMesh, TextAlignment::Center);
-		textEntity.EmplaceComponent<RectTransform>(glm::vec3(0.0f), glm::vec2(1.0f));
-		textEntity.EmplaceComponent<CanvasRenderer>(
+		m_ECS->EmplaceComponent<RectTransform>(textEntity, glm::vec3(0.0f), glm::vec2(1.0f));
+		m_ECS->EmplaceComponent<CanvasRenderer>(textEntity,
+			m_Specification.Material,
+			textMesh,
+			1,
+			0,
+			true
+		);
+
+		m_ECS->EmplaceComponent<Text>(textEntity,
+			specs.Name,
+			m_Specification.Font,
+			TextAlignment::Center
+		);
+		int32_t textTransformIndex = m_ECS->GetComponentIndex<RectTransform>(textEntity);
+		int32_t textRendererIndex =  m_ECS->GetComponentIndex<CanvasRenderer>(textEntity);
+
+		newChildNode->Children.back().Children.push_back(Node{ entity, textTransformIndex, textRendererIndex });
+		return entity;
+	}
+	uint32_t GuiContext::CreateCheckbox(uint32_t canvas, const CheckboxSpecification& specs)
+	{
+		auto& texCoords = m_Specification.SubTexture[GuiSpecification::CHECKBOX_CHECKED]->GetTexCoords();
+		uint32_t entity = m_ECS->CreateEntity();
+		Mesh mesh;
+		GenerateQuadMesh(texCoords, specs.DefaultColor, glm::vec2(1.0f), mesh);
+
+		m_ECS->EmplaceComponent<RectTransform>(entity, specs.Position, specs.Size);
+		m_ECS->EmplaceComponent<CanvasRenderer>(entity,
+			m_Specification.Material,
+			mesh,
+			0,
+			0,
+			true
+			);
+		m_ECS->EmplaceComponent<Button>(entity, specs.DefaultColor, specs.ClickColor, specs.HooverColor);
+
+		int32_t transformIndex = m_ECS->GetComponentIndex<RectTransform>(entity);
+		int32_t rendererIndex = m_ECS->GetComponentIndex<CanvasRenderer>(entity);
+
+		auto newChildNode = findEntityNode(m_Entities.back(), canvas);
+		XYZ_ASSERT(newChildNode, "Canvas was not found");
+		newChildNode->Children.push_back(Node{ entity, transformIndex, rendererIndex });
+
+		uint32_t textEntity = m_ECS->CreateEntity();
+		Mesh textMesh;
+		GenerateTextMesh(specs.Name.c_str(), m_Specification.Font, specs.DefaultColor, textMesh, TextAlignment::Center);
+		m_ECS->EmplaceComponent<RectTransform>(textEntity, glm::vec3(0.0f), glm::vec2(1.0f));
+		m_ECS->EmplaceComponent<CanvasRenderer>(textEntity,
 			m_Specification.Material,
 			textMesh,
 			1,
 			0,
 			true
 			);
-		textEntity.EmplaceComponent<Text>(
+
+		m_ECS->EmplaceComponent<Text>(textEntity,
 			specs.Name,
 			m_Specification.Font,
 			TextAlignment::Center
 			);
-		int32_t textTransformIndex = m_ECS.GetComponentIndex<RectTransform>(textEntity);
-		int32_t textRendererIndex = m_ECS.GetComponentIndex<CanvasRenderer>(textEntity);
+		int32_t textTransformIndex = m_ECS->GetComponentIndex<RectTransform>(textEntity);
+		int32_t textRendererIndex = m_ECS->GetComponentIndex<CanvasRenderer>(textEntity);
 
 		newChildNode->Children.back().Children.push_back(Node{ entity, textTransformIndex, textRendererIndex });
 		return entity;
 	}
-	EditorEntity EditorScene::CreateText(EditorEntity canvas, const TextSpecification& specs)
+	uint32_t GuiContext::CreateText(uint32_t canvas, const TextSpecification& specs)
 	{
-		EditorEntity entity(m_ECS.CreateEntity(), this);
+		uint32_t entity = m_ECS->CreateEntity();
 		Mesh mesh;
 		GenerateTextMesh(specs.Source.c_str(), m_Specification.Font, specs.Color, mesh, specs.Alignment);
-		
-		entity.EmplaceComponent<RectTransform>(specs.Position, specs.Size);
-		entity.EmplaceComponent<CanvasRenderer>(
+
+		m_ECS->EmplaceComponent<RectTransform>(entity, specs.Position, specs.Size);
+		m_ECS->EmplaceComponent<CanvasRenderer>(entity,
 			m_Specification.Material,
 			mesh,
 			1,
 			0,
 			true
 			);
-		entity.EmplaceComponent<Text>(
+		m_ECS->EmplaceComponent<Text>( entity,
 			specs.Source,
 			m_Specification.Font,
 			specs.Alignment
 			);
 
-		int32_t transformIndex = m_ECS.GetComponentIndex<RectTransform>(entity);
-		int32_t rendererIndex = m_ECS.GetComponentIndex<CanvasRenderer>(entity);
-		
+		int32_t transformIndex = m_ECS->GetComponentIndex<RectTransform>(entity);
+		int32_t rendererIndex =  m_ECS->GetComponentIndex<CanvasRenderer>(entity);
+
 		auto newChildNode = findEntityNode(m_Entities.back(), canvas);
 		XYZ_ASSERT(newChildNode, "Canvas was not found");
 		newChildNode->Children.push_back(Node{ entity, transformIndex, rendererIndex });
 
 		return entity;
 	}
-	void EditorScene::SetParent(EditorEntity parent, EditorEntity child)
-	{
-		auto newChildNode = findEntityNode(m_Entities.back(), parent);
-		swapEntityNodes(m_Entities.back(), *newChildNode, child);
-	}
-
-	void EditorScene::SetViewportSize(uint32_t width, uint32_t height)
+	void GuiContext::SetViewportSize(uint32_t width, uint32_t height)
 	{
 		m_ViewportSize = glm::vec2(width, height);
 
@@ -293,8 +285,39 @@ namespace XYZ {
 		specs.Height = height;
 		m_RenderPass->GetSpecification().TargetFramebuffer->Resize();
 	}
+	void GuiContext::SetParent(uint32_t parent, uint32_t child)
+	{
+		auto newChildNode = findEntityNode(m_Entities.back(), parent);
+		swapEntityNodes(m_Entities.back(), *newChildNode, child);
+	}
+	void GuiContext::OnEvent(Event& event)
+	{
+		EventDispatcher dispatcher(event);
+		if (dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&GuiContext::onMouseButtonPress, this)))
+		{
+		}
+		else if (dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&GuiContext::onMouseButtonRelease, this)))
+		{
+		}
+		else if (dispatcher.Dispatch<MouseMovedEvent>(Hook(&GuiContext::onMouseMove, this)))
+		{
+		}
+	}
+	void GuiContext::OnUpdate(Timestep ts)
+	{
+	}
+	void GuiContext::OnRender()
+	{
+		Renderer::BeginRenderPass(m_RenderPass, false);
+		GuiRenderer::BeginScene(m_ViewportSize);
+		for (auto& child : m_Entities)
+			submitNode(child, glm::vec3(0.0f));
 
-	bool EditorScene::onMouseButtonPress(MouseButtonPressEvent& event)
+		GuiRenderer::EndScene();
+		Renderer::EndRenderPass();
+		Renderer::WaitAndRender();
+	}
+	bool GuiContext::onMouseButtonPress(MouseButtonPressEvent& event)
 	{
 		if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_LEFT))
 		{
@@ -313,8 +336,7 @@ namespace XYZ {
 		}
 		return false;
 	}
-
-	bool EditorScene::onMouseButtonRelease(MouseButtonReleaseEvent& event)
+	bool GuiContext::onMouseButtonRelease(MouseButtonReleaseEvent& event)
 	{
 		if (event.IsButtonReleased(MouseCode::XYZ_MOUSE_BUTTON_LEFT))
 		{
@@ -333,8 +355,7 @@ namespace XYZ {
 		}
 		return false;
 	}
-
-	bool EditorScene::onMouseMove(MouseMovedEvent& event)
+	bool GuiContext::onMouseMove(MouseMovedEvent& event)
 	{
 		auto [mx, my] = Input::GetMousePosition();
 		glm::vec2 mousePosition = MouseToWorld({ mx,my }, m_ViewportSize);
@@ -355,9 +376,7 @@ namespace XYZ {
 		}
 		return false;
 	}
-
-
-	void EditorScene::submitNode(const Node& node, const glm::vec3& parentPosition)
+	void GuiContext::submitNode(const Node& node, const glm::vec3& parentPosition)
 	{
 		auto& rectTransform = (*m_TransformStorage)[node.RectTransformIndex];
 		rectTransform.WorldPosition = parentPosition + rectTransform.Position;
@@ -369,8 +388,7 @@ namespace XYZ {
 				submitNode(child, rectTransform.WorldPosition);
 		}
 	}
-
-	void EditorScene::swapEntityNodes(Node& current, Node& newNode, EditorEntity entity)
+	void GuiContext::swapEntityNodes(Node& current, Node& newNode, uint32_t entity)
 	{
 		for (uint32_t i = 0; i < current.Children.size(); ++i)
 		{
@@ -391,8 +409,7 @@ namespace XYZ {
 			swapEntityNodes(current.Children[i], newNode, entity);
 		}
 	}
-
-	Node* EditorScene::findEntityNode(Node& node, EditorEntity entity)
+	Node* GuiContext::findEntityNode(Node& node, uint32_t entity)
 	{
 		if ((uint32_t)node.Entity == (uint32_t)entity)
 		{
@@ -404,40 +421,5 @@ namespace XYZ {
 				return node;
 		}
 		return nullptr;
-	}
-
-	void EditorScene::DestroyEntity(EditorEntity entity)
-	{
-	}
-	void EditorScene::OnPlay()
-	{
-	}
-	void EditorScene::OnEvent(Event& e)
-	{
-		EventDispatcher dispatcher(e);
-		if (dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&EditorScene::onMouseButtonPress, this)))
-		{
-		}
-		else if (dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorScene::onMouseButtonRelease, this)))
-		{
-		}
-		else if (dispatcher.Dispatch<MouseMovedEvent>(Hook(&EditorScene::onMouseMove, this)))
-		{
-		}
-	}
-	void EditorScene::OnUpdate(Timestep ts)
-	{
-
-	}
-	void EditorScene::OnRender()
-	{
-		Renderer::BeginRenderPass(m_RenderPass, false);
-		GuiRenderer::BeginScene(m_ViewportSize);
-		for (auto& child : m_Entities)
-			submitNode(child, glm::vec3(0.0f));
-
-		GuiRenderer::EndScene();
-		Renderer::EndRenderPass();
-		Renderer::WaitAndRender();
 	}
 }

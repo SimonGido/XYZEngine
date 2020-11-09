@@ -218,15 +218,14 @@ namespace XYZ {
 		material->Set("u_Texture", font->GetTexture(), 1);
 
 		float divisor = 8.0f;
-		EditorUISpecification specs;
+		GuiSpecification specs;
 		specs.Material = material;
 		specs.Font = font;
-		specs.SubTexture[EditorUISpecification::BUTTON] = Ref<SubTexture2D>::Create(texture, glm::vec2(0,0), glm::vec2((float)texture->GetWidth() / divisor, (float)texture->GetHeight() / divisor));
-		
-		m_EditorScene = Ref<EditorScene>::Create(specs);
-		m_EditorScene->SetViewportSize(windowWidth, windowHeight);
+		specs.SubTexture[GuiSpecification::BUTTON] = Ref<SubTexture2D>::Create(texture, glm::vec2(0,0), glm::vec2((float)texture->GetWidth() / divisor, (float)texture->GetHeight() / divisor));
+		m_GuiContext = Application::Get().GetGuiLayer()->CreateContext(&m_ECS, specs);		
+		m_GuiContext->SetViewportSize(windowWidth, windowHeight);
 
-		EditorEntity canvas = m_EditorScene->CreateCanvas(CanvasSpecification(
+		uint32_t canvas = m_GuiContext->CreateCanvas(CanvasSpecification(
 				CanvasRenderMode::ScreenSpace,
 				glm::vec3(0.0f),
 				glm::vec2(windowWidth, windowHeight),
@@ -234,7 +233,7 @@ namespace XYZ {
 		));
 		for (int i = 0; i < 10; ++i)
 		{
-			EditorEntity editorEntity = m_EditorScene->CreateButton(canvas,
+			uint32_t editorEntity = m_GuiContext->CreateButton(canvas,
 				ButtonSpecification{
 					"Button",
 					glm::vec3(i * 50,i * 50, 0.0f),
@@ -244,12 +243,12 @@ namespace XYZ {
 					glm::vec4(1.0f, 0.5f, 0.8f, 1.0f)
 			});
 
-			editorEntity.GetComponent<Button>()->RegisterCallback<ClickEvent>(Hook(&EditorLayer::onButtonClickTest, this));
+			m_ECS.GetComponent<Button>(editorEntity)->RegisterCallback<ClickEvent>(Hook(&EditorLayer::onButtonClickTest, this));
 			m_EditorEntities.push_back(editorEntity);
 		}
 
-		m_EditorEntities[6].GetComponent<RectTransform>()->Position = glm::vec3(100.0f, 0.0f, 0.0f);
-		m_EditorScene->SetParent(m_EditorEntities[6], m_EditorEntities[7]);
+		m_ECS.GetComponent<RectTransform>(m_EditorEntities[6])->Position = glm::vec3(100.0f, 0.0f, 0.0f);
+		m_GuiContext->SetParent(m_EditorEntities[6], m_EditorEntities[7]);
 		
 		//for (int i = 0; i < 10; ++i)
 		//{
@@ -277,9 +276,6 @@ namespace XYZ {
 		m_EditorCamera.OnUpdate(ts);
 		m_Scene->OnUpdate(ts);
 		m_Scene->OnRenderEditor(m_EditorCamera);
-
-		m_EditorScene->OnUpdate(ts);
-		m_EditorScene->OnRender();
 	}
 	void EditorLayer::OnEvent(Event& event)
 	{			
@@ -287,7 +283,6 @@ namespace XYZ {
 		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&EditorLayer::onMouseButtonPress, this));
 		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorLayer::onMouseButtonRelease, this));	
 		m_EditorCamera.OnEvent(event);
-		m_EditorScene->OnEvent(event);
 	}
 
 	

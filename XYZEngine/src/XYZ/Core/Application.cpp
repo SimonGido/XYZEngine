@@ -29,6 +29,9 @@ namespace XYZ {
 		m_Window->SetVSync(false);
 
 		m_Window->RegisterCallback(Hook(&Application::OnEvent, this));		
+		
+		m_GuiLayer = new GuiLayer();
+		m_LayerStack.PushOverlay(m_GuiLayer);
 	}
 
 	Application::~Application()
