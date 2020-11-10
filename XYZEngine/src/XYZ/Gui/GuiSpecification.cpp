@@ -44,4 +44,11 @@ namespace XYZ {
 		Color(color)
 	{
 	}
+	PanelSpecification::PanelSpecification(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
+		:
+		Position(position),
+		Size(size),
+		Color(color)
+	{
+	}
 }

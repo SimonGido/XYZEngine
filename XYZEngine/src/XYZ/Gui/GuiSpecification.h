@@ -93,4 +93,16 @@ namespace XYZ {
 		glm::vec2 Size;
 		glm::vec4 Color;
 	};
+
+	struct PanelSpecification
+	{
+		PanelSpecification(
+			const glm::vec3& position,
+			const glm::vec2& size,
+			const glm::vec4& color
+		);
+		glm::vec3 Position;
+		glm::vec2 Size;
+		glm::vec4 Color;
+	};
 }

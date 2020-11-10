@@ -17,6 +17,27 @@
 
 
 namespace XYZ {
+	struct TextCanvasRendererRebuild : public CanvasRendererRebuildSpecification
+	{
+		TextCanvasRendererRebuild(Text* text);
+
+		virtual void Rebuild(CanvasRenderer* renderer, RectTransform* transform) override;
+
+	private:
+		Text* m_Text;
+	};
+
+	struct QuadCanvasRendererRebuild : public CanvasRendererRebuildSpecification
+	{
+		QuadCanvasRendererRebuild(const glm::vec4& color, const glm::vec4& texCoords);
+			
+		virtual void Rebuild(CanvasRenderer* renderer, RectTransform* transform) override;
+		
+	private:
+		glm::vec4 m_Color;
+		glm::vec4 m_TexCoords;
+	};
+
 	struct Node
 	{
 		uint32_t Entity;
@@ -31,6 +52,7 @@ namespace XYZ {
 	{
 	public:
 		uint32_t CreateCanvas(const CanvasSpecification& specs);
+		uint32_t CreatePanel(uint32_t canvas, const PanelSpecification& specs);
 		uint32_t CreateButton(uint32_t canvas, const ButtonSpecification& specs);
 		uint32_t CreateCheckbox(uint32_t canvas, const CheckboxSpecification& specs);
 		//uint32_t CreateSlider(uint32_t canvas);
@@ -41,10 +63,13 @@ namespace XYZ {
 		void OnEvent(Event& event);
 		void OnUpdate(Timestep ts);
 		void OnRender();
+		void RefreshLayouts();
 
 	private:
 		// Only gui layer can create new context
 		GuiContext(ECSManager* ecs, const GuiSpecification& specs);
+
+		bool onCanvasRendererRebuild(CanvasRendererRebuildEvent& event);
 
 		bool onWindowResizeEvent(WindowResizeEvent& event);
 		bool onMouseButtonPress(MouseButtonPressEvent& event);
@@ -77,6 +102,7 @@ namespace XYZ {
 		std::shared_ptr<ComponentStorage<RectTransform>> m_TransformStorage;
 		std::shared_ptr<ComponentStorage<CanvasRenderer>> m_CanvasRenderStorage;
 
+		ComponentGroup<Canvas, CanvasRenderer, RectTransform>* m_CanvasGroup;
 		ComponentGroup<Button, CanvasRenderer, RectTransform>* m_ButtonGroup;
 		ComponentGroup<Checkbox, CanvasRenderer, RectTransform>* m_CheckboxGroup;
 		ComponentGroup<Slider, CanvasRenderer, RectTransform>* m_SliderGroup;

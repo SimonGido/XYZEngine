@@ -2,6 +2,7 @@
 #include "Event.h"
 
 
+
 namespace XYZ {
 
 	struct ClickEvent : public Event
@@ -102,5 +103,40 @@ namespace XYZ {
 		}
 	private:
 		EventType m_Type;
+	};
+
+	struct CanvasRenderer;
+	struct RectTransform;
+	struct CanvasRendererRebuildSpecification
+	{
+		virtual void Rebuild(CanvasRenderer* renderer, RectTransform* transform) = 0;
+	};
+
+	
+	struct CanvasRendererRebuildEvent : public Event
+	{
+		CanvasRendererRebuildEvent(CanvasRenderer* renderer, RectTransform* transform, CanvasRendererRebuildSpecification& specification)
+			: 
+			m_Type(EventType::CanvasRendererRebuild),
+			m_Renderer(renderer),
+			m_Transform(transform),
+			m_Specification(specification)
+		{}
+
+		virtual EventType GetEventType() const override { return m_Type; }
+
+		CanvasRenderer* GetRenderer() { return m_Renderer; }
+		RectTransform* GetTransform() { return m_Transform; }
+		CanvasRendererRebuildSpecification& GetSpecification() { return m_Specification; }
+
+		static EventType GetStaticType()
+		{
+			return EventType::CanvasRendererRebuild;
+		}
+	private:
+		EventType m_Type;
+		CanvasRenderer* m_Renderer;
+		RectTransform* m_Transform;
+		CanvasRendererRebuildSpecification& m_Specification;
 	};
 }

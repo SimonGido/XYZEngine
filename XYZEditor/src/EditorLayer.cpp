@@ -205,6 +205,28 @@ namespace XYZ {
 			m_ECS.GetComponent<Checkbox>(editorEntity)->RegisterCallback<CheckedEvent>(Hook(&EditorLayer::onCheckboxCheckedTest, this));
 			m_EditorEntities.push_back(editorEntity);
 		}
+		for (int i = 0; i < 10; ++i)
+		{
+			uint32_t editorEntity = m_GuiContext->CreateText(canvas,
+				TextSpecification{
+					TextAlignment::Center,
+					"Checkbox",
+					glm::vec3(i * 70, -140.0f, 0.0f),
+					glm::vec2(50.0f,50.0f),
+					glm::vec4(1.0f, 0.5f, 0.8f, 1.0f)
+				});
+
+			m_EditorEntities.push_back(editorEntity);
+		}
+
+		auto rectTransform = m_ECS.GetComponent<RectTransform>(m_EditorEntities.back());
+		auto canvasRenderer = m_ECS.GetComponent<CanvasRenderer>(m_EditorEntities.back());
+		auto text = m_ECS.GetComponent<Text>(m_EditorEntities.back());
+		rectTransform->Size.x += 50;
+		
+		rectTransform->Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent(
+			canvasRenderer, rectTransform, TextCanvasRendererRebuild(text)
+		));
 	}	
 
 

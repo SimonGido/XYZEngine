@@ -60,7 +60,7 @@ namespace XYZ {
 			mesh.Vertices.push_back(Vertex{ color, vertices[i], texCoords[i] });
 	}
 
-	static void GenerateTextMesh(const char* source, const Ref<Font>& font, const glm::vec4& color, Mesh& mesh, TextAlignment alignment)
+	static void GenerateTextMesh(const char* source, const Ref<Font>& font, const glm::vec4& color, const glm::vec2& size, Mesh& mesh, TextAlignment alignment)
 	{
 		size_t oldMeshSize = mesh.Vertices.size();
 		float height = 0.0f;
@@ -70,6 +70,9 @@ namespace XYZ {
 		while (source[counter] != '\0')
 		{
 			auto& character = font->GetCharacter(source[counter]);
+			if (xCursor + character.XAdvance >= size.x)
+				break;
+
 			glm::vec2 charSize = {
 				character.X1Coord - character.X0Coord,
 				character.Y1Coord - character.Y0Coord
@@ -110,6 +113,10 @@ namespace XYZ {
 			}
 		}
 	}
+
+
+
+
 	GuiContext::GuiContext(ECSManager* ecs, const GuiSpecification& specs)
 		:
 		m_ECS(ecs),
@@ -122,6 +129,7 @@ namespace XYZ {
 		fbo->Resize();
 		m_RenderPass = RenderPass::Create({ fbo });
 
+		m_CanvasGroup = m_ECS->CreateGroup<Canvas, CanvasRenderer, RectTransform>();
 		m_ButtonGroup = m_ECS->CreateGroup<Button, CanvasRenderer, RectTransform>();
 		m_CheckboxGroup = m_ECS->CreateGroup<Checkbox, CanvasRenderer, RectTransform>();
 		m_SliderGroup = m_ECS->CreateGroup<Slider, CanvasRenderer, RectTransform>();
@@ -130,13 +138,19 @@ namespace XYZ {
 		m_TransformStorage = m_ECS->GetComponentStorage<RectTransform>();
 		m_CanvasRenderStorage = m_ECS->GetComponentStorage<CanvasRenderer>();
 	}
+	bool GuiContext::onCanvasRendererRebuild(CanvasRendererRebuildEvent& event)
+	{
+		event.GetRenderer()->Mesh.Vertices.clear();
+		event.GetSpecification().Rebuild(event.GetRenderer(), event.GetTransform());
+		return true;
+	}
 	uint32_t GuiContext::CreateCanvas(const CanvasSpecification& specs)
 	{
 		auto& texCoords = m_Specification.SubTexture[GuiSpecification::BUTTON]->GetTexCoords();
 		uint32_t entity = m_ECS->CreateEntity();
 		
 		Mesh mesh;
-		GenerateQuadMesh(texCoords, specs.Color, glm::vec2(1.0f), mesh);
+		GenerateQuadMesh(texCoords, specs.Color, specs.Size, mesh);
 		m_ECS->EmplaceComponent<Canvas>(entity, specs.RenderMode);
 		m_ECS->EmplaceComponent<RectTransform>(entity, specs.Position, specs.Size);
 		
@@ -154,12 +168,16 @@ namespace XYZ {
 		m_Entities.push_back(Node{ entity, transformIndex, rendererIndex });
 		return entity;
 	}
+	uint32_t GuiContext::CreatePanel(uint32_t canvas, const PanelSpecification& specs)
+	{
+		return uint32_t();
+	}
 	uint32_t GuiContext::CreateButton(uint32_t canvas, const ButtonSpecification& specs)
 	{
 		auto& texCoords = m_Specification.SubTexture[GuiSpecification::BUTTON]->GetTexCoords();
 		uint32_t entity = m_ECS->CreateEntity();
 		Mesh mesh;
-		GenerateQuadMesh(texCoords, specs.DefaultColor, glm::vec2(1.0f), mesh);
+		GenerateQuadMesh(texCoords, specs.DefaultColor, specs.Size, mesh);
 
 		m_ECS->EmplaceComponent<RectTransform>(entity, specs.Position, specs.Size);
 		m_ECS->EmplaceComponent<CanvasRenderer>( entity,
@@ -180,8 +198,10 @@ namespace XYZ {
 
 		uint32_t textEntity = m_ECS->CreateEntity();
 		Mesh textMesh;
-		GenerateTextMesh(specs.Name.c_str(), m_Specification.Font, specs.DefaultColor, textMesh, TextAlignment::Center);
-		m_ECS->EmplaceComponent<RectTransform>(textEntity, glm::vec3(0.0f), glm::vec2(1.0f));
+		GenerateTextMesh(specs.Name.c_str(), m_Specification.Font, specs.DefaultColor, specs.Size, textMesh, TextAlignment::Center);
+		auto textRectTransform = m_ECS->EmplaceComponent<RectTransform>(textEntity, glm::vec3(0.0f), specs.Size);
+		textRectTransform->RegisterCallback<CanvasRendererRebuildEvent>(Hook(&GuiContext::onCanvasRendererRebuild, this));
+
 		m_ECS->EmplaceComponent<CanvasRenderer>(textEntity,
 			m_Specification.Material,
 			textMesh,
@@ -193,6 +213,7 @@ namespace XYZ {
 		m_ECS->EmplaceComponent<Text>(textEntity,
 			specs.Name,
 			m_Specification.Font,
+			specs.DefaultColor,
 			TextAlignment::Center
 		);
 		int32_t textTransformIndex = m_ECS->GetComponentIndex<RectTransform>(textEntity);
@@ -212,7 +233,7 @@ namespace XYZ {
 			texCoords = m_Specification.SubTexture[GuiSpecification::CHECKBOX_CHECKED]->GetTexCoords();	
 
 		Mesh mesh;
-		GenerateQuadMesh(texCoords, specs.DefaultColor, glm::vec2(1.0f), mesh);
+		GenerateQuadMesh(texCoords, specs.DefaultColor, specs.Size, mesh);
 
 		m_ECS->EmplaceComponent<RectTransform>(entity, specs.Position, specs.Size);
 		m_ECS->EmplaceComponent<CanvasRenderer>(entity,
@@ -232,8 +253,9 @@ namespace XYZ {
 
 		uint32_t textEntity = m_ECS->CreateEntity();
 		Mesh textMesh;
-		GenerateTextMesh(specs.Name.c_str(), m_Specification.Font, specs.DefaultColor, textMesh, TextAlignment::Center);
-		m_ECS->EmplaceComponent<RectTransform>(textEntity, glm::vec3(0.0f), glm::vec2(1.0f));
+		GenerateTextMesh(specs.Name.c_str(), m_Specification.Font, specs.DefaultColor,specs.Size, textMesh, TextAlignment::Center);
+		auto textRectTransform = m_ECS->EmplaceComponent<RectTransform>(textEntity, glm::vec3(0.0f), glm::vec2(1.0f));
+		textRectTransform->RegisterCallback<CanvasRendererRebuildEvent>(Hook(&GuiContext::onCanvasRendererRebuild, this));
 		m_ECS->EmplaceComponent<CanvasRenderer>(textEntity,
 			m_Specification.Material,
 			textMesh,
@@ -245,6 +267,7 @@ namespace XYZ {
 		m_ECS->EmplaceComponent<Text>(textEntity,
 			specs.Name,
 			m_Specification.Font,
+			specs.DefaultColor,
 			TextAlignment::Center
 			);
 		int32_t textTransformIndex = m_ECS->GetComponentIndex<RectTransform>(textEntity);
@@ -257,9 +280,10 @@ namespace XYZ {
 	{
 		uint32_t entity = m_ECS->CreateEntity();
 		Mesh mesh;
-		GenerateTextMesh(specs.Source.c_str(), m_Specification.Font, specs.Color, mesh, specs.Alignment);
+		GenerateTextMesh(specs.Source.c_str(), m_Specification.Font, specs.Color, specs.Size, mesh, specs.Alignment);
 
-		m_ECS->EmplaceComponent<RectTransform>(entity, specs.Position, specs.Size);
+		auto textRectTransform = m_ECS->EmplaceComponent<RectTransform>(entity, specs.Position, specs.Size);
+		textRectTransform->RegisterCallback<CanvasRendererRebuildEvent>(Hook(&GuiContext::onCanvasRendererRebuild, this));
 		m_ECS->EmplaceComponent<CanvasRenderer>(entity,
 			m_Specification.Material,
 			mesh,
@@ -270,6 +294,7 @@ namespace XYZ {
 		m_ECS->EmplaceComponent<Text>( entity,
 			specs.Source,
 			m_Specification.Font,
+			specs.Color,
 			specs.Alignment
 			);
 
@@ -388,7 +413,7 @@ namespace XYZ {
 		for (int i = 0; i < m_ButtonGroup->Size(); ++i)
 		{
 			auto [button, canvasRenderer, rectTransform] = (*m_ButtonGroup)[i];
-			if (Collide(rectTransform->WorldPosition, rectTransform->Scale, mousePosition))
+			if (Collide(rectTransform->WorldPosition, rectTransform->Size, mousePosition))
 			{
 				button->Machine.TransitionTo(ButtonState::Clicked);
 				SetMeshColor(canvasRenderer->Mesh, button->ClickColor);
@@ -417,7 +442,7 @@ namespace XYZ {
 		for (int i = 0; i < m_ButtonGroup->Size(); ++i)
 		{
 			auto [button, canvasRenderer, rectTransform] = (*m_ButtonGroup)[i];
-			if (Collide(rectTransform->WorldPosition, rectTransform->Scale, mousePosition)
+			if (Collide(rectTransform->WorldPosition, rectTransform->Size, mousePosition)
 				&& button->Machine.TransitionTo(ButtonState::Hoovered))
 			{
 				SetMeshColor(canvasRenderer->Mesh, button->HooverColor);
@@ -438,7 +463,7 @@ namespace XYZ {
 		for (int i = 0; i < m_CheckboxGroup->Size(); ++i)
 		{
 			auto [checkbox, canvasRenderer, rectTransform] = (*m_CheckboxGroup)[i];
-			if (Collide(rectTransform->WorldPosition, rectTransform->Scale, mousePosition))
+			if (Collide(rectTransform->WorldPosition, rectTransform->Size, mousePosition))
 			{
 				if (checkbox->Checked)
 				{
@@ -464,7 +489,7 @@ namespace XYZ {
 		for (int i = 0; i < m_CheckboxGroup->Size(); ++i)
 		{
 			auto [checkbox, canvasRenderer, rectTransform] = (*m_CheckboxGroup)[i];
-			if (Collide(rectTransform->WorldPosition, rectTransform->Scale, mousePosition))
+			if (Collide(rectTransform->WorldPosition, rectTransform->Size, mousePosition))
 			{
 				SetMeshColor(canvasRenderer->Mesh, checkbox->HooverColor);
 				checkbox->Execute<HooverEvent>(HooverEvent{});
@@ -524,5 +549,87 @@ namespace XYZ {
 				return node;
 		}
 		return nullptr;
+	}
+	TextCanvasRendererRebuild::TextCanvasRendererRebuild(Text* text)
+		: m_Text(text)
+	{
+	}
+	void TextCanvasRendererRebuild::Rebuild(CanvasRenderer* renderer, RectTransform* transform)
+	{
+		size_t oldMeshSize = renderer->Mesh.Vertices.size();
+		float height = 0.0f;
+		float xCursor = 0.0f;
+		float yCursor = 0.0f;
+		uint32_t counter = 0;
+		for (auto c : m_Text->Source)
+		{
+			auto& character = m_Text->Font->GetCharacter(c);
+			if (xCursor + character.XAdvance >= transform->Size.x)
+				break;
+
+			glm::vec2 charSize = {
+				character.X1Coord - character.X0Coord,
+				character.Y1Coord - character.Y0Coord
+			};
+			if (height < charSize.y) height = charSize.y;
+
+			glm::vec2 charOffset = { character.XOffset, charSize.y - character.YOffset };
+			glm::vec2 charPosition = { xCursor + charOffset.x, yCursor - charOffset.y };
+			glm::vec4 charTexCoord = {
+				(float)character.X0Coord / (float)m_Text->Font->GetWidth(), (float)character.Y0Coord / (float)m_Text->Font->GetHeight(),
+				(float)character.X1Coord / (float)m_Text->Font->GetWidth(), (float)character.Y1Coord / (float)m_Text->Font->GetHeight()
+			};
+
+			glm::vec3 quads[4] = {
+				{ charPosition.x,			   charPosition.y , 0.0f },
+				{ charPosition.x + charSize.x, charPosition.y, 0.0f, },
+				{ charPosition.x + charSize.x, charPosition.y + charSize.y, 0.0f, },
+				{ charPosition.x,			   charPosition.y + charSize.y, 0.0f, },
+			};
+			glm::vec2 texCoords[4] = {
+				 {charTexCoord.x, charTexCoord.w},
+				 {charTexCoord.z, charTexCoord.w},
+				 {charTexCoord.z, charTexCoord.y},
+				 {charTexCoord.x, charTexCoord.y},
+			};
+			for (uint32_t i = 0; i < 4; ++i)
+				renderer->Mesh.Vertices.push_back(Vertex{ m_Text->Color, quads[i], texCoords[i] });
+
+			xCursor += character.XAdvance;
+			counter++;
+		}
+		if (m_Text->Alignment == TextAlignment::Center)
+		{
+			for (size_t i = oldMeshSize; i < renderer->Mesh.Vertices.size(); ++i)
+			{
+				renderer->Mesh.Vertices[i].Position.x -= xCursor / 2.0f;
+				renderer->Mesh.Vertices[i].Position.y -= height / 2.0f;
+			}
+		}
+	}
+	QuadCanvasRendererRebuild::QuadCanvasRendererRebuild(const glm::vec4& color, const glm::vec4& texCoords)
+		:
+		m_Color(color),
+		m_TexCoords(texCoords)
+	{
+	}
+	void QuadCanvasRendererRebuild::Rebuild(CanvasRenderer* renderer, RectTransform* transform)
+	{
+		constexpr size_t quadVertexCount = 4;
+	
+		glm::vec2 texCoords[quadVertexCount] = {
+			{m_TexCoords.x,m_TexCoords.y},
+			{m_TexCoords.z,m_TexCoords.y},
+			{m_TexCoords.z,m_TexCoords.w},
+			{m_TexCoords.x,m_TexCoords.w}
+		};
+		glm::vec3 vertices[quadVertexCount] = {
+			{  -transform->Size.x / 2.0f,  -transform->Size.y / 2.0f, 0.0f},
+			{   transform->Size.x / 2.0f,  -transform->Size.y / 2.0f, 0.0f},
+			{   transform->Size.x / 2.0f,   transform->Size.y / 2.0f, 0.0f},
+			{  -transform->Size.x / 2.0f,   transform->Size.y / 2.0f, 0.0f}
+		};
+		for (size_t i = 0; i < quadVertexCount; ++i)
+			renderer->Mesh.Vertices.push_back(Vertex{ m_Color, vertices[i], texCoords[i] });
 	}
 }
