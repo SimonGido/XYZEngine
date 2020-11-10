@@ -11,13 +11,10 @@ namespace XYZ {
 		void SetAllowedTransitions(uint32_t allowedTransitionsToBitset);
 		void AllowTransition(uint32_t stateIndex);
 		void DisallowTransition(uint32_t stateIndex);
-
 		bool CanTransitTo(uint32_t stateIndex);
 
-		uint32_t GetAllowedTransitions() const { return m_AllowedTransitionsTo; }
-
 		uint32_t GetID() const { return m_ID; }
-
+		uint32_t GetAllowedTransitions() const { return m_AllowedTransitionsTo; }
 	private:
 		uint32_t m_ID = 0;
 		uint32_t m_AllowedTransitionsTo = 0;
@@ -29,36 +26,20 @@ namespace XYZ {
 	class StateMachine
 	{
 	public:
-		struct StatePair
-		{
-			State State;
-			std::string Name;
-		};
-	public:
-		State CreateState(const std::string& name);
+		State& CreateState();
 
 		bool TransitionTo(uint32_t id);
 
 		void SetDefaultState(uint32_t id);
 
-		void SetCurrentState(uint32_t id) { m_CurrentState = id; };
-
-		void RenameState(uint32_t id, const std::string& name);
-
 		inline const State& GetCurrentState() const 
 		{ 
-			return m_StatesMap[m_CurrentState].State; 
+			return m_States[m_CurrentState]; 
 		}
 		inline State& GetState(uint32_t id) 
 		{ 
 			XYZ_ASSERT(m_StatesInitialized & BIT(id), "State with id ", id, "is not initialized");
-			return m_StatesMap[id].State; 
-		}
-
-		inline const std::string& GetStateName(uint32_t id) 
-		{
-			XYZ_ASSERT(m_StatesInitialized & BIT(id), "State with id ", id, "is not initialized");
-			return m_StatesMap[id].Name; 
+			return m_States[id]; 
 		}
 
 		inline uint32_t GetNumStates() const { return m_NextFreeBit; }
@@ -76,7 +57,7 @@ namespace XYZ {
 		uint32_t m_NextFreeBit = 0;
 		uint32_t m_StatesInitialized = 0;
 
-		StatePair m_StatesMap[sc_MaxBit];
+		State m_States[sc_MaxBit];
 	};
 
 

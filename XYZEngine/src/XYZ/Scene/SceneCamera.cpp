@@ -14,6 +14,22 @@ namespace XYZ {
 	{
 	}
 
+	void SceneCamera::SetProjectionType(CameraProjectionType type)
+	{
+		m_ProjectionType = type;
+		recalculate();
+	}
+
+	void SceneCamera::SetPerspective(const CameraPerspectiveProperties& props)
+	{
+		m_PerspectiveProps = props;	
+	}
+
+	void SceneCamera::SetOrthographic(const CameraOrthographicProperties& props)
+	{
+		m_OrthographicProps = props;
+	}
+
 	void SceneCamera::SetViewportSize(uint32_t width, uint32_t height)
 	{
 		m_ViewportWidth = width;
@@ -25,12 +41,12 @@ namespace XYZ {
 		switch (m_ProjectionType)
 		{
 		case CameraProjectionType::Perspective:
-			m_ProjectionMatrix = glm::perspectiveFov(m_PerspectiveProperties.PerspectiveFOV, (float)m_ViewportWidth, (float)m_ViewportHeight, m_PerspectiveProperties.PerspectiveNear, m_PerspectiveProperties.PerspectiveFar);
+			m_ProjectionMatrix = glm::perspectiveFov(m_PerspectiveProps.PerspectiveFOV, (float)m_ViewportWidth, (float)m_ViewportHeight, m_PerspectiveProps.PerspectiveNear, m_PerspectiveProps.PerspectiveFar);
 			break;
 		case CameraProjectionType::Orthographic:
 			float aspect = (float)m_ViewportWidth / (float)m_ViewportHeight;
-			float w = m_OrthographicProperties.OrthographicSize * aspect;
-			float h = m_OrthographicProperties.OrthographicSize;
+			float w = m_OrthographicProps.OrthographicSize * aspect;
+			float h = m_OrthographicProps.OrthographicSize;
 			m_ProjectionMatrix = glm::ortho(-w * 0.5f, w * 0.5f, -h * 0.5f, h * 0.5f);
 			break;
 		}

@@ -65,12 +65,11 @@ namespace XYZ {
 
 		if (m_MouseMoving)
 		{
-			auto& props = m_OrthographicProperties;
-			auto [mx,my] = Input::GetMousePosition();
-		
-			m_CameraPosition.x = m_OldPosition.x - ((mx - m_StartMousePos.x) * m_CameraMouseMoveSpeed * props.OrthographicSize);
-			m_CameraPosition.y = m_OldPosition.y + ((my - m_StartMousePos.y) * m_CameraMouseMoveSpeed * props.OrthographicSize);
-			
+			auto [mx, my] = Input::GetMousePosition();
+
+			m_CameraPosition.x = m_OldPosition.x - ((mx - m_StartMousePos.x) * m_CameraMouseMoveSpeed * m_ZoomLevel);
+			m_CameraPosition.y = m_OldPosition.y + ((my - m_StartMousePos.y) * m_CameraMouseMoveSpeed * m_ZoomLevel);
+
 			modified = true;
 		}
 
@@ -89,8 +88,7 @@ namespace XYZ {
 	void EditorCamera::OnResize(const glm::vec2& size)
 	{
 		m_AspectRatio = size.x / size.y;
-		auto& props = m_OrthographicProperties;
-		m_ProjectionMatrix = glm::ortho(-m_AspectRatio * props.OrthographicSize, m_AspectRatio * props.OrthographicSize, -props.OrthographicSize, props.OrthographicSize);
+		m_ProjectionMatrix = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
 		recalculate();
 	}
 
@@ -118,14 +116,12 @@ namespace XYZ {
 	}
 	bool EditorCamera::onMouseScrolled(MouseScrollEvent& event)
 	{
-		auto& props = m_OrthographicProperties;
-		
-		props.OrthographicSize -= (float)event.GetOffsetY() * 0.25f;
-		props.OrthographicSize = std::max(props.OrthographicSize, 0.25f);
-		m_CameraTranslationSpeed = props.OrthographicSize;
+		m_ZoomLevel -= (float)event.GetOffsetY() * 0.25f;
+		m_ZoomLevel = std::max(m_ZoomLevel, 0.25f);
+		m_CameraTranslationSpeed = m_ZoomLevel;
 
 
-		m_ProjectionMatrix = glm::ortho(-m_AspectRatio * props.OrthographicSize, m_AspectRatio * props.OrthographicSize, -props.OrthographicSize, props.OrthographicSize);
+		m_ProjectionMatrix = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
 		m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
 
 		return false;
@@ -152,8 +148,7 @@ namespace XYZ {
 	bool EditorCamera::onWindowResized(WindowResizeEvent& event)
 	{
 		m_AspectRatio = (float)event.GetWidth() / (float)event.GetHeight();
-		auto& props = m_OrthographicProperties;
-		m_ProjectionMatrix = glm::ortho(-m_AspectRatio * props.OrthographicSize, m_AspectRatio * props.OrthographicSize, -props.OrthographicSize, props.OrthographicSize);
+		m_ProjectionMatrix = glm::ortho(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
 		m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
 		return false;
 	}

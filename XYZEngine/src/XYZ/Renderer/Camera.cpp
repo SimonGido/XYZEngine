@@ -10,12 +10,4 @@ namespace XYZ {
 		: m_ProjectionMatrix(projectionMatrix)
 	{
 	}
-	void Camera::SetPerspective(const CameraPerspectiveProperties& perspectiveProps)
-	{
-		m_PerspectiveProperties = perspectiveProps;
-	}
-	void Camera::SetOrthographic(const CameraOrthographicProperties& orthoProps)
-	{
-		m_OrthographicProperties = orthoProps;
-	}
 }

@@ -115,6 +115,7 @@ namespace XYZ {
 		m_ECS(ecs),
 		m_Specification(specs)
 	{
+		m_ViewMatrix = glm::inverse(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f)));
 		Ref<FrameBuffer> fbo = FrameBuffer::Create({ 1280, 720,{0.1f,0.1f,0.1f,1.0f},1,FrameBufferFormat::RGBA16F,true });
 		fbo->CreateColorAttachment(FrameBufferFormat::RGBA16F); // Position color buffer
 		fbo->CreateDepthAttachment();
@@ -202,8 +203,14 @@ namespace XYZ {
 	}
 	uint32_t GuiContext::CreateCheckbox(uint32_t canvas, const CheckboxSpecification& specs)
 	{
-		auto& texCoords = m_Specification.SubTexture[GuiSpecification::CHECKBOX_CHECKED]->GetTexCoords();
 		uint32_t entity = m_ECS->CreateEntity();
+		auto checkbox = m_ECS->EmplaceComponent<Checkbox>(entity, specs.DefaultColor, specs.HooverColor);
+
+
+		glm::vec4 texCoords = m_Specification.SubTexture[GuiSpecification::CHECKBOX_UNCHECKED]->GetTexCoords();
+		if (checkbox->Checked)
+			texCoords = m_Specification.SubTexture[GuiSpecification::CHECKBOX_CHECKED]->GetTexCoords();	
+
 		Mesh mesh;
 		GenerateQuadMesh(texCoords, specs.DefaultColor, glm::vec2(1.0f), mesh);
 
@@ -214,9 +221,8 @@ namespace XYZ {
 			0,
 			0,
 			true
-			);
-		m_ECS->EmplaceComponent<Button>(entity, specs.DefaultColor, specs.ClickColor, specs.HooverColor);
-
+		);
+	
 		int32_t transformIndex = m_ECS->GetComponentIndex<RectTransform>(entity);
 		int32_t rendererIndex = m_ECS->GetComponentIndex<CanvasRenderer>(entity);
 
@@ -284,6 +290,12 @@ namespace XYZ {
 		specs.Width = width;
 		specs.Height = height;
 		m_RenderPass->GetSpecification().TargetFramebuffer->Resize();
+
+		float w = (float)width;
+		float h = (float)height;
+		m_Camera.SetProjectionMatrix(glm::ortho(-w * 0.5f, w * 0.5f, -h * 0.5f, h * 0.5f));
+
+		m_ViewportSize = glm::vec2(w, h);
 	}
 	void GuiContext::SetParent(uint32_t parent, uint32_t child)
 	{
@@ -293,6 +305,7 @@ namespace XYZ {
 	void GuiContext::OnEvent(Event& event)
 	{
 		EventDispatcher dispatcher(event);
+
 		if (dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&GuiContext::onMouseButtonPress, this)))
 		{
 		}
@@ -302,14 +315,27 @@ namespace XYZ {
 		else if (dispatcher.Dispatch<MouseMovedEvent>(Hook(&GuiContext::onMouseMove, this)))
 		{
 		}
+		else if (dispatcher.Dispatch<WindowResizeEvent>(Hook(&GuiContext::onWindowResizeEvent, this)));
+		{
+		}
 	}
 	void GuiContext::OnUpdate(Timestep ts)
 	{
+		for (int i = 0; i < m_CheckboxGroup->Size(); ++i)
+		{
+			auto [checkbox, canvasRenderer, rectTransform] = (*m_CheckboxGroup)[i];
+			if (checkbox->Checked)
+				checkbox->Execute<CheckedEvent>(CheckedEvent{});
+		}
 	}
 	void GuiContext::OnRender()
 	{
 		Renderer::BeginRenderPass(m_RenderPass, false);
-		GuiRenderer::BeginScene(m_ViewportSize);
+		GuiRendererCamera renderCamera;
+		renderCamera.Camera = m_Camera;
+		renderCamera.ViewMatrix = m_ViewMatrix;
+
+		GuiRenderer::BeginScene(renderCamera);
 		for (auto& child : m_Entities)
 			submitNode(child, glm::vec3(0.0f));
 
@@ -317,22 +343,21 @@ namespace XYZ {
 		Renderer::EndRenderPass();
 		Renderer::WaitAndRender();
 	}
+	bool GuiContext::onWindowResizeEvent(WindowResizeEvent& event)
+	{
+		SetViewportSize((uint32_t)event.GetWidth(), (uint32_t)event.GetHeight());
+		return false;
+	}
 	bool GuiContext::onMouseButtonPress(MouseButtonPressEvent& event)
 	{
+		auto [mx, my] = Input::GetMousePosition();
+		glm::vec2 mousePosition = MouseToWorld({ mx,my }, m_ViewportSize);
 		if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_LEFT))
-		{
-			auto [mx, my] = Input::GetMousePosition();
-			glm::vec2 mousePosition = MouseToWorld({ mx,my }, m_ViewportSize);
-			for (int i = 0; i < m_ButtonGroup->Size(); ++i)
-			{
-				auto [button, canvasRenderer, rectTransform] = (*m_ButtonGroup)[i];
-				if (Collide(rectTransform->WorldPosition, rectTransform->Scale, mousePosition))
-				{
-					SetMeshColor(canvasRenderer->Mesh, button->ClickColor);
-					if (button->Execute<ClickEvent>(ClickEvent{}))
-						return true;
-				}
-			}
+		{	
+			if (buttonOnMouseButtonPress(mousePosition))
+				return true;
+			else if (checkboxOnMouseButtonPress(mousePosition))
+				return true;
 		}
 		return false;
 	}
@@ -340,18 +365,8 @@ namespace XYZ {
 	{
 		if (event.IsButtonReleased(MouseCode::XYZ_MOUSE_BUTTON_LEFT))
 		{
-			auto [mx, my] = Input::GetMousePosition();
-			glm::vec2 mousePosition = MouseToWorld({ mx,my }, m_ViewportSize);
-			for (int i = 0; i < m_ButtonGroup->Size(); ++i)
-			{
-				auto [button, canvasRenderer, rectTransform] = (*m_ButtonGroup)[i];
-				if (Collide(rectTransform->WorldPosition, rectTransform->Scale, mousePosition))
-				{
-					SetMeshColor(canvasRenderer->Mesh, button->DefaultColor);
-					if (button->Execute<ReleaseEvent>(ReleaseEvent{}))
-						return true;
-				}
-			}
+			if (buttonOnMouseButtonRelease())
+				return true;
 		}
 		return false;
 	}
@@ -359,16 +374,57 @@ namespace XYZ {
 	{
 		auto [mx, my] = Input::GetMousePosition();
 		glm::vec2 mousePosition = MouseToWorld({ mx,my }, m_ViewportSize);
+		
+		if (buttonOnMouseMove(mousePosition))
+			return true;
+		else if (checkboxOnMouseMove(mousePosition))
+			return true;
+
+		return false;
+	}
+
+	bool GuiContext::buttonOnMouseButtonPress(const glm::vec2& mousePosition)
+	{
 		for (int i = 0; i < m_ButtonGroup->Size(); ++i)
 		{
 			auto [button, canvasRenderer, rectTransform] = (*m_ButtonGroup)[i];
 			if (Collide(rectTransform->WorldPosition, rectTransform->Scale, mousePosition))
 			{
+				button->Machine.TransitionTo(ButtonState::Clicked);
+				SetMeshColor(canvasRenderer->Mesh, button->ClickColor);
+				if (button->Execute<ClickEvent>(ClickEvent{}))
+					return true;
+			}
+		}
+		return false;
+	}
+
+	bool GuiContext::buttonOnMouseButtonRelease()
+	{
+		for (int i = 0; i < m_ButtonGroup->Size(); ++i)
+		{
+			auto [button, canvasRenderer, rectTransform] = (*m_ButtonGroup)[i];
+			button->Machine.TransitionTo(ButtonState::Released);
+			SetMeshColor(canvasRenderer->Mesh, button->DefaultColor);
+			if (button->Execute<ReleaseEvent>(ReleaseEvent{}))
+				return true;
+		}
+		return false;
+	}
+
+	bool GuiContext::buttonOnMouseMove(const glm::vec2& mousePosition)
+	{
+		for (int i = 0; i < m_ButtonGroup->Size(); ++i)
+		{
+			auto [button, canvasRenderer, rectTransform] = (*m_ButtonGroup)[i];
+			if (Collide(rectTransform->WorldPosition, rectTransform->Scale, mousePosition)
+				&& button->Machine.TransitionTo(ButtonState::Hoovered))
+			{
 				SetMeshColor(canvasRenderer->Mesh, button->HooverColor);
 				button->Execute<HooverEvent>(HooverEvent{});
 				return true;
 			}
-			else
+			else if (button->Machine.TransitionTo(ButtonState::UnHoovered))
 			{
 				SetMeshColor(canvasRenderer->Mesh, button->DefaultColor);
 				button->Execute<UnHooverEvent>(UnHooverEvent{});
@@ -376,6 +432,53 @@ namespace XYZ {
 		}
 		return false;
 	}
+
+	bool GuiContext::checkboxOnMouseButtonPress(const glm::vec2& mousePosition)
+	{
+		for (int i = 0; i < m_CheckboxGroup->Size(); ++i)
+		{
+			auto [checkbox, canvasRenderer, rectTransform] = (*m_CheckboxGroup)[i];
+			if (Collide(rectTransform->WorldPosition, rectTransform->Scale, mousePosition))
+			{
+				if (checkbox->Checked)
+				{
+					checkbox->Checked = false;
+					SetQuadTexCoords(canvasRenderer->Mesh, m_Specification.SubTexture[GuiSpecification::CHECKBOX_UNCHECKED]->GetTexCoords());
+					if (checkbox->Execute<UnCheckedEvent>(UnCheckedEvent{}));
+						return true;
+				}
+				else
+				{
+					checkbox->Checked = true;
+					SetQuadTexCoords(canvasRenderer->Mesh, m_Specification.SubTexture[GuiSpecification::CHECKBOX_CHECKED]->GetTexCoords());
+					if (checkbox->Execute<CheckedEvent>(CheckedEvent{}));
+						return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	bool GuiContext::checkboxOnMouseMove(const glm::vec2& mousePosition)
+	{
+		for (int i = 0; i < m_CheckboxGroup->Size(); ++i)
+		{
+			auto [checkbox, canvasRenderer, rectTransform] = (*m_CheckboxGroup)[i];
+			if (Collide(rectTransform->WorldPosition, rectTransform->Scale, mousePosition))
+			{
+				SetMeshColor(canvasRenderer->Mesh, checkbox->HooverColor);
+				checkbox->Execute<HooverEvent>(HooverEvent{});
+				return true;
+			}
+			else
+			{
+				SetMeshColor(canvasRenderer->Mesh, checkbox->DefaultColor);
+				checkbox->Execute<UnHooverEvent>(UnHooverEvent{});
+			}
+		}
+		return false;
+	}
+
 	void GuiContext::submitNode(const Node& node, const glm::vec3& parentPosition)
 	{
 		auto& rectTransform = (*m_TransformStorage)[node.RectTransformIndex];

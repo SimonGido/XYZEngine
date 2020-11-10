@@ -28,11 +28,10 @@ namespace XYZ {
 		const glm::vec3& position,
 		const glm::vec2& size,
 		const glm::vec4& defaultColor,
-		const glm::vec4& clickColor,
 		const glm::vec4& hooverColor
 	)
 		:
-		Name(name), Position(position), Size(size), DefaultColor(defaultColor), ClickColor(clickColor), HooverColor(hooverColor)
+		Name(name), Position(position), Size(size), DefaultColor(defaultColor), HooverColor(hooverColor)
 	{
 	}
 

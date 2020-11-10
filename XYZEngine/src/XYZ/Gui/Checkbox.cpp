@@ -3,35 +3,28 @@
 
 
 namespace XYZ {
-	Checkbox::Checkbox()
+	Checkbox::Checkbox(const glm::vec4& defaultColor, const glm::vec4& hooverColor)
+		:
+		DefaultColor(defaultColor), HooverColor(hooverColor)
 	{
+		State& checkedState = Machine.CreateState();
+		State& unCheckedState = Machine.CreateState();
+		State& hooverState = Machine.CreateState();
+		State& unHooverState = Machine.CreateState();
+
+		checkedState.AllowTransition(unCheckedState.GetID());
+		unCheckedState.AllowTransition(checkedState.GetID());
+		unCheckedState.AllowTransition(hooverState.GetID());
+		unCheckedState.AllowTransition(unHooverState.GetID());
+		hooverState.AllowTransition(checkedState.GetID());
+		hooverState.AllowTransition(unHooverState.GetID());
+		hooverState.AllowTransition(hooverState.GetID());
+		unHooverState.AllowTransition(hooverState.GetID());
+		Machine.SetDefaultState(unHooverState.GetID());
 	}
 	void Checkbox::OnUpdate(Timestep ts)
 	{
-		if (m_Checked)
+		if (Checked)
 			Execute(CheckedEvent{});
-	}
-	void Checkbox::OnEvent(Event& event)
-	{
-
-		EventDispatcher dispatcher(event);
-		if (event.GetEventType() == EventType::Click)
-		{
-			m_Checked = !m_Checked;
-			if (m_Checked)
-				event.Handled = Execute(CheckedEvent{});
-			else
-				event.Handled = Execute(UnCheckedEvent{});
-		}	
-		else if (event.GetEventType() == EventType::Hoover)
-		{
-			event.Handled = Execute(HooverEvent{});
-			m_Hoovered = true;
-		}
-		else if (event.GetEventType() == EventType::UnHoover)
-		{
-			event.Handled = Execute(UnHooverEvent{});
-			m_Hoovered = false;
-		}
 	}
 }

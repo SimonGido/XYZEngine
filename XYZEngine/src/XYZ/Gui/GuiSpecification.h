@@ -67,7 +67,6 @@ namespace XYZ {
 			const glm::vec3& position,
 			const glm::vec2& size,
 			const glm::vec4& defaultColor,
-			const glm::vec4& clickColor,
 			const glm::vec4& hooverColor
 		);
 
@@ -76,7 +75,6 @@ namespace XYZ {
 		glm::vec2	Size;
 
 		glm::vec4   DefaultColor;
-		glm::vec4   ClickColor;
 		glm::vec4   HooverColor;
 	};
 	struct TextSpecification

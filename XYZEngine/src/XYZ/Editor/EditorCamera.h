@@ -23,7 +23,7 @@ namespace XYZ {
 
 		const glm::vec3& GetPosition() const { return m_CameraPosition; }
 		float GetRotation() const { return m_CameraRotation; }
-		float GetZoomLevel() const { return m_OrthographicProperties.OrthographicSize; };
+		float GetZoomLevel() const { return m_ZoomLevel; };
 		float GetAspectRatio() const { return m_AspectRatio; }
 
 		const glm::mat4& GetProjectionMatrix() const { return m_ProjectionMatrix; }
@@ -54,7 +54,9 @@ namespace XYZ {
 		glm::vec3 m_CameraPosition = { 0.0f, 0.0f, 0.0f };
 
 		float m_AspectRatio = 16.0f / 9.0f;
-	
+		float m_ZoomLevel = 1.0f;
+
+
 		float m_CameraRotation = 0.0f; //In degrees, in the anti-clockwise direction
 		float m_CameraTranslationSpeed = 5.0f;
 		float m_CameraRotationSpeed = 180.0f;

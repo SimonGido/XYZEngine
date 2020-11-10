@@ -89,74 +89,13 @@ namespace XYZ {
 		m_TestEntity = m_Scene->GetEntity(2);
 		m_SpriteRenderer = m_TestEntity.GetComponent<SpriteRenderer>();
 		m_Transform = m_TestEntity.GetComponent<TransformComponent>();
-		m_Animator = m_TestEntity.EmplaceComponent<AnimatorComponent>();
 		
 		m_CharacterTexture = Texture2D::Create(XYZ::TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest, "Assets/Textures/player_sprite.png");
 		m_CharacterSubTexture = Ref<SubTexture2D>::Create(m_CharacterTexture, glm::vec2(0, 0), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
 		m_CharacterSubTexture2 = Ref<SubTexture2D>::Create(m_CharacterTexture, glm::vec2(1, 2), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
-		m_CharacterSubTexture3 = Ref<SubTexture2D>::Create(m_CharacterTexture, glm::vec2(2, 2), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
-
-
-		
-		m_IdleAnimation = Ref<Animation>::Create(3.0f);
-		auto prop = m_IdleAnimation->AddProperty<glm::vec4>(m_SpriteRenderer->Color);
-		auto posProperty = m_IdleAnimation->AddProperty<glm::vec3>(m_Position);
-		auto rotProperty = m_IdleAnimation->AddProperty<glm::vec3>(m_Rotation);
-		auto spriteProperty = m_IdleAnimation->AddProperty<Ref<SubTexture2D>>(m_SpriteRenderer->SubTexture);
-
-		prop->KeyFrames.push_back({ {1,0,0,1},0.0f });
-		prop->KeyFrames.push_back({ {0,1,0,1},1.0f });
-		prop->KeyFrames.push_back({ {0,0,1,1},2.0f });
-		prop->KeyFrames.push_back({ {1,0,0,1},3.0f });
-
-
-		posProperty->KeyFrames.push_back({ {0,0,0},0.0f });
-		posProperty->KeyFrames.push_back({ {-1,0,0},1.0f });
-		posProperty->KeyFrames.push_back({ {0,1,0},2.0f });
-		posProperty->KeyFrames.push_back({ {0,0,0},3.0f });
-
-		rotProperty->KeyFrames.push_back({ {0,0,0},0.0f });
-		rotProperty->KeyFrames.push_back({ {0,0,1.5},1.0f });
-		rotProperty->KeyFrames.push_back({ {0,0,2},2.0f });
-		rotProperty->KeyFrames.push_back({ {0,0,0},3.0f });
-
-		spriteProperty->KeyFrames.push_back({ m_CharacterSubTexture,0.0f });
-		spriteProperty->KeyFrames.push_back({ m_CharacterSubTexture2,1.0f });
-		spriteProperty->KeyFrames.push_back({ m_CharacterSubTexture3,2.0f });
-		spriteProperty->KeyFrames.push_back({ m_CharacterSubTexture,3.0f });
-
-
-		m_RunAnimation = Ref<Animation>::Create(3.0f);
-		auto posProperty2 = m_RunAnimation->AddProperty<glm::vec3>(m_Position);
-		posProperty2->KeyFrames.push_back({ {0,0,0},0.0f });
-		posProperty2->KeyFrames.push_back({ {-1,0,0},1.0f });
-		posProperty2->KeyFrames.push_back({ {0,1,0},2.0f });
-		posProperty2->KeyFrames.push_back({ {0,0,0},3.0f });
-
-
-		auto spriteProperty2 = m_RunAnimation->AddProperty<Ref<SubTexture2D>>(m_SpriteRenderer->SubTexture);
-		spriteProperty2->KeyFrames.push_back({ m_CharacterSubTexture,0.0f });
-		spriteProperty2->KeyFrames.push_back({ m_CharacterSubTexture2,1.0f });
-		spriteProperty2->KeyFrames.push_back({ m_CharacterSubTexture3,2.0f });
-		spriteProperty2->KeyFrames.push_back({ m_CharacterSubTexture,3.0f });
-
-		m_AnimationController = Ref<AnimationController>::Create();
-		m_AnimationController->AddAnimation("Idle", m_IdleAnimation);
-		m_AnimationController->AddAnimation("Run", m_RunAnimation);
-		m_AnimationController->AddAnimation("Test1", m_RunAnimation);
-		m_AnimationController->AddAnimation("Test2", m_RunAnimation);
-		m_AnimationController->AddAnimation("Test3", m_RunAnimation);
-		m_AnimationController->AddAnimation("Test4", m_RunAnimation);
-		m_AnimationController->AddAnimation("Test5", m_RunAnimation);
-		m_AnimationController->AddAnimation("Test6", m_RunAnimation);
-		
-		m_Animator->Controller = m_AnimationController;
-		m_Animator->Controller->SetDefaultAnimation("Run");
-
-		
+		m_CharacterSubTexture3 = Ref<SubTexture2D>::Create(m_CharacterTexture, glm::vec2(2, 2), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));	
 
 		auto backgroundTexture = m_AssetManager.GetAsset<Texture2D>("Assets/Textures/Backgroundfield.png");
-
 
 		///////////////////////////////////////////////////////////
 
@@ -211,7 +150,7 @@ namespace XYZ {
 		m_Particle->ParticleEffect->SetParticlesRange(m_Vertices, m_Data, 0, count);
 		///////////////////////////////////////////////////////////
 
-		Ref<Font> font = Ref<Font>::Create(16, "Assets/Fonts/arial.ttf");
+		Ref<Font> font = Ref<Font>::Create(14, "Assets/Fonts/arial.ttf");
 		auto texture = Texture2D::Create(XYZ::TextureWrap::Clamp, TextureParam::Linear, TextureParam::Nearest, "Assets/Textures/Gui/TexturePack_Dark.png");
 		auto material = Ref<Material>::Create(Shader::Create("Assets/Shaders/GuiShader.glsl"));
 		material->Set("u_Texture", texture, 0);
@@ -222,8 +161,10 @@ namespace XYZ {
 		specs.Material = material;
 		specs.Font = font;
 		specs.SubTexture[GuiSpecification::BUTTON] = Ref<SubTexture2D>::Create(texture, glm::vec2(0,0), glm::vec2((float)texture->GetWidth() / divisor, (float)texture->GetHeight() / divisor));
+		specs.SubTexture[GuiSpecification::CHECKBOX_CHECKED] = Ref<SubTexture2D>::Create(texture, glm::vec2(1, 1), glm::vec2((float)texture->GetWidth() / divisor, (float)texture->GetHeight() / divisor));
+		specs.SubTexture[GuiSpecification::CHECKBOX_UNCHECKED] = Ref<SubTexture2D>::Create(texture, glm::vec2(0, 1), glm::vec2((float)texture->GetWidth() / divisor, (float)texture->GetHeight() / divisor));
 		m_GuiContext = Application::Get().GetGuiLayer()->CreateContext(&m_ECS, specs);		
-		m_GuiContext->SetViewportSize(windowWidth, windowHeight);
+		
 
 		uint32_t canvas = m_GuiContext->CreateCanvas(CanvasSpecification(
 				CanvasRenderMode::ScreenSpace,
@@ -250,17 +191,20 @@ namespace XYZ {
 		m_ECS.GetComponent<RectTransform>(m_EditorEntities[6])->Position = glm::vec3(100.0f, 0.0f, 0.0f);
 		m_GuiContext->SetParent(m_EditorEntities[6], m_EditorEntities[7]);
 		
-		//for (int i = 0; i < 10; ++i)
-		//{
-		//	EditorEntity editorEntity = m_EditorScene->CreateText(canvas, TextSpecification{
-		//		TextAlignment::Center,
-		//		"Test text",
-		//		glm::vec3(0.0, i * -32.0f, 0.0f),
-		//		glm::vec2(1.0f, 1.0f),
-		//		glm::vec4(1.0f)
-		//	});
-		//	m_EditorEntities.push_back(editorEntity);
-		//}
+		for (int i = 0; i < 10; ++i)
+		{
+			uint32_t editorEntity = m_GuiContext->CreateCheckbox(canvas,
+				CheckboxSpecification{
+					"Checkbox",
+					glm::vec3(i * 70, -70.0f, 0.0f),
+					glm::vec2(50.0f,50.0f),
+					glm::vec4(1.0f,1.0f,1.0f,1.0f),
+					glm::vec4(1.0f, 0.5f, 0.8f, 1.0f)
+				});
+
+			m_ECS.GetComponent<Checkbox>(editorEntity)->RegisterCallback<CheckedEvent>(Hook(&EditorLayer::onCheckboxCheckedTest, this));
+			m_EditorEntities.push_back(editorEntity);
+		}
 	}	
 
 
@@ -296,7 +240,14 @@ namespace XYZ {
 	}
 	bool EditorLayer::onButtonClickTest(ClickEvent& event)
 	{
+		std::cout << "Clicked" << std::endl;
 		return true;
+	}
+
+	bool EditorLayer::onCheckboxCheckedTest(CheckedEvent& event)
+	{
+		std::cout << "Checked" << std::endl;
+		return false;
 	}
 
 }

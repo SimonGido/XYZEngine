@@ -22,30 +22,20 @@ namespace XYZ {
 		return m_AllowedTransitionsTo & BIT(stateIndex);
 	}
 
-	State StateMachine::CreateState(const std::string& name)
+
+	State& StateMachine::CreateState()
 	{
-		for (auto state : m_StatesMap)
-		{
-			if (state.Name == name)
-			{
-				XYZ_LOG_ERR("State with name ", name, " already exists");
-				break;
-			}
-		}
-		
 		XYZ_ASSERT(m_NextFreeBit < sc_MaxBit, "State machine can has only %d states", sc_MaxBit);
 		State state;
 		state.m_ID = m_NextFreeBit++;
 		m_StatesInitialized |= BIT(state.m_ID);
-
-		m_StatesMap[state.m_ID].Name = name;
-		m_StatesMap[state.m_ID].State = state;
-		return state;
+		m_States[state.m_ID] = state;
+		return m_States[state.m_ID];
 	}
 
 	bool StateMachine::TransitionTo(uint32_t id)
 	{
-		auto& current = m_StatesMap[m_CurrentState].State;
+		auto& current = m_States[m_CurrentState];
 		// Check if id of state is in allowed transitions of the current state or check if the current state has allowed any transitions;	
 		XYZ_ASSERT(m_StatesInitialized & BIT(id), "State was not registered in this state machine");
 		if ((BIT(id) & current.m_AllowedTransitionsTo)
@@ -57,17 +47,11 @@ namespace XYZ {
 		return false;
 	}
 
-
-	void StateMachine::RenameState(uint32_t id, const std::string& name)
-	{
-		XYZ_ASSERT(m_StatesInitialized & BIT(id), "State with id ", id, "is not initialized");
-		m_StatesMap[id].Name = name;
-	}
-
 	void StateMachine::SetDefaultState(uint32_t id)
 	{
 		XYZ_ASSERT(m_StatesInitialized & BIT(id), "State with id ", id, "is not initialized");
 		XYZ_ASSERT(id < m_NextFreeBit, "State was not registered in this state machine");
+		m_CurrentState = id;
 	}
 
 

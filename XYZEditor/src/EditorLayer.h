@@ -28,6 +28,7 @@ namespace XYZ {
 		bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
 
 		bool onButtonClickTest(ClickEvent& event);
+		bool onCheckboxCheckedTest(CheckedEvent& event);
 
 		ParticleVertex* m_Vertices;
 		ParticleInformation* m_Data;
@@ -48,11 +49,6 @@ namespace XYZ {
 
 		SpriteRenderer* m_SpriteRenderer;
 		TransformComponent* m_Transform;
-		AnimatorComponent* m_Animator;
-		
-		Ref<AnimationController> m_AnimationController;
-		Ref<Animation> m_IdleAnimation;
-		Ref<Animation> m_RunAnimation;
 
 		glm::vec3 m_Position = { 0,0,0 };
 		glm::vec3 m_Rotation = { 0,0,0 };

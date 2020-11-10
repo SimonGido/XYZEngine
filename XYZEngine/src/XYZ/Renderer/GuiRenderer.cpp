@@ -10,7 +10,7 @@
 namespace XYZ {
 	struct GuiRendererData
 	{
-		glm::vec2 ViewportSize;
+		GuiRendererCamera RendererCamera;
 
 		struct WidgetDrawCommand
 		{
@@ -26,9 +26,9 @@ namespace XYZ {
 	void GuiRenderer::Init()
 	{
 	}
-	void GuiRenderer::BeginScene(const glm::vec2& viewportSize)
+	void GuiRenderer::BeginScene(const GuiRendererCamera& camera)
 	{
-		s_Data.ViewportSize = viewportSize;
+		s_Data.RendererCamera = camera;
 	}
 
 	void GuiRenderer::EndScene()
@@ -36,9 +36,7 @@ namespace XYZ {
 		flushDrawList();
 		s_Data.WidgetDrawList.clear();
 	}
-	void GuiRenderer::SetMaterial(const Ref<Material>& material)
-	{
-	}
+
 	void GuiRenderer::SubmitWidget(CanvasRenderer* canvasRenderer, RectTransform* transform)
 	{
 		// TODO: Might not work the best for text
@@ -47,13 +45,14 @@ namespace XYZ {
 	}
 	void GuiRenderer::flushDrawList()
 	{
-		Renderer2D::BeginScene(glm::mat4(1.0f), s_Data.ViewportSize);
+		glm::mat4 viewProjectionMatrix = s_Data.RendererCamera.Camera.GetProjectionMatrix() * s_Data.RendererCamera.ViewMatrix;
+		Renderer2D::BeginScene(viewProjectionMatrix, glm::vec2(0, 0));
 		
 		Ref<Material> currentMaterial = nullptr;
 		if (s_Data.WidgetDrawList.size())
 		{
 			currentMaterial = s_Data.WidgetDrawList.back().Renderer->Material;
-			currentMaterial->Set("u_ViewportSize", s_Data.ViewportSize);
+			currentMaterial->Set("u_ViewProjectionMatrix", viewProjectionMatrix);
 			Renderer2D::SetMaterial(currentMaterial);
 		}
 		for (auto& dc : s_Data.WidgetDrawList)
@@ -61,7 +60,7 @@ namespace XYZ {
 			if (currentMaterial->GetSortKey() != dc.Renderer->Material->GetSortKey())
 			{
 				currentMaterial = dc.Renderer->Material;
-				currentMaterial->Set("u_ViewportSize", s_Data.ViewportSize);
+				currentMaterial->Set("u_ViewProjectionMatrix", viewProjectionMatrix);
 				Renderer2D::SetMaterial(currentMaterial);
 			}
 			Renderer2D::SubmitQuads(dc.Transform->GetWorldTransform(), dc.Renderer->Mesh.Vertices.data(), dc.Renderer->Mesh.Vertices.size() / 4.0f, dc.Renderer->TextureID, dc.Renderer->TilingFactor);
@@ -72,11 +71,11 @@ namespace XYZ {
 	}
 	bool GuiRenderer::cullTest(const glm::vec3& position, const glm::vec2& scale)
 	{
-		if (position.x - scale.x + s_Data.ViewportSize.x / 2.0f < s_Data.ViewportSize.x 
-		 && position.x + scale.x + s_Data.ViewportSize.x / 2.0f > 0.0f
-		 && position.y - scale.y + s_Data.ViewportSize.y / 2.0f < s_Data.ViewportSize.y 
-		 && position.y + scale.y + s_Data.ViewportSize.y / 2.0f > 0.0f)
+		//if (position.x - scale.x + s_Data.ViewportSize.x / 2.0f < s_Data.ViewportSize.x 
+		// && position.x + scale.x + s_Data.ViewportSize.x / 2.0f > 0.0f
+		// && position.y - scale.y + s_Data.ViewportSize.y / 2.0f < s_Data.ViewportSize.y 
+		// && position.y + scale.y + s_Data.ViewportSize.y / 2.0f > 0.0f)
 			return true;
-		return false;
+		//return false;
 	}
 }
