@@ -1,9 +1,9 @@
 #include "stdafx.h"
-#include "Component.h"
+#include "ComponentManager.h"
 
 
 namespace XYZ {
 	namespace ECS {
-	
+
 	}
 }

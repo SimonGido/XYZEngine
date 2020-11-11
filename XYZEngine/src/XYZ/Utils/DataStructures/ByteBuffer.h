@@ -70,7 +70,7 @@ namespace XYZ {
 		template<typename T>
 		T* As()
 		{
-			return (T*)Data;
+			return (T*)m_Data;
 		}
 
 		inline uint32_t GetSize() const { return m_Size; }

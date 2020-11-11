@@ -4,6 +4,7 @@
 
 #include "XYZ/Timer.h"
 #include "XYZ/Renderer/Renderer.h"
+#include "XYZ/EntityComponentSystem/ComponentManager.h"
 #include "XYZ/EntityComponentSystem/ComponentArchetype.h"
 #include "XYZ/EntityComponentSystem/Component.h"
 
@@ -18,17 +19,32 @@
 namespace XYZ {
 	Application* Application::s_Application = nullptr;
 
-	struct Test : public Component
+	struct Test : public ECS::TypeT<Test>
 	{
 		int x = 0;
 		int y = 0;
-		int z = 0;
+		int z = 8;
 	};
 
-	struct Opica : public Component
+	struct Opica : public ECS::TypeT<Opica>
 	{
-		glm::vec2 size = glm::vec2(0,0);
-		glm::vec2 pos = glm::vec2(0, 0);
+		float x = 50.0f;
+		float y = 50.0f;
+		float z = 50.0f;
+	};
+
+	struct Krava : public ECS::TypeT<Krava>
+	{
+		float x = 600.0f;
+		float y = 600.0f;
+		float z = 600.0f;
+	};
+
+	struct Hava : public ECS::TypeT<Hava>
+	{
+		float x = 900.0f;
+		float y = 900.0f;
+		float z = 900.0f;
 	};
 
 	Application::Application()
@@ -46,32 +62,27 @@ namespace XYZ {
 		m_GuiLayer = new GuiLayer();
 		m_LayerStack.PushOverlay(m_GuiLayer);
 
-		Test::m_ID = 1;
-		Opica::m_ID = 2;
 	
 		uint32_t entity = 0;
 		ECS::Signature signature;
-		signature.set(Test::m_ID);
-		signature.set(Opica::m_ID);
+		//signature.set(Test::m_ID);
+		//signature.set(Opica::m_ID);
 
-		ComponentLayout layout;
-		layout.Elements.push_back({ sizeof(Test), Test::m_ID });
-		layout.Elements.push_back({ sizeof(Opica), Opica::m_ID });
-		ComponentArchetype archetype(layout);
+		Opica opica;
+		
+		Test test;
+		test.x = 7;
+		test.z = 12;
 
-		std::tuple<Test, Opica> component;
-		std::get<0>(component).x = 10;
-		std::get<1>(component).size = glm::vec2(15, 4);
-		archetype.AddComponent(entity, signature, (uint8_t*)&component);
-		{
-			auto &[test, opica] = archetype.GetComponent<Test, Opica>(entity);
+		ECS::ComponentManagerT manager;
+		manager.AddComponent(entity, signature, opica);
+		manager.AddComponent(entity, signature, test);
+		manager.AddComponent(entity, signature, Krava());
+		manager.AddComponent(entity, signature, Hava());
 
-			test.y = 15;
-		}
-		{
-			auto [test, opica] = archetype.GetComponent<Test, Opica>(entity);
-		}
-
+		auto& archeType = manager.GetArchetype(signature);
+		auto &[opicaC,testC, kravaC, havaC] = archeType.GetComponentsAs<Opica, Test, Krava, Hava>(entity);
+		auto layout = archeType.GetLayout();
 	}
 
 	Application::~Application()
