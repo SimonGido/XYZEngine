@@ -1,6 +1,6 @@
 #pragma once
 
-#include "XYZ/ECS/ECSManager.h"
+#include "XYZ/EntityComponentSystem/Component.h"
 #include "XYZ/Event/GuiEvent.h"
 #include "XYZ/Event/EventSystem.h"
 
@@ -22,7 +22,7 @@ namespace XYZ {
 	}
 
 	class Checkbox : public EventSystem<CheckedEvent, UnCheckedEvent, HooverEvent, UnHooverEvent>,
-				     public Type<Checkbox>
+		public ECS::Type<Checkbox>
 	{
 	public:
 		Checkbox(const glm::vec4& defaultColor,const glm::vec4& hooverColo);

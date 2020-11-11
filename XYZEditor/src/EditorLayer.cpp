@@ -52,27 +52,27 @@ namespace XYZ {
 		NativeScriptEngine::Init();
 
 		NativeScriptEngine::SetOnReloadCallback([this] {
-			auto storage = m_Scene->GetECS().GetComponentStorage<NativeScriptComponent>();
-			for (int i = 0; i < storage->Size(); ++i)
-			{
-				(*storage)[i].ScriptableEntity = (ScriptableEntity*)NativeScriptEngine::CreateScriptObject((*storage)[i].ScriptObjectName);
-				if ((*storage)[i].ScriptableEntity)
-				{
-					(*storage)[i].ScriptableEntity->Entity = m_StoredEntitiesWithScript[i];
-					(*storage)[i].ScriptableEntity->OnCreate();
-				}
-			}
+			//auto storage = m_Scene->GetECS().GetComponentStorage<NativeScriptComponent>();
+			//for (int i = 0; i < storage->Size(); ++i)
+			//{
+			//	(*storage)[i].ScriptableEntity = (ScriptableEntity*)NativeScriptEngine::CreateScriptObject((*storage)[i].ScriptObjectName);
+			//	if ((*storage)[i].ScriptableEntity)
+			//	{
+			//		(*storage)[i].ScriptableEntity->Entity = m_StoredEntitiesWithScript[i];
+			//		(*storage)[i].ScriptableEntity->OnCreate();
+			//	}
+			//}
 		});
 
 		NativeScriptEngine::SetOnRecompileCallback([this]() {		
-			auto storage = m_Scene->GetECS().GetComponentStorage<NativeScriptComponent>();
-			for (int i = 0; i < storage->Size(); ++i)
-			{
-				if ((*storage)[i].ScriptableEntity)
-				{
-					m_StoredEntitiesWithScript.push_back((*storage)[i].ScriptableEntity->Entity);
-				}
-			}
+			//auto storage = m_Scene->GetECS().GetComponentStorage<NativeScriptComponent>();
+			//for (int i = 0; i < storage->Size(); ++i)
+			//{
+			//	if ((*storage)[i].ScriptableEntity)
+			//	{
+			//		m_StoredEntitiesWithScript.push_back((*storage)[i].ScriptableEntity->Entity);
+			//	}
+			//}
 		});
 		
 
@@ -87,8 +87,8 @@ namespace XYZ {
 		m_Material->SetFlags(XYZ::RenderFlags::TransparentFlag);
 
 		m_TestEntity = m_Scene->GetEntity(2);
-		m_SpriteRenderer = m_TestEntity.GetComponent<SpriteRenderer>();
-		m_Transform = m_TestEntity.GetComponent<TransformComponent>();
+		//m_SpriteRenderer = m_TestEntity.GetComponent<SpriteRenderer>();
+		//m_Transform = m_TestEntity.GetComponent<TransformComponent>();
 		
 		m_CharacterTexture = Texture2D::Create(XYZ::TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest, "Assets/Textures/player_sprite.png");
 		m_CharacterSubTexture = Ref<SubTexture2D>::Create(m_CharacterTexture, glm::vec2(0, 0), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
@@ -108,7 +108,7 @@ namespace XYZ {
 	
 		computeMat->SetRoutine("blueColor");	
 	
-		m_Particle = m_TestEntity.EmplaceComponent<ParticleComponent>(ParticleComponent());
+		//m_Particle = m_TestEntity.EmplaceComponent<ParticleComponent>(ParticleComponent());
 		m_Particle->RenderMaterial = Ref<MaterialInstance>::Create(renderMat);
 		m_Particle->ComputeMaterial = Ref<MaterialInstance>::Create(computeMat);
 		m_Particle->ParticleEffect = Ref<ParticleEffect>::Create(ParticleEffectConfiguration(count, 2.0f), ParticleLayoutConfiguration());
@@ -184,12 +184,12 @@ namespace XYZ {
 					glm::vec4(1.0f, 0.5f, 0.8f, 1.0f)
 			});
 
-			m_ECS.GetComponent<Button>(editorEntity)->RegisterCallback<ClickEvent>(Hook(&EditorLayer::onButtonClickTest, this));
-			m_EditorEntities.push_back(editorEntity);
+			//m_ECS.GetComponent<Button>(editorEntity)->RegisterCallback<ClickEvent>(Hook(&EditorLayer::onButtonClickTest, this));
+			//m_EditorEntities.push_back(editorEntity);
 		}
 
-		m_ECS.GetComponent<RectTransform>(m_EditorEntities[6])->Position = glm::vec3(100.0f, 0.0f, 0.0f);
-		m_GuiContext->SetParent(m_EditorEntities[6], m_EditorEntities[7]);
+		//m_ECS.GetComponent<RectTransform>(m_EditorEntities[6])->Position = glm::vec3(100.0f, 0.0f, 0.0f);
+		//m_GuiContext->SetParent(m_EditorEntities[6], m_EditorEntities[7]);
 		
 		for (int i = 0; i < 10; ++i)
 		{
@@ -202,8 +202,8 @@ namespace XYZ {
 					glm::vec4(1.0f, 0.5f, 0.8f, 1.0f)
 				});
 
-			m_ECS.GetComponent<Checkbox>(editorEntity)->RegisterCallback<CheckedEvent>(Hook(&EditorLayer::onCheckboxCheckedTest, this));
-			m_EditorEntities.push_back(editorEntity);
+			//m_ECS.GetComponent<Checkbox>(editorEntity)->RegisterCallback<CheckedEvent>(Hook(&EditorLayer::onCheckboxCheckedTest, this));
+			//m_EditorEntities.push_back(editorEntity);
 		}
 		for (int i = 0; i < 10; ++i)
 		{
@@ -219,14 +219,14 @@ namespace XYZ {
 			m_EditorEntities.push_back(editorEntity);
 		}
 
-		auto rectTransform = m_ECS.GetComponent<RectTransform>(m_EditorEntities.back());
-		auto canvasRenderer = m_ECS.GetComponent<CanvasRenderer>(m_EditorEntities.back());
-		auto text = m_ECS.GetComponent<Text>(m_EditorEntities.back());
-		rectTransform->Size.x += 50;
-		
-		rectTransform->Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent(
-			canvasRenderer, rectTransform, TextCanvasRendererRebuild(text)
-		));
+		//auto rectTransform = m_ECS.GetComponent<RectTransform>(m_EditorEntities.back());
+		//auto canvasRenderer = m_ECS.GetComponent<CanvasRenderer>(m_EditorEntities.back());
+		//auto text = m_ECS.GetComponent<Text>(m_EditorEntities.back());
+		//rectTransform->Size.x += 50;
+		//
+		//rectTransform->Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent(
+		//	canvasRenderer, rectTransform, TextCanvasRendererRebuild(text)
+		//));
 	}	
 
 

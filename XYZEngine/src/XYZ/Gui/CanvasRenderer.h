@@ -1,12 +1,12 @@
 #pragma once
-#include "XYZ/ECS/Component.h"
+#include "XYZ/EntityComponentSystem/Component.h"
 #include "XYZ/Renderer/Mesh.h"
 #include "XYZ/Renderer/Material.h"
 
 #include <glm/glm.hpp>
 
 namespace XYZ {
-	struct CanvasRenderer : public Type<CanvasRenderer>
+	struct CanvasRenderer : public ECS::Type<CanvasRenderer>
 	{
 		CanvasRenderer(
 			Ref<Material> material,

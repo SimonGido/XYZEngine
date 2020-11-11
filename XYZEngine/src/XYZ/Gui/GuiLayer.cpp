@@ -33,7 +33,7 @@ namespace XYZ {
 			context->OnEvent(event);
 		}
 	}
-	GuiContext* GuiLayer::CreateContext(ECSManager* ecs, const GuiSpecification& specs)
+	GuiContext* GuiLayer::CreateContext(ECS::ECSManager* ecs, const GuiSpecification& specs)
 	{
 		auto [width, height] = Input::GetWindowSize();
 		m_GuiContexts.push_back(new GuiContext(ecs, specs));

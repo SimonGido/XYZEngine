@@ -1,7 +1,7 @@
 #pragma once
 #include "XYZ/Core/Ref.h"
 #include "XYZ/Core/Timestep.h"
-#include "XYZ/ECS/ECSManager.h"
+#include "XYZ/EntityComponentSystem/ECSManager.h"
 #include "XYZ/Event/Event.h"
 
 #include "XYZ/Renderer/Camera.h"
@@ -53,7 +53,7 @@ namespace XYZ {
 
         SceneState GetState() const { return m_State; }
         Entity GetEntity(uint32_t index);
-        ECSManager& GetECS() { return m_ECS; }
+        ECS::ECSManager& GetECS() { return m_ECS; }
         Entity GetSelectedEntity();
 
         inline const std::string& GetName() const { return m_Name; }
@@ -63,13 +63,7 @@ namespace XYZ {
         void showCamera(uint32_t entity);
 
     private:
-        ECSManager m_ECS;
-        ComponentGroup<TransformComponent, CameraComponent>* m_CameraGroup = nullptr;
-        ComponentGroup<TransformComponent, SpriteRenderer>* m_RenderGroup = nullptr;
-        ComponentGroup<TransformComponent, ParticleComponent>* m_ParticleGroup = nullptr;
-        ComponentGroup<TransformComponent, PointLight2D>* m_LightGroup = nullptr;
-        ComponentGroup<AnimatorComponent>* m_AnimateGroup = nullptr;
-        ComponentGroup<NativeScriptComponent>* m_ScriptGroup = nullptr;
+        ECS::ECSManager m_ECS;
 
         std::string m_Name;
         SceneState m_State = SceneState::Edit;

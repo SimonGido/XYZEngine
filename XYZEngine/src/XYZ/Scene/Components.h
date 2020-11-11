@@ -1,5 +1,5 @@
 #pragma once
-#include "XYZ/ECS/Component.h"
+#include "XYZ/EntityComponentSystem/Component.h"
 #include "XYZ/Particle/ParticleEffect.h"
 #include "XYZ/Renderer/SubTexture2D.h"
 
@@ -13,7 +13,7 @@
 namespace XYZ {
 	class ScriptableEntity;
 
-	class TransformComponent : public Type<TransformComponent>
+	class TransformComponent : public ECS::Type<TransformComponent>
 	{
 	public:
 		TransformComponent() = default;
@@ -38,7 +38,7 @@ namespace XYZ {
 		}
 	};
 
-	struct SceneTagComponent : public Type<SceneTagComponent>
+	struct SceneTagComponent : public ECS::Type<SceneTagComponent>
 	{
 		std::string Name;
 		SceneTagComponent(const std::string& name)
@@ -52,7 +52,7 @@ namespace XYZ {
 		operator const  std::string& () const { return Name; }
 	};
 
-	struct SpriteRenderer : public Type<SpriteRenderer>
+	struct SpriteRenderer : public ECS::Type<SpriteRenderer>
 	{
 		SpriteRenderer() = default;
 
@@ -81,14 +81,14 @@ namespace XYZ {
 	};
 
 
-	struct CameraComponent : public Type<CameraComponent>
+	struct CameraComponent : public ECS::Type<CameraComponent>
 	{
 		SceneCamera Camera;
 		CameraComponent() = default;
 	};
 
 
-	struct NativeScriptComponent : public Type<NativeScriptComponent>
+	struct NativeScriptComponent : public ECS::Type<NativeScriptComponent>
 	{
 		NativeScriptComponent() = default;
 		NativeScriptComponent(ScriptableEntity* scriptableEntity, const std::string& scriptObjectName)
@@ -101,7 +101,7 @@ namespace XYZ {
 		std::string ScriptObjectName;
 	};
 
-	struct AnimatorComponent : public Type<AnimatorComponent>
+	struct AnimatorComponent : public ECS::Type<AnimatorComponent>
 	{
 		AnimatorComponent() = default;
 		
@@ -110,7 +110,7 @@ namespace XYZ {
 
 
 
-	struct ParticleComponent : public Type<ParticleComponent>
+	struct ParticleComponent : public ECS::Type<ParticleComponent>
 	{
 		ParticleComponent() = default;
 		Ref<MaterialInstance> RenderMaterial;
@@ -120,7 +120,7 @@ namespace XYZ {
 		uint32_t TextureID = 0;
 	};
 
-	struct PointLight2D : public Type<PointLight2D>
+	struct PointLight2D : public ECS::Type<PointLight2D>
 	{
 		PointLight2D() = default;
 

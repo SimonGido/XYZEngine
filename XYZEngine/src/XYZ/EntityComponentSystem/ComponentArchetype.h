@@ -34,12 +34,19 @@ namespace XYZ {
 			uint8_t* GetComponent(uint32_t entity);
 
 			template <typename ...Args>
+			std::tuple<Args...>* GetComponents(size_t& count)
+			{
+				count = m_Entities.size();
+				return m_Buffer.As<std::tuple<Args...>>();
+			}
+			
+			template <typename ...Args>
 			std::tuple<Args...>& GetComponentsAs(uint32_t entity)
 			{
 				auto it = m_EntityMap.find(entity);
 				XYZ_ASSERT(it != m_EntityMap.end(), "Entity does not exist in this archetype");
 
-			
+
 				return *reinterpret_cast<std::tuple<Args...>*>(&m_Buffer[it->second]);
 			}
 

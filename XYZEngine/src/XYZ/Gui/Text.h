@@ -1,5 +1,5 @@
 #pragma once
-#include "XYZ/ECS/ECSManager.h"
+#include "XYZ/EntityComponentSystem/Component.h"
 #include "XYZ/Renderer/Font.h"
 
 #include <glm/glm.hpp>
@@ -13,7 +13,7 @@ namespace XYZ {
 		Center
 	};
 
-	struct Text : public Type<Text>
+	struct Text : public ECS::Type<Text>
 	{
 		Text(const std::string& source, const Ref<Font>& font, const glm::vec4& color, TextAlignment alignment);
 		

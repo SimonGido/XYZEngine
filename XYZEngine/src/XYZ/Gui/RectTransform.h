@@ -1,5 +1,5 @@
 #pragma once
-#include "XYZ/ECS/Component.h"
+#include "XYZ/EntityComponentSystem/Component.h"
 #include "XYZ/Event/EventSystem.h"
 #include "XYZ/Event/GuiEvent.h"
 
@@ -7,7 +7,7 @@
 #include <glm/gtx/transform.hpp>
 
 namespace XYZ {
-	struct RectTransform : public Type<RectTransform>,
+	struct RectTransform : public ECS::Type<RectTransform>,
 						   public EventSystem<CanvasRendererRebuildEvent> // Editor only , it fires event when canvas should be rebuilt
 	{
 		RectTransform(const glm::vec3& position, const glm::vec2& size)

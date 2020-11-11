@@ -1,5 +1,5 @@
 #pragma once
-#include "XYZ/ECS/ECSManager.h"
+#include "XYZ/EntityComponentSystem/Component.h"
 #include "XYZ/Event/GuiEvent.h"
 #include "XYZ/Event/InputEvent.h"
 
@@ -21,7 +21,7 @@ namespace XYZ {
 	}
 
 	class Button : public EventSystem<ClickEvent, ReleaseEvent, HooverEvent, UnHooverEvent>,
-		public Type<Button>
+		public ECS::Type<Button>
 	{
 	public:
 		Button(const glm::vec4& defaultColor, const glm::vec4& clickColor, const glm::vec4& hooverColor);

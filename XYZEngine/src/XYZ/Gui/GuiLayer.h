@@ -1,5 +1,6 @@
 #pragma once
 #include "XYZ/Core/Layer.h"
+#include "XYZ/EntityComponentSystem/ECSManager.h"
 
 #include "GuiContext.h"
 
@@ -14,7 +15,7 @@ namespace XYZ {
 		virtual void OnUpdate(Timestep ts) override;
 		virtual void OnEvent(Event& event) override;
 
-		GuiContext* CreateContext(ECSManager* ecs, const GuiSpecification& specs);
+		GuiContext* CreateContext(ECS::ECSManager* ecs, const GuiSpecification& specs);
 
 	private:
 		std::vector<GuiContext*> m_GuiContexts;

@@ -5,9 +5,27 @@
 namespace XYZ {
 	namespace ECS {
 
-		class ComponentManagerT
+		class ComponentManager
 		{
 		public:
+			~ComponentManager()
+			{
+				for (auto archetype : m_ArcheTypes)
+					archetype.second.Clean();
+			}
+
+			void CreateArcheType(const ComponentLayout& layout)
+			{
+				Signature signature;
+				for (auto& el : layout.Elements)
+					signature.set(el.ID);
+
+				auto hash = m_HashFunction(signature);
+				XYZ_ASSERT(m_ArcheTypes.find(hash) == m_ArcheTypes.end(), "Archetype already exists");	
+
+				m_ArcheTypes[hash] = ComponentArchetype(layout);
+			}
+
 			template <typename T>
 			void AddComponent(uint32_t entity, Signature& signature, const T& component)
 			{		
@@ -28,8 +46,8 @@ namespace XYZ {
 					if (it->second.RemoveComponent(entity, signature))
 					{
 						// It returned true, means archetype is empty -> destroy it
-						it->second.Clean();
-						m_ArcheTypes.erase(it);
+						//it->second.Clean();
+						//m_ArcheTypes.erase(it);
 					}
 				}
 				else
@@ -60,6 +78,53 @@ namespace XYZ {
 
 				delete[]tempStorage;
 			}
+
+			template <typename T>
+			void RemoveComponent(uint32_t entity, Signature& signature)
+			{
+				auto it = m_ArcheTypes.find(m_HashFunction(signature));
+				XYZ_ASSERT(it != m_ArcheTypes.end(), "Entity does not have component with id ", T::GetComponentID());
+				ByteBuffer tempStorage;
+				ComponentLayout layout;
+
+				tempStorage.Allocate(it->second.GetLayoutSize() - sizeof(T));
+				auto data = it->second.GetComponent(entity);
+				uint32_t offsetData = 0;
+				uint32_t offsetTempStorage = 0;
+				for (auto& el : it->second.GetLayout().Elements)
+				{
+					if (el.ID != T::GetComponentID())
+					{
+						layout.Elements.push_back(el);
+						tempStorage.Write(&data[offsetData], el.Size, offsetTempStorage);
+						offsetTempStorage += el.Size;
+					}
+					offsetData += el.Size;
+				}
+
+				if (it->second.RemoveComponent(entity, signature))
+				{
+					// It returned true, means archetype is empty -> destroy it
+					//it->second.Clean();
+					//m_ArcheTypes.erase(it);
+				}
+
+				signature.set(T::GetComponentID(), false);
+				auto updatedHash = m_HashFunction(signature);
+				auto newIt = m_ArcheTypes.find(updatedHash);
+				if (newIt != m_ArcheTypes.end())
+				{
+					newIt->second.AddComponent(entity, signature, tempStorage);
+				}
+				else
+				{
+					m_ArcheTypes[updatedHash] = ComponentArchetype(layout);
+					m_ArcheTypes[updatedHash].AddComponent(entity, signature, tempStorage);
+				}
+
+				delete[]tempStorage;
+			}
+
 
 			ComponentArchetype& GetArchetype(const Signature& signature) { return m_ArcheTypes[m_HashFunction(signature)]; }
 

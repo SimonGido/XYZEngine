@@ -19,28 +19,28 @@
 namespace XYZ {
 	Application* Application::s_Application = nullptr;
 
-	struct Test : public ECS::TypeT<Test>
+	struct Test : public ECS::Type<Test>
 	{
 		int x = 0;
 		int y = 0;
 		int z = 8;
 	};
 
-	struct Opica : public ECS::TypeT<Opica>
+	struct Opica : public ECS::Type<Opica>
 	{
 		float x = 50.0f;
 		float y = 50.0f;
 		float z = 50.0f;
 	};
 
-	struct Krava : public ECS::TypeT<Krava>
+	struct Krava : public ECS::Type<Krava>
 	{
 		float x = 600.0f;
 		float y = 600.0f;
 		float z = 600.0f;
 	};
 
-	struct Hava : public ECS::TypeT<Hava>
+	struct Hava : public ECS::Type<Hava>
 	{
 		float x = 900.0f;
 		float y = 900.0f;
@@ -74,15 +74,38 @@ namespace XYZ {
 		test.x = 7;
 		test.z = 12;
 
-		ECS::ComponentManagerT manager;
+		ECS::ComponentManager manager;
+
+		
+		ECS::ComponentLayout layout;
+		layout.Elements.push_back({ sizeof(Opica),Opica::GetComponentID() });
+		layout.Elements.push_back({ sizeof(Test),Test::GetComponentID() });
+		layout.Elements.push_back({ sizeof(Krava),Krava::GetComponentID() });
+		layout.Elements.push_back({ sizeof(Hava),Hava::GetComponentID() });
+		manager.CreateArcheType(layout);
+
 		manager.AddComponent(entity, signature, opica);
 		manager.AddComponent(entity, signature, test);
 		manager.AddComponent(entity, signature, Krava());
 		manager.AddComponent(entity, signature, Hava());
+		
+		{		
+			auto& archeType = manager.GetArchetype(signature);
+			auto& [opicaC, testC, kravaC, havaC] = archeType.GetComponentsAs<Opica, Test, Krava, Hava>(entity);
+		}
 
-		auto& archeType = manager.GetArchetype(signature);
-		auto &[opicaC,testC, kravaC, havaC] = archeType.GetComponentsAs<Opica, Test, Krava, Hava>(entity);
-		auto layout = archeType.GetLayout();
+		manager.RemoveComponent<Krava>(entity, signature);
+		{
+			auto& archeType = manager.GetArchetype(signature);
+			auto& [opicaC, testC, havaC] = archeType.GetComponentsAs<Hava, Test, Krava>(entity);
+			
+			size_t count = 0;
+			auto h = archeType.GetComponents<Krava, Test, Hava>(count);
+			
+			auto o = std::get<0>(h[0]);
+
+			std::cout << count << std::endl;
+		}
 	}
 
 	Application::~Application()

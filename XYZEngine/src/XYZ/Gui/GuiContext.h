@@ -1,8 +1,8 @@
 #pragma once
+#include "XYZ/EntityComponentSystem/ECSManager.h"
 #include "XYZ/Event/Event.h"
 #include "XYZ/Event/ApplicationEvent.h"
 #include "XYZ/Core/Timestep.h"
-#include "XYZ/ECS/ECSManager.h"
 #include "XYZ/Renderer/RenderPass.h"
 #include "XYZ/Renderer/Camera.h"
 
@@ -63,11 +63,11 @@ namespace XYZ {
 		void OnEvent(Event& event);
 		void OnUpdate(Timestep ts);
 		void OnRender();
-		void RefreshLayouts();
+
 
 	private:
 		// Only gui layer can create new context
-		GuiContext(ECSManager* ecs, const GuiSpecification& specs);
+		GuiContext(ECS::ECSManager* ecs, const GuiSpecification& specs);
 
 		bool onCanvasRendererRebuild(CanvasRendererRebuildEvent& event);
 
@@ -93,20 +93,20 @@ namespace XYZ {
 		Camera m_Camera;
 		glm::mat4 m_ViewMatrix;
 
-		ECSManager* m_ECS = nullptr;
+		ECS::ECSManager* m_ECS = nullptr;
 		GuiSpecification m_Specification;
 
 		Ref<RenderPass> m_RenderPass;
 		glm::vec2 m_ViewportSize;
 
-		std::shared_ptr<ComponentStorage<RectTransform>> m_TransformStorage;
-		std::shared_ptr<ComponentStorage<CanvasRenderer>> m_CanvasRenderStorage;
-
-		ComponentGroup<Canvas, CanvasRenderer, RectTransform>* m_CanvasGroup;
-		ComponentGroup<Button, CanvasRenderer, RectTransform>* m_ButtonGroup;
-		ComponentGroup<Checkbox, CanvasRenderer, RectTransform>* m_CheckboxGroup;
-		ComponentGroup<Slider, CanvasRenderer, RectTransform>* m_SliderGroup;
-		ComponentGroup<Text, CanvasRenderer, RectTransform>* m_TextGroup;
+		//std::shared_ptr<ComponentStorage<RectTransform>> m_TransformStorage;
+		//std::shared_ptr<ComponentStorage<CanvasRenderer>> m_CanvasRenderStorage;
+		//
+		//ComponentGroup<Canvas, CanvasRenderer, RectTransform>* m_CanvasGroup;
+		//ComponentGroup<Button, CanvasRenderer, RectTransform>* m_ButtonGroup;
+		//ComponentGroup<Checkbox, CanvasRenderer, RectTransform>* m_CheckboxGroup;
+		//ComponentGroup<Slider, CanvasRenderer, RectTransform>* m_SliderGroup;
+		//ComponentGroup<Text, CanvasRenderer, RectTransform>* m_TextGroup;
 
 		friend class GuiLayer;
 	};

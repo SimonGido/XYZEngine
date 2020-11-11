@@ -12,10 +12,10 @@ namespace XYZ {
 			m_Layout(layout)
 		{
 			m_LayoutSize = 0;
-			for (auto& it : layout.Elements)
+			for (auto it = layout.Elements.rbegin(); it != layout.Elements.rend(); ++it)
 			{
-				m_Signature.set(it.ID);
-				m_LayoutSize += it.Size;
+				m_Signature.set(it->ID);
+				m_LayoutSize += it->Size;
 			}
 			m_Buffer.Allocate(m_LayoutSize);
 		}

@@ -1,5 +1,5 @@
 #pragma once
-#include "XYZ/ECS/Component.h"
+#include "XYZ/EntityComponentSystem/Component.h"
 
 #include <glm/glm.hpp>
 
@@ -11,7 +11,7 @@ namespace XYZ {
 		RenderModes
 	};
 
-	struct Canvas : public Type<Canvas>
+	struct Canvas : public ECS::Type<Canvas>
 	{
 		Canvas(CanvasRenderMode mode)
 			:

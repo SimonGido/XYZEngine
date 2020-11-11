@@ -31,19 +31,16 @@
 #include "XYZ/Scene/SceneManager.h"
 #include "XYZ/Scene/AssetManager.h"
 #include "XYZ/Scene/Animation.h"
+#include "XYZ/Scene/Entity.h"
 
 
 //---------Editor-----------//
 #include "XYZ/Editor/EditorCamera.h"
 
 //------ECS-----//
-#include "XYZ/ECS/ECSManager.h"
-#include "XYZ/ECS/Entity.h"
+#include "XYZ/EntityComponentSystem/ECSManager.h"
 
-//-----Systems-----//
-#include "XYZ/Physics/PhysicsSystem.h"
-#include "XYZ/Physics/GridCollisionSystem.h"
-#include "XYZ/Physics/RealGridCollisionSystem.h"
+
 
 //-----Audio-----//
 #include "XYZ/Audio/Audio.h"

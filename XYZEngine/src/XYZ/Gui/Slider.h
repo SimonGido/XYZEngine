@@ -1,5 +1,5 @@
 #pragma once
-#include "XYZ/ECS/Component.h"
+#include "XYZ/EntityComponentSystem/Component.h"
 #include "XYZ/Event/GuiEvent.h"
 #include "XYZ/Event/EventSystem.h"
 
@@ -8,7 +8,7 @@ namespace XYZ {
 
 
 	class Slider : public EventSystem<ClickEvent, ReleaseEvent, HooverEvent, UnHooverEvent>,
-				   public Type<Slider>
+		public ECS::Type<Slider>
 	{
 	public:
 		void OnEvent(Event& event);

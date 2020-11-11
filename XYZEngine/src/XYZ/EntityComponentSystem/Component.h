@@ -5,8 +5,8 @@
 namespace XYZ {
 	namespace ECS {
 
-		class ComponentManagerT;
-		class IComponentT
+		class ComponentManager;
+		class IComponent
 		{
 		public:
 			template <typename T>
@@ -23,12 +23,12 @@ namespace XYZ {
 				return ++nextType;
 			}
 
-			friend class ComponentManagerT;
+			friend class ComponentManager;
 		};
 
 
-		template <typename Derived, typename DeriveFrom = IComponentT>
-		class TypeT : public IComponentT
+		template <typename Derived, typename DeriveFrom = IComponent>
+		class Type : public IComponent
 		{
 		public:
 			// return unique static id
