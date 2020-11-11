@@ -4,7 +4,8 @@
 
 #include "XYZ/Timer.h"
 #include "XYZ/Renderer/Renderer.h"
-
+#include "XYZ/EntityComponentSystem/ComponentArchetype.h"
+#include "XYZ/EntityComponentSystem/Component.h"
 
 #include <GLFW/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -17,6 +18,18 @@
 namespace XYZ {
 	Application* Application::s_Application = nullptr;
 
+	struct Test : public Component
+	{
+		int x = 0;
+		int y = 0;
+		int z = 0;
+	};
+
+	struct Opica : public Component
+	{
+		glm::vec2 size = glm::vec2(0,0);
+		glm::vec2 pos = glm::vec2(0, 0);
+	};
 
 	Application::Application()
 	{
@@ -32,6 +45,33 @@ namespace XYZ {
 		
 		m_GuiLayer = new GuiLayer();
 		m_LayerStack.PushOverlay(m_GuiLayer);
+
+		Test::m_ID = 1;
+		Opica::m_ID = 2;
+	
+		uint32_t entity = 0;
+		ECS::Signature signature;
+		signature.set(Test::m_ID);
+		signature.set(Opica::m_ID);
+
+		ComponentLayout layout;
+		layout.Elements.push_back({ sizeof(Test), Test::m_ID });
+		layout.Elements.push_back({ sizeof(Opica), Opica::m_ID });
+		ComponentArchetype archetype(layout);
+
+		std::tuple<Test, Opica> component;
+		std::get<0>(component).x = 10;
+		std::get<1>(component).size = glm::vec2(15, 4);
+		archetype.AddComponent(entity, signature, (uint8_t*)&component);
+		{
+			auto &[test, opica] = archetype.GetComponent<Test, Opica>(entity);
+
+			test.y = 15;
+		}
+		{
+			auto [test, opica] = archetype.GetComponent<Test, Opica>(entity);
+		}
+
 	}
 
 	Application::~Application()
