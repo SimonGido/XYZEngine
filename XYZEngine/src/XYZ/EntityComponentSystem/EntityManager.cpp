@@ -4,25 +4,24 @@
 namespace XYZ {
 	namespace ECS {
 		EntityManager::EntityManager()
-			: m_EntitiesInUse(0)
+			:
+			m_EntitiesInUse(0)
 		{
-
 		}
 		uint32_t EntityManager::CreateEntity()
 		{
 			XYZ_ASSERT(m_EntitiesInUse < MAX_ENTITIES, "Too many entities in existence.");
-
-			// Take an ID from the front of the queue
-			m_EntitiesInUse++;
-			uint32_t entity = (uint32_t)m_Signatures.Insert({ Signature(),0 });
-			m_Signatures[(int)entity].Entity = entity;
-
-			return entity;
+			return m_Signatures.Insert(Signature(0));		
 		}
 		Signature& EntityManager::GetSignature(uint32_t entity)
 		{
 			XYZ_ASSERT(entity < MAX_ENTITIES, "Entity out of range.");
-			return m_Signatures[entity].Signature;
+			return m_Signatures[entity];
+		}
+		const Signature& EntityManager::GetSignature(uint32_t entity) const
+		{
+			XYZ_ASSERT(entity < MAX_ENTITIES, "Entity out of range.");
+			return m_Signatures[entity];
 		}
 		void EntityManager::DestroyEntity(uint32_t entity)
 		{
@@ -30,7 +29,7 @@ namespace XYZ {
 
 			// Put the destroyed ID at the back of the queue
 			//Restart bitset to zero;
-			m_Signatures[entity].Signature.reset();
+			m_Signatures[entity].reset();
 			m_Signatures.Erase(entity);
 			m_EntitiesInUse--;
 		}
@@ -39,7 +38,7 @@ namespace XYZ {
 			XYZ_ASSERT(entity < MAX_ENTITIES, "Entity out of range.");
 
 			// Put this entity's signature into the array
-			m_Signatures[entity].Signature = signature;
+			m_Signatures[entity] = signature;
 		}
 	}
 }

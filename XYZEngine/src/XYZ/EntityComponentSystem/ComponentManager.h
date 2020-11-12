@@ -1,6 +1,8 @@
 #pragma once
-#include "ComponentArchetype.h"
+#include "ComponentStorage.h"
+#include "ComponentGroup.h"
 #include "Component.h"
+#include "Types.h"
 
 namespace XYZ {
 	namespace ECS {
@@ -10,131 +12,97 @@ namespace XYZ {
 		public:
 			~ComponentManager()
 			{
-				for (auto archetype : m_ArcheTypes)
-					archetype.second.Clean();
+				for (auto storage : m_Storages)
+					delete storage;
+				
+				for (auto group : m_Groups)
+					delete group;
 			}
 
-			void CreateArcheType(const ComponentLayout& layout)
+			template <typename T>
+			T& AddComponent(uint32_t entity, const T& component)
+			{
+				if (T::GetComponentID() >= m_Storages.size())
+				{
+					m_Storages.resize(size_t(T::GetComponentID()) + 1);
+					m_Storages[T::GetComponentID()] = new ComponentStorage<T>();
+				}
+				else if (!m_Storages[T::GetComponentID()])
+					m_Storages[T::GetComponentID()] = new ComponentStorage<T>();
+
+				ComponentStorage<T>* casted = (ComponentStorage<T>*)m_Storages[T::GetComponentID()];
+
+				return casted->AddComponent(entity, component);
+			}
+
+			template <typename T>
+			void RemoveComponent(uint32_t entity)
+			{
+				ComponentStorage<T>* casted = (ComponentStorage<T>*)m_Storages[T::GetComponentID()];
+				casted->RemoveComponent(entity);
+			}
+
+			template <typename T>
+			T& GetComponent(uint32_t entity)
+			{
+				ComponentStorage<T>* casted = (ComponentStorage<T>*)m_Storages[T::GetComponentID()];
+				return casted->GetComponent(entity);
+			}
+
+			IComponentStorage* GetStorage(uint8_t index)
+			{
+				return m_Storages[(size_t)index];
+			}
+
+			IComponentGroup* GetGroup(const Signature& signature)
+			{
+				for (auto group : m_Groups)
+				{
+					if ((group->GetSignature() & signature) == group->GetSignature())
+						return group;
+				}
+				return nullptr;
+			}
+
+			template <typename ...Args>
+			ComponentGroup<Args...>* CreateGroup()
 			{
 				Signature signature;
-				for (auto& el : layout.Elements)
-					signature.set(el.ID);
-
-				auto hash = m_HashFunction(signature);
-				XYZ_ASSERT(m_ArcheTypes.find(hash) == m_ArcheTypes.end(), "Archetype already exists");	
-
-				m_ArcheTypes[hash] = ComponentArchetype(layout);
-			}
-
-			template <typename T>
-			void AddComponent(uint32_t entity, Signature& signature, const T& component)
-			{		
-				ByteBuffer tempStorage;
-				ComponentLayout layout;		
-				layout.Elements.push_back({ sizeof(T), T::GetComponentID() });
-				// Remove entity from old archetype
-				auto it = m_ArcheTypes.find(m_HashFunction(signature));
-				if (it != m_ArcheTypes.end())
-				{
-					// Storing old entity component data and merging them with new component
-					tempStorage.Allocate(it->second.GetLayoutSize() + sizeof(T));
-					tempStorage.Write((void*)&component, sizeof(T));
-					tempStorage.Write(it->second.GetComponent(entity), it->second.GetLayoutSize(), sizeof(T));
-					for (const ComponentElement& elem : it->second.GetLayout().Elements)
-						layout.Elements.push_back(elem);
-
-					if (it->second.RemoveComponent(entity, signature))
-					{
-						// It returned true, means archetype is empty -> destroy it
-						//it->second.Clean();
-						//m_ArcheTypes.erase(it);
-					}
-				}
-				else
-				{
-					// Old Archetype did not exist
-					tempStorage.Allocate(sizeof(T));
-					tempStorage.Write((void*)&component, sizeof(T));
-				}
-
+				std::initializer_list<uint16_t> componentTypes{ Args::GetComponentID()... };
+				for (auto it : componentTypes)
+					signature.set(it);
 				
-				// Update entity signature to hold new component
-				signature.set(T::GetComponentID());
-
-				// Find if this archetype already exists
-				auto updatedHash = m_HashFunction(signature);
-				auto newIt = m_ArcheTypes.find(updatedHash);
-				if (newIt != m_ArcheTypes.end())
-				{
-					// New archetype exists so add component
-					newIt->second.AddComponent(entity, signature, tempStorage);
-				}
-				else
-				{
-					// New arhcetype does not exists so create new archetype and add component
-					m_ArcheTypes[updatedHash] = ComponentArchetype(layout);
-					m_ArcheTypes[updatedHash].AddComponent(entity, signature, tempStorage);
+				for (auto group : m_Groups)
+				{		
+					XYZ_ASSERT(!(group->GetSignature() & signature).any(), "Component is already owned by different group");
 				}
 
-				delete[]tempStorage;
+				auto group = new ComponentGroup<Args...>();
+				m_Groups.push_back(group);
+				return group;
 			}
 
-			template <typename T>
-			void RemoveComponent(uint32_t entity, Signature& signature)
+
+			void EntityDestroyed(uint32_t entity, const Signature& signature, ECSManager* ecs)
 			{
-				auto it = m_ArcheTypes.find(m_HashFunction(signature));
-				XYZ_ASSERT(it != m_ArcheTypes.end(), "Entity does not have component with id ", T::GetComponentID());
-				ByteBuffer tempStorage;
-				ComponentLayout layout;
-
-				tempStorage.Allocate(it->second.GetLayoutSize() - sizeof(T));
-				auto data = it->second.GetComponent(entity);
-				uint32_t offsetData = 0;
-				uint32_t offsetTempStorage = 0;
-				for (auto& el : it->second.GetLayout().Elements)
+				for (uint32_t i = 0; i < m_Storages.size(); ++i)
 				{
-					if (el.ID != T::GetComponentID())
+					if (signature.test(i))
 					{
-						layout.Elements.push_back(el);
-						tempStorage.Write(&data[offsetData], el.Size, offsetTempStorage);
-						offsetTempStorage += el.Size;
+						if (m_Storages[i])
+							m_Storages[i]->EntityDestroyed(entity);
 					}
-					offsetData += el.Size;
 				}
-
-				if (it->second.RemoveComponent(entity, signature))
+				for (auto group : m_Groups)
 				{
-					// It returned true, means archetype is empty -> destroy it
-					//it->second.Clean();
-					//m_ArcheTypes.erase(it);
+					if (group->GetSignature() == signature)
+						group->RemoveEntity(entity, ecs);
 				}
-
-				signature.set(T::GetComponentID(), false);
-				auto updatedHash = m_HashFunction(signature);
-				auto newIt = m_ArcheTypes.find(updatedHash);
-				if (newIt != m_ArcheTypes.end())
-				{
-					newIt->second.AddComponent(entity, signature, tempStorage);
-				}
-				else
-				{
-					m_ArcheTypes[updatedHash] = ComponentArchetype(layout);
-					m_ArcheTypes[updatedHash].AddComponent(entity, signature, tempStorage);
-				}
-
-				delete[]tempStorage;
 			}
-
-
-			ComponentArchetype& GetArchetype(const Signature& signature) { return m_ArcheTypes[m_HashFunction(signature)]; }
 
 		private:
-			std::hash<std::bitset<MAX_COMPONENTS>> m_HashFunction;
-
-			std::unordered_map<size_t, ComponentArchetype> m_ArcheTypes;
-	
-
-			uint8_t m_NextID = 1;
+			std::vector<IComponentStorage*> m_Storages;
+			std::vector<IComponentGroup*> m_Groups;
 		};
 	}
 }

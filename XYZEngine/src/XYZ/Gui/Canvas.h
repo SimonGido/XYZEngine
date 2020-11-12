@@ -13,6 +13,7 @@ namespace XYZ {
 
 	struct Canvas : public ECS::Type<Canvas>
 	{
+		Canvas() = default;
 		Canvas(CanvasRenderMode mode)
 			:
 			RenderMode(mode)

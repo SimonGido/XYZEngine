@@ -4,9 +4,7 @@
 
 #include "XYZ/Timer.h"
 #include "XYZ/Renderer/Renderer.h"
-#include "XYZ/EntityComponentSystem/ComponentManager.h"
-#include "XYZ/EntityComponentSystem/ComponentArchetype.h"
-#include "XYZ/EntityComponentSystem/Component.h"
+
 
 #include <GLFW/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -18,34 +16,6 @@
 
 namespace XYZ {
 	Application* Application::s_Application = nullptr;
-
-	struct Test : public ECS::Type<Test>
-	{
-		int x = 0;
-		int y = 0;
-		int z = 8;
-	};
-
-	struct Opica : public ECS::Type<Opica>
-	{
-		float x = 50.0f;
-		float y = 50.0f;
-		float z = 50.0f;
-	};
-
-	struct Krava : public ECS::Type<Krava>
-	{
-		float x = 600.0f;
-		float y = 600.0f;
-		float z = 600.0f;
-	};
-
-	struct Hava : public ECS::Type<Hava>
-	{
-		float x = 900.0f;
-		float y = 900.0f;
-		float z = 900.0f;
-	};
 
 	Application::Application()
 	{
@@ -61,51 +31,6 @@ namespace XYZ {
 		
 		m_GuiLayer = new GuiLayer();
 		m_LayerStack.PushOverlay(m_GuiLayer);
-
-	
-		uint32_t entity = 0;
-		ECS::Signature signature;
-		//signature.set(Test::m_ID);
-		//signature.set(Opica::m_ID);
-
-		Opica opica;
-		
-		Test test;
-		test.x = 7;
-		test.z = 12;
-
-		ECS::ComponentManager manager;
-
-		
-		ECS::ComponentLayout layout;
-		layout.Elements.push_back({ sizeof(Opica),Opica::GetComponentID() });
-		layout.Elements.push_back({ sizeof(Test),Test::GetComponentID() });
-		layout.Elements.push_back({ sizeof(Krava),Krava::GetComponentID() });
-		layout.Elements.push_back({ sizeof(Hava),Hava::GetComponentID() });
-		manager.CreateArcheType(layout);
-
-		manager.AddComponent(entity, signature, opica);
-		manager.AddComponent(entity, signature, test);
-		manager.AddComponent(entity, signature, Krava());
-		manager.AddComponent(entity, signature, Hava());
-		
-		{		
-			auto& archeType = manager.GetArchetype(signature);
-			auto& [opicaC, testC, kravaC, havaC] = archeType.GetComponentsAs<Opica, Test, Krava, Hava>(entity);
-		}
-
-		manager.RemoveComponent<Krava>(entity, signature);
-		{
-			auto& archeType = manager.GetArchetype(signature);
-			auto& [opicaC, testC, havaC] = archeType.GetComponentsAs<Hava, Test, Krava>(entity);
-			
-			size_t count = 0;
-			auto h = archeType.GetComponents<Krava, Test, Hava>(count);
-			
-			auto o = std::get<0>(h[0]);
-
-			std::cout << count << std::endl;
-		}
 	}
 
 	Application::~Application()

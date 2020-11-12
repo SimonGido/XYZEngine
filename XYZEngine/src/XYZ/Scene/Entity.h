@@ -58,8 +58,7 @@ namespace XYZ {
 		template <typename T>
 		bool HasComponent() const
 		{
-			auto signature = m_Scene->m_ECS.GetEntitySignature(m_ID);
-			return signature.test(T::GetComponentID());
+			return m_Scene->m_ECS.Contains<T>(m_ID);
 		}
 		
 		void Destroy()

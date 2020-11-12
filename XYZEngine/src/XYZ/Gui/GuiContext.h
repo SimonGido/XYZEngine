@@ -41,11 +41,9 @@ namespace XYZ {
 	struct Node
 	{
 		uint32_t Entity;
-		int32_t RectTransformIndex;
-		int32_t CanvasRendererIndex;
-
 		std::vector<Node> Children;
 	};
+
 	using Tree = std::vector<Node>;
 
 	class GuiContext
@@ -94,19 +92,13 @@ namespace XYZ {
 		glm::mat4 m_ViewMatrix;
 
 		ECS::ECSManager* m_ECS = nullptr;
+
 		GuiSpecification m_Specification;
 
 		Ref<RenderPass> m_RenderPass;
 		glm::vec2 m_ViewportSize;
 
-		//std::shared_ptr<ComponentStorage<RectTransform>> m_TransformStorage;
-		//std::shared_ptr<ComponentStorage<CanvasRenderer>> m_CanvasRenderStorage;
-		//
-		//ComponentGroup<Canvas, CanvasRenderer, RectTransform>* m_CanvasGroup;
-		//ComponentGroup<Button, CanvasRenderer, RectTransform>* m_ButtonGroup;
-		//ComponentGroup<Checkbox, CanvasRenderer, RectTransform>* m_CheckboxGroup;
-		//ComponentGroup<Slider, CanvasRenderer, RectTransform>* m_SliderGroup;
-		//ComponentGroup<Text, CanvasRenderer, RectTransform>* m_TextGroup;
+
 
 		friend class GuiLayer;
 	};

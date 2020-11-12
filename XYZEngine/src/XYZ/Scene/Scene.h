@@ -51,10 +51,10 @@ namespace XYZ {
         void OnRenderEditor(const EditorCamera& camera);
 
 
-        SceneState GetState() const { return m_State; }
         Entity GetEntity(uint32_t index);
-        ECS::ECSManager& GetECS() { return m_ECS; }
         Entity GetSelectedEntity();
+        SceneState GetState() const { return m_State; }
+        ECS::ECSManager& GetECS() { return m_ECS; }
 
         inline const std::string& GetName() const { return m_Name; }
         inline const SceneCamera& GetMainCamera() const { return m_MainCamera->Camera; }
@@ -64,6 +64,8 @@ namespace XYZ {
 
     private:
         ECS::ECSManager m_ECS;
+
+        ECS::ComponentGroup<TransformComponent, SpriteRenderer, SceneTagComponent>* m_RenderGroup;
 
         std::string m_Name;
         SceneState m_State = SceneState::Edit;
@@ -85,7 +87,6 @@ namespace XYZ {
         Ref<SubTexture2D> m_CameraSubTexture;
         SpriteRenderer* m_CameraSprite;
          
-
         friend class Entity;
         friend class Asset<Scene>;
     };

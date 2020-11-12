@@ -15,28 +15,20 @@ namespace XYZ {
 	
 			EntityManager();
 
-	
 			uint32_t CreateEntity();
 
 			Signature& GetSignature(uint32_t entity);
-	
+			const Signature& GetSignature(uint32_t entity)const;
+
 			void DestroyEntity(uint32_t entity);
 	
 			void SetSignature(uint32_t entity, Signature signature);
 
-			uint32_t GetNumEntitiesInUse() const { return m_EntitiesInUse; }
+			uint32_t GetNumEntities() const { return m_EntitiesInUse; }
 		private:
 			uint32_t m_EntitiesInUse;
 
-			struct EntitySignature
-			{
-				Signature Signature;
-				uint32_t Entity;
-			};
-
-			// Every entity has Signature representing components that it contains
-			// System with same signatures will use entity
-			FreeList<EntitySignature> m_Signatures;
+			FreeList<Signature> m_Signatures;
 		};
 	}
 }

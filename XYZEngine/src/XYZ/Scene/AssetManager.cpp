@@ -432,92 +432,92 @@ namespace XYZ {
 
 	static void SerializeEntity(YAML::Emitter& out, AssetManager& manager, Entity entity, int32_t parentIndex)
 	{
-		//if (entity.HasComponent<SceneTagComponent>())
-		//{
-		//	SceneTagComponent* tag = entity.GetComponent<SceneTagComponent>();
-		//	out << YAML::BeginMap;
-		//	out << YAML::Key << "Entity";
-		//	out << YAML::Value << tag->Name;
-		//
-		//	if (parentIndex >= 0)
-		//	{
-		//		out << YAML::Key << "Parent";
-		//		out << YAML::Value << parentIndex;
-		//	}
-		//	if (entity.HasComponent<TransformComponent>())
-		//	{
-		//		out << YAML::Key << "TransformComponent";
-		//		out << YAML::BeginMap;
-		//		auto transform = entity.GetComponent<TransformComponent>();
-		//
-		//		out << YAML::Key << "Position" << YAML::Value << transform->Translation;
-		//		out << YAML::Key << "Rotation" << YAML::Value << transform->Rotation;
-		//		out << YAML::Key << "Scale" << YAML::Value << transform->Scale;
-		//
-		//		out << YAML::EndMap; // TransformComponent
-		//	}
-		//	if (entity.HasComponent<CameraComponent>())
-		//	{
-		//		out << YAML::Key << "CameraComponent";
-		//		out << YAML::BeginMap; // CameraComponent
-		//
-		//		auto camera = entity.GetComponent<CameraComponent>()->Camera;
-		//		
-		//		auto& perspectiveProps = camera.GetPerspectiveProperties();
-		//		auto& orthoProps = camera.GetOrthographicProperties();
-		//		out << YAML::Key << "ProjectionType" << YAML::Value << ToUnderlying(camera.GetProjectionType());
-		//		
-		//		out << YAML::Key << "PerspectiveFOV" << YAML::Value << perspectiveProps.PerspectiveFOV;
-		//		out << YAML::Key << "PerspectiveNear" << YAML::Value << perspectiveProps.PerspectiveNear;
-		//		out << YAML::Key << "PerspectiveFar" << YAML::Value << perspectiveProps.PerspectiveFar;
-		//		
-		//		out << YAML::Key << "OrthographicSize" << YAML::Value <<  orthoProps.OrthographicSize;
-		//		out << YAML::Key << "OrthographicNear" << YAML::Value << orthoProps.OrthographicNear;
-		//		out << YAML::Key << "OrthographicFar" << YAML::Value <<  orthoProps.OrthographicFar;
-		//
-		//		out << YAML::EndMap; // CameraComponent
-		//	}
-		//	if (entity.HasComponent<SpriteRenderer>())
-		//	{
-		//		out << YAML::Key << "SpriteRenderer";
-		//		out << YAML::BeginMap; // SpriteRenderer
-		//		auto renderComponent = entity.GetComponent<SpriteRenderer>();
-		//		auto materialPath = renderComponent->Material->GetFilepath();
-		//		if (materialPath.empty())
-		//		{
-		//			manager.RegisterAsset<Material>("Assets/Materials/New_Material.mat", renderComponent->Material);
-		//			materialPath = "Assets/Materials/New_Material.mat";
-		//		}
-		//		else if (!manager.IsRegistered<Material>(materialPath))
-		//		{
-		//			manager.RegisterAsset<Material>(materialPath, renderComponent->Material);
-		//			materialPath = renderComponent->Material->GetFilepath();
-		//		}
-		//
-		//
-		//		auto subtexturePath = renderComponent->SubTexture->GetFilepath();
-		//		if (subtexturePath.empty())
-		//		{
-		//			manager.RegisterAsset<SubTexture2D>("Assets/SubTextures/New_SubTexture.subtex", renderComponent->SubTexture);
-		//			subtexturePath = "Assets/SubTextures/New_SubTexture.subtex";
-		//		}
-		//		else if (!manager.IsRegistered<SubTexture2D>(subtexturePath))
-		//		{
-		//			manager.RegisterAsset<SubTexture2D>(subtexturePath, renderComponent->SubTexture);
-		//			subtexturePath = renderComponent->SubTexture->GetFilepath();
-		//		}
-		//
-		//		out << YAML::Key << "MaterialAssetPath" << YAML::Value << materialPath;
-		//		out << YAML::Key << "SubTextureAssetPath" << YAML::Value << subtexturePath;
-		//		out << YAML::Key << "Color" << YAML::Value << renderComponent->Color;
-		//		out << YAML::Key << "TextureID" << YAML::Value << renderComponent->TextureID;
-		//		out << YAML::Key << "SortLayer" << YAML::Value << renderComponent->SortLayer;
-		//		out << YAML::Key << "IsVisible" << YAML::Value << renderComponent->IsVisible;
-		//		out << YAML::EndMap; // SpriteRenderer
-		//	}
-		//
-		//	out << YAML::EndMap; // Entity
-		//}
+		if (entity.HasComponent<SceneTagComponent>())
+		{
+			SceneTagComponent& tag = entity.GetComponent<SceneTagComponent>();
+			out << YAML::BeginMap;
+			out << YAML::Key << "Entity";
+			out << YAML::Value << tag.Name;
+		
+			if (parentIndex >= 0)
+			{
+				out << YAML::Key << "Parent";
+				out << YAML::Value << parentIndex;
+			}
+			if (entity.HasComponent<TransformComponent>())
+			{
+				out << YAML::Key << "TransformComponent";
+				out << YAML::BeginMap;
+				auto& transform = entity.GetComponent<TransformComponent>();
+		
+				out << YAML::Key << "Position" << YAML::Value << transform.Translation;
+				out << YAML::Key << "Rotation" << YAML::Value << transform.Rotation;
+				out << YAML::Key << "Scale" << YAML::Value << transform.Scale;
+		
+				out << YAML::EndMap; // TransformComponent
+			}
+			if (entity.HasComponent<CameraComponent>())
+			{
+				out << YAML::Key << "CameraComponent";
+				out << YAML::BeginMap; // CameraComponent
+		
+				auto &camera = entity.GetComponent<CameraComponent>().Camera;
+				
+				auto& perspectiveProps = camera.GetPerspectiveProperties();
+				auto& orthoProps = camera.GetOrthographicProperties();
+				out << YAML::Key << "ProjectionType" << YAML::Value << ToUnderlying(camera.GetProjectionType());
+				
+				out << YAML::Key << "PerspectiveFOV" << YAML::Value << perspectiveProps.PerspectiveFOV;
+				out << YAML::Key << "PerspectiveNear" << YAML::Value << perspectiveProps.PerspectiveNear;
+				out << YAML::Key << "PerspectiveFar" << YAML::Value << perspectiveProps.PerspectiveFar;
+				
+				out << YAML::Key << "OrthographicSize" << YAML::Value <<  orthoProps.OrthographicSize;
+				out << YAML::Key << "OrthographicNear" << YAML::Value << orthoProps.OrthographicNear;
+				out << YAML::Key << "OrthographicFar" << YAML::Value <<  orthoProps.OrthographicFar;
+		
+				out << YAML::EndMap; // CameraComponent
+			}
+			if (entity.HasComponent<SpriteRenderer>())
+			{
+				out << YAML::Key << "SpriteRenderer";
+				out << YAML::BeginMap; // SpriteRenderer
+				auto& renderComponent = entity.GetComponent<SpriteRenderer>();
+				auto materialPath = renderComponent.Material->GetFilepath();
+				if (materialPath.empty())
+				{
+					manager.RegisterAsset<Material>("Assets/Materials/New_Material.mat", renderComponent.Material);
+					materialPath = "Assets/Materials/New_Material.mat";
+				}
+				else if (!manager.IsRegistered<Material>(materialPath))
+				{
+					manager.RegisterAsset<Material>(materialPath, renderComponent.Material);
+					materialPath = renderComponent.Material->GetFilepath();
+				}
+		
+		
+				auto subtexturePath = renderComponent.SubTexture->GetFilepath();
+				if (subtexturePath.empty())
+				{
+					manager.RegisterAsset<SubTexture2D>("Assets/SubTextures/New_SubTexture.subtex", renderComponent.SubTexture);
+					subtexturePath = "Assets/SubTextures/New_SubTexture.subtex";
+				}
+				else if (!manager.IsRegistered<SubTexture2D>(subtexturePath))
+				{
+					manager.RegisterAsset<SubTexture2D>(subtexturePath, renderComponent.SubTexture);
+					subtexturePath = renderComponent.SubTexture->GetFilepath();
+				}
+		
+				out << YAML::Key << "MaterialAssetPath" << YAML::Value << materialPath;
+				out << YAML::Key << "SubTextureAssetPath" << YAML::Value << subtexturePath;
+				out << YAML::Key << "Color" << YAML::Value << renderComponent.Color;
+				out << YAML::Key << "TextureID" << YAML::Value << renderComponent.TextureID;
+				out << YAML::Key << "SortLayer" << YAML::Value << renderComponent.SortLayer;
+				out << YAML::Key << "IsVisible" << YAML::Value << renderComponent.IsVisible;
+				out << YAML::EndMap; // SpriteRenderer
+			}
+		
+			out << YAML::EndMap; // Entity
+		}
 	}
 
 	template <>
@@ -558,96 +558,98 @@ namespace XYZ {
 		XYZ_LOG_INFO("Deserializing scene ", sceneName);
 		
 		Handle = Ref<Scene>::Create(sceneName);
-
 		auto entities = data["Entities"];
 		if (entities)
 		{
-			//std::vector<std::pair<Entity,Entity>> deserializedEntities;
-			//for (auto entity : entities)
-			//{
-			//	SceneTagComponent tag(entity["Entity"].as<std::string>());
-			//
-			//	Entity ent = Handle->CreateEntity(tag);
-			//	auto parent = entity["Parent"];
-			//	if (parent)
-			//	{
-			//		Entity parentEntity(parent.as<uint32_t>(), Handle.Raw());
-			//		deserializedEntities.push_back({ ent, parentEntity });
-			//	}
-			//	auto transformComponent = entity["TransformComponent"];
-			//	if (transformComponent)
-			//	{
-			//		XYZ_LOG_INFO("Adding transform to entity ", tag.Name);
-			//		auto transform = ent.GetComponent<TransformComponent>();
-			//		glm::vec3 translation = transformComponent["Position"].as<glm::vec3>();
-			//		glm::vec3 rotation = transformComponent["Rotation"].as<glm::vec3>();
-			//		glm::vec3 scale = transformComponent["Scale"].as<glm::vec3>();
-			//
-			//		transform->Translation = translation;
-			//		transform->Rotation = rotation;
-			//		transform->Scale = scale;
-			//	}
-			//	auto cameraComponent = entity["CameraComponent"];
-			//	if (cameraComponent)
-			//	{
-			//		XYZ_LOG_INFO("Adding camera component to entity ", tag.Name);
-			//		CameraPerspectiveProperties perspectiveProps;
-			//		CameraOrthographicProperties orthoProps;
-			//		CameraProjectionType projectionType;
-			//
-			//		uint32_t type = cameraComponent["ProjectionType"].as<uint32_t>();
-			//		switch (type)
-			//		{
-			//		case ToUnderlying(CameraProjectionType::Orthographic):
-			//			projectionType = CameraProjectionType::Orthographic;
-			//			break;
-			//		case ToUnderlying(CameraProjectionType::Perspective):
-			//			projectionType = CameraProjectionType::Perspective;
-			//			break;
-			//		}
-			//		perspectiveProps.PerspectiveFOV = cameraComponent["PerspectiveFOV"].as<float>();
-			//		perspectiveProps.PerspectiveNear = cameraComponent["PerspectiveNear"].as<float>();
-			//		perspectiveProps.PerspectiveFar = cameraComponent["PerspectiveFar"].as<float>();
-			//
-			//		orthoProps.OrthographicSize = cameraComponent["OrthographicSize"].as<float>();
-			//		orthoProps.OrthographicNear = cameraComponent["OrthographicNear"].as<float>();
-			//		orthoProps.OrthographicFar = cameraComponent["OrthographicFar"].as<float>();
-			//
-			//		auto camera = ent.EmplaceComponent<CameraComponent>();
-			//		camera->Camera.SetProjectionType(projectionType);
-			//		camera->Camera.SetPerspective(perspectiveProps);
-			//		camera->Camera.SetOrthographic(orthoProps);
-			//	}
-			//
-			//	auto spriteRenderer = entity["SpriteRenderer"];
-			//	if (spriteRenderer)
-			//	{
-			//		XYZ_LOG_INFO("Adding sprite renderer to entity ", tag.Name);
-			//		std::string materialPath = spriteRenderer["MaterialAssetPath"].as<std::string>();
-			//		std::string subtexturePath = spriteRenderer["SubTextureAssetPath"].as<std::string>();
-			//		glm::vec4 color = spriteRenderer["Color"].as<glm::vec4>();
-			//		uint32_t textureID = spriteRenderer["TextureID"].as<uint32_t>();
-			//		uint16_t sortLayer = spriteRenderer["SortLayer"].as<uint16_t>();
-			//
-			//		manager.LoadAsset<Material>(materialPath);
-			//		manager.LoadAsset<SubTexture2D>(subtexturePath);
-			//		auto material = manager.GetAsset<Material>(materialPath);
-			//		auto subTexture = manager.GetAsset<SubTexture2D>(subtexturePath);
-			//		ent.EmplaceComponent<SpriteRenderer>(
-			//			material,
-			//			subTexture,
-			//			color,
-			//			textureID,
-			//			sortLayer
-			//		);
-			//	}
-			//}
-			//
-			//for (auto &entity : deserializedEntities)
-			//{
-			//	auto [child, parent] = entity;
-			//	Handle->SetParent(parent, child);
-			//}
+			std::vector<std::pair<Entity,Entity>> deserializedEntities;
+			for (auto entity : entities)
+			{
+				SceneTagComponent tag(entity["Entity"].as<std::string>());
+			
+				Entity ent = Handle->CreateEntity(tag);
+				auto parent = entity["Parent"];
+				if (parent)
+				{
+					Entity parentEntity(parent.as<uint32_t>(), Handle.Raw());
+					deserializedEntities.push_back({ ent, parentEntity });
+				}
+				auto transformComponent = entity["TransformComponent"];
+				if (transformComponent)
+				{
+					XYZ_LOG_INFO("Adding transform to entity ", tag.Name);
+					auto& transform = ent.GetComponent<TransformComponent>();
+					glm::vec3 translation = transformComponent["Position"].as<glm::vec3>();
+					glm::vec3 rotation = transformComponent["Rotation"].as<glm::vec3>();
+					glm::vec3 scale = transformComponent["Scale"].as<glm::vec3>();
+			
+				
+					transform.Translation = translation;
+					transform.Rotation = rotation;
+					transform.Scale = scale;
+				}
+				auto cameraComponent = entity["CameraComponent"];
+				if (cameraComponent)
+				{
+					XYZ_LOG_INFO("Adding camera component to entity ", tag.Name);
+					CameraPerspectiveProperties perspectiveProps;
+					CameraOrthographicProperties orthoProps;
+					CameraProjectionType projectionType;
+			
+					uint32_t type = cameraComponent["ProjectionType"].as<uint32_t>();
+					switch (type)
+					{
+					case ToUnderlying(CameraProjectionType::Orthographic):
+						projectionType = CameraProjectionType::Orthographic;
+						break;
+					case ToUnderlying(CameraProjectionType::Perspective):
+						projectionType = CameraProjectionType::Perspective;
+						break;
+					}
+					perspectiveProps.PerspectiveFOV = cameraComponent["PerspectiveFOV"].as<float>();
+					perspectiveProps.PerspectiveNear = cameraComponent["PerspectiveNear"].as<float>();
+					perspectiveProps.PerspectiveFar = cameraComponent["PerspectiveFar"].as<float>();
+			
+					orthoProps.OrthographicSize = cameraComponent["OrthographicSize"].as<float>();
+					orthoProps.OrthographicNear = cameraComponent["OrthographicNear"].as<float>();
+					orthoProps.OrthographicFar = cameraComponent["OrthographicFar"].as<float>();
+			
+				
+					auto& camera = ent.AddComponent<CameraComponent>(CameraComponent());
+					
+					camera.Camera.SetProjectionType(projectionType);
+					camera.Camera.SetPerspective(perspectiveProps);
+					camera.Camera.SetOrthographic(orthoProps);
+				}
+			
+				auto spriteRenderer = entity["SpriteRenderer"];
+				if (spriteRenderer)
+				{
+					XYZ_LOG_INFO("Adding sprite renderer to entity ", tag.Name);
+					std::string materialPath = spriteRenderer["MaterialAssetPath"].as<std::string>();
+					std::string subtexturePath = spriteRenderer["SubTextureAssetPath"].as<std::string>();
+					glm::vec4 color = spriteRenderer["Color"].as<glm::vec4>();
+					uint32_t textureID = spriteRenderer["TextureID"].as<uint32_t>();
+					uint16_t sortLayer = spriteRenderer["SortLayer"].as<uint16_t>();
+			
+					manager.LoadAsset<Material>(materialPath);
+					manager.LoadAsset<SubTexture2D>(subtexturePath);
+					auto material = manager.GetAsset<Material>(materialPath);
+					auto subTexture = manager.GetAsset<SubTexture2D>(subtexturePath);
+					ent.AddComponent<SpriteRenderer>(SpriteRenderer(
+						material,
+						subTexture,
+						color,
+						textureID,
+						sortLayer
+					));
+				}
+			}
+			
+			for (auto &entity : deserializedEntities)
+			{
+				auto &[child, parent] = entity;
+				Handle->SetParent(parent, child);
+			}
 		}
 	}
 

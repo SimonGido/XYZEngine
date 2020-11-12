@@ -8,6 +8,7 @@
 namespace XYZ {
 	struct CanvasRenderer : public ECS::Type<CanvasRenderer>
 	{
+		CanvasRenderer() = default;
 		CanvasRenderer(
 			Ref<Material> material,
 			const Mesh& mesh,

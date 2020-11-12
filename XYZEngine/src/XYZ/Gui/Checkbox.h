@@ -25,7 +25,8 @@ namespace XYZ {
 		public ECS::Type<Checkbox>
 	{
 	public:
-		Checkbox(const glm::vec4& defaultColor,const glm::vec4& hooverColo);
+		Checkbox() = default;
+		Checkbox(const glm::vec4& defaultColor,const glm::vec4& hooverColor);
 
 		void OnUpdate(Timestep ts);
 

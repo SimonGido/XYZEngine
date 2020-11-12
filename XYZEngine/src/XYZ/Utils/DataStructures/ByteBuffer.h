@@ -67,6 +67,8 @@ namespace XYZ {
 			return *this;
 		}
 
+
+
 		template<typename T>
 		T* As()
 		{
@@ -84,8 +86,11 @@ namespace XYZ {
 			memcpy(buffer.m_Data, data, size);
 			return buffer;
 		}
+
+
+		uint32_t m_Size;
+
 	private:
 		uint8_t* m_Data;
-		uint32_t m_Size;
 	};
 }

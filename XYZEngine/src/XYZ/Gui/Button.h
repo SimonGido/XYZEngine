@@ -24,6 +24,7 @@ namespace XYZ {
 		public ECS::Type<Button>
 	{
 	public:
+		Button() = default;
 		Button(const glm::vec4& defaultColor, const glm::vec4& clickColor, const glm::vec4& hooverColor);
 
 		glm::vec4   DefaultColor;
