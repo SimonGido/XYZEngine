@@ -561,11 +561,12 @@ namespace XYZ {
 		auto entities = data["Entities"];
 		if (entities)
 		{
-			std::vector<std::pair<Entity,Entity>> deserializedEntities;
+			std::vector<std::pair<Entity, Entity>> deserializedEntities;
+			
 			for (auto entity : entities)
 			{
 				SceneTagComponent tag(entity["Entity"].as<std::string>());
-			
+
 				Entity ent = Handle->CreateEntity(tag);
 				auto parent = entity["Parent"];
 				if (parent)
@@ -581,8 +582,8 @@ namespace XYZ {
 					glm::vec3 translation = transformComponent["Position"].as<glm::vec3>();
 					glm::vec3 rotation = transformComponent["Rotation"].as<glm::vec3>();
 					glm::vec3 scale = transformComponent["Scale"].as<glm::vec3>();
-			
-				
+
+
 					transform.Translation = translation;
 					transform.Rotation = rotation;
 					transform.Scale = scale;
@@ -594,7 +595,7 @@ namespace XYZ {
 					CameraPerspectiveProperties perspectiveProps;
 					CameraOrthographicProperties orthoProps;
 					CameraProjectionType projectionType;
-			
+
 					uint32_t type = cameraComponent["ProjectionType"].as<uint32_t>();
 					switch (type)
 					{
@@ -608,19 +609,19 @@ namespace XYZ {
 					perspectiveProps.PerspectiveFOV = cameraComponent["PerspectiveFOV"].as<float>();
 					perspectiveProps.PerspectiveNear = cameraComponent["PerspectiveNear"].as<float>();
 					perspectiveProps.PerspectiveFar = cameraComponent["PerspectiveFar"].as<float>();
-			
+
 					orthoProps.OrthographicSize = cameraComponent["OrthographicSize"].as<float>();
 					orthoProps.OrthographicNear = cameraComponent["OrthographicNear"].as<float>();
 					orthoProps.OrthographicFar = cameraComponent["OrthographicFar"].as<float>();
-			
-				
+
+
 					auto& camera = ent.AddComponent<CameraComponent>(CameraComponent());
-					
+
 					camera.Camera.SetProjectionType(projectionType);
 					camera.Camera.SetPerspective(perspectiveProps);
 					camera.Camera.SetOrthographic(orthoProps);
 				}
-			
+
 				auto spriteRenderer = entity["SpriteRenderer"];
 				if (spriteRenderer)
 				{
@@ -630,7 +631,7 @@ namespace XYZ {
 					glm::vec4 color = spriteRenderer["Color"].as<glm::vec4>();
 					uint32_t textureID = spriteRenderer["TextureID"].as<uint32_t>();
 					uint16_t sortLayer = spriteRenderer["SortLayer"].as<uint16_t>();
-			
+
 					manager.LoadAsset<Material>(materialPath);
 					manager.LoadAsset<SubTexture2D>(subtexturePath);
 					auto material = manager.GetAsset<Material>(materialPath);
@@ -644,12 +645,13 @@ namespace XYZ {
 					));
 				}
 			}
-			
-			for (auto &entity : deserializedEntities)
+
+			for (auto& entity : deserializedEntities)
 			{
-				auto &[child, parent] = entity;
+				auto& [child, parent] = entity;
 				Handle->SetParent(parent, child);
 			}
+			
 		}
 	}
 

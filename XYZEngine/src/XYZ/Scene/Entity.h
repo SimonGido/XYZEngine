@@ -53,7 +53,11 @@ namespace XYZ {
 		{
 			return m_Scene->m_ECS.AddComponent<T>(m_ID, component);
 		}
-		
+		template <typename T>
+		void RemoveComponent()
+		{
+			m_Scene->m_ECS.RemoveComponent<T>(m_ID);
+		}
 	
 		template <typename T>
 		bool HasComponent() const

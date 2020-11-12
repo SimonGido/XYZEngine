@@ -38,14 +38,19 @@ namespace XYZ {
 			{
 				Signature& signature = m_EntityManager.GetSignature(entity);
 				XYZ_ASSERT(signature.test(T::GetComponentID()), "Entity does not have component");
-				signature.set(T::GetComponentID(), false);
+				
 				if (signature.test(HAS_GROUP_BIT))
 				{
-					if (auto group = m_ComponentManager.GetGroup(signature))
-						group->RemoveEntity(entity, this);
 					signature.set(HAS_GROUP_BIT, false);
+					if (auto group = m_ComponentManager.GetGroup(signature))
+					{
+						group->RemoveEntity(entity, this);
+						signature.set(T::GetComponentID(), false);
+						return true;
+					}
 				}
 				m_ComponentManager.RemoveComponent<T>(entity);
+				signature.set(T::GetComponentID(), false);
 				return true;
 			}
 

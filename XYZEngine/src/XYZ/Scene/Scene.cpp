@@ -206,7 +206,6 @@ namespace XYZ {
 		SceneRenderer::BeginScene(this, renderCamera);
 		
 		
-
 		for (auto entity : m_Entities)
 		{	
 			if (m_RenderGroup->HasEntity(entity))
