@@ -1,6 +1,6 @@
 #pragma once
 #include "XYZ/Core/Layer.h"
-#include "XYZ/EntityComponentSystem/ECSManager.h"
+#include "XYZ/ECS/ECSManager.h"
 
 #include "GuiContext.h"
 

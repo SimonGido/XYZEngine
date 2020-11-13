@@ -13,6 +13,7 @@ namespace XYZ {
 			* virtual destructor
 			*/
 			virtual ~IComponentStorage() = default;
+			virtual void AddRawComponent(uint32_t entity, uint8_t* component) = 0;
 			virtual void EntityDestroyed(uint32_t entity) = 0;
 
 		};
@@ -38,7 +39,7 @@ namespace XYZ {
 			{
 				return m_Data[m_EntityDataMap[entity]].Data;
 			}
-		
+
 			void RemoveComponent(uint32_t entity)
 			{
 				if (m_Data.size() > 1)
@@ -55,7 +56,10 @@ namespace XYZ {
 				}
 				m_Data.pop_back();
 			}
-
+			virtual void AddRawComponent(uint32_t entity, uint8_t* component) override
+			{
+				AddComponent(entity, *(T*)component);
+			}
 			virtual void EntityDestroyed(uint32_t entity) override
 			{
 				RemoveComponent(entity);

@@ -1,5 +1,5 @@
 #pragma once
-#include "XYZ/EntityComponentSystem/Component.h"
+#include "XYZ/ECS/Component.h"
 #include "XYZ/Renderer/Font.h"
 
 #include <glm/glm.hpp>

@@ -1,7 +1,7 @@
 #pragma once
 #include "XYZ/Core/Ref.h"
 #include "XYZ/Core/Timestep.h"
-#include "XYZ/EntityComponentSystem/ECSManager.h"
+#include "XYZ/ECS/ECSManager.h"
 #include "XYZ/Event/Event.h"
 
 #include "XYZ/Renderer/Camera.h"

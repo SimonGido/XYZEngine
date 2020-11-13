@@ -1,6 +1,6 @@
 #pragma once
 
-#include "XYZ/EntityComponentSystem/ECSManager.h"
+#include "XYZ/ECS/ECSManager.h"
 #include <glm/glm.hpp>
 
 

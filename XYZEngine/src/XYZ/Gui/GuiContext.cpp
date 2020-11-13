@@ -338,10 +338,10 @@ namespace XYZ {
 	{
 		for (uint32_t i = 0; i < m_ECS->GetNumberOfEntities(); ++i)
 		{
-			auto& rectTransform = m_ECS->GetComponentDirect<RectTransform>(i);
+			auto& rectTransform = m_ECS->GetStorageComponent<RectTransform>(i);
 			if (m_ECS->Contains<Checkbox>(i))
 			{
-				auto& checkbox = m_ECS->GetComponentDirect<Checkbox>(i);
+				auto& checkbox = m_ECS->GetStorageComponent<Checkbox>(i);
 				if (checkbox.Checked)
 					checkbox.Execute<CheckedEvent>(CheckedEvent{});
 			}
@@ -500,10 +500,10 @@ namespace XYZ {
 
 	void GuiContext::submitNode(const Node& node, const glm::vec3& parentPosition)
 	{
-		auto& rectTransform = m_ECS->GetComponentDirect<RectTransform>(node.Entity);
+		auto& rectTransform = m_ECS->GetStorageComponent<RectTransform>(node.Entity);
 		rectTransform.WorldPosition = parentPosition + rectTransform.Position;
 
-		auto& canvasRenderer = m_ECS->GetComponentDirect<CanvasRenderer>(node.Entity);
+		auto& canvasRenderer = m_ECS->GetStorageComponent<CanvasRenderer>(node.Entity);
 		if (canvasRenderer.IsVisible)
 		{
 			GuiRenderer::SubmitWidget(&canvasRenderer, &rectTransform);

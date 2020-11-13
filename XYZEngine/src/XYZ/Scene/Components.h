@@ -1,5 +1,5 @@
 #pragma once
-#include "XYZ/EntityComponentSystem/Component.h"
+#include "XYZ/ECS/Component.h"
 #include "XYZ/Particle/ParticleEffect.h"
 #include "XYZ/Renderer/SubTexture2D.h"
 

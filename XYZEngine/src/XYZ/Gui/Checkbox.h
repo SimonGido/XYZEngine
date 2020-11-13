@@ -1,6 +1,6 @@
 #pragma once
 
-#include "XYZ/EntityComponentSystem/Component.h"
+#include "XYZ/ECS/Component.h"
 #include "XYZ/Event/GuiEvent.h"
 #include "XYZ/Event/EventSystem.h"
 

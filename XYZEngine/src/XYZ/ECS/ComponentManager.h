@@ -35,6 +35,65 @@ namespace XYZ {
 				return casted->AddComponent(entity, component);
 			}
 
+			void AddRawComponent(uint32_t entity, uint8_t* component, uint8_t componentID)
+			{
+				m_Storages[componentID]->AddRawComponent(entity, component);
+			}
+
+			void AddToGroup(uint32_t entity, Signature& signature, ECSManager* ecs)
+			{
+				for (auto group : m_Groups)
+				{
+					if ((group->GetSignature() & signature) == group->GetSignature()
+					 && !group->HasEntity(entity))
+					{
+						group->AddEntity(entity, signature, ecs);
+						return;
+					}
+				}
+			}
+
+			void RemoveFromGroup(uint32_t entity, uint8_t id, Signature& signature, ECSManager* ecs)
+			{
+				for (auto group : m_Groups)
+				{
+					auto& groupSignature = group->GetSignature();
+					if ((groupSignature & signature) == groupSignature && group->HasEntity(entity))
+					{
+						signature.set(id, false);
+						
+						auto memoryLayout = group->GetMemoryLayout();
+						auto numElements = group->GetNumberOfElements();
+						// Rest of the elements that no longer belong to group are removed and copied to the separate storages
+						for (size_t i = 0; i < numElements; ++i)
+						{
+							if (signature.test(memoryLayout[i].ID))
+							{
+								uint8_t* component = nullptr;
+								group->FindComponent(&component, entity, memoryLayout[i].ID);
+								AddRawComponent(entity, component, memoryLayout[i].ID);
+							}
+						}
+						group->RemoveEntity(entity, ecs);
+						return;
+					}
+				}
+			}
+
+
+			void GetFromGroup(uint32_t entity,const Signature& signature, uint8_t componentID, uint8_t** component)
+			{
+				for (auto group : m_Groups)
+				{
+					if ((group->GetSignature() & signature) == group->GetSignature()
+						&& group->HasEntity(entity))
+					{
+						group->FindComponent(component, entity, componentID);
+						return;
+					}
+				}
+			}
+			
 			template <typename T>
 			void RemoveComponent(uint32_t entity)
 			{

@@ -1,5 +1,5 @@
 #pragma once
-#include "XYZ/EntityComponentSystem/ECSManager.h"
+#include "XYZ/ECS/ECSManager.h"
 #include "XYZ/Event/Event.h"
 #include "XYZ/Event/ApplicationEvent.h"
 #include "XYZ/Core/Timestep.h"

@@ -38,7 +38,7 @@
 #include "XYZ/Editor/EditorCamera.h"
 
 //------ECS-----//
-#include "XYZ/EntityComponentSystem/ECSManager.h"
+#include "XYZ/ECS/ECSManager.h"
 
 
 

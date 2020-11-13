@@ -15,7 +15,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
-#include "XYZ/EntityComponentSystem/ComponentGroup.h"
+#include "XYZ/ECS/ComponentGroup.h"
 
 namespace XYZ {
 
@@ -212,16 +212,16 @@ namespace XYZ {
 			{
 				auto& [transform, renderer, sceneTag] = m_RenderGroup->GetComponents(entity);
 				SceneRenderer::SubmitSprite(&renderer, transform.GetTransform());
-			}
+			}		
 			if (m_ECS.Contains<ParticleComponent>(entity))
 			{
-				auto& particle = m_ECS.GetComponentDirect<ParticleComponent>(entity);
+				auto& particle = m_ECS.GetStorageComponent<ParticleComponent>(entity);
 				auto& transform = m_ECS.GetComponent<TransformComponent>(entity);
 				SceneRenderer::SubmitParticles(&particle, transform.GetTransform());
 			}
 			if (m_ECS.Contains<PointLight2D>(entity))
 			{
-				auto& light = m_ECS.GetComponentDirect<PointLight2D>(entity);
+				auto& light = m_ECS.GetStorageComponent<PointLight2D>(entity);
 				auto& transform = m_ECS.GetComponent<TransformComponent>(entity);
 				SceneRenderer::SubmitLight(&light, transform.GetTransform());
 			}

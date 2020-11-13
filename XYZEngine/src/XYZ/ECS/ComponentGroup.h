@@ -37,12 +37,20 @@ namespace XYZ {
 		class IComponentGroup
 		{		
 		public:
+			struct MemoryLayout
+			{
+				size_t Size;
+				uint8_t ID;
+			};
+		public:
 			virtual void AddEntity(uint32_t entity, Signature& signature, ECSManager* ecs) = 0;
 			virtual void RemoveEntity(uint32_t entity, ECSManager* ecs) = 0;
 			virtual bool HasEntity(uint32_t entity) = 0;
 
 			virtual void FindComponent(uint8_t** object, uint32_t entity, uint8_t id) = 0;
 
+			virtual const size_t GetNumberOfElements() const = 0;
+			virtual const MemoryLayout* GetMemoryLayout() const = 0;
 			const Signature& GetSignature() const { return m_Signature; }
 		protected:
 			Signature m_Signature;
@@ -108,10 +116,19 @@ namespace XYZ {
 					}
 				});
 			}
-
 			virtual bool HasEntity(uint32_t entity) override
 			{
-				return m_EntityDataMap.size() > entity && m_Data.size() > m_EntityDataMap[entity];
+				return m_EntityDataMap.size() > entity && m_Data.size() > m_EntityDataMap[entity] 
+				    && m_Data[m_EntityDataMap[entity]].Entity == entity;
+			}
+			virtual const size_t GetNumberOfElements() const override
+			{
+				return sc_NumElements;
+			}
+
+			virtual const MemoryLayout* GetMemoryLayout() const override
+			{
+				return m_MemoryLayout;
 			}
 
 			std::tuple<Args...>& GetComponents(uint32_t entity)
@@ -134,11 +151,13 @@ namespace XYZ {
 				return m_Data[index].Data;
 			}
 
+			
+
 		private:
 			struct Pack
 			{
 				std::tuple<Args...> Data;
-				uint32_t Entity;
+				uint32_t Entity = NULL_ENTITY;
 			};
 
 			std::vector<Pack> m_Data;
@@ -146,11 +165,6 @@ namespace XYZ {
 
 			static constexpr size_t sc_NumElements = sizeof...(Args);
 
-			struct MemoryLayout
-			{
-				size_t Size;
-				uint8_t ID;
-			};
 			
 			MemoryLayout m_MemoryLayout[sc_NumElements];
 		};
