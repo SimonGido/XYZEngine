@@ -131,7 +131,7 @@ namespace XYZ {
 
 	Ref<Texture2D> OpenGLFrameBuffer::CreateTextureFromColorAttachment(uint32_t index)
 	{
-		XYZ_ASSERT(!m_ColorAttachments[i].IsTexture, "Color attachment is already a texture");
+		XYZ_ASSERT(!m_ColorAttachments[index].IsTexture, "Color attachment is already a texture");
 		auto texture = Texture2D::Create(m_ColorAttachments[index].RendererID);
 		m_ColorAttachments[index].IsTexture = true;
 		m_Textures.push_back(texture);

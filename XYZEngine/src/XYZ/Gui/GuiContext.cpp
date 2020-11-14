@@ -315,6 +315,29 @@ namespace XYZ {
 
 		return entity;
 	}
+	uint32_t GuiContext::CreateImage(uint32_t canvas, const Ref<SubTexture2D>& subTexture)
+	{
+		auto& texCoords = subTexture->GetTexCoords();
+		uint32_t entity = m_ECS->CreateEntity();
+
+		Mesh mesh;
+		GenerateQuadMesh(texCoords, glm::vec4(1.0f), glm::vec2(300.0f,300.0f), mesh);
+
+		m_ECS->AddComponent<Relationship>(entity, Relationship());
+		m_ECS->AddComponent<RectTransform>(entity, RectTransform(glm::vec3(0.0f), glm::vec2(300.0f)));
+		m_ECS->AddComponent<CanvasRenderer>(entity,
+			CanvasRenderer(
+				m_Specification.Material,
+				subTexture,
+				glm::vec4(1.0f),
+				mesh,
+				0,
+				true
+			));
+
+		setupParent(canvas, entity);
+		return entity;
+	}
 	void GuiContext::SetViewportSize(uint32_t width, uint32_t height)
 	{
 		m_ViewportSize = glm::vec2(width, height);

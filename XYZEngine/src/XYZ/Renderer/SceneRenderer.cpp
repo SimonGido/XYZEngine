@@ -67,7 +67,7 @@ namespace XYZ {
 	{
 		// Composite pass
 		{
-			Ref<FrameBuffer> fbo = FrameBuffer::Create({ 1280, 720,{0.1f,0.1f,0.1f,1.0f},1,FrameBufferFormat::RGBA16F,true });
+			Ref<FrameBuffer> fbo = FrameBuffer::Create({ 1280, 720,{0.1f,0.1f,0.1f,1.0f},1,FrameBufferFormat::RGBA16F,false });
 			fbo->CreateColorAttachment(FrameBufferFormat::RGBA16F); // Color
 			fbo->CreateDepthAttachment();
 			fbo->Resize();

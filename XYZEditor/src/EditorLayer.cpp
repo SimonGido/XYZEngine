@@ -228,6 +228,7 @@ namespace XYZ {
 		rectTransform.Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent(
 			m_EditorEntities.back(), TextCanvasRendererRebuild()
 		));
+		
 	}	
 
 
@@ -239,10 +240,21 @@ namespace XYZ {
 	}
 	void EditorLayer::OnUpdate(Timestep ts)
 	{
+		Renderer::Clear();
+		Renderer::SetClearColor({ 0.1f,0.1f,0.1f,0.1f });
+
 		NativeScriptEngine::Update(ts);
 		m_EditorCamera.OnUpdate(ts);
 		m_Scene->OnUpdate(ts);
 		m_Scene->OnRenderEditor(m_EditorCamera);
+		
+		static bool test = true;
+		if (test)
+		{
+			test = false;
+			auto texture = SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer->CreateTextureFromColorAttachment(0);		
+			m_GuiContext->CreateImage(0, Ref<SubTexture2D>::Create(texture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)));
+		}
 	}
 	void EditorLayer::OnEvent(Event& event)
 	{			

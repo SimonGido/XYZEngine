@@ -47,7 +47,7 @@ namespace XYZ {
 		glm::mat4 viewProjectionMatrix = s_Data.RendererCamera.Camera.GetProjectionMatrix() * s_Data.RendererCamera.ViewMatrix;
 		Renderer2D::BeginScene(viewProjectionMatrix, glm::vec2(0, 0));
 		
-		
+	
 		for (auto& dc : s_Data.WidgetDrawList)
 		{	
 			if (dc.Renderer->Material)
