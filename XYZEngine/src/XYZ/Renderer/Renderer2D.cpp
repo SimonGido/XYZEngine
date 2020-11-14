@@ -4,6 +4,7 @@
 #include "VertexArray.h"
 #include "Renderer.h"
 
+#include <array>
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -31,22 +32,26 @@ namespace XYZ {
 
 	struct Renderer2DData
 	{
+		static const uint32_t MaxTextures = 32;
+		static const uint32_t MaxQuads = 10000;
+		static const uint32_t MaxVertices = MaxQuads * 4;
+		static const uint32_t MaxIndices = MaxQuads * 6;
+		static const uint32_t MaxLines = 10000;
+		static const uint32_t MaxLineVertices = MaxLines * 2;
+		static const uint32_t MaxLineIndices = MaxLines * 6;
+
+
 		void Reset();
 		void ResetLines();
 		
+		Ref<Material> DefaultQuadMaterial;
 		Ref<Material> QuadMaterial;
 		Ref<Material> GridMaterial;
 		Ref<Shader> LineShader;
 
-		const uint32_t MaxQuads = 10000;
-		const uint32_t MaxVertices = MaxQuads * 4;
-		const uint32_t MaxIndices = MaxQuads * 6;
-
-
-		const uint32_t MaxLines = 10000;
-		const uint32_t MaxLineVertices = MaxLines * 2;
-		const uint32_t MaxLineIndices = MaxLines * 6;
-
+		Ref<Texture2D> TextureSlots[MaxTextures];
+		uint32_t TextureSlotIndex = 0;
+	
 		Ref<VertexArray> GridVertexArray;
 		Ref<VertexArray> QuadVertexArray;
 		Ref<VertexBuffer> QuadVertexBuffer;
@@ -81,6 +86,7 @@ namespace XYZ {
 	{
 		if (!BufferBase)
 		{
+			DefaultQuadMaterial = Ref<Material>::Create(Shader::Create("Assets/Shaders/DefaultShader.glsl"));
 			BufferBase = new Vertex2D[MaxVertices];
 			QuadVertexArray = VertexArray::Create();
 			QuadVertexBuffer = VertexBuffer::Create(MaxVertices * sizeof(Vertex2D));
@@ -150,7 +156,9 @@ namespace XYZ {
 	
 			GridVertexArray->SetIndexBuffer(gridIB);
 		}
-		BufferPtr = BufferBase;	
+		BufferPtr = BufferBase;
+		QuadMaterial = nullptr;
+		TextureSlotIndex = 0;
 		IndexCount = 0;	
 	}
 	void Renderer2DData::ResetLines()
@@ -199,12 +207,33 @@ namespace XYZ {
 	{
 		s_Data.ViewProjectionMatrix = viewProjectionMatrix;
 		s_Data.ViewportSize = viewportSize;
+		s_Data.QuadMaterial = s_Data.DefaultQuadMaterial;
 	}
 
+	uint32_t Renderer2D::SetTexture(const Ref<Texture2D>& texture)
+	{
+		for (uint32_t i = 0; i < s_Data.QuadMaterial->GetTextures().size(); ++i)
+		{
+			if (s_Data.QuadMaterial->GetTextures()[i]->GetRendererID() == texture->GetRendererID())
+				return i;
+		}
+		for (uint32_t i = 0; i < s_Data.TextureSlotIndex; ++i)
+		{
+			if (s_Data.TextureSlots[i]->GetRendererID() == texture->GetRendererID())
+				return i + s_Data.QuadMaterial->GetTextures().size();
+		}
+
+		if (s_Data.QuadMaterial->GetTextures().size() + s_Data.TextureSlotIndex >= s_Data.MaxTextures + 1)
+			Flush();
+		
+		s_Data.TextureSlots[s_Data.TextureSlotIndex++] = texture;
+		return s_Data.TextureSlotIndex + s_Data.QuadMaterial->GetTextures().size() - 1;
+	}
 
 	void Renderer2D::SetMaterial(const Ref<Material>& material)
 	{
-		if (s_Data.QuadMaterial && material.Raw() != s_Data.QuadMaterial.Raw())
+		XYZ_ASSERT(material, "Material can not be null");
+		if (material->GetSortKey() != s_Data.QuadMaterial->GetSortKey())
 			Flush();
 		
 		s_Data.QuadMaterial = material;
@@ -361,13 +390,21 @@ namespace XYZ {
 		uint32_t dataSize = (uint8_t*)s_Data.BufferPtr - (uint8_t*)s_Data.BufferBase;
 		if (dataSize)
 		{
+			XYZ_ASSERT(s_Data.QuadMaterial, "No material set");
 			s_Data.QuadMaterial->Bind();
+			s_Data.QuadMaterial->GetShader()->SetMat4("u_ViewProjectionMatrix", s_Data.ViewProjectionMatrix);
+			
+			uint32_t textureSlotOffset = s_Data.QuadMaterial->GetTextures().size();
+			for (uint32_t i = 0; i < s_Data.TextureSlotIndex; ++i)
+				s_Data.TextureSlots[i]->Bind(i + textureSlotOffset);
+
 			s_Data.QuadVertexBuffer->Update(s_Data.BufferBase, dataSize);
 			s_Data.QuadVertexArray->Bind();
 			Renderer::DrawIndexed(PrimitiveType::Triangles, s_Data.IndexCount);
 			s_Data.Stats.DrawCalls++;
 			s_Data.Reset();
 		}	
+		s_Data.QuadMaterial = s_Data.DefaultQuadMaterial;
 	}
 	void Renderer2D::FlushLines()
 	{	

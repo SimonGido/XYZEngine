@@ -129,6 +129,20 @@ namespace XYZ {
 			});
 	}
 
+	Ref<Texture2D> OpenGLFrameBuffer::CreateTextureFromColorAttachment(uint32_t index)
+	{
+		XYZ_ASSERT(!m_ColorAttachments[i].IsTexture, "Color attachment is already a texture");
+		auto texture = Texture2D::Create(m_ColorAttachments[index].RendererID);
+		m_ColorAttachments[index].IsTexture = true;
+		m_Textures.push_back(texture);
+		return texture;
+	}
+
+	Ref<Texture2D> OpenGLFrameBuffer::GetTexture(uint32_t index) const
+	{
+		return m_Textures[index];
+	}
+
 	void OpenGLFrameBuffer::setupColorAttachment(ColorAttachment& attachment, uint32_t index)
 	{
 		glCreateTextures(GL_TEXTURE_2D, 1, &attachment.RendererID);

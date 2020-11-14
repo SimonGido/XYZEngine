@@ -11,7 +11,7 @@ namespace XYZ {
 	public:
 		OpenGLTexture2D(TextureWrap wrap, TextureParam min, TextureParam max, const std::string& path);
 		OpenGLTexture2D(const TextureSpecs& specs);
-
+		OpenGLTexture2D(uint32_t rendererID);
 
 		virtual ~OpenGLTexture2D();
 

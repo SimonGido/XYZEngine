@@ -22,7 +22,6 @@ Entities:
       MaterialAssetPath: Assets/Materials/New_Material.mat
       SubTextureAssetPath: Assets\SubTextures\New_SubTexture.subtex
       Color: [0.992172241, 0.996078432, 0.996078432, 1]
-      TextureID: 0
       SortLayer: 5
       IsVisible: true
   - Entity: Test
@@ -34,7 +33,6 @@ Entities:
       MaterialAssetPath: Assets\Materials\New_Material.mat
       SubTextureAssetPath: Assets/SubTextures/New_SubTexture.subtex
       Color: [1, 1, 1, 1]
-      TextureID: 0
       SortLayer: 1
       IsVisible: true
   - Entity: Background
@@ -46,7 +44,6 @@ Entities:
       MaterialAssetPath: Assets\Materials\New_Material.mat
       SubTextureAssetPath: Assets\SubTextures\Backgroundfield.subtex
       Color: [1, 1, 1, 1]
-      TextureID: 1
       SortLayer: 0
       IsVisible: true
   - Entity: Light

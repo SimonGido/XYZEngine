@@ -82,6 +82,10 @@ namespace XYZ {
 					&& m_IndexGroups[m_EntityDataMap[entity]].Entity == entity;
 			}
 
+			uint32_t GetEntity(size_t index) const
+			{
+				return m_IndexGroups[index].Entity;
+			}
 
 			std::tuple<Args&...> operator[] (size_t index)
 			{

@@ -20,6 +20,7 @@ namespace XYZ {
 			CHECKBOX_CHECKED,
 			CHECKBOX_UNCHECKED,
 			SLIDER,
+			FONT,
 			NUM_SPRITES
 		};
 		Ref<SubTexture2D> SubTexture[NUM_SPRITES];
@@ -105,4 +106,5 @@ namespace XYZ {
 		glm::vec2 Size;
 		glm::vec4 Color;
 	};
+
 }

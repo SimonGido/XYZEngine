@@ -152,6 +152,14 @@ namespace XYZ {
 		});
 	}
 
+	OpenGLTexture2D::OpenGLTexture2D(uint32_t rendererID)
+		:
+		m_RendererID(rendererID),
+		m_DataFormat(0),
+		m_InternalFormat(0)
+	{
+	}
+
 	OpenGLTexture2D::~OpenGLTexture2D()
 	{
 		delete[]m_LocalData;
@@ -164,6 +172,7 @@ namespace XYZ {
 		m_LocalData.Write(data, size, 0);
 		Renderer::Submit([this,size]() {
 			XYZ_ASSERT(size == m_Specification.Width * m_Specification.Height * m_Specification.Channels, "Data must be entire texture!");
+			XYZ_ASSERT(m_DataFormat && m_InternalFormat, "Texture has no format or was created from frame buffer");
 			glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Specification.Width, m_Specification.Height, m_DataFormat, GL_UNSIGNED_BYTE, m_LocalData);
 		});
 	}

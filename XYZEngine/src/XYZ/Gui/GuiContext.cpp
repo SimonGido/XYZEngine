@@ -5,7 +5,7 @@
 #include "XYZ/Core/Input.h"
 #include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Renderer/GuiRenderer.h"
-#include "XYZ/Scene/Components.h"
+
 
 #include <glm/gtx/transform.hpp>
 namespace XYZ {
@@ -133,13 +133,17 @@ namespace XYZ {
 		m_CanvasView = &m_ECS->CreateView<Canvas, CanvasRenderer, RectTransform>();
 		m_ButtonView = &m_ECS->CreateView<Button, CanvasRenderer, RectTransform>();
 		m_CheckboxView = &m_ECS->CreateView<Checkbox, CanvasRenderer, RectTransform>();
+		m_LayoutGroup = &m_ECS->CreateView<LayoutGroup, Relationship, RectTransform>();
 	}
 	bool GuiContext::onCanvasRendererRebuild(CanvasRendererRebuildEvent& event)
 	{
-		event.GetRenderer()->Mesh.Vertices.clear();
-		event.GetSpecification().Rebuild(event.GetRenderer(), event.GetTransform());
+		auto& renderer = m_ECS->GetComponent<CanvasRenderer>(event.GetEntity());
+		renderer.Mesh.Vertices.clear();
+
+		event.GetSpecification().Rebuild(event.GetEntity(), *m_ECS);
 		return true;
 	}
+
 	uint32_t GuiContext::CreateCanvas(const CanvasSpecification& specs)
 	{
 		auto& texCoords = m_Specification.SubTexture[GuiSpecification::BUTTON]->GetTexCoords();
@@ -149,14 +153,14 @@ namespace XYZ {
 		GenerateQuadMesh(texCoords, specs.Color, specs.Size, mesh);
 	
 		m_ECS->AddComponent<Relationship>(entity, Relationship());
-		m_ECS->AddComponent<Canvas>(entity, Canvas(specs.RenderMode));
+		m_ECS->AddComponent<Canvas>(entity, Canvas(specs.RenderMode, specs.Color));
 		m_ECS->AddComponent<RectTransform>(entity, RectTransform(specs.Position, specs.Size));
-		
 		m_ECS->AddComponent<CanvasRenderer>( entity,
 			CanvasRenderer(
 				m_Specification.Material,
+				m_Specification.SubTexture[GuiSpecification::BUTTON],
+				specs.Color,
 				mesh,
-				0,
 				0,
 				true
 			));
@@ -181,13 +185,14 @@ namespace XYZ {
 		m_ECS->AddComponent<CanvasRenderer>( entity,
 			CanvasRenderer(
 				m_Specification.Material,
+				m_Specification.SubTexture[GuiSpecification::BUTTON],
+				specs.DefaultColor,
 				mesh,
 				0,
-				0,
 				true
-			));
-		m_ECS->AddComponent<Button>(entity, Button(specs.DefaultColor, specs.ClickColor, specs.HooverColor));
-		
+		));
+
+		m_ECS->AddComponent<Button>(entity, Button(specs.ClickColor, specs.HooverColor));
 			
 		setupParent(canvas, entity);
 		
@@ -199,15 +204,16 @@ namespace XYZ {
 		textRectTransform.RegisterCallback<CanvasRendererRebuildEvent>(Hook(&GuiContext::onCanvasRendererRebuild, this));
 		
 		m_ECS->AddComponent<Relationship>(textEntity, Relationship());
+
 		m_ECS->AddComponent<CanvasRenderer>(textEntity,
 			CanvasRenderer(
 				m_Specification.Material,
+				m_Specification.SubTexture[GuiSpecification::FONT],
+				specs.DefaultColor,
 				textMesh,
-				1,
 				0,
 				true
-			)
-		);
+		));
 		
 		m_ECS->AddComponent<Text>(textEntity,
 			Text(
@@ -223,7 +229,7 @@ namespace XYZ {
 	uint32_t GuiContext::CreateCheckbox(uint32_t canvas, const CheckboxSpecification& specs)
 	{
 		uint32_t entity = m_ECS->CreateEntity();
-		auto& checkbox = m_ECS->AddComponent<Checkbox>(entity, Checkbox(specs.DefaultColor, specs.HooverColor));
+		auto& checkbox = m_ECS->AddComponent<Checkbox>(entity, Checkbox(specs.HooverColor));
 
 
 		glm::vec4 texCoords = m_Specification.SubTexture[GuiSpecification::CHECKBOX_UNCHECKED]->GetTexCoords();
@@ -232,13 +238,16 @@ namespace XYZ {
 
 		Mesh mesh;
 		GenerateQuadMesh(texCoords, specs.DefaultColor, specs.Size, mesh);
+		
 		m_ECS->AddComponent<Relationship>(entity, Relationship());
 		m_ECS->AddComponent<RectTransform>(entity, RectTransform(specs.Position, specs.Size));
+	
 		m_ECS->AddComponent<CanvasRenderer>(entity,
 			CanvasRenderer(
 				m_Specification.Material,
+				m_Specification.SubTexture[GuiSpecification::CHECKBOX_UNCHECKED],
+				specs.DefaultColor,
 				mesh,
-				0,
 				0,
 				true
 			));
@@ -252,11 +261,13 @@ namespace XYZ {
 		auto& textRectTransform = m_ECS->AddComponent<RectTransform>(textEntity, RectTransform(glm::vec3(0.0f), glm::vec2(1.0f)));
 		textRectTransform.RegisterCallback<CanvasRendererRebuildEvent>(Hook(&GuiContext::onCanvasRendererRebuild, this));
 		m_ECS->AddComponent<Relationship>(textEntity, Relationship());
+		
 		m_ECS->AddComponent<CanvasRenderer>(textEntity,
 			CanvasRenderer(
 				m_Specification.Material,
+				m_Specification.SubTexture[GuiSpecification::FONT],
+				specs.DefaultColor,
 				textMesh,
-				1,
 				0,
 				true
 			));
@@ -283,11 +294,13 @@ namespace XYZ {
 		m_ECS->AddComponent<CanvasRenderer>(entity,
 			CanvasRenderer(
 				m_Specification.Material,
+				m_Specification.SubTexture[GuiSpecification::FONT],
+				specs.Color,
 				mesh,
-				1,
 				0,
 				true
 			));
+
 		m_ECS->AddComponent<Relationship>(entity, Relationship());
 		m_ECS->AddComponent<Text>( entity,
 			Text(
@@ -316,6 +329,14 @@ namespace XYZ {
 		m_Camera.SetProjectionMatrix(glm::ortho(-w * 0.5f, w * 0.5f, -h * 0.5f, h * 0.5f));
 
 		m_ViewportSize = glm::vec2(w, h);
+		for (size_t i = 0; i < m_CanvasView->Size(); ++i)
+		{
+			auto& [canvas, renderer, transform] = (*m_CanvasView)[i];
+			transform.Size = m_ViewportSize;
+			transform.Position = glm::vec3(0.0f);
+			transform.Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent(
+				m_CanvasView->GetEntity(i), QuadCanvasRendererRebuild()));
+		}
 	}
 	void GuiContext::SetParent(uint32_t parent, uint32_t child)
 	{
@@ -341,15 +362,17 @@ namespace XYZ {
 	}
 	void GuiContext::OnUpdate(Timestep ts)
 	{
-		for (uint32_t i = 0; i < m_ECS->GetNumberOfEntities(); ++i)
+		for (size_t i = 0; i < m_CheckboxView->Size(); ++i)
 		{
-			auto& rectTransform = m_ECS->GetStorageComponent<RectTransform>(i);
-			if (m_ECS->Contains<Checkbox>(i))
-			{
-				auto& checkbox = m_ECS->GetStorageComponent<Checkbox>(i);
-				if (checkbox.Checked)
-					checkbox.Execute<CheckedEvent>(CheckedEvent{});
-			}
+			auto& [checkbox,renderer, transform] = (*m_CheckboxView)[i];
+			if (checkbox.Checked)
+				checkbox.Execute<CheckedEvent>(CheckedEvent{});
+		}
+
+		for (size_t i = 0; i < m_LayoutGroup->Size(); ++i)
+		{
+			auto& [layout, relation, transform] = (*m_LayoutGroup)[i];
+			applyLayout(layout, relation, transform);
 		}
 	}
 	void GuiContext::OnRender()
@@ -361,7 +384,7 @@ namespace XYZ {
 
 		GuiRenderer::BeginScene(renderCamera);
 		for (auto& canvas : m_Canvases)
-			submitNode(canvas, glm::vec3(0.0f));
+			submitToRenderer(canvas, glm::vec3(0.0f));
 
 
 		GuiRenderer::EndScene();
@@ -416,7 +439,7 @@ namespace XYZ {
 			if (Collide(rectTransform.WorldPosition, rectTransform.Size, mousePosition))
 			{
 				button.Machine.TransitionTo(ButtonState::Clicked);
-				SetMeshColor(canvasRenderer.Mesh, button.ClickColor);
+				SetMeshColor(canvasRenderer.Mesh, canvasRenderer.Color * button.ClickColor);
 				if (button.Execute<ClickEvent>(ClickEvent{}))
 					return true;
 			}
@@ -430,7 +453,7 @@ namespace XYZ {
 		{
 			auto [button, canvasRenderer, rectTransform] = (*m_ButtonView)[i];
 			button.Machine.TransitionTo(ButtonState::Released);
-			SetMeshColor(canvasRenderer.Mesh, button.DefaultColor);
+			SetMeshColor(canvasRenderer.Mesh, canvasRenderer.Color);
 			if (button.Execute<ReleaseEvent>(ReleaseEvent{}))
 				return true;
 		}
@@ -441,17 +464,17 @@ namespace XYZ {
 	{
 		for (int i = 0; i < m_ButtonView->Size(); ++i)
 		{
-			auto [button, canvasRenderer, rectTransform] = (*m_ButtonView)[i];
+			auto [button,canvasRenderer, rectTransform] = (*m_ButtonView)[i];
 			if (Collide(rectTransform.WorldPosition, rectTransform.Size, mousePosition)
 				&& button.Machine.TransitionTo(ButtonState::Hoovered))
 			{
-				SetMeshColor(canvasRenderer.Mesh, button.HooverColor);
+				SetMeshColor(canvasRenderer.Mesh, canvasRenderer.Color * button.HooverColor);
 				button.Execute<HooverEvent>(HooverEvent{});
 				return true;
 			}
 			else if (button.Machine.TransitionTo(ButtonState::UnHoovered))
 			{
-				SetMeshColor(canvasRenderer.Mesh, button.DefaultColor);
+				SetMeshColor(canvasRenderer.Mesh, canvasRenderer.Color);
 				button.Execute<UnHooverEvent>(UnHooverEvent{});
 			}
 		}
@@ -491,24 +514,23 @@ namespace XYZ {
 			auto [checkbox, canvasRenderer, rectTransform] = (*m_CheckboxView)[i];
 			if (Collide(rectTransform.WorldPosition, rectTransform.Size, mousePosition))
 			{
-				SetMeshColor(canvasRenderer.Mesh, checkbox.HooverColor);
+				SetMeshColor(canvasRenderer.Mesh, canvasRenderer.Color * checkbox.HooverColor);
 				checkbox.Execute<HooverEvent>(HooverEvent{});
 				return true;
 			}
 			else
 			{
-				SetMeshColor(canvasRenderer.Mesh, checkbox.DefaultColor);
+				SetMeshColor(canvasRenderer.Mesh, canvasRenderer.Color);
 				checkbox.Execute<UnHooverEvent>(UnHooverEvent{});
 			}
 		}
 		return false;
 	}
 
-	void GuiContext::submitNode(uint32_t entity, const glm::vec3& parentPosition)
+	void GuiContext::submitToRenderer(uint32_t entity, const glm::vec3& parentPosition)
 	{
 		auto& rectTransform = m_ECS->GetStorageComponent<RectTransform>(entity);
 		rectTransform.WorldPosition = parentPosition + rectTransform.Position;
-
 		auto& canvasRenderer = m_ECS->GetStorageComponent<CanvasRenderer>(entity);
 		if (canvasRenderer.IsVisible)
 		{
@@ -517,45 +539,42 @@ namespace XYZ {
 			uint32_t currentEntity = currentRel.FirstChild;
 			while (currentEntity != NULL_ENTITY)
 			{
-				submitNode(currentEntity, rectTransform.WorldPosition);
+				submitToRenderer(currentEntity, rectTransform.WorldPosition);
 				currentEntity = m_ECS->GetComponent<Relationship>(currentEntity).NextSibling;
 			}
 		}
 	}
-	void GuiContext::swapEntityNodes(Node& current, Node& newNode, uint32_t entity)
-	{
-		for (uint32_t i = 0; i < current.Children.size(); ++i)
-		{
-			if ((uint32_t)current.Children[i].Entity == (uint32_t)entity)
-			{
-				if (newNode.Entity == current.Entity)
-					return;
 
-				newNode.Children.insert(newNode.Children.end(),
-					std::make_move_iterator(current.Children.begin() + i),
-					std::make_move_iterator(current.Children.begin() + i + 1)
-				);
-				if (i < current.Children.size() - 1)
-					current.Children[i] = std::move(current.Children.back());
-				current.Children.pop_back();
-				return;
-			}
-			swapEntityNodes(current.Children[i], newNode, entity);
-		}
-	}
-	Node* GuiContext::findEntityNode(Node& node, uint32_t entity)
+	void GuiContext::applyLayout(const LayoutGroup& layout, const Relationship& parentRel, const RectTransform& transform)
 	{
-		if ((uint32_t)node.Entity == (uint32_t)entity)
+		glm::vec2 endOffset = { layout.Padding.Right, layout.Padding.Bottom };
+		glm::vec3 position = { layout.Padding.Left - (transform.Size.x / 2.0f), (transform.Size.y / 2.0f) - layout.Padding.Top, 0.0f };
+
+
+		float maxHeight = 0.0f;
+		uint32_t current = parentRel.FirstChild;
+		while (current != NULL_ENTITY)
 		{
-			return &node;
-		}
-		for (auto& it : node.Children)
-		{
-			if (auto node = findEntityNode(it, entity))
-				return node;
-		}
-		return nullptr;
+			auto& currentRel = m_ECS->GetComponent<Relationship>(current);
+			auto& currentTransform = m_ECS->GetComponent<RectTransform>(current);
+			if (currentTransform.Size.y > maxHeight)
+				maxHeight = currentTransform.Size.y;
+
+
+			glm::vec3 sizeOffset = glm::vec3(currentTransform.Size.x / 2.0f, -currentTransform.Size.y / 2.0f, 0.0f);
+			if (position.x + sizeOffset.x >= transform.Position.x + transform.Size.x - layout.Padding.Right)
+			{
+				position.y -= maxHeight + layout.CellSpacing.y;
+				position.x = layout.Padding.Left - (transform.Size.x / 2.0f);
+				maxHeight = 0.0f;
+			}
+			currentTransform.Position = position + sizeOffset;
+			position.x += currentTransform.Size.x + layout.CellSpacing.x;
+
+			current = currentRel.NextSibling;
+		}		
 	}
+	
 	void GuiContext::setupParent(uint32_t parent, uint32_t child)
 	{
 		auto& parentRel = m_ECS->GetComponent<Relationship>(parent);
@@ -610,21 +629,22 @@ namespace XYZ {
 			current = currentRel.NextSibling;
 		}
 	}
-	TextCanvasRendererRebuild::TextCanvasRendererRebuild(Text* text)
-		: m_Text(text)
-	{
-	}
-	void TextCanvasRendererRebuild::Rebuild(CanvasRenderer* renderer, RectTransform* transform)
-	{
-		size_t oldMeshSize = renderer->Mesh.Vertices.size();
+
+	void TextCanvasRendererRebuild::Rebuild(uint32_t entity, ECS::ECSManager& ecs)
+	{	
+		auto& transform = ecs.GetComponent<RectTransform>(entity);
+		auto& renderer = ecs.GetComponent<CanvasRenderer>(entity);
+		auto& text = ecs.GetComponent<Text>(entity);
+
+		size_t oldMeshSize = renderer.Mesh.Vertices.size();
 		float height = 0.0f;
 		float xCursor = 0.0f;
 		float yCursor = 0.0f;
 		uint32_t counter = 0;
-		for (auto c : m_Text->Source)
+		for (auto c : text.Source)
 		{
-			auto& character = m_Text->Font->GetCharacter(c);
-			if (xCursor + character.XAdvance >= transform->Size.x)
+			auto& character = text.Font->GetCharacter(c);
+			if (xCursor + character.XAdvance >= transform.Size.x)
 				break;
 
 			glm::vec2 charSize = {
@@ -636,8 +656,8 @@ namespace XYZ {
 			glm::vec2 charOffset = { character.XOffset, charSize.y - character.YOffset };
 			glm::vec2 charPosition = { xCursor + charOffset.x, yCursor - charOffset.y };
 			glm::vec4 charTexCoord = {
-				(float)character.X0Coord / (float)m_Text->Font->GetWidth(), (float)character.Y0Coord / (float)m_Text->Font->GetHeight(),
-				(float)character.X1Coord / (float)m_Text->Font->GetWidth(), (float)character.Y1Coord / (float)m_Text->Font->GetHeight()
+				(float)character.X0Coord / (float)text.Font->GetWidth(), (float)character.Y0Coord / (float)text.Font->GetHeight(),
+				(float)character.X1Coord / (float)text.Font->GetWidth(), (float)character.Y1Coord / (float)text.Font->GetHeight()
 			};
 
 			glm::vec3 quads[4] = {
@@ -653,43 +673,41 @@ namespace XYZ {
 				 {charTexCoord.x, charTexCoord.y},
 			};
 			for (uint32_t i = 0; i < 4; ++i)
-				renderer->Mesh.Vertices.push_back(Vertex{ m_Text->Color, quads[i], texCoords[i] });
+				renderer.Mesh.Vertices.push_back(Vertex{ text.Color, quads[i], texCoords[i] });
 
 			xCursor += character.XAdvance;
 			counter++;
 		}
-		if (m_Text->Alignment == TextAlignment::Center)
+		if (text.Alignment == TextAlignment::Center)
 		{
-			for (size_t i = oldMeshSize; i < renderer->Mesh.Vertices.size(); ++i)
+			for (size_t i = oldMeshSize; i < renderer.Mesh.Vertices.size(); ++i)
 			{
-				renderer->Mesh.Vertices[i].Position.x -= xCursor / 2.0f;
-				renderer->Mesh.Vertices[i].Position.y -= height / 2.0f;
+				renderer.Mesh.Vertices[i].Position.x -= xCursor / 2.0f;
+				renderer.Mesh.Vertices[i].Position.y -= height / 2.0f;
 			}
 		}
 	}
-	QuadCanvasRendererRebuild::QuadCanvasRendererRebuild(const glm::vec4& color, const glm::vec4& texCoords)
-		:
-		m_Color(color),
-		m_TexCoords(texCoords)
-	{
-	}
-	void QuadCanvasRendererRebuild::Rebuild(CanvasRenderer* renderer, RectTransform* transform)
+
+	void QuadCanvasRendererRebuild::Rebuild(uint32_t entity, ECS::ECSManager& ecs)
 	{
 		constexpr size_t quadVertexCount = 4;
-	
+		auto& transform = ecs.GetComponent<RectTransform>(entity);
+		auto& renderer = ecs.GetComponent<CanvasRenderer>(entity);
+		auto& texCoord = renderer.SubTexture->GetTexCoords();
+
 		glm::vec2 texCoords[quadVertexCount] = {
-			{m_TexCoords.x,m_TexCoords.y},
-			{m_TexCoords.z,m_TexCoords.y},
-			{m_TexCoords.z,m_TexCoords.w},
-			{m_TexCoords.x,m_TexCoords.w}
+			{texCoord.x,texCoord.y},
+			{texCoord.z,texCoord.y},
+			{texCoord.z,texCoord.w},
+			{texCoord.x,texCoord.w}
 		};
 		glm::vec3 vertices[quadVertexCount] = {
-			{  -transform->Size.x / 2.0f,  -transform->Size.y / 2.0f, 0.0f},
-			{   transform->Size.x / 2.0f,  -transform->Size.y / 2.0f, 0.0f},
-			{   transform->Size.x / 2.0f,   transform->Size.y / 2.0f, 0.0f},
-			{  -transform->Size.x / 2.0f,   transform->Size.y / 2.0f, 0.0f}
+			{  -transform.Size.x / 2.0f,  -transform.Size.y / 2.0f, 0.0f},
+			{   transform.Size.x / 2.0f,  -transform.Size.y / 2.0f, 0.0f},
+			{   transform.Size.x / 2.0f,   transform.Size.y / 2.0f, 0.0f},
+			{  -transform.Size.x / 2.0f,   transform.Size.y / 2.0f, 0.0f}
 		};
 		for (size_t i = 0; i < quadVertexCount; ++i)
-			renderer->Mesh.Vertices.push_back(Vertex{ m_Color, vertices[i], texCoords[i] });
+			renderer.Mesh.Vertices.push_back(Vertex{ renderer.Color, vertices[i], texCoords[i] });
 	}
 }

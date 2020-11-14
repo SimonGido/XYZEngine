@@ -1,6 +1,6 @@
 #pragma once
 #include "Event.h"
-
+#include "XYZ/ECS/ECSManager.h"
 
 
 namespace XYZ {
@@ -109,24 +109,22 @@ namespace XYZ {
 	struct RectTransform;
 	struct CanvasRendererRebuildSpecification
 	{
-		virtual void Rebuild(CanvasRenderer* renderer, RectTransform* transform) = 0;
+		virtual void Rebuild(uint32_t entity, ECS::ECSManager& ecs) = 0;
 	};
 
 	
 	struct CanvasRendererRebuildEvent : public Event
 	{
-		CanvasRendererRebuildEvent(CanvasRenderer* renderer, RectTransform* transform, CanvasRendererRebuildSpecification& specification)
+		CanvasRendererRebuildEvent(uint32_t entity, CanvasRendererRebuildSpecification& specification)
 			: 
 			m_Type(EventType::CanvasRendererRebuild),
-			m_Renderer(renderer),
-			m_Transform(transform),
+			m_Entity(entity),
 			m_Specification(specification)
 		{}
 
 		virtual EventType GetEventType() const override { return m_Type; }
 
-		CanvasRenderer* GetRenderer() { return m_Renderer; }
-		RectTransform* GetTransform() { return m_Transform; }
+		uint32_t GetEntity() const { return m_Entity; }
 		CanvasRendererRebuildSpecification& GetSpecification() { return m_Specification; }
 
 		static EventType GetStaticType()
@@ -135,27 +133,7 @@ namespace XYZ {
 		}
 	private:
 		EventType m_Type;
-		CanvasRenderer* m_Renderer;
-		RectTransform* m_Transform;
+		uint32_t m_Entity;
 		CanvasRendererRebuildSpecification& m_Specification;
-	};
-
-
-
-	struct LayoutGroupUpdatedEvent : public Event
-	{
-		LayoutGroupUpdatedEvent()
-			:
-			m_Type(EventType::LayoutGroupUpdated)
-		{}
-		
-		virtual EventType GetEventType() const override { return m_Type; }
-
-		static EventType GetStaticType()
-		{
-			return EventType::LayoutGroupUpdated;
-		}
-	private:
-		EventType m_Type;
 	};
 }

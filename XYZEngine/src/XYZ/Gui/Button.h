@@ -21,13 +21,12 @@ namespace XYZ {
 	}
 
 	class Button : public EventSystem<ClickEvent, ReleaseEvent, HooverEvent, UnHooverEvent>,
-		public ECS::Type<Button>
+				   public ECS::Type<Button>
 	{
 	public:
-		Button() = default;
-		Button(const glm::vec4& defaultColor, const glm::vec4& clickColor, const glm::vec4& hooverColor);
+		Button(const glm::vec4& clickColor, const glm::vec4& hooverColor);
 
-		glm::vec4   DefaultColor;
+		
 		glm::vec4   ClickColor;
 		glm::vec4   HooverColor;
 

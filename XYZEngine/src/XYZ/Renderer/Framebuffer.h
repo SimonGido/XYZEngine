@@ -2,6 +2,7 @@
 #include <memory>
 
 #include "XYZ/Core/Ref.h"
+#include "XYZ/Renderer/Texture.h"
 
 #include <glm/glm.hpp>
 
@@ -22,6 +23,7 @@ namespace XYZ {
 		uint32_t RendererID;
 		uint32_t AttachmentID;
 		FrameBufferFormat Format;
+		bool     IsTexture = false;
 	};
 
 	struct DepthAttachment
@@ -57,9 +59,11 @@ namespace XYZ {
 
 		virtual void CreateColorAttachment(FrameBufferFormat format) = 0;
 		virtual void CreateDepthAttachment() = 0;
-
+		virtual Ref<Texture2D> CreateTextureFromColorAttachment(uint32_t index) = 0;
+		virtual Ref<Texture2D> GetTexture(uint32_t index) const = 0;
 		virtual ColorAttachment GetColorAttachment(uint32_t index) const = 0;
 		virtual DepthAttachment GetDetphAttachment(uint32_t index) const = 0;
+
 
 		virtual size_t GetNumberColorAttachments() const = 0;
 		virtual size_t GetNumberDepthAttachments() const = 0;

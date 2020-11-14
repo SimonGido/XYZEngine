@@ -17,8 +17,6 @@ namespace XYZ {
 	class TransformComponent : public ECS::Type<TransformComponent>
 	{
 	public:
-		TransformComponent() = default;
-		
 		TransformComponent(const glm::vec3& translation)
 			: Translation(translation)
 		{}
@@ -55,13 +53,10 @@ namespace XYZ {
 
 	struct SpriteRenderer : public ECS::Type<SpriteRenderer>
 	{
-		SpriteRenderer() = default;
-
 		SpriteRenderer(
 			Ref<Material> material,
 			Ref<SubTexture2D> subTexture,
 			const glm::vec4& color,
-			uint32_t textureID,
 			int32_t sortLayer,
 			bool isVisible = true
 		);
@@ -76,7 +71,6 @@ namespace XYZ {
 		Ref<SubTexture2D> SubTexture;
 		glm::vec4 Color;
 
-		uint32_t TextureID;
 		int32_t SortLayer = 0;
 		bool IsVisible = true;
 	};

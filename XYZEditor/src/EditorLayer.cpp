@@ -162,15 +162,21 @@ namespace XYZ {
 		specs.SubTexture[GuiSpecification::BUTTON] = Ref<SubTexture2D>::Create(texture, glm::vec2(0,0), glm::vec2((float)texture->GetWidth() / divisor, (float)texture->GetHeight() / divisor));
 		specs.SubTexture[GuiSpecification::CHECKBOX_CHECKED] = Ref<SubTexture2D>::Create(texture, glm::vec2(1, 1), glm::vec2((float)texture->GetWidth() / divisor, (float)texture->GetHeight() / divisor));
 		specs.SubTexture[GuiSpecification::CHECKBOX_UNCHECKED] = Ref<SubTexture2D>::Create(texture, glm::vec2(0, 1), glm::vec2((float)texture->GetWidth() / divisor, (float)texture->GetHeight() / divisor));
+		specs.SubTexture[GuiSpecification::FONT] = Ref<SubTexture2D>::Create(font->GetTexture(), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 		m_GuiContext = Application::Get().GetGuiLayer()->CreateContext(&m_ECS, specs);		
 		
 
 		uint32_t canvas = m_GuiContext->CreateCanvas(CanvasSpecification(
 				CanvasRenderMode::ScreenSpace,
 				glm::vec3(0.0f),
-				glm::vec2(windowWidth, windowHeight),
+				glm::vec2(300, windowHeight),
 				glm::vec4(0.0f)
 		));
+
+		auto& layout = m_ECS.AddComponent<LayoutGroup>(canvas, LayoutGroup());
+		layout.CellSpacing.x = 10.0f;
+		layout.CellSpacing.y = 10.0f;
+
 		for (int i = 0; i < 10; ++i)
 		{
 			uint32_t editorEntity = m_GuiContext->CreateButton(canvas,
@@ -186,9 +192,6 @@ namespace XYZ {
 			m_ECS.GetComponent<Button>(editorEntity).RegisterCallback<ClickEvent>(Hook(&EditorLayer::onButtonClickTest, this));
 			m_EditorEntities.push_back(editorEntity);
 		}
-
-		m_ECS.GetComponent<RectTransform>(m_EditorEntities[6]).Position = glm::vec3(100.0f, 0.0f, 0.0f);
-		m_GuiContext->SetParent(m_EditorEntities[6], m_EditorEntities[7]);
 		
 		for (int i = 0; i < 10; ++i)
 		{
@@ -219,12 +222,11 @@ namespace XYZ {
 		}
 
 		auto& rectTransform = m_ECS.GetComponent<RectTransform>(m_EditorEntities.back());
-		auto& canvasRenderer = m_ECS.GetComponent<CanvasRenderer>(m_EditorEntities.back());
 		auto& text = m_ECS.GetComponent<Text>(m_EditorEntities.back());
 		rectTransform.Size.x += 50;
 		
 		rectTransform.Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent(
-			&canvasRenderer, &rectTransform, TextCanvasRendererRebuild(&text)
+			m_EditorEntities.back(), TextCanvasRendererRebuild()
 		));
 	}	
 

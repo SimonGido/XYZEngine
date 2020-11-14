@@ -11,7 +11,6 @@ namespace XYZ {
 		public ECS::Type<Slider>
 	{
 	public:
-		Slider() = default;
 		void OnEvent(Event& event);
 
 	private:

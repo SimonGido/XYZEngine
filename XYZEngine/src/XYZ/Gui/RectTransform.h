@@ -10,7 +10,6 @@ namespace XYZ {
 	struct RectTransform : public ECS::Type<RectTransform>,
 						   public EventSystem<CanvasRendererRebuildEvent> // Editor only , it fires event when canvas should be rebuilt
 	{
-		RectTransform() = default;
 		RectTransform(const glm::vec3& position, const glm::vec2& size)
 			: WorldPosition(position), Position(position), Size(size)
 		{}

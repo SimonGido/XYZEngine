@@ -3,9 +3,9 @@
 
 
 namespace XYZ {
-	Checkbox::Checkbox(const glm::vec4& defaultColor, const glm::vec4& hooverColor)
+	Checkbox::Checkbox(const glm::vec4& hooverColor)
 		:
-		DefaultColor(defaultColor), HooverColor(hooverColor)
+		HooverColor(hooverColor)
 	{
 		State& checkedState = Machine.CreateState();
 		State& unCheckedState = Machine.CreateState();

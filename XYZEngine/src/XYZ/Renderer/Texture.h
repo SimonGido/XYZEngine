@@ -69,22 +69,10 @@ namespace XYZ {
 	class Texture2D : public Texture
 	{
 	public:
-		/**
-		* @param[in] format Format of the texture
-		* @param[in] wrap   Component of wrapping of the texture
-		* @param[in] width  Width of the texture
-		* @param[in] height Height of the texture
-		* @return shared_ptr to empty Texture2D
-		*/
+
 		static Ref<Texture2D> Create(const TextureSpecs& specs);
-		
-		
-		/**
-		* @param[in] wrap   Component of wrapping of the texture
-		* @param[in] path	File path to the image
-		* @return shared_ptr to Texture2D
-		*/
 		static Ref<Texture2D> Create(TextureWrap wrap, TextureParam min, TextureParam max, const std::string& path);
+		static Ref<Texture2D> Create(uint32_t rendererID);
 
 		static void BindStatic(uint32_t rendererID, uint32_t slot);
 	};

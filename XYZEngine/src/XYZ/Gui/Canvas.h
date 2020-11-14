@@ -13,12 +13,13 @@ namespace XYZ {
 
 	struct Canvas : public ECS::Type<Canvas>
 	{
-		Canvas() = default;
-		Canvas(CanvasRenderMode mode)
+		Canvas(CanvasRenderMode mode, const glm::vec4& color)
 			:
-			RenderMode(mode)
+			RenderMode(mode),
+			Color(color)
 		{}
 
 		CanvasRenderMode RenderMode;
+		glm::vec4 Color;
 	};
 }

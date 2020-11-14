@@ -238,23 +238,11 @@ namespace XYZ {
 			Renderer2D::SubmitGrid(s_Data.GridProps.Transform, s_Data.GridProps.Scale, s_Data.GridProps.LineWidth);
 		}
 
-		Ref<Material> currentMaterial = nullptr;
-		if (s_Data.SpriteDrawList.size())
-		{
-			currentMaterial = s_Data.SpriteDrawList.back().Sprite->Material;
-			currentMaterial->Set("u_ViewProjectionMatrix", s_Data.ViewProjectionMatrix);
-			Renderer2D::SetMaterial(currentMaterial);
-		}
-
 		for (auto& dc : s_Data.SpriteDrawList)
 		{
-			if (currentMaterial->GetSortKey() != dc.Sprite->Material->GetSortKey())
-			{
-				currentMaterial = dc.Sprite->Material;
-				currentMaterial->Set("u_ViewProjectionMatrix", s_Data.ViewProjectionMatrix);
-				Renderer2D::SetMaterial(currentMaterial);
-			}
-			Renderer2D::SubmitQuad(dc.Transform, dc.Sprite->SubTexture->GetTexCoords(), dc.Sprite->TextureID, dc.Sprite->Color);
+			Renderer2D::SetMaterial(dc.Sprite->Material);
+			uint32_t textureID = Renderer2D::SetTexture(dc.Sprite->SubTexture->GetTexture());
+			Renderer2D::SubmitQuad(dc.Transform, dc.Sprite->SubTexture->GetTexCoords(), textureID, dc.Sprite->Color);
 		}
 
 		Renderer2D::Flush();

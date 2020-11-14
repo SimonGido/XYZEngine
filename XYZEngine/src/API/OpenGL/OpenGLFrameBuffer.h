@@ -1,6 +1,7 @@
 #pragma once
 #include "XYZ/Renderer/FrameBuffer.h"
 
+
 namespace XYZ {
 
 	class OpenGLFrameBuffer : public FrameBuffer
@@ -19,7 +20,8 @@ namespace XYZ {
 	
 		virtual void CreateColorAttachment(FrameBufferFormat format) override;
 		virtual void CreateDepthAttachment() override;
-
+		virtual Ref<Texture2D> CreateTextureFromColorAttachment(uint32_t index) override;
+		virtual Ref<Texture2D> GetTexture(uint32_t index) const override;
 		virtual ColorAttachment GetColorAttachment(uint32_t index) const override { return m_ColorAttachments[index]; }
 		virtual DepthAttachment GetDetphAttachment(uint32_t index) const override { return m_DepthAttachments[index]; }
 
@@ -39,5 +41,6 @@ namespace XYZ {
 
 		std::vector<ColorAttachment> m_ColorAttachments;
 		std::vector<DepthAttachment> m_DepthAttachments;
+		std::vector<Ref<Texture2D>>  m_Textures;
 	};
 }

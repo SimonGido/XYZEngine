@@ -28,6 +28,18 @@ namespace XYZ {
 		return nullptr;
 	}
 
+	Ref<Texture2D> Texture2D::Create(uint32_t rendererID)
+	{
+		switch (Renderer::GetAPI())
+		{
+		case RendererAPI::API::None: XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
+		case RendererAPI::API::OpenGL: return Ref<OpenGLTexture2D>::Create(rendererID);
+		}
+
+		XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
+		return nullptr;
+	}
+
 	void Texture2D::BindStatic(uint32_t rendererID, uint32_t slot)
 	{
 		switch (Renderer::GetAPI())

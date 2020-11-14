@@ -510,7 +510,6 @@ namespace XYZ {
 				out << YAML::Key << "MaterialAssetPath" << YAML::Value << materialPath;
 				out << YAML::Key << "SubTextureAssetPath" << YAML::Value << subtexturePath;
 				out << YAML::Key << "Color" << YAML::Value << renderComponent.Color;
-				out << YAML::Key << "TextureID" << YAML::Value << renderComponent.TextureID;
 				out << YAML::Key << "SortLayer" << YAML::Value << renderComponent.SortLayer;
 				out << YAML::Key << "IsVisible" << YAML::Value << renderComponent.IsVisible;
 				out << YAML::EndMap; // SpriteRenderer
@@ -605,6 +604,8 @@ namespace XYZ {
 					case ToUnderlying(CameraProjectionType::Perspective):
 						projectionType = CameraProjectionType::Perspective;
 						break;
+					default:
+						projectionType = CameraProjectionType::Orthographic;
 					}
 					perspectiveProps.PerspectiveFOV = cameraComponent["PerspectiveFOV"].as<float>();
 					perspectiveProps.PerspectiveNear = cameraComponent["PerspectiveNear"].as<float>();
@@ -629,7 +630,6 @@ namespace XYZ {
 					std::string materialPath = spriteRenderer["MaterialAssetPath"].as<std::string>();
 					std::string subtexturePath = spriteRenderer["SubTextureAssetPath"].as<std::string>();
 					glm::vec4 color = spriteRenderer["Color"].as<glm::vec4>();
-					uint32_t textureID = spriteRenderer["TextureID"].as<uint32_t>();
 					uint16_t sortLayer = spriteRenderer["SortLayer"].as<uint16_t>();
 
 					manager.LoadAsset<Material>(materialPath);
@@ -640,7 +640,6 @@ namespace XYZ {
 						material,
 						subTexture,
 						color,
-						textureID,
 						sortLayer
 					));
 				}

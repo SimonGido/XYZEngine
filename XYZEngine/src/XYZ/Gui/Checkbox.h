@@ -25,12 +25,10 @@ namespace XYZ {
 		public ECS::Type<Checkbox>
 	{
 	public:
-		Checkbox() = default;
-		Checkbox(const glm::vec4& defaultColor,const glm::vec4& hooverColor);
+		Checkbox(const glm::vec4& hooverColor);
 
 		void OnUpdate(Timestep ts);
 
-		glm::vec4   DefaultColor;
 		glm::vec4   HooverColor;
 
 		StateMachine Machine;

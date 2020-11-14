@@ -39,7 +39,6 @@ namespace XYZ {
 
 	void GuiRenderer::SubmitWidget(CanvasRenderer* canvasRenderer, RectTransform* transform)
 	{
-		// TODO: Might not work the best for text
 		if (cullTest(transform->WorldPosition, transform->Scale))
 			s_Data.WidgetDrawList.push_back({ canvasRenderer, transform });
 	}
@@ -48,22 +47,13 @@ namespace XYZ {
 		glm::mat4 viewProjectionMatrix = s_Data.RendererCamera.Camera.GetProjectionMatrix() * s_Data.RendererCamera.ViewMatrix;
 		Renderer2D::BeginScene(viewProjectionMatrix, glm::vec2(0, 0));
 		
-		Ref<Material> currentMaterial = nullptr;
-		if (s_Data.WidgetDrawList.size())
-		{
-			currentMaterial = s_Data.WidgetDrawList.back().Renderer->Material;
-			currentMaterial->Set("u_ViewProjectionMatrix", viewProjectionMatrix);
-			Renderer2D::SetMaterial(currentMaterial);
-		}
+		
 		for (auto& dc : s_Data.WidgetDrawList)
-		{
-			if (currentMaterial->GetSortKey() != dc.Renderer->Material->GetSortKey())
-			{
-				currentMaterial = dc.Renderer->Material;
-				currentMaterial->Set("u_ViewProjectionMatrix", viewProjectionMatrix);
-				Renderer2D::SetMaterial(currentMaterial);
-			}
-			Renderer2D::SubmitQuads(dc.Transform->GetWorldTransform(), dc.Renderer->Mesh.Vertices.data(), dc.Renderer->Mesh.Vertices.size() / 4.0f, dc.Renderer->TextureID, dc.Renderer->TilingFactor);
+		{	
+			if (dc.Renderer->Material)
+				Renderer2D::SetMaterial(dc.Renderer->Material);	
+			uint32_t textureID = Renderer2D::SetTexture(dc.Renderer->SubTexture->GetTexture());
+			Renderer2D::SubmitQuads(dc.Transform->GetWorldTransform(), dc.Renderer->Mesh.Vertices.data(), dc.Renderer->Mesh.Vertices.size() / 4.0f, textureID, dc.Renderer->TilingFactor);
 		}
 		Renderer2D::Flush();
 		Renderer2D::FlushLines();

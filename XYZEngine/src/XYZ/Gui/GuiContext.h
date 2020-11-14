@@ -5,6 +5,7 @@
 #include "XYZ/Core/Timestep.h"
 #include "XYZ/Renderer/RenderPass.h"
 #include "XYZ/Renderer/Camera.h"
+#include "XYZ/Scene/Components.h"
 
 #include "Canvas.h"
 #include "Button.h"
@@ -13,29 +14,19 @@
 #include "Text.h"
 #include "CanvasRenderer.h"
 #include "RectTransform.h"
+#include "LayoutGroup.h"
 #include "GuiSpecification.h"
 
 
 namespace XYZ {
 	struct TextCanvasRendererRebuild : public CanvasRendererRebuildSpecification
 	{
-		TextCanvasRendererRebuild(Text* text);
-
-		virtual void Rebuild(CanvasRenderer* renderer, RectTransform* transform) override;
-
-	private:
-		Text* m_Text;
+		virtual void Rebuild(uint32_t entity, ECS::ECSManager& ecs) override;
 	};
 
 	struct QuadCanvasRendererRebuild : public CanvasRendererRebuildSpecification
 	{
-		QuadCanvasRendererRebuild(const glm::vec4& color, const glm::vec4& texCoords);
-			
-		virtual void Rebuild(CanvasRenderer* renderer, RectTransform* transform) override;
-		
-	private:
-		glm::vec4 m_Color;
-		glm::vec4 m_TexCoords;
+		virtual void Rebuild(uint32_t entity, ECS::ECSManager& ecs) override;
 	};
 
 	struct Node
@@ -49,12 +40,14 @@ namespace XYZ {
 	class GuiContext
 	{
 	public:
+		// Templates to create widgets
 		uint32_t CreateCanvas(const CanvasSpecification& specs);
 		uint32_t CreatePanel(uint32_t canvas, const PanelSpecification& specs);
 		uint32_t CreateButton(uint32_t canvas, const ButtonSpecification& specs);
 		uint32_t CreateCheckbox(uint32_t canvas, const CheckboxSpecification& specs);
-		//uint32_t CreateSlider(uint32_t canvas);
 		uint32_t CreateText(uint32_t canvas, const TextSpecification& specs);
+	
+		//uint32_t CreateSlider(uint32_t canvas);
 
 		void SetViewportSize(uint32_t width, uint32_t height);
 		void SetParent(uint32_t parent, uint32_t child);
@@ -62,30 +55,29 @@ namespace XYZ {
 		void OnUpdate(Timestep ts);
 		void OnRender();
 
-
 	private:
 		// Only gui layer can create new context
 		GuiContext(ECS::ECSManager* ecs, const GuiSpecification& specs);
 
+		// Event resolving functions
 		bool onCanvasRendererRebuild(CanvasRendererRebuildEvent& event);
-
 		bool onWindowResizeEvent(WindowResizeEvent& event);
 		bool onMouseButtonPress(MouseButtonPressEvent& event);
 		bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
 		bool onMouseMove(MouseMovedEvent& event);
 
+		// Widget specific respones
 		bool buttonOnMouseButtonPress(const glm::vec2& mousePosition);
 		bool buttonOnMouseButtonRelease();
 		bool buttonOnMouseMove(const glm::vec2& mousePosition);
-
 		bool checkboxOnMouseButtonPress(const glm::vec2& mousePosition);
 		bool checkboxOnMouseMove(const glm::vec2& mousePosition);
 
+		// Update functions
+		void submitToRenderer(uint32_t entity, const glm::vec3& parentPosition);
+		void applyLayout(const LayoutGroup& layout, const Relationship& parentRel, const RectTransform& transform);
 
-		void submitNode(uint32_t entity, const glm::vec3& parentPosition);
-		void swapEntityNodes(Node& current, Node& newNode, uint32_t entity);
-		Node* findEntityNode(Node& node, uint32_t entity);
-	
+		// Relation ship helper functions
 		void setupParent(uint32_t parent, uint32_t child);
 		void removeParent(uint32_t entity);
 	private:
@@ -97,6 +89,7 @@ namespace XYZ {
 		ECS::ComponentView<Canvas, CanvasRenderer, RectTransform>* m_CanvasView;
 		ECS::ComponentView<Button, CanvasRenderer, RectTransform>* m_ButtonView;
 		ECS::ComponentView<Checkbox, CanvasRenderer, RectTransform>* m_CheckboxView;
+		ECS::ComponentView<LayoutGroup, Relationship, RectTransform>* m_LayoutGroup;
 
 		GuiSpecification m_Specification;
 
