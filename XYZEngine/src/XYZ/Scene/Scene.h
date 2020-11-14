@@ -57,7 +57,6 @@ namespace XYZ {
         ECS::ECSManager& GetECS() { return m_ECS; }
 
         inline const std::string& GetName() const { return m_Name; }
-        inline const SceneCamera& GetMainCamera() const { return m_MainCamera->Camera; }
     private:
         void showSelection(uint32_t entity);
         void showCamera(uint32_t entity);
@@ -75,9 +74,7 @@ namespace XYZ {
         SceneState m_State = SceneState::Edit;
 
         uint32_t m_SelectedEntity;
-
-        CameraComponent* m_MainCamera;
-        TransformComponent* m_MainCameraTransform;
+        uint32_t m_CameraEntity;
 
         std::vector<uint32_t> m_Entities;
         std::unordered_map<uint32_t, uint32_t> m_SceneGraphMap;

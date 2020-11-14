@@ -23,11 +23,9 @@ namespace XYZ {
 	Scene::Scene(const std::string& name)
 		:
 		m_Name(name),
-		m_SelectedEntity(Entity())
+		m_SelectedEntity(Entity()),
+		m_CameraEntity(Entity())
 	{
-		m_MainCamera = nullptr;
-		m_MainCameraTransform = nullptr;
-
 		m_ViewportWidth  = 0;
 		m_ViewportHeight = 0;
 
@@ -100,22 +98,18 @@ namespace XYZ {
 	}
 
 	void Scene::OnPlay()
-	{	
-		
+	{		
+		for (auto entity : m_Entities)
 		{
-			//auto &[transform, camera, sceneTag] = group[i];
-			//m_MainCamera = &camera;
-			//m_MainCameraTransform = &transform;
-			//break;
+			Entity ent(entity, this);
+			if (ent.HasComponent<CameraComponent>())
+			{
+				ent.GetStorageComponent<CameraComponent>().Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+				m_CameraEntity = ent;
+				return;
+			}
 		}
-		if (!m_MainCamera)
-		{
-			XYZ_LOG_ERR("No camera found in the scene");
-		}
-		else
-		{
-			m_MainCamera->Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
-		}
+		XYZ_LOG_ERR("No camera found in the scene");	
 	}
 
 	void Scene::OnEvent(Event& e)
@@ -132,41 +126,47 @@ namespace XYZ {
 		// 3D part here
 
 		///////////////
+		Entity cameraEntity(m_CameraEntity, this);
 		SceneRendererCamera renderCamera;
-		renderCamera.Camera = m_MainCamera->Camera;
-		renderCamera.ViewMatrix = glm::inverse(m_MainCameraTransform->GetTransform());
+		auto& cameraComponent = cameraEntity.GetStorageComponent<CameraComponent>();
+		auto& cameraTransform = cameraEntity.GetStorageComponent<TransformComponent>();
+		renderCamera.Camera = cameraComponent.Camera;
+		renderCamera.ViewMatrix = glm::inverse(cameraTransform.GetTransform());
+
 		SceneRenderer::GetOptions().ShowGrid = false;
 		SceneRenderer::BeginScene(this, renderCamera);
+		for (size_t i = 0; i < m_RenderView->Size(); ++i)
 		{
-			
-			{
-				//auto &[transform, sprite, sceneTag] = group[i];
-				//SceneRenderer::SubmitSprite(&sprite, transform.GetTransform());
-			}
+			auto [transform, renderer] = (*m_RenderView)[i];
+			SceneRenderer::SubmitSprite(&renderer, transform.GetTransform());
 		}
+		for (size_t i = 0; i < m_ParticleView->Size(); ++i)
 		{
-		
-			{
-				//auto &[transform, particle, sceneTag] = group[i];
-				//SceneRenderer::SubmitParticles(&particle, transform.GetTransform());
-			}
+			auto [transform, particle] = (*m_ParticleView)[i];
+			SceneRenderer::SubmitParticles(&particle, transform.GetTransform());
+		}
+
+		for (size_t i = 0; i < m_LightView->Size(); ++i)
+		{
+			auto [transform, light] = (*m_LightView)[i];
+			SceneRenderer::SubmitLight(&light, transform.GetTransform());
 		}
 		SceneRenderer::EndScene();
 	}
 
 	void Scene::OnUpdate(Timestep ts)
 	{
-		//for (int32_t i = 0; i < m_AnimateGroup->Size(); ++i)
-		//{
-		//	auto [animator] = (*m_AnimateGroup)[i];
-		//	animator->Controller->Update(ts);
-		//}
-		//for (int32_t i = 0; i < m_ScriptGroup->Size(); ++i)
-		//{
-		//	auto [script] = (*m_ScriptGroup)[i];
-		//	if (script->ScriptableEntity)
-		//		script->ScriptableEntity->OnUpdate(ts);
-		//}
+		for (int32_t i = 0; i < m_AnimatorView->Size(); ++i)
+		{
+			auto [animator] = (*m_AnimatorView)[i];
+			animator.Controller->Update(ts);
+		}
+		for (int32_t i = 0; i < m_NativeScriptView->Size(); ++i)
+		{
+			auto [script] = (*m_NativeScriptView)[i];
+			if (script.ScriptableEntity)
+				script.ScriptableEntity->OnUpdate(ts);
+		}
 		
 		for (size_t i = 0; i < m_ParticleView->Size(); ++i)
 		{

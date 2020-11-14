@@ -128,6 +128,10 @@ namespace XYZ {
 		fbo->CreateDepthAttachment();
 		fbo->Resize();
 		m_RenderPass = RenderPass::Create({ fbo });
+
+		m_CanvasView = &m_ECS->CreateView<Canvas, CanvasRenderer, RectTransform>();
+		m_ButtonView = &m_ECS->CreateView<Button, CanvasRenderer, RectTransform>();
+		m_CheckboxView = &m_ECS->CreateView<Checkbox, CanvasRenderer, RectTransform>();
 	}
 	bool GuiContext::onCanvasRendererRebuild(CanvasRendererRebuildEvent& event)
 	{
@@ -404,97 +408,97 @@ namespace XYZ {
 
 	bool GuiContext::buttonOnMouseButtonPress(const glm::vec2& mousePosition)
 	{
-		//for (int i = 0; i < m_ButtonGroup->Size(); ++i)
-		//{
-		//	auto [button, canvasRenderer, rectTransform] = (*m_ButtonGroup)[i];
-		//	if (Collide(rectTransform->WorldPosition, rectTransform->Size, mousePosition))
-		//	{
-		//		button->Machine.TransitionTo(ButtonState::Clicked);
-		//		SetMeshColor(canvasRenderer->Mesh, button->ClickColor);
-		//		if (button->Execute<ClickEvent>(ClickEvent{}))
-		//			return true;
-		//	}
-		//}
+		for (int i = 0; i < m_ButtonView->Size(); ++i)
+		{
+			auto [button, canvasRenderer, rectTransform] = (*m_ButtonView)[i];
+			if (Collide(rectTransform.WorldPosition, rectTransform.Size, mousePosition))
+			{
+				button.Machine.TransitionTo(ButtonState::Clicked);
+				SetMeshColor(canvasRenderer.Mesh, button.ClickColor);
+				if (button.Execute<ClickEvent>(ClickEvent{}))
+					return true;
+			}
+		}
 		return false;
 	}
 
 	bool GuiContext::buttonOnMouseButtonRelease()
 	{
-		//for (int i = 0; i < m_ButtonGroup->Size(); ++i)
-		//{
-		//	auto [button, canvasRenderer, rectTransform] = (*m_ButtonGroup)[i];
-		//	button->Machine.TransitionTo(ButtonState::Released);
-		//	SetMeshColor(canvasRenderer->Mesh, button->DefaultColor);
-		//	if (button->Execute<ReleaseEvent>(ReleaseEvent{}))
-		//		return true;
-		//}
+		for (int i = 0; i < m_ButtonView->Size(); ++i)
+		{
+			auto [button, canvasRenderer, rectTransform] = (*m_ButtonView)[i];
+			button.Machine.TransitionTo(ButtonState::Released);
+			SetMeshColor(canvasRenderer.Mesh, button.DefaultColor);
+			if (button.Execute<ReleaseEvent>(ReleaseEvent{}))
+				return true;
+		}
 		return false;
 	}
 
 	bool GuiContext::buttonOnMouseMove(const glm::vec2& mousePosition)
 	{
-		//for (int i = 0; i < m_ButtonGroup->Size(); ++i)
-		//{
-		//	auto [button, canvasRenderer, rectTransform] = (*m_ButtonGroup)[i];
-		//	if (Collide(rectTransform->WorldPosition, rectTransform->Size, mousePosition)
-		//		&& button->Machine.TransitionTo(ButtonState::Hoovered))
-		//	{
-		//		SetMeshColor(canvasRenderer->Mesh, button->HooverColor);
-		//		button->Execute<HooverEvent>(HooverEvent{});
-		//		return true;
-		//	}
-		//	else if (button->Machine.TransitionTo(ButtonState::UnHoovered))
-		//	{
-		//		SetMeshColor(canvasRenderer->Mesh, button->DefaultColor);
-		//		button->Execute<UnHooverEvent>(UnHooverEvent{});
-		//	}
-		//}
+		for (int i = 0; i < m_ButtonView->Size(); ++i)
+		{
+			auto [button, canvasRenderer, rectTransform] = (*m_ButtonView)[i];
+			if (Collide(rectTransform.WorldPosition, rectTransform.Size, mousePosition)
+				&& button.Machine.TransitionTo(ButtonState::Hoovered))
+			{
+				SetMeshColor(canvasRenderer.Mesh, button.HooverColor);
+				button.Execute<HooverEvent>(HooverEvent{});
+				return true;
+			}
+			else if (button.Machine.TransitionTo(ButtonState::UnHoovered))
+			{
+				SetMeshColor(canvasRenderer.Mesh, button.DefaultColor);
+				button.Execute<UnHooverEvent>(UnHooverEvent{});
+			}
+		}
 		return false;
 	}
 
 	bool GuiContext::checkboxOnMouseButtonPress(const glm::vec2& mousePosition)
 	{
-		//for (int i = 0; i < m_CheckboxGroup->Size(); ++i)
-		//{
-		//	auto [checkbox, canvasRenderer, rectTransform] = (*m_CheckboxGroup)[i];
-		//	if (Collide(rectTransform->WorldPosition, rectTransform->Size, mousePosition))
-		//	{
-		//		if (checkbox->Checked)
-		//		{
-		//			checkbox->Checked = false;
-		//			SetQuadTexCoords(canvasRenderer->Mesh, m_Specification.SubTexture[GuiSpecification::CHECKBOX_UNCHECKED]->GetTexCoords());
-		//			if (checkbox->Execute<UnCheckedEvent>(UnCheckedEvent{}));
-		//				return true;
-		//		}
-		//		else
-		//		{
-		//			checkbox->Checked = true;
-		//			SetQuadTexCoords(canvasRenderer->Mesh, m_Specification.SubTexture[GuiSpecification::CHECKBOX_CHECKED]->GetTexCoords());
-		//			if (checkbox->Execute<CheckedEvent>(CheckedEvent{}));
-		//				return true;
-		//		}
-		//	}
-		//}
+		for (int i = 0; i < m_CheckboxView->Size(); ++i)
+		{
+			auto [checkbox, canvasRenderer, rectTransform] = (*m_CheckboxView)[i];
+			if (Collide(rectTransform.WorldPosition, rectTransform.Size, mousePosition))
+			{
+				if (checkbox.Checked)
+				{
+					checkbox.Checked = false;
+					SetQuadTexCoords(canvasRenderer.Mesh, m_Specification.SubTexture[GuiSpecification::CHECKBOX_UNCHECKED]->GetTexCoords());
+					if (checkbox.Execute<UnCheckedEvent>(UnCheckedEvent{}));
+						return true;
+				}
+				else
+				{
+					checkbox.Checked = true;
+					SetQuadTexCoords(canvasRenderer.Mesh, m_Specification.SubTexture[GuiSpecification::CHECKBOX_CHECKED]->GetTexCoords());
+					if (checkbox.Execute<CheckedEvent>(CheckedEvent{}));
+						return true;
+				}
+			}
+		}
 		return false;
 	}
 
 	bool GuiContext::checkboxOnMouseMove(const glm::vec2& mousePosition)
 	{
-		//for (int i = 0; i < m_CheckboxGroup->Size(); ++i)
-		//{
-		//	auto [checkbox, canvasRenderer, rectTransform] = (*m_CheckboxGroup)[i];
-		//	if (Collide(rectTransform->WorldPosition, rectTransform->Size, mousePosition))
-		//	{
-		//		SetMeshColor(canvasRenderer->Mesh, checkbox->HooverColor);
-		//		checkbox->Execute<HooverEvent>(HooverEvent{});
-		//		return true;
-		//	}
-		//	else
-		//	{
-		//		SetMeshColor(canvasRenderer->Mesh, checkbox->DefaultColor);
-		//		checkbox->Execute<UnHooverEvent>(UnHooverEvent{});
-		//	}
-		//}
+		for (int i = 0; i < m_CheckboxView->Size(); ++i)
+		{
+			auto [checkbox, canvasRenderer, rectTransform] = (*m_CheckboxView)[i];
+			if (Collide(rectTransform.WorldPosition, rectTransform.Size, mousePosition))
+			{
+				SetMeshColor(canvasRenderer.Mesh, checkbox.HooverColor);
+				checkbox.Execute<HooverEvent>(HooverEvent{});
+				return true;
+			}
+			else
+			{
+				SetMeshColor(canvasRenderer.Mesh, checkbox.DefaultColor);
+				checkbox.Execute<UnHooverEvent>(UnHooverEvent{});
+			}
+		}
 		return false;
 	}
 

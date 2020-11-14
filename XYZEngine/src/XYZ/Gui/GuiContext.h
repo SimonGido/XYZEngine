@@ -92,6 +92,9 @@ namespace XYZ {
 		glm::mat4 m_ViewMatrix;
 
 		ECS::ECSManager* m_ECS = nullptr;
+		ECS::ComponentView<Canvas, CanvasRenderer, RectTransform>* m_CanvasView;
+		ECS::ComponentView<Button, CanvasRenderer, RectTransform>* m_ButtonView;
+		ECS::ComponentView<Checkbox, CanvasRenderer, RectTransform>* m_CheckboxView;
 
 		GuiSpecification m_Specification;
 
