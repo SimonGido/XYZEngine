@@ -5,6 +5,7 @@
 #include "XYZ/Core/Input.h"
 #include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Renderer/GuiRenderer.h"
+#include "XYZ/Scene/Components.h"
 
 #include <glm/gtx/transform.hpp>
 namespace XYZ {
@@ -146,6 +147,8 @@ namespace XYZ {
 		
 		Mesh mesh;
 		GenerateQuadMesh(texCoords, specs.Color, specs.Size, mesh);
+	
+		m_ECS->AddComponent<Relationship>(entity, Relationship());
 		m_ECS->AddComponent<Canvas>(entity, Canvas(specs.RenderMode));
 		m_ECS->AddComponent<RectTransform>(entity, RectTransform(specs.Position, specs.Size));
 		
@@ -159,7 +162,7 @@ namespace XYZ {
 			));
 
 
-		m_Entities.push_back(Node{ entity });
+		m_Canvases.push_back(entity);
 		return entity;
 	}
 	uint32_t GuiContext::CreatePanel(uint32_t canvas, const PanelSpecification& specs)
@@ -173,6 +176,7 @@ namespace XYZ {
 		Mesh mesh;
 		GenerateQuadMesh(texCoords, specs.DefaultColor, specs.Size, mesh);
 
+		m_ECS->AddComponent<Relationship>(entity, Relationship());
 		m_ECS->AddComponent<RectTransform>(entity, RectTransform( specs.Position, specs.Size));
 		m_ECS->AddComponent<CanvasRenderer>( entity,
 			CanvasRenderer(
@@ -185,9 +189,7 @@ namespace XYZ {
 		m_ECS->AddComponent<Button>(entity, Button(specs.DefaultColor, specs.ClickColor, specs.HooverColor));
 		
 			
-		auto newChildNode = findEntityNode(m_Entities.back(), canvas);
-		XYZ_ASSERT(newChildNode, "Canvas was not found");
-		newChildNode->Children.push_back(Node{ entity });
+		setupParent(canvas, entity);
 		
 		uint32_t textEntity = m_ECS->CreateEntity();
 		Mesh textMesh;
@@ -196,6 +198,7 @@ namespace XYZ {
 		
 		textRectTransform.RegisterCallback<CanvasRendererRebuildEvent>(Hook(&GuiContext::onCanvasRendererRebuild, this));
 		
+		m_ECS->AddComponent<Relationship>(textEntity, Relationship());
 		m_ECS->AddComponent<CanvasRenderer>(textEntity,
 			CanvasRenderer(
 				m_Specification.Material,
@@ -214,7 +217,7 @@ namespace XYZ {
 			TextAlignment::Center
 		));
 		
-		newChildNode->Children.back().Children.push_back(Node{ textEntity });
+		setupParent(entity, textEntity);
 		return entity;
 	}
 	uint32_t GuiContext::CreateCheckbox(uint32_t canvas, const CheckboxSpecification& specs)
@@ -229,7 +232,7 @@ namespace XYZ {
 
 		Mesh mesh;
 		GenerateQuadMesh(texCoords, specs.DefaultColor, specs.Size, mesh);
-
+		m_ECS->AddComponent<Relationship>(entity, Relationship());
 		m_ECS->AddComponent<RectTransform>(entity, RectTransform(specs.Position, specs.Size));
 		m_ECS->AddComponent<CanvasRenderer>(entity,
 			CanvasRenderer(
@@ -241,15 +244,14 @@ namespace XYZ {
 			));
 
 
-		auto newChildNode = findEntityNode(m_Entities.back(), canvas);
-		XYZ_ASSERT(newChildNode, "Canvas was not found");
-		newChildNode->Children.push_back(Node{ entity });
+		setupParent(canvas, entity);
 
 		uint32_t textEntity = m_ECS->CreateEntity();
 		Mesh textMesh;
 		GenerateTextMesh(specs.Name.c_str(), m_Specification.Font, specs.DefaultColor, specs.Size, textMesh, TextAlignment::Center);
 		auto& textRectTransform = m_ECS->AddComponent<RectTransform>(textEntity, RectTransform(glm::vec3(0.0f), glm::vec2(1.0f)));
 		textRectTransform.RegisterCallback<CanvasRendererRebuildEvent>(Hook(&GuiContext::onCanvasRendererRebuild, this));
+		m_ECS->AddComponent<Relationship>(textEntity, Relationship());
 		m_ECS->AddComponent<CanvasRenderer>(textEntity,
 			CanvasRenderer(
 				m_Specification.Material,
@@ -267,7 +269,7 @@ namespace XYZ {
 				TextAlignment::Center
 			));
 		
-		newChildNode->Children.back().Children.push_back(Node{ textEntity });
+		setupParent(entity, textEntity);
 		return entity;
 	}
 	uint32_t GuiContext::CreateText(uint32_t canvas, const TextSpecification& specs)
@@ -286,6 +288,7 @@ namespace XYZ {
 				0,
 				true
 			));
+		m_ECS->AddComponent<Relationship>(entity, Relationship());
 		m_ECS->AddComponent<Text>( entity,
 			Text(
 				specs.Source,
@@ -295,9 +298,7 @@ namespace XYZ {
 			));
 
 		
-		auto newChildNode = findEntityNode(m_Entities.back(), canvas);
-		XYZ_ASSERT(newChildNode, "Canvas was not found");
-		newChildNode->Children.push_back(Node{ entity });
+		setupParent(canvas, entity);
 
 		return entity;
 	}
@@ -318,8 +319,8 @@ namespace XYZ {
 	}
 	void GuiContext::SetParent(uint32_t parent, uint32_t child)
 	{
-		auto newChildNode = findEntityNode(m_Entities.back(), parent);
-		swapEntityNodes(m_Entities.back(), *newChildNode, child);
+		removeParent(child);
+		setupParent(parent, child);
 	}
 	void GuiContext::OnEvent(Event& event)
 	{
@@ -359,8 +360,9 @@ namespace XYZ {
 		renderCamera.ViewMatrix = m_ViewMatrix;
 
 		GuiRenderer::BeginScene(renderCamera);
-		for (auto& child : m_Entities)
-			submitNode(child, glm::vec3(0.0f));
+		for (auto& canvas : m_Canvases)
+			submitNode(canvas, glm::vec3(0.0f));
+
 
 		GuiRenderer::EndScene();
 		Renderer::EndRenderPass();
@@ -502,17 +504,22 @@ namespace XYZ {
 		return false;
 	}
 
-	void GuiContext::submitNode(const Node& node, const glm::vec3& parentPosition)
+	void GuiContext::submitNode(uint32_t entity, const glm::vec3& parentPosition)
 	{
-		auto& rectTransform = m_ECS->GetStorageComponent<RectTransform>(node.Entity);
+		auto& rectTransform = m_ECS->GetStorageComponent<RectTransform>(entity);
 		rectTransform.WorldPosition = parentPosition + rectTransform.Position;
 
-		auto& canvasRenderer = m_ECS->GetStorageComponent<CanvasRenderer>(node.Entity);
+		auto& canvasRenderer = m_ECS->GetStorageComponent<CanvasRenderer>(entity);
 		if (canvasRenderer.IsVisible)
 		{
 			GuiRenderer::SubmitWidget(&canvasRenderer, &rectTransform);
-			for (auto& child : node.Children)
-				submitNode(child, rectTransform.WorldPosition);
+			auto& currentRel = m_ECS->GetComponent<Relationship>(entity);
+			uint32_t currentEntity = currentRel.FirstChild;
+			while (currentEntity != NULL_ENTITY)
+			{
+				submitNode(currentEntity, rectTransform.WorldPosition);
+				currentEntity = m_ECS->GetComponent<Relationship>(currentEntity).NextSibling;
+			}
 		}
 	}
 	void GuiContext::swapEntityNodes(Node& current, Node& newNode, uint32_t entity)
@@ -548,6 +555,60 @@ namespace XYZ {
 				return node;
 		}
 		return nullptr;
+	}
+	void GuiContext::setupParent(uint32_t parent, uint32_t child)
+	{
+		auto& parentRel = m_ECS->GetComponent<Relationship>(parent);
+		auto& childRel = m_ECS->GetComponent<Relationship>(child);
+
+		childRel.Parent = parent;
+		if (parentRel.FirstChild != NULL_ENTITY)
+		{
+			// Parent has first child
+			auto& parentFirstChild = m_ECS->GetComponent<Relationship>(parentRel.FirstChild);	
+			// Set new child of parent as previous sibling of first child
+			parentFirstChild.PreviousSibling = child;
+		
+			childRel.NextSibling = parentRel.FirstChild;
+			parentRel.FirstChild = child;
+		}
+		else
+		{
+			parentRel.FirstChild = child;
+		}	
+	}
+	void GuiContext::removeParent(uint32_t entity)
+	{
+		auto& childRel = m_ECS->GetComponent<Relationship>(entity);
+		auto& parentRel = m_ECS->GetComponent<Relationship>(childRel.Parent);
+
+		// Not siblings ( must be first child of parent )
+		if (childRel.NextSibling == NULL_ENTITY && childRel.PreviousSibling == NULL_ENTITY)
+		{
+			childRel.Parent = NULL_ENTITY;
+			parentRel.FirstChild = NULL_ENTITY;
+		}
+
+		uint32_t current = parentRel.FirstChild;
+		while (current != NULL_ENTITY)
+		{
+			auto& currentRel = m_ECS->GetComponent<Relationship>(current);			
+			if (current == entity)
+			{
+				if (currentRel.PreviousSibling != NULL_ENTITY)
+				{
+					auto& prevRel = m_ECS->GetComponent<Relationship>(currentRel.PreviousSibling);
+					prevRel.NextSibling = currentRel.NextSibling;
+				}
+				if (currentRel.NextSibling != NULL_ENTITY)
+				{
+					auto& nextRel = m_ECS->GetComponent<Relationship>(currentRel.NextSibling);
+					nextRel.PreviousSibling = currentRel.PreviousSibling;
+				}
+				return;
+			}
+			current = currentRel.NextSibling;
+		}
 	}
 	TextCanvasRendererRebuild::TextCanvasRendererRebuild(Text* text)
 		: m_Text(text)

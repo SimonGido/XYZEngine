@@ -1,20 +1,28 @@
 #pragma once
 #include "XYZ/ECS/ECSManager.h"
+#include "XYZ/Event/EventSystem.h"
+#include "XYZ/Event/GuiEvent.h"
 
+
+#include <glm/glm.hpp>
 
 namespace XYZ {
+
+	struct Padding
+	{
+		float Left = 0.0f, Right = 0.0f, Top = 0.0f, Bottom = 0.0f;
+	};
 	
-	class LayoutGroup : public Type<LayoutGroup>
+	class LayoutGroup : public ECS::Type<LayoutGroup>,
+						public EventSystem<CanvasRendererRebuildEvent>
 	{
 	public:
 		LayoutGroup() {};
+		
+		Padding Padding;
 
-		float WidthSpacing = 0.0f;
-		float HeightSpacing = 0.0f;
+		glm::vec2 CellSize = glm::vec2(0.0f);
+		glm::vec2 CellSpacing = glm::vec2(0.0f);
 
-		float LeftPadding = 0.0f;
-		float RightPadding = 0.0f;
-		float TopPadding = 0.0f;
-		float BottomPadding = 0.0f;
 	};
 }

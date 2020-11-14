@@ -82,12 +82,14 @@ namespace XYZ {
 		bool checkboxOnMouseMove(const glm::vec2& mousePosition);
 
 
-		void submitNode(const Node& node, const glm::vec3& parentPosition);
+		void submitNode(uint32_t entity, const glm::vec3& parentPosition);
 		void swapEntityNodes(Node& current, Node& newNode, uint32_t entity);
 		Node* findEntityNode(Node& node, uint32_t entity);
 	
+		void setupParent(uint32_t parent, uint32_t child);
+		void removeParent(uint32_t entity);
 	private:
-		Tree m_Entities;
+		//Tree m_Entities;
 		Camera m_Camera;
 		glm::mat4 m_ViewMatrix;
 
@@ -101,7 +103,7 @@ namespace XYZ {
 		Ref<RenderPass> m_RenderPass;
 		glm::vec2 m_ViewportSize;
 
-
+		std::vector<uint32_t> m_Canvases;
 
 		friend class GuiLayer;
 	};

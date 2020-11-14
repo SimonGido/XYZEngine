@@ -139,4 +139,23 @@ namespace XYZ {
 		RectTransform* m_Transform;
 		CanvasRendererRebuildSpecification& m_Specification;
 	};
+
+
+
+	struct LayoutGroupUpdatedEvent : public Event
+	{
+		LayoutGroupUpdatedEvent()
+			:
+			m_Type(EventType::LayoutGroupUpdated)
+		{}
+		
+		virtual EventType GetEventType() const override { return m_Type; }
+
+		static EventType GetStaticType()
+		{
+			return EventType::LayoutGroupUpdated;
+		}
+	private:
+		EventType m_Type;
+	};
 }

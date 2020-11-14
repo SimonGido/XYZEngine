@@ -1,5 +1,6 @@
 #pragma once
 #include "XYZ/ECS/Component.h"
+#include "XYZ/ECS/Types.h"
 #include "XYZ/Particle/ParticleEffect.h"
 #include "XYZ/Renderer/SubTexture2D.h"
 
@@ -126,5 +127,14 @@ namespace XYZ {
 
 		glm::vec3 Color = glm::vec3(1.0f);
 		float Intensity = 1.0f;
+	};
+
+
+	struct Relationship : public ECS::Type<Relationship>
+	{
+		uint32_t Parent			 = NULL_ENTITY;
+		uint32_t FirstChild		 = NULL_ENTITY;
+		uint32_t PreviousSibling = NULL_ENTITY;
+		uint32_t NextSibling	 = NULL_ENTITY;
 	};
 }
