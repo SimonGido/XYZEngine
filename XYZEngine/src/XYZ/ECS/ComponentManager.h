@@ -1,6 +1,7 @@
 #pragma once
 #include "ComponentStorage.h"
 #include "ComponentGroup.h"
+#include "ComponentView.h"
 #include "Component.h"
 #include "Types.h"
 
@@ -17,6 +18,9 @@ namespace XYZ {
 				
 				for (auto group : m_Groups)
 					delete group;
+
+				for (auto view : m_Views)
+					delete view;
 			}
 
 			template <typename T>
@@ -31,8 +35,20 @@ namespace XYZ {
 					m_Storages[T::GetComponentID()] = new ComponentStorage<T>();
 
 				ComponentStorage<T>* casted = (ComponentStorage<T>*)m_Storages[T::GetComponentID()];
-
 				return casted->AddComponent(entity, component);
+			}
+
+
+			template <typename T>
+			void ForceStorage()
+			{
+				if (T::GetComponentID() >= m_Storages.size())
+				{
+					m_Storages.resize(size_t(T::GetComponentID()) + 1);
+					m_Storages[T::GetComponentID()] = new ComponentStorage<T>();
+				}
+				else if (!m_Storages[T::GetComponentID()])
+					m_Storages[T::GetComponentID()] = new ComponentStorage<T>();
 			}
 
 			void AddRawComponent(uint32_t entity, uint8_t* component, uint8_t componentID)
@@ -48,6 +64,19 @@ namespace XYZ {
 					 && !group->HasEntity(entity))
 					{
 						group->AddEntity(entity, signature, ecs);
+						return;
+					}
+				}
+			}
+
+			void AddToView(uint32_t entity,const Signature& signature)
+			{
+				for (auto view : m_Views)
+				{
+					if ((view->GetSignature() & signature) == view->GetSignature()
+						&& !view->HasEntity(entity))
+					{
+						view->AddEntity(entity);
 						return;
 					}
 				}
@@ -74,12 +103,20 @@ namespace XYZ {
 								AddRawComponent(entity, component, memoryLayout[i].ID);
 							}
 						}
-						group->RemoveEntity(entity, ecs);
+						group->RemoveEntity(entity);
 						return;
 					}
 				}
 			}
 
+			void RemoveFromView(uint32_t entity)
+			{
+				for (auto view : m_Views)
+				{
+					if (view->HasEntity(entity))
+						view->RemoveEntity(entity);
+				}
+			}
 
 			void GetFromGroup(uint32_t entity,const Signature& signature, uint8_t componentID, uint8_t** component)
 			{
@@ -95,10 +132,12 @@ namespace XYZ {
 			}
 			
 			template <typename T>
-			void RemoveComponent(uint32_t entity)
+			void RemoveComponent(uint32_t entity, const Signature& signature)
 			{
 				ComponentStorage<T>* casted = (ComponentStorage<T>*)m_Storages[T::GetComponentID()];
-				casted->RemoveComponent(entity);
+				uint32_t updatedEntity = casted->RemoveComponent(entity);
+				if (updatedEntity != NULL_ENTITY)
+					updateViews(entity,signature, updatedEntity);
 			}
 
 			template <typename T>
@@ -122,6 +161,15 @@ namespace XYZ {
 				}
 				return nullptr;
 			}
+			IComponentView* GetView(const Signature& signature)
+			{
+				for (auto view : m_Views)
+				{
+					if ((view->GetSignature() & signature) == view->GetSignature())
+						return view;
+				}
+				return nullptr;
+			}
 
 			template <typename ...Args>
 			ComponentGroup<Args...>* CreateGroup()
@@ -141,6 +189,26 @@ namespace XYZ {
 				return group;
 			}
 
+			template <typename ...Args>
+			ComponentView<Args...>* CreateView(ECSManager * ecs)
+			{
+				Signature signature;
+				std::initializer_list<uint16_t> componentTypes{ Args::GetComponentID()... };
+				for (auto it : componentTypes)
+					signature.set(it);
+				for (auto view : m_Views)
+				{
+					XYZ_ASSERT(view->GetSignature() != signature, "View already exists");
+				}
+				auto view = new ComponentView<Args...>(ecs);
+				m_Views.push_back(view);
+				return view;
+			}
+
+			uint32_t GetComponentIndex(uint32_t entity, uint32_t index) const
+			{
+				return m_Storages[index]->GetComponentIndex(entity);
+			}
 
 			void EntityDestroyed(uint32_t entity, const Signature& signature, ECSManager* ecs)
 			{
@@ -154,14 +222,35 @@ namespace XYZ {
 				}
 				for (auto group : m_Groups)
 				{
-					if (group->GetSignature() == signature)
-						group->RemoveEntity(entity, ecs);
+					if (group->HasEntity(entity))
+						group->RemoveEntity(entity);
+				}
+				for (auto view : m_Views)
+				{
+					if (view->HasEntity(entity))
+						view->RemoveEntity(entity);
 				}
 			}
 
 		private:
+			// This is called when entity index in storage has changed
+			void updateViews(uint32_t removedEntity, const Signature& signature, uint32_t updatedEntity)
+			{
+				for (auto view : m_Views)
+				{
+					if (view->HasEntity(removedEntity) && (view->GetSignature() & signature) != view->GetSignature())
+						view->RemoveEntity(removedEntity);
+
+					if (view->HasEntity(updatedEntity))
+						view->EntityComponentUpdated(updatedEntity);
+				}
+			}
+
+
+		private:
 			std::vector<IComponentStorage*> m_Storages;
 			std::vector<IComponentGroup*> m_Groups;
+			std::vector<IComponentView*> m_Views;
 		};
 	}
 }

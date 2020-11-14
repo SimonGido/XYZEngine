@@ -6,31 +6,6 @@
 namespace XYZ {
 	namespace ECS {
 
-		template <int I, class... Ts>
-		decltype(auto) get(Ts&&... ts)
-		{
-			return std::get<I>(std::forward_as_tuple(ts...));
-		}
-		template<typename... Types>
-		constexpr auto GetTypesSize()
-		{
-			return std::array<std::size_t, sizeof...(Types)>{sizeof(Types)...};
-		}
-
-		template<class F, class...Ts, std::size_t...Is>
-		void for_each_in_tuple(const std::tuple<Ts...>& tuple, F func, std::index_sequence<Is...>) 
-		{
-			using expander = int[];
-			(void)expander {
-				0, ((void)func(std::get<Is>(tuple)), 0)...
-			};
-		}
-
-		template<class F, class...Ts>
-		void for_each_in_tuple(const std::tuple<Ts...>& tuple, F func) 
-		{
-			for_each_in_tuple(tuple, func, std::make_index_sequence<sizeof...(Ts)>());
-		}
 
 		class ECSManager;
 
@@ -44,8 +19,8 @@ namespace XYZ {
 			};
 		public:
 			virtual void AddEntity(uint32_t entity, Signature& signature, ECSManager* ecs) = 0;
-			virtual void RemoveEntity(uint32_t entity, ECSManager* ecs) = 0;
-			virtual bool HasEntity(uint32_t entity) = 0;
+			virtual void RemoveEntity(uint32_t entity) = 0;
+			virtual bool HasEntity(uint32_t entity) const = 0;
 
 			virtual void FindComponent(uint8_t** object, uint32_t entity, uint8_t id) = 0;
 
@@ -88,7 +63,7 @@ namespace XYZ {
 				signature.set(HAS_GROUP_BIT);
 			}
 
-			virtual void RemoveEntity(uint32_t entity, ECSManager* ecs) override
+			virtual void RemoveEntity(uint32_t entity) override
 			{
 				if (m_Data.size() > 1)
 				{
@@ -108,7 +83,7 @@ namespace XYZ {
 			virtual void FindComponent(uint8_t** object, uint32_t entity, uint8_t id)
 			{
 				uint32_t counter = 0;
-				for_each_in_tuple(m_Data[m_EntityDataMap[entity]].Data, [&](const auto& x) { 
+				ForEachInTuple(m_Data[m_EntityDataMap[entity]].Data, [&](const auto& x) {
 					if (m_MemoryLayout[counter++].ID == id)
 					{
 						*object = (uint8_t*)&x;
@@ -116,7 +91,7 @@ namespace XYZ {
 					}
 				});
 			}
-			virtual bool HasEntity(uint32_t entity) override
+			virtual bool HasEntity(uint32_t entity) const override
 			{
 				return m_EntityDataMap.size() > entity && m_Data.size() > m_EntityDataMap[entity] 
 				    && m_Data[m_EntityDataMap[entity]].Entity == entity;

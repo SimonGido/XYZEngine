@@ -65,7 +65,11 @@ namespace XYZ {
     private:
         ECS::ECSManager m_ECS;
 
-        ECS::ComponentGroup<TransformComponent, SpriteRenderer, SceneTagComponent>* m_RenderGroup;
+        ECS::ComponentView<TransformComponent, SpriteRenderer>* m_RenderView;
+        ECS::ComponentView<TransformComponent, ParticleComponent>* m_ParticleView;
+        ECS::ComponentView<TransformComponent, PointLight2D>* m_LightView;
+        ECS::ComponentView<NativeScriptComponent>* m_NativeScriptView;
+        ECS::ComponentView<AnimatorComponent>* m_AnimatorView;
 
         std::string m_Name;
         SceneState m_State = SceneState::Edit;

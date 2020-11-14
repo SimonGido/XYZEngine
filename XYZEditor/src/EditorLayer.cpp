@@ -86,11 +86,8 @@ namespace XYZ {
 		m_Material->SetFlags(XYZ::RenderFlags::TransparentFlag);
 
 		m_TestEntity = m_Scene->GetEntity(2);
-		auto& group = m_Scene->GetECS().GetGroup<TransformComponent, SpriteRenderer, SceneTagComponent>();
-		auto& [transform, renderer, sceneTag] = group.GetComponents(m_TestEntity);
-
-		m_SpriteRenderer = &renderer;
-		m_Transform = &transform;
+		m_SpriteRenderer = &m_TestEntity.GetComponent<SpriteRenderer>();
+		m_Transform = &m_TestEntity.GetComponent<TransformComponent>();
 
 		m_CharacterTexture = Texture2D::Create(XYZ::TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest, "Assets/Textures/player_sprite.png");
 		m_CharacterSubTexture = Ref<SubTexture2D>::Create(m_CharacterTexture, glm::vec2(0, 0), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));

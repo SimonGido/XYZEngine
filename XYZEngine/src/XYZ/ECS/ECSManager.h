@@ -26,6 +26,7 @@ namespace XYZ {
 				signature.set(T::GetComponentID(), true);
 				auto& result = m_ComponentManager.AddComponent<T>(entity, component);
 				m_ComponentManager.AddToGroup(entity, signature, this);
+				m_ComponentManager.AddToView(entity, signature);
 				return result;
 			}
 			
@@ -40,8 +41,8 @@ namespace XYZ {
 					m_ComponentManager.RemoveFromGroup(entity, T::GetComponentID(), signature, this);			
 					return true;
 				}
-				m_ComponentManager.RemoveComponent<T>(entity);
 				signature.set(T::GetComponentID(), false);
+				m_ComponentManager.RemoveComponent<T>(entity, signature);
 				return true;
 			}
 
@@ -98,7 +99,12 @@ namespace XYZ {
 				return signature.test(T::GetComponentID());
 			}
 
-		
+			template <typename T>
+			void ForceStorage()
+			{
+				m_ComponentManager.ForceStorage<T>();
+			}
+
 			template <typename T>
 			ComponentStorage<T>* GetStorage()
 			{
@@ -117,11 +123,49 @@ namespace XYZ {
 				XYZ_ASSERT(group, "Group does not exist");
 				return *(ComponentGroup<Args...>*)group;
 			}
-			
+
+			template <typename ...Args>
+			ComponentView<Args...>& GetView()
+			{
+				Signature signature;
+				std::initializer_list<uint16_t> componentTypes{ Args::GetComponentID()... };
+				for (auto it : componentTypes)
+					signature.set(it);
+
+				auto view = m_ComponentManager.GetView(signature);
+				
+				XYZ_ASSERT(view, "View does not exist");
+				return *(ComponentView<Args...>*)view;
+			}
+
 			template <typename ...Args>
 			ComponentGroup<Args...>& CreateGroup()
 			{
 				return *m_ComponentManager.CreateGroup<Args...>();
+			}
+
+			template <typename ...Args>
+			ComponentView<Args...>& CreateView()
+			{
+				auto view = m_ComponentManager.CreateView<Args...>(this);
+				for (uint32_t i = 0; i < m_EntityManager.m_Signatures.Range(); ++i)
+				{
+					const Signature& signature = m_EntityManager.m_Signatures[i];
+					if ((view->GetSignature() & signature) == view->GetSignature())
+						view->AddEntity(i);
+				}
+				return *view;
+			}
+
+			template <typename T>
+			uint32_t GetComponentIndex(uint32_t entity) const
+			{
+				return m_ComponentManager.GetComponentIndex(entity, T::GetComponentID());
+			}
+
+			uint32_t GetComponentIndex(uint32_t entity, uint8_t id) const
+			{
+				return m_ComponentManager.GetComponentIndex(entity, id);
 			}
 
 			const uint32_t GetNumberOfEntities() const { return m_EntityManager.GetNumEntities(); }

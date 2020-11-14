@@ -1,6 +1,5 @@
 #pragma once
-
-
+#include "Types.h"
 
 namespace XYZ {
 
@@ -15,7 +14,7 @@ namespace XYZ {
 			virtual ~IComponentStorage() = default;
 			virtual void AddRawComponent(uint32_t entity, uint8_t* component) = 0;
 			virtual void EntityDestroyed(uint32_t entity) = 0;
-
+			virtual uint32_t GetComponentIndex(uint32_t entity) const = 0;
 		};
 
 
@@ -40,8 +39,10 @@ namespace XYZ {
 				return m_Data[m_EntityDataMap[entity]].Data;
 			}
 
-			void RemoveComponent(uint32_t entity)
+			
+			uint32_t RemoveComponent(uint32_t entity)
 			{
+				uint32_t updatedEntity = NULL_ENTITY;
 				if (m_Data.size() > 1)
 				{
 					// Entity of last element in data pack
@@ -53,9 +54,17 @@ namespace XYZ {
 					// Point last entity to data new index;
 					m_EntityDataMap[lastEntity] = index;
 					// Pop back last element
+					updatedEntity = lastEntity;
 				}
 				m_Data.pop_back();
+				return updatedEntity;
 			}
+
+			virtual uint32_t GetComponentIndex(uint32_t entity) const override
+			{
+				return m_EntityDataMap[entity];
+			}
+
 			virtual void AddRawComponent(uint32_t entity, uint8_t* component) override
 			{
 				AddComponent(entity, *(T*)component);
@@ -63,6 +72,16 @@ namespace XYZ {
 			virtual void EntityDestroyed(uint32_t entity) override
 			{
 				RemoveComponent(entity);
+			}
+
+			T& operator[](size_t index)
+			{
+				return m_Data[index].Data;
+			}
+
+			const T& operator[](size_t index) const
+			{
+				return m_Data[index].Data;
 			}
 
 		private:

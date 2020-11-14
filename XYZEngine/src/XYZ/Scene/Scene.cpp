@@ -45,8 +45,12 @@ namespace XYZ {
 			100
 		);
 
-		m_RenderGroup = &m_ECS.CreateGroup<TransformComponent, SpriteRenderer, SceneTagComponent>();
-
+		
+		m_RenderView = &m_ECS.CreateView<TransformComponent, SpriteRenderer>();
+		m_ParticleView = &m_ECS.CreateView<TransformComponent, ParticleComponent>();
+		m_LightView = &m_ECS.CreateView<TransformComponent, PointLight2D>();
+		m_NativeScriptView = &m_ECS.CreateView<NativeScriptComponent>();
+		m_AnimatorView = &m_ECS.CreateView<AnimatorComponent>();
 	}
 
 	Scene::~Scene() 
@@ -164,26 +168,20 @@ namespace XYZ {
 		//		script->ScriptableEntity->OnUpdate(ts);
 		//}
 		
-		for (auto entity : m_Entities)
+		for (size_t i = 0; i < m_ParticleView->Size(); ++i)
 		{
-			m_ECS.GetComponent<TransformComponent>(entity);
-			if (m_ECS.Contains<ParticleComponent>(entity))
-			{
-				auto& transform = m_RenderGroup->Get<TransformComponent>(entity);
-				auto& particle = m_ECS.GetComponent<ParticleComponent>(entity);
-				auto material = particle.ComputeMaterial->GetParentMaterial();
-				auto materialInstance = particle.ComputeMaterial;
+			auto [transform, particle] = (*m_ParticleView)[i];
+			auto material = particle.ComputeMaterial->GetParentMaterial();
+			auto materialInstance = particle.ComputeMaterial;
 
-				materialInstance->Set("u_Time", ts);
-				materialInstance->Set("u_ParticlesInExistence", (int)std::ceil(particle.ParticleEffect->GetEmittedParticles()));
+			materialInstance->Set("u_Time", ts);
+			materialInstance->Set("u_ParticlesInExistence", (int)std::ceil(particle.ParticleEffect->GetEmittedParticles()));
 
-				material->Bind();
-				materialInstance->Bind();
-				particle.ParticleEffect->Update(ts);
-				material->GetShader()->Compute(32, 32, 1);
-			}
-		}
-		
+			material->Bind();
+			materialInstance->Bind();
+			particle.ParticleEffect->Update(ts);
+			material->GetShader()->Compute(32, 32, 1);
+		}	
 	}
 
 	void Scene::OnRenderEditor(const EditorCamera& camera)
@@ -205,35 +203,29 @@ namespace XYZ {
 		SceneRenderer::SetGridProperties({ gridTransform,{8.025f * (cameraWidth / camera.GetZoomLevel()), 8.025f * (cameraHeight / camera.GetZoomLevel())},0.025f });
 		SceneRenderer::BeginScene(this, renderCamera);
 		
-		
-		for (auto entity : m_Entities)
-		{	
-			if (m_RenderGroup->HasEntity(entity))
-			{
-				auto& [transform, renderer, sceneTag] = m_RenderGroup->GetComponents(entity);
-				SceneRenderer::SubmitSprite(&renderer, transform.GetTransform());
-			}		
-			if (m_ECS.Contains<ParticleComponent>(entity))
-			{
-				auto& particle = m_ECS.GetStorageComponent<ParticleComponent>(entity);
-				auto& transform = m_ECS.GetComponent<TransformComponent>(entity);
-				SceneRenderer::SubmitParticles(&particle, transform.GetTransform());
-			}
-			if (m_ECS.Contains<PointLight2D>(entity))
-			{
-				auto& light = m_ECS.GetStorageComponent<PointLight2D>(entity);
-				auto& transform = m_ECS.GetComponent<TransformComponent>(entity);
-				SceneRenderer::SubmitLight(&light, transform.GetTransform());
-			}
-		}
+		for (size_t i = 0; i < m_RenderView->Size(); ++i)
 		{
-			if (m_SelectedEntity < MAX_ENTITIES)
-			{
-				if (m_ECS.Contains<CameraComponent>(m_SelectedEntity))
-					showCamera(m_SelectedEntity);
-				else
-					showSelection(m_SelectedEntity);
-			}
+			auto [transform, renderer] = (*m_RenderView)[i];
+			SceneRenderer::SubmitSprite(&renderer, transform.GetTransform());
+		}
+		for (size_t i = 0; i < m_ParticleView->Size(); ++i)
+		{
+			auto [transform, particle] = (*m_ParticleView)[i];
+			SceneRenderer::SubmitParticles(&particle, transform.GetTransform());
+		}
+
+		for (size_t i = 0; i < m_LightView->Size(); ++i)
+		{
+			auto [transform, light] = (*m_LightView)[i];
+			SceneRenderer::SubmitLight(&light, transform.GetTransform());
+		}
+
+		if (m_SelectedEntity < MAX_ENTITIES)
+		{
+			if (m_ECS.Contains<CameraComponent>(m_SelectedEntity))
+				showCamera(m_SelectedEntity);
+			else
+				showSelection(m_SelectedEntity);
 		}
 		SceneRenderer::EndScene();	
 	}
