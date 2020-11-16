@@ -55,6 +55,7 @@
 #include "XYZ/Gui/Text.h"
 #include "XYZ/Gui/Button.h"
 #include "XYZ/Gui/Checkbox.h"
+#include "XYZ/Gui/Dockspace.h"
 
 
 #include "XYZ/FSM/StateMachine.h"

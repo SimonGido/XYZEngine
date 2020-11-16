@@ -38,6 +38,7 @@ namespace XYZ {
 
 	EditorLayer::~EditorLayer()
 	{
+		delete m_Dockspace;
 	}
 
 	void EditorLayer::OnAttach()
@@ -169,66 +170,84 @@ namespace XYZ {
 		uint32_t canvas = m_GuiContext->CreateCanvas(CanvasSpecification(
 				CanvasRenderMode::ScreenSpace,
 				glm::vec3(0.0f),
-				glm::vec2(300, windowHeight),
+				glm::vec2(windowWidth, windowHeight),
 				glm::vec4(0.0f)
 		));
 
-		auto& layout = m_ECS.AddComponent<LayoutGroup>(canvas, LayoutGroup());
-		layout.CellSpacing.x = 10.0f;
-		layout.CellSpacing.y = 10.0f;
+		//auto& layout = m_ECS.AddComponent<LayoutGroup>(canvas, LayoutGroup());
+		//layout.CellSpacing.x = 10.0f;
+		//layout.CellSpacing.y = 10.0f;
 
-		for (int i = 0; i < 10; ++i)
-		{
-			uint32_t editorEntity = m_GuiContext->CreateButton(canvas,
-				ButtonSpecification{
-					"Button",
-					glm::vec3(i * 50,i * 50, 0.0f),
-					glm::vec2(50.0f,50.0f),
-					glm::vec4(1.0f,1.0f,1.0f,1.0f),
-					glm::vec4(0.4f, 1.0f, 0.8f, 1.0f),
-					glm::vec4(1.0f, 0.5f, 0.8f, 1.0f)
-			});
-
-			m_ECS.GetComponent<Button>(editorEntity).RegisterCallback<ClickEvent>(Hook(&EditorLayer::onButtonClickTest, this));
-			m_EditorEntities.push_back(editorEntity);
-		}
+		//for (int i = 0; i < 10; ++i)
+		//{
+		//	uint32_t editorEntity = m_GuiContext->CreateButton(canvas,
+		//		ButtonSpecification{
+		//			"Button",
+		//			glm::vec3(i * 50,i * 50, 0.0f),
+		//			glm::vec2(50.0f,50.0f),
+		//			glm::vec4(1.0f,1.0f,1.0f,1.0f),
+		//			glm::vec4(0.4f, 1.0f, 0.8f, 1.0f),
+		//			glm::vec4(1.0f, 0.5f, 0.8f, 1.0f)
+		//	});
+		//
+		//	m_ECS.GetComponent<Button>(editorEntity).RegisterCallback<ClickEvent>(Hook(&EditorLayer::onButtonClickTest, this));
+		//	m_EditorEntities.push_back(editorEntity);
+		//}
+		//
+		//for (int i = 0; i < 10; ++i)
+		//{
+		//	uint32_t editorEntity = m_GuiContext->CreateCheckbox(canvas,
+		//		CheckboxSpecification{
+		//			"Checkbox",
+		//			glm::vec3(i * 70, -70.0f, 0.0f),
+		//			glm::vec2(50.0f,50.0f),
+		//			glm::vec4(1.0f,1.0f,1.0f,1.0f),
+		//			glm::vec4(1.0f, 0.5f, 0.8f, 1.0f)
+		//		});
+		//
+		//	m_ECS.GetComponent<Checkbox>(editorEntity).RegisterCallback<CheckedEvent>(Hook(&EditorLayer::onCheckboxCheckedTest, this));
+		//	m_EditorEntities.push_back(editorEntity);
+		//}
+		//for (int i = 0; i < 10; ++i)
+		//{
+		//	uint32_t editorEntity = m_GuiContext->CreateText(canvas,
+		//		TextSpecification{
+		//			TextAlignment::Center,
+		//			"Checkbox",
+		//			glm::vec3(i * 70, -140.0f, 0.0f),
+		//			glm::vec2(50.0f,50.0f),
+		//			glm::vec4(1.0f, 0.5f, 0.8f, 1.0f)
+		//		});
+		//
+		//	m_EditorEntities.push_back(editorEntity);
+		//}
+		//
+		//auto& rectTransform = m_ECS.GetComponent<RectTransform>(m_EditorEntities.back());
+		//auto& text = m_ECS.GetComponent<Text>(m_EditorEntities.back());
+		//rectTransform.Size.x += 50;
+		//
+		//rectTransform.Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent(
+		//	m_EditorEntities.back(), TextCanvasRendererRebuild()
+		//));
 		
-		for (int i = 0; i < 10; ++i)
-		{
-			uint32_t editorEntity = m_GuiContext->CreateCheckbox(canvas,
-				CheckboxSpecification{
-					"Checkbox",
-					glm::vec3(i * 70, -70.0f, 0.0f),
-					glm::vec2(50.0f,50.0f),
-					glm::vec4(1.0f,1.0f,1.0f,1.0f),
-					glm::vec4(1.0f, 0.5f, 0.8f, 1.0f)
-				});
-
-			m_ECS.GetComponent<Checkbox>(editorEntity).RegisterCallback<CheckedEvent>(Hook(&EditorLayer::onCheckboxCheckedTest, this));
-			m_EditorEntities.push_back(editorEntity);
-		}
-		for (int i = 0; i < 10; ++i)
-		{
-			uint32_t editorEntity = m_GuiContext->CreateText(canvas,
-				TextSpecification{
-					TextAlignment::Center,
-					"Checkbox",
-					glm::vec3(i * 70, -140.0f, 0.0f),
-					glm::vec2(50.0f,50.0f),
-					glm::vec4(1.0f, 0.5f, 0.8f, 1.0f)
-				});
-
-			m_EditorEntities.push_back(editorEntity);
-		}
-
-		auto& rectTransform = m_ECS.GetComponent<RectTransform>(m_EditorEntities.back());
-		auto& text = m_ECS.GetComponent<Text>(m_EditorEntities.back());
-		rectTransform.Size.x += 50;
-		
-		rectTransform.Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent(
-			m_EditorEntities.back(), TextCanvasRendererRebuild()
+		m_Dockspace = new Dockspace(&m_ECS, m_GuiContext);
+		m_Dockspace->CreatePanel(canvas, "Opica", PanelSpecification(
+			glm::vec3(-200.0f),
+			glm::vec2(300.0f),
+			glm::vec4(1.0f)
 		));
-		
+
+		m_Dockspace->CreatePanel(canvas, "Havkac", PanelSpecification(
+			glm::vec3(200.0f),
+			glm::vec2(300.0f),
+			glm::vec4(1.0f)
+		));
+
+		m_Dockspace->CreatePanel(canvas, "Zemiak", PanelSpecification(
+			glm::vec3(-400.0f),
+			glm::vec2(300.0f),
+			glm::vec4(1.0f)
+		));
 	}	
 
 
@@ -247,14 +266,15 @@ namespace XYZ {
 		m_EditorCamera.OnUpdate(ts);
 		m_Scene->OnUpdate(ts);
 		m_Scene->OnRenderEditor(m_EditorCamera);
-		
-		static bool test = true;
-		if (test)
-		{
-			test = false;
-			auto texture = SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer->CreateTextureFromColorAttachment(0);		
-			m_GuiContext->CreateImage(0, Ref<SubTexture2D>::Create(texture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)));
-		}
+		m_Dockspace->OnUpdate(ts);
+
+		//static bool test = true;
+		//if (test)
+		//{
+		//	test = false;
+		//	auto texture = SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer->CreateTextureFromColorAttachment(0);		
+		//	uint32_t entity = m_GuiContext->CreateImage(0, Ref<SubTexture2D>::Create(texture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)));
+		//}
 	}
 	void EditorLayer::OnEvent(Event& event)
 	{			
@@ -262,6 +282,7 @@ namespace XYZ {
 		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&EditorLayer::onMouseButtonPress, this));
 		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorLayer::onMouseButtonRelease, this));	
 		m_EditorCamera.OnEvent(event);
+		m_Dockspace->OnEvent(event);
 	}
 
 	

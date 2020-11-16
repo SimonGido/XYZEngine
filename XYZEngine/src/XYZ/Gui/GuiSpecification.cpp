@@ -17,10 +17,11 @@ namespace XYZ {
 		const glm::vec2& size,
 		const glm::vec4& defaultColor,
 		const glm::vec4& clickColor,
-		const glm::vec4& hooverColor
+		const glm::vec4& hooverColor,
+		uint32_t		 sortLayer
 	)
 		:
-		Name(name), Position(position), Size(size), DefaultColor(defaultColor), ClickColor(clickColor), HooverColor(hooverColor)
+		Name(name), Position(position), Size(size), DefaultColor(defaultColor), ClickColor(clickColor), HooverColor(hooverColor), SortLayer(sortLayer)
 	{
 	}
 	CheckboxSpecification::CheckboxSpecification(
@@ -44,7 +45,7 @@ namespace XYZ {
 		Color(color)
 	{
 	}
-	PanelSpecification::PanelSpecification(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
+	PanelSpecification::PanelSpecification( const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
 		:
 		Position(position),
 		Size(size),

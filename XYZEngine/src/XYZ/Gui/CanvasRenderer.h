@@ -14,7 +14,7 @@ namespace XYZ {
 			Ref<SubTexture2D> SubTexture,
 			glm::vec4		  Color,
 			const Mesh&		  mesh,
-			int32_t			  sortLayer,
+			uint32_t			  sortLayer,
 			bool			  isVisible = true
 		);
 
@@ -27,7 +27,7 @@ namespace XYZ {
 		Ref<SubTexture2D> SubTexture;
 		glm::vec4		  Color;
 		Mesh			  Mesh;
-		int32_t			  SortLayer = 0;
+		uint32_t			  SortLayer = 0;
 		float			  TilingFactor = 1.0f;
 		bool			  IsVisible = true;
 	};

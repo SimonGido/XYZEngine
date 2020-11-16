@@ -1,4 +1,5 @@
 #pragma once
+#include "XYZ/ECS/ECSManager.h"
 #include "XYZ/ECS/Component.h"
 #include "XYZ/ECS/Types.h"
 #include "XYZ/Particle/ParticleEffect.h"
@@ -57,7 +58,7 @@ namespace XYZ {
 			Ref<Material> material,
 			Ref<SubTexture2D> subTexture,
 			const glm::vec4& color,
-			int32_t sortLayer,
+			uint32_t sortLayer,
 			bool isVisible = true
 		);
 
@@ -71,7 +72,7 @@ namespace XYZ {
 		Ref<SubTexture2D> SubTexture;
 		glm::vec4 Color;
 
-		int32_t SortLayer = 0;
+		uint32_t SortLayer = 0;
 		bool IsVisible = true;
 	};
 
@@ -130,5 +131,8 @@ namespace XYZ {
 		uint32_t FirstChild		 = NULL_ENTITY;
 		uint32_t PreviousSibling = NULL_ENTITY;
 		uint32_t NextSibling	 = NULL_ENTITY;
+
+		static void SetupRelation(uint32_t parent, uint32_t child, ECS::ECSManager& ecs);
+		static void RemoveRelation(uint32_t child, ECS::ECSManager& ecs);
 	};
 }

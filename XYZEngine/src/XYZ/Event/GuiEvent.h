@@ -7,12 +7,14 @@ namespace XYZ {
 
 	struct ClickEvent : public Event
 	{
-		ClickEvent()	
-			: m_Type(EventType::Click)
+		ClickEvent(uint32_t entity)	
+			: m_Type(EventType::Click),m_Entity(entity)
 		{
 		}
 
 		virtual EventType GetEventType() const override { return m_Type; }
+
+		uint32_t GetEntity() const { return m_Entity; }
 
 		static EventType GetStaticType()
 		{
@@ -21,16 +23,18 @@ namespace XYZ {
 
 	private:
 		EventType m_Type;
+		uint32_t m_Entity;
 	};
 
 	struct ReleaseEvent : public Event
 	{
-		ReleaseEvent()
-			: m_Type(EventType::Release)
+		ReleaseEvent(uint32_t entity)
+			: m_Type(EventType::Release), m_Entity(entity)
 		{
 		}
 
 		virtual EventType GetEventType() const override { return m_Type; }
+		uint32_t GetEntity() const { return m_Entity; }
 		static EventType GetStaticType()
 		{
 			return EventType::Release;
@@ -38,6 +42,7 @@ namespace XYZ {
 
 	private:
 		EventType m_Type;
+		uint32_t m_Entity;
 	};
 
 	struct CheckedEvent : public Event

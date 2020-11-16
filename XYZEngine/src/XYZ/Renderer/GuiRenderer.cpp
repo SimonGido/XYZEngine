@@ -47,6 +47,9 @@ namespace XYZ {
 		glm::mat4 viewProjectionMatrix = s_Data.RendererCamera.Camera.GetProjectionMatrix() * s_Data.RendererCamera.ViewMatrix;
 		Renderer2D::BeginScene(viewProjectionMatrix, glm::vec2(0, 0));
 		
+		std::sort(s_Data.WidgetDrawList.begin(), s_Data.WidgetDrawList.end(), [](const GuiRendererData::WidgetDrawCommand& a, const GuiRendererData::WidgetDrawCommand& b) {
+			return a.Renderer->SortLayer < b.Renderer->SortLayer;
+		});
 	
 		for (auto& dc : s_Data.WidgetDrawList)
 		{	

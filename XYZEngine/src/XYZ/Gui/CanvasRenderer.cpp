@@ -8,7 +8,7 @@ namespace XYZ {
 		Ref<SubTexture2D>      subTexture,
 		glm::vec4		       color,
 		const XYZ::Mesh&	   mesh,
-		int32_t				   sortLayer,
+		uint32_t			   sortLayer,
 		bool			       isVisible
 	)
 		:

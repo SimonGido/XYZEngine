@@ -15,6 +15,7 @@ namespace XYZ {
 
 		clickState.AllowTransition(releaseState.GetID());
 		releaseState.AllowTransition(clickState.GetID());
+
 		releaseState.AllowTransition(hooverState.GetID());
 		unHooverState.AllowTransition(hooverState.GetID());
 		hooverState.AllowTransition(clickState.GetID());

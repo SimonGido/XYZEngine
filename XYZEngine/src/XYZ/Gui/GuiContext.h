@@ -59,6 +59,7 @@ namespace XYZ {
 		void OnUpdate(Timestep ts);
 		void OnRender();
 
+		uint32_t GetCanvas(size_t index) const { return m_Canvases[index]; }
 	private:
 		// Only gui layer can create new context
 		GuiContext(ECS::ECSManager* ecs, const GuiSpecification& specs);
@@ -80,10 +81,6 @@ namespace XYZ {
 		// Update functions
 		void submitToRenderer(uint32_t entity, const glm::vec3& parentPosition);
 		void applyLayout(const LayoutGroup& layout, const Relationship& parentRel, const RectTransform& transform);
-
-		// Relation ship helper functions
-		void setupParent(uint32_t parent, uint32_t child);
-		void removeParent(uint32_t entity);
 	private:
 		//Tree m_Entities;
 		Camera m_Camera;

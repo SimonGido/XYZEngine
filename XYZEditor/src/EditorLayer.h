@@ -9,7 +9,6 @@
 #include <glm/gtc/type_ptr.hpp>
 
 
-// TODO: solve fragmentation
 namespace XYZ {
 
 	class EditorLayer : public Layer
@@ -45,6 +44,8 @@ namespace XYZ {
 	private:	
 		ECS::ECSManager m_ECS;
 		GuiContext* m_GuiContext = nullptr;
+		Dockspace* m_Dockspace;
+
 		Entity m_TestEntity;
 
 		SpriteRenderer* m_SpriteRenderer;

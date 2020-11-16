@@ -5,7 +5,7 @@
 
 
 namespace XYZ {
-	SpriteRenderer::SpriteRenderer(XYZ::Ref<XYZ::Material> material, Ref<XYZ::SubTexture2D> subTexture, const glm::vec4& color, int32_t sortLayer, bool isVisible)
+	SpriteRenderer::SpriteRenderer(XYZ::Ref<XYZ::Material> material, Ref<XYZ::SubTexture2D> subTexture, const glm::vec4& color, uint32_t sortLayer, bool isVisible)
 		:
 		Material(material),
 		SubTexture(subTexture),
@@ -43,6 +43,74 @@ namespace XYZ {
 		IsVisible = other.IsVisible;
 
 		return *this;
+	}
+
+	void Relationship::SetupRelation(uint32_t parent, uint32_t child, ECS::ECSManager& ecs)
+	{
+		auto& parentRel = ecs.GetComponent<Relationship>(parent);
+		auto& childRel = ecs.GetComponent<Relationship>(child);
+
+		childRel.Parent = parent;
+		if (parentRel.FirstChild != NULL_ENTITY)
+		{
+			// Parent has first child
+			auto& parentFirstChildRel = ecs.GetComponent<Relationship>(parentRel.FirstChild);
+			// Set new child of parent as previous sibling of first child
+			parentFirstChildRel.PreviousSibling = child;
+			childRel.NextSibling = parentRel.FirstChild;
+			parentRel.FirstChild = child;
+		}
+		else
+		{
+			parentRel.FirstChild = child;
+		}
+	}
+
+	void Relationship::RemoveRelation(uint32_t child, ECS::ECSManager& ecs)
+	{
+		auto& childRel =  ecs.GetComponent<Relationship>(child);
+		auto& parentRel = ecs.GetComponent<Relationship>(childRel.Parent);
+
+		// Not siblings ( must be first child of parent )
+		if (childRel.NextSibling == NULL_ENTITY && childRel.PreviousSibling == NULL_ENTITY)
+		{
+			childRel.Parent = NULL_ENTITY;
+			parentRel.FirstChild = NULL_ENTITY;
+		}
+
+		uint32_t current = parentRel.FirstChild;
+		if (child == current) // If child is first child of parent
+		{
+			auto& currentRel = ecs.GetComponent<Relationship>(current);
+			if (currentRel.NextSibling != NULL_ENTITY)
+			{
+				auto& nextRel = ecs.GetComponent<Relationship>(currentRel.NextSibling);
+				nextRel.PreviousSibling = NULL_ENTITY;
+				parentRel.FirstChild = currentRel.NextSibling;
+			}
+		}
+		else // Else find where it is and remove from hierarchy
+		{
+			while (current != NULL_ENTITY)
+			{
+				auto& currentRel = ecs.GetComponent<Relationship>(current);
+				if (current == child)
+				{
+					if (currentRel.PreviousSibling != NULL_ENTITY)
+					{
+						auto& prevRel = ecs.GetComponent<Relationship>(currentRel.PreviousSibling);
+						prevRel.NextSibling = currentRel.NextSibling;
+					}
+					if (currentRel.NextSibling != NULL_ENTITY)
+					{
+						auto& nextRel = ecs.GetComponent<Relationship>(currentRel.NextSibling);
+						nextRel.PreviousSibling = currentRel.PreviousSibling;
+					}
+					return;
+				}
+				current = currentRel.NextSibling;
+			}
+		}
 	}
 
 }

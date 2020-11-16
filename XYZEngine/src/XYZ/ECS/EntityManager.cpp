@@ -10,6 +10,7 @@ namespace XYZ {
 		}
 		uint32_t EntityManager::CreateEntity()
 		{
+			m_EntitiesInUse++;
 			XYZ_ASSERT(m_EntitiesInUse < MAX_ENTITIES, "Too many entities in existence.");
 			return m_Signatures.Insert(Signature(0));		
 		}
