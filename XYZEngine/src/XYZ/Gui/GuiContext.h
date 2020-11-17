@@ -7,6 +7,7 @@
 #include "XYZ/Renderer/Camera.h"
 #include "XYZ/Renderer/SubTexture2D.h"
 #include "XYZ/Scene/Components.h"
+#include "XYZ/Core/Ref.h"
 
 #include "Canvas.h"
 #include "Button.h"
@@ -38,7 +39,7 @@ namespace XYZ {
 
 	using Tree = std::vector<Node>;
 
-	class GuiContext
+	class GuiContext : public RefCount
 	{
 	public:
 		// Templates to create widgets
@@ -47,9 +48,7 @@ namespace XYZ {
 		uint32_t CreateButton(uint32_t canvas, const ButtonSpecification& specs);
 		uint32_t CreateCheckbox(uint32_t canvas, const CheckboxSpecification& specs);
 		uint32_t CreateText(uint32_t canvas, const TextSpecification& specs);
-
-		// TODO: Not finished just testing
-		uint32_t CreateImage(uint32_t canvas, const Ref<SubTexture2D>& subTexture);
+		uint32_t CreateImage(uint32_t canvas, const ImageSpecification& specs);
 	
 		//uint32_t CreateSlider(uint32_t canvas);
 

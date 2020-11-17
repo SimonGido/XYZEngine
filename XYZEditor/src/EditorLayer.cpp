@@ -48,7 +48,7 @@ namespace XYZ {
 		uint8_t* pixels = (uint8_t*)stbi_load("Assets/Textures/Gui/Prohibited.png", &width, &height, &channels, 0);
 		m_ProhibitedCursor = Application::Get().GetWindow().CreateCustomCursor(pixels, width, height, width / 2.0f, height / 2.0f);
 		
-
+		
 		Renderer::Init();
 		NativeScriptEngine::Init();
 
@@ -248,6 +248,8 @@ namespace XYZ {
 			glm::vec2(300.0f),
 			glm::vec4(1.0f)
 		));
+
+		Renderer::WaitAndRender();
 	}	
 
 
@@ -268,13 +270,18 @@ namespace XYZ {
 		m_Scene->OnRenderEditor(m_EditorCamera);
 		m_Dockspace->OnUpdate(ts);
 
-		//static bool test = true;
-		//if (test)
-		//{
-		//	test = false;
-		//	auto texture = SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer->CreateTextureFromColorAttachment(0);		
-		//	uint32_t entity = m_GuiContext->CreateImage(0, Ref<SubTexture2D>::Create(texture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)));
-		//}
+		static bool test = true;
+		if (test)
+		{
+			test = false;
+			auto texture = SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer->CreateTextureFromColorAttachment(0);		
+			uint32_t entity = m_Dockspace->CreateRenderWindow(0, "Scene", ImageSpecification(
+				Ref<SubTexture2D>::Create(texture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)),
+				glm::vec3(0.0f),
+				glm::vec2(400.0f),
+				glm::vec4(1.0f)
+			));
+		}
 	}
 	void EditorLayer::OnEvent(Event& event)
 	{			

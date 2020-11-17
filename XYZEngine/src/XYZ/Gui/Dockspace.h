@@ -45,6 +45,7 @@ namespace XYZ {
 
 
 		uint32_t CreatePanel(uint32_t canvas, const std::string& name, const PanelSpecification& specs);
+		uint32_t CreateRenderWindow(uint32_t canvas, const std::string& name, const ImageSpecification& specs);
 
 	private:
 		bool onMouseButtonPress(MouseButtonPressEvent& event);
@@ -52,11 +53,16 @@ namespace XYZ {
 		bool onButtonPress(ClickEvent& event);
 		bool onButtonRelease(ReleaseEvent& event);
 
+		void handleResize();
+		uint32_t findResize(uint32_t nodeEntity, const glm::vec2& mousePosition);
+
 		void updateEntities(uint32_t nodeEntity);
 		void destroyNode(uint32_t nodeEntity);
-		bool removeFromNode(uint32_t nodeEntity, uint32_t entity);
+		void adjustEntityTransform(uint32_t nodeEntity, uint32_t entity);
 		void insertToNode(uint32_t nodeEntity, uint32_t entity);
-		uint32_t splitNode(uint32_t entity, SplitType type, const glm::vec2& mousePosition);
+		bool removeFromNode(uint32_t nodeEntity, uint32_t entity);
+		void resizeNode(uint32_t nodeEntity, const glm::vec3& positionDiff, const glm::vec2& sizeDiff);
+		uint32_t splitNode(uint32_t nodeEntity, SplitType type, const glm::vec2& mousePosition);
 		uint32_t createNode(uint32_t parent, const glm::vec3& position, const glm::vec2& size);
 		uint32_t findNode(uint32_t entity, const glm::vec2& mousePosition);
 		SplitType resolveSplit(uint32_t nodeEntity, const glm::vec2& mousePosition);
@@ -67,7 +73,19 @@ namespace XYZ {
 		uint32_t m_RootEntity;
 		
 		uint32_t m_ModifiedEntity = NULL_ENTITY;
+
 		glm::vec2 m_MouseOffset = glm::vec2(0.0f);
+
+		struct ResizeData
+		{
+			float	  Border;
+			float	  FirstSize;
+			float	  SecondSize;
+			uint32_t  Entity = NULL_ENTITY;
+			SplitType Type = SplitType::None;
+		};
+
+		ResizeData m_ResizeData;
 
 		GuiContext* m_Context;
 	};

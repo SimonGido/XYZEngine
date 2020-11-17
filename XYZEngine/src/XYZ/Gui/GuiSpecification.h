@@ -109,4 +109,20 @@ namespace XYZ {
 		glm::vec4 Color;
 	};
 
+
+	struct ImageSpecification
+	{
+		ImageSpecification(
+			const Ref<SubTexture2D>& subTexture,
+			const glm::vec3& position,
+			const glm::vec2& size,
+			const glm::vec4& color
+		);
+
+		Ref<SubTexture2D> SubTexture;
+		glm::vec3 Position;
+		glm::vec2 Size;
+		glm::vec4 Color;
+	};
+
 }
