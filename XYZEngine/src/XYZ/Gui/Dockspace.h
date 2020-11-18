@@ -58,6 +58,7 @@ namespace XYZ {
 
 		void updateEntities(uint32_t nodeEntity);
 		void destroyNode(uint32_t nodeEntity);
+		void adjustNodeChildren(uint32_t nodeEntity);
 		void adjustEntityTransform(uint32_t nodeEntity, uint32_t entity);
 		void insertToNode(uint32_t nodeEntity, uint32_t entity);
 		bool removeFromNode(uint32_t nodeEntity, uint32_t entity);

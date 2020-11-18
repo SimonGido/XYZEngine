@@ -259,16 +259,18 @@ namespace XYZ {
 			else if (m_ResizeData.Type == SplitType::Vertical)
 			{
 				float dist = m_ResizeData.Border - mousePosition.x;
-				glm::vec3 bottomPosition = { m_ResizeData.Border - (m_ResizeData.FirstSize / 2.0f) - (dist / 2.0f), dockNode.Position.y, 0.0f };
-				glm::vec2 bottomSize = { m_ResizeData.FirstSize - dist, dockNode.Size.y };
-				glm::vec3 topPosition = { m_ResizeData.Border + (m_ResizeData.SecondSize / 2.0f) - dist / 2.0f, dockNode.Position.y, 0.0f };
-				glm::vec2 topSize = { m_ResizeData.SecondSize + dist, dockNode.Size.y };
+				glm::vec3 leftPosition = { m_ResizeData.Border - (m_ResizeData.FirstSize / 2.0f) - (dist / 2.0f), dockNode.Position.y, 0.0f };
+				glm::vec2 leftSize = { m_ResizeData.FirstSize - dist, dockNode.Size.y };
+				glm::vec3 rightPosition = { m_ResizeData.Border + (m_ResizeData.SecondSize / 2.0f) - dist / 2.0f, dockNode.Position.y, 0.0f };
+				glm::vec2 rightSize = { m_ResizeData.SecondSize + dist, dockNode.Size.y };
 
-				firstDockNode.Position = bottomPosition;
-				firstDockNode.Size = bottomSize;
-				secondDockNode.Position = topPosition;
-				secondDockNode.Size = topSize;
+				firstDockNode.Position =leftPosition;
+				firstDockNode.Size = leftSize;
+				secondDockNode.Position = rightPosition;
+				secondDockNode.Size = rightSize;
 			}
+			adjustNodeChildren(rel.FirstChild);
+			adjustNodeChildren(childRel.NextSibling);
 			updateEntities(m_ResizeData.Entity);
 		}
 	}
@@ -381,6 +383,44 @@ namespace XYZ {
 		
 		Relationship::RemoveRelation(nodeEntity, *m_ECS);
 		m_ECS->DestroyEntity(nodeEntity);
+	}
+	void Dockspace::adjustNodeChildren(uint32_t nodeEntity)
+	{
+		auto& rel = m_ECS->GetStorageComponent<Relationship>(nodeEntity);
+		auto& dockNode = m_ECS->GetStorageComponent<DockNodeComponent>(nodeEntity);
+
+		uint32_t current = rel.FirstChild;
+		if (current != NULL_ENTITY)
+		{
+			uint32_t sibling = m_ECS->GetStorageComponent<Relationship>(current).NextSibling;
+			auto& firstDockNode = m_ECS->GetStorageComponent<DockNodeComponent>(current);
+			auto& secondDockNode = m_ECS->GetStorageComponent<DockNodeComponent>(sibling);
+
+			if (dockNode.Split == SplitType::Horizontal)
+			{
+				firstDockNode.Position.x = dockNode.Position.x;
+				firstDockNode.Size.x = dockNode.Size.x;
+				
+				secondDockNode.Position.x = dockNode.Position.x;
+				secondDockNode.Size.x = dockNode.Size.x;
+
+				secondDockNode.Size.y = dockNode.Size.y - firstDockNode.Size.y;
+				secondDockNode.Position.y = firstDockNode.Position.y + (firstDockNode.Size.y / 2.0f) + (secondDockNode.Size.y / 2.0f);
+			}
+			else if (dockNode.Split == SplitType::Vertical)
+			{
+				firstDockNode.Position.y = dockNode.Position.y;
+				firstDockNode.Size.y = dockNode.Size.y;
+
+				secondDockNode.Position.y = dockNode.Position.y;
+				secondDockNode.Size.y = dockNode.Size.y;
+
+				firstDockNode.Size.x = dockNode.Size.x - secondDockNode.Size.x;
+				firstDockNode.Position.x = secondDockNode.Position.x - (secondDockNode.Size.x / 2.0f) - (firstDockNode.Size.x / 2.0f);
+			}	
+			adjustNodeChildren(current);
+			adjustNodeChildren(sibling);
+		}
 	}
 	void Dockspace::adjustEntityTransform(uint32_t nodeEntity, uint32_t entity)
 	{
