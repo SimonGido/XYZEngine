@@ -249,6 +249,18 @@ namespace XYZ {
 			glm::vec4(1.0f)
 		));
 
+		m_Dockspace->CreatePanel(canvas, "Kostovnik", PanelSpecification(
+			glm::vec3(-400.0f),
+			glm::vec2(300.0f),
+			glm::vec4(1.0f)
+		));
+
+		m_Dockspace->CreatePanel(canvas, "Pelengac", PanelSpecification(
+			glm::vec3(-400.0f),
+			glm::vec2(300.0f),
+			glm::vec4(1.0f)
+		));
+
 		Renderer::WaitAndRender();
 	}	
 

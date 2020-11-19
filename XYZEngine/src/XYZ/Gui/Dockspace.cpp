@@ -264,7 +264,7 @@ namespace XYZ {
 				glm::vec3 rightPosition = { m_ResizeData.Border + (m_ResizeData.SecondSize / 2.0f) - dist / 2.0f, dockNode.Position.y, 0.0f };
 				glm::vec2 rightSize = { m_ResizeData.SecondSize + dist, dockNode.Size.y };
 
-				firstDockNode.Position =leftPosition;
+				firstDockNode.Position = leftPosition;
 				firstDockNode.Size = leftSize;
 				secondDockNode.Position = rightPosition;
 				secondDockNode.Size = rightSize;
@@ -415,8 +415,15 @@ namespace XYZ {
 				secondDockNode.Position.y = dockNode.Position.y;
 				secondDockNode.Size.y = dockNode.Size.y;
 
-				firstDockNode.Size.x = dockNode.Size.x - secondDockNode.Size.x;
-				firstDockNode.Position.x = secondDockNode.Position.x - (secondDockNode.Size.x / 2.0f) - (firstDockNode.Size.x / 2.0f);
+				float oldSize = firstDockNode.Size.x + secondDockNode.Size.x;
+				float scaleFirst = firstDockNode.Size.x / oldSize;
+				float scaleSecond = secondDockNode.Size.x / oldSize;
+
+				firstDockNode.Size.x = dockNode.Size.x * scaleFirst;
+				secondDockNode.Size.x = dockNode.Size.x * scaleSecond;
+
+				firstDockNode.Position.x  = (dockNode.Position.x - dockNode.Size.x / 2.0f) + (firstDockNode.Size.x / 2.0f);
+				secondDockNode.Position.x = (firstDockNode.Position.x + firstDockNode.Size.x / 2.0f) + (secondDockNode.Size.x / 2.0f);
 			}	
 			adjustNodeChildren(current);
 			adjustNodeChildren(sibling);
