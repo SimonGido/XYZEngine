@@ -231,37 +231,129 @@ namespace XYZ {
 		//));
 		
 		m_Dockspace = new Dockspace(&m_ECS, m_GuiContext);
-		m_Dockspace->CreatePanel(canvas, "Opica", PanelSpecification(
+		
+		uint32_t opicaEntity = m_Dockspace->CreatePanel(canvas, "Opica", PanelSpecification(
 			glm::vec3(-200.0f),
 			glm::vec2(300.0f),
 			glm::vec4(1.0f)
 		));
+		auto& layout = m_ECS.AddComponent<LayoutGroup>(opicaEntity, LayoutGroup());
+		layout.CellSpacing.x = 10.0f;
+		layout.CellSpacing.y = 10.0f;
+		layout.Padding.Top = 35.0f;
 
-		m_Dockspace->CreatePanel(canvas, "Havkac", PanelSpecification(
+		for (int i = 0; i < 20; ++i)
+		{
+			uint32_t editorEntity = m_GuiContext->CreateButton(opicaEntity,
+				ButtonSpecification{
+					"Button",
+					glm::vec3(i * 50,i * 50, 0.0f),
+					glm::vec2(50.0f,50.0f),
+					glm::vec4(1.0f,1.0f,1.0f,1.0f),
+					glm::vec4(0.4f, 1.0f, 0.8f, 1.0f),
+					glm::vec4(1.0f, 0.5f, 0.8f, 1.0f),
+					1
+				});
+		}
+
+		
+
+
+		auto havkac = m_Dockspace->CreatePanel(canvas, "Havkac", PanelSpecification(
 			glm::vec3(200.0f),
 			glm::vec2(300.0f),
 			glm::vec4(1.0f)
 		));
 
-		m_Dockspace->CreatePanel(canvas, "Zemiak", PanelSpecification(
+		m_ECS.AddComponent<LayoutGroup>(havkac, LayoutGroup());
+		for (int i = 0; i < 20; ++i)
+		{
+			uint32_t editorEntity = m_GuiContext->CreateButton(havkac,
+				ButtonSpecification{
+					"Button",
+					glm::vec3(i * 50,i * 50, 0.0f),
+					glm::vec2(50.0f,50.0f),
+					glm::vec4(1.0f,1.0f,1.0f,1.0f),
+					glm::vec4(0.4f, 1.0f, 0.8f, 1.0f),
+					glm::vec4(1.0f, 0.5f, 0.8f, 1.0f),
+					1
+				});
+		}
+
+
+		auto zemiak = m_Dockspace->CreatePanel(canvas, "Zemiak", PanelSpecification(
 			glm::vec3(-400.0f),
 			glm::vec2(300.0f),
 			glm::vec4(1.0f)
 		));
 
-		m_Dockspace->CreatePanel(canvas, "Kostovnik", PanelSpecification(
+		m_ECS.AddComponent<LayoutGroup>(zemiak, LayoutGroup());
+		for (int i = 0; i < 20; ++i)
+		{
+			uint32_t editorEntity = m_GuiContext->CreateButton(zemiak,
+				ButtonSpecification{
+					"Button",
+					glm::vec3(i * 50,i * 50, 0.0f),
+					glm::vec2(50.0f,50.0f),
+					glm::vec4(1.0f,1.0f,1.0f,1.0f),
+					glm::vec4(0.4f, 1.0f, 0.8f, 1.0f),
+					glm::vec4(1.0f, 0.5f, 0.8f, 1.0f),
+					1
+				});
+		}
+
+		auto kostovnik = m_Dockspace->CreatePanel(canvas, "Kostovnik", PanelSpecification(
 			glm::vec3(-400.0f),
 			glm::vec2(300.0f),
 			glm::vec4(1.0f)
 		));
 
-		m_Dockspace->CreatePanel(canvas, "Pelengac", PanelSpecification(
+		m_ECS.AddComponent<LayoutGroup>(kostovnik, LayoutGroup());
+		for (int i = 0; i < 20; ++i)
+		{
+			uint32_t editorEntity = m_GuiContext->CreateButton(kostovnik,
+				ButtonSpecification{
+					"Button",
+					glm::vec3(i * 50,i * 50, 0.0f),
+					glm::vec2(50.0f,50.0f),
+					glm::vec4(1.0f,1.0f,1.0f,1.0f),
+					glm::vec4(0.4f, 1.0f, 0.8f, 1.0f),
+					glm::vec4(1.0f, 0.5f, 0.8f, 1.0f),
+					1
+				});
+		}
+
+		auto pelengac = m_Dockspace->CreatePanel(canvas, "Pelengac", PanelSpecification(
 			glm::vec3(-400.0f),
 			glm::vec2(300.0f),
 			glm::vec4(1.0f)
 		));
+
+		m_ECS.AddComponent<LayoutGroup>(pelengac, LayoutGroup());
+		for (int i = 0; i < 20; ++i)
+		{
+			uint32_t editorEntity = m_GuiContext->CreateButton(pelengac,
+				ButtonSpecification{
+					"Button",
+					glm::vec3(i * 50,i * 50, 0.0f),
+					glm::vec2(50.0f,50.0f),
+					glm::vec4(1.0f,1.0f,1.0f,1.0f),
+					glm::vec4(0.4f, 1.0f, 0.8f, 1.0f),
+					glm::vec4(1.0f, 0.5f, 0.8f, 1.0f),
+					1
+				});
+		}
 
 		Renderer::WaitAndRender();
+
+
+		auto renderTexture = SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer->CreateTextureFromColorAttachment(0);
+		uint32_t entity = m_Dockspace->CreateRenderWindow(0, "Scene", ImageSpecification(
+			Ref<SubTexture2D>::Create(renderTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)),
+			glm::vec3(0.0f),
+			glm::vec2(400.0f),
+			glm::vec4(1.0f)
+		));
 	}	
 
 
@@ -281,19 +373,6 @@ namespace XYZ {
 		m_Scene->OnUpdate(ts);
 		m_Scene->OnRenderEditor(m_EditorCamera);
 		m_Dockspace->OnUpdate(ts);
-
-		static bool test = true;
-		if (test)
-		{
-			test = false;
-			auto texture = SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer->CreateTextureFromColorAttachment(0);		
-			uint32_t entity = m_Dockspace->CreateRenderWindow(0, "Scene", ImageSpecification(
-				Ref<SubTexture2D>::Create(texture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)),
-				glm::vec3(0.0f),
-				glm::vec2(400.0f),
-				glm::vec4(1.0f)
-			));
-		}
 	}
 	void EditorLayer::OnEvent(Event& event)
 	{			

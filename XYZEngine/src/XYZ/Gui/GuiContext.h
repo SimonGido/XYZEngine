@@ -44,11 +44,11 @@ namespace XYZ {
 	public:
 		// Templates to create widgets
 		uint32_t CreateCanvas(const CanvasSpecification& specs);
-		uint32_t CreatePanel(uint32_t canvas, const PanelSpecification& specs);
-		uint32_t CreateButton(uint32_t canvas, const ButtonSpecification& specs);
-		uint32_t CreateCheckbox(uint32_t canvas, const CheckboxSpecification& specs);
-		uint32_t CreateText(uint32_t canvas, const TextSpecification& specs);
-		uint32_t CreateImage(uint32_t canvas, const ImageSpecification& specs);
+		uint32_t CreatePanel(uint32_t parent, const PanelSpecification& specs);
+		uint32_t CreateButton(uint32_t parent, const ButtonSpecification& specs);
+		uint32_t CreateCheckbox(uint32_t parent, const CheckboxSpecification& specs);
+		uint32_t CreateText(uint32_t parent, const TextSpecification& specs);
+		uint32_t CreateImage(uint32_t parent, const ImageSpecification& specs);
 	
 		//uint32_t CreateSlider(uint32_t canvas);
 

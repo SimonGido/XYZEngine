@@ -169,7 +169,7 @@ namespace XYZ {
 		m_Canvases.push_back(entity);
 		return entity;
 	}
-	uint32_t GuiContext::CreatePanel(uint32_t canvas, const PanelSpecification& specs)
+	uint32_t GuiContext::CreatePanel(uint32_t parent, const PanelSpecification& specs)
 	{
 		auto& texCoords = m_Specification.SubTexture[GuiSpecification::BUTTON]->GetTexCoords();
 		uint32_t entity = m_ECS->CreateEntity();
@@ -191,10 +191,10 @@ namespace XYZ {
 		
 		transform.RegisterCallback<CanvasRendererRebuildEvent>(Hook(&GuiContext::onCanvasRendererRebuild, this));
 
-		Relationship::SetupRelation(canvas, entity, *m_ECS);
+		Relationship::SetupRelation(parent, entity, *m_ECS);
 		return entity;
 	}
-	uint32_t GuiContext::CreateButton(uint32_t canvas, const ButtonSpecification& specs)
+	uint32_t GuiContext::CreateButton(uint32_t parent, const ButtonSpecification& specs)
 	{
 		auto& texCoords = m_Specification.SubTexture[GuiSpecification::BUTTON]->GetTexCoords();
 		uint32_t entity = m_ECS->CreateEntity();
@@ -215,7 +215,7 @@ namespace XYZ {
 
 		m_ECS->AddComponent<Button>(entity, Button(specs.ClickColor, specs.HooverColor));
 			
-		Relationship::SetupRelation(canvas, entity, *m_ECS);
+		Relationship::SetupRelation(parent, entity, *m_ECS);
 		
 		uint32_t textEntity = m_ECS->CreateEntity();
 		Mesh textMesh;
@@ -232,7 +232,7 @@ namespace XYZ {
 				m_Specification.SubTexture[GuiSpecification::FONT],
 				specs.DefaultColor,
 				textMesh,
-				specs.SortLayer,
+				specs.SortLayer + 1,
 				true
 		));
 		
@@ -247,7 +247,7 @@ namespace XYZ {
 		Relationship::SetupRelation(entity, textEntity, *m_ECS);
 		return entity;
 	}
-	uint32_t GuiContext::CreateCheckbox(uint32_t canvas, const CheckboxSpecification& specs)
+	uint32_t GuiContext::CreateCheckbox(uint32_t parent, const CheckboxSpecification& specs)
 	{
 		uint32_t entity = m_ECS->CreateEntity();
 		auto& checkbox = m_ECS->AddComponent<Checkbox>(entity, Checkbox(specs.HooverColor));
@@ -274,7 +274,7 @@ namespace XYZ {
 			));
 
 
-		Relationship::SetupRelation(canvas, entity, *m_ECS);
+		Relationship::SetupRelation(parent, entity, *m_ECS);
 
 
 		uint32_t textEntity = m_ECS->CreateEntity();
@@ -306,7 +306,7 @@ namespace XYZ {
 
 		return entity;
 	}
-	uint32_t GuiContext::CreateText(uint32_t canvas, const TextSpecification& specs)
+	uint32_t GuiContext::CreateText(uint32_t parent, const TextSpecification& specs)
 	{
 		uint32_t entity = m_ECS->CreateEntity();
 		Mesh mesh;
@@ -334,7 +334,7 @@ namespace XYZ {
 			));
 
 		
-		Relationship::SetupRelation(canvas, entity, *m_ECS);
+		Relationship::SetupRelation(parent, entity, *m_ECS);
 
 		return entity;
 	}
@@ -610,9 +610,8 @@ namespace XYZ {
 			if (currentTransform.Size.y > maxHeight)
 				maxHeight = currentTransform.Size.y;
 
-
-			glm::vec3 sizeOffset = glm::vec3(currentTransform.Size.x / 2.0f, -currentTransform.Size.y / 2.0f, 0.0f);
-			if (position.x + sizeOffset.x >= transform.Position.x + transform.Size.x - layout.Padding.Right)
+			glm::vec3 sizeOffset = glm::vec3(currentTransform.Size.x / 2.0f, -currentTransform.Size.y / 2.0f, 0.0f);	
+			if (position.x + (sizeOffset.x * 2.0f) >= (transform.Size.x / 2.0f) - layout.Padding.Right)
 			{
 				position.y -= maxHeight + layout.CellSpacing.y;
 				position.x = layout.Padding.Left - (transform.Size.x / 2.0f);

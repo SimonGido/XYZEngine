@@ -20,13 +20,22 @@ static glm::vec2 MouseToWorld(const glm::vec2& point, const glm::vec2& windowSiz
 
 namespace XYZ {
 
+	// Editor only component
+	struct DockNodeComponent : public ECS::Type<DockNodeComponent>
+	{
+		DockNodeComponent(const glm::vec3& position, const glm::vec2& size);
+
+		std::vector<uint32_t> Entities;
+		glm::vec3 Position;
+		glm::vec2 Size;
+		SplitType Split = SplitType::None;
+	};
 
 	Dockspace::Dockspace(ECS::ECSManager* ecs, GuiContext* context)
 		:
 		m_ECS(ecs),
 		m_Context(context)
 	{
-		m_DockView = &m_ECS->CreateView<DockNodeComponent>();
 		m_RootEntity = m_ECS->CreateEntity();
 		auto [width, height] = Input::GetWindowSize();
 		m_ECS->AddComponent<Relationship>(m_RootEntity, Relationship());
@@ -78,7 +87,7 @@ namespace XYZ {
 			buttonSize,
 			glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
 			glm::vec4(0.4f, 1.0f, 0.8f, 1.0f),
-			glm::vec4(1.0f, 0.5f, 0.8f, 1.0f),
+			glm::vec4(1.0f, 0.5f, 0.8f, 0.0f),
 			1
 		);
 		uint32_t buttonEntity = m_Context->CreateButton(canvas, panelButtonSpecs);
@@ -91,7 +100,7 @@ namespace XYZ {
 
 		button.RegisterCallback<ClickEvent>(Hook(&Dockspace::onButtonPress, this));	
 		button.RegisterCallback<ReleaseEvent>(Hook(&Dockspace::onButtonRelease, this));
-		return buttonEntity;
+		return panelEntity;
 	}
 	uint32_t Dockspace::CreateRenderWindow(uint32_t canvas, const std::string& name, const ImageSpecification& specs)
 	{
@@ -128,7 +137,7 @@ namespace XYZ {
 		button.RegisterCallback<ClickEvent>(Hook(&Dockspace::onButtonPress, this));
 		button.RegisterCallback<ReleaseEvent>(Hook(&Dockspace::onButtonRelease, this));
 
-		return buttonEntity;
+		return panelEntity;
 	}
 	bool Dockspace::onMouseButtonPress(MouseButtonPressEvent& event)
 	{
@@ -180,6 +189,8 @@ namespace XYZ {
 	}
 	uint32_t Dockspace::findResize(uint32_t nodeEntity, const glm::vec2& mousePosition)
 	{
+		static constexpr float offset = 5.0f;
+
 		auto& currentRel = m_ECS->GetStorageComponent<Relationship>(nodeEntity);
 		auto& dockNode = m_ECS->GetStorageComponent<DockNodeComponent>(nodeEntity);
 
@@ -191,8 +202,8 @@ namespace XYZ {
 
 			if (dockNode.Split == SplitType::Horizontal)
 			{			
-				if (mousePosition.y > firstDockNode.Position.y + (firstDockNode.Size.y / 2.0f) - 5.0f
-					&& mousePosition.y < secondDockNode.Position.y - (secondDockNode.Size.y / 2.0f) + 5.0f)
+				if (mousePosition.y > firstDockNode.Position.y + (firstDockNode.Size.y / 2.0f) - offset
+					&& mousePosition.y < secondDockNode.Position.y - (secondDockNode.Size.y / 2.0f) + offset)
 				{
 					m_ResizeData.Entity = nodeEntity;
 					m_ResizeData.Border = firstDockNode.Position.y + (firstDockNode.Size.y / 2.0f);
@@ -204,8 +215,8 @@ namespace XYZ {
 			}
 			else
 			{
-				if (mousePosition.x > firstDockNode.Position.x + (firstDockNode.Size.x / 2.0f) - 5.0f
-					&& mousePosition.x < secondDockNode.Position.x - (secondDockNode.Size.x / 2.0f) + 5.0f)
+				if (mousePosition.x > firstDockNode.Position.x + (firstDockNode.Size.x / 2.0f) - offset
+					&& mousePosition.x < secondDockNode.Position.x - (secondDockNode.Size.x / 2.0f) + offset)
 				{
 					m_ResizeData.Entity = nodeEntity;
 					m_ResizeData.Border = firstDockNode.Position.x + (firstDockNode.Size.x / 2.0f);

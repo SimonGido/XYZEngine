@@ -25,15 +25,7 @@ namespace XYZ {
 		Vertical
 	};
 
-	struct DockNodeComponent : public ECS::Type<DockNodeComponent>
-	{
-		DockNodeComponent(const glm::vec3& position, const glm::vec2& size);
-
-		std::vector<uint32_t> Entities;
-		glm::vec3 Position;
-		glm::vec2 Size;
-		SplitType Split = SplitType::None;
-	};
+	
 
 	class Dockspace
 	{
@@ -69,10 +61,8 @@ namespace XYZ {
 		SplitType resolveSplit(uint32_t nodeEntity, const glm::vec2& mousePosition);
 	private:
 		ECS::ECSManager* m_ECS;
-		ECS::ComponentView<DockNodeComponent>* m_DockView;
 		
-		uint32_t m_RootEntity;
-		
+		uint32_t m_RootEntity;	
 		uint32_t m_ModifiedEntity = NULL_ENTITY;
 
 		glm::vec2 m_MouseOffset = glm::vec2(0.0f);
@@ -87,7 +77,6 @@ namespace XYZ {
 		};
 
 		ResizeData m_ResizeData;
-
 		GuiContext* m_Context;
 	};
 }

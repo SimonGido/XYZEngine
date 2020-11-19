@@ -71,7 +71,7 @@ namespace XYZ {
 		auto& childRel =  ecs.GetComponent<Relationship>(child);
 		auto& parentRel = ecs.GetComponent<Relationship>(childRel.Parent);
 
-		// Not siblings ( must be first child of parent )
+		// No siblings ( must be first child of parent )
 		if (childRel.NextSibling == NULL_ENTITY && childRel.PreviousSibling == NULL_ENTITY)
 		{
 			childRel.Parent = NULL_ENTITY;
