@@ -3,24 +3,23 @@
 
 
 namespace XYZ {
-	void Slider::OnEvent(Event& event)
+	Slider::Slider(const glm::vec4& hooverColor)
+		:
+		HooverColor(hooverColor)
 	{
-		EventDispatcher dispatcher(event);
-		if (dispatcher.Dispatch<ClickEvent>(Hook(&Slider::Execute<ClickEvent>, this)))
-		{
-			std::cout << "Clicked" << std::endl;
-		}
-		else if (dispatcher.Dispatch<ReleaseEvent>(Hook(&Slider::Execute<ReleaseEvent>, this)))
-		{
-			std::cout << "Released" << std::endl;
-		}
-		else if (dispatcher.Dispatch<HooverEvent>(Hook(&Slider::Execute<HooverEvent>, this)))
-		{
-			std::cout << "Hoover" << std::endl;
-		}
-		else if (dispatcher.Dispatch<UnHooverEvent>(Hook(&Slider::Execute<UnHooverEvent>, this)))
-		{
-			std::cout << "UnHoover" << std::endl;
-		}
+		State<SliderState::NumStates>& clickState = Machine.CreateState();
+		State<SliderState::NumStates>& releaseState = Machine.CreateState();
+		State<SliderState::NumStates>& hooverState = Machine.CreateState();
+		State<SliderState::NumStates>& unHooverState = Machine.CreateState();
+
+		clickState.AllowTransition(releaseState.GetID());
+		releaseState.AllowTransition(clickState.GetID());
+
+		releaseState.AllowTransition(hooverState.GetID());
+		unHooverState.AllowTransition(hooverState.GetID());
+		hooverState.AllowTransition(clickState.GetID());
+		hooverState.AllowTransition(hooverState.GetID());
+		hooverState.AllowTransition(unHooverState.GetID());
+		Machine.SetDefaultState(unHooverState.GetID());
 	}
 }

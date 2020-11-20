@@ -80,6 +80,27 @@ namespace XYZ {
 		glm::vec4   DefaultColor;
 		glm::vec4   HooverColor;
 	};
+	struct SliderSpecification
+	{
+		SliderSpecification(
+			const std::string& name,
+			const glm::vec3& position,
+			const glm::vec2& size,
+			const glm::vec2& handleSize,
+			const glm::vec4& defaultColor,
+			const glm::vec4& handleColor,
+			const glm::vec4& hooverColor
+		);
+
+		std::string Name;
+		glm::vec3   Position;
+		glm::vec2	Size;
+		glm::vec2   HandleSize;
+
+		glm::vec4   DefaultColor;
+		glm::vec4   HandleColor;
+		glm::vec4   HooverColor;
+	};
 	struct TextSpecification
 	{
 		TextSpecification(

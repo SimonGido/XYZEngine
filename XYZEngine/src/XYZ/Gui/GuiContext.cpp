@@ -133,6 +133,7 @@ namespace XYZ {
 		m_CanvasView = &m_ECS->CreateView<Canvas, CanvasRenderer, RectTransform>();
 		m_ButtonView = &m_ECS->CreateView<Button, CanvasRenderer, RectTransform>();
 		m_CheckboxView = &m_ECS->CreateView<Checkbox, CanvasRenderer, RectTransform>();
+		m_SliderView = &m_ECS->CreateView<Slider, CanvasRenderer, RectTransform>();
 		m_LayoutGroup = &m_ECS->CreateView<LayoutGroup, Relationship, RectTransform>();
 	}
 	bool GuiContext::onCanvasRendererRebuild(CanvasRendererRebuildEvent& event)
@@ -303,6 +304,81 @@ namespace XYZ {
 			));
 		
 		Relationship::SetupRelation(entity,textEntity, *m_ECS);
+
+		return entity;
+	}
+	uint32_t GuiContext::CreateSlider(uint32_t parent, const SliderSpecification& specs)
+	{
+		uint32_t entity = m_ECS->CreateEntity();
+		auto& slider = m_ECS->AddComponent<Slider>(entity, Slider(specs.HooverColor));
+
+		glm::vec4 texCoords = m_Specification.SubTexture[GuiSpecification::BUTTON]->GetTexCoords();
+	
+		Mesh mesh;
+		GenerateQuadMesh(texCoords, specs.DefaultColor, specs.Size, mesh);
+
+		m_ECS->AddComponent<Relationship>(entity, Relationship());
+		m_ECS->AddComponent<RectTransform>(entity, RectTransform(specs.Position, specs.Size));
+
+		m_ECS->AddComponent<CanvasRenderer>(entity,
+			CanvasRenderer(
+				m_Specification.Material,
+				m_Specification.SubTexture[GuiSpecification::BUTTON],
+				specs.DefaultColor,
+				mesh,
+				0,
+				true
+			));
+
+
+		Relationship::SetupRelation(parent, entity, *m_ECS);
+
+
+		uint32_t handle = m_ECS->CreateEntity();
+		Mesh handleMesh;
+		GenerateQuadMesh(texCoords, specs.DefaultColor, specs.HandleSize, handleMesh);
+		m_ECS->AddComponent<Relationship>(handle, Relationship());
+		m_ECS->AddComponent<RectTransform>(handle, RectTransform(glm::vec3(0.0f), specs.HandleSize));
+
+		m_ECS->AddComponent<CanvasRenderer>(handle,
+			CanvasRenderer(
+				m_Specification.Material,
+				m_Specification.SubTexture[GuiSpecification::BUTTON],
+				specs.HandleColor,
+				handleMesh,
+				0,
+				true
+			));
+		
+
+		Relationship::SetupRelation(entity, handle, *m_ECS);
+
+		uint32_t textEntity = m_ECS->CreateEntity();
+		Mesh textMesh;
+		GenerateTextMesh(specs.Name.c_str(), m_Specification.Font, specs.DefaultColor, specs.Size, textMesh, TextAlignment::Center);
+		auto& textRectTransform = m_ECS->AddComponent<RectTransform>(textEntity, RectTransform(glm::vec3(0.0f), glm::vec2(1.0f)));
+		textRectTransform.RegisterCallback<CanvasRendererRebuildEvent>(Hook(&GuiContext::onCanvasRendererRebuild, this));
+		m_ECS->AddComponent<Relationship>(textEntity, Relationship());
+
+		m_ECS->AddComponent<CanvasRenderer>(textEntity,
+			CanvasRenderer(
+				m_Specification.Material,
+				m_Specification.SubTexture[GuiSpecification::FONT],
+				specs.DefaultColor,
+				textMesh,
+				1,
+				true
+			));
+
+		m_ECS->AddComponent<Text>(textEntity,
+			Text(
+				specs.Name,
+				m_Specification.Font,
+				specs.DefaultColor,
+				TextAlignment::Center
+			));
+
+		Relationship::SetupRelation(entity, textEntity, *m_ECS);
 
 		return entity;
 	}

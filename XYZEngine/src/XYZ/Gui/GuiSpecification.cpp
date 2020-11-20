@@ -60,4 +60,15 @@ namespace XYZ {
 		Color(color)
 	{
 	}
+	SliderSpecification::SliderSpecification(const std::string& name, const glm::vec3& position, const glm::vec2& size,const glm::vec2& handleSize, const glm::vec4& defaultColor, const glm::vec4& handleColor, const glm::vec4& hooverColor)
+		:
+		Name(name), 
+		Position(position), 
+		Size(size), 
+		HandleSize(handleSize),
+		DefaultColor(defaultColor),
+		HandleColor(handleColor), 
+		HooverColor(hooverColor)
+	{
+	}
 }

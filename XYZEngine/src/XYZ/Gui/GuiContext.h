@@ -47,6 +47,7 @@ namespace XYZ {
 		uint32_t CreatePanel(uint32_t parent, const PanelSpecification& specs);
 		uint32_t CreateButton(uint32_t parent, const ButtonSpecification& specs);
 		uint32_t CreateCheckbox(uint32_t parent, const CheckboxSpecification& specs);
+		uint32_t CreateSlider(uint32_t parent, const SliderSpecification& specs);
 		uint32_t CreateText(uint32_t parent, const TextSpecification& specs);
 		uint32_t CreateImage(uint32_t parent, const ImageSpecification& specs);
 	
@@ -89,6 +90,7 @@ namespace XYZ {
 		ECS::ComponentView<Canvas, CanvasRenderer, RectTransform>* m_CanvasView;
 		ECS::ComponentView<Button, CanvasRenderer, RectTransform>* m_ButtonView;
 		ECS::ComponentView<Checkbox, CanvasRenderer, RectTransform>* m_CheckboxView;
+		ECS::ComponentView<Slider, CanvasRenderer, RectTransform> * m_SliderView;
 		ECS::ComponentView<LayoutGroup, Relationship, RectTransform>* m_LayoutGroup;
 
 		GuiSpecification m_Specification;

@@ -2,18 +2,32 @@
 #include "XYZ/ECS/Component.h"
 #include "XYZ/Event/GuiEvent.h"
 #include "XYZ/Event/EventSystem.h"
+#include "XYZ/FSM/StateMachine.h"
 
+#include <glm/glm.hpp>
 
 namespace XYZ {
 
+	namespace SliderState {
+		enum SliderState
+		{
+			Dragged,
+			Released,
+			Hoovered,
+			UnHoovered,
+			NumStates
+		};
+	}
 
 	class Slider : public EventSystem<ClickEvent, ReleaseEvent, HooverEvent, UnHooverEvent>,
 		public ECS::Type<Slider>
 	{
 	public:
-		void OnEvent(Event& event);
+		Slider(const glm::vec4& hooverColor);
 
-	private:
-		float m_Value = 0.0f;
+		glm::vec4 HooverColor;
+		float	  Value = 0.0f;
+
+		StateMachine<SliderState::NumStates> Machine;
 	};
 }

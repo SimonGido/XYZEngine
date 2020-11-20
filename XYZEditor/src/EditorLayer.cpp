@@ -256,6 +256,16 @@ namespace XYZ {
 				});
 		}
 
+		uint32_t editorEntity = m_GuiContext->CreateSlider(opicaEntity,
+			SliderSpecification{
+				"Slider",
+				glm::vec3(0.0f),
+				glm::vec2(150.0f,25.0f),
+				glm::vec2(25.0f, 60.0f),
+				glm::vec4(1.0f,1.0f,1.9f,1.0f),
+				glm::vec4(0.7f, 0.8f, 1.0f, 1.0f),
+				glm::vec4(0.4f, 1.0f, 0.8f, 1.0f)
+			});
 		
 
 
