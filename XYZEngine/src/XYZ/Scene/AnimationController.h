@@ -16,14 +16,14 @@ namespace XYZ {
 		void SetDefaultAnimation(const std::string& name);
 		void Update(Timestep ts);
 
-		StateMachine& GetStateMachine() { return m_StateMachine; }
+		StateMachine<32>& GetStateMachine() { return m_StateMachine; }
 		const Ref<Animation>& GetCurrentAnimation() const;
 	private:
 		Ref<Animation> m_CurrentAnimation;
 		std::vector<Ref<Animation>> m_Animations;
 		std::unordered_map<std::string, uint32_t> m_StatesMap;
 
-		StateMachine m_StateMachine;
+		StateMachine<32> m_StateMachine;
 	};
 
 

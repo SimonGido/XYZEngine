@@ -16,7 +16,8 @@ namespace XYZ {
 			Clicked,  
 			Released, 
 			Hoovered,  
-			UnHoovered
+			UnHoovered,
+			NumStates
 		};
 	}
 
@@ -30,6 +31,6 @@ namespace XYZ {
 		glm::vec4   ClickColor;
 		glm::vec4   HooverColor;
 
-		StateMachine Machine;
+		StateMachine<ButtonState::NumStates> Machine;
 	};
 }

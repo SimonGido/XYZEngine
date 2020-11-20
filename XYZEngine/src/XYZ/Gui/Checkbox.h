@@ -17,7 +17,8 @@ namespace XYZ {
 			Checked,
 			UnChecked,
 			Hoovered,
-			UnHoovered
+			UnHoovered,
+			NumStates
 		};
 	}
 
@@ -31,7 +32,7 @@ namespace XYZ {
 
 		glm::vec4   HooverColor;
 
-		StateMachine Machine;
+		StateMachine<CheckboxState::NumStates> Machine;
 		bool Checked = false;
 	};
 }
