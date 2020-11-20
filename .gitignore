@@ -348,3 +348,5 @@ healthchecksdb
 *.sln
 *.vcxproj
 *.filters
+*.tlog
+*.lastbuildstate

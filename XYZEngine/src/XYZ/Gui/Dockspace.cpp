@@ -415,8 +415,15 @@ namespace XYZ {
 				secondDockNode.Position.x = dockNode.Position.x;
 				secondDockNode.Size.x = dockNode.Size.x;
 
-				secondDockNode.Size.y = dockNode.Size.y - firstDockNode.Size.y;
-				secondDockNode.Position.y = firstDockNode.Position.y + (firstDockNode.Size.y / 2.0f) + (secondDockNode.Size.y / 2.0f);
+				float oldSize = firstDockNode.Size.y + secondDockNode.Size.y;
+				float scaleFirst = firstDockNode.Size.y / oldSize;
+				float scaleSecond = secondDockNode.Size.y / oldSize;
+
+				firstDockNode.Size.y = dockNode.Size.y * scaleFirst;
+				secondDockNode.Size.y = dockNode.Size.y * scaleSecond;
+
+				firstDockNode.Position.y = (dockNode.Position.y - dockNode.Size.y / 2.0f) + (firstDockNode.Size.y / 2.0f);
+				secondDockNode.Position.y = (firstDockNode.Position.y + firstDockNode.Size.y / 2.0f) + (secondDockNode.Size.y / 2.0f);
 			}
 			else if (dockNode.Split == SplitType::Vertical)
 			{
