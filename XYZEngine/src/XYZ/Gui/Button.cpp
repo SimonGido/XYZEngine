@@ -8,10 +8,10 @@ namespace XYZ {
 		:
 		ClickColor(clickColor), HooverColor(hooverColor)
 	{
-		State& clickState = Machine.CreateState();
-		State& releaseState = Machine.CreateState();
-		State& hooverState = Machine.CreateState();
-		State& unHooverState = Machine.CreateState();
+		State<ButtonState::NumStates>& clickState = Machine.CreateState();
+		State<ButtonState::NumStates>& releaseState = Machine.CreateState();
+		State<ButtonState::NumStates>& hooverState = Machine.CreateState();
+		State<ButtonState::NumStates>& unHooverState = Machine.CreateState();
 
 		clickState.AllowTransition(releaseState.GetID());
 		releaseState.AllowTransition(clickState.GetID());

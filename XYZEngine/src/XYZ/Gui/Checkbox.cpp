@@ -7,10 +7,10 @@ namespace XYZ {
 		:
 		HooverColor(hooverColor)
 	{
-		State& checkedState = Machine.CreateState();
-		State& unCheckedState = Machine.CreateState();
-		State& hooverState = Machine.CreateState();
-		State& unHooverState = Machine.CreateState();
+		State<CheckboxState::NumStates>& checkedState = Machine.CreateState();
+		State<CheckboxState::NumStates>& unCheckedState = Machine.CreateState();
+		State<CheckboxState::NumStates>& hooverState = Machine.CreateState();
+		State<CheckboxState::NumStates>& unHooverState = Machine.CreateState();
 
 		checkedState.AllowTransition(unCheckedState.GetID());
 		unCheckedState.AllowTransition(checkedState.GetID());
