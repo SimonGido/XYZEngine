@@ -13,13 +13,11 @@ namespace XYZ {
 		{
 			Dragged,
 			Released,
-			Hoovered,
-			UnHoovered,
 			NumStates
 		};
 	}
 
-	class Slider : public EventSystem<ClickEvent, ReleaseEvent, HooverEvent, UnHooverEvent>,
+	class Slider : public EventSystem<ClickEvent, ReleaseEvent, DraggedEvent>,
 		public ECS::Type<Slider>
 	{
 	public:

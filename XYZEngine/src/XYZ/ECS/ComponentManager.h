@@ -64,7 +64,6 @@ namespace XYZ {
 					 && !group->HasEntity(entity))
 					{
 						group->AddEntity(entity, signature, ecs);
-						return;
 					}
 				}
 			}
@@ -77,7 +76,6 @@ namespace XYZ {
 						&& !view->HasEntity(entity))
 					{
 						view->AddEntity(entity);
-						return;
 					}
 				}
 			}

@@ -17,6 +17,7 @@
 #include "CanvasRenderer.h"
 #include "RectTransform.h"
 #include "LayoutGroup.h"
+#include "InputField.h"
 #include "GuiSpecification.h"
 
 
@@ -50,8 +51,7 @@ namespace XYZ {
 		uint32_t CreateSlider(uint32_t parent, const SliderSpecification& specs);
 		uint32_t CreateText(uint32_t parent, const TextSpecification& specs);
 		uint32_t CreateImage(uint32_t parent, const ImageSpecification& specs);
-	
-		//uint32_t CreateSlider(uint32_t canvas);
+		uint32_t CreateInputField(uint32_t parent, const InputFieldSpecification& specs);
 
 		void SetViewportSize(uint32_t width, uint32_t height);
 		void SetParent(uint32_t parent, uint32_t child);
@@ -70,29 +70,42 @@ namespace XYZ {
 		bool onMouseButtonPress(MouseButtonPressEvent& event);
 		bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
 		bool onMouseMove(MouseMovedEvent& event);
+		bool onKeyPressed(KeyPressedEvent& event);
+		bool onKeyTyped(KeyTypedEvent& event);
 
 		// Widget specific respones
 		bool buttonOnMouseButtonPress(const glm::vec2& mousePosition);
 		bool buttonOnMouseButtonRelease();
 		bool buttonOnMouseMove(const glm::vec2& mousePosition);
+		
 		bool checkboxOnMouseButtonPress(const glm::vec2& mousePosition);
 		bool checkboxOnMouseMove(const glm::vec2& mousePosition);
+		
+		bool sliderOnMouseButtonPress(const glm::vec2& mousePosition);
+		bool sliderOnMouseButtonRelease();
+		bool sliderOnMouseMove(const glm::vec2& mousePosition);
+		
+		bool inputFieldOnMouseButtonPress(const glm::vec2& mousePosition);
+		bool inputFieldOnMouseMove(const glm::vec2& mousePosition);
 
 		// Update functions
-		void submitToRenderer(uint32_t entity, const glm::vec3& parentPosition);
-		void applyLayout(const LayoutGroup& layout, const Relationship& parentRel, const RectTransform& transform);
+		void updateTransform(uint32_t entity, const glm::vec3& parentPosition);
+		void applyLayoutGroup(const LayoutGroup& layout, const Relationship& parentRel, const RectTransform& transform);
+		
 	private:
 		//Tree m_Entities;
 		Camera m_Camera;
 		glm::mat4 m_ViewMatrix;
 
 		ECS::ECSManager* m_ECS = nullptr;
+		ECS::ComponentView<CanvasRenderer, RectTransform>* m_RenderView;
 		ECS::ComponentView<Canvas, CanvasRenderer, RectTransform>* m_CanvasView;
 		ECS::ComponentView<Button, CanvasRenderer, RectTransform>* m_ButtonView;
 		ECS::ComponentView<Checkbox, CanvasRenderer, RectTransform>* m_CheckboxView;
 		ECS::ComponentView<Slider, CanvasRenderer, RectTransform> * m_SliderView;
-		ECS::ComponentView<LayoutGroup, Relationship, RectTransform>* m_LayoutGroup;
-
+		ECS::ComponentView<LayoutGroup, Relationship, RectTransform>* m_LayoutGroupView;
+		ECS::ComponentView<Layout, Relationship, CanvasRenderer, RectTransform>* m_LayoutView;
+		ECS::ComponentView<InputField, CanvasRenderer, RectTransform>* m_InputFieldView;
 		GuiSpecification m_Specification;
 
 		Ref<RenderPass> m_RenderPass;

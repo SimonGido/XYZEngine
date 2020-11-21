@@ -17,6 +17,7 @@ MouseMoved,
 
 Click,
 Release,
+Drag,
 Checked,
 UnChecked,
 Hoover,

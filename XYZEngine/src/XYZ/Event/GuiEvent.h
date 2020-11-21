@@ -47,6 +47,28 @@ namespace XYZ {
 		uint32_t m_Entity;
 	};
 
+	struct DraggedEvent : public Event
+	{
+		DraggedEvent(uint32_t entity, float value)
+			: m_Type(EventType::Drag), m_Entity(entity), m_Value(value)
+		{
+		}
+
+		virtual EventType GetEventType() const override { return m_Type; }
+
+		uint32_t GetEntity() const { return m_Entity; }
+
+		static EventType GetStaticType()
+		{
+			return EventType::Drag;
+		}
+
+	private:
+		EventType m_Type;
+		uint32_t m_Entity;
+		float m_Value;
+	};
+
 	struct CheckedEvent : public Event
 	{
 		CheckedEvent()

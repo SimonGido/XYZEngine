@@ -60,7 +60,7 @@ namespace XYZ {
 		Color(color)
 	{
 	}
-	SliderSpecification::SliderSpecification(const std::string& name, const glm::vec3& position, const glm::vec2& size,const glm::vec2& handleSize, const glm::vec4& defaultColor, const glm::vec4& handleColor, const glm::vec4& hooverColor)
+	SliderSpecification::SliderSpecification(const std::string& name, const glm::vec3& position, const glm::vec2& size,const glm::vec2& handleSize, const glm::vec4& defaultColor, const glm::vec4& handleColor, const glm::vec4& hooverColor, uint32_t sortLayer)
 		:
 		Name(name), 
 		Position(position), 
@@ -68,7 +68,12 @@ namespace XYZ {
 		HandleSize(handleSize),
 		DefaultColor(defaultColor),
 		HandleColor(handleColor), 
-		HooverColor(hooverColor)
+		HooverColor(hooverColor),
+		SortLayer(sortLayer)
+	{
+	}
+	InputFieldSpecification::InputFieldSpecification(const glm::vec3& position, const glm::vec2& size, const glm::vec4& defaultColor, const glm::vec4& selectColor, const glm::vec4& hooverColor, uint32_t sortLayer)
+		: Position(position), Size(size), DefaultColor(defaultColor), SelectColor(selectColor), HooverColor(hooverColor), SortLayer(sortLayer)
 	{
 	}
 }

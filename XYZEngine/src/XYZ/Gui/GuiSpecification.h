@@ -89,7 +89,8 @@ namespace XYZ {
 			const glm::vec2& handleSize,
 			const glm::vec4& defaultColor,
 			const glm::vec4& handleColor,
-			const glm::vec4& hooverColor
+			const glm::vec4& hooverColor,
+			uint32_t		 sortLayer = 0
 		);
 
 		std::string Name;
@@ -100,6 +101,7 @@ namespace XYZ {
 		glm::vec4   DefaultColor;
 		glm::vec4   HandleColor;
 		glm::vec4   HooverColor;
+		uint32_t	SortLayer;
 	};
 	struct TextSpecification
 	{
@@ -146,4 +148,23 @@ namespace XYZ {
 		glm::vec4 Color;
 	};
 
+	struct InputFieldSpecification
+	{
+		InputFieldSpecification(
+			const glm::vec3& position,
+			const glm::vec2& size,
+			const glm::vec4& defaultColor,
+			const glm::vec4& selectColor,
+			const glm::vec4& hooverColor,
+			uint32_t		 sortLayer = 0
+		);
+
+		glm::vec3   Position;
+		glm::vec2	Size;
+
+		glm::vec4   DefaultColor;
+		glm::vec4   SelectColor;
+		glm::vec4   HooverColor;
+		uint32_t	SortLayer;
+	};
 }

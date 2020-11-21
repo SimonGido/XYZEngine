@@ -37,5 +37,6 @@ namespace XYZ {
 				return IComponent::GetID<Derived>();
 			}
 		};
+
 	}
 }

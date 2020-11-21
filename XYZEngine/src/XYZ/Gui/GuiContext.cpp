@@ -63,6 +63,9 @@ namespace XYZ {
 
 	static void GenerateTextMesh(const char* source, const Ref<Font>& font, const glm::vec4& color, const glm::vec2& size, Mesh& mesh, TextAlignment alignment)
 	{
+		if (!source)
+			return;
+
 		size_t oldMeshSize = mesh.Vertices.size();
 		float height = 0.0f;
 		float xCursor = 0.0f;
@@ -130,11 +133,14 @@ namespace XYZ {
 		fbo->Resize();
 		m_RenderPass = RenderPass::Create({ fbo });
 
+		m_RenderView = &m_ECS->CreateView<CanvasRenderer, RectTransform>();
 		m_CanvasView = &m_ECS->CreateView<Canvas, CanvasRenderer, RectTransform>();
 		m_ButtonView = &m_ECS->CreateView<Button, CanvasRenderer, RectTransform>();
 		m_CheckboxView = &m_ECS->CreateView<Checkbox, CanvasRenderer, RectTransform>();
 		m_SliderView = &m_ECS->CreateView<Slider, CanvasRenderer, RectTransform>();
-		m_LayoutGroup = &m_ECS->CreateView<LayoutGroup, Relationship, RectTransform>();
+		m_LayoutGroupView = &m_ECS->CreateView<LayoutGroup, Relationship, RectTransform>();
+		m_LayoutView = &m_ECS->CreateView<Layout, Relationship, CanvasRenderer, RectTransform>();
+		m_InputFieldView = &m_ECS->CreateView<InputField, CanvasRenderer, RectTransform>();
 	}
 	bool GuiContext::onCanvasRendererRebuild(CanvasRendererRebuildEvent& event)
 	{
@@ -155,7 +161,8 @@ namespace XYZ {
 	
 		m_ECS->AddComponent<Relationship>(entity, Relationship());
 		m_ECS->AddComponent<Canvas>(entity, Canvas(specs.RenderMode, specs.Color));
-		m_ECS->AddComponent<RectTransform>(entity, RectTransform(specs.Position, specs.Size));
+		auto& transform = m_ECS->AddComponent<RectTransform>(entity, RectTransform(specs.Position, specs.Size));
+		transform.RegisterCallback<CanvasRendererRebuildEvent>(Hook(&GuiContext::onCanvasRendererRebuild, this));
 		m_ECS->AddComponent<CanvasRenderer>( entity,
 			CanvasRenderer(
 				m_Specification.Material,
@@ -203,7 +210,8 @@ namespace XYZ {
 		GenerateQuadMesh(texCoords, specs.DefaultColor, specs.Size, mesh);
 
 		m_ECS->AddComponent<Relationship>(entity, Relationship());
-		m_ECS->AddComponent<RectTransform>(entity, RectTransform( specs.Position, specs.Size));
+		auto& transform = m_ECS->AddComponent<RectTransform>(entity, RectTransform( specs.Position, specs.Size));
+		transform.RegisterCallback<CanvasRendererRebuildEvent>(Hook(&GuiContext::onCanvasRendererRebuild, this));
 		m_ECS->AddComponent<CanvasRenderer>( entity,
 			CanvasRenderer(
 				m_Specification.Material,
@@ -239,7 +247,7 @@ namespace XYZ {
 		
 		m_ECS->AddComponent<Text>(textEntity,
 			Text(
-			specs.Name,
+			specs.Name.c_str(),
 			m_Specification.Font,
 			specs.DefaultColor,
 			TextAlignment::Center
@@ -262,8 +270,8 @@ namespace XYZ {
 		GenerateQuadMesh(texCoords, specs.DefaultColor, specs.Size, mesh);
 		
 		m_ECS->AddComponent<Relationship>(entity, Relationship());
-		m_ECS->AddComponent<RectTransform>(entity, RectTransform(specs.Position, specs.Size));
-	
+		auto& transform = m_ECS->AddComponent<RectTransform>(entity, RectTransform(specs.Position, specs.Size));
+		transform.RegisterCallback<CanvasRendererRebuildEvent>(Hook(&GuiContext::onCanvasRendererRebuild, this));
 		m_ECS->AddComponent<CanvasRenderer>(entity,
 			CanvasRenderer(
 				m_Specification.Material,
@@ -297,7 +305,7 @@ namespace XYZ {
 
 		m_ECS->AddComponent<Text>(textEntity,
 			Text(
-				specs.Name,
+				specs.Name.c_str(),
 				m_Specification.Font,
 				specs.DefaultColor,
 				TextAlignment::Center
@@ -318,15 +326,15 @@ namespace XYZ {
 		GenerateQuadMesh(texCoords, specs.DefaultColor, specs.Size, mesh);
 
 		m_ECS->AddComponent<Relationship>(entity, Relationship());
-		m_ECS->AddComponent<RectTransform>(entity, RectTransform(specs.Position, specs.Size));
-
+		auto & transform = m_ECS->AddComponent<RectTransform>(entity, RectTransform(specs.Position, specs.Size));
+		transform.RegisterCallback<CanvasRendererRebuildEvent>(Hook(&GuiContext::onCanvasRendererRebuild, this));
 		m_ECS->AddComponent<CanvasRenderer>(entity,
 			CanvasRenderer(
 				m_Specification.Material,
 				m_Specification.SubTexture[GuiSpecification::BUTTON],
 				specs.DefaultColor,
 				mesh,
-				0,
+				specs.SortLayer,
 				true
 			));
 
@@ -336,22 +344,22 @@ namespace XYZ {
 
 		uint32_t handle = m_ECS->CreateEntity();
 		Mesh handleMesh;
-		GenerateQuadMesh(texCoords, specs.DefaultColor, specs.HandleSize, handleMesh);
+		GenerateQuadMesh(texCoords, specs.HandleColor, specs.HandleSize, handleMesh);
 		m_ECS->AddComponent<Relationship>(handle, Relationship());
-		m_ECS->AddComponent<RectTransform>(handle, RectTransform(glm::vec3(0.0f), specs.HandleSize));
-
+		auto& handleRectTransform = m_ECS->AddComponent<RectTransform>(handle, RectTransform(glm::vec3(0.0f), specs.HandleSize));
+		handleRectTransform.RegisterCallback<CanvasRendererRebuildEvent>(Hook(&GuiContext::onCanvasRendererRebuild, this));
 		m_ECS->AddComponent<CanvasRenderer>(handle,
 			CanvasRenderer(
 				m_Specification.Material,
 				m_Specification.SubTexture[GuiSpecification::BUTTON],
 				specs.HandleColor,
 				handleMesh,
-				0,
+				specs.SortLayer+1,
 				true
 			));
 		
 
-		Relationship::SetupRelation(entity, handle, *m_ECS);
+		
 
 		uint32_t textEntity = m_ECS->CreateEntity();
 		Mesh textMesh;
@@ -366,19 +374,20 @@ namespace XYZ {
 				m_Specification.SubTexture[GuiSpecification::FONT],
 				specs.DefaultColor,
 				textMesh,
-				1,
+				specs.SortLayer+1,
 				true
 			));
 
 		m_ECS->AddComponent<Text>(textEntity,
 			Text(
-				specs.Name,
+				specs.Name.c_str(),
 				m_Specification.Font,
 				specs.DefaultColor,
 				TextAlignment::Center
 			));
 
 		Relationship::SetupRelation(entity, textEntity, *m_ECS);
+		Relationship::SetupRelation(entity, handle, *m_ECS);
 
 		return entity;
 	}
@@ -403,7 +412,7 @@ namespace XYZ {
 		m_ECS->AddComponent<Relationship>(entity, Relationship());
 		m_ECS->AddComponent<Text>( entity,
 			Text(
-				specs.Source,
+				specs.Source.c_str(),
 				m_Specification.Font,
 				specs.Color,
 				specs.Alignment
@@ -424,6 +433,7 @@ namespace XYZ {
 
 		m_ECS->AddComponent<Relationship>(entity, Relationship());
 		auto & transform = m_ECS->AddComponent<RectTransform>(entity, RectTransform(specs.Position, specs.Size));
+		
 		m_ECS->AddComponent<CanvasRenderer>(entity,
 			CanvasRenderer(
 				m_Specification.Material,
@@ -436,6 +446,61 @@ namespace XYZ {
 
 		transform.RegisterCallback<CanvasRendererRebuildEvent>(Hook(&GuiContext::onCanvasRendererRebuild, this));
 		Relationship::SetupRelation(canvas, entity, *m_ECS);
+
+		return entity;
+	}
+	uint32_t GuiContext::CreateInputField(uint32_t parent, const InputFieldSpecification& specs)
+	{
+		uint32_t textEntity = m_ECS->CreateEntity();
+		Mesh textMesh;
+		GenerateTextMesh(nullptr, m_Specification.Font, specs.DefaultColor, specs.Size, textMesh, TextAlignment::Center);
+		auto& textRectTransform = m_ECS->AddComponent<RectTransform>(textEntity, RectTransform(glm::vec3(0.0f), specs.Size));
+		textRectTransform.RegisterCallback<CanvasRendererRebuildEvent>(Hook(&GuiContext::onCanvasRendererRebuild, this));
+		m_ECS->AddComponent<Relationship>(textEntity, Relationship());
+
+		m_ECS->AddComponent<CanvasRenderer>(textEntity,
+			CanvasRenderer(
+				m_Specification.Material,
+				m_Specification.SubTexture[GuiSpecification::FONT],
+				specs.DefaultColor,
+				textMesh,
+				specs.SortLayer + 1,
+				true
+			));
+
+		m_ECS->AddComponent<Text>(textEntity,
+			Text(
+				"",
+				m_Specification.Font,
+				specs.DefaultColor,
+				TextAlignment::Center
+			));
+
+		
+		uint32_t entity = m_ECS->CreateEntity();
+		auto& field = m_ECS->AddComponent<InputField>(entity, InputField(specs.SelectColor, specs.HooverColor, textEntity, m_ECS));
+
+		glm::vec4 texCoords = m_Specification.SubTexture[GuiSpecification::BUTTON]->GetTexCoords();
+
+		Mesh mesh;
+		GenerateQuadMesh(texCoords, specs.DefaultColor, specs.Size, mesh);
+
+		m_ECS->AddComponent<Relationship>(entity, Relationship());
+		auto & transform = m_ECS->AddComponent<RectTransform>(entity, RectTransform(specs.Position, specs.Size));
+		transform.RegisterCallback<CanvasRendererRebuildEvent>(Hook(&GuiContext::onCanvasRendererRebuild, this));
+		m_ECS->AddComponent<CanvasRenderer>(entity,
+			CanvasRenderer(
+				m_Specification.Material,
+				m_Specification.SubTexture[GuiSpecification::BUTTON],
+				specs.DefaultColor,
+				mesh,
+				specs.SortLayer,
+				true
+			));
+
+
+		Relationship::SetupRelation(parent, entity, *m_ECS);
+		Relationship::SetupRelation(entity, textEntity, *m_ECS);
 
 		return entity;
 	}
@@ -480,7 +545,13 @@ namespace XYZ {
 		else if (dispatcher.Dispatch<MouseMovedEvent>(Hook(&GuiContext::onMouseMove, this)))
 		{
 		}
-		else if (dispatcher.Dispatch<WindowResizeEvent>(Hook(&GuiContext::onWindowResizeEvent, this)));
+		else if (dispatcher.Dispatch<WindowResizeEvent>(Hook(&GuiContext::onWindowResizeEvent, this)))
+		{
+		}
+		else if (dispatcher.Dispatch<KeyTypedEvent>(Hook(&GuiContext::onKeyTyped, this)))
+		{
+		}
+		else if (dispatcher.Dispatch<KeyPressedEvent>(Hook(&GuiContext::onKeyPressed, this)))
 		{
 		}
 	}
@@ -493,10 +564,13 @@ namespace XYZ {
 				checkbox.Execute<CheckedEvent>(CheckedEvent{});
 		}
 
-		for (size_t i = 0; i < m_LayoutGroup->Size(); ++i)
+		for (auto& canvas : m_Canvases)
+			updateTransform(canvas, glm::vec3(0.0f));
+
+		for (size_t i = 0; i < m_LayoutGroupView->Size(); ++i)
 		{
-			auto& [layout, relation, transform] = (*m_LayoutGroup)[i];
-			applyLayout(layout, relation, transform);
+			auto& [layout, relation, transform] = (*m_LayoutGroupView)[i];
+			applyLayoutGroup(layout, relation, transform);
 		}
 	}
 	void GuiContext::OnRender()
@@ -507,9 +581,12 @@ namespace XYZ {
 		renderCamera.ViewMatrix = m_ViewMatrix;
 
 		GuiRenderer::BeginScene(renderCamera);
-		for (auto& canvas : m_Canvases)
-			submitToRenderer(canvas, glm::vec3(0.0f));
-
+		
+		for (size_t i = 0; i < m_RenderView->Size(); ++i)
+		{
+			auto &[canvasRenderer, rectTransform] = (*m_RenderView)[i];
+			GuiRenderer::SubmitWidget(&canvasRenderer, &rectTransform);
+		}
 
 		GuiRenderer::EndScene();
 		Renderer::EndRenderPass();
@@ -526,9 +603,13 @@ namespace XYZ {
 		glm::vec2 mousePosition = MouseToWorld({ mx,my }, m_ViewportSize);
 		if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_LEFT))
 		{	
-			if (buttonOnMouseButtonPress(mousePosition))
+			if (inputFieldOnMouseButtonPress(mousePosition))
+				return true;
+			else if (buttonOnMouseButtonPress(mousePosition))
 				return true;
 			else if (checkboxOnMouseButtonPress(mousePosition))
+				return true;
+			else if (sliderOnMouseButtonPress(mousePosition))
 				return true;
 		}
 		return false;
@@ -539,6 +620,8 @@ namespace XYZ {
 		{
 			if (buttonOnMouseButtonRelease())
 				return true;
+			else if (sliderOnMouseButtonRelease())
+				return true;
 		}
 		return false;
 	}
@@ -547,11 +630,68 @@ namespace XYZ {
 		auto [mx, my] = Input::GetMousePosition();
 		glm::vec2 mousePosition = MouseToWorld({ mx,my }, m_ViewportSize);
 		
-		if (buttonOnMouseMove(mousePosition))
+		if (inputFieldOnMouseMove(mousePosition))
+			return true;
+		else if (buttonOnMouseMove(mousePosition))
 			return true;
 		else if (checkboxOnMouseMove(mousePosition))
 			return true;
+		else if (sliderOnMouseMove(mousePosition))
+			return true;
 
+		return false;
+	}
+
+	bool GuiContext::onKeyPressed(KeyPressedEvent& event)
+	{
+		if (event.IsKeyPressed(KeyCode::XYZ_KEY_BACKSPACE))
+		{
+			for (size_t i = 0; i < m_InputFieldView->Size(); ++i)
+			{
+				auto& [inputField, canvasRenderer, rectTransform] = (*m_InputFieldView)[i];
+				if (inputField.Machine.GetCurrentState().GetID() == InputFieldState::Selected)
+				{
+					if (inputField.ECS && inputField.ECS->Contains<Text>(inputField.TextEntity))
+					{
+						auto& text = inputField.ECS->GetStorageComponent<Text>(inputField.TextEntity);
+						auto& textRectTransform = inputField.ECS->GetStorageComponent<RectTransform>(inputField.TextEntity);
+
+						if (!text.Source.empty())
+						{
+							text.Source.pop_back();
+							textRectTransform.Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent(inputField.TextEntity,
+								TextCanvasRendererRebuild()
+							));
+						}
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	bool GuiContext::onKeyTyped(KeyTypedEvent& event)
+	{
+		for (size_t i = 0; i < m_InputFieldView->Size(); ++i)
+		{
+			auto& [inputField, canvasRenderer, rectTransform] = (*m_InputFieldView)[i];
+			if (inputField.Machine.GetCurrentState().GetID() == InputFieldState::Selected)
+			{
+				if (inputField.ECS && inputField.ECS->Contains<Text>(inputField.TextEntity))
+				{
+					auto& text = inputField.ECS->GetStorageComponent<Text>(inputField.TextEntity);
+					auto& textRectTransform = inputField.ECS->GetStorageComponent<RectTransform>(inputField.TextEntity);
+
+
+					text.Source += event.GetKey();
+					textRectTransform.Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent(inputField.TextEntity,
+						TextCanvasRendererRebuild()
+					));
+					return true;
+				}
+			}
+		}
 		return false;
 	}
 
@@ -653,25 +793,140 @@ namespace XYZ {
 		return false;
 	}
 
-	void GuiContext::submitToRenderer(uint32_t entity, const glm::vec3& parentPosition)
+	bool GuiContext::sliderOnMouseButtonPress(const glm::vec2& mousePosition)
+	{
+		for (int i = 0; i < m_SliderView->Size(); ++i)
+		{
+			auto [slider, canvasRenderer, rectTransform] = (*m_SliderView)[i];
+			if (Collide(rectTransform.WorldPosition, rectTransform.Size, mousePosition))
+			{
+				slider.Machine.TransitionTo(SliderState::Dragged);
+				SetMeshColor(canvasRenderer.Mesh, canvasRenderer.Color * slider.HooverColor);
+				if (slider.Execute<ClickEvent>(ClickEvent{ m_SliderView->GetEntity(i) }))
+					return true;
+			}
+		}
+		return false;
+	}
+
+	bool GuiContext::sliderOnMouseButtonRelease()
+	{
+		for (int i = 0; i < m_SliderView->Size(); ++i)
+		{
+			auto [slider, canvasRenderer, rectTransform] = (*m_SliderView)[i];
+			SetMeshColor(canvasRenderer.Mesh, canvasRenderer.Color);
+			if (slider.Machine.TransitionTo(SliderState::Released))
+			{
+				if (slider.Execute<ReleaseEvent>(ReleaseEvent{ m_SliderView->GetEntity(i) }))
+					return true;
+			}
+		}
+		return false;
+	}
+
+	bool GuiContext::sliderOnMouseMove(const glm::vec2& mousePosition)
+	{
+		for (int i = 0; i < m_SliderView->Size(); ++i)
+		{
+			auto [slider, canvasRenderer, rectTransform] = (*m_SliderView)[i];
+			if (slider.Machine.GetCurrentState().GetID() == SliderState::Dragged)
+			{
+				auto& rel = m_ECS->GetStorageComponent<Relationship>(m_SliderView->GetEntity(i));
+				uint32_t handle = rel.FirstChild;
+				auto& handleTransform = m_ECS->GetStorageComponent<RectTransform>(handle);
+				float diff = mousePosition.x - handleTransform.WorldPosition.x;
+				
+				if (handleTransform.Position.x + (handleTransform.Size.x / 2.0f) + diff < (rectTransform.Size.x / 2.0f)
+				&& (handleTransform.Position.x - (handleTransform.Size.x / 2.0f) + diff > (-rectTransform.Size.x / 2.0f)))
+				{
+					handleTransform.Position.x += diff;
+				}
+				else if (handleTransform.Position.x < 0.0f)
+				{
+					handleTransform.Position.x = (-rectTransform.Size.x / 2.0f) + (handleTransform.Size.x / 2.0f);
+				}
+				else
+				{
+					handleTransform.Position.x = (rectTransform.Size.x / 2.0f) - (handleTransform.Size.x / 2.0f);
+				}
+				
+				slider.Value = handleTransform.Position.x  / (rectTransform.Size.x - handleTransform.Size.x) + 0.5f;
+				slider.Execute<DraggedEvent>(DraggedEvent(m_SliderView->GetEntity(i), slider.Value));
+				handleTransform.Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent(
+					handle, QuadCanvasRendererRebuild()
+				));
+				return true;
+			}
+		}
+		return false;
+	}
+
+	bool GuiContext::inputFieldOnMouseButtonPress(const glm::vec2& mousePosition)
+	{
+		for (int i = 0; i < m_InputFieldView->Size(); ++i)
+		{
+			auto [inputField, canvasRenderer, rectTransform] = (*m_InputFieldView)[i];
+			if (inputField.Machine.GetCurrentState().GetID() == InputFieldState::Selected)
+			{
+				inputField.Machine.TransitionTo(InputFieldState::Released);
+				SetMeshColor(canvasRenderer.Mesh, canvasRenderer.Color);
+				inputField.Execute<ReleaseEvent>(ReleaseEvent(m_InputFieldView->GetEntity(i)));
+			}
+			if (Collide(rectTransform.WorldPosition, rectTransform.Size, mousePosition))
+			{
+				inputField.Machine.TransitionTo(InputFieldState::Hoovered);
+				if (inputField.Machine.TransitionTo(InputFieldState::Selected))
+				{
+					SetMeshColor(canvasRenderer.Mesh, canvasRenderer.Color * inputField.SelectColor);
+					inputField.Execute<ClickEvent>(ClickEvent(m_InputFieldView->GetEntity(i)));
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	bool GuiContext::inputFieldOnMouseMove(const glm::vec2& mousePosition)
+	{
+		for (int i = 0; i < m_InputFieldView->Size(); ++i)
+		{
+			auto [inputField, canvasRenderer, rectTransform] = (*m_InputFieldView)[i];
+			if (Collide(rectTransform.WorldPosition, rectTransform.Size, mousePosition))
+			{
+				if (inputField.Machine.TransitionTo(InputFieldState::Hoovered))
+				{
+					SetMeshColor(canvasRenderer.Mesh, canvasRenderer.Color * inputField.HooverColor);
+					inputField.Execute<HooverEvent>(HooverEvent{});
+				}
+				return true;
+			}
+			else if (inputField.Machine.TransitionTo(InputFieldState::UnHoovered))
+			{
+				SetMeshColor(canvasRenderer.Mesh, canvasRenderer.Color);
+				inputField.Execute<UnHooverEvent>(UnHooverEvent{});
+			}
+		}
+		return false;
+	}
+
+	void GuiContext::updateTransform(uint32_t entity, const glm::vec3& parentPosition)
 	{
 		auto& rectTransform = m_ECS->GetStorageComponent<RectTransform>(entity);
 		rectTransform.WorldPosition = parentPosition + rectTransform.Position;
 		auto& canvasRenderer = m_ECS->GetStorageComponent<CanvasRenderer>(entity);
 		if (canvasRenderer.IsVisible)
-		{
-			GuiRenderer::SubmitWidget(&canvasRenderer, &rectTransform);
+		{		
 			auto& currentRel = m_ECS->GetComponent<Relationship>(entity);
 			uint32_t currentEntity = currentRel.FirstChild;
 			while (currentEntity != NULL_ENTITY)
 			{
-				submitToRenderer(currentEntity, rectTransform.WorldPosition);
+				updateTransform(currentEntity, rectTransform.WorldPosition);
 				currentEntity = m_ECS->GetComponent<Relationship>(currentEntity).NextSibling;
 			}
 		}
 	}
 
-	void GuiContext::applyLayout(const LayoutGroup& layout, const Relationship& parentRel, const RectTransform& transform)
+	void GuiContext::applyLayoutGroup(const LayoutGroup& layout, const Relationship& parentRel, const RectTransform& transform)
 	{
 		glm::vec2 endOffset = { layout.Padding.Right, layout.Padding.Bottom };
 		glm::vec3 position = { layout.Padding.Left - (transform.Size.x / 2.0f), (transform.Size.y / 2.0f) - layout.Padding.Top, 0.0f };
@@ -686,7 +941,7 @@ namespace XYZ {
 			if (currentTransform.Size.y > maxHeight)
 				maxHeight = currentTransform.Size.y;
 
-			glm::vec3 sizeOffset = glm::vec3(currentTransform.Size.x / 2.0f, -currentTransform.Size.y / 2.0f, 0.0f);	
+			glm::vec3 sizeOffset = glm::vec3(currentTransform.Size.x / 2.0f, -currentTransform.Size.y / 2.0f, 0.0f);
 			if (position.x + (sizeOffset.x * 2.0f) >= (transform.Size.x / 2.0f) - layout.Padding.Right)
 			{
 				position.y -= maxHeight + layout.CellSpacing.y;
@@ -697,7 +952,7 @@ namespace XYZ {
 			position.x += currentTransform.Size.x + layout.CellSpacing.x;
 
 			current = currentRel.NextSibling;
-		}		
+		}
 	}
 
 
@@ -708,9 +963,9 @@ namespace XYZ {
 		auto& text = ecs.GetComponent<Text>(entity);
 
 		size_t oldMeshSize = renderer.Mesh.Vertices.size();
-		float height = 0.0f;
-		float xCursor = 0.0f;
-		float yCursor = 0.0f;
+		int32_t height = 0.0f;
+		int32_t xCursor = 0.0f;
+		int32_t yCursor = 0.0f;
 		uint32_t counter = 0;
 		for (auto c : text.Source)
 		{
@@ -722,7 +977,8 @@ namespace XYZ {
 				character.X1Coord - character.X0Coord,
 				character.Y1Coord - character.Y0Coord
 			};
-			if (height < charSize.y) height = charSize.y;
+			if (height < character.Y1Coord - character.Y0Coord) 
+				height = character.Y1Coord - character.Y0Coord;
 
 			glm::vec2 charOffset = { character.XOffset, charSize.y - character.YOffset };
 			glm::vec2 charPosition = { xCursor + charOffset.x, yCursor - charOffset.y };
@@ -751,10 +1007,12 @@ namespace XYZ {
 		}
 		if (text.Alignment == TextAlignment::Center)
 		{
+			int32_t xOffset = xCursor / 2;
+			int32_t yOffset = height / 2;
 			for (size_t i = oldMeshSize; i < renderer.Mesh.Vertices.size(); ++i)
 			{
-				renderer.Mesh.Vertices[i].Position.x -= xCursor / 2.0f;
-				renderer.Mesh.Vertices[i].Position.y -= height / 2.0f;
+				renderer.Mesh.Vertices[i].Position.x -= xOffset;
+				renderer.Mesh.Vertices[i].Position.y -= yOffset;
 			}
 		}
 	}
