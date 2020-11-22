@@ -18,12 +18,17 @@ namespace XYZ {
 
 	struct IDComponent : public ECS::Type<IDComponent>
 	{
+		IDComponent() = default;
+		IDComponent(const GUID& id) 
+			: ID(id)
+		{}
 		GUID ID;
 	};
 
 	class TransformComponent : public ECS::Type<TransformComponent>
 	{
 	public:
+		TransformComponent() = default;
 		TransformComponent(const glm::vec3& translation)
 			: Translation(translation)
 		{}

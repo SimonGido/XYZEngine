@@ -155,6 +155,61 @@ namespace XYZ {
 		return { translation, orientation, scale };
 	}
 
+	static enum class FieldType
+	{
+		Float,
+		Float2,
+		Float3,
+		Float4,
+		Int,
+		None
+	};
+
+	static FieldType FindType(const std::string& str)
+	{
+		char tokenComma = ',';
+		size_t numCommas = std::count(str.begin(), str.end(), tokenComma);
+		char tokenDot = '.';
+		size_t numDots = std::count(str.begin(), str.end(), tokenDot);
+
+		switch (numCommas)
+		{
+		case 0:
+			if (numDots)
+				return FieldType::Float;
+			else
+				return FieldType::Int;
+		case 1:
+			return FieldType::Float2;
+		case 2:
+			return FieldType::Float3;
+		case 3:
+			return FieldType::Float4;
+		}
+
+		XYZ_ASSERT(false, "Wrong type");
+		return FieldType::None;
+	}
+	static TextureWrap IntToTextureWrap(int wrap)
+	{
+
+		if (wrap == ToUnderlying(TextureWrap::Clamp))
+			return TextureWrap::Clamp;
+		if (wrap == ToUnderlying(TextureWrap::Repeat))
+			return TextureWrap::Repeat;
+
+
+		return TextureWrap::None;
+	}
+	static TextureParam IntToTextureParam(int param)
+	{
+		if (param == ToUnderlying(TextureParam::Nearest))
+			return TextureParam::Nearest;
+		if (param == ToUnderlying(TextureParam::Linear))
+			return TextureParam::Linear;
+
+		return TextureParam::None;
+	}
 	template<>
 	void Serializer::Serialize(YAML::Emitter& out, const Ref<Texture2D>& texture)
 	{
@@ -438,6 +493,10 @@ namespace XYZ {
 	{
 		if (entity.HasComponent<SceneTagComponent>())
 		{
+			IDComponent id = entity.GetComponent<IDComponent>();
+			out << YAML::BeginMap;
+			out << YAML::Key << "Entity";
+			out << YAML::Value << id.ID;
 			Serialize<SceneTagComponent>(out, entity.GetComponent<SceneTagComponent>());
 
 			if (entity.HasComponent<TransformComponent>())
@@ -477,5 +536,206 @@ namespace XYZ {
 		out << YAML::EndMap;
 	}
 
+	template <>
+	Ref<Texture2D> Serializer::Deserialize<Ref<Texture2D>>(YAML::Node& data)
+	{
+		TextureWrap wrap = TextureWrap::Clamp;
+		TextureParam min = TextureParam::Linear;
+		TextureParam max = TextureParam::Nearest;
+
+		XYZ_ASSERT(data["Texture"], "Incorrect file format");
+		wrap = IntToTextureWrap(data["Wrap"].as<int>());
+		min = IntToTextureParam(data["Param Min"].as<int>());
+		max = IntToTextureParam(data["Param Max"].as<int>());
 	
+		return Texture2D::Create(wrap, min, max, data["TexturePath"].as<std::string>());
+	}
+
+	template <>
+	Ref<SubTexture2D> Serializer::Deserialize<Ref<SubTexture2D>>(YAML::Node& data)
+	{
+		XYZ_ASSERT(data["SubTexture"], "Incorrect file format ");
+
+		std::string path = data["TextureAssetPath"].as<std::string>();
+		std::ifstream stream(path);
+		XYZ_ASSERT(stream.is_open(), "Texture does not exist");
+
+		std::stringstream strStream;
+		strStream << stream.rdbuf();
+		YAML::Node textureData = YAML::Load(strStream.str());
+
+		Ref<Texture2D> texture = Deserialize<Ref<Texture2D>>(textureData);
+		glm::vec4 texCoords = data["TexCoords"].as<glm::vec4>();
+
+		return Ref<SubTexture2D>::Create(texture, texCoords);
+	}
+
+	template <>
+	Ref<Material> Serializer::Deserialize<Ref<Material>>(YAML::Node& data)
+	{
+		auto shader = Shader::Create(data["ShaderAssetPath"].as<std::string>());
+		Ref<Material> material = Ref<Material>::Create(shader);
+
+		for (auto& seq : data["Textures"])
+		{
+			std::string path = seq["TextureAssetPath"].as<std::string>() + ".meta";
+			uint32_t index = seq["TextureIndex"].as<uint32_t>();
+			Ref<Texture2D> texture;
+			std::ifstream stream(path);
+			if (stream.is_open())
+			{
+				std::stringstream strStream;
+				strStream << stream.rdbuf();
+				YAML::Node textureData = YAML::Load(strStream.str());
+				texture = Deserialize<Ref<Texture2D>>(textureData);
+			}
+			else
+			{
+				XYZ_LOG_WARN("Missing texture meta data, setting default");
+				texture = Texture2D::Create(TextureWrap::Clamp, TextureParam::Linear, TextureParam::Nearest, path);
+			}
+			material->Set("u_Texture", texture, index);
+		}
+
+		for (auto& seq : data["Values"])
+		{
+			for (auto& val : seq)
+			{
+				std::stringstream ss;
+				ss << val.second;
+				auto type = FindType(ss.str());
+				switch (type)
+				{
+				case FieldType::Float:
+					material->Set(val.first.as<std::string>(), val.second.as<float>());
+					break;
+				case FieldType::Float2:
+					material->Set(val.first.as<std::string>(), val.second.as<glm::vec2>());
+					break;
+				case FieldType::Float3:
+					material->Set(val.first.as<std::string>(), val.second.as<glm::vec3>());
+					break;
+				case FieldType::Float4:
+					material->Set(val.first.as<std::string>(), val.second.as<glm::vec4>());
+					break;
+				case FieldType::None:
+					break;
+				}
+
+			}
+		}
+		return material;
+	}
+
+
+	template <>
+	SpriteRenderer Serializer::Deserialize<SpriteRenderer>(YAML::Node& data)
+	{
+		std::string materialPath = data["MaterialAssetPath"].as<std::string>();
+		std::string subtexturePath = data["SubTextureAssetPath"].as<std::string>();
+		glm::vec4 color = data["Color"].as<glm::vec4>();
+		uint16_t sortLayer = data["SortLayer"].as<uint16_t>();
+
+
+		std::ifstream stream(materialPath);
+		std::stringstream strStream;
+		strStream << stream.rdbuf();
+
+		YAML::Node matData = YAML::Load(strStream.str());
+		Ref<Material> material = Deserialize<Ref<Material>>(matData);
+	}
+
+	template <>
+	CameraComponent Serializer::Deserialize<CameraComponent>(YAML::Node& data)
+	{
+		CameraPerspectiveProperties perspectiveProps;
+		CameraOrthographicProperties orthoProps;
+		CameraProjectionType projectionType;
+
+		uint32_t type = data["ProjectionType"].as<uint32_t>();
+		switch (type)
+		{
+		case ToUnderlying(CameraProjectionType::Orthographic):
+			projectionType = CameraProjectionType::Orthographic;
+			break;
+		case ToUnderlying(CameraProjectionType::Perspective):
+			projectionType = CameraProjectionType::Perspective;
+			break;
+		default:
+			projectionType = CameraProjectionType::Orthographic;
+		}
+		perspectiveProps.PerspectiveFOV =  data["PerspectiveFOV"].as<float>();
+		perspectiveProps.PerspectiveNear = data["PerspectiveNear"].as<float>();
+		perspectiveProps.PerspectiveFar =  data["PerspectiveFar"].as<float>();
+
+		orthoProps.OrthographicSize = data["OrthographicSize"].as<float>();
+		orthoProps.OrthographicNear = data["OrthographicNear"].as<float>();
+		orthoProps.OrthographicFar =  data["OrthographicFar"].as<float>();
+
+		CameraComponent camera;
+		camera.Camera.SetProjectionType(projectionType);
+		camera.Camera.SetPerspective(perspectiveProps);
+		camera.Camera.SetOrthographic(orthoProps);
+		return camera;
+	}
+
+	template <>
+	TransformComponent Serializer::Deserialize<TransformComponent>(YAML::Node& data)
+	{
+		TransformComponent transform(data["Position"].as<glm::vec3>());
+		
+		glm::vec3 rotation = data["Rotation"].as<glm::vec3>();
+		glm::vec3 scale = data["Scale"].as<glm::vec3>();
+
+		transform.Rotation = rotation;
+		transform.Scale = scale;
+		return transform;
+	}
+
+	template <>
+	Entity Serializer::Deserialize<Entity>(YAML::Node& data)
+	{
+		Entity entity;
+		GUID guid;
+		guid = data["Entity"].as<std::string>();
+		entity.AddComponent<IDComponent>(IDComponent(guid));
+
+		SceneTagComponent tag = data["SceneTagComponent"].as<std::string>();
+		entity.AddComponent<SceneTagComponent>(tag);
+		auto transformComponent = data["TransformComponent"];
+		if (transformComponent)
+		{
+			entity.AddComponent<TransformComponent>(Deserialize<TransformComponent>(transformComponent));
+		}
+		auto cameraComponent = data["CameraComponent"];
+		if (cameraComponent)
+		{
+			entity.AddComponent<CameraComponent>(Deserialize<CameraComponent>(cameraComponent));
+		}
+		auto spriteRenderer = data["SpriteRenderer"];
+		if (spriteRenderer)
+		{
+			entity.AddComponent<SpriteRenderer>(Deserialize<SpriteRenderer>(spriteRenderer));
+		}
+	}
+	
+	template <>
+	Ref<Scene> Serializer::Deserialize<Ref<Scene>>(YAML::Node& data)
+	{
+		XYZ_ASSERT(data["Scene"], "Incorrect file format");
+
+		std::string sceneName = data["Scene"].as<std::string>();
+		XYZ_LOG_INFO("Deserializing scene ", sceneName);
+
+		Ref<Scene> result = Ref<Scene>::Create(sceneName);
+		auto entities = data["Entities"];
+		if (entities)
+		{
+			for (auto entity : entities)
+			{
+				result->m_Entities.push_back(Deserialize<Entity>(entity));
+			}
+		}
+		return result;
+	}
 }
