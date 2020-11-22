@@ -60,7 +60,7 @@ project "XYZEngine"
 			"%{prj.name}/vendor/yaml-cpp/include/**.h",
 
 			"%{prj.name}/vendor/RCC/**.h",
-			"%{prj.name}/vendor/RCC/**.cpp"
+			"%{prj.name}/vendor/RCC/**.cpp",
 		}
 
 		defines

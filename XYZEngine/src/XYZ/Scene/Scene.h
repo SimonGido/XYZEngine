@@ -53,6 +53,7 @@ namespace XYZ {
 
         Entity GetEntity(uint32_t index);
         Entity GetSelectedEntity();
+        
         SceneState GetState() const { return m_State; }
         ECS::ECSManager& GetECS() { return m_ECS; }
 
@@ -89,6 +90,7 @@ namespace XYZ {
         SpriteRenderer* m_CameraSprite;
          
         friend class Entity;
+        friend class Serializer;
         friend class Asset<Scene>;
     };
 }

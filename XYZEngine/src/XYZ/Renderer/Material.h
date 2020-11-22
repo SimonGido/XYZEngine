@@ -69,6 +69,8 @@ namespace XYZ {
 		size_t GetNumberOfTextures() const { return m_Textures.size(); }
 		
 		Ref<Shader>& GetShader() { return m_Shader; }
+		const Ref<Shader>& GetShader() const { return m_Shader; }
+
 		const uint8_t* GetBuffer() const { return m_Buffer; }
 		const std::vector<Ref<Texture>>& GetTextures() const { return m_Textures; }
 		

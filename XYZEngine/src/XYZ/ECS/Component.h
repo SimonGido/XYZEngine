@@ -19,7 +19,7 @@ namespace XYZ {
 		private:
 			static uint8_t getNextID()
 			{
-				static uint16_t nextType = 0;
+				static uint8_t nextType = 0;
 				return ++nextType;
 			}
 

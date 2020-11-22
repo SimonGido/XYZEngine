@@ -62,6 +62,21 @@ namespace XYZ {
 			}
 
 			template <typename T>
+			const T& GetComponent(uint32_t entity) const
+			{
+				Signature& signature = m_EntityManager.GetSignature(entity);
+				XYZ_ASSERT(signature.test(T::GetComponentID()), "Entity does not have component");
+				if (signature.test(HAS_GROUP_BIT))
+				{
+					uint8_t* component = nullptr;
+					m_ComponentManager.GetFromGroup(entity, signature, T::GetComponentID(), &component);
+					if (component)
+						return *(T*)component;
+				}
+				return m_ComponentManager.GetComponent<T>(entity);
+			}
+
+			template <typename T>
 			T& GetGroupComponent(uint32_t entity)
 			{
 				Signature& signature = m_EntityManager.GetSignature(entity);
@@ -75,13 +90,34 @@ namespace XYZ {
 			}
 
 			template <typename T>
+			const T& GetGroupComponent(uint32_t entity) const
+			{
+				Signature& signature = m_EntityManager.GetSignature(entity);
+				XYZ_ASSERT(signature.test(T::GetComponentID()), "Entity does not have component");
+				XYZ_ASSERT(signature.test(HAS_GROUP_BIT), "Entity does not have group");
+
+				uint8_t* component = nullptr;
+				m_ComponentManager.GetFromGroup(entity, signature, T::GetComponentID(), &component);
+				XYZ_ASSERT(component, "Group does not contain entity");
+				return *(T*)component;
+			}
+
+			template <typename T>
 			T& GetStorageComponent(uint32_t entity)
 			{
 				XYZ_ASSERT(m_EntityManager.GetSignature(entity).test(T::GetComponentID()), "Entity does not have component");
 				return m_ComponentManager.GetComponent<T>(entity);
 			}
 
-			const Signature& GetEntitySignature(uint32_t entity)
+
+			template <typename T>
+			const T& GetStorageComponent(uint32_t entity) const
+			{
+				XYZ_ASSERT(m_EntityManager.GetSignature(entity).test(T::GetComponentID()), "Entity does not have component");
+				return m_ComponentManager.GetComponent<T>(entity);
+			}
+
+			const Signature& GetEntitySignature(uint32_t entity) const
 			{
 				return m_EntityManager.GetSignature(entity);
 			}
