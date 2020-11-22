@@ -430,20 +430,21 @@ namespace XYZ {
 	}
 
 
-	static void SerializeEntity(YAML::Emitter& out, AssetManager& manager, Entity entity, int32_t parentIndex)
+	static void SerializeEntity(YAML::Emitter& out, AssetManager& manager, Entity entity)
 	{
 		if (entity.HasComponent<SceneTagComponent>())
 		{
-			SceneTagComponent& tag = entity.GetComponent<SceneTagComponent>();
+			IDComponent id = entity.GetComponent<IDComponent>();
 			out << YAML::BeginMap;
 			out << YAML::Key << "Entity";
-			out << YAML::Value << tag.Name;
-		
-			if (parentIndex >= 0)
-			{
-				out << YAML::Key << "Parent";
-				out << YAML::Value << parentIndex;
-			}
+			out << YAML::Value << id.ID;
+
+			SceneTagComponent& tag = entity.GetComponent<SceneTagComponent>();
+			out << YAML::Key << "SceneTagComponent";
+			out << YAML::BeginMap;
+			out << YAML::Key << "Name" << YAML::Value << tag.Name;
+			out << YAML::EndMap;
+
 			if (entity.HasComponent<TransformComponent>())
 			{
 				out << YAML::Key << "TransformComponent";
@@ -534,7 +535,7 @@ namespace XYZ {
 		for (auto ent : scene->m_Entities)
 		{
 			Entity entity = { ent,scene.Raw() };
-			SerializeEntity(out, manager, entity, -1);
+			SerializeEntity(out, manager, entity);
 		}
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
@@ -559,20 +560,17 @@ namespace XYZ {
 		Handle = Ref<Scene>::Create(sceneName);
 		auto entities = data["Entities"];
 		if (entities)
-		{
-			std::vector<std::pair<Entity, Entity>> deserializedEntities;
-			
+		{	
 			for (auto entity : entities)
-			{
-				SceneTagComponent tag(entity["Entity"].as<std::string>());
+			{			
+				GUID guid;
+				guid = entity["Entity"].as<std::string>();
 
-				Entity ent = Handle->CreateEntity(tag);
-				auto parent = entity["Parent"];
-				if (parent)
-				{
-					Entity parentEntity(parent.as<uint32_t>(), Handle.Raw());
-					deserializedEntities.push_back({ ent, parentEntity });
-				}
+				auto sceneTagComponent = entity["SceneTagComponent"];
+				SceneTagComponent tag(sceneTagComponent["Name"].as<std::string>());
+			
+				Entity ent = Handle->CreateEntity(tag, guid);
+			
 				auto transformComponent = entity["TransformComponent"];
 				if (transformComponent)
 				{
@@ -643,14 +641,7 @@ namespace XYZ {
 						sortLayer
 					));
 				}
-			}
-
-			for (auto& entity : deserializedEntities)
-			{
-				auto& [child, parent] = entity;
-				Handle->SetParent(parent, child);
-			}
-			
+			}		
 		}
 	}
 

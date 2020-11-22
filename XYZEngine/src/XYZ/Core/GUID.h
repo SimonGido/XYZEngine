@@ -11,6 +11,12 @@ namespace XYZ {
 		GUID();
 		GUID(const GUID& other);
 		
+		GUID& operator=(const std::string uuid)
+		{
+			m_UUID = uuid;
+			return *this;
+		}
+
 		operator std::string& () { return m_UUID; }
 		operator const  std::string& () const { return m_UUID; }
 

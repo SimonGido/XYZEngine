@@ -1,6 +1,8 @@
 Scene: Test Scene
 Entities:
-  - Entity: Main Camera
+  - Entity: "{93EF9084-8E06-4BBC-BBB9-0EFBD6BBEC9A}"
+    SceneTagComponent:
+      Name: Main Camera
     TransformComponent:
       Position: [-7.56528664, -15.2381783, 0]
       Rotation: [0, 0, 0]
@@ -13,7 +15,9 @@ Entities:
       OrthographicSize: 36
       OrthographicNear: -1
       OrthographicFar: 1
-  - Entity: Test Entity
+  - Entity: "{20B7B59C-CA1A-419C-9C30-B59C85BF69EA}"
+    SceneTagComponent:
+      Name: Test Entity
     TransformComponent:
       Position: [11.5751724, -13.1587791, 0]
       Rotation: [0, 0, 0]
@@ -24,7 +28,9 @@ Entities:
       Color: [0.992172241, 0.996078432, 0.996078432, 1]
       SortLayer: 5
       IsVisible: true
-  - Entity: Test
+  - Entity: "{CE0C06EC-2EA2-44AE-9D4D-238AF5A4E8E6}"
+    SceneTagComponent:
+      Name: Test
     TransformComponent:
       Position: [21.0612316, -19.1210003, 0]
       Rotation: [0, 0, 0]
@@ -35,7 +41,9 @@ Entities:
       Color: [1, 1, 1, 1]
       SortLayer: 1
       IsVisible: true
-  - Entity: Background
+  - Entity: "{26B86D3F-BCBB-4FDC-B50B-97621629D76A}"
+    SceneTagComponent:
+      Name: Background
     TransformComponent:
       Position: [-6.71537018, -12.3699999, 0]
       Rotation: [0, 0, 0]
@@ -46,12 +54,16 @@ Entities:
       Color: [1, 1, 1, 1]
       SortLayer: 0
       IsVisible: true
-  - Entity: Light
+  - Entity: "{886D172D-0D18-426A-9EE5-E71866508A71}"
+    SceneTagComponent:
+      Name: Light
     TransformComponent:
       Position: [-19.4020004, -4.81110001, 5]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-  - Entity: Light2
+  - Entity: "{B8A7616A-93DF-4A45-A64D-F8F3645E3AE0}"
+    SceneTagComponent:
+      Name: Light2
     TransformComponent:
       Position: [25.459465, 7.94594574, 2]
       Rotation: [0, 0, 0]

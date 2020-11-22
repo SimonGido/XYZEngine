@@ -2,6 +2,7 @@
 #include "XYZ/ECS/ECSManager.h"
 #include "XYZ/ECS/Component.h"
 #include "XYZ/ECS/Types.h"
+#include "XYZ/Core/GUID.h"
 #include "XYZ/Particle/ParticleEffect.h"
 #include "XYZ/Renderer/SubTexture2D.h"
 
@@ -14,6 +15,11 @@
 
 namespace XYZ {
 	class ScriptableEntity;
+
+	struct IDComponent : public ECS::Type<IDComponent>
+	{
+		GUID ID;
+	};
 
 	class TransformComponent : public ECS::Type<TransformComponent>
 	{

@@ -35,7 +35,7 @@ namespace XYZ {
         Scene(const std::string& name);
         ~Scene();
     
-        Entity CreateEntity(const std::string& name);
+        Entity CreateEntity(const std::string& name, const GUID& guid);
         void DestroyEntity(Entity entity);
         void SetParent(Entity parent, Entity child);
         void SetState(SceneState state) { m_State = state; }

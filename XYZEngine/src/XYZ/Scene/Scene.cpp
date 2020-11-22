@@ -56,10 +56,12 @@ namespace XYZ {
 		delete m_CameraSprite;
 	}
 
-	Entity Scene::CreateEntity(const std::string& name)
+	Entity Scene::CreateEntity(const std::string& name, const GUID& guid)
 	{
 		Entity entity(m_ECS.CreateEntity(), this);
-		
+		IDComponent id;
+		id.ID = guid;
+		entity.AddComponent<IDComponent>(id);
 		entity.AddComponent<SceneTagComponent>( SceneTagComponent(name) );
 		entity.AddComponent<TransformComponent>(TransformComponent(glm::vec3(0.0f, 0.0f, 0.0f)));
 		
