@@ -24,7 +24,7 @@ IncludeDir["mini"] = "XYZEngine/vendor/mini"
 IncludeDir["OpenAL"] = "XYZEngine/vendor/OpenAL-Soft"
 IncludeDir["MiniMp3"] = "XYZEngine/vendor/minimp3"
 IncludeDir["FreeType"] = "XYZEngine/vendor/freetype-2.10.1"
-
+IncludeDir["FileWatcher"] = "XYZEngine/vendor/FileWatcher/include"
 
 include "XYZEngine/vendor/GLFW"
 include "XYZEngine/vendor/GLEW"
@@ -60,7 +60,7 @@ project "XYZEngine"
 			"%{prj.name}/vendor/yaml-cpp/include/**.h",
 
 			"%{prj.name}/vendor/RCC/**.h",
-			"%{prj.name}/vendor/RCC/**.cpp",
+			"%{prj.name}/vendor/RCC/**.cpp"
 		}
 
 		defines
@@ -135,6 +135,7 @@ project "XYZEditor"
 		includedirs
 		{
 			"XYZEngine/vendor",
+			"XYZEngine/vendor/yaml-cpp/include",
 			"XYZEngine/src",
 			"NativeScript",
 			"%{IncludeDir.glm}",
