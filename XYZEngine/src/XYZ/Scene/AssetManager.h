@@ -20,9 +20,9 @@ namespace XYZ {
 		{
 			std::string fullPath = m_Directory + "\\" + filepath;
 			static_assert(std::is_base_of<Serializable, T>::value, "Class is not serializable!");
-			//auto it = m_Assets.find(fullPath);
-			//if (it != m_Assets.end() && it->second->GetRefCount())
-				//return Ref<T>((T*)it->second);
+			auto it = m_Assets.find(fullPath);
+			if (it != m_Assets.end() && it->second->GetRefCount())
+				return Ref<T>((T*)it->second);
 			
 			Ref<T> ref = Serializer::DeserializeResource<T>(fullPath);
 			m_Assets[fullPath] = ref.Raw();

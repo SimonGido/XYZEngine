@@ -1,6 +1,7 @@
 #pragma once
 
 #include "XYZ/Core/Ref.h"
+#include "XYZ/Utils/DataStructures/ByteBuffer.h"
 
 #include <unordered_map>
 #include <memory>
@@ -19,117 +20,80 @@ namespace XYZ {
 		NONE,
 		SAMPLER2D,
 		SAMPLERCUBE,
-		BOOL, FLOAT, FLOAT_VEC2, FLOAT_VEC3, FLOAT_VEC4,
+		BOOL, FLOAT, VEC2, VEC3, VEC4,
 		INT, INT_VEC2, INT_VEC3, INT_VEC4,
-		FLOAT_MAT4,
+		MAT3, MAT4,
 		STRUCT,
 	};
 
+	enum class ShaderType
+	{
+		Vertex,
+		Fragment,
+		Compute
+	};
 
-	/**
-	* @struct Uniform
-	* @brief represents uniform of the shader
-	*/
 	struct Uniform
 	{
-		std::string Name;
-		UniformDataType Type;
-		uint32_t Location;
-		unsigned int Offset;
-		unsigned int Size;
-		unsigned int Count;
-		bool IsArray;
+		std::string		Name;
+		UniformDataType DataType;
+		ShaderType		ShaderType;
+		uint32_t		Offset;
+		uint32_t		Size;
+		uint32_t		Count;
+		uint32_t		Location;
 	};
 
-	struct UniformBuffer
+	struct UniformList
 	{
-
+		std::vector<Uniform> Uniforms;
+		uint32_t			 Size = 0;
 	};
 
-	/**
-	* @struct TextureUniform
-	* @brief represents texture uniform of the shader
-	*/
 	struct TextureUniform
 	{
 		std::string Name;
-		uint32_t Location;
 		uint32_t Slot;
 		uint32_t Count;
 	};
 
-	/**
-	* @struct SubRoutine
-	* @brief represents sub routine of the shader
-	*/
-	struct SubRoutine
+	struct TextureUniformList
 	{
-		uint32_t ShaderType;
-		uint32_t Index;
-		std::string Name;
+		std::vector<TextureUniform> Textures;
+		uint32_t					Count;
 	};
 
-	/**
-	* @struct Routine
-	* @brief represents routine of the shader
-	*/
-	struct Routine
-	{
-		std::vector<SubRoutine> SubRoutines;
-		SubRoutine ActiveSubRoutine;
-	};
-
-
-
-	/**
-	* @class Shader
-	* @brief Shader encapsulates graphics API shader program.
-	* Creates abstraction above shader programs
-	*/
 	class Shader : public RefCount
 	{
 	public:
 		~Shader() = default;
 
 		virtual void Bind() const = 0;
-		virtual void Compute(uint32_t groupX, uint32_t groupY = 1, uint32_t groupZ = 1) const = 0;
 		virtual void Unbind() const = 0;
-		virtual void SetUniforms(unsigned char* buffer) = 0;
-		virtual void SetSubRoutine(const std::string& name) = 0;
-		virtual void UploadRoutines() = 0;
+		virtual void Compute(uint32_t groupX, uint32_t groupY = 1, uint32_t groupZ = 1) const = 0;
+		virtual void SetVSUniforms(ByteBuffer buffer) = 0;
+		virtual void SetFSUniforms(ByteBuffer buffer) = 0;
+
 		virtual void Reload() = 0;
 		virtual void AddReloadCallback(std::function<void()> callback) = 0;
-		virtual void AddSource(const std::string& filePath) = 0;
 
 
+		virtual void SetInt(const std::string& name, int value) = 0;
 		virtual void SetFloat(const std::string& name, float value) = 0;
 		virtual void SetFloat2(const std::string& name,const glm::vec2& value) = 0;
 		virtual void SetFloat3(const std::string& name, const glm::vec3& value) = 0;
 		virtual void SetFloat4(const std::string& name, const glm::vec4& value) = 0;
-		virtual void SetInt(const std::string& name, int value) = 0;
 		virtual void SetMat4(const std::string& name, const glm::mat4& value) = 0;
 
-		virtual std::string GetPath() const = 0;
-		virtual std::string GetName() const = 0;
-		virtual const Uniform* FindUniform(const std::string& name) const = 0;
-		virtual const TextureUniform* FindTexture(const std::string& name) const = 0;
-
-		virtual uint32_t GetUniformSize() const = 0;
-		virtual const std::vector<Uniform>& GetUniforms() const = 0;
+		virtual const UniformList& GetVSUniformList() const = 0;
+		virtual const UniformList& GetFSUniformList() const = 0;
+		
+		virtual const std::string& GetPath() const = 0;
+		virtual const std::string& GetName() const = 0;
+		
 		virtual uint32_t GetRendererID() const = 0;
-		/**
-		* Create Shader
-		* @param[in] path	File path to the glsl code
-		* @return shared_ptr to Shader
-		*/
-		static Ref<Shader> Create(const std::string& path);
 
-		/**
-		* Create Shader
-		* @param[in] name	Name of the shader
-		* @param[in] path	File path to the glsl code
-		* @return shared_ptr to Shader
-		*/
+		static Ref<Shader> Create(const std::string& path);
 		static Ref<Shader> Create(const std::string& name, const std::string& path);
 
 	protected:

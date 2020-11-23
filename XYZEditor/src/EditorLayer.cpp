@@ -108,7 +108,6 @@ namespace XYZ {
 		renderMat->Set("u_Texture", Texture2D::Create(XYZ::TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest, "Assets/Textures/flame.png"), 0);
 		renderMat->Set("u_Texture", Texture2D::Create(XYZ::TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest, "Assets/Textures/flame_emission.png"), 1);
 
-		computeMat->SetRoutine("blueColor");
 
 		m_Particle = &m_TestEntity.AddComponent<ParticleComponent>(ParticleComponent());
 		m_Particle->RenderMaterial = Ref<MaterialInstance>::Create(renderMat);

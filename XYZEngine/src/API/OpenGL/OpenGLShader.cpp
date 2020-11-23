@@ -10,6 +10,82 @@
 
 namespace XYZ {
 
+	UniformDataType StringToType(const std::string& type)
+	{
+		if (type == "int")      return UniformDataType::INT;
+		if (type == "float")    return UniformDataType::FLOAT;
+		if (type == "vec2")     return UniformDataType::VEC2;
+		if (type == "vec3")     return UniformDataType::VEC3;
+		if (type == "vec4")     return UniformDataType::VEC4;
+		if (type == "mat3")     return UniformDataType::MAT3;
+		if (type == "mat4")     return UniformDataType::MAT4;
+		return UniformDataType::NONE;
+	}
+	uint32_t SizeOfUniformType(UniformDataType type)
+	{
+		switch (type)
+		{
+		case UniformDataType::INT:        return 4;
+		case UniformDataType::FLOAT:      return 4;
+		case UniformDataType::VEC2:       return 4 * 2;
+		case UniformDataType::VEC3:       return 4 * 3;
+		case UniformDataType::VEC4:       return 4 * 4;
+		case UniformDataType::MAT3:       return 4 * 3 * 3;
+		case UniformDataType::MAT4:       return 4 * 4 * 4;
+		}
+		return 0;
+	}
+
+	std::vector<std::string> SplitString(const std::string& string, const std::string& delimiters)
+	{
+		size_t start = 0;
+		size_t end = string.find_first_of(delimiters);
+
+		std::vector<std::string> result;
+
+		while (end <= std::string::npos)
+		{
+			std::string token = string.substr(start, end - start);
+			if (!token.empty())
+				result.push_back(token);
+
+			if (end == std::string::npos)
+				break;
+
+			start = end + 1;
+			end = string.find_first_of(delimiters, start);
+		}
+
+		return result;
+	}
+
+	std::vector<std::string> SplitString(const std::string& string, const char delimiter)
+	{
+		return SplitString(string, std::string(1, delimiter));
+	}
+
+	std::vector<std::string> Tokenize(const std::string& string)
+	{
+		return SplitString(string, " \t\n");
+	}
+
+	std::vector<std::string> GetLines(const std::string& string)
+	{
+		return SplitString(string, "\n");
+	}
+
+	std::string GetStatement(const char* str, const char** outPosition)
+	{
+		const char* end = strstr(str, ";");
+		if (!end)
+			return str;
+
+		if (outPosition)
+			*outPosition = end;
+		uint32_t length = end - str + 1;
+		return std::string(str, length);
+	}
+
 	static std::string CutArrayIndexing(const std::string& name)
 	{
 		std::string str;
@@ -35,29 +111,36 @@ namespace XYZ {
 		XYZ_ASSERT(false, "Unknown shader type!");
 		return 0;
 	}
-	OpenGLShader::OpenGLShader(const std::string& path)
-		: m_NumTakenTexSlots(0), m_UniformsSize(0), m_Textures(0), m_Path(path)
+
+	std::string readShaderFromFile(const std::string& filepath)
 	{
-		std::string source = readFile(path);
-		auto shaderSources = preProcess(source);
-		Renderer::Submit([=](){
-				compile(shaderSources);
-				parseUniforms();
-				parseSubRoutines();
-				glUseProgram(0);
-		});
+		std::string result;
+		std::ifstream in(filepath, std::ios::in | std::ios::binary);
+		if (in)
+		{
+			in.seekg(0, std::ios::end);
+			result.resize(in.tellg());
+			in.seekg(0, std::ios::beg);
+			in.read(&result[0], result.size());
+			in.close();
+		}
+		else
+		{
+			XYZ_ASSERT(false, "Could not load shader!");
+		}
+		return result;
+	}
+
+
+	OpenGLShader::OpenGLShader(const std::string& path)
+		: m_NumTakenTexSlots(0), m_AssetPath(path)
+	{
+		Reload();
 	}
 	OpenGLShader::OpenGLShader(const std::string& name, const std::string& path)
-		: m_Name(name), m_NumTakenTexSlots(0), m_UniformsSize(0), m_Textures(0), m_Path(path)
+		: m_Name(name), m_AssetPath(path)
 	{
-		std::string source = readFile(m_Path);
-		auto shaderSources = preProcess(source);
-		Renderer::Submit([=]() {
-			compile(shaderSources);
-			parseUniforms();
-			parseSubRoutines();
-			glUseProgram(0);
-		});
+		Reload();
 	}
 	OpenGLShader::~OpenGLShader()
 	{
@@ -86,76 +169,45 @@ namespace XYZ {
 			});
 	}
 
-	const Uniform* OpenGLShader::FindUniform(const std::string& name) const
+	void OpenGLShader::SetVSUniforms(ByteBuffer buffer)
 	{
-		for (size_t i = 0; i < m_Uniforms.size(); ++i)
+		for (auto& uniform : m_VSUniformList.Uniforms)
 		{
-			if (m_Uniforms[i].Name == name)
-				return &m_Uniforms[i];
-		}
-		return nullptr;
-	}
-
-
-	const TextureUniform* OpenGLShader::FindTexture(const std::string& name) const
-	{
-		for (size_t i = 0; i < m_Textures.size(); ++i)
-		{
-			if (m_Textures[i].Name == name)
-				return &m_Textures[i];
-		}
-		return nullptr;
-	}
-
-	void OpenGLShader::addUniform(UniformDataType type, unsigned int size, unsigned int offset, const std::string& name, unsigned int count)
-	{
-		int32_t id = glGetUniformLocation(m_RendererID, name.c_str());
-		if (id != -1)
-		{
-			if (type == UniformDataType::SAMPLER2D)
+			if (uniform.Count > 1)
 			{
-				TextureUniform texture;
-				texture.Count = count;
-				texture.Location = id;
-				texture.Name = name;
-				texture.Slot = m_NumTakenTexSlots;
-
-				XYZ_ASSERT(texture.Slot + (count - 1) < sc_MaxTextureSlots, "It is possible to have only ", sc_MaxTextureSlots, " textures per shader");
-				glUseProgram(m_RendererID);
-				if (count > 1)
-				{
-					texture.Name = CutArrayIndexing(texture.Name);
-					int32_t slots[32];
-					for (int32_t i = (int32_t)texture.Slot; i < (int32_t)count + (int32_t)texture.Slot; ++i)
-						slots[i] = i;
-					glUniform1iv(texture.Location, texture.Count, &slots[texture.Slot]);
-				}
-				else
-					glUniform1i(id, texture.Slot);
-
-
-				m_NumTakenTexSlots += count;
-				m_Textures.push_back(texture);
+				Renderer::Submit([=]() {
+					setUniformArr(&uniform, buffer);
+					});
 			}
 			else
 			{
-				Uniform uniform;
-				uniform.Size = size;
-				uniform.Offset = offset;
-				uniform.Type = type;
-				uniform.Location = id;
-				uniform.Name = name;
-				uniform.Count = count;
-
-				if (uniform.Count > 1)
-					uniform.IsArray = true;
-				else
-					uniform.IsArray = false;
-				m_Uniforms.push_back(uniform);
+				Renderer::Submit([=]() {
+					setUniform(&uniform, buffer);
+					});
 			}
 		}
 	}
 
+	void OpenGLShader::SetFSUniforms(ByteBuffer buffer)
+	{
+		for (auto& uniform : m_FSUniformList.Uniforms)
+		{
+			if (uniform.Count > 1)
+			{
+				Renderer::Submit([=]() {
+					setUniformArr(&uniform, buffer);
+					});
+			}
+			else
+			{
+				Renderer::Submit([=]() {
+					setUniform(&uniform, buffer);
+					});
+			}
+		}
+	}
+
+	
 	void OpenGLShader::parseSource(unsigned int Component,const std::string& source)
 	{		
 		const char* versionToken = "#version";
@@ -179,124 +231,62 @@ namespace XYZ {
 		}
 	}
 
-	void OpenGLShader::setUniform(const Uniform* uniform, unsigned char* data)
+	void OpenGLShader::setUniform(const Uniform* uniform, ByteBuffer data)
 	{
-		switch (uniform->Type)
+		switch (uniform->DataType)
 		{
 		case UniformDataType::FLOAT:
 			uploadFloat(uniform->Location, *(float*)& data[uniform->Offset]);
 			break;
-		case UniformDataType::FLOAT_VEC2:
+		case UniformDataType::VEC2:
 			uploadFloat2(uniform->Location, *(glm::vec2*) & data[uniform->Offset]);
 			break;
-		case UniformDataType::FLOAT_VEC3:
+		case UniformDataType::VEC3:
 			uploadFloat3(uniform->Location, *(glm::vec3*) & data[uniform->Offset]);
 			break;
-		case UniformDataType::FLOAT_VEC4:
+		case UniformDataType::VEC4:
 			uploadFloat4(uniform->Location, *(glm::vec4*) & data[uniform->Offset]);
 			break;
 		case UniformDataType::INT:
 			uploadInt(uniform->Location, *(int*)& data[uniform->Offset]);
 			break;
-		case UniformDataType::FLOAT_MAT4:
+		case UniformDataType::MAT4:
 			uploadMat4(uniform->Location, *(glm::mat4*) & data[uniform->Offset]);
 			break;
 		};
 	}
 
-	void OpenGLShader::setUniformArr(const Uniform* uniform, unsigned char* data)
+	void OpenGLShader::setUniformArr(const Uniform* uniform, ByteBuffer data)
 	{
-		switch (uniform->Type)
+		switch (uniform->DataType)
 		{
 		case UniformDataType::FLOAT:
 			uploadFloatArr(uniform->Location, (float*)& data[uniform->Offset], uniform->Count);
 			break;
-		case UniformDataType::FLOAT_VEC2:
+		case UniformDataType::VEC2:
 			uploadFloat2Arr(uniform->Location, *(glm::vec2*) & data[uniform->Offset], uniform->Count);
 			break;
-		case UniformDataType::FLOAT_VEC3:
+		case UniformDataType::VEC3:
 			uploadFloat3Arr(uniform->Location, *(glm::vec3*) & data[uniform->Offset], uniform->Count);
 			break;
-		case UniformDataType::FLOAT_VEC4:
+		case UniformDataType::VEC4:
 			uploadFloat4Arr(uniform->Location, *(glm::vec4*) & data[uniform->Offset], uniform->Count);
 			break;
 		case UniformDataType::INT:
 			uploadIntArr(uniform->Location, (int*)& data[uniform->Offset], uniform->Count);
 			break;
-		case UniformDataType::FLOAT_MAT4:
+		case UniformDataType::MAT4:
 			uploadMat4Arr(uniform->Location, *(glm::mat4*) & data[uniform->Offset], uniform->Count);
 			break;
 		};
 	}
 
-	void OpenGLShader::SetUniforms(unsigned char* data)
-	{
-		for (auto& uniform : m_Uniforms)
-		{
-			if (uniform.IsArray)
-			{
-				Renderer::Submit([=]() {
-					setUniformArr(&uniform, (unsigned char*)data);
-					});
-			}
-			else
-			{
-				Renderer::Submit([=]() {
-					setUniform(&uniform, (unsigned char*)data);
-					});
-			}
-		}
-	}
-
-
-	void OpenGLShader::SetSubRoutine(const std::string& name)
-	{
-		for (auto& routine : m_Routines)
-		{
-			if (routine.ActiveSubRoutine.Name == name)
-				return;
-			for (auto& sub : routine.SubRoutines)
-			{
-				if (sub.Name == name)
-				{
-					routine.ActiveSubRoutine = sub;
-					return;
-				}
-			}
-		}
-		XYZ_ASSERT(false, "Routine does not exist ", name.c_str());
-	}
-
-	void OpenGLShader::UploadRoutines()
-	{
-		for (size_t i = 0; i < m_Routines.size(); ++i)
-		{
-			SubRoutine routine = m_Routines[i].ActiveSubRoutine;
-			Renderer::Submit([=]() {
-				glUniformSubroutinesuiv(routine.ShaderType, 1, &routine.Index);
-				});
-		}
-	}
-
 
 	void OpenGLShader::Reload()
 	{
-		XYZ_LOG_WARN("Reloading shader ", m_Name.c_str());
-		m_Uniforms.clear();
-		m_Textures.clear();
-		m_Routines.clear();
-		m_UniformsSize = 0;
-		m_NumTakenTexSlots = 0;
+		std::string source = readShaderFromFile(m_AssetPath);
+		load(source);
 
-		std::string source = readFile(m_Path);
-		m_ShaderSources.clear();
-		m_ShaderSources = preProcess(source);
-		
-		Renderer::Submit([=]() {
-			compile(m_ShaderSources);
-			parseUniforms();
-			parseSubRoutines();
-		});
 		for (size_t i = 0; i < m_ShaderReloadCallbacks.size(); ++i)
 			m_ShaderReloadCallbacks[i]();
 	}
@@ -306,20 +296,7 @@ namespace XYZ {
 		m_ShaderReloadCallbacks.push_back(callback);
 	}
 
-	void OpenGLShader::AddSource(const std::string& filepath)
-	{
-		std::string source = readFile(filepath);
-		const char* ComponentToken = "#type";
-		size_t ComponentTokenLength = strlen(ComponentToken);
-		size_t pos = source.find(ComponentToken, 0);
-		
-		size_t eol = source.find_first_of("\r\n", pos);
-		XYZ_ASSERT(eol != std::string::npos, "Syntax error");
-		size_t begin = pos + ComponentTokenLength + 1;
-		std::string Component = source.substr(begin, eol - begin);
 
-		parseSource(ShaderComponentFromString(Component),source);
-	}
 
 	void OpenGLShader::SetFloat(const std::string& name, float value)
 	{
@@ -432,24 +409,19 @@ namespace XYZ {
 	{
 		glUniformMatrix4fv(loc, count, GL_FALSE, glm::value_ptr(matrix));
 	}
-	std::string OpenGLShader::readFile(const std::string& filepath)
+	
+	void OpenGLShader::load(const std::string& source)
 	{
-		std::string result;
-		std::ifstream in(filepath, std::ios::in | std::ios::binary);
-		if (in)
-		{
-			in.seekg(0, std::ios::end);
-			result.resize(in.tellg());
-			in.seekg(0, std::ios::beg);
-			in.read(&result[0], result.size());
-			in.close();
-		}
-		else
-			XYZ_LOG_ERR("Could not open file ", filepath.c_str());
+		m_ShaderSources = preProcess(source);
+		parse();
 
-		return result;
+		Renderer::Submit([=]() {
+			compileAndUpload();
+			resolveUniforms();
+		});
 	}
-	std::unordered_map<unsigned int, std::string> OpenGLShader::preProcess(const std::string& source)
+
+	std::unordered_map<uint32_t, std::string> OpenGLShader::preProcess(const std::string& source)
 	{
 		const char* TypeToken = "#type";
 		size_t TypeTokenLength = strlen(TypeToken);
@@ -472,15 +444,67 @@ namespace XYZ {
 		}
 		return m_ShaderSources;
 	}
-	void OpenGLShader::compile(const std::unordered_map<unsigned int, std::string>& shaderSources)
+	
+	void OpenGLShader::parseUniform(const std::string& statement, ShaderType type)
+	{
+		std::vector<std::string> tokens = Tokenize(statement);
+		uint32_t index = 0;
+
+		index++; // "uniform"
+		std::string typeString = tokens[index++];
+		std::string name = tokens[index++];
+		// Strip ; from name if present
+		if (const char* s = strstr(name.c_str(), ";"))
+			name = std::string(name.c_str(), s - name.c_str());
+
+		std::string n(name);
+		uint32_t count = 1;
+		const char* namestr = n.c_str();
+		if (const char* s = strstr(namestr, "["))
+		{
+			name = std::string(namestr, s - namestr);
+			const char* end = strstr(namestr, "]");
+			std::string c(s + 1, end - s);
+			count = atoi(c.c_str());
+		}
+
+		auto dataType = StringToType(typeString);
+		auto size = SizeOfUniformType(dataType);
+		if (dataType != UniformDataType::NONE)
+		{
+			
+			if (type == ShaderType::Vertex)
+			{
+				Uniform uniform{
+					   name, dataType, type, m_VSUniformList.Size, size, count, 0
+				};
+				m_VSUniformList.Uniforms.push_back(uniform);
+				m_VSUniformList.Size += size * count;
+			}
+			else
+			{
+				Uniform uniform{
+					   name, dataType, type, m_FSUniformList.Size, size, count, 0
+				};
+				m_FSUniformList.Uniforms.push_back(uniform);
+				m_FSUniformList.Size += size * count;
+			}
+		}
+		else
+		{
+			m_TextureList.Textures.push_back(TextureUniform{ name, m_TextureList.Count, count });
+			m_TextureList.Count += count;
+		}
+	}
+	void OpenGLShader::compileAndUpload()
 	{
 		GLuint program = glCreateProgram();
 
-		XYZ_ASSERT(shaderSources.size() <= 3, "We only support 3 shaders for now");
+		XYZ_ASSERT(m_ShaderSources.size() <= 3, "We only support 3 shaders for now");
 		std::array<GLenum, 3> glShaderIDs;
 
 		int glShaderIDIndex = 0;
-		for (auto& kv : shaderSources)
+		for (auto& kv : m_ShaderSources)
 		{
 			GLenum Component = kv.first;
 			const std::string& source = kv.second;
@@ -521,24 +545,24 @@ namespace XYZ {
 		glLinkProgram(m_RendererID);
 
 		GLint isLinked = 0;
-		glGetProgramiv(m_RendererID, GL_LINK_STATUS, (int*)& isLinked);
+		glGetProgramiv(m_RendererID, GL_LINK_STATUS, (int*)&isLinked);
 
 		if (isLinked == GL_FALSE)
 		{
 			GLint maxLength = 0;
 			glGetProgramiv(m_RendererID, GL_INFO_LOG_LENGTH, &maxLength);
-		
+
 			// The maxLength includes the NULL character
 			std::vector<GLchar> infoLog(maxLength);
 			glGetProgramInfoLog(m_RendererID, maxLength, &maxLength, &infoLog[0]);
-		
+
 			// We don't need the program anymore.
 			glDeleteProgram(m_RendererID);
-		
+
 			for (size_t i = 0; i < glShaderIDIndex; ++i)
 				glDeleteShader(glShaderIDs[i]);
-		
-		
+
+
 			XYZ_LOG_ERR(infoLog.data());
 			XYZ_ASSERT(false, "Shader link failure!");
 			return;
@@ -550,99 +574,68 @@ namespace XYZ {
 			glDeleteShader(glShaderIDs[i]);
 		}
 	}
-	void OpenGLShader::parseUniforms()
+	void OpenGLShader::resolveUniforms()
 	{
-		GLint count;
-		GLint size;
-		GLenum Type;
-		const GLsizei bufSize = 50;
-		GLchar name[bufSize];
-		GLsizei length;
-
-		// Parse uniforms
-		glGetProgramiv(m_RendererID, GL_ACTIVE_UNIFORMS, &count);
-
-		int offset = 0;
-		for (int i = 0; i < count; i++)
+		glUseProgram(m_RendererID);
+		for (auto& uni : m_VSUniformList.Uniforms)
 		{
-			int sizeUni = 0;
-			glGetActiveUniform(m_RendererID, (GLuint)i, bufSize, &length, &size, &Type, name);
-			UniformDataType uniType = UniformDataType::NONE;
-			switch (Type)
-			{
-			case GL_FLOAT:	    uniType = UniformDataType::FLOAT;
-				sizeUni = sizeof(float);
-				break;
-			case GL_FLOAT_VEC2: uniType = UniformDataType::FLOAT_VEC2;
-				sizeUni = 2 * sizeof(float);
-				break;
-			case GL_FLOAT_VEC3: uniType = UniformDataType::FLOAT_VEC3;
-				sizeUni = 3 * sizeof(float);
-				break;
-			case GL_FLOAT_VEC4: uniType = UniformDataType::FLOAT_VEC4;
-				sizeUni = 4 * sizeof(float);
-				break;
-			case GL_INT:	    uniType = UniformDataType::INT;
-				sizeUni = sizeof(int);
-				break;
-			case GL_INT_VEC2:	uniType = UniformDataType::INT_VEC2;
-				sizeUni = 2 * sizeof(int);
-				break;
-			case GL_INT_VEC3:	uniType = UniformDataType::INT_VEC3;
-				sizeUni = 3 * sizeof(int);
-				break;
-			case GL_INT_VEC4:	uniType = UniformDataType::INT_VEC4;
-				sizeUni = 4 * sizeof(int);
-				break;
-			case GL_FLOAT_MAT4:	uniType = UniformDataType::FLOAT_MAT4;
-				sizeUni = sizeof(glm::mat4);
-				break;
-			case GL_SAMPLER_2D: uniType = UniformDataType::SAMPLER2D;
-				sizeUni = 0;
-				break;
-			case GL_SAMPLER_CUBE: uniType = UniformDataType::SAMPLERCUBE;
-				sizeUni = 0;
-				break;
-			case GL_BOOL:	uniType = UniformDataType::BOOL;
-				sizeUni = sizeof(bool);
-				break;
-			}
-
-			// Array
-			if (size > 1)
-				sizeUni *= size;
-		
-			addUniform(uniType, sizeUni, offset, name, size);
-			offset += sizeUni;
-			m_UniformsSize += sizeUni;
+			uni.Location = glGetUniformLocation(m_RendererID, uni.Name.c_str());
 		}
-
+		for (auto& uni : m_FSUniformList.Uniforms)
+		{
+			uni.Location = glGetUniformLocation(m_RendererID, uni.Name.c_str());
+		}
+		for (auto& texture : m_TextureList.Textures)
+		{
+			if (texture.Count > 1)
+			{
+				int32_t location = glGetUniformLocation(m_RendererID, texture.Name.c_str());
+				int* samplers = new int[texture.Count];
+				for (uint32_t s = 0; s < texture.Count; ++s)
+					samplers[s] = texture.Slot + s;
+				glUniform1iv(location, texture.Count, samplers);
+				delete[] samplers;
+			}
+		}
 	}
-
-	void OpenGLShader::parseSubRoutines()
+	const char* FindToken(const char* str, const std::string& token)
 	{
-		int countActiveSU;
-		char name[256];
-		int len;
-		int numCompS;
-
-		unsigned int Components[4] = { GL_VERTEX_SHADER,GL_FRAGMENT_SHADER,GL_GEOMETRY_SHADER,GL_COMPUTE_SHADER };
-		for (auto Component : Components)
+		const char* t = str;
+		while (t = strstr(t, token.c_str()))
 		{
-			glGetProgramStageiv(m_RendererID, Component, GL_ACTIVE_SUBROUTINE_UNIFORMS, &countActiveSU);
-			for (int i = 0; i < countActiveSU; ++i)
-			{
-				glGetActiveSubroutineUniformiv(m_RendererID, Component, i, GL_NUM_COMPATIBLE_SUBROUTINES, &numCompS);
-				Routine routine;
-				for (int j = 0; j < numCompS; ++j)
-				{
-					glGetActiveSubroutineName(m_RendererID, Component, j, 256, &len, name);
-					GLuint id = glGetSubroutineIndex(m_RendererID, Component, name);
-					routine.SubRoutines.push_back(SubRoutine{ Component,id,std::string(name) });
-				}
-				m_Routines.push_back(routine);
-			}
+			bool left = str == t || isspace(t[-1]);
+			bool right = !t[token.size()] || isspace(t[token.size()]);
+			if (left && right)
+				return t;
+			t += token.size();
 		}
+		return nullptr;
+	}
+	
+	void OpenGLShader::parse()
+	{
+		const char* token;
+		const char* vstr;
+		const char* fstr;
+
+		m_VSUniformList.Uniforms.clear();
+		m_VSUniformList.Size = 0;
+		m_FSUniformList.Uniforms.clear();
+		m_VSUniformList.Size = 0;
+
+		auto& vertexSource = m_ShaderSources[GL_VERTEX_SHADER];
+		auto& fragmentSource = m_ShaderSources[GL_FRAGMENT_SHADER];
+
+		// Vertex Shader
+		vstr = vertexSource.c_str();
+		while (token = FindToken(vstr, "uniform"))
+			parseUniform(GetStatement(token, &vstr), ShaderType::Vertex);
+
+		// Fragment Shader
+		fstr = fragmentSource.c_str();
+		while (token = FindToken(fstr, "uniform"))
+			parseUniform(GetStatement(token, &fstr), ShaderType::Fragment);
+
 	}
 
 }

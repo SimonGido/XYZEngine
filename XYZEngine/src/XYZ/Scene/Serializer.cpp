@@ -269,41 +269,41 @@ namespace XYZ {
 
 		out << YAML::Key << "Values";
 		out << YAML::Value << YAML::BeginSeq;
-		for (auto& uniform : material->GetShader()->GetUniforms())
+		for (auto& uniform : material->GetShader()->GetVSUniformList().Uniforms)
 		{
-			switch (uniform.Type)
+			switch (uniform.DataType)
 			{
 			case UniformDataType::FLOAT:
 				out << YAML::BeginMap;
 				out << YAML::Key << uniform.Name;
-				out << YAML::Value << *(float*)&material->GetBuffer()[uniform.Offset];
+				out << YAML::Value << *(float*)&material->GetVSUniformBuffer()[uniform.Offset];
 				out << YAML::EndMap;
 				break;
-			case UniformDataType::FLOAT_VEC2:
+			case UniformDataType::VEC2:
 				out << YAML::BeginMap;
 				out << YAML::Key << uniform.Name;
-				out << YAML::Value << *(glm::vec2*) & material->GetBuffer()[uniform.Offset];
+				out << YAML::Value << *(glm::vec2*) & material->GetVSUniformBuffer()[uniform.Offset];
 				out << YAML::EndMap;
 				break;
-			case UniformDataType::FLOAT_VEC3:
+			case UniformDataType::VEC3:
 				out << YAML::BeginMap;
 				out << YAML::Key << uniform.Name;
-				out << YAML::Value << *(glm::vec3*) & material->GetBuffer()[uniform.Offset];
+				out << YAML::Value << *(glm::vec3*) & material->GetVSUniformBuffer()[uniform.Offset];
 				out << YAML::EndMap;
 				break;
-			case UniformDataType::FLOAT_VEC4:
+			case UniformDataType::VEC4:
 				out << YAML::BeginMap;
 				out << YAML::Key << uniform.Name;
-				out << YAML::Value << *(glm::vec4*) & material->GetBuffer()[uniform.Offset];
+				out << YAML::Value << *(glm::vec4*) & material->GetVSUniformBuffer()[uniform.Offset];
 				out << YAML::EndMap;
 				break;
 			case UniformDataType::INT:
 				out << YAML::BeginMap;
 				out << YAML::Key << uniform.Name;
-				out << YAML::Value << *(int*)&material->GetBuffer()[uniform.Offset];
+				out << YAML::Value << *(int*)&material->GetVSUniformBuffer()[uniform.Offset];
 				out << YAML::EndMap;
 				break;
-			case UniformDataType::FLOAT_MAT4:
+			case UniformDataType::MAT4:
 				break;
 			};
 		}

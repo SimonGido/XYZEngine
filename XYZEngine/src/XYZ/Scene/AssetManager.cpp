@@ -25,8 +25,6 @@ namespace XYZ {
 		std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
 		std::string convertedStr = converter.to_bytes(filepath);
 
-		GetAsset<Scene>(convertedStr);
-
 		std::cout << "File changed " << convertedStr << std::endl;
 	}
 	void AssetManager::OnFileAdded(const std::wstring& filepath)

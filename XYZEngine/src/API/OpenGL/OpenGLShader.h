@@ -10,44 +10,42 @@ namespace XYZ {
 		virtual ~OpenGLShader();
 
 		virtual void Bind() const override;
-		virtual void Compute(uint32_t groupX, uint32_t groupY = 1, uint32_t groupZ = 1) const override;
 		virtual void Unbind() const override;
-		virtual void SetUniforms(unsigned char* data) override;
-		virtual void SetSubRoutine(const std::string& name) override;
-		virtual void UploadRoutines() override;
+		virtual void Compute(uint32_t groupX, uint32_t groupY = 1, uint32_t groupZ = 1) const override;
+		virtual void SetVSUniforms(ByteBuffer buffer) override;
+		virtual void SetFSUniforms(ByteBuffer buffer) override;
+
 
 		virtual void Reload() override;
 		virtual void AddReloadCallback(std::function<void()> callback) override;
-		virtual void AddSource(const std::string& filepath) override;
 
+		virtual void SetInt(const std::string& name, int value) override;
 		virtual void SetFloat(const std::string& name, float value) override;
 		virtual void SetFloat2(const std::string& name, const glm::vec2& value) override;
 		virtual void SetFloat3(const std::string& name, const glm::vec3& value) override;
 		virtual void SetFloat4(const std::string& name, const glm::vec4& value) override;
-		virtual void SetInt(const std::string& name, int value) override;
 		virtual void SetMat4(const std::string& name, const glm::mat4& value) override;
 
-		virtual const Uniform* FindUniform(const std::string& name) const override;
-		virtual const TextureUniform* FindTexture(const std::string& name) const override;
+		virtual const UniformList& GetVSUniformList() const override { return m_VSUniformList; }
+		virtual const UniformList& GetFSUniformList() const override { return m_FSUniformList; }
+			
+		inline virtual const std::string& GetPath() const override { return m_AssetPath; };
+		inline virtual const std::string& GetName() const override { return m_Name; }
 
-		inline virtual std::string GetPath() const override { return m_Path; };
-		inline virtual std::string GetName() const override { return m_Name; }
-
-		virtual uint32_t GetUniformSize() const { return m_UniformsSize; };
-		virtual const std::vector<Uniform>& GetUniforms() const override { return m_Uniforms; };
 		virtual uint32_t GetRendererID() const override { return m_RendererID; }
 	private:
-		std::string readFile(const std::string& filepath);
-		std::unordered_map<unsigned int, std::string> preProcess(const std::string& source);
-		void compile(const std::unordered_map<unsigned int, std::string>& shaderSources);
-		void parseUniforms();
-		void parseSubRoutines();
-		void addUniform(UniformDataType type, unsigned int size, unsigned int offset, const std::string& name, unsigned int count = 0);
+		void parse();
+		void load(const std::string& source);
+		void parseUniform(const std::string& statement, ShaderType type);
+		void compileAndUpload();
+		void resolveUniforms();
 
-		void parseSource(unsigned int Component,const std::string& source);
+		std::unordered_map<uint32_t, std::string> preProcess(const std::string& source);
 
-		void setUniform(const Uniform* uniform, unsigned char* data);
-		void setUniformArr(const Uniform* uniform, unsigned char* data);
+		void parseSource(unsigned int component,const std::string& source);
+
+		void setUniform(const Uniform* uniform, ByteBuffer data);
+		void setUniformArr(const Uniform* uniform, ByteBuffer data);
 
 		void uploadInt(uint32_t loc, int value);
 		void uploadFloat(uint32_t loc, float value);
@@ -69,17 +67,17 @@ namespace XYZ {
 		ShaderProgramType m_Type;
 
 		std::string m_Name;
-		std::string m_Path;
+		std::string m_AssetPath;
 
 		uint32_t m_NumTakenTexSlots;
-		uint32_t m_UniformsSize;
+		
+		UniformList m_VSUniformList;
+		UniformList m_FSUniformList;
 
-		std::vector<Uniform> m_Uniforms;
-		std::vector<TextureUniform> m_Textures;
-		std::vector<Routine> m_Routines;
+		TextureUniformList m_TextureList;
 
 		std::vector<std::function<void()>> m_ShaderReloadCallbacks;
-		std::unordered_map<unsigned int, std::string> m_ShaderSources;
+		std::unordered_map<uint32_t, std::string> m_ShaderSources;
 
 		// Temporary, in future we will get that information from the GPU
 		static constexpr uint32_t sc_MaxTextureSlots = 32;
