@@ -40,20 +40,24 @@ namespace XYZ {
 	{
 		std::string source = readFile(path);
 		auto shaderSources = preProcess(source);
-		compile(shaderSources);
-		parseUniforms();
-		parseSubRoutines();
-		glUseProgram(0);
+		Renderer::Submit([=](){
+				compile(shaderSources);
+				parseUniforms();
+				parseSubRoutines();
+				glUseProgram(0);
+		});
 	}
 	OpenGLShader::OpenGLShader(const std::string& name, const std::string& path)
 		: m_Name(name), m_NumTakenTexSlots(0), m_UniformsSize(0), m_Textures(0), m_Path(path)
 	{
 		std::string source = readFile(m_Path);
 		auto shaderSources = preProcess(source);
-		compile(shaderSources);
-		parseUniforms();
-		parseSubRoutines();
-		glUseProgram(0);
+		Renderer::Submit([=]() {
+			compile(shaderSources);
+			parseUniforms();
+			parseSubRoutines();
+			glUseProgram(0);
+		});
 	}
 	OpenGLShader::~OpenGLShader()
 	{
@@ -285,29 +289,14 @@ namespace XYZ {
 		m_NumTakenTexSlots = 0;
 
 		std::string source = readFile(m_Path);
-		//parseVariables("Assets/Shaders/Variables/PredefinedVariables.glsl", source);
 		m_ShaderSources.clear();
 		m_ShaderSources = preProcess(source);
-		compile(m_ShaderSources);
-		parseUniforms();
-		parseSubRoutines();
-
-		for (size_t i = 0; i < m_ShaderReloadCallbacks.size(); ++i)
-			m_ShaderReloadCallbacks[i]();
-	}
-
-	void OpenGLShader::Recompile()
-	{
-		XYZ_LOG_WARN("Recompiling shader ", m_Name.c_str());
-		m_Uniforms.clear();
-		m_Textures.clear();
-		m_Routines.clear();
-		m_UniformsSize = 0;
-		m_NumTakenTexSlots = 0;
-
-		compile(m_ShaderSources);
-		parseUniforms();
-		parseSubRoutines();
+		
+		Renderer::Submit([=]() {
+			compile(m_ShaderSources);
+			parseUniforms();
+			parseSubRoutines();
+		});
 		for (size_t i = 0; i < m_ShaderReloadCallbacks.size(); ++i)
 			m_ShaderReloadCallbacks[i]();
 	}

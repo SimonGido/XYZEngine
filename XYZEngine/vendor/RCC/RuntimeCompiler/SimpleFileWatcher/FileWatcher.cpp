@@ -31,6 +31,7 @@
 #	define FILEWATCHER_IMPL FileWatcherOSX
 #elif FILEWATCHER_PLATFORM == FILEWATCHER_PLATFORM_LINUX
 #	include "FileWatcherLinux.h"
+#include "..\..\..\..\src\XYZ\FileWatcher\FileWatcher.h"
 #	define FILEWATCHER_IMPL FileWatcherLinux
 #endif
 
@@ -81,3 +82,5 @@ namespace FW
 	}
 
 }//namespace FW
+
+

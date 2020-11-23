@@ -24,7 +24,6 @@ IncludeDir["mini"] = "XYZEngine/vendor/mini"
 IncludeDir["OpenAL"] = "XYZEngine/vendor/OpenAL-Soft"
 IncludeDir["MiniMp3"] = "XYZEngine/vendor/minimp3"
 IncludeDir["FreeType"] = "XYZEngine/vendor/freetype-2.10.1"
-IncludeDir["FileWatcher"] = "XYZEngine/vendor/FileWatcher/include"
 
 include "XYZEngine/vendor/GLFW"
 include "XYZEngine/vendor/GLEW"

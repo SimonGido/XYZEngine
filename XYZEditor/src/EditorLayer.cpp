@@ -33,6 +33,8 @@ namespace XYZ {
 	
 	
 	EditorLayer::EditorLayer()
+		:
+		m_AssetManager("Assets")
 	{
 	}
 
@@ -79,11 +81,11 @@ namespace XYZ {
 
 		uint32_t windowWidth = Application::Get().GetWindow().GetWidth();
 		uint32_t windowHeight = Application::Get().GetWindow().GetHeight();
-		m_Scene = m_AssetManager.GetAsset<Scene>("Assets/Scenes/scene.xyz");
+		m_Scene = m_AssetManager.GetAsset<Scene>("Scenes\\scene.xyz");
 		m_Scene->SetViewportSize(windowWidth, windowHeight);
 		SceneManager::Get().SetActive(m_Scene);
 
-		m_Material = m_AssetManager.GetAsset<Material>("Assets/Materials/material.mat");
+		m_Material = m_AssetManager.GetAsset<Material>("Materials\\material.mat");
 		m_Material->SetFlags(XYZ::RenderFlags::TransparentFlag);
 
 		m_TestEntity = m_Scene->GetEntity(2);
@@ -95,7 +97,7 @@ namespace XYZ {
 		m_CharacterSubTexture2 = Ref<SubTexture2D>::Create(m_CharacterTexture, glm::vec2(1, 2), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
 		m_CharacterSubTexture3 = Ref<SubTexture2D>::Create(m_CharacterTexture, glm::vec2(2, 2), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
 
-		auto backgroundTexture = m_AssetManager.GetAsset<Texture2D>("Assets/Textures/Backgroundfield.png");
+		auto backgroundTexture = m_AssetManager.GetAsset<Texture2D>("Textures\\Backgroundfield.png");
 
 		///////////////////////////////////////////////////////////
 
@@ -406,10 +408,12 @@ namespace XYZ {
 		Renderer::SetClearColor({ 0.1f,0.1f,0.1f,0.1f });
 
 		NativeScriptEngine::Update(ts);
+
 		m_EditorCamera.OnUpdate(ts);
 		m_Scene->OnUpdate(ts);
 		m_Scene->OnRenderEditor(m_EditorCamera);
 		m_Dockspace->OnUpdate(ts);
+		
 	}
 	void EditorLayer::OnEvent(Event& event)
 	{			

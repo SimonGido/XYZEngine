@@ -98,7 +98,6 @@ namespace XYZ {
 		virtual void SetSubRoutine(const std::string& name) = 0;
 		virtual void UploadRoutines() = 0;
 		virtual void Reload() = 0;
-		virtual void Recompile() = 0;
 		virtual void AddReloadCallback(std::function<void()> callback) = 0;
 		virtual void AddSource(const std::string& filePath) = 0;
 

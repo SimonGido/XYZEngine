@@ -17,7 +17,6 @@ namespace XYZ {
 		virtual void UploadRoutines() override;
 
 		virtual void Reload() override;
-		virtual void Recompile() override;
 		virtual void AddReloadCallback(std::function<void()> callback) override;
 		virtual void AddSource(const std::string& filepath) override;
 
