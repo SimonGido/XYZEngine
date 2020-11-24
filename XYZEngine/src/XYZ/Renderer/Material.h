@@ -31,7 +31,7 @@ namespace XYZ {
 			buffer.Write((unsigned char*)&val, uni->Size, uni->Offset);
 
 			for (auto& it : m_MaterialInstances)
-				it->UpdateMaterialValue(uni);
+				it->updateMaterialValue(uni);
 		}
 		template<typename T>
 		void Set(const std::string& name, const T& val, uint32_t size, uint32_t offset)
@@ -43,30 +43,33 @@ namespace XYZ {
 			buffer.Write((unsigned char*)&val, size, uni->Offset + offset);
 			
 			for (auto& it : m_MaterialInstances)
-				it->UpdateMaterialValue(uni);
+				it->updateMaterialValue(uni);
 		}
 
 		void Set(const std::string& name, const Ref<Texture2D>& texture, uint32_t index = 0)
 		{
-			//auto tex = m_Shader->FindTexture(name);
-			//XYZ_ASSERT(tex, "Material texture does not exist ", name.c_str());
-			//
-			//if ((uint32_t)m_Textures.size() <= tex->Slot + index)
-			//	m_Textures.resize((size_t)tex->Slot + 1 + index);
-			//
-			//
-			//m_Textures[size_t(tex->Slot) + size_t(index)] = texture;
+			auto tex = findTexture(name);
+			XYZ_ASSERT(tex, "Material texture does not exist ", name.c_str());
+			
+			if ((uint32_t)m_Textures.size() <= tex->Slot + index)
+				m_Textures.resize((size_t)tex->Slot + 1 + index);
+				
+			m_Textures[size_t(tex->Slot) + size_t(index)] = texture;
+		}
+		template <typename T>
+		T& Get(const std::string& name)
+		{
+			auto uni = findUniform(name);
+			XYZ_ASSERT(uni, "Material uniform does not exist ", name.c_str());
+			auto& buffer = getUniformBufferTarget(uni->ShaderType);
+			return *(T*)&buffer[uni->Offset];
 		}
 
+		void Bind() const;
+		void SetFlags(RenderFlags renderFlags) { m_Flags |= renderFlags; }
+		uint64_t GetFlags() const { return m_Flags; }
+	
 
-		void SetFlags(RenderFlags renderFlags) { m_Key |= renderFlags; }
-		void Bind();
-
-		bool IsSet(RenderFlags flag) const { return ( m_Key & flag); }
-			
-		int64_t GetSortKey() const { return m_Key; }
-		size_t GetNumberOfTextures() const { return m_Textures.size(); }
-		
 		Ref<Shader>& GetShader() { return m_Shader; }
 		const Ref<Shader>& GetShader() const { return m_Shader; }
 
@@ -78,9 +81,10 @@ namespace XYZ {
 		//TODO TEMPORARY
 		void ReloadShader() { m_Shader->Reload(); };
 	private:
-		void OnShaderReload();
+		void onShaderReload();
 		ByteBuffer& getUniformBufferTarget(ShaderType type);
 		const Uniform* findUniform(const std::string& name);
+		const TextureUniform* findTexture(const std::string& name);
 
 	private:
 		Ref<Shader> m_Shader;
@@ -89,7 +93,7 @@ namespace XYZ {
 
 		ByteBuffer m_VSUniformBuffer;
 		ByteBuffer m_FSUniformBuffer;
-		int64_t m_Key = 0;
+		uint64_t m_Flags = 0;
 	};
 
 
@@ -107,7 +111,7 @@ namespace XYZ {
 			auto uni = m_Material->findUniform(name);
 			XYZ_ASSERT(uni, "Material uniform does not exist ", name.c_str());
 			
-			auto& buffer = m_Material->getUniformBufferTarget(uni->ShaderType);
+			auto& buffer = getUniformBufferTarget(uni->ShaderType);
 			buffer.Write((unsigned char*)&val, uni->Size, uni->Offset);
 			m_UpdatedValues.insert(name);
 		}
@@ -119,7 +123,7 @@ namespace XYZ {
 			XYZ_ASSERT(uni, "Material uniform does not exist ", name.c_str());	
 			XYZ_ASSERT(size + Offset < uni->Size, "Material uniform out of range");
 			
-			auto& buffer = m_Material->getUniformBufferTarget(uni->ShaderType);
+			auto& buffer = getUniformBufferTarget(uni->ShaderType);
 			buffer.Write((unsigned char*)&val, uni->Size, uni->Offset);
 			m_UpdatedValues.insert(name);
 		}
@@ -127,14 +131,15 @@ namespace XYZ {
 		template <typename T>
 		T& Get(const std::string& name)
 		{
-			auto uni = m_Material->m_Shader->FindUniform(name);
+			auto uni = m_Material->findUniform(name);
 			XYZ_ASSERT(uni, "Material uniform does not exist ", name.c_str());
-			return *(T*)m_Buffer[uni->Offset];
+			auto& buffer =getUniformBufferTarget(uni->ShaderType);
+			return *(T*)&buffer[uni->Offset];
 		}
 
-		void Bind();
+		void Bind() const;
 
-		int64_t GetSortKey() const { return m_Material->m_Key; }	
+		uint64_t GetFlags() const { return m_Material->m_Flags; }	
 		const uint8_t* GetVSUniformBuffer() const { return m_VSUniformBuffer; }
 		const uint8_t* GetFSUniformBuffer() const { return m_FSUniformBuffer; }
 		Ref<Material> GetParentMaterial() const { return m_Material; }
@@ -142,9 +147,9 @@ namespace XYZ {
 		static Ref<MaterialInstance> Create(const Ref<Material>& material);
 	private:
 
-		void OnShaderReload();
-		void UpdateMaterialValue(const Uniform* uni);
-
+		void onShaderReload();
+		void updateMaterialValue(const Uniform* uni);
+		ByteBuffer& getUniformBufferTarget(ShaderType type);
 	private:
 		Ref<Material> m_Material;
 

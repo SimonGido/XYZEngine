@@ -179,8 +179,9 @@ namespace XYZ {
 			materialInstance->Set("u_Time", ts);
 			materialInstance->Set("u_ParticlesInExistence", (int)std::ceil(particle.ParticleEffect->GetEmittedParticles()));
 
-			material->Bind();
+			material->GetShader()->Bind();
 			materialInstance->Bind();
+
 			particle.ParticleEffect->Update(ts);
 			material->GetShader()->Compute(32, 32, 1);
 		}	

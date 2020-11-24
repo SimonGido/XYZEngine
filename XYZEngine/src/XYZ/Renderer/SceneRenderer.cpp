@@ -209,13 +209,13 @@ namespace XYZ {
 		std::sort(s_Data.SpriteDrawList.begin(), s_Data.SpriteDrawList.end(),
 			[](const SceneRendererData::SpriteDrawCommand& a, const SceneRendererData::SpriteDrawCommand& b) {
 				if (a.Sprite->SortLayer == b.Sprite->SortLayer)
-					return a.Sprite->Material->GetSortKey() < b.Sprite->Material->GetSortKey();
+					return a.Sprite->Material->GetFlags() < b.Sprite->Material->GetFlags();
 				return a.Sprite->SortLayer < b.Sprite->SortLayer;
 			});
-
+		
 		std::sort(s_Data.ParticleDrawList.begin(), s_Data.ParticleDrawList.end(),
 			[](const SceneRendererData::ParticleDrawCommand& a, const SceneRendererData::ParticleDrawCommand& b) {
-				return a.Particle->RenderMaterial->GetSortKey() < b.Particle->RenderMaterial->GetSortKey();
+				return a.Particle->RenderMaterial->GetFlags() < b.Particle->RenderMaterial->GetFlags();
 			});
 
 		GeometryPass();

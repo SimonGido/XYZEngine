@@ -156,7 +156,7 @@ namespace XYZ {
 	}
 	void OpenGLShader::Compute(uint32_t groupX, uint32_t groupY, uint32_t groupZ) const
 	{
-		XYZ_ASSERT(m_Type == ShaderProgramType::COMPUTE, "Calling compute on non compute shader");
+		XYZ_ASSERT(m_IsCompute, "Calling compute on non compute shader");
 		Renderer::Submit([=]() {
 			glDispatchCompute(groupX, groupY, groupZ);
 			glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
@@ -169,7 +169,7 @@ namespace XYZ {
 			});
 	}
 
-	void OpenGLShader::SetVSUniforms(ByteBuffer buffer)
+	void OpenGLShader::SetVSUniforms(ByteBuffer buffer) const
 	{
 		for (auto& uniform : m_VSUniformList.Uniforms)
 		{
@@ -188,7 +188,7 @@ namespace XYZ {
 		}
 	}
 
-	void OpenGLShader::SetFSUniforms(ByteBuffer buffer)
+	void OpenGLShader::SetFSUniforms(ByteBuffer buffer)const
 	{
 		for (auto& uniform : m_FSUniformList.Uniforms)
 		{
@@ -208,11 +208,11 @@ namespace XYZ {
 	}
 
 	
-	void OpenGLShader::parseSource(unsigned int Component,const std::string& source)
+	void OpenGLShader::parseSource(uint32_t component,const std::string& source)
 	{		
 		const char* versionToken = "#version";
 		size_t versionTokenLength = strlen(versionToken);
-		size_t verPos = m_ShaderSources[Component].find(versionToken, 0);
+		size_t verPos = m_ShaderSources[component].find(versionToken, 0);
 		size_t sourcePos = verPos + versionTokenLength + 1;
 		size_t sourceEol = source.find_first_of("\r\n", sourcePos);
 
@@ -227,11 +227,11 @@ namespace XYZ {
 
 			size_t nextLinePos = source.find_first_not_of("\r\n", eol);
 			pos = source.find(ComponentToken, nextLinePos);
-			m_ShaderSources[Component].insert(sourceEol + 2 ,source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos)));
+			m_ShaderSources[component].insert(sourceEol + 2 ,source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos)));
 		}
 	}
 
-	void OpenGLShader::setUniform(const Uniform* uniform, ByteBuffer data)
+	void OpenGLShader::setUniform(const Uniform* uniform, ByteBuffer data) const
 	{
 		switch (uniform->DataType)
 		{
@@ -256,7 +256,7 @@ namespace XYZ {
 		};
 	}
 
-	void OpenGLShader::setUniformArr(const Uniform* uniform, ByteBuffer data)
+	void OpenGLShader::setUniformArr(const Uniform* uniform, ByteBuffer data) const
 	{
 		switch (uniform->DataType)
 		{
@@ -352,60 +352,60 @@ namespace XYZ {
 			});
 	}
 
-	void OpenGLShader::uploadInt(uint32_t loc, int value)
+	void OpenGLShader::uploadInt(uint32_t loc, int value) const
 	{
 		glUniform1i(loc, value);
 	}
 
-	void OpenGLShader::uploadFloat(uint32_t loc, float value)
+	void OpenGLShader::uploadFloat(uint32_t loc, float value) const
 	{
 		glUniform1f(loc, value);
 	}
-	void OpenGLShader::uploadFloat2(uint32_t loc, const glm::vec2& value)
+	void OpenGLShader::uploadFloat2(uint32_t loc, const glm::vec2& value) const
 	{
 		glUniform2f(loc, value.x, value.y);
 	}
-	void OpenGLShader::uploadFloat3(uint32_t loc, const glm::vec3& value)
+	void OpenGLShader::uploadFloat3(uint32_t loc, const glm::vec3& value) const
 	{
 		glUniform3f(loc, value.x, value.y, value.z);
 	}
-	void OpenGLShader::uploadFloat4(uint32_t loc, const glm::vec4& value)
+	void OpenGLShader::uploadFloat4(uint32_t loc, const glm::vec4& value) const
 	{
 		glUniform4f(loc, value.x, value.y, value.z, value.w);
 	}
-	void OpenGLShader::uploadMat3(uint32_t loc, const glm::mat3& matrix)
+	void OpenGLShader::uploadMat3(uint32_t loc, const glm::mat3& matrix) const
 	{
 		glUniformMatrix3fv(loc, 1, GL_FALSE, glm::value_ptr(matrix));
 	}
-	void OpenGLShader::uploadMat4(uint32_t loc, const glm::mat4& matrix)
+	void OpenGLShader::uploadMat4(uint32_t loc, const glm::mat4& matrix) const
 	{
 		glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(matrix));
 	}
-	void OpenGLShader::uploadIntArr(uint32_t loc, int* values, uint32_t count)
+	void OpenGLShader::uploadIntArr(uint32_t loc, int* values, uint32_t count) const
 	{
 		glUniform1iv(loc, count, values);
 	}
-	void OpenGLShader::uploadFloatArr(uint32_t loc, float* values, uint32_t count)
+	void OpenGLShader::uploadFloatArr(uint32_t loc, float* values, uint32_t count) const
 	{
 		glUniform1fv(loc, count, values);
 	}
-	void OpenGLShader::uploadFloat2Arr(uint32_t loc, const glm::vec2& value, uint32_t count)
+	void OpenGLShader::uploadFloat2Arr(uint32_t loc, const glm::vec2& value, uint32_t count) const
 	{
 		glUniform2fv(loc, count, (float*)& value);
 	}
-	void OpenGLShader::uploadFloat3Arr(uint32_t loc, const glm::vec3& value, uint32_t count)
+	void OpenGLShader::uploadFloat3Arr(uint32_t loc, const glm::vec3& value, uint32_t count) const
 	{
 		glUniform3fv(loc, count, (float*)& value);
 	}
-	void OpenGLShader::uploadFloat4Arr(uint32_t loc, const glm::vec4& value, uint32_t count)
+	void OpenGLShader::uploadFloat4Arr(uint32_t loc, const glm::vec4& value, uint32_t count) const
 	{
 		glUniform4fv(loc, count, (float*)& value);
 	}
-	void OpenGLShader::uploadMat3Arr(uint32_t loc, const glm::mat3& matrix, uint32_t count)
+	void OpenGLShader::uploadMat3Arr(uint32_t loc, const glm::mat3& matrix, uint32_t count) const
 	{
 		glUniformMatrix3fv(loc, count, GL_FALSE, glm::value_ptr(matrix));
 	}
-	void OpenGLShader::uploadMat4Arr(uint32_t loc, const glm::mat4& matrix, uint32_t count)
+	void OpenGLShader::uploadMat4Arr(uint32_t loc, const glm::mat4& matrix, uint32_t count) const
 	{
 		glUniformMatrix4fv(loc, count, GL_FALSE, glm::value_ptr(matrix));
 	}
@@ -438,9 +438,7 @@ namespace XYZ {
 			pos = source.find(TypeToken, nextLinePos);
 			m_ShaderSources[ShaderComponentFromString(Type)] = source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos));
 			if (Type == "compute")
-				m_Type = ShaderProgramType::COMPUTE;
-			else
-				m_Type = ShaderProgramType::RENDER;
+				m_IsCompute = true;
 		}
 		return m_ShaderSources;
 	}
@@ -499,13 +497,16 @@ namespace XYZ {
 	void OpenGLShader::compileAndUpload()
 	{
 		GLuint program = glCreateProgram();
-
+	
 		XYZ_ASSERT(m_ShaderSources.size() <= 3, "We only support 3 shaders for now");
 		std::array<GLenum, 3> glShaderIDs;
 
 		int glShaderIDIndex = 0;
 		for (auto& kv : m_ShaderSources)
 		{
+			if (kv.second.empty())
+				continue;
+
 			GLenum Component = kv.first;
 			const std::string& source = kv.second;
 
@@ -596,6 +597,11 @@ namespace XYZ {
 				glUniform1iv(location, texture.Count, samplers);
 				delete[] samplers;
 			}
+			else
+			{
+				int32_t location = glGetUniformLocation(m_RendererID, texture.Name.c_str());
+				glUniform1i(location, texture.Slot);
+			}
 		}
 	}
 	const char* FindToken(const char* str, const std::string& token)
@@ -618,6 +624,7 @@ namespace XYZ {
 		const char* vstr;
 		const char* fstr;
 
+
 		m_VSUniformList.Uniforms.clear();
 		m_VSUniformList.Size = 0;
 		m_FSUniformList.Uniforms.clear();
@@ -636,6 +643,12 @@ namespace XYZ {
 		while (token = FindToken(fstr, "uniform"))
 			parseUniform(GetStatement(token, &fstr), ShaderType::Fragment);
 
+		if (m_IsCompute)
+		{
+			const char* cstr = m_ShaderSources[GL_COMPUTE_SHADER].c_str();
+			while (token = FindToken(cstr, "uniform"))
+				parseUniform(GetStatement(token, &cstr), ShaderType::Vertex);
+		}
 	}
 
 }

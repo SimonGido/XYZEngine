@@ -233,7 +233,7 @@ namespace XYZ {
 	void Renderer2D::SetMaterial(const Ref<Material>& material)
 	{
 		XYZ_ASSERT(material, "Material can not be null");
-		if (material->GetSortKey() != s_Data.QuadMaterial->GetSortKey())
+		if (material->GetFlags() != s_Data.QuadMaterial->GetFlags())
 			Flush();
 		
 		s_Data.QuadMaterial = material;

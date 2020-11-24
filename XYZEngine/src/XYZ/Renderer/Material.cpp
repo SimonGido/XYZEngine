@@ -10,8 +10,8 @@ namespace XYZ {
 		m_VSUniformBuffer.Allocate(shader->GetVSUniformList().Size);
 		m_FSUniformBuffer.Allocate(shader->GetFSUniformList().Size);
 
-		m_Shader->AddReloadCallback(std::bind(&Material::OnShaderReload, this));
-		m_Key = m_Shader->GetRendererID();
+		m_Shader->AddReloadCallback(std::bind(&Material::onShaderReload, this));
+		m_Flags = m_Shader->GetRendererID();
 	}
 
 	Material::~Material()
@@ -20,7 +20,7 @@ namespace XYZ {
 		delete[] m_FSUniformBuffer;
 	}			
 
-	void Material::Bind()
+	void Material::Bind() const
 	{
 		m_Shader->Bind();
 		for (size_t i = 0; i < m_Textures.size(); i++)
@@ -30,21 +30,23 @@ namespace XYZ {
 				texture->Bind(i);
 		}
 
-		m_Shader->SetVSUniforms(m_VSUniformBuffer);
-		m_Shader->SetFSUniforms(m_FSUniformBuffer);
+		if (m_VSUniformBuffer)
+			m_Shader->SetVSUniforms(m_VSUniformBuffer);
+		if (m_FSUniformBuffer)
+			m_Shader->SetFSUniforms(m_FSUniformBuffer);
 	}
 
-	void Material::OnShaderReload()
+	void Material::onShaderReload()
 	{
 		delete[] m_VSUniformBuffer;
 		delete[] m_FSUniformBuffer;
 
 		m_VSUniformBuffer.Allocate(m_Shader->GetVSUniformList().Size);
 		m_FSUniformBuffer.Allocate(m_Shader->GetFSUniformList().Size);
-		m_Key = m_Shader->GetRendererID();
+		m_Flags = m_Shader->GetRendererID();
 
 		for (auto& it : m_MaterialInstances)
-			it->OnShaderReload();
+			it->onShaderReload();
 	}
 
 	ByteBuffer& Material::getUniformBufferTarget(ShaderType type)
@@ -69,6 +71,21 @@ namespace XYZ {
 		return nullptr;
 	}
 
+	const TextureUniform* Material::findTexture(const std::string& name)
+	{
+		for (auto& uni : m_Shader->GetTextureList().Textures)
+		{
+			if (uni.Name == name)
+				return &uni;
+		}
+		for (auto& uni : m_Shader->GetTextureList().Textures)
+		{
+			if (uni.Name == name)
+				return &uni;
+		}
+		return nullptr;
+	}
+
 	MaterialInstance::MaterialInstance(const Ref<Material>& material)
 		: m_Material(material)
 	{
@@ -84,10 +101,13 @@ namespace XYZ {
 		delete[] m_FSUniformBuffer;
 	}
 
-	void MaterialInstance::Bind()
+
+	void MaterialInstance::Bind() const
 	{
-		m_Material->m_Shader->SetVSUniforms(m_VSUniformBuffer);
-		m_Material->m_Shader->SetFSUniforms(m_FSUniformBuffer);
+		if (m_VSUniformBuffer)
+			m_Material->m_Shader->SetVSUniforms(m_VSUniformBuffer);
+		if (m_FSUniformBuffer)
+			m_Material->m_Shader->SetFSUniforms(m_FSUniformBuffer);
 	}
 
 	Ref<MaterialInstance> MaterialInstance::Create(const Ref<Material>& material)
@@ -95,7 +115,7 @@ namespace XYZ {
 		return Ref<MaterialInstance>::Create(material);
 	}
 
-	void MaterialInstance::OnShaderReload()
+	void MaterialInstance::onShaderReload()
 	{
 		delete[] m_VSUniformBuffer;
 		delete[] m_FSUniformBuffer;
@@ -104,7 +124,7 @@ namespace XYZ {
 		m_FSUniformBuffer.Allocate(m_Material->m_Shader->GetFSUniformList().Size);
 	}
 
-	void MaterialInstance::UpdateMaterialValue(const Uniform* uni)
+	void MaterialInstance::updateMaterialValue(const Uniform* uni)
 	{
 		if (m_UpdatedValues.find(uni->Name) == m_UpdatedValues.end())
 		{
@@ -119,6 +139,13 @@ namespace XYZ {
 				m_FSUniformBuffer.Write(data, uni->Size, uni->Offset);
 			}
 		}
+	}
+
+	ByteBuffer& MaterialInstance::getUniformBufferTarget(ShaderType type)
+	{
+		if (type == ShaderType::Vertex)
+			return m_VSUniformBuffer;
+		return m_FSUniformBuffer;
 	}
 
 }

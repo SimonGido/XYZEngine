@@ -60,7 +60,7 @@ namespace XYZ {
 	struct TextureUniformList
 	{
 		std::vector<TextureUniform> Textures;
-		uint32_t					Count;
+		uint32_t					Count = 0;
 	};
 
 	class Shader : public RefCount
@@ -71,8 +71,8 @@ namespace XYZ {
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
 		virtual void Compute(uint32_t groupX, uint32_t groupY = 1, uint32_t groupZ = 1) const = 0;
-		virtual void SetVSUniforms(ByteBuffer buffer) = 0;
-		virtual void SetFSUniforms(ByteBuffer buffer) = 0;
+		virtual void SetVSUniforms(ByteBuffer buffer) const = 0;
+		virtual void SetFSUniforms(ByteBuffer buffer) const = 0;
 
 		virtual void Reload() = 0;
 		virtual void AddReloadCallback(std::function<void()> callback) = 0;
@@ -87,7 +87,8 @@ namespace XYZ {
 
 		virtual const UniformList& GetVSUniformList() const = 0;
 		virtual const UniformList& GetFSUniformList() const = 0;
-		
+		virtual const TextureUniformList& GetTextureList() const = 0;
+
 		virtual const std::string& GetPath() const = 0;
 		virtual const std::string& GetName() const = 0;
 		
@@ -95,13 +96,6 @@ namespace XYZ {
 
 		static Ref<Shader> Create(const std::string& path);
 		static Ref<Shader> Create(const std::string& name, const std::string& path);
-
-	protected:
-		enum class ShaderProgramType
-		{
-			RENDER,
-			COMPUTE
-		};
 	};
 
 

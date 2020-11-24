@@ -307,7 +307,44 @@ namespace XYZ {
 				break;
 			};
 		}
-
+		for (auto& uniform : material->GetShader()->GetFSUniformList().Uniforms)
+		{
+			switch (uniform.DataType)
+			{
+			case UniformDataType::FLOAT:
+				out << YAML::BeginMap;
+				out << YAML::Key << uniform.Name;
+				out << YAML::Value << *(float*)&material->GetVSUniformBuffer()[uniform.Offset];
+				out << YAML::EndMap;
+				break;
+			case UniformDataType::VEC2:
+				out << YAML::BeginMap;
+				out << YAML::Key << uniform.Name;
+				out << YAML::Value << *(glm::vec2*) & material->GetVSUniformBuffer()[uniform.Offset];
+				out << YAML::EndMap;
+				break;
+			case UniformDataType::VEC3:
+				out << YAML::BeginMap;
+				out << YAML::Key << uniform.Name;
+				out << YAML::Value << *(glm::vec3*) & material->GetVSUniformBuffer()[uniform.Offset];
+				out << YAML::EndMap;
+				break;
+			case UniformDataType::VEC4:
+				out << YAML::BeginMap;
+				out << YAML::Key << uniform.Name;
+				out << YAML::Value << *(glm::vec4*) & material->GetVSUniformBuffer()[uniform.Offset];
+				out << YAML::EndMap;
+				break;
+			case UniformDataType::INT:
+				out << YAML::BeginMap;
+				out << YAML::Key << uniform.Name;
+				out << YAML::Value << *(int*)&material->GetVSUniformBuffer()[uniform.Offset];
+				out << YAML::EndMap;
+				break;
+			case UniformDataType::MAT4:
+				break;
+			};
+		}
 
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
