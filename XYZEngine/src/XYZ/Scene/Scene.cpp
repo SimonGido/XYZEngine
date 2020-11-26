@@ -6,7 +6,6 @@
 #include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/SceneRenderer.h"
-
 #include "XYZ/NativeScript/ScriptableEntity.h"
 #include "Entity.h"
 
@@ -69,7 +68,7 @@ namespace XYZ {
 		m_Entities.push_back(entity);
 		uint32_t index = m_Entities.size() - 1;
 		m_SceneGraphMap.insert({ entity,index });
-
+	
 		return entity;
 	}
 

@@ -20,6 +20,7 @@ namespace XYZ {
 		const glm::vec4& GetTexCoords() const { return m_TexCoords; }
 
 		const Ref<Texture2D>& GetTexture() const { return m_Texture; }
+
 	private:
 		Ref<Texture2D> m_Texture;
 		glm::vec4 m_TexCoords;

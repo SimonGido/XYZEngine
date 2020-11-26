@@ -5,6 +5,8 @@
 
 #include <stb_image/stb_image.h>
 
+#include <random>
+
 namespace XYZ {
 
 	static glm::vec2 MouseToWorld(const glm::vec2& point, const glm::vec2& windowSize)
@@ -81,11 +83,10 @@ namespace XYZ {
 
 		uint32_t windowWidth = Application::Get().GetWindow().GetWidth();
 		uint32_t windowHeight = Application::Get().GetWindow().GetHeight();
-		m_Scene = m_AssetManager.GetAsset<Scene>("Scenes\\scene.xyz");
+		m_Scene = m_AssetManager.GetAsset<Scene>("Assets/Scenes/scene.xyz");
 		m_Scene->SetViewportSize(windowWidth, windowHeight);
-		SceneManager::Get().SetActive(m_Scene);
 
-		m_Material = m_AssetManager.GetAsset<Material>("Materials\\material.mat");
+		m_Material = m_AssetManager.GetAsset<Material>("Assets/Materials/material.mat");
 		m_Material->SetFlags(XYZ::RenderFlags::TransparentFlag);
 
 		m_TestEntity = m_Scene->GetEntity(2);
@@ -97,8 +98,7 @@ namespace XYZ {
 		m_CharacterSubTexture2 = Ref<SubTexture2D>::Create(m_CharacterTexture, glm::vec2(1, 2), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
 		m_CharacterSubTexture3 = Ref<SubTexture2D>::Create(m_CharacterTexture, glm::vec2(2, 2), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
 
-		auto backgroundTexture = m_AssetManager.GetAsset<Texture2D>("Textures\\Backgroundfield.png");
-
+		auto backgroundTexture = m_AssetManager.GetAsset<Texture2D>("Assets/Textures/Backgroundfield.png");
 		///////////////////////////////////////////////////////////
 
 		uint32_t count = 5000;
@@ -400,6 +400,12 @@ namespace XYZ {
 	{
 		NativeScriptEngine::Shutdown();
 		Renderer::Shutdown();
+		Serializer::SerializeResource<Scene>(m_Scene->GetFilepath(), m_Scene);
+
+		YAML::Emitter out;
+		Serializer::Serialize<ECS::ECSManager>(out, m_ECS);
+		std::ofstream fout("ECS.ecs");
+		fout << out.c_str();
 	}
 	void EditorLayer::OnUpdate(Timestep ts)
 	{

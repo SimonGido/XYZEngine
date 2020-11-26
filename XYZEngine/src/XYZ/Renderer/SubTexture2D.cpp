@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "SubTexture2D.h"
 
+#include "XYZ/Scene/Serializer.h"
+
 
 namespace XYZ {
 	SubTexture2D::SubTexture2D(const Ref<Texture2D>& texture, const glm::vec2& coords, const glm::vec2& size)
@@ -26,4 +28,5 @@ namespace XYZ {
 		m_TexCoords = { min, max };
 		std::cout << m_TexCoords.x << " " << m_TexCoords.y << " " << m_TexCoords.z << " " << m_TexCoords.w << std::endl;
 	}
+	
 }

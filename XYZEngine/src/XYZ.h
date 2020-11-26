@@ -28,7 +28,6 @@
 
 //-----Scene-----//
 #include "XYZ/Scene/SceneCamera.h"
-#include "XYZ/Scene/SceneManager.h"
 #include "XYZ/Scene/AssetManager.h"
 #include "XYZ/Scene/Animation.h"
 #include "XYZ/Scene/Entity.h"

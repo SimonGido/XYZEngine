@@ -38,7 +38,7 @@ namespace XYZ {
 		~Animation();
 
 		void Update(float dt);
-		
+
 		template <typename T, typename ...Args>
 		Property<T>* AddProperty(Args&&... args)
 		{

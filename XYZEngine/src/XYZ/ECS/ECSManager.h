@@ -64,7 +64,7 @@ namespace XYZ {
 			template <typename T>
 			const T& GetComponent(uint32_t entity) const
 			{
-				Signature& signature = m_EntityManager.GetSignature(entity);
+				const Signature& signature = m_EntityManager.GetSignature(entity);
 				XYZ_ASSERT(signature.test(T::GetComponentID()), "Entity does not have component");
 				if (signature.test(HAS_GROUP_BIT))
 				{
@@ -205,6 +205,7 @@ namespace XYZ {
 			}
 
 			const uint32_t GetNumberOfEntities() const { return m_EntityManager.GetNumEntities(); }
+
 
 		private:
 			ComponentManager m_ComponentManager;

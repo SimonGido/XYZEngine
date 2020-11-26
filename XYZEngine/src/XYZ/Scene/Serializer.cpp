@@ -6,10 +6,11 @@
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Renderer/Texture.h"
 #include "XYZ/Gui/GuiContext.h"
+#include "XYZ/ECS/ECSManager.h"
 
 #include "Scene.h"
 #include "Entity.h"
-
+#include "AssetManager.h"
 
 
 #define GLM_ENABLE_EXPERIMENTAL
@@ -213,7 +214,7 @@ namespace XYZ {
 	template<>
 	void Serializer::SerializeResource(const std::string& filepath, const Ref<Texture2D>& texture)
 	{
-		XYZ_LOG_INFO("Serializing texture ", texture->GetFilepath());
+		XYZ_LOG_INFO("Serializing texture ", filepath);
 		YAML::Emitter out;
 		out << YAML::BeginMap; // Texture
 		out << YAML::Key << "Texture" << YAML::Value << texture->GetName();
@@ -241,6 +242,12 @@ namespace XYZ {
 
 		std::ofstream fout(subTexture->GetFilepath());
 		fout << out.c_str();
+		
+		std::string texturePath = subTexture->GetTexture()->GetFilepath();
+		if (texturePath.empty())
+			texturePath = "Assets/Textures/New_Texture";
+
+		SerializeResource<Texture2D>(texturePath, subTexture->GetTexture());
 	}
 
 	template <>
@@ -258,6 +265,13 @@ namespace XYZ {
 		uint32_t counter = 0;
 		for (auto& texture : material->GetTextures())
 		{
+			std::string texturePath = texture->GetFilepath();
+			if (texturePath.empty())
+				texturePath = "Assets/Textures/New_Texture";
+			
+			auto texture2D = Ref<Texture2D>((Texture2D*)texture.Raw());
+			SerializeResource<Texture2D>(texturePath, texture2D);
+
 			out << YAML::BeginMap;
 			out << YAML::Key << "TextureAssetPath";
 			out << YAML::Value << texture->GetFilepath();
@@ -314,31 +328,31 @@ namespace XYZ {
 			case UniformDataType::FLOAT:
 				out << YAML::BeginMap;
 				out << YAML::Key << uniform.Name;
-				out << YAML::Value << *(float*)&material->GetVSUniformBuffer()[uniform.Offset];
+				out << YAML::Value << *(float*)&material->GetFSUniformBuffer()[uniform.Offset];
 				out << YAML::EndMap;
 				break;
 			case UniformDataType::VEC2:
 				out << YAML::BeginMap;
 				out << YAML::Key << uniform.Name;
-				out << YAML::Value << *(glm::vec2*) & material->GetVSUniformBuffer()[uniform.Offset];
+				out << YAML::Value << *(glm::vec2*) & material->GetFSUniformBuffer()[uniform.Offset];
 				out << YAML::EndMap;
 				break;
 			case UniformDataType::VEC3:
 				out << YAML::BeginMap;
 				out << YAML::Key << uniform.Name;
-				out << YAML::Value << *(glm::vec3*) & material->GetVSUniformBuffer()[uniform.Offset];
+				out << YAML::Value << *(glm::vec3*) & material->GetFSUniformBuffer()[uniform.Offset];
 				out << YAML::EndMap;
 				break;
 			case UniformDataType::VEC4:
 				out << YAML::BeginMap;
 				out << YAML::Key << uniform.Name;
-				out << YAML::Value << *(glm::vec4*) & material->GetVSUniformBuffer()[uniform.Offset];
+				out << YAML::Value << *(glm::vec4*) & material->GetFSUniformBuffer()[uniform.Offset];
 				out << YAML::EndMap;
 				break;
 			case UniformDataType::INT:
 				out << YAML::BeginMap;
 				out << YAML::Key << uniform.Name;
-				out << YAML::Value << *(int*)&material->GetVSUniformBuffer()[uniform.Offset];
+				out << YAML::Value << *(int*)&material->GetFSUniformBuffer()[uniform.Offset];
 				out << YAML::EndMap;
 				break;
 			case UniformDataType::MAT4:
@@ -357,9 +371,10 @@ namespace XYZ {
 	template <>
 	void Serializer::Serialize<SceneTagComponent>(YAML::Emitter& out, const SceneTagComponent& val)
 	{
+		out << YAML::Key << "SceneTagComponent";
 		out << YAML::BeginMap;
-		out << YAML::Key << "Entity";
-		out << YAML::Value << val.Name;
+		out << YAML::Key << "Name" << YAML::Value << val.Name;
+		out << YAML::EndMap;
 	}
 
 	template <>
@@ -406,15 +421,15 @@ namespace XYZ {
 		if (materialPath.empty())
 		{
 			materialPath = "Assets/Materials/New_Material.mat";
-			SerializeResource<Material>(materialPath, val.Material);
 		}
+		SerializeResource<Material>(materialPath, val.Material);
 		
 		auto subtexturePath = val.SubTexture->GetFilepath();
 		if (subtexturePath.empty())
 		{
 			subtexturePath = "Assets/SubTextures/New_SubTexture.subtex";
-			SerializeResource<SubTexture2D>(subtexturePath, val.SubTexture);
 		}
+		SerializeResource<SubTexture2D>(subtexturePath, val.SubTexture);
 		
 		out << YAML::Key << "MaterialAssetPath" << YAML::Value << materialPath;
 		out << YAML::Key << "SubTextureAssetPath" << YAML::Value << subtexturePath;
@@ -445,17 +460,17 @@ namespace XYZ {
 		auto materialPath = val.Material->GetFilepath();
 		if (materialPath.empty())
 		{
-			materialPath = "Assets/Materials/New_Material.mat";
-			SerializeResource<Material>(materialPath, val.Material);
+			materialPath = "Assets/Materials/New_Material.mat";	
 		}
-
+		SerializeResource<Material>(materialPath, val.Material);
+		
 		auto subtexturePath = val.SubTexture->GetFilepath();
 		if (subtexturePath.empty())
 		{
-			subtexturePath = "Assets/SubTextures/New_SubTexture.subtex";
-			SerializeResource<SubTexture2D>(subtexturePath, val.SubTexture);
+			subtexturePath = "Assets/SubTextures/New_SubTexture.subtex";		
 		}
-
+		SerializeResource<SubTexture2D>(subtexturePath, val.SubTexture);
+		
 		out << YAML::Key << "MaterialAssetPath" << YAML::Value << materialPath;
 		out << YAML::Key << "SubTextureAssetPath" << YAML::Value << subtexturePath;
 		out << YAML::Key << "Color" << YAML::Value << val.Color;
@@ -553,6 +568,39 @@ namespace XYZ {
 		}
 	}
 
+	template <>
+	void Serializer::Serialize<ECS::ECSManager>(YAML::Emitter& out, const ECS::ECSManager& ecs)
+	{
+		for (uint32_t entity = 0; entity < ecs.GetNumberOfEntities(); ++entity)
+		{
+			if (ecs.GetEntitySignature(entity).any())
+			{
+				out << YAML::BeginMap;
+				out << YAML::Key << "Entity";
+				if (ecs.Contains<IDComponent>(entity))
+				{
+					out << YAML::Value << ecs.GetComponent<IDComponent>(entity).ID;
+				}
+				if (ecs.Contains<SceneTagComponent>(entity))
+				{
+					Serialize<SceneTagComponent>(out, ecs.GetComponent<SceneTagComponent>(entity));
+				}	
+				if (ecs.Contains<TransformComponent>(entity))
+				{
+					Serialize<TransformComponent>(out, ecs.GetComponent<TransformComponent>(entity));
+				}
+				if (ecs.Contains<CameraComponent>(entity))
+				{
+					Serialize<CameraComponent>(out, ecs.GetComponent<CameraComponent>(entity));
+				}
+				if (ecs.Contains<SpriteRenderer>(entity))
+				{
+					Serialize<SpriteRenderer>(out, ecs.GetComponent<SpriteRenderer>(entity));
+				}
+				out << YAML::EndMap; // Entity
+			}
+		}
+	}
 
 	template <>
 	void Serializer::SerializeResource<Scene>(const std::string& filepath, const Ref<Scene>& scene)
@@ -573,10 +621,12 @@ namespace XYZ {
 		}
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
+		std::ofstream fout(scene->GetFilepath());
+		fout << out.c_str();
 	}
 
 	template <>
-	Ref<Texture2D> Serializer::DeserializeResource<Texture2D>(const std::string& filepath)
+	Ref<Texture2D> Serializer::DeserializeResource<Texture2D>(const std::string& filepath, AssetManager& assetManager)
 	{
 		TextureWrap wrap = TextureWrap::Clamp;
 		TextureParam min = TextureParam::Linear;
@@ -598,11 +648,14 @@ namespace XYZ {
 		{
 			XYZ_LOG_WARN("Missing texture meta data, setting default");
 		}
-		return Texture2D::Create(wrap, min, max, filepath);
+
+		auto ref = Texture2D::Create(wrap, min, max, filepath);
+		ref->SetFilepath(filepath);
+		return ref;
 	}
 
 	template <>
-	Ref<SubTexture2D> Serializer::DeserializeResource<SubTexture2D>(const std::string& filepath)
+	Ref<SubTexture2D> Serializer::DeserializeResource<SubTexture2D>(const std::string& filepath, AssetManager& assetManager)
 	{
 		std::ifstream stream(filepath);
 		std::stringstream strStream;
@@ -613,14 +666,16 @@ namespace XYZ {
 
 		std::string texturePath = data["TextureAssetPath"].as<std::string>();
 		
-		Ref<Texture2D> texture = DeserializeResource<Texture2D>(texturePath);
+		Ref<Texture2D> texture = assetManager.GetAsset<Texture2D>(texturePath);
 		glm::vec4 texCoords = data["TexCoords"].as<glm::vec4>();
 
-		return Ref<SubTexture2D>::Create(texture, texCoords);
+		auto ref = Ref<SubTexture2D>::Create(texture, texCoords);
+		ref->SetFilepath(filepath);
+		return ref;
 	}
 
 	template <>
-	Ref<Material> Serializer::DeserializeResource(const std::string& filepath)
+	Ref<Material> Serializer::DeserializeResource(const std::string& filepath, AssetManager& assetManager)
 	{
 		std::ifstream stream(filepath);
 		std::stringstream strStream;
@@ -634,7 +689,7 @@ namespace XYZ {
 		{
 			std::string texturepath = seq["TextureAssetPath"].as<std::string>();
 			uint32_t index = seq["TextureIndex"].as<uint32_t>();
-			Ref<Texture2D> texture = DeserializeResource<Texture2D>(texturepath);
+			Ref<Texture2D> texture = assetManager.GetAsset<Texture2D>(texturepath);
 			material->Set("u_Texture", texture, index);
 		}
 
@@ -665,20 +720,21 @@ namespace XYZ {
 
 			}
 		}
+		material->SetFilepath(filepath);
 		return material;
 	}
 
 	
 	template <>
-	SpriteRenderer Serializer::Deserialize<SpriteRenderer>(YAML::Node& data)
+	SpriteRenderer Serializer::Deserialize<SpriteRenderer>(YAML::Node& data, AssetManager& assetManager)
 	{
 		std::string materialPath = data["MaterialAssetPath"].as<std::string>();
 		std::string subtexturePath = data["SubTextureAssetPath"].as<std::string>();
 		glm::vec4 color = data["Color"].as<glm::vec4>();
 		uint16_t sortLayer = data["SortLayer"].as<uint16_t>();
 
-		Ref<Material> material = DeserializeResource<Material>(materialPath);
-		Ref<SubTexture2D> subTexture = DeserializeResource<SubTexture2D>(subtexturePath);
+		Ref<Material> material = assetManager.GetAsset<Material>(materialPath);
+		Ref<SubTexture2D> subTexture = assetManager.GetAsset<SubTexture2D>(subtexturePath);
 
 		SpriteRenderer spriteRenderer(
 			material,
@@ -690,7 +746,7 @@ namespace XYZ {
 	}
 
 	template <>
-	CameraComponent Serializer::Deserialize<CameraComponent>(YAML::Node& data)
+	CameraComponent Serializer::Deserialize<CameraComponent>(YAML::Node& data, AssetManager& assetManager)
 	{
 		CameraPerspectiveProperties perspectiveProps;
 		CameraOrthographicProperties orthoProps;
@@ -724,7 +780,7 @@ namespace XYZ {
 	}
 
 	template <>
-	TransformComponent Serializer::Deserialize<TransformComponent>(YAML::Node& data)
+	TransformComponent Serializer::Deserialize<TransformComponent>(YAML::Node& data, AssetManager& assetManager)
 	{
 		TransformComponent transform(data["Position"].as<glm::vec3>());
 		
@@ -737,9 +793,10 @@ namespace XYZ {
 	}	
 
 
+	
 
 	template <>
-	Ref<Scene> Serializer::DeserializeResource(const std::string& filepath)
+	Ref<Scene> Serializer::DeserializeResource(const std::string& filepath, AssetManager& assetManager)
 	{
 		std::ifstream stream(filepath);
 		std::stringstream strStream;
@@ -762,26 +819,26 @@ namespace XYZ {
 				auto tagComponent = entity["SceneTagComponent"];
 				SceneTagComponent tag = tagComponent["Name"].as<std::string>();
 				Entity ent = result->CreateEntity(tag, guid);
-
+			
 				auto transformComponent = entity["TransformComponent"];
 				if (transformComponent)
 				{
 					auto& transform = ent.GetComponent<TransformComponent>();
-					transform = Deserialize<TransformComponent>(transformComponent);
+					transform = Deserialize<TransformComponent>(transformComponent, assetManager);
 				}
 				auto cameraComponent = entity["CameraComponent"];
 				if (cameraComponent)
 				{
-					ent.AddComponent<CameraComponent>(Deserialize<CameraComponent>(cameraComponent));
+					ent.AddComponent<CameraComponent>(Deserialize<CameraComponent>(cameraComponent, assetManager));
 				}
 				auto spriteRenderer = entity["SpriteRenderer"];
 				if (spriteRenderer)
 				{
-					ent.AddComponent<SpriteRenderer>(Deserialize<SpriteRenderer>(spriteRenderer));
+					ent.AddComponent<SpriteRenderer>(Deserialize<SpriteRenderer>(spriteRenderer, assetManager));
 				}
-				result->m_Entities.push_back(ent);
 			}
 		}
+		result->SetFilepath(filepath);
 		return result;
 	}
 }

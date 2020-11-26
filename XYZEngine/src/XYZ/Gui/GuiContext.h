@@ -32,14 +32,6 @@ namespace XYZ {
 		virtual void Rebuild(uint32_t entity, ECS::ECSManager& ecs) override;
 	};
 
-	struct Node
-	{
-		uint32_t Entity;
-		std::vector<Node> Children;
-	};
-
-	using Tree = std::vector<Node>;
-
 	class GuiContext : public RefCount
 	{
 	public:

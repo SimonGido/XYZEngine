@@ -40,6 +40,7 @@ namespace XYZ {
 		XYZ_ASSERT(m_CurrentAnimation, "No animation exists");
 		m_CurrentAnimation->Update(ts);
 	}
+
 	const Ref<Animation>& AnimationController::GetCurrentAnimation() const
 	{
 		XYZ_ASSERT(m_CurrentAnimation, "No animation exists");

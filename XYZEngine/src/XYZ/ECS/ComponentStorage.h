@@ -39,7 +39,10 @@ namespace XYZ {
 				return m_Data[m_EntityDataMap[entity]].Data;
 			}
 
-			
+			const T& GetComponent(uint32_t entity) const
+			{
+				return m_Data[m_EntityDataMap[entity]].Data;
+			}
 			uint32_t RemoveComponent(uint32_t entity)
 			{
 				uint32_t updatedEntity = NULL_ENTITY;

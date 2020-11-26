@@ -50,7 +50,6 @@ namespace XYZ {
         void OnRender();
         void OnRenderEditor(const EditorCamera& camera);
 
-
         Entity GetEntity(uint32_t index);
         Entity GetSelectedEntity();
         

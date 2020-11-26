@@ -2,7 +2,6 @@
 #include "NativeScriptWrappers.h"
 
 
-#include "XYZ/Scene/SceneManager.h"
 
 namespace XYZ {
 	namespace Script {

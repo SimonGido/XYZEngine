@@ -128,7 +128,18 @@ namespace XYZ {
 					}
 				}
 			}
-			
+			void GetFromGroup(uint32_t entity, const Signature& signature, uint8_t componentID, uint8_t** component) const
+			{
+				for (auto group : m_Groups)
+				{
+					if ((group->GetSignature() & signature) == group->GetSignature()
+						&& group->HasEntity(entity))
+					{
+						group->FindComponent(component, entity, componentID);
+						return;
+					}
+				}
+			}
 			template <typename T>
 			void RemoveComponent(uint32_t entity, const Signature& signature)
 			{
@@ -140,6 +151,12 @@ namespace XYZ {
 
 			template <typename T>
 			T& GetComponent(uint32_t entity)
+			{
+				ComponentStorage<T>* casted = (ComponentStorage<T>*)m_Storages[T::GetComponentID()];
+				return casted->GetComponent(entity);
+			}
+			template <typename T>
+			T& GetComponent(uint32_t entity) const
 			{
 				ComponentStorage<T>* casted = (ComponentStorage<T>*)m_Storages[T::GetComponentID()];
 				return casted->GetComponent(entity);

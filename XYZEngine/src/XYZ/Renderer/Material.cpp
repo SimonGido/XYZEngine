@@ -36,6 +36,7 @@ namespace XYZ {
 			m_Shader->SetFSUniforms(m_FSUniformBuffer);
 	}
 
+
 	void Material::onShaderReload()
 	{
 		delete[] m_VSUniformBuffer;

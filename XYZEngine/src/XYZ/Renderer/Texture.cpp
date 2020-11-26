@@ -4,6 +4,7 @@
 #include "Renderer.h"
 #include "API/OpenGL/OpenGLTexture.h"
 
+
 namespace XYZ {
 	Ref<Texture2D> Texture2D::Create(const TextureSpecs& specs)
 	{

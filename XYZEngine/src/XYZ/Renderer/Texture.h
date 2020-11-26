@@ -58,7 +58,6 @@ namespace XYZ {
 		virtual uint8_t* GetData() = 0;
 		virtual const TextureSpecs& GetSpecification() const = 0;
 		virtual void Bind(uint32_t slot = 0) const = 0;
-
 		static uint32_t CalculateMipMapCount(uint32_t width, uint32_t height);
 	};
 
@@ -69,7 +68,6 @@ namespace XYZ {
 	class Texture2D : public Texture
 	{
 	public:
-
 		static Ref<Texture2D> Create(const TextureSpecs& specs);
 		static Ref<Texture2D> Create(TextureWrap wrap, TextureParam min, TextureParam max, const std::string& path);
 		static Ref<Texture2D> Create(uint32_t rendererID);

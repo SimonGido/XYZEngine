@@ -18,14 +18,16 @@ namespace XYZ {
 	}
 	AssetManager::~AssetManager()
 	{
-		m_FileWatcher->Stop();
+		m_FileWatcher->Stop();	
 	}
+
 	void AssetManager::OnFileChange(const std::wstring& filepath)
 	{
 		std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
 		std::string convertedStr = converter.to_bytes(filepath);
-
-		std::cout << "File changed " << convertedStr << std::endl;
+		std::replace(convertedStr.begin(), convertedStr.end(), '\\', '/');
+		
+		//std::cout << "File changed " << convertedStr << std::endl;
 	}
 	void AssetManager::OnFileAdded(const std::wstring& filepath)
 	{
