@@ -39,6 +39,7 @@ namespace XYZ {
 		m_RootEntity = m_ECS->CreateEntity();
 		auto [width, height] = Input::GetWindowSize();
 		m_ECS->AddComponent<Relationship>(m_RootEntity, Relationship());
+		m_ECS->AddComponent<IDComponent>(m_RootEntity, IDComponent());
 		auto& dock = m_ECS->AddComponent<DockNodeComponent>(m_RootEntity, DockNodeComponent(glm::vec3(0.0f), { width,height }));
 	}
 
@@ -517,6 +518,8 @@ namespace XYZ {
 	uint32_t Dockspace::createNode(uint32_t parent, const glm::vec3& position, const glm::vec2& size)
 	{
 		uint32_t entity = m_ECS->CreateEntity();
+		m_ECS->AddComponent<IDComponent>(entity, IDComponent());
+
 		auto& dock = m_ECS->AddComponent<DockNodeComponent>(entity, DockNodeComponent(position, size));
 		m_ECS->AddComponent<Relationship>(entity, Relationship());
 		

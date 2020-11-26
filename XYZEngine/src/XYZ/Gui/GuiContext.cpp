@@ -155,7 +155,8 @@ namespace XYZ {
 	{
 		auto& texCoords = m_Specification.SubTexture[GuiSpecification::BUTTON]->GetTexCoords();
 		uint32_t entity = m_ECS->CreateEntity();
-		
+		m_ECS->AddComponent<IDComponent>(entity, IDComponent());
+
 		Mesh mesh;
 		GenerateQuadMesh(texCoords, specs.Color, specs.Size, mesh);
 	
@@ -181,6 +182,7 @@ namespace XYZ {
 	{
 		auto& texCoords = m_Specification.SubTexture[GuiSpecification::BUTTON]->GetTexCoords();
 		uint32_t entity = m_ECS->CreateEntity();
+		m_ECS->AddComponent<IDComponent>(entity, IDComponent());
 
 		Mesh mesh;
 		GenerateQuadMesh(texCoords, specs.Color, specs.Size, mesh);
@@ -206,6 +208,8 @@ namespace XYZ {
 	{
 		auto& texCoords = m_Specification.SubTexture[GuiSpecification::BUTTON]->GetTexCoords();
 		uint32_t entity = m_ECS->CreateEntity();
+		m_ECS->AddComponent<IDComponent>(entity, IDComponent());
+
 		Mesh mesh;
 		GenerateQuadMesh(texCoords, specs.DefaultColor, specs.Size, mesh);
 
@@ -227,6 +231,8 @@ namespace XYZ {
 		Relationship::SetupRelation(parent, entity, *m_ECS);
 		
 		uint32_t textEntity = m_ECS->CreateEntity();
+		m_ECS->AddComponent<IDComponent>(textEntity, IDComponent());
+
 		Mesh textMesh;
 		GenerateTextMesh(specs.Name.c_str(), m_Specification.Font, specs.DefaultColor, specs.Size, textMesh, TextAlignment::Center);
 		auto& textRectTransform = m_ECS->AddComponent<RectTransform>(textEntity, RectTransform(glm::vec3(0.0f), specs.Size));
@@ -259,6 +265,7 @@ namespace XYZ {
 	uint32_t GuiContext::CreateCheckbox(uint32_t parent, const CheckboxSpecification& specs)
 	{
 		uint32_t entity = m_ECS->CreateEntity();
+		m_ECS->AddComponent<IDComponent>(entity, IDComponent());
 		auto& checkbox = m_ECS->AddComponent<Checkbox>(entity, Checkbox(specs.HooverColor));
 
 
@@ -287,6 +294,7 @@ namespace XYZ {
 
 
 		uint32_t textEntity = m_ECS->CreateEntity();
+		m_ECS->AddComponent<IDComponent>(textEntity, IDComponent());
 		Mesh textMesh;
 		GenerateTextMesh(specs.Name.c_str(), m_Specification.Font, specs.DefaultColor, specs.Size, textMesh, TextAlignment::Center);
 		auto& textRectTransform = m_ECS->AddComponent<RectTransform>(textEntity, RectTransform(glm::vec3(0.0f), glm::vec2(1.0f)));
@@ -318,6 +326,7 @@ namespace XYZ {
 	uint32_t GuiContext::CreateSlider(uint32_t parent, const SliderSpecification& specs)
 	{
 		uint32_t entity = m_ECS->CreateEntity();
+		m_ECS->AddComponent<IDComponent>(entity, IDComponent());
 		auto& slider = m_ECS->AddComponent<Slider>(entity, Slider(specs.HooverColor));
 
 		glm::vec4 texCoords = m_Specification.SubTexture[GuiSpecification::BUTTON]->GetTexCoords();
@@ -343,6 +352,7 @@ namespace XYZ {
 
 
 		uint32_t handle = m_ECS->CreateEntity();
+		m_ECS->AddComponent<IDComponent>(handle, IDComponent());
 		Mesh handleMesh;
 		GenerateQuadMesh(texCoords, specs.HandleColor, specs.HandleSize, handleMesh);
 		m_ECS->AddComponent<Relationship>(handle, Relationship());
@@ -362,6 +372,7 @@ namespace XYZ {
 		
 
 		uint32_t textEntity = m_ECS->CreateEntity();
+		m_ECS->AddComponent<IDComponent>(textEntity, IDComponent());
 		Mesh textMesh;
 		GenerateTextMesh(specs.Name.c_str(), m_Specification.Font, specs.DefaultColor, specs.Size, textMesh, TextAlignment::Center);
 		auto& textRectTransform = m_ECS->AddComponent<RectTransform>(textEntity, RectTransform(glm::vec3(0.0f), glm::vec2(1.0f)));
@@ -394,6 +405,8 @@ namespace XYZ {
 	uint32_t GuiContext::CreateText(uint32_t parent, const TextSpecification& specs)
 	{
 		uint32_t entity = m_ECS->CreateEntity();
+		m_ECS->AddComponent<IDComponent>(entity, IDComponent());
+
 		Mesh mesh;
 		GenerateTextMesh(specs.Source.c_str(), m_Specification.Font, specs.Color, specs.Size, mesh, specs.Alignment);
 
@@ -427,6 +440,7 @@ namespace XYZ {
 	{
 		auto& texCoords = specs.SubTexture->GetTexCoords();
 		uint32_t entity = m_ECS->CreateEntity();
+		m_ECS->AddComponent<IDComponent>(entity, IDComponent());
 
 		Mesh mesh;
 		GenerateQuadMesh(texCoords, specs.Color, specs.Size, mesh);
@@ -452,6 +466,7 @@ namespace XYZ {
 	uint32_t GuiContext::CreateInputField(uint32_t parent, const InputFieldSpecification& specs)
 	{
 		uint32_t textEntity = m_ECS->CreateEntity();
+		m_ECS->AddComponent<IDComponent>(textEntity, IDComponent());
 		Mesh textMesh;
 		GenerateTextMesh(nullptr, m_Specification.Font, specs.DefaultColor, specs.Size, textMesh, TextAlignment::Center);
 		auto& textRectTransform = m_ECS->AddComponent<RectTransform>(textEntity, RectTransform(glm::vec3(0.0f), specs.Size));
@@ -478,6 +493,8 @@ namespace XYZ {
 
 		
 		uint32_t entity = m_ECS->CreateEntity();
+		m_ECS->AddComponent<IDComponent>(entity, IDComponent());
+
 		auto& field = m_ECS->AddComponent<InputField>(entity, InputField(specs.SelectColor, specs.HooverColor, textEntity, m_ECS));
 
 		glm::vec4 texCoords = m_Specification.SubTexture[GuiSpecification::BUTTON]->GetTexCoords();

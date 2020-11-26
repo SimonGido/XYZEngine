@@ -493,7 +493,7 @@ namespace XYZ {
 
 		out << YAML::EndMap;
 	}
-
+	
 	template <>
 	void Serializer::Serialize<Button>(YAML::Emitter& out, const Button& val)
 	{
@@ -540,7 +540,18 @@ namespace XYZ {
 
 		out << YAML::EndMap;
 	}
+	template <>
+	void Serializer::Serialize<Relationship>(YAML::Emitter& out, const Relationship& val)
+	{
+		out << YAML::Key << "Relationship";
+		out << YAML::BeginMap;
 
+		out << YAML::Key << "Parent" << YAML::Value << val.Parent;
+		out << YAML::Key << "NextSibling" << YAML::Value << val.NextSibling;
+		out << YAML::Key << "PreviousSibling" << YAML::Value << val.PreviousSibling;
+		out << YAML::Key << "FirstChild" << YAML::Value << val.FirstChild;
+		out << YAML::EndMap;
+	}
 	template <>
 	void Serializer::Serialize<Entity>(YAML::Emitter& out, const Entity& entity)
 	{
@@ -571,16 +582,19 @@ namespace XYZ {
 	template <>
 	void Serializer::Serialize<ECS::ECSManager>(YAML::Emitter& out, const ECS::ECSManager& ecs)
 	{
+		out << YAML::BeginMap;
+		out << YAML::Key << "ECS";
+		out << YAML::Value << "ECS";
+
+		out << YAML::Key << "Entities";
+		out << YAML::Value << YAML::BeginSeq;
 		for (uint32_t entity = 0; entity < ecs.GetNumberOfEntities(); ++entity)
 		{
 			if (ecs.GetEntitySignature(entity).any())
 			{
 				out << YAML::BeginMap;
-				out << YAML::Key << "Entity";
-				if (ecs.Contains<IDComponent>(entity))
-				{
-					out << YAML::Value << ecs.GetComponent<IDComponent>(entity).ID;
-				}
+				out << YAML::Key << "Entity" << YAML::Value << ecs.GetComponent<IDComponent>(entity).ID;
+			
 				if (ecs.Contains<SceneTagComponent>(entity))
 				{
 					Serialize<SceneTagComponent>(out, ecs.GetComponent<SceneTagComponent>(entity));
@@ -597,9 +611,35 @@ namespace XYZ {
 				{
 					Serialize<SpriteRenderer>(out, ecs.GetComponent<SpriteRenderer>(entity));
 				}
+				if (ecs.Contains<Button>(entity))
+				{
+					Serialize<Button>(out, ecs.GetComponent<Button>(entity));
+				}
+				if (ecs.Contains<Checkbox>(entity))
+				{
+					Serialize<Checkbox>(out, ecs.GetComponent<Checkbox>(entity));
+				}
+				if (ecs.Contains<Slider>(entity))
+				{
+					Serialize<Slider>(out, ecs.GetComponent<Slider>(entity));
+				}
+				if (ecs.Contains<InputField>(entity))
+				{
+					Serialize<InputField>(out, ecs.GetComponent<InputField>(entity));
+				}
+				if (ecs.Contains<LayoutGroup>(entity))
+				{
+					Serialize<LayoutGroup>(out, ecs.GetComponent<LayoutGroup>(entity));
+				}
+				if (ecs.Contains<Relationship>(entity))
+				{
+					Serialize<Relationship>(out, ecs.GetComponent<Relationship>(entity));
+				}
 				out << YAML::EndMap; // Entity
 			}
 		}
+		out << YAML::EndSeq;
+		out << YAML::EndMap;
 	}
 
 	template <>
