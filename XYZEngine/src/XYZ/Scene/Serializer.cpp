@@ -556,7 +556,20 @@ namespace XYZ {
 			out << YAML::Key << "Entities" << YAML::Value << val.Entities;
 		out << YAML::EndMap; // DockNodeComponent
 	}
+	template <>
+	void Serializer::Serialize<Text>(YAML::Emitter& out, const Text& val)
+	{
+		out << YAML::Key << "Text";
+		out << YAML::BeginMap;
 
+		out << YAML::Key << "FontPath" << YAML::Value << val.Font->GetFilepath();
+		out << YAML::Key << "Source" << YAML::Value << val.Source;
+		out << YAML::Key << "Color" << YAML::Value << val.Color;
+		out << YAML::Key << "Alignment" << YAML::Value << ToUnderlying(val.Alignment);
+
+		
+		out << YAML::EndMap; // Text
+	}
 
 
 	template <>
@@ -657,6 +670,10 @@ namespace XYZ {
 				if (ecs.Contains<DockNodeComponent>(entity))
 				{
 					Serialize<DockNodeComponent>(out, ecs.GetComponent<DockNodeComponent>(entity));
+				}
+				if (ecs.Contains<Text>(entity))
+				{
+					Serialize<Text>(out, ecs.GetComponent<Text>(entity));
 				}
 				out << YAML::EndMap; // Entity
 			}
@@ -964,6 +981,30 @@ namespace XYZ {
 		relationship.FirstChild = data["FirstChild"].as<uint32_t>();
 		return relationship;
 	}
+
+	template <>
+	Text Serializer::Deserialize<Text>(YAML::Node& data, AssetManager& assetManager)
+	{
+		Ref<Font> font = assetManager.GetAsset<Font>(data["FontPath"].as<std::string>())->GetHandle();
+		std::string source = data["Source"].as<std::string>();
+		glm::vec4 color = data["Color"].as<glm::vec4>();
+		TextAlignment alignment;
+		uint32_t align = data["Alignment"].as<uint32_t>();
+		switch (align)
+		{
+		case ToUnderlying(TextAlignment::Center):
+			alignment = TextAlignment::Center;
+			break;
+		case ToUnderlying(TextAlignment::Left):
+			alignment = TextAlignment::Left;
+			break;
+		case ToUnderlying(TextAlignment::Right):
+			alignment = TextAlignment::Right;
+			break;
+		}
+		return Text(source, font, color, alignment);
+	}
+
 	template <>
 	DockNodeComponent Serializer::Deserialize<DockNodeComponent>(YAML::Node& data, AssetManager& assetManager)
 	{
@@ -1067,6 +1108,27 @@ namespace XYZ {
 				{
 					ecs.AddComponent<DockNodeComponent>(ent, Deserialize<DockNodeComponent>(dockNode, assetManager));
 				}
+				auto text = entity["Text"];
+				if (text)
+				{
+					ecs.AddComponent<Text>(ent, Deserialize<Text>(text, assetManager));
+				}
+				if (ecs.Contains<CanvasRenderer>(ent) && ecs.Contains<RectTransform>(ent))
+				{
+					auto& transform = ecs.GetComponent<RectTransform>(ent);
+					if (ecs.Contains<Text>(ent))
+					{
+						transform.Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent(
+							{ ent,&ecs }, TextCanvasRendererRebuild()
+						));
+					}
+					else
+					{
+						transform.Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent(
+							{ ent,&ecs }, QuadCanvasRendererRebuild()
+						));
+					}
+				}
 			}
 		}
 		return ecs;
@@ -1149,7 +1211,11 @@ namespace XYZ {
 				{
 					val.AddComponent<DockNodeComponent>(ent, Deserialize<DockNodeComponent>(dockNode, assetManager));
 				}
-
+				auto text = entity["Text"];
+				if (text)
+				{
+					val.AddComponent<Text>(ent, Deserialize<Text>(text, assetManager));
+				}
 				if (val.Contains<CanvasRenderer>(ent) && val.Contains<RectTransform>(ent))
 				{
 					auto& transform = val.GetComponent<RectTransform>(ent);

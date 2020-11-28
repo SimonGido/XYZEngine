@@ -3,5 +3,7 @@ ShaderAssetPath: Assets/Shaders/GuiShader.glsl
 Textures:
   - TextureAssetPath: Assets/Textures/Gui/TexturePack_Dark.png
     TextureIndex: 0
+  - TextureAssetPath: Assets/Fonts/arial.ttf
+    TextureIndex: 1
 Values:
   []

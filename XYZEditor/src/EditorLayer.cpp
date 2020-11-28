@@ -179,177 +179,177 @@ namespace XYZ {
 		std::stringstream strStream;
 		strStream << stream.rdbuf();
 		YAML::Node data = YAML::Load(strStream.str());
-		//Serializer::Deserialize<ECSManager>(data, m_AssetManager, m_ECS);
+		Serializer::Deserialize<ECSManager>(data, m_AssetManager, m_ECS);
 
-		uint32_t canvas = m_GuiContext->CreateCanvas(CanvasSpecification(
-			CanvasRenderMode::ScreenSpace,
-			glm::vec3(0.0f),
-			glm::vec2(windowWidth, windowHeight),
-			glm::vec4(0.0f)
-		));
+		//uint32_t canvas = m_GuiContext->CreateCanvas(CanvasSpecification(
+		//	CanvasRenderMode::ScreenSpace,
+		//	glm::vec3(0.0f),
+		//	glm::vec2(windowWidth, windowHeight),
+		//	glm::vec4(0.0f)
+		//));
 
 		m_Dockspace = new Dockspace(&m_ECS, m_GuiContext);
-		m_Dockspace->SetRoot(NULL_ENTITY);
+		m_Dockspace->SetRoot(1);
 
-		uint32_t opicaEntity = m_Dockspace->CreatePanel(canvas, "Opica", PanelSpecification(
-			glm::vec3(-200.0f),
-			glm::vec2(300.0f),
-			glm::vec4(1.5f)
-		));
-		{
-			auto& layout = m_ECS.AddComponent<LayoutGroup>(opicaEntity, LayoutGroup());
-			layout.CellSpacing.x = 10.0f;
-			layout.CellSpacing.y = 10.0f;
-			layout.Padding.Top = 35.0f;
-		}
-		for (int i = 0; i < 20; ++i)
-		{
-			uint32_t editorEntity = m_GuiContext->CreateButton(opicaEntity,
-				ButtonSpecification{
-					"Button",
-					glm::vec3(i * 50,i * 50, 0.0f),
-					glm::vec2(50.0f,50.0f),
-					glm::vec4(1.0f,1.0f,1.0f,1.0f),
-					glm::vec4(0.4f, 1.0f, 0.8f, 1.0f),
-					glm::vec4(1.0f, 0.5f, 0.8f, 1.0f),
-					1
-				});
-		}
-		
-		uint32_t editorEntity = m_GuiContext->CreateSlider(opicaEntity,
-			SliderSpecification{
-				"Slider",
-				glm::vec3(0.0f),
-				glm::vec2(150.0f,25.0f),
-				glm::vec2(25.0f, 25.0f),
-				glm::vec4(1.0f,1.0f,1.9f,1.0f),
-				glm::vec4(0.7f, 1.8f, 1.0f, 1.0f),
-				glm::vec4(0.4f, 1.0f, 0.8f, 1.0f),
-				1
-			});
-		uint32_t inputEntity = m_GuiContext->CreateInputField(opicaEntity,
-			InputFieldSpecification{
-				glm::vec3(0.0f),
-				glm::vec2(150.0f,25.0f),
-				glm::vec4(1.0f,1.0f,1.9f,1.0f),
-				glm::vec4(0.7f, 1.8f, 1.0f, 1.0f),
-				glm::vec4(0.4f, 1.0f, 0.8f, 1.0f),
-				1
-			});
-		
-		
-		auto havkac = m_Dockspace->CreatePanel(canvas, "Havkac", PanelSpecification(
-			glm::vec3(200.0f),
-			glm::vec2(300.0f),
-			glm::vec4(1.5f)
-		));
-		{
-			auto& layout = m_ECS.AddComponent<LayoutGroup>(havkac, LayoutGroup());
-			layout.CellSpacing.x = 10.0f;
-			layout.CellSpacing.y = 10.0f;
-			layout.Padding.Top = 35.0f;
-			layout.Padding.Left = 15.0f;
-		}
-		for (int i = 0; i < 20; ++i)
-		{
-			uint32_t editorEntity = m_GuiContext->CreateButton(havkac,
-				ButtonSpecification{
-					"Button",
-					glm::vec3(i * 50,i * 50, 0.0f),
-					glm::vec2(50.0f,50.0f),
-					glm::vec4(1.0f,1.0f,1.0f,1.0f),
-					glm::vec4(0.4f, 1.0f, 0.8f, 1.0f),
-					glm::vec4(1.0f, 0.5f, 0.8f, 1.0f),
-					1
-				});
-		}
-		
-		
-		auto zemiak = m_Dockspace->CreatePanel(canvas, "Zemiak", PanelSpecification(
-			glm::vec3(-400.0f),
-			glm::vec2(300.0f),
-			glm::vec4(1.5f)
-		));
-		{
-			auto& layout = m_ECS.AddComponent<LayoutGroup>(zemiak, LayoutGroup());
-			layout.CellSpacing.x = 10.0f;
-			layout.CellSpacing.y = 10.0f;
-			layout.Padding.Top = 35.0f;
-		}
-		for (int i = 0; i < 20; ++i)
-		{
-			uint32_t editorEntity = m_GuiContext->CreateButton(zemiak,
-				ButtonSpecification{
-					"Button",
-					glm::vec3(i * 50,i * 50, 0.0f),
-					glm::vec2(50.0f,50.0f),
-					glm::vec4(1.0f,1.0f,1.0f,1.0f),
-					glm::vec4(0.4f, 1.0f, 0.8f, 1.0f),
-					glm::vec4(1.0f, 0.5f, 0.8f, 1.0f),
-					1
-				});
-		}
-		
-		auto kostovnik = m_Dockspace->CreatePanel(canvas, "Kostovnik", PanelSpecification(
-			glm::vec3(-400.0f),
-			glm::vec2(300.0f),
-			glm::vec4(1.5f)
-		));
-		{
-			auto& layout = m_ECS.AddComponent<LayoutGroup>(kostovnik, LayoutGroup());
-			layout.CellSpacing.x = 10.0f;
-			layout.CellSpacing.y = 10.0f;
-			layout.Padding.Top = 35.0f;
-		}
-		for (int i = 0; i < 20; ++i)
-		{
-			uint32_t editorEntity = m_GuiContext->CreateButton(kostovnik,
-				ButtonSpecification{
-					"Button",
-					glm::vec3(i * 50,i * 50, 0.0f),
-					glm::vec2(50.0f,50.0f),
-					glm::vec4(1.0f,1.0f,1.0f,1.0f),
-					glm::vec4(0.4f, 1.0f, 0.8f, 1.0f),
-					glm::vec4(1.0f, 0.5f, 0.8f, 1.0f),
-					1
-				});
-		}
-		
-		auto pelengac = m_Dockspace->CreatePanel(canvas, "Pelengac", PanelSpecification(
-			glm::vec3(-400.0f),
-			glm::vec2(300.0f),
-			glm::vec4(1.5f)
-		));
-		{
-			auto& layout = m_ECS.AddComponent<LayoutGroup>(pelengac, LayoutGroup());
-			layout.CellSpacing.x = 10.0f;
-			layout.CellSpacing.y = 10.0f;
-			layout.Padding.Top = 35.0f;
-		}
-		for (int i = 0; i < 20; ++i)
-		{
-			uint32_t editorEntity = m_GuiContext->CreateButton(pelengac,
-				ButtonSpecification{
-					"Button",
-					glm::vec3(i * 50,i * 50, 0.0f),
-					glm::vec2(50.0f,50.0f),
-					glm::vec4(1.0f,1.0f,1.0f,1.0f),
-					glm::vec4(0.4f, 1.0f, 0.8f, 1.0f),
-					glm::vec4(1.0f, 0.5f, 0.8f, 1.0f),
-					1
-				});
-		}
-		
-		Renderer::WaitAndRender();
-		
-		
-		auto renderTexture = SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer->CreateTextureFromColorAttachment(0);
-		uint32_t entity = m_Dockspace->CreateRenderWindow(0, "Scene", ImageSpecification(
-			Ref<SubTexture2D>::Create(renderTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)),
-			glm::vec3(0.0f),
-			glm::vec2(400.0f),
-			glm::vec4(1.0f)
-		));
+		//uint32_t opicaEntity = m_Dockspace->CreatePanel(canvas, "Opica", PanelSpecification(
+		//	glm::vec3(-200.0f),
+		//	glm::vec2(300.0f),
+		//	glm::vec4(1.5f)
+		//));
+		//{
+		//	auto& layout = m_ECS.AddComponent<LayoutGroup>(opicaEntity, LayoutGroup());
+		//	layout.CellSpacing.x = 10.0f;
+		//	layout.CellSpacing.y = 10.0f;
+		//	layout.Padding.Top = 35.0f;
+		//}
+		//for (int i = 0; i < 20; ++i)
+		//{
+		//	uint32_t editorEntity = m_GuiContext->CreateButton(opicaEntity,
+		//		ButtonSpecification{
+		//			"Button",
+		//			glm::vec3(i * 50,i * 50, 0.0f),
+		//			glm::vec2(50.0f,50.0f),
+		//			glm::vec4(1.0f,1.0f,1.0f,1.0f),
+		//			glm::vec4(0.4f, 1.0f, 0.8f, 1.0f),
+		//			glm::vec4(1.0f, 0.5f, 0.8f, 1.0f),
+		//			1
+		//		});
+		//}
+		//
+		//uint32_t editorEntity = m_GuiContext->CreateSlider(opicaEntity,
+		//	SliderSpecification{
+		//		"Slider",
+		//		glm::vec3(0.0f),
+		//		glm::vec2(150.0f,25.0f),
+		//		glm::vec2(25.0f, 25.0f),
+		//		glm::vec4(1.0f,1.0f,1.9f,1.0f),
+		//		glm::vec4(0.7f, 1.8f, 1.0f, 1.0f),
+		//		glm::vec4(0.4f, 1.0f, 0.8f, 1.0f),
+		//		1
+		//	});
+		//uint32_t inputEntity = m_GuiContext->CreateInputField(opicaEntity,
+		//	InputFieldSpecification{
+		//		glm::vec3(0.0f),
+		//		glm::vec2(150.0f,25.0f),
+		//		glm::vec4(1.0f,1.0f,1.9f,1.0f),
+		//		glm::vec4(0.7f, 1.8f, 1.0f, 1.0f),
+		//		glm::vec4(0.4f, 1.0f, 0.8f, 1.0f),
+		//		1
+		//	});
+		//
+		//
+		//auto havkac = m_Dockspace->CreatePanel(canvas, "Havkac", PanelSpecification(
+		//	glm::vec3(200.0f),
+		//	glm::vec2(300.0f),
+		//	glm::vec4(1.5f)
+		//));
+		//{
+		//	auto& layout = m_ECS.AddComponent<LayoutGroup>(havkac, LayoutGroup());
+		//	layout.CellSpacing.x = 10.0f;
+		//	layout.CellSpacing.y = 10.0f;
+		//	layout.Padding.Top = 35.0f;
+		//	layout.Padding.Left = 15.0f;
+		//}
+		//for (int i = 0; i < 20; ++i)
+		//{
+		//	uint32_t editorEntity = m_GuiContext->CreateButton(havkac,
+		//		ButtonSpecification{
+		//			"Button",
+		//			glm::vec3(i * 50,i * 50, 0.0f),
+		//			glm::vec2(50.0f,50.0f),
+		//			glm::vec4(1.0f,1.0f,1.0f,1.0f),
+		//			glm::vec4(0.4f, 1.0f, 0.8f, 1.0f),
+		//			glm::vec4(1.0f, 0.5f, 0.8f, 1.0f),
+		//			1
+		//		});
+		//}
+		//
+		//
+		//auto zemiak = m_Dockspace->CreatePanel(canvas, "Zemiak", PanelSpecification(
+		//	glm::vec3(-400.0f),
+		//	glm::vec2(300.0f),
+		//	glm::vec4(1.5f)
+		//));
+		//{
+		//	auto& layout = m_ECS.AddComponent<LayoutGroup>(zemiak, LayoutGroup());
+		//	layout.CellSpacing.x = 10.0f;
+		//	layout.CellSpacing.y = 10.0f;
+		//	layout.Padding.Top = 35.0f;
+		//}
+		//for (int i = 0; i < 20; ++i)
+		//{
+		//	uint32_t editorEntity = m_GuiContext->CreateButton(zemiak,
+		//		ButtonSpecification{
+		//			"Button",
+		//			glm::vec3(i * 50,i * 50, 0.0f),
+		//			glm::vec2(50.0f,50.0f),
+		//			glm::vec4(1.0f,1.0f,1.0f,1.0f),
+		//			glm::vec4(0.4f, 1.0f, 0.8f, 1.0f),
+		//			glm::vec4(1.0f, 0.5f, 0.8f, 1.0f),
+		//			1
+		//		});
+		//}
+		//
+		//auto kostovnik = m_Dockspace->CreatePanel(canvas, "Kostovnik", PanelSpecification(
+		//	glm::vec3(-400.0f),
+		//	glm::vec2(300.0f),
+		//	glm::vec4(1.5f)
+		//));
+		//{
+		//	auto& layout = m_ECS.AddComponent<LayoutGroup>(kostovnik, LayoutGroup());
+		//	layout.CellSpacing.x = 10.0f;
+		//	layout.CellSpacing.y = 10.0f;
+		//	layout.Padding.Top = 35.0f;
+		//}
+		//for (int i = 0; i < 20; ++i)
+		//{
+		//	uint32_t editorEntity = m_GuiContext->CreateButton(kostovnik,
+		//		ButtonSpecification{
+		//			"Button",
+		//			glm::vec3(i * 50,i * 50, 0.0f),
+		//			glm::vec2(50.0f,50.0f),
+		//			glm::vec4(1.0f,1.0f,1.0f,1.0f),
+		//			glm::vec4(0.4f, 1.0f, 0.8f, 1.0f),
+		//			glm::vec4(1.0f, 0.5f, 0.8f, 1.0f),
+		//			1
+		//		});
+		//}
+		//
+		//auto pelengac = m_Dockspace->CreatePanel(canvas, "Pelengac", PanelSpecification(
+		//	glm::vec3(-400.0f),
+		//	glm::vec2(300.0f),
+		//	glm::vec4(1.5f)
+		//));
+		//{
+		//	auto& layout = m_ECS.AddComponent<LayoutGroup>(pelengac, LayoutGroup());
+		//	layout.CellSpacing.x = 10.0f;
+		//	layout.CellSpacing.y = 10.0f;
+		//	layout.Padding.Top = 35.0f;
+		//}
+		//for (int i = 0; i < 20; ++i)
+		//{
+		//	uint32_t editorEntity = m_GuiContext->CreateButton(pelengac,
+		//		ButtonSpecification{
+		//			"Button",
+		//			glm::vec3(i * 50,i * 50, 0.0f),
+		//			glm::vec2(50.0f,50.0f),
+		//			glm::vec4(1.0f,1.0f,1.0f,1.0f),
+		//			glm::vec4(0.4f, 1.0f, 0.8f, 1.0f),
+		//			glm::vec4(1.0f, 0.5f, 0.8f, 1.0f),
+		//			1
+		//		});
+		//}
+		//
+		//Renderer::WaitAndRender();
+		//
+		//
+		//auto renderTexture = SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer->CreateTextureFromColorAttachment(0);
+		//uint32_t entity = m_Dockspace->CreateRenderWindow(0, "Scene", ImageSpecification(
+		//	Ref<SubTexture2D>::Create(renderTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)),
+		//	glm::vec3(0.0f),
+		//	glm::vec2(400.0f),
+		//	glm::vec4(1.0f)
+		//));
 	}	
 
 

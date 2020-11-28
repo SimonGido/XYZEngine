@@ -1,6 +1,6 @@
 ECS: ECS
 Entities:
-  - Entity: "{9DC4B5B3-129A-4A2F-A386-F2A83757A794}"
+  - Entity: "{1BE98AAB-D7AD-4CF6-82B2-D67ADCF80042}"
     Relationship:
       Parent: 65537
       NextSibling: 65537
@@ -19,7 +19,7 @@ Entities:
       Scale: [1, 1]
     Canvas:
       Color: [0, 0, 0, 0]
-  - Entity: "{62AA7912-813D-40AD-9B15-AC2690F073BA}"
+  - Entity: "{485C793B-8E5E-4E12-AAD4-D16073D541BF}"
     Relationship:
       Parent: 65537
       NextSibling: 65537
@@ -29,7 +29,7 @@ Entities:
       Position: [0, 0, 0]
       Size: [1920, 1017]
       Split: 0
-  - Entity: "{B692F370-715D-4056-A6AE-8DBEB7EE18FD}"
+  - Entity: "{5FF9DF0F-40EB-4B6E-A26A-3BEFB115F666}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 0]
@@ -49,7 +49,7 @@ Entities:
       Position: [-200, -200, 0]
       Size: [50, 30]
       Scale: [1, 1]
-  - Entity: "{A6A6EDBB-0F26-47A8-8740-63CB24AA17C8}"
+  - Entity: "{1947F725-CBA2-4A90-870E-55BA11C091D4}"
     Relationship:
       Parent: 2
       NextSibling: 65537
@@ -57,7 +57,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -66,7 +66,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 30]
       Scale: [1, 1]
-  - Entity: "{67150C29-9A73-42D1-A957-8E3951DFB25D}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Opica
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{FDBB4D3A-240F-4077-8AD3-EAB2C5BAF9D6}"
     LayoutGroup:
       LeftPadding: 0
       RightPadding: 0
@@ -89,7 +94,7 @@ Entities:
       Position: [125, -135, 0]
       Size: [300, 300]
       Scale: [1, 1]
-  - Entity: "{ABB15B6D-36F1-426F-810B-B77BDC676998}"
+  - Entity: "{8DF5C42F-EE06-4DFA-BFA0-9832A531CB5B}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -109,7 +114,7 @@ Entities:
       Position: [-5, -185, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{E296E958-6B83-4A84-A4EF-61E53504606D}"
+  - Entity: "{BE655899-F6F5-442E-A590-214B66919127}"
     Relationship:
       Parent: 5
       NextSibling: 65537
@@ -117,7 +122,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -126,7 +131,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{1A0512B7-C396-472A-B381-49507CAC9BDB}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{F1C57999-017A-4C76-A3BF-E24CAE5EB8ED}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -146,7 +156,7 @@ Entities:
       Position: [-65, -185, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{9A3CD4A2-516A-47FE-8C70-2E305068489C}"
+  - Entity: "{EEDF103E-6C7F-4C0A-8B76-37E1FEEB2E0C}"
     Relationship:
       Parent: 7
       NextSibling: 65537
@@ -154,7 +164,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -163,7 +173,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{5A5DA50E-2499-4BD4-8B5D-06741CD46A0A}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{81A4CD57-905D-4961-98E0-B1B66594A043}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -183,7 +198,7 @@ Entities:
       Position: [-125, -185, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{5D6C4654-7615-4E65-8424-64878335BC21}"
+  - Entity: "{0E970907-2A72-4D53-B429-8B07F22C1895}"
     Relationship:
       Parent: 9
       NextSibling: 65537
@@ -191,7 +206,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -200,7 +215,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{C31C4542-085A-4489-B2D6-867E0FB9BE74}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{BA89913F-4078-4F3F-B530-0F0958969197}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -220,7 +240,7 @@ Entities:
       Position: [115, -125, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{7C59C241-13C3-41F9-A1A7-E5D433F5CF87}"
+  - Entity: "{59C51F22-344A-4B63-8559-F3E7C2659828}"
     Relationship:
       Parent: 11
       NextSibling: 65537
@@ -228,7 +248,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -237,7 +257,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{D2DDB2E2-BA60-47C5-B1AE-0A858669E2BD}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{58F391AA-D068-4EC8-B0E3-57C626092352}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -257,7 +282,7 @@ Entities:
       Position: [55, -125, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{E72AC0C4-F749-4FDF-ADD7-E1F986615BFF}"
+  - Entity: "{68E730AA-68C8-4A0B-8E17-675BE3491D29}"
     Relationship:
       Parent: 13
       NextSibling: 65537
@@ -265,7 +290,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -274,7 +299,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{DCD5B713-30B8-42E5-B019-6C5DDFA383EB}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{1F7C62C2-50C6-4044-B771-B4DEF794B4A0}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -294,7 +324,7 @@ Entities:
       Position: [-5, -125, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{AA474CD7-785F-4040-A2A6-3C3278E809D1}"
+  - Entity: "{9CD01E01-849B-4265-944F-70832FEBABDD}"
     Relationship:
       Parent: 15
       NextSibling: 65537
@@ -302,7 +332,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -311,7 +341,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{0F35FCC8-7ED2-4D09-89F4-67613AD8E0CF}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{566B7C5E-1F4A-4CB2-A626-F359375A9780}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -331,7 +366,7 @@ Entities:
       Position: [-65, -125, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{D7FE5BC0-5113-4AE4-AA2E-C4AC35EEFC90}"
+  - Entity: "{27F052A3-03DD-4EF5-AB0C-942BC34EED86}"
     Relationship:
       Parent: 17
       NextSibling: 65537
@@ -339,7 +374,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -348,7 +383,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{E641F6DA-6DFB-4154-AB9E-E5050DDFDF58}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{0E00498C-D5AD-480C-9C34-F90A53F9394D}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -368,7 +408,7 @@ Entities:
       Position: [-125, -125, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{2B6F7EA3-6FB8-4BE8-AE37-FF662E210A23}"
+  - Entity: "{0FA114AA-3D2E-4EA1-9660-46811B627AD3}"
     Relationship:
       Parent: 19
       NextSibling: 65537
@@ -376,7 +416,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -385,7 +425,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{38BD8F50-D032-419A-809E-89C1DFD2C0FD}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{DC009F00-93B3-4BA7-A318-69AB3E3C1C3B}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -405,7 +450,7 @@ Entities:
       Position: [115, -65, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{ABCDE46D-6A0C-4863-8D52-4692E8F13137}"
+  - Entity: "{5B2E5FF5-F2BF-4257-B1BB-556CDEF23E24}"
     Relationship:
       Parent: 21
       NextSibling: 65537
@@ -413,7 +458,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -422,7 +467,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{88C3046D-1A33-450A-8819-6DA8D2EBA95B}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{2AA6930A-4DAC-43A9-A8BB-179453088746}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -442,7 +492,7 @@ Entities:
       Position: [55, -65, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{E21E2376-5992-459E-8341-DCDA719555B2}"
+  - Entity: "{FEDF93D1-0344-4835-8E7A-B81F4CB09125}"
     Relationship:
       Parent: 23
       NextSibling: 65537
@@ -450,7 +500,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -459,7 +509,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{3C44B653-42AC-4614-AC06-13C2F0951EDF}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{73EA8BB5-CDB5-4814-892E-562FDE53CE7E}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -479,7 +534,7 @@ Entities:
       Position: [-5, -65, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{E33BF659-24C5-445B-94E9-1E23B32665ED}"
+  - Entity: "{4FF26061-9AEB-48E9-8934-64E78C2422B5}"
     Relationship:
       Parent: 25
       NextSibling: 65537
@@ -487,7 +542,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -496,7 +551,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{52D6DF7D-8D97-4121-80AE-8D2BEE1A34FC}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{ABE62A3C-00B0-490A-BD26-8F84A088E7F3}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -516,7 +576,7 @@ Entities:
       Position: [-65, -65, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{F88C76EA-D781-46C3-B901-63E8C22E8BFF}"
+  - Entity: "{CAAED6A5-8878-4F0C-B51A-6113DC7A443C}"
     Relationship:
       Parent: 27
       NextSibling: 65537
@@ -524,7 +584,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -533,7 +593,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{6526B2DD-2F14-4E44-9F3A-85A0418D47A2}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{0F942F16-1D37-41FE-836A-94555C63EA03}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -553,7 +618,7 @@ Entities:
       Position: [-125, -65, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{A0DDF404-B859-4ADC-9A0E-32B88F155AD8}"
+  - Entity: "{755B93E2-4DB0-4B92-85A6-28DB6EAE8D36}"
     Relationship:
       Parent: 29
       NextSibling: 65537
@@ -561,7 +626,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -570,7 +635,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{F5915650-EFFE-414B-850E-B865498A0157}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{86FBBA78-EC8F-493D-AEAD-DD9A61065E70}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -590,7 +660,7 @@ Entities:
       Position: [115, -5, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{760B94E4-3A2A-4014-88AC-7E2BA63ADCE6}"
+  - Entity: "{FA221A33-EF31-43BE-B657-B48CEC26E484}"
     Relationship:
       Parent: 31
       NextSibling: 65537
@@ -598,7 +668,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -607,7 +677,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{359A8B72-94CE-40C8-833A-E1A0D0E2B268}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{86363483-5365-462B-9B44-FD8D2A72FFF2}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -627,7 +702,7 @@ Entities:
       Position: [55, -5, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{40013C74-B68F-4F29-8FA4-38D2E4294490}"
+  - Entity: "{99BD28BD-D646-44B7-ABC4-2B2AF4753A17}"
     Relationship:
       Parent: 33
       NextSibling: 65537
@@ -635,7 +710,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -644,7 +719,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{C7615917-4249-4D8C-A54F-31B336944B88}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{9D51A754-4504-483D-9D3D-2D1E2AA4CA84}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -664,7 +744,7 @@ Entities:
       Position: [-5, -5, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{6704CFEF-3CE3-465F-A567-18D5A3D3EC20}"
+  - Entity: "{EBA73219-43EF-40F3-ABB1-89DCC5984F7E}"
     Relationship:
       Parent: 35
       NextSibling: 65537
@@ -672,7 +752,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -681,7 +761,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{D6302D9E-922D-4454-B403-5A7110695F6E}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{5CF20CBD-2AF6-473E-9130-8D242262C5B4}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -701,7 +786,7 @@ Entities:
       Position: [-65, -5, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{7BF49BC3-5F36-417E-AFC2-937431F8E6B0}"
+  - Entity: "{9909A302-27A8-4F85-A1AC-7CF130AD94F1}"
     Relationship:
       Parent: 37
       NextSibling: 65537
@@ -709,7 +794,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -718,7 +803,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{CC7A3B53-13D0-42CC-A73B-958EF06A2E0A}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{C79E094B-FEF5-4930-BA28-8F0F0D30C3E4}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -738,7 +828,7 @@ Entities:
       Position: [-125, -5, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{733483BC-FF0B-4EC6-8803-DB945A124B4B}"
+  - Entity: "{09CD0D1C-F06B-424E-8A9C-7D88A462EF36}"
     Relationship:
       Parent: 39
       NextSibling: 65537
@@ -746,7 +836,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -755,7 +845,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{A2FF4BCD-5C6A-45D8-956B-61444C8945A5}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{8CDA2583-99BA-4F58-889D-FB8843AF36A9}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -775,7 +870,7 @@ Entities:
       Position: [95, 55, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{7FB443DD-6426-4A76-9550-D1E4493587D1}"
+  - Entity: "{E07B26C0-8193-43AA-A45D-ADAB4F5CA112}"
     Relationship:
       Parent: 41
       NextSibling: 65537
@@ -783,7 +878,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -792,7 +887,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{264FF5AA-B262-463C-80A8-A20AF778EDF8}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{0213BEB8-C5E5-4B4B-8BD5-F3A9A7674676}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -812,7 +912,7 @@ Entities:
       Position: [35, 55, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{9FF0BE3D-A2B5-4904-8801-5F0B72D607D3}"
+  - Entity: "{A67831D1-57DC-4D85-82A9-B138CC8D6E3A}"
     Relationship:
       Parent: 43
       NextSibling: 65537
@@ -820,7 +920,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -829,7 +929,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{EDCE19FC-58E5-4F04-9692-70F6E386A80D}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{CCECC87B-08C9-4C67-BDE3-AD360B4A3984}"
     Slider:
       Value: 0
       HooverColor: [0.400000006, 1, 0.800000012, 1]
@@ -849,7 +954,7 @@ Entities:
       Position: [-75, 67.5, 0]
       Size: [150, 25]
       Scale: [1, 1]
-  - Entity: "{04CB5AFF-52DC-417A-B2AE-02C6C7B3E73A}"
+  - Entity: "{F762A27C-B05D-4ECC-90EE-30ECE484D74D}"
     Relationship:
       Parent: 45
       NextSibling: 47
@@ -863,10 +968,10 @@ Entities:
       IsVisible: true
     RectTransformComponent:
       WorldPosition: [-150, -267.5, 0]
-      Position: [0, 0, 0]
+      Position: [-62.5, 0, 0]
       Size: [25, 25]
       Scale: [1, 1]
-  - Entity: "{6F1E39B1-F669-47F7-B93F-3189CB3C2F7C}"
+  - Entity: "{6C169F46-908B-4268-B49B-3F0BF4DE4A38}"
     Relationship:
       Parent: 45
       NextSibling: 65537
@@ -874,7 +979,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1.89999998, 1]
       SortLayer: 2
       IsVisible: true
@@ -883,7 +988,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [1, 1]
       Scale: [1, 1]
-  - Entity: "{F297B70F-EFE0-451D-808A-168AA6DCFADE}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Slider
+      Color: [1, 1, 1.89999998, 1]
+      Alignment: 2
+  - Entity: "{FC9B3290-60DA-4CE0-9EF2-B0C12929CBF0}"
     Relationship:
       Parent: 49
       NextSibling: 65537
@@ -891,7 +1001,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1.89999998, 1]
       SortLayer: 2
       IsVisible: true
@@ -900,11 +1010,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [150, 25]
       Scale: [1, 1]
-  - Entity: "{514B099B-03B3-4545-A9E2-B9963CB63084}"
-    InputField:
-      SelectColor: [0.699999988, 1.79999995, 1, 1]
-      HooverColor: [0.400000006, 1, 0.800000012, 1]
-      TextEntity: 48
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: ""
+      Color: [1, 1, 1.89999998, 1]
+      Alignment: 2
+  - Entity: "{B9511631-B42D-426F-9B15-026D54FD62C2}"
     Relationship:
       Parent: 4
       NextSibling: 45
@@ -921,7 +1032,7 @@ Entities:
       Position: [-75, 102.5, 0]
       Size: [150, 25]
       Scale: [1, 1]
-  - Entity: "{F6E0C426-F28A-4CDB-9BC9-8ABC03BE80EE}"
+  - Entity: "{6A886E9E-99F7-425B-A08E-2861C9E96B5F}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 0]
@@ -941,7 +1052,7 @@ Entities:
       Position: [200, 200, 0]
       Size: [50, 30]
       Scale: [1, 1]
-  - Entity: "{9DEBD825-1218-42C8-8C5E-170F6E631F5E}"
+  - Entity: "{C94EC0EF-42E9-45DB-8F09-D2AAEC1A7B8C}"
     Relationship:
       Parent: 50
       NextSibling: 65537
@@ -949,7 +1060,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -958,7 +1069,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 30]
       Scale: [1, 1]
-  - Entity: "{6080E299-E4A0-439D-9A5C-084ED064302C}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Havkac
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{5F278F35-A691-468C-9F4E-FF3D985127CF}"
     LayoutGroup:
       LeftPadding: 15
       RightPadding: 0
@@ -981,7 +1097,7 @@ Entities:
       Position: [125, -135, 0]
       Size: [300, 300]
       Scale: [1, 1]
-  - Entity: "{22A10FF8-AAB4-4AE4-A204-BDEFF0B7EA4C}"
+  - Entity: "{89F3878A-E83E-49C2-8CE4-13A5F2F8AF63}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1001,7 +1117,7 @@ Entities:
       Position: [70, -150, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{DCB107CE-459E-4608-9103-723B56E8B656}"
+  - Entity: "{5E60CF08-0076-4596-A64E-DF2072DAAC73}"
     Relationship:
       Parent: 53
       NextSibling: 65537
@@ -1009,7 +1125,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -1018,7 +1134,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{189DD3E9-B305-4EDC-AE58-D221CB5F0D95}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{4FB660EA-F058-4756-92AA-87170F0B252E}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1038,7 +1159,7 @@ Entities:
       Position: [10, -150, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{0C3E9F98-D62E-4870-9FB8-FB5E4F998F0A}"
+  - Entity: "{5CBA2481-6DF5-4E5A-BF4B-D7E4FE63A449}"
     Relationship:
       Parent: 55
       NextSibling: 65537
@@ -1046,7 +1167,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -1055,7 +1176,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{0B49C26D-8AFB-42EF-A07B-21EE313789CE}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{430B13DA-D8C9-40E5-BE7E-9B1D8B693734}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1075,7 +1201,7 @@ Entities:
       Position: [-50, -150, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{6E9B0917-3F50-4C7A-91DA-D45F20E5FC92}"
+  - Entity: "{EE03F14E-1A69-4D53-AEA3-673BF98D7FA1}"
     Relationship:
       Parent: 57
       NextSibling: 65537
@@ -1083,7 +1209,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -1092,7 +1218,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{51A6B5F1-277A-433D-804B-A0470EC91075}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{4B219898-B724-43B5-ADBE-2A73ECB69095}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1112,7 +1243,7 @@ Entities:
       Position: [-110, -150, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{9625336F-7EE2-400F-92F1-8BB0421F7FDA}"
+  - Entity: "{482F8297-4506-4B5C-AA01-F7653CA8C61B}"
     Relationship:
       Parent: 59
       NextSibling: 65537
@@ -1120,7 +1251,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -1129,7 +1260,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{6640CF31-7595-415E-A1EA-DCDA2FF843F6}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{8FA730A2-81B1-47E4-B838-F43E8AC2D3A0}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1149,7 +1285,7 @@ Entities:
       Position: [70, -90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{5F7604F3-ADE9-47D2-8DF9-5CD688256CB9}"
+  - Entity: "{9CC8629E-99A5-4EB7-83BE-6A0184E4546A}"
     Relationship:
       Parent: 61
       NextSibling: 65537
@@ -1157,7 +1293,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -1166,7 +1302,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{4CF47E11-A54B-4368-B1BA-18EEC0D952DA}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{4AABC68D-A4C7-40B3-965E-CA7F981B79AA}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1186,7 +1327,7 @@ Entities:
       Position: [10, -90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{D04ECD8A-AADE-42ED-8EEC-F9C3980525B2}"
+  - Entity: "{B1E982AB-3F04-4D42-BB83-84687EEB2E0B}"
     Relationship:
       Parent: 63
       NextSibling: 65537
@@ -1194,7 +1335,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -1203,7 +1344,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{25891240-4A75-4146-80EB-2F29D22977E0}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{4D423777-3560-48E7-9B69-D0766AE43144}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1223,7 +1369,7 @@ Entities:
       Position: [-50, -90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{2CEB6228-5D43-4116-87E1-F819D0CD2959}"
+  - Entity: "{F774E446-642A-4075-8653-A7D9A72B8B4C}"
     Relationship:
       Parent: 65
       NextSibling: 65537
@@ -1231,7 +1377,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -1240,7 +1386,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{EBF1CF62-AF46-4B1C-8588-0595BBA6E471}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{78361A99-583A-4652-ACF5-D1A6D66350F1}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1260,7 +1411,7 @@ Entities:
       Position: [-110, -90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{D04BC201-2F5E-400A-9223-3A88CE790810}"
+  - Entity: "{AC0C274C-4F3C-4DEA-A027-BD4DE66EBEC7}"
     Relationship:
       Parent: 67
       NextSibling: 65537
@@ -1268,7 +1419,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -1277,7 +1428,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{005AB66D-3457-4942-8A71-AAD532C8811C}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{25C3F942-D93F-4D71-810E-471DCBD58EC7}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1297,7 +1453,7 @@ Entities:
       Position: [70, -30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{EA87962B-7615-4B75-AD40-0893F027D544}"
+  - Entity: "{14B0098F-C022-4F43-A9E7-1336CE2F8C77}"
     Relationship:
       Parent: 69
       NextSibling: 65537
@@ -1305,7 +1461,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -1314,7 +1470,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{E4E4A74E-223A-4AEF-BCDF-1B920DC3B0AA}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{E1F3D06A-2F59-46CB-A6B9-AAAF2BF73177}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1334,7 +1495,7 @@ Entities:
       Position: [10, -30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{130BDB6A-0ACD-447B-A5BD-5A4394F21E1C}"
+  - Entity: "{2E43E910-CF4E-4475-8990-AC0E165769A3}"
     Relationship:
       Parent: 71
       NextSibling: 65537
@@ -1342,7 +1503,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -1351,7 +1512,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{003D4A7E-14FC-4A48-9B44-34E08B39171E}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{D8C851D6-F6E6-449F-9CA4-84C02628B563}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1371,7 +1537,7 @@ Entities:
       Position: [-50, -30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{03FB15CE-9ADD-4A9E-96E5-33A082A77B86}"
+  - Entity: "{6DEBAB70-50B3-48CE-A1A5-66B358F26FA9}"
     Relationship:
       Parent: 73
       NextSibling: 65537
@@ -1379,7 +1545,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -1388,7 +1554,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{BE5F6711-437D-4945-8AB7-E97A93583FF3}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{D82E0405-4AE9-4F86-B05F-670597754E11}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1408,7 +1579,7 @@ Entities:
       Position: [-110, -30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{E442340B-CB18-4BE6-AB1A-A48A203FCB3C}"
+  - Entity: "{8A12AE0F-9B30-4DD9-8CE3-D649549F1277}"
     Relationship:
       Parent: 75
       NextSibling: 65537
@@ -1416,7 +1587,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -1425,7 +1596,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{B3F6FBEE-E471-4982-94E8-1ACCE53098D8}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{441B5E9A-3428-4B25-902B-3278E552ED3D}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1445,7 +1621,7 @@ Entities:
       Position: [70, 30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{165E9DBE-61BD-4CAA-AFE5-E707790C5F16}"
+  - Entity: "{E07F5498-8904-4EA2-98B9-0CD5D3921496}"
     Relationship:
       Parent: 77
       NextSibling: 65537
@@ -1453,7 +1629,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -1462,7 +1638,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{0DC4F5AC-D848-47DC-AF0B-B46B5E5B455C}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{B91A55BB-EACA-4989-8C6F-CEE3AE22632F}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1482,7 +1663,7 @@ Entities:
       Position: [10, 30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{A7F180D5-8212-40D6-B0C1-8DD23113E6BB}"
+  - Entity: "{7933CE5A-BA8F-4948-9F52-709500A43E6E}"
     Relationship:
       Parent: 79
       NextSibling: 65537
@@ -1490,7 +1671,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -1499,7 +1680,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{A2319E69-FD9E-4BC3-8348-913161E64515}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{ED9C4BBC-84F2-42D8-98A2-FC5B1E27AB37}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1519,7 +1705,7 @@ Entities:
       Position: [-50, 30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{23B08AA4-8226-4BF3-BA2C-45FA260E45DD}"
+  - Entity: "{487270EB-78C8-41A5-9CC8-32BCE479A84B}"
     Relationship:
       Parent: 81
       NextSibling: 65537
@@ -1527,7 +1713,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -1536,7 +1722,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{D1B9954E-E692-498C-AF00-6DB5FEB0D45A}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{C91EAF52-0C31-4A1E-9F7A-3BBABDE4973A}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1556,7 +1747,7 @@ Entities:
       Position: [-110, 30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{405D60F6-8051-4577-89FA-76EC2449F158}"
+  - Entity: "{B26A1796-9F66-4345-ADA1-4DF7FB88F5D0}"
     Relationship:
       Parent: 83
       NextSibling: 65537
@@ -1564,7 +1755,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -1573,7 +1764,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{750D0132-DF7C-4A4B-80C3-432AFAA70971}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{06582E4F-867D-4C38-BBB5-B43CFEFDAE6D}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1593,7 +1789,7 @@ Entities:
       Position: [70, 90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{9CB6D8A7-1EBE-4BBF-837B-D789B950A748}"
+  - Entity: "{18DBD5A8-6242-4E79-AF65-4CF6985BC283}"
     Relationship:
       Parent: 85
       NextSibling: 65537
@@ -1601,7 +1797,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -1610,7 +1806,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{10A4B451-6BF8-419D-804C-9EF31AA4D47E}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{FEFF4D3A-5716-4BA8-90FA-5528EF357571}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1630,7 +1831,7 @@ Entities:
       Position: [10, 90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{02144246-269D-45BC-984D-CB4127695983}"
+  - Entity: "{202F49EC-3A82-412B-9BF3-A278924380C9}"
     Relationship:
       Parent: 87
       NextSibling: 65537
@@ -1638,7 +1839,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -1647,7 +1848,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{895A94C1-B3D9-4A10-8604-B300669CF05F}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{9694E92F-BEE5-47A6-BAF5-5FD2A1559067}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1667,7 +1873,7 @@ Entities:
       Position: [-50, 90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{69F05B48-964D-473F-ABC1-B019E25F6D4C}"
+  - Entity: "{57FFE2D5-9115-464D-BE86-8CD18CBB5CF2}"
     Relationship:
       Parent: 89
       NextSibling: 65537
@@ -1675,7 +1881,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -1684,7 +1890,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{B76B9EE1-798D-4A56-8865-87021D2D45D2}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{34B68EB1-8186-4807-9C4C-A3365ED31FBB}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1704,7 +1915,7 @@ Entities:
       Position: [-110, 90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{003641B7-D598-4D27-A023-583D546003B4}"
+  - Entity: "{20A8E45E-B8B8-49F2-8B12-E42DF800D122}"
     Relationship:
       Parent: 91
       NextSibling: 65537
@@ -1712,7 +1923,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -1721,7 +1932,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{BF455AF1-99F3-4A10-A8CE-2D7F7012489A}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{AEA99964-2F16-4DB9-A312-F47F72B6AFCF}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 0]
@@ -1741,7 +1957,7 @@ Entities:
       Position: [-400, -400, 0]
       Size: [50, 30]
       Scale: [1, 1]
-  - Entity: "{05C970A8-4870-43FD-807D-6B9A7DABDBA1}"
+  - Entity: "{5E6F06C7-490A-4FE6-83A9-BD89FBF0FE73}"
     Relationship:
       Parent: 93
       NextSibling: 65537
@@ -1749,7 +1965,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -1758,7 +1974,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 30]
       Scale: [1, 1]
-  - Entity: "{15801013-264E-401C-BC56-8F5BC06A095B}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Zemiak
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{0F0EF72B-DCCF-4722-BDFB-1C8C24D8717E}"
     LayoutGroup:
       LeftPadding: 0
       RightPadding: 0
@@ -1781,7 +2002,7 @@ Entities:
       Position: [125, -135, 0]
       Size: [300, 300]
       Scale: [1, 1]
-  - Entity: "{761B823B-8F9A-401C-97C0-AD23DED34D4C}"
+  - Entity: "{8A857916-7371-4C4D-8F4A-0AC0DCA5467B}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1801,7 +2022,7 @@ Entities:
       Position: [115, -90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{804DDE1C-8999-49F9-9011-FC66FDB5B065}"
+  - Entity: "{2A703672-E3D5-463D-BAEB-2359DE2B9D5A}"
     Relationship:
       Parent: 96
       NextSibling: 65537
@@ -1809,7 +2030,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -1818,7 +2039,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{1E78E6B1-821B-4583-B82E-DDFD908D655B}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{8AA08C51-53F2-43B9-9A3B-1841F56A1089}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1838,7 +2064,7 @@ Entities:
       Position: [55, -90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{DFFD31DE-22F4-4F5E-B32A-9CF7EC62C07C}"
+  - Entity: "{B797404D-3209-40C1-905D-5DD036231233}"
     Relationship:
       Parent: 98
       NextSibling: 65537
@@ -1846,7 +2072,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -1855,7 +2081,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{1764FFAF-5653-4A95-A4CD-0BB7DA2A082C}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{80F2C981-C329-49D6-B786-276E0E65B253}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1875,7 +2106,7 @@ Entities:
       Position: [-5, -90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{7B0C9B96-56BA-4822-9F16-ED0CAA8102C6}"
+  - Entity: "{E464B72A-E2B9-4F78-85F1-C3EBBBC69A9E}"
     Relationship:
       Parent: 100
       NextSibling: 65537
@@ -1883,7 +2114,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -1892,7 +2123,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{6545CC9A-1253-4F78-BE31-4E76E5ADEA39}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{6D7AB482-BF4C-488E-8E0F-C85EBCC32FD4}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1912,7 +2148,7 @@ Entities:
       Position: [-65, -90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{45AF6E6D-58AB-4BF5-A987-6F34E0FEAB69}"
+  - Entity: "{1B1D9EE1-D388-46CC-880C-25AA9BB1E47D}"
     Relationship:
       Parent: 102
       NextSibling: 65537
@@ -1920,7 +2156,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -1929,7 +2165,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{70AF50F7-A4B5-4EC8-9958-97D5830E823F}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{920A5129-C23C-49FC-8E32-8E8B46DE869E}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1949,7 +2190,7 @@ Entities:
       Position: [-125, -90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{DDE6288C-EBA6-4D25-B3D1-00AA6B841E08}"
+  - Entity: "{F5400C85-0D5D-486A-B3FD-44838416C935}"
     Relationship:
       Parent: 104
       NextSibling: 65537
@@ -1957,7 +2198,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -1966,7 +2207,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{ABDFAECC-7C1C-4588-B814-9F2F2FB7C8FB}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{D0933FB5-3F0C-4A14-AFD9-BA2A9F792DA4}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1986,7 +2232,7 @@ Entities:
       Position: [115, -30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{5FF6BEFB-DE12-45B3-8651-DD5BE569782C}"
+  - Entity: "{1E2C8A97-5EDF-4748-84CA-617BFF5E40B2}"
     Relationship:
       Parent: 106
       NextSibling: 65537
@@ -1994,7 +2240,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -2003,7 +2249,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{E86EE9A5-8ABA-4C91-9652-2F2ACECAA1A1}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{D2E8259E-CB0F-44A2-BC98-E39A93FBF782}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -2023,7 +2274,7 @@ Entities:
       Position: [55, -30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{F16EAB4A-B564-4D43-9EF6-3B112D294021}"
+  - Entity: "{B907C973-894D-42D4-A93C-89F09EB209F8}"
     Relationship:
       Parent: 108
       NextSibling: 65537
@@ -2031,7 +2282,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -2040,7 +2291,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{C78C11BC-672E-496B-9866-BD28E1760F9E}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{38158369-40E2-42D3-B7AD-438044ACE8D3}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -2060,7 +2316,7 @@ Entities:
       Position: [-5, -30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{17F644B8-7259-479A-B344-41A53C03B27F}"
+  - Entity: "{E0EFD2ED-244D-4B85-8008-ACB535C655F9}"
     Relationship:
       Parent: 110
       NextSibling: 65537
@@ -2068,7 +2324,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -2077,7 +2333,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{E2BF5AA2-E94A-4C17-A94E-971B86E4BAE7}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{1F5DAF57-70E0-4642-8209-98A72C5B1C88}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -2097,7 +2358,7 @@ Entities:
       Position: [-65, -30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{DD048466-252D-41E0-B6CE-C8BF1281619A}"
+  - Entity: "{27E1E4F5-3225-4CDB-AB13-96F4F274AE87}"
     Relationship:
       Parent: 112
       NextSibling: 65537
@@ -2105,7 +2366,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -2114,7 +2375,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{7AE68FEF-6527-412B-8053-F79FDAE026D2}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{464A1F4B-4096-4344-8CFF-0A350F21AC77}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -2134,7 +2400,7 @@ Entities:
       Position: [-125, -30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{59A86230-7F32-480E-B09B-010E090F9278}"
+  - Entity: "{EC640CD6-C7E1-4683-AA72-348A4401A416}"
     Relationship:
       Parent: 114
       NextSibling: 65537
@@ -2142,7 +2408,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -2151,7 +2417,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{427367BB-40BA-48DC-97EE-6A0C9F71A623}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{FDA79198-72C0-4468-AF39-38FB542A1F5F}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -2171,7 +2442,7 @@ Entities:
       Position: [115, 30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{7C2B256E-6CC2-4A7F-8BE4-DC2381018F25}"
+  - Entity: "{1870A7DF-E8E7-412C-B92F-9B7C591A1132}"
     Relationship:
       Parent: 116
       NextSibling: 65537
@@ -2179,7 +2450,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -2188,7 +2459,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{42B36F52-35C0-45CA-8427-A145A0B417C0}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{7F90F58B-0E4A-4006-89E5-B13D9C46BF0C}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -2208,7 +2484,7 @@ Entities:
       Position: [55, 30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{50723358-5E80-4801-A15D-AB9B9248F351}"
+  - Entity: "{E229F362-A332-4EE3-89C6-C5D6E84F0845}"
     Relationship:
       Parent: 118
       NextSibling: 65537
@@ -2216,7 +2492,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -2225,7 +2501,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{702BF792-3341-4204-AAB0-19333CEC3262}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{15B90329-3A18-4DAF-A48F-C4863C67C825}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -2245,7 +2526,7 @@ Entities:
       Position: [-5, 30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{6E5E5E00-E934-4D97-B363-0643C21A6525}"
+  - Entity: "{96DB61DF-6D04-4CB9-89D6-53595A443F80}"
     Relationship:
       Parent: 120
       NextSibling: 65537
@@ -2253,7 +2534,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -2262,7 +2543,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{758BE22A-94EF-4125-BE6C-869F751187FE}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{BAA6EBFD-D659-4358-833B-144C148BE365}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -2282,7 +2568,7 @@ Entities:
       Position: [-65, 30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{938A0FB2-65E4-4211-ACF2-02C7E9047853}"
+  - Entity: "{9EF4656D-5EEA-4CF6-B6BB-54EE3CC57E29}"
     Relationship:
       Parent: 122
       NextSibling: 65537
@@ -2290,7 +2576,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -2299,7 +2585,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{F903492E-4C35-41E1-BDB2-2A1CC6F196CB}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{F8D72BF1-F855-41BD-9DEA-4B2978A76F9D}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -2319,7 +2610,7 @@ Entities:
       Position: [-125, 30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{0CCFBF78-7C6E-45F2-9D09-65BCAD204FAA}"
+  - Entity: "{34A66970-0418-4892-8480-389C2A715ED0}"
     Relationship:
       Parent: 124
       NextSibling: 65537
@@ -2327,7 +2618,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -2336,7 +2627,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{7011358C-BD14-4F48-A807-F6FF48A7B208}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{FD767962-13ED-4EB9-8F22-F7AEBBCEAF4A}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -2356,7 +2652,7 @@ Entities:
       Position: [115, 90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{DAAA0650-BDF1-4986-84A5-9C0B15244689}"
+  - Entity: "{508169A7-A002-4349-A381-BFA2A4D42093}"
     Relationship:
       Parent: 126
       NextSibling: 65537
@@ -2364,7 +2660,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -2373,7 +2669,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{78F8C946-6C8D-46C3-B89B-D40D2B223796}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{07E8F29D-C092-456D-9917-8D2966C48906}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -2393,7 +2694,7 @@ Entities:
       Position: [55, 90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{60DD9240-EFA0-4EB0-86AE-0E4C2A68A0EC}"
+  - Entity: "{B904AD8D-6379-475C-9A67-936DD9561205}"
     Relationship:
       Parent: 128
       NextSibling: 65537
@@ -2401,7 +2702,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -2410,7 +2711,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{23DE97A6-5903-447E-9FA0-B64BE245ED51}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{BF128D8F-90C2-40B9-AA66-C06871DC1084}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -2430,7 +2736,7 @@ Entities:
       Position: [-5, 90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{BA8E9D68-54A1-4A3E-A183-23B44DD41BD1}"
+  - Entity: "{BC4494BA-ED30-452C-A3A3-77E59AA65329}"
     Relationship:
       Parent: 130
       NextSibling: 65537
@@ -2438,7 +2744,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -2447,7 +2753,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{FA5E9764-F02C-4556-8571-922633ADE613}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{8B4AEC4D-4FCC-45AC-8085-3DA41CD7C5C5}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -2467,7 +2778,7 @@ Entities:
       Position: [-65, 90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{F4832089-0286-4235-8826-29D514576E25}"
+  - Entity: "{B19C6887-60D7-480B-B101-FBF106F1AC72}"
     Relationship:
       Parent: 132
       NextSibling: 65537
@@ -2475,7 +2786,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -2484,7 +2795,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{9FD9F849-715C-4E61-B3BF-59851329D5F9}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{276901BC-2328-43EF-B572-929AF1FDC792}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -2504,7 +2820,7 @@ Entities:
       Position: [-125, 90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{B0A32B2C-B041-4FC9-B09F-69C7A8967EFA}"
+  - Entity: "{C443F42F-E11F-4311-B31E-913E52A20C8D}"
     Relationship:
       Parent: 134
       NextSibling: 65537
@@ -2512,7 +2828,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -2521,7 +2837,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{AFBF5F29-4F2C-45FC-A272-25E32666BBD9}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{2A46BDEA-BC70-4095-B114-6E6431790C0E}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 0]
@@ -2541,7 +2862,7 @@ Entities:
       Position: [-400, -400, 0]
       Size: [50, 30]
       Scale: [1, 1]
-  - Entity: "{FEC79F6E-0A7C-47A5-890E-E77BECC7CA3D}"
+  - Entity: "{2DE0EC65-59E1-49C9-8D6C-674A9C74AE50}"
     Relationship:
       Parent: 136
       NextSibling: 65537
@@ -2549,7 +2870,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -2558,7 +2879,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 30]
       Scale: [1, 1]
-  - Entity: "{0BD79C2D-AF8A-4D5F-95B7-7F8DC2076599}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Kostovnik
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{76432BF6-C958-4D91-B0B3-E3C68F1C6780}"
     LayoutGroup:
       LeftPadding: 0
       RightPadding: 0
@@ -2581,7 +2907,7 @@ Entities:
       Position: [125, -135, 0]
       Size: [300, 300]
       Scale: [1, 1]
-  - Entity: "{17307005-8761-46DB-827B-DDAE67C95C34}"
+  - Entity: "{0676F939-05FB-4AD5-BC6B-1AEA86FE69A0}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -2601,7 +2927,7 @@ Entities:
       Position: [115, -90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{0E5E8147-E5C4-4B2E-9004-66584F4DEABE}"
+  - Entity: "{289D7BAD-3A49-4A21-B129-4A58CBEAF5E2}"
     Relationship:
       Parent: 139
       NextSibling: 65537
@@ -2609,7 +2935,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -2618,7 +2944,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{8BC417E0-2652-412B-BE33-BC045EFB719F}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{5A4FD1EB-6BCF-41B1-AE29-56401EEDCFE8}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -2638,7 +2969,7 @@ Entities:
       Position: [55, -90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{46137FB2-339A-4E50-B02B-69338174B6F6}"
+  - Entity: "{C1FE6BC3-DB60-4C38-8329-10403A08B97E}"
     Relationship:
       Parent: 141
       NextSibling: 65537
@@ -2646,7 +2977,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -2655,7 +2986,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{BBF776B0-8A17-4B7A-8E85-20209EE0E235}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{1A526C87-CABE-4C56-B7AB-2C30C21A021F}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -2675,7 +3011,7 @@ Entities:
       Position: [-5, -90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{2776E0D0-3CBA-40D6-863E-5C9DDF5CA03E}"
+  - Entity: "{E537F809-9F40-4CA3-9133-A74251CE521C}"
     Relationship:
       Parent: 143
       NextSibling: 65537
@@ -2683,7 +3019,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -2692,7 +3028,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{7C2EAC00-FD28-40E1-B74E-D88E066BE11B}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{714CF369-8C0C-4A49-986B-EF1F68A60F31}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -2712,7 +3053,7 @@ Entities:
       Position: [-65, -90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{1C610769-57E9-47AC-9A1C-AE82640C727F}"
+  - Entity: "{B77F89C1-FD86-4A54-9F48-67A4D5138E66}"
     Relationship:
       Parent: 145
       NextSibling: 65537
@@ -2720,7 +3061,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -2729,7 +3070,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{A95ACD4E-A534-407C-BC00-CFCF7BF2454C}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{F64FD028-A28E-437D-90A2-BC119CAA4816}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -2749,7 +3095,7 @@ Entities:
       Position: [-125, -90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{E6649C8C-0F72-4392-9CBC-8B9AF3E81DD2}"
+  - Entity: "{7FAE2144-A2B5-44F5-A70B-EA93AED82757}"
     Relationship:
       Parent: 147
       NextSibling: 65537
@@ -2757,7 +3103,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -2766,7 +3112,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{92DDB2A8-F8DB-4A45-942E-4FA75BF5C1A5}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{810120FF-A245-497E-A6B3-C7576F0F8100}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -2786,7 +3137,7 @@ Entities:
       Position: [115, -30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{E289EE37-0B7F-40CC-99B8-2D10ED456CDC}"
+  - Entity: "{FCE65959-48D0-4153-B499-6F01C2B14440}"
     Relationship:
       Parent: 149
       NextSibling: 65537
@@ -2794,7 +3145,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -2803,7 +3154,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{EB728B87-6890-4933-93A7-7122A33FEA6A}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{62458F89-290C-47E0-8966-9612115DFB5E}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -2823,7 +3179,7 @@ Entities:
       Position: [55, -30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{478C3461-E1F3-48E3-A209-4BFFC236FE4A}"
+  - Entity: "{E5A28D98-70E4-4735-90B3-31C3CA4F7B4B}"
     Relationship:
       Parent: 151
       NextSibling: 65537
@@ -2831,7 +3187,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -2840,7 +3196,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{C6C648A1-F042-4666-A8F8-81ECC87E2D24}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{E4C119F7-9F11-4176-BD13-65AD04620EBE}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -2860,7 +3221,7 @@ Entities:
       Position: [-5, -30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{B0DD5ED4-8321-42DC-B197-022A5F301276}"
+  - Entity: "{8A1AD8D5-3A05-4F49-835F-18E3867A32EC}"
     Relationship:
       Parent: 153
       NextSibling: 65537
@@ -2868,7 +3229,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -2877,7 +3238,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{54CF3617-62E7-4EC7-9C1B-7283DA5F0445}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{BC80C922-0D0C-4C1A-B59A-58712A6950D8}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -2897,7 +3263,7 @@ Entities:
       Position: [-65, -30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{08C43500-AEB7-461C-81CB-843E3A54E2B1}"
+  - Entity: "{F8886345-7309-4F7B-9868-7D64AABAC4BA}"
     Relationship:
       Parent: 155
       NextSibling: 65537
@@ -2905,7 +3271,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -2914,7 +3280,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{8C1078A2-DE46-412C-90BB-077A3959E71C}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{39F6C356-5E59-43AE-8155-B92BDEFF65A4}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -2934,7 +3305,7 @@ Entities:
       Position: [-125, -30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{E797B7F3-35EF-4266-A5C8-D996FA29D398}"
+  - Entity: "{A4D7B438-1240-4F38-B1A2-31811C4DA9BB}"
     Relationship:
       Parent: 157
       NextSibling: 65537
@@ -2942,7 +3313,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -2951,7 +3322,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{203D0087-B614-4871-B8C5-A544A2EEDD9F}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{322D3A1E-263C-4DD6-B724-C1BD892A1E69}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -2971,7 +3347,7 @@ Entities:
       Position: [115, 30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{AE9475CB-EAE4-4779-8419-7850356F3035}"
+  - Entity: "{3F357843-22E3-48ED-853F-2397EDE3E5B0}"
     Relationship:
       Parent: 159
       NextSibling: 65537
@@ -2979,7 +3355,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -2988,7 +3364,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{412A8927-FD5C-4812-8942-DBFE038B7059}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{26475607-6E50-4786-A52B-F7A992933CC6}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -3008,7 +3389,7 @@ Entities:
       Position: [55, 30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{17EE5D7D-420A-41C6-9C6D-E245901D8AFF}"
+  - Entity: "{714C6539-A5F8-416E-ACCA-65F528461779}"
     Relationship:
       Parent: 161
       NextSibling: 65537
@@ -3016,7 +3397,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -3025,7 +3406,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{FBC15406-D396-4C39-8D29-FB45823C28ED}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{8A277BBE-B537-4833-8566-C1F63CE69ACE}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -3045,7 +3431,7 @@ Entities:
       Position: [-5, 30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{BAAAD3A6-F42A-45C1-9643-B7B74345D754}"
+  - Entity: "{D4A7CB0F-C5CC-4F76-B609-C36CF81B2B8C}"
     Relationship:
       Parent: 163
       NextSibling: 65537
@@ -3053,7 +3439,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -3062,7 +3448,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{664E01C1-E3A8-42B3-AB44-A119C18099FD}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{59AFC980-F1D1-473F-B904-1D51373D2C47}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -3082,7 +3473,7 @@ Entities:
       Position: [-65, 30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{BCBF8550-23DF-4EE3-BA3D-786690624BE6}"
+  - Entity: "{00D0D1CC-4D6C-4F59-BC43-A056226CF776}"
     Relationship:
       Parent: 165
       NextSibling: 65537
@@ -3090,7 +3481,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -3099,7 +3490,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{5C1ACE63-05C1-4FC6-B5A7-84494D4BC3E5}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{FF958E79-BD1B-4A4E-BFE5-60206D0112B9}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -3119,7 +3515,7 @@ Entities:
       Position: [-125, 30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{045D69F8-2633-409F-A10F-CD039F58A5C9}"
+  - Entity: "{0EFFD5E4-B41C-428A-806A-C72187E36BBA}"
     Relationship:
       Parent: 167
       NextSibling: 65537
@@ -3127,7 +3523,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -3136,7 +3532,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{65340E4C-20B6-4EE1-BF3B-A1A9E90B05CE}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{917BDB9A-6D21-4130-8455-2697BD9A78E0}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -3156,7 +3557,7 @@ Entities:
       Position: [115, 90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{08D0E1DC-641D-4EDD-9C4B-F55625D93FD7}"
+  - Entity: "{CAD8DC9C-C57D-41E6-8545-3E4D2F25358F}"
     Relationship:
       Parent: 169
       NextSibling: 65537
@@ -3164,7 +3565,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -3173,7 +3574,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{01F8BFA8-395D-40BF-B66F-C0D007C489AD}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{ADEC203F-04BA-4177-8F7D-933CE060C03A}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -3193,7 +3599,7 @@ Entities:
       Position: [55, 90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{C0BA3E6C-A7E1-48B0-939C-893181ED64B9}"
+  - Entity: "{740EE34B-2B31-4D51-BD04-B5BFB52BB21D}"
     Relationship:
       Parent: 171
       NextSibling: 65537
@@ -3201,7 +3607,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -3210,7 +3616,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{FC6AD967-D245-43FA-BC9B-5A8F27A533CF}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{314996B6-39C1-4864-9631-A3991D58C23E}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -3230,7 +3641,7 @@ Entities:
       Position: [-5, 90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{8C3B6AE9-AE15-4497-B5B1-A9937DEB1FE7}"
+  - Entity: "{4586365C-4689-40C4-9991-9B11574D0010}"
     Relationship:
       Parent: 173
       NextSibling: 65537
@@ -3238,7 +3649,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -3247,7 +3658,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{F9C55703-4966-4E75-AC7F-28895AFAE3A2}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{4C759218-E5BB-4CAE-9A5C-E9DFF8B98C5E}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -3267,7 +3683,7 @@ Entities:
       Position: [-65, 90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{31C8ECE1-39E3-42C7-908C-72E423F556D5}"
+  - Entity: "{E81D53B0-7CBF-4CD1-9405-7F07178776A6}"
     Relationship:
       Parent: 175
       NextSibling: 65537
@@ -3275,7 +3691,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -3284,7 +3700,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{2E7E15C7-E685-4D19-B0D8-2646FCBF75E2}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{917879F8-1BAC-4FA0-A1F5-53368A773C1C}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -3304,7 +3725,7 @@ Entities:
       Position: [-125, 90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{46246A9D-332A-4E96-8DD8-000C06F3C051}"
+  - Entity: "{C3742747-5454-449A-B11F-FBBE13D059AE}"
     Relationship:
       Parent: 177
       NextSibling: 65537
@@ -3312,7 +3733,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -3321,7 +3742,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{F4FFF11C-467C-4F59-A9D9-F3FA83DE1F6A}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{88AD7329-6081-47E4-97FA-46B3F94D9857}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 0]
@@ -3341,7 +3767,7 @@ Entities:
       Position: [-400, -400, 0]
       Size: [50, 30]
       Scale: [1, 1]
-  - Entity: "{9C8D5AB3-47CC-4A3B-B762-FD77B3733B9F}"
+  - Entity: "{252C8ACE-83DC-457B-86B0-87EB407F91B2}"
     Relationship:
       Parent: 179
       NextSibling: 65537
@@ -3349,7 +3775,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -3358,7 +3784,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 30]
       Scale: [1, 1]
-  - Entity: "{AB994AD9-0C93-4692-BD5A-94502EA4444F}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Pelengac
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{0910E1E1-BE8E-4252-9464-678BAE59C40F}"
     LayoutGroup:
       LeftPadding: 0
       RightPadding: 0
@@ -3381,7 +3812,7 @@ Entities:
       Position: [125, -135, 0]
       Size: [300, 300]
       Scale: [1, 1]
-  - Entity: "{D6D76A5C-C7BD-44AB-AB8E-59C0D9F7F7BB}"
+  - Entity: "{912DED6A-4B84-4828-8AD5-AD7ECBFE3AF8}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -3401,7 +3832,7 @@ Entities:
       Position: [115, -90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{8806619F-72AA-439B-A863-FBFD9216E97B}"
+  - Entity: "{06749DB1-FEC0-4827-B055-7B8B17CD31E1}"
     Relationship:
       Parent: 182
       NextSibling: 65537
@@ -3409,7 +3840,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -3418,7 +3849,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{B6154835-050D-4069-837E-E7B4C0E9E638}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{ED771A07-8E94-477B-9035-FCB3BDD73F3D}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -3438,7 +3874,7 @@ Entities:
       Position: [55, -90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{2A2C426A-0540-40C3-85E1-ED23641E85F9}"
+  - Entity: "{A5DEF462-C6C4-4830-A10D-AC27580B7304}"
     Relationship:
       Parent: 184
       NextSibling: 65537
@@ -3446,7 +3882,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -3455,7 +3891,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{393AACE6-2618-47B3-BF3B-31543A7C4117}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{3E47B708-FCD6-4791-A6F3-1E8232D453AC}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -3475,7 +3916,7 @@ Entities:
       Position: [-5, -90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{C1CF6C45-BDCE-4CD3-B531-8D41FFEF2692}"
+  - Entity: "{D5995D98-E92E-4041-80C1-6BBAF0881350}"
     Relationship:
       Parent: 186
       NextSibling: 65537
@@ -3483,7 +3924,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -3492,7 +3933,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{F7345803-F89A-48A7-969A-0FDDC3952B57}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{6B67964F-F431-4ED3-98E0-3259267AB7F0}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -3512,7 +3958,7 @@ Entities:
       Position: [-65, -90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{13FDEB65-DFA2-4794-BDF9-E05E3B8102C9}"
+  - Entity: "{45455455-1813-4A92-B2A8-AAFB97EDCE61}"
     Relationship:
       Parent: 188
       NextSibling: 65537
@@ -3520,7 +3966,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -3529,7 +3975,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{860E7499-16D6-42E0-B8CB-FFF426BD1F61}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{51D6ED3A-1530-4D00-8EA9-70F115B01503}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -3549,7 +4000,7 @@ Entities:
       Position: [-125, -90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{642DAAE2-D063-49D7-B681-5EB634C0978F}"
+  - Entity: "{BBC23F47-3B5B-4A64-B2C2-CD4014F7C14F}"
     Relationship:
       Parent: 190
       NextSibling: 65537
@@ -3557,7 +4008,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -3566,7 +4017,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{82F9205D-3056-4726-A310-CE58CAB75993}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{11C50E96-CFB1-4CDE-BCA5-18A9F33EBE05}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -3586,7 +4042,7 @@ Entities:
       Position: [115, -30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{02AA851D-0E96-4088-B20B-A96901CEFDCA}"
+  - Entity: "{7E741F03-8AFA-42D2-B950-43E87027B808}"
     Relationship:
       Parent: 192
       NextSibling: 65537
@@ -3594,7 +4050,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -3603,7 +4059,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{BD97251D-778D-4D8B-9005-FF5C8E0F2DBF}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{759C827C-096C-44D2-A787-79E552913DB5}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -3623,7 +4084,7 @@ Entities:
       Position: [55, -30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{38200EED-F66F-4010-8E8D-282B33CF9642}"
+  - Entity: "{DDD96412-54F8-456F-9C9B-68A3520829A4}"
     Relationship:
       Parent: 194
       NextSibling: 65537
@@ -3631,7 +4092,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -3640,7 +4101,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{155B1A77-F02C-4506-8888-2F1A1AF460AC}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{534310AC-56F6-4350-B70F-D3F84B929184}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -3660,7 +4126,7 @@ Entities:
       Position: [-5, -30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{FEF64F77-16AE-49F6-B5EE-5CA591D8171C}"
+  - Entity: "{8B365F5D-4507-4E93-98C8-B619ED725526}"
     Relationship:
       Parent: 196
       NextSibling: 65537
@@ -3668,7 +4134,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -3677,7 +4143,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{2C5B213A-0A8B-49CD-8344-491D71308C0F}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{E42B6AE5-0EC4-4BBB-9509-B1E6CC3186DA}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -3697,7 +4168,7 @@ Entities:
       Position: [-65, -30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{1753E10B-15ED-437A-A368-8DB15B7D89B6}"
+  - Entity: "{FC280B6A-43F5-4286-B026-299D8A249E00}"
     Relationship:
       Parent: 198
       NextSibling: 65537
@@ -3705,7 +4176,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -3714,7 +4185,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{E3C6698B-2BA7-42D6-993B-954086A7AEFB}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{DB3C3C43-E5D2-426C-88E8-723E77B83699}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -3734,7 +4210,7 @@ Entities:
       Position: [-125, -30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{CD752E10-C86E-4ACA-BE71-01145289A1A4}"
+  - Entity: "{16313040-4556-45B7-A074-69814E5A8B96}"
     Relationship:
       Parent: 200
       NextSibling: 65537
@@ -3742,7 +4218,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -3751,7 +4227,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{DE253703-4527-4B49-907B-ED3F4F413947}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{299B6F08-5F77-4BC2-B4A7-5EB06185D698}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -3771,7 +4252,7 @@ Entities:
       Position: [115, 30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{D774966B-1190-44A5-AF97-94F8A37E846B}"
+  - Entity: "{7A700276-E18E-4C10-BAE1-F0261E7312A4}"
     Relationship:
       Parent: 202
       NextSibling: 65537
@@ -3779,7 +4260,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -3788,7 +4269,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{9F155275-2E42-4AFF-B4D1-577C1848C142}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{FA8DC14A-4DF4-44BB-9936-61E7CD1E111A}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -3808,7 +4294,7 @@ Entities:
       Position: [55, 30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{0DA0978E-C689-420C-B53C-6E4D57969F85}"
+  - Entity: "{A40DB235-959F-4F64-8F6D-360EB4727C1C}"
     Relationship:
       Parent: 204
       NextSibling: 65537
@@ -3816,7 +4302,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -3825,7 +4311,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{36597E39-3CC6-46B8-9559-D02AD9FADFFA}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{8F4B1636-F97A-4619-9CCA-42D88B2E0E5C}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -3845,7 +4336,7 @@ Entities:
       Position: [-5, 30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{37AA303B-295A-46E2-9D68-33BEABAD20CB}"
+  - Entity: "{3808850E-45F1-46B5-81F5-B325F7BACCD1}"
     Relationship:
       Parent: 206
       NextSibling: 65537
@@ -3853,7 +4344,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -3862,7 +4353,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{C9881AB6-B7EE-4876-9C12-8F4DAD7FD0CA}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{9E7503CA-F3D8-41AC-B6D4-FF2A954D0D61}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -3882,7 +4378,7 @@ Entities:
       Position: [-65, 30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{48387B5B-FBB6-4257-9407-E57A6CA269D3}"
+  - Entity: "{B88E14AF-0DE3-41FC-8A7B-1DEA59EDE937}"
     Relationship:
       Parent: 208
       NextSibling: 65537
@@ -3890,7 +4386,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -3899,7 +4395,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{93A09EAD-FF35-4593-BFF1-7AED714D3A05}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{3EC6B1A5-5FA0-4D61-8762-0CF4C428BA7E}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -3919,7 +4420,7 @@ Entities:
       Position: [-125, 30, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{80295AF7-EF2B-4072-888E-F4FBCC34AEB6}"
+  - Entity: "{D0DFAE53-CD28-4123-9F64-2DF9B5057F40}"
     Relationship:
       Parent: 210
       NextSibling: 65537
@@ -3927,7 +4428,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -3936,7 +4437,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{1841DF98-BF9E-40E4-954A-03D61A043657}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{1AC0A2C8-BE47-45C2-B7B2-D411268A71B1}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -3956,7 +4462,7 @@ Entities:
       Position: [115, 90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{1E32DE91-2B88-4CC7-A2AB-7A6D1FD87FA3}"
+  - Entity: "{24976891-1042-48E1-98A0-EF244711DE0C}"
     Relationship:
       Parent: 212
       NextSibling: 65537
@@ -3964,7 +4470,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -3973,7 +4479,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{149432D2-9FFF-40EB-9366-71711F059E13}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{DC21F0FB-50A8-4AB7-BBBE-7AD035F20E5A}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -3993,7 +4504,7 @@ Entities:
       Position: [55, 90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{3747F012-2A29-4B29-B94E-683D22B379C8}"
+  - Entity: "{4800DBB6-AB81-40E9-8EA4-F6BEEE98C053}"
     Relationship:
       Parent: 214
       NextSibling: 65537
@@ -4001,7 +4512,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -4010,7 +4521,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{D3315BAB-ED82-4B63-8753-9340915F141A}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{377FADA0-3CE4-435B-8AE3-8F4E2E2685B4}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -4030,7 +4546,7 @@ Entities:
       Position: [-5, 90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{67637F04-360A-45EF-93FA-FAC1DBEFD858}"
+  - Entity: "{87982EF9-8D8B-49DB-87B1-C127F3321BD5}"
     Relationship:
       Parent: 216
       NextSibling: 65537
@@ -4038,7 +4554,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -4047,7 +4563,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{295DA5FD-5B55-414E-83E2-2475CB404C2F}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{50B1E1B4-4E81-4613-9573-5C1AAEBF7DAD}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -4067,7 +4588,7 @@ Entities:
       Position: [-65, 90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{ADFC5FAC-03BE-40A8-87CD-5EFBA92AE9CD}"
+  - Entity: "{06A353AD-6E5D-41F7-9AD6-AC2631C33CBF}"
     Relationship:
       Parent: 218
       NextSibling: 65537
@@ -4075,7 +4596,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -4084,7 +4605,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{1461465A-02B7-449D-A75B-2A4E600B5C90}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{AF619EC4-66D6-4E4F-9A2E-36AD422E7233}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -4104,7 +4630,7 @@ Entities:
       Position: [-125, 90, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{D89A02AA-4E1F-40F0-A068-72CFC1630F98}"
+  - Entity: "{E1700886-67DD-4D42-AAE5-C99094F15EC9}"
     Relationship:
       Parent: 220
       NextSibling: 65537
@@ -4112,7 +4638,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -4121,7 +4647,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
-  - Entity: "{5CABDFF3-38E9-4035-9732-4ABCA4D4C540}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Button
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{07CB208A-0FB6-4228-85D2-271BBC6236E0}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -4141,7 +4672,7 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 30]
       Scale: [1, 1]
-  - Entity: "{38695A46-9A55-43D7-BEA5-CA5BEEE83FDB}"
+  - Entity: "{F5A0F60C-1C3C-4646-B520-2C567A72F203}"
     Relationship:
       Parent: 222
       NextSibling: 65537
@@ -4149,7 +4680,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/FontSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 2
       IsVisible: true
@@ -4158,7 +4689,12 @@ Entities:
       Position: [0, 0, 0]
       Size: [50, 30]
       Scale: [1, 1]
-  - Entity: "{CAAF7140-DD15-44D4-9204-87189A2E0422}"
+    Text:
+      FontPath: Assets/Fonts/arial.ttf
+      Source: Scene
+      Color: [1, 1, 1, 1]
+      Alignment: 2
+  - Entity: "{616FDBEE-DE19-4B90-ADE8-0F1264B38A16}"
     Relationship:
       Parent: 222
       NextSibling: 223
@@ -4166,7 +4702,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: ""
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 0
       IsVisible: true
