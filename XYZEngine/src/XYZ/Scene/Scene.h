@@ -2,15 +2,15 @@
 #include "XYZ/Core/Ref.h"
 #include "XYZ/Core/Timestep.h"
 #include "XYZ/ECS/ECSManager.h"
-#include "XYZ/Event/Event.h"
+#include "XYZ/ECS/Entity.h"
 
+#include "XYZ/Event/Event.h"
 #include "XYZ/Renderer/Camera.h"
 
 #include "XYZ/Editor/EditorCamera.h"
 #include "SceneCamera.h"
 #include "Components.h"
 #include "Serializable.h"
-
 
 namespace XYZ {
 
@@ -54,7 +54,7 @@ namespace XYZ {
         Entity GetSelectedEntity();
         
         SceneState GetState() const { return m_State; }
-        ECS::ECSManager& GetECS() { return m_ECS; }
+        ECSManager& GetECS() { return m_ECS; }
 
         inline const std::string& GetName() const { return m_Name; }
     private:
@@ -62,13 +62,13 @@ namespace XYZ {
         void showCamera(uint32_t entity);
 
     private:
-        ECS::ECSManager m_ECS;
+        ECSManager m_ECS;
 
-        ECS::ComponentView<TransformComponent, SpriteRenderer>* m_RenderView;
-        ECS::ComponentView<TransformComponent, ParticleComponent>* m_ParticleView;
-        ECS::ComponentView<TransformComponent, PointLight2D>* m_LightView;
-        ECS::ComponentView<NativeScriptComponent>* m_NativeScriptView;
-        ECS::ComponentView<AnimatorComponent>* m_AnimatorView;
+        ComponentView<TransformComponent, SpriteRenderer>* m_RenderView;
+        ComponentView<TransformComponent, ParticleComponent>* m_ParticleView;
+        ComponentView<TransformComponent, PointLight2D>* m_LightView;
+        ComponentView<NativeScriptComponent>* m_NativeScriptView;
+        ComponentView<AnimatorComponent>* m_AnimatorView;
 
         std::string m_Name;
         SceneState m_State = SceneState::Edit;
@@ -90,6 +90,5 @@ namespace XYZ {
          
         friend class Entity;
         friend class Serializer;
-        friend class Asset<Scene>;
     };
 }

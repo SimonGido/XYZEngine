@@ -4,7 +4,7 @@
 #include "Text.h"
 
 namespace XYZ {
-    InputField::InputField(const glm::vec4& selectColor, const glm::vec4& hooverColor, uint32_t entity, ECS::ECSManager* ecs)
+    InputField::InputField(const glm::vec4& selectColor, const glm::vec4& hooverColor, uint32_t entity, ECSManager* ecs)
         :
         SelectColor(selectColor), HooverColor(hooverColor), TextEntity(entity), ECS(ecs)
     {

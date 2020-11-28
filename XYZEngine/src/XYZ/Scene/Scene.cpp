@@ -7,7 +7,7 @@
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/SceneRenderer.h"
 #include "XYZ/NativeScript/ScriptableEntity.h"
-#include "Entity.h"
+
 
 #include "XYZ/Timer.h"
 
@@ -57,7 +57,7 @@ namespace XYZ {
 
 	Entity Scene::CreateEntity(const std::string& name, const GUID& guid)
 	{
-		Entity entity(m_ECS.CreateEntity(), this);
+		Entity entity(&m_ECS);
 		IDComponent id;
 		id.ID = guid;
 		entity.AddComponent<IDComponent>(id);
@@ -102,7 +102,7 @@ namespace XYZ {
 	{		
 		for (auto entity : m_Entities)
 		{
-			Entity ent(entity, this);
+			Entity ent(entity, &m_ECS);
 			if (ent.HasComponent<CameraComponent>())
 			{
 				ent.GetStorageComponent<CameraComponent>().Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
@@ -127,7 +127,7 @@ namespace XYZ {
 		// 3D part here
 
 		///////////////
-		Entity cameraEntity(m_CameraEntity, this);
+		Entity cameraEntity(m_CameraEntity, &m_ECS);
 		SceneRendererCamera renderCamera;
 		auto& cameraComponent = cameraEntity.GetStorageComponent<CameraComponent>();
 		auto& cameraTransform = cameraEntity.GetStorageComponent<TransformComponent>();
@@ -241,12 +241,12 @@ namespace XYZ {
 
 	Entity Scene::GetEntity(uint32_t index)
 	{
-		return { m_Entities[index],this };
+		return { m_Entities[index], &m_ECS };
 	}
 
 	Entity Scene::GetSelectedEntity()
 	{
-		return { m_SelectedEntity, this };
+		return { m_SelectedEntity, &m_ECS };
 	}
 
 	void Scene::showSelection(uint32_t entity)

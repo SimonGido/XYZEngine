@@ -30,7 +30,7 @@
 #include "XYZ/Scene/SceneCamera.h"
 #include "XYZ/Scene/AssetManager.h"
 #include "XYZ/Scene/Animation.h"
-#include "XYZ/Scene/Entity.h"
+
 
 
 //---------Editor-----------//
@@ -38,7 +38,7 @@
 
 //------ECS-----//
 #include "XYZ/ECS/ECSManager.h"
-
+#include "XYZ/ECS/Entity.h"
 
 
 //-----Audio-----//

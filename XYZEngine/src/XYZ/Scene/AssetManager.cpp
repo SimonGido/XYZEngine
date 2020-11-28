@@ -21,6 +21,12 @@ namespace XYZ {
 		m_FileWatcher->Stop();	
 	}
 
+	void AssetManager::Serialize()
+	{
+		for (auto it : m_Assets)
+			it.second->Serialize();
+	}
+
 	void AssetManager::OnFileChange(const std::wstring& filepath)
 	{
 		std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;

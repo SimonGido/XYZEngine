@@ -3,7 +3,5 @@
 
 
 namespace XYZ {
-	namespace ECS {
-	
-	}
+
 }

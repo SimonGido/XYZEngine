@@ -1,20 +1,20 @@
 #pragma once
 #include "Event.h"
 #include "XYZ/ECS/ECSManager.h"
-
+#include "XYZ/ECS/Entity.h"
 
 namespace XYZ {
 
 	struct ClickEvent : public Event
 	{
-		ClickEvent(uint32_t entity)	
+		ClickEvent(Entity entity)	
 			: m_Type(EventType::Click),m_Entity(entity)
 		{
 		}
 
 		virtual EventType GetEventType() const override { return m_Type; }
 
-		uint32_t GetEntity() const { return m_Entity; }
+		Entity GetEntity() const { return m_Entity; }
 
 		static EventType GetStaticType()
 		{
@@ -23,20 +23,20 @@ namespace XYZ {
 
 	private:
 		EventType m_Type;
-		uint32_t m_Entity;
+		Entity m_Entity;
 	};
 
 
 
 	struct ReleaseEvent : public Event
 	{
-		ReleaseEvent(uint32_t entity)
+		ReleaseEvent(Entity entity)
 			: m_Type(EventType::Release), m_Entity(entity)
 		{
 		}
 
 		virtual EventType GetEventType() const override { return m_Type; }
-		uint32_t GetEntity() const { return m_Entity; }
+		Entity GetEntity() const { return m_Entity; }
 		static EventType GetStaticType()
 		{
 			return EventType::Release;
@@ -44,19 +44,19 @@ namespace XYZ {
 
 	private:
 		EventType m_Type;
-		uint32_t m_Entity;
+		Entity m_Entity;
 	};
 
 	struct DraggedEvent : public Event
 	{
-		DraggedEvent(uint32_t entity, float value)
+		DraggedEvent(Entity entity, float value)
 			: m_Type(EventType::Drag), m_Entity(entity), m_Value(value)
 		{
 		}
 
 		virtual EventType GetEventType() const override { return m_Type; }
 
-		uint32_t GetEntity() const { return m_Entity; }
+		Entity GetEntity() const { return m_Entity; }
 
 		static EventType GetStaticType()
 		{
@@ -65,7 +65,7 @@ namespace XYZ {
 
 	private:
 		EventType m_Type;
-		uint32_t m_Entity;
+		Entity m_Entity;
 		float m_Value;
 	};
 
@@ -138,13 +138,13 @@ namespace XYZ {
 	struct RectTransform;
 	struct CanvasRendererRebuildSpecification
 	{
-		virtual void Rebuild(uint32_t entity, ECS::ECSManager& ecs) = 0;
+		virtual void Rebuild(Entity entity) = 0;
 	};
 
 	
 	struct CanvasRendererRebuildEvent : public Event
 	{
-		CanvasRendererRebuildEvent(uint32_t entity, CanvasRendererRebuildSpecification& specification)
+		CanvasRendererRebuildEvent(Entity entity, CanvasRendererRebuildSpecification& specification)
 			: 
 			m_Type(EventType::CanvasRendererRebuild),
 			m_Entity(entity),
@@ -153,7 +153,8 @@ namespace XYZ {
 
 		virtual EventType GetEventType() const override { return m_Type; }
 
-		uint32_t GetEntity() const { return m_Entity; }
+		Entity GetEntity() const { return m_Entity; }
+
 		CanvasRendererRebuildSpecification& GetSpecification() { return m_Specification; }
 
 		static EventType GetStaticType()
@@ -162,7 +163,7 @@ namespace XYZ {
 		}
 	private:
 		EventType m_Type;
-		uint32_t m_Entity;
+		Entity m_Entity;
 		CanvasRendererRebuildSpecification& m_Specification;
 	};
 }

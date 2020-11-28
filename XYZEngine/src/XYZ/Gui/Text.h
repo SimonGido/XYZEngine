@@ -13,7 +13,7 @@ namespace XYZ {
 		Center
 	};
 
-	struct Text : public ECS::Type<Text>
+	struct Text : public Type<Text>
 	{
 		Text(const std::string& source, const Ref<Font>& font, const glm::vec4& color, TextAlignment alignment);
 

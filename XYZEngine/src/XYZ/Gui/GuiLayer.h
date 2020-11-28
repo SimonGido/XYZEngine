@@ -15,7 +15,7 @@ namespace XYZ {
 		virtual void OnUpdate(Timestep ts) override;
 		virtual void OnEvent(Event& event) override;
 
-		GuiContext* CreateContext(ECS::ECSManager* ecs, const GuiSpecification& specs);
+		GuiContext* CreateContext(ECSManager* ecs, const GuiSpecification& specs);
 
 	private:
 		std::vector<GuiContext*> m_GuiContexts;

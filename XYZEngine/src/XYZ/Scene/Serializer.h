@@ -16,7 +16,10 @@ namespace XYZ {
 		static T Deserialize(YAML::Node& data, AssetManager& assetManager);
 
 		template <typename T>
-		static void SerializeResource(const std::string& filepath, const Ref<T>& val);
+		static void Deserialize(YAML::Node& data, AssetManager& assetManager, T& val);
+
+		template <typename T>
+		static void SerializeResource(const Ref<T>& val);
 
 		template <typename T>
 		static Ref<T> DeserializeResource(const std::string& filepath, AssetManager& assetManager);

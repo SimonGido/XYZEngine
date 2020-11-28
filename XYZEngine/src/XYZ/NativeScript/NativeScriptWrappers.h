@@ -1,6 +1,6 @@
 #pragma once
 #include "XYZ/Scene/Components.h"
-#include "XYZ/Scene/Entity.h"
+#include "XYZ/ECS/Entity.h"
 #include <glm/glm.hpp>
 
 

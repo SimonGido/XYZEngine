@@ -24,26 +24,28 @@
 namespace XYZ {
 	struct TextCanvasRendererRebuild : public CanvasRendererRebuildSpecification
 	{
-		virtual void Rebuild(uint32_t entity, ECS::ECSManager& ecs) override;
+		virtual void Rebuild(Entity entity) override;
 	};
 
 	struct QuadCanvasRendererRebuild : public CanvasRendererRebuildSpecification
 	{
-		virtual void Rebuild(uint32_t entity, ECS::ECSManager& ecs) override;
+		virtual void Rebuild(Entity entity) override;
 	};
 
+
+	// TODO: same serialization logic as with scene
 	class GuiContext : public RefCount
 	{
 	public:
 		// Templates to create widgets
-		uint32_t CreateCanvas(const CanvasSpecification& specs);
-		uint32_t CreatePanel(uint32_t parent, const PanelSpecification& specs);
-		uint32_t CreateButton(uint32_t parent, const ButtonSpecification& specs);
-		uint32_t CreateCheckbox(uint32_t parent, const CheckboxSpecification& specs);
-		uint32_t CreateSlider(uint32_t parent, const SliderSpecification& specs);
-		uint32_t CreateText(uint32_t parent, const TextSpecification& specs);
-		uint32_t CreateImage(uint32_t parent, const ImageSpecification& specs);
-		uint32_t CreateInputField(uint32_t parent, const InputFieldSpecification& specs);
+		Entity CreateCanvas(const CanvasSpecification& specs);
+		Entity CreatePanel(uint32_t parent, const PanelSpecification& specs);
+		Entity CreateButton(uint32_t parent, const ButtonSpecification& specs);
+		Entity CreateCheckbox(uint32_t parent, const CheckboxSpecification& specs);
+		Entity CreateSlider(uint32_t parent, const SliderSpecification& specs);
+		Entity CreateText(uint32_t parent, const TextSpecification& specs);
+		Entity CreateImage(uint32_t parent, const ImageSpecification& specs);
+		Entity CreateInputField(uint32_t parent, const InputFieldSpecification& specs);
 
 		void SetViewportSize(uint32_t width, uint32_t height);
 		void SetParent(uint32_t parent, uint32_t child);
@@ -54,7 +56,7 @@ namespace XYZ {
 		uint32_t GetCanvas(size_t index) const { return m_Canvases[index]; }
 	private:
 		// Only gui layer can create new context
-		GuiContext(ECS::ECSManager* ecs, const GuiSpecification& specs);
+		GuiContext(ECSManager* ecs, const GuiSpecification& specs);
 
 		// Event resolving functions
 		bool onCanvasRendererRebuild(CanvasRendererRebuildEvent& event);
@@ -69,35 +71,35 @@ namespace XYZ {
 		bool buttonOnMouseButtonPress(const glm::vec2& mousePosition);
 		bool buttonOnMouseButtonRelease();
 		bool buttonOnMouseMove(const glm::vec2& mousePosition);
-		
+
 		bool checkboxOnMouseButtonPress(const glm::vec2& mousePosition);
 		bool checkboxOnMouseMove(const glm::vec2& mousePosition);
-		
+
 		bool sliderOnMouseButtonPress(const glm::vec2& mousePosition);
 		bool sliderOnMouseButtonRelease();
 		bool sliderOnMouseMove(const glm::vec2& mousePosition);
-		
+
 		bool inputFieldOnMouseButtonPress(const glm::vec2& mousePosition);
 		bool inputFieldOnMouseMove(const glm::vec2& mousePosition);
 
 		// Update functions
 		void updateTransform(uint32_t entity, const glm::vec3& parentPosition);
 		void applyLayoutGroup(const LayoutGroup& layout, const Relationship& parentRel, const RectTransform& transform);
-		
+
 	private:
 		//Tree m_Entities;
 		Camera m_Camera;
 		glm::mat4 m_ViewMatrix;
 
-		ECS::ECSManager* m_ECS = nullptr;
-		ECS::ComponentView<CanvasRenderer, RectTransform>* m_RenderView;
-		ECS::ComponentView<Canvas, CanvasRenderer, RectTransform>* m_CanvasView;
-		ECS::ComponentView<Button, CanvasRenderer, RectTransform>* m_ButtonView;
-		ECS::ComponentView<Checkbox, CanvasRenderer, RectTransform>* m_CheckboxView;
-		ECS::ComponentView<Slider, CanvasRenderer, RectTransform> * m_SliderView;
-		ECS::ComponentView<LayoutGroup, Relationship, RectTransform>* m_LayoutGroupView;
-		ECS::ComponentView<Layout, Relationship, CanvasRenderer, RectTransform>* m_LayoutView;
-		ECS::ComponentView<InputField, CanvasRenderer, RectTransform>* m_InputFieldView;
+		ECSManager* m_ECS = nullptr;
+		ComponentView<CanvasRenderer, RectTransform>* m_RenderView;
+		ComponentView<Canvas, CanvasRenderer, RectTransform>* m_CanvasView;
+		ComponentView<Button, CanvasRenderer, RectTransform>* m_ButtonView;
+		ComponentView<Checkbox, CanvasRenderer, RectTransform>* m_CheckboxView;
+		ComponentView<Slider, CanvasRenderer, RectTransform>* m_SliderView;
+		ComponentView<LayoutGroup, Relationship, RectTransform>* m_LayoutGroupView;
+		ComponentView<Layout, Relationship, CanvasRenderer, RectTransform>* m_LayoutView;
+		ComponentView<InputField, CanvasRenderer, RectTransform>* m_InputFieldView;
 		GuiSpecification m_Specification;
 
 		Ref<RenderPass> m_RenderPass;
@@ -106,6 +108,6 @@ namespace XYZ {
 		std::vector<uint32_t> m_Canvases;
 
 		friend class GuiLayer;
+		friend class Serializer;
 	};
-
 }

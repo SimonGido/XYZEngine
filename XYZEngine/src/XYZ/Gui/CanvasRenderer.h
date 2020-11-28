@@ -7,14 +7,14 @@
 #include <glm/glm.hpp>
 
 namespace XYZ {
-	struct CanvasRenderer : public ECS::Type<CanvasRenderer>
+	struct CanvasRenderer : public Type<CanvasRenderer>
 	{
 		CanvasRenderer(
 			Ref<Material>     Material,
 			Ref<SubTexture2D> SubTexture,
 			glm::vec4		  Color,
 			const Mesh&		  mesh,
-			uint32_t			  sortLayer,
+			uint32_t		  sortLayer,
 			bool			  isVisible = true
 		);
 
@@ -23,11 +23,12 @@ namespace XYZ {
 
 
 		CanvasRenderer& operator =(const CanvasRenderer& other);
+		
 		Ref<Material>     Material;
 		Ref<SubTexture2D> SubTexture;
 		glm::vec4		  Color;
 		Mesh			  Mesh;
-		uint32_t			  SortLayer = 0;
+		uint32_t		  SortLayer;
 		float			  TilingFactor = 1.0f;
 		bool			  IsVisible = true;
 	};

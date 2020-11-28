@@ -25,17 +25,25 @@ namespace XYZ {
 		Vertical
 	};
 
-	
+	struct DockNodeComponent : public Type<DockNodeComponent>
+	{
+		DockNodeComponent(const glm::vec3& position, const glm::vec2& size);
+
+		std::vector<uint32_t> Entities;
+		glm::vec3 Position;
+		glm::vec2 Size;
+		SplitType Split = SplitType::None;
+	};
 
 	class Dockspace
 	{
 	public:
-		Dockspace(ECS::ECSManager* ecs, GuiContext* context);
+		Dockspace(ECSManager* ecs, GuiContext* context);
 
 		void OnUpdate(Timestep ts);
 		void OnEvent(Event& event);
 
-
+		void SetRoot(uint32_t entity);
 		uint32_t CreatePanel(uint32_t canvas, const std::string& name, const PanelSpecification& specs);
 		uint32_t CreateRenderWindow(uint32_t canvas, const std::string& name, const ImageSpecification& specs);
 
@@ -60,9 +68,9 @@ namespace XYZ {
 		uint32_t findNode(uint32_t entity, const glm::vec2& mousePosition);
 		SplitType resolveSplit(uint32_t nodeEntity, const glm::vec2& mousePosition);
 	private:
-		ECS::ECSManager* m_ECS;
+		ECSManager* m_ECS;
 		
-		uint32_t m_RootEntity;	
+		uint32_t m_RootEntity = NULL_ENTITY;
 		uint32_t m_ModifiedEntity = NULL_ENTITY;
 
 		glm::vec2 m_MouseOffset = glm::vec2(0.0f);

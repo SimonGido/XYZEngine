@@ -1,0 +1,3 @@
+SubTexture: ButtonSubtexture
+TextureAssetPath: Assets/Textures/Gui/TexturePack_Dark.png
+TexCoords: [0, 0, 0.125, 0.125]

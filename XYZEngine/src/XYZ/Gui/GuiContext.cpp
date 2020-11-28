@@ -118,10 +118,7 @@ namespace XYZ {
 		}
 	}
 
-
-
-
-	GuiContext::GuiContext(ECS::ECSManager* ecs, const GuiSpecification& specs)
+	GuiContext::GuiContext(ECSManager* ecs, const GuiSpecification& specs)
 		:
 		m_ECS(ecs),
 		m_Specification(specs)
@@ -147,11 +144,11 @@ namespace XYZ {
 		auto& renderer = m_ECS->GetComponent<CanvasRenderer>(event.GetEntity());
 		renderer.Mesh.Vertices.clear();
 
-		event.GetSpecification().Rebuild(event.GetEntity(), *m_ECS);
+		event.GetSpecification().Rebuild(event.GetEntity());
 		return true;
 	}
 
-	uint32_t GuiContext::CreateCanvas(const CanvasSpecification& specs)
+	Entity GuiContext::CreateCanvas(const CanvasSpecification& specs)
 	{
 		auto& texCoords = m_Specification.SubTexture[GuiSpecification::BUTTON]->GetTexCoords();
 		uint32_t entity = m_ECS->CreateEntity();
@@ -176,9 +173,9 @@ namespace XYZ {
 
 
 		m_Canvases.push_back(entity);
-		return entity;
+		return { entity, m_ECS };
 	}
-	uint32_t GuiContext::CreatePanel(uint32_t parent, const PanelSpecification& specs)
+	Entity GuiContext::CreatePanel(uint32_t parent, const PanelSpecification& specs)
 	{
 		auto& texCoords = m_Specification.SubTexture[GuiSpecification::BUTTON]->GetTexCoords();
 		uint32_t entity = m_ECS->CreateEntity();
@@ -202,9 +199,9 @@ namespace XYZ {
 		transform.RegisterCallback<CanvasRendererRebuildEvent>(Hook(&GuiContext::onCanvasRendererRebuild, this));
 
 		Relationship::SetupRelation(parent, entity, *m_ECS);
-		return entity;
+		return { entity, m_ECS };
 	}
-	uint32_t GuiContext::CreateButton(uint32_t parent, const ButtonSpecification& specs)
+	Entity GuiContext::CreateButton(uint32_t parent, const ButtonSpecification& specs)
 	{
 		auto& texCoords = m_Specification.SubTexture[GuiSpecification::BUTTON]->GetTexCoords();
 		uint32_t entity = m_ECS->CreateEntity();
@@ -260,9 +257,9 @@ namespace XYZ {
 		));
 		
 		Relationship::SetupRelation(entity, textEntity, *m_ECS);
-		return entity;
+		return { entity, m_ECS };
 	}
-	uint32_t GuiContext::CreateCheckbox(uint32_t parent, const CheckboxSpecification& specs)
+	Entity GuiContext::CreateCheckbox(uint32_t parent, const CheckboxSpecification& specs)
 	{
 		uint32_t entity = m_ECS->CreateEntity();
 		m_ECS->AddComponent<IDComponent>(entity, IDComponent());
@@ -321,9 +318,9 @@ namespace XYZ {
 		
 		Relationship::SetupRelation(entity,textEntity, *m_ECS);
 
-		return entity;
+		return { entity, m_ECS };
 	}
-	uint32_t GuiContext::CreateSlider(uint32_t parent, const SliderSpecification& specs)
+	Entity GuiContext::CreateSlider(uint32_t parent, const SliderSpecification& specs)
 	{
 		uint32_t entity = m_ECS->CreateEntity();
 		m_ECS->AddComponent<IDComponent>(entity, IDComponent());
@@ -400,9 +397,9 @@ namespace XYZ {
 		Relationship::SetupRelation(entity, textEntity, *m_ECS);
 		Relationship::SetupRelation(entity, handle, *m_ECS);
 
-		return entity;
+		return { entity, m_ECS };
 	}
-	uint32_t GuiContext::CreateText(uint32_t parent, const TextSpecification& specs)
+	Entity GuiContext::CreateText(uint32_t parent, const TextSpecification& specs)
 	{
 		uint32_t entity = m_ECS->CreateEntity();
 		m_ECS->AddComponent<IDComponent>(entity, IDComponent());
@@ -434,9 +431,9 @@ namespace XYZ {
 		
 		Relationship::SetupRelation(parent, entity, *m_ECS);
 
-		return entity;
+		return { entity, m_ECS };
 	}
-	uint32_t GuiContext::CreateImage(uint32_t canvas, const ImageSpecification& specs)
+	Entity GuiContext::CreateImage(uint32_t canvas, const ImageSpecification& specs)
 	{
 		auto& texCoords = specs.SubTexture->GetTexCoords();
 		uint32_t entity = m_ECS->CreateEntity();
@@ -461,9 +458,9 @@ namespace XYZ {
 		transform.RegisterCallback<CanvasRendererRebuildEvent>(Hook(&GuiContext::onCanvasRendererRebuild, this));
 		Relationship::SetupRelation(canvas, entity, *m_ECS);
 
-		return entity;
+		return { entity, m_ECS };
 	}
-	uint32_t GuiContext::CreateInputField(uint32_t parent, const InputFieldSpecification& specs)
+	Entity GuiContext::CreateInputField(uint32_t parent, const InputFieldSpecification& specs)
 	{
 		uint32_t textEntity = m_ECS->CreateEntity();
 		m_ECS->AddComponent<IDComponent>(textEntity, IDComponent());
@@ -519,7 +516,7 @@ namespace XYZ {
 		Relationship::SetupRelation(parent, entity, *m_ECS);
 		Relationship::SetupRelation(entity, textEntity, *m_ECS);
 
-		return entity;
+		return { entity, m_ECS };
 	}
 	void GuiContext::SetViewportSize(uint32_t width, uint32_t height)
 	{
@@ -541,7 +538,7 @@ namespace XYZ {
 			transform.Size = m_ViewportSize;
 			transform.Position = glm::vec3(0.0f);
 			transform.Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent(
-				m_CanvasView->GetEntity(i), QuadCanvasRendererRebuild()));
+				{ m_CanvasView->GetEntity(i), m_ECS }, QuadCanvasRendererRebuild()));
 		}
 	}
 	void GuiContext::SetParent(uint32_t parent, uint32_t child)
@@ -676,7 +673,7 @@ namespace XYZ {
 						if (!text.Source.empty())
 						{
 							text.Source.pop_back();
-							textRectTransform.Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent(inputField.TextEntity,
+							textRectTransform.Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent({ inputField.TextEntity, m_ECS },
 								TextCanvasRendererRebuild()
 							));
 						}
@@ -702,7 +699,7 @@ namespace XYZ {
 
 
 					text.Source += event.GetKey();
-					textRectTransform.Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent(inputField.TextEntity,
+					textRectTransform.Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent({ inputField.TextEntity, m_ECS },
 						TextCanvasRendererRebuild()
 					));
 					return true;
@@ -721,7 +718,7 @@ namespace XYZ {
 			{
 				button.Machine.TransitionTo(ButtonState::Clicked);
 				SetMeshColor(canvasRenderer.Mesh, canvasRenderer.Color * button.ClickColor);
-				if (button.Execute<ClickEvent>(ClickEvent{m_ButtonView->GetEntity(i)}))
+				if (button.Execute<ClickEvent>(ClickEvent{{m_ButtonView->GetEntity(i), m_ECS} }))
 					return true;
 			}
 		}
@@ -736,7 +733,7 @@ namespace XYZ {
 			SetMeshColor(canvasRenderer.Mesh, canvasRenderer.Color);
 			if (button.Machine.TransitionTo(ButtonState::Released))
 			{
-				if (button.Execute<ReleaseEvent>(ReleaseEvent{ m_ButtonView->GetEntity(i) }))
+				if (button.Execute<ReleaseEvent>(ReleaseEvent{ {m_ButtonView->GetEntity(i), m_ECS} }))
 					return true;
 			}
 		}
@@ -819,7 +816,7 @@ namespace XYZ {
 			{
 				slider.Machine.TransitionTo(SliderState::Dragged);
 				SetMeshColor(canvasRenderer.Mesh, canvasRenderer.Color * slider.HooverColor);
-				if (slider.Execute<ClickEvent>(ClickEvent{ m_SliderView->GetEntity(i) }))
+				if (slider.Execute<ClickEvent>(ClickEvent{ {m_SliderView->GetEntity(i), m_ECS} }))
 					return true;
 			}
 		}
@@ -834,7 +831,7 @@ namespace XYZ {
 			SetMeshColor(canvasRenderer.Mesh, canvasRenderer.Color);
 			if (slider.Machine.TransitionTo(SliderState::Released))
 			{
-				if (slider.Execute<ReleaseEvent>(ReleaseEvent{ m_SliderView->GetEntity(i) }))
+				if (slider.Execute<ReleaseEvent>(ReleaseEvent{ {m_SliderView->GetEntity(i), m_ECS} }))
 					return true;
 			}
 		}
@@ -868,9 +865,9 @@ namespace XYZ {
 				}
 				
 				slider.Value = handleTransform.Position.x  / (rectTransform.Size.x - handleTransform.Size.x) + 0.5f;
-				slider.Execute<DraggedEvent>(DraggedEvent(m_SliderView->GetEntity(i), slider.Value));
+				slider.Execute<DraggedEvent>(DraggedEvent({ m_SliderView->GetEntity(i), m_ECS }, slider.Value));
 				handleTransform.Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent(
-					handle, QuadCanvasRendererRebuild()
+					{ handle, m_ECS }, QuadCanvasRendererRebuild()
 				));
 				return true;
 			}
@@ -887,7 +884,7 @@ namespace XYZ {
 			{
 				inputField.Machine.TransitionTo(InputFieldState::Released);
 				SetMeshColor(canvasRenderer.Mesh, canvasRenderer.Color);
-				inputField.Execute<ReleaseEvent>(ReleaseEvent(m_InputFieldView->GetEntity(i)));
+				inputField.Execute<ReleaseEvent>(ReleaseEvent({ m_InputFieldView->GetEntity(i), m_ECS }));
 			}
 			if (Collide(rectTransform.WorldPosition, rectTransform.Size, mousePosition))
 			{
@@ -895,7 +892,7 @@ namespace XYZ {
 				if (inputField.Machine.TransitionTo(InputFieldState::Selected))
 				{
 					SetMeshColor(canvasRenderer.Mesh, canvasRenderer.Color * inputField.SelectColor);
-					inputField.Execute<ClickEvent>(ClickEvent(m_InputFieldView->GetEntity(i)));
+					inputField.Execute<ClickEvent>(ClickEvent({ m_InputFieldView->GetEntity(i) , m_ECS }));
 					return true;
 				}
 			}
@@ -973,11 +970,11 @@ namespace XYZ {
 	}
 
 
-	void TextCanvasRendererRebuild::Rebuild(uint32_t entity, ECS::ECSManager& ecs)
+	void TextCanvasRendererRebuild::Rebuild(Entity entity)
 	{	
-		auto& transform = ecs.GetComponent<RectTransform>(entity);
-		auto& renderer = ecs.GetComponent<CanvasRenderer>(entity);
-		auto& text = ecs.GetComponent<Text>(entity);
+		auto& transform = entity.GetComponent<RectTransform>();
+		auto& renderer = entity.GetComponent<CanvasRenderer>();
+		auto& text = entity.GetComponent<Text>();
 
 		size_t oldMeshSize = renderer.Mesh.Vertices.size();
 		int32_t height = 0.0f;
@@ -1034,11 +1031,11 @@ namespace XYZ {
 		}
 	}
 
-	void QuadCanvasRendererRebuild::Rebuild(uint32_t entity, ECS::ECSManager& ecs)
+	void QuadCanvasRendererRebuild::Rebuild(Entity entity)
 	{
 		constexpr size_t quadVertexCount = 4;
-		auto& transform = ecs.GetComponent<RectTransform>(entity);
-		auto& renderer = ecs.GetComponent<CanvasRenderer>(entity);
+		auto& transform = entity.GetComponent<RectTransform>();
+		auto& renderer =  entity.GetComponent<CanvasRenderer>();
 		auto& texCoord = renderer.SubTexture->GetTexCoords();
 
 		glm::vec2 texCoords[quadVertexCount] = {

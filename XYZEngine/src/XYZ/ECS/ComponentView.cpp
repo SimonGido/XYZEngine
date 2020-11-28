@@ -4,7 +4,5 @@
 
 
 namespace XYZ {
-	namespace ECS {
 
-	}
 }

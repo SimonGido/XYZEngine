@@ -19,16 +19,16 @@ namespace XYZ {
 			NumStates
 		};
 	}
-	struct InputField : public ECS::Type<InputField>,
+	struct InputField : public Type<InputField>,
 					    public EventSystem<ClickEvent, ReleaseEvent, HooverEvent, UnHooverEvent>
 	{
-		InputField(const glm::vec4& selectColor, const glm::vec4& hooverColor, uint32_t entity, ECS::ECSManager* ecs);
+		InputField(const glm::vec4& selectColor, const glm::vec4& hooverColor, uint32_t entity, ECSManager* ecs);
 
 		glm::vec4 SelectColor;
 		glm::vec4 HooverColor;
 
 		uint32_t TextEntity;
-		ECS::ECSManager* ECS;
+		ECSManager* ECS;
 
 		StateMachine<InputFieldState::NumStates> Machine;
 

@@ -10,7 +10,7 @@ namespace XYZ {
 		float Left = 0.0f, Right = 0.0f, Top = 0.0f, Bottom = 0.0f;
 	};
 	
-	class LayoutGroup : public ECS::Type<LayoutGroup>
+	class LayoutGroup : public Type<LayoutGroup>
 	{
 	public:
 		LayoutGroup() {};
@@ -19,7 +19,7 @@ namespace XYZ {
 		glm::vec2 CellSpacing = glm::vec2(0.0f);
 	};
 
-	class Layout : public ECS::Type<Layout>
+	class Layout : public Type<Layout>
 	{
 	public:
 		Layout(const std::initializer_list<uint32_t>& elems);

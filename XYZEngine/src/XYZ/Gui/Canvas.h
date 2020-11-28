@@ -11,7 +11,7 @@ namespace XYZ {
 		RenderModes
 	};
 
-	struct Canvas : public ECS::Type<Canvas>
+	struct Canvas : public Type<Canvas>
 	{
 		Canvas(CanvasRenderMode mode, const glm::vec4& color)
 			:

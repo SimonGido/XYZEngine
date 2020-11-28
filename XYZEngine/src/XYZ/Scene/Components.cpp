@@ -45,7 +45,7 @@ namespace XYZ {
 		return *this;
 	}
 
-	void Relationship::SetupRelation(uint32_t parent, uint32_t child, ECS::ECSManager& ecs)
+	void Relationship::SetupRelation(uint32_t parent, uint32_t child, ECSManager& ecs)
 	{
 		auto& parentRel = ecs.GetComponent<Relationship>(parent);
 		auto& childRel = ecs.GetComponent<Relationship>(child);
@@ -66,7 +66,7 @@ namespace XYZ {
 		}
 	}
 
-	void Relationship::RemoveRelation(uint32_t child, ECS::ECSManager& ecs)
+	void Relationship::RemoveRelation(uint32_t child, ECSManager& ecs)
 	{
 		auto& childRel =  ecs.GetComponent<Relationship>(child);
 		auto& parentRel = ecs.GetComponent<Relationship>(childRel.Parent);

@@ -8,6 +8,34 @@
 
 namespace XYZ {
 	
+	class IAsset
+	{
+	public:
+		virtual void Serialize() = 0;
+	};
+
+	template <typename T>
+	class Asset : public IAsset
+	{
+	public:
+		Asset(Ref<T> handle)
+			: m_Handle(handle)
+		{
+			static_assert(std::is_base_of<Serializable, T>::value, "Class is not serializable!");
+		}
+		virtual void Serialize() override
+		{
+			Serializer::SerializeResource<T>(m_Handle);
+		}
+
+		Ref<T> GetHandle() { return m_Handle; }
+		const Ref<T> GetHandle() const { return m_Handle; }
+
+	private:	
+		Ref<T> m_Handle;
+
+		friend class AssetManager;
+	};
 
 	class AssetManager : public IFileWatcherListener
 	{
@@ -16,17 +44,26 @@ namespace XYZ {
 		~AssetManager();
 
 		template <typename T>
-		Ref<T> GetAsset(const std::string& filepath)
+		Asset<T>* GetAsset(const std::string& filepath)
 		{
-			static_assert(std::is_base_of<Serializable, T>::value, "Class is not serializable!");
 			auto it = m_Assets.find(filepath);
-			if (it != m_Assets.end() && it->second)
-				return Ref<T>((T*)it->second);
-			
+			if (it != m_Assets.end())
+			{
+				Asset<T>* casted = (Asset<T>*)it->second;
+				if (casted->GetHandle())
+					return casted;
+
+				Ref<T> ref = Serializer::DeserializeResource<T>(filepath, *this);
+				casted->m_Handle = ref;
+				casted;
+			}
 			Ref<T> ref = Serializer::DeserializeResource<T>(filepath, *this);
-			m_Assets[filepath] = ref.Raw();
-			return ref;
+			IAsset* asset = new Asset<T>(ref);
+			m_Assets[filepath] = asset;
+			return (Asset<T>*)asset;
 		}
+
+		void Serialize();
 
 		virtual void OnFileChange(const std::wstring& filepath) override;
 		virtual void OnFileAdded(const std::wstring& filepath) override;
@@ -34,7 +71,7 @@ namespace XYZ {
 		virtual void OnFileRenamed(const std::wstring& filepath) override;
 
 	private:
-		std::unordered_map<std::string, RefCount*> m_Assets;
+		std::unordered_map<std::string, IAsset*> m_Assets;
 		std::unique_ptr<FileWatcher> m_FileWatcher;
 		std::string m_Directory;
 	};

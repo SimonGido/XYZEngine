@@ -23,7 +23,7 @@ namespace XYZ {
 	}
 
 	class Checkbox : public EventSystem<CheckedEvent, UnCheckedEvent, HooverEvent, UnHooverEvent>,
-		public ECS::Type<Checkbox>
+		public Type<Checkbox>
 	{
 	public:
 		Checkbox(const glm::vec4& hooverColor);

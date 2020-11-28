@@ -1,0 +1,3 @@
+SubTexture: FontSubtexture
+TextureAssetPath: "Assets/Fonts/arial.ttf"
+TexCoords: [0, 0, 1, 1]

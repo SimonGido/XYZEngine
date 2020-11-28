@@ -16,7 +16,7 @@
 namespace XYZ {
 	class ScriptableEntity;
 
-	struct IDComponent : public ECS::Type<IDComponent>
+	struct IDComponent : public Type<IDComponent>
 	{
 		IDComponent() = default;
 		IDComponent(const GUID& id) 
@@ -25,7 +25,7 @@ namespace XYZ {
 		GUID ID;
 	};
 
-	class TransformComponent : public ECS::Type<TransformComponent>
+	class TransformComponent : public Type<TransformComponent>
 	{
 	public:
 		TransformComponent() = default;
@@ -49,7 +49,7 @@ namespace XYZ {
 		}
 	};
 
-	struct SceneTagComponent : public ECS::Type<SceneTagComponent>
+	struct SceneTagComponent : public Type<SceneTagComponent>
 	{
 		std::string Name;
 		SceneTagComponent(const std::string& name)
@@ -63,7 +63,7 @@ namespace XYZ {
 		operator const  std::string& () const { return Name; }
 	};
 
-	struct SpriteRenderer : public ECS::Type<SpriteRenderer>
+	struct SpriteRenderer : public Type<SpriteRenderer>
 	{
 		SpriteRenderer(
 			Ref<Material> material,
@@ -88,14 +88,14 @@ namespace XYZ {
 	};
 
 
-	struct CameraComponent : public ECS::Type<CameraComponent>
+	struct CameraComponent : public Type<CameraComponent>
 	{
 		SceneCamera Camera;
 		CameraComponent() = default;
 	};
 
 
-	struct NativeScriptComponent : public ECS::Type<NativeScriptComponent>
+	struct NativeScriptComponent : public Type<NativeScriptComponent>
 	{
 		NativeScriptComponent() = default;
 		NativeScriptComponent(ScriptableEntity* scriptableEntity, const std::string& scriptObjectName)
@@ -108,7 +108,7 @@ namespace XYZ {
 		std::string ScriptObjectName;
 	};
 
-	struct AnimatorComponent : public ECS::Type<AnimatorComponent>
+	struct AnimatorComponent : public Type<AnimatorComponent>
 	{
 		AnimatorComponent() = default;
 		
@@ -117,7 +117,7 @@ namespace XYZ {
 
 
 
-	struct ParticleComponent : public ECS::Type<ParticleComponent>
+	struct ParticleComponent : public Type<ParticleComponent>
 	{
 		ParticleComponent() = default;
 		Ref<MaterialInstance> RenderMaterial;
@@ -127,7 +127,7 @@ namespace XYZ {
 		uint32_t TextureID = 0;
 	};
 
-	struct PointLight2D : public ECS::Type<PointLight2D>
+	struct PointLight2D : public Type<PointLight2D>
 	{
 		PointLight2D() = default;
 
@@ -136,14 +136,14 @@ namespace XYZ {
 	};
 
 
-	struct Relationship : public ECS::Type<Relationship>
+	struct Relationship : public Type<Relationship>
 	{
 		uint32_t Parent			 = NULL_ENTITY;
 		uint32_t FirstChild		 = NULL_ENTITY;
 		uint32_t PreviousSibling = NULL_ENTITY;
 		uint32_t NextSibling	 = NULL_ENTITY;
 
-		static void SetupRelation(uint32_t parent, uint32_t child, ECS::ECSManager& ecs);
-		static void RemoveRelation(uint32_t child, ECS::ECSManager& ecs);
+		static void SetupRelation(uint32_t parent, uint32_t child, ECSManager& ecs);
+		static void RemoveRelation(uint32_t child, ECSManager& ecs);
 	};
 }

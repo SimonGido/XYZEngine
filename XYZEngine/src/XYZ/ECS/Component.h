@@ -3,40 +3,37 @@
 #include <bitset>
 
 namespace XYZ {
-	namespace ECS {
 
-		class ComponentManager;
-		class IComponent
+	class ComponentManager;
+	class IComponent
+	{
+	public:
+		template <typename T>
+		static uint8_t GetID()
 		{
-		public:
-			template <typename T>
-			static uint8_t GetID()
-			{
-				static uint8_t compType = getNextID();
-				return compType;
-			}
-		
-		private:
-			static uint8_t getNextID()
-			{
-				static uint8_t nextType = 0;
-				return ++nextType;
-			}
-
-			friend class ComponentManager;
-		};
-
-
-		template <typename Derived, typename DeriveFrom = IComponent>
-		class Type : public IComponent
+			static uint8_t compType = getNextID();
+			return compType;
+		}
+	
+	private:
+		static uint8_t getNextID()
 		{
-		public:
-			// return unique static id
-			static uint8_t GetComponentID()
-			{
-				return IComponent::GetID<Derived>();
-			}
-		};
+			static uint8_t nextType = 0;
+			return ++nextType;
+		}
 
-	}
+		friend class ComponentManager;
+	};
+
+
+	template <typename Derived, typename DeriveFrom = IComponent>
+	class Type : public IComponent
+	{
+	public:
+		// return unique static id
+		static uint8_t GetComponentID()
+		{
+			return IComponent::GetID<Derived>();
+		}
+	};
 }

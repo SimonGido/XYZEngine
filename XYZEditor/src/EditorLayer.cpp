@@ -83,10 +83,10 @@ namespace XYZ {
 
 		uint32_t windowWidth = Application::Get().GetWindow().GetWidth();
 		uint32_t windowHeight = Application::Get().GetWindow().GetHeight();
-		m_Scene = m_AssetManager.GetAsset<Scene>("Assets/Scenes/scene.xyz");
+		m_Scene = m_AssetManager.GetAsset<Scene>("Assets/Scenes/scene.xyz")->GetHandle();
 		m_Scene->SetViewportSize(windowWidth, windowHeight);
 
-		m_Material = m_AssetManager.GetAsset<Material>("Assets/Materials/material.mat");
+		m_Material = m_AssetManager.GetAsset<Material>("Assets/Materials/material.mat")->GetHandle();
 		m_Material->SetFlags(XYZ::RenderFlags::TransparentFlag);
 
 		m_TestEntity = m_Scene->GetEntity(2);
@@ -151,22 +151,35 @@ namespace XYZ {
 		m_Particle->ParticleEffect->SetParticlesRange(m_Vertices, m_Data, 0, count);
 		///////////////////////////////////////////////////////////
 
-		Ref<Font> font = Ref<Font>::Create(14, "Assets/Fonts/arial.ttf");
-		auto texture = Texture2D::Create(XYZ::TextureWrap::Clamp, TextureParam::Linear, TextureParam::Nearest, "Assets/Textures/Gui/TexturePack_Dark.png");
-		auto material = Ref<Material>::Create(Shader::Create("Assets/Shaders/GuiShader.glsl"));
-		material->Set("u_Texture", texture, 0);
+		Ref<Font> font = m_AssetManager.GetAsset<Font>("Assets/Fonts/arial.ttf")->GetHandle();
+		auto texture = m_AssetManager.GetAsset<Texture2D>("Assets/Textures/Gui/TexturePack_Dark.png")->GetHandle();
+		auto material = m_AssetManager.GetAsset<Material>("Assets/Materials/GuiMaterial.mat")->GetHandle();
+
 		material->Set("u_Texture", font->GetTexture(), 1);
 
 		float divisor = 8.0f;
 		GuiSpecification specs;
 		specs.Material = material;
 		specs.Font = font;
-		specs.SubTexture[GuiSpecification::BUTTON] = Ref<SubTexture2D>::Create(texture, glm::vec2(0, 0), glm::vec2((float)texture->GetWidth() / divisor, (float)texture->GetHeight() / divisor));
-		specs.SubTexture[GuiSpecification::CHECKBOX_CHECKED] = Ref<SubTexture2D>::Create(texture, glm::vec2(1, 1), glm::vec2((float)texture->GetWidth() / divisor, (float)texture->GetHeight() / divisor));
-		specs.SubTexture[GuiSpecification::CHECKBOX_UNCHECKED] = Ref<SubTexture2D>::Create(texture, glm::vec2(0, 1), glm::vec2((float)texture->GetWidth() / divisor, (float)texture->GetHeight() / divisor));
-		specs.SubTexture[GuiSpecification::FONT] = Ref<SubTexture2D>::Create(font->GetTexture(), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
-		m_GuiContext = Application::Get().GetGuiLayer()->CreateContext(&m_ECS, specs);
 
+		specs.SubTexture[GuiSpecification::BUTTON] = m_AssetManager.GetAsset<SubTexture2D>("Assets/SubTextures/ButtonSubtexture.subtex")->GetHandle();
+		specs.SubTexture[GuiSpecification::CHECKBOX_CHECKED] = m_AssetManager.GetAsset<SubTexture2D>("Assets/SubTextures/CheckboxCheckedSubtexture.subtex")->GetHandle();
+		specs.SubTexture[GuiSpecification::CHECKBOX_UNCHECKED] = m_AssetManager.GetAsset<SubTexture2D>("Assets/SubTextures/CheckboxUnCheckedSubtexture.subtex")->GetHandle();
+		specs.SubTexture[GuiSpecification::FONT] = m_AssetManager.GetAsset<SubTexture2D>("Assets/SubTextures/FontSubtexture.subtex")->GetHandle();
+		
+		//Serializer::SerializeResource<SubTexture2D>(specs.SubTexture[GuiSpecification::BUTTON]);
+		//Serializer::SerializeResource<SubTexture2D>(specs.SubTexture[GuiSpecification::CHECKBOX_CHECKED]);
+		//Serializer::SerializeResource<SubTexture2D>(specs.SubTexture[GuiSpecification::CHECKBOX_UNCHECKED]);
+		//Serializer::SerializeResource<SubTexture2D>(specs.SubTexture[GuiSpecification::FONT]);
+
+		m_GuiContext = Application::Get().GetGuiLayer()->CreateContext(&m_ECS, specs);
+		
+
+		std::ifstream stream("ECS.ecs");
+		std::stringstream strStream;
+		strStream << stream.rdbuf();
+		YAML::Node data = YAML::Load(strStream.str());
+		//Serializer::Deserialize<ECSManager>(data, m_AssetManager, m_ECS);
 
 		uint32_t canvas = m_GuiContext->CreateCanvas(CanvasSpecification(
 			CanvasRenderMode::ScreenSpace,
@@ -175,63 +188,8 @@ namespace XYZ {
 			glm::vec4(0.0f)
 		));
 
-		//auto& layout = m_ECS.AddComponent<LayoutGroup>(canvas, LayoutGroup());
-		//layout.CellSpacing.x = 10.0f;
-		//layout.CellSpacing.y = 10.0f;
-
-		//for (int i = 0; i < 10; ++i)
-		//{
-		//	uint32_t editorEntity = m_GuiContext->CreateButton(canvas,
-		//		ButtonSpecification{
-		//			"Button",
-		//			glm::vec3(i * 50,i * 50, 0.0f),
-		//			glm::vec2(50.0f,50.0f),
-		//			glm::vec4(1.0f,1.0f,1.0f,1.0f),
-		//			glm::vec4(0.4f, 1.0f, 0.8f, 1.0f),
-		//			glm::vec4(1.0f, 0.5f, 0.8f, 1.0f)
-		//	});
-		//
-		//	m_ECS.GetComponent<Button>(editorEntity).RegisterCallback<ClickEvent>(Hook(&EditorLayer::onButtonClickTest, this));
-		//	m_EditorEntities.push_back(editorEntity);
-		//}
-		//
-		//for (int i = 0; i < 10; ++i)
-		//{
-		//	uint32_t editorEntity = m_GuiContext->CreateCheckbox(canvas,
-		//		CheckboxSpecification{
-		//			"Checkbox",
-		//			glm::vec3(i * 70, -70.0f, 0.0f),
-		//			glm::vec2(50.0f,50.0f),
-		//			glm::vec4(1.0f,1.0f,1.0f,1.0f),
-		//			glm::vec4(1.0f, 0.5f, 0.8f, 1.0f)
-		//		});
-		//
-		//	m_ECS.GetComponent<Checkbox>(editorEntity).RegisterCallback<CheckedEvent>(Hook(&EditorLayer::onCheckboxCheckedTest, this));
-		//	m_EditorEntities.push_back(editorEntity);
-		//}
-		//for (int i = 0; i < 10; ++i)
-		//{
-		//	uint32_t editorEntity = m_GuiContext->CreateText(canvas,
-		//		TextSpecification{
-		//			TextAlignment::Center,
-		//			"Checkbox",
-		//			glm::vec3(i * 70, -140.0f, 0.0f),
-		//			glm::vec2(50.0f,50.0f),
-		//			glm::vec4(1.0f, 0.5f, 0.8f, 1.0f)
-		//		});
-		//
-		//	m_EditorEntities.push_back(editorEntity);
-		//}
-		//
-		//auto& rectTransform = m_ECS.GetComponent<RectTransform>(m_EditorEntities.back());
-		//auto& text = m_ECS.GetComponent<Text>(m_EditorEntities.back());
-		//rectTransform.Size.x += 50;
-		//
-		//rectTransform.Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent(
-		//	m_EditorEntities.back(), TextCanvasRendererRebuild()
-		//));
-
 		m_Dockspace = new Dockspace(&m_ECS, m_GuiContext);
+		m_Dockspace->SetRoot(NULL_ENTITY);
 
 		uint32_t opicaEntity = m_Dockspace->CreatePanel(canvas, "Opica", PanelSpecification(
 			glm::vec3(-200.0f),
@@ -257,7 +215,7 @@ namespace XYZ {
 					1
 				});
 		}
-
+		
 		uint32_t editorEntity = m_GuiContext->CreateSlider(opicaEntity,
 			SliderSpecification{
 				"Slider",
@@ -278,8 +236,8 @@ namespace XYZ {
 				glm::vec4(0.4f, 1.0f, 0.8f, 1.0f),
 				1
 			});
-
-
+		
+		
 		auto havkac = m_Dockspace->CreatePanel(canvas, "Havkac", PanelSpecification(
 			glm::vec3(200.0f),
 			glm::vec2(300.0f),
@@ -305,8 +263,8 @@ namespace XYZ {
 					1
 				});
 		}
-
-
+		
+		
 		auto zemiak = m_Dockspace->CreatePanel(canvas, "Zemiak", PanelSpecification(
 			glm::vec3(-400.0f),
 			glm::vec2(300.0f),
@@ -331,7 +289,7 @@ namespace XYZ {
 					1
 				});
 		}
-
+		
 		auto kostovnik = m_Dockspace->CreatePanel(canvas, "Kostovnik", PanelSpecification(
 			glm::vec3(-400.0f),
 			glm::vec2(300.0f),
@@ -356,7 +314,7 @@ namespace XYZ {
 					1
 				});
 		}
-
+		
 		auto pelengac = m_Dockspace->CreatePanel(canvas, "Pelengac", PanelSpecification(
 			glm::vec3(-400.0f),
 			glm::vec2(300.0f),
@@ -381,10 +339,10 @@ namespace XYZ {
 					1
 				});
 		}
-
+		
 		Renderer::WaitAndRender();
-
-
+		
+		
 		auto renderTexture = SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer->CreateTextureFromColorAttachment(0);
 		uint32_t entity = m_Dockspace->CreateRenderWindow(0, "Scene", ImageSpecification(
 			Ref<SubTexture2D>::Create(renderTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)),
@@ -400,12 +358,13 @@ namespace XYZ {
 	{
 		NativeScriptEngine::Shutdown();
 		Renderer::Shutdown();
-		Serializer::SerializeResource<Scene>(m_Scene->GetFilepath(), m_Scene);
+		//Serializer::SerializeResource<Scene>(m_Scene->GetFilepath(), m_Scene);
 
 		YAML::Emitter out;
-		Serializer::Serialize<ECS::ECSManager>(out, m_ECS);
+		Serializer::Serialize<ECSManager>(out, m_ECS);
 		std::ofstream fout("ECS.ecs");
 		fout << out.c_str();
+		m_AssetManager.Serialize();
 	}
 	void EditorLayer::OnUpdate(Timestep ts)
 	{
@@ -417,8 +376,7 @@ namespace XYZ {
 		m_EditorCamera.OnUpdate(ts);
 		m_Scene->OnUpdate(ts);
 		m_Scene->OnRenderEditor(m_EditorCamera);
-		m_Dockspace->OnUpdate(ts);
-		
+		m_Dockspace->OnUpdate(ts);		
 	}
 	void EditorLayer::OnEvent(Event& event)
 	{			

@@ -3,13 +3,14 @@
 
 #include "XYZ/Core/Input.h"
 
+#include "XYZ/Scene/Serializer.h"
 
 static bool Collide(const glm::vec2& pos, const glm::vec2& size, const glm::vec2& point)
 {
 	return (pos.x + size.x / 2.0f > point.x &&
-			pos.x - size.x / 2.0f < point.x &&
-			pos.y + size.y / 2.0f > point.y &&
-			pos.y - size.y / 2.0f < point.y);
+		pos.x - size.x / 2.0f < point.x &&
+		pos.y + size.y / 2.0f > point.y &&
+		pos.y - size.y / 2.0f < point.y);
 }
 
 static glm::vec2 MouseToWorld(const glm::vec2& point, const glm::vec2& windowSize)
@@ -19,28 +20,11 @@ static glm::vec2 MouseToWorld(const glm::vec2& point, const glm::vec2& windowSiz
 }
 
 namespace XYZ {
-
-	// Editor only component
-	struct DockNodeComponent : public ECS::Type<DockNodeComponent>
-	{
-		DockNodeComponent(const glm::vec3& position, const glm::vec2& size);
-
-		std::vector<uint32_t> Entities;
-		glm::vec3 Position;
-		glm::vec2 Size;
-		SplitType Split = SplitType::None;
-	};
-
-	Dockspace::Dockspace(ECS::ECSManager* ecs, GuiContext* context)
+	Dockspace::Dockspace(ECSManager* ecs, GuiContext* context)
 		:
 		m_ECS(ecs),
 		m_Context(context)
 	{
-		m_RootEntity = m_ECS->CreateEntity();
-		auto [width, height] = Input::GetWindowSize();
-		m_ECS->AddComponent<Relationship>(m_RootEntity, Relationship());
-		m_ECS->AddComponent<IDComponent>(m_RootEntity, IDComponent());
-		auto& dock = m_ECS->AddComponent<DockNodeComponent>(m_RootEntity, DockNodeComponent(glm::vec3(0.0f), { width,height }));
 	}
 
 	void Dockspace::OnUpdate(Timestep ts)
@@ -63,12 +47,33 @@ namespace XYZ {
 	{
 		EventDispatcher dispatcher(event);
 		if (dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&Dockspace::onMouseButtonPress, this)))
-		{}
+		{
+		}
 		else if (dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&Dockspace::onMouseButtonRelease, this)))
-		{}
+		{
+		}
+	}
+	void Dockspace::SetRoot(uint32_t entity)
+	{
+		m_RootEntity = entity;
+		if (m_RootEntity == NULL_ENTITY)
+		{
+			m_RootEntity = m_ECS->CreateEntity();
+			m_ECS->AddComponent<IDComponent>(m_RootEntity, IDComponent());
+		}
+		if (!m_ECS->Contains<DockNodeComponent>(m_RootEntity))
+		{
+			auto [width, height] = Input::GetWindowSize();
+			m_ECS->AddComponent<DockNodeComponent>(m_RootEntity, DockNodeComponent(glm::vec3(0.0f), { width,height }));
+		}
+		if (!m_ECS->Contains<Relationship>(m_RootEntity))
+		{
+			m_ECS->AddComponent<Relationship>(m_RootEntity, Relationship());
+		}
 	}
 	uint32_t Dockspace::CreatePanel(uint32_t canvas, const std::string& name, const PanelSpecification& specs)
 	{
+		XYZ_ASSERT(m_RootEntity != NULL_ENTITY, "No root found");
 		glm::vec2 buttonSize = glm::vec2(50.0f, 30.0f);
 		glm::vec3 buttonPosition = glm::vec3(
 			specs.Position.x,
@@ -81,7 +86,7 @@ namespace XYZ {
 			glm::vec2(specs.Size),
 			specs.Color
 		);
-	
+
 		ButtonSpecification panelButtonSpecs(
 			name,
 			buttonPosition,
@@ -93,18 +98,19 @@ namespace XYZ {
 		);
 		uint32_t buttonEntity = m_Context->CreateButton(canvas, panelButtonSpecs);
 		uint32_t panelEntity = m_Context->CreatePanel(canvas, modifiedSpecs);
-		
+
 		Relationship::RemoveRelation(panelEntity, *m_ECS);
 		Relationship::SetupRelation(buttonEntity, panelEntity, *m_ECS);
 
 		auto& button = m_ECS->GetStorageComponent<Button>(buttonEntity);
 
-		button.RegisterCallback<ClickEvent>(Hook(&Dockspace::onButtonPress, this));	
+		button.RegisterCallback<ClickEvent>(Hook(&Dockspace::onButtonPress, this));
 		button.RegisterCallback<ReleaseEvent>(Hook(&Dockspace::onButtonRelease, this));
 		return panelEntity;
 	}
 	uint32_t Dockspace::CreateRenderWindow(uint32_t canvas, const std::string& name, const ImageSpecification& specs)
 	{
+		XYZ_ASSERT(m_RootEntity != NULL_ENTITY, "No root found");
 		glm::vec2 buttonSize = glm::vec2(50.0f, 30.0f);
 		glm::vec3 buttonPosition = glm::vec3(
 			specs.Position.x,
@@ -133,7 +139,7 @@ namespace XYZ {
 
 		Relationship::RemoveRelation(panelEntity, *m_ECS);
 		Relationship::SetupRelation(buttonEntity, panelEntity, *m_ECS);
-		
+
 		auto& button = m_ECS->GetStorageComponent<Button>(buttonEntity);
 		button.RegisterCallback<ClickEvent>(Hook(&Dockspace::onButtonPress, this));
 		button.RegisterCallback<ReleaseEvent>(Hook(&Dockspace::onButtonRelease, this));
@@ -165,7 +171,7 @@ namespace XYZ {
 		auto& transform = m_ECS->GetStorageComponent<RectTransform>(buttonEntity);
 
 		if (Collide(transform.WorldPosition, transform.Size, mousePosition))
-		{	
+		{
 			m_ModifiedEntity = buttonEntity;
 			m_MouseOffset = mousePosition - glm::vec2(transform.Position);
 			removeFromNode(m_RootEntity, buttonEntity);
@@ -202,7 +208,7 @@ namespace XYZ {
 			auto& secondDockNode = m_ECS->GetStorageComponent<DockNodeComponent>(firstNodeRel.NextSibling);
 
 			if (dockNode.Split == SplitType::Horizontal)
-			{			
+			{
 				if (mousePosition.y > firstDockNode.Position.y + (firstDockNode.Size.y / 2.0f) - offset
 					&& mousePosition.y < secondDockNode.Position.y - (secondDockNode.Size.y / 2.0f) + offset)
 				{
@@ -254,7 +260,7 @@ namespace XYZ {
 
 			auto& firstDockNode = m_ECS->GetStorageComponent<DockNodeComponent>(rel.FirstChild);
 			auto& secondDockNode = m_ECS->GetStorageComponent<DockNodeComponent>(childRel.NextSibling);
-			
+
 			if (m_ResizeData.Type == SplitType::Horizontal)
 			{
 				float dist = m_ResizeData.Border - mousePosition.y;
@@ -293,14 +299,14 @@ namespace XYZ {
 		uint32_t result = nodeEntity;
 		if (type == SplitType::Horizontal)
 		{
-			glm::vec3 topPosition =    { dockNode.Position.x, dockNode.Position.y + dockNode.Size.y / 4.0f, 0.0f };
+			glm::vec3 topPosition = { dockNode.Position.x, dockNode.Position.y + dockNode.Size.y / 4.0f, 0.0f };
 			glm::vec3 bottomPosition = { dockNode.Position.x, dockNode.Position.y - dockNode.Size.y / 4.0f, 0.0f };
-			
+
 			glm::vec2 size = { dockNode.Size.x, dockNode.Size.y / 2.0f };
-			
+
 			uint32_t top = createNode(nodeEntity, topPosition, size);
 			uint32_t bottom = createNode(nodeEntity, bottomPosition, size);
-			
+
 			// Old dock node no longer valid
 			auto& updatedDockNode = m_ECS->GetStorageComponent<DockNodeComponent>(nodeEntity);
 			if (mousePosition.y < updatedDockNode.Position.y)
@@ -314,21 +320,21 @@ namespace XYZ {
 				result = top;
 				for (auto entity : updatedDockNode.Entities)
 					insertToNode(bottom, entity);
-			}		
+			}
 			updatedDockNode.Entities.clear();
 		}
-		else if( type == SplitType::Vertical)
+		else if (type == SplitType::Vertical)
 		{
-			glm::vec3 leftPosition =  { dockNode.Position.x - dockNode.Size.x / 4.0f, dockNode.Position.y, 0.0f };
+			glm::vec3 leftPosition = { dockNode.Position.x - dockNode.Size.x / 4.0f, dockNode.Position.y, 0.0f };
 			glm::vec3 rightPosition = { dockNode.Position.x + dockNode.Size.x / 4.0f, dockNode.Position.y, 0.0f };
 			glm::vec2 size = { dockNode.Size.x / 2.0f, dockNode.Size.y };
-			
+
 			uint32_t right = createNode(nodeEntity, rightPosition, size);
 			uint32_t left = createNode(nodeEntity, leftPosition, size);
-			
+
 			// Old dock node no longer valid
 			auto& updatedDockNode = m_ECS->GetComponent<DockNodeComponent>(nodeEntity);
-			
+
 			if (mousePosition.x > updatedDockNode.Position.x)
 			{
 				result = right;
@@ -351,7 +357,7 @@ namespace XYZ {
 		auto& dockNode = m_ECS->GetStorageComponent<DockNodeComponent>(nodeEntity);
 		for (auto entity : dockNode.Entities)
 			adjustEntityTransform(nodeEntity, entity);
-		
+
 		auto& rel = m_ECS->GetStorageComponent<Relationship>(nodeEntity);
 		uint32_t current = rel.FirstChild;
 		while (current != NULL_ENTITY)
@@ -364,7 +370,7 @@ namespace XYZ {
 	void Dockspace::destroyNode(uint32_t nodeEntity)
 	{
 		auto& rel = m_ECS->GetStorageComponent<Relationship>(nodeEntity);
-		auto& dockNode = m_ECS->GetStorageComponent<DockNodeComponent>(rel.Parent);	
+		auto& dockNode = m_ECS->GetStorageComponent<DockNodeComponent>(rel.Parent);
 
 		if (rel.NextSibling != NULL_ENTITY)
 		{
@@ -377,14 +383,14 @@ namespace XYZ {
 
 			uint32_t tmpSibling = rel.NextSibling;
 			Relationship::RemoveRelation(rel.NextSibling, *m_ECS);
-			m_ECS->DestroyEntity(tmpSibling);	
+			m_ECS->DestroyEntity(tmpSibling);
 		}
 		else
 		{
 			auto& dockNodeSibling = m_ECS->GetStorageComponent<DockNodeComponent>(rel.PreviousSibling);
 			if (dockNodeSibling.Split != SplitType::None)
 				return;
-			
+
 			for (auto entity : dockNodeSibling.Entities)
 				insertToNode(rel.Parent, entity);
 
@@ -392,7 +398,7 @@ namespace XYZ {
 			Relationship::RemoveRelation(rel.PreviousSibling, *m_ECS);
 			m_ECS->DestroyEntity(tmpSibling);
 		}
-		
+
 		Relationship::RemoveRelation(nodeEntity, *m_ECS);
 		m_ECS->DestroyEntity(nodeEntity);
 	}
@@ -412,7 +418,7 @@ namespace XYZ {
 			{
 				firstDockNode.Position.x = dockNode.Position.x;
 				firstDockNode.Size.x = dockNode.Size.x;
-				
+
 				secondDockNode.Position.x = dockNode.Position.x;
 				secondDockNode.Size.x = dockNode.Size.x;
 
@@ -441,9 +447,9 @@ namespace XYZ {
 				firstDockNode.Size.x = dockNode.Size.x * scaleFirst;
 				secondDockNode.Size.x = dockNode.Size.x * scaleSecond;
 
-				firstDockNode.Position.x  = (dockNode.Position.x - dockNode.Size.x / 2.0f) + (firstDockNode.Size.x / 2.0f);
+				firstDockNode.Position.x = (dockNode.Position.x - dockNode.Size.x / 2.0f) + (firstDockNode.Size.x / 2.0f);
 				secondDockNode.Position.x = (firstDockNode.Position.x + firstDockNode.Size.x / 2.0f) + (secondDockNode.Size.x / 2.0f);
-			}	
+			}
 			adjustNodeChildren(current);
 			adjustNodeChildren(sibling);
 		}
@@ -467,7 +473,7 @@ namespace XYZ {
 			0.0f
 		);
 		firstChildTransform.Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent(
-			entityRel.FirstChild, QuadCanvasRendererRebuild()
+			{ entityRel.FirstChild, m_ECS }, QuadCanvasRendererRebuild()
 		));
 	}
 	bool Dockspace::removeFromNode(uint32_t nodeEntity, uint32_t entity)
@@ -476,7 +482,7 @@ namespace XYZ {
 		auto it = std::find(dockNode.Entities.begin(), dockNode.Entities.end(), entity);
 		if (it != dockNode.Entities.end())
 		{
-			dockNode.Entities.erase(it);	
+			dockNode.Entities.erase(it);
 			if (dockNode.Entities.empty())
 			{
 				if (nodeEntity != m_RootEntity)
@@ -500,8 +506,8 @@ namespace XYZ {
 		auto& dockNode = m_ECS->GetStorageComponent<DockNodeComponent>(nodeEntity);
 		dockNode.Position += positionDiff;
 		dockNode.Size += sizeDiff;
-		
-		
+
+
 		auto& rel = m_ECS->GetStorageComponent<Relationship>(nodeEntity);
 		uint32_t current = rel.FirstChild;
 		while (current != NULL_ENTITY)
@@ -511,7 +517,7 @@ namespace XYZ {
 		}
 	}
 	void Dockspace::insertToNode(uint32_t nodeEntity, uint32_t entity)
-	{		
+	{
 		adjustEntityTransform(nodeEntity, entity);
 		m_ECS->GetStorageComponent<DockNodeComponent>(nodeEntity).Entities.push_back(entity);
 	}
@@ -522,16 +528,16 @@ namespace XYZ {
 
 		auto& dock = m_ECS->AddComponent<DockNodeComponent>(entity, DockNodeComponent(position, size));
 		m_ECS->AddComponent<Relationship>(entity, Relationship());
-		
+
 		Relationship::SetupRelation(parent, entity, *m_ECS);
 		return entity;
 	}
 
-	uint32_t Dockspace::findNode(uint32_t entity,  const glm::vec2& mousePosition)
+	uint32_t Dockspace::findNode(uint32_t entity, const glm::vec2& mousePosition)
 	{
 		auto& currentRel = m_ECS->GetStorageComponent<Relationship>(entity);
 		auto& dockNode = m_ECS->GetStorageComponent<DockNodeComponent>(entity);
-		
+
 		if (currentRel.FirstChild == NULL_ENTITY && Collide(dockNode.Position, dockNode.Size, mousePosition))
 			return entity;
 

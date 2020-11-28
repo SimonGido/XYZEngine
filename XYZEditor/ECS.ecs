@@ -1,18 +1,35 @@
 ECS: ECS
 Entities:
-  - Entity: "{2AC7438A-95DF-4CAF-9AE2-450B499868B5}"
+  - Entity: "{9DC4B5B3-129A-4A2F-A386-F2A83757A794}"
     Relationship:
       Parent: 65537
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 222
-  - Entity: "{5A401042-CA0A-4B24-9D12-DF096B8B7BDF}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [0, 0, 0, 0]
+      SortLayer: 0
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [0, 0, 0]
+      Position: [0, 0, 0]
+      Size: [1920, 1017]
+      Scale: [1, 1]
+    Canvas:
+      Color: [0, 0, 0, 0]
+  - Entity: "{62AA7912-813D-40AD-9B15-AC2690F073BA}"
     Relationship:
       Parent: 65537
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{A1F97244-3EBE-4B22-B74D-CB76462A8A6D}"
+    DockNodeComponent:
+      Position: [0, 0, 0]
+      Size: [1920, 1017]
+      Split: 0
+  - Entity: "{B692F370-715D-4056-A6AE-8DBEB7EE18FD}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 0]
@@ -21,13 +38,35 @@ Entities:
       NextSibling: 65537
       PreviousSibling: 50
       FirstChild: 4
-  - Entity: "{BC232FA0-6B86-42F8-90A3-4D9129A14396}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-200, -200, 0]
+      Position: [-200, -200, 0]
+      Size: [50, 30]
+      Scale: [1, 1]
+  - Entity: "{A6A6EDBB-0F26-47A8-8740-63CB24AA17C8}"
     Relationship:
       Parent: 2
       NextSibling: 65537
       PreviousSibling: 4
       FirstChild: 65537
-  - Entity: "{54632E37-DF13-4F04-AF2E-214FBEAC014C}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-200, -200, 0]
+      Position: [0, 0, 0]
+      Size: [50, 30]
+      Scale: [1, 1]
+  - Entity: "{67150C29-9A73-42D1-A957-8E3951DFB25D}"
     LayoutGroup:
       LeftPadding: 0
       RightPadding: 0
@@ -39,7 +78,18 @@ Entities:
       NextSibling: 3
       PreviousSibling: 65537
       FirstChild: 49
-  - Entity: "{AF35A2F5-B070-45B0-9492-62177302BED6}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1.5, 1.5, 1.5, 1.5]
+      SortLayer: 0
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-75, -335, 0]
+      Position: [125, -135, 0]
+      Size: [300, 300]
+      Scale: [1, 1]
+  - Entity: "{ABB15B6D-36F1-426F-810B-B77BDC676998}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -48,13 +98,35 @@ Entities:
       NextSibling: 65537
       PreviousSibling: 7
       FirstChild: 6
-  - Entity: "{C77D06E7-594E-4D8F-B1F8-5ABE32BCAFE4}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-80, -520, 0]
+      Position: [-5, -185, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{E296E958-6B83-4A84-A4EF-61E53504606D}"
     Relationship:
       Parent: 5
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{0B4D1C9B-4C62-40FA-A7B2-4988A9E6A449}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-80, -520, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{1A0512B7-C396-472A-B381-49507CAC9BDB}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -63,13 +135,35 @@ Entities:
       NextSibling: 5
       PreviousSibling: 9
       FirstChild: 8
-  - Entity: "{5037DC2F-E709-4DBB-BAFE-7FC4D6E7574B}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-140, -520, 0]
+      Position: [-65, -185, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{9A3CD4A2-516A-47FE-8C70-2E305068489C}"
     Relationship:
       Parent: 7
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{769E0E94-1C00-4CE6-A741-7F60188FE3C8}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-140, -520, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{5A5DA50E-2499-4BD4-8B5D-06741CD46A0A}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -78,13 +172,35 @@ Entities:
       NextSibling: 7
       PreviousSibling: 11
       FirstChild: 10
-  - Entity: "{C7ADF6EF-A671-4AE5-97AC-E81741B43079}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-200, -520, 0]
+      Position: [-125, -185, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{5D6C4654-7615-4E65-8424-64878335BC21}"
     Relationship:
       Parent: 9
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{F4E78E6B-2D6A-42C9-83D7-47A22BAA3C5D}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-200, -520, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{C31C4542-085A-4489-B2D6-867E0FB9BE74}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -93,13 +209,35 @@ Entities:
       NextSibling: 9
       PreviousSibling: 13
       FirstChild: 12
-  - Entity: "{1C6F614A-F471-4FDF-B708-8AF443A7440A}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [40, -460, 0]
+      Position: [115, -125, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{7C59C241-13C3-41F9-A1A7-E5D433F5CF87}"
     Relationship:
       Parent: 11
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{0A81EB2E-929F-4B00-9DB5-5C4704DAC474}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [40, -460, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{D2DDB2E2-BA60-47C5-B1AE-0A858669E2BD}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -108,13 +246,35 @@ Entities:
       NextSibling: 11
       PreviousSibling: 15
       FirstChild: 14
-  - Entity: "{8048A86D-1658-4D06-89F3-2ED69B3D683B}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-20, -460, 0]
+      Position: [55, -125, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{E72AC0C4-F749-4FDF-ADD7-E1F986615BFF}"
     Relationship:
       Parent: 13
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{64FA3E4C-E6D8-41DB-B4C3-E16D2C3FCADC}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-20, -460, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{DCD5B713-30B8-42E5-B019-6C5DDFA383EB}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -123,13 +283,35 @@ Entities:
       NextSibling: 13
       PreviousSibling: 17
       FirstChild: 16
-  - Entity: "{03543429-9BF5-456C-B245-790133FBA38C}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-80, -460, 0]
+      Position: [-5, -125, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{AA474CD7-785F-4040-A2A6-3C3278E809D1}"
     Relationship:
       Parent: 15
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{8AAEE0D1-B0FD-4973-99B4-642F78F70777}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-80, -460, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{0F35FCC8-7ED2-4D09-89F4-67613AD8E0CF}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -138,13 +320,35 @@ Entities:
       NextSibling: 15
       PreviousSibling: 19
       FirstChild: 18
-  - Entity: "{14A33374-9F07-4DC1-BF51-9622EF9EDF09}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-140, -460, 0]
+      Position: [-65, -125, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{D7FE5BC0-5113-4AE4-AA2E-C4AC35EEFC90}"
     Relationship:
       Parent: 17
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{09C1A9BA-62F8-48E5-9A0D-653D1FF28433}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-140, -460, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{E641F6DA-6DFB-4154-AB9E-E5050DDFDF58}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -153,13 +357,35 @@ Entities:
       NextSibling: 17
       PreviousSibling: 21
       FirstChild: 20
-  - Entity: "{830DDDB4-83F6-4890-9A62-21BD799FE61E}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-200, -460, 0]
+      Position: [-125, -125, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{2B6F7EA3-6FB8-4BE8-AE37-FF662E210A23}"
     Relationship:
       Parent: 19
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{BE69355E-391E-45FD-926E-B67E10699C5D}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-200, -460, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{38BD8F50-D032-419A-809E-89C1DFD2C0FD}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -168,13 +394,35 @@ Entities:
       NextSibling: 19
       PreviousSibling: 23
       FirstChild: 22
-  - Entity: "{7A4B214F-64AE-4AA7-9184-B24561607F0F}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [40, -400, 0]
+      Position: [115, -65, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{ABCDE46D-6A0C-4863-8D52-4692E8F13137}"
     Relationship:
       Parent: 21
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{EBD71202-7DE8-4F8D-96B0-35B57F1E6328}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [40, -400, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{88C3046D-1A33-450A-8819-6DA8D2EBA95B}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -183,13 +431,35 @@ Entities:
       NextSibling: 21
       PreviousSibling: 25
       FirstChild: 24
-  - Entity: "{0D8AB99F-B434-4CBD-9BEC-75DC503A96D6}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-20, -400, 0]
+      Position: [55, -65, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{E21E2376-5992-459E-8341-DCDA719555B2}"
     Relationship:
       Parent: 23
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{7754BFE0-6C26-4A94-A1E6-D42A05E8A2D9}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-20, -400, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{3C44B653-42AC-4614-AC06-13C2F0951EDF}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -198,13 +468,35 @@ Entities:
       NextSibling: 23
       PreviousSibling: 27
       FirstChild: 26
-  - Entity: "{E5FA8095-5707-45BB-853F-D9D8E725BD2C}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-80, -400, 0]
+      Position: [-5, -65, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{E33BF659-24C5-445B-94E9-1E23B32665ED}"
     Relationship:
       Parent: 25
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{46255A0F-73F0-41B7-BBC8-40B545F455B8}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-80, -400, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{52D6DF7D-8D97-4121-80AE-8D2BEE1A34FC}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -213,13 +505,35 @@ Entities:
       NextSibling: 25
       PreviousSibling: 29
       FirstChild: 28
-  - Entity: "{2B4E5D28-2A75-4284-B51C-97405BBCF8C6}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-140, -400, 0]
+      Position: [-65, -65, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{F88C76EA-D781-46C3-B901-63E8C22E8BFF}"
     Relationship:
       Parent: 27
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{4469EDF4-D084-43D8-9BEF-B699471A023B}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-140, -400, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{6526B2DD-2F14-4E44-9F3A-85A0418D47A2}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -228,13 +542,35 @@ Entities:
       NextSibling: 27
       PreviousSibling: 31
       FirstChild: 30
-  - Entity: "{08A2BDC9-C0B5-423C-A92E-B4D1A28DFC87}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-200, -400, 0]
+      Position: [-125, -65, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{A0DDF404-B859-4ADC-9A0E-32B88F155AD8}"
     Relationship:
       Parent: 29
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{197F1AF1-2897-4131-9726-D7746DAB08E4}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-200, -400, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{F5915650-EFFE-414B-850E-B865498A0157}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -243,13 +579,35 @@ Entities:
       NextSibling: 29
       PreviousSibling: 33
       FirstChild: 32
-  - Entity: "{B15B5820-1A30-42AA-ACF8-3D56F6FF03F4}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [40, -340, 0]
+      Position: [115, -5, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{760B94E4-3A2A-4014-88AC-7E2BA63ADCE6}"
     Relationship:
       Parent: 31
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{DF2A24BA-9169-4880-9685-3EB53823B9C3}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [40, -340, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{359A8B72-94CE-40C8-833A-E1A0D0E2B268}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -258,13 +616,35 @@ Entities:
       NextSibling: 31
       PreviousSibling: 35
       FirstChild: 34
-  - Entity: "{00047FCA-6AAF-4C9E-9B90-FCBBF33C0D4A}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-20, -340, 0]
+      Position: [55, -5, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{40013C74-B68F-4F29-8FA4-38D2E4294490}"
     Relationship:
       Parent: 33
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{7B55A3B8-33C5-475C-A0B8-FC0DD30B37AA}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-20, -340, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{C7615917-4249-4D8C-A54F-31B336944B88}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -273,13 +653,35 @@ Entities:
       NextSibling: 33
       PreviousSibling: 37
       FirstChild: 36
-  - Entity: "{9D8AC792-7447-4AAC-82C0-76E65566C14B}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-80, -340, 0]
+      Position: [-5, -5, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{6704CFEF-3CE3-465F-A567-18D5A3D3EC20}"
     Relationship:
       Parent: 35
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{5BEAD180-B660-4B9E-9769-AD59E0461D6F}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-80, -340, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{D6302D9E-922D-4454-B403-5A7110695F6E}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -288,13 +690,35 @@ Entities:
       NextSibling: 35
       PreviousSibling: 39
       FirstChild: 38
-  - Entity: "{1A68B0B5-A484-468F-A865-2E3CF8C23D19}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-140, -340, 0]
+      Position: [-65, -5, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{7BF49BC3-5F36-417E-AFC2-937431F8E6B0}"
     Relationship:
       Parent: 37
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{4461355B-511F-4032-BFA2-FA67EB131933}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-140, -340, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{CC7A3B53-13D0-42CC-A73B-958EF06A2E0A}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -303,13 +727,35 @@ Entities:
       NextSibling: 37
       PreviousSibling: 41
       FirstChild: 40
-  - Entity: "{8BCD73C0-8491-4ACE-AD78-2DBE7F395DAD}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-200, -340, 0]
+      Position: [-125, -5, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{733483BC-FF0B-4EC6-8803-DB945A124B4B}"
     Relationship:
       Parent: 39
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{662F2487-FBBE-43D9-85D4-481B77D52942}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-200, -340, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{A2FF4BCD-5C6A-45D8-956B-61444C8945A5}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -318,13 +764,35 @@ Entities:
       NextSibling: 39
       PreviousSibling: 43
       FirstChild: 42
-  - Entity: "{B6AF32BE-407F-4CBF-9149-F399ECD4FFA7}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [20, -280, 0]
+      Position: [95, 55, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{7FB443DD-6426-4A76-9550-D1E4493587D1}"
     Relationship:
       Parent: 41
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{000A00CB-068F-4A25-9A9B-3AD0BDDF8928}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [20, -280, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{264FF5AA-B262-463C-80A8-A20AF778EDF8}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -333,13 +801,35 @@ Entities:
       NextSibling: 41
       PreviousSibling: 45
       FirstChild: 44
-  - Entity: "{0ED6B727-7E9E-4B7E-922C-353B151D9410}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-40, -280, 0]
+      Position: [35, 55, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{9FF0BE3D-A2B5-4904-8801-5F0B72D607D3}"
     Relationship:
       Parent: 43
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{D8C0FE70-6738-47F9-945B-97279809B743}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-40, -280, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{EDCE19FC-58E5-4F04-9692-70F6E386A80D}"
     Slider:
       Value: 0
       HooverColor: [0.400000006, 1, 0.800000012, 1]
@@ -348,25 +838,69 @@ Entities:
       NextSibling: 43
       PreviousSibling: 49
       FirstChild: 46
-  - Entity: "{8F1A45C5-8FBE-44B6-B85E-DD4BAEE00900}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1.89999998, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-150, -267.5, 0]
+      Position: [-75, 67.5, 0]
+      Size: [150, 25]
+      Scale: [1, 1]
+  - Entity: "{04CB5AFF-52DC-417A-B2AE-02C6C7B3E73A}"
     Relationship:
       Parent: 45
       NextSibling: 47
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{E73D34FF-894A-4719-85DB-B5A7317CF71A}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [0.699999988, 1.79999995, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-150, -267.5, 0]
+      Position: [0, 0, 0]
+      Size: [25, 25]
+      Scale: [1, 1]
+  - Entity: "{6F1E39B1-F669-47F7-B93F-3189CB3C2F7C}"
     Relationship:
       Parent: 45
       NextSibling: 65537
       PreviousSibling: 46
       FirstChild: 65537
-  - Entity: "{C8CFEB82-961B-449F-8875-228306230181}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1.89999998, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-150, -267.5, 0]
+      Position: [0, 0, 0]
+      Size: [1, 1]
+      Scale: [1, 1]
+  - Entity: "{F297B70F-EFE0-451D-808A-168AA6DCFADE}"
     Relationship:
       Parent: 49
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{A4633153-649F-409A-9189-72D4564536CD}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1.89999998, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-150, -232.5, 0]
+      Position: [0, 0, 0]
+      Size: [150, 25]
+      Scale: [1, 1]
+  - Entity: "{514B099B-03B3-4545-A9E2-B9963CB63084}"
     InputField:
       SelectColor: [0.699999988, 1.79999995, 1, 1]
       HooverColor: [0.400000006, 1, 0.800000012, 1]
@@ -376,7 +910,18 @@ Entities:
       NextSibling: 45
       PreviousSibling: 65537
       FirstChild: 48
-  - Entity: "{A1DB5800-81C9-4527-9CAF-0DE8A06D8EF4}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1.89999998, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-150, -232.5, 0]
+      Position: [-75, 102.5, 0]
+      Size: [150, 25]
+      Scale: [1, 1]
+  - Entity: "{F6E0C426-F28A-4CDB-9BC9-8ABC03BE80EE}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 0]
@@ -385,13 +930,35 @@ Entities:
       NextSibling: 2
       PreviousSibling: 93
       FirstChild: 52
-  - Entity: "{19C9DCE3-ACD4-4AA9-9370-47A55078C4BE}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [200, 200, 0]
+      Position: [200, 200, 0]
+      Size: [50, 30]
+      Scale: [1, 1]
+  - Entity: "{9DEBD825-1218-42C8-8C5E-170F6E631F5E}"
     Relationship:
       Parent: 50
       NextSibling: 65537
       PreviousSibling: 52
       FirstChild: 65537
-  - Entity: "{69FB61C9-AEC3-4F90-B466-DA671A340E06}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [200, 200, 0]
+      Position: [0, 0, 0]
+      Size: [50, 30]
+      Scale: [1, 1]
+  - Entity: "{6080E299-E4A0-439D-9A5C-084ED064302C}"
     LayoutGroup:
       LeftPadding: 15
       RightPadding: 0
@@ -403,7 +970,18 @@ Entities:
       NextSibling: 51
       PreviousSibling: 65537
       FirstChild: 91
-  - Entity: "{67B239C0-736E-4117-B218-B072721F2D29}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1.5, 1.5, 1.5, 1.5]
+      SortLayer: 0
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [325, 65, 0]
+      Position: [125, -135, 0]
+      Size: [300, 300]
+      Scale: [1, 1]
+  - Entity: "{22A10FF8-AAB4-4AE4-A204-BDEFF0B7EA4C}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -412,13 +990,35 @@ Entities:
       NextSibling: 65537
       PreviousSibling: 55
       FirstChild: 54
-  - Entity: "{C5F1C9FE-5A33-4207-B1D4-BB7350C76048}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [395, -85, 0]
+      Position: [70, -150, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{DCB107CE-459E-4608-9103-723B56E8B656}"
     Relationship:
       Parent: 53
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{37D97D0F-A5DD-4908-84AC-90BC120807CF}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [395, -85, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{189DD3E9-B305-4EDC-AE58-D221CB5F0D95}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -427,13 +1027,35 @@ Entities:
       NextSibling: 53
       PreviousSibling: 57
       FirstChild: 56
-  - Entity: "{BE1D1762-5CCA-4EED-B459-9AD0A9326D36}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [335, -85, 0]
+      Position: [10, -150, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{0C3E9F98-D62E-4870-9FB8-FB5E4F998F0A}"
     Relationship:
       Parent: 55
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{42D1A5C3-34F0-4179-BCC4-CEF13F715894}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [335, -85, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{0B49C26D-8AFB-42EF-A07B-21EE313789CE}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -442,13 +1064,35 @@ Entities:
       NextSibling: 55
       PreviousSibling: 59
       FirstChild: 58
-  - Entity: "{0FA99098-8C68-4098-9722-C4FF36C3A85B}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [275, -85, 0]
+      Position: [-50, -150, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{6E9B0917-3F50-4C7A-91DA-D45F20E5FC92}"
     Relationship:
       Parent: 57
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{F2850DFB-EC6B-4812-A04D-59E818B06C7D}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [275, -85, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{51A6B5F1-277A-433D-804B-A0470EC91075}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -457,13 +1101,35 @@ Entities:
       NextSibling: 57
       PreviousSibling: 61
       FirstChild: 60
-  - Entity: "{396426C8-B102-4FEF-8099-7466B631D9B2}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [215, -85, 0]
+      Position: [-110, -150, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{9625336F-7EE2-400F-92F1-8BB0421F7FDA}"
     Relationship:
       Parent: 59
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{A134AA0E-765B-4952-B038-3947A45D0639}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [215, -85, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{6640CF31-7595-415E-A1EA-DCDA2FF843F6}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -472,13 +1138,35 @@ Entities:
       NextSibling: 59
       PreviousSibling: 63
       FirstChild: 62
-  - Entity: "{EB6F3060-6439-4B18-826B-699C145ABC13}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [395, -25, 0]
+      Position: [70, -90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{5F7604F3-ADE9-47D2-8DF9-5CD688256CB9}"
     Relationship:
       Parent: 61
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{D2D3E5C7-4AE2-4BF7-AE91-EB6DA4F95EA4}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [395, -25, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{4CF47E11-A54B-4368-B1BA-18EEC0D952DA}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -487,13 +1175,35 @@ Entities:
       NextSibling: 61
       PreviousSibling: 65
       FirstChild: 64
-  - Entity: "{30E03AAB-0D23-4E92-9531-8F00FF0C3064}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [335, -25, 0]
+      Position: [10, -90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{D04ECD8A-AADE-42ED-8EEC-F9C3980525B2}"
     Relationship:
       Parent: 63
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{53F60FA0-6988-4AE7-A3DB-8E55B71262DE}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [335, -25, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{25891240-4A75-4146-80EB-2F29D22977E0}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -502,13 +1212,35 @@ Entities:
       NextSibling: 63
       PreviousSibling: 67
       FirstChild: 66
-  - Entity: "{8874F93E-6AC4-4B9E-B15D-11DFE6C144CF}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [275, -25, 0]
+      Position: [-50, -90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{2CEB6228-5D43-4116-87E1-F819D0CD2959}"
     Relationship:
       Parent: 65
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{D7AC1551-2B94-4496-A9D2-AD52A68D501A}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [275, -25, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{EBF1CF62-AF46-4B1C-8588-0595BBA6E471}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -517,13 +1249,35 @@ Entities:
       NextSibling: 65
       PreviousSibling: 69
       FirstChild: 68
-  - Entity: "{4751EC0E-0B6A-4CFD-8B14-BA68A80F7DEE}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [215, -25, 0]
+      Position: [-110, -90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{D04BC201-2F5E-400A-9223-3A88CE790810}"
     Relationship:
       Parent: 67
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{45B9122B-01ED-4122-99D7-A86BD894C646}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [215, -25, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{005AB66D-3457-4942-8A71-AAD532C8811C}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -532,13 +1286,35 @@ Entities:
       NextSibling: 67
       PreviousSibling: 71
       FirstChild: 70
-  - Entity: "{8C2336B1-E500-4CED-8ABF-CF520D543A81}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [395, 35, 0]
+      Position: [70, -30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{EA87962B-7615-4B75-AD40-0893F027D544}"
     Relationship:
       Parent: 69
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{A33207CD-4C02-45CA-95F6-D865DB692345}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [395, 35, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{E4E4A74E-223A-4AEF-BCDF-1B920DC3B0AA}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -547,13 +1323,35 @@ Entities:
       NextSibling: 69
       PreviousSibling: 73
       FirstChild: 72
-  - Entity: "{FDD305DB-55CE-493B-A9D3-DCBFAA334D94}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [335, 35, 0]
+      Position: [10, -30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{130BDB6A-0ACD-447B-A5BD-5A4394F21E1C}"
     Relationship:
       Parent: 71
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{B62D3083-5A9D-41E0-B4AF-33670FEEA5F5}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [335, 35, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{003D4A7E-14FC-4A48-9B44-34E08B39171E}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -562,13 +1360,35 @@ Entities:
       NextSibling: 71
       PreviousSibling: 75
       FirstChild: 74
-  - Entity: "{DACBEFDC-CBE0-455E-BD3F-F8C0A75E1183}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [275, 35, 0]
+      Position: [-50, -30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{03FB15CE-9ADD-4A9E-96E5-33A082A77B86}"
     Relationship:
       Parent: 73
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{542A7545-2D4E-44A2-80F7-DE9C0DB3B3F2}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [275, 35, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{BE5F6711-437D-4945-8AB7-E97A93583FF3}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -577,13 +1397,35 @@ Entities:
       NextSibling: 73
       PreviousSibling: 77
       FirstChild: 76
-  - Entity: "{7CE7629C-F370-46B9-AAC6-7AC277318A29}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [215, 35, 0]
+      Position: [-110, -30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{E442340B-CB18-4BE6-AB1A-A48A203FCB3C}"
     Relationship:
       Parent: 75
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{8472D586-C2E0-44A9-BCB2-26A7E2F9F4E1}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [215, 35, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{B3F6FBEE-E471-4982-94E8-1ACCE53098D8}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -592,13 +1434,35 @@ Entities:
       NextSibling: 75
       PreviousSibling: 79
       FirstChild: 78
-  - Entity: "{0267A654-C75F-4128-BC14-961773CE68F9}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [395, 95, 0]
+      Position: [70, 30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{165E9DBE-61BD-4CAA-AFE5-E707790C5F16}"
     Relationship:
       Parent: 77
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{8A708A63-DEFA-4EBE-BC86-DD416458A85A}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [395, 95, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{0DC4F5AC-D848-47DC-AF0B-B46B5E5B455C}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -607,13 +1471,35 @@ Entities:
       NextSibling: 77
       PreviousSibling: 81
       FirstChild: 80
-  - Entity: "{38867824-F62C-43EC-A626-607C2231E844}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [335, 95, 0]
+      Position: [10, 30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{A7F180D5-8212-40D6-B0C1-8DD23113E6BB}"
     Relationship:
       Parent: 79
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{0A146F91-9880-40C4-96E3-A9404722B877}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [335, 95, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{A2319E69-FD9E-4BC3-8348-913161E64515}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -622,13 +1508,35 @@ Entities:
       NextSibling: 79
       PreviousSibling: 83
       FirstChild: 82
-  - Entity: "{DCEDEACA-67C1-42DD-94FD-BE0BBE8AD538}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [275, 95, 0]
+      Position: [-50, 30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{23B08AA4-8226-4BF3-BA2C-45FA260E45DD}"
     Relationship:
       Parent: 81
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{60D41813-6C16-4151-B49F-B50C17657587}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [275, 95, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{D1B9954E-E692-498C-AF00-6DB5FEB0D45A}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -637,13 +1545,35 @@ Entities:
       NextSibling: 81
       PreviousSibling: 85
       FirstChild: 84
-  - Entity: "{C6DF3283-7F79-4086-86BE-8B723DBE280B}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [215, 95, 0]
+      Position: [-110, 30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{405D60F6-8051-4577-89FA-76EC2449F158}"
     Relationship:
       Parent: 83
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{D0ACDBEA-5FD3-4FBD-AE9E-3D2AE7B14A62}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [215, 95, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{750D0132-DF7C-4A4B-80C3-432AFAA70971}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -652,13 +1582,35 @@ Entities:
       NextSibling: 83
       PreviousSibling: 87
       FirstChild: 86
-  - Entity: "{F7AF0D04-DFA4-4EDC-8388-49BDCAE8EC7A}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [395, 155, 0]
+      Position: [70, 90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{9CB6D8A7-1EBE-4BBF-837B-D789B950A748}"
     Relationship:
       Parent: 85
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{7AA4E8E5-BC65-4E8D-BAB2-F6CD541196DD}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [395, 155, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{10A4B451-6BF8-419D-804C-9EF31AA4D47E}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -667,13 +1619,35 @@ Entities:
       NextSibling: 85
       PreviousSibling: 89
       FirstChild: 88
-  - Entity: "{B3E72352-6BBA-45A3-BF26-32C8BB185085}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [335, 155, 0]
+      Position: [10, 90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{02144246-269D-45BC-984D-CB4127695983}"
     Relationship:
       Parent: 87
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{77FBD94E-517D-4DC4-9AFC-F3AC6C047B62}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [335, 155, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{895A94C1-B3D9-4A10-8604-B300669CF05F}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -682,13 +1656,35 @@ Entities:
       NextSibling: 87
       PreviousSibling: 91
       FirstChild: 90
-  - Entity: "{CDF04B2E-ED92-4D2E-906C-D64960404F04}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [275, 155, 0]
+      Position: [-50, 90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{69F05B48-964D-473F-ABC1-B019E25F6D4C}"
     Relationship:
       Parent: 89
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{2776D010-2A87-4BE1-9E3A-E2373237D6AA}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [275, 155, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{B76B9EE1-798D-4A56-8865-87021D2D45D2}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -697,13 +1693,35 @@ Entities:
       NextSibling: 89
       PreviousSibling: 65537
       FirstChild: 92
-  - Entity: "{E6E6960B-FD35-451F-9AB8-8F3795A25F03}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [215, 155, 0]
+      Position: [-110, 90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{003641B7-D598-4D27-A023-583D546003B4}"
     Relationship:
       Parent: 91
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{5121816C-2D22-4418-AFD5-0EF18245850F}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [215, 155, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{BF455AF1-99F3-4A10-A8CE-2D7F7012489A}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 0]
@@ -712,13 +1730,35 @@ Entities:
       NextSibling: 50
       PreviousSibling: 136
       FirstChild: 95
-  - Entity: "{D9C05415-DEA3-4B94-89BF-1826AB829AB5}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-400, -400, 0]
+      Position: [-400, -400, 0]
+      Size: [50, 30]
+      Scale: [1, 1]
+  - Entity: "{05C970A8-4870-43FD-807D-6B9A7DABDBA1}"
     Relationship:
       Parent: 93
       NextSibling: 65537
       PreviousSibling: 95
       FirstChild: 65537
-  - Entity: "{5F1D26E1-CCE1-4602-990D-DB70A5D55EF3}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-400, -400, 0]
+      Position: [0, 0, 0]
+      Size: [50, 30]
+      Scale: [1, 1]
+  - Entity: "{15801013-264E-401C-BC56-8F5BC06A095B}"
     LayoutGroup:
       LeftPadding: 0
       RightPadding: 0
@@ -730,7 +1770,18 @@ Entities:
       NextSibling: 94
       PreviousSibling: 65537
       FirstChild: 134
-  - Entity: "{DF01A795-5D0B-48B3-9872-FEE2982FA23C}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1.5, 1.5, 1.5, 1.5]
+      SortLayer: 0
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-275, -535, 0]
+      Position: [125, -135, 0]
+      Size: [300, 300]
+      Scale: [1, 1]
+  - Entity: "{761B823B-8F9A-401C-97C0-AD23DED34D4C}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -739,13 +1790,35 @@ Entities:
       NextSibling: 65537
       PreviousSibling: 98
       FirstChild: 97
-  - Entity: "{29628621-76F8-4271-870C-9CEB9EF295A4}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-160, -625, 0]
+      Position: [115, -90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{804DDE1C-8999-49F9-9011-FC66FDB5B065}"
     Relationship:
       Parent: 96
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{484561C5-B857-40CC-A81F-6C08D8A18850}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-160, -625, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{1E78E6B1-821B-4583-B82E-DDFD908D655B}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -754,13 +1827,35 @@ Entities:
       NextSibling: 96
       PreviousSibling: 100
       FirstChild: 99
-  - Entity: "{B4466D90-58AE-4E6D-B926-B3AD7F7F2ABC}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-220, -625, 0]
+      Position: [55, -90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{DFFD31DE-22F4-4F5E-B32A-9CF7EC62C07C}"
     Relationship:
       Parent: 98
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{27A7218D-5D9D-4D15-A04A-1BA79EFB905D}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-220, -625, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{1764FFAF-5653-4A95-A4CD-0BB7DA2A082C}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -769,13 +1864,35 @@ Entities:
       NextSibling: 98
       PreviousSibling: 102
       FirstChild: 101
-  - Entity: "{7979CDA5-CA21-45B6-A5DE-463B973497D7}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-280, -625, 0]
+      Position: [-5, -90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{7B0C9B96-56BA-4822-9F16-ED0CAA8102C6}"
     Relationship:
       Parent: 100
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{442EBC84-8FAC-4A6A-B883-E869A8CD57FE}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-280, -625, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{6545CC9A-1253-4F78-BE31-4E76E5ADEA39}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -784,13 +1901,35 @@ Entities:
       NextSibling: 100
       PreviousSibling: 104
       FirstChild: 103
-  - Entity: "{BD58A6FC-9533-4FAE-8325-4DF31C1DCF9A}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-340, -625, 0]
+      Position: [-65, -90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{45AF6E6D-58AB-4BF5-A987-6F34E0FEAB69}"
     Relationship:
       Parent: 102
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{433BEB60-63B0-4A90-A856-82CC84932C5B}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-340, -625, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{70AF50F7-A4B5-4EC8-9958-97D5830E823F}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -799,13 +1938,35 @@ Entities:
       NextSibling: 102
       PreviousSibling: 106
       FirstChild: 105
-  - Entity: "{8838F761-3BE7-439F-8261-3717F6D8EDFE}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-400, -625, 0]
+      Position: [-125, -90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{DDE6288C-EBA6-4D25-B3D1-00AA6B841E08}"
     Relationship:
       Parent: 104
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{2DF2A4AF-6F82-4120-82EC-86B3CA39A4A3}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-400, -625, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{ABDFAECC-7C1C-4588-B814-9F2F2FB7C8FB}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -814,13 +1975,35 @@ Entities:
       NextSibling: 104
       PreviousSibling: 108
       FirstChild: 107
-  - Entity: "{BB4FF466-F1A3-475C-A827-D88068B6207A}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-160, -565, 0]
+      Position: [115, -30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{5FF6BEFB-DE12-45B3-8651-DD5BE569782C}"
     Relationship:
       Parent: 106
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{63CAA197-576D-4B50-AF12-69CC3F5C9432}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-160, -565, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{E86EE9A5-8ABA-4C91-9652-2F2ACECAA1A1}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -829,13 +2012,35 @@ Entities:
       NextSibling: 106
       PreviousSibling: 110
       FirstChild: 109
-  - Entity: "{D6624D65-0F8A-4CC0-A7B2-0446CAEC5BFC}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-220, -565, 0]
+      Position: [55, -30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{F16EAB4A-B564-4D43-9EF6-3B112D294021}"
     Relationship:
       Parent: 108
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{F7A85905-D48E-45D7-9349-1CD98DED0778}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-220, -565, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{C78C11BC-672E-496B-9866-BD28E1760F9E}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -844,13 +2049,35 @@ Entities:
       NextSibling: 108
       PreviousSibling: 112
       FirstChild: 111
-  - Entity: "{6663FF30-6B63-4ED5-9228-D75CF40A3C05}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-280, -565, 0]
+      Position: [-5, -30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{17F644B8-7259-479A-B344-41A53C03B27F}"
     Relationship:
       Parent: 110
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{BDAE97E8-0ABE-40B9-BD06-2E47FE9F8D1B}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-280, -565, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{E2BF5AA2-E94A-4C17-A94E-971B86E4BAE7}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -859,13 +2086,35 @@ Entities:
       NextSibling: 110
       PreviousSibling: 114
       FirstChild: 113
-  - Entity: "{584846DC-12FB-45A1-900F-378A222694B3}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-340, -565, 0]
+      Position: [-65, -30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{DD048466-252D-41E0-B6CE-C8BF1281619A}"
     Relationship:
       Parent: 112
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{589A71B7-9579-4774-8EA2-8DDA35FC1716}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-340, -565, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{7AE68FEF-6527-412B-8053-F79FDAE026D2}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -874,13 +2123,35 @@ Entities:
       NextSibling: 112
       PreviousSibling: 116
       FirstChild: 115
-  - Entity: "{DA80ECAE-0A24-4E1F-AAEC-B70069B72A9C}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-400, -565, 0]
+      Position: [-125, -30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{59A86230-7F32-480E-B09B-010E090F9278}"
     Relationship:
       Parent: 114
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{C7B9E80D-55A4-4AB7-8BDD-E9DCF9BE8535}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-400, -565, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{427367BB-40BA-48DC-97EE-6A0C9F71A623}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -889,13 +2160,35 @@ Entities:
       NextSibling: 114
       PreviousSibling: 118
       FirstChild: 117
-  - Entity: "{2BA5847C-4FB3-48DF-B88F-3C9351EE88D2}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-160, -505, 0]
+      Position: [115, 30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{7C2B256E-6CC2-4A7F-8BE4-DC2381018F25}"
     Relationship:
       Parent: 116
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{5B103D9A-D187-4238-ACE4-D40CCD36210A}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-160, -505, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{42B36F52-35C0-45CA-8427-A145A0B417C0}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -904,13 +2197,35 @@ Entities:
       NextSibling: 116
       PreviousSibling: 120
       FirstChild: 119
-  - Entity: "{78776372-421B-49F2-A1DE-529EAC8F4AAB}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-220, -505, 0]
+      Position: [55, 30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{50723358-5E80-4801-A15D-AB9B9248F351}"
     Relationship:
       Parent: 118
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{D7621B42-50D5-4BD9-B5C8-8B97724C3834}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-220, -505, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{702BF792-3341-4204-AAB0-19333CEC3262}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -919,13 +2234,35 @@ Entities:
       NextSibling: 118
       PreviousSibling: 122
       FirstChild: 121
-  - Entity: "{A1B9987C-7C47-4738-9A1A-D7DE03A2CD36}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-280, -505, 0]
+      Position: [-5, 30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{6E5E5E00-E934-4D97-B363-0643C21A6525}"
     Relationship:
       Parent: 120
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{7222AC3E-EB7F-406F-A720-C05A8B2A9134}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-280, -505, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{758BE22A-94EF-4125-BE6C-869F751187FE}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -934,13 +2271,35 @@ Entities:
       NextSibling: 120
       PreviousSibling: 124
       FirstChild: 123
-  - Entity: "{C74BFAF6-553E-4A86-8D16-A64B67D5C08C}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-340, -505, 0]
+      Position: [-65, 30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{938A0FB2-65E4-4211-ACF2-02C7E9047853}"
     Relationship:
       Parent: 122
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{E48E35E5-B79B-45AC-8837-70BA042341C7}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-340, -505, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{F903492E-4C35-41E1-BDB2-2A1CC6F196CB}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -949,13 +2308,35 @@ Entities:
       NextSibling: 122
       PreviousSibling: 126
       FirstChild: 125
-  - Entity: "{A8C11DF6-9A48-455D-86A0-2D0354C015C9}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-400, -505, 0]
+      Position: [-125, 30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{0CCFBF78-7C6E-45F2-9D09-65BCAD204FAA}"
     Relationship:
       Parent: 124
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{64792AA1-F95F-4406-9A7B-269C62D0F2C1}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-400, -505, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{7011358C-BD14-4F48-A807-F6FF48A7B208}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -964,13 +2345,35 @@ Entities:
       NextSibling: 124
       PreviousSibling: 128
       FirstChild: 127
-  - Entity: "{59713F6F-D609-42ED-BF40-B52C957A68C6}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-160, -445, 0]
+      Position: [115, 90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{DAAA0650-BDF1-4986-84A5-9C0B15244689}"
     Relationship:
       Parent: 126
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{74FD1C76-3AE2-43D7-ADD0-2CF56371CA52}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-160, -445, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{78F8C946-6C8D-46C3-B89B-D40D2B223796}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -979,13 +2382,35 @@ Entities:
       NextSibling: 126
       PreviousSibling: 130
       FirstChild: 129
-  - Entity: "{21BD3E99-4776-4C57-B91C-AD86AAFC7104}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-220, -445, 0]
+      Position: [55, 90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{60DD9240-EFA0-4EB0-86AE-0E4C2A68A0EC}"
     Relationship:
       Parent: 128
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{9EF93B83-BB44-4B8D-A5CA-00D1E51A0D1F}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-220, -445, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{23DE97A6-5903-447E-9FA0-B64BE245ED51}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -994,13 +2419,35 @@ Entities:
       NextSibling: 128
       PreviousSibling: 132
       FirstChild: 131
-  - Entity: "{30849EEA-8158-467B-920B-6E2ECC4B6873}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-280, -445, 0]
+      Position: [-5, 90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{BA8E9D68-54A1-4A3E-A183-23B44DD41BD1}"
     Relationship:
       Parent: 130
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{C2BE8C26-4B4D-4A44-B89D-881BD85D7536}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-280, -445, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{FA5E9764-F02C-4556-8571-922633ADE613}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1009,13 +2456,35 @@ Entities:
       NextSibling: 130
       PreviousSibling: 134
       FirstChild: 133
-  - Entity: "{2DB25B4A-E013-4112-BEAD-AF7E419DF87F}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-340, -445, 0]
+      Position: [-65, 90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{F4832089-0286-4235-8826-29D514576E25}"
     Relationship:
       Parent: 132
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{BA0E730D-6876-4CFF-871C-EBAC9468F92F}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-340, -445, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{9FD9F849-715C-4E61-B3BF-59851329D5F9}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1024,13 +2493,35 @@ Entities:
       NextSibling: 132
       PreviousSibling: 65537
       FirstChild: 135
-  - Entity: "{F7DAB725-E0F4-46BB-B26A-F2048FE03675}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-400, -445, 0]
+      Position: [-125, 90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{B0A32B2C-B041-4FC9-B09F-69C7A8967EFA}"
     Relationship:
       Parent: 134
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{4DCD00B2-6A5D-40F3-ACC6-D9171BCDF8B9}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-400, -445, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{AFBF5F29-4F2C-45FC-A272-25E32666BBD9}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 0]
@@ -1039,13 +2530,35 @@ Entities:
       NextSibling: 93
       PreviousSibling: 179
       FirstChild: 138
-  - Entity: "{98F23B0F-8B7C-4049-96D1-B86A90686496}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-400, -400, 0]
+      Position: [-400, -400, 0]
+      Size: [50, 30]
+      Scale: [1, 1]
+  - Entity: "{FEC79F6E-0A7C-47A5-890E-E77BECC7CA3D}"
     Relationship:
       Parent: 136
       NextSibling: 65537
       PreviousSibling: 138
       FirstChild: 65537
-  - Entity: "{C5EBE5E8-8B74-4B34-B70A-87B07C4DA44A}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-400, -400, 0]
+      Position: [0, 0, 0]
+      Size: [50, 30]
+      Scale: [1, 1]
+  - Entity: "{0BD79C2D-AF8A-4D5F-95B7-7F8DC2076599}"
     LayoutGroup:
       LeftPadding: 0
       RightPadding: 0
@@ -1057,7 +2570,18 @@ Entities:
       NextSibling: 137
       PreviousSibling: 65537
       FirstChild: 177
-  - Entity: "{54FA3E56-3A49-4798-8086-FA341B206315}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1.5, 1.5, 1.5, 1.5]
+      SortLayer: 0
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-275, -535, 0]
+      Position: [125, -135, 0]
+      Size: [300, 300]
+      Scale: [1, 1]
+  - Entity: "{17307005-8761-46DB-827B-DDAE67C95C34}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1066,13 +2590,35 @@ Entities:
       NextSibling: 65537
       PreviousSibling: 141
       FirstChild: 140
-  - Entity: "{1AB28C8D-29D3-4D76-A58E-7B14C685E906}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-160, -625, 0]
+      Position: [115, -90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{0E5E8147-E5C4-4B2E-9004-66584F4DEABE}"
     Relationship:
       Parent: 139
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{15FAA180-758A-4EA2-94C3-C0AB5822D36D}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-160, -625, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{8BC417E0-2652-412B-BE33-BC045EFB719F}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1081,13 +2627,35 @@ Entities:
       NextSibling: 139
       PreviousSibling: 143
       FirstChild: 142
-  - Entity: "{0C54695A-B0BA-4CB9-885F-3E72C53E9E24}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-220, -625, 0]
+      Position: [55, -90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{46137FB2-339A-4E50-B02B-69338174B6F6}"
     Relationship:
       Parent: 141
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{A7C387D2-4771-47AB-ADEB-0C0DF02C4402}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-220, -625, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{BBF776B0-8A17-4B7A-8E85-20209EE0E235}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1096,13 +2664,35 @@ Entities:
       NextSibling: 141
       PreviousSibling: 145
       FirstChild: 144
-  - Entity: "{C1EB0F40-E36A-40F2-A811-DF01DDC8B8DC}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-280, -625, 0]
+      Position: [-5, -90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{2776E0D0-3CBA-40D6-863E-5C9DDF5CA03E}"
     Relationship:
       Parent: 143
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{1CE3CE69-E7E1-49B2-A7C9-B710F86A12C2}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-280, -625, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{7C2EAC00-FD28-40E1-B74E-D88E066BE11B}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1111,13 +2701,35 @@ Entities:
       NextSibling: 143
       PreviousSibling: 147
       FirstChild: 146
-  - Entity: "{F1513BDA-9184-4E28-B840-9FB88A9C5F7C}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-340, -625, 0]
+      Position: [-65, -90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{1C610769-57E9-47AC-9A1C-AE82640C727F}"
     Relationship:
       Parent: 145
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{012CFEC8-B3FF-4150-B1F6-1B969AFEE476}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-340, -625, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{A95ACD4E-A534-407C-BC00-CFCF7BF2454C}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1126,13 +2738,35 @@ Entities:
       NextSibling: 145
       PreviousSibling: 149
       FirstChild: 148
-  - Entity: "{5BBED333-660B-412C-AAD1-CB9ED0750860}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-400, -625, 0]
+      Position: [-125, -90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{E6649C8C-0F72-4392-9CBC-8B9AF3E81DD2}"
     Relationship:
       Parent: 147
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{4AA68AD2-48F4-408B-A827-3867F83C2DFA}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-400, -625, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{92DDB2A8-F8DB-4A45-942E-4FA75BF5C1A5}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1141,13 +2775,35 @@ Entities:
       NextSibling: 147
       PreviousSibling: 151
       FirstChild: 150
-  - Entity: "{80906955-D4FA-4E14-9FB3-6676E28D7475}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-160, -565, 0]
+      Position: [115, -30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{E289EE37-0B7F-40CC-99B8-2D10ED456CDC}"
     Relationship:
       Parent: 149
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{5E1D5979-933A-4770-AFAC-EA9A0FFE70EB}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-160, -565, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{EB728B87-6890-4933-93A7-7122A33FEA6A}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1156,13 +2812,35 @@ Entities:
       NextSibling: 149
       PreviousSibling: 153
       FirstChild: 152
-  - Entity: "{2E542453-F3D4-4F74-A690-F775A2D0980C}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-220, -565, 0]
+      Position: [55, -30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{478C3461-E1F3-48E3-A209-4BFFC236FE4A}"
     Relationship:
       Parent: 151
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{31DC7EA1-93E3-407B-9835-04F518AD88E2}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-220, -565, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{C6C648A1-F042-4666-A8F8-81ECC87E2D24}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1171,13 +2849,35 @@ Entities:
       NextSibling: 151
       PreviousSibling: 155
       FirstChild: 154
-  - Entity: "{D6E0FC39-8FEF-4AE0-B2CC-4472F054A0AB}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-280, -565, 0]
+      Position: [-5, -30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{B0DD5ED4-8321-42DC-B197-022A5F301276}"
     Relationship:
       Parent: 153
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{A87E9F36-4576-4917-872C-F5C7D46BA07A}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-280, -565, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{54CF3617-62E7-4EC7-9C1B-7283DA5F0445}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1186,13 +2886,35 @@ Entities:
       NextSibling: 153
       PreviousSibling: 157
       FirstChild: 156
-  - Entity: "{069A27A9-C7E6-4732-8DAC-447526B8F332}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-340, -565, 0]
+      Position: [-65, -30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{08C43500-AEB7-461C-81CB-843E3A54E2B1}"
     Relationship:
       Parent: 155
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{F2BA3623-1FB4-490B-ACAC-C2AD2C906795}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-340, -565, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{8C1078A2-DE46-412C-90BB-077A3959E71C}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1201,13 +2923,35 @@ Entities:
       NextSibling: 155
       PreviousSibling: 159
       FirstChild: 158
-  - Entity: "{76968E18-8808-4F44-973E-BB73891AFA12}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-400, -565, 0]
+      Position: [-125, -30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{E797B7F3-35EF-4266-A5C8-D996FA29D398}"
     Relationship:
       Parent: 157
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{5789BE63-3060-48E8-A275-E9A2278021DF}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-400, -565, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{203D0087-B614-4871-B8C5-A544A2EEDD9F}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1216,13 +2960,35 @@ Entities:
       NextSibling: 157
       PreviousSibling: 161
       FirstChild: 160
-  - Entity: "{E48463A6-6BB2-4167-9DAC-D257EB85A31B}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-160, -505, 0]
+      Position: [115, 30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{AE9475CB-EAE4-4779-8419-7850356F3035}"
     Relationship:
       Parent: 159
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{B73ECEAC-3AAF-445C-9309-F8EF8F32FC48}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-160, -505, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{412A8927-FD5C-4812-8942-DBFE038B7059}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1231,13 +2997,35 @@ Entities:
       NextSibling: 159
       PreviousSibling: 163
       FirstChild: 162
-  - Entity: "{BC065BF1-D48F-4BC3-BD0F-6EBF519B2627}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-220, -505, 0]
+      Position: [55, 30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{17EE5D7D-420A-41C6-9C6D-E245901D8AFF}"
     Relationship:
       Parent: 161
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{D4876FDF-9361-4A86-814F-97240964BEF0}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-220, -505, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{FBC15406-D396-4C39-8D29-FB45823C28ED}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1246,13 +3034,35 @@ Entities:
       NextSibling: 161
       PreviousSibling: 165
       FirstChild: 164
-  - Entity: "{AEAB039E-D0E6-4A13-9130-0AF0B9021E2E}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-280, -505, 0]
+      Position: [-5, 30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{BAAAD3A6-F42A-45C1-9643-B7B74345D754}"
     Relationship:
       Parent: 163
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{7EB9A7FD-D6CD-4313-AC00-B421252B9B24}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-280, -505, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{664E01C1-E3A8-42B3-AB44-A119C18099FD}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1261,13 +3071,35 @@ Entities:
       NextSibling: 163
       PreviousSibling: 167
       FirstChild: 166
-  - Entity: "{84A403F7-F363-4B80-827F-27BB5B33BDA7}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-340, -505, 0]
+      Position: [-65, 30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{BCBF8550-23DF-4EE3-BA3D-786690624BE6}"
     Relationship:
       Parent: 165
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{80CF78CC-2AFA-4F13-9B57-54234D30C4A2}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-340, -505, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{5C1ACE63-05C1-4FC6-B5A7-84494D4BC3E5}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1276,13 +3108,35 @@ Entities:
       NextSibling: 165
       PreviousSibling: 169
       FirstChild: 168
-  - Entity: "{329BDD28-6075-4736-BA1A-0D2EFFB7F0D1}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-400, -505, 0]
+      Position: [-125, 30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{045D69F8-2633-409F-A10F-CD039F58A5C9}"
     Relationship:
       Parent: 167
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{11972207-9226-4F1B-9E93-D719C7F7C390}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-400, -505, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{65340E4C-20B6-4EE1-BF3B-A1A9E90B05CE}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1291,13 +3145,35 @@ Entities:
       NextSibling: 167
       PreviousSibling: 171
       FirstChild: 170
-  - Entity: "{D38E7346-CB50-4FDA-A239-1587D9601F94}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-160, -445, 0]
+      Position: [115, 90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{08D0E1DC-641D-4EDD-9C4B-F55625D93FD7}"
     Relationship:
       Parent: 169
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{53346787-A28D-487C-8881-6AC12EDA8A4D}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-160, -445, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{01F8BFA8-395D-40BF-B66F-C0D007C489AD}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1306,13 +3182,35 @@ Entities:
       NextSibling: 169
       PreviousSibling: 173
       FirstChild: 172
-  - Entity: "{BF66C7F9-549A-48C6-AD52-6F98A0EF1840}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-220, -445, 0]
+      Position: [55, 90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{C0BA3E6C-A7E1-48B0-939C-893181ED64B9}"
     Relationship:
       Parent: 171
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{66704482-D1F5-43B6-AAEE-BA78FE22D9D8}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-220, -445, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{FC6AD967-D245-43FA-BC9B-5A8F27A533CF}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1321,13 +3219,35 @@ Entities:
       NextSibling: 171
       PreviousSibling: 175
       FirstChild: 174
-  - Entity: "{F2EAA910-7DC1-4B0A-ACEF-44A21C69A7DA}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-280, -445, 0]
+      Position: [-5, 90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{8C3B6AE9-AE15-4497-B5B1-A9937DEB1FE7}"
     Relationship:
       Parent: 173
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{DCF6A23B-C6C4-4155-8479-3A20554BDE4C}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-280, -445, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{F9C55703-4966-4E75-AC7F-28895AFAE3A2}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1336,13 +3256,35 @@ Entities:
       NextSibling: 173
       PreviousSibling: 177
       FirstChild: 176
-  - Entity: "{4AF5C921-F4AC-4593-8E45-092626BCAA87}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-340, -445, 0]
+      Position: [-65, 90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{31C8ECE1-39E3-42C7-908C-72E423F556D5}"
     Relationship:
       Parent: 175
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{1E0D2E5B-71D0-4839-B051-84AF09710FEA}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-340, -445, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{2E7E15C7-E685-4D19-B0D8-2646FCBF75E2}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1351,13 +3293,35 @@ Entities:
       NextSibling: 175
       PreviousSibling: 65537
       FirstChild: 178
-  - Entity: "{23345156-CDF3-4365-8A06-F26DFF7F13CB}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-400, -445, 0]
+      Position: [-125, 90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{46246A9D-332A-4E96-8DD8-000C06F3C051}"
     Relationship:
       Parent: 177
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{EAE374B3-EF0C-45BD-975E-15A6BDC0BDB5}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-400, -445, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{F4FFF11C-467C-4F59-A9D9-F3FA83DE1F6A}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 0]
@@ -1366,13 +3330,35 @@ Entities:
       NextSibling: 136
       PreviousSibling: 222
       FirstChild: 181
-  - Entity: "{48A8E725-2264-4692-9D67-BDC3B4920D7A}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-400, -400, 0]
+      Position: [-400, -400, 0]
+      Size: [50, 30]
+      Scale: [1, 1]
+  - Entity: "{9C8D5AB3-47CC-4A3B-B762-FD77B3733B9F}"
     Relationship:
       Parent: 179
       NextSibling: 65537
       PreviousSibling: 181
       FirstChild: 65537
-  - Entity: "{85B0C6B4-8D24-48E1-82A3-B84A87AFFCA1}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-400, -400, 0]
+      Position: [0, 0, 0]
+      Size: [50, 30]
+      Scale: [1, 1]
+  - Entity: "{AB994AD9-0C93-4692-BD5A-94502EA4444F}"
     LayoutGroup:
       LeftPadding: 0
       RightPadding: 0
@@ -1384,7 +3370,18 @@ Entities:
       NextSibling: 180
       PreviousSibling: 65537
       FirstChild: 220
-  - Entity: "{2206DD38-C073-4097-A89B-1E7432E3F7C0}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1.5, 1.5, 1.5, 1.5]
+      SortLayer: 0
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-275, -535, 0]
+      Position: [125, -135, 0]
+      Size: [300, 300]
+      Scale: [1, 1]
+  - Entity: "{D6D76A5C-C7BD-44AB-AB8E-59C0D9F7F7BB}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1393,13 +3390,35 @@ Entities:
       NextSibling: 65537
       PreviousSibling: 184
       FirstChild: 183
-  - Entity: "{0BABDF0A-6EDC-482E-9464-7497F1B5AD6C}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-160, -625, 0]
+      Position: [115, -90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{8806619F-72AA-439B-A863-FBFD9216E97B}"
     Relationship:
       Parent: 182
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{85AE07C3-F5D9-40A0-B8C3-E8FEAD7A8C71}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-160, -625, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{B6154835-050D-4069-837E-E7B4C0E9E638}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1408,13 +3427,35 @@ Entities:
       NextSibling: 182
       PreviousSibling: 186
       FirstChild: 185
-  - Entity: "{72CF6280-AF6C-48BD-894E-46DF2AAF0550}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-220, -625, 0]
+      Position: [55, -90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{2A2C426A-0540-40C3-85E1-ED23641E85F9}"
     Relationship:
       Parent: 184
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{0B1B807C-6047-4CCF-8D22-ED40E60F2233}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-220, -625, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{393AACE6-2618-47B3-BF3B-31543A7C4117}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1423,13 +3464,35 @@ Entities:
       NextSibling: 184
       PreviousSibling: 188
       FirstChild: 187
-  - Entity: "{0F271FFC-DAF8-447C-8D1D-D40D041BB933}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-280, -625, 0]
+      Position: [-5, -90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{C1CF6C45-BDCE-4CD3-B531-8D41FFEF2692}"
     Relationship:
       Parent: 186
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{1FC02113-94D6-4CDD-B2CE-CCB19F6CD987}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-280, -625, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{F7345803-F89A-48A7-969A-0FDDC3952B57}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1438,13 +3501,35 @@ Entities:
       NextSibling: 186
       PreviousSibling: 190
       FirstChild: 189
-  - Entity: "{E66DC39C-4D15-4A86-80CB-C9CC4E062C8A}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-340, -625, 0]
+      Position: [-65, -90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{13FDEB65-DFA2-4794-BDF9-E05E3B8102C9}"
     Relationship:
       Parent: 188
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{A07540E6-4484-4DD6-934F-2779A9F62A5C}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-340, -625, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{860E7499-16D6-42E0-B8CB-FFF426BD1F61}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1453,13 +3538,35 @@ Entities:
       NextSibling: 188
       PreviousSibling: 192
       FirstChild: 191
-  - Entity: "{93CB8687-3530-4EEE-AB7B-9CC0DD71D4B8}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-400, -625, 0]
+      Position: [-125, -90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{642DAAE2-D063-49D7-B681-5EB634C0978F}"
     Relationship:
       Parent: 190
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{436B2B28-C18C-4FF7-A6EA-2B91A150426D}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-400, -625, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{82F9205D-3056-4726-A310-CE58CAB75993}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1468,13 +3575,35 @@ Entities:
       NextSibling: 190
       PreviousSibling: 194
       FirstChild: 193
-  - Entity: "{7ACFC6FD-8EB6-4DFD-9803-77ECEED0D176}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-160, -565, 0]
+      Position: [115, -30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{02AA851D-0E96-4088-B20B-A96901CEFDCA}"
     Relationship:
       Parent: 192
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{8949713F-72C7-4211-B72B-AAA37894A68B}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-160, -565, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{BD97251D-778D-4D8B-9005-FF5C8E0F2DBF}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1483,13 +3612,35 @@ Entities:
       NextSibling: 192
       PreviousSibling: 196
       FirstChild: 195
-  - Entity: "{8F0C0A9D-21D3-436A-B61C-305A9FAC654C}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-220, -565, 0]
+      Position: [55, -30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{38200EED-F66F-4010-8E8D-282B33CF9642}"
     Relationship:
       Parent: 194
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{9B5D62A3-48CB-4EED-B144-0C13B4F6EE1B}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-220, -565, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{155B1A77-F02C-4506-8888-2F1A1AF460AC}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1498,13 +3649,35 @@ Entities:
       NextSibling: 194
       PreviousSibling: 198
       FirstChild: 197
-  - Entity: "{75C40464-4B1D-403C-A668-878B8A97BABC}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-280, -565, 0]
+      Position: [-5, -30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{FEF64F77-16AE-49F6-B5EE-5CA591D8171C}"
     Relationship:
       Parent: 196
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{758A2856-690C-4C86-AF99-111277EB6250}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-280, -565, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{2C5B213A-0A8B-49CD-8344-491D71308C0F}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1513,13 +3686,35 @@ Entities:
       NextSibling: 196
       PreviousSibling: 200
       FirstChild: 199
-  - Entity: "{3A3D9268-1F16-4B1E-8496-D9E8C4D3F725}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-340, -565, 0]
+      Position: [-65, -30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{1753E10B-15ED-437A-A368-8DB15B7D89B6}"
     Relationship:
       Parent: 198
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{682A3434-D68C-433D-BEFA-600EDAD4989E}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-340, -565, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{E3C6698B-2BA7-42D6-993B-954086A7AEFB}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1528,13 +3723,35 @@ Entities:
       NextSibling: 198
       PreviousSibling: 202
       FirstChild: 201
-  - Entity: "{23B6403D-9B50-4EB3-982B-69B969DBF0D9}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-400, -565, 0]
+      Position: [-125, -30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{CD752E10-C86E-4ACA-BE71-01145289A1A4}"
     Relationship:
       Parent: 200
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{CD0D068A-9FCF-444E-B214-2369FCBB15B8}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-400, -565, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{DE253703-4527-4B49-907B-ED3F4F413947}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1543,13 +3760,35 @@ Entities:
       NextSibling: 200
       PreviousSibling: 204
       FirstChild: 203
-  - Entity: "{B381B4AC-0A3C-4226-B438-9BA48DF742BD}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-160, -505, 0]
+      Position: [115, 30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{D774966B-1190-44A5-AF97-94F8A37E846B}"
     Relationship:
       Parent: 202
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{CB8FAE5F-2D6D-4672-9FBF-196E87B8577D}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-160, -505, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{9F155275-2E42-4AFF-B4D1-577C1848C142}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1558,13 +3797,35 @@ Entities:
       NextSibling: 202
       PreviousSibling: 206
       FirstChild: 205
-  - Entity: "{6AD2FEFD-0107-44C8-9295-E0B80A8943E3}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-220, -505, 0]
+      Position: [55, 30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{0DA0978E-C689-420C-B53C-6E4D57969F85}"
     Relationship:
       Parent: 204
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{D3AEE36D-9D04-4A15-988A-AD418836CFEC}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-220, -505, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{36597E39-3CC6-46B8-9559-D02AD9FADFFA}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1573,13 +3834,35 @@ Entities:
       NextSibling: 204
       PreviousSibling: 208
       FirstChild: 207
-  - Entity: "{35B99C29-C63C-4EE9-BF4E-9CB71B20D0C8}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-280, -505, 0]
+      Position: [-5, 30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{37AA303B-295A-46E2-9D68-33BEABAD20CB}"
     Relationship:
       Parent: 206
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{7E8170A5-459C-4022-BDD8-5C2E2EFE1E87}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-280, -505, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{C9881AB6-B7EE-4876-9C12-8F4DAD7FD0CA}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1588,13 +3871,35 @@ Entities:
       NextSibling: 206
       PreviousSibling: 210
       FirstChild: 209
-  - Entity: "{E2A621E3-8E64-4AB9-96A3-A86A907446D7}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-340, -505, 0]
+      Position: [-65, 30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{48387B5B-FBB6-4257-9407-E57A6CA269D3}"
     Relationship:
       Parent: 208
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{43F7AD38-DD96-4415-B50E-CF3610A03AFB}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-340, -505, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{93A09EAD-FF35-4593-BFF1-7AED714D3A05}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1603,13 +3908,35 @@ Entities:
       NextSibling: 208
       PreviousSibling: 212
       FirstChild: 211
-  - Entity: "{C54F4065-3B5F-4AC1-A1A7-DFB72C54C491}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-400, -505, 0]
+      Position: [-125, 30, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{80295AF7-EF2B-4072-888E-F4FBCC34AEB6}"
     Relationship:
       Parent: 210
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{468886E4-D607-4657-8E2E-7157F7FAE4D2}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-400, -505, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{1841DF98-BF9E-40E4-954A-03D61A043657}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1618,13 +3945,35 @@ Entities:
       NextSibling: 210
       PreviousSibling: 214
       FirstChild: 213
-  - Entity: "{1866E0FF-B5E0-40EE-9B21-DEAB65E337AF}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-160, -445, 0]
+      Position: [115, 90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{1E32DE91-2B88-4CC7-A2AB-7A6D1FD87FA3}"
     Relationship:
       Parent: 212
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{7B351EDB-4298-4EEC-BF71-1A06E54F9786}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-160, -445, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{149432D2-9FFF-40EB-9366-71711F059E13}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1633,13 +3982,35 @@ Entities:
       NextSibling: 212
       PreviousSibling: 216
       FirstChild: 215
-  - Entity: "{59D43788-30CE-4964-9968-02D5758EA18A}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-220, -445, 0]
+      Position: [55, 90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{3747F012-2A29-4B29-B94E-683D22B379C8}"
     Relationship:
       Parent: 214
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{51B6FFF9-437D-46AC-9375-45F59F2B558C}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-220, -445, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{D3315BAB-ED82-4B63-8753-9340915F141A}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1648,13 +4019,35 @@ Entities:
       NextSibling: 214
       PreviousSibling: 218
       FirstChild: 217
-  - Entity: "{A5D8C44F-DF47-4A91-80F8-9C37C399CAC9}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-280, -445, 0]
+      Position: [-5, 90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{67637F04-360A-45EF-93FA-FAC1DBEFD858}"
     Relationship:
       Parent: 216
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{2178413C-D985-417B-B0A3-8AD74E455BA1}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-280, -445, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{295DA5FD-5B55-414E-83E2-2475CB404C2F}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1663,13 +4056,35 @@ Entities:
       NextSibling: 216
       PreviousSibling: 220
       FirstChild: 219
-  - Entity: "{D09D679B-A197-4190-93C9-B6DA7D214C95}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-340, -445, 0]
+      Position: [-65, 90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{ADFC5FAC-03BE-40A8-87CD-5EFBA92AE9CD}"
     Relationship:
       Parent: 218
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{59439A14-12AC-49DC-B59D-720788722D3A}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-340, -445, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{1461465A-02B7-449D-A75B-2A4E600B5C90}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1678,13 +4093,35 @@ Entities:
       NextSibling: 218
       PreviousSibling: 65537
       FirstChild: 221
-  - Entity: "{0AE1A773-322D-4DAF-81D2-51C8A2221A4F}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-400, -445, 0]
+      Position: [-125, 90, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{D89A02AA-4E1F-40F0-A068-72CFC1630F98}"
     Relationship:
       Parent: 220
       NextSibling: 65537
       PreviousSibling: 65537
       FirstChild: 65537
-  - Entity: "{AA190B39-6572-497F-9BD7-82E1BF72DDF4}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [-400, -445, 0]
+      Position: [0, 0, 0]
+      Size: [50, 50]
+      Scale: [1, 1]
+  - Entity: "{5CABDFF3-38E9-4035-9732-4ABCA4D4C540}"
     Button:
       ClickColor: [0.400000006, 1, 0.800000012, 1]
       HooverColor: [1, 0.5, 0.800000012, 1]
@@ -1693,15 +4130,48 @@ Entities:
       NextSibling: 179
       PreviousSibling: 65537
       FirstChild: 224
-  - Entity: "{10C6FFBF-C414-4129-88F8-2470D0AE9F3E}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [0, 0, 0]
+      Position: [0, 0, 0]
+      Size: [50, 30]
+      Scale: [1, 1]
+  - Entity: "{38695A46-9A55-43D7-BEA5-CA5BEEE83FDB}"
     Relationship:
       Parent: 222
       NextSibling: 65537
       PreviousSibling: 224
       FirstChild: 65537
-  - Entity: "{DF3D122B-2A26-4917-B996-4DD4CA4F87B3}"
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 2
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [0, 0, 0]
+      Position: [0, 0, 0]
+      Size: [50, 30]
+      Scale: [1, 1]
+  - Entity: "{CAAF7140-DD15-44D4-9204-87189A2E0422}"
     Relationship:
       Parent: 222
       NextSibling: 223
       PreviousSibling: 65537
       FirstChild: 65537
+    CanvasRenderer:
+      MaterialAssetPath: Assets/Materials/GuiMaterial.mat
+      SubTextureAssetPath: ""
+      Color: [1, 1, 1, 1]
+      SortLayer: 0
+      IsVisible: true
+    RectTransformComponent:
+      WorldPosition: [175, -185, 0]
+      Position: [175, -185, 0]
+      Size: [400, 400]
+      Scale: [1, 1]

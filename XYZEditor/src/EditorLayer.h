@@ -42,7 +42,7 @@ namespace XYZ {
 		std::vector<Entity> m_StoredEntitiesWithScript;
 		std::vector<uint32_t> m_EditorEntities;
 	private:	
-		ECS::ECSManager m_ECS;
+		ECSManager m_ECS;
 		GuiContext* m_GuiContext = nullptr;
 		Dockspace* m_Dockspace;
 
