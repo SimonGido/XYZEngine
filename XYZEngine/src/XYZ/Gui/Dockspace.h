@@ -1,6 +1,7 @@
 #pragma once
 
 #include "XYZ/ECS/ECSManager.h"
+#include "XYZ/ECS/Entity.h"
 #include "XYZ/ECS/Types.h"
 
 #include "XYZ/Event/Event.h"
@@ -35,6 +36,9 @@ namespace XYZ {
 		SplitType Split = SplitType::None;
 	};
 
+	struct Dockable : public Type<Dockable>
+	{};
+
 	class Dockspace
 	{
 	public:
@@ -42,10 +46,10 @@ namespace XYZ {
 
 		void OnUpdate(Timestep ts);
 		void OnEvent(Event& event);
-
 		void SetRoot(uint32_t entity);
-		uint32_t CreatePanel(uint32_t canvas, const std::string& name, const PanelSpecification& specs);
-		uint32_t CreateRenderWindow(uint32_t canvas, const std::string& name, const ImageSpecification& specs);
+
+		Entity CreatePanel(uint32_t canvas, const std::string& name, const PanelSpecification& specs);
+		Entity CreateRenderWindow(uint32_t canvas, const std::string& name, const ImageSpecification& specs);
 
 	private:
 		bool onMouseButtonPress(MouseButtonPressEvent& event);

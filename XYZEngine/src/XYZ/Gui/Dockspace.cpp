@@ -25,6 +25,15 @@ namespace XYZ {
 		m_ECS(ecs),
 		m_Context(context)
 	{
+		for (uint32_t i = 0; i < ecs->GetNumberOfEntities(); ++i)
+		{
+			if (ecs->Contains<Dockable>(i))
+			{
+				auto& button = m_ECS->GetStorageComponent<Button>(i);
+				button.RegisterCallback<ClickEvent>(Hook(&Dockspace::onButtonPress, this));
+				button.RegisterCallback<ReleaseEvent>(Hook(&Dockspace::onButtonRelease, this));
+			}
+		}
 	}
 
 	void Dockspace::OnUpdate(Timestep ts)
@@ -71,7 +80,8 @@ namespace XYZ {
 			m_ECS->AddComponent<Relationship>(m_RootEntity, Relationship());
 		}
 	}
-	uint32_t Dockspace::CreatePanel(uint32_t canvas, const std::string& name, const PanelSpecification& specs)
+
+	Entity Dockspace::CreatePanel(uint32_t canvas, const std::string& name, const PanelSpecification& specs)
 	{
 		XYZ_ASSERT(m_RootEntity != NULL_ENTITY, "No root found");
 		glm::vec2 buttonSize = glm::vec2(50.0f, 30.0f);
@@ -97,6 +107,8 @@ namespace XYZ {
 			1
 		);
 		uint32_t buttonEntity = m_Context->CreateButton(canvas, panelButtonSpecs);
+		m_ECS->AddComponent<Dockable>(buttonEntity, Dockable());
+
 		uint32_t panelEntity = m_Context->CreatePanel(canvas, modifiedSpecs);
 
 		Relationship::RemoveRelation(panelEntity, *m_ECS);
@@ -106,9 +118,9 @@ namespace XYZ {
 
 		button.RegisterCallback<ClickEvent>(Hook(&Dockspace::onButtonPress, this));
 		button.RegisterCallback<ReleaseEvent>(Hook(&Dockspace::onButtonRelease, this));
-		return panelEntity;
+		return { panelEntity, m_ECS };
 	}
-	uint32_t Dockspace::CreateRenderWindow(uint32_t canvas, const std::string& name, const ImageSpecification& specs)
+	Entity Dockspace::CreateRenderWindow(uint32_t canvas, const std::string& name, const ImageSpecification& specs)
 	{
 		XYZ_ASSERT(m_RootEntity != NULL_ENTITY, "No root found");
 		glm::vec2 buttonSize = glm::vec2(50.0f, 30.0f);
@@ -135,6 +147,8 @@ namespace XYZ {
 			1
 		);
 		uint32_t buttonEntity = m_Context->CreateButton(canvas, panelButtonSpecs);
+		m_ECS->AddComponent<Dockable>(buttonEntity, Dockable());
+
 		uint32_t panelEntity = m_Context->CreateImage(canvas, modifiedSpecs);
 
 		Relationship::RemoveRelation(panelEntity, *m_ECS);
@@ -144,7 +158,7 @@ namespace XYZ {
 		button.RegisterCallback<ClickEvent>(Hook(&Dockspace::onButtonPress, this));
 		button.RegisterCallback<ReleaseEvent>(Hook(&Dockspace::onButtonRelease, this));
 
-		return panelEntity;
+		return { panelEntity, m_ECS };
 	}
 	bool Dockspace::onMouseButtonPress(MouseButtonPressEvent& event)
 	{
@@ -573,4 +587,5 @@ namespace XYZ {
 		Position(position), Size(size)
 	{
 	}
+	
 }

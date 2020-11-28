@@ -19,7 +19,7 @@ namespace XYZ {
 		glm::vec2 Size;
 		glm::vec2 Scale = glm::vec2(1.0f);
 
-		bool OnCanvasRendererRebuild(CanvasRendererRebuildEvent& event);
+		
 
 		glm::mat4 GetTransform() const
 		{
@@ -31,5 +31,8 @@ namespace XYZ {
 			return glm::translate(glm::mat4(1.0f), WorldPosition)
 				* glm::scale(glm::mat4(1.0f), glm::vec3(Scale, 1.0f));
 		}
+
+	private:
+		bool onCanvasRendererRebuild(CanvasRendererRebuildEvent& event);
 	};
 }

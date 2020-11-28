@@ -447,6 +447,7 @@ namespace XYZ {
 	template <>
 	void Serializer::Serialize<CanvasRenderer>(YAML::Emitter& out, const CanvasRenderer& val)
 	{
+		XYZ_ASSERT(!val.SubTexture->GetFilepath().empty(), "SubTexture file path is empty");
 		out << YAML::Key << "CanvasRenderer";
 		out << YAML::BeginMap; 
 
@@ -571,6 +572,13 @@ namespace XYZ {
 		out << YAML::EndMap; // Text
 	}
 
+	template <>
+	void Serializer::Serialize<Dockable>(YAML::Emitter& out, const Dockable& val)
+	{
+		out << YAML::Key << "Dockable";
+		out << YAML::BeginMap;
+		out << YAML::EndMap; // Dockable
+	}
 
 	template <>
 	void Serializer::Serialize<Entity>(YAML::Emitter& out, const Entity& entity)
@@ -674,6 +682,10 @@ namespace XYZ {
 				if (ecs.Contains<Text>(entity))
 				{
 					Serialize<Text>(out, ecs.GetComponent<Text>(entity));
+				}
+				if (ecs.Contains<Dockable>(entity))
+				{
+					Serialize<Dockable>(out, ecs.GetComponent<Dockable>(entity));
 				}
 				out << YAML::EndMap; // Entity
 			}
@@ -1006,13 +1018,19 @@ namespace XYZ {
 	}
 
 	template <>
+	Dockable Serializer::Deserialize<Dockable>(YAML::Node& data, AssetManager& assetManager)
+	{
+		return Dockable();
+	}
+
+	template <>
 	DockNodeComponent Serializer::Deserialize<DockNodeComponent>(YAML::Node& data, AssetManager& assetManager)
 	{
 		glm::vec3 position = data["Position"].as<glm::vec3>();
 		glm::vec2 size = data["Size"].as<glm::vec2>();
 
 		DockNodeComponent dockNode(position, size);
-		if (data["Entites"])
+		if (data["Entities"])
 			dockNode.Entities = data["Entities"].as<std::vector<uint32_t>>();
 		auto split = data["Split"].as<int32_t>();
 		switch (split)
@@ -1112,6 +1130,11 @@ namespace XYZ {
 				if (text)
 				{
 					ecs.AddComponent<Text>(ent, Deserialize<Text>(text, assetManager));
+				}
+				auto dockable = entity["Dockable"];
+				if (dockable)
+				{
+					ecs.AddComponent<Dockable>(ent, Deserialize<Dockable>(dockable, assetManager));
 				}
 				if (ecs.Contains<CanvasRenderer>(ent) && ecs.Contains<RectTransform>(ent))
 				{
@@ -1215,6 +1238,11 @@ namespace XYZ {
 				if (text)
 				{
 					val.AddComponent<Text>(ent, Deserialize<Text>(text, assetManager));
+				}
+				auto dockable = entity["Dockable"];
+				if (dockable)
+				{
+					val.AddComponent<Dockable>(ent, Deserialize<Dockable>(dockable, assetManager));
 				}
 				if (val.Contains<CanvasRenderer>(ent) && val.Contains<RectTransform>(ent))
 				{

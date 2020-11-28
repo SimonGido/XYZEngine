@@ -138,6 +138,14 @@ namespace XYZ {
 		m_LayoutGroupView = &m_ECS->CreateView<LayoutGroup, Relationship, RectTransform>();
 		m_LayoutView = &m_ECS->CreateView<Layout, Relationship, CanvasRenderer, RectTransform>();
 		m_InputFieldView = &m_ECS->CreateView<InputField, CanvasRenderer, RectTransform>();
+
+		for (uint32_t i = 0; i < ecs->GetNumberOfEntities(); ++i)
+		{
+			if (ecs->Contains<Canvas>(i))
+			{
+				m_Canvases.push_back(i);
+			}
+		}
 	}
 	bool GuiContext::onCanvasRendererRebuild(CanvasRendererRebuildEvent& event)
 	{

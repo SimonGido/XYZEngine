@@ -172,7 +172,6 @@ namespace XYZ {
 		//Serializer::SerializeResource<SubTexture2D>(specs.SubTexture[GuiSpecification::CHECKBOX_UNCHECKED]);
 		//Serializer::SerializeResource<SubTexture2D>(specs.SubTexture[GuiSpecification::FONT]);
 
-		m_GuiContext = Application::Get().GetGuiLayer()->CreateContext(&m_ECS, specs);
 		
 
 		std::ifstream stream("ECS.ecs");
@@ -188,6 +187,7 @@ namespace XYZ {
 		//	glm::vec4(0.0f)
 		//));
 
+		m_GuiContext = Application::Get().GetGuiLayer()->CreateContext(&m_ECS, specs);
 		m_Dockspace = new Dockspace(&m_ECS, m_GuiContext);
 		m_Dockspace->SetRoot(1);
 
