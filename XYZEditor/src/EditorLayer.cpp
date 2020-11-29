@@ -340,16 +340,35 @@ namespace XYZ {
 		//		});
 		//}
 		//
-		//Renderer::WaitAndRender();
+		
 		//
 		//
-		//auto renderTexture = SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer->CreateTextureFromColorAttachment(0);
 		//uint32_t entity = m_Dockspace->CreateRenderWindow(0, "Scene", ImageSpecification(
 		//	Ref<SubTexture2D>::Create(renderTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)),
 		//	glm::vec3(0.0f),
 		//	glm::vec2(400.0f),
 		//	glm::vec4(1.0f)
 		//));
+		
+		Renderer::WaitAndRender();
+		auto renderTexture = SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer->CreateTextureFromColorAttachment(0);
+		auto subTexture = Ref<SubTexture2D>::Create(renderTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+		for (uint32_t i = 0; i < m_ECS.GetNumberOfEntities(); ++i)
+		{
+			if (m_ECS.Contains<IDComponent>(i))
+			{
+				auto& IDComp = m_ECS.GetComponent<IDComponent>(i);
+				if ((std::string)IDComp.ID == "{F98D48E0-BA80-43C6-8A77-5138B9FFE621}")
+				{
+					m_ECS.GetComponent<CanvasRenderer>(i).SubTexture = subTexture;
+					m_ECS.GetComponent<RectTransform>(i).Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent(
+						{i, &m_ECS}, QuadCanvasRendererRebuild()
+					));
+					break;
+				}
+			}
+
+		}
 	}	
 
 
@@ -358,7 +377,6 @@ namespace XYZ {
 	{
 		NativeScriptEngine::Shutdown();
 		Renderer::Shutdown();
-		//Serializer::SerializeResource<Scene>(m_Scene->GetFilepath(), m_Scene);
 
 		YAML::Emitter out;
 		Serializer::Serialize<ECSManager>(out, m_ECS);
