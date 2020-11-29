@@ -79,7 +79,7 @@ namespace XYZ {
 		// Light pass
 		{
 			FrameBufferSpecs specs;
-			specs.ClearColor = { 0.1f,0.1f,0.1f,1.0f };
+			specs.ClearColor = { 0.0f,0.0f,0.0f,1.0f };
 			specs.Attachments = {
 				FrameBufferTextureSpecs(FrameBufferTextureFormat::RGBA16F),
 				FrameBufferTextureSpecs(FrameBufferTextureFormat::DEPTH24STENCIL8)
@@ -102,7 +102,7 @@ namespace XYZ {
 		// Bloom pass
 		{
 			FrameBufferSpecs specs;
-			specs.ClearColor = { 0.1f,0.1f,0.1f,1.0f };
+			specs.ClearColor = { 0.0f,0.0f,0.0f,1.0f };
 			specs.Attachments = {
 				FrameBufferTextureSpecs(FrameBufferTextureFormat::RGBA16F),
 				FrameBufferTextureSpecs(FrameBufferTextureFormat::DEPTH24STENCIL8)
@@ -113,7 +113,7 @@ namespace XYZ {
 		// Gausian blur pass
 		{
 			FrameBufferSpecs specs;
-			specs.ClearColor = { 0.1f,0.1f,0.1f,1.0f };
+			specs.ClearColor = { 0.0f,0.0f,0.0f,1.0f };
 			specs.Attachments = {
 				FrameBufferTextureSpecs(FrameBufferTextureFormat::RGBA16F),
 				FrameBufferTextureSpecs(FrameBufferTextureFormat::DEPTH24STENCIL8)
@@ -273,7 +273,7 @@ namespace XYZ {
 	void SceneRenderer::BloomPass()
 	{
 		Renderer::BeginRenderPass(s_Data.BloomPass, true);
-		float exposure = 1.0f;
+		float exposure = 0.7f;
 
 		s_Data.BloomShader->Bind();
 		s_Data.BloomShader->SetFloat("u_Exposure", exposure);
