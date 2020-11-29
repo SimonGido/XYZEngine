@@ -5,7 +5,7 @@
 #include "XYZ/Core/Timestep.h"
 #include "XYZ/Renderer/RenderPass.h"
 #include "XYZ/Renderer/Camera.h"
-#include "XYZ/Renderer/SubTexture2D.h"
+#include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Scene/Components.h"
 #include "XYZ/Core/Ref.h"
 

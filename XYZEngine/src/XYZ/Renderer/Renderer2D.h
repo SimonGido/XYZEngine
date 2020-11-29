@@ -28,7 +28,7 @@ namespace XYZ {
 		*/
 		static void BeginScene(const glm::mat4& viewProjectionMatrix, const glm::vec2& viewportSize);
 
-		static uint32_t SetTexture(const Ref<Texture2D>& texture);
+		static uint32_t SetTexture(const Ref<Texture>& texture);
 		static void SetMaterial(const Ref<Material>& material);
 		static void SubmitQuad(const glm::mat4& transform, const glm::vec4& color, float tilingFactor = 1.0f);
 		static void SubmitQuad(const glm::mat4& transform, const glm::vec4& texCoord, uint32_t textureID, const glm::vec4& color = glm::vec4(1), float tilingFactor = 1.0f);

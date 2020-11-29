@@ -85,12 +85,14 @@ namespace XYZ {
 			pngData[i * 4 + 3] = pixelData[i];
 		}
 
-		m_Texture = Texture2D::Create({
+		m_Texture = Texture2D::Create(
 			(uint32_t)texWidth,(uint32_t)texHeight,4,
-			TextureWrap::Clamp,
-			TextureParam::Linear,
-			TextureParam::Nearest
-			});
+			TextureSpecs{
+				TextureWrap::Clamp,
+				TextureParam::Linear,
+				TextureParam::Nearest
+			}
+			);
 
 		m_Texture->SetData(pngData, pngData.GetSize());
 		//stbi_write_png("font_output.png", texWidth, texHeight, 4, pngData, texWidth * 4);

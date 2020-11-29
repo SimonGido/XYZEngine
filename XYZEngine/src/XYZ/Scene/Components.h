@@ -4,7 +4,7 @@
 #include "XYZ/ECS/Types.h"
 #include "XYZ/Core/GUID.h"
 #include "XYZ/Particle/ParticleEffect.h"
-#include "XYZ/Renderer/SubTexture2D.h"
+#include "XYZ/Renderer/SubTexture.h"
 
 #include "SceneCamera.h"
 #include "AnimationController.h"
@@ -67,7 +67,7 @@ namespace XYZ {
 	{
 		SpriteRenderer(
 			Ref<Material> material,
-			Ref<SubTexture2D> subTexture,
+			Ref<SubTexture> subTexture,
 			const glm::vec4& color,
 			uint32_t sortLayer,
 			bool isVisible = true
@@ -80,7 +80,7 @@ namespace XYZ {
 		SpriteRenderer& operator =(const SpriteRenderer& other);
 
 		Ref<Material> Material;
-		Ref<SubTexture2D> SubTexture;
+		Ref<SubTexture> SubTexture;
 		glm::vec4 Color;
 
 		uint32_t SortLayer = 0;

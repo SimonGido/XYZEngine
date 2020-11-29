@@ -49,7 +49,7 @@ namespace XYZ {
 		Ref<Material> GridMaterial;
 		Ref<Shader> LineShader;
 
-		Ref<Texture2D> TextureSlots[MaxTextures];
+		Ref<Texture> TextureSlots[MaxTextures];
 		uint32_t TextureSlotIndex = 0;
 	
 		Ref<VertexArray> GridVertexArray;
@@ -210,7 +210,7 @@ namespace XYZ {
 		s_Data.QuadMaterial = s_Data.DefaultQuadMaterial;
 	}
 
-	uint32_t Renderer2D::SetTexture(const Ref<Texture2D>& texture)
+	uint32_t Renderer2D::SetTexture(const Ref<Texture>& texture)
 	{
 		for (uint32_t i = 0; i < s_Data.QuadMaterial->GetTextures().size(); ++i)
 		{

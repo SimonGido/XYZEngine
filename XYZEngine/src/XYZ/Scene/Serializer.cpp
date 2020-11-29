@@ -246,6 +246,7 @@ namespace XYZ {
 	template<>
 	void Serializer::SerializeResource(const Ref<Texture2D>& texture)
 	{
+		XYZ_ASSERT(!texture->GetFilepath().empty(), "Filepath is empty");
 		XYZ_LOG_INFO("Serializing texture ", texture->GetFilepath());
 		YAML::Emitter out;
 		out << YAML::BeginMap; // Texture
@@ -262,8 +263,9 @@ namespace XYZ {
 	}
 
 	template <>
-	void Serializer::SerializeResource(const Ref<SubTexture2D>& subTexture)
+	void Serializer::SerializeResource(const Ref<SubTexture>& subTexture)
 	{
+		XYZ_ASSERT(!subTexture->GetFilepath().empty(), "Filepath is empty");
 		XYZ_LOG_INFO("Serializing subtexture ", subTexture->GetFilepath());
 		YAML::Emitter out;
 		out << YAML::BeginMap;
@@ -321,6 +323,7 @@ namespace XYZ {
 	template <>
 	void Serializer::SerializeResource<Material>(const Ref<Material>& material)
 	{
+		XYZ_ASSERT(!material->GetFilepath().empty(), "Filepath is empty");
 		XYZ_LOG_INFO("Serializing material ", material->GetFilepath());
 		YAML::Emitter out;
 		out << YAML::BeginMap;
@@ -358,6 +361,7 @@ namespace XYZ {
 	template <>
 	void Serializer::SerializeResource<Font>(const Ref<Font>& font)
 	{
+		XYZ_ASSERT(!font->GetFilepath().empty(), "Filepath is empty");
 		XYZ_LOG_INFO("Serializing font ", font->GetFilepath());
 		// remove extension
 		std::string pathWithoutExtension = font->GetFilepath().substr(0, font->GetFilepath().size() - 4);
@@ -371,6 +375,36 @@ namespace XYZ {
 
 		std::ofstream fout(pathWithoutExtension + ".meta");
 		fout << out.c_str();
+	}
+
+	template <>
+	void Serializer::SerializeResource<FrameBuffer>(const Ref<FrameBuffer>& frameBuffer)
+	{
+		XYZ_ASSERT(!frameBuffer->GetFilepath().empty(), "Filepath is empty");
+		XYZ_LOG_INFO("Serializing FrameBuffer ", frameBuffer->GetFilepath());
+
+		auto& specs = frameBuffer->GetSpecification();
+		YAML::Emitter out;
+		out << YAML::BeginMap; // FrameBuffer
+		out << YAML::Key << "FrameBuffer" << YAML::Value << frameBuffer->GetName();
+		
+		
+		out << YAML::Key << "ClearColor" << YAML::Value << specs.ClearColor;
+		out << YAML::Key << "Width" << YAML::Value << specs.Width;
+		out << YAML::Key << "Height" << YAML::Value << specs.Height;
+		out << YAML::Key << "Samples" << YAML::Value << specs.Samples;
+		out << YAML::Key << "SwapChainTarget" << YAML::Value << specs.SwapChainTarget;
+	
+		out << YAML::Key << "Attachments";
+		out << YAML::Value << YAML::BeginSeq;
+		for (auto & it : specs.Attachments.Attachments)
+		{
+			out << YAML::BeginMap;
+			out << YAML::Key << "TextureFormat" << YAML::Value << ToUnderlying(it.TextureFormat);
+			out << YAML::EndMap;
+		}
+		out << YAML::EndSeq;
+		out << YAML::EndMap; // FrameBuffer
 	}
 
 	template <>
@@ -697,6 +731,7 @@ namespace XYZ {
 	template <>
 	void Serializer::SerializeResource<Scene>(const Ref<Scene>& scene)
 	{
+		XYZ_ASSERT(!scene->GetFilepath().empty(), "Filepath is empty");
 		XYZ_LOG_INFO("Serializing scene ", scene->GetFilepath());
 		Ref<Scene> sceneCopy = scene;
 		YAML::Emitter out;
@@ -720,11 +755,8 @@ namespace XYZ {
 	template <>
 	Ref<Texture2D> Serializer::DeserializeResource<Texture2D>(const std::string& filepath, AssetManager& assetManager)
 	{
-		TextureWrap wrap = TextureWrap::Clamp;
-		TextureParam min = TextureParam::Linear;
-		TextureParam max = TextureParam::Nearest;
-
 		std::ifstream stream(filepath + ".meta");
+		TextureSpecs specs;
 		if (stream.is_open())
 		{
 			std::stringstream strStream;
@@ -732,22 +764,22 @@ namespace XYZ {
 			YAML::Node data = YAML::Load(strStream.str());
 		
 			XYZ_ASSERT(data["Texture"], "Incorrect file format");
-			wrap = IntToTextureWrap(data["Wrap"].as<int>());
-			min = IntToTextureParam(data["Param Min"].as<int>());
-			max = IntToTextureParam(data["Param Max"].as<int>());
+			specs.Wrap = IntToTextureWrap(data["Wrap"].as<int>());
+			specs.MinParam = IntToTextureParam(data["Param Min"].as<int>());
+			specs.MagParam = IntToTextureParam(data["Param Max"].as<int>());
 		}
 		else
 		{
 			XYZ_LOG_WARN("Missing texture meta data, setting default");
 		}
 
-		auto ref = Texture2D::Create(wrap, min, max, filepath);
+		auto ref = Texture2D::Create(specs, filepath);
 		ref->SetFilepath(filepath);
 		return ref;
 	}
 
 	template <>
-	Ref<SubTexture2D> Serializer::DeserializeResource<SubTexture2D>(const std::string& filepath, AssetManager& assetManager)
+	Ref<SubTexture> Serializer::DeserializeResource<SubTexture>(const std::string& filepath, AssetManager& assetManager)
 	{
 		std::ifstream stream(filepath);
 		std::stringstream strStream;
@@ -766,7 +798,7 @@ namespace XYZ {
 
 		glm::vec4 texCoords = data["TexCoords"].as<glm::vec4>();
 
-		auto ref = Ref<SubTexture2D>::Create(texture, texCoords);
+		auto ref = Ref<SubTexture>::Create(texture, texCoords);
 		ref->SetFilepath(filepath);
 		return ref;
 	}
@@ -834,7 +866,7 @@ namespace XYZ {
 		strStream << stream.rdbuf();
 		YAML::Node data = YAML::Load(strStream.str());
 
-		XYZ_ASSERT(data["Font"], "Incorrect file format ");
+		XYZ_ASSERT(data["Font"], "Incorrect file format");
 		uint32_t pixelSize = data["PixelSize"].as<uint32_t>();
 	
 
@@ -842,6 +874,48 @@ namespace XYZ {
 		ref->GetTexture()->SetFilepath(filepath);
 		ref->SetFilepath(filepath);
 		return ref;
+	}
+
+	template <>
+	Ref<FrameBuffer> Serializer::DeserializeResource<FrameBuffer>(const std::string& filepath, AssetManager& assetManager)
+	{
+		std::ifstream stream(filepath);
+		std::stringstream strStream;
+		strStream << stream.rdbuf();
+		YAML::Node data = YAML::Load(strStream.str());
+
+		XYZ_ASSERT(data["FrameBuffer"], "Incorect file format");
+		FrameBufferSpecs specs;
+		specs.ClearColor = data["ClearColor"].as<glm::vec4>();
+		specs.Width = data["Width"].as<uint32_t>();
+		specs.Height = data["Height"].as<uint32_t>();
+		specs.Samples = data["Samples"].as<uint32_t>();
+		specs.SwapChainTarget = data["SwapChainTarget"].as<uint32_t>();
+
+		for (auto& seq : data["Attachments"])
+		{
+			int32_t format = seq["TextureFormat"].as<int32_t>();
+			FrameBufferTextureSpecs textureSpecs;
+			
+			switch (format)
+			{
+			case ToUnderlying(FrameBufferTextureFormat::RGBA8):
+				textureSpecs.TextureFormat = FrameBufferTextureFormat::RGBA8;
+				break;
+			case ToUnderlying(FrameBufferTextureFormat::RGBA16F):
+				textureSpecs.TextureFormat = FrameBufferTextureFormat::RGBA16F;
+				break;
+			case ToUnderlying(FrameBufferTextureFormat::RGBA32F):
+				textureSpecs.TextureFormat = FrameBufferTextureFormat::RGBA32F;
+				break;
+			case ToUnderlying(FrameBufferTextureFormat::RG32F):
+				textureSpecs.TextureFormat = FrameBufferTextureFormat::RG32F;
+				break;
+			};
+			specs.Attachments.Attachments.push_back(textureSpecs);
+		}
+		
+		return FrameBuffer::Create(specs);
 	}
 	
 	template <>
@@ -853,7 +927,7 @@ namespace XYZ {
 		uint16_t sortLayer = data["SortLayer"].as<uint16_t>();
 
 		Ref<Material> material = assetManager.GetAsset<Material>(materialPath)->GetHandle();
-		Ref<SubTexture2D> subTexture = assetManager.GetAsset<SubTexture2D>(subtexturePath)->GetHandle();
+		Ref<SubTexture> subTexture = assetManager.GetAsset<SubTexture>(subtexturePath)->GetHandle();
 
 		SpriteRenderer spriteRenderer(
 			material,
@@ -933,7 +1007,7 @@ namespace XYZ {
 		uint16_t sortLayer = data["SortLayer"].as<uint16_t>();
 
 		Ref<Material> material = assetManager.GetAsset<Material>(materialPath)->GetHandle();
-		Ref<SubTexture2D> subTexture = assetManager.GetAsset<SubTexture2D>(subtexturePath)->GetHandle();
+		Ref<SubTexture> subTexture = assetManager.GetAsset<SubTexture>(subtexturePath)->GetHandle();
 
 		return CanvasRenderer(
 			material, subTexture, color, Mesh(), sortLayer

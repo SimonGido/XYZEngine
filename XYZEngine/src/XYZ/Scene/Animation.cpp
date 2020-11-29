@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Animation.h"
 
-#include "XYZ/Renderer/SubTexture2D.h"
+#include "XYZ/Renderer/SubTexture.h"
 
 #include <glm/glm.hpp>
 
@@ -62,7 +62,7 @@ namespace XYZ {
 		}
 	}
 
-	void Property <Ref<SubTexture2D>>::Update(float currentTime)
+	void Property <Ref<SubTexture>>::Update(float currentTime)
 	{
 		if (CurrentFrame < KeyFrames.size() - 1)
 		{

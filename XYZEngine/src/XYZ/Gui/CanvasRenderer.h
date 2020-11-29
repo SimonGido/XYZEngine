@@ -2,7 +2,7 @@
 #include "XYZ/ECS/Component.h"
 #include "XYZ/Renderer/Mesh.h"
 #include "XYZ/Renderer/Material.h"
-#include "XYZ/Renderer/SubTexture2D.h"
+#include "XYZ/Renderer/SubTexture.h"
 
 #include <glm/glm.hpp>
 
@@ -11,7 +11,7 @@ namespace XYZ {
 	{
 		CanvasRenderer(
 			Ref<Material>     Material,
-			Ref<SubTexture2D> SubTexture,
+			Ref<SubTexture> SubTexture,
 			glm::vec4		  Color,
 			const Mesh&		  mesh,
 			uint32_t		  sortLayer,
@@ -25,7 +25,7 @@ namespace XYZ {
 		CanvasRenderer& operator =(const CanvasRenderer& other);
 		
 		Ref<Material>     Material;
-		Ref<SubTexture2D> SubTexture;
+		Ref<SubTexture> SubTexture;
 		glm::vec4		  Color;
 		Mesh			  Mesh;
 		uint32_t		  SortLayer;

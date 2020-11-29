@@ -1,8 +1,9 @@
 #pragma once
 #include <memory>
+#include <vector>
 
 #include "XYZ/Core/Ref.h"
-#include "XYZ/Renderer/Texture.h"
+#include "XYZ/Scene/Serializable.h"
 
 #include <glm/glm.hpp>
 
@@ -10,68 +11,73 @@ namespace XYZ {
 	/*! @class FrameBufferFormat
 	*	@brief Describes the color format of the FrameBuffer
 	*/
-	enum class FrameBufferFormat
+	enum class FrameBufferTextureFormat
 	{
 		None = 0,
-		RGB = 1,
-		RGBA8 = 2,
-		RGBA16F = 3
+
+		// Color
+		RGBA8 = 1,
+		RGBA16F = 2,
+		RGBA32F = 3,
+		RG32F = 4,
+
+		// Depth/stencil
+		DEPTH32F = 5,
+		DEPTH24STENCIL8 = 6,
+
+		// Defaults
+		Depth = DEPTH24STENCIL8
 	};
 
-	struct ColorAttachment
+	struct FrameBufferTextureSpecs
 	{
-		uint32_t RendererID;
-		uint32_t AttachmentID;
-		FrameBufferFormat Format;
-		bool     IsTexture = false;
+		FrameBufferTextureSpecs() = default;
+		FrameBufferTextureSpecs(FrameBufferTextureFormat format) : TextureFormat(format) {}
+
+		FrameBufferTextureFormat TextureFormat;
 	};
 
-	struct DepthAttachment
+	struct FrameBufferAttachmentSpecs
 	{
-		uint32_t RendererID;
+		FrameBufferAttachmentSpecs() = default;
+		FrameBufferAttachmentSpecs(const std::initializer_list<FrameBufferTextureSpecs>& attachments)
+			: Attachments(attachments) {}
+
+		std::vector<FrameBufferTextureSpecs> Attachments;
 	};
 
 	struct FrameBufferSpecs
 	{
-		uint32_t Width;
-		uint32_t Height;
+		uint32_t Width = 1280;
+		uint32_t Height = 720;
+		uint32_t Samples = 1; // multisampling
 		glm::vec4 ClearColor;
-		uint32_t Samples = 1;
-		FrameBufferFormat Format = FrameBufferFormat::RGBA16F;
-		bool SwapChainTarget = false; 
+		FrameBufferAttachmentSpecs Attachments;
+
+		bool SwapChainTarget = false;
 	};
 
-	/*! @class FrameBuffer
-	*	@brief Framebuffer for texture operations
-	*/
-	class FrameBuffer : public RefCount
+
+	class FrameBuffer : public RefCount,
+						public Serializable
 	{
 	public:
 		virtual ~FrameBuffer() = default;
 
-		virtual void Resize() = 0;
+		virtual void Resize(uint32_t width, uint32_t height) = 0;
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
-		virtual void Blit() const = 0;
-
+		
+		virtual void BindTexture(uint32_t attachmentIndex, uint32_t slot) const = 0;
 		virtual void SetSpecification(const FrameBufferSpecs& specs) = 0;
 
-		virtual void CreateColorAttachment(FrameBufferFormat format) = 0;
-		virtual void CreateDepthAttachment() = 0;
-		virtual Ref<Texture2D> CreateTextureFromColorAttachment(uint32_t index) = 0;
-		virtual Ref<Texture2D> GetTexture(uint32_t index) const = 0;
-		virtual ColorAttachment GetColorAttachment(uint32_t index) const = 0;
-		virtual DepthAttachment GetDetphAttachment(uint32_t index) const = 0;
-
-
-		virtual size_t GetNumberColorAttachments() const = 0;
-		virtual size_t GetNumberDepthAttachments() const = 0;
+		virtual const uint32_t GetColorAttachmentRendererID(uint32_t index) const = 0;
+		virtual const uint32_t GetDetphAttachmentRendererID() const = 0;
 
 		virtual const FrameBufferSpecs& GetSpecification() const = 0;
-		virtual FrameBufferSpecs& GetSpecification() = 0;
 		
-		static void BindDefault();
+
 		static Ref<FrameBuffer> Create(const FrameBufferSpecs& specs);
 	};
 

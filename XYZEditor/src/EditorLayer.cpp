@@ -93,10 +93,10 @@ namespace XYZ {
 		m_SpriteRenderer = &m_TestEntity.GetComponent<SpriteRenderer>();
 		m_Transform = &m_TestEntity.GetComponent<TransformComponent>();
 
-		m_CharacterTexture = Texture2D::Create(XYZ::TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest, "Assets/Textures/player_sprite.png");
-		m_CharacterSubTexture = Ref<SubTexture2D>::Create(m_CharacterTexture, glm::vec2(0, 0), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
-		m_CharacterSubTexture2 = Ref<SubTexture2D>::Create(m_CharacterTexture, glm::vec2(1, 2), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
-		m_CharacterSubTexture3 = Ref<SubTexture2D>::Create(m_CharacterTexture, glm::vec2(2, 2), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
+		m_CharacterTexture = Texture2D::Create({ TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest }, "Assets/Textures/player_sprite.png");
+		m_CharacterSubTexture = Ref<SubTexture>::Create(m_CharacterTexture, glm::vec2(0, 0), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
+		m_CharacterSubTexture2 = Ref<SubTexture>::Create(m_CharacterTexture, glm::vec2(1, 2), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
+		m_CharacterSubTexture3 = Ref<SubTexture>::Create(m_CharacterTexture, glm::vec2(2, 2), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
 
 		auto backgroundTexture = m_AssetManager.GetAsset<Texture2D>("Assets/Textures/Backgroundfield.png");
 		///////////////////////////////////////////////////////////
@@ -105,8 +105,8 @@ namespace XYZ {
 		auto computeMat = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleComputeShader.glsl"));
 		auto renderMat = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShader.glsl"));
 
-		renderMat->Set("u_Texture", Texture2D::Create(XYZ::TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest, "Assets/Textures/flame.png"), 0);
-		renderMat->Set("u_Texture", Texture2D::Create(XYZ::TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest, "Assets/Textures/flame_emission.png"), 1);
+		renderMat->Set("u_Texture", Texture2D::Create({TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest}, "Assets/Textures/flame.png"), 0);
+		renderMat->Set("u_Texture", Texture2D::Create({TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest}, "Assets/Textures/flame_emission.png"), 1);
 
 
 		m_Particle = &m_TestEntity.AddComponent<ParticleComponent>(ParticleComponent());
@@ -162,197 +162,25 @@ namespace XYZ {
 		specs.Material = material;
 		specs.Font = font;
 
-		specs.SubTexture[GuiSpecification::BUTTON] = m_AssetManager.GetAsset<SubTexture2D>("Assets/SubTextures/ButtonSubtexture.subtex")->GetHandle();
-		specs.SubTexture[GuiSpecification::CHECKBOX_CHECKED] = m_AssetManager.GetAsset<SubTexture2D>("Assets/SubTextures/CheckboxCheckedSubtexture.subtex")->GetHandle();
-		specs.SubTexture[GuiSpecification::CHECKBOX_UNCHECKED] = m_AssetManager.GetAsset<SubTexture2D>("Assets/SubTextures/CheckboxUnCheckedSubtexture.subtex")->GetHandle();
-		specs.SubTexture[GuiSpecification::FONT] = m_AssetManager.GetAsset<SubTexture2D>("Assets/SubTextures/FontSubtexture.subtex")->GetHandle();
+		specs.SubTexture[GuiSpecification::BUTTON] = m_AssetManager.GetAsset<SubTexture>("Assets/SubTextures/ButtonSubtexture.subtex")->GetHandle();
+		specs.SubTexture[GuiSpecification::CHECKBOX_CHECKED] = m_AssetManager.GetAsset<SubTexture>("Assets/SubTextures/CheckboxCheckedSubtexture.subtex")->GetHandle();
+		specs.SubTexture[GuiSpecification::CHECKBOX_UNCHECKED] = m_AssetManager.GetAsset<SubTexture>("Assets/SubTextures/CheckboxUnCheckedSubtexture.subtex")->GetHandle();
+		specs.SubTexture[GuiSpecification::FONT] = m_AssetManager.GetAsset<SubTexture>("Assets/SubTextures/FontSubtexture.subtex")->GetHandle();
 		
-		//Serializer::SerializeResource<SubTexture2D>(specs.SubTexture[GuiSpecification::BUTTON]);
-		//Serializer::SerializeResource<SubTexture2D>(specs.SubTexture[GuiSpecification::CHECKBOX_CHECKED]);
-		//Serializer::SerializeResource<SubTexture2D>(specs.SubTexture[GuiSpecification::CHECKBOX_UNCHECKED]);
-		//Serializer::SerializeResource<SubTexture2D>(specs.SubTexture[GuiSpecification::FONT]);
-
-		
-
 		std::ifstream stream("ECS.ecs");
 		std::stringstream strStream;
 		strStream << stream.rdbuf();
 		YAML::Node data = YAML::Load(strStream.str());
 		Serializer::Deserialize<ECSManager>(data, m_AssetManager, m_ECS);
 
-		//uint32_t canvas = m_GuiContext->CreateCanvas(CanvasSpecification(
-		//	CanvasRenderMode::ScreenSpace,
-		//	glm::vec3(0.0f),
-		//	glm::vec2(windowWidth, windowHeight),
-		//	glm::vec4(0.0f)
-		//));
-
 		m_GuiContext = Application::Get().GetGuiLayer()->CreateContext(&m_ECS, specs);
 		m_Dockspace = new Dockspace(&m_ECS, m_GuiContext);
 		m_Dockspace->SetRoot(1);
 
-		//uint32_t opicaEntity = m_Dockspace->CreatePanel(canvas, "Opica", PanelSpecification(
-		//	glm::vec3(-200.0f),
-		//	glm::vec2(300.0f),
-		//	glm::vec4(1.5f)
-		//));
-		//{
-		//	auto& layout = m_ECS.AddComponent<LayoutGroup>(opicaEntity, LayoutGroup());
-		//	layout.CellSpacing.x = 10.0f;
-		//	layout.CellSpacing.y = 10.0f;
-		//	layout.Padding.Top = 35.0f;
-		//}
-		//for (int i = 0; i < 20; ++i)
-		//{
-		//	uint32_t editorEntity = m_GuiContext->CreateButton(opicaEntity,
-		//		ButtonSpecification{
-		//			"Button",
-		//			glm::vec3(i * 50,i * 50, 0.0f),
-		//			glm::vec2(50.0f,50.0f),
-		//			glm::vec4(1.0f,1.0f,1.0f,1.0f),
-		//			glm::vec4(0.4f, 1.0f, 0.8f, 1.0f),
-		//			glm::vec4(1.0f, 0.5f, 0.8f, 1.0f),
-		//			1
-		//		});
-		//}
-		//
-		//uint32_t editorEntity = m_GuiContext->CreateSlider(opicaEntity,
-		//	SliderSpecification{
-		//		"Slider",
-		//		glm::vec3(0.0f),
-		//		glm::vec2(150.0f,25.0f),
-		//		glm::vec2(25.0f, 25.0f),
-		//		glm::vec4(1.0f,1.0f,1.9f,1.0f),
-		//		glm::vec4(0.7f, 1.8f, 1.0f, 1.0f),
-		//		glm::vec4(0.4f, 1.0f, 0.8f, 1.0f),
-		//		1
-		//	});
-		//uint32_t inputEntity = m_GuiContext->CreateInputField(opicaEntity,
-		//	InputFieldSpecification{
-		//		glm::vec3(0.0f),
-		//		glm::vec2(150.0f,25.0f),
-		//		glm::vec4(1.0f,1.0f,1.9f,1.0f),
-		//		glm::vec4(0.7f, 1.8f, 1.0f, 1.0f),
-		//		glm::vec4(0.4f, 1.0f, 0.8f, 1.0f),
-		//		1
-		//	});
-		//
-		//
-		//auto havkac = m_Dockspace->CreatePanel(canvas, "Havkac", PanelSpecification(
-		//	glm::vec3(200.0f),
-		//	glm::vec2(300.0f),
-		//	glm::vec4(1.5f)
-		//));
-		//{
-		//	auto& layout = m_ECS.AddComponent<LayoutGroup>(havkac, LayoutGroup());
-		//	layout.CellSpacing.x = 10.0f;
-		//	layout.CellSpacing.y = 10.0f;
-		//	layout.Padding.Top = 35.0f;
-		//	layout.Padding.Left = 15.0f;
-		//}
-		//for (int i = 0; i < 20; ++i)
-		//{
-		//	uint32_t editorEntity = m_GuiContext->CreateButton(havkac,
-		//		ButtonSpecification{
-		//			"Button",
-		//			glm::vec3(i * 50,i * 50, 0.0f),
-		//			glm::vec2(50.0f,50.0f),
-		//			glm::vec4(1.0f,1.0f,1.0f,1.0f),
-		//			glm::vec4(0.4f, 1.0f, 0.8f, 1.0f),
-		//			glm::vec4(1.0f, 0.5f, 0.8f, 1.0f),
-		//			1
-		//		});
-		//}
-		//
-		//
-		//auto zemiak = m_Dockspace->CreatePanel(canvas, "Zemiak", PanelSpecification(
-		//	glm::vec3(-400.0f),
-		//	glm::vec2(300.0f),
-		//	glm::vec4(1.5f)
-		//));
-		//{
-		//	auto& layout = m_ECS.AddComponent<LayoutGroup>(zemiak, LayoutGroup());
-		//	layout.CellSpacing.x = 10.0f;
-		//	layout.CellSpacing.y = 10.0f;
-		//	layout.Padding.Top = 35.0f;
-		//}
-		//for (int i = 0; i < 20; ++i)
-		//{
-		//	uint32_t editorEntity = m_GuiContext->CreateButton(zemiak,
-		//		ButtonSpecification{
-		//			"Button",
-		//			glm::vec3(i * 50,i * 50, 0.0f),
-		//			glm::vec2(50.0f,50.0f),
-		//			glm::vec4(1.0f,1.0f,1.0f,1.0f),
-		//			glm::vec4(0.4f, 1.0f, 0.8f, 1.0f),
-		//			glm::vec4(1.0f, 0.5f, 0.8f, 1.0f),
-		//			1
-		//		});
-		//}
-		//
-		//auto kostovnik = m_Dockspace->CreatePanel(canvas, "Kostovnik", PanelSpecification(
-		//	glm::vec3(-400.0f),
-		//	glm::vec2(300.0f),
-		//	glm::vec4(1.5f)
-		//));
-		//{
-		//	auto& layout = m_ECS.AddComponent<LayoutGroup>(kostovnik, LayoutGroup());
-		//	layout.CellSpacing.x = 10.0f;
-		//	layout.CellSpacing.y = 10.0f;
-		//	layout.Padding.Top = 35.0f;
-		//}
-		//for (int i = 0; i < 20; ++i)
-		//{
-		//	uint32_t editorEntity = m_GuiContext->CreateButton(kostovnik,
-		//		ButtonSpecification{
-		//			"Button",
-		//			glm::vec3(i * 50,i * 50, 0.0f),
-		//			glm::vec2(50.0f,50.0f),
-		//			glm::vec4(1.0f,1.0f,1.0f,1.0f),
-		//			glm::vec4(0.4f, 1.0f, 0.8f, 1.0f),
-		//			glm::vec4(1.0f, 0.5f, 0.8f, 1.0f),
-		//			1
-		//		});
-		//}
-		//
-		//auto pelengac = m_Dockspace->CreatePanel(canvas, "Pelengac", PanelSpecification(
-		//	glm::vec3(-400.0f),
-		//	glm::vec2(300.0f),
-		//	glm::vec4(1.5f)
-		//));
-		//{
-		//	auto& layout = m_ECS.AddComponent<LayoutGroup>(pelengac, LayoutGroup());
-		//	layout.CellSpacing.x = 10.0f;
-		//	layout.CellSpacing.y = 10.0f;
-		//	layout.Padding.Top = 35.0f;
-		//}
-		//for (int i = 0; i < 20; ++i)
-		//{
-		//	uint32_t editorEntity = m_GuiContext->CreateButton(pelengac,
-		//		ButtonSpecification{
-		//			"Button",
-		//			glm::vec3(i * 50,i * 50, 0.0f),
-		//			glm::vec2(50.0f,50.0f),
-		//			glm::vec4(1.0f,1.0f,1.0f,1.0f),
-		//			glm::vec4(0.4f, 1.0f, 0.8f, 1.0f),
-		//			glm::vec4(1.0f, 0.5f, 0.8f, 1.0f),
-		//			1
-		//		});
-		//}
-		//
-		
-		//
-		//
-		//uint32_t entity = m_Dockspace->CreateRenderWindow(0, "Scene", ImageSpecification(
-		//	Ref<SubTexture2D>::Create(renderTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f)),
-		//	glm::vec3(0.0f),
-		//	glm::vec2(400.0f),
-		//	glm::vec4(1.0f)
-		//));
-		
 		Renderer::WaitAndRender();
-		auto renderTexture = SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer->CreateTextureFromColorAttachment(0);
-		auto subTexture = Ref<SubTexture2D>::Create(renderTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+		
+		Ref<RenderTexture> renderTexture = RenderTexture::Create(SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer);
+		auto subTexture = Ref<SubTexture>::Create(renderTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 		for (uint32_t i = 0; i < m_ECS.GetNumberOfEntities(); ++i)
 		{
 			if (m_ECS.Contains<IDComponent>(i))

@@ -21,10 +21,11 @@
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/RenderPass.h"
 #include "XYZ/Renderer/Material.h"
+#include "XYZ/Renderer/RenderTexture.h"
 
 
 #include "XYZ/Renderer/Framebuffer.h"
-#include "XYZ/Renderer/SubTexture2D.h"
+#include "XYZ/Renderer/SubTexture.h"
 
 //-----Scene-----//
 #include "XYZ/Scene/SceneCamera.h"

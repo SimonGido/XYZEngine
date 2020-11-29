@@ -1,6 +1,6 @@
 #pragma once
 #include "XYZ/Core/Ref.h"
-#include "Framebuffer.h"
+#include "FrameBuffer.h"
 
 namespace XYZ {
 

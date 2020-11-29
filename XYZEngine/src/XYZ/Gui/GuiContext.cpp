@@ -124,10 +124,16 @@ namespace XYZ {
 		m_Specification(specs)
 	{
 		m_ViewMatrix = glm::inverse(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f)));
-		Ref<FrameBuffer> fbo = FrameBuffer::Create({ 1280, 720,{0.1f,0.1f,0.1f,1.0f},1,FrameBufferFormat::RGBA16F,true });
-		fbo->CreateColorAttachment(FrameBufferFormat::RGBA16F); // Position color buffer
-		fbo->CreateDepthAttachment();
-		fbo->Resize();
+
+		FrameBufferSpecs fboSpecs;
+		fboSpecs.ClearColor = { 0.1f,0.1f,0.1f,1.0f };
+		fboSpecs.Attachments = {
+			FrameBufferTextureSpecs(FrameBufferTextureFormat::RGBA16F),
+			FrameBufferTextureSpecs(FrameBufferTextureFormat::DEPTH24STENCIL8)
+		};
+		fboSpecs.SwapChainTarget = true;
+
+		Ref<FrameBuffer> fbo = FrameBuffer::Create(fboSpecs);
 		m_RenderPass = RenderPass::Create({ fbo });
 
 		m_RenderView = &m_ECS->CreateView<CanvasRenderer, RectTransform>();
@@ -529,11 +535,7 @@ namespace XYZ {
 	void GuiContext::SetViewportSize(uint32_t width, uint32_t height)
 	{
 		m_ViewportSize = glm::vec2(width, height);
-
-		auto& specs = m_RenderPass->GetSpecification().TargetFramebuffer->GetSpecification();
-		specs.Width = width;
-		specs.Height = height;
-		m_RenderPass->GetSpecification().TargetFramebuffer->Resize();
+		m_RenderPass->GetSpecification().TargetFramebuffer->Resize(width, height);
 
 		float w = (float)width;
 		float h = (float)height;

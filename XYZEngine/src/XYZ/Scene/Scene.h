@@ -85,7 +85,7 @@ namespace XYZ {
 
         Ref<Material> m_CameraMaterial;
         Ref<Texture2D> m_CameraTexture;
-        Ref<SubTexture2D> m_CameraSubTexture;
+        Ref<SubTexture> m_CameraSubTexture;
         SpriteRenderer* m_CameraSprite;
          
         friend class Entity;

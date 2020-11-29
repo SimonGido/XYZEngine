@@ -1,6 +1,6 @@
 #pragma once
 #include "XYZ/Renderer/Material.h"
-#include "XYZ/Renderer/SubTexture2D.h"
+#include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Gui/Canvas.h"
 #include "XYZ/Renderer/Font.h"
 #include "XYZ/Gui/Text.h"
@@ -23,7 +23,7 @@ namespace XYZ {
 			FONT,
 			NUM_SPRITES
 		};
-		Ref<SubTexture2D> SubTexture[NUM_SPRITES];
+		Ref<SubTexture> SubTexture[NUM_SPRITES];
 	};
 
 
@@ -136,13 +136,13 @@ namespace XYZ {
 	struct ImageSpecification
 	{
 		ImageSpecification(
-			const Ref<SubTexture2D>& subTexture,
+			const Ref<SubTexture>& subTexture,
 			const glm::vec3& position,
 			const glm::vec2& size,
 			const glm::vec4& color
 		);
 
-		Ref<SubTexture2D> SubTexture;
+		Ref<SubTexture> SubTexture;
 		glm::vec3 Position;
 		glm::vec2 Size;
 		glm::vec4 Color;

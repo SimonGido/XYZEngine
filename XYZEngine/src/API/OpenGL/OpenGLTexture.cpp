@@ -7,7 +7,8 @@
 
 
 namespace XYZ {
-	OpenGLTexture2D::OpenGLTexture2D(TextureWrap wrap, TextureParam min, TextureParam max, const std::string& path)
+	OpenGLTexture2D::OpenGLTexture2D(const TextureSpecs& specs, const std::string& path)
+		: m_Specification(specs)
 	{
 		m_Filepath = path;
 		int width, height, channels;
@@ -15,12 +16,9 @@ namespace XYZ {
 		m_LocalData = (uint8_t*)stbi_load(path.c_str(), &width, &height, &channels, 0);
 
 		XYZ_ASSERT(m_LocalData, "Failed to load image!");
-		m_Specification.Width = width;
-		m_Specification.Height = height;
-		m_Specification.Channels = channels;
-		m_Specification.Wrap = wrap;
-		m_Specification.MinParam = min;
-		m_Specification.MagParam = max;
+		m_Width = width;
+		m_Height = height;
+		m_Channels = channels;
 	
 		GLenum internalFormat = 0, dataFormat = 0;
 		if (channels == 4)
@@ -47,8 +45,8 @@ namespace XYZ {
 
 		Renderer::Submit([=]() {
 			glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
-			int levels = Texture::CalculateMipMapCount(m_Specification.Width, m_Specification.Height);
-			glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Specification.Width, m_Specification.Height);
+			int levels = Texture::CalculateMipMapCount(m_Width, m_Height);
+			glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
 			if (m_Specification.MinParam == TextureParam::Linear)
 			{
 				glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, levels > 1 ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
@@ -77,50 +75,47 @@ namespace XYZ {
 				glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 				glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 			}
-			glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Specification.Width, m_Specification.Height, m_DataFormat, GL_UNSIGNED_BYTE, m_LocalData);
+			glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, m_LocalData);
 			glGenerateTextureMipmap(m_RendererID);
 			stbi_image_free(m_LocalData);
 			m_LocalData = nullptr;
 		});
 	}
 
-	OpenGLTexture2D::OpenGLTexture2D(const TextureSpecs& specs)
-	{
-		m_Specification.Width = specs.Width;
-		m_Specification.Height = specs.Height;
-		m_Specification.Wrap = specs.Wrap;
-		m_Specification.Channels = specs.Channels;
+	OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, uint32_t channels, const TextureSpecs& specs)
+		: m_Width(width), m_Height(height), m_Channels(channels), m_Specification(specs)
+	{	
 		m_DataFormat = 0;
 		m_InternalFormat = 0;
 
-		if (specs.Channels == 4)
+		if (m_Channels == 4)
 		{
 			m_InternalFormat = GL_RGBA8;
 			m_DataFormat = GL_RGBA;
 		}
-		else if (specs.Channels == 3)
+		else if (m_Channels == 3)
 		{
 			m_InternalFormat = GL_RGB8;
 			m_DataFormat = GL_RGB;
 		}
-		else if (specs.Channels == 1)
+		else if (m_Channels == 1)
 		{
 			m_InternalFormat = GL_R8;
 			m_DataFormat = GL_RED;
 		}
 		else
 		{
-			XYZ_ASSERT("Channel is not supported ", specs.Channels);
+			XYZ_ASSERT("Channel is not supported ", m_Channels);
 		}
 		
-		m_LocalData.Allocate(m_Specification.Width * m_Specification.Height * m_Specification.Channels);
+		m_LocalData.Allocate(m_Width * m_Height * m_Channels);
 
 		Renderer::Submit([this]() {
 
-			if (m_Specification.Channels == 1)
+			if (m_Channels == 1)
 				glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 			glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
-			glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Specification.Width, m_Specification.Height);
+			glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
 
 			if (m_Specification.MinParam == TextureParam::Linear)
 			{
@@ -152,14 +147,6 @@ namespace XYZ {
 		});
 	}
 
-	OpenGLTexture2D::OpenGLTexture2D(uint32_t rendererID)
-		:
-		m_RendererID(rendererID),
-		m_DataFormat(0),
-		m_InternalFormat(0)
-	{
-	}
-
 	OpenGLTexture2D::~OpenGLTexture2D()
 	{
 		delete[]m_LocalData;
@@ -171,15 +158,15 @@ namespace XYZ {
 		m_LocalData.ZeroInitialize();
 		m_LocalData.Write(data, size, 0);
 		Renderer::Submit([this,size]() {
-			XYZ_ASSERT(size == m_Specification.Width * m_Specification.Height * m_Specification.Channels, "Data must be entire texture!");
+			XYZ_ASSERT(size == m_Width * m_Height * m_Channels, "Data must be entire texture!");
 			XYZ_ASSERT(m_DataFormat && m_InternalFormat, "Texture has no format or was created from frame buffer");
-			glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Specification.Width, m_Specification.Height, m_DataFormat, GL_UNSIGNED_BYTE, m_LocalData);
+			glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, m_LocalData);
 		});
 	}
 
 	uint8_t* OpenGLTexture2D::GetData()
 	{
-		m_LocalData.Allocate(m_Specification.Width * m_Specification.Height * m_Specification.Channels);
+		m_LocalData.Allocate(m_Width * m_Height * m_Channels);
 		glBindTexture(GL_TEXTURE_2D, m_RendererID);
 		glGetTexImage(GL_TEXTURE_2D, 0, m_DataFormat, GL_UNSIGNED_BYTE, m_LocalData);
 
@@ -199,6 +186,4 @@ namespace XYZ {
 			glBindTextureUnit(slot, rendererID); 
 			});
 	}
-
-
 }

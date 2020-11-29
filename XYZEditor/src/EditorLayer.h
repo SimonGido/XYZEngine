@@ -62,9 +62,9 @@ namespace XYZ {
 		Ref<Material> m_Material;
 		Ref<Texture2D> m_CharacterTexture;
 
-		Ref<SubTexture2D> m_CharacterSubTexture;
-		Ref<SubTexture2D> m_CharacterSubTexture2;
-		Ref<SubTexture2D> m_CharacterSubTexture3;
+		Ref<SubTexture> m_CharacterSubTexture;
+		Ref<SubTexture> m_CharacterSubTexture2;
+		Ref<SubTexture> m_CharacterSubTexture3;
 
 
 		void* m_ProhibitedCursor = nullptr;

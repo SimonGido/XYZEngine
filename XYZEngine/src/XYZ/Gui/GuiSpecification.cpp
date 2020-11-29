@@ -52,7 +52,7 @@ namespace XYZ {
 		Color(color)
 	{
 	}
-	ImageSpecification::ImageSpecification(const Ref<SubTexture2D>& subTexture, const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
+	ImageSpecification::ImageSpecification(const Ref<XYZ::SubTexture>& subTexture, const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
 		:
 		SubTexture(subTexture),
 		Position(position),

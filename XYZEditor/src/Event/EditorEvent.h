@@ -70,7 +70,7 @@ namespace XYZ {
 	class SpriteSelectedEvent : public Event
 	{
 	public:
-		SpriteSelectedEvent(const Ref<SubTexture2D>& sprite)
+		SpriteSelectedEvent(const Ref<SubTexture>& sprite)
 			:
 			m_Type(EventType::SpriteSelected),
 			m_Sprite(sprite)
@@ -78,7 +78,7 @@ namespace XYZ {
 
 		virtual EventType GetEventType() const override { return m_Type; }
 
-		Ref<SubTexture2D> GetSprite() const { return m_Sprite; }
+		Ref<SubTexture> GetSprite() const { return m_Sprite; }
 
 		static EventType GetStaticType()
 		{
@@ -86,6 +86,6 @@ namespace XYZ {
 		}
 	private:
 		EventType m_Type;
-		Ref<SubTexture2D> m_Sprite;
+		Ref<SubTexture> m_Sprite;
 	};
 }

@@ -5,7 +5,7 @@
 namespace XYZ {
 	CanvasRenderer::CanvasRenderer(
 		Ref<XYZ::Material>     material,
-		Ref<SubTexture2D>      subTexture,
+		Ref<XYZ::SubTexture>   subTexture,
 		glm::vec4		       color,
 		const XYZ::Mesh&	   mesh,
 		uint32_t			   sortLayer,
