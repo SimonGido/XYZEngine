@@ -787,11 +787,16 @@ namespace XYZ {
 		YAML::Node data = YAML::Load(strStream.str());
 
 		XYZ_ASSERT(data["SubTexture"], "Incorrect file format ");
-	
 		std::string texturePath = data["TextureAssetPath"].as<std::string>();
 		
 		Ref<Texture2D> texture;
-		if (HasExtension(texturePath, "ttf"))
+		if (texturePath.empty())
+		{
+			texture = Texture2D::Create(1, 1, 4, TextureSpecs());
+			uint32_t defaultData = 0xffffffff;
+			texture->SetData(&defaultData, sizeof(uint32_t));
+		}
+		else if (HasExtension(texturePath, "ttf"))
 			texture = assetManager.GetAsset<Font>(texturePath)->GetHandle()->GetTexture();
 		else
 			texture = assetManager.GetAsset<Texture2D>(texturePath)->GetHandle();

@@ -4714,7 +4714,7 @@ Entities:
       FirstChild: 65537
     CanvasRenderer:
       MaterialAssetPath: Assets/Materials/GuiMaterial.mat
-      SubTextureAssetPath: Assets/SubTextures/ButtonSubtexture.subtex
+      SubTextureAssetPath: Assets/SubTextures/RenderSubTexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 0
       IsVisible: true

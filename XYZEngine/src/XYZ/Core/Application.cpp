@@ -17,6 +17,7 @@
 namespace XYZ {
 	Application* Application::s_Application = nullptr;
 
+
 	Application::Application()
 	{
 		Logger::Get().SetLogLevel(LogLevel::INFO | LogLevel::WARNING | LogLevel::ERR);
@@ -27,8 +28,8 @@ namespace XYZ {
 		m_Window = Window::Create();
 		m_Window->SetVSync(false);
 
-		m_Window->RegisterCallback(Hook(&Application::OnEvent, this));		
-		
+		m_Window->RegisterCallback(Hook(&Application::OnEvent, this));	
+
 		m_GuiLayer = new GuiLayer();
 		m_LayerStack.PushOverlay(m_GuiLayer);
 	}

@@ -180,7 +180,6 @@ namespace XYZ {
 		Renderer::WaitAndRender();
 		
 		Ref<RenderTexture> renderTexture = RenderTexture::Create(SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer);
-		auto subTexture = Ref<SubTexture>::Create(renderTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 		for (uint32_t i = 0; i < m_ECS.GetNumberOfEntities(); ++i)
 		{
 			if (m_ECS.Contains<IDComponent>(i))
@@ -188,10 +187,10 @@ namespace XYZ {
 				auto& IDComp = m_ECS.GetComponent<IDComponent>(i);
 				if ((std::string)IDComp.ID == "{F98D48E0-BA80-43C6-8A77-5138B9FFE621}")
 				{
-					m_ECS.GetComponent<CanvasRenderer>(i).SubTexture = subTexture;
-					m_ECS.GetComponent<RectTransform>(i).Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent(
-						{i, &m_ECS}, QuadCanvasRendererRebuild()
-					));
+					m_ECS.GetComponent<CanvasRenderer>(i).SubTexture->SetTexture(renderTexture);
+					//m_ECS.GetComponent<RectTransform>(i).Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent(
+					//	{i, &m_ECS}, QuadCanvasRendererRebuild()
+					//));
 					break;
 				}
 			}
