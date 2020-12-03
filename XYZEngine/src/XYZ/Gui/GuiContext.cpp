@@ -540,7 +540,7 @@ namespace XYZ {
 		float w = (float)width;
 		float h = (float)height;
 		m_Camera.SetProjectionMatrix(glm::ortho(-w * 0.5f, w * 0.5f, -h * 0.5f, h * 0.5f));
-
+	
 		m_ViewportSize = glm::vec2(w, h);
 		for (size_t i = 0; i < m_CanvasView->Size(); ++i)
 		{

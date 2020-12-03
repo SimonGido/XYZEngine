@@ -61,6 +61,7 @@ namespace XYZ {
 		else if (dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&Dockspace::onMouseButtonRelease, this)))
 		{
 		}
+		else if (dispatcher.Dispatch<WindowResizeEvent>(Hook(&Dockspace::onWindowResize, this)));
 	}
 	void Dockspace::SetRoot(uint32_t entity)
 	{
@@ -159,6 +160,15 @@ namespace XYZ {
 		button.RegisterCallback<ReleaseEvent>(Hook(&Dockspace::onButtonRelease, this));
 
 		return { panelEntity, m_ECS };
+	}
+	bool Dockspace::onWindowResize(WindowResizeEvent& event)
+	{
+		auto& rootDockNode = m_ECS->GetStorageComponent<DockNodeComponent>(m_RootEntity);
+		glm::vec2 newSize = { event.GetWidth() , event.GetHeight() };
+		glm::vec2 scale = newSize / rootDockNode.Size;
+		//rescaleNode(m_RootEntity, scale);
+		//updateEntities(m_RootEntity);
+		return false;
 	}
 	bool Dockspace::onMouseButtonPress(MouseButtonPressEvent& event)
 	{
@@ -527,6 +537,21 @@ namespace XYZ {
 		while (current != NULL_ENTITY)
 		{
 			resizeNode(current, positionDiff, sizeDiff);
+			current = m_ECS->GetStorageComponent<Relationship>(current).NextSibling;
+		}
+	}
+	void Dockspace::rescaleNode(uint32_t nodeEntity, const glm::vec2 scale)
+	{
+		auto& dockNode = m_ECS->GetStorageComponent<DockNodeComponent>(nodeEntity);
+		glm::vec2 oldSize = dockNode.Size;
+		dockNode.Size *= scale;
+		glm::vec2 diff = dockNode.Size - oldSize;
+	
+		auto& rel = m_ECS->GetStorageComponent<Relationship>(nodeEntity);
+		uint32_t current = rel.FirstChild;
+		while (current != NULL_ENTITY)
+		{
+			rescaleNode(current, scale);
 			current = m_ECS->GetStorageComponent<Relationship>(current).NextSibling;
 		}
 	}

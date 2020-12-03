@@ -856,7 +856,6 @@ namespace XYZ {
 				case FieldType::None:
 					break;
 				}
-
 			}
 		}
 		material->SetFilepath(filepath);
