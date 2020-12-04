@@ -173,7 +173,7 @@ namespace XYZ {
 		YAML::Node data = YAML::Load(strStream.str());
 		Serializer::Deserialize<ECSManager>(data, m_AssetManager, m_ECS);
 
-		m_GuiContext = Application::Get().GetGuiLayer()->CreateContext(&m_ECS, specs);
+		m_GuiContext = Application::Get().GetGuiLayer()->CreateContext(&m_ECS, specs);	
 		m_Dockspace = new Dockspace(&m_ECS, m_GuiContext);
 		m_Dockspace->SetRoot(1);
 
@@ -185,7 +185,7 @@ namespace XYZ {
 			if (m_ECS.Contains<IDComponent>(i))
 			{
 				auto& IDComp = m_ECS.GetComponent<IDComponent>(i);
-				if ((std::string)IDComp.ID == "{F98D48E0-BA80-43C6-8A77-5138B9FFE621}")
+				if ((std::string)IDComp.ID == "{5AA13A66-A415-487A-BE7A-77362B710C65}")
 				{
 					m_ECS.GetComponent<CanvasRenderer>(i).SubTexture->SetTexture(renderTexture);
 					//m_ECS.GetComponent<RectTransform>(i).Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent(

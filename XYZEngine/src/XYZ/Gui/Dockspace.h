@@ -83,9 +83,6 @@ namespace XYZ {
 
 		struct ResizeData
 		{
-			float	  Border;
-			float	  FirstSize;
-			float	  SecondSize;
 			uint32_t  Entity = NULL_ENTITY;
 			SplitType Type = SplitType::None;
 		};

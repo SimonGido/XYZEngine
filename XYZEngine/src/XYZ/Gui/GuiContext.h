@@ -60,7 +60,6 @@ namespace XYZ {
 
 		// Event resolving functions
 		bool onCanvasRendererRebuild(CanvasRendererRebuildEvent& event);
-		bool onWindowResizeEvent(WindowResizeEvent& event);
 		bool onMouseButtonPress(MouseButtonPressEvent& event);
 		bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
 		bool onMouseMove(MouseMovedEvent& event);

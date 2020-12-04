@@ -13,6 +13,16 @@ static bool Collide(const glm::vec2& pos, const glm::vec2& size, const glm::vec2
 		pos.y - size.y / 2.0f < point.y);
 }
 
+static bool CollideNotCentered(const glm::vec2& pos, const glm::vec2& size, const glm::vec2& point)
+{
+	return (pos.x + size.x > point.x &&
+		pos.x		   < point.x&&
+		pos.y + size.y > point.y &&
+		pos.y < point.y);
+}
+
+
+
 static glm::vec2 MouseToWorld(const glm::vec2& point, const glm::vec2& windowSize)
 {
 	glm::vec2 offset = { windowSize.x / 2,windowSize.y / 2 };
@@ -74,7 +84,8 @@ namespace XYZ {
 		if (!m_ECS->Contains<DockNodeComponent>(m_RootEntity))
 		{
 			auto [width, height] = Input::GetWindowSize();
-			m_ECS->AddComponent<DockNodeComponent>(m_RootEntity, DockNodeComponent(glm::vec3(0.0f), { width,height }));
+			glm::vec2 size = { width, height };
+			m_ECS->AddComponent<DockNodeComponent>(m_RootEntity, DockNodeComponent(glm::vec3(-size / 2.0f , 0.0f), size));
 		}
 		if (!m_ECS->Contains<Relationship>(m_RootEntity))
 		{
@@ -111,7 +122,6 @@ namespace XYZ {
 		m_ECS->AddComponent<Dockable>(buttonEntity, Dockable());
 
 		uint32_t panelEntity = m_Context->CreatePanel(canvas, modifiedSpecs);
-
 		Relationship::RemoveRelation(panelEntity, *m_ECS);
 		Relationship::SetupRelation(buttonEntity, panelEntity, *m_ECS);
 
@@ -163,11 +173,6 @@ namespace XYZ {
 	}
 	bool Dockspace::onWindowResize(WindowResizeEvent& event)
 	{
-		auto& rootDockNode = m_ECS->GetStorageComponent<DockNodeComponent>(m_RootEntity);
-		glm::vec2 newSize = { event.GetWidth() , event.GetHeight() };
-		glm::vec2 scale = newSize / rootDockNode.Size;
-		//rescaleNode(m_RootEntity, scale);
-		//updateEntities(m_RootEntity);
 		return false;
 	}
 	bool Dockspace::onMouseButtonPress(MouseButtonPressEvent& event)
@@ -225,7 +230,7 @@ namespace XYZ {
 		auto& currentRel = m_ECS->GetStorageComponent<Relationship>(nodeEntity);
 		auto& dockNode = m_ECS->GetStorageComponent<DockNodeComponent>(nodeEntity);
 
-		if (Collide(dockNode.Position, dockNode.Size, mousePosition) && currentRel.FirstChild != NULL_ENTITY)
+		if (CollideNotCentered(dockNode.Position, dockNode.Size, mousePosition) && currentRel.FirstChild != NULL_ENTITY)
 		{
 			auto& firstNodeRel = m_ECS->GetStorageComponent<Relationship>(currentRel.FirstChild);
 			auto& firstDockNode = m_ECS->GetStorageComponent<DockNodeComponent>(currentRel.FirstChild);
@@ -233,26 +238,20 @@ namespace XYZ {
 
 			if (dockNode.Split == SplitType::Horizontal)
 			{
-				if (mousePosition.y > firstDockNode.Position.y + (firstDockNode.Size.y / 2.0f) - offset
-					&& mousePosition.y < secondDockNode.Position.y - (secondDockNode.Size.y / 2.0f) + offset)
+				if (mousePosition.y > firstDockNode.Position.y + firstDockNode.Size.y - offset
+				 && mousePosition.y < firstDockNode.Position.y + firstDockNode.Size.y + offset)
 				{
 					m_ResizeData.Entity = nodeEntity;
-					m_ResizeData.Border = firstDockNode.Position.y + (firstDockNode.Size.y / 2.0f);
-					m_ResizeData.FirstSize = firstDockNode.Size.y;
-					m_ResizeData.SecondSize = secondDockNode.Size.y;
 					m_ResizeData.Type = dockNode.Split;
 					return nodeEntity;
 				}
 			}
 			else
 			{
-				if (mousePosition.x > firstDockNode.Position.x + (firstDockNode.Size.x / 2.0f) - offset
-					&& mousePosition.x < secondDockNode.Position.x - (secondDockNode.Size.x / 2.0f) + offset)
+				if (mousePosition.x > firstDockNode.Position.x + firstDockNode.Size.x  - offset
+				 && mousePosition.x < firstDockNode.Position.x + firstDockNode.Size.x + offset)
 				{
 					m_ResizeData.Entity = nodeEntity;
-					m_ResizeData.Border = firstDockNode.Position.x + (firstDockNode.Size.x / 2.0f);
-					m_ResizeData.FirstSize = firstDockNode.Size.x;
-					m_ResizeData.SecondSize = secondDockNode.Size.x;
 					m_ResizeData.Type = dockNode.Split;
 					return nodeEntity;
 				}
@@ -281,40 +280,30 @@ namespace XYZ {
 		if (rel.FirstChild != NULL_ENTITY)
 		{
 			auto& childRel = m_ECS->GetStorageComponent<Relationship>(rel.FirstChild);
-
 			auto& firstDockNode = m_ECS->GetStorageComponent<DockNodeComponent>(rel.FirstChild);
 			auto& secondDockNode = m_ECS->GetStorageComponent<DockNodeComponent>(childRel.NextSibling);
 
 			if (m_ResizeData.Type == SplitType::Horizontal)
 			{
-				float dist = m_ResizeData.Border - mousePosition.y;
-				glm::vec3 bottomPosition = { dockNode.Position.x, m_ResizeData.Border - (m_ResizeData.FirstSize / 2.0f) - dist / 2.0f, 0.0f };
-				glm::vec2 bottomSize = { dockNode.Size.x, m_ResizeData.FirstSize - dist };
-				glm::vec3 topPosition = { dockNode.Position.x, m_ResizeData.Border + (m_ResizeData.SecondSize / 2.0f) - dist / 2.0f, 0.0f };
-				glm::vec2 topSize = { dockNode.Size.x, m_ResizeData.SecondSize + dist };
-
-				firstDockNode.Position = bottomPosition;
-				firstDockNode.Size = bottomSize;
-				secondDockNode.Position = topPosition;
-				secondDockNode.Size = topSize;
+				firstDockNode.Size.y = mousePosition.y - dockNode.Position.y;
+				secondDockNode.Position.y = dockNode.Position.y + firstDockNode.Size.y;
+				secondDockNode.Size.y = (dockNode.Position.y + dockNode.Size.y) - secondDockNode.Position.y;
 			}
 			else if (m_ResizeData.Type == SplitType::Vertical)
 			{
-				float dist = m_ResizeData.Border - mousePosition.x;
-				glm::vec3 leftPosition = { m_ResizeData.Border - (m_ResizeData.FirstSize / 2.0f) - (dist / 2.0f), dockNode.Position.y, 0.0f };
-				glm::vec2 leftSize = { m_ResizeData.FirstSize - dist, dockNode.Size.y };
-				glm::vec3 rightPosition = { m_ResizeData.Border + (m_ResizeData.SecondSize / 2.0f) - dist / 2.0f, dockNode.Position.y, 0.0f };
-				glm::vec2 rightSize = { m_ResizeData.SecondSize + dist, dockNode.Size.y };
-
-				firstDockNode.Position = leftPosition;
-				firstDockNode.Size = leftSize;
-				secondDockNode.Position = rightPosition;
-				secondDockNode.Size = rightSize;
+				glm::vec2 leftOld = firstDockNode.Size;
+				glm::vec2 rightOld = secondDockNode.Size;
+				glm::vec2 leftNew = { mousePosition.x - dockNode.Position.x, firstDockNode.Size.y };
+				glm::vec2 rightNew = { ( dockNode.Position.x + dockNode.Size.x) - secondDockNode.Position.x , secondDockNode.Size.y };
+				
+				firstDockNode.Size.x = leftNew.x;
+				secondDockNode.Position.x = dockNode.Position.x + firstDockNode.Size.x;
+				secondDockNode.Size.x = rightNew.x;
 			}
 			adjustNodeChildren(rel.FirstChild);
 			adjustNodeChildren(childRel.NextSibling);
-			updateEntities(m_ResizeData.Entity);
 		}
+		updateEntities(m_ResizeData.Entity);
 	}
 	uint32_t Dockspace::splitNode(uint32_t nodeEntity, SplitType type, const glm::vec2& mousePosition)
 	{
@@ -323,9 +312,8 @@ namespace XYZ {
 		uint32_t result = nodeEntity;
 		if (type == SplitType::Horizontal)
 		{
-			glm::vec3 topPosition = { dockNode.Position.x, dockNode.Position.y + dockNode.Size.y / 4.0f, 0.0f };
-			glm::vec3 bottomPosition = { dockNode.Position.x, dockNode.Position.y - dockNode.Size.y / 4.0f, 0.0f };
-
+			glm::vec3 topPosition = { dockNode.Position.x, dockNode.Position.y + dockNode.Size.y / 2.0f, 0.0f };
+			glm::vec3 bottomPosition = { dockNode.Position.x, dockNode.Position.y, 0.0f };
 			glm::vec2 size = { dockNode.Size.x, dockNode.Size.y / 2.0f };
 
 			uint32_t top = createNode(nodeEntity, topPosition, size);
@@ -333,7 +321,7 @@ namespace XYZ {
 
 			// Old dock node no longer valid
 			auto& updatedDockNode = m_ECS->GetStorageComponent<DockNodeComponent>(nodeEntity);
-			if (mousePosition.y < updatedDockNode.Position.y)
+			if (mousePosition.y < topPosition.y)
 			{
 				result = bottom;
 				for (auto entity : updatedDockNode.Entities)
@@ -349,8 +337,8 @@ namespace XYZ {
 		}
 		else if (type == SplitType::Vertical)
 		{
-			glm::vec3 leftPosition = { dockNode.Position.x - dockNode.Size.x / 4.0f, dockNode.Position.y, 0.0f };
-			glm::vec3 rightPosition = { dockNode.Position.x + dockNode.Size.x / 4.0f, dockNode.Position.y, 0.0f };
+			glm::vec3 leftPosition = { dockNode.Position.x, dockNode.Position.y, 0.0f };
+			glm::vec3 rightPosition = { dockNode.Position.x + dockNode.Size.x / 2.0f, dockNode.Position.y, 0.0f };
 			glm::vec2 size = { dockNode.Size.x / 2.0f, dockNode.Size.y };
 
 			uint32_t right = createNode(nodeEntity, rightPosition, size);
@@ -359,7 +347,7 @@ namespace XYZ {
 			// Old dock node no longer valid
 			auto& updatedDockNode = m_ECS->GetComponent<DockNodeComponent>(nodeEntity);
 
-			if (mousePosition.x > updatedDockNode.Position.x)
+			if (mousePosition.x > leftPosition.x + size.x)
 			{
 				result = right;
 				for (auto entity : updatedDockNode.Entities)
@@ -430,7 +418,6 @@ namespace XYZ {
 	{
 		auto& rel = m_ECS->GetStorageComponent<Relationship>(nodeEntity);
 		auto& dockNode = m_ECS->GetStorageComponent<DockNodeComponent>(nodeEntity);
-
 		uint32_t current = rel.FirstChild;
 		if (current != NULL_ENTITY)
 		{
@@ -440,39 +427,23 @@ namespace XYZ {
 
 			if (dockNode.Split == SplitType::Horizontal)
 			{
-				firstDockNode.Position.x = dockNode.Position.x;
+				glm::vec2 halfSize = { dockNode.Size.x , dockNode.Size.y / 2 };
+				glm::vec3 bottomPos = { dockNode.Position.x ,dockNode.Position.y,0.0f };
+				glm::vec3 topPos = { dockNode.Position.x , dockNode.Position.y + firstDockNode.Size.y ,0.0f };
+
+				firstDockNode.Position = bottomPos;
+				secondDockNode.Position = topPos;
 				firstDockNode.Size.x = dockNode.Size.x;
-
-				secondDockNode.Position.x = dockNode.Position.x;
-				secondDockNode.Size.x = dockNode.Size.x;
-
-				float oldSize = firstDockNode.Size.y + secondDockNode.Size.y;
-				float scaleFirst = firstDockNode.Size.y / oldSize;
-				float scaleSecond = secondDockNode.Size.y / oldSize;
-
-				firstDockNode.Size.y = dockNode.Size.y * scaleFirst;
-				secondDockNode.Size.y = dockNode.Size.y * scaleSecond;
-
-				firstDockNode.Position.y = (dockNode.Position.y - dockNode.Size.y / 2.0f) + (firstDockNode.Size.y / 2.0f);
-				secondDockNode.Position.y = (firstDockNode.Position.y + firstDockNode.Size.y / 2.0f) + (secondDockNode.Size.y / 2.0f);
+				secondDockNode.Size.x = dockNode.Size.x;	
+				secondDockNode.Size.y = dockNode.Size.y - firstDockNode.Size.y;
 			}
 			else if (dockNode.Split == SplitType::Vertical)
 			{
-				firstDockNode.Position.y = dockNode.Position.y;
+				firstDockNode.Position = dockNode.Position;
+				firstDockNode.Size.x = secondDockNode.Position.x - firstDockNode.Position.x;
 				firstDockNode.Size.y = dockNode.Size.y;
-
-				secondDockNode.Position.y = dockNode.Position.y;
+				secondDockNode.Size.x = dockNode.Size.x - firstDockNode.Size.x;
 				secondDockNode.Size.y = dockNode.Size.y;
-
-				float oldSize = firstDockNode.Size.x + secondDockNode.Size.x;
-				float scaleFirst = firstDockNode.Size.x / oldSize;
-				float scaleSecond = secondDockNode.Size.x / oldSize;
-
-				firstDockNode.Size.x = dockNode.Size.x * scaleFirst;
-				secondDockNode.Size.x = dockNode.Size.x * scaleSecond;
-
-				firstDockNode.Position.x = (dockNode.Position.x - dockNode.Size.x / 2.0f) + (firstDockNode.Size.x / 2.0f);
-				secondDockNode.Position.x = (firstDockNode.Position.x + firstDockNode.Size.x / 2.0f) + (secondDockNode.Size.x / 2.0f);
 			}
 			adjustNodeChildren(current);
 			adjustNodeChildren(sibling);
@@ -485,15 +456,16 @@ namespace XYZ {
 		auto& entityRel = m_ECS->GetStorageComponent<Relationship>(entity);
 		auto& firstChildTransform = m_ECS->GetStorageComponent<RectTransform>(entityRel.FirstChild);
 
+
 		transform.Position = dockNode.Position + glm::vec3(
-			(-dockNode.Size.x / 2.0f) + (transform.Size.x / 2.0f),
-			(dockNode.Size.y / 2.0f) - (transform.Size.y / 2.0f),
+			transform.Size.x / 2.0f, dockNode.Size.y - transform.Size.y / 2.0f,
 			0.0f
 		);
+		
 		firstChildTransform.Size = dockNode.Size;
 		firstChildTransform.Position = glm::vec3(
 			(dockNode.Size.x / 2.0f) - (transform.Size.x / 2.0f),
-			-(dockNode.Size.y / 2.0f) + (transform.Size.y / 2.0f),
+		   -(dockNode.Size.y / 2.0f) + (transform.Size.y / 2.0f),
 			0.0f
 		);
 		firstChildTransform.Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent(
@@ -568,6 +540,14 @@ namespace XYZ {
 		auto& dock = m_ECS->AddComponent<DockNodeComponent>(entity, DockNodeComponent(position, size));
 		m_ECS->AddComponent<Relationship>(entity, Relationship());
 
+		//m_Context->CreateButton(0, ButtonSpecification(
+		//	"TEst",
+		//	position + glm::vec3(size / 2.0f,0.0f),
+		//	size,
+		//	glm::vec4(1.0f),
+		//	glm::vec4(1.0f),
+		//	glm::vec4(1.0f)
+		//));
 		Relationship::SetupRelation(parent, entity, *m_ECS);
 		return entity;
 	}
@@ -577,7 +557,7 @@ namespace XYZ {
 		auto& currentRel = m_ECS->GetStorageComponent<Relationship>(entity);
 		auto& dockNode = m_ECS->GetStorageComponent<DockNodeComponent>(entity);
 
-		if (currentRel.FirstChild == NULL_ENTITY && Collide(dockNode.Position, dockNode.Size, mousePosition))
+		if (currentRel.FirstChild == NULL_ENTITY && CollideNotCentered(dockNode.Position, dockNode.Size, mousePosition))
 			return entity;
 
 		uint32_t result = NULL_ENTITY;
@@ -595,13 +575,13 @@ namespace XYZ {
 	SplitType Dockspace::resolveSplit(uint32_t nodeEntity, const glm::vec2& mousePosition)
 	{
 		auto& dockNode = m_ECS->GetStorageComponent<DockNodeComponent>(nodeEntity);
-		if (mousePosition.x < dockNode.Position.x - dockNode.Size.x / 4.0f
-			|| mousePosition.x > dockNode.Position.x + dockNode.Size.y / 4.0f)
+		if (mousePosition.x < dockNode.Position.x + dockNode.Size.x / 4.0f
+		 || mousePosition.x > dockNode.Position.x + dockNode.Size.x - (dockNode.Size.x / 4.0f))
 		{
 			return SplitType::Vertical;
 		}
-		else if (mousePosition.y < dockNode.Position.y - dockNode.Size.y / 4.0f
-			|| mousePosition.y >   dockNode.Position.y + dockNode.Size.y / 4.0f)
+		else if (mousePosition.y < dockNode.Position.y + dockNode.Size.y / 4.0f
+			  || mousePosition.y > dockNode.Position.y + dockNode.Size.y - (dockNode.Size.y / 4.0f))
 		{
 			return SplitType::Horizontal;
 		}

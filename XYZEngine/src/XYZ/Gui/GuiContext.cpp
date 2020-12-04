@@ -539,6 +539,7 @@ namespace XYZ {
 
 		float w = (float)width;
 		float h = (float)height;
+
 		m_Camera.SetProjectionMatrix(glm::ortho(-w * 0.5f, w * 0.5f, -h * 0.5f, h * 0.5f));
 	
 		m_ViewportSize = glm::vec2(w, h);
@@ -567,9 +568,6 @@ namespace XYZ {
 		{
 		}
 		else if (dispatcher.Dispatch<MouseMovedEvent>(Hook(&GuiContext::onMouseMove, this)))
-		{
-		}
-		else if (dispatcher.Dispatch<WindowResizeEvent>(Hook(&GuiContext::onWindowResizeEvent, this)))
 		{
 		}
 		else if (dispatcher.Dispatch<KeyTypedEvent>(Hook(&GuiContext::onKeyTyped, this)))
@@ -616,11 +614,7 @@ namespace XYZ {
 		Renderer::EndRenderPass();
 		Renderer::WaitAndRender();
 	}
-	bool GuiContext::onWindowResizeEvent(WindowResizeEvent& event)
-	{
-		SetViewportSize((uint32_t)event.GetWidth(), (uint32_t)event.GetHeight());
-		return false;
-	}
+
 	bool GuiContext::onMouseButtonPress(MouseButtonPressEvent& event)
 	{
 		auto [mx, my] = Input::GetMousePosition();
