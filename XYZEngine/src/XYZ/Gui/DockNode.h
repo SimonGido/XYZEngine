@@ -27,6 +27,7 @@ namespace XYZ {
 		glm::vec3 Position;
 		glm::vec2 Size;
 		SplitType Split = SplitType::None;
+	
 	private:
 		bool onResize(ComponentResizedEvent& event);
 	};

@@ -401,35 +401,25 @@ namespace XYZ {
 		auto& rel = m_ECS->GetStorageComponent<Relationship>(nodeEntity);
 		auto& dockNode = m_ECS->GetStorageComponent<DockNodeComponent>(rel.Parent);
 
-		if (rel.NextSibling != NULL_ENTITY)
-		{
-			auto& dockNodeSibling = m_ECS->GetStorageComponent<DockNodeComponent>(rel.NextSibling);
-			if (dockNodeSibling.Split != SplitType::None)
-				return;
+		uint32_t sibling = rel.NextSibling;
+		if (rel.NextSibling == NULL_ENTITY)
+			sibling = rel.PreviousSibling;
+		
+		auto& dockNodeSibling = m_ECS->GetStorageComponent<DockNodeComponent>(sibling);
+		if (dockNodeSibling.Split != SplitType::None)
+			return;
 
-			for (auto entity : dockNodeSibling.Entities)
-				insertToNode(rel.Parent, entity);
+		for (auto entity : dockNodeSibling.Entities)
+			insertToNode(rel.Parent, entity);
 
-			uint32_t tmpSibling = rel.NextSibling;
-			Relationship::RemoveRelation(rel.NextSibling, *m_ECS);
-			m_ECS->DestroyEntity(tmpSibling);
-		}
-		else
-		{
-			auto& dockNodeSibling = m_ECS->GetStorageComponent<DockNodeComponent>(rel.PreviousSibling);
-			if (dockNodeSibling.Split != SplitType::None)
-				return;
-
-			for (auto entity : dockNodeSibling.Entities)
-				insertToNode(rel.Parent, entity);
-
-			uint32_t tmpSibling = rel.PreviousSibling;
-			Relationship::RemoveRelation(rel.PreviousSibling, *m_ECS);
-			m_ECS->DestroyEntity(tmpSibling);
-		}
+		uint32_t tmpSibling = sibling;
+		Relationship::RemoveRelation(sibling, *m_ECS);
+		m_ECS->DestroyEntity(tmpSibling);
+		
 
 		Relationship::RemoveRelation(nodeEntity, *m_ECS);
 		m_ECS->DestroyEntity(nodeEntity);
+		dockNode.Split = SplitType::None;
 	}
 	void Dockspace::adjustNodeChildren(uint32_t nodeEntity)
 	{
@@ -492,6 +482,7 @@ namespace XYZ {
 	}
 	bool Dockspace::removeFromNode(uint32_t nodeEntity, uint32_t entity)
 	{
+		auto& rel = m_ECS->GetStorageComponent<Relationship>(nodeEntity);
 		auto& dockNode = m_ECS->GetStorageComponent<DockNodeComponent>(nodeEntity);
 		auto it = std::find(dockNode.Entities.begin(), dockNode.Entities.end(), entity);
 		if (it != dockNode.Entities.end())
@@ -500,11 +491,13 @@ namespace XYZ {
 			if (dockNode.Entities.empty())
 			{
 				if (nodeEntity != m_RootEntity)
+				{
 					destroyNode(nodeEntity);
+				}
 			}
 			return true;
 		}
-		auto& rel = m_ECS->GetStorageComponent<Relationship>(nodeEntity);
+		
 		uint32_t currentEntity = rel.FirstChild;
 		while (currentEntity != NULL_ENTITY)
 		{
@@ -557,6 +550,8 @@ namespace XYZ {
 
 		auto& dock = m_ECS->AddComponent<DockNodeComponent>(entity, DockNodeComponent(position, size));
 		m_ECS->AddComponent<Relationship>(entity, Relationship());
+
+		m_ECS->AddComponent<LineRenderer>(entity, LineRenderer(glm::vec4(0.1f, 0.1f, 0.0f, 1.0f), LineMesh()));
 
 		Relationship::SetupRelation(parent, entity, *m_ECS);
 		return entity;
