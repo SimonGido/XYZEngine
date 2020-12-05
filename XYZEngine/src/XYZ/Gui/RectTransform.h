@@ -10,7 +10,7 @@ namespace XYZ {
 	
 
 	struct RectTransform : public Type<RectTransform>,
-						   public EventSystem<RectTransformResizedEvent> // Editor only , it fires event when canvas should be rebuilt
+						   public EventSystem<ComponentResizedEvent>
 	{
 		RectTransform(const glm::vec3& position, const glm::vec2& size);
 			
@@ -32,6 +32,6 @@ namespace XYZ {
 		}
 
 	private:
-		bool onCanvasRendererRebuild(RectTransformResizedEvent& event);
+		bool onResize(ComponentResizedEvent& event);
 	};
 }

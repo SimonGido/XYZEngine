@@ -134,10 +134,10 @@ namespace XYZ {
 		EventType m_Type;
 	};
 
-	struct RectTransformResizedEvent : public Event
+	struct ComponentResizedEvent : public Event
 	{
-		RectTransformResizedEvent(Entity entity)
-			: m_Type(EventType::RectTransformResized),m_Entity(entity)
+		ComponentResizedEvent(Entity entity)
+			: m_Type(EventType::ComponentResized),m_Entity(entity)
 		{}
 
 		Entity GetEntity() const { return m_Entity; }
@@ -146,7 +146,7 @@ namespace XYZ {
 
 		static EventType GetStaticType()
 		{
-			return EventType::RectTransformResized;
+			return EventType::ComponentResized;
 		}
 	private:
 		EventType m_Type;

@@ -17,8 +17,13 @@ namespace XYZ {
 			CanvasRenderer* Renderer;
 			RectTransform*  Transform;
 		};
+		struct LineDrawCommand
+		{
+			LineRenderer* Renderer;
+		};
 
 		std::vector<WidgetDrawCommand> WidgetDrawList;
+		std::vector<LineDrawCommand> LineDrawList;
 	};
 
 	GuiRendererData s_Data;
@@ -36,12 +41,17 @@ namespace XYZ {
 	{
 		flushDrawList();
 		s_Data.WidgetDrawList.clear();
+		s_Data.LineDrawList.clear();
 	}
 
 	void GuiRenderer::SubmitWidget(CanvasRenderer* canvasRenderer, RectTransform* transform)
 	{
 		if (cullTest(transform->WorldPosition, transform->Scale))
 			s_Data.WidgetDrawList.push_back({ canvasRenderer, transform });
+	}
+	void GuiRenderer::SubmitWidget(LineRenderer* lineRenderer)
+	{
+		s_Data.LineDrawList.push_back({ lineRenderer });
 	}
 	void GuiRenderer::flushDrawList()
 	{
@@ -58,6 +68,15 @@ namespace XYZ {
 				Renderer2D::SetMaterial(dc.Renderer->Material);	
 			uint32_t textureID = Renderer2D::SetTexture(dc.Renderer->SubTexture->GetTexture());
 			Renderer2D::SubmitQuads(dc.Transform->GetWorldTransform(), dc.Renderer->Mesh.Vertices.data(), dc.Renderer->Mesh.Vertices.size() / 4.0f, textureID, dc.Renderer->TilingFactor);
+		}
+		for (auto& dc : s_Data.LineDrawList)
+		{
+			for (size_t i = 0; i < dc.Renderer->LineMesh.Points.size(); i += 2)
+			{	
+				auto& startPoint = dc.Renderer->LineMesh.Points[i];
+				auto& endPoint = dc.Renderer->LineMesh.Points[i + 1];
+				Renderer2D::SubmitLine(startPoint, endPoint, dc.Renderer->Color);
+			}
 		}
 		Renderer2D::Flush();
 		Renderer2D::FlushLines();

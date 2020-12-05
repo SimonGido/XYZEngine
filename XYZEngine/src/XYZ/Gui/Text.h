@@ -10,7 +10,8 @@ namespace XYZ {
 	{
 		Left,
 		Right,
-		Center
+		Center,
+		None
 	};
 
 	struct Text : public Type<Text>

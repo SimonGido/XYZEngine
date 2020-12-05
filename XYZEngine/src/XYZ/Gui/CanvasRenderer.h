@@ -11,7 +11,7 @@ namespace XYZ {
 	{
 		CanvasRenderer(
 			Ref<Material>     Material,
-			Ref<SubTexture> SubTexture,
+			Ref<SubTexture>   SubTexture,
 			glm::vec4		  Color,
 			const Mesh&		  mesh,
 			uint32_t		  sortLayer,
@@ -25,7 +25,7 @@ namespace XYZ {
 		CanvasRenderer& operator =(const CanvasRenderer& other);
 		
 		Ref<Material>     Material;
-		Ref<SubTexture> SubTexture;
+		Ref<SubTexture>   SubTexture;
 		glm::vec4		  Color;
 		Mesh			  Mesh;
 		uint32_t		  SortLayer;

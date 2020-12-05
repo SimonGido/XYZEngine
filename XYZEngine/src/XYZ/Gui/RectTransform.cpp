@@ -4,7 +4,7 @@
 #include "Text.h"
 
 namespace XYZ {
-	static bool OnQuadRectTransformResized(RectTransformResizedEvent& event)
+	static bool OnQuadRectTransformResized(ComponentResizedEvent& event)
 	{
 		auto entity = event.GetEntity();
 		constexpr size_t quadVertexCount = 4;
@@ -29,7 +29,7 @@ namespace XYZ {
 		return false;
 	}
 
-	static bool OnTextRectTransformResized(RectTransformResizedEvent& event)
+	static bool OnTextRectTransformResized(ComponentResizedEvent& event)
 	{
 		auto& entity = event.GetEntity();
 		auto& transform = entity.GetComponent<RectTransform>();
@@ -95,10 +95,10 @@ namespace XYZ {
 	RectTransform::RectTransform(const glm::vec3& position, const glm::vec2& size)
 		: WorldPosition(position), Position(position), Size(size)
 	{
-		RegisterCallback<RectTransformResizedEvent>(Hook(&RectTransform::onCanvasRendererRebuild, this));
+		RegisterCallback<ComponentResizedEvent>(Hook(&RectTransform::onResize, this));
 	}
 
-	bool RectTransform::onCanvasRendererRebuild(RectTransformResizedEvent& event)
+	bool RectTransform::onResize(ComponentResizedEvent& event)
 	{
 		auto entity = event.GetEntity();
 		if (entity.HasComponent<CanvasRenderer>())

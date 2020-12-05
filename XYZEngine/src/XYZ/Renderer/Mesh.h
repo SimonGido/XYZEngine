@@ -17,4 +17,9 @@ namespace XYZ {
 	{
 		std::vector<Vertex> Vertices;
 	};
+
+	struct LineMesh
+	{
+		std::vector<glm::vec3> Points;
+	};
 }

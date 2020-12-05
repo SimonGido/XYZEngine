@@ -314,6 +314,9 @@ namespace XYZ {
 				secondDockNode.Position.x = dockNode.Position.x + firstDockNode.Size.x;
 				secondDockNode.Size.x = rightNew.x;
 			}
+			firstDockNode.Execute<ComponentResizedEvent>(ComponentResizedEvent({ rel.FirstChild, m_ECS }));
+			secondDockNode.Execute<ComponentResizedEvent>(ComponentResizedEvent({ childRel.NextSibling, m_ECS }));
+
 			adjustNodeChildren(rel.FirstChild);
 			adjustNodeChildren(childRel.NextSibling);
 		}
@@ -459,6 +462,9 @@ namespace XYZ {
 				secondDockNode.Size.x = dockNode.Size.x - firstDockNode.Size.x;
 				secondDockNode.Size.y = dockNode.Size.y;
 			}
+			firstDockNode.Execute<ComponentResizedEvent>(ComponentResizedEvent({ current, m_ECS }));
+			secondDockNode.Execute<ComponentResizedEvent>(ComponentResizedEvent({ sibling, m_ECS }));
+			
 			adjustNodeChildren(current);
 			adjustNodeChildren(sibling);
 		}
@@ -482,7 +488,7 @@ namespace XYZ {
 		   -(dockNode.Size.y / 2.0f) + (transform.Size.y / 2.0f),
 			0.0f
 		);
-		firstChildTransform.Execute<RectTransformResizedEvent>(RectTransformResizedEvent({ entityRel.FirstChild, m_ECS }));
+		firstChildTransform.Execute<ComponentResizedEvent>(ComponentResizedEvent({ entityRel.FirstChild, m_ECS }));
 	}
 	bool Dockspace::removeFromNode(uint32_t nodeEntity, uint32_t entity)
 	{
@@ -591,10 +597,5 @@ namespace XYZ {
 		}
 		return SplitType::None;
 	}
-	DockNodeComponent::DockNodeComponent(const glm::vec3& position, const glm::vec2& size)
-		:
-		Position(position), Size(size)
-	{
-	}
-	
+
 }

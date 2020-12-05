@@ -494,6 +494,27 @@ namespace XYZ {
 	}
 
 	template <>
+	void Serializer::Serialize<LineRenderer>(YAML::Emitter& out, const LineRenderer& val)
+	{
+		out << YAML::Key << "LineRenderer";
+		out << YAML::BeginMap;
+
+		out << YAML::Key << "Color" << YAML::Value << val.Color;
+		out << YAML::Key << "IsVisible" << YAML::Value << val.IsVisible;
+
+		out << YAML::Key << "Points";
+		out << YAML::Value << YAML::BeginSeq;
+		for (auto& it : val.LineMesh.Points)
+		{
+			out << YAML::BeginMap;
+			out << YAML::Key << "Point" << YAML::Value << it;
+			out << YAML::EndMap;
+		}
+		out << YAML::EndSeq;
+		out << YAML::EndMap; // LineRenderer
+	}
+
+	template <>
 	void Serializer::Serialize<LayoutGroup>(YAML::Emitter& out, const LayoutGroup& val)
 	{
 		out << YAML::Key << "LayoutGroup";
@@ -720,6 +741,10 @@ namespace XYZ {
 				if (ecs.Contains<Dockable>(entity))
 				{
 					Serialize<Dockable>(out, ecs.GetComponent<Dockable>(entity));
+				}
+				if (ecs.Contains<LineRenderer>(entity))
+				{
+					Serialize<LineRenderer>(out, ecs.GetComponent<LineRenderer>(entity));
 				}
 				out << YAML::EndMap; // Entity
 			}
@@ -1078,7 +1103,7 @@ namespace XYZ {
 		Ref<Font> font = assetManager.GetAsset<Font>(data["FontPath"].as<std::string>())->GetHandle();
 		std::string source = data["Source"].as<std::string>();
 		glm::vec4 color = data["Color"].as<glm::vec4>();
-		TextAlignment alignment;
+		TextAlignment alignment = TextAlignment::None;
 		uint32_t align = data["Alignment"].as<uint32_t>();
 		switch (align)
 		{
@@ -1124,6 +1149,19 @@ namespace XYZ {
 			break;
 		};
 		return dockNode;
+	}
+
+	template<>
+	LineRenderer Serializer::Deserialize<LineRenderer>(YAML::Node& data, AssetManager& assetManager)
+	{
+		LineMesh mesh;
+		glm::vec4 color = data["Color"].as<glm::vec4>();
+		for (auto& seq : data["Points"])
+		{
+			mesh.Points.push_back(seq["Point"].as<glm::vec3>());
+		}
+
+		return LineRenderer(color, mesh);
 	}
 
 	template<>
@@ -1214,10 +1252,16 @@ namespace XYZ {
 				{
 					ecs.AddComponent<Dockable>(ent, Deserialize<Dockable>(dockable, assetManager));
 				}
+				auto lineRenderer = entity["LineRenderer"];
+				if (lineRenderer)
+				{
+					ecs.AddComponent<LineRenderer>(ent, Deserialize<LineRenderer>(lineRenderer, assetManager));
+				}
+
 				if (ecs.Contains<CanvasRenderer>(ent) && ecs.Contains<RectTransform>(ent))
 				{
 					auto& transform = ecs.GetComponent<RectTransform>(ent);
-					transform.Execute<RectTransformResizedEvent>(RectTransformResizedEvent({ ent, &ecs }));
+					transform.Execute<ComponentResizedEvent>(ComponentResizedEvent({ ent, &ecs }));
 				}
 			}
 		}
@@ -1311,10 +1355,15 @@ namespace XYZ {
 				{
 					val.AddComponent<Dockable>(ent, Deserialize<Dockable>(dockable, assetManager));
 				}
+				auto lineRenderer = entity["LineRenderer"];
+				if (lineRenderer)
+				{
+					val.AddComponent<LineRenderer>(ent, Deserialize<LineRenderer>(lineRenderer, assetManager));
+				}
 				if (val.Contains<CanvasRenderer>(ent) && val.Contains<RectTransform>(ent))
 				{
 					auto& transform = val.GetComponent<RectTransform>(ent);
-					transform.Execute<RectTransformResizedEvent>(RectTransformResizedEvent({ ent, &val }));
+					transform.Execute<ComponentResizedEvent>(ComponentResizedEvent({ ent, &val }));
 				}
 			}
 		}

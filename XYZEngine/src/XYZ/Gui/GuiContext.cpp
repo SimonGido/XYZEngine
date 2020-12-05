@@ -136,6 +136,7 @@ namespace XYZ {
 		Ref<FrameBuffer> fbo = FrameBuffer::Create(fboSpecs);
 		m_RenderPass = RenderPass::Create({ fbo });
 
+		m_LineRenderView = &m_ECS->CreateView<LineRenderer>();
 		m_RenderView = &m_ECS->CreateView<CanvasRenderer, RectTransform>();
 		m_CanvasView = &m_ECS->CreateView<Canvas, CanvasRenderer, RectTransform>();
 		m_ButtonView = &m_ECS->CreateView<Button, CanvasRenderer, RectTransform>();
@@ -154,7 +155,7 @@ namespace XYZ {
 		}
 	}
 
-	bool GuiContext::onQuadRectTransformResized(RectTransformResizedEvent& event)
+	bool GuiContext::onQuadRectTransformResized(ComponentResizedEvent& event)
 	{
 		auto entity = event.GetEntity();
 		constexpr size_t quadVertexCount = 4;
@@ -179,7 +180,7 @@ namespace XYZ {
 		return false;
 	}
 
-	bool GuiContext::onTextRectTransformResized(RectTransformResizedEvent& event)
+	bool GuiContext::onTextRectTransformResized(ComponentResizedEvent& event)
 	{
 		auto& entity = event.GetEntity();
 		auto& transform = entity.GetComponent<RectTransform>();
@@ -254,7 +255,7 @@ namespace XYZ {
 		m_ECS->AddComponent<Relationship>(entity, Relationship());
 		m_ECS->AddComponent<Canvas>(entity, Canvas(specs.RenderMode, specs.Color));
 		auto& transform = m_ECS->AddComponent<RectTransform>(entity, RectTransform(specs.Position, specs.Size));
-		transform.RegisterCallback<RectTransformResizedEvent>(Hook(&GuiContext::onQuadRectTransformResized, this));
+		transform.RegisterCallback<ComponentResizedEvent>(Hook(&GuiContext::onQuadRectTransformResized, this));
 		m_ECS->AddComponent<CanvasRenderer>( entity,
 			CanvasRenderer(
 				m_Specification.Material,
@@ -290,7 +291,7 @@ namespace XYZ {
 				true
 			));
 		
-		transform.RegisterCallback<RectTransformResizedEvent>(Hook(&GuiContext::onQuadRectTransformResized, this));
+		transform.RegisterCallback<ComponentResizedEvent>(Hook(&GuiContext::onQuadRectTransformResized, this));
 
 		Relationship::SetupRelation(parent, entity, *m_ECS);
 		return { entity, m_ECS };
@@ -306,7 +307,7 @@ namespace XYZ {
 
 		m_ECS->AddComponent<Relationship>(entity, Relationship());
 		auto& transform = m_ECS->AddComponent<RectTransform>(entity, RectTransform( specs.Position, specs.Size));
-		transform.RegisterCallback<RectTransformResizedEvent>(Hook(&GuiContext::onQuadRectTransformResized, this));
+		transform.RegisterCallback<ComponentResizedEvent>(Hook(&GuiContext::onQuadRectTransformResized, this));
 		m_ECS->AddComponent<CanvasRenderer>( entity,
 			CanvasRenderer(
 				m_Specification.Material,
@@ -328,7 +329,7 @@ namespace XYZ {
 		GenerateTextMesh(specs.Name.c_str(), m_Specification.Font, specs.DefaultColor, specs.Size, textMesh, TextAlignment::Center);
 		auto& textRectTransform = m_ECS->AddComponent<RectTransform>(textEntity, RectTransform(glm::vec3(0.0f), specs.Size));
 		
-		textRectTransform.RegisterCallback<RectTransformResizedEvent>(Hook(&GuiContext::onTextRectTransformResized, this));
+		textRectTransform.RegisterCallback<ComponentResizedEvent>(Hook(&GuiContext::onTextRectTransformResized, this));
 		m_ECS->AddComponent<Relationship>(textEntity, Relationship());
 
 		m_ECS->AddComponent<CanvasRenderer>(textEntity,
@@ -368,7 +369,7 @@ namespace XYZ {
 		
 		m_ECS->AddComponent<Relationship>(entity, Relationship());
 		auto& transform = m_ECS->AddComponent<RectTransform>(entity, RectTransform(specs.Position, specs.Size));
-		transform.RegisterCallback<RectTransformResizedEvent>(Hook(&GuiContext::onQuadRectTransformResized, this));
+		transform.RegisterCallback<ComponentResizedEvent>(Hook(&GuiContext::onQuadRectTransformResized, this));
 		m_ECS->AddComponent<CanvasRenderer>(entity,
 			CanvasRenderer(
 				m_Specification.Material,
@@ -388,7 +389,7 @@ namespace XYZ {
 		Mesh textMesh;
 		GenerateTextMesh(specs.Name.c_str(), m_Specification.Font, specs.DefaultColor, specs.Size, textMesh, TextAlignment::Center);
 		auto& textRectTransform = m_ECS->AddComponent<RectTransform>(textEntity, RectTransform(glm::vec3(0.0f), glm::vec2(1.0f)));
-		textRectTransform.RegisterCallback<RectTransformResizedEvent>(Hook(&GuiContext::onTextRectTransformResized, this));
+		textRectTransform.RegisterCallback<ComponentResizedEvent>(Hook(&GuiContext::onTextRectTransformResized, this));
 		m_ECS->AddComponent<Relationship>(textEntity, Relationship());
 		
 		m_ECS->AddComponent<CanvasRenderer>(textEntity,
@@ -426,7 +427,7 @@ namespace XYZ {
 
 		m_ECS->AddComponent<Relationship>(entity, Relationship());
 		auto & transform = m_ECS->AddComponent<RectTransform>(entity, RectTransform(specs.Position, specs.Size));
-		transform.RegisterCallback<RectTransformResizedEvent>(Hook(&GuiContext::onQuadRectTransformResized, this));
+		transform.RegisterCallback<ComponentResizedEvent>(Hook(&GuiContext::onQuadRectTransformResized, this));
 		m_ECS->AddComponent<CanvasRenderer>(entity,
 			CanvasRenderer(
 				m_Specification.Material,
@@ -447,7 +448,7 @@ namespace XYZ {
 		GenerateQuadMesh(texCoords, specs.HandleColor, specs.HandleSize, handleMesh);
 		m_ECS->AddComponent<Relationship>(handle, Relationship());
 		auto& handleRectTransform = m_ECS->AddComponent<RectTransform>(handle, RectTransform(glm::vec3(0.0f), specs.HandleSize));
-		handleRectTransform.RegisterCallback<RectTransformResizedEvent>(Hook(&GuiContext::onQuadRectTransformResized, this));
+		handleRectTransform.RegisterCallback<ComponentResizedEvent>(Hook(&GuiContext::onQuadRectTransformResized, this));
 		m_ECS->AddComponent<CanvasRenderer>(handle,
 			CanvasRenderer(
 				m_Specification.Material,
@@ -466,7 +467,7 @@ namespace XYZ {
 		Mesh textMesh;
 		GenerateTextMesh(specs.Name.c_str(), m_Specification.Font, specs.DefaultColor, specs.Size, textMesh, TextAlignment::Center);
 		auto& textRectTransform = m_ECS->AddComponent<RectTransform>(textEntity, RectTransform(glm::vec3(0.0f), glm::vec2(1.0f)));
-		textRectTransform.RegisterCallback<RectTransformResizedEvent>(Hook(&GuiContext::onTextRectTransformResized, this));
+		textRectTransform.RegisterCallback<ComponentResizedEvent>(Hook(&GuiContext::onTextRectTransformResized, this));
 		m_ECS->AddComponent<Relationship>(textEntity, Relationship());
 
 		m_ECS->AddComponent<CanvasRenderer>(textEntity,
@@ -501,7 +502,7 @@ namespace XYZ {
 		GenerateTextMesh(specs.Source.c_str(), m_Specification.Font, specs.Color, specs.Size, mesh, specs.Alignment);
 
 		auto& textRectTransform = m_ECS->AddComponent<RectTransform>(entity, RectTransform(specs.Position, specs.Size));
-		textRectTransform.RegisterCallback<RectTransformResizedEvent>(Hook(&GuiContext::onTextRectTransformResized, this));
+		textRectTransform.RegisterCallback<ComponentResizedEvent>(Hook(&GuiContext::onTextRectTransformResized, this));
 		m_ECS->AddComponent<CanvasRenderer>(entity,
 			CanvasRenderer(
 				m_Specification.Material,
@@ -548,7 +549,7 @@ namespace XYZ {
 				true
 			));
 
-		transform.RegisterCallback<RectTransformResizedEvent>(Hook(&GuiContext::onQuadRectTransformResized, this));
+		transform.RegisterCallback<ComponentResizedEvent>(Hook(&GuiContext::onQuadRectTransformResized, this));
 		Relationship::SetupRelation(canvas, entity, *m_ECS);
 
 		return { entity, m_ECS };
@@ -560,7 +561,7 @@ namespace XYZ {
 		Mesh textMesh;
 		GenerateTextMesh(nullptr, m_Specification.Font, specs.DefaultColor, specs.Size, textMesh, TextAlignment::Center);
 		auto& textRectTransform = m_ECS->AddComponent<RectTransform>(textEntity, RectTransform(glm::vec3(0.0f), specs.Size));
-		textRectTransform.RegisterCallback<RectTransformResizedEvent>(Hook(&GuiContext::onTextRectTransformResized, this));
+		textRectTransform.RegisterCallback<ComponentResizedEvent>(Hook(&GuiContext::onTextRectTransformResized, this));
 		m_ECS->AddComponent<Relationship>(textEntity, Relationship());
 
 		m_ECS->AddComponent<CanvasRenderer>(textEntity,
@@ -594,7 +595,7 @@ namespace XYZ {
 
 		m_ECS->AddComponent<Relationship>(entity, Relationship());
 		auto & transform = m_ECS->AddComponent<RectTransform>(entity, RectTransform(specs.Position, specs.Size));
-		transform.RegisterCallback<RectTransformResizedEvent>(Hook(&GuiContext::onQuadRectTransformResized, this));
+		transform.RegisterCallback<ComponentResizedEvent>(Hook(&GuiContext::onQuadRectTransformResized, this));
 		m_ECS->AddComponent<CanvasRenderer>(entity,
 			CanvasRenderer(
 				m_Specification.Material,
@@ -626,7 +627,7 @@ namespace XYZ {
 			auto& [canvas, renderer, transform] = (*m_CanvasView)[i];
 			transform.Size = m_ViewportSize;
 			transform.Position = glm::vec3(0.0f);
-			transform.Execute<RectTransformResizedEvent>(RectTransformResizedEvent({ m_CanvasView->GetEntity(i), m_ECS }));
+			transform.Execute<ComponentResizedEvent>(ComponentResizedEvent({ m_CanvasView->GetEntity(i), m_ECS }));
 		}
 		
 	}
@@ -690,7 +691,11 @@ namespace XYZ {
 			auto &[canvasRenderer, rectTransform] = (*m_RenderView)[i];
 			GuiRenderer::SubmitWidget(&canvasRenderer, &rectTransform);
 		}
-
+		for (size_t i = 0; i < m_LineRenderView->Size(); ++i)
+		{
+			auto& [lineRenderer] = (*m_LineRenderView)[i];
+			GuiRenderer::SubmitWidget(&lineRenderer);
+		}
 		GuiRenderer::EndScene();
 		Renderer::EndRenderPass();
 		Renderer::WaitAndRender();
@@ -763,7 +768,7 @@ namespace XYZ {
 						if (!text.Source.empty())
 						{
 							text.Source.pop_back();
-							textRectTransform.Execute<RectTransformResizedEvent>(RectTransformResizedEvent({ m_CanvasView->GetEntity(i), m_ECS }));
+							textRectTransform.Execute<ComponentResizedEvent>(ComponentResizedEvent({ m_CanvasView->GetEntity(i), m_ECS }));
 						}
 						return true;
 					}
@@ -787,7 +792,7 @@ namespace XYZ {
 
 
 					text.Source += event.GetKey();
-					textRectTransform.Execute<RectTransformResizedEvent>(RectTransformResizedEvent({ m_CanvasView->GetEntity(i), m_ECS }));
+					textRectTransform.Execute<ComponentResizedEvent>(ComponentResizedEvent({ m_CanvasView->GetEntity(i), m_ECS }));
 					return true;
 				}
 			}
@@ -952,7 +957,7 @@ namespace XYZ {
 				
 				slider.Value = handleTransform.Position.x  / (rectTransform.Size.x - handleTransform.Size.x) + 0.5f;
 				slider.Execute<DraggedEvent>(DraggedEvent({ m_SliderView->GetEntity(i), m_ECS }, slider.Value));
-				handleTransform.Execute<RectTransformResizedEvent>(RectTransformResizedEvent({ m_CanvasView->GetEntity(i), m_ECS }));
+				handleTransform.Execute<ComponentResizedEvent>(ComponentResizedEvent({ m_CanvasView->GetEntity(i), m_ECS }));
 				return true;
 			}
 		}

@@ -1,9 +1,5 @@
 #pragma once
 
-#include "XYZ/ECS/ECSManager.h"
-#include "XYZ/ECS/Entity.h"
-#include "XYZ/ECS/Types.h"
-
 #include "XYZ/Event/Event.h"
 #include "XYZ/Event/InputEvent.h"
 #include "XYZ/Event/GuiEvent.h"
@@ -12,32 +8,12 @@
 #include "XYZ/Core/Timestep.h"
 #include "GuiSpecification.h"
 #include "RectTransform.h"
+#include "DockNode.h"
 #include "GuiContext.h"
 
-#include <glm/glm.hpp>
 
 
 namespace XYZ {
-
-	enum class SplitType
-	{
-		None,
-		Horizontal,
-		Vertical
-	};
-
-	struct DockNodeComponent : public Type<DockNodeComponent>
-	{
-		DockNodeComponent(const glm::vec3& position, const glm::vec2& size);
-
-		std::vector<uint32_t> Entities;
-		glm::vec3 Position;
-		glm::vec2 Size;
-		SplitType Split = SplitType::None;
-	};
-
-	struct Dockable : public Type<Dockable>
-	{};
 
 	class Dockspace
 	{

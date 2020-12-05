@@ -18,6 +18,7 @@
 #include "RectTransform.h"
 #include "LayoutGroup.h"
 #include "InputField.h"
+#include "LineRenderer.h"
 #include "GuiSpecification.h"
 
 
@@ -49,8 +50,8 @@ namespace XYZ {
 		GuiContext(ECSManager* ecs, const GuiSpecification& specs);
 
 		// Event resolving functions
-		bool onQuadRectTransformResized(RectTransformResizedEvent& event);
-		bool onTextRectTransformResized(RectTransformResizedEvent& event);
+		bool onQuadRectTransformResized(ComponentResizedEvent& event);
+		bool onTextRectTransformResized(ComponentResizedEvent& event);
 		bool onMouseButtonPress(MouseButtonPressEvent& event);
 		bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
 		bool onWindowResize(WindowResizeEvent& event);
@@ -83,6 +84,7 @@ namespace XYZ {
 		glm::mat4 m_ViewMatrix;
 
 		ECSManager* m_ECS = nullptr;
+		ComponentView<LineRenderer>* m_LineRenderView;
 		ComponentView<CanvasRenderer, RectTransform>* m_RenderView;
 		ComponentView<Canvas, CanvasRenderer, RectTransform>* m_CanvasView;
 		ComponentView<Button, CanvasRenderer, RectTransform>* m_ButtonView;
