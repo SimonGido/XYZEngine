@@ -18,8 +18,7 @@ namespace XYZ {
 		glm::vec3 Position;
 		glm::vec2 Size;
 		glm::vec2 Scale = glm::vec2(1.0f);
-
-		
+	
 
 		glm::mat4 GetTransform() const
 		{

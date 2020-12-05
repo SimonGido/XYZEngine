@@ -11,7 +11,7 @@ namespace XYZ {
 	struct GuiRendererData
 	{
 		GuiRendererCamera RendererCamera;
-
+		glm::vec2 ViewportSize;
 		struct WidgetDrawCommand
 		{
 			CanvasRenderer* Renderer;
@@ -26,9 +26,10 @@ namespace XYZ {
 	void GuiRenderer::Init()
 	{
 	}
-	void GuiRenderer::BeginScene(const GuiRendererCamera& camera)
+	void GuiRenderer::BeginScene(const GuiRendererCamera& camera, const glm::vec2& viewportSize)
 	{
 		s_Data.RendererCamera = camera;
+		s_Data.ViewportSize = viewportSize;
 	}
 
 	void GuiRenderer::EndScene()
@@ -45,7 +46,7 @@ namespace XYZ {
 	void GuiRenderer::flushDrawList()
 	{
 		glm::mat4 viewProjectionMatrix = s_Data.RendererCamera.Camera.GetProjectionMatrix() * s_Data.RendererCamera.ViewMatrix;
-		Renderer2D::BeginScene(viewProjectionMatrix, glm::vec2(0, 0));
+		Renderer2D::BeginScene(viewProjectionMatrix, s_Data.ViewportSize);
 		
 		std::sort(s_Data.WidgetDrawList.begin(), s_Data.WidgetDrawList.end(), [](const GuiRendererData::WidgetDrawCommand& a, const GuiRendererData::WidgetDrawCommand& b) {
 			return a.Renderer->SortLayer < b.Renderer->SortLayer;

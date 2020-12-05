@@ -534,15 +534,14 @@ namespace XYZ {
 	}
 	void GuiContext::SetViewportSize(uint32_t width, uint32_t height)
 	{
-		m_ViewportSize = glm::vec2(width, height);
 		m_RenderPass->GetSpecification().TargetFramebuffer->Resize(width, height);
 
 		float w = (float)width;
 		float h = (float)height;
 
 		m_Camera.SetProjectionMatrix(glm::ortho(-w * 0.5f, w * 0.5f, -h * 0.5f, h * 0.5f));
-	
-		m_ViewportSize = glm::vec2(w, h);
+		m_ViewportSize = { w, h };
+
 		for (size_t i = 0; i < m_CanvasView->Size(); ++i)
 		{
 			auto& [canvas, renderer, transform] = (*m_CanvasView)[i];
@@ -551,6 +550,7 @@ namespace XYZ {
 			transform.Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent(
 				{ m_CanvasView->GetEntity(i), m_ECS }, QuadCanvasRendererRebuild()));
 		}
+		
 	}
 	void GuiContext::SetParent(uint32_t parent, uint32_t child)
 	{
@@ -561,6 +561,9 @@ namespace XYZ {
 	{
 		EventDispatcher dispatcher(event);
 
+		if (dispatcher.Dispatch<WindowResizeEvent>(Hook(&GuiContext::onWindowResize, this)))
+		{
+		}
 		if (dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&GuiContext::onMouseButtonPress, this)))
 		{
 		}
@@ -602,7 +605,7 @@ namespace XYZ {
 		renderCamera.Camera = m_Camera;
 		renderCamera.ViewMatrix = m_ViewMatrix;
 
-		GuiRenderer::BeginScene(renderCamera);
+		GuiRenderer::BeginScene(renderCamera, m_ViewportSize);
 		
 		for (size_t i = 0; i < m_RenderView->Size(); ++i)
 		{
@@ -641,6 +644,11 @@ namespace XYZ {
 			else if (sliderOnMouseButtonRelease())
 				return true;
 		}
+		return false;
+	}
+	bool GuiContext::onWindowResize(WindowResizeEvent& event)
+	{
+		SetViewportSize((uint32_t)event.GetWidth(), (uint32_t)event.GetHeight());
 		return false;
 	}
 	bool GuiContext::onMouseMove(MouseMovedEvent& event)
@@ -944,6 +952,7 @@ namespace XYZ {
 		}
 	}
 
+	
 	void GuiContext::applyLayoutGroup(const LayoutGroup& layout, const Relationship& parentRel, const RectTransform& transform)
 	{
 		glm::vec2 endOffset = { layout.Padding.Right, layout.Padding.Bottom };

@@ -62,6 +62,7 @@ namespace XYZ {
 		bool onCanvasRendererRebuild(CanvasRendererRebuildEvent& event);
 		bool onMouseButtonPress(MouseButtonPressEvent& event);
 		bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
+		bool onWindowResize(WindowResizeEvent& event);
 		bool onMouseMove(MouseMovedEvent& event);
 		bool onKeyPressed(KeyPressedEvent& event);
 		bool onKeyTyped(KeyTypedEvent& event);
@@ -108,5 +109,6 @@ namespace XYZ {
 
 		friend class GuiLayer;
 		friend class Serializer;
+		friend class Dockspace;
 	};
 }

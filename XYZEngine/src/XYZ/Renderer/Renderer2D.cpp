@@ -398,6 +398,7 @@ namespace XYZ {
 			for (uint32_t i = 0; i < s_Data.TextureSlotIndex; ++i)
 				s_Data.TextureSlots[i]->Bind(i + textureSlotOffset);
 
+		
 			s_Data.QuadMaterial->GetShader()->SetMat4("u_ViewProjectionMatrix", s_Data.ViewProjectionMatrix);
 					
 			s_Data.QuadVertexBuffer->Update(s_Data.BufferBase, dataSize);

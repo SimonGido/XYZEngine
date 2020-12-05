@@ -20,7 +20,7 @@ namespace XYZ {
 	public:
 		static void Init();
 
-		static void BeginScene(const GuiRendererCamera& camera);
+		static void BeginScene(const GuiRendererCamera& camera, const glm::vec2& windowSize);
 		static void EndScene();
 
 		static void SubmitWidget(CanvasRenderer* canvasRenderer, RectTransform* transform);

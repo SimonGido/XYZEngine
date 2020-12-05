@@ -71,7 +71,9 @@ namespace XYZ {
 		else if (dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&Dockspace::onMouseButtonRelease, this)))
 		{
 		}
-		else if (dispatcher.Dispatch<WindowResizeEvent>(Hook(&Dockspace::onWindowResize, this)));
+		else if (dispatcher.Dispatch<WindowResizeEvent>(Hook(&Dockspace::onWindowResize, this)))
+		{
+		}
 	}
 	void Dockspace::SetRoot(uint32_t entity)
 	{
@@ -86,6 +88,14 @@ namespace XYZ {
 			auto [width, height] = Input::GetWindowSize();
 			glm::vec2 size = { width, height };
 			m_ECS->AddComponent<DockNodeComponent>(m_RootEntity, DockNodeComponent(glm::vec3(-size / 2.0f , 0.0f), size));
+		}
+		else
+		{
+			auto [width, height] = Input::GetWindowSize();
+			glm::vec2 size = { width, height };
+			auto& dockNode = m_ECS->GetStorageComponent<DockNodeComponent>(m_RootEntity);
+			dockNode.Position = glm::vec3(-size / 2.0f, 0.0f);
+			dockNode.Size = size;
 		}
 		if (!m_ECS->Contains<Relationship>(m_RootEntity))
 		{
@@ -173,6 +183,12 @@ namespace XYZ {
 	}
 	bool Dockspace::onWindowResize(WindowResizeEvent& event)
 	{
+		glm::vec2 newWindowSize = { event.GetWidth(), event.GetHeight() };
+		glm::vec2 oldSize = m_ECS->GetStorageComponent<DockNodeComponent>(m_RootEntity).Size;
+		glm::vec2 scale = (newWindowSize / oldSize);
+		rescaleNode(m_RootEntity, scale);
+		updateEntities(m_RootEntity);
+
 		return false;
 	}
 	bool Dockspace::onMouseButtonPress(MouseButtonPressEvent& event)
@@ -517,8 +533,7 @@ namespace XYZ {
 		auto& dockNode = m_ECS->GetStorageComponent<DockNodeComponent>(nodeEntity);
 		glm::vec2 oldSize = dockNode.Size;
 		dockNode.Size *= scale;
-		glm::vec2 diff = dockNode.Size - oldSize;
-	
+		dockNode.Position *= glm::vec3(scale, 1.0f);
 		auto& rel = m_ECS->GetStorageComponent<Relationship>(nodeEntity);
 		uint32_t current = rel.FirstChild;
 		while (current != NULL_ENTITY)
@@ -540,14 +555,6 @@ namespace XYZ {
 		auto& dock = m_ECS->AddComponent<DockNodeComponent>(entity, DockNodeComponent(position, size));
 		m_ECS->AddComponent<Relationship>(entity, Relationship());
 
-		//m_Context->CreateButton(0, ButtonSpecification(
-		//	"TEst",
-		//	position + glm::vec3(size / 2.0f,0.0f),
-		//	size,
-		//	glm::vec4(1.0f),
-		//	glm::vec4(1.0f),
-		//	glm::vec4(1.0f)
-		//));
 		Relationship::SetupRelation(parent, entity, *m_ECS);
 		return entity;
 	}
