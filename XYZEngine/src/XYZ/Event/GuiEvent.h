@@ -134,36 +134,22 @@ namespace XYZ {
 		EventType m_Type;
 	};
 
-	struct CanvasRenderer;
-	struct RectTransform;
-	struct CanvasRendererRebuildSpecification
+	struct RectTransformResizedEvent : public Event
 	{
-		virtual void Rebuild(Entity entity) = 0;
-	};
-
-	
-	struct CanvasRendererRebuildEvent : public Event
-	{
-		CanvasRendererRebuildEvent(Entity entity, CanvasRendererRebuildSpecification& specification)
-			: 
-			m_Type(EventType::CanvasRendererRebuild),
-			m_Entity(entity),
-			m_Specification(specification)
+		RectTransformResizedEvent(Entity entity)
+			: m_Type(EventType::RectTransformResized),m_Entity(entity)
 		{}
-
-		virtual EventType GetEventType() const override { return m_Type; }
 
 		Entity GetEntity() const { return m_Entity; }
 
-		CanvasRendererRebuildSpecification& GetSpecification() { return m_Specification; }
+		virtual EventType GetEventType() const override { return m_Type; }
 
 		static EventType GetStaticType()
 		{
-			return EventType::CanvasRendererRebuild;
+			return EventType::RectTransformResized;
 		}
 	private:
 		EventType m_Type;
 		Entity m_Entity;
-		CanvasRendererRebuildSpecification& m_Specification;
 	};
 }

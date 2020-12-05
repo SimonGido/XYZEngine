@@ -188,9 +188,6 @@ namespace XYZ {
 				if ((std::string)IDComp.ID == "{5AA13A66-A415-487A-BE7A-77362B710C65}")
 				{
 					m_ECS.GetComponent<CanvasRenderer>(i).SubTexture->SetTexture(renderTexture);
-					//m_ECS.GetComponent<RectTransform>(i).Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent(
-					//	{i, &m_ECS}, QuadCanvasRendererRebuild()
-					//));
 					break;
 				}
 			}
@@ -228,6 +225,7 @@ namespace XYZ {
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&EditorLayer::onMouseButtonPress, this));
 		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorLayer::onMouseButtonRelease, this));	
+		dispatcher.Dispatch<WindowResizeEvent>(Hook(&EditorLayer::onWindowResize, this));
 		m_EditorCamera.OnEvent(event);
 		m_Dockspace->OnEvent(event);
 	}
@@ -241,15 +239,9 @@ namespace XYZ {
 	{
 		return false;
 	}
-	bool EditorLayer::onButtonClickTest(ClickEvent& event)
+	bool EditorLayer::onWindowResize(WindowResizeEvent& event)
 	{
-		std::cout << "Clicked" << std::endl;
-		return true;
-	}
-
-	bool EditorLayer::onCheckboxCheckedTest(CheckedEvent& event)
-	{
-		std::cout << "Checked" << std::endl;
+		m_Scene->SetViewportSize((uint32_t)event.GetWidth(), (uint32_t)event.GetHeight());
 		return false;
 	}
 

@@ -25,9 +25,8 @@ namespace XYZ {
 	private:
 		bool onMouseButtonPress(MouseButtonPressEvent& event);
 		bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
+		bool onWindowResize(WindowResizeEvent& event);
 
-		bool onButtonClickTest(ClickEvent& event);
-		bool onCheckboxCheckedTest(CheckedEvent& event);
 
 		ParticleVertex* m_Vertices;
 		ParticleInformation* m_Data;

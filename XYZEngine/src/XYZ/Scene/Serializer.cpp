@@ -1217,18 +1217,7 @@ namespace XYZ {
 				if (ecs.Contains<CanvasRenderer>(ent) && ecs.Contains<RectTransform>(ent))
 				{
 					auto& transform = ecs.GetComponent<RectTransform>(ent);
-					if (ecs.Contains<Text>(ent))
-					{
-						transform.Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent(
-							{ ent,&ecs }, TextCanvasRendererRebuild()
-						));
-					}
-					else
-					{
-						transform.Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent(
-							{ ent,&ecs }, QuadCanvasRendererRebuild()
-						));
-					}
+					transform.Execute<RectTransformResizedEvent>(RectTransformResizedEvent({ ent, &ecs }));
 				}
 			}
 		}
@@ -1325,18 +1314,7 @@ namespace XYZ {
 				if (val.Contains<CanvasRenderer>(ent) && val.Contains<RectTransform>(ent))
 				{
 					auto& transform = val.GetComponent<RectTransform>(ent);
-					if (val.Contains<Text>(ent))
-					{
-						transform.Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent(
-							{ ent,&val }, TextCanvasRendererRebuild()
-						));
-					}
-					else
-					{
-						transform.Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent(
-							{ ent,&val }, QuadCanvasRendererRebuild()
-						));
-					}
+					transform.Execute<RectTransformResizedEvent>(RectTransformResizedEvent({ ent, &val }));
 				}
 			}
 		}

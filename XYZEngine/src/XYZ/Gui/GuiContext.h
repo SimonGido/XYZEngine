@@ -22,16 +22,6 @@
 
 
 namespace XYZ {
-	struct TextCanvasRendererRebuild : public CanvasRendererRebuildSpecification
-	{
-		virtual void Rebuild(Entity entity) override;
-	};
-
-	struct QuadCanvasRendererRebuild : public CanvasRendererRebuildSpecification
-	{
-		virtual void Rebuild(Entity entity) override;
-	};
-
 
 	// TODO: same serialization logic as with scene
 	class GuiContext : public RefCount
@@ -59,7 +49,8 @@ namespace XYZ {
 		GuiContext(ECSManager* ecs, const GuiSpecification& specs);
 
 		// Event resolving functions
-		bool onCanvasRendererRebuild(CanvasRendererRebuildEvent& event);
+		bool onQuadRectTransformResized(RectTransformResizedEvent& event);
+		bool onTextRectTransformResized(RectTransformResizedEvent& event);
 		bool onMouseButtonPress(MouseButtonPressEvent& event);
 		bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
 		bool onWindowResize(WindowResizeEvent& event);

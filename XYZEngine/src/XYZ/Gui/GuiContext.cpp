@@ -153,13 +153,93 @@ namespace XYZ {
 			}
 		}
 	}
-	bool GuiContext::onCanvasRendererRebuild(CanvasRendererRebuildEvent& event)
-	{
-		auto& renderer = m_ECS->GetComponent<CanvasRenderer>(event.GetEntity());
-		renderer.Mesh.Vertices.clear();
 
-		event.GetSpecification().Rebuild(event.GetEntity());
-		return true;
+	bool GuiContext::onQuadRectTransformResized(RectTransformResizedEvent& event)
+	{
+		auto entity = event.GetEntity();
+		constexpr size_t quadVertexCount = 4;
+		auto& transform = entity.GetComponent<RectTransform>();
+		auto& renderer = entity.GetComponent<CanvasRenderer>();
+		auto& texCoord = renderer.SubTexture->GetTexCoords();
+
+		glm::vec2 texCoords[quadVertexCount] = {
+			{texCoord.x,texCoord.y},
+			{texCoord.z,texCoord.y},
+			{texCoord.z,texCoord.w},
+			{texCoord.x,texCoord.w}
+		};
+		glm::vec3 vertices[quadVertexCount] = {
+			{  -transform.Size.x / 2.0f,  -transform.Size.y / 2.0f, 0.0f},
+			{   transform.Size.x / 2.0f,  -transform.Size.y / 2.0f, 0.0f},
+			{   transform.Size.x / 2.0f,   transform.Size.y / 2.0f, 0.0f},
+			{  -transform.Size.x / 2.0f,   transform.Size.y / 2.0f, 0.0f}
+		};
+		for (size_t i = 0; i < quadVertexCount; ++i)
+			renderer.Mesh.Vertices.push_back(Vertex{ renderer.Color, vertices[i], texCoords[i] });
+		return false;
+	}
+
+	bool GuiContext::onTextRectTransformResized(RectTransformResizedEvent& event)
+	{
+		auto& entity = event.GetEntity();
+		auto& transform = entity.GetComponent<RectTransform>();
+		auto& renderer = entity.GetComponent<CanvasRenderer>();
+		auto& text = entity.GetComponent<Text>();
+
+		size_t oldMeshSize = renderer.Mesh.Vertices.size();
+		int32_t height = 0.0f;
+		int32_t xCursor = 0.0f;
+		int32_t yCursor = 0.0f;
+		uint32_t counter = 0;
+		for (auto c : text.Source)
+		{
+			auto& character = text.Font->GetCharacter(c);
+			if (xCursor + character.XAdvance >= transform.Size.x)
+				break;
+
+			glm::vec2 charSize = {
+				character.X1Coord - character.X0Coord,
+				character.Y1Coord - character.Y0Coord
+			};
+			if (height < character.Y1Coord - character.Y0Coord)
+				height = character.Y1Coord - character.Y0Coord;
+
+			glm::vec2 charOffset = { character.XOffset, charSize.y - character.YOffset };
+			glm::vec2 charPosition = { xCursor + charOffset.x, yCursor - charOffset.y };
+			glm::vec4 charTexCoord = {
+				(float)character.X0Coord / (float)text.Font->GetWidth(), (float)character.Y0Coord / (float)text.Font->GetHeight(),
+				(float)character.X1Coord / (float)text.Font->GetWidth(), (float)character.Y1Coord / (float)text.Font->GetHeight()
+			};
+
+			glm::vec3 quads[4] = {
+				{ charPosition.x,			   charPosition.y , 0.0f },
+				{ charPosition.x + charSize.x, charPosition.y, 0.0f, },
+				{ charPosition.x + charSize.x, charPosition.y + charSize.y, 0.0f, },
+				{ charPosition.x,			   charPosition.y + charSize.y, 0.0f, },
+			};
+			glm::vec2 texCoords[4] = {
+				 {charTexCoord.x, charTexCoord.w},
+				 {charTexCoord.z, charTexCoord.w},
+				 {charTexCoord.z, charTexCoord.y},
+				 {charTexCoord.x, charTexCoord.y},
+			};
+			for (uint32_t i = 0; i < 4; ++i)
+				renderer.Mesh.Vertices.push_back(Vertex{ text.Color, quads[i], texCoords[i] });
+
+			xCursor += character.XAdvance;
+			counter++;
+		}
+		if (text.Alignment == TextAlignment::Center)
+		{
+			int32_t xOffset = xCursor / 2;
+			int32_t yOffset = height / 2;
+			for (size_t i = oldMeshSize; i < renderer.Mesh.Vertices.size(); ++i)
+			{
+				renderer.Mesh.Vertices[i].Position.x -= xOffset;
+				renderer.Mesh.Vertices[i].Position.y -= yOffset;
+			}
+		}
+		return false;
 	}
 
 	Entity GuiContext::CreateCanvas(const CanvasSpecification& specs)
@@ -174,7 +254,7 @@ namespace XYZ {
 		m_ECS->AddComponent<Relationship>(entity, Relationship());
 		m_ECS->AddComponent<Canvas>(entity, Canvas(specs.RenderMode, specs.Color));
 		auto& transform = m_ECS->AddComponent<RectTransform>(entity, RectTransform(specs.Position, specs.Size));
-		transform.RegisterCallback<CanvasRendererRebuildEvent>(Hook(&GuiContext::onCanvasRendererRebuild, this));
+		transform.RegisterCallback<RectTransformResizedEvent>(Hook(&GuiContext::onQuadRectTransformResized, this));
 		m_ECS->AddComponent<CanvasRenderer>( entity,
 			CanvasRenderer(
 				m_Specification.Material,
@@ -210,7 +290,7 @@ namespace XYZ {
 				true
 			));
 		
-		transform.RegisterCallback<CanvasRendererRebuildEvent>(Hook(&GuiContext::onCanvasRendererRebuild, this));
+		transform.RegisterCallback<RectTransformResizedEvent>(Hook(&GuiContext::onQuadRectTransformResized, this));
 
 		Relationship::SetupRelation(parent, entity, *m_ECS);
 		return { entity, m_ECS };
@@ -226,7 +306,7 @@ namespace XYZ {
 
 		m_ECS->AddComponent<Relationship>(entity, Relationship());
 		auto& transform = m_ECS->AddComponent<RectTransform>(entity, RectTransform( specs.Position, specs.Size));
-		transform.RegisterCallback<CanvasRendererRebuildEvent>(Hook(&GuiContext::onCanvasRendererRebuild, this));
+		transform.RegisterCallback<RectTransformResizedEvent>(Hook(&GuiContext::onQuadRectTransformResized, this));
 		m_ECS->AddComponent<CanvasRenderer>( entity,
 			CanvasRenderer(
 				m_Specification.Material,
@@ -248,8 +328,7 @@ namespace XYZ {
 		GenerateTextMesh(specs.Name.c_str(), m_Specification.Font, specs.DefaultColor, specs.Size, textMesh, TextAlignment::Center);
 		auto& textRectTransform = m_ECS->AddComponent<RectTransform>(textEntity, RectTransform(glm::vec3(0.0f), specs.Size));
 		
-		textRectTransform.RegisterCallback<CanvasRendererRebuildEvent>(Hook(&GuiContext::onCanvasRendererRebuild, this));
-		
+		textRectTransform.RegisterCallback<RectTransformResizedEvent>(Hook(&GuiContext::onTextRectTransformResized, this));
 		m_ECS->AddComponent<Relationship>(textEntity, Relationship());
 
 		m_ECS->AddComponent<CanvasRenderer>(textEntity,
@@ -289,7 +368,7 @@ namespace XYZ {
 		
 		m_ECS->AddComponent<Relationship>(entity, Relationship());
 		auto& transform = m_ECS->AddComponent<RectTransform>(entity, RectTransform(specs.Position, specs.Size));
-		transform.RegisterCallback<CanvasRendererRebuildEvent>(Hook(&GuiContext::onCanvasRendererRebuild, this));
+		transform.RegisterCallback<RectTransformResizedEvent>(Hook(&GuiContext::onQuadRectTransformResized, this));
 		m_ECS->AddComponent<CanvasRenderer>(entity,
 			CanvasRenderer(
 				m_Specification.Material,
@@ -309,7 +388,7 @@ namespace XYZ {
 		Mesh textMesh;
 		GenerateTextMesh(specs.Name.c_str(), m_Specification.Font, specs.DefaultColor, specs.Size, textMesh, TextAlignment::Center);
 		auto& textRectTransform = m_ECS->AddComponent<RectTransform>(textEntity, RectTransform(glm::vec3(0.0f), glm::vec2(1.0f)));
-		textRectTransform.RegisterCallback<CanvasRendererRebuildEvent>(Hook(&GuiContext::onCanvasRendererRebuild, this));
+		textRectTransform.RegisterCallback<RectTransformResizedEvent>(Hook(&GuiContext::onTextRectTransformResized, this));
 		m_ECS->AddComponent<Relationship>(textEntity, Relationship());
 		
 		m_ECS->AddComponent<CanvasRenderer>(textEntity,
@@ -347,7 +426,7 @@ namespace XYZ {
 
 		m_ECS->AddComponent<Relationship>(entity, Relationship());
 		auto & transform = m_ECS->AddComponent<RectTransform>(entity, RectTransform(specs.Position, specs.Size));
-		transform.RegisterCallback<CanvasRendererRebuildEvent>(Hook(&GuiContext::onCanvasRendererRebuild, this));
+		transform.RegisterCallback<RectTransformResizedEvent>(Hook(&GuiContext::onQuadRectTransformResized, this));
 		m_ECS->AddComponent<CanvasRenderer>(entity,
 			CanvasRenderer(
 				m_Specification.Material,
@@ -368,7 +447,7 @@ namespace XYZ {
 		GenerateQuadMesh(texCoords, specs.HandleColor, specs.HandleSize, handleMesh);
 		m_ECS->AddComponent<Relationship>(handle, Relationship());
 		auto& handleRectTransform = m_ECS->AddComponent<RectTransform>(handle, RectTransform(glm::vec3(0.0f), specs.HandleSize));
-		handleRectTransform.RegisterCallback<CanvasRendererRebuildEvent>(Hook(&GuiContext::onCanvasRendererRebuild, this));
+		handleRectTransform.RegisterCallback<RectTransformResizedEvent>(Hook(&GuiContext::onQuadRectTransformResized, this));
 		m_ECS->AddComponent<CanvasRenderer>(handle,
 			CanvasRenderer(
 				m_Specification.Material,
@@ -387,7 +466,7 @@ namespace XYZ {
 		Mesh textMesh;
 		GenerateTextMesh(specs.Name.c_str(), m_Specification.Font, specs.DefaultColor, specs.Size, textMesh, TextAlignment::Center);
 		auto& textRectTransform = m_ECS->AddComponent<RectTransform>(textEntity, RectTransform(glm::vec3(0.0f), glm::vec2(1.0f)));
-		textRectTransform.RegisterCallback<CanvasRendererRebuildEvent>(Hook(&GuiContext::onCanvasRendererRebuild, this));
+		textRectTransform.RegisterCallback<RectTransformResizedEvent>(Hook(&GuiContext::onTextRectTransformResized, this));
 		m_ECS->AddComponent<Relationship>(textEntity, Relationship());
 
 		m_ECS->AddComponent<CanvasRenderer>(textEntity,
@@ -422,7 +501,7 @@ namespace XYZ {
 		GenerateTextMesh(specs.Source.c_str(), m_Specification.Font, specs.Color, specs.Size, mesh, specs.Alignment);
 
 		auto& textRectTransform = m_ECS->AddComponent<RectTransform>(entity, RectTransform(specs.Position, specs.Size));
-		textRectTransform.RegisterCallback<CanvasRendererRebuildEvent>(Hook(&GuiContext::onCanvasRendererRebuild, this));
+		textRectTransform.RegisterCallback<RectTransformResizedEvent>(Hook(&GuiContext::onTextRectTransformResized, this));
 		m_ECS->AddComponent<CanvasRenderer>(entity,
 			CanvasRenderer(
 				m_Specification.Material,
@@ -469,7 +548,7 @@ namespace XYZ {
 				true
 			));
 
-		transform.RegisterCallback<CanvasRendererRebuildEvent>(Hook(&GuiContext::onCanvasRendererRebuild, this));
+		transform.RegisterCallback<RectTransformResizedEvent>(Hook(&GuiContext::onQuadRectTransformResized, this));
 		Relationship::SetupRelation(canvas, entity, *m_ECS);
 
 		return { entity, m_ECS };
@@ -481,7 +560,7 @@ namespace XYZ {
 		Mesh textMesh;
 		GenerateTextMesh(nullptr, m_Specification.Font, specs.DefaultColor, specs.Size, textMesh, TextAlignment::Center);
 		auto& textRectTransform = m_ECS->AddComponent<RectTransform>(textEntity, RectTransform(glm::vec3(0.0f), specs.Size));
-		textRectTransform.RegisterCallback<CanvasRendererRebuildEvent>(Hook(&GuiContext::onCanvasRendererRebuild, this));
+		textRectTransform.RegisterCallback<RectTransformResizedEvent>(Hook(&GuiContext::onTextRectTransformResized, this));
 		m_ECS->AddComponent<Relationship>(textEntity, Relationship());
 
 		m_ECS->AddComponent<CanvasRenderer>(textEntity,
@@ -515,7 +594,7 @@ namespace XYZ {
 
 		m_ECS->AddComponent<Relationship>(entity, Relationship());
 		auto & transform = m_ECS->AddComponent<RectTransform>(entity, RectTransform(specs.Position, specs.Size));
-		transform.RegisterCallback<CanvasRendererRebuildEvent>(Hook(&GuiContext::onCanvasRendererRebuild, this));
+		transform.RegisterCallback<RectTransformResizedEvent>(Hook(&GuiContext::onQuadRectTransformResized, this));
 		m_ECS->AddComponent<CanvasRenderer>(entity,
 			CanvasRenderer(
 				m_Specification.Material,
@@ -539,7 +618,7 @@ namespace XYZ {
 		float w = (float)width;
 		float h = (float)height;
 
-		m_Camera.SetProjectionMatrix(glm::mat4(1.0f));
+		m_Camera.SetProjectionMatrix(glm::ortho(-w * 0.5f, w * 0.5f, -h * 0.5f, h * 0.5f));
 		m_ViewportSize = { w, h };
 
 		for (size_t i = 0; i < m_CanvasView->Size(); ++i)
@@ -547,8 +626,7 @@ namespace XYZ {
 			auto& [canvas, renderer, transform] = (*m_CanvasView)[i];
 			transform.Size = m_ViewportSize;
 			transform.Position = glm::vec3(0.0f);
-			transform.Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent(
-				{ m_CanvasView->GetEntity(i), m_ECS }, QuadCanvasRendererRebuild()));
+			transform.Execute<RectTransformResizedEvent>(RectTransformResizedEvent({ m_CanvasView->GetEntity(i), m_ECS }));
 		}
 		
 	}
@@ -685,9 +763,7 @@ namespace XYZ {
 						if (!text.Source.empty())
 						{
 							text.Source.pop_back();
-							textRectTransform.Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent({ inputField.TextEntity, m_ECS },
-								TextCanvasRendererRebuild()
-							));
+							textRectTransform.Execute<RectTransformResizedEvent>(RectTransformResizedEvent({ m_CanvasView->GetEntity(i), m_ECS }));
 						}
 						return true;
 					}
@@ -711,9 +787,7 @@ namespace XYZ {
 
 
 					text.Source += event.GetKey();
-					textRectTransform.Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent({ inputField.TextEntity, m_ECS },
-						TextCanvasRendererRebuild()
-					));
+					textRectTransform.Execute<RectTransformResizedEvent>(RectTransformResizedEvent({ m_CanvasView->GetEntity(i), m_ECS }));
 					return true;
 				}
 			}
@@ -878,9 +952,7 @@ namespace XYZ {
 				
 				slider.Value = handleTransform.Position.x  / (rectTransform.Size.x - handleTransform.Size.x) + 0.5f;
 				slider.Execute<DraggedEvent>(DraggedEvent({ m_SliderView->GetEntity(i), m_ECS }, slider.Value));
-				handleTransform.Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent(
-					{ handle, m_ECS }, QuadCanvasRendererRebuild()
-				));
+				handleTransform.Execute<RectTransformResizedEvent>(RectTransformResizedEvent({ m_CanvasView->GetEntity(i), m_ECS }));
 				return true;
 			}
 		}
@@ -980,90 +1052,5 @@ namespace XYZ {
 
 			current = currentRel.NextSibling;
 		}
-	}
-
-
-	void TextCanvasRendererRebuild::Rebuild(Entity entity)
-	{	
-		auto& transform = entity.GetComponent<RectTransform>();
-		auto& renderer = entity.GetComponent<CanvasRenderer>();
-		auto& text = entity.GetComponent<Text>();
-
-		size_t oldMeshSize = renderer.Mesh.Vertices.size();
-		int32_t height = 0.0f;
-		int32_t xCursor = 0.0f;
-		int32_t yCursor = 0.0f;
-		uint32_t counter = 0;
-		for (auto c : text.Source)
-		{
-			auto& character = text.Font->GetCharacter(c);
-			if (xCursor + character.XAdvance >= transform.Size.x)
-				break;
-
-			glm::vec2 charSize = {
-				character.X1Coord - character.X0Coord,
-				character.Y1Coord - character.Y0Coord
-			};
-			if (height < character.Y1Coord - character.Y0Coord) 
-				height = character.Y1Coord - character.Y0Coord;
-
-			glm::vec2 charOffset = { character.XOffset, charSize.y - character.YOffset };
-			glm::vec2 charPosition = { xCursor + charOffset.x, yCursor - charOffset.y };
-			glm::vec4 charTexCoord = {
-				(float)character.X0Coord / (float)text.Font->GetWidth(), (float)character.Y0Coord / (float)text.Font->GetHeight(),
-				(float)character.X1Coord / (float)text.Font->GetWidth(), (float)character.Y1Coord / (float)text.Font->GetHeight()
-			};
-
-			glm::vec3 quads[4] = {
-				{ charPosition.x,			   charPosition.y , 0.0f },
-				{ charPosition.x + charSize.x, charPosition.y, 0.0f, },
-				{ charPosition.x + charSize.x, charPosition.y + charSize.y, 0.0f, },
-				{ charPosition.x,			   charPosition.y + charSize.y, 0.0f, },
-			};
-			glm::vec2 texCoords[4] = {
-				 {charTexCoord.x, charTexCoord.w},
-				 {charTexCoord.z, charTexCoord.w},
-				 {charTexCoord.z, charTexCoord.y},
-				 {charTexCoord.x, charTexCoord.y},
-			};
-			for (uint32_t i = 0; i < 4; ++i)
-				renderer.Mesh.Vertices.push_back(Vertex{ text.Color, quads[i], texCoords[i] });
-
-			xCursor += character.XAdvance;
-			counter++;
-		}
-		if (text.Alignment == TextAlignment::Center)
-		{
-			int32_t xOffset = xCursor / 2;
-			int32_t yOffset = height / 2;
-			for (size_t i = oldMeshSize; i < renderer.Mesh.Vertices.size(); ++i)
-			{
-				renderer.Mesh.Vertices[i].Position.x -= xOffset;
-				renderer.Mesh.Vertices[i].Position.y -= yOffset;
-			}
-		}
-	}
-
-	void QuadCanvasRendererRebuild::Rebuild(Entity entity)
-	{
-		constexpr size_t quadVertexCount = 4;
-		auto& transform = entity.GetComponent<RectTransform>();
-		auto& renderer =  entity.GetComponent<CanvasRenderer>();
-		auto& texCoord = renderer.SubTexture->GetTexCoords();
-
-		glm::vec2 texCoords[quadVertexCount] = {
-			{texCoord.x,texCoord.y},
-			{texCoord.z,texCoord.y},
-			{texCoord.z,texCoord.w},
-			{texCoord.x,texCoord.w}
-		};
-		glm::vec3 vertices[quadVertexCount] = {
-			{  -transform.Size.x / 2.0f,  -transform.Size.y / 2.0f, 0.0f},
-			{   transform.Size.x / 2.0f,  -transform.Size.y / 2.0f, 0.0f},
-			{   transform.Size.x / 2.0f,   transform.Size.y / 2.0f, 0.0f},
-			{  -transform.Size.x / 2.0f,   transform.Size.y / 2.0f, 0.0f}
-		};
-		for (size_t i = 0; i < quadVertexCount; ++i)
-			renderer.Mesh.Vertices.push_back(Vertex{ renderer.Color, vertices[i], texCoords[i] });
 	}
 }

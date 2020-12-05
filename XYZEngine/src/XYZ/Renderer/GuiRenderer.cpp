@@ -54,7 +54,6 @@ namespace XYZ {
 	
 		for (auto& dc : s_Data.WidgetDrawList)
 		{	
-			dc.Renderer->Material->Set("u_ViewportSize", s_Data.ViewportSize);
 			if (dc.Renderer->Material)
 				Renderer2D::SetMaterial(dc.Renderer->Material);	
 			uint32_t textureID = Renderer2D::SetTexture(dc.Renderer->SubTexture->GetTexture());

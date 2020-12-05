@@ -21,8 +21,6 @@ static bool CollideNotCentered(const glm::vec2& pos, const glm::vec2& size, cons
 		pos.y < point.y);
 }
 
-
-
 static glm::vec2 MouseToWorld(const glm::vec2& point, const glm::vec2& windowSize)
 {
 	glm::vec2 offset = { windowSize.x / 2,windowSize.y / 2 };
@@ -484,9 +482,7 @@ namespace XYZ {
 		   -(dockNode.Size.y / 2.0f) + (transform.Size.y / 2.0f),
 			0.0f
 		);
-		firstChildTransform.Execute<CanvasRendererRebuildEvent>(CanvasRendererRebuildEvent(
-			{ entityRel.FirstChild, m_ECS }, QuadCanvasRendererRebuild()
-		));
+		firstChildTransform.Execute<RectTransformResizedEvent>(RectTransformResizedEvent({ entityRel.FirstChild, m_ECS }));
 	}
 	bool Dockspace::removeFromNode(uint32_t nodeEntity, uint32_t entity)
 	{
