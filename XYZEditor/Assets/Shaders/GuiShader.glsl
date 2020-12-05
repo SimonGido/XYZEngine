@@ -15,6 +15,7 @@ out float v_TextureID;
 out float v_TilingFactor;
 
 uniform mat4 u_ViewProjectionMatrix;
+uniform vec2 u_ViewportSize;
 
 void main()
 {
@@ -22,7 +23,7 @@ void main()
 	v_TexCoord = a_TexCoord;
 	v_TextureID = a_TextureID;
 	v_TilingFactor = a_TilingFactor;
-	gl_Position = u_ViewProjectionMatrix * vec4(a_Position.xy, 0.0, 1.0);
+	gl_Position = u_ViewProjectionMatrix * vec4(a_Position.xy / (u_ViewportSize / 2.0), 0.0, 1.0);
 }
 
 #type fragment

@@ -531,9 +531,10 @@ namespace XYZ {
 	void Dockspace::rescaleNode(uint32_t nodeEntity, const glm::vec2 scale)
 	{
 		auto& dockNode = m_ECS->GetStorageComponent<DockNodeComponent>(nodeEntity);
-		glm::vec2 oldSize = dockNode.Size;
 		dockNode.Size *= scale;
 		dockNode.Position *= glm::vec3(scale, 1.0f);
+
+
 		auto& rel = m_ECS->GetStorageComponent<Relationship>(nodeEntity);
 		uint32_t current = rel.FirstChild;
 		while (current != NULL_ENTITY)
