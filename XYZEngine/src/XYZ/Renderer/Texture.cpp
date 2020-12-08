@@ -2,7 +2,7 @@
 #include "Texture.h"
 
 #include "Renderer.h"
-#include "API/OpenGL/OpenGLTexture.h"
+#include "XYZ/API/OpenGL/OpenGLTexture.h"
 
 
 namespace XYZ {

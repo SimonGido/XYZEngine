@@ -406,6 +406,7 @@ namespace XYZ {
 			sibling = rel.PreviousSibling;
 		
 		auto& dockNodeSibling = m_ECS->GetStorageComponent<DockNodeComponent>(sibling);
+
 		if (dockNodeSibling.Split != SplitType::None)
 			return;
 
@@ -551,8 +552,8 @@ namespace XYZ {
 		auto& dock = m_ECS->AddComponent<DockNodeComponent>(entity, DockNodeComponent(position, size));
 		m_ECS->AddComponent<Relationship>(entity, Relationship());
 
-		m_ECS->AddComponent<LineRenderer>(entity, LineRenderer(glm::vec4(0.1f, 0.1f, 0.0f, 1.0f), LineMesh()));
-
+		auto& renderer = m_ECS->AddComponent<LineRenderer>(entity, LineRenderer(glm::vec4(0.1f, 0.1f, 0.0f, 1.0f), LineMesh()));
+		dock.Execute<ComponentResizedEvent>(ComponentResizedEvent{ {entity, m_ECS} });
 		Relationship::SetupRelation(parent, entity, *m_ECS);
 		return entity;
 	}

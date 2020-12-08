@@ -45,7 +45,7 @@ namespace XYZ {
 		uint32_t RemoveComponent(uint32_t entity)
 		{
 			uint32_t updatedEntity = NULL_ENTITY;
-			if (m_Data.size() > 1)
+			if (entity != m_Data.back().Entity)
 			{
 				// Entity of last element in data pack
 				uint32_t lastEntity = m_Data.back().Entity;

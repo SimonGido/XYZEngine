@@ -1,8 +1,6 @@
 #pragma once
 #include <XYZ.h>
 
-#include "../Inspectable/Inspectable.h"
-
 namespace XYZ {
 	class DeselectedEvent : public Event
 	{

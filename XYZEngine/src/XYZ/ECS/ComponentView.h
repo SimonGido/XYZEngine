@@ -55,7 +55,7 @@ namespace XYZ {
 
 		virtual void RemoveEntity(uint32_t entity) override
 		{
-			if (m_IndexGroups.size() > 1)
+			if (m_IndexGroups.back().Entity != entity)
 			{
 				// Entity of last element in data pack
 				uint32_t lastEntity = m_IndexGroups.back().Entity;
@@ -66,6 +66,8 @@ namespace XYZ {
 				// Point last entity to data new index;
 				m_EntityDataMap[lastEntity] = index;
 				// Pop back last element
+				
+				m_IndexGroups[index].Elements = { m_ECS->GetComponentIndex<Args>(m_IndexGroups[index].Entity)... };
 			}
 			m_IndexGroups.pop_back();
 		}

@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Buffer.h"
 #include "APIContext.h"
-#include "API/OpenGL/OpenGLBuffer.h"
+#include "XYZ/API/OpenGL/OpenGLBuffer.h"
 #include "Renderer.h"
 
 namespace XYZ {

@@ -612,6 +612,13 @@ namespace XYZ {
 
 		return { entity, m_ECS };
 	}
+
+	void GuiContext::DestroyEntity(uint32_t entity)
+	{
+		Relationship::RemoveRelation(entity, *m_ECS);
+		m_ECS->DestroyEntity(entity);
+	}
+
 	void GuiContext::SetViewportSize(uint32_t width, uint32_t height)
 	{
 		m_RenderPass->GetSpecification().TargetFramebuffer->Resize(width, height);

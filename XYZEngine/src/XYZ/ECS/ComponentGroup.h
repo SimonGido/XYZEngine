@@ -63,7 +63,7 @@ namespace XYZ {
 
 		virtual void RemoveEntity(uint32_t entity) override
 		{
-			if (m_Data.size() > 1)
+			if (entity != m_Data.back().Entity)
 			{
 				// Entity of last element in data pack
 				uint32_t lastEntity = m_Data.back().Entity;

@@ -2,7 +2,7 @@
 #include "VertexArray.h"
 
 #include "Renderer.h"
-#include "API/OpenGL/OpenGLVertexArray.h"
+#include "XYZ/API/OpenGL/OpenGLVertexArray.h"
 
 
 namespace XYZ {

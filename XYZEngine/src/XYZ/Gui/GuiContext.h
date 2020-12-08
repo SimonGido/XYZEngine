@@ -37,6 +37,7 @@ namespace XYZ {
 		Entity CreateText(uint32_t parent, const TextSpecification& specs);
 		Entity CreateImage(uint32_t parent, const ImageSpecification& specs);
 		Entity CreateInputField(uint32_t parent, const InputFieldSpecification& specs);
+		void   DestroyEntity(uint32_t entity);
 
 		void SetViewportSize(uint32_t width, uint32_t height);
 		void SetParent(uint32_t parent, uint32_t child);

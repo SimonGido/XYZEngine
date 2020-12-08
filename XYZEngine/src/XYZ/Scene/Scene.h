@@ -90,5 +90,6 @@ namespace XYZ {
          
         friend class Entity;
         friend class Serializer;
+        friend class SceneHierarchyPanel;
     };
 }
