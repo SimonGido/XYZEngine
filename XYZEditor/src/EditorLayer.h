@@ -67,5 +67,22 @@ namespace XYZ {
 
 
 		void* m_ProhibitedCursor = nullptr;
+
+
+	private:
+		struct EditorData
+		{
+			GuiContext* GUI;
+			Dockspace*  Dockspace;
+			uint32_t    Canvas;
+
+			enum PanelID
+			{
+				SceneHierarchy,
+				NumPanels
+			};
+
+			Entity Panel[NumPanels];
+		};
 	};
 }

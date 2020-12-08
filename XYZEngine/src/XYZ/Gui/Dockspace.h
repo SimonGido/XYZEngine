@@ -65,5 +65,8 @@ namespace XYZ {
 
 		ResizeData m_ResizeData;
 		GuiContext* m_Context;
+
+
+		friend class Serializer; 
 	};
 }

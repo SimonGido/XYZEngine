@@ -104,9 +104,9 @@ Entities:
       SortLayer: 0
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-783.5, 0, 0]
-      Position: [151.5, -493.500031, 0]
-      Size: [353, 1017.00006]
+      WorldPosition: [-754, 0, 0]
+      Position: [181, -493.500031, 0]
+      Size: [412, 1017.00006]
       Scale: [1, 1]
   - Entity: "{8180712D-2D59-4402-9645-FDCFD4B8B5C4}"
     Button:
@@ -124,8 +124,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-875, 208.500031, 0]
-      Position: [-91.5, 208.500031, 0]
+      WorldPosition: [-695, 268.500031, 0]
+      Position: [59, 268.500031, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{BD629A91-9B44-4E18-B7B2-0536974937A6}"
@@ -141,7 +141,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-875, 208.500031, 0]
+      WorldPosition: [-695, 268.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -166,8 +166,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-935, 208.500031, 0]
-      Position: [-151.5, 208.500031, 0]
+      WorldPosition: [-755, 268.500031, 0]
+      Position: [-1, 268.500031, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{66D1E87D-01B5-41A0-87CE-4314BD638426}"
@@ -183,7 +183,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-935, 208.500031, 0]
+      WorldPosition: [-755, 268.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -208,8 +208,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-635, 268.500031, 0]
-      Position: [148.5, 268.500031, 0]
+      WorldPosition: [-815, 268.500031, 0]
+      Position: [-61, 268.500031, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{7AE0DF03-77A7-4E88-9578-CFF57EAB1419}"
@@ -225,7 +225,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-635, 268.500031, 0]
+      WorldPosition: [-815, 268.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -250,8 +250,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-695, 268.500031, 0]
-      Position: [88.5, 268.500031, 0]
+      WorldPosition: [-875, 268.500031, 0]
+      Position: [-121, 268.500031, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{156653C1-A7C2-4DF7-BE11-757E3A812281}"
@@ -267,7 +267,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-695, 268.500031, 0]
+      WorldPosition: [-875, 268.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -292,8 +292,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-755, 268.500031, 0]
-      Position: [28.5, 268.500031, 0]
+      WorldPosition: [-935, 268.500031, 0]
+      Position: [-181, 268.500031, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{975211FE-D396-4A79-9A8A-031D6CF35786}"
@@ -309,7 +309,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-755, 268.500031, 0]
+      WorldPosition: [-935, 268.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -334,8 +334,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-815, 268.500031, 0]
-      Position: [-31.5, 268.500031, 0]
+      WorldPosition: [-575, 328.500031, 0]
+      Position: [179, 328.500031, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{084D7C45-BFAC-4E32-912A-1CE726826609}"
@@ -351,7 +351,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-815, 268.500031, 0]
+      WorldPosition: [-575, 328.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -376,8 +376,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-875, 268.500031, 0]
-      Position: [-91.5, 268.500031, 0]
+      WorldPosition: [-635, 328.500031, 0]
+      Position: [119, 328.500031, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{58A3111D-D9E8-4188-84E6-63B8350F3E09}"
@@ -393,7 +393,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-875, 268.500031, 0]
+      WorldPosition: [-635, 328.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -418,8 +418,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-935, 268.500031, 0]
-      Position: [-151.5, 268.500031, 0]
+      WorldPosition: [-695, 328.500031, 0]
+      Position: [59, 328.500031, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{A24DDE60-19D8-4D50-8A52-7C83B3963B3D}"
@@ -435,7 +435,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-935, 268.500031, 0]
+      WorldPosition: [-695, 328.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -460,8 +460,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-635, 328.500031, 0]
-      Position: [148.5, 328.500031, 0]
+      WorldPosition: [-755, 328.500031, 0]
+      Position: [-1, 328.500031, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{92236705-D94A-4358-964D-8C18358B2717}"
@@ -477,7 +477,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-635, 328.500031, 0]
+      WorldPosition: [-755, 328.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -502,8 +502,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-695, 328.500031, 0]
-      Position: [88.5, 328.500031, 0]
+      WorldPosition: [-815, 328.500031, 0]
+      Position: [-61, 328.500031, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{3DC0E41F-ABEA-4E0C-B179-A8DCA10BDDDA}"
@@ -519,7 +519,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-695, 328.500031, 0]
+      WorldPosition: [-815, 328.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -544,8 +544,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-755, 328.500031, 0]
-      Position: [28.5, 328.500031, 0]
+      WorldPosition: [-875, 328.500031, 0]
+      Position: [-121, 328.500031, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{BDA9EC1E-2C56-4E68-AD74-967EE2C15891}"
@@ -561,7 +561,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-755, 328.500031, 0]
+      WorldPosition: [-875, 328.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -586,8 +586,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-815, 328.500031, 0]
-      Position: [-31.5, 328.500031, 0]
+      WorldPosition: [-935, 328.500031, 0]
+      Position: [-181, 328.500031, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{6EEE3B6E-28A9-440F-A0EE-04A4C0138CB8}"
@@ -603,7 +603,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-815, 328.500031, 0]
+      WorldPosition: [-935, 328.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -628,8 +628,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-875, 328.500031, 0]
-      Position: [-91.5, 328.500031, 0]
+      WorldPosition: [-575, 388.500031, 0]
+      Position: [179, 388.500031, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{45B5D80C-CBE0-4363-AE09-2EF3918E65DC}"
@@ -645,7 +645,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-875, 328.500031, 0]
+      WorldPosition: [-575, 388.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -670,8 +670,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-935, 328.500031, 0]
-      Position: [-151.5, 328.500031, 0]
+      WorldPosition: [-635, 388.500031, 0]
+      Position: [119, 388.500031, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{BDA25A6E-9ED1-475F-98BF-69725085758A}"
@@ -687,7 +687,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-935, 328.500031, 0]
+      WorldPosition: [-635, 388.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -712,8 +712,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-635, 388.500031, 0]
-      Position: [148.5, 388.500031, 0]
+      WorldPosition: [-695, 388.500031, 0]
+      Position: [59, 388.500031, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{568AF3FA-0D62-41B5-AB81-8A8D2C52E7E2}"
@@ -729,7 +729,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-635, 388.500031, 0]
+      WorldPosition: [-695, 388.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -754,8 +754,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-695, 388.500031, 0]
-      Position: [88.5, 388.500031, 0]
+      WorldPosition: [-755, 388.500031, 0]
+      Position: [-1, 388.500031, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{DBB006B5-6F52-4E06-823E-887D8A923AD1}"
@@ -771,7 +771,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-695, 388.500031, 0]
+      WorldPosition: [-755, 388.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -796,8 +796,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-755, 388.500031, 0]
-      Position: [28.5, 388.500031, 0]
+      WorldPosition: [-815, 388.500031, 0]
+      Position: [-61, 388.500031, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{CECA441E-4FDC-4B66-BBAD-6FEA7C88F443}"
@@ -813,7 +813,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-755, 388.500031, 0]
+      WorldPosition: [-815, 388.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -838,8 +838,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-815, 388.500031, 0]
-      Position: [-31.5, 388.500031, 0]
+      WorldPosition: [-875, 388.500031, 0]
+      Position: [-121, 388.500031, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{EA79177A-695D-4FEC-9E57-AA835A12B331}"
@@ -855,7 +855,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-815, 388.500031, 0]
+      WorldPosition: [-875, 388.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -880,8 +880,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-875, 388.500031, 0]
-      Position: [-91.5, 388.500031, 0]
+      WorldPosition: [-935, 388.500031, 0]
+      Position: [-181, 388.500031, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{C6FC0ABE-F80F-4380-AC68-2673D8994C56}"
@@ -897,7 +897,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-875, 388.500031, 0]
+      WorldPosition: [-935, 388.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -922,8 +922,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-935, 388.500031, 0]
-      Position: [-151.5, 388.500031, 0]
+      WorldPosition: [-615, 448.500031, 0]
+      Position: [139, 448.500031, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{4FA3A5D5-20D5-4E55-880E-22E547E6E3FE}"
@@ -939,7 +939,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-935, 388.500031, 0]
+      WorldPosition: [-615, 448.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -965,7 +965,7 @@ Entities:
       IsVisible: true
     RectTransformComponent:
       WorldPosition: [-725, 461.000031, 0]
-      Position: [58.5, 461.000031, 0]
+      Position: [29, 461.000031, 0]
       Size: [150, 25]
       Scale: [1, 1]
   - Entity: "{4188E64B-123F-47AC-96B5-1E2649D4F22A}"
@@ -1043,7 +1043,7 @@ Entities:
       IsVisible: true
     RectTransformComponent:
       WorldPosition: [-885, 461.000031, 0]
-      Position: [-101.5, 461.000031, 0]
+      Position: [-131, 461.000031, 0]
       Size: [150, 25]
       Scale: [1, 1]
   - Entity: "{D6AB3A62-A17B-4671-8D00-E56EB9C66928}"
@@ -1062,8 +1062,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [565, -15, 0]
-      Position: [565, -15, 0]
+      WorldPosition: [565, 493.500031, 0]
+      Position: [565, 493.500031, 0]
       Size: [50, 30]
       Scale: [1, 1]
     Dockable:
@@ -1081,7 +1081,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [565, -15, 0]
+      WorldPosition: [565, 493.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 30]
       Scale: [1, 1]
@@ -1109,7 +1109,7 @@ Entities:
       SortLayer: 0
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [750, -254.250015, 0]
+      WorldPosition: [750, 254.250015, 0]
       Position: [185, -239.250015, 0]
       Size: [420, 508.500031]
       Scale: [1, 1]
@@ -1129,7 +1129,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [640, -240, 0]
+      WorldPosition: [640, 268.500031, 0]
       Position: [-110, 14.2500153, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1146,7 +1146,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [640, -240, 0]
+      WorldPosition: [640, 268.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1171,7 +1171,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [580, -240, 0]
+      WorldPosition: [580, 268.500031, 0]
       Position: [-170, 14.2500153, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1188,7 +1188,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [580, -240, 0]
+      WorldPosition: [580, 268.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1213,7 +1213,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [880, -180, 0]
+      WorldPosition: [880, 328.500031, 0]
       Position: [130, 74.2500153, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1230,7 +1230,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [880, -180, 0]
+      WorldPosition: [880, 328.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1255,7 +1255,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [820, -180, 0]
+      WorldPosition: [820, 328.500031, 0]
       Position: [70, 74.2500153, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1272,7 +1272,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [820, -180, 0]
+      WorldPosition: [820, 328.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1297,7 +1297,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [760, -180, 0]
+      WorldPosition: [760, 328.500031, 0]
       Position: [10, 74.2500153, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1314,7 +1314,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [760, -180, 0]
+      WorldPosition: [760, 328.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1339,7 +1339,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [700, -180, 0]
+      WorldPosition: [700, 328.500031, 0]
       Position: [-50, 74.2500153, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1356,7 +1356,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [700, -180, 0]
+      WorldPosition: [700, 328.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1381,7 +1381,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [640, -180, 0]
+      WorldPosition: [640, 328.500031, 0]
       Position: [-110, 74.2500153, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1398,7 +1398,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [640, -180, 0]
+      WorldPosition: [640, 328.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1423,7 +1423,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [580, -180, 0]
+      WorldPosition: [580, 328.500031, 0]
       Position: [-170, 74.2500153, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1440,7 +1440,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [580, -180, 0]
+      WorldPosition: [580, 328.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1465,7 +1465,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [880, -120, 0]
+      WorldPosition: [880, 388.500031, 0]
       Position: [130, 134.250015, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1482,7 +1482,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [880, -120, 0]
+      WorldPosition: [880, 388.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1507,7 +1507,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [820, -120, 0]
+      WorldPosition: [820, 388.500031, 0]
       Position: [70, 134.250015, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1524,7 +1524,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [820, -120, 0]
+      WorldPosition: [820, 388.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1549,7 +1549,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [760, -120, 0]
+      WorldPosition: [760, 388.500031, 0]
       Position: [10, 134.250015, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1566,7 +1566,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [760, -120, 0]
+      WorldPosition: [760, 388.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1591,7 +1591,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [700, -120, 0]
+      WorldPosition: [700, 388.500031, 0]
       Position: [-50, 134.250015, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1608,7 +1608,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [700, -120, 0]
+      WorldPosition: [700, 388.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1633,7 +1633,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [640, -120, 0]
+      WorldPosition: [640, 388.500031, 0]
       Position: [-110, 134.250015, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1650,7 +1650,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [640, -120, 0]
+      WorldPosition: [640, 388.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1675,7 +1675,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [580, -120, 0]
+      WorldPosition: [580, 388.500031, 0]
       Position: [-170, 134.250015, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1692,7 +1692,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [580, -120, 0]
+      WorldPosition: [580, 388.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1717,7 +1717,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [880, -60, 0]
+      WorldPosition: [880, 448.500031, 0]
       Position: [130, 194.250015, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1734,7 +1734,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [880, -60, 0]
+      WorldPosition: [880, 448.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1759,7 +1759,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [820, -60, 0]
+      WorldPosition: [820, 448.500031, 0]
       Position: [70, 194.250015, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1776,7 +1776,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [820, -60, 0]
+      WorldPosition: [820, 448.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1801,7 +1801,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [760, -60, 0]
+      WorldPosition: [760, 448.500031, 0]
       Position: [10, 194.250015, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1818,7 +1818,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [760, -60, 0]
+      WorldPosition: [760, 448.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1843,7 +1843,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [700, -60, 0]
+      WorldPosition: [700, 448.500031, 0]
       Position: [-50, 194.250015, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1860,7 +1860,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [700, -60, 0]
+      WorldPosition: [700, 448.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1885,7 +1885,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [640, -60, 0]
+      WorldPosition: [640, 448.500031, 0]
       Position: [-110, 194.250015, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1902,7 +1902,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [640, -60, 0]
+      WorldPosition: [640, 448.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1927,7 +1927,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [580, -60, 0]
+      WorldPosition: [580, 448.500031, 0]
       Position: [-170, 194.250015, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1944,7 +1944,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [580, -60, 0]
+      WorldPosition: [580, 448.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -1969,8 +1969,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-582, 493.500031, 0]
-      Position: [-582, 493.500031, 0]
+      WorldPosition: [-523, 493.500031, 0]
+      Position: [-523, 493.500031, 0]
       Size: [50, 30]
       Scale: [1, 1]
     Dockable:
@@ -1988,7 +1988,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-582, 493.500031, 0]
+      WorldPosition: [-523, 493.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 30]
       Scale: [1, 1]
@@ -2016,9 +2016,9 @@ Entities:
       SortLayer: 0
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-33.5, 435, 0]
-      Position: [548.5, -58.5000305, 0]
-      Size: [1147, 147.000061]
+      WorldPosition: [-4, 435, 0]
+      Position: [519, -58.5000305, 0]
+      Size: [1088, 147.000061]
       Scale: [1, 1]
   - Entity: "{CC26754E-D34D-47F4-84A8-711D74090FA5}"
     Button:
@@ -2036,8 +2036,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-582, 388.500031, 0]
-      Position: [-548.5, -46.4999695, 0]
+      WorldPosition: [-463, 388.500031, 0]
+      Position: [-459, -46.4999695, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{0BF4A36F-A3BC-4316-894E-6D936669613A}"
@@ -2053,7 +2053,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-582, 388.500031, 0]
+      WorldPosition: [-463, 388.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -2078,8 +2078,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [498, 448.500031, 0]
-      Position: [531.5, 13.5000305, 0]
+      WorldPosition: [-523, 388.500031, 0]
+      Position: [-519, -46.4999695, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{131D7455-4BF0-4D86-B826-F8500761C5E0}"
@@ -2095,7 +2095,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [498, 448.500031, 0]
+      WorldPosition: [-523, 388.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -2120,8 +2120,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [438, 448.500031, 0]
-      Position: [471.5, 13.5000305, 0]
+      WorldPosition: [497, 448.500031, 0]
+      Position: [501, 13.5000305, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{F2F8F881-A48A-42E2-AD99-FA08FD8CCE92}"
@@ -2137,7 +2137,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [438, 448.500031, 0]
+      WorldPosition: [497, 448.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -2162,8 +2162,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [378, 448.500031, 0]
-      Position: [411.5, 13.5000305, 0]
+      WorldPosition: [437, 448.500031, 0]
+      Position: [441, 13.5000305, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{F536EE5C-C799-407B-8141-5A3184EC133C}"
@@ -2179,7 +2179,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [378, 448.500031, 0]
+      WorldPosition: [437, 448.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -2204,8 +2204,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [318, 448.500031, 0]
-      Position: [351.5, 13.5000305, 0]
+      WorldPosition: [377, 448.500031, 0]
+      Position: [381, 13.5000305, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{64DE1181-3E50-44AA-9923-05636099398E}"
@@ -2221,7 +2221,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [318, 448.500031, 0]
+      WorldPosition: [377, 448.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -2246,8 +2246,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [258, 448.500031, 0]
-      Position: [291.5, 13.5000305, 0]
+      WorldPosition: [317, 448.500031, 0]
+      Position: [321, 13.5000305, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{5EF91908-DBD6-450C-9F06-CD51DE0396A9}"
@@ -2263,7 +2263,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [258, 448.500031, 0]
+      WorldPosition: [317, 448.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -2288,8 +2288,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [198, 448.500031, 0]
-      Position: [231.5, 13.5000305, 0]
+      WorldPosition: [257, 448.500031, 0]
+      Position: [261, 13.5000305, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{1BB45775-AC9D-4CB6-98CD-AF251B35C1E6}"
@@ -2305,7 +2305,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [198, 448.500031, 0]
+      WorldPosition: [257, 448.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -2330,8 +2330,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [138, 448.500031, 0]
-      Position: [171.5, 13.5000305, 0]
+      WorldPosition: [197, 448.500031, 0]
+      Position: [201, 13.5000305, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{268586E8-40BF-4901-B7CA-6C95DFB684E8}"
@@ -2347,7 +2347,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [138, 448.500031, 0]
+      WorldPosition: [197, 448.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -2372,8 +2372,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [78, 448.500031, 0]
-      Position: [111.5, 13.5000305, 0]
+      WorldPosition: [137, 448.500031, 0]
+      Position: [141, 13.5000305, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{C235848E-07D8-41F5-B175-C6C4DEE27AC1}"
@@ -2389,7 +2389,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [78, 448.500031, 0]
+      WorldPosition: [137, 448.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -2414,8 +2414,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [18, 448.500031, 0]
-      Position: [51.5, 13.5000305, 0]
+      WorldPosition: [77, 448.500031, 0]
+      Position: [81, 13.5000305, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{CE81B320-D26E-4104-8D66-DBCE56A1A2A7}"
@@ -2431,7 +2431,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [18, 448.500031, 0]
+      WorldPosition: [77, 448.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -2456,8 +2456,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-42, 448.500031, 0]
-      Position: [-8.5, 13.5000305, 0]
+      WorldPosition: [17, 448.500031, 0]
+      Position: [21, 13.5000305, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{3964EA68-FC9A-4448-9755-88BD24596F98}"
@@ -2473,7 +2473,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-42, 448.500031, 0]
+      WorldPosition: [17, 448.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -2498,8 +2498,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-102, 448.500031, 0]
-      Position: [-68.5, 13.5000305, 0]
+      WorldPosition: [-43, 448.500031, 0]
+      Position: [-39, 13.5000305, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{5687B272-933A-4795-913B-4AEE6A3B2790}"
@@ -2515,7 +2515,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-102, 448.500031, 0]
+      WorldPosition: [-43, 448.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -2540,8 +2540,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-162, 448.500031, 0]
-      Position: [-128.5, 13.5000305, 0]
+      WorldPosition: [-103, 448.500031, 0]
+      Position: [-99, 13.5000305, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{D9B4F9AC-87E9-473B-A972-AC94ACD2E4A9}"
@@ -2557,7 +2557,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-162, 448.500031, 0]
+      WorldPosition: [-103, 448.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -2582,8 +2582,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-222, 448.500031, 0]
-      Position: [-188.5, 13.5000305, 0]
+      WorldPosition: [-163, 448.500031, 0]
+      Position: [-159, 13.5000305, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{FE4C0F4B-8EA6-4E25-944F-E0F543875C1A}"
@@ -2599,7 +2599,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-222, 448.500031, 0]
+      WorldPosition: [-163, 448.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -2624,8 +2624,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-282, 448.500031, 0]
-      Position: [-248.5, 13.5000305, 0]
+      WorldPosition: [-223, 448.500031, 0]
+      Position: [-219, 13.5000305, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{3F57CAB6-600B-4667-8D85-14965B967F82}"
@@ -2641,7 +2641,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-282, 448.500031, 0]
+      WorldPosition: [-223, 448.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -2666,8 +2666,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-342, 448.500031, 0]
-      Position: [-308.5, 13.5000305, 0]
+      WorldPosition: [-283, 448.500031, 0]
+      Position: [-279, 13.5000305, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{BF56DC53-7520-43CF-A03A-93BD26FABF26}"
@@ -2683,7 +2683,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-342, 448.500031, 0]
+      WorldPosition: [-283, 448.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -2708,8 +2708,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-402, 448.500031, 0]
-      Position: [-368.5, 13.5000305, 0]
+      WorldPosition: [-343, 448.500031, 0]
+      Position: [-339, 13.5000305, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{00DB5F9A-92FF-484B-BCC2-491C41137FE6}"
@@ -2725,7 +2725,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-402, 448.500031, 0]
+      WorldPosition: [-343, 448.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -2750,8 +2750,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-462, 448.500031, 0]
-      Position: [-428.5, 13.5000305, 0]
+      WorldPosition: [-403, 448.500031, 0]
+      Position: [-399, 13.5000305, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{AD9A8017-D335-4A67-8638-EE99003B6FCE}"
@@ -2767,7 +2767,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-462, 448.500031, 0]
+      WorldPosition: [-403, 448.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -2792,8 +2792,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-522, 448.500031, 0]
-      Position: [-488.5, 13.5000305, 0]
+      WorldPosition: [-463, 448.500031, 0]
+      Position: [-459, 13.5000305, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{85FB54D4-3050-4041-9E88-028588B89B53}"
@@ -2809,7 +2809,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-522, 448.500031, 0]
+      WorldPosition: [-463, 448.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -2834,8 +2834,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-582, 448.500031, 0]
-      Position: [-548.5, 13.5000305, 0]
+      WorldPosition: [-523, 448.500031, 0]
+      Position: [-519, 13.5000305, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{23BA7A52-A4CC-431E-BC8F-F76C58BCA156}"
@@ -2851,7 +2851,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-582, 448.500031, 0]
+      WorldPosition: [-523, 448.500031, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -2876,8 +2876,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-582, -269.5, 0]
-      Position: [-582, -269.5, 0]
+      WorldPosition: [-523, -307.5, 0]
+      Position: [-523, -307.5, 0]
       Size: [50, 30]
       Scale: [1, 1]
     Dockable:
@@ -2895,7 +2895,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-582, -269.5, 0]
+      WorldPosition: [-523, -307.5, 0]
       Position: [0, 0, 0]
       Size: [50, 30]
       Scale: [1, 1]
@@ -2923,9 +2923,9 @@ Entities:
       SortLayer: 0
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-33.5, -381.5, 0]
-      Position: [548.5, -112.000015, 0]
-      Size: [1147, 254.000031]
+      WorldPosition: [-4, -400.5, 0]
+      Position: [519, -93.0000153, 0]
+      Size: [1088, 216.000031]
       Scale: [1, 1]
   - Entity: "{6763E078-DC79-42F8-AE69-E48F1F88F816}"
     Button:
@@ -2943,8 +2943,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-582, -374.5, 0]
-      Position: [-548.5, 7.00001526, 0]
+      WorldPosition: [-463, -412.5, 0]
+      Position: [-459, -11.9999847, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{1B11591F-E4D6-4A7B-8BA6-B0CB57D43A7F}"
@@ -2960,7 +2960,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-582, -374.5, 0]
+      WorldPosition: [-463, -412.5, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -2985,8 +2985,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [498, -314.5, 0]
-      Position: [531.5, 67.0000153, 0]
+      WorldPosition: [-523, -412.5, 0]
+      Position: [-519, -11.9999847, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{C2C42E90-983A-434E-8E1B-2779821DA092}"
@@ -3002,7 +3002,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [498, -314.5, 0]
+      WorldPosition: [-523, -412.5, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -3027,8 +3027,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [438, -314.5, 0]
-      Position: [471.5, 67.0000153, 0]
+      WorldPosition: [497, -352.5, 0]
+      Position: [501, 48.0000153, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{34EA3AA2-C0E6-47DA-9315-873E897F3053}"
@@ -3044,7 +3044,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [438, -314.5, 0]
+      WorldPosition: [497, -352.5, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -3069,8 +3069,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [378, -314.5, 0]
-      Position: [411.5, 67.0000153, 0]
+      WorldPosition: [437, -352.5, 0]
+      Position: [441, 48.0000153, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{07088FDA-911A-4D9A-9BE5-EB844564BC79}"
@@ -3086,7 +3086,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [378, -314.5, 0]
+      WorldPosition: [437, -352.5, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -3111,8 +3111,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [318, -314.5, 0]
-      Position: [351.5, 67.0000153, 0]
+      WorldPosition: [377, -352.5, 0]
+      Position: [381, 48.0000153, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{BBE9B979-A8F8-4DED-9795-9B84D118D62A}"
@@ -3128,7 +3128,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [318, -314.5, 0]
+      WorldPosition: [377, -352.5, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -3153,8 +3153,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [258, -314.5, 0]
-      Position: [291.5, 67.0000153, 0]
+      WorldPosition: [317, -352.5, 0]
+      Position: [321, 48.0000153, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{15EB5A55-BA80-4CA7-BFC7-3C62FB48EB02}"
@@ -3170,7 +3170,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [258, -314.5, 0]
+      WorldPosition: [317, -352.5, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -3195,8 +3195,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [198, -314.5, 0]
-      Position: [231.5, 67.0000153, 0]
+      WorldPosition: [257, -352.5, 0]
+      Position: [261, 48.0000153, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{D8C387E5-7828-4AA3-8FAA-FD80B2881027}"
@@ -3212,7 +3212,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [198, -314.5, 0]
+      WorldPosition: [257, -352.5, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -3237,8 +3237,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [138, -314.5, 0]
-      Position: [171.5, 67.0000153, 0]
+      WorldPosition: [197, -352.5, 0]
+      Position: [201, 48.0000153, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{844BD246-D399-4023-972C-077174664FDD}"
@@ -3254,7 +3254,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [138, -314.5, 0]
+      WorldPosition: [197, -352.5, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -3279,8 +3279,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [78, -314.5, 0]
-      Position: [111.5, 67.0000153, 0]
+      WorldPosition: [137, -352.5, 0]
+      Position: [141, 48.0000153, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{3A3145DC-02D8-4A97-9F09-03842D31E889}"
@@ -3296,7 +3296,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [78, -314.5, 0]
+      WorldPosition: [137, -352.5, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -3321,8 +3321,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [18, -314.5, 0]
-      Position: [51.5, 67.0000153, 0]
+      WorldPosition: [77, -352.5, 0]
+      Position: [81, 48.0000153, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{89D1E3A9-ECA2-48A7-862F-417B4267B96A}"
@@ -3338,7 +3338,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [18, -314.5, 0]
+      WorldPosition: [77, -352.5, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -3363,8 +3363,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-42, -314.5, 0]
-      Position: [-8.5, 67.0000153, 0]
+      WorldPosition: [17, -352.5, 0]
+      Position: [21, 48.0000153, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{93A08CD8-F8F1-4F77-9F39-C5187F68F3D6}"
@@ -3380,7 +3380,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-42, -314.5, 0]
+      WorldPosition: [17, -352.5, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -3405,8 +3405,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-102, -314.5, 0]
-      Position: [-68.5, 67.0000153, 0]
+      WorldPosition: [-43, -352.5, 0]
+      Position: [-39, 48.0000153, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{814488DF-7623-4AB7-9138-865C40A5E67F}"
@@ -3422,7 +3422,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-102, -314.5, 0]
+      WorldPosition: [-43, -352.5, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -3447,8 +3447,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-162, -314.5, 0]
-      Position: [-128.5, 67.0000153, 0]
+      WorldPosition: [-103, -352.5, 0]
+      Position: [-99, 48.0000153, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{5570B350-695C-4EBB-95DF-2B35872E6817}"
@@ -3464,7 +3464,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-162, -314.5, 0]
+      WorldPosition: [-103, -352.5, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -3489,8 +3489,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-222, -314.5, 0]
-      Position: [-188.5, 67.0000153, 0]
+      WorldPosition: [-163, -352.5, 0]
+      Position: [-159, 48.0000153, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{3496817F-CD80-4C6A-ACBE-5F71E150E274}"
@@ -3506,7 +3506,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-222, -314.5, 0]
+      WorldPosition: [-163, -352.5, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -3531,8 +3531,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-282, -314.5, 0]
-      Position: [-248.5, 67.0000153, 0]
+      WorldPosition: [-223, -352.5, 0]
+      Position: [-219, 48.0000153, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{A795BA3B-4EB4-40AA-B636-07805694B739}"
@@ -3548,7 +3548,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-282, -314.5, 0]
+      WorldPosition: [-223, -352.5, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -3573,8 +3573,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-342, -314.5, 0]
-      Position: [-308.5, 67.0000153, 0]
+      WorldPosition: [-283, -352.5, 0]
+      Position: [-279, 48.0000153, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{F761F468-15A2-4C40-98F6-76073FA398C1}"
@@ -3590,7 +3590,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-342, -314.5, 0]
+      WorldPosition: [-283, -352.5, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -3615,8 +3615,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-402, -314.5, 0]
-      Position: [-368.5, 67.0000153, 0]
+      WorldPosition: [-343, -352.5, 0]
+      Position: [-339, 48.0000153, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{F0017583-8BF4-4ED1-B0C4-C0EC0947B444}"
@@ -3632,7 +3632,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-402, -314.5, 0]
+      WorldPosition: [-343, -352.5, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -3657,8 +3657,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-462, -314.5, 0]
-      Position: [-428.5, 67.0000153, 0]
+      WorldPosition: [-403, -352.5, 0]
+      Position: [-399, 48.0000153, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{BBD197D4-FDDB-4E9F-8383-B8301AD35E00}"
@@ -3674,7 +3674,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-462, -314.5, 0]
+      WorldPosition: [-403, -352.5, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -3699,8 +3699,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-522, -314.5, 0]
-      Position: [-488.5, 67.0000153, 0]
+      WorldPosition: [-463, -352.5, 0]
+      Position: [-459, 48.0000153, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{D6845B91-8D5E-466B-96F3-197D85F43EB1}"
@@ -3716,7 +3716,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-522, -314.5, 0]
+      WorldPosition: [-463, -352.5, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -3741,8 +3741,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-582, -314.5, 0]
-      Position: [-548.5, 67.0000153, 0]
+      WorldPosition: [-523, -352.5, 0]
+      Position: [-519, 48.0000153, 0]
       Size: [50, 50]
       Scale: [1, 1]
   - Entity: "{9CF194C0-7BB4-4EFA-9425-CDD5425D53C9}"
@@ -3758,7 +3758,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-582, -314.5, 0]
+      WorldPosition: [-523, -352.5, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -3783,8 +3783,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [565, 493.500031, 0]
-      Position: [565, 493.500031, 0]
+      WorldPosition: [565, -15, 0]
+      Position: [565, -15, 0]
       Size: [50, 30]
       Scale: [1, 1]
     Dockable:
@@ -3802,7 +3802,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [565, 493.500031, 0]
+      WorldPosition: [565, -15, 0]
       Position: [0, 0, 0]
       Size: [50, 30]
       Scale: [1, 1]
@@ -3830,7 +3830,7 @@ Entities:
       SortLayer: 0
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [750, 254.250015, 0]
+      WorldPosition: [750, -254.250015, 0]
       Position: [185, -239.250015, 0]
       Size: [420, 508.500031]
       Scale: [1, 1]
@@ -3850,7 +3850,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [865, 328.500031, 0]
+      WorldPosition: [865, -180, 0]
       Position: [115, 74.2500153, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -3867,7 +3867,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [865, 328.500031, 0]
+      WorldPosition: [865, -180, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -3892,7 +3892,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [805, 328.500031, 0]
+      WorldPosition: [805, -180, 0]
       Position: [55, 74.2500153, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -3909,7 +3909,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [805, 328.500031, 0]
+      WorldPosition: [805, -180, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -3934,7 +3934,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [745, 328.500031, 0]
+      WorldPosition: [745, -180, 0]
       Position: [-5, 74.2500153, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -3951,7 +3951,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [745, 328.500031, 0]
+      WorldPosition: [745, -180, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -3976,7 +3976,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [685, 328.500031, 0]
+      WorldPosition: [685, -180, 0]
       Position: [-65, 74.2500153, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -3993,7 +3993,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [685, 328.500031, 0]
+      WorldPosition: [685, -180, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -4018,7 +4018,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [625, 328.500031, 0]
+      WorldPosition: [625, -180, 0]
       Position: [-125, 74.2500153, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -4035,7 +4035,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [625, 328.500031, 0]
+      WorldPosition: [625, -180, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -4060,7 +4060,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [565, 328.500031, 0]
+      WorldPosition: [565, -180, 0]
       Position: [-185, 74.2500153, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -4077,7 +4077,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [565, 328.500031, 0]
+      WorldPosition: [565, -180, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -4102,7 +4102,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [925, 388.500031, 0]
+      WorldPosition: [925, -120, 0]
       Position: [175, 134.250015, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -4119,7 +4119,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [925, 388.500031, 0]
+      WorldPosition: [925, -120, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -4144,7 +4144,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [865, 388.500031, 0]
+      WorldPosition: [865, -120, 0]
       Position: [115, 134.250015, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -4161,7 +4161,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [865, 388.500031, 0]
+      WorldPosition: [865, -120, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -4186,7 +4186,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [805, 388.500031, 0]
+      WorldPosition: [805, -120, 0]
       Position: [55, 134.250015, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -4203,7 +4203,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [805, 388.500031, 0]
+      WorldPosition: [805, -120, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -4228,7 +4228,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [745, 388.500031, 0]
+      WorldPosition: [745, -120, 0]
       Position: [-5, 134.250015, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -4245,7 +4245,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [745, 388.500031, 0]
+      WorldPosition: [745, -120, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -4270,7 +4270,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [685, 388.500031, 0]
+      WorldPosition: [685, -120, 0]
       Position: [-65, 134.250015, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -4287,7 +4287,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [685, 388.500031, 0]
+      WorldPosition: [685, -120, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -4312,7 +4312,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [625, 388.500031, 0]
+      WorldPosition: [625, -120, 0]
       Position: [-125, 134.250015, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -4329,7 +4329,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [625, 388.500031, 0]
+      WorldPosition: [625, -120, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -4354,7 +4354,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [565, 388.500031, 0]
+      WorldPosition: [565, -120, 0]
       Position: [-185, 134.250015, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -4371,7 +4371,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [565, 388.500031, 0]
+      WorldPosition: [565, -120, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -4396,7 +4396,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [925, 448.500031, 0]
+      WorldPosition: [925, -60, 0]
       Position: [175, 194.250015, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -4413,7 +4413,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [925, 448.500031, 0]
+      WorldPosition: [925, -60, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -4438,7 +4438,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [865, 448.500031, 0]
+      WorldPosition: [865, -60, 0]
       Position: [115, 194.250015, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -4455,7 +4455,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [865, 448.500031, 0]
+      WorldPosition: [865, -60, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -4480,7 +4480,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [805, 448.500031, 0]
+      WorldPosition: [805, -60, 0]
       Position: [55, 194.250015, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -4497,7 +4497,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [805, 448.500031, 0]
+      WorldPosition: [805, -60, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -4522,7 +4522,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [745, 448.500031, 0]
+      WorldPosition: [745, -60, 0]
       Position: [-5, 194.250015, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -4539,7 +4539,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [745, 448.500031, 0]
+      WorldPosition: [745, -60, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -4564,7 +4564,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [685, 448.500031, 0]
+      WorldPosition: [685, -60, 0]
       Position: [-65, 194.250015, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -4581,7 +4581,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [685, 448.500031, 0]
+      WorldPosition: [685, -60, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -4606,7 +4606,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [625, 448.500031, 0]
+      WorldPosition: [625, -60, 0]
       Position: [-125, 194.250015, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -4623,7 +4623,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [625, 448.500031, 0]
+      WorldPosition: [625, -60, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -4648,7 +4648,7 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [565, 448.500031, 0]
+      WorldPosition: [565, -60, 0]
       Position: [-185, 194.250015, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -4665,7 +4665,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [565, 448.500031, 0]
+      WorldPosition: [565, -60, 0]
       Position: [0, 0, 0]
       Size: [50, 50]
       Scale: [1, 1]
@@ -4690,8 +4690,8 @@ Entities:
       SortLayer: 1
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-582, 346.5, 0]
-      Position: [-582, 346.5, 0]
+      WorldPosition: [-523, 346.5, 0]
+      Position: [-523, 346.5, 0]
       Size: [50, 30]
       Scale: [1, 1]
     Dockable:
@@ -4709,7 +4709,7 @@ Entities:
       SortLayer: 2
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-582, 346.5, 0]
+      WorldPosition: [-523, 346.5, 0]
       Position: [0, 0, 0]
       Size: [50, 30]
       Scale: [1, 1]
@@ -4731,16 +4731,16 @@ Entities:
       SortLayer: 0
       IsVisible: true
     RectTransformComponent:
-      WorldPosition: [-33.5, 53.5, 0]
-      Position: [548.5, -293, 0]
-      Size: [1147, 616]
+      WorldPosition: [-4, 34.5, 0]
+      Position: [519, -312, 0]
+      Size: [1088, 654]
       Scale: [1, 1]
   - Entity: "{E0665C80-C785-43ED-8E00-E7A87FC288EE}"
     Relationship:
       Parent: 1
       NextSibling: 65537
       PreviousSibling: 226
-      FirstChild: 233
+      FirstChild: 234
     DockNodeComponent:
       Position: [540, -508.500031, 0]
       Size: [420, 1017.00006]
@@ -4786,21 +4786,21 @@ Entities:
       PreviousSibling: 228
       FirstChild: 230
     DockNodeComponent:
-      Position: [-607, -508.500031, 0]
-      Size: [1147, 1017.00006]
+      Position: [-548, -508.500031, 0]
+      Size: [1088, 1017.00006]
       Split: 1
     LineRenderer:
       Color: [0.100000001, 0.100000001, 0, 1]
       IsVisible: false
       Points:
-        - Point: [-607, -508.500031, 0]
+        - Point: [-548, -508.500031, 0]
         - Point: [540, -508.500031, 0]
         - Point: [540, -508.500031, 0]
         - Point: [540, 508.500031, 0]
         - Point: [540, 508.500031, 0]
-        - Point: [-607, 508.500031, 0]
-        - Point: [-607, 508.500031, 0]
-        - Point: [-607, -508.500031, 0]
+        - Point: [-548, 508.500031, 0]
+        - Point: [-548, 508.500031, 0]
+        - Point: [-548, -508.500031, 0]
   - Entity: "{81D19746-0881-4F1C-84ED-C9FF4D403814}"
     Relationship:
       Parent: 226
@@ -4809,7 +4809,7 @@ Entities:
       FirstChild: 65537
     DockNodeComponent:
       Position: [-960, -508.500031, 0]
-      Size: [353, 1017.00006]
+      Size: [412, 1017.00006]
       Split: 0
       Entities:
         - 2
@@ -4818,10 +4818,10 @@ Entities:
       IsVisible: false
       Points:
         - Point: [-960, -508.500031, 0]
-        - Point: [-607, -508.500031, 0]
-        - Point: [-607, -508.500031, 0]
-        - Point: [-607, 508.500031, 0]
-        - Point: [-607, 508.500031, 0]
+        - Point: [-548, -508.500031, 0]
+        - Point: [-548, -508.500031, 0]
+        - Point: [-548, 508.500031, 0]
+        - Point: [-548, 508.500031, 0]
         - Point: [-960, 508.500031, 0]
         - Point: [-960, 508.500031, 0]
         - Point: [-960, -508.500031, 0]
@@ -4832,8 +4832,8 @@ Entities:
       PreviousSibling: 230
       FirstChild: 65537
     DockNodeComponent:
-      Position: [-607, 361.499969, 0]
-      Size: [1147, 147.000061]
+      Position: [-548, 361.499969, 0]
+      Size: [1088, 147.000061]
       Split: 0
       Entities:
         - 93
@@ -4841,69 +4841,45 @@ Entities:
       Color: [0.100000001, 0.100000001, 0, 1]
       IsVisible: false
       Points:
-        - Point: [-607, 361.499969, 0]
+        - Point: [-548, 361.499969, 0]
         - Point: [540, 361.499969, 0]
         - Point: [540, 361.499969, 0]
         - Point: [540, 508.500031, 0]
         - Point: [540, 508.500031, 0]
-        - Point: [-607, 508.500031, 0]
-        - Point: [-607, 508.500031, 0]
-        - Point: [-607, 361.499969, 0]
+        - Point: [-548, 508.500031, 0]
+        - Point: [-548, 508.500031, 0]
+        - Point: [-548, 361.499969, 0]
   - Entity: "{4854D3B8-54B0-4365-865B-65453315510E}"
     Relationship:
       Parent: 227
       NextSibling: 229
       PreviousSibling: 65537
-      FirstChild: 232
+      FirstChild: 231
     DockNodeComponent:
-      Position: [-607, -508.500031, 0]
-      Size: [1147, 870]
+      Position: [-548, -508.500031, 0]
+      Size: [1088, 870]
       Split: 1
     LineRenderer:
       Color: [0.100000001, 0.100000001, 0, 1]
       IsVisible: false
       Points:
-        - Point: [-607, -508.500031, 0]
+        - Point: [-548, -508.500031, 0]
         - Point: [540, -508.500031, 0]
         - Point: [540, -508.500031, 0]
         - Point: [540, 361.499969, 0]
         - Point: [540, 361.499969, 0]
-        - Point: [-607, 361.499969, 0]
-        - Point: [-607, 361.499969, 0]
-        - Point: [-607, -508.500031, 0]
-  - Entity: "{0AA08741-6DFF-4F10-8527-EAAF877A029E}"
+        - Point: [-548, 361.499969, 0]
+        - Point: [-548, 361.499969, 0]
+        - Point: [-548, -508.500031, 0]
+  - Entity: "{23B620E6-EA34-479C-95DD-95D9BA6128D9}"
     Relationship:
       Parent: 230
-      NextSibling: 65537
-      PreviousSibling: 232
-      FirstChild: 65537
-    DockNodeComponent:
-      Position: [-607, -254.5, 0]
-      Size: [1147, 616]
-      Split: 0
-      Entities:
-        - 222
-    LineRenderer:
-      Color: [0.100000001, 0.100000001, 0, 1]
-      IsVisible: false
-      Points:
-        - Point: [-607, -254.5, 0]
-        - Point: [540, -254.5, 0]
-        - Point: [540, -254.5, 0]
-        - Point: [540, 361.5, 0]
-        - Point: [540, 361.5, 0]
-        - Point: [-607, 361.5, 0]
-        - Point: [-607, 361.5, 0]
-        - Point: [-607, -254.5, 0]
-  - Entity: "{D69D3BDE-EE61-40B7-B754-07AD95BC96A0}"
-    Relationship:
-      Parent: 230
-      NextSibling: 231
+      NextSibling: 232
       PreviousSibling: 65537
       FirstChild: 65537
     DockNodeComponent:
-      Position: [-607, -508.500031, 0]
-      Size: [1147, 254.000031]
+      Position: [-548, -508.500031, 0]
+      Size: [1088, 216.000031]
       Split: 0
       Entities:
         - 136
@@ -4911,22 +4887,46 @@ Entities:
       Color: [0.100000001, 0.100000001, 0, 1]
       IsVisible: false
       Points:
-        - Point: [-607, -508.500031, 0]
+        - Point: [-548, -508.500031, 0]
         - Point: [540, -508.500031, 0]
         - Point: [540, -508.500031, 0]
-        - Point: [540, -254.5, 0]
-        - Point: [540, -254.5, 0]
-        - Point: [-607, -254.5, 0]
-        - Point: [-607, -254.5, 0]
-        - Point: [-607, -508.500031, 0]
-  - Entity: "{79A5ACD0-5AED-4B5A-88BF-2FDA10A6A932}"
+        - Point: [540, -292.5, 0]
+        - Point: [540, -292.5, 0]
+        - Point: [-548, -292.5, 0]
+        - Point: [-548, -292.5, 0]
+        - Point: [-548, -508.500031, 0]
+  - Entity: "{9EA39E41-9A98-4055-9C70-6FE95A470091}"
     Relationship:
-      Parent: 225
-      NextSibling: 234
-      PreviousSibling: 65537
+      Parent: 230
+      NextSibling: 65537
+      PreviousSibling: 231
       FirstChild: 65537
     DockNodeComponent:
-      Position: [540, -508.500031, 0]
+      Position: [-548, -292.5, 0]
+      Size: [1088, 654]
+      Split: 0
+      Entities:
+        - 222
+    LineRenderer:
+      Color: [0.100000001, 0.100000001, 0, 1]
+      IsVisible: false
+      Points:
+        - Point: [-548, -292.5, 0]
+        - Point: [540, -292.5, 0]
+        - Point: [540, -292.5, 0]
+        - Point: [540, 361.5, 0]
+        - Point: [540, 361.5, 0]
+        - Point: [-548, 361.5, 0]
+        - Point: [-548, 361.5, 0]
+        - Point: [-548, -292.5, 0]
+  - Entity: "{A54D723D-8599-4B10-B9B7-26178BDDA01F}"
+    Relationship:
+      Parent: 225
+      NextSibling: 65537
+      PreviousSibling: 234
+      FirstChild: 65537
+    DockNodeComponent:
+      Position: [540, 0, 0]
       Size: [420, 508.500031]
       Split: 0
       Entities:
@@ -4935,22 +4935,22 @@ Entities:
       Color: [0.100000001, 0.100000001, 0, 1]
       IsVisible: false
       Points:
-        - Point: [540, -508.500031, 0]
-        - Point: [960, -508.500031, 0]
-        - Point: [960, -508.500031, 0]
+        - Point: [540, 0, 0]
         - Point: [960, 0, 0]
         - Point: [960, 0, 0]
+        - Point: [960, 508.500031, 0]
+        - Point: [960, 508.500031, 0]
+        - Point: [540, 508.500031, 0]
+        - Point: [540, 508.500031, 0]
         - Point: [540, 0, 0]
-        - Point: [540, 0, 0]
-        - Point: [540, -508.500031, 0]
-  - Entity: "{66379DBF-FCDE-4381-A1AE-44A36872B193}"
+  - Entity: "{2FE07DA0-6467-4553-ADAB-E6864DF23D54}"
     Relationship:
       Parent: 225
-      NextSibling: 65537
-      PreviousSibling: 233
+      NextSibling: 233
+      PreviousSibling: 65537
       FirstChild: 65537
     DockNodeComponent:
-      Position: [540, 0, 0]
+      Position: [540, -508.500031, 0]
       Size: [420, 508.500031]
       Split: 0
       Entities:
@@ -4959,11 +4959,11 @@ Entities:
       Color: [0.100000001, 0.100000001, 0, 1]
       IsVisible: false
       Points:
-        - Point: [540, 0, 0]
+        - Point: [540, -508.500031, 0]
+        - Point: [960, -508.500031, 0]
+        - Point: [960, -508.500031, 0]
         - Point: [960, 0, 0]
         - Point: [960, 0, 0]
-        - Point: [960, 508.500031, 0]
-        - Point: [960, 508.500031, 0]
-        - Point: [540, 508.500031, 0]
-        - Point: [540, 508.500031, 0]
         - Point: [540, 0, 0]
+        - Point: [540, 0, 0]
+        - Point: [540, -508.500031, 0]

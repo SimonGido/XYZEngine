@@ -662,6 +662,53 @@ namespace XYZ {
 		}
 	}
 
+	static void SerializeDocknode(YAML::Emitter& out, uint32_t entity, ECSManager& ecs)
+	{
+		auto& val = ecs.GetStorageComponent<DockNodeComponent>(entity);
+		out << YAML::Key << "DockNodeComponent";
+		out << YAML::BeginMap;
+
+		out << YAML::Key << "Position" << YAML::Value << val.Position;
+		out << YAML::Key << "Size" << YAML::Value << val.Size;
+		out << YAML::Key << "Split" << YAML::Value << ToUnderlying(val.Split);
+		
+		out << YAML::Key << "Panels";
+		out << YAML::Value << YAML::BeginSeq;
+		for (auto entity : val.Entities)
+		{
+			auto& entityRel = ecs.GetStorageComponent<Relationship>(entity);
+			uint32_t textEntity = entityRel.FirstChild;
+			
+			if (!ecs.Contains<Text>(textEntity))
+			{
+				auto& siblingRel = ecs.GetStorageComponent<Relationship>(textEntity);
+				textEntity = siblingRel.NextSibling;
+			}
+			out << YAML::BeginMap;
+			out << YAML::Key << "Name" << YAML::Value << ecs.GetComponent<Text>(textEntity).Source;
+			out << YAML::EndMap; // Specification
+		}
+		out << YAML::EndSeq;
+		out << YAML::EndMap; // DockNodeComponent
+	}
+
+	template <>
+	void Serializer::Serialize<Dockspace>(YAML::Emitter& out, const Dockspace& dockSpace)
+	{
+		out << YAML::BeginMap;
+		out << YAML::Key << "Dockspace";
+		out << YAML::Value << YAML::BeginSeq;
+	
+		auto& ecs = *dockSpace.m_ECS;
+		for (uint32_t entity = 0; entity < ecs.GetNumberOfEntities(); ++entity)
+		{
+			if (ecs.Contains<DockNodeComponent>(entity))
+				SerializeDocknode(out, entity, ecs);
+		}
+		out << YAML::EndSeq;
+		out << YAML::EndMap;
+	}
+
 	template <>
 	void Serializer::Serialize<ECSManager>(YAML::Emitter& out, const ECSManager& ecs)
 	{

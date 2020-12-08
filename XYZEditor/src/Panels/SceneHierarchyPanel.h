@@ -14,10 +14,10 @@ namespace XYZ {
 
 
 	private:
-		Ref<Scene> m_Context;
+		Ref<Scene>  m_Context;
 		Dockspace*  m_Dockspace;
 		GuiContext* m_GuiContext;
-		uint32_t    m_PanelEntity;
+		uint32_t    m_PanelEntity = NULL_ENTITY;
 		std::vector<uint32_t> m_Entities;
 	};
 }

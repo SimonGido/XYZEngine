@@ -201,11 +201,18 @@ namespace XYZ {
 	{
 		NativeScriptEngine::Shutdown();
 		Renderer::Shutdown();
-
-		YAML::Emitter out;
-		Serializer::Serialize<ECSManager>(out, m_ECS);
-		std::ofstream fout("ECS.ecs");
-		fout << out.c_str();
+		{
+			YAML::Emitter out;
+			Serializer::Serialize<Dockspace>(out, *m_Dockspace);
+			std::ofstream fout("Dockspace.ds");
+			fout << out.c_str();
+		}
+		{
+			YAML::Emitter out;
+			Serializer::Serialize<ECSManager>(out, m_ECS);
+			std::ofstream fout("ECS.ecs");
+			fout << out.c_str();
+		}
 		m_AssetManager.Serialize();
 	}
 	void EditorLayer::OnUpdate(Timestep ts)
