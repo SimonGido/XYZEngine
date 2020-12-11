@@ -36,12 +36,12 @@ namespace XYZ {
 		struct SpriteDrawCommand
 		{
 			SpriteRenderer* Sprite;
-			glm::mat4 Transform;
+			TransformComponent* Transform;
 		};
 		struct ParticleDrawCommand
 		{
 			ParticleComponent* Particle;
-			glm::mat4 Transform;
+			TransformComponent* Transform;
 		};
 
 		struct PointLight
@@ -68,6 +68,7 @@ namespace XYZ {
 		// Composite pass
 		{
 			FrameBufferSpecs specs;
+			specs.SwapChainTarget = true;
 			specs.ClearColor = { 0.1f,0.1f,0.1f,1.0f };
 			specs.Attachments = {
 				FrameBufferTextureSpecs(FrameBufferTextureFormat::RGBA16F),
@@ -147,6 +148,13 @@ namespace XYZ {
 	
 		s_Data.ViewProjectionMatrix = s_Data.SceneCamera.Camera.GetProjectionMatrix() * s_Data.SceneCamera.ViewMatrix;
 	}
+	void SceneRenderer::BeginScene(const Scene* scene, const glm::mat4 viewProjectionMatrix)
+	{
+		XYZ_ASSERT(!s_Data.ActiveScene, "Missing end scene");
+		s_Data.ActiveScene = scene;
+
+		s_Data.ViewProjectionMatrix = viewProjectionMatrix;
+	}
 	void SceneRenderer::EndScene()
 	{
 		XYZ_ASSERT(s_Data.ActiveScene, "Missing begin scene");
@@ -154,11 +162,11 @@ namespace XYZ {
 
 		FlushDrawList();
 	}
-	void SceneRenderer::SubmitSprite(SpriteRenderer* sprite, const glm::mat4& transform)
+	void SceneRenderer::SubmitSprite(SpriteRenderer* sprite, TransformComponent* transform)
 	{
 		s_Data.SpriteDrawList.push_back({ sprite,transform });
 	}
-	void SceneRenderer::SubmitParticles(ParticleComponent* particle, const glm::mat4& transform)
+	void SceneRenderer::SubmitParticles(ParticleComponent* particle, TransformComponent* transform)
 	{
 		s_Data.ParticleDrawList.push_back({ particle,transform });
 	}
@@ -194,6 +202,8 @@ namespace XYZ {
 	{
 		std::sort(s_Data.SpriteDrawList.begin(), s_Data.SpriteDrawList.end(),
 			[](const SceneRendererData::SpriteDrawCommand& a, const SceneRendererData::SpriteDrawCommand& b) {
+				return a.Transform->Translation.z < b.Transform->Translation.z;
+
 				if (a.Sprite->SortLayer == b.Sprite->SortLayer)
 					return a.Sprite->Material->GetFlags() < b.Sprite->Material->GetFlags();
 				return a.Sprite->SortLayer < b.Sprite->SortLayer;
@@ -209,7 +219,10 @@ namespace XYZ {
 		BloomPass();
 		GaussianBlurPass();
 		CompositePass();
+		RendererAPI::SetDepth(true);
 		Renderer::WaitAndRender();
+		RendererAPI::SetDepth(false);
+
 		s_Data.SpriteDrawList.clear();
 		s_Data.ParticleDrawList.clear();
 		s_Data.LightsList.clear();
@@ -228,7 +241,7 @@ namespace XYZ {
 		{
 			Renderer2D::SetMaterial(dc.Sprite->Material);
 			uint32_t textureID = Renderer2D::SetTexture(dc.Sprite->SubTexture->GetTexture());
-			Renderer2D::SubmitQuad(dc.Transform, dc.Sprite->SubTexture->GetTexCoords(), textureID, dc.Sprite->Color);
+			Renderer2D::SubmitQuad(dc.Transform->GetTransform(), dc.Sprite->SubTexture->GetTexCoords(), textureID, dc.Sprite->Color);
 		}
 
 		Renderer2D::Flush();
@@ -242,9 +255,9 @@ namespace XYZ {
 
 			material->Set("u_ViewProjectionMatrix", s_Data.ViewProjectionMatrix);
 			material->Bind();
-			materialInstace->Set("u_Transform", dc.Transform);
+			materialInstace->Set("u_Transform", dc.Transform->GetTransform());
 			materialInstace->Bind();
-			Renderer2D::SubmitParticles(dc.Transform, dc.Particle->ParticleEffect);
+			Renderer2D::SubmitParticles(dc.Transform->GetTransform(), dc.Particle->ParticleEffect);
 		}
 
 

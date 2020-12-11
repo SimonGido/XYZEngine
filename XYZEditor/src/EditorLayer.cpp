@@ -47,6 +47,8 @@ namespace XYZ {
 
 	void EditorLayer::OnAttach()
 	{
+		m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
+
 		int width, height, channels;
 		stbi_set_flip_vertically_on_load(1);
 		uint8_t* pixels = (uint8_t*)stbi_load("Assets/Textures/Gui/Prohibited.png", &width, &height, &channels, 0);

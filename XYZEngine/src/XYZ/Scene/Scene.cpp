@@ -139,12 +139,12 @@ namespace XYZ {
 		for (size_t i = 0; i < m_RenderView->Size(); ++i)
 		{
 			auto [transform, renderer] = (*m_RenderView)[i];
-			SceneRenderer::SubmitSprite(&renderer, transform.GetTransform());
+			SceneRenderer::SubmitSprite(&renderer, &transform);
 		}
 		for (size_t i = 0; i < m_ParticleView->Size(); ++i)
 		{
 			auto [transform, particle] = (*m_ParticleView)[i];
-			SceneRenderer::SubmitParticles(&particle, transform.GetTransform());
+			SceneRenderer::SubmitParticles(&particle, &transform);
 		}
 
 		for (size_t i = 0; i < m_LightView->Size(); ++i)
@@ -188,32 +188,17 @@ namespace XYZ {
 
 	void Scene::OnRenderEditor(const EditorCamera& camera)
 	{
-
-		// 3D part here
-
-		///////////////
-
-		float cameraWidth = camera.GetZoomLevel() * camera.GetAspectRatio() * 2;
-		float cameraHeight = camera.GetZoomLevel() * 2;
-		glm::mat4 gridTransform = glm::translate(glm::mat4(1.0f), camera.GetPosition()) * glm::scale(glm::mat4(1.0f), { cameraWidth,cameraHeight,1.0f });
-
-		SceneRendererCamera renderCamera;
-		renderCamera.Camera = camera;
-		renderCamera.ViewMatrix = camera.GetViewMatrix();
-		
-		SceneRenderer::GetOptions().ShowGrid = true;
-		SceneRenderer::SetGridProperties({ gridTransform,{8.025f * (cameraWidth / camera.GetZoomLevel()), 8.025f * (cameraHeight / camera.GetZoomLevel())},0.025f });
-		SceneRenderer::BeginScene(this, renderCamera);
+		SceneRenderer::BeginScene(this, camera.GetViewProjection());
 		
 		for (size_t i = 0; i < m_RenderView->Size(); ++i)
 		{
 			auto [transform, renderer] = (*m_RenderView)[i];
-			SceneRenderer::SubmitSprite(&renderer, transform.GetTransform());
+			SceneRenderer::SubmitSprite(&renderer, &transform);
 		}
 		for (size_t i = 0; i < m_ParticleView->Size(); ++i)
 		{
 			auto [transform, particle] = (*m_ParticleView)[i];
-			SceneRenderer::SubmitParticles(&particle, transform.GetTransform());
+			SceneRenderer::SubmitParticles(&particle, &transform);
 		}
 
 		for (size_t i = 0; i < m_LightView->Size(); ++i)
@@ -271,7 +256,7 @@ namespace XYZ {
 		auto& camera = m_ECS.GetComponent<CameraComponent>(entity).Camera;
 		auto transformComponent = m_ECS.GetComponent<TransformComponent>(entity);
 
-		SceneRenderer::SubmitSprite(m_CameraSprite, transformComponent.GetTransform());
+		SceneRenderer::SubmitSprite(m_CameraSprite, &transformComponent);
 		
 		auto& translation = transformComponent.Translation;
 		if (camera.GetProjectionType() == CameraProjectionType::Orthographic)

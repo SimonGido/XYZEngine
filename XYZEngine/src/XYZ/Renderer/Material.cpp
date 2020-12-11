@@ -25,9 +25,8 @@ namespace XYZ {
 		m_Shader->Bind();
 		for (size_t i = 0; i < m_Textures.size(); i++)
 		{
-			auto& texture = m_Textures[i];
-			if (texture)
-				texture->Bind(i);
+			if (m_Textures[i])
+				m_Textures[i]->Bind(i);
 		}
 
 		if (m_VSUniformBuffer)

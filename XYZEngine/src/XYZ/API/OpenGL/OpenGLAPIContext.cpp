@@ -81,10 +81,6 @@ namespace XYZ {
 
 	void OpenGLAPIContext::Init()
 	{
-		glEnable(GL_BLEND);
-		glEnable(GL_DEPTH_TEST);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 		glfwMakeContextCurrent(m_WindowHandle);
 
 		XYZ_LOG_WARN("OpenGL Info:");

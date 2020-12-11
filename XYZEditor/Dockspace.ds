@@ -1,7 +1,7 @@
 Dockspace:
   - DockNodeComponent
-  - Position: [-960, -508.5, 0]
-    Size: [1920, 1017]
+  - Position: [-1280, -688.5, 0]
+    Size: [2560, 1377]
     Split: 2
     Panels:
       []
@@ -30,38 +30,38 @@ Dockspace:
     Panels:
       - Name: Opica
   - DockNodeComponent
-  - Position: [-548, 361.499969, 0]
-    Size: [1088, 147.000061]
+  - Position: [-548, 361.500061, 0]
+    Size: [1088, 147.000092]
     Split: 0
     Panels:
       - Name: Zemiak
   - DockNodeComponent
   - Position: [-548, -508.500031, 0]
-    Size: [1088, 870]
+    Size: [1088, 869.999939]
     Split: 1
     Panels:
       []
   - DockNodeComponent
   - Position: [-548, -508.500031, 0]
-    Size: [1088, 216.000031]
+    Size: [1088, 209.000031]
     Split: 0
     Panels:
       - Name: Kostovnik
   - DockNodeComponent
-  - Position: [-548, -292.5, 0]
-    Size: [1088, 654]
+  - Position: [-548, -299.5, 0]
+    Size: [1088, 660.999878]
     Split: 0
     Panels:
       - Name: Scene
   - DockNodeComponent
-  - Position: [540, 0, 0]
-    Size: [420, 508.500031]
+  - Position: [540, -46.5, 0]
+    Size: [420, 555]
     Split: 0
     Panels:
       - Name: Havkac
   - DockNodeComponent
   - Position: [540, -508.500031, 0]
-    Size: [420, 508.500031]
+    Size: [420, 462.000031]
     Split: 0
     Panels:
       - Name: Pelengac

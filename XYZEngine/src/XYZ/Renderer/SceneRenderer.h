@@ -32,10 +32,11 @@ namespace XYZ {
 		static void SetViewportSize(uint32_t width, uint32_t height);
 
 		static void BeginScene(const Scene* scene, const SceneRendererCamera& camera);
+		static void BeginScene(const Scene* scene, const glm::mat4 viewProjectionMatrix);
 		static void EndScene();
 
-		static void SubmitSprite(SpriteRenderer* sprite, const glm::mat4& transform);
-		static void SubmitParticles(ParticleComponent* particle, const glm::mat4& transform);
+		static void SubmitSprite(SpriteRenderer* sprite, TransformComponent* transform);
+		static void SubmitParticles(ParticleComponent* particle, TransformComponent* transform);
 		static void SubmitLight(PointLight2D* light, const glm::mat4& transform);
 		static void SetGridProperties(const GridProperties& props);
 

@@ -336,6 +336,11 @@ namespace XYZ {
 		uint32_t counter = 0;
 		for (auto& texture : material->GetTextures())
 		{
+			if (!texture)
+			{
+				counter++;
+				continue;
+			}
 			out << YAML::BeginMap;
 			out << YAML::Key << "TextureAssetPath";
 			out << YAML::Value << texture->GetFilepath();

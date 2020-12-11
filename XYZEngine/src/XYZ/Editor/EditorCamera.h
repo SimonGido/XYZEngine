@@ -1,69 +1,69 @@
 #pragma once
+
 #include "XYZ/Renderer/Camera.h"
+#include "XYZ/Core/Timestep.h"
 #include "XYZ/Event/Event.h"
 #include "XYZ/Event/InputEvent.h"
-#include "XYZ/Event/ApplicationEvent.h"
+
+#include <glm/glm.hpp>
 
 namespace XYZ {
+
 	class EditorCamera : public Camera
 	{
 	public:
-		EditorCamera() = default;
-		EditorCamera(const glm::mat4 projectionMatrix);
+		EditorCamera();
+		EditorCamera(float fov, float aspectRatio, float nearClip, float farClip);
 
+		void OnUpdate(Timestep ts);
+		void OnEvent(Event& e);
 
-		void OnUpdate(float dt);
-		void OnEvent(Event& event);
-		void OnResize(const glm::vec2& size);
+		inline float GetDistance() const { return m_Distance; }
+		inline void SetDistance(float distance) { m_Distance = distance; }
 
-		void SetCameraMouseMoveSpeed(float speed) { m_CameraMouseMoveSpeed = speed; }
-		void SetPosition(const glm::vec3& pos);
-		void Translate(const glm::vec3& translation);
-		void Stop();
+		inline void SetViewportSize(float width, float height) { m_ViewportWidth = width; m_ViewportHeight = height; updateProjection(); }
 
-		const glm::vec3& GetPosition() const { return m_CameraPosition; }
-		float GetRotation() const { return m_CameraRotation; }
-		float GetZoomLevel() const { return m_ZoomLevel; };
-		float GetAspectRatio() const { return m_AspectRatio; }
-
-		const glm::mat4& GetProjectionMatrix() const { return m_ProjectionMatrix; }
 		const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
-		const glm::mat4& GetViewProjectionMatrix() const { return m_ViewProjectionMatrix; }
+		glm::mat4 GetViewProjection() const { return m_ProjectionMatrix * m_ViewMatrix; }
+
+		glm::vec3 GetUpDirection() const;
+		glm::vec3 GetRightDirection() const;
+		glm::vec3 GetForwardDirection() const;
+		glm::quat GetOrientation() const;
+		const glm::vec3& GetPosition() const { return m_Position; }
+
+		float GetPitch() const { return m_Pitch; }
+		float GetYaw() const { return m_Yaw; }
 	private:
+		void updateProjection();
+		void updateView();
 
-		void recalculate();
-		/**
-		* Handler for the mouse scrolled event
-		* @param[in] event shared_ptr to the Event
-		*/
-		bool onMouseScrolled(MouseScrollEvent& event);
+		bool onMouseScroll(MouseScrollEvent& e);
 
+		void mousePan(const glm::vec2& delta);
+		void mouseRotate(const glm::vec2& delta);
+		void mouseZoom(float delta);
 
-		bool onMouseButtonPress(MouseButtonPressEvent& event);
+		glm::vec3 calculatePosition() const;
 
-		bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
-		/**
-		* Handler for the window resized event
-		* @param[in] event shared_ptr to the Event
-		*/
-		bool onWindowResized(WindowResizeEvent& event);
-
+		std::pair<float, float> panSpeed() const;
+		float rotationSpeed() const;
+		float zoomSpeed() const;
 	private:
-		glm::mat4 m_ViewProjectionMatrix = glm::mat4(1.0f);
-		glm::mat4 m_ViewMatrix = glm::mat4(1.0f);
-		glm::vec3 m_CameraPosition = { 0.0f, 0.0f, 0.0f };
+		float m_FOV = 45.0f, m_AspectRatio = 1.778f, m_NearClip = 0.1f, m_FarClip = 1000.0f;
 
-		float m_AspectRatio = 16.0f / 9.0f;
-		float m_ZoomLevel = 1.0f;
+		glm::mat4 m_ViewMatrix;
+		glm::vec3 m_Position = { 0.0f, 0.0f, 0.0f };
+		glm::vec3 m_FocalPoint = { 0.0f, 0.0f, 0.0f };
 
+		glm::vec2 m_InitialMousePosition = { 0.0f, 0.0f };
 
-		float m_CameraRotation = 0.0f; //In degrees, in the anti-clockwise direction
-		float m_CameraTranslationSpeed = 5.0f;
-		float m_CameraRotationSpeed = 180.0f;
-		float m_CameraMouseMoveSpeed = 0.01f;
+		float m_Distance = 10.0f;
+		float m_Pitch = 0.0f, m_Yaw = 0.0f;
+
+		float m_ViewportWidth = 1280, m_ViewportHeight = 720;
 		
-		glm::vec2 m_StartMousePos = { 0,0 };
-		glm::vec3 m_OldPosition = { 0,0,0 };
-		bool m_MouseMoving = false;
+		bool m_LockOrtho = false;
 	};
+
 }
