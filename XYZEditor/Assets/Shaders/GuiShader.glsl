@@ -1,5 +1,5 @@
 #type vertex
-#version 430
+#version 450
 
 
 layout(location = 0) in vec4  a_Color;
@@ -11,7 +11,7 @@ layout(location = 4) in float a_TilingFactor;
 
 out vec4 v_Color;
 out vec2 v_TexCoord;
-out float v_TextureID;
+out flat float v_TextureID;
 out float v_TilingFactor;
 
 uniform mat4 u_ViewProjectionMatrix;
@@ -26,7 +26,7 @@ void main()
 }
 
 #type fragment
-#version 430
+#version 450
 
 #define PI 3.141592
 
@@ -35,7 +35,7 @@ void main()
 
 in vec4 v_Color;
 in vec2 v_TexCoord;
-in float v_TextureID;
+in flat float v_TextureID;
 in float v_TilingFactor;
 
 

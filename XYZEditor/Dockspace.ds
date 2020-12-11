@@ -1,67 +1,67 @@
 Dockspace:
   - DockNodeComponent
-  - Position: [-960, -508.5, 0]
-    Size: [1920, 1017]
+  - Position: [-960.000061, -508.5, 0]
+    Size: [1920.00012, 1017]
     Split: 2
     Panels:
       []
   - DockNodeComponent
-  - Position: [540, -508.500031, 0]
-    Size: [420, 1017.00006]
+  - Position: [535.000061, -508.500092, 0]
+    Size: [425.000092, 1017.00018]
     Split: 1
     Panels:
       []
   - DockNodeComponent
-  - Position: [-960, -508.500031, 0]
-    Size: [1500, 1017.00006]
+  - Position: [-960.000061, -508.500092, 0]
+    Size: [1495.00024, 1017.00018]
     Split: 2
     Panels:
       []
   - DockNodeComponent
-  - Position: [-548, -508.500031, 0]
-    Size: [1088, 1017.00006]
+  - Position: [-550.000061, -508.500092, 0]
+    Size: [1085.00012, 1017.00018]
     Split: 1
     Panels:
       []
   - DockNodeComponent
-  - Position: [-960, -508.500031, 0]
-    Size: [412, 1017.00006]
+  - Position: [-960.000061, -508.500092, 0]
+    Size: [410, 1017.00018]
     Split: 0
     Panels:
       - Name: Opica
   - DockNodeComponent
-  - Position: [-548, 361.500061, 0]
-    Size: [1088, 147.000092]
+  - Position: [-550.000061, 270.20166, 0]
+    Size: [1085.00012, 238.298416]
     Split: 0
     Panels:
       - Name: Zemiak
   - DockNodeComponent
-  - Position: [-548, -508.500031, 0]
-    Size: [1088, 869.999939]
+  - Position: [-550.000061, -508.500092, 0]
+    Size: [1085.00012, 778.701782]
     Split: 1
     Panels:
       []
   - DockNodeComponent
-  - Position: [-548, -508.500031, 0]
-    Size: [1088, 209.000031]
+  - Position: [-550.000061, -508.500092, 0]
+    Size: [1085.00012, 209.000122]
     Split: 0
     Panels:
       - Name: Kostovnik
   - DockNodeComponent
-  - Position: [-548, -299.5, 0]
-    Size: [1088, 660.999878]
+  - Position: [-550.000061, -299.499969, 0]
+    Size: [1085.00012, 569.70166]
     Split: 0
     Panels:
       - Name: Scene
   - DockNodeComponent
-  - Position: [540, -46.5, 0]
-    Size: [420, 555]
+  - Position: [535.000061, -46.5001144, 0]
+    Size: [425.000092, 555.000183]
     Split: 0
     Panels:
       - Name: Havkac
   - DockNodeComponent
-  - Position: [540, -508.500031, 0]
-    Size: [420, 462.000031]
+  - Position: [535.000061, -508.500092, 0]
+    Size: [425.000092, 462]
     Split: 0
     Panels:
       - Name: Pelengac

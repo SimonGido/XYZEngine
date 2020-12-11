@@ -176,8 +176,7 @@ namespace XYZ {
 		Serializer::Deserialize<ECSManager>(data, m_AssetManager, m_ECS);
 
 		m_GuiContext = Application::Get().GetGuiLayer()->CreateContext(&m_ECS, specs);	
-		m_Dockspace = new Dockspace(&m_ECS, m_GuiContext);
-		m_Dockspace->SetRoot(1);
+		m_Dockspace = new Dockspace(&m_ECS, m_GuiContext, 1);
 
 		Renderer::WaitAndRender();
 		

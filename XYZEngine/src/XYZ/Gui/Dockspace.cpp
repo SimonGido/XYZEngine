@@ -28,7 +28,7 @@ static glm::vec2 MouseToWorld(const glm::vec2& point, const glm::vec2& windowSiz
 }
 
 namespace XYZ {
-	Dockspace::Dockspace(ECSManager* ecs, GuiContext* context)
+	Dockspace::Dockspace(ECSManager* ecs, GuiContext* context, uint32_t root)
 		:
 		m_ECS(ecs),
 		m_Context(context)
@@ -41,6 +41,34 @@ namespace XYZ {
 				button.RegisterCallback<ClickEvent>(Hook(&Dockspace::onButtonPress, this));
 				button.RegisterCallback<ReleaseEvent>(Hook(&Dockspace::onButtonRelease, this));
 			}
+		}
+
+
+		m_RootEntity = root;
+		if (m_RootEntity == NULL_ENTITY)
+		{
+			m_RootEntity = m_ECS->CreateEntity();
+			m_ECS->AddComponent<IDComponent>(m_RootEntity, IDComponent());
+		}
+		if (!m_ECS->Contains<DockNodeComponent>(m_RootEntity))
+		{
+			auto [width, height] = Input::GetWindowSize();
+			glm::vec2 size = { width, height };
+			m_ECS->AddComponent<DockNodeComponent>(m_RootEntity, DockNodeComponent(glm::vec3(-size / 2.0f, 0.0f), size));
+		}
+		else
+		{
+			auto [width, height] = Input::GetWindowSize();
+			glm::vec2 size = { width, height };
+			
+			auto& dockNode = m_ECS->GetStorageComponent<DockNodeComponent>(m_RootEntity);
+			glm::vec2 scale = (size / dockNode.Size);
+			rescaleNode(m_RootEntity, scale);
+			updateEntities(m_RootEntity);
+		}
+		if (!m_ECS->Contains<Relationship>(m_RootEntity))
+		{
+			m_ECS->AddComponent<Relationship>(m_RootEntity, Relationship());
 		}
 	}
 
@@ -71,33 +99,6 @@ namespace XYZ {
 		}
 		else if (dispatcher.Dispatch<WindowResizeEvent>(Hook(&Dockspace::onWindowResize, this)))
 		{
-		}
-	}
-	void Dockspace::SetRoot(uint32_t entity)
-	{
-		m_RootEntity = entity;
-		if (m_RootEntity == NULL_ENTITY)
-		{
-			m_RootEntity = m_ECS->CreateEntity();
-			m_ECS->AddComponent<IDComponent>(m_RootEntity, IDComponent());
-		}
-		if (!m_ECS->Contains<DockNodeComponent>(m_RootEntity))
-		{
-			auto [width, height] = Input::GetWindowSize();
-			glm::vec2 size = { width, height };
-			m_ECS->AddComponent<DockNodeComponent>(m_RootEntity, DockNodeComponent(glm::vec3(-size / 2.0f , 0.0f), size));
-		}
-		else
-		{
-			auto [width, height] = Input::GetWindowSize();
-			glm::vec2 size = { width, height };
-			auto& dockNode = m_ECS->GetStorageComponent<DockNodeComponent>(m_RootEntity);
-			dockNode.Position = glm::vec3(-size / 2.0f, 0.0f);
-			dockNode.Size = size;
-		}
-		if (!m_ECS->Contains<Relationship>(m_RootEntity))
-		{
-			m_ECS->AddComponent<Relationship>(m_RootEntity, Relationship());
 		}
 	}
 
@@ -529,7 +530,7 @@ namespace XYZ {
 		auto& dockNode = m_ECS->GetStorageComponent<DockNodeComponent>(nodeEntity);
 		dockNode.Size *= scale;
 		dockNode.Position *= glm::vec3(scale, 1.0f);
-
+		dockNode.Execute<ComponentResizedEvent>(ComponentResizedEvent{ { nodeEntity, m_ECS} });
 
 		auto& rel = m_ECS->GetStorageComponent<Relationship>(nodeEntity);
 		uint32_t current = rel.FirstChild;

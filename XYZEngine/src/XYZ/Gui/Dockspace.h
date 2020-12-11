@@ -18,11 +18,10 @@ namespace XYZ {
 	class Dockspace
 	{
 	public:
-		Dockspace(ECSManager* ecs, GuiContext* context);
+		Dockspace(ECSManager* ecs, GuiContext* context, uint32_t root);
 
 		void OnUpdate(Timestep ts);
 		void OnEvent(Event& event);
-		void SetRoot(uint32_t entity);
 
 		Entity CreatePanel(uint32_t canvas, const std::string& name, const PanelSpecification& specs);
 		Entity CreateRenderWindow(uint32_t canvas, const std::string& name, const ImageSpecification& specs);
