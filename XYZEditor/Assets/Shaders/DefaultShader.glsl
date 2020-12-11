@@ -1,5 +1,5 @@
 #type vertex
-#version 430
+#version 450 
 
 
 layout(location = 0) in vec4  a_Color;
@@ -12,7 +12,7 @@ layout(location = 4) in float a_TilingFactor;
 out vec4 v_Color;
 out vec3 v_Position;
 out vec2 v_TexCoord;
-out float v_TextureID;
+out flat float v_TextureID;
 out float v_TilingFactor;
 
 
@@ -30,7 +30,7 @@ void main()
 }
 
 #type fragment
-#version 430
+#version 450
 
 layout(location = 0) out vec4 o_Color;
 layout(location = 1) out vec4 o_Position;
@@ -39,7 +39,7 @@ layout(location = 1) out vec4 o_Position;
 in vec4 v_Color;
 in vec3 v_Position;
 in vec2 v_TexCoord;
-in float v_TextureID;
+in flat float v_TextureID;
 in float v_TilingFactor;
 
 uniform vec4 u_Color;

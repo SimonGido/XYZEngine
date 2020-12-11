@@ -26,6 +26,7 @@ namespace XYZ {
 		static void Bind(uint32_t rendererID, uint32_t slot);
 	private:
 		uint32_t m_RendererID = 0;
+
 		uint32_t m_Width, m_Height;
 		uint32_t m_Channels;
 

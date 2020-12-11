@@ -1,7 +1,7 @@
 Dockspace:
   - DockNodeComponent
-  - Position: [-1280, -688.5, 0]
-    Size: [2560, 1377]
+  - Position: [-960, -508.5, 0]
+    Size: [1920, 1017]
     Split: 2
     Panels:
       []

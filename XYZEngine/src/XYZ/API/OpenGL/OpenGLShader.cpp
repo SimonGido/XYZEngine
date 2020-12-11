@@ -589,7 +589,7 @@ namespace XYZ {
 		for (auto& texture : m_TextureList.Textures)
 		{
 			if (texture.Count > 1)
-			{
+			{	
 				int32_t location = glGetUniformLocation(m_RendererID, texture.Name.c_str());
 				int* samplers = new int[texture.Count];
 				for (uint32_t s = 0; s < texture.Count; ++s)

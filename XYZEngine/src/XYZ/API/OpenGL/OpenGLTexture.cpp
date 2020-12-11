@@ -15,6 +15,7 @@ namespace XYZ {
 		stbi_set_flip_vertically_on_load(1);	
 		m_LocalData = (uint8_t*)stbi_load(path.c_str(), &width, &height, &channels, 0);
 
+		
 		XYZ_ASSERT(m_LocalData, "Failed to load image!");
 		m_Width = width;
 		m_Height = height;
@@ -77,6 +78,7 @@ namespace XYZ {
 			}
 			glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, m_LocalData);
 			glGenerateTextureMipmap(m_RendererID);
+
 			stbi_image_free(m_LocalData);
 			m_LocalData = nullptr;
 		});

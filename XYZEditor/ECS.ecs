@@ -15,7 +15,7 @@ Entities:
     RectTransformComponent:
       WorldPosition: [0, 0, 0]
       Position: [0, 0, 0]
-      Size: [2560, 1377]
+      Size: [1920, 1017]
       Scale: [1, 1]
     Canvas:
       Color: [0, 0, 0, 0]
@@ -26,8 +26,8 @@ Entities:
       PreviousSibling: 65537
       FirstChild: 226
     DockNodeComponent:
-      Position: [-1280, -688.5, 0]
-      Size: [2560, 1377]
+      Position: [-960, -508.5, 0]
+      Size: [1920, 1017]
       Split: 2
     LineRenderer:
       Color: [0.100000001, 0.100000001, 0, 1]
