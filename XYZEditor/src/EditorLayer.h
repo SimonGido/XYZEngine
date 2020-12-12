@@ -42,8 +42,8 @@ namespace XYZ {
 		std::vector<uint32_t> m_EditorEntities;
 	private:	
 		ECSManager m_ECS;
+		Dockspace m_Dockspace;
 		GuiContext* m_GuiContext = nullptr;
-		Dockspace* m_Dockspace;
 
 		Entity m_TestEntity;
 

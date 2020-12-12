@@ -18,22 +18,21 @@ namespace XYZ {
 		virtual ~EventSystem() = default;
 		
 		template <typename Event>
-		void RegisterCallback(const EventCallback<Event>& func)
+		size_t RegisterCallback(const EventCallback<Event>& func)
 		{
 			auto& handler = std::get<EventHandler<Event>>(m_Events);
-			handler.AddCallback(func);
+			return handler.AddCallback(func);
 		}
 
 		template <typename Event>
-		void UnRegisterCallback(const EventCallback<Event>& func)
+		bool UnRegisterCallback(size_t id)
 		{
 			auto& handler = std::get<EventHandler<Event>>(m_Events);
-			handler.RemoveCallback(func);
+			return handler.RemoveCallback(id);
 		}
 
 	private:
 		std::tuple<EventHandler<Events>...> m_Events;
-
 	};
 
 	

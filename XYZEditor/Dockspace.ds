@@ -1,67 +1,67 @@
 Dockspace:
-  - DockNodeComponent
-  - Position: [-960.000061, -508.5, 0]
-    Size: [1920.00012, 1017]
-    Split: 2
-    Panels:
-      []
-  - DockNodeComponent
-  - Position: [535.000061, -508.500092, 0]
-    Size: [425.000092, 1017.00018]
-    Split: 1
-    Panels:
-      []
-  - DockNodeComponent
-  - Position: [-960.000061, -508.500092, 0]
-    Size: [1495.00024, 1017.00018]
-    Split: 2
-    Panels:
-      []
-  - DockNodeComponent
-  - Position: [-550.000061, -508.500092, 0]
-    Size: [1085.00012, 1017.00018]
-    Split: 1
-    Panels:
-      []
-  - DockNodeComponent
-  - Position: [-960.000061, -508.500092, 0]
-    Size: [410, 1017.00018]
-    Split: 0
-    Panels:
-      - Name: Opica
-  - DockNodeComponent
-  - Position: [-550.000061, 270.20166, 0]
-    Size: [1085.00012, 238.298416]
-    Split: 0
-    Panels:
-      - Name: Zemiak
-  - DockNodeComponent
-  - Position: [-550.000061, -508.500092, 0]
-    Size: [1085.00012, 778.701782]
-    Split: 1
-    Panels:
-      []
-  - DockNodeComponent
-  - Position: [-550.000061, -508.500092, 0]
-    Size: [1085.00012, 209.000122]
-    Split: 0
-    Panels:
-      - Name: Kostovnik
-  - DockNodeComponent
-  - Position: [-550.000061, -299.499969, 0]
-    Size: [1085.00012, 569.70166]
-    Split: 0
-    Panels:
-      - Name: Scene
-  - DockNodeComponent
-  - Position: [535.000061, -46.5001144, 0]
-    Size: [425.000092, 555.000183]
-    Split: 0
-    Panels:
-      - Name: Havkac
-  - DockNodeComponent
-  - Position: [535.000061, -508.500092, 0]
-    Size: [425.000092, 462]
-    Split: 0
-    Panels:
-      - Name: Pelengac
+  - DockNodeComponent:
+      Position: [-960, -508.5, 0]
+      Size: [1920, 1017]
+      Split: 2
+      Panels:
+        []
+  - DockNodeComponent:
+      Position: [561, -508.500092, 0]
+      Size: [399, 1017.00018]
+      Split: 1
+      Panels:
+        []
+  - DockNodeComponent:
+      Position: [-960, -508.500092, 0]
+      Size: [1521, 1017.00018]
+      Split: 2
+      Panels:
+        []
+  - DockNodeComponent:
+      Position: [-550, -508.500092, 0]
+      Size: [1111, 1017.00018]
+      Split: 1
+      Panels:
+        []
+  - DockNodeComponent:
+      Position: [-960, -508.500092, 0]
+      Size: [410, 1017.00018]
+      Split: 0
+      Panels:
+        - Name: Opica
+  - DockNodeComponent:
+      Position: [-550, 301.500031, 0]
+      Size: [1111, 207.000061]
+      Split: 0
+      Panels:
+        - Name: Zemiak
+  - DockNodeComponent:
+      Position: [-550, -508.500092, 0]
+      Size: [1111, 810.000122]
+      Split: 1
+      Panels:
+        []
+  - DockNodeComponent:
+      Position: [-550, -508.500092, 0]
+      Size: [1111, 191.000092]
+      Split: 0
+      Panels:
+        - Name: Kostovnik
+  - DockNodeComponent:
+      Position: [-550, -317.5, 0]
+      Size: [1111, 619]
+      Split: 0
+      Panels:
+        - Name: Scene
+  - DockNodeComponent:
+      Position: [561, 0, 0]
+      Size: [399, 508.500092]
+      Split: 0
+      Panels:
+        - Name: Pelengac
+  - DockNodeComponent:
+      Position: [561, -508.500092, 0]
+      Size: [399, 508.500092]
+      Split: 0
+      Panels:
+        - Name: Havkac

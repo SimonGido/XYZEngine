@@ -5,53 +5,50 @@
 
 namespace XYZ {
 
-	//template <typename Event>
-	//using EventCallback = std::function<bool(Event)>;
+	
 
 	template <typename Event>
 	class EventHandler
 	{
 	public:	
-		void AddCallback(const EventCallback<Event>& func)
+		size_t AddCallback(const EventCallback<Event>& func)
 		{
-			m_Callbacks.push_back(func);
+			m_Callbacks.push_back({ m_NextID, func });
+			return m_NextID++;
 		}
 
-		void RemoveCallback(const EventCallback<Event>& func)
+		bool RemoveCallback(size_t id)
 		{
 			for (size_t i = 0; i < m_Callbacks.size(); ++i)
 			{
-				if (getAddress(m_Callbacks[i]) == getAddress(func))
+				if (m_Callbacks[i].ID == id)
 				{
 					m_Callbacks.erase(m_Callbacks.begin() + i);
-					break;
+					return true;
 				}
 			}
+			return false;
 		}
 
 		bool ExecuteCallbacks(Event& event)
 		{
-			for (auto& callback : m_Callbacks)
+			for (auto& it : m_Callbacks)
 			{
-				if (callback(event))
+				if (it.Callback(event))
 					return true;
 			}
 			return false;
 		}
 
+
 	private:
-		// Little hack for comparison 
-		template<typename T, typename... U>
-		size_t getAddress(std::function<T(U...)> f) 
+		struct CallbackPack
 		{
-			Componentdef T(fnComponent)(U...);
-			fnComponent** fnPointer = f.template target<fnComponent*>();
-			return (size_t)*fnPointer;
-		}
-
-
-	private:
-		std::vector<EventCallback<Event>> m_Callbacks;
+			size_t ID;
+			EventCallback<Event> Callback;
+		};
+		std::vector<CallbackPack> m_Callbacks;
+		size_t m_NextID = 0;
 	};
 
 

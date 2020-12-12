@@ -670,6 +670,8 @@ namespace XYZ {
 	static void SerializeDocknode(YAML::Emitter& out, uint32_t entity, ECSManager& ecs)
 	{
 		auto& val = ecs.GetStorageComponent<DockNodeComponent>(entity);
+		out << YAML::BeginMap;
+
 		out << YAML::Key << "DockNodeComponent";
 		out << YAML::BeginMap;
 
@@ -694,6 +696,8 @@ namespace XYZ {
 			out << YAML::EndMap; // Specification
 		}
 		out << YAML::EndSeq;
+		out << YAML::EndMap;
+
 		out << YAML::EndMap; // DockNodeComponent
 	}
 
@@ -704,7 +708,7 @@ namespace XYZ {
 		out << YAML::Key << "Dockspace";
 		out << YAML::Value << YAML::BeginSeq;
 	
-		auto& ecs = *dockSpace.m_ECS;
+		auto& ecs = *dockSpace.m_Context->m_ECS;
 		for (uint32_t entity = 0; entity < ecs.GetNumberOfEntities(); ++entity)
 		{
 			if (ecs.Contains<DockNodeComponent>(entity))
@@ -1215,6 +1219,12 @@ namespace XYZ {
 
 		return LineRenderer(color, mesh);
 	}
+
+	//template <>
+	//Dockspace Serializer::Deserialize<Dockspace>(YAML::Node& data, AssetManager& assetManager)
+	//{
+	//	XYZ_ASSERT(data["Dockspace"], "Incorrect file format");
+	//}
 
 	template<>
 	ECSManager Serializer::Deserialize<ECSManager>(YAML::Node& data, AssetManager& assetManager)

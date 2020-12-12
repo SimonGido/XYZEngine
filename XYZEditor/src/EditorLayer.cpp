@@ -42,7 +42,7 @@ namespace XYZ {
 
 	EditorLayer::~EditorLayer()
 	{
-		delete m_Dockspace;
+		
 	}
 
 	void EditorLayer::OnAttach()
@@ -139,8 +139,8 @@ namespace XYZ {
 			m_Vertices[i].Rotation = 0.0f;
 			m_Vertices[i].TexCoordOffset = glm::vec2(0);
 
-			m_Data[i].DefaultPosition.x = m_Vertices[i].Position.x;
-			m_Data[i].DefaultPosition.y = m_Vertices[i].Position.y;
+			m_Data[i].DefaultPosition = m_Vertices[i].Position;
+			
 			m_Data[i].ColorBegin = m_Vertices[i].Color;
 			m_Data[i].ColorEnd = m_Vertices[i].Color;
 			m_Data[i].SizeBegin = 1.0f;
@@ -176,7 +176,8 @@ namespace XYZ {
 		Serializer::Deserialize<ECSManager>(data, m_AssetManager, m_ECS);
 
 		m_GuiContext = Application::Get().GetGuiLayer()->CreateContext(&m_ECS, specs);	
-		m_Dockspace = new Dockspace(&m_ECS, m_GuiContext, 1);
+		m_Dockspace = Dockspace(m_GuiContext, 1);
+		
 
 		Renderer::WaitAndRender();
 		
@@ -192,7 +193,6 @@ namespace XYZ {
 					break;
 				}
 			}
-
 		}
 	}	
 
@@ -204,7 +204,7 @@ namespace XYZ {
 		Renderer::Shutdown();
 		{
 			YAML::Emitter out;
-			Serializer::Serialize<Dockspace>(out, *m_Dockspace);
+			Serializer::Serialize<Dockspace>(out, m_Dockspace);
 			std::ofstream fout("Dockspace.ds");
 			fout << out.c_str();
 		}
@@ -226,7 +226,7 @@ namespace XYZ {
 		m_EditorCamera.OnUpdate(ts);
 		m_Scene->OnUpdate(ts);
 		m_Scene->OnRenderEditor(m_EditorCamera);
-		m_Dockspace->OnUpdate(ts);		
+		m_Dockspace.OnUpdate(ts);		
 	}
 	void EditorLayer::OnEvent(Event& event)
 	{			
@@ -235,7 +235,7 @@ namespace XYZ {
 		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorLayer::onMouseButtonRelease, this));	
 		dispatcher.Dispatch<WindowResizeEvent>(Hook(&EditorLayer::onWindowResize, this));
 		m_EditorCamera.OnEvent(event);
-		m_Dockspace->OnEvent(event);
+		m_Dockspace.OnEvent(event);
 	}
 
 	

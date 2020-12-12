@@ -68,7 +68,6 @@ namespace XYZ {
 		// Composite pass
 		{
 			FrameBufferSpecs specs;
-			specs.SwapChainTarget = true;
 			specs.ClearColor = { 0.1f,0.1f,0.1f,1.0f };
 			specs.Attachments = {
 				FrameBufferTextureSpecs(FrameBufferTextureFormat::RGBA16F),
@@ -219,9 +218,7 @@ namespace XYZ {
 		BloomPass();
 		GaussianBlurPass();
 		CompositePass();
-		RendererAPI::SetDepth(true);
 		Renderer::WaitAndRender();
-		RendererAPI::SetDepth(false);
 
 		s_Data.SpriteDrawList.clear();
 		s_Data.ParticleDrawList.clear();

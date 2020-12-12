@@ -18,7 +18,12 @@ namespace XYZ {
 	class Dockspace
 	{
 	public:
-		Dockspace(ECSManager* ecs, GuiContext* context, uint32_t root);
+		Dockspace();
+		Dockspace(GuiContext* context, uint32_t root);
+		Dockspace(const Dockspace& other);
+		~Dockspace();
+
+		Dockspace& operator=(const Dockspace& other);
 
 		void OnUpdate(Timestep ts);
 		void OnEvent(Event& event);
@@ -48,9 +53,9 @@ namespace XYZ {
 		uint32_t findNode(uint32_t entity, const glm::vec2& mousePosition);
 		uint32_t findResize(uint32_t nodeEntity, const glm::vec2& mousePosition);
 		SplitType resolveSplit(uint32_t nodeEntity, const glm::vec2& mousePosition);
+	
 	private:
-		ECSManager* m_ECS;
-		
+		GuiContext* m_Context;
 		uint32_t m_RootEntity = NULL_ENTITY;
 		uint32_t m_ModifiedEntity = NULL_ENTITY;
 
@@ -63,8 +68,8 @@ namespace XYZ {
 		};
 
 		ResizeData m_ResizeData;
-		GuiContext* m_Context;
-
+		
+		std::vector<size_t> m_CallbackIDs;
 
 		friend class Serializer; 
 	};
