@@ -9,6 +9,7 @@ namespace XYZ {
 	{
 	public:
 		GUID();
+		GUID(const std::string& id);
 		GUID(const GUID& other);
 		
 		GUID& operator=(const std::string uuid)

@@ -20,6 +20,12 @@ namespace XYZ {
 		auto result = CoCreateGuid(&uuid);
 		m_UUID = GuidToString(uuid);
 	}
+	GUID::GUID(const std::string& id)
+		: m_UUID(id)
+	{
+		if (m_UUID.size() < 38)
+			XYZ_LOG_WARN("ID ", id, " is probably not UUID");
+	}
 	GUID::GUID(const GUID& other)
 		:
 		m_UUID(other.m_UUID)

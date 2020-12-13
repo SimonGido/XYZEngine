@@ -203,8 +203,21 @@ namespace XYZ {
 			return m_ComponentManager.GetComponentIndex(entity, id);
 		}
 
-		const uint32_t GetNumberOfEntities() const { return m_EntityManager.GetNumEntities(); }
+		template <typename T>
+		uint32_t FindEntity(const T& component) const
+		{
+			for (int32_t i = 0; i < m_EntityManager.m_Signatures.Range();++i)
+			{
+				if (m_EntityManager.m_Signatures[i].test(T::GetComponentID()))
+				{
+					if (component == m_ComponentManager.GetComponent<T>(i))
+						return i;
+				}
+			}
+			return NULL_ENTITY;
+		}
 
+		const uint32_t GetNumberOfEntities() const { return m_EntityManager.GetNumEntities(); }
 
 	private:
 		ComponentManager m_ComponentManager;

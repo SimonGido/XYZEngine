@@ -28,5 +28,7 @@ namespace XYZ {
 		uint32_t m_EntitiesInUse;
 
 		FreeList<Signature> m_Signatures;
+		
+		friend class ECSManager;
 	};
 }

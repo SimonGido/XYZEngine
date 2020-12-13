@@ -580,18 +580,23 @@ namespace XYZ {
 
 		out << YAML::EndMap;
 	}
-	template <>
-	void Serializer::Serialize<Relationship>(YAML::Emitter& out, const Relationship& val)
+
+	static void SerializeRelationship(const ECSManager& ecs, YAML::Emitter& out, const Relationship& val)
 	{
 		out << YAML::Key << "Relationship";
 		out << YAML::BeginMap;
 
-		out << YAML::Key << "Parent" << YAML::Value << val.Parent;
-		out << YAML::Key << "NextSibling" << YAML::Value << val.NextSibling;
-		out << YAML::Key << "PreviousSibling" << YAML::Value << val.PreviousSibling;
-		out << YAML::Key << "FirstChild" << YAML::Value << val.FirstChild;
+		if (val.Parent != NULL_ENTITY)
+			out << YAML::Key << "Parent" << YAML::Value << ecs.GetComponent<IDComponent>(val.Parent).ID;
+		if (val.NextSibling != NULL_ENTITY)
+			out << YAML::Key << "NextSibling" << YAML::Value << ecs.GetComponent<IDComponent>(val.NextSibling).ID;
+		if (val.PreviousSibling != NULL_ENTITY)
+			out << YAML::Key << "PreviousSibling" << YAML::Value << ecs.GetComponent<IDComponent>(val.PreviousSibling).ID;
+		if (val.FirstChild != NULL_ENTITY)
+			out << YAML::Key << "FirstChild" << YAML::Value << ecs.GetComponent<IDComponent>(val.FirstChild).ID;
 		out << YAML::EndMap;
 	}
+
 	template <>
 	void Serializer::Serialize<Canvas>(YAML::Emitter& out, const Canvas& val)
 	{
@@ -706,13 +711,30 @@ namespace XYZ {
 	{
 		out << YAML::BeginMap;
 		out << YAML::Key << "Dockspace";
+		out << YAML::Value << "Dockspace";
+
+		out << YAML::Key << "Entities";
 		out << YAML::Value << YAML::BeginSeq;
-	
+		
 		auto& ecs = *dockSpace.m_Context->m_ECS;
 		for (uint32_t entity = 0; entity < ecs.GetNumberOfEntities(); ++entity)
 		{
-			if (ecs.Contains<DockNodeComponent>(entity))
-				SerializeDocknode(out, entity, ecs);
+			if (ecs.GetEntitySignature(entity).any())
+			{			
+				if (ecs.Contains<DockNodeComponent>(entity))
+				{
+					out << YAML::BeginMap;
+					out << YAML::Key << "Entity" << YAML::Value << ecs.GetComponent<IDComponent>(entity).ID;
+
+					Serialize<DockNodeComponent>(out, ecs.GetComponent<DockNodeComponent>(entity));
+					if (ecs.Contains<Relationship>(entity))
+					{
+						SerializeRelationship(ecs, out, ecs.GetComponent<Relationship>(entity));
+					}
+					
+					out << YAML::EndMap; // Entity
+				}				
+			}
 		}
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
@@ -772,7 +794,7 @@ namespace XYZ {
 				}
 				if (ecs.Contains<Relationship>(entity))
 				{
-					Serialize<Relationship>(out, ecs.GetComponent<Relationship>(entity));
+					SerializeRelationship(ecs, out, ecs.GetComponent<Relationship>(entity));
 				}
 				if (ecs.Contains<CanvasRenderer>(entity))
 				{
@@ -1142,14 +1164,29 @@ namespace XYZ {
 		return Canvas(CanvasRenderMode::ScreenSpace, color);
 	}
 
-	template <>
-	Relationship Serializer::Deserialize<Relationship>(YAML::Node& data, AssetManager& assetManager)
+	static Relationship DeserializeRelationship(const ECSManager& ecs, YAML::Node& data, AssetManager& assetManager)
 	{
 		Relationship relationship;
-		relationship.Parent = data["Parent"].as<uint32_t>();
-		relationship.NextSibling = data["NextSibling"].as<uint32_t>();
-		relationship.PreviousSibling = data["PreviousSibling"].as<uint32_t>();
-		relationship.FirstChild = data["FirstChild"].as<uint32_t>();
+		if (data["Parent"])
+		{
+			std::string parent = data["Parent"].as<std::string>();
+			relationship.Parent = ecs.FindEntity<IDComponent>(IDComponent( { parent } ));
+		}
+		if (data["NextSibling"])
+		{
+			std::string nextSibling = data["NextSibling"].as<std::string>();
+			relationship.NextSibling = ecs.FindEntity<IDComponent>(IDComponent({ nextSibling }));
+		}
+		if (data["PreviousSibling"])
+		{
+			std::string previousSibling = data["PreviousSibling"].as<std::string>();
+			relationship.PreviousSibling = ecs.FindEntity<IDComponent>(IDComponent({ previousSibling }));
+		}
+		if (data["FirstChild"])
+		{
+			std::string firstChild = data["FirstChild"].as<std::string>();
+			relationship.FirstChild = ecs.FindEntity<IDComponent>(IDComponent({ firstChild }));
+		}
 		return relationship;
 	}
 
@@ -1220,11 +1257,6 @@ namespace XYZ {
 		return LineRenderer(color, mesh);
 	}
 
-	//template <>
-	//Dockspace Serializer::Deserialize<Dockspace>(YAML::Node& data, AssetManager& assetManager)
-	//{
-	//	XYZ_ASSERT(data["Dockspace"], "Incorrect file format");
-	//}
 
 	template<>
 	ECSManager Serializer::Deserialize<ECSManager>(YAML::Node& data, AssetManager& assetManager)
@@ -1235,13 +1267,15 @@ namespace XYZ {
 		XYZ_LOG_INFO("Deserializing ecs ", ecsName);
 
 		auto entities = data["Entities"];
+
+		std::vector<uint32_t> createdEntities;
 		if (entities)
 		{
 			for (auto entity : entities)
 			{
 				uint32_t ent = ecs.CreateEntity();
-				GUID guid;
-				guid = entity["Entity"].as<std::string>();
+				createdEntities.push_back(ent);
+				GUID guid(entity["Entity"].as<std::string>());
 				ecs.AddComponent<IDComponent>(ent, IDComponent(guid));
 
 				auto tagComponent = entity["SceneTagComponent"];
@@ -1259,11 +1293,7 @@ namespace XYZ {
 				{
 					ecs.AddComponent<SpriteRenderer>(ent, Deserialize<SpriteRenderer>(spriteRenderer, assetManager));
 				}
-				auto relationship = entity["Relationship"];
-				if (relationship)
-				{
-					ecs.AddComponent<Relationship>(ent, Deserialize<Relationship>(relationship, assetManager));
-				}
+				
 				auto button = entity["Button"];
 				if (button)
 				{
@@ -1326,6 +1356,16 @@ namespace XYZ {
 					transform.Execute<ComponentResizedEvent>(ComponentResizedEvent({ ent, &ecs }));
 				}
 			}
+			uint32_t counter = 0;
+			for (auto entity : entities)
+			{
+				auto ent = createdEntities[counter++];
+				auto relationship = entity["Relationship"];
+				if (relationship)
+				{
+					ecs.AddComponent<Relationship>(ent, DeserializeRelationship(ecs, relationship, assetManager));
+				}
+			}
 		}
 		return ecs;
 	}
@@ -1340,11 +1380,12 @@ namespace XYZ {
 		auto entities = data["Entities"];
 		if (entities)
 		{
+			std::vector<uint32_t> createdEntities;
 			for (auto entity : entities)
 			{
 				uint32_t ent = val.CreateEntity();
-				GUID guid;
-				guid = entity["Entity"].as<std::string>();
+				createdEntities.push_back(ent);
+				GUID guid(entity["Entity"].as<std::string>());
 				val.AddComponent<IDComponent>(ent, IDComponent(guid));
 
 				auto tagComponent = entity["SceneTagComponent"];
@@ -1362,11 +1403,7 @@ namespace XYZ {
 				{
 					val.AddComponent<SpriteRenderer>(ent, Deserialize<SpriteRenderer>(spriteRenderer, assetManager));
 				}
-				auto relationship = entity["Relationship"];
-				if (relationship)
-				{
-					val.AddComponent<Relationship>(ent, Deserialize<Relationship>(relationship, assetManager));
-				}
+			
 				auto button = entity["Button"];
 				if (button)
 				{
@@ -1426,6 +1463,16 @@ namespace XYZ {
 				{
 					auto& transform = val.GetComponent<RectTransform>(ent);
 					transform.Execute<ComponentResizedEvent>(ComponentResizedEvent({ ent, &val }));
+				}
+			}
+			uint32_t counter = 0;
+			for (auto entity : entities)
+			{
+				auto ent = createdEntities[counter++];
+				auto relationship = entity["Relationship"];
+				if (relationship)
+				{
+					val.AddComponent<Relationship>(ent, DeserializeRelationship(val, relationship, assetManager));
 				}
 			}
 		}

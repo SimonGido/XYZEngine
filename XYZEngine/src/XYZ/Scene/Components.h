@@ -22,6 +22,10 @@ namespace XYZ {
 		IDComponent(const GUID& id) 
 			: ID(id)
 		{}
+		bool operator==(const IDComponent& other) const
+		{
+			return (std::string)ID == (std::string)other.ID;
+		}
 		GUID ID;
 	};
 
