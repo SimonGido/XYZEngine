@@ -2,15 +2,15 @@ Dockspace: Dockspace
 Entities:
   - Entity: "{52DD4264-22BF-4BCB-B329-5FF202178897}"
     DockNodeComponent:
-      Position: [-960, -508.5, 0]
-      Size: [1920, 1017]
+      Position: [-912, -486.5, 0]
+      Size: [1824, 973]
       Split: 2
     Relationship:
       FirstChild: "{E2B16F11-8B28-4226-B0DB-0DBBF80A4282}"
   - Entity: "{E0665C80-C785-43ED-8E00-E7A87FC288EE}"
     DockNodeComponent:
-      Position: [559, -508.500092, 0]
-      Size: [409, 1017.00018]
+      Position: [625, -486.500092, 0]
+      Size: [287, 973.000183]
       Split: 1
     Relationship:
       Parent: "{52DD4264-22BF-4BCB-B329-5FF202178897}"
@@ -18,8 +18,8 @@ Entities:
       FirstChild: "{364A2ED9-2E59-44B3-B39C-C6466E1E2185}"
   - Entity: "{E2B16F11-8B28-4226-B0DB-0DBBF80A4282}"
     DockNodeComponent:
-      Position: [-960, -508.500092, 0]
-      Size: [1519, 1017.00018]
+      Position: [-912, -486.500092, 0]
+      Size: [1537, 973.000183]
       Split: 2
     Relationship:
       Parent: "{52DD4264-22BF-4BCB-B329-5FF202178897}"
@@ -27,66 +27,66 @@ Entities:
       FirstChild: "{81D19746-0881-4F1C-84ED-C9FF4D403814}"
   - Entity: "{E17EAAA1-F6AD-490A-913B-8509B274B7F5}"
     DockNodeComponent:
-      Position: [-550, -508.500092, 0]
-      Size: [1109, 1017.00018]
+      Position: [-638, -486.500092, 0]
+      Size: [1263, 973.000183]
       Split: 1
     Relationship:
       Parent: "{E2B16F11-8B28-4226-B0DB-0DBBF80A4282}"
       PreviousSibling: "{81D19746-0881-4F1C-84ED-C9FF4D403814}"
-      FirstChild: "{4854D3B8-54B0-4365-865B-65453315510E}"
+      FirstChild: "{EE02A5EF-F93A-41E8-9887-5620E9F3E3CB}"
   - Entity: "{81D19746-0881-4F1C-84ED-C9FF4D403814}"
     DockNodeComponent:
-      Position: [-960, -508.500092, 0]
-      Size: [410, 1017.00018]
+      Position: [-912, -486.500092, 0]
+      Size: [274, 973.000183]
       Split: 0
       Entities:
         - 2
     Relationship:
       Parent: "{E2B16F11-8B28-4226-B0DB-0DBBF80A4282}"
       NextSibling: "{E17EAAA1-F6AD-490A-913B-8509B274B7F5}"
-  - Entity: "{1476679A-4D8D-4912-8D84-2974BA38ECEC}"
+  - Entity: "{3CABF4DD-0F7E-474F-A8A9-A076217613F2}"
     DockNodeComponent:
-      Position: [-550, 311.500031, 0]
-      Size: [1109, 197.000061]
+      Position: [-638, -330.5, 0]
+      Size: [1263, 817.000122]
+      Split: 2
+    Relationship:
+      Parent: "{E17EAAA1-F6AD-490A-913B-8509B274B7F5}"
+      PreviousSibling: "{EE02A5EF-F93A-41E8-9887-5620E9F3E3CB}"
+      FirstChild: "{5D765A1C-0A07-494F-9FB2-E8E3E10ECF14}"
+  - Entity: "{EE02A5EF-F93A-41E8-9887-5620E9F3E3CB}"
+    DockNodeComponent:
+      Position: [-638, -486.500092, 0]
+      Size: [1263, 156.000092]
       Split: 0
       Entities:
         - 93
     Relationship:
       Parent: "{E17EAAA1-F6AD-490A-913B-8509B274B7F5}"
-      PreviousSibling: "{4854D3B8-54B0-4365-865B-65453315510E}"
-  - Entity: "{4854D3B8-54B0-4365-865B-65453315510E}"
+      NextSibling: "{3CABF4DD-0F7E-474F-A8A9-A076217613F2}"
+  - Entity: "{5D765A1C-0A07-494F-9FB2-E8E3E10ECF14}"
     DockNodeComponent:
-      Position: [-550, -508.500092, 0]
-      Size: [1109, 820.000122]
-      Split: 1
-    Relationship:
-      Parent: "{E17EAAA1-F6AD-490A-913B-8509B274B7F5}"
-      NextSibling: "{1476679A-4D8D-4912-8D84-2974BA38ECEC}"
-      FirstChild: "{42A484DB-A57C-41CE-898D-4EFD096EEBC0}"
-  - Entity: "{42A484DB-A57C-41CE-898D-4EFD096EEBC0}"
-    DockNodeComponent:
-      Position: [-550, -508.500092, 0]
-      Size: [1109, 191.000092]
-      Split: 0
-      Entities:
-        - 136
-    Relationship:
-      Parent: "{4854D3B8-54B0-4365-865B-65453315510E}"
-      NextSibling: "{4FC357DA-DA62-46EE-B602-AAB7000CCA5A}"
-  - Entity: "{4FC357DA-DA62-46EE-B602-AAB7000CCA5A}"
-    DockNodeComponent:
-      Position: [-550, -317.5, 0]
-      Size: [1109, 629]
+      Position: [-638, -330.5, 0]
+      Size: [986, 817.000122]
       Split: 0
       Entities:
         - 222
     Relationship:
-      Parent: "{4854D3B8-54B0-4365-865B-65453315510E}"
-      PreviousSibling: "{42A484DB-A57C-41CE-898D-4EFD096EEBC0}"
+      Parent: "{3CABF4DD-0F7E-474F-A8A9-A076217613F2}"
+      NextSibling: "{6F8C06C8-5488-497C-87BA-B22E3F8019BF}"
+  - Entity: "{6F8C06C8-5488-497C-87BA-B22E3F8019BF}"
+    DockNodeComponent:
+      Position: [348, -330.5, 0]
+      Size: [277, 817.000122]
+      Split: 0
+      Entities:
+        - 136
+    Relationship:
+      Parent: "{3CABF4DD-0F7E-474F-A8A9-A076217613F2}"
+      PreviousSibling: "{5D765A1C-0A07-494F-9FB2-E8E3E10ECF14}"
   - Entity: "{364A2ED9-2E59-44B3-B39C-C6466E1E2185}"
     DockNodeComponent:
-      Position: [559, -508.500092, 0]
-      Size: [409, 508.500092]
+      Position: [625, -486.500092, 0]
+      Size: [287, 486.500092]
       Split: 0
       Entities:
         - 50
@@ -95,8 +95,8 @@ Entities:
       NextSibling: "{010E1094-EC96-4D8A-8071-141561E52CD5}"
   - Entity: "{010E1094-EC96-4D8A-8071-141561E52CD5}"
     DockNodeComponent:
-      Position: [559, 0, 0]
-      Size: [409, 508.500092]
+      Position: [625, 0, 0]
+      Size: [287, 486.500092]
       Split: 0
       Entities:
         - 179

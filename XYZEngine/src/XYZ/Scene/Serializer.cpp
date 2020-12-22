@@ -1479,6 +1479,20 @@ namespace XYZ {
 	}
 
 	template <>
+	void Serializer::Deserialize<Dockspace>(YAML::Node& data, AssetManager& assetManager, Dockspace& val)
+	{
+		XYZ_ASSERT(data["Dockspace"], "Incorrect file format");
+		std::string dockspaceName = data["Dockspace"].as<std::string>();
+		XYZ_LOG_INFO("Deserializing dockspace ", dockspaceName);
+
+		auto entities = data["Entities"];
+		if (entities)
+		{
+
+		}
+	}
+
+	template <>
 	Ref<Scene> Serializer::DeserializeResource(const std::string& filepath, AssetManager& assetManager)
 	{
 		std::ifstream stream(filepath);

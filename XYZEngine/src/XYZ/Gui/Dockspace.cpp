@@ -445,7 +445,7 @@ namespace XYZ {
 	void Dockspace::destroyNode(uint32_t nodeEntity)
 	{
 		auto& rel = m_Context->m_ECS->GetStorageComponent<Relationship>(nodeEntity);
-		auto& dockNode = m_Context->m_ECS->GetStorageComponent<DockNodeComponent>(rel.Parent);
+		auto& dockNodeParent = m_Context->m_ECS->GetStorageComponent<DockNodeComponent>(rel.Parent);
 
 		uint32_t sibling = rel.NextSibling;
 		if (rel.NextSibling == NULL_ENTITY)
@@ -453,20 +453,29 @@ namespace XYZ {
 		
 		auto& dockNodeSibling = m_Context->m_ECS->GetStorageComponent<DockNodeComponent>(sibling);
 
-		if (dockNodeSibling.Split != SplitType::None)
-			return;
-
+		dockNodeParent.Split = dockNodeSibling.Split;
+		dockNodeParent.Entities.clear();
 		for (auto entity : dockNodeSibling.Entities)
+		{
+			auto& entRel = m_Context->m_ECS->GetStorageComponent<Relationship>(entity);
+			entRel.Parent = rel.Parent;
 			insertToNode(rel.Parent, entity);
-
-		uint32_t tmpSibling = sibling;
-		Relationship::RemoveRelation(sibling, *m_Context->m_ECS);
-		m_Context->m_ECS->DestroyEntity(tmpSibling);
+		}
+		auto& siblingRel = m_Context->m_ECS->GetStorageComponent<Relationship>(sibling);
+		auto& parentRel = m_Context->m_ECS->GetStorageComponent<Relationship>(rel.Parent);
 		
-
-		Relationship::RemoveRelation(nodeEntity, *m_Context->m_ECS);
+		parentRel.FirstChild = siblingRel.FirstChild;
+		uint32_t current = siblingRel.FirstChild;
+		while (current != NULL_ENTITY)
+		{
+			auto& currRel = m_Context->m_ECS->GetStorageComponent<Relationship>(current);
+			currRel.Parent = rel.Parent;
+			current = currRel.NextSibling;
+		}
+		adjustNodeChildren(rel.Parent);
+		updateEntities(rel.Parent);
+		m_Context->m_ECS->DestroyEntity(sibling);
 		m_Context->m_ECS->DestroyEntity(nodeEntity);
-		dockNode.Split = SplitType::None;
 	}
 	void Dockspace::adjustNodeChildren(uint32_t nodeEntity)
 	{
