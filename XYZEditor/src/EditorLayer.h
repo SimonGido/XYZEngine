@@ -2,11 +2,14 @@
 
 #include <XYZ.h>
 
+#include "Panels/SceneHierarchyPanel.h"
+
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
 
 
 namespace XYZ {
@@ -37,6 +40,8 @@ namespace XYZ {
 
 		EditorCamera m_EditorCamera;
 		AssetManager m_AssetManager;
+		SceneHierarchyPanel m_SceneHierarchyPanel;
+
 
 		std::vector<Entity> m_StoredEntitiesWithScript;
 		std::vector<uint32_t> m_EditorEntities;

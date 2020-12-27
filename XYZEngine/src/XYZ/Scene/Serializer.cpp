@@ -619,7 +619,9 @@ namespace XYZ {
 		out << YAML::Key << "Split" << YAML::Value << ToUnderlying(val.Split);
 		
 		if (!val.Entities.empty())
+		{
 			out << YAML::Key << "Entities" << YAML::Value << val.Entities;
+		}
 		out << YAML::EndMap; // DockNodeComponent
 	}
 	template <>
@@ -672,11 +674,8 @@ namespace XYZ {
 		}
 	}
 
-	static void SerializeDocknode(YAML::Emitter& out, uint32_t entity, ECSManager& ecs)
+	static void SerializeDockNode(const ECSManager& ecs, YAML::Emitter& out, const DockNodeComponent& val)
 	{
-		auto& val = ecs.GetStorageComponent<DockNodeComponent>(entity);
-		out << YAML::BeginMap;
-
 		out << YAML::Key << "DockNodeComponent";
 		out << YAML::BeginMap;
 
@@ -688,20 +687,11 @@ namespace XYZ {
 		out << YAML::Value << YAML::BeginSeq;
 		for (auto entity : val.Entities)
 		{
-			auto& entityRel = ecs.GetStorageComponent<Relationship>(entity);
-			uint32_t textEntity = entityRel.FirstChild;
-			
-			if (!ecs.Contains<Text>(textEntity))
-			{
-				auto& siblingRel = ecs.GetStorageComponent<Relationship>(textEntity);
-				textEntity = siblingRel.NextSibling;
-			}
 			out << YAML::BeginMap;
-			out << YAML::Key << "Name" << YAML::Value << ecs.GetComponent<Text>(textEntity).Source;
-			out << YAML::EndMap; // Specification
+			out << YAML::Key << "ID" << YAML::Value << ecs.GetComponent<IDComponent>(entity).ID;
+			out << YAML::EndMap;
 		}
 		out << YAML::EndSeq;
-		out << YAML::EndMap;
 
 		out << YAML::EndMap; // DockNodeComponent
 	}
@@ -726,7 +716,7 @@ namespace XYZ {
 					out << YAML::BeginMap;
 					out << YAML::Key << "Entity" << YAML::Value << ecs.GetComponent<IDComponent>(entity).ID;
 
-					Serialize<DockNodeComponent>(out, ecs.GetComponent<DockNodeComponent>(entity));
+					SerializeDockNode(ecs, out, ecs.GetComponent<DockNodeComponent>(entity));
 					if (ecs.Contains<Relationship>(entity))
 					{
 						SerializeRelationship(ecs, out, ecs.GetComponent<Relationship>(entity));
@@ -810,7 +800,7 @@ namespace XYZ {
 				}
 				if (ecs.Contains<DockNodeComponent>(entity))
 				{
-					Serialize<DockNodeComponent>(out, ecs.GetComponent<DockNodeComponent>(entity));
+					SerializeDockNode(ecs, out, ecs.GetComponent<DockNodeComponent>(entity));
 				}
 				if (ecs.Contains<Text>(entity))
 				{
@@ -1164,7 +1154,7 @@ namespace XYZ {
 		return Canvas(CanvasRenderMode::ScreenSpace, color);
 	}
 
-	static Relationship DeserializeRelationship(const ECSManager& ecs, YAML::Node& data, AssetManager& assetManager)
+	static Relationship DeserializeRelationship(const ECSManager& ecs, YAML::Node& data)
 	{
 		Relationship relationship;
 		if (data["Parent"])
@@ -1188,6 +1178,30 @@ namespace XYZ {
 			relationship.FirstChild = ecs.FindEntity<IDComponent>(IDComponent({ firstChild }));
 		}
 		return relationship;
+	}
+
+	static DockNodeComponent DeserializeDockNode(const ECSManager& ecs, YAML::Node& data)
+	{
+		glm::vec3 pos = data["Position"].as<glm::vec3>();
+		glm::vec2 size = data["Size"].as<glm::vec2>();
+		DockNodeComponent dockNode(pos, size);
+		dockNode.Split = SplitType::None;
+		int32_t split = data["Split"].as<int32_t>();
+		switch (split)
+		{
+		case ToUnderlying(SplitType::Horizontal):
+			dockNode.Split = SplitType::Horizontal;
+			break;
+		case ToUnderlying(SplitType::Vertical):
+			dockNode.Split = SplitType::Vertical;
+			break;
+		}
+		for (auto& it : data["Panels"])
+		{
+			uint32_t entity = ecs.FindEntity<IDComponent>({ it["ID"].as<std::string>() });
+			dockNode.Entities.push_back(entity);
+		}
+		return dockNode;
 	}
 
 	template <>
@@ -1329,11 +1343,7 @@ namespace XYZ {
 				{
 					ecs.AddComponent<CanvasRenderer>(ent, Deserialize<CanvasRenderer>(canvasRenderer, assetManager));
 				}
-				auto dockNode = entity["DockNodeComponent"];
-				if (dockNode)
-				{
-					ecs.AddComponent<DockNodeComponent>(ent, Deserialize<DockNodeComponent>(dockNode, assetManager));
-				}
+				
 				auto text = entity["Text"];
 				if (text)
 				{
@@ -1363,7 +1373,13 @@ namespace XYZ {
 				auto relationship = entity["Relationship"];
 				if (relationship)
 				{
-					ecs.AddComponent<Relationship>(ent, DeserializeRelationship(ecs, relationship, assetManager));
+					ecs.AddComponent<Relationship>(ent, DeserializeRelationship(ecs, relationship));
+				}
+
+				auto dockNode = entity["DockNodeComponent"];
+				if (dockNode)
+				{
+					ecs.AddComponent<DockNodeComponent>(ent, DeserializeDockNode(ecs, dockNode));
 				}
 			}
 		}
@@ -1439,11 +1455,7 @@ namespace XYZ {
 				{
 					val.AddComponent<CanvasRenderer>(ent, Deserialize<CanvasRenderer>(canvasRenderer, assetManager));
 				}
-				auto dockNode = entity["DockNodeComponent"];
-				if (dockNode)
-				{
-					val.AddComponent<DockNodeComponent>(ent, Deserialize<DockNodeComponent>(dockNode, assetManager));
-				}
+				
 				auto text = entity["Text"];
 				if (text)
 				{
@@ -1472,7 +1484,13 @@ namespace XYZ {
 				auto relationship = entity["Relationship"];
 				if (relationship)
 				{
-					val.AddComponent<Relationship>(ent, DeserializeRelationship(val, relationship, assetManager));
+					val.AddComponent<Relationship>(ent, DeserializeRelationship(val, relationship));
+				}
+
+				auto dockNode = entity["DockNodeComponent"];
+				if (dockNode)
+				{
+					val.AddComponent<DockNodeComponent>(ent, DeserializeDockNode(val, dockNode));
 				}
 			}
 		}
@@ -1485,10 +1503,25 @@ namespace XYZ {
 		std::string dockspaceName = data["Dockspace"].as<std::string>();
 		XYZ_LOG_INFO("Deserializing dockspace ", dockspaceName);
 
+		ECSManager& ecs = *val.m_Context->m_ECS;
 		auto entities = data["Entities"];
 		if (entities)
 		{
+			std::vector<uint32_t> createdEntities;
+			for (auto entity : entities)
+			{
+				uint32_t ent = ecs.CreateEntity();
+				createdEntities.push_back(ent);
+				GUID guid(entity["Entity"].as<std::string>());
+				ecs.AddComponent<IDComponent>(ent, IDComponent(guid));
 
+
+				auto dockNode = entity["DockNodeComponent"];
+				if (dockNode)
+				{
+					ecs.AddComponent<DockNodeComponent>(ent, DeserializeDockNode(ecs, dockNode));
+				}
+			}
 		}
 	}
 

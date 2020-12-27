@@ -177,8 +177,9 @@ namespace XYZ {
 
 		m_GuiContext = Application::Get().GetGuiLayer()->CreateContext(&m_ECS, specs);	
 		m_Dockspace = Dockspace(m_GuiContext, 1);
-		
-
+		uint32_t sceneHierarchyPanel = m_ECS.FindEntity<IDComponent>({ (std::string)"{F7A53EA2-9BFD-4C3E-9CE7-8E50DA64A93C}" });
+		m_SceneHierarchyPanel = SceneHierarchyPanel(&m_Dockspace, m_GuiContext, Entity(sceneHierarchyPanel, &m_ECS));
+		m_SceneHierarchyPanel.SetContext(m_Scene);
 		Renderer::WaitAndRender();
 		
 		Ref<RenderTexture> renderTexture = RenderTexture::Create(SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer);
@@ -202,6 +203,7 @@ namespace XYZ {
 	{
 		NativeScriptEngine::Shutdown();
 		Renderer::Shutdown();
+		m_SceneHierarchyPanel.Clean();
 		{
 			YAML::Emitter out;
 			Serializer::Serialize<Dockspace>(out, m_Dockspace);

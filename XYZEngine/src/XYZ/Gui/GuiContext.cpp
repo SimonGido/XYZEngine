@@ -307,6 +307,7 @@ namespace XYZ {
 
 		m_ECS->AddComponent<Relationship>(entity, Relationship());
 		auto& transform = m_ECS->AddComponent<RectTransform>(entity, RectTransform( specs.Position, specs.Size));
+		// TODO remove
 		transform.RegisterCallback<ComponentResizedEvent>(Hook(&GuiContext::onQuadRectTransformResized, this));
 		m_ECS->AddComponent<CanvasRenderer>( entity,
 			CanvasRenderer(
@@ -696,6 +697,12 @@ namespace XYZ {
 		for (size_t i = 0; i < m_RenderView->Size(); ++i)
 		{
 			auto &[canvasRenderer, rectTransform] = (*m_RenderView)[i];
+			if (m_ECS->Contains<Slider>(m_RenderView->GetEntity(i)))
+			{
+				auto& rel = m_ECS->GetStorageComponent<Relationship>(m_RenderView->GetEntity(i));
+				auto& childTrans = m_ECS->GetStorageComponent<RectTransform>(rel.FirstChild);
+				std::cout << childTrans.WorldPosition.x << std::endl;
+			}
 			GuiRenderer::SubmitWidget(&canvasRenderer, &rectTransform);
 		}
 		for (size_t i = 0; i < m_LineRenderView->Size(); ++i)
@@ -914,8 +921,8 @@ namespace XYZ {
 			{
 				slider.Machine.TransitionTo(SliderState::Dragged);
 				SetMeshColor(canvasRenderer.Mesh, canvasRenderer.Color * slider.HooverColor);
-				if (slider.Execute<ClickEvent>(ClickEvent{ {m_SliderView->GetEntity(i), m_ECS} }))
-					return true;
+				slider.Execute<ClickEvent>(ClickEvent{ {m_SliderView->GetEntity(i), m_ECS} });
+				return true;
 			}
 		}
 		return false;
@@ -947,7 +954,7 @@ namespace XYZ {
 				uint32_t handle = rel.FirstChild;
 				auto& handleTransform = m_ECS->GetStorageComponent<RectTransform>(handle);
 				float diff = mousePosition.x - handleTransform.WorldPosition.x;
-				
+	
 				if (handleTransform.Position.x + (handleTransform.Size.x / 2.0f) + diff < (rectTransform.Size.x / 2.0f)
 				&& (handleTransform.Position.x - (handleTransform.Size.x / 2.0f) + diff > (-rectTransform.Size.x / 2.0f)))
 				{
@@ -961,7 +968,6 @@ namespace XYZ {
 				{
 					handleTransform.Position.x = (rectTransform.Size.x / 2.0f) - (handleTransform.Size.x / 2.0f);
 				}
-				
 				slider.Value = handleTransform.Position.x  / (rectTransform.Size.x - handleTransform.Size.x) + 0.5f;
 				slider.Execute<DraggedEvent>(DraggedEvent({ m_SliderView->GetEntity(i), m_ECS }, slider.Value));
 				handleTransform.Execute<ComponentResizedEvent>(ComponentResizedEvent({ m_CanvasView->GetEntity(i), m_ECS }));
@@ -1024,6 +1030,14 @@ namespace XYZ {
 		auto& rectTransform = m_ECS->GetStorageComponent<RectTransform>(entity);
 		rectTransform.WorldPosition = parentPosition + rectTransform.Position;
 		auto& canvasRenderer = m_ECS->GetStorageComponent<CanvasRenderer>(entity);
+
+		if (m_ECS->Contains<Slider>(entity))
+		{
+			auto& rel = m_ECS->GetStorageComponent<Relationship>(entity);
+			auto& childTrans = m_ECS->GetStorageComponent<RectTransform>(rel.FirstChild);
+			std::cout << childTrans.WorldPosition.x << std::endl;
+		}
+
 		if (canvasRenderer.IsVisible)
 		{		
 			auto& currentRel = m_ECS->GetComponent<Relationship>(entity);

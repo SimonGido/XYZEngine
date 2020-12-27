@@ -136,6 +136,7 @@ namespace XYZ {
 		{
 			handleResize();
 		}
+		
 	}
 	void Dockspace::OnEvent(Event& event)
 	{
@@ -503,6 +504,7 @@ namespace XYZ {
 			else if (dockNode.Split == SplitType::Vertical)
 			{
 				firstDockNode.Position = dockNode.Position;
+				secondDockNode.Position.y = dockNode.Position.y;
 				firstDockNode.Size.x = secondDockNode.Position.x - firstDockNode.Position.x;
 				firstDockNode.Size.y = dockNode.Size.y;
 				secondDockNode.Size.x = dockNode.Size.x - firstDockNode.Size.x;

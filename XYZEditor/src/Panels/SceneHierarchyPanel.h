@@ -7,17 +7,18 @@ namespace XYZ {
 	class SceneHierarchyPanel
 	{
 	public:
-		SceneHierarchyPanel(Dockspace* dockSpace, GuiContext* gui);
+		SceneHierarchyPanel();
+		SceneHierarchyPanel(Dockspace* dockSpace, GuiContext* gui, Entity panelEntity);
+		~SceneHierarchyPanel();
 
 		void SetContext(const Ref<Scene>& scene);
-
-
+		void Clean();
 
 	private:
 		Ref<Scene>  m_Context;
 		Dockspace*  m_Dockspace;
 		GuiContext* m_GuiContext;
-		uint32_t    m_PanelEntity = NULL_ENTITY;
+		Entity      m_PanelEntity;
 		std::vector<uint32_t> m_Entities;
 	};
 }
