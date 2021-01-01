@@ -24,11 +24,14 @@ IncludeDir["mini"] = "XYZEngine/vendor/mini"
 IncludeDir["OpenAL"] = "XYZEngine/vendor/OpenAL-Soft"
 IncludeDir["MiniMp3"] = "XYZEngine/vendor/minimp3"
 IncludeDir["FreeType"] = "XYZEngine/vendor/freetype-2.10.1"
+IncludeDir["Asio"] = "XYZNet/vendor/asio/include"
+
 
 include "XYZEngine/vendor/GLFW"
 include "XYZEngine/vendor/GLEW"
 include "XYZEngine/vendor/OpenAL-Soft"
 include "XYZEngine/vendor/freetype-2.10.1"
+
 
 project "XYZEngine"
 		location "XYZEngine"
@@ -47,7 +50,6 @@ project "XYZEngine"
 		{
 			"%{prj.name}/src/**.h",
 			"%{prj.name}/src/**.cpp",
-			"%{prj.name}/src/**.def",
 			"%{prj.name}/vendor/glm/glm/**.hpp",
 			"%{prj.name}/vendor/glm/glm/**.inl",
 			"%{prj.name}/vendor/mini/ini.h",
@@ -113,64 +115,88 @@ project "XYZEngine"
 				runtime "Release"
 				optimize "on"
 
-	
+
+project "XYZNet"
+		location "XYZNet"
+		kind "StaticLib"
+		language "C++"
+		cppdialect "C++17"
+		staticruntime "on"
+		
+		targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+		objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+		
+		files
+		{
+			"%{prj.name}/src/**.h",
+			"%{prj.name}/src/**.cpp",
+			"%{prj.name}/vendor/asio/include/**.hpp",
+			"%{prj.name}/vendor/asio/include/**.h"
+		}
+
+		includedirs
+		{
+			"%{prj.name}/src",
+			"%{IncludeDir.Asio}"
+		}
+		
+		filter "system:windows"
+				systemversion "latest"
+		
+		filter "configurations:Debug"
+				defines "XYZ_NET_DEBUG"
+				runtime "Debug"
+				symbols "on"
+		
+		
+		filter "configurations:Release"
+				defines "XYZ_NET_RELEASE"
+				runtime "Release"
+				optimize "on"
+		
+		
 project "XYZEditor"
 		location "XYZEditor"
 		kind "ConsoleApp"
 		language "C++"
 		cppdialect "C++17"
 		staticruntime "on"
-
+		
 		targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 		objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-
+		
 		files
 		{
 			"%{prj.name}/src/**.h",
-			"%{prj.name}/src/**.cpp",
-			"%{prj.name}/src/**.def"
+			"%{prj.name}/src/**.cpp"
 		}
-
+		
 		includedirs
 		{
-			"XYZEngine/vendor",
 			"XYZEngine/vendor/yaml-cpp/include",
+			"XYZEngine/vendor",
 			"XYZEngine/src",
-			"NativeScript",
+			"XYZNet/src",
 			"%{IncludeDir.glm}",
-			"%{IncludeDir.RCC}"
+			"%{IncludeDir.RCC}",
+			"%{IncludeDir.Asio}"
 		}
-
+		
 		links
 		{
 			"XYZEngine"
 		}
-
+		
 		filter "system:windows"
 				systemversion "latest"
-
+		
 		filter "configurations:Debug"
 				defines "XYZ_DEBUG"
 				runtime "Debug"
 				symbols "on"
-
-
+		
+		
 		filter "configurations:Release"
 				defines "XYZ_RELEASE"
 				runtime "Release"
 				optimize "on"
-
-
-project "XYZScriptCore"
-		location "XYZScriptCore"
-		kind "SharedLib"
-		language "C#"
-			
-		targetdir ("bin/" .. outputdir .. "/%{prj.name}")
-		objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-			
-		files 
-		{
-			"%{prj.name}/src/**.cs", 
-		}
-

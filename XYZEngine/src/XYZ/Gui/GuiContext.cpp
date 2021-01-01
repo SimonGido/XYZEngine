@@ -701,7 +701,6 @@ namespace XYZ {
 			{
 				auto& rel = m_ECS->GetStorageComponent<Relationship>(m_RenderView->GetEntity(i));
 				auto& childTrans = m_ECS->GetStorageComponent<RectTransform>(rel.FirstChild);
-				std::cout << childTrans.WorldPosition.x << std::endl;
 			}
 			GuiRenderer::SubmitWidget(&canvasRenderer, &rectTransform);
 		}

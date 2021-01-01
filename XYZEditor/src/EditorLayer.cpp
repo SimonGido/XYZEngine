@@ -7,7 +7,35 @@
 
 #include <random>
 
+#include <XYZNet.h>
+
 namespace XYZ {
+
+	enum class MessageType : uint32_t
+	{
+		ServerAccept,
+		ServerDeny,
+		ServerPing,
+		MessageAll,
+		ServerMessage
+	};
+	
+	class CustomServer : public Net::Server<MessageType>
+	{
+	public:
+		CustomServer(uint16_t port)
+			: Net::Server<MessageType>(port)
+		{}
+
+	protected:
+		virtual bool onClientConnect(std::shared_ptr<Net::Connection<MessageType>> client) override
+		{
+			return true;
+		}
+
+	};
+
+	static CustomServer* s_Server;
 
 	static glm::vec2 MouseToWorld(const glm::vec2& point, const glm::vec2& windowSize)
 	{
@@ -38,11 +66,13 @@ namespace XYZ {
 		:
 		m_AssetManager("Assets")
 	{
+		s_Server = new CustomServer(60000);
+		s_Server->Start();
 	}
 
 	EditorLayer::~EditorLayer()
 	{
-		
+		delete s_Server;
 	}
 
 	void EditorLayer::OnAttach()
@@ -229,6 +259,9 @@ namespace XYZ {
 		m_Scene->OnUpdate(ts);
 		m_Scene->OnRenderEditor(m_EditorCamera);
 		m_Dockspace.OnUpdate(ts);		
+
+
+		s_Server->Update();
 	}
 	void EditorLayer::OnEvent(Event& event)
 	{			
