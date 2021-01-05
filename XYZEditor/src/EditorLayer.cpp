@@ -2,12 +2,9 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
-
 #include <stb_image/stb_image.h>
 
 #include <random>
-
-#include <XYZNet.h>
 
 namespace XYZ {
 
@@ -42,6 +39,7 @@ namespace XYZ {
 		glm::vec2 offset = { windowSize.x / 2,windowSize.y / 2 };
 		return { point.x - offset.x, offset.y - point.y };
 	}
+
 	static bool Collide(const glm::vec2& pos, const glm::vec2& size, const glm::vec2& point)
 	{
 		return (pos.x + size.x > point.x &&
@@ -262,6 +260,9 @@ namespace XYZ {
 
 
 		s_Server->Update();
+		Net::Message<MessageType> msg;
+		msg << "Kokotko";
+		s_Server->MessageAllClients(msg);
 	}
 	void EditorLayer::OnEvent(Event& event)
 	{			

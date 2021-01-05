@@ -2,17 +2,19 @@ Dockspace: Dockspace
 Entities:
   - Entity: "{52DD4264-22BF-4BCB-B329-5FF202178897}"
     DockNodeComponent:
-      Position: [-912, -486.5, 0]
-      Size: [1824, 973]
+      Position: [-960, -508.5, 0]
+      Size: [1920, 1017]
       Split: 2
       Panels:
         []
     Relationship:
+      Parent: "{EE40620C-C5FA-476D-9375-519CCD76528D}"
+      NextSibling: "{2C6646FD-6938-4117-8D65-141A1E64B913}"
       FirstChild: "{E2B16F11-8B28-4226-B0DB-0DBBF80A4282}"
   - Entity: "{E0665C80-C785-43ED-8E00-E7A87FC288EE}"
     DockNodeComponent:
-      Position: [475, -486.500153, 0]
-      Size: [437, 973.000305]
+      Position: [500, -508.500153, 0]
+      Size: [460, 1017.00031]
       Split: 1
       Panels:
         []
@@ -22,8 +24,8 @@ Entities:
       FirstChild: "{364A2ED9-2E59-44B3-B39C-C6466E1E2185}"
   - Entity: "{E2B16F11-8B28-4226-B0DB-0DBBF80A4282}"
     DockNodeComponent:
-      Position: [-912, -486.500153, 0]
-      Size: [1387, 973.000305]
+      Position: [-960, -508.500153, 0]
+      Size: [1459.99988, 1017.00031]
       Split: 1
       Panels:
         []
@@ -33,8 +35,8 @@ Entities:
       FirstChild: "{EE02A5EF-F93A-41E8-9887-5620E9F3E3CB}"
   - Entity: "{05A41B52-FB76-402D-8D03-35EC30854B39}"
     DockNodeComponent:
-      Position: [-566, -289.5, 0]
-      Size: [1041, 776.000122]
+      Position: [-514, -302.591461, 0]
+      Size: [1013.99988, 811.091614]
       Split: 2
       Panels:
         []
@@ -44,8 +46,8 @@ Entities:
       FirstChild: "{BA61401E-4326-4268-98F8-68D4C3B0F387}"
   - Entity: "{E9D489D5-9708-40DC-91B2-79795A769D85}"
     DockNodeComponent:
-      Position: [-912, -289.5, 0]
-      Size: [346, 776.000122]
+      Position: [-960, -302.591461, 0]
+      Size: [446, 811.091614]
       Split: 0
       Panels:
         - ID: "{82C99753-B3B7-4B29-B21A-4E1F29B30617}"
@@ -54,8 +56,8 @@ Entities:
       NextSibling: "{05A41B52-FB76-402D-8D03-35EC30854B39}"
   - Entity: "{3CABF4DD-0F7E-474F-A8A9-A076217613F2}"
     DockNodeComponent:
-      Position: [-912, -289.5, 0]
-      Size: [1387, 776.000122]
+      Position: [-960, -302.591461, 0]
+      Size: [1459.99988, 811.091614]
       Split: 2
       Panels:
         []
@@ -65,8 +67,8 @@ Entities:
       FirstChild: "{E9D489D5-9708-40DC-91B2-79795A769D85}"
   - Entity: "{EE02A5EF-F93A-41E8-9887-5620E9F3E3CB}"
     DockNodeComponent:
-      Position: [-912, -486.500153, 0]
-      Size: [1387, 197.000153]
+      Position: [-960, -508.500153, 0]
+      Size: [1459.99988, 205.908691]
       Split: 0
       Panels:
         - ID: "{B6044E67-DEE6-4426-BCC3-4ECF17B1433D}"
@@ -75,8 +77,8 @@ Entities:
       NextSibling: "{3CABF4DD-0F7E-474F-A8A9-A076217613F2}"
   - Entity: "{BA61401E-4326-4268-98F8-68D4C3B0F387}"
     DockNodeComponent:
-      Position: [-566, -289.5, 0]
-      Size: [818, 776.000122]
+      Position: [-514, -302.591461, 0]
+      Size: [679, 811.091614]
       Split: 0
       Panels:
         - ID: "{2C6646FD-6938-4117-8D65-141A1E64B913}"
@@ -85,8 +87,8 @@ Entities:
       NextSibling: "{8638AE71-811E-4E65-BBDE-447A3AC5C45B}"
   - Entity: "{8638AE71-811E-4E65-BBDE-447A3AC5C45B}"
     DockNodeComponent:
-      Position: [252, -289.5, 0]
-      Size: [223, 776.000122]
+      Position: [164.999985, -302.591461, 0]
+      Size: [334.999878, 811.091614]
       Split: 0
       Panels:
         - ID: "{5D904944-B702-4C62-9206-2B71EAC81B9E}"
@@ -95,8 +97,8 @@ Entities:
       PreviousSibling: "{BA61401E-4326-4268-98F8-68D4C3B0F387}"
   - Entity: "{364A2ED9-2E59-44B3-B39C-C6466E1E2185}"
     DockNodeComponent:
-      Position: [475, -486.500153, 0]
-      Size: [437, 421.000153]
+      Position: [500, -508.500153, 0]
+      Size: [460, 440.038177]
       Split: 0
       Panels:
         - ID: "{D6AB3A62-A17B-4671-8D00-E56EB9C66928}"
@@ -105,8 +107,8 @@ Entities:
       NextSibling: "{010E1094-EC96-4D8A-8071-141561E52CD5}"
   - Entity: "{010E1094-EC96-4D8A-8071-141561E52CD5}"
     DockNodeComponent:
-      Position: [475, -65.5, 0]
-      Size: [437, 552.000122]
+      Position: [500, -68.4619751, 0]
+      Size: [460, 576.962097]
       Split: 0
       Panels:
         - ID: "{E700488C-3E57-4D8B-97D7-BA50D585F87E}"

@@ -152,6 +152,20 @@ namespace XYZ {
 			{
 				m_Canvases.push_back(i);
 			}
+			if (!ecs->Contains<RectTransform>(i))
+			{
+				ecs->AddComponent<RectTransform>(i, RectTransform(glm::vec3(0.0f), glm::vec2(0.0f)));
+			}
+			Relationship& rel = ecs->GetStorageComponent<Relationship>(i);
+			if (rel.Parent == NULL_ENTITY && i != m_Canvases[0])
+			{
+				Relationship::SetupRelation(m_Canvases[0], i, *m_ECS);
+			}
+
+			if (ecs->Contains<InputField>(i))
+			{
+				Relationship::SetupRelation(4, i, *m_ECS);
+			}
 		}
 	}
 
@@ -1028,25 +1042,14 @@ namespace XYZ {
 	{
 		auto& rectTransform = m_ECS->GetStorageComponent<RectTransform>(entity);
 		rectTransform.WorldPosition = parentPosition + rectTransform.Position;
-		auto& canvasRenderer = m_ECS->GetStorageComponent<CanvasRenderer>(entity);
 
-		if (m_ECS->Contains<Slider>(entity))
+		auto& currentRel = m_ECS->GetComponent<Relationship>(entity);
+		uint32_t currentEntity = currentRel.FirstChild;
+		while (currentEntity != NULL_ENTITY)
 		{
-			auto& rel = m_ECS->GetStorageComponent<Relationship>(entity);
-			auto& childTrans = m_ECS->GetStorageComponent<RectTransform>(rel.FirstChild);
-			std::cout << childTrans.WorldPosition.x << std::endl;
-		}
-
-		if (canvasRenderer.IsVisible)
-		{		
-			auto& currentRel = m_ECS->GetComponent<Relationship>(entity);
-			uint32_t currentEntity = currentRel.FirstChild;
-			while (currentEntity != NULL_ENTITY)
-			{
-				updateTransform(currentEntity, rectTransform.WorldPosition);
-				currentEntity = m_ECS->GetComponent<Relationship>(currentEntity).NextSibling;
-			}
-		}
+			updateTransform(currentEntity, rectTransform.WorldPosition);
+			currentEntity = m_ECS->GetComponent<Relationship>(currentEntity).NextSibling;
+		}	
 	}
 
 	

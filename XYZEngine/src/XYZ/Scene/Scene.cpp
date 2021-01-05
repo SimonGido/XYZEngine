@@ -57,12 +57,12 @@ namespace XYZ {
 
 	Entity Scene::CreateEntity(const std::string& name, const GUID& guid)
 	{
-		Entity entity(&m_ECS);
+		Entity entity(&m_ECS);	
 		IDComponent id;
 		id.ID = guid;
 		entity.AddComponent<IDComponent>(id);
-		entity.AddComponent<SceneTagComponent>( SceneTagComponent(name) );
-		entity.AddComponent<TransformComponent>(TransformComponent(glm::vec3(0.0f, 0.0f, 0.0f)));
+		entity.AddComponent<SceneTagComponent>( SceneTagComponent(name) );	
+		entity.AddComponent<TransformComponent>(TransformComponent(glm::vec3(0.0f, 0.0f, 0.0f)));	
 		
 		
 		m_Entities.push_back(entity);

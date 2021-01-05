@@ -29,11 +29,10 @@ namespace XYZ {
 				}
 				catch (std::exception& e)
 				{
-					std::cout << "[SERVER] Exception: " << e.what() << std::endl;
+					XYZ_LOG_ERR("Server Exception: ", e.what());
 					return false;
 				}
-
-				std::cout << "[SERVER] Started" << std::endl;
+				XYZ_LOG_INFO("Server Started");
 			}
 
 			void Stop()
@@ -43,7 +42,7 @@ namespace XYZ {
 				if (m_ContextThread.joinable())
 					m_ContextThread.join();
 
-				std::cout << "[SERVER] Stopped" << std::endl;
+				XYZ_LOG_INFO("Server Stopped");
 			}
 
 			void WaitForClientConnection()
@@ -51,25 +50,37 @@ namespace XYZ {
 				m_AsioAcceptor.async_accept([this](std::error_code ec, asio::ip::tcp::socket socket) {
 					if (!ec)
 					{
-						std::cout << "[SERVER] New Connection: " << socket.remote_endpoint() << std::endl;
+						XYZ_LOG_INFO("Server New Connection: ", socket.remote_endpoint());
 						std::shared_ptr<Connection<T>> newConn =
 							std::make_shared<Connection<T>>(Connection<T>::Owner::Server,
 								m_AsioContext, std::move(socket), m_MessagesIn);
-						
+				
 						if (onClientConnect(newConn))
 						{
 							m_Connections.push_back(std::move(newConn));
-							m_Connections.back()->ConnectToClient(m_NextClientID++);
-							std::cout << "[" << m_Connections.back()->GetID() << "] Connection Approved" << std::endl;
+							uint32_t id = 0;
+							if (!m_FreeClientIDs.empty())
+							{
+								id = m_FreeClientIDs.back();
+								m_FreeClientIDs.pop_back();
+							}
+							else
+							{
+								id = m_NextClientID++;
+							}
+
+							m_Connections.back()->ConnectToClient(id);
+							XYZ_LOG_INFO("[", m_Connections.back()->GetID(), "] Connection Approved");
+							
 						}
 						else
 						{
-							std::cout << "[SERVER] Connection Denied" << std::endl;
+							XYZ_LOG_WARN("Server Connection Denied");
 						}
 					}
 					else
 					{
-						std::cout << "[SERVER] New Connection Error: " << ec.message() << std::endl;
+						XYZ_LOG_ERR("Server New Connection Error: ", ec.message());
 					}
 					WaitForClientConnection();
 				});
@@ -84,9 +95,12 @@ namespace XYZ {
 				else
 				{
 					onClientDisconnect(client);
+					if (client)
+						m_FreeClientIDs.push_back(client->GetID());
+
 					client.reset();
 					m_Connections.erase(
-						std::remove(m_Connections.begin(), m_Connections.end(), client), m_Connections
+						std::remove(m_Connections.begin(), m_Connections.end(), client), m_Connections.end()
 					);
 				}
 			}
@@ -99,11 +113,14 @@ namespace XYZ {
 					if (client && client->IsConnected())
 					{
 						if (client != ignoredClient)
-							client->Send(msg)
+							client->Send(msg);
 					}
 					else
 					{
 						onClientDisconnect(client);
+						if (client)
+							m_FreeClientIDs.push_back(client->GetID());
+
 						client.reset();
 						invalidClientExists = true;
 					}
@@ -111,7 +128,7 @@ namespace XYZ {
 				if (invalidClientExists)
 				{
 					m_Connections.erase(
-						std::remove(m_Connections.begin(), m_Connections.end(), nullptr), m_Connections
+						std::remove(m_Connections.begin(), m_Connections.end(), nullptr), m_Connections.end()
 					);
 				}
 			}
@@ -154,6 +171,8 @@ namespace XYZ {
 			std::thread m_ContextThread;
 
 			uint32_t m_NextClientID = 0;
+
+			std::vector<uint32_t> m_FreeClientIDs;
 		};
 	}
 }

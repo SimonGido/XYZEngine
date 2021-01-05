@@ -66,3 +66,9 @@
 //------Utils-------//
 #include "XYZ/Utils/DataStructures/HashGrid2D.h"
 #include "XYZ/Utils/DataStructures/ByteBuffer.h"
+
+
+//------Net---------//
+#include "XYZ/Net/NetServer.h"
+#include "XYZ/Net/NetClient.h"
+#include "XYZ/Net/NetConnection.h"

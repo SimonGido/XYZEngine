@@ -568,15 +568,16 @@ namespace XYZ {
 		out << YAML::EndMap;
 	}
 
-	template <>
-	void Serializer::Serialize<InputField>(YAML::Emitter& out, const InputField& val)
+
+
+	static void SerializeInputField(const ECSManager& ecs, YAML::Emitter& out, const InputField& val)
 	{
 		out << YAML::Key << "InputField";
 		out << YAML::BeginMap;
 
 		out << YAML::Key << "SelectColor" << YAML::Value << val.SelectColor;
 		out << YAML::Key << "HooverColor" << YAML::Value << val.HooverColor;
-		out << YAML::Key << "TextEntity" << YAML::Value << val.TextEntity;
+		out << YAML::Key << "TextEntity" << YAML::Value << ecs.GetStorageComponent<IDComponent>(val.TextEntity).ID;
 
 		out << YAML::EndMap;
 	}
@@ -776,7 +777,7 @@ namespace XYZ {
 				}
 				if (ecs.Contains<InputField>(entity))
 				{
-					Serialize<InputField>(out, ecs.GetComponent<InputField>(entity));
+					SerializeInputField(ecs, out, ecs.GetComponent<InputField>(entity));
 				}
 				if (ecs.Contains<LayoutGroup>(entity))
 				{
@@ -1135,6 +1136,10 @@ namespace XYZ {
 		slider.Value = data["Value"].as<float>();
 		return slider;
 	}
+
+
+	
+
 	template <>
 	LayoutGroup Serializer::Deserialize<LayoutGroup>(YAML::Node& data, AssetManager& assetManager)
 	{
@@ -1152,6 +1157,17 @@ namespace XYZ {
 	{
 		glm::vec4 color = data["Color"].as<glm::vec4>();
 		return Canvas(CanvasRenderMode::ScreenSpace, color);
+	}
+
+	static InputField DeserializeInputField(ECSManager& ecs, YAML::Node& data)
+	{
+		glm::vec4 selectColor = data["SelectColor"].as<glm::vec4>();
+		glm::vec4 hooverColor = data["HooverColor"].as<glm::vec4>();
+		uint32_t textEntity = ecs.FindEntity<IDComponent>(IDComponent({ data["TextEntity"].as<std::string>() }));
+		InputField val(
+			selectColor, hooverColor, textEntity, &ecs
+		);
+		return val;
 	}
 
 	static Relationship DeserializeRelationship(const ECSManager& ecs, YAML::Node& data)
@@ -1381,6 +1397,12 @@ namespace XYZ {
 				{
 					ecs.AddComponent<DockNodeComponent>(ent, DeserializeDockNode(ecs, dockNode));
 				}
+
+				auto inputField = entity["InputField"];
+				if (inputField)
+				{
+					ecs.AddComponent<InputField>(ent, DeserializeInputField(ecs, inputField));
+				}
 			}
 		}
 		return ecs;
@@ -1491,6 +1513,12 @@ namespace XYZ {
 				if (dockNode)
 				{
 					val.AddComponent<DockNodeComponent>(ent, DeserializeDockNode(val, dockNode));
+				}
+
+				auto inputField = entity["InputField"];
+				if (inputField)
+				{
+					val.AddComponent<InputField>(ent, DeserializeInputField(val, inputField));
 				}
 			}
 		}

@@ -24,7 +24,7 @@ IncludeDir["mini"] = "XYZEngine/vendor/mini"
 IncludeDir["OpenAL"] = "XYZEngine/vendor/OpenAL-Soft"
 IncludeDir["MiniMp3"] = "XYZEngine/vendor/minimp3"
 IncludeDir["FreeType"] = "XYZEngine/vendor/freetype-2.10.1"
-IncludeDir["Asio"] = "XYZNet/vendor/asio/include"
+IncludeDir["Asio"] = "XYZEngine/vendor/asio/include"
 
 
 include "XYZEngine/vendor/GLFW"
@@ -61,7 +61,10 @@ project "XYZEngine"
 			"%{prj.name}/vendor/yaml-cpp/include/**.h",
 
 			"%{prj.name}/vendor/RCC/**.h",
-			"%{prj.name}/vendor/RCC/**.cpp"
+			"%{prj.name}/vendor/RCC/**.cpp",
+
+			"%{prj.name}/vendor/asio/include/**.hpp",
+			"%{prj.name}/vendor/asio/include/**.h"
 		}
 
 		defines
@@ -86,7 +89,8 @@ project "XYZEngine"
 			"%{IncludeDir.MiniMp3}",	
 			"%{prj.name}/vendor/stb_image",
 			"%{prj.name}/vendor/yaml-cpp/include",
-			"%{IncludeDir.FreeType}/include"
+			"%{IncludeDir.FreeType}/include",
+			"%{IncludeDir.Asio}"
 		}
 
 		links
@@ -115,46 +119,7 @@ project "XYZEngine"
 				runtime "Release"
 				optimize "on"
 
-
-project "XYZNet"
-		location "XYZNet"
-		kind "StaticLib"
-		language "C++"
-		cppdialect "C++17"
-		staticruntime "on"
-		
-		targetdir ("bin/" .. outputdir .. "/%{prj.name}")
-		objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-		
-		files
-		{
-			"%{prj.name}/src/**.h",
-			"%{prj.name}/src/**.cpp",
-			"%{prj.name}/vendor/asio/include/**.hpp",
-			"%{prj.name}/vendor/asio/include/**.h"
-		}
-
-		includedirs
-		{
-			"%{prj.name}/src",
-			"%{IncludeDir.Asio}"
-		}
-		
-		filter "system:windows"
-				systemversion "latest"
-		
-		filter "configurations:Debug"
-				defines "XYZ_NET_DEBUG"
-				runtime "Debug"
-				symbols "on"
-		
-		
-		filter "configurations:Release"
-				defines "XYZ_NET_RELEASE"
-				runtime "Release"
-				optimize "on"
-		
-		
+			
 project "XYZEditor"
 		location "XYZEditor"
 		kind "ConsoleApp"
