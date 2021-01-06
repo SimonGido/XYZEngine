@@ -606,9 +606,11 @@ namespace XYZ {
 		uint32_t entity = m_Context->m_ECS->CreateEntity();
 		m_Context->m_ECS->AddComponent<IDComponent>(entity, IDComponent());
 
+		m_Context->m_ECS->AddComponent<RectTransform>(entity, RectTransform(glm::vec3(0.0f), glm::vec2(0.0f)));
 		auto& dock = m_Context->m_ECS->AddComponent<DockNodeComponent>(entity, DockNodeComponent(position, size));
 		m_Context->m_ECS->AddComponent<Relationship>(entity, Relationship());
-
+	
+		
 		auto& renderer = m_Context->m_ECS->AddComponent<LineRenderer>(entity, LineRenderer(glm::vec4(0.1f, 0.1f, 0.0f, 1.0f), LineMesh()));
 		dock.Execute<ComponentResizedEvent>(ComponentResizedEvent{ {entity, m_Context->m_ECS} });
 		Relationship::SetupRelation(parent, entity, *m_Context->m_ECS);

@@ -152,19 +152,11 @@ namespace XYZ {
 			{
 				m_Canvases.push_back(i);
 			}
-			if (!ecs->Contains<RectTransform>(i))
-			{
-				ecs->AddComponent<RectTransform>(i, RectTransform(glm::vec3(0.0f), glm::vec2(0.0f)));
-			}
+			
 			Relationship& rel = ecs->GetStorageComponent<Relationship>(i);
 			if (rel.Parent == NULL_ENTITY && i != m_Canvases[0])
 			{
 				Relationship::SetupRelation(m_Canvases[0], i, *m_ECS);
-			}
-
-			if (ecs->Contains<InputField>(i))
-			{
-				Relationship::SetupRelation(4, i, *m_ECS);
 			}
 		}
 	}

@@ -78,8 +78,7 @@ namespace XYZ {
 		{
 			for (auto view : m_Views)
 			{
-				if ((view->GetSignature() & signature) == view->GetSignature()
-					&& !view->HasEntity(entity))
+				if ((view->GetSignature() & signature) == view->GetSignature() && !view->HasEntity(entity))
 				{
 					view->AddEntity(entity);
 				}
@@ -233,24 +232,18 @@ namespace XYZ {
 
 		void EntityDestroyed(uint32_t entity, const Signature& signature, ECSManager* ecs)
 		{
+			std::vector<uint32_t> updated;
 			for (uint32_t i = 0; i < m_Storages.size(); ++i)
 			{
-				if (signature.test(i))
-				{
-					if (m_Storages[i])
-						m_Storages[i]->EntityDestroyed(entity);
-				}
+				if (signature.test(i) && m_Storages[i])
+					updated.push_back(m_Storages[i]->EntityDestroyed(entity));	
 			}
 			for (auto group : m_Groups)
 			{
 				if (group->HasEntity(entity))
 					group->RemoveEntity(entity);
 			}
-			for (auto view : m_Views)
-			{
-				if (view->HasEntity(entity))
-					view->RemoveEntity(entity);
-			}
+			updateViews(entity, signature, updated);
 		}
 
 	private:
@@ -259,14 +252,27 @@ namespace XYZ {
 		{
 			for (auto view : m_Views)
 			{
-				if (view->HasEntity(removedEntity) && (view->GetSignature() & signature) != view->GetSignature())
+				if (view->HasEntity(removedEntity) && (view->GetSignature() & signature) == view->GetSignature())
 					view->RemoveEntity(removedEntity);
 
 				if (view->HasEntity(updatedEntity))
 					view->EntityComponentUpdated(updatedEntity);
 			}
 		}
+		void updateViews(uint32_t removedEntity, const Signature& signature, const std::vector<uint32_t>& updatedEntities)
+		{
+			for (auto view : m_Views)
+			{
+				if (view->HasEntity(removedEntity) && (view->GetSignature() & signature) == view->GetSignature())
+					view->RemoveEntity(removedEntity);
 
+				for (auto updatedEntity : updatedEntities)
+				{
+					if (view->HasEntity(updatedEntity))
+						view->EntityComponentUpdated(updatedEntity);
+				}
+			}
+		}
 
 	private:
 		std::vector<IComponentStorage*> m_Storages;

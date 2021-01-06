@@ -12,7 +12,7 @@ namespace XYZ {
 		*/
 		virtual ~IComponentStorage() = default;
 		virtual void AddRawComponent(uint32_t entity, uint8_t* component) = 0;
-		virtual void EntityDestroyed(uint32_t entity) = 0;
+		virtual uint32_t EntityDestroyed(uint32_t entity) = 0;
 		virtual uint32_t GetComponentIndex(uint32_t entity) const = 0;
 	};
 
@@ -71,9 +71,9 @@ namespace XYZ {
 		{
 			AddComponent(entity, *(T*)component);
 		}
-		virtual void EntityDestroyed(uint32_t entity) override
+		virtual uint32_t EntityDestroyed(uint32_t entity) override
 		{
-			RemoveComponent(entity);
+			return RemoveComponent(entity);
 		}
 
 		T& operator[](size_t index)
