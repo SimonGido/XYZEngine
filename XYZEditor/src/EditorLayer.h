@@ -42,8 +42,6 @@ namespace XYZ {
 		AssetManager m_AssetManager;
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 
-
-		std::vector<Entity> m_StoredEntitiesWithScript;
 		std::vector<uint32_t> m_EditorEntities;
 	private:	
 		ECSManager m_ECS;

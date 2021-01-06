@@ -67,7 +67,6 @@ namespace XYZ {
         ComponentView<TransformComponent, SpriteRenderer>* m_RenderView;
         ComponentView<TransformComponent, ParticleComponent>* m_ParticleView;
         ComponentView<TransformComponent, PointLight2D>* m_LightView;
-        ComponentView<NativeScriptComponent>* m_NativeScriptView;
         ComponentView<AnimatorComponent>* m_AnimatorView;
 
         std::string m_Name;

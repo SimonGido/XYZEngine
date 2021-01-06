@@ -99,19 +99,6 @@ namespace XYZ {
 	};
 
 
-	struct NativeScriptComponent : public Type<NativeScriptComponent>
-	{
-		NativeScriptComponent() = default;
-		NativeScriptComponent(ScriptableEntity* scriptableEntity, const std::string& scriptObjectName)
-			:
-			ScriptableEntity(scriptableEntity),
-			ScriptObjectName(scriptObjectName)
-		{}
-
-		ScriptableEntity* ScriptableEntity = nullptr;
-		std::string ScriptObjectName;
-	};
-
 	struct AnimatorComponent : public Type<AnimatorComponent>
 	{
 		AnimatorComponent() = default;

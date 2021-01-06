@@ -60,8 +60,7 @@
 
 #include "XYZ/FSM/StateMachine.h"
 
-//------NativeScript-------//
-#include "XYZ/NativeScript/ScriptableEntity.h"
+
 
 //------Utils-------//
 #include "XYZ/Utils/DataStructures/HashGrid2D.h"

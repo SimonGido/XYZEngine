@@ -6,7 +6,6 @@
 #include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/SceneRenderer.h"
-#include "XYZ/NativeScript/ScriptableEntity.h"
 
 
 #include "XYZ/Timer.h"
@@ -46,7 +45,6 @@ namespace XYZ {
 		m_RenderView = &m_ECS.CreateView<TransformComponent, SpriteRenderer>();
 		m_ParticleView = &m_ECS.CreateView<TransformComponent, ParticleComponent>();
 		m_LightView = &m_ECS.CreateView<TransformComponent, PointLight2D>();
-		m_NativeScriptView = &m_ECS.CreateView<NativeScriptComponent>();
 		m_AnimatorView = &m_ECS.CreateView<AnimatorComponent>();
 	}
 
@@ -162,13 +160,7 @@ namespace XYZ {
 			auto [animator] = (*m_AnimatorView)[i];
 			animator.Controller->Update(ts);
 		}
-		for (int32_t i = 0; i < m_NativeScriptView->Size(); ++i)
-		{
-			auto [script] = (*m_NativeScriptView)[i];
-			if (script.ScriptableEntity)
-				script.ScriptableEntity->OnUpdate(ts);
-		}
-		
+	
 		for (size_t i = 0; i < m_ParticleView->Size(); ++i)
 		{
 			auto [transform, particle] = (*m_ParticleView)[i];

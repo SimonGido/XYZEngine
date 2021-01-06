@@ -82,33 +82,8 @@ namespace XYZ {
 		uint8_t* pixels = (uint8_t*)stbi_load("Assets/Textures/Gui/Prohibited.png", &width, &height, &channels, 0);
 		m_ProhibitedCursor = Application::Get().GetWindow().CreateCustomCursor(pixels, width, height, width / 2.0f, height / 2.0f);
 
-
 		Renderer::Init();
-		NativeScriptEngine::Init();
-
-		NativeScriptEngine::SetOnReloadCallback([this] {
-			//auto storage = m_Scene->GetECS().GetComponentStorage<NativeScriptComponent>();
-			//for (int i = 0; i < storage->Size(); ++i)
-			//{
-			//	(*storage)[i].ScriptableEntity = (ScriptableEntity*)NativeScriptEngine::CreateScriptObject((*storage)[i].ScriptObjectName);
-			//	if ((*storage)[i].ScriptableEntity)
-			//	{
-			//		(*storage)[i].ScriptableEntity->Entity = m_StoredEntitiesWithScript[i];
-			//		(*storage)[i].ScriptableEntity->OnCreate();
-			//	}
-			//}
-			});
-
-		NativeScriptEngine::SetOnRecompileCallback([this]() {
-			//auto storage = m_Scene->GetECS().GetComponentStorage<NativeScriptComponent>();
-			//for (int i = 0; i < storage->Size(); ++i)
-			//{
-			//	if ((*storage)[i].ScriptableEntity)
-			//	{
-			//		m_StoredEntitiesWithScript.push_back((*storage)[i].ScriptableEntity->Entity);
-			//	}
-			//}
-			});
+		
 
 
 		uint32_t windowWidth = Application::Get().GetWindow().GetWidth();
@@ -229,15 +204,8 @@ namespace XYZ {
 
 	void EditorLayer::OnDetach()
 	{
-		NativeScriptEngine::Shutdown();
 		Renderer::Shutdown();
 		m_SceneHierarchyPanel.Clean();
-		{
-			YAML::Emitter out;
-			Serializer::Serialize<Dockspace>(out, m_Dockspace);
-			std::ofstream fout("Dockspace.ds");
-			fout << out.c_str();
-		}
 		{
 			YAML::Emitter out;
 			Serializer::Serialize<ECSManager>(out, m_ECS);
@@ -250,8 +218,6 @@ namespace XYZ {
 	{
 		Renderer::Clear();
 		Renderer::SetClearColor({ 0.1f,0.1f,0.1f,0.1f });
-
-		NativeScriptEngine::Update(ts);
 
 		m_EditorCamera.OnUpdate(ts);
 		m_Scene->OnUpdate(ts);
