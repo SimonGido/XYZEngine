@@ -32,10 +32,14 @@ namespace XYZ {
 		{
 			glfwWindowHint(GLFW_MAXIMIZED, true);
 			m_Window = glfwCreateWindow(mode->width, mode->width, props.Title.c_str(), NULL, NULL);	
+			m_Data.Width = mode->width;
+			m_Data.Height = mode->height;
 		}
 		else if (props.Flags & WindowFlags::FULLSCREEN)
 		{
 			m_Window = glfwCreateWindow(mode->width, mode->width, props.Title.c_str(), glfwGetPrimaryMonitor(), NULL);
+			m_Data.Width = mode->width;
+			m_Data.Height = mode->height;
 		}
 		else
 		{

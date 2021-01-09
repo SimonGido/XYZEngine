@@ -14,6 +14,7 @@ namespace XYZ {
 		virtual void AddRawComponent(uint32_t entity, uint8_t* component) = 0;
 		virtual uint32_t EntityDestroyed(uint32_t entity) = 0;
 		virtual uint32_t GetComponentIndex(uint32_t entity) const = 0;
+		virtual IComponentStorage* Clone() = 0;
 	};
 
 
@@ -76,6 +77,16 @@ namespace XYZ {
 			return RemoveComponent(entity);
 		}
 
+		virtual IComponentStorage* Clone() override
+		{
+			ComponentStorage<T>* newStorage = new ComponentStorage<T>();
+			for (auto& it : m_Data)
+				newStorage->m_Data.push_back(it);
+			for (auto& it : m_EntityDataMap)
+				newStorage->m_EntityDataMap.push_back(it);
+			return newStorage;
+		}
+
 		T& operator[](size_t index)
 		{
 			return m_Data[index].Data;
@@ -85,6 +96,8 @@ namespace XYZ {
 		{
 			return m_Data[index].Data;
 		}
+
+		size_t Size() const { return m_Data.size(); }
 
 	private:
 		struct Pack

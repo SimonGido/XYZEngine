@@ -16,6 +16,7 @@ namespace XYZ {
 			uint8_t ID;
 		};
 	public:
+		virtual ~IComponentGroup() = default;
 		virtual void AddEntity(uint32_t entity, Signature& signature, ECSManager* ecs) = 0;
 		virtual void RemoveEntity(uint32_t entity) = 0;
 		virtual bool HasEntity(uint32_t entity) const = 0;

@@ -10,6 +10,7 @@ namespace XYZ {
 	class IComponentView
 	{
 	public:
+		virtual ~IComponentView() = default;
 		virtual void AddEntity(uint32_t entity) = 0;
 		virtual void RemoveEntity(uint32_t entity) = 0;
 		virtual void EntityComponentUpdated(uint32_t entity) = 0;

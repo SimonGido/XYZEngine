@@ -68,6 +68,7 @@ namespace XYZ {
         ComponentView<TransformComponent, ParticleComponent>* m_ParticleView;
         ComponentView<TransformComponent, PointLight2D>* m_LightView;
         ComponentView<AnimatorComponent>* m_AnimatorView;
+        ComponentStorage<ScriptComponent>* m_ScriptStorage;
 
         std::string m_Name;
         SceneState m_State = SceneState::Edit;

@@ -39,9 +39,19 @@ namespace XYZ {
 				});
 			}
 
-			bool ConnectToServer()
+			void ConnectToServer(const asio::ip::tcp::resolver::results_type& endpoints)
 			{
-				return false; 
+				if (m_Owner == Owner::Client)
+				{
+					asio::async_connect(m_Socket, endpoints,
+						[this](std::error_code ec, asio::ip::tcp::endpoint endpoint) {
+
+							if (!ec)
+							{
+								readHeader();
+							}
+						});
+				}
 			}
 
 			void ConnectToClient(uint32_t id)

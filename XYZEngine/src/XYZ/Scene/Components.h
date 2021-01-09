@@ -5,6 +5,7 @@
 #include "XYZ/Core/GUID.h"
 #include "XYZ/Particle/ParticleEffect.h"
 #include "XYZ/Renderer/SubTexture.h"
+#include "XYZ/ScriptEngine/Script.h"
 
 #include "SceneCamera.h"
 #include "AnimationController.h"
@@ -14,7 +15,6 @@
 #include <glm/gtx/transform.hpp>
 
 namespace XYZ {
-	class ScriptableEntity;
 
 	struct IDComponent : public Type<IDComponent>
 	{
@@ -62,6 +62,11 @@ namespace XYZ {
 		SceneTagComponent(const SceneTagComponent& other)
 			: Name(other.Name)
 		{}
+
+		bool operator==(const SceneTagComponent& other) const
+		{
+			return Name == other.Name;
+		}
 
 		operator std::string& () { return Name; }
 		operator const  std::string& () const { return Name; }
@@ -136,5 +141,10 @@ namespace XYZ {
 
 		static void SetupRelation(uint32_t parent, uint32_t child, ECSManager& ecs);
 		static void RemoveRelation(uint32_t child, ECSManager& ecs);
+	};
+
+	struct ScriptComponent : public Type<ScriptComponent>
+	{
+		Script* Script = nullptr;
 	};
 }

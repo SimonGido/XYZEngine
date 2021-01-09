@@ -11,7 +11,11 @@ namespace XYZ {
 	{
 		m_EntitiesInUse++;
 		XYZ_ASSERT(m_EntitiesInUse < MAX_ENTITIES, "Too many entities in existence.");
-		return m_Signatures.Insert(Signature(0));		
+		uint32_t entity = m_Signatures.Insert(Signature(0));
+		if (m_Valid.size() <= entity)
+			m_Valid.resize((size_t)entity + 1);
+		m_Valid[entity] = true;
+		return entity;		
 	}
 	Signature& EntityManager::GetSignature(uint32_t entity)
 	{
@@ -29,7 +33,7 @@ namespace XYZ {
 
 		// Put the destroyed ID at the back of the queue
 		//Restart bitset to zero;
-		m_Signatures[entity].reset();
+		m_Valid[entity] = false;
 		m_Signatures.Erase(entity);
 		m_EntitiesInUse--;
 	}

@@ -1,0 +1,2 @@
+C:\Users\Gido\Projects\GameDev\XYZEngine\vendor\lua\bin\Debug-windows-x86_64\Lua\Lua.pdb
+C:\Users\Gido\Projects\GameDev\XYZEngine\vendor\lua\bin-int\Debug-windows-x86_64\Lua\Lua.pdb

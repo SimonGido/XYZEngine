@@ -46,6 +46,9 @@ namespace XYZ {
 		m_ParticleView = &m_ECS.CreateView<TransformComponent, ParticleComponent>();
 		m_LightView = &m_ECS.CreateView<TransformComponent, PointLight2D>();
 		m_AnimatorView = &m_ECS.CreateView<AnimatorComponent>();
+		
+		m_ECS.ForceStorage<ScriptComponent>();
+		m_ScriptStorage = m_ECS.GetStorage<ScriptComponent>();
 	}
 
 	Scene::~Scene() 
@@ -108,6 +111,13 @@ namespace XYZ {
 				return;
 			}
 		}
+		for (size_t i = 0; i < m_ScriptStorage->Size(); ++i)
+		{
+			Script* script = (*m_ScriptStorage)[i].Script;
+			if (script)
+				script->OnCreate();
+		}
+
 		XYZ_LOG_ERR("No camera found in the scene");	
 	}
 
@@ -155,7 +165,14 @@ namespace XYZ {
 
 	void Scene::OnUpdate(Timestep ts)
 	{
-		for (int32_t i = 0; i < m_AnimatorView->Size(); ++i)
+		for (size_t i = 0; i < m_ScriptStorage->Size(); ++i)
+		{
+			Script* script = (*m_ScriptStorage)[i].Script;
+			if (script)
+				script->OnUpdate(ts);
+		}
+
+		for (size_t i = 0; i < m_AnimatorView->Size(); ++i)
 		{
 			auto [animator] = (*m_AnimatorView)[i];
 			animator.Controller->Update(ts);

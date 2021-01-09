@@ -28,7 +28,8 @@ namespace XYZ {
 		uint32_t m_EntitiesInUse;
 
 		FreeList<Signature> m_Signatures;
-		
+		std::vector<bool> m_Valid;
+
 		friend class ECSManager;
 	};
 }

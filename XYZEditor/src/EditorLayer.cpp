@@ -8,32 +8,6 @@
 
 namespace XYZ {
 
-	enum class MessageType : uint32_t
-	{
-		ServerAccept,
-		ServerDeny,
-		ServerPing,
-		MessageAll,
-		ServerMessage
-	};
-	
-	class CustomServer : public Net::Server<MessageType>
-	{
-	public:
-		CustomServer(uint16_t port)
-			: Net::Server<MessageType>(port)
-		{}
-
-	protected:
-		virtual bool onClientConnect(std::shared_ptr<Net::Connection<MessageType>> client) override
-		{
-			return true;
-		}
-
-	};
-
-	static CustomServer* s_Server;
-
 	static glm::vec2 MouseToWorld(const glm::vec2& point, const glm::vec2& windowSize)
 	{
 		glm::vec2 offset = { windowSize.x / 2,windowSize.y / 2 };
@@ -63,18 +37,17 @@ namespace XYZ {
 	EditorLayer::EditorLayer()
 		:
 		m_AssetManager("Assets")
-	{
-		s_Server = new CustomServer(60000);
-		s_Server->Start();
+	{		
 	}
 
 	EditorLayer::~EditorLayer()
 	{
-		delete s_Server;
 	}
 
 	void EditorLayer::OnAttach()
 	{
+		Renderer::Init();
+
 		m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
 
 		int width, height, channels;
@@ -82,7 +55,6 @@ namespace XYZ {
 		uint8_t* pixels = (uint8_t*)stbi_load("Assets/Textures/Gui/Prohibited.png", &width, &height, &channels, 0);
 		m_ProhibitedCursor = Application::Get().GetWindow().CreateCustomCursor(pixels, width, height, width / 2.0f, height / 2.0f);
 
-		Renderer::Init();
 		
 
 
@@ -223,12 +195,6 @@ namespace XYZ {
 		m_Scene->OnUpdate(ts);
 		m_Scene->OnRenderEditor(m_EditorCamera);
 		m_Dockspace.OnUpdate(ts);		
-
-
-		s_Server->Update();
-		Net::Message<MessageType> msg;
-		msg << "Kokotko";
-		s_Server->MessageAllClients(msg);
 	}
 	void EditorLayer::OnEvent(Event& event)
 	{			

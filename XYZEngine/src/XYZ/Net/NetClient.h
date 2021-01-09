@@ -20,13 +20,17 @@ namespace XYZ {
 			{
 				try
 				{
-					m_Connection = std::make_unique<Connection<T>>();
-
 					asio::ip::tcp::resolver resolver(m_Context);
 					auto endpoints = resolver.resolve(host, std::to_string(port));
 
+					m_Connection = std::make_unique<Connection<T>>(
+						Connection<T>::Owner::Client,
+						m_Context,
+						asio::ip::tcp::socket(m_Context),
+						m_MessagesIn
+					);
+					
 					m_Connection->ConnectToServer(endpoints);
-
 					m_ContextThread = std::thread([this]() {m_Context.run(); });
 				}
 				catch (std::exception& e)

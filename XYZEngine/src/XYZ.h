@@ -60,7 +60,10 @@
 
 #include "XYZ/FSM/StateMachine.h"
 
-
+//------Scripting-------//
+#include "XYZ/ScriptEngine/ScriptEngine.h"
+#include "XYZ/ScriptEngine/LuaScriptApi.h"
+#include "XYZ/ScriptEngine/LuaScript.h"
 
 //------Utils-------//
 #include "XYZ/Utils/DataStructures/HashGrid2D.h"
@@ -71,3 +74,5 @@
 #include "XYZ/Net/NetServer.h"
 #include "XYZ/Net/NetClient.h"
 #include "XYZ/Net/NetConnection.h"
+
+
