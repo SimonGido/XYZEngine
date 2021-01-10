@@ -2,6 +2,7 @@
 #include "LuaScript.h"
 
 #include "LuaScriptAPI.h"
+#include "LuaScriptEngine.h"
 
 extern "C"
 {
@@ -24,12 +25,51 @@ namespace XYZ {
 
 	LuaScript::LuaScript(const std::string& filepath)
 	{
-		LuaScriptAPI::LoadScript(&m_LuaState, filepath);
+		m_LuaState = luaL_newstate();
+		luaL_openlibs(m_LuaState);
+
+		LuaScriptEngine::CreateTable(m_LuaState, LuaTable(
+			"Entity", 
+			{
+				{"GetTranslation", LuaScriptAPI::GetTranslation},
+				{"SetTranslation", LuaScriptAPI::SetTranslation},
+			    {"Find",		   LuaScriptAPI::Find}
+			},
+			{}
+		));
+		LuaScriptEngine::CreateTable(m_LuaState, LuaTable(
+			"Math", 
+			{
+				{"Vec2", LuaScriptAPI::Vec2},
+				{"Vec3", LuaScriptAPI::Vec3},
+				{"Vec4", LuaScriptAPI::Vec4}
+			},
+			{}
+
+		));
+		LuaScriptEngine::CreateTable(m_LuaState, LuaTable(
+			"Input",
+			{
+				{"IsKeyPressed", LuaScriptAPI::IsKeyPressed},
+			},
+			{
+				{"KeyW", ToUnderlying(KeyCode::XYZ_KEY_W) },
+				{"KeyA", ToUnderlying(KeyCode::XYZ_KEY_A) },
+				{"KeyS", ToUnderlying(KeyCode::XYZ_KEY_S) },
+				{"KeyD", ToUnderlying(KeyCode::XYZ_KEY_D) }
+			}
+
+		));
+
+
+		if (CheckLua(m_LuaState, luaL_dofile(m_LuaState, filepath.c_str())))
+		{
+		}
 	}
 
 	LuaScript::~LuaScript()
 	{
-		LuaScriptAPI::UnLoadScript(m_LuaState);
+		lua_close(m_LuaState);
 	}
 
 

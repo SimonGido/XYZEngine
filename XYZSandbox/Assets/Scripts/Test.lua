@@ -1,6 +1,6 @@
 
-position = Vec2()
-entity = GetEntity("Test Entity");
+
+entity = Entity.Find("Test Entity");
 
 function OnCreate()
 
@@ -8,14 +8,25 @@ function OnCreate()
 end
 
 function OnUpdate(ts)
-	test = Vec2()
-	test.x = ts
-	test.y = ts
 
-	test2 = GetTranslation(entity)
+	newPos = Math.Vec3()
 
-	position = test + test2
+	if Input.IsKeyPressed(Input.KeyW) then
+		newPos.y = ts
+	elseif Input.IsKeyPressed(Input.KeyA) then
+		newPos.x = -ts
+	elseif Input.IsKeyPressed(Input.KeyS) then
+		newPos.y = -ts
+	elseif Input.IsKeyPressed(Input.KeyD) then
+		newPos.x = ts
+	end
 
-	SetTranslation(entity, position.x, position.y, 0)
+	pos = Entity.GetTranslation(entity)
+
+	pos.x = pos.x + newPos.x
+	pos.y = pos.y + newPos.y
+	pos.z = pos.z + newPos.z
+
+	Entity.SetTranslation(entity, pos.x, pos.y, pos.z)
 
 end
