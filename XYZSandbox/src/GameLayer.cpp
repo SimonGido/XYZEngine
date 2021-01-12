@@ -17,7 +17,7 @@ namespace XYZ {
 
 		m_Scene = Ref<Scene>::Create("Scene");
 		LuaScriptAPI::SetActiveScene(m_Scene);
-		MonoScriptEngine::Init();
+		MonoScriptEngine::Init("XYZScriptCore.dll");
 
 		m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
 		auto& app = Application::Get();

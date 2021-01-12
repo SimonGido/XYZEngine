@@ -629,3 +629,48 @@ XYZ::CheckLua: Assets/Scripts/Test.lua:1: module 'ffi' not found:
 	no file 'C:\Users\Simon Gido\Desktop\GameDev\XYZSandbox\..\bin\Debug-windows-x86_64\XYZSandbox\ffi54.dll'
 	no file '.\ffi54.dll'
 XYZ::OpenGLShader::SetInt::<lambda_76e00e8d71bd896e5f278eccc826376f>::operator (): Assertion Failed: Uniform u_Horizontal does not exist
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 460.89
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 460.89
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 460.89
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 460.89
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 460.89
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 460.89
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 460.89
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 460.89
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 460.89
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 460.89
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 460.89
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed

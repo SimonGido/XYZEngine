@@ -307,3 +307,16 @@ project "XYZClient"
 				defines "XYZ_RELEASE"
 				runtime "Release"
 				optimize "on"
+
+project "XYZScriptCore"
+		location "XYZScriptCore"
+		kind "SharedLib"
+		language "C#"
+			
+		targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+		objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+			
+		files 
+		{
+			"%{prj.name}/src/**.cs", 
+		}

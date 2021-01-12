@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "MonoScriptEngine.h"
+#include "XYZ/Core/Application.h"
+
 
 #include <mono/jit/jit.h>
 #include <mono/metadata/loader.h>
@@ -7,17 +9,19 @@
 
 namespace XYZ {
 
+	static MonoDomain* s_Domain = nullptr;
 
-	void MonoScriptEngine::Init()
+	static MonoAssembly* s_Assembly = nullptr;
+
+	void MonoScriptEngine::Init(const std::string& assemblyPath)
 	{
-		MonoDomain* domain;
-		domain = mono_jit_init_version("myapp", "v4.0.30319");
+		s_Domain = mono_jit_init_version("XYZEngine", "v4.0.30319");
+		XYZ_ASSERT(s_Domain, "Failed to init jit");
 
-		MonoAssembly * assembly;
-
-		assembly = mono_domain_assembly_open(domain, "file.exe");
-		if (!assembly)
-		{
-		}
+		s_Assembly = mono_domain_assembly_open(s_Domain, assemblyPath.c_str());
+		XYZ_ASSERT(s_Assembly, "Failed to open assembly ", assemblyPath);
+	}
+	void MonoScriptEngine::Destroy()
+	{
 	}
 }
