@@ -14,7 +14,7 @@ extern "C"
 namespace XYZ {
 	static bool CheckLua(lua_State* L, int err)
 	{
-		if (err != LUA_OK)
+		if (err != 0)
 		{
 			XYZ_LOG_ERR(lua_tostring(L, -1));
 			return false;

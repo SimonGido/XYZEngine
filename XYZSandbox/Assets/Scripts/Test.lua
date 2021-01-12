@@ -1,5 +1,3 @@
-
-
 entity = Entity.Find("Test Entity");
 
 function OnCreate()

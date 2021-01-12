@@ -25,7 +25,10 @@ IncludeDir["MiniMp3"] = "XYZEngine/vendor/minimp3"
 IncludeDir["FreeType"] = "XYZEngine/vendor/freetype-2.10.1"
 IncludeDir["Asio"] = "XYZEngine/vendor/asio/include"
 IncludeDir["Lua"] = "XYZEngine/vendor/lua/include"
+IncludeDir["mono"] = "XYZEngine/vendor/mono/include"
 
+LibraryDir = {}
+LibraryDir["mono"] = "vendor/mono/lib/Debug/mono-2.0-sgen.lib"
 
 include "XYZEngine/vendor/GLFW"
 include "XYZEngine/vendor/GLEW"
@@ -88,7 +91,8 @@ project "XYZEngine"
 			"%{prj.name}/vendor/yaml-cpp/include",
 			"%{IncludeDir.FreeType}/include",
 			"%{IncludeDir.Asio}",
-			"%{IncludeDir.Lua}"
+			"%{IncludeDir.Lua}",
+			"%{IncludeDir.mono}"
 		}
 
 		links
@@ -98,7 +102,8 @@ project "XYZEngine"
 			"OpenAL-Soft",
 			"FreeType",
 			"Lua",
-			"opengl32"
+			"opengl32",
+			"%{LibraryDir.mono}"
 		}
 		
 		flags { "NoPCH" }
@@ -203,7 +208,11 @@ project "XYZSandbox"
 				defines "XYZ_DEBUG"
 				runtime "Debug"
 				symbols "on"
-		
+
+		postbuildcommands 
+		{
+			'{COPY} "../XYZEngine/vendor/mono/bin/Debug/mono-2.0-sgen.dll" "%{cfg.targetdir}"'
+		}
 		
 		filter "configurations:Release"
 				defines "XYZ_RELEASE"

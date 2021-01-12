@@ -583,3 +583,49 @@ XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
 XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
 XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 460.89
 XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce GTX 1660 SUPER/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 452.06
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce GTX 1660 SUPER/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 452.06
+XYZ::CheckLua: Assets/Scripts/Test.lua:1: module 'ffi' not found:
+	no field package.preload['ffi']
+	no file 'C:\Users\Simon Gido\Desktop\GameDev\XYZSandbox\..\bin\Debug-windows-x86_64\XYZSandbox\lua\ffi.lua'
+	no file 'C:\Users\Simon Gido\Desktop\GameDev\XYZSandbox\..\bin\Debug-windows-x86_64\XYZSandbox\lua\ffi\init.lua'
+	no file 'C:\Users\Simon Gido\Desktop\GameDev\XYZSandbox\..\bin\Debug-windows-x86_64\XYZSandbox\ffi.lua'
+	no file 'C:\Users\Simon Gido\Desktop\GameDev\XYZSandbox\..\bin\Debug-windows-x86_64\XYZSandbox\ffi\init.lua'
+	no file 'C:\Users\Simon Gido\Desktop\GameDev\XYZSandbox\..\bin\Debug-windows-x86_64\XYZSandbox\..\share\lua\5.4\ffi.lua'
+	no file 'C:\Users\Simon Gido\Desktop\GameDev\XYZSandbox\..\bin\Debug-windows-x86_64\XYZSandbox\..\share\lua\5.4\ffi\init.lua'
+	no file '.\ffi.lua'
+	no file '.\ffi\init.lua'
+	no file 'C:\Users\Simon Gido\Desktop\GameDev\XYZSandbox\..\bin\Debug-windows-x86_64\XYZSandbox\ffi.dll'
+	no file 'C:\Users\Simon Gido\Desktop\GameDev\XYZSandbox\..\bin\Debug-windows-x86_64\XYZSandbox\..\lib\lua\5.4\ffi.dll'
+	no file 'C:\Users\Simon Gido\Desktop\GameDev\XYZSandbox\..\bin\Debug-windows-x86_64\XYZSandbox\loadall.dll'
+	no file '.\ffi.dll'
+	no file 'C:\Users\Simon Gido\Desktop\GameDev\XYZSandbox\..\bin\Debug-windows-x86_64\XYZSandbox\ffi54.dll'
+	no file '.\ffi54.dll'
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce GTX 1660 SUPER/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 452.06
+XYZ::CheckLua: Assets/Scripts/Test.lua:1: module 'ffi' not found:
+	no field package.preload['ffi']
+	no file 'C:\Users\Simon Gido\Desktop\GameDev\XYZSandbox\..\bin\Debug-windows-x86_64\XYZSandbox\lua\ffi.lua'
+	no file 'C:\Users\Simon Gido\Desktop\GameDev\XYZSandbox\..\bin\Debug-windows-x86_64\XYZSandbox\lua\ffi\init.lua'
+	no file 'C:\Users\Simon Gido\Desktop\GameDev\XYZSandbox\..\bin\Debug-windows-x86_64\XYZSandbox\ffi.lua'
+	no file 'C:\Users\Simon Gido\Desktop\GameDev\XYZSandbox\..\bin\Debug-windows-x86_64\XYZSandbox\ffi\init.lua'
+	no file 'C:\Users\Simon Gido\Desktop\GameDev\XYZSandbox\..\bin\Debug-windows-x86_64\XYZSandbox\..\share\lua\5.4\ffi.lua'
+	no file 'C:\Users\Simon Gido\Desktop\GameDev\XYZSandbox\..\bin\Debug-windows-x86_64\XYZSandbox\..\share\lua\5.4\ffi\init.lua'
+	no file '.\ffi.lua'
+	no file '.\ffi\init.lua'
+	no file 'C:\Users\Simon Gido\Desktop\GameDev\XYZSandbox\..\bin\Debug-windows-x86_64\XYZSandbox\ffi.dll'
+	no file 'C:\Users\Simon Gido\Desktop\GameDev\XYZSandbox\..\bin\Debug-windows-x86_64\XYZSandbox\..\lib\lua\5.4\ffi.dll'
+	no file 'C:\Users\Simon Gido\Desktop\GameDev\XYZSandbox\..\bin\Debug-windows-x86_64\XYZSandbox\loadall.dll'
+	no file '.\ffi.dll'
+	no file 'C:\Users\Simon Gido\Desktop\GameDev\XYZSandbox\..\bin\Debug-windows-x86_64\XYZSandbox\ffi54.dll'
+	no file '.\ffi54.dll'
+XYZ::OpenGLShader::SetInt::<lambda_76e00e8d71bd896e5f278eccc826376f>::operator (): Assertion Failed: Uniform u_Horizontal does not exist
