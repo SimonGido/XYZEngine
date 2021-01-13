@@ -20,8 +20,7 @@
     <OutputPath>..\bin\Debug-windows-x86_64\XYZScriptCore\</OutputPath>
     <BaseIntermediateOutputPath>..\bin-int\Debug-windows-x86_64\XYZScriptCore\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants>
-    </DefineConstants>
+    <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -32,11 +31,12 @@
     <OutputPath>..\bin\Release-windows-x86_64\XYZScriptCore\</OutputPath>
     <BaseIntermediateOutputPath>..\bin-int\Release-windows-x86_64\XYZScriptCore\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants>
-    </DefineConstants>
+    <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <ItemGroup>
+  </ItemGroup>
   <ItemGroup>
     <Compile Include="src\Entity.cs" />
     <Compile Include="src\Math\Matrix4.cs" />
@@ -44,8 +44,7 @@
     <Compile Include="src\Math\Vector3.cs" />
     <Compile Include="src\Math\Vector4.cs" />
     <Compile Include="src\Scene\Component.cs" />
-  </ItemGroup>
-  <ItemGroup>
+    <Compile Include="src\Scriptable.cs" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

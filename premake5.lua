@@ -25,6 +25,7 @@ IncludeDir["MiniMp3"] = "XYZEngine/vendor/minimp3"
 IncludeDir["FreeType"] = "XYZEngine/vendor/freetype-2.10.1"
 IncludeDir["Asio"] = "XYZEngine/vendor/asio/include"
 IncludeDir["Lua"] = "XYZEngine/vendor/lua/include"
+IncludeDir["LuaBridge"] = "XYZEngine/vendor/LuaBridge/Source"
 IncludeDir["mono"] = "XYZEngine/vendor/mono/include"
 
 LibraryDir = {}
@@ -92,6 +93,7 @@ project "XYZEngine"
 			"%{IncludeDir.FreeType}/include",
 			"%{IncludeDir.Asio}",
 			"%{IncludeDir.Lua}",
+			"%{IncludeDir.LuaBridge}",
 			"%{IncludeDir.mono}"
 		}
 
@@ -310,6 +312,19 @@ project "XYZClient"
 
 project "XYZScriptCore"
 		location "XYZScriptCore"
+		kind "SharedLib"
+		language "C#"
+			
+		targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+		objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+			
+		files 
+		{
+			"%{prj.name}/src/**.cs", 
+		}
+
+project "XYZScriptExample"
+		location "XYZScriptExample"
 		kind "SharedLib"
 		language "C#"
 			

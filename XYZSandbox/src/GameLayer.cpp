@@ -3,6 +3,8 @@
 
 namespace XYZ {
 
+	static LuaApp* s_LuaApp = nullptr;
+
 	GameLayer::GameLayer()
 	{
 	}
@@ -34,12 +36,15 @@ namespace XYZ {
 			material, subTexture, glm::vec4(1.0f), 0
 		));
 
-		ScriptComponent& scriptComponent = m_Entity.AddComponent<ScriptComponent>(ScriptComponent());
-		scriptComponent.Script = new LuaScript("Assets/Scripts/Test.lua");
+		//ScriptComponent& scriptComponent = m_Entity.AddComponent<ScriptComponent>(ScriptComponent());
+		//scriptComponent.Script = new LuaScript("Assets/Scripts/Test.lua");
 
 		auto specs = SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer->GetSpecification();
 		specs.SwapChainTarget = true;
 		SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer->SetSpecification(specs);
+	
+		LuaApp::SetScene(m_Scene);
+		s_LuaApp = new LuaApp("Assets/Scripts/NewTest.lua");
 	}
 
 	void GameLayer::OnDetach()
@@ -55,6 +60,8 @@ namespace XYZ {
 		m_EditorCamera.OnUpdate(ts);
 		m_Scene->OnUpdate(ts);
 		m_Scene->OnRenderEditor(m_EditorCamera);
+
+		s_LuaApp->OnUpdate(ts);
 	}
 
 	void GameLayer::OnEvent(Event& event)

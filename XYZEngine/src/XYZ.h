@@ -65,6 +65,7 @@
 #include "XYZ/ScriptEngine/LuaScriptApi.h"
 #include "XYZ/ScriptEngine/LuaScript.h"
 #include "XYZ/ScriptEngine/MonoScriptEngine.h"
+#include "XYZ/Script/LuaApp.h"
 
 //------Utils-------//
 #include "XYZ/Utils/DataStructures/HashGrid2D.h"
