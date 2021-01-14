@@ -9,6 +9,7 @@ namespace XYZ {
 	{
 	public:
 		LuaApp(const std::string& filepath);
+		~LuaApp();
 
 		void OnUpdate(Timestep ts);
 		
