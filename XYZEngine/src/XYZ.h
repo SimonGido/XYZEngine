@@ -63,6 +63,7 @@
 //------Scripting-------//
 #include "XYZ/ScriptEngine/MonoScriptEngine.h"
 #include "XYZ/Script/LuaApp.h"
+#include "XYZ/Script/LuaEntity.h"
 
 //------Utils-------//
 #include "XYZ/Utils/DataStructures/HashGrid2D.h"

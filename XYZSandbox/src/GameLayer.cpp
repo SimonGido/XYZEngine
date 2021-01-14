@@ -42,8 +42,8 @@ namespace XYZ {
 		specs.SwapChainTarget = true;
 		SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer->SetSpecification(specs);
 	
-		LuaApp::SetScene(m_Scene);
-		s_LuaApp = new LuaApp("Assets/Scripts/NewTest.lua");
+		LuaEntity::SetScene(m_Scene);
+		s_LuaApp = new LuaApp("Assets/Scripts/Test.lua");
 	}
 
 	void GameLayer::OnDetach()

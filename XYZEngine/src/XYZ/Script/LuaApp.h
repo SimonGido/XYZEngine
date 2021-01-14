@@ -1,8 +1,6 @@
 #pragma once
 
-#include "XYZ/Scene/Scene.h"
-
-
+#include "XYZ/Core/Timestep.h"
 
 struct lua_State;
 namespace XYZ {
@@ -15,7 +13,6 @@ namespace XYZ {
 		void OnUpdate(Timestep ts);
 		
 		
-		static void SetScene(Ref<Scene> scene);
 	private:
 		lua_State* m_L;
 	};
