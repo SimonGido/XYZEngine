@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace XYZ
-{ }
+{
     interface Scriptable
     {
     void OnCreate();

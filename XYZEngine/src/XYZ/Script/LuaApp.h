@@ -2,15 +2,10 @@
 
 #include "XYZ/Scene/Scene.h"
 
-extern "C"
-{
-#include <lua.h>
-#include <lualib.h>
-#include <lauxlib.h>
-}
 
+
+struct lua_State;
 namespace XYZ {
-
 
 	class LuaApp
 	{

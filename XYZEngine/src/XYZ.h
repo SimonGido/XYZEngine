@@ -61,9 +61,6 @@
 #include "XYZ/FSM/StateMachine.h"
 
 //------Scripting-------//
-#include "XYZ/ScriptEngine/ScriptEngine.h"
-#include "XYZ/ScriptEngine/LuaScriptApi.h"
-#include "XYZ/ScriptEngine/LuaScript.h"
 #include "XYZ/ScriptEngine/MonoScriptEngine.h"
 #include "XYZ/Script/LuaApp.h"
 

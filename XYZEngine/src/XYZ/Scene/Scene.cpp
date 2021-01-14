@@ -113,9 +113,7 @@ namespace XYZ {
 		}
 		for (size_t i = 0; i < m_ScriptStorage->Size(); ++i)
 		{
-			Script* script = (*m_ScriptStorage)[i].Script;
-			if (script)
-				script->OnCreate();
+			
 		}
 
 		XYZ_LOG_ERR("No camera found in the scene");	
@@ -167,9 +165,7 @@ namespace XYZ {
 	{
 		for (size_t i = 0; i < m_ScriptStorage->Size(); ++i)
 		{
-			Script* script = (*m_ScriptStorage)[i].Script;
-			if (script)
-				script->OnUpdate(ts);
+			
 		}
 
 		for (size_t i = 0; i < m_AnimatorView->Size(); ++i)

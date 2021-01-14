@@ -5,7 +5,6 @@
 #include "XYZ/Core/GUID.h"
 #include "XYZ/Particle/ParticleEffect.h"
 #include "XYZ/Renderer/SubTexture.h"
-#include "XYZ/ScriptEngine/Script.h"
 
 #include "SceneCamera.h"
 #include "AnimationController.h"
@@ -145,6 +144,6 @@ namespace XYZ {
 
 	struct ScriptComponent : public Type<ScriptComponent>
 	{
-		Script* Script = nullptr;
+		
 	};
 }
