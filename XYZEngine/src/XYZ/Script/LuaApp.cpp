@@ -19,6 +19,7 @@ extern "C"
 
 #include <LuaBridge/LuaBridge.h>
 #include <LuaBridge/RefCountedPtr.h>
+#include <LuaBridge/RefCountedObject.h>
 
 namespace luabridge {
 
@@ -46,9 +47,21 @@ namespace luabridge {
 	template <>
 	struct luabridge::Stack<XYZ::MouseCode> : EnumWrapper<XYZ::MouseCode>
 	{};
+
+	template <class T>
+	struct ContainerTraits <XYZ::Ref <T> >
+	{
+		typedef typename T Type;
+
+		static T* get(XYZ::Ref<T> c)
+		{
+			return c.Raw();
+		}
+	};
 }
 
 namespace XYZ {
+
 	static bool CheckLua(lua_State* L, int err)
 	{
 		if (err != 0)
@@ -98,10 +111,10 @@ namespace XYZ {
 			.endClass();
 
 		// Resources
-		// TODO: This does not work
+
 		luabridge::getGlobalNamespace(m_L)
 			.beginClass<SubTexture>("SubTexture")
-			.addFunction("SetCoords", &SubTexture::SetCoords)
+			.addConstructor <void (*) (const Ref<Texture>&, const glm::vec4&), Ref<SubTexture> >()
 			.endClass();
 
 

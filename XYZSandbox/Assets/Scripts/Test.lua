@@ -19,7 +19,6 @@ function OnUpdate(ts)
 	coords.x = 5
 	spriteRenderer.Color.z = coords.x
 
-
 	if Input.IsKeyPressed(65) then
 		transform.Translation.x = transform.Translation.x - ts
 	elseif Input.IsKeyPressed(68) then

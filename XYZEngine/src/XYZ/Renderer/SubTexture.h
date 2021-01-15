@@ -11,6 +11,7 @@ namespace XYZ {
 						 public Serializable
 	{
 	public:
+		SubTexture(){}
 		SubTexture(const Ref<Texture>& texture, const glm::vec2& coords, const glm::vec2& size);
 		SubTexture(const Ref<Texture>& texture, const glm::vec4& texCoords);
 
