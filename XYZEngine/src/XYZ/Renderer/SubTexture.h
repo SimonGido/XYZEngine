@@ -14,8 +14,8 @@ namespace XYZ {
 		SubTexture(const Ref<Texture>& texture, const glm::vec2& coords, const glm::vec2& size);
 		SubTexture(const Ref<Texture>& texture, const glm::vec4& texCoords);
 
-		void SetCoords(const glm::vec2& coords,const glm::vec2& size);
 		void SetCoords(const glm::vec4& texCoords) { m_TexCoords = texCoords; };
+		void SetCoordsWithSize(const glm::vec2& coords,const glm::vec2& size);
 		void SetTexture(const Ref<Texture>& texture) { m_Texture = texture; };
 		const glm::vec4& GetTexCoords() const { return m_TexCoords; }
 

@@ -10,7 +10,11 @@ namespace XYZ {
 	public:
 		LuaEntity();
 
-		TransformComponent& GetTransformComponent();
+		template <typename T>
+		T& GetComponent()
+		{
+			return m_Entity.GetComponent<T>();
+		}
 
 
 		static LuaEntity CreateEntity(const std::string& name);

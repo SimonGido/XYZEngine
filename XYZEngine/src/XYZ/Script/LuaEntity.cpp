@@ -9,10 +9,6 @@ namespace XYZ {
 	{
 	}
 
-	TransformComponent& LuaEntity::GetTransformComponent()
-	{
-		return m_Entity.GetComponent<TransformComponent>();
-	}
 
 	LuaEntity LuaEntity::CreateEntity(const std::string& name)
 	{

@@ -3,8 +3,10 @@
 
 #include "XYZ/ECS/Entity.h"
 #include "XYZ/Scene/Components.h"
+#include "XYZ/Scene/Serializer.h"
 #include "XYZ/Core/Input.h"
 #include "XYZ/Core/KeyCodes.h"
+#include "XYZ/Core/MouseCodes.h"
 #include "LuaEntity.h"
 
 extern "C"
@@ -16,8 +18,10 @@ extern "C"
 
 
 #include <LuaBridge/LuaBridge.h>
+#include <LuaBridge/RefCountedPtr.h>
 
 namespace luabridge {
+
 	template <typename T>
 	struct EnumWrapper 
 	{
@@ -38,8 +42,10 @@ namespace luabridge {
 
 	template <>
 	struct luabridge::Stack<XYZ::KeyCode> : EnumWrapper<XYZ::KeyCode> 
-	{
-	};
+	{};
+	template <>
+	struct luabridge::Stack<XYZ::MouseCode> : EnumWrapper<XYZ::MouseCode>
+	{};
 }
 
 namespace XYZ {
@@ -57,7 +63,6 @@ namespace XYZ {
 	{
 		m_L = luaL_newstate();
 		luaL_openlibs(m_L);
-
 
 		// Input
 		luabridge::getGlobalNamespace(m_L)
@@ -85,10 +90,18 @@ namespace XYZ {
 
 		luabridge::getGlobalNamespace(m_L)
 			.beginClass <glm::vec4>("Vec4")
+			.addConstructor <void (*) (float, float, float , float)>()
 			.addProperty("x", &glm::vec4::x)
 			.addProperty("y", &glm::vec4::y)
 			.addProperty("z", &glm::vec4::z)
 			.addProperty("w", &glm::vec4::w)
+			.endClass();
+
+		// Resources
+		// TODO: This does not work
+		luabridge::getGlobalNamespace(m_L)
+			.beginClass<SubTexture>("SubTexture")
+			.addFunction("SetCoords", &SubTexture::SetCoords)
 			.endClass();
 
 
@@ -99,13 +112,20 @@ namespace XYZ {
 			.addProperty("Rotation", &TransformComponent::Rotation)
 			.addProperty("Scale", &TransformComponent::Scale)
 			.endClass();
-		
 
+
+		luabridge::getGlobalNamespace(m_L)
+			.beginClass<SpriteRenderer>("SpriteRenderer")
+			.addProperty("SubTexture", &SpriteRenderer::SubTexture)
+			.addProperty("Color", &SpriteRenderer::Color)
+			.endClass();
+		
 
 		// Entity
 		luabridge::getGlobalNamespace(m_L)
 			.beginClass<LuaEntity>("Entity")
-			.addFunction("GetTransform", &LuaEntity::GetTransformComponent)
+			.addFunction("GetTransform", &LuaEntity::GetComponent<TransformComponent>)
+			.addFunction("GetSpriteRenderer", &LuaEntity::GetComponent<SpriteRenderer>)
 			.addStaticFunction("FindEntity", &LuaEntity::FindEntity)
 			.addStaticFunction("CreateEntity", &LuaEntity::CreateEntity)
 			.endClass();
