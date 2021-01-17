@@ -91,6 +91,11 @@ namespace XYZ {
 		return Texture2D::Create({ wrap, minParam, magParam }, path);
 	}
 
+	static Ref<SubTexture> CreateSubTexture(const Ref<Texture>& texture, const glm::vec4& texCoords)
+	{
+		return Ref<SubTexture>::Create(texture, texCoords);
+	}
+	
 	LuaApp::LuaApp(const std::string& directory, const std::string& filename)
 		:
 		m_Directory(directory),
@@ -147,9 +152,13 @@ namespace XYZ {
 
 		luabridge::getGlobalNamespace(m_L)
 			.beginClass<SubTexture>("SubTexture")
-			.addConstructor <void (*) (void), Ref <SubTexture> >()
+			.addConstructor <void (*) (const Ref<Texture>&, const glm::vec4&), Ref <SubTexture> >()
 			.addFunction("SetTexture", &SubTexture::SetTexture)
 			.addFunction("SetCoords", &SubTexture::SetCoords)
+			.endClass()
+			.beginClass<Ref<SubTexture>>("SubTextureRef")
+			.addFunction("Get", &Ref<SubTexture>::Get)
+			.addStaticFunction("Create", &CreateSubTexture)
 			.endClass();
 
 		// Components

@@ -11,7 +11,6 @@ namespace XYZ {
 						 public Serializable
 	{
 	public:
-		SubTexture() = default;
 		SubTexture(const Ref<Texture>& texture, const glm::vec2& coords, const glm::vec2& size);
 		SubTexture(const Ref<Texture>& texture, const glm::vec4& texCoords);
 
@@ -23,7 +22,7 @@ namespace XYZ {
 		const Ref<Texture>& GetTexture() const { return m_Texture; }
 
 	private:
-		Ref<Texture> m_Texture = nullptr;
-		glm::vec4 m_TexCoords = glm::vec4(0.0f);
+		Ref<Texture> m_Texture;
+		glm::vec4 m_TexCoords;
 	};
 }

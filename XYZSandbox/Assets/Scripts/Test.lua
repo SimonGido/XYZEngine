@@ -21,11 +21,13 @@ function OnUpdate(ts)
 	spriteRenderer.Color.z = coords.x
 
 	texture = Texture2D.Create(0, 0, 0, "Assets/Textures/bird.png")
-	subTexture = SubTexture()
-	subTexture:SetTexture(texture)
-	subTexture:SetCoords(coords)
-	spriteRenderer.SubTexture = subTexture
+	subTexture = SubTextureRef.Create(texture, coords)
 
+	
+	spriteRenderer.SubTexture = subTexture
+	spriteRenderer.SubTexture:Get():SetTexture(texture)
+	
+	
 	
 	if Input.IsKeyPressed(65) then -- A
 		transform.Translation.x = transform.Translation.x - ts * 5
@@ -34,7 +36,7 @@ function OnUpdate(ts)
 		transform.Translation.x = transform.Translation.x + ts * 5
 		--animator.Controller:TransitionTo(0)
 	end
-
+	
 	if Input.IsKeyPressed(83) then -- S
 		transform.Translation.y = transform.Translation.y - ts
 	elseif Input.IsKeyPressed(87) then -- W
