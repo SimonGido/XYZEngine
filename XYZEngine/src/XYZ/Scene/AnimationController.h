@@ -4,24 +4,23 @@
 #include "XYZ/Scene/Serializable.h"
 #include "XYZ/Core/Timestep.h"
 
+
 namespace XYZ {
 
-	class AnimationController : public RefCount,
-								public Serializable
+	class AnimationController : public Serializable
 	{
 	public:
-		void AddAnimation(const std::string& name, const Ref<Animation>& animation);
-		void RemoveAnimation(const std::string& name);
-	
-		void SetDefaultAnimation(const std::string& name);
 		void Update(Timestep ts);
+		void TransitionTo(uint32_t id);
+		void RemoveAnimation(uint32_t id);
+		uint32_t AddAnimation(Ref<Animation> animation);
 
 		StateMachine<32>& GetStateMachine() { return m_StateMachine; }
 		const Ref<Animation>& GetCurrentAnimation() const;
+	
 	private:
-		Ref<Animation> m_CurrentAnimation;
+		Ref<Animation> m_CurrentAnimation = nullptr;
 		std::vector<Ref<Animation>> m_Animations;
-		std::unordered_map<std::string, uint32_t> m_StatesMap;
 
 		StateMachine<32> m_StateMachine;
 	};

@@ -106,10 +106,9 @@ namespace XYZ {
 	struct AnimatorComponent : public Type<AnimatorComponent>
 	{
 		AnimatorComponent() = default;
-		
-		Ref<AnimationController> Controller;
-	};
 
+		AnimationController Controller;
+	};
 
 
 	struct ParticleComponent : public Type<ParticleComponent>

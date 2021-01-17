@@ -5,6 +5,7 @@
 #include <windows.h>
 
 namespace XYZ {
+
 	static void FileWatcherThread(FileWatcher& watcherObj)
 	{
 		HANDLE hDir = CreateFile(watcherObj.GetDirectory().c_str(),  // pointer to the file name
@@ -47,24 +48,29 @@ namespace XYZ {
 
 			filename[pNotify->FileNameLength / 2] = NULL;
 
-			switch (Buffer[0].Action)
-			{
-			case FILE_ACTION_MODIFIED:
-				watcherObj.OnFileChange(filename);
-				break;
-			case FILE_ACTION_ADDED:
-				watcherObj.OnFileAdded(filename);
-				break;
-			case FILE_ACTION_REMOVED:
-				watcherObj.OnFileRemoved(filename);
-				break;
-			case FILE_ACTION_RENAMED_OLD_NAME:
-				watcherObj.OnFileRenamed(filename);
-				break;
-			case FILE_ACTION_RENAMED_NEW_NAME:
-				watcherObj.OnFileRenamed(filename);
-				break;
-			}
+			auto fullPath = watcherObj.GetDirectory() + L"/" + filename;
+			while (true)
+			{	
+				switch (Buffer[0].Action)
+				{
+				case FILE_ACTION_MODIFIED:
+					watcherObj.OnFileChange(filename);
+					break;
+				case FILE_ACTION_ADDED:
+					watcherObj.OnFileAdded(filename);
+					break;
+				case FILE_ACTION_REMOVED:
+					watcherObj.OnFileRemoved(filename);
+					break;
+				case FILE_ACTION_RENAMED_OLD_NAME:
+					watcherObj.OnFileRenamed(filename);
+					break;
+				case FILE_ACTION_RENAMED_NEW_NAME:
+					watcherObj.OnFileRenamed(filename);
+					break;
+				}
+				break;			
+			}		
 		}
 
 		CloseHandle(hDir);

@@ -25,7 +25,7 @@ namespace XYZ {
 	}
 
 
-	void LuaEntity::SetScene(Ref<Scene> scene)
+	void LuaEntity::SetActiveScene(Ref<Scene> scene)
 	{
 		s_Scene = scene;
 	}

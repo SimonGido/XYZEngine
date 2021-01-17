@@ -45,12 +45,28 @@ namespace XYZ {
 	{
 	public:
 		State<NumStates>& CreateState()
-		{
-			XYZ_ASSERT(m_NextFreeBit < NumStates, "State machine can has only %d states", NumStates);
-			State<NumStates> state(m_NextFreeBit++, 0);
+		{	
+			bool freeBit = false;
+			uint8_t firstFreeBit = 0;
+			for (uint32_t i = 0; i < NumStates; ++i)
+			{
+				if (!(m_StatesInitialized & BIT(i)))
+				{
+					firstFreeBit = i;
+					freeBit = true;
+					break;
+				}
+			}
+			XYZ_ASSERT(freeBit, "Maximum number of states is ", NumStates);
+
+			State<NumStates> state(firstFreeBit, 0);
 			m_StatesInitialized |= BIT(state.GetID());
 			m_States[state.GetID()] = state;
 			return m_States[state.GetID()];
+		}
+		void DestroyState(uint32_t id)
+		{
+			m_StatesInitialized &= ~BIT(id);
 		}
 
 		bool TransitionTo(uint32_t id)
@@ -69,7 +85,6 @@ namespace XYZ {
 		void SetDefaultState(uint32_t id)
 		{
 			XYZ_ASSERT(m_StatesInitialized & BIT(id), "State with id ", id, "is not initialized");
-			XYZ_ASSERT(id < m_NextFreeBit, "State was not registered in this state machine");
 			m_CurrentState = id;
 		}
 
@@ -77,13 +92,17 @@ namespace XYZ {
 		{ 
 			return m_States[m_CurrentState]; 
 		}
+
 		inline State<NumStates>& GetState(uint32_t id) 
 		{ 
 			XYZ_ASSERT(m_StatesInitialized & BIT(id), "State with id ", id, "is not initialized");
 			return m_States[id]; 
 		}
 
-		inline uint32_t GetNumStates() const { return m_NextFreeBit; }
+		inline uint32_t GetNumStates() const 
+		{
+			return m_NextFreeBit; 
+		}
 
 		bool IsStateInitialized(uint32_t id) const 
 		{ 
@@ -92,7 +111,6 @@ namespace XYZ {
 	private:
 		uint32_t m_CurrentState;
 
-		uint32_t m_NextFreeBit = 0;
 		uint32_t m_StatesInitialized = 0;
 
 		State<NumStates> m_States[NumStates];

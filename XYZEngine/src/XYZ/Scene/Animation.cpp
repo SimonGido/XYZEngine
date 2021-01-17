@@ -9,7 +9,7 @@ namespace XYZ {
 
 	static float UpdateFloat(const Property<float>::KeyFrame& begin, const Property<float>::KeyFrame& end, float currentTime)
 	{
-		float scale = (currentTime - begin.Time) / (end.Time - begin.Time);
+		float scale = (currentTime - begin.EndTime) / (end.EndTime - begin.EndTime);
 		float valueDiff = end.Value - begin.Value;
 	
 		return begin.Value + (valueDiff * scale);
@@ -17,7 +17,7 @@ namespace XYZ {
 
 	static glm::vec3 UpdateVec3(const Property<glm::vec3>::KeyFrame& begin, const Property<glm::vec3>::KeyFrame& end, float currentTime)
 	{
-		float scale = (currentTime - begin.Time) / (end.Time - begin.Time);
+		float scale = (currentTime - begin.EndTime) / (end.EndTime - begin.EndTime);
 		glm::vec3 valueDiff = end.Value - begin.Value;
 		
 		glm::vec3 result = { 0,0,0 };
@@ -30,7 +30,7 @@ namespace XYZ {
 
 	static glm::vec4 UpdateVec4(const Property<glm::vec4>::KeyFrame& begin, const Property<glm::vec4>::KeyFrame& end, float currentTime)
 	{
-		float scale = (currentTime - begin.Time) / (end.Time - begin.Time);
+		float scale = (currentTime - begin.EndTime) / (end.EndTime - begin.EndTime);
 		glm::vec4 valueDiff = end.Value - begin.Value;
 
 		glm::vec4 result = { 0, 0, 0 ,0 };
@@ -44,30 +44,30 @@ namespace XYZ {
 
 	void Property<glm::vec3>::Update(float currentTime)
 	{
-		if (CurrentFrame < KeyFrames.size() - 1)
+		if (CurrentFrame < KeyFrames.size())
 		{					
 			ModifiedValue = UpdateVec3(KeyFrames[CurrentFrame], KeyFrames[CurrentFrame + 1], currentTime);
-			if (currentTime >= KeyFrames[CurrentFrame + 1].Time)
+			if (currentTime >= KeyFrames[CurrentFrame].EndTime)
 				CurrentFrame++;
 		}
 	}
 
 	void Property<glm::vec4>::Update(float currentTime)
 	{
-		if (CurrentFrame < KeyFrames.size() - 1)
+		if (CurrentFrame < KeyFrames.size())
 		{
 			ModifiedValue = UpdateVec4(KeyFrames[CurrentFrame], KeyFrames[CurrentFrame + 1], currentTime);
-			if (currentTime >= KeyFrames[CurrentFrame + 1].Time)
+			if (currentTime >= KeyFrames[CurrentFrame].EndTime)
 				CurrentFrame++;
 		}
 	}
 
 	void Property <Ref<SubTexture>>::Update(float currentTime)
 	{
-		if (CurrentFrame < KeyFrames.size() - 1)
+		if (CurrentFrame < KeyFrames.size())
 		{
 			ModifiedValue = KeyFrames[CurrentFrame].Value;
-			if (currentTime >= KeyFrames[CurrentFrame + 1].Time)
+			if (currentTime >= KeyFrames[CurrentFrame].EndTime)
 				CurrentFrame++;
 		}
 	}
@@ -83,11 +83,11 @@ namespace XYZ {
 		for (auto prop : Properties)
 			delete prop;
 	}
-	void Animation::Update(float dt)
+	void Animation::Update(Timestep ts)
 	{
 		if (CurrentTime < AnimationLength)
 		{
-			CurrentTime += dt;
+			CurrentTime += ts;
 			for (auto prop : Properties)
 				prop->Update(CurrentTime);
 		}

@@ -1,4 +1,5 @@
 #pragma once
+#include "XYZ/Core/Timestep.h"
 #include "XYZ/Core/Ref.h"
 #include "XYZ/Scene/Serializable.h"
 
@@ -6,6 +7,8 @@ namespace XYZ {
 
 	struct IProperty
 	{
+		virtual ~IProperty() = default;
+
 		virtual void Update(float currentTime) = 0;
 
 		size_t CurrentFrame = 0;
@@ -23,7 +26,7 @@ namespace XYZ {
 		struct KeyFrame
 		{
 			T Value;
-			float Time;
+			float EndTime;
 		};
 
 		T& ModifiedValue;
@@ -37,7 +40,7 @@ namespace XYZ {
 		Animation(float animLength,  bool repeat = true);
 		~Animation();
 
-		void Update(float dt);
+		void Update(Timestep ts);
 
 		template <typename T, typename ...Args>
 		Property<T>* AddProperty(Args&&... args)
@@ -49,7 +52,7 @@ namespace XYZ {
 
 		float CurrentTime = 0.0f;
 		float AnimationLength;
-		bool Repeat;
+		bool  Repeat;
 
 		std::vector<IProperty*> Properties;
 	};

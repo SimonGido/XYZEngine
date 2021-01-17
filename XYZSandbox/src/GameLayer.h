@@ -21,6 +21,7 @@ namespace XYZ {
 
 	private:
 		Ref<Scene> m_Scene;
+
 		EditorCamera m_EditorCamera;
 
 		Entity m_Entity;

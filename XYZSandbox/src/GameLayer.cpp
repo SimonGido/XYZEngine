@@ -28,22 +28,50 @@ namespace XYZ {
 		Ref<Material> material = Ref<Material>::Create(Shader::Create("Assets/Shaders/DefaultShader.glsl"));
 		Ref<Texture2D> texture = Texture2D::Create({ TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest }, "Assets/Textures/player_sprite.png");
 		Ref<SubTexture> subTexture = Ref<SubTexture>::Create(texture, glm::vec2(0, 0), glm::vec2(texture->GetWidth() / 8, texture->GetHeight() / 3));
+
+
 		
 		material->Set("u_Color", glm::vec4(1.0f));
 		m_Entity = m_Scene->CreateEntity("Test Entity", GUID());
-		m_Entity.AddComponent<SpriteRenderer>(SpriteRenderer(
+		
+		SpriteRenderer& spriteRenderer = m_Entity.AddComponent<SpriteRenderer>(SpriteRenderer(
 			material, subTexture, glm::vec4(1.0f), 0
 		));
 
-		//ScriptComponent& scriptComponent = m_Entity.AddComponent<ScriptComponent>(ScriptComponent());
-		//scriptComponent.Script = new LuaScript("Assets/Scripts/Test.lua");
+
+		Ref<Animation> walkRightAnimation = Ref<Animation>::Create(2.0f);
+		{
+			Ref<SubTexture> firstFrame = Ref<SubTexture>::Create(texture, glm::vec2(0, 1), glm::vec2(texture->GetWidth() / 8, texture->GetHeight() / 3));
+			Ref<SubTexture> secondFrame = Ref<SubTexture>::Create(texture, glm::vec2(1, 1), glm::vec2(texture->GetWidth() / 8, texture->GetHeight() / 3));
+			auto property = walkRightAnimation->AddProperty<Ref<SubTexture>>(spriteRenderer.SubTexture);
+			property->KeyFrames.push_back({ firstFrame, 1.0f });
+			property->KeyFrames.push_back({ secondFrame, 2.0f });
+		}
+
+		Ref<Animation> walkLeftAnimation = Ref<Animation>::Create(2.0f);
+		{
+			Ref<SubTexture> firstFrame = Ref<SubTexture>::Create(texture, glm::vec2(2, 1), glm::vec2(texture->GetWidth() / 8, texture->GetHeight() / 3));
+			Ref<SubTexture> secondFrame = Ref<SubTexture>::Create(texture, glm::vec2(3, 1), glm::vec2(texture->GetWidth() / 8, texture->GetHeight() / 3));
+			auto property = walkLeftAnimation->AddProperty<Ref<SubTexture>>(spriteRenderer.SubTexture);
+			property->KeyFrames.push_back({ firstFrame, 1.0f });
+			property->KeyFrames.push_back({ secondFrame, 2.0f });
+		}
+
+
+		//AnimatorComponent& animator = m_Entity.AddComponent<AnimatorComponent>(AnimatorComponent());
+		//uint32_t walkRight = animator.Controller.AddAnimation(walkRightAnimation);
+		//uint32_t walkLeft = animator.Controller.AddAnimation(walkLeftAnimation);
+		//
+		//StateMachine<32>& stateMachine = animator.Controller.GetStateMachine();
+		//stateMachine.GetState(walkRight).AllowTransition(walkLeft);
+		//stateMachine.GetState(walkLeft).AllowTransition(walkRight);
 
 		auto specs = SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer->GetSpecification();
 		specs.SwapChainTarget = true;
 		SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer->SetSpecification(specs);
 	
-		LuaEntity::SetScene(m_Scene);
-		s_LuaApp = new LuaApp("Assets/Scripts/Test.lua");
+		LuaEntity::SetActiveScene(m_Scene);
+		s_LuaApp = new LuaApp("Assets/Scripts", "Test.lua");
 	}
 
 	void GameLayer::OnDetach()
@@ -59,7 +87,6 @@ namespace XYZ {
 		m_EditorCamera.OnUpdate(ts);
 		m_Scene->OnUpdate(ts);
 		m_Scene->OnRenderEditor(m_EditorCamera);
-
 		s_LuaApp->OnUpdate(ts);
 	}
 

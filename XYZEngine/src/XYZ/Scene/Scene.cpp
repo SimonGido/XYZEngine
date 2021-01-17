@@ -49,6 +49,7 @@ namespace XYZ {
 		
 		m_ECS.ForceStorage<ScriptComponent>();
 		m_ScriptStorage = m_ECS.GetStorage<ScriptComponent>();
+		m_AnimatorStorage = m_ECS.GetStorage<AnimatorComponent>();
 	}
 
 	Scene::~Scene() 
@@ -168,10 +169,16 @@ namespace XYZ {
 			
 		}
 
+		for (size_t i = 0; i < m_AnimatorStorage->Size(); ++i)
+		{
+			AnimatorComponent& anim = (*m_AnimatorStorage)[i];
+			anim.Controller.Update(ts);
+		}
+
 		for (size_t i = 0; i < m_AnimatorView->Size(); ++i)
 		{
 			auto [animator] = (*m_AnimatorView)[i];
-			animator.Controller->Update(ts);
+			animator.Controller.Update(ts);
 		}
 	
 		for (size_t i = 0; i < m_ParticleView->Size(); ++i)

@@ -20,7 +20,7 @@ namespace XYZ {
 		static LuaEntity CreateEntity(const std::string& name);
 		static LuaEntity FindEntity(const std::string& name);
 
-		static void SetScene(Ref<Scene> scene);
+		static void SetActiveScene(Ref<Scene> scene);
 	private:
 		Entity m_Entity;
 
