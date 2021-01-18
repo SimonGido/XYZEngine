@@ -150,27 +150,26 @@ namespace XYZ {
 
 		luabridge::getGlobalNamespace(m_L)
 			.beginClass<Texture>("Texture")
+			.addFunction("GetWidth", &Texture::GetWidth)
+			.addFunction("GetHeight", &Texture::GetHeight)
 			.endClass()
 			.deriveClass <Texture2D, Texture>("Texture2D")
+			.addStaticFunction("Create", &CreateTexture2D)
 			.endClass()
 			.beginClass<Ref<Texture>>("RefTexture")
 			.addFunction("Get", &Ref<Texture>::Get)
-			.addStaticFunction("Create", &CreateTexture2D)
 			.endClass();
+			
 
 		luabridge::getGlobalNamespace(m_L)
 			.beginClass<SubTexture>("SubTexture")
-			.addConstructor <void (*) (const Ref<Texture>&, const glm::vec4&), Ref <SubTexture> >()
 			.addFunction("SetTexture", &SubTexture::SetTexture)
 			.addFunction("SetCoords", &SubTexture::SetCoords)
+			.addStaticFunction("Create", &CreateSubTexture)
 			.endClass()
 			.beginClass<Ref<SubTexture>>("RefSubTexture")
 			.addFunction("Get", &Ref<SubTexture>::Get)
-			.addStaticFunction("Create", &CreateSubTexture)
 			.endClass();
-
-
-		
 
 		// Components
 		luabridge::getGlobalNamespace(m_L)

@@ -20,12 +20,17 @@ function OnUpdate(ts)
 	coords.x = Add(ts, 0.5)
 	spriteRenderer.Color.z = coords.x
 
-	local texture = RefTexture.Create(0, 0, 0, "Assets/Textures/bird.png")
-	local subTexture = RefSubTexture.Create(texture, coords)
+	local texture = Texture2D.Create(0, 0, 0, "Assets/Textures/bird.png")
+	local subTexture = SubTexture.Create(texture, coords)
 	
+
+	subTexture:SetTexture(texture)
+
 	spriteRenderer.SubTexture = subTexture
+
 	spriteRenderer.SubTexture:Get():SetTexture(texture)
 	
+	print(texture:GetWidth())
 	
 	
 	if Input.IsKeyPressed(65) then -- A

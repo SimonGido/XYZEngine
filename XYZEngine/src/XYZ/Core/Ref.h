@@ -113,7 +113,7 @@ namespace XYZ {
 		T& operator*() { return *m_Instance; }
 		const T& operator*() const { return *m_Instance; }
 
-		T* Get() { return m_Instance; }
+		T& Get() { return *m_Instance; }
 
 		T* Raw() { return  m_Instance; }
 		const T* Raw() const { return  m_Instance; }
