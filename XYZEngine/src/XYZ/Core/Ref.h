@@ -61,6 +61,7 @@ namespace XYZ {
 			DecRef();
 		}
 
+
 		Ref(const Ref<T>& other)
 			: m_Instance(other.m_Instance)
 		{

@@ -17,6 +17,7 @@ namespace XYZ {
 		void OnUpdate(Timestep ts);
 	
 
+	protected:
 		virtual void OnFileChange(const std::wstring& filepath) override;
 		virtual void OnFileAdded(const std::wstring& filepath) override;
 		virtual void OnFileRemoved(const std::wstring& filepath) override;

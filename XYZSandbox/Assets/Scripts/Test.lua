@@ -20,9 +20,8 @@ function OnUpdate(ts)
 	coords.x = Add(ts, 0.5)
 	spriteRenderer.Color.z = coords.x
 
-	texture = Texture2D.Create(0, 0, 0, "Assets/Textures/bird.png")
-	subTexture = SubTextureRef.Create(texture, coords)
-
+	local texture = RefTexture.Create(0, 0, 0, "Assets/Textures/bird.png")
+	local subTexture = RefSubTexture.Create(texture, coords)
 	
 	spriteRenderer.SubTexture = subTexture
 	spriteRenderer.SubTexture:Get():SetTexture(texture)
