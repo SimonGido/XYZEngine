@@ -58,13 +58,13 @@ namespace XYZ {
 		}
 
 
-		//AnimatorComponent& animator = m_Entity.AddComponent<AnimatorComponent>(AnimatorComponent());
-		//uint32_t walkRight = animator.Controller.AddAnimation(walkRightAnimation);
-		//uint32_t walkLeft = animator.Controller.AddAnimation(walkLeftAnimation);
-		//
-		//StateMachine<32>& stateMachine = animator.Controller.GetStateMachine();
-		//stateMachine.GetState(walkRight).AllowTransition(walkLeft);
-		//stateMachine.GetState(walkLeft).AllowTransition(walkRight);
+		AnimatorComponent& animator = m_Entity.AddComponent<AnimatorComponent>(AnimatorComponent());
+		uint32_t walkRight = animator.Controller.AddAnimation(walkRightAnimation);
+		uint32_t walkLeft = animator.Controller.AddAnimation(walkLeftAnimation);
+		
+		StateMachine<32>& stateMachine = animator.Controller.GetStateMachine();
+		stateMachine.GetState(walkRight).AllowTransition(walkLeft);
+		stateMachine.GetState(walkLeft).AllowTransition(walkRight);
 
 		auto specs = SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer->GetSpecification();
 		specs.SwapChainTarget = true;

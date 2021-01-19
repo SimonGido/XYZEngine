@@ -1,6 +1,8 @@
 require("Assets/Scripts/Another")
 
 entity = Entity.FindEntity("Test Entity")
+texture = Texture2D.Create(0, 0, 0, "Assets/Textures/player_sprite.png")
+
 
 function OnCreate()
 
@@ -11,34 +13,25 @@ function OnUpdate(ts)
 
 	transform = entity:GetTransform()
 	spriteRenderer = entity:GetSpriteRenderer()
-	--animator = entity:GetAnimator()
+	animator = entity:GetAnimator()
 
-	spriteRenderer.Color.x = transform.Translation.x
-	spriteRenderer.Color.y = transform.Translation.y
-
-	coords = Vec4(ts + 0.5, ts + 0.5, ts - 0.5, ts - 0.5)
+	coords = Vec4(ts - 0.5, ts - 0.5, ts + 0.5, ts + 0.5)
 	coords.x = Add(ts, 0.5)
-	spriteRenderer.Color.z = coords.x
 
-	local texture = Texture2D.Create(0, 0, 0, "Assets/Textures/bird.png")
-	local subTexture = SubTexture.Create(texture, coords)
 	
-
-	subTexture:SetTexture(texture)
-
-	spriteRenderer.SubTexture = subTexture
+	spriteRenderer.Color.x = 1
+	spriteRenderer.Color.y = 0
+	spriteRenderer.Color.z = 0
 
 	spriteRenderer.SubTexture:Get():SetTexture(texture)
-	
-	print(texture:GetWidth())
 	
 	
 	if Input.IsKeyPressed(65) then -- A
 		transform.Translation.x = transform.Translation.x - ts * 5
-		--animator.Controller:TransitionTo(1)
+		animator.Controller:TransitionTo(1)
 	elseif Input.IsKeyPressed(68) then -- D
 		transform.Translation.x = transform.Translation.x + ts * 5
-		--animator.Controller:TransitionTo(0)
+		animator.Controller:TransitionTo(0)
 	end
 	
 	if Input.IsKeyPressed(83) then -- S

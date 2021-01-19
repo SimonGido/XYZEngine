@@ -86,6 +86,8 @@ namespace XYZ {
 		return true;
 	}
 
+
+	// Resource helper functions
 	static Ref<Texture2D> CreateTexture2D(TextureWrap wrap, TextureParam minParam, TextureParam magParam, const std::string& path)
 	{
 		return Texture2D::Create({ wrap, minParam, magParam }, path);
@@ -96,10 +98,6 @@ namespace XYZ {
 		return Ref<SubTexture>::Create(texture, texCoords);
 	}
 
-	static void Test()
-	{
-		std::cout << "Destructor" << std::endl;
-	}
 
 	LuaApp::LuaApp(const std::string& directory, const std::string& filename)
 		:
@@ -147,7 +145,6 @@ namespace XYZ {
 			.addProperty("w", &glm::vec4::w)
 			.endClass();
 
-
 		luabridge::getGlobalNamespace(m_L)
 			.beginClass<Texture>("Texture")
 			.addFunction("GetWidth", &Texture::GetWidth)
@@ -165,10 +162,10 @@ namespace XYZ {
 			.beginClass<SubTexture>("SubTexture")
 			.addFunction("SetTexture", &SubTexture::SetTexture)
 			.addFunction("SetCoords", &SubTexture::SetCoords)
-			.addStaticFunction("Create", &CreateSubTexture)
 			.endClass()
 			.beginClass<Ref<SubTexture>>("RefSubTexture")
 			.addFunction("Get", &Ref<SubTexture>::Get)
+			.addStaticFunction("Create", &CreateSubTexture)
 			.endClass();
 
 		// Components
