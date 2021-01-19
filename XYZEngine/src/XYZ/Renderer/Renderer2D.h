@@ -26,7 +26,7 @@ namespace XYZ {
 		* Initial setup before rendering
 		* @param[in] camera		Reference to the camera 
 		*/
-		static void BeginScene(const glm::mat4& viewProjectionMatrix, const glm::vec2& viewportSize);
+		static void BeginScene(const glm::mat4& viewProjectionMatrix);
 
 		static uint32_t SetTexture(const Ref<Texture>& texture);
 		static void SetMaterial(const Ref<Material>& material);
@@ -38,6 +38,7 @@ namespace XYZ {
 		static void SubmitLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color = glm::vec4(1.0f));
 		static void SubmitParticles(const glm::mat4& transform, const Ref<ParticleEffect>& particleEffect);
 	
+		static void SubmitQuadNotCentered(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, uint32_t textureID, const glm::vec4& color = glm::vec4(1), float tilingFactor = 1.0f);
 		static void SubmitGrid(const glm::mat4& transform, const glm::vec2& scale, float lineWidth);
 	
 

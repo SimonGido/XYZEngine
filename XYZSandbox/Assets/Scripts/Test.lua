@@ -18,12 +18,13 @@ function OnUpdate(ts)
 	coords = Vec4(ts - 0.5, ts - 0.5, ts + 0.5, ts + 0.5)
 	coords.x = Add(ts, 0.5)
 
+	local subTexture = RefSubTexture.Create(texture, coords)
 	
 	spriteRenderer.Color.x = 1
 	spriteRenderer.Color.y = 0
 	spriteRenderer.Color.z = 0
 
-	spriteRenderer.SubTexture:Get():SetTexture(texture)
+	spriteRenderer.SubTexture = subTexture
 	
 	
 	if Input.IsKeyPressed(65) then -- A

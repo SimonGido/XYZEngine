@@ -77,7 +77,6 @@ namespace XYZ {
 		LineVertex* LineBufferPtr = nullptr;
 
 		glm::mat4 ViewProjectionMatrix;
-		glm::vec2 ViewportSize;
 		Renderer2DStats Stats;
 	};
 
@@ -203,10 +202,9 @@ namespace XYZ {
 		delete[] s_Data.LineBufferBase;
 	}
 
-	void Renderer2D::BeginScene(const glm::mat4& viewProjectionMatrix, const glm::vec2& viewportSize)
+	void Renderer2D::BeginScene(const glm::mat4& viewProjectionMatrix)
 	{
 		s_Data.ViewProjectionMatrix = viewProjectionMatrix;
-		s_Data.ViewportSize = viewportSize;
 		s_Data.QuadMaterial = s_Data.DefaultQuadMaterial;
 	}
 
@@ -370,6 +368,37 @@ namespace XYZ {
 			s_Data.BufferPtr++;
 		}
 		s_Data.IndexCount += 6 * countQuads;
+	}
+
+	void Renderer2D::SubmitQuadNotCentered(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, uint32_t textureID, const glm::vec4& color, float tilingFactor)
+	{
+		constexpr size_t quadVertexCount = 4;
+
+		if (s_Data.IndexCount + 6 >= s_Data.MaxIndices)
+			Flush();
+
+		glm::vec2 texCoords[quadVertexCount] = {
+			{texCoord.x,texCoord.y},
+			{texCoord.z,texCoord.y},
+			{texCoord.z,texCoord.w},
+			{texCoord.x,texCoord.w}
+		};
+		glm::vec3 vertices[quadVertexCount] = {
+			{  position.x ,			 position.y, 0.0f},
+			{  position.x + size.x,  position.y, 0.0f},
+			{  position.x + size.x,  position.y + size.y, 0.0f},
+			{  position.x,			 position.y + size.y, 0.0f}
+		};
+		for (size_t i = 0; i < quadVertexCount; ++i)
+		{
+			s_Data.BufferPtr->Position = vertices[i];
+			s_Data.BufferPtr->Color = color;
+			s_Data.BufferPtr->TexCoord = texCoords[i];
+			s_Data.BufferPtr->TextureID = (float)textureID;
+			s_Data.BufferPtr->TilingFactor = tilingFactor;
+			s_Data.BufferPtr++;
+		}
+		s_Data.IndexCount += 6;
 	}
 
 	void Renderer2D::SubmitGrid(const glm::mat4& transform, const glm::vec2& scale, float lineWidth)

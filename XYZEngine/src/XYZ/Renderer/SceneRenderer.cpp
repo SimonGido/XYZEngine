@@ -227,7 +227,7 @@ namespace XYZ {
 	void SceneRenderer::GeometryPass()
 	{
 		Renderer::BeginRenderPass(s_Data.GeometryPass, true);
-		Renderer2D::BeginScene(s_Data.ViewProjectionMatrix, s_Data.ViewportSize);
+		Renderer2D::BeginScene(s_Data.ViewProjectionMatrix);
 
 		if (s_Data.Options.ShowGrid)
 		{
