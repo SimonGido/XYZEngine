@@ -2,7 +2,6 @@
 #include "InGui.h"
 
 #include "XYZ/Core/Input.h"
-#include "XYZ/Event/InputEvent.h"
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/Renderer.h"
 
@@ -13,6 +12,8 @@
 namespace XYZ {
 
 	InGuiContext* InGui::s_Context = nullptr;
+
+
 
 	static bool Collide(const glm::vec2& pos, const glm::vec2& size, const glm::vec2& point)
 	{
@@ -107,50 +108,13 @@ namespace XYZ {
 
 	void InGui::OnEvent(Event& event)
 	{
-		if (event.GetEventType() == EventType::MouseButtonPressed)
-		{
-			MouseButtonPressEvent& e = (MouseButtonPressEvent&)event;
-			if (e.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_LEFT))
-			{
-				for (auto& window : s_Context->Windows)
-				{
-					if (window.Flags & InGuiWindowFlags::Initialized
-						&& Collide(window.Position, window.Size, s_Context->FrameData.MousePosition))
-					{
-						s_Context->FrameData.Flags |= InGuiInputFlags::LeftClicked;
-						s_Context->FrameData.MovedWindowID = window.ID;
-						s_Context->FrameData.MouseOffset = s_Context->FrameData.MousePosition - window.Position;
-						if (window.Flags & InGuiWindowFlags::EventBlocking)
-							event.Handled = true;
-						return;
-					}
-				}
-			}
-		}
-		else if (event.GetEventType() == EventType::MouseButtonReleased)
-		{
-			MouseButtonReleaseEvent& e = (MouseButtonReleaseEvent&)event;
-			if (e.IsButtonReleased(MouseCode::XYZ_MOUSE_BUTTON_LEFT))
-			{
-				s_Context->FrameData.MovedWindowID = InGuiFrameData::NullID;
-				for (auto& window : s_Context->Windows)
-				{
-					if (window.Flags & InGuiWindowFlags::Initialized
-						&& Collide(window.Position, window.Size, s_Context->FrameData.MousePosition))
-					{				
-						if (window.Flags & InGuiWindowFlags::EventBlocking)
-							event.Handled = true;
-
-						return;
-					}
-				}
-			}
-		}
-		else if (event.GetEventType() == EventType::MouseMoved)
-		{
-			MouseMovedEvent& e = (MouseMovedEvent&)event;
-			s_Context->FrameData.MousePosition = { (float)e.GetX(), (float)e.GetY() };
-		}
+		EventDispatcher dispatcher(event);
+		if (dispatcher.Dispatch<MouseButtonPressEvent>(&InGui::onMouseButtonPress))
+		{ }
+		else if (dispatcher.Dispatch<MouseButtonReleaseEvent>(&InGui::onMouseButtonRelease))
+		{ }
+		else if (dispatcher.Dispatch<MouseMovedEvent>(&InGui::onMouseMove))
+		{ }
 	}
 
 	InGuiWindow& InGui::getInitializedWindow(uint32_t id, const glm::vec2& position, const glm::vec2& size)
@@ -178,6 +142,8 @@ namespace XYZ {
 		}
 	}
 
+
+
 	uint8_t InGui::Begin(uint32_t id, const char* name, const glm::vec2& position, const glm::vec2& size)
 	{	
 		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID == InGuiFrameData::NullID, "Missing end call");
@@ -186,15 +152,10 @@ namespace XYZ {
 
 		uint8_t returnValue = 0;
 		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
-		if (Collide(window.Position, window.Size, s_Context->FrameData.MousePosition))
+		if (IS_SET(window.Flags, InGuiWindowFlags::Hoovered))
 		{
 			returnValue |= InGuiReturnType::Hoovered;
 			color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
-			if (s_Context->FrameData.Flags & InGuiInputFlags::LeftClicked)
-			{
-				returnValue |= InGuiReturnType::Clicked;
-				s_Context->FrameData.Flags &= ~InGuiInputFlags::LeftClicked;
-			}
 		}
 		InGuiFactory::GenerateWindow(name, window, color, s_Context->RenderData);
 		return returnValue;
@@ -206,4 +167,73 @@ namespace XYZ {
 		s_Context->FrameData.ActiveWindowID = InGuiFrameData::NullID;
 	}
 
+
+	bool InGui::onMouseButtonPress(MouseButtonPressEvent& event)
+	{
+		if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_LEFT))
+		{
+			for (auto& window : s_Context->Windows)
+			{
+				if (IS_SET(window.Flags, InGuiWindowFlags::Initialized)
+					&& Collide(window.Position, { window.Size.x, InGuiWindow::PanelHeight }, s_Context->FrameData.MousePosition))
+				{
+					bool handled = false;
+					glm::vec2 minButtonPos = { window.Position.x + window.Size.x - InGuiWindow::PanelHeight, window.Position.y };
+					if (Collide(minButtonPos, { InGuiWindow::PanelHeight, InGuiWindow::PanelHeight }, s_Context->FrameData.MousePosition))
+					{
+						window.Flags ^= InGuiWindowFlags::Collapsed;
+					}
+					else
+					{
+						s_Context->FrameData.Flags |= InGuiInputFlags::LeftClicked;
+						s_Context->FrameData.MovedWindowID = window.ID;
+						s_Context->FrameData.MouseOffset = s_Context->FrameData.MousePosition - window.Position;
+						if (window.Flags & InGuiWindowFlags::EventBlocking)
+							handled = true;
+					}
+					return handled;
+				}
+			}
+		}
+		return false;
+	}
+
+	bool InGui::onMouseButtonRelease(MouseButtonReleaseEvent& event)
+	{
+		if (event.IsButtonReleased(MouseCode::XYZ_MOUSE_BUTTON_LEFT))
+		{
+			bool handled = false;
+			s_Context->FrameData.MovedWindowID = InGuiFrameData::NullID;
+			for (auto& window : s_Context->Windows)
+			{
+				if (IS_SET(window.Flags, InGuiWindowFlags::Initialized)
+					&& Collide(window.Position, window.Size, s_Context->FrameData.MousePosition))
+				{
+					if (window.Flags & InGuiWindowFlags::EventBlocking)
+						handled = true;
+				}
+			}
+			return handled;
+		}
+		return false;
+	}
+
+	bool InGui::onMouseMove(MouseMovedEvent& event)
+	{
+		s_Context->FrameData.MousePosition = { (float)event.GetX(), (float)event.GetY() };
+		bool hoovered = false;
+		for (auto& window : s_Context->Windows)
+		{
+			window.Flags &= ~InGuiWindowFlags::Hoovered;
+			if (!hoovered
+				&& IS_SET(window.Flags, InGuiWindowFlags::Initialized)
+				&& !IS_SET(window.Flags, InGuiWindowFlags::Collapsed)
+				&& Collide(window.Position, window.Size, s_Context->FrameData.MousePosition))
+			{
+				window.Flags |= InGuiWindowFlags::Hoovered;
+				hoovered = true;
+			}
+		}
+		return false;
+	}
 }

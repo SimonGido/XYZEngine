@@ -1,6 +1,7 @@
 #pragma once
 
 #include "XYZ/Event/Event.h"
+#include "XYZ/Event/InputEvent.h"
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Renderer/Font.h"
@@ -28,7 +29,9 @@ namespace XYZ {
 		enum WindowFlags
 		{
 			Initialized   = BIT(0),
-			EventBlocking = BIT(1)
+			EventBlocking = BIT(1),
+			Hoovered	  = BIT(2),
+			Collapsed	  = BIT(3)
 		};
 	}
 
@@ -61,6 +64,8 @@ namespace XYZ {
 		glm::vec2 Size;
 		uint32_t  ID;
 		uint16_t  Flags;
+
+		static constexpr float PanelHeight = 25.0f;
 	};
 
 	struct InGuiRenderData
@@ -143,6 +148,9 @@ namespace XYZ {
 		static InGuiWindow& getInitializedWindow(uint32_t id, const glm::vec2& position, const glm::vec2& size);
 		static void handleWindowMove();
 
+		static bool onMouseButtonPress(MouseButtonPressEvent& event);
+		static bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
+		static bool onMouseMove(MouseMovedEvent& event);
 	private:
 		static InGuiContext* s_Context;
 	};

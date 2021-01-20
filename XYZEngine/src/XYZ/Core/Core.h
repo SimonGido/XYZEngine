@@ -21,7 +21,7 @@
 #define BIND_EVENT_FN(x) std::bind(&Application::x, this, std::placeholders::_1)
 
 #define BIT(x) (1 << x)
-
+#define IS_SET(x, flag) ( x & flag )
 
 #ifdef XYZ_ENABLE_ASSERTS
 #define XYZ_ASSERT(x, ...) { if(!(x)) { XYZ_LOG_ERR("Assertion Failed: ", __VA_ARGS__ ); __debugbreak(); } }

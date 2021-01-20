@@ -99,7 +99,7 @@ namespace XYZ {
 
 	void GameLayer::OnInGuiRender()
 	{
-		if (InGui::Begin(1, "Test Window", glm::vec2(200.0f), glm::vec2(500.0f)) & InGuiReturnType::Hoovered)
+		if (InGui::Begin(1, "Test Window hahahahahaha", glm::vec2(200.0f), glm::vec2(100.0f)) & InGuiReturnType::Hoovered)
 		{
 
 		}
