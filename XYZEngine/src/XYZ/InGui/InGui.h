@@ -24,6 +24,15 @@ namespace XYZ {
 			RightClicked = BIT(1)
 		};
 	}
+	namespace InGuiResizeFlags {
+		enum ResizeFlags
+		{
+			Left   = BIT(0),
+			Right  = BIT(1),
+			Top    = BIT(2),
+			Bottom = BIT(3)
+		};
+	}
 
 	namespace InGuiWindowFlags {
 		enum WindowFlags
@@ -129,8 +138,10 @@ namespace XYZ {
 		glm::vec2  MousePosition;
 		glm::vec2  MouseOffset;
 		uint16_t   Flags;
-		uint32_t   ActiveWindowID = NullID;
-		uint32_t   MovedWindowID = NullID;
+		uint8_t	   ResizeFlags;
+		uint32_t   ActiveWindowID  = NullID;
+		uint32_t   MovedWindowID   = NullID;
+		uint32_t   ResizedWindowID = NullID;
 	};
 
 
@@ -153,6 +164,7 @@ namespace XYZ {
 		static void EndFrame();
 		static void OnEvent(Event& event);
 		static void SetLayout(uint32_t id, const InGuiLayout& layout);
+		static void Separator();
 
 		static bool Begin(uint32_t id, const char* name, const glm::vec2& position, const glm::vec2& size);
 		static void End();
@@ -162,10 +174,12 @@ namespace XYZ {
 	private:
 		static InGuiWindow& getInitializedWindow(uint32_t id, const glm::vec2& position, const glm::vec2& size);
 		static void handleWindowMove();
+		static void handleWindowResize();
 
 		static bool onMouseButtonPress(MouseButtonPressEvent& event);
 		static bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
 		static bool onMouseMove(MouseMovedEvent& event);
+
 	private:
 		static InGuiContext* s_Context;
 	};

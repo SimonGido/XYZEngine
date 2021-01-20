@@ -109,10 +109,15 @@ namespace XYZ {
 		InGui::End();
 		if (InGui::Begin(0, "Test Window", glm::vec2(0.0f), glm::vec2(500.0f)))
 		{
-			InGui::Button("Buttonik", glm::vec2(50.0f,50.0f));
+			if (IS_SET(InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f)), InGuiReturnType::Clicked))
+			{
+				std::cout << "clicked" << std::endl;
+			}
 			InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));
 			InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));
 			InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));
+
+			InGui::Separator();
 			InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));
 		}
 		else

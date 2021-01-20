@@ -5,7 +5,7 @@ namespace XYZ {
 	static glm::vec2 GenerateTextMesh(const char* source, const Ref<Font>& font, const glm::vec4& color, const glm::vec2& pos, const glm::vec2& size, InGuiMesh& mesh, uint32_t textureID)
 	{
 		if (!source)
-			return;
+			return { 0.0f, 0.0f };
 
 		size_t oldMeshSize = mesh.Quads.size();
 		float height = 0.0f;
@@ -82,7 +82,7 @@ namespace XYZ {
 		);
 		
 	}
-	void InGuiFactory::GenerateQuadWithText(const char* text, InGuiWindow& window, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, const InGuiRenderData& renderData)
+	glm::vec2 InGuiFactory::GenerateQuadWithText(const char* text, InGuiWindow& window, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, const InGuiRenderData& renderData)
 	{
 		glm::vec2 textOffset = { 7.0f, 0.0f };
 		glm::vec2 textPosition = position + glm::vec2{size.x, size.y / 2.0f} + textOffset;
@@ -98,9 +98,15 @@ namespace XYZ {
 				size,
 				InGuiRenderData::TextureID
 			});
-		glm::vec2 generatedSize = GenerateTextMesh(
+
+		glm::vec2 genSize = GenerateTextMesh(
 			text, renderData.Font, renderData.Color[InGuiRenderData::DEFAULT_COLOR],
 			textPosition, textSize, window.Mesh, InGuiRenderData::FontTextureID
 		);
+		float height = size.y;
+		if (height < genSize.y)
+			height = genSize.y;
+
+		return glm::vec2(size.x + genSize.x + textOffset.x, height);
 	}
 }

@@ -13,8 +13,16 @@ namespace XYZ {
 
 	InGuiContext* InGui::s_Context = nullptr;
 
+	static float s_HighestInRow = 0.0f;
 	static glm::vec2 s_LayoutOffset = glm::vec2(0.0f);
 
+	template <typename Type>
+	static bool TurnOffFlag(Type& num, Type flag)
+	{
+		bool isSet = (num & flag);
+		num &= ~flag;
+		return isSet;
+	}
 
 	static bool Collide(const glm::vec2& pos, const glm::vec2& size, const glm::vec2& point)
 	{
@@ -104,6 +112,7 @@ namespace XYZ {
 		Renderer::WaitAndRender();
 
 		handleWindowMove();
+		handleWindowResize();
 	}
 
 
@@ -123,6 +132,15 @@ namespace XYZ {
 		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
 		InGuiWindow& window = s_Context->Windows[id];
 		window.Layout = layout;
+	}
+
+	void InGui::Separator()
+	{
+		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
+		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
+
+		s_LayoutOffset.x = window.Position.x + window.Layout.LeftPadding;
+		s_LayoutOffset.y += s_HighestInRow + window.Layout.TopPadding;
 	}
 
 	InGuiWindow& InGui::getInitializedWindow(uint32_t id, const glm::vec2& position, const glm::vec2& size)
@@ -150,11 +168,29 @@ namespace XYZ {
 		}
 	}
 
+	void InGui::handleWindowResize()
+	{
+		uint32_t id = s_Context->FrameData.ResizedWindowID;
+		if (id != InGuiFrameData::NullID)
+		{
+			const glm::vec2& mousePos = s_Context->FrameData.MousePosition;
+			InGuiWindow& window = s_Context->Windows[id];
+			uint8_t resizeFlags = s_Context->FrameData.ResizeFlags;
+			if (IS_SET(resizeFlags, InGuiResizeFlags::Left))
+			{
+				window.Position.x = mousePos.x;
+				window.Size.x = window.Position.x + window.Size.x - mousePos.x;
+			}
+		}
+	}
+
 	bool InGui::Begin(uint32_t id, const char* name, const glm::vec2& position, const glm::vec2& size)
 	{	
 		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID == InGuiFrameData::NullID, "Missing end call");
 		s_Context->FrameData.ActiveWindowID = id;
 		InGuiWindow& window = getInitializedWindow(id, position, size);
+		
+		s_HighestInRow = 0.0f;
 		s_LayoutOffset = glm::vec2(
 			window.Position.x + window.Layout.LeftPadding, 
 			window.Position.y + InGuiWindow::PanelHeight + window.Layout.TopPadding
@@ -174,6 +210,7 @@ namespace XYZ {
 	{
 		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
 		s_Context->FrameData.ActiveWindowID = InGuiFrameData::NullID;
+		
 	}
 
 	uint8_t InGui::Button(const char* name, const glm::vec2& size)
@@ -181,14 +218,31 @@ namespace XYZ {
 		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
 		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
 
-		glm::vec2 position = s_LayoutOffset;
-		if (position.x < window.Position.x + window.Size.x - window.Layout.RightPadding)
+		uint8_t returnType = 0;
+		size_t oldQuadCount = window.Mesh.Quads.size();
+		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
+		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, color, size, s_LayoutOffset, s_Context->RenderData);
+				
+		if (s_LayoutOffset.x + genSize.x >= window.Position.x + window.Size.x)
 		{
-			InGuiFactory::GenerateQuadWithText(name, window, glm::vec4(1.0f), size, position, s_Context->RenderData);
+			window.Mesh.Quads.erase(window.Mesh.Quads.begin() + oldQuadCount, window.Mesh.Quads.end());
+			return returnType;
 		}
-		s_LayoutOffset.x += window.Layout.SpacingX;
+		else if (s_HighestInRow < genSize.y)
+			s_HighestInRow = genSize.y;
 
-		return 0;
+	
+		
+		if (Collide(s_LayoutOffset, size, s_Context->FrameData.MousePosition))
+		{
+			returnType |= InGuiReturnType::Hoovered;
+			window.Mesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
+			if (TurnOffFlag<uint16_t>(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked))
+				returnType |= InGuiReturnType::Clicked;
+		}
+
+		s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
+		return returnType;
 	}
 
 
@@ -196,26 +250,35 @@ namespace XYZ {
 	{
 		if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_LEFT))
 		{
+			const glm::vec2& mousePos = s_Context->FrameData.MousePosition;
+			s_Context->FrameData.Flags |= InGuiInputFlags::LeftClicked;
 			for (auto& window : s_Context->Windows)
 			{
 				if (IS_SET(window.Flags, InGuiWindowFlags::Initialized)
-					&& Collide(window.Position, { window.Size.x, InGuiWindow::PanelHeight }, s_Context->FrameData.MousePosition))
+					&& Collide(window.Position, window.Size, mousePos))
 				{
-					bool handled = false;
-					glm::vec2 minButtonPos = { window.Position.x + window.Size.x - InGuiWindow::PanelHeight, window.Position.y };
-					if (Collide(minButtonPos, { InGuiWindow::PanelHeight, InGuiWindow::PanelHeight }, s_Context->FrameData.MousePosition))
+					if (window.Position.y + InGuiWindow::PanelHeight >= mousePos.y)
 					{
-						window.Flags ^= InGuiWindowFlags::Collapsed;
+						bool handled = false;
+						glm::vec2 minButtonPos = { window.Position.x + window.Size.x - InGuiWindow::PanelHeight, window.Position.y };
+						if (Collide(minButtonPos, { InGuiWindow::PanelHeight, InGuiWindow::PanelHeight }, mousePos))
+						{
+							window.Flags ^= InGuiWindowFlags::Collapsed;
+						}
+						else
+						{
+							s_Context->FrameData.MovedWindowID = window.ID;
+							s_Context->FrameData.MouseOffset = mousePos - window.Position;
+							if (window.Flags & InGuiWindowFlags::EventBlocking)
+								handled = true;
+						}
+						return handled;
 					}
-					else
+					else if (mousePos.x < window.Position.x + 5.0f)
 					{
-						s_Context->FrameData.Flags |= InGuiInputFlags::LeftClicked;
-						s_Context->FrameData.MovedWindowID = window.ID;
-						s_Context->FrameData.MouseOffset = s_Context->FrameData.MousePosition - window.Position;
-						if (window.Flags & InGuiWindowFlags::EventBlocking)
-							handled = true;
+						s_Context->FrameData.ResizeFlags |= InGuiResizeFlags::Left;
+						s_Context->FrameData.ResizedWindowID = window.ID;
 					}
-					return handled;
 				}
 			}
 		}
