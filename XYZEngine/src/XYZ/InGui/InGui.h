@@ -24,6 +24,14 @@ namespace XYZ {
 		};
 	}
 
+	namespace InGuiWindowFlags {
+		enum WindowFlags
+		{
+			Initialized   = BIT(0),
+			EventBlocking = BIT(1)
+		};
+	}
+
 	struct InGuiQuad
 	{
 		glm::vec4 Color;
@@ -52,7 +60,7 @@ namespace XYZ {
 		glm::vec2 Position;
 		glm::vec2 Size;
 		uint32_t  ID;
-		bool	  Initialized = false;
+		uint16_t  Flags;
 	};
 
 	struct InGuiRenderData
@@ -92,26 +100,30 @@ namespace XYZ {
 		Ref<SubTexture> SubTexture[NUM_SUBTEXTURES];
 		glm::vec4		Color[NUM_COLORS];
 
-		static constexpr uint32_t TextureID = 0;
-		static constexpr uint32_t FontTextureID = 1;
-		static constexpr uint32_t ColorPickerTextureID = 2;
-		static constexpr uint32_t DefaultTextureCount = 3;
+		static constexpr uint32_t TextureID				= 0;
+		static constexpr uint32_t FontTextureID			= 1;
+		static constexpr uint32_t ColorPickerTextureID  = 2;
+		static constexpr uint32_t DefaultTextureCount   = 3;
 	};
 
 	struct InGuiFrameData
 	{
+		static constexpr uint32_t NullID = 65536;
+
 		glm::mat4  ViewProjectionMatrix;
 		glm::vec2  MousePosition;
-		uint32_t   ActiveWindowID;
+		glm::vec2  MouseOffset;
 		uint16_t   Flags;
+		uint32_t   ActiveWindowID = NullID;
+		uint32_t   MovedWindowID = NullID;
 	};
 
 	struct InGuiContext
 	{
 		InGuiFrameData			FrameData;
+		InGuiRenderData			RenderData;
 
 		std::vector<InGuiWindow> Windows;
-		std::vector<InGuiMesh>   Meshes;
 	};
 
 	class InGui
@@ -125,7 +137,11 @@ namespace XYZ {
 		static void OnEvent(Event& event);
 
 		static uint8_t Begin(uint32_t id, const char* name, const glm::vec2& position, const glm::vec2& size);
-		static uint8_t End();
+		static void End();
+
+	private:
+		static InGuiWindow& getInitializedWindow(uint32_t id, const glm::vec2& position, const glm::vec2& size);
+		static void handleWindowMove();
 
 	private:
 		static InGuiContext* s_Context;

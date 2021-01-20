@@ -2,6 +2,8 @@
 #include "Window.h"
 #include "LayerStack.h"
 #include "XYZ/Gui/GuiLayer.h"
+#include "XYZ/InGui/InGuiLayer.h"
+
 
 /**	@class Application
  *  Singleton class.
@@ -84,6 +86,8 @@ namespace XYZ {
 	private:
 		LayerStack m_LayerStack;
 		GuiLayer* m_GuiLayer;
+		InGuiLayer* m_InGuiLayer;
+
 		std::unique_ptr<Window> m_Window;
 
 		bool m_Running;

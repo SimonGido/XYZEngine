@@ -97,6 +97,25 @@ namespace XYZ {
 		m_EditorCamera.OnEvent(event);
 	}
 
+	void GameLayer::OnInGuiRender()
+	{
+		if (InGui::Begin(1, "Test Window", glm::vec2(200.0f), glm::vec2(500.0f)) & InGuiReturnType::Hoovered)
+		{
+
+		}
+		else
+		{
+		}
+		InGui::End();
+		if (InGui::Begin(0, "Test Window", glm::vec2(0.0f), glm::vec2(500.0f)) & InGuiReturnType::Hoovered)
+		{
+		}
+		else
+		{
+		}
+		InGui::End();		
+	}
+
 	bool GameLayer::onWindowResize(WindowResizeEvent& event)
 	{
 		m_Scene->SetViewportSize((uint32_t)event.GetWidth(), (uint32_t)event.GetHeight());

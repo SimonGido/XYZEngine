@@ -32,6 +32,9 @@ namespace XYZ {
 
 		m_GuiLayer = new GuiLayer();
 		m_LayerStack.PushOverlay(m_GuiLayer);
+
+		m_InGuiLayer = new InGuiLayer();
+		m_LayerStack.PushOverlay(m_InGuiLayer);
 	}
 
 	Application::~Application()
@@ -51,6 +54,11 @@ namespace XYZ {
 				
 				for (Layer* layer : m_LayerStack)	
 					layer->OnUpdate(timestep);
+
+				m_InGuiLayer->Begin();
+				for (Layer* layer : m_LayerStack)
+					layer->OnInGuiRender();
+				m_InGuiLayer->End();
 			
 			}
 			m_Window->Update();
