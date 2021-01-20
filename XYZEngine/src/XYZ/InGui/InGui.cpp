@@ -13,6 +13,7 @@ namespace XYZ {
 
 	InGuiContext* InGui::s_Context = nullptr;
 
+	static glm::vec2 s_LayoutOffset = glm::vec2(0.0f);
 
 
 	static bool Collide(const glm::vec2& pos, const glm::vec2& size, const glm::vec2& point)
@@ -89,7 +90,7 @@ namespace XYZ {
 		
 		for (auto winIt = s_Context->Windows.rbegin(); winIt != s_Context->Windows.rend(); ++winIt)
 		{
-			for (auto it = winIt->Mesh.Quads.rbegin(); it != winIt->Mesh.Quads.rend(); ++it)
+			for (auto it = winIt->Mesh.Quads.begin(); it != winIt->Mesh.Quads.end(); ++it)
 			{
 				Renderer2D::SubmitQuadNotCentered(it->Position, it->Size, it->TexCoord, it->TextureID, it->Color);
 			}
@@ -117,6 +118,13 @@ namespace XYZ {
 		{ }
 	}
 
+	void InGui::SetLayout(uint32_t id, const InGuiLayout& layout)
+	{
+		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
+		InGuiWindow& window = s_Context->Windows[id];
+		window.Layout = layout;
+	}
+
 	InGuiWindow& InGui::getInitializedWindow(uint32_t id, const glm::vec2& position, const glm::vec2& size)
 	{
 		if (s_Context->Windows.size() <= id)
@@ -142,29 +150,45 @@ namespace XYZ {
 		}
 	}
 
-
-
-	uint8_t InGui::Begin(uint32_t id, const char* name, const glm::vec2& position, const glm::vec2& size)
+	bool InGui::Begin(uint32_t id, const char* name, const glm::vec2& position, const glm::vec2& size)
 	{	
 		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID == InGuiFrameData::NullID, "Missing end call");
 		s_Context->FrameData.ActiveWindowID = id;
 		InGuiWindow& window = getInitializedWindow(id, position, size);
+		s_LayoutOffset = glm::vec2(
+			window.Position.x + window.Layout.LeftPadding, 
+			window.Position.y + InGuiWindow::PanelHeight + window.Layout.TopPadding
+		);
 
-		uint8_t returnValue = 0;
 		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
 		if (IS_SET(window.Flags, InGuiWindowFlags::Hoovered))
 		{
-			returnValue |= InGuiReturnType::Hoovered;
 			color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
 		}
 		InGuiFactory::GenerateWindow(name, window, color, s_Context->RenderData);
-		return returnValue;
+		
+		return !IS_SET(window.Flags, InGuiWindowFlags::Collapsed);
 	}
 
 	void InGui::End()
 	{
 		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
 		s_Context->FrameData.ActiveWindowID = InGuiFrameData::NullID;
+	}
+
+	uint8_t InGui::Button(const char* name, const glm::vec2& size)
+	{
+		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
+		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
+
+		glm::vec2 position = s_LayoutOffset;
+		if (position.x < window.Position.x + window.Size.x - window.Layout.RightPadding)
+		{
+			InGuiFactory::GenerateQuadWithText(name, window, glm::vec4(1.0f), size, position, s_Context->RenderData);
+		}
+		s_LayoutOffset.x += window.Layout.SpacingX;
+
+		return 0;
 	}
 
 

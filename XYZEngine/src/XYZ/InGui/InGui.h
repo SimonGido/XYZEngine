@@ -57,16 +57,26 @@ namespace XYZ {
 		std::vector<InGuiLine>	Lines;
 	};
 
+	struct InGuiLayout
+	{
+		float LeftPadding = 10.0f, RightPadding = 10.0f, TopPadding = 10.0f, BottomPadding = 10.0f;	
+		float SpacingX = 5.0f;
+		float SpacingY = 5.0f;
+	};
+
 	struct InGuiWindow
 	{
-		InGuiMesh Mesh;
-		glm::vec2 Position;
-		glm::vec2 Size;
-		uint32_t  ID;
-		uint16_t  Flags;
+		InGuiMesh   Mesh;
+		InGuiLayout Layout;
+		glm::vec2   Position;
+		glm::vec2   Size;
+		uint32_t    ID;
+		uint16_t    Flags;
 
 		static constexpr float PanelHeight = 25.0f;
 	};
+
+
 
 	struct InGuiRenderData
 	{
@@ -123,6 +133,8 @@ namespace XYZ {
 		uint32_t   MovedWindowID = NullID;
 	};
 
+
+
 	struct InGuiContext
 	{
 		InGuiFrameData			FrameData;
@@ -140,9 +152,12 @@ namespace XYZ {
 		static void BeginFrame(const glm::mat4& viewProjectionMatrix);
 		static void EndFrame();
 		static void OnEvent(Event& event);
+		static void SetLayout(uint32_t id, const InGuiLayout& layout);
 
-		static uint8_t Begin(uint32_t id, const char* name, const glm::vec2& position, const glm::vec2& size);
+		static bool Begin(uint32_t id, const char* name, const glm::vec2& position, const glm::vec2& size);
 		static void End();
+
+		static uint8_t Button(const char* name, const glm::vec2& size);
 
 	private:
 		static InGuiWindow& getInitializedWindow(uint32_t id, const glm::vec2& position, const glm::vec2& size);

@@ -99,7 +99,7 @@ namespace XYZ {
 
 	void GameLayer::OnInGuiRender()
 	{
-		if (InGui::Begin(1, "Test Window hahahahahaha", glm::vec2(200.0f), glm::vec2(100.0f)) & InGuiReturnType::Hoovered)
+		if (InGui::Begin(1, "Test Window hahahahahaha", glm::vec2(200.0f), glm::vec2(100.0f)))
 		{
 
 		}
@@ -107,8 +107,13 @@ namespace XYZ {
 		{
 		}
 		InGui::End();
-		if (InGui::Begin(0, "Test Window", glm::vec2(0.0f), glm::vec2(500.0f)) & InGuiReturnType::Hoovered)
+		if (InGui::Begin(0, "Test Window", glm::vec2(0.0f), glm::vec2(500.0f)))
 		{
+			InGui::Button("Buttonik", glm::vec2(50.0f,50.0f));
+			InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));
+			InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));
+			InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));
+			InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));
 		}
 		else
 		{
