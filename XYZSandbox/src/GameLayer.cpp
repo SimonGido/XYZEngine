@@ -119,6 +119,8 @@ namespace XYZ {
 			{
 				std::cout << "checked" << std::endl;
 			}
+			
+			InGui::Slider("Test", glm::vec2(200.0f, 25.0f), m_Value);
 
 			InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));
 			InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));

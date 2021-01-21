@@ -88,7 +88,6 @@ namespace XYZ {
 	void InGui::EndFrame()
 	{
 		XYZ_ASSERT(s_Context, "InGuiContext is not initialized");
-		s_Context->FrameData.Flags = 0;
 
 		glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f));
 		viewMatrix = glm::inverse(viewMatrix);
@@ -234,6 +233,7 @@ namespace XYZ {
 				
 		if (s_LayoutOffset.x + genSize.x >= window.Position.x + window.Size.x)
 		{
+			s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
 			window.Mesh.Quads.erase(window.Mesh.Quads.begin() + oldQuadCount, window.Mesh.Quads.end());
 			return returnType;
 		}
@@ -286,6 +286,48 @@ namespace XYZ {
 				val = !val;
 			}
 		}
+		s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
+		return returnType;
+	}
+
+	uint8_t InGui::Slider(const char* name, const glm::vec2& size, float& val)
+	{
+		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
+		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
+
+		uint8_t returnType = 0;
+		size_t oldQuadCount = window.Mesh.Quads.size();
+		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
+		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, color, size, s_LayoutOffset, s_Context->RenderData, InGuiRenderData::SLIDER);
+		glm::vec2 handleSize = glm::vec2(size.y, size.y);
+		glm::vec2 handlePosition = s_LayoutOffset + glm::vec2((size.x - size.y) * val, 0.0f);
+		InGuiFactory::GenerateQuadWithText(nullptr, window, color, handleSize, handlePosition, s_Context->RenderData, InGuiRenderData::SLIDER_HANDLE);
+
+		if (s_LayoutOffset.x + genSize.x >= window.Position.x + window.Size.x)
+		{
+			s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
+			window.Mesh.Quads.erase(window.Mesh.Quads.begin() + oldQuadCount, window.Mesh.Quads.end());
+			return returnType;
+		}
+		else if (s_HighestInRow < genSize.y)
+			s_HighestInRow = genSize.y;
+
+
+
+		if (Collide(s_LayoutOffset, size, s_Context->FrameData.MousePosition))
+		{
+			returnType |= InGuiReturnType::Hoovered;
+			window.Mesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
+			if (IS_SET(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked))
+			{
+				val = (s_Context->FrameData.MousePosition.x - s_LayoutOffset.x) / size.x;
+				if (val > 0.94f) val = 1.0f;
+				if (val < 0.06f) val = 0.0f;
+
+				returnType |= InGuiReturnType::Clicked;
+			}
+		}
+
 		s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
 		return returnType;
 	}
@@ -351,6 +393,7 @@ namespace XYZ {
 			s_Context->FrameData.MovedWindowID = InGuiFrameData::NullID;
 			s_Context->FrameData.ResizedWindowID = InGuiFrameData::NullID;
 			s_Context->FrameData.ResizeFlags = 0;
+			s_Context->FrameData.Flags &= ~InGuiInputFlags::LeftClicked;
 
 			for (auto& window : s_Context->Windows)
 			{
@@ -363,6 +406,7 @@ namespace XYZ {
 			}
 			return handled;
 		}
+
 		return false;
 	}
 

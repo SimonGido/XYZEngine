@@ -28,6 +28,7 @@ namespace XYZ {
 		Entity m_Entity;
 
 		bool m_CheckboxVal = false;
+		float m_Value = 0.1f;
 	};
 
 }
