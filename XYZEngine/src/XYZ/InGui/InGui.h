@@ -172,6 +172,7 @@ namespace XYZ {
 		static uint8_t Button(const char* name, const glm::vec2& size);
 		static uint8_t Checkbox(const char* name, const glm::vec2& size, bool& val);
 		static uint8_t Slider(const char* name, const glm::vec2& size, float& val);
+		static uint8_t Float(const char* name, const glm::vec2& size, float& val);
 
 	private:
 		static InGuiWindow& getInitializedWindow(uint32_t id, const glm::vec2& position, const glm::vec2& size);
