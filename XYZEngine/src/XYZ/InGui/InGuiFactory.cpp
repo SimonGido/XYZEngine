@@ -82,7 +82,7 @@ namespace XYZ {
 		);
 		
 	}
-	glm::vec2 InGuiFactory::GenerateQuadWithText(const char* text, InGuiWindow& window, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, const InGuiRenderData& renderData)
+	glm::vec2 InGuiFactory::GenerateQuadWithText(const char* text, InGuiWindow& window, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, const InGuiRenderData& renderData, uint32_t subTextureIndex)
 	{
 		glm::vec2 textOffset = { 7.0f, 0.0f };
 		glm::vec2 textPosition = position + glm::vec2{size.x, size.y / 2.0f} + textOffset;
@@ -93,7 +93,7 @@ namespace XYZ {
 		window.Mesh.Quads.push_back(
 			{
 				color,
-				renderData.SubTexture[InGuiRenderData::BUTTON]->GetTexCoords(),
+				renderData.SubTexture[subTextureIndex]->GetTexCoords(),
 				{position, 0.0f},
 				size,
 				InGuiRenderData::TextureID

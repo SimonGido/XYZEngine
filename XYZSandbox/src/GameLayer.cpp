@@ -113,6 +113,13 @@ namespace XYZ {
 			{
 				std::cout << "clicked" << std::endl;
 			}
+
+			InGui::Checkbox("Checkboxik", glm::vec2(50.0f), m_CheckboxVal);
+			if (m_CheckboxVal)
+			{
+				std::cout << "checked" << std::endl;
+			}
+
 			InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));
 			InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));
 			InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));

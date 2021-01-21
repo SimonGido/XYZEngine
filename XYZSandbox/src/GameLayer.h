@@ -26,6 +26,8 @@ namespace XYZ {
 		EditorCamera m_EditorCamera;
 
 		Entity m_Entity;
+
+		bool m_CheckboxVal = false;
 	};
 
 }

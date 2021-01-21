@@ -178,8 +178,17 @@ namespace XYZ {
 			uint8_t resizeFlags = s_Context->FrameData.ResizeFlags;
 			if (IS_SET(resizeFlags, InGuiResizeFlags::Left))
 			{
-				window.Position.x = mousePos.x;
 				window.Size.x = window.Position.x + window.Size.x - mousePos.x;
+				window.Position.x = mousePos.x;
+			}
+			else if (IS_SET(resizeFlags, InGuiResizeFlags::Right))
+			{
+				window.Size.x = mousePos.x - window.Position.x;
+			}
+
+			if (IS_SET(resizeFlags, InGuiResizeFlags::Bottom))
+			{
+				window.Size.y = mousePos.y - window.Position.y;
 			}
 		}
 	}
@@ -221,7 +230,7 @@ namespace XYZ {
 		uint8_t returnType = 0;
 		size_t oldQuadCount = window.Mesh.Quads.size();
 		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
-		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, color, size, s_LayoutOffset, s_Context->RenderData);
+		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, color, size, s_LayoutOffset, s_Context->RenderData, InGuiRenderData::BUTTON);
 				
 		if (s_LayoutOffset.x + genSize.x >= window.Position.x + window.Size.x)
 		{
@@ -245,6 +254,42 @@ namespace XYZ {
 		return returnType;
 	}
 
+	uint8_t InGui::Checkbox(const char* name, const glm::vec2& size, bool& val)
+	{
+		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
+		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
+
+		uint8_t returnType = 0;
+		size_t oldQuadCount = window.Mesh.Quads.size();
+		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
+		uint32_t subTextureIndex = InGuiRenderData::CHECKBOX_UNCHECKED;
+		if (val) subTextureIndex = InGuiRenderData::CHECKBOX_CHECKED;
+			
+		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, color, size, s_LayoutOffset, s_Context->RenderData, subTextureIndex);
+
+		if (s_LayoutOffset.x + genSize.x >= window.Position.x + window.Size.x)
+		{
+			s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
+			window.Mesh.Quads.erase(window.Mesh.Quads.begin() + oldQuadCount, window.Mesh.Quads.end());
+			return returnType;
+		}
+		else if (s_HighestInRow < genSize.y)
+			s_HighestInRow = genSize.y;
+
+		if (Collide(s_LayoutOffset, size, s_Context->FrameData.MousePosition))
+		{
+			returnType |= InGuiReturnType::Hoovered;
+			window.Mesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
+			if (TurnOffFlag<uint16_t>(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked))
+			{
+				returnType |= InGuiReturnType::Clicked;
+				val = !val;
+			}
+		}
+		s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
+		return returnType;
+	}
+
 
 	bool InGui::onMouseButtonPress(MouseButtonPressEvent& event)
 	{
@@ -257,7 +302,7 @@ namespace XYZ {
 				if (IS_SET(window.Flags, InGuiWindowFlags::Initialized)
 					&& Collide(window.Position, window.Size, mousePos))
 				{
-					if (window.Position.y + InGuiWindow::PanelHeight >= mousePos.y)
+					if (window.Position.y + InGuiWindow::PanelHeight >= mousePos.y) // Panel was hit
 					{
 						bool handled = false;
 						glm::vec2 minButtonPos = { window.Position.x + window.Size.x - InGuiWindow::PanelHeight, window.Position.y };
@@ -274,10 +319,23 @@ namespace XYZ {
 						}
 						return handled;
 					}
-					else if (mousePos.x < window.Position.x + 5.0f)
+					else // Handle resize
 					{
-						s_Context->FrameData.ResizeFlags |= InGuiResizeFlags::Left;
-						s_Context->FrameData.ResizedWindowID = window.ID;
+						if (mousePos.x < window.Position.x + 5.0f) // Left resize
+						{
+							s_Context->FrameData.ResizeFlags |= InGuiResizeFlags::Left;
+							s_Context->FrameData.ResizedWindowID = window.ID;
+						}
+						else if (mousePos.x > window.Position.x + window.Size.x - 5.0f) // Right resize
+						{
+							s_Context->FrameData.ResizeFlags |= InGuiResizeFlags::Right;
+							s_Context->FrameData.ResizedWindowID = window.ID;
+						}
+						if (mousePos.y > window.Position.y + window.Size.y - 5.0f) // Bottom
+						{
+							s_Context->FrameData.ResizeFlags |= InGuiResizeFlags::Bottom;
+							s_Context->FrameData.ResizedWindowID = window.ID;
+						}
 					}
 				}
 			}
@@ -291,6 +349,9 @@ namespace XYZ {
 		{
 			bool handled = false;
 			s_Context->FrameData.MovedWindowID = InGuiFrameData::NullID;
+			s_Context->FrameData.ResizedWindowID = InGuiFrameData::NullID;
+			s_Context->FrameData.ResizeFlags = 0;
+
 			for (auto& window : s_Context->Windows)
 			{
 				if (IS_SET(window.Flags, InGuiWindowFlags::Initialized)
