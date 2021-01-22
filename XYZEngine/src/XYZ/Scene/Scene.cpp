@@ -6,9 +6,8 @@
 #include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/SceneRenderer.h"
+#include "SceneEntity.h"
 
-
-#include "XYZ/Timer.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
@@ -40,8 +39,7 @@ namespace XYZ {
 			0,
 			100
 		);
-
-		
+	
 		m_RenderView = &m_ECS.CreateView<TransformComponent, SpriteRenderer>();
 		m_ParticleView = &m_ECS.CreateView<TransformComponent, ParticleComponent>();
 		m_LightView = &m_ECS.CreateView<TransformComponent, PointLight2D>();
@@ -57,9 +55,9 @@ namespace XYZ {
 		delete m_CameraSprite;
 	}
 
-	Entity Scene::CreateEntity(const std::string& name, const GUID& guid)
+	SceneEntity Scene::CreateEntity(const std::string& name, const GUID& guid)
 	{
-		Entity entity(&m_ECS);	
+		SceneEntity entity(m_ECS.CreateEntity(), this);	
 		IDComponent id;
 		id.ID = guid;
 		entity.AddComponent<IDComponent>(id);
@@ -74,7 +72,7 @@ namespace XYZ {
 		return entity;
 	}
 
-	void Scene::DestroyEntity(Entity entity)
+	void Scene::DestroyEntity(SceneEntity entity)
 	{
 		auto it = m_SceneGraphMap.find(entity);
 		XYZ_ASSERT(it != m_SceneGraphMap.end(), "");
@@ -90,10 +88,6 @@ namespace XYZ {
 		m_ECS.DestroyEntity(entity);
 	}
 
-	void Scene::SetParent(Entity parent, Entity child)
-	{
-	
-	}
 
 	void Scene::OnAttach()
 	{
@@ -236,14 +230,14 @@ namespace XYZ {
 		m_ViewportHeight = height;
 	}
 
-	Entity Scene::GetEntity(uint32_t index)
+	SceneEntity Scene::GetEntity(uint32_t index)
 	{
-		return { m_Entities[index], &m_ECS };
+		return { m_Entities[index], this };
 	}
 
-	Entity Scene::GetSelectedEntity()
+	SceneEntity Scene::GetSelectedEntity()
 	{
-		return { m_SelectedEntity, &m_ECS };
+		return { m_SelectedEntity, this };
 	}
 
 	void Scene::showSelection(uint32_t entity)

@@ -7,8 +7,8 @@
 #include "XYZ/Gui/Dockspace.h"
 #include "XYZ/ECS/ECSManager.h"
 #include "XYZ/ECS/Entity.h"
-
 #include "Scene.h"
+#include "SceneEntity.h"
 #include "AssetManager.h"
 
 #include <filesystem>
@@ -1576,7 +1576,7 @@ namespace XYZ {
 				guid = entity["Entity"].as<std::string>();
 				auto tagComponent = entity["SceneTagComponent"];
 				SceneTagComponent tag = tagComponent["Name"].as<std::string>();
-				Entity ent = result->CreateEntity(tag, guid);
+				SceneEntity ent = result->CreateEntity(tag, guid);
 			
 				auto transformComponent = entity["TransformComponent"];
 				if (transformComponent)

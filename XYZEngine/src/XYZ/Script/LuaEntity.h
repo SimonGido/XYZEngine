@@ -1,5 +1,6 @@
 #pragma once
 #include "XYZ/Scene/Scene.h"
+#include "XYZ/Scene/SceneEntity.h"
 #include "XYZ/Scene/Components.h"
 
 namespace XYZ {
@@ -22,7 +23,7 @@ namespace XYZ {
 
 		static void SetActiveScene(Ref<Scene> scene);
 	private:
-		Entity m_Entity;
+		SceneEntity m_Entity;
 
 		static Ref<Scene> s_Scene;
 	};

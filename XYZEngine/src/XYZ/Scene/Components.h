@@ -143,6 +143,11 @@ namespace XYZ {
 
 	struct ScriptComponent : public Type<ScriptComponent>
 	{
-		
+		std::string ModuleName;
+
+		ScriptComponent() = default;
+		ScriptComponent(const ScriptComponent & other) = default;
+		ScriptComponent(const std::string & moduleName)
+			: ModuleName(moduleName) {}
 	};
 }

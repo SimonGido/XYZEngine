@@ -33,6 +33,7 @@ namespace XYZ {
 					return false;
 				}
 				XYZ_LOG_INFO("Server Started");
+				return true;
 			}
 
 			void Stop()

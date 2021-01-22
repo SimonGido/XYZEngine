@@ -48,7 +48,7 @@ namespace XYZ {
 		Dockspace m_Dockspace;
 		GuiContext* m_GuiContext = nullptr;
 
-		Entity m_TestEntity;
+		SceneEntity m_TestEntity;
 
 		SpriteRenderer* m_SpriteRenderer;
 		TransformComponent* m_Transform;

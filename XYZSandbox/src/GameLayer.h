@@ -25,7 +25,7 @@ namespace XYZ {
 
 		EditorCamera m_EditorCamera;
 
-		Entity m_Entity;
+		SceneEntity m_Entity;
 
 		bool m_CheckboxVal = false;
 		float m_Value = 0.1f;

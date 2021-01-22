@@ -31,6 +31,8 @@
 #include "XYZ/Scene/SceneCamera.h"
 #include "XYZ/Scene/AssetManager.h"
 #include "XYZ/Scene/Animation.h"
+#include "XYZ/Scene/SceneEntity.h"
+#include "XYZ/Scene/Scene.h"
 
 
 
@@ -61,6 +63,7 @@
 #include "XYZ/FSM/StateMachine.h"
 
 //------Scripting-------//
+#include "XYZ/Script/ScriptEngine.h"
 #include "XYZ/ScriptEngine/MonoScriptEngine.h"
 #include "XYZ/Script/LuaApp.h"
 #include "XYZ/Script/LuaEntity.h"
