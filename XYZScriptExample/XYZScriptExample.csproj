@@ -43,6 +43,10 @@
   <ItemGroup>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\XYZScriptCore\XYZScriptCore.csproj">
+      <Project>{0EC7F5CD-7A87-7104-43C2-BA81AF41B6E0}</Project>
+      <Name>XYZScriptCore</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

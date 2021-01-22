@@ -335,3 +335,8 @@ project "XYZScriptExample"
 		{
 			"%{prj.name}/src/**.cs", 
 		}
+
+		links
+		{
+			"XYZScriptCore"
+		}

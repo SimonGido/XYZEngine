@@ -124,9 +124,7 @@ namespace XYZ {
 
 	static void InitMono()
 	{
-		//mono_set_assemblies_path("../XYZEngine/vendor/mono/lib");
-		// mono_jit_set_trace_options("--verbose");
-		mono_set_dirs("lib", "mypath/etc");
+		mono_set_assemblies_path("mono/lib");
 
 		auto domain = mono_jit_init("XYZEngine");
 
