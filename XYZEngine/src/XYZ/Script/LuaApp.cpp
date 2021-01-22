@@ -98,6 +98,14 @@ namespace XYZ {
 		return Ref<SubTexture>::Create(texture, texCoords);
 	}
 
+	static Ref<SubTexture> GetSubTexture(SpriteRenderer* spriteRenderer)
+	{
+		return spriteRenderer->SubTexture;
+	}
+	static void SetSubTexture(SpriteRenderer* spriteRenderer, Ref<SubTexture> subTexture)
+	{
+		spriteRenderer->SubTexture = subTexture;
+	}
 
 	LuaApp::LuaApp(const std::string& directory, const std::string& filename)
 		:
@@ -152,9 +160,6 @@ namespace XYZ {
 			.endClass()
 			.deriveClass <Texture2D, Texture>("Texture2D")
 			.addStaticFunction("Create", &CreateTexture2D)
-			.endClass()
-			.beginClass<Ref<Texture>>("RefTexture")
-			.addFunction("Get", &Ref<Texture>::Get)
 			.endClass();
 			
 
@@ -162,9 +167,6 @@ namespace XYZ {
 			.beginClass<SubTexture>("SubTexture")
 			.addFunction("SetTexture", &SubTexture::SetTexture)
 			.addFunction("SetCoords", &SubTexture::SetCoords)
-			.endClass()
-			.beginClass<Ref<SubTexture>>("RefSubTexture")
-			.addFunction("Get", &Ref<SubTexture>::Get)
 			.addStaticFunction("Create", &CreateSubTexture)
 			.endClass();
 
@@ -179,7 +181,8 @@ namespace XYZ {
 
 		luabridge::getGlobalNamespace(m_L)
 			.beginClass<SpriteRenderer>("SpriteRenderer")
-			.addProperty("SubTexture", &SpriteRenderer::SubTexture)
+			.addFunction("GetSubTexture", &GetSubTexture)
+			.addFunction("SetSubTexture", &SetSubTexture)
 			.addProperty("Color", &SpriteRenderer::Color)
 			.endClass();
 		

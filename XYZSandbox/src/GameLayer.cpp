@@ -18,8 +18,7 @@ namespace XYZ {
 		Renderer::Init();
 
 		m_Scene = Ref<Scene>::Create("Scene");
-		//MonoScriptEngine::Init("XYZScriptCore.dll");
-		ScriptEngine::Init("XYZScriptExample.dll");
+		//ScriptEngine::Init("XYZScriptExample.dll");
 
 		m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
 		auto& app = Application::Get();

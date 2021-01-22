@@ -1,7 +1,7 @@
 require("Assets/Scripts/Another")
 
 entity = Entity.FindEntity("Test Entity")
-texture = Texture2D.Create(0, 0, 0, "Assets/Textures/player_sprite.png")
+texture = Texture2D.Create(0, 0, 0, "Assets/Textures/Background.png")
 
 
 function OnCreate()
@@ -18,14 +18,14 @@ function OnUpdate(ts)
 	coords = Vec4(ts - 0.5, ts - 0.5, ts + 0.5, ts + 0.5)
 	coords.x = Add(ts, 0.5)
 
-	local subTexture = RefSubTexture.Create(texture, coords)
+	local subTexture = SubTexture.Create(texture, coords)
 	
 	spriteRenderer.Color.x = 1
 	spriteRenderer.Color.y = 0
 	spriteRenderer.Color.z = 0
 
-	spriteRenderer.SubTexture = subTexture
-	
+	test = spriteRenderer:GetSubTexture():SetTexture(texture)
+	spriteRenderer:GetSubTexture():SetCoords(coords)
 	
 	if Input.IsKeyPressed(65) then -- A
 		transform.Translation.x = transform.Translation.x - ts * 5
