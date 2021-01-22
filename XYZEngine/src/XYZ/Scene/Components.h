@@ -6,6 +6,7 @@
 #include "XYZ/Particle/ParticleEffect.h"
 #include "XYZ/Renderer/SubTexture.h"
 
+
 #include "SceneCamera.h"
 #include "AnimationController.h"
 
@@ -36,6 +37,7 @@ namespace XYZ {
 			: Translation(translation)
 		{}
 		
+		glm::mat4 Transform = glm::mat4(1.0f);
 		glm::vec3 Translation = { 0.0f,0.0f,0.0f };
 		glm::vec3 Rotation = { 0.0f,0.0f,0.0f };
 		glm::vec3 Scale = { 1.0f,1.0f,1.0f };
@@ -55,6 +57,7 @@ namespace XYZ {
 	struct SceneTagComponent : public Type<SceneTagComponent>
 	{
 		std::string Name;
+		SceneTagComponent() = default;
 		SceneTagComponent(const std::string& name)
 			: Name(name)
 		{}
@@ -73,6 +76,7 @@ namespace XYZ {
 
 	struct SpriteRenderer : public Type<SpriteRenderer>
 	{
+		SpriteRenderer() = default;
 		SpriteRenderer(
 			Ref<Material> material,
 			Ref<SubTexture> subTexture,
@@ -141,6 +145,7 @@ namespace XYZ {
 		static void RemoveRelation(uint32_t child, ECSManager& ecs);
 	};
 
+	struct EntityScriptClass;
 	struct ScriptComponent : public Type<ScriptComponent>
 	{
 		std::string ModuleName;
@@ -149,5 +154,12 @@ namespace XYZ {
 		ScriptComponent(const ScriptComponent & other) = default;
 		ScriptComponent(const std::string & moduleName)
 			: ModuleName(moduleName) {}
+
+
+	private:
+		EntityScriptClass* ScriptClass = nullptr;
+		uint32_t Handle = 0;
+
+		friend class ScriptEngine;
 	};
 }

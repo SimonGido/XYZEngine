@@ -24,7 +24,6 @@ namespace XYZ {
 			m_Scene(scene),
 			m_ID(id)
 		{
-
 		}
 
 		template<typename T>
@@ -67,14 +66,11 @@ namespace XYZ {
 		template <typename T>
 		T& AddComponent(const T& component)
 		{
-			T& res = m_Scene->m_ECS.AddComponent<T>(m_ID, component);
-			m_Scene->onAddComponent<T>(m_ID, res);
-			return res;
+			return m_Scene->m_ECS.AddComponent<T>(m_ID, component);
 		}
 		template <typename T>
 		void RemoveComponent()
 		{
-			m_Scene->onRemoveComponent<T>(m_ID);
 			m_Scene->m_ECS.RemoveComponent<T>(m_ID);
 		}
 

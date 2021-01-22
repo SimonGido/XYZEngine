@@ -18,7 +18,7 @@ namespace XYZ {
 		Renderer::Init();
 
 		m_Scene = Ref<Scene>::Create("Scene");
-		ScriptEngine::Init("XYZScriptExample.dll");
+		ScriptEngine::Init("Assets/Scripts/XYZScriptExample.dll");
 
 		m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
 		auto& app = Application::Get();
@@ -34,6 +34,10 @@ namespace XYZ {
 		material->Set("u_Color", glm::vec4(1.0f));
 		m_Entity = m_Scene->CreateEntity("Test Entity", GUID());
 		
+		m_Entity.AddComponent<ScriptComponent>(ScriptComponent("Example.Script"));
+		ScriptEngine::InitScriptEntity(m_Entity);
+		ScriptEngine::InstantiateEntityClass(m_Entity);
+
 		SpriteRenderer& spriteRenderer = m_Entity.AddComponent<SpriteRenderer>(SpriteRenderer(
 			material, subTexture, glm::vec4(1.0f), 0
 		));
@@ -71,7 +75,7 @@ namespace XYZ {
 		SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer->SetSpecification(specs);
 	
 		LuaEntity::SetActiveScene(m_Scene);
-		s_LuaApp = new LuaApp("Assets/Scripts", "Test.lua");
+		s_LuaApp = new LuaApp("Assets/Lua", "Test.lua");
 	}
 
 	void GameLayer::OnDetach()

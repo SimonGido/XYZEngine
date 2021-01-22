@@ -61,29 +61,12 @@ namespace XYZ {
         void showSelection(uint32_t entity);
         void showCamera(uint32_t entity);
 
-        template <typename T>
-        void onAddComponent(uint32_t entity, const T& component)
-        {
-            if (T::GetComponentID() == ScriptComponent::GetComponentID())
-                m_EntitiesWithScript.push_back(entity);
-        }
-
-        template <typename T>
-        void onRemoveComponent(uint32_t entity)
-        {
-            if (T::GetComponentID() == ScriptComponent::GetComponentID())
-            {
-                auto it = std::find(m_EntitiesWithScript.begin(), m_EntitiesWithScript.end(), entity);
-                if (it != m_EntitiesWithScript.end())
-                    m_EntitiesWithScript.erase(it);
-            }
-        }
-
+       
     private:
         ECSManager m_ECS;
         GUID m_UUID;
 
-        std::vector<uint32_t> m_EntitiesWithScript;
+        std::vector<uint32_t> m_Entities;
 
         ComponentView<TransformComponent, SpriteRenderer>* m_RenderView;
         ComponentView<TransformComponent, ParticleComponent>* m_ParticleView;
@@ -98,8 +81,7 @@ namespace XYZ {
         uint32_t m_SelectedEntity;
         uint32_t m_CameraEntity;
 
-        std::vector<uint32_t> m_Entities;
-        std::unordered_map<uint32_t, uint32_t> m_SceneGraphMap;
+       
 
         uint32_t m_ViewportWidth;
         uint32_t m_ViewportHeight;

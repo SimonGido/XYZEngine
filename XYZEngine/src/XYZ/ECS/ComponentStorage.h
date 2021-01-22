@@ -14,6 +14,7 @@ namespace XYZ {
 		virtual void AddRawComponent(uint32_t entity, uint8_t* component) = 0;
 		virtual uint32_t EntityDestroyed(uint32_t entity) = 0;
 		virtual uint32_t GetComponentIndex(uint32_t entity) const = 0;
+		virtual uint32_t GetEntityAtIndex(size_t index) const = 0;
 		virtual IComponentStorage* Clone() = 0;
 	};
 
@@ -76,7 +77,10 @@ namespace XYZ {
 		{
 			return RemoveComponent(entity);
 		}
-
+		virtual uint32_t GetEntityAtIndex(size_t index) const override
+		{
+			return m_Data[index].Entity;
+		}
 		virtual IComponentStorage* Clone() override
 		{
 			ComponentStorage<T>* newStorage = new ComponentStorage<T>();

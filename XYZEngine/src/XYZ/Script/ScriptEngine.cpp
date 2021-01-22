@@ -14,13 +14,13 @@
 #include <winioctl.h>
 
 #include "XYZ/Scene/SceneEntity.h"
+#include "ScriptEngineRegistry.h"
 
 namespace XYZ {
 
 	static MonoDomain* s_MonoDomain = nullptr;
 	static std::string s_AssemblyPath;
 	static Ref<Scene> s_SceneContext;
-	//static EntityInstanceMap s_EntityInstanceMap;
 
 	// Assembly images
 	MonoImage* s_AppAssemblyImage = nullptr;
@@ -40,24 +40,19 @@ namespace XYZ {
 		MonoMethod* OnDestroyMethod = nullptr;
 		MonoMethod* OnUpdateMethod = nullptr;
 
-		// Physics
-		MonoMethod* OnCollision2DBeginMethod = nullptr;
-		MonoMethod* OnCollision2DEndMethod = nullptr;
-
 		void InitClassMethods(MonoImage* image)
 		{
 			OnCreateMethod = GetMethod(image, FullName + ":OnCreate()");
 			OnUpdateMethod = GetMethod(image, FullName + ":OnUpdate(single)");
 		}
 	};
+	static std::unordered_map<std::string, EntityScriptClass*> s_EntityClassMap;
 
-	MonoObject* EntityInstance::GetInstance()
+	static MonoObject* GetInstance(uint32_t handle)
 	{
-		XYZ_ASSERT(Handle, "Entity has not been instantiated!");
-		return mono_gchandle_get_target(Handle);
+		XYZ_ASSERT(handle, "Entity has not been instantiated!");
+		return mono_gchandle_get_target(handle);
 	}
-
-	static std::unordered_map<std::string, EntityScriptClass> s_EntityClassMap;
 
 	MonoAssembly* LoadAssemblyFromFile(const char* filepath)
 	{
@@ -87,7 +82,8 @@ namespace XYZ {
 		}
 
 		DWORD read = 0;
-		ReadFile(file, file_data, file_size, &read, NULL);
+		if (ReadFile(file, file_data, file_size, &read, NULL))
+		{ }
 		if (file_size != read)
 		{
 			free(file_data);
@@ -197,6 +193,8 @@ namespace XYZ {
 	void ScriptEngine::Shutdown()
 	{
 		s_SceneContext = nullptr;
+		for (auto it : s_EntityClassMap)
+			delete it.second;
 	}
 
 
@@ -220,7 +218,7 @@ namespace XYZ {
 
 		auto appAssembly = LoadAssembly(path);
 		auto appAssemblyImage = GetAssemblyImage(appAssembly);
-		//ScriptEngineRegistry::RegisterAll();
+		ScriptEngineRegistry::RegisterAll();
 
 		if (cleanup)
 		{
@@ -237,9 +235,11 @@ namespace XYZ {
 		
 		Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
 		XYZ_ASSERT(scene, "No active scene!");
-		for (uint32_t entity : scene->m_EntitiesWithScript)
+
+		ComponentStorage<ScriptComponent>* scriptStorage = scene->m_ECS.GetStorage<ScriptComponent>();
+		for (size_t i = 0; i < scriptStorage->Size(); ++i)
 		{
-			InitScriptEntity(SceneEntity{ entity, scene.Raw() });
+			InitScriptEntity(SceneEntity{ scriptStorage->GetEntityAtIndex(i), scene.Raw() });
 		}
 	}
 
@@ -253,45 +253,69 @@ namespace XYZ {
 	}
 	void ScriptEngine::OnCreateEntity(SceneEntity entity)
 	{
+		ScriptComponent& scriptComponent = entity.GetComponent<ScriptComponent>();
+		if (scriptComponent.ScriptClass->OnCreateMethod)
+			CallMethod(GetInstance(scriptComponent.Handle), scriptComponent.ScriptClass->OnCreateMethod);
 	}
 	void ScriptEngine::OnUpdateEntity(SceneEntity entity, Timestep ts)
 	{
+		auto& scriptComponent = entity.GetComponent<ScriptComponent>();
+		if (scriptComponent.ScriptClass->OnUpdateMethod)
+		{
+			void* args[] = { &ts };
+			CallMethod(GetInstance(scriptComponent.Handle), scriptComponent.ScriptClass->OnUpdateMethod, args);
+		}
 	}
-	void ScriptEngine::OnScriptComponentDestroyed(Entity entity)
-	{
-	}
+
 	bool ScriptEngine::ModuleExists(const std::string& moduleName)
 	{
-		return false;
+		std::string NamespaceName, ClassName;
+		if (moduleName.find('.') != std::string::npos)
+		{
+			NamespaceName = moduleName.substr(0, moduleName.find_last_of('.'));
+			ClassName = moduleName.substr(moduleName.find_last_of('.') + 1);
+		}
+		else
+		{
+			ClassName = moduleName;
+		}
+
+		MonoClass* monoClass = mono_class_from_name(s_AppAssemblyImage, NamespaceName.c_str(), ClassName.c_str());
+		return monoClass != nullptr;
 	}
+
 	void ScriptEngine::InitScriptEntity(SceneEntity entity)
 	{
 		Scene* scene = entity.m_Scene;
 		GUID id = entity.GetComponent<IDComponent>().ID;
-		auto& moduleName = entity.GetComponent<ScriptComponent>().ModuleName;
-		if (moduleName.empty())
+		auto& scriptComponent = entity.GetComponent<ScriptComponent>();
+		if (scriptComponent.ModuleName.empty())
 			return;
 
-		if (!ModuleExists(moduleName))
+		if (!ModuleExists(scriptComponent.ModuleName))
 		{
-			XYZ_LOG_ERR("Entity references non-existent script module ", moduleName);
+			XYZ_LOG_ERR("Entity references non-existent script module ", scriptComponent.ModuleName);
 			return;
 		}
 
-		EntityScriptClass& scriptClass = s_EntityClassMap[moduleName];
-		scriptClass.FullName = moduleName;
-		if (moduleName.find('.') != std::string::npos)
+		auto it = s_EntityClassMap.find(scriptComponent.ModuleName);
+		if (it == s_EntityClassMap.end())
+			s_EntityClassMap[scriptComponent.ModuleName] = new EntityScriptClass();
+		
+		scriptComponent.ScriptClass = s_EntityClassMap[scriptComponent.ModuleName];
+		if (scriptComponent.ModuleName.find('.') != std::string::npos)
 		{
-			scriptClass.NamespaceName = moduleName.substr(0, moduleName.find_last_of('.'));
-			scriptClass.ClassName = moduleName.substr(moduleName.find_last_of('.') + 1);
+			scriptComponent.ScriptClass->NamespaceName = scriptComponent.ModuleName.substr(0, scriptComponent.ModuleName.find_last_of('.'));
+			scriptComponent.ScriptClass->ClassName = scriptComponent.ModuleName.substr(scriptComponent.ModuleName.find_last_of('.') + 1);
 		}
 		else
 		{
-			scriptClass.ClassName = moduleName;
+			scriptComponent.ScriptClass->ClassName = scriptComponent.ModuleName;
 		}
+		scriptComponent.ScriptClass->FullName = scriptComponent.ModuleName;
 
-		scriptClass.Class = GetClass(s_AppAssemblyImage, scriptClass);
-		scriptClass.InitClassMethods(s_AppAssemblyImage);
+		scriptComponent.ScriptClass->Class = GetClass(s_AppAssemblyImage, *scriptComponent.ScriptClass);
+		scriptComponent.ScriptClass->InitClassMethods(s_AppAssemblyImage);
 
 		//EntityInstanceData& entityInstanceData = s_EntityInstanceMap[scene->GetUUID()][id];
 		//EntityInstance& entityInstance = entityInstanceData.Instance;
@@ -336,12 +360,33 @@ namespace XYZ {
 		//		}
 		//	}
 		//}
+	}
 
-	}
-	void ScriptEngine::ShutdownScriptEntity(SceneEntity entity, const std::string& moduleName)
-	{
-	}
 	void ScriptEngine::InstantiateEntityClass(SceneEntity entity)
 	{
+		Scene* scene = entity.m_Scene;
+		GUID id = entity.GetComponent<IDComponent>().ID;
+		ScriptComponent& scriptComponent = entity.GetComponent<ScriptComponent>();
+		
+		XYZ_ASSERT(scriptComponent.ScriptClass, "");
+		scriptComponent.Handle = Instantiate(*scriptComponent.ScriptClass);
+
+		MonoProperty* entityIDPropery = mono_class_get_property_from_name(scriptComponent.ScriptClass->Class, "ID");
+		mono_property_get_get_method(entityIDPropery);
+		MonoMethod* entityIDSetMethod = mono_property_get_set_method(entityIDPropery);
+		void* param[] = { &id };
+		CallMethod(GetInstance(scriptComponent.Handle), entityIDSetMethod, param);
+
+		//// Set all public fields to appropriate values
+		//ScriptModuleFieldMap& moduleFieldMap = entityInstanceData.ModuleFieldMap;
+		//if (moduleFieldMap.find(moduleName) != moduleFieldMap.end())
+		//{
+		//	auto& publicFields = moduleFieldMap.at(moduleName);
+		//	for (auto& [name, field] : publicFields)
+		//		field.CopyStoredValueToRuntime();
+		//}
+
+		// Call OnCreate function (if exists)
+		OnCreateEntity(entity);
 	}
 }

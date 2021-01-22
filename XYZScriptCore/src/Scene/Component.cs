@@ -12,7 +12,7 @@ namespace XYZ
         public Entity Entity { get; set; }
     }
 
-    public class TagComponent : Component
+    public class SceneTagComponent : Component
     {
         public string Tag
         {
@@ -68,20 +68,25 @@ namespace XYZ
         // TODO
     }
 
-    public class SpriteRendererComponent : Component
+    public class SpriteRenderer : Component
     {
         // TODO
     }
 
-    // TODO
-    public class RigidBody2DComponent : Component
+    public class AnimatorComponent : Component
     {
-        public void ApplyLinearImpulse(Vector2 impulse, Vector2 offset, bool wake)
-        {
-            ApplyLinearImpulse_Native(Entity.ID, ref impulse, ref offset, wake);
-        }
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ApplyLinearImpulse_Native(ulong entityID, ref Vector2 impulse, ref Vector2 offset, bool wake);
+        // TODO
+    }
+    public class ParticleComponent : Component
+    {
+        // TODO
+    }
+    public class Relationship : Component
+    {
+        // TODO
+    }
+    public class PointLight2D : Component
+    {
+        // TODO
     }
 }

@@ -6,13 +6,14 @@
 #include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/SceneRenderer.h"
+#include "XYZ/ECS/ComponentGroup.h"
 #include "SceneEntity.h"
 
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
-#include "XYZ/ECS/ComponentGroup.h"
+#include "XYZ/Script/ScriptEngine.h"
 
 namespace XYZ {
 
@@ -66,25 +67,19 @@ namespace XYZ {
 		
 		
 		m_Entities.push_back(entity);
-		uint32_t index = m_Entities.size() - 1;
-		m_SceneGraphMap.insert({ entity,index });
-	
 		return entity;
 	}
 
 	void Scene::DestroyEntity(SceneEntity entity)
 	{
-		auto it = m_SceneGraphMap.find(entity);
-		XYZ_ASSERT(it != m_SceneGraphMap.end(), "");
-	
 		// Swap with last and delete
 		uint32_t lastEntity = m_Entities.back();
-		m_Entities[it->second] = std::move(m_Entities.back());
-		m_Entities.pop_back();
-
-		m_SceneGraphMap[lastEntity] = it->second;
-		m_SceneGraphMap.erase(it);		
-
+		auto it = std::find(m_Entities.begin(), m_Entities.end(), (uint32_t)entity);
+		if (it != m_Entities.end())
+		{
+			*it = std::move(m_Entities.back());
+			m_Entities.pop_back();
+		}
 		m_ECS.DestroyEntity(entity);
 	}
 
@@ -160,7 +155,8 @@ namespace XYZ {
 	{
 		for (size_t i = 0; i < m_ScriptStorage->Size(); ++i)
 		{
-			
+			ScriptComponent& scriptComponent = (*m_ScriptStorage)[i];
+			ScriptEngine::OnUpdateEntity({ m_ScriptStorage->GetEntityAtIndex(i),this }, ts);
 		}
 
 		for (size_t i = 0; i < m_AnimatorStorage->Size(); ++i)
