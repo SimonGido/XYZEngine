@@ -142,6 +142,9 @@ namespace XYZ {
 		uint32_t   ActiveWindowID  = NullID;
 		uint32_t   MovedWindowID   = NullID;
 		uint32_t   ResizedWindowID = NullID;
+
+		std::vector<bool> HandleInput;
+		size_t			  InputIndex = 0;
 	};
 
 
@@ -175,6 +178,7 @@ namespace XYZ {
 		static uint8_t Float(const char* name, const glm::vec2& size, float& val);
 
 	private:
+		static bool eraseOutOfBorders(size_t oldQuadCount, const glm::vec2& genSize, InGuiWindow& window);
 		static InGuiWindow& getInitializedWindow(uint32_t id, const glm::vec2& position, const glm::vec2& size);
 		static void handleWindowMove();
 		static void handleWindowResize();
@@ -182,6 +186,8 @@ namespace XYZ {
 		static bool onMouseButtonPress(MouseButtonPressEvent& event);
 		static bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
 		static bool onMouseMove(MouseMovedEvent& event);
+		static bool onKeyTyped(KeyTypedEvent& event);
+		static bool onKeyPressed(KeyPressedEvent& event);
 
 	private:
 		static InGuiContext* s_Context;

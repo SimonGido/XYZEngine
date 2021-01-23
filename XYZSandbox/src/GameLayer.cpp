@@ -19,6 +19,7 @@ namespace XYZ {
 
 		m_Scene = Ref<Scene>::Create("Scene");
 		ScriptEngine::Init("Assets/Scripts/XYZScriptExample.dll");
+		ScriptEngine::SetSceneContext(m_Scene);
 
 		m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
 		auto& app = Application::Get();
@@ -80,6 +81,7 @@ namespace XYZ {
 
 	void GameLayer::OnDetach()
 	{
+		ScriptEngine::Shutdown();
 		Renderer::Shutdown();
 	}
 
@@ -132,6 +134,9 @@ namespace XYZ {
 
 			InGui::Separator();
 			InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));
+			InGui::Float("Test", glm::vec2(50.0f), m_Value);
+			InGui::Float("Test", glm::vec2(50.0f), m_Test);
+			InGui::Float("Test", glm::vec2(50.0f), m_Haha);
 		}
 		else
 		{

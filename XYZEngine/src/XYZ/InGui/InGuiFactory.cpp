@@ -2,18 +2,18 @@
 #include "InGuiFactory.h"
 
 namespace XYZ {
-	static glm::vec2 GenerateTextMesh(const char* source, const Ref<Font>& font, const glm::vec4& color, const glm::vec2& pos, const glm::vec2& size, InGuiMesh& mesh, uint32_t textureID)
+
+	static glm::vec2 GenerateTextMesh(const char* source, const Ref<Font>& font, const glm::vec4& color, const glm::vec2& pos, const glm::vec2& size, InGuiMesh& mesh, uint32_t textureID, uint32_t maxCount)
 	{
 		if (!source)
 			return { 0.0f, 0.0f };
 
-		size_t oldMeshSize = mesh.Quads.size();
 		float height = 0.0f;
 		float xCursor = 0.0f;
 		float yCursor = 0.0f;
 		
 		uint32_t counter = 0;
-		while (source[counter] != '\0')
+		while (source[counter] != '\0' && counter < maxCount)
 		{
 			auto& character = font->GetCharacter(source[counter]);
 			if (xCursor + (float)character.XAdvance >= size.x)
@@ -78,18 +78,12 @@ namespace XYZ {
 			});	
 		GenerateTextMesh(
 			text, renderData.Font, renderData.Color[InGuiRenderData::DEFAULT_COLOR],
-			textPosition, textSize, window.Mesh, InGuiRenderData::FontTextureID
+			textPosition, textSize, window.Mesh, InGuiRenderData::FontTextureID, 1000
 		);
 		
 	}
 	glm::vec2 InGuiFactory::GenerateQuadWithText(const char* text, InGuiWindow& window, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, const InGuiRenderData& renderData, uint32_t subTextureIndex)
 	{
-		glm::vec2 textOffset = { 7.0f, 0.0f };
-		glm::vec2 textPosition = position + glm::vec2{size.x, size.y / 2.0f} + textOffset;
-		glm::vec2 textSize = { window.Size.x - window.Layout.RightPadding, window.Size.y };
-		textPosition.x = std::floor(textPosition.x);
-		textPosition.y = std::floor(textPosition.y);
-		
 		window.Mesh.Quads.push_back(
 			{
 				color,
@@ -99,14 +93,78 @@ namespace XYZ {
 				InGuiRenderData::TextureID
 			});
 
+		glm::vec2 textPosition = position;
+		glm::vec2 textSize = { window.Size.x - window.Layout.RightPadding, window.Size.y };
+		textPosition.x = std::floor(textPosition.x);
+		textPosition.y = std::floor(textPosition.y);
+
+		size_t oldMeshSize = window.Mesh.Quads.size();
 		glm::vec2 genSize = GenerateTextMesh(
 			text, renderData.Font, renderData.Color[InGuiRenderData::DEFAULT_COLOR],
-			textPosition, textSize, window.Mesh, InGuiRenderData::FontTextureID
+			position, textSize, window.Mesh, InGuiRenderData::FontTextureID, 1000
 		);
+
+		glm::vec2 textOffset = { 7.0f, 0.0f };
+		
+		for (size_t i = oldMeshSize; i < window.Mesh.Quads.size(); ++i)
+		{
+			window.Mesh.Quads[i].Position.x += size.x + textOffset.x;
+			window.Mesh.Quads[i].Position.y += (size.y / 2.0f) + (genSize.y / 2.0f);
+		}
+
+
 		float height = size.y;
 		if (height < genSize.y)
 			height = genSize.y;
 
 		return glm::vec2(size.x + genSize.x + textOffset.x, height);
+	}
+	glm::vec2 InGuiFactory::GenerateTextCentered(const char* text, InGuiWindow& window, const glm::vec2& position, const glm::vec2& size, const InGuiRenderData& renderData, uint32_t maxCount)
+	{
+		size_t oldMeshSize = window.Mesh.Quads.size();
+		glm::vec2 genSize = GenerateTextMesh(
+			text, renderData.Font, renderData.Color[InGuiRenderData::DEFAULT_COLOR],
+			position, size, window.Mesh, InGuiRenderData::FontTextureID, maxCount
+		);
+
+		for (size_t i = oldMeshSize; i < window.Mesh.Quads.size(); ++i)
+		{
+			window.Mesh.Quads[i].Position.x += (size.x / 2.0f) - (genSize.x / 2.0f);
+			window.Mesh.Quads[i].Position.y += (size.y / 2.0f) + (genSize.y / 2.0f);
+		}
+		return genSize;
+	}
+	void InGuiFactory::GenerateTextHighlight(const char* text, InGuiWindow& window, const glm::vec2& position, const glm::vec2& size, const InGuiRenderData& renderData, uint32_t highlightCharIndex)
+	{
+		if (!text)
+			return;
+		float height = 0.0f;
+		float xCursor = 0.0f;
+		uint32_t counter = 0;
+		while (text[counter] != '\0' && counter != highlightCharIndex + 1)
+		{
+			auto& character = renderData.Font->GetCharacter(text[counter]);
+			glm::vec2 charSize = {
+				character.X1Coord - character.X0Coord,
+				character.Y1Coord - character.Y0Coord
+			};
+
+			if (height < charSize.y) height = charSize.y;
+			xCursor += character.XAdvance;
+			counter++;
+		}
+		InGuiLine line;
+		line.Color = renderData.Color[InGuiRenderData::DEFAULT_COLOR];
+		line.P0 = glm::vec3(position.x + xCursor, position.y, 0.0f);
+		line.P1 = glm::vec3(position.x + xCursor, position.y + height, 0.0f);
+		window.Mesh.Lines.push_back(line);
+	}
+	void InGuiFactory::GenerateQuadHighlight(InGuiWindow& window, const InGuiRenderData& renderData, uint32_t highlightQuadIndex)
+	{
+		InGuiQuad quad;
+		quad.Position = window.Mesh.Quads[highlightQuadIndex].Position ;
+		quad.Size = window.Mesh.Quads[highlightQuadIndex].Size;
+		quad.Color = renderData.Color[InGuiRenderData::SELECT_COLOR];
+		window.Mesh.Quads.push_back(quad);
 	}
 }

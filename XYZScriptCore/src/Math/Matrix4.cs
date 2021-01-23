@@ -41,6 +41,12 @@ namespace XYZ
             get { return new Vector3(D03, D13, D23); }
             set { D03 = value.X; D13 = value.Y; D23 = value.Z; }
         }
+        public void TranslateTest(Vector3 translation)
+        {
+            D03 += translation.X;
+            D13 += translation.Y;
+            D23 += translation.Z;
+        }
 
         public static Matrix4 Translate(Vector3 translation)
         {

@@ -24,7 +24,7 @@ namespace XYZ {
 			SceneEntity ent(entity, scene.Raw());
 		
 			auto& transformComponent = ent.GetComponent<TransformComponent>();
-			memcpy(outTransform, glm::value_ptr(transformComponent.Transform), sizeof(glm::mat4));
+			memcpy(outTransform, glm::value_ptr(transformComponent.GetTransform()), sizeof(glm::mat4));
 		}
 
 		void XYZ_Entity_SetTransform(uint32_t entity, glm::mat4* inTransform)
@@ -34,8 +34,10 @@ namespace XYZ {
 
 			SceneEntity ent(entity, scene.Raw());
 
+			glm::mat4 transform;
+			memcpy(glm::value_ptr(transform), inTransform, sizeof(glm::mat4));
 			auto& transformComponent = ent.GetComponent<TransformComponent>();
-			memcpy(glm::value_ptr(transformComponent.Transform), inTransform, sizeof(glm::mat4));
+			transformComponent.DecomposeTransform(transform);
 		}
 	}
 }

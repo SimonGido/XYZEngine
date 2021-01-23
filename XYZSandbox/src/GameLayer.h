@@ -29,6 +29,8 @@ namespace XYZ {
 
 		bool m_CheckboxVal = false;
 		float m_Value = 0.1f;
+		float m_Test = 2.8f;
+		float m_Haha = 3.4f;
 	};
 
 }

@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 
 namespace XYZ
 {
     public class Entity
     {
-        public ulong ID { get; private set; }
+        public uint ID { get; private set; }
 
         ~Entity()
         {
@@ -48,12 +49,12 @@ namespace XYZ
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void CreateComponent_Native(ulong entityID, Type type);
+        private static extern void CreateComponent_Native(uint entityID, Type type);
         [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern bool HasComponent_Native(ulong entityID, Type type);
+        private static extern bool HasComponent_Native(uint entityID, Type type);
         [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void GetTransform_Native(ulong entityID, out Matrix4 matrix);
+        private static extern void GetTransform_Native(uint entityID, out Matrix4 matrix);
         [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void SetTransform_Native(ulong entityID, ref Matrix4 matrix);
+        private static extern void SetTransform_Native(uint entityID, ref Matrix4 matrix);
     }
 }

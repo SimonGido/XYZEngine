@@ -64,7 +64,6 @@
 
 //------Scripting-------//
 #include "XYZ/Script/ScriptEngine.h"
-#include "XYZ/ScriptEngine/MonoScriptEngine.h"
 #include "XYZ/Script/LuaApp.h"
 #include "XYZ/Script/LuaEntity.h"
 

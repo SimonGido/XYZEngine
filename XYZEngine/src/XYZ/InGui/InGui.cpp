@@ -13,8 +13,12 @@ namespace XYZ {
 
 	InGuiContext* InGui::s_Context = nullptr;
 
+	static char s_TextBuffer[_MAX_PATH];
+	static uint32_t s_ModifyTextBufferIndex = 0;
+	static char s_ModifyTextBuffer[_MAX_PATH];
 	static float s_HighestInRow = 0.0f;
 	static glm::vec2 s_LayoutOffset = glm::vec2(0.0f);
+
 
 	template <typename Type>
 	static bool TurnOffFlag(Type& num, Type flag)
@@ -24,6 +28,24 @@ namespace XYZ {
 		return isSet;
 	}
 
+	static uint32_t FindNumCharacters(const char* source, float maxWidth, Ref<Font> font)
+	{
+		if (!source)
+			return 0;
+
+		float xCursor = 0.0f;
+		uint32_t counter = 0;
+		while (source[counter] != '\0')
+		{
+			auto& character = font->GetCharacter(source[counter]);
+			if (xCursor + (float)character.XAdvance >= maxWidth)
+				break;
+		
+			xCursor += character.XAdvance;
+			counter++;
+		}
+		return counter;
+	}
 	static bool Collide(const glm::vec2& pos, const glm::vec2& size, const glm::vec2& point)
 	{
 		return (pos.x + size.x > point.x &&
@@ -31,7 +53,7 @@ namespace XYZ {
 			    pos.y + size.y >  point.y &&
 			    pos.y < point.y);
 	}
-
+	
 	InGuiRenderData::InGuiRenderData()
 	{
 		Ref<Shader> shader = Shader::Create("Assets/Shaders/DefaultShader.glsl");
@@ -83,6 +105,7 @@ namespace XYZ {
 	{
 		XYZ_ASSERT(s_Context, "InGuiContext is not initialized");
 		s_Context->FrameData.ViewProjectionMatrix = viewProjectionMatrix;	
+		s_Context->FrameData.InputIndex = 0;
 	}
 
 	void InGui::EndFrame()
@@ -107,6 +130,7 @@ namespace XYZ {
 			}
 		}
 		Renderer2D::Flush();
+		Renderer2D::FlushLines();
 		Renderer2D::EndScene();
 		Renderer::WaitAndRender();
 
@@ -124,6 +148,10 @@ namespace XYZ {
 		{ }
 		else if (dispatcher.Dispatch<MouseMovedEvent>(&InGui::onMouseMove))
 		{ }
+		else if (dispatcher.Dispatch<KeyTypedEvent>(&InGui::onKeyTyped))
+		{ }
+		else if (dispatcher.Dispatch<KeyPressedEvent>(&InGui::onKeyPressed))
+		{ }
 	}
 
 	void InGui::SetLayout(uint32_t id, const InGuiLayout& layout)
@@ -140,6 +168,20 @@ namespace XYZ {
 
 		s_LayoutOffset.x = window.Position.x + window.Layout.LeftPadding;
 		s_LayoutOffset.y += s_HighestInRow + window.Layout.TopPadding;
+	}
+
+	bool InGui::eraseOutOfBorders(size_t oldQuadCount, const glm::vec2& genSize, InGuiWindow& window)
+	{
+		if (s_LayoutOffset.x + genSize.x >= window.Position.x + window.Size.x)
+		{
+			s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
+			window.Mesh.Quads.erase(window.Mesh.Quads.begin() + oldQuadCount, window.Mesh.Quads.end());
+			return true;
+		}
+		else if (s_HighestInRow < genSize.y)
+			s_HighestInRow = genSize.y;
+		
+		return false;
 	}
 
 	InGuiWindow& InGui::getInitializedWindow(uint32_t id, const glm::vec2& position, const glm::vec2& size)
@@ -231,17 +273,9 @@ namespace XYZ {
 		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
 		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, color, size, s_LayoutOffset, s_Context->RenderData, InGuiRenderData::BUTTON);
 				
-		if (s_LayoutOffset.x + genSize.x >= window.Position.x + window.Size.x)
-		{
-			s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
-			window.Mesh.Quads.erase(window.Mesh.Quads.begin() + oldQuadCount, window.Mesh.Quads.end());
+		if (eraseOutOfBorders(oldQuadCount, genSize, window))
 			return returnType;
-		}
-		else if (s_HighestInRow < genSize.y)
-			s_HighestInRow = genSize.y;
 
-	
-		
 		if (Collide(s_LayoutOffset, size, s_Context->FrameData.MousePosition))
 		{
 			returnType |= InGuiReturnType::Hoovered;
@@ -267,14 +301,8 @@ namespace XYZ {
 			
 		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, color, size, s_LayoutOffset, s_Context->RenderData, subTextureIndex);
 
-		if (s_LayoutOffset.x + genSize.x >= window.Position.x + window.Size.x)
-		{
-			s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
-			window.Mesh.Quads.erase(window.Mesh.Quads.begin() + oldQuadCount, window.Mesh.Quads.end());
+		if (eraseOutOfBorders(oldQuadCount, genSize, window))
 			return returnType;
-		}
-		else if (s_HighestInRow < genSize.y)
-			s_HighestInRow = genSize.y;
 
 		if (Collide(s_LayoutOffset, size, s_Context->FrameData.MousePosition))
 		{
@@ -294,6 +322,14 @@ namespace XYZ {
 	{
 		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
 		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
+		
+		// Clamping
+		if (val > 0.94f) val = 1.0f;
+		if (val < 0.06f) val = 0.0f;
+
+		int ret = snprintf(s_TextBuffer, sizeof(s_TextBuffer), "%f", val);
+		if (ret < 0)
+			val = 0.0f;
 
 		uint8_t returnType = 0;
 		size_t oldQuadCount = window.Mesh.Quads.size();
@@ -302,17 +338,10 @@ namespace XYZ {
 		glm::vec2 handleSize = glm::vec2(size.y, size.y);
 		glm::vec2 handlePosition = s_LayoutOffset + glm::vec2((size.x - size.y) * val, 0.0f);
 		InGuiFactory::GenerateQuadWithText(nullptr, window, color, handleSize, handlePosition, s_Context->RenderData, InGuiRenderData::SLIDER_HANDLE);
+		InGuiFactory::GenerateTextCentered(s_TextBuffer, window, s_LayoutOffset, size, s_Context->RenderData, 1000);
 
-		if (s_LayoutOffset.x + genSize.x >= window.Position.x + window.Size.x)
-		{
-			s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
-			window.Mesh.Quads.erase(window.Mesh.Quads.begin() + oldQuadCount, window.Mesh.Quads.end());
+		if (eraseOutOfBorders(oldQuadCount, genSize, window))
 			return returnType;
-		}
-		else if (s_HighestInRow < genSize.y)
-			s_HighestInRow = genSize.y;
-
-
 
 		if (Collide(s_LayoutOffset, size, s_Context->FrameData.MousePosition))
 		{
@@ -321,9 +350,6 @@ namespace XYZ {
 			if (IS_SET(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked))
 			{
 				val = (s_Context->FrameData.MousePosition.x - s_LayoutOffset.x) / size.x;
-				if (val > 0.94f) val = 1.0f;
-				if (val < 0.06f) val = 0.0f;
-
 				returnType |= InGuiReturnType::Clicked;
 			}
 		}
@@ -336,31 +362,68 @@ namespace XYZ {
 	{
 		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
 		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
+		InGuiFrameData& data = s_Context->FrameData;
 
 		uint8_t returnType = 0;
 		size_t oldQuadCount = window.Mesh.Quads.size();
 		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
-		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, color, size, s_LayoutOffset, s_Context->RenderData, InGuiRenderData::BUTTON);
+		uint32_t maxCharacters = _MAX_PATH;
+		char* buffer = s_TextBuffer; // By default text buffer
 
-		if (s_LayoutOffset.x + genSize.x >= window.Position.x + window.Size.x)
+		if (data.InputIndex == data.HandleInput.size())
+			data.HandleInput.push_back(false);
+
+		// If input is about to be handled than use buffer for modifying values
+		bool handleInput = data.HandleInput[data.InputIndex];
+		if (handleInput)
 		{
-			s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
-			window.Mesh.Quads.erase(window.Mesh.Quads.begin() + oldQuadCount, window.Mesh.Quads.end());
-			return returnType;
+			color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
+			buffer = s_ModifyTextBuffer;
+
+			s_ModifyTextBuffer[s_ModifyTextBufferIndex] = '.';
+			val = (float)atof(s_ModifyTextBuffer);
+			maxCharacters = s_ModifyTextBufferIndex;
 		}
-		else if (s_HighestInRow < genSize.y)
-			s_HighestInRow = genSize.y;
+		else
+		{
+			// Otherwise just parse value as string to text buffer
+			int ret = snprintf(buffer, sizeof(buffer), "%f", val);
+			if (ret < 0) val = 0.0f;				
+		}
 
 
+		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, color, size, s_LayoutOffset, s_Context->RenderData, InGuiRenderData::BUTTON);
+		InGuiFactory::GenerateTextCentered(buffer, window, s_LayoutOffset, size, s_Context->RenderData, maxCharacters);
+
+		if (eraseOutOfBorders(oldQuadCount, genSize, window))
+			return returnType;
 
 		if (Collide(s_LayoutOffset, size, s_Context->FrameData.MousePosition))
 		{
 			returnType |= InGuiReturnType::Hoovered;
 			window.Mesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
 			if (TurnOffFlag<uint16_t>(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked))
+			{
 				returnType |= InGuiReturnType::Clicked;
-		}
+				data.HandleInput[data.InputIndex].flip();
+				if (data.HandleInput[data.InputIndex])
+				{
+					// This is called once when bit is fliped to true
+					int ret = snprintf(s_TextBuffer, sizeof(s_TextBuffer), "%f", val);
+					if (ret < 0) val = 0.0f;
 
+					s_ModifyTextBufferIndex = FindNumCharacters(s_TextBuffer, size.x, s_Context->RenderData.Font);
+					memcpy(s_ModifyTextBuffer, s_TextBuffer, s_ModifyTextBufferIndex);
+				}
+				for (uint32_t i = 0; i < s_Context->FrameData.HandleInput.size(); ++i)
+				{
+					if (i != data.InputIndex)
+						data.HandleInput[i] = false;
+				}
+			}
+		}
+	
+		data.InputIndex++;
 		s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
 		return returnType;
 	}
@@ -368,7 +431,7 @@ namespace XYZ {
 
 	bool InGui::onMouseButtonPress(MouseButtonPressEvent& event)
 	{
-		if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_LEFT))
+		if (event.IsButtonPressed(MouseCode::MOUSE_BUTTON_LEFT))
 		{
 			const glm::vec2& mousePos = s_Context->FrameData.MousePosition;
 			s_Context->FrameData.Flags |= InGuiInputFlags::LeftClicked;
@@ -420,7 +483,7 @@ namespace XYZ {
 
 	bool InGui::onMouseButtonRelease(MouseButtonReleaseEvent& event)
 	{
-		if (event.IsButtonReleased(MouseCode::XYZ_MOUSE_BUTTON_LEFT))
+		if (event.IsButtonReleased(MouseCode::MOUSE_BUTTON_LEFT))
 		{
 			bool handled = false;
 			s_Context->FrameData.MovedWindowID = InGuiFrameData::NullID;
@@ -458,6 +521,24 @@ namespace XYZ {
 				window.Flags |= InGuiWindowFlags::Hoovered;
 				hoovered = true;
 			}
+		}
+		return false;
+	}
+	bool InGui::onKeyTyped(KeyTypedEvent& event)
+	{
+		if (s_ModifyTextBufferIndex < _MAX_PATH)
+		{
+			s_ModifyTextBuffer[s_ModifyTextBufferIndex++] = (char)event.GetKey();
+		}
+		return false;
+	}
+	bool InGui::onKeyPressed(KeyPressedEvent& event)
+	{
+		if (event.IsKeyPressed(KeyCode::KEY_BACKSPACE))
+		{
+			if (s_ModifyTextBufferIndex > 0)
+				s_ModifyTextBufferIndex--;
+			s_ModifyTextBuffer[s_ModifyTextBufferIndex] = '0';
 		}
 		return false;
 	}

@@ -50,6 +50,8 @@ namespace XYZ
             }
         }
 
+    
+
         [MethodImpl(MethodImplOptions.InternalCall)]
         public static extern void GetTransform_Native(ulong entityID, out Matrix4 result);
 

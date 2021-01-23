@@ -724,7 +724,7 @@ namespace XYZ {
 	{
 		auto [mx, my] = Input::GetMousePosition();
 		glm::vec2 mousePosition = MouseToWorld({ mx,my }, m_ViewportSize);
-		if (event.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_LEFT))
+		if (event.IsButtonPressed(MouseCode::MOUSE_BUTTON_LEFT))
 		{	
 			if (inputFieldOnMouseButtonPress(mousePosition))
 				return true;
@@ -739,7 +739,7 @@ namespace XYZ {
 	}
 	bool GuiContext::onMouseButtonRelease(MouseButtonReleaseEvent& event)
 	{
-		if (event.IsButtonReleased(MouseCode::XYZ_MOUSE_BUTTON_LEFT))
+		if (event.IsButtonReleased(MouseCode::MOUSE_BUTTON_LEFT))
 		{
 			if (buttonOnMouseButtonRelease())
 				return true;
@@ -772,7 +772,7 @@ namespace XYZ {
 
 	bool GuiContext::onKeyPressed(KeyPressedEvent& event)
 	{
-		if (event.IsKeyPressed(KeyCode::XYZ_KEY_BACKSPACE))
+		if (event.IsKeyPressed(KeyCode::KEY_BACKSPACE))
 		{
 			for (size_t i = 0; i < m_InputFieldView->Size(); ++i)
 			{

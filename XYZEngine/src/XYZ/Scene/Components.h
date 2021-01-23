@@ -13,6 +13,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 
 namespace XYZ {
 
@@ -37,20 +38,33 @@ namespace XYZ {
 			: Translation(translation)
 		{}
 		
-		glm::mat4 Transform = glm::mat4(1.0f);
 		glm::vec3 Translation = { 0.0f,0.0f,0.0f };
 		glm::vec3 Rotation = { 0.0f,0.0f,0.0f };
 		glm::vec3 Scale = { 1.0f,1.0f,1.0f };
-
+		
 		glm::mat4 GetTransform() const
-		{
+		{		
 			glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), Rotation.x, { 1, 0, 0 })
-							   * glm::rotate(glm::mat4(1.0f), Rotation.y, { 0, 1, 0 })
-							   * glm::rotate(glm::mat4(1.0f), Rotation.z, { 0, 0, 1 });
+				* glm::rotate(glm::mat4(1.0f), Rotation.y, { 0, 1, 0 })
+				* glm::rotate(glm::mat4(1.0f), Rotation.z, { 0, 0, 1 });
+
 
 			return glm::translate(glm::mat4(1.0f), Translation)
-				 * rotation
-				 * glm::scale(glm::mat4(1.0f), Scale);
+					* rotation
+					* glm::scale(glm::mat4(1.0f), Scale);
+		}
+
+
+		void DecomposeTransform(const glm::mat4& transform)
+		{
+			glm::vec3 scale;
+			glm::quat rotation;
+			glm::vec3 translation;
+			glm::vec3 skew;
+			glm::vec4 perspective;
+				
+			glm::decompose(transform, Scale, rotation, Translation, skew, perspective);
+			Rotation = glm::eulerAngles(rotation) * glm::pi<float>() / 180.f;
 		}
 	};
 

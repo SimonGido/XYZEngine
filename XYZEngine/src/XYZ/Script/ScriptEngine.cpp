@@ -371,10 +371,10 @@ namespace XYZ {
 		XYZ_ASSERT(scriptComponent.ScriptClass, "");
 		scriptComponent.Handle = Instantiate(*scriptComponent.ScriptClass);
 
-		MonoProperty* entityIDPropery = mono_class_get_property_from_name(scriptComponent.ScriptClass->Class, "ID");
-		mono_property_get_get_method(entityIDPropery);
-		MonoMethod* entityIDSetMethod = mono_property_get_set_method(entityIDPropery);
-		void* param[] = { &id };
+		MonoProperty* entityIDProperty = mono_class_get_property_from_name(scriptComponent.ScriptClass->Class, "ID");
+		mono_property_get_get_method(entityIDProperty);
+		MonoMethod* entityIDSetMethod = mono_property_get_set_method(entityIDProperty);
+		void* param[] = { &entity.m_ID };
 		CallMethod(GetInstance(scriptComponent.Handle), entityIDSetMethod, param);
 
 		//// Set all public fields to appropriate values

@@ -315,7 +315,7 @@ project "XYZScriptCore"
 		kind "SharedLib"
 		language "C#"
 			
-		targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+		targetdir ("XYZSandbox/Assets/Scripts")
 		objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 			
 		files 

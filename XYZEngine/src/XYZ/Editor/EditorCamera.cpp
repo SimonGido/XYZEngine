@@ -68,17 +68,17 @@ namespace XYZ {
 
 	void EditorCamera::OnUpdate(Timestep ts)
 	{
-		if (Input::IsKeyPressed(KeyCode::XYZ_KEY_LEFT_ALT))
+		if (Input::IsKeyPressed(KeyCode::KEY_LEFT_ALT))
 		{
 			const glm::vec2& mouse{ Input::GetMouseX(), Input::GetMouseY() };
 			glm::vec2 delta = (mouse - m_InitialMousePosition) * 0.003f;
 			m_InitialMousePosition = mouse;
 
-			if (Input::IsMouseButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_MIDDLE))
+			if (Input::IsMouseButtonPressed(MouseCode::MOUSE_BUTTON_MIDDLE))
 				mousePan(delta);
-			else if (Input::IsMouseButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_LEFT))
+			else if (Input::IsMouseButtonPressed(MouseCode::MOUSE_BUTTON_LEFT))
 				mouseRotate(delta);
-			else if (Input::IsMouseButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_RIGHT))
+			else if (Input::IsMouseButtonPressed(MouseCode::MOUSE_BUTTON_RIGHT))
 				mouseZoom(delta.y);
 		}
 
