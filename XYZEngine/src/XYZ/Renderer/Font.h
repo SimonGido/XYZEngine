@@ -29,8 +29,10 @@ namespace XYZ {
 		const uint32_t GetWidth() const { return m_Texture->GetWidth(); }
 		const uint32_t GetHeight() const { return m_Texture->GetHeight(); }	
 		const uint32_t GetPixelsize() const { return m_PixelSize; }
+		const uint32_t GetLineHeight() const { return m_LineHeight; }
 	private:
 		uint32_t m_PixelSize;
+		uint32_t m_LineHeight;
 		Ref<Texture2D> m_Texture;
 		std::vector<Character> m_Characters;
 

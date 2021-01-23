@@ -37,7 +37,7 @@ namespace XYZ {
 		ByteBuffer pixelData;
 		pixelData.Allocate(texWidth * texHeight * 1);
 		pixelData.ZeroInitialize();
-
+		m_LineHeight = face->size->metrics.height / 64;
 		int32_t penX = 0, penY = 0;
 		for (uint8_t c = 0; c < sc_NumGlyphs; c++)
 		{

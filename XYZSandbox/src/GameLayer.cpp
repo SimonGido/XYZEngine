@@ -134,6 +134,7 @@ namespace XYZ {
 
 			InGui::Separator();
 			InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));
+			InGui::Text("Haha\nHrava debilna");
 			InGui::Float("Test", glm::vec2(50.0f), m_Value);
 			InGui::Float("Test", glm::vec2(50.0f), m_Test);
 			InGui::Float("Test", glm::vec2(50.0f), m_Haha);

@@ -8,7 +8,8 @@ namespace XYZ {
 		if (!source)
 			return { 0.0f, 0.0f };
 
-		float height = 0.0f;
+		float width = 0.0f;
+
 		float xCursor = 0.0f;
 		float yCursor = 0.0f;
 		
@@ -16,6 +17,15 @@ namespace XYZ {
 		while (source[counter] != '\0' && counter < maxCount)
 		{
 			auto& character = font->GetCharacter(source[counter]);
+			if (source[counter] == '\n')
+			{
+				width = xCursor;
+				yCursor += font->GetLineHeight();
+				xCursor = 0.0f;
+				counter++;
+				continue;
+			}
+
 			if (xCursor + (float)character.XAdvance >= size.x)
 				break;
 
@@ -23,8 +33,7 @@ namespace XYZ {
 				character.X1Coord - character.X0Coord,
 				character.Y1Coord - character.Y0Coord
 			};
-			if (height < charSize.y) height = charSize.y;
-
+			
 			glm::vec2 charOffset = { character.XOffset, character.YOffset };
 			glm::vec2 charPosition = { pos.x + xCursor + charOffset.x, pos.y + yCursor - charOffset.y };
 			glm::vec4 charTexCoord = {
@@ -36,7 +45,10 @@ namespace XYZ {
 			xCursor += character.XAdvance;
 			counter++;
 		}
-		return { xCursor, height };
+		if (width < xCursor)
+			width = xCursor;
+
+		return { width, yCursor + font->GetLineHeight() };
 	}
 
 	void InGuiFactory::GenerateWindow(const char* text, InGuiWindow& window, const glm::vec4& color, const InGuiRenderData& renderData)
@@ -134,37 +146,11 @@ namespace XYZ {
 		}
 		return genSize;
 	}
-	void InGuiFactory::GenerateTextHighlight(const char* text, InGuiWindow& window, const glm::vec2& position, const glm::vec2& size, const InGuiRenderData& renderData, uint32_t highlightCharIndex)
+	glm::vec2 InGuiFactory::GenerateText(const char* text, InGuiWindow& window, const glm::vec4& color, const glm::vec2& position, const glm::vec2& size, const InGuiRenderData& renderData)
 	{
-		if (!text)
-			return;
-		float height = 0.0f;
-		float xCursor = 0.0f;
-		uint32_t counter = 0;
-		while (text[counter] != '\0' && counter != highlightCharIndex + 1)
-		{
-			auto& character = renderData.Font->GetCharacter(text[counter]);
-			glm::vec2 charSize = {
-				character.X1Coord - character.X0Coord,
-				character.Y1Coord - character.Y0Coord
-			};
-
-			if (height < charSize.y) height = charSize.y;
-			xCursor += character.XAdvance;
-			counter++;
-		}
-		InGuiLine line;
-		line.Color = renderData.Color[InGuiRenderData::DEFAULT_COLOR];
-		line.P0 = glm::vec3(position.x + xCursor, position.y, 0.0f);
-		line.P1 = glm::vec3(position.x + xCursor, position.y + height, 0.0f);
-		window.Mesh.Lines.push_back(line);
-	}
-	void InGuiFactory::GenerateQuadHighlight(InGuiWindow& window, const InGuiRenderData& renderData, uint32_t highlightQuadIndex)
-	{
-		InGuiQuad quad;
-		quad.Position = window.Mesh.Quads[highlightQuadIndex].Position ;
-		quad.Size = window.Mesh.Quads[highlightQuadIndex].Size;
-		quad.Color = renderData.Color[InGuiRenderData::SELECT_COLOR];
-		window.Mesh.Quads.push_back(quad);
+		return GenerateTextMesh(
+			text, renderData.Font, color,
+			position, size, window.Mesh, InGuiRenderData::FontTextureID, 1000
+		);
 	}
 }

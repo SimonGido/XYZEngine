@@ -357,6 +357,36 @@ namespace XYZ {
 		s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
 		return returnType;
 	}
+	uint8_t InGui::Text(const char* text)
+	{
+		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
+		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
+
+		uint8_t returnType = 0;
+		size_t oldQuadCount = window.Mesh.Quads.size();
+		glm::vec2 size = glm::vec2(500.0f);
+		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
+		
+
+		glm::vec2 genPos = s_LayoutOffset + glm::vec2(0.0f, s_Context->RenderData.Font->GetLineHeight());
+		glm::vec2 genSize = InGuiFactory::GenerateText(text, window, color, genPos, size, s_Context->RenderData);
+
+		if (eraseOutOfBorders(oldQuadCount, genSize, window))
+			return returnType;
+
+		if (Collide(s_LayoutOffset, genSize, s_Context->FrameData.MousePosition))
+		{
+			returnType |= InGuiReturnType::Hoovered;
+			for (size_t i = oldQuadCount; i < window.Mesh.Quads.size(); ++i)
+				window.Mesh.Quads[i].Color = s_Context->RenderData.Color[InGuiRenderData::SELECT_COLOR];
+			
+			if (TurnOffFlag<uint16_t>(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked))
+				returnType |= InGuiReturnType::Clicked;
+		}
+
+		s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
+		return returnType;
+	}
 
 	uint8_t InGui::Float(const char* name, const glm::vec2& size, float& val)
 	{
@@ -427,6 +457,7 @@ namespace XYZ {
 		s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
 		return returnType;
 	}
+
 
 
 	bool InGui::onMouseButtonPress(MouseButtonPressEvent& event)
