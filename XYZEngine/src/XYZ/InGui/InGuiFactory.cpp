@@ -53,6 +53,10 @@ namespace XYZ {
 
 	void InGuiFactory::GenerateWindow(const char* text, InGuiWindow& window, const glm::vec4& color, const InGuiRenderData& renderData)
 	{
+		const glm::vec4& oldTex = renderData.SubTexture[InGuiRenderData::WINDOW]->GetTexCoords();
+		glm::vec4 texCoords = {
+			oldTex.x, oldTex.w, oldTex.z, oldTex.y
+		};
 		window.Mesh.Quads.clear();
 		window.Mesh.Lines.clear();
 		glm::vec2 textOffset = { 7.0f, 7.0f };
@@ -66,7 +70,7 @@ namespace XYZ {
 			window.Mesh.Quads.push_back(
 				{
 					color,
-					renderData.SubTexture[InGuiRenderData::WINDOW]->GetTexCoords(),
+					texCoords,
 					{window.Position, InGuiWindow::PanelHeight },
 					window.Size,
 					InGuiRenderData::TextureID
@@ -94,19 +98,43 @@ namespace XYZ {
 		);
 		
 	}
-	glm::vec2 InGuiFactory::GenerateQuadWithText(const char* text, InGuiWindow& window, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, const InGuiRenderData& renderData, uint32_t subTextureIndex)
+	void InGuiFactory::GenerateQuad(InGuiWindow& window, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, const InGuiRenderData& renderData, uint32_t subTextureIndex)
 	{
+		const glm::vec4& oldTex = renderData.SubTexture[subTextureIndex]->GetTexCoords();
+		glm::vec4 texCoords = {
+			oldTex.x, oldTex.w, oldTex.z, oldTex.y
+		};
 		window.Mesh.Quads.push_back(
 			{
 				color,
-				renderData.SubTexture[subTextureIndex]->GetTexCoords(),
+				texCoords,
+				{position, 0.0f},
+				size,
+				InGuiRenderData::TextureID
+			});
+	}
+	glm::vec2 InGuiFactory::GenerateQuadWithText(const char* text, InGuiWindow& window, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, const InGuiRenderData& renderData, uint32_t subTextureIndex)
+	{
+		const glm::vec4& oldTex = renderData.SubTexture[subTextureIndex]->GetTexCoords();
+		glm::vec4 texCoords = {
+			oldTex.x, oldTex.w, oldTex.z, oldTex.y
+		};
+		window.Mesh.Quads.push_back(
+			{
+				color,
+				texCoords,
 				{position, 0.0f},
 				size,
 				InGuiRenderData::TextureID
 			});
 
 		glm::vec2 textPosition = position;
-		glm::vec2 textSize = { window.Size.x - window.Layout.RightPadding, window.Size.y };
+		glm::vec2 textSize = { 
+			window.Size.x - window.Layout.RightPadding - size.x
+			- (position.x - window.Position.x), 
+			window.Size.y 
+		};
+
 		textPosition.x = std::floor(textPosition.x);
 		textPosition.y = std::floor(textPosition.y);
 
@@ -130,6 +158,47 @@ namespace XYZ {
 			height = genSize.y;
 
 		return glm::vec2(size.x + genSize.x + textOffset.x, height);
+	}
+	glm::vec2 InGuiFactory::GenerateQuadWithTextLeft(const char* text, InGuiWindow& window, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, const InGuiRenderData& renderData, uint32_t subTextureIndex)
+	{
+		const glm::vec4& oldTex = renderData.SubTexture[subTextureIndex]->GetTexCoords();
+		glm::vec4 texCoords = {
+			oldTex.x, oldTex.w, oldTex.z, oldTex.y
+		};
+		window.Mesh.Quads.push_back(
+			{
+				color,
+				texCoords,
+				{position, 0.0f},
+				size,
+				InGuiRenderData::TextureID
+			});
+
+		glm::vec2 textPosition = position;
+		glm::vec2 textSize = {size.x, window.Size.y };
+		textPosition.x = std::floor(textPosition.x);
+		textPosition.y = std::floor(textPosition.y);
+
+		size_t oldMeshSize = window.Mesh.Quads.size();
+		glm::vec2 genSize = GenerateTextMesh(
+			text, renderData.Font, renderData.Color[InGuiRenderData::DEFAULT_COLOR],
+			position, textSize, window.Mesh, InGuiRenderData::FontTextureID, 1000
+		);
+
+		glm::vec2 textOffset = { 7.0f, 0.0f };
+
+		for (size_t i = oldMeshSize; i < window.Mesh.Quads.size(); ++i)
+		{
+			window.Mesh.Quads[i].Position.x += textOffset.x;
+			window.Mesh.Quads[i].Position.y += (size.y / 2.0f) + (genSize.y / 2.0f);
+		}
+
+
+		float height = size.y;
+		if (height < genSize.y)
+			height = genSize.y;
+
+		return glm::vec2(size.x, height);
 	}
 	glm::vec2 InGuiFactory::GenerateTextCentered(const char* text, InGuiWindow& window, const glm::vec2& position, const glm::vec2& size, const InGuiRenderData& renderData, uint32_t maxCount)
 	{

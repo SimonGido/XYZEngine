@@ -14,8 +14,9 @@ namespace XYZ {
 	InGuiContext* InGui::s_Context = nullptr;
 
 	static char s_TextBuffer[_MAX_PATH];
-	static uint32_t s_ModifyTextBufferIndex = 0;
 	static char s_ModifyTextBuffer[_MAX_PATH];
+	static uint32_t s_ModifyTextBufferIndex = 0;
+
 	static float s_HighestInRow = 0.0f;
 	static glm::vec2 s_LayoutOffset = glm::vec2(0.0f);
 
@@ -168,11 +169,13 @@ namespace XYZ {
 
 		s_LayoutOffset.x = window.Position.x + window.Layout.LeftPadding;
 		s_LayoutOffset.y += s_HighestInRow + window.Layout.TopPadding;
+		s_HighestInRow = 0.0f;
 	}
 
 	bool InGui::eraseOutOfBorders(size_t oldQuadCount, const glm::vec2& genSize, InGuiWindow& window)
 	{
-		if (s_LayoutOffset.x + genSize.x >= window.Position.x + window.Size.x)
+		if (s_LayoutOffset.x + genSize.x >= window.Position.x + window.Size.x 
+		 || s_LayoutOffset.y + genSize.y >= window.Position.y + window.Size.y)
 		{
 			s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
 			window.Mesh.Quads.erase(window.Mesh.Quads.begin() + oldQuadCount, window.Mesh.Quads.end());
@@ -262,6 +265,90 @@ namespace XYZ {
 		s_Context->FrameData.ActiveWindowID = InGuiFrameData::NullID;
 		
 	}
+
+	bool InGui::BeginGroup(const char* name, bool& open)
+	{
+		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
+		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
+
+		size_t oldQuadCount = window.Mesh.Quads.size();
+		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
+		glm::vec2 size = { window.Size.x , InGuiWindow::PanelHeight };
+		glm::vec2 buttonSize = glm::vec2(InGuiWindow::PanelHeight, InGuiWindow::PanelHeight);
+		glm::vec2 pos = { window.Position.x , s_LayoutOffset.y };
+		uint32_t subTextureIndex = InGuiRenderData::RIGHT_ARROW;
+		if (open) subTextureIndex = InGuiRenderData::DOWN_ARROW;
+
+		InGuiFactory::GenerateQuad(window, color, size, pos, s_Context->RenderData, InGuiRenderData::BUTTON);
+		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, color, buttonSize, pos, s_Context->RenderData, subTextureIndex);
+
+		if (eraseOutOfBorders(oldQuadCount + 2, genSize, window)) { return false; }
+
+		if (Collide(pos, size, s_Context->FrameData.MousePosition))
+		{
+			window.Mesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
+			if (Collide(pos, buttonSize, s_Context->FrameData.MousePosition))
+			{
+				if (TurnOffFlag<uint16_t>(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked))
+				{
+					open = !open;
+				}
+			}
+		}
+		if (open) Separator();			
+		return open;
+	}
+
+	uint8_t InGui::PushNode(const char* name, bool& open)
+	{
+		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
+		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
+	
+		uint32_t returnType = 0;
+		size_t oldQuadCount = window.Mesh.Quads.size();
+		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
+		glm::vec2 buttonSize = glm::vec2(InGuiWindow::PanelHeight, InGuiWindow::PanelHeight);
+		glm::vec2 pos = s_LayoutOffset;
+		uint32_t subTextureIndex = InGuiRenderData::RIGHT_ARROW;
+		if (open) subTextureIndex = InGuiRenderData::DOWN_ARROW;
+
+		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, color, buttonSize, pos, s_Context->RenderData, subTextureIndex);
+		if (eraseOutOfBorders(oldQuadCount, genSize, window)) { return false; }
+
+		if (Collide(pos, genSize, s_Context->FrameData.MousePosition))
+		{
+			if (Collide(pos, buttonSize, s_Context->FrameData.MousePosition))
+			{
+				window.Mesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
+				if (TurnOffFlag<uint16_t>(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked))
+				{
+					open = !open;
+				}
+			}
+			else // It collides with text
+			{
+				for (size_t i = oldQuadCount + 1; i < window.Mesh.Quads.size(); ++i)
+					window.Mesh.Quads[i].Color = s_Context->RenderData.Color[InGuiRenderData::SELECT_COLOR];
+				returnType |= InGuiReturnType::Hoovered;
+				if (TurnOffFlag<uint16_t>(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked))
+				{
+					returnType |= InGuiReturnType::Clicked;
+				}
+			}
+		}
+		s_LayoutOffset.y += genSize.y;
+		return open;
+	}
+
+	void InGui::BeginChildren()
+	{		
+		s_LayoutOffset.x += InGuiWindow::PanelHeight;
+	}
+	void InGui::EndChildren()
+	{
+		s_LayoutOffset.x -= InGuiWindow::PanelHeight;
+	}
+
 
 	uint8_t InGui::Button(const char* name, const glm::vec2& size)
 	{

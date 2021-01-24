@@ -383,6 +383,7 @@ namespace XYZ {
 			{texCoord.z,texCoord.w},
 			{texCoord.x,texCoord.w}
 		};
+
 		glm::vec3 vertices[quadVertexCount] = {
 			{  position.x ,			 position.y, 0.0f},
 			{  position.x + size.x,  position.y, 0.0f},

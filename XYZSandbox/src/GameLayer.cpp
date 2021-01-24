@@ -105,13 +105,32 @@ namespace XYZ {
 
 	void GameLayer::OnInGuiRender()
 	{
-		if (InGui::Begin(1, "Test Window hahahahahaha", glm::vec2(200.0f), glm::vec2(100.0f)))
+		if (InGui::Begin(1, "Test Window hahahahahaha", glm::vec2(200.0f), glm::vec2(300.0f)))
 		{
-
+			InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));
+			InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));
+			InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));
+			InGui::Separator();
+			if (InGui::PushNode("Entity some", m_BranchOpen))
+			{
+				InGui::BeginChildren();
+				InGui::PushNode("Entity some", m_ChildrenOpen);
+				if (InGui::PushNode("Entity some", m_AnotherChildrenOpen))
+				{
+					InGui::BeginChildren();
+					InGui::PushNode("Entity some", m_AnotherChildrenOpen);
+					InGui::EndChildren();
+				}
+				InGui::PushNode("Entity some", m_ChildrenOpen);
+				InGui::PushNode("Entity some", m_ChildrenOpen);
+				InGui::EndChildren();
+			}
+			InGui::Separator();
+			InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));
+			InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));
+			InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));
 		}
-		else
-		{
-		}
+		
 		InGui::End();
 		if (InGui::Begin(0, "Test Window", glm::vec2(0.0f), glm::vec2(500.0f)))
 		{
@@ -126,18 +145,28 @@ namespace XYZ {
 				std::cout << "checked" << std::endl;
 			}
 			
-			InGui::Slider("Test", glm::vec2(200.0f, 25.0f), m_Value);
-
-			InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));
-			InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));
-			InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));
-
 			InGui::Separator();
-			InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));
-			InGui::Text("Haha\nHrava debilna");
-			InGui::Float("Test", glm::vec2(50.0f), m_Value);
-			InGui::Float("Test", glm::vec2(50.0f), m_Test);
-			InGui::Float("Test", glm::vec2(50.0f), m_Haha);
+			if (InGui::BeginGroup("Test", m_CheckboxVal))
+			{
+				InGui::Slider("Test", glm::vec2(200.0f, 25.0f), m_Value);
+
+				InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));
+				InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));
+				InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));
+
+				InGui::Separator();
+				InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));
+				InGui::Text("Haha\nHrava debilna");
+				InGui::Float("Test", glm::vec2(50.0f), m_Value);
+			}
+			InGui::Separator();
+			
+			if (InGui::BeginGroup("Test", m_CheckboxVal))
+			{
+				InGui::Float("Test", glm::vec2(50.0f), m_Test);
+				InGui::Float("Test", glm::vec2(50.0f), m_Haha);
+			}
+			InGui::Separator();
 		}
 		else
 		{

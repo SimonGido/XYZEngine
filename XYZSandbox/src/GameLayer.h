@@ -31,6 +31,10 @@ namespace XYZ {
 		float m_Value = 0.1f;
 		float m_Test = 2.8f;
 		float m_Haha = 3.4f;
+
+		bool m_BranchOpen = false;
+		bool m_ChildrenOpen = false;
+		bool m_AnotherChildrenOpen = false;
 	};
 
 }
