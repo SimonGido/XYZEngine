@@ -183,6 +183,8 @@ namespace XYZ {
 		static uint8_t Text(const char* text);
 		static uint8_t Float(const char* name, const glm::vec2& size, float& val);
 	private:
+		static void saveLayout();
+		static void loadLayout();
 		static bool eraseOutOfBorders(size_t oldQuadCount, const glm::vec2& genSize, InGuiWindow& window);
 		static InGuiWindow& getInitializedWindow(uint32_t id, const glm::vec2& position, const glm::vec2& size);
 		static void handleWindowMove();

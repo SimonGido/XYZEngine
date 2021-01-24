@@ -9,6 +9,8 @@
 
 #include <glm/gtx/transform.hpp>
 
+#include <ini.h>
+
 namespace XYZ {
 
 	InGuiContext* InGui::s_Context = nullptr;
@@ -20,6 +22,16 @@ namespace XYZ {
 	static float s_HighestInRow = 0.0f;
 	static glm::vec2 s_LayoutOffset = glm::vec2(0.0f);
 
+	static glm::vec2 StringToVec2(const std::string& src)
+	{
+		glm::vec2 val;
+		size_t split = src.find(",", 0);
+
+		val.x = std::stof(src.substr(0, split));
+		val.y = std::stof(src.substr(split + 1, src.size() - split));
+
+		return val;
+	}
 
 	template <typename Type>
 	static bool TurnOffFlag(Type& num, Type flag)
@@ -94,10 +106,12 @@ namespace XYZ {
 	void InGui::Init()
 	{
 		s_Context = new InGuiContext();
+		loadLayout();
 	}
 
 	void InGui::Destroy()
 	{
+		saveLayout();
 		if (s_Context)
 			delete s_Context;
 	}
@@ -543,6 +557,47 @@ namespace XYZ {
 		data.InputIndex++;
 		s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
 		return returnType;
+	}
+
+	void InGui::saveLayout()
+	{
+		mINI::INIFile file("ingui.ini");
+		mINI::INIStructure ini;
+		file.generate(ini);
+		for (auto& win : s_Context->Windows)
+		{
+			if (IS_SET(win.Flags, InGuiWindowFlags::Initialized))
+			{
+				std::string pos = std::to_string(win.Position.x) + "," + std::to_string(win.Position.y);
+				std::string size = std::to_string(win.Size.x) + "," + std::to_string(win.Size.y);
+				std::string id = std::to_string(win.ID);
+				std::string flags = std::to_string(win.Flags);
+				ini[id]["position"] = pos;
+				ini[id]["size"] = size;
+				ini[id]["flags"] = flags;
+			}
+		}
+		file.write(ini);
+	}
+
+	void InGui::loadLayout()
+	{
+		mINI::INIFile file("ingui.ini");
+		mINI::INIStructure ini;
+		
+		if (file.read(ini))
+		{
+			for (auto it = ini.begin(); it != ini.end(); ++it)
+			{
+				size_t ID = atoi(it->first.c_str());
+				if (ID >= s_Context->Windows.size())
+					s_Context->Windows.resize(ID + 1);
+				s_Context->Windows[ID].ID = ID;
+				s_Context->Windows[ID].Position = StringToVec2(it->second.get("position"));
+				s_Context->Windows[ID].Size = StringToVec2(it->second.get("size"));
+				s_Context->Windows[ID].Flags = atoi(it->second.get("flags").c_str());
+			}
+		}
 	}
 
 
