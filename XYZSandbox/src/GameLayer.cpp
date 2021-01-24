@@ -105,6 +105,11 @@ namespace XYZ {
 
 	void GameLayer::OnInGuiRender()
 	{
+		if (InGui::ImageWindow(2, "Scene", glm::vec2(200.0f), glm::vec2(300.0f), m_Entity.GetComponent<SpriteRenderer>().SubTexture))
+		{
+		}
+		InGui::End();
+
 		if (InGui::Begin(1, "Test Window hahahahahaha", glm::vec2(200.0f), glm::vec2(300.0f)))
 		{
 			InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));

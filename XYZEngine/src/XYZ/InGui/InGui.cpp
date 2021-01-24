@@ -268,8 +268,36 @@ namespace XYZ {
 		{
 			color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
 		}
-		InGuiFactory::GenerateWindow(name, window, color, s_Context->RenderData);
+		InGuiFactory::GenerateWindow(
+			name, window, color, s_Context->RenderData, 
+			s_Context->RenderData.SubTexture[InGuiRenderData::WINDOW], InGuiRenderData::TextureID
+		);
 		
+		return !IS_SET(window.Flags, InGuiWindowFlags::Collapsed);
+	}
+
+	bool InGui::ImageWindow(uint32_t id, const char* name, const glm::vec2& position, const glm::vec2& size, Ref<SubTexture> subTexture)
+	{
+		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID == InGuiFrameData::NullID, "Missing end call");
+		s_Context->FrameData.ActiveWindowID = id;
+		InGuiWindow& window = getInitializedWindow(id, position, size);
+
+		s_HighestInRow = 0.0f;
+		s_LayoutOffset = glm::vec2(
+			window.Position.x + window.Layout.LeftPadding,
+			window.Position.y + InGuiWindow::PanelHeight + window.Layout.TopPadding
+		);
+
+		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
+		if (IS_SET(window.Flags, InGuiWindowFlags::Hoovered))
+		{
+			color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
+		}
+		InGuiFactory::GenerateWindow(
+			name, window, color, s_Context->RenderData,
+			subTexture, Renderer2D::SetTexture(subTexture->GetTexture())
+		);
+
 		return !IS_SET(window.Flags, InGuiWindowFlags::Collapsed);
 	}
 

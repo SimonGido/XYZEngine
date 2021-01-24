@@ -171,6 +171,7 @@ namespace XYZ {
 		static void Separator();
 
 		static bool Begin(uint32_t id, const char* name, const glm::vec2& position, const glm::vec2& size);
+		static bool ImageWindow(uint32_t id, const char* name, const glm::vec2& position, const glm::vec2& size, Ref<SubTexture> subTexture);
 		static void End();
 		static bool BeginGroup(const char* name, bool& open);
 

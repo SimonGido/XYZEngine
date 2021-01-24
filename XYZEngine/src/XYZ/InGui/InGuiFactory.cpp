@@ -51,9 +51,9 @@ namespace XYZ {
 		return { width, yCursor + font->GetLineHeight() };
 	}
 
-	void InGuiFactory::GenerateWindow(const char* text, InGuiWindow& window, const glm::vec4& color, const InGuiRenderData& renderData)
+	void InGuiFactory::GenerateWindow(const char* text, InGuiWindow& window, const glm::vec4& color, const InGuiRenderData& renderData, Ref<SubTexture> subTexture, uint32_t textureID)
 	{
-		const glm::vec4& oldTex = renderData.SubTexture[InGuiRenderData::WINDOW]->GetTexCoords();
+		const glm::vec4& oldTex = subTexture->GetTexCoords();
 		glm::vec4 texCoords = {
 			oldTex.x, oldTex.w, oldTex.z, oldTex.y
 		};
@@ -73,7 +73,7 @@ namespace XYZ {
 					texCoords,
 					{window.Position, InGuiWindow::PanelHeight },
 					window.Size,
-					InGuiRenderData::TextureID
+					textureID
 				});
 		}
 		window.Mesh.Quads.push_back(
