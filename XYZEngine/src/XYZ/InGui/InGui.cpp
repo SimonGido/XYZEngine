@@ -121,18 +121,18 @@ namespace XYZ {
 		XYZ_ASSERT(s_Context, "InGuiContext is not initialized");
 		s_Context->FrameData.ViewProjectionMatrix = viewProjectionMatrix;	
 		s_Context->FrameData.InputIndex = 0;
-	}
 
-	void InGui::EndFrame()
-	{
-		XYZ_ASSERT(s_Context, "InGuiContext is not initialized");
 
 		glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f));
 		viewMatrix = glm::inverse(viewMatrix);
 
 		Renderer2D::BeginScene(s_Context->FrameData.ViewProjectionMatrix * viewMatrix);
 		Renderer2D::SetMaterial(s_Context->RenderData.Material);
-		
+	}
+
+	void InGui::EndFrame()
+	{
+		XYZ_ASSERT(s_Context, "InGuiContext is not initialized");
 		for (auto winIt = s_Context->Windows.rbegin(); winIt != s_Context->Windows.rend(); ++winIt)
 		{
 			for (auto it = winIt->Mesh.Quads.begin(); it != winIt->Mesh.Quads.end(); ++it)
@@ -556,6 +556,31 @@ namespace XYZ {
 	
 		data.InputIndex++;
 		s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
+		return returnType;
+	}
+
+	uint8_t InGui::Image(const glm::vec2& size, Ref<SubTexture> subTexture)
+	{
+		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
+		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
+
+		uint8_t returnType = 0;
+		size_t oldQuadCount = window.Mesh.Quads.size();
+		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
+		InGuiFactory::GenerateQuad(window, color, size, s_LayoutOffset, subTexture, Renderer2D::SetTexture(subTexture->GetTexture()));
+
+		if (eraseOutOfBorders(oldQuadCount, size, window))
+			return returnType;
+
+		if (Collide(s_LayoutOffset, size, s_Context->FrameData.MousePosition))
+		{
+			returnType |= InGuiReturnType::Hoovered;
+			window.Mesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
+			if (TurnOffFlag<uint16_t>(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked))
+				returnType |= InGuiReturnType::Clicked;
+		}
+
+		s_LayoutOffset.x += size.x + window.Layout.SpacingX;
 		return returnType;
 	}
 

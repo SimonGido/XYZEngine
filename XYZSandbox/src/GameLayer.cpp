@@ -129,6 +129,17 @@ namespace XYZ {
 			InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));
 			InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));
 			InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));
+
+
+			InGui::Image(glm::vec2(100.0f), m_Entity.GetComponent<SpriteRenderer>().SubTexture);
+			InGui::Image(glm::vec2(100.0f), m_Entity.GetComponent<SpriteRenderer>().SubTexture);
+			InGui::Image(glm::vec2(100.0f), m_Entity.GetComponent<SpriteRenderer>().SubTexture);
+			InGui::Separator();
+			InGui::Image(glm::vec2(100.0f), m_Entity.GetComponent<SpriteRenderer>().SubTexture);
+			InGui::Image(glm::vec2(100.0f), m_Entity.GetComponent<SpriteRenderer>().SubTexture);
+			InGui::Image(glm::vec2(100.0f), m_Entity.GetComponent<SpriteRenderer>().SubTexture);
+			InGui::Image(glm::vec2(100.0f), m_Entity.GetComponent<SpriteRenderer>().SubTexture);
+			InGui::Image(glm::vec2(100.0f), m_Entity.GetComponent<SpriteRenderer>().SubTexture);
 		}
 		
 		InGui::End();

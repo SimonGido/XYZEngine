@@ -113,9 +113,9 @@ namespace XYZ {
 				InGuiRenderData::TextureID
 			});
 	}
-	glm::vec2 InGuiFactory::GenerateQuadWithText(const char* text, InGuiWindow& window, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, const InGuiRenderData& renderData, uint32_t subTextureIndex)
+	void InGuiFactory::GenerateQuad(InGuiWindow& window, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, Ref<SubTexture> subTexture, uint32_t textureID)
 	{
-		const glm::vec4& oldTex = renderData.SubTexture[subTextureIndex]->GetTexCoords();
+		const glm::vec4& oldTex = subTexture->GetTexCoords();
 		glm::vec4 texCoords = {
 			oldTex.x, oldTex.w, oldTex.z, oldTex.y
 		};
@@ -125,9 +125,12 @@ namespace XYZ {
 				texCoords,
 				{position, 0.0f},
 				size,
-				InGuiRenderData::TextureID
+				textureID
 			});
-
+	}
+	glm::vec2 InGuiFactory::GenerateQuadWithText(const char* text, InGuiWindow& window, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, const InGuiRenderData& renderData, uint32_t subTextureIndex)
+	{
+		GenerateQuad(window, color, size, position, renderData.SubTexture[subTextureIndex], InGuiRenderData::TextureID);
 		glm::vec2 textPosition = position;
 		glm::vec2 textSize = { 
 			window.Size.x - window.Layout.RightPadding - size.x
@@ -161,19 +164,7 @@ namespace XYZ {
 	}
 	glm::vec2 InGuiFactory::GenerateQuadWithTextLeft(const char* text, InGuiWindow& window, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, const InGuiRenderData& renderData, uint32_t subTextureIndex)
 	{
-		const glm::vec4& oldTex = renderData.SubTexture[subTextureIndex]->GetTexCoords();
-		glm::vec4 texCoords = {
-			oldTex.x, oldTex.w, oldTex.z, oldTex.y
-		};
-		window.Mesh.Quads.push_back(
-			{
-				color,
-				texCoords,
-				{position, 0.0f},
-				size,
-				InGuiRenderData::TextureID
-			});
-
+		GenerateQuad(window, color, size, position, renderData.SubTexture[subTextureIndex], InGuiRenderData::TextureID);
 		glm::vec2 textPosition = position;
 		glm::vec2 textSize = {size.x, window.Size.y };
 		textPosition.x = std::floor(textPosition.x);

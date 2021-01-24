@@ -24,8 +24,8 @@ function OnUpdate(ts)
 	spriteRenderer.Color.y = 0
 	spriteRenderer.Color.z = 0
 
-	test = spriteRenderer:GetSubTexture():SetTexture(texture)
-	spriteRenderer:GetSubTexture():SetCoords(coords)
+	--test = spriteRenderer:GetSubTexture():SetTexture(texture)
+	--spriteRenderer:GetSubTexture():SetCoords(coords)
 	
 	if Input.IsKeyPressed(65) then -- A
 		transform.Translation.x = transform.Translation.x - ts * 5
