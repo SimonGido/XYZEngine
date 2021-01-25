@@ -94,7 +94,7 @@ namespace XYZ {
 
 	void MeshRenderer2D::SetMaterial(const Ref<Material>& material)
 	{
-		if (s_Data.Material && material.Raw() != s_Data.Material.Raw())
+		if (s_Data.Material.Raw() && material.Raw() != s_Data.Material.Raw())
 			Flush();
 
 		s_Data.Material = material;

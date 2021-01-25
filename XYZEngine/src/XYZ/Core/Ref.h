@@ -104,8 +104,9 @@ namespace XYZ {
 			return *this;
 		}
 
-		operator bool() { return m_Instance != nullptr; }
-		operator bool() const { return m_Instance != nullptr; }
+	
+		//operator bool() { return m_Instance != nullptr; }
+		//operator bool() const { return m_Instance != nullptr; }
 
 		T* operator->() { return m_Instance; }
 		const T* operator->() const { return m_Instance; }

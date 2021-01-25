@@ -125,7 +125,7 @@ namespace XYZ {
 
 	void Renderer::BeginRenderPass(const Ref<RenderPass>& renderPass, bool clear)
 	{
-		XYZ_ASSERT(renderPass, "Render pass can not be null");
+		XYZ_ASSERT(renderPass.Raw(), "Render pass can not be null");
 		s_Data.ActiveRenderPass = renderPass;
 		if (!s_Data.ActiveRenderPass->GetSpecification().TargetFramebuffer->GetSpecification().SwapChainTarget)
 			s_Data.ActiveRenderPass->GetSpecification().TargetFramebuffer->Bind();
@@ -142,7 +142,7 @@ namespace XYZ {
 
 	void Renderer::EndRenderPass()
 	{
-		XYZ_ASSERT(s_Data.ActiveRenderPass, "No active render pass! Have you called Renderer::EndRenderPass twice?");
+		XYZ_ASSERT(s_Data.ActiveRenderPass.Raw(), "No active render pass! Have you called Renderer::EndRenderPass twice?");
 		s_Data.ActiveRenderPass->GetSpecification().TargetFramebuffer->Unbind();
 		s_Data.ActiveRenderPass = nullptr;
 	}

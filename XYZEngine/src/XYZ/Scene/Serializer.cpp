@@ -336,7 +336,7 @@ namespace XYZ {
 		uint32_t counter = 0;
 		for (auto& texture : material->GetTextures())
 		{
-			if (!texture)
+			if (!texture.Raw())
 			{
 				counter++;
 				continue;

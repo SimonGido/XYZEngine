@@ -234,7 +234,7 @@ namespace XYZ {
 		LoadXYZRuntimeAssembly(path);
 		
 		Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
-		XYZ_ASSERT(scene, "No active scene!");
+		XYZ_ASSERT(scene.Raw(), "No active scene!");
 
 		ComponentStorage<ScriptComponent>* scriptStorage = scene->m_ECS.GetStorage<ScriptComponent>();
 		for (size_t i = 0; i < scriptStorage->Size(); ++i)

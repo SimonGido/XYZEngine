@@ -24,17 +24,12 @@ extern "C"
 #include <locale>
 #include <codecvt>
 
-struct Test
-{
-
-};
-
-namespace sol {
-	template <>
-	struct is_container<XYZ::Ref<Test>> : std::false_type {};
-}
 namespace XYZ {
 
+	struct ScriptableEntity
+	{
+		virtual void OnUpdate(Timestep ts) {};
+	};
 	
 	static bool CheckLua(lua_State* L, int err)
 	{
@@ -93,116 +88,142 @@ namespace XYZ {
 		m_L.open_libraries(sol::lib::base, sol::lib::package, sol::lib::os);
 		SetLuaPath(m_L, Application::Get().GetApplicationDir().c_str());
 
+		// Input
+		{
+			sol::usertype<Input> type = m_L.new_usertype<Input>("Input");
+			type["IsKeyPressed"] = &Input::IsKeyPressed;
+			type["IsMouseButtonPressed"] = &Input::IsMouseButtonPressed;
+			type["GetMouseX"] = &Input::GetMouseX;
+			type["GetMouseY"] = &Input::GetMouseY;
+		}
+		// Vec2
+		{
+			sol::usertype<glm::vec2> type = m_L.new_usertype<glm::vec2>("Vec2",
+				sol::call_constructor, sol::factories(
+					[]() { return glm::vec2(); },
+					[](float val) { return glm::vec2(val); },
+					[](float x, float y) { return glm::vec2(x, y); }
+			));
+			type["x"] = &glm::vec2::x;
+			type["y"] = &glm::vec2::y;
+		}
 
-		sol::usertype<Input> input = m_L.new_usertype<Input>("Input");
-		input["IsKeyPressed"] = &Input::IsKeyPressed;
-		input["IsMouseButtonPressed"] = &Input::IsMouseButtonPressed;
-		input["GetMouseX"] = &Input::GetMouseX;
-		input["GetMouseY"] = &Input::GetMouseY;
+		// Vec3
+		{
+			sol::usertype<glm::vec3> type = m_L.new_usertype<glm::vec3>("Vec3",
+				sol::call_constructor, sol::factories(
+					[]() { return glm::vec3(); },
+					[](float val) { return glm::vec3(val); },
+					[](float x, float y, float z) { return glm::vec3(x, y, z); }
+			));
+			type["x"] = &glm::vec3::x;
+			type["y"] = &glm::vec3::y;
+			type["z"] = &glm::vec3::z;
+		}
 
+		// Vec4
+		{
+			sol::usertype<glm::vec4> type = m_L.new_usertype<glm::vec4>("Vec4",
+				sol::call_constructor, sol::factories(
+					[]() { return glm::vec4(); },
+					[](float val) { return glm::vec4(val); },
+					[](float x, float y, float z, float w) { return glm::vec4(x, y, z, w); }
+			));
+			type["x"] = &glm::vec4::x;
+			type["y"] = &glm::vec4::y;
+			type["z"] = &glm::vec4::z;
+			type["w"] = &glm::vec4::w;
+		}
 
-		sol::usertype<glm::vec2> vec2 = m_L.new_usertype<glm::vec2>("Vec2",
-			sol::constructors<glm::vec2(), glm::vec2(float), glm::vec2(float, float)>()
-		);
-		vec2["x"] = &glm::vec2::x;
-		vec2["y"] = &glm::vec2::y;
-		sol::usertype<glm::vec3> vec3 = m_L.new_usertype<glm::vec3>("Vec3",
-			sol::constructors<glm::vec3(), glm::vec3(float), glm::vec3(float, float, float)>()
-			);
-		vec3["x"] = &glm::vec3::x;
-		vec3["y"] = &glm::vec3::y;
-		vec3["z"] = &glm::vec3::z;
-		sol::usertype<glm::vec4> vec4 = m_L.new_usertype<glm::vec4>("Vec4",
-			sol::constructors<glm::vec4(), glm::vec2(float), glm::vec2(float, float, float, float)>()
-			);
-		vec4["x"] = &glm::vec4::x;
-		vec4["y"] = &glm::vec4::y;
-		vec4["z"] = &glm::vec4::z;
-		vec4["w"] = &glm::vec4::w;
+		// Texture
+		{
+			sol::usertype<Texture> type = m_L.new_usertype<Texture>("Texture",
+				"GetWidth", &Texture::GetWidth,
+				"GetHeight", &Texture::GetHeight,
+				"GetChannels", &Texture::GetChannels
+				);
+		}
 
-
-
-		sol::usertype<Texture> texture = m_L.new_usertype<Texture>("Texture");
-
-		sol::usertype<SubTexture> subTexture = m_L.new_usertype<SubTexture>("SubTexture",
-			sol::constructors<SubTexture(const Ref<Texture>&, const glm::vec4&), SubTexture(const Ref<Texture>&, const glm::vec2&, const glm::vec2&)>()
-			);
-
-		subTexture["SetCoords"] = &SubTexture::SetCoords;
-
-
-		sol::usertype<Ref<Test>> refSubTexture = m_L.new_usertype<Ref<Test>>("RefSubTexture");
-	
-
-		sol::usertype<TransformComponent> transform = m_L.new_usertype<TransformComponent>("TransformComponent");
-		transform["Translation"] = &TransformComponent::Translation;
-		transform["Rotation"] = &TransformComponent::Rotation;
-		transform["Scale"] = &TransformComponent::Scale;
-
-		sol::usertype<SpriteRenderer> sprite = m_L.new_usertype<SpriteRenderer>("SpriteRenderer");
-		//sprite["Sprite"] = &SpriteRenderer::SubTexture;
-		sprite["Color"] = &SpriteRenderer::Color;
-
-		sol::usertype<LuaEntity> luaEnt = m_L.new_usertype<LuaEntity>("Entity");
-		luaEnt["GetTransform"] = &LuaEntity::GetComponent<TransformComponent>;
-		luaEnt["GetSpriteRenderer"] = &LuaEntity::GetComponent<SpriteRenderer>;
-		luaEnt["FindEntity"] = &LuaEntity::FindEntity;
-		luaEnt["CreateEntity"] = &LuaEntity::CreateEntity;
+		// Texture2D
+		{
+			sol::usertype<Texture2D> type = m_L.new_usertype<Texture2D>("Texture2D",
+				sol::base_classes, sol::bases<Texture>()
+				);
+		}
 		
+		// TextureSpecs
+		{
+			sol::usertype<TextureSpecs> type = m_L.new_usertype<TextureSpecs>("TextureSpecs");
+			type["Wrap"] = &TextureSpecs::Wrap;
+			type["MinParam"] = &TextureSpecs::MinParam;
+			type["MagParam"] = &TextureSpecs::MagParam;
+		}
 
-		//luabridge::getGlobalNamespace(m_L)
-		//	.beginClass<Texture>("Texture")
-		//	.addFunction("GetWidth", &Texture::GetWidth)
-		//	.addFunction("GetHeight", &Texture::GetHeight)
-		//	.endClass()
-		//	.deriveClass <Texture2D, Texture>("Texture2D")
-		//	.addStaticFunction("Create", &CreateTexture2D)
-		//	.endClass();
-		//	
-		//
-		//luabridge::getGlobalNamespace(m_L)
-		//	.beginClass<SubTexture>("SubTexture")
-		//	.addFunction("SetTexture", &SubTexture::SetTexture)
-		//	.addFunction("SetCoords", &SubTexture::SetCoords)
-		//	.addStaticFunction("Create", &CreateSubTexture)
-		//	.endClass();
-		//
-	
-		//luabridge::getGlobalNamespace(m_L)
-		//	.beginClass<SpriteRenderer>("SpriteRenderer")
-		//	.addFunction("GetSubTexture", &GetSubTexture)
-		//	.addFunction("SetSubTexture", &SetSubTexture)
-		//	.addProperty("Color", &SpriteRenderer::Color)
-		//	.endClass();
-		//
-		//
-		//luabridge::getGlobalNamespace(m_L)
-		//	.beginClass<AnimationController>("AnimationController")
-		//	.addFunction("TransitionTo", &AnimationController::TransitionTo)
-		//	.endClass();
-		//
-		//
-		//luabridge::getGlobalNamespace(m_L)
-		//	.beginClass<AnimatorComponent>("AnimatorComponent")
-		//	.addProperty("Controller", &AnimatorComponent::Controller)
-		//	.endClass();
-		//
-		//
-		//// Entity
-		//luabridge::getGlobalNamespace(m_L)
-		//	.beginClass<LuaEntity>("Entity")
-		//	.addFunction("GetTransform", &LuaEntity::GetComponent<TransformComponent>)
-		//	.addFunction("GetSpriteRenderer", &LuaEntity::GetComponent<SpriteRenderer>)
-		//	.addFunction("GetAnimator", &LuaEntity::GetComponent<AnimatorComponent>)
-		//	.addStaticFunction("FindEntity", &LuaEntity::FindEntity)
-		//	.addStaticFunction("CreateEntity", &LuaEntity::CreateEntity)
-		//	.endClass();
-		//
-		//
-		//
-		//if (CheckLua(m_L, luaL_dofile(m_L, fullPath.c_str())))
-		//{
-		//}			
+		// RefTexture
+		{
+			sol::usertype<Ref<Texture>> type = m_L.new_usertype<Ref<Texture>>("RefTexture",
+				sol::call_constructor, sol::factories(
+					[](const TextureSpecs& specs, const std::string& path) { return Texture2D::Create(specs, path); }
+			));
+			type["Get"] = &Ref<Texture>::Get;
+		}
+
+		// SubTexture
+		{
+			sol::automagic_enrollments enrolments;
+			enrolments.default_constructor = false;
+			sol::usertype<SubTexture> type = m_L.new_usertype<SubTexture>("SubTexture", enrolments);
+			type["SetTexture"] = &SubTexture::SetTexture;
+			type["SetCoords"] = &SubTexture::SetCoords;
+			type["GetTexCoords"] = &SubTexture::GetTexCoords;
+			type["GetTexture"] = &SubTexture::GetTexture;
+		}
+		// RefSubTexture
+		{
+			sol::usertype<Ref<SubTexture>> type = m_L.new_usertype<Ref<SubTexture>>("RefSubTexture",
+				sol::call_constructor, sol::factories(
+					[](const Ref<Texture>& texture, const glm::vec4& texCoords) { return Ref<SubTexture>::Create(texture, texCoords); }
+			));
+			type["Get"] = &Ref<SubTexture>::Get;
+		}
+
+		// AnimationController
+		{
+			sol::usertype<AnimationController> type = m_L.new_usertype<AnimationController>("AnimationController");
+			type["TransitionTo"] = &AnimationController::TransitionTo;
+		}
+
+
+		// Transform
+		{
+			sol::usertype<TransformComponent> type = m_L.new_usertype<TransformComponent>("TransformComponent");
+			type["Translation"] = &TransformComponent::Translation;
+			type["Rotation"] = &TransformComponent::Rotation;
+			type["Scale"] = &TransformComponent::Scale;
+		}
+
+		// SpriteRenderer
+		{
+			sol::usertype<SpriteRenderer> type = m_L.new_usertype<SpriteRenderer>("SpriteRenderer");
+			type["SubTexture"] = &SpriteRenderer::SubTexture;
+			type["Color"] = &SpriteRenderer::Color;
+		}
+
+		// AnimatorComponent
+		{
+			sol::usertype <AnimatorComponent> type = m_L.new_usertype<AnimatorComponent>("AnimatorComponent");
+			type["Controller"] = &AnimatorComponent::Controller;
+		}
+
+		// LuaEntity
+		{
+			sol::usertype<LuaEntity> type = m_L.new_usertype<LuaEntity>("Entity");
+			type["GetTransform"] = &LuaEntity::GetComponent<TransformComponent>;
+			type["GetSpriteRenderer"] = &LuaEntity::GetComponent<SpriteRenderer>;
+			type["GetAnimator"] = &LuaEntity::GetComponent<AnimatorComponent>;
+			type["FindEntity"] = &LuaEntity::FindEntity;
+			type["CreateEntity"] = &LuaEntity::CreateEntity;
+		}
 
 		std::string fullPath = m_Directory + "/" + filename;
 		m_L.script_file(fullPath);
@@ -217,21 +238,17 @@ namespace XYZ {
 
 	void LuaApp::OnUpdate(Timestep ts)
 	{
-		try
 		{
-			{
-				std::scoped_lock lock(m_Mutex);
-				if (m_Reload)
-					m_Reload = !tryReload();
-			}
-			m_L["OnUpdate"](ts.GetSeconds());
-			//luabridge::LuaRef handler = luabridge::getGlobal(m_L, "OnUpdate");
-			//handler((lua_Number)ts.GetSeconds());
+			std::scoped_lock lock(m_Mutex);
+			if (m_Reload)
+				m_Reload = !tryReload();
 		}
-		catch (const std::exception& e)
+		auto res = m_L["OnUpdate"](ts.GetSeconds());
+		if (!res.valid())
 		{
-			XYZ_LOG_ERR("Exception OnUpdate: ", e.what());
-		}	
+			sol::error err = res;
+			XYZ_LOG_ERR("Exception OnUpdate: ", err.what());
+		}
 	}
 	void LuaApp::OnFileChange(const std::wstring& filepath)
 	{

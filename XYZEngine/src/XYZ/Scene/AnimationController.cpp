@@ -5,7 +5,7 @@
 namespace XYZ {
 	uint32_t AnimationController::AddAnimation(Ref<Animation> animation)
 	{
-		if (!m_CurrentAnimation)
+		if (!m_CurrentAnimation.Raw())
 			m_CurrentAnimation = animation;
 
 		auto &state = m_StateMachine.CreateState();
@@ -17,7 +17,7 @@ namespace XYZ {
 	}
 	void AnimationController::Update(Timestep ts)
 	{
-		if (m_CurrentAnimation)
+		if (m_CurrentAnimation.Raw())
 			m_CurrentAnimation->Update(ts);
 	}
 
@@ -34,7 +34,7 @@ namespace XYZ {
 		{
 			for (auto animation : m_Animations)
 			{
-				if (animation)
+				if (animation.Raw())
 				{
 					m_CurrentAnimation = animation;
 					break;
@@ -47,7 +47,7 @@ namespace XYZ {
 
 	const Ref<Animation>& AnimationController::GetCurrentAnimation() const
 	{
-		XYZ_ASSERT(m_CurrentAnimation, "No animation exists");
+		XYZ_ASSERT(m_CurrentAnimation.Raw(), "No animation exists");
 		return m_CurrentAnimation;
 	}
 }

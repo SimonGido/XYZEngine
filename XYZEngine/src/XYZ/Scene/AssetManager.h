@@ -50,7 +50,7 @@ namespace XYZ {
 			if (it != m_Assets.end())
 			{
 				Asset<T>* casted = (Asset<T>*)it->second;
-				if (casted->GetHandle())
+				if (casted->GetHandle().Raw())
 					return casted;
 
 				Ref<T> ref = Serializer::DeserializeResource<T>(filepath, *this);

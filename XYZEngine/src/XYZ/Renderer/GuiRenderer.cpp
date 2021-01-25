@@ -64,7 +64,7 @@ namespace XYZ {
 	
 		for (auto& dc : s_Data.WidgetDrawList)
 		{	
-			if (dc.Renderer->Material)
+			if (dc.Renderer->Material.Raw())
 				Renderer2D::SetMaterial(dc.Renderer->Material);	
 			uint32_t textureID = Renderer2D::SetTexture(dc.Renderer->SubTexture->GetTexture());
 			Renderer2D::SubmitQuads(dc.Transform->GetWorldTransform(), dc.Renderer->Mesh.Vertices.data(), dc.Renderer->Mesh.Vertices.size() / 4.0f, textureID, dc.Renderer->TilingFactor);

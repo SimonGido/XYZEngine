@@ -212,7 +212,7 @@ namespace XYZ {
 	{
 		for (uint32_t i = 0; i < s_Data.QuadMaterial->GetTextures().size(); ++i)
 		{
-			if (s_Data.QuadMaterial->GetTextures()[i] && s_Data.QuadMaterial->GetTextures()[i]->GetRendererID() == texture->GetRendererID())
+			if (s_Data.QuadMaterial->GetTextures()[i].Raw() && s_Data.QuadMaterial->GetTextures()[i]->GetRendererID() == texture->GetRendererID())
 				return i;
 		}
 		for (uint32_t i = 0; i < s_Data.TextureSlotIndex; ++i)
@@ -230,7 +230,7 @@ namespace XYZ {
 
 	void Renderer2D::SetMaterial(const Ref<Material>& material)
 	{
-		XYZ_ASSERT(material, "Material can not be null");
+		XYZ_ASSERT(material.Raw(), "Material can not be null");
 		if (material->GetFlags() != s_Data.QuadMaterial->GetFlags())
 			Flush();
 		
@@ -420,7 +420,7 @@ namespace XYZ {
 		uint32_t dataSize = (uint8_t*)s_Data.BufferPtr - (uint8_t*)s_Data.BufferBase;
 		if (dataSize)
 		{
-			XYZ_ASSERT(s_Data.QuadMaterial, "No material set");
+			XYZ_ASSERT(s_Data.QuadMaterial.Raw(), "No material set");
 				
 			s_Data.QuadMaterial->Bind();
 			uint32_t textureSlotOffset = s_Data.QuadMaterial->GetTextures().size();

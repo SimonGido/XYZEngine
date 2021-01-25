@@ -25,7 +25,7 @@ namespace XYZ {
 		m_Shader->Bind();
 		for (size_t i = 0; i < m_Textures.size(); i++)
 		{
-			if (m_Textures[i])
+			if (m_Textures[i].Raw())
 				m_Textures[i]->Bind(i);
 		}
 

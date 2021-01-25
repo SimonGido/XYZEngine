@@ -19,7 +19,7 @@ namespace XYZ {
 		void XYZ_Entity_GetTransform(uint32_t entity, glm::mat4* outTransform)
 		{
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
-			XYZ_ASSERT(scene, "No active scene!");
+			XYZ_ASSERT(scene.Raw(), "No active scene!");
 			
 			SceneEntity ent(entity, scene.Raw());
 		
@@ -30,7 +30,7 @@ namespace XYZ {
 		void XYZ_Entity_SetTransform(uint32_t entity, glm::mat4* inTransform)
 		{
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
-			XYZ_ASSERT(scene, "No active scene!");
+			XYZ_ASSERT(scene.Raw(), "No active scene!");
 
 			SceneEntity ent(entity, scene.Raw());
 

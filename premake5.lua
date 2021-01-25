@@ -25,7 +25,6 @@ IncludeDir["MiniMp3"] = "XYZEngine/vendor/minimp3"
 IncludeDir["FreeType"] = "XYZEngine/vendor/freetype-2.10.1"
 IncludeDir["Asio"] = "XYZEngine/vendor/asio/include"
 IncludeDir["Lua"] = "XYZEngine/vendor/lua/include"
-IncludeDir["LuaBridge"] = "XYZEngine/vendor/LuaBridge/Source"
 IncludeDir["Sol"] = "XYZEngine/vendor/sol2/include"
 IncludeDir["mono"] = "XYZEngine/vendor/mono/include"
 
@@ -94,7 +93,6 @@ project "XYZEngine"
 			"%{IncludeDir.FreeType}/include",
 			"%{IncludeDir.Asio}",
 			"%{IncludeDir.Lua}",
-			"%{IncludeDir.LuaBridge}",
 			"%{IncludeDir.Sol}",
 			"%{IncludeDir.mono}"
 		}
@@ -247,7 +245,9 @@ project "XYZServer"
 			"XYZEngine/vendor",
 			"XYZEngine/src",
 			"%{IncludeDir.glm}",
-			"%{IncludeDir.Asio}"
+			"%{IncludeDir.Asio}",
+			"%{IncludeDir.Lua}",
+			"%{IncludeDir.Sol}"
 		}
 		
 		links
@@ -292,7 +292,9 @@ project "XYZClient"
 			"XYZEngine/vendor",
 			"XYZEngine/src",
 			"%{IncludeDir.glm}",
-			"%{IncludeDir.Asio}"
+			"%{IncludeDir.Asio}",
+			"%{IncludeDir.Lua}",
+			"%{IncludeDir.Sol}"
 		}
 		
 		links

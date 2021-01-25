@@ -12,7 +12,7 @@ function OnUpdate(ts)
 
 	transform = entity:GetTransform()
 	spriteRenderer = entity:GetSpriteRenderer()
-	--animator = entity:GetAnimator()
+	animator = entity:GetAnimator()
 	--
 	--coords = Vec4(ts - 0.5, ts - 0.5, ts + 0.5, ts + 0.5)
 	--coords.x = Add(ts, 0.5)
@@ -23,12 +23,10 @@ function OnUpdate(ts)
 	spriteRenderer.Color.y = 0
 	spriteRenderer.Color.z = 0
 
-	test = Vec3.new(1.0)
+	test = Vec3(1.0)
 	spriteRenderer.Color.z = test.z
-	--
-	----test = spriteRenderer:GetSubTexture():SetTexture(texture)
-	----spriteRenderer:GetSubTexture():SetCoords(coords)
-	--
+
+	
 	if Input.IsKeyPressed(65) then -- A
 		transform.Translation.x = transform.Translation.x - ts * 5
 		animator.Controller:TransitionTo(1)
