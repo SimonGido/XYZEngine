@@ -175,7 +175,7 @@ namespace XYZ {
 		static void End();
 		static bool BeginGroup(const char* name, bool& open);
 
-		static uint8_t PushNode(const char* name, bool & open);
+		static uint8_t PushNode(const char* name, const glm::vec2& size, bool & open);
 		static void BeginChildren();
 		static void EndChildren();
 

@@ -116,18 +116,18 @@ namespace XYZ {
 			InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));
 			InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));
 			InGui::Separator();
-			if (InGui::PushNode("Entity some", m_BranchOpen))
+			if (InGui::PushNode("Entity some", glm::vec2(25.0f), m_BranchOpen))
 			{
 				InGui::BeginChildren();
-				InGui::PushNode("Entity some", m_ChildrenOpen);
-				if (InGui::PushNode("Entity some", m_AnotherChildrenOpen))
+				InGui::PushNode("Entity some", glm::vec2(25.0f), m_ChildrenOpen);
+				if (InGui::PushNode("Entity some", glm::vec2(25.0f), m_AnotherChildrenOpen))
 				{
 					InGui::BeginChildren();
-					InGui::PushNode("Entity some", m_AnotherChildrenOpen);
+					InGui::PushNode("Entity some", glm::vec2(25.0f), m_AnotherChildrenOpen);
 					InGui::EndChildren();
 				}
-				InGui::PushNode("Entity some", m_ChildrenOpen);
-				InGui::PushNode("Entity some", m_ChildrenOpen);
+				InGui::PushNode("Entity some",glm::vec2(25.0f), m_ChildrenOpen);
+				InGui::PushNode("Entity some",glm::vec2(25.0f), m_ChildrenOpen);
 				InGui::EndChildren();
 			}
 			InGui::Separator();
