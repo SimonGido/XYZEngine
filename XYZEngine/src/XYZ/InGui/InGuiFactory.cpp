@@ -151,8 +151,8 @@ namespace XYZ {
 		
 		for (size_t i = oldMeshSize; i < window.Mesh.Quads.size(); ++i)
 		{
-			window.Mesh.Quads[i].Position.x += size.x + textOffset.x;
-			window.Mesh.Quads[i].Position.y += (size.y / 2.0f) + (genSize.y / 2.0f);
+			window.Mesh.Quads[i].Position.x += std::floor(size.x + textOffset.x);
+			window.Mesh.Quads[i].Position.y += std::floor((size.y / 2.0f) + (genSize.y / 2.0f));
 		}
 
 

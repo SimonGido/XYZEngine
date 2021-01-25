@@ -176,7 +176,10 @@ namespace XYZ {
 				InGui::Float("Test", glm::vec2(50.0f), m_Value);
 			}
 			InGui::Separator();
-			
+			if (InGui::BeginGroup("Krava", m_CheckboxVal))
+			{
+			}
+			InGui::Separator();
 			if (InGui::BeginGroup("Test", m_CheckboxVal))
 			{
 				InGui::Float("Test", glm::vec2(50.0f), m_Test);
