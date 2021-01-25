@@ -65,6 +65,7 @@ namespace XYZ {
 		* @param[out] reference to the Window
 		*/
 		Window& GetWindow() { return *m_Window; }
+		const std::string& GetApplicationDir() const { return m_ApplicationDir; }
 
 		void Stop();
 		/**
@@ -92,6 +93,8 @@ namespace XYZ {
 
 		bool m_Running;
 		float m_LastFrameTime = 0.0f;
+
+		std::string m_ApplicationDir;
 
 		static Application* s_Application;
 	};

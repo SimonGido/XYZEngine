@@ -1,3 +1,5 @@
+require("Assets/Lua/Another")
+
 entity = Entity.FindEntity("Test Entity")
 --texture = Texture2D.Create(0, 0, 0, "Assets/Textures/Background.png")
 

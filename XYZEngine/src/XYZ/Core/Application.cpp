@@ -35,6 +35,11 @@ namespace XYZ {
 
 		m_InGuiLayer = new InGuiLayer();
 		m_LayerStack.PushOverlay(m_InGuiLayer);
+
+		TCHAR NPath[MAX_PATH];
+		GetCurrentDirectory(MAX_PATH, NPath);
+		std::wstring tmp(&NPath[0]);
+		m_ApplicationDir = std::string(tmp.begin(), tmp.end());
 	}
 
 	Application::~Application()

@@ -5,6 +5,7 @@
 #include "XYZ/ECS/Entity.h"
 #include "XYZ/Scene/Components.h"
 #include "XYZ/Scene/Serializer.h"
+#include "XYZ/Core/Application.h"
 #include "XYZ/Core/Input.h"
 #include "XYZ/Core/KeyCodes.h"
 #include "XYZ/Core/MouseCodes.h"
@@ -96,6 +97,7 @@ namespace XYZ {
 		std::string cur_path = lua_tostring(L, -1); // grab path string from top of stack
 		cur_path.append(";"); // do your path magic here
 		cur_path.append(path);
+		cur_path.append("\\?.lua");
 		lua_pop(L, 1); // get rid of the string on the stack we just pushed on line 5
 		lua_pushstring(L, cur_path.c_str()); // push the new one
 		lua_setfield(L, -2, "path"); // set the field "path" in table at -2 with value at top of stack
@@ -133,13 +135,14 @@ namespace XYZ {
 		m_FileWatcher->Start();
 
 		m_L.open_libraries(sol::lib::base, sol::lib::package, sol::lib::os);
-		
+		SetLuaPath(m_L, Application::Get().GetApplicationDir().c_str());
+
+
 		sol::usertype<Input> input = m_L.new_usertype<Input>("Input");
 		input["IsKeyPressed"] = &Input::IsKeyPressed;
 		input["IsMouseButtonPressed"] = &Input::IsMouseButtonPressed;
 		input["GetMouseX"] = &Input::GetMouseX;
 		input["GetMouseY"] = &Input::GetMouseY;
-
 
 
 		sol::usertype<glm::vec2> vec2 = m_L.new_usertype<glm::vec2>("Vec2",
@@ -173,6 +176,8 @@ namespace XYZ {
 		luaEnt["GetTransform"] = &LuaEntity::GetComponent<TransformComponent>;
 
 		luaEnt["FindEntity"] = &LuaEntity::FindEntity;
+
+		
 
 		//luabridge::getGlobalNamespace(m_L)
 		//	.beginClass<Texture>("Texture")
