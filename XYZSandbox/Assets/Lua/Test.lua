@@ -23,8 +23,8 @@ function OnUpdate(ts)
 	spriteRenderer.Color.y = 0
 	spriteRenderer.Color.z = 0
 
-	test = Vec3(1.0)
-	spriteRenderer.Color.z = test.z
+	test = Vec3(1.0, 0.5, 0.7)
+	spriteRenderer.Color.y = test.y
 
 	
 	if Input.IsKeyPressed(65) then -- A

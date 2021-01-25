@@ -3,7 +3,7 @@
 
 namespace XYZ {
 
-	static LuaApp* s_LuaApp = nullptr;
+	static LuaModule* s_LuaModule= nullptr;
 
 	GameLayer::GameLayer()
 	{
@@ -76,7 +76,7 @@ namespace XYZ {
 		SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer->SetSpecification(specs);
 	
 		LuaEntity::SetActiveScene(m_Scene);
-		s_LuaApp = new LuaApp("Assets/Lua", "Test.lua");
+		s_LuaModule = new LuaModule("Assets/Lua", "Test.lua");
 	}
 
 	void GameLayer::OnDetach()
@@ -93,7 +93,7 @@ namespace XYZ {
 		m_EditorCamera.OnUpdate(ts);
 		m_Scene->OnUpdate(ts);
 		m_Scene->OnRenderEditor(m_EditorCamera);
-		s_LuaApp->OnUpdate(ts);
+		s_LuaModule->OnUpdate(ts);
 	}
 
 	void GameLayer::OnEvent(Event& event)

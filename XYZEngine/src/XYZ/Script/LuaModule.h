@@ -11,11 +11,11 @@
 
 namespace XYZ {
 
-	class LuaApp : public IFileWatcherListener
+	class LuaModule : public IFileWatcherListener
 	{
 	public:
-		LuaApp(const std::string& directory, const std::string& filename);
-		~LuaApp();
+		LuaModule(const std::string& directory, const std::string& filename);
+		~LuaModule();
 
 		void OnUpdate(Timestep ts);
 	

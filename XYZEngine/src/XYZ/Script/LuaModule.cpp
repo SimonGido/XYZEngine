@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "LuaApp.h"
+#include "LuaModule.h"
 
 
 #include "XYZ/ECS/Entity.h"
@@ -26,21 +26,6 @@ extern "C"
 
 namespace XYZ {
 
-	struct ScriptableEntity
-	{
-		virtual void OnUpdate(Timestep ts) {};
-	};
-	
-	static bool CheckLua(lua_State* L, int err)
-	{
-		if (err != 0)
-		{
-			XYZ_LOG_ERR(lua_tostring(L, -1));
-			return false;
-		}
-		return true;
-	}
-
 	static int SetLuaPath(lua_State* L, const char* path)
 	{
 		lua_getglobal(L, "package");
@@ -55,27 +40,9 @@ namespace XYZ {
 		lua_pop(L, 1); // get rid of package table from top of stack
 		return 0; // all done!
 	}
-	// Resource helper functions
-	static Ref<Texture2D> CreateTexture2D(TextureWrap wrap, TextureParam minParam, TextureParam magParam, const std::string& path)
-	{
-		return Texture2D::Create({ wrap, minParam, magParam }, path);
-	}
 
-	static Ref<SubTexture> CreateSubTexture(const Ref<Texture>& texture, const glm::vec4& texCoords)
-	{
-		return Ref<SubTexture>::Create(texture, texCoords);
-	}
 
-	static Ref<SubTexture> GetSubTexture(SpriteRenderer* spriteRenderer)
-	{
-		return spriteRenderer->SubTexture;
-	}
-	static void SetSubTexture(SpriteRenderer* spriteRenderer, Ref<SubTexture> subTexture)
-	{
-		spriteRenderer->SubTexture = subTexture;
-	}
-
-	LuaApp::LuaApp(const std::string& directory, const std::string& filename)
+	LuaModule::LuaModule(const std::string& directory, const std::string& filename)
 		:
 		m_Directory(directory),
 		m_FileName(filename)
@@ -229,14 +196,14 @@ namespace XYZ {
 		m_L.script_file(fullPath);
 	}
 
-	LuaApp::~LuaApp()
+	LuaModule::~LuaModule()
 	{
 		m_FileWatcher->Stop();
 
 		lua_close(m_L);
 	}
 
-	void LuaApp::OnUpdate(Timestep ts)
+	void LuaModule::OnUpdate(Timestep ts)
 	{
 		{
 			std::scoped_lock lock(m_Mutex);
@@ -250,32 +217,30 @@ namespace XYZ {
 			XYZ_LOG_ERR("Exception OnUpdate: ", err.what());
 		}
 	}
-	void LuaApp::OnFileChange(const std::wstring& filepath)
+	void LuaModule::OnFileChange(const std::wstring& filepath)
 	{
 		std::string fullPath = m_Directory + "/" + m_FileName;	
 		std::scoped_lock lock(m_Mutex);
 		m_Reload = true;
 	}
-	void LuaApp::OnFileAdded(const std::wstring& filepath)
+	void LuaModule::OnFileAdded(const std::wstring& filepath)
 	{
 	}
-	void LuaApp::OnFileRemoved(const std::wstring& filepath)
+	void LuaModule::OnFileRemoved(const std::wstring& filepath)
 	{
 	}
-	void LuaApp::OnFileRenamed(const std::wstring& filepath)
+	void LuaModule::OnFileRenamed(const std::wstring& filepath)
 	{
 	}
 
-	bool LuaApp::tryReload()
+	bool LuaModule::tryReload()
 	{
 		std::string fullPath = m_Directory + "/" + m_FileName;
 		auto it = fopen(fullPath.c_str(), "r");
 		if (it)
 		{
 			fclose(it);
-			if (CheckLua(m_L, luaL_dofile(m_L, fullPath.c_str())))
-			{
-			}
+			m_L.script_file(fullPath);
 			XYZ_LOG_INFO("Lua Script successfully reloaded ", m_FileName);
 			return true;
 		}
