@@ -176,8 +176,10 @@ namespace XYZ {
 		static bool BeginGroup(const char* name, bool& open);
 
 		static uint8_t PushNode(const char* name, const glm::vec2& size, bool & open);
+		static uint8_t Dropdown(const char* name, const glm::vec2& size, bool& open);
 		static void BeginChildren();
 		static void EndChildren();
+
 
 		static uint8_t Button(const char* name, const glm::vec2& size);
 		static uint8_t Checkbox(const char* name, const glm::vec2& size, bool& val);

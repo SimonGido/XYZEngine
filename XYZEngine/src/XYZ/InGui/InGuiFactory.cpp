@@ -165,8 +165,10 @@ namespace XYZ {
 	glm::vec2 InGuiFactory::GenerateQuadWithTextLeft(const char* text, InGuiWindow& window, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, const InGuiRenderData& renderData, uint32_t subTextureIndex)
 	{
 		GenerateQuad(window, color, size, position, renderData.SubTexture[subTextureIndex], InGuiRenderData::TextureID);
+
+		glm::vec2 textOffset = { 7.0f, 0.0f };
 		glm::vec2 textPosition = position;
-		glm::vec2 textSize = {size.x, window.Size.y };
+		glm::vec2 textSize = {size.x - textOffset.x, window.Size.y };
 		textPosition.x = std::floor(textPosition.x);
 		textPosition.y = std::floor(textPosition.y);
 
@@ -176,7 +178,6 @@ namespace XYZ {
 			position, textSize, window.Mesh, InGuiRenderData::FontTextureID, 1000
 		);
 
-		glm::vec2 textOffset = { 7.0f, 0.0f };
 
 		for (size_t i = oldMeshSize; i < window.Mesh.Quads.size(); ++i)
 		{

@@ -128,6 +128,23 @@ namespace XYZ {
 				}
 				InGui::PushNode("Entity some",glm::vec2(25.0f), m_ChildrenOpen);
 				InGui::PushNode("Entity some",glm::vec2(25.0f), m_ChildrenOpen);
+				InGui::EndChildren();		
+			}
+			InGui::Separator();
+
+			if (InGui::Dropdown("Entity some", glm::vec2(100.0f,25.0f), m_BranchOpen))
+			{
+				InGui::BeginChildren();
+				InGui::Dropdown("Entity some", glm::vec2(100.0f, 25.0f), m_ChildrenOpen);
+				if (InGui::Dropdown("Entity some", glm::vec2(100.0f, 25.0f), m_AnotherChildrenOpen))
+				{
+					InGui::BeginChildren();
+					InGui::Dropdown("Entity some", glm::vec2(100.0f, 25.0f), m_AnotherChildrenOpen);
+					InGui::EndChildren();
+				}
+
+				InGui::Dropdown("Entity some", glm::vec2(100.0f,25.0f), m_ChildrenOpen);
+				InGui::Dropdown("Entity some", glm::vec2(100.0f,25.0f), m_ChildrenOpen);
 				InGui::EndChildren();
 			}
 			InGui::Separator();

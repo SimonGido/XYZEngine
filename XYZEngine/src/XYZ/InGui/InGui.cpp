@@ -304,8 +304,7 @@ namespace XYZ {
 	void InGui::End()
 	{
 		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
-		s_Context->FrameData.ActiveWindowID = InGuiFrameData::NullID;
-		
+		s_Context->FrameData.ActiveWindowID = InGuiFrameData::NullID;	
 	}
 
 	bool InGui::BeginGroup(const char* name, bool& open)
@@ -324,7 +323,7 @@ namespace XYZ {
 		InGuiFactory::GenerateQuad(window, color, size, pos, s_Context->RenderData, InGuiRenderData::BUTTON);
 		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, color, buttonSize, pos, s_Context->RenderData, subTextureIndex);
 
-		if (eraseOutOfBorders(oldQuadCount + 2, genSize, window)) { return false; }
+		if (eraseOutOfBorders(oldQuadCount, buttonSize, window)) { return false; }
 
 		if (Collide(pos, size, s_Context->FrameData.MousePosition))
 		{
@@ -354,6 +353,44 @@ namespace XYZ {
 		if (open) subTextureIndex = InGuiRenderData::DOWN_ARROW;
 
 		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, color, size, pos, s_Context->RenderData, subTextureIndex);
+		if (eraseOutOfBorders(oldQuadCount, genSize, window)) { return false; }
+
+		if (Collide(pos, genSize, s_Context->FrameData.MousePosition))
+		{
+			if (Collide(pos, size, s_Context->FrameData.MousePosition))
+			{
+				window.Mesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
+				if (TurnOffFlag<uint16_t>(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked))
+				{
+					open = !open;
+				}
+			}
+			else // It collides with text
+			{
+				for (size_t i = oldQuadCount + 1; i < window.Mesh.Quads.size(); ++i)
+					window.Mesh.Quads[i].Color = s_Context->RenderData.Color[InGuiRenderData::SELECT_COLOR];
+				returnType |= InGuiReturnType::Hoovered;
+				if (TurnOffFlag<uint16_t>(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked))
+				{
+					returnType |= InGuiReturnType::Clicked;
+				}
+			}
+		}
+		s_LayoutOffset.y += genSize.y;
+		return open;
+	}
+
+	uint8_t InGui::Dropdown(const char* name, const glm::vec2& size, bool& open)
+	{
+		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
+		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
+
+		uint32_t returnType = 0;
+		size_t oldQuadCount = window.Mesh.Quads.size();
+		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
+		glm::vec2 pos = s_LayoutOffset;
+
+		glm::vec2 genSize = InGuiFactory::GenerateQuadWithTextLeft(name, window, color, size, pos, s_Context->RenderData, InGuiRenderData::BUTTON);
 		if (eraseOutOfBorders(oldQuadCount, genSize, window)) { return false; }
 
 		if (Collide(pos, genSize, s_Context->FrameData.MousePosition))
