@@ -11,7 +11,7 @@ end
 function OnUpdate(ts)
 
 	transform = entity:GetTransform()
-	--spriteRenderer = entity:GetSpriteRenderer()
+	spriteRenderer = entity:GetSpriteRenderer()
 	--animator = entity:GetAnimator()
 	--
 	--coords = Vec4(ts - 0.5, ts - 0.5, ts + 0.5, ts + 0.5)
@@ -19,9 +19,12 @@ function OnUpdate(ts)
 	--
 	--local subTexture = SubTexture.Create(texture, coords)
 	--
-	--spriteRenderer.Color.x = 1
-	--spriteRenderer.Color.y = 0
-	--spriteRenderer.Color.z = 0
+	spriteRenderer.Color.x = 1
+	spriteRenderer.Color.y = 0
+	spriteRenderer.Color.z = 0
+
+	test = Vec3.new(1.0)
+	spriteRenderer.Color.z = test.z
 	--
 	----test = spriteRenderer:GetSubTexture():SetTexture(texture)
 	----spriteRenderer:GetSubTexture():SetCoords(coords)

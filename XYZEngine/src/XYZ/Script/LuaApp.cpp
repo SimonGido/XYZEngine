@@ -19,67 +19,23 @@ extern "C"
 }
 
 
-#include <LuaBridge/LuaBridge.h>
-#include <LuaBridge/RefCountedPtr.h>
-#include <LuaBridge/RefCountedObject.h>
-
-
-
-
 
 // TODO: delete
 #include <locale>
 #include <codecvt>
 
-namespace luabridge {
+struct Test
+{
 
-	template <typename T>
-	struct EnumWrapper 
-	{
-		static inline
-			typename std::enable_if<std::is_enum<T>::value, void>::type
-			push(lua_State* L, T value) 
-		{
-			lua_pushnumber(L, static_cast<std::size_t>(value));
-		}
+};
 
-		static inline
-			typename std::enable_if<std::is_enum<T>::value, T>::type
-			get(lua_State* L, int index) 
-		{
-			return static_cast<T>(lua_tointeger(L, index));
-		}
-	};
-
+namespace sol {
 	template <>
-	struct luabridge::Stack<XYZ::KeyCode> : EnumWrapper<XYZ::KeyCode> 
-	{};
-	template <>
-	struct luabridge::Stack<XYZ::MouseCode> : EnumWrapper<XYZ::MouseCode>
-	{};
-
-	template <>
-	struct luabridge::Stack<XYZ::TextureParam> : EnumWrapper<XYZ::TextureParam>
-	{};
-	template <>	
-	struct luabridge::Stack<XYZ::TextureWrap> : EnumWrapper<XYZ::TextureWrap>
-	{};
-
-
-	template <class T>
-	struct ContainerTraits <XYZ::Ref <T> >
-	{
-		typedef typename T Type;
-
-		static T* get(XYZ::Ref<T> c)
-		{
-			return c.Raw();
-		}
-	};
+	struct is_container<XYZ::Ref<Test>> : std::false_type {};
 }
-
 namespace XYZ {
 
+	
 	static bool CheckLua(lua_State* L, int err)
 	{
 		if (err != 0)
@@ -165,18 +121,33 @@ namespace XYZ {
 		vec4["w"] = &glm::vec4::w;
 
 
+
+		sol::usertype<Texture> texture = m_L.new_usertype<Texture>("Texture");
+
+		sol::usertype<SubTexture> subTexture = m_L.new_usertype<SubTexture>("SubTexture",
+			sol::constructors<SubTexture(const Ref<Texture>&, const glm::vec4&), SubTexture(const Ref<Texture>&, const glm::vec2&, const glm::vec2&)>()
+			);
+
+		subTexture["SetCoords"] = &SubTexture::SetCoords;
+
+
+		sol::usertype<Ref<Test>> refSubTexture = m_L.new_usertype<Ref<Test>>("RefSubTexture");
+	
+
 		sol::usertype<TransformComponent> transform = m_L.new_usertype<TransformComponent>("TransformComponent");
 		transform["Translation"] = &TransformComponent::Translation;
 		transform["Rotation"] = &TransformComponent::Rotation;
 		transform["Scale"] = &TransformComponent::Scale;
 
-
+		sol::usertype<SpriteRenderer> sprite = m_L.new_usertype<SpriteRenderer>("SpriteRenderer");
+		//sprite["Sprite"] = &SpriteRenderer::SubTexture;
+		sprite["Color"] = &SpriteRenderer::Color;
 
 		sol::usertype<LuaEntity> luaEnt = m_L.new_usertype<LuaEntity>("Entity");
 		luaEnt["GetTransform"] = &LuaEntity::GetComponent<TransformComponent>;
-
+		luaEnt["GetSpriteRenderer"] = &LuaEntity::GetComponent<SpriteRenderer>;
 		luaEnt["FindEntity"] = &LuaEntity::FindEntity;
-
+		luaEnt["CreateEntity"] = &LuaEntity::CreateEntity;
 		
 
 		//luabridge::getGlobalNamespace(m_L)
@@ -196,15 +167,7 @@ namespace XYZ {
 		//	.addStaticFunction("Create", &CreateSubTexture)
 		//	.endClass();
 		//
-		//// Components
-		//luabridge::getGlobalNamespace(m_L)
-		//	.beginClass<TransformComponent>("TransformComponent")
-		//	.addProperty("Translation", &TransformComponent::Translation)
-		//	.addProperty("Rotation", &TransformComponent::Rotation)
-		//	.addProperty("Scale", &TransformComponent::Scale)
-		//	.endClass();
-		//
-		//
+	
 		//luabridge::getGlobalNamespace(m_L)
 		//	.beginClass<SpriteRenderer>("SpriteRenderer")
 		//	.addFunction("GetSubTexture", &GetSubTexture)
@@ -261,9 +224,9 @@ namespace XYZ {
 				if (m_Reload)
 					m_Reload = !tryReload();
 			}
-
-			luabridge::LuaRef handler = luabridge::getGlobal(m_L, "OnUpdate");
-			handler((lua_Number)ts.GetSeconds());
+			m_L["OnUpdate"](ts.GetSeconds());
+			//luabridge::LuaRef handler = luabridge::getGlobal(m_L, "OnUpdate");
+			//handler((lua_Number)ts.GetSeconds());
 		}
 		catch (const std::exception& e)
 		{
