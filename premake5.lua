@@ -26,6 +26,7 @@ IncludeDir["FreeType"] = "XYZEngine/vendor/freetype-2.10.1"
 IncludeDir["Asio"] = "XYZEngine/vendor/asio/include"
 IncludeDir["Lua"] = "XYZEngine/vendor/lua/include"
 IncludeDir["LuaBridge"] = "XYZEngine/vendor/LuaBridge/Source"
+IncludeDir["Sol"] = "XYZEngine/vendor/sol2/include"
 IncludeDir["mono"] = "XYZEngine/vendor/mono/include"
 
 LibraryDir = {}
@@ -94,6 +95,7 @@ project "XYZEngine"
 			"%{IncludeDir.Asio}",
 			"%{IncludeDir.Lua}",
 			"%{IncludeDir.LuaBridge}",
+			"%{IncludeDir.Sol}",
 			"%{IncludeDir.mono}"
 		}
 
@@ -149,7 +151,8 @@ project "XYZEditor"
 			"XYZEngine/src",
 			"%{IncludeDir.glm}",
 			"%{IncludeDir.Asio}",
-			"%{IncludeDir.Lua}"
+			"%{IncludeDir.Lua}",
+			"%{IncludeDir.Sol}"
 		}
 		
 		links
@@ -195,7 +198,8 @@ project "XYZSandbox"
 			"XYZEngine/src",
 			"%{IncludeDir.glm}",
 			"%{IncludeDir.Asio}",
-			"%{IncludeDir.Lua}"
+			"%{IncludeDir.Lua}",
+			"%{IncludeDir.Sol}"
 		}
 		
 		links

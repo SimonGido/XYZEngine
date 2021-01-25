@@ -3,9 +3,12 @@
 #include "XYZ/Core/Timestep.h"
 #include "XYZ/FileWatcher/FileWatcher.h"
 
+#define SOL_ALL_SAFETIES_ON 1
+#include <sol/sol.hpp>
+
+
 #include <mutex>
 
-struct lua_State;
 namespace XYZ {
 
 	class LuaApp : public IFileWatcherListener
@@ -27,7 +30,7 @@ namespace XYZ {
 		bool tryReload();
 
 	private:
-		lua_State* m_L;
+		sol::state m_L;
 		std::unique_ptr<FileWatcher> m_FileWatcher;
 
 		std::string m_Directory;
