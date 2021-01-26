@@ -181,8 +181,8 @@ namespace XYZ {
 
 		for (size_t i = oldMeshSize; i < window.Mesh.Quads.size(); ++i)
 		{
-			window.Mesh.Quads[i].Position.x += textOffset.x;
-			window.Mesh.Quads[i].Position.y += (size.y / 2.0f) + (genSize.y / 2.0f);
+			window.Mesh.Quads[i].Position.x += std::floor(textOffset.x);
+			window.Mesh.Quads[i].Position.y += std::floor((size.y / 2.0f) + (genSize.y / 2.0f));
 		}
 
 
@@ -202,8 +202,8 @@ namespace XYZ {
 
 		for (size_t i = oldMeshSize; i < window.Mesh.Quads.size(); ++i)
 		{
-			window.Mesh.Quads[i].Position.x += (size.x / 2.0f) - (genSize.x / 2.0f);
-			window.Mesh.Quads[i].Position.y += (size.y / 2.0f) + (genSize.y / 2.0f);
+			window.Mesh.Quads[i].Position.x += std::floor((size.x / 2.0f) - (genSize.x / 2.0f));
+			window.Mesh.Quads[i].Position.y += std::floor((size.y / 2.0f) + (genSize.y / 2.0f));
 		}
 		return genSize;
 	}
