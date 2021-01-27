@@ -77,6 +77,7 @@ namespace XYZ {
 
 		virtual const FrameBufferSpecs& GetSpecification() const = 0;
 		
+		virtual uint32_t ReadPixel(uint32_t mx, uint32_t my, uint32_t attachmentIndex) const = 0;
 
 		static Ref<FrameBuffer> Create(const FrameBufferSpecs& specs);
 	};

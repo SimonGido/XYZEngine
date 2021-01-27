@@ -9,7 +9,8 @@ namespace XYZ {
 	{
 		None,
 		Triangles,
-		Lines
+		Lines,
+		Points
 	};
 
 	struct RenderAPICapabilities

@@ -209,4 +209,11 @@ namespace XYZ {
 		m_Specification = specs;
 		//Resize(specs.Width, specs.Height);
 	}
+	uint32_t OpenGLFrameBuffer::ReadPixel(uint32_t mx, uint32_t my, uint32_t attachmentIndex) const
+	{
+		int pixel = -1;
+		glReadBuffer(GL_COLOR_ATTACHMENT0 + attachmentIndex);
+		glReadPixels(mx, my, m_Specification.Width, m_Specification.Height, GL_RED_INTEGER, GL_INT, &pixel);
+		return uint32_t(pixel);
+	}
 }

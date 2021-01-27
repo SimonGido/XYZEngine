@@ -13,6 +13,7 @@ namespace XYZ {
 	{
 		uint32_t DrawCalls = 0;
 		uint32_t LineDrawCalls = 0;
+		uint32_t CollisionDrawCalls = 0;
 	};
 
 	struct Vertex2D
@@ -22,6 +23,7 @@ namespace XYZ {
 		glm::vec2 TexCoord;
 		float	  TextureID;
 		float	  TilingFactor;
+		float	  CollisionID;
 	};
 
 	struct LineVertex
@@ -39,6 +41,7 @@ namespace XYZ {
 		static const uint32_t MaxLines = 10000;
 		static const uint32_t MaxLineVertices = MaxLines * 2;
 		static const uint32_t MaxLineIndices = MaxLines * 6;
+		static const uint32_t MaxCollisionIDs = 50000;
 
 
 		void Reset();
@@ -48,6 +51,7 @@ namespace XYZ {
 		Ref<Material> QuadMaterial;
 		Ref<Material> GridMaterial;
 		Ref<Shader> LineShader;
+		Ref<Shader> MousePickerShader;
 
 		Ref<Texture> TextureSlots[MaxTextures];
 		uint32_t TextureSlotIndex = 0;
@@ -76,6 +80,7 @@ namespace XYZ {
 		LineVertex* LineBufferBase = nullptr;
 		LineVertex* LineBufferPtr = nullptr;
 
+
 		glm::mat4 ViewProjectionMatrix;
 		Renderer2DStats Stats;
 	};
@@ -95,6 +100,7 @@ namespace XYZ {
 			{2, XYZ::ShaderDataComponent::Float2, "a_TexCoord" },
 			{3, XYZ::ShaderDataComponent::Float,  "a_TextureID" },
 			{4, XYZ::ShaderDataComponent::Float,  "a_TilingFactor" },
+			{5, XYZ::ShaderDataComponent::Int,	  "a_CollisionID" },
 				});
 			QuadVertexArray->AddVertexBuffer(QuadVertexBuffer);
 
@@ -188,6 +194,7 @@ namespace XYZ {
 		LineIndexCount = 0;
 	}
 
+	
 	static Renderer2DData s_Data;
 
 	void Renderer2D::Init()
@@ -415,6 +422,17 @@ namespace XYZ {
 		Renderer::DrawIndexed(PrimitiveType::Triangles, 6);
 	}
 
+	void Renderer2D::SubmitCollisionID(uint32_t id)
+	{
+		Vertex2D* tmpPtr = s_Data.BufferPtr;
+		constexpr size_t quadVertexCount = 4;
+		for (size_t i = 0; i < quadVertexCount; ++i)
+		{
+			tmpPtr->CollisionID = id;
+			tmpPtr++;
+		}
+	}
+
 	void Renderer2D::Flush()
 	{	
 		uint32_t dataSize = (uint8_t*)s_Data.BufferPtr - (uint8_t*)s_Data.BufferBase;
@@ -454,10 +472,13 @@ namespace XYZ {
 		}	
 	}
 
+
+
 	void Renderer2D::EndScene()
 	{
 		s_Data.Stats.DrawCalls = 0;
 		s_Data.Stats.LineDrawCalls = 0;
+		s_Data.Stats.CollisionDrawCalls = 0;
 		s_Data.QuadMaterial = nullptr;
 	}
 }

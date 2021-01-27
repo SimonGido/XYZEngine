@@ -40,7 +40,7 @@ namespace XYZ {
 	
 		static void SubmitQuadNotCentered(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, uint32_t textureID, const glm::vec4& color = glm::vec4(1), float tilingFactor = 1.0f);
 		static void SubmitGrid(const glm::mat4& transform, const glm::vec2& scale, float lineWidth);
-	
+		static void SubmitCollisionID(uint32_t id);
 
 		static void Flush();
 		static void FlushLines();

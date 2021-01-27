@@ -23,7 +23,7 @@ namespace XYZ {
 		Ref<RenderPass> GeometryPass;
 		Ref<RenderPass> BloomPass;
 		Ref<RenderPass> GaussianBlurPass;
-
+		Ref<RenderPass> MousePickerPass;
 
 		Ref<Shader> GaussianBlurShader;
 		Ref<Shader> BloomShader;
@@ -75,6 +75,16 @@ namespace XYZ {
 			};
 			Ref<FrameBuffer> fbo = FrameBuffer::Create(specs);
 			s_Data.CompositePass = RenderPass::Create({ fbo });
+		}
+		// Mouse Picker pass
+		{
+			FrameBufferSpecs specs;
+			specs.ClearColor = { 0.1f,0.1f,0.1f,1.0f };
+			specs.Attachments = {
+				FrameBufferTextureSpecs(FrameBufferTextureFormat::RGBA8)
+			};
+			Ref<FrameBuffer> fbo = FrameBuffer::Create(specs);
+			s_Data.MousePickerPass = RenderPass::Create({ fbo });
 		}
 		// Light pass
 		{
@@ -137,6 +147,7 @@ namespace XYZ {
 		s_Data.GaussianBlurPass->GetSpecification().TargetFramebuffer->Resize(width, height);
 		s_Data.BloomPass->GetSpecification().TargetFramebuffer->Resize(width, height);
 		s_Data.CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height);	
+		s_Data.MousePickerPass->GetSpecification().TargetFramebuffer->Resize(width, height);
 	}
 	void SceneRenderer::BeginScene(const Scene* scene, const SceneRendererCamera& camera)
 	{
@@ -160,6 +171,10 @@ namespace XYZ {
 		s_Data.ActiveScene = nullptr;
 
 		FlushDrawList();
+	}
+	void SceneRenderer::SubmitCollisionID(uint32_t id)
+	{
+		Renderer2D::SubmitCollisionID(id);
 	}
 	void SceneRenderer::SubmitSprite(SpriteRenderer* sprite, TransformComponent* transform)
 	{
@@ -189,6 +204,11 @@ namespace XYZ {
 		return s_Data.CompositePass;
 	}
 
+	Ref<RenderPass> SceneRenderer::GetCollisionRenderPass()
+	{
+		return s_Data.MousePickerPass;
+	}
+
 	uint32_t SceneRenderer::GetFinalColorBufferRendererID()
 	{
 		return s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetColorAttachmentRendererID(0);
@@ -213,6 +233,7 @@ namespace XYZ {
 				return a.Particle->RenderMaterial->GetFlags() < b.Particle->RenderMaterial->GetFlags();
 			});
 
+		MousePickerPass();
 		GeometryPass();
 		LightPass();
 		BloomPass();
@@ -224,6 +245,14 @@ namespace XYZ {
 		s_Data.ParticleDrawList.clear();
 		s_Data.LightsList.clear();
 	}
+	void SceneRenderer::MousePickerPass()
+	{
+		Renderer::BeginRenderPass(s_Data.MousePickerPass, true);
+
+
+		Renderer::EndRenderPass();
+	}
+	
 	void SceneRenderer::GeometryPass()
 	{
 		Renderer::BeginRenderPass(s_Data.GeometryPass, true);

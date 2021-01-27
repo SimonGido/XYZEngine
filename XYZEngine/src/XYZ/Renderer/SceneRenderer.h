@@ -35,17 +35,20 @@ namespace XYZ {
 		static void BeginScene(const Scene* scene, const glm::mat4 viewProjectionMatrix);
 		static void EndScene();
 
-		static void SubmitSprite(SpriteRenderer* sprite, TransformComponent* transform);
+		static void SubmitCollisionID(uint32_t id);
+		static void SubmitSprite(SpriteRenderer* sprite, TransformComponent* transform, uint32_t collisionID);
 		static void SubmitParticles(ParticleComponent* particle, TransformComponent* transform);
 		static void SubmitLight(PointLight2D* light, const glm::mat4& transform);
 		static void SetGridProperties(const GridProperties& props);
 
 		static Ref<RenderPass> GetFinalRenderPass();
-	
+		static Ref<RenderPass> GetCollisionRenderPass();
+
 		static uint32_t GetFinalColorBufferRendererID();
 		static SceneRendererOptions& GetOptions();
 	private:
 		static void FlushDrawList();
+		static void MousePickerPass();
 		static void GeometryPass();
 		static void LightPass();
 		static void BloomPass();

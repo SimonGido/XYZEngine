@@ -39,12 +39,13 @@ in flat float v_TextureID;
 in float v_TilingFactor;
 
 
+layout(location = 0) out vec4 o_Color;
 uniform sampler2D u_Texture[32];
-out vec4 FragColor;
+
 
 void main()
 {
 	vec2 tiledTexCoord = v_TexCoord * v_TilingFactor;
-	FragColor = vec4(texture(u_Texture[int(v_TextureID)], tiledTexCoord)) * v_Color;
+	o_Color = vec4(texture(u_Texture[int(v_TextureID)], tiledTexCoord)) * v_Color;
 }
 

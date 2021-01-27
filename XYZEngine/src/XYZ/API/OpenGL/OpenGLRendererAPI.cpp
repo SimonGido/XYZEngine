@@ -63,6 +63,8 @@ namespace XYZ {
 		case XYZ::PrimitiveType::Lines:
 			glDrawElements(GL_LINES, indexCount, GL_UNSIGNED_INT, nullptr);
 			break;
+		case XYZ::PrimitiveType::Points:
+			glDrawElements(GL_POINT, indexCount, GL_UNSIGNED_INT, nullptr);
 		}
 		
 		glBindTexture(GL_TEXTURE_2D, 0);

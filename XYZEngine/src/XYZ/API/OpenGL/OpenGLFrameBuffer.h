@@ -24,7 +24,8 @@ namespace XYZ {
 
 	
 		virtual const FrameBufferSpecs& GetSpecification() const override { return m_Specification; }
-	
+		virtual uint32_t ReadPixel(uint32_t mx, uint32_t my, uint32_t attachmentIndex) const override;
+
 	private:
 		uint32_t m_RendererID = 0;
 		FrameBufferSpecs m_Specification;
