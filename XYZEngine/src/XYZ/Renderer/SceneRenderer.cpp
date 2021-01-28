@@ -23,7 +23,6 @@ namespace XYZ {
 		Ref<RenderPass> GeometryPass;
 		Ref<RenderPass> BloomPass;
 		Ref<RenderPass> GaussianBlurPass;
-		Ref<RenderPass> MousePickerPass;
 
 		Ref<Shader> GaussianBlurShader;
 		Ref<Shader> BloomShader;
@@ -44,9 +43,8 @@ namespace XYZ {
 			TransformComponent* Transform;
 		};
 
-		struct SpriteDrawCommandWithCollision
+		struct CollisionDrawCommand
 		{
-			SpriteRenderer* Sprite;
 			TransformComponent* Transform;
 			uint32_t ID;
 		};
@@ -58,7 +56,7 @@ namespace XYZ {
 			float Intensity = 1.0f;
 		};
 
-		std::vector<SpriteDrawCommandWithCollision> SpriteDrawCollisionList;
+		std::vector<CollisionDrawCommand> CollisionList;
 		std::vector<SpriteDrawCommand> SpriteDrawList;
 		std::vector<ParticleDrawCommand> ParticleDrawList;
 		std::vector<PointLight> LightsList;
@@ -85,16 +83,7 @@ namespace XYZ {
 			Ref<FrameBuffer> fbo = FrameBuffer::Create(specs);
 			s_Data.CompositePass = RenderPass::Create({ fbo });
 		}
-		// Mouse Picker pass
-		{
-			FrameBufferSpecs specs;
-			specs.ClearColor = { 0.1f,0.1f,0.1f,1.0f };
-			specs.Attachments = {
-				FrameBufferTextureSpecs(FrameBufferTextureFormat::RGBA8)
-			};
-			Ref<FrameBuffer> fbo = FrameBuffer::Create(specs);
-			s_Data.MousePickerPass = RenderPass::Create({ fbo });
-		}
+
 		// Light pass
 		{
 			FrameBufferSpecs specs;
@@ -157,7 +146,6 @@ namespace XYZ {
 		s_Data.GaussianBlurPass->GetSpecification().TargetFramebuffer->Resize(width, height);
 		s_Data.BloomPass->GetSpecification().TargetFramebuffer->Resize(width, height);
 		s_Data.CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height);	
-		s_Data.MousePickerPass->GetSpecification().TargetFramebuffer->Resize(width, height);
 	}
 	void SceneRenderer::BeginScene(const Scene* scene, const SceneRendererCamera& camera)
 	{
@@ -187,9 +175,9 @@ namespace XYZ {
 	{
 		s_Data.SpriteDrawList.push_back({ sprite,transform });
 	}
-	void SceneRenderer::SubmitSprite(SpriteRenderer* sprite, TransformComponent* transform, uint32_t collisionID)
+	void SceneRenderer::SubmitCollision(TransformComponent* transform, uint32_t collisionID)
 	{
-		s_Data.SpriteDrawCollisionList.push_back({ sprite, transform, collisionID });
+		s_Data.CollisionList.push_back({ transform, collisionID });
 	}
 	void SceneRenderer::SubmitParticles(ParticleComponent* particle, TransformComponent* transform)
 	{
@@ -244,7 +232,6 @@ namespace XYZ {
 				return a.Particle->RenderMaterial->GetFlags() < b.Particle->RenderMaterial->GetFlags();
 			});
 
-		MousePickerPass();
 		GeometryPass();
 		LightPass();
 		BloomPass();
@@ -256,14 +243,7 @@ namespace XYZ {
 		s_Data.ParticleDrawList.clear();
 		s_Data.LightsList.clear();
 	}
-	void SceneRenderer::MousePickerPass()
-	{
-		Renderer::BeginRenderPass(s_Data.MousePickerPass, true);
 
-
-		Renderer::EndRenderPass();
-	}
-	
 	void SceneRenderer::GeometryPass()
 	{
 		Renderer::BeginRenderPass(s_Data.GeometryPass, true);
@@ -274,11 +254,9 @@ namespace XYZ {
 			Renderer2D::SubmitGrid(s_Data.GridProps.Transform, s_Data.GridProps.Scale, s_Data.GridProps.LineWidth);
 		}
 
-		for (auto& dc : s_Data.SpriteDrawCollisionList)
+		for (auto& dc : s_Data.CollisionList)
 		{
-			Renderer2D::SetMaterial(dc.Sprite->Material);
-			uint32_t textureID = Renderer2D::SetTexture(dc.Sprite->SubTexture->GetTexture());
-			Renderer2D::SubmitQuadWithID(dc.Transform->GetTransform(), dc.Sprite->SubTexture->GetTexCoords(), textureID, dc.ID, dc.Sprite->Color);
+			Renderer2D::SubmitCollisionQuad(dc.Transform->GetTransform(), dc.ID);
 		}
 
 		for (auto& dc : s_Data.SpriteDrawList)
@@ -290,6 +268,8 @@ namespace XYZ {
 
 		Renderer2D::Flush();
 		Renderer2D::FlushLines();
+		Renderer2D::FlushCollisions();
+
 		auto [mx, my] = Input::GetMousePosition();
 		auto [width, height] = Input::GetWindowSize();
 		s_Data.GeometryPass->GetSpecification().TargetFramebuffer->ReadPixel(mx, height - my, 2);
@@ -318,13 +298,16 @@ namespace XYZ {
 
 		s_Data.LightShader->Bind();
 		s_Data.LightShader->SetInt("u_NumberOfLights", s_Data.LightsList.size());
-
-		s_Data.LightStorageBuffer->Update(s_Data.LightsList.data(), s_Data.LightsList.size() * sizeof(SceneRendererData::PointLight));
-		s_Data.LightStorageBuffer->BindRange(0, s_Data.LightsList.size() * sizeof(SceneRendererData::PointLight), 0);
+		
+		if (s_Data.LightsList.size())
+		{
+			s_Data.LightStorageBuffer->Update(s_Data.LightsList.data(), s_Data.LightsList.size() * sizeof(SceneRendererData::PointLight));
+			s_Data.LightStorageBuffer->BindRange(0, s_Data.LightsList.size() * sizeof(SceneRendererData::PointLight), 0);
+		}
 
 		s_Data.GeometryPass->GetSpecification().TargetFramebuffer->BindTexture(0, 0);
 		s_Data.GeometryPass->GetSpecification().TargetFramebuffer->BindTexture(1, 1);
-
+	
 		Renderer::SubmitFullsceenQuad();
 		
 		Renderer::EndRenderPass();

@@ -167,12 +167,9 @@ namespace XYZ {
 
 	void OpenGLShaderStorageBuffer::BindRange(uint32_t offset, uint32_t size, uint32_t index)const
 	{
-		if (size)
-		{
-			Renderer::Submit([this, offset, size, index]() {
-				glBindBufferRange(GL_SHADER_STORAGE_BUFFER, index, m_RendererID, offset, size);
-				});
-		}
+		Renderer::Submit([this, offset, size, index]() {
+			glBindBufferRange(GL_SHADER_STORAGE_BUFFER, index, m_RendererID, offset, size);
+			});
 	}
 
 	void OpenGLShaderStorageBuffer::Bind()const

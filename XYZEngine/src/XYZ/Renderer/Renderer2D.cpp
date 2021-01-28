@@ -23,13 +23,18 @@ namespace XYZ {
 		glm::vec2 TexCoord;
 		float	  TextureID;
 		float	  TilingFactor;
-		int		  CollisionID = -1;
 	};
 
 	struct LineVertex
 	{
 		glm::vec3 Position;
 		glm::vec4 Color;
+	};
+	
+	struct CollisionVertex
+	{
+		glm::vec3 Position;
+		int CollisionID;
 	};
 
 	struct Renderer2DData
@@ -41,17 +46,18 @@ namespace XYZ {
 		static const uint32_t MaxLines = 10000;
 		static const uint32_t MaxLineVertices = MaxLines * 2;
 		static const uint32_t MaxLineIndices = MaxLines * 6;
-		static const uint32_t MaxCollisionIDs = 50000;
+		static const uint32_t MaxCollisionVertices = MaxQuads * 4;
 
 
 		void Reset();
 		void ResetLines();
+		void ResetCollisions();
 		
 		Ref<Material> DefaultQuadMaterial;
 		Ref<Material> QuadMaterial;
 		Ref<Material> GridMaterial;
 		Ref<Shader> LineShader;
-		Ref<Shader> MousePickerShader;
+		Ref<Shader> CollisionShader;
 
 		Ref<Texture> TextureSlots[MaxTextures];
 		uint32_t TextureSlotIndex = 0;
@@ -81,6 +87,13 @@ namespace XYZ {
 		LineVertex* LineBufferPtr = nullptr;
 
 
+		Ref<VertexArray>  CollisionVertexArray;
+		Ref<VertexBuffer> CollisionVertexBuffer;
+
+		uint32_t CollisionIndexCount = 0;
+		CollisionVertex* CollisionBufferBase = nullptr;
+		CollisionVertex* CollisionBufferPtr = nullptr;
+
 		glm::mat4 ViewProjectionMatrix;
 		Renderer2DStats Stats;
 	};
@@ -99,8 +112,7 @@ namespace XYZ {
 			{1, XYZ::ShaderDataComponent::Float3, "a_Position" },
 			{2, XYZ::ShaderDataComponent::Float2, "a_TexCoord" },
 			{3, XYZ::ShaderDataComponent::Float,  "a_TextureID" },
-			{4, XYZ::ShaderDataComponent::Float,  "a_TilingFactor" },
-			{5, XYZ::ShaderDataComponent::Int,	  "a_CollisionID" },
+			{4, XYZ::ShaderDataComponent::Float,  "a_TilingFactor" }
 				});
 			QuadVertexArray->AddVertexBuffer(QuadVertexBuffer);
 
@@ -194,6 +206,43 @@ namespace XYZ {
 		LineIndexCount = 0;
 	}
 
+	void Renderer2DData::ResetCollisions()
+	{
+		if (!CollisionBufferBase)
+		{	// Lines
+			CollisionVertexArray = VertexArray::Create();
+
+			CollisionShader = Shader::Create("Assets/Shaders/MousePicker.glsl");
+			CollisionVertexBuffer = VertexBuffer::Create(MaxLineVertices * sizeof(LineVertex));
+			CollisionVertexBuffer->SetLayout({
+				{0, XYZ::ShaderDataComponent::Float3, "a_Position" },
+				{1, XYZ::ShaderDataComponent::Int,    "a_ObjectID" },
+				});
+			CollisionBufferBase = new CollisionVertex[MaxCollisionVertices];
+
+			CollisionVertexArray->AddVertexBuffer(CollisionVertexBuffer);
+			uint32_t* quadIndices = new uint32_t[MaxIndices];
+			uint32_t offset = 0;
+			for (uint32_t i = 0; i < MaxIndices; i += 6)
+			{
+				quadIndices[i + 0] = offset + 0;
+				quadIndices[i + 1] = offset + 1;
+				quadIndices[i + 2] = offset + 2;
+
+				quadIndices[i + 3] = offset + 2;
+				quadIndices[i + 4] = offset + 3;
+				quadIndices[i + 5] = offset + 0;
+
+				offset += 4;
+			}
+			Ref<IndexBuffer> collisionIndexBuffer = IndexBuffer::Create(quadIndices, MaxLineIndices);
+			LineVertexArray->SetIndexBuffer(collisionIndexBuffer);
+			delete[] quadIndices;
+		}
+
+		CollisionBufferPtr = CollisionBufferBase;
+		CollisionIndexCount = 0;
+	}
 	
 	static Renderer2DData s_Data;
 
@@ -201,12 +250,14 @@ namespace XYZ {
 	{
 		s_Data.Reset();
 		s_Data.ResetLines();
+		s_Data.ResetCollisions();
 	}
 
 	void Renderer2D::Shutdown()
 	{
 		delete[] s_Data.BufferBase;
 		delete[] s_Data.LineBufferBase;
+		delete[] s_Data.CollisionBufferBase;
 	}
 
 	void Renderer2D::BeginScene(const glm::mat4& viewProjectionMatrix)
@@ -318,32 +369,6 @@ namespace XYZ {
 		s_Data.IndexCount += 6;
 	}
 
-	void Renderer2D::SubmitQuadWithID(const glm::mat4& transform, const glm::vec4& texCoord, uint32_t textureID, uint32_t id, const glm::vec4& color, float tilingFactor)
-	{
-		constexpr size_t quadVertexCount = 4;
-
-		if (s_Data.IndexCount + 6 >= s_Data.MaxIndices)
-			Flush();
-
-		glm::vec2 texCoords[quadVertexCount] = {
-			{texCoord.x,texCoord.y},
-			{texCoord.z,texCoord.y},
-			{texCoord.z,texCoord.w},
-			{texCoord.x,texCoord.w}
-		};
-		for (size_t i = 0; i < quadVertexCount; ++i)
-		{
-			s_Data.BufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
-			s_Data.BufferPtr->Color = color;
-			s_Data.BufferPtr->TexCoord = texCoords[i];
-			s_Data.BufferPtr->TextureID = (float)textureID;
-			s_Data.BufferPtr->TilingFactor = tilingFactor;
-			s_Data.BufferPtr->CollisionID = (int)id;
-			s_Data.BufferPtr++;
-		}
-		s_Data.IndexCount += 6;
-	}
-
 	void Renderer2D::SubmitLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color)
 	{
 		if (s_Data.LineIndexCount >= s_Data.MaxLineIndices)
@@ -366,6 +391,22 @@ namespace XYZ {
 		particleEffect->GetShaderStorage()->BindBase(1);
 		particleEffect->GetIndirectBuffer()->Bind();
 		Renderer::DrawElementsIndirect(nullptr);
+	}
+
+	void Renderer2D::SubmitCollisionQuad(const glm::mat4& transform, uint32_t id)
+	{
+		constexpr size_t quadVertexCount = 4;
+
+		if (s_Data.CollisionIndexCount + 6 >= s_Data.MaxIndices)
+			FlushCollisions();
+
+		for (size_t i = 0; i < quadVertexCount; ++i)
+		{
+			s_Data.CollisionBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
+			s_Data.CollisionBufferPtr->CollisionID = (int)id;
+			s_Data.CollisionBufferPtr++;
+		}
+		s_Data.CollisionIndexCount += 6;
 	}
 
 
@@ -448,17 +489,6 @@ namespace XYZ {
 		Renderer::DrawIndexed(PrimitiveType::Triangles, 6);
 	}
 
-	void Renderer2D::SubmitCollisionID(uint32_t id)
-	{
-		Vertex2D* tmpPtr = s_Data.BufferPtr;
-		constexpr size_t quadVertexCount = 4;
-		for (size_t i = 0; i < quadVertexCount; ++i)
-		{
-			tmpPtr->CollisionID = id;
-			tmpPtr++;
-		}
-	}
-
 	void Renderer2D::Flush()
 	{	
 		uint32_t dataSize = (uint8_t*)s_Data.BufferPtr - (uint8_t*)s_Data.BufferBase;
@@ -496,6 +526,23 @@ namespace XYZ {
 			s_Data.Stats.LineDrawCalls++;
 			s_Data.ResetLines();
 		}	
+	}
+
+	void Renderer2D::FlushCollisions()
+	{
+		uint32_t dataSize = (uint8_t*)s_Data.CollisionBufferPtr - (uint8_t*)s_Data.CollisionBufferBase;
+		if (dataSize)
+		{
+			s_Data.CollisionShader->Bind();
+			s_Data.CollisionShader->SetMat4("u_ViewProjectionMatrix", s_Data.ViewProjectionMatrix);
+
+			s_Data.CollisionVertexBuffer->Update(s_Data.CollisionBufferBase, dataSize);
+			s_Data.CollisionVertexArray->Bind();
+			Renderer::DrawIndexed(PrimitiveType::Triangles, s_Data.CollisionIndexCount);
+
+			s_Data.Stats.CollisionDrawCalls++;
+			s_Data.ResetCollisions();
+		}
 	}
 
 

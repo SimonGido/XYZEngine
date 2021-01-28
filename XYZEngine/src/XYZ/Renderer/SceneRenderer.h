@@ -36,7 +36,7 @@ namespace XYZ {
 		static void EndScene();
 
 		static void SubmitSprite(SpriteRenderer* sprite, TransformComponent* transform);
-		static void SubmitSprite(SpriteRenderer* sprite, TransformComponent* transform, uint32_t collisionID);
+		static void SubmitCollision(TransformComponent* transform, uint32_t collisionID);
 		static void SubmitParticles(ParticleComponent* particle, TransformComponent* transform);
 		static void SubmitLight(PointLight2D* light, const glm::mat4& transform);
 		static void SetGridProperties(const GridProperties& props);
@@ -48,7 +48,6 @@ namespace XYZ {
 		static SceneRendererOptions& GetOptions();
 	private:
 		static void FlushDrawList();
-		static void MousePickerPass();
 		static void GeometryPass();
 		static void LightPass();
 		static void BloomPass();
