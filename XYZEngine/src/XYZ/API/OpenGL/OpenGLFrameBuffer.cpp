@@ -15,7 +15,7 @@ namespace XYZ {
 
 		static void CreateTextures(bool multisampled, uint32_t* outID, uint32_t count)
 		{
-			glCreateTextures(TextureTarget(multisampled), 1, outID);
+			glCreateTextures(TextureTarget(multisampled), count, outID);
 		}
 
 		static void BindTexture(bool multisampled, uint32_t id)
@@ -27,6 +27,7 @@ namespace XYZ {
 		{
 			switch (format)
 			{
+			case GL_R32I: return GL_UNSIGNED_BYTE;
 			case GL_RGBA8: return GL_UNSIGNED_BYTE;
 			case GL_RG16F:
 			case GL_RG32F:
@@ -49,14 +50,22 @@ namespace XYZ {
 			else
 			{
 				// Only RGBA access for now
-				glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, GL_RGBA, DataType(format), nullptr);
+				switch (format)
+				{
+				case GL_R32I:
+					glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, GL_RED_INTEGER, DataType(format), nullptr);
+					break;
+				default:
+					glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, GL_RGBA, DataType(format), nullptr);
+					break;
+				}
 
 				glTexParameteri(TextureTarget(multisampled), GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 				glTexParameteri(TextureTarget(multisampled), GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 				glTexParameteri(TextureTarget(multisampled), GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 				glTexParameteri(TextureTarget(multisampled), GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 			}
-
+	
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, TextureTarget(multisampled), id, 0);
 		}
 
@@ -162,6 +171,8 @@ namespace XYZ {
 					case FrameBufferTextureFormat::RG32F:
 						Utils::AttachColorTexture(m_ColorAttachments[i], m_Specification.Samples, GL_RG32F, m_Specification.Width, m_Specification.Height, i);
 						break;
+					case FrameBufferTextureFormat::R32I:
+						Utils::AttachColorTexture(m_ColorAttachments[i], m_Specification.Samples, GL_R32I, m_Specification.Width, m_Specification.Height, i);
 					}
 				}
 			}
@@ -178,6 +189,16 @@ namespace XYZ {
 					Utils::AttachDepthTexture(m_DepthAttachment, m_Specification.Samples, GL_DEPTH_COMPONENT32F, GL_DEPTH_ATTACHMENT, m_Specification.Width, m_Specification.Height);
 					break;
 				}
+			}
+
+			if (m_ColorAttachmentFormats.size())
+			{
+				GLenum buffers[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+				glDrawBuffers(m_ColorAttachmentFormats.size(), buffers);
+			}
+			else
+			{
+				glDrawBuffer(GL_NONE);
 			}
 			XYZ_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer is incomplete!");
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -209,11 +230,15 @@ namespace XYZ {
 		m_Specification = specs;
 		//Resize(specs.Width, specs.Height);
 	}
-	uint32_t OpenGLFrameBuffer::ReadPixel(uint32_t mx, uint32_t my, uint32_t attachmentIndex) const
+	int32_t OpenGLFrameBuffer::ReadPixel(uint32_t mx, uint32_t my, uint32_t attachmentIndex) const
 	{
-		int pixel = -1;
-		glReadBuffer(GL_COLOR_ATTACHMENT0 + attachmentIndex);
-		glReadPixels(mx, my, m_Specification.Width, m_Specification.Height, GL_RED_INTEGER, GL_INT, &pixel);
-		return uint32_t(pixel);
+		Renderer::Submit([this, attachmentIndex, mx, my]() {
+			int pixel; 
+			glReadBuffer(GL_COLOR_ATTACHMENT0 + attachmentIndex);
+			glReadPixels(mx, my, 1, 1, GL_RED_INTEGER, GL_INT, &pixel);
+			std::cout << pixel << std::endl;
+		});
+	
+		return 0;
 	}
 }

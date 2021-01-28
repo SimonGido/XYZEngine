@@ -7,14 +7,14 @@ layout(location = 1) in vec3  a_Position;
 layout(location = 2) in vec2  a_TexCoord;
 layout(location = 3) in float a_TextureID;
 layout(location = 4) in float a_TilingFactor;
-layout(location = 5) in float a_CollisionID;
+layout(location = 5) in int a_CollisionID;
 
 
 out vec4 v_Color;
 out vec3 v_Position;
 out vec2 v_TexCoord;
 out flat float v_TextureID;
-out flat float v_CollisionID;
+out flat int v_CollisionID;
 out float v_TilingFactor;
 
 
@@ -26,8 +26,8 @@ void main()
 	v_Position = a_Position.xyz;
 	v_TexCoord = a_TexCoord;
 	v_TextureID = a_TextureID;
-	v_CollisionID = a_CollisionID;
 	v_TilingFactor = a_TilingFactor;
+	v_CollisionID = a_CollisionID;
 	gl_Position = u_ViewProjectionMatrix * vec4(a_Position, 1.0);
 
 }
@@ -44,7 +44,7 @@ in vec4 v_Color;
 in vec3 v_Position;
 in vec2 v_TexCoord;
 in flat float v_TextureID;
-in flat float v_CollisionID;
+in flat int v_CollisionID;
 in float v_TilingFactor;
 
 uniform vec4 u_Color;
@@ -55,5 +55,5 @@ void main()
 {
 	o_Color = texture(u_Texture[int(v_TextureID)], v_TexCoord * v_TilingFactor) * v_Color * u_Color;
 	o_Position = vec4(v_Position, 1.0);
-	o_CollisionID = int(v_CollisionID);
+	o_CollisionID = v_CollisionID;
 }

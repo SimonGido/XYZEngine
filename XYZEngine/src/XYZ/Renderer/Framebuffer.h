@@ -20,10 +20,11 @@ namespace XYZ {
 		RGBA16F = 2,
 		RGBA32F = 3,
 		RG32F = 4,
+		R32I = 5,
 
 		// Depth/stencil
-		DEPTH32F = 5,
-		DEPTH24STENCIL8 = 6,
+		DEPTH32F = 6,
+		DEPTH24STENCIL8 = 7,
 
 		// Defaults
 		Depth = DEPTH24STENCIL8
@@ -77,7 +78,7 @@ namespace XYZ {
 
 		virtual const FrameBufferSpecs& GetSpecification() const = 0;
 		
-		virtual uint32_t ReadPixel(uint32_t mx, uint32_t my, uint32_t attachmentIndex) const = 0;
+		virtual int32_t ReadPixel(uint32_t mx, uint32_t my, uint32_t attachmentIndex) const = 0;
 
 		static Ref<FrameBuffer> Create(const FrameBufferSpecs& specs);
 	};

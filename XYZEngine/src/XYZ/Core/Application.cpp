@@ -20,7 +20,7 @@ namespace XYZ {
 
 	Application::Application()
 	{
-		Logger::Get().SetLogLevel(LogLevel::INFO | LogLevel::WARNING | LogLevel::ERR);
+		Logger::Get().SetLogLevel(LogLevel::INFO | LogLevel::WARNING | LogLevel::ERR | LogLevel::API);
 		//Logger::Get().SetLogLevel(LogLevel::NOLOG);
 		s_Application = this;
 		m_Running = true;

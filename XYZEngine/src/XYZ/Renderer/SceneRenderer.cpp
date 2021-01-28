@@ -44,6 +44,13 @@ namespace XYZ {
 			TransformComponent* Transform;
 		};
 
+		struct SpriteDrawCommandWithCollision
+		{
+			SpriteRenderer* Sprite;
+			TransformComponent* Transform;
+			uint32_t ID;
+		};
+
 		struct PointLight
 		{	
 			glm::vec4 Position;
@@ -51,9 +58,11 @@ namespace XYZ {
 			float Intensity = 1.0f;
 		};
 
+		std::vector<SpriteDrawCommandWithCollision> SpriteDrawCollisionList;
 		std::vector<SpriteDrawCommand> SpriteDrawList;
 		std::vector<ParticleDrawCommand> ParticleDrawList;
 		std::vector<PointLight> LightsList;
+
 
 		glm::vec2 ViewportSize;
 
@@ -104,6 +113,7 @@ namespace XYZ {
 			specs.Attachments = {
 				FrameBufferTextureSpecs(FrameBufferTextureFormat::RGBA16F),
 				FrameBufferTextureSpecs(FrameBufferTextureFormat::RGBA16F),
+				FrameBufferTextureSpecs(FrameBufferTextureFormat::R32I),
 				FrameBufferTextureSpecs(FrameBufferTextureFormat::DEPTH24STENCIL8)
 			};
 			Ref<FrameBuffer> fbo = FrameBuffer::Create(specs);
@@ -172,13 +182,14 @@ namespace XYZ {
 
 		FlushDrawList();
 	}
-	void SceneRenderer::SubmitCollisionID(uint32_t id)
-	{
-		Renderer2D::SubmitCollisionID(id);
-	}
+
 	void SceneRenderer::SubmitSprite(SpriteRenderer* sprite, TransformComponent* transform)
 	{
 		s_Data.SpriteDrawList.push_back({ sprite,transform });
+	}
+	void SceneRenderer::SubmitSprite(SpriteRenderer* sprite, TransformComponent* transform, uint32_t collisionID)
+	{
+		s_Data.SpriteDrawCollisionList.push_back({ sprite, transform, collisionID });
 	}
 	void SceneRenderer::SubmitParticles(ParticleComponent* particle, TransformComponent* transform)
 	{
@@ -206,7 +217,7 @@ namespace XYZ {
 
 	Ref<RenderPass> SceneRenderer::GetCollisionRenderPass()
 	{
-		return s_Data.MousePickerPass;
+		return s_Data.GeometryPass;
 	}
 
 	uint32_t SceneRenderer::GetFinalColorBufferRendererID()
@@ -263,6 +274,13 @@ namespace XYZ {
 			Renderer2D::SubmitGrid(s_Data.GridProps.Transform, s_Data.GridProps.Scale, s_Data.GridProps.LineWidth);
 		}
 
+		for (auto& dc : s_Data.SpriteDrawCollisionList)
+		{
+			Renderer2D::SetMaterial(dc.Sprite->Material);
+			uint32_t textureID = Renderer2D::SetTexture(dc.Sprite->SubTexture->GetTexture());
+			Renderer2D::SubmitQuadWithID(dc.Transform->GetTransform(), dc.Sprite->SubTexture->GetTexCoords(), textureID, dc.ID, dc.Sprite->Color);
+		}
+
 		for (auto& dc : s_Data.SpriteDrawList)
 		{
 			Renderer2D::SetMaterial(dc.Sprite->Material);
@@ -272,7 +290,9 @@ namespace XYZ {
 
 		Renderer2D::Flush();
 		Renderer2D::FlushLines();
-
+		auto [mx, my] = Input::GetMousePosition();
+		auto [width, height] = Input::GetWindowSize();
+		s_Data.GeometryPass->GetSpecification().TargetFramebuffer->ReadPixel(mx, height - my, 2);
 
 		for (auto& dc : s_Data.ParticleDrawList)
 		{
@@ -286,9 +306,10 @@ namespace XYZ {
 			Renderer2D::SubmitParticles(dc.Transform->GetTransform(), dc.Particle->ParticleEffect);
 		}
 
-
+		
 		Renderer2D::EndScene();
 		Renderer::EndRenderPass();
+		
 	}
 
 	void SceneRenderer::LightPass()
@@ -305,7 +326,7 @@ namespace XYZ {
 		s_Data.GeometryPass->GetSpecification().TargetFramebuffer->BindTexture(1, 1);
 
 		Renderer::SubmitFullsceenQuad();
-
+		
 		Renderer::EndRenderPass();
 	}
 

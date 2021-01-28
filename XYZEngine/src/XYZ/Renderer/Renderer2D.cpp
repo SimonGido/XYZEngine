@@ -23,7 +23,7 @@ namespace XYZ {
 		glm::vec2 TexCoord;
 		float	  TextureID;
 		float	  TilingFactor;
-		float	  CollisionID;
+		int		  CollisionID = -1;
 	};
 
 	struct LineVertex
@@ -313,6 +313,32 @@ namespace XYZ {
 			s_Data.BufferPtr->TexCoord = texCoords[i];
 			s_Data.BufferPtr->TextureID = (float)textureID;
 			s_Data.BufferPtr->TilingFactor = tilingFactor;
+			s_Data.BufferPtr++;
+		}
+		s_Data.IndexCount += 6;
+	}
+
+	void Renderer2D::SubmitQuadWithID(const glm::mat4& transform, const glm::vec4& texCoord, uint32_t textureID, uint32_t id, const glm::vec4& color, float tilingFactor)
+	{
+		constexpr size_t quadVertexCount = 4;
+
+		if (s_Data.IndexCount + 6 >= s_Data.MaxIndices)
+			Flush();
+
+		glm::vec2 texCoords[quadVertexCount] = {
+			{texCoord.x,texCoord.y},
+			{texCoord.z,texCoord.y},
+			{texCoord.z,texCoord.w},
+			{texCoord.x,texCoord.w}
+		};
+		for (size_t i = 0; i < quadVertexCount; ++i)
+		{
+			s_Data.BufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
+			s_Data.BufferPtr->Color = color;
+			s_Data.BufferPtr->TexCoord = texCoords[i];
+			s_Data.BufferPtr->TextureID = (float)textureID;
+			s_Data.BufferPtr->TilingFactor = tilingFactor;
+			s_Data.BufferPtr->CollisionID = (int)id;
 			s_Data.BufferPtr++;
 		}
 		s_Data.IndexCount += 6;

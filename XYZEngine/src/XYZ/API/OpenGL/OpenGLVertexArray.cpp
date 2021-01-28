@@ -62,15 +62,25 @@ namespace XYZ {
 			for (const auto& element : vbl)
 			{
 				glEnableVertexAttribArray(element.Index);
-				glVertexAttribPointer(element.Index,
-					element.GetComponentCount(),
-					ShaderDataComponentToOpenGLBaseComponent(element.Component),
-					//element.m_Normalized ? GL_TRUE : GL_FALSE,
-					GL_FALSE,
-					vbl.GetStride(),
-					(const void*)element.Offset);
-			
-				glVertexAttribDivisor(element.Index, element.Divisor);
+				if (element.Component == ShaderDataComponent::Int)
+				{
+					glVertexAttribIPointer(element.Index,
+						element.GetComponentCount(),
+						ShaderDataComponentToOpenGLBaseComponent(element.Component),
+						vbl.GetStride(),
+						(const void*)element.Offset);
+				}
+				else
+				{				
+					glVertexAttribPointer(element.Index,
+						element.GetComponentCount(),
+						ShaderDataComponentToOpenGLBaseComponent(element.Component),
+						//element.m_Normalized ? GL_TRUE : GL_FALSE,
+						GL_FALSE,
+						vbl.GetStride(),
+						(const void*)element.Offset);
+					glVertexAttribDivisor(element.Index, element.Divisor);
+				}
 			}
 
 			m_VertexBuffers.push_back(vertexBuffer);

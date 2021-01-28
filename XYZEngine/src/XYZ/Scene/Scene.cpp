@@ -187,23 +187,19 @@ namespace XYZ {
 			material->GetShader()->Compute(32, 32, 1);
 		}	
 
-		auto [mx, my] = Input::GetMousePosition();
-		uint32_t id = SceneRenderer::GetCollisionRenderPass()->GetSpecification().TargetFramebuffer->ReadPixel(mx, my, 0);
-		
-		std::cout << id << std::endl;
+		//auto [mx, my] = Input::GetMousePosition();
+		//auto [width, height] = Input::GetWindowSize();
+		//int32_t id = SceneRenderer::GetCollisionRenderPass()->GetSpecification().TargetFramebuffer->ReadPixel(mx, height - my, 2);
 	}
 
 	void Scene::OnRenderEditor(const EditorCamera& camera)
 	{
 		SceneRenderer::BeginScene(this, camera.GetViewProjection());
 		
-
 		for (size_t i = 0; i < m_RenderView->Size(); ++i)
 		{
 			auto [transform, renderer] = (*m_RenderView)[i];
-			SceneRenderer::SubmitSprite(&renderer, &transform);
-
-			SceneRenderer::SubmitCollisionID(m_RenderView->GetEntity(i));
+			SceneRenderer::SubmitSprite(&renderer, &transform, m_RenderView->GetEntity(i));
 		}
 		for (size_t i = 0; i < m_ParticleView->Size(); ++i)
 		{
