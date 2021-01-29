@@ -187,9 +187,10 @@ namespace XYZ {
 			material->GetShader()->Compute(32, 32, 1);
 		}	
 
-		//auto [mx, my] = Input::GetMousePosition();
-		//auto [width, height] = Input::GetWindowSize();
-		//int32_t id = SceneRenderer::GetCollisionRenderPass()->GetSpecification().TargetFramebuffer->ReadPixel(mx, height - my, 2);
+		auto [mx, my] = Input::GetMousePosition();
+		auto [width, height] = Input::GetWindowSize();
+		
+		SceneRenderer::GetCollisionRenderPass()->GetSpecification().TargetFramebuffer->ReadPixel(m_CollisionID, mx, height - my, 2);
 	}
 
 	void Scene::OnRenderEditor(const EditorCamera& camera)

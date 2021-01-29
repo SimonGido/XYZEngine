@@ -1,12 +1,12 @@
 #pragma once
 #include "XYZ/Core/Ref.h"
-#include "FrameBuffer.h"
+#include "Framebuffer.h"
 
 namespace XYZ {
 
 	struct RenderPassSpecification
 	{
-		Ref<FrameBuffer> TargetFramebuffer;
+		Ref<Framebuffer> TargetFramebuffer;
 	};
 
 	class RenderPass : public RefCount

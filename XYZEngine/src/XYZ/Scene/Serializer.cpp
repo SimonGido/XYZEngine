@@ -383,15 +383,15 @@ namespace XYZ {
 	}
 
 	template <>
-	void Serializer::SerializeResource<FrameBuffer>(const Ref<FrameBuffer>& frameBuffer)
+	void Serializer::SerializeResource<Framebuffer>(const Ref<Framebuffer>& Framebuffer)
 	{
-		XYZ_ASSERT(!frameBuffer->GetFilepath().empty(), "Filepath is empty");
-		XYZ_LOG_INFO("Serializing FrameBuffer ", frameBuffer->GetFilepath());
+		XYZ_ASSERT(!Framebuffer->GetFilepath().empty(), "Filepath is empty");
+		XYZ_LOG_INFO("Serializing Framebuffer ", Framebuffer->GetFilepath());
 
-		auto& specs = frameBuffer->GetSpecification();
+		auto& specs = Framebuffer->GetSpecification();
 		YAML::Emitter out;
-		out << YAML::BeginMap; // FrameBuffer
-		out << YAML::Key << "FrameBuffer" << YAML::Value << frameBuffer->GetName();
+		out << YAML::BeginMap; // Framebuffer
+		out << YAML::Key << "Framebuffer" << YAML::Value << Framebuffer->GetName();
 		
 		
 		out << YAML::Key << "ClearColor" << YAML::Value << specs.ClearColor;
@@ -409,7 +409,7 @@ namespace XYZ {
 			out << YAML::EndMap;
 		}
 		out << YAML::EndSeq;
-		out << YAML::EndMap; // FrameBuffer
+		out << YAML::EndMap; // Framebuffer
 	}
 
 	template <>
@@ -975,15 +975,15 @@ namespace XYZ {
 	}
 
 	template <>
-	Ref<FrameBuffer> Serializer::DeserializeResource<FrameBuffer>(const std::string& filepath, AssetManager& assetManager)
+	Ref<Framebuffer> Serializer::DeserializeResource<Framebuffer>(const std::string& filepath, AssetManager& assetManager)
 	{
 		std::ifstream stream(filepath);
 		std::stringstream strStream;
 		strStream << stream.rdbuf();
 		YAML::Node data = YAML::Load(strStream.str());
 
-		XYZ_ASSERT(data["FrameBuffer"], "Incorect file format");
-		FrameBufferSpecs specs;
+		XYZ_ASSERT(data["Framebuffer"], "Incorect file format");
+		FramebufferSpecs specs;
 		specs.ClearColor = data["ClearColor"].as<glm::vec4>();
 		specs.Width = data["Width"].as<uint32_t>();
 		specs.Height = data["Height"].as<uint32_t>();
@@ -993,27 +993,27 @@ namespace XYZ {
 		for (auto& seq : data["Attachments"])
 		{
 			int32_t format = seq["TextureFormat"].as<int32_t>();
-			FrameBufferTextureSpecs textureSpecs;
+			FramebufferTextureSpecs textureSpecs;
 			
 			switch (format)
 			{
-			case ToUnderlying(FrameBufferTextureFormat::RGBA8):
-				textureSpecs.TextureFormat = FrameBufferTextureFormat::RGBA8;
+			case ToUnderlying(FramebufferTextureFormat::RGBA8):
+				textureSpecs.TextureFormat = FramebufferTextureFormat::RGBA8;
 				break;
-			case ToUnderlying(FrameBufferTextureFormat::RGBA16F):
-				textureSpecs.TextureFormat = FrameBufferTextureFormat::RGBA16F;
+			case ToUnderlying(FramebufferTextureFormat::RGBA16F):
+				textureSpecs.TextureFormat = FramebufferTextureFormat::RGBA16F;
 				break;
-			case ToUnderlying(FrameBufferTextureFormat::RGBA32F):
-				textureSpecs.TextureFormat = FrameBufferTextureFormat::RGBA32F;
+			case ToUnderlying(FramebufferTextureFormat::RGBA32F):
+				textureSpecs.TextureFormat = FramebufferTextureFormat::RGBA32F;
 				break;
-			case ToUnderlying(FrameBufferTextureFormat::RG32F):
-				textureSpecs.TextureFormat = FrameBufferTextureFormat::RG32F;
+			case ToUnderlying(FramebufferTextureFormat::RG32F):
+				textureSpecs.TextureFormat = FramebufferTextureFormat::RG32F;
 				break;
 			};
 			specs.Attachments.Attachments.push_back(textureSpecs);
 		}
 		
-		return FrameBuffer::Create(specs);
+		return Framebuffer::Create(specs);
 	}
 	
 	template <>

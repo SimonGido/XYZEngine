@@ -125,15 +125,15 @@ namespace XYZ {
 	{
 		m_ViewMatrix = glm::inverse(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f)));
 
-		FrameBufferSpecs fboSpecs;
+		FramebufferSpecs fboSpecs;
 		fboSpecs.ClearColor = { 0.1f,0.1f,0.1f,1.0f };
 		fboSpecs.Attachments = {
-			FrameBufferTextureSpecs(FrameBufferTextureFormat::RGBA16F),
-			FrameBufferTextureSpecs(FrameBufferTextureFormat::DEPTH24STENCIL8)
+			FramebufferTextureSpecs(FramebufferTextureFormat::RGBA16F),
+			FramebufferTextureSpecs(FramebufferTextureFormat::DEPTH24STENCIL8)
 		};
 		fboSpecs.SwapChainTarget = true;
 
-		Ref<FrameBuffer> fbo = FrameBuffer::Create(fboSpecs);
+		Ref<Framebuffer> fbo = Framebuffer::Create(fboSpecs);
 		m_RenderPass = RenderPass::Create({ fbo });
 
 		m_LineRenderView = &m_ECS->CreateView<LineRenderer>();

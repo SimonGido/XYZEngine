@@ -65,6 +65,7 @@ namespace XYZ {
     private:
         ECSManager m_ECS;
         GUID m_UUID;
+        int32_t m_CollisionID = -1;
 
         std::vector<uint32_t> m_Entities;
 

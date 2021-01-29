@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "OpenGLFrameBuffer.h"
+#include "OpenGLFramebuffer.h"
 
 #include "XYZ/Renderer/Renderer.h"
 
@@ -89,12 +89,12 @@ namespace XYZ {
 			glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, TextureTarget(multisampled), id, 0);
 		}
 
-		static bool IsDepthFormat(FrameBufferTextureFormat format)
+		static bool IsDepthFormat(FramebufferTextureFormat format)
 		{
 			switch (format)
 			{
-			case FrameBufferTextureFormat::DEPTH24STENCIL8:
-			case FrameBufferTextureFormat::DEPTH32F:
+			case FramebufferTextureFormat::DEPTH24STENCIL8:
+			case FramebufferTextureFormat::DEPTH32F:
 				return true;
 			}
 			return false;
@@ -103,7 +103,7 @@ namespace XYZ {
 	}
 
 
-	OpenGLFrameBuffer::OpenGLFrameBuffer(const FrameBufferSpecs& specs)
+	OpenGLFramebuffer::OpenGLFramebuffer(const FramebufferSpecs& specs)
 		: m_Specification(specs)
 	{
 		for (auto format : m_Specification.Attachments.Attachments)
@@ -116,7 +116,7 @@ namespace XYZ {
 		Resize(specs.Width, specs.Height);
 	}
 
-	OpenGLFrameBuffer::~OpenGLFrameBuffer()
+	OpenGLFramebuffer::~OpenGLFramebuffer()
 	{		
 		Renderer::Submit([this]() {
 			glDeleteFramebuffers(1, &m_RendererID);	
@@ -125,7 +125,7 @@ namespace XYZ {
 				glDeleteTextures(1, &it);
 		});
 	}
-	void OpenGLFrameBuffer::Resize(uint32_t width, uint32_t height)
+	void OpenGLFramebuffer::Resize(uint32_t width, uint32_t height)
 	{
 		if (m_Specification.Width == 0 || m_Specification.Height == 0)
 		{
@@ -159,33 +159,33 @@ namespace XYZ {
 					Utils::BindTexture(multisample, m_ColorAttachments[i]);
 					switch (m_ColorAttachmentFormats[i])
 					{
-					case FrameBufferTextureFormat::RGBA8:
+					case FramebufferTextureFormat::RGBA8:
 						Utils::AttachColorTexture(m_ColorAttachments[i], m_Specification.Samples, GL_RGBA8, m_Specification.Width, m_Specification.Height, i);
 						break;
-					case FrameBufferTextureFormat::RGBA16F:
+					case FramebufferTextureFormat::RGBA16F:
 						Utils::AttachColorTexture(m_ColorAttachments[i], m_Specification.Samples, GL_RGBA16F, m_Specification.Width, m_Specification.Height, i);
 						break;
-					case FrameBufferTextureFormat::RGBA32F:
+					case FramebufferTextureFormat::RGBA32F:
 						Utils::AttachColorTexture(m_ColorAttachments[i], m_Specification.Samples, GL_RGBA32F, m_Specification.Width, m_Specification.Height, i);
 						break;
-					case FrameBufferTextureFormat::RG32F:
+					case FramebufferTextureFormat::RG32F:
 						Utils::AttachColorTexture(m_ColorAttachments[i], m_Specification.Samples, GL_RG32F, m_Specification.Width, m_Specification.Height, i);
 						break;
-					case FrameBufferTextureFormat::R32I:
+					case FramebufferTextureFormat::R32I:
 						Utils::AttachColorTexture(m_ColorAttachments[i], m_Specification.Samples, GL_R32I, m_Specification.Width, m_Specification.Height, i);
 					}
 				}
 			}
-			if (m_DepthAttachmentFormat != FrameBufferTextureFormat::None)
+			if (m_DepthAttachmentFormat != FramebufferTextureFormat::None)
 			{
 				Utils::CreateTextures(multisample, &m_DepthAttachment, 1);
 				Utils::BindTexture(multisample, m_DepthAttachment);
 				switch (m_DepthAttachmentFormat)
 				{
-				case FrameBufferTextureFormat::DEPTH24STENCIL8:
+				case FramebufferTextureFormat::DEPTH24STENCIL8:
 					Utils::AttachDepthTexture(m_DepthAttachment, m_Specification.Samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Specification.Width, m_Specification.Height);
 					break;
-				case FrameBufferTextureFormat::DEPTH32F:
+				case FramebufferTextureFormat::DEPTH32F:
 					Utils::AttachDepthTexture(m_DepthAttachment, m_Specification.Samples, GL_DEPTH_COMPONENT32F, GL_DEPTH_ATTACHMENT, m_Specification.Width, m_Specification.Height);
 					break;
 				}
@@ -204,41 +204,47 @@ namespace XYZ {
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		});
 	}
-	void OpenGLFrameBuffer::Bind() const
+	void OpenGLFramebuffer::Bind() const
 	{
 		Renderer::Submit([this]() {
 			glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 			glViewport(0, 0, m_Specification.Width, m_Specification.Height);
 		});
 	}
-	void OpenGLFrameBuffer::Unbind() const
+	void OpenGLFramebuffer::Unbind() const
 	{
 		Renderer::Submit([this]() {
 			glBindFramebuffer(GL_FRAMEBUFFER, 0); 
 		});
 	}
 
-	void OpenGLFrameBuffer::BindTexture(uint32_t attachmentIndex, uint32_t slot) const
+	void OpenGLFramebuffer::BindTexture(uint32_t attachmentIndex, uint32_t slot) const
 	{
 		Renderer::Submit([this, attachmentIndex, slot]() {
 			glBindTextureUnit(slot, m_ColorAttachments[attachmentIndex]);
 		});
 	}
 
-	void OpenGLFrameBuffer::SetSpecification(const FrameBufferSpecs& specs)
+	void OpenGLFramebuffer::SetSpecification(const FramebufferSpecs& specs)
 	{
 		m_Specification = specs;
 		//Resize(specs.Width, specs.Height);
 	}
-	int32_t OpenGLFrameBuffer::ReadPixel(uint32_t mx, uint32_t my, uint32_t attachmentIndex) const
-	{
-		Renderer::Submit([this, attachmentIndex, mx, my]() {
-			int pixel; 
+	void OpenGLFramebuffer::ReadPixel(int32_t& pixel, uint32_t mx, uint32_t my, uint32_t attachmentIndex) const
+	{	
+		Renderer::Submit([this, mx, my, attachmentIndex, &pixel]() {
+			glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 			glReadBuffer(GL_COLOR_ATTACHMENT0 + attachmentIndex);
 			glReadPixels(mx, my, 1, 1, GL_RED_INTEGER, GL_INT, &pixel);
-			std::cout << pixel << std::endl;
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		});
-	
-		return 0;
+	}
+	void OpenGLFramebuffer::ClearColorAttachment(uint32_t colorAttachmentIndex, void* clearValue) const
+	{
+		// TODO: Make it work with other types than GL_RED_INTEGER
+		int clearVal = *(int*)clearValue;
+		Renderer::Submit([this, colorAttachmentIndex, clearVal]() {
+			glClearTexImage(m_ColorAttachments[colorAttachmentIndex], 0, GL_RED_INTEGER, GL_INT, &clearVal);
+		});
 	}
 }

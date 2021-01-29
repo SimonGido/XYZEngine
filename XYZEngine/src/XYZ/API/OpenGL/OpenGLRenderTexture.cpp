@@ -4,7 +4,7 @@
 
 namespace XYZ {
 
-	OpenGLRenderTexture::OpenGLRenderTexture(const Ref<FrameBuffer>& renderTarget)
+	OpenGLRenderTexture::OpenGLRenderTexture(const Ref<Framebuffer>& renderTarget)
 		: m_RenderTarget(renderTarget)
 	{
 		XYZ_ASSERT(!m_RenderTarget->GetSpecification().Attachments.Attachments.empty(), "Render target has no attachments");

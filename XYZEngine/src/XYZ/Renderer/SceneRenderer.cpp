@@ -74,60 +74,60 @@ namespace XYZ {
 	{
 		// Composite pass
 		{
-			FrameBufferSpecs specs;
+			FramebufferSpecs specs;
 			specs.ClearColor = { 0.1f,0.1f,0.1f,1.0f };
 			specs.Attachments = {
-				FrameBufferTextureSpecs(FrameBufferTextureFormat::RGBA16F),
-				FrameBufferTextureSpecs(FrameBufferTextureFormat::DEPTH24STENCIL8)
+				FramebufferTextureSpecs(FramebufferTextureFormat::RGBA16F),
+				FramebufferTextureSpecs(FramebufferTextureFormat::DEPTH24STENCIL8)
 			};
-			Ref<FrameBuffer> fbo = FrameBuffer::Create(specs);
+			Ref<Framebuffer> fbo = Framebuffer::Create(specs);
 			s_Data.CompositePass = RenderPass::Create({ fbo });
 		}
 
 		// Light pass
 		{
-			FrameBufferSpecs specs;
+			FramebufferSpecs specs;
 			specs.ClearColor = { 0.0f,0.0f,0.0f,1.0f };
 			specs.Attachments = {
-				FrameBufferTextureSpecs(FrameBufferTextureFormat::RGBA16F),
-				FrameBufferTextureSpecs(FrameBufferTextureFormat::DEPTH24STENCIL8)
+				FramebufferTextureSpecs(FramebufferTextureFormat::RGBA16F),
+				FramebufferTextureSpecs(FramebufferTextureFormat::DEPTH24STENCIL8)
 			};
-			Ref<FrameBuffer> fbo = FrameBuffer::Create(specs);
+			Ref<Framebuffer> fbo = Framebuffer::Create(specs);
 			s_Data.LightPass = RenderPass::Create({ fbo });
 		}
 		// Geometry pass
 		{
-			FrameBufferSpecs specs;
+			FramebufferSpecs specs;
 			specs.ClearColor = { 0.1f,0.1f,0.1f,1.0f };
 			specs.Attachments = {
-				FrameBufferTextureSpecs(FrameBufferTextureFormat::RGBA16F),
-				FrameBufferTextureSpecs(FrameBufferTextureFormat::RGBA16F),
-				FrameBufferTextureSpecs(FrameBufferTextureFormat::R32I),
-				FrameBufferTextureSpecs(FrameBufferTextureFormat::DEPTH24STENCIL8)
+				FramebufferTextureSpecs(FramebufferTextureFormat::RGBA16F),
+				FramebufferTextureSpecs(FramebufferTextureFormat::RGBA16F),
+				FramebufferTextureSpecs(FramebufferTextureFormat::R32I),
+				FramebufferTextureSpecs(FramebufferTextureFormat::DEPTH24STENCIL8)
 			};
-			Ref<FrameBuffer> fbo = FrameBuffer::Create(specs);
+			Ref<Framebuffer> fbo = Framebuffer::Create(specs);
 			s_Data.GeometryPass = RenderPass::Create({ fbo });
 		}
 		// Bloom pass
 		{
-			FrameBufferSpecs specs;
+			FramebufferSpecs specs;
 			specs.ClearColor = { 0.0f,0.0f,0.0f,1.0f };
 			specs.Attachments = {
-				FrameBufferTextureSpecs(FrameBufferTextureFormat::RGBA16F),
-				FrameBufferTextureSpecs(FrameBufferTextureFormat::DEPTH24STENCIL8)
+				FramebufferTextureSpecs(FramebufferTextureFormat::RGBA16F),
+				FramebufferTextureSpecs(FramebufferTextureFormat::DEPTH24STENCIL8)
 			};
-			Ref<FrameBuffer> fbo = FrameBuffer::Create(specs);
+			Ref<Framebuffer> fbo = Framebuffer::Create(specs);
 			s_Data.BloomPass = RenderPass::Create({ fbo });
 		}
 		// Gausian blur pass
 		{
-			FrameBufferSpecs specs;
+			FramebufferSpecs specs;
 			specs.ClearColor = { 0.0f,0.0f,0.0f,1.0f };
 			specs.Attachments = {
-				FrameBufferTextureSpecs(FrameBufferTextureFormat::RGBA16F),
-				FrameBufferTextureSpecs(FrameBufferTextureFormat::DEPTH24STENCIL8)
+				FramebufferTextureSpecs(FramebufferTextureFormat::RGBA16F),
+				FramebufferTextureSpecs(FramebufferTextureFormat::DEPTH24STENCIL8)
 			};
-			Ref<FrameBuffer> fbo = FrameBuffer::Create(specs);
+			Ref<Framebuffer> fbo = Framebuffer::Create(specs);
 			s_Data.GaussianBlurPass = RenderPass::Create({ fbo });
 		}
 		s_Data.GaussianBlurShader = Shader::Create("Assets/Shaders/GaussianBlurShader.glsl");
@@ -239,6 +239,7 @@ namespace XYZ {
 		CompositePass();
 		Renderer::WaitAndRender();
 
+		s_Data.CollisionList.clear();
 		s_Data.SpriteDrawList.clear();
 		s_Data.ParticleDrawList.clear();
 		s_Data.LightsList.clear();
@@ -248,6 +249,8 @@ namespace XYZ {
 	{
 		Renderer::BeginRenderPass(s_Data.GeometryPass, true);
 		Renderer2D::BeginScene(s_Data.ViewProjectionMatrix);
+		int clearValue = -1;
+		s_Data.GeometryPass->GetSpecification().TargetFramebuffer->ClearColorAttachment(2, &clearValue);
 
 		if (s_Data.Options.ShowGrid)
 		{
@@ -269,10 +272,6 @@ namespace XYZ {
 		Renderer2D::Flush();
 		Renderer2D::FlushLines();
 		Renderer2D::FlushCollisions();
-
-		auto [mx, my] = Input::GetMousePosition();
-		auto [width, height] = Input::GetWindowSize();
-		s_Data.GeometryPass->GetSpecification().TargetFramebuffer->ReadPixel(mx, height - my, 2);
 
 		for (auto& dc : s_Data.ParticleDrawList)
 		{

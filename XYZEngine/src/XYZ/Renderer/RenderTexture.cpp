@@ -8,7 +8,7 @@
 
 namespace XYZ {
 
-	Ref<RenderTexture> RenderTexture::Create(const Ref<FrameBuffer>& renderTarget)
+	Ref<RenderTexture> RenderTexture::Create(const Ref<Framebuffer>& renderTarget)
 	{
 		switch (Renderer::GetAPI())
 		{

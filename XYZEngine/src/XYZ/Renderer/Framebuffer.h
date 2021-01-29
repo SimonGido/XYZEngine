@@ -8,10 +8,10 @@
 #include <glm/glm.hpp>
 
 namespace XYZ {
-	/*! @class FrameBufferFormat
-	*	@brief Describes the color format of the FrameBuffer
+	/*! @class FramebufferFormat
+	*	@brief Describes the color format of the Framebuffer
 	*/
-	enum class FrameBufferTextureFormat
+	enum class FramebufferTextureFormat
 	{
 		None = 0,
 
@@ -30,40 +30,40 @@ namespace XYZ {
 		Depth = DEPTH24STENCIL8
 	};
 
-	struct FrameBufferTextureSpecs
+	struct FramebufferTextureSpecs
 	{
-		FrameBufferTextureSpecs() = default;
-		FrameBufferTextureSpecs(FrameBufferTextureFormat format) : TextureFormat(format) {}
+		FramebufferTextureSpecs() = default;
+		FramebufferTextureSpecs(FramebufferTextureFormat format) : TextureFormat(format) {}
 
-		FrameBufferTextureFormat TextureFormat;
+		FramebufferTextureFormat TextureFormat;
 	};
 
-	struct FrameBufferAttachmentSpecs
+	struct FramebufferAttachmentSpecs
 	{
-		FrameBufferAttachmentSpecs() = default;
-		FrameBufferAttachmentSpecs(const std::initializer_list<FrameBufferTextureSpecs>& attachments)
+		FramebufferAttachmentSpecs() = default;
+		FramebufferAttachmentSpecs(const std::initializer_list<FramebufferTextureSpecs>& attachments)
 			: Attachments(attachments) {}
 
-		std::vector<FrameBufferTextureSpecs> Attachments;
+		std::vector<FramebufferTextureSpecs> Attachments;
 	};
 
-	struct FrameBufferSpecs
+	struct FramebufferSpecs
 	{
 		uint32_t Width = 1280;
 		uint32_t Height = 720;
 		uint32_t Samples = 1; // multisampling
 		glm::vec4 ClearColor;
-		FrameBufferAttachmentSpecs Attachments;
+		FramebufferAttachmentSpecs Attachments;
 
 		bool SwapChainTarget = false;
 	};
 
 
-	class FrameBuffer : public RefCount,
+	class Framebuffer : public RefCount,
 						public Serializable
 	{
 	public:
-		virtual ~FrameBuffer() = default;
+		virtual ~Framebuffer() = default;
 
 		virtual void Resize(uint32_t width, uint32_t height) = 0;
 
@@ -71,16 +71,17 @@ namespace XYZ {
 		virtual void Unbind() const = 0;
 		
 		virtual void BindTexture(uint32_t attachmentIndex, uint32_t slot) const = 0;
-		virtual void SetSpecification(const FrameBufferSpecs& specs) = 0;
+		virtual void SetSpecification(const FramebufferSpecs& specs) = 0;
 
 		virtual const uint32_t GetColorAttachmentRendererID(uint32_t index) const = 0;
 		virtual const uint32_t GetDetphAttachmentRendererID() const = 0;
 
-		virtual const FrameBufferSpecs& GetSpecification() const = 0;
+		virtual const FramebufferSpecs& GetSpecification() const = 0;
 		
-		virtual int32_t ReadPixel(uint32_t mx, uint32_t my, uint32_t attachmentIndex) const = 0;
+		virtual void ReadPixel(int32_t& pixel, uint32_t mx, uint32_t my, uint32_t attachmentIndex) const = 0;
+		virtual void ClearColorAttachment(uint32_t colorAttachmentIndex, void* clearValue) const = 0;
 
-		static Ref<FrameBuffer> Create(const FrameBufferSpecs& specs);
+		static Ref<Framebuffer> Create(const FramebufferSpecs& specs);
 	};
 
 }

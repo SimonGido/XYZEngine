@@ -1,15 +1,15 @@
 #pragma once
 #include "Texture.h"
 
-#include "FrameBuffer.h"
+#include "Framebuffer.h"
 
 namespace XYZ {
 	class RenderTexture : public Texture
 	{
 	public:
-		virtual Ref<FrameBuffer> GetRenderTarget() = 0;
+		virtual Ref<Framebuffer> GetRenderTarget() = 0;
 
-		static Ref<RenderTexture> Create(const Ref<FrameBuffer>& renderTarget);
+		static Ref<RenderTexture> Create(const Ref<Framebuffer>& renderTarget);
 	};
 
 }
