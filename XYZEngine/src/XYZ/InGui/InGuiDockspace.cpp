@@ -8,10 +8,10 @@
 namespace XYZ {
 
 
+
 	static InGuiDockNode* s_Root = nullptr;
 
 	static InGuiDockNode* s_ResizedNode = nullptr;
-
 
 	static InGuiMesh s_Mesh;
 
@@ -69,6 +69,7 @@ namespace XYZ {
 		if (node->SecondChild)
 			DestroyRecursive(node->SecondChild);
 
+	
 		delete node;
 	}
 
@@ -77,14 +78,15 @@ namespace XYZ {
 		node.Type = type;
 		node.FirstChild = new InGuiDockNode();
 		node.SecondChild = new InGuiDockNode();
+		
+
 		node.FirstChild->Parent = &node;
 		node.SecondChild->Parent = &node;
 		if (node.Type == InGuiSplitType::Vertical)
 		{
 			node.FirstChild->Data.Position = node.Data.Position;
 			node.FirstChild->Data.Size = glm::vec2(node.Data.Size.x / 2.0f, node.Data.Size.y);
-			node.FirstChild->Data.Windows = std::move(node.Data.Windows);
-			node.Data.Windows.clear();
+			
 
 			node.SecondChild->Data.Position = glm::vec2(node.Data.Position.x + node.Data.Size.x / 2.0f, node.Data.Position.y);
 			node.SecondChild->Data.Size = node.FirstChild->Data.Size;
@@ -93,8 +95,6 @@ namespace XYZ {
 		{
 			node.FirstChild->Data.Position = node.Data.Position;
 			node.FirstChild->Data.Size = glm::vec2(node.Data.Size.x, node.Data.Size.y / 2.0f);
-			node.FirstChild->Data.Windows = std::move(node.Data.Windows);
-			node.Data.Windows.clear();
 
 			node.SecondChild->Data.Position = glm::vec2(node.Data.Position.x, node.Data.Position.y + node.Data.Size.y / 2.0f);
 			node.SecondChild->Data.Size = node.FirstChild->Data.Size;
@@ -134,24 +134,32 @@ namespace XYZ {
 			{
 				SplitNode(node, InGuiSplitType::Vertical);
 				node.FirstChild->Data.Windows.push_back(windowID);
+				node.SecondChild->Data.Windows = std::move(node.Data.Windows);
+				node.Data.Windows.clear();
 				return true;
 			}
 			else if (Collide(rightPos, quadSize, mousePos))
 			{
 				SplitNode(node, InGuiSplitType::Vertical);
 				node.SecondChild->Data.Windows.push_back(windowID);
+				node.FirstChild->Data.Windows = std::move(node.Data.Windows);
+				node.Data.Windows.clear();
 				return true;
 			}
 			else if (Collide(topPos, quadSize, mousePos))
 			{
 				SplitNode(node, InGuiSplitType::Horizontal);
 				node.FirstChild->Data.Windows.push_back(windowID);
+				node.SecondChild->Data.Windows = std::move(node.Data.Windows);
+				node.Data.Windows.clear();
 				return true;
 			}
 			else if (Collide(bottomPos, quadSize, mousePos))
 			{
 				SplitNode(node, InGuiSplitType::Horizontal);
 				node.SecondChild->Data.Windows.push_back(windowID);
+				node.FirstChild->Data.Windows = std::move(node.Data.Windows);
+				node.Data.Windows.clear();
 				return true;
 			}
 		}
@@ -284,15 +292,11 @@ namespace XYZ {
 
 		AdjustChildrenRecursive(first);
 		AdjustChildrenRecursive(second);
+	}
 
-		//if (first->FirstChild)
-		//	AdjustChildrenRecursive(first->FirstChild);
-		//if (first->SecondChild)
-		//	AdjustChildrenRecursive(first->SecondChild);
-		//if (second->FirstChild)
-		//	AdjustChildrenRecursive(second->FirstChild);
-		//if (second->SecondChild)
-		//	AdjustChildrenRecursive(second->SecondChild);
+	void InGuiDockspace::Init(InGuiDockNode* root)
+	{
+		s_Root = root;
 	}
 
 	void InGuiDockspace::Init(const glm::vec2& pos, const glm::vec2& size)
@@ -376,5 +380,9 @@ namespace XYZ {
 			s_ResizedNode = nullptr;
 		}
 		return false;
+	}
+	InGuiDockNode* InGuiDockspace::getRoot()
+	{
+		return s_Root;
 	}
 }

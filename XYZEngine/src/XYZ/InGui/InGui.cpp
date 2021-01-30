@@ -10,7 +10,40 @@
 
 #include <glm/gtx/transform.hpp>
 
-#include <ini.h>
+#include <yaml-cpp/yaml.h>
+
+
+
+namespace YAML {
+	template<>
+	struct convert<glm::vec2>
+	{
+		static Node encode(const glm::vec2& rhs)
+		{
+			Node node;
+			node.push_back(rhs.x);
+			node.push_back(rhs.y);
+			return node;
+		}
+
+		static bool decode(const Node& node, glm::vec2& rhs)
+		{
+			if (!node.IsSequence() || node.size() != 2)
+				return false;
+
+			rhs.x = node[0].as<float>();
+			rhs.y = node[1].as<float>();
+			return true;
+		}
+	};
+}
+
+YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec2& v)
+{
+	out << YAML::Flow;
+	out << YAML::BeginSeq << v.x << v.y << YAML::EndSeq;
+	return out;
+}
 
 namespace XYZ {
 
@@ -631,43 +664,121 @@ namespace XYZ {
 		return returnType;
 	}
 
+	static void SaveRecursiveDockNode(const InGuiDockNode* node, YAML::Emitter& out)
+	{
+		if (node)
+		{
+			out << YAML::BeginMap;
+			out << YAML::Key << "DockNode" << YAML::Value << node->ID;
+			out << YAML::Key << "Position" << YAML::Value << node->Data.Position;
+			out << YAML::Key << "Size" << YAML::Value << node->Data.Size;
+			out << YAML::Key << "Type" << YAML::Value << ToUnderlying(node->Type);
+			out << YAML::Key << "Windows" << YAML::Value << node->Data.Windows;
+			if (node->FirstChild)
+				out << YAML::Key << "FirstChild" << YAML::Value << node->FirstChild->ID;
+			if (node->SecondChild)
+				out << YAML::Key << "SecondChild" << YAML::Value << node->SecondChild->ID;
+			out << YAML::EndMap; // Window
+			SaveRecursiveDockNode(node->FirstChild, out);
+			SaveRecursiveDockNode(node->SecondChild, out);
+		}
+	}
+
+
 	void InGui::saveLayout()
 	{
-		mINI::INIFile file("ingui.ini");
-		mINI::INIStructure ini;
-		file.generate(ini);
+		YAML::Emitter out;
+		std::ofstream fout("ingui.ingui");
+
+		out << YAML::BeginMap;
+		out << YAML::Key << "InGui";
+		out << YAML::Value << "InGui";
+
+		out << YAML::Key << "Windows";
+		out << YAML::Value << YAML::BeginSeq;
 		for (auto& win : s_Context->Windows)
 		{
 			if (IS_SET(win.Flags, InGuiWindowFlags::Initialized))
 			{
-				std::string pos = std::to_string(win.Position.x) + "," + std::to_string(win.Position.y);
-				std::string size = std::to_string(win.Size.x) + "," + std::to_string(win.Size.y);
-				std::string id = std::to_string(win.ID);
-				std::string flags = std::to_string(win.Flags);
-				ini[id]["position"] = pos;
-				ini[id]["size"] = size;
-				ini[id]["flags"] = flags;
+				out << YAML::BeginMap;
+				out << YAML::Key << "Window" << YAML::Value << win.ID;
+				out << YAML::Key << "Flags" << YAML::Value << win.Flags;
+				out << YAML::Key << "Position" << YAML::Value << win.Position;
+				out << YAML::Key << "Size" << YAML::Value << win.Size;
+				out << YAML::EndMap; // Window
 			}
 		}
-		file.write(ini);
+		out << YAML::EndSeq;
+		/////////////////////////
+		out << YAML::Key << "Dockspace";
+		out << YAML::Value << YAML::BeginSeq;
+		SaveRecursiveDockNode(InGuiDockspace::getRoot(), out);
+		out << YAML::EndSeq;
+		
+		out << YAML::EndMap;
+		fout << out.c_str();
 	}
 
 	void InGui::loadLayout()
 	{
-		mINI::INIFile file("ingui.ini");
-		mINI::INIStructure ini;
-		
-		if (file.read(ini))
+		std::ifstream stream("ingui.ingui");
+		if (stream.is_open())
 		{
-			for (auto it = ini.begin(); it != ini.end(); ++it)
+			std::stringstream strStream;
+			strStream << stream.rdbuf();
+			YAML::Node data = YAML::Load(strStream.str());
+			auto& windows = data["Windows"];
+			if (windows)
 			{
-				size_t ID = atoi(it->first.c_str());
-				if (ID >= s_Context->Windows.size())
-					s_Context->Windows.resize(ID + 1);
-				s_Context->Windows[ID].ID = ID;
-				s_Context->Windows[ID].Position = StringToVec2(it->second.get("position"));
-				s_Context->Windows[ID].Size = StringToVec2(it->second.get("size"));
-				s_Context->Windows[ID].Flags = atoi(it->second.get("flags").c_str());
+				for (auto& it : windows)
+				{
+					size_t id = it["Window"].as<size_t>();
+					if (s_Context->Windows.size() <= id)
+						s_Context->Windows.resize(id + 1);
+
+					s_Context->Windows[id].ID = id;
+					s_Context->Windows[id].Position = it["Position"].as<glm::vec2>();
+					s_Context->Windows[id].Size = it["Size"].as<glm::vec2>();
+					s_Context->Windows[id].Flags = it["Flags"].as<uint16_t>();
+				}
+			}
+			auto& dockspace = data["Dockspace"];
+			if (dockspace)
+			{
+				struct NodeConstructData
+				{
+					uint32_t FirstChildID;
+					uint32_t SecondChildID;
+					InGuiDockNode* Node = nullptr;
+				};
+				std::vector<NodeConstructData> nodes;
+				for (auto& it : dockspace)
+				{
+					size_t id = it["DockNode"].as<uint32_t>();
+					if (id >= nodes.size())
+						nodes.resize(id + 1);
+					nodes[id].Node = new InGuiDockNode(id);
+					nodes[id].Node->Data.Position = it["Position"].as<glm::vec2>();
+					nodes[id].Node->Data.Size = it["Size"].as<glm::vec2>();
+					nodes[id].Node->Data.Windows = it["Windows"].as<std::vector<uint32_t>>();
+					nodes[id].Node->Type = static_cast<InGuiSplitType>(it["Type"].as<uint32_t>());
+					if (it["FirstChild"])
+						nodes[id].FirstChildID = it["FirstChild"].as<uint32_t>();
+					if (it["SecondChild"])
+						nodes[id].SecondChildID = it["SecondChild"].as<uint32_t>();
+				}
+				for (auto node : nodes)
+				{
+					if (node.Node && node.Node->Type != InGuiSplitType::None)
+					{
+						nodes[node.FirstChildID].Node->Parent = node.Node;
+						nodes[node.SecondChildID].Node->Parent = node.Node;
+						node.Node->FirstChild = nodes[node.FirstChildID].Node;
+						node.Node->SecondChild = nodes[node.SecondChildID].Node;
+					}
+				}
+				if (nodes.size())
+					InGuiDockspace::Init(nodes[0].Node);
 			}
 		}
 	}

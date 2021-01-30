@@ -24,8 +24,8 @@ namespace XYZ {
 
 	void InGuiLayer::OnDetach()
 	{
-		InGuiDockspace::Destroy();
 		InGui::Destroy();
+		InGuiDockspace::Destroy();
 	}
 
 	void InGuiLayer::OnEvent(Event& event)

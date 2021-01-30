@@ -3,6 +3,10 @@
 
 
 namespace XYZ {
+
+	static uint32_t s_NextID = 0;
+	static std::queue<uint32_t> s_FreeIDs;
+
 	InGuiRenderData::InGuiRenderData()
 	{
 		Ref<Shader> shader = Shader::Create("Assets/Shaders/DefaultShader.glsl");
@@ -37,5 +41,25 @@ namespace XYZ {
 		Color[SELECT_COLOR] = { 0.8f, 0.0f, 0.2f, 0.6f };
 		Color[LINE_COLOR] = { 0.4f, 0.5f, 0.8f, 1.0f };
 		Color[SELECTOR_COLOR] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	}
+	InGuiDockNode::InGuiDockNode()
+	{
+		if (!s_FreeIDs.empty())
+		{
+			ID = s_FreeIDs.front();
+			s_FreeIDs.pop();
+		}
+		else
+			ID = s_NextID++;
+	}
+	InGuiDockNode::InGuiDockNode(uint32_t id)
+	{
+		if (s_NextID <= id)
+			s_NextID = id + 1;
+		ID = id;
+	}
+	InGuiDockNode::~InGuiDockNode()
+	{
+		s_FreeIDs.push(ID);
 	}
 }

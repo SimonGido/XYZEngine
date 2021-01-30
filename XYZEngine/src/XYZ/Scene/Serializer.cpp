@@ -1296,12 +1296,12 @@ namespace XYZ {
 		std::string ecsName = data["ECS"].as<std::string>();
 		XYZ_LOG_INFO("Deserializing ecs ", ecsName);
 
-		auto entities = data["Entities"];
+		auto& entities = data["Entities"];
 
 		std::vector<uint32_t> createdEntities;
 		if (entities)
 		{
-			for (auto entity : entities)
+			for (auto& entity : entities)
 			{
 				uint32_t ent = ecs.CreateEntity();
 				createdEntities.push_back(ent);

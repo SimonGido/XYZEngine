@@ -156,10 +156,15 @@ namespace XYZ {
 
 	struct InGuiDockNode
 	{
+		InGuiDockNode();
+		InGuiDockNode(uint32_t id);
+		~InGuiDockNode();
+
 		InGuiDockNode* Parent = nullptr;
 		InGuiDockNode* FirstChild = nullptr;
 		InGuiDockNode* SecondChild = nullptr;
 		InGuiSplitType Type = InGuiSplitType::None;
+		uint32_t ID;
 
 		struct NodeData
 		{

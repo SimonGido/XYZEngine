@@ -11,6 +11,7 @@ namespace XYZ {
 	class InGuiDockspace
 	{
 	public:
+		static void Init(InGuiDockNode* root);
 		static void Init(const glm::vec2& pos, const glm::vec2& size);
 		static void Destroy();
 
@@ -23,6 +24,8 @@ namespace XYZ {
 		
 		static bool onMouseLeftPress(const glm::vec2& mousePos);
 		static bool onMouseLeftRelease();
+
+		static InGuiDockNode* getRoot();
 
 		friend class InGui;
 	};
