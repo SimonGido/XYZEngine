@@ -67,6 +67,7 @@ namespace XYZ {
 
 		if (!IS_SET(window.Flags, InGuiWindowFlags::Collapsed))
 		{
+			GenerateFrame(window.Mesh, window.Position, window.Size, renderData);
 			window.Mesh.Quads.push_back(
 				{
 					color,
@@ -98,13 +99,13 @@ namespace XYZ {
 		);
 		
 	}
-	void InGuiFactory::GenerateQuad(InGuiWindow& window, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, const InGuiRenderData& renderData, uint32_t subTextureIndex)
+	void InGuiFactory::GenerateQuad(InGuiMesh& mesh, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, const InGuiRenderData& renderData, uint32_t subTextureIndex)
 	{
 		const glm::vec4& oldTex = renderData.SubTexture[subTextureIndex]->GetTexCoords();
 		glm::vec4 texCoords = {
 			oldTex.x, oldTex.w, oldTex.z, oldTex.y
 		};
-		window.Mesh.Quads.push_back(
+		mesh.Quads.push_back(
 			{
 				color,
 				texCoords,
@@ -113,13 +114,13 @@ namespace XYZ {
 				InGuiRenderData::TextureID
 			});
 	}
-	void InGuiFactory::GenerateQuad(InGuiWindow& window, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, Ref<SubTexture> subTexture, uint32_t textureID)
+	void InGuiFactory::GenerateQuad(InGuiMesh& mesh, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, Ref<SubTexture> subTexture, uint32_t textureID)
 	{
 		const glm::vec4& oldTex = subTexture->GetTexCoords();
 		glm::vec4 texCoords = {
 			oldTex.x, oldTex.w, oldTex.z, oldTex.y
 		};
-		window.Mesh.Quads.push_back(
+		mesh.Quads.push_back(
 			{
 				color,
 				texCoords,
@@ -130,7 +131,7 @@ namespace XYZ {
 	}
 	glm::vec2 InGuiFactory::GenerateQuadWithText(const char* text, InGuiWindow& window, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, const InGuiRenderData& renderData, uint32_t subTextureIndex)
 	{
-		GenerateQuad(window, color, size, position, renderData.SubTexture[subTextureIndex], InGuiRenderData::TextureID);
+		GenerateQuad(window.Mesh, color, size, position, renderData.SubTexture[subTextureIndex], InGuiRenderData::TextureID);
 		glm::vec2 textPosition = position;
 		glm::vec2 textSize = { 
 			window.Size.x - window.Layout.RightPadding - size.x
@@ -164,7 +165,7 @@ namespace XYZ {
 	}
 	glm::vec2 InGuiFactory::GenerateQuadWithTextLeft(const char* text, InGuiWindow& window, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, const InGuiRenderData& renderData, uint32_t subTextureIndex)
 	{
-		GenerateQuad(window, color, size, position, renderData.SubTexture[subTextureIndex], InGuiRenderData::TextureID);
+		GenerateQuad(window.Mesh, color, size, position, renderData.SubTexture[subTextureIndex], InGuiRenderData::TextureID);
 
 		glm::vec2 textOffset = { 7.0f, 0.0f };
 		glm::vec2 textPosition = position;
@@ -213,5 +214,50 @@ namespace XYZ {
 			text, renderData.Font, color,
 			position, size, window.Mesh, InGuiRenderData::FontTextureID, 1000
 		);
+	}
+	void InGuiFactory::GenerateFrame(InGuiMesh& mesh, const glm::vec2& position, const glm::vec2& size, const InGuiRenderData& renderData)
+	{
+		InGuiLine line;
+		line.Color = renderData.Color[InGuiRenderData::LINE_COLOR];
+
+		line.P0 = glm::vec3(position, 0.0f);
+		line.P1 = glm::vec3(position.x + size.x, position.y, 0.0f);
+		mesh.Lines.push_back(line);
+
+		line.P0 = glm::vec3(position.x + size.x, position.y, 0.0f);
+		line.P1 = glm::vec3(position.x + size.x, position.y + size.y, 0.0f);
+		mesh.Lines.push_back(line);
+
+		line.P0 = glm::vec3(position.x + size.x, position.y + size.y, 0.0f);
+		line.P1 = glm::vec3(position.x, position.y + size.y, 0.0f);
+		mesh.Lines.push_back(line);
+
+		line.P0 = glm::vec3(position.x, position.y + size.y, 0.0f);
+		line.P1 = glm::vec3(position, 0.0f);
+		mesh.Lines.push_back(line);
+	}
+	void InGuiFactory::GenerateDockNode(InGuiDockNode& node, InGuiMesh& mesh, const glm::vec2& quadSize, const InGuiRenderData& renderData)
+	{
+		glm::vec4 quadColor = glm::vec4(1.5f, 1.8f, 2.9f, 1.0f);
+		glm::vec2 middlePos = node.Data.Position + ((node.Data.Size - quadSize) / 2.0f);
+		glm::vec2 leftPos = node.Data.Position + glm::vec2(0.0f, (node.Data.Size.y - quadSize.y) / 2.0f);
+		glm::vec2 rightPos = node.Data.Position + glm::vec2(node.Data.Size.x - quadSize.x, (node.Data.Size.y - quadSize.y) / 2.0f);
+		glm::vec2 topPos = node.Data.Position + glm::vec2((node.Data.Size.x - quadSize.x) / 2.0f, 0.0f);
+		glm::vec2 bottomPos = node.Data.Position + glm::vec2((node.Data.Size.x - quadSize.x) / 2.0f, node.Data.Size.y - quadSize.y);
+		GenerateQuad(
+			mesh, quadColor, quadSize, middlePos, 
+			renderData.SubTexture[InGuiRenderData::BUTTON], InGuiRenderData::TextureID);
+		GenerateQuad(
+			mesh, quadColor, quadSize, leftPos, 
+			renderData.SubTexture[InGuiRenderData::BUTTON], InGuiRenderData::TextureID);
+		GenerateQuad(
+			mesh, quadColor, quadSize, rightPos, 
+			renderData.SubTexture[InGuiRenderData::BUTTON], InGuiRenderData::TextureID);
+		GenerateQuad(
+			mesh, quadColor, quadSize, topPos,
+			renderData.SubTexture[InGuiRenderData::BUTTON], InGuiRenderData::TextureID);
+		GenerateQuad(
+			mesh, quadColor, quadSize, bottomPos,
+			renderData.SubTexture[InGuiRenderData::BUTTON], InGuiRenderData::TextureID);
 	}
 }

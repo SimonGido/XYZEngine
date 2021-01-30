@@ -6,6 +6,7 @@
 #include "XYZ/Renderer/Renderer.h"
 
 #include "InGuiFactory.h"
+#include "InGuiDockspace.h"
 
 #include <glm/gtx/transform.hpp>
 
@@ -41,6 +42,14 @@ namespace XYZ {
 		return isSet;
 	}
 
+	template <typename Type>
+	static bool TurnOnFlag(Type& num, Type flag)
+	{
+		bool isSet = (num & flag);
+		num |= flag;
+		return isSet;
+	}
+
 	static uint32_t FindNumCharacters(const char* source, float maxWidth, Ref<Font> font)
 	{
 		if (!source)
@@ -59,6 +68,7 @@ namespace XYZ {
 		}
 		return counter;
 	}
+
 	static bool Collide(const glm::vec2& pos, const glm::vec2& size, const glm::vec2& point)
 	{
 		return (pos.x + size.x > point.x &&
@@ -67,41 +77,6 @@ namespace XYZ {
 			    pos.y < point.y);
 	}
 	
-	InGuiRenderData::InGuiRenderData()
-	{
-		Ref<Shader> shader = Shader::Create("Assets/Shaders/DefaultShader.glsl");
-		Texture = Texture2D::Create({ TextureWrap::Clamp, TextureParam::Linear, TextureParam::Nearest }, "Assets/Textures/Gui/TexturePack_Dark.png");
-		Ref<Texture2D> colorPickerTexture = Texture2D::Create({ TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest }, "Assets/Textures/Gui/ColorPicker.png");
-
-		Font = Ref<XYZ::Font>::Create(14, "Assets/Fonts/arial.ttf");
-		Material = Ref<XYZ::Material>::Create(shader);
-		Material->Set("u_Texture", Texture, TextureID);
-		Material->Set("u_Texture", Font->GetTexture(), FontTextureID);
-		Material->Set("u_Texture", colorPickerTexture, ColorPickerTextureID);
-		Material->Set("u_Color", glm::vec4(1.0f));
-
-
-		float divisor = 8.0f;
-		SubTexture[BUTTON] = Ref<XYZ::SubTexture>::Create(Texture, glm::vec2(0, 0), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
-		SubTexture[CHECKBOX_CHECKED] = Ref<XYZ::SubTexture>::Create(Texture, glm::vec2(1, 1), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
-		SubTexture[CHECKBOX_UNCHECKED] = Ref<XYZ::SubTexture>::Create(Texture, glm::vec2(0, 1), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
-		SubTexture[SLIDER] = Ref<XYZ::SubTexture>::Create(Texture, glm::vec2(0, 0), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
-		SubTexture[SLIDER_HANDLE] = Ref<XYZ::SubTexture>::Create(Texture, glm::vec2(1, 2), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
-		SubTexture[WINDOW] = Ref<XYZ::SubTexture>::Create(Texture, glm::vec2(0, 3), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
-		SubTexture[MIN_BUTTON] = Ref<XYZ::SubTexture>::Create(Texture, glm::vec2(1, 3), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
-		SubTexture[CLOSE_BUTTON] = Ref<XYZ::SubTexture>::Create(Texture, glm::vec2(2, 0), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
-		SubTexture[DOWN_ARROW] = Ref<XYZ::SubTexture>::Create(Texture, glm::vec2(2, 3), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
-		SubTexture[RIGHT_ARROW] = Ref<XYZ::SubTexture>::Create(Texture, glm::vec2(2, 2), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
-		SubTexture[LEFT_ARROW] = Ref<XYZ::SubTexture>::Create(Texture, glm::vec2(3, 2), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
-		SubTexture[DOCKSPACE] = Ref<XYZ::SubTexture>::Create(Texture, glm::vec2(0, 0), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
-
-
-		Color[DEFAULT_COLOR] = { 1.0f, 1.0f, 1.0f, 1.0f };
-		Color[HOOVER_COLOR] = { 1.0f, 2.5f, 2.8f, 1.0f };
-		Color[SELECT_COLOR] = { 0.8f, 0.0f, 0.2f, 0.6f };
-		Color[LINE_COLOR] = { 0.4f, 0.5f, 0.8f, 1.0f };
-		Color[SELECTOR_COLOR] = { 1.0f, 1.0f, 1.0f, 1.0f };
-	}
 
 	void InGui::Init()
 	{
@@ -128,22 +103,30 @@ namespace XYZ {
 
 		Renderer2D::BeginScene(s_Context->FrameData.ViewProjectionMatrix * viewMatrix);
 		Renderer2D::SetMaterial(s_Context->RenderData.Material);
+		InGuiDockspace::beginFrame(s_Context, (s_Context->FrameData.MovedWindowID != InGuiFrameData::NullID));
 	}
 
 	void InGui::EndFrame()
 	{
 		XYZ_ASSERT(s_Context, "InGuiContext is not initialized");
+		InGuiDockspace::endFrame(s_Context);
+		Renderer2D::SetMaterial(s_Context->RenderData.Material);
 		for (auto winIt = s_Context->Windows.rbegin(); winIt != s_Context->Windows.rend(); ++winIt)
 		{
-			for (auto it = winIt->Mesh.Quads.begin(); it != winIt->Mesh.Quads.end(); ++it)
+			if (!IS_SET(winIt->Flags, InGuiWindowFlags::Docked))
 			{
-				Renderer2D::SubmitQuadNotCentered(it->Position, it->Size, it->TexCoord, it->TextureID, it->Color);
-			}
-			for (auto& line : winIt->Mesh.Lines)
-			{
-				Renderer2D::SubmitLine(line.P0, line.P1, line.Color);
+				for (auto it = winIt->Mesh.Quads.begin(); it != winIt->Mesh.Quads.end(); ++it)
+				{
+					Renderer2D::SubmitQuadNotCentered(it->Position, it->Size, it->TexCoord, it->TextureID, it->Color);
+				}
+				for (auto& line : winIt->Mesh.Lines)
+				{
+					Renderer2D::SubmitLine(line.P0, line.P1, line.Color);
+				}
 			}
 		}
+
+		
 		Renderer2D::Flush();
 		Renderer2D::FlushLines();
 		Renderer2D::EndScene();
@@ -320,7 +303,7 @@ namespace XYZ {
 		uint32_t subTextureIndex = InGuiRenderData::RIGHT_ARROW;
 		if (open) subTextureIndex = InGuiRenderData::DOWN_ARROW;
 
-		InGuiFactory::GenerateQuad(window, color, size, pos, s_Context->RenderData, InGuiRenderData::BUTTON);
+		InGuiFactory::GenerateQuad(window.Mesh, color, size, pos, s_Context->RenderData, InGuiRenderData::BUTTON);
 		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, color, buttonSize, pos, s_Context->RenderData, subTextureIndex);
 
 		if (eraseOutOfBorders(oldQuadCount, buttonSize, window)) { return false; }
@@ -631,7 +614,7 @@ namespace XYZ {
 		uint8_t returnType = 0;
 		size_t oldQuadCount = window.Mesh.Quads.size();
 		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
-		InGuiFactory::GenerateQuad(window, color, size, s_LayoutOffset, subTexture, Renderer2D::SetTexture(subTexture->GetTexture()));
+		InGuiFactory::GenerateQuad(window.Mesh, color, size, s_LayoutOffset, subTexture, Renderer2D::SetTexture(subTexture->GetTexture()));
 
 		if (eraseOutOfBorders(oldQuadCount, size, window))
 			return returnType;
@@ -696,28 +679,31 @@ namespace XYZ {
 		if (event.IsButtonPressed(MouseCode::MOUSE_BUTTON_LEFT))
 		{
 			const glm::vec2& mousePos = s_Context->FrameData.MousePosition;
+			if (InGuiDockspace::onMouseLeftPress(mousePos))
+				return true;
 			s_Context->FrameData.Flags |= InGuiInputFlags::LeftClicked;
 			for (auto& window : s_Context->Windows)
 			{
 				if (IS_SET(window.Flags, InGuiWindowFlags::Initialized)
 					&& Collide(window.Position, window.Size, mousePos))
 				{
+					bool handled = false;
 					if (window.Position.y + InGuiWindow::PanelHeight >= mousePos.y) // Panel was hit
 					{
-						bool handled = false;
 						glm::vec2 minButtonPos = { window.Position.x + window.Size.x - InGuiWindow::PanelHeight, window.Position.y };
 						if (Collide(minButtonPos, { InGuiWindow::PanelHeight, InGuiWindow::PanelHeight }, mousePos))
 						{
 							window.Flags ^= InGuiWindowFlags::Collapsed;
+							handled = true;
 						}
 						else
 						{
 							s_Context->FrameData.MovedWindowID = window.ID;
 							s_Context->FrameData.MouseOffset = mousePos - window.Position;
-							if (window.Flags & InGuiWindowFlags::EventBlocking)
-								handled = true;
+							handled = true;
+							if (InGuiDockspace::removeWindow(window.ID))
+								TurnOffFlag<uint16_t>(window.Flags, InGuiWindowFlags::Docked);
 						}
-						return handled;
 					}
 					else // Handle resize
 					{
@@ -725,20 +711,29 @@ namespace XYZ {
 						{
 							s_Context->FrameData.ResizeFlags |= InGuiResizeFlags::Left;
 							s_Context->FrameData.ResizedWindowID = window.ID;
+							handled = true;
 						}
 						else if (mousePos.x > window.Position.x + window.Size.x - 5.0f) // Right resize
 						{
 							s_Context->FrameData.ResizeFlags |= InGuiResizeFlags::Right;
 							s_Context->FrameData.ResizedWindowID = window.ID;
+							handled = true;
 						}
 						if (mousePos.y > window.Position.y + window.Size.y - 5.0f) // Bottom
 						{
 							s_Context->FrameData.ResizeFlags |= InGuiResizeFlags::Bottom;
 							s_Context->FrameData.ResizedWindowID = window.ID;
+							handled = true;
+							
 						}
 					}
+					if (handled)
+					{
+						TurnOffFlag<uint16_t>(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked);
+						return IS_SET(window.Flags, InGuiWindowFlags::EventBlocking);
+					}
 				}
-			}
+			}		
 		}
 		return false;
 	}
@@ -748,11 +743,22 @@ namespace XYZ {
 		if (event.IsButtonReleased(MouseCode::MOUSE_BUTTON_LEFT))
 		{
 			bool handled = false;
+			InGuiDockspace::onMouseLeftRelease();
+			if (s_Context->FrameData.MovedWindowID != InGuiFrameData::NullID)
+			{
+				InGuiWindow& window = s_Context->Windows[s_Context->FrameData.MovedWindowID];
+				if (InGuiDockspace::insertWindow(window.ID, s_Context->FrameData.MousePosition))
+				{
+					TurnOnFlag<uint16_t>(window.Flags, InGuiWindowFlags::Docked);
+				}
+			}
+
 			s_Context->FrameData.MovedWindowID = InGuiFrameData::NullID;
 			s_Context->FrameData.ResizedWindowID = InGuiFrameData::NullID;
 			s_Context->FrameData.ResizeFlags = 0;
 			s_Context->FrameData.Flags &= ~InGuiInputFlags::LeftClicked;
 
+			
 			for (auto& window : s_Context->Windows)
 			{
 				if (IS_SET(window.Flags, InGuiWindowFlags::Initialized)

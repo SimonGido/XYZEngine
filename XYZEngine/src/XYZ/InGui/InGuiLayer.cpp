@@ -3,7 +3,9 @@
 
 #include "XYZ/Event/ApplicationEvent.h"
 #include "XYZ/Core/Input.h"
+
 #include "InGui.h"	
+#include "InGuiDockspace.h"
 
 #include <glm/gtx/transform.hpp>
 
@@ -11,16 +13,18 @@ namespace XYZ {
 
 	void InGuiLayer::OnAttach()
 	{
-		InGui::Init();
-
 		float w = (float)Input::GetWindowSize().first;
 		float h = (float)Input::GetWindowSize().second;
 
 		m_Camera.SetProjectionMatrix(glm::ortho(0.0f, w, h, 0.0f));
+
+		InGui::Init();
+		InGuiDockspace::Init(glm::vec2(0.0f), { w, h });
 	}
 
 	void InGuiLayer::OnDetach()
 	{
+		InGuiDockspace::Destroy();
 		InGui::Destroy();
 	}
 
