@@ -11,6 +11,7 @@ namespace XYZ {
 	class IAsset
 	{
 	public:
+		virtual ~IAsset() = default;
 		virtual void Serialize() = 0;
 	};
 

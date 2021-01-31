@@ -59,6 +59,8 @@ namespace XYZ {
 		};
 		window.Mesh.Quads.clear();
 		window.Mesh.Lines.clear();
+		window.OverlayMesh.Quads.clear();
+		window.OverlayMesh.Lines.clear();
 		glm::vec2 textOffset = { 7.0f, 7.0f };
 		glm::vec2 textPosition = { window.Position.x + textOffset.x, window.Position.y + InGuiWindow::PanelHeight - textOffset.y };
 		glm::vec2 textSize = { window.Size.x - textOffset.x - InGuiWindow::PanelHeight, window.Size.y - textOffset.y };
@@ -129,9 +131,9 @@ namespace XYZ {
 				textureID
 			});
 	}
-	glm::vec2 InGuiFactory::GenerateQuadWithText(const char* text, InGuiWindow& window, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, const InGuiRenderData& renderData, uint32_t subTextureIndex)
+	glm::vec2 InGuiFactory::GenerateQuadWithText(const char* text, const InGuiWindow& window, InGuiMesh& mesh, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, const InGuiRenderData& renderData, uint32_t subTextureIndex)
 	{
-		GenerateQuad(window.Mesh, color, size, position, renderData.SubTexture[subTextureIndex], InGuiRenderData::TextureID);
+		GenerateQuad(mesh, color, size, position, renderData.SubTexture[subTextureIndex], InGuiRenderData::TextureID);
 		glm::vec2 textPosition = position;
 		glm::vec2 textSize = { 
 			window.Size.x - window.Layout.RightPadding - size.x
@@ -142,18 +144,18 @@ namespace XYZ {
 		textPosition.x = std::floor(textPosition.x);
 		textPosition.y = std::floor(textPosition.y);
 
-		size_t oldMeshSize = window.Mesh.Quads.size();
+		size_t oldMeshSize = mesh.Quads.size();
 		glm::vec2 genSize = GenerateTextMesh(
 			text, renderData.Font, renderData.Color[InGuiRenderData::DEFAULT_COLOR],
-			position, textSize, window.Mesh, InGuiRenderData::FontTextureID, 1000
+			position, textSize, mesh, InGuiRenderData::FontTextureID, 1000
 		);
 
 		glm::vec2 textOffset = { 7.0f, 0.0f };
 		
-		for (size_t i = oldMeshSize; i < window.Mesh.Quads.size(); ++i)
+		for (size_t i = oldMeshSize; i < mesh.Quads.size(); ++i)
 		{
-			window.Mesh.Quads[i].Position.x += std::floor(size.x + textOffset.x);
-			window.Mesh.Quads[i].Position.y += std::floor((size.y / 2.0f) + (genSize.y / 2.0f));
+			mesh.Quads[i].Position.x += std::floor(size.x + textOffset.x);
+			mesh.Quads[i].Position.y += std::floor((size.y / 2.0f) + (genSize.y / 2.0f));
 		}
 
 
@@ -163,9 +165,9 @@ namespace XYZ {
 
 		return glm::vec2(size.x + genSize.x + textOffset.x, height);
 	}
-	glm::vec2 InGuiFactory::GenerateQuadWithTextLeft(const char* text, InGuiWindow& window, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, const InGuiRenderData& renderData, uint32_t subTextureIndex)
+	glm::vec2 InGuiFactory::GenerateQuadWithTextLeft(const char* text, const InGuiWindow& window, InGuiMesh& mesh, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, const InGuiRenderData& renderData, uint32_t subTextureIndex)
 	{
-		GenerateQuad(window.Mesh, color, size, position, renderData.SubTexture[subTextureIndex], InGuiRenderData::TextureID);
+		GenerateQuad(mesh, color, size, position, renderData.SubTexture[subTextureIndex], InGuiRenderData::TextureID);
 
 		glm::vec2 textOffset = { 7.0f, 0.0f };
 		glm::vec2 textPosition = position;
@@ -173,17 +175,17 @@ namespace XYZ {
 		textPosition.x = std::floor(textPosition.x);
 		textPosition.y = std::floor(textPosition.y);
 
-		size_t oldMeshSize = window.Mesh.Quads.size();
+		size_t oldMeshSize = mesh.Quads.size();
 		glm::vec2 genSize = GenerateTextMesh(
 			text, renderData.Font, renderData.Color[InGuiRenderData::DEFAULT_COLOR],
-			position, textSize, window.Mesh, InGuiRenderData::FontTextureID, 1000
+			position, textSize, mesh, InGuiRenderData::FontTextureID, 1000
 		);
 
 
-		for (size_t i = oldMeshSize; i < window.Mesh.Quads.size(); ++i)
+		for (size_t i = oldMeshSize; i < mesh.Quads.size(); ++i)
 		{
-			window.Mesh.Quads[i].Position.x += std::floor(textOffset.x);
-			window.Mesh.Quads[i].Position.y += std::floor((size.y / 2.0f) + (genSize.y / 2.0f));
+			mesh.Quads[i].Position.x += std::floor(textOffset.x);
+			mesh.Quads[i].Position.y += std::floor((size.y / 2.0f) + (genSize.y / 2.0f));
 		}
 
 
@@ -193,26 +195,26 @@ namespace XYZ {
 
 		return glm::vec2(size.x, height);
 	}
-	glm::vec2 InGuiFactory::GenerateTextCentered(const char* text, InGuiWindow& window, const glm::vec2& position, const glm::vec2& size, const InGuiRenderData& renderData, uint32_t maxCount)
+	glm::vec2 InGuiFactory::GenerateTextCentered(const char* text, const InGuiWindow& window, InGuiMesh& mesh, const glm::vec2& position, const glm::vec2& size, const InGuiRenderData& renderData, uint32_t maxCount)
 	{
-		size_t oldMeshSize = window.Mesh.Quads.size();
+		size_t oldMeshSize = mesh.Quads.size();
 		glm::vec2 genSize = GenerateTextMesh(
 			text, renderData.Font, renderData.Color[InGuiRenderData::DEFAULT_COLOR],
-			position, size, window.Mesh, InGuiRenderData::FontTextureID, maxCount
+			position, size, mesh, InGuiRenderData::FontTextureID, maxCount
 		);
 
-		for (size_t i = oldMeshSize; i < window.Mesh.Quads.size(); ++i)
+		for (size_t i = oldMeshSize; i < mesh.Quads.size(); ++i)
 		{
-			window.Mesh.Quads[i].Position.x += std::floor((size.x / 2.0f) - (genSize.x / 2.0f));
-			window.Mesh.Quads[i].Position.y += std::floor((size.y / 2.0f) + (genSize.y / 2.0f));
+			mesh.Quads[i].Position.x += std::floor((size.x / 2.0f) - (genSize.x / 2.0f));
+			mesh.Quads[i].Position.y += std::floor((size.y / 2.0f) + (genSize.y / 2.0f));
 		}
 		return genSize;
 	}
-	glm::vec2 InGuiFactory::GenerateText(const char* text, InGuiWindow& window, const glm::vec4& color, const glm::vec2& position, const glm::vec2& size, const InGuiRenderData& renderData)
+	glm::vec2 InGuiFactory::GenerateText(const char* text, InGuiMesh& mesh, const glm::vec4& color, const glm::vec2& position, const glm::vec2& size, const InGuiRenderData& renderData)
 	{
 		return GenerateTextMesh(
 			text, renderData.Font, color,
-			position, size, window.Mesh, InGuiRenderData::FontTextureID, 1000
+			position, size, mesh, InGuiRenderData::FontTextureID, 1000
 		);
 	}
 	void InGuiFactory::GenerateFrame(InGuiMesh& mesh, const glm::vec2& position, const glm::vec2& size, const InGuiRenderData& renderData)

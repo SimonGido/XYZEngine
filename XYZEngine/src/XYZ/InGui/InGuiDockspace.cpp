@@ -245,6 +245,14 @@ namespace XYZ {
 			{
 				Renderer2D::SubmitLine(line.P0, line.P1, line.Color);
 			}
+			for (auto it = window.OverlayMesh.Quads.begin(); it != window.OverlayMesh.Quads.end(); ++it)
+			{
+				Renderer2D::SubmitQuadNotCentered(it->Position, it->Size, it->TexCoord, it->TextureID, it->Color);
+			}
+			for (auto& line : window.OverlayMesh.Lines)
+			{
+				Renderer2D::SubmitLine(line.P0, line.P1, line.Color);
+			}
 		}
 	}
 

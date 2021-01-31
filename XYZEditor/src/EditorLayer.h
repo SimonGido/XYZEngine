@@ -24,6 +24,7 @@ namespace XYZ {
 		virtual void OnDetach() override;
 		virtual void OnUpdate(Timestep ts) override;
 		virtual void OnEvent(Event& event) override;
+		virtual void OnInGuiRender() override;
 
 	private:
 		bool onMouseButtonPress(MouseButtonPressEvent& event);
@@ -42,12 +43,7 @@ namespace XYZ {
 		AssetManager m_AssetManager;
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 
-		std::vector<uint32_t> m_EditorEntities;
 	private:	
-		ECSManager m_ECS;
-		Dockspace m_Dockspace;
-		GuiContext* m_GuiContext = nullptr;
-
 		SceneEntity m_TestEntity;
 
 		SpriteRenderer* m_SpriteRenderer;
@@ -75,10 +71,6 @@ namespace XYZ {
 	private:
 		struct EditorData
 		{
-			GuiContext* GUI;
-			Dockspace*  Dockspace;
-			uint32_t    Canvas;
-
 			enum PanelID
 			{
 				SceneHierarchy,

@@ -1,0 +1,13 @@
+InGui: InGui
+Windows:
+  - Window: 0
+    Flags: 23
+    Position: [0, 0]
+    Size: [1920, 1017]
+Dockspace:
+  - DockNode: 0
+    Position: [0, 0]
+    Size: [1920, 1017]
+    Type: 0
+    Windows:
+      - 0

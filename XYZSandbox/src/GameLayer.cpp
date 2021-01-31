@@ -132,6 +132,7 @@ namespace XYZ {
 			}
 			InGui::Separator();
 
+			glm::vec2 oldPos = InGui::GetPosition();
 			if (InGui::Dropdown("Entity some", glm::vec2(100.0f,25.0f), m_BranchOpen))
 			{
 				InGui::BeginChildren();
@@ -147,6 +148,7 @@ namespace XYZ {
 				InGui::Dropdown("Entity some", glm::vec2(100.0f,25.0f), m_ChildrenOpen);
 				InGui::EndChildren();
 			}
+			InGui::SetPosition(oldPos);
 			InGui::Separator();
 			InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));
 			InGui::Button("Buttonik", glm::vec2(50.0f, 50.0f));

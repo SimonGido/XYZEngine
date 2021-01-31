@@ -103,6 +103,5 @@ namespace XYZ {
 
 		friend class GuiLayer;
 		friend class Serializer;
-		friend class Dockspace;
 	};
 }

@@ -36,7 +36,8 @@ namespace XYZ {
 	
 	EditorLayer::EditorLayer()
 		:
-		m_AssetManager("Assets")
+		m_AssetManager("Assets"),
+		m_SceneHierarchyPanel(0)
 	{		
 	}
 
@@ -134,42 +135,10 @@ namespace XYZ {
 
 		material->Set("u_Texture", font->GetTexture(), 1);
 
-		float divisor = 8.0f;
-		GuiSpecification specs;
-		specs.Material = material;
-		specs.Font = font;
-
-		specs.SubTexture[GuiSpecification::BUTTON] = m_AssetManager.GetAsset<SubTexture>("Assets/SubTextures/ButtonSubtexture.subtex")->GetHandle();
-		specs.SubTexture[GuiSpecification::CHECKBOX_CHECKED] = m_AssetManager.GetAsset<SubTexture>("Assets/SubTextures/CheckboxCheckedSubtexture.subtex")->GetHandle();
-		specs.SubTexture[GuiSpecification::CHECKBOX_UNCHECKED] = m_AssetManager.GetAsset<SubTexture>("Assets/SubTextures/CheckboxUnCheckedSubtexture.subtex")->GetHandle();
-		specs.SubTexture[GuiSpecification::FONT] = m_AssetManager.GetAsset<SubTexture>("Assets/SubTextures/FontSubtexture.subtex")->GetHandle();
-		
-		std::ifstream stream("ECS.ecs");
-		std::stringstream strStream;
-		strStream << stream.rdbuf();
-		YAML::Node data = YAML::Load(strStream.str());
-		Serializer::Deserialize<ECSManager>(data, m_AssetManager, m_ECS);
-
-		m_GuiContext = Application::Get().GetGuiLayer()->CreateContext(&m_ECS, specs);	
-		m_Dockspace = Dockspace(m_GuiContext, 1);
-		uint32_t sceneHierarchyPanel = m_ECS.FindEntity<IDComponent>({ (std::string)"{F7A53EA2-9BFD-4C3E-9CE7-8E50DA64A93C}" });
-		m_SceneHierarchyPanel = SceneHierarchyPanel(&m_Dockspace, m_GuiContext, Entity(sceneHierarchyPanel, &m_ECS));
-		m_SceneHierarchyPanel.SetContext(m_Scene);
+	
 		Renderer::WaitAndRender();
 		
 		Ref<RenderTexture> renderTexture = RenderTexture::Create(SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer);
-		for (uint32_t i = 0; i < m_ECS.GetNumberOfEntities(); ++i)
-		{
-			if (m_ECS.Contains<IDComponent>(i))
-			{
-				auto& IDComp = m_ECS.GetComponent<IDComponent>(i);
-				if ((std::string)IDComp.ID == "{5AA13A66-A415-487A-BE7A-77362B710C65}")
-				{
-					m_ECS.GetComponent<CanvasRenderer>(i).SubTexture->SetTexture(renderTexture);
-					break;
-				}
-			}
-		}
 	}	
 
 
@@ -177,13 +146,6 @@ namespace XYZ {
 	void EditorLayer::OnDetach()
 	{
 		Renderer::Shutdown();
-		m_SceneHierarchyPanel.Clean();
-		{
-			YAML::Emitter out;
-			Serializer::Serialize<ECSManager>(out, m_ECS);
-			std::ofstream fout("ECS.ecs");
-			fout << out.c_str();
-		}
 		m_AssetManager.Serialize();
 	}
 	void EditorLayer::OnUpdate(Timestep ts)
@@ -193,8 +155,7 @@ namespace XYZ {
 
 		m_EditorCamera.OnUpdate(ts);
 		m_Scene->OnUpdate(ts);
-		m_Scene->OnRenderEditor(m_EditorCamera);
-		m_Dockspace.OnUpdate(ts);		
+		m_Scene->OnRenderEditor(m_EditorCamera);	
 	}
 	void EditorLayer::OnEvent(Event& event)
 	{			
@@ -203,7 +164,11 @@ namespace XYZ {
 		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorLayer::onMouseButtonRelease, this));	
 		dispatcher.Dispatch<WindowResizeEvent>(Hook(&EditorLayer::onWindowResize, this));
 		m_EditorCamera.OnEvent(event);
-		m_Dockspace.OnEvent(event);
+	}
+
+	void EditorLayer::OnInGuiRender()
+	{
+		m_SceneHierarchyPanel.OnInGuiRender();
 	}
 
 	

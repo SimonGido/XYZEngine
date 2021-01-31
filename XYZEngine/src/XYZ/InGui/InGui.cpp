@@ -55,6 +55,7 @@ namespace XYZ {
 
 	static float s_HighestInRow = 0.0f;
 	static glm::vec2 s_LayoutOffset = glm::vec2(0.0f);
+	static glm::vec2 s_OldLayoutOffset = glm::vec2(0.0f);
 
 	static glm::vec2 StringToVec2(const std::string& src)
 	{
@@ -156,6 +157,14 @@ namespace XYZ {
 				{
 					Renderer2D::SubmitLine(line.P0, line.P1, line.Color);
 				}
+				for (auto it = winIt->OverlayMesh.Quads.begin(); it != winIt->OverlayMesh.Quads.end(); ++it)
+				{
+					Renderer2D::SubmitQuadNotCentered(it->Position, it->Size, it->TexCoord, it->TextureID, it->Color);
+				}
+				for (auto& line : winIt->OverlayMesh.Lines)
+				{
+					Renderer2D::SubmitLine(line.P0, line.P1, line.Color);
+				}
 			}
 		}
 
@@ -202,13 +211,23 @@ namespace XYZ {
 		s_HighestInRow = 0.0f;
 	}
 
-	bool InGui::eraseOutOfBorders(size_t oldQuadCount, const glm::vec2& genSize, InGuiWindow& window)
+	void InGui::SetPosition(const glm::vec2& position)
+	{
+		s_LayoutOffset = position;
+	}
+
+	glm::vec2 InGui::GetPosition()
+	{
+		return s_LayoutOffset;
+	}
+
+	bool InGui::eraseOutOfBorders(size_t oldQuadCount, const glm::vec2& genSize, const InGuiWindow& window, InGuiMesh& mesh)
 	{
 		if (s_LayoutOffset.x + genSize.x >= window.Position.x + window.Size.x 
 		 || s_LayoutOffset.y + genSize.y >= window.Position.y + window.Size.y)
 		{
 			s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
-			window.Mesh.Quads.erase(window.Mesh.Quads.begin() + oldQuadCount, window.Mesh.Quads.end());
+			mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
 			return true;
 		}
 		else if (s_HighestInRow < genSize.y)
@@ -337,9 +356,9 @@ namespace XYZ {
 		if (open) subTextureIndex = InGuiRenderData::DOWN_ARROW;
 
 		InGuiFactory::GenerateQuad(window.Mesh, color, size, pos, s_Context->RenderData, InGuiRenderData::BUTTON);
-		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, color, buttonSize, pos, s_Context->RenderData, subTextureIndex);
+		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, window.Mesh, color, buttonSize, pos, s_Context->RenderData, subTextureIndex);
 
-		if (eraseOutOfBorders(oldQuadCount, buttonSize, window)) { return false; }
+		if (eraseOutOfBorders(oldQuadCount, buttonSize, window, window.Mesh)) { return false; }
 
 		if (Collide(pos, size, s_Context->FrameData.MousePosition))
 		{
@@ -368,8 +387,8 @@ namespace XYZ {
 		uint32_t subTextureIndex = InGuiRenderData::RIGHT_ARROW;
 		if (open) subTextureIndex = InGuiRenderData::DOWN_ARROW;
 
-		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, color, size, pos, s_Context->RenderData, subTextureIndex);
-		if (eraseOutOfBorders(oldQuadCount, genSize, window)) { return false; }
+		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, window.Mesh, color, size, pos, s_Context->RenderData, subTextureIndex);
+		if (eraseOutOfBorders(oldQuadCount, genSize, window, window.Mesh)) { return false; }
 
 		if (Collide(pos, genSize, s_Context->FrameData.MousePosition))
 		{
@@ -402,18 +421,18 @@ namespace XYZ {
 		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
 
 		uint32_t returnType = 0;
-		size_t oldQuadCount = window.Mesh.Quads.size();
+		size_t oldQuadCount = window.OverlayMesh.Quads.size();
 		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
 		glm::vec2 pos = s_LayoutOffset;
 
-		glm::vec2 genSize = InGuiFactory::GenerateQuadWithTextLeft(name, window, color, size, pos, s_Context->RenderData, InGuiRenderData::BUTTON);
-		if (eraseOutOfBorders(oldQuadCount, genSize, window)) { return false; }
+		glm::vec2 genSize = InGuiFactory::GenerateQuadWithTextLeft(name, window, window.OverlayMesh, color, size, pos, s_Context->RenderData, InGuiRenderData::BUTTON);
+		if (eraseOutOfBorders(oldQuadCount, genSize, window, window.OverlayMesh)) { return false; }
 
 		if (Collide(pos, genSize, s_Context->FrameData.MousePosition))
 		{
 			if (Collide(pos, size, s_Context->FrameData.MousePosition))
 			{
-				window.Mesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
+				window.OverlayMesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
 				if (TurnOffFlag<uint16_t>(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked))
 				{
 					open = !open;
@@ -421,8 +440,8 @@ namespace XYZ {
 			}
 			else // It collides with text
 			{
-				for (size_t i = oldQuadCount + 1; i < window.Mesh.Quads.size(); ++i)
-					window.Mesh.Quads[i].Color = s_Context->RenderData.Color[InGuiRenderData::SELECT_COLOR];
+				for (size_t i = oldQuadCount + 1; i < window.OverlayMesh.Quads.size(); ++i)
+					window.OverlayMesh.Quads[i].Color = s_Context->RenderData.Color[InGuiRenderData::SELECT_COLOR];
 				returnType |= InGuiReturnType::Hoovered;
 				if (TurnOffFlag<uint16_t>(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked))
 				{
@@ -442,8 +461,6 @@ namespace XYZ {
 	{
 		s_LayoutOffset.x -= InGuiWindow::PanelHeight;
 	}
-
-
 	uint8_t InGui::Button(const char* name, const glm::vec2& size)
 	{
 		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
@@ -452,9 +469,9 @@ namespace XYZ {
 		uint8_t returnType = 0;
 		size_t oldQuadCount = window.Mesh.Quads.size();
 		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
-		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, color, size, s_LayoutOffset, s_Context->RenderData, InGuiRenderData::BUTTON);
+		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, window.Mesh, color, size, s_LayoutOffset, s_Context->RenderData, InGuiRenderData::BUTTON);
 				
-		if (eraseOutOfBorders(oldQuadCount, genSize, window))
+		if (eraseOutOfBorders(oldQuadCount, genSize, window, window.Mesh))
 			return returnType;
 
 		if (Collide(s_LayoutOffset, size, s_Context->FrameData.MousePosition))
@@ -480,9 +497,9 @@ namespace XYZ {
 		uint32_t subTextureIndex = InGuiRenderData::CHECKBOX_UNCHECKED;
 		if (val) subTextureIndex = InGuiRenderData::CHECKBOX_CHECKED;
 			
-		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, color, size, s_LayoutOffset, s_Context->RenderData, subTextureIndex);
+		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, window.Mesh, color, size, s_LayoutOffset, s_Context->RenderData, subTextureIndex);
 
-		if (eraseOutOfBorders(oldQuadCount, genSize, window))
+		if (eraseOutOfBorders(oldQuadCount, genSize, window, window.Mesh))
 			return returnType;
 
 		if (Collide(s_LayoutOffset, size, s_Context->FrameData.MousePosition))
@@ -515,13 +532,13 @@ namespace XYZ {
 		uint8_t returnType = 0;
 		size_t oldQuadCount = window.Mesh.Quads.size();
 		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
-		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, color, size, s_LayoutOffset, s_Context->RenderData, InGuiRenderData::SLIDER);
+		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, window.Mesh, color, size, s_LayoutOffset, s_Context->RenderData, InGuiRenderData::SLIDER);
 		glm::vec2 handleSize = glm::vec2(size.y, size.y);
 		glm::vec2 handlePosition = s_LayoutOffset + glm::vec2((size.x - size.y) * val, 0.0f);
-		InGuiFactory::GenerateQuadWithText(nullptr, window, color, handleSize, handlePosition, s_Context->RenderData, InGuiRenderData::SLIDER_HANDLE);
-		InGuiFactory::GenerateTextCentered(s_TextBuffer, window, s_LayoutOffset, size, s_Context->RenderData, 1000);
+		InGuiFactory::GenerateQuadWithText(nullptr, window, window.Mesh, color, handleSize, handlePosition, s_Context->RenderData, InGuiRenderData::SLIDER_HANDLE);
+		InGuiFactory::GenerateTextCentered(s_TextBuffer, window, window.Mesh, s_LayoutOffset, size, s_Context->RenderData, 1000);
 
-		if (eraseOutOfBorders(oldQuadCount, genSize, window))
+		if (eraseOutOfBorders(oldQuadCount, genSize, window, window.Mesh))
 			return returnType;
 
 		if (Collide(s_LayoutOffset, size, s_Context->FrameData.MousePosition))
@@ -550,9 +567,9 @@ namespace XYZ {
 		
 
 		glm::vec2 genPos = s_LayoutOffset + glm::vec2(0.0f, s_Context->RenderData.Font->GetLineHeight());
-		glm::vec2 genSize = InGuiFactory::GenerateText(text, window, color, genPos, size, s_Context->RenderData);
+		glm::vec2 genSize = InGuiFactory::GenerateText(text, window.Mesh, color, genPos, size, s_Context->RenderData);
 
-		if (eraseOutOfBorders(oldQuadCount, genSize, window))
+		if (eraseOutOfBorders(oldQuadCount, genSize, window, window.Mesh))
 			return returnType;
 
 		if (Collide(s_LayoutOffset, genSize, s_Context->FrameData.MousePosition))
@@ -603,10 +620,10 @@ namespace XYZ {
 		}
 
 
-		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, color, size, s_LayoutOffset, s_Context->RenderData, InGuiRenderData::BUTTON);
-		InGuiFactory::GenerateTextCentered(buffer, window, s_LayoutOffset, size, s_Context->RenderData, maxCharacters);
+		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, window.Mesh, color, size, s_LayoutOffset, s_Context->RenderData, InGuiRenderData::BUTTON);
+		InGuiFactory::GenerateTextCentered(buffer, window, window.Mesh, s_LayoutOffset, size, s_Context->RenderData, maxCharacters);
 
-		if (eraseOutOfBorders(oldQuadCount, genSize, window))
+		if (eraseOutOfBorders(oldQuadCount, genSize, window, window.Mesh))
 			return returnType;
 
 		if (Collide(s_LayoutOffset, size, s_Context->FrameData.MousePosition))
@@ -649,7 +666,7 @@ namespace XYZ {
 		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
 		InGuiFactory::GenerateQuad(window.Mesh, color, size, s_LayoutOffset, subTexture, Renderer2D::SetTexture(subTexture->GetTexture()));
 
-		if (eraseOutOfBorders(oldQuadCount, size, window))
+		if (eraseOutOfBorders(oldQuadCount, size, window, window.Mesh))
 			return returnType;
 
 		if (Collide(s_LayoutOffset, size, s_Context->FrameData.MousePosition))
@@ -781,6 +798,7 @@ namespace XYZ {
 					InGuiDockspace::Init(nodes[0].Node);
 			}
 		}
+		stream.close();
 	}
 
 

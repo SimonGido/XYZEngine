@@ -74,6 +74,7 @@ namespace XYZ {
 	struct InGuiWindow
 	{
 		InGuiMesh   Mesh;
+		InGuiMesh   OverlayMesh;
 		InGuiLayout Layout;
 		glm::vec2   Position;
 		glm::vec2   Size;
@@ -179,7 +180,6 @@ namespace XYZ {
 	{
 		InGuiFrameData			 FrameData;
 		InGuiRenderData			 RenderData;
-
 
 		std::vector<InGuiWindow> Windows;
 	};

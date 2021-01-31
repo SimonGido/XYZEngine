@@ -2,40 +2,46 @@
 
 
 namespace XYZ {
-	SceneHierarchyPanel::SceneHierarchyPanel()
-		: m_Dockspace(nullptr), m_GuiContext(nullptr)
-	{
-	}
-	SceneHierarchyPanel::SceneHierarchyPanel(Dockspace* dockSpace, GuiContext* gui, Entity panelEntity)
-		: m_Dockspace(dockSpace), m_GuiContext(gui), m_PanelEntity(panelEntity)
-	{	
-	}
-	SceneHierarchyPanel::~SceneHierarchyPanel()
-	{
+    SceneHierarchyPanel::SceneHierarchyPanel(uint32_t panelID)
+        : 
+        m_PanelID(panelID)
+    {
+        InGui::Begin(panelID, "Scene Hierarchy", glm::vec2(0.0f), glm::vec2(200.0f));
+        InGui::End();
+    }
+    SceneHierarchyPanel::~SceneHierarchyPanel()
+    {
+        if (m_BranchesOpen)
+            delete m_BranchesOpen;
+    }
+    void SceneHierarchyPanel::SetContext(Ref<Scene> context)
+    {
+        if (m_BranchesOpen)
+        {
+            delete[] m_BranchesOpen;
+            m_BranchesOpen = nullptr;
+        }
+        m_Context = context;
+        m_BranchesOpen = new bool[m_Context->m_Entities.size()];
+    }
+    void SceneHierarchyPanel::OnInGuiRender()
+    {
+        if (InGui::Begin(m_PanelID, "Scene Hierarchy", glm::vec2(0.0f), glm::vec2(200.0f)))
+        {
+            if (m_Context.Raw())
+            {
+                uint32_t counter = 0;
+                for (auto entityID : m_Context->m_Entities)
+                {
+                    SceneEntity entity(entityID, m_Context.Raw());
+                    if (InGui::PushNode(entity.GetComponent<SceneTagComponent>().Name.c_str(), glm::vec2(25.0f), m_BranchesOpen[counter]))
+                    {
 
-	}
-	void SceneHierarchyPanel::SetContext(const Ref<Scene>& scene)
-	{
-		for (auto ent : m_Entities)
-			m_GuiContext->DestroyEntity(ent);
-		m_Context = scene;
-
-		for (auto id : m_Context->m_Entities)
-		{
-			Entity entity(id, &m_Context->m_ECS);
-			Entity textEntity = m_GuiContext->CreateText(m_PanelEntity, TextSpecification(
-				TextAlignment::Center,
-				entity.GetComponent<SceneTagComponent>().Name,
-				glm::vec3(0.0f),
-				glm::vec2(m_PanelEntity.GetComponent<RectTransform>().Size.x, 20.0f),
-				glm::vec4(1.0f)
-			));
-			m_Entities.push_back(textEntity);
-		}
-	}
-	void SceneHierarchyPanel::Clean()
-	{
-		for (auto ent : m_Entities)
-			m_GuiContext->DestroyEntity(ent);
-	}
+                    }
+                    counter++;
+                }
+            }
+        }
+        InGui::End();
+    }
 }
