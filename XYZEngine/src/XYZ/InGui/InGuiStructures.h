@@ -11,7 +11,7 @@ namespace XYZ {
 		enum ReturnType
 		{
 			Hoovered = BIT(0),
-			Clicked = BIT(1)
+			Clicked = BIT(1),
 		};
 	}
 	namespace InGuiInputFlags {

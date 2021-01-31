@@ -63,6 +63,7 @@ namespace XYZ {
 		uint32_t windowHeight = Application::Get().GetWindow().GetHeight();
 		m_Scene = m_AssetManager.GetAsset<Scene>("Assets/Scenes/scene.xyz")->GetHandle();
 		m_Scene->SetViewportSize(windowWidth, windowHeight);
+		m_SceneHierarchyPanel.SetContext(m_Scene);
 
 		m_Material = m_AssetManager.GetAsset<Material>("Assets/Materials/material.mat")->GetHandle();
 		m_Material->SetFlags(XYZ::RenderFlags::TransparentFlag);
@@ -164,6 +165,7 @@ namespace XYZ {
 		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorLayer::onMouseButtonRelease, this));	
 		dispatcher.Dispatch<WindowResizeEvent>(Hook(&EditorLayer::onWindowResize, this));
 		m_EditorCamera.OnEvent(event);
+		m_SceneHierarchyPanel.OnEvent(event);
 	}
 
 	void EditorLayer::OnInGuiRender()

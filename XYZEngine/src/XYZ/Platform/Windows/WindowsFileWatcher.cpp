@@ -6,9 +6,9 @@
 
 namespace XYZ {
 
-	static void FileWatcherThread(FileWatcher& watcherObj)
+	static void FileWatcherThread(std::shared_ptr<FileWatcher> watcherObj)
 	{
-		HANDLE hDir = CreateFile(watcherObj.GetDirectory().c_str(),  // pointer to the file name
+		HANDLE hDir = CreateFile(watcherObj->GetDirectory().c_str(),  // pointer to the file name
 			FILE_LIST_DIRECTORY,									 // access (read/write) mode
 			FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,  // share mode
 			NULL,													 // security descriptor
@@ -37,7 +37,7 @@ namespace XYZ {
 			&BytesReturned,							 // bytes returned
 			NULL,									 // overlapped buffer
 			NULL									 // completion routine
-		) && watcherObj.IsRunning())
+		) && watcherObj->IsRunning())
 		{
 			int offset = 0;
 			FILE_NOTIFY_INFORMATION* pNotify;
@@ -48,31 +48,30 @@ namespace XYZ {
 
 			filename[pNotify->FileNameLength / 2] = NULL;
 
-			auto fullPath = watcherObj.GetDirectory() + L"/" + filename;
+			auto fullPath = watcherObj->GetDirectory() + L"/" + filename;
 			while (true)
 			{	
 				switch (Buffer[0].Action)
 				{
 				case FILE_ACTION_MODIFIED:
-					watcherObj.OnFileChange(filename);
+					watcherObj->OnFileChange(filename);
 					break;
 				case FILE_ACTION_ADDED:
-					watcherObj.OnFileAdded(filename);
+					watcherObj->OnFileAdded(filename);
 					break;
 				case FILE_ACTION_REMOVED:
-					watcherObj.OnFileRemoved(filename);
+					watcherObj->OnFileRemoved(filename);
 					break;
 				case FILE_ACTION_RENAMED_OLD_NAME:
-					watcherObj.OnFileRenamed(filename);
+					watcherObj->OnFileRenamed(filename);
 					break;
 				case FILE_ACTION_RENAMED_NEW_NAME:
-					watcherObj.OnFileRenamed(filename);
+					watcherObj->OnFileRenamed(filename);
 					break;
 				}
 				break;			
 			}		
 		}
-
 		CloseHandle(hDir);
 	}
 
@@ -87,7 +86,7 @@ namespace XYZ {
 	void WindowsFileWatcher::Start()
 	{
 		m_Running = true;
-		m_FileWatcherThread = std::unique_ptr<std::thread>(new std::thread(FileWatcherThread, std::ref(*this)));
+		m_FileWatcherThread = std::unique_ptr<std::thread>(new std::thread(FileWatcherThread, this->shared_from_this()));
 		m_FileWatcherThread->detach();
 	}
 	void WindowsFileWatcher::Stop()
@@ -95,8 +94,8 @@ namespace XYZ {
 		m_Running = false;
 	}
 
-	std::unique_ptr<FileWatcher> FileWatcher::Create(const std::wstring& dir)
+	std::shared_ptr<FileWatcher> FileWatcher::Create(const std::wstring& dir)
 	{
-		return std::make_unique<WindowsFileWatcher>(dir);
+		return std::make_shared<WindowsFileWatcher>(dir);
 	}
 }

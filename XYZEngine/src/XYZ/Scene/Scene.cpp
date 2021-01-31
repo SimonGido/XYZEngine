@@ -72,8 +72,10 @@ namespace XYZ {
 
 	void Scene::DestroyEntity(SceneEntity entity)
 	{
-		// Swap with last and delete
 		uint32_t lastEntity = m_Entities.back();
+		if (entity.m_ID == m_SelectedEntity)
+			m_SelectedEntity = NULL_ENTITY;
+		// Swap with last and delete
 		auto it = std::find(m_Entities.begin(), m_Entities.end(), (uint32_t)entity);
 		if (it != m_Entities.end())
 		{

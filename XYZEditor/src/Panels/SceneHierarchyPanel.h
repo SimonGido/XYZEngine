@@ -14,11 +14,21 @@ namespace XYZ {
 
 
 		void OnInGuiRender();
+		void OnEvent(Event& event);
+	private:
+		void resizeEntities();
+
+		bool onMouseButtonPress(MouseButtonPressEvent& event);
+		bool onKeyPressed(KeyPressedEvent& event);
 
 	private:
 		uint32_t m_PanelID;
 		Ref<Scene> m_Context;
 
-		bool* m_BranchesOpen = nullptr;
+		glm::vec2 m_DropdownPosition = glm::vec2(0.0f);
+		bool m_DropdownOpen = false;
+		bool* m_EntitiesOpen = nullptr;
+		size_t m_CurrentSize = 0;
+		size_t m_SelectedEntityIndex = 0;
 	};
 }

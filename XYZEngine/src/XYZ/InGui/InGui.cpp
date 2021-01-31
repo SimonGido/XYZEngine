@@ -210,10 +210,19 @@ namespace XYZ {
 		s_LayoutOffset.y += s_HighestInRow + window.Layout.TopPadding;
 		s_HighestInRow = 0.0f;
 	}
+	void InGui::SetWindowFlags(uint32_t id, uint16_t flags)
+	{
+		s_Context->Windows[id].Flags = flags;
+	}
 
 	void InGui::SetPosition(const glm::vec2& position)
 	{
 		s_LayoutOffset = position;
+	}
+
+	uint16_t InGui::GetWindowFlags(uint32_t id)
+	{
+		return s_Context->Windows[id].Flags;
 	}
 
 	glm::vec2 InGui::GetPosition()
@@ -375,7 +384,7 @@ namespace XYZ {
 		return open;
 	}
 
-	uint8_t InGui::PushNode(const char* name, const glm::vec2& size, bool& open)
+	uint8_t InGui::PushNode(const char* name, const glm::vec2& size, bool& open, bool highlight)
 	{
 		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
 		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
@@ -383,6 +392,8 @@ namespace XYZ {
 		uint32_t returnType = 0;
 		size_t oldQuadCount = window.Mesh.Quads.size();
 		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
+		if (highlight) color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
+
 		glm::vec2 pos = s_LayoutOffset;
 		uint32_t subTextureIndex = InGuiRenderData::RIGHT_ARROW;
 		if (open) subTextureIndex = InGuiRenderData::DOWN_ARROW;
@@ -412,7 +423,7 @@ namespace XYZ {
 			}
 		}
 		s_LayoutOffset.y += genSize.y;
-		return open;
+		return returnType;
 	}
 
 	uint8_t InGui::Dropdown(const char* name, const glm::vec2& size, bool& open)
@@ -426,7 +437,7 @@ namespace XYZ {
 		glm::vec2 pos = s_LayoutOffset;
 
 		glm::vec2 genSize = InGuiFactory::GenerateQuadWithTextLeft(name, window, window.OverlayMesh, color, size, pos, s_Context->RenderData, InGuiRenderData::BUTTON);
-		if (eraseOutOfBorders(oldQuadCount, genSize, window, window.OverlayMesh)) { return false; }
+		//if (eraseOutOfBorders(oldQuadCount, genSize, window, window.OverlayMesh)) { return false; }
 
 		if (Collide(pos, genSize, s_Context->FrameData.MousePosition))
 		{
@@ -450,7 +461,7 @@ namespace XYZ {
 			}
 		}
 		s_LayoutOffset.y += genSize.y;
-		return open;
+		return returnType;
 	}
 
 	void InGui::BeginChildren()

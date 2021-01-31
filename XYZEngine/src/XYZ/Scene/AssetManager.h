@@ -74,7 +74,7 @@ namespace XYZ {
 
 	private:
 		std::unordered_map<std::string, IAsset*> m_Assets;
-		std::unique_ptr<FileWatcher> m_FileWatcher;
+		std::shared_ptr<FileWatcher> m_FileWatcher;
 		std::string m_Directory;
 	};
 }

@@ -31,7 +31,7 @@ namespace XYZ {
 
 	private:
 		sol::state m_L;
-		std::unique_ptr<FileWatcher> m_FileWatcher;
+		std::shared_ptr<FileWatcher> m_FileWatcher;
 
 		std::string m_Directory;
 		std::string m_FileName;

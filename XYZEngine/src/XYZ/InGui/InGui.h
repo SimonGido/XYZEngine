@@ -21,7 +21,10 @@ namespace XYZ {
 		static void OnEvent(Event& event);
 		static void SetLayout(uint32_t id, const InGuiLayout& layout);
 		static void Separator();
+		
+		static void SetWindowFlags(uint32_t id, uint16_t flags);
 		static void SetPosition(const glm::vec2& position);
+		static uint16_t GetWindowFlags(uint32_t id);
 		static glm::vec2 GetPosition();
 
 		static bool Begin(uint32_t id, const char* name, const glm::vec2& position, const glm::vec2& size);
@@ -29,7 +32,7 @@ namespace XYZ {
 		static void End();
 		static bool BeginGroup(const char* name, bool& open);
 
-		static uint8_t PushNode(const char* name, const glm::vec2& size, bool& open);
+		static uint8_t PushNode(const char* name, const glm::vec2& size, bool& open, bool highlight = false);
 		static uint8_t Dropdown(const char* name, const glm::vec2& size, bool& open);
 		static void BeginChildren();
 		static void EndChildren();

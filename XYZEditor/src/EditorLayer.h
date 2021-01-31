@@ -36,7 +36,6 @@ namespace XYZ {
 		ParticleInformation* m_Data;
 		ParticleComponent* m_Particle;
 	private:
-
 		Ref<Scene> m_Scene;
 
 		EditorCamera m_EditorCamera;

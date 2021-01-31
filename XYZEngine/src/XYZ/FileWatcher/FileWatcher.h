@@ -5,7 +5,7 @@
 
 namespace XYZ {
 
-	class FileWatcher
+	class FileWatcher : public std::enable_shared_from_this<FileWatcher>
 	{
 	public:
 		FileWatcher(const std::wstring& dir);
@@ -23,7 +23,7 @@ namespace XYZ {
 		void OnFileRenamed(const std::wstring& fileName);
 
 
-		static std::unique_ptr<FileWatcher> Create(const std::wstring& dir);
+		static std::shared_ptr<FileWatcher> Create(const std::wstring& dir);
 	protected:
 		std::wstring m_Directory;
 		std::vector<IFileWatcherListener*> m_Listeners;
