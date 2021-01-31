@@ -3,6 +3,7 @@
 #include <XYZ.h>
 
 #include "Panels/SceneHierarchyPanel.h"
+#include "Panels/ScenePanel.h"
 
 
 #define GLM_ENABLE_EXPERIMENTAL
@@ -41,7 +42,7 @@ namespace XYZ {
 		EditorCamera m_EditorCamera;
 		AssetManager m_AssetManager;
 		SceneHierarchyPanel m_SceneHierarchyPanel;
-
+		ScenePanel m_ScenePanel;
 	private:	
 		SceneEntity m_TestEntity;
 

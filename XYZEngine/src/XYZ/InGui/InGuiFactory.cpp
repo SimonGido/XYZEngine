@@ -72,7 +72,7 @@ namespace XYZ {
 			GenerateFrame(window.Mesh, window.Position, window.Size, renderData);
 			window.Mesh.Quads.push_back(
 				{
-					color,
+					glm::vec4(1.0f),
 					texCoords,
 					{window.Position, InGuiWindow::PanelHeight },
 					window.Size,

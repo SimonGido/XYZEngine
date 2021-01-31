@@ -37,7 +37,8 @@ namespace XYZ {
 	EditorLayer::EditorLayer()
 		:
 		m_AssetManager("Assets"),
-		m_SceneHierarchyPanel(0)
+		m_SceneHierarchyPanel(0),
+		m_ScenePanel(1)
 	{		
 	}
 
@@ -55,15 +56,17 @@ namespace XYZ {
 		stbi_set_flip_vertically_on_load(1);
 		uint8_t* pixels = (uint8_t*)stbi_load("Assets/Textures/Gui/Prohibited.png", &width, &height, &channels, 0);
 		m_ProhibitedCursor = Application::Get().GetWindow().CreateCustomCursor(pixels, width, height, width / 2.0f, height / 2.0f);
-
-		
+		m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
+		auto& app = Application::Get();
+		m_EditorCamera.SetViewportSize((float)app.GetWindow().GetWidth(), (float)app.GetWindow().GetHeight());
+		SceneRenderer::SetViewportSize(app.GetWindow().GetWidth(), app.GetWindow().GetHeight());
 
 
 		uint32_t windowWidth = Application::Get().GetWindow().GetWidth();
 		uint32_t windowHeight = Application::Get().GetWindow().GetHeight();
 		m_Scene = m_AssetManager.GetAsset<Scene>("Assets/Scenes/scene.xyz")->GetHandle();
 		m_Scene->SetViewportSize(windowWidth, windowHeight);
-		m_SceneHierarchyPanel.SetContext(m_Scene);
+		
 
 		m_Material = m_AssetManager.GetAsset<Material>("Assets/Materials/material.mat")->GetHandle();
 		m_Material->SetFlags(XYZ::RenderFlags::TransparentFlag);
@@ -140,6 +143,11 @@ namespace XYZ {
 		Renderer::WaitAndRender();
 		
 		Ref<RenderTexture> renderTexture = RenderTexture::Create(SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer);
+		Ref<SubTexture> renderSubTexture = Ref<SubTexture>::Create(renderTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+	
+		m_SceneHierarchyPanel.SetContext(m_Scene);
+		m_ScenePanel.SetContext(m_Scene);
+		m_ScenePanel.SetSubTexture(renderSubTexture);
 	}	
 
 
@@ -166,11 +174,13 @@ namespace XYZ {
 		dispatcher.Dispatch<WindowResizeEvent>(Hook(&EditorLayer::onWindowResize, this));
 		m_EditorCamera.OnEvent(event);
 		m_SceneHierarchyPanel.OnEvent(event);
+		m_ScenePanel.OnEvent(event);
 	}
 
 	void EditorLayer::OnInGuiRender()
 	{
 		m_SceneHierarchyPanel.OnInGuiRender();
+		m_ScenePanel.OnInGuiRender();
 	}
 
 	
@@ -185,6 +195,7 @@ namespace XYZ {
 	bool EditorLayer::onWindowResize(WindowResizeEvent& event)
 	{
 		m_Scene->SetViewportSize((uint32_t)event.GetWidth(), (uint32_t)event.GetHeight());
+		m_EditorCamera.SetViewportSize((float)event.GetWidth(), (float)event.GetHeight());
 		return false;
 	}
 

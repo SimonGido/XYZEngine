@@ -32,9 +32,9 @@ Entities:
     SceneTagComponent:
       Name: Test
     TransformComponent:
-      Position: [21.0612316, -19.1210003, 0.5]
+      Position: [0, 0, 0]
       Rotation: [0, 0, 0]
-      Scale: [10.1579437, 12.8600006, 1]
+      Scale: [1, 1, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/New_Material.mat
       SubTextureAssetPath: Assets/SubTextures/New_SubTexture.subtex
