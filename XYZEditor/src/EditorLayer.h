@@ -4,7 +4,7 @@
 
 #include "Panels/SceneHierarchyPanel.h"
 #include "Panels/ScenePanel.h"
-
+#include "Panels/InspectorPanel.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
@@ -14,7 +14,16 @@
 
 
 namespace XYZ {
-
+	namespace PanelID {
+		enum PanelID
+		{
+			SceneHierarchyPanel,
+			ScenePanel,
+			InspectorPanel,
+			NumPanels
+		};
+	}
+	
 	class EditorLayer : public Layer
 	{
 	public:
@@ -39,10 +48,11 @@ namespace XYZ {
 	private:
 		Ref<Scene> m_Scene;
 
-		EditorCamera m_EditorCamera;
 		AssetManager m_AssetManager;
 		SceneHierarchyPanel m_SceneHierarchyPanel;
+		InspectorPanel m_InspectorPanel;
 		ScenePanel m_ScenePanel;
+
 	private:	
 		SceneEntity m_TestEntity;
 
@@ -63,21 +73,5 @@ namespace XYZ {
 		Ref<SubTexture> m_CharacterSubTexture;
 		Ref<SubTexture> m_CharacterSubTexture2;
 		Ref<SubTexture> m_CharacterSubTexture3;
-
-
-		void* m_ProhibitedCursor = nullptr;
-
-
-	private:
-		struct EditorData
-		{
-			enum PanelID
-			{
-				SceneHierarchy,
-				NumPanels
-			};
-
-			Entity Panel[NumPanels];
-		};
 	};
 }

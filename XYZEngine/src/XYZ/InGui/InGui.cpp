@@ -332,8 +332,11 @@ namespace XYZ {
 	{
 		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID == InGuiFrameData::NullID, "Missing end call");
 		s_Context->FrameData.ActiveWindowID = id;
-		InGuiWindow& window = getInitializedWindow(id, position, size);
+		if (!subTexture.Raw()) 
+			return false;
 
+		InGuiWindow& window = getInitializedWindow(id, position, size);
+		
 		s_HighestInRow = 0.0f;
 		s_LayoutOffset = glm::vec2(
 			window.Position.x + window.Layout.LeftPadding,

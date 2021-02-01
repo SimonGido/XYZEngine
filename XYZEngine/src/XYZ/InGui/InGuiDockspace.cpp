@@ -273,11 +273,15 @@ namespace XYZ {
 		{
 			if (node->Type == InGuiSplitType::Vertical)
 			{
+				float oldSize = node->FirstChild->Data.Size.x + node->SecondChild->Data.Size.x;
+				float scale = node->Data.Size.x / oldSize;
+
 				node->FirstChild->Data.Position = node->Data.Position;
 				node->FirstChild->Data.Size.x = node->SecondChild->Data.Position.x - node->FirstChild->Data.Position.x;
 				node->FirstChild->Data.Size.y = node->Data.Size.y;
 				node->SecondChild->Data.Position.y = node->Data.Position.y;
 				node->SecondChild->Data.Size.y = node->Data.Size.y;
+				node->SecondChild->Data.Size.x = node->Data.Size.x - node->FirstChild->Data.Size.x;
 			}
 			else
 			{
@@ -286,6 +290,7 @@ namespace XYZ {
 				node->FirstChild->Data.Size.x = node->Data.Size.x;
 				node->SecondChild->Data.Position.x = node->Data.Position.x;
 				node->SecondChild->Data.Size.x = node->Data.Size.x;
+				node->SecondChild->Data.Size.y = node->Data.Size.y - node->FirstChild->Data.Size.y;
 			}
 			AdjustChildrenRecursive(node->FirstChild);
 			AdjustChildrenRecursive(node->SecondChild);

@@ -62,6 +62,7 @@ namespace XYZ {
 		IDComponent id;
 		id.ID = guid;
 		entity.AddComponent<IDComponent>(id);
+		entity.AddComponent<Relationship>(Relationship());
 		entity.AddComponent<SceneTagComponent>( SceneTagComponent(name) );	
 		entity.AddComponent<TransformComponent>(TransformComponent(glm::vec3(0.0f, 0.0f, 0.0f)));	
 		
@@ -103,6 +104,7 @@ namespace XYZ {
 				return;
 			}
 		}
+		
 		for (size_t i = 0; i < m_ScriptStorage->Size(); ++i)
 		{
 			
@@ -250,10 +252,10 @@ namespace XYZ {
 		auto& translation = transformComponent.Translation;
 		auto& scale = transformComponent.Scale;
 		
-		glm::vec3 topLeft = { translation.x - scale.x / 2,translation.y + scale.y / 2,1 };
-		glm::vec3 topRight = { translation.x + scale.x / 2,translation.y + scale.y / 2,1 };
-		glm::vec3 bottomLeft = { translation.x - scale.x / 2,translation.y - scale.y / 2,1 };
-		glm::vec3 bottomRight = { translation.x + scale.x / 2,translation.y - scale.y / 2,1 };
+		glm::vec3 topLeft = { translation.x - scale.x / 2,translation.y + scale.y / 2, translation.z};
+		glm::vec3 topRight = { translation.x + scale.x / 2,translation.y + scale.y / 2, translation.z };
+		glm::vec3 bottomLeft = { translation.x - scale.x / 2,translation.y - scale.y / 2, translation.z };
+		glm::vec3 bottomRight = { translation.x + scale.x / 2,translation.y - scale.y / 2, translation.z };
 		
 		Renderer2D::SubmitLine(topLeft, topRight);
 		Renderer2D::SubmitLine(topRight, bottomRight);

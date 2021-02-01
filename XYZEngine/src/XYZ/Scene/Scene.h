@@ -68,6 +68,7 @@ namespace XYZ {
         int32_t m_CollisionID = -1;
 
         std::vector<uint32_t> m_Entities;
+        std::vector<uint32_t> m_SceneGraph;
 
         ComponentView<TransformComponent, SpriteRenderer>* m_RenderView;
         ComponentView<TransformComponent, ParticleComponent>* m_ParticleView;
