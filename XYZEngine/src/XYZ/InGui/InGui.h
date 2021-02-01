@@ -2,6 +2,7 @@
 
 #include "XYZ/Event/Event.h"
 #include "XYZ/Event/InputEvent.h"
+#include "XYZ/Event/ApplicationEvent.h"
 
 #include "InGuiStructures.h"
 
@@ -53,6 +54,7 @@ namespace XYZ {
 		static void handleWindowMove();
 		static void handleWindowResize();
 
+		static bool onWindowResize(WindowResizeEvent& event);
 		static bool onMouseButtonPress(MouseButtonPressEvent& event);
 		static bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
 		static bool onMouseMove(MouseMovedEvent& event);

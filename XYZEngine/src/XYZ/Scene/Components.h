@@ -176,4 +176,10 @@ namespace XYZ {
 
 		friend class ScriptEngine;
 	};
+
+
+	struct RigidBodyComponent : public Type<RigidBodyComponent>
+	{
+
+	};
 }

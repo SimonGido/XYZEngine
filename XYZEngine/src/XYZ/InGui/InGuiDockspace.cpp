@@ -23,6 +23,17 @@ namespace XYZ {
 			pos.y < point.y);
 	}
 
+	static void ScaleRecursive(InGuiDockNode* node, const glm::vec2& scale)
+	{
+		if (node->FirstChild)
+			ScaleRecursive(node->FirstChild, scale);
+		if (node->SecondChild)
+			ScaleRecursive(node->SecondChild, scale);
+
+		node->Data.Size *= scale;
+		node->Data.Position *= scale;
+	}
+
 	static bool ResizedBorder(InGuiSplitType type, const glm::vec2& border, const glm::vec2& mousePos, const glm::vec2& offset)
 	{
 		if (type == InGuiSplitType::Vertical)
@@ -322,6 +333,15 @@ namespace XYZ {
 		if (s_Root)
 		{
 			DestroyRecursive(s_Root);
+		}
+	}
+
+	void InGuiDockspace::SetRootSize(const glm::vec2& size)
+	{
+		if (s_Root)
+		{
+			glm::vec2 scale = size / s_Root->Data.Size;
+			ScaleRecursive(s_Root, scale);
 		}
 	}
 

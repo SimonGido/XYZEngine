@@ -183,15 +183,23 @@ namespace XYZ {
 	{
 		EventDispatcher dispatcher(event);
 		if (dispatcher.Dispatch<MouseButtonPressEvent>(&InGui::onMouseButtonPress))
-		{ }
+		{
+		}
 		else if (dispatcher.Dispatch<MouseButtonReleaseEvent>(&InGui::onMouseButtonRelease))
-		{ }
+		{
+		}
 		else if (dispatcher.Dispatch<MouseMovedEvent>(&InGui::onMouseMove))
-		{ }
+		{
+		}
 		else if (dispatcher.Dispatch<KeyTypedEvent>(&InGui::onKeyTyped))
-		{ }
+		{
+		}
 		else if (dispatcher.Dispatch<KeyPressedEvent>(&InGui::onKeyPressed))
-		{ }
+		{
+		}
+		else if (dispatcher.Dispatch<WindowResizeEvent>(&InGui::onWindowResize))
+		{
+		}
 	}
 
 	void InGui::SetLayout(uint32_t id, const InGuiLayout& layout)
@@ -806,13 +814,23 @@ namespace XYZ {
 					}
 				}
 				if (nodes.size())
+				{
 					InGuiDockspace::Init(nodes[0].Node);
+					auto [width, height] = Input::GetWindowSize();
+					InGuiDockspace::SetRootSize({ width, height });
+				}
 			}
 		}
 		stream.close();
 	}
 
 
+
+	bool InGui::onWindowResize(WindowResizeEvent& event)
+	{
+		InGuiDockspace::SetRootSize({ event.GetWidth(), event.GetHeight() });
+		return false;
+	}
 
 	bool InGui::onMouseButtonPress(MouseButtonPressEvent& event)
 	{

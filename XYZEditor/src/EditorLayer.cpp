@@ -133,13 +133,6 @@ namespace XYZ {
 		m_Particle->ParticleEffect->SetParticlesRange(m_Vertices, m_Data, 0, count);
 		///////////////////////////////////////////////////////////
 
-		Ref<Font> font = m_AssetManager.GetAsset<Font>("Assets/Fonts/arial.ttf")->GetHandle();
-		auto texture = m_AssetManager.GetAsset<Texture2D>("Assets/Textures/Gui/TexturePack_Dark.png")->GetHandle();
-		auto material = m_AssetManager.GetAsset<Material>("Assets/Materials/GuiMaterial.mat")->GetHandle();
-
-		material->Set("u_Texture", font->GetTexture(), 1);
-
-	
 		Renderer::WaitAndRender();
 		
 		Ref<RenderTexture> renderTexture = RenderTexture::Create(SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer);
