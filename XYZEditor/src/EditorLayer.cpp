@@ -147,6 +147,11 @@ namespace XYZ {
 		m_ScenePanel.OnUpdate(ts);
 		m_Scene->OnUpdate(ts);
 		m_Scene->OnRenderEditor(m_ScenePanel.GetEditorCamera());	
+		if ((uint32_t)m_Scene->GetSelectedEntity() != (uint32_t)m_SelectedEntity)
+		{
+			m_SelectedEntity = m_Scene->GetSelectedEntity();
+			m_InspectorPanel.SetContext(m_SelectedEntity);
+		}
 	}
 	void EditorLayer::OnEvent(Event& event)
 	{			

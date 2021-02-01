@@ -57,6 +57,9 @@ namespace XYZ {
         const GUID& GetUUID() const { return m_UUID; }
 
         inline const std::string& GetName() const { return m_Name; }
+
+
+
     private:
         void showSelection(uint32_t entity);
         void showCamera(uint32_t entity);
@@ -84,15 +87,12 @@ namespace XYZ {
         uint32_t m_CameraEntity;
 
        
-
         uint32_t m_ViewportWidth;
         uint32_t m_ViewportHeight;
         
-
-        Ref<Material> m_CameraMaterial;
         Ref<Texture2D> m_CameraTexture;
         Ref<SubTexture> m_CameraSubTexture;
-        SpriteRenderer* m_CameraSprite;
+
          
         friend class SceneEntity;
         friend class Serializer;

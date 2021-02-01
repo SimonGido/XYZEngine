@@ -85,6 +85,8 @@ namespace XYZ {
 			m_Scene->DestroyEntity(*this);
 		}
 
+		size_t NumberOfTypes() const { return m_Scene->m_ECS.GetNumberOfRegisteredComponentTypes(); }
+
 		SceneEntity& operator =(const SceneEntity& other)
 		{
 			m_Scene = other.m_Scene;

@@ -655,7 +655,7 @@ namespace XYZ {
 			if (TurnOffFlag<uint16_t>(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked))
 			{
 				returnType |= InGuiReturnType::Clicked;
-				data.HandleInput[data.InputIndex].flip();
+				data.HandleInput[data.InputIndex] = true;
 				if (data.HandleInput[data.InputIndex])
 				{
 					// This is called once when bit is fliped to true
@@ -843,6 +843,8 @@ namespace XYZ {
 			if (InGuiDockspace::onMouseLeftPress(mousePos))
 				return true;
 			s_Context->FrameData.Flags |= InGuiInputFlags::LeftClicked;
+			for (auto& it : s_Context->FrameData.HandleInput)
+				it = false;
 			for (auto& window : s_Context->Windows)
 			{
 				if (IS_SET(window.Flags, InGuiWindowFlags::Initialized)

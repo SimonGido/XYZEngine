@@ -45,9 +45,9 @@ Entities:
     SceneTagComponent:
       Name: Background
     TransformComponent:
-      Position: [-6.71537018, -12.3699999, -10]
+      Position: [-6.71530008, 0, -10]
       Rotation: [0, 0, 0]
-      Scale: [76, 46.4879799, 1]
+      Scale: [76, 46.4869995, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/New_Material.mat
       SubTextureAssetPath: Assets/SubTextures/Backgroundfield.subtex

@@ -174,7 +174,7 @@ namespace XYZ {
 			GridVertexArray->SetIndexBuffer(gridIB);
 		}
 		BufferPtr = BufferBase;
-		QuadMaterial = nullptr;
+		QuadMaterial = DefaultQuadMaterial;
 		TextureSlotIndex = 0;
 		IndexCount = 0;	
 	}
@@ -289,7 +289,7 @@ namespace XYZ {
 	void Renderer2D::SetMaterial(const Ref<Material>& material)
 	{
 		XYZ_ASSERT(material.Raw(), "Material can not be null");
-		if (material->GetFlags() != s_Data.QuadMaterial->GetFlags())
+		if (*material.Raw() != *s_Data.QuadMaterial.Raw())
 			Flush();
 		
 		s_Data.QuadMaterial = material;
@@ -509,7 +509,6 @@ namespace XYZ {
 			s_Data.Stats.DrawCalls++;
 			s_Data.Reset();
 		}	
-		s_Data.QuadMaterial = s_Data.DefaultQuadMaterial;
 	}
 	void Renderer2D::FlushLines()
 	{	
@@ -552,6 +551,5 @@ namespace XYZ {
 		s_Data.Stats.DrawCalls = 0;
 		s_Data.Stats.LineDrawCalls = 0;
 		s_Data.Stats.CollisionDrawCalls = 0;
-		s_Data.QuadMaterial = nullptr;
 	}
 }

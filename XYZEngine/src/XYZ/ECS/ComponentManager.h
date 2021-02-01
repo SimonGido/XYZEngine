@@ -230,6 +230,8 @@ namespace XYZ {
 			return m_Storages[index]->GetComponentIndex(entity);
 		}
 
+		size_t GetNumberOfStorages() const { return m_Storages.size(); }
+
 		void EntityDestroyed(uint32_t entity, const Signature& signature, ECSManager* ecs)
 		{
 			std::vector<uint32_t> updated;
@@ -245,6 +247,7 @@ namespace XYZ {
 			}
 			updateViews(entity, signature, updated);
 		}
+
 
 	private:
 		// This is called when entity index in storage has changed

@@ -219,6 +219,7 @@ namespace XYZ {
 
 		const uint32_t GetNumberOfEntities() const { return m_EntityManager.GetNumEntities(); }
 
+		size_t GetNumberOfRegisteredComponentTypes() const { return m_ComponentManager.GetNumberOfStorages(); }
 	private:
 		ComponentManager m_ComponentManager;
 		EntityManager m_EntityManager;

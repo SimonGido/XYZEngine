@@ -27,19 +27,9 @@ namespace XYZ {
 		m_ViewportWidth  = 0;
 		m_ViewportHeight = 0;
 
-		m_CameraMaterial = Ref<Material>::Create(Shader::Create("Assets/Shaders/DefaultShader.glsl"));
 		m_CameraTexture = Texture2D::Create({ TextureWrap::Clamp, TextureParam::Linear, TextureParam::Nearest }, "Assets/Textures/Gui/Camera.png");
 		m_CameraSubTexture = Ref<SubTexture>::Create(m_CameraTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
-		m_CameraMaterial->Set("u_Color", glm::vec4(1.0f));
-		m_CameraMaterial->Set("u_Texture", m_CameraTexture);
 
-		m_CameraSprite = new SpriteRenderer(
-			m_CameraMaterial,
-			m_CameraSubTexture,
-			glm::vec4(1.0f),
-			0,
-			100
-		);
 	
 		m_RenderView = &m_ECS.CreateView<TransformComponent, SpriteRenderer>();
 		m_ParticleView = &m_ECS.CreateView<TransformComponent, ParticleComponent>();
@@ -53,7 +43,7 @@ namespace XYZ {
 
 	Scene::~Scene() 
 	{
-		delete m_CameraSprite;
+		
 	}
 
 	SceneEntity Scene::CreateEntity(const std::string& name, const GUID& guid)
@@ -200,7 +190,22 @@ namespace XYZ {
 	void Scene::OnRenderEditor(const EditorCamera& camera)
 	{
 		SceneRenderer::BeginScene(this, camera.GetViewProjection());
-		
+		if (m_SelectedEntity < MAX_ENTITIES)
+		{
+			if (m_ECS.Contains<CameraComponent>(m_SelectedEntity))
+			{
+				// TODO: Temporary
+				if (!m_ECS.Contains<SpriteRenderer>(m_SelectedEntity))
+				{
+					SpriteRenderer copy = m_ECS.GetComponent<SpriteRenderer>(m_Entities[2]);
+					copy.SubTexture = m_CameraSubTexture;
+					m_ECS.AddComponent<SpriteRenderer>(m_SelectedEntity, copy);
+				}
+				showCamera(m_SelectedEntity);
+			}
+			else
+				showSelection(m_SelectedEntity);
+		}
 		for (size_t i = 0; i < m_RenderView->Size(); ++i)
 		{
 			auto [transform, renderer] = (*m_RenderView)[i];
@@ -219,13 +224,7 @@ namespace XYZ {
 			SceneRenderer::SubmitLight(&light, transform.GetTransform());
 		}
 
-		if (m_SelectedEntity < MAX_ENTITIES)
-		{
-			if (m_ECS.Contains<CameraComponent>(m_SelectedEntity))
-				showCamera(m_SelectedEntity);
-			else
-				showSelection(m_SelectedEntity);
-		}
+	
 		SceneRenderer::EndScene();	
 	}
 
@@ -268,8 +267,6 @@ namespace XYZ {
 		auto& camera = m_ECS.GetComponent<CameraComponent>(entity).Camera;
 		auto transformComponent = m_ECS.GetComponent<TransformComponent>(entity);
 
-		SceneRenderer::SubmitSprite(m_CameraSprite, &transformComponent);
-		
 		auto& translation = transformComponent.Translation;
 		if (camera.GetProjectionType() == CameraProjectionType::Orthographic)
 		{

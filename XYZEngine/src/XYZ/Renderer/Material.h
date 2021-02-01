@@ -77,7 +77,15 @@ namespace XYZ {
 		const uint8_t* GetFSUniformBuffer() const { return m_FSUniformBuffer; }
 
 		const std::vector<Ref<Texture>>& GetTextures() const { return m_Textures; }
-				
+		
+		bool operator ==(const Material& other) const
+		{
+			return m_Shader->GetRendererID() == other.m_Shader->GetRendererID() && m_Flags == other.m_Flags;
+		}
+		bool operator != (const Material& other) const
+		{
+			return m_Shader->GetRendererID() != other.m_Shader->GetRendererID() || m_Flags != other.m_Flags;
+		}
 		//TODO TEMPORARY
 		void ReloadShader() { m_Shader->Reload(); };
 	private:

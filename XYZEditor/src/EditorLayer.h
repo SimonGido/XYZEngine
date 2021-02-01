@@ -55,6 +55,7 @@ namespace XYZ {
 
 	private:	
 		SceneEntity m_TestEntity;
+		SceneEntity m_SelectedEntity;
 
 		SpriteRenderer* m_SpriteRenderer;
 		TransformComponent* m_Transform;
