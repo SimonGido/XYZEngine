@@ -27,9 +27,10 @@ namespace XYZ {
 
 	void ScenePanel::OnUpdate(Timestep ts)
 	{
-		if (IS_SET(InGui::GetWindowFlags(m_PanelID), InGuiWindowFlags::Hoovered))
+		if (IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
 		{
 			m_EditorCamera.OnUpdate(ts);
+			m_EditorCamera.SetViewportSize(InGui::GetWindow(m_PanelID).Size.x, InGui::GetWindow(m_PanelID).Size.y);
 		}
 	}
 	void ScenePanel::OnInGuiRender()
@@ -44,7 +45,8 @@ namespace XYZ {
 	{
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<WindowResizeEvent>(Hook(&ScenePanel::onWindowResize, this));
-		if (IS_SET(InGui::GetWindowFlags(m_PanelID), InGuiWindowFlags::Hoovered))
+		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&ScenePanel::onMouseButtonPress, this));
+		if (IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
 		{
 			m_EditorCamera.OnEvent(event);
 		}
@@ -52,6 +54,21 @@ namespace XYZ {
 	bool ScenePanel::onWindowResize(WindowResizeEvent& event)
 	{
 		m_EditorCamera.SetViewportSize((float)event.GetWidth(), (float)event.GetHeight());
+		return false;
+	}
+	bool ScenePanel::onMouseButtonPress(MouseButtonPressEvent& event)
+	{
+		if (event.IsButtonPressed(MouseCode::MOUSE_BUTTON_LEFT))
+		{
+			if (IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
+			{
+				auto [mx, my] = Input::GetMousePosition();
+				my = Input::GetWindowSize().second - my;
+				std::cout << id << std::endl;
+				SceneRenderer::GetCollisionRenderPass()->GetSpecification().TargetFramebuffer->ReadPixel(id, mx, my, 2);
+				
+			}
+		}
 		return false;
 	}
 }

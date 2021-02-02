@@ -20,9 +20,9 @@ void main()
 
 layout(location = 2) out int o_IDBuffer;
 
-in flat int a_ObjectID;
+in flat int v_ObjectID;
 
 void main()
 {
-	o_IDBuffer = a_ObjectID;
+	o_IDBuffer = v_ObjectID;
 }

@@ -14,7 +14,7 @@
 
 namespace XYZ {
 
-   
+
     enum class SceneState
     {
         Play,
@@ -29,12 +29,12 @@ namespace XYZ {
     class Asset;
     class SceneEntity;
     class Scene : public RefCount,
-                  public Serializable
+        public Serializable
     {
     public:
         Scene(const std::string& name);
         ~Scene();
-    
+
         SceneEntity CreateEntity(const std::string& name, const GUID& guid);
         void DestroyEntity(SceneEntity entity);
         void SetState(SceneState state) { m_State = state; }
@@ -51,7 +51,7 @@ namespace XYZ {
 
         SceneEntity GetEntity(uint32_t index);
         SceneEntity GetSelectedEntity();
-        
+
         SceneState GetState() const { return m_State; }
         ECSManager& GetECS() { return m_ECS; }
         const GUID& GetUUID() const { return m_UUID; }
@@ -64,7 +64,7 @@ namespace XYZ {
         void showSelection(uint32_t entity);
         void showCamera(uint32_t entity);
 
-       
+
     private:
         ECSManager m_ECS;
         GUID m_UUID;
@@ -86,14 +86,15 @@ namespace XYZ {
         uint32_t m_SelectedEntity;
         uint32_t m_CameraEntity;
 
-       
+
         uint32_t m_ViewportWidth;
         uint32_t m_ViewportHeight;
-        
+
         Ref<Texture2D> m_CameraTexture;
         Ref<SubTexture> m_CameraSubTexture;
+        Ref<Material> m_CameraMaterial;
+        SpriteRenderer m_CameraRenderer;
 
-         
         friend class SceneEntity;
         friend class Serializer;
         friend class ScriptEngine;

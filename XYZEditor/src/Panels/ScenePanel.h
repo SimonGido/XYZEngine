@@ -19,9 +19,11 @@ namespace XYZ {
 		EditorCamera& GetEditorCamera() { return m_EditorCamera; }
 	private:
 		bool onWindowResize(WindowResizeEvent& event);
+		bool onMouseButtonPress(MouseButtonPressEvent& event);
 
 	private:
 		uint32_t m_PanelID;
+		int32_t id = -1;
 		Ref<Scene> m_Context;
 		Ref<SubTexture> m_SubTexture;
 

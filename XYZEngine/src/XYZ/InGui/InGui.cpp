@@ -228,9 +228,9 @@ namespace XYZ {
 		s_LayoutOffset = position;
 	}
 
-	uint16_t InGui::GetWindowFlags(uint32_t id)
+	const InGuiWindow& InGui::GetWindow(uint32_t id)
 	{
-		return s_Context->Windows[id].Flags;
+		return s_Context->Windows[id];
 	}
 
 	glm::vec2 InGui::GetPosition()

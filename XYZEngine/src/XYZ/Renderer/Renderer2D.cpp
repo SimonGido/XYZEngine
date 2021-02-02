@@ -213,7 +213,7 @@ namespace XYZ {
 			CollisionVertexArray = VertexArray::Create();
 
 			CollisionShader = Shader::Create("Assets/Shaders/MousePicker.glsl");
-			CollisionVertexBuffer = VertexBuffer::Create(MaxLineVertices * sizeof(LineVertex));
+			CollisionVertexBuffer = VertexBuffer::Create(MaxVertices * sizeof(CollisionVertex));
 			CollisionVertexBuffer->SetLayout({
 				{0, XYZ::ShaderDataComponent::Float3, "a_Position" },
 				{1, XYZ::ShaderDataComponent::Int,    "a_ObjectID" },
@@ -235,8 +235,8 @@ namespace XYZ {
 
 				offset += 4;
 			}
-			Ref<IndexBuffer> collisionIndexBuffer = IndexBuffer::Create(quadIndices, MaxLineIndices);
-			LineVertexArray->SetIndexBuffer(collisionIndexBuffer);
+			Ref<IndexBuffer> collisionIndexBuffer = IndexBuffer::Create(quadIndices, MaxIndices);
+			CollisionVertexArray->SetIndexBuffer(collisionIndexBuffer);
 			delete[] quadIndices;
 		}
 

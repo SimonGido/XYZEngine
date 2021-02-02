@@ -25,7 +25,7 @@ namespace XYZ {
 		
 		static void SetWindowFlags(uint32_t id, uint16_t flags);
 		static void SetPosition(const glm::vec2& position);
-		static uint16_t GetWindowFlags(uint32_t id);
+		static const InGuiWindow& GetWindow(uint32_t id);
 		static glm::vec2 GetPosition();
 
 		static bool Begin(uint32_t id, const char* name, const glm::vec2& position, const glm::vec2& size);

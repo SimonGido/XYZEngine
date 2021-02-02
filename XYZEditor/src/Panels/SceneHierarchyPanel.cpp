@@ -9,7 +9,7 @@ namespace XYZ {
         InGui::Begin(panelID, "Scene Hierarchy", glm::vec2(0.0f), glm::vec2(200.0f));
         InGui::End();
 
-        uint16_t flags = InGui::GetWindowFlags(panelID);
+        uint16_t flags = InGui::GetWindow(panelID).Flags;
         flags &= ~InGuiWindowFlags::EventBlocking;
         InGui::SetWindowFlags(panelID, flags);
     }
@@ -82,7 +82,7 @@ namespace XYZ {
     {
         if (event.IsButtonPressed(MouseCode::MOUSE_BUTTON_RIGHT))
         {
-            if (IS_SET(InGui::GetWindowFlags(m_PanelID), InGuiWindowFlags::Hoovered))
+            if (IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
             {
                 m_DropdownPosition = { Input::GetMouseX(), Input::GetMouseY() };
                 m_DropdownOpen = true;
