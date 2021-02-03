@@ -38,6 +38,10 @@ in vec2 v_TexCoords;
 uniform sampler2D u_Texture[2];
 uniform int u_NumberOfLights;
 
+const float c_Constant = 1.0;
+const float c_Linear = 0.09;
+const float c_Quadratic = 0.032;
+
 void main()
 {
 	vec4 color = texture(u_Texture[0], v_TexCoords);
@@ -45,13 +49,16 @@ void main()
 
 	for (int i = 0; i < u_NumberOfLights; ++i)
 	{
-		float dist = length(PointLights[i].Position.xy - fragPos.xy);
-		if (dist < 100)
-		{
-			float strength = (1.0 / distance(PointLights[i].Position.xyz, fragPos.xyz)) * PointLights[i].Intensity;
-			strength = clamp(strength, 0.0, 1.0);
-			color.rgb += PointLights[i].Color * strength;
-		}
+		vec3 ambient = color.xyz;
+		float distance = length(PointLights[i].Position.xyz - fragPos);
+		float attenuation = 1.0 / (c_Constant + c_Linear * distance + c_Quadratic * (distance * distance));
+		vec3 lightDir = normalize(PointLights[i].Position.xyz - fragPos);
+		vec3 diffuse = color.xyz;
+	
+		ambient *= attenuation;
+		diffuse *= attenuation;
+	
+		color.xyz += (ambient + diffuse) * PointLights[i].Color * PointLights[i].Intensity;
 	}
 	o_Color = color;
 }

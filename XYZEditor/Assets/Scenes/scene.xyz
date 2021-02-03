@@ -71,19 +71,19 @@ Entities:
     SceneTagComponent:
       Name: Light
     TransformComponent:
-      Position: [-19.4020004, -4.81110001, 5]
+      Position: [-10, -7, 5]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     PointLight2D:
-      Color: [1, 0, 1]
-      Intensity: 1.79999995
+      Color: [1, 1, 1]
+      Intensity: 7
   - Entity: "{B8A7616A-93DF-4A45-A64D-F8F3645E3AE0}"
     SceneTagComponent:
       Name: Light2
     TransformComponent:
-      Position: [25.459465, 7.94594574, 2]
+      Position: [25.459465, 80, 2]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     PointLight2D:
-      Color: [1, 0.699999988, 1]
-      Intensity: 5.58333349
+      Color: [1, 0, 1]
+      Intensity: 2.58333325

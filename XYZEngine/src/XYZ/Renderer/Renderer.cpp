@@ -95,6 +95,13 @@ namespace XYZ {
 		});
 	}
 
+	void Renderer::SetDepthTest(bool val)
+	{
+		Renderer::Submit([=]() {
+			RendererAPI::SetDepth(val);
+			});
+	}
+
 	void Renderer::DrawIndexed(PrimitiveType type, uint32_t indexCount)
 	{
 		Renderer::Submit([=]() {

@@ -84,16 +84,14 @@ namespace XYZ {
 					PointLight2D& light = m_Context.GetComponent<PointLight2D>();
 					if (InGui::BeginGroup("Point Light 2D", m_ComponentGroups[index++]))
 					{
-						InGui::Text("Translation");
+						InGui::Text("Color");
 						InGui::Separator();
 						InGui::Float("R", glm::vec2(50.0f, 30.0f), light.Color.x);
 						InGui::Float("G", glm::vec2(50.0f, 30.0f), light.Color.y);
 						InGui::Float("B", glm::vec2(50.0f, 30.0f), light.Color.z);
 						InGui::Separator();
 						InGui::Text("Intensity");
-						float intensity = light.Intensity / 10.0f;
-						InGui::Slider("", glm::vec2(120.0f, 25.0f), intensity);
-						light.Intensity = intensity * 10.0f;
+						InGui::Float("", glm::vec2(120.0f, 25.0f), light.Intensity);
 						InGui::Separator();
 					}
 					InGui::Separator();
