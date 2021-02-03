@@ -73,7 +73,9 @@ namespace XYZ {
 						InGui::Text("Sort Layer");
 						InGui::Separator();
 						InGui::UInt("", glm::vec2(50.0f, 30.0f), spriteRenderer.SortLayer);
-						std::cout << spriteRenderer.SortLayer << std::endl;
+						InGui::Separator();
+						InGui::Checkbox("Visible", glm::vec2(30.0f), spriteRenderer.IsVisible);
+						InGui::Separator();
 					}
 					InGui::Separator();
 				}

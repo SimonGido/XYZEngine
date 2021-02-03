@@ -29,6 +29,5 @@ namespace XYZ {
 		bool m_DropdownOpen = false;
 		bool* m_EntitiesOpen = nullptr;
 		size_t m_CurrentSize = 0;
-		size_t m_SelectedEntityIndex = 0;
 	};
 }

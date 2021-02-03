@@ -21,7 +21,6 @@ namespace XYZ {
     void SceneHierarchyPanel::SetContext(Ref<Scene> context)
     {
         m_Context = context;
-        m_SelectedEntityIndex = m_Context->m_Entities.size();
         if (m_CurrentSize < context->m_Entities.size())
             resizeEntities();
     }
@@ -37,12 +36,11 @@ namespace XYZ {
                 for (auto entityID : m_Context->m_Entities)
                 {
                     SceneEntity entity(entityID, m_Context.Raw());
-                    bool hightlight = m_SelectedEntityIndex == counter;
+                    bool hightlight = (m_Context->GetSelectedEntity() == entity);
                     if (uint8_t res = InGui::PushNode(entity.GetComponent<SceneTagComponent>().Name.c_str(), glm::vec2(25.0f), m_EntitiesOpen[counter], hightlight))
                     {
                         if (IS_SET(res, InGuiReturnType::Clicked))
                         {
-                            m_SelectedEntityIndex = (size_t)counter;
                             m_Context->SetSelectedEntity(entity);
                         }
                     }
@@ -100,7 +98,6 @@ namespace XYZ {
                 if (auto entity = m_Context->GetSelectedEntity())
                 {
                     m_Context->DestroyEntity(entity);
-                    m_SelectedEntityIndex = m_Context->m_Entities.size();
                 }
             }
         }
