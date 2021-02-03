@@ -43,6 +43,8 @@ namespace XYZ {
 
 		InGui::ImageWindow(m_PanelID, "Scene", glm::vec2(0.0f), glm::vec2(200.0f), m_SubTexture);
 		InGui::End();
+
+		m_ViewportSize = InGui::GetWindow(m_PanelID).Size;
 	}
 	void ScenePanel::SetContext(Ref<Scene> context)
 	{
@@ -55,17 +57,18 @@ namespace XYZ {
 
 	void ScenePanel::OnUpdate(Timestep ts)
 	{
-		Renderer2D::SubmitLine(m_Origin, m_Direction * 100.0f, glm::vec4(1.0f));
 		if (IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
 		{
 			m_EditorCamera.OnUpdate(ts);		
 		}
-		if (m_Context.Raw())
+
+		glm::vec2 newViewportSize = InGui::GetWindow(m_PanelID).Size;
+		if (m_Context.Raw() && m_ViewportSize != newViewportSize)
 		{
-			glm::vec2 viewPortSize = InGui::GetWindow(m_PanelID).Size;
-			SceneRenderer::SetViewportSize((uint32_t)viewPortSize.x, (uint32_t)viewPortSize.y);
-			m_EditorCamera.SetViewportSize(viewPortSize.x, viewPortSize.y);
-			m_Context->SetViewportSize((uint32_t)viewPortSize.x, (uint32_t)viewPortSize.y);
+			m_ViewportSize = newViewportSize;
+			SceneRenderer::SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
+			m_Context->SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}
 	}
 	void ScenePanel::OnInGuiRender()
@@ -101,18 +104,14 @@ namespace XYZ {
 					m_Context->SetSelectedEntity(NULL_ENTITY);
 					auto [mouseX, mouseY] = getMouseViewportSpace();
 					auto [origin, direction] = castRay(mouseX, mouseY);
-					m_Origin = origin;
-					m_Direction = direction;
+	
 					for (uint32_t entityID : m_Context->GetEntities())
 					{
 						SceneEntity entity(entityID, m_Context.Raw());
 						TransformComponent& transformComponent = entity.GetComponent<TransformComponent>();
 						glm::mat4 entityTransform = transformComponent.GetTransform();
-						Ray ray = {
-							origin,
-							direction
-						};
-			
+						
+						Ray ray = { origin,direction };
 						AABB aabb(
 							transformComponent.Translation - (transformComponent.Scale / 2.0f),
 							transformComponent.Translation + (transformComponent.Scale / 2.0f)
@@ -120,8 +119,8 @@ namespace XYZ {
 
 						if (ray.IntersectsAABB(aabb))
 						{
-							if ((uint32_t)m_Context->GetSelectedEntity() == NULL_ENTITY)
-								m_Context->SetSelectedEntity(entityID);
+							m_Context->SetSelectedEntity(entityID);
+							return true;
 						}				
 					}
 				}			

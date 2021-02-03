@@ -27,12 +27,8 @@ namespace XYZ {
 		uint32_t m_PanelID;
 		Ref<Scene> m_Context;
 		Ref<SubTexture> m_SubTexture;
+		glm::vec2 m_ViewportSize;
 
 		EditorCamera m_EditorCamera;
-
-		std::vector<uint32_t> m_PickedIDs;
-
-		glm::vec3 m_Origin;
-		glm::vec3 m_Direction;
 	};
 }

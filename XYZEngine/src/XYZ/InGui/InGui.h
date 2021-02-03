@@ -44,6 +44,7 @@ namespace XYZ {
 		static uint8_t Slider(const char* name, const glm::vec2& size, float& val);
 		static uint8_t Text(const char* text);
 		static uint8_t Float(const char* name, const glm::vec2& size, float& val);
+		static uint8_t UInt(const char* name, const glm::vec2& size, uint32_t& val);
 		static uint8_t Image(const glm::vec2& size, Ref<SubTexture> subTexture);
 
 	private:

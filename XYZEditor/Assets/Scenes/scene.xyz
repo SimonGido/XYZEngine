@@ -39,7 +39,7 @@ Entities:
       MaterialAssetPath: Assets/Materials/New_Material.mat
       SubTextureAssetPath: Assets/SubTextures/New_SubTexture.subtex
       Color: [1, 1, 1, 1]
-      SortLayer: 1
+      SortLayer: 4
       IsVisible: true
   - Entity: "{26B86D3F-BCBB-4FDC-B50B-97621629D76A}"
     SceneTagComponent:

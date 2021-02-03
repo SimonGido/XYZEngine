@@ -70,6 +70,10 @@ namespace XYZ {
 						InGui::Float("B", glm::vec2(50.0f, 30.0f), spriteRenderer.Color.z);
 						InGui::Float("A", glm::vec2(50.0f, 30.0f), spriteRenderer.Color.w);
 						InGui::Separator();
+						InGui::Text("Sort Layer");
+						InGui::Separator();
+						InGui::UInt("", glm::vec2(50.0f, 30.0f), spriteRenderer.SortLayer);
+						std::cout << spriteRenderer.SortLayer << std::endl;
 					}
 					InGui::Separator();
 				}
