@@ -134,6 +134,11 @@ namespace XYZ {
 			return signature.test(T::GetComponentID());
 		}
 
+		bool IsValid(uint32_t entity) const
+		{
+			return m_EntityManager.m_Valid.size() > entity && m_EntityManager.m_Valid[entity];
+		}
+
 		template <typename T>
 		void ForceStorage()
 		{

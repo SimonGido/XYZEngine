@@ -22,7 +22,7 @@
 #include "XYZ/Renderer/RenderPass.h"
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Renderer/RenderTexture.h"
-
+#include "XYZ/Renderer/Font.h"
 
 #include "XYZ/Renderer/Framebuffer.h"
 #include "XYZ/Renderer/SubTexture.h"
@@ -38,6 +38,7 @@
 
 //---------Editor-----------//
 #include "XYZ/Editor/EditorCamera.h"
+#include "XYZ/Editor/MousePicker.h"
 
 //------ECS-----//
 #include "XYZ/ECS/ECSManager.h"
@@ -46,11 +47,6 @@
 
 //-----Audio-----//
 #include "XYZ/Audio/Audio.h"
-
-#include "XYZ/Utils/DataStructures/Graph.h"
-
-#include "XYZ/Renderer/Font.h"
-
 
 
 //------UI-------//
@@ -70,6 +66,7 @@
 #include "XYZ/Utils/DataStructures/HashGrid2D.h"
 #include "XYZ/Utils/DataStructures/ByteBuffer.h"
 
+#include "XYZ/Utils/DataStructures/Graph.h"
 
 //------Net---------//
 #include "XYZ/Net/NetServer.h"

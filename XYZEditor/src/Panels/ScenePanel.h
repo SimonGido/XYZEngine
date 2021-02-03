@@ -23,10 +23,11 @@ namespace XYZ {
 
 	private:
 		uint32_t m_PanelID;
-		int32_t id = -1;
+		int32_t m_PickedID = -1;
 		Ref<Scene> m_Context;
 		Ref<SubTexture> m_SubTexture;
 
 		EditorCamera m_EditorCamera;
+		MousePicker m_Picker;
 	};
 }

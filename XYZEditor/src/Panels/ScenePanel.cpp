@@ -15,6 +15,9 @@ namespace XYZ {
 
 		InGui::ImageWindow(m_PanelID, "Scene", glm::vec2(0.0f), glm::vec2(200.0f), m_SubTexture);
 		InGui::End();
+
+		auto [width, height] = Input::GetWindowSize();
+		m_Picker.SetViewportSize(width, height);
 	}
 	void ScenePanel::SetContext(Ref<Scene> context)
 	{
@@ -29,6 +32,13 @@ namespace XYZ {
 	{
 		if (IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
 		{
+			if (m_Context.Raw())
+			{
+				if (m_PickedID != (uint32_t)m_Context->GetSelectedEntity() && m_Context->GetECS().IsValid(m_PickedID))
+				{
+					m_Context->SetSelectedEntity(m_PickedID);
+				}
+			}
 			m_EditorCamera.OnUpdate(ts);
 			m_EditorCamera.SetViewportSize(InGui::GetWindow(m_PanelID).Size.x, InGui::GetWindow(m_PanelID).Size.y);
 		}
@@ -64,9 +74,7 @@ namespace XYZ {
 			{
 				auto [mx, my] = Input::GetMousePosition();
 				my = Input::GetWindowSize().second - my;
-				std::cout << id << std::endl;
-				SceneRenderer::GetCollisionRenderPass()->GetSpecification().TargetFramebuffer->ReadPixel(id, mx, my, 2);
-				
+				SceneRenderer::GetCollisionRenderPass()->GetSpecification().TargetFramebuffer->ReadPixel(m_PickedID, mx, my, 2);			
 			}
 		}
 		return false;

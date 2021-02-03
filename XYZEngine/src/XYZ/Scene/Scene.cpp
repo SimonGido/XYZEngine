@@ -206,7 +206,8 @@ namespace XYZ {
 		for (size_t i = 0; i < m_RenderView->Size(); ++i)
 		{
 			auto [transform, renderer] = (*m_RenderView)[i];
-			SceneRenderer::SubmitCollision(&transform, m_RenderView->GetEntity(i));
+			if (m_RenderView->GetEntity(i) != m_SelectedEntity)
+				SceneRenderer::SubmitCollision(&transform, m_RenderView->GetEntity(i));
 			SceneRenderer::SubmitSprite(&renderer, &transform);
 		}
 		for (size_t i = 0; i < m_ParticleView->Size(); ++i)
