@@ -132,6 +132,9 @@ namespace XYZ {
 			XYZ_LOG_WARN("Width and height can not be zero");
 			return;
 		}
+		if (m_Specification.Width == width && m_Specification.Height == height)
+			return;
+
 		m_Specification.Width = width;
 		m_Specification.Height = height;
 

@@ -223,7 +223,6 @@ namespace XYZ {
 
 	void Scene::SetViewportSize(uint32_t width, uint32_t height)
 	{
-		SceneRenderer::SetViewportSize(width, height);
 		m_ViewportWidth = width;
 		m_ViewportHeight = height;
 	}

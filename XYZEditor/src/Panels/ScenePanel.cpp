@@ -23,15 +23,13 @@ namespace XYZ {
 	{
 		auto [mx, my] = Input::GetMousePosition();
 		auto& window = InGui::GetWindow(m_PanelID);
-		//mx -= window.Position.x;
-		//my -= window.Position.y;
+		mx -= window.Position.x;
+		my -= window.Position.y;
 
-		auto [width, height] = Input::GetWindowSize();
 		auto viewportWidth = window.Size.x;
 		auto viewportHeight = window.Size.y;
 
-		return { (mx / width) * 2.0f - 1.0f, ((my / height) * 2.0f - 1.0f) * -1.0f };
-		//return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f };
+		return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f };
 	}
 
 	ScenePanel::ScenePanel(uint32_t panelID)
@@ -58,10 +56,16 @@ namespace XYZ {
 	void ScenePanel::OnUpdate(Timestep ts)
 	{
 		Renderer2D::SubmitLine(m_Origin, m_Direction * 100.0f, glm::vec4(1.0f));
-		//if (IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
+		if (IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
 		{
-			m_EditorCamera.OnUpdate(ts);
-			m_EditorCamera.SetViewportSize(InGui::GetWindow(m_PanelID).Size.x, InGui::GetWindow(m_PanelID).Size.y);
+			m_EditorCamera.OnUpdate(ts);		
+		}
+		if (m_Context.Raw())
+		{
+			glm::vec2 viewPortSize = InGui::GetWindow(m_PanelID).Size;
+			SceneRenderer::SetViewportSize((uint32_t)viewPortSize.x, (uint32_t)viewPortSize.y);
+			m_EditorCamera.SetViewportSize(viewPortSize.x, viewPortSize.y);
+			m_Context->SetViewportSize((uint32_t)viewPortSize.x, (uint32_t)viewPortSize.y);
 		}
 	}
 	void ScenePanel::OnInGuiRender()
@@ -77,21 +81,20 @@ namespace XYZ {
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<WindowResizeEvent>(Hook(&ScenePanel::onWindowResize, this));
 		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&ScenePanel::onMouseButtonPress, this));
-		//if (IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
+		if (IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
 		{
 			m_EditorCamera.OnEvent(event);
 		}
 	}
 	bool ScenePanel::onWindowResize(WindowResizeEvent& event)
 	{
-		m_EditorCamera.SetViewportSize((float)event.GetWidth(), (float)event.GetHeight());
 		return false;
 	}
 	bool ScenePanel::onMouseButtonPress(MouseButtonPressEvent& event)
 	{
 		if (event.IsButtonPressed(MouseCode::MOUSE_BUTTON_LEFT) && !Input::IsKeyPressed(KeyCode::KEY_LEFT_ALT))
 		{
-			//if (IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
+			if (IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
 			{
 				if (m_Context.Raw())
 				{
@@ -106,14 +109,13 @@ namespace XYZ {
 						TransformComponent& transformComponent = entity.GetComponent<TransformComponent>();
 						glm::mat4 entityTransform = transformComponent.GetTransform();
 						Ray ray = {
-							glm::inverse(entityTransform) * glm::vec4(origin, 1.0f),
-							glm::inverse(glm::mat3(entityTransform)) * direction
+							origin,
+							direction
 						};
-
-						
+			
 						AABB aabb(
-							transformComponent.Translation - glm::vec3(transformComponent.Scale.x / 2.0f, transformComponent.Scale.y / 2.0f, 0.5f),
-							transformComponent.Translation + glm::vec3(transformComponent.Scale.x / 2.0f, transformComponent.Scale.y / 2.0f, 0.5f)
+							transformComponent.Translation - (transformComponent.Scale / 2.0f),
+							transformComponent.Translation + (transformComponent.Scale / 2.0f)
 						);
 
 						if (ray.IntersectsAABB(aabb))

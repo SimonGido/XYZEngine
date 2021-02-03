@@ -237,6 +237,9 @@ namespace XYZ {
 		BloomPass();
 		GaussianBlurPass();
 		CompositePass();
+
+		auto [width, height] = Input::GetWindowSize();
+		Renderer::SetViewPort(0, 0, (uint32_t)width, (uint32_t)height);
 		Renderer::WaitAndRender();
 
 		s_Data.CollisionList.clear();
@@ -249,8 +252,8 @@ namespace XYZ {
 	{
 		Renderer::BeginRenderPass(s_Data.GeometryPass, true);
 		Renderer2D::BeginScene(s_Data.ViewProjectionMatrix);
-		int clearValue = -1;
-		s_Data.GeometryPass->GetSpecification().TargetFramebuffer->ClearColorAttachment(2, &clearValue);
+		//int clearValue = -1;
+		//s_Data.GeometryPass->GetSpecification().TargetFramebuffer->ClearColorAttachment(2, &clearValue);
 
 		if (s_Data.Options.ShowGrid)
 		{
@@ -287,8 +290,7 @@ namespace XYZ {
 
 		
 		Renderer2D::EndScene();
-		Renderer::EndRenderPass();
-		
+		Renderer::EndRenderPass();		
 	}
 
 	void SceneRenderer::LightPass()
@@ -355,8 +357,7 @@ namespace XYZ {
 		s_Data.LightPass->GetSpecification().TargetFramebuffer->BindTexture(0, 0);
 		s_Data.GaussianBlurPass->GetSpecification().TargetFramebuffer->BindTexture(0, 1);
 
-		Renderer::SubmitFullsceenQuad();
+		Renderer::SubmitFullsceenQuad();	
 		Renderer::EndRenderPass();
 	}
-
 }
