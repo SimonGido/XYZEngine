@@ -26,7 +26,7 @@ Entities:
       MaterialAssetPath: Assets/Materials/New_Material.mat
       SubTextureAssetPath: Assets/SubTextures/New_SubTexture.subtex
       Color: [0.992172241, 0.996078432, 0.996078432, 1]
-      SortLayer: 5
+      SortLayer: 0
       IsVisible: true
   - Entity: "{CE0C06EC-2EA2-44AE-9D4D-238AF5A4E8E6}"
     SceneTagComponent:
@@ -74,6 +74,9 @@ Entities:
       Position: [-19.4020004, -4.81110001, 5]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
+    PointLight2D:
+      Color: [1, 0, 1]
+      Intensity: 1.79999995
   - Entity: "{B8A7616A-93DF-4A45-A64D-F8F3645E3AE0}"
     SceneTagComponent:
       Name: Light2
@@ -81,3 +84,6 @@ Entities:
       Position: [25.459465, 7.94594574, 2]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
+    PointLight2D:
+      Color: [1, 0.699999988, 1]
+      Intensity: 5.58333349

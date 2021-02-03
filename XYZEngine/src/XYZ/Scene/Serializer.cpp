@@ -469,6 +469,16 @@ namespace XYZ {
 		out << YAML::EndMap; // SpriteRenderer
 	}
 	template <>
+	void Serializer::Serialize<PointLight2D>(YAML::Emitter& out, const PointLight2D& val)
+	{
+		out << YAML::Key << "PointLight2D";
+		out << YAML::BeginMap; // Point Light
+
+		out << YAML::Key << "Color" << YAML::Value << val.Color;
+		out << YAML::Key << "Intensity" << YAML::Value << val.Intensity;
+		out << YAML::EndMap; // Point Light
+	}
+	template <>
 	void Serializer::Serialize<RectTransform>(YAML::Emitter& out, const RectTransform& val)
 	{
 		out << YAML::Key << "RectTransformComponent";
@@ -646,6 +656,10 @@ namespace XYZ {
 			if (entity.HasComponent<SpriteRenderer>())
 			{
 				Serialize<SpriteRenderer>(out, entity.GetComponent<SpriteRenderer>());
+			}
+			if (entity.HasComponent<PointLight2D>())
+			{
+				Serialize<PointLight2D>(out, entity.GetComponent<PointLight2D>());
 			}
 			out << YAML::EndMap; // Entity
 		}
@@ -1026,6 +1040,15 @@ namespace XYZ {
 	}
 
 	template <>
+	PointLight2D Serializer::Deserialize<PointLight2D>(YAML::Node& data, AssetManager& assetManager)
+	{
+		PointLight2D light;
+		light.Color = data["Color"].as<glm::vec3>();
+		light.Intensity = data["Intensity"].as<float>();
+		return light;
+	}
+
+	template <>
 	Button Serializer::Deserialize<Button>(YAML::Node& data, AssetManager& assetManager)
 	{
 		glm::vec4 hooverColor = data["HooverColor"].as<glm::vec4>();
@@ -1218,6 +1241,12 @@ namespace XYZ {
 					ecs.AddComponent<CanvasRenderer>(ent, Deserialize<CanvasRenderer>(canvasRenderer, assetManager));
 				}
 				
+				auto pointLight = entity["PointLight2D"];
+				if (pointLight)
+				{
+					ecs.AddComponent<PointLight2D>(ent, Deserialize<PointLight2D>(pointLight, assetManager));
+				}
+
 				auto text = entity["Text"];
 				if (text)
 				{
@@ -1289,7 +1318,7 @@ namespace XYZ {
 				{
 					val.AddComponent<SpriteRenderer>(ent, Deserialize<SpriteRenderer>(spriteRenderer, assetManager));
 				}
-			
+
 				auto button = entity["Button"];
 				if (button)
 				{
@@ -1325,7 +1354,13 @@ namespace XYZ {
 				{
 					val.AddComponent<CanvasRenderer>(ent, Deserialize<CanvasRenderer>(canvasRenderer, assetManager));
 				}
-				
+
+				auto pointLight = entity["PointLight2D"];
+				if (pointLight)
+				{
+					val.AddComponent<PointLight2D>(ent, Deserialize<PointLight2D>(pointLight, assetManager));
+				}
+
 				auto text = entity["Text"];
 				if (text)
 				{
@@ -1403,6 +1438,11 @@ namespace XYZ {
 				if (spriteRenderer)
 				{
 					ent.AddComponent<SpriteRenderer>(Deserialize<SpriteRenderer>(spriteRenderer, assetManager));
+				}
+				auto pointLight = entity["PointLight2D"];
+				if (pointLight)
+				{
+					ent.AddComponent<PointLight2D>(Deserialize<PointLight2D>(pointLight, assetManager));
 				}
 			}
 		}
