@@ -21,13 +21,18 @@ namespace XYZ {
 		bool onWindowResize(WindowResizeEvent& event);
 		bool onMouseButtonPress(MouseButtonPressEvent& event);
 
+		std::pair<glm::vec3, glm::vec3> castRay(float mx, float my) const;
+		std::pair<float, float> getMouseViewportSpace() const;
 	private:
 		uint32_t m_PanelID;
-		int32_t m_PickedID = -1;
 		Ref<Scene> m_Context;
 		Ref<SubTexture> m_SubTexture;
 
 		EditorCamera m_EditorCamera;
-		MousePicker m_Picker;
+
+		std::vector<uint32_t> m_PickedIDs;
+
+		glm::vec3 m_Origin;
+		glm::vec3 m_Direction;
 	};
 }

@@ -51,6 +51,7 @@ namespace XYZ {
 
         SceneEntity GetEntity(uint32_t index);
         SceneEntity GetSelectedEntity();
+        const std::vector<uint32_t>& GetEntities() const { return m_Entities; }
 
         SceneState GetState() const { return m_State; }
         ECSManager& GetECS() { return m_ECS; }
@@ -68,10 +69,8 @@ namespace XYZ {
     private:
         ECSManager m_ECS;
         GUID m_UUID;
-        int32_t m_CollisionID = -1;
 
         std::vector<uint32_t> m_Entities;
-        std::vector<uint32_t> m_SceneGraph;
 
         ComponentView<TransformComponent, SpriteRenderer>* m_RenderView;
         ComponentView<TransformComponent, ParticleComponent>* m_ParticleView;

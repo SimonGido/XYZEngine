@@ -38,7 +38,6 @@
 
 //---------Editor-----------//
 #include "XYZ/Editor/EditorCamera.h"
-#include "XYZ/Editor/MousePicker.h"
 
 //------ECS-----//
 #include "XYZ/ECS/ECSManager.h"
@@ -65,6 +64,8 @@
 //------Utils-------//
 #include "XYZ/Utils/DataStructures/HashGrid2D.h"
 #include "XYZ/Utils/DataStructures/ByteBuffer.h"
+#include "XYZ/Utils/Math/Ray.h"
+
 
 #include "XYZ/Utils/DataStructures/Graph.h"
 

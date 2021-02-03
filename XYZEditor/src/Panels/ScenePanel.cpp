@@ -4,6 +4,36 @@
 
 
 namespace XYZ {
+
+	std::pair<glm::vec3, glm::vec3> ScenePanel::castRay(float mx, float my) const
+	{
+		glm::vec4 mouseClipPos = { mx, my, -1.0f, 1.0f };
+
+		auto inverseProj = glm::inverse(m_EditorCamera.GetProjectionMatrix());
+		auto inverseView = glm::inverse(glm::mat3(m_EditorCamera.GetViewMatrix()));
+
+		glm::vec4 ray = inverseProj * mouseClipPos;
+		glm::vec3 rayPos = m_EditorCamera.GetPosition();
+		glm::vec3 rayDir = inverseView * glm::vec3(ray);
+
+		return { rayPos, rayDir };
+	}
+
+	std::pair<float, float> ScenePanel::getMouseViewportSpace() const
+	{
+		auto [mx, my] = Input::GetMousePosition();
+		auto& window = InGui::GetWindow(m_PanelID);
+		//mx -= window.Position.x;
+		//my -= window.Position.y;
+
+		auto [width, height] = Input::GetWindowSize();
+		auto viewportWidth = window.Size.x;
+		auto viewportHeight = window.Size.y;
+
+		return { (mx / width) * 2.0f - 1.0f, ((my / height) * 2.0f - 1.0f) * -1.0f };
+		//return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f };
+	}
+
 	ScenePanel::ScenePanel(uint32_t panelID)
 		:
 		m_PanelID(panelID)
@@ -15,9 +45,6 @@ namespace XYZ {
 
 		InGui::ImageWindow(m_PanelID, "Scene", glm::vec2(0.0f), glm::vec2(200.0f), m_SubTexture);
 		InGui::End();
-
-		auto [width, height] = Input::GetWindowSize();
-		m_Picker.SetViewportSize(width, height);
 	}
 	void ScenePanel::SetContext(Ref<Scene> context)
 	{
@@ -30,15 +57,9 @@ namespace XYZ {
 
 	void ScenePanel::OnUpdate(Timestep ts)
 	{
-		if (IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
+		Renderer2D::SubmitLine(m_Origin, m_Direction * 100.0f, glm::vec4(1.0f));
+		//if (IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
 		{
-			if (m_Context.Raw())
-			{
-				if (m_PickedID != (uint32_t)m_Context->GetSelectedEntity() && m_Context->GetECS().IsValid(m_PickedID))
-				{
-					m_Context->SetSelectedEntity(m_PickedID);
-				}
-			}
 			m_EditorCamera.OnUpdate(ts);
 			m_EditorCamera.SetViewportSize(InGui::GetWindow(m_PanelID).Size.x, InGui::GetWindow(m_PanelID).Size.y);
 		}
@@ -47,7 +68,7 @@ namespace XYZ {
 	{
 		if (InGui::ImageWindow(m_PanelID, "Scene", glm::vec2(0.0f), glm::vec2(200.0f), m_SubTexture))
 		{
-		
+			
 		}
 		InGui::End();
 	}
@@ -56,7 +77,7 @@ namespace XYZ {
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<WindowResizeEvent>(Hook(&ScenePanel::onWindowResize, this));
 		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&ScenePanel::onMouseButtonPress, this));
-		if (IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
+		//if (IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
 		{
 			m_EditorCamera.OnEvent(event);
 		}
@@ -68,13 +89,40 @@ namespace XYZ {
 	}
 	bool ScenePanel::onMouseButtonPress(MouseButtonPressEvent& event)
 	{
-		if (event.IsButtonPressed(MouseCode::MOUSE_BUTTON_LEFT))
+		if (event.IsButtonPressed(MouseCode::MOUSE_BUTTON_LEFT) && !Input::IsKeyPressed(KeyCode::KEY_LEFT_ALT))
 		{
-			if (IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
+			//if (IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
 			{
-				auto [mx, my] = Input::GetMousePosition();
-				my = Input::GetWindowSize().second - my;
-				SceneRenderer::GetCollisionRenderPass()->GetSpecification().TargetFramebuffer->ReadPixel(m_PickedID, mx, my, 2);			
+				if (m_Context.Raw())
+				{
+					m_Context->SetSelectedEntity(NULL_ENTITY);
+					auto [mouseX, mouseY] = getMouseViewportSpace();
+					auto [origin, direction] = castRay(mouseX, mouseY);
+					m_Origin = origin;
+					m_Direction = direction;
+					for (uint32_t entityID : m_Context->GetEntities())
+					{
+						SceneEntity entity(entityID, m_Context.Raw());
+						TransformComponent& transformComponent = entity.GetComponent<TransformComponent>();
+						glm::mat4 entityTransform = transformComponent.GetTransform();
+						Ray ray = {
+							glm::inverse(entityTransform) * glm::vec4(origin, 1.0f),
+							glm::inverse(glm::mat3(entityTransform)) * direction
+						};
+
+						
+						AABB aabb(
+							transformComponent.Translation - glm::vec3(transformComponent.Scale.x / 2.0f, transformComponent.Scale.y / 2.0f, 0.5f),
+							transformComponent.Translation + glm::vec3(transformComponent.Scale.x / 2.0f, transformComponent.Scale.y / 2.0f, 0.5f)
+						);
+
+						if (ray.IntersectsAABB(aabb))
+						{
+							if ((uint32_t)m_Context->GetSelectedEntity() == NULL_ENTITY)
+								m_Context->SetSelectedEntity(entityID);
+						}				
+					}
+				}			
 			}
 		}
 		return false;
