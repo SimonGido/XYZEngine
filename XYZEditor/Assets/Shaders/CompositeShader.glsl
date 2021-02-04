@@ -28,7 +28,7 @@ void main()
 {    
     vec4 geometryColor = texture(u_Texture[0], v_TexCoords);
     vec4 bloomColor = texture(u_Texture[1], v_TexCoords);
-    geometryColor += bloomColor;
+    geometryColor.xyz += bloomColor.xyz;
     geometryColor.a = clamp(geometryColor.a, 0.0, 1.0);
     o_Color = geometryColor;
 }

@@ -40,7 +40,8 @@ namespace XYZ {
 		bool onMouseButtonPress(MouseButtonPressEvent& event);
 		bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
 		bool onWindowResize(WindowResizeEvent& event);
-
+		bool onKeyPress(KeyPressedEvent& event);
+		bool onKeyRelease(KeyReleasedEvent& event);
 
 		ParticleVertex* m_Vertices;
 		ParticleInformation* m_Data;
@@ -53,6 +54,19 @@ namespace XYZ {
 		InspectorPanel m_InspectorPanel;
 		ScenePanel m_ScenePanel;
 
+		enum ModifyFlags
+		{
+			Move   = BIT(0),
+			Rotate = BIT(1),
+			Scale  = BIT(2),
+			X      = BIT(3),
+			Y      = BIT(4),
+			Z      = BIT(5)
+		};
+		uint8_t m_ModifyFlags = 0;
+		float m_MoveSpeed = 100.0f;
+		glm::vec2 m_MouseOffset = glm::vec2(0.0f);
+
 	private:	
 		SceneEntity m_TestEntity;
 		SceneEntity m_SelectedEntity;
@@ -62,11 +76,6 @@ namespace XYZ {
 
 		glm::vec3 m_Position = { 0,0,0 };
 		glm::vec3 m_Rotation = { 0,0,0 };
-
-
-		bool m_MenuOpen = false;
-		bool m_Selecting = false;
-		bool m_LeftPanel = false;
 	
 		Ref<Material> m_Material;
 		Ref<Texture2D> m_CharacterTexture;

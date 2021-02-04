@@ -235,7 +235,7 @@ namespace XYZ {
 		GeometryPass();
 		LightPass();
 		BloomPass();
-		GaussianBlurPass();
+		//GaussianBlurPass();
 		CompositePass();
 
 		auto [width, height] = Input::GetWindowSize();
@@ -355,7 +355,7 @@ namespace XYZ {
 
 		s_Data.CompositeShader->Bind();
 		s_Data.LightPass->GetSpecification().TargetFramebuffer->BindTexture(0, 0);
-		s_Data.GaussianBlurPass->GetSpecification().TargetFramebuffer->BindTexture(0, 1);
+		s_Data.BloomPass->GetSpecification().TargetFramebuffer->BindTexture(0, 1);
 
 		Renderer::SubmitFullsceenQuad();	
 		Renderer::EndRenderPass();

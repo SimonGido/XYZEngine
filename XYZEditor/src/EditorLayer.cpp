@@ -151,6 +151,35 @@ namespace XYZ {
 		{
 			m_SelectedEntity = m_Scene->GetSelectedEntity();
 			m_InspectorPanel.SetContext(m_SelectedEntity);
+			m_ModifyFlags = 0;
+		}
+
+		if (m_ModifyFlags)
+		{
+			auto [mx, my] = Input::GetMousePosition();
+			float distX = mx - m_MouseOffset.x;
+
+			auto& transform = m_SelectedEntity.GetComponent<TransformComponent>();
+			if (IS_SET(m_ModifyFlags, ModifyFlags::Move))
+			{
+				if (IS_SET(m_ModifyFlags, ModifyFlags::X))
+				{
+					transform.Translation.x += distX * m_MoveSpeed * ts;
+				}
+				else if (IS_SET(m_ModifyFlags, ModifyFlags::Y))
+				{
+					transform.Translation.y += distX * m_MoveSpeed * ts;
+				}
+				else if (IS_SET(m_ModifyFlags, ModifyFlags::Z))
+				{
+					transform.Translation.z += distX * m_MoveSpeed * ts;
+				}
+				else
+				{
+
+				}
+			}
+			m_MouseOffset = { Input::GetMouseX(), Input::GetMouseY() };
 		}
 	}
 	void EditorLayer::OnEvent(Event& event)
@@ -159,7 +188,7 @@ namespace XYZ {
 		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&EditorLayer::onMouseButtonPress, this));
 		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorLayer::onMouseButtonRelease, this));	
 		dispatcher.Dispatch<WindowResizeEvent>(Hook(&EditorLayer::onWindowResize, this));
-		
+		dispatcher.Dispatch<KeyPressedEvent>(Hook(&EditorLayer::onKeyPress, this));
 		m_SceneHierarchyPanel.OnEvent(event);
 		m_ScenePanel.OnEvent(event);
 	}
@@ -181,6 +210,53 @@ namespace XYZ {
 		return false;
 	}
 	bool EditorLayer::onWindowResize(WindowResizeEvent& event)
+	{
+		return false;
+	}
+
+	bool EditorLayer::onKeyPress(KeyPressedEvent& event)
+	{
+		if ((uint32_t)m_SelectedEntity != NULL_ENTITY)
+		{
+			if (m_ModifyFlags)
+			{
+				if (event.IsKeyPressed(KeyCode::KEY_X))
+				{
+					m_ModifyFlags |= ModifyFlags::X;
+				}
+				else if (event.IsKeyPressed(KeyCode::KEY_Y))
+				{
+					m_ModifyFlags |= ModifyFlags::Y;
+				}
+				else if (event.IsKeyPressed(KeyCode::KEY_Z))
+				{
+					m_ModifyFlags |= ModifyFlags::Z;
+				}
+			}
+			else
+			{
+				m_ModifyFlags = 0;
+			}
+
+			if (event.IsKeyPressed(KeyCode::KEY_G))
+			{
+				m_ModifyFlags = ModifyFlags::Move;
+			}
+			else if (event.IsKeyPressed(KeyCode::KEY_R))
+			{
+				m_ModifyFlags = ModifyFlags::Rotate;
+			}
+			else if (event.IsKeyPressed(KeyCode::KEY_S))
+			{
+				m_ModifyFlags = ModifyFlags::Scale;
+			}
+
+			return m_ModifyFlags;
+		}
+		return false;
+	}
+
+	bool EditorLayer::onKeyRelease(KeyReleasedEvent& event)
 	{
 		return false;
 	}
