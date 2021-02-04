@@ -59,28 +59,39 @@ namespace XYZ {
 	{
 		if (IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
 		{
-			m_EditorCamera.OnUpdate(ts);		
-			if (m_Context.Raw() && (uint32_t)m_Context->GetSelectedEntity() != NULL_ENTITY)
+			m_EditorCamera.OnUpdate(ts);	
+			if (m_Context.Raw())
 			{
-				if (m_ModifyFlags)
+				if (m_SelectedEntity != (uint32_t)m_Context->GetSelectedEntity())
+				{
+					m_SelectedEntity = m_Context->GetSelectedEntity();
+					m_ModifyFlags = 0;
+				}
+				if (m_ModifyFlags && (uint32_t)m_Context->GetSelectedEntity() != NULL_ENTITY)
 				{
 					auto [mx, my] = Input::GetMousePosition();
 					float distX = mx - m_OldMousePosition.x;
 					float distY = m_OldMousePosition.y - my;
 					auto& transform = m_Context->GetSelectedEntity().GetComponent<TransformComponent>();
-					if (IS_SET(m_ModifyFlags, ModifyFlags::Move))
+					glm::vec3* modifiedVal = nullptr;
+					
+					if (IS_SET(m_ModifyFlags, ModifyFlags::Move)) modifiedVal = &transform.Translation;
+					if (IS_SET(m_ModifyFlags, ModifyFlags::Rotate)) modifiedVal = &transform.Rotation;
+					if (IS_SET(m_ModifyFlags, ModifyFlags::Scale)) modifiedVal = &transform.Scale;
+
+					if (modifiedVal)
 					{
 						if (IS_SET(m_ModifyFlags, ModifyFlags::X))
 						{
-							transform.Translation.x += (distX + distY) * m_MoveSpeed * ts;
+							modifiedVal->x += (distX + distY) * m_MoveSpeed * ts;
 						}
 						else if (IS_SET(m_ModifyFlags, ModifyFlags::Y))
 						{
-							transform.Translation.y += (distX + distY) * m_MoveSpeed * ts;
+							modifiedVal->y += (distX + distY) * m_MoveSpeed * ts;
 						}
 						else if (IS_SET(m_ModifyFlags, ModifyFlags::Z))
 						{
-							transform.Translation.z += (distX + distY) * m_MoveSpeed * ts;
+							modifiedVal->z += (distX + distY) * m_MoveSpeed * ts;
 						}
 						else
 						{

@@ -19,7 +19,7 @@ Entities:
     SceneTagComponent:
       Name: Test Entity
     TransformComponent:
-      Position: [18.1210785, -21.3060112, 48.2508202]
+      Position: [18.1210785, 17.9920921, 13.5166664]
       Rotation: [0, 0, 0]
       Scale: [7.75337791, 9.20939827, 1]
     SpriteRenderer:
@@ -32,9 +32,9 @@ Entities:
     SceneTagComponent:
       Name: Test
     TransformComponent:
-      Position: [0, 10, 1]
+      Position: [30.7712555, 10, 1]
       Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Scale: [13.0023727, 14.1118774, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/New_Material.mat
       SubTextureAssetPath: Assets/SubTextures/New_SubTexture.subtex
@@ -45,7 +45,7 @@ Entities:
     SceneTagComponent:
       Name: Background
     TransformComponent:
-      Position: [0, 0, -0]
+      Position: [-41.2041969, -0.201250076, -23.8474846]
       Rotation: [0, 0, 0]
       Scale: [76, 46.4869995, 1]
     SpriteRenderer:
@@ -58,7 +58,7 @@ Entities:
     SceneTagComponent:
       Name: Background
     TransformComponent:
-      Position: [21.5358963, -12.3699999, -20]
+      Position: [21.5358963, -11.3884773, -16.8496399]
       Rotation: [0, 0, 0]
       Scale: [76, 46.4879799, 1]
     SpriteRenderer:
