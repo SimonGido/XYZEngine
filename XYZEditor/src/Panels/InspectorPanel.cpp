@@ -96,6 +96,10 @@ namespace XYZ {
 					}
 					InGui::Separator();
 				}
+				if (m_Context.HasComponent<ScriptComponent>())
+				{
+
+				}
 			}
 		}
 		InGui::End();

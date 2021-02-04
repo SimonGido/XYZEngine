@@ -201,7 +201,7 @@ namespace XYZ {
 		for (size_t i = 0; i < m_RenderView->Size(); ++i)
 		{
 			auto [transform, renderer] = (*m_RenderView)[i];
-			if (renderer.IsVisible)
+			if (renderer.IsVisible && renderer.SubTexture.Raw())
 				SceneRenderer::SubmitSprite(&renderer, &transform);
 		}
 		for (size_t i = 0; i < m_ParticleView->Size(); ++i)
@@ -246,7 +246,7 @@ namespace XYZ {
 		glm::vec3 topRight = { translation.x + scale.x / 2,translation.y + scale.y / 2, translation.z };
 		glm::vec3 bottomLeft = { translation.x - scale.x / 2,translation.y - scale.y / 2, translation.z };
 		glm::vec3 bottomRight = { translation.x + scale.x / 2,translation.y - scale.y / 2, translation.z };
-
+	
 		Renderer2D::SubmitLine(topLeft, topRight);
 		Renderer2D::SubmitLine(topRight, bottomRight);
 		Renderer2D::SubmitLine(bottomRight, bottomLeft);

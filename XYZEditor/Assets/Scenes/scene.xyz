@@ -19,21 +19,21 @@ Entities:
     SceneTagComponent:
       Name: Test Entity
     TransformComponent:
-      Position: [18.1210785, 17.9920921, 13.5166664]
-      Rotation: [0, 0, 0]
+      Position: [5.69337463, 17.9920921, 13.5166664]
+      Rotation: [-6.18758202, 22.8417397, 0.497961044]
       Scale: [7.75337791, 9.20939827, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/New_Material.mat
       SubTextureAssetPath: Assets/SubTextures/New_SubTexture.subtex
       Color: [0.992172241, 0.996078432, 0.996078432, 1]
-      SortLayer: 1
+      SortLayer: 6
       IsVisible: true
   - Entity: "{CE0C06EC-2EA2-44AE-9D4D-238AF5A4E8E6}"
     SceneTagComponent:
       Name: Test
     TransformComponent:
-      Position: [30.7712555, 10, 1]
-      Rotation: [0, 0, 0]
+      Position: [-2.00657654, -23.5440636, 1]
+      Rotation: [-6.81347847, -0.48418045, 0]
       Scale: [13.0023727, 14.1118774, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/New_Material.mat
@@ -73,7 +73,7 @@ Entities:
     TransformComponent:
       Position: [-10, -7, 5]
       Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Scale: [19.0908203, 8.85980225, 1]
     PointLight2D:
       Color: [1, 1, 1]
       Intensity: 0
