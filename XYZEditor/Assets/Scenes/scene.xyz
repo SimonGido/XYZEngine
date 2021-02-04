@@ -19,7 +19,7 @@ Entities:
     SceneTagComponent:
       Name: Test Entity
     TransformComponent:
-      Position: [6.20005798, 0, 10]
+      Position: [18.1210785, -21.3060112, 48.2508202]
       Rotation: [0, 0, 0]
       Scale: [7.75337791, 9.20939827, 1]
     SpriteRenderer:
@@ -58,7 +58,7 @@ Entities:
     SceneTagComponent:
       Name: Background
     TransformComponent:
-      Position: [-6.71537018, -12.3699999, -20]
+      Position: [21.5358963, -12.3699999, -20]
       Rotation: [0, 0, 0]
       Scale: [76, 46.4879799, 1]
     SpriteRenderer:

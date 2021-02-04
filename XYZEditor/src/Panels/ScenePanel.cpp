@@ -60,6 +60,35 @@ namespace XYZ {
 		if (IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
 		{
 			m_EditorCamera.OnUpdate(ts);		
+			if (m_Context.Raw() && (uint32_t)m_Context->GetSelectedEntity() != NULL_ENTITY)
+			{
+				if (m_ModifyFlags)
+				{
+					auto [mx, my] = Input::GetMousePosition();
+					float distX = mx - m_OldMousePosition.x;
+					float distY = m_OldMousePosition.y - my;
+					auto& transform = m_Context->GetSelectedEntity().GetComponent<TransformComponent>();
+					if (IS_SET(m_ModifyFlags, ModifyFlags::Move))
+					{
+						if (IS_SET(m_ModifyFlags, ModifyFlags::X))
+						{
+							transform.Translation.x += (distX + distY) * m_MoveSpeed * ts;
+						}
+						else if (IS_SET(m_ModifyFlags, ModifyFlags::Y))
+						{
+							transform.Translation.y += (distX + distY) * m_MoveSpeed * ts;
+						}
+						else if (IS_SET(m_ModifyFlags, ModifyFlags::Z))
+						{
+							transform.Translation.z += (distX + distY) * m_MoveSpeed * ts;
+						}
+						else
+						{
+						}
+					}
+					m_OldMousePosition = { Input::GetMouseX(), Input::GetMouseY() };
+				}
+			}
 		}
 
 		glm::vec2 newViewportSize = InGui::GetWindow(m_PanelID).Size;
@@ -81,12 +110,16 @@ namespace XYZ {
 	}
 	void ScenePanel::OnEvent(Event& event)
 	{
-		EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<WindowResizeEvent>(Hook(&ScenePanel::onWindowResize, this));
-		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&ScenePanel::onMouseButtonPress, this));
-		if (IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
+		if (m_Context.Raw())
 		{
-			m_EditorCamera.OnEvent(event);
+			EventDispatcher dispatcher(event);
+			dispatcher.Dispatch<WindowResizeEvent>(Hook(&ScenePanel::onWindowResize, this));
+			dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&ScenePanel::onMouseButtonPress, this));
+			if (IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
+			{
+				dispatcher.Dispatch<KeyPressedEvent>(Hook(&ScenePanel::onKeyPress, this));
+				m_EditorCamera.OnEvent(event);
+			}
 		}
 	}
 	bool ScenePanel::onWindowResize(WindowResizeEvent& event)
@@ -99,33 +132,80 @@ namespace XYZ {
 		{
 			if (IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
 			{
-				if (m_Context.Raw())
-				{
-					m_Context->SetSelectedEntity(NULL_ENTITY);
-					auto [mouseX, mouseY] = getMouseViewportSpace();
-					auto [origin, direction] = castRay(mouseX, mouseY);
+				m_Context->SetSelectedEntity(NULL_ENTITY);
+				auto [mouseX, mouseY] = getMouseViewportSpace();
+				auto [origin, direction] = castRay(mouseX, mouseY);
 	
-					for (uint32_t entityID : m_Context->GetEntities())
+				for (uint32_t entityID : m_Context->GetEntities())
+				{
+					SceneEntity entity(entityID, m_Context.Raw());
+					TransformComponent& transformComponent = entity.GetComponent<TransformComponent>();
+					glm::mat4 entityTransform = transformComponent.GetTransform();
+					
+					Ray ray = { origin,direction };
+					AABB aabb(
+						transformComponent.Translation - (transformComponent.Scale / 2.0f),
+						transformComponent.Translation + (transformComponent.Scale / 2.0f)
+					);
+					
+					if (ray.IntersectsAABB(aabb))
 					{
-						SceneEntity entity(entityID, m_Context.Raw());
-						TransformComponent& transformComponent = entity.GetComponent<TransformComponent>();
-						glm::mat4 entityTransform = transformComponent.GetTransform();
-						
-						Ray ray = { origin,direction };
-						AABB aabb(
-							transformComponent.Translation - (transformComponent.Scale / 2.0f),
-							transformComponent.Translation + (transformComponent.Scale / 2.0f)
-						);
-
-						if (ray.IntersectsAABB(aabb))
-						{
-							m_Context->SetSelectedEntity(entityID);
-							return true;
-						}				
-					}
+						m_Context->SetSelectedEntity(entityID);
+						return true;
+					}				
 				}			
 			}
 		}
+		return false;
+	}
+	bool ScenePanel::onKeyPress(KeyPressedEvent& event)
+	{
+		if ((uint32_t)m_Context->GetSelectedEntity() != NULL_ENTITY)
+		{
+			if (m_ModifyFlags)
+			{
+				if (event.IsKeyPressed(KeyCode::KEY_X))
+				{
+					m_ModifyFlags |= ModifyFlags::X;
+					m_ModifyFlags &= ~(ModifyFlags::Y | ModifyFlags::Z);
+				}
+				else if (event.IsKeyPressed(KeyCode::KEY_Y))
+				{
+					m_ModifyFlags |= ModifyFlags::Y;
+					m_ModifyFlags &= ~(ModifyFlags::X | ModifyFlags::Z);
+				}
+				else if (event.IsKeyPressed(KeyCode::KEY_Z))
+				{
+					m_ModifyFlags |= ModifyFlags::Z;
+					m_ModifyFlags &= ~(ModifyFlags::Y | ModifyFlags::X);
+				}
+			}
+			else
+			{
+				m_ModifyFlags = 0;
+			}
+
+			if (event.IsKeyPressed(KeyCode::KEY_G))
+			{
+				m_ModifyFlags = ModifyFlags::Move;
+			}
+			else if (event.IsKeyPressed(KeyCode::KEY_R))
+			{
+				m_ModifyFlags = ModifyFlags::Rotate;
+			}
+			else if (event.IsKeyPressed(KeyCode::KEY_S))
+			{
+				m_ModifyFlags = ModifyFlags::Scale;
+			}
+			
+			if (m_ModifyFlags) m_OldMousePosition = { Input::GetMouseX(), Input::GetMouseY() };
+			return m_ModifyFlags;
+		}
+		m_ModifyFlags = 0;
+		return false;
+	}
+	bool ScenePanel::onKeyRelease(KeyReleasedEvent& event)
+	{
 		return false;
 	}
 }

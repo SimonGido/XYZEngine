@@ -54,18 +54,6 @@ namespace XYZ {
 		InspectorPanel m_InspectorPanel;
 		ScenePanel m_ScenePanel;
 
-		enum ModifyFlags
-		{
-			Move   = BIT(0),
-			Rotate = BIT(1),
-			Scale  = BIT(2),
-			X      = BIT(3),
-			Y      = BIT(4),
-			Z      = BIT(5)
-		};
-		uint8_t m_ModifyFlags = 0;
-		float m_MoveSpeed = 100.0f;
-		glm::vec2 m_MouseOffset = glm::vec2(0.0f);
 
 	private:	
 		SceneEntity m_TestEntity;
