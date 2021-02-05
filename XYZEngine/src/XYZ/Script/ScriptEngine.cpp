@@ -374,6 +374,7 @@ namespace XYZ {
 				PublicField field = { name, xyzFieldType };
 				field.m_Handle = scriptComponent.Handle;
 				field.m_MonoClassField = iter;
+				field.StoreRuntimeValue();
 				scriptComponent.Fields.emplace_back(std::move(field));
 			}
 		}

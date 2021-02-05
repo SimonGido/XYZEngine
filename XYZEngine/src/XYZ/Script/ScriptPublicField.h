@@ -23,6 +23,7 @@ namespace XYZ {
 		PublicField& operator = (const PublicField& other);
 		
 		void CopyStoredValueToRuntime();
+		void StoreRuntimeValue();
 
 		template<typename T>
 		T GetStoredValue() const
@@ -32,7 +33,15 @@ namespace XYZ {
 			return value;
 		}
 
-		
+		template <>
+		std::string GetStoredValue() const
+		{
+			char* value;
+			getStoredString_Internal(&value);
+			std::string res(value);
+			delete[]value;
+			return res;
+		}
 
 		template<typename T>
 		void SetStoredValue(T value) const
@@ -51,9 +60,10 @@ namespace XYZ {
 		template <>
 		std::string GetRuntimeValue() const
 		{
-			std::string value;
+			char* value;
 			getRuntimeString_Internal(&value);
-			return value;
+			std::string res(value);
+			return res;
 		}
 
 		template<typename T>
@@ -76,10 +86,14 @@ namespace XYZ {
 		uint8_t* allocateBuffer(PublicFieldType type);
 		void setStoredValue_Internal(void* value) const;
 		void getStoredValue_Internal(void* outValue) const;
+
+		void getStoredString_Internal(char** outValue) const;
+		
 		void setRuntimeValue_Internal(void* value) const;
 		void getRuntimeValue_Internal(void* outValue) const;
+		
 		void setRuntimeString_Internal(const char* value) const;
-		void getRuntimeString_Internal(std::string* outValue) const;
+		void getRuntimeString_Internal(char** outValue) const;
 
 	private:
 		MonoClassField* m_MonoClassField;

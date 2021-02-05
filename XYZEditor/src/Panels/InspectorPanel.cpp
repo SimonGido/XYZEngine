@@ -107,7 +107,7 @@ namespace XYZ {
 						{			
 							if (field.GetType() == PublicFieldType::Float)
 							{
-								float val = field.GetRuntimeValue<float>();
+								float val = field.GetStoredValue<float>();
 								if (InGui::Float(field.GetName().c_str(), glm::vec2(50.0f, 30.0f), val) == InGuiReturnType::Modified)
 								{
 									field.SetStoredValue<float>(val);
@@ -116,14 +116,11 @@ namespace XYZ {
 							}
 							if (field.GetType() == PublicFieldType::String)
 							{
-								std::string val;
+								std::string val = field.GetStoredValue<std::string>();
 								if (InGui::String(field.GetName().c_str(), glm::vec2(50.0f, 30.0f), val) == InGuiReturnType::Modified)
 								{
-									if (!val.empty())
-									{
-										field.SetRuntimeValue<std::string>(val);
-										val = field.GetRuntimeValue<std::string>();
-									}
+									field.SetStoredValue<std::string>(val);
+									field.SetRuntimeValue<std::string>(val);			
 								}
 							}
 							InGui::Separator();

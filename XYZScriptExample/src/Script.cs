@@ -18,7 +18,6 @@ namespace Example
 
         public void OnUpdate(float ts)
         {
-            Console.Write(Test);
             Matrix4 transform = GetTransform();
             Vector3 translation = transform.Translation;
          

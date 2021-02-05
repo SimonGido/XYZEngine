@@ -93,6 +93,17 @@ namespace XYZ {
 		mono_field_set_value(GetInstance(m_Handle), m_MonoClassField, m_StoredValueBuffer);
 	}
 
+	void PublicField::StoreRuntimeValue()
+	{
+		if (m_Type != PublicFieldType::String)
+			getRuntimeValue_Internal(m_StoredValueBuffer);
+		else
+		{
+			delete[]m_StoredValueBuffer;
+			getRuntimeString_Internal((char**)&m_StoredValueBuffer);
+		}
+	}
+
 	void PublicField::SetStoredValueRaw(void* src)
 	{
 		uint32_t size = GetFieldSize(m_Type);
@@ -116,8 +127,12 @@ namespace XYZ {
 		uint32_t size = GetFieldSize(m_Type);
 		memcpy(outValue, m_StoredValueBuffer, size);
 	}
-
-	
+	void PublicField::getStoredString_Internal(char** outValue) const
+	{
+		uint32_t size = GetFieldSize(m_Type);
+		*outValue = new char[size];
+		memcpy(*outValue, m_StoredValueBuffer, size);
+	}
 
 	void PublicField::setRuntimeValue_Internal(void* value) const
 	{
@@ -139,12 +154,13 @@ namespace XYZ {
 		XYZ_ASSERT(instance, "");
 		mono_field_set_value(instance, m_MonoClassField, string);
 	}
-	void PublicField::getRuntimeString_Internal(std::string* outValue) const
+	void PublicField::getRuntimeString_Internal(char** outValue) const
 	{
 		auto instance = GetInstance(m_Handle);
 		XYZ_ASSERT(instance, "");
 		MonoString* string = nullptr;
-		mono_field_get_value(instance, m_MonoClassField, outValue);
+		mono_field_get_value(instance, m_MonoClassField, &string);
+		*outValue = mono_string_to_utf8(string);
 	}
 
 }
