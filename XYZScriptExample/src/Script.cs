@@ -6,10 +6,10 @@ namespace Example
 {
     public class Script : Entity
     {
+        public string Test = "Pes";
         public float VerticalSpeed = 5.0f;
         public float Speed = 2.0f;
         public float Rotation = 0.0f;
-
         public Vector3 Velocity;
 
         public void OnCreate()
@@ -18,6 +18,7 @@ namespace Example
 
         public void OnUpdate(float ts)
         {
+            Console.Write(Test);
             Matrix4 transform = GetTransform();
             Vector3 translation = transform.Translation;
          

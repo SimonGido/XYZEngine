@@ -7,6 +7,7 @@ extern "C" {
 
 	typedef struct _MonoObject MonoObject;
 	typedef struct _MonoClassField MonoClassField;
+	typedef struct _MonoDomain MonoDomain;
 }
 
 
@@ -31,7 +32,7 @@ namespace XYZ {
 		static bool ModuleExists(const std::string& moduleName);
 		static void InitScriptEntity(SceneEntity entity);
 		static void InstantiateEntityClass(SceneEntity entity);
-
+		static MonoDomain* GetMonoDomain();
 	};
 
 }

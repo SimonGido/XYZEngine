@@ -321,7 +321,7 @@ project "XYZScriptCore"
 		kind "SharedLib"
 		language "C#"
 			
-		targetdir ("XYZSandbox/Assets/Scripts")
+		targetdir ("XYZEditor/Assets/Scripts")
 		objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 			
 		files 
@@ -334,7 +334,7 @@ project "XYZScriptExample"
 		kind "SharedLib"
 		language "C#"
 			
-		targetdir ("XYZSandbox/Assets/Scripts")
+		targetdir ("XYZEditor/Assets/Scripts")
 		objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 			
 		files 

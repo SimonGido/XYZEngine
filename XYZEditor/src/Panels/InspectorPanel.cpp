@@ -114,6 +114,18 @@ namespace XYZ {
 									field.SetRuntimeValue<float>(val);
 								}
 							}
+							if (field.GetType() == PublicFieldType::String)
+							{
+								std::string val;
+								if (InGui::String(field.GetName().c_str(), glm::vec2(50.0f, 30.0f), val) == InGuiReturnType::Modified)
+								{
+									if (!val.empty())
+									{
+										field.SetRuntimeValue<std::string>(val);
+										val = field.GetRuntimeValue<std::string>();
+									}
+								}
+							}
 							InGui::Separator();
 						}
 					}

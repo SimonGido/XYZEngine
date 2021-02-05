@@ -381,4 +381,9 @@ namespace XYZ {
 		OnCreateEntity(entity);
 	}
 
+	MonoDomain* ScriptEngine::GetMonoDomain()
+	{
+		return s_MonoDomain;
+	}
+
 }

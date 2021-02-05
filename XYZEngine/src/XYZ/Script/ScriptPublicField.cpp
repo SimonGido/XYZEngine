@@ -6,6 +6,9 @@
 #include <mono/metadata/debug-helpers.h>
 #include <mono/metadata/attrdefs.h>
 
+
+#include "ScriptEngine.h"
+
 namespace XYZ {
 	static MonoObject* GetInstance(uint32_t handle)
 	{
@@ -20,7 +23,7 @@ namespace XYZ {
 		case PublicFieldType::Float:       return 4;
 		case PublicFieldType::Int:         return 4;
 		case PublicFieldType::UnsignedInt: return 4;
-			// case FieldType::String:   return 8; // TODO
+		case PublicFieldType::String:	   return 8;
 		case PublicFieldType::Vec2:        return 4 * 2;
 		case PublicFieldType::Vec3:        return 4 * 3;
 		case PublicFieldType::Vec4:        return 4 * 4;
@@ -112,8 +115,10 @@ namespace XYZ {
 	{
 		uint32_t size = GetFieldSize(m_Type);
 		memcpy(outValue, m_StoredValueBuffer, size);
-
 	}
+
+	
+
 	void PublicField::setRuntimeValue_Internal(void* value) const
 	{
 		auto instance = GetInstance(m_Handle);
@@ -127,4 +132,19 @@ namespace XYZ {
 		XYZ_ASSERT(instance, "");
 		mono_field_get_value(instance, m_MonoClassField, outValue);
 	}
+	void PublicField::setRuntimeString_Internal(const char* value) const
+	{
+		MonoString* string = mono_string_new(ScriptEngine::GetMonoDomain(), value);
+		auto instance = GetInstance(m_Handle);
+		XYZ_ASSERT(instance, "");
+		mono_field_set_value(instance, m_MonoClassField, string);
+	}
+	void PublicField::getRuntimeString_Internal(std::string* outValue) const
+	{
+		auto instance = GetInstance(m_Handle);
+		XYZ_ASSERT(instance, "");
+		MonoString* string = nullptr;
+		mono_field_get_value(instance, m_MonoClassField, outValue);
+	}
+
 }

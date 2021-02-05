@@ -32,6 +32,8 @@ namespace XYZ {
 			return value;
 		}
 
+		
+
 		template<typename T>
 		void SetStoredValue(T value) const
 		{
@@ -46,10 +48,24 @@ namespace XYZ {
 			return value;
 		}
 
+		template <>
+		std::string GetRuntimeValue() const
+		{
+			std::string value;
+			getRuntimeString_Internal(&value);
+			return value;
+		}
+
 		template<typename T>
 		void SetRuntimeValue(T value) const
 		{
 			setRuntimeValue_Internal(&value);
+		}
+
+		template <>
+		void SetRuntimeValue(std::string val) const
+		{
+			setRuntimeString_Internal(val.c_str());
 		}
 
 		void SetStoredValueRaw(void* src);
@@ -62,6 +78,8 @@ namespace XYZ {
 		void getStoredValue_Internal(void* outValue) const;
 		void setRuntimeValue_Internal(void* value) const;
 		void getRuntimeValue_Internal(void* outValue) const;
+		void setRuntimeString_Internal(const char* value) const;
+		void getRuntimeString_Internal(std::string* outValue) const;
 
 	private:
 		MonoClassField* m_MonoClassField;
