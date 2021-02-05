@@ -3,8 +3,15 @@
 #include "XYZ/ECS/Entity.h"
 #include "XYZ/Scene/Scene.h"
 
-namespace XYZ {
+extern "C" {
 
+	typedef struct _MonoObject MonoObject;
+	typedef struct _MonoClassField MonoClassField;
+}
+
+
+namespace XYZ {
+	
 	class ScriptEngine
 	{
 	public:

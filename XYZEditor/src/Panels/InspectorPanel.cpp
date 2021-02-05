@@ -102,6 +102,20 @@ namespace XYZ {
 					if (InGui::BeginGroup("Script Component", m_ComponentGroups[index++]))
 					{
 						InGui::String("Module Name", glm::vec2(120.0f, 25.0f), script.ModuleName);
+						InGui::Separator();
+						for (auto& field : script.Fields)
+						{			
+							if (field.GetType() == PublicFieldType::Float)
+							{
+								float val = field.GetRuntimeValue<float>();
+								if (InGui::Float(field.GetName().c_str(), glm::vec2(50.0f, 30.0f), val) == InGuiReturnType::Modified)
+								{
+									field.SetStoredValue<float>(val);
+									field.SetRuntimeValue<float>(val);
+								}
+							}
+							InGui::Separator();
+						}
 					}
 					InGui::Separator();
 				}

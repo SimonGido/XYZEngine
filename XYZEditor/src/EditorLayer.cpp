@@ -71,6 +71,12 @@ namespace XYZ {
 		ScriptEngine::InstantiateEntityClass(m_TestEntity);
 
 
+		auto test = m_Scene->GetEntity(1);
+		test.AddComponent<ScriptComponent>(ScriptComponent("Example.Script"));
+		ScriptEngine::InitScriptEntity(test);
+		ScriptEngine::InstantiateEntityClass(test);
+
+
 		m_CharacterTexture = Texture2D::Create({ TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest }, "Assets/Textures/player_sprite.png");
 		m_CharacterSubTexture = Ref<SubTexture>::Create(m_CharacterTexture, glm::vec2(0, 0), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
 		m_CharacterSubTexture2 = Ref<SubTexture>::Create(m_CharacterTexture, glm::vec2(1, 2), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));

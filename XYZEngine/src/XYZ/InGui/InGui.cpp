@@ -633,6 +633,7 @@ namespace XYZ {
 			s_ModifyTextBuffer[s_ModifyTextBufferIndex] = '.';
 			val = (float)atof(s_ModifyTextBuffer);
 			maxCharacters = s_ModifyTextBufferIndex;
+			returnType |= InGuiReturnType::Modified;
 		}
 		else
 		{
@@ -701,6 +702,7 @@ namespace XYZ {
 
 			val = (float)atoi(s_ModifyTextBuffer);
 			maxCharacters = s_ModifyTextBufferIndex;
+			returnType |= InGuiReturnType::Modified;
 		}
 		else
 		{
@@ -770,6 +772,7 @@ namespace XYZ {
 
 			val = s_ModifyTextBuffer;
 			maxCharacters = s_ModifyTextBufferIndex;
+			returnType |= InGuiReturnType::Modified;
 		}
 		else
 		{

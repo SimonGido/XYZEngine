@@ -5,7 +5,7 @@
 #include "XYZ/Core/GUID.h"
 #include "XYZ/Particle/ParticleEffect.h"
 #include "XYZ/Renderer/SubTexture.h"
-
+#include "XYZ/Script/ScriptPublicField.h"
 
 #include "SceneCamera.h"
 #include "AnimationController.h"
@@ -163,15 +163,16 @@ namespace XYZ {
 	struct ScriptComponent : public Type<ScriptComponent>
 	{
 		std::string ModuleName;
+		std::vector<PublicField> Fields;
 
 		ScriptComponent() = default;
 		ScriptComponent(const ScriptComponent & other) = default;
 		ScriptComponent(const std::string & moduleName)
 			: ModuleName(moduleName) {}
 
-
 	private:
 		EntityScriptClass* ScriptClass = nullptr;
+		
 		uint32_t Handle = 0;
 
 		friend class ScriptEngine;

@@ -15,6 +15,7 @@
 
 #include "XYZ/Scene/SceneEntity.h"
 #include "ScriptEngineRegistry.h"
+#include "ScriptPublicField.h"
 
 namespace XYZ {
 
@@ -284,6 +285,28 @@ namespace XYZ {
 		return monoClass != nullptr;
 	}
 
+	static PublicFieldType GetXYZFieldType(MonoType* monoType)
+	{
+		int type = mono_type_get_type(monoType);
+		switch (type)
+		{
+		case MONO_TYPE_R4: return PublicFieldType::Float;
+		case MONO_TYPE_I4: return PublicFieldType::Int;
+		case MONO_TYPE_U4: return PublicFieldType::UnsignedInt;
+		case MONO_TYPE_STRING: return PublicFieldType::String;
+		case MONO_TYPE_VALUETYPE:
+		{
+			char* name = mono_type_get_name(monoType);
+			if (strcmp(name, "XYZ.Vector2") == 0) return PublicFieldType::Vec2;
+			if (strcmp(name, "XYZ.Vector3") == 0) return PublicFieldType::Vec3;
+			if (strcmp(name, "XYZ.Vector4") == 0) return PublicFieldType::Vec4;
+		}
+		}
+		return PublicFieldType::None;
+	}
+
+
+
 	void ScriptEngine::InitScriptEntity(SceneEntity entity)
 	{
 		Scene* scene = entity.m_Scene;
@@ -315,51 +338,7 @@ namespace XYZ {
 		scriptComponent.ScriptClass->FullName = scriptComponent.ModuleName;
 
 		scriptComponent.ScriptClass->Class = GetClass(s_AppAssemblyImage, *scriptComponent.ScriptClass);
-		scriptComponent.ScriptClass->InitClassMethods(s_AppAssemblyImage);
-
-		//EntityInstanceData& entityInstanceData = s_EntityInstanceMap[scene->GetUUID()][id];
-		//EntityInstance& entityInstance = entityInstanceData.Instance;
-		//entityInstance.ScriptClass = &scriptClass;
-		//ScriptModuleFieldMap& moduleFieldMap = entityInstanceData.ModuleFieldMap;
-		//auto& fieldMap = moduleFieldMap[moduleName];
-		//
-		//// Save old fields
-		//std::unordered_map<std::string, PublicField> oldFields;
-		//oldFields.reserve(fieldMap.size());
-		//for (auto& [fieldName, field] : fieldMap)
-		//	oldFields.emplace(fieldName, std::move(field));
-		//fieldMap.clear();
-
-		// Retrieve public fields (TODO: cache these fields if the module is used more than once)
-		//{
-		//	MonoClassField* iter;
-		//	void* ptr = 0;
-		//	while ((iter = mono_class_get_fields(scriptClass.Class, &ptr)) != NULL)
-		//	{
-		//		const char* name = mono_field_get_name(iter);
-		//		uint32_t flags = mono_field_get_flags(iter);
-		//		if ((flags & MONO_FIELD_ATTR_PUBLIC) == 0)
-		//			continue;
-		//
-		//		MonoType* fieldType = mono_field_get_type(iter);
-		//		FieldType hazelFieldType = GetHazelFieldType(fieldType);
-		//
-		//		// TODO: Attributes
-		//		MonoCustomAttrInfo* attr = mono_custom_attrs_from_field(scriptClass.Class, iter);
-		//
-		//		if (oldFields.find(name) != oldFields.end())
-		//		{
-		//			fieldMap.emplace(name, std::move(oldFields.at(name)));
-		//		}
-		//		else
-		//		{
-		//			PublicField field = { name, hazelFieldType };
-		//			field.m_EntityInstance = &entityInstance;
-		//			field.m_MonoClassField = iter;
-		//			fieldMap.emplace(name, std::move(field));
-		//		}
-		//	}
-		//}
+		scriptComponent.ScriptClass->InitClassMethods(s_AppAssemblyImage);		
 	}
 
 	void ScriptEngine::InstantiateEntityClass(SceneEntity entity)
@@ -376,17 +355,30 @@ namespace XYZ {
 		MonoMethod* entityIDSetMethod = mono_property_get_set_method(entityIDProperty);
 		void* param[] = { &entity.m_ID };
 		CallMethod(GetInstance(scriptComponent.Handle), entityIDSetMethod, param);
+		{
+			MonoClassField* iter;
+			void* ptr = 0;
+			while ((iter = mono_class_get_fields(scriptComponent.ScriptClass->Class, &ptr)) != NULL)
+			{
+				const char* name = mono_field_get_name(iter);
+				uint32_t flags = mono_field_get_flags(iter);
+				if ((flags & MONO_FIELD_ATTR_PUBLIC) == 0)
+					continue;
 
-		//// Set all public fields to appropriate values
-		//ScriptModuleFieldMap& moduleFieldMap = entityInstanceData.ModuleFieldMap;
-		//if (moduleFieldMap.find(moduleName) != moduleFieldMap.end())
-		//{
-		//	auto& publicFields = moduleFieldMap.at(moduleName);
-		//	for (auto& [name, field] : publicFields)
-		//		field.CopyStoredValueToRuntime();
-		//}
+				MonoType* fieldType = mono_field_get_type(iter);
+				PublicFieldType xyzFieldType = GetXYZFieldType(fieldType);
 
+				// TODO: Attributes
+				MonoCustomAttrInfo* attr = mono_custom_attrs_from_field(scriptComponent.ScriptClass->Class, iter);
+
+				PublicField field = { name, xyzFieldType };
+				field.m_Handle = scriptComponent.Handle;
+				field.m_MonoClassField = iter;
+				scriptComponent.Fields.emplace_back(std::move(field));
+			}
+		}
 		// Call OnCreate function (if exists)
 		OnCreateEntity(entity);
 	}
+
 }

@@ -12,6 +12,7 @@ namespace XYZ {
 		{
 			Hoovered = BIT(0),
 			Clicked = BIT(1),
+			Modified = BIT(2)
 		};
 	}
 	namespace InGuiInputFlags {
