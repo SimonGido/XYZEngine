@@ -91,14 +91,19 @@ namespace XYZ {
 						InGui::Float("B", glm::vec2(50.0f, 30.0f), light.Color.z);
 						InGui::Separator();
 						InGui::Text("Intensity");
-						InGui::Float("", glm::vec2(120.0f, 25.0f), light.Intensity);
+						InGui::Float("", glm::vec2(50.0f, 25.0f), light.Intensity);
 						InGui::Separator();
 					}
 					InGui::Separator();
 				}
 				if (m_Context.HasComponent<ScriptComponent>())
 				{
-
+					ScriptComponent& script = m_Context.GetComponent<ScriptComponent>();
+					if (InGui::BeginGroup("Script Component", m_ComponentGroups[index++]))
+					{
+						InGui::String("Module Name", glm::vec2(120.0f, 25.0f), script.ModuleName);
+					}
+					InGui::Separator();
 				}
 			}
 		}

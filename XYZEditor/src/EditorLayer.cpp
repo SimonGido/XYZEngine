@@ -51,7 +51,9 @@ namespace XYZ {
 	{
 		Renderer::Init();
 		m_Scene = m_AssetManager.GetAsset<Scene>("Assets/Scenes/scene.xyz")->GetHandle();
-	
+		ScriptEngine::Init("Assets/Scripts/XYZScriptExample.dll");
+		ScriptEngine::SetSceneContext(m_Scene);
+
 		uint32_t windowWidth = Application::Get().GetWindow().GetWidth();
 		uint32_t windowHeight = Application::Get().GetWindow().GetHeight();
 		SceneRenderer::SetViewportSize(windowWidth, windowHeight);
@@ -64,6 +66,10 @@ namespace XYZ {
 		m_TestEntity = m_Scene->GetEntity(2);
 		m_SpriteRenderer = &m_TestEntity.GetComponent<SpriteRenderer>();
 		m_Transform = &m_TestEntity.GetComponent<TransformComponent>();
+		m_TestEntity.AddComponent<ScriptComponent>(ScriptComponent("Example.Script"));
+		ScriptEngine::InitScriptEntity(m_TestEntity);
+		ScriptEngine::InstantiateEntityClass(m_TestEntity);
+
 
 		m_CharacterTexture = Texture2D::Create({ TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest }, "Assets/Textures/player_sprite.png");
 		m_CharacterSubTexture = Ref<SubTexture>::Create(m_CharacterTexture, glm::vec2(0, 0), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));

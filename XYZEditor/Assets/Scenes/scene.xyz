@@ -20,7 +20,7 @@ Entities:
       Name: Test Entity
     TransformComponent:
       Position: [5.69337463, 17.9920921, 13.5166664]
-      Rotation: [-6.18758202, 22.8417397, 0.497961044]
+      Rotation: [4.08329964, 44.4144249, -32.2008591]
       Scale: [7.75337791, 9.20939827, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/New_Material.mat
@@ -32,9 +32,9 @@ Entities:
     SceneTagComponent:
       Name: Test
     TransformComponent:
-      Position: [-2.00657654, -23.5440636, 1]
-      Rotation: [-6.81347847, -0.48418045, 0]
-      Scale: [13.0023727, 14.1118774, 1]
+      Position: [34.4446259, -21.65695, 1]
+      Rotation: [0, -0, 0]
+      Scale: [13.0023727, 14.1118765, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/New_Material.mat
       SubTextureAssetPath: Assets/SubTextures/New_SubTexture.subtex
@@ -81,9 +81,9 @@ Entities:
     SceneTagComponent:
       Name: Light2
     TransformComponent:
-      Position: [25.459465, 80, 2]
+      Position: [25.459465, -11.2994385, 2]
       Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Scale: [27.5068054, 18.7696228, 1]
     PointLight2D:
       Color: [1, 0, 1]
       Intensity: 0

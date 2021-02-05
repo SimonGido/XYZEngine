@@ -746,6 +746,73 @@ namespace XYZ {
 		return returnType;
 	}
 
+	uint8_t InGui::String(const char* name, const glm::vec2& size, std::string& val)
+	{
+		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
+		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
+		InGuiFrameData& data = s_Context->FrameData;
+
+		uint8_t returnType = 0;
+		size_t oldQuadCount = window.Mesh.Quads.size();
+		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
+		uint32_t maxCharacters = _MAX_PATH;
+		char* buffer = s_TextBuffer; // By default text buffer
+
+		if (data.InputIndex == data.HandleInput.size())
+			data.HandleInput.push_back(false);
+
+		// If input is about to be handled than use buffer for modifying values
+		bool handleInput = data.HandleInput[data.InputIndex];
+		if (handleInput)
+		{
+			color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
+			buffer = s_ModifyTextBuffer;
+
+			val = s_ModifyTextBuffer;
+			maxCharacters = s_ModifyTextBufferIndex;
+		}
+		else
+		{
+			// Otherwise just parse value as string to text buffer
+			int ret = snprintf(buffer, sizeof(buffer), "%s", val.c_str());
+			if (ret < 0) val = 0.0f;
+		}
+
+
+		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, window.Mesh, color, size, s_LayoutOffset, s_Context->RenderData, InGuiRenderData::BUTTON);
+		InGuiFactory::GenerateTextCentered(buffer, window, window.Mesh, s_LayoutOffset, size, s_Context->RenderData, maxCharacters);
+
+		if (eraseOutOfBorders(oldQuadCount, genSize, window, window.Mesh))
+			return returnType;
+
+		if (Collide(s_LayoutOffset, size, s_Context->FrameData.MousePosition))
+		{
+			returnType |= InGuiReturnType::Hoovered;
+			window.Mesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
+			if (TurnOffFlag<uint16_t>(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked))
+			{
+				returnType |= InGuiReturnType::Clicked;
+				data.HandleInput[data.InputIndex] = true;
+				if (data.HandleInput[data.InputIndex])
+				{
+					// This is called once when bit is fliped to true
+					int ret = snprintf(s_TextBuffer, sizeof(s_TextBuffer), "%s", val.c_str());
+					s_ModifyTextBufferIndex = FindNumCharacters(s_TextBuffer, size.x, s_Context->RenderData.Font);
+					memcpy(s_ModifyTextBuffer, s_TextBuffer, s_ModifyTextBufferIndex);
+				}
+				for (uint32_t i = 0; i < s_Context->FrameData.HandleInput.size(); ++i)
+				{
+					if (i != data.InputIndex)
+						data.HandleInput[i] = false;
+				}
+			}
+		}
+
+		data.InputIndex++;
+		s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
+		return returnType;
+	}
+
 	uint8_t InGui::Image(const glm::vec2& size, Ref<SubTexture> subTexture)
 	{
 		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");

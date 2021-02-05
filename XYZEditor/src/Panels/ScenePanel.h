@@ -36,12 +36,12 @@ namespace XYZ {
 
 		enum ModifyFlags
 		{
-			Move = BIT(0),
+			Move   = BIT(0),
 			Rotate = BIT(1),
-			Scale = BIT(2),
-			X = BIT(3),
-			Y = BIT(4),
-			Z = BIT(5)
+			Scale  = BIT(2),
+			X	   = BIT(3),
+			Y	   = BIT(4),
+			Z	   = BIT(5)
 		};
 		uint32_t m_SelectedEntity = NULL_ENTITY;
 		uint8_t m_ModifyFlags = 0;
