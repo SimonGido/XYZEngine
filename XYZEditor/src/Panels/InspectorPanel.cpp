@@ -103,6 +103,8 @@ namespace XYZ {
 					{
 						InGui::String("Module Name", glm::vec2(120.0f, 25.0f), script.ModuleName);
 						InGui::Separator();
+						InGui::Text("Public Fields:");
+						InGui::Separator();
 						for (auto& field : script.Fields)
 						{			
 							if (field.GetType() == PublicFieldType::Float)

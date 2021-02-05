@@ -49,8 +49,8 @@ namespace XYZ {
 		m_Handle = other.m_Handle;
 		m_MonoClassField = other.m_MonoClassField;
 
-		if (m_StoredValueBuffer)
-			delete m_StoredValueBuffer;
+		if (m_StoredValueBuffer && m_Type != PublicFieldType::String)
+			delete[]m_StoredValueBuffer;
 
 		m_StoredValueBuffer = allocateBuffer(m_Type);
 		memcpy(m_StoredValueBuffer, other.m_StoredValueBuffer, GetFieldSize(other.m_Type));
@@ -70,18 +70,19 @@ namespace XYZ {
 	}
 	PublicField::~PublicField()
 	{
-		delete[] m_StoredValueBuffer;
+		if (m_StoredValueBuffer && m_Type != PublicFieldType::String)
+			delete[]m_StoredValueBuffer;
 	}
 
 	PublicField& PublicField::operator=(const PublicField& other)
 	{
+		if (m_StoredValueBuffer && m_Type != PublicFieldType::String)
+			delete[]m_StoredValueBuffer;
+		
 		m_Name = other.m_Name;
 		m_Type = other.m_Type;
 		m_Handle = other.m_Handle;
 		m_MonoClassField = other.m_MonoClassField;
-
-		if (m_StoredValueBuffer)
-			delete m_StoredValueBuffer;
 
 		m_StoredValueBuffer = allocateBuffer(m_Type);
 		memcpy(m_StoredValueBuffer, other.m_StoredValueBuffer, GetFieldSize(other.m_Type));
