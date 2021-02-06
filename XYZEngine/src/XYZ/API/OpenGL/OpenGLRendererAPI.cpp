@@ -30,6 +30,15 @@ namespace XYZ {
 		else
 			glDisable(GL_DEPTH_TEST);
 	}
+
+	void RendererAPI::SetScissor(bool enabled)
+	{
+		if (enabled)
+			glEnable(GL_SCISSOR_TEST);
+		else
+			glDisable(GL_SCISSOR_TEST);
+	}
+
 	void RendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 	{
 		glViewport(x, y, width, height);
@@ -48,6 +57,16 @@ namespace XYZ {
 	void RendererAPI::ReadPixels(uint32_t xCoord, uint32_t yCoord, uint32_t width, uint32_t height, uint8_t* data)
 	{
 		glReadPixels(xCoord, yCoord, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	}
+
+	void RendererAPI::Scissor(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
+	{
+		glScissor(x, y, width, height);
+	}
+
+	void RendererAPI::ScissorArray(uint32_t count, uint8_t* scissors)
+	{
+		glScissorArrayv(0, count, (GLint*)scissors);
 	}
 
 	void RendererAPI::DrawIndexed(PrimitiveType type, uint32_t indexCount)

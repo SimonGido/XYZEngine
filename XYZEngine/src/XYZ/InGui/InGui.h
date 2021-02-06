@@ -32,6 +32,8 @@ namespace XYZ {
 		static bool ImageWindow(uint32_t id, const char* name, const glm::vec2& position, const glm::vec2& size, Ref<SubTexture> subTexture);
 		static void End();
 		static bool BeginGroup(const char* name, bool& open);
+		static void BeginScrollableArea(float height, float & offset, float scale);
+		static void EndScrollableArea();
 
 		static uint8_t PushNode(const char* name, const glm::vec2& size, bool& open, bool highlight = false);
 		static uint8_t Dropdown(const char* name, const glm::vec2& size, bool& open);

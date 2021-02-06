@@ -61,6 +61,9 @@ namespace XYZ {
 		window.Mesh.Lines.clear();
 		window.OverlayMesh.Quads.clear();
 		window.OverlayMesh.Lines.clear();
+		window.ScrollableMesh.Quads.clear();
+		window.ScrollableMesh.Lines.clear();
+
 		glm::vec2 textOffset = { 7.0f, 7.0f };
 		glm::vec2 textPosition = { window.Position.x + textOffset.x, window.Position.y + InGuiWindow::PanelHeight - textOffset.y };
 		glm::vec2 textSize = { window.Size.x - textOffset.x - InGuiWindow::PanelHeight, window.Size.y - textOffset.y };

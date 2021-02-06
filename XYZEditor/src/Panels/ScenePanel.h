@@ -43,6 +43,7 @@ namespace XYZ {
 			Y	   = BIT(4),
 			Z	   = BIT(5)
 		};
+
 		uint32_t m_SelectedEntity = NULL_ENTITY;
 		uint8_t m_ModifyFlags = 0;
 		float m_MoveSpeed = 100.0f;

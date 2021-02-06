@@ -3,6 +3,7 @@
 
 #include "InGui.h"
 #include "InGuiFactory.h"
+#include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Renderer/Renderer2D.h"
 
 namespace XYZ {
@@ -248,6 +249,7 @@ namespace XYZ {
 			InGuiWindow& window = context->Windows[winIndex];
 			window.Position = node->Data.Position;
 			window.Size = node->Data.Size;
+
 			for (auto it = window.Mesh.Quads.begin(); it != window.Mesh.Quads.end(); ++it)
 			{
 				Renderer2D::SubmitQuadNotCentered(it->Position, it->Size, it->TexCoord, it->TextureID, it->Color);

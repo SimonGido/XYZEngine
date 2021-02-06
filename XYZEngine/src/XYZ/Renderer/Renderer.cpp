@@ -102,6 +102,29 @@ namespace XYZ {
 			});
 	}
 
+	void Renderer::SetScissorTest(bool val)
+	{
+		Renderer::Submit([=]() {
+			RendererAPI::SetScissor(val);
+			});
+	}
+
+	void Renderer::Scissor(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
+	{
+		Renderer::Submit([=]() {
+			RendererAPI::Scissor(x, y, width, height);
+			});
+	}
+
+	void Renderer::ScissorArray(uint32_t count, ScissorSpecs* scissors)
+	{
+		ByteBuffer buffer = ByteBuffer::Copy(scissors, count * sizeof(ScissorSpecs));
+		Renderer::Submit([=]() {
+			RendererAPI::ScissorArray(count, buffer);
+			delete[] buffer;
+			});
+	}
+
 	void Renderer::DrawIndexed(PrimitiveType type, uint32_t indexCount)
 	{
 		Renderer::Submit([=]() {
@@ -139,11 +162,26 @@ namespace XYZ {
 
 		if (clear)
 		{
-			const glm::vec4& clearColor = renderPass->GetSpecification().TargetFramebuffer->GetSpecification().ClearColor;
+			auto& specs = renderPass->GetSpecification().TargetFramebuffer->GetSpecification();
+			if (specs.Scissors.size())
+			{
+				Renderer::Submit([=]() {
+					RendererAPI::SetScissor(true);
+					RendererAPI::ScissorArray(specs.Scissors.size(), (uint8_t*)specs.Scissors.data());
+				});
+			}
+			const glm::vec4& clearColor = specs.ClearColor;
 			Renderer::Submit([=]() {
 				RendererAPI::SetClearColor(clearColor);
 				RendererAPI::Clear();
 				});
+
+			if (specs.Scissors.size())
+			{
+				Renderer::Submit([=]() {
+					RendererAPI::SetScissor(false);
+					});
+			}
 		}
 	}
 

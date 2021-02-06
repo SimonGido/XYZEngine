@@ -20,5 +20,9 @@ namespace XYZ {
 		SceneEntity m_Context;
 		size_t m_CurrentSize = 0;
 		bool* m_ComponentGroups = nullptr;
+		bool m_AddComponentOpen = false;
+
+		float m_ScrollOffset = 0.0f;
+		float m_ScrollScale = 1.0f;
 	};
 }

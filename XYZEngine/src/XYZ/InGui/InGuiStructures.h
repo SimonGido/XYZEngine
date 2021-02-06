@@ -3,6 +3,7 @@
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Renderer/Font.h"
+#include "XYZ/Renderer/Framebuffer.h"
 
 #include <glm/glm.hpp>
 
@@ -76,6 +77,7 @@ namespace XYZ {
 	{
 		InGuiMesh   Mesh;
 		InGuiMesh   OverlayMesh;
+		InGuiMesh   ScrollableMesh;
 		InGuiLayout Layout;
 		glm::vec2   Position;
 		glm::vec2   Size;
@@ -84,8 +86,6 @@ namespace XYZ {
 
 		static constexpr float PanelHeight = 25.0f;
 	};
-
-
 
 	struct InGuiRenderData
 	{
@@ -142,8 +142,10 @@ namespace XYZ {
 		uint32_t   ActiveWindowID = NullID;
 		uint32_t   MovedWindowID = NullID;
 		uint32_t   ResizedWindowID = NullID;
+		InGuiMesh* CurrentMesh = nullptr;
 
-
+		std::vector<ScissorSpecs> Scissors;
+		std::vector<Ref<Texture>> CustomTextures;
 		std::vector<bool> HandleInput;
 		size_t			  InputIndex = 0;
 	};

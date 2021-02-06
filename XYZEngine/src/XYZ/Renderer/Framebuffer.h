@@ -5,6 +5,7 @@
 #include "XYZ/Core/Ref.h"
 #include "XYZ/Scene/Serializable.h"
 
+
 #include <glm/glm.hpp>
 
 namespace XYZ {
@@ -46,6 +47,14 @@ namespace XYZ {
 
 		std::vector<FramebufferTextureSpecs> Attachments;
 	};
+	
+	struct ScissorSpecs
+	{
+		uint32_t X;
+		uint32_t Y;
+		uint32_t Width;
+		uint32_t Height;
+	};
 
 	struct FramebufferSpecs
 	{
@@ -54,6 +63,7 @@ namespace XYZ {
 		uint32_t Samples = 1; // multisampling
 		glm::vec4 ClearColor;
 		FramebufferAttachmentSpecs Attachments;
+		std::vector<ScissorSpecs>  Scissors;
 
 		bool SwapChainTarget = false;
 	};

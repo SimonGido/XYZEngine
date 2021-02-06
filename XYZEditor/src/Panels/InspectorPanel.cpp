@@ -29,6 +29,8 @@ namespace XYZ {
 				if (m_CurrentSize < m_Context.NumberOfTypes())
 					resizeGroups();
 
+
+				InGui::BeginScrollableArea(300.0f, m_ScrollOffset, 100.0f);
 				uint32_t index = 0;
 				if (m_Context.HasComponent<TransformComponent>())
 				{
@@ -116,7 +118,64 @@ namespace XYZ {
 									field.SetRuntimeValue<float>(val);
 								}
 							}
-							if (field.GetType() == PublicFieldType::String)
+							else if (field.GetType() == PublicFieldType::Vec2)
+							{
+								glm::vec2 val = field.GetStoredValue<glm::vec2>();
+								if (InGui::Float("", glm::vec2(50.0f, 30.0f), val.x) == InGuiReturnType::Modified)
+								{
+									field.SetStoredValue<glm::vec2>(val);
+									field.SetRuntimeValue<glm::vec2>(val);
+								}
+								if (InGui::Float(field.GetName().c_str(), glm::vec2(50.0f, 30.0f), val.y) == InGuiReturnType::Modified)
+								{
+									field.SetStoredValue<glm::vec2>(val);
+									field.SetRuntimeValue<glm::vec2>(val);
+								}
+							}
+							else if (field.GetType() == PublicFieldType::Vec3)
+							{
+								glm::vec3 val = field.GetStoredValue<glm::vec3>();								
+								if (InGui::Float("", glm::vec2(50.0f, 30.0f), val.x) == InGuiReturnType::Modified)
+								{
+									field.SetStoredValue<glm::vec3>(val);
+									field.SetRuntimeValue<glm::vec3>(val);
+								}
+								if (InGui::Float("", glm::vec2(50.0f, 30.0f), val.y) == InGuiReturnType::Modified)
+								{
+									field.SetStoredValue<glm::vec3>(val);
+									field.SetRuntimeValue<glm::vec3>(val);
+								}
+								if (InGui::Float(field.GetName().c_str(), glm::vec2(50.0f, 30.0f), val.z) == InGuiReturnType::Modified)
+								{
+									field.SetStoredValue<glm::vec3>(val);
+									field.SetRuntimeValue<glm::vec3>(val);
+								}
+							}
+							else if (field.GetType() == PublicFieldType::Vec4)
+							{
+								glm::vec4 val = field.GetStoredValue<glm::vec4>();
+								if (InGui::Float("", glm::vec2(50.0f, 30.0f), val.x) == InGuiReturnType::Modified)
+								{
+									field.SetStoredValue<glm::vec4>(val);
+									field.SetRuntimeValue<glm::vec4>(val);
+								}
+								if (InGui::Float("", glm::vec2(50.0f, 30.0f), val.y) == InGuiReturnType::Modified)
+								{
+									field.SetStoredValue<glm::vec4>(val);
+									field.SetRuntimeValue<glm::vec4>(val);
+								}
+								if (InGui::Float("", glm::vec2(50.0f, 30.0f), val.z) == InGuiReturnType::Modified)
+								{
+									field.SetStoredValue<glm::vec4>(val);
+									field.SetRuntimeValue<glm::vec4>(val);
+								}
+								if (InGui::Float(field.GetName().c_str(), glm::vec2(50.0f, 30.0f), val.w) == InGuiReturnType::Modified)
+								{
+									field.SetStoredValue<glm::vec4>(val);
+									field.SetRuntimeValue<glm::vec4>(val);
+								}
+							}
+							else if (field.GetType() == PublicFieldType::String)
 							{
 								std::string val = field.GetStoredValue<std::string>();
 								if (InGui::String(field.GetName().c_str(), glm::vec2(50.0f, 30.0f), val) == InGuiReturnType::Modified)
@@ -130,7 +189,39 @@ namespace XYZ {
 					}
 					InGui::Separator();
 				}
+				InGui::Separator();
+				InGui::EndScrollableArea();
+				InGui::Separator();
+				if (!m_Context.HasComponent<ScriptComponent>())
+				{
+					InGui::Dropdown("Add Component", glm::vec2(InGui::GetWindow(m_PanelID).Size.x - 20.0f, 25.0f), m_AddComponentOpen);
+				}
 			}
+			InGui::Separator();
+			InGui::Button("test", glm::vec2(50.0f));
+			InGui::Button("test", glm::vec2(50.0f));
+			InGui::Button("test", glm::vec2(50.0f));
+			InGui::Button("test", glm::vec2(50.0f));
+			InGui::Separator();
+			InGui::Button("test", glm::vec2(50.0f));
+			InGui::Separator();
+			InGui::Button("test", glm::vec2(50.0f));
+			InGui::Separator();
+			InGui::Button("test", glm::vec2(50.0f));
+			InGui::Separator();
+			InGui::Button("test", glm::vec2(50.0f));
+			InGui::Separator();
+			InGui::Button("test", glm::vec2(50.0f));
+			InGui::Separator();
+			InGui::Button("test", glm::vec2(50.0f));
+			InGui::Button("test", glm::vec2(50.0f));
+			InGui::Button("test", glm::vec2(50.0f));
+			InGui::Button("test", glm::vec2(50.0f));
+			InGui::Separator();
+			InGui::Button("test", glm::vec2(50.0f));
+			InGui::Separator();
+			InGui::Button("test", glm::vec2(50.0f));
+			InGui::Separator();
 		}
 		InGui::End();
 	}
