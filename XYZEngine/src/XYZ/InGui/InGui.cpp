@@ -3,7 +3,7 @@
 
 #include "XYZ/Core/Input.h"
 #include "XYZ/Renderer/Renderer.h"
-#include "XYZ/Renderer/InGuiRenderer2D.h"
+#include "XYZ/Renderer/Renderer2D.h"
 
 #include "InGuiFactory.h"
 #include "InGuiDockspace.h"
@@ -137,8 +137,8 @@ namespace XYZ {
 		glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f));
 		viewMatrix = glm::inverse(viewMatrix);
 
-		InGuiRenderer2D::BeginScene(s_Context->FrameData.ViewProjectionMatrix * viewMatrix);
-		InGuiRenderer2D::SetMaterial(s_Context->RenderData.DefaultMaterial);
+		Renderer2D::BeginScene(s_Context->FrameData.ViewProjectionMatrix * viewMatrix);
+		Renderer2D::SetMaterial(s_Context->RenderData.DefaultMaterial);
 		InGuiDockspace::beginFrame(s_Context, (s_Context->FrameData.MovedWindowID != InGuiFrameData::NullID));
 	}
 
@@ -147,61 +147,61 @@ namespace XYZ {
 		XYZ_ASSERT(s_Context, "InGuiContext is not initialized");
 		
 		InGuiDockspace::endFrame(s_Context);
-		InGuiRenderer2D::SetMaterial(s_Context->RenderData.DefaultMaterial);
+		Renderer2D::SetMaterial(s_Context->RenderData.DefaultMaterial);
 		for (auto winIt = s_Context->Windows.rbegin(); winIt != s_Context->Windows.rend(); ++winIt)
 		{
 			if (!IS_SET(winIt->Flags, InGuiWindowFlags::Docked))
 			{
 				for (auto it = winIt->Mesh.Quads.begin(); it != winIt->Mesh.Quads.end(); ++it)
 				{
-					InGuiRenderer2D::SubmitQuadNotCentered(it->Position, it->Size, it->TexCoord, it->TextureID, it->Color);
+					Renderer2D::SubmitQuadNotCentered(it->Position, it->Size, it->TexCoord, it->TextureID, it->Color);
 				}
 				for (auto& line : winIt->Mesh.Lines)
 				{
-					InGuiRenderer2D::SubmitLine(line.P0, line.P1, line.Color);
+					Renderer2D::SubmitLine(line.P0, line.P1, line.Color);
 				}
 				for (auto it = winIt->OverlayMesh.Quads.begin(); it != winIt->OverlayMesh.Quads.end(); ++it)
 				{
-					InGuiRenderer2D::SubmitQuadNotCentered(it->Position, it->Size, it->TexCoord, it->TextureID, it->Color);
+					Renderer2D::SubmitQuadNotCentered(it->Position, it->Size, it->TexCoord, it->TextureID, it->Color);
 				}
 				for (auto& line : winIt->OverlayMesh.Lines)
 				{
-					InGuiRenderer2D::SubmitLine(line.P0, line.P1, line.Color);
+					Renderer2D::SubmitLine(line.P0, line.P1, line.Color);
 				}
 			}	
 		}
 
-		InGuiRenderer2D::Flush();
-		InGuiRenderer2D::FlushLines();
+		Renderer2D::Flush();
+		Renderer2D::FlushLines();
 
 		if (s_Context->FrameData.Scissors.size())
 		{		
 			s_Context->RenderData.ScissorBuffer->Update(s_Context->FrameData.Scissors.data(), s_Context->FrameData.Scissors.size() * sizeof(InGuiScissor));
 			s_Context->RenderData.ScissorBuffer->BindRange(0, s_Context->FrameData.Scissors.size() * sizeof(InGuiScissor), 0);
 			s_Context->RenderData.ScissorMaterial->Set("u_NumberScissors", s_Context->FrameData.Scissors.size());
-			InGuiRenderer2D::SetMaterial(s_Context->RenderData.ScissorMaterial);
+			Renderer2D::SetMaterial(s_Context->RenderData.ScissorMaterial);
 			for (auto& texture : s_Context->FrameData.CustomTextures)
-				InGuiRenderer2D::SetTexture(texture);
+				Renderer2D::SetTexture(texture);
 
 
 			for (auto winIt = s_Context->Windows.rbegin(); winIt != s_Context->Windows.rend(); ++winIt)
 			{
 				for (auto it = winIt->ScrollableMesh.Quads.begin(); it != winIt->ScrollableMesh.Quads.end(); ++it)
 				{
-					InGuiRenderer2D::SubmitQuadNotCentered(it->Position, it->Size, it->TexCoord, it->TextureID, it->Color, it->ScissorIndex);
+					Renderer2D::SubmitQuadNotCentered(it->Position, it->Size, it->TexCoord, it->TextureID, it->Color, it->ScissorIndex);
 				}
 				for (auto& line : winIt->ScrollableMesh.Lines)
 				{
-					InGuiRenderer2D::SubmitLine(line.P0, line.P1, line.Color);
+					Renderer2D::SubmitLine(line.P0, line.P1, line.Color);
 				}
 			}
-			InGuiRenderer2D::Flush();
-			InGuiRenderer2D::FlushLines();
+			Renderer2D::Flush();
+			Renderer2D::FlushLines();
 			s_Context->FrameData.Scissors.clear();
 		}
 		s_Context->FrameData.CustomTextures.clear();
 
-		InGuiRenderer2D::EndScene();
+		Renderer2D::EndScene();
 		Renderer::WaitAndRender();
 
 		handleWindowMove();
@@ -382,7 +382,7 @@ namespace XYZ {
 		}
 		InGuiFactory::GenerateWindow(
 			name, window, color, s_Context->RenderData,
-			subTexture, InGuiRenderer2D::SetTexture(subTexture->GetTexture())
+			subTexture, Renderer2D::SetTexture(subTexture->GetTexture())
 		);
 		s_Context->FrameData.CustomTextures.push_back(subTexture->GetTexture());
 		s_Context->FrameData.CurrentMesh = &window.Mesh;
@@ -976,7 +976,7 @@ namespace XYZ {
 		size_t oldQuadCount = mesh.Quads.size();
 		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
 		InGuiFactory::GenerateQuad(mesh, color, size, s_LayoutOffset, subTexture, 
-			InGuiRenderer2D::SetTexture(subTexture->GetTexture()), s_Context->FrameData.Scissors.size() - 1
+			Renderer2D::SetTexture(subTexture->GetTexture()), s_Context->FrameData.Scissors.size() - 1
 		);
 		s_Context->FrameData.CustomTextures.push_back(subTexture->GetTexture());
 

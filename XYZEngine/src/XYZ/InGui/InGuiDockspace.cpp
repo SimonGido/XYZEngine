@@ -4,7 +4,7 @@
 #include "InGui.h"
 #include "InGuiFactory.h"
 #include "XYZ/Renderer/Renderer.h"
-#include "XYZ/Renderer/InGuiRenderer2D.h"
+#include "XYZ/Renderer/Renderer2D.h"
 
 namespace XYZ {
 
@@ -294,19 +294,19 @@ namespace XYZ {
 
 			for (auto it = window.Mesh.Quads.begin(); it != window.Mesh.Quads.end(); ++it)
 			{
-				InGuiRenderer2D::SubmitQuadNotCentered(it->Position, it->Size, it->TexCoord, it->TextureID, it->Color);
+				Renderer2D::SubmitQuadNotCentered(it->Position, it->Size, it->TexCoord, it->TextureID, it->Color);
 			}
 			for (auto& line : window.Mesh.Lines)
 			{
-				InGuiRenderer2D::SubmitLine(line.P0, line.P1, line.Color);
+				Renderer2D::SubmitLine(line.P0, line.P1, line.Color);
 			}
 			for (auto it = window.OverlayMesh.Quads.begin(); it != window.OverlayMesh.Quads.end(); ++it)
 			{
-				InGuiRenderer2D::SubmitQuadNotCentered(it->Position, it->Size, it->TexCoord, it->TextureID, it->Color);
+				Renderer2D::SubmitQuadNotCentered(it->Position, it->Size, it->TexCoord, it->TextureID, it->Color);
 			}
 			for (auto& line : window.OverlayMesh.Lines)
 			{
-				InGuiRenderer2D::SubmitLine(line.P0, line.P1, line.Color);
+				Renderer2D::SubmitLine(line.P0, line.P1, line.Color);
 			}
 		}
 	}
@@ -384,14 +384,14 @@ namespace XYZ {
 				HandleResize(s_ResizedNode, context->FrameData.MousePosition);
 			for (auto it = s_Mesh.Quads.begin(); it != s_Mesh.Quads.end(); ++it)
 			{
-				InGuiRenderer2D::SubmitQuadNotCentered(it->Position, it->Size, it->TexCoord, it->TextureID, it->Color);
+				Renderer2D::SubmitQuadNotCentered(it->Position, it->Size, it->TexCoord, it->TextureID, it->Color);
 			}
 			for (auto& line : s_Mesh.Lines)
 			{
-				InGuiRenderer2D::SubmitLine(line.P0, line.P1, line.Color);
+				Renderer2D::SubmitLine(line.P0, line.P1, line.Color);
 			}
-			InGuiRenderer2D::Flush();
-			InGuiRenderer2D::FlushLines();
+			Renderer2D::Flush();
+			Renderer2D::FlushLines();
 
 			s_Mesh.Lines.clear();
 			s_Mesh.Quads.clear();

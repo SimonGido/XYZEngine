@@ -1,9 +1,8 @@
 #include "stdafx.h"
 #include "Renderer.h"
 
-#include "SceneRenderer.h"
 #include "Renderer2D.h"
-#include "InGuiRenderer2D.h"
+#include "SceneRenderer.h"
 #include "GuiRenderer.h"
 
 namespace XYZ {
@@ -63,9 +62,8 @@ namespace XYZ {
 	void Renderer::Init()
 	{
 		RendererAPI::Init();
-		SceneRenderer::Init();
 		Renderer2D::Init();
-		InGuiRenderer2D::Init();
+		SceneRenderer::Init();
 		GuiRenderer::Init();
 
 		SetupFullscreenQuad();
