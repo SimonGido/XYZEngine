@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "XYZ/Renderer/RendererAPI.h"
-
+#include "XYZ/Renderer/Framebuffer.h"
 #include <GL/glew.h>
 
 namespace XYZ {

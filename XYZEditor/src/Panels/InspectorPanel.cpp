@@ -197,6 +197,7 @@ namespace XYZ {
 					InGui::Dropdown("Add Component", glm::vec2(InGui::GetWindow(m_PanelID).Size.x - 20.0f, 25.0f), m_AddComponentOpen);
 				}
 			}
+			InGui::BeginScrollableArea(300.0f, m_ScrollOffsetTest, 100.0f);
 			InGui::Separator();
 			InGui::Button("test", glm::vec2(50.0f));
 			InGui::Button("test", glm::vec2(50.0f));
@@ -222,6 +223,7 @@ namespace XYZ {
 			InGui::Separator();
 			InGui::Button("test", glm::vec2(50.0f));
 			InGui::Separator();
+			InGui::EndScrollableArea();
 		}
 		InGui::End();
 	}

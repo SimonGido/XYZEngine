@@ -9,17 +9,24 @@ namespace XYZ {
 
 	InGuiRenderData::InGuiRenderData()
 	{
-		Ref<Shader> shader = Shader::Create("Assets/Shaders/DefaultShader.glsl");
+		Ref<Shader> shader = Shader::Create("Assets/Shaders/InGuiShader.glsl");
 		Texture = Texture2D::Create({ TextureWrap::Clamp, TextureParam::Linear, TextureParam::Nearest }, "Assets/Textures/Gui/TexturePack_Dark.png");
 		Ref<Texture2D> colorPickerTexture = Texture2D::Create({ TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest }, "Assets/Textures/Gui/ColorPicker.png");
 
 		Font = Ref<XYZ::Font>::Create(14, "Assets/Fonts/arial.ttf");
-		Material = Ref<XYZ::Material>::Create(shader);
-		Material->Set("u_Texture", Texture, TextureID);
-		Material->Set("u_Texture", Font->GetTexture(), FontTextureID);
-		Material->Set("u_Texture", colorPickerTexture, ColorPickerTextureID);
-		Material->Set("u_Color", glm::vec4(1.0f));
+		DefaultMaterial = Ref<XYZ::Material>::Create(shader);
+		DefaultMaterial->Set("u_Texture", Texture, TextureID);
+		DefaultMaterial->Set("u_Texture", Font->GetTexture(), FontTextureID);
+		DefaultMaterial->Set("u_Texture", colorPickerTexture, ColorPickerTextureID);
+		DefaultMaterial->Set("u_Color", glm::vec4(1.0f));
 
+		Ref<Shader> scissorShader = Shader::Create("Assets/Shaders/ScissorShader.glsl");
+		ScissorMaterial = Ref<XYZ::Material>::Create(scissorShader);
+		ScissorMaterial->Set("u_Texture", Texture, TextureID);
+		ScissorMaterial->Set("u_Texture", Font->GetTexture(), FontTextureID);
+		ScissorMaterial->Set("u_Texture", colorPickerTexture, ColorPickerTextureID);
+		ScissorMaterial->Set("u_Color", glm::vec4(1.0f));
+		ScissorMaterial->Set("u_NumberScissors", 0);
 
 		float divisor = 8.0f;
 		SubTexture[BUTTON] = Ref<XYZ::SubTexture>::Create(Texture, glm::vec2(0, 0), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
@@ -41,6 +48,8 @@ namespace XYZ {
 		Color[SELECT_COLOR] = { 0.8f, 0.0f, 0.2f, 0.6f };
 		Color[LINE_COLOR] = { 0.4f, 0.5f, 0.8f, 1.0f };
 		Color[SELECTOR_COLOR] = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+		ScissorBuffer = ShaderStorageBuffer::Create(MaxNumberOfScissors * sizeof(InGuiScissor));
 	}
 	InGuiDockNode::InGuiDockNode()
 	{

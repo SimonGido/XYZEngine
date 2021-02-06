@@ -3,6 +3,7 @@
 
 #include "SceneRenderer.h"
 #include "Renderer2D.h"
+#include "InGuiRenderer2D.h"
 #include "GuiRenderer.h"
 
 namespace XYZ {
@@ -64,6 +65,7 @@ namespace XYZ {
 		RendererAPI::Init();
 		SceneRenderer::Init();
 		Renderer2D::Init();
+		InGuiRenderer2D::Init();
 		GuiRenderer::Init();
 
 		SetupFullscreenQuad();

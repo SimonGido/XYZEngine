@@ -4,11 +4,9 @@
 #include "InGui.h"
 #include "InGuiFactory.h"
 #include "XYZ/Renderer/Renderer.h"
-#include "XYZ/Renderer/Renderer2D.h"
+#include "XYZ/Renderer/InGuiRenderer2D.h"
 
 namespace XYZ {
-
-
 
 	static InGuiDockNode* s_Root = nullptr;
 
@@ -184,13 +182,61 @@ namespace XYZ {
 		if (parent->FirstChild == node)
 		{
 			parent->Data.Windows = std::move(parent->SecondChild->Data.Windows);
+			parent->Type = parent->SecondChild->Type;
+			InGuiDockNode* tmp = parent->SecondChild;
+			if (parent->SecondChild->Type != InGuiSplitType::None)
+			{
+				tmp->FirstChild->Parent = parent;
+				tmp->SecondChild->Parent = parent;
+				parent->FirstChild = tmp->FirstChild;
+				parent->SecondChild = tmp->SecondChild;
+			}
+			delete tmp;
 		}
 		else
 		{
 			parent->Data.Windows = std::move(parent->FirstChild->Data.Windows);
+			parent->Type = parent->FirstChild->Type;
+			InGuiDockNode* tmp = parent->FirstChild;
+			if (parent->FirstChild->Type != InGuiSplitType::None)
+			{
+				tmp->FirstChild->Parent = parent;
+				tmp->SecondChild->Parent = parent;
+				parent->FirstChild = tmp->FirstChild;
+				parent->SecondChild = tmp->SecondChild;
+			}
+			delete tmp;
 		}
 	}
+	static void AdjustChildrenRecursive(InGuiDockNode* node)
+	{
+		if (node->FirstChild && node->SecondChild)
+		{
+			if (node->Type == InGuiSplitType::Vertical)
+			{
+				float oldSize = node->FirstChild->Data.Size.x + node->SecondChild->Data.Size.x;
+				float scale = node->Data.Size.x / oldSize;
 
+				node->FirstChild->Data.Position = node->Data.Position;
+				node->FirstChild->Data.Size.x = node->SecondChild->Data.Position.x - node->FirstChild->Data.Position.x;
+				node->FirstChild->Data.Size.y = node->Data.Size.y;
+				node->SecondChild->Data.Position.y = node->Data.Position.y;
+				node->SecondChild->Data.Size.y = node->Data.Size.y;
+				node->SecondChild->Data.Size.x = node->Data.Size.x - node->FirstChild->Data.Size.x;
+			}
+			else
+			{
+				node->FirstChild->Data.Position = node->Data.Position;
+				node->FirstChild->Data.Size.y = node->SecondChild->Data.Position.y - node->FirstChild->Data.Position.y;
+				node->FirstChild->Data.Size.x = node->Data.Size.x;
+				node->SecondChild->Data.Position.x = node->Data.Position.x;
+				node->SecondChild->Data.Size.x = node->Data.Size.x;
+				node->SecondChild->Data.Size.y = node->Data.Size.y - node->FirstChild->Data.Size.y;
+			}
+			AdjustChildrenRecursive(node->FirstChild);
+			AdjustChildrenRecursive(node->SecondChild);
+		}
+	}
 	static bool RemoveRecursive(InGuiDockNode* node, uint32_t id)
 	{
 		if (node->FirstChild)
@@ -212,11 +258,7 @@ namespace XYZ {
 				// Unsplit node
 				InGuiDockNode* parent = node->Parent;
 				MoveSiblingToParent(node);
-				DestroyRecursive(parent->FirstChild);
-				DestroyRecursive(parent->SecondChild);
-				parent->FirstChild = nullptr;
-				parent->SecondChild = nullptr;
-				parent->Type = InGuiSplitType::None;
+				AdjustChildrenRecursive(parent);
 			}
 			return true;
 		}
@@ -252,52 +294,24 @@ namespace XYZ {
 
 			for (auto it = window.Mesh.Quads.begin(); it != window.Mesh.Quads.end(); ++it)
 			{
-				Renderer2D::SubmitQuadNotCentered(it->Position, it->Size, it->TexCoord, it->TextureID, it->Color);
+				InGuiRenderer2D::SubmitQuadNotCentered(it->Position, it->Size, it->TexCoord, it->TextureID, it->Color);
 			}
 			for (auto& line : window.Mesh.Lines)
 			{
-				Renderer2D::SubmitLine(line.P0, line.P1, line.Color);
+				InGuiRenderer2D::SubmitLine(line.P0, line.P1, line.Color);
 			}
 			for (auto it = window.OverlayMesh.Quads.begin(); it != window.OverlayMesh.Quads.end(); ++it)
 			{
-				Renderer2D::SubmitQuadNotCentered(it->Position, it->Size, it->TexCoord, it->TextureID, it->Color);
+				InGuiRenderer2D::SubmitQuadNotCentered(it->Position, it->Size, it->TexCoord, it->TextureID, it->Color);
 			}
 			for (auto& line : window.OverlayMesh.Lines)
 			{
-				Renderer2D::SubmitLine(line.P0, line.P1, line.Color);
+				InGuiRenderer2D::SubmitLine(line.P0, line.P1, line.Color);
 			}
 		}
 	}
 
-	static void AdjustChildrenRecursive(InGuiDockNode* node)
-	{
-		if (node->FirstChild && node->SecondChild)
-		{
-			if (node->Type == InGuiSplitType::Vertical)
-			{
-				float oldSize = node->FirstChild->Data.Size.x + node->SecondChild->Data.Size.x;
-				float scale = node->Data.Size.x / oldSize;
-
-				node->FirstChild->Data.Position = node->Data.Position;
-				node->FirstChild->Data.Size.x = node->SecondChild->Data.Position.x - node->FirstChild->Data.Position.x;
-				node->FirstChild->Data.Size.y = node->Data.Size.y;
-				node->SecondChild->Data.Position.y = node->Data.Position.y;
-				node->SecondChild->Data.Size.y = node->Data.Size.y;
-				node->SecondChild->Data.Size.x = node->Data.Size.x - node->FirstChild->Data.Size.x;
-			}
-			else
-			{
-				node->FirstChild->Data.Position = node->Data.Position;
-				node->FirstChild->Data.Size.y = node->SecondChild->Data.Position.y - node->FirstChild->Data.Position.y;
-				node->FirstChild->Data.Size.x = node->Data.Size.x;
-				node->SecondChild->Data.Position.x = node->Data.Position.x;
-				node->SecondChild->Data.Size.x = node->Data.Size.x;
-				node->SecondChild->Data.Size.y = node->Data.Size.y - node->FirstChild->Data.Size.y;
-			}
-			AdjustChildrenRecursive(node->FirstChild);
-			AdjustChildrenRecursive(node->SecondChild);
-		}
-	}
+	
 
 	static void HandleResize(InGuiDockNode* node, const glm::vec2& mousePos)
 	{
@@ -370,14 +384,14 @@ namespace XYZ {
 				HandleResize(s_ResizedNode, context->FrameData.MousePosition);
 			for (auto it = s_Mesh.Quads.begin(); it != s_Mesh.Quads.end(); ++it)
 			{
-				Renderer2D::SubmitQuadNotCentered(it->Position, it->Size, it->TexCoord, it->TextureID, it->Color);
+				InGuiRenderer2D::SubmitQuadNotCentered(it->Position, it->Size, it->TexCoord, it->TextureID, it->Color);
 			}
 			for (auto& line : s_Mesh.Lines)
 			{
-				Renderer2D::SubmitLine(line.P0, line.P1, line.Color);
+				InGuiRenderer2D::SubmitLine(line.P0, line.P1, line.Color);
 			}
-			Renderer2D::Flush();
-			Renderer2D::FlushLines();
+			InGuiRenderer2D::Flush();
+			InGuiRenderer2D::FlushLines();
 
 			s_Mesh.Lines.clear();
 			s_Mesh.Quads.clear();

@@ -2,8 +2,8 @@
 #include "InGui.h"
 
 #include "XYZ/Core/Input.h"
-#include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/Renderer.h"
+#include "XYZ/Renderer/InGuiRenderer2D.h"
 
 #include "InGuiFactory.h"
 #include "InGuiDockspace.h"
@@ -14,6 +14,7 @@
 
 
 namespace YAML {
+
 	template<>
 	struct convert<glm::vec2>
 	{
@@ -136,8 +137,8 @@ namespace XYZ {
 		glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f));
 		viewMatrix = glm::inverse(viewMatrix);
 
-		Renderer2D::BeginScene(s_Context->FrameData.ViewProjectionMatrix * viewMatrix);
-		Renderer2D::SetMaterial(s_Context->RenderData.Material);
+		InGuiRenderer2D::BeginScene(s_Context->FrameData.ViewProjectionMatrix * viewMatrix);
+		InGuiRenderer2D::SetMaterial(s_Context->RenderData.DefaultMaterial);
 		InGuiDockspace::beginFrame(s_Context, (s_Context->FrameData.MovedWindowID != InGuiFrameData::NullID));
 	}
 
@@ -146,60 +147,61 @@ namespace XYZ {
 		XYZ_ASSERT(s_Context, "InGuiContext is not initialized");
 		
 		InGuiDockspace::endFrame(s_Context);
-		Renderer2D::SetMaterial(s_Context->RenderData.Material);
+		InGuiRenderer2D::SetMaterial(s_Context->RenderData.DefaultMaterial);
 		for (auto winIt = s_Context->Windows.rbegin(); winIt != s_Context->Windows.rend(); ++winIt)
 		{
 			if (!IS_SET(winIt->Flags, InGuiWindowFlags::Docked))
 			{
 				for (auto it = winIt->Mesh.Quads.begin(); it != winIt->Mesh.Quads.end(); ++it)
 				{
-					Renderer2D::SubmitQuadNotCentered(it->Position, it->Size, it->TexCoord, it->TextureID, it->Color);
+					InGuiRenderer2D::SubmitQuadNotCentered(it->Position, it->Size, it->TexCoord, it->TextureID, it->Color);
 				}
 				for (auto& line : winIt->Mesh.Lines)
 				{
-					Renderer2D::SubmitLine(line.P0, line.P1, line.Color);
+					InGuiRenderer2D::SubmitLine(line.P0, line.P1, line.Color);
 				}
 				for (auto it = winIt->OverlayMesh.Quads.begin(); it != winIt->OverlayMesh.Quads.end(); ++it)
 				{
-					Renderer2D::SubmitQuadNotCentered(it->Position, it->Size, it->TexCoord, it->TextureID, it->Color);
+					InGuiRenderer2D::SubmitQuadNotCentered(it->Position, it->Size, it->TexCoord, it->TextureID, it->Color);
 				}
 				for (auto& line : winIt->OverlayMesh.Lines)
 				{
-					Renderer2D::SubmitLine(line.P0, line.P1, line.Color);
+					InGuiRenderer2D::SubmitLine(line.P0, line.P1, line.Color);
 				}
 			}	
 		}
 
-		Renderer2D::Flush();
-		Renderer2D::FlushLines();
+		InGuiRenderer2D::Flush();
+		InGuiRenderer2D::FlushLines();
 
 		if (s_Context->FrameData.Scissors.size())
-		{
-			Renderer::SetScissorTest(true);
-			Renderer::ScissorArray(s_Context->FrameData.Scissors.size(), s_Context->FrameData.Scissors.data());
-			Renderer2D::SetMaterial(s_Context->RenderData.Material);
+		{		
+			s_Context->RenderData.ScissorBuffer->Update(s_Context->FrameData.Scissors.data(), s_Context->FrameData.Scissors.size() * sizeof(InGuiScissor));
+			s_Context->RenderData.ScissorBuffer->BindRange(0, s_Context->FrameData.Scissors.size() * sizeof(InGuiScissor), 0);
+			s_Context->RenderData.ScissorMaterial->Set("u_NumberScissors", s_Context->FrameData.Scissors.size());
+			InGuiRenderer2D::SetMaterial(s_Context->RenderData.ScissorMaterial);
 			for (auto& texture : s_Context->FrameData.CustomTextures)
-				Renderer2D::SetTexture(texture);
+				InGuiRenderer2D::SetTexture(texture);
+
 
 			for (auto winIt = s_Context->Windows.rbegin(); winIt != s_Context->Windows.rend(); ++winIt)
 			{
 				for (auto it = winIt->ScrollableMesh.Quads.begin(); it != winIt->ScrollableMesh.Quads.end(); ++it)
 				{
-					Renderer2D::SubmitQuadNotCentered(it->Position, it->Size, it->TexCoord, it->TextureID, it->Color);
+					InGuiRenderer2D::SubmitQuadNotCentered(it->Position, it->Size, it->TexCoord, it->TextureID, it->Color, it->ScissorIndex);
 				}
 				for (auto& line : winIt->ScrollableMesh.Lines)
 				{
-					Renderer2D::SubmitLine(line.P0, line.P1, line.Color);
+					InGuiRenderer2D::SubmitLine(line.P0, line.P1, line.Color);
 				}
 			}
-			Renderer2D::Flush();
-			Renderer2D::FlushLines();
-			Renderer::SetScissorTest(false);
+			InGuiRenderer2D::Flush();
+			InGuiRenderer2D::FlushLines();
 			s_Context->FrameData.Scissors.clear();
 		}
 		s_Context->FrameData.CustomTextures.clear();
 
-		Renderer2D::EndScene();
+		InGuiRenderer2D::EndScene();
 		Renderer::WaitAndRender();
 
 		handleWindowMove();
@@ -380,7 +382,7 @@ namespace XYZ {
 		}
 		InGuiFactory::GenerateWindow(
 			name, window, color, s_Context->RenderData,
-			subTexture, Renderer2D::SetTexture(subTexture->GetTexture())
+			subTexture, InGuiRenderer2D::SetTexture(subTexture->GetTexture())
 		);
 		s_Context->FrameData.CustomTextures.push_back(subTexture->GetTexture());
 		s_Context->FrameData.CurrentMesh = &window.Mesh;
@@ -411,8 +413,12 @@ namespace XYZ {
 		uint32_t subTextureIndex = InGuiRenderData::RIGHT_ARROW;
 		if (open) subTextureIndex = InGuiRenderData::DOWN_ARROW;
 
-		InGuiFactory::GenerateQuad(mesh, color, size, pos, s_Context->RenderData, InGuiRenderData::BUTTON);
-		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, mesh, color, buttonSize, pos, s_Context->RenderData, subTextureIndex);
+		
+		InGuiFactory::GenerateQuad(mesh, color, size, pos, 
+			s_Context->RenderData, InGuiRenderData::BUTTON, s_Context->FrameData.Scissors.size() - 1
+		);
+		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, mesh, color, buttonSize, pos, 
+			s_Context->RenderData, subTextureIndex, s_Context->FrameData.Scissors.size() - 1);
 
 		if (eraseOutOfBorders(oldQuadCount, buttonSize, window, mesh)) { return false; }
 
@@ -445,9 +451,9 @@ namespace XYZ {
 		s_Context->FrameData.CurrentMesh = &window.ScrollableMesh;
 	
 		auto [wWidth, wHeight] = Input::GetWindowSize();
-		uint32_t positionY = wHeight - s_LayoutOffset.y - height;
+		float positionY = wHeight - s_LayoutOffset.y - height;
 		s_Context->FrameData.Scissors.push_back(
-			{ (uint32_t)window.Position.x, (uint32_t)positionY, (uint32_t)size.x, (uint32_t)size.y }
+			{ window.Position.x, positionY, size.x, size.y }
 		);
 
 		s_ActiveWidgets = false;
@@ -482,7 +488,9 @@ namespace XYZ {
 		uint32_t subTextureIndex = InGuiRenderData::RIGHT_ARROW;
 		if (open) subTextureIndex = InGuiRenderData::DOWN_ARROW;
 
-		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, mesh, color, size, pos, s_Context->RenderData, subTextureIndex);
+		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, mesh, color, size, pos, 
+			s_Context->RenderData, subTextureIndex, s_Context->FrameData.Scissors.size() - 1
+		);
 		if (eraseOutOfBorders(oldQuadCount, genSize, window, mesh)) { return false; }
 		if (!s_ActiveWidgets) return 0;
 
@@ -521,7 +529,8 @@ namespace XYZ {
 		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
 		glm::vec2 pos = s_LayoutOffset;
 
-		glm::vec2 genSize = InGuiFactory::GenerateQuadWithTextLeft(name, window, window.OverlayMesh, color, size, pos, s_Context->RenderData, InGuiRenderData::BUTTON);
+		glm::vec2 genSize = InGuiFactory::GenerateQuadWithTextLeft(name, window, window.OverlayMesh, 
+			color, size, pos, s_Context->RenderData, InGuiRenderData::BUTTON, s_Context->FrameData.Scissors.size() - 1);
 		//if (eraseOutOfBorders(oldQuadCount, genSize, window, window.OverlayMesh)) { return false; }
 		if (!s_ActiveWidgets) return 0;
 
@@ -567,7 +576,10 @@ namespace XYZ {
 		uint8_t returnType = 0;
 		size_t oldQuadCount = mesh.Quads.size();
 		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
-		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, mesh, color, size, s_LayoutOffset, s_Context->RenderData, InGuiRenderData::BUTTON);
+		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(
+			name, window, mesh, color, size, s_LayoutOffset, 
+			s_Context->RenderData, InGuiRenderData::BUTTON, s_Context->FrameData.Scissors.size() - 1
+		);
 				
 		if (eraseOutOfBorders(oldQuadCount, genSize, window, mesh))
 			return returnType;
@@ -601,7 +613,10 @@ namespace XYZ {
 		uint32_t subTextureIndex = InGuiRenderData::CHECKBOX_UNCHECKED;
 		if (val) subTextureIndex = InGuiRenderData::CHECKBOX_CHECKED;
 			
-		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, mesh, color, size, s_LayoutOffset, s_Context->RenderData, subTextureIndex);
+		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(
+			name, window, mesh, color, size, s_LayoutOffset, 
+			s_Context->RenderData, subTextureIndex, s_Context->FrameData.Scissors.size() - 1
+		);
 
 		if (eraseOutOfBorders(oldQuadCount, genSize, window, mesh))
 			return returnType;
@@ -642,11 +657,15 @@ namespace XYZ {
 		uint8_t returnType = 0;
 		size_t oldQuadCount = mesh.Quads.size();
 		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
-		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, mesh, color, size, s_LayoutOffset, s_Context->RenderData, InGuiRenderData::SLIDER);
+		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, mesh, color, size, s_LayoutOffset, s_Context->RenderData, InGuiRenderData::SLIDER, s_Context->FrameData.Scissors.size());
 		glm::vec2 handleSize = glm::vec2(size.y, size.y);
 		glm::vec2 handlePosition = s_LayoutOffset + glm::vec2((size.x - size.y) * val, 0.0f);
-		InGuiFactory::GenerateQuadWithText(nullptr, window, mesh, color, handleSize, handlePosition, s_Context->RenderData, InGuiRenderData::SLIDER_HANDLE);
-		InGuiFactory::GenerateTextCentered(s_TextBuffer, window, mesh, s_LayoutOffset, size, s_Context->RenderData, 1000);
+		InGuiFactory::GenerateQuadWithText(nullptr, window, mesh, color, handleSize, handlePosition, 
+			s_Context->RenderData, InGuiRenderData::SLIDER_HANDLE, s_Context->FrameData.Scissors.size() - 1
+		);
+		InGuiFactory::GenerateTextCentered(s_TextBuffer, window, mesh, s_LayoutOffset, size,
+			s_Context->RenderData, 1000, s_Context->FrameData.Scissors.size() - 1
+		);
 
 		if (eraseOutOfBorders(oldQuadCount, genSize, window, mesh))
 			return returnType;
@@ -683,7 +702,9 @@ namespace XYZ {
 		
 
 		glm::vec2 genPos = s_LayoutOffset + glm::vec2(0.0f, s_Context->RenderData.Font->GetLineHeight());
-		glm::vec2 genSize = InGuiFactory::GenerateText(text, mesh, color, genPos, size, s_Context->RenderData);
+		glm::vec2 genSize = InGuiFactory::GenerateText(text, mesh, color, genPos, size, 
+			s_Context->RenderData, s_Context->FrameData.Scissors.size() - 1
+		);
 
 		if (eraseOutOfBorders(oldQuadCount, genSize, window, mesh))
 			return returnType;
@@ -743,8 +764,12 @@ namespace XYZ {
 		}
 
 
-		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window,mesh, color, size, s_LayoutOffset, s_Context->RenderData, InGuiRenderData::BUTTON);
-		InGuiFactory::GenerateTextCentered(buffer, window, mesh, s_LayoutOffset, size, s_Context->RenderData, maxCharacters);
+		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window,mesh, color, size, s_LayoutOffset, 
+			s_Context->RenderData, InGuiRenderData::BUTTON, s_Context->FrameData.Scissors.size() - 1
+		);
+		InGuiFactory::GenerateTextCentered(buffer, window, mesh, s_LayoutOffset, size, 
+			s_Context->RenderData, maxCharacters, s_Context->FrameData.Scissors.size() - 1
+		);
 		
 		if (eraseOutOfBorders(oldQuadCount, genSize, window, mesh))
 			return returnType;
@@ -818,8 +843,12 @@ namespace XYZ {
 		}
 
 
-		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, mesh, color, size, s_LayoutOffset, s_Context->RenderData, InGuiRenderData::BUTTON);
-		InGuiFactory::GenerateTextCentered(buffer, window, mesh, s_LayoutOffset, size, s_Context->RenderData, maxCharacters);
+		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, mesh, color, size, s_LayoutOffset,
+			s_Context->RenderData, InGuiRenderData::BUTTON, s_Context->FrameData.Scissors.size() - 1
+		);
+		InGuiFactory::GenerateTextCentered(buffer, window, mesh, s_LayoutOffset, size, 
+			s_Context->RenderData, maxCharacters, s_Context->FrameData.Scissors.size() - 1
+		);
 
 		if (eraseOutOfBorders(oldQuadCount, genSize, window, mesh))
 			return returnType;
@@ -894,8 +923,12 @@ namespace XYZ {
 		}
 
 
-		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, mesh, color, size, s_LayoutOffset, s_Context->RenderData, InGuiRenderData::BUTTON);
-		InGuiFactory::GenerateTextCentered(buffer, window, mesh, s_LayoutOffset, size, s_Context->RenderData, maxCharacters);
+		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, mesh, color, size, 
+			s_LayoutOffset, s_Context->RenderData, InGuiRenderData::BUTTON, s_Context->FrameData.Scissors.size() - 1
+		);
+		InGuiFactory::GenerateTextCentered(buffer, window, mesh, s_LayoutOffset, size, 
+			s_Context->RenderData, maxCharacters, s_Context->FrameData.Scissors.size() - 1
+		);
 
 		if (eraseOutOfBorders(oldQuadCount, genSize, window, mesh))
 			return returnType;
@@ -942,7 +975,9 @@ namespace XYZ {
 		uint8_t returnType = 0;
 		size_t oldQuadCount = mesh.Quads.size();
 		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
-		InGuiFactory::GenerateQuad(mesh, color, size, s_LayoutOffset, subTexture, Renderer2D::SetTexture(subTexture->GetTexture()));
+		InGuiFactory::GenerateQuad(mesh, color, size, s_LayoutOffset, subTexture, 
+			InGuiRenderer2D::SetTexture(subTexture->GetTexture()), s_Context->FrameData.Scissors.size() - 1
+		);
 		s_Context->FrameData.CustomTextures.push_back(subTexture->GetTexture());
 
 		if (eraseOutOfBorders(oldQuadCount, size, window, mesh))

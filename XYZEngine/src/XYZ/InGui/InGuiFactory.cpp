@@ -3,7 +3,7 @@
 
 namespace XYZ {
 
-	static glm::vec2 GenerateTextMesh(const char* source, const Ref<Font>& font, const glm::vec4& color, const glm::vec2& pos, const glm::vec2& size, InGuiMesh& mesh, uint32_t textureID, uint32_t maxCount)
+	static glm::vec2 GenerateTextMesh(const char* source, const Ref<Font>& font, const glm::vec4& color, const glm::vec2& pos, const glm::vec2& size, InGuiMesh& mesh, uint32_t textureID, uint32_t maxCount, uint32_t scissorIndex)
 	{
 		if (!source)
 			return { 0.0f, 0.0f };
@@ -40,7 +40,7 @@ namespace XYZ {
 				(float)(character.X0Coord) / (float)(font->GetWidth()), (float)(character.Y0Coord) / (float)(font->GetHeight()),
 				(float)(character.X1Coord) / (float)(font->GetWidth()), (float)(character.Y1Coord) / (float)(font->GetHeight())
 			};		
-			mesh.Quads.push_back({ color, charTexCoord, glm::vec3{charPosition, 0.0f}, charSize, textureID });
+			mesh.Quads.push_back({ color, charTexCoord, glm::vec3{charPosition, 0.0f}, charSize, textureID, scissorIndex });
 
 			xCursor += character.XAdvance;
 			counter++;
@@ -100,11 +100,11 @@ namespace XYZ {
 			});	
 		GenerateTextMesh(
 			text, renderData.Font, renderData.Color[InGuiRenderData::DEFAULT_COLOR],
-			textPosition, textSize, window.Mesh, InGuiRenderData::FontTextureID, 1000
+			textPosition, textSize, window.Mesh, InGuiRenderData::FontTextureID, 1000, 0
 		);
 		
 	}
-	void InGuiFactory::GenerateQuad(InGuiMesh& mesh, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, const InGuiRenderData& renderData, uint32_t subTextureIndex)
+	void InGuiFactory::GenerateQuad(InGuiMesh& mesh, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, const InGuiRenderData& renderData, uint32_t subTextureIndex, uint32_t scissorIndex)
 	{
 		const glm::vec4& oldTex = renderData.SubTexture[subTextureIndex]->GetTexCoords();
 		glm::vec4 texCoords = {
@@ -116,10 +116,11 @@ namespace XYZ {
 				texCoords,
 				{position, 0.0f},
 				size,
-				InGuiRenderData::TextureID
+				InGuiRenderData::TextureID,
+				scissorIndex
 			});
 	}
-	void InGuiFactory::GenerateQuad(InGuiMesh& mesh, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, Ref<SubTexture> subTexture, uint32_t textureID)
+	void InGuiFactory::GenerateQuad(InGuiMesh& mesh, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, Ref<SubTexture> subTexture, uint32_t textureID, uint32_t scissorIndex)
 	{
 		const glm::vec4& oldTex = subTexture->GetTexCoords();
 		glm::vec4 texCoords = {
@@ -131,12 +132,13 @@ namespace XYZ {
 				texCoords,
 				{position, 0.0f},
 				size,
-				textureID
+				textureID,
+				scissorIndex
 			});
 	}
-	glm::vec2 InGuiFactory::GenerateQuadWithText(const char* text, const InGuiWindow& window, InGuiMesh& mesh, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, const InGuiRenderData& renderData, uint32_t subTextureIndex)
+	glm::vec2 InGuiFactory::GenerateQuadWithText(const char* text, const InGuiWindow& window, InGuiMesh& mesh, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, const InGuiRenderData& renderData, uint32_t subTextureIndex, uint32_t scissorIndex)
 	{
-		GenerateQuad(mesh, color, size, position, renderData.SubTexture[subTextureIndex], InGuiRenderData::TextureID);
+		GenerateQuad(mesh, color, size, position, renderData.SubTexture[subTextureIndex], InGuiRenderData::TextureID, scissorIndex);
 		glm::vec2 textPosition = position;
 		glm::vec2 textSize = { 
 			window.Size.x - window.Layout.RightPadding - size.x
@@ -150,7 +152,7 @@ namespace XYZ {
 		size_t oldMeshSize = mesh.Quads.size();
 		glm::vec2 genSize = GenerateTextMesh(
 			text, renderData.Font, renderData.Color[InGuiRenderData::DEFAULT_COLOR],
-			position, textSize, mesh, InGuiRenderData::FontTextureID, 1000
+			position, textSize, mesh, InGuiRenderData::FontTextureID, 1000, scissorIndex
 		);
 
 		glm::vec2 textOffset = { 7.0f, 0.0f };
@@ -168,9 +170,9 @@ namespace XYZ {
 
 		return glm::vec2(size.x + genSize.x + textOffset.x, height);
 	}
-	glm::vec2 InGuiFactory::GenerateQuadWithTextLeft(const char* text, const InGuiWindow& window, InGuiMesh& mesh, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, const InGuiRenderData& renderData, uint32_t subTextureIndex)
+	glm::vec2 InGuiFactory::GenerateQuadWithTextLeft(const char* text, const InGuiWindow& window, InGuiMesh& mesh, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, const InGuiRenderData& renderData, uint32_t subTextureIndex, uint32_t scissorIndex)
 	{
-		GenerateQuad(mesh, color, size, position, renderData.SubTexture[subTextureIndex], InGuiRenderData::TextureID);
+		GenerateQuad(mesh, color, size, position, renderData.SubTexture[subTextureIndex], InGuiRenderData::TextureID, scissorIndex);
 
 		glm::vec2 textOffset = { 7.0f, 0.0f };
 		glm::vec2 textPosition = position;
@@ -181,7 +183,7 @@ namespace XYZ {
 		size_t oldMeshSize = mesh.Quads.size();
 		glm::vec2 genSize = GenerateTextMesh(
 			text, renderData.Font, renderData.Color[InGuiRenderData::DEFAULT_COLOR],
-			position, textSize, mesh, InGuiRenderData::FontTextureID, 1000
+			position, textSize, mesh, InGuiRenderData::FontTextureID, 1000, scissorIndex
 		);
 
 
@@ -198,12 +200,12 @@ namespace XYZ {
 
 		return glm::vec2(size.x, height);
 	}
-	glm::vec2 InGuiFactory::GenerateTextCentered(const char* text, const InGuiWindow& window, InGuiMesh& mesh, const glm::vec2& position, const glm::vec2& size, const InGuiRenderData& renderData, uint32_t maxCount)
+	glm::vec2 InGuiFactory::GenerateTextCentered(const char* text, const InGuiWindow& window, InGuiMesh& mesh, const glm::vec2& position, const glm::vec2& size, const InGuiRenderData& renderData, uint32_t maxCount, uint32_t scissorIndex)
 	{
 		size_t oldMeshSize = mesh.Quads.size();
 		glm::vec2 genSize = GenerateTextMesh(
 			text, renderData.Font, renderData.Color[InGuiRenderData::DEFAULT_COLOR],
-			position, size, mesh, InGuiRenderData::FontTextureID, maxCount
+			position, size, mesh, InGuiRenderData::FontTextureID, maxCount, scissorIndex
 		);
 
 		for (size_t i = oldMeshSize; i < mesh.Quads.size(); ++i)
@@ -213,11 +215,11 @@ namespace XYZ {
 		}
 		return genSize;
 	}
-	glm::vec2 InGuiFactory::GenerateText(const char* text, InGuiMesh& mesh, const glm::vec4& color, const glm::vec2& position, const glm::vec2& size, const InGuiRenderData& renderData)
+	glm::vec2 InGuiFactory::GenerateText(const char* text, InGuiMesh& mesh, const glm::vec4& color, const glm::vec2& position, const glm::vec2& size, const InGuiRenderData& renderData, uint32_t scissorIndex)
 	{
 		return GenerateTextMesh(
 			text, renderData.Font, color,
-			position, size, mesh, InGuiRenderData::FontTextureID, 1000
+			position, size, mesh, InGuiRenderData::FontTextureID, 1000, scissorIndex
 		);
 	}
 	void InGuiFactory::GenerateFrame(InGuiMesh& mesh, const glm::vec2& position, const glm::vec2& size, const InGuiRenderData& renderData)
@@ -251,18 +253,18 @@ namespace XYZ {
 		glm::vec2 bottomPos = node.Data.Position + glm::vec2((node.Data.Size.x - quadSize.x) / 2.0f, node.Data.Size.y - quadSize.y);
 		GenerateQuad(
 			mesh, quadColor, quadSize, middlePos, 
-			renderData.SubTexture[InGuiRenderData::BUTTON], InGuiRenderData::TextureID);
+			renderData.SubTexture[InGuiRenderData::BUTTON], InGuiRenderData::TextureID, 0);
 		GenerateQuad(
 			mesh, quadColor, quadSize, leftPos, 
-			renderData.SubTexture[InGuiRenderData::BUTTON], InGuiRenderData::TextureID);
+			renderData.SubTexture[InGuiRenderData::BUTTON], InGuiRenderData::TextureID, 0);
 		GenerateQuad(
 			mesh, quadColor, quadSize, rightPos, 
-			renderData.SubTexture[InGuiRenderData::BUTTON], InGuiRenderData::TextureID);
+			renderData.SubTexture[InGuiRenderData::BUTTON], InGuiRenderData::TextureID, 0);
 		GenerateQuad(
 			mesh, quadColor, quadSize, topPos,
-			renderData.SubTexture[InGuiRenderData::BUTTON], InGuiRenderData::TextureID);
+			renderData.SubTexture[InGuiRenderData::BUTTON], InGuiRenderData::TextureID, 0);
 		GenerateQuad(
 			mesh, quadColor, quadSize, bottomPos,
-			renderData.SubTexture[InGuiRenderData::BUTTON], InGuiRenderData::TextureID);
+			renderData.SubTexture[InGuiRenderData::BUTTON], InGuiRenderData::TextureID, 0);
 	}
 }

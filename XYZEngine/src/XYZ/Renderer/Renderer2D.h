@@ -8,6 +8,7 @@
 
 
 namespace XYZ {
+	// TODO: Generic to specify layout of renderer?
 
 	class Renderer2D
 	{

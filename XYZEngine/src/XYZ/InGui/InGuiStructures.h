@@ -4,6 +4,7 @@
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Renderer/Font.h"
 #include "XYZ/Renderer/Framebuffer.h"
+#include "XYZ/Renderer/Buffer.h"
 
 #include <glm/glm.hpp>
 
@@ -51,6 +52,7 @@ namespace XYZ {
 		glm::vec3 Position;
 		glm::vec2 Size;
 		uint32_t  TextureID;
+		uint32_t  ScissorIndex = 0;
 	};
 
 	struct InGuiLine
@@ -87,13 +89,23 @@ namespace XYZ {
 		static constexpr float PanelHeight = 25.0f;
 	};
 
+	struct InGuiScissor
+	{
+		float X;
+		float Y;
+		float Width;
+		float Height;
+	};
+
 	struct InGuiRenderData
 	{
 		InGuiRenderData();
 
 		Ref<Font>		   Font;
 		Ref<Texture2D>	   Texture;
-		Ref<Material>	   Material;
+		Ref<Material>	   DefaultMaterial;
+		Ref<Material>	   ScissorMaterial;
+		Ref<ShaderStorageBuffer> ScissorBuffer;
 
 		enum
 		{
@@ -128,6 +140,8 @@ namespace XYZ {
 		static constexpr uint32_t FontTextureID = 1;
 		static constexpr uint32_t ColorPickerTextureID = 2;
 		static constexpr uint32_t DefaultTextureCount = 3;
+
+		static constexpr uint32_t MaxNumberOfScissors = 32;
 	};
 
 	struct InGuiFrameData
@@ -144,10 +158,10 @@ namespace XYZ {
 		uint32_t   ResizedWindowID = NullID;
 		InGuiMesh* CurrentMesh = nullptr;
 
-		std::vector<ScissorSpecs> Scissors;
+		std::vector<InGuiScissor> Scissors;
 		std::vector<Ref<Texture>> CustomTextures;
-		std::vector<bool> HandleInput;
-		size_t			  InputIndex = 0;
+		std::vector<bool>		  HandleInput;
+		size_t					  InputIndex = 0;
 	};
 
 
