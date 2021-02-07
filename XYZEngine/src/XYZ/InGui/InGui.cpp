@@ -423,7 +423,7 @@ namespace XYZ {
 
 
 		if (eraseOutOfBorders(oldQuadCount, buttonSize, window, mesh)) { return false; }
-		if (!s_ActiveWidgets) return false;
+		if (!s_ActiveWidgets) return open;
 
 		if (Collide(pos, size, s_Context->FrameData.MousePosition))
 		{
