@@ -346,10 +346,10 @@ namespace XYZ {
 			Flush();
 
 		glm::vec2 texCoords[quadVertexCount] = {
-			{texCoord.x,texCoord.y},
-			{texCoord.z,texCoord.y},
-			{texCoord.z,texCoord.w},
-			{texCoord.x,texCoord.w}
+			{texCoord.x, texCoord.y},
+			{texCoord.z, texCoord.y},
+			{texCoord.z, texCoord.w},
+			{texCoord.x, texCoord.w}
 		};
 		glm::vec3 vertices[quadVertexCount] = {
 			{  position.x - size.x / 2.0f,  position.y - size.y / 2.0f, 0.0f},
@@ -452,10 +452,10 @@ namespace XYZ {
 			Flush();
 
 		glm::vec2 texCoords[quadVertexCount] = {
-			{texCoord.x,texCoord.y},
-			{texCoord.z,texCoord.y},
-			{texCoord.z,texCoord.w},
-			{texCoord.x,texCoord.w}
+			{texCoord.x, texCoord.y},
+			{texCoord.z, texCoord.y},
+			{texCoord.z, texCoord.w},
+			{texCoord.x, texCoord.w}
 		};
 
 		glm::vec3 vertices[quadVertexCount] = {

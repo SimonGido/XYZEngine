@@ -7,11 +7,11 @@ Windows:
   - Window: 1
     Flags: 19
     Position: [414, 0]
-    Size: [1030, 1017]
+    Size: [1034, 1017]
   - Window: 2
     Flags: 55
-    Position: [1444, 0]
-    Size: [476, 1017]
+    Position: [1448, 0]
+    Size: [472, 1017]
 Dockspace:
   - DockNode: 0
     Position: [0, 0]
@@ -37,13 +37,13 @@ Dockspace:
     SecondChild: 8
   - DockNode: 3
     Position: [414, 0]
-    Size: [1030, 1017]
+    Size: [1034, 1017]
     Type: 0
     Windows:
       - 1
   - DockNode: 8
-    Position: [1444, 0]
-    Size: [476, 1017]
+    Position: [1448, 0]
+    Size: [472, 1017]
     Type: 0
     Windows:
       - 2
