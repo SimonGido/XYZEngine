@@ -199,6 +199,7 @@ namespace XYZ {
 		InGuiRenderData			 RenderData;
 
 		std::vector<InGuiWindow> Windows;
+		std::vector<uint32_t>    EventListeners;
 	};
 
 }

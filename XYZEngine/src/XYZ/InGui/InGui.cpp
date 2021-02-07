@@ -295,6 +295,7 @@ namespace XYZ {
 			s_Context->Windows[id].Size = size;
 			s_Context->Windows[id].ID = id;
 			s_Context->Windows[id].Flags |= (InGuiWindowFlags::Initialized | InGuiWindowFlags::EventBlocking);
+			s_Context->EventListeners.push_back(id);
 		}
 		return s_Context->Windows[id];
 	}
@@ -420,7 +421,9 @@ namespace XYZ {
 		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, mesh, color, buttonSize, pos, 
 			s_Context->RenderData, subTextureIndex, s_Context->FrameData.Scissors.size() - 1);
 
+
 		if (eraseOutOfBorders(oldQuadCount, buttonSize, window, mesh)) { return false; }
+		if (!s_ActiveWidgets) return false;
 
 		if (Collide(pos, size, s_Context->FrameData.MousePosition))
 		{
@@ -437,32 +440,35 @@ namespace XYZ {
 		return open;
 	}
 
-	void InGui::BeginScrollableArea(float height, float& offset, float scale)
+	void InGui::BeginScrollableArea(const glm::vec2& size, float& offset, float scale)
 	{
 		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
-		float val = offset / scale;
-		InGui::Slider("", glm::vec2(height, 25.0f), val);
-		offset = val * scale;
-		InGui::Separator();
-
-		glm::vec2 pos = { window.Position.x , s_LayoutOffset.y };
-		glm::vec2 size = { window.Size.x , height };
-
-		s_Context->FrameData.CurrentMesh = &window.ScrollableMesh;
 	
 		auto [wWidth, wHeight] = Input::GetWindowSize();
-		float positionY = wHeight - s_LayoutOffset.y - height;
+		float positionY = wHeight - s_LayoutOffset.y - size.y;
 		s_Context->FrameData.Scissors.push_back(
-			{ window.Position.x, positionY, size.x, size.y }
+			{ s_LayoutOffset.x, positionY, size.x, size.y }
 		);
 
-		s_ActiveWidgets = false;
-		if (Collide(pos, size, s_Context->FrameData.MousePosition))
-			s_ActiveWidgets = true;
+		InGuiFactory::GenerateFrame(window.ScrollableMesh, s_LayoutOffset, size, s_Context->RenderData);
+		bool activeWidgets = false;
+		if (Collide(s_LayoutOffset, size, s_Context->FrameData.MousePosition))
+			activeWidgets = true;
 
-		InGuiFactory::GenerateFrame(window.Mesh, pos, size, s_Context->RenderData);
+		//////////////////// SLIDER LOGIC ///////////////////////
+		s_LayoutOffset.x += size.x + window.Layout.LeftPadding;
+		float val = offset / scale;
+		InGui::SliderVertical("", glm::vec2(25.0f, size.y), val);
+		offset = val * scale;
+		s_LayoutOffset.x -= size.x + window.Layout.LeftPadding;
+		s_HighestInRow = 0.0f;
+		////////////////////////////////////////////////////////
+	
+		s_ActiveWidgets = activeWidgets;
 		s_ScrollOffset = s_LayoutOffset.y + size.y;
 		s_LayoutOffset.y -= offset - window.Layout.SpacingY;
+		s_Context->FrameData.CurrentMesh = &window.ScrollableMesh;
+		window.Layout.LeftPadding += window.Layout.LeftPadding; // Padding relative to scrollable area
 	}
 
 	void InGui::EndScrollableArea()
@@ -471,6 +477,7 @@ namespace XYZ {
 		s_Context->FrameData.CurrentMesh = &window.Mesh;
 		s_LayoutOffset.y = s_ScrollOffset + window.Layout.SpacingY;
 		s_ActiveWidgets = true;
+		window.Layout.LeftPadding -= window.Layout.LeftPadding / 2.0f; // Remove padding relative to scrollable area
 	}
 
 	uint8_t InGui::PushNode(const char* name, const glm::vec2& size, bool& open, bool highlight)
@@ -682,6 +689,50 @@ namespace XYZ {
 			if (IS_SET(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked))
 			{
 				val = (s_Context->FrameData.MousePosition.x - s_LayoutOffset.x) / size.x;
+				returnType |= InGuiReturnType::Clicked;
+			}
+		}
+
+		s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
+		return returnType;
+	}
+	uint8_t InGui::SliderVertical(const char* name, const glm::vec2& size, float& val)
+	{
+		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
+		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
+		InGuiMesh& mesh = *s_Context->FrameData.CurrentMesh;
+
+		// Clamping
+		if (val > 0.94f) val = 1.0f;
+		if (val < 0.06f) val = 0.0f;
+
+
+		uint8_t returnType = 0;
+		size_t oldQuadCount = mesh.Quads.size();
+		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
+		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, mesh, color, size, s_LayoutOffset, s_Context->RenderData, InGuiRenderData::SLIDER, s_Context->FrameData.Scissors.size());
+		glm::vec2 handleSize = glm::vec2(size.x, size.x);
+		glm::vec2 handlePosition = s_LayoutOffset + glm::vec2(0.0f, (size.y - size.x) * val);
+		
+		InGuiFactory::GenerateQuadWithText(nullptr, window, mesh, color, handleSize, handlePosition,
+			s_Context->RenderData, InGuiRenderData::SLIDER_HANDLE, s_Context->FrameData.Scissors.size() - 1
+		);
+
+		if (eraseOutOfBorders(oldQuadCount, genSize, window, mesh))
+			return returnType;
+		if (!s_ActiveWidgets)
+		{
+			s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
+			return 0;
+		}
+
+		if (Collide(s_LayoutOffset, size, s_Context->FrameData.MousePosition))
+		{
+			returnType |= InGuiReturnType::Hoovered;
+			mesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
+			if (IS_SET(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked))
+			{
+				val = (s_Context->FrameData.MousePosition.y - s_LayoutOffset.y) / size.y;
 				returnType |= InGuiReturnType::Clicked;
 			}
 		}
@@ -1076,6 +1127,7 @@ namespace XYZ {
 					s_Context->Windows[id].Position = it["Position"].as<glm::vec2>();
 					s_Context->Windows[id].Size = it["Size"].as<glm::vec2>();
 					s_Context->Windows[id].Flags = it["Flags"].as<uint16_t>();
+					s_Context->EventListeners.push_back(id);
 				}
 			}
 			auto& dockspace = data["Dockspace"];
@@ -1136,14 +1188,21 @@ namespace XYZ {
 	{
 		if (event.IsButtonPressed(MouseCode::MOUSE_BUTTON_LEFT))
 		{
+			std::sort(s_Context->EventListeners.begin(), s_Context->EventListeners.end(), [](uint32_t a, uint32_t b) {
+				InGuiWindow& first = s_Context->Windows[a];
+				InGuiWindow& second = s_Context->Windows[b];
+				return first.Flags > second.Flags;
+			});
+
 			const glm::vec2& mousePos = s_Context->FrameData.MousePosition;
 			if (InGuiDockspace::onMouseLeftPress(mousePos))
 				return true;
 			s_Context->FrameData.Flags |= InGuiInputFlags::LeftClicked;
-			for (auto& it : s_Context->FrameData.HandleInput)
-				it = false;
-			for (auto& window : s_Context->Windows)
+			for (auto& it : s_Context->FrameData.HandleInput) it = false;
+				
+			for (uint32_t id : s_Context->EventListeners)
 			{
+				InGuiWindow& window = s_Context->Windows[id];
 				if (IS_SET(window.Flags, InGuiWindowFlags::Initialized)
 					&& Collide(window.Position, window.Size, mousePos))
 				{
@@ -1238,8 +1297,9 @@ namespace XYZ {
 	{
 		s_Context->FrameData.MousePosition = { (float)event.GetX(), (float)event.GetY() };
 		bool hoovered = false;
-		for (auto& window : s_Context->Windows)
+		for (uint32_t id : s_Context->EventListeners)
 		{
+			InGuiWindow& window = s_Context->Windows[id];
 			window.Flags &= ~InGuiWindowFlags::Hoovered;
 			if (!hoovered
 				&& IS_SET(window.Flags, InGuiWindowFlags::Initialized)

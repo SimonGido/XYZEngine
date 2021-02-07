@@ -32,7 +32,7 @@ namespace XYZ {
 		static bool ImageWindow(uint32_t id, const char* name, const glm::vec2& position, const glm::vec2& size, Ref<SubTexture> subTexture);
 		static void End();
 		static bool BeginGroup(const char* name, bool& open);
-		static void BeginScrollableArea(float height, float & offset, float scale);
+		static void BeginScrollableArea(const glm::vec2& size, float & offset, float scale);
 		static void EndScrollableArea();
 
 		static uint8_t PushNode(const char* name, const glm::vec2& size, bool& open, bool highlight = false);
@@ -44,6 +44,7 @@ namespace XYZ {
 		static uint8_t Button(const char* name, const glm::vec2& size);
 		static uint8_t Checkbox(const char* name, const glm::vec2& size, bool& val);
 		static uint8_t Slider(const char* name, const glm::vec2& size, float& val);
+		static uint8_t SliderVertical(const char* name, const glm::vec2& size, float& val);
 		static uint8_t Text(const char* text);
 		static uint8_t Float(const char* name, const glm::vec2& size, float& val);
 		static uint8_t UInt(const char* name, const glm::vec2& size, uint32_t& val);

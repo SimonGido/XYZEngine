@@ -191,6 +191,12 @@ namespace XYZ {
 				parent->FirstChild = tmp->FirstChild;
 				parent->SecondChild = tmp->SecondChild;
 			}
+			else
+			{
+				delete parent->FirstChild;
+				parent->FirstChild = nullptr;
+				parent->SecondChild = nullptr;
+			}
 			delete tmp;
 		}
 		else
@@ -204,6 +210,12 @@ namespace XYZ {
 				tmp->SecondChild->Parent = parent;
 				parent->FirstChild = tmp->FirstChild;
 				parent->SecondChild = tmp->SecondChild;
+			}
+			else
+			{
+				delete parent->SecondChild;
+				parent->FirstChild = nullptr;
+				parent->SecondChild = nullptr;
 			}
 			delete tmp;
 		}

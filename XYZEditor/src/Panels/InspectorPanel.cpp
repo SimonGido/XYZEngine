@@ -30,7 +30,7 @@ namespace XYZ {
 					resizeGroups();
 
 
-				InGui::BeginScrollableArea(300.0f, m_ScrollOffset, 100.0f);
+				InGui::BeginScrollableArea(glm::vec2(InGui::GetWindow(m_PanelID).Size.x - 65.0f, 300.0f), m_ScrollOffset, 100.0f);
 				uint32_t index = 0;
 				if (m_Context.HasComponent<TransformComponent>())
 				{
@@ -197,7 +197,7 @@ namespace XYZ {
 					InGui::Dropdown("Add Component", glm::vec2(InGui::GetWindow(m_PanelID).Size.x - 20.0f, 25.0f), m_AddComponentOpen);
 				}
 			}
-			InGui::BeginScrollableArea(300.0f, m_ScrollOffsetTest, 100.0f);
+			InGui::BeginScrollableArea(glm::vec2(InGui::GetWindow(m_PanelID).Size.x - 65.0f, 300.0f), m_ScrollOffsetTest, 100.0f);
 			InGui::Separator();
 			InGui::Button("test", glm::vec2(50.0f));
 			InGui::Button("test", glm::vec2(50.0f));
