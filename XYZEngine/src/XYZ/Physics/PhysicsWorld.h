@@ -15,8 +15,6 @@ namespace XYZ {
 		void AddEntity(SceneEntity entity);
 		void RemoveEntity(SceneEntity entity);
 
-	private:
-		float calculateTorque(const glm::vec2& force);
 
 	private:
 		std::vector<SceneEntity> m_Entities;
