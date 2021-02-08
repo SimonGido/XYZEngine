@@ -10,7 +10,7 @@
 
 
 namespace XYZ {
-	int32_t DynamicTree::RayCast(const Ray& ray)
+	bool DynamicTree::RayCast(const Ray& ray, uint32_t& result)
 	{
 		std::stack<int32_t> stack;
 		stack.push(m_RootIndex);
@@ -24,10 +24,11 @@ namespace XYZ {
 			}
 			if (m_Nodes[index].IsLeaf())
 			{
-				int32_t objectIndex = m_Nodes[index].ObjectIndex;
-				if (ray.IntersectsAABB(m_Objects[objectIndex]))
+				uint32_t objectIndex = m_Nodes[index].ObjectIndex;
+				if (ray.IntersectsAABB(m_Nodes[index].Box))
 				{
-					return objectIndex;
+					result = objectIndex;
+					return true;
 				}
 			}
 			else
@@ -36,7 +37,7 @@ namespace XYZ {
 				stack.push(m_Nodes[index].SecondChild);
 			}
 		}
-		return -1;
+		return false;
 	}
 	int32_t DynamicTree::Insert(uint32_t objectIndex, const AABB& box)
 	{

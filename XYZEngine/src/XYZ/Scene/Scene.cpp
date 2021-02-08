@@ -42,6 +42,8 @@ namespace XYZ {
 		m_ECS.ForceStorage<ScriptComponent>();
 		m_ScriptStorage = m_ECS.GetStorage<ScriptComponent>();
 		m_AnimatorStorage = m_ECS.GetStorage<AnimatorComponent>();
+
+		m_Tree.Insert(NULL_ENTITY, { glm::vec3(-200.0f), glm::vec3(200.0f) });
 	}
 
 	Scene::~Scene()

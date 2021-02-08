@@ -146,14 +146,17 @@ namespace XYZ {
 				m_Context->SetSelectedEntity(NULL_ENTITY);
 				auto [mouseX, mouseY] = getMouseViewportSpace();
 				auto [origin, direction] = castRay(mouseX, mouseY);
-	
+				Ray ray = { origin,direction };
+
+				uint32_t res = NULL_ENTITY;
+		
 				for (uint32_t entityID : m_Context->GetEntities())
 				{
 					SceneEntity entity(entityID, m_Context.Raw());
 					TransformComponent& transformComponent = entity.GetComponent<TransformComponent>();
 					glm::mat4 entityTransform = transformComponent.GetTransform();
 					
-					Ray ray = { origin,direction };
+					
 					AABB aabb(
 						transformComponent.Translation - (transformComponent.Scale / 2.0f),
 						transformComponent.Translation + (transformComponent.Scale / 2.0f)

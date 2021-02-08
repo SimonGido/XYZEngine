@@ -101,7 +101,7 @@ namespace XYZ {
         friend class SceneEntity;
         friend class Serializer;
         friend class ScriptEngine;
-        friend class MousePicker;
+        friend class ScenePanel;
         friend class SceneHierarchyPanel;
     };
 }

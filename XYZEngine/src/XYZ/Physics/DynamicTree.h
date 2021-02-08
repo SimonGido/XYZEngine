@@ -22,7 +22,7 @@ namespace XYZ {
 	class DynamicTree
 	{
 	public:
-		int32_t RayCast(const Ray& ray);
+		bool RayCast(const Ray& ray, uint32_t& result);
 
 		int32_t Insert(uint32_t objectIndex, const AABB& box);
 		void Move(int32_t index, const glm::vec2& displacement);
@@ -40,6 +40,5 @@ namespace XYZ {
 		FreeList<Node> m_Nodes;
 
 		int32_t m_RootIndex = NULL_NODE;
-		std::vector<AABB> m_Objects;
 	};
 }

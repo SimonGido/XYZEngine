@@ -12,13 +12,11 @@ namespace XYZ {
 
 		void Update(Timestep ts);
 
-		void AddEntity(SceneEntity entity);
-		void RemoveEntity(SceneEntity entity);
+		uint32_t CreatePhysicsObject(uint32_t id);
 
 
 	private:
-		std::vector<SceneEntity> m_Entities;
-
+		DynamicTree m_Tree;
 		glm::vec2 m_Gravity;
 	};
 }

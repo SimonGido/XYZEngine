@@ -181,7 +181,9 @@ namespace XYZ {
 
 	struct RigidBodyComponent : public Type<RigidBodyComponent>
 	{
-
+		float Mass = 1.0f;
+		float LinearDrag = 0.0f;
+		float AngularDrag = 0.05f;
 	};
 
 
