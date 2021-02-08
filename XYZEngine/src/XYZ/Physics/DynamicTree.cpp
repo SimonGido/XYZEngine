@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "DynamicTree.h"
 
+#include "XYZ/Renderer/Renderer2D.h"
+
 #include <stack>
 
 // Copied Box2D implementation of the dynamic tree
@@ -58,6 +60,50 @@ namespace XYZ {
 	{		
 		removeLeaf(index);
 		m_Nodes.Erase(index);
+	}
+
+	void DynamicTree::SubmitToRenderer()
+	{
+		std::stack<int32_t> stack;
+		stack.push(m_RootIndex);
+		while (!stack.empty())
+		{
+			int32_t index = stack.top();
+			stack.pop();
+
+			AABB box = m_Nodes[index].Box;
+
+			//Renderer2D::SubmitLine(box.Min, glm::vec3(box.Min.x, box.Min.y, box.Max.z));
+			//Renderer2D::SubmitLine(box.Min, glm::vec3(box.Min.x, box.Max.y, box.Min.z));
+			//Renderer2D::SubmitLine(box.Min, glm::vec3(box.Max.x, box.Min.y, box.Min.z));
+			//
+			//Renderer2D::SubmitLine(box.Max, glm::vec3(box.Max.x, box.Max.y, box.Min.z));
+			//Renderer2D::SubmitLine(box.Max, glm::vec3(box.Max.x, box.Min.y, box.Max.z));
+			//Renderer2D::SubmitLine(box.Max, glm::vec3(box.Min.x, box.Max.y, box.Max.z));
+
+
+			Renderer2D::SubmitLine(box.Min, glm::vec3(box.Max.x, box.Min.y, box.Min.z));
+			Renderer2D::SubmitLine(glm::vec3(box.Max.x, box.Min.y, box.Min.z), glm::vec3(box.Max.x, box.Max.y, box.Min.z));
+			Renderer2D::SubmitLine(glm::vec3(box.Max.x, box.Max.y, box.Min.z), glm::vec3(box.Min.x, box.Max.y, box.Min.z));
+			Renderer2D::SubmitLine(glm::vec3(box.Min.x, box.Max.y, box.Min.z), box.Min);
+
+
+			Renderer2D::SubmitLine(glm::vec3(box.Min.x, box.Min.y, box.Max.z), glm::vec3(box.Max.x, box.Min.y, box.Max.z));
+			Renderer2D::SubmitLine(glm::vec3(box.Max.x, box.Min.y, box.Max.z), glm::vec3(box.Max.x, box.Max.y, box.Max.z));
+			Renderer2D::SubmitLine(glm::vec3(box.Max.x, box.Max.y, box.Max.z), glm::vec3(box.Min.x, box.Max.y, box.Max.z));
+			Renderer2D::SubmitLine(glm::vec3(box.Min.x, box.Max.y, box.Max.z), glm::vec3(box.Min.x, box.Min.y, box.Max.z));
+
+
+			if (m_Nodes[index].IsLeaf())
+			{
+				
+			}
+			else
+			{
+				stack.push(m_Nodes[index].FirstChild);
+				stack.push(m_Nodes[index].SecondChild);
+			}
+		}
 	}
 
 	void DynamicTree::insertLeaf(int32_t leaf)

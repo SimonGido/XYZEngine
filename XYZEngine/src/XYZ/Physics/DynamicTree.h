@@ -28,6 +28,9 @@ namespace XYZ {
 		void Move(int32_t index, const glm::vec2& displacement);
 		void Remove(int32_t index);
 
+		// Debug
+		void SubmitToRenderer();
+
 	private:
 		void insertLeaf(int32_t index);
 		void removeLeaf(int32_t leaf);

@@ -191,8 +191,8 @@ namespace XYZ {
 			{
 				auto& boxCollider = entity.AddComponent<BoxColliderComponent>({});
 				auto& transform = entity.GetComponent<TransformComponent>();
-				boxCollider.Box.Min = transform.Translation - transform.Scale / 2.0f;
-				boxCollider.Box.Max = transform.Translation + transform.Scale / 2.0f;
+				boxCollider.Box.Min = transform.Translation - transform.Scale * 0.5f;
+				boxCollider.Box.Max = transform.Translation + transform.Scale * 0.5f;
 				m_Tree.Insert(entityID, boxCollider.Box);
 			}
 		}
@@ -201,6 +201,7 @@ namespace XYZ {
 	void Scene::OnRenderEditor(const EditorCamera& camera)
 	{
 		SceneRenderer::BeginScene(this, camera.GetViewProjection());
+		m_Tree.SubmitToRenderer();
 		if (m_SelectedEntity != NULL_ENTITY)
 		{
 			if (m_ECS.Contains<CameraComponent>(m_SelectedEntity))
