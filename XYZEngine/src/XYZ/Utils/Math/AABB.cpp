@@ -25,6 +25,13 @@ namespace XYZ {
 		return result;
 	}
 
+	bool AABB::Intersect(const AABB& aabb) const
+	{
+		return (Min.x <= aabb.Max.x && Max.x >= aabb.Min.x) &&
+			   (Min.y <= aabb.Max.y && Max.y >= aabb.Min.y) &&
+			   (Min.z <= aabb.Max.z && Max.z >= aabb.Min.z);
+	}
+
 	AABB AABB::Union(const AABB& a, const AABB& b)
 	{
 		AABB c;

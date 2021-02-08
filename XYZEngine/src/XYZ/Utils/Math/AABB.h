@@ -15,7 +15,7 @@ namespace XYZ {
 
 		float CalculateArea() const;
 		bool Contains(const AABB& aabb) const;
-		
+		bool Intersect(const AABB& aabb) const;
 
 		static AABB Union(const AABB& a, const AABB& b);
 	};
