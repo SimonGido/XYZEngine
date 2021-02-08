@@ -6,10 +6,10 @@
 #include "XYZ/Particle/ParticleEffect.h"
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Script/ScriptPublicField.h"
+#include "XYZ/Utils/Math/AABB.h"
 
 #include "SceneCamera.h"
 #include "AnimationController.h"
-
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
@@ -182,5 +182,11 @@ namespace XYZ {
 	struct RigidBodyComponent : public Type<RigidBodyComponent>
 	{
 
+	};
+
+
+	struct BoxColliderComponent : public Type<BoxColliderComponent>
+	{
+		AABB Box;
 	};
 }

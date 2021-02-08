@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <algorithm>
 
 namespace XYZ {
 
@@ -8,13 +9,14 @@ namespace XYZ {
 	{
 		glm::vec3 Min, Max;
 
-		AABB()
-			: Min(0.0f), Max(0.0f) {}
+		AABB();
+		AABB(const glm::vec3& min, const glm::vec3& max);
+			
 
-		AABB(const glm::vec3& min, const glm::vec3& max)
-			: Min(min), Max(max) {}
+		float CalculateArea() const;
+		bool Contains(const AABB& aabb) const;
+		
 
+		static AABB Union(const AABB& a, const AABB& b);
 	};
-
-
 }

@@ -12,6 +12,8 @@
 
 #include "Serializable.h"
 
+#include "XYZ/Physics/DynamicTree.h"
+
 namespace XYZ {
 
 
@@ -93,6 +95,8 @@ namespace XYZ {
         Ref<SubTexture> m_CameraSubTexture;
         Ref<Material> m_CameraMaterial;
         SpriteRenderer m_CameraRenderer;
+
+        DynamicTree m_Tree;
 
         friend class SceneEntity;
         friend class Serializer;

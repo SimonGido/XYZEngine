@@ -183,6 +183,19 @@ namespace XYZ {
 			particle.ParticleEffect->Update(ts);
 			material->GetShader()->Compute(32, 32, 1);
 		}
+
+		for (auto entityID : m_Entities)
+		{
+			SceneEntity entity(entityID, this);
+			if (!entity.HasComponent<BoxColliderComponent>())
+			{
+				auto& boxCollider = entity.AddComponent<BoxColliderComponent>({});
+				auto& transform = entity.GetComponent<TransformComponent>();
+				boxCollider.Box.Min = transform.Translation - transform.Scale / 2.0f;
+				boxCollider.Box.Max = transform.Translation + transform.Scale / 2.0f;
+				m_Tree.Insert(entityID, boxCollider.Box);
+			}
+		}
 	}
 
 	void Scene::OnRenderEditor(const EditorCamera& camera)
