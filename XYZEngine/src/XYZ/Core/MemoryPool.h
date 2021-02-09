@@ -36,6 +36,7 @@ namespace XYZ {
 		template <typename T>
 		void Deallocate(T* val)
 		{
+			val->~T();
 			uint8_t* tmp = (uint8_t*)val + sizeof(T);
 			size_t index = *(size_t*)tmp;
 
