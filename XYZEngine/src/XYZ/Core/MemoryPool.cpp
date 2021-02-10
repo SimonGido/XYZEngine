@@ -12,7 +12,6 @@ namespace XYZ {
 
 	MemoryPool::~MemoryPool()
 	{
-		mergeFreeChunks();
 		for (auto& block : m_Blocks)
 		{
 			if (block.Data)

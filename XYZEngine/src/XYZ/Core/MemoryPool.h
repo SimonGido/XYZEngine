@@ -49,7 +49,7 @@ namespace XYZ {
 			else
 			{
 				m_FreeChunks.push_back(chunk);
-				//mergeFreeChunks();
+				mergeFreeChunks();
 			}
 		}
 	private:
