@@ -19,6 +19,8 @@ namespace XYZ {
 
 		virtual bool Intersect(const PhysicsShape& shape) const = 0;
 		virtual AABB GetAABB() const = 0;
+		virtual float CalculateMass(float density) const = 0;
+
 		ShapeType GetType() const { return m_Type; };
 
 	private:
@@ -37,8 +39,8 @@ namespace XYZ {
 		glm::vec2 Max;           
 
 		virtual bool Intersect(const PhysicsShape& shape) const override;
-
 		virtual AABB GetAABB() const override { return { {Min, 0.0f}, {Max,0.0f} }; }
+		virtual float CalculateMass(float density) const override;
 	};
 
 	struct CircleShape : public PhysicsShape
@@ -47,8 +49,8 @@ namespace XYZ {
 		CircleShape(float radius);
 
 		virtual bool Intersect(const PhysicsShape& shape) const override;
-
 		virtual AABB GetAABB() const override;
+		virtual float CalculateMass(float density) const override;
 
 		float Radius;
 	};

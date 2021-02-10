@@ -9,4 +9,12 @@ namespace XYZ {
 		m_Angle(angle),
 		m_ID(id)
 	{}
+	void PhysicsBody::recalculateMass()
+	{
+		m_Mass = 0.0f;
+		for (auto& fixture : m_Fixtures)
+		{
+			m_Mass += fixture.Shape->CalculateMass(fixture.Density);
+		}
+	}
 }

@@ -17,8 +17,8 @@ namespace XYZ {
 		void Update(Timestep ts, float updateFrequency);
 
 		PhysicsBody* CreateBody(const glm::vec2& position, float rotation);
-		BoxShape2D* AddBox2DShape(PhysicsBody* body, const glm::vec2& min, const glm::vec2& max);
-		CircleShape* AddCircleShape(PhysicsBody* body, float radius);
+		BoxShape2D* AddBox2DShape(PhysicsBody* body, const glm::vec2& min, const glm::vec2& max, float density);
+		CircleShape* AddCircleShape(PhysicsBody* body, float radius, float density);
 
 	private:
 		DynamicTree m_Tree;

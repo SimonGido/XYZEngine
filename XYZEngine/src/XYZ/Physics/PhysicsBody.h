@@ -5,23 +5,44 @@
 
 namespace XYZ {
 
+	struct Fixture
+	{
+		PhysicsShape* Shape;
+		float Density;
+	};
+
 	class PhysicsBody
 	{
 	public:
 		PhysicsBody(const glm::vec2& position, float angle, uint32_t id);
-			
+		
+		void SetFixtureDensity(uint32_t index, float density) { m_Fixtures[index].Density = density; recalculateMass(); }
 
 		const glm::vec2& GetPosition() const { return m_Position; }
-		const float GetAngle() const { return m_Angle; }
+		float GetMass() const { return m_Mass;  }
+		float GetAngle() const { return m_Angle; }
+		const std::vector<Fixture>& GetFixtures() const { return m_Fixtures; }
+
+
+
+		enum class Type { Dynamic, Kinematic, Static };
+
+
+		Type m_Type = Type::Dynamic;
+		float m_LinearDamping = 0.0f;
+		float m_AngularDamping = 0.0f;
+
+	private:
+		void recalculateMass();
 
 	private:
 		glm::vec2 m_Position;
 		float	  m_Angle;
-		
-		std::vector<PhysicsShape*> m_ShapeAttachments;
+		float	  m_Mass = 0.0f;
 
 		const uint32_t m_ID;
-
+		
+		std::vector<Fixture> m_Fixtures;
 		friend class PhysicsWorld;
 	};
 }

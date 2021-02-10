@@ -208,8 +208,11 @@ namespace XYZ {
 				m_PhysicsWorld.AddBox2DShape(
 					boxCollider.Body, 
 					transform.Translation - transform.Scale * 0.5f, 
-					transform.Translation + transform.Scale * 0.5f
+					transform.Translation + transform.Scale * 0.5f,
+					1.0f
 				);
+
+				boxCollider.Body->SetFixtureDensity(0, 5.0f);
 			}
 		}
 	}

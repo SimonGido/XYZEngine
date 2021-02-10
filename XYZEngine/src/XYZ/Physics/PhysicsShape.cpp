@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "PhysicsShape.h"
 
+#include <glm/ext/scalar_constants.hpp>
 
 namespace XYZ {
 	PhysicsShape::PhysicsShape(ShapeType type)
@@ -33,6 +34,13 @@ namespace XYZ {
 		return false;
 	}
 
+	float BoxShape2D::CalculateMass(float density) const
+	{
+		float a = Max.x - Min.x;
+		float b = Max.y - Min.y;
+		return a * b * density;
+	}
+
 	CircleShape::CircleShape()
 		: 
 		PhysicsShape(ShapeType::Circle),
@@ -55,5 +63,9 @@ namespace XYZ {
 	AABB CircleShape::GetAABB() const
 	{
 		return { glm::vec3(-Radius), glm::vec3(Radius) };
+	}
+	float CircleShape::CalculateMass(float density) const
+	{
+		return glm::pi<float>() * (Radius * Radius) * density;
 	}
 }

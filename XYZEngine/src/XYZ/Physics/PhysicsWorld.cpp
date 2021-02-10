@@ -21,10 +21,13 @@ namespace XYZ {
 			m_CurrentTime = 0.0f;
 			for (auto body : m_Bodies)
 			{
-				glm::vec2 old = body->m_Position;
-				body->m_Position += m_Gravity * updateFrequency;
-				for (auto shape : body->m_ShapeAttachments)
-					m_Tree.Move(shape->m_ID, body->m_Position - old);
+				if (body->m_Type != PhysicsBody::Type::Static)
+				{
+					glm::vec2 old = body->m_Position;
+					body->m_Position += m_Gravity * body->m_Mass * updateFrequency;
+					for (auto &fixture : body->m_Fixtures)
+						m_Tree.Move(fixture.Shape->m_ID, body->m_Position - old);
+				}
 			}
 		}
 		m_CurrentTime += ts;
@@ -38,20 +41,20 @@ namespace XYZ {
 		return body;
 	}
 
-	BoxShape2D* PhysicsWorld::AddBox2DShape(PhysicsBody* body, const glm::vec2& min, const glm::vec2& max)
+	BoxShape2D* PhysicsWorld::AddBox2DShape(PhysicsBody* body, const glm::vec2& min, const glm::vec2& max, float density)
 	{
 		BoxShape2D* box = m_Pool.Allocate<BoxShape2D>(min, max);
-		body->m_ShapeAttachments.push_back(box);
-
+		body->m_Fixtures.push_back({ box, density });
+		body->recalculateMass();
 		box->m_ID = m_Tree.Insert(body->m_ID, box->GetAABB());
 		return box;
 	}
 
-	CircleShape* PhysicsWorld::AddCircleShape(PhysicsBody* body, float radius)
+	CircleShape* PhysicsWorld::AddCircleShape(PhysicsBody* body, float radius, float density)
 	{
 		CircleShape* circle = m_Pool.Allocate<CircleShape>(radius);
-		body->m_ShapeAttachments.push_back(circle);
-
+		body->m_Fixtures.push_back({ circle, density });
+		body->recalculateMass();
 		circle->m_ID = m_Tree.Insert(body->m_ID, circle->GetAABB());
 		return circle;
 	}
