@@ -3,7 +3,7 @@
 
 #include "XYZ/Renderer/Renderer2D.h"
 
-#include <stack>
+
 
 // Copied Box2D implementation of the dynamic tree
 // https://github.com/behdad/box2d/blob/master/Box2D/Box2D/Collision/b2DynamicTree.cpp
@@ -38,6 +38,34 @@ namespace XYZ {
 			}
 		}
 		return false;
+	}
+	void DynamicTree::Query(const CollisionCallback& callback, const AABB& aabb)
+	{
+		std::stack<int32_t> stack;
+		stack.push(m_RootIndex);
+		while (!stack.empty())
+		{
+			int32_t index = stack.top();
+			stack.pop();
+			if (index == NULL_NODE)
+				continue;
+
+			const Node& node = m_Nodes[index];
+			if (node.Box.Intersect(aabb))
+			{
+				if (node.IsLeaf())
+				{
+					bool proceed = callback(index);
+					if (!proceed)
+						return;
+				}
+				else
+				{
+					stack.push(node.FirstChild);
+					stack.push(node.SecondChild);
+				}
+			}
+		}
 	}
 	int32_t DynamicTree::Insert(uint32_t objectIndex, const AABB& box)
 	{

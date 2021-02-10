@@ -47,6 +47,9 @@ namespace XYZ {
 		m_AnimatorStorage = m_ECS.GetStorage<AnimatorComponent>();
 		m_BoxColliderStorage = m_ECS.GetStorage<BoxColliderComponent>();
 
+		auto body = m_PhysicsWorld.CreateBody(glm::vec2(0.0f, -50.0f), 0.0f);
+		body->m_Type = PhysicsBody::Type::Static;
+		m_PhysicsWorld.AddBox2DShape(body, glm::vec2(-100.0f, -25.0f), glm::vec2(100.0f, 0.0f), 0.0f);
 	}
 
 	Scene::~Scene()
