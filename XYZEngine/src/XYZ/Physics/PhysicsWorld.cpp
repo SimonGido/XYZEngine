@@ -25,8 +25,13 @@ namespace XYZ {
 				{
 					glm::vec2 old = body->m_Position;
 					body->m_Position += m_Gravity * body->m_Mass * updateFrequency;
-					for (auto &fixture : body->m_Fixtures)
+					for (auto& fixture : body->m_Fixtures)
+					{
+						float inertia = fixture.Shape->CalculateInertia(body->m_Mass);
+						float torque = fixture.Shape->CalculateTorque(glm::vec2(5.0f, m_Gravity.y));
+						body->m_Angle += torque / inertia;
 						m_Tree.Move(fixture.Shape->m_ID, body->m_Position - old);
+					}
 				}
 			}
 		}

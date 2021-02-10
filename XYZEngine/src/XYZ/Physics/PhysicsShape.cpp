@@ -41,6 +41,21 @@ namespace XYZ {
 		return a * b * density;
 	}
 
+	float BoxShape2D::CalculateInertia(float mass) const
+	{
+		float a = Max.x - Min.x;
+		float b = Max.y - Min.y;
+		return mass * (a * a + b * b) / 12.0f;
+	}
+
+	float BoxShape2D::CalculateTorque(const glm::vec2& force) const
+	{
+		float a = (Max.x - Min.x) / 2.0f;
+		float b = (Max.y - Min.y) / 2.0f;
+
+		return a * force.y - b * force.x;
+	}
+
 	CircleShape::CircleShape()
 		: 
 		PhysicsShape(ShapeType::Circle),
@@ -67,5 +82,13 @@ namespace XYZ {
 	float CircleShape::CalculateMass(float density) const
 	{
 		return glm::pi<float>() * (Radius * Radius) * density;
+	}
+	float CircleShape::CalculateInertia(float mass) const
+	{
+		return 0.0f;
+	}
+	float CircleShape::CalculateTorque(const glm::vec2& force) const
+	{
+		return 0.0f;
 	}
 }

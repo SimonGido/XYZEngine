@@ -23,7 +23,7 @@ namespace XYZ {
 		m_Name(name),
 		m_SelectedEntity(NULL_ENTITY),
 		m_CameraEntity(NULL_ENTITY),
-		m_PhysicsWorld(glm::vec2(0.0f, -9.8f))
+		m_PhysicsWorld(glm::vec2(0.0f, -0.008f))
 	{
 		m_ViewportWidth = 0;
 		m_ViewportHeight = 0;
@@ -195,6 +195,7 @@ namespace XYZ {
 			auto [transform, boxCollider] = (*m_BoxColliderView)[i];
 			transform.Translation.x = boxCollider.Body->GetPosition().x;
 			transform.Translation.y = boxCollider.Body->GetPosition().y;
+			transform.Rotation.z = boxCollider.Body->GetAngle();
 		}
 
 		for (auto entityID : m_Entities)
