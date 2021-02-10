@@ -23,6 +23,9 @@ namespace XYZ {
 
 	private:
 		const ShapeType m_Type;
+		int32_t m_ID = -1;
+
+		friend class PhysicsWorld;
 	};
 
 	struct BoxShape2D : public PhysicsShape

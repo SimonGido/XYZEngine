@@ -22,7 +22,8 @@ namespace XYZ {
 		:
 		m_Name(name),
 		m_SelectedEntity(NULL_ENTITY),
-		m_CameraEntity(NULL_ENTITY)
+		m_CameraEntity(NULL_ENTITY),
+		m_PhysicsWorld(glm::vec2(0.0f, -9.8f))
 	{
 		m_ViewportWidth = 0;
 		m_ViewportHeight = 0;
@@ -38,12 +39,14 @@ namespace XYZ {
 		m_ParticleView = &m_ECS.CreateView<TransformComponent, ParticleComponent>();
 		m_LightView = &m_ECS.CreateView<TransformComponent, PointLight2D>();
 		m_AnimatorView = &m_ECS.CreateView<AnimatorComponent>();
+		m_BoxColliderView = &m_ECS.CreateView<TransformComponent, BoxColliderComponent>();
 
 		m_ECS.ForceStorage<ScriptComponent>();
+		m_ECS.ForceStorage<BoxColliderComponent>();
 		m_ScriptStorage = m_ECS.GetStorage<ScriptComponent>();
 		m_AnimatorStorage = m_ECS.GetStorage<AnimatorComponent>();
+		m_BoxColliderStorage = m_ECS.GetStorage<BoxColliderComponent>();
 
-		m_Tree.Insert(NULL_ENTITY, { glm::vec3(-200.0f), glm::vec3(200.0f) });
 	}
 
 	Scene::~Scene()
@@ -186,6 +189,14 @@ namespace XYZ {
 			material->GetShader()->Compute(32, 32, 1);
 		}
 
+		m_PhysicsWorld.Update(ts, 1.0f / 60.0f);
+		for (size_t i = 0; i < m_BoxColliderView->Size(); ++i)
+		{
+			auto [transform, boxCollider] = (*m_BoxColliderView)[i];
+			transform.Translation.x = boxCollider.Body->GetPosition().x;
+			transform.Translation.y = boxCollider.Body->GetPosition().y;
+		}
+
 		for (auto entityID : m_Entities)
 		{
 			SceneEntity entity(entityID, this);
@@ -193,9 +204,12 @@ namespace XYZ {
 			{
 				auto& boxCollider = entity.AddComponent<BoxColliderComponent>({});
 				auto& transform = entity.GetComponent<TransformComponent>();
-				boxCollider.Box.Min = transform.Translation - transform.Scale * 0.5f;
-				boxCollider.Box.Max = transform.Translation + transform.Scale * 0.5f;
-				m_Tree.Insert(entityID, boxCollider.Box);
+				boxCollider.Body = m_PhysicsWorld.CreateBody(glm::vec2(transform.Translation.x, transform.Translation.y), 0.0f);
+				m_PhysicsWorld.AddBox2DShape(
+					boxCollider.Body, 
+					transform.Translation - transform.Scale * 0.5f, 
+					transform.Translation + transform.Scale * 0.5f
+				);
 			}
 		}
 	}
@@ -203,7 +217,6 @@ namespace XYZ {
 	void Scene::OnRenderEditor(const EditorCamera& camera)
 	{
 		SceneRenderer::BeginScene(this, camera.GetViewProjection());
-		m_Tree.SubmitToRenderer();
 		if (m_SelectedEntity != NULL_ENTITY)
 		{
 			if (m_ECS.Contains<CameraComponent>(m_SelectedEntity))

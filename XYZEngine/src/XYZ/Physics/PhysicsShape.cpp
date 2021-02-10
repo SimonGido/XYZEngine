@@ -9,7 +9,7 @@ namespace XYZ {
 	{
 	}
 
-	BoxShape::BoxShape()
+	BoxShape2D::BoxShape2D()
 		:
 		PhysicsShape(ShapeType::Box),
 		Min(glm::vec2(0.0f)),
@@ -54,7 +54,6 @@ namespace XYZ {
 
 	AABB CircleShape::GetAABB() const
 	{
-		return {glm::vec3(Radius)}
+		return { glm::vec3(-Radius), glm::vec3(Radius) };
 	}
-
 }

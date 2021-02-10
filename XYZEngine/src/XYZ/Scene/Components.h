@@ -7,6 +7,7 @@
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Script/ScriptPublicField.h"
 #include "XYZ/Utils/Math/AABB.h"
+#include "XYZ/Physics/PhysicsBody.h"
 
 #include "SceneCamera.h"
 #include "AnimationController.h"
@@ -189,6 +190,6 @@ namespace XYZ {
 
 	struct BoxColliderComponent : public Type<BoxColliderComponent>
 	{
-		AABB Box;
+		PhysicsBody* Body;
 	};
 }

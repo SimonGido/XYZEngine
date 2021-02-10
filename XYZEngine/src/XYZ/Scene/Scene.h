@@ -13,6 +13,7 @@
 #include "Serializable.h"
 
 #include "XYZ/Physics/DynamicTree.h"
+#include "XYZ/Physics/PhysicsWorld.h"
 
 namespace XYZ {
 
@@ -71,15 +72,19 @@ namespace XYZ {
     private:
         ECSManager m_ECS;
         GUID m_UUID;
+        PhysicsWorld m_PhysicsWorld;
 
         std::vector<uint32_t> m_Entities;
 
         ComponentView<TransformComponent, SpriteRenderer>* m_RenderView;
         ComponentView<TransformComponent, ParticleComponent>* m_ParticleView;
         ComponentView<TransformComponent, PointLight2D>* m_LightView;
+        ComponentView<TransformComponent, BoxColliderComponent>* m_BoxColliderView;
+
         ComponentView<AnimatorComponent>* m_AnimatorView;
         ComponentStorage<ScriptComponent>* m_ScriptStorage;
         ComponentStorage<AnimatorComponent>* m_AnimatorStorage;
+        ComponentStorage<BoxColliderComponent>* m_BoxColliderStorage;
 
         std::string m_Name;
         SceneState m_State = SceneState::Edit;
@@ -96,7 +101,6 @@ namespace XYZ {
         Ref<Material> m_CameraMaterial;
         SpriteRenderer m_CameraRenderer;
 
-        DynamicTree m_Tree;
 
         friend class SceneEntity;
         friend class Serializer;

@@ -66,7 +66,8 @@ namespace XYZ {
 	void DynamicTree::SubmitToRenderer()
 	{
 		std::stack<int32_t> stack;
-		stack.push(m_RootIndex);
+		if (m_RootIndex != NULL_NODE)
+			stack.push(m_RootIndex);
 		while (!stack.empty())
 		{
 			int32_t index = stack.top();
@@ -259,12 +260,13 @@ namespace XYZ {
 			int32_t tmpIndex = grandParent;
 			while (tmpIndex != NULL_NODE)
 			{
-				tmpIndex = balance(index);
+				tmpIndex = balance(tmpIndex);
 				int32_t firstChild = m_Nodes[tmpIndex].FirstChild;
 				int32_t secondChild = m_Nodes[tmpIndex].SecondChild;
-
+			
 				m_Nodes[tmpIndex].Box = AABB::Union(m_Nodes[firstChild].Box, m_Nodes[secondChild].Box);
 				m_Nodes[tmpIndex].Height = 1 + std::max(m_Nodes[firstChild].Height, m_Nodes[secondChild].Height);
+						
 				tmpIndex = m_Nodes[tmpIndex].ParentIndex;
 			}
 		}

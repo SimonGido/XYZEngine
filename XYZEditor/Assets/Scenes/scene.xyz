@@ -4,7 +4,7 @@ Entities:
     SceneTagComponent:
       Name: Main Camera
     TransformComponent:
-      Position: [-7.56528664, -15.2381783, 0]
+      Position: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     CameraComponent:
@@ -19,7 +19,7 @@ Entities:
     SceneTagComponent:
       Name: Test Entity
     TransformComponent:
-      Position: [-6.49064445, 16.2163773, 13.5166664]
+      Position: [0, 0, 13.5166664]
       Rotation: [0, -0, 0]
       Scale: [7.75337791, 9.20939827, 0.99999994]
     SpriteRenderer:
@@ -32,7 +32,7 @@ Entities:
     SceneTagComponent:
       Name: Test
     TransformComponent:
-      Position: [-18.9248428, -29.3125648, 1]
+      Position: [0, 0, 1]
       Rotation: [0, -0, 0]
       Scale: [13.0023727, 14.1118765, 1]
     SpriteRenderer:
@@ -45,7 +45,7 @@ Entities:
     SceneTagComponent:
       Name: Background
     TransformComponent:
-      Position: [-41.2041969, -0.201250076, -23.8474846]
+      Position: [0, 0, -23.8474846]
       Rotation: [0, 0, 0]
       Scale: [76, 46.4869995, 1]
     SpriteRenderer:
@@ -58,7 +58,7 @@ Entities:
     SceneTagComponent:
       Name: Background
     TransformComponent:
-      Position: [21.5358963, -11.3884773, -16.8496399]
+      Position: [0, 0, -16.8496399]
       Rotation: [0, 0, 0]
       Scale: [76, 46.4879799, 1]
     SpriteRenderer:
@@ -71,7 +71,7 @@ Entities:
     SceneTagComponent:
       Name: Light
     TransformComponent:
-      Position: [-10, -7, 5]
+      Position: [0, 0, 5]
       Rotation: [0, 0, 0]
       Scale: [19.0908203, 8.85980225, 1]
     PointLight2D:
@@ -81,7 +81,7 @@ Entities:
     SceneTagComponent:
       Name: Light2
     TransformComponent:
-      Position: [25.459465, -11.2994385, 2]
+      Position: [0, 0, 2]
       Rotation: [0, 0, 0]
       Scale: [27.5068054, 18.7696228, 1]
     PointLight2D:
