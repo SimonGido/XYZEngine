@@ -13,9 +13,10 @@ namespace XYZ {
 		NumTypes
 	};
 
+	class PhysicsBody;
 	struct PhysicsShape
 	{
-		PhysicsShape(ShapeType type);
+		PhysicsShape(ShapeType type, PhysicsBody* body);
 
 		virtual bool Intersect(const PhysicsShape& shape) const = 0;
 		virtual AABB GetAABB() const = 0;
@@ -31,17 +32,19 @@ namespace XYZ {
 		const ShapeType m_Type;
 		int32_t m_ID = -1;
 
+		PhysicsBody* m_Body;
 		friend class PhysicsWorld;
 	};
 
 	struct BoxShape2D : public PhysicsShape
 	{
-		BoxShape2D();
-		BoxShape2D(const glm::vec2& min, const glm::vec2& max);
+		BoxShape2D(PhysicsBody* body);
+		BoxShape2D(PhysicsBody* body, const glm::vec2& min, const glm::vec2& max);
 
 		glm::vec2 Min;
 		glm::vec2 Max;           
 
+		// TODO: Return Collision Data instead of plain true/false
 		virtual bool Intersect(const PhysicsShape& shape) const override;
 		virtual AABB GetAABB() const override { return { {Min, 0.0f}, {Max,0.0f} }; }
 		virtual float CalculateMass(float density) const override;
@@ -52,8 +55,8 @@ namespace XYZ {
 
 	struct CircleShape : public PhysicsShape
 	{
-		CircleShape();
-		CircleShape(float radius);
+		CircleShape(PhysicsBody* body);
+		CircleShape(PhysicsBody* body, float radius);
 
 		virtual bool Intersect(const PhysicsShape& shape) const override;
 		virtual AABB GetAABB() const override;

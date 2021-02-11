@@ -21,6 +21,7 @@ namespace XYZ {
 		const glm::vec2& GetPosition() const { return m_Position; }
 		float GetMass() const { return m_Mass;  }
 		float GetAngle() const { return m_Angle; }
+		uint32_t GetID() const { return m_ID; }
 		const std::vector<Fixture>& GetFixtures() const { return m_Fixtures; }
 
 
@@ -30,12 +31,6 @@ namespace XYZ {
 
 		Type m_Type = Type::Dynamic;
 		
-		glm::vec2 m_LinearVelocity = glm::vec2(0.0f);
-		float     m_AngularVelocity = 0.0f;
-		float	  m_LinearDamping = 0.0f;
-		float	  m_AngularDamping = 0.0f;
-		float	  m_Restitution = 0.0f;
-
 
 	private:
 		void recalculateMass();
@@ -43,6 +38,11 @@ namespace XYZ {
 	private:
 		glm::vec2 m_Position;
 		float	  m_Angle;
+
+		glm::vec2 m_LinearVelocity = glm::vec2(0.0f);
+		glm::vec2 m_Acceleration = glm::vec2(0.0f);
+		float     m_AngularVelocity = 0.0f;
+		float	  m_Restitution = 0.0f;
 		float	  m_Mass = 0.0f;
 		
 		const uint32_t m_ID;

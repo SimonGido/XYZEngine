@@ -20,7 +20,7 @@ namespace XYZ {
 		bool IsLeaf() const { return FirstChild == NULL_NODE; }
 	};
 
-	using CollisionCallback = std::function<bool(int32_t)>;
+	using CollisionCallback = std::function<bool(int32_t, uint32_t)>;
 
 	class DynamicTree
 	{

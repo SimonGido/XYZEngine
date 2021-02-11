@@ -33,11 +33,12 @@ namespace XYZ {
 						glm::vec2 center = fixture.Shape->CalculateCenter();
 						torque += fixture.Shape->CalculateTorque(forces, center);
 						
-						auto func = [&](int32_t id) -> bool {
-							if (id != fixture.Shape->GetID())
+						auto func = [&](int32_t shapeID, uint32_t bodyID) -> bool {
+							if (shapeID != fixture.Shape->GetID())
 							{
-								forces = -forces;
-								body->m_LinearVelocity = glm::vec2(0.0f);
+								PhysicsBody* otherBody = m_Bodies[bodyID];
+								//glm::vec2 rv = otherBody->m_LinearVelocity - body->m_LinearVelocity;
+				
 								return true;
 							}
 							return false;
@@ -45,10 +46,10 @@ namespace XYZ {
 						m_Tree.Query(func, fixture.Shape->GetAABB() + body->m_Position);
 					}
 					
-					glm::vec2 acceleration = forces / body->m_Mass;
+					body->m_Acceleration += forces / body->m_Mass;
 					float angularAcceleration = torque / inertia;
 					
-					body->m_LinearVelocity += acceleration * updateFrequency;
+					body->m_LinearVelocity += body->m_Acceleration * updateFrequency;
 					body->m_AngularVelocity += angularAcceleration * updateFrequency;
 					body->m_Position += body->m_LinearVelocity * updateFrequency;
 					body->m_Angle += body->m_AngularVelocity * updateFrequency;
@@ -73,7 +74,7 @@ namespace XYZ {
 
 	BoxShape2D* PhysicsWorld::AddBox2DShape(PhysicsBody* body, const glm::vec2& min, const glm::vec2& max, float density)
 	{
-		BoxShape2D* box = m_Pool.Allocate<BoxShape2D>(min, max);
+		BoxShape2D* box = m_Pool.Allocate<BoxShape2D>(body, min, max);
 		body->m_Fixtures.push_back({ box, density });
 		body->recalculateMass();
 		box->m_ID = m_Tree.Insert(body->m_ID, box->GetAABB());
@@ -82,7 +83,7 @@ namespace XYZ {
 
 	CircleShape* PhysicsWorld::AddCircleShape(PhysicsBody* body, float radius, float density)
 	{
-		CircleShape* circle = m_Pool.Allocate<CircleShape>(radius);
+		CircleShape* circle = m_Pool.Allocate<CircleShape>(body, radius);
 		body->m_Fixtures.push_back({ circle, density });
 		body->recalculateMass();
 		circle->m_ID = m_Tree.Insert(body->m_ID, circle->GetAABB());

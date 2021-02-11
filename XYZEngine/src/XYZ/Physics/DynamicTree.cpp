@@ -55,7 +55,7 @@ namespace XYZ {
 			{
 				if (node.IsLeaf())
 				{
-					bool proceed = callback(index);
+					bool proceed = callback(index, m_Nodes[index].ObjectIndex);
 					if (proceed)
 						return;
 				}

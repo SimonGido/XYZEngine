@@ -4,22 +4,23 @@
 #include <glm/ext/scalar_constants.hpp>
 
 namespace XYZ {
-	PhysicsShape::PhysicsShape(ShapeType type)
+	PhysicsShape::PhysicsShape(ShapeType type, PhysicsBody* body)
 		:
-		m_Type(type)
+		m_Type(type),
+		m_Body(body)
 	{
 	}
 
-	BoxShape2D::BoxShape2D()
+	BoxShape2D::BoxShape2D(PhysicsBody* body)
 		:
-		PhysicsShape(ShapeType::Box),
+		PhysicsShape(ShapeType::Box, body),
 		Min(glm::vec2(0.0f)),
 		Max(glm::vec2(0.0f))
 	{
 	}
-	BoxShape2D::BoxShape2D(const glm::vec2& min, const glm::vec2& max)
+	BoxShape2D::BoxShape2D(PhysicsBody* body, const glm::vec2& min, const glm::vec2& max)
 		:
-		PhysicsShape(ShapeType::Box),
+		PhysicsShape(ShapeType::Box, body),
 		Min(min),
 		Max(max)
 	{
@@ -64,16 +65,16 @@ namespace XYZ {
 		return { centerX, centerY };
 	}
 
-	CircleShape::CircleShape()
+	CircleShape::CircleShape(PhysicsBody* body)
 		: 
-		PhysicsShape(ShapeType::Circle),
+		PhysicsShape(ShapeType::Circle, body),
 		Radius(1.0f)
 	{
 	}
 
-	CircleShape::CircleShape(float radius)
+	CircleShape::CircleShape(PhysicsBody* body,float radius)
 		: 
-		PhysicsShape(ShapeType::Circle),
+		PhysicsShape(ShapeType::Circle, body),
 		Radius(radius)
 	{
 	}
