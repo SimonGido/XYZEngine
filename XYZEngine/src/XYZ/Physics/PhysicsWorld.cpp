@@ -30,7 +30,8 @@ namespace XYZ {
 					for (auto& fixture : body->m_Fixtures)
 					{
 						inertia += fixture.Shape->CalculateInertia(fixture.Density);
-						torque += fixture.Shape->CalculateTorque(forces);
+						glm::vec2 center = fixture.Shape->CalculateCenter();
+						torque += fixture.Shape->CalculateTorque(forces, center);
 						
 						auto func = [&](int32_t id) -> bool {
 							if (id != fixture.Shape->GetID())

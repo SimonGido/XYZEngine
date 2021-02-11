@@ -48,12 +48,20 @@ namespace XYZ {
 		return mass * (a * a + b * b) / 12.0f;
 	}
 
-	float BoxShape2D::CalculateTorque(const glm::vec2& force) const
+	float BoxShape2D::CalculateTorque(const glm::vec2& force, const glm::vec2& pos) const
 	{
-		float a = (Max.x - Min.x) / 2.0f;
-		float b = (Max.y - Min.y) / 2.0f;
+		float centerX = (Max.x - Min.x) / 2.0f;
+		float centerY = (Max.y - Min.y) / 2.0f;
+		glm::vec2 d = glm::vec2(pos.x - centerX, pos.y - centerY);
 
-		return a * force.y - b * force.x;
+		return d.x * force.y - force.x * d.y;
+	}
+
+	glm::vec2 BoxShape2D::CalculateCenter() const
+	{
+		float centerX = (Max.x - Min.x) / 2.0f;
+		float centerY = (Max.y - Min.y) / 2.0f;
+		return { centerX, centerY };
 	}
 
 	CircleShape::CircleShape()
@@ -87,7 +95,7 @@ namespace XYZ {
 	{
 		return 0.0f;
 	}
-	float CircleShape::CalculateTorque(const glm::vec2& force) const
+	float CircleShape::CalculateTorque(const glm::vec2& force, const glm::vec2& pos) const
 	{
 		return 0.0f;
 	}

@@ -21,7 +21,8 @@ namespace XYZ {
 		virtual AABB GetAABB() const = 0;
 		virtual float CalculateMass(float density) const = 0;
 		virtual float CalculateInertia(float mass) const = 0;
-		virtual float CalculateTorque(const glm::vec2& force) const = 0;
+		virtual float CalculateTorque(const glm::vec2& force, const glm::vec2& pos) const = 0;
+		virtual glm::vec2 CalculateCenter() const { return glm::vec2(0.0f); }
 
 		ShapeType GetType() const { return m_Type; };
 
@@ -45,7 +46,8 @@ namespace XYZ {
 		virtual AABB GetAABB() const override { return { {Min, 0.0f}, {Max,0.0f} }; }
 		virtual float CalculateMass(float density) const override;
 		virtual float CalculateInertia(float mass) const override;
-		virtual float CalculateTorque(const glm::vec2& force) const override;
+		virtual float CalculateTorque(const glm::vec2& force, const glm::vec2& pos) const override;
+		virtual glm::vec2 CalculateCenter() const override;
 	};
 
 	struct CircleShape : public PhysicsShape
@@ -57,7 +59,7 @@ namespace XYZ {
 		virtual AABB GetAABB() const override;
 		virtual float CalculateMass(float density) const override;
 		virtual float CalculateInertia(float mass) const override;
-		virtual float CalculateTorque(const glm::vec2& force) const override;
+		virtual float CalculateTorque(const glm::vec2& force, const glm::vec2& pos) const override;
 
 		float Radius;
 	};
