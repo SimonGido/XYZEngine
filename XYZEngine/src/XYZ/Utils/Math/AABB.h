@@ -18,5 +18,7 @@ namespace XYZ {
 		bool Intersect(const AABB& aabb) const;
 
 		static AABB Union(const AABB& a, const AABB& b);
+
+		AABB operator +(const glm::vec2& val) const;
 	};
 }

@@ -5,13 +5,12 @@
 
 namespace XYZ {
 
-
 	PhysicsWorld::PhysicsWorld(const glm::vec2& gravity)
 		:
 		m_Pool(10 * 1024),
 		m_Gravity(gravity)
 	{
-		m_Tree.Insert(NULL_ENTITY, AABB(glm::vec3(-200.0f), glm::vec3(200.0f)));
+		//m_Tree.Insert(NULL_ENTITY, AABB(glm::vec3(-200.0f), glm::vec3(200.0f)));
 	}
 
 	void PhysicsWorld::Update(Timestep ts, float updateFrequency)
@@ -24,17 +23,36 @@ namespace XYZ {
 				if (body->m_Type != PhysicsBody::Type::Static)
 				{
 					glm::vec2 old = body->m_Position;
-					body->m_Position += m_Gravity * body->m_Mass * updateFrequency;
+					glm::vec2 forces = m_Gravity * body->m_Mass;
 
 					float inertia = 0.0f;
 					float torque = 0.0f;
 					for (auto& fixture : body->m_Fixtures)
-					{				
+					{
 						inertia += fixture.Shape->CalculateMass(fixture.Density);
-						torque += fixture.Shape->CalculateTorque(glm::vec2(5.0f, m_Gravity.y));				
+						torque += fixture.Shape->CalculateTorque(glm::vec2(0.5f, m_Gravity.y));
+						
+						auto func = [&](int32_t id) -> bool {
+							if (id != fixture.Shape->GetID())
+							{
+								forces = -forces;
+								body->m_LinearVelocity = glm::vec2(0.0f);
+								return true;
+							}
+							return false;
+						};
+						m_Tree.Query(func, fixture.Shape->GetAABB() + body->m_Position);
+					}
+					
+					glm::vec2 acceleration = forces / body->m_Mass;
+					body->m_LinearVelocity += acceleration * updateFrequency;
+					body->m_Position += body->m_LinearVelocity * updateFrequency;
+					body->m_Angle += torque / inertia;
+
+					for (auto& fixture : body->m_Fixtures)
+					{
 						m_Tree.Move(fixture.Shape->m_ID, body->m_Position - old);
 					}
-					body->m_Angle += torque / inertia;
 				}
 			}
 		}
@@ -66,5 +84,4 @@ namespace XYZ {
 		circle->m_ID = m_Tree.Insert(body->m_ID, circle->GetAABB());
 		return circle;
 	}
-	
 }

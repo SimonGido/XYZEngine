@@ -23,7 +23,7 @@ namespace XYZ {
 		m_Name(name),
 		m_SelectedEntity(NULL_ENTITY),
 		m_CameraEntity(NULL_ENTITY),
-		m_PhysicsWorld(glm::vec2(0.0f, -0.008f))
+		m_PhysicsWorld(glm::vec2(0.0f, -9.8f))
 	{
 		m_ViewportWidth = 0;
 		m_ViewportHeight = 0;
@@ -47,9 +47,9 @@ namespace XYZ {
 		m_AnimatorStorage = m_ECS.GetStorage<AnimatorComponent>();
 		m_BoxColliderStorage = m_ECS.GetStorage<BoxColliderComponent>();
 
-		auto body = m_PhysicsWorld.CreateBody(glm::vec2(0.0f, -50.0f), 0.0f);
-		body->m_Type = PhysicsBody::Type::Static;
-		m_PhysicsWorld.AddBox2DShape(body, glm::vec2(-100.0f, -25.0f), glm::vec2(100.0f, 0.0f), 0.0f);
+		//auto body = m_PhysicsWorld.CreateBody(glm::vec2(0.0f, -50.0f), 0.0f);
+		//body->m_Type = PhysicsBody::Type::Static;
+		//m_PhysicsWorld.AddBox2DShape(body, glm::vec2(-100.0f, -25.0f), glm::vec2(100.0f, 0.0f), 0.0f);
 	}
 
 	Scene::~Scene()
@@ -204,19 +204,31 @@ namespace XYZ {
 		for (auto entityID : m_Entities)
 		{
 			SceneEntity entity(entityID, this);
-			if (!entity.HasComponent<BoxColliderComponent>())
+			if (!entity.HasComponent<BoxColliderComponent>() && !entity.HasComponent<CameraComponent>())
 			{
+				SceneTagComponent& sceneTag = entity.GetComponent<SceneTagComponent>();
+			
 				auto& boxCollider = entity.AddComponent<BoxColliderComponent>({});
 				auto& transform = entity.GetComponent<TransformComponent>();
-				boxCollider.Body = m_PhysicsWorld.CreateBody(glm::vec2(transform.Translation.x, transform.Translation.y), 0.0f);
+				if (sceneTag.Name == "Background")
+				{
+					transform.Translation.y = -100.0f;
+					boxCollider.Body = m_PhysicsWorld.CreateBody(glm::vec2(transform.Translation.x, transform.Translation.y), 0.0f);
+					boxCollider.Body->m_Type = PhysicsBody::Type::Static;
+				}
+				else
+				{
+					boxCollider.Body = m_PhysicsWorld.CreateBody(glm::vec2(transform.Translation.x, transform.Translation.y), 0.0f);
+				}
+
 				m_PhysicsWorld.AddBox2DShape(
 					boxCollider.Body, 
 					transform.Translation - transform.Scale * 0.5f, 
 					transform.Translation + transform.Scale * 0.5f,
-					1.0f
+					10.0f
 				);
 
-				boxCollider.Body->SetFixtureDensity(0, 5.0f);
+				boxCollider.Body->SetFixtureDensity(0, 5.0f);	
 			}
 		}
 	}

@@ -31,6 +31,7 @@ namespace XYZ {
 		Type m_Type = Type::Dynamic;
 		float m_LinearDamping = 0.0f;
 		float m_AngularDamping = 0.0f;
+		glm::vec2 m_LinearVelocity = glm::vec2(0.0f);
 
 	private:
 		void recalculateMass();
@@ -39,7 +40,6 @@ namespace XYZ {
 		glm::vec2 m_Position;
 		float	  m_Angle;
 
-		glm::vec2 m_LinearVelocity = glm::vec2(0.0f);
 		float     m_AngularVelocity = 0.0f;
 		float	  m_Mass = 0.0f;
 

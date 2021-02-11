@@ -25,6 +25,7 @@ namespace XYZ {
 
 		ShapeType GetType() const { return m_Type; };
 
+		int32_t GetID() const { return m_ID; }
 	private:
 		const ShapeType m_Type;
 		int32_t m_ID = -1;

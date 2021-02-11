@@ -165,6 +165,7 @@ namespace XYZ {
 			m_InspectorPanel.SetContext(m_SelectedEntity);
 		}
 	}
+
 	void EditorLayer::OnEvent(Event& event)
 	{			
 		EventDispatcher dispatcher(event);

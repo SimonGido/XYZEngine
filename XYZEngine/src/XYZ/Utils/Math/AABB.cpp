@@ -43,4 +43,12 @@ namespace XYZ {
 		return c;
 	}
 
+	AABB AABB::operator+(const glm::vec2& val) const
+	{
+		AABB res;
+		res.Min = Min + glm::vec3(val, 0.0f);
+		res.Max = Max + glm::vec3(val, 0.0f);
+		return res;
+	}
+
 }
