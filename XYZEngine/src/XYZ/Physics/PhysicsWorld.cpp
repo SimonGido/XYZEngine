@@ -23,14 +23,14 @@ namespace XYZ {
 				if (body->m_Type != PhysicsBody::Type::Static)
 				{
 					glm::vec2 old = body->m_Position;
-					glm::vec2 forces = m_Gravity * body->m_Mass;
+					glm::vec2 forces = m_Gravity;
 
 					float inertia = 0.0f;
 					float torque = 0.0f;
 					for (auto& fixture : body->m_Fixtures)
 					{
-						inertia += fixture.Shape->CalculateMass(fixture.Density);
-						torque += fixture.Shape->CalculateTorque(glm::vec2(0.5f, m_Gravity.y));
+						inertia += fixture.Shape->CalculateInertia(fixture.Density);
+						torque += fixture.Shape->CalculateTorque(forces);
 						
 						auto func = [&](int32_t id) -> bool {
 							if (id != fixture.Shape->GetID())
@@ -45,9 +45,12 @@ namespace XYZ {
 					}
 					
 					glm::vec2 acceleration = forces / body->m_Mass;
+					float angularAcceleration = torque / inertia;
+					
 					body->m_LinearVelocity += acceleration * updateFrequency;
+					body->m_AngularVelocity += angularAcceleration * updateFrequency;
 					body->m_Position += body->m_LinearVelocity * updateFrequency;
-					body->m_Angle += torque / inertia;
+					body->m_Angle += body->m_AngularVelocity * updateFrequency;
 
 					for (auto& fixture : body->m_Fixtures)
 					{

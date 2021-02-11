@@ -29,9 +29,13 @@ namespace XYZ {
 
 
 		Type m_Type = Type::Dynamic;
-		float m_LinearDamping = 0.0f;
-		float m_AngularDamping = 0.0f;
+		
 		glm::vec2 m_LinearVelocity = glm::vec2(0.0f);
+		float     m_AngularVelocity = 0.0f;
+		float	  m_LinearDamping = 0.0f;
+		float	  m_AngularDamping = 0.0f;
+		float	  m_Restitution = 0.0f;
+
 
 	private:
 		void recalculateMass();
@@ -39,11 +43,8 @@ namespace XYZ {
 	private:
 		glm::vec2 m_Position;
 		float	  m_Angle;
-
-		float     m_AngularVelocity = 0.0f;
 		float	  m_Mass = 0.0f;
-
-
+		
 		const uint32_t m_ID;
 		
 		std::vector<Fixture> m_Fixtures;
