@@ -5,6 +5,14 @@
 
 namespace XYZ {
 
+
+	struct IntersectData
+	{
+		glm::vec2 Enter;
+		float Penetration;
+		bool Intersection = false;
+	};
+
 	enum class ShapeType
 	{
 		Box,
@@ -18,7 +26,7 @@ namespace XYZ {
 	{
 		PhysicsShape(ShapeType type, PhysicsBody* body);
 
-		virtual bool Intersect(const PhysicsShape& shape) const = 0;
+		virtual IntersectData Intersect(const PhysicsShape& shape) const = 0;
 		virtual AABB GetAABB() const = 0;
 		virtual float CalculateMass(float density) const = 0;
 		virtual float CalculateInertia(float mass) const = 0;
@@ -32,6 +40,7 @@ namespace XYZ {
 		const ShapeType m_Type;
 		int32_t m_ID = -1;
 
+	protected:
 		PhysicsBody* m_Body;
 		friend class PhysicsWorld;
 	};
@@ -44,9 +53,8 @@ namespace XYZ {
 		glm::vec2 Min;
 		glm::vec2 Max;           
 
-		// TODO: Return Collision Data instead of plain true/false
-		virtual bool Intersect(const PhysicsShape& shape) const override;
-		virtual AABB GetAABB() const override { return { {Min, 0.0f}, {Max,0.0f} }; }
+		virtual IntersectData Intersect(const PhysicsShape& shape) const override;
+		virtual AABB GetAABB() const override;
 		virtual float CalculateMass(float density) const override;
 		virtual float CalculateInertia(float mass) const override;
 		virtual float CalculateTorque(const glm::vec2& force, const glm::vec2& pos) const override;
@@ -58,7 +66,7 @@ namespace XYZ {
 		CircleShape(PhysicsBody* body);
 		CircleShape(PhysicsBody* body, float radius);
 
-		virtual bool Intersect(const PhysicsShape& shape) const override;
+		virtual IntersectData Intersect(const PhysicsShape& shape) const override;
 		virtual AABB GetAABB() const override;
 		virtual float CalculateMass(float density) const override;
 		virtual float CalculateInertia(float mass) const override;

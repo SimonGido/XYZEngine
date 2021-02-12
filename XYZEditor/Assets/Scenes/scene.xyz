@@ -20,7 +20,7 @@ Entities:
       Name: Background
     TransformComponent:
       Position: [0, -100, -16.8496399]
-      Rotation: [0, 0, 0]
+      Rotation: [0, -0, 0]
       Scale: [76, 46.4879799, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/New_Material.mat
@@ -32,9 +32,9 @@ Entities:
     SceneTagComponent:
       Name: Test
     TransformComponent:
-      Position: [0, -2.71218276, 1]
-      Rotation: [0, -0, 0]
-      Scale: [13.0023861, 14.1119242, 0.999926984]
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [5, 5, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/New_Material.mat
       SubTextureAssetPath: Assets/SubTextures/New_SubTexture.subtex

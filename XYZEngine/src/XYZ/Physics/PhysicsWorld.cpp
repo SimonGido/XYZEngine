@@ -37,13 +37,15 @@ namespace XYZ {
 							if (shapeID != fixture.Shape->GetID())
 							{
 								PhysicsBody* otherBody = m_Bodies[bodyID];
-								//glm::vec2 rv = otherBody->m_LinearVelocity - body->m_LinearVelocity;
+								auto data = otherBody->GetFixtures()[0].Shape->Intersect(*fixture.Shape);
+								body->m_Acceleration = glm::vec2(0.0f);
+								body->m_LinearVelocity = glm::vec2(0.0f);
 				
 								return true;
 							}
 							return false;
 						};
-						m_Tree.Query(func, fixture.Shape->GetAABB() + body->m_Position);
+						m_Tree.Query(func, fixture.Shape->GetAABB());
 					}
 					
 					body->m_Acceleration += forces / body->m_Mass;

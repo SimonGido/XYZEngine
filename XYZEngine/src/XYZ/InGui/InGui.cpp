@@ -423,8 +423,11 @@ namespace XYZ {
 
 
 		if (eraseOutOfBorders(oldQuadCount, buttonSize, window, mesh)) { return false; }
-		if (!s_ActiveWidgets) return open;
-
+		if (!s_ActiveWidgets)
+		{
+			if (open) Separator();
+			return open;
+		}
 		if (Collide(pos, size, s_Context->FrameData.MousePosition))
 		{
 			mesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];

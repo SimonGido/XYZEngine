@@ -223,8 +223,8 @@ namespace XYZ {
 
 				m_PhysicsWorld.AddBox2DShape(
 					boxCollider.Body, 
-					transform.Translation - transform.Scale * 0.5f, 
-					transform.Translation + transform.Scale * 0.5f,
+					-transform.Scale * 0.5f, 
+					transform.Scale * 0.5f,
 					10.0f
 				);
 

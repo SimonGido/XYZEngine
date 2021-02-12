@@ -2,6 +2,7 @@
 #include "XYZ/Utils/Math/AABB.h"
 #include "XYZ/Utils/Math/Ray.h"
 #include "XYZ/Utils/DataStructures/FreeList.h"
+#include "PhysicsShape.h"
 #include <stack>
 
 namespace XYZ {

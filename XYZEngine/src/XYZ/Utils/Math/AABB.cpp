@@ -3,6 +3,8 @@
 
 namespace XYZ {
 
+
+
 	AABB::AABB()
 		: Min(0.0f), Max(0.0f) 
 	{}
