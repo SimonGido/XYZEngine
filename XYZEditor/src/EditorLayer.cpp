@@ -76,7 +76,8 @@ namespace XYZ {
 		ScriptEngine::InitScriptEntity(test);
 		ScriptEngine::InstantiateEntityClass(test);
 
-
+		m_NewEntity = m_Scene->GetEntity(3);
+		
 		m_CharacterTexture = Texture2D::Create({ TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest }, "Assets/Textures/player_sprite.png");
 		m_CharacterSubTexture = Ref<SubTexture>::Create(m_CharacterTexture, glm::vec2(0, 0), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
 		m_CharacterSubTexture2 = Ref<SubTexture>::Create(m_CharacterTexture, glm::vec2(1, 2), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
@@ -163,6 +164,33 @@ namespace XYZ {
 		{
 			m_SelectedEntity = m_Scene->GetSelectedEntity();
 			m_InspectorPanel.SetContext(m_SelectedEntity);
+		}
+
+		if (m_TestEntity.HasComponent<BoxColliderComponent>())
+		{
+			float speed = 0.05f;
+			auto body = m_TestEntity.GetComponent<BoxColliderComponent>().Body;
+			if (Input::IsKeyPressed(KeyCode::KEY_LEFT))
+				body->m_LinearVelocity.x += -speed;
+			if (Input::IsKeyPressed(KeyCode::KEY_RIGHT))
+				body->m_LinearVelocity.x += speed;
+			if (Input::IsKeyPressed(KeyCode::KEY_UP))
+				body->m_LinearVelocity.y += speed;
+			if (Input::IsKeyPressed(KeyCode::KEY_DOWN))
+				body->m_LinearVelocity.y += -speed;
+		}
+		if (m_NewEntity.HasComponent<BoxColliderComponent>())
+		{
+			float speed = 0.05f;
+			auto body = m_NewEntity.GetComponent<BoxColliderComponent>().Body;
+			if (Input::IsKeyPressed(KeyCode::KEY_A))
+				body->m_LinearVelocity.x += -speed;
+			if (Input::IsKeyPressed(KeyCode::KEY_D))
+				body->m_LinearVelocity.x += speed;
+			if (Input::IsKeyPressed(KeyCode::KEY_W))
+				body->m_LinearVelocity.y += speed;
+			if (Input::IsKeyPressed(KeyCode::KEY_S))
+				body->m_LinearVelocity.y += -speed;
 		}
 	}
 

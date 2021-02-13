@@ -23,7 +23,7 @@ namespace XYZ {
 		m_Name(name),
 		m_SelectedEntity(NULL_ENTITY),
 		m_CameraEntity(NULL_ENTITY),
-		m_PhysicsWorld(glm::vec2(0.0f, -9.8f))
+		m_PhysicsWorld(glm::vec2(0.0f, 0.0f))
 	{
 		m_ViewportWidth = 0;
 		m_ViewportHeight = 0;
@@ -192,8 +192,9 @@ namespace XYZ {
 			material->GetShader()->Compute(32, 32, 1);
 		}
 
-		m_PhysicsWorld.Update(ts, 1.0f / 60.0f);
-		for (size_t i = 0; i < m_BoxColliderView->Size(); ++i)
+		//if (Input::IsKeyPressed(KeyCode::KEY_SPACE))
+			m_PhysicsWorld.Update(ts, 1.0f / 60.0f);
+ 		for (size_t i = 0; i < m_BoxColliderView->Size(); ++i)
 		{
 			auto [transform, boxCollider] = (*m_BoxColliderView)[i];
 			transform.Translation.x = boxCollider.Body->GetPosition().x;
@@ -207,7 +208,10 @@ namespace XYZ {
 			if (!entity.HasComponent<BoxColliderComponent>() && !entity.HasComponent<CameraComponent>())
 			{
 				SceneTagComponent& sceneTag = entity.GetComponent<SceneTagComponent>();
-			
+				if (sceneTag.Name == "Background")
+				{
+					//continue;
+				}
 				auto& boxCollider = entity.AddComponent<BoxColliderComponent>({});
 				auto& transform = entity.GetComponent<TransformComponent>();
 				if (sceneTag.Name == "Background")

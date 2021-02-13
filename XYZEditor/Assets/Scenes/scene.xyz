@@ -19,7 +19,7 @@ Entities:
     SceneTagComponent:
       Name: Background
     TransformComponent:
-      Position: [0, -100, -16.8496399]
+      Position: [0, -100, 0]
       Rotation: [0, -0, 0]
       Scale: [76, 46.4879799, 1]
     SpriteRenderer:
@@ -33,8 +33,21 @@ Entities:
       Name: Test
     TransformComponent:
       Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
+      Rotation: [0, -0, 0]
       Scale: [5, 5, 1]
+    SpriteRenderer:
+      MaterialAssetPath: Assets/Materials/New_Material.mat
+      SubTextureAssetPath: Assets/SubTextures/New_SubTexture.subtex
+      Color: [1, 1, 1, 1]
+      SortLayer: 4
+      IsVisible: true
+  - Entity: "{370A988D-20DA-4B21-B9EE-2440E4E3660D}"
+    SceneTagComponent:
+      Name: New Entity
+    TransformComponent:
+      Position: [-0.39007476, 10, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/New_Material.mat
       SubTextureAssetPath: Assets/SubTextures/New_SubTexture.subtex

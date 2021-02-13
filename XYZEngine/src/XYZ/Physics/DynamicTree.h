@@ -21,7 +21,7 @@ namespace XYZ {
 		bool IsLeaf() const { return FirstChild == NULL_NODE; }
 	};
 
-	using CollisionCallback = std::function<bool(int32_t, uint32_t)>;
+	using CollisionCallback = std::function<bool(int32_t)>;
 
 	class DynamicTree
 	{
@@ -33,10 +33,13 @@ namespace XYZ {
 		void Move(int32_t index, const glm::vec2& displacement);
 		void Remove(int32_t index);
 
-	
-
+		uint32_t GetObjectIndex(int32_t index) const { return m_Nodes[index].ObjectIndex; }
+		const AABB& GetAABB(int32_t index) const { return m_Nodes[index].Box; }
 		// Debug
 		void SubmitToRenderer();
+
+		void CleanMovedNodes();
+		const std::vector<bool>& GetMovedNodes() const { return m_MovedNodes; }
 
 	private:
 		void insertLeaf(int32_t index);
@@ -46,6 +49,7 @@ namespace XYZ {
 	private:
 		FreeList<Node> m_Nodes;
 
+		std::vector<bool> m_MovedNodes;
 		int32_t m_RootIndex = NULL_NODE;
 	};
 }

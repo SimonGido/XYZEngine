@@ -8,9 +8,10 @@ namespace XYZ {
 
 	struct IntersectData
 	{
-		glm::vec2 Enter;
-		float Penetration;
-		bool Intersection = false;
+		glm::vec2 ContactPoint = glm::vec2(0.0f);
+		glm::vec2 ContactNormal = glm::vec2(0.0f);
+		float HitTime = 0.0f;;
+		bool  Hit = false;
 	};
 
 	enum class ShapeType
@@ -26,8 +27,9 @@ namespace XYZ {
 	{
 		PhysicsShape(ShapeType type, PhysicsBody* body);
 
-		virtual IntersectData Intersect(const PhysicsShape& shape) const = 0;
+		virtual IntersectData Intersect(const PhysicsShape& shape, float time) const = 0;
 		virtual AABB GetAABB() const = 0;
+		virtual AABB GetOldAABB() const = 0;
 		virtual float CalculateMass(float density) const = 0;
 		virtual float CalculateInertia(float mass) const = 0;
 		virtual float CalculateTorque(const glm::vec2& force, const glm::vec2& pos) const = 0;
@@ -41,7 +43,7 @@ namespace XYZ {
 		int32_t m_ID = -1;
 
 	protected:
-		PhysicsBody* m_Body;
+		const PhysicsBody* m_Body;
 		friend class PhysicsWorld;
 	};
 
@@ -53,8 +55,9 @@ namespace XYZ {
 		glm::vec2 Min;
 		glm::vec2 Max;           
 
-		virtual IntersectData Intersect(const PhysicsShape& shape) const override;
+		virtual IntersectData Intersect(const PhysicsShape& shape, float time) const override;
 		virtual AABB GetAABB() const override;
+		virtual AABB GetOldAABB() const override;
 		virtual float CalculateMass(float density) const override;
 		virtual float CalculateInertia(float mass) const override;
 		virtual float CalculateTorque(const glm::vec2& force, const glm::vec2& pos) const override;
@@ -66,12 +69,18 @@ namespace XYZ {
 		CircleShape(PhysicsBody* body);
 		CircleShape(PhysicsBody* body, float radius);
 
-		virtual IntersectData Intersect(const PhysicsShape& shape) const override;
+		virtual IntersectData Intersect(const PhysicsShape& shape, float time) const override;
 		virtual AABB GetAABB() const override;
+		virtual AABB GetOldAABB() const override;
 		virtual float CalculateMass(float density) const override;
 		virtual float CalculateInertia(float mass) const override;
 		virtual float CalculateTorque(const glm::vec2& force, const glm::vec2& pos) const override;
 
 		float Radius;
+	};
+
+	struct Polygon : public PhysicsShape
+	{
+
 	};
 }

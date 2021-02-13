@@ -12,7 +12,7 @@ namespace XYZ {
 		AABB();
 		AABB(const glm::vec3& min, const glm::vec3& max);
 			
-
+		float GetPerimeter() const;
 		float CalculateArea() const;
 		bool Contains(const AABB& aabb) const;
 		bool Intersect(const AABB& aabb) const;

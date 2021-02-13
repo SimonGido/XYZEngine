@@ -5,54 +5,61 @@
 #include <glm/ext/scalar_constants.hpp>
 
 namespace XYZ {
-	static bool TestAxis(const glm::vec2& axis, float minA, float maxA, float minB, float maxB, glm::vec2& mtvAxis, float& mtvDistance)
+	
+
+	static IntersectData RayIntersectsAABB(const glm::vec2& origin, const glm::vec2& dir, const AABB& target)
 	{
-		// Separating Axis Theorem
-		// =======================
-		// - Two convex shapes only overlap if they overlap on all axes of separation
-		// - In order to create accurate responses we need to find the collision vector (Minimum Translation Vector)   
-		// - The collision vector is made from a vector and a scalar, 
-		//   - The vector value is the axis associated with the smallest penetration
-		//   - The scalar value is the smallest penetration value
-		// - Find if the two boxes intersect along a single axis
-		// - Compute the intersection interval for that axis
-		// - Keep the smallest intersection/penetration value
-		float axisLengthSquared = glm::dot(axis, axis);
+		IntersectData result;
+		glm::vec2 targetSize = target.Max - target.Min;
+		glm::vec2 min = { target.Min.x, target.Min.y };
+		glm::vec2 max = { target.Max.x, target.Max.y };
+		glm::vec2 tNear = (min - origin) / dir;
+		glm::vec2 tFar = glm::vec2(max - origin) / dir;
+		
+		if (std::isnan(tFar.y) || std::isnan(tFar.x)) return result;
+		if (std::isnan(tNear.y) || std::isnan(tNear.x)) return result;
 
-		// If the axis is degenerate then ignore
-		if (axisLengthSquared < 1.0e-8f)
-			return true;
+		if (tNear.x > tFar.x) std::swap(tNear.x, tFar.x);
+		if (tNear.y > tFar.y) std::swap(tNear.y, tFar.y);
+		if (tNear.x > tFar.y || tNear.y > tFar.x) return result;
 
-		// Calculate the two possible overlap ranges
-		// Either we overlap on the left or the right sides
-		float d0 = (maxB - minA);   // 'Left' side
-		float d1 = (maxA - minB);   // 'Right' side
+		result.HitTime = std::max(tNear.x, tNear.y);
+		float tHitFar = std::min(tFar.x, tFar.y);
 
-		// Intervals do not overlap, so no intersection
-		if (d0 <= 0.0f || d1 <= 0.0f)
-			return false;
-
-		// Find out if we overlap on the 'right' or 'left' of the object.
-		float overlap = (d0 < d1) ? d0 : -d1;
-
-		// The mtd vector for that axis
-		glm::vec2 sep = axis * (overlap / axisLengthSquared);
-
-		// The mtd vector length squared
-		float sepLengthSquared = glm::dot(sep, sep);
-
-		// If that vector is smaller than our computed Minimum Translation Distance use that vector as our current MTV distance
-		if (sepLengthSquared < mtvDistance)
+		if (result.HitTime > 1.0f) return result;
+		if (tHitFar <= 0.0f) return result;
+		
+		result.ContactPoint = origin + result.HitTime * dir;
+		if (tNear.x > tNear.y)
 		{
-			mtvDistance = sepLengthSquared;
-			mtvAxis = sep;
+			if (dir.x < 0.0f)
+				result.ContactNormal = { 1.0f, 0.0f };
+			else
+				result.ContactNormal = { -1.0f, 0.0f };
 		}
+		else if (tNear.x < tNear.y)
+		{
+			if (dir.y < 0.0f)
+				result.ContactNormal = { 0.0f, 1.0f };
+			else
+				result.ContactNormal = { 0.0f, -1.0f };
+		}
+		result.Hit = true;
+		return result;
+	}
+	
+	static IntersectData DynamicAABBIntersectsAABB(const AABB& in, const AABB& target, const glm::vec2& velocity, float time)
+	{
+		AABB expanded;
+		glm::vec3 inSize = in.Max - in.Min;
+		expanded.Min = target.Min - inSize / 2.0f;
+		expanded.Max = target.Max + inSize / 2.0f;
 
-		return true;
+		IntersectData result = RayIntersectsAABB(in.Min + inSize / 2.0f, velocity * time, expanded);
+		
+		return result;
 	}
 
-	
-	
 	PhysicsShape::PhysicsShape(ShapeType type, PhysicsBody* body)
 		:
 		m_Type(type),
@@ -74,34 +81,25 @@ namespace XYZ {
 		Max(max)
 	{
 	}
-	IntersectData BoxShape2D::Intersect(const PhysicsShape& shape) const
+	IntersectData BoxShape2D::Intersect(const PhysicsShape& shape, float time) const
 	{
 		IntersectData data;
 		if (shape.GetType() == ShapeType::Box)
 		{
 			const BoxShape2D& box = (const BoxShape2D&)shape;
-			data.Intersection = box.GetAABB().Intersect(GetAABB());
-			if (data.Intersection)
-			{
-				float mtvDistance = FLT_MAX;
-				glm::vec2 mtvAxis(0.0f);
-
-				if (!TestAxis(glm::vec2(1.0f, 0.0f), Min.x, Max.x, box.Min.x, box.Max.x, mtvAxis, mtvDistance))
-					return data;
-
-				if (!TestAxis(glm::vec2(0.0f, 1.0f), Min.y, Max.y, box.Min.y, box.Max.y, mtvAxis, mtvDistance))
-					return data;
-
-				data.Enter = glm::normalize(mtvAxis);
-				data.Penetration = glm::sqrt(mtvDistance) * 1.001f;
-			}
+			return DynamicAABBIntersectsAABB(GetAABB(), box.GetAABB(), m_Body->GetLinearVelocity(), time);
 		}
 		return data;
 	}
 
 	AABB BoxShape2D::GetAABB() const
 	{
-		{ return { {m_Body->GetPosition() + Min, 0.0f}, {m_Body->GetPosition() + Max,0.0f} }; }
+		 return { {m_Body->GetPosition() + Min, 0.0f}, {m_Body->GetPosition() + Max,0.0f} };
+	}
+
+	AABB BoxShape2D::GetOldAABB() const
+	{
+		return { {m_Body->GetOldPosition() + Min, 0.0f}, {m_Body->GetOldPosition() + Max,0.0f} };
 	}
 
 	float BoxShape2D::CalculateMass(float density) const
@@ -148,7 +146,7 @@ namespace XYZ {
 	{
 	}
 
-	IntersectData CircleShape::Intersect(const PhysicsShape& shape) const
+	IntersectData CircleShape::Intersect(const PhysicsShape& shape, float time) const
 	{
 		return IntersectData();
 	}
@@ -156,6 +154,10 @@ namespace XYZ {
 	AABB CircleShape::GetAABB() const
 	{
 		return { glm::vec3(-Radius), glm::vec3(Radius) };
+	}
+	AABB CircleShape::GetOldAABB() const
+	{
+		return AABB();
 	}
 	float CircleShape::CalculateMass(float density) const
 	{

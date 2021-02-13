@@ -28,5 +28,8 @@ namespace XYZ {
 
 		glm::vec2 m_Gravity;
 		float m_CurrentTime = 0.0f;
+
+
+		std::vector<std::pair<int32_t, int32_t>> m_IntersectingNodes;
 	};
 }

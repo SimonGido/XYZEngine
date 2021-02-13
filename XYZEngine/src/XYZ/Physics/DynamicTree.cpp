@@ -39,7 +39,7 @@ namespace XYZ {
 		}
 		return false;
 	}
-	void DynamicTree::Query(const CollisionCallback& callback, const AABB& aabb)
+	void DynamicTree::Query(const CollisionCallback& callback,const AABB& aabb)
 	{
 		std::stack<int32_t> stack;
 		stack.push(m_RootIndex);
@@ -55,7 +55,7 @@ namespace XYZ {
 			{
 				if (node.IsLeaf())
 				{
-					bool proceed = callback(index, m_Nodes[index].ObjectIndex);
+					bool proceed = callback(index);
 					if (proceed)
 						return;
 				}
@@ -71,6 +71,8 @@ namespace XYZ {
 	{
 		int32_t leaf = m_Nodes.Insert({ box , objectIndex });
 		
+		if (m_MovedNodes.size() < m_Nodes.Range())
+			m_MovedNodes.resize(m_Nodes.Range());
 		insertLeaf(leaf);
 		return leaf;
 	}
@@ -83,6 +85,7 @@ namespace XYZ {
 		m_Nodes[index].Box.Max.x += displacement.x;
 		m_Nodes[index].Box.Max.y += displacement.y;
 
+		m_MovedNodes[index] = true;
 		insertLeaf(index);
 	}
 	void DynamicTree::Remove(int32_t index)
@@ -135,6 +138,12 @@ namespace XYZ {
 		}
 	}
 
+	void DynamicTree::CleanMovedNodes()
+	{
+		for (auto& node : m_MovedNodes)
+			node = false;
+	}
+
 	void DynamicTree::insertLeaf(int32_t leaf)
 	{
 		if (m_RootIndex == NULL_NODE)
@@ -150,10 +159,10 @@ namespace XYZ {
 			int32_t firstChild = m_Nodes[index].FirstChild;
 			int32_t secondChild = m_Nodes[index].SecondChild;
 
-			float area = m_Nodes[index].Box.CalculateArea();
+			float area = m_Nodes[index].Box.GetPerimeter();
 
 			AABB combinedAABB = AABB::Union(m_Nodes[index].Box, leafAABB);
-			float combinedArea = combinedAABB.CalculateArea();
+			float combinedArea = combinedAABB.GetPerimeter();
 
 			// Cost of creating a new parent for this node and the new leaf
 			float cost = 2.0f * combinedArea;
@@ -166,13 +175,13 @@ namespace XYZ {
 			if (m_Nodes[firstChild].IsLeaf())
 			{
 				AABB aabb = AABB::Union(leafAABB, m_Nodes[firstChild].Box);
-				cost1 = aabb.CalculateArea() + inheritanceCost;
+				cost1 = aabb.GetPerimeter() + inheritanceCost;
 			}
 			else
 			{
 				AABB aabb = AABB::Union(leafAABB, m_Nodes[firstChild].Box);
-				float oldArea = m_Nodes[firstChild].Box.CalculateArea();
-				float newArea = aabb.CalculateArea();
+				float oldArea = m_Nodes[firstChild].Box.GetPerimeter();
+				float newArea = aabb.GetPerimeter();
 				cost1 = (newArea - oldArea) + inheritanceCost;
 			}
 
@@ -181,13 +190,13 @@ namespace XYZ {
 			if (m_Nodes[secondChild].IsLeaf())
 			{
 				AABB aabb = AABB::Union(leafAABB, m_Nodes[secondChild].Box);
-				cost2 = aabb.CalculateArea() + inheritanceCost;
+				cost2 = aabb.GetPerimeter() + inheritanceCost;
 			}
 			else
 			{
 				AABB aabb = AABB::Union(leafAABB, m_Nodes[secondChild].Box);
-				float oldArea = m_Nodes[secondChild].Box.CalculateArea();
-				float newArea = aabb.CalculateArea();
+				float oldArea = m_Nodes[secondChild].Box.GetPerimeter();
+				float newArea = aabb.GetPerimeter();
 				cost2 = newArea - oldArea + inheritanceCost;
 			}
 

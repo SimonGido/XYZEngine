@@ -17,6 +17,12 @@ namespace XYZ {
 		return 2.0f * (diff.x * diff.y * diff.z + diff.z * diff.x);
 	}
 
+	float AABB::GetPerimeter() const
+	{
+		float wx = Max.x - Min.x;
+		float wy = Max.y - Min.y;
+		return 2.0f * (wx + wy);
+	}
 	bool AABB::Contains(const AABB& aabb) const
 	{
 		bool result = true;
@@ -29,9 +35,18 @@ namespace XYZ {
 
 	bool AABB::Intersect(const AABB& aabb) const
 	{
-		return (Min.x <= aabb.Max.x && Max.x >= aabb.Min.x) &&
-			   (Min.y <= aabb.Max.y && Max.y >= aabb.Min.y) &&
-			   (Min.z <= aabb.Max.z && Max.z >= aabb.Min.z);
+		float d1x = aabb.Min.x - Max.x;
+		float d1y = aabb.Min.y - Max.y;
+		float d2x = Min.x - aabb.Max.x;
+		float d2y = Min.y - aabb.Max.y;
+
+		if (d1x > 0.0f || d1y > 0.0f)
+			return false;
+
+		if (d2x > 0.0f || d2y > 0.0f)
+			return false;
+
+		return true;
 	}
 
 	AABB AABB::Union(const AABB& a, const AABB& b)
@@ -40,8 +55,8 @@ namespace XYZ {
 		c.Min.x = std::min(a.Min.x, b.Min.x);
 		c.Min.y = std::min(a.Min.y, b.Min.y);
 
-		c.Max.x = std::min(a.Max.x, b.Max.x);
-		c.Max.y = std::min(a.Max.y, b.Max.y);
+		c.Max.x = std::max(a.Max.x, b.Max.x);
+		c.Max.y = std::max(a.Max.y, b.Max.y);
 		return c;
 	}
 

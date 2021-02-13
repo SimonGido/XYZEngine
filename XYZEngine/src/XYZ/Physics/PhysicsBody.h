@@ -19,6 +19,8 @@ namespace XYZ {
 		void SetFixtureDensity(uint32_t index, float density) { m_Fixtures[index].Density = density; recalculateMass(); }
 
 		const glm::vec2& GetPosition() const { return m_Position; }
+		const glm::vec2& GetOldPosition() const { return m_OldPosition; }
+		const glm::vec2& GetLinearVelocity() const { return m_LinearVelocity; }
 		float GetMass() const { return m_Mass;  }
 		float GetAngle() const { return m_Angle; }
 		uint32_t GetID() const { return m_ID; }
@@ -32,11 +34,8 @@ namespace XYZ {
 		Type m_Type = Type::Dynamic;
 		
 
-	private:
-		void recalculateMass();
-		
-	private:
 		glm::vec2 m_Position;
+		glm::vec2 m_OldPosition;
 		float	  m_Angle;
 
 		glm::vec2 m_LinearVelocity = glm::vec2(0.0f);
@@ -44,6 +43,12 @@ namespace XYZ {
 		float     m_AngularVelocity = 0.0f;
 		float	  m_Restitution = 0.0f;
 		float	  m_Mass = 0.0f;
+
+	private:
+		void recalculateMass();
+		
+	private:
+		
 		
 		const uint32_t m_ID;
 		

@@ -2,15 +2,32 @@
 #include "PhysicsWorld.h"
 
 #include "XYZ/Scene/Components.h"
+#include "XYZ/Renderer/Renderer2D.h"
 
 namespace XYZ {
+
+	//if (shapeID != fixture.Shape->GetID())
+						//{
+						//	PhysicsBody* otherBody = m_Bodies[bodyID];
+						//	auto data = fixture.Shape->Intersect(*otherBody->GetFixtures()[0].Shape, updateFrequency);
+						//	if (data.Hit)
+						//	{
+						//		velocity += data.ContactNormal
+						//			* glm::vec2(fabs(velocity.x), fabs(velocity.y)) * (1.0f - data.HitTime);
+						//
+						//
+						//		Renderer2D::SubmitLine(glm::vec3(data.ContactPoint, 0.0f), glm::vec3(data.ContactNormal, 0.0f));
+						//	}
+						//	return false;
+						//}
+
+
 
 	PhysicsWorld::PhysicsWorld(const glm::vec2& gravity)
 		:
 		m_Pool(10 * 1024),
 		m_Gravity(gravity)
 	{
-		//m_Tree.Insert(NULL_ENTITY, AABB(glm::vec3(-200.0f), glm::vec3(200.0f)));
 	}
 
 	void PhysicsWorld::Update(Timestep ts, float updateFrequency)
@@ -18,51 +35,83 @@ namespace XYZ {
 		if (m_CurrentTime >= updateFrequency)
 		{
 			m_CurrentTime = 0.0f;
-			for (auto body : m_Bodies)
+			
+			auto& movedNodes = m_Tree.GetMovedNodes();
+			int32_t counter = 0;
+			for (auto node : movedNodes)
+			{
+				if (node)
+				{
+					auto func = [&](int32_t shapeID) -> bool
+					{
+						if (counter == shapeID)
+							return false;
+
+						if (movedNodes[shapeID] && shapeID > counter)
+							return false;
+
+						m_IntersectingNodes.push_back({ counter, shapeID });
+						return false;
+					};
+					
+					m_Tree.Query(func, m_Tree.GetAABB(counter) + m_Bodies[m_Tree.GetObjectIndex(counter)]->m_LinearVelocity);
+				}
+				counter++;
+			}
+
+			for (auto& it : m_IntersectingNodes)
+			{
+				auto firstBody = m_Bodies[m_Tree.GetObjectIndex(it.first)];
+				auto secondBody = m_Bodies[m_Tree.GetObjectIndex(it.second)];
+
+				for (auto& fixture : firstBody->GetFixtures())
+				{
+					for (auto& otherFixture : secondBody->GetFixtures())
+					{
+						{
+							auto data = fixture.Shape->Intersect(*otherFixture.Shape, updateFrequency);
+							if (data.Hit)
+							{
+								firstBody->m_LinearVelocity += data.ContactNormal
+									* glm::vec2(fabs(firstBody->m_LinearVelocity.x), fabs(firstBody->m_LinearVelocity.y)) * (1.0f - data.HitTime);
+							}
+						}
+						{
+							auto data = otherFixture.Shape->Intersect(*fixture.Shape, updateFrequency);
+							if (data.Hit)
+							{
+								secondBody->m_LinearVelocity += data.ContactNormal
+									* glm::vec2(fabs(secondBody->m_LinearVelocity.x), fabs(secondBody->m_LinearVelocity.y)) * (1.0f - data.HitTime);
+							}
+						}
+					}
+				}
+			}
+			m_IntersectingNodes.clear();
+			m_Tree.CleanMovedNodes();
+
+
+			for (auto& body : m_Bodies)
 			{
 				if (body->m_Type != PhysicsBody::Type::Static)
 				{
-					glm::vec2 old = body->m_Position;
+					body->m_OldPosition = body->m_Position;
 					glm::vec2 forces = m_Gravity;
-
-					float inertia = 0.0f;
-					float torque = 0.0f;
-					for (auto& fixture : body->m_Fixtures)
-					{
-						inertia += fixture.Shape->CalculateInertia(fixture.Density);
-						glm::vec2 center = fixture.Shape->CalculateCenter();
-						torque += fixture.Shape->CalculateTorque(forces, center);
-						
-						auto func = [&](int32_t shapeID, uint32_t bodyID) -> bool {
-							if (shapeID != fixture.Shape->GetID())
-							{
-								PhysicsBody* otherBody = m_Bodies[bodyID];
-								auto data = otherBody->GetFixtures()[0].Shape->Intersect(*fixture.Shape);
-								body->m_Acceleration = glm::vec2(0.0f);
-								body->m_LinearVelocity = glm::vec2(0.0f);
-				
-								return true;
-							}
-							return false;
-						};
-						m_Tree.Query(func, fixture.Shape->GetAABB());
-					}
-					
-					body->m_Acceleration += forces / body->m_Mass;
-					float angularAcceleration = torque / inertia;
-					
+					body->m_Acceleration = forces;
 					body->m_LinearVelocity += body->m_Acceleration * updateFrequency;
-					body->m_AngularVelocity += angularAcceleration * updateFrequency;
-					body->m_Position += body->m_LinearVelocity * updateFrequency;
-					body->m_Angle += body->m_AngularVelocity * updateFrequency;
-
-					for (auto& fixture : body->m_Fixtures)
+					glm::vec2 velocity = body->m_LinearVelocity;
+					body->m_Position += velocity * updateFrequency;
+					if (body->m_Position != body->m_OldPosition)
 					{
-						m_Tree.Move(fixture.Shape->m_ID, body->m_Position - old);
+						for (auto& fixture : body->m_Fixtures)
+						{
+							m_Tree.Move(fixture.Shape->m_ID, body->m_Position - body->m_OldPosition);
+						}
 					}
 				}
 			}
 		}
+		
 		m_CurrentTime += ts;
 		m_Tree.SubmitToRenderer();
 	}
