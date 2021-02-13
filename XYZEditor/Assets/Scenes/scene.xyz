@@ -21,7 +21,7 @@ Entities:
     TransformComponent:
       Position: [0, -100, 0]
       Rotation: [0, -0, 0]
-      Scale: [76, 46.4879799, 1]
+      Scale: [76, 2, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/New_Material.mat
       SubTextureAssetPath: Assets/SubTextures/Backgroundfield.subtex

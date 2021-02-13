@@ -6,6 +6,29 @@
 
 namespace XYZ {
 
+	static void SubmitBoxToRenderer(const AABB& box)
+	{
+		Renderer2D::SubmitLine(box.Min, glm::vec3(box.Max.x, box.Min.y, box.Min.z));
+		Renderer2D::SubmitLine(glm::vec3(box.Max.x, box.Min.y, box.Min.z), glm::vec3(box.Max.x, box.Max.y, box.Min.z));
+		Renderer2D::SubmitLine(glm::vec3(box.Max.x, box.Max.y, box.Min.z), glm::vec3(box.Min.x, box.Max.y, box.Min.z));
+		Renderer2D::SubmitLine(glm::vec3(box.Min.x, box.Max.y, box.Min.z), box.Min);
+
+
+		Renderer2D::SubmitLine(glm::vec3(box.Min.x, box.Min.y, box.Max.z), glm::vec3(box.Max.x, box.Min.y, box.Max.z));
+		Renderer2D::SubmitLine(glm::vec3(box.Max.x, box.Min.y, box.Max.z), glm::vec3(box.Max.x, box.Max.y, box.Max.z));
+		Renderer2D::SubmitLine(glm::vec3(box.Max.x, box.Max.y, box.Max.z), glm::vec3(box.Min.x, box.Max.y, box.Max.z));
+		Renderer2D::SubmitLine(glm::vec3(box.Min.x, box.Max.y, box.Max.z), glm::vec3(box.Min.x, box.Min.y, box.Max.z));
+
+
+		Renderer2D::SubmitLine(box.Min, glm::vec3(box.Min.x, box.Min.y, box.Max.z));
+		Renderer2D::SubmitLine(glm::vec3(box.Min.x, box.Max.y, box.Min.z), glm::vec3(box.Min.x, box.Max.y, box.Max.z));
+
+
+		Renderer2D::SubmitLine(glm::vec3(box.Max.x, box.Min.y, box.Min.z), glm::vec3(box.Max.x, box.Min.y, box.Max.z));
+		Renderer2D::SubmitLine(glm::vec3(box.Max.x, box.Max.y, box.Min.z), glm::vec3(box.Max.x, box.Max.y, box.Max.z));
+
+	}
+
 	//if (shapeID != fixture.Shape->GetID())
 						//{
 						//	PhysicsBody* otherBody = m_Bodies[bodyID];
@@ -36,6 +59,8 @@ namespace XYZ {
 		{
 			m_CurrentTime = 0.0f;
 			
+
+			// Find possible collisions between moving nodes
 			auto& movedNodes = m_Tree.GetMovedNodes();
 			int32_t counter = 0;
 			for (auto node : movedNodes)
@@ -54,11 +79,19 @@ namespace XYZ {
 						return false;
 					};
 					
-					m_Tree.Query(func, m_Tree.GetAABB(counter) + m_Bodies[m_Tree.GetObjectIndex(counter)]->m_LinearVelocity);
+					// Use fat aabb to prevent tunneling
+					AABB fatAABB = m_Tree.GetAABB(counter);
+					fatAABB.Min.x -= fabs(m_Bodies[m_Tree.GetObjectIndex(counter)]->m_LinearVelocity.x) * updateFrequency;
+					fatAABB.Min.y -= fabs(m_Bodies[m_Tree.GetObjectIndex(counter)]->m_LinearVelocity.y) * updateFrequency;
+					fatAABB.Max.x += fabs(m_Bodies[m_Tree.GetObjectIndex(counter)]->m_LinearVelocity.x) * updateFrequency;
+					fatAABB.Max.y += fabs(m_Bodies[m_Tree.GetObjectIndex(counter)]->m_LinearVelocity.y) * updateFrequency;
+					m_Tree.Query(func, fatAABB);
+					SubmitBoxToRenderer(fatAABB);
 				}
 				counter++;
 			}
 
+			// Go through possible intersections and resolve collisions
 			for (auto& it : m_IntersectingNodes)
 			{
 				auto firstBody = m_Bodies[m_Tree.GetObjectIndex(it.first)];
@@ -68,6 +101,7 @@ namespace XYZ {
 				{
 					for (auto& otherFixture : secondBody->GetFixtures())
 					{
+						// First body is moving for sure
 						{
 							auto data = fixture.Shape->Intersect(*otherFixture.Shape, updateFrequency);
 							if (data.Hit)
@@ -76,9 +110,10 @@ namespace XYZ {
 									* glm::vec2(fabs(firstBody->m_LinearVelocity.x), fabs(firstBody->m_LinearVelocity.y)) * (1.0f - data.HitTime);
 							}
 						}
+						// Check if second body is also moving, to prevent division by zero ( velocity )
 						{
 							auto data = otherFixture.Shape->Intersect(*fixture.Shape, updateFrequency);
-							if (data.Hit)
+							if (data.Hit && movedNodes[otherFixture.Shape->GetID()])
 							{
 								secondBody->m_LinearVelocity += data.ContactNormal
 									* glm::vec2(fabs(secondBody->m_LinearVelocity.x), fabs(secondBody->m_LinearVelocity.y)) * (1.0f - data.HitTime);
@@ -87,10 +122,11 @@ namespace XYZ {
 					}
 				}
 			}
+			// Restart intersecting nodes and moved nodes
 			m_IntersectingNodes.clear();
 			m_Tree.CleanMovedNodes();
 
-
+			// Apply velocity and forces
 			for (auto& body : m_Bodies)
 			{
 				if (body->m_Type != PhysicsBody::Type::Static)
@@ -99,8 +135,7 @@ namespace XYZ {
 					glm::vec2 forces = m_Gravity;
 					body->m_Acceleration = forces;
 					body->m_LinearVelocity += body->m_Acceleration * updateFrequency;
-					glm::vec2 velocity = body->m_LinearVelocity;
-					body->m_Position += velocity * updateFrequency;
+					body->m_Position += body->m_LinearVelocity * updateFrequency;
 					if (body->m_Position != body->m_OldPosition)
 					{
 						for (auto& fixture : body->m_Fixtures)
