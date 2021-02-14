@@ -192,4 +192,9 @@ namespace XYZ {
 	{
 		PhysicsBody* Body;
 	};
+
+	struct CircleCollider2DComponent : public Type<CircleCollider2DComponent>
+	{
+		PhysicsShape* Shape;
+	};
 }

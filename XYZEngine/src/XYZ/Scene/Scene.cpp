@@ -46,10 +46,6 @@ namespace XYZ {
 		m_ScriptStorage = m_ECS.GetStorage<ScriptComponent>();
 		m_AnimatorStorage = m_ECS.GetStorage<AnimatorComponent>();
 		m_BoxColliderStorage = m_ECS.GetStorage<BoxColliderComponent>();
-
-		//auto body = m_PhysicsWorld.CreateBody(glm::vec2(0.0f, -50.0f), 0.0f);
-		//body->m_Type = PhysicsBody::Type::Static;
-		//m_PhysicsWorld.AddBox2DShape(body, glm::vec2(-100.0f, -25.0f), glm::vec2(100.0f, 0.0f), 0.0f);
 	}
 
 	Scene::~Scene()
@@ -192,8 +188,7 @@ namespace XYZ {
 			material->GetShader()->Compute(32, 32, 1);
 		}
 
-		//if (Input::IsKeyPressed(KeyCode::KEY_SPACE))
-			m_PhysicsWorld.Update(ts, 1.0f / 60.0f);
+		m_PhysicsWorld.Update(ts);
  		for (size_t i = 0; i < m_BoxColliderView->Size(); ++i)
 		{
 			auto [transform, boxCollider] = (*m_BoxColliderView)[i];
@@ -225,11 +220,29 @@ namespace XYZ {
 					boxCollider.Body = m_PhysicsWorld.CreateBody(glm::vec2(transform.Translation.x, transform.Translation.y), 0.0f);
 				}
 
-				m_PhysicsWorld.AddBox2DShape(
+				m_PhysicsWorld.AddCircleShape(
 					boxCollider.Body, 
-					-transform.Scale * 0.5f, 
-					transform.Scale * 0.5f,
-					10.0f
+					glm::vec2(0.0f, transform.Scale.y / 4.0f),
+					transform.Scale.y / 4.0f,
+					1.0f
+				);
+				m_PhysicsWorld.AddCircleShape(
+					boxCollider.Body,
+					glm::vec2(0.0f, -transform.Scale.y / 4.0f),
+					transform.Scale.y / 4.0f,
+					1.0f
+				);
+				m_PhysicsWorld.AddCircleShape(
+					boxCollider.Body,
+					glm::vec2(-transform.Scale.x / 4.0f, 0.0f),
+					transform.Scale.x / 6.0f,
+					1.0f
+				);
+				m_PhysicsWorld.AddCircleShape(
+					boxCollider.Body,
+					glm::vec2(transform.Scale.x / 4.0f, 0.0f),
+					transform.Scale.x / 6.0f,
+					1.0f
 				);
 
 				boxCollider.Body->SetFixtureDensity(0, 5.0f);	

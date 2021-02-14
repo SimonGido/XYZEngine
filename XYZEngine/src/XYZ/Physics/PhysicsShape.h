@@ -8,10 +8,8 @@ namespace XYZ {
 
 	struct IntersectData
 	{
-		glm::vec2 ContactPoint = glm::vec2(0.0f);
-		glm::vec2 ContactNormal = glm::vec2(0.0f);
-		float HitTime = 0.0f;;
-		bool  Hit = false;
+		glm::vec2 Displacement = glm::vec2(0.0f);
+		bool Intersection = false;
 	};
 
 	enum class ShapeType
@@ -29,20 +27,20 @@ namespace XYZ {
 
 		virtual IntersectData Intersect(const PhysicsShape& shape, float time) const = 0;
 		virtual AABB GetAABB() const = 0;
-		virtual AABB GetOldAABB() const = 0;
 		virtual float CalculateMass(float density) const = 0;
 		virtual float CalculateInertia(float mass) const = 0;
 		virtual float CalculateTorque(const glm::vec2& force, const glm::vec2& pos) const = 0;
 		virtual glm::vec2 CalculateCenter() const { return glm::vec2(0.0f); }
 
+		const PhysicsBody* GetBody() const { return m_Body; }
 		ShapeType GetType() const { return m_Type; };
-
 		int32_t GetID() const { return m_ID; }
 	private:
 		const ShapeType m_Type;
 		int32_t m_ID = -1;
 
 	protected:
+		glm::vec2 m_Offset;
 		const PhysicsBody* m_Body;
 		friend class PhysicsWorld;
 	};
@@ -57,7 +55,6 @@ namespace XYZ {
 
 		virtual IntersectData Intersect(const PhysicsShape& shape, float time) const override;
 		virtual AABB GetAABB() const override;
-		virtual AABB GetOldAABB() const override;
 		virtual float CalculateMass(float density) const override;
 		virtual float CalculateInertia(float mass) const override;
 		virtual float CalculateTorque(const glm::vec2& force, const glm::vec2& pos) const override;
@@ -67,11 +64,10 @@ namespace XYZ {
 	struct CircleShape : public PhysicsShape
 	{
 		CircleShape(PhysicsBody* body);
-		CircleShape(PhysicsBody* body, float radius);
+		CircleShape(PhysicsBody* body, const glm::vec2& offset, float radius);
 
 		virtual IntersectData Intersect(const PhysicsShape& shape, float time) const override;
 		virtual AABB GetAABB() const override;
-		virtual AABB GetOldAABB() const override;
 		virtual float CalculateMass(float density) const override;
 		virtual float CalculateInertia(float mass) const override;
 		virtual float CalculateTorque(const glm::vec2& force, const glm::vec2& pos) const override;

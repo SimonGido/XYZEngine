@@ -14,11 +14,14 @@ namespace XYZ {
 	public:
 		PhysicsWorld(const glm::vec2& gravity);
 
-		void Update(Timestep ts, float updateFrequency);
+		void Update(Timestep ts);
 
 		PhysicsBody* CreateBody(const glm::vec2& position, float rotation);
 		BoxShape2D* AddBox2DShape(PhysicsBody* body, const glm::vec2& min, const glm::vec2& max, float density);
-		CircleShape* AddCircleShape(PhysicsBody* body, float radius, float density);
+		CircleShape* AddCircleShape(PhysicsBody* body, const glm::vec2& offset, float radius, float density);
+
+	private:
+		void broadPhase(Timestep ts);
 
 	private:
 		DynamicTree m_Tree;
@@ -27,8 +30,6 @@ namespace XYZ {
 		std::vector<PhysicsBody*> m_Bodies;
 
 		glm::vec2 m_Gravity;
-		float m_CurrentTime = 0.0f;
-
 
 		std::vector<std::pair<int32_t, int32_t>> m_IntersectingNodes;
 	};
