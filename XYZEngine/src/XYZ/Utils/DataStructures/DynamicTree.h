@@ -2,7 +2,6 @@
 #include "XYZ/Utils/Math/AABB.h"
 #include "XYZ/Utils/Math/Ray.h"
 #include "XYZ/Utils/DataStructures/FreeList.h"
-#include "PhysicsShape.h"
 #include <stack>
 
 namespace XYZ {
@@ -11,7 +10,7 @@ namespace XYZ {
 	struct Node
 	{
 		AABB Box;
-		uint32_t ObjectIndex;
+		void* UserData;
 
 		int32_t ParentIndex = NULL_NODE;
 		int32_t FirstChild = NULL_NODE;
@@ -26,14 +25,14 @@ namespace XYZ {
 	class DynamicTree
 	{
 	public:
-		bool RayCast(const Ray& ray, uint32_t& result);
+		bool RayCast(const Ray& ray, void*& result);
 		void Query(const CollisionCallback& callback, const AABB& aabb);
 
-		int32_t Insert(uint32_t objectIndex, const AABB& box);
+		int32_t Insert(void*userData, const AABB& box);
 		void Move(int32_t index, const glm::vec2& displacement);
 		void Remove(int32_t index);
 
-		uint32_t GetObjectIndex(int32_t index) const { return m_Nodes[index].ObjectIndex; }
+		void* GetUserData(int32_t index) const { return m_Nodes[index].UserData; }
 		const AABB& GetAABB(int32_t index) const { return m_Nodes[index].Box; }
 		// Debug
 		void SubmitToRenderer();

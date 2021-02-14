@@ -12,11 +12,9 @@
 
 #include "Serializable.h"
 
-#include "XYZ/Physics/DynamicTree.h"
-#include "XYZ/Physics/PhysicsWorld.h"
 
+class b2World;
 namespace XYZ {
-
 
     enum class SceneState
     {
@@ -25,12 +23,11 @@ namespace XYZ {
         Pause
     };
 
-    /*! @class Scene
-    *	@brief Holds all data relevant to a Scene
-    */
+
     template <typename T>
     class Asset;
     class SceneEntity;
+    
     class Scene : public RefCount,
         public Serializable
     {
@@ -72,14 +69,15 @@ namespace XYZ {
     private:
         ECSManager m_ECS;
         GUID m_UUID;
-        PhysicsWorld m_PhysicsWorld;
 
         std::vector<uint32_t> m_Entities;
+        SceneEntity* m_PhysicsBodyEntityBuffer = nullptr;
+
 
         ComponentView<TransformComponent, SpriteRenderer>* m_RenderView;
         ComponentView<TransformComponent, ParticleComponent>* m_ParticleView;
         ComponentView<TransformComponent, PointLight2D>* m_LightView;
-        ComponentView<TransformComponent, BoxColliderComponent>* m_BoxColliderView;
+        ComponentView<TransformComponent, RigidBody2DComponent>* m_RigidBodyView;
 
         ComponentView<AnimatorComponent>* m_AnimatorView;
         ComponentStorage<ScriptComponent>* m_ScriptStorage;
@@ -101,6 +99,7 @@ namespace XYZ {
         Ref<Material> m_CameraMaterial;
         SpriteRenderer m_CameraRenderer;
 
+        b2World* m_PhysicsWorld;
 
         friend class SceneEntity;
         friend class Serializer;

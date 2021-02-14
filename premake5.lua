@@ -27,6 +27,7 @@ IncludeDir["Asio"] = "XYZEngine/vendor/asio/include"
 IncludeDir["Lua"] = "XYZEngine/vendor/lua/include"
 IncludeDir["Sol"] = "XYZEngine/vendor/sol2/include"
 IncludeDir["mono"] = "XYZEngine/vendor/mono/include"
+IncludeDir["Box2D"] = "XYZEngine/vendor/box2d/include"
 
 LibraryDir = {}
 LibraryDir["mono"] = "vendor/mono/lib/Debug/mono-2.0-sgen.lib"
@@ -36,7 +37,7 @@ include "XYZEngine/vendor/GLEW"
 include "XYZEngine/vendor/OpenAL-Soft"
 include "XYZEngine/vendor/freetype-2.10.1"
 include "XYZEngine/vendor/lua"
-
+include "XYZEngine/vendor/box2d"
 
 project "XYZEngine"
 		location "XYZEngine"
@@ -94,7 +95,8 @@ project "XYZEngine"
 			"%{IncludeDir.Asio}",
 			"%{IncludeDir.Lua}",
 			"%{IncludeDir.Sol}",
-			"%{IncludeDir.mono}"
+			"%{IncludeDir.mono}",
+			"%{IncludeDir.Box2D}"
 		}
 
 		links
@@ -105,6 +107,7 @@ project "XYZEngine"
 			"FreeType",
 			"Lua",
 			"opengl32",
+			"Box2D",
 			"%{LibraryDir.mono}"
 		}
 		

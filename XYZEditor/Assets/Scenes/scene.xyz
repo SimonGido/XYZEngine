@@ -32,7 +32,7 @@ Entities:
     SceneTagComponent:
       Name: Test
     TransformComponent:
-      Position: [0, 0, 0]
+      Position: [7.15964802e-07, 0, 0]
       Rotation: [0, -0, 0]
       Scale: [5, 5, 1]
     SpriteRenderer:
@@ -45,8 +45,8 @@ Entities:
     SceneTagComponent:
       Name: New Entity
     TransformComponent:
-      Position: [-0.39007476, 10, 0]
-      Rotation: [0, 0, 0]
+      Position: [-0.390093893, 0, 0]
+      Rotation: [0, 0, 3.31786805e-06]
       Scale: [1, 1, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/New_Material.mat

@@ -144,6 +144,8 @@ namespace XYZ {
 		m_SceneHierarchyPanel.SetContext(m_Scene);
 		m_ScenePanel.SetContext(m_Scene);
 		m_ScenePanel.SetSubTexture(renderSubTexture);
+
+		m_Scene->OnPlay();
 	}	
 
 
@@ -166,32 +168,32 @@ namespace XYZ {
 			m_InspectorPanel.SetContext(m_SelectedEntity);
 		}
 
-		if (m_TestEntity.HasComponent<BoxColliderComponent>())
-		{
-			float speed = 0.05f;
-			auto body = m_TestEntity.GetComponent<BoxColliderComponent>().Body;
-			if (Input::IsKeyPressed(KeyCode::KEY_LEFT))
-				body->m_LinearVelocity.x += -speed;
-			if (Input::IsKeyPressed(KeyCode::KEY_RIGHT))
-				body->m_LinearVelocity.x += speed;
-			if (Input::IsKeyPressed(KeyCode::KEY_UP))
-				body->m_LinearVelocity.y += speed;
-			if (Input::IsKeyPressed(KeyCode::KEY_DOWN))
-				body->m_LinearVelocity.y += -speed;
-		}
-		if (m_NewEntity.HasComponent<BoxColliderComponent>())
-		{
-			float speed = 0.05f;
-			auto body = m_NewEntity.GetComponent<BoxColliderComponent>().Body;
-			if (Input::IsKeyPressed(KeyCode::KEY_A))
-				body->m_LinearVelocity.x += -speed;
-			if (Input::IsKeyPressed(KeyCode::KEY_D))
-				body->m_LinearVelocity.x += speed;
-			if (Input::IsKeyPressed(KeyCode::KEY_W))
-				body->m_LinearVelocity.y += speed;
-			if (Input::IsKeyPressed(KeyCode::KEY_S))
-				body->m_LinearVelocity.y += -speed;
-		}
+		//if (m_TestEntity.HasComponent<BoxColliderComponent>())
+		//{
+		//	float speed = 0.05f;
+		//	auto body = m_TestEntity.GetComponent<BoxColliderComponent>().Body;
+		//	if (Input::IsKeyPressed(KeyCode::KEY_LEFT))
+		//		body->m_LinearVelocity.x += -speed;
+		//	if (Input::IsKeyPressed(KeyCode::KEY_RIGHT))
+		//		body->m_LinearVelocity.x += speed;
+		//	if (Input::IsKeyPressed(KeyCode::KEY_UP))
+		//		body->m_LinearVelocity.y += speed;
+		//	if (Input::IsKeyPressed(KeyCode::KEY_DOWN))
+		//		body->m_LinearVelocity.y += -speed;
+		//}
+		//if (m_NewEntity.HasComponent<BoxColliderComponent>())
+		//{
+		//	float speed = 0.05f;
+		//	auto body = m_NewEntity.GetComponent<BoxColliderComponent>().Body;
+		//	if (Input::IsKeyPressed(KeyCode::KEY_A))
+		//		body->m_LinearVelocity.x += -speed;
+		//	if (Input::IsKeyPressed(KeyCode::KEY_D))
+		//		body->m_LinearVelocity.x += speed;
+		//	if (Input::IsKeyPressed(KeyCode::KEY_W))
+		//		body->m_LinearVelocity.y += speed;
+		//	if (Input::IsKeyPressed(KeyCode::KEY_S))
+		//		body->m_LinearVelocity.y += -speed;
+		//}
 	}
 
 	void EditorLayer::OnEvent(Event& event)

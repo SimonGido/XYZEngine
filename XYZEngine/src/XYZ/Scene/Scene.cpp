@@ -7,23 +7,27 @@
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/SceneRenderer.h"
 #include "XYZ/ECS/ComponentGroup.h"
+#include "XYZ/Script/ScriptEngine.h"
+#include "XYZ/Physics/ContactListener.h"
+
 #include "SceneEntity.h"
 
+
+#include <box2d/box2d.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
-#include "XYZ/Script/ScriptEngine.h"
 
 namespace XYZ {
 
+	static ContactListener s_ContactListener;
 
 	Scene::Scene(const std::string& name)
 		:
 		m_Name(name),
 		m_SelectedEntity(NULL_ENTITY),
-		m_CameraEntity(NULL_ENTITY),
-		m_PhysicsWorld(glm::vec2(0.0f, 0.0f))
+		m_CameraEntity(NULL_ENTITY)
 	{
 		m_ViewportWidth = 0;
 		m_ViewportHeight = 0;
@@ -39,7 +43,7 @@ namespace XYZ {
 		m_ParticleView = &m_ECS.CreateView<TransformComponent, ParticleComponent>();
 		m_LightView = &m_ECS.CreateView<TransformComponent, PointLight2D>();
 		m_AnimatorView = &m_ECS.CreateView<AnimatorComponent>();
-		m_BoxColliderView = &m_ECS.CreateView<TransformComponent, BoxColliderComponent>();
+		m_RigidBodyView = &m_ECS.CreateView<TransformComponent, RigidBody2DComponent>();
 
 		m_ECS.ForceStorage<ScriptComponent>();
 		m_ECS.ForceStorage<BoxColliderComponent>();
@@ -47,14 +51,13 @@ namespace XYZ {
 		m_AnimatorStorage = m_ECS.GetStorage<AnimatorComponent>();
 		m_BoxColliderStorage = m_ECS.GetStorage<BoxColliderComponent>();
 
-		//auto body = m_PhysicsWorld.CreateBody(glm::vec2(0.0f, -50.0f), 0.0f);
-		//body->m_Type = PhysicsBody::Type::Static;
-		//m_PhysicsWorld.AddBox2DShape(body, glm::vec2(-100.0f, -25.0f), glm::vec2(100.0f, 0.0f), 0.0f);
+		m_PhysicsWorld = new b2World(b2Vec2{ 0.0f,-9.8f });
+		m_PhysicsWorld->SetContactListener(&s_ContactListener);
 	}
 
 	Scene::~Scene()
 	{
-
+		delete m_PhysicsWorld;
 	}
 
 	SceneEntity Scene::CreateEntity(const std::string& name, const GUID& guid)
@@ -102,7 +105,7 @@ namespace XYZ {
 			{
 				ent.GetStorageComponent<CameraComponent>().Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 				m_CameraEntity = ent;
-				return;
+				break;
 			}
 		}
 
@@ -111,7 +114,47 @@ namespace XYZ {
 
 		}
 
-		XYZ_LOG_ERR("No camera found in the scene");
+		uint32_t counter = 0;
+		m_PhysicsBodyEntityBuffer = new SceneEntity[m_Entities.size()];
+		for (auto entityID : m_Entities)
+		{
+			SceneEntity entity(entityID, this);
+			if (!entity.HasComponent<BoxColliderComponent>() && !entity.HasComponent<CameraComponent>())
+			{
+				SceneTagComponent& sceneTag = entity.GetComponent<SceneTagComponent>();
+				
+				auto& boxCollider = entity.AddComponent<BoxColliderComponent>({});
+				auto& rigidBody = entity.AddComponent<RigidBody2DComponent>({});
+				auto& transform = entity.GetComponent<TransformComponent>();
+				if (sceneTag.Name == "Background")
+				{
+					rigidBody.BodyType = RigidBody2DComponent::Type::Static;
+				}
+				b2BodyDef bodyDef;
+				if (rigidBody.BodyType == RigidBody2DComponent::Type::Dynamic)
+					bodyDef.type = b2_dynamicBody;
+				else if (rigidBody.BodyType == RigidBody2DComponent::Type::Static)
+					bodyDef.type = b2_staticBody;
+				else if (rigidBody.BodyType == RigidBody2DComponent::Type::Kinematic)
+					bodyDef.type = b2_kinematicBody;
+				bodyDef.position.Set(transform.Translation.x, transform.Translation.y);
+				bodyDef.angle = transform.Rotation.z;
+				b2Body * body = m_PhysicsWorld->CreateBody(&bodyDef);
+				rigidBody.RuntimeBody = body;
+				SceneEntity* entityStorage = &m_PhysicsBodyEntityBuffer[counter++];
+				*entityStorage = SceneEntity(entityID, this);
+
+				b2PolygonShape shape;
+				boxCollider.Size = transform.Scale / 2.0f;
+				shape.SetAsBox(boxCollider.Size.x, boxCollider.Size.y);
+				b2FixtureDef fixture;
+				fixture.shape = &shape;
+				fixture.density = boxCollider.Density;
+				fixture.friction = boxCollider.Friction;
+				boxCollider.RuntimeFixture = body->CreateFixture(&fixture);
+			}
+		}
+
 	}
 
 	void Scene::OnEvent(Event& e)
@@ -158,6 +201,18 @@ namespace XYZ {
 
 	void Scene::OnUpdate(Timestep ts)
 	{
+		int32_t velocityIterations = 6;
+		int32_t positionIterations = 2;
+		m_PhysicsWorld->Step(ts, velocityIterations, positionIterations);
+		
+		for (size_t i = 0; i < m_RigidBodyView->Size(); ++i)
+		{
+			auto [transform, rigidBody] = (*m_RigidBodyView)[i];
+			b2Body* body = static_cast<b2Body*>(rigidBody.RuntimeBody);
+			transform.Translation.x = body->GetPosition().x;
+			transform.Translation.y = body->GetPosition().y;
+			transform.Rotation.z = body->GetAngle();
+		}
 		for (size_t i = 0; i < m_ScriptStorage->Size(); ++i)
 		{
 			ScriptComponent& scriptComponent = (*m_ScriptStorage)[i];
@@ -190,50 +245,6 @@ namespace XYZ {
 
 			particle.ParticleEffect->Update(ts);
 			material->GetShader()->Compute(32, 32, 1);
-		}
-
-		//if (Input::IsKeyPressed(KeyCode::KEY_SPACE))
-			m_PhysicsWorld.Update(ts, 1.0f / 60.0f);
- 		for (size_t i = 0; i < m_BoxColliderView->Size(); ++i)
-		{
-			auto [transform, boxCollider] = (*m_BoxColliderView)[i];
-			transform.Translation.x = boxCollider.Body->GetPosition().x;
-			transform.Translation.y = boxCollider.Body->GetPosition().y;
-			transform.Rotation.z = boxCollider.Body->GetAngle();
-		}
-
-		for (auto entityID : m_Entities)
-		{
-			SceneEntity entity(entityID, this);
-			if (!entity.HasComponent<BoxColliderComponent>() && !entity.HasComponent<CameraComponent>())
-			{
-				SceneTagComponent& sceneTag = entity.GetComponent<SceneTagComponent>();
-				if (sceneTag.Name == "Background")
-				{
-					//continue;
-				}
-				auto& boxCollider = entity.AddComponent<BoxColliderComponent>({});
-				auto& transform = entity.GetComponent<TransformComponent>();
-				if (sceneTag.Name == "Background")
-				{
-					transform.Translation.y = -100.0f;
-					boxCollider.Body = m_PhysicsWorld.CreateBody(glm::vec2(transform.Translation.x, transform.Translation.y), 0.0f);
-					boxCollider.Body->m_Type = PhysicsBody::Type::Static;
-				}
-				else
-				{
-					boxCollider.Body = m_PhysicsWorld.CreateBody(glm::vec2(transform.Translation.x, transform.Translation.y), 0.0f);
-				}
-
-				m_PhysicsWorld.AddBox2DShape(
-					boxCollider.Body, 
-					-transform.Scale * 0.5f, 
-					transform.Scale * 0.5f,
-					10.0f
-				);
-
-				boxCollider.Body->SetFixtureDensity(0, 5.0f);	
-			}
 		}
 	}
 

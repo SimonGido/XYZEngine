@@ -64,6 +64,7 @@
 //------Utils-------//
 #include "XYZ/Utils/DataStructures/HashGrid2D.h"
 #include "XYZ/Utils/DataStructures/ByteBuffer.h"
+#include "XYZ/Utils/DataStructures/DynamicTree.h"
 #include "XYZ/Utils/Math/Ray.h"
 
 
@@ -80,4 +81,3 @@
 #include "XYZ/InGui/InGuiDockspace.h"
 
 
-#include "XYZ/Physics/DynamicTree.h"
