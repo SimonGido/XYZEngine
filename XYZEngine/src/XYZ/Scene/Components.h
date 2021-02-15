@@ -188,7 +188,7 @@ namespace XYZ {
 	};
 
 
-	struct BoxColliderComponent : public Type<BoxColliderComponent>
+	struct BoxCollider2DComponent : public Type<BoxCollider2DComponent>
 	{
 		glm::vec2 Size = glm::vec2(1.0f);
 		float Density = 1.0f;

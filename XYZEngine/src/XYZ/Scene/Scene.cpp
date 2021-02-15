@@ -46,10 +46,8 @@ namespace XYZ {
 		m_RigidBodyView = &m_ECS.CreateView<TransformComponent, RigidBody2DComponent>();
 
 		m_ECS.ForceStorage<ScriptComponent>();
-		m_ECS.ForceStorage<BoxColliderComponent>();
 		m_ScriptStorage = m_ECS.GetStorage<ScriptComponent>();
 		m_AnimatorStorage = m_ECS.GetStorage<AnimatorComponent>();
-		m_BoxColliderStorage = m_ECS.GetStorage<BoxColliderComponent>();
 
 		m_PhysicsWorld = new b2World(b2Vec2{ 0.0f,-9.8f });
 		m_PhysicsWorld->SetContactListener(&s_ContactListener);
@@ -91,11 +89,6 @@ namespace XYZ {
 	}
 
 
-	void Scene::OnAttach()
-	{
-
-	}
-
 	void Scene::OnPlay()
 	{
 		for (auto entity : m_Entities)
@@ -119,11 +112,11 @@ namespace XYZ {
 		for (auto entityID : m_Entities)
 		{
 			SceneEntity entity(entityID, this);
-			if (!entity.HasComponent<BoxColliderComponent>() && !entity.HasComponent<CameraComponent>())
+			if (!entity.HasComponent<BoxCollider2DComponent>() && !entity.HasComponent<CameraComponent>())
 			{
 				SceneTagComponent& sceneTag = entity.GetComponent<SceneTagComponent>();
 				
-				auto& boxCollider = entity.AddComponent<BoxColliderComponent>({});
+				auto& boxCollider = entity.AddComponent<BoxCollider2DComponent>({});
 				auto& rigidBody = entity.AddComponent<RigidBody2DComponent>({});
 				auto& transform = entity.GetComponent<TransformComponent>();
 				if (sceneTag.Name == "Background")
@@ -131,6 +124,9 @@ namespace XYZ {
 					rigidBody.BodyType = RigidBody2DComponent::Type::Static;
 				}
 				b2BodyDef bodyDef;
+				SceneEntity* entityStorage = &m_PhysicsBodyEntityBuffer[counter++];
+				*entityStorage = SceneEntity(entityID, this);
+
 				if (rigidBody.BodyType == RigidBody2DComponent::Type::Dynamic)
 					bodyDef.type = b2_dynamicBody;
 				else if (rigidBody.BodyType == RigidBody2DComponent::Type::Static)
@@ -139,10 +135,9 @@ namespace XYZ {
 					bodyDef.type = b2_kinematicBody;
 				bodyDef.position.Set(transform.Translation.x, transform.Translation.y);
 				bodyDef.angle = transform.Rotation.z;
+				bodyDef.userData.pointer = reinterpret_cast<uintptr_t>(entityStorage);
 				b2Body * body = m_PhysicsWorld->CreateBody(&bodyDef);
 				rigidBody.RuntimeBody = body;
-				SceneEntity* entityStorage = &m_PhysicsBodyEntityBuffer[counter++];
-				*entityStorage = SceneEntity(entityID, this);
 
 				b2PolygonShape shape;
 				boxCollider.Size = transform.Scale / 2.0f;
@@ -161,9 +156,9 @@ namespace XYZ {
 	{
 	}
 
-	void Scene::OnDetach()
+	void Scene::OnStop()
 	{
-
+		delete[] m_PhysicsBodyEntityBuffer;
 	}
 
 	void Scene::OnRender()

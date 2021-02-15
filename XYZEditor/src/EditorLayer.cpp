@@ -154,6 +154,7 @@ namespace XYZ {
 	{
 		Renderer::Shutdown();
 		m_AssetManager.Serialize();
+		m_Scene->OnStop();
 	}
 	void EditorLayer::OnUpdate(Timestep ts)
 	{

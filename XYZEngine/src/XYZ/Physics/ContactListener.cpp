@@ -1,9 +1,13 @@
 #include "stdafx.h"
 #include "ContactListener.h"
 
+#include "XYZ/Scene/SceneEntity.h"
+
 namespace XYZ {
 	void ContactListener::BeginContact(b2Contact* contact)
 	{
+		SceneEntity* A = reinterpret_cast<SceneEntity*>(contact->GetFixtureA()->GetBody()->GetUserData().pointer);
+		SceneEntity* B = reinterpret_cast<SceneEntity*>(contact->GetFixtureB()->GetBody()->GetUserData().pointer);
 	}
 	void ContactListener::EndContact(b2Contact* contact)
 	{

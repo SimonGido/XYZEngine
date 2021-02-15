@@ -295,6 +295,27 @@ namespace XYZ {
 		s_Data.QuadMaterial = material;
 	}
 
+	void Renderer2D::SubmitCircle(const glm::vec3& pos, float radius, uint32_t sides, const glm::vec4& color)
+	{
+		if (s_Data.LineIndexCount + sides * 2 >= s_Data.MaxLineIndices)
+			FlushLines();
+
+		float step = 360 / sides;
+		for (int a = step; a < 360 + step; a += step)
+		{
+			float before = glm::radians((float)(a - step));
+			float heading = glm::radians((float)a);
+
+			s_Data.LineBufferPtr->Position = glm::vec3(pos.x + std::cos(before) * radius, pos.y + std::sin(before) * radius, pos.z);
+			s_Data.LineBufferPtr->Color = color;
+			s_Data.LineBufferPtr++;
+			s_Data.LineBufferPtr->Position = glm::vec3(pos.x + std::cos(heading) * radius, pos.y + std::sin(heading) * radius, pos.z);
+			s_Data.LineBufferPtr->Color = color;
+			s_Data.LineBufferPtr++;
+			s_Data.LineIndexCount += 2;
+		}
+	}
+
 
 	void Renderer2D::SubmitQuad(const glm::mat4& transform, const glm::vec4& color, float tilingFactor)
 	{

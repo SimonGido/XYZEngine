@@ -41,9 +41,8 @@ namespace XYZ {
         void SetViewportSize(uint32_t width, uint32_t height);
         void SetSelectedEntity(uint32_t entity) { m_SelectedEntity = entity; }
 
-        void OnAttach();
         void OnPlay();
-        void OnDetach();
+        void OnStop();
         void OnEvent(Event& e);
         void OnUpdate(Timestep ts);
         void OnRender();
@@ -82,7 +81,6 @@ namespace XYZ {
         ComponentView<AnimatorComponent>* m_AnimatorView;
         ComponentStorage<ScriptComponent>* m_ScriptStorage;
         ComponentStorage<AnimatorComponent>* m_AnimatorStorage;
-        ComponentStorage<BoxColliderComponent>* m_BoxColliderStorage;
 
         std::string m_Name;
         SceneState m_State = SceneState::Edit;
