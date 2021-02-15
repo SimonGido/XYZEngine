@@ -131,10 +131,10 @@ namespace XYZ {
 			};
 			glm::vec2 normal = glm::vec2(0.0f);
 			float overlap = FindAxisLeastPenetration(normal, normals, points1, points2, 4, 4);
-			if (overlap > 0.0f)
+			if (overlap >= 0.0f)
 				return data;
 			data.Displacement = -normal * overlap;
-			data.Normal = -normal;
+			data.Normal = normal;
 			data.Intersection = true;
 			return data;
 		}

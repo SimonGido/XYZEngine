@@ -4,6 +4,11 @@
 #include "XYZ/Scene/Components.h"
 #include "XYZ/Renderer/Renderer2D.h"
 
+
+#include <glm/glm.hpp>
+#include <glm/gtx/transform.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
+
 namespace XYZ {
 
 	static void SubmitBoxToRenderer(const AABB& box, const glm::vec4& color)
@@ -48,7 +53,15 @@ namespace XYZ {
 			auto firstBody = m_Bodies[m_Tree.GetObjectIndex(it.first)];
 			auto secondBody = m_Bodies[m_Tree.GetObjectIndex(it.second)];
 
+			glm::vec2 firstMomentum = firstBody->m_Mass * firstBody->m_Velocity;
+			glm::vec2 secondMomentum = secondBody->m_Mass * secondBody->m_Velocity;
 
+			glm::vec2 momentum = firstMomentum + secondMomentum;
+			glm::vec2 totalVelocity = firstBody->m_Velocity + secondBody->m_Velocity;
+
+			glm::vec2 secondFinal = (firstBody->m_Mass * totalVelocity) / (firstBody->m_Mass + secondBody->m_Mass);
+			glm::vec2 firstFinal = secondFinal - totalVelocity;
+	
 			for (auto& fixture : firstBody->GetFixtures())
 			{
 				for (auto& otherFixture : secondBody->GetFixtures())
@@ -56,22 +69,28 @@ namespace XYZ {
 					{
 						auto data = fixture.Shape->Intersect(*otherFixture.Shape, ts);
 						if (data.Intersection)
-						{
+						{	
 							if (firstBody->m_Type != PhysicsBody::Type::Static)
 							{
-								firstBody->m_Position -= data.Displacement;
-								firstBody->m_Velocity = -firstBody->m_Velocity * 0.2f;
+								glm::vec2 firstResult = -firstFinal - 2 * (glm::dot(-firstFinal, -data.Normal)) * -data.Normal;
+								glm::vec2 secondResult = -secondFinal - 2 * (glm::dot(-secondFinal, -data.Normal)) * -data.Normal;
+								firstBody->m_Position -= data.Displacement;	
+								firstBody->m_Velocity = firstResult;
+								secondBody->m_Velocity = secondFinal;
 							}
 						}
 					}
 					{
 						auto data = otherFixture.Shape->Intersect(*fixture.Shape, ts);
 						if (data.Intersection)
-						{
+						{	
 							if (secondBody->m_Type != PhysicsBody::Type::Static)
 							{
-								secondBody->m_Position -= data.Displacement;
-								secondBody->m_Velocity = -secondBody->m_Velocity * 0.2f;
+								glm::vec2 firstResult = -firstFinal - 2 * (glm::dot(-firstFinal, -data.Normal)) * -data.Normal;
+								glm::vec2 secondResult = -secondFinal - 2 * (glm::dot(-secondFinal, -data.Normal)) * -data.Normal;
+								firstBody->m_Position -= data.Displacement;
+								firstBody->m_Velocity = firstResult;
+								secondBody->m_Velocity = secondResult;
 							}
 						}
 					}
@@ -96,7 +115,7 @@ namespace XYZ {
 						m_Tree.Move(fixture.Shape->m_ID, body->m_Position - body->m_OldPosition);
 					}
 				}
-				body->m_Forces = glm::vec2(0.0f);
+				//body->m_Forces = glm::vec2(0.0f);
 			}
 		}
 		m_Tree.SubmitToRenderer();
