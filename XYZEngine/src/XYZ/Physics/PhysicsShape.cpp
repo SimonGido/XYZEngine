@@ -8,66 +8,81 @@
 #include <glm/ext/scalar_constants.hpp>
 
 namespace XYZ {
+	static void SubmitBoxToRenderer(const AABB& box, const glm::vec4& color)
+	{
+		Renderer2D::SubmitLine(box.Min, glm::vec3(box.Max.x, box.Min.y, box.Min.z), color);
+		Renderer2D::SubmitLine(glm::vec3(box.Max.x, box.Min.y, box.Min.z), glm::vec3(box.Max.x, box.Max.y, box.Min.z), color);
+		Renderer2D::SubmitLine(glm::vec3(box.Max.x, box.Max.y, box.Min.z), glm::vec3(box.Min.x, box.Max.y, box.Min.z), color);
+		Renderer2D::SubmitLine(glm::vec3(box.Min.x, box.Max.y, box.Min.z), box.Min, color);
+
+
+		Renderer2D::SubmitLine(glm::vec3(box.Min.x, box.Min.y, box.Max.z), glm::vec3(box.Max.x, box.Min.y, box.Max.z), color);
+		Renderer2D::SubmitLine(glm::vec3(box.Max.x, box.Min.y, box.Max.z), glm::vec3(box.Max.x, box.Max.y, box.Max.z), color);
+		Renderer2D::SubmitLine(glm::vec3(box.Max.x, box.Max.y, box.Max.z), glm::vec3(box.Min.x, box.Max.y, box.Max.z), color);
+		Renderer2D::SubmitLine(glm::vec3(box.Min.x, box.Max.y, box.Max.z), glm::vec3(box.Min.x, box.Min.y, box.Max.z), color);
+
+
+		Renderer2D::SubmitLine(box.Min, glm::vec3(box.Min.x, box.Min.y, box.Max.z), color);
+		Renderer2D::SubmitLine(glm::vec3(box.Min.x, box.Max.y, box.Min.z), glm::vec3(box.Min.x, box.Max.y, box.Max.z), color);
+
+
+		Renderer2D::SubmitLine(glm::vec3(box.Max.x, box.Min.y, box.Min.z), glm::vec3(box.Max.x, box.Min.y, box.Max.z), color);
+		Renderer2D::SubmitLine(glm::vec3(box.Max.x, box.Max.y, box.Min.z), glm::vec3(box.Max.x, box.Max.y, box.Max.z), color);
+	}
 	
 	static bool CircleIntersectsCircle(float x1, float y1, float r1, float x2, float y2, float r2)
 	{
 		return fabs((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)) <= (r1 + r2) * (r1 + r2);
 	};
 
-	//static IntersectData RayIntersectsAABB(const glm::vec2& origin, const glm::vec2& dir, const AABB& target)
-	//{
-	//	IntersectData result;
-	//	glm::vec2 targetSize = target.Max - target.Min;
-	//	glm::vec2 min = { target.Min.x, target.Min.y };
-	//	glm::vec2 max = { target.Max.x, target.Max.y };
-	//	glm::vec2 tNear = (min - origin) / dir;
-	//	glm::vec2 tFar = glm::vec2(max - origin) / dir;
-	//	
-	//	if (std::isnan(tFar.y) || std::isnan(tFar.x)) return result;
-	//	if (std::isnan(tNear.y) || std::isnan(tNear.x)) return result;
-	//
-	//	if (tNear.x > tFar.x) std::swap(tNear.x, tFar.x);
-	//	if (tNear.y > tFar.y) std::swap(tNear.y, tFar.y);
-	//	if (tNear.x > tFar.y || tNear.y > tFar.x) return result;
-	//
-	//	result.HitTime = std::max(tNear.x, tNear.y);
-	//	float tHitFar = std::min(tFar.x, tFar.y);
-	//
-	//	if (result.HitTime > 1.0f) return result;
-	//	if (tHitFar <= 0.0f) return result;
-	//	
-	//	result.ContactPoint = origin + result.HitTime * dir;
-	//	if (tNear.x > tNear.y)
-	//	{
-	//		if (dir.x < 0.0f)
-	//			result.ContactNormal = { 1.0f, 0.0f };
-	//		else
-	//			result.ContactNormal = { -1.0f, 0.0f };
-	//	}
-	//	else if (tNear.x < tNear.y)
-	//	{
-	//		if (dir.y < 0.0f)
-	//			result.ContactNormal = { 0.0f, 1.0f };
-	//		else
-	//			result.ContactNormal = { 0.0f, -1.0f };
-	//	}
-	//	result.Hit = true;
-	//	return result;
-	//}
-	
-	static IntersectData DynamicAABBIntersectsAABB(const AABB& in, const AABB& target, const glm::vec2& velocity, float time)
+	static glm::vec2 GetSupport(const glm::vec2& dir, glm::vec2* vertices, uint32_t vertexCount)
 	{
-		//AABB expanded;
-		//glm::vec3 inSize = in.Max - in.Min;
-		//expanded.Min = target.Min - inSize / 2.0f;
-		//expanded.Max = target.Max + inSize / 2.0f;
-		//
-		//IntersectData result = RayIntersectsAABB(in.Min + inSize / 2.0f, velocity * time, expanded);
-		//
-		//return result;
-		
-		return IntersectData();
+		float bestProjection = -FLT_MAX;
+		glm::vec2 bestVertex = glm::vec2(0.0f);
+
+		for (uint32_t i = 0; i < vertexCount; ++i)
+		{
+			glm::vec2 v = vertices[i];
+			float projection = glm::dot(v, dir);
+
+			if (projection > bestProjection)
+			{
+				bestVertex = v;
+				bestProjection = projection;
+			}
+		}
+		return bestVertex;
 	}
+
+	static float FindAxisLeastPenetration(
+		glm::vec2& normal, const glm::vec2* aNormals,
+		glm::vec2* aVertices, glm::vec2* bVertices, uint32_t aVertexCount, uint32_t bVertexCount
+	)
+	{
+		float bestDistance = -FLT_MAX;
+		
+		for (uint32_t i = 0; i < aVertexCount; ++i)
+		{
+			// Retrieve a face normal from A
+			glm::vec2 n = aNormals[i];
+			// Retrieve support point from B along -n
+			glm::vec2 s = GetSupport(-n, bVertices, bVertexCount);
+			// Retrieve vertex on face from A, transform into
+			// B's model space
+			glm::vec2 v = aVertices[i];
+			// Compute penetration distance (in B's model space)
+			float d = glm::dot(n, s - v);
+			// Store greatest distance
+			if (d > bestDistance)
+			{
+				bestDistance = d;
+				normal = aNormals[i];
+			}
+		}
+		return bestDistance;
+	}
+
+
 
 	PhysicsShape::PhysicsShape(ShapeType type, PhysicsBody* body)
 		:
@@ -96,7 +111,32 @@ namespace XYZ {
 		if (shape.GetType() == ShapeType::Box)
 		{
 			const BoxShape2D& box = (const BoxShape2D&)shape;
-			//return DynamicAABBIntersectsAABB(GetAABB(), box.GetAABB(), m_Body->GetVelocity(), time);
+			
+			SubmitBoxToRenderer(GetAABB(), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+			SubmitBoxToRenderer(box.GetAABB(), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+
+			glm::vec2 firstSize = GetAABB().Max - GetAABB().Min;
+			glm::vec2 secondSize = box.GetAABB().Max - box.GetAABB().Min;
+			glm::vec2 points1[4] = {
+				GetAABB().Min, GetAABB().Min + glm::vec3(firstSize.x ,0.0f,0.0f),
+				GetAABB().Max, GetAABB().Min + glm::vec3(0.0f, firstSize.y ,0.0f),
+			};
+			glm::vec2 points2[4] = {
+				box.GetAABB().Min, box.GetAABB().Min + glm::vec3(secondSize.x ,0.0f,0.0f),
+				box.GetAABB().Max, box.GetAABB().Min + glm::vec3(0.0f, secondSize.y ,0.0f),
+			};
+
+			static constexpr glm::vec2 normals[4] = {
+				{0,-1},{1,0},{0,1},{-1,0}
+			};
+			glm::vec2 normal = glm::vec2(0.0f);
+			float overlap = FindAxisLeastPenetration(normal, normals, points1, points2, 4, 4);
+			if (overlap > 0.0f)
+				return data;
+			data.Displacement = -normal * overlap;
+			data.Normal = -normal;
+			data.Intersection = true;
+			return data;
 		}
 		return data;
 	}

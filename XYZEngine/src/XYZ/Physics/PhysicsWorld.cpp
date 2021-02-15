@@ -53,11 +53,27 @@ namespace XYZ {
 			{
 				for (auto& otherFixture : secondBody->GetFixtures())
 				{
-					auto data = fixture.Shape->Intersect(*otherFixture.Shape, ts);
-					if (data.Intersection)
 					{
-						firstBody->m_Position -= data.Displacement;
-						secondBody->m_Position += data.Displacement;
+						auto data = fixture.Shape->Intersect(*otherFixture.Shape, ts);
+						if (data.Intersection)
+						{
+							if (firstBody->m_Type != PhysicsBody::Type::Static)
+							{
+								firstBody->m_Position -= data.Displacement;
+								firstBody->m_Velocity = -firstBody->m_Velocity * 0.2f;
+							}
+						}
+					}
+					{
+						auto data = otherFixture.Shape->Intersect(*fixture.Shape, ts);
+						if (data.Intersection)
+						{
+							if (secondBody->m_Type != PhysicsBody::Type::Static)
+							{
+								secondBody->m_Position -= data.Displacement;
+								secondBody->m_Velocity = -secondBody->m_Velocity * 0.2f;
+							}
+						}
 					}
 				}
 			}

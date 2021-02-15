@@ -9,6 +9,7 @@ namespace XYZ {
 	struct IntersectData
 	{
 		glm::vec2 Displacement = glm::vec2(0.0f);
+		glm::vec2 Normal = glm::vec2(0.0f);
 		bool Intersection = false;
 	};
 
@@ -40,7 +41,7 @@ namespace XYZ {
 		int32_t m_ID = -1;
 
 	protected:
-		glm::vec2 m_Offset;
+		glm::vec2 m_Offset = glm::vec2(0.0f);
 		const PhysicsBody* m_Body;
 		friend class PhysicsWorld;
 	};

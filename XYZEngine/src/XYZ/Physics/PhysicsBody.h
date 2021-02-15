@@ -40,8 +40,8 @@ namespace XYZ {
 		glm::vec2 m_Forces = glm::vec2(0.0f);
 		glm::vec2 m_Velocity = glm::vec2(0.0f);
 		float     m_AngularVelocity = 0.0f;
-		float	  m_Restitution = 0.0f;
 		float	  m_Mass = 0.0f;
+		float     m_Inertia = 0.0f;
 
 	private:
 		void recalculateMass();

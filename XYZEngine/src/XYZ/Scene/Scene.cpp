@@ -220,30 +220,37 @@ namespace XYZ {
 					boxCollider.Body = m_PhysicsWorld.CreateBody(glm::vec2(transform.Translation.x, transform.Translation.y), 0.0f);
 				}
 
-				m_PhysicsWorld.AddCircleShape(
-					boxCollider.Body, 
-					glm::vec2(0.0f, transform.Scale.y / 4.0f),
-					transform.Scale.y / 4.0f,
-					1.0f
-				);
-				m_PhysicsWorld.AddCircleShape(
+				m_PhysicsWorld.AddBox2DShape(
 					boxCollider.Body,
-					glm::vec2(0.0f, -transform.Scale.y / 4.0f),
-					transform.Scale.y / 4.0f,
+					-transform.Scale / 2.0f,
+					transform.Scale / 2.0f,
 					1.0f
 				);
-				m_PhysicsWorld.AddCircleShape(
-					boxCollider.Body,
-					glm::vec2(-transform.Scale.x / 4.0f, 0.0f),
-					transform.Scale.x / 6.0f,
-					1.0f
-				);
-				m_PhysicsWorld.AddCircleShape(
-					boxCollider.Body,
-					glm::vec2(transform.Scale.x / 4.0f, 0.0f),
-					transform.Scale.x / 6.0f,
-					1.0f
-				);
+
+				//m_PhysicsWorld.AddCircleShape(
+				//	boxCollider.Body, 
+				//	glm::vec2(0.0f, transform.Scale.y / 4.0f),
+				//	transform.Scale.y / 4.0f,
+				//	1.0f
+				//);
+				//m_PhysicsWorld.AddCircleShape(
+				//	boxCollider.Body,
+				//	glm::vec2(0.0f, -transform.Scale.y / 4.0f),
+				//	transform.Scale.y / 4.0f,
+				//	1.0f
+				//);
+				//m_PhysicsWorld.AddCircleShape(
+				//	boxCollider.Body,
+				//	glm::vec2(-transform.Scale.x / 4.0f, 0.0f),
+				//	transform.Scale.x / 6.0f,
+				//	1.0f
+				//);
+				//m_PhysicsWorld.AddCircleShape(
+				//	boxCollider.Body,
+				//	glm::vec2(transform.Scale.x / 4.0f, 0.0f),
+				//	transform.Scale.x / 6.0f,
+				//	1.0f
+				//);
 
 				boxCollider.Body->SetFixtureDensity(0, 5.0f);	
 			}
