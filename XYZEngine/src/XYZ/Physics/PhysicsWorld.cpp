@@ -41,83 +41,14 @@ namespace XYZ {
 	}
 
 	void PhysicsWorld::Update(Timestep ts)
-	{	
-		broadPhase(ts);
-		// Go through possible intersections and resolve collisions
+	{
 		for (auto& body : m_Bodies)
+		{
 			body->m_OldPosition = body->m_Position;
-		
-
-		for (auto& it : m_IntersectingNodes)
-		{
-			auto firstBody = m_Bodies[m_Tree.GetObjectIndex(it.first)];
-			auto secondBody = m_Bodies[m_Tree.GetObjectIndex(it.second)];
-
-			glm::vec2 firstMomentum = firstBody->m_Mass * firstBody->m_Velocity;
-			glm::vec2 secondMomentum = secondBody->m_Mass * secondBody->m_Velocity;
-
-			glm::vec2 momentum = firstMomentum + secondMomentum;
-			glm::vec2 totalVelocity = firstBody->m_Velocity + secondBody->m_Velocity;
-
-			glm::vec2 secondFinal = (firstBody->m_Mass * totalVelocity) / (firstBody->m_Mass + secondBody->m_Mass);
-			glm::vec2 firstFinal = secondFinal - totalVelocity;
-	
-			for (auto& fixture : firstBody->GetFixtures())
-			{
-				for (auto& otherFixture : secondBody->GetFixtures())
-				{
-					{
-						auto data = fixture.Shape->Intersect(*otherFixture.Shape, ts);
-						if (data.Intersection)
-						{	
-							if (firstBody->m_Type != PhysicsBody::Type::Static)
-							{
-								glm::vec2 firstResult = -firstFinal - 2 * (glm::dot(-firstFinal, -data.Normal)) * -data.Normal;
-								glm::vec2 secondResult = -secondFinal - 2 * (glm::dot(-secondFinal, -data.Normal)) * -data.Normal;
-								firstBody->m_Position -= data.Displacement;	
-								firstBody->m_Velocity = firstResult;
-								secondBody->m_Velocity = secondFinal;
-							}
-						}
-					}
-					{
-						auto data = otherFixture.Shape->Intersect(*fixture.Shape, ts);
-						if (data.Intersection)
-						{	
-							if (secondBody->m_Type != PhysicsBody::Type::Static)
-							{
-								glm::vec2 firstResult = -firstFinal - 2 * (glm::dot(-firstFinal, -data.Normal)) * -data.Normal;
-								glm::vec2 secondResult = -secondFinal - 2 * (glm::dot(-secondFinal, -data.Normal)) * -data.Normal;
-								firstBody->m_Position -= data.Displacement;
-								firstBody->m_Velocity = firstResult;
-								secondBody->m_Velocity = secondResult;
-							}
-						}
-					}
-				}
-			}
 		}
-		// Restart intersecting nodes and moved nodes
-		m_IntersectingNodes.clear();
-		m_Tree.CleanMovedNodes();
+		broadPhase(ts);
+		narrowPhase(ts);
 
-		// Apply velocity and forces
-		for (auto& body : m_Bodies)
-		{
-			if (body->m_Type != PhysicsBody::Type::Static)
-			{
-				body->m_Velocity += (m_Gravity + (body->m_Forces / body->m_Mass)) * (float)ts;
-				body->m_Position += body->m_Velocity * (float)ts;
-				if (body->m_Position != body->m_OldPosition)
-				{
-					for (auto& fixture : body->m_Fixtures)
-					{
-						m_Tree.Move(fixture.Shape->m_ID, body->m_Position - body->m_OldPosition);
-					}
-				}
-				//body->m_Forces = glm::vec2(0.0f);
-			}
-		}
 		m_Tree.SubmitToRenderer();
 	}
 
@@ -131,18 +62,18 @@ namespace XYZ {
 	BoxShape2D* PhysicsWorld::AddBox2DShape(PhysicsBody* body, const glm::vec2& min, const glm::vec2& max, float density)
 	{
 		BoxShape2D* box = m_Pool.Allocate<BoxShape2D>(body, min, max);
-		body->m_Fixtures.push_back({ box, density });
-		body->recalculateMass();
-		box->m_ID = m_Tree.Insert(body->m_ID, box->GetAABB());
+		body->m_Shape = box;
+		body->SetDensity(density);
+		body->m_Shape->m_ID = m_Tree.Insert(body->m_ID, box->GetAABB());
 		return box;
 	}
 
 	CircleShape* PhysicsWorld::AddCircleShape(PhysicsBody* body, const glm::vec2& offset, float radius, float density)
 	{
 		CircleShape* circle = m_Pool.Allocate<CircleShape>(body, offset, radius);
-		body->m_Fixtures.push_back({ circle, density });
-		body->recalculateMass();
-		circle->m_ID = m_Tree.Insert(body->m_ID, circle->GetAABB() + offset);
+		body->m_Shape = circle;
+		body->SetDensity(density);
+		body->m_Shape->m_ID = m_Tree.Insert(body->m_ID, circle->GetAABB() + offset);
 		return circle;
 	}
 	void PhysicsWorld::broadPhase(Timestep ts)
@@ -154,31 +85,50 @@ namespace XYZ {
 		{
 			if (node)
 			{
-				auto func = [&](int32_t shapeID) -> bool
+				auto func = [&](uint32_t bodyIndex) -> bool
 				{
-					if (counter == shapeID)
+					if (counter == bodyIndex)
 						return false;
 
-					if (movedNodes[shapeID] && shapeID > counter)
+					if (movedNodes[bodyIndex] && bodyIndex > counter)
 						return false;
 
-					if (m_Tree.GetObjectIndex(shapeID) == m_Tree.GetObjectIndex(counter))
-						return false;
+					
+					Manifold manifold;
+					manifold.A = m_Bodies[counter];
+					manifold.B = m_Bodies[bodyIndex];
+					m_Manifolds.push_back(manifold);
 
-					m_IntersectingNodes.push_back({ counter, shapeID });
 					return false;
 				};
-
-				// Use fat aabb to prevent tunneling
-				AABB fatAABB = m_Tree.GetAABB(counter);
-				fatAABB.Min.x -= fabs(m_Bodies[m_Tree.GetObjectIndex(counter)]->m_Velocity.x) * ts;
-				fatAABB.Min.y -= fabs(m_Bodies[m_Tree.GetObjectIndex(counter)]->m_Velocity.y) * ts;
-				fatAABB.Max.x += fabs(m_Bodies[m_Tree.GetObjectIndex(counter)]->m_Velocity.x) * ts;
-				fatAABB.Max.y += fabs(m_Bodies[m_Tree.GetObjectIndex(counter)]->m_Velocity.y) * ts;
-				m_Tree.Query(func, fatAABB);
-				SubmitBoxToRenderer(fatAABB, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+				m_Tree.Query(func, m_Tree.GetAABB(counter));
 			}
 			counter++;
+		}
+	}
+	void PhysicsWorld::narrowPhase(Timestep ts)
+	{
+		for (auto& manifold : m_Manifolds)
+		{
+
+		}
+
+		// Restart intersecting nodes and moved nodes
+		m_Manifolds.clear();
+		m_Tree.CleanMovedNodes();
+
+		// Apply velocity and forces
+		for (auto& body : m_Bodies)
+		{
+			if (body->m_Type != PhysicsBody::Type::Static)
+			{
+				body->m_Velocity += m_Gravity + (body->m_Forces / body->m_Mass) * (float)ts;
+				body->m_Position += body->m_Velocity * (float)ts;
+				if (body->m_Position != body->m_OldPosition)
+				{
+					m_Tree.Move(body->m_Shape->m_ID, body->m_Position - body->m_OldPosition);
+				}
+			}
 		}
 	}
 }

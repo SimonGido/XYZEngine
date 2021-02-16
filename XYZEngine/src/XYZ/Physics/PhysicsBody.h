@@ -16,14 +16,14 @@ namespace XYZ {
 	public:
 		PhysicsBody(const glm::vec2& position, float angle, uint32_t id);
 		
-		void SetFixtureDensity(uint32_t index, float density) { m_Fixtures[index].Density = density; recalculateMass(); }
+		void SetDensity(float density) { m_Density = density; recalculateMass(); }
 
 		const glm::vec2& GetPosition() const { return m_Position; }
 		const glm::vec2& GetVelocity() const { return m_Velocity; }
 		float GetMass() const { return m_Mass;  }
 		float GetAngle() const { return m_Angle; }
 		uint32_t GetID() const { return m_ID; }
-		const std::vector<Fixture>& GetFixtures() const { return m_Fixtures; }
+		const PhysicsShape* GetShape() const { return m_Shape; }
 
 
 
@@ -42,16 +42,18 @@ namespace XYZ {
 		float     m_AngularVelocity = 0.0f;
 		float	  m_Mass = 0.0f;
 		float     m_Friction = 1.0f;
-		float	  m_Torque = 0.0f;
+		float	  m_Restitution = 1.0f;
+
+
 	private:
 		void recalculateMass();
 		
 	private:
-		
+		float m_Density = 1.0f;
 		
 		const uint32_t m_ID;
-		
-		std::vector<Fixture> m_Fixtures;
+
+		PhysicsShape* m_Shape;
 		friend class PhysicsWorld;
 	};
 }

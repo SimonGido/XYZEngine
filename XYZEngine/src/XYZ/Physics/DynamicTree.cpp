@@ -24,7 +24,7 @@ namespace XYZ {
 			}
 			if (m_Nodes[index].IsLeaf())
 			{
-				uint32_t objectIndex = m_Nodes[index].ObjectIndex;
+				uint32_t objectIndex = m_Nodes[index].DataIndex;
 				if (ray.IntersectsAABB(m_Nodes[index].Box))
 				{
 					result = objectIndex;
@@ -55,7 +55,7 @@ namespace XYZ {
 			{
 				if (node.IsLeaf())
 				{
-					bool proceed = callback(index);
+					bool proceed = callback(m_Nodes[index].DataIndex);
 					if (proceed)
 						return;
 				}

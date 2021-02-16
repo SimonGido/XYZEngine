@@ -4,6 +4,7 @@
 #include "DynamicTree.h"
 #include "PhysicsBody.h"
 #include "PhysicsShape.h"
+#include "Manifold.h"
 
 #include <glm/glm.hpp>
 
@@ -22,6 +23,7 @@ namespace XYZ {
 
 	private:
 		void broadPhase(Timestep ts);
+		void narrowPhase(Timestep ts);
 
 	private:
 		DynamicTree m_Tree;
@@ -31,6 +33,6 @@ namespace XYZ {
 
 		glm::vec2 m_Gravity;
 
-		std::vector<std::pair<int32_t, int32_t>> m_IntersectingNodes;
+		std::vector<Manifold> m_Manifolds;
 	};
 }
