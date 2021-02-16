@@ -64,6 +64,7 @@ namespace XYZ {
 		BoxShape2D* box = m_Pool.Allocate<BoxShape2D>(body, min, max);
 		body->m_Shape = box;
 		body->SetDensity(density);
+		body->m_InverseInertia = 1.0f / box->CalculateInertia(body->m_Mass);
 		body->m_Shape->m_ID = m_Tree.Insert(body->m_ID, box->GetAABB());
 		return box;
 	}
@@ -73,44 +74,35 @@ namespace XYZ {
 		CircleShape* circle = m_Pool.Allocate<CircleShape>(body, offset, radius);
 		body->m_Shape = circle;
 		body->SetDensity(density);
+		body->m_InverseInertia = 1.0f / circle->CalculateInertia(body->m_Mass);
 		body->m_Shape->m_ID = m_Tree.Insert(body->m_ID, circle->GetAABB() + offset);
 		return circle;
 	}
 	void PhysicsWorld::broadPhase(Timestep ts)
 	{
-		// Find possible collisions between moving nodes
-		auto& movedNodes = m_Tree.GetMovedNodes();
-		int32_t counter = 0;
-		for (auto node : movedNodes)
+		for (size_t i = 0; i < m_Bodies.size(); ++i)
 		{
-			if (node)
+			PhysicsBody* A = m_Bodies[i];
+			for (size_t j = i + 1; j < m_Bodies.size(); ++j)
 			{
-				auto func = [&](uint32_t bodyIndex) -> bool
+				PhysicsBody* B = m_Bodies[j];
+				auto data = A->GetShape()->Intersect(*B->GetShape(), ts);
+				if (data.Intersection)
 				{
-					if (counter == bodyIndex)
-						return false;
-
-					if (movedNodes[bodyIndex] && bodyIndex > counter)
-						return false;
-
-					
 					Manifold manifold;
-					manifold.A = m_Bodies[counter];
-					manifold.B = m_Bodies[bodyIndex];
+					manifold.A = A;
+					manifold.B = B;
 					m_Manifolds.push_back(manifold);
-
-					return false;
-				};
-				m_Tree.Query(func, m_Tree.GetAABB(counter));
+				}
 			}
-			counter++;
 		}
 	}
 	void PhysicsWorld::narrowPhase(Timestep ts)
 	{
 		for (auto& manifold : m_Manifolds)
 		{
-
+			manifold.PreStep();
+			manifold.Resolve();
 		}
 
 		// Restart intersecting nodes and moved nodes
@@ -122,13 +114,14 @@ namespace XYZ {
 		{
 			if (body->m_Type != PhysicsBody::Type::Static)
 			{
-				body->m_Velocity += m_Gravity + (body->m_Forces / body->m_Mass) * (float)ts;
+				body->m_Velocity += (m_Gravity + (body->m_Forces / body->m_Mass)) * (float)ts;
 				body->m_Position += body->m_Velocity * (float)ts;
 				if (body->m_Position != body->m_OldPosition)
 				{
 					m_Tree.Move(body->m_Shape->m_ID, body->m_Position - body->m_OldPosition);
 				}
 			}
+			body->m_Forces = glm::vec2(0.0f);
 		}
 	}
 }

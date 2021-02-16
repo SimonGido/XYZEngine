@@ -21,5 +21,9 @@ namespace XYZ {
 		{
 			return 2 * (glm::dot(dir, hitNormal)) * hitNormal - dir;
 		}
+		float PythagoreanSolve(float a, float b)
+		{
+			return sqrt(a * a + b * b);
+		}
 	}
 }

@@ -23,7 +23,7 @@ namespace XYZ {
 		m_Name(name),
 		m_SelectedEntity(NULL_ENTITY),
 		m_CameraEntity(NULL_ENTITY),
-		m_PhysicsWorld(glm::vec2(0.0f, -9.0f))
+		m_PhysicsWorld(glm::vec2(0.0f, -9.8f))
 	{
 		m_ViewportWidth = 0;
 		m_ViewportHeight = 0;
@@ -252,7 +252,7 @@ namespace XYZ {
 				//	1.0f
 				//);
 
-				boxCollider.Body->SetFixtureDensity(0, 5.0f);	
+				boxCollider.Body->SetDensity(5.0f);	
 			}
 		}
 	}

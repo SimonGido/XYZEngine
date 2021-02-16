@@ -168,7 +168,7 @@ namespace XYZ {
 
 		if (m_TestEntity.HasComponent<BoxColliderComponent>())
 		{
-			float speed = 0.06;
+			float speed = 0.03;
 			auto body = m_TestEntity.GetComponent<BoxColliderComponent>().Body;
 			if (Input::IsKeyPressed(KeyCode::KEY_LEFT))
 				body->m_Velocity.x += -speed;

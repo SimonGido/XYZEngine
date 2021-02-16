@@ -17,7 +17,8 @@ namespace XYZ {
 		PhysicsBody(const glm::vec2& position, float angle, uint32_t id);
 		
 		void SetDensity(float density) { m_Density = density; recalculateMass(); }
-
+		void ApplyImpulse(const glm::vec2& impulse, const glm::vec2& contactVector);
+		
 		const glm::vec2& GetPosition() const { return m_Position; }
 		const glm::vec2& GetVelocity() const { return m_Velocity; }
 		float GetMass() const { return m_Mass;  }
@@ -41,7 +42,10 @@ namespace XYZ {
 		glm::vec2 m_Velocity = glm::vec2(0.0f);
 		float     m_AngularVelocity = 0.0f;
 		float	  m_Mass = 0.0f;
-		float     m_Friction = 1.0f;
+		float	  m_InverseMass = 0.0f;
+		float	  m_InverseInertia = 0.0f;
+		float     m_StaticFriction = 1.0f;
+		float     m_DynamicFriction = 1.0f;
 		float	  m_Restitution = 1.0f;
 
 
