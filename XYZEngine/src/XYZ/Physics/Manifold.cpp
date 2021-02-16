@@ -6,58 +6,13 @@
 
 namespace XYZ {
 
-    void Manifold::PreStep()
-    {
-        Collision::AABBvsAABB(*this);
-        PositionalCorrection();
-    }
-    void Manifold::Resolve()
-    {
-        glm::vec2 rv = B->m_Velocity - A->m_Velocity;
-
-        float velAlongNormal = glm::dot(rv, Normal);
-
-        if (velAlongNormal > 0)
-            return;
-
-        float minRest = std::min(A->m_Restitution, B->m_Restitution);
-        float impulseScalar = -(1.0f + minRest) * velAlongNormal;
-        impulseScalar /= 1.0f / A->m_Mass + 1.0f / B->m_Mass;
-        glm::vec2 impulse = impulseScalar * Normal;
-        A->m_Velocity -= 1.0f / A->m_Mass * impulse;
-        B->m_Velocity += 1.0f / B->m_Mass * impulse;
-
-
-        // Friction
-        rv = B->m_Velocity - A->m_Velocity;
-        glm::vec2 tangent = rv - glm::dot(rv, Normal) * Normal;
-        tangent = glm::normalize(tangent);
-
-        float jt = -glm::dot(rv, tangent);
-        if (std::isnan(jt))
-            return;
-        jt = jt / (1.0f / A->m_Mass + 1.0f / B->m_Mass);
-
-        float mu = Math::PythagoreanSolve(A->m_StaticFriction, B->m_StaticFriction);
-
-        glm::vec2 frictionImpulse;
-        if (abs(jt) < jt * mu)
-        {
-            frictionImpulse = jt * tangent;
-        }
-        else
-        {
-            float dynamicFriction = Math::PythagoreanSolve(A->m_DynamicFriction, B->m_DynamicFriction);
-            frictionImpulse = -jt * tangent * dynamicFriction;
-        }
-        A->m_Velocity -= (1.0f / A->m_Mass) * frictionImpulse;
-        B->m_Velocity += (1.0f / B->m_Mass) * frictionImpulse;
-    }
     void Manifold::Solve()
     {
+        Collision::AABBvsAABB(*this);
     }
     void Manifold::Initialize(const glm::vec2& gravity, float dt)
     {
+        Collision::AABBvsAABB(*this);
         Restitution = std::min(A->m_Restitution, B->m_Restitution);
         StaticFriction = std::sqrt(A->m_StaticFriction * A->m_StaticFriction);
         DynamicFriction = std::sqrt(A->m_DynamicFriction * A->m_DynamicFriction);

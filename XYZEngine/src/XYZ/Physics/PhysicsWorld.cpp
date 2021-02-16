@@ -101,8 +101,9 @@ namespace XYZ {
 	{
 		for (auto& manifold : m_Manifolds)
 		{
-			manifold.PreStep();
-			manifold.Resolve();
+			manifold.Initialize(m_Gravity, ts);
+			manifold.ApplyImpulse();
+			manifold.PositionalCorrection();
 		}
 
 		// Restart intersecting nodes and moved nodes

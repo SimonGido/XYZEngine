@@ -21,12 +21,21 @@ namespace XYZ {
 				float yOverlap = aExtentY + bExtentY - abs(n.y);
 				if (yOverlap > 0.0f)
 				{
+					m.ContactCount = 2;
 					if (xOverlap < yOverlap)
 					{
 						if (n.x < 0)
+						{
 							m.Normal = glm::vec2(-1.0f, 0.0f);
+							m.Contacts[0] = bBox.Min;
+							m.Contacts[1] = bBox.Min + glm::vec3(0.0f, bBox.Max.y, 0.0f);
+						}
 						else
+						{
 							m.Normal = glm::vec2(1.0f, 0.0f);
+							m.Contacts[0] = bBox.Max - glm::vec3(0.0f, bBox.Max.y, 0.0f);
+							m.Contacts[1] = bBox.Max;
+						}
 						m.PenetrationDepth = xOverlap;
 						return true;
 					}
@@ -34,9 +43,17 @@ namespace XYZ {
 					{
 						// Point toward B knowing that n points from A to B
 						if (n.y < 0)
+						{
 							m.Normal = glm::vec2(0.0f, -1.0f);
+							m.Contacts[0] = bBox.Min;
+							m.Contacts[1] = bBox.Min + glm::vec3(bBox.Max.x, 0.0f, 0.0f);
+						}
 						else
+						{
 							m.Normal = glm::vec2(0.0f, 1.0f);
+							m.Contacts[0] = bBox.Max - glm::vec3(bBox.Max.x, 0.0f, 0.0f);
+							m.Contacts[1] = bBox.Max;
+						}
 						m.PenetrationDepth = yOverlap;
 						return true;
 					}

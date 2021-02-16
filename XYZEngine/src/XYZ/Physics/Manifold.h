@@ -16,7 +16,7 @@ namespace XYZ {
 		PhysicsBody* B;
 		
 
-	private:
+	//private:
 		glm::vec2 Normal;
 		float PenetrationDepth;
 
