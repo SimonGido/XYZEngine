@@ -9,7 +9,7 @@ namespace XYZ {
 	{
 		Box,
 		Circle,
-		Chain,
+		Polygon,
 		NumTypes
 	};
 
@@ -22,7 +22,6 @@ namespace XYZ {
 		virtual AABB GetAABB() const = 0;
 		virtual float CalculateMass(float density) const = 0;
 		virtual float CalculateInertia(float mass) const = 0;
-		virtual float CalculateTorque(const glm::vec2& force, const glm::vec2& pos) const = 0;
 		virtual glm::vec2 CalculateCenter() const { return glm::vec2(0.0f); }
 
 		const PhysicsBody* GetBody() const { return m_Body; }
@@ -50,26 +49,33 @@ namespace XYZ {
 		virtual AABB GetAABB() const override;
 		virtual float CalculateMass(float density) const override;
 		virtual float CalculateInertia(float mass) const override;
-		virtual float CalculateTorque(const glm::vec2& force, const glm::vec2& pos) const override;
 		virtual glm::vec2 CalculateCenter() const override;
 	};
 
 	struct CircleShape : public PhysicsShape
 	{
 		CircleShape(PhysicsBody* body);
-		CircleShape(PhysicsBody* body, const glm::vec2& offset, float radius);
+		CircleShape(PhysicsBody* body, float radius);
 
 		virtual bool Intersect(const PhysicsShape& shape) const override;
 		virtual AABB GetAABB() const override;
 		virtual float CalculateMass(float density) const override;
 		virtual float CalculateInertia(float mass) const override;
-		virtual float CalculateTorque(const glm::vec2& force, const glm::vec2& pos) const override;
 
 		float Radius;
 	};
 
-	struct Polygon : public PhysicsShape
+	struct PolygonShape : public PhysicsShape
 	{
+		PolygonShape(PhysicsBody* body);
+		PolygonShape(PhysicsBody* body, const std::vector<glm::vec2>& vertices);
 
+		virtual bool Intersect(const PhysicsShape& shape) const override;
+		virtual AABB GetAABB() const override;
+		virtual float CalculateMass(float density) const override;
+		virtual float CalculateInertia(float mass) const override;
+		virtual glm::vec2 CalculateCenter() const override;
+
+		std::vector<glm::vec2> Vertices;
 	};
 }

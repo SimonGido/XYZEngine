@@ -14,24 +14,10 @@ namespace XYZ {
 
 	static void SubmitBoxToRenderer(const AABB& box, const glm::vec4& color)
 	{
-		Renderer2D::SubmitLine(box.Min, glm::vec3(box.Max.x, box.Min.y, box.Min.z), color);
-		Renderer2D::SubmitLine(glm::vec3(box.Max.x, box.Min.y, box.Min.z), glm::vec3(box.Max.x, box.Max.y, box.Min.z), color);
-		Renderer2D::SubmitLine(glm::vec3(box.Max.x, box.Max.y, box.Min.z), glm::vec3(box.Min.x, box.Max.y, box.Min.z), color);
-		Renderer2D::SubmitLine(glm::vec3(box.Min.x, box.Max.y, box.Min.z), box.Min, color);
-
-
 		Renderer2D::SubmitLine(glm::vec3(box.Min.x, box.Min.y, box.Max.z), glm::vec3(box.Max.x, box.Min.y, box.Max.z), color);
 		Renderer2D::SubmitLine(glm::vec3(box.Max.x, box.Min.y, box.Max.z), glm::vec3(box.Max.x, box.Max.y, box.Max.z), color);
 		Renderer2D::SubmitLine(glm::vec3(box.Max.x, box.Max.y, box.Max.z), glm::vec3(box.Min.x, box.Max.y, box.Max.z), color);
 		Renderer2D::SubmitLine(glm::vec3(box.Min.x, box.Max.y, box.Max.z), glm::vec3(box.Min.x, box.Min.y, box.Max.z), color);
-
-
-		Renderer2D::SubmitLine(box.Min, glm::vec3(box.Min.x, box.Min.y, box.Max.z), color);
-		Renderer2D::SubmitLine(glm::vec3(box.Min.x, box.Max.y, box.Min.z), glm::vec3(box.Min.x, box.Max.y, box.Max.z), color);
-
-
-		Renderer2D::SubmitLine(glm::vec3(box.Max.x, box.Min.y, box.Min.z), glm::vec3(box.Max.x, box.Min.y, box.Max.z), color);
-		Renderer2D::SubmitLine(glm::vec3(box.Max.x, box.Max.y, box.Min.z), glm::vec3(box.Max.x, box.Max.y, box.Max.z), color);
 	}
 
 	PhysicsWorld::PhysicsWorld(const glm::vec2& gravity)
@@ -52,7 +38,7 @@ namespace XYZ {
 		// Restart intersecting nodes and moved nodes
 		m_Manifolds.clear();
 		m_Tree.CleanMovedNodes();
-		m_Tree.SubmitToRenderer();
+		debugDraw();
 	}
 
 	PhysicsBody* PhysicsWorld::CreateBody(const glm::vec2& position, float rotation)
@@ -74,16 +60,27 @@ namespace XYZ {
 		return box;
 	}
 
-	CircleShape* PhysicsWorld::AddCircleShape(PhysicsBody* body, const glm::vec2& offset, float radius, float density)
+	CircleShape* PhysicsWorld::AddCircleShape(PhysicsBody* body, const float radius, float density)
 	{
-		CircleShape* circle = m_Pool.Allocate<CircleShape>(body, offset, radius);
+		CircleShape* circle = m_Pool.Allocate<CircleShape>(body, radius);
 		body->m_Shape = circle;
 		body->SetDensity(density);
 		body->m_InverseInertia = 1.0f / circle->CalculateInertia(body->m_Mass);
 		if (body->m_Type == PhysicsBody::Type::Static)
 			body->m_InverseInertia = 0.0f;
-		body->m_Shape->m_ID = m_Tree.Insert(body->m_ID, circle->GetAABB() + offset);
+		body->m_Shape->m_ID = m_Tree.Insert(body->m_ID, circle->GetAABB());
 		return circle;
+	}
+	PolygonShape* PhysicsWorld::AddPolygonShape(PhysicsBody* body, const std::vector<glm::vec2>& vertices, float density)
+	{
+		PolygonShape* polygon = m_Pool.Allocate<PolygonShape>(body, vertices);
+		body->m_Shape = polygon;
+		body->SetDensity(density);
+		body->m_InverseInertia = 1.0f / polygon->CalculateInertia(body->m_Mass);
+		if (body->m_Type == PhysicsBody::Type::Static)
+			body->m_InverseInertia = 0.0f;
+		body->m_Shape->m_ID = m_Tree.Insert(body->m_ID, polygon->GetAABB());
+		return nullptr;
 	}
 	void PhysicsWorld::broadPhase()
 	{
@@ -142,5 +139,25 @@ namespace XYZ {
 			manifold.PositionalCorrection();
 		
 		
+	}
+	void PhysicsWorld::debugDraw()
+	{
+		glm::vec4 centerColor = glm::vec4(1.0f, 0.0f, 1.0f, 1.0f);
+		glm::vec4 velocityColor = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+		glm::vec4 contactColor = glm::vec4(1.0f, 0.0f, 1.0f, 1.0f);
+		for (auto body : m_Bodies)
+		{
+			glm::vec2 vel = glm::normalize(body->m_Velocity);
+			Renderer2D::SubmitCircle(glm::vec3(body->m_Shape->CalculateCenter(), 0.0f), 0.5f, 10, centerColor);
+			Renderer2D::SubmitLine(glm::vec3(body->m_Position, 0.0f), glm::vec3(body->m_Position + vel, 0.0f), velocityColor);
+		}
+
+		for (auto& manifold : m_Manifolds)
+		{
+			for (uint32_t i = 0; i < manifold.ContactCount; ++i)
+				Renderer2D::SubmitCircle(glm::vec3(manifold.Contacts[i], 0.0f), 0.5f, 10, contactColor);
+		}
+
+		m_Tree.SubmitToRenderer();
 	}
 }

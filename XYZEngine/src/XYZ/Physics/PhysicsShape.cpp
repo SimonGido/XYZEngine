@@ -96,20 +96,11 @@ namespace XYZ {
 		return mass * (a * a + b * b) / 12.0f;
 	}
 
-	float BoxShape2D::CalculateTorque(const glm::vec2& force, const glm::vec2& pos) const
-	{
-		float centerX = (Max.x - Min.x) / 2.0f;
-		float centerY = (Max.y - Min.y) / 2.0f;
-		glm::vec2 d = glm::vec2(pos.x - centerX, pos.y - centerY);
-
-		return d.x * force.y - force.x * d.y;
-	}
-
 	glm::vec2 BoxShape2D::CalculateCenter() const
 	{
-		float centerX = (Max.x - Min.x) / 2.0f;
-		float centerY = (Max.y - Min.y) / 2.0f;
-		return { centerX, centerY };
+		float centerX = Min.x + (Max.x - Min.x) / 2.0f;
+		float centerY = Min.y + (Max.y - Min.y) / 2.0f;
+		return { m_Body->GetPosition().x + centerX, m_Body->GetPosition().y + centerY };
 	}
 
 	CircleShape::CircleShape(PhysicsBody* body)
@@ -119,12 +110,11 @@ namespace XYZ {
 	{
 	}
 
-	CircleShape::CircleShape(PhysicsBody* body, const glm::vec2& offset,float radius)
+	CircleShape::CircleShape(PhysicsBody* body,float radius)
 		: 
 		PhysicsShape(ShapeType::Circle, body),
 		Radius(radius)
 	{
-		m_Offset = offset;
 	}
 
 	bool CircleShape::Intersect(const PhysicsShape& shape) const
@@ -156,8 +146,123 @@ namespace XYZ {
 	{
 		return 0.0f;
 	}
-	float CircleShape::CalculateTorque(const glm::vec2& force, const glm::vec2& pos) const
+	
+	PolygonShape::PolygonShape(PhysicsBody* body)
+		:
+		PhysicsShape(ShapeType::Polygon, body)
 	{
-		return 0.0f;
+	}
+	PolygonShape::PolygonShape(PhysicsBody* body, const std::vector<glm::vec2>& vertices)
+		:
+		PhysicsShape(ShapeType::Polygon, body),
+		Vertices(vertices)
+	{
+	}
+	bool PolygonShape::Intersect(const PhysicsShape& shape) const
+	{
+		return false;
+	}
+	AABB PolygonShape::GetAABB() const
+	{
+		AABB box;
+		box.Min = glm::vec3(FLT_MAX, FLT_MAX, 0.0f);
+		box.Max = glm::vec3(-FLT_MAX, -FLT_MAX, 0.0f);
+		for (auto& vertex : Vertices)
+		{
+			if (box.Min.x > vertex.x)
+				box.Min.x = vertex.x;
+			if (box.Min.y > vertex.y)
+				box.Min.y = vertex.y;
+			if (box.Max.x < vertex.x)
+				box.Max.x = vertex.x;
+			if (box.Max.y < vertex.y)
+				box.Max.y = vertex.y;
+		}
+		auto& bodyPos = m_Body->GetPosition();
+		box.Min.x += bodyPos.x;
+		box.Min.y += bodyPos.y;
+		box.Max.x += bodyPos.x;
+		box.Max.y += bodyPos.y;
+		return box;
+	}
+	float PolygonShape::CalculateMass(float density) const
+	{
+		// Calculate centroid and moment of interia
+		glm::vec2 centroid(0.0f, 0.0f); // centroid
+		float area = 0.0f;
+		float inertia = 0.0f;
+		const float inv3 = 1.0f / 3.0f;
+
+		for (size_t i = 0; i < Vertices.size(); ++i)
+		{
+			// Triangle vertices, third vertex implied as (0, 0)
+			glm::vec2 p1(Vertices[i]);
+			glm::vec2 p2 = Vertices[0];
+			if (i < Vertices.size() - 1)
+				p2 = Vertices[i + 1];
+				
+			float d = Math::Cross(p1, p2);
+			float triangleArea = 0.5f * d;
+
+			area += triangleArea;
+
+			// Use area to weight the centroid average, not just vertex position
+			centroid += triangleArea * inv3 * (p1 + p2);
+
+			float intx2 = p1.x * p1.x + p2.x * p1.x + p2.x * p2.x;
+			float inty2 = p1.y * p1.y + p2.y * p1.y + p2.y * p2.y;
+			inertia += (0.25f * inv3 * d) * (intx2 + inty2);
+		}
+		return density * area;
+	}
+	float PolygonShape::CalculateInertia(float mass) const
+	{
+		glm::vec2 centroid(0.0f, 0.0f); // centroid
+		float area = 0.0f;
+		float inertia = 0.0f;
+		const float inv3 = 1.0f / 3.0f;
+
+		for (size_t i = 0; i < Vertices.size(); ++i)
+		{
+			// Triangle vertices, third vertex implied as (0, 0)
+			glm::vec2 p1(Vertices[i]);
+			glm::vec2 p2 = Vertices[0];
+			if (i < Vertices.size() - 1)
+				p2 = Vertices[i + 1];
+
+			float d = Math::Cross(p1, p2);
+			float triangleArea = 0.5f * d;
+
+			area += triangleArea;
+
+			// Use area to weight the centroid average, not just vertex position
+			centroid += triangleArea * inv3 * (p1 + p2);
+
+			float intx2 = p1.x * p1.x + p2.x * p1.x + p2.x * p2.x;
+			float inty2 = p1.y * p1.y + p2.y * p1.y + p2.y * p2.y;
+			inertia += (0.25f * inv3 * d) * (intx2 + inty2);
+		}
+		return inertia * area * mass;
+	}
+
+	glm::vec2 PolygonShape::CalculateCenter() const
+	{
+		glm::vec2 centroid(0.0f, 0.0f);
+		const float inv3 = 1.0f / 3.0f;
+		for (size_t i = 0; i < Vertices.size(); ++i)
+		{
+			// Triangle vertices, third vertex implied as (0, 0)
+			glm::vec2 p1(Vertices[i]);
+			glm::vec2 p2 = Vertices[0];
+			if (i < Vertices.size() - 1)
+				p2 = Vertices[i + 1];
+
+			float d = Math::Cross(p1, p2);
+			float triangleArea = 0.5f * d;
+		
+			// Use area to weight the centroid average, not just vertex position
+			centroid += triangleArea * inv3 * (p1 + p2);
+		}
+		return m_Body->GetPosition() + centroid;
 	}
 }

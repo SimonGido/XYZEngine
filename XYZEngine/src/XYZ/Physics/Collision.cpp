@@ -64,6 +64,10 @@ namespace XYZ {
 			}
 			return false;
 		}
+		bool PolygonvsPolygon(Manifold& m)
+		{
+			return false;
+		}
 	}
 }
 

@@ -23,7 +23,7 @@ namespace XYZ {
 		m_Name(name),
 		m_SelectedEntity(NULL_ENTITY),
 		m_CameraEntity(NULL_ENTITY),
-		m_PhysicsWorld(glm::vec2(0.0f, -9.8f))
+		m_PhysicsWorld(glm::vec2(0.0f, 0.0f))
 	{
 		m_ViewportWidth = 0;
 		m_ViewportHeight = 0;
@@ -219,6 +219,16 @@ namespace XYZ {
 				{
 					boxCollider.Body = m_PhysicsWorld.CreateBody(glm::vec2(transform.Translation.x, transform.Translation.y), 0.0f);
 				}
+
+				std::vector<glm::vec2> vertices{
+				-transform.Scale / 2.0f, glm::vec2(transform.Scale.x / 2.0f, -transform.Scale.y / 2.0f),
+				transform.Scale / 2.0f, glm::vec2(-transform.Scale.x / 2.0f, transform.Scale.y / 2.0f)
+				};
+				//m_PhysicsWorld.AddPolygonShape(
+				//	boxCollider.Body,
+				//	vertices,
+				//	1.0f
+				//);
 
 				m_PhysicsWorld.AddBox2DShape(
 					boxCollider.Body,

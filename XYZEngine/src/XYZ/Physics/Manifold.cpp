@@ -4,7 +4,6 @@
 #include "Collision.h"
 #include "XYZ/Utils/Math/Math.h"
 
-#include "XYZ/Renderer/Renderer2D.h"
 
 namespace XYZ {
 
@@ -22,7 +21,6 @@ namespace XYZ {
 
         for (uint32_t i = 0; i < ContactCount; ++i)
         {
-            Renderer2D::SubmitCircle(glm::vec3(Contacts[i], 0.0f), 1.0f, 10, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f));
             // Calculate radii from COM to contact
             glm::vec2 ra = Contacts[i] - A->m_Position;
             glm::vec2 rb = Contacts[i] - B->m_Position;
