@@ -9,6 +9,7 @@
 #include "XYZ/ECS/ComponentGroup.h"
 #include "XYZ/Script/ScriptEngine.h"
 #include "XYZ/Physics/ContactListener.h"
+#include "XYZ/Renderer/PhysicsDebugRenderer.h"
 
 #include "SceneEntity.h"
 
@@ -22,6 +23,7 @@
 namespace XYZ {
 
 	static ContactListener s_ContactListener;
+	static PhysicsDebugRenderer s_DebugRenderer;
 
 	Scene::Scene(const std::string& name)
 		:
@@ -51,6 +53,8 @@ namespace XYZ {
 
 		m_PhysicsWorld = new b2World(b2Vec2{ 0.0f,-9.8f });
 		m_PhysicsWorld->SetContactListener(&s_ContactListener);
+		m_PhysicsWorld->SetDebugDraw(&s_DebugRenderer);
+		s_DebugRenderer.SetFlags(b2Draw::e_shapeBit | b2Draw::e_aabbBit | b2Draw::e_centerOfMassBit);
 	}
 
 	Scene::~Scene()
@@ -199,7 +203,8 @@ namespace XYZ {
 		int32_t velocityIterations = 6;
 		int32_t positionIterations = 2;
 		m_PhysicsWorld->Step(ts, velocityIterations, positionIterations);
-		
+		m_PhysicsWorld->DebugDraw();
+
 		for (size_t i = 0; i < m_RigidBodyView->Size(); ++i)
 		{
 			auto [transform, rigidBody] = (*m_RigidBodyView)[i];
