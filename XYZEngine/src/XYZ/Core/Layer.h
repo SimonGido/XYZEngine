@@ -24,9 +24,7 @@ namespace XYZ {
 		virtual void OnDetach() {} //Destroy
 		virtual void OnUpdate(Timestep ts) {} //Update
 		virtual void OnEvent(Event& event) {};
-		virtual void OnInGuiRender(Timestep ts) {};
-
-
+		virtual void OnInGuiRender() {};
 	protected:
 
 		int32_t m_Key;

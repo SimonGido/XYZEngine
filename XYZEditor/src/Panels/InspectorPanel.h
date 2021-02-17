@@ -1,25 +1,29 @@
 #pragma once
+
 #include <XYZ.h>
 
 namespace XYZ {
 
-	class InspectorLayout
-	{
-	public:
-		virtual void OnInGuiRender() {};
-		virtual void OnEvent(Event& event) {};
-	};
-
 	class InspectorPanel
 	{
 	public:
-		InspectorPanel();
-		bool OnInGuiRender();
-		void SetInspectorLayout(InspectorLayout* layout);
-		void OnEvent(Event& event);
+		InspectorPanel(uint32_t panelID);
+		void SetContext(SceneEntity context);
+
+		void OnInGuiRender();
 
 	private:
-		InspectorLayout* m_Layout = nullptr;
-		InGuiWindow* m_Window;
+		void resizeGroups();
+
+	private:
+		uint32_t m_PanelID;
+		SceneEntity m_Context;
+		size_t m_CurrentSize = 0;
+		bool* m_ComponentGroups = nullptr;
+		bool m_AddComponentOpen = false;
+
+		float m_ScrollOffset = 0.0f;
+		float m_ScrollOffsetTest = 0.0f;
+		float m_ScrollScale = 1.0f;
 	};
 }

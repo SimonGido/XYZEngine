@@ -8,7 +8,6 @@ namespace XYZ {
 	{
 	public:
 		Serializable(const std::string& filepath = "");
-			
 		virtual ~Serializable() {};
 
 		void SetFilepath(const std::string& filepath);

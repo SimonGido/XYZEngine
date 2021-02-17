@@ -34,7 +34,7 @@ namespace XYZ {
 		static void BeginScene(const SceneMeshRenderData& data);
 		static void SetMaterial(const Ref<Material>& material);
 
-		static void SubmitMesh(const glm::mat4& transform, const Ref<Mesh>& mesh);
+		//static void SubmitMesh(const glm::mat4& transform, const Ref<Mesh>& mesh);
 		/**
 		* Execute the command queue
 		*/

@@ -1,9 +1,8 @@
 #pragma once
 #include "Window.h"
 #include "LayerStack.h"
+#include "XYZ/Gui/GuiLayer.h"
 #include "XYZ/InGui/InGuiLayer.h"
-
-#include <vector>
 
 
 /**	@class Application
@@ -53,8 +52,9 @@ namespace XYZ {
 		void PopLayer(Layer* layer);
 
 
-		void OnEvent(Event& event);
+		bool OnEvent(Event& event);
 
+		GuiLayer* GetGuiLayer() { return m_GuiLayer; }
 		
 		std::string OpenFile(const char* filter = "All\0*.*\0") const;
 		std::string SaveFile(const char* filter = "All\0*.*\0") const;
@@ -65,6 +65,7 @@ namespace XYZ {
 		* @param[out] reference to the Window
 		*/
 		Window& GetWindow() { return *m_Window; }
+		const std::string& GetApplicationDir() const { return m_ApplicationDir; }
 
 		void Stop();
 		/**
@@ -80,17 +81,20 @@ namespace XYZ {
 		static Application* CreateApplication();
 
 	private:
-		void onWindowResized(WindowResizeEvent& event);
-		void onWindowClosed(WindowCloseEvent& event);
+		bool onWindowResized(WindowResizeEvent& event);
+		bool onWindowClosed(WindowCloseEvent& event);
 
 	private:
 		LayerStack m_LayerStack;
-		std::unique_ptr<Window> m_Window;
-
+		GuiLayer* m_GuiLayer;
 		InGuiLayer* m_InGuiLayer;
+
+		std::unique_ptr<Window> m_Window;
 
 		bool m_Running;
 		float m_LastFrameTime = 0.0f;
+
+		std::string m_ApplicationDir;
 
 		static Application* s_Application;
 	};

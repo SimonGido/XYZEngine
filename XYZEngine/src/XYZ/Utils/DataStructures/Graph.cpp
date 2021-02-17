@@ -10,11 +10,12 @@ namespace XYZ {
 	}
 	int32_t Graph::AddVertex(uint32_t index)
 	{
-		return m_Vertices.Insert({ index });
+		m_Vertices.push_back({ index });
+		return m_Vertices.size() - 1;
 	}
 	void Graph::AddEdge(int32_t start, int32_t end)
 	{
-		XYZ_ASSERT(start < m_Vertices.Range() && end < m_Vertices.Range(), "Edge out of range");
+		XYZ_ASSERT(start < m_Vertices.size() && end < m_Vertices.size(), "Edge out of range");
 		m_Vertices[start].Connections.push_back({ end });
 		if (m_BothDirrections)
 			m_Vertices[end].Connections.push_back({ start });
@@ -56,10 +57,11 @@ namespace XYZ {
 		{
 			// TODO
 		}
-		m_Vertices.Erase(index);
+		m_Vertices[index] = std::move(m_Vertices.back());
+		m_Vertices.pop_back();
 	}
 	void Graph::Clear()
 	{
-		m_Vertices.Clear();
+		m_Vertices.clear();
 	}
 }

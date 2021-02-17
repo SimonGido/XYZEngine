@@ -1,33 +1,36 @@
 #pragma once
-#include "XYZ/ECS/ECSManager.h"
+#include "XYZ/ECS/Component.h"
 #include "XYZ/Event/GuiEvent.h"
+#include "XYZ/Event/InputEvent.h"
+
 #include "XYZ/Event/EventSystem.h"
-#include "Widget.h"
+#include "XYZ/FSM/StateMachine.h"
 
 #include <glm/glm.hpp>
-
 #include <functional>
 
 namespace XYZ {
-	class Button : public Widget,
-				   public EventSystem<ClickEvent,ReleaseEvent,HooverEvent,UnHooverEvent>,
+	namespace ButtonState {
+		enum ButtonState
+		{
+			Clicked,  
+			Released, 
+			Hoovered,  
+			UnHoovered,
+			NumStates
+		};
+	}
+
+	class Button : public EventSystem<ClickEvent, ReleaseEvent, HooverEvent, UnHooverEvent>,
 				   public Type<Button>
 	{
 	public:
-		Button();
+		Button(const glm::vec4& clickColor, const glm::vec4& hooverColor);
 
+		
+		glm::vec4   ClickColor;
+		glm::vec4   HooverColor;
 
-		virtual void OnEvent(Event& event) override;
-		virtual WidgetType GetWidgetType() override { return WidgetType::Button; }
-
-	private:
-
-		template <typename Event>
-		bool executeEvent(Event& e)
-		{
-			Execute(e);
-			return true;
-		}
-	
+		StateMachine<ButtonState::NumStates> Machine;
 	};
 }

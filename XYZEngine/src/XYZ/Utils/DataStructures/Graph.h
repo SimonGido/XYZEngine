@@ -10,6 +10,12 @@ namespace XYZ {
 	class Graph
 	{	
 	public:
+		struct Vertex
+		{
+			uint32_t Index;
+			std::vector<int32_t> Connections;
+		};
+	public:
 		Graph(bool bothDirrections);
 
 		int32_t AddVertex(uint32_t index);	
@@ -21,47 +27,19 @@ namespace XYZ {
 		template <typename Func>
 		void Traverse(const Func& func)
 		{
-			for (int32_t i = 0; i < m_Vertices.Range(); ++i)
-			{
-				if (!m_Vertices.Valid(i))
-					continue;
-					
+			for (int32_t i = 0; i < m_Vertices.size(); ++i)
+			{			
 				for (auto connection : m_Vertices[i].Connections)
 				{
 					func(i, connection, m_Vertices[i].Index, m_Vertices[connection].Index);
 				}
 			}
 		}
-		template <typename Func>
-		void TraverseAll(const Func& func)
-		{
-			for (int32_t i = 0; i < m_Vertices.Range(); ++i)
-			{
-				if (!m_Vertices.Valid(i))
-					continue;
 
-				if (!m_Vertices[i].Connections.empty())
-				{
-					for (auto connection : m_Vertices[i].Connections)
-					{
-						func(i, connection, m_Vertices[i].Index, m_Vertices[connection].Index, true);
-					}
-				}
-				else
-				{
-					func(i, -1, m_Vertices[i].Index, -1, false);
-				}
-			}
-		}
-	
+		const std::vector<Vertex>& GetVertices() const { return m_Vertices; }
 	private:
-		struct Vertex
-		{
-			uint32_t Index;
-			std::vector<int32_t> Connections;
-		};
-
-		FreeList<Vertex> m_Vertices;
+		
+		std::vector<Vertex> m_Vertices;
 		const bool m_BothDirrections;
 	};
 }

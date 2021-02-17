@@ -1,31 +1,38 @@
 #pragma once
 
-#include "XYZ/ECS/ECSManager.h"
+#include "XYZ/ECS/Component.h"
 #include "XYZ/Event/GuiEvent.h"
 #include "XYZ/Event/EventSystem.h"
-#include "Widget.h"
+
+#include "XYZ/Core/Timestep.h"
+#include "XYZ/FSM/StateMachine.h"
+
+
+#include <glm/glm.hpp>
 
 namespace XYZ {
-	class Checkbox : public Widget,
-				     public EventSystem<ClickEvent, ReleaseEvent, HooverEvent, UnHooverEvent, CheckedEvent>,
-				     public Type<Checkbox>
+	namespace CheckboxState {
+		enum CheckboxState
+		{
+			Checked,
+			UnChecked,
+			Hoovered,
+			UnHoovered,
+			NumStates
+		};
+	}
+
+	class Checkbox : public EventSystem<CheckedEvent, UnCheckedEvent, HooverEvent, UnHooverEvent>,
+		public Type<Checkbox>
 	{
 	public:
-		Checkbox();
+		Checkbox(const glm::vec4& hooverColor);
 
-		virtual void OnUpdate(float dt) override;
-		virtual void OnEvent(Event& event) override;
-		virtual WidgetType GetWidgetType() override { return WidgetType::Button; }
+		void OnUpdate(Timestep ts);
 
-	private:
+		glm::vec4   HooverColor;
 
-		template <typename Event>
-		bool executeEvent(Event& e)
-		{
-			return true;
-		}
-
-	private:
-		bool m_Checked = false;
+		StateMachine<CheckboxState::NumStates> Machine;
+		bool Checked = false;
 	};
 }

@@ -21,42 +21,31 @@
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/RenderPass.h"
 #include "XYZ/Renderer/Material.h"
-
+#include "XYZ/Renderer/RenderTexture.h"
+#include "XYZ/Renderer/Font.h"
 
 #include "XYZ/Renderer/Framebuffer.h"
-#include "XYZ/Renderer/MeshFactory.h"
-#include "XYZ/Renderer/SpriteRenderer.h"
-#include "XYZ/Renderer/SubTexture2D.h"
+#include "XYZ/Renderer/SubTexture.h"
 
 //-----Scene-----//
 #include "XYZ/Scene/SceneCamera.h"
-#include "XYZ/Scene/SceneManager.h"
 #include "XYZ/Scene/AssetManager.h"
 #include "XYZ/Scene/Animation.h"
-#include "XYZ/Scene/EditorCamera.h"
+#include "XYZ/Scene/SceneEntity.h"
+#include "XYZ/Scene/Scene.h"
+
+
+
+//---------Editor-----------//
+#include "XYZ/Editor/EditorCamera.h"
 
 //------ECS-----//
 #include "XYZ/ECS/ECSManager.h"
 #include "XYZ/ECS/Entity.h"
 
-//-----Systems-----//
-#include "XYZ/Physics/PhysicsSystem.h"
-#include "XYZ/Physics/GridCollisionSystem.h"
-#include "XYZ/Physics/RealGridCollisionSystem.h"
-#include "XYZ/Particle/ParticleSystem2D.h"
-
-
 
 //-----Audio-----//
 #include "XYZ/Audio/Audio.h"
-
-
-
-#include "XYZ/Utils/DataStructures/Tree.h"
-#include "XYZ/Utils/DataStructures/Graph.h"
-
-#include "XYZ/Renderer/Font.h"
-
 
 
 //------UI-------//
@@ -64,16 +53,31 @@
 #include "XYZ/Gui/Button.h"
 #include "XYZ/Gui/Checkbox.h"
 
-//------InGui-------//
-#include "XYZ/InGui/InGui.h"
-
 
 #include "XYZ/FSM/StateMachine.h"
 
-
-//------NativeScript-------//
-#include "XYZ/NativeScript/ScriptableEntity.h"
+//------Scripting-------//
+#include "XYZ/Script/ScriptEngine.h"
+#include "XYZ/Script/LuaModule.h"
+#include "XYZ/Script/LuaEntity.h"
 
 //------Utils-------//
 #include "XYZ/Utils/DataStructures/HashGrid2D.h"
 #include "XYZ/Utils/DataStructures/ByteBuffer.h"
+#include "XYZ/Utils/DataStructures/DynamicTree.h"
+#include "XYZ/Utils/Math/Ray.h"
+
+
+#include "XYZ/Utils/DataStructures/Graph.h"
+
+//------Net---------//
+#include "XYZ/Net/NetServer.h"
+#include "XYZ/Net/NetClient.h"
+#include "XYZ/Net/NetConnection.h"
+
+
+
+#include "XYZ/InGui/InGui.h"
+#include "XYZ/InGui/InGuiDockspace.h"
+
+

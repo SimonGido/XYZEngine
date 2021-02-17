@@ -2,37 +2,32 @@
 
 #include <XYZ.h>
 
-
 namespace XYZ {
 
 	class SceneHierarchyPanel
 	{
 	public:
-		SceneHierarchyPanel();
-		SceneHierarchyPanel(const Ref<Scene>& context);
+		SceneHierarchyPanel(uint32_t panelID);
+		~SceneHierarchyPanel();
 
-		void SetContext(const Ref<Scene>& context);
+		void SetContext(Ref<Scene> context);
 
-		bool OnInGuiRender();
 
-		void SelectEntity(const glm::vec2& position);
-		void InvalidateEntity();
-
-		void RemoveEntity(Entity entity);
-		void InsertEntity(Entity entity);
-	
-		inline Entity GetSelectedEntity() const { return m_SelectedEntity; }
+		void OnInGuiRender();
+		void OnEvent(Event& event);
 	private:
-		void drawEntity(Entity entity);
+		void resizeEntities();
+
+		bool onMouseButtonPress(MouseButtonPressEvent& event);
+		bool onKeyPressed(KeyPressedEvent& event);
 
 	private:
+		uint32_t m_PanelID;
 		Ref<Scene> m_Context;
 
-		InGuiWindow* m_Window;
-		bool m_PopupEnabled = false;
-		glm::vec2 m_PopupPosition = { 0,0 };
-
-		Entity m_SelectedEntity;
-		HashGrid2D<Entity> m_Entities;
+		glm::vec2 m_DropdownPosition = glm::vec2(0.0f);
+		bool m_DropdownOpen = false;
+		bool* m_EntitiesOpen = nullptr;
+		size_t m_CurrentSize = 0;
 	};
 }

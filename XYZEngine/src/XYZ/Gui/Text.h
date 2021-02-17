@@ -1,18 +1,26 @@
 #pragma once
-#include "XYZ/ECS/ECSManager.h"
+#include "XYZ/ECS/Component.h"
 #include "XYZ/Renderer/Font.h"
+
+#include <glm/glm.hpp>
 
 namespace XYZ {
 
-	struct TextUI : public Type<TextUI>
+	enum class TextAlignment
 	{
-		TextUI(const std::string& text, const Ref<Font>& font)
-			:
-			Text(text),
-			Font(font)
-		{}
-	
-		std::string Text;
-		Ref<Font> Font;
+		Left,
+		Right,
+		Center,
+		None
+	};
+
+	struct Text : public Type<Text>
+	{
+		Text(const std::string& source, const Ref<Font>& font, const glm::vec4& color, TextAlignment alignment);
+
+		std::string	  Source;
+		Ref<Font>     Font;
+		glm::vec4	  Color;
+		TextAlignment Alignment;
 	};
 }

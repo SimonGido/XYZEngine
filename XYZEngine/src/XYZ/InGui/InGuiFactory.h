@@ -1,30 +1,22 @@
 #pragma once
-#include "InGuiStructures.h"
 
+#include "InGui.h"
+#include "InGuiDockspace.h"
 
 namespace XYZ {
 
 	class InGuiFactory
 	{
 	public:
-		static void GenerateWindow(const char* name, InGuiWindow& window, const InGuiRenderConfiguration& renderConfig);
-		static void GenerateRenderWindow(const char* name,InGuiWindow& window,uint32_t rendererID, InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig);
-		static void GenerateButton(const glm::vec2& position, const glm::vec2& size,const glm::vec4& color, const char* name,InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig);
-		static void GenerateCheckbox(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const char* name, bool value, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig);
-		static void GenerateSlider(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const char* name,float value,glm::vec2& windowSpaceOffset, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig);
-		static void GenerateImage(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const glm::vec4& texCoords, uint32_t rendererID, InGuiMesh& mesh, std::vector<TextureRendererIDPair>& texturePairs, const InGuiRenderConfiguration& renderConfig, float tilingFactor);
-		static void GenerateTextArea(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const char* name, const char* text, glm::vec2& windowSpaceOffset, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig);
-		static TextInfo GenerateText(const glm::vec4& color, const char* text,float length, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig);
-		static TextInfo GenerateText(const glm::vec4& color, const char* text, float length, InGuiVertex* vertices, const InGuiRenderConfiguration& renderConfig);
-		static void GenerateColorPicker4(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig);
-		static void Generate6SegmentColorRectangle(const glm::vec2& position, const glm::vec2& size, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig);
-		static void GenerateGroup(const glm::vec2& position,const glm::vec4& color, const char* name, bool open, InGuiPerFrameData& frameData, const InGuiRenderConfiguration& renderConfig);
-		static void GenerateQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig);
-		static void GenerateMenuBar(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const char* name, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig);
-		static void GenerateFrame(InGuiLineMesh& mesh, const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
-		static void GenerateArrowLine(InGuiMesh& mesh,InGuiLineMesh& lineMesh, const glm::vec2& p0, const glm::vec2& p1,const glm::vec2& size, const InGuiRenderConfiguration& renderConfig);
-		static void GenerateIcon(InGuiMesh& mesh, const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const Ref<SubTexture2D>& subTexture, uint32_t textureID);
-		static void GenerateNode(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, const char* name, InGuiMesh& mesh, const InGuiRenderConfiguration& renderConfig);
-
+		static void GenerateWindow(const char* text, InGuiWindow& window, const glm::vec4& color, const InGuiRenderData& renderData, Ref<SubTexture> subTexture, uint32_t textureID);
+		static void GenerateQuad(InGuiMesh& mesh, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, const InGuiRenderData& renderData, uint32_t subTextureIndex, uint32_t scissorIndex);
+		static void GenerateQuad(InGuiMesh& mesh, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, Ref<SubTexture> subTexture, uint32_t textureID, uint32_t scissorIndex);
+		static glm::vec2 GenerateQuadWithText(const char* text,const InGuiWindow& window, InGuiMesh& mesh, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, const InGuiRenderData& renderData, uint32_t subTextureIndex, uint32_t scissorIndex);
+		static glm::vec2 GenerateQuadWithTextLeft(const char* text, const InGuiWindow& window, InGuiMesh& mesh, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, const InGuiRenderData& renderData, uint32_t subTextureIndex, uint32_t scissorIndex);
+		static glm::vec2 GenerateTextCentered(const char* text, const InGuiWindow& window, InGuiMesh& mesh, const glm::vec2& position, const glm::vec2& size, const InGuiRenderData& renderData, uint32_t maxCount, uint32_t scissorIndex);
+		static glm::vec2 GenerateText(const char* text, InGuiMesh& mesh, const glm::vec4& color, const glm::vec2& position, const glm::vec2& size, const InGuiRenderData& renderData, uint32_t scissorIndex);
+	
+		static void GenerateFrame(InGuiMesh& mesh, const glm::vec2& position, const glm::vec2& size, const InGuiRenderData& renderData);
+		static void GenerateDockNode(InGuiDockNode& node, InGuiMesh& mesh, const glm::vec2& quadSize, const InGuiRenderData& renderData);
 	};
 }

@@ -1,190 +1,233 @@
 #pragma once
 #include "ComponentManager.h"
 #include "EntityManager.h"
-#include "SystemManager.h"
-#include "ComponentGroup.h"
-
-#include "XYZ/Core/Singleton.h"
-#include "XYZ/Event/Event.h"
-
-#include <memory>
 
 namespace XYZ {
-
-	struct ECSCoreData
-	{
-		ComponentManager ComponentManager;
-		EntityManager    EntityManager;
-		SystemManager	 SystemManager;
-	};
-
+	 
 	class ECSManager
 	{
 	public:
-		template<typename T>
-		std::shared_ptr<T> RegisterSystem()
-		{	
-			return s_Data.SystemManager.RegisterSystem<T>();
-		}
-		template<typename T>
-		void UnRegisterComponent()
-		{
-			s_Data.ComponentManager.UnRegisterComponent<T>();
-		}
-		template<typename T>
-		T* AddComponent(uint32_t entity,const T& component)
-		{
-			static_assert(std::is_base_of<Type<T>, T>::value, "Trying to add component that has no type");
-			auto c = s_Data.ComponentManager.AddComponent<T>(entity, component);
+		uint32_t CreateEntity() { return m_EntityManager.CreateEntity(); };
 
-			auto active = s_Data.ComponentManager.GetComponent<ActiveComponent>(entity);
-			auto signature = s_Data.EntityManager.GetSignature(entity);
-
-			// Remove from old group
-			s_Data.ComponentManager.RemoveFromGroup(entity, signature);
-
-			signature.set(s_Data.ComponentManager.GetComponentType<T>(), 1);
-			active->ActiveComponents.set(s_Data.ComponentManager.GetComponentType<T>(), 1);
-
-			s_Data.EntityManager.SetSignature(entity, signature);
-			s_Data.SystemManager.EntitySignatureChanged(entity, signature);
-
-			// Add to new group
-			s_Data.ComponentManager.AddToGroup(entity, signature);
-
-			return c;
-		}
-
-		template <typename T,typename ...Args>
-		T* EmplaceComponent(uint32_t entity, Args&& ... args)
-		{
-			static_assert(std::is_base_of<Type<T>, T>::value, "Trying to add component that has no type");
-			auto c = s_Data.ComponentManager.EmplaceComponent<T>(entity, std::forward<Args>(args)...);
-
-			auto active = s_Data.ComponentManager.GetComponent<ActiveComponent>(entity);
-			auto signature = s_Data.EntityManager.GetSignature(entity);
-
-			// Remove from old group
-			s_Data.ComponentManager.RemoveFromGroup(entity, signature);
-
-			signature.set(s_Data.ComponentManager.GetComponentType<T>(), 1);
-			active->ActiveComponents.set(s_Data.ComponentManager.GetComponentType<T>(), 1);
-
-			s_Data.EntityManager.SetSignature(entity, signature);
-			s_Data.SystemManager.EntitySignatureChanged(entity, signature);
-
-			// Add to new group
-			s_Data.ComponentManager.AddToGroup(entity, signature);
-
-			return c;
-		}
-
-		template<typename T>
-		void RemoveComponent(uint32_t entity)
-		{
-			s_Data.ComponentManager.RemoveComponent<T>(entity);
-
-			auto active = s_Data.ComponentManager.GetComponent<ActiveComponent>(entity);
-			auto signature = s_Data.EntityManager.GetSignature(entity);
-
-			// Remove from old group
-			s_Data.ComponentManager.RemoveFromGroup(entity, signature);
-
-			signature.set(s_Data.ComponentManager.GetComponentComponent<T>(), 0);
-			active->activeComponents.set(s_Data.ComponentManager.GetComponentType<T>(), 0);
-
-			s_Data.EntityManager.SetSignature(entity, signature);
-			s_Data.SystemManager.EntitySignatureChanged(entity, signature);
-
-			// Add to new group
-			s_Data.ComponentManager.AddToGroup(entity, signature);
-		}
-
-		template<typename T>
-		void SetSystemSignature(Signature signature)
-		{
-			s_Data.SystemManager.SetSignature<T>(signature);
-		}
-		template<typename T>
-		ComponentType GetComponentType()
-		{
-			return s_Data.ComponentManager.GetComponentType<T>();
-		}
-
-		template<typename T> 
-		std::shared_ptr<ComponentStorage<T>> GetComponentStorage()
-		{
-			return s_Data.ComponentManager.GetComponentStorage<T>();
-		}
-
-		template<typename T>
-		T *GetComponent(uint32_t entity)
-		{
-			return s_Data.ComponentManager.GetComponent<T>(entity);
+		void DestroyEntity(uint32_t entity) 
+		{ 
+			auto& signature = m_EntityManager.GetSignature(entity);
+			signature.set(HAS_GROUP_BIT, false);
+			m_ComponentManager.EntityDestroyed(entity, signature, this);
+			m_EntityManager.DestroyEntity(entity); 
 		}
 
 		template <typename T>
-		int GetComponentIndex(uint32_t entity)
+		T& AddComponent(uint32_t entity, const T& component)
 		{
-			return s_Data.ComponentManager.GetComponentIndex<T>(entity);
+			Signature& signature = m_EntityManager.GetSignature(entity);
+			XYZ_ASSERT(!signature.test(T::GetComponentID()), "Entity already contains component");
+			signature.set(T::GetComponentID(), true);
+			auto& result = m_ComponentManager.AddComponent<T>(entity, component);
+			m_ComponentManager.AddToGroup(entity, signature, this);
+			m_ComponentManager.AddToView(entity, signature);
+			return result;
 		}
-
-		template<typename T>
-		std::shared_ptr<T> GetSystem()
-		{
-			return std::static_pointer_cast<T>(s_Data.SystemManager.GetSystem<T>());
-		}
-
-
-		template <typename T>
-		bool Contains(uint32_t entity)
-		{
-			return s_Data.ComponentManager.Contains<T>(entity);
-		}
-		void DestroyEntity(uint32_t entity)
-		{
-			auto signature = GetEntitySignature(entity);
-			s_Data.SystemManager.EntityDestroyed(entity, signature);
-			// Remove from group
-			s_Data.ComponentManager.RemoveFromGroup(entity, signature);
-			s_Data.ComponentManager.EntityDestroyed(entity);
-			s_Data.EntityManager.DestroyEntity(entity);
-		}
-		Signature GetEntitySignature(uint32_t entity)
-		{
-			return s_Data.EntityManager.GetSignature(entity);
-		}
-		uint32_t CreateEntity()
-		{
-			uint32_t entity = s_Data.EntityManager.CreateEntity();
-			EmplaceComponent<ActiveComponent>(entity);
-			return entity;
-		}
-
-		template <typename ...Types>
-		ComponentGroup<Types...>* CreateGroup()
-		{
-			auto group = s_Data.ComponentManager.CreateGroup<Types...>(this);
-			// Add old entities to group
-			for (int i = 0; i < s_Data.EntityManager.m_Signatures.Range(); ++i)
-			{
-				Signature signature = s_Data.EntityManager.m_Signatures[i].Signature;
-				uint32_t entity = s_Data.EntityManager.m_Signatures[i].Entity;
-				if ((group->GetSignature() & signature) == group->GetSignature())
-					group->AddEntity(entity);
-			}
-			return group;
-		}
-
-		template <typename ...Types>
-		ComponentGroup<Types...>* GetGroup()
-		{
-			return s_Data.ComponentManager.GetGroup<Types...>();
-		}
-
-	private:
-		ECSCoreData s_Data;
 		
-	};
+		template <typename T>
+		bool RemoveComponent(uint32_t entity)
+		{
+			Signature& signature = m_EntityManager.GetSignature(entity);
+			XYZ_ASSERT(signature.test(T::GetComponentID()), "Entity does not have component");
+			
+			if (signature.test(HAS_GROUP_BIT))
+			{
+				m_ComponentManager.RemoveFromGroup(entity, T::GetComponentID(), signature, this);			
+				return true;
+			}
+			signature.set(T::GetComponentID(), false);
+			m_ComponentManager.RemoveComponent<T>(entity, signature);
+			return true;
+		}
 
+		template <typename T>
+		T& GetComponent(uint32_t entity)
+		{
+			Signature& signature = m_EntityManager.GetSignature(entity);
+			XYZ_ASSERT(signature.test(T::GetComponentID()), "Entity does not have component");
+			if (signature.test(HAS_GROUP_BIT))
+			{
+				uint8_t* component = nullptr;
+				m_ComponentManager.GetFromGroup(entity, signature, T::GetComponentID(), &component);
+				if (component)
+					return *(T*)component;		
+			}
+			return m_ComponentManager.GetComponent<T>(entity);
+		}
+
+		template <typename T>
+		const T& GetComponent(uint32_t entity) const
+		{
+			const Signature& signature = m_EntityManager.GetSignature(entity);
+			XYZ_ASSERT(signature.test(T::GetComponentID()), "Entity does not have component");
+			if (signature.test(HAS_GROUP_BIT))
+			{
+				uint8_t* component = nullptr;
+				m_ComponentManager.GetFromGroup(entity, signature, T::GetComponentID(), &component);
+				if (component)
+					return *(T*)component;
+			}
+			return m_ComponentManager.GetComponent<T>(entity);
+		}
+
+		template <typename T>
+		T& GetGroupComponent(uint32_t entity)
+		{
+			Signature& signature = m_EntityManager.GetSignature(entity);
+			XYZ_ASSERT(signature.test(T::GetComponentID()), "Entity does not have component");
+			XYZ_ASSERT(signature.test(HAS_GROUP_BIT), "Entity does not have group");
+			
+			uint8_t* component = nullptr;
+			m_ComponentManager.GetFromGroup(entity, signature, T::GetComponentID(), &component);
+			XYZ_ASSERT(component, "Group does not contain entity");
+			return *(T*)component;		
+		}
+
+		template <typename T>
+		const T& GetGroupComponent(uint32_t entity) const
+		{
+			Signature& signature = m_EntityManager.GetSignature(entity);
+			XYZ_ASSERT(signature.test(T::GetComponentID()), "Entity does not have component");
+			XYZ_ASSERT(signature.test(HAS_GROUP_BIT), "Entity does not have group");
+
+			uint8_t* component = nullptr;
+			m_ComponentManager.GetFromGroup(entity, signature, T::GetComponentID(), &component);
+			XYZ_ASSERT(component, "Group does not contain entity");
+			return *(T*)component;
+		}
+
+		template <typename T>
+		T& GetStorageComponent(uint32_t entity)
+		{
+			XYZ_ASSERT(m_EntityManager.GetSignature(entity).test(T::GetComponentID()), "Entity does not have component");
+			return m_ComponentManager.GetComponent<T>(entity);
+		}
+
+
+		template <typename T>
+		const T& GetStorageComponent(uint32_t entity) const
+		{
+			XYZ_ASSERT(m_EntityManager.GetSignature(entity).test(T::GetComponentID()), "Entity does not have component");
+			return m_ComponentManager.GetComponent<T>(entity);
+		}
+
+		const Signature& GetEntitySignature(uint32_t entity) const
+		{
+			return m_EntityManager.GetSignature(entity);
+		}
+
+		bool HasGroup(uint32_t entity) const
+		{
+			auto& signature = m_EntityManager.GetSignature(entity);
+			return signature.test(HAS_GROUP_BIT);
+		}
+
+		template <typename T>
+		bool Contains(uint32_t entity) const
+		{
+			auto& signature = m_EntityManager.GetSignature(entity);
+			return signature.test(T::GetComponentID());
+		}
+
+		bool IsValid(uint32_t entity) const
+		{
+			return m_EntityManager.m_Valid.size() > entity && m_EntityManager.m_Valid[entity];
+		}
+
+		template <typename T>
+		void ForceStorage()
+		{
+			m_ComponentManager.ForceStorage<T>();
+		}
+
+		template <typename T>
+		ComponentStorage<T>* GetStorage()
+		{
+			return (ComponentStorage<T>*)m_ComponentManager.GetStorage(T::GetComponentID());
+		}
+
+		template <typename ...Args>
+		ComponentGroup<Args...>& GetGroup()
+		{
+			Signature signature;
+			std::initializer_list<uint16_t> componentTypes{ Args::GetComponentID()... };
+			for (auto it : componentTypes)
+				signature.set(it);
+
+			auto group = m_ComponentManager.GetGroup(signature);
+			XYZ_ASSERT(group, "Group does not exist");
+			return *(ComponentGroup<Args...>*)group;
+		}
+
+		template <typename ...Args>
+		ComponentView<Args...>& GetView()
+		{
+			Signature signature;
+			std::initializer_list<uint16_t> componentTypes{ Args::GetComponentID()... };
+			for (auto it : componentTypes)
+				signature.set(it);
+
+			auto view = m_ComponentManager.GetView(signature);
+			
+			XYZ_ASSERT(view, "View does not exist");
+			return *(ComponentView<Args...>*)view;
+		}
+
+		template <typename ...Args>
+		ComponentGroup<Args...>& CreateGroup()
+		{
+			return *m_ComponentManager.CreateGroup<Args...>();
+		}
+
+		template <typename ...Args>
+		ComponentView<Args...>& CreateView()
+		{
+			auto view = m_ComponentManager.CreateView<Args...>(this);
+			for (uint32_t i = 0; i < m_EntityManager.m_Signatures.Range(); ++i)
+			{
+				const Signature& signature = m_EntityManager.m_Signatures[i];
+				if ((view->GetSignature() & signature) == view->GetSignature())
+					view->AddEntity(i);
+			}
+			return *view;
+		}
+
+		template <typename T>
+		uint32_t GetComponentIndex(uint32_t entity) const
+		{
+			return m_ComponentManager.GetComponentIndex(entity, T::GetComponentID());
+		}
+
+		uint32_t GetComponentIndex(uint32_t entity, uint8_t id) const
+		{
+			return m_ComponentManager.GetComponentIndex(entity, id);
+		}
+
+		template <typename T>
+		uint32_t FindEntity(const T& component) const
+		{
+			for (int32_t i = 0; i < m_EntityManager.m_Signatures.Range();++i)
+			{
+				if (m_EntityManager.m_Signatures[i].test(T::GetComponentID()))
+				{
+					if (component == m_ComponentManager.GetComponent<T>(i))
+						return i;
+				}
+			}
+			return NULL_ENTITY;
+		}
+
+		const uint32_t GetNumberOfEntities() const { return m_EntityManager.GetNumEntities(); }
+
+		size_t GetNumberOfRegisteredComponentTypes() const { return m_ComponentManager.GetNumberOfStorages(); }
+	private:
+		ComponentManager m_ComponentManager;
+		EntityManager m_EntityManager;
+	};
+	
 }

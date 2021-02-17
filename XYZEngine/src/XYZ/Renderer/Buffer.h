@@ -55,7 +55,7 @@ namespace XYZ {
 		* @param[in] name		Name of element represented in shader
 		* @param[in] divisior	Specify how is data split between instances, default 0
 		*/
-		BufferElement(unsigned int index, ShaderDataComponent Component, const std::string& name, unsigned int divisor = 0)
+		BufferElement(unsigned int index, ShaderDataComponent Component, const std::string& name, uint32_t divisor = 0)
 			: Index(index), Component(Component), Divisor(divisor), Size(ShaderDataComponentSize(Component)), Offset(0)
 		{}
 
@@ -84,10 +84,10 @@ namespace XYZ {
 		}
 
 		ShaderDataComponent Component;
-		unsigned int   Size;
-		unsigned int   Offset;
-		unsigned int   Index;
-		unsigned int   Divisor;
+		uint32_t   Size;
+		uint32_t   Offset;
+		uint32_t   Index;
+		uint32_t   Divisor;
 	};
 
 
@@ -140,7 +140,7 @@ namespace XYZ {
 		*/
 		inline void CalculateOffsetsAndStride()
 		{
-			unsigned int offset = 0;
+			uint32_t offset = 0;
 			m_Stride = 0;
 			for (auto& element : m_Elements)
 			{
@@ -173,7 +173,7 @@ namespace XYZ {
 
 	private:
 		std::vector<BufferElement> m_Elements;
-		unsigned int m_Stride = 0;
+		uint32_t m_Stride = 0;
 	};
 
 	/**
@@ -202,7 +202,7 @@ namespace XYZ {
 		virtual void Resize(float* vertices, uint32_t size) = 0;
 		virtual void SetLayout(const BufferLayout& layout) = 0;
 		virtual const BufferLayout& GetLayout() const = 0;
-		
+		virtual uint32_t GetRendererID() const = 0;
 		/**
 		* Create empty VertexBuffer, Buffer usage is Dynamic
 		* @param size	Size of the buffer in bytes
@@ -234,7 +234,7 @@ namespace XYZ {
 		virtual void UnBind() const = 0;
 
 		virtual uint32_t GetCount() const = 0;
-
+		virtual uint32_t GetRendererID() const = 0;
 		/**
 		* Create IndexBuffer
 		* @param[in] indices	Pointer to the indices
@@ -263,7 +263,7 @@ namespace XYZ {
 		virtual void GetSubData(void* buffer, uint32_t size, uint32_t offset = 0) = 0;
 		virtual void SetLayout(const BufferLayout& layout) = 0;
 		virtual const BufferLayout& GetLayout() const = 0;
-
+		virtual uint32_t GetRendererID() const = 0;
 		/**
 		* Create empty ShaderStorageBuffer, Buffer usage is Dynamic
 		* @param[in] size	Size of the buffer in bytes

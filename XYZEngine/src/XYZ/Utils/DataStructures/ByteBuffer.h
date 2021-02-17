@@ -67,10 +67,12 @@ namespace XYZ {
 			return *this;
 		}
 
+
+
 		template<typename T>
 		T* As()
 		{
-			return (T*)Data;
+			return (T*)m_Data;
 		}
 
 		inline uint32_t GetSize() const { return m_Size; }
@@ -84,8 +86,11 @@ namespace XYZ {
 			memcpy(buffer.m_Data, data, size);
 			return buffer;
 		}
+
+
+		uint32_t m_Size;
+
 	private:
 		uint8_t* m_Data;
-		uint32_t m_Size;
 	};
 }

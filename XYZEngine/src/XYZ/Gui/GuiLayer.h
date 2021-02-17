@@ -1,9 +1,8 @@
 #pragma once
 #include "XYZ/Core/Layer.h"
+#include "XYZ/ECS/ECSManager.h"
 
-#include "XYZ/Event/ApplicationEvent.h"
-#include "XYZ/Event/InputEvent.h"
-
+#include "GuiContext.h"
 
 namespace XYZ {
 
@@ -16,12 +15,9 @@ namespace XYZ {
 		virtual void OnUpdate(Timestep ts) override;
 		virtual void OnEvent(Event& event) override;
 
+		GuiContext* CreateContext(ECSManager* ecs, const GuiSpecification& specs);
+
 	private:
-		bool onMouseButtonPress(MouseButtonPressEvent& event);
-		bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
-		bool onMouseMove(MouseMovedEvent& event);
-		bool onMouseScroll(MouseScrollEvent& event);
-		bool onWindowResized(WindowResizeEvent& event);
-	
+		std::vector<GuiContext*> m_GuiContexts;
 	};
 }

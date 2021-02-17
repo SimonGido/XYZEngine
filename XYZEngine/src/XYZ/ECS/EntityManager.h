@@ -6,53 +6,30 @@
 #include <array>
 
 namespace XYZ {
-	/*! @class EntityManager
-	* @brief Manager for entities
-	*/
+
 	class EntityManager
 	{
 		friend class ECSManager;
 	public:
-		/**
-		* Constructor
-		*/
+	
 		EntityManager();
 
-		/**
-		* Creates new entity
-		* @return new entity
-		*/
 		uint32_t CreateEntity();
 
-		/**
-		* @param[in] entity
-		* @return signature of the entity
-		*/
-		Signature GetSignature(uint32_t entity);
-		/**
-		* Destroy entity
-		* @param[in] entity
-		*/
+		Signature& GetSignature(uint32_t entity);
+		const Signature& GetSignature(uint32_t entity)const;
+
 		void DestroyEntity(uint32_t entity);
-		/**
-		* Set new signature for the entity
-		* @param[in] entity
-		* @param[in] signature
-		*/
+	
 		void SetSignature(uint32_t entity, Signature signature);
 
-		uint32_t GetNumEntitiesInUse() const { return m_EntitiesInUse; }
+		uint32_t GetNumEntities() const { return m_EntitiesInUse; }
 	private:
 		uint32_t m_EntitiesInUse;
 
-		struct EntitySignature
-		{
-			Signature Signature;
-			uint32_t Entity;
-		};
+		FreeList<Signature> m_Signatures;
+		std::vector<bool> m_Valid;
 
-		// Every entity has Signature representing components that it contains
-		// System with same signatures will use entity
-		FreeList<EntitySignature> m_Signatures;
+		friend class ECSManager;
 	};
 }

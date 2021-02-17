@@ -20,20 +20,26 @@ namespace XYZ {
 
 	Application::Application()
 	{
-		Logger::Get()->SetLogLevel(LogLevel::INFO | LogLevel::WARNING | LogLevel::ERR);
-		//Logger::Get()->SetLogLevel(LogLevel::NOLOG);
+		Logger::Get().SetLogLevel(LogLevel::INFO | LogLevel::WARNING | LogLevel::ERR | LogLevel::API);
+		//Logger::Get().SetLogLevel(LogLevel::NOLOG);
 		s_Application = this;
 		m_Running = true;
 
 		m_Window = Window::Create();
 		m_Window->SetVSync(false);
-		m_Window->SetEventCallback(Hook(&Application::OnEvent, this));
+
+		m_Window->RegisterCallback(Hook(&Application::OnEvent, this));	
+
+		m_GuiLayer = new GuiLayer();
+		m_LayerStack.PushOverlay(m_GuiLayer);
 
 		m_InGuiLayer = new InGuiLayer();
 		m_LayerStack.PushOverlay(m_InGuiLayer);
-		m_Window->RegisterCallback<WindowCloseEvent>(Hook(&Application::onWindowClosed, this));
-		m_Window->RegisterCallback<WindowResizeEvent>(Hook(&Application::onWindowResized, this));
-			
+
+		TCHAR NPath[MAX_PATH];
+		GetCurrentDirectory(MAX_PATH, NPath);
+		std::wstring tmp(&NPath[0]);
+		m_ApplicationDir = std::string(tmp.begin(), tmp.end());
 	}
 
 	Application::~Application()
@@ -49,16 +55,16 @@ namespace XYZ {
 			float timestep = time - m_LastFrameTime;
 			m_LastFrameTime = time;
 			{
-				Stopwatch watch;
+				//Stopwatch watch;
 				
 				for (Layer* layer : m_LayerStack)	
 					layer->OnUpdate(timestep);
-				
+
 				m_InGuiLayer->Begin();
 				for (Layer* layer : m_LayerStack)
-					layer->OnInGuiRender(timestep);
+					layer->OnInGuiRender();
 				m_InGuiLayer->End();
-				
+			
 			}
 			m_Window->Update();
 		}
@@ -84,35 +90,32 @@ namespace XYZ {
 		m_Running = false;
 	}
 
-	void Application::onWindowResized(WindowResizeEvent& event)
+	bool Application::onWindowResized(WindowResizeEvent& event)
 	{
 		Renderer::SetViewPort(0, 0, event.GetWidth(), event.GetHeight());
+		return false;
 	}
 
-	void Application::onWindowClosed(WindowCloseEvent& event)
+	bool Application::onWindowClosed(WindowCloseEvent& event)
 	{
 		m_Running = false;
+		return false;
 	}
 
 
-	void Application::OnEvent(Event& event)
+	bool Application::OnEvent(Event& event)
 	{
-		//if (event.GetEventComponent() == EventComponent::WindowResized)
-		//{
-		//	WindowResizeEvent& resize = (WindowResizeEvent&)event;
-		//	Renderer::OnWindowResize(resize.GetWidth(), resize.GetHeight());
-		//}
-		//else if (event.GetEventComponent() == EventComponent::WindowClosed)
-		//{
-		//	WindowCloseEvent& close = (WindowCloseEvent&)event;
-		//	m_Running = false;
-		//}
+		EventDispatcher dispatcher(event);
+		dispatcher.Dispatch<WindowResizeEvent>(Hook(&Application::onWindowResized, this));
+		dispatcher.Dispatch<WindowCloseEvent>(Hook(&Application::onWindowClosed, this));
+
 		for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)
 		{
 			(*it)->OnEvent(event);
 			if (event.Handled)
-				break;
+				return true;
 		}
+		return false;
 	}
 
 	std::string Application::OpenFile(const char* filter) const

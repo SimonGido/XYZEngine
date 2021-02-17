@@ -2,31 +2,30 @@
 #include "XYZ/ECS/Component.h"
 #include "XYZ/Event/GuiEvent.h"
 #include "XYZ/Event/EventSystem.h"
-#include "Widget.h"
+#include "XYZ/FSM/StateMachine.h"
 
+#include <glm/glm.hpp>
 
 namespace XYZ {
 
+	namespace SliderState {
+		enum SliderState
+		{
+			Dragged,
+			Released,
+			NumStates
+		};
+	}
 
-	class Slider :  public Widget,
-					public EventSystem<ClickEvent, ReleaseEvent, HooverEvent, UnHooverEvent>,
-					public Type<Slider>
+	class Slider : public EventSystem<ClickEvent, ReleaseEvent, DraggedEvent>,
+		public Type<Slider>
 	{
 	public:
-		virtual void OnEvent(Event& event) override;
+		Slider(const glm::vec4& hooverColor);
 
-		virtual WidgetType GetWidgetType() override { return WidgetType::Button; }
+		glm::vec4 HooverColor;
+		float	  Value = 0.0f;
 
-	private:
-
-		template <typename Event>
-		bool executeEvent(Event& e)
-		{
-			Execute(e);
-			return true;
-		}
-
-	private:
-		float m_Value = 0.0f;
+		StateMachine<SliderState::NumStates> Machine;
 	};
 }

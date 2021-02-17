@@ -3,28 +3,24 @@
 
 
 namespace XYZ {
-	Button::Button()
+	
+	Button::Button(const glm::vec4& clickColor, const glm::vec4& hooverColor)
+		:
+		ClickColor(clickColor), HooverColor(hooverColor)
 	{
-	}
+		State<ButtonState::NumStates>& clickState = Machine.CreateState();
+		State<ButtonState::NumStates>& releaseState = Machine.CreateState();
+		State<ButtonState::NumStates>& hooverState = Machine.CreateState();
+		State<ButtonState::NumStates>& unHooverState = Machine.CreateState();
 
-	void Button::OnEvent(Event& event)
-	{
-		EventDispatcher dispatcher(event);
-		if (dispatcher.Dispatch<ClickEvent>(Hook(&Button::executeEvent<ClickEvent>, this)))
-		{
-			std::cout << "Clicked" << std::endl;
-		}
-		else if (dispatcher.Dispatch<ReleaseEvent>(Hook(&Button::executeEvent<ReleaseEvent>, this)))
-		{
-			std::cout << "Released" << std::endl;
-		}
-		else if (dispatcher.Dispatch<HooverEvent>(Hook(&Button::executeEvent<HooverEvent>, this)))
-		{
-			std::cout << "Hoover" << std::endl;
-		}
-		else if (dispatcher.Dispatch<UnHooverEvent>(Hook(&Button::executeEvent<UnHooverEvent>, this)))
-		{
-			std::cout << "UnHoover" << std::endl;
-		}
+		clickState.AllowTransition(releaseState.GetID());
+		releaseState.AllowTransition(clickState.GetID());
+
+		releaseState.AllowTransition(hooverState.GetID());
+		unHooverState.AllowTransition(hooverState.GetID());
+		hooverState.AllowTransition(clickState.GetID());
+		hooverState.AllowTransition(hooverState.GetID());
+		hooverState.AllowTransition(unHooverState.GetID());
+		Machine.SetDefaultState(unHooverState.GetID());
 	}
 }

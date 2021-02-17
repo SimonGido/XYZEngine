@@ -1,92 +1,111 @@
 #pragma once
-#include "XYZ/Core/KeyCodes.h"
-#include "XYZ/Core/MouseCodes.h"
-#include "XYZ/Renderer/Font.h"
+
 #include "XYZ/Renderer/Material.h"
-#include "XYZ/Renderer/SubTexture2D.h"
+#include "XYZ/Renderer/SubTexture.h"
+#include "XYZ/Renderer/Font.h"
 #include "XYZ/Renderer/Framebuffer.h"
-#include "XYZ/Renderer/InGuiRenderer.h"
+#include "XYZ/Renderer/Buffer.h"
 
-
+#include <glm/glm.hpp>
 
 namespace XYZ {
-	namespace InGuiWindowFlag {
-		enum InGuiWindowFlags
-	{
-			Moved			= BIT(0),
-			Collapsed		= BIT(1), 
-			MenuEnabled		= BIT(2),
-			Modified		= BIT(3),
-			Closed			= BIT(4),
-			Hoovered		= BIT(5),
-			LeftResizing	= BIT(6),
-			RightResizing	= BIT(7),
-			TopResizing		= BIT(8),
-			BottomResizing	= BIT(9),
-			Visible			= BIT(10),
-			AutoPosition	= BIT(11),
-			Docked			= BIT(12),
-			Resized			= BIT(13),
-			Initialized		= BIT(14),
-			ForceNewLine	= BIT(15),
-			Dockable		= BIT(16),
-			EventBlocking	= BIT(17), // It will receive event but wont set it to handled		
-		};
-	}
-
-	namespace InGuiPerFrameFlag {
-		enum InGuiPerFrameFlags
-		{
-			LeftMouseButtonPressed	 = BIT(0),
-			RightMouseButtonPressed	 = BIT(1),
-			LeftMouseButtonReleased	 = BIT(2),
-			RightMouseButtonReleased = BIT(3),
-			ClickHandled			 = BIT(4),
-			ReleaseHandled			 = BIT(5)
-		};
-	}
-
-	namespace InGuiNodeFlag {
-		enum InGuiNodeFlags
-		{
-			NodeMoved		= BIT(0),
-			NodeModified	= BIT(1),
-			NodeHoovered	= BIT(2)
-		};
-	}
-
 	namespace InGuiReturnType {
-		enum InGuiReturnType
+		enum ReturnType
 		{
-			Clicked		= BIT(0), // Widget was clicked, set , modified
-			Hoovered	= BIT(1)  // Widget was hoovered
+			Hoovered = BIT(0),
+			Clicked = BIT(1),
+			Modified = BIT(2)
 		};
 	}
-	namespace InGuiPanelType {
-		enum InGuiPanelType
+	namespace InGuiInputFlags {
+		enum InputFlags
 		{
-			Left,
-			Right,
-			Top,
-			Bottom,
-			NumTypes
+			LeftClicked = BIT(0),
+			RightClicked = BIT(1)
+		};
+	}
+	namespace InGuiResizeFlags {
+		enum ResizeFlags
+		{
+			Left = BIT(0),
+			Right = BIT(1),
+			Top = BIT(2),
+			Bottom = BIT(3)
 		};
 	}
 
-	struct TextInfo
+	namespace InGuiWindowFlags {
+		enum WindowFlags
+		{
+			Initialized = BIT(0),
+			EventBlocking = BIT(1),
+			Hoovered = BIT(2),
+			Collapsed = BIT(3),
+			Docked = BIT(4)
+		};
+	}
+
+	struct InGuiQuad
 	{
-		glm::vec2 Size = { 0.0f,0.0f };
-		uint32_t Count = 0;
+		glm::vec4 Color;
+		glm::vec4 TexCoord;
+		glm::vec3 Position;
+		glm::vec2 Size;
+		uint32_t  TextureID;
+		uint32_t  ScissorIndex = 0;
 	};
 
-
-	struct InGuiRenderConfiguration
+	struct InGuiLine
 	{
-		InGuiRenderConfiguration();
+		glm::vec4 Color;
+		glm::vec3 P0;
+		glm::vec3 P1;
+	};
+
+	struct InGuiMesh
+	{
+		std::vector<InGuiQuad>	Quads;
+		std::vector<InGuiLine>	Lines;
+	};
+
+	struct InGuiLayout
+	{
+		float LeftPadding = 10.0f, RightPadding = 10.0f, TopPadding = 10.0f, BottomPadding = 10.0f;
+		float SpacingX = 5.0f;
+		float SpacingY = 5.0f;
+	};
+
+	struct InGuiWindow
+	{
+		InGuiMesh   Mesh;
+		InGuiMesh   OverlayMesh;
+		InGuiMesh   ScrollableMesh;
+		InGuiLayout Layout;
+		glm::vec2   Position;
+		glm::vec2   Size;
+		uint32_t    ID;
+		uint16_t    Flags;
+
+		static constexpr float PanelHeight = 25.0f;
+	};
+
+	struct InGuiScissor
+	{
+		float X;
+		float Y;
+		float Width;
+		float Height;
+	};
+
+	struct InGuiRenderData
+	{
+		InGuiRenderData();
 
 		Ref<Font>		   Font;
 		Ref<Texture2D>	   Texture;
-		Ref<XYZ::Material> Material;
+		Ref<Material>	   DefaultMaterial;
+		Ref<Material>	   ScissorMaterial;
+		Ref<ShaderStorageBuffer> ScissorBuffer;
 
 		enum
 		{
@@ -113,172 +132,74 @@ namespace XYZ {
 			SELECTOR_COLOR,
 			NUM_COLORS
 		};
-		Ref<SubTexture2D> SubTexture[NUM_SUBTEXTURES];
-		glm::vec4 Color[NUM_COLORS];
+
+		Ref<SubTexture> SubTexture[NUM_SUBTEXTURES];
+		glm::vec4		Color[NUM_COLORS];
 
 		static constexpr uint32_t TextureID = 0;
 		static constexpr uint32_t FontTextureID = 1;
 		static constexpr uint32_t ColorPickerTextureID = 2;
 		static constexpr uint32_t DefaultTextureCount = 3;
 
-		friend class InGui;
-	};
-
-
-	struct InGuiDockNode;
-	struct InGuiWindow
-	{
-		InGuiMesh Mesh;
-		InGuiLineMesh LineMesh;
-
-		InGuiMesh OverlayMesh;
-		InGuiLineMesh OverlayLineMesh;
-
-		glm::vec2 Position = { 0.0f,0.0f };
-		glm::vec2 Size = { 0.0f,0.0f };
-
-		uint32_t Flags = 0;
-		uint32_t ID = 0;
-		uint8_t  QueueType = 0;
-		float MinimalWidth = 0.0f;
-
-		const char* Name = nullptr;
-		InGuiDockNode* DockNode = nullptr;
-		std::function<void(const glm::vec2&)> OnResizeCallback;
-		static constexpr float PanelSize = 25.0f;
-	};
-
-
-	struct InGuiPanel
-	{
-		InGuiMesh Mesh;
-		InGuiLineMesh LineMesh;
-
-		InGuiMesh OverlayMesh;
-		InGuiLineMesh OverlayLineMesh;
-
-		glm::vec2 Position = { 0.0f,0.0f };
-		glm::vec2 Size = { 0.0f,0.0f };
-
-		static constexpr glm::vec2 ArrowSize = glm::vec2(25.0f, 80.0f);
-	};
-
-	struct InGuiPerFrameData
-	{
-		InGuiPerFrameData();
-		~InGuiPerFrameData();
-
-		void ResetFrameData();
-		void ResetWindowData();
-
-		InGuiWindow* ModifiedWindow;
-		InGuiWindow* CurrentWindow;
-
-		InGuiMesh* ActiveMesh;
-		InGuiLineMesh* ActiveLineMesh;
-		InGuiMesh* ActiveOverlayMesh;
-		InGuiLineMesh* ActiveOverlayLineMesh;
-		InGuiVertex* TempVertices;
-
-		glm::mat4 ViewProjectionMatrix;
-		glm::vec2 WindowSize;
-		glm::vec2 PopupSize;
-		glm::vec2 ModifiedWindowMouseOffset;
-		glm::vec2 WindowSpaceOffset;
-		glm::vec2 MenuBarOffset;
-		glm::vec2 PopupOffset;
-
-		glm::vec2 MousePosition;
-		glm::vec2 SelectedPoint;
-
-		float MaxHeightInRow;
-		float MenuItemOffset;
-		float PanelOffset;
-		float ItemOffset;
-
-		int Code;
-		int KeyCode;
-		int Mode;
-		bool CapslockEnabled;
-
-		uint32_t PopupItemCount = 0;
-		uint16_t Flags = 0;
-		std::vector<TextureRendererIDPair> TexturePairs;
-	};
-
-	enum class SplitAxis
-	{
-		None,
-		Vertical,
-		Horizontal	
-	};
-
-	enum class DockPosition
-	{
-		None,
-		Left,
-		Right,
-		Bottom,
-		Top,
-		Middle
-	};
-
-	struct InGuiDockNode
-	{
-		InGuiDockNode(const glm::vec2& pos, const glm::vec2& size, uint32_t id, InGuiDockNode* parent = nullptr)
-			:
-			Position(pos), Size(size), ID(id), Parent(parent)
-		{
-			Children[0] = nullptr;
-			Children[1] = nullptr;
-			VisibleWindow = nullptr;
-		}
-
-		glm::vec2 Position;
-		glm::vec2 Size;
-
-		InGuiDockNode* Parent;
-		InGuiDockNode* Children[2];
-		InGuiWindow* VisibleWindow;
-		std::vector<InGuiWindow*> Windows;
-		uint32_t ID;
-		SplitAxis Split = SplitAxis::None;
-		DockPosition Dock = DockPosition::None;
-	};
-
-
-	using InGuiPanelMap = InGuiPanel[InGuiPanelType::NumTypes];
-	using InGuiWindowMap = std::vector<InGuiWindow*>;
-
-	class InGuiRenderQueue
-	{
-	public:
-		enum Type
-		{
-			BACK  = 0,
-			FRONT = 1,
-			NUM   = 2
-		};
-
-	public:
-		void PushOverlay(InGuiMesh* mesh, InGuiLineMesh* lineMesh, uint8_t queueType = 0);
-		void Push(InGuiMesh* mesh, InGuiLineMesh* lineMesh, uint8_t queueType = 0);
-		void Submit(uint8_t queueType);
-		void Reset();
-
-	private:
-		struct Queue
-		{
-			std::vector<InGuiMesh*> InGuiMeshes;
-			std::vector<InGuiLineMesh*> InGuiLineMeshes;
-			uint32_t NumOverLayers = 0;
-		};
-		Queue m_Queues[Type::NUM];	
+		static constexpr uint32_t MaxNumberOfScissors = 32;
 	};
 
 	struct InGuiFrameData
 	{
-		InGuiPerFrameData PerFrameData;
-		InGuiRenderQueue RenderQueue;
+		static constexpr uint32_t NullID = 65536;
+
+		glm::mat4  ViewProjectionMatrix;
+		glm::vec2  MousePosition;
+		glm::vec2  MouseOffset;
+		uint16_t   Flags;
+		uint8_t	   ResizeFlags;
+		uint32_t   ActiveWindowID = NullID;
+		uint32_t   MovedWindowID = NullID;
+		uint32_t   ResizedWindowID = NullID;
+		InGuiMesh* CurrentMesh = nullptr;
+
+		std::vector<InGuiScissor> Scissors;
+		std::vector<Ref<Texture>> CustomTextures;
+		std::vector<bool>		  HandleInput;
+		size_t					  InputIndex = 0;
 	};
+
+
+	enum class InGuiSplitType
+	{
+		None,
+		Horizontal,
+		Vertical
+	};
+
+	struct InGuiDockNode
+	{
+		InGuiDockNode();
+		InGuiDockNode(uint32_t id);
+		~InGuiDockNode();
+
+		InGuiDockNode* Parent = nullptr;
+		InGuiDockNode* FirstChild = nullptr;
+		InGuiDockNode* SecondChild = nullptr;
+		InGuiSplitType Type = InGuiSplitType::None;
+		uint32_t ID;
+
+		struct NodeData
+		{
+			glm::vec2 Size;
+			glm::vec2 Position;
+			std::vector<uint32_t> Windows;
+		};
+		NodeData Data;
+	};
+
+	struct InGuiContext
+	{
+		InGuiFrameData			 FrameData;
+		InGuiRenderData			 RenderData;
+
+		std::vector<InGuiWindow> Windows;
+		std::vector<uint32_t>    EventListeners;
+	};
+
 }

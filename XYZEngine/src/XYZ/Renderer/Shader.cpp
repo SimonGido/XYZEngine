@@ -2,7 +2,7 @@
 #include "Shader.h"
 
 #include "Renderer.h"
-#include "API/OpenGL/OpenGLShader.h"
+#include "XYZ/API/OpenGL/OpenGLShader.h"
 
 
 namespace XYZ {

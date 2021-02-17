@@ -6,7 +6,7 @@ namespace XYZ {
 
 	struct RenderPassSpecification
 	{
-		Ref<FrameBuffer> TargetFramebuffer;
+		Ref<Framebuffer> TargetFramebuffer;
 	};
 
 	class RenderPass : public RefCount

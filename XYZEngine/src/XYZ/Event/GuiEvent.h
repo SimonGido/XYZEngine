@@ -1,17 +1,20 @@
 #pragma once
 #include "Event.h"
-
+#include "XYZ/ECS/ECSManager.h"
+#include "XYZ/ECS/Entity.h"
 
 namespace XYZ {
 
 	struct ClickEvent : public Event
 	{
-		ClickEvent()	
-			: m_Type(EventType::Click)
+		ClickEvent(Entity entity)	
+			: m_Type(EventType::Click),m_Entity(entity)
 		{
 		}
 
 		virtual EventType GetEventType() const override { return m_Type; }
+
+		Entity GetEntity() const { return m_Entity; }
 
 		static EventType GetStaticType()
 		{
@@ -20,6 +23,50 @@ namespace XYZ {
 
 	private:
 		EventType m_Type;
+		Entity m_Entity;
+	};
+
+
+
+	struct ReleaseEvent : public Event
+	{
+		ReleaseEvent(Entity entity)
+			: m_Type(EventType::Release), m_Entity(entity)
+		{
+		}
+
+		virtual EventType GetEventType() const override { return m_Type; }
+		Entity GetEntity() const { return m_Entity; }
+		static EventType GetStaticType()
+		{
+			return EventType::Release;
+		}
+
+	private:
+		EventType m_Type;
+		Entity m_Entity;
+	};
+
+	struct DraggedEvent : public Event
+	{
+		DraggedEvent(Entity entity, float value)
+			: m_Type(EventType::Drag), m_Entity(entity), m_Value(value)
+		{
+		}
+
+		virtual EventType GetEventType() const override { return m_Type; }
+
+		Entity GetEntity() const { return m_Entity; }
+
+		static EventType GetStaticType()
+		{
+			return EventType::Drag;
+		}
+
+	private:
+		EventType m_Type;
+		Entity m_Entity;
+		float m_Value;
 	};
 
 	struct CheckedEvent : public Event
@@ -39,24 +86,23 @@ namespace XYZ {
 	private:
 		EventType m_Type;
 	};
-
-	struct ReleaseEvent : public Event
+	struct UnCheckedEvent : public Event
 	{
-		ReleaseEvent()
-			: m_Type(EventType::Release)
+		UnCheckedEvent()
+			: m_Type(EventType::UnChecked)
 		{
 		}
 
 		virtual EventType GetEventType() const override { return m_Type; }
+
 		static EventType GetStaticType()
 		{
-			return EventType::Release;
+			return EventType::UnChecked;
 		}
 
 	private:
 		EventType m_Type;
 	};
-
 
 	struct HooverEvent : public Event
 	{
@@ -86,5 +132,24 @@ namespace XYZ {
 		}
 	private:
 		EventType m_Type;
+	};
+
+	struct ComponentResizedEvent : public Event
+	{
+		ComponentResizedEvent(Entity entity)
+			: m_Type(EventType::ComponentResized),m_Entity(entity)
+		{}
+
+		Entity GetEntity() const { return m_Entity; }
+
+		virtual EventType GetEventType() const override { return m_Type; }
+
+		static EventType GetStaticType()
+		{
+			return EventType::ComponentResized;
+		}
+	private:
+		EventType m_Type;
+		Entity m_Entity;
 	};
 }

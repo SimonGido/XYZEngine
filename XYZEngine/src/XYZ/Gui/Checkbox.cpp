@@ -3,33 +3,28 @@
 
 
 namespace XYZ {
-	Checkbox::Checkbox()
+	Checkbox::Checkbox(const glm::vec4& hooverColor)
+		:
+		HooverColor(hooverColor)
 	{
+		State<CheckboxState::NumStates>& checkedState = Machine.CreateState();
+		State<CheckboxState::NumStates>& unCheckedState = Machine.CreateState();
+		State<CheckboxState::NumStates>& hooverState = Machine.CreateState();
+		State<CheckboxState::NumStates>& unHooverState = Machine.CreateState();
+
+		checkedState.AllowTransition(unCheckedState.GetID());
+		unCheckedState.AllowTransition(checkedState.GetID());
+		unCheckedState.AllowTransition(hooverState.GetID());
+		unCheckedState.AllowTransition(unHooverState.GetID());
+		hooverState.AllowTransition(checkedState.GetID());
+		hooverState.AllowTransition(unHooverState.GetID());
+		hooverState.AllowTransition(hooverState.GetID());
+		unHooverState.AllowTransition(hooverState.GetID());
+		Machine.SetDefaultState(unHooverState.GetID());
 	}
-	void Checkbox::OnUpdate(float dt)
+	void Checkbox::OnUpdate(Timestep ts)
 	{
-		if (m_Checked)
+		if (Checked)
 			Execute(CheckedEvent{});
-	}
-	void Checkbox::OnEvent(Event& event)
-	{
-		EventDispatcher dispatcher(event);
-		if (dispatcher.Dispatch<ClickEvent>(Hook(&Checkbox::executeEvent<ClickEvent>, this)))
-		{
-			std::cout << "Clicked" << std::endl;
-			m_Checked = !m_Checked;
-			if (m_Checked)
-				Execute(ClickEvent{});
-			else
-				Execute(ReleaseEvent{});
-		}
-		else if (dispatcher.Dispatch<HooverEvent>(Hook(&Checkbox::executeEvent<HooverEvent>, this)))
-		{
-			Execute(HooverEvent{});
-		}
-		else if (dispatcher.Dispatch<UnHooverEvent>(Hook(&Checkbox::executeEvent<UnHooverEvent>, this)))
-		{
-			Execute(UnHooverEvent{});
-		}
 	}
 }

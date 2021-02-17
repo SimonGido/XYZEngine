@@ -14,7 +14,7 @@ namespace XYZ {
 		{
 			m_RefCount--;
 		}
-
+	
 		uint32_t GetRefCount() const { return m_RefCount; }
 	private:
 		mutable uint32_t m_RefCount = 0; // TODO: atomic
@@ -61,6 +61,7 @@ namespace XYZ {
 			DecRef();
 		}
 
+
 		Ref(const Ref<T>& other)
 			: m_Instance(other.m_Instance)
 		{
@@ -103,14 +104,17 @@ namespace XYZ {
 			return *this;
 		}
 
-		operator bool() { return m_Instance != nullptr; }
-		operator bool() const { return m_Instance != nullptr; }
+	
+		//operator bool() { return m_Instance != nullptr; }
+		//operator bool() const { return m_Instance != nullptr; }
 
 		T* operator->() { return m_Instance; }
 		const T* operator->() const { return m_Instance; }
 
 		T& operator*() { return *m_Instance; }
 		const T& operator*() const { return *m_Instance; }
+
+		T& Get() { return *m_Instance; }
 
 		T* Raw() { return  m_Instance; }
 		const T* Raw() const { return  m_Instance; }

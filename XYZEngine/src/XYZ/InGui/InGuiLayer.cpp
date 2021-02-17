@@ -1,100 +1,54 @@
 #include "stdafx.h"
 #include "InGuiLayer.h"
 
-#include "InGui.h"
-
+#include "XYZ/Event/ApplicationEvent.h"
 #include "XYZ/Core/Input.h"
-#include "XYZ/Core/MouseCodes.h"
-#include "XYZ/Core/KeyCodes.h"
 
+#include "InGui.h"	
+#include "InGuiDockspace.h"
+
+#include <glm/gtx/transform.hpp>
 
 namespace XYZ {
+
 	void InGuiLayer::OnAttach()
-	{	
+	{
+		float w = (float)Input::GetWindowSize().first;
+		float h = (float)Input::GetWindowSize().second;
+
+		m_Camera.SetProjectionMatrix(glm::ortho(0.0f, w, h, 0.0f));
+
 		InGui::Init();
+		InGuiDockspace::Init(glm::vec2(0.0f), { w, h });
 	}
+
 	void InGuiLayer::OnDetach()
 	{
 		InGui::Destroy();
+		InGuiDockspace::Destroy();
 	}
-	void InGuiLayer::OnUpdate(Timestep ts)
-	{
-		
-	}
+
 	void InGuiLayer::OnEvent(Event& event)
 	{
-		EventDispatcher dispatcher(event);
-		
-		if (dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&InGuiLayer::onMouseButtonPress, this)))
+		if (event.GetEventType() == EventType::WindowResized)
 		{
-		}
-		else if (dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&InGuiLayer::onMouseButtonRelease, this)))
-		{
-		}
-		else if (dispatcher.Dispatch<MouseMovedEvent>(Hook(&InGuiLayer::onMouseMove, this)))
-		{
-		}
-		else if (dispatcher.Dispatch<WindowResizeEvent>(Hook(&InGuiLayer::onWindowResize, this)))
-		{
-		}
-		else if (dispatcher.Dispatch<KeyPressedEvent>(Hook(&InGuiLayer::onKeyPressed, this)))
-		{
-		}
-		else if (dispatcher.Dispatch<MouseScrollEvent>(Hook(&InGuiLayer::onMouseScroll, this)))
-		{
+			const auto& e = (WindowResizeEvent&)event;
+			float w = (float)e.GetWidth();
+			float h = (float)e.GetHeight();
 
+			m_Camera.SetProjectionMatrix(glm::ortho(0.0f, w, h, 0.0f));
 		}
+		InGui::OnEvent(event);
 	}
+
 	void InGuiLayer::Begin()
 	{
-		InGui::BeginFrame();
+		InGui::BeginFrame(m_Camera.GetProjectionMatrix());
 	}
+
 	void InGuiLayer::End()
 	{
 		InGui::EndFrame();
 	}
-	bool InGuiLayer::onMouseButtonPress(MouseButtonPressEvent& e)
-	{
-		if (e.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_LEFT))
-		{
-			return InGui::OnLeftMouseButtonPress();
-		}
-		else if (e.IsButtonPressed(MouseCode::XYZ_MOUSE_BUTTON_RIGHT))
-		{
-			return InGui::OnRightMouseButtonPress();
-		}
 
-		return false;
-	}
-	bool InGuiLayer::onMouseButtonRelease(MouseButtonReleaseEvent& e)
-	{
-		if (e.IsButtonReleased(MouseCode::XYZ_MOUSE_BUTTON_LEFT))
-		{
-			return InGui::OnLeftMouseButtonRelease();
-		}
-		else if (e.IsButtonReleased(MouseCode::XYZ_MOUSE_BUTTON_RIGHT))
-		{
-			return InGui::OnRightMouseButtonRelease();
-		}
-
-		return false;
-	}
-	bool InGuiLayer::onMouseMove(MouseMovedEvent& e)
-	{
-		return false;
-	}
-	bool InGuiLayer::onWindowResize(WindowResizeEvent& e)
-	{
-		InGui::OnWindowResize({ e.GetWidth(),e.GetHeight() });
-		return false;
-	}
-	bool InGuiLayer::onKeyPressed(KeyPressedEvent& e)
-	{
-		InGui::OnKeyPress(e.GetKey(), e.GetMod());
-		return false;
-	}
-	bool InGuiLayer::onMouseScroll(MouseScrollEvent& e)
-	{
-		return false;
-	}
 }

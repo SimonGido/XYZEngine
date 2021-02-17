@@ -12,35 +12,14 @@ namespace XYZ {
 	*	@brief Components of events that can be triggered in the engine. User-defined events are classified as 'Custom'
 	*/
 	enum class EventType
-	{
-		None = 0,
-
-		WindowClosed,
-		WindowResized,
-
-		KeyPressed,
-		KeyReleased,
-		KeyTyped,
-
-		MouseButtonPressed,
-		MouseButtonReleased,
-
-		MouseScroll,
-		MouseMoved,
-
-		Click,
-		Release,
-		Checked,
-		Hoover,
-		UnHoover
+	{		
+		#include "CoreEventTypes.def"
+		#include "../../XYZEditor/src/Event/EditorEventTypes.def"
 	};
-
-#define EVENT_CLASS_TYPE(Type) static EventComponent GetStaticType() { return EventComponent::Type; }
-								
 
 
 	template <typename Type>
-	using EventCallback = std::function<void(Type)>;
+	using EventCallback = std::function<bool(Type&)>;
 
 	/*! @class Event
 	*	@brief Describes an event and its handlers
@@ -53,7 +32,21 @@ namespace XYZ {
 		bool Handled = false;
 	};
 
-
+	class EventCaller
+	{
+	public:
+		void RegisterCallback(const EventCallback<Event>& callback)
+		{
+			m_Callback = callback;
+		}
+		bool Execute(Event& event)
+		{
+			XYZ_ASSERT(m_Callback, "Event caller callback not initialized");
+			return m_Callback(event);
+		}
+	private:
+		EventCallback<Event> m_Callback;
+	};
 	
 	class EventDispatcher
 	{

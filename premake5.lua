@@ -19,17 +19,25 @@ IncludeDir = {}
 IncludeDir["GLFW"] = "XYZEngine/vendor/GLFW/include"
 IncludeDir["GLEW"] = "XYZEngine/vendor/GLEW/include"
 IncludeDir["glm"] = "XYZEngine/vendor/glm"
-IncludeDir["RCC"] = "XYZEngine/vendor/RCC"
 IncludeDir["mini"] = "XYZEngine/vendor/mini"
 IncludeDir["OpenAL"] = "XYZEngine/vendor/OpenAL-Soft"
 IncludeDir["MiniMp3"] = "XYZEngine/vendor/minimp3"
 IncludeDir["FreeType"] = "XYZEngine/vendor/freetype-2.10.1"
+IncludeDir["Asio"] = "XYZEngine/vendor/asio/include"
+IncludeDir["Lua"] = "XYZEngine/vendor/lua/include"
+IncludeDir["Sol"] = "XYZEngine/vendor/sol2/include"
+IncludeDir["mono"] = "XYZEngine/vendor/mono/include"
+IncludeDir["Box2D"] = "XYZEngine/vendor/box2d/include"
 
+LibraryDir = {}
+LibraryDir["mono"] = "vendor/mono/lib/Debug/mono-2.0-sgen.lib"
 
 include "XYZEngine/vendor/GLFW"
 include "XYZEngine/vendor/GLEW"
 include "XYZEngine/vendor/OpenAL-Soft"
 include "XYZEngine/vendor/freetype-2.10.1"
+include "XYZEngine/vendor/lua"
+include "XYZEngine/vendor/box2d"
 
 project "XYZEngine"
 		location "XYZEngine"
@@ -58,8 +66,8 @@ project "XYZEngine"
 			"%{prj.name}/vendor/yaml-cpp/src/**.h",
 			"%{prj.name}/vendor/yaml-cpp/include/**.h",
 
-			"%{prj.name}/vendor/RCC/**.h",
-			"%{prj.name}/vendor/RCC/**.cpp"
+			"%{prj.name}/vendor/asio/include/**.hpp",
+			"%{prj.name}/vendor/asio/include/**.h"
 		}
 
 		defines
@@ -76,7 +84,6 @@ project "XYZEngine"
 			"%{IncludeDir.GLFW}",
 			"%{IncludeDir.GLEW}",
 			"%{IncludeDir.glm}",
-			"%{IncludeDir.RCC}",
 			"%{IncludeDir.mini}",
 			"%{IncludeDir.OpenAL}/include",
 			"%{IncludeDir.OpenAL}/src",
@@ -84,7 +91,12 @@ project "XYZEngine"
 			"%{IncludeDir.MiniMp3}",	
 			"%{prj.name}/vendor/stb_image",
 			"%{prj.name}/vendor/yaml-cpp/include",
-			"%{IncludeDir.FreeType}/include"
+			"%{IncludeDir.FreeType}/include",
+			"%{IncludeDir.Asio}",
+			"%{IncludeDir.Lua}",
+			"%{IncludeDir.Sol}",
+			"%{IncludeDir.mono}",
+			"%{IncludeDir.Box2D}"
 		}
 
 		links
@@ -93,7 +105,10 @@ project "XYZEngine"
 			"GLFW",
 			"OpenAL-Soft",
 			"FreeType",
-			"opengl32"
+			"Lua",
+			"opengl32",
+			"Box2D",
+			"%{LibraryDir.mono}"
 		}
 		
 		flags { "NoPCH" }
@@ -113,58 +128,203 @@ project "XYZEngine"
 				runtime "Release"
 				optimize "on"
 
-	
+			
 project "XYZEditor"
 		location "XYZEditor"
 		kind "ConsoleApp"
 		language "C++"
 		cppdialect "C++17"
 		staticruntime "on"
-
+		
 		targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 		objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-
+		
 		files
 		{
 			"%{prj.name}/src/**.h",
 			"%{prj.name}/src/**.cpp"
 		}
-
+		
 		includedirs
 		{
+			"XYZEngine/vendor/yaml-cpp/include",
 			"XYZEngine/vendor",
 			"XYZEngine/src",
-			"NativeScript",
 			"%{IncludeDir.glm}",
-			"%{IncludeDir.RCC}"
+			"%{IncludeDir.Asio}",
+			"%{IncludeDir.Lua}",
+			"%{IncludeDir.Sol}"
 		}
-
+		
 		links
 		{
 			"XYZEngine"
 		}
-
+		
 		filter "system:windows"
 				systemversion "latest"
-
+		
 		filter "configurations:Debug"
 				defines "XYZ_DEBUG"
 				runtime "Debug"
 				symbols "on"
-
-
+		
+		
 		filter "configurations:Release"
 				defines "XYZ_RELEASE"
 				runtime "Release"
 				optimize "on"
 
 
+project "XYZSandbox"
+		location "XYZSandbox"
+		kind "ConsoleApp"
+		language "C++"
+		cppdialect "C++17"
+		staticruntime "on"
+		
+		targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+		objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+		
+		files
+		{
+			"%{prj.name}/src/**.h",
+			"%{prj.name}/src/**.cpp"
+		}
+		
+		includedirs
+		{
+			"XYZEngine/vendor/yaml-cpp/include",
+			"XYZEngine/vendor",
+			"XYZEngine/src",
+			"%{IncludeDir.glm}",
+			"%{IncludeDir.Asio}",
+			"%{IncludeDir.Lua}",
+			"%{IncludeDir.Sol}"
+		}
+		
+		links
+		{
+			"XYZEngine"
+		}
+		
+		filter "system:windows"
+				systemversion "latest"
+		
+		filter "configurations:Debug"
+				defines "XYZ_DEBUG"
+				runtime "Debug"
+				symbols "on"
+
+		postbuildcommands 
+		{
+			'{COPY} "../XYZEngine/vendor/mono/bin/Debug/mono-2.0-sgen.dll" "%{cfg.targetdir}"'
+		}
+		
+		filter "configurations:Release"
+				defines "XYZ_RELEASE"
+				runtime "Release"
+				optimize "on"
+
+project "XYZServer"
+		location "XYZServer"
+		kind "ConsoleApp"
+		language "C++"
+		cppdialect "C++17"
+		staticruntime "on"
+		
+		targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+		objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+		
+		files
+		{
+			"%{prj.name}/src/**.h",
+			"%{prj.name}/src/**.cpp"
+		}
+		
+		includedirs
+		{
+			"XYZEngine/vendor/yaml-cpp/include",
+			"XYZEngine/vendor",
+			"XYZEngine/src",
+			"%{IncludeDir.glm}",
+			"%{IncludeDir.Asio}",
+			"%{IncludeDir.Lua}",
+			"%{IncludeDir.Sol}"
+		}
+		
+		links
+		{
+			"XYZEngine"
+		}
+		
+		filter "system:windows"
+				systemversion "latest"
+		
+		filter "configurations:Debug"
+				defines "XYZ_DEBUG"
+				runtime "Debug"
+				symbols "on"
+		
+		
+		filter "configurations:Release"
+				defines "XYZ_RELEASE"
+				runtime "Release"
+				optimize "on"
+
+
+project "XYZClient"
+		location "XYZClient"
+		kind "ConsoleApp"
+		language "C++"
+		cppdialect "C++17"
+		staticruntime "on"
+		
+		targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+		objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+		
+		files
+		{
+			"%{prj.name}/src/**.h",
+			"%{prj.name}/src/**.cpp"
+		}
+		
+		includedirs
+		{
+			"XYZEngine/vendor/yaml-cpp/include",
+			"XYZEngine/vendor",
+			"XYZEngine/src",
+			"%{IncludeDir.glm}",
+			"%{IncludeDir.Asio}",
+			"%{IncludeDir.Lua}",
+			"%{IncludeDir.Sol}"
+		}
+		
+		links
+		{
+			"XYZEngine"
+		}
+		
+		filter "system:windows"
+				systemversion "latest"
+		
+		filter "configurations:Debug"
+				defines "XYZ_DEBUG"
+				runtime "Debug"
+				symbols "on"
+		
+		
+		filter "configurations:Release"
+				defines "XYZ_RELEASE"
+				runtime "Release"
+				optimize "on"
+
 project "XYZScriptCore"
 		location "XYZScriptCore"
 		kind "SharedLib"
 		language "C#"
 			
-		targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+		targetdir ("XYZEditor/Assets/Scripts")
 		objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 			
 		files 
@@ -172,3 +332,20 @@ project "XYZScriptCore"
 			"%{prj.name}/src/**.cs", 
 		}
 
+project "XYZScriptExample"
+		location "XYZScriptExample"
+		kind "SharedLib"
+		language "C#"
+			
+		targetdir ("XYZEditor/Assets/Scripts")
+		objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+			
+		files 
+		{
+			"%{prj.name}/src/**.cs", 
+		}
+
+		links
+		{
+			"XYZScriptCore"
+		}

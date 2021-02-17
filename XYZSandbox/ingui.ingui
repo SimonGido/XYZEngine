@@ -1,0 +1,49 @@
+InGui: InGui
+Windows:
+  - Window: 0
+    Flags: 19
+    Position: [960, 634]
+    Size: [960, 383]
+  - Window: 1
+    Flags: 23
+    Position: [960, 0]
+    Size: [960, 634]
+  - Window: 2
+    Flags: 19
+    Position: [0, 0]
+    Size: [960, 1017]
+Dockspace:
+  - DockNode: 0
+    Position: [0, 0]
+    Size: [1920, 1017]
+    Type: 2
+    Windows:
+      []
+    FirstChild: 1
+    SecondChild: 2
+  - DockNode: 1
+    Position: [0, 0]
+    Size: [960, 1017]
+    Type: 0
+    Windows:
+      - 2
+  - DockNode: 2
+    Position: [960, 0]
+    Size: [960, 1017]
+    Type: 1
+    Windows:
+      []
+    FirstChild: 3
+    SecondChild: 4
+  - DockNode: 3
+    Position: [960, 0]
+    Size: [960, 634]
+    Type: 0
+    Windows:
+      - 1
+  - DockNode: 4
+    Position: [960, 634]
+    Size: [960, 383]
+    Type: 0
+    Windows:
+      - 0

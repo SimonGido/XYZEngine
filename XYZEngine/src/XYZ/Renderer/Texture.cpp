@@ -2,26 +2,27 @@
 #include "Texture.h"
 
 #include "Renderer.h"
-#include "API/OpenGL/OpenGLTexture.h"
+#include "XYZ/API/OpenGL/OpenGLTexture.h"
+
 
 namespace XYZ {
-	Ref<Texture2D> Texture2D::Create(const TextureSpecs& specs)
+	Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height, uint32_t channels, const TextureSpecs& specs)
 	{
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::API::None: XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
-		case RendererAPI::API::OpenGL: return Ref<OpenGLTexture2D>::Create(specs);
+		case RendererAPI::API::OpenGL: return Ref<OpenGLTexture2D>::Create(width, height, channels, specs);
 		}
 
 		XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
 		return nullptr;
 	}
-	Ref<Texture2D> Texture2D::Create(TextureWrap wrap, TextureParam min, TextureParam max, const std::string& path)
+	Ref<Texture2D> Texture2D::Create(const TextureSpecs& specs, const std::string& path)
 	{
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::API::None: XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
-		case RendererAPI::API::OpenGL: return Ref<OpenGLTexture2D>::Create(wrap,min,max, path);
+		case RendererAPI::API::OpenGL: return Ref<OpenGLTexture2D>::Create(specs, path);
 		}
 
 		XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");

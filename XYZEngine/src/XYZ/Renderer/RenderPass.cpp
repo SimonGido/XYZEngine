@@ -2,7 +2,7 @@
 #include "RenderPass.h"
 
 #include "RendererAPI.h"
-#include "API/OpenGL/OpenGLRenderPass.h"
+#include "XYZ/API/OpenGL/OpenGLRenderPass.h"
 
 namespace XYZ {
 	Ref<RenderPass> RenderPass::Create(const RenderPassSpecification& spec)

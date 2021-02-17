@@ -1,17 +1,8 @@
 #pragma once
 #include "Types.h"
-#include "XYZ/Utils/DataStructures/FreeList.h"
-#include "XYZ/Core/Core.h"
-
-#include <unordered_map>
-#include <array>
 
 namespace XYZ {
 
-	class ComponentManager;
-	/*! @class IComponentStorage
-	* @brief interface of storage for components
-	*/
 	class IComponentStorage
 	{
 		friend class ComponentManager;
@@ -20,115 +11,106 @@ namespace XYZ {
 		* virtual destructor
 		*/
 		virtual ~IComponentStorage() = default;
-		virtual void EntityDestroyed(uint32_t entity) = 0;
-
+		virtual void AddRawComponent(uint32_t entity, uint8_t* component) = 0;
+		virtual uint32_t EntityDestroyed(uint32_t entity) = 0;
+		virtual uint32_t GetComponentIndex(uint32_t entity) const = 0;
+		virtual uint32_t GetEntityAtIndex(size_t index) const = 0;
+		virtual IComponentStorage* Clone() = 0;
 	};
-	
-	
 
-	/*! @class ComponentStorage
-	* @brief storage for new Component of components
-	*/
-	template<typename T>
+
+	template <typename T>
 	class ComponentStorage : public IComponentStorage
 	{
 	public:
-		ComponentStorage()
-			: m_Components(MAX_ENTITIES)
-		{}
-
-		virtual ~ComponentStorage()
-		{}
-
-		/**
-		* Check if contains entity
-		* @param[in] entity
-		* @return
-		*/
-		bool Contains(uint32_t entity)
+		T& AddComponent(uint32_t entity, const T& component)
 		{
-			return m_Lookup.find(entity) != m_Lookup.end();
+			if (m_EntityDataMap.size() <= entity)
+				m_EntityDataMap.resize(size_t(entity) + 1);
+
+			m_EntityDataMap[entity] = m_Data.size();
+
+			m_Data.push_back({ component,entity });
+
+			return m_Data[m_EntityDataMap[entity]].Data;
 		}
 
-		/**
-		* Add new component to entity
-		* @param[in] entity
-		* @tparam[in] component
-		*/
-		T* AddComponent(uint32_t entity,const T& component)
+		T& GetComponent(uint32_t entity)
 		{
-			XYZ_ASSERT(m_Lookup.find(entity) == m_Lookup.end(), "Entity ",entity," already contains component");	
-			int32_t index = m_Components.Insert(component);
-			m_Lookup[entity] = index;
-			return &m_Components[index];
+			return m_Data[m_EntityDataMap[entity]].Data;
 		}
 
-		template<typename T, typename ...Args>
-		T* EmplaceComponent(uint32_t entity, Args&&... args)
+		const T& GetComponent(uint32_t entity) const
 		{
-			XYZ_ASSERT(m_Lookup.find(entity) == m_Lookup.end(), "Entity ", entity, " already contains component");
-			int32_t index = m_Components.Emplace(std::forward<Args>(args)...);
-			m_Lookup[entity] = index;
-			return &m_Components[index];
+			return m_Data[m_EntityDataMap[entity]].Data;
 		}
-		/**
-		* Remove component from the entity
-		* @param[in] entity
-		*/
-		void RemoveComponent(uint32_t entity)
+		uint32_t RemoveComponent(uint32_t entity)
 		{
-			XYZ_ASSERT(m_Lookup.find(entity) != m_Lookup.end(), "Removing non-existent component");
-
-			int32_t removeIndex = m_Lookup[entity];
-			m_Components.Erase(removeIndex);
-			m_Lookup.erase(entity);
-		}
-
-		/**
-		* @param[in] entity
-		* @return index of component in the storage
-		*/
-		int GetComponentIndex(uint32_t entity)
-		{
-			XYZ_ASSERT(m_Lookup.find(entity) != m_Lookup.end(), "Retrieving non-existent component.");
-			return m_Lookup[entity];
+			uint32_t updatedEntity = NULL_ENTITY;
+			if (entity != m_Data.back().Entity)
+			{
+				// Entity of last element in data pack
+				uint32_t lastEntity = m_Data.back().Entity;
+				// Index that is entity pointing to
+				uint32_t index = m_EntityDataMap[entity];
+				// Move last element in data pack at the place of removed component
+				m_Data[index] = std::move(m_Data.back());
+				// Point last entity to data new index;
+				m_EntityDataMap[lastEntity] = index;
+				// Pop back last element
+				updatedEntity = lastEntity;
+			}
+			m_Data.pop_back();
+			return updatedEntity;
 		}
 
-		/**
-		* @param[in] entity
-		* @return pointer to the component
-		*/
-		T* GetComponent(uint32_t entity)
+		virtual uint32_t GetComponentIndex(uint32_t entity) const override
 		{
-			XYZ_ASSERT(m_Lookup.find(entity) != m_Lookup.end(), "Retrieving non-existent component.");
-			return &m_Components[m_Lookup[entity]];
+			return m_EntityDataMap[entity];
 		}
 
-		/**
-		* Remove entity from storage if entity is destroyed
-		* @param[in] entity
-		*/
-		virtual void EntityDestroyed(uint32_t entity) override
+		virtual void AddRawComponent(uint32_t entity, uint8_t* component) override
 		{
-			if (Contains(entity))
-				RemoveComponent(entity);
+			AddComponent(entity, *(T*)component);
+		}
+		virtual uint32_t EntityDestroyed(uint32_t entity) override
+		{
+			return RemoveComponent(entity);
+		}
+		virtual uint32_t GetEntityAtIndex(size_t index) const override
+		{
+			return m_Data[index].Entity;
+		}
+		virtual IComponentStorage* Clone() override
+		{
+			ComponentStorage<T>* newStorage = new ComponentStorage<T>();
+			for (auto& it : m_Data)
+				newStorage->m_Data.push_back(it);
+			for (auto& it : m_EntityDataMap)
+				newStorage->m_EntityDataMap.push_back(it);
+			return newStorage;
 		}
 
-		T& operator [](int32_t index)
+		T& operator[](size_t index)
 		{
-			return m_Components[index];
+			return m_Data[index].Data;
 		}
-		
-		int Size() const
+
+		const T& operator[](size_t index) const
 		{
-			return m_Components.Range();
+			return m_Data[index].Data;
 		}
+
+		size_t Size() const { return m_Data.size(); }
 
 	private:
-		FreeList<T> m_Components;
-		std::unordered_map<uint32_t, int32_t> m_Lookup;
+		struct Pack
+		{
+			T Data;
+			uint32_t Entity;
+		};
+
+		std::vector<Pack> m_Data;
+		std::vector<uint32_t> m_EntityDataMap;
 	};
-
-	
-
 }

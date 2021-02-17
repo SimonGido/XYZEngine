@@ -6,11 +6,14 @@
 #include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/SceneRenderer.h"
+#include "XYZ/ECS/ComponentGroup.h"
+#include "XYZ/Script/ScriptEngine.h"
+#include "XYZ/Physics/ContactListener.h"
 
-#include "XYZ/NativeScript/ScriptableEntity.h"
-#include "XYZ/ECS/Entity.h"
+#include "SceneEntity.h"
 
-#include "XYZ/Timer.h"
+
+#include <box2d/box2d.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
@@ -18,207 +21,290 @@
 
 namespace XYZ {
 
+	static ContactListener s_ContactListener;
+
 	Scene::Scene(const std::string& name)
 		:
 		m_Name(name),
-		m_SelectedEntity(Entity())
+		m_SelectedEntity(NULL_ENTITY),
+		m_CameraEntity(NULL_ENTITY)
 	{
-		m_CameraGroup = m_ECS.CreateGroup<TransformComponent, CameraComponent>();
-		m_RenderGroup = m_ECS.CreateGroup<TransformComponent, SpriteRenderer>();
-		m_AnimateGroup = m_ECS.CreateGroup<AnimatorComponent>();
-		m_ScriptGroup = m_ECS.CreateGroup<NativeScriptComponent>();
-
-		m_MainCamera = nullptr;
-		m_MainCameraTransform = nullptr;
-
-		m_ViewportWidth  = 0;
+		m_ViewportWidth = 0;
 		m_ViewportHeight = 0;
 
+		m_CameraTexture = Texture2D::Create({ TextureWrap::Clamp, TextureParam::Linear, TextureParam::Nearest }, "Assets/Textures/Gui/Camera.png");
+		m_CameraSubTexture = Ref<SubTexture>::Create(m_CameraTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 		m_CameraMaterial = Ref<Material>::Create(Shader::Create("Assets/Shaders/DefaultShader.glsl"));
-		m_CameraTexture = Texture2D::Create(TextureWrap::Clamp, TextureParam::Linear, TextureParam::Nearest, "Assets/Textures/Gui/Camera.png");
-		m_CameraSubTexture = Ref<SubTexture2D>::Create(m_CameraTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 		m_CameraMaterial->Set("u_Color", glm::vec4(1.0f));
 		m_CameraMaterial->Set("u_Texture", m_CameraTexture);
+		m_CameraRenderer = SpriteRenderer(m_CameraMaterial, m_CameraSubTexture, glm::vec4(1.0f), 0);
 
-		m_CameraSprite = new SpriteRenderer(
-			m_CameraMaterial,
-			m_CameraSubTexture,
-			glm::vec4(1.0f),
-			0,
-			100
-		);
+		m_RenderView = &m_ECS.CreateView<TransformComponent, SpriteRenderer>();
+		m_ParticleView = &m_ECS.CreateView<TransformComponent, ParticleComponent>();
+		m_LightView = &m_ECS.CreateView<TransformComponent, PointLight2D>();
+		m_AnimatorView = &m_ECS.CreateView<AnimatorComponent>();
+		m_RigidBodyView = &m_ECS.CreateView<TransformComponent, RigidBody2DComponent>();
+
+		m_ECS.ForceStorage<ScriptComponent>();
+		m_ScriptStorage = m_ECS.GetStorage<ScriptComponent>();
+		m_AnimatorStorage = m_ECS.GetStorage<AnimatorComponent>();
+
+		m_PhysicsWorld = new b2World(b2Vec2{ 0.0f,-9.8f });
+		m_PhysicsWorld->SetContactListener(&s_ContactListener);
 	}
 
-	Scene::~Scene() 
+	Scene::~Scene()
 	{
-		delete m_CameraSprite;
+		delete m_PhysicsWorld;
 	}
 
-	Entity Scene::CreateEntity(const std::string& name)
+	SceneEntity Scene::CreateEntity(const std::string& name, const GUID& guid)
 	{
-		Entity entity(m_ECS.CreateEntity(), this);
-		entity.EmplaceComponent<SceneTagComponent>( name );
-		entity.EmplaceComponent<TransformComponent>(glm::vec3(0.0f, 0.0f, 0.0f));
-		
-		
+		SceneEntity entity(m_ECS.CreateEntity(), this);
+		IDComponent id;
+		id.ID = guid;
+		entity.AddComponent<IDComponent>(id);
+		entity.AddComponent<Relationship>(Relationship());
+		entity.AddComponent<SceneTagComponent>(SceneTagComponent(name));
+		entity.AddComponent<TransformComponent>(TransformComponent(glm::vec3(0.0f, 0.0f, 0.0f)));
+
+
 		m_Entities.push_back(entity);
-		uint32_t index = m_Entities.size() - 1;
-		m_SceneGraphMap.insert({ entity,index });
-
 		return entity;
 	}
 
-	void Scene::DestroyEntity(Entity entity)
+	void Scene::DestroyEntity(SceneEntity entity)
 	{
-		auto it = m_SceneGraphMap.find(entity);
-		XYZ_ASSERT(it != m_SceneGraphMap.end(), "");
-	
-		// Swap with last and delete
 		uint32_t lastEntity = m_Entities.back();
-		m_Entities[it->second] = std::move(m_Entities.back());
-		m_Entities.pop_back();
-
-		m_SceneGraphMap[lastEntity] = it->second;
-		m_SceneGraphMap.erase(it);		
-
+		if (entity.m_ID == m_SelectedEntity)
+			m_SelectedEntity = NULL_ENTITY;
+		// Swap with last and delete
+		auto it = std::find(m_Entities.begin(), m_Entities.end(), (uint32_t)entity);
+		if (it != m_Entities.end())
+		{
+			*it = std::move(m_Entities.back());
+			m_Entities.pop_back();
+		}
 		m_ECS.DestroyEntity(entity);
 	}
 
-	void Scene::SetParent(Entity parent, Entity child)
-	{
-	
-	}
-
-	void Scene::OnAttach()
-	{
-
-	}
 
 	void Scene::OnPlay()
-	{	
-		for (int i = 0; i < m_CameraGroup->Size(); ++i)
+	{
+		for (auto entity : m_Entities)
 		{
-			auto [transform, camera] = (*m_CameraGroup)[i];
-			m_MainCamera = camera;
-			m_MainCameraTransform = transform;
-			break;
+			Entity ent(entity, &m_ECS);
+			if (ent.HasComponent<CameraComponent>())
+			{
+				ent.GetStorageComponent<CameraComponent>().Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+				m_CameraEntity = ent;
+				break;
+			}
 		}
-		if (!m_MainCamera)
+
+		for (size_t i = 0; i < m_ScriptStorage->Size(); ++i)
 		{
-			XYZ_LOG_ERR("No camera found in the scene");
+
 		}
-		else
+
+		uint32_t counter = 0;
+		m_PhysicsBodyEntityBuffer = new SceneEntity[m_Entities.size()];
+		for (auto entityID : m_Entities)
 		{
-			m_MainCamera->Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+			SceneEntity entity(entityID, this);
+			if (!entity.HasComponent<BoxCollider2DComponent>() && !entity.HasComponent<CameraComponent>())
+			{
+				SceneTagComponent& sceneTag = entity.GetComponent<SceneTagComponent>();
+				
+				auto& boxCollider = entity.AddComponent<BoxCollider2DComponent>({});
+				auto& rigidBody = entity.AddComponent<RigidBody2DComponent>({});
+				auto& transform = entity.GetComponent<TransformComponent>();
+				if (sceneTag.Name == "Background")
+				{
+					rigidBody.BodyType = RigidBody2DComponent::Type::Static;
+				}
+				b2BodyDef bodyDef;
+				SceneEntity* entityStorage = &m_PhysicsBodyEntityBuffer[counter++];
+				*entityStorage = SceneEntity(entityID, this);
+
+				if (rigidBody.BodyType == RigidBody2DComponent::Type::Dynamic)
+					bodyDef.type = b2_dynamicBody;
+				else if (rigidBody.BodyType == RigidBody2DComponent::Type::Static)
+					bodyDef.type = b2_staticBody;
+				else if (rigidBody.BodyType == RigidBody2DComponent::Type::Kinematic)
+					bodyDef.type = b2_kinematicBody;
+				bodyDef.position.Set(transform.Translation.x, transform.Translation.y);
+				bodyDef.angle = transform.Rotation.z;
+				bodyDef.userData.pointer = reinterpret_cast<uintptr_t>(entityStorage);
+				b2Body * body = m_PhysicsWorld->CreateBody(&bodyDef);
+				rigidBody.RuntimeBody = body;
+
+				b2PolygonShape shape;
+				boxCollider.Size = transform.Scale / 2.0f;
+				shape.SetAsBox(boxCollider.Size.x, boxCollider.Size.y);
+				b2FixtureDef fixture;
+				fixture.shape = &shape;
+				fixture.density = boxCollider.Density;
+				fixture.friction = boxCollider.Friction;
+				boxCollider.RuntimeFixture = body->CreateFixture(&fixture);
+			}
 		}
+
 	}
 
 	void Scene::OnEvent(Event& e)
 	{
 	}
 
-	void Scene::OnDetach()
+	void Scene::OnStop()
 	{
-		for (auto entity : m_Entities)
-		{
-			m_ECS.DestroyEntity(entity);
-		}
+		delete[] m_PhysicsBodyEntityBuffer;
 	}
 
 	void Scene::OnRender()
-	{	
+	{
 		// 3D part here
 
 		///////////////
+		Entity cameraEntity(m_CameraEntity, &m_ECS);
 		SceneRendererCamera renderCamera;
-		renderCamera.Camera = m_MainCamera->Camera;
-		renderCamera.ViewMatrix = glm::inverse(m_MainCameraTransform->GetTransform());
+		auto& cameraComponent = cameraEntity.GetStorageComponent<CameraComponent>();
+		auto& cameraTransform = cameraEntity.GetStorageComponent<TransformComponent>();
+		renderCamera.Camera = cameraComponent.Camera;
+		renderCamera.ViewMatrix = glm::inverse(cameraTransform.GetTransform());
+
 		SceneRenderer::GetOptions().ShowGrid = false;
 		SceneRenderer::BeginScene(this, renderCamera);
-		for (int i = 0; i < m_RenderGroup->Size(); ++i)
+		for (size_t i = 0; i < m_RenderView->Size(); ++i)
 		{
-			auto [transform, sprite] = (*m_RenderGroup)[i];
-			SceneRenderer::SubmitSprite(sprite, transform->GetTransform());
+			auto [transform, renderer] = (*m_RenderView)[i];
+			SceneRenderer::SubmitSprite(&renderer, &transform);
+		}
+		for (size_t i = 0; i < m_ParticleView->Size(); ++i)
+		{
+			auto [transform, particle] = (*m_ParticleView)[i];
+			SceneRenderer::SubmitParticles(&particle, &transform);
+		}
+
+		for (size_t i = 0; i < m_LightView->Size(); ++i)
+		{
+			auto [transform, light] = (*m_LightView)[i];
+			SceneRenderer::SubmitLight(&light, transform.GetTransform());
 		}
 		SceneRenderer::EndScene();
 	}
 
 	void Scene::OnUpdate(Timestep ts)
 	{
-		for (int i = 0; i < m_AnimateGroup->Size(); ++i)
+		int32_t velocityIterations = 6;
+		int32_t positionIterations = 2;
+		m_PhysicsWorld->Step(ts, velocityIterations, positionIterations);
+		
+		for (size_t i = 0; i < m_RigidBodyView->Size(); ++i)
 		{
-			auto [animator] = (*m_AnimateGroup)[i];
-			animator->Controller->Update(ts);
+			auto [transform, rigidBody] = (*m_RigidBodyView)[i];
+			b2Body* body = static_cast<b2Body*>(rigidBody.RuntimeBody);
+			transform.Translation.x = body->GetPosition().x;
+			transform.Translation.y = body->GetPosition().y;
+			transform.Rotation.z = body->GetAngle();
 		}
-		for (int i = 0; i < m_ScriptGroup->Size(); ++i)
+		for (size_t i = 0; i < m_ScriptStorage->Size(); ++i)
 		{
-			auto [script] = (*m_ScriptGroup)[i];
-			if (script->ScriptableEntity)
-				script->ScriptableEntity->OnUpdate(ts);
+			ScriptComponent& scriptComponent = (*m_ScriptStorage)[i];
+			ScriptEngine::OnUpdateEntity({ m_ScriptStorage->GetEntityAtIndex(i),this }, ts);
+		}
+
+		for (size_t i = 0; i < m_AnimatorStorage->Size(); ++i)
+		{
+			AnimatorComponent& anim = (*m_AnimatorStorage)[i];
+			anim.Controller.Update(ts);
+		}
+
+		for (size_t i = 0; i < m_AnimatorView->Size(); ++i)
+		{
+			auto [animator] = (*m_AnimatorView)[i];
+			animator.Controller.Update(ts);
+		}
+
+		for (size_t i = 0; i < m_ParticleView->Size(); ++i)
+		{
+			auto [transform, particle] = (*m_ParticleView)[i];
+			auto material = particle.ComputeMaterial->GetParentMaterial();
+			auto materialInstance = particle.ComputeMaterial;
+
+			materialInstance->Set("u_Time", ts);
+			materialInstance->Set("u_ParticlesInExistence", (int)std::ceil(particle.ParticleEffect->GetEmittedParticles()));
+
+			material->GetShader()->Bind();
+			materialInstance->Bind();
+
+			particle.ParticleEffect->Update(ts);
+			material->GetShader()->Compute(32, 32, 1);
 		}
 	}
 
 	void Scene::OnRenderEditor(const EditorCamera& camera)
 	{
-
-		// 3D part here
-
-		///////////////
-
-		float cameraWidth = camera.GetZoomLevel() * camera.GetAspectRatio() * 2;
-		float cameraHeight = camera.GetZoomLevel() * 2;
-		glm::mat4 gridTransform = glm::translate(glm::mat4(1.0f), camera.GetPosition()) * glm::scale(glm::mat4(1.0f), { cameraWidth,cameraHeight,1.0f });
-
-		SceneRendererCamera renderCamera;
-		renderCamera.Camera = camera;
-		renderCamera.ViewMatrix = camera.GetViewMatrix();
-		
-		SceneRenderer::GetOptions().ShowGrid = true;
-		SceneRenderer::SetGridProperties({ gridTransform,{8.025f * (cameraWidth / camera.GetZoomLevel()), 8.025f * (cameraHeight / camera.GetZoomLevel())},0.025f });
-		SceneRenderer::BeginScene(this, renderCamera);
-		for (int i = 0; i < m_RenderGroup->Size(); ++i)
-		{
-			auto [transform, sprite] = (*m_RenderGroup)[i];
-			SceneRenderer::SubmitSprite(sprite, transform->GetTransform());
-		}
-		if (m_SelectedEntity < MAX_ENTITIES)
+		SceneRenderer::BeginScene(this, camera.GetViewProjection());
+		if (m_SelectedEntity != NULL_ENTITY)
 		{
 			if (m_ECS.Contains<CameraComponent>(m_SelectedEntity))
 			{
+				SceneRenderer::SubmitSprite(&m_CameraRenderer, &m_ECS.GetComponent<TransformComponent>(m_SelectedEntity));
 				showCamera(m_SelectedEntity);
 			}
 			else
-			{
 				showSelection(m_SelectedEntity);
-			}
 		}
-		SceneRenderer::EndScene();
+		for (size_t i = 0; i < m_RenderView->Size(); ++i)
+		{
+			auto [transform, renderer] = (*m_RenderView)[i];
+			if (renderer.IsVisible && renderer.SubTexture.Raw())
+				SceneRenderer::SubmitSprite(&renderer, &transform);
+		}
+		for (size_t i = 0; i < m_ParticleView->Size(); ++i)
+		{
+			auto [transform, particle] = (*m_ParticleView)[i];
+			SceneRenderer::SubmitParticles(&particle, &transform);
+		}
 
+		for (size_t i = 0; i < m_LightView->Size(); ++i)
+		{
+			auto [transform, light] = (*m_LightView)[i];
+			SceneRenderer::SubmitLight(&light, transform.GetTransform());
+		}
+
+
+		SceneRenderer::EndScene();
 	}
 
 	void Scene::SetViewportSize(uint32_t width, uint32_t height)
 	{
-		SceneRenderer::SetViewportSize(width, height);
 		m_ViewportWidth = width;
 		m_ViewportHeight = height;
 	}
 
-	Entity Scene::GetEntity(uint32_t index)
+	SceneEntity Scene::GetEntity(uint32_t index)
 	{
-		return { m_Entities[index],this };
+		return { m_Entities[index], this };
+	}
+
+	SceneEntity Scene::GetSelectedEntity()
+	{
+		return { m_SelectedEntity, this };
 	}
 
 	void Scene::showSelection(uint32_t entity)
 	{
 		auto transformComponent = m_ECS.GetComponent<TransformComponent>(entity);
-		auto& translation = transformComponent->Translation;
-		auto& scale = transformComponent->Scale;
+		auto& translation = transformComponent.Translation;
+		auto& scale = transformComponent.Scale;
 
-		glm::vec3 topLeft = { translation.x - scale.x / 2,translation.y + scale.y / 2,1 };
-		glm::vec3 topRight = { translation.x + scale.x / 2,translation.y + scale.y / 2,1 };
-		glm::vec3 bottomLeft = { translation.x - scale.x / 2,translation.y - scale.y / 2,1 };
-		glm::vec3 bottomRight = { translation.x + scale.x / 2,translation.y - scale.y / 2,1 };
-
+		glm::vec3 topLeft = { translation.x - scale.x / 2,translation.y + scale.y / 2, translation.z };
+		glm::vec3 topRight = { translation.x + scale.x / 2,translation.y + scale.y / 2, translation.z };
+		glm::vec3 bottomLeft = { translation.x - scale.x / 2,translation.y - scale.y / 2, translation.z };
+		glm::vec3 bottomRight = { translation.x + scale.x / 2,translation.y - scale.y / 2, translation.z };
+	
 		Renderer2D::SubmitLine(topLeft, topRight);
 		Renderer2D::SubmitLine(topRight, bottomRight);
 		Renderer2D::SubmitLine(bottomRight, bottomLeft);
@@ -227,12 +313,10 @@ namespace XYZ {
 
 	void Scene::showCamera(uint32_t entity)
 	{
-		auto& camera = m_ECS.GetComponent<CameraComponent>(entity)->Camera;
+		auto& camera = m_ECS.GetComponent<CameraComponent>(entity).Camera;
 		auto transformComponent = m_ECS.GetComponent<TransformComponent>(entity);
 
-		SceneRenderer::SubmitSprite(m_CameraSprite, transformComponent->GetTransform());
-
-		auto& translation = transformComponent->Translation;
+		auto& translation = transformComponent.Translation;
 		if (camera.GetProjectionType() == CameraProjectionType::Orthographic)
 		{
 			float size = camera.GetOrthographicProperties().OrthographicSize;

@@ -94,7 +94,7 @@ namespace XYZ {
 
 	void MeshRenderer2D::SetMaterial(const Ref<Material>& material)
 	{
-		if (s_Data.Material && material.Raw() != s_Data.Material.Raw())
+		if (s_Data.Material.Raw() && material.Raw() != s_Data.Material.Raw())
 			Flush();
 
 		s_Data.Material = material;
@@ -102,26 +102,26 @@ namespace XYZ {
 
 
 
-	void MeshRenderer2D::SubmitMesh(const glm::mat4& transform, const Ref<Mesh>& mesh)
-	{
-		if (s_Data.IndexCount + mesh->Indices.size() >= s_Data.MaxIndices)
-			Flush();
-
-		for (auto& vertex : mesh->Vertices)
-		{
-			s_Data.BufferPtr->Position = transform * vertex.Position;
-			s_Data.BufferPtr->Color = vertex.Color;
-			s_Data.BufferPtr->TexCoord = vertex.TexCoord;
-			s_Data.BufferPtr->TextureID = (float)mesh->TextureID;
-			s_Data.BufferPtr++;
-		}
-		for (auto index : mesh->Indices)
-		{
-			*s_Data.IndexBufferPtr = index;
-			s_Data.IndexBufferPtr++;
-		}
-		s_Data.IndexCount += mesh->Indices.size();
-	}
+	//void MeshRenderer2D::SubmitMesh(const glm::mat4& transform, const Ref<Mesh>& mesh)
+	//{
+	//	if (s_Data.IndexCount + mesh->Indices.size() >= s_Data.MaxIndices)
+	//		Flush();
+	//
+	//	for (auto& vertex : mesh->Vertices)
+	//	{
+	//		s_Data.BufferPtr->Position = transform * vertex.Position;
+	//		s_Data.BufferPtr->Color = vertex.Color;
+	//		s_Data.BufferPtr->TexCoord = vertex.TexCoord;
+	//		s_Data.BufferPtr->TextureID = (float)mesh->TextureID;
+	//		s_Data.BufferPtr++;
+	//	}
+	//	for (auto index : mesh->Indices)
+	//	{
+	//		*s_Data.IndexBufferPtr = index;
+	//		s_Data.IndexBufferPtr++;
+	//	}
+	//	s_Data.IndexCount += mesh->Indices.size();
+	//}
 
 
 	void MeshRenderer2D::Flush()

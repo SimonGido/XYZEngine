@@ -32,12 +32,9 @@ namespace XYZ {
 
 	struct TextureSpecs
 	{
-		uint32_t Width;
-		uint32_t Height;
-		uint32_t Channels;
-		TextureWrap Wrap;
-		TextureParam MinParam = TextureParam::None;
-		TextureParam MagParam = TextureParam::None;
+		TextureWrap Wrap = TextureWrap::Clamp;
+		TextureParam MinParam = TextureParam::Linear;
+		TextureParam MagParam = TextureParam::Nearest;
 	};
 
 	/**
@@ -49,16 +46,15 @@ namespace XYZ {
 	{
 	public:
 		virtual ~Texture() = default;
-
+	
+		virtual void Bind(uint32_t slot = 0) const = 0;
+ 		//virtual void SetData(void* data, uint32_t size) = 0;
+		//virtual uint8_t* GetData() = 0;
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
 		virtual uint32_t GetChannels() const = 0;
+		//virtual const TextureSpecs& GetSpecification() const = 0;
 		virtual uint32_t GetRendererID() const = 0;
- 		virtual void SetData(void* data, uint32_t size) = 0;
-		virtual uint8_t* GetData() = 0;
-		virtual const TextureSpecs& GetSpecification() const = 0;
-		virtual void Bind(uint32_t slot = 0) const = 0;
-
 		static uint32_t CalculateMipMapCount(uint32_t width, uint32_t height);
 	};
 
@@ -69,24 +65,14 @@ namespace XYZ {
 	class Texture2D : public Texture
 	{
 	public:
-		/**
-		* @param[in] format Format of the texture
-		* @param[in] wrap   Component of wrapping of the texture
-		* @param[in] width  Width of the texture
-		* @param[in] height Height of the texture
-		* @return shared_ptr to empty Texture2D
-		*/
-		static Ref<Texture2D> Create(const TextureSpecs& specs);
-		
-		
-		/**
-		* @param[in] wrap   Component of wrapping of the texture
-		* @param[in] path	File path to the image
-		* @return shared_ptr to Texture2D
-		*/
-		static Ref<Texture2D> Create(TextureWrap wrap, TextureParam min, TextureParam max, const std::string& path);
+		virtual void SetData(void* data, uint32_t size) = 0;
+		virtual uint8_t* GetData() = 0;
+
+		virtual const TextureSpecs& GetSpecification() const = 0;
+
+		static Ref<Texture2D> Create(uint32_t width, uint32_t height, uint32_t channels, const TextureSpecs& specs);
+		static Ref<Texture2D> Create(const TextureSpecs& specs, const std::string& path);
 
 		static void BindStatic(uint32_t rendererID, uint32_t slot);
 	};
-
 }

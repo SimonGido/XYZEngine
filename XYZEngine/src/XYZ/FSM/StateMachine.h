@@ -1,77 +1,119 @@
 #pragma once
 
 #include <queue>
+#include <bitset>
 
 namespace XYZ {
 
 	
+	template <uint32_t NumStates>
 	class State
 	{
 	public:
-		void SetAllowedTransitions(uint32_t allowedTransitionsToBitset);
-		void AllowTransition(uint32_t stateIndex);
-		void DisallowTransition(uint32_t stateIndex);
+		State() = default;
+		State(uint32_t id, const std::bitset<NumStates>& allowedTransitions)
+			: m_ID(id), m_AllowedTransitionsTo(allowedTransitions)
+		{}
 
-		bool CanTransitTo(uint32_t stateIndex);
-
-		uint32_t GetAllowedTransitions() const { return m_AllowedTransitionsTo; }
+		void SetAllowedTransitions(const std::bitset<NumStates>& allowedTransitionsToBitset)
+		{
+			m_AllowedTransitionsTo = allowedTransitionsToBitset;
+		}
+		void AllowTransition(uint32_t stateIndex)
+		{
+			m_AllowedTransitionsTo |= BIT(stateIndex);
+		}
+		void DisallowTransition(uint32_t stateIndex)
+		{
+			m_AllowedTransitionsTo &= ~BIT(stateIndex);
+		}
+		bool CanTransitTo(uint32_t stateIndex) const
+		{
+			return m_AllowedTransitionsTo & BIT(stateIndex);
+		}
 
 		uint32_t GetID() const { return m_ID; }
-
+		std::bitset<NumStates> GetAllowedTransitions() const { return m_AllowedTransitionsTo; }
 	private:
-		uint32_t m_ID = 0;
-		uint32_t m_AllowedTransitionsTo = 0;
-
-		friend class StateMachine;
+		uint32_t m_ID;
+		std::bitset<NumStates> m_AllowedTransitionsTo;
 	};
 
 	// TODO: use maybe std::bitset instead of uint32_t , it will result in more states
+	template <uint32_t NumStates>
 	class StateMachine
 	{
 	public:
-		struct StatePair
+		State<NumStates>& CreateState()
+		{	
+			bool freeBit = false;
+			uint8_t firstFreeBit = 0;
+			for (uint32_t i = 0; i < NumStates; ++i)
+			{
+				if (!(m_StatesInitialized & BIT(i)))
+				{
+					firstFreeBit = i;
+					freeBit = true;
+					break;
+				}
+			}
+			XYZ_ASSERT(freeBit, "Maximum number of states is ", NumStates);
+
+			State<NumStates> state(firstFreeBit, 0);
+			m_StatesInitialized |= BIT(state.GetID());
+			m_States[state.GetID()] = state;
+			return m_States[state.GetID()];
+		}
+		void DestroyState(uint32_t id)
 		{
-			State State;
-			std::string Name;
-		};
-	public:
-		State CreateState(const std::string& name);
+			m_StatesInitialized &= ~BIT(id);
+		}
 
-		bool TransitionTo(const State& state);
+		bool TransitionTo(uint32_t id)
+		{
+			auto& current = m_States[m_CurrentState];
+			// Check if id of state is in allowed transitions of the current state or check if the current state has allowed any transitions;	
+			XYZ_ASSERT(m_StatesInitialized & BIT(id), "State was not registered in this state machine");
+			if (current.GetAllowedTransitions().test(id))
+			{
+				m_CurrentState = id;
+				return true;
+			}
+			return false;
+		}
 
-		void SetDefaultState(const State& state);
+		void SetDefaultState(uint32_t id)
+		{
+			XYZ_ASSERT(m_StatesInitialized & BIT(id), "State with id ", id, "is not initialized");
+			m_CurrentState = id;
+		}
 
-		void RenameState(uint32_t id, const std::string& name);
+		inline const State<NumStates>& GetCurrentState() const 
+		{ 
+			return m_States[m_CurrentState]; 
+		}
 
-		inline const State& GetCurrentState() const { return m_CurrentState; }
-
-		inline State& GetState(uint32_t id) 
+		inline State<NumStates>& GetState(uint32_t id) 
 		{ 
 			XYZ_ASSERT(m_StatesInitialized & BIT(id), "State with id ", id, "is not initialized");
-			return m_StatesMap[id].State; 
+			return m_States[id]; 
 		}
 
-		inline const std::string& GetStateName(uint32_t id) 
+		inline uint32_t GetNumStates() const 
 		{
-			XYZ_ASSERT(m_StatesInitialized & BIT(id), "State with id ", id, "is not initialized");
-			return m_StatesMap[id].Name; 
+			return m_NextFreeBit; 
 		}
-		inline uint32_t GetNumStates() const { return m_NextFreeBit; }
 
-		bool IsStateInitialized(uint32_t id) const { return m_StatesInitialized & BIT(id); }
-
-		static uint32_t GetAny() { return sc_Any; }
-		static constexpr uint32_t GetMaxBit() { return sc_MaxBit; }
+		bool IsStateInitialized(uint32_t id) const 
+		{ 
+			return m_StatesInitialized & BIT(id); 
+		}
 	private:
-		static constexpr uint32_t sc_MaxBit = 31;
-		static constexpr uint32_t sc_Any = (1 << 31);
+		uint32_t m_CurrentState;
 
-		State m_CurrentState;
-
-		uint32_t m_NextFreeBit = 0;
 		uint32_t m_StatesInitialized = 0;
 
-		StatePair m_StatesMap[sc_MaxBit];
+		State<NumStates> m_States[NumStates];
 	};
 
 
