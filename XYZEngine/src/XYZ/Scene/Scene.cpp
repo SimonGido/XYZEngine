@@ -213,7 +213,7 @@ namespace XYZ {
 				{
 					transform.Translation.y = -100.0f;
 					boxCollider.Body = m_PhysicsWorld.CreateBody(glm::vec2(transform.Translation.x, transform.Translation.y), 0.0f);
-					boxCollider.Body->m_Type = PhysicsBody::Type::Static;
+					boxCollider.Body->SetType(PhysicsBody::Type::Static);
 				}
 				else
 				{

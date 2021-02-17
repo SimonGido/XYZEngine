@@ -22,8 +22,10 @@ namespace XYZ {
 		CircleShape* AddCircleShape(PhysicsBody* body, const glm::vec2& offset, float radius, float density);
 
 	private:
-		void broadPhase(Timestep ts);
-		void narrowPhase(Timestep ts);
+		void applyForces();
+		void applyVelocities();
+		void broadPhase();
+		void narrowPhase();
 
 	private:
 		DynamicTree m_Tree;
@@ -34,5 +36,7 @@ namespace XYZ {
 		glm::vec2 m_Gravity;
 
 		std::vector<Manifold> m_Manifolds;
+
+		float m_DeltaTime = 0.0f;
 	};
 }

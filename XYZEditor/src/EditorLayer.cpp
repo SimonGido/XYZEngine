@@ -171,26 +171,26 @@ namespace XYZ {
 			float speed = 0.03;
 			auto body = m_TestEntity.GetComponent<BoxColliderComponent>().Body;
 			if (Input::IsKeyPressed(KeyCode::KEY_LEFT))
-				body->m_Velocity.x += -speed;
+				body->AddVelocity({ -speed,0.0f });
 			if (Input::IsKeyPressed(KeyCode::KEY_RIGHT))
-				body->m_Velocity.x += speed;
+				body->AddVelocity({ speed,0.0f });
 			if (Input::IsKeyPressed(KeyCode::KEY_UP))
-				body->m_Velocity.y += speed;
+				body->AddVelocity({ 0.0f, speed });
 			if (Input::IsKeyPressed(KeyCode::KEY_DOWN))
-				body->m_Velocity.y += -speed;
+				body->AddVelocity({ 0.0f, -speed });
 		}
 		if (m_NewEntity.HasComponent<BoxColliderComponent>())
 		{
 			float speed = 0.06f;
 			auto body = m_NewEntity.GetComponent<BoxColliderComponent>().Body;
 			if (Input::IsKeyPressed(KeyCode::KEY_A))
-				body->m_Velocity.x += -speed;
+				body->AddVelocity({ -speed,0.0f });
 			if (Input::IsKeyPressed(KeyCode::KEY_D))
-				body->m_Velocity.x += speed;
+				body->AddVelocity({ speed,0.0f });
 			if (Input::IsKeyPressed(KeyCode::KEY_W))
-				body->m_Velocity.y += speed;
+				body->AddVelocity({ 0.0f, speed });
 			if (Input::IsKeyPressed(KeyCode::KEY_S))
-				body->m_Velocity.y += -speed;
+				body->AddVelocity({ 0.0f, -speed });
 		}
 	}
 

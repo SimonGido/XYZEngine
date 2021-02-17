@@ -20,7 +20,7 @@ namespace XYZ {
 		glm::vec2 Normal;
 		float PenetrationDepth;
 
-		glm::vec2 Contacts[2];
+		glm::vec2 Contacts[2] = { glm::vec2(0.0f), glm::vec2(0.0f) };
 		uint32_t  ContactCount;
 
 		float Restitution = 0.0f;

@@ -4,6 +4,7 @@
 #include "XYZ/Scene/Components.h"
 #include "XYZ/Renderer/Renderer2D.h"
 
+#include "XYZ/Utils/Math/Math.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
@@ -42,13 +43,15 @@ namespace XYZ {
 
 	void PhysicsWorld::Update(Timestep ts)
 	{
-		for (auto& body : m_Bodies)
-		{
-			body->m_OldPosition = body->m_Position;
-		}
-		broadPhase(ts);
-		narrowPhase(ts);
+		m_DeltaTime = ts;
+		broadPhase();
+		applyForces();
+		narrowPhase();
+		applyVelocities();
 
+		// Restart intersecting nodes and moved nodes
+		m_Manifolds.clear();
+		m_Tree.CleanMovedNodes();
 		m_Tree.SubmitToRenderer();
 	}
 
@@ -65,6 +68,8 @@ namespace XYZ {
 		body->m_Shape = box;
 		body->SetDensity(density);
 		body->m_InverseInertia = 1.0f / box->CalculateInertia(body->m_Mass);
+		if (body->m_Type == PhysicsBody::Type::Static)
+			body->m_InverseInertia = 0.0f;
 		body->m_Shape->m_ID = m_Tree.Insert(body->m_ID, box->GetAABB());
 		return box;
 	}
@@ -75,10 +80,12 @@ namespace XYZ {
 		body->m_Shape = circle;
 		body->SetDensity(density);
 		body->m_InverseInertia = 1.0f / circle->CalculateInertia(body->m_Mass);
+		if (body->m_Type == PhysicsBody::Type::Static)
+			body->m_InverseInertia = 0.0f;
 		body->m_Shape->m_ID = m_Tree.Insert(body->m_ID, circle->GetAABB() + offset);
 		return circle;
 	}
-	void PhysicsWorld::broadPhase(Timestep ts)
+	void PhysicsWorld::broadPhase()
 	{
 		for (size_t i = 0; i < m_Bodies.size(); ++i)
 		{
@@ -86,8 +93,7 @@ namespace XYZ {
 			for (size_t j = i + 1; j < m_Bodies.size(); ++j)
 			{
 				PhysicsBody* B = m_Bodies[j];
-				auto data = A->GetShape()->Intersect(*B->GetShape(), ts);
-				if (data.Intersection)
+				if (A->GetShape()->Intersect(*B->GetShape()))
 				{
 					Manifold manifold;
 					manifold.A = A;
@@ -97,32 +103,44 @@ namespace XYZ {
 			}
 		}
 	}
-	void PhysicsWorld::narrowPhase(Timestep ts)
+
+	void PhysicsWorld::applyForces()
 	{
-		for (auto& manifold : m_Manifolds)
-		{
-			manifold.Initialize(m_Gravity, ts);
-			manifold.ApplyImpulse();
-			manifold.PositionalCorrection();
-		}
-
-		// Restart intersecting nodes and moved nodes
-		m_Manifolds.clear();
-		m_Tree.CleanMovedNodes();
-
-		// Apply velocity and forces
 		for (auto& body : m_Bodies)
 		{
 			if (body->m_Type != PhysicsBody::Type::Static)
 			{
-				body->m_Velocity += (m_Gravity + (body->m_Forces / body->m_Mass)) * (float)ts;
-				body->m_Position += body->m_Velocity * (float)ts;
-				if (body->m_Position != body->m_OldPosition)
-				{
-					m_Tree.Move(body->m_Shape->m_ID, body->m_Position - body->m_OldPosition);
-				}
+				body->m_OldPosition = body->m_Position;
+				body->m_Velocity += (m_Gravity + (body->m_Forces / body->m_Mass)) * m_DeltaTime;
 			}
 			body->m_Forces = glm::vec2(0.0f);
+			body->m_Torque = 0.0f;
 		}
+	}
+
+	void PhysicsWorld::applyVelocities()
+	{
+		for (auto& body : m_Bodies)
+		{
+			if (body->m_Type != PhysicsBody::Type::Static)
+			{
+				body->m_Position += body->m_Velocity * m_DeltaTime;
+				body->m_Angle += body->m_AngularVelocity * m_DeltaTime;
+				if (body->m_Position != body->m_OldPosition)
+					m_Tree.Move(body->m_Shape->m_ID, body->m_Position - body->m_OldPosition);
+			}
+		}
+	}
+
+	void PhysicsWorld::narrowPhase()
+	{
+		for (auto& manifold : m_Manifolds)
+			manifold.Initialize(m_Gravity, m_DeltaTime);
+		for (auto& manifold : m_Manifolds)
+			manifold.ApplyImpulse();
+		for (auto& manifold : m_Manifolds)
+			manifold.PositionalCorrection();
+		
+		
 	}
 }

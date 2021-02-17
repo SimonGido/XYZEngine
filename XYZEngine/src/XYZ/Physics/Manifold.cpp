@@ -4,7 +4,10 @@
 #include "Collision.h"
 #include "XYZ/Utils/Math/Math.h"
 
+#include "XYZ/Renderer/Renderer2D.h"
+
 namespace XYZ {
+
 
     void Manifold::Solve()
     {
@@ -19,13 +22,14 @@ namespace XYZ {
 
         for (uint32_t i = 0; i < ContactCount; ++i)
         {
+            Renderer2D::SubmitCircle(glm::vec3(Contacts[i], 0.0f), 1.0f, 10, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f));
             // Calculate radii from COM to contact
             glm::vec2 ra = Contacts[i] - A->m_Position;
             glm::vec2 rb = Contacts[i] - B->m_Position;
 
             
             glm::vec2 rv = B->m_Velocity + Math::Cross(B->m_AngularVelocity, rb) -
-                A->m_Velocity - Math::Cross(A->m_AngularVelocity, ra);
+                           A->m_Velocity - Math::Cross(A->m_AngularVelocity, ra);
 
 
             // Determine if we should perform a resting collision or not
@@ -48,7 +52,7 @@ namespace XYZ {
             glm::vec2 rv = B->m_Velocity + Math::Cross(B->m_AngularVelocity, rb) -
                 A->m_Velocity - Math::Cross(A->m_AngularVelocity, ra);
 
-            float contactVel = glm::dot(rv, Normal);
+            float contactVel = Math::Dot(rv, Normal);
 
             // Do not resolve if velocities are separating
             if (contactVel > 0)
@@ -56,7 +60,9 @@ namespace XYZ {
 
             float raCrossN = Math::Cross(ra, Normal);
             float rbCrossN = Math::Cross(rb, Normal);
-            float invMassSum = A->m_InverseMass + B->m_InverseMass + sqrt(raCrossN) * A->m_InverseInertia + sqrt(rbCrossN) * B->m_InverseInertia;
+            float sqrRacrossN = raCrossN * raCrossN;
+            float sqrRbcrossN = rbCrossN * rbCrossN;
+            float invMassSum = A->m_InverseMass + B->m_InverseMass + sqrRacrossN * A->m_InverseInertia + sqrRbcrossN * B->m_InverseInertia;
 
             // Calculate impulse scalar
             float j = -(1.0f + Restitution) * contactVel;
@@ -72,11 +78,11 @@ namespace XYZ {
             rv = B->m_Velocity + Math::Cross(B->m_AngularVelocity, rb) -
                 A->m_Velocity - Math::Cross(A->m_AngularVelocity, ra);
 
-            glm::vec2 t = rv - (Normal * glm::dot(rv, Normal));
-            t = glm::normalize(t);
+            glm::vec2 t = rv - (Normal * Math::Dot(rv, Normal));
+            Math::Normalize(t);
 
             // j tangent magnitude
-            float jt = -glm::dot(rv, t);
+            float jt = -Math::Dot(rv, t);
             jt /= invMassSum;
             jt /= (float)ContactCount;
 
@@ -103,5 +109,7 @@ namespace XYZ {
         glm::vec2 correction = (std::max(PenetrationDepth - slop, 0.0f) / (A->m_InverseMass + B->m_InverseMass)) * Normal * percent;
         A->m_Position -= correction * A->m_InverseMass;
         B->m_Position += correction * B->m_InverseMass;
+
+        ContactCount = 0;
     }
 }

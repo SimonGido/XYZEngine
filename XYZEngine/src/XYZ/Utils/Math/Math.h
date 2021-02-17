@@ -26,5 +26,22 @@ namespace XYZ {
 			return a.x * b.y - a.y * b.x;
 		}
 
+
+		inline float Dot(const glm::vec2& a, const glm::vec2& b)
+		{
+			return a.x * b.x + a.y * b.y;
+		}
+
+		inline void Normalize(glm::vec2& a)
+		{
+			float len = std::sqrt(a.x * a.x + a.y * a.y);;
+
+			if (len > FLT_EPSILON)
+			{
+				float invLen = 1.0f / len;
+				a.x *= invLen;
+				a.y *= invLen;
+			}
+		}
 	}
 }

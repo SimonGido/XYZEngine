@@ -295,12 +295,10 @@ namespace XYZ {
 		s_Data.QuadMaterial = material;
 	}
 
-	void Renderer2D::SubmitCircle(const glm::vec3& pos, float radius, const glm::vec4& color)
+	void Renderer2D::SubmitCircle(const glm::vec3& pos, float radius, uint32_t sides, const glm::vec4& color)
 	{
-		if (s_Data.LineIndexCount >= s_Data.MaxLineIndices)
+		if (s_Data.LineIndexCount + (sides * 2) >= s_Data.MaxLineIndices)
 			FlushLines();
-
-		static constexpr uint32_t sides = 20;
 		float step = 360 / sides;
 		for (int a = step; a < 360 + step; a += step)
 		{

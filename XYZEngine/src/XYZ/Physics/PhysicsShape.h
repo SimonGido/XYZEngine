@@ -5,14 +5,6 @@
 
 namespace XYZ {
 
-
-	struct IntersectData
-	{
-		glm::vec2 Displacement = glm::vec2(0.0f);
-		glm::vec2 Normal = glm::vec2(0.0f);
-		bool Intersection = false;
-	};
-
 	enum class ShapeType
 	{
 		Box,
@@ -26,7 +18,7 @@ namespace XYZ {
 	{
 		PhysicsShape(ShapeType type, PhysicsBody* body);
 
-		virtual IntersectData Intersect(const PhysicsShape& shape, float time) const = 0;
+		virtual bool Intersect(const PhysicsShape& shape) const = 0;
 		virtual AABB GetAABB() const = 0;
 		virtual float CalculateMass(float density) const = 0;
 		virtual float CalculateInertia(float mass) const = 0;
@@ -54,7 +46,7 @@ namespace XYZ {
 		glm::vec2 Min;
 		glm::vec2 Max;           
 
-		virtual IntersectData Intersect(const PhysicsShape& shape, float time) const override;
+		virtual bool Intersect(const PhysicsShape& shape) const override;
 		virtual AABB GetAABB() const override;
 		virtual float CalculateMass(float density) const override;
 		virtual float CalculateInertia(float mass) const override;
@@ -67,7 +59,7 @@ namespace XYZ {
 		CircleShape(PhysicsBody* body);
 		CircleShape(PhysicsBody* body, const glm::vec2& offset, float radius);
 
-		virtual IntersectData Intersect(const PhysicsShape& shape, float time) const override;
+		virtual bool Intersect(const PhysicsShape& shape) const override;
 		virtual AABB GetAABB() const override;
 		virtual float CalculateMass(float density) const override;
 		virtual float CalculateInertia(float mass) const override;
