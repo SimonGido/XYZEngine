@@ -214,10 +214,23 @@ namespace XYZ {
 					transform.Translation.y = -100.0f;
 					boxCollider.Body = m_PhysicsWorld.CreateBody(glm::vec2(transform.Translation.x, transform.Translation.y), 0.0f);
 					boxCollider.Body->SetType(PhysicsBody::Type::Static);
+
+					m_PhysicsWorld.AddBox2DShape(
+						boxCollider.Body,
+						-transform.Scale / 2.0f,
+						transform.Scale / 2.0f,
+						1.0f
+					);
 				}
 				else
 				{
 					boxCollider.Body = m_PhysicsWorld.CreateBody(glm::vec2(transform.Translation.x, transform.Translation.y), 0.0f);
+			
+					m_PhysicsWorld.AddCircleShape(
+						boxCollider.Body, 
+						transform.Scale.y / 2.0f,
+						1.0f
+					);		
 				}
 
 				std::vector<glm::vec2> vertices{
@@ -230,12 +243,7 @@ namespace XYZ {
 				//	1.0f
 				//);
 
-				m_PhysicsWorld.AddBox2DShape(
-					boxCollider.Body,
-					-transform.Scale / 2.0f,
-					transform.Scale / 2.0f,
-					1.0f
-				);
+				
 
 				//m_PhysicsWorld.AddCircleShape(
 				//	boxCollider.Body, 

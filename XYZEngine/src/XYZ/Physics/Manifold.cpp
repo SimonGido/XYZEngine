@@ -10,11 +10,16 @@ namespace XYZ {
 
     void Manifold::Solve()
     {
-        Collision::AABBvsAABB(*this);
+        ShapeType aType = A->GetShape()->GetType();
+        ShapeType bType = B->GetShape()->GetType();
+        if (aType == ShapeType::Box && bType == ShapeType::Box)
+            Collision::AABBvsAABB(*this);
+        else if (aType == ShapeType::Circle && bType == ShapeType::Circle)
+            Collision::CirclevsCircle(*this);
     }
     void Manifold::Initialize(const glm::vec2& gravity, float dt)
     {
-        Collision::AABBvsAABB(*this);
+        Solve();
         Restitution = std::min(A->m_Restitution, B->m_Restitution);
         StaticFriction = std::sqrt(A->m_StaticFriction * A->m_StaticFriction);
         DynamicFriction = std::sqrt(A->m_DynamicFriction * A->m_DynamicFriction);

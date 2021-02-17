@@ -145,11 +145,22 @@ namespace XYZ {
 		glm::vec4 centerColor = glm::vec4(1.0f, 0.0f, 1.0f, 1.0f);
 		glm::vec4 velocityColor = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
 		glm::vec4 contactColor = glm::vec4(1.0f, 0.0f, 1.0f, 1.0f);
+		glm::vec4 shapeColor = glm::vec4(0.0f, 1.0f, 1.0f, 1.0f);
 		for (auto body : m_Bodies)
 		{
 			glm::vec2 vel = glm::normalize(body->m_Velocity);
 			Renderer2D::SubmitCircle(glm::vec3(body->m_Shape->CalculateCenter(), 0.0f), 0.5f, 10, centerColor);
 			Renderer2D::SubmitLine(glm::vec3(body->m_Position, 0.0f), glm::vec3(body->m_Position + vel, 0.0f), velocityColor);
+
+			if (body->m_Shape->m_Type == ShapeType::Box)
+			{
+				SubmitBoxToRenderer(body->m_Shape->GetAABB(), shapeColor);
+			}
+			else if (body->m_Shape->m_Type == ShapeType::Circle)
+			{
+				Renderer2D::SubmitCircle(glm::vec3(body->m_Position, 0.0f),
+					static_cast<CircleShape*>(body->m_Shape)->Radius, 15, shapeColor);
+			}
 		}
 
 		for (auto& manifold : m_Manifolds)

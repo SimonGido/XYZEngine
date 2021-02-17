@@ -64,6 +64,45 @@ namespace XYZ {
 			}
 			return false;
 		}
+		bool CirclevsCircle(Manifold& m)
+		{
+			// Calculate translational vector, which is normal
+			const CircleShape* ShapeA = static_cast<const CircleShape*>(m.A->GetShape());
+			const CircleShape* ShapeB = static_cast<const CircleShape*>(m.B->GetShape());
+			
+			glm::vec2 normal = m.B->GetPosition() - m.A->GetPosition();
+
+			float distSqr = normal.x * normal.x + normal.y * normal.y;
+			float radius = ShapeA->Radius + ShapeB->Radius;
+
+			// Not in contact
+			if (distSqr >= radius * radius)
+			{
+				m.ContactCount = 0;
+				return false;
+			}
+
+			float distance = std::sqrt(distSqr);
+			m.ContactCount = 1;
+
+			if (distance == 0.0f)
+			{
+				m.PenetrationDepth = ShapeA->Radius;
+				m.Normal = glm::vec2(1, 0);
+				m.Contacts[0] = m.A->GetPosition();
+			}
+			else
+			{
+				m.PenetrationDepth = radius - distance;
+				m.Normal = normal / distance; // Faster than using Normalized since we already performed sqrt
+				m.Contacts[0] = m.Normal * ShapeA->Radius + m.A->GetPosition();
+			}
+			return true;
+		}
+		bool CirclevsAABB(Manifold& m)
+		{
+			return false;
+		}
 		bool PolygonvsPolygon(Manifold& m)
 		{
 			return false;

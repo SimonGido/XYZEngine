@@ -142,9 +142,10 @@ namespace XYZ {
 	{
 		return glm::pi<float>() * (Radius * Radius) * density;
 	}
+
 	float CircleShape::CalculateInertia(float mass) const
 	{
-		return 0.0f;
+		return (glm::pi<float>() * (Radius * Radius * Radius * Radius)) / 4.0f;
 	}
 	
 	PolygonShape::PolygonShape(PhysicsBody* body)
