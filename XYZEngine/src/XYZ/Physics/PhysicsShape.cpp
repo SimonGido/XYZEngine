@@ -153,7 +153,7 @@ namespace XYZ {
 
 	float CircleShape::CalculateInertia(float mass) const
 	{
-		return (glm::pi<float>() * (Radius * Radius * Radius * Radius)) / 4.0f;
+		return (mass * (Radius * Radius)) / 2.0f;
 	}
 
 	glm::vec2 CircleShape::CalculateCenter() const
