@@ -73,6 +73,14 @@ namespace XYZ {
 
 			return RectangleIntersectsRectangle(aabb.Min, aabb.Max, otherAABB.Min, otherAABB.Max);
 		}
+		else if (shape.GetType() == ShapeType::Circle)
+		{
+			const CircleShape& circle = (const CircleShape&)shape;
+			const AABB& otherAABB = circle.GetAABB();
+			const AABB& aabb = GetAABB();
+
+			return RectangleIntersectsRectangle(aabb.Min, aabb.Max, otherAABB.Min, otherAABB.Max);
+		}
 		return false;
 	}
 

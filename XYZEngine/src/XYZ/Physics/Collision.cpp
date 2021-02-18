@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "Collision.h"
 
+#include "XYZ/Utils/Math/Math.h"
+
 namespace XYZ {
 	namespace Collision {
 		bool AABBvsAABB(Manifold& m)
@@ -101,7 +103,109 @@ namespace XYZ {
 		}
 		bool CirclevsAABB(Manifold& m)
 		{
-			return false;
+			m.ContactCount = 0;
+
+			const CircleShape* circleShape = static_cast<const CircleShape*>(m.A->GetShape());
+			const BoxShape2D* boxShape = static_cast<const BoxShape2D*>(m.B->GetShape());
+			// Transform circle center to Polygon model space
+			glm::vec2 center = m.A->GetPosition();
+			
+			const AABB& box = boxShape->GetAABB();
+
+			// Find edge with minimum penetration
+			// Exact concept as using support points in Polygon vs Polygon
+			float separation = -FLT_MAX;
+
+			float s1 = Math::Dot(glm::vec2(0.0f, -1.0f), center - glm::vec2(box.Min.x, box.Min.y));
+			float s2 = Math::Dot(glm::vec2(1.0f, 0.0f), center - glm::vec2(box.Max.x, box.Min.y));
+			float s3 = Math::Dot(glm::vec2(0.0f, 1.0f), center - glm::vec2(box.Max.x, box.Max.y));
+			float s4 = Math::Dot(glm::vec2(-1.0f, 0.0f), center - glm::vec2(box.Min.x, box.Max.y));
+
+			if (s1 > circleShape->Radius || s2 > circleShape->Radius || s3 > circleShape->Radius || s4 > circleShape->Radius)
+				return false;
+
+			glm::vec2 faceNormal = glm::vec2(0.0f);
+			glm::vec2 v1 = glm::vec2(0.0f), v2 = glm::vec2(0.0f);
+			if (s1 > separation)
+			{
+				separation = s1;
+				faceNormal = glm::vec2(0.0f, -1.0f);
+				v1 = glm::vec2(box.Min.x, box.Min.y);
+				v2 = glm::vec2(box.Max.x, box.Min.y);
+			}
+			if (s2 > separation)
+			{
+				separation = s2;
+				faceNormal = glm::vec2(1.0f, 0.0f);
+				v1 = glm::vec2(box.Max.x, box.Min.y);
+				v2 = glm::vec2(box.Max.x, box.Max.y);
+			}
+			if (s3 > separation)
+			{
+				separation = s3;
+				faceNormal = glm::vec2(0.0f, 1.0f);
+				v1 = glm::vec2(box.Max.x, box.Max.y);
+				v2 = glm::vec2(box.Min.x, box.Max.y);
+			}
+			if (s4 > separation)
+			{
+				separation = s4;
+				faceNormal = glm::vec2(-1.0f, 0.0f);
+				v1 = glm::vec2(box.Min.x, box.Max.y);
+				v2 = glm::vec2(box.Min.x, box.Min.y);
+			}
+
+			// Check to see if center is within polygon
+			if (separation < FLT_EPSILON)
+			{
+				m.ContactCount = 1;
+				m.Normal = -faceNormal;
+				m.Contacts[0] = m.Normal * circleShape->Radius + m.A->GetPosition();
+				m.PenetrationDepth = circleShape->Radius;
+				return true;
+			}
+
+			// Determine which voronoi region of the edge center of circle lies within
+			float dot1 = Math::Dot(center - v1, v2 - v1);
+			float dot2 = Math::Dot(center - v2, v1 - v2);
+			m.PenetrationDepth = circleShape->Radius - separation;
+
+			// Closest to v1
+			if (dot1 <= 0.0f)
+			{
+				float distSqr = Math::Dot(center - v1, center - v1);
+				if (distSqr > circleShape->Radius * circleShape->Radius)
+					return false;
+
+				m.ContactCount = 1;
+				m.Normal = v1 - center;
+				Math::Normalize(m.Normal);
+				v1 = v1 + m.B->GetPosition();
+				m.Contacts[0] = v1;
+			}
+			// Closest to v2
+			else if (dot2 <= 0.0f)
+			{
+				float distSqr = Math::Dot(center - v2, center - v2);
+				if (distSqr > circleShape->Radius * circleShape->Radius)
+					return false;
+
+				m.ContactCount = 1;
+				m.Normal = v2 - center;
+				Math::Normalize(m.Normal);
+				v2 += m.B->GetPosition();
+				m.Contacts[0] = v2;
+			}
+			// Closest to face
+			else
+			{
+				if (Math::Dot(center - v1, faceNormal) > circleShape->Radius)
+					return false;
+				m.Normal = -faceNormal;
+				m.Contacts[0] = m.Normal * circleShape->Radius + m.A->GetPosition();
+				m.ContactCount = 1;
+			}
+			return true;
 		}
 		bool PolygonvsPolygon(Manifold& m)
 		{

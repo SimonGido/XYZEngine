@@ -12,10 +12,26 @@ namespace XYZ {
     {
         ShapeType aType = A->GetShape()->GetType();
         ShapeType bType = B->GetShape()->GetType();
+
         if (aType == ShapeType::Box && bType == ShapeType::Box)
+        {
             Collision::AABBvsAABB(*this);
+        }
         else if (aType == ShapeType::Circle && bType == ShapeType::Circle)
+        {
             Collision::CirclevsCircle(*this);
+        }
+        else if (aType == ShapeType::Circle && bType == ShapeType::Box)
+        {
+            Collision::CirclevsAABB(*this);
+        }
+        else if (aType == ShapeType::Box && bType == ShapeType::Circle)
+        {
+            PhysicsBody* tmp = A;
+            A = B;
+            B = tmp;
+            Collision::CirclevsAABB(*this);
+        }
     }
     void Manifold::Initialize(const glm::vec2& gravity, float dt)
     {
