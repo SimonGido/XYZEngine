@@ -61,7 +61,7 @@ namespace XYZ {
 		virtual AABB GetAABB() const override;
 		virtual float CalculateMass(float density) const override;
 		virtual float CalculateInertia(float mass) const override;
-
+		virtual glm::vec2 CalculateCenter() const override;
 		float Radius;
 	};
 

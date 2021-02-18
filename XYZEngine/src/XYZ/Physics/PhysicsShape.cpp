@@ -155,6 +155,11 @@ namespace XYZ {
 	{
 		return (glm::pi<float>() * (Radius * Radius * Radius * Radius)) / 4.0f;
 	}
+
+	glm::vec2 CircleShape::CalculateCenter() const
+	{
+		return m_Body->GetPosition();
+	}
 	
 	PolygonShape::PolygonShape(PhysicsBody* body)
 		:
