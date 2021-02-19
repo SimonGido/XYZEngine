@@ -51,6 +51,9 @@ namespace XYZ {
 	{
 		Renderer::Init();
 		m_Scene = m_AssetManager.GetAsset<Scene>("Assets/Scenes/scene.xyz")->GetHandle();
+		// TODO: Temporary
+		m_Scene->OnPlay();
+
 		ScriptEngine::Init("Assets/Scripts/XYZScriptExample.dll");
 		ScriptEngine::SetSceneContext(m_Scene);
 
@@ -166,10 +169,10 @@ namespace XYZ {
 			m_InspectorPanel.SetContext(m_SelectedEntity);
 		}
 
-		if (m_TestEntity.HasComponent<BoxColliderComponent>())
+		if (m_TestEntity.HasComponent<RigidBody2DComponent>())
 		{
 			float speed = 0.03;
-			auto body = m_TestEntity.GetComponent<BoxColliderComponent>().Body;
+			auto body = m_TestEntity.GetComponent<RigidBody2DComponent>().Body;
 			if (Input::IsKeyPressed(KeyCode::KEY_LEFT))
 				body->AddVelocity({ -speed,0.0f });
 			if (Input::IsKeyPressed(KeyCode::KEY_RIGHT))
@@ -179,10 +182,10 @@ namespace XYZ {
 			if (Input::IsKeyPressed(KeyCode::KEY_DOWN))
 				body->AddVelocity({ 0.0f, -speed });
 		}
-		if (m_NewEntity.HasComponent<BoxColliderComponent>())
+		if (m_NewEntity.HasComponent<RigidBody2DComponent>())
 		{
 			float speed = 0.06f;
-			auto body = m_NewEntity.GetComponent<BoxColliderComponent>().Body;
+			auto body = m_NewEntity.GetComponent<RigidBody2DComponent>().Body;
 			if (Input::IsKeyPressed(KeyCode::KEY_A))
 				body->AddVelocity({ -speed,0.0f });
 			if (Input::IsKeyPressed(KeyCode::KEY_D))

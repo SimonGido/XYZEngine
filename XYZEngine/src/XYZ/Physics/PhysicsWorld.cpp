@@ -33,12 +33,12 @@ namespace XYZ {
 		broadPhase();
 		applyForces();
 		narrowPhase();
+		
 		applyVelocities();
 
 		// Restart intersecting nodes and moved nodes
 		m_Manifolds.clear();
 		m_Tree.CleanMovedNodes();
-		debugDraw();
 	}
 
 	PhysicsBody* PhysicsWorld::CreateBody(const glm::vec2& position, float rotation)
@@ -136,9 +136,9 @@ namespace XYZ {
 		for (auto& manifold : m_Manifolds)
 			manifold.ApplyImpulse();
 		for (auto& manifold : m_Manifolds)
-			manifold.PositionalCorrection();
-		
-		
+			manifold.PositionalCorrection();	
+
+		debugDraw();
 	}
 	void PhysicsWorld::debugDraw()
 	{

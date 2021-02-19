@@ -1,6 +1,8 @@
-Scene: Test Scene
+Scene: Scene
 Entities:
   - Entity: "{93EF9084-8E06-4BBC-BBB9-0EFBD6BBEC9A}"
+    SceneTagComponent:
+      Name: Main Camera
     SceneTagComponent:
       Name: Main Camera
     TransformComponent:
@@ -15,7 +17,11 @@ Entities:
       OrthographicSize: 36
       OrthographicNear: -1
       OrthographicFar: 1
+    Relationship:
+      {}
   - Entity: "{26B86D3F-BCBB-4FDC-B50B-97621629D76A}"
+    SceneTagComponent:
+      Name: Background
     SceneTagComponent:
       Name: Background
     TransformComponent:
@@ -28,11 +34,21 @@ Entities:
       Color: [1, 1, 1, 1]
       SortLayer: 0
       IsVisible: true
+    Relationship:
+      {}
+    RigidBody2D:
+      Type: 0
+    BoxCollider2D:
+      Offset: [0, 0]
+      Size: [76, 2]
+      Density: 1
   - Entity: "{CE0C06EC-2EA2-44AE-9D4D-238AF5A4E8E6}"
     SceneTagComponent:
       Name: Test
+    SceneTagComponent:
+      Name: Test
     TransformComponent:
-      Position: [0, 0, 0]
+      Position: [0.098458603, -6.68374205, 0]
       Rotation: [0, -0, 0]
       Scale: [5, 5, 1]
     SpriteRenderer:
@@ -41,16 +57,34 @@ Entities:
       Color: [1, 1, 1, 1]
       SortLayer: 4
       IsVisible: true
+    Relationship:
+      {}
+    RigidBody2D:
+      Type: 1
+    BoxCollider2D:
+      Offset: [0, 0]
+      Size: [5, 5]
+      Density: 1
   - Entity: "{370A988D-20DA-4B21-B9EE-2440E4E3660D}"
     SceneTagComponent:
       Name: New Entity
+    SceneTagComponent:
+      Name: New Entity
     TransformComponent:
-      Position: [-0.39007476, 10, 0]
-      Rotation: [0, 0, 0]
-      Scale: [6, 6, 1]
+      Position: [-2.85154128, -6.68374205, 0]
+      Rotation: [0, 0, 3.31786805e-06]
+      Scale: [1, 1, 1]
     SpriteRenderer:
       MaterialAssetPath: Assets/Materials/New_Material.mat
       SubTextureAssetPath: Assets/SubTextures/New_SubTexture.subtex
       Color: [1, 1, 1, 1]
       SortLayer: 4
       IsVisible: true
+    Relationship:
+      {}
+    RigidBody2D:
+      Type: 1
+    BoxCollider2D:
+      Offset: [0, 0]
+      Size: [1, 1]
+      Density: 1

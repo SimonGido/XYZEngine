@@ -39,13 +39,11 @@ namespace XYZ {
 		m_ParticleView = &m_ECS.CreateView<TransformComponent, ParticleComponent>();
 		m_LightView = &m_ECS.CreateView<TransformComponent, PointLight2D>();
 		m_AnimatorView = &m_ECS.CreateView<AnimatorComponent>();
-		m_BoxColliderView = &m_ECS.CreateView<TransformComponent, BoxColliderComponent>();
+		m_RigidBodyView = &m_ECS.CreateView<TransformComponent, RigidBody2DComponent>();
 
 		m_ECS.ForceStorage<ScriptComponent>();
-		m_ECS.ForceStorage<BoxColliderComponent>();
 		m_ScriptStorage = m_ECS.GetStorage<ScriptComponent>();
 		m_AnimatorStorage = m_ECS.GetStorage<AnimatorComponent>();
-		m_BoxColliderStorage = m_ECS.GetStorage<BoxColliderComponent>();
 	}
 
 	Scene::~Scene()
@@ -91,6 +89,7 @@ namespace XYZ {
 
 	void Scene::OnPlay()
 	{
+		bool foundCamera = false;
 		for (auto entity : m_Entities)
 		{
 			Entity ent(entity, &m_ECS);
@@ -98,16 +97,45 @@ namespace XYZ {
 			{
 				ent.GetStorageComponent<CameraComponent>().Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 				m_CameraEntity = ent;
-				return;
+				foundCamera = true;
 			}
 		}
-
+		if (!foundCamera)
+		{
+			XYZ_LOG_ERR("No camera found in the scene");
+			return;
+		}
 		for (size_t i = 0; i < m_ScriptStorage->Size(); ++i)
 		{
 
 		}
+		for (auto entity : m_Entities)
+		{
+			if (m_ECS.Contains<RigidBody2DComponent>(entity))
+			{
+				RigidBody2DComponent& rigidBody = m_ECS.GetComponent<RigidBody2DComponent>(entity);
+				TransformComponent& transform = m_ECS.GetComponent<TransformComponent>(entity);
+				rigidBody.Body = m_PhysicsWorld.CreateBody(glm::vec2(transform.Translation.x, transform.Translation.y), 0.0f);
+				
+				if (rigidBody.Type == RigidBody2DComponent::BodyType::Static)
+					rigidBody.Body->SetType(PhysicsBody::Type::Static);
+				else if (rigidBody.Type == RigidBody2DComponent::BodyType::Dynamic)
+					rigidBody.Body->SetType(PhysicsBody::Type::Dynamic);		
+				else if (rigidBody.Type == RigidBody2DComponent::BodyType::Kinematic)
+					rigidBody.Body->SetType(PhysicsBody::Type::Kinematic);
 
-		XYZ_LOG_ERR("No camera found in the scene");
+				if (m_ECS.Contains<BoxCollider2DComponent>(entity))
+				{
+					BoxCollider2DComponent& boxCollider = m_ECS.GetComponent<BoxCollider2DComponent>(entity);
+					boxCollider.Shape = m_PhysicsWorld.AddBox2DShape(
+						rigidBody.Body,
+						-boxCollider.Size / 2.0f,
+						boxCollider.Size / 2.0f,
+						boxCollider.Density
+					);
+				}
+			}
+		}
 	}
 
 	void Scene::OnEvent(Event& e)
@@ -188,91 +216,14 @@ namespace XYZ {
 			material->GetShader()->Compute(32, 32, 1);
 		}
 
-		m_PhysicsWorld.Update(ts);
- 		for (size_t i = 0; i < m_BoxColliderView->Size(); ++i)
+		if (Input::IsKeyPressed(KeyCode::KEY_SPACE))
+			m_PhysicsWorld.Update(ts);
+ 		for (size_t i = 0; i < m_RigidBodyView->Size(); ++i)
 		{
-			auto [transform, boxCollider] = (*m_BoxColliderView)[i];
-			transform.Translation.x = boxCollider.Body->GetPosition().x;
-			transform.Translation.y = boxCollider.Body->GetPosition().y;
-			transform.Rotation.z = boxCollider.Body->GetAngle();
-		}
-
-		for (auto entityID : m_Entities)
-		{
-			SceneEntity entity(entityID, this);
-			if (!entity.HasComponent<BoxColliderComponent>() && !entity.HasComponent<CameraComponent>())
-			{
-				SceneTagComponent& sceneTag = entity.GetComponent<SceneTagComponent>();
-				if (sceneTag.Name == "Background")
-				{
-					//continue;
-				}
-				auto& boxCollider = entity.AddComponent<BoxColliderComponent>({});
-				auto& transform = entity.GetComponent<TransformComponent>();
-				if (sceneTag.Name == "Background")
-				{
-					transform.Translation.y = -100.0f;
-					boxCollider.Body = m_PhysicsWorld.CreateBody(glm::vec2(transform.Translation.x, transform.Translation.y), 0.0f);
-					boxCollider.Body->SetType(PhysicsBody::Type::Static);
-
-					m_PhysicsWorld.AddBox2DShape(
-						boxCollider.Body,
-						-transform.Scale / 2.0f,
-						transform.Scale / 2.0f,
-						1.0f
-					);
-				}
-				else
-				{
-					boxCollider.Body = m_PhysicsWorld.CreateBody(glm::vec2(transform.Translation.x, transform.Translation.y), 0.0f);
-			
-					m_PhysicsWorld.AddCircleShape(
-						boxCollider.Body, 
-						transform.Scale.y / 2.0f,
-						1.0f
-					);		
-
-				}
-
-				std::vector<glm::vec2> vertices{
-				-transform.Scale / 2.0f, glm::vec2(transform.Scale.x / 2.0f, -transform.Scale.y / 2.0f),
-				transform.Scale / 2.0f, glm::vec2(-transform.Scale.x / 2.0f, transform.Scale.y / 2.0f)
-				};
-				//m_PhysicsWorld.AddPolygonShape(
-				//	boxCollider.Body,
-				//	vertices,
-				//	1.0f
-				//);
-
-				
-
-				//m_PhysicsWorld.AddCircleShape(
-				//	boxCollider.Body, 
-				//	glm::vec2(0.0f, transform.Scale.y / 4.0f),
-				//	transform.Scale.y / 4.0f,
-				//	1.0f
-				//);
-				//m_PhysicsWorld.AddCircleShape(
-				//	boxCollider.Body,
-				//	glm::vec2(0.0f, -transform.Scale.y / 4.0f),
-				//	transform.Scale.y / 4.0f,
-				//	1.0f
-				//);
-				//m_PhysicsWorld.AddCircleShape(
-				//	boxCollider.Body,
-				//	glm::vec2(-transform.Scale.x / 4.0f, 0.0f),
-				//	transform.Scale.x / 6.0f,
-				//	1.0f
-				//);
-				//m_PhysicsWorld.AddCircleShape(
-				//	boxCollider.Body,
-				//	glm::vec2(transform.Scale.x / 4.0f, 0.0f),
-				//	transform.Scale.x / 6.0f,
-				//	1.0f
-				//);
-
-				boxCollider.Body->SetDensity(5.0f);	
-			}
+			auto [transform, rigidBody] = (*m_RigidBodyView)[i];
+			transform.Translation.x = rigidBody.Body->GetPosition().x;
+			transform.Translation.y = rigidBody.Body->GetPosition().y;
+			//transform.Rotation.z = rigidBody.Body->GetAngle();
 		}
 	}
 

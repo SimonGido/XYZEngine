@@ -79,12 +79,11 @@ namespace XYZ {
         ComponentView<TransformComponent, SpriteRenderer>* m_RenderView;
         ComponentView<TransformComponent, ParticleComponent>* m_ParticleView;
         ComponentView<TransformComponent, PointLight2D>* m_LightView;
-        ComponentView<TransformComponent, BoxColliderComponent>* m_BoxColliderView;
+        ComponentView<TransformComponent, RigidBody2DComponent>* m_RigidBodyView;
 
         ComponentView<AnimatorComponent>* m_AnimatorView;
         ComponentStorage<ScriptComponent>* m_ScriptStorage;
         ComponentStorage<AnimatorComponent>* m_AnimatorStorage;
-        ComponentStorage<BoxColliderComponent>* m_BoxColliderStorage;
 
         std::string m_Name;
         SceneState m_State = SceneState::Edit;

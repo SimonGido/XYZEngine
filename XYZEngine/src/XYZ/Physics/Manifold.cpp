@@ -128,7 +128,5 @@ namespace XYZ {
         glm::vec2 correction = (std::max(PenetrationDepth - slop, 0.0f) / (A->m_InverseMass + B->m_InverseMass)) * Normal * percent;
         A->m_Position -= correction * A->m_InverseMass;
         B->m_Position += correction * B->m_InverseMass;
-
-        ContactCount = 0;
     }
 }

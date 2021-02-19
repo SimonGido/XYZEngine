@@ -635,6 +635,40 @@ namespace XYZ {
 	}
 
 	template <>
+	void Serializer::Serialize<RigidBody2DComponent>(YAML::Emitter& out, const RigidBody2DComponent& val)
+	{
+		out << YAML::Key << "RigidBody2D";
+		out << YAML::BeginMap;
+
+		out << YAML::Key << "Type" << YAML::Value << ToUnderlying(val.Type);
+		out << YAML::EndMap; // RigidBody2D
+	}
+
+	template <>
+	void Serializer::Serialize<BoxCollider2DComponent>(YAML::Emitter& out, const BoxCollider2DComponent& val)
+	{
+		out << YAML::Key << "BoxCollider2D";
+		out << YAML::BeginMap;
+
+		out << YAML::Key << "Offset" << val.Offset;
+		out << YAML::Key << "Size" << val.Size;
+		out << YAML::Key << "Density" << val.Density;
+		out << YAML::EndMap; // BoxCollider2D;
+	}
+
+	template <>
+	void Serializer::Serialize<CircleCollider2DComponent>(YAML::Emitter& out, const CircleCollider2DComponent& val)
+	{
+		out << YAML::Key << "CircleCollider2D";
+		out << YAML::BeginMap;
+
+		out << YAML::Key << "Offset" << val.Offset;
+		out << YAML::Key << "Radius" << val.Radius;
+		out << YAML::Key << "Density" << val.Density;
+		out << YAML::EndMap; // CircleCollider2D;
+	}
+
+	template <>
 	void Serializer::Serialize<Entity>(YAML::Emitter& out, const Entity& entity)
 	{
 		if (entity.HasComponent<SceneTagComponent>())
@@ -644,22 +678,80 @@ namespace XYZ {
 			out << YAML::Key << "Entity";
 			out << YAML::Value << id.ID;
 			Serialize<SceneTagComponent>(out, entity.GetComponent<SceneTagComponent>());
+			auto& ecs = *entity.m_ECS;
+			if (ecs.Contains<SceneTagComponent>(entity))
+			{
+				Serialize<SceneTagComponent>(out, ecs.GetComponent<SceneTagComponent>(entity));
+			}
+			if (ecs.Contains<TransformComponent>(entity))
+			{
+				Serialize<TransformComponent>(out, ecs.GetComponent<TransformComponent>(entity));
+			}
+			if (ecs.Contains<CameraComponent>(entity))
+			{
+				Serialize<CameraComponent>(out, ecs.GetComponent<CameraComponent>(entity));
+			}
+			if (ecs.Contains<SpriteRenderer>(entity))
+			{
+				Serialize<SpriteRenderer>(out, ecs.GetComponent<SpriteRenderer>(entity));
+			}
+			if (ecs.Contains<Button>(entity))
+			{
+				Serialize<Button>(out, ecs.GetComponent<Button>(entity));
+			}
+			if (ecs.Contains<Checkbox>(entity))
+			{
+				Serialize<Checkbox>(out, ecs.GetComponent<Checkbox>(entity));
+			}
+			if (ecs.Contains<Slider>(entity))
+			{
+				Serialize<Slider>(out, ecs.GetComponent<Slider>(entity));
+			}
+			if (ecs.Contains<InputField>(entity))
+			{
+				SerializeInputField(ecs, out, ecs.GetComponent<InputField>(entity));
+			}
+			if (ecs.Contains<LayoutGroup>(entity))
+			{
+				Serialize<LayoutGroup>(out, ecs.GetComponent<LayoutGroup>(entity));
+			}
+			if (ecs.Contains<Relationship>(entity))
+			{
+				SerializeRelationship(ecs, out, ecs.GetComponent<Relationship>(entity));
+			}
+			if (ecs.Contains<CanvasRenderer>(entity))
+			{
+				Serialize<CanvasRenderer>(out, ecs.GetComponent<CanvasRenderer>(entity));
+			}
+			if (ecs.Contains<RectTransform>(entity))
+			{
+				Serialize<RectTransform>(out, ecs.GetComponent<RectTransform>(entity));
+			}
+			if (ecs.Contains<Canvas>(entity))
+			{
+				Serialize<Canvas>(out, ecs.GetComponent<Canvas>(entity));
+			}
+			if (ecs.Contains<Text>(entity))
+			{
+				Serialize<Text>(out, ecs.GetComponent<Text>(entity));
+			}
 
-			if (entity.HasComponent<TransformComponent>())
+			if (ecs.Contains<LineRenderer>(entity))
 			{
-				Serialize<TransformComponent>(out, entity.GetComponent<TransformComponent>());
+				Serialize<LineRenderer>(out, ecs.GetComponent<LineRenderer>(entity));
 			}
-			if (entity.HasComponent<CameraComponent>())
+
+			if (ecs.Contains<RigidBody2DComponent>(entity))
 			{
-				Serialize<CameraComponent>(out, entity.GetComponent<CameraComponent>());
+				Serialize<RigidBody2DComponent>(out, ecs.GetComponent<RigidBody2DComponent>(entity));
 			}
-			if (entity.HasComponent<SpriteRenderer>())
+			if (ecs.Contains<BoxCollider2DComponent>(entity))
 			{
-				Serialize<SpriteRenderer>(out, entity.GetComponent<SpriteRenderer>());
+				Serialize<BoxCollider2DComponent>(out, ecs.GetComponent<BoxCollider2DComponent>(entity));
 			}
-			if (entity.HasComponent<PointLight2D>())
+			if (ecs.Contains<CircleCollider2DComponent>(entity))
 			{
-				Serialize<PointLight2D>(out, entity.GetComponent<PointLight2D>());
+				Serialize<CircleCollider2DComponent>(out, ecs.GetComponent<CircleCollider2DComponent>(entity));
 			}
 			out << YAML::EndMap; // Entity
 		}
@@ -670,7 +762,7 @@ namespace XYZ {
 	{
 		out << YAML::BeginMap;
 		out << YAML::Key << "ECS";
-		out << YAML::Value << "ECS";
+		//out << YAML::Value << "ECS";
 
 		out << YAML::Key << "Entities";
 		out << YAML::Value << YAML::BeginSeq;
@@ -742,6 +834,19 @@ namespace XYZ {
 				{
 					Serialize<LineRenderer>(out, ecs.GetComponent<LineRenderer>(entity));
 				}
+
+				if (ecs.Contains<RigidBody2DComponent>(entity))
+				{
+					Serialize<RigidBody2DComponent>(out, ecs.GetComponent<RigidBody2DComponent>(entity));
+				}
+				if (ecs.Contains<BoxCollider2DComponent>(entity))
+				{
+					Serialize<BoxCollider2DComponent>(out, ecs.GetComponent<BoxCollider2DComponent>(entity));
+				}
+				if (ecs.Contains<CircleCollider2DComponent>(entity))
+				{
+					Serialize<CircleCollider2DComponent>(out, ecs.GetComponent<CircleCollider2DComponent>(entity));
+				}
 				out << YAML::EndMap; // Entity
 			}
 		}
@@ -756,10 +861,9 @@ namespace XYZ {
 		XYZ_LOG_INFO("Serializing scene ", scene->GetFilepath());
 		Ref<Scene> sceneCopy = scene;
 		YAML::Emitter out;
+		
 		out << YAML::BeginMap;
-		out << YAML::Key << "Scene";
-		out << YAML::Value << scene->GetName();
-
+		out << YAML::Key << "Scene" << scene->m_Name;
 		out << YAML::Key << "Entities";
 		out << YAML::Value << YAML::BeginSeq;
 		for (auto ent : scene->m_Entities)
@@ -1168,6 +1272,46 @@ namespace XYZ {
 		return LineRenderer(color, mesh);
 	}
 
+	template <>
+	RigidBody2DComponent Serializer::Deserialize<RigidBody2DComponent>(YAML::Node& data, AssetManager& assetManager)
+	{
+		RigidBody2DComponent body;
+		uint32_t type = data["Type"].as<uint32_t>();
+		switch (type)
+		{
+		case ToUnderlying(RigidBody2DComponent::BodyType::Static):
+			body.Type = RigidBody2DComponent::BodyType::Static;
+			break;
+		case ToUnderlying(RigidBody2DComponent::BodyType::Dynamic):
+			body.Type = RigidBody2DComponent::BodyType::Dynamic;
+			break;
+		case ToUnderlying(RigidBody2DComponent::BodyType::Kinematic):
+			body.Type = RigidBody2DComponent::BodyType::Kinematic;
+			break;
+		}
+		return body;
+	}
+
+	template <>
+	BoxCollider2DComponent Serializer::Deserialize<BoxCollider2DComponent>(YAML::Node& data, AssetManager& assetManager)
+	{
+		BoxCollider2DComponent box;
+		box.Offset = data["Offset"].as<glm::vec2>();
+		box.Size = data["Size"].as<glm::vec2>();
+		box.Density = data["Density"].as<float>();
+
+		return box;
+	}
+	template <>
+	CircleCollider2DComponent Serializer::Deserialize<CircleCollider2DComponent>(YAML::Node& data, AssetManager& assetManager)
+	{
+		CircleCollider2DComponent circle;
+		circle.Offset = data["Offset"].as<glm::vec2>();
+		circle.Radius = data["Radius"].as<float>();
+		circle.Density = data["Density"].as<float>();
+
+		return circle;
+	}
 
 	template<>
 	ECSManager Serializer::Deserialize<ECSManager>(YAML::Node& data, AssetManager& assetManager)
@@ -1257,6 +1401,24 @@ namespace XYZ {
 				if (lineRenderer)
 				{
 					ecs.AddComponent<LineRenderer>(ent, Deserialize<LineRenderer>(lineRenderer, assetManager));
+				}
+
+				auto rigidBody = entity["RigidBody2D"];
+				if (rigidBody)
+				{
+					ecs.AddComponent<RigidBody2DComponent>(ent, Deserialize<RigidBody2DComponent>(rigidBody, assetManager));
+				}
+
+				auto boxCollider = entity["BoxCollider2D"];
+				if (boxCollider)
+				{
+					ecs.AddComponent<BoxCollider2DComponent>(ent, Deserialize<BoxCollider2DComponent>(boxCollider, assetManager));
+				}
+
+				auto circleCollider = entity["CircleCollider2D"];
+				if (circleCollider)
+				{
+					ecs.AddComponent<CircleCollider2DComponent>(ent, Deserialize<CircleCollider2DComponent>(circleCollider, assetManager));
 				}
 
 				if (ecs.Contains<CanvasRenderer>(ent) && ecs.Contains<RectTransform>(ent))
@@ -1366,6 +1528,24 @@ namespace XYZ {
 				{
 					val.AddComponent<Text>(ent, Deserialize<Text>(text, assetManager));
 				}
+
+				auto rigidBody = entity["RigidBody2D"];
+				if (rigidBody)
+				{
+					val.AddComponent<RigidBody2DComponent>(ent, Deserialize<RigidBody2DComponent>(rigidBody, assetManager));
+				}
+
+				auto boxCollider = entity["BoxCollider2D"];
+				if (boxCollider)
+				{
+					val.AddComponent<BoxCollider2DComponent>(ent, Deserialize<BoxCollider2DComponent>(boxCollider, assetManager));
+				}
+
+				auto circleCollider = entity["CircleCollider2D"];
+				if (circleCollider)
+				{
+					val.AddComponent<CircleCollider2DComponent>(ent, Deserialize<CircleCollider2DComponent>(circleCollider, assetManager));
+				}
 				
 				auto lineRenderer = entity["LineRenderer"];
 				if (lineRenderer)
@@ -1397,6 +1577,106 @@ namespace XYZ {
 		}
 	}
 
+	template <>
+	void Serializer::Deserialize<SceneEntity>(YAML::Node& entity, AssetManager& assetManager, SceneEntity& val)
+	{
+		ECSManager& ecs = val.m_Scene->m_ECS;
+		uint32_t ent = val;
+		auto transformComponent = entity["TransformComponent"];
+		if (transformComponent)
+		{
+			ecs.GetComponent<TransformComponent>(ent) = Serializer::Deserialize<TransformComponent>(transformComponent, assetManager);
+		}
+
+		auto cameraComponent = entity["CameraComponent"];
+		if (cameraComponent)
+		{
+			ecs.AddComponent<CameraComponent>(ent, Deserialize<CameraComponent>(cameraComponent, assetManager));
+		}
+		auto spriteRenderer = entity["SpriteRenderer"];
+		if (spriteRenderer)
+		{
+			ecs.AddComponent<SpriteRenderer>(ent, Deserialize<SpriteRenderer>(spriteRenderer, assetManager));
+		}
+
+		auto button = entity["Button"];
+		if (button)
+		{
+			ecs.AddComponent<Button>(ent, Deserialize<Button>(button, assetManager));
+		}
+		auto checkbox = entity["Checkbox"];
+		if (checkbox)
+		{
+			ecs.AddComponent<Checkbox>(ent, Deserialize<Checkbox>(checkbox, assetManager));
+		}
+		auto slider = entity["Slider"];
+		if (slider)
+		{
+			ecs.AddComponent<Slider>(ent, Deserialize<Slider>(slider, assetManager));
+		}
+		auto layoutGroup = entity["LayoutGroup"];
+		if (layoutGroup)
+		{
+			ecs.AddComponent<LayoutGroup>(ent, Deserialize<LayoutGroup>(layoutGroup, assetManager));
+		}
+		auto canvas = entity["Canvas"];
+		if (canvas)
+		{
+			ecs.AddComponent<Canvas>(ent, Deserialize<Canvas>(canvas, assetManager));
+		}
+		auto rectTransform = entity["RectTransformComponent"];
+		if (rectTransform)
+		{
+			ecs.AddComponent<RectTransform>(ent, Deserialize<RectTransform>(rectTransform, assetManager));
+		}
+		auto canvasRenderer = entity["CanvasRenderer"];
+		if (canvasRenderer)
+		{
+			ecs.AddComponent<CanvasRenderer>(ent, Deserialize<CanvasRenderer>(canvasRenderer, assetManager));
+		}
+
+		auto pointLight = entity["PointLight2D"];
+		if (pointLight)
+		{
+			ecs.AddComponent<PointLight2D>(ent, Deserialize<PointLight2D>(pointLight, assetManager));
+		}
+
+		auto text = entity["Text"];
+		if (text)
+		{
+			ecs.AddComponent<Text>(ent, Deserialize<Text>(text, assetManager));
+		}
+
+		auto lineRenderer = entity["LineRenderer"];
+		if (lineRenderer)
+		{
+			ecs.AddComponent<LineRenderer>(ent, Deserialize<LineRenderer>(lineRenderer, assetManager));
+		}
+
+		auto rigidBody = entity["RigidBody2D"];
+		if (rigidBody)
+		{
+			ecs.AddComponent<RigidBody2DComponent>(ent, Deserialize<RigidBody2DComponent>(rigidBody, assetManager));
+		}
+
+		auto boxCollider = entity["BoxCollider2D"];
+		if (boxCollider)
+		{
+			ecs.AddComponent<BoxCollider2DComponent>(ent, Deserialize<BoxCollider2DComponent>(boxCollider, assetManager));
+		}
+
+		auto circleCollider = entity["CircleCollider2D"];
+		if (circleCollider)
+		{
+			ecs.AddComponent<CircleCollider2DComponent>(ent, Deserialize<CircleCollider2DComponent>(circleCollider, assetManager));
+		}
+
+		if (ecs.Contains<CanvasRenderer>(ent) && ecs.Contains<RectTransform>(ent))
+		{
+			auto& transform = ecs.GetComponent<RectTransform>(ent);
+			transform.Execute<ComponentResizedEvent>(ComponentResizedEvent({ ent, &ecs }));
+		}
+	}
 
 	template <>
 	Ref<Scene> Serializer::DeserializeResource(const std::string& filepath, AssetManager& assetManager)
@@ -1408,10 +1688,9 @@ namespace XYZ {
 
 		XYZ_ASSERT(data["Scene"], "Incorrect file format");
 
-		std::string sceneName = data["Scene"].as<std::string>();
-		XYZ_LOG_INFO("Deserializing scene ", sceneName);
+		XYZ_LOG_INFO("Deserializing scene");
 
-		Ref<Scene> result = Ref<Scene>::Create(sceneName);
+		Ref<Scene> result = Ref<Scene>::Create("Scene");
 		auto entities = data["Entities"];
 		if (entities)
 		{
@@ -1421,29 +1700,8 @@ namespace XYZ {
 				guid = entity["Entity"].as<std::string>();
 				auto tagComponent = entity["SceneTagComponent"];
 				SceneTagComponent tag = tagComponent["Name"].as<std::string>();
-				SceneEntity ent = result->CreateEntity(tag, guid);
-			
-				auto transformComponent = entity["TransformComponent"];
-				if (transformComponent)
-				{
-					auto& transform = ent.GetComponent<TransformComponent>();
-					transform = Deserialize<TransformComponent>(transformComponent, assetManager);
-				}
-				auto cameraComponent = entity["CameraComponent"];
-				if (cameraComponent)
-				{
-					ent.AddComponent<CameraComponent>(Deserialize<CameraComponent>(cameraComponent, assetManager));
-				}
-				auto spriteRenderer = entity["SpriteRenderer"];
-				if (spriteRenderer)
-				{
-					ent.AddComponent<SpriteRenderer>(Deserialize<SpriteRenderer>(spriteRenderer, assetManager));
-				}
-				auto pointLight = entity["PointLight2D"];
-				if (pointLight)
-				{
-					ent.AddComponent<PointLight2D>(Deserialize<PointLight2D>(pointLight, assetManager));
-				}
+				SceneEntity ent = result->CreateEntity(tag, guid);		
+				Serializer::Deserialize<SceneEntity>(entity, assetManager, ent);
 			}
 		}
 		result->SetFilepath(filepath);

@@ -180,21 +180,31 @@ namespace XYZ {
 	};
 
 
-	struct RigidBodyComponent : public Type<RigidBodyComponent>
+	struct RigidBody2DComponent : public Type<RigidBody2DComponent>
 	{
-		float Mass = 1.0f;
-		float LinearDrag = 0.0f;
-		float AngularDrag = 0.05f;
+		enum class BodyType { Static, Dynamic, Kinematic };
+
+		BodyType Type;
+
+		PhysicsBody* Body;
 	};
 
 
-	struct BoxColliderComponent : public Type<BoxColliderComponent>
+	struct BoxCollider2DComponent : public Type<BoxCollider2DComponent>
 	{
-		PhysicsBody* Body;
+		PhysicsShape* Shape;
+
+		glm::vec2 Offset = glm::vec2(0.0f);
+		glm::vec2 Size = glm::vec2(1.0f);
+		float Density = 1.0f;
 	};
 
 	struct CircleCollider2DComponent : public Type<CircleCollider2DComponent>
 	{
 		PhysicsShape* Shape;
+
+		glm::vec2 Offset = glm::vec2(0.0f);
+		float Radius = 1.0f;
+		float Density = 1.0f;
 	};
 }
