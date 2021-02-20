@@ -572,12 +572,14 @@ namespace XYZ {
 			size, pos, s_Context->RenderData, InGuiRenderData::BUTTON, 
 			s_Context->FrameData.Scissors.size() - 1
 		);
-		s_DropdownSize = size;
-		s_DropdownItemCount++;
+		
 
 		if (eraseOutOfBorders(oldQuadCount, size, window, mesh)) { return false; }
+		
+		s_DropdownSize = size;
 		s_LayoutOffset.y += size.y;
-
+		s_DropdownItemCount++;
+		
 		if (!s_ActiveWidgets) return 0;
 
 		if (Collide(pos, size, s_Context->FrameData.MousePosition))
