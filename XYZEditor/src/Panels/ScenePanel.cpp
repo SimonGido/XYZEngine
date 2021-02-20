@@ -44,7 +44,8 @@ namespace XYZ {
 		InGui::ImageWindow(m_PanelID, "Scene", glm::vec2(0.0f), glm::vec2(200.0f), m_SubTexture);
 		InGui::End();
 
-		m_ViewportSize = InGui::GetWindow(m_PanelID).Size;
+		m_ButtonSubTextures[Play] = InGui::GetContext().RenderData.SubTexture[InGuiRenderData::RIGHT_ARROW];
+		m_ButtonSubTextures[Pause] = InGui::GetContext().RenderData.SubTexture[InGuiRenderData::PAUSE];
 	}
 	void ScenePanel::SetContext(Ref<Scene> context)
 	{
@@ -115,7 +116,24 @@ namespace XYZ {
 	{
 		if (InGui::ImageWindow(m_PanelID, "Scene", glm::vec2(0.0f), glm::vec2(200.0f), m_SubTexture))
 		{
-			
+			if (IS_SET(InGui::Image(glm::vec2(50.0f), m_ButtonSubTextures[m_State]), InGuiReturnType::Clicked))
+			{
+				if (m_Context.Raw())
+				{
+					if (m_State == Play)
+					{
+						m_State = Pause;
+						m_Context->SetState(SceneState::Play);
+						m_Context->OnPlay();
+					}
+					else
+					{
+						m_State = Play;
+						m_Context->SetState(SceneState::Edit);
+						m_Context->OnStop();
+					}
+				}
+			}
 		}
 		InGui::End();
 	}

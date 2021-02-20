@@ -17,6 +17,7 @@
 
 namespace XYZ {
 
+	static std::vector<TransformComponent> s_EditTransforms;
 
 	Scene::Scene(const std::string& name)
 		:
@@ -81,46 +82,31 @@ namespace XYZ {
 		m_ECS.DestroyEntity(entity);
 	}
 
-
-	void Scene::OnAttach()
-	{
-
-	}
-
 	void Scene::OnPlay()
 	{
 		bool foundCamera = false;
+		s_EditTransforms.clear();
+		s_EditTransforms.resize(m_ECS.GetNumberOfEntities());		
 		for (auto entity : m_Entities)
 		{
 			Entity ent(entity, &m_ECS);
+			s_EditTransforms[entity] = ent.GetComponent<TransformComponent>();
 			if (ent.HasComponent<CameraComponent>())
 			{
 				ent.GetStorageComponent<CameraComponent>().Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 				m_CameraEntity = ent;
 				foundCamera = true;
 			}
-		}
-		if (!foundCamera)
-		{
-			XYZ_LOG_ERR("No camera found in the scene");
-			return;
-		}
-		for (size_t i = 0; i < m_ScriptStorage->Size(); ++i)
-		{
-
-		}
-		for (auto entity : m_Entities)
-		{
 			if (m_ECS.Contains<RigidBody2DComponent>(entity))
 			{
 				RigidBody2DComponent& rigidBody = m_ECS.GetComponent<RigidBody2DComponent>(entity);
 				TransformComponent& transform = m_ECS.GetComponent<TransformComponent>(entity);
 				rigidBody.Body = m_PhysicsWorld.CreateBody(glm::vec2(transform.Translation.x, transform.Translation.y), 0.0f);
-				
+
 				if (rigidBody.Type == RigidBody2DComponent::BodyType::Static)
 					rigidBody.Body->SetType(PhysicsBody::Type::Static);
 				else if (rigidBody.Type == RigidBody2DComponent::BodyType::Dynamic)
-					rigidBody.Body->SetType(PhysicsBody::Type::Dynamic);		
+					rigidBody.Body->SetType(PhysicsBody::Type::Dynamic);
 				else if (rigidBody.Type == RigidBody2DComponent::BodyType::Kinematic)
 					rigidBody.Body->SetType(PhysicsBody::Type::Kinematic);
 
@@ -136,15 +122,37 @@ namespace XYZ {
 				}
 			}
 		}
+		if (!foundCamera)
+		{
+			XYZ_LOG_ERR("No camera found in the scene");
+			return;
+		}
+		for (size_t i = 0; i < m_ScriptStorage->Size(); ++i)
+		{
+			ScriptComponent& script = (*m_ScriptStorage)[i];
+			ScriptEngine::OnCreateEntity({ m_ScriptStorage->GetEntityAtIndex(i), this });
+		}
 	}
 
-	void Scene::OnEvent(Event& e)
+	void Scene::OnStop()
 	{
-	}
-
-	void Scene::OnDetach()
-	{
-
+		for (auto entity : m_Entities)
+		{
+			Entity ent(entity, &m_ECS);
+			ent.GetComponent<TransformComponent>() = s_EditTransforms[entity];
+			if (m_ECS.Contains<RigidBody2DComponent>(entity))
+			{
+				RigidBody2DComponent& rigidBody = m_ECS.GetComponent<RigidBody2DComponent>(entity);
+				m_PhysicsWorld.DestroyBody(rigidBody.Body);
+				rigidBody.Body = nullptr;
+				if (m_ECS.Contains<BoxCollider2DComponent>(entity))
+				{
+					BoxCollider2DComponent& boxCollider = m_ECS.GetComponent<BoxCollider2DComponent>(entity);
+					m_PhysicsWorld.DestroyShape(boxCollider.Shape);
+					boxCollider.Shape = nullptr;
+				}
+			}
+		}
 	}
 
 	void Scene::OnRender()
@@ -182,6 +190,8 @@ namespace XYZ {
 
 	void Scene::OnUpdate(Timestep ts)
 	{
+		m_PhysicsWorld.Update(ts);
+
 		for (size_t i = 0; i < m_ScriptStorage->Size(); ++i)
 		{
 			ScriptComponent& scriptComponent = (*m_ScriptStorage)[i];
@@ -216,8 +226,7 @@ namespace XYZ {
 			material->GetShader()->Compute(32, 32, 1);
 		}
 
-		if (Input::IsKeyPressed(KeyCode::KEY_SPACE))
-			m_PhysicsWorld.Update(ts);
+		
  		for (size_t i = 0; i < m_RigidBodyView->Size(); ++i)
 		{
 			auto [transform, rigidBody] = (*m_RigidBodyView)[i];

@@ -41,6 +41,23 @@ namespace XYZ {
 		m_Tree.CleanMovedNodes();
 	}
 
+	void PhysicsWorld::DestroyBody(PhysicsBody* body)
+	{
+		m_Tree.Remove(body->m_Shape->m_ID);
+		auto & it = std::find_if(m_Bodies.begin(), m_Bodies.end(), [body](const PhysicsBody* a) {
+			return a->GetID() == body->m_ID;
+		});
+		if (it != m_Bodies.end())
+			m_Bodies.erase(it);
+
+		m_Pool.Deallocate<PhysicsBody>(body);
+	}
+
+	void PhysicsWorld::DestroyShape(PhysicsShape* shape)
+	{
+		m_Pool.Deallocate<PhysicsShape>(shape);
+	}
+
 	PhysicsBody* PhysicsWorld::CreateBody(const glm::vec2& position, float rotation)
 	{
 		PhysicsBody* body = m_Pool.Allocate<PhysicsBody>(position, rotation, m_Bodies.size());

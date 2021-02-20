@@ -263,6 +263,11 @@ namespace XYZ {
 		return s_Context->Windows[id];
 	}
 
+	const InGuiContext& InGui::GetContext()
+	{
+		return *s_Context;
+	}
+
 	glm::vec2 InGui::GetPosition()
 	{
 		return s_LayoutOffset;

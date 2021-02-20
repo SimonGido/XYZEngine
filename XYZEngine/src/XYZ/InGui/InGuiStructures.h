@@ -120,6 +120,7 @@ namespace XYZ {
 			DOWN_ARROW,
 			RIGHT_ARROW,
 			LEFT_ARROW,
+			PAUSE,
 			DOCKSPACE,
 			NUM_SUBTEXTURES = 32
 		};

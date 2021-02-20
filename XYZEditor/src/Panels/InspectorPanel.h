@@ -23,7 +23,6 @@ namespace XYZ {
 		bool m_AddComponentOpen = false;
 
 		float m_ScrollOffset = 0.0f;
-		float m_ScrollOffsetTest = 0.0f;
 		float m_ScrollScale = 1.0f;
 	};
 }

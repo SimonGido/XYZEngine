@@ -44,25 +44,19 @@ namespace XYZ {
         void SetViewportSize(uint32_t width, uint32_t height);
         void SetSelectedEntity(uint32_t entity) { m_SelectedEntity = entity; }
 
-        void OnAttach();
         void OnPlay();
-        void OnDetach();
-        void OnEvent(Event& e);
+        void OnStop();
         void OnUpdate(Timestep ts);
         void OnRender();
         void OnRenderEditor(const EditorCamera& camera);
 
         SceneEntity GetEntity(uint32_t index);
         SceneEntity GetSelectedEntity();
-        const std::vector<uint32_t>& GetEntities() const { return m_Entities; }
+        inline const std::vector<uint32_t>& GetEntities() const { return m_Entities; }
 
-        SceneState GetState() const { return m_State; }
-        ECSManager& GetECS() { return m_ECS; }
-        const GUID& GetUUID() const { return m_UUID; }
-
+        inline SceneState GetState() const { return m_State; }
+        inline const GUID& GetUUID() const { return m_UUID; }
         inline const std::string& GetName() const { return m_Name; }
-
-
 
     private:
         void showSelection(uint32_t entity);
@@ -105,6 +99,7 @@ namespace XYZ {
         friend class Serializer;
         friend class ScriptEngine;
         friend class ScenePanel;
+        friend class LuaEntity;
         friend class SceneHierarchyPanel;
     };
 }

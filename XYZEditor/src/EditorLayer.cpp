@@ -51,8 +51,6 @@ namespace XYZ {
 	{
 		Renderer::Init();
 		m_Scene = m_AssetManager.GetAsset<Scene>("Assets/Scenes/scene.xyz")->GetHandle();
-		// TODO: Temporary
-		m_Scene->OnPlay();
 
 		ScriptEngine::Init("Assets/Scripts/XYZScriptExample.dll");
 		ScriptEngine::SetSceneContext(m_Scene);
@@ -161,8 +159,17 @@ namespace XYZ {
 		Renderer::Clear();
 		Renderer::SetClearColor({ 0.1f,0.1f,0.1f,0.1f });
 		m_ScenePanel.OnUpdate(ts);
-		m_Scene->OnUpdate(ts);
-		m_Scene->OnRenderEditor(m_ScenePanel.GetEditorCamera());	
+
+		if (m_Scene->GetState() == SceneState::Play)
+		{
+			m_Scene->OnUpdate(ts);
+			m_Scene->OnRender();
+		}
+		else
+		{
+			m_Scene->OnRenderEditor(m_ScenePanel.GetEditorCamera());
+		}
+
 		if ((uint32_t)m_Scene->GetSelectedEntity() != (uint32_t)m_SelectedEntity)
 		{
 			m_SelectedEntity = m_Scene->GetSelectedEntity();

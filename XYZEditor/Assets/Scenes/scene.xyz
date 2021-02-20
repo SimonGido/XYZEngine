@@ -6,7 +6,7 @@ Entities:
     SceneTagComponent:
       Name: Main Camera
     TransformComponent:
-      Position: [141.810944, -2.71218276, 0]
+      Position: [2.78157806, -91.4417801, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     CameraComponent:
@@ -48,7 +48,7 @@ Entities:
     SceneTagComponent:
       Name: Test
     TransformComponent:
-      Position: [0.098458603, -6.68374205, 0]
+      Position: [8.63050556, 0.0747070313, 0]
       Rotation: [0, -0, 0]
       Scale: [5, 5, 1]
     SpriteRenderer:
@@ -71,7 +71,7 @@ Entities:
     SceneTagComponent:
       Name: New Entity
     TransformComponent:
-      Position: [-2.85154128, -6.68374205, 0]
+      Position: [-2.85154128, 0.392044544, 0]
       Rotation: [0, 0, 3.31786805e-06]
       Scale: [1, 1, 1]
     SpriteRenderer:

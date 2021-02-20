@@ -27,6 +27,7 @@ namespace XYZ {
 		static void SetPosition(const glm::vec2& position);
 		static const InGuiWindow& GetWindow(uint32_t id);
 		static glm::vec2 GetPosition();
+		static const InGuiContext& GetContext();
 
 		static bool Begin(uint32_t id, const char* name, const glm::vec2& position, const glm::vec2& size);
 		static bool ImageWindow(uint32_t id, const char* name, const glm::vec2& position, const glm::vec2& size, Ref<SubTexture> subTexture);

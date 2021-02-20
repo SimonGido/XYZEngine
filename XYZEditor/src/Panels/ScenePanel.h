@@ -29,7 +29,7 @@ namespace XYZ {
 		uint32_t m_PanelID;
 		Ref<Scene> m_Context;
 		Ref<SubTexture> m_SubTexture;
-		glm::vec2 m_ViewportSize;
+		glm::vec2 m_ViewportSize = glm::vec2(0.0f);
 
 		EditorCamera m_EditorCamera;
 
@@ -43,6 +43,15 @@ namespace XYZ {
 			Y	   = BIT(4),
 			Z	   = BIT(5)
 		};
+
+		enum State
+		{
+			Play,
+			Pause,
+			NumStates
+		};
+		Ref<SubTexture> m_ButtonSubTextures[NumStates];
+		uint32_t m_State = Play;
 
 		uint32_t m_SelectedEntity = NULL_ENTITY;
 		uint8_t m_ModifyFlags = 0;

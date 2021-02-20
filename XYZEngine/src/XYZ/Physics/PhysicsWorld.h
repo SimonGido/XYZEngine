@@ -17,6 +17,9 @@ namespace XYZ {
 
 		void Update(Timestep ts);
 
+		void DestroyBody(PhysicsBody* body);
+		void DestroyShape(PhysicsShape* shape);
+
 		PhysicsBody* CreateBody(const glm::vec2& position, float rotation);
 		BoxShape2D* AddBox2DShape(PhysicsBody* body, const glm::vec2& min, const glm::vec2& max, float density);
 		CircleShape* AddCircleShape(PhysicsBody* body, float radius, float density);
@@ -32,10 +35,10 @@ namespace XYZ {
 		DynamicTree m_Tree;
 		MemoryPool m_Pool;
 
-		std::vector<PhysicsBody*> m_Bodies;
-
 		glm::vec2 m_Gravity;
 
+
+		std::vector<PhysicsBody*> m_Bodies;
 		std::vector<Manifold> m_Manifolds;
 
 		float m_DeltaTime = 0.0f;
