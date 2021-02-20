@@ -80,6 +80,8 @@ namespace XYZ {
 		InGuiMesh   Mesh;
 		InGuiMesh   OverlayMesh;
 		InGuiMesh   ScrollableMesh;
+		InGuiMesh   ScrollableOverlayMesh;
+
 		InGuiLayout Layout;
 		glm::vec2   Position;
 		glm::vec2   Size;
@@ -145,6 +147,13 @@ namespace XYZ {
 		static constexpr uint32_t MaxNumberOfScissors = 32;
 	};
 
+	enum class InGuiTextCenter
+	{
+		Left,
+		Right,
+		Middle,
+	};
+
 	struct InGuiFrameData
 	{
 		static constexpr uint32_t NullID = 65536;
@@ -158,6 +167,8 @@ namespace XYZ {
 		uint32_t   MovedWindowID = NullID;
 		uint32_t   ResizedWindowID = NullID;
 		InGuiMesh* CurrentMesh = nullptr;
+		InGuiMesh* CurrentOverlayMesh = nullptr;
+		InGuiTextCenter Center = InGuiTextCenter::Left;
 
 		std::vector<InGuiScissor> Scissors;
 		std::vector<Ref<Texture>> CustomTextures;

@@ -25,9 +25,12 @@ namespace XYZ {
 		
 		static void SetWindowFlags(uint32_t id, uint16_t flags);
 		static void SetPosition(const glm::vec2& position);
+		static void SetTextCenter(InGuiTextCenter center);
+		
+		static const glm::vec2& GetPositionOfNext();
 		static const InGuiWindow& GetWindow(uint32_t id);
-		static glm::vec2 GetPosition();
 		static const InGuiContext& GetContext();
+
 
 		static bool Begin(uint32_t id, const char* name, const glm::vec2& position, const glm::vec2& size);
 		static bool ImageWindow(uint32_t id, const char* name, const glm::vec2& position, const glm::vec2& size, Ref<SubTexture> subTexture);
@@ -38,6 +41,9 @@ namespace XYZ {
 
 		static uint8_t PushNode(const char* name, const glm::vec2& size, bool& open, bool highlight = false);
 		static uint8_t Dropdown(const char* name, const glm::vec2& size, bool& open);
+		static uint8_t DropdownItem(const char* name);
+		static void EndDropdown();
+
 		static void BeginChildren();
 		static void EndChildren();
 

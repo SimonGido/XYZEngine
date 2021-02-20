@@ -2,6 +2,18 @@
 #include "InspectorPanel.h"
 
 namespace XYZ {
+	static const char* BodyTypeToString(RigidBody2DComponent::BodyType type)
+	{
+		switch (type)
+		{
+		case RigidBody2DComponent::BodyType::Static:
+			return "Static";
+		case RigidBody2DComponent::BodyType::Dynamic:
+			return "Dynamic";
+		case RigidBody2DComponent::BodyType::Kinematic:
+			return "Kinematic";
+		}
+	}
 	InspectorPanel::InspectorPanel(uint32_t panelID)
 		:
 		m_PanelID(panelID)
@@ -14,10 +26,13 @@ namespace XYZ {
 		m_Context = context;
 		if (m_Context)
 		{
+			m_AddComponentOpen = false;
+			m_RigidBodyTypeOpen = false;
 			if (m_CurrentSize < m_Context.NumberOfTypes())
 			{
 				resizeGroups();
 			}
+			memset(m_ComponentGroups, 0, m_CurrentSize);
 		}
 	}
 	void InspectorPanel::OnInGuiRender()
@@ -29,8 +44,14 @@ namespace XYZ {
 				if (m_CurrentSize < m_Context.NumberOfTypes())
 					resizeGroups();
 
-
-				InGui::BeginScrollableArea(glm::vec2(InGui::GetWindow(m_PanelID).Size.x - 65.0f, 300.0f), m_ScrollOffset, 100.0f);
+				auto layout = InGui::GetWindow(m_PanelID).Layout;
+			
+				InGui::BeginScrollableArea(glm::vec2(InGui::GetWindow(m_PanelID).Size.x - 65.0f, 300.0f), m_ScrollOffset, m_ScrollScale);
+				
+				layout.LeftPadding = 20.0f;
+				layout.RightPadding = 70.0f;
+				InGui::SetLayout(m_PanelID, layout);
+				
 				uint32_t index = 0;
 				if (m_Context.HasComponent<TransformComponent>())
 				{
@@ -98,6 +119,65 @@ namespace XYZ {
 					}
 					InGui::Separator();
 				}
+				if (m_Context.HasComponent<RigidBody2DComponent>())
+				{
+					RigidBody2DComponent& rigidBody = m_Context.GetComponent<RigidBody2DComponent>();
+					if (InGui::BeginGroup("RigidBody2D", m_ComponentGroups[index++]))
+					{
+						InGui::Dropdown(BodyTypeToString(rigidBody.Type), glm::vec2(100.0f, 25.0f), m_RigidBodyTypeOpen);
+						if (m_RigidBodyTypeOpen)
+						{
+							if (rigidBody.Type != RigidBody2DComponent::BodyType::Static)
+							{
+								if (IS_SET(InGui::DropdownItem("Static"), InGuiReturnType::Clicked))
+								{
+									rigidBody.Type = RigidBody2DComponent::BodyType::Static;
+								}
+							}
+							if (rigidBody.Type != RigidBody2DComponent::BodyType::Dynamic)
+							{
+								if (IS_SET(InGui::DropdownItem("Dynamic"), InGuiReturnType::Clicked))
+								{
+									rigidBody.Type = RigidBody2DComponent::BodyType::Dynamic;
+								}
+							}
+							if (rigidBody.Type != RigidBody2DComponent::BodyType::Kinematic)
+							{
+								if (IS_SET(InGui::DropdownItem("Kinematic"), InGuiReturnType::Clicked))
+								{
+									rigidBody.Type = RigidBody2DComponent::BodyType::Kinematic;
+								}
+							}	
+						}
+						InGui::EndDropdown();
+					}
+					InGui::Separator();
+				}
+				if (m_Context.HasComponent<BoxCollider2DComponent>())
+				{
+					BoxCollider2DComponent& boxCollider = m_Context.GetComponent<BoxCollider2DComponent>();
+					if (InGui::BeginGroup("BoxCollider2D", m_ComponentGroups[index++]))
+					{
+						InGui::Text("Offset");
+						InGui::Separator();
+						InGui::Float("X", glm::vec2(50.0f, 30.0f), boxCollider.Offset.x);
+						InGui::Float("Y", glm::vec2(50.0f, 30.0f), boxCollider.Offset.y);
+						InGui::Separator();
+
+						InGui::Text("Size");
+						InGui::Separator();
+						InGui::Float("X", glm::vec2(50.0f, 30.0f), boxCollider.Size.x);
+						InGui::Float("Y", glm::vec2(50.0f, 30.0f), boxCollider.Size.y);
+						InGui::Separator();
+
+						InGui::Text("Density");
+						InGui::Separator();
+						InGui::Float("", glm::vec2(50.0f, 30.0f), boxCollider.Density);
+						InGui::Separator();
+					}
+					InGui::Separator();
+				}
+				
 				if (m_Context.HasComponent<ScriptComponent>())
 				{
 					ScriptComponent& script = m_Context.GetComponent<ScriptComponent>();
@@ -189,13 +269,37 @@ namespace XYZ {
 					}
 					InGui::Separator();
 				}
+				std::cout << m_ScrollScale << std::endl;
+				m_ScrollScale = InGui::GetPositionOfNext().y - InGui::GetWindow(m_PanelID).Position.y + m_ScrollOffset;
 				InGui::Separator();
 				InGui::EndScrollableArea();
+
+				layout.LeftPadding = 60.0f;
+				layout.RightPadding = 60.0f;
+				InGui::SetLayout(m_PanelID, layout);
 				InGui::Separator();
-				if (!m_Context.HasComponent<ScriptComponent>())
+				InGui::SetTextCenter(InGuiTextCenter::Middle);
+				InGui::Dropdown("Add Component", glm::vec2(InGui::GetWindow(m_PanelID).Size.x - 120.0f, 25.0f), m_AddComponentOpen);
+				if (m_AddComponentOpen)
 				{
-					InGui::Dropdown("Add Component", glm::vec2(InGui::GetWindow(m_PanelID).Size.x - 20.0f, 25.0f), m_AddComponentOpen);
+					if (!m_Context.HasComponent<ScriptComponent>())
+					{
+						InGui::DropdownItem("Add Script Component");
+					}
+					if (!m_Context.HasComponent<RigidBody2DComponent>())
+					{
+						InGui::DropdownItem("Add RigidBody2D");
+					}
+					if (!m_Context.HasComponent<BoxCollider2DComponent>())
+					{
+						InGui::DropdownItem("Add BoxCollider2D");
+					}
 				}
+				InGui::EndDropdown();
+				layout.LeftPadding = 10.0f;
+				layout.RightPadding = 10.0f;
+				InGui::SetLayout(m_PanelID, layout);
+				InGui::SetTextCenter(InGuiTextCenter::Left);
 			}
 		}
 		InGui::End();

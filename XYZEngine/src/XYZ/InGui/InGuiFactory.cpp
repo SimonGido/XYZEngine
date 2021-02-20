@@ -64,6 +64,8 @@ namespace XYZ {
 		window.OverlayMesh.Lines.clear();
 		window.ScrollableMesh.Quads.clear();
 		window.ScrollableMesh.Lines.clear();
+		window.ScrollableOverlayMesh.Quads.clear();
+		window.ScrollableOverlayMesh.Lines.clear();
 
 		glm::vec2 textOffset = { 7.0f, 7.0f };
 		glm::vec2 textPosition = { window.Position.x + textOffset.x, window.Position.y + InGuiWindow::PanelHeight - textOffset.y };
@@ -201,7 +203,7 @@ namespace XYZ {
 
 		return glm::vec2(size.x, height);
 	}
-	glm::vec2 InGuiFactory::GenerateTextCentered(const char* text, const InGuiWindow& window, InGuiMesh& mesh, const glm::vec2& position, const glm::vec2& size, const InGuiRenderData& renderData, uint32_t maxCount, uint32_t scissorIndex)
+	glm::vec2 InGuiFactory::GenerateTextCenteredMiddle(const char* text, const InGuiWindow& window, InGuiMesh& mesh, const glm::vec2& position, const glm::vec2& size, const InGuiRenderData& renderData, uint32_t maxCount, uint32_t scissorIndex)
 	{
 		size_t oldMeshSize = mesh.Quads.size();
 		glm::vec2 genSize = GenerateTextMesh(
@@ -214,6 +216,45 @@ namespace XYZ {
 			mesh.Quads[i].Position.x += std::floor((size.x / 2.0f) - (genSize.x / 2.0f));
 			mesh.Quads[i].Position.y += std::floor((size.y / 2.0f) + (genSize.y / 2.0f));
 		}
+		return genSize;
+	}
+	glm::vec2 InGuiFactory::GenerateQuadWithTextCentered(const char* text, InGuiTextCenter center, const InGuiWindow& window, InGuiMesh& mesh, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, const InGuiRenderData& renderData, uint32_t subTextureIndex, uint32_t scissorIndex)
+	{
+		GenerateQuad(mesh, color, size, position, renderData.SubTexture[subTextureIndex], InGuiRenderData::TextureID, scissorIndex);
+
+		glm::vec2 textOffset = { 7.0f, 0.0f };
+		glm::vec2 textPosition = position;
+		glm::vec2 textSize = { size.x - textOffset.x, window.Size.y };
+		textPosition.x = std::floor(textPosition.x);
+		textPosition.y = std::floor(textPosition.y);
+
+		size_t oldMeshSize = mesh.Quads.size();
+		glm::vec2 genSize = GenerateTextMesh(
+			text, renderData.Font, renderData.Color[InGuiRenderData::DEFAULT_COLOR],
+			position, textSize, mesh, InGuiRenderData::FontTextureID, 1000, scissorIndex
+		);
+
+		if (center == InGuiTextCenter::Middle)
+		{
+			for (size_t i = oldMeshSize; i < mesh.Quads.size(); ++i)
+			{
+				mesh.Quads[i].Position.x += std::floor((size.x / 2.0f) - (genSize.x / 2.0f));
+				mesh.Quads[i].Position.y += std::floor((size.y / 2.0f) + (genSize.y / 2.0f));
+			}
+		}
+		else if (center == InGuiTextCenter::Left)
+		{
+			glm::vec2 textOffset = { 7.0f, 0.0f };
+			for (size_t i = oldMeshSize; i < mesh.Quads.size(); ++i)
+			{
+				mesh.Quads[i].Position.x += std::floor(textOffset.x);
+				mesh.Quads[i].Position.y += std::floor((size.y / 2.0f) + (genSize.y / 2.0f));
+			}
+			float height = size.y;
+			if (height > genSize.y)
+				genSize.y = height;
+		}
+		genSize.x = size.x;
 		return genSize;
 	}
 	glm::vec2 InGuiFactory::GenerateText(const char* text, InGuiMesh& mesh, const glm::vec4& color, const glm::vec2& position, const glm::vec2& size, const InGuiRenderData& renderData, uint32_t scissorIndex)
