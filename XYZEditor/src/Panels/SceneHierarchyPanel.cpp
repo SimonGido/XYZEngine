@@ -47,13 +47,14 @@ namespace XYZ {
                     counter++;
                 }
          
-                InGui::SetPosition(m_DropdownPosition);
+                InGui::SetPositionOfNext(m_DropdownPosition);
                 if (m_DropdownOpen)
                 {
                     if (IS_SET(InGui::Dropdown("New Entity", { 150.0f, 30.0f }, m_DropdownOpen), InGuiReturnType::Clicked))
                     {
 
                     }
+                    InGui::EndDropdown();
                 }        
             }
         }
@@ -83,10 +84,11 @@ namespace XYZ {
             if (IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
             {
                 m_DropdownPosition = { Input::GetMouseX(), Input::GetMouseY() };
-                m_DropdownOpen = true;
+                m_DropdownOpen = !m_DropdownOpen;
                 return true;
             }
         }
+        
         return false;
     }
     bool SceneHierarchyPanel::onKeyPressed(KeyPressedEvent& event)

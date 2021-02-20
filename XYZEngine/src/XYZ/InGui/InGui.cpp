@@ -264,7 +264,7 @@ namespace XYZ {
 		s_Context->Windows[id].Flags = flags;
 	}
 
-	void InGui::SetPosition(const glm::vec2& position)
+	void InGui::SetPositionOfNext(const glm::vec2& position)
 	{
 		s_LayoutOffset = position;
 	}
@@ -379,7 +379,7 @@ namespace XYZ {
 		);
 	
 		s_Context->FrameData.CurrentMesh = &window.Mesh;
-		
+		s_Context->FrameData.CurrentOverlayMesh = &window.OverlayMesh;
 		return !IS_SET(window.Flags, InGuiWindowFlags::Collapsed);
 	}
 
@@ -409,7 +409,7 @@ namespace XYZ {
 		);
 		s_Context->FrameData.CustomTextures.push_back(subTexture->GetTexture());
 		s_Context->FrameData.CurrentMesh = &window.Mesh;
-
+		s_Context->FrameData.CurrentOverlayMesh = &window.OverlayMesh;
 		return !IS_SET(window.Flags, InGuiWindowFlags::Collapsed);
 	}
 
@@ -445,11 +445,11 @@ namespace XYZ {
 
 
 		if (eraseOutOfBorders(oldQuadCount, buttonSize, window, mesh)) { return false; }
+		if (open) Separator();
+
 		if (!s_ActiveWidgets)
-		{
-			if (open) Separator();
 			return open;
-		}
+
 		if (Collide(pos, size, s_Context->FrameData.MousePosition))
 		{
 			mesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
@@ -461,7 +461,7 @@ namespace XYZ {
 				}
 			}
 		}
-		if (open) Separator();			
+				
 		return open;
 	}
 

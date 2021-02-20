@@ -103,10 +103,10 @@ namespace XYZ {
 	{
 		InGuiRenderData();
 
-		Ref<Font>		   Font;
-		Ref<Texture2D>	   Texture;
-		Ref<Material>	   DefaultMaterial;
-		Ref<Material>	   ScissorMaterial;
+		Ref<Font>				 Font;
+		Ref<Texture2D>			 Texture;
+		Ref<Material>			 DefaultMaterial;
+		Ref<Material>			 ScissorMaterial;
 		Ref<ShaderStorageBuffer> ScissorBuffer;
 
 		enum
@@ -143,7 +143,6 @@ namespace XYZ {
 		static constexpr uint32_t FontTextureID = 1;
 		static constexpr uint32_t ColorPickerTextureID = 2;
 		static constexpr uint32_t DefaultTextureCount = 3;
-
 		static constexpr uint32_t MaxNumberOfScissors = 32;
 	};
 
@@ -158,24 +157,23 @@ namespace XYZ {
 	{
 		static constexpr uint32_t NullID = 65536;
 
-		glm::mat4  ViewProjectionMatrix;
-		glm::vec2  MousePosition;
-		glm::vec2  MouseOffset;
-		uint16_t   Flags;
-		uint8_t	   ResizeFlags;
-		uint32_t   ActiveWindowID = NullID;
-		uint32_t   MovedWindowID = NullID;
-		uint32_t   ResizedWindowID = NullID;
-		InGuiMesh* CurrentMesh = nullptr;
-		InGuiMesh* CurrentOverlayMesh = nullptr;
-		InGuiTextCenter Center = InGuiTextCenter::Left;
+		glm::mat4  ViewProjectionMatrix = glm::mat4(1.0f);
+		glm::vec2  MousePosition		= glm::vec2(0.0f);
+		glm::vec2  MouseOffset			= glm::vec2(0.0f);
+		uint16_t   Flags				= 0;
+		uint8_t	   ResizeFlags			= 0;
+		uint32_t   ActiveWindowID		= NullID;
+		uint32_t   MovedWindowID		= NullID;
+		uint32_t   ResizedWindowID		= NullID;
+		InGuiMesh* CurrentMesh			= nullptr;
+		InGuiMesh* CurrentOverlayMesh	= nullptr;
+		InGuiTextCenter Center			= InGuiTextCenter::Left;
 
 		std::vector<InGuiScissor> Scissors;
 		std::vector<Ref<Texture>> CustomTextures;
 		std::vector<bool>		  HandleInput;
 		size_t					  InputIndex = 0;
 	};
-
 
 	enum class InGuiSplitType
 	{

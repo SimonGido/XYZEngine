@@ -132,6 +132,7 @@ namespace XYZ {
 								if (IS_SET(InGui::DropdownItem("Static"), InGuiReturnType::Clicked))
 								{
 									rigidBody.Type = RigidBody2DComponent::BodyType::Static;
+									m_RigidBodyTypeOpen = false;
 								}
 							}
 							if (rigidBody.Type != RigidBody2DComponent::BodyType::Dynamic)
@@ -139,6 +140,7 @@ namespace XYZ {
 								if (IS_SET(InGui::DropdownItem("Dynamic"), InGuiReturnType::Clicked))
 								{
 									rigidBody.Type = RigidBody2DComponent::BodyType::Dynamic;
+									m_RigidBodyTypeOpen = false;
 								}
 							}
 							if (rigidBody.Type != RigidBody2DComponent::BodyType::Kinematic)
@@ -146,6 +148,7 @@ namespace XYZ {
 								if (IS_SET(InGui::DropdownItem("Kinematic"), InGuiReturnType::Clicked))
 								{
 									rigidBody.Type = RigidBody2DComponent::BodyType::Kinematic;
+									m_RigidBodyTypeOpen = false;
 								}
 							}	
 						}
@@ -269,7 +272,6 @@ namespace XYZ {
 					}
 					InGui::Separator();
 				}
-				std::cout << m_ScrollScale << std::endl;
 				m_ScrollScale = InGui::GetPositionOfNext().y - InGui::GetWindow(m_PanelID).Position.y + m_ScrollOffset;
 				InGui::Separator();
 				InGui::EndScrollableArea();
@@ -284,18 +286,22 @@ namespace XYZ {
 				{
 					if (!m_Context.HasComponent<ScriptComponent>())
 					{
-						InGui::DropdownItem("Add Script Component");
+						if (IS_SET(InGui::DropdownItem("Add Script Component"), InGuiReturnType::Clicked))
+							m_AddComponentOpen = false;
 					}
 					if (!m_Context.HasComponent<RigidBody2DComponent>())
 					{
-						InGui::DropdownItem("Add RigidBody2D");
+						if (IS_SET(InGui::DropdownItem("Add RigidBody2D"), InGuiReturnType::Clicked))
+							m_AddComponentOpen = false;
 					}
 					if (!m_Context.HasComponent<BoxCollider2DComponent>())
 					{
-						InGui::DropdownItem("Add BoxCollider2D");
+						if (IS_SET(InGui::DropdownItem("Add BoxCollider2D"), InGuiReturnType::Clicked))
+							m_AddComponentOpen = false;
 					}
 				}
 				InGui::EndDropdown();
+				
 				layout.LeftPadding = 10.0f;
 				layout.RightPadding = 10.0f;
 				InGui::SetLayout(m_PanelID, layout);

@@ -24,7 +24,7 @@ namespace XYZ {
 		static void Separator();
 		
 		static void SetWindowFlags(uint32_t id, uint16_t flags);
-		static void SetPosition(const glm::vec2& position);
+		static void SetPositionOfNext(const glm::vec2& position);
 		static void SetTextCenter(InGuiTextCenter center);
 		
 		static const glm::vec2& GetPositionOfNext();
