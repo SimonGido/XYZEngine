@@ -67,7 +67,16 @@ namespace XYZ {
 
         for (auto& bone : m_Animation.Skeleton.Joints)
         {
-
+            VertexBoneData data;
+            data.IDs[0] = bone.ID;
+            for (size_t i = 0; i < 4; ++i)
+            {
+                m_Vertices.push_back({
+                    quadVertexPositions[i],
+                    glm::vec2(1.0f),
+                    data
+                });
+            }
         }
     }
     void SkeletalMesh::Update(float ts)

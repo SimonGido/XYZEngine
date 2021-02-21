@@ -18,13 +18,10 @@ namespace XYZ {
 		}
 		void Reset()
 		{
-			memset(IDs, 0, sc_MaxBonesPerVertex * sizeof(uint32_t));
-			memset(StartWeights, 0, sc_MaxBonesPerVertex * sizeof(float));
-			memset(EndWeights, 0, sc_MaxBonesPerVertex * sizeof(float));
+			memset(IDs, -1, sc_MaxBonesPerVertex * sizeof(int32_t));
 		}
-		uint32_t IDs[sc_MaxBonesPerVertex];
-		float    StartWeights[sc_MaxBonesPerVertex];
-		float	 EndWeights[sc_MaxBonesPerVertex];
+
+		int32_t IDs[sc_MaxBonesPerVertex];
 	};
 
 	struct AnimatedVertex
