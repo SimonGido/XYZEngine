@@ -303,14 +303,16 @@ namespace XYZ {
 			auto [transform, particle] = (*m_ParticleView)[i];
 			SceneRenderer::SubmitParticles(&particle, &transform);
 		}
-
+		
 		for (size_t i = 0; i < m_LightView->Size(); ++i)
 		{
 			auto [transform, light] = (*m_LightView)[i];
 			SceneRenderer::SubmitLight(&light, transform.GetTransform());
 		}
-
 		m_SkeletalMesh->Update(0.01f);
+		SceneRenderer::SubmitSkeletalMesh(m_SkeletalMesh);
+		
+		
 		SceneRenderer::EndScene();
 	}
 

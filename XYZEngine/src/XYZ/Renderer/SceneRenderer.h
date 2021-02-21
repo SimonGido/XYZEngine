@@ -35,6 +35,7 @@ namespace XYZ {
 		static void BeginScene(const Scene* scene, const glm::mat4 viewProjectionMatrix);
 		static void EndScene();
 
+		static void SubmitSkeletalMesh(SkeletalMesh* mesh);
 		static void SubmitSprite(SpriteRenderer* sprite, TransformComponent* transform);
 		static void SubmitCollision(TransformComponent* transform, uint32_t collisionID);
 		static void SubmitParticles(ParticleComponent* particle, TransformComponent* transform);

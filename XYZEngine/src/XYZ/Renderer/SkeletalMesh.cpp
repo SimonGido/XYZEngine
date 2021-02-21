@@ -65,6 +65,13 @@ namespace XYZ {
             { -0.5f,  0.5f, 0.0f }
         };  
 
+        glm::vec2 texCoords[4] = {
+            {0.0f, 0.0f},
+            {1.0f, 0.0f},
+            {1.0f, 1.0f},
+            {0.0f, 1.0f}
+        };
+
         for (auto& bone : m_Animation.Skeleton.Joints)
         {
             VertexBoneData data;
@@ -73,10 +80,11 @@ namespace XYZ {
             {
                 m_Vertices.push_back({
                     quadVertexPositions[i],
-                    glm::vec2(1.0f),
+                    texCoords[i],
                     data
                 });
             }
+            break;
         }
     }
     void SkeletalMesh::Update(float ts)
@@ -127,6 +135,11 @@ namespace XYZ {
             }
             return false;
         });
+    }
+
+    void SkeletalMesh::Render()
+    {
+        Renderer2D::SubmitQuads(m_Vertices.data(), m_Vertices.size() / 4, 0, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
     }
 
 }

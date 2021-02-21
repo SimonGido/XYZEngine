@@ -76,6 +76,8 @@ namespace XYZ {
 
 		void Update(float ts);
 
+		void Render();
+
 	private:
 		std::vector<AnimatedVertex> m_Vertices;
 

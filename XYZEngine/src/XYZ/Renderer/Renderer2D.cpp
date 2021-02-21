@@ -444,7 +444,24 @@ namespace XYZ {
 			s_Data.BufferPtr->TilingFactor = tilingFactor;
 			s_Data.BufferPtr++;
 		}
-		s_Data.IndexCount += 6;
+		s_Data.IndexCount += countQuads * 6;
+	}
+
+	void Renderer2D::SubmitQuads(const AnimatedVertex* vertices, uint32_t countQuads, uint32_t textureID, const glm::vec4& color, float tilingFactor)
+	{
+		if (s_Data.IndexCount + countQuads * 6 >= s_Data.MaxIndices)
+			Flush();
+
+		for (uint32_t i = 0; i < countQuads * 4; ++i)
+		{
+			s_Data.BufferPtr->Position = vertices[i].Position;
+			s_Data.BufferPtr->Color = color;
+			s_Data.BufferPtr->TexCoord = vertices[i].TexCoord;
+			s_Data.BufferPtr->TextureID = (float)textureID;
+			s_Data.BufferPtr->TilingFactor = tilingFactor;
+			s_Data.BufferPtr++;
+		}
+		s_Data.IndexCount += countQuads * 6;
 	}
 
 	void Renderer2D::SubmitQuads(const glm::mat4& transform, const Vertex* vertices, uint32_t countQuads, uint32_t textureID, float tilingFactor)

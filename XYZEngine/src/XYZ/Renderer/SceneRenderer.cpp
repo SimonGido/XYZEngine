@@ -172,6 +172,12 @@ namespace XYZ {
 
 		FlushDrawList();
 	}
+	static SkeletalMesh* s_Mesh;
+
+	void SceneRenderer::SubmitSkeletalMesh(SkeletalMesh* mesh)
+	{
+		s_Mesh = mesh;
+	}
 
 	void SceneRenderer::SubmitSprite(SpriteRenderer* sprite, TransformComponent* transform)
 	{
@@ -257,6 +263,7 @@ namespace XYZ {
 		//int clearValue = -1;
 		//s_Data.GeometryPass->GetSpecification().TargetFramebuffer->ClearColorAttachment(2, &clearValue);
 
+		
 		if (s_Data.Options.ShowGrid)
 		{
 			Renderer2D::SubmitGrid(s_Data.GridProps.Transform, s_Data.GridProps.Scale, s_Data.GridProps.LineWidth);
@@ -273,6 +280,7 @@ namespace XYZ {
 			uint32_t textureID = Renderer2D::SetTexture(dc.Sprite->SubTexture->GetTexture());
 			Renderer2D::SubmitQuad(dc.Transform->GetTransform(), dc.Sprite->SubTexture->GetTexCoords(), textureID, dc.Sprite->Color);
 		}
+		s_Mesh->Render();
 
 		Renderer2D::Flush();
 		Renderer2D::FlushLines();
