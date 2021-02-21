@@ -45,11 +45,52 @@ namespace XYZ {
 		m_ECS.ForceStorage<ScriptComponent>();
 		m_ScriptStorage = m_ECS.GetStorage<ScriptComponent>();
 		m_AnimatorStorage = m_ECS.GetStorage<AnimatorComponent>();
+
+
+
+
+		////////////////////////
+		SkeletalAnimation anim;
+		anim.Skeleton.Joints.push_back({ glm::vec3(0.0f) });
+		anim.Skeleton.Joints.push_back({ glm::vec3(1.0f,1.0f,0.0f) });
+		anim.Skeleton.Joints.push_back({ glm::vec3(-2.0f,-2.5f,0.0f) });
+		anim.Skeleton.Joints.push_back({ glm::vec3(-0.8f,-2.0f,0.0f) });
+		
+		int32_t root = anim.Skeleton.JointHierarchy.Insert(&anim.Skeleton.Joints[0], 0);
+		anim.Skeleton.Joints[0].ID = root;
+		anim.Skeleton.Joints[1].ID = anim.Skeleton.JointHierarchy.Insert(&anim.Skeleton.Joints[1], root);
+		anim.Skeleton.Joints[2].ID = anim.Skeleton.JointHierarchy.Insert(&anim.Skeleton.Joints[2], root);
+		anim.Skeleton.Joints[3].ID = anim.Skeleton.JointHierarchy.Insert(&anim.Skeleton.Joints[3], root);
+
+		{
+			KeyFrame::Data data;
+			data.Joint = &anim.Skeleton.Joints[0];
+			data.StartPosition = glm::vec3(-1.0f);
+			data.EndPosition = glm::vec3(1.0f);
+			anim.KeyFrames.push_back({});
+			anim.KeyFrames.back().AffectedJoints.push_back(data);
+			anim.KeyFrames.back().Length = 5.0f;
+		}
+		{
+			KeyFrame::Data data;
+			data.Joint = &anim.Skeleton.Joints[1];
+			data.StartPosition = glm::vec3(0.0f,-4.0f, 0.0f);
+			data.EndPosition = glm::vec3(1.0f);
+			anim.KeyFrames.push_back({});
+			anim.KeyFrames.back().AffectedJoints.push_back(data);
+			anim.KeyFrames.back().Length = 5.0f;
+
+			data.Joint = &anim.Skeleton.Joints[2];
+			data.StartPosition = glm::vec3(0.0f, -4.0f, 0.0f);
+			data.EndPosition = glm::vec3(-1.0f);
+			anim.KeyFrames.back().AffectedJoints.push_back(data);
+		}
+		m_SkeletalMesh = new SkeletalMesh(anim);
 	}
 
 	Scene::~Scene()
 	{
-
+		delete m_SkeletalMesh;
 	}
 
 	SceneEntity Scene::CreateEntity(const std::string& name, const GUID& guid)
@@ -185,13 +226,14 @@ namespace XYZ {
 			auto [transform, light] = (*m_LightView)[i];
 			SceneRenderer::SubmitLight(&light, transform.GetTransform());
 		}
+		
 		SceneRenderer::EndScene();
 	}
 
 	void Scene::OnUpdate(Timestep ts)
 	{
 		m_PhysicsWorld.Update(ts);
-
+		
 		for (size_t i = 0; i < m_ScriptStorage->Size(); ++i)
 		{
 			ScriptComponent& scriptComponent = (*m_ScriptStorage)[i];
@@ -239,6 +281,7 @@ namespace XYZ {
 	void Scene::OnRenderEditor(const EditorCamera& camera)
 	{
 		SceneRenderer::BeginScene(this, camera.GetViewProjection());
+		
 		if (m_SelectedEntity != NULL_ENTITY)
 		{
 			if (m_ECS.Contains<CameraComponent>(m_SelectedEntity))
@@ -267,7 +310,7 @@ namespace XYZ {
 			SceneRenderer::SubmitLight(&light, transform.GetTransform());
 		}
 
-
+		m_SkeletalMesh->Update(0.01f);
 		SceneRenderer::EndScene();
 	}
 

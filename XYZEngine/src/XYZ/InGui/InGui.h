@@ -36,7 +36,7 @@ namespace XYZ {
 		static bool ImageWindow(uint32_t id, const char* name, const glm::vec2& position, const glm::vec2& size, Ref<SubTexture> subTexture);
 		static void End();
 		static bool BeginGroup(const char* name, bool& open);
-		static void BeginScrollableArea(const glm::vec2& size, float & offset, float scale);
+		static void BeginScrollableArea(const glm::vec2& size, float & offset, float scale, float scrollSpeed);
 		static void EndScrollableArea();
 
 		static uint8_t PushNode(const char* name, const glm::vec2& size, bool& open, bool highlight = false);
@@ -69,6 +69,7 @@ namespace XYZ {
 		static bool onWindowResize(WindowResizeEvent& event);
 		static bool onMouseButtonPress(MouseButtonPressEvent& event);
 		static bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
+		static bool onMouseScroll(MouseScrollEvent& event);
 		static bool onMouseMove(MouseMovedEvent& event);
 		static bool onKeyTyped(KeyTypedEvent& event);
 		static bool onKeyPressed(KeyPressedEvent& event);

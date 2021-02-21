@@ -155,11 +155,14 @@ namespace XYZ {
 
 	struct InGuiFrameData
 	{
-		static constexpr uint32_t NullID = 65536;
+		void RestartValues();
 
+		static constexpr uint32_t NullID = 65536;
+	
 		glm::mat4  ViewProjectionMatrix = glm::mat4(1.0f);
 		glm::vec2  MousePosition		= glm::vec2(0.0f);
 		glm::vec2  MouseOffset			= glm::vec2(0.0f);
+		float	   ScrollOffset			= 0.0f;
 		uint16_t   Flags				= 0;
 		uint8_t	   ResizeFlags			= 0;
 		uint32_t   ActiveWindowID		= NullID;

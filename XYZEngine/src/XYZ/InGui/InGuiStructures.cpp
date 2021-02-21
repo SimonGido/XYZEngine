@@ -72,4 +72,11 @@ namespace XYZ {
 	{
 		s_FreeIDs.push(ID);
 	}
+	void InGuiFrameData::RestartValues()
+	{
+		ScrollOffset = 0.0f;
+		InputIndex = 0;
+		CustomTextures.clear();
+		Scissors.clear();
+	}
 }

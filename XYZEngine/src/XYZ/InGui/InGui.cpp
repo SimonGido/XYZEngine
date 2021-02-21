@@ -134,9 +134,7 @@ namespace XYZ {
 	{
 		XYZ_ASSERT(s_Context, "InGuiContext is not initialized");
 		s_Context->FrameData.ViewProjectionMatrix = viewProjectionMatrix;	
-		s_Context->FrameData.InputIndex = 0;
-
-
+		
 		glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f));
 		viewMatrix = glm::inverse(viewMatrix);
 
@@ -208,9 +206,8 @@ namespace XYZ {
 			}
 			Renderer2D::Flush();
 			Renderer2D::FlushLines();
-			s_Context->FrameData.Scissors.clear();
 		}
-		s_Context->FrameData.CustomTextures.clear();
+		s_Context->FrameData.RestartValues();
 
 		Renderer2D::EndScene();
 		Renderer::WaitAndRender();
@@ -239,6 +236,9 @@ namespace XYZ {
 		{
 		}
 		else if (dispatcher.Dispatch<WindowResizeEvent>(&InGui::onWindowResize))
+		{
+		}
+		else if (dispatcher.Dispatch<MouseScrollEvent>(&InGui::onMouseScroll))
 		{
 		}
 	}
@@ -465,7 +465,7 @@ namespace XYZ {
 		return open;
 	}
 
-	void InGui::BeginScrollableArea(const glm::vec2& size, float& offset, float scale)
+	void InGui::BeginScrollableArea(const glm::vec2& size, float& offset, float scale, float scrollSpeed)
 	{
 		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
 	
@@ -478,8 +478,10 @@ namespace XYZ {
 		InGuiFactory::GenerateFrame(window.ScrollableMesh, s_LayoutOffset, size, s_Context->RenderData);
 		bool activeWidgets = false;
 		if (Collide(s_LayoutOffset, size, s_Context->FrameData.MousePosition))
+		{
 			activeWidgets = true;
-
+			offset -= s_Context->FrameData.ScrollOffset * scrollSpeed;
+		}
 		//////////////////// SLIDER LOGIC ///////////////////////
 		s_LayoutOffset.x += size.x + window.Layout.LeftPadding;
 		float val = offset / scale;
@@ -735,8 +737,8 @@ namespace XYZ {
 		InGuiMesh& mesh = *s_Context->FrameData.CurrentMesh;
 
 		// Clamping
-		if (val > 0.94f) val = 1.0f;
-		if (val < 0.06f) val = 0.0f;
+		if (val > 0.99f) val = 1.0f;
+		else if (val < 0.01f) val = 0.0f;
 
 		int ret = snprintf(s_TextBuffer, sizeof(s_TextBuffer), "%f", val);
 		if (ret < 0)
@@ -784,8 +786,8 @@ namespace XYZ {
 		InGuiMesh& mesh = *s_Context->FrameData.CurrentMesh;
 
 		// Clamping
-		if (val > 0.94f) val = 1.0f;
-		if (val < 0.06f) val = 0.0f;
+		if (val > 1.0f - FLT_MIN) val = 1.0f;
+		else if (val < FLT_MIN) val = 0.0f;
 
 
 		uint8_t returnType = 0;
@@ -1371,6 +1373,20 @@ namespace XYZ {
 			return handled;
 		}
 
+		return false;
+	}
+
+	bool InGui::onMouseScroll(MouseScrollEvent& event)
+	{
+		for (auto& window : s_Context->Windows)
+		{
+			if (IS_SET(window.Flags, InGuiWindowFlags::Initialized)
+				&& Collide(window.Position, window.Size, s_Context->FrameData.MousePosition))
+			{
+				s_Context->FrameData.ScrollOffset = event.GetOffsetY();
+				return false;
+			}
+		}
 		return false;
 	}
 

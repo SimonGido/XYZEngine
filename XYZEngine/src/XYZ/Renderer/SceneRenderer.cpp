@@ -31,6 +31,7 @@ namespace XYZ {
 
 
 		Ref<ShaderStorageBuffer> LightStorageBuffer;
+		
 
 		struct SpriteDrawCommand
 		{
@@ -55,6 +56,7 @@ namespace XYZ {
 			glm::vec3 Color;
 			float Intensity = 1.0f;
 		};
+
 
 		std::vector<CollisionDrawCommand> CollisionList;
 		std::vector<SpriteDrawCommand> SpriteDrawList;

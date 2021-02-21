@@ -15,6 +15,8 @@
 #include "XYZ/Physics/DynamicTree.h"
 #include "XYZ/Physics/PhysicsWorld.h"
 
+#include "XYZ/Renderer/SkeletalMesh.h"
+
 namespace XYZ {
 
 
@@ -93,6 +95,11 @@ namespace XYZ {
         Ref<SubTexture> m_CameraSubTexture;
         Ref<Material> m_CameraMaterial;
         SpriteRenderer m_CameraRenderer;
+
+
+        
+        ////////////////////////
+        SkeletalMesh *m_SkeletalMesh;
 
 
         friend class SceneEntity;
