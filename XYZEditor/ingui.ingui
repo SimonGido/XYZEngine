@@ -5,11 +5,11 @@ Windows:
     Position: [0, 0]
     Size: [414, 1017]
   - Window: 1
-    Flags: 23
+    Flags: 19
     Position: [414, 0]
     Size: [1060, 1017]
   - Window: 2
-    Flags: 51
+    Flags: 55
     Position: [1474, 0]
     Size: [446, 1017]
 Dockspace:

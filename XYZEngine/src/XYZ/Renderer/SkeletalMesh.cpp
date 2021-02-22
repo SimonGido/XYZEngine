@@ -6,6 +6,7 @@
 #include "XYZ/Core/Input.h"
 
 #include <glm/gtx/transform.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 
 namespace XYZ {
 
@@ -33,129 +34,76 @@ namespace XYZ {
     }
 
 
-    Joint::Joint(const glm::vec3& position)
+    Skeleton::Skeleton(const Skeleton& other)
         :
-        Position(position),
-        FinalPosition(position),
-        DefaultPosition(position)
+        BoneHierarchy(other.BoneHierarchy),
+        Bones(other.Bones)
     {
-    }
-
-    SkeletalAnimation::SkeletalAnimation(const SkeletalAnimation& other)
-        :
-        Skeleton(other.Skeleton),
-        KeyFrames(other.KeyFrames)
-    {
-        for (auto& joint : Skeleton.Joints)
+        for (auto& bone : Bones)
         {
-            Skeleton.JointHierarchy.SetData(joint.ID, &joint);
-        }
-        for (size_t i = 0; i < other.KeyFrames.size(); ++i)
-        {
-            for (size_t j = 0; j < other.KeyFrames[i].AffectedJoints.size(); ++j)
-            {
-                KeyFrames[i].AffectedJoints[j].Joint = static_cast<Joint*>(Skeleton.JointHierarchy.GetData(other.KeyFrames[i].AffectedJoints[j].Joint->ID));
-            }
+            BoneHierarchy.SetData(bone.ID, &bone);
         }
     }
 
  
-    SkeletalMesh::SkeletalMesh(const SkeletalAnimation& animation)
+    SkeletalMesh::SkeletalMesh(const Skeleton& skeleton)
         :
-        m_Animation(animation)
+        m_Skeleton(skeleton)
     {
-        //glm::vec3 quadVertexPositions[4] = {
-        //    { -0.5f, -0.5f, 0.0f },
-        //    {  0.5f, -0.5f, 0.0f },
-        //    {  0.5f,  0.5f, 0.0f },
-        //    { -0.5f,  0.5f, 0.0f }
-        //};  
-        //
-        //glm::vec2 texCoords[4] = {
-        //    {0.0f, 0.0f},
-        //    {1.0f, 0.0f},
-        //    {1.0f, 1.0f},
-        //    {0.0f, 1.0f}
-        //};
-        //
-        //for (auto& joint : m_Animation.Skeleton.Joints)
-        //{
-        //    VertexBoneData data;
-        //    data.IDs[0] = joint.ID;
-        //    for (size_t i = 0; i < 4; ++i)
-        //    {
-        //        m_Vertices.push_back({
-        //            quadVertexPositions[i],
-        //            texCoords[i],
-        //            data
-        //        });
-        //    }
-        //}
+    
     }
     void SkeletalMesh::Update(float ts)
-    {
-        if (m_CurrentFrame < m_Animation.KeyFrames.size())
-        {
-            KeyFrame& keyFrame = m_Animation.KeyFrames[m_CurrentFrame];
-
-            float delta = m_CurrentTime / keyFrame.Length;
-            for (auto& it : keyFrame.AffectedJoints)
-            {
-                it.Joint->Position = Interpolate(it.StartPosition, it.EndPosition, delta);
-            }    
-            if (m_CurrentTime >= keyFrame.Length)
-            {
-                m_CurrentTime = 0.0f;
-                m_CurrentFrame++;
-            }
-            m_CurrentTime += ts;
-        }
-        else if (m_Repeat)
-        {
-            m_CurrentTime = 0.0f;
-            m_CurrentFrame = 0;
-        }
-
-        m_Animation.Skeleton.JointHierarchy.Traverse([](void* parent, void* child) -> bool {
+    {  
+        m_Skeleton.BoneHierarchy.Traverse([](void* parent, void* child) -> bool {
            
-            Joint* childJoint = static_cast<Joint*>(child);
-            childJoint->FinalPosition = childJoint->Position;
+            Bone* childBone = static_cast<Bone*>(child);
             if (parent)
             {
-                Joint* parentJoint = static_cast<Joint*>(parent);
-                childJoint->FinalPosition = parentJoint->FinalPosition + childJoint->Position;
+                Bone* parentBone = static_cast<Bone*>(parent);
+                childBone->FinalTransform = parentBone->FinalTransform * childBone->Transform;
+            }
+            else
+            {
+                childBone->FinalTransform = childBone->Transform;
             }
             return false;
         });
 
-        m_Animation.Skeleton.JointHierarchy.Traverse([&](void* parent, void* child) -> bool {
+        m_Skeleton.BoneHierarchy.Traverse([&](void* parent, void* child) -> bool {
 
-            Joint* childJoint = static_cast<Joint*>(child);
-            glm::vec4 color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-            if (m_Selected && m_Selected->ID == childJoint->ID)
-                color = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+            Bone* childBone = static_cast<Bone*>(child);
+            glm::vec4 color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+            if (m_Selected && m_Selected->ID == childBone->ID)
+                color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 
-            Renderer2D::SubmitCircle(childJoint->FinalPosition, 0.05f, 10, color);
+            glm::vec3 scale;
+            glm::quat rotation;
+            glm::vec3 translation;
+            glm::vec3 skew;
+            glm::vec4 perspective;
+            glm::decompose(childBone->FinalTransform, scale, rotation, translation, skew, perspective);  
+            Renderer2D::SubmitCircle(translation, 0.05f, 10, color);
+            
+      
+            //Renderer2D::SubmitLine(translation, test * childBone->Length, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f));
 
-            if (parent)
-            {
-                Joint* parentJoint = static_cast<Joint*>(parent);
-                Renderer2D::SubmitLine(parentJoint->FinalPosition, childJoint->FinalPosition, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f));
-            }
+     
             return false;
         });
 
+      
         if (Input::IsKeyPressed(KeyCode::KEY_SPACE) && !s_Pressed)
         {
             s_Pressed = true;
             uint32_t counter = 0;
-            m_Animation.Skeleton.JointHierarchy.Traverse([&](void* parent, void* child) -> bool {
-
+            m_Skeleton.BoneHierarchy.Traverse([&](void* parent, void* child) -> bool {
+        
                 if (counter == s_LastSelected)
                 {
-                    m_Selected = static_cast<Joint*>(child);
+                    m_Selected = static_cast<Bone*>(child);
+                    std::cout << s_LastSelected << std::endl;
                     s_LastSelected++;
-                    if (s_LastSelected >= m_Animation.Skeleton.Joints.size())
+                    if (s_LastSelected >= m_Skeleton.Bones.size())
                         s_LastSelected = 0;
                     return true;
                 }
@@ -170,8 +118,14 @@ namespace XYZ {
         if (Input::IsMouseButtonPressed(MouseCode::MOUSE_BUTTON_LEFT) && m_Selected)
         {
             auto [mx, my] = Input::GetMousePosition();
-            m_Selected->Position.x += (mx - m_OldMousePosition.x) / 100.0f;
-            m_Selected->Position.y -= (my - m_OldMousePosition.y) / 100.0f;
+            m_Selected->Transform = m_Selected->Transform * glm::rotate(0.001f, glm::vec3(0.0f, 0.0f, 1.0f));
+        }
+        if (Input::IsMouseButtonPressed(MouseCode::MOUSE_BUTTON_RIGHT) && m_Selected)
+        {
+            auto [mx, my] = Input::GetMousePosition();
+
+            glm::vec3 translation = glm::vec3((mx - m_OldMousePosition.x) / 100.0f, -(my - m_OldMousePosition.y) / 100.0f, 0.0f);
+            m_Selected->Transform = glm::translate(m_Selected->Transform, translation);
         }
 
         auto [mx, my] = Input::GetMousePosition();
@@ -180,15 +134,17 @@ namespace XYZ {
 
     void SkeletalMesh::Render()
     {
-        std::vector<AnimatedVertex> vertices;
+        std::vector<Vertex> vertices;
+        vertices.resize(m_Vertices.size());
+        uint32_t counter = 0;
         for (auto& vertex : m_Vertices)
         {
-            Joint* joint = static_cast<Joint*>(m_Animation.Skeleton.JointHierarchy.GetData(vertex.BoneData.IDs[0]));
-            vertices.push_back(vertex);
-            vertices.back().Position += joint->FinalPosition - joint->DefaultPosition;
+            Bone* bone = static_cast<Bone*>(m_Skeleton.BoneHierarchy.GetData(vertex.BoneData.IDs[0]));
+            vertices[counter].Position = bone->FinalTransform * glm::vec4(vertex.Position, 1.0f);
+            vertices[counter].TexCoord = vertex.TexCoord;
+            vertices[counter].Color = glm::vec4(1.0f);
+            counter++;
         }
-
-        Renderer2D::SubmitQuads(vertices.data(), vertices.size() / 4, 0, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        Renderer2D::SubmitQuads(vertices.data(), vertices.size() / 4, 0);
     }
-
 }

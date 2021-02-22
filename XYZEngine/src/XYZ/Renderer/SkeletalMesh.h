@@ -32,48 +32,30 @@ namespace XYZ {
 		VertexBoneData BoneData;
 	};
 
-	struct Joint
+	struct Bone
 	{
-		Joint(const glm::vec3& position);
-
-		glm::vec3 Position;
-		glm::vec3 FinalPosition;
-		glm::vec3 DefaultPosition;
+		glm::mat4 FinalTransform;
+		glm::mat4 Transform;
+		float Length = 3.0f;
 		int32_t ID;
+
+		// Debug 
+		std::string Name;
 	};
 
 	struct Skeleton
 	{
-		Tree JointHierarchy;
-		std::vector<Joint> Joints;
-	};
+		Skeleton() = default;
+		Skeleton(const Skeleton& other);
 
-	struct KeyFrame
-	{
-		struct Data
-		{
-			Joint* Joint;
-			glm::vec3 StartPosition;
-			glm::vec3 EndPosition;
-		};
-
-		std::vector<Data> AffectedJoints;
-		float Length;
-	};
-
-	struct SkeletalAnimation
-	{
-		SkeletalAnimation() = default;
-		SkeletalAnimation(const SkeletalAnimation& other);
-
-		Skeleton Skeleton;
-		std::vector<KeyFrame> KeyFrames;
+		Tree BoneHierarchy;
+		std::vector<Bone> Bones;
 	};
 
 	class SkeletalMesh : public RefCount
 	{
 	public:
-		SkeletalMesh(const SkeletalAnimation& animation);
+		SkeletalMesh(const Skeleton& skeleton);
 
 		void Update(float ts);
 
@@ -81,10 +63,10 @@ namespace XYZ {
 	//private:
 		std::vector<AnimatedVertex> m_Vertices;
 
-		Joint* m_Selected = nullptr;
+		Bone* m_Selected = nullptr;
 		glm::vec2 m_OldMousePosition = glm::vec2(0.0f);
 
-		SkeletalAnimation m_Animation;
+		Skeleton m_Skeleton;
 		uint32_t m_CurrentFrame = 0;
 
 		float m_CurrentTime = 0.0f;

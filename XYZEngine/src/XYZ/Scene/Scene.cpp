@@ -50,35 +50,47 @@ namespace XYZ {
 
 
 		////////////////////////
-		SkeletalAnimation anim;
-		anim.Skeleton.Joints.push_back({ glm::vec3(0.0f) });
-		anim.Skeleton.Joints.push_back({ glm::vec3(-1.0f,0.0f,0.0f) }); // Left hand
-		anim.Skeleton.Joints.push_back({ glm::vec3(1.0f,0.0f,0.0f) }); // Right hand
-		anim.Skeleton.Joints.push_back({ glm::vec3(0.0,-1.5f,0.0f) }); // Body
-		anim.Skeleton.Joints.push_back({ glm::vec3(-0.5f,-1.0f,0.0f) }); // Left knee
-		anim.Skeleton.Joints.push_back({ glm::vec3(0.5f,-1.0f,0.0f) }); // Right knee
-		anim.Skeleton.Joints.push_back({ glm::vec3(0.0f,-1.0f,0.0f) }); // Left foot
-		anim.Skeleton.Joints.push_back({ glm::vec3(0.0f,-1.0f,0.0f) }); // Right foot
+		Skeleton skeleton;
+		skeleton.Bones.push_back({});
+		skeleton.Bones.push_back({}); // Left hand
+		skeleton.Bones.push_back({}); // Right hand
+		skeleton.Bones.push_back({}); // Left knee
+		skeleton.Bones.push_back({}); // Right knee
+		skeleton.Bones.push_back({}); // Left foot
+		skeleton.Bones.push_back({}); // Right foot
 
-		int32_t root = anim.Skeleton.JointHierarchy.Insert(&anim.Skeleton.Joints[0], 0);
-		int32_t leftHand = anim.Skeleton.JointHierarchy.Insert(&anim.Skeleton.Joints[1], root);
-		int32_t rightHand = anim.Skeleton.JointHierarchy.Insert(&anim.Skeleton.Joints[2], root);
-		int32_t body = anim.Skeleton.JointHierarchy.Insert(&anim.Skeleton.Joints[3], root);
-		int32_t leftKnee = anim.Skeleton.JointHierarchy.Insert(&anim.Skeleton.Joints[4], body);
-		int32_t rightKnee = anim.Skeleton.JointHierarchy.Insert(&anim.Skeleton.Joints[5], body);
-		int32_t leftFoot = anim.Skeleton.JointHierarchy.Insert(&anim.Skeleton.Joints[6], leftKnee);
-		int32_t rightFoot = anim.Skeleton.JointHierarchy.Insert(&anim.Skeleton.Joints[7], rightKnee);
+		skeleton.Bones[0].Transform = glm::translate(glm::vec3( 0.0f,  0.0f, 0.0f));
+		skeleton.Bones[1].Transform = glm::translate(glm::vec3(-1.0f,  0.0f, 0.0f));
+		skeleton.Bones[2].Transform = glm::translate(glm::vec3( 1.0f,  0.0f, 0.0f));
+		skeleton.Bones[3].Transform = glm::translate(glm::vec3(-0.5f, -1.0f, 0.0f));
+		skeleton.Bones[4].Transform = glm::translate(glm::vec3( 0.5f, -1.0f, 0.0f));
+		skeleton.Bones[5].Transform = glm::translate(glm::vec3( 0.0f, -1.0f, 0.0f));
+		skeleton.Bones[6].Transform = glm::translate(glm::vec3( 0.0f, -1.0f, 0.0f));
+
+		int32_t root		= skeleton.BoneHierarchy.Insert(&skeleton.Bones[0], 0);
+		int32_t leftHand	= skeleton.BoneHierarchy.Insert(&skeleton.Bones[1], root);
+		int32_t rightHand	= skeleton.BoneHierarchy.Insert(&skeleton.Bones[2], root);
+		int32_t leftKnee	= skeleton.BoneHierarchy.Insert(&skeleton.Bones[3], root);
+		int32_t rightKnee	= skeleton.BoneHierarchy.Insert(&skeleton.Bones[4], root);
+		int32_t leftFoot	= skeleton.BoneHierarchy.Insert(&skeleton.Bones[5], leftKnee);
+		int32_t rightFoot	= skeleton.BoneHierarchy.Insert(&skeleton.Bones[6], rightKnee);
 
 
-		anim.Skeleton.Joints[0].ID = root;
-		anim.Skeleton.Joints[1].ID = leftHand;
-		anim.Skeleton.Joints[2].ID = rightHand;
-		anim.Skeleton.Joints[3].ID = body;
-		anim.Skeleton.Joints[4].ID = leftKnee;
-		anim.Skeleton.Joints[5].ID = rightKnee;
-		anim.Skeleton.Joints[6].ID = leftFoot;
-		anim.Skeleton.Joints[7].ID = rightFoot;
+		skeleton.Bones[0].ID = root;
+		skeleton.Bones[1].ID = leftHand;
+		skeleton.Bones[2].ID = rightHand;
+		skeleton.Bones[3].ID = leftKnee;
+		skeleton.Bones[4].ID = rightKnee;
+		skeleton.Bones[5].ID = leftFoot;
+		skeleton.Bones[6].ID = rightFoot;
 
+		skeleton.Bones[0].Name = "Root";
+		skeleton.Bones[1].Name = "Left Hand";
+		skeleton.Bones[2].Name = "Right Hand";
+		skeleton.Bones[3].Name = "Left Knee";
+		skeleton.Bones[4].Name = "Right Knee";
+		skeleton.Bones[5].Name = "Left Foot";
+		skeleton.Bones[6].Name = "Right Foot";
 
 
 		glm::vec2 texCoords[4] = {
@@ -88,20 +100,19 @@ namespace XYZ {
 		    {0.0f, 1.0f}
 		};
 		glm::vec3 firstQuad[4] = {
-			{-1.0f, -0.5f, 0.0f},
-			{ 0.0f, -0.5f, 0.0f},
-			{ 0.0f,  0.5f, 0.0f},
-			{-1.0f,  0.5f, 0.0f},
+			{-0.5f, -0.5f, 0.0f},
+			{ 0.5f, -0.5f, 0.0f},
+			{ 0.5f,  0.5f, 0.0f},
+			{-0.5f,  0.5f, 0.0f},
 		};
-		m_SkeletalMesh = new SkeletalMesh(anim);
+		m_SkeletalMesh = new SkeletalMesh(skeleton);
 		
 		VertexBoneData data;
-		data.IDs[0] = leftHand;
+		data.IDs[0] = leftFoot;
 		m_SkeletalMesh->m_Vertices.push_back({ firstQuad[0], texCoords[0], data });
-		data.IDs[0] = root;
 		m_SkeletalMesh->m_Vertices.push_back({ firstQuad[1], texCoords[1], data });
+		data.IDs[0] = leftKnee;
 		m_SkeletalMesh->m_Vertices.push_back({ firstQuad[2], texCoords[2], data });
-		data.IDs[0] = leftHand;
 		m_SkeletalMesh->m_Vertices.push_back({ firstQuad[3], texCoords[3], data });
 
 		{

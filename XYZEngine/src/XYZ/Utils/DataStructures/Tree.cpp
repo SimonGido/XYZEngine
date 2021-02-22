@@ -95,7 +95,16 @@ namespace XYZ {
             while (sibling != TreeNode::sc_Invalid)
             {
                 const TreeNode& siblingNode = m_Nodes[sibling];
-                stack.push(sibling);
+                if (siblingNode.FirstChild != TreeNode::sc_Invalid)
+                    stack.push(siblingNode.FirstChild);
+
+                void* parentData = nullptr;
+                void* data = siblingNode.Data;     
+                if (node.Parent != TreeNode::sc_Invalid)
+                    parentData = m_Nodes[node.Parent].Data;
+                if (callback(parentData, data))
+                    return;
+
                 sibling = siblingNode.NextSibling;
             }
             if (node.FirstChild != TreeNode::sc_Invalid)
