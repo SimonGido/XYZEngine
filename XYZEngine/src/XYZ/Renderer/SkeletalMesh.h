@@ -5,6 +5,7 @@
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Utils/DataStructures/Tree.h"
 
+
 #include <glm/glm.hpp>
 
 namespace XYZ {
@@ -77,10 +78,11 @@ namespace XYZ {
 		void Update(float ts);
 
 		void Render();
-
-	private:
+	//private:
 		std::vector<AnimatedVertex> m_Vertices;
 
+		Joint* m_Selected = nullptr;
+		glm::vec2 m_OldMousePosition = glm::vec2(0.0f);
 
 		SkeletalAnimation m_Animation;
 		uint32_t m_CurrentFrame = 0;

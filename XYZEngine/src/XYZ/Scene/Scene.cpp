@@ -52,40 +52,82 @@ namespace XYZ {
 		////////////////////////
 		SkeletalAnimation anim;
 		anim.Skeleton.Joints.push_back({ glm::vec3(0.0f) });
-		anim.Skeleton.Joints.push_back({ glm::vec3(1.0f,1.0f,0.0f) });
-		anim.Skeleton.Joints.push_back({ glm::vec3(-2.0f,-2.5f,0.0f) });
-		anim.Skeleton.Joints.push_back({ glm::vec3(-0.8f,-2.0f,0.0f) });
-		
+		anim.Skeleton.Joints.push_back({ glm::vec3(-1.0f,0.0f,0.0f) }); // Left hand
+		anim.Skeleton.Joints.push_back({ glm::vec3(1.0f,0.0f,0.0f) }); // Right hand
+		anim.Skeleton.Joints.push_back({ glm::vec3(0.0,-1.5f,0.0f) }); // Body
+		anim.Skeleton.Joints.push_back({ glm::vec3(-0.5f,-1.0f,0.0f) }); // Left knee
+		anim.Skeleton.Joints.push_back({ glm::vec3(0.5f,-1.0f,0.0f) }); // Right knee
+		anim.Skeleton.Joints.push_back({ glm::vec3(0.0f,-1.0f,0.0f) }); // Left foot
+		anim.Skeleton.Joints.push_back({ glm::vec3(0.0f,-1.0f,0.0f) }); // Right foot
+
 		int32_t root = anim.Skeleton.JointHierarchy.Insert(&anim.Skeleton.Joints[0], 0);
+		int32_t leftHand = anim.Skeleton.JointHierarchy.Insert(&anim.Skeleton.Joints[1], root);
+		int32_t rightHand = anim.Skeleton.JointHierarchy.Insert(&anim.Skeleton.Joints[2], root);
+		int32_t body = anim.Skeleton.JointHierarchy.Insert(&anim.Skeleton.Joints[3], root);
+		int32_t leftKnee = anim.Skeleton.JointHierarchy.Insert(&anim.Skeleton.Joints[4], body);
+		int32_t rightKnee = anim.Skeleton.JointHierarchy.Insert(&anim.Skeleton.Joints[5], body);
+		int32_t leftFoot = anim.Skeleton.JointHierarchy.Insert(&anim.Skeleton.Joints[6], leftKnee);
+		int32_t rightFoot = anim.Skeleton.JointHierarchy.Insert(&anim.Skeleton.Joints[7], rightKnee);
+
+
 		anim.Skeleton.Joints[0].ID = root;
-		anim.Skeleton.Joints[1].ID = anim.Skeleton.JointHierarchy.Insert(&anim.Skeleton.Joints[1], root);
-		anim.Skeleton.Joints[2].ID = anim.Skeleton.JointHierarchy.Insert(&anim.Skeleton.Joints[2], root);
-		anim.Skeleton.Joints[3].ID = anim.Skeleton.JointHierarchy.Insert(&anim.Skeleton.Joints[3], root);
+		anim.Skeleton.Joints[1].ID = leftHand;
+		anim.Skeleton.Joints[2].ID = rightHand;
+		anim.Skeleton.Joints[3].ID = body;
+		anim.Skeleton.Joints[4].ID = leftKnee;
+		anim.Skeleton.Joints[5].ID = rightKnee;
+		anim.Skeleton.Joints[6].ID = leftFoot;
+		anim.Skeleton.Joints[7].ID = rightFoot;
 
-		{
-			KeyFrame::Data data;
-			data.Joint = &anim.Skeleton.Joints[0];
-			data.StartPosition = glm::vec3(-1.0f);
-			data.EndPosition = glm::vec3(1.0f);
-			anim.KeyFrames.push_back({});
-			anim.KeyFrames.back().AffectedJoints.push_back(data);
-			anim.KeyFrames.back().Length = 5.0f;
-		}
-		{
-			KeyFrame::Data data;
-			data.Joint = &anim.Skeleton.Joints[1];
-			data.StartPosition = glm::vec3(0.0f,-4.0f, 0.0f);
-			data.EndPosition = glm::vec3(1.0f);
-			anim.KeyFrames.push_back({});
-			anim.KeyFrames.back().AffectedJoints.push_back(data);
-			anim.KeyFrames.back().Length = 5.0f;
 
-			data.Joint = &anim.Skeleton.Joints[2];
-			data.StartPosition = glm::vec3(0.0f, -4.0f, 0.0f);
-			data.EndPosition = glm::vec3(-1.0f);
-			anim.KeyFrames.back().AffectedJoints.push_back(data);
-		}
+
+		glm::vec2 texCoords[4] = {
+		    {0.0f, 0.0f},
+		    {1.0f, 0.0f},
+		    {1.0f, 1.0f},
+		    {0.0f, 1.0f}
+		};
+		glm::vec3 firstQuad[4] = {
+			{-1.0f, -0.5f, 0.0f},
+			{ 0.0f, -0.5f, 0.0f},
+			{ 0.0f,  0.5f, 0.0f},
+			{-1.0f,  0.5f, 0.0f},
+		};
 		m_SkeletalMesh = new SkeletalMesh(anim);
+		
+		VertexBoneData data;
+		data.IDs[0] = leftHand;
+		m_SkeletalMesh->m_Vertices.push_back({ firstQuad[0], texCoords[0], data });
+		data.IDs[0] = root;
+		m_SkeletalMesh->m_Vertices.push_back({ firstQuad[1], texCoords[1], data });
+		m_SkeletalMesh->m_Vertices.push_back({ firstQuad[2], texCoords[2], data });
+		data.IDs[0] = leftHand;
+		m_SkeletalMesh->m_Vertices.push_back({ firstQuad[3], texCoords[3], data });
+
+		{
+			//KeyFrame::Data data;
+			//data.Joint = &anim.Skeleton.Joints[0];
+			//data.StartPosition = glm::vec3(0.0f);
+			//data.EndPosition = glm::vec3(1.0f);
+			//anim.KeyFrames.push_back({});
+			//anim.KeyFrames.back().AffectedJoints.push_back(data);
+			//anim.KeyFrames.back().Length = 5.0f;
+		}
+		{
+			//KeyFrame::Data data;
+			//data.Joint = &anim.Skeleton.Joints[1];
+			//data.StartPosition = glm::vec3(0.0f,-4.0f, 0.0f);
+			//data.EndPosition = glm::vec3(1.0f);
+			//anim.KeyFrames.push_back({});
+			//anim.KeyFrames.back().AffectedJoints.push_back(data);
+			//anim.KeyFrames.back().Length = 5.0f;
+			//
+			//data.Joint = &anim.Skeleton.Joints[2];
+			//data.StartPosition = glm::vec3(0.0f, -4.0f, 0.0f);
+			//data.EndPosition = glm::vec3(-1.0f);
+			//anim.KeyFrames.back().AffectedJoints.push_back(data);
+		}
+		
 	}
 
 	Scene::~Scene()
