@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "InspectorPanel.h"
 
+#include "XYZ/InGui/InGui.h"
+
 namespace XYZ {
 	static const char* BodyTypeToString(RigidBody2DComponent::BodyType type)
 	{

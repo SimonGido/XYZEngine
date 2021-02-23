@@ -1,6 +1,6 @@
 #pragma once
 
-#include <XYZ.h>
+#include "XYZ/Scene/SceneEntity.h"
 
 namespace XYZ {
 

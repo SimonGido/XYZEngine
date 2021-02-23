@@ -1,6 +1,8 @@
 #pragma once
 
-#include <XYZ.h>
+#include "XYZ/Scene/Scene.h"
+#include "XYZ/Event/ApplicationEvent.h"
+#include "XYZ/Event/InputEvent.h"
 
 namespace XYZ {
 

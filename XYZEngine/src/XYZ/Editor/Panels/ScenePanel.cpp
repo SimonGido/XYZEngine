@@ -1,7 +1,11 @@
 #include "stdafx.h"
 #include "ScenePanel.h"
 
-
+#include "XYZ/Core/Input.h"
+#include "XYZ/Core/Application.h"
+#include "XYZ/InGui/InGui.h"
+#include "XYZ/Scene/SceneEntity.h"
+#include "XYZ/Renderer/SceneRenderer.h"
 
 namespace XYZ {
 

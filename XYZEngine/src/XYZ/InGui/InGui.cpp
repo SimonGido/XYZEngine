@@ -1274,7 +1274,7 @@ namespace XYZ {
 			std::sort(s_Context->EventListeners.begin(), s_Context->EventListeners.end(), [](uint32_t a, uint32_t b) {
 				InGuiWindow& first = s_Context->Windows[a];
 				InGuiWindow& second = s_Context->Windows[b];
-				return first.Flags > second.Flags;
+				return first.Flags < second.Flags;
 			});
 
 			const glm::vec2& mousePos = s_Context->FrameData.MousePosition;

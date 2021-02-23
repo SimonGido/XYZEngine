@@ -39,7 +39,8 @@ namespace XYZ {
 		m_AssetManager("Assets"),
 		m_SceneHierarchyPanel(PanelID::SceneHierarchyPanel),
 		m_InspectorPanel(PanelID::InspectorPanel),
-		m_ScenePanel(PanelID::ScenePanel)
+		m_ScenePanel(PanelID::ScenePanel),
+		m_SpriteEditorPanel(PanelID::SpriteEditorPanel)
 	{		
 	}
 
@@ -141,10 +142,13 @@ namespace XYZ {
 		
 		Ref<RenderTexture> renderTexture = RenderTexture::Create(SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer);
 		Ref<SubTexture> renderSubTexture = Ref<SubTexture>::Create(renderTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
-	
+		Ref<Texture> robotTexture = Texture2D::Create({}, "Assets/Textures/Robot.png");
+		Ref<SubTexture> robotSubTexture = Ref<SubTexture>::Create(robotTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+
 		m_SceneHierarchyPanel.SetContext(m_Scene);
 		m_ScenePanel.SetContext(m_Scene);
 		m_ScenePanel.SetSubTexture(renderSubTexture);
+		m_SpriteEditorPanel.SetContext(robotSubTexture);
 	}	
 
 
@@ -213,6 +217,7 @@ namespace XYZ {
 		dispatcher.Dispatch<KeyPressedEvent>(Hook(&EditorLayer::onKeyPress, this));
 		m_SceneHierarchyPanel.OnEvent(event);
 		m_ScenePanel.OnEvent(event);
+		m_SpriteEditorPanel.OnEvent(event);
 	}
 
 	void EditorLayer::OnInGuiRender()
@@ -220,6 +225,7 @@ namespace XYZ {
 		m_SceneHierarchyPanel.OnInGuiRender();
 		m_InspectorPanel.OnInGuiRender();
 		m_ScenePanel.OnInGuiRender();
+		m_SpriteEditorPanel.OnInGuiRender();
 	}
 
 	
