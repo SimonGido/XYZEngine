@@ -9,7 +9,6 @@ namespace XYZ {
 
 
 
-
 	private:
 	};
 }

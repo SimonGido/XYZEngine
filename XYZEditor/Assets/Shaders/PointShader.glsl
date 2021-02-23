@@ -30,9 +30,5 @@ in float v_Radius;
 
 void main()
 {
-	vec2 circCoord = 2.0 * gl_PointCoord - 1.0;
-	if (dot(circCoord, circCoord) > v_Radius) 
-	    discard;
-
 	o_Color = v_Color;
 }

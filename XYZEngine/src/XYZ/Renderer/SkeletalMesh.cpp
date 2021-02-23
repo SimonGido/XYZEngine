@@ -83,7 +83,6 @@ namespace XYZ {
             glm::vec4 perspective;
             glm::decompose(childBone->FinalTransform, scale, rotation, translation, skew, perspective);  
             Renderer2D::SubmitCircle(translation, 0.05f, 10, color);
-            Renderer2D::SubmitPoint(translation, 20.0f, color);
       
             //Renderer2D::SubmitLine(translation, test * childBone->Length, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f));
 
