@@ -37,7 +37,11 @@ namespace XYZ {
 				InGui::Image(m_Size, m_Context);
 				for (auto& point : m_Points[0])
 				{
-					Renderer2D::SubmitCircle(glm::vec3(windowPosition.x + point[0], windowPosition.y + point[1], 0.0f), 5.0f, 20, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f));
+					glm::vec2 relativePos = {
+						windowPosition.x + (windowSize.x / 2.0f) + point[0],
+						windowPosition.y + (windowSize.y / 2.0f) + point[1]
+					};
+					Renderer2D::SubmitCircle(glm::vec3(relativePos.x, relativePos.y, 0.0f), 5.0f, 20, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f));
 				}
 				for (size_t i = 1; i < m_Indices.size(); ++i)
 				{
@@ -45,7 +49,18 @@ namespace XYZ {
 					uint32_t currentIndex = m_Indices[i];
 					Point& previous = m_Points[0][previousIndex];
 					Point& current = m_Points[0][currentIndex];
-					Renderer2D::SubmitLine(glm::vec3(previous[0], previous[1], 0.0f), glm::vec3(current[0], current[1], 0.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+
+					glm::vec2 previousRelPos = {
+						windowPosition.x + (windowSize.x / 2.0f) + previous[0],
+						windowPosition.y + (windowSize.y / 2.0f) + previous[1]
+					};
+					glm::vec2 currentRelPos = {
+						windowPosition.x + (windowSize.x / 2.0f) + current[0],
+						windowPosition.y + (windowSize.y / 2.0f) + current[1]
+					};
+					Renderer2D::SubmitLine(
+						glm::vec3(previousRelPos.x, previousRelPos.y, 0.0f), 
+						glm::vec3(currentRelPos.x, currentRelPos.y, 0.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 				}
 				InGui::SetPositionOfNext(nextPos);
 				if (IS_SET(InGui::Button("Triangulate", glm::vec2(70.0f, 50.0f)), InGuiReturnType::Clicked))
@@ -69,7 +84,8 @@ namespace XYZ {
 			{
 				auto [mx, my] = Input::GetMousePosition();
 				glm::vec2 windowPosition = InGui::GetWindow(m_PanelID).Position;
-				glm::vec2 relativePos = glm::vec2( mx, my ) - windowPosition;
+				glm::vec2 windowSize = InGui::GetWindow(m_PanelID).Size;
+				glm::vec2 relativePos = glm::vec2( mx, my ) - windowPosition - (windowSize / 2.0f);
 
 				m_Points[0].push_back({ relativePos.x, relativePos.y });
 
