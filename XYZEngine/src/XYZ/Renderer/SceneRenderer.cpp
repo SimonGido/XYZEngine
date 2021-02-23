@@ -280,7 +280,7 @@ namespace XYZ {
 			uint32_t textureID = Renderer2D::SetTexture(dc.Sprite->SubTexture->GetTexture());
 			Renderer2D::SubmitQuad(dc.Transform->GetTransform(), dc.Sprite->SubTexture->GetTexCoords(), textureID, dc.Sprite->Color);
 		}
-		s_Mesh->Render();
+		s_Mesh->Render(s_Data.ViewProjectionMatrix);
 
 		Renderer2D::Flush();
 		Renderer2D::FlushLines();

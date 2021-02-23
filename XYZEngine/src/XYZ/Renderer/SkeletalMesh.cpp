@@ -46,11 +46,11 @@ namespace XYZ {
     }
 
  
-    SkeletalMesh::SkeletalMesh(const Skeleton& skeleton)
+    SkeletalMesh::SkeletalMesh(const Skeleton& skeleton, Ref<Material> material)
         :
-        m_Skeleton(skeleton)
+        m_Skeleton(skeleton),
+        m_Material(material)
     {
-    
     }
     void SkeletalMesh::Update(float ts)
     {  
@@ -132,19 +132,42 @@ namespace XYZ {
         m_OldMousePosition = glm::vec2( mx, my );
     }
 
-    void SkeletalMesh::Render()
+    void SkeletalMesh::RebuildBuffers()
     {
-        std::vector<Vertex> vertices;
-        vertices.resize(m_Vertices.size());
+        m_VertexArray = VertexArray::Create();
+
+        Ref<VertexBuffer> vbo = VertexBuffer::Create(m_Vertices.data(), m_Vertices.size() * sizeof(AnimatedVertex));
+        vbo->SetLayout({
+            {0, XYZ::ShaderDataComponent::Float3, "a_Position" },
+            {1, XYZ::ShaderDataComponent::Float2, "a_TexCoord" },
+            {2, XYZ::ShaderDataComponent::Int4,   "a_BoneIDs"  },
+            {3, XYZ::ShaderDataComponent::Float4, "a_Weights"  }
+        });
+
+        m_VertexArray->AddVertexBuffer(vbo);
+
+        Ref<IndexBuffer> ibo = IndexBuffer::Create(m_Indices.data(), m_Indices.size());
+        m_VertexArray->SetIndexBuffer(ibo);
+    }
+
+    void SkeletalMesh::Render(const glm::mat4& viewProjectionMatrix)
+    {
+        Ref<Shader> shader = m_Material->GetShader();
+
+        shader->Bind();
+        shader->SetMat4("u_Transform", glm::translate(glm::vec3(0.0f)));
+        shader->SetMat4("u_ViewProjectionMatrix", viewProjectionMatrix);
+        shader->SetFloat4("u_Color", glm::vec4(1.0f));
+
         uint32_t counter = 0;
-        for (auto& vertex : m_Vertices)
+        for (auto& bone : m_Skeleton.Bones)
         {
-            Bone* bone = static_cast<Bone*>(m_Skeleton.BoneHierarchy.GetData(vertex.BoneData.IDs[0]));
-            vertices[counter].Position = bone->FinalTransform * glm::vec4(vertex.Position, 1.0f);
-            vertices[counter].TexCoord = vertex.TexCoord;
-            vertices[counter].Color = glm::vec4(1.0f);
-            counter++;
+            char name[12];
+            sprintf(name, "u_Bones[%u]", counter++);
+            shader->SetMat4(name, bone.FinalTransform);
         }
-        Renderer2D::SubmitQuads(vertices.data(), vertices.size() / 4, 0);
+
+        m_VertexArray->Bind();
+        Renderer::DrawIndexed(PrimitiveType::Triangles, m_Indices.size());
     }
 }

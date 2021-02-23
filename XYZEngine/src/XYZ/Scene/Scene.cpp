@@ -105,15 +105,25 @@ namespace XYZ {
 			{ 0.5f,  0.5f, 0.0f},
 			{-0.5f,  0.5f, 0.0f},
 		};
-		m_SkeletalMesh = new SkeletalMesh(skeleton);
+
+		m_SkeletalMesh = new SkeletalMesh(skeleton, Ref<Material>::Create(Shader::Create("Assets/Shaders/SkeletalAnimationShader.glsl")));
 		
 		VertexBoneData data;
-		data.IDs[0] = leftFoot;
+		data.Weights[0] = 1.0f;
+		data.IDs[0] = 5;
 		m_SkeletalMesh->m_Vertices.push_back({ firstQuad[0], texCoords[0], data });
 		m_SkeletalMesh->m_Vertices.push_back({ firstQuad[1], texCoords[1], data });
-		data.IDs[0] = leftKnee;
+		data.IDs[0] = 3;
 		m_SkeletalMesh->m_Vertices.push_back({ firstQuad[2], texCoords[2], data });
 		m_SkeletalMesh->m_Vertices.push_back({ firstQuad[3], texCoords[3], data });
+
+		m_SkeletalMesh->m_Indices.push_back(0);
+		m_SkeletalMesh->m_Indices.push_back(1);
+		m_SkeletalMesh->m_Indices.push_back(2);
+		m_SkeletalMesh->m_Indices.push_back(2);
+		m_SkeletalMesh->m_Indices.push_back(3);
+		m_SkeletalMesh->m_Indices.push_back(0);
+		m_SkeletalMesh->RebuildBuffers();
 
 		{
 			//KeyFrame::Data data;

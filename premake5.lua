@@ -27,6 +27,7 @@ IncludeDir["Asio"] = "XYZEngine/vendor/asio/include"
 IncludeDir["Lua"] = "XYZEngine/vendor/lua/include"
 IncludeDir["Sol"] = "XYZEngine/vendor/sol2/include"
 IncludeDir["mono"] = "XYZEngine/vendor/mono/include"
+IncludeDir["earcut"] = "XYZEngine/vendor/earcut/include"
 
 LibraryDir = {}
 LibraryDir["mono"] = "vendor/mono/lib/Debug/mono-2.0-sgen.lib"
@@ -94,7 +95,8 @@ project "XYZEngine"
 			"%{IncludeDir.Asio}",
 			"%{IncludeDir.Lua}",
 			"%{IncludeDir.Sol}",
-			"%{IncludeDir.mono}"
+			"%{IncludeDir.mono}",
+			"%{IncludeDir.earcut}"
 		}
 
 		links

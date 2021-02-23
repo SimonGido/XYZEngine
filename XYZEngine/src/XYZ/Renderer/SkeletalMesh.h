@@ -19,10 +19,12 @@ namespace XYZ {
 		}
 		void Reset()
 		{
-			memset(IDs, -1, sc_MaxBonesPerVertex * sizeof(int32_t));
+			memset(IDs, 0, sc_MaxBonesPerVertex * sizeof(uint32_t));
+			memset(Weights, 0, sc_MaxBonesPerVertex * sizeof(float));
 		}
 
-		int32_t IDs[sc_MaxBonesPerVertex];
+		uint32_t IDs[sc_MaxBonesPerVertex];
+		float    Weights[sc_MaxBonesPerVertex];
 	};
 
 	struct AnimatedVertex
@@ -55,13 +57,19 @@ namespace XYZ {
 	class SkeletalMesh : public RefCount
 	{
 	public:
-		SkeletalMesh(const Skeleton& skeleton);
+		SkeletalMesh(const Skeleton& skeleton, Ref<Material> material);
 
 		void Update(float ts);
+		void RebuildBuffers();
 
-		void Render();
+		void Render(const glm::mat4& viewProjectionMatrix);
+
 	//private:
+		Ref<VertexArray> m_VertexArray;
+		Ref<Material> m_Material;
+
 		std::vector<AnimatedVertex> m_Vertices;
+		std::vector<uint32_t> m_Indices;
 
 		Bone* m_Selected = nullptr;
 		glm::vec2 m_OldMousePosition = glm::vec2(0.0f);
