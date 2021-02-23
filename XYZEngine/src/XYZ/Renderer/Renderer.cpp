@@ -95,6 +95,13 @@ namespace XYZ {
 		});
 	}
 
+	void Renderer::SetPointSize(float size)
+	{
+		Renderer::Submit([=]() {
+			RendererAPI::SetPointSize(size);
+			});
+	}
+
 	void Renderer::SetDepthTest(bool val)
 	{
 		Renderer::Submit([=]() {
@@ -122,6 +129,13 @@ namespace XYZ {
 		Renderer::Submit([=]() {
 			RendererAPI::ScissorArray(count, buffer);
 			delete[] buffer;
+			});
+	}
+
+	void Renderer::DrawArrays(PrimitiveType type, uint32_t count)
+	{
+		Renderer::Submit([=]() {
+			RendererAPI::DrawArrays(type, count);
 			});
 	}
 

@@ -26,11 +26,13 @@ namespace XYZ {
 		static void Clear();
 		static void SetClearColor(const glm::vec4& color);
 		static void SetViewPort(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
+		static void SetPointSize(float size);
 		static void SetDepthTest(bool val);
 		static void SetScissorTest(bool val);
 		static void Scissor(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 		static void ScissorArray(uint32_t count, ScissorSpecs* scissors);
 
+		static void DrawArrays(PrimitiveType type, uint32_t count);
 		static void DrawIndexed(PrimitiveType type, uint32_t indexCount = 0);
 		static void DrawInstanced(const Ref<VertexArray>& vertexArray, uint32_t count, uint32_t offset = 0);
 		static void DrawElementsIndirect(void* indirect);

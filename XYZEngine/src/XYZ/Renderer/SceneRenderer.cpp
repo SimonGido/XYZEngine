@@ -285,6 +285,7 @@ namespace XYZ {
 		Renderer2D::Flush();
 		Renderer2D::FlushLines();
 		Renderer2D::FlushCollisions();
+		Renderer2D::FlushPoints();
 
 		for (auto& dc : s_Data.ParticleDrawList)
 		{

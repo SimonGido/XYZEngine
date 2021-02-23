@@ -2,10 +2,6 @@
 
 #include <XYZ.h>
 
-#include "Panels/SceneHierarchyPanel.h"
-#include "Panels/ScenePanel.h"
-#include "Panels/InspectorPanel.h"
-
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/matrix_decompose.hpp>

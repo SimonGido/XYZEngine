@@ -14,7 +14,6 @@ namespace XYZ {
 	enum class EventType
 	{		
 		#include "CoreEventTypes.def"
-		#include "../../XYZEditor/src/Event/EditorEventTypes.def"
 	};
 
 

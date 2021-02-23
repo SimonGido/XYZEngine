@@ -23,9 +23,9 @@
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Renderer/RenderTexture.h"
 #include "XYZ/Renderer/Font.h"
-
 #include "XYZ/Renderer/Framebuffer.h"
 #include "XYZ/Renderer/SubTexture.h"
+
 
 //-----Scene-----//
 #include "XYZ/Scene/SceneCamera.h"
@@ -35,9 +35,11 @@
 #include "XYZ/Scene/Scene.h"
 
 
-
 //---------Editor-----------//
 #include "XYZ/Editor/EditorCamera.h"
+#include "XYZ/Editor/Panels/ScenePanel.h"
+#include "XYZ/Editor/Panels/SceneHierarchyPanel.h"
+#include "XYZ/Editor/Panels/InspectorPanel.h"
 
 //------ECS-----//
 #include "XYZ/ECS/ECSManager.h"
@@ -54,8 +56,6 @@
 #include "XYZ/Gui/Checkbox.h"
 
 
-#include "XYZ/FSM/StateMachine.h"
-
 //------Scripting-------//
 #include "XYZ/Script/ScriptEngine.h"
 #include "XYZ/Script/LuaModule.h"
@@ -67,7 +67,6 @@
 #include "XYZ/Utils/Math/Ray.h"
 
 
-#include "XYZ/Utils/DataStructures/Graph.h"
 
 //------Net---------//
 #include "XYZ/Net/NetServer.h"
@@ -75,9 +74,6 @@
 #include "XYZ/Net/NetConnection.h"
 
 
-
+//------InGui---------//
 #include "XYZ/InGui/InGui.h"
 #include "XYZ/InGui/InGuiDockspace.h"
-
-
-#include "XYZ/Physics/DynamicTree.h"

@@ -37,6 +37,13 @@ namespace XYZ {
 		int CollisionID;
 	};
 
+	struct Point
+	{
+		glm::vec4 Color;
+		glm::vec3 Position;
+		float Radius;
+	};
+
 	struct Renderer2DData
 	{
 		static const uint32_t MaxTextures = 32;
@@ -47,17 +54,20 @@ namespace XYZ {
 		static const uint32_t MaxLineVertices = MaxLines * 2;
 		static const uint32_t MaxLineIndices = MaxLines * 6;
 		static const uint32_t MaxCollisionVertices = MaxQuads * 4;
-
+		static const uint32_t MaxPoints = 10000;
 
 		void Reset();
 		void ResetLines();
 		void ResetCollisions();
+		void ResetPoints();
+
 		
 		Ref<Material> DefaultQuadMaterial;
 		Ref<Material> QuadMaterial;
 		Ref<Material> GridMaterial;
 		Ref<Shader> LineShader;
 		Ref<Shader> CollisionShader;
+		Ref<Shader> PointShader;
 
 		Ref<Texture> TextureSlots[MaxTextures];
 		uint32_t TextureSlotIndex = 0;
@@ -89,10 +99,17 @@ namespace XYZ {
 
 		Ref<VertexArray>  CollisionVertexArray;
 		Ref<VertexBuffer> CollisionVertexBuffer;
+		uint32_t PointCount = 0;
+		Point* PointBufferBase = nullptr;
+		Point* PointBufferPtr = nullptr;
 
 		uint32_t CollisionIndexCount = 0;
 		CollisionVertex* CollisionBufferBase = nullptr;
 		CollisionVertex* CollisionBufferPtr = nullptr;
+
+
+		Ref<VertexArray> PointsVertexArray;
+		Ref<VertexBuffer> PointsVertexBuffer;
 
 		glm::mat4 ViewProjectionMatrix;
 		Renderer2DStats Stats;
@@ -170,7 +187,6 @@ namespace XYZ {
 
 			uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
 			auto gridIB = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
-	
 			GridVertexArray->SetIndexBuffer(gridIB);
 		}
 		BufferPtr = BufferBase;
@@ -243,6 +259,26 @@ namespace XYZ {
 		CollisionBufferPtr = CollisionBufferBase;
 		CollisionIndexCount = 0;
 	}
+
+	void Renderer2DData::ResetPoints()
+	{
+		if (!PointBufferBase)
+		{
+			PointShader = Shader::Create("Assets/Shaders/PointShader.glsl");
+			PointsVertexArray = VertexArray::Create();
+			PointsVertexBuffer = VertexBuffer::Create(MaxPoints * sizeof(Point));
+			PointsVertexBuffer->SetLayout({
+				{0, ShaderDataComponent::Float4, "a_Color"},
+				{1, ShaderDataComponent::Float3, "a_Position"},
+				{2, ShaderDataComponent::Float, "a_Radius"}
+				});
+			PointBufferBase = new Point[MaxPoints];
+
+			PointsVertexArray->AddVertexBuffer(PointsVertexBuffer);
+		}
+		PointBufferPtr = PointBufferBase;
+		PointCount = 0;
+	}
 	
 	static Renderer2DData s_Data;
 
@@ -251,6 +287,7 @@ namespace XYZ {
 		s_Data.Reset();
 		s_Data.ResetLines();
 		s_Data.ResetCollisions();
+		s_Data.ResetPoints();
 	}
 
 	void Renderer2D::Shutdown()
@@ -258,6 +295,7 @@ namespace XYZ {
 		delete[] s_Data.BufferBase;
 		delete[] s_Data.LineBufferBase;
 		delete[] s_Data.CollisionBufferBase;
+		delete[] s_Data.PointBufferBase;
 	}
 
 	void Renderer2D::BeginScene(const glm::mat4& viewProjectionMatrix)
@@ -295,6 +333,7 @@ namespace XYZ {
 		s_Data.QuadMaterial = material;
 	}
 
+
 	void Renderer2D::SubmitCircle(const glm::vec3& pos, float radius, uint32_t sides, const glm::vec4& color)
 	{
 		if (s_Data.LineIndexCount + (sides * 2) >= s_Data.MaxLineIndices)
@@ -313,6 +352,18 @@ namespace XYZ {
 			s_Data.LineBufferPtr++;
 			s_Data.LineIndexCount += 2;
 		}
+	}
+
+	void Renderer2D::SubmitPoint(const glm::vec3& pos, float radius, const glm::vec4& color)
+	{
+		if (s_Data.PointCount >= s_Data.MaxPoints)
+			FlushPoints();
+
+		s_Data.PointBufferPtr->Color = color;
+		s_Data.PointBufferPtr->Position = pos;
+		s_Data.PointBufferPtr->Radius = radius;
+		s_Data.PointBufferPtr++;
+		s_Data.PointCount++;
 	}
 
 
@@ -578,6 +629,22 @@ namespace XYZ {
 
 			s_Data.Stats.CollisionDrawCalls++;
 			s_Data.ResetCollisions();
+		}
+	}
+
+	void Renderer2D::FlushPoints()
+	{
+		uint32_t dataSize = (uint8_t*)s_Data.PointBufferPtr - (uint8_t*)s_Data.PointBufferBase;
+		if (dataSize)
+		{
+			s_Data.PointShader->Bind();
+			s_Data.PointShader->SetMat4("u_ViewProjectionMatrix", s_Data.ViewProjectionMatrix);
+
+			s_Data.PointsVertexBuffer->Update(s_Data.PointBufferBase, dataSize);
+			s_Data.PointsVertexArray->Bind();
+
+			Renderer::DrawArrays(PrimitiveType::Points, s_Data.PointCount);
+			s_Data.ResetPoints();
 		}
 	}
 

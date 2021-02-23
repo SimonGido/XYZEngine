@@ -22,6 +22,7 @@ namespace XYZ {
 		glGetIntegerv(GL_MAX_SAMPLES, &caps.MaxSamples);
 		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &caps.MaxAnisotropy);
 		glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &caps.MaxTextureUnits);
+		glEnable(GL_PROGRAM_POINT_SIZE);
 	}
 	void RendererAPI::SetDepth(bool enabled)
 	{
@@ -37,6 +38,11 @@ namespace XYZ {
 			glEnable(GL_SCISSOR_TEST);
 		else
 			glDisable(GL_SCISSOR_TEST);
+	}
+
+	void RendererAPI::SetPointSize(float size)
+	{
+		glPointSize(size);
 	}
 
 	void RendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
@@ -69,6 +75,25 @@ namespace XYZ {
 		glScissorArrayv(0, count, (GLint*)scissors);
 	}
 
+	void RendererAPI::DrawArrays(PrimitiveType type, uint32_t count)
+	{
+		switch (type)
+		{
+		case XYZ::PrimitiveType::None:
+			XYZ_ASSERT(false, "Primitive type is none");
+			break;
+		case XYZ::PrimitiveType::Triangles:
+			glDrawArrays(GL_TRIANGLES, 0, count);
+			break;
+		case XYZ::PrimitiveType::Lines:
+			glDrawArrays(GL_LINES, 0, count);
+			break;
+		case XYZ::PrimitiveType::Points:
+			glDrawArrays(GL_POINTS, 0, count);
+		}
+
+	}
+
 	void RendererAPI::DrawIndexed(PrimitiveType type, uint32_t indexCount)
 	{
 		switch (type)
@@ -83,7 +108,7 @@ namespace XYZ {
 			glDrawElements(GL_LINES, indexCount, GL_UNSIGNED_INT, nullptr);
 			break;
 		case XYZ::PrimitiveType::Points:
-			glDrawElements(GL_POINT, indexCount, GL_UNSIGNED_INT, nullptr);
+			glDrawElements(GL_POINTS, indexCount, GL_UNSIGNED_INT, nullptr);
 		}
 		
 		glBindTexture(GL_TEXTURE_2D, 0);
