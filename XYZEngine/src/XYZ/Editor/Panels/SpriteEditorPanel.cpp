@@ -8,6 +8,22 @@
 #include "mapbox/earcut.hpp"
 
 namespace XYZ {
+
+	static void CircleOfLines(InGuiMesh& mesh, const glm::vec3& pos, float radius, size_t sides, const glm::vec4& color)
+	{
+		float step = 360 / sides;
+		for (int a = step; a < 360 + step; a += step)
+		{
+			float before = glm::radians((float)(a - step));
+			float heading = glm::radians((float)a);
+
+			glm::vec3 p0 = glm::vec3(pos.x + std::cos(before) * radius, pos.y + std::sin(before) * radius, pos.z);
+			glm::vec3 p1 = glm::vec3(pos.x + std::cos(heading) * radius, pos.y + std::sin(heading) * radius, pos.z);
+
+			mesh.Lines.push_back({ color, p0, p1 });
+		}
+	}
+
 	SpriteEditorPanel::SpriteEditorPanel(uint32_t panelID)
 		:
 		m_PanelID(panelID)
@@ -42,7 +58,7 @@ namespace XYZ {
 				InGui::BeginScrollableArea(windowSize - glm::vec2(2.0f * layout.RightPadding, 0.0f), m_ScrollOffset, 100.0f, 10.0f);
 				glm::vec2 nextPos = InGui::GetPositionOfNext();
 				InGui::SetPositionOfNext(windowPosition + position);
-				InGui::Image(m_Size * 2.0f, m_Context);
+				InGui::Image(m_Size, m_Context);
 				
 				for (auto& point : m_Points[0])
 				{
@@ -50,7 +66,10 @@ namespace XYZ {
 						windowPosition.x + (windowSize.x / 2.0f) + point[0],
 						windowPosition.y + (windowSize.y / 2.0f) + point[1]
 					};
-					Renderer2D::SubmitCircle(glm::vec3(relativePos.x, relativePos.y, 0.0f), sc_PointRadius, 20, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f));
+					CircleOfLines(
+						InGui::GetWindowScrollableOverlayMesh(m_PanelID), glm::vec3(relativePos.x, relativePos.y, 0.0f), 
+						sc_PointRadius, 20, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f)
+					);
 				}
 				for (size_t i = 1; i < m_Indices.size(); ++i)
 				{
@@ -67,9 +86,12 @@ namespace XYZ {
 						windowPosition.x + (windowSize.x / 2.0f) + current[0],
 						windowPosition.y + (windowSize.y / 2.0f) + current[1]
 					};
-					Renderer2D::SubmitLine(
-						glm::vec3(previousRelPos.x, previousRelPos.y, 0.0f), 
-						glm::vec3(currentRelPos.x, currentRelPos.y, 0.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+					auto& mesh = InGui::GetWindowScrollableOverlayMesh(m_PanelID);
+					mesh.Lines.push_back({ 
+						glm::vec4(0.0f, 0.0f, 1.0f, 1.0f),
+						glm::vec3(previousRelPos.x, previousRelPos.y, 0.0f),
+						glm::vec3(currentRelPos.x, currentRelPos.y, 0.0f) 
+					});
 				}
 				InGui::SetPositionOfNext(nextPos);
 				if (IS_SET(InGui::Button("Triangulate", glm::vec2(70.0f, 50.0f)), InGuiReturnType::Clicked))

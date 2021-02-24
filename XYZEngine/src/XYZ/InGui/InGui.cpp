@@ -275,6 +275,26 @@ namespace XYZ {
 		return s_Context->Windows[id];
 	}
 
+	InGuiMesh& InGui::GetWindowMesh(uint32_t id)
+	{
+		return s_Context->Windows[id].Mesh;
+	}
+
+	InGuiMesh& InGui::GetWindowOverlayMesh(uint32_t id)
+	{
+		return s_Context->Windows[id].OverlayMesh;
+	}
+
+	InGuiMesh& InGui::GetWindowScrollableMesh(uint32_t id)
+	{
+		return s_Context->Windows[id].ScrollableMesh;
+	}
+
+	InGuiMesh& InGui::GetWindowScrollableOverlayMesh(uint32_t id)
+	{
+		return s_Context->Windows[id].ScrollableOverlayMesh;
+	}
+
 	const InGuiContext& InGui::GetContext()
 	{
 		return *s_Context;

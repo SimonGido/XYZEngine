@@ -29,6 +29,10 @@ namespace XYZ {
 		
 		static const glm::vec2& GetPositionOfNext();
 		static const InGuiWindow& GetWindow(uint32_t id);
+		static InGuiMesh& GetWindowMesh(uint32_t id);
+		static InGuiMesh& GetWindowOverlayMesh(uint32_t id);
+		static InGuiMesh& GetWindowScrollableMesh(uint32_t id);
+		static InGuiMesh& GetWindowScrollableOverlayMesh(uint32_t id);
 		static const InGuiContext& GetContext();
 
 
