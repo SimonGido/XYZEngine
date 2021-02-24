@@ -143,9 +143,10 @@ namespace XYZ {
 	{
 		GenerateQuad(mesh, color, size, position, renderData.SubTexture[subTextureIndex], InGuiRenderData::TextureID, scissorIndex);
 		glm::vec2 textPosition = position;
+		glm::vec2 textOffset = { 7.0f, 0.0f };
 		glm::vec2 textSize = { 
 			window.Size.x - window.Layout.RightPadding - size.x
-			- (position.x - window.Position.x), 
+			- (position.x - window.Position.x) - textOffset.x, 
 			window.Size.y 
 		};
 
@@ -158,7 +159,7 @@ namespace XYZ {
 			position, textSize, mesh, InGuiRenderData::FontTextureID, 1000, scissorIndex
 		);
 
-		glm::vec2 textOffset = { 7.0f, 0.0f };
+		
 		
 		for (size_t i = oldMeshSize; i < mesh.Quads.size(); ++i)
 		{

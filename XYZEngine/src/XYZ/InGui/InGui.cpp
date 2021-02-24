@@ -284,17 +284,41 @@ namespace XYZ {
 	bool InGui::eraseOutOfBorders(size_t oldQuadCount, const glm::vec2& genSize, const InGuiWindow& window, InGuiMesh& mesh)
 	{
 		InGuiFrameData& frameData = s_Context->FrameData;
-		if (frameData.LayoutOffset.x + genSize.x > window.Position.x + window.Size.x - window.Layout.RightPadding 
-		 || frameData.LayoutOffset.y + genSize.y > window.Position.y + window.Size.y - window.Layout.BottomPadding 
-		 && !s_Context->FrameData.ScrollableActive)
+		float xBorder = window.Position.x + window.Size.x - window.Layout.RightPadding;
+		float yBorder = window.Position.y + window.Size.y - window.Layout.BottomPadding;
+		if (frameData.LayoutOffset.x + genSize.x > xBorder && !frameData.ScrollableActive)
 		{
-			frameData.LayoutOffset.x += genSize.x + window.Layout.SpacingX;
-			mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
-			return true;
+			if (frameData.EraseOutOfLine)
+			{
+				frameData.LayoutOffset.x += genSize.x + window.Layout.SpacingX;
+				mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
+				return true;
+			}
+			else if (!(frameData.LayoutOffset.y + genSize.y > yBorder))
+			{
+				float oldX = mesh.Quads[oldQuadCount].Position.x;
+				mesh.Quads[oldQuadCount].Position.x = window.Position.x + window.Layout.LeftPadding;
+				mesh.Quads[oldQuadCount].Position.y += frameData.HighestInRow + window.Layout.TopPadding;
+				for (size_t i = oldQuadCount + 1; i < mesh.Quads.size(); ++i)
+				{
+					float diff = mesh.Quads[i].Position.x - oldX;
+					oldX = mesh.Quads[i].Position.x;
+
+					mesh.Quads[i].Position.x = mesh.Quads[i - 1].Position.x + diff;
+					mesh.Quads[i].Position.y += frameData.HighestInRow + window.Layout.TopPadding;
+				}
+				Separator();
+				frameData.HighestInRow = genSize.y;
+			}
+			else
+			{
+				mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
+				return true;
+			}
 		}
-		else if (frameData.HighestInRow < genSize.y)
+		if (frameData.HighestInRow < genSize.y)
 			frameData.HighestInRow = genSize.y;
-		
+	
 		return false;
 	}
 
