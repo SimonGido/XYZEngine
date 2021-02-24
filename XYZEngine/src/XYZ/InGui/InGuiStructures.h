@@ -168,6 +168,7 @@ namespace XYZ {
 		uint32_t				  MovedWindowID			= NullID;
 		uint32_t				  ResizedWindowID		= NullID;
 		uint32_t				  DropdownItemCount		= 0;
+		float					  ScrollableHeight		= 0.0f;
 		glm::vec2			      DropdownSize			= glm::vec2(0.0f);
 		glm::vec2				  LayoutOffset			= glm::vec2(0.0f);
 		InGuiMesh*				  CurrentMesh			= nullptr;

@@ -152,15 +152,12 @@ namespace XYZ {
 			text, renderData.Font, renderData.Color[InGuiRenderData::DEFAULT_COLOR],
 			position, textSize, mesh, InGuiRenderData::FontTextureID, 1000, scissorIndex
 		);
-
-		
-		
+	
 		for (size_t i = oldMeshSize; i < mesh.Quads.size(); ++i)
 		{
 			mesh.Quads[i].Position.x += std::floor(size.x + textOffset.x);
 			mesh.Quads[i].Position.y += std::floor((size.y / 2.0f) + (genSize.y / 2.0f));
 		}
-
 
 		float height = size.y;
 		if (height < genSize.y)

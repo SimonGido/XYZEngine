@@ -492,9 +492,10 @@ namespace XYZ {
 		InGuiFrameData& frameData = s_Context->FrameData;
 
 		auto [wWidth, wHeight] = Input::GetWindowSize();
+		float positionX = frameData.LayoutOffset.x;
 		float positionY = wHeight - frameData.LayoutOffset.y - size.y;
 		s_Context->FrameData.Scissors.push_back(
-			{ frameData.LayoutOffset.x, positionY, size.x, size.y }
+			{ positionX, positionY, size.x, size.y }
 		);
 
 		InGuiFactory::GenerateFrame(window.ScrollableMesh, frameData.LayoutOffset, size, s_Context->RenderData);
@@ -502,24 +503,24 @@ namespace XYZ {
 		if (Collide(frameData.LayoutOffset, size, s_Context->FrameData.MousePosition))
 		{
 			activeWidgets = true;
-			offset -= s_Context->FrameData.ScrollOffset * scrollSpeed;
+			offset -= frameData.ScrollOffset * scrollSpeed;
 		}
 		//////////////////// SLIDER LOGIC ///////////////////////
-		frameData.LayoutOffset.x += size.x + window.Layout.LeftPadding;
+		frameData.LayoutOffset.x += (size.x + window.Layout.LeftPadding);
 		float val = offset / scale;
 		InGui::SliderVertical("", glm::vec2(25.0f, size.y), val);
 		offset = val * scale;
-		frameData.LayoutOffset.x -= size.x + window.Layout.LeftPadding;
-		frameData.HighestInRow = 0.0f;
 		////////////////////////////////////////////////////////
-	
+		frameData.LayoutOffset.x = positionX + window.Layout.LeftPadding;
+		frameData.HighestInRow = 0.0f;
+
+
 		frameData.ActiveWidgets = activeWidgets;
-		frameData.ScrollOffset = frameData.LayoutOffset.y + size.y;
+		frameData.ScrollableHeight = frameData.LayoutOffset.y + size.y;
 		frameData.LayoutOffset.y -= offset - window.Layout.SpacingY;
-		s_Context->FrameData.ScrollableActive = true;
-		s_Context->FrameData.CurrentMesh = &window.ScrollableMesh;
-		s_Context->FrameData.CurrentOverlayMesh = &window.ScrollableOverlayMesh;
-		window.Layout.LeftPadding += window.Layout.LeftPadding; // Padding relative to scrollable area
+		frameData.ScrollableActive = true;
+		frameData.CurrentMesh = &window.ScrollableMesh;
+		frameData.CurrentOverlayMesh = &window.ScrollableOverlayMesh;
 	}
 
 	void InGui::EndScrollableArea()
@@ -531,9 +532,8 @@ namespace XYZ {
 		frameData.CurrentMesh = &window.Mesh;
 		frameData.CurrentOverlayMesh = &window.OverlayMesh;
 		frameData.ScrollableActive = false;
-		frameData.LayoutOffset.y = frameData.ScrollOffset + window.Layout.SpacingY;
+		frameData.LayoutOffset.y = frameData.ScrollableHeight + window.Layout.SpacingY;
 		frameData.ActiveWidgets = true;
-		window.Layout.LeftPadding -= window.Layout.LeftPadding / 2.0f; // Remove padding relative to scrollable area
 	}
 
 	uint8_t InGui::PushNode(const char* name, const glm::vec2& size, bool& open, bool highlight)
@@ -777,8 +777,7 @@ namespace XYZ {
 		else if (val < 0.01f) val = 0.0f;
 
 		int ret = snprintf(frameData.TextBuffer, sizeof(frameData.TextBuffer), "%f", val);
-		if (ret < 0)
-			val = 0.0f;
+		if (ret < 0) val = 0.0f;
 
 		uint8_t returnType = 0;
 		size_t oldQuadCount = mesh.Quads.size();
