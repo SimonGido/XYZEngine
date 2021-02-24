@@ -5,9 +5,19 @@
 #include "XYZ/InGui/InGui.h"
 #include "XYZ/Renderer/Renderer2D.h"
 
-#include "mapbox/earcut.hpp"
+#include <mapbox/earcut.hpp>
 
 namespace XYZ {
+
+
+	struct MyPoint
+	{
+		char something;
+		float x;
+		int something_else;
+		float y;
+		float foo[5];
+	};
 
 	static void CircleOfLines(InGuiMesh& mesh, const glm::vec3& pos, float radius, size_t sides, const glm::vec4& color)
 	{
@@ -75,6 +85,7 @@ namespace XYZ {
 				{
 					uint32_t previousIndex = m_Indices[i - 1];
 					uint32_t currentIndex = m_Indices[i];
+					
 					Point& previous = m_Points[0][previousIndex];
 					Point& current = m_Points[0][currentIndex];
 
@@ -87,16 +98,17 @@ namespace XYZ {
 						windowPosition.y + (windowSize.y / 2.0f) + current[1]
 					};
 					auto& mesh = InGui::GetWindowScrollableOverlayMesh(m_PanelID);
-					mesh.Lines.push_back({ 
+					mesh.Lines.push_back({
 						glm::vec4(0.0f, 0.0f, 1.0f, 1.0f),
 						glm::vec3(previousRelPos.x, previousRelPos.y, 0.0f),
-						glm::vec3(currentRelPos.x, currentRelPos.y, 0.0f) 
-					});
+						glm::vec3(currentRelPos.x, currentRelPos.y, 0.0f)
+						});
+					
 				}
 				InGui::SetPositionOfNext(nextPos);
 				if (IS_SET(InGui::Button("Triangulate", glm::vec2(70.0f, 50.0f)), InGuiReturnType::Clicked))
 				{
-					m_Indices = mapbox::earcut<uint32_t>(m_Points);
+					m_Indices = mapbox::earcut<uint32_t>(m_Points);	
 				}
 				if (m_MovedPoint)
 				{
@@ -145,6 +157,7 @@ namespace XYZ {
 						m_Points[0].erase(m_Points[0].begin() + counter);
 						if (m_Indices.size())
 							m_Indices = mapbox::earcut<uint32_t>(m_Points);
+						
 						return true;
 					}
 					counter++;
