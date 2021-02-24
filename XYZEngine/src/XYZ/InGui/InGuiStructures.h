@@ -159,25 +159,38 @@ namespace XYZ {
 
 		static constexpr uint32_t NullID = 65536;
 	
-		glm::mat4  ViewProjectionMatrix = glm::mat4(1.0f);
-		glm::vec2  MousePosition		= glm::vec2(0.0f);
-		glm::vec2  MouseOffset			= glm::vec2(0.0f);
-		float	   ScrollOffset			= 0.0f;
-		uint16_t   Flags				= 0;
-		uint8_t	   ResizeFlags			= 0;
-		uint32_t   ActiveWindowID		= NullID;
-		uint32_t   MovedWindowID		= NullID;
-		uint32_t   ResizedWindowID		= NullID;
-		InGuiMesh* CurrentMesh			= nullptr;
-		InGuiMesh* CurrentOverlayMesh	= nullptr;
-		InGuiTextCenter Center			= InGuiTextCenter::Left;
-		bool ScrollableActive			= false;
+		glm::mat4				  ViewProjectionMatrix	= glm::mat4(1.0f);
+		glm::vec2				  MousePosition			= glm::vec2(0.0f);
+		glm::vec2				  MouseOffset			= glm::vec2(0.0f);
+		uint16_t				  Flags					= 0;
+		uint8_t					  ResizeFlags			= 0;
+		uint32_t				  ActiveWindowID		= NullID;
+		uint32_t				  MovedWindowID			= NullID;
+		uint32_t				  ResizedWindowID		= NullID;
+		uint32_t				  DropdownItemCount		= 0;
+		glm::vec2			      DropdownSize			= glm::vec2(0.0f);
+		glm::vec2				  LayoutOffset			= glm::vec2(0.0f);
+		InGuiMesh*				  CurrentMesh			= nullptr;
+		InGuiMesh*				  CurrentOverlayMesh	= nullptr;
+		InGuiTextCenter			  TextCenter			= InGuiTextCenter::Left;
+		bool					  ScrollableActive		= false;
+		bool					  ActiveWidgets			= true;
+		float					  ScrollOffset			= 0.0f;
+		float					  HighestInRow			= 0.0f;
 
+		uint32_t				  ModifyTextIndex		= 0;
+		char					  TextBuffer[_MAX_PATH];
+		char					  ModifyTextBuffer[_MAX_PATH];
+		
 		std::vector<InGuiScissor> Scissors;
 		std::vector<Ref<Texture>> CustomTextures;
+		
 		std::vector<bool>		  HandleInput;
 		size_t					  InputIndex = 0;
 	};
+
+
+
 
 	enum class InGuiSplitType
 	{

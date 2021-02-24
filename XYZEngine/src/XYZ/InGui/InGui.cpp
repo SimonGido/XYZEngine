@@ -49,18 +49,6 @@ namespace XYZ {
 
 	InGuiContext* InGui::s_Context = nullptr;
 
-	static char s_TextBuffer[_MAX_PATH];
-	static char s_ModifyTextBuffer[_MAX_PATH];
-	static uint32_t s_ModifyTextBufferIndex = 0;
-
-	static float s_HighestInRow = 0.0f;
-	static float s_ScrollOffset = 0.0f;
-	static bool  s_ActiveWidgets = true;
-
-	static uint32_t s_DropdownItemCount = 0;
-	static glm::vec2 s_DropdownSize = glm::vec2(0.0f);
-	static glm::vec2 s_LayoutOffset = glm::vec2(0.0f);
-	static glm::vec2 s_OldLayoutOffset = glm::vec2(0.0f);
 
 	static glm::vec2 StringToVec2(const std::string& src)
 	{
@@ -254,10 +242,11 @@ namespace XYZ {
 	{
 		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
 		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
+		InGuiFrameData& frameData = s_Context->FrameData;
 
-		s_LayoutOffset.x = window.Position.x + window.Layout.LeftPadding;
-		s_LayoutOffset.y += s_HighestInRow + window.Layout.TopPadding;
-		s_HighestInRow = 0.0f;
+		frameData.LayoutOffset.x = window.Position.x + window.Layout.LeftPadding;
+		frameData.LayoutOffset.y += frameData.HighestInRow + window.Layout.TopPadding;
+		frameData.HighestInRow = 0.0f;
 	}
 	void InGui::SetWindowFlags(uint32_t id, uint16_t flags)
 	{
@@ -266,17 +255,19 @@ namespace XYZ {
 
 	void InGui::SetPositionOfNext(const glm::vec2& position)
 	{
-		s_LayoutOffset = position;
+		InGuiFrameData& frameData = s_Context->FrameData;
+		frameData.LayoutOffset = position;
 	}
 
 	void InGui::SetTextCenter(InGuiTextCenter center)
 	{
-		s_Context->FrameData.Center = center;
+		s_Context->FrameData.TextCenter = center;
 	}
 
 	const glm::vec2& InGui::GetPositionOfNext()
 	{
-		return s_LayoutOffset;
+		InGuiFrameData& frameData = s_Context->FrameData;
+		return frameData.LayoutOffset;
 	}
 
 	const InGuiWindow& InGui::GetWindow(uint32_t id)
@@ -292,16 +283,17 @@ namespace XYZ {
 
 	bool InGui::eraseOutOfBorders(size_t oldQuadCount, const glm::vec2& genSize, const InGuiWindow& window, InGuiMesh& mesh)
 	{
-		if (s_LayoutOffset.x + genSize.x > window.Position.x + window.Size.x - window.Layout.RightPadding 
-		 || s_LayoutOffset.y + genSize.y > window.Position.y + window.Size.y - window.Layout.BottomPadding 
+		InGuiFrameData& frameData = s_Context->FrameData;
+		if (frameData.LayoutOffset.x + genSize.x > window.Position.x + window.Size.x - window.Layout.RightPadding 
+		 || frameData.LayoutOffset.y + genSize.y > window.Position.y + window.Size.y - window.Layout.BottomPadding 
 		 && !s_Context->FrameData.ScrollableActive)
 		{
-			s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
+			frameData.LayoutOffset.x += genSize.x + window.Layout.SpacingX;
 			mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
 			return true;
 		}
-		else if (s_HighestInRow < genSize.y)
-			s_HighestInRow = genSize.y;
+		else if (frameData.HighestInRow < genSize.y)
+			frameData.HighestInRow = genSize.y;
 		
 		return false;
 	}
@@ -362,9 +354,10 @@ namespace XYZ {
 		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID == InGuiFrameData::NullID, "Missing end call");
 		s_Context->FrameData.ActiveWindowID = id;
 		InGuiWindow& window = getInitializedWindow(id, position, size);
-		
-		s_HighestInRow = 0.0f;
-		s_LayoutOffset = glm::vec2(
+		InGuiFrameData& frameData = s_Context->FrameData;
+
+		frameData.HighestInRow = 0.0f;
+		frameData.LayoutOffset = glm::vec2(
 			window.Position.x + window.Layout.LeftPadding, 
 			window.Position.y + InGuiWindow::PanelHeight + window.Layout.TopPadding
 		);
@@ -392,9 +385,10 @@ namespace XYZ {
 			return false;
 
 		InGuiWindow& window = getInitializedWindow(id, position, size);
-		
-		s_HighestInRow = 0.0f;
-		s_LayoutOffset = glm::vec2(
+		InGuiFrameData& frameData = s_Context->FrameData;
+
+		frameData.HighestInRow = 0.0f;
+		frameData.LayoutOffset = glm::vec2(
 			window.Position.x + window.Layout.LeftPadding,
 			window.Position.y + InGuiWindow::PanelHeight + window.Layout.TopPadding
 		);
@@ -424,7 +418,8 @@ namespace XYZ {
 	{
 		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
 		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
-		InGuiMesh& mesh = *s_Context->FrameData.CurrentMesh;
+		InGuiFrameData& frameData = s_Context->FrameData;
+		InGuiMesh& mesh = *frameData.CurrentMesh;
 
 		size_t oldQuadCount = mesh.Quads.size();
 		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
@@ -433,7 +428,7 @@ namespace XYZ {
 			InGuiWindow::PanelHeight 
 		};
 		glm::vec2 buttonSize = glm::vec2(InGuiWindow::PanelHeight, InGuiWindow::PanelHeight);
-		glm::vec2 pos = { window.Position.x + window.Layout.LeftPadding , s_LayoutOffset.y };
+		glm::vec2 pos = { window.Position.x + window.Layout.LeftPadding , frameData.LayoutOffset.y };
 		uint32_t subTextureIndex = InGuiRenderData::RIGHT_ARROW;
 		if (open) subTextureIndex = InGuiRenderData::DOWN_ARROW;
 
@@ -448,7 +443,7 @@ namespace XYZ {
 		if (eraseOutOfBorders(oldQuadCount, buttonSize, window, mesh)) { return false; }
 		if (open) Separator();
 
-		if (!s_ActiveWidgets)
+		if (!frameData.ActiveWidgets)
 			return open;
 
 		if (Collide(pos, size, s_Context->FrameData.MousePosition))
@@ -470,32 +465,33 @@ namespace XYZ {
 	{
 		XYZ_ASSERT(!s_Context->FrameData.ScrollableActive, "Missing end scrollable area");
 		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
-	
+		InGuiFrameData& frameData = s_Context->FrameData;
+
 		auto [wWidth, wHeight] = Input::GetWindowSize();
-		float positionY = wHeight - s_LayoutOffset.y - size.y;
+		float positionY = wHeight - frameData.LayoutOffset.y - size.y;
 		s_Context->FrameData.Scissors.push_back(
-			{ s_LayoutOffset.x, positionY, size.x, size.y }
+			{ frameData.LayoutOffset.x, positionY, size.x, size.y }
 		);
 
-		InGuiFactory::GenerateFrame(window.ScrollableMesh, s_LayoutOffset, size, s_Context->RenderData);
+		InGuiFactory::GenerateFrame(window.ScrollableMesh, frameData.LayoutOffset, size, s_Context->RenderData);
 		bool activeWidgets = false;
-		if (Collide(s_LayoutOffset, size, s_Context->FrameData.MousePosition))
+		if (Collide(frameData.LayoutOffset, size, s_Context->FrameData.MousePosition))
 		{
 			activeWidgets = true;
 			offset -= s_Context->FrameData.ScrollOffset * scrollSpeed;
 		}
 		//////////////////// SLIDER LOGIC ///////////////////////
-		s_LayoutOffset.x += size.x + window.Layout.LeftPadding;
+		frameData.LayoutOffset.x += size.x + window.Layout.LeftPadding;
 		float val = offset / scale;
 		InGui::SliderVertical("", glm::vec2(25.0f, size.y), val);
 		offset = val * scale;
-		s_LayoutOffset.x -= size.x + window.Layout.LeftPadding;
-		s_HighestInRow = 0.0f;
+		frameData.LayoutOffset.x -= size.x + window.Layout.LeftPadding;
+		frameData.HighestInRow = 0.0f;
 		////////////////////////////////////////////////////////
 	
-		s_ActiveWidgets = activeWidgets;
-		s_ScrollOffset = s_LayoutOffset.y + size.y;
-		s_LayoutOffset.y -= offset - window.Layout.SpacingY;
+		frameData.ActiveWidgets = activeWidgets;
+		frameData.ScrollOffset = frameData.LayoutOffset.y + size.y;
+		frameData.LayoutOffset.y -= offset - window.Layout.SpacingY;
 		s_Context->FrameData.ScrollableActive = true;
 		s_Context->FrameData.CurrentMesh = &window.ScrollableMesh;
 		s_Context->FrameData.CurrentOverlayMesh = &window.ScrollableOverlayMesh;
@@ -506,11 +502,13 @@ namespace XYZ {
 	{
 		XYZ_ASSERT(s_Context->FrameData.ScrollableActive, "Missing begin scrollable area");
 		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
-		s_Context->FrameData.CurrentMesh = &window.Mesh;
-		s_Context->FrameData.CurrentOverlayMesh = &window.OverlayMesh;
-		s_Context->FrameData.ScrollableActive = false;
-		s_LayoutOffset.y = s_ScrollOffset + window.Layout.SpacingY;
-		s_ActiveWidgets = true;
+		InGuiFrameData& frameData = s_Context->FrameData;
+
+		frameData.CurrentMesh = &window.Mesh;
+		frameData.CurrentOverlayMesh = &window.OverlayMesh;
+		frameData.ScrollableActive = false;
+		frameData.LayoutOffset.y = frameData.ScrollOffset + window.Layout.SpacingY;
+		frameData.ActiveWidgets = true;
 		window.Layout.LeftPadding -= window.Layout.LeftPadding / 2.0f; // Remove padding relative to scrollable area
 	}
 
@@ -518,14 +516,15 @@ namespace XYZ {
 	{
 		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
 		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
-		InGuiMesh& mesh = *s_Context->FrameData.CurrentMesh;
+		InGuiFrameData& frameData = s_Context->FrameData;
+		InGuiMesh& mesh = *frameData.CurrentMesh;
 
 		uint32_t returnType = 0;
 		size_t oldQuadCount = mesh.Quads.size();
 		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
 		if (highlight) color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
 
-		glm::vec2 pos = s_LayoutOffset;
+		glm::vec2 pos = frameData.LayoutOffset;
 		uint32_t subTextureIndex = InGuiRenderData::RIGHT_ARROW;
 		if (open) subTextureIndex = InGuiRenderData::DOWN_ARROW;
 
@@ -533,7 +532,7 @@ namespace XYZ {
 			s_Context->RenderData, subTextureIndex, s_Context->FrameData.Scissors.size() - 1
 		);
 		if (eraseOutOfBorders(oldQuadCount, genSize, window, mesh)) { return false; }
-		if (!s_ActiveWidgets) return 0;
+		if (!frameData.ActiveWidgets) return 0;
 
 		if (Collide(pos, genSize, s_Context->FrameData.MousePosition))
 		{
@@ -556,25 +555,26 @@ namespace XYZ {
 				}
 			}
 		}
-		s_LayoutOffset.y += genSize.y;
+		frameData.LayoutOffset.y += genSize.y;
 		return returnType;
 	}
 
 	uint8_t InGui::Dropdown(const char* name, const glm::vec2& size, bool& open)
 	{
+		InGuiFrameData& frameData = s_Context->FrameData;
 		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
-		XYZ_ASSERT(!s_DropdownItemCount, "Missing end dropdown");
+		XYZ_ASSERT(!frameData.DropdownItemCount, "Missing end dropdown");
 		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
 		InGuiMesh& mesh = *s_Context->FrameData.CurrentOverlayMesh;
 		
 		uint32_t returnType = 0;
 		size_t oldQuadCount = mesh.Quads.size();
 		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
-		glm::vec2 pos = s_LayoutOffset;
+		glm::vec2 pos = frameData.LayoutOffset;
 	
 
 		glm::vec2 genSize = InGuiFactory::GenerateQuadWithTextCentered(
-			name, s_Context->FrameData.Center,
+			name, s_Context->FrameData.TextCenter,
 			window, mesh, color,
 			size, pos, s_Context->RenderData, InGuiRenderData::BUTTON, 
 			s_Context->FrameData.Scissors.size() - 1
@@ -583,11 +583,11 @@ namespace XYZ {
 
 		if (eraseOutOfBorders(oldQuadCount, size, window, mesh)) { return false; }
 		
-		s_DropdownSize = size;
-		s_LayoutOffset.y += size.y;
-		s_DropdownItemCount++;
+		frameData.DropdownSize = size;
+		frameData.LayoutOffset.y += size.y;
+		frameData.DropdownItemCount++;
 		
-		if (!s_ActiveWidgets) return 0;
+		if (!frameData.ActiveWidgets) return 0;
 
 		if (Collide(pos, size, s_Context->FrameData.MousePosition))
 		{
@@ -607,38 +607,40 @@ namespace XYZ {
 	void InGui::EndDropdown()
 	{
 		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
-		s_LayoutOffset.y -= s_DropdownSize.y * s_DropdownItemCount;
-		s_LayoutOffset.x += window.Layout.SpacingX + s_DropdownSize.x;
-		s_DropdownItemCount = 0;
+		InGuiFrameData& frameData = s_Context->FrameData;
+		frameData.LayoutOffset.y -= frameData.DropdownSize.y * frameData.DropdownItemCount;
+		frameData.LayoutOffset.x += window.Layout.SpacingX + frameData.DropdownSize.x;
+		frameData.DropdownItemCount = 0;
 	}
 
 	uint8_t InGui::DropdownItem(const char* name)
 	{
 		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
 		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
-		InGuiMesh& mesh = *s_Context->FrameData.CurrentOverlayMesh;
+		InGuiFrameData& frameData = s_Context->FrameData;
+		InGuiMesh& mesh = *frameData.CurrentOverlayMesh;
 
 		uint32_t returnType = 0;
 		size_t oldQuadCount = mesh.Quads.size();
 		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
-		glm::vec2 pos = s_LayoutOffset;
+		glm::vec2 pos = frameData.LayoutOffset;
 
 
 		glm::vec2 genSize = InGuiFactory::GenerateQuadWithTextCentered(
-			name, s_Context->FrameData.Center,
+			name, s_Context->FrameData.TextCenter,
 			window, mesh, color,
-			s_DropdownSize, pos, s_Context->RenderData, InGuiRenderData::BUTTON,
+			frameData.DropdownSize, pos, s_Context->RenderData, InGuiRenderData::BUTTON,
 			s_Context->FrameData.Scissors.size() - 1
 		);
 
-		if (eraseOutOfBorders(oldQuadCount, s_DropdownSize, window, mesh)) { return false; }
+		if (eraseOutOfBorders(oldQuadCount, frameData.DropdownSize, window, mesh)) { return false; }
 		
-		s_LayoutOffset.y += s_DropdownSize.y;
-		s_DropdownItemCount++;
+		frameData.LayoutOffset.y += frameData.DropdownSize.y;
+		frameData.DropdownItemCount++;
 
-		if (!s_ActiveWidgets) return 0;
+		if (!frameData.ActiveWidgets) return 0;
 
-		if (Collide(pos, s_DropdownSize, s_Context->FrameData.MousePosition))
+		if (Collide(pos, frameData.DropdownSize, s_Context->FrameData.MousePosition))
 		{
 			mesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
 			if (TurnOffFlag<uint16_t>(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked))
@@ -655,36 +657,39 @@ namespace XYZ {
 	}
 
 	void InGui::BeginChildren()
-	{		
-		s_LayoutOffset.x += InGuiWindow::PanelHeight;
+	{
+		InGuiFrameData& frameData = s_Context->FrameData;
+		frameData.LayoutOffset.x += InGuiWindow::PanelHeight;
 	}
 	void InGui::EndChildren()
 	{
-		s_LayoutOffset.x -= InGuiWindow::PanelHeight;
+		InGuiFrameData& frameData = s_Context->FrameData;
+		frameData.LayoutOffset.x -= InGuiWindow::PanelHeight;
 	}
 	uint8_t InGui::Button(const char* name, const glm::vec2& size)
 	{
 		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
 		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
-		InGuiMesh& mesh = *s_Context->FrameData.CurrentMesh;
+		InGuiFrameData& frameData = s_Context->FrameData;
+		InGuiMesh& mesh = *frameData.CurrentMesh;
 
 		uint8_t returnType = 0;
 		size_t oldQuadCount = mesh.Quads.size();
 		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
 		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(
-			name, window, mesh, color, size, s_LayoutOffset, 
+			name, window, mesh, color, size, frameData.LayoutOffset, 
 			s_Context->RenderData, InGuiRenderData::BUTTON, s_Context->FrameData.Scissors.size() - 1
 		);
 				
 		if (eraseOutOfBorders(oldQuadCount, genSize, window, mesh))
 			return returnType;
-		if (!s_ActiveWidgets)
+		if (!frameData.ActiveWidgets)
 		{
-			s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
+			frameData.LayoutOffset.x += genSize.x + window.Layout.SpacingX;
 			return 0;
 		}
 
-		if (Collide(s_LayoutOffset, size, s_Context->FrameData.MousePosition))
+		if (Collide(frameData.LayoutOffset, size, s_Context->FrameData.MousePosition))
 		{
 			returnType |= InGuiReturnType::Hoovered;
 			mesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
@@ -692,7 +697,7 @@ namespace XYZ {
 				returnType |= InGuiReturnType::Clicked;
 		}
 
-		s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
+		frameData.LayoutOffset.x += genSize.x + window.Layout.SpacingX;
 		return returnType;
 	}
 
@@ -700,7 +705,8 @@ namespace XYZ {
 	{
 		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
 		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
-		InGuiMesh& mesh = *s_Context->FrameData.CurrentMesh;
+		InGuiFrameData& frameData = s_Context->FrameData;
+		InGuiMesh& mesh = *frameData.CurrentMesh;
 
 		uint8_t returnType = 0;
 		size_t oldQuadCount = mesh.Quads.size();
@@ -709,19 +715,19 @@ namespace XYZ {
 		if (val) subTextureIndex = InGuiRenderData::CHECKBOX_CHECKED;
 			
 		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(
-			name, window, mesh, color, size, s_LayoutOffset, 
+			name, window, mesh, color, size, frameData.LayoutOffset, 
 			s_Context->RenderData, subTextureIndex, s_Context->FrameData.Scissors.size() - 1
 		);
 
 		if (eraseOutOfBorders(oldQuadCount, genSize, window, mesh))
 			return returnType;
-		if (!s_ActiveWidgets)
+		if (!frameData.ActiveWidgets)
 		{
-			s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
+			frameData.LayoutOffset.x += genSize.x + window.Layout.SpacingX;
 			return 0;
 		}
 
-		if (Collide(s_LayoutOffset, size, s_Context->FrameData.MousePosition))
+		if (Collide(frameData.LayoutOffset, size, s_Context->FrameData.MousePosition))
 		{
 			returnType |= InGuiReturnType::Hoovered;
 			mesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
@@ -731,7 +737,7 @@ namespace XYZ {
 				val = !val;
 			}
 		}
-		s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
+		frameData.LayoutOffset.x += genSize.x + window.Layout.SpacingX;
 		return returnType;
 	}
 
@@ -739,56 +745,58 @@ namespace XYZ {
 	{
 		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
 		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
-		InGuiMesh& mesh = *s_Context->FrameData.CurrentMesh;
+		InGuiFrameData& frameData = s_Context->FrameData;
+		InGuiMesh& mesh = *frameData.CurrentMesh;
 
 		// Clamping
 		if (val > 0.99f) val = 1.0f;
 		else if (val < 0.01f) val = 0.0f;
 
-		int ret = snprintf(s_TextBuffer, sizeof(s_TextBuffer), "%f", val);
+		int ret = snprintf(frameData.TextBuffer, sizeof(frameData.TextBuffer), "%f", val);
 		if (ret < 0)
 			val = 0.0f;
 
 		uint8_t returnType = 0;
 		size_t oldQuadCount = mesh.Quads.size();
 		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
-		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, mesh, color, size, s_LayoutOffset, s_Context->RenderData, InGuiRenderData::SLIDER, s_Context->FrameData.Scissors.size());
+		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, mesh, color, size, frameData.LayoutOffset, s_Context->RenderData, InGuiRenderData::SLIDER, s_Context->FrameData.Scissors.size());
 		glm::vec2 handleSize = glm::vec2(size.y, size.y);
-		glm::vec2 handlePosition = s_LayoutOffset + glm::vec2((size.x - size.y) * val, 0.0f);
+		glm::vec2 handlePosition = frameData.LayoutOffset + glm::vec2((size.x - size.y) * val, 0.0f);
 		InGuiFactory::GenerateQuadWithText(nullptr, window, mesh, color, handleSize, handlePosition, 
 			s_Context->RenderData, InGuiRenderData::SLIDER_HANDLE, s_Context->FrameData.Scissors.size() - 1
 		);
-		InGuiFactory::GenerateTextCenteredMiddle(s_TextBuffer, window, mesh, s_LayoutOffset, size,
+		InGuiFactory::GenerateTextCenteredMiddle(frameData.TextBuffer, window, mesh, frameData.LayoutOffset, size,
 			s_Context->RenderData, 1000, s_Context->FrameData.Scissors.size() - 1
 		);
 
 		if (eraseOutOfBorders(oldQuadCount, genSize, window, mesh))
 			return returnType;
-		if (!s_ActiveWidgets)
+		if (!frameData.ActiveWidgets)
 		{
-			s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
+			frameData.LayoutOffset.x += genSize.x + window.Layout.SpacingX;
 			return 0;
 		}
 
-		if (Collide(s_LayoutOffset, size, s_Context->FrameData.MousePosition))
+		if (Collide(frameData.LayoutOffset, size, s_Context->FrameData.MousePosition))
 		{
 			returnType |= InGuiReturnType::Hoovered;
 			mesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
 			if (IS_SET(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked))
 			{
-				val = (s_Context->FrameData.MousePosition.x - s_LayoutOffset.x) / size.x;
+				val = (s_Context->FrameData.MousePosition.x - frameData.LayoutOffset.x) / size.x;
 				returnType |= InGuiReturnType::Clicked;
 			}
 		}
 
-		s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
+		frameData.LayoutOffset.x += genSize.x + window.Layout.SpacingX;
 		return returnType;
 	}
 	uint8_t InGui::SliderVertical(const char* name, const glm::vec2& size, float& val)
 	{
 		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
 		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
-		InGuiMesh& mesh = *s_Context->FrameData.CurrentMesh;
+		InGuiFrameData& frameData = s_Context->FrameData;
+		InGuiMesh& mesh = *frameData.CurrentMesh;
 
 		// Clamping
 		if (val > 1.0f - FLT_MIN) val = 1.0f;
@@ -798,9 +806,9 @@ namespace XYZ {
 		uint8_t returnType = 0;
 		size_t oldQuadCount = mesh.Quads.size();
 		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
-		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, mesh, color, size, s_LayoutOffset, s_Context->RenderData, InGuiRenderData::SLIDER, s_Context->FrameData.Scissors.size());
+		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, mesh, color, size, frameData.LayoutOffset, s_Context->RenderData, InGuiRenderData::SLIDER, s_Context->FrameData.Scissors.size());
 		glm::vec2 handleSize = glm::vec2(size.x, size.x);
-		glm::vec2 handlePosition = s_LayoutOffset + glm::vec2(0.0f, (size.y - size.x) * val);
+		glm::vec2 handlePosition = frameData.LayoutOffset + glm::vec2(0.0f, (size.y - size.x) * val);
 		
 		InGuiFactory::GenerateQuadWithText(nullptr, window, mesh, color, handleSize, handlePosition,
 			s_Context->RenderData, InGuiRenderData::SLIDER_HANDLE, s_Context->FrameData.Scissors.size() - 1
@@ -808,31 +816,32 @@ namespace XYZ {
 
 		if (eraseOutOfBorders(oldQuadCount, genSize, window, mesh))
 			return returnType;
-		if (!s_ActiveWidgets)
+		if (!frameData.ActiveWidgets)
 		{
-			s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
+			frameData.LayoutOffset.x += genSize.x + window.Layout.SpacingX;
 			return 0;
 		}
 
-		if (Collide(s_LayoutOffset, size, s_Context->FrameData.MousePosition))
+		if (Collide(frameData.LayoutOffset, size, s_Context->FrameData.MousePosition))
 		{
 			returnType |= InGuiReturnType::Hoovered;
 			mesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
 			if (IS_SET(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked))
 			{
-				val = (s_Context->FrameData.MousePosition.y - s_LayoutOffset.y) / size.y;
+				val = (s_Context->FrameData.MousePosition.y - frameData.LayoutOffset.y) / size.y;
 				returnType |= InGuiReturnType::Clicked;
 			}
 		}
 
-		s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
+		frameData.LayoutOffset.x += genSize.x + window.Layout.SpacingX;
 		return returnType;
 	}
 	uint8_t InGui::Text(const char* text)
 	{
 		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
 		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
-		InGuiMesh& mesh = *s_Context->FrameData.CurrentMesh;
+		InGuiFrameData& frameData = s_Context->FrameData;
+		InGuiMesh& mesh = *frameData.CurrentMesh;
 
 		uint8_t returnType = 0;
 		size_t oldQuadCount = mesh.Quads.size();
@@ -840,20 +849,20 @@ namespace XYZ {
 		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
 		
 
-		glm::vec2 genPos = s_LayoutOffset + glm::vec2(0.0f, s_Context->RenderData.Font->GetLineHeight());
+		glm::vec2 genPos = frameData.LayoutOffset + glm::vec2(0.0f, s_Context->RenderData.Font->GetLineHeight());
 		glm::vec2 genSize = InGuiFactory::GenerateText(text, mesh, color, genPos, size, 
 			s_Context->RenderData, s_Context->FrameData.Scissors.size() - 1
 		);
 
 		if (eraseOutOfBorders(oldQuadCount, genSize, window, mesh))
 			return returnType;
-		if (!s_ActiveWidgets)
+		if (!frameData.ActiveWidgets)
 		{
-			s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
+			frameData.LayoutOffset.x += genSize.x + window.Layout.SpacingX;
 			return 0;
 		}
 
-		if (Collide(s_LayoutOffset, genSize, s_Context->FrameData.MousePosition))
+		if (Collide(frameData.LayoutOffset, genSize, s_Context->FrameData.MousePosition))
 		{
 			returnType |= InGuiReturnType::Hoovered;
 			for (size_t i = oldQuadCount; i < mesh.Quads.size(); ++i)
@@ -863,7 +872,7 @@ namespace XYZ {
 				returnType |= InGuiReturnType::Clicked;
 		}
 
-		s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
+		frameData.LayoutOffset.x += genSize.x + window.Layout.SpacingX;
 		return returnType;
 	}
 
@@ -871,28 +880,28 @@ namespace XYZ {
 	{
 		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
 		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
-		InGuiFrameData& data = s_Context->FrameData;
-		InGuiMesh& mesh = *s_Context->FrameData.CurrentMesh;
+		InGuiFrameData& frameData = s_Context->FrameData;
+		InGuiMesh& mesh = *frameData.CurrentMesh;
 
 		uint8_t returnType = 0;
 		size_t oldQuadCount = mesh.Quads.size();
 		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
 		uint32_t maxCharacters = _MAX_PATH;
-		char* buffer = s_TextBuffer; // By default text buffer
+		char* buffer = frameData.TextBuffer; // By default text buffer
 
-		if (data.InputIndex == data.HandleInput.size())
-			data.HandleInput.push_back(false);
+		if (frameData.InputIndex == frameData.HandleInput.size())
+			frameData.HandleInput.push_back(false);
 
 		// If input is about to be handled than use buffer for modifying values
-		bool handleInput = data.HandleInput[data.InputIndex];
+		bool handleInput = frameData.HandleInput[frameData.InputIndex];
 		if (handleInput)
 		{
 			color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
-			buffer = s_ModifyTextBuffer;
+			buffer = frameData.ModifyTextBuffer;
 
-			s_ModifyTextBuffer[s_ModifyTextBufferIndex] = '.';
-			val = (float)atof(s_ModifyTextBuffer);
-			maxCharacters = s_ModifyTextBufferIndex;
+			frameData.ModifyTextBuffer[frameData.ModifyTextIndex] = '.';
+			val = (float)atof(frameData.ModifyTextBuffer);
+			maxCharacters = frameData.ModifyTextIndex;
 			returnType |= InGuiReturnType::Modified;
 		}
 		else
@@ -903,75 +912,75 @@ namespace XYZ {
 		}
 
 
-		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window,mesh, color, size, s_LayoutOffset, 
+		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window,mesh, color, size, frameData.LayoutOffset, 
 			s_Context->RenderData, InGuiRenderData::BUTTON, s_Context->FrameData.Scissors.size() - 1
 		);
-		InGuiFactory::GenerateTextCenteredMiddle(buffer, window, mesh, s_LayoutOffset, size,
+		InGuiFactory::GenerateTextCenteredMiddle(buffer, window, mesh, frameData.LayoutOffset, size,
 			s_Context->RenderData, maxCharacters, s_Context->FrameData.Scissors.size() - 1
 		);
 		
 		if (eraseOutOfBorders(oldQuadCount, genSize, window, mesh))
 			return returnType;
-		if (!s_ActiveWidgets)
+		if (!frameData.ActiveWidgets)
 		{
-			s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
+			frameData.LayoutOffset.x += genSize.x + window.Layout.SpacingX;
 			return 0;
 		}
 
-		if (Collide(s_LayoutOffset, size, s_Context->FrameData.MousePosition))
+		if (Collide(frameData.LayoutOffset, size, s_Context->FrameData.MousePosition))
 		{
 			returnType |= InGuiReturnType::Hoovered;
 			mesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
 			if (TurnOffFlag<uint16_t>(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked))
 			{
 				returnType |= InGuiReturnType::Clicked;
-				data.HandleInput[data.InputIndex] = true;
-				if (data.HandleInput[data.InputIndex])
+				frameData.HandleInput[frameData.InputIndex] = true;
+				if (frameData.HandleInput[frameData.InputIndex])
 				{
 					// This is called once when bit is fliped to true
-					int ret = snprintf(s_TextBuffer, sizeof(s_TextBuffer), "%f", val);
+					int ret = snprintf(frameData.TextBuffer, sizeof(frameData.TextBuffer), "%f", val);
 					if (ret < 0) val = 0.0f;
 
-					s_ModifyTextBufferIndex = FindNumCharacters(s_TextBuffer, size.x, s_Context->RenderData.Font);
-					memcpy(s_ModifyTextBuffer, s_TextBuffer, s_ModifyTextBufferIndex);
+					frameData.ModifyTextIndex = FindNumCharacters(frameData.TextBuffer, size.x, s_Context->RenderData.Font);
+					memcpy(frameData.ModifyTextBuffer, frameData.TextBuffer, frameData.ModifyTextIndex);
 				}
 				for (uint32_t i = 0; i < s_Context->FrameData.HandleInput.size(); ++i)
 				{
-					if (i != data.InputIndex)
-						data.HandleInput[i] = false;
+					if (i != frameData.InputIndex)
+						frameData.HandleInput[i] = false;
 				}
 			}
 		}
 	
-		data.InputIndex++;
-		s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
+		frameData.InputIndex++;
+		frameData.LayoutOffset.x += genSize.x + window.Layout.SpacingX;
 		return returnType;
 	}
 	uint8_t InGui::UInt(const char* name, const glm::vec2& size, uint32_t& val)
 	{
 		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
 		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
-		InGuiFrameData& data = s_Context->FrameData;
+		InGuiFrameData& frameData = s_Context->FrameData;
 		InGuiMesh& mesh = *s_Context->FrameData.CurrentMesh;
 
 		uint8_t returnType = 0;
 		size_t oldQuadCount = mesh.Quads.size();
 		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
 		uint32_t maxCharacters = _MAX_PATH;
-		char* buffer = s_TextBuffer; // By default text buffer
+		char* buffer = frameData.TextBuffer; // By default text buffer
 
-		if (data.InputIndex == data.HandleInput.size())
-			data.HandleInput.push_back(false);
+		if (frameData.InputIndex == frameData.HandleInput.size())
+			frameData.HandleInput.push_back(false);
 
 		// If input is about to be handled than use buffer for modifying values
-		bool handleInput = data.HandleInput[data.InputIndex];
+		bool handleInput = frameData.HandleInput[frameData.InputIndex];
 		if (handleInput)
 		{
 			color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
-			buffer = s_ModifyTextBuffer;
+			buffer = frameData.ModifyTextBuffer;
 
-			val = (float)atoi(s_ModifyTextBuffer);
-			maxCharacters = s_ModifyTextBufferIndex;
+			val = (float)atoi(frameData.ModifyTextBuffer);
+			maxCharacters = frameData.ModifyTextIndex;
 			returnType |= InGuiReturnType::Modified;
 		}
 		else
@@ -982,48 +991,48 @@ namespace XYZ {
 		}
 
 
-		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, mesh, color, size, s_LayoutOffset,
+		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, mesh, color, size, frameData.LayoutOffset,
 			s_Context->RenderData, InGuiRenderData::BUTTON, s_Context->FrameData.Scissors.size() - 1
 		);
-		InGuiFactory::GenerateTextCenteredMiddle(buffer, window, mesh, s_LayoutOffset, size,
+		InGuiFactory::GenerateTextCenteredMiddle(buffer, window, mesh, frameData.LayoutOffset, size,
 			s_Context->RenderData, maxCharacters, s_Context->FrameData.Scissors.size() - 1
 		);
 
 		if (eraseOutOfBorders(oldQuadCount, genSize, window, mesh))
 			return returnType;
-		if (!s_ActiveWidgets)
+		if (!frameData.ActiveWidgets)
 		{
-			s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
+			frameData.LayoutOffset.x += genSize.x + window.Layout.SpacingX;
 			return 0;
 		}
 
-		if (Collide(s_LayoutOffset, size, s_Context->FrameData.MousePosition))
+		if (Collide(frameData.LayoutOffset, size, s_Context->FrameData.MousePosition))
 		{
 			returnType |= InGuiReturnType::Hoovered;
 			mesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
 			if (TurnOffFlag<uint16_t>(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked))
 			{
 				returnType |= InGuiReturnType::Clicked;
-				data.HandleInput[data.InputIndex] = true;
-				if (data.HandleInput[data.InputIndex])
+				frameData.HandleInput[frameData.InputIndex] = true;
+				if (frameData.HandleInput[frameData.InputIndex])
 				{
 					// This is called once when bit is fliped to true
-					int ret = snprintf(s_TextBuffer, sizeof(s_TextBuffer), "%u", val);
+					int ret = snprintf(frameData.TextBuffer, sizeof(frameData.TextBuffer), "%u", val);
 					if (ret < 0) val = 0.0f;
 
-					s_ModifyTextBufferIndex = FindNumCharacters(s_TextBuffer, size.x, s_Context->RenderData.Font);
-					memcpy(s_ModifyTextBuffer, s_TextBuffer, s_ModifyTextBufferIndex);
+					frameData.ModifyTextIndex = FindNumCharacters(frameData.TextBuffer, size.x, s_Context->RenderData.Font);
+					memcpy(frameData.ModifyTextBuffer, frameData.TextBuffer, frameData.ModifyTextIndex);
 				}
 				for (uint32_t i = 0; i < s_Context->FrameData.HandleInput.size(); ++i)
 				{
-					if (i != data.InputIndex)
-						data.HandleInput[i] = false;
+					if (i != frameData.InputIndex)
+						frameData.HandleInput[i] = false;
 				}
 			}
 		}
 
-		data.InputIndex++;
-		s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
+		frameData.InputIndex++;
+		frameData.LayoutOffset.x += genSize.x + window.Layout.SpacingX;
 		return returnType;
 	}
 
@@ -1031,27 +1040,27 @@ namespace XYZ {
 	{
 		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
 		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
-		InGuiFrameData& data = s_Context->FrameData;
+		InGuiFrameData& frameData = s_Context->FrameData;
 		InGuiMesh& mesh = *s_Context->FrameData.CurrentMesh;
 
 		uint8_t returnType = 0;
 		size_t oldQuadCount = mesh.Quads.size();
 		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
 		uint32_t maxCharacters = _MAX_PATH;
-		char* buffer = s_TextBuffer; // By default text buffer
+		char* buffer = frameData.TextBuffer; // By default text buffer
 
-		if (data.InputIndex == data.HandleInput.size())
-			data.HandleInput.push_back(false);
+		if (frameData.InputIndex == frameData.HandleInput.size())
+			frameData.HandleInput.push_back(false);
 
 		// If input is about to be handled than use buffer for modifying values
-		bool handleInput = data.HandleInput[data.InputIndex];
+		bool handleInput = frameData.HandleInput[frameData.InputIndex];
 		if (handleInput)
 		{
 			color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
-			buffer = s_ModifyTextBuffer;
+			buffer = frameData.ModifyTextBuffer;
 
-			val = s_ModifyTextBuffer;
-			maxCharacters = s_ModifyTextBufferIndex;
+			val = frameData.ModifyTextBuffer;
+			maxCharacters = frameData.ModifyTextIndex;
 			returnType |= InGuiReturnType::Modified;
 		}
 		else
@@ -1063,45 +1072,45 @@ namespace XYZ {
 
 
 		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, mesh, color, size, 
-			s_LayoutOffset, s_Context->RenderData, InGuiRenderData::BUTTON, s_Context->FrameData.Scissors.size() - 1
+			frameData.LayoutOffset, s_Context->RenderData, InGuiRenderData::BUTTON, s_Context->FrameData.Scissors.size() - 1
 		);
-		InGuiFactory::GenerateTextCenteredMiddle(buffer, window, mesh, s_LayoutOffset, size,
+		InGuiFactory::GenerateTextCenteredMiddle(buffer, window, mesh, frameData.LayoutOffset, size,
 			s_Context->RenderData, maxCharacters, s_Context->FrameData.Scissors.size() - 1
 		);
 
 		if (eraseOutOfBorders(oldQuadCount, genSize, window, mesh))
 			return returnType;
-		if (!s_ActiveWidgets)
+		if (!frameData.ActiveWidgets)
 		{
-			s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
+			frameData.LayoutOffset.x += genSize.x + window.Layout.SpacingX;
 			return 0;
 		}
 
-		if (Collide(s_LayoutOffset, size, s_Context->FrameData.MousePosition))
+		if (Collide(frameData.LayoutOffset, size, s_Context->FrameData.MousePosition))
 		{
 			returnType |= InGuiReturnType::Hoovered;
 			mesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
 			if (TurnOffFlag<uint16_t>(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked))
 			{
 				returnType |= InGuiReturnType::Clicked;
-				data.HandleInput[data.InputIndex] = true;
-				if (data.HandleInput[data.InputIndex])
+				frameData.HandleInput[frameData.InputIndex] = true;
+				if (frameData.HandleInput[frameData.InputIndex])
 				{
 					// This is called once when bit is fliped to true
-					int ret = snprintf(s_TextBuffer, sizeof(s_TextBuffer), "%s", val.c_str());
-					s_ModifyTextBufferIndex = FindNumCharacters(s_TextBuffer, size.x, s_Context->RenderData.Font);
-					memcpy(s_ModifyTextBuffer, s_TextBuffer, s_ModifyTextBufferIndex);
+					int ret = snprintf(frameData.TextBuffer, sizeof(frameData.TextBuffer), "%s", val.c_str());
+					frameData.ModifyTextIndex = FindNumCharacters(frameData.TextBuffer, size.x, s_Context->RenderData.Font);
+					memcpy(frameData.ModifyTextBuffer, frameData.TextBuffer, frameData.ModifyTextIndex);
 				}
 				for (uint32_t i = 0; i < s_Context->FrameData.HandleInput.size(); ++i)
 				{
-					if (i != data.InputIndex)
-						data.HandleInput[i] = false;
+					if (i != frameData.InputIndex)
+						frameData.HandleInput[i] = false;
 				}
 			}
 		}
 
-		data.InputIndex++;
-		s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
+		frameData.InputIndex++;
+		frameData.LayoutOffset.x += genSize.x + window.Layout.SpacingX;
 		return returnType;
 	}
 
@@ -1109,25 +1118,26 @@ namespace XYZ {
 	{
 		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
 		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
-		InGuiMesh& mesh = *s_Context->FrameData.CurrentMesh;
+		InGuiFrameData& frameData = s_Context->FrameData;
+		InGuiMesh& mesh = *frameData.CurrentMesh;
 
 		uint8_t returnType = 0;
 		size_t oldQuadCount = mesh.Quads.size();
 		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
-		InGuiFactory::GenerateQuad(mesh, color, size, s_LayoutOffset, subTexture, 
+		InGuiFactory::GenerateQuad(mesh, color, size, frameData.LayoutOffset, subTexture, 
 			Renderer2D::SetTexture(subTexture->GetTexture()), s_Context->FrameData.Scissors.size() - 1
 		);
 		s_Context->FrameData.CustomTextures.push_back(subTexture->GetTexture());
 
 		if (eraseOutOfBorders(oldQuadCount, size, window, mesh))
 			return returnType;
-		if (!s_ActiveWidgets)
+		if (!frameData.ActiveWidgets)
 		{
-			s_LayoutOffset.x += size.x + window.Layout.SpacingX;
+			frameData.LayoutOffset.x += size.x + window.Layout.SpacingX;
 			return 0;
 		}
 
-		if (Collide(s_LayoutOffset, size, s_Context->FrameData.MousePosition))
+		if (Collide(frameData.LayoutOffset, size, s_Context->FrameData.MousePosition))
 		{
 			returnType |= InGuiReturnType::Hoovered;
 			mesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
@@ -1135,7 +1145,7 @@ namespace XYZ {
 				returnType |= InGuiReturnType::Clicked;
 		}
 
-		s_LayoutOffset.x += size.x + window.Layout.SpacingX;
+		frameData.LayoutOffset.x += size.x + window.Layout.SpacingX;
 		return returnType;
 	}
 
@@ -1416,19 +1426,21 @@ namespace XYZ {
 	}
 	bool InGui::onKeyTyped(KeyTypedEvent& event)
 	{
-		if (s_ModifyTextBufferIndex < _MAX_PATH)
+		InGuiFrameData& frameData = s_Context->FrameData;
+		if (frameData.ModifyTextIndex < _MAX_PATH)
 		{
-			s_ModifyTextBuffer[s_ModifyTextBufferIndex++] = (char)event.GetKey();
+			frameData.ModifyTextBuffer[frameData.ModifyTextIndex++] = (char)event.GetKey();
 		}
 		return false;
 	}
 	bool InGui::onKeyPressed(KeyPressedEvent& event)
 	{
+		InGuiFrameData& frameData = s_Context->FrameData;
 		if (event.IsKeyPressed(KeyCode::KEY_BACKSPACE))
 		{
-			if (s_ModifyTextBufferIndex > 0)
-				s_ModifyTextBufferIndex--;
-			s_ModifyTextBuffer[s_ModifyTextBufferIndex] = '\0';
+			if (frameData.ModifyTextIndex > 0)
+				frameData.ModifyTextIndex--;
+			frameData.ModifyTextBuffer[frameData.ModifyTextIndex] = '\0';
 		}
 		return false;
 	}
