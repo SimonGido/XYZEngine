@@ -36,12 +36,13 @@ namespace XYZ {
 				glm::vec2 windowSize = InGui::GetWindow(m_PanelID).Size;
 				glm::vec2 windowPosition = InGui::GetWindow(m_PanelID).Position;
 				glm::vec2 position = (windowSize / 2.0f) - (m_Size / 2.0f);
+				auto& layout = InGui::GetWindow(m_PanelID).Layout;
 				
-		
+				InGui::BeginScrollableArea(windowSize - glm::vec2(2.0f * layout.RightPadding, 0.0f), m_ScrollOffset, 100.0f, 10.0f);
 				glm::vec2 nextPos = InGui::GetPositionOfNext();
 				InGui::SetPositionOfNext(windowPosition + position);
-				InGui::Image(m_Size, m_Context);
-
+				InGui::Image(m_Size * 2.0f, m_Context);
+				
 				for (auto& point : m_Points[0])
 				{
 					glm::vec2 relativePos = {
@@ -86,6 +87,8 @@ namespace XYZ {
 				{
 					m_MovedPoint = nullptr;
 				}
+				InGui::EndScrollableArea();
+
 			}
 		}
 		InGui::End();

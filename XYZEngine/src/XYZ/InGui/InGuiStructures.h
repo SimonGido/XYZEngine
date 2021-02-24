@@ -171,6 +171,7 @@ namespace XYZ {
 		InGuiMesh* CurrentMesh			= nullptr;
 		InGuiMesh* CurrentOverlayMesh	= nullptr;
 		InGuiTextCenter Center			= InGuiTextCenter::Left;
+		bool ScrollableActive			= false;
 
 		std::vector<InGuiScissor> Scissors;
 		std::vector<Ref<Texture>> CustomTextures;

@@ -55,7 +55,7 @@ namespace XYZ {
 
 	static float s_HighestInRow = 0.0f;
 	static float s_ScrollOffset = 0.0f;
-	static bool s_ActiveWidgets = true;
+	static bool  s_ActiveWidgets = true;
 
 	static uint32_t s_DropdownItemCount = 0;
 	static glm::vec2 s_DropdownSize = glm::vec2(0.0f);
@@ -293,7 +293,8 @@ namespace XYZ {
 	bool InGui::eraseOutOfBorders(size_t oldQuadCount, const glm::vec2& genSize, const InGuiWindow& window, InGuiMesh& mesh)
 	{
 		if (s_LayoutOffset.x + genSize.x > window.Position.x + window.Size.x - window.Layout.RightPadding 
-		 || s_LayoutOffset.y + genSize.y > window.Position.y + window.Size.y - window.Layout.BottomPadding)
+		 || s_LayoutOffset.y + genSize.y > window.Position.y + window.Size.y - window.Layout.BottomPadding 
+		 && !s_Context->FrameData.ScrollableActive)
 		{
 			s_LayoutOffset.x += genSize.x + window.Layout.SpacingX;
 			mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
@@ -467,6 +468,7 @@ namespace XYZ {
 
 	void InGui::BeginScrollableArea(const glm::vec2& size, float& offset, float scale, float scrollSpeed)
 	{
+		XYZ_ASSERT(!s_Context->FrameData.ScrollableActive, "Missing end scrollable area");
 		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
 	
 		auto [wWidth, wHeight] = Input::GetWindowSize();
@@ -494,6 +496,7 @@ namespace XYZ {
 		s_ActiveWidgets = activeWidgets;
 		s_ScrollOffset = s_LayoutOffset.y + size.y;
 		s_LayoutOffset.y -= offset - window.Layout.SpacingY;
+		s_Context->FrameData.ScrollableActive = true;
 		s_Context->FrameData.CurrentMesh = &window.ScrollableMesh;
 		s_Context->FrameData.CurrentOverlayMesh = &window.ScrollableOverlayMesh;
 		window.Layout.LeftPadding += window.Layout.LeftPadding; // Padding relative to scrollable area
@@ -501,9 +504,11 @@ namespace XYZ {
 
 	void InGui::EndScrollableArea()
 	{
+		XYZ_ASSERT(s_Context->FrameData.ScrollableActive, "Missing begin scrollable area");
 		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
 		s_Context->FrameData.CurrentMesh = &window.Mesh;
 		s_Context->FrameData.CurrentOverlayMesh = &window.OverlayMesh;
+		s_Context->FrameData.ScrollableActive = false;
 		s_LayoutOffset.y = s_ScrollOffset + window.Layout.SpacingY;
 		s_ActiveWidgets = true;
 		window.Layout.LeftPadding -= window.Layout.LeftPadding / 2.0f; // Remove padding relative to scrollable area

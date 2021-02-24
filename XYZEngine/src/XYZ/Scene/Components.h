@@ -184,13 +184,13 @@ namespace XYZ {
 
 		BodyType Type;
 
-		PhysicsBody* Body;
+		PhysicsBody* Body = nullptr;
 	};
 
 
 	struct BoxCollider2DComponent : public Type<BoxCollider2DComponent>
 	{
-		PhysicsShape* Shape;
+		PhysicsShape* Shape = nullptr;
 
 		glm::vec2 Offset = glm::vec2(0.0f);
 		glm::vec2 Size = glm::vec2(1.0f);
@@ -199,7 +199,7 @@ namespace XYZ {
 
 	struct CircleCollider2DComponent : public Type<CircleCollider2DComponent>
 	{
-		PhysicsShape* Shape;
+		PhysicsShape* Shape = nullptr;
 
 		glm::vec2 Offset = glm::vec2(0.0f);
 		float Radius = 1.0f;

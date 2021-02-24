@@ -33,6 +33,7 @@ namespace XYZ {
 		std::vector<std::vector<Point>> m_Points;
 		std::vector<uint32_t> m_Indices;
 		float m_Scale = 1.0f;
+		float m_ScrollOffset = 0.0f;
 
 		Point* m_MovedPoint = nullptr;
 

@@ -184,27 +184,33 @@ namespace XYZ {
 		{
 			float speed = 0.03;
 			auto body = m_TestEntity.GetComponent<RigidBody2DComponent>().Body;
-			if (Input::IsKeyPressed(KeyCode::KEY_LEFT))
-				body->AddVelocity({ -speed,0.0f });
-			if (Input::IsKeyPressed(KeyCode::KEY_RIGHT))
-				body->AddVelocity({ speed,0.0f });
-			if (Input::IsKeyPressed(KeyCode::KEY_UP))
-				body->AddVelocity({ 0.0f, speed });
-			if (Input::IsKeyPressed(KeyCode::KEY_DOWN))
-				body->AddVelocity({ 0.0f, -speed });
+			if (body)
+			{
+				if (Input::IsKeyPressed(KeyCode::KEY_LEFT))
+					body->AddVelocity({ -speed,0.0f });
+				if (Input::IsKeyPressed(KeyCode::KEY_RIGHT))
+					body->AddVelocity({ speed,0.0f });
+				if (Input::IsKeyPressed(KeyCode::KEY_UP))
+					body->AddVelocity({ 0.0f, speed });
+				if (Input::IsKeyPressed(KeyCode::KEY_DOWN))
+					body->AddVelocity({ 0.0f, -speed });
+			}
 		}
 		if (m_NewEntity.HasComponent<RigidBody2DComponent>())
-		{
+		{			
 			float speed = 0.06f;
 			auto body = m_NewEntity.GetComponent<RigidBody2DComponent>().Body;
-			if (Input::IsKeyPressed(KeyCode::KEY_A))
-				body->AddVelocity({ -speed,0.0f });
-			if (Input::IsKeyPressed(KeyCode::KEY_D))
-				body->AddVelocity({ speed,0.0f });
-			if (Input::IsKeyPressed(KeyCode::KEY_W))
-				body->AddVelocity({ 0.0f, speed });
-			if (Input::IsKeyPressed(KeyCode::KEY_S))
-				body->AddVelocity({ 0.0f, -speed });
+			if (body)
+			{
+				if (Input::IsKeyPressed(KeyCode::KEY_A))
+					body->AddVelocity({ -speed,0.0f });
+				if (Input::IsKeyPressed(KeyCode::KEY_D))
+					body->AddVelocity({ speed,0.0f });
+				if (Input::IsKeyPressed(KeyCode::KEY_W))
+					body->AddVelocity({ 0.0f, speed });
+				if (Input::IsKeyPressed(KeyCode::KEY_S))
+					body->AddVelocity({ 0.0f, -speed });
+			}
 		}
 	}
 

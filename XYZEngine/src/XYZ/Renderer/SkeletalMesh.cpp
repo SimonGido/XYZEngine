@@ -85,8 +85,7 @@ namespace XYZ {
             Renderer2D::SubmitCircle(translation, 0.05f, 10, color);
       
             //Renderer2D::SubmitLine(translation, test * childBone->Length, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f));
-
-     
+   
             return false;
         });
 
