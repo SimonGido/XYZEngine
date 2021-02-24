@@ -461,7 +461,7 @@ namespace XYZ {
 			s_Context->RenderData, InGuiRenderData::BUTTON, s_Context->FrameData.Scissors.size() - 1
 		);
 		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, mesh, color, buttonSize, pos, 
-			s_Context->RenderData, subTextureIndex, s_Context->FrameData.Scissors.size() - 1);
+			s_Context->RenderData, subTextureIndex, s_Context->FrameData.Scissors.size() - 1, frameData.EraseOutOfLine);
 
 
 		if (eraseOutOfBorders(oldQuadCount, buttonSize, window, mesh)) { return false; }
@@ -553,7 +553,7 @@ namespace XYZ {
 		if (open) subTextureIndex = InGuiRenderData::DOWN_ARROW;
 
 		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, mesh, color, size, pos, 
-			s_Context->RenderData, subTextureIndex, s_Context->FrameData.Scissors.size() - 1
+			s_Context->RenderData, subTextureIndex, s_Context->FrameData.Scissors.size() - 1, frameData.EraseOutOfLine
 		);
 		if (eraseOutOfBorders(oldQuadCount, genSize, window, mesh)) { return false; }
 		if (!frameData.ActiveWidgets) return 0;
@@ -702,7 +702,7 @@ namespace XYZ {
 		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
 		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(
 			name, window, mesh, color, size, frameData.LayoutOffset, 
-			s_Context->RenderData, InGuiRenderData::BUTTON, s_Context->FrameData.Scissors.size() - 1
+			s_Context->RenderData, InGuiRenderData::BUTTON, s_Context->FrameData.Scissors.size() - 1, frameData.EraseOutOfLine
 		);
 				
 		if (eraseOutOfBorders(oldQuadCount, genSize, window, mesh))
@@ -740,7 +740,7 @@ namespace XYZ {
 			
 		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(
 			name, window, mesh, color, size, frameData.LayoutOffset, 
-			s_Context->RenderData, subTextureIndex, s_Context->FrameData.Scissors.size() - 1
+			s_Context->RenderData, subTextureIndex, s_Context->FrameData.Scissors.size() - 1, frameData.EraseOutOfLine
 		);
 
 		if (eraseOutOfBorders(oldQuadCount, genSize, window, mesh))
@@ -783,11 +783,12 @@ namespace XYZ {
 		uint8_t returnType = 0;
 		size_t oldQuadCount = mesh.Quads.size();
 		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
-		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, mesh, color, size, frameData.LayoutOffset, s_Context->RenderData, InGuiRenderData::SLIDER, s_Context->FrameData.Scissors.size());
+		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, mesh, color, size, frameData.LayoutOffset, 
+			s_Context->RenderData, InGuiRenderData::SLIDER, s_Context->FrameData.Scissors.size(), frameData.EraseOutOfLine);
 		glm::vec2 handleSize = glm::vec2(size.y, size.y);
 		glm::vec2 handlePosition = frameData.LayoutOffset + glm::vec2((size.x - size.y) * val, 0.0f);
 		InGuiFactory::GenerateQuadWithText(nullptr, window, mesh, color, handleSize, handlePosition, 
-			s_Context->RenderData, InGuiRenderData::SLIDER_HANDLE, s_Context->FrameData.Scissors.size() - 1
+			s_Context->RenderData, InGuiRenderData::SLIDER_HANDLE, s_Context->FrameData.Scissors.size() - 1, frameData.EraseOutOfLine
 		);
 		InGuiFactory::GenerateTextCenteredMiddle(frameData.TextBuffer, window, mesh, frameData.LayoutOffset, size,
 			s_Context->RenderData, 1000, s_Context->FrameData.Scissors.size() - 1
@@ -830,12 +831,13 @@ namespace XYZ {
 		uint8_t returnType = 0;
 		size_t oldQuadCount = mesh.Quads.size();
 		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
-		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, mesh, color, size, frameData.LayoutOffset, s_Context->RenderData, InGuiRenderData::SLIDER, s_Context->FrameData.Scissors.size());
+		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, mesh, color, size, frameData.LayoutOffset, 
+			s_Context->RenderData, InGuiRenderData::SLIDER, s_Context->FrameData.Scissors.size(), frameData.EraseOutOfLine);
 		glm::vec2 handleSize = glm::vec2(size.x, size.x);
 		glm::vec2 handlePosition = frameData.LayoutOffset + glm::vec2(0.0f, (size.y - size.x) * val);
 		
 		InGuiFactory::GenerateQuadWithText(nullptr, window, mesh, color, handleSize, handlePosition,
-			s_Context->RenderData, InGuiRenderData::SLIDER_HANDLE, s_Context->FrameData.Scissors.size() - 1
+			s_Context->RenderData, InGuiRenderData::SLIDER_HANDLE, s_Context->FrameData.Scissors.size() - 1, frameData.EraseOutOfLine
 		);
 
 		if (eraseOutOfBorders(oldQuadCount, genSize, window, mesh))
@@ -937,7 +939,7 @@ namespace XYZ {
 
 
 		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window,mesh, color, size, frameData.LayoutOffset, 
-			s_Context->RenderData, InGuiRenderData::BUTTON, s_Context->FrameData.Scissors.size() - 1
+			s_Context->RenderData, InGuiRenderData::BUTTON, s_Context->FrameData.Scissors.size() - 1, frameData.EraseOutOfLine
 		);
 		InGuiFactory::GenerateTextCenteredMiddle(buffer, window, mesh, frameData.LayoutOffset, size,
 			s_Context->RenderData, maxCharacters, s_Context->FrameData.Scissors.size() - 1
@@ -1016,7 +1018,7 @@ namespace XYZ {
 
 
 		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, mesh, color, size, frameData.LayoutOffset,
-			s_Context->RenderData, InGuiRenderData::BUTTON, s_Context->FrameData.Scissors.size() - 1
+			s_Context->RenderData, InGuiRenderData::BUTTON, s_Context->FrameData.Scissors.size() - 1, frameData.EraseOutOfLine
 		);
 		InGuiFactory::GenerateTextCenteredMiddle(buffer, window, mesh, frameData.LayoutOffset, size,
 			s_Context->RenderData, maxCharacters, s_Context->FrameData.Scissors.size() - 1
@@ -1096,7 +1098,7 @@ namespace XYZ {
 
 
 		glm::vec2 genSize = InGuiFactory::GenerateQuadWithText(name, window, mesh, color, size, 
-			frameData.LayoutOffset, s_Context->RenderData, InGuiRenderData::BUTTON, s_Context->FrameData.Scissors.size() - 1
+			frameData.LayoutOffset, s_Context->RenderData, InGuiRenderData::BUTTON, s_Context->FrameData.Scissors.size() - 1, frameData.EraseOutOfLine
 		);
 		InGuiFactory::GenerateTextCenteredMiddle(buffer, window, mesh, frameData.LayoutOffset, size,
 			s_Context->RenderData, maxCharacters, s_Context->FrameData.Scissors.size() - 1

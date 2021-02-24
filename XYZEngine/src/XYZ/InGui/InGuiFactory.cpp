@@ -139,19 +139,13 @@ namespace XYZ {
 				scissorIndex
 			});
 	}
-	glm::vec2 InGuiFactory::GenerateQuadWithText(const char* text, const InGuiWindow& window, InGuiMesh& mesh, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, const InGuiRenderData& renderData, uint32_t subTextureIndex, uint32_t scissorIndex)
+	glm::vec2 InGuiFactory::GenerateQuadWithText(const char* text, const InGuiWindow& window, InGuiMesh& mesh, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, const InGuiRenderData& renderData, uint32_t subTextureIndex, uint32_t scissorIndex, bool textErase)
 	{
 		GenerateQuad(mesh, color, size, position, renderData.SubTexture[subTextureIndex], InGuiRenderData::TextureID, scissorIndex);
-		glm::vec2 textPosition = position;
+		glm::vec2 textPosition = { std::floor(position.x), std::floor(position.y) };
 		glm::vec2 textOffset = { 7.0f, 0.0f };
-		glm::vec2 textSize = { 
-			window.Size.x - window.Layout.RightPadding - size.x
-			- (position.x - window.Position.x) - textOffset.x, 
-			window.Size.y 
-		};
-
-		textPosition.x = std::floor(textPosition.x);
-		textPosition.y = std::floor(textPosition.y);
+		glm::vec2 textSize = window.Size - textOffset;
+		if (textErase) textSize.x = window.Size.x - window.Layout.RightPadding - size.x - (position.x - window.Position.x) - textOffset.x;
 
 		size_t oldMeshSize = mesh.Quads.size();
 		glm::vec2 genSize = GenerateTextMesh(
@@ -179,10 +173,8 @@ namespace XYZ {
 		GenerateQuad(mesh, color, size, position, renderData.SubTexture[subTextureIndex], InGuiRenderData::TextureID, scissorIndex);
 
 		glm::vec2 textOffset = { 7.0f, 0.0f };
-		glm::vec2 textPosition = position;
+		glm::vec2 textPosition = { std::floor(position.x), std::floor(position.y) };
 		glm::vec2 textSize = {size.x - textOffset.x, window.Size.y };
-		textPosition.x = std::floor(textPosition.x);
-		textPosition.y = std::floor(textPosition.y);
 
 		size_t oldMeshSize = mesh.Quads.size();
 		glm::vec2 genSize = GenerateTextMesh(
@@ -224,10 +216,8 @@ namespace XYZ {
 		GenerateQuad(mesh, color, size, position, renderData.SubTexture[subTextureIndex], InGuiRenderData::TextureID, scissorIndex);
 
 		glm::vec2 textOffset = { 7.0f, 0.0f };
-		glm::vec2 textPosition = position;
+		glm::vec2 textPosition = { std::floor(position.x), std::floor(position.y) };
 		glm::vec2 textSize = { size.x - textOffset.x, window.Size.y };
-		textPosition.x = std::floor(textPosition.x);
-		textPosition.y = std::floor(textPosition.y);
 
 		size_t oldMeshSize = mesh.Quads.size();
 		glm::vec2 genSize = GenerateTextMesh(
