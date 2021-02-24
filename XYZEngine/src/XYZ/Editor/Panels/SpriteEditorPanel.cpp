@@ -38,6 +38,7 @@ namespace XYZ {
 				glm::vec2 position = (windowSize / 2.0f) - (m_Size / 2.0f);
 				auto& layout = InGui::GetWindow(m_PanelID).Layout;
 				
+				// TODO scale it enough to support 4k ?
 				InGui::BeginScrollableArea(windowSize - glm::vec2(2.0f * layout.RightPadding, 0.0f), m_ScrollOffset, 100.0f, 10.0f);
 				glm::vec2 nextPos = InGui::GetPositionOfNext();
 				InGui::SetPositionOfNext(windowPosition + position);
