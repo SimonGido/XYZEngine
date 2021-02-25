@@ -27,6 +27,7 @@ bld/
 [Bb]in-int/
 [Oo]bj/
 [Ll]og/
+!XYZEngine/vendor/mono/bin/Debug
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
@@ -344,8 +345,8 @@ healthchecksdb
 /bin-int/Debug-windows-x86_64
 /bin-int/Release-windows-x86_64
 
-/XYZEditor/XYZLog.txt
-/XYZEditor/results.json
+# Visual Studio files and folder
+.vs/
 *.sln
 *.vcxproj
 *.filters

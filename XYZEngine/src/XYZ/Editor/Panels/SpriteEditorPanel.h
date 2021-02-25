@@ -6,7 +6,7 @@
 #include <array>
 
 namespace XYZ {
-	using Point = std::array<float, 2>;
+	using XPoint = std::array<float, 2>;
 
 	class SpriteEditorPanel
 	{
@@ -30,12 +30,12 @@ namespace XYZ {
 
 		glm::vec2 m_Size = glm::vec2(0.0f);
 		
-		std::vector<std::vector<Point>> m_Points;
+		std::vector<std::vector<XPoint>> m_Points;
 		std::vector<uint32_t> m_Indices;
 		float m_Scale = 1.0f;
 		float m_ScrollOffset = 0.0f;
 
-		Point* m_MovedPoint = nullptr;
+		XPoint* m_MovedPoint = nullptr;
 
 		static constexpr float sc_PointRadius = 5.0f;
 	};

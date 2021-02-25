@@ -9,16 +9,6 @@
 
 namespace XYZ {
 
-
-	struct MyPoint
-	{
-		char something;
-		float x;
-		int something_else;
-		float y;
-		float foo[5];
-	};
-
 	static void CircleOfLines(InGuiMesh& mesh, const glm::vec3& pos, float radius, size_t sides, const glm::vec4& color)
 	{
 		float step = 360 / sides;
@@ -86,8 +76,8 @@ namespace XYZ {
 					uint32_t previousIndex = m_Indices[i - 1];
 					uint32_t currentIndex = m_Indices[i];
 					
-					Point& previous = m_Points[0][previousIndex];
-					Point& current = m_Points[0][currentIndex];
+					XPoint& previous = m_Points[0][previousIndex];
+					XPoint& current = m_Points[0][currentIndex];
 
 					glm::vec2 previousRelPos = {
 						windowPosition.x + (windowSize.x / 2.0f) + previous[0],
