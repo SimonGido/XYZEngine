@@ -27,7 +27,7 @@ bld/
 [Bb]in-int/
 [Oo]bj/
 [Ll]og/
-!XYZEngine/vendor/mono/bin/
+!XYZEngine/vendor/mono/bin/Debug/mono-2.0-sgen.dll
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
