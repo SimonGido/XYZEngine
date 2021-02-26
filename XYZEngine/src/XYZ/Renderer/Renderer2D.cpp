@@ -52,7 +52,7 @@ namespace XYZ {
 		static const uint32_t MaxIndices = MaxQuads * 6;
 		static const uint32_t MaxLines = 10000;
 		static const uint32_t MaxLineVertices = MaxLines * 2;
-		static const uint32_t MaxLineIndices = MaxLines * 6;
+		static const uint32_t MaxLineIndices = MaxLines * 2;
 		static const uint32_t MaxCollisionVertices = MaxQuads * 4;
 		static const uint32_t MaxPoints = 10000;
 
@@ -336,7 +336,7 @@ namespace XYZ {
 
 	void Renderer2D::SubmitCircle(const glm::vec3& pos, float radius, uint32_t sides, const glm::vec4& color)
 	{
-		if (s_Data.LineIndexCount + (sides * 2) >= s_Data.MaxLineIndices)
+		if (s_Data.LineIndexCount + (sides * 3) >= s_Data.MaxLineIndices)
 			FlushLines();
 		float step = 360 / sides;
 		for (int a = step; a < 360 + step; a += step)

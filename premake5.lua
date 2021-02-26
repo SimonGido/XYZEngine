@@ -19,7 +19,6 @@ IncludeDir = {}
 IncludeDir["GLFW"] = "XYZEngine/vendor/GLFW/include"
 IncludeDir["GLEW"] = "XYZEngine/vendor/GLEW/include"
 IncludeDir["glm"] = "XYZEngine/vendor/glm"
-IncludeDir["mini"] = "XYZEngine/vendor/mini"
 IncludeDir["OpenAL"] = "XYZEngine/vendor/OpenAL-Soft"
 IncludeDir["MiniMp3"] = "XYZEngine/vendor/minimp3"
 IncludeDir["FreeType"] = "XYZEngine/vendor/freetype-2.10.1"
@@ -28,6 +27,7 @@ IncludeDir["Lua"] = "XYZEngine/vendor/lua/include"
 IncludeDir["Sol"] = "XYZEngine/vendor/sol2/include"
 IncludeDir["mono"] = "XYZEngine/vendor/mono/include"
 IncludeDir["earcut"] = "XYZEngine/vendor/earcut/include"
+IncludeDir["TrianglePP"] = "XYZEngine/vendor/TrianglePP/source"
 
 LibraryDir = {}
 LibraryDir["mono"] = "vendor/mono/lib/Debug/mono-2.0-sgen.lib"
@@ -37,6 +37,8 @@ include "XYZEngine/vendor/GLEW"
 include "XYZEngine/vendor/OpenAL-Soft"
 include "XYZEngine/vendor/freetype-2.10.1"
 include "XYZEngine/vendor/lua"
+include "XYZEngine/vendor/TrianglePP"
+
 
 project "XYZEngine"
 		location "XYZEngine"
@@ -57,7 +59,6 @@ project "XYZEngine"
 			"%{prj.name}/src/**.cpp",
 			"%{prj.name}/vendor/glm/glm/**.hpp",
 			"%{prj.name}/vendor/glm/glm/**.inl",
-			"%{prj.name}/vendor/mini/ini.h",
 			"%{prj.name}/vendor/stb_image/**.h",
 			"%{prj.name}/vendor/stb_image/**.cpp",
 
@@ -80,22 +81,23 @@ project "XYZEngine"
 		includedirs
 		{
 			"%{prj.name}/src",
+			"%{prj.name}/vendor/stb_image",
+			"%{prj.name}/vendor/yaml-cpp/include",
+			"%{prj.name}/vendor/assimp/include",
 			"%{IncludeDir.GLFW}",
 			"%{IncludeDir.GLEW}",
 			"%{IncludeDir.glm}",
-			"%{IncludeDir.mini}",
 			"%{IncludeDir.OpenAL}/include",
 			"%{IncludeDir.OpenAL}/src",
 			"%{IncludeDir.OpenAL}/src/common",
 			"%{IncludeDir.MiniMp3}",	
-			"%{prj.name}/vendor/stb_image",
-			"%{prj.name}/vendor/yaml-cpp/include",
 			"%{IncludeDir.FreeType}/include",
 			"%{IncludeDir.Asio}",
 			"%{IncludeDir.Lua}",
 			"%{IncludeDir.Sol}",
 			"%{IncludeDir.mono}",
-			"%{IncludeDir.earcut}"
+			"%{IncludeDir.earcut}",
+			"%{IncludeDir.TrianglePP}"
 		}
 
 		links
@@ -106,6 +108,7 @@ project "XYZEngine"
 			"FreeType",
 			"Lua",
 			"opengl32",
+			"TrianglePP",
 			"%{LibraryDir.mono}"
 		}
 		

@@ -531,7 +531,7 @@ namespace XYZ {
 		InGui::SliderVertical("", glm::vec2(25.0f, size.y), val);
 		offset = val * scale;
 		////////////////////////////////////////////////////////
-		frameData.LayoutOffset.x = positionX + window.Layout.LeftPadding;
+		frameData.LayoutOffset.x = positionX;
 		frameData.HighestInRow = 0.0f;
 
 
