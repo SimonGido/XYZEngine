@@ -81,6 +81,7 @@ namespace XYZ {
 		InGuiMesh   OverlayMesh;
 		InGuiMesh   ScrollableMesh;
 		InGuiMesh   ScrollableOverlayMesh;
+		InGuiMesh	TriangleMesh;
 
 		InGuiLayout Layout;
 		glm::vec2   Position;

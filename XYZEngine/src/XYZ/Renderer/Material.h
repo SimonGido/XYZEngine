@@ -56,6 +56,17 @@ namespace XYZ {
 				
 			m_Textures[size_t(tex->Slot) + size_t(index)] = texture;
 		}
+		void Set(const std::string& name, const Ref<Texture>& texture, uint32_t index = 0)
+		{
+			auto tex = findTexture(name);
+			XYZ_ASSERT(tex, "Material texture does not exist ", name.c_str());
+
+			if ((uint32_t)m_Textures.size() <= tex->Slot + index)
+				m_Textures.resize((size_t)tex->Slot + 1 + index);
+
+			m_Textures[size_t(tex->Slot) + size_t(index)] = texture;
+		}
+
 		template <typename T>
 		T& Get(const std::string& name)
 		{
@@ -66,6 +77,7 @@ namespace XYZ {
 		}
 
 		void Bind() const;
+		void ClearTextures() { m_Textures.clear(); }
 		void SetFlags(RenderFlags renderFlags) { m_Flags |= renderFlags; }
 		uint64_t GetFlags() const { return m_Flags; }
 	

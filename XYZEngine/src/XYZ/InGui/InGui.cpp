@@ -458,7 +458,7 @@ namespace XYZ {
 		s_Context->FrameData.ActiveWindowID = InGuiFrameData::NullID;	
 	}
 
-	bool InGui::BeginGroup(const char* name, bool& open)
+	bool InGui::BeginGroup(const char* name, const glm::vec2& size, bool& open)
 	{
 		XYZ_ASSERT(s_Context->FrameData.ActiveWindowID != InGuiFrameData::NullID, "Missing begin call");
 		InGuiWindow& window = s_Context->Windows[s_Context->FrameData.ActiveWindowID];
@@ -467,11 +467,8 @@ namespace XYZ {
 
 		size_t oldQuadCount = mesh.Quads.size();
 		glm::vec4 color = s_Context->RenderData.Color[InGuiRenderData::DEFAULT_COLOR];
-		glm::vec2 size = {
-			window.Size.x - window.Layout.RightPadding - window.Layout.LeftPadding, 
-			InGuiWindow::PanelHeight 
-		};
-		glm::vec2 buttonSize = glm::vec2(InGuiWindow::PanelHeight, InGuiWindow::PanelHeight);
+
+		glm::vec2 buttonSize = glm::vec2(InGuiWindow::PanelHeight, size.y);
 		glm::vec2 pos = { window.Position.x + window.Layout.LeftPadding , frameData.LayoutOffset.y };
 		uint32_t subTextureIndex = InGuiRenderData::RIGHT_ARROW;
 		if (open) subTextureIndex = InGuiRenderData::DOWN_ARROW;

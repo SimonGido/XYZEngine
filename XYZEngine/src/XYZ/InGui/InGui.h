@@ -39,7 +39,7 @@ namespace XYZ {
 		static bool Begin(uint32_t id, const char* name, const glm::vec2& position, const glm::vec2& size);
 		static bool ImageWindow(uint32_t id, const char* name, const glm::vec2& position, const glm::vec2& size, Ref<SubTexture> subTexture);
 		static void End();
-		static bool BeginGroup(const char* name, bool& open);
+		static bool BeginGroup(const char* name, const glm::vec2& size, bool& open);
 		static void BeginScrollableArea(const glm::vec2& size, float & offset, float scale, float scrollSpeed);
 		static void EndScrollableArea();
 

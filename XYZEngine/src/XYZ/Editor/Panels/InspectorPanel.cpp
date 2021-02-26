@@ -46,7 +46,9 @@ namespace XYZ {
 				if (m_CurrentSize < m_Context.NumberOfTypes())
 					resizeGroups();
 
-				auto layout = InGui::GetWindow(m_PanelID).Layout;
+
+				const InGuiWindow& window = InGui::GetWindow(m_PanelID);
+				auto layout = window.Layout;
 			
 				InGui::BeginScrollableArea(glm::vec2(InGui::GetWindow(m_PanelID).Size.x - 65.0f, 500.0f), m_ScrollOffset, m_ScrollScale, 10.0f);
 				
@@ -54,11 +56,16 @@ namespace XYZ {
 				layout.RightPadding = 70.0f;
 				InGui::SetLayout(m_PanelID, layout);
 				
+				glm::vec2 size = {
+					window.Size.x - window.Layout.RightPadding - window.Layout.LeftPadding,
+					InGuiWindow::PanelHeight
+				};
+
 				uint32_t index = 0;
 				if (m_Context.HasComponent<TransformComponent>())
 				{
 					TransformComponent& transform = m_Context.GetComponent<TransformComponent>();
-					if (InGui::BeginGroup("Transform Component", m_ComponentGroups[index++]))
+					if (InGui::BeginGroup("Transform Component", size, m_ComponentGroups[index++]))
 					{
 						InGui::Text("Translation");
 						InGui::Separator();
@@ -86,7 +93,7 @@ namespace XYZ {
 				if (m_Context.HasComponent<SpriteRenderer>())
 				{
 					SpriteRenderer& spriteRenderer = m_Context.GetComponent<SpriteRenderer>();
-					if (InGui::BeginGroup("Sprite Renderer", m_ComponentGroups[index++]))
+					if (InGui::BeginGroup("Sprite Renderer", size, m_ComponentGroups[index++]))
 					{
 						InGui::Text("Color");
 						InGui::Separator();
@@ -107,7 +114,7 @@ namespace XYZ {
 				if (m_Context.HasComponent<PointLight2D>())
 				{
 					PointLight2D& light = m_Context.GetComponent<PointLight2D>();
-					if (InGui::BeginGroup("Point Light 2D", m_ComponentGroups[index++]))
+					if (InGui::BeginGroup("Point Light 2D", size, m_ComponentGroups[index++]))
 					{
 						InGui::Text("Color");
 						InGui::Separator();
@@ -124,7 +131,7 @@ namespace XYZ {
 				if (m_Context.HasComponent<RigidBody2DComponent>())
 				{
 					RigidBody2DComponent& rigidBody = m_Context.GetComponent<RigidBody2DComponent>();
-					if (InGui::BeginGroup("RigidBody2D", m_ComponentGroups[index++]))
+					if (InGui::BeginGroup("RigidBody2D", size, m_ComponentGroups[index++]))
 					{
 						InGui::Dropdown(BodyTypeToString(rigidBody.Type), glm::vec2(100.0f, 25.0f), m_RigidBodyTypeOpen);
 						if (m_RigidBodyTypeOpen)
@@ -161,7 +168,7 @@ namespace XYZ {
 				if (m_Context.HasComponent<BoxCollider2DComponent>())
 				{
 					BoxCollider2DComponent& boxCollider = m_Context.GetComponent<BoxCollider2DComponent>();
-					if (InGui::BeginGroup("BoxCollider2D", m_ComponentGroups[index++]))
+					if (InGui::BeginGroup("BoxCollider2D", size, m_ComponentGroups[index++]))
 					{
 						InGui::Text("Offset");
 						InGui::Separator();
@@ -186,7 +193,7 @@ namespace XYZ {
 				if (m_Context.HasComponent<ScriptComponent>())
 				{
 					ScriptComponent& script = m_Context.GetComponent<ScriptComponent>();
-					if (InGui::BeginGroup("Script Component", m_ComponentGroups[index++]))
+					if (InGui::BeginGroup("Script Component", size, m_ComponentGroups[index++]))
 					{
 						InGui::String("Module Name", glm::vec2(120.0f, 25.0f), script.ModuleName);
 						InGui::Separator();

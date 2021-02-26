@@ -3,11 +3,21 @@
 
 #include "XYZ/Core/Input.h"
 #include "XYZ/Renderer/Renderer2D.h"
+#include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Utils/Math/Math.h"
 
+
+#include <glm/gtx/transform.hpp>
 #include <tpp_interface.hpp>
 
 namespace XYZ {
+
+	struct PreviewVertex
+	{
+		glm::vec3 Color;
+		glm::vec3 Position;
+		glm::vec2 TexCoord;
+	};
 
 	static void GetTriangulationPt(const std::vector<tpp::Delaunay::Point>& points, int keyPointIdx, const tpp::Delaunay::Point& sPoint, double& x, double& y)
 	{
@@ -49,12 +59,21 @@ namespace XYZ {
 		auto flags = InGui::GetWindow(m_PanelID).Flags;
 		flags &= ~InGuiWindowFlags::EventBlocking;
 		InGui::SetWindowFlags(m_PanelID, flags);
+
+		m_CategoriesOpen[Bones] = false;
+		m_CategoriesOpen[Geometry] = false;
+		m_CategoriesOpen[Weights] = false;
+
+		m_Material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Test.glsl"));
 	}
 	void SpriteEditorPanel::SetContext(Ref<SubTexture> context)
 	{
 		m_Context = context;
-		m_Size.x = (float)m_Context->GetTexture()->GetWidth();
-		m_Size.y = (float)m_Context->GetTexture()->GetHeight();
+		m_ContextSize.x = (float)m_Context->GetTexture()->GetWidth();
+		m_ContextSize.y = (float)m_Context->GetTexture()->GetHeight();
+
+		m_Material->ClearTextures();
+		m_Material->Set("u_Texture", m_Context->GetTexture(), 0);
 	}
 	void SpriteEditorPanel::OnInGuiRender()
 	{
@@ -64,30 +83,30 @@ namespace XYZ {
 			{
 				glm::vec2 windowSize = InGui::GetWindow(m_PanelID).Size;
 				glm::vec2 windowPosition = InGui::GetWindow(m_PanelID).Position;
-				glm::vec2 position = (windowSize / 2.0f) - (m_Size / 2.0f);
+				glm::vec2 position = (windowSize / 2.0f) - (m_ContextSize / 2.0f);
 				auto& layout = InGui::GetWindow(m_PanelID).Layout;
 
-				// TODO scale it enough to support 4k ?
 				InGui::BeginScrollableArea(windowSize - glm::vec2(2.0f * layout.RightPadding, 0.0f), m_ScrollOffset, 100.0f, 10.0f);
 				glm::vec2 nextPos = InGui::GetPositionOfNext();
 				InGui::SetPositionOfNext(windowPosition + position);
-				InGui::Image(m_Size, m_Context);
+				InGui::Image(m_ContextSize, m_Context);
 
 				auto [mx, my] = Input::GetMousePosition();
 				m_Triangle = findTriangle({ mx, my });
+				auto& mesh = InGui::GetWindowScrollableOverlayMesh(m_PanelID);
 
-				for (auto& point : m_Points)
+				for (auto& vertex : m_Vertices)
 				{
 					glm::vec2 relativePos = {
-						windowPosition.x + (windowSize.x / 2.0f) + point.X,
-						windowPosition.y + (windowSize.y / 2.0f) + point.Y
+						windowPosition.x + (windowSize.x / 2.0f) + vertex.X,
+						windowPosition.y + (windowSize.y / 2.0f) + vertex.Y
 					};
 					CircleOfLines(
-						InGui::GetWindowScrollableOverlayMesh(m_PanelID), glm::vec3(relativePos.x, relativePos.y, 0.0f),
+						mesh, glm::vec3(relativePos.x, relativePos.y, 0.0f),
 						sc_PointRadius, 20, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f)
 					);
 				}
-				auto& mesh = InGui::GetWindowScrollableOverlayMesh(m_PanelID);
+				
 				glm::vec2 offset = {
 						windowPosition.x + (windowSize.x / 2.0f),
 						windowPosition.y + (windowSize.y / 2.0f)
@@ -109,34 +128,84 @@ namespace XYZ {
 
 				InGui::Separator();
 				InGui::SetPositionOfNext(nextPos);
-				if (IS_SET(InGui::Button("Triangulate", glm::vec2(70.0f, 50.0f)), InGuiReturnType::Clicked))
-				{			
-					triangulate();
+
+				glm::vec2 size = { 150.0f, InGuiWindow::PanelHeight };
+				if (InGui::BeginGroup("Bones", size, m_CategoriesOpen[Bones]))
+				{
+
 				}
 				InGui::Separator();
-				if (IS_SET(InGui::Button("Clear", glm::vec2(70.0f, 50.0f)), InGuiReturnType::Clicked))
+				if (InGui::BeginGroup("Geometry", size, m_CategoriesOpen[Geometry]))
 				{
-					m_Indices.clear();
-					m_Points.clear();
-					m_Triangulated = false;
+					if (IS_SET(InGui::Button("Create Vertex", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
+					{
+						m_GeometryCategoryFlags = CreateVertex;
+					}
+					InGui::Separator();
+					if (IS_SET(InGui::Button("Edit Vertex", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
+					{
+						m_GeometryCategoryFlags = EditVertex;
+					}
+					InGui::Separator();
+					if (IS_SET(InGui::Button("Delete Vertex", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
+					{
+						m_GeometryCategoryFlags = DeleteVertex;
+					}
+					InGui::Separator();
+					if (IS_SET(InGui::Button("Delete Triangle", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
+					{
+						m_GeometryCategoryFlags = DeleteTriangle;
+					}
+					InGui::Separator();
+					if (IS_SET(InGui::Button("Clear", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
+					{
+						m_Indices.clear();
+						m_Vertices.clear();
+						m_Triangulated = false;
+					}	
+					InGui::Separator();
+					if (IS_SET(InGui::Button("Triangulate", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
+					{
+						triangulate();
+					}
 				}
-				if (m_MovedPoint)
+				InGui::Separator();
+				if (InGui::BeginGroup("Weights", size, m_CategoriesOpen[Weights]))
+				{
+
+				}
+				InGui::Separator();
+				
+				if (m_EditedVertex)
 				{
 					auto [mx, my] = Input::GetMousePosition();
 					glm::vec2 relativePos = glm::vec2(mx, my) - windowPosition - (windowSize / 2.0f);
 
-					(*m_MovedPoint).X = relativePos.x;
-					(*m_MovedPoint).Y = relativePos.y;
+					(*m_EditedVertex).X = relativePos.x;
+					(*m_EditedVertex).Y = relativePos.y;
+					updateVertexBuffer();
 				}
 				if (!IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
 				{
-					m_MovedPoint = nullptr;
+					m_EditedVertex = nullptr;
 				}
-				InGui::EndScrollableArea();
-
+				InGui::EndScrollableArea();			
 			}
 		}
 		InGui::End();
+
+		if (m_Triangulated)
+		{
+			float w = (float)Input::GetWindowSize().first;
+			float h = (float)Input::GetWindowSize().second;
+
+			Renderer::SetActiveQueue(RenderQueueType::Overlay);
+			m_Material->Set("u_ViewProjectionMatrix", glm::ortho(0.0f, w, h, 0.0f));
+			m_Material->Bind();
+			m_VertexArray->Bind();
+			Renderer::DrawIndexed(PrimitiveType::Triangles, m_VertexArray->GetIndexBuffer()->GetCount());
+			Renderer::SetActiveQueue(RenderQueueType::Default);
+		}
 	}
 	void SpriteEditorPanel::OnEvent(Event& event)
 	{
@@ -154,60 +223,49 @@ namespace XYZ {
 				auto [mx, my] = Input::GetMousePosition();
 				glm::vec2 windowPosition = InGui::GetWindow(m_PanelID).Position;
 				glm::vec2 windowSize = InGui::GetWindow(m_PanelID).Size;
-				glm::vec2 relativePos = glm::vec2( mx, my ) - windowPosition - (windowSize / 2.0f);
+				glm::vec2 relativePos = glm::vec2(mx, my) - windowPosition - (windowSize / 2.0f);
 				
-				m_Points.push_back({ relativePos.x, relativePos.y });
-				return true;
-			}
-		}
-		else if (event.IsButtonPressed(MouseCode::MOUSE_BUTTON_LEFT))
-		{
-			auto [mx, my] = Input::GetMousePosition();
-			glm::vec2 windowPosition = InGui::GetWindow(m_PanelID).Position;
-			glm::vec2 windowSize = InGui::GetWindow(m_PanelID).Size;
-			glm::vec2 relativePos = glm::vec2(mx, my) - windowPosition - (windowSize / 2.0f);
-			uint32_t counter = 0;
-			for (auto& point : m_Points)
-			{
-				glm::vec2 relativePos = {
-					windowPosition.x + (windowSize.x / 2.0f) + point.X,
-					windowPosition.y + (windowSize.y / 2.0f) + point.Y
-				};
-				if (glm::distance(glm::vec2(mx, my), relativePos) < sc_PointRadius)
+				if (IS_SET(m_GeometryCategoryFlags, GeometryCategoryFlags::CreateVertex))
 				{
-					m_MovedPoint = &point;
+					glm::vec2 pos = glm::vec2(mx, my) - windowPosition - (windowSize / 2.0f);
+					m_Vertices.push_back({ pos.x, pos.y });
 					return true;
 				}
-				counter++;
-			}
-		}
-		else if (event.IsButtonPressed(MouseCode::MOUSE_BUTTON_MIDDLE))
-		{
-			if (IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
-			{
-				auto [mx, my] = Input::GetMousePosition();
-				glm::vec2 windowPosition = InGui::GetWindow(m_PanelID).Position;
-				glm::vec2 windowSize = InGui::GetWindow(m_PanelID).Size;
-				glm::vec2 relativePos = glm::vec2(mx, my) - windowPosition - (windowSize / 2.0f);
-				uint32_t counter = 0;
-
-				if (!m_Triangulated)
+				else if (IS_SET(m_GeometryCategoryFlags, GeometryCategoryFlags::EditVertex))
 				{
-					for (auto& point : m_Points)
+					uint32_t counter = 0;
+					for (auto& vertex : m_Vertices)
 					{
-						glm::vec2 relativePos = {
-							windowPosition.x + (windowSize.x / 2.0f) + point.X,
-							windowPosition.y + (windowSize.y / 2.0f) + point.Y
+						glm::vec2 pos = {
+							windowPosition.x + (windowSize.x / 2.0f) + vertex.X,
+							windowPosition.y + (windowSize.y / 2.0f) + vertex.Y
 						};
-						if (glm::distance(glm::vec2(mx, my), relativePos) < sc_PointRadius)
+						if (glm::distance(glm::vec2(mx, my), pos) < sc_PointRadius)
 						{
-							m_Points.erase(m_Points.begin() + counter);
+							m_EditedVertex = &vertex;
 							return true;
 						}
 						counter++;
 					}
 				}
-				else if (m_TriangleFound)
+				else if (IS_SET(m_GeometryCategoryFlags, GeometryCategoryFlags::DeleteVertex) && !m_Triangulated)
+				{
+					uint32_t counter = 0;
+					for (auto& point : m_Vertices)
+					{
+						glm::vec2 pos = {
+							windowPosition.x + (windowSize.x / 2.0f) + point.X,
+							windowPosition.y + (windowSize.y / 2.0f) + point.Y
+						};
+						if (glm::distance(glm::vec2(mx, my), pos) < sc_PointRadius)
+						{
+							m_Vertices.erase(m_Vertices.begin() + counter);
+							return true;
+						}
+						counter++;
+					}
+				}
+				else if (IS_SET(m_GeometryCategoryFlags, GeometryCategoryFlags::DeleteTriangle) && m_Triangulated && m_TriangleFound)
 				{
 					for (size_t i = 2; i < m_Indices.size(); i += 3)
 					{
@@ -216,21 +274,23 @@ namespace XYZ {
 							&& m_Triangle.Third == m_Indices[i])
 						{
 							m_Indices.erase(m_Indices.begin() + i - 2, m_Indices.begin() + i + 1);
-							break;
+							eraseEmptyPoints();
+							rebuildRenderBuffers();
+							m_TriangleFound = false;
+							return true;
 						}
 					}
-					m_TriangleFound = false;
+					
 				}
-				return true;
 			}
 		}
 		return false;
 	}
 	bool SpriteEditorPanel::onMouseButtonRelease(MouseButtonReleaseEvent& event)
 	{
-		if (event.IsButtonReleased(MouseCode::MOUSE_BUTTON_LEFT))
+		if (event.IsButtonReleased(MouseCode::MOUSE_BUTTON_RIGHT))
 		{
-			m_MovedPoint = nullptr;
+			m_EditedVertex = nullptr;
 		}
 		return false;
 	}
@@ -249,10 +309,80 @@ namespace XYZ {
 		}
 		return false;
 	}
+	void SpriteEditorPanel::rebuildRenderBuffers()
+	{
+		if (m_Vertices.size())
+		{
+			auto [mx, my] = Input::GetMousePosition();
+			glm::vec2 windowPosition = InGui::GetWindow(m_PanelID).Position;
+			glm::vec2 windowSize = InGui::GetWindow(m_PanelID).Size;
+			glm::vec2 relativePos = glm::vec2(mx, my) - windowPosition - (windowSize / 2.0f);
+
+			std::vector<PreviewVertex> vertices;
+			vertices.reserve(m_Vertices.size());
+			for (auto& vertex : m_Vertices)
+			{
+				glm::vec2 pos = {
+					windowPosition.x + (windowSize.x / 2.0f) + vertex.X,
+					windowPosition.y + (windowSize.y / 2.0f) + vertex.Y
+				};
+				vertices.push_back({
+					glm::vec3(1.0f),
+					glm::vec3(pos,-0.7f),
+					calculateTexCoord(pos)
+					});
+
+				std::cout << calculateTexCoord(pos).x << " " << calculateTexCoord(pos).y << std::endl;
+			}
+			m_VertexArray = VertexArray::Create();
+			m_VertexBuffer = VertexBuffer::Create(vertices.data(), vertices.size() * sizeof(PreviewVertex), BufferUsage::Dynamic);
+			m_VertexBuffer->SetLayout({
+				{0, ShaderDataComponent::Float3, "a_Color"},
+				{1, ShaderDataComponent::Float3, "a_Position"},
+				{2, ShaderDataComponent::Float2, "a_TexCoord"},
+				});
+			m_VertexArray->AddVertexBuffer(m_VertexBuffer);
+			Ref<IndexBuffer> ibo = IndexBuffer::Create(m_Indices.data(), m_Indices.size());
+			m_VertexArray->SetIndexBuffer(ibo);
+		}
+	}
+	void SpriteEditorPanel::updateVertexBuffer()
+	{
+		glm::vec2 windowSize = InGui::GetWindow(m_PanelID).Size;
+		glm::vec2 windowPosition = InGui::GetWindow(m_PanelID).Position;
+
+		std::vector<PreviewVertex> vertices;
+		vertices.reserve(m_Vertices.size());
+		for (auto& vertex : m_Vertices)
+		{
+			glm::vec2 pos = {
+			   windowPosition.x + (windowSize.x / 2.0f) + vertex.X,
+			   windowPosition.y + (windowSize.y / 2.0f) + vertex.Y
+			};
+			vertices.push_back({
+				glm::vec3(1.0f),
+				glm::vec3(pos.x,pos.y,0.0f),
+				calculateTexCoord(pos) 
+				});
+		}
+		m_VertexBuffer->Update(vertices.data(), vertices.size() * sizeof(PreviewVertex));
+	}
+	glm::vec2 SpriteEditorPanel::calculateTexCoord(const glm::vec2& pos)
+	{
+		glm::vec2 windowSize = InGui::GetWindow(m_PanelID).Size;
+		glm::vec2 windowPosition = InGui::GetWindow(m_PanelID).Position;
+		glm::vec2 position = (windowSize / 2.0f) - (m_ContextSize / 2.0f);
+
+		glm::vec2 bottomLeftPoint = windowPosition + position;
+		glm::vec2 topRightPoint = windowPosition + position + glm::vec2(m_ContextSize.x, m_ContextSize.y);
+
+		glm::vec2 diff = topRightPoint - pos;
+		return glm::vec2(diff.x / m_ContextSize.x, diff.y / m_ContextSize.y);
+	}
 	void SpriteEditorPanel::triangulate()
 	{
 		std::vector<tpp::Delaunay::Point> points;
-		for (auto& p : m_Points)
+		for (auto& p : m_Vertices)
 		{
 			points.push_back({ p.X, p.Y });
 		}
@@ -262,7 +392,7 @@ namespace XYZ {
 		generator.Triangulate(true);
 
 		m_Indices.clear();
-		m_Points.clear();
+		m_Vertices.clear();
 		for (tpp::Delaunay::fIterator fit = generator.fbegin(); fit != generator.fend(); ++fit)
 		{
 			tpp::Delaunay::Point sp1;
@@ -277,23 +407,23 @@ namespace XYZ {
 			if (std::find(m_Indices.begin(), m_Indices.end(), (uint32_t)keypointIdx1) == m_Indices.end())
 			{
 				GetTriangulationPt(points, keypointIdx1, sp1, x, y);
-				if (m_Points.size() <= keypointIdx1)
-					m_Points.resize((size_t)keypointIdx1 + 1);
-				m_Points[keypointIdx1] = { (float)x, (float)y };
+				if (m_Vertices.size() <= keypointIdx1)
+					m_Vertices.resize((size_t)keypointIdx1 + 1);
+				m_Vertices[keypointIdx1] = { (float)x, (float)y };
 			}
 			if (std::find(m_Indices.begin(), m_Indices.end(), (uint32_t)keypointIdx2) == m_Indices.end())
 			{
 				GetTriangulationPt(points, keypointIdx2, sp2, x, y);
-				if (m_Points.size() <= keypointIdx2)
-					m_Points.resize((size_t)keypointIdx2 + 1);
-				m_Points[keypointIdx2] = { (float)x, (float)y };
+				if (m_Vertices.size() <= keypointIdx2)
+					m_Vertices.resize((size_t)keypointIdx2 + 1);
+				m_Vertices[keypointIdx2] = { (float)x, (float)y };
 			}
 			if (std::find(m_Indices.begin(), m_Indices.end(), (uint32_t)keypointIdx3) == m_Indices.end())
 			{
 				GetTriangulationPt(points, keypointIdx3, sp3, x, y);
-				if (m_Points.size() <= keypointIdx3)
-					m_Points.resize((size_t)keypointIdx3 + 1);
-				m_Points[keypointIdx3] = { (float)x, (float)y };
+				if (m_Vertices.size() <= keypointIdx3)
+					m_Vertices.resize((size_t)keypointIdx3 + 1);
+				m_Vertices[keypointIdx3] = { (float)x, (float)y };
 			}
 
 
@@ -302,12 +432,32 @@ namespace XYZ {
 			m_Indices.push_back((uint32_t)keypointIdx3);
 		}
 		m_Triangulated = true;
+		rebuildRenderBuffers();
+	}
+	void SpriteEditorPanel::eraseEmptyPoints()
+	{
+		std::vector<uint32_t> erasedPoints;
+		for (uint32_t i = 0; i < m_Vertices.size(); ++i)
+		{
+			auto it = std::find(m_Indices.begin(), m_Indices.end(), i);
+			if (it == m_Indices.end())	
+				erasedPoints.push_back(i);
+		}
+		for (int32_t i = erasedPoints.size() - 1; i >= 0; --i)
+		{
+			m_Vertices.erase(m_Vertices.begin() + erasedPoints[i]);
+			for (auto& index : m_Indices)
+			{
+				if (index >= erasedPoints[i])
+					index--;
+			}
+		}
 	}
 	void SpriteEditorPanel::showTriangle(InGuiMesh& mesh, const Triangle& triangle, const glm::vec2& offset, const glm::vec4& color)
 	{
-		Point& first = m_Points[triangle.First];
-		Point& second = m_Points[triangle.Second];
-		Point& third = m_Points[triangle.Third];
+		Vertex& first = m_Vertices[triangle.First];
+		Vertex& second = m_Vertices[triangle.Second];
+		Vertex& third = m_Vertices[triangle.Third];
 
 		glm::vec2 firstPos = {
 			offset.x + first.X,
@@ -345,7 +495,7 @@ namespace XYZ {
 	{
 		glm::vec2 windowSize = InGui::GetWindow(m_PanelID).Size;
 		glm::vec2 windowPosition = InGui::GetWindow(m_PanelID).Position;
-		glm::vec2 position = (windowSize / 2.0f) - (m_Size / 2.0f);
+		glm::vec2 position = (windowSize / 2.0f) - (m_ContextSize / 2.0f);
 
 		Triangle triangle;
 		m_TriangleFound = false;
@@ -355,9 +505,9 @@ namespace XYZ {
 			uint32_t secondIndex = m_Indices[i - 1];
 			uint32_t thirdIndex = m_Indices[i];
 
-			Point& first = m_Points[firstIndex];
-			Point& second = m_Points[secondIndex];
-			Point& third = m_Points[thirdIndex];
+			Vertex& first = m_Vertices[firstIndex];
+			Vertex& second = m_Vertices[secondIndex];
+			Vertex& third = m_Vertices[thirdIndex];
 
 			glm::vec2 firstPos = {
 				windowPosition.x + (windowSize.x / 2.0f) + first.X,
