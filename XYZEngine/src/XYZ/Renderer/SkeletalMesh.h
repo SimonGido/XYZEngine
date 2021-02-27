@@ -38,7 +38,7 @@ namespace XYZ {
 	{
 		glm::mat4 FinalTransform;
 		glm::mat4 Transform;
-		float Length = 3.0f;
+		float Length = 1.0f;
 		int32_t ID;
 
 		// Debug 

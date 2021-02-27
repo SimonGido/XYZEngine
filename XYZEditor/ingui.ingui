@@ -5,17 +5,17 @@ Windows:
     Position: [0, 0]
     Size: [372, 1017]
   - Window: 1
-    Flags: 23
+    Flags: 19
     Position: [372, 0]
-    Size: [1307, 268]
+    Size: [1307, 246]
   - Window: 2
-    Flags: 51
+    Flags: 55
     Position: [1679, 0]
     Size: [241, 1017]
   - Window: 3
     Flags: 17
-    Position: [372, 268]
-    Size: [1307, 749]
+    Position: [372, 246]
+    Size: [1307, 771]
 Dockspace:
   - DockNode: 0
     Position: [0, 0]
@@ -49,13 +49,13 @@ Dockspace:
     SecondChild: 11
   - DockNode: 10
     Position: [372, 0]
-    Size: [1307, 268]
+    Size: [1307, 246]
     Type: 0
     Windows:
       - 1
   - DockNode: 11
-    Position: [372, 268]
-    Size: [1307, 749]
+    Position: [372, 246]
+    Size: [1307, 771]
     Type: 0
     Windows:
       - 3

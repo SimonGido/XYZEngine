@@ -68,8 +68,8 @@ namespace XYZ {
 		skeleton.Bones[6].Transform = glm::translate(glm::vec3( 0.0f, -1.0f, 0.0f));
 
 		int32_t root		= skeleton.BoneHierarchy.Insert(&skeleton.Bones[0], 0);
-		int32_t leftHand	= skeleton.BoneHierarchy.Insert(&skeleton.Bones[1], root);
-		int32_t rightHand	= skeleton.BoneHierarchy.Insert(&skeleton.Bones[2], root);
+		int32_t leftHand	= skeleton.BoneHierarchy.Insert(&skeleton.Bones[1]);
+		int32_t rightHand	= skeleton.BoneHierarchy.Insert(&skeleton.Bones[2]);
 		int32_t leftKnee	= skeleton.BoneHierarchy.Insert(&skeleton.Bones[3], root);
 		int32_t rightKnee	= skeleton.BoneHierarchy.Insert(&skeleton.Bones[4], root);
 		int32_t leftFoot	= skeleton.BoneHierarchy.Insert(&skeleton.Bones[5], leftKnee);

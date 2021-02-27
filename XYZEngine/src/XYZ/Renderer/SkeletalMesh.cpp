@@ -7,6 +7,7 @@
 
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 namespace XYZ {
 
@@ -75,16 +76,20 @@ namespace XYZ {
             glm::vec4 color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
             if (m_Selected && m_Selected->ID == childBone->ID)
                 color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+           
 
             glm::vec3 scale;
             glm::quat rotation;
             glm::vec3 translation;
             glm::vec3 skew;
             glm::vec4 perspective;
-            glm::decompose(childBone->FinalTransform, scale, rotation, translation, skew, perspective);  
+            glm::decompose(childBone->FinalTransform, scale, rotation, translation, skew, perspective);
             Renderer2D::SubmitCircle(translation, 0.05f, 10, color);
-      
-            //Renderer2D::SubmitLine(translation, test * childBone->Length, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f));
+
+
+            glm::vec3 endPoint = glm::vec3(0.0f, -childBone->Length, 0.0f);;
+            endPoint = childBone->FinalTransform * glm::vec4(endPoint, 1.0f);
+            Renderer2D::SubmitLine(translation, endPoint, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f));
    
             return false;
         });
@@ -99,7 +104,7 @@ namespace XYZ {
                 if (counter == s_LastSelected)
                 {
                     m_Selected = static_cast<Bone*>(child);
-                    std::cout << s_LastSelected << std::endl;
+                    
                     s_LastSelected++;
                     if (s_LastSelected >= m_Skeleton.Bones.size())
                         s_LastSelected = 0;
@@ -116,6 +121,7 @@ namespace XYZ {
         if (Input::IsMouseButtonPressed(MouseCode::MOUSE_BUTTON_LEFT) && m_Selected)
         {
             auto [mx, my] = Input::GetMousePosition();
+           
             m_Selected->Transform = m_Selected->Transform * glm::rotate(0.001f, glm::vec3(0.0f, 0.0f, 1.0f));
         }
         if (Input::IsMouseButtonPressed(MouseCode::MOUSE_BUTTON_RIGHT) && m_Selected)

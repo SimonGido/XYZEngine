@@ -11,6 +11,32 @@ namespace XYZ {
         m_Nodes(other.m_Nodes)
     {
     }
+    int32_t Tree::Insert(void* data)
+    {
+        TreeNode newNode;
+        newNode.Data = data;
+        int32_t newInserted = m_Nodes.Insert(newNode);
+        if (m_Root == TreeNode::sc_Invalid)
+        {
+            m_Root = newInserted;
+            return newInserted;
+        }
+        
+        int32_t tmpNext = m_Nodes[m_Root].NextSibling;
+        if (tmpNext == TreeNode::sc_Invalid)
+        {
+            m_Nodes[m_Root].NextSibling = newInserted;
+            m_Nodes[newInserted].PreviousSibling = m_Root;
+        }
+        else
+        {
+            m_Nodes[m_Root].NextSibling = newInserted;
+            m_Nodes[newInserted].PreviousSibling = m_Root;
+            m_Nodes[newInserted].NextSibling = tmpNext;
+            m_Nodes[tmpNext].PreviousSibling = newInserted;
+        }
+        return newInserted;
+    }
     int32_t Tree::Insert(void* data, int32_t parent)
     {
         TreeNode newNode;
@@ -117,5 +143,13 @@ namespace XYZ {
             if (callback(parentData, data))
                 return;
         }
+    }
+    void* Tree::GetParentData(int32_t index)
+    {
+        if (m_Nodes[index].Parent != TreeNode::sc_Invalid)
+        {
+            return m_Nodes[m_Nodes[index].Parent].Data;
+        }
+        return nullptr;
     }
 }

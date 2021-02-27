@@ -8,6 +8,10 @@
 #include "XYZ/Utils/Math/Math.h"
 
 #include <glm/gtx/transform.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
+#include <glm/gtx/quaternion.hpp>
+
+
 #include <tpp_interface.hpp>
 
 namespace XYZ {
@@ -51,7 +55,8 @@ namespace XYZ {
 
 	SpriteEditorPanel::SpriteEditorPanel(uint32_t panelID)
 		:
-		m_PanelID(panelID)
+		m_PanelID(panelID),
+		m_BonePool(15 * sizeof(SpriteEditorPanel::Bone))
 	{
 		InGui::ImageWindow(m_PanelID, "Sprite Editor", glm::vec2(0.0f), glm::vec2(200.0f), m_Context);
 		InGui::End();
@@ -101,13 +106,34 @@ namespace XYZ {
 			mx *= window.Size.x / 2.0f;
 			my *= window.Size.y / 2.0f;
 			m_Triangle = findTriangle({ mx, my });
-			if (m_EditedVertex)
+			m_BoneID = findBone({ mx, my });
+
+			
+			if (m_CreatedBone)
+			{
+				if (auto parent = m_BoneHierarchy.GetParentData(m_CreatedBone->ID))
+				{
+					Bone* parentBone = static_cast<Bone*>(parent);
+					mx -= parentBone->End.x + parentBone->WorldStart.x;
+					my -= parentBone->End.y + parentBone->WorldStart.y;
+				}
+				m_CreatedBone->End = { mx - m_CreatedBone->Start.x, my - m_CreatedBone->Start.y };
+			}
+			else if (m_EditedBone)
+			{
+				if (IS_SET(m_Flags, PreviewPose))
+				{
+					m_EditedBone->PreviewTransform = m_EditedBone->PreviewTransform * glm::rotate(0.01f, glm::vec3(0.0f, 0.0f, 1.0f));
+				}
+			}
+			else if (m_EditedVertex)
 			{
 				(*m_EditedVertex).X = mx;
 				(*m_EditedVertex).Y = my;
 				updateVertexBuffer();
-			}
+			}		
 		}
+
 		m_Framebuffer->Bind();
 		Renderer::SetClearColor(m_Framebuffer->GetSpecification().ClearColor);
 		Renderer::Clear();;
@@ -120,9 +146,77 @@ namespace XYZ {
 
 
 		Renderer2D::BeginScene(projection);
+
+		if (IS_SET(m_Flags, Flags::PreviewPose))
+		{
+			m_BoneHierarchy.Traverse([](void* parent, void* child) -> bool {
+
+				Bone* childBone = static_cast<Bone*>(child);
+				if (parent)
+				{
+					Bone* parentBone = static_cast<Bone*>(parent);
+					childBone->PreviewFinalTransform = parentBone->PreviewFinalTransform * childBone->PreviewTransform;
+				}
+				else
+				{
+					childBone->PreviewFinalTransform = childBone->PreviewTransform;
+				}
+				return false;
+			});
+
+			m_BoneHierarchy.Traverse([&](void* parent, void* child) -> bool {
+
+				Bone* childBone = static_cast<Bone*>(child);
+				glm::vec4 color = glm::vec4(0.2f, 0.0f, 1.0f, 1.0f);
+				if (childBone->ID == m_BoneID)
+					color = glm::vec4(0.8f, 0.3f, 1.0f, 1.0f);
+		
+				glm::vec3 scale;
+				glm::quat rotation;
+				glm::vec3 translation;
+				glm::vec3 skew;
+				glm::vec4 perspective;
+				glm::decompose(childBone->PreviewFinalTransform, scale, rotation, translation, skew, perspective);
+				Renderer2D::SubmitCircle(translation, sc_PointRadius, 20, color);
+				
+				glm::vec4 endPoint = glm::toMat4(rotation) * glm::vec4(childBone->End, 0.0f, 1.0f);
+				endPoint += glm::vec4(translation, 0.0f);
+				Renderer2D::SubmitLine(translation, glm::vec3(endPoint.x, endPoint.y, 0.0f), glm::vec4(0.7f, 0.4f, 1.0f, 1.0f));
+
+				Renderer2D::SubmitCircle(endPoint, sc_PointRadius, 20, color);
+
+				return false;
+			});
+		}
+		else
+		{
+			m_BoneHierarchy.Traverse([&](void* parent, void* child) -> bool {
+
+				Bone* childBone = static_cast<Bone*>(child);
+				glm::vec4 color = glm::vec4(0.2f, 0.0f, 1.0f, 1.0f);
+				if (childBone->ID == m_BoneID)
+					color = glm::vec4(0.8f, 0.3f, 1.0f, 1.0f);
+
+				childBone->WorldStart = childBone->Start;
+				glm::vec2 end = childBone->Start + childBone->End;
+				if (parent)
+				{
+					Bone* parentBone = static_cast<Bone*>(parent);
+					glm::vec2 parentBoneEnd = parentBone->WorldStart + parentBone->End;
+					childBone->WorldStart += parentBoneEnd;
+					end += parentBoneEnd;
+				}
+
+				Renderer2D::SubmitCircle(glm::vec3(childBone->WorldStart, 0.0f), sc_PointRadius, 20, color);
+				Renderer2D::SubmitLine(glm::vec3(childBone->WorldStart, 0.0f), glm::vec3(end, 0.0f), glm::vec4(0.7f, 0.4f, 1.0f, 1.0f));
+				Renderer2D::SubmitCircle(glm::vec3(end, 0.0f), sc_PointRadius, 20, glm::vec4(0.2f, 0.0f, 1.0f, 1.0f));
+
+				return false;
+				});
+		}
 		for (auto& vertex : m_Vertices)
 		{
-			Renderer2D::SubmitCircle(glm::vec3(vertex.X, vertex.Y, 0.0f), sc_PointRadius, 20, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+			Renderer2D::SubmitCircle(glm::vec3(vertex.X, vertex.Y, 0.0f), sc_PointRadius, 20, sc_VertexColor);
 		}
 		for (size_t i = 2; i < m_Indices.size(); i += 3)
 		{
@@ -131,11 +225,11 @@ namespace XYZ {
 				m_Indices[i - 1],
 				m_Indices[i]
 			};
-			showTriangle(triangle, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+			showTriangle(triangle, sc_TriangleColor);
 		}
 		if (m_TriangleFound)
 		{
-			showTriangle(m_Triangle, glm::vec4(0.6f, 0.3f, 1.0f, 1.0f));
+			showTriangle(m_Triangle, sc_TriangleHighlightColor);
 		}
 		Renderer2D::FlushLines();
 		Renderer2D::EndScene();
@@ -153,29 +247,53 @@ namespace XYZ {
 				glm::vec2 size = { 150.0f, InGuiWindow::PanelHeight };
 				if (InGui::BeginGroup("Bones", size, m_CategoriesOpen[Bones]))
 				{
-
+					if (IS_SET(InGui::Button("Preview Pose", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
+					{
+						if (IS_SET(m_Flags, EditBone))
+							m_Flags |= PreviewPose;
+						else
+							m_Flags = PreviewPose;
+						initializePose();
+					}
+					if (IS_SET(InGui::Button("Create Bone", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
+					{
+						m_Flags = CreateBone;
+					}
+					InGui::Separator();
+					if (IS_SET(InGui::Button("Edit Bone", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
+					{
+						if (IS_SET(m_Flags, PreviewPose))
+							m_Flags |= EditBone;
+						else
+							m_Flags = EditBone;
+					}
+					InGui::Separator();
+					if (IS_SET(InGui::Button("Delete Bone", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
+					{
+						m_Flags = DeleteBone;
+					}
 				}
 				InGui::Separator();
 				if (InGui::BeginGroup("Geometry", size, m_CategoriesOpen[Geometry]))
 				{
 					if (IS_SET(InGui::Button("Create Vertex", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
 					{
-						m_GeometryCategoryFlags = CreateVertex;
+						m_Flags = CreateVertex;
 					}
 					InGui::Separator();
 					if (IS_SET(InGui::Button("Edit Vertex", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
 					{
-						m_GeometryCategoryFlags = EditVertex;
+						m_Flags = EditVertex;
 					}
 					InGui::Separator();
 					if (IS_SET(InGui::Button("Delete Vertex", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
 					{
-						m_GeometryCategoryFlags = DeleteVertex;
+						m_Flags = DeleteVertex;
 					}
 					InGui::Separator();
 					if (IS_SET(InGui::Button("Delete Triangle", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
 					{
-						m_GeometryCategoryFlags = DeleteTriangle;
+						m_Flags = DeleteTriangle;
 					}
 					InGui::Separator();
 					if (IS_SET(InGui::Button("Clear", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
@@ -224,12 +342,36 @@ namespace XYZ {
 				mx *= windowSize.x / 2.0f;
 				my *= windowSize.y / 2.0f;
 
-				if (IS_SET(m_GeometryCategoryFlags, GeometryCategoryFlags::CreateVertex))
+				// Bone
+				if (IS_SET(m_Flags, Flags::CreateBone))
+				{
+					Bone* bone = m_BonePool.Allocate<Bone>();
+					if (Input::IsKeyPressed(KeyCode::KEY_LEFT_CONTROL) && m_LastCreatedBone)
+					{
+						bone->ID = m_BoneHierarchy.Insert(bone, m_LastCreatedBone->ID);
+						bone->Start = glm::vec2(0.0f);
+					}
+					else
+					{
+						bone->ID = m_BoneHierarchy.Insert(bone);
+						bone->Start = { mx, my };
+					}					
+					m_CreatedBone = bone;
+				}
+				else if (IS_SET(m_Flags, Flags::EditBone))
+				{
+					m_BoneID = findBone({ mx, my });
+					if (m_FoundBone)
+						m_EditedBone = static_cast<Bone*>(m_BoneHierarchy.GetData(m_BoneID));
+				}
+				
+				// Vertex
+				else if (IS_SET(m_Flags, Flags::CreateVertex))
 				{
 					m_Vertices.push_back({ mx, my });
 					return true;
 				}
-				else if (IS_SET(m_GeometryCategoryFlags, GeometryCategoryFlags::EditVertex))
+				else if (IS_SET(m_Flags, Flags::EditVertex))
 				{
 					uint32_t counter = 0;
 					for (auto& vertex : m_Vertices)
@@ -242,7 +384,7 @@ namespace XYZ {
 						counter++;
 					}
 				}
-				else if (IS_SET(m_GeometryCategoryFlags, GeometryCategoryFlags::DeleteVertex) && !m_Triangulated)
+				else if (IS_SET(m_Flags, Flags::DeleteVertex) && !m_Triangulated)
 				{
 					uint32_t counter = 0;
 					for (auto& vertex : m_Vertices)
@@ -255,7 +397,7 @@ namespace XYZ {
 						counter++;
 					}
 				}
-				else if (IS_SET(m_GeometryCategoryFlags, GeometryCategoryFlags::DeleteTriangle) && m_Triangulated && m_TriangleFound)
+				else if (IS_SET(m_Flags, Flags::DeleteTriangle) && m_Triangulated && m_TriangleFound)
 				{
 					for (size_t i = 2; i < m_Indices.size(); i += 3)
 					{
@@ -270,7 +412,6 @@ namespace XYZ {
 							return true;
 						}
 					}
-
 				}
 			}
 		}
@@ -281,6 +422,9 @@ namespace XYZ {
 		if (event.IsButtonReleased(MouseCode::MOUSE_BUTTON_RIGHT))
 		{
 			m_EditedVertex = nullptr;
+			m_EditedBone = nullptr;
+			m_LastCreatedBone = m_CreatedBone;
+			m_CreatedBone = nullptr;
 		}
 		return false;
 	}
@@ -381,6 +525,23 @@ namespace XYZ {
 	{
 		glm::vec2 position = pos + m_ContextSize / 2.0f;
 		return glm::vec2(position.x / m_ContextSize.x , position.y / m_ContextSize.y);
+	}
+	void SpriteEditorPanel::initializePose()
+	{
+		m_BoneHierarchy.Traverse([](void* parent, void* child) -> bool {
+
+			Bone* childBone = static_cast<Bone*>(child);
+			if (parent)
+			{
+				Bone* parentBone = static_cast<Bone*>(parent);
+				childBone->PreviewTransform = glm::translate(glm::vec3(parentBone->End, 0.0f));
+			}
+			else
+			{
+				childBone->PreviewTransform = glm::translate(glm::vec3(childBone->Start, 0.0f));
+			}
+			return false;
+		});
 	}
 	void SpriteEditorPanel::triangulate()
 	{
@@ -492,6 +653,42 @@ namespace XYZ {
 		}
 
 		return triangle;
+	}
+	int32_t SpriteEditorPanel::findBone(const glm::vec2& pos)
+	{
+		int32_t boneId = -1;
+		m_FoundBone = false;
+		m_BoneHierarchy.Traverse([&](void* parent, void* child) -> bool {
+
+			Bone* childBone = static_cast<Bone*>(child);
+			if (IS_SET(m_Flags, Flags::PreviewPose))
+			{
+				glm::vec3 scale;
+				glm::quat rotation;
+				glm::vec3 translation;
+				glm::vec3 skew;
+				glm::vec4 perspective;
+				glm::decompose(childBone->PreviewFinalTransform, scale, rotation, translation, skew, perspective);
+
+				if (glm::distance(pos, glm::vec2(translation.x, translation.y)) < sc_PointRadius)
+				{
+					boneId = childBone->ID;
+					m_FoundBone = true;
+					return true;
+				}			
+			}	
+			else
+			{
+				if (glm::distance(pos, childBone->WorldStart) < sc_PointRadius)
+				{
+					boneId = childBone->ID;
+					m_FoundBone = true;
+					return true;
+				}
+			}
+			return false;
+		});
+		return boneId;
 	}
 	std::pair<float, float> SpriteEditorPanel::getMouseViewportSpace() const
 	{

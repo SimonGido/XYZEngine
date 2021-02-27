@@ -23,12 +23,15 @@ namespace XYZ {
 		Tree() = default;
 		Tree(const Tree& other);
 
+		int32_t Insert(void* data);
 		int32_t Insert(void* data, int32_t parent);
 		void    Remove(int32_t index);
 
 		void    Traverse(const std::function<bool(void*, void*)>& callback) const;
 		void	SetData(int32_t index, void* data) { m_Nodes[index].Data = data; }
 		void*   GetData(int32_t index) { return m_Nodes[index].Data; }
+		void*	GetParentData(int32_t index);
+		int32_t GetRoot() const { return m_Root; }
 	private:	
 		int32_t m_Root = TreeNode::sc_Invalid;
 		FreeList<TreeNode> m_Nodes;
