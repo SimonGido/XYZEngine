@@ -255,6 +255,7 @@ namespace XYZ {
 							m_Flags = PreviewPose;
 						initializePose();
 					}
+					InGui::Separator();
 					if (IS_SET(InGui::Button("Create Bone", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
 					{
 						m_Flags = CreateBone;
