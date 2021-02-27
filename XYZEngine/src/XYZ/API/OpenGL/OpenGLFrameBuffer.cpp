@@ -113,7 +113,7 @@ namespace XYZ {
 			else
 				m_DepthAttachmentFormat = format.TextureFormat;
 		}
-		Resize(specs.Width, specs.Height);
+		Resize(specs.Width, specs.Height, true);
 	}
 
 	OpenGLFramebuffer::~OpenGLFramebuffer()
@@ -125,14 +125,14 @@ namespace XYZ {
 				glDeleteTextures(1, &it);
 		});
 	}
-	void OpenGLFramebuffer::Resize(uint32_t width, uint32_t height)
+	void OpenGLFramebuffer::Resize(uint32_t width, uint32_t height, bool forceResize)
 	{
 		if (m_Specification.Width == 0 || m_Specification.Height == 0)
 		{
 			XYZ_LOG_WARN("Width and height can not be zero");
 			return;
 		}
-		if (m_Specification.Width == width && m_Specification.Height == height)
+		if (!forceResize && m_Specification.Width == width && m_Specification.Height == height)
 			return;
 
 		m_Specification.Width = width;

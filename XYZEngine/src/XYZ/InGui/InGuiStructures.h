@@ -177,7 +177,7 @@ namespace XYZ {
 		InGuiTextCenter			  TextCenter			= InGuiTextCenter::Left;
 		bool					  ScrollableActive		= false;
 		bool					  ActiveWidgets			= true;
-		bool					  EraseOutOfLine		= false;
+		bool					  EraseOutOfLine		= true;
 		float					  ScrollOffset			= 0.0f;
 		float					  HighestInRow			= 0.0f;
 

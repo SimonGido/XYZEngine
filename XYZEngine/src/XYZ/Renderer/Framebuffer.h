@@ -75,7 +75,7 @@ namespace XYZ {
 	public:
 		virtual ~Framebuffer() = default;
 
-		virtual void Resize(uint32_t width, uint32_t height) = 0;
+		virtual void Resize(uint32_t width, uint32_t height, bool forceResize = false) = 0;
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;

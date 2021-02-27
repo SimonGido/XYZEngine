@@ -48,8 +48,8 @@ namespace XYZ {
 		virtual ~Texture() = default;
 	
 		virtual void Bind(uint32_t slot = 0) const = 0;
- 		//virtual void SetData(void* data, uint32_t size) = 0;
-		//virtual uint8_t* GetData() = 0;
+		virtual void SetData(void* data, uint32_t size) {};
+		virtual uint8_t* GetData() { return nullptr; };
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
 		virtual uint32_t GetChannels() const = 0;
@@ -65,8 +65,8 @@ namespace XYZ {
 	class Texture2D : public Texture
 	{
 	public:
-		virtual void SetData(void* data, uint32_t size) = 0;
-		virtual uint8_t* GetData() = 0;
+		//virtual void SetData(void* data, uint32_t size) = 0;
+		//virtual uint8_t* GetData() = 0;
 
 		virtual const TextureSpecs& GetSpecification() const = 0;
 
