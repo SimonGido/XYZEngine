@@ -15,6 +15,7 @@ namespace XYZ {
 		int32_t FirstChild		= sc_Invalid;
 		int32_t NextSibling		= sc_Invalid;
 		int32_t PreviousSibling = sc_Invalid;
+		uint32_t Depth = 0;
 	};
 
 	class Tree
@@ -32,8 +33,13 @@ namespace XYZ {
 		void*   GetData(int32_t index) { return m_Nodes[index].Data; }
 		void*	GetParentData(int32_t index);
 		int32_t GetRoot() const { return m_Root; }
+		uint32_t GetNodeCount() const { return m_NodeCount; }
+
+		const FreeList<TreeNode>& GetFlatNodes() const { return m_Nodes; }
 	private:	
 		int32_t m_Root = TreeNode::sc_Invalid;
 		FreeList<TreeNode> m_Nodes;
+
+		uint32_t m_NodeCount = 0;
 	};
 }

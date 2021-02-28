@@ -8,7 +8,8 @@ namespace XYZ {
     Tree::Tree(const Tree& other)
         :
         m_Root(other.m_Root),
-        m_Nodes(other.m_Nodes)
+        m_Nodes(other.m_Nodes),
+        m_NodeCount(other.m_NodeCount)
     {
     }
     int32_t Tree::Insert(void* data)
@@ -19,6 +20,7 @@ namespace XYZ {
         if (m_Root == TreeNode::sc_Invalid)
         {
             m_Root = newInserted;
+            m_NodeCount++;
             return newInserted;
         }
         
@@ -35,6 +37,7 @@ namespace XYZ {
             m_Nodes[newInserted].NextSibling = tmpNext;
             m_Nodes[tmpNext].PreviousSibling = newInserted;
         }
+        m_NodeCount++;
         return newInserted;
     }
     int32_t Tree::Insert(void* data, int32_t parent)
@@ -46,6 +49,7 @@ namespace XYZ {
         if (m_Root == TreeNode::sc_Invalid)
         {
             m_Root = newInserted;
+            m_NodeCount++;
             return newInserted;
         }     
         TreeNode& parentNode = m_Nodes[parent];
@@ -57,8 +61,10 @@ namespace XYZ {
         }
       
         m_Nodes[newInserted].Parent = parent;
+        m_Nodes[newInserted].Depth = m_Nodes[parent].Depth + 1;
         parentNode.FirstChild = newInserted;
 
+        m_NodeCount++;
         return newInserted;
     }
     void Tree::Remove(int32_t index)
@@ -79,11 +85,14 @@ namespace XYZ {
                     TreeNode& siblingNode = m_Nodes[sibling];
                     if (siblingNode.FirstChild != TreeNode::sc_Invalid)
                         stack.push(siblingNode.FirstChild);
+
+                    m_NodeCount--;
                     m_Nodes.Erase(sibling);
                 }
                 if (m_Nodes[tmp].FirstChild != TreeNode::sc_Invalid)
                     stack.push(m_Nodes[tmp].FirstChild);
 
+                m_NodeCount--;
                 m_Nodes.Erase(tmp);
             }
         }
@@ -101,9 +110,50 @@ namespace XYZ {
             if (removed.PreviousSibling != TreeNode::sc_Invalid)
                 m_Nodes[removed.PreviousSibling].NextSibling = removed.NextSibling;
         }
+        m_NodeCount--;
         m_Nodes.Erase(index);
     }
  
+    //void Tree::Traverse(const std::function<bool(void*, void*)>& callback) const
+    //{
+    //    if (m_Root == TreeNode::sc_Invalid)
+    //        return;
+    //
+    //    std::stack<int32_t> stack;
+    //    stack.push(m_Root);
+    //    while (!stack.empty())
+    //    {
+    //        int32_t tmp = stack.top();
+    //        stack.pop();
+    //        const TreeNode& node = m_Nodes[tmp];
+    //       
+    //        int32_t sibling = node.NextSibling;
+    //        while (sibling != TreeNode::sc_Invalid)
+    //        {
+    //            const TreeNode& siblingNode = m_Nodes[sibling];
+    //            if (siblingNode.FirstChild != TreeNode::sc_Invalid)
+    //                stack.push(siblingNode.FirstChild);
+    //
+    //            void* parentData = nullptr;
+    //            void* data = siblingNode.Data;     
+    //            if (node.Parent != TreeNode::sc_Invalid)
+    //                parentData = m_Nodes[node.Parent].Data;
+    //            if (callback(parentData, data))
+    //                return;
+    //
+    //            sibling = siblingNode.NextSibling;
+    //        }
+    //        if (node.FirstChild != TreeNode::sc_Invalid)
+    //            stack.push(node.FirstChild);
+    //        
+    //        void* parentData = nullptr;
+    //        void* data = node.Data;
+    //        if (node.Parent != TreeNode::sc_Invalid)
+    //            parentData = m_Nodes[node.Parent].Data;
+    //        if (callback(parentData, data))
+    //            return;
+    //    }
+    //}
     void Tree::Traverse(const std::function<bool(void*, void*)>& callback) const
     {
         if (m_Root == TreeNode::sc_Invalid)
@@ -115,27 +165,13 @@ namespace XYZ {
         {
             int32_t tmp = stack.top();
             stack.pop();
-            const TreeNode& node = m_Nodes[tmp];
-           
-            int32_t sibling = node.NextSibling;
-            while (sibling != TreeNode::sc_Invalid)
-            {
-                const TreeNode& siblingNode = m_Nodes[sibling];
-                if (siblingNode.FirstChild != TreeNode::sc_Invalid)
-                    stack.push(siblingNode.FirstChild);
-
-                void* parentData = nullptr;
-                void* data = siblingNode.Data;     
-                if (node.Parent != TreeNode::sc_Invalid)
-                    parentData = m_Nodes[node.Parent].Data;
-                if (callback(parentData, data))
-                    return;
-
-                sibling = siblingNode.NextSibling;
-            }
+            
+            const TreeNode& node = m_Nodes[tmp];        
+            if (node.NextSibling != TreeNode::sc_Invalid)
+                stack.push(node.NextSibling);
             if (node.FirstChild != TreeNode::sc_Invalid)
                 stack.push(node.FirstChild);
-            
+
             void* parentData = nullptr;
             void* data = node.Data;
             if (node.Parent != TreeNode::sc_Invalid)

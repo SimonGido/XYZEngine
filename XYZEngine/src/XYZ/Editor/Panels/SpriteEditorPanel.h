@@ -3,6 +3,7 @@
 #include "XYZ/Renderer/Framebuffer.h"
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Renderer/RenderTexture.h"
+
 #include "XYZ/Event/Event.h"
 #include "XYZ/Event/InputEvent.h"
 #include "XYZ/InGui/InGui.h"
@@ -26,9 +27,27 @@ namespace XYZ {
 		void OnEvent(Event& event);
 
 	private:
+		struct BoneData
+		{
+			static constexpr uint32_t sc_MaxBonesPerVertex = 4;
+			BoneData()
+			{
+				Reset();
+			}
+			void Reset()
+			{
+				memset(IDs, -1, sc_MaxBonesPerVertex * sizeof(int32_t));
+				memset(Weights, 0, sc_MaxBonesPerVertex * sizeof(float));
+			}
+			int32_t IDs[sc_MaxBonesPerVertex];
+			float   Weights[sc_MaxBonesPerVertex];
+		};
+		
 		struct Vertex
 		{
 			float X, Y;
+			BoneData Data;
+			glm::vec3 Color = glm::vec3(0.1f);
 		};
 
 		struct Triangle
@@ -48,6 +67,9 @@ namespace XYZ {
 
 			glm::mat4 PreviewTransform;
 			glm::mat4 PreviewFinalTransform;
+
+			std::string Name;
+			bool Open = false;
 		};
 
 		enum Categories
@@ -68,22 +90,33 @@ namespace XYZ {
 			CreateVertex	= BIT(4),
 			EditVertex		= BIT(5),
 			DeleteVertex	= BIT(6),
-			DeleteTriangle	= BIT(7)
+			DeleteTriangle	= BIT(7),
+
+			WeightBrush		= BIT(8)
 		};
 
 	private:
 		bool onMouseButtonPress(MouseButtonPressEvent& event);
 		bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
 		bool onMouseScroll(MouseScrollEvent& event);
+		
+		void colorizeWeights();
+		void updateBoneHierarchy();
+		void inGuiRenderBoneHierarchy();
+		void submitPreviewsToRenderer();
 		void rebuildRenderBuffers();
 		void updateVertexBuffer();
 		glm::vec2 calculateTexCoord(const glm::vec2& pos);
 
+		void autoWeights();
+		void handleWeightBrush(const glm::vec2& pos);
 		void initializePose();
+		void verticesToBoneLocalSpace();
 		void triangulate();
 		void eraseEmptyPoints();
 		void showTriangle(const Triangle& triangle, const glm::vec4& color);
-		Triangle findTriangle(const glm::vec2& pos);
+		void findVerticesInRadius(const glm::vec2& pos, float radius, std::vector<Vertex*>& vertices);
+		Triangle findTriangle(const glm::vec2& pos);	
 		int32_t findBone(const glm::vec2& pos);
 
 		std::pair<float, float> getMouseViewportSpace() const;
@@ -95,15 +128,17 @@ namespace XYZ {
 		
 		Tree m_BoneHierarchy;
 		MemoryPool m_BonePool;
+
+		std::vector<Bone*> m_Bones;
 		std::vector<Vertex> m_Vertices;
+		std::vector<glm::vec2> m_VerticesLocalToBones;
 		std::vector<uint32_t> m_Indices;
 
 		float m_Scale = 1.0f;
 		float m_ScrollOffset = 0.0f;
 
-		Bone* m_EditedBone = nullptr;
-		Bone* m_LastCreatedBone = nullptr;
 		Bone* m_CreatedBone = nullptr;
+		Bone* m_SelectedBone = nullptr;
 		Vertex* m_EditedVertex = nullptr;
 
 		int32_t m_BoneID;
@@ -113,6 +148,8 @@ namespace XYZ {
 		bool m_TriangleFound = false;
 		bool m_Triangulated = false;
 
+		float m_WeightBrushRadius = 15.0f;
+		float m_WeightBrushStrength = 0.01f;
 
 		uint16_t m_Flags = 0;
 		bool m_CategoriesOpen[Categories::NumCategories];
@@ -123,13 +160,13 @@ namespace XYZ {
 		Ref<VertexArray> m_VertexArray;
 		Ref<VertexBuffer> m_VertexBuffer;
 		Ref<Material> m_Material;
+		Ref<Shader> m_Shader;
 		glm::vec2 m_ViewportSize;
-
+		glm::vec2 m_MousePosition;
 
 		static constexpr glm::vec4 sc_VertexColor = glm::vec4(0.0f, 0.7f, 0.8f, 1.0f);
 		static constexpr glm::vec4 sc_TriangleColor = glm::vec4(0.8f, 0.8f, 0.8f, 0.5f);
 		static constexpr glm::vec4 sc_TriangleHighlightColor = glm::vec4(0.9f, 0.9f, 0.9f, 1.0f);
 		static constexpr float sc_PointRadius = 5.0f;
-
 	};
 }
