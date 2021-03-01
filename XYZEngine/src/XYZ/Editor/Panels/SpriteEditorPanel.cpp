@@ -131,15 +131,30 @@ namespace XYZ {
 					my -= parentBone->End.y + parentBone->WorldStart.y;
 				}
 				m_CreatedBone->End = { mx - m_CreatedBone->Start.x, my - m_CreatedBone->Start.y };
-			}		
-			if (IS_SET(m_Flags, PreviewPose))
+			}	
+			if (IS_SET(m_Flags, EditBone))
 			{
-				if (IS_SET(m_Flags, EditBone))
+				if (IS_SET(m_Flags, PreviewPose))
 				{
 					if (Input::IsMouseButtonPressed(MouseCode::MOUSE_BUTTON_RIGHT) && m_BoneID != -1)
 					{
 						Bone* editedBone = static_cast<Bone*>(m_BoneHierarchy.GetData(m_BoneID));
 						editedBone->PreviewTransform *= glm::rotate(0.01f, glm::vec3(0.0f, 0.0f, 1.0f));
+						updateVertexBuffer();
+					}
+				}
+				else
+				{
+					if (Input::IsMouseButtonPressed(MouseCode::MOUSE_BUTTON_RIGHT) && m_BoneID != -1)
+					{
+						Bone* editedBone = static_cast<Bone*>(m_BoneHierarchy.GetData(m_BoneID));
+						editedBone->Start = { mx, my };
+						if (auto parent = m_BoneHierarchy.GetParentData(m_BoneID))
+						{
+							Bone* parentBone = static_cast<Bone*>(parent);
+							editedBone->Start -= parentBone->WorldStart + parentBone->End;
+						}
+						
 						updateVertexBuffer();
 					}
 				}
@@ -348,37 +363,38 @@ namespace XYZ {
 				my *= windowSize.y / 2.0f;
 
 				// Bone
-				if (IS_SET(m_Flags, Flags::CreateBone))
-				{
-					Bone* bone = m_BonePool.Allocate<Bone>();
-					if (Input::IsKeyPressed(KeyCode::KEY_LEFT_CONTROL) && m_SelectedBone)
-					{
-						bone->ID = m_BoneHierarchy.Insert(bone, m_SelectedBone->ID);
-						bone->Start = glm::vec2(0.0f);
-						char buffer[20];
-						sprintf(buffer, "bone_%u", s_NextBone++);
-						bone->Name = buffer;
-					}
-					else
-					{
-						bone->ID = m_BoneHierarchy.Insert(bone);
-						bone->Start = { mx, my };
-						char buffer[20];
-						sprintf(buffer, "bone_%u", s_NextBone++);
-						bone->Name = buffer;
-					}					
-					m_CreatedBone = bone;
-					m_SelectedBone = m_CreatedBone;
-					m_Bones.push_back(bone);
-				}
-				else if (IS_SET(m_Flags, Flags::EditBone))
+				if (IS_SET(m_Flags, PreviewPose | CreateBone | EditBone | DeleteBone))
 				{
 					m_SelectedBone = nullptr;
 					m_BoneID = findBone({ mx, my });
 					if (m_FoundBone)
+					{
 						m_SelectedBone = static_cast<Bone*>(m_BoneHierarchy.GetData(m_BoneID));
+						return true;
+					}
 				}
-				
+				if (IS_SET(m_Flags, Flags::CreateBone))
+				{
+					Bone* bone = m_BonePool.Allocate<Bone>();
+					
+					if (m_CreatedBone)
+					{
+						bone->ID = m_BoneHierarchy.Insert(bone, m_CreatedBone->ID);
+						bone->Start = glm::vec2(0.0f);
+					}
+					else
+					{
+						bone->ID = m_BoneHierarchy.Insert(bone);
+						bone->Start = glm::vec2(mx, my);
+					}
+					char buffer[20];
+					sprintf(buffer, "bone_%u", s_NextBone++);
+					bone->Name = buffer;
+					m_Bones.push_back(bone);
+									
+					m_CreatedBone = bone;
+				}
+						
 				// Vertex
 				else if (IS_SET(m_Flags, Flags::CreateVertex))
 				{
@@ -436,7 +452,8 @@ namespace XYZ {
 		if (event.IsButtonReleased(MouseCode::MOUSE_BUTTON_RIGHT))
 		{
 			m_EditedVertex = nullptr;
-			m_CreatedBone = nullptr;
+			if (!Input::IsKeyPressed(KeyCode::KEY_LEFT_CONTROL))
+				m_CreatedBone = nullptr;
 		}
 		return false;
 	}
@@ -524,6 +541,9 @@ namespace XYZ {
 			}
 			if (open)
 				InGui::PushNode(childBone->Name.c_str(), glm::vec2(25.0f), childBone->Open, false);
+			else
+				return true;
+
 			currentDepth = nodes[childBone->ID].Depth;
 			return false;
 		});
