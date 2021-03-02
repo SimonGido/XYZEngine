@@ -369,7 +369,6 @@ namespace XYZ {
 				// Bone
 				if (IS_SET(m_Flags, PreviewPose | CreateBone | EditBone | DeleteBone))
 				{
-					m_SelectedBone = nullptr;
 					m_BoneID = findBone({ mx, my });
 					if (m_FoundBone)
 					{
@@ -762,11 +761,11 @@ namespace XYZ {
 	}
 	void SpriteEditorPanel::autoWeights()
 	{
-		if (m_BoneHierarchy.GetNodeCount())
+		if (m_SelectedBone)
 		{
 			for (auto& vertex : m_Vertices)
 			{
-				vertex.Data.IDs[0] = m_BoneHierarchy.GetRoot();
+				vertex.Data.IDs[0] = m_SelectedBone->ID;
 				vertex.Data.Weights[0] = 1.0f;
 			}
 		}
@@ -799,7 +798,10 @@ namespace XYZ {
 						if (vertex->Data.Weights[i] > 1.0f)
 							vertex->Data.Weights[i] = 1.0f;
 						else if (vertex->Data.Weights[i] < 0.0f)
+						{
 							vertex->Data.Weights[i] = 0.0f;
+							vertex->Data.IDs[i] = -1;
+						}
 					}
 				}
 				// Bone was not found, so add new id
@@ -813,6 +815,7 @@ namespace XYZ {
 							vertex->Data.Weights[i] = 1.0f;
 						else if (vertex->Data.Weights[i] < 0.0f)
 							vertex->Data.Weights[i] = 0.0f;
+						break;
 					}
 				}
 			}

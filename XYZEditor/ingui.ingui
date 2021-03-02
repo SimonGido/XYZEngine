@@ -5,11 +5,11 @@ Windows:
     Position: [0, 0]
     Size: [344, 1017]
   - Window: 1
-    Flags: 23
+    Flags: 19
     Position: [344, 0]
     Size: [1335, 196]
   - Window: 2
-    Flags: 51
+    Flags: 55
     Position: [1679, 0]
     Size: [241, 1017]
   - Window: 3
