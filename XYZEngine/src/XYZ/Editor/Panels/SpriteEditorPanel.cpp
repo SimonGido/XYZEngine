@@ -790,13 +790,17 @@ namespace XYZ {
 			for (auto vertex : vertices)
 			{
 				float dist = glm::distance(glm::vec2(vertex->X, vertex->Y), pos);
+				bool exists = false;
 				for (uint32_t i = 0; i < 4; ++i)
 				{
 					if (vertex->Data.IDs[i] == m_SelectedBone->ID)
 					{
+						exists = true;
 						vertex->Data.Weights[i] += val * (1.0f - (dist / m_WeightBrushRadius)) * m_WeightBrushStrength;
 						if (vertex->Data.Weights[i] > 1.0f)
+						{
 							vertex->Data.Weights[i] = 1.0f;
+						}
 						else if (vertex->Data.Weights[i] < 0.0f)
 						{
 							vertex->Data.Weights[i] = 0.0f;
@@ -805,17 +809,20 @@ namespace XYZ {
 					}
 				}
 				// Bone was not found, so add new id
-				for (uint32_t i = 0; i < 4; ++i)
+				if (!exists)
 				{
-					if (vertex->Data.IDs[i] == -1)
+					for (uint32_t i = 0; i < 4; ++i)
 					{
-						vertex->Data.IDs[i] = m_SelectedBone->ID;
-						vertex->Data.Weights[i] += val * (1.0f - (dist / m_WeightBrushRadius)) * m_WeightBrushStrength;
-						if (vertex->Data.Weights[i] > 1.0f)
-							vertex->Data.Weights[i] = 1.0f;
-						else if (vertex->Data.Weights[i] < 0.0f)
-							vertex->Data.Weights[i] = 0.0f;
-						break;
+						if (vertex->Data.IDs[i] == -1)
+						{
+							vertex->Data.IDs[i] = m_SelectedBone->ID;
+							vertex->Data.Weights[i] += val * (1.0f - (dist / m_WeightBrushRadius)) * m_WeightBrushStrength;
+							if (vertex->Data.Weights[i] > 1.0f)
+								vertex->Data.Weights[i] = 1.0f;
+							else if (vertex->Data.Weights[i] < 0.0f)
+								vertex->Data.Weights[i] = 0.0f;
+							break;
+						}
 					}
 				}
 			}
