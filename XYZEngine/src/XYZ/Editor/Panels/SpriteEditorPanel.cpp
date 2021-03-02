@@ -154,7 +154,6 @@ namespace XYZ {
 							Bone* parentBone = static_cast<Bone*>(parent);
 							editedBone->Start -= parentBone->WorldStart + parentBone->End;
 						}
-						
 						updateVertexBuffer();
 					}
 				}
@@ -241,6 +240,11 @@ namespace XYZ {
 							m_Flags |= EditBone;
 						else
 							m_Flags = EditBone;
+						if (m_Vertices.size() != m_VerticesLocalToBones.size())
+						{
+							verticesToBoneLocalSpace();
+							updateVertexBuffer();
+						}
 					}
 					InGui::Separator();
 					if (IS_SET(InGui::Button("Delete Bone", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
