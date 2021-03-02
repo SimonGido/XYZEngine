@@ -48,7 +48,7 @@ Entities:
     SceneTagComponent:
       Name: Test
     TransformComponent:
-      Position: [8.63050556, 0.0747070312, 0]
+      Position: [8.63050556, 0.0747070313, 0]
       Rotation: [0, -0, 0]
       Scale: [5, 5, 1]
     SpriteRenderer:

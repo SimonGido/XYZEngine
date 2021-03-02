@@ -47,7 +47,7 @@ namespace XYZ {
 		{
 			float X, Y;
 			BoneData Data;
-			glm::vec3 Color = glm::vec3(0.1f);
+			glm::vec3 Color = glm::vec3(0.0f);
 		};
 
 		struct Triangle

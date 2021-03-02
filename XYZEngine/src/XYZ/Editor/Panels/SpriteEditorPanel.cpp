@@ -331,11 +331,9 @@ namespace XYZ {
 					{
 						uint16_t oldFlags = m_Flags;
 						m_Flags = WeightBrush;
-						if (IS_SET(oldFlags, PreviewPose))
-						{
-							verticesToBoneLocalSpace();
-							updateVertexBuffer();
-						}
+					
+						verticesToBoneLocalSpace();
+						updateVertexBuffer();						
 					}
 				}
 				InGui::Separator();
@@ -800,7 +798,8 @@ namespace XYZ {
 						vertex->Data.Weights[i] += val * (1.0f - (dist / m_WeightBrushRadius)) * m_WeightBrushStrength;
 						if (vertex->Data.Weights[i] > 1.0f)
 							vertex->Data.Weights[i] = 1.0f;
-						return;
+						else if (vertex->Data.Weights[i] < 0.0f)
+							vertex->Data.Weights[i] = 0.0f;
 					}
 				}
 				// Bone was not found, so add new id
@@ -812,7 +811,8 @@ namespace XYZ {
 						vertex->Data.Weights[i] += val * (1.0f - (dist / m_WeightBrushRadius)) * m_WeightBrushStrength;
 						if (vertex->Data.Weights[i] > 1.0f)
 							vertex->Data.Weights[i] = 1.0f;
-						return;
+						else if (vertex->Data.Weights[i] < 0.0f)
+							vertex->Data.Weights[i] = 0.0f;
 					}
 				}
 			}
