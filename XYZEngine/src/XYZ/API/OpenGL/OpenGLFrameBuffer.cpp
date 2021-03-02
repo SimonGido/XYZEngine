@@ -127,7 +127,7 @@ namespace XYZ {
 	}
 	void OpenGLFramebuffer::Resize(uint32_t width, uint32_t height, bool forceResize)
 	{
-		if (m_Specification.Width == 0 || m_Specification.Height == 0)
+		if (width == 0 || height == 0)
 		{
 			XYZ_LOG_WARN("Width and height can not be zero");
 			return;

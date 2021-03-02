@@ -69,6 +69,7 @@ namespace XYZ {
 			glm::mat4 PreviewFinalTransform;
 
 			std::string Name;
+			glm::vec3   Color;
 			bool Open = false;
 		};
 
