@@ -28,11 +28,6 @@ namespace XYZ {
 	static std::vector<PreviewVertex> s_PreviewVertices;
 	static uint32_t s_NextBone = 1;
 
-	static glm::vec3 Interpolate(const glm::vec3& start, const glm::vec3& end, float step)
-	{
-		glm::vec3 diff = end - start;
-		return diff * step + start;
-	}
 
 	static void GetTriangulationPt(const std::vector<tpp::Delaunay::Point>& points, int keyPointIdx, const tpp::Delaunay::Point& sPoint, double& x, double& y)
 	{
@@ -84,6 +79,7 @@ namespace XYZ {
 
 		m_Shader = Shader::Create("Assets/Shaders/SkinningEditor.glsl");
 		m_Material = Ref<Material>::Create(m_Shader);
+		m_Material->Set("u_ColorEnabled", 0);
 
 		m_ViewportSize = window.Size;
 		FramebufferSpecs specs;
@@ -169,6 +165,7 @@ namespace XYZ {
 			{
 				handleWeightBrush({ mx, my });
 				colorizeWeights();
+				updateVertexBuffer();
 			}
 		}
 
@@ -178,6 +175,11 @@ namespace XYZ {
 
 		glm::mat4 projection = glm::ortho(-window.Size.x / 2.0f, window.Size.x / 2.0f, -window.Size.y / 2.0f, window.Size.y / 2.0f);
 		m_Material->Set("u_ViewProjectionMatrix", projection);
+		if (IS_SET(m_Flags, WeightBrush))
+			m_Material->Set("u_ColorEnabled", 1);
+		else
+			m_Material->Set("u_ColorEnabled", 0);
+
 		m_Material->Bind();
 		m_Shader->SetMat4("u_Transform", glm::mat4(1.0f));
 
@@ -394,6 +396,7 @@ namespace XYZ {
 					char buffer[20];
 					sprintf(buffer, "bone_%u", s_NextBone++);
 					bone->Name = buffer;
+					bone->Color = glm::vec3(0.0f, 1.0f, 0.0f);
 					m_Bones.push_back(bone);
 									
 					m_CreatedBone = bone;
@@ -488,16 +491,12 @@ namespace XYZ {
 		{
 			for (auto& vertex : m_Vertices)
 			{
+				vertex.Color = glm::vec3(0.0f);
 				for (uint32_t i = 0; i < 4; ++i)
 				{
 					if (vertex.Data.IDs[i] == m_SelectedBone->ID)
-					{
-						float weight = vertex.Data.Weights[i];
-						if (weight < 0.5f)
-							vertex.Color = Interpolate(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), weight);
-						else
-							vertex.Color = Interpolate(glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), weight);
-						break;
+					{				
+						vertex.Color += m_SelectedBone->Color * vertex.Data.Weights[i];
 					}
 				}
 			}
@@ -748,7 +747,7 @@ namespace XYZ {
 				finalPos = boneTransform * glm::vec4(vertex.x, vertex.y, 0.0f, 1.0f);
 			}
 			s_PreviewVertices.push_back({
-				glm::vec3(1.0f),
+				m_Vertices[vertexCounter].Color,
 				glm::vec3(finalPos.x, finalPos.y,0.0f),
 				calculateTexCoord(glm::vec2(m_Vertices[vertexCounter].X, m_Vertices[vertexCounter].Y)),
 				data
@@ -951,16 +950,6 @@ namespace XYZ {
 			Renderer2D::SubmitLine(glm::vec3(first.Position.x, first.Position.y, 0.0f), glm::vec3(second.Position.x, second.Position.y, 0.0f), color);
 			Renderer2D::SubmitLine(glm::vec3(second.Position.x, second.Position.y, 0.0f), glm::vec3(third.Position.x, third.Position.y, 0.0f), color);
 			Renderer2D::SubmitLine(glm::vec3(third.Position.x, third.Position.y, 0.0f), glm::vec3(first.Position.x, first.Position.y, 0.0f), color);
-		}
-		else if (IS_SET(m_Flags, WeightBrush))
-		{
-			Vertex& first = m_Vertices[triangle.First];
-			Vertex& second = m_Vertices[triangle.Second];
-			Vertex& third = m_Vertices[triangle.Third];
-
-			Renderer2D::SubmitLine(glm::vec3(first.X, first.Y, 0.0f), glm::vec3(second.X, second.Y, 0.0f), glm::vec4(first.Color, 1.0f));
-			Renderer2D::SubmitLine(glm::vec3(second.X, second.Y, 0.0f), glm::vec3(third.X, third.Y, 0.0f), glm::vec4(second.Color, 1.0f));
-			Renderer2D::SubmitLine(glm::vec3(third.X, third.Y, 0.0f), glm::vec3(first.X, first.Y, 0.0f), glm::vec4(third.Color, 1.0f));
 		}
 		else
 		{
