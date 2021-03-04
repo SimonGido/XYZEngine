@@ -3,6 +3,7 @@
 #include "XYZ/Renderer/Framebuffer.h"
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Renderer/RenderTexture.h"
+#include "XYZ/Renderer/SkeletalMesh.h"
 
 #include "XYZ/Event/Event.h"
 #include "XYZ/Event/InputEvent.h"
@@ -11,7 +12,6 @@
 #include "XYZ/Utils/DataStructures/Tree.h"
 #include "XYZ/Core/MemoryPool.h"
 
-#include <array>
 
 namespace XYZ {
 
@@ -43,11 +43,19 @@ namespace XYZ {
 			float   Weights[sc_MaxBonesPerVertex];
 		};
 		
-		struct Vertex
+		struct BoneVertex
 		{
 			float X, Y;
 			BoneData Data;
 			glm::vec3 Color = glm::vec3(0.0f);
+		};
+
+		struct PreviewVertex
+		{
+			glm::vec3 Color;
+			glm::vec3 Position;
+			glm::vec2 TexCoord;
+			VertexBoneData BoneData;
 		};
 
 		struct Triangle
@@ -116,7 +124,7 @@ namespace XYZ {
 		void triangulate();
 		void eraseEmptyPoints();
 		void showTriangle(const Triangle& triangle, const glm::vec4& color);
-		void findVerticesInRadius(const glm::vec2& pos, float radius, std::vector<Vertex*>& vertices);
+		void findVerticesInRadius(const glm::vec2& pos, float radius, std::vector<BoneVertex*>& vertices);
 		Triangle findTriangle(const glm::vec2& pos);	
 		int32_t findBone(const glm::vec2& pos);
 
@@ -131,16 +139,17 @@ namespace XYZ {
 		MemoryPool m_BonePool;
 
 		std::vector<Bone*> m_Bones;
-		std::vector<Vertex> m_Vertices;
-		std::vector<glm::vec2> m_VerticesLocalToBones;
+		std::vector<BoneVertex> m_Vertices;
 		std::vector<uint32_t> m_Indices;
+		std::vector<glm::vec2> m_VerticesLocalToBones;
+		std::vector<PreviewVertex> m_PreviewVertices;
 
 		float m_Scale = 1.0f;
 		float m_ScrollOffset = 0.0f;
 
 		Bone* m_CreatedBone = nullptr;
 		Bone* m_SelectedBone = nullptr;
-		Vertex* m_EditedVertex = nullptr;
+		BoneVertex* m_EditedVertex = nullptr;
 
 		int32_t m_BoneID;
 		bool m_FoundBone;
@@ -165,9 +174,16 @@ namespace XYZ {
 		glm::vec2 m_ViewportSize;
 		glm::vec2 m_MousePosition;
 
-		static constexpr glm::vec4 sc_VertexColor = glm::vec4(0.0f, 0.7f, 0.8f, 1.0f);
-		static constexpr glm::vec4 sc_TriangleColor = glm::vec4(0.8f, 0.8f, 0.8f, 0.5f);
-		static constexpr glm::vec4 sc_TriangleHighlightColor = glm::vec4(0.9f, 0.9f, 0.9f, 1.0f);
+		enum Color
+		{
+			VertexColor,
+			TriangleColor,
+			TriangleHighlightColor,
+			BoneHighlightColor,
+			NumColors
+		};
+		const glm::vec4 m_Colors[Color::NumColors];
+
 		static constexpr float sc_PointRadius = 5.0f;
 	};
 }

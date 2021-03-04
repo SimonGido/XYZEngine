@@ -4,7 +4,7 @@
 #include "XYZ/Core/Input.h"
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/Renderer.h"
-#include "XYZ/Renderer/SkeletalMesh.h"
+
 #include "XYZ/Utils/Math/Math.h"
 
 #include <glm/gtx/transform.hpp>
@@ -15,19 +15,67 @@
 
 
 namespace XYZ {
+#define MAX_BONES 60
 
-
-	struct PreviewVertex
-	{
-		glm::vec3 Color;
-		glm::vec3 Position;
-		glm::vec2 TexCoord;
-		VertexBoneData BoneData;
-	};
-
-	static std::vector<PreviewVertex> s_PreviewVertices;
 	static uint32_t s_NextBone = 1;
 
+	static uint32_t s_ColorIDs[MAX_BONES];
+
+	static glm::vec3 HSVtoRGB(float H, float S, float V) 
+	{
+		if (H > 360 || H < 0 || S > 100 || S < 0 || V > 100 || V < 0) 
+		{
+			XYZ_ASSERT(false,"");
+		}
+		float s = S / 100;
+		float v = V / 100;
+		float C = s * v;
+		float X = C * (1 - abs(fmod(H / 60.0, 2) - 1));
+		float m = v - C;
+		float r, g, b;
+		if (H >= 0 && H < 60) 
+		{
+			r = C, g = X, b = 0;
+		}
+		else if (H >= 60 && H < 120) 
+		{
+			r = X, g = C, b = 0;
+		}
+		else if (H >= 120 && H < 180) 
+		{
+			r = 0, g = C, b = X;
+		}
+		else if (H >= 180 && H < 240) 
+		{
+			r = 0, g = X, b = C;
+		}
+		else if (H >= 240 && H < 300) 
+		{
+			r = X, g = 0, b = C;
+		}
+		else 
+		{
+			r = C, g = 0, b = X;
+		}
+		float R = (r + m);
+		float G = (g + m);
+		float B = (b + m);
+
+		return { R, G, B };
+	}
+
+	static glm::vec3 RandomColor(uint32_t index)
+	{
+		std::random_device dev;
+		std::mt19937 rng(dev());
+		std::uniform_real_distribution<float> sDist(90.0f, 100.0f);
+		std::uniform_real_distribution<float> vDist(50.0f, 100.0f);
+
+		float h = (float)index * (360.0f / (float)MAX_BONES);
+		float s = sDist(rng);
+		float v = vDist(rng);
+		return HSVtoRGB(h, s, v);
+	}
 
 	static void GetTriangulationPt(const std::vector<tpp::Delaunay::Point>& points, int keyPointIdx, const tpp::Delaunay::Point& sPoint, double& x, double& y)
 	{
@@ -44,25 +92,17 @@ namespace XYZ {
 		}
 	}
 
-	static void CircleOfLines(InGuiMesh& mesh, const glm::vec3& pos, float radius, size_t sides, const glm::vec4& color)
-	{
-		float step = 360 / sides;
-		for (int a = step; a < 360 + step; a += step)
-		{
-			float before = glm::radians((float)(a - step));
-			float heading = glm::radians((float)a);
-
-			glm::vec3 p0 = glm::vec3(pos.x + std::cos(before) * radius, pos.y + std::sin(before) * radius, pos.z);
-			glm::vec3 p1 = glm::vec3(pos.x + std::cos(heading) * radius, pos.y + std::sin(heading) * radius, pos.z);
-
-			mesh.Lines.push_back({ color, p0, p1 });
-		}
-	}
 
 	SpriteEditorPanel::SpriteEditorPanel(uint32_t panelID)
 		:
 		m_PanelID(panelID),
-		m_BonePool(15 * sizeof(SpriteEditorPanel::Bone))
+		m_BonePool(15 * sizeof(SpriteEditorPanel::Bone)),
+		m_Colors{
+			glm::vec4(0.0f, 0.7f, 0.8f, 1.0f),
+			glm::vec4(0.8f, 0.8f, 0.8f, 0.5f),
+			glm::vec4(0.9f, 0.9f, 0.9f, 1.0f),
+			glm::vec4(0.9f, 0.9f, 0.9f, 1.0f)
+		}
 	{
 		InGui::ImageWindow(m_PanelID, "Sprite Editor", glm::vec2(0.0f), glm::vec2(200.0f), m_Context);
 		InGui::End();
@@ -94,6 +134,10 @@ namespace XYZ {
 		m_RenderTexture = RenderTexture::Create(m_Framebuffer);
 		m_RenderSubTexture = Ref<SubTexture>::Create(m_RenderTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 		rebuildRenderBuffers();
+
+		for (uint32_t i = 0; i < MAX_BONES; ++i)
+			s_ColorIDs[i] = i;
+		std::shuffle(&s_ColorIDs[0], &s_ColorIDs[MAX_BONES - 1], std::default_random_engine(0));
 	}
 	void SpriteEditorPanel::SetContext(Ref<SubTexture> context)
 	{
@@ -378,8 +422,7 @@ namespace XYZ {
 				}
 				if (IS_SET(m_Flags, Flags::CreateBone))
 				{
-					Bone* bone = m_BonePool.Allocate<Bone>();
-					
+					Bone* bone = m_BonePool.Allocate<Bone>();		
 					if (m_CreatedBone)
 					{
 						bone->ID = m_BoneHierarchy.Insert(bone, m_CreatedBone->ID);
@@ -391,12 +434,12 @@ namespace XYZ {
 						bone->Start = glm::vec2(mx, my);
 					}
 					char buffer[20];
-					sprintf(buffer, "bone_%u", s_NextBone++);
+					sprintf(buffer, "bone_%u", s_NextBone);
 					bone->Name = buffer;
-					bone->Color = glm::vec3(0.0f, 1.0f, 0.0f);
-					m_Bones.push_back(bone);
-									
+					bone->Color = RandomColor(s_ColorIDs[s_NextBone]);
+					m_Bones.push_back(bone);	
 					m_CreatedBone = bone;
+					s_NextBone++;
 				}
 						
 				// Vertex
@@ -556,9 +599,9 @@ namespace XYZ {
 			m_BoneHierarchy.Traverse([&](void* parent, void* child) -> bool {
 
 				Bone* childBone = static_cast<Bone*>(child);
-				glm::vec4 color = glm::vec4(0.2f, 0.0f, 1.0f, 1.0f);
+				glm::vec4 color = glm::vec4(childBone->Color, 1.0f);
 				if (childBone->ID == m_BoneID || (m_SelectedBone && childBone->ID == m_SelectedBone->ID))
-					color = glm::vec4(0.8f, 0.3f, 1.0f, 1.0f);
+					color = m_Colors[BoneHighlightColor];
 
 				glm::vec3 scale;
 				glm::quat rotation;
@@ -570,8 +613,13 @@ namespace XYZ {
 
 				glm::vec4 endPoint = glm::toMat4(rotation) * glm::vec4(childBone->End, 0.0f, 1.0f);
 				endPoint += glm::vec4(translation, 0.0f);
-				Renderer2D::SubmitLine(translation, glm::vec3(endPoint.x, endPoint.y, 0.0f), color);
 
+				glm::vec3 dir = glm::vec3(endPoint.x, endPoint.y, 0.0f) - glm::vec3(translation.x, translation.y, 0.0f);
+				dir = glm::normalize(dir);
+				glm::vec3 normal = { -dir.y, dir.x, 0.0f };
+
+				Renderer2D::SubmitLine(translation + (normal * sc_PointRadius), glm::vec3(endPoint.x, endPoint.y, 0.0f), color);
+				Renderer2D::SubmitLine(translation - (normal * sc_PointRadius), glm::vec3(endPoint.x, endPoint.y, 0.0f), color);
 
 				return false;
 				});
@@ -581,9 +629,9 @@ namespace XYZ {
 			m_BoneHierarchy.Traverse([&](void* parent, void* child) -> bool {
 
 				Bone* childBone = static_cast<Bone*>(child);
-				glm::vec4 color = glm::vec4(0.2f, 0.0f, 1.0f, 1.0f);
+				glm::vec4 color = glm::vec4(childBone->Color, 1.0f);
 				if (childBone->ID == m_BoneID || (m_SelectedBone && childBone->ID == m_SelectedBone->ID))
-					color = glm::vec4(0.8f, 0.3f, 1.0f, 1.0f);
+					color = m_Colors[BoneHighlightColor];
 
 				childBone->WorldStart = childBone->Start;
 				glm::vec2 end = childBone->Start + childBone->End;
@@ -595,30 +643,36 @@ namespace XYZ {
 					end += parentBoneEnd;
 				}
 
+				glm::vec2 dir = glm::vec2(end.x, end.y) - glm::vec2(childBone->WorldStart.x, childBone->WorldStart.y);
+				dir = glm::normalize(dir);
+				glm::vec2 normal = { -dir.y, dir.x };
+
 				Renderer2D::SubmitCircle(glm::vec3(childBone->WorldStart, 0.0f), sc_PointRadius, 20, color);
-				Renderer2D::SubmitLine(glm::vec3(childBone->WorldStart, 0.0f), glm::vec3(end, 0.0f), color);
+				Renderer2D::SubmitLine(glm::vec3(childBone->WorldStart + (normal * sc_PointRadius),0.0f), glm::vec3(end.x, end.y, 0.0f), color);
+				Renderer2D::SubmitLine(glm::vec3(childBone->WorldStart - (normal * sc_PointRadius),0.0f), glm::vec3(end.x, end.y, 0.0f), color);
+
 
 				return false;
 				});
 		}
 		if (IS_SET(m_Flags, PreviewPose))
 		{
-			for (auto& vertex : s_PreviewVertices)
+			for (auto& vertex : m_PreviewVertices)
 			{
-				Renderer2D::SubmitCircle(glm::vec3(vertex.Position.x, vertex.Position.y, 0.0f), sc_PointRadius, 20, sc_VertexColor);
+				Renderer2D::SubmitCircle(glm::vec3(vertex.Position.x, vertex.Position.y, 0.0f), sc_PointRadius, 20, m_Colors[VertexColor]);
 			}
 		}
 		else
 		{
 			for (auto& vertex : m_Vertices)
 			{
-				Renderer2D::SubmitCircle(glm::vec3(vertex.X, vertex.Y, 0.0f), sc_PointRadius, 20, sc_VertexColor);
+				Renderer2D::SubmitCircle(glm::vec3(vertex.X, vertex.Y, 0.0f), sc_PointRadius, 20, m_Colors[VertexColor]);
 			}
 		}
 		
 		if (IS_SET(m_Flags, WeightBrush))
 		{
-			std::vector<Vertex*> vertices;
+			std::vector<BoneVertex*> vertices;
 			findVerticesInRadius(m_MousePosition, m_WeightBrushRadius, vertices);
 			for (auto vertex : vertices)
 			{
@@ -633,19 +687,19 @@ namespace XYZ {
 				m_Indices[i - 1],
 				m_Indices[i]
 			};
-			showTriangle(triangle, sc_TriangleColor);
+			showTriangle(triangle, m_Colors[TriangleColor]);
 		}
 		if (m_TriangleFound)
 		{
-			showTriangle(m_Triangle, sc_TriangleHighlightColor);
+			showTriangle(m_Triangle, m_Colors[TriangleHighlightColor]);
 		}
 	}
 	void SpriteEditorPanel::rebuildRenderBuffers()
 	{
-		s_PreviewVertices.clear();
+		m_PreviewVertices.clear();
 		if (m_Vertices.size())
 		{
-			s_PreviewVertices.reserve(m_Vertices.size());
+			m_PreviewVertices.reserve(m_Vertices.size());
 			for (auto& vertex : m_Vertices)
 			{
 				VertexBoneData data;
@@ -664,7 +718,7 @@ namespace XYZ {
 					counter++;
 				}
 
-				s_PreviewVertices.push_back({
+				m_PreviewVertices.push_back({
 					glm::vec3(1.0f),
 					glm::vec3(vertex.X, vertex.Y, 0.0f),
 					calculateTexCoord(glm::vec2(vertex.X, vertex.Y)),
@@ -674,23 +728,23 @@ namespace XYZ {
 		}
 		else
 		{
-			s_PreviewVertices.reserve(4);
-			s_PreviewVertices.push_back({
+			m_PreviewVertices.reserve(4);
+			m_PreviewVertices.push_back({
 				glm::vec3(1.0f),
 				glm::vec3(-m_ContextSize.x / 2.0f, -m_ContextSize.y / 2.0f, 0.0f),
 				glm::vec2(0.0f)
 				});
-			s_PreviewVertices.push_back({
+			m_PreviewVertices.push_back({
 				glm::vec3(1.0f),
 				glm::vec3(m_ContextSize.x / 2.0f, -m_ContextSize.y / 2.0f, 0.0f),
 				glm::vec2(1.0f,0.0f)
 				});
-			s_PreviewVertices.push_back({
+			m_PreviewVertices.push_back({
 				glm::vec3(1.0f),
 				glm::vec3(m_ContextSize.x / 2.0f,  m_ContextSize.y / 2.0f, 0.0f),
 				glm::vec2(1.0f)
 				});
-			s_PreviewVertices.push_back({
+			m_PreviewVertices.push_back({
 				glm::vec3(1.0f),
 				glm::vec3(-m_ContextSize.x / 2.0f, m_ContextSize.y / 2.0f, 0.0f),
 				glm::vec2(0.0f, 1.0f)
@@ -698,7 +752,7 @@ namespace XYZ {
 		}
 
 		m_VertexArray = VertexArray::Create();
-		m_VertexBuffer = VertexBuffer::Create(s_PreviewVertices.data(), s_PreviewVertices.size() * sizeof(PreviewVertex), BufferUsage::Dynamic);
+		m_VertexBuffer = VertexBuffer::Create(m_PreviewVertices.data(), m_PreviewVertices.size() * sizeof(PreviewVertex), BufferUsage::Dynamic);
 		m_VertexBuffer->SetLayout({
 			{0, ShaderDataComponent::Float3, "a_Color"},
 			{1, ShaderDataComponent::Float3, "a_Position"},
@@ -724,7 +778,7 @@ namespace XYZ {
 	}
 	void SpriteEditorPanel::updateVertexBuffer()
 	{
-		s_PreviewVertices.clear();
+		m_PreviewVertices.clear();
 		uint32_t vertexCounter = 0;
 		for (auto& vertex : m_VerticesLocalToBones)
 		{
@@ -743,7 +797,7 @@ namespace XYZ {
 				}
 				finalPos = boneTransform * glm::vec4(vertex.x, vertex.y, 0.0f, 1.0f);
 			}
-			s_PreviewVertices.push_back({
+			m_PreviewVertices.push_back({
 				m_Vertices[vertexCounter].Color,
 				glm::vec3(finalPos.x, finalPos.y,0.0f),
 				calculateTexCoord(glm::vec2(m_Vertices[vertexCounter].X, m_Vertices[vertexCounter].Y)),
@@ -752,7 +806,7 @@ namespace XYZ {
 
 			vertexCounter++;
 		}
-		m_VertexBuffer->Update(s_PreviewVertices.data(), s_PreviewVertices.size() * sizeof(PreviewVertex));
+		m_VertexBuffer->Update(m_PreviewVertices.data(), m_PreviewVertices.size() * sizeof(PreviewVertex));
 	}
 	glm::vec2 SpriteEditorPanel::calculateTexCoord(const glm::vec2& pos)
 	{
@@ -775,7 +829,7 @@ namespace XYZ {
 	{
 		Renderer2D::SubmitCircle(glm::vec3(pos.x, pos.y, 0.0f), m_WeightBrushRadius, 30, glm::vec4(1.0f, 0.8f, 1.0f, 1.0f));
 
-		std::vector<Vertex*> vertices;
+		std::vector<BoneVertex*> vertices;
 		findVerticesInRadius(pos, m_WeightBrushRadius, vertices);
 		if (m_SelectedBone)
 		{
@@ -953,9 +1007,9 @@ namespace XYZ {
 	{
 		if (IS_SET(m_Flags, PreviewPose))
 		{
-			PreviewVertex& first = s_PreviewVertices[triangle.First];
-			PreviewVertex& second = s_PreviewVertices[triangle.Second];
-			PreviewVertex& third = s_PreviewVertices[triangle.Third];
+			PreviewVertex& first = m_PreviewVertices[triangle.First];
+			PreviewVertex& second = m_PreviewVertices[triangle.Second];
+			PreviewVertex& third = m_PreviewVertices[triangle.Third];
 
 			Renderer2D::SubmitLine(glm::vec3(first.Position.x, first.Position.y, 0.0f), glm::vec3(second.Position.x, second.Position.y, 0.0f), color);
 			Renderer2D::SubmitLine(glm::vec3(second.Position.x, second.Position.y, 0.0f), glm::vec3(third.Position.x, third.Position.y, 0.0f), color);
@@ -963,16 +1017,16 @@ namespace XYZ {
 		}
 		else
 		{
-			Vertex& first = m_Vertices[triangle.First];
-			Vertex& second = m_Vertices[triangle.Second];
-			Vertex& third = m_Vertices[triangle.Third];
+			BoneVertex& first = m_Vertices[triangle.First];
+			BoneVertex& second = m_Vertices[triangle.Second];
+			BoneVertex& third = m_Vertices[triangle.Third];
 
 			Renderer2D::SubmitLine(glm::vec3(first.X, first.Y, 0.0f), glm::vec3(second.X, second.Y, 0.0f), color);
 			Renderer2D::SubmitLine(glm::vec3(second.X, second.Y, 0.0f), glm::vec3(third.X, third.Y, 0.0f), color);
 			Renderer2D::SubmitLine(glm::vec3(third.X, third.Y, 0.0f), glm::vec3(first.X, first.Y, 0.0f), color);
 		}
 	}
-	void SpriteEditorPanel::findVerticesInRadius(const glm::vec2& pos, float radius, std::vector<Vertex*>& vertices)
+	void SpriteEditorPanel::findVerticesInRadius(const glm::vec2& pos, float radius, std::vector<BoneVertex*>& vertices)
 	{
 		for (auto& vertex : m_Vertices)
 		{
@@ -992,9 +1046,9 @@ namespace XYZ {
 			uint32_t secondIndex = m_Indices[i - 1];
 			uint32_t thirdIndex = m_Indices[i];
 
-			Vertex& first = m_Vertices[firstIndex];
-			Vertex& second = m_Vertices[secondIndex];
-			Vertex& third = m_Vertices[thirdIndex];
+			BoneVertex& first = m_Vertices[firstIndex];
+			BoneVertex& second = m_Vertices[secondIndex];
+			BoneVertex& third = m_Vertices[thirdIndex];
 			if (Math::PointInTriangle(pos, glm::vec2(first.X, first.Y), glm::vec2(second.X, second.Y), glm::vec2(third.X, third.Y)))
 			{
 				triangle.First = firstIndex;
