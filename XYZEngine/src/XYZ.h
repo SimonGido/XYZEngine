@@ -40,7 +40,7 @@
 #include "XYZ/Editor/Panels/ScenePanel.h"
 #include "XYZ/Editor/Panels/SceneHierarchyPanel.h"
 #include "XYZ/Editor/Panels/InspectorPanel.h"
-#include "XYZ/Editor/Panels/SpriteEditorPanel.h"
+#include "XYZ/Editor/Panels/SkinningEditorPanel.h"
 
 //------ECS-----//
 #include "XYZ/ECS/ECSManager.h"

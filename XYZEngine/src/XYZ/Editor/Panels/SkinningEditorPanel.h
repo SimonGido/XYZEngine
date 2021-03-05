@@ -127,6 +127,8 @@ namespace XYZ {
 		void eraseTriangleAtPosition(const glm::vec2& pos);
 		void decomposeBone(PreviewBone* bone, glm::vec2& start, glm::vec2& end, glm::vec2& normal);
 
+		void previewBoneCreate();
+		void handleBoneCreate();
 		void handleBoneEdit();
 		void handleVertexEdit();
 		void handleWeightsBrush();
@@ -186,6 +188,14 @@ namespace XYZ {
 		PreviewBone* m_SelectedBone = nullptr;
 		BoneVertex* m_SelectedVertex = nullptr;
 		Triangle* m_SelectedTriangle = nullptr;
+
+		struct NewBoneData
+		{
+			PreviewBone* Parent = nullptr;
+			glm::vec2 Start = glm::vec2(0.0f);
+			bool Creating = false;
+		};
+		NewBoneData m_NewBoneData;
 
 		bool m_Triangulated = false;
 

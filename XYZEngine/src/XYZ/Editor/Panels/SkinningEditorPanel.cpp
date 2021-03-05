@@ -19,7 +19,7 @@ namespace XYZ {
 
     static glm::vec3 HSVtoRGB(float H, float S, float V)
     {
-        XYZ_ASSERT(H > 360 || H < 0 || S > 100 || S < 0 || V > 100 || V < 0, "");
+        XYZ_ASSERT(!(H > 360 || H < 0 || S > 100 || S < 0 || V > 100 || V < 0), "");
 
         float s = S / 100;
         float v = V / 100;
@@ -55,8 +55,10 @@ namespace XYZ {
         std::uniform_real_distribution<float> vDist(50.0f, 100.0f);
 
         float h = (float)index * (360.0f / (float)MAX_BONES);
-        float s = sDist(rng);
-        float v = vDist(rng);
+        //float s = sDist(rng);
+        //float v = vDist(rng);
+        float s = 80.0f;
+        float v = 60.0f;
         return HSVtoRGB(h, s, v);
     }
 
@@ -145,7 +147,11 @@ namespace XYZ {
             m_FoundTriangle = findTriangle(m_MousePosition);
             m_FoundBone = findBone(m_MousePosition);
 
-            if (IS_SET(m_Flags, EditBone))
+            if (IS_SET(m_Flags, CreateBone))
+            {
+                previewBoneCreate();
+            }
+            else if (IS_SET(m_Flags, EditBone))
             {
                 handleBoneEdit();
             }
@@ -253,7 +259,11 @@ namespace XYZ {
     {
         if (event.IsButtonPressed(MouseCode::MOUSE_BUTTON_RIGHT))
         {
-            if (IS_SET(m_Flags, CreateVertex) && !m_Triangulated)
+            if (IS_SET(m_Flags, CreateBone))
+            {
+                handleBoneCreate();
+            }
+            else if (IS_SET(m_Flags, CreateVertex) && !m_Triangulated)
             {
                 m_SelectedVertex = nullptr;
                 m_Vertices.push_back({ m_MousePosition.x, m_MousePosition.y });
@@ -335,21 +345,21 @@ namespace XYZ {
             int keypointIdx3 = generator.Apex(fit, &sp3);
 
             double x = 0.0f, y = 0.0f;
-            if (trianglesHaveIndex((uint32_t)keypointIdx1))
+            if (!trianglesHaveIndex((uint32_t)keypointIdx1))
             {
                 GetTriangulationPt(points, keypointIdx1, sp1, x, y);
                 if (m_Vertices.size() <= keypointIdx1)
                     m_Vertices.resize((size_t)keypointIdx1 + 1);
                 m_Vertices[keypointIdx1] = { (float)x, (float)y };
             }
-            if (trianglesHaveIndex((uint32_t)keypointIdx2))
+            if (!trianglesHaveIndex((uint32_t)keypointIdx2))
             {
                 GetTriangulationPt(points, keypointIdx2, sp2, x, y);
                 if (m_Vertices.size() <= keypointIdx2)
                     m_Vertices.resize((size_t)keypointIdx2 + 1);
                 m_Vertices[keypointIdx2] = { (float)x, (float)y };
             }
-            if (trianglesHaveIndex((uint32_t)keypointIdx3))
+            if (!trianglesHaveIndex((uint32_t)keypointIdx3))
             {
                 GetTriangulationPt(points, keypointIdx3, sp3, x, y);
                 if (m_Vertices.size() <= keypointIdx3)
@@ -578,6 +588,70 @@ namespace XYZ {
         glm::vec2 dir = glm::normalize(end - start);     
         normal = { -dir.y, dir.x };
     }
+    void SkinningEditorPanel::previewBoneCreate()
+    {
+        glm::vec2 newBoneStart = m_MousePosition;
+        glm::vec4 color = glm::vec4(RandomColor(m_ColorIDs[s_NextBone]), 1.0f);
+
+        if (m_NewBoneData.Creating)
+        {
+            glm::vec2 dir = glm::normalize(m_MousePosition - m_NewBoneData.Start);
+            glm::vec2 normal = { -dir.y, dir.x };
+            Renderer2D::SubmitCircle(glm::vec3(m_NewBoneData.Start, 0.0f), m_PointRadius, 20, color);
+            Renderer2D::SubmitLine(glm::vec3(m_NewBoneData.Start + normal * m_PointRadius, 0.0f), glm::vec3(m_MousePosition, 0.0f), glm::vec4(color.x, color.y, color.z, 0.5f));
+            Renderer2D::SubmitLine(glm::vec3(m_NewBoneData.Start - normal * m_PointRadius, 0.0f), glm::vec3(m_MousePosition, 0.0f), glm::vec4(color.x, color.y, color.z, 0.5f));
+        }
+        else if (m_FoundBone)
+        {
+            glm::vec2 end = m_FoundBone->WorldStart + m_FoundBone->End;
+            if (glm::distance(m_MousePosition, end) < m_PointRadius)
+            {
+                Renderer2D::SubmitCircle(glm::vec3(end, 0.0f), m_PointRadius, 20, color);
+                newBoneStart = end;
+            }
+        }
+        else if (m_SelectedBone)
+        {                  
+            glm::vec2 dir = glm::normalize(m_MousePosition - m_SelectedBone->WorldStart);
+            glm::vec2 normal = { -dir.y, dir.x };
+            Renderer2D::SubmitCircle(glm::vec3(m_MousePosition, 0.0f), m_PointRadius, 20, color);
+            Renderer2D::SubmitLine(glm::vec3(m_MousePosition + normal * m_PointRadius, 0.0f), glm::vec3(m_SelectedBone->WorldStart, 0.0f), glm::vec4(color.x, color.y, color.z, 0.5f));
+            Renderer2D::SubmitLine(glm::vec3(m_MousePosition - normal * m_PointRadius, 0.0f), glm::vec3(m_SelectedBone->WorldStart, 0.0f), glm::vec4(color.x, color.y, color.z, 0.5f));
+        }       
+        else
+        {
+            Renderer2D::SubmitCircle(glm::vec3(m_MousePosition, 0.0f), m_PointRadius, 20, color);
+        }
+    }
+    void SkinningEditorPanel::handleBoneCreate()
+    {
+        if (!m_NewBoneData.Creating)
+        {
+            m_NewBoneData.Creating = true;
+            m_NewBoneData.Parent = m_FoundBone;
+            m_NewBoneData.Start = m_MousePosition;
+        }
+        else
+        {  
+            PreviewBone* newBone = m_BonePool.Allocate<PreviewBone>();
+            newBone->Color = RandomColor(m_ColorIDs[s_NextBone++]);
+            newBone->Start = m_NewBoneData.Start;
+            m_Bones.push_back(newBone);
+            if (m_NewBoneData.Parent)
+            {
+                newBone->ID = m_BoneHierarchy.Insert(newBone, m_NewBoneData.Parent->ID);
+                glm::vec2 parentWorldEnd = m_NewBoneData.Parent->WorldStart + m_NewBoneData.Parent->End;
+                newBone->End = m_MousePosition - newBone->Start - m_NewBoneData.Parent->End;
+            }
+            else
+            {
+                newBone->ID = m_BoneHierarchy.Insert(newBone);
+                newBone->End = m_MousePosition - newBone->Start;
+            }
+            m_NewBoneData.Creating = false;
+            m_NewBoneData.Parent = nullptr;
+        }
+    }
     void SkinningEditorPanel::handleBoneEdit()
     {
         if (m_SelectedBone)
@@ -770,6 +844,7 @@ namespace XYZ {
     }
     void SkinningEditorPanel::renderMesh(const glm::mat4& viewProjection)
     {
+        m_Shader->Bind();
         m_Shader->SetMat4("u_ViewProjectionMatrix", viewProjection);
         if (IS_SET(m_Flags, WeightBrush))
             m_Shader->SetInt("u_ColorEnabled", 1);
@@ -777,7 +852,6 @@ namespace XYZ {
             m_Shader->SetInt("u_ColorEnabled", 0);
 
         m_Shader->SetMat4("u_Transform", glm::mat4(1.0f));
-        m_Shader->Bind();
         m_Context->GetTexture()->Bind();
 
         m_VertexArray->Bind();
@@ -791,6 +865,9 @@ namespace XYZ {
 
         if (m_FoundTriangle)
             renderTriangle(*m_FoundTriangle, m_Colors[TriangleHighlightColor]);
+        
+        if (IS_SET(m_Flags, CreateBone))
+            previewBoneCreate();
 
         if (IS_SET(m_Flags, Flags::PreviewPose))
         {
@@ -811,6 +888,7 @@ namespace XYZ {
             m_BoneHierarchy.Traverse([&](void* parent, void* child) -> bool {
 
                 PreviewBone* childBone = static_cast<PreviewBone*>(child);
+                childBone->WorldStart = childBone->Start;
                 glm::vec2 end = childBone->Start + childBone->End;
                 if (parent)
                 {
@@ -819,9 +897,9 @@ namespace XYZ {
                     childBone->WorldStart += parentBoneEnd;
                     end += parentBoneEnd;
                 }
-                glm::vec2 dir = glm::normalize(childBone->WorldStart - end);
+                glm::vec2 dir = glm::normalize(end - childBone->WorldStart);
                 glm::vec2 normal = { -dir.y, dir.x };
-                renderBone(m_PointRadius, childBone->Start, end, normal, glm::vec4(childBone->Color, 1.0f));
+                renderBone(m_PointRadius, childBone->WorldStart, end, normal, glm::vec4(childBone->Color, 1.0f));
                 return false;
                 });
             for (auto& vertex : m_Vertices)

@@ -40,7 +40,7 @@ namespace XYZ {
 		m_SceneHierarchyPanel(PanelID::SceneHierarchyPanel),
 		m_InspectorPanel(PanelID::InspectorPanel),
 		m_ScenePanel(PanelID::ScenePanel),
-		m_SpriteEditorPanel(PanelID::SpriteEditorPanel)
+		m_SkinningEditorPanel(PanelID::SkinningEditorPanel)
 	{		
 	}
 
@@ -148,7 +148,7 @@ namespace XYZ {
 		m_SceneHierarchyPanel.SetContext(m_Scene);
 		m_ScenePanel.SetContext(m_Scene);
 		m_ScenePanel.SetSubTexture(renderSubTexture);
-		m_SpriteEditorPanel.SetContext(robotSubTexture);
+		m_SkinningEditorPanel.SetContext(robotSubTexture);
 	}	
 
 
@@ -163,7 +163,7 @@ namespace XYZ {
 		Renderer::Clear();
 		Renderer::SetClearColor({ 0.1f,0.1f,0.1f,0.1f });
 		m_ScenePanel.OnUpdate(ts);
-		m_SpriteEditorPanel.OnUpdate(ts);
+		m_SkinningEditorPanel.OnUpdate(ts);
 
 		if (m_Scene->GetState() == SceneState::Play)
 		{
@@ -224,7 +224,7 @@ namespace XYZ {
 		dispatcher.Dispatch<KeyPressedEvent>(Hook(&EditorLayer::onKeyPress, this));
 		m_SceneHierarchyPanel.OnEvent(event);
 		m_ScenePanel.OnEvent(event);
-		m_SpriteEditorPanel.OnEvent(event);
+		m_SkinningEditorPanel.OnEvent(event);
 	}
 
 	void EditorLayer::OnInGuiRender()
@@ -232,7 +232,7 @@ namespace XYZ {
 		m_SceneHierarchyPanel.OnInGuiRender();
 		m_InspectorPanel.OnInGuiRender();
 		m_ScenePanel.OnInGuiRender();
-		m_SpriteEditorPanel.OnInGuiRender();
+		m_SkinningEditorPanel.OnInGuiRender();
 	}
 
 	

@@ -16,7 +16,7 @@ namespace XYZ {
 			SceneHierarchyPanel,
 			ScenePanel,
 			InspectorPanel,
-			SpriteEditorPanel,
+			SkinningEditorPanel,
 			NumPanels
 		};
 	}
@@ -50,7 +50,7 @@ namespace XYZ {
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		InspectorPanel m_InspectorPanel;
 		ScenePanel m_ScenePanel;
-		SpriteEditorPanel m_SpriteEditorPanel;
+		SkinningEditorPanel m_SkinningEditorPanel;
 
 
 	private:	
