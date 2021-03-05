@@ -116,6 +116,7 @@ namespace XYZ {
 		bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
 		bool onMouseScroll(MouseScrollEvent& event);
 
+		void triangulate();
 		void initializePose();
 		void updateBoneHierarchy();
 		void updateVertexBuffer();
@@ -123,10 +124,15 @@ namespace XYZ {
 		void eraseEmptyPoints();
 		void decomposeBone(PreviewBone* bone, glm::vec2& start, glm::vec2& end, glm::vec2& normal);
 
+		void handleBoneEdit();
+		void handleVertexEdit();
 
+		bool trianglesHaveIndex(uint32_t index) const;
 		glm::vec2 getPositionLocalToBone(const BoneVertex& vertex);
 		glm::vec2 applyBonesOnvertex(const BoneVertex& vertex);
+		glm::vec2 getMouseWindowSpace() const;
 		std::pair<float, float> getMouseViewportSpace() const;
+
 
 		void renderAll();
 		void renderTriangle(const Triangle& triangle, const glm::vec4& color);
@@ -165,9 +171,13 @@ namespace XYZ {
 		float m_Scale = 1.0f;
 		float m_ScrollOffset = 0.0f;
 
-		PreviewBone* m_SelectedBone = nullptr;
+		PreviewBone* m_FoundBone = nullptr;
 		BoneVertex* m_FoundVertex = nullptr;
 		Triangle* m_FoundTriangle = nullptr;
+
+		PreviewBone* m_SelectedBone = nullptr;
+		BoneVertex* m_SelectedVertex = nullptr;
+		Triangle* m_SelectedTriangle = nullptr;
 
 		bool m_Triangulated = false;
 

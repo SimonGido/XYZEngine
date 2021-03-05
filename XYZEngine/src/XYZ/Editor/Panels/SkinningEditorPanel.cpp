@@ -125,7 +125,7 @@ namespace XYZ {
         m_Framebuffer = Framebuffer::Create(specs);
         m_RenderTexture = RenderTexture::Create(m_Framebuffer);
         m_RenderSubTexture = Ref<SubTexture>::Create(m_RenderTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
-       // rebuildRenderBuffers();
+        rebuildRenderBuffers();
 
         for (uint32_t i = 0; i < MAX_BONES; ++i)
             m_ColorIDs[i] = i;
@@ -133,10 +133,33 @@ namespace XYZ {
     }
     void SkinningEditorPanel::SetContext(Ref<SubTexture> context)
     {
-       
+        m_Context = context;
+        m_ContextSize.x = (float)m_Context->GetTexture()->GetWidth();
+        m_ContextSize.y = (float)m_Context->GetTexture()->GetHeight();
+
+        m_Material->ClearTextures();
+        m_Material->Set("u_Texture", m_Context->GetTexture(), 0);
+        rebuildRenderBuffers();
     }
     void SkinningEditorPanel::OnUpdate(Timestep ts)
     {
+        const InGuiWindow& window = InGui::GetWindow(m_PanelID);
+        if (IS_SET(window.Flags, InGuiWindowFlags::Hoovered))
+        {
+            m_MousePosition = getMouseWindowSpace();
+            m_FoundVertex = findVertex(m_MousePosition);
+            m_FoundTriangle = findTriangle(m_MousePosition);
+            m_FoundBone = findBone(m_MousePosition);
+
+            if (IS_SET(m_Flags, EditBone))
+            {
+                handleBoneEdit();
+            }
+            else if (IS_SET(m_Flags, EditVertex))
+            {
+                handleVertexEdit();
+            }
+        }
     }
     void SkinningEditorPanel::OnInGuiRender()
     {
@@ -155,6 +178,64 @@ namespace XYZ {
     bool SkinningEditorPanel::onMouseScroll(MouseScrollEvent& event)
     {
         return false;
+    }
+    void SkinningEditorPanel::triangulate()
+    {
+        if (m_Vertices.size() < 3)
+            return;
+
+        std::vector<tpp::Delaunay::Point> points;
+        for (auto& p : m_Vertices)
+        {
+            points.push_back({ p.X, p.Y });
+        }
+        tpp::Delaunay generator(points);
+        generator.setMinAngle(30.5f);
+        generator.setMaxArea(12000.5f);
+        generator.Triangulate(true);
+
+        m_Triangles.clear();
+        m_Vertices.clear();
+        for (tpp::Delaunay::fIterator fit = generator.fbegin(); fit != generator.fend(); ++fit)
+        {
+            tpp::Delaunay::Point sp1;
+            tpp::Delaunay::Point sp2;
+            tpp::Delaunay::Point sp3;
+
+            int keypointIdx1 = generator.Org(fit, &sp1);
+            int keypointIdx2 = generator.Dest(fit, &sp2);
+            int keypointIdx3 = generator.Apex(fit, &sp3);
+
+            double x = 0.0f, y = 0.0f;
+            if (trianglesHaveIndex((uint32_t)keypointIdx1))
+            {
+                GetTriangulationPt(points, keypointIdx1, sp1, x, y);
+                if (m_Vertices.size() <= keypointIdx1)
+                    m_Vertices.resize((size_t)keypointIdx1 + 1);
+                m_Vertices[keypointIdx1] = { (float)x, (float)y };
+            }
+            if (trianglesHaveIndex((uint32_t)keypointIdx2))
+            {
+                GetTriangulationPt(points, keypointIdx2, sp2, x, y);
+                if (m_Vertices.size() <= keypointIdx2)
+                    m_Vertices.resize((size_t)keypointIdx2 + 1);
+                m_Vertices[keypointIdx2] = { (float)x, (float)y };
+            }
+            if (trianglesHaveIndex((uint32_t)keypointIdx3))
+            {
+                GetTriangulationPt(points, keypointIdx3, sp3, x, y);
+                if (m_Vertices.size() <= keypointIdx3)
+                    m_Vertices.resize((size_t)keypointIdx3 + 1);
+                m_Vertices[keypointIdx3] = { (float)x, (float)y };
+            }
+            m_Triangles.push_back({
+                (uint32_t)keypointIdx1,
+                (uint32_t)keypointIdx2,
+                (uint32_t)keypointIdx3
+                });
+        }
+        m_Triangulated = true;
+        rebuildRenderBuffers();
     }
     void SkinningEditorPanel::initializePose()
     {
@@ -199,7 +280,9 @@ namespace XYZ {
             glm::vec2 finalPos = glm::vec2(vertex.X, vertex.Y);
             if (IS_SET(m_Flags, PreviewPose))
             {
-                finalPos = applyBonesOnvertex(vertex);
+                BoneVertex vertexLocalToBone = vertex;
+                auto posLocalToBone = getPositionLocalToBone(vertexLocalToBone);
+                finalPos = applyBonesOnvertex(vertexLocalToBone);
             }
             m_PreviewVertices.push_back({
                 vertex.Color,
@@ -296,15 +379,7 @@ namespace XYZ {
         std::vector<uint32_t> erasedPoints;
         for (uint32_t i = 0; i < m_Vertices.size(); ++i)
         {
-            bool found = false;
-            for (auto& triangle : m_Triangles)
-            {
-                if (triangle.First == i || triangle.Second == i || triangle.Third == i)
-                {
-                    found = true;
-                    break;
-                }
-            }
+            bool found = trianglesHaveIndex(i);
             if (!found)
                 erasedPoints.push_back(i);
         }
@@ -336,6 +411,47 @@ namespace XYZ {
         end = start + glm::vec2(tmpEnd.x, tmpEnd.y);
         glm::vec2 dir = glm::normalize(end - start);     
         normal = { -dir.y, dir.x };
+    }
+    void SkinningEditorPanel::handleBoneEdit()
+    {
+        if (m_SelectedBone)
+        {
+            if (Input::IsMouseButtonPressed(MouseCode::MOUSE_BUTTON_RIGHT))
+            {
+                if (IS_SET(m_Flags, PreviewPose))
+                {
+                    m_SelectedBone->PreviewTransform *= glm::rotate(0.01f, glm::vec3(0.0f, 0.0f, 1.0f));
+                }
+                else
+                {
+                    m_SelectedBone->Start = m_MousePosition;
+                    if (auto parent = m_BoneHierarchy.GetParentData(m_SelectedBone->ID))
+                    {
+                        PreviewBone* parentBone = static_cast<PreviewBone*>(parent);
+                        m_SelectedBone->Start -= parentBone->WorldStart + parentBone->End;
+                    }
+                }
+                updateVertexBuffer();
+            }
+        }
+    }
+    void SkinningEditorPanel::handleVertexEdit()
+    {
+        if (m_SelectedVertex)
+        {
+            m_SelectedVertex->X = m_MousePosition.x;
+            m_SelectedVertex->Y = m_MousePosition.y;
+        }
+        updateVertexBuffer();
+    }
+    bool SkinningEditorPanel::trianglesHaveIndex(uint32_t index) const
+    {
+        for (auto& triangle : m_Triangles)
+        {
+            if (triangle.First == index || triangle.Second == index || triangle.Third == index)
+                return true;
+        }
+        return false;
     }
     glm::vec2 SkinningEditorPanel::getPositionLocalToBone(const BoneVertex& vertex)
     {
@@ -370,6 +486,14 @@ namespace XYZ {
         if (!hasBone)
             return { vertex.X, vertex.Y };
         return boneTransform * glm::vec4(vertex.X, vertex.Y, 0.0f, 1.0f);
+    }
+    glm::vec2 SkinningEditorPanel::getMouseWindowSpace() const
+    {
+        const InGuiWindow& window = InGui::GetWindow(m_PanelID);
+        auto [mx, my] = getMouseViewportSpace();
+        mx *= window.Size.x / 2.0f;
+        my *= window.Size.y / 2.0f;
+        return { mx , my };
     }
     std::pair<float, float> SkinningEditorPanel::getMouseViewportSpace() const
     {
