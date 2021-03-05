@@ -160,6 +160,7 @@ namespace XYZ {
                 handleVertexEdit();
             }
         }
+        renderAll();
     }
     void SkinningEditorPanel::OnInGuiRender()
     {
@@ -660,12 +661,39 @@ namespace XYZ {
     }
     void SkinningEditorPanel::renderAll()
     {
+        m_Framebuffer->Bind(); 
+        Renderer::SetClearColor(m_Framebuffer->GetSpecification().ClearColor);
+        Renderer::Clear();;
+
+        const InGuiWindow& window = InGui::GetWindow(m_PanelID);
+        glm::mat4 projection = glm::ortho(-window.Size.x / 2.0f, window.Size.x / 2.0f, -window.Size.y / 2.0f, window.Size.y / 2.0f);
+        renderMesh(projection);
+        renderPreviews(projection);
+        m_Framebuffer->Unbind();
+    }
+    void SkinningEditorPanel::renderMesh(const glm::mat4& viewProjection)
+    {
+        m_Material->Set("u_ViewProjectionMatrix", viewProjection);
+        if (IS_SET(m_Flags, WeightBrush))
+            m_Material->Set("u_ColorEnabled", 1);
+        else
+            m_Material->Set("u_ColorEnabled", 0);
+
+        m_Material->Bind();
+        m_Shader->SetMat4("u_Transform", glm::mat4(1.0f));
+
+        m_VertexArray->Bind();
+        Renderer::DrawIndexed(PrimitiveType::Triangles, m_VertexArray->GetIndexBuffer()->GetCount());
+    }
+    void SkinningEditorPanel::renderPreviews(const glm::mat4& viewProjection)
+    {
+        Renderer2D::BeginScene(viewProjection);
         for (auto& triangle : m_Triangles)
             renderTriangle(triangle, m_Colors[TriangleColor]);
 
         if (m_FoundTriangle)
             renderTriangle(*m_FoundTriangle, m_Colors[TriangleHighlightColor]);
-        
+
         if (IS_SET(m_Flags, Flags::PreviewPose))
         {
             updateBoneHierarchy();
@@ -676,7 +704,7 @@ namespace XYZ {
                 decomposeBone(childBone, start, end, normal);
                 renderBone(m_PointRadius, start, end, normal, glm::vec4(childBone->Color, 1.0f));
                 return false;
-            });
+                });
             for (auto& vertex : m_PreviewVertices)
                 Renderer2D::SubmitCircle(glm::vec3(vertex.Position.x, vertex.Position.y, 0.0f), m_PointRadius, 20, m_Colors[VertexColor]);
         }
@@ -697,10 +725,14 @@ namespace XYZ {
                 glm::vec2 normal = { -dir.y, dir.x };
                 renderBone(m_PointRadius, childBone->Start, end, normal, glm::vec4(childBone->Color, 1.0f));
                 return false;
-            });
+                });
             for (auto& vertex : m_Vertices)
                 Renderer2D::SubmitCircle(glm::vec3(vertex.X, vertex.Y, 0.0f), m_PointRadius, 20, m_Colors[VertexColor]);
         }
+
+        Renderer2D::FlushLines();
+        Renderer2D::EndScene();
+        Renderer2D::EndScene();
     }
     void SkinningEditorPanel::renderTriangle(const Triangle& triangle, const glm::vec4& color)
     {

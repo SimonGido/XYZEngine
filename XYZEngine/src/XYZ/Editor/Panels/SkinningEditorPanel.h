@@ -140,6 +140,8 @@ namespace XYZ {
 
 
 		void renderAll();
+		void renderMesh(const glm::mat4& viewProjection);
+		void renderPreviews(const glm::mat4& viewProjection);
 		void renderTriangle(const Triangle& triangle, const glm::vec4& color);
 		void renderBone(float radius, const glm::vec2& start, const glm::vec2& end, const glm::vec2& normal, const glm::vec4& color);
 
