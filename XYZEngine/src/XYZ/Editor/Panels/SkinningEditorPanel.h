@@ -122,14 +122,19 @@ namespace XYZ {
 		void updateVertexBuffer();
 		void rebuildRenderBuffers();
 		void eraseEmptyPoints();
+		void eraseVertexAtPosition(const glm::vec2& pos);
+		void eraseTriangleAtPosition(const glm::vec2& pos);
 		void decomposeBone(PreviewBone* bone, glm::vec2& start, glm::vec2& end, glm::vec2& normal);
 
 		void handleBoneEdit();
 		void handleVertexEdit();
+		void handleWeightsBrush();
 
 		bool trianglesHaveIndex(uint32_t index) const;
+		glm::vec2 calculateTexCoord(const glm::vec2& pos);
 		glm::vec2 getPositionLocalToBone(const BoneVertex& vertex);
-		glm::vec2 applyBonesOnvertex(const BoneVertex& vertex);
+		glm::vec2 getPositionFromBones(const BoneVertex& vertex);
+		glm::vec3 getColorFromBoneWeights(const BoneVertex& vertex);
 		glm::vec2 getMouseWindowSpace() const;
 		std::pair<float, float> getMouseViewportSpace() const;
 
@@ -141,6 +146,7 @@ namespace XYZ {
 		Triangle* findTriangle(const glm::vec2& pos);
 		BoneVertex* findVertex(const glm::vec2& pos);
 		PreviewBone* findBone(const glm::vec2& pos);
+		void findVerticesInRadius(const glm::vec2& pos, float radius, std::vector<BoneVertex*>& vertices);
 	private:
 		const uint32_t m_PanelID;
 		const glm::vec4 m_Colors[Color::NumColors];

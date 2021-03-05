@@ -166,9 +166,40 @@ namespace XYZ {
     }
     void SkinningEditorPanel::OnEvent(Event& event)
     {
+        EventDispatcher dispatcher(event);
+        if (IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
+        {
+            dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&SkinningEditorPanel::onMouseButtonPress, this));
+            dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&SkinningEditorPanel::onMouseButtonRelease, this));
+            dispatcher.Dispatch<MouseScrollEvent>(Hook(&SkinningEditorPanel::onMouseScroll, this));
+        }
     }
     bool SkinningEditorPanel::onMouseButtonPress(MouseButtonPressEvent& event)
     {
+        if (event.IsButtonPressed(MouseCode::MOUSE_BUTTON_RIGHT))
+        {
+            if (m_FoundBone)
+                m_SelectedBone = m_FoundBone;
+            else if (m_FoundVertex)
+                m_SelectedVertex = m_FoundVertex;
+            else if (m_FoundTriangle)       
+                m_SelectedTriangle = m_FoundTriangle;
+
+
+            if (IS_SET(m_Flags, CreateVertex) && !m_Triangulated)
+            {
+                m_SelectedVertex = nullptr;
+                m_Vertices.push_back({ m_MousePosition.x, m_MousePosition.y });
+            }
+            else if (IS_SET(m_Flags, DeleteVertex) && !m_Triangulated)
+            {
+                eraseVertexAtPosition(m_MousePosition);
+            }
+            else if (IS_SET(m_Flags, DeleteTriangle))
+            {
+                eraseTriangleAtPosition(m_MousePosition);
+            }
+        }
         return false;
     }
     bool SkinningEditorPanel::onMouseButtonRelease(MouseButtonReleaseEvent& event)
@@ -183,6 +214,9 @@ namespace XYZ {
     {
         if (m_Vertices.size() < 3)
             return;
+
+        m_FoundTriangle = nullptr;
+        m_FoundVertex = nullptr;
 
         std::vector<tpp::Delaunay::Point> points;
         for (auto& p : m_Vertices)
@@ -282,10 +316,17 @@ namespace XYZ {
             {
                 BoneVertex vertexLocalToBone = vertex;
                 auto posLocalToBone = getPositionLocalToBone(vertexLocalToBone);
-                finalPos = applyBonesOnvertex(vertexLocalToBone);
+                vertexLocalToBone.X = posLocalToBone.x;
+                vertexLocalToBone.Y = posLocalToBone.y;
+                finalPos = getPositionFromBones(vertexLocalToBone);
+            }
+            glm::vec3 finalColor = vertex.Color;
+            if (IS_SET(m_Flags, WeightBrush))
+            {
+                finalColor = getColorFromBoneWeights(vertex);
             }
             m_PreviewVertices.push_back({
-                vertex.Color,
+                finalColor,
                 glm::vec3(finalPos, 0.0f),
                 CalculateTexCoord(glm::vec2(vertex.X, vertex.Y),m_ContextSize),
                 VertexBoneData()
@@ -397,6 +438,37 @@ namespace XYZ {
             }
         }
     }
+    void SkinningEditorPanel::eraseVertexAtPosition(const glm::vec2& pos)
+    {
+        uint32_t counter = 0;
+        for (auto& vertex : m_Vertices)
+        {
+            if (glm::distance(pos, glm::vec2(vertex.X, vertex.Y)) < m_PointRadius)
+            {
+                m_Vertices.erase(m_Vertices.begin() + counter);
+                m_SelectedVertex = nullptr;
+                return;
+            }
+            counter++;
+        }
+    }
+    void SkinningEditorPanel::eraseTriangleAtPosition(const glm::vec2& pos)
+    {
+        uint32_t counter = 0;
+        for (auto& triangle : m_Triangles)
+        {
+            BoneVertex& first = m_Vertices[triangle.First];
+            BoneVertex& second = m_Vertices[triangle.Second];
+            BoneVertex& third = m_Vertices[triangle.Third];
+            if (Math::PointInTriangle(pos, glm::vec2(first.X, first.Y), glm::vec2(second.X, second.Y), glm::vec2(third.X, third.Y)))
+            {
+                m_SelectedTriangle = nullptr;
+                m_Triangles.erase(m_Triangles.begin() + counter);
+                return;
+            }
+            counter++;
+        }
+    }
     void SkinningEditorPanel::decomposeBone(PreviewBone* bone, glm::vec2& start, glm::vec2& end, glm::vec2& normal)
     {
         glm::vec3 scale;
@@ -444,6 +516,63 @@ namespace XYZ {
         }
         updateVertexBuffer();
     }
+    void SkinningEditorPanel::handleWeightsBrush()
+    {
+        Renderer2D::SubmitCircle(glm::vec3(m_MousePosition, 0.0f), m_WeightBrushRadius, 30, glm::vec4(1.0f, 0.8f, 1.0f, 1.0f));
+        std::vector<BoneVertex*> vertices;
+        findVerticesInRadius(m_MousePosition, m_WeightBrushRadius, vertices);
+
+        if (m_SelectedBone)
+        {
+            float val = 0.0f;
+            if (Input::IsMouseButtonPressed(MouseCode::MOUSE_BUTTON_RIGHT))
+                val = 1.0f;
+            else if (Input::IsMouseButtonPressed(MouseCode::MOUSE_BUTTON_LEFT))
+                val = -1.0f;
+            else
+                return;
+           
+            for (auto vertex : vertices)
+            {
+                float dist = glm::distance(glm::vec2(vertex->X, vertex->Y), m_MousePosition);
+                bool exists = false;
+                for (uint32_t i = 0; i < 4; ++i)
+                {
+                    if (vertex->Data.IDs[i] == m_SelectedBone->ID)
+                    {
+                        exists = true;
+                        vertex->Data.Weights[i] += val * (1.0f - (dist / m_WeightBrushRadius)) * m_WeightBrushStrength;
+                        if (vertex->Data.Weights[i] > 1.0f)
+                        {
+                            vertex->Data.Weights[i] = 1.0f;
+                        }
+                        else if (vertex->Data.Weights[i] < 0.0f)
+                        {
+                            vertex->Data.Weights[i] = 0.0f;
+                            vertex->Data.IDs[i] = -1;
+                        }
+                    }
+                }
+                // Bone was not found, so add new id
+                if (!exists)
+                {
+                    for (uint32_t i = 0; i < 4; ++i)
+                    {
+                        if (vertex->Data.IDs[i] == -1)
+                        {
+                            vertex->Data.IDs[i] = m_SelectedBone->ID;
+                            vertex->Data.Weights[i] += val * (1.0f - (dist / m_WeightBrushRadius)) * m_WeightBrushStrength;
+                            if (vertex->Data.Weights[i] > 1.0f)
+                                vertex->Data.Weights[i] = 1.0f;
+                            else if (vertex->Data.Weights[i] < 0.0f)
+                                vertex->Data.Weights[i] = 0.0f;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
     bool SkinningEditorPanel::trianglesHaveIndex(uint32_t index) const
     {
         for (auto& triangle : m_Triangles)
@@ -452,6 +581,11 @@ namespace XYZ {
                 return true;
         }
         return false;
+    }
+    glm::vec2 SkinningEditorPanel::calculateTexCoord(const glm::vec2& pos)
+    {
+        glm::vec2 position = pos + m_ContextSize / 2.0f;
+        return glm::vec2(position.x / m_ContextSize.x, position.y / m_ContextSize.y);
     }
     glm::vec2 SkinningEditorPanel::getPositionLocalToBone(const BoneVertex& vertex)
     {
@@ -470,7 +604,24 @@ namespace XYZ {
             return { vertex.X, vertex.Y };
         return glm::inverse(boneTransform) * glm::vec4(vertex.X, vertex.Y, 0.0f, 1.0f);
     }
-    glm::vec2 SkinningEditorPanel::applyBonesOnvertex(const BoneVertex& vertex)
+    glm::vec3 SkinningEditorPanel::getColorFromBoneWeights(const BoneVertex& vertex)
+    {
+        bool hasBone = false;
+        glm::vec3 color = glm::vec3(1.0f);
+        for (uint32_t i = 0; i < 4; ++i)
+        {
+            if (vertex.Data.IDs[i] != -1)
+            {
+                PreviewBone* bone = static_cast<PreviewBone*>(m_BoneHierarchy.GetData(vertex.Data.IDs[i]));
+                color *= bone->Color * vertex.Data.Weights[i];
+                hasBone = true;
+            }
+        }
+        if (!hasBone)
+            return vertex.Color;
+        return color;
+    }
+    glm::vec2 SkinningEditorPanel::getPositionFromBones(const BoneVertex& vertex)
     {
         bool hasBone = false;
         glm::mat4 boneTransform = glm::mat4(0.0f);
@@ -640,6 +791,17 @@ namespace XYZ {
             return false;
         });
         return bone;
+    }
+
+    void SkinningEditorPanel::findVerticesInRadius(const glm::vec2& pos, float radius, std::vector<BoneVertex*>& vertices)
+    {
+        for (auto& vertex : m_Vertices)
+        {
+            if (glm::distance(glm::vec2(vertex.X, vertex.Y), pos) < radius)
+            {
+                vertices.push_back(&vertex);
+            }
+        }
     }
 
 }
