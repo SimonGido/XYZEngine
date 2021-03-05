@@ -10,6 +10,7 @@ namespace XYZ {
 	{
 	}
 
+
 	MemoryPool::~MemoryPool()
 	{
 		for (auto& block : m_Blocks)

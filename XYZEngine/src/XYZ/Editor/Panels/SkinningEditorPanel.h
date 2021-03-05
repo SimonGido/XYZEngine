@@ -116,6 +116,7 @@ namespace XYZ {
 		bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
 		bool onMouseScroll(MouseScrollEvent& event);
 
+		void clear();
 		void triangulate();
 		void initializePose();
 		void updateBoneHierarchy();
@@ -162,7 +163,6 @@ namespace XYZ {
 		Ref<SubTexture> m_RenderSubTexture;
 		Ref<VertexArray> m_VertexArray;
 		Ref<VertexBuffer> m_VertexBuffer;
-		Ref<Material> m_Material;
 		Ref<Shader> m_Shader;
 		glm::vec2 m_ViewportSize;
 		glm::vec2 m_MousePosition;

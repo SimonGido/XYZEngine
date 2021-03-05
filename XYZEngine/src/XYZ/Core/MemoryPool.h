@@ -52,6 +52,7 @@ namespace XYZ {
 				mergeFreeChunks();
 			}
 		}
+
 	private:
 		void mergeFreeChunks();
 		std::pair<uint8_t, uint32_t> findAvailableIndex(uint32_t size);

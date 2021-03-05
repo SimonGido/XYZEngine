@@ -19,10 +19,8 @@ namespace XYZ {
 
     static glm::vec3 HSVtoRGB(float H, float S, float V)
     {
-        if (H > 360 || H < 0 || S > 100 || S < 0 || V > 100 || V < 0)
-        {
-            XYZ_ASSERT(false, "");
-        }
+        XYZ_ASSERT(H > 360 || H < 0 || S > 100 || S < 0 || V > 100 || V < 0, "");
+
         float s = S / 100;
         float v = V / 100;
         float C = s * v;
@@ -108,8 +106,6 @@ namespace XYZ {
         InGui::SetWindowFlags(m_PanelID, flags);
 
         m_Shader = Shader::Create("Assets/Shaders/SkinningEditor.glsl");
-        m_Material = Ref<Material>::Create(m_Shader);
-        m_Material->Set("u_ColorEnabled", 0);
 
         m_ViewportSize = window.Size;
         m_MousePosition = glm::vec2(0.0f);
@@ -137,8 +133,6 @@ namespace XYZ {
         m_ContextSize.x = (float)m_Context->GetTexture()->GetWidth();
         m_ContextSize.y = (float)m_Context->GetTexture()->GetHeight();
 
-        m_Material->ClearTextures();
-        m_Material->Set("u_Texture", m_Context->GetTexture(), 0);
         rebuildRenderBuffers();
     }
     void SkinningEditorPanel::OnUpdate(Timestep ts)
@@ -159,11 +153,91 @@ namespace XYZ {
             {
                 handleVertexEdit();
             }
+            else if (IS_SET(m_Flags, WeightBrush))
+            {
+                handleWeightsBrush();
+            }
         }
         renderAll();
     }
     void SkinningEditorPanel::OnInGuiRender()
     {
+        if (m_Context.Raw())
+        {
+            if (InGui::ImageWindow(m_PanelID, "Sprite Editor", glm::vec2(0.0f), glm::vec2(200.0f), m_RenderSubTexture))
+            {
+                glm::vec2 size = { 150.0f, InGuiWindow::PanelHeight };
+                if (InGui::BeginGroup("Bones", size, m_CategoriesOpen[Bones]))
+                {
+                    if (IS_SET(InGui::Button("Preview Pose", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
+                    {
+                        m_Flags = PreviewPose;
+                    }
+                    InGui::Separator();
+                    if (IS_SET(InGui::Button("Create Bone", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
+                    {
+                        m_Flags = CreateBone;
+                    }
+                    InGui::Separator();
+                    if (IS_SET(InGui::Button("Edit Bone", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
+                    {
+                        m_Flags = EditBone;
+                    }
+                    InGui::Separator();
+                    if (IS_SET(InGui::Button("Delete Bone", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
+                    {
+                        m_Flags = DeleteBone;
+                    }
+                }
+                InGui::Separator();
+                if (InGui::BeginGroup("Geometry", size, m_CategoriesOpen[Geometry]))
+                {
+                    if (IS_SET(InGui::Button("Create Vertex", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
+                    {
+                        m_Flags = CreateVertex;
+                    }
+                    InGui::Separator();
+                    if (IS_SET(InGui::Button("Edit Vertex", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
+                    {
+                        m_Flags = EditVertex;
+                    }
+                    InGui::Separator();
+                    if (IS_SET(InGui::Button("Delete Vertex", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
+                    {           
+                        m_Flags = DeleteVertex;
+                    }
+                    InGui::Separator();
+                    if (IS_SET(InGui::Button("Delete Triangle", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
+                    {
+                        m_Flags = DeleteTriangle;
+                    }
+                    InGui::Separator();
+                    if (IS_SET(InGui::Button("Clear", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
+                    {
+                        clear();
+                    }
+                    InGui::Separator();
+                    if (IS_SET(InGui::Button("Triangulate", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
+                    {
+                        triangulate();
+                    }
+                }
+                InGui::Separator();
+                if (InGui::BeginGroup("Weights", size, m_CategoriesOpen[Weights]))
+                {
+                    if (IS_SET(InGui::Button("Weight Brush", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
+                    {
+                        m_Flags = WeightBrush;
+                    }
+                }
+                InGui::Separator();
+
+                if (!IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
+                {
+                }
+            }
+            InGui::End();
+        }
     }
     void SkinningEditorPanel::OnEvent(Event& event)
     {
@@ -179,27 +253,28 @@ namespace XYZ {
     {
         if (event.IsButtonPressed(MouseCode::MOUSE_BUTTON_RIGHT))
         {
-            if (m_FoundBone)
-                m_SelectedBone = m_FoundBone;
-            else if (m_FoundVertex)
-                m_SelectedVertex = m_FoundVertex;
-            else if (m_FoundTriangle)       
-                m_SelectedTriangle = m_FoundTriangle;
-
-
             if (IS_SET(m_Flags, CreateVertex) && !m_Triangulated)
             {
                 m_SelectedVertex = nullptr;
                 m_Vertices.push_back({ m_MousePosition.x, m_MousePosition.y });
+                return true;
             }
             else if (IS_SET(m_Flags, DeleteVertex) && !m_Triangulated)
             {
                 eraseVertexAtPosition(m_MousePosition);
+                return true;
             }
             else if (IS_SET(m_Flags, DeleteTriangle))
             {
                 eraseTriangleAtPosition(m_MousePosition);
+                return true;
             }
+            else if (m_FoundBone)
+                m_SelectedBone = m_FoundBone;
+            else if (m_FoundVertex)
+                m_SelectedVertex = m_FoundVertex;
+            else if (m_FoundTriangle)
+                m_SelectedTriangle = m_FoundTriangle;
         }
         return false;
     }
@@ -210,6 +285,24 @@ namespace XYZ {
     bool SkinningEditorPanel::onMouseScroll(MouseScrollEvent& event)
     {
         return false;
+    }
+    void SkinningEditorPanel::clear()
+    {
+        m_Flags = 0;
+        m_Triangulated = false;
+        m_Triangles.clear();
+        m_Vertices.clear();
+        m_PreviewVertices.clear();
+        for (auto bone : m_Bones)
+            m_BonePool.Deallocate<PreviewBone>(bone);
+       
+        m_Bones.clear();
+        m_FoundBone = nullptr;
+        m_FoundVertex = nullptr;
+        m_FoundTriangle = nullptr;
+        m_SelectedBone = nullptr;
+        m_SelectedTriangle = nullptr;
+        m_SelectedVertex = nullptr;
     }
     void SkinningEditorPanel::triangulate()
     {
@@ -512,10 +605,14 @@ namespace XYZ {
     {
         if (m_SelectedVertex)
         {
-            m_SelectedVertex->X = m_MousePosition.x;
-            m_SelectedVertex->Y = m_MousePosition.y;
+            if (Input::IsMouseButtonPressed(MouseCode::MOUSE_BUTTON_RIGHT))
+            {
+                m_SelectedVertex->X = m_MousePosition.x;
+                m_SelectedVertex->Y = m_MousePosition.y;
+                
+                updateVertexBuffer();
+            }
         }
-        updateVertexBuffer();
     }
     void SkinningEditorPanel::handleWeightsBrush()
     {
@@ -673,14 +770,15 @@ namespace XYZ {
     }
     void SkinningEditorPanel::renderMesh(const glm::mat4& viewProjection)
     {
-        m_Material->Set("u_ViewProjectionMatrix", viewProjection);
+        m_Shader->SetMat4("u_ViewProjectionMatrix", viewProjection);
         if (IS_SET(m_Flags, WeightBrush))
-            m_Material->Set("u_ColorEnabled", 1);
+            m_Shader->SetInt("u_ColorEnabled", 1);
         else
-            m_Material->Set("u_ColorEnabled", 0);
+            m_Shader->SetInt("u_ColorEnabled", 0);
 
-        m_Material->Bind();
         m_Shader->SetMat4("u_Transform", glm::mat4(1.0f));
+        m_Shader->Bind();
+        m_Context->GetTexture()->Bind();
 
         m_VertexArray->Bind();
         Renderer::DrawIndexed(PrimitiveType::Triangles, m_VertexArray->GetIndexBuffer()->GetCount());
@@ -835,5 +933,4 @@ namespace XYZ {
             }
         }
     }
-
 }
