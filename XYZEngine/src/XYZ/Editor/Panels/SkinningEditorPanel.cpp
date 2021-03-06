@@ -301,6 +301,11 @@ namespace XYZ {
                 m_SelectedVertex = m_FoundVertex;
                 m_SelectedTriangle = m_FoundTriangle;
             }
+            else
+            {
+                if (m_FoundBone)
+                    m_SelectedBone = m_FoundBone;
+            }
         }
         else if (event.IsButtonPressed(MouseCode::MOUSE_BUTTON_MIDDLE))
         {
