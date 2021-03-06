@@ -17,6 +17,13 @@ namespace XYZ {
 
     static uint32_t s_NextBone = 1;
 
+    static uint16_t ToggleBit(uint16_t flags, uint16_t flag)
+    {
+        uint16_t result = flag;
+        if (IS_SET(flags, flag))
+            result = 0;
+        return result;
+    }
     static glm::vec3 HSVtoRGB(float H, float S, float V)
     {
         XYZ_ASSERT(!(H > 360 || H < 0 || S > 100 || S < 0 || V > 100 || V < 0), "");
@@ -92,7 +99,7 @@ namespace XYZ {
             glm::vec4(0.0f, 0.7f, 0.8f, 1.0f),
             glm::vec4(0.8f, 0.8f, 0.8f, 0.5f),
             glm::vec4(0.9f, 0.9f, 0.9f, 1.0f),
-            glm::vec4(0.9f, 0.9f, 0.9f, 1.0f)
+            glm::vec4(0.9f, 0.9f, 0.3f, 1.0f)
         },
         m_PointRadius(5.0f)
     {
@@ -177,22 +184,23 @@ namespace XYZ {
                 {
                     if (IS_SET(InGui::Button("Preview Pose", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
                     {
-                        m_Flags = PreviewPose;
+                        m_Flags = ToggleBit(m_Flags, PreviewPose);
+                        initializePose();
                     }
                     InGui::Separator();
                     if (IS_SET(InGui::Button("Create Bone", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
                     {
-                        m_Flags = CreateBone;
+                        m_Flags = ToggleBit(m_Flags, CreateBone);
                     }
                     InGui::Separator();
                     if (IS_SET(InGui::Button("Edit Bone", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
                     {
-                        m_Flags = EditBone;
+                        m_Flags = ToggleBit(m_Flags, EditBone);
                     }
                     InGui::Separator();
                     if (IS_SET(InGui::Button("Delete Bone", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
                     {
-                        m_Flags = DeleteBone;
+                        m_Flags = ToggleBit(m_Flags, DeleteBone);
                     }
                 }
                 InGui::Separator();
@@ -200,22 +208,22 @@ namespace XYZ {
                 {
                     if (IS_SET(InGui::Button("Create Vertex", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
                     {
-                        m_Flags = CreateVertex;
+                        m_Flags = ToggleBit(m_Flags, CreateVertex);
                     }
                     InGui::Separator();
                     if (IS_SET(InGui::Button("Edit Vertex", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
                     {
-                        m_Flags = EditVertex;
+                        m_Flags = ToggleBit(m_Flags, EditVertex);
                     }
                     InGui::Separator();
                     if (IS_SET(InGui::Button("Delete Vertex", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
                     {           
-                        m_Flags = DeleteVertex;
+                        m_Flags = ToggleBit(m_Flags, DeleteVertex);
                     }
                     InGui::Separator();
                     if (IS_SET(InGui::Button("Delete Triangle", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
                     {
-                        m_Flags = DeleteTriangle;
+                        m_Flags = ToggleBit(m_Flags, DeleteTriangle);
                     }
                     InGui::Separator();
                     if (IS_SET(InGui::Button("Clear", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
@@ -233,7 +241,7 @@ namespace XYZ {
                 {
                     if (IS_SET(InGui::Button("Weight Brush", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
                     {
-                        m_Flags = WeightBrush;
+                        m_Flags = ToggleBit(m_Flags, WeightBrush);
                     }
                 }
                 InGui::Separator();
@@ -277,14 +285,21 @@ namespace XYZ {
             else if (IS_SET(m_Flags, DeleteTriangle))
             {
                 eraseTriangleAtPosition(m_MousePosition);
+                eraseEmptyPoints();
                 return true;
             }
-            else if (m_FoundBone)
+            if (!IS_SET(m_Flags, WeightBrush))
+            {
                 m_SelectedBone = m_FoundBone;
-            else if (m_FoundVertex)
                 m_SelectedVertex = m_FoundVertex;
-            else if (m_FoundTriangle)
                 m_SelectedTriangle = m_FoundTriangle;
+            }
+        }
+        else if (event.IsButtonPressed(MouseCode::MOUSE_BUTTON_MIDDLE))
+        {
+            m_SelectedBone = nullptr;
+            m_SelectedVertex = nullptr;
+            m_SelectedTriangle = nullptr;
         }
         return false;
     }
@@ -294,6 +309,10 @@ namespace XYZ {
     }
     bool SkinningEditorPanel::onMouseScroll(MouseScrollEvent& event)
     {
+        if (IS_SET(m_Flags, WeightBrush))
+        {
+            m_WeightBrushRadius -= event.GetOffsetY();
+        }
         return false;
     }
     void SkinningEditorPanel::clear()
@@ -431,7 +450,7 @@ namespace XYZ {
             }
             m_PreviewVertices.push_back({
                 finalColor,
-                glm::vec3(finalPos, 0.0f),
+                glm::vec3(finalPos, 1.0f),
                 CalculateTexCoord(glm::vec2(vertex.X, vertex.Y),m_ContextSize),
                 VertexBoneData()
              });
@@ -524,8 +543,7 @@ namespace XYZ {
         std::vector<uint32_t> erasedPoints;
         for (uint32_t i = 0; i < m_Vertices.size(); ++i)
         {
-            bool found = trianglesHaveIndex(i);
-            if (!found)
+            if (!trianglesHaveIndex(i))
                 erasedPoints.push_back(i);
         }
         for (int32_t i = erasedPoints.size() - 1; i >= 0; --i)
@@ -568,6 +586,7 @@ namespace XYZ {
             {
                 m_SelectedTriangle = nullptr;
                 m_Triangles.erase(m_Triangles.begin() + counter);
+                rebuildRenderBuffers();
                 return;
             }
             counter++;
@@ -597,9 +616,10 @@ namespace XYZ {
         {
             glm::vec2 dir = glm::normalize(m_MousePosition - m_NewBoneData.Start);
             glm::vec2 normal = { -dir.y, dir.x };
-            Renderer2D::SubmitCircle(glm::vec3(m_NewBoneData.Start, 0.0f), m_PointRadius, 20, color);
-            Renderer2D::SubmitLine(glm::vec3(m_NewBoneData.Start + normal * m_PointRadius, 0.0f), glm::vec3(m_MousePosition, 0.0f), glm::vec4(color.x, color.y, color.z, 0.5f));
-            Renderer2D::SubmitLine(glm::vec3(m_NewBoneData.Start - normal * m_PointRadius, 0.0f), glm::vec3(m_MousePosition, 0.0f), glm::vec4(color.x, color.y, color.z, 0.5f));
+            Renderer2D::SubmitCircle(glm::vec3(m_NewBoneData.Start, 0.0f), m_PointRadius, 20, glm::vec4(color.x, color.y, color.z, 0.2f));
+            Renderer2D::SubmitCircle(glm::vec3(m_MousePosition, 0.0f), m_PointRadius, 20, glm::vec4(color.x, color.y, color.z, 0.2f));
+            Renderer2D::SubmitLine(glm::vec3(m_NewBoneData.Start + normal * m_PointRadius, 0.0f), glm::vec3(m_MousePosition, 0.0f), glm::vec4(color.x, color.y, color.z, 0.2f));
+            Renderer2D::SubmitLine(glm::vec3(m_NewBoneData.Start - normal * m_PointRadius, 0.0f), glm::vec3(m_MousePosition, 0.0f), glm::vec4(color.x, color.y, color.z, 0.2f));
         }
         else if (m_FoundBone)
         {
@@ -607,7 +627,6 @@ namespace XYZ {
             if (glm::distance(m_MousePosition, end) < m_PointRadius)
             {
                 Renderer2D::SubmitCircle(glm::vec3(end, 0.0f), m_PointRadius, 20, color);
-                newBoneStart = end;
             }
         }
         else if (m_SelectedBone)
@@ -615,8 +634,8 @@ namespace XYZ {
             glm::vec2 dir = glm::normalize(m_MousePosition - m_SelectedBone->WorldStart);
             glm::vec2 normal = { -dir.y, dir.x };
             Renderer2D::SubmitCircle(glm::vec3(m_MousePosition, 0.0f), m_PointRadius, 20, color);
-            Renderer2D::SubmitLine(glm::vec3(m_MousePosition + normal * m_PointRadius, 0.0f), glm::vec3(m_SelectedBone->WorldStart, 0.0f), glm::vec4(color.x, color.y, color.z, 0.5f));
-            Renderer2D::SubmitLine(glm::vec3(m_MousePosition - normal * m_PointRadius, 0.0f), glm::vec3(m_SelectedBone->WorldStart, 0.0f), glm::vec4(color.x, color.y, color.z, 0.5f));
+            Renderer2D::SubmitLine(glm::vec3(m_MousePosition + normal * m_PointRadius, 0.0f), glm::vec3(m_SelectedBone->WorldStart, 0.0f), glm::vec4(color.x, color.y, color.z, 0.2f));
+            Renderer2D::SubmitLine(glm::vec3(m_MousePosition - normal * m_PointRadius, 0.0f), glm::vec3(m_SelectedBone->WorldStart, 0.0f), glm::vec4(color.x, color.y, color.z, 0.2f));
         }       
         else
         {
@@ -629,6 +648,8 @@ namespace XYZ {
         {
             m_NewBoneData.Creating = true;
             m_NewBoneData.Parent = m_FoundBone;
+            if (!m_FoundBone)
+                m_NewBoneData.Parent = m_SelectedBone;
             m_NewBoneData.Start = m_MousePosition;
         }
         else
@@ -641,7 +662,8 @@ namespace XYZ {
             {
                 newBone->ID = m_BoneHierarchy.Insert(newBone, m_NewBoneData.Parent->ID);
                 glm::vec2 parentWorldEnd = m_NewBoneData.Parent->WorldStart + m_NewBoneData.Parent->End;
-                newBone->End = m_MousePosition - newBone->Start - m_NewBoneData.Parent->End;
+                newBone->End = m_MousePosition - newBone->Start;
+                newBone->Start -= parentWorldEnd;
             }
             else
             {
@@ -743,6 +765,7 @@ namespace XYZ {
                     }
                 }
             }
+            updateVertexBuffer();
         }
     }
     bool SkinningEditorPanel::trianglesHaveIndex(uint32_t index) const
@@ -878,6 +901,8 @@ namespace XYZ {
                 glm::vec2 start, end, normal;
                 decomposeBone(childBone, start, end, normal);
                 renderBone(m_PointRadius, start, end, normal, glm::vec4(childBone->Color, 1.0f));
+                if (m_SelectedBone && m_SelectedBone->ID == childBone->ID)
+                    renderBone(m_PointRadius * 1.2f, childBone->WorldStart, end, normal * 1.2f, m_Colors[BoneHighlightColor]);
                 return false;
                 });
             for (auto& vertex : m_PreviewVertices)
@@ -900,6 +925,8 @@ namespace XYZ {
                 glm::vec2 dir = glm::normalize(end - childBone->WorldStart);
                 glm::vec2 normal = { -dir.y, dir.x };
                 renderBone(m_PointRadius, childBone->WorldStart, end, normal, glm::vec4(childBone->Color, 1.0f));
+                if (m_SelectedBone && m_SelectedBone->ID == childBone->ID)
+                    renderBone(m_PointRadius * 1.2f, childBone->WorldStart, end, normal * 1.2f, m_Colors[BoneHighlightColor]);
                 return false;
                 });
             for (auto& vertex : m_Vertices)
@@ -937,8 +964,9 @@ namespace XYZ {
     void SkinningEditorPanel::renderBone(float radius, const glm::vec2& start, const glm::vec2& end, const glm::vec2& normal, const glm::vec4& color)
     {
         Renderer2D::SubmitCircle(glm::vec3(start, 0.0f), radius, 20, color);
-        Renderer2D::SubmitLine(glm::vec3(start + (normal * radius),0.0f), glm::vec3(end.x, end.y, 0.0f), color);
-        Renderer2D::SubmitLine(glm::vec3(start - (normal * radius),0.0f), glm::vec3(end.x, end.y, 0.0f), color);
+        Renderer2D::SubmitCircle(glm::vec3(end, 0.0f), radius, 20, color);
+        Renderer2D::SubmitLine(glm::vec3(start + (normal * radius),0.0f), glm::vec3(end, 0.0f), color);
+        Renderer2D::SubmitLine(glm::vec3(start - (normal * radius),0.0f), glm::vec3(end, 0.0f), color);
     }
 
    
@@ -990,7 +1018,9 @@ namespace XYZ {
             glm::vec2 v1 = start + (normal * m_PointRadius);
             glm::vec2 v2 = start - (normal * m_PointRadius);
             
-            if (glm::distance(pos, start) < m_PointRadius || Math::PointInTriangle(pos, v1, v2, end))
+            if (glm::distance(pos, start) < m_PointRadius 
+             || glm::distance(pos, end) < m_PointRadius 
+             || Math::PointInTriangle(pos, v1, v2, end))
             {
                 bone = childBone;
                 return true;
