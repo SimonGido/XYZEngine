@@ -657,12 +657,17 @@ namespace XYZ {
     }
     void SkinningEditorPanel::handleBoneCreate()
     {
-        if (!m_NewBoneData.Creating)
+        if (m_FoundBone)
         {
+            m_SelectedBone = m_FoundBone;
+            // It is not the end of the bone so do not start new bone
+            if (glm::distance(m_MousePosition, m_SelectedBone->WorldStart + m_SelectedBone->End) > m_PointRadius)
+                return;
+        }
+        if (!m_NewBoneData.Creating)
+        {       
             m_NewBoneData.Creating = true;
-            m_NewBoneData.Parent = m_FoundBone;
-            if (!m_FoundBone)
-                m_NewBoneData.Parent = m_SelectedBone;
+            m_NewBoneData.Parent = m_SelectedBone;
             m_NewBoneData.Start = m_MousePosition;
         }
         else
@@ -922,6 +927,8 @@ namespace XYZ {
             m_BoneHierarchy.Traverse([&](void* parent, void* child) -> bool {
 
                 PreviewBone* childBone = static_cast<PreviewBone*>(child);
+                if (parent)
+                    renderBoneRelation(static_cast<PreviewBone*>(parent), childBone);
                 glm::vec2 start, end, normal;
                 decomposeBone(childBone, start, end, normal);
                 renderBone(m_PointRadius, start, end, normal, glm::vec4(childBone->Color, 1.0f));
@@ -945,7 +952,9 @@ namespace XYZ {
                     glm::vec2 parentBoneEnd = parentBone->WorldStart + parentBone->End;
                     childBone->WorldStart += parentBoneEnd;
                     end += parentBoneEnd;
-                }
+
+                    renderBoneRelation(parentBone, childBone);
+                }      
                 glm::vec2 dir = glm::normalize(end - childBone->WorldStart);
                 glm::vec2 normal = { -dir.y, dir.x };
                 renderBone(m_PointRadius, childBone->WorldStart, end, normal, glm::vec4(childBone->Color, 1.0f));
@@ -960,6 +969,14 @@ namespace XYZ {
         Renderer2D::FlushLines();
         Renderer2D::EndScene();
         Renderer2D::EndScene();
+    }
+    void SkinningEditorPanel::renderBoneRelation(PreviewBone* parent, PreviewBone* child)
+    {
+        glm::vec2 childStart = parent->WorldStart + parent->End + child->Start;
+        glm::vec2 dir = glm::normalize(childStart - parent->WorldStart);
+        glm::vec2 normal = { -dir.y, dir.x };
+        Renderer2D::SubmitLine(glm::vec3(parent->WorldStart + normal * m_PointRadius, 0.0f), glm::vec3(childStart, 0.0f), glm::vec4(child->Color, 0.2f));
+        Renderer2D::SubmitLine(glm::vec3(parent->WorldStart - normal * m_PointRadius, 0.0f), glm::vec3(childStart, 0.0f), glm::vec4(child->Color, 0.2f));
     }
     void SkinningEditorPanel::renderTriangle(const Triangle& triangle, const glm::vec4& color)
     {
