@@ -171,6 +171,11 @@ namespace XYZ {
                 handleWeightsBrush();
             }
         }
+        if (IS_SET(m_Flags, PreviewPose))
+        {
+            updateBoneHierarchy();
+            updateVertexBuffer();
+        }
         renderAll();
     }
     void SkinningEditorPanel::OnInGuiRender()
@@ -186,6 +191,7 @@ namespace XYZ {
                     {
                         m_Flags = ToggleBit(m_Flags, PreviewPose);
                         initializePose();
+                        updateVertexBuffer();
                     }
                     InGui::Separator();
                     if (IS_SET(InGui::Button("Create Bone", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
@@ -195,7 +201,9 @@ namespace XYZ {
                     InGui::Separator();
                     if (IS_SET(InGui::Button("Edit Bone", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
                     {
+                        uint16_t previewPose = m_Flags & PreviewPose;
                         m_Flags = ToggleBit(m_Flags, EditBone);
+                        m_Flags |= previewPose;
                     }
                     InGui::Separator();
                     if (IS_SET(InGui::Button("Delete Bone", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
@@ -285,7 +293,6 @@ namespace XYZ {
             else if (IS_SET(m_Flags, DeleteTriangle))
             {
                 eraseTriangleAtPosition(m_MousePosition);
-                eraseEmptyPoints();
                 return true;
             }
             if (!IS_SET(m_Flags, WeightBrush))
@@ -402,7 +409,7 @@ namespace XYZ {
             if (parent)
             {
                 PreviewBone* parentBone = static_cast<PreviewBone*>(parent);
-                childBone->PreviewTransform = glm::translate(glm::vec3(parentBone->End, 0.0f));
+                childBone->PreviewTransform = glm::translate(glm::vec3(parentBone->End + childBone->Start, 0.0f));
             }
             else
             {
@@ -586,6 +593,7 @@ namespace XYZ {
             {
                 m_SelectedTriangle = nullptr;
                 m_Triangles.erase(m_Triangles.begin() + counter);
+                eraseEmptyPoints();
                 rebuildRenderBuffers();
                 return;
             }
@@ -777,12 +785,24 @@ namespace XYZ {
         }
         return false;
     }
-    glm::vec2 SkinningEditorPanel::calculateTexCoord(const glm::vec2& pos)
+    glm::mat4 SkinningEditorPanel::getBoneDefaultTransform(PreviewBone* bone)
+    {
+        if (auto parent = m_BoneHierarchy.GetParentData(bone->ID))
+        {
+            PreviewBone* parentBone = static_cast<PreviewBone*>(parent);
+            return glm::translate(glm::vec3(parentBone->End + bone->Start, 0.0f));
+        }
+        else
+        {
+            return glm::translate(glm::vec3(bone->Start, 0.0f));
+        }
+    }
+    glm::vec2 SkinningEditorPanel::calculateTexCoord(const glm::vec2& pos) const
     {
         glm::vec2 position = pos + m_ContextSize / 2.0f;
         return glm::vec2(position.x / m_ContextSize.x, position.y / m_ContextSize.y);
     }
-    glm::vec2 SkinningEditorPanel::getPositionLocalToBone(const BoneVertex& vertex)
+    glm::vec2 SkinningEditorPanel::getPositionLocalToBone(const BoneVertex& vertex) 
     {
         bool hasBone = false;
         glm::mat4 boneTransform = glm::mat4(0.0f);
@@ -791,7 +811,7 @@ namespace XYZ {
             if (vertex.Data.IDs[i] != -1)
             {
                 PreviewBone* bone = static_cast<PreviewBone*>(m_BoneHierarchy.GetData(vertex.Data.IDs[i]));
-                boneTransform += bone->PreviewFinalTransform * vertex.Data.Weights[i];
+                boneTransform += getBoneDefaultTransform(bone) * vertex.Data.Weights[i];
                 hasBone = true;
             }
         }
@@ -799,7 +819,7 @@ namespace XYZ {
             return { vertex.X, vertex.Y };
         return glm::inverse(boneTransform) * glm::vec4(vertex.X, vertex.Y, 0.0f, 1.0f);
     }
-    glm::vec3 SkinningEditorPanel::getColorFromBoneWeights(const BoneVertex& vertex)
+    glm::vec3 SkinningEditorPanel::getColorFromBoneWeights(const BoneVertex& vertex) 
     {
         bool hasBone = false;
         glm::vec3 color = glm::vec3(1.0f);
@@ -894,7 +914,6 @@ namespace XYZ {
 
         if (IS_SET(m_Flags, Flags::PreviewPose))
         {
-            updateBoneHierarchy();
             m_BoneHierarchy.Traverse([&](void* parent, void* child) -> bool {
 
                 PreviewBone* childBone = static_cast<PreviewBone*>(child);
