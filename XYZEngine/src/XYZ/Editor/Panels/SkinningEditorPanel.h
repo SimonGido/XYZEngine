@@ -65,6 +65,13 @@ namespace XYZ {
 			uint32_t Third = 0;
 		};
 
+		struct Submesh
+		{
+			std::vector<BoneVertex> Vertices;
+			std::vector<Triangle> Triangles;
+			bool Triangulated;
+		};
+
 		struct PreviewBone
 		{
 			glm::vec2 WorldStart = glm::vec2(0.0f);
@@ -79,6 +86,7 @@ namespace XYZ {
 			glm::vec3   Color;
 			bool Open = false;
 		};
+
 		enum Categories
 		{
 			Bones,
@@ -94,12 +102,13 @@ namespace XYZ {
 			EditBone = BIT(2),
 			DeleteBone = BIT(3),
 
-			CreateVertex = BIT(4),
-			EditVertex = BIT(5),
-			DeleteVertex = BIT(6),
-			DeleteTriangle = BIT(7),
+			CreateSubMesh = BIT(4),
+			CreateVertex = BIT(5),
+			EditVertex = BIT(6),
+			DeleteVertex = BIT(7),
+			DeleteTriangle = BIT(8),
 
-			WeightBrush = BIT(8)
+			WeightBrush = BIT(9)
 		};
 
 		enum Color
@@ -116,7 +125,7 @@ namespace XYZ {
 		bool onMouseScroll(MouseScrollEvent& event);
 
 		void clear();
-		void triangulate();
+		void triangulate(Submesh& subMesh);
 		void initializePose();
 		void updateBoneHierarchy();
 		void updateVertexBuffer();
@@ -132,7 +141,7 @@ namespace XYZ {
 		void handleVertexEdit();
 		void handleWeightsBrush();
 
-		bool trianglesHaveIndex(uint32_t index) const;
+		bool trianglesHaveIndex(const Submesh& subMesh, uint32_t index) const;
 		glm::vec2 calculateTexCoord(const glm::vec2& pos) const;
 		glm::vec2 getPositionLocalToBone(const BoneVertex& vertex);
 		glm::vec2 getPositionFromBones(const BoneVertex& vertex);
@@ -144,11 +153,11 @@ namespace XYZ {
 		void renderMesh(const glm::mat4& viewProjection);
 		void renderPreviews(const glm::mat4& viewProjection);
 		void renderBoneRelation(PreviewBone* parent, PreviewBone* child);
-		void renderTriangle(const Triangle& triangle, const glm::vec4& color);
+		void renderTriangle(uint32_t subMeshIndex, const Triangle& triangle, const glm::vec4& color);
 		void renderBone(float radius, const glm::vec2& start, const glm::vec2& end, const glm::vec2& normal, const glm::vec4& color);
 
-		Triangle* findTriangle(const glm::vec2& pos);
-		BoneVertex* findVertex(const glm::vec2& pos);
+		std::pair<uint32_t, Triangle*> findTriangle(const glm::vec2& pos);
+		std::pair<uint32_t, BoneVertex*> findVertex(const glm::vec2& pos);
 		PreviewBone* findBone(const glm::vec2& pos);
 		void findVerticesInRadius(const glm::vec2& pos, float radius, std::vector<BoneVertex*>& vertices);
 	private:
@@ -173,17 +182,18 @@ namespace XYZ {
 		MemoryPool m_BonePool;
 
 		std::vector<PreviewBone*> m_Bones;
-		std::vector<BoneVertex> m_Vertices;
-		std::vector<Triangle> m_Triangles;
+		std::vector<Submesh> m_SubMeshes;
 		std::vector<PreviewVertex> m_PreviewVertices;
 
 		float m_Scale = 1.0f;
 		float m_ScrollOffset = 0.0f;
 
+		uint32_t m_FoundSubmeshIndex = 0;
 		PreviewBone* m_FoundBone = nullptr;
 		BoneVertex* m_FoundVertex = nullptr;
 		Triangle* m_FoundTriangle = nullptr;
 
+		uint32_t m_SelectedSubmeshIndex = 0;
 		PreviewBone* m_SelectedBone = nullptr;
 		BoneVertex* m_SelectedVertex = nullptr;
 		Triangle* m_SelectedTriangle = nullptr;
@@ -196,7 +206,6 @@ namespace XYZ {
 		};
 		NewBoneData m_NewBoneData;
 
-		bool m_Triangulated = false;
 
 		float m_WeightBrushRadius = 15.0f;
 		float m_WeightBrushStrength = 0.01f;

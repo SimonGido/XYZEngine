@@ -150,8 +150,16 @@ namespace XYZ {
         if (IS_SET(window.Flags, InGuiWindowFlags::Hoovered))
         {
             m_MousePosition = getMouseWindowSpace();
-            m_FoundVertex = findVertex(m_MousePosition);
-            m_FoundTriangle = findTriangle(m_MousePosition);
+            {
+                auto [index, vertex] = findVertex(m_MousePosition);
+                m_FoundVertex = vertex;
+                m_FoundSubmeshIndex = index;
+            }
+            {
+                auto [index, triangle] = findTriangle(m_MousePosition);
+                m_FoundTriangle = triangle;
+                m_FoundSubmeshIndex = index;
+            }    
             m_FoundBone = findBone(m_MousePosition);
 
             if (IS_SET(m_Flags, CreateBone))
@@ -214,6 +222,11 @@ namespace XYZ {
                 InGui::Separator();
                 if (InGui::BeginGroup("Geometry", size, m_CategoriesOpen[Geometry]))
                 {
+                    if (IS_SET(InGui::Button("Create Submesh", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
+                    {
+                        m_SubMeshes.push_back({});
+                    }
+                    InGui::Separator();
                     if (IS_SET(InGui::Button("Create Vertex", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
                     {
                         m_Flags = ToggleBit(m_Flags, CreateVertex);
@@ -241,7 +254,12 @@ namespace XYZ {
                     InGui::Separator();
                     if (IS_SET(InGui::Button("Triangulate", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
                     {
-                        triangulate();
+                        for (auto& subMesh : m_SubMeshes)
+                        {
+                            if (!subMesh.Triangulated)
+                                triangulate(subMesh);
+                        }
+                        rebuildRenderBuffers();
                     }
                 }
                 InGui::Separator();
@@ -279,13 +297,15 @@ namespace XYZ {
             {
                 handleBoneCreate();
             }
-            else if (IS_SET(m_Flags, CreateVertex) && !m_Triangulated)
+            else if (IS_SET(m_Flags, CreateVertex))
             {
                 m_SelectedVertex = nullptr;
-                m_Vertices.push_back({ m_MousePosition.x, m_MousePosition.y });
+                if (m_SubMeshes.empty() || m_SubMeshes.back().Triangulated)
+                    m_SubMeshes.push_back({});
+                m_SubMeshes.back().Vertices.push_back({ m_MousePosition.x, m_MousePosition.y });
                 return true;
             }
-            else if (IS_SET(m_Flags, DeleteVertex) && !m_Triangulated)
+            else if (IS_SET(m_Flags, DeleteVertex))
             {
                 eraseVertexAtPosition(m_MousePosition);
                 return true;
@@ -330,9 +350,7 @@ namespace XYZ {
     void SkinningEditorPanel::clear()
     {
         m_Flags = 0;
-        m_Triangulated = false;
-        m_Triangles.clear();
-        m_Vertices.clear();
+        m_SubMeshes.clear();
         m_PreviewVertices.clear();
         for (auto bone : m_Bones)
             m_BonePool.Deallocate<PreviewBone>(bone);
@@ -344,17 +362,18 @@ namespace XYZ {
         m_SelectedBone = nullptr;
         m_SelectedTriangle = nullptr;
         m_SelectedVertex = nullptr;
+        rebuildRenderBuffers();
     }
-    void SkinningEditorPanel::triangulate()
+    void SkinningEditorPanel::triangulate(Submesh& subMesh)
     {
-        if (m_Vertices.size() < 3)
+        if (subMesh.Vertices.size() < 3)
             return;
 
         m_FoundTriangle = nullptr;
         m_FoundVertex = nullptr;
 
         std::vector<tpp::Delaunay::Point> points;
-        for (auto& p : m_Vertices)
+        for (auto& p : subMesh.Vertices)
         {
             points.push_back({ p.X, p.Y });
         }
@@ -363,8 +382,8 @@ namespace XYZ {
         generator.setMaxArea(12000.5f);
         generator.Triangulate(true);
 
-        m_Triangles.clear();
-        m_Vertices.clear();
+        subMesh.Triangles.clear();
+        subMesh.Vertices.clear();
         for (tpp::Delaunay::fIterator fit = generator.fbegin(); fit != generator.fend(); ++fit)
         {
             tpp::Delaunay::Point sp1;
@@ -376,35 +395,34 @@ namespace XYZ {
             int keypointIdx3 = generator.Apex(fit, &sp3);
 
             double x = 0.0f, y = 0.0f;
-            if (!trianglesHaveIndex((uint32_t)keypointIdx1))
+            if (!trianglesHaveIndex(subMesh, (uint32_t)keypointIdx1))
             {
                 GetTriangulationPt(points, keypointIdx1, sp1, x, y);
-                if (m_Vertices.size() <= keypointIdx1)
-                    m_Vertices.resize((size_t)keypointIdx1 + 1);
-                m_Vertices[keypointIdx1] = { (float)x, (float)y };
+                if (subMesh.Vertices.size() <= keypointIdx1)
+                    subMesh.Vertices.resize((size_t)keypointIdx1 + 1);
+                subMesh.Vertices[keypointIdx1] = { (float)x, (float)y };
             }
-            if (!trianglesHaveIndex((uint32_t)keypointIdx2))
+            if (!trianglesHaveIndex(subMesh, (uint32_t)keypointIdx2))
             {
                 GetTriangulationPt(points, keypointIdx2, sp2, x, y);
-                if (m_Vertices.size() <= keypointIdx2)
-                    m_Vertices.resize((size_t)keypointIdx2 + 1);
-                m_Vertices[keypointIdx2] = { (float)x, (float)y };
+                if (subMesh.Vertices.size() <= keypointIdx2)
+                    subMesh.Vertices.resize((size_t)keypointIdx2 + 1);
+                subMesh.Vertices[keypointIdx2] = { (float)x, (float)y };
             }
-            if (!trianglesHaveIndex((uint32_t)keypointIdx3))
+            if (!trianglesHaveIndex(subMesh, (uint32_t)keypointIdx3))
             {
                 GetTriangulationPt(points, keypointIdx3, sp3, x, y);
-                if (m_Vertices.size() <= keypointIdx3)
-                    m_Vertices.resize((size_t)keypointIdx3 + 1);
-                m_Vertices[keypointIdx3] = { (float)x, (float)y };
+                if (subMesh.Vertices.size() <= keypointIdx3)
+                    subMesh.Vertices.resize((size_t)keypointIdx3 + 1);
+                subMesh.Vertices[keypointIdx3] = { (float)x, (float)y };
             }
-            m_Triangles.push_back({
+            subMesh.Triangles.push_back({
                 (uint32_t)keypointIdx1,
                 (uint32_t)keypointIdx2,
                 (uint32_t)keypointIdx3
                 });
         }
-        m_Triangulated = true;
-        rebuildRenderBuffers();
+        subMesh.Triangulated = true;
     }
     void SkinningEditorPanel::initializePose()
     {
@@ -436,62 +454,75 @@ namespace XYZ {
     void SkinningEditorPanel::updateVertexBuffer()
     {
         m_PreviewVertices.clear();
-        m_PreviewVertices.reserve(m_Vertices.size());
-        for (auto& vertex : m_Vertices)
-        {        
-            glm::vec2 finalPos = glm::vec2(vertex.X, vertex.Y);
-            if (IS_SET(m_Flags, PreviewPose))
+        for (auto& subMesh : m_SubMeshes)
+        {
+            for (auto& vertex : subMesh.Vertices)
             {
-                BoneVertex vertexLocalToBone = vertex;
-                auto posLocalToBone = getPositionLocalToBone(vertexLocalToBone);
-                vertexLocalToBone.X = posLocalToBone.x;
-                vertexLocalToBone.Y = posLocalToBone.y;
-                finalPos = getPositionFromBones(vertexLocalToBone);
+                glm::vec2 finalPos = glm::vec2(vertex.X, vertex.Y);
+                if (IS_SET(m_Flags, PreviewPose))
+                {
+                    BoneVertex vertexLocalToBone = vertex;
+                    auto posLocalToBone = getPositionLocalToBone(vertexLocalToBone);
+                    vertexLocalToBone.X = posLocalToBone.x;
+                    vertexLocalToBone.Y = posLocalToBone.y;
+                    finalPos = getPositionFromBones(vertexLocalToBone);
+                }
+                glm::vec3 finalColor = vertex.Color;
+                if (IS_SET(m_Flags, WeightBrush))
+                {
+                    finalColor = getColorFromBoneWeights(vertex);
+                }
+                m_PreviewVertices.push_back({
+                    finalColor,
+                    glm::vec3(finalPos, 1.0f),
+                    CalculateTexCoord(glm::vec2(vertex.X, vertex.Y),m_ContextSize),
+                    VertexBoneData()
+                });
             }
-            glm::vec3 finalColor = vertex.Color;
-            if (IS_SET(m_Flags, WeightBrush))
-            {
-                finalColor = getColorFromBoneWeights(vertex);
-            }
-            m_PreviewVertices.push_back({
-                finalColor,
-                glm::vec3(finalPos, 1.0f),
-                CalculateTexCoord(glm::vec2(vertex.X, vertex.Y),m_ContextSize),
-                VertexBoneData()
-             });
         }
         m_VertexBuffer->Update(m_PreviewVertices.data(), m_PreviewVertices.size() * sizeof(PreviewVertex));
     }
     void SkinningEditorPanel::rebuildRenderBuffers()
     {
         m_PreviewVertices.clear();
-        if (m_Vertices.size())
+        std::vector<uint32_t> indices;
+        if (m_SubMeshes.size())
         {
-            m_PreviewVertices.reserve(m_Vertices.size());
-            for (auto& vertex : m_Vertices)
-            {
-                VertexBoneData data;
-                uint32_t counter = 0;
-                for (auto bone : m_Bones)
+            uint32_t offset = 0;
+            for (auto& subMesh : m_SubMeshes)
+            {          
+                for (auto& triangle : subMesh.Triangles)
+                {
+                    indices.push_back(triangle.First + offset);
+                    indices.push_back(triangle.Second + offset);
+                    indices.push_back(triangle.Third + offset);
+                }
+                offset += subMesh.Vertices.size();
+                for (auto& vertex : subMesh.Vertices)
                 {
                     VertexBoneData data;
-                    for (uint32_t i = 0; i < 4; ++i)
+                    uint32_t counter = 0;
+                    for (auto bone : m_Bones)
                     {
-                        if (bone->ID == vertex.Data.IDs[i])
+                        VertexBoneData data;
+                        for (uint32_t i = 0; i < 4; ++i)
                         {
-                            data.IDs[i] = counter;
-                            data.Weights[i] = vertex.Data.Weights[i];
+                            if (bone->ID == vertex.Data.IDs[i])
+                            {
+                                data.IDs[i] = counter;
+                                data.Weights[i] = vertex.Data.Weights[i];
+                            }
                         }
+                        counter++;
                     }
-                    counter++;
-                }
 
-                m_PreviewVertices.push_back({
-                    glm::vec3(1.0f),
-                    glm::vec3(vertex.X, vertex.Y, 0.0f),
-                    CalculateTexCoord(glm::vec2(vertex.X, vertex.Y),m_ContextSize),
-                    data
-                   });
+                    m_PreviewVertices.push_back({
+                        glm::vec3(1.0f),
+                        glm::vec3(vertex.X, vertex.Y, 0.0f),
+                        CalculateTexCoord(glm::vec2(vertex.X, vertex.Y),m_ContextSize),
+                        data
+                        });
+                }
             }
         }
         else
@@ -529,9 +560,9 @@ namespace XYZ {
             {4, ShaderDataComponent::Float4, "a_Weights"},
             });
         m_VertexArray->AddVertexBuffer(m_VertexBuffer);
-        if (m_Triangles.size())
+        if (indices.size())
         {
-            Ref<IndexBuffer> ibo = IndexBuffer::Create((uint32_t*)m_Triangles.data(), m_Triangles.size() * 3);
+            Ref<IndexBuffer> ibo = IndexBuffer::Create(indices.data(), indices.size());
             m_VertexArray->SetIndexBuffer(ibo);
         }
         else
@@ -545,57 +576,66 @@ namespace XYZ {
     }
     void SkinningEditorPanel::eraseEmptyPoints()
     {
-        std::vector<uint32_t> erasedPoints;
-        for (uint32_t i = 0; i < m_Vertices.size(); ++i)
+        for (auto& subMesh : m_SubMeshes)
         {
-            if (!trianglesHaveIndex(i))
-                erasedPoints.push_back(i);
-        }
-        for (int32_t i = erasedPoints.size() - 1; i >= 0; --i)
-        {
-            m_Vertices.erase(m_Vertices.begin() + erasedPoints[i]);
-            for (auto& triange : m_Triangles)
+            std::vector<uint32_t> erasedPoints;
+            for (uint32_t i = 0; i < subMesh.Vertices.size(); ++i)
             {
-                if (triange.First >= erasedPoints[i])
-                    triange.First--;
-                if (triange.Second >= erasedPoints[i])
-                    triange.Second--;
-                if (triange.Third >= erasedPoints[i])
-                    triange.Third--;
+                if (!trianglesHaveIndex(subMesh, i))
+                    erasedPoints.push_back(i);
+            }
+            for (int32_t i = erasedPoints.size() - 1; i >= 0; --i)
+            {
+                subMesh.Vertices.erase(subMesh.Vertices.begin() + erasedPoints[i]);
+                for (auto& triange : subMesh.Triangles)
+                {
+                    if (triange.First >= erasedPoints[i])
+                        triange.First--;
+                    if (triange.Second >= erasedPoints[i])
+                        triange.Second--;
+                    if (triange.Third >= erasedPoints[i])
+                        triange.Third--;
+                }
             }
         }
     }
     void SkinningEditorPanel::eraseVertexAtPosition(const glm::vec2& pos)
-    {
-        uint32_t counter = 0;
-        for (auto& vertex : m_Vertices)
+    {        
+        for (auto& subMesh : m_SubMeshes)
         {
-            if (glm::distance(pos, glm::vec2(vertex.X, vertex.Y)) < m_PointRadius)
+            uint32_t counter = 0;
+            for (auto& vertex : subMesh.Vertices)
             {
-                m_Vertices.erase(m_Vertices.begin() + counter);
-                m_SelectedVertex = nullptr;
-                return;
+                if (glm::distance(pos, glm::vec2(vertex.X, vertex.Y)) < m_PointRadius)
+                {
+                    subMesh.Vertices.erase(subMesh.Vertices.begin() + counter);
+                    m_SelectedVertex = nullptr;
+                    return;
+                }
+                counter++;
             }
-            counter++;
         }
     }
     void SkinningEditorPanel::eraseTriangleAtPosition(const glm::vec2& pos)
-    {
-        uint32_t counter = 0;
-        for (auto& triangle : m_Triangles)
+    {     
+        for (auto& subMesh : m_SubMeshes)
         {
-            BoneVertex& first = m_Vertices[triangle.First];
-            BoneVertex& second = m_Vertices[triangle.Second];
-            BoneVertex& third = m_Vertices[triangle.Third];
-            if (Math::PointInTriangle(pos, glm::vec2(first.X, first.Y), glm::vec2(second.X, second.Y), glm::vec2(third.X, third.Y)))
+            uint32_t counter = 0;
+            for (auto& triangle : subMesh.Triangles)
             {
-                m_SelectedTriangle = nullptr;
-                m_Triangles.erase(m_Triangles.begin() + counter);
-                eraseEmptyPoints();
-                rebuildRenderBuffers();
-                return;
+                BoneVertex& first =  subMesh.Vertices[triangle.First];
+                BoneVertex& second = subMesh.Vertices[triangle.Second];
+                BoneVertex& third =  subMesh.Vertices[triangle.Third];
+                if (Math::PointInTriangle(pos, glm::vec2(first.X, first.Y), glm::vec2(second.X, second.Y), glm::vec2(third.X, third.Y)))
+                {
+                    m_SelectedTriangle = nullptr;
+                    subMesh.Triangles.erase(subMesh.Triangles.begin() + counter);
+                    eraseEmptyPoints();
+                    rebuildRenderBuffers();
+                    return;
+                }
+                counter++;
             }
-            counter++;
         }
     }
     void SkinningEditorPanel::decomposeBone(PreviewBone* bone, glm::vec2& start, glm::vec2& end, float& rot, glm::vec2& normal, bool finalTransform)
@@ -799,9 +839,9 @@ namespace XYZ {
             updateVertexBuffer();
         }
     }
-    bool SkinningEditorPanel::trianglesHaveIndex(uint32_t index) const
+    bool SkinningEditorPanel::trianglesHaveIndex(const Submesh& subMesh, uint32_t index) const
     {
-        for (auto& triangle : m_Triangles)
+        for (auto& triangle : subMesh.Triangles)
         {
             if (triangle.First == index || triangle.Second == index || triangle.Third == index)
                 return true;
@@ -916,11 +956,15 @@ namespace XYZ {
     void SkinningEditorPanel::renderPreviews(const glm::mat4& viewProjection)
     {
         Renderer2D::BeginScene(viewProjection);
-        for (auto& triangle : m_Triangles)
-            renderTriangle(triangle, m_Colors[TriangleColor]);
-
+        uint32_t counter = 0;
+        for (auto& subMesh : m_SubMeshes)
+        {
+            for (auto& triangle : subMesh.Triangles)
+                renderTriangle(counter, triangle, m_Colors[TriangleColor]);
+            counter++;
+        }
         if (m_FoundTriangle)
-            renderTriangle(*m_FoundTriangle, m_Colors[TriangleHighlightColor]);
+            renderTriangle(m_FoundSubmeshIndex, *m_FoundTriangle, m_Colors[TriangleHighlightColor]);
         
         if (IS_SET(m_Flags, CreateBone))
             previewBoneCreate();
@@ -946,8 +990,11 @@ namespace XYZ {
         }
         else
         {
-            for (auto& vertex : m_Vertices)
-                Renderer2D::SubmitCircle(glm::vec3(vertex.X, vertex.Y, 0.0f), m_PointRadius, 20, m_Colors[VertexColor]);
+            for (auto& subMesh : m_SubMeshes)
+            {
+                for (auto& vertex : subMesh.Vertices)
+                    Renderer2D::SubmitCircle(glm::vec3(vertex.X, vertex.Y, 0.0f), m_PointRadius, 20, m_Colors[VertexColor]);
+            }
             m_BoneHierarchy.Traverse([&](void* parent, void* child) -> bool {
 
                 PreviewBone* childBone = static_cast<PreviewBone*>(child);
@@ -998,7 +1045,7 @@ namespace XYZ {
         Renderer2D::SubmitLine(glm::vec3(start + normal * m_PointRadius, 0.0f), glm::vec3(end, 0.0f), glm::vec4(child->Color, 0.2f));
         Renderer2D::SubmitLine(glm::vec3(start - normal * m_PointRadius, 0.0f), glm::vec3(end, 0.0f), glm::vec4(child->Color, 0.2f));
     }
-    void SkinningEditorPanel::renderTriangle(const Triangle& triangle, const glm::vec4& color)
+    void SkinningEditorPanel::renderTriangle(uint32_t subMeshIndex, const Triangle& triangle, const glm::vec4& color)
     {
         if (IS_SET(m_Flags, PreviewPose))
         {
@@ -1012,9 +1059,9 @@ namespace XYZ {
         }
         else
         {
-            BoneVertex& first = m_Vertices[triangle.First];
-            BoneVertex& second = m_Vertices[triangle.Second];
-            BoneVertex& third = m_Vertices[triangle.Third];
+            BoneVertex& first =  m_SubMeshes[subMeshIndex].Vertices[triangle.First];
+            BoneVertex& second = m_SubMeshes[subMeshIndex].Vertices[triangle.Second];
+            BoneVertex& third =  m_SubMeshes[subMeshIndex].Vertices[triangle.Third];
 
             Renderer2D::SubmitLine(glm::vec3(first.X, first.Y, 0.0f), glm::vec3(second.X, second.Y, 0.0f), color);
             Renderer2D::SubmitLine(glm::vec3(second.X, second.Y, 0.0f), glm::vec3(third.X, third.Y, 0.0f), color);
@@ -1031,30 +1078,36 @@ namespace XYZ {
     }
 
    
-    SkinningEditorPanel::Triangle* SkinningEditorPanel::findTriangle(const glm::vec2& pos)
+    std::pair<uint32_t, SkinningEditorPanel::Triangle*> SkinningEditorPanel::findTriangle(const glm::vec2& pos)
     {
-        Triangle triangle;
-        for (auto& triangle : m_Triangles)
+        for (size_t i = 0; i < m_SubMeshes.size(); ++i)
         {
-            BoneVertex& first = m_Vertices[triangle.First];
-            BoneVertex& second = m_Vertices[triangle.Second];
-            BoneVertex& third = m_Vertices[triangle.Third];
-            if (Math::PointInTriangle(pos, glm::vec2(first.X, first.Y), glm::vec2(second.X, second.Y), glm::vec2(third.X, third.Y)))
+            for (auto& triangle : m_SubMeshes[i].Triangles)
             {
-                return &triangle;
+                BoneVertex& first = m_SubMeshes[i].Vertices[triangle.First];
+                BoneVertex& second = m_SubMeshes[i].Vertices[triangle.Second];
+                BoneVertex& third = m_SubMeshes[i].Vertices[triangle.Third];
+                if (Math::PointInTriangle(pos, glm::vec2(first.X, first.Y), glm::vec2(second.X, second.Y), glm::vec2(third.X, third.Y)))
+                {
+                    return { i, &triangle };
+                }
             }
         }
-        return nullptr;
+        return { 0,nullptr };
     }
-    SkinningEditorPanel::BoneVertex* SkinningEditorPanel::findVertex(const glm::vec2& pos)
+    std::pair<uint32_t, SkinningEditorPanel::BoneVertex*> SkinningEditorPanel::findVertex(const glm::vec2& pos)
     {
-        for (auto& vertex : m_Vertices)
+        for (size_t i = 0; i < m_SubMeshes.size(); ++i)
         {
-            if (glm::distance(pos, glm::vec2(vertex.X, vertex.Y)) < m_PointRadius)
+            for (auto& vertex : m_SubMeshes[i].Vertices)
             {
-                return &vertex;
+                if (glm::distance(pos, glm::vec2(vertex.X, vertex.Y)) < m_PointRadius)
+                {
+                    return { i, &vertex };
+                }
             }
         }
+        return { 0,nullptr };
     }
     SkinningEditorPanel::PreviewBone* SkinningEditorPanel::findBone(const glm::vec2& pos)
     {
@@ -1093,11 +1146,14 @@ namespace XYZ {
 
     void SkinningEditorPanel::findVerticesInRadius(const glm::vec2& pos, float radius, std::vector<BoneVertex*>& vertices)
     {
-        for (auto& vertex : m_Vertices)
+        for (size_t i = 0; i < m_SubMeshes.size(); ++i)
         {
-            if (glm::distance(glm::vec2(vertex.X, vertex.Y), pos) < radius)
+            for (auto& vertex : m_SubMeshes[i].Vertices)
             {
-                vertices.push_back(&vertex);
+                if (glm::distance(glm::vec2(vertex.X, vertex.Y), pos) < radius)
+                {
+                    vertices.push_back(&vertex);
+                }
             }
         }
     }
