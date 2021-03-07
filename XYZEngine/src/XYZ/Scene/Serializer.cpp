@@ -1697,6 +1697,7 @@ namespace XYZ {
 			for (auto entity : entities)
 			{
 				GUID guid;
+				std::cout << (std::string)guid << std::endl;
 				guid = entity["Entity"].as<std::string>();
 				auto tagComponent = entity["SceneTagComponent"];
 				SceneTagComponent tag = tagComponent["Name"].as<std::string>();

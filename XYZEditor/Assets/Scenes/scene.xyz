@@ -1,6 +1,6 @@
 Scene: Scene
 Entities:
-  - Entity: "{93EF9084-8E06-4BBC-BBB9-0EFBD6BBEC9A}"
+  - Entity: "93EF9084-8E06-4BBC-BBB9-0EFBD6BBEC9A"
     SceneTagComponent:
       Name: Main Camera
     SceneTagComponent:
@@ -19,7 +19,7 @@ Entities:
       OrthographicFar: 1
     Relationship:
       {}
-  - Entity: "{26B86D3F-BCBB-4FDC-B50B-97621629D76A}"
+  - Entity: "26B86D3F-BCBB-4FDC-B50B-97621629D76A"
     SceneTagComponent:
       Name: Background
     SceneTagComponent:
@@ -42,7 +42,7 @@ Entities:
       Offset: [0, 0]
       Size: [76, 2]
       Density: 1
-  - Entity: "{CE0C06EC-2EA2-44AE-9D4D-238AF5A4E8E6}"
+  - Entity: "CE0C06EC-2EA2-44AE-9D4D-238AF5A4E8E6"
     SceneTagComponent:
       Name: Test
     SceneTagComponent:
@@ -65,7 +65,7 @@ Entities:
       Offset: [0, 0]
       Size: [5, 5]
       Density: 1
-  - Entity: "{370A988D-20DA-4B21-B9EE-2440E4E3660D}"
+  - Entity: "370A988D-20DA-4B21-B9EE-2440E4E3660D"
     SceneTagComponent:
       Name: New Entity
     SceneTagComponent:
