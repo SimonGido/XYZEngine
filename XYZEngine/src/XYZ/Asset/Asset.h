@@ -4,16 +4,32 @@
 
 namespace XYZ {
 
-	//class Asset : RefCount
-	//{
-	//public:
-	//	virtual ~Asset() {};
-	//
-	//	std::string FilePath;
-	//	std::string FileName;
-	//	std::string FileExtension;
-	//	GUID		DirectoryID;
-	//	bool		IsLoaded = false;
-	//};
+	enum class AssetType
+	{
+		Scene,
+		Mesh,
+		Texture,
+		SubTexture,
+		Material,
+		Shader,
+		Font,
+		Audio,
+		Script
+	};
+
+
+	class Asset : RefCount
+	{
+	public:
+		virtual ~Asset() {};
+	
+		size_t		Handle;
+		AssetType   Type;
+		std::string FilePath;
+		std::string FileName;
+		std::string FileExtension;
+		size_t		DirectoryID;
+		bool		IsLoaded = false;
+	};
 
 }
