@@ -598,14 +598,20 @@ namespace XYZ {
             counter++;
         }
     }
-    void SkinningEditorPanel::decomposeBone(PreviewBone* bone, glm::vec2& start, glm::vec2& end, glm::vec2& normal)
+    void SkinningEditorPanel::decomposeBone(PreviewBone* bone, glm::vec2& start, glm::vec2& end, float& rot, glm::vec2& normal, bool finalTransform)
     {
         glm::vec3 scale;
         glm::quat rotation;
         glm::vec3 translation;
         glm::vec3 skew;
         glm::vec4 perspective;
-        glm::decompose(bone->PreviewFinalTransform, scale, rotation, translation, skew, perspective);
+        if (finalTransform)
+            glm::decompose(bone->PreviewFinalTransform, scale, rotation, translation, skew, perspective);
+        else
+            glm::decompose(bone->PreviewTransform, scale, rotation, translation, skew, perspective);
+
+        glm::vec3 euler = glm::eulerAngles(rotation);
+        rot = euler.z;
 
         start = glm::vec2(translation.x, translation.y);
         glm::vec4 tmpEnd = glm::toMat4(rotation) * glm::vec4(bone->End, 0.0f, 1.0f);
@@ -692,28 +698,21 @@ namespace XYZ {
             {
                 if (IS_SET(m_Flags, PreviewPose))
                 {
-                    if (glm::distance(m_MousePosition, m_SelectedBone->WorldStart) < m_PointRadius)
+                    float rot;
+                    glm::vec2 start, end, normal;
+                    decomposeBone(m_SelectedBone, start, end, rot, normal);
+                    if (glm::distance(m_MousePosition, start) < m_PointRadius * 2.0f)
                     {
-                        m_SelectedBone->Start = m_MousePosition;
-                        m_SelectedBone->WorldStart = m_MousePosition;
-                        if (auto parent = m_BoneHierarchy.GetParentData(m_SelectedBone->ID))
-                        {
-                            PreviewBone* parentBone = static_cast<PreviewBone*>(parent);
-                            m_SelectedBone->Start -= parentBone->WorldStart;
-                            m_SelectedBone->WorldStart = parentBone->WorldStart + m_SelectedBone->Start;
-                        }
-                        initializePose();
+                        glm::vec2 translation = m_MousePosition - start;
+                        m_SelectedBone->PreviewTransform = glm::translate(m_SelectedBone->PreviewTransform, glm::vec3(translation, 0.0f));
                     }
                     else
                     {
-                        glm::mat4 translation = glm::translate(glm::vec3(m_SelectedBone->Start, 0.0f));
-                        glm::vec2 endTmp = m_SelectedBone->WorldStart + m_SelectedBone->End;
-                        glm::vec2 origDir = glm::normalize(endTmp - m_SelectedBone->WorldStart);
-                        glm::vec2 dir = glm::normalize(m_MousePosition - m_SelectedBone->WorldStart);
-                                        
+                        glm::vec2 origDir = glm::normalize(end - start);
+                        glm::vec2 dir = glm::normalize(m_MousePosition - start);
+                                       
                         float angle = glm::atan(dir.y, dir.x) - glm::atan(origDir.y, origDir.x);
-                        glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 0.0f, 1.0f));
-                        m_SelectedBone->PreviewTransform = translation * rotation;                       
+                        m_SelectedBone->PreviewTransform = glm::rotate(m_SelectedBone->PreviewTransform, angle, glm::vec3(0.0f, 0.0f, 1.0f));
                     }
                 }
                 else
@@ -935,8 +934,10 @@ namespace XYZ {
                 PreviewBone* childBone = static_cast<PreviewBone*>(child);
                 if (parent)
                     renderBoneRelation(static_cast<PreviewBone*>(parent), childBone);
+
+                float rot;
                 glm::vec2 start, end, normal;
-                decomposeBone(childBone, start, end, normal);
+                decomposeBone(childBone, start, end, rot, normal);
                 renderBone(m_PointRadius, start, end, normal, glm::vec4(childBone->Color, 1.0f));
                 if (m_SelectedBone && m_SelectedBone->ID == childBone->ID)
                     renderBone(m_PointRadius * 1.2f, start, end, normal * 1.2f, m_Colors[BoneHighlightColor]);
@@ -978,11 +979,12 @@ namespace XYZ {
         glm::vec2 start, end;
         if (IS_SET(m_Flags, PreviewPose))
         {
+            float rot;
             glm::vec2 parentStart, parentEnd, parentNormal;
-            decomposeBone(parent, parentStart, parentEnd, parentNormal);
+            decomposeBone(parent, parentStart, parentEnd, rot, parentNormal);
 
             glm::vec2 childStart, childEnd, childNormal;
-            decomposeBone(child, childStart, childEnd, childNormal);
+            decomposeBone(child, childStart, childEnd, rot, childNormal);
             start = parentStart;
             end = childStart;
         }
@@ -1060,12 +1062,11 @@ namespace XYZ {
         m_BoneHierarchy.Traverse([&](void* parent, void* child) -> bool {
 
             PreviewBone* childBone = static_cast<PreviewBone*>(child);
-            glm::vec2 start;
-            glm::vec2 end;
-            glm::vec2 normal;
+            float rot;
+            glm::vec2 start, end, normal;
             if (IS_SET(m_Flags, Flags::PreviewPose))
             {
-                decomposeBone(childBone, start, end, normal);
+                decomposeBone(childBone, start, end, rot, normal);
             }
             else
             {

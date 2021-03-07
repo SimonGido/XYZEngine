@@ -67,10 +67,9 @@ namespace XYZ {
 
 		struct PreviewBone
 		{
-			glm::vec2 WorldStart;
-			glm::vec2 Start;
-			glm::vec2 End;
-
+			glm::vec2 WorldStart = glm::vec2(0.0f);
+			glm::vec2 Start = glm::vec2(0.0f);
+			glm::vec2 End = glm::vec2(0.0f);
 			int32_t ID;
 
 			glm::mat4 PreviewTransform;
@@ -125,7 +124,7 @@ namespace XYZ {
 		void eraseEmptyPoints();
 		void eraseVertexAtPosition(const glm::vec2& pos);
 		void eraseTriangleAtPosition(const glm::vec2& pos);
-		void decomposeBone(PreviewBone* bone, glm::vec2& start, glm::vec2& end, glm::vec2& normal);
+		void decomposeBone(PreviewBone* bone, glm::vec2& start, glm::vec2& end, float& rot, glm::vec2& normal, bool finalTransform = true);
 
 		void previewBoneCreate();
 		void handleBoneCreate();
