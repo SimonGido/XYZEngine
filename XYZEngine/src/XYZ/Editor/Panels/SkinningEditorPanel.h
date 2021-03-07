@@ -134,7 +134,6 @@ namespace XYZ {
 		void handleWeightsBrush();
 
 		bool trianglesHaveIndex(uint32_t index) const;
-		glm::mat4 getBoneDefaultTransform(PreviewBone* bone);
 		glm::vec2 calculateTexCoord(const glm::vec2& pos) const;
 		glm::vec2 getPositionLocalToBone(const BoneVertex& vertex);
 		glm::vec2 getPositionFromBones(const BoneVertex& vertex);

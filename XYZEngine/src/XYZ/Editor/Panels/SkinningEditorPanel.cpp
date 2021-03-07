@@ -411,15 +411,8 @@ namespace XYZ {
         m_BoneHierarchy.Traverse([](void* parent, void* child) -> bool {
 
             PreviewBone* childBone = static_cast<PreviewBone*>(child);
-            if (parent)
-            {
-                PreviewBone* parentBone = static_cast<PreviewBone*>(parent);
-                childBone->PreviewTransform = glm::translate(glm::vec3(parentBone->End + childBone->Start, 0.0f));
-            }
-            else
-            {
-                childBone->PreviewTransform = glm::translate(glm::vec3(childBone->Start, 0.0f));
-            }
+            childBone->PreviewTransform = glm::translate(glm::vec3(childBone->Start, 0.0f));
+
             return false;
         });
     }
@@ -679,9 +672,8 @@ namespace XYZ {
             if (m_NewBoneData.Parent)
             {
                 newBone->ID = m_BoneHierarchy.Insert(newBone, m_NewBoneData.Parent->ID);
-                glm::vec2 parentWorldEnd = m_NewBoneData.Parent->WorldStart + m_NewBoneData.Parent->End;
                 newBone->End = m_MousePosition - newBone->Start;
-                newBone->Start -= parentWorldEnd;
+                newBone->Start -= m_NewBoneData.Parent->WorldStart;
             }
             else
             {
@@ -707,18 +699,14 @@ namespace XYZ {
                         if (auto parent = m_BoneHierarchy.GetParentData(m_SelectedBone->ID))
                         {
                             PreviewBone* parentBone = static_cast<PreviewBone*>(parent);
-                            m_SelectedBone->Start -= parentBone->WorldStart + parentBone->End;
+                            m_SelectedBone->Start -= parentBone->WorldStart;
                             m_SelectedBone->WorldStart = parentBone->WorldStart + m_SelectedBone->Start;
                         }
                         initializePose();
                     }
                     else
                     {
-                        glm::vec2 relativePos = m_SelectedBone->Start;
-                        if (auto parent = m_BoneHierarchy.GetParentData(m_SelectedBone->ID))
-                            relativePos += static_cast<PreviewBone*>(parent)->End;
-
-                        glm::mat4 translation = glm::translate(glm::vec3(relativePos, 0.0f));
+                        glm::mat4 translation = glm::translate(glm::vec3(m_SelectedBone->Start, 0.0f));
                         glm::vec2 endTmp = m_SelectedBone->WorldStart + m_SelectedBone->End;
                         glm::vec2 origDir = glm::normalize(endTmp - m_SelectedBone->WorldStart);
                         glm::vec2 dir = glm::normalize(m_MousePosition - m_SelectedBone->WorldStart);
@@ -734,7 +722,7 @@ namespace XYZ {
                     if (auto parent = m_BoneHierarchy.GetParentData(m_SelectedBone->ID))
                     {
                         PreviewBone* parentBone = static_cast<PreviewBone*>(parent);
-                        m_SelectedBone->Start -= parentBone->WorldStart + parentBone->End;
+                        m_SelectedBone->Start -= parentBone->WorldStart;
                     }
                 }
                 updateVertexBuffer();
@@ -821,18 +809,7 @@ namespace XYZ {
         }
         return false;
     }
-    glm::mat4 SkinningEditorPanel::getBoneDefaultTransform(PreviewBone* bone)
-    {
-        if (auto parent = m_BoneHierarchy.GetParentData(bone->ID))
-        {
-            PreviewBone* parentBone = static_cast<PreviewBone*>(parent);
-            return glm::translate(glm::vec3(parentBone->End + bone->Start, 0.0f));
-        }
-        else
-        {
-            return glm::translate(glm::vec3(bone->Start, 0.0f));
-        }
-    }
+
     glm::vec2 SkinningEditorPanel::calculateTexCoord(const glm::vec2& pos) const
     {
         glm::vec2 position = pos + m_ContextSize / 2.0f;
@@ -847,7 +824,7 @@ namespace XYZ {
             if (vertex.Data.IDs[i] != -1)
             {
                 PreviewBone* bone = static_cast<PreviewBone*>(m_BoneHierarchy.GetData(vertex.Data.IDs[i]));
-                boneTransform += getBoneDefaultTransform(bone) * vertex.Data.Weights[i];
+                boneTransform += glm::translate(glm::vec3(bone->Start, 0.0f)) * vertex.Data.Weights[i];
                 hasBone = true;
             }
         }
@@ -978,9 +955,8 @@ namespace XYZ {
                 if (parent)
                 {
                     PreviewBone* parentBone = static_cast<PreviewBone*>(parent);
-                    glm::vec2 parentBoneEnd = parentBone->WorldStart + parentBone->End;
-                    childBone->WorldStart += parentBoneEnd;
-                    end += parentBoneEnd;
+                    childBone->WorldStart += parentBone->WorldStart;
+                    end += parentBone->WorldStart;
 
                     renderBoneRelation(parentBone, childBone);
                 }      
@@ -1012,7 +988,7 @@ namespace XYZ {
         }
         else
         {
-            end = parent->WorldStart + parent->End + child->Start;
+            end = parent->WorldStart + child->Start;
             start = parent->WorldStart;         
         }
         glm::vec2 dir = glm::normalize(end - start);
