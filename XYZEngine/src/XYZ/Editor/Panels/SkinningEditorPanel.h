@@ -142,7 +142,6 @@ namespace XYZ {
 		glm::vec2 getMouseWindowSpace() const;
 		std::pair<float, float> getMouseViewportSpace() const;
 
-
 		void renderAll();
 		void renderMesh(const glm::mat4& viewProjection);
 		void renderPreviews(const glm::mat4& viewProjection);

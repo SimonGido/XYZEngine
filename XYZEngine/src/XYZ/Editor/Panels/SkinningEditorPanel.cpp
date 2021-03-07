@@ -700,7 +700,33 @@ namespace XYZ {
             {
                 if (IS_SET(m_Flags, PreviewPose))
                 {
-                    m_SelectedBone->PreviewTransform *= glm::rotate(0.01f, glm::vec3(0.0f, 0.0f, 1.0f));
+                    if (glm::distance(m_MousePosition, m_SelectedBone->WorldStart) < m_PointRadius)
+                    {
+                        m_SelectedBone->Start = m_MousePosition;
+                        m_SelectedBone->WorldStart = m_MousePosition;
+                        if (auto parent = m_BoneHierarchy.GetParentData(m_SelectedBone->ID))
+                        {
+                            PreviewBone* parentBone = static_cast<PreviewBone*>(parent);
+                            m_SelectedBone->Start -= parentBone->WorldStart + parentBone->End;
+                            m_SelectedBone->WorldStart = parentBone->WorldStart + m_SelectedBone->Start;
+                        }
+                        initializePose();
+                    }
+                    else
+                    {
+                        glm::vec2 relativePos = m_SelectedBone->Start;
+                        if (auto parent = m_BoneHierarchy.GetParentData(m_SelectedBone->ID))
+                            relativePos += static_cast<PreviewBone*>(parent)->End;
+
+                        glm::mat4 translation = glm::translate(glm::vec3(relativePos, 0.0f));
+                        glm::vec2 endTmp = m_SelectedBone->WorldStart + m_SelectedBone->End;
+                        glm::vec2 origDir = glm::normalize(endTmp - m_SelectedBone->WorldStart);
+                        glm::vec2 dir = glm::normalize(m_MousePosition - m_SelectedBone->WorldStart);
+                                        
+                        float angle = glm::atan(dir.y, dir.x) - glm::atan(origDir.y, origDir.x);
+                        glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 0.0f, 1.0f));
+                        m_SelectedBone->PreviewTransform = translation * rotation;                       
+                    }
                 }
                 else
                 {
@@ -883,6 +909,7 @@ namespace XYZ {
 
         return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f };
     }
+ 
     void SkinningEditorPanel::renderAll()
     {
         m_Framebuffer->Bind(); 
@@ -924,6 +951,8 @@ namespace XYZ {
 
         if (IS_SET(m_Flags, Flags::PreviewPose))
         {
+            for (auto& vertex : m_PreviewVertices)
+                Renderer2D::SubmitCircle(glm::vec3(vertex.Position.x, vertex.Position.y, 0.0f), m_PointRadius, 20, m_Colors[VertexColor]);
             m_BoneHierarchy.Traverse([&](void* parent, void* child) -> bool {
 
                 PreviewBone* childBone = static_cast<PreviewBone*>(child);
@@ -933,14 +962,14 @@ namespace XYZ {
                 decomposeBone(childBone, start, end, normal);
                 renderBone(m_PointRadius, start, end, normal, glm::vec4(childBone->Color, 1.0f));
                 if (m_SelectedBone && m_SelectedBone->ID == childBone->ID)
-                    renderBone(m_PointRadius * 1.2f, childBone->WorldStart, end, normal * 1.2f, m_Colors[BoneHighlightColor]);
+                    renderBone(m_PointRadius * 1.2f, start, end, normal * 1.2f, m_Colors[BoneHighlightColor]);
                 return false;
-                });
-            for (auto& vertex : m_PreviewVertices)
-                Renderer2D::SubmitCircle(glm::vec3(vertex.Position.x, vertex.Position.y, 0.0f), m_PointRadius, 20, m_Colors[VertexColor]);
+                });         
         }
         else
         {
+            for (auto& vertex : m_Vertices)
+                Renderer2D::SubmitCircle(glm::vec3(vertex.X, vertex.Y, 0.0f), m_PointRadius, 20, m_Colors[VertexColor]);
             m_BoneHierarchy.Traverse([&](void* parent, void* child) -> bool {
 
                 PreviewBone* childBone = static_cast<PreviewBone*>(child);
@@ -961,9 +990,7 @@ namespace XYZ {
                 if (m_SelectedBone && m_SelectedBone->ID == childBone->ID)
                     renderBone(m_PointRadius * 1.2f, childBone->WorldStart, end, normal * 1.2f, m_Colors[BoneHighlightColor]);
                 return false;
-                });
-            for (auto& vertex : m_Vertices)
-                Renderer2D::SubmitCircle(glm::vec3(vertex.X, vertex.Y, 0.0f), m_PointRadius, 20, m_Colors[VertexColor]);
+                });         
         }
 
         Renderer2D::FlushLines();
@@ -972,11 +999,26 @@ namespace XYZ {
     }
     void SkinningEditorPanel::renderBoneRelation(PreviewBone* parent, PreviewBone* child)
     {
-        glm::vec2 childStart = parent->WorldStart + parent->End + child->Start;
-        glm::vec2 dir = glm::normalize(childStart - parent->WorldStart);
+        glm::vec2 start, end;
+        if (IS_SET(m_Flags, PreviewPose))
+        {
+            glm::vec2 parentStart, parentEnd, parentNormal;
+            decomposeBone(parent, parentStart, parentEnd, parentNormal);
+
+            glm::vec2 childStart, childEnd, childNormal;
+            decomposeBone(child, childStart, childEnd, childNormal);
+            start = parentStart;
+            end = childStart;
+        }
+        else
+        {
+            end = parent->WorldStart + parent->End + child->Start;
+            start = parent->WorldStart;         
+        }
+        glm::vec2 dir = glm::normalize(end - start);
         glm::vec2 normal = { -dir.y, dir.x };
-        Renderer2D::SubmitLine(glm::vec3(parent->WorldStart + normal * m_PointRadius, 0.0f), glm::vec3(childStart, 0.0f), glm::vec4(child->Color, 0.2f));
-        Renderer2D::SubmitLine(glm::vec3(parent->WorldStart - normal * m_PointRadius, 0.0f), glm::vec3(childStart, 0.0f), glm::vec4(child->Color, 0.2f));
+        Renderer2D::SubmitLine(glm::vec3(start + normal * m_PointRadius, 0.0f), glm::vec3(end, 0.0f), glm::vec4(child->Color, 0.2f));
+        Renderer2D::SubmitLine(glm::vec3(start - normal * m_PointRadius, 0.0f), glm::vec3(end, 0.0f), glm::vec4(child->Color, 0.2f));
     }
     void SkinningEditorPanel::renderTriangle(const Triangle& triangle, const glm::vec4& color)
     {
