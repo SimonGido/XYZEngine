@@ -17,6 +17,9 @@ namespace XYZ {
 		template <typename T>
 		void serialize(YAML::Emitter& out, const T& val);
 
+		template <typename T>
+		T deserialize(YAML::Node& node);
+
 	private:
 		Ref<Scene> m_Scene;
 	};

@@ -13,29 +13,132 @@
 
 #include <yaml-cpp/yaml.h>
 
+
+namespace YAML {
+
+	template<>
+	struct convert<glm::vec2>
+	{
+		static Node encode(const glm::vec2& rhs)
+		{
+			Node node;
+			node.push_back(rhs.x);
+			node.push_back(rhs.y);
+			return node;
+		}
+
+		static bool decode(const Node& node, glm::vec2& rhs)
+		{
+			if (!node.IsSequence() || node.size() != 2)
+				return false;
+
+			rhs.x = node[0].as<float>();
+			rhs.y = node[1].as<float>();
+			return true;
+		}
+	};
+
+	template<>
+	struct convert<glm::vec3>
+	{
+		static Node encode(const glm::vec3& rhs)
+		{
+			Node node;
+			node.push_back(rhs.x);
+			node.push_back(rhs.y);
+			node.push_back(rhs.z);
+			return node;
+		}
+
+		static bool decode(const Node& node, glm::vec3& rhs)
+		{
+			if (!node.IsSequence() || node.size() != 3)
+				return false;
+
+			rhs.x = node[0].as<float>();
+			rhs.y = node[1].as<float>();
+			rhs.z = node[2].as<float>();
+			return true;
+		}
+	};
+
+	template<>
+	struct convert<glm::vec4>
+	{
+		static Node encode(const glm::vec4& rhs)
+		{
+			Node node;
+			node.push_back(rhs.x);
+			node.push_back(rhs.y);
+			node.push_back(rhs.z);
+			node.push_back(rhs.w);
+			return node;
+		}
+
+		static bool decode(const Node& node, glm::vec4& rhs)
+		{
+			if (!node.IsSequence() || node.size() != 4)
+				return false;
+
+			rhs.x = node[0].as<float>();
+			rhs.y = node[1].as<float>();
+			rhs.z = node[2].as<float>();
+			rhs.w = node[3].as<float>();
+			return true;
+		}
+	};
+
+	template<>
+	struct convert<glm::quat>
+	{
+		static Node encode(const glm::quat& rhs)
+		{
+			Node node;
+			node.push_back(rhs.w);
+			node.push_back(rhs.x);
+			node.push_back(rhs.y);
+			node.push_back(rhs.z);
+			return node;
+		}
+
+		static bool decode(const Node& node, glm::quat& rhs)
+		{
+			if (!node.IsSequence() || node.size() != 4)
+				return false;
+
+			rhs.w = node[0].as<float>();
+			rhs.x = node[1].as<float>();
+			rhs.y = node[2].as<float>();
+			rhs.z = node[3].as<float>();
+			return true;
+		}
+	};
+}
+
+
 namespace XYZ {
-	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec2& v)
+	static YAML::Emitter& ToVec2(YAML::Emitter& out, const glm::vec2& v)
 	{
 		out << YAML::Flow;
 		out << YAML::BeginSeq << v.x << v.y << YAML::EndSeq;
 		return out;
 	}
-
-	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec3& v)
+	
+	static YAML::Emitter& ToVec3(YAML::Emitter& out, const glm::vec3& v)
 	{
 		out << YAML::Flow;
 		out << YAML::BeginSeq << v.x << v.y << v.z << YAML::EndSeq;
 		return out;
 	}
-
-	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec4& v)
+	
+	static YAML::Emitter& ToVec4(YAML::Emitter& out, const glm::vec4& v)
 	{
 		out << YAML::Flow;
 		out << YAML::BeginSeq << v.x << v.y << v.z << v.w << YAML::EndSeq;
 		return out;
 	}
 
-	static enum class FieldType
+	enum class FieldType
 	{
 		Float,
 		Float2,
@@ -114,19 +217,22 @@ namespace XYZ {
 			case UniformDataType::VEC2:
 				out << YAML::BeginMap;
 				out << YAML::Key << uniform.Name;
-				out << YAML::Value << *(glm::vec2*)&buffer[uniform.Offset];
+				out << YAML::Value;
+				ToVec2(out, *(glm::vec2*)&buffer[uniform.Offset]);
 				out << YAML::EndMap;
 				break;
 			case UniformDataType::VEC3:
 				out << YAML::BeginMap;
 				out << YAML::Key << uniform.Name;
-				out << YAML::Value << *(glm::vec3*)&buffer[uniform.Offset];
+				out << YAML::Value;
+				ToVec3(out, *(glm::vec3*)&buffer[uniform.Offset]);
 				out << YAML::EndMap;
 				break;
 			case UniformDataType::VEC4:
 				out << YAML::BeginMap;
 				out << YAML::Key << uniform.Name;
-				out << YAML::Value << *(glm::vec4*)&buffer[uniform.Offset];
+				out << YAML::Value;
+				ToVec4(out, *(glm::vec4*)&buffer[uniform.Offset]);
 				out << YAML::EndMap;
 				break;
 			case UniformDataType::INT:
@@ -144,46 +250,48 @@ namespace XYZ {
 
 
 	template<>
-	void AssetSerializer::serialize<Texture2D>(Ref<Asset> asset)
+	void AssetSerializer::serialize<Texture2D>(const Ref<Asset>& asset)
 	{
 		XYZ_ASSERT(!asset->FilePath.empty(), "Filepath is empty");
-		Ref<Texture2D> texture = asset.As<Texture2D>();
-
+		Ref<Texture2D> texture = Ref<Texture2D>((Texture2D*)asset.Raw());
+		
 		YAML::Emitter out;
 		out << YAML::BeginMap;
-
+		
 		out << YAML::Key << "Texture" << YAML::Value << asset->FileName;
 		out << YAML::Key << "Wrap" << YAML::Value << ToUnderlying(texture->GetSpecification().Wrap);
 		out << YAML::Key << "Param Min" << YAML::Value << ToUnderlying(texture->GetSpecification().MinParam);
 		out << YAML::Key << "Param Max" << YAML::Value << ToUnderlying(texture->GetSpecification().MagParam);
-
+		
 		std::ofstream fout(asset->FilePath);
 		fout << out.c_str();
 	}
 
+
 	template <>
-	void AssetSerializer::serialize<SubTexture>(Ref<Asset> asset)
+	void AssetSerializer::serialize<SubTexture>(const Ref<Asset>& asset)
 	{
 		XYZ_ASSERT(!asset->FilePath.empty(), "Filepath is empty");
-		Ref<SubTexture> subTexture = asset.As<SubTexture>();
-
+		Ref<SubTexture> subTexture = Ref<SubTexture>((SubTexture*)asset.Raw());
+		
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		out << YAML::Key << "SubTexture" << YAML::Value << subTexture->FileName;
 		out << YAML::Key << "TextureAsset" << YAML::Value << subTexture->GetTexture()->Handle;
-		out << YAML::Key << "TexCoords" << YAML::Value << subTexture->GetTexCoords();
-
+		out << YAML::Key << "TexCoords" << YAML::Value;
+		ToVec4(out, subTexture->GetTexCoords());
+		
 		out << YAML::EndMap;
-
+		
 		std::ofstream fout(subTexture->FilePath);
 		fout << out.c_str();
 	}
 
 	template <>
-	void AssetSerializer::serialize<Shader>(Ref<Asset> asset)
+	void AssetSerializer::serialize<Shader>(const Ref<Asset>& asset)
 	{
 		XYZ_ASSERT(!asset->FilePath.empty(), "Filepath is empty");
-		Ref<Shader> shader = asset.As<Shader>();
+		Ref<Shader> shader = Ref<Shader>((Shader*)asset.Raw());
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		out << YAML::Key << "Shader" << YAML::Value << asset->FileName;
@@ -193,10 +301,10 @@ namespace XYZ {
 	}
 
 	template <>
-	void AssetSerializer::serialize<Material>(Ref<Asset> asset)
+	void AssetSerializer::serialize<Material>(const Ref<Asset>& asset)
 	{
 		XYZ_ASSERT(!asset->FilePath.empty(), "Filepath is empty");
-		Ref<Material> material = asset.As<Material>();
+		Ref<Material> material = Ref<Material>((Material*)asset.Raw());
 
 		YAML::Emitter out;
 		out << YAML::BeginMap;
@@ -235,14 +343,15 @@ namespace XYZ {
 
 
 	template <>
-	void AssetSerializer::serialize<Font>(Ref<Asset> asset)
+	void AssetSerializer::serialize<Font>(const Ref<Asset>& asset)
 	{
 		XYZ_ASSERT(!asset->FilePath.empty(), "Filepath is empty");
-		Ref<Font> font = asset.As<Font>();
+		Ref<Font> font = Ref<Font>((Font*)asset.Raw());
 		YAML::Emitter out;
 		out << YAML::BeginMap; // Font
 		
 		out << YAML::Key << "Font" << YAML::Value << font->FileName;
+		out << YAML::Key << "FontPath" << YAML::Value << font->GetFilepath();
 		out << YAML::Key << "PixelSize" << YAML::Value << font->GetPixelsize();
 
 		out << YAML::EndMap; // Font
@@ -252,29 +361,13 @@ namespace XYZ {
 	}
 
 	template <>
-	void AssetSerializer::serialize<Scene>(Ref<Asset> asset)
+	void AssetSerializer::serialize<Scene>(const Ref<Asset>& asset)
 	{
 		XYZ_ASSERT(!asset->FilePath.empty(), "Filepath is empty");
-		Ref<Scene> scene = asset.As<Scene>();
+		Ref<Scene> scene = Ref<Scene>((Scene*)asset.Raw());
 		
 		SceneSerializer sceneSerializer(scene);
 		sceneSerializer.Serialize();
-
-		//YAML::Emitter out;
-		//
-		//out << YAML::BeginMap;
-		//out << YAML::Key << "Scene" << scene->m_Name;
-		//out << YAML::Key << "Entities";
-		//out << YAML::Value << YAML::BeginSeq;
-		//for (auto ent : scene->m_Entities)
-		//{
-		//	Entity entity(ent, &sceneCopy->m_ECS);
-		//	Serialize<Entity>(out, entity);
-		//}
-		//out << YAML::EndSeq;
-		//out << YAML::EndMap;
-		//std::ofstream fout(scene->GetFilepath());
-		//fout << out.c_str();
 	}
 
 	template <>
@@ -287,7 +380,7 @@ namespace XYZ {
 			std::stringstream strStream;
 			strStream << stream.rdbuf();
 			YAML::Node data = YAML::Load(strStream.str());
-
+	
 			XYZ_ASSERT(data["Texture"], "Incorrect file format");
 			specs.Wrap = IntToTextureWrap(data["Wrap"].as<int>());
 			specs.MinParam = IntToTextureParam(data["Param Min"].as<int>());
@@ -297,7 +390,7 @@ namespace XYZ {
 		{
 			XYZ_LOG_WARN("Missing texture meta data, setting default");
 		}
-
+	
 		auto texture = Texture2D::Create(specs, asset->FilePath);
 		return texture.As<Asset>();
 	}
@@ -390,9 +483,9 @@ namespace XYZ {
 
 		XYZ_ASSERT(data["Font"], "Incorrect file format");
 		uint32_t pixelSize = data["PixelSize"].as<uint32_t>();
+		std::string fontPath = data["FontPath"].as<std::string>();
 
-
-		auto ref = Ref<Font>::Create(pixelSize, asset->FilePath);
+		auto ref = Ref<Font>::Create(pixelSize, fontPath);
 		return ref.As<Font>();
 	}
 
@@ -403,21 +496,6 @@ namespace XYZ {
 		SceneSerializer sceneSerializer(result);
 		sceneSerializer.Deserialize();
 
-		//auto entities = data["Entities"];
-		//if (entities)
-		//{
-		//	for (auto entity : entities)
-		//	{
-		//		GUID guid;
-		//		std::cout << (std::string)guid << std::endl;
-		//		guid = entity["Entity"].as<std::string>();
-		//		auto tagComponent = entity["SceneTagComponent"];
-		//		SceneTagComponent tag = tagComponent["Name"].as<std::string>();
-		//		SceneEntity ent = result->CreateEntity(tag, guid);
-		//		Serializer::Deserialize<SceneEntity>(entity, assetManager, ent);
-		//	}
-		//}
-		
 		return result;
 	}
 
@@ -451,7 +529,7 @@ namespace XYZ {
 		return asset;
 
 	}
-	Ref<Asset> AssetSerializer::LoadAssetData(Ref<Asset> asset)
+	Ref<Asset> AssetSerializer::LoadAssetData(Ref<Asset>& asset)
 	{
 		switch (asset->Type)
 		{

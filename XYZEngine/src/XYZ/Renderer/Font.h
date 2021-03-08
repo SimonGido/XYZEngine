@@ -29,12 +29,13 @@ namespace XYZ {
 		const uint32_t GetHeight() const { return m_Texture->GetHeight(); }	
 		const uint32_t GetPixelsize() const { return m_PixelSize; }
 		const uint32_t GetLineHeight() const { return m_LineHeight; }
+		const std::string& GetFilepath() const { return m_Filepath; }
 	private:
 		uint32_t m_PixelSize;
 		uint32_t m_LineHeight;
 		Ref<Texture2D> m_Texture;
 		std::vector<Character> m_Characters;
-
+		std::string m_Filepath;
 		static constexpr uint32_t sc_NumGlyphs = 128;
 	};
 	

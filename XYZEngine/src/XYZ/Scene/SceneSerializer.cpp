@@ -4,6 +4,8 @@
 #include "XYZ/Scene/SceneEntity.h"
 #include "XYZ/Scene/Components.h"
 #include "XYZ/Gui/GuiContext.h"
+#include "XYZ/Asset/AssetManager.h"
+
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
@@ -149,7 +151,7 @@ namespace XYZ {
 		return { translation, orientation, scale };
 	}
 
-	static void SerializeInputField(const ECSManager& ecs, YAML::Emitter& out, const InputField& val)
+	static void SerializeInputField(ECSManager& ecs, YAML::Emitter& out, const InputField& val)
 	{
 		out << YAML::Key << "InputField";
 		out << YAML::BeginMap;
@@ -160,7 +162,7 @@ namespace XYZ {
 
 		out << YAML::EndMap;
 	}
-	static void SerializeRelationship(const ECSManager& ecs, YAML::Emitter& out, const Relationship& val)
+	static void SerializeRelationship(ECSManager& ecs, YAML::Emitter& out, const Relationship& val)
 	{
 		out << YAML::Key << "Relationship";
 		out << YAML::BeginMap;
@@ -488,6 +490,384 @@ namespace XYZ {
 	}
 
 
+	template <>
+	SpriteRenderer SceneSerializer::deserialize<SpriteRenderer>(YAML::Node& data)
+	{
+		GUID materialHandle(data["MaterialAsset"].as<std::string>());
+		GUID subTextureHandle(data["SubTextureAsset"].as<std::string>());
+		glm::vec4 color = data["Color"].as<glm::vec4>();
+		uint16_t sortLayer = data["SortLayer"].as<uint16_t>();
+
+		Ref<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+		Ref<SubTexture> subTexture = AssetManager::GetAsset<SubTexture>(subTextureHandle);
+
+		SpriteRenderer spriteRenderer(
+			material,
+			subTexture,
+			color,
+			sortLayer
+		);
+		return spriteRenderer;
+	}
+
+	template <>
+	CameraComponent SceneSerializer::deserialize<CameraComponent>(YAML::Node& data)
+	{
+		CameraPerspectiveProperties perspectiveProps;
+		CameraOrthographicProperties orthoProps;
+		CameraProjectionType projectionType;
+
+		uint32_t type = data["ProjectionType"].as<uint32_t>();
+		switch (type)
+		{
+		case ToUnderlying(CameraProjectionType::Orthographic):
+			projectionType = CameraProjectionType::Orthographic;
+			break;
+		case ToUnderlying(CameraProjectionType::Perspective):
+			projectionType = CameraProjectionType::Perspective;
+			break;
+		default:
+			projectionType = CameraProjectionType::Orthographic;
+		}
+		perspectiveProps.PerspectiveFOV = data["PerspectiveFOV"].as<float>();
+		perspectiveProps.PerspectiveNear = data["PerspectiveNear"].as<float>();
+		perspectiveProps.PerspectiveFar = data["PerspectiveFar"].as<float>();
+
+		orthoProps.OrthographicSize = data["OrthographicSize"].as<float>();
+		orthoProps.OrthographicNear = data["OrthographicNear"].as<float>();
+		orthoProps.OrthographicFar = data["OrthographicFar"].as<float>();
+
+		CameraComponent camera;
+		camera.Camera.SetProjectionType(projectionType);
+		camera.Camera.SetPerspective(perspectiveProps);
+		camera.Camera.SetOrthographic(orthoProps);
+		return camera;
+	}
+
+	template <>
+	TransformComponent SceneSerializer::deserialize<TransformComponent>(YAML::Node& data)
+	{
+		TransformComponent transform(data["Position"].as<glm::vec3>());
+
+		glm::vec3 rotation = data["Rotation"].as<glm::vec3>();
+		glm::vec3 scale = data["Scale"].as<glm::vec3>();
+
+		transform.Rotation = rotation;
+		transform.Scale = scale;
+		return transform;
+	}
+
+	template <>
+	RectTransform SceneSerializer::deserialize<RectTransform>(YAML::Node& data)
+	{
+		RectTransform transform(data["Position"].as<glm::vec3>(), data["Size"].as<glm::vec2>());
+
+		glm::vec3 worldPosition = data["WorldPosition"].as<glm::vec3>();
+		glm::vec2 scale = data["Scale"].as<glm::vec2>();
+
+		transform.WorldPosition = worldPosition;
+		transform.Scale = scale;
+		return transform;
+	}
+
+	template <>
+	CanvasRenderer SceneSerializer::deserialize<CanvasRenderer>(YAML::Node& data)
+	{
+		GUID materialHandle(data["MaterialAsset"].as<std::string>());
+		GUID subTextureHandle(data["SubTextureAsset"].as<std::string>());
+		glm::vec4 color = data["Color"].as<glm::vec4>();
+		uint16_t sortLayer = data["SortLayer"].as<uint16_t>();
+
+		Ref<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+		Ref<SubTexture> subTexture = AssetManager::GetAsset<SubTexture>(subTextureHandle);
+
+		return CanvasRenderer(
+			material, subTexture, color, Mesh(), sortLayer
+		);
+	}
+
+	template <>
+	PointLight2D SceneSerializer::deserialize<PointLight2D>(YAML::Node& data)
+	{
+		PointLight2D light;
+		light.Color = data["Color"].as<glm::vec3>();
+		light.Intensity = data["Intensity"].as<float>();
+		return light;
+	}
+
+	template <>
+	Button SceneSerializer::deserialize<Button>(YAML::Node& data)
+	{
+		glm::vec4 hooverColor = data["HooverColor"].as<glm::vec4>();
+		glm::vec4 clickColor = data["ClickColor"].as<glm::vec4>();
+
+		return Button(clickColor, hooverColor);
+	}
+
+	template <>
+	Checkbox SceneSerializer::deserialize<Checkbox>(YAML::Node& data)
+	{
+		glm::vec4 hooverColor = data["HooverColor"].as<glm::vec4>();
+		return Checkbox(hooverColor);
+	}
+
+	template <>
+	Slider SceneSerializer::deserialize<Slider>(YAML::Node& data)
+	{
+		glm::vec4 hooverColor = data["HooverColor"].as<glm::vec4>();
+		Slider slider(hooverColor);
+		slider.Value = data["Value"].as<float>();
+		return slider;
+	}
+
+
+
+
+	template <>
+	LayoutGroup SceneSerializer::deserialize<LayoutGroup>(YAML::Node& data)
+	{
+		LayoutGroup layout;
+		layout.Padding.Left = data["LeftPadding"].as<float>();
+		layout.Padding.Right = data["RightPadding"].as<float>();
+		layout.Padding.Top = data["TopPadding"].as<float>();
+		layout.Padding.Bottom = data["BottomPadding"].as<float>();
+		layout.CellSpacing = data["CellSpacing"].as<glm::vec2>();
+
+		return layout;
+	}
+	template <>
+	Canvas SceneSerializer::deserialize<Canvas>(YAML::Node& data)
+	{
+		glm::vec4 color = data["Color"].as<glm::vec4>();
+		return Canvas(CanvasRenderMode::ScreenSpace, color);
+	}
+
+	static InputField DeserializeInputField(ECSManager& ecs, YAML::Node& data)
+	{
+		glm::vec4 selectColor = data["SelectColor"].as<glm::vec4>();
+		glm::vec4 hooverColor = data["HooverColor"].as<glm::vec4>();
+		uint32_t textEntity = ecs.FindEntity<IDComponent>(IDComponent({ data["TextEntity"].as<std::string>() }));
+		InputField val(
+			selectColor, hooverColor, textEntity, &ecs
+		);
+		return val;
+	}
+
+	static Relationship DeserializeRelationship(const ECSManager& ecs, YAML::Node& data)
+	{
+		Relationship relationship;
+		if (data["Parent"])
+		{
+			std::string parent = data["Parent"].as<std::string>();
+			relationship.Parent = ecs.FindEntity<IDComponent>(IDComponent({ parent }));
+		}
+		if (data["NextSibling"])
+		{
+			std::string nextSibling = data["NextSibling"].as<std::string>();
+			relationship.NextSibling = ecs.FindEntity<IDComponent>(IDComponent({ nextSibling }));
+		}
+		if (data["PreviousSibling"])
+		{
+			std::string previousSibling = data["PreviousSibling"].as<std::string>();
+			relationship.PreviousSibling = ecs.FindEntity<IDComponent>(IDComponent({ previousSibling }));
+		}
+		if (data["FirstChild"])
+		{
+			std::string firstChild = data["FirstChild"].as<std::string>();
+			relationship.FirstChild = ecs.FindEntity<IDComponent>(IDComponent({ firstChild }));
+		}
+		return relationship;
+	}
+
+	template <>
+	Text SceneSerializer::deserialize<Text>(YAML::Node& data)
+	{
+		Ref<Font> font = AssetManager::GetAsset<Font>(GUID(data["FontAsset"].as<std::string>()));
+		std::string source = data["Source"].as<std::string>();
+		glm::vec4 color = data["Color"].as<glm::vec4>();
+		TextAlignment alignment = TextAlignment::None;
+		uint32_t align = data["Alignment"].as<uint32_t>();
+		switch (align)
+		{
+		case ToUnderlying(TextAlignment::Center):
+			alignment = TextAlignment::Center;
+			break;
+		case ToUnderlying(TextAlignment::Left):
+			alignment = TextAlignment::Left;
+			break;
+		case ToUnderlying(TextAlignment::Right):
+			alignment = TextAlignment::Right;
+			break;
+		}
+		return Text(source, font, color, alignment);
+	}
+
+	template<>
+	LineRenderer SceneSerializer::deserialize<LineRenderer>(YAML::Node& data)
+	{
+		LineMesh mesh;
+		glm::vec4 color = data["Color"].as<glm::vec4>();
+		for (auto& seq : data["Points"])
+		{
+			mesh.Points.push_back(seq["Point"].as<glm::vec3>());
+		}
+
+		return LineRenderer(color, mesh);
+	}
+
+	template <>
+	RigidBody2DComponent SceneSerializer::deserialize<RigidBody2DComponent>(YAML::Node& data)
+	{
+		RigidBody2DComponent body;
+		uint32_t type = data["Type"].as<uint32_t>();
+		switch (type)
+		{
+		case ToUnderlying(RigidBody2DComponent::BodyType::Static):
+			body.Type = RigidBody2DComponent::BodyType::Static;
+			break;
+		case ToUnderlying(RigidBody2DComponent::BodyType::Dynamic):
+			body.Type = RigidBody2DComponent::BodyType::Dynamic;
+			break;
+		case ToUnderlying(RigidBody2DComponent::BodyType::Kinematic):
+			body.Type = RigidBody2DComponent::BodyType::Kinematic;
+			break;
+		}
+		return body;
+	}
+
+	template <>
+	BoxCollider2DComponent SceneSerializer::deserialize<BoxCollider2DComponent>(YAML::Node& data)
+	{
+		BoxCollider2DComponent box;
+		box.Offset = data["Offset"].as<glm::vec2>();
+		box.Size = data["Size"].as<glm::vec2>();
+		box.Density = data["Density"].as<float>();
+
+		return box;
+	}
+	template <>
+	CircleCollider2DComponent SceneSerializer::deserialize<CircleCollider2DComponent>(YAML::Node& data)
+	{
+		CircleCollider2DComponent circle;
+		circle.Offset = data["Offset"].as<glm::vec2>();
+		circle.Radius = data["Radius"].as<float>();
+		circle.Density = data["Density"].as<float>();
+
+		return circle;
+	}
+
+
+	template <>
+	SceneEntity SceneSerializer::deserialize<SceneEntity>(YAML::Node& data)
+	{
+		GUID guid;
+		guid = data["Entity"].as<std::string>();
+		auto& tagComponent = data["SceneTagComponent"];
+		
+		SceneTagComponent tag = tagComponent["Name"].as<std::string>();
+		SceneEntity entity = m_Scene->CreateEntity(tag, guid);
+
+
+
+		auto transformComponent = data["TransformComponent"];
+		if (transformComponent)
+		{
+			entity.GetComponent<TransformComponent>() = SceneSerializer::deserialize<TransformComponent>(transformComponent);
+		}
+
+		auto cameraComponent = data["CameraComponent"];
+		if (cameraComponent)
+		{
+			entity.AddComponent<CameraComponent>(deserialize<CameraComponent>(cameraComponent));
+		}
+		auto spriteRenderer = data["SpriteRenderer"];
+		if (spriteRenderer)
+		{
+			entity.AddComponent<SpriteRenderer>(deserialize<SpriteRenderer>(spriteRenderer));
+		}
+
+		auto button = data["Button"];
+		if (button)
+		{
+			entity.AddComponent<Button>(deserialize<Button>(button));
+		}
+		auto checkbox = data["Checkbox"];
+		if (checkbox)
+		{
+			entity.AddComponent<Checkbox>(deserialize<Checkbox>(checkbox));
+		}
+		auto slider = data["Slider"];
+		if (slider)
+		{
+			entity.AddComponent<Slider>(deserialize<Slider>(slider));
+		}
+		auto layoutGroup = data["LayoutGroup"];
+		if (layoutGroup)
+		{
+			entity.AddComponent<LayoutGroup>(deserialize<LayoutGroup>(layoutGroup));
+		}
+		auto canvas = data["Canvas"];
+		if (canvas)
+		{
+			entity.AddComponent<Canvas>(deserialize<Canvas>(canvas));
+		}
+		auto rectTransform = data["RectTransformComponent"];
+		if (rectTransform)
+		{
+			entity.AddComponent<RectTransform>(deserialize<RectTransform>(rectTransform));
+		}
+		auto canvasRenderer = data["CanvasRenderer"];
+		if (canvasRenderer)
+		{
+			entity.AddComponent<CanvasRenderer>(deserialize<CanvasRenderer>(canvasRenderer));
+		}
+
+		auto pointLight = data["PointLight2D"];
+		if (pointLight)
+		{
+			entity.AddComponent<PointLight2D>(deserialize<PointLight2D>(pointLight));
+		}
+
+		auto text = data["Text"];
+		if (text)
+		{
+			entity.AddComponent<Text>(deserialize<Text>(text));
+		}
+
+		auto lineRenderer = data["LineRenderer"];
+		if (lineRenderer)
+		{
+			entity.AddComponent<LineRenderer>(deserialize<LineRenderer>(lineRenderer));
+		}
+
+		auto rigidBody = data["RigidBody2D"];
+		if (rigidBody)
+		{
+			entity.AddComponent<RigidBody2DComponent>(deserialize<RigidBody2DComponent>(rigidBody));
+		}
+
+		auto boxCollider = data["BoxCollider2D"];
+		if (boxCollider)
+		{
+			entity.AddComponent<BoxCollider2DComponent>(deserialize<BoxCollider2DComponent>(boxCollider));
+		}
+
+		auto circleCollider = data["CircleCollider2D"];
+		if (circleCollider)
+		{
+			entity.AddComponent<CircleCollider2DComponent>(deserialize<CircleCollider2DComponent>(circleCollider));
+		}
+
+		if (entity.HasComponent<CanvasRenderer>() && entity.HasComponent<RectTransform>())
+		{
+			auto& transform = entity.GetComponent<RectTransform>();
+			transform.Execute<ComponentResizedEvent>(ComponentResizedEvent({ entity, &entity.m_Scene->m_ECS }));
+		}
+
+		return entity;
+	}
+
+
 	SceneSerializer::SceneSerializer(Ref<Scene> scene)
 		:
 		m_Scene(scene)
@@ -511,7 +891,24 @@ namespace XYZ {
 		std::ofstream fout(m_Scene->FilePath);
 		fout << out.c_str();
 	}
+
+
+
 	Ref<Scene> SceneSerializer::Deserialize()
 	{
+		std::ifstream stream(m_Scene->FilePath);
+		std::stringstream strStream;
+		strStream << stream.rdbuf();
+		YAML::Node data = YAML::Load(strStream.str());
+
+		auto entities = data["Entities"];
+		if (entities)
+		{
+			for (auto entity : entities)
+			{
+				SceneSerializer::deserialize<SceneEntity>(entity);
+			}
+		}
+		return m_Scene;
 	}
 }

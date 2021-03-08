@@ -4,7 +4,6 @@
 
 #include "XYZ/ECS/Entity.h"
 #include "XYZ/Scene/Components.h"
-#include "XYZ/Scene/Serializer.h"
 #include "XYZ/Core/Application.h"
 #include "XYZ/Core/Input.h"
 #include "XYZ/Core/KeyCodes.h"

@@ -17,7 +17,7 @@ namespace XYZ {
 	};
 
 
-	class Asset : RefCount
+	class Asset : public RefCount
 	{
 	public:
 		virtual ~Asset() {};

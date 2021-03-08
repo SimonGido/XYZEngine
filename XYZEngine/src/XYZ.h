@@ -29,7 +29,6 @@
 
 //-----Scene-----//
 #include "XYZ/Scene/SceneCamera.h"
-#include "XYZ/Scene/AssetManager.h"
 #include "XYZ/Scene/Animation.h"
 #include "XYZ/Scene/SceneEntity.h"
 #include "XYZ/Scene/Scene.h"
@@ -78,3 +77,6 @@
 //------InGui---------//
 #include "XYZ/InGui/InGui.h"
 #include "XYZ/InGui/InGuiDockspace.h"
+
+//------Asset---------//
+#include "XYZ/Asset/AssetManager.h"

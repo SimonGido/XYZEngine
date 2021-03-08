@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "SubTexture.h"
 
-#include "XYZ/Scene/Serializer.h"
 
 
 namespace XYZ {

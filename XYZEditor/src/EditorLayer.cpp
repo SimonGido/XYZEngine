@@ -36,7 +36,6 @@ namespace XYZ {
 	
 	EditorLayer::EditorLayer()
 		:
-		m_AssetManager("Assets"),
 		m_SceneHierarchyPanel(PanelID::SceneHierarchyPanel),
 		m_InspectorPanel(PanelID::InspectorPanel),
 		m_ScenePanel(PanelID::ScenePanel),
@@ -50,8 +49,9 @@ namespace XYZ {
 
 	void EditorLayer::OnAttach()
 	{
+		AssetManager::Init();
 		Renderer::Init();
-		m_Scene = m_AssetManager.GetAsset<Scene>("Assets/Scenes/scene.xyz")->GetHandle();
+		//m_Scene = AssetManager::CreateAsset<Scene>();
 
 		ScriptEngine::Init("Assets/Scripts/XYZScriptExample.dll");
 		ScriptEngine::SetSceneContext(m_Scene);
@@ -62,7 +62,7 @@ namespace XYZ {
 		m_Scene->SetViewportSize(windowWidth, windowHeight);
 		
 
-		m_Material = m_AssetManager.GetAsset<Material>("Assets/Materials/material.mat")->GetHandle();
+		//m_Material = m_AssetManager.GetAsset<Material>("Assets/Materials/material.mat")->GetHandle();
 		m_Material->SetFlags(XYZ::RenderFlags::TransparentFlag);
 
 		m_TestEntity = m_Scene->GetEntity(2);
@@ -85,7 +85,7 @@ namespace XYZ {
 		m_CharacterSubTexture2 = Ref<SubTexture>::Create(m_CharacterTexture, glm::vec2(1, 2), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
 		m_CharacterSubTexture3 = Ref<SubTexture>::Create(m_CharacterTexture, glm::vec2(2, 2), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
 
-		auto backgroundTexture = m_AssetManager.GetAsset<Texture2D>("Assets/Textures/Backgroundfield.png");
+		//auto backgroundTexture = m_AssetManager.GetAsset<Texture2D>("Assets/Textures/Backgroundfield.png");
 		///////////////////////////////////////////////////////////
 
 		uint32_t count = 5000;
@@ -156,7 +156,7 @@ namespace XYZ {
 	void EditorLayer::OnDetach()
 	{
 		Renderer::Shutdown();
-		m_AssetManager.Serialize();
+		AssetManager::Shutdown();
 	}
 	void EditorLayer::OnUpdate(Timestep ts)
 	{

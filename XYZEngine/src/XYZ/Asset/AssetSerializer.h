@@ -3,6 +3,7 @@
 
 
 
+
 namespace XYZ {
 	class AssetSerializer
 	{
@@ -16,7 +17,7 @@ namespace XYZ {
 
 		static Ref<Asset> LoadAssetMeta(const std::string& filepath, const GUID& directoryHandle, AssetType type);
 		
-		static Ref<Asset> LoadAssetData(Ref<Asset> asset);
+		static Ref<Asset> LoadAssetData(Ref<Asset>& asset);
 		
 
 	private:
@@ -24,7 +25,8 @@ namespace XYZ {
 		static Ref<Asset> deserialize(Ref<Asset> asset);
 
 		template <typename T>
-		static void serialize(Ref<Asset> asset);
+		static void serialize(const Ref<Asset>& asset);
+
 		
 		static void loadMetaFile(Ref<Asset> asset);
 		static void createMetaFile(Ref<Asset> asset);
