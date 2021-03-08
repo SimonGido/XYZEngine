@@ -10,7 +10,7 @@
 #include "SceneCamera.h"
 #include "Components.h"
 
-#include "Serializable.h"
+#include "XYZ/Asset/Asset.h"
 
 #include "XYZ/Physics/DynamicTree.h"
 #include "XYZ/Physics/PhysicsWorld.h"
@@ -30,11 +30,8 @@ namespace XYZ {
     /*! @class Scene
     *	@brief Holds all data relevant to a Scene
     */
-    template <typename T>
-    class Asset;
     class SceneEntity;
-    class Scene : public RefCount,
-        public Serializable
+    class Scene : public Asset
     {
     public:
         Scene(const std::string& name);
@@ -103,7 +100,7 @@ namespace XYZ {
 
 
         friend class SceneEntity;
-        friend class Serializer;
+        friend class SceneSerializer;
         friend class ScriptEngine;
         friend class ScenePanel;
         friend class LuaEntity;

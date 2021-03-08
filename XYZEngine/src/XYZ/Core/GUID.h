@@ -1,7 +1,8 @@
 #pragma once
 
 #include <array>
-
+#include <functional>
+#include <string>
 
 namespace XYZ {
 
@@ -51,4 +52,18 @@ namespace XYZ {
 		uint16_t m_Data3;
 		uint8_t  m_Data4[8];
 	};
+}
+
+
+namespace std {
+
+	template <>
+	struct hash<XYZ::GUID>
+	{
+		size_t operator()(const XYZ::GUID& k) const
+		{
+			return k.Hash();
+		}
+	};
+
 }

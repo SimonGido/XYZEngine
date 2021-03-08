@@ -242,40 +242,9 @@ namespace XYZ {
 
 		return TextureParam::None;
 	}
-	template<>
-	void Serializer::SerializeResource(const Ref<Texture2D>& texture)
-	{
-		XYZ_ASSERT(!texture->GetFilepath().empty(), "Filepath is empty");
-		XYZ_LOG_INFO("Serializing texture ", texture->GetFilepath());
-		YAML::Emitter out;
-		out << YAML::BeginMap; // Texture
-		out << YAML::Key << "Texture" << YAML::Value << texture->GetName();
 
-		out << YAML::Key << "Wrap" << YAML::Value << ToUnderlying(texture->GetSpecification().Wrap);
-		out << YAML::Key << "Param Min" << YAML::Value << ToUnderlying(texture->GetSpecification().MinParam);
-		out << YAML::Key << "Param Max" << YAML::Value << ToUnderlying(texture->GetSpecification().MagParam);
 
-		out << YAML::EndMap; // Texture
-
-		std::ofstream fout(texture->GetFilepath() + ".meta");
-		fout << out.c_str();
-	}
-
-	template <>
-	void Serializer::SerializeResource(const Ref<SubTexture>& subTexture)
-	{
-		XYZ_ASSERT(!subTexture->GetFilepath().empty(), "Filepath is empty");
-		XYZ_LOG_INFO("Serializing subtexture ", subTexture->GetFilepath());
-		YAML::Emitter out;
-		out << YAML::BeginMap;
-		out << YAML::Key << "SubTexture" << YAML::Value << subTexture->GetName();
-		out << YAML::Key << "TextureAssetPath" << YAML::Value << subTexture->GetTexture()->GetFilepath();
-		out << YAML::Key << "TexCoords" << YAML::Value << subTexture->GetTexCoords();
-		out << YAML::EndMap;
-
-		std::ofstream fout(subTexture->GetFilepath());
-		fout << out.c_str();
-	}
+	
 
 	static void SerializeUniformList(YAML::Emitter& out, const uint8_t* buffer, const std::vector<Uniform>& uniformList)
 	{
@@ -319,97 +288,8 @@ namespace XYZ {
 		}
 	}
 
-	template <>
-	void Serializer::SerializeResource<Material>(const Ref<Material>& material)
-	{
-		XYZ_ASSERT(!material->GetFilepath().empty(), "Filepath is empty");
-		XYZ_LOG_INFO("Serializing material ", material->GetFilepath());
-		YAML::Emitter out;
-		out << YAML::BeginMap;
-		out << YAML::Key << "Material" << YAML::Value << material->GetName();
-		out << YAML::Key << "ShaderAssetPath" << YAML::Value << material->GetShader()->GetPath();
 
 
-		out << YAML::Key << "Textures";
-		out << YAML::Value << YAML::BeginSeq;
-		uint32_t counter = 0;
-		for (auto& texture : material->GetTextures())
-		{
-			if (!texture.Raw())
-			{
-				counter++;
-				continue;
-			}
-			out << YAML::BeginMap;
-			out << YAML::Key << "TextureAssetPath";
-			out << YAML::Value << texture->GetFilepath();
-			out << YAML::Key << "TextureIndex";
-			out << YAML::Value << counter++;
-			out << YAML::EndMap;
-		}
-		out << YAML::EndSeq;
-
-		out << YAML::Key << "Values";
-		out << YAML::Value << YAML::BeginSeq;
-
-		SerializeUniformList(out, material->GetVSUniformBuffer(), material->GetShader()->GetVSUniformList().Uniforms);
-		SerializeUniformList(out, material->GetFSUniformBuffer(), material->GetShader()->GetFSUniformList().Uniforms);
-		
-
-		out << YAML::EndSeq;
-		out << YAML::EndMap;
-
-		std::ofstream fout(material->GetFilepath());
-		fout << out.c_str();
-	}
-	template <>
-	void Serializer::SerializeResource<Font>(const Ref<Font>& font)
-	{
-		XYZ_ASSERT(!font->GetFilepath().empty(), "Filepath is empty");
-		XYZ_LOG_INFO("Serializing font ", font->GetFilepath());
-		// remove extension
-		std::string pathWithoutExtension = font->GetFilepath().substr(0, font->GetFilepath().size() - 4);
-		YAML::Emitter out;
-		out << YAML::BeginMap; // Font
-		out << YAML::Key << "Font" << YAML::Value << font->GetName();
-
-		out << YAML::Key << "PixelSize" << YAML::Value << font->GetPixelsize();
-		
-		out << YAML::EndMap; // Font
-
-		std::ofstream fout(pathWithoutExtension + ".meta");
-		fout << out.c_str();
-	}
-
-	template <>
-	void Serializer::SerializeResource<Framebuffer>(const Ref<Framebuffer>& Framebuffer)
-	{
-		XYZ_ASSERT(!Framebuffer->GetFilepath().empty(), "Filepath is empty");
-		XYZ_LOG_INFO("Serializing Framebuffer ", Framebuffer->GetFilepath());
-
-		auto& specs = Framebuffer->GetSpecification();
-		YAML::Emitter out;
-		out << YAML::BeginMap; // Framebuffer
-		out << YAML::Key << "Framebuffer" << YAML::Value << Framebuffer->GetName();
-		
-		
-		out << YAML::Key << "ClearColor" << YAML::Value << specs.ClearColor;
-		out << YAML::Key << "Width" << YAML::Value << specs.Width;
-		out << YAML::Key << "Height" << YAML::Value << specs.Height;
-		out << YAML::Key << "Samples" << YAML::Value << specs.Samples;
-		out << YAML::Key << "SwapChainTarget" << YAML::Value << specs.SwapChainTarget;
-	
-		out << YAML::Key << "Attachments";
-		out << YAML::Value << YAML::BeginSeq;
-		for (auto & it : specs.Attachments.Attachments)
-		{
-			out << YAML::BeginMap;
-			out << YAML::Key << "TextureFormat" << YAML::Value << ToUnderlying(it.TextureFormat);
-			out << YAML::EndMap;
-		}
-		out << YAML::EndSeq;
-		out << YAML::EndMap; // Framebuffer
-	}
 
 	template <>
 	void Serializer::Serialize<SceneTagComponent>(YAML::Emitter& out, const SceneTagComponent& val)
@@ -461,8 +341,8 @@ namespace XYZ {
 		out << YAML::Key << "SpriteRenderer";
 		out << YAML::BeginMap; // SpriteRenderer
 	
-		out << YAML::Key << "MaterialAssetPath" << YAML::Value << val.Material->GetFilepath();
-		out << YAML::Key << "SubTextureAssetPath" << YAML::Value << val.SubTexture->GetFilepath();
+		out << YAML::Key << "MaterialAsset" << YAML::Value << val.Material->Handle;
+		out << YAML::Key << "SubTextureAsset" << YAML::Value << val.SubTexture->Handle;
 		out << YAML::Key << "Color" << YAML::Value << val.Color;
 		out << YAML::Key << "SortLayer" << YAML::Value << val.SortLayer;
 		out << YAML::Key << "IsVisible" << YAML::Value << val.IsVisible;
@@ -495,12 +375,11 @@ namespace XYZ {
 	template <>
 	void Serializer::Serialize<CanvasRenderer>(YAML::Emitter& out, const CanvasRenderer& val)
 	{
-		XYZ_ASSERT(!val.SubTexture->GetFilepath().empty(), "SubTexture file path is empty");
 		out << YAML::Key << "CanvasRenderer";
 		out << YAML::BeginMap; 
 
-		out << YAML::Key << "MaterialAssetPath" << YAML::Value << val.Material->GetFilepath();
-		out << YAML::Key << "SubTextureAssetPath" << YAML::Value << val.SubTexture->GetFilepath();
+		out << YAML::Key << "MaterialAsset" << YAML::Value << val.Material->Handle;
+		out << YAML::Key << "SubTextureAsset" << YAML::Value << val.SubTexture->Handle;
 		out << YAML::Key << "Color" << YAML::Value << val.Color;
 		out << YAML::Key << "SortLayer" << YAML::Value << val.SortLayer;
 		out << YAML::Key << "IsVisible" << YAML::Value << val.IsVisible;
@@ -625,7 +504,7 @@ namespace XYZ {
 		out << YAML::Key << "Text";
 		out << YAML::BeginMap;
 
-		out << YAML::Key << "FontPath" << YAML::Value << val.Font->GetFilepath();
+		out << YAML::Key << "FontAsset" << YAML::Value << val.Font->Handle;
 		out << YAML::Key << "Source" << YAML::Value << val.Source;
 		out << YAML::Key << "Color" << YAML::Value << val.Color;
 		out << YAML::Key << "Alignment" << YAML::Value << ToUnderlying(val.Alignment);
@@ -852,199 +731,6 @@ namespace XYZ {
 		}
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
-	}
-
-	template <>
-	void Serializer::SerializeResource<Scene>(const Ref<Scene>& scene)
-	{
-		XYZ_ASSERT(!scene->GetFilepath().empty(), "Filepath is empty");
-		XYZ_LOG_INFO("Serializing scene ", scene->GetFilepath());
-		Ref<Scene> sceneCopy = scene;
-		YAML::Emitter out;
-		
-		out << YAML::BeginMap;
-		out << YAML::Key << "Scene" << scene->m_Name;
-		out << YAML::Key << "Entities";
-		out << YAML::Value << YAML::BeginSeq;
-		for (auto ent : scene->m_Entities)
-		{
-			Entity entity(ent, &sceneCopy->m_ECS);
-			Serialize<Entity>(out, entity);
-		}
-		out << YAML::EndSeq;
-		out << YAML::EndMap;
-		std::ofstream fout(scene->GetFilepath());
-		fout << out.c_str();
-	}
-
-	template <>
-	Ref<Texture2D> Serializer::DeserializeResource<Texture2D>(const std::string& filepath, AssetManager& assetManager)
-	{
-		std::ifstream stream(filepath + ".meta");
-		TextureSpecs specs;
-		if (stream.is_open())
-		{
-			std::stringstream strStream;
-			strStream << stream.rdbuf();
-			YAML::Node data = YAML::Load(strStream.str());
-		
-			XYZ_ASSERT(data["Texture"], "Incorrect file format");
-			specs.Wrap = IntToTextureWrap(data["Wrap"].as<int>());
-			specs.MinParam = IntToTextureParam(data["Param Min"].as<int>());
-			specs.MagParam = IntToTextureParam(data["Param Max"].as<int>());
-		}
-		else
-		{
-			XYZ_LOG_WARN("Missing texture meta data, setting default");
-		}
-
-		auto ref = Texture2D::Create(specs, filepath);
-		ref->SetFilepath(filepath);
-		return ref;
-	}
-
-	template <>
-	Ref<SubTexture> Serializer::DeserializeResource<SubTexture>(const std::string& filepath, AssetManager& assetManager)
-	{
-		std::ifstream stream(filepath);
-		std::stringstream strStream;
-		strStream << stream.rdbuf();
-		YAML::Node data = YAML::Load(strStream.str());
-
-		XYZ_ASSERT(data["SubTexture"], "Incorrect file format ");
-		std::string texturePath = data["TextureAssetPath"].as<std::string>();
-		
-		Ref<Texture2D> texture;
-		if (texturePath.empty())
-		{
-			texture = Texture2D::Create(1, 1, 4, TextureSpecs());
-			uint32_t defaultData = 0xffffffff;
-			texture->SetData(&defaultData, sizeof(uint32_t));
-		}
-		else if (HasExtension(texturePath, "ttf"))
-			texture = assetManager.GetAsset<Font>(texturePath)->GetHandle()->GetTexture();
-		else
-			texture = assetManager.GetAsset<Texture2D>(texturePath)->GetHandle();
-
-		glm::vec4 texCoords = data["TexCoords"].as<glm::vec4>();
-
-		auto ref = Ref<SubTexture>::Create(texture, texCoords);
-		ref->SetFilepath(filepath);
-		return ref;
-	}
-
-	template <>
-	Ref<Material> Serializer::DeserializeResource<Material>(const std::string& filepath, AssetManager& assetManager)
-	{
-		std::ifstream stream(filepath);
-		std::stringstream strStream;
-		strStream << stream.rdbuf();
-		YAML::Node data = YAML::Load(strStream.str());
-
-		auto shader = Shader::Create(data["ShaderAssetPath"].as<std::string>());
-		Ref<Material> material = Ref<Material>::Create(shader);
-
-		for (auto& seq : data["Textures"])
-		{
-			std::string texturePath = seq["TextureAssetPath"].as<std::string>();
-			uint32_t index = seq["TextureIndex"].as<uint32_t>();
-			Ref<Texture2D> texture;
-			if (HasExtension(texturePath, "ttf"))
-				texture = assetManager.GetAsset<Font>(texturePath)->GetHandle()->GetTexture();
-			else
-				texture = assetManager.GetAsset<Texture2D>(texturePath)->GetHandle();
-			
-			material->Set("u_Texture", texture, index);
-		}
-
-		for (auto& seq : data["Values"])
-		{
-			for (auto& val : seq)
-			{
-				std::stringstream ss;
-				ss << val.second;
-				auto type = FindType(ss.str());
-				switch (type)
-				{
-				case FieldType::Float:
-					material->Set(val.first.as<std::string>(), val.second.as<float>());
-					break;
-				case FieldType::Float2:
-					material->Set(val.first.as<std::string>(), val.second.as<glm::vec2>());
-					break;
-				case FieldType::Float3:
-					material->Set(val.first.as<std::string>(), val.second.as<glm::vec3>());
-					break;
-				case FieldType::Float4:
-					material->Set(val.first.as<std::string>(), val.second.as<glm::vec4>());
-					break;
-				case FieldType::None:
-					break;
-				}
-			}
-		}
-		material->SetFilepath(filepath);
-		return material;
-	}
-	template <>
-	Ref<Font> Serializer::DeserializeResource<Font>(const std::string& filepath, AssetManager& assetManager)
-	{
-		std::string pathWithoutExtension = filepath.substr(0, filepath.size() - 4);
-		std::ifstream stream(pathWithoutExtension + ".meta");
-		std::stringstream strStream;
-		strStream << stream.rdbuf();
-		YAML::Node data = YAML::Load(strStream.str());
-
-		XYZ_ASSERT(data["Font"], "Incorrect file format");
-		uint32_t pixelSize = data["PixelSize"].as<uint32_t>();
-	
-
-		auto ref = Ref<Font>::Create(pixelSize, filepath);
-		ref->GetTexture()->SetFilepath(filepath);
-		ref->SetFilepath(filepath);
-		return ref;
-	}
-
-	template <>
-	Ref<Framebuffer> Serializer::DeserializeResource<Framebuffer>(const std::string& filepath, AssetManager& assetManager)
-	{
-		std::ifstream stream(filepath);
-		std::stringstream strStream;
-		strStream << stream.rdbuf();
-		YAML::Node data = YAML::Load(strStream.str());
-
-		XYZ_ASSERT(data["Framebuffer"], "Incorect file format");
-		FramebufferSpecs specs;
-		specs.ClearColor = data["ClearColor"].as<glm::vec4>();
-		specs.Width = data["Width"].as<uint32_t>();
-		specs.Height = data["Height"].as<uint32_t>();
-		specs.Samples = data["Samples"].as<uint32_t>();
-		specs.SwapChainTarget = data["SwapChainTarget"].as<uint32_t>();
-
-		for (auto& seq : data["Attachments"])
-		{
-			int32_t format = seq["TextureFormat"].as<int32_t>();
-			FramebufferTextureSpecs textureSpecs;
-			
-			switch (format)
-			{
-			case ToUnderlying(FramebufferTextureFormat::RGBA8):
-				textureSpecs.TextureFormat = FramebufferTextureFormat::RGBA8;
-				break;
-			case ToUnderlying(FramebufferTextureFormat::RGBA16F):
-				textureSpecs.TextureFormat = FramebufferTextureFormat::RGBA16F;
-				break;
-			case ToUnderlying(FramebufferTextureFormat::RGBA32F):
-				textureSpecs.TextureFormat = FramebufferTextureFormat::RGBA32F;
-				break;
-			case ToUnderlying(FramebufferTextureFormat::RG32F):
-				textureSpecs.TextureFormat = FramebufferTextureFormat::RG32F;
-				break;
-			};
-			specs.Attachments.Attachments.push_back(textureSpecs);
-		}
-		
-		return Framebuffer::Create(specs);
 	}
 	
 	template <>
@@ -1678,34 +1364,5 @@ namespace XYZ {
 		}
 	}
 
-	template <>
-	Ref<Scene> Serializer::DeserializeResource(const std::string& filepath, AssetManager& assetManager)
-	{
-		std::ifstream stream(filepath);
-		std::stringstream strStream;
-		strStream << stream.rdbuf();
-		YAML::Node data = YAML::Load(strStream.str());
-
-		XYZ_ASSERT(data["Scene"], "Incorrect file format");
-
-		XYZ_LOG_INFO("Deserializing scene");
-
-		Ref<Scene> result = Ref<Scene>::Create("Scene");
-		auto entities = data["Entities"];
-		if (entities)
-		{
-			for (auto entity : entities)
-			{
-				GUID guid;
-				std::cout << (std::string)guid << std::endl;
-				guid = entity["Entity"].as<std::string>();
-				auto tagComponent = entity["SceneTagComponent"];
-				SceneTagComponent tag = tagComponent["Name"].as<std::string>();
-				SceneEntity ent = result->CreateEntity(tag, guid);		
-				Serializer::Deserialize<SceneEntity>(entity, assetManager, ent);
-			}
-		}
-		result->SetFilepath(filepath);
-		return result;
-	}
+	
 }

@@ -1,7 +1,6 @@
 #pragma once
 #include "XYZ/Core/Timestep.h"
-#include "XYZ/Core/Ref.h"
-#include "XYZ/Scene/Serializable.h"
+#include "XYZ/Asset/Asset.h"
 
 namespace XYZ {
 
@@ -33,8 +32,7 @@ namespace XYZ {
 		std::vector<KeyFrame> KeyFrames;
 	};
 
-	class Animation : public RefCount,
-					  public Serializable
+	class Animation : public Asset
 	{
 	public:
 		Animation(float animLength,  bool repeat = true);

@@ -1,14 +1,12 @@
 #pragma once
 #include "Texture.h"
-#include "XYZ/Core/Ref.h"
-#include "XYZ/Scene/Serializable.h"
+#include "XYZ/Asset/Asset.h"
 
 #include <glm/glm.hpp>
 
 namespace XYZ {
 
-	class SubTexture : public RefCount,
-						 public Serializable
+	class SubTexture : public Asset
 	{
 	public:
 		SubTexture(const Ref<Texture>& texture, const glm::vec2& coords, const glm::vec2& size);

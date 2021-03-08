@@ -3,7 +3,6 @@
 #include <vector>
 
 #include "XYZ/Core/Ref.h"
-#include "XYZ/Scene/Serializable.h"
 
 
 #include <glm/glm.hpp>
@@ -69,8 +68,7 @@ namespace XYZ {
 	};
 
 
-	class Framebuffer : public RefCount,
-						public Serializable
+	class Framebuffer : public RefCount
 	{
 	public:
 		virtual ~Framebuffer() = default;

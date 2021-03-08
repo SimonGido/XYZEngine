@@ -1,13 +1,12 @@
 #pragma once
-#include "XYZ/Core/GUID.h"
 #include "XYZ/Core/Ref.h"
+#include "XYZ/Core/GUID.h"
 
 namespace XYZ {
 
 	enum class AssetType
 	{
 		Scene,
-		Mesh,
 		Texture,
 		SubTexture,
 		Material,
@@ -23,12 +22,12 @@ namespace XYZ {
 	public:
 		virtual ~Asset() {};
 	
-		size_t		Handle;
+		GUID		Handle;
 		AssetType   Type;
 		std::string FilePath;
 		std::string FileName;
 		std::string FileExtension;
-		size_t		DirectoryID;
+		GUID		DirectoryHandle;
 		bool		IsLoaded = false;
 	};
 

@@ -46,7 +46,6 @@ namespace XYZ {
 	private:
 		Ref<Scene> m_Scene;
 
-		AssetManager m_AssetManager;
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		InspectorPanel m_InspectorPanel;
 		ScenePanel m_ScenePanel;

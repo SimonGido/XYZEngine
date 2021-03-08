@@ -112,7 +112,7 @@ namespace XYZ {
 
 
 		friend class Scene;
-		friend class Serializer;
+		friend class SceneSerializer;
 		friend class ScriptEngine;
 	};
 }

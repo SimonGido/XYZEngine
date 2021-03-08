@@ -1,7 +1,6 @@
 #pragma once
 
-#include "XYZ/Core/Ref.h"
-#include "XYZ/Scene/Serializable.h"
+#include "XYZ/Asset/Asset.h"
 
 #include <string>
 #include <memory>
@@ -41,8 +40,7 @@ namespace XYZ {
 	* @interface Texture
 	* pure virtual (interface) class.
 	*/
-	class Texture : public RefCount,
-					public Serializable
+	class Texture : public Asset
 	{
 	public:
 		virtual ~Texture() = default;
@@ -53,7 +51,7 @@ namespace XYZ {
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
 		virtual uint32_t GetChannels() const = 0;
-		//virtual const TextureSpecs& GetSpecification() const = 0;
+
 		virtual uint32_t GetRendererID() const = 0;
 		static uint32_t CalculateMipMapCount(uint32_t width, uint32_t height);
 	};

@@ -1,13 +1,13 @@
 #pragma once
 #include "Animation.h"
 #include "XYZ/FSM/StateMachine.h"
-#include "XYZ/Scene/Serializable.h"
+#include "XYZ/Asset/Asset.h"
 #include "XYZ/Core/Timestep.h"
 
 
 namespace XYZ {
 
-	class AnimationController : public Serializable
+	class AnimationController : public Asset
 	{
 	public:
 		void Update(Timestep ts);
@@ -24,7 +24,4 @@ namespace XYZ {
 
 		StateMachine<32> m_StateMachine;
 	};
-
-
-
 }

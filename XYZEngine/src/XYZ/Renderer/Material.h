@@ -2,8 +2,7 @@
 #include "Shader.h"
 #include "Texture.h"
 #include "RenderFlags.h"
-#include "XYZ/Core/Ref.h"
-#include "XYZ/Scene/Serializable.h"
+#include "XYZ/Asset/Asset.h"
 #include "XYZ/Utils/DataStructures/ByteBuffer.h"
 
 #include <queue>
@@ -12,8 +11,7 @@
 
 namespace XYZ {
 
-	class Material : public RefCount,
-					 public Serializable
+	class Material : public Asset
 	{
 		friend class MaterialInstance;
 	public:

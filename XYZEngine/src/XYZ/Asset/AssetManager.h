@@ -1,6 +1,7 @@
 #pragma once
 #include "XYZ/Core/GUID.h"
 #include "XYZ/Utils/StringUtils.h"
+#include "AssetSerializer.h"
 #include "Asset.h"
 
 namespace XYZ {
@@ -8,9 +9,13 @@ namespace XYZ {
 	class AssetManager
 	{
 	public:
+		static void Init();
+		static void Shutdown();
+
+		static AssetType GetAssetTypeFromExtension(const std::string& extension);
 
 		template<typename T, typename... Args>
-		static Ref<T> CreateAsset(const std::string& filename, AssetType type, size_t directoryHandle, Args&&... args)
+		static Ref<T> CreateAsset(const std::string& filename, AssetType type, const GUID& directoryHandle, Args&&... args)
 		{
 			static_assert(std::is_base_of<Asset, T>::value, "CreateAsset only works for types derived from Asset");
 
@@ -22,7 +27,7 @@ namespace XYZ {
 			asset->FileName = Utils::RemoveExtension(Utils::GetFilename(asset->FilePath));
 			asset->Extension = Utils::GetFilename(filename);
 			asset->ParentDirectory = directoryHandle;
-			asset->Handle = std::hash<std::string>()(asset->FilePath);
+			asset->Handle = GUID();
 			asset->IsLoaded = true;
 			s_LoadedAssets[asset->Handle] = asset;
 
@@ -30,19 +35,24 @@ namespace XYZ {
 		}
 
 		template<typename T>
-		static Ref<T> GetAsset(size_t assetHandle, bool loadData = true)
+		static Ref<T> GetAsset(const GUID& assetHandle, bool loadData = true)
 		{
 			XYZ_ASSERT(s_LoadedAssets.find(assetHandle) != s_LoadedAssets.end(),"");
 			Ref<Asset> asset = s_LoadedAssets[assetHandle];
 
 			if (!asset->IsLoaded && loadData)
 			{
-				//asset = AssetSerializer::LoadAssetData(asset);
+				asset = AssetSerializer::LoadAssetData(asset);
 			}
 			return asset.As<T>();
 		}
 
 	private:
-		std::unordered_map<GUID, Ref<Asset>> s_LoadedAssets;
+		static void processDirectory(const std::string& path);
+		static void importAsset(const std::string& path);
+
+	private:
+		static std::unordered_map<GUID, Ref<Asset>> s_LoadedAssets;
+		static std::unordered_map<std::string, AssetType> s_AssetTypes;
 	};
 }

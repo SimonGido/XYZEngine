@@ -1,5 +1,5 @@
 #pragma once
-#include "XYZ/Core/Ref.h"
+#include "XYZ/Asset/Asset.h"
 #include "XYZ/Renderer/Texture.h"
 
 
@@ -17,8 +17,7 @@ namespace XYZ {
 		int32_t XAdvance;
 	};
 
-	class Font : public RefCount,
-				 public Serializable
+	class Font : public Asset
 	{
 	public:
 		Font(uint32_t pixelSize, const std::string& path);

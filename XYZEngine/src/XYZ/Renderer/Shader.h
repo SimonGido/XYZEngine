@@ -1,6 +1,6 @@
 #pragma once
 
-#include "XYZ/Core/Ref.h"
+#include "XYZ/Asset/Asset.h"
 #include "XYZ/Utils/DataStructures/ByteBuffer.h"
 
 #include <unordered_map>
@@ -63,7 +63,7 @@ namespace XYZ {
 		uint32_t					Count = 0;
 	};
 
-	class Shader : public RefCount
+	class Shader : public Asset
 	{
 	public:
 		~Shader() = default;
