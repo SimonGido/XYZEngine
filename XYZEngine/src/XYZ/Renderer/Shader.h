@@ -63,7 +63,8 @@ namespace XYZ {
 		uint32_t					Count = 0;
 	};
 
-	class Shader : public Asset
+	class ShaderAsset;
+	class Shader : public RefCount
 	{
 	public:
 		~Shader() = default;
@@ -99,9 +100,21 @@ namespace XYZ {
 	};
 
 
-	class ShaderLibrary
+	class ShaderAsset : public Asset
 	{
-		std::unordered_map<std::string, Ref<Shader>> m_Shaders;
+	public:
+		ShaderAsset(const std::string& filepath)
+			: 
+			Shader(Shader::Create(filepath)),
+			ShaderFilePath(filepath)
+		{}
+		Ref<Shader> Shader;
+		std::string ShaderFilePath;
+	};
+
+
+	class ShaderLibrary : public RefCount
+	{
 	public:
 		void Add(const Ref<Shader>& shader);
 		//void Add(const std::string& name, const Ref<Shader>& shader);
@@ -110,6 +123,9 @@ namespace XYZ {
 		Ref<Shader> Load(const std::string& name, const std::string& path);
 		Ref<Shader> Get(const std::string& name);
 		bool Exists(const std::string& name);
+
+	private:
+		std::unordered_map<std::string, Ref<Shader>> m_Shaders;
 	};
 
 }

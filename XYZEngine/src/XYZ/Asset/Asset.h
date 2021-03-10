@@ -30,5 +30,14 @@ namespace XYZ {
 		GUID		DirectoryHandle;
 		bool		IsLoaded = false;
 	};
+	
+	class AssetDirectory
+	{
+	public:
+		GUID						Handle;
+		GUID						ParentHandle;
+		std::string					FilePath;
+		std::vector<GUID>			SubDirectoryHandles;
+	};
 
 }

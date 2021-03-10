@@ -288,14 +288,14 @@ namespace XYZ {
 	}
 
 	template <>
-	void AssetSerializer::serialize<Shader>(const Ref<Asset>& asset)
+	void AssetSerializer::serialize<ShaderAsset>(const Ref<Asset>& asset)
 	{
 		XYZ_ASSERT(!asset->FilePath.empty(), "Filepath is empty");
-		Ref<Shader> shader = Ref<Shader>((Shader*)asset.Raw());
+		Ref<ShaderAsset> shaderAsset = Ref<ShaderAsset>((ShaderAsset*)asset.Raw());
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		out << YAML::Key << "Shader" << YAML::Value << asset->FileName;
-		out << YAML::Key << "FilePath" << YAML::Value << shader->GetPath();
+		out << YAML::Key << "ShaderFilePath" << YAML::Value << shaderAsset->ShaderFilePath;
 		std::ofstream fout(asset->FilePath);
 		fout << out.c_str();
 	}
@@ -309,7 +309,7 @@ namespace XYZ {
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		out << YAML::Key << "Material" << YAML::Value << asset->FileName;
-		out << YAML::Key << "ShaderAsset" << YAML::Value << material->GetShader()->Handle;
+		out << YAML::Key << "ShaderAsset" << YAML::Value << material->GetShaderAsset()->Handle;
 
 		out << YAML::Key << "Textures";
 		out << YAML::Value << YAML::BeginSeq;
@@ -414,14 +414,15 @@ namespace XYZ {
 	}
 
 	template <>
-	Ref<Asset> AssetSerializer::deserialize<Shader>(Ref<Asset> asset)
+	Ref<Asset> AssetSerializer::deserialize<ShaderAsset>(Ref<Asset> asset)
 	{
 		std::ifstream stream(asset->FilePath);
 		std::stringstream strStream;
 		strStream << stream.rdbuf();
 		YAML::Node data = YAML::Load(strStream.str());
 
-		return Shader::Create(data["FilePath"].as<std::string>());
+
+		return Shader::Create(data["ShaderFilePath"].as<std::string>());
 	}
 
 	template <>
@@ -433,9 +434,9 @@ namespace XYZ {
 		YAML::Node data = YAML::Load(strStream.str());
 
 		GUID shaderHandle(data["ShaderAsset"].as<std::string>());
-		auto shader = AssetManager::GetAsset<Shader>(shaderHandle);
+		auto shaderAsset = AssetManager::GetAsset<ShaderAsset>(shaderHandle);
 
-		Ref<Material> material = Ref<Material>::Create(shader);
+		Ref<Material> material = Ref<Material>::Create(shaderAsset->Shader);
 
 		for (auto& seq : data["Textures"])
 		{
@@ -542,7 +543,7 @@ namespace XYZ {
 		case AssetType::Material:
 			return deserialize<Material>(asset);
 		case AssetType::Shader:
-			return deserialize<Shader>(asset);
+			return deserialize<ShaderAsset>(asset);
 		case AssetType::Font:
 			return deserialize<Font>(asset);
 		}

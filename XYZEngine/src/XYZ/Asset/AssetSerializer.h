@@ -12,7 +12,7 @@ namespace XYZ {
 		static void SerializeAsset(Ref<T> asset)
 		{
 			static_assert(std::is_base_of<Asset, T>::value, "SerializeAsset only accepts types that inherit from Asset");
-			Serialize<T>(asset);
+			serialize<T>(asset);
 		}
 
 		static Ref<Asset> LoadAssetMeta(const std::string& filepath, const GUID& directoryHandle, AssetType type);

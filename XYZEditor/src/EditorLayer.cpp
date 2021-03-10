@@ -51,7 +51,10 @@ namespace XYZ {
 	{
 		AssetManager::Init();
 		Renderer::Init();
-		//m_Scene = AssetManager::CreateAsset<Scene>();
+
+		auto shaderAsset = AssetManager::CreateAsset<ShaderAsset>("DefaultShader.shader", AssetType::Shader, AssetManager::GetDirectoryHandle("Assets/Shaders"), "Assets/Shaders/DefaultShader.glsl");
+		m_Material = AssetManager::CreateAsset<Material>("Material.mat", AssetType::Material, AssetManager::GetDirectoryHandle("Assets/Materials"), shaderAsset->Shader);
+		m_Scene = AssetManager::CreateAsset<Scene>("Scene.xyz", AssetType::Scene, AssetManager::GetDirectoryHandle("Assets/Scenes"), "Scene");
 
 		ScriptEngine::Init("Assets/Scripts/XYZScriptExample.dll");
 		ScriptEngine::SetSceneContext(m_Scene);
@@ -62,7 +65,7 @@ namespace XYZ {
 		m_Scene->SetViewportSize(windowWidth, windowHeight);
 		
 
-		//m_Material = m_AssetManager.GetAsset<Material>("Assets/Materials/material.mat")->GetHandle();
+		
 		m_Material->SetFlags(XYZ::RenderFlags::TransparentFlag);
 
 		m_TestEntity = m_Scene->GetEntity(2);
