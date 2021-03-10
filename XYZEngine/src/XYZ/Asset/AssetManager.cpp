@@ -31,6 +31,7 @@ namespace XYZ {
 	{
 		s_LoadedAssets.clear();
 	}
+
 	AssetType AssetManager::GetAssetTypeFromExtension(const std::string& extension)
 	{
 		return s_AssetTypes[extension];

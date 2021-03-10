@@ -83,11 +83,10 @@ namespace XYZ {
 		Ref<Shader>& GetShader() { return m_Shader; }
 		const Ref<Shader>& GetShader() const { return m_Shader; }
 		const Ref<ShaderAsset>& GetShaderAsset() { return m_ShaderAsset; }
+		const std::vector<Ref<Texture>>& GetTextures() const { return m_Textures; }
 
 		const uint8_t* GetVSUniformBuffer() const { return m_VSUniformBuffer; }
 		const uint8_t* GetFSUniformBuffer() const { return m_FSUniformBuffer; }
-
-		const std::vector<Ref<Texture>>& GetTextures() const { return m_Textures; }
 		
 		bool operator ==(const Material& other) const
 		{
@@ -108,8 +107,9 @@ namespace XYZ {
 	private:
 		Ref<Shader> m_Shader;
 		Ref<ShaderAsset> m_ShaderAsset;
-		std::unordered_set<MaterialInstance*> m_MaterialInstances;
 		std::vector<Ref<Texture>> m_Textures;
+
+		std::unordered_set<MaterialInstance*> m_MaterialInstances;
 
 		ByteBuffer m_VSUniformBuffer;
 		ByteBuffer m_FSUniformBuffer;

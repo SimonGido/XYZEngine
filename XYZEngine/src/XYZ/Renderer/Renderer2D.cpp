@@ -120,7 +120,7 @@ namespace XYZ {
 	{
 		if (!BufferBase)
 		{
-			DefaultQuadMaterial = Ref<Material>::Create(Shader::Create("Assets/Shaders/DefaultShader.glsl"));
+			DefaultQuadMaterial = Ref<Material>::Create(Ref<ShaderAsset>::Create("Assets/Shaders/DefaultShader.glsl"));
 			BufferBase = new Vertex2D[MaxVertices];
 			QuadVertexArray = VertexArray::Create();
 			QuadVertexBuffer = VertexBuffer::Create(MaxVertices * sizeof(Vertex2D));
@@ -152,7 +152,7 @@ namespace XYZ {
 			delete[] quadIndices;
 
 			// Grid setup
-			GridMaterial = Ref<Material>::Create(Shader::Create("Assets/Shaders/Grid.glsl"));
+			GridMaterial = Ref<Material>::Create(Ref<ShaderAsset>::Create("Assets/Shaders/Grid.glsl"));
 			GridMaterial->Set("u_Scale", glm::vec2{ 16.025f,16.025f });
 			GridMaterial->Set("u_LineWidth", 0.025f);
 			struct QuadVertex
