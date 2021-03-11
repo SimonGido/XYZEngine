@@ -7,7 +7,7 @@
 #include <glm/glm.hpp>
 
 namespace XYZ {
-	struct CanvasRenderer : public Type<CanvasRenderer>
+	struct CanvasRenderer : public IComponent
 	{
 		CanvasRenderer(
 			Ref<Material>     Material,

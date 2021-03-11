@@ -18,7 +18,7 @@ namespace XYZ {
 	}
 
 	class Slider : public EventSystem<ClickEvent, ReleaseEvent, DraggedEvent>,
-		public Type<Slider>
+		public IComponent
 	{
 	public:
 		Slider(const glm::vec4& hooverColor);

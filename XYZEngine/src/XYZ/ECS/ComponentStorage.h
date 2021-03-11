@@ -1,116 +1,125 @@
 #pragma once
 #include "Types.h"
 
+#include "ComponentAllocator.h"
+
 namespace XYZ {
 
-	class IComponentStorage
-	{
-		friend class ComponentManager;
-	public:
-		/**
-		* virtual destructor
-		*/
-		virtual ~IComponentStorage() = default;
-		virtual void AddRawComponent(uint32_t entity, uint8_t* component) = 0;
-		virtual uint32_t EntityDestroyed(uint32_t entity) = 0;
-		virtual uint32_t GetComponentIndex(uint32_t entity) const = 0;
-		virtual uint32_t GetEntityAtIndex(size_t index) const = 0;
-		virtual IComponentStorage* Clone() = 0;
-	};
-
-
-	template <typename T>
-	class ComponentStorage : public IComponentStorage
+	class ComponentStorage
 	{
 	public:
+		ComponentStorage();
+		ComponentStorage(uint8_t id);
+		
+		uint32_t EntityDestroyed(uint32_t entity)
+		{
+			uint32_t updatedEntity = NULL_ENTITY;
+			if (entity != m_DataEntityMap.back())
+			{
+				uint32_t lastEntity = m_DataEntityMap.back();
+				uint32_t index = m_EntityDataMap[entity];
+				m_Data.Copy(index, m_Data.Size() - 1, m_Data.GetElementSize());
+
+				m_DataEntityMap[index] = lastEntity;
+				m_EntityDataMap[lastEntity] = index;
+				updatedEntity = lastEntity;
+			}
+			m_Data.Erase(m_Data.Size() - 1, m_Data.GetElementSize());
+			return updatedEntity;
+		}
+
+		template <typename T, typename ...Args>
+		T& EmplaceComponent(uint32_t entity, Args&& ... args)
+		{
+			if (m_EntityDataMap.size() <= entity)
+				m_EntityDataMap.resize(size_t(entity) + 1);
+			
+			m_DataEntityMap.push_back(entity);
+			m_EntityDataMap[entity] = m_Data.Size();
+			return *m_Data.Emplace(std::forward<Args>(args)...);
+		}
+		template <typename T>
 		T& AddComponent(uint32_t entity, const T& component)
 		{
 			if (m_EntityDataMap.size() <= entity)
 				m_EntityDataMap.resize(size_t(entity) + 1);
 
-			m_EntityDataMap[entity] = m_Data.size();
-
-			m_Data.push_back({ component,entity });
-
-			return m_Data[m_EntityDataMap[entity]].Data;
+			m_DataEntityMap.push_back(entity);
+			m_EntityDataMap[entity] = m_Data.Size();
+			return *m_Data.Push({ component,entity });
 		}
-
+		template <typename T>
 		T& GetComponent(uint32_t entity)
 		{
-			return m_Data[m_EntityDataMap[entity]].Data;
+			return m_Data.Get(m_EntityDataMap[entity]);
 		}
 
+		template <typename T>
 		const T& GetComponent(uint32_t entity) const
 		{
-			return m_Data[m_EntityDataMap[entity]].Data;
+			return m_Data.Get(m_EntityDataMap[entity]);
 		}
+
+		template <typename T>
 		uint32_t RemoveComponent(uint32_t entity)
 		{
 			uint32_t updatedEntity = NULL_ENTITY;
-			if (entity != m_Data.back().Entity)
+			if (entity != m_DataEntityMap.back())
 			{
 				// Entity of last element in data pack
-				uint32_t lastEntity = m_Data.back().Entity;
+				uint32_t lastEntity = m_DataEntityMap.back();
 				// Index that is entity pointing to
 				uint32_t index = m_EntityDataMap[entity];
 				// Move last element in data pack at the place of removed component
-				m_Data[index] = std::move(m_Data.back());
+				m_Data.Move<T>(index, m_Data.Size() - 1);
+				// Point data entity map at index to last entity
+				m_DataEntityMap[index] = lastEntity;
 				// Point last entity to data new index;
 				m_EntityDataMap[lastEntity] = index;
 				// Pop back last element
 				updatedEntity = lastEntity;
 			}
-			m_Data.pop_back();
+			m_Data.Pop();
 			return updatedEntity;
 		}
+		template <typename T>
+		ComponentStorage Clone() override
+		{
+			ComponentStorage storage;
+			m_Data.Clone(storage.m_Data);
+			storage.m_DataEntityMap = m_DataEntityMap;
+			storage.m_EntityDataMap = m_EntityDataMap;
+			return storage;
+		}
 
-		virtual uint32_t GetComponentIndex(uint32_t entity) const override
+		template <typename T>
+		T& GetComponentAtIndex(size_t index)
+		{
+			return m_Data.Get(index);
+		}
+
+		template <typename T>
+		const T& GetComponentAtIndex(size_t index) const
+		{
+			return m_Data.Get(index);
+		}
+
+		uint32_t GetComponentIndex(uint32_t entity) const
 		{
 			return m_EntityDataMap[entity];
 		}
 
-		virtual void AddRawComponent(uint32_t entity, uint8_t* component) override
+		uint32_t GetEntityAtIndex(size_t index) const
 		{
-			AddComponent(entity, *(T*)component);
-		}
-		virtual uint32_t EntityDestroyed(uint32_t entity) override
-		{
-			return RemoveComponent(entity);
-		}
-		virtual uint32_t GetEntityAtIndex(size_t index) const override
-		{
-			return m_Data[index].Entity;
-		}
-		virtual IComponentStorage* Clone() override
-		{
-			ComponentStorage<T>* newStorage = new ComponentStorage<T>();
-			for (auto& it : m_Data)
-				newStorage->m_Data.push_back(it);
-			for (auto& it : m_EntityDataMap)
-				newStorage->m_EntityDataMap.push_back(it);
-			return newStorage;
+			return m_DataEntityMap[index];
 		}
 
-		T& operator[](size_t index)
-		{
-			return m_Data[index].Data;
-		}
+		size_t Size() const { return m_Data.Size(); }
 
-		const T& operator[](size_t index) const
-		{
-			return m_Data[index].Data;
-		}
-
-		size_t Size() const { return m_Data.size(); }
-
+		uint8_t GetComponentID() const { return m_Data.GetID(); }
 	private:
-		struct Pack
-		{
-			T Data;
-			uint32_t Entity;
-		};
-
-		std::vector<Pack> m_Data;
+		ComponentAllocator m_Data;
 		std::vector<uint32_t> m_EntityDataMap;
+		std::vector<uint32_t> m_DataEntityMap;
 	};
 }

@@ -1,0 +1,178 @@
+#pragma once
+#include "Types.h"
+#include "Component.h"
+
+namespace XYZ {
+	class ComponentAllocator
+	{
+	public:
+		ComponentAllocator();
+		ComponentAllocator(uint8_t id, size_t elementSize);
+
+		template <typename T, typename T2>
+		void Clone(ComponentAllocator& allocator) const
+		{
+			XYZ_ASSERT(T::GetComponentID() == m_ID && m_ID != INVALID_COMPONENT, "");
+			allocator.Clean<T2>();
+
+			allocator.m_ID = m_ID;
+			allocator.m_Size = m_Size;
+			allocator.m_Capacity = m_Capacity;
+			allocator.m_Buffer = new uint8_t[m_Capacity];
+			for (size_t i = 0; i < m_Size; i += sizeof(T))
+				new((void*)&allocator.m_Buffer[i])T(*reinterpret_cast<T*>(&m_Buffer[i]));
+		}
+
+		template <typename T>
+		void Clean()
+		{
+			XYZ_ASSERT(T::GetComponentID() == m_ID && m_ID != INVALID_COMPONENT, "");
+			for (size_t i = 0; i < m_Size; i += sizeof(T))
+			{
+				T* casted = reinterpret_cast<T*>(&m_Buffer[i]);
+				casted->~T();
+			}
+			delete[]m_Buffer;
+			m_Buffer = nullptr;
+			m_Size = 0;
+			m_Capacity = 0;
+		}
+
+		void Clean(size_t elementSize)
+		{
+			for (size_t i = 0; i < m_Size; i += elementSize)
+			{
+				IComponent* casted = reinterpret_cast<IComponent*>(&m_Buffer[i]);
+				casted->~IComponent();
+			}
+			delete[]m_Buffer;
+			m_Buffer = nullptr;
+			m_Size = 0;
+			m_Capacity = 0;
+		}
+
+		template <typename T>
+		T* Push(const T& elem)
+		{
+			XYZ_ASSERT(T::GetComponentID() == m_ID && m_ID != INVALID_COMPONENT, "");
+			if (m_Size + sizeof(T) >= m_Capacity)
+				reallocate<T>((m_Capacity * sc_CapacityMultiplier) + sizeof(T));
+
+			T* result = new ((void*)&m_Buffer[m_Size])T(elem);
+			m_Size += sizeof(T);
+
+			return result;
+		}
+
+		template <typename T, typename ...Args>
+		T* Emplace(Args&&... args)
+		{
+			XYZ_ASSERT(T::GetComponentID() == m_ID && m_ID != INVALID_COMPONENT, "");
+			if (m_Size + sizeof(T) >= m_Capacity)
+				reallocate<T>((m_Capacity * sc_CapacityMultiplier) + sizeof(T));
+
+			T* result = new ((void*)&m_Buffer[m_Size])T(std::forward<Args>(args)...);
+			m_Size += sizeof(T);
+
+			return result;
+		}
+
+		template <typename T>
+		void Erase(size_t index)
+		{
+			XYZ_ASSERT(T::GetComponentID() == m_ID && m_ID != INVALID_COMPONENT, "");
+			T* removed = reinterpret_cast<T*>(&m_Buffer[index * sizeof(T)]);
+			removed->~T();
+
+			for (size_t i = (index + 1) * sizeof(T); i < m_Size; i += sizeof(T))
+			{
+				T* casted = reinterpret_cast<T*>(&m_Buffer[i]);
+				new ((void*)&m_Buffer[i - sizeof(T)]) T(*casted);
+				casted->~T();
+			}
+			m_Size -= sizeof(T);
+		}
+
+		void Erase(size_t index, size_t elementSize)
+		{
+			IComponent* removed = reinterpret_cast<IComponent*>(&m_Buffer[index * elementSize]);
+			removed->~IComponent();
+
+			for (size_t i = (index + 1) * elementSize; i < m_Size; i += elementSize)
+			{
+				IComponent* casted = reinterpret_cast<IComponent*>(&m_Buffer[i]);
+				IComponent* dest = reinterpret_cast<IComponent*>(&m_Buffer[i - elementSize]);
+				dest->Copy(casted);
+			}
+			m_Size -= elementSize;
+		}
+
+		template <typename T>
+		void Pop()
+		{
+			Erase<T>(Size<T>() - 1);
+		}
+
+		template <typename T>
+		void Move(size_t targetIndex, size_t sourceIndex)
+		{
+			XYZ_ASSERT(T::GetComponentID() == m_ID, "");
+
+			size_t firstIndexInBuffer = targetIndex * sizeof(T);
+			size_t secondIndexInBuffer = sourceIndex * sizeof(T);
+			T* first = reinterpret_cast<T*>(&m_Buffer[firstIndexInBuffer]);
+			T* second = reinterpret_cast<T*>(&m_Buffer[secondIndexInBuffer]);
+			new (&m_Buffer[firstIndexInBuffer])T(std::move(*second));
+		}
+
+		void Copy(size_t targetIndex, size_t sourceIndex, size_t elementSize)
+		{
+			IComponent* target = reinterpret_cast<IComponent*>(&m_Buffer[targetIndex * elementSize]);
+			IComponent* source = reinterpret_cast<IComponent*>(&m_Buffer[sourceIndex * elementSize]);
+			target->Copy(source);
+		}
+
+		template <typename T>
+		T& Get(size_t index)
+		{
+			XYZ_ASSERT(T::GetComponentID() == m_ID && m_ID != INVALID_COMPONENT, "");
+			return *reinterpret_cast<T*>(&m_Buffer[index * sizeof(T)]);
+		}
+
+		template <typename T>
+		const T& Get(size_t index) const
+		{
+			XYZ_ASSERT(T::GetComponentID() == m_ID && m_ID != INVALID_COMPONENT, "");
+			return *reinterpret_cast<T*>(&m_Buffer[index * sizeof(T)]);
+		}
+		uint8_t GetID() const { return m_ID; }
+
+		size_t Size() const { return m_Size / m_ElementSize; }
+		size_t GetElementSize() const { return m_ElementSize; }
+	private:
+		template <typename T>
+		void reallocate(size_t newCapacity)
+		{
+			m_Capacity = newCapacity;
+			uint8_t* tmp = new uint8_t[m_Capacity];
+			for (size_t i = 0; i < m_Size; i += sizeof(T))
+			{
+				T* casted = reinterpret_cast<T*>(&m_Buffer[i]);
+				new ((void*)&tmp[i])T(*casted);
+				casted->~T();
+			}
+			delete[]m_Buffer;
+			m_Buffer = tmp;
+		}
+
+
+	private:
+		uint8_t* m_Buffer = nullptr;
+		size_t m_Capacity = 0;
+		size_t m_Size = 0;
+
+		uint8_t m_ID;
+		size_t m_ElementSize;
+		static constexpr size_t sc_CapacityMultiplier = 2;
+	};
+}

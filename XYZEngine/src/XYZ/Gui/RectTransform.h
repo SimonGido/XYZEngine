@@ -9,7 +9,7 @@
 namespace XYZ {
 	
 
-	struct RectTransform : public Type<RectTransform>,
+	struct RectTransform : public IComponent,
 						   public EventSystem<ComponentResizedEvent>
 	{
 		RectTransform(const glm::vec3& position, const glm::vec2& size);

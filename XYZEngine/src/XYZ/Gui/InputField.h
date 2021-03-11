@@ -19,7 +19,7 @@ namespace XYZ {
 			NumStates
 		};
 	}
-	struct InputField : public Type<InputField>,
+	struct InputField : public IComponent,
 					    public EventSystem<ClickEvent, ReleaseEvent, HooverEvent, UnHooverEvent>
 	{
 		InputField(const glm::vec4& selectColor, const glm::vec4& hooverColor, uint32_t entity, ECSManager* ecs);

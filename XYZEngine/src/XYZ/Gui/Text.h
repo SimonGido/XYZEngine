@@ -14,7 +14,7 @@ namespace XYZ {
 		None
 	};
 
-	struct Text : public Type<Text>
+	struct Text : public IComponent
 	{
 		Text(const std::string& source, const Ref<Font>& font, const glm::vec4& color, TextAlignment alignment);
 

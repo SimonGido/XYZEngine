@@ -5,7 +5,7 @@
 namespace XYZ {
 
 	class ComponentManager;
-	class IComponent
+	class Counter
 	{
 	public:
 		template <typename T>
@@ -26,14 +26,29 @@ namespace XYZ {
 	};
 
 
-	template <typename Derived, typename DeriveFrom = IComponent>
+	template <typename Derived, typename DeriveFrom = Counter>
 	class Type : public IComponent
 	{
 	public:
 		// return unique static id
 		static uint8_t GetComponentID()
 		{
-			return IComponent::GetID<Derived>();
+			return Counter::GetID<Derived>();
+		}
+	};
+
+
+	class IComponent
+	{
+	public:
+		virtual ~IComponent() {}
+
+		virtual void Copy(IComponent* component) = 0;
+
+		template <typename T>
+		static uint8_t GetComponentID()
+		{
+			return Type<T>::GetComponentID();
 		}
 	};
 }

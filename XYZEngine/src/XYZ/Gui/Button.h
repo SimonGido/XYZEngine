@@ -22,7 +22,7 @@ namespace XYZ {
 	}
 
 	class Button : public EventSystem<ClickEvent, ReleaseEvent, HooverEvent, UnHooverEvent>,
-				   public Type<Button>
+				   public IComponent
 	{
 	public:
 		Button(const glm::vec4& clickColor, const glm::vec4& hooverColor);

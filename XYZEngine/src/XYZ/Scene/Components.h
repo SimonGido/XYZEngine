@@ -18,7 +18,7 @@
 
 namespace XYZ {
 
-	struct IDComponent : public Type<IDComponent>
+	struct IDComponent : public IComponent
 	{
 		IDComponent() = default;
 		IDComponent(const GUID& id) 
@@ -31,7 +31,7 @@ namespace XYZ {
 		GUID ID;
 	};
 
-	class TransformComponent : public Type<TransformComponent>
+	class TransformComponent : public IComponent
 	{
 	public:
 		TransformComponent() = default;
@@ -67,7 +67,7 @@ namespace XYZ {
 		}
 	};
 
-	struct SceneTagComponent : public Type<SceneTagComponent>
+	struct SceneTagComponent : public IComponent
 	{
 		std::string Name;
 		SceneTagComponent() = default;
@@ -87,7 +87,7 @@ namespace XYZ {
 		operator const  std::string& () const { return Name; }
 	};
 
-	struct SpriteRenderer : public Type<SpriteRenderer>
+	struct SpriteRenderer : public IComponent
 	{
 		SpriteRenderer() = default;
 		SpriteRenderer(
@@ -113,22 +113,27 @@ namespace XYZ {
 	};
 
 
-	struct CameraComponent : public Type<CameraComponent>
+	struct CameraComponent : public IComponent
 	{
 		SceneCamera Camera;
 		CameraComponent() = default;
 	};
 
 
-	struct AnimatorComponent : public Type<AnimatorComponent>
+	struct AnimatorComponent : public IComponent
 	{
 		AnimatorComponent() = default;
+
+		virtual void Copy(IComponent* component) override
+		{
+			Controller = static_cast<AnimatorComponent*>(component)->Controller;
+		}
 
 		AnimationController Controller;
 	};
 
 
-	struct ParticleComponent : public Type<ParticleComponent>
+	struct ParticleComponent : public IComponent
 	{
 		ParticleComponent() = default;
 		Ref<MaterialInstance> RenderMaterial;
@@ -138,7 +143,7 @@ namespace XYZ {
 		uint32_t TextureID = 0;
 	};
 
-	struct PointLight2D : public Type<PointLight2D>
+	struct PointLight2D : public IComponent
 	{
 		PointLight2D() = default;
 
@@ -147,7 +152,7 @@ namespace XYZ {
 	};
 
 
-	struct Relationship : public Type<Relationship>
+	struct Relationship : public IComponent
 	{
 		uint32_t Parent			 = NULL_ENTITY;
 		uint32_t FirstChild		 = NULL_ENTITY;
@@ -159,7 +164,7 @@ namespace XYZ {
 	};
 
 	struct EntityScriptClass;
-	struct ScriptComponent : public Type<ScriptComponent>
+	struct ScriptComponent : public IComponent
 	{
 		std::string ModuleName;
 		std::vector<PublicField> Fields;
@@ -178,7 +183,7 @@ namespace XYZ {
 	};
 
 
-	struct RigidBody2DComponent : public Type<RigidBody2DComponent>
+	struct RigidBody2DComponent : public IComponent
 	{
 		enum class BodyType { Static, Dynamic, Kinematic };
 
@@ -188,7 +193,7 @@ namespace XYZ {
 	};
 
 
-	struct BoxCollider2DComponent : public Type<BoxCollider2DComponent>
+	struct BoxCollider2DComponent : public IComponent
 	{
 		PhysicsShape* Shape = nullptr;
 
@@ -197,7 +202,7 @@ namespace XYZ {
 		float Density = 1.0f;
 	};
 
-	struct CircleCollider2DComponent : public Type<CircleCollider2DComponent>
+	struct CircleCollider2DComponent : public IComponent
 	{
 		PhysicsShape* Shape = nullptr;
 

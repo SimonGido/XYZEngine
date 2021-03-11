@@ -11,7 +11,7 @@ namespace XYZ {
 		RenderModes
 	};
 
-	struct Canvas : public Type<Canvas>
+	struct Canvas : public IComponent
 	{
 		Canvas(CanvasRenderMode mode, const glm::vec4& color)
 			:

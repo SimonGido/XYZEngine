@@ -9,7 +9,7 @@
 
 namespace XYZ {
 
-	struct LineRenderer : public Type<LineRenderer>
+	struct LineRenderer : public IComponent
 	{
 		LineRenderer(const glm::vec4& color, const LineMesh& mesh, bool isVisible = false);
 

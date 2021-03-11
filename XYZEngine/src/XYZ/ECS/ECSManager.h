@@ -12,8 +12,7 @@ namespace XYZ {
 		void DestroyEntity(uint32_t entity) 
 		{ 
 			auto& signature = m_EntityManager.GetSignature(entity);
-			signature.set(HAS_GROUP_BIT, false);
-			m_ComponentManager.EntityDestroyed(entity, signature, this);
+			m_ComponentManager.EntityDestroyed(entity, signature);
 			m_EntityManager.DestroyEntity(entity); 
 		}
 
@@ -121,11 +120,6 @@ namespace XYZ {
 			return m_EntityManager.GetSignature(entity);
 		}
 
-		bool HasGroup(uint32_t entity) const
-		{
-			auto& signature = m_EntityManager.GetSignature(entity);
-			return signature.test(HAS_GROUP_BIT);
-		}
 
 		template <typename T>
 		bool Contains(uint32_t entity) const
@@ -146,22 +140,9 @@ namespace XYZ {
 		}
 
 		template <typename T>
-		ComponentStorage<T>* GetStorage()
+		ComponentStorage* GetStorage()
 		{
-			return (ComponentStorage<T>*)m_ComponentManager.GetStorage(T::GetComponentID());
-		}
-
-		template <typename ...Args>
-		ComponentGroup<Args...>& GetGroup()
-		{
-			Signature signature;
-			std::initializer_list<uint16_t> componentTypes{ Args::GetComponentID()... };
-			for (auto it : componentTypes)
-				signature.set(it);
-
-			auto group = m_ComponentManager.GetGroup(signature);
-			XYZ_ASSERT(group, "Group does not exist");
-			return *(ComponentGroup<Args...>*)group;
+			return m_ComponentManager.GetStorage(T::GetComponentID());
 		}
 
 		template <typename ...Args>
@@ -176,12 +157,6 @@ namespace XYZ {
 			
 			XYZ_ASSERT(view, "View does not exist");
 			return *(ComponentView<Args...>*)view;
-		}
-
-		template <typename ...Args>
-		ComponentGroup<Args...>& CreateGroup()
-		{
-			return *m_ComponentManager.CreateGroup<Args...>();
 		}
 
 		template <typename ...Args>
