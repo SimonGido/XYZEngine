@@ -2,11 +2,33 @@
 #include "XYZ/Core/GUID.h"
 #include "XYZ/Utils/StringUtils.h"
 #include "XYZ/Renderer/Shader.h"
+#include "XYZ/Renderer/Texture.h"
 #include "AssetSerializer.h"
 #include "Asset.h"
 
 namespace XYZ {
 
+	namespace Helper {
+
+		template <typename T, typename...Args>
+		inline typename std::enable_if<
+			(!std::is_same<T, Shader>::value) && 
+			(!std::is_same<T, Texture>::value), 
+			Ref<T>
+		>::type
+		CreateRef(Args&&... args)
+		{
+			return Ref<T>::Create(std::forward<Args>(args)...);
+		}
+
+
+		template <typename T, typename ...Args>
+		inline typename std::enable_if<std::is_same<T, Shader>::value, Ref<T>>::type 
+		CreateRef(Args&&... args)
+		{
+			return Shader::Create(std::forward<Args>(args)...);
+		}
+	}
 
 	class AssetManager
 	{
@@ -17,7 +39,7 @@ namespace XYZ {
 		static AssetType GetAssetTypeFromExtension(const std::string& extension);
 		static GUID		 GetAssetHandle(const std::string& filepath);
 		static GUID		 GetDirectoryHandle(const std::string& filepath);
-		
+
 
 		template<typename T, typename... Args>
 		static Ref<T> CreateAsset(const std::string& filename, AssetType type, const GUID& directoryHandle, Args&&... args)
@@ -25,7 +47,7 @@ namespace XYZ {
 			static_assert(std::is_base_of<Asset, T>::value, "CreateAsset only works for types derived from Asset");
 
 			auto& directory = s_Directories[directoryHandle];
-			Ref<T> asset = Ref<T>::Create(std::forward<Args>(args)...);
+			Ref<T> asset = Helper::CreateRef<T>(std::forward<Args>(args)...);
 			asset->Type = type;
 			asset->FilePath = directory.FilePath + "/" + filename;
 			asset->FileName = Utils::RemoveExtension(Utils::GetFilename(asset->FilePath));
@@ -38,7 +60,7 @@ namespace XYZ {
 
 			return asset;
 		}
-
+		
 		template<typename T>
 		static Ref<T> GetAsset(const GUID& assetHandle, bool loadData = true)
 		{

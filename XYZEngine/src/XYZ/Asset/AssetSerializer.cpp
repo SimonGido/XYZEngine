@@ -288,14 +288,14 @@ namespace XYZ {
 	}
 
 	template <>
-	void AssetSerializer::serialize<ShaderAsset>(const Ref<Asset>& asset)
+	void AssetSerializer::serialize<Shader>(const Ref<Asset>& asset)
 	{
 		XYZ_ASSERT(!asset->FilePath.empty(), "Filepath is empty");
-		Ref<ShaderAsset> shaderAsset = Ref<ShaderAsset>((ShaderAsset*)asset.Raw());
+		Ref<Shader> shader = Ref<Shader>((Shader*)asset.Raw());
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		out << YAML::Key << "Shader" << YAML::Value << asset->FileName;
-		out << YAML::Key << "ShaderFilePath" << YAML::Value << shaderAsset->ShaderFilePath;
+		out << YAML::Key << "ShaderFilePath" << YAML::Value << shader->GetPath();
 		std::ofstream fout(asset->FilePath);
 		fout << out.c_str();
 	}
@@ -309,7 +309,7 @@ namespace XYZ {
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		out << YAML::Key << "Material" << YAML::Value << asset->FileName;
-		out << YAML::Key << "ShaderAsset" << YAML::Value << material->GetShaderAsset()->Handle;
+		out << YAML::Key << "ShaderAsset" << YAML::Value << material->GetShader()->Handle;
 
 		out << YAML::Key << "Textures";
 		out << YAML::Value << YAML::BeginSeq;
@@ -434,9 +434,9 @@ namespace XYZ {
 		YAML::Node data = YAML::Load(strStream.str());
 
 		GUID shaderHandle(data["ShaderAsset"].as<std::string>());
-		auto shaderAsset = AssetManager::GetAsset<ShaderAsset>(shaderHandle);
+		auto shader = AssetManager::GetAsset<Shader>(shaderHandle);
 
-		Ref<Material> material = Ref<Material>::Create(shaderAsset->Shader);
+		Ref<Material> material = Ref<Material>::Create(shader);
 
 		for (auto& seq : data["Textures"])
 		{

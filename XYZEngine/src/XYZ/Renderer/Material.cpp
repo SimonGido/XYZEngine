@@ -4,10 +4,9 @@
 
 namespace XYZ {
 	
-	Material::Material(const Ref<ShaderAsset>& shaderAsset)
+	Material::Material(const Ref<Shader>& shader)
 	{
-		m_Shader = shaderAsset->Shader;
-		m_ShaderAsset = shaderAsset;
+		m_Shader = shader;
 		m_VSUniformBuffer.Allocate(m_Shader->GetVSUniformList().Size);
 		m_FSUniformBuffer.Allocate(m_Shader->GetFSUniformList().Size);
 

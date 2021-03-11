@@ -5,7 +5,8 @@
 
 #include <yaml-cpp/yaml.h>
 
-namespace XYZ {
+namespace XYZ
+{
 
 	std::unordered_map<GUID, Ref<Asset>> AssetManager::s_LoadedAssets;
 	std::unordered_map<GUID, AssetDirectory> AssetManager::s_Directories;

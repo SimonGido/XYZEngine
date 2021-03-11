@@ -9,21 +9,21 @@ namespace XYZ {
 
 	InGuiRenderData::InGuiRenderData()
 	{
-		Ref<ShaderAsset> shaderAsset = Ref<ShaderAsset>::Create("Assets/Shaders/InGuiShader.glsl");
-		Ref<ShaderAsset> scissorShaderAsset = Ref<ShaderAsset>::Create("Assets/Shaders/ScissorShader.glsl");
+		Ref<Shader> shader = Shader::Create("Assets/Shaders/InGuiShader.glsl");
+		Ref<Shader> scissorShader = Shader::Create("Assets/Shaders/ScissorShader.glsl");
 
 		Texture = Texture2D::Create({ TextureWrap::Clamp, TextureParam::Linear, TextureParam::Nearest }, "Assets/Textures/Gui/TexturePack_Dark.png");
 		Ref<Texture2D> colorPickerTexture = Texture2D::Create({ TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest }, "Assets/Textures/Gui/ColorPicker.png");
 
 		Font = Ref<XYZ::Font>::Create(14, "Assets/Fonts/arial.ttf");
-		DefaultMaterial = Ref<XYZ::Material>::Create(shaderAsset);
+		DefaultMaterial = Ref<XYZ::Material>::Create(shader);
 		DefaultMaterial->Set("u_Texture", Texture, TextureID);
 		DefaultMaterial->Set("u_Texture", Font->GetTexture(), FontTextureID);
 		DefaultMaterial->Set("u_Texture", colorPickerTexture, ColorPickerTextureID);
 		DefaultMaterial->Set("u_Color", glm::vec4(1.0f));
 
 		
-		ScissorMaterial = Ref<XYZ::Material>::Create(scissorShaderAsset);
+		ScissorMaterial = Ref<XYZ::Material>::Create(scissorShader);
 		ScissorMaterial->Set("u_Texture", Texture, TextureID);
 		ScissorMaterial->Set("u_Texture", Font->GetTexture(), FontTextureID);
 		ScissorMaterial->Set("u_Texture", colorPickerTexture, ColorPickerTextureID);

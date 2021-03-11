@@ -15,7 +15,7 @@ namespace XYZ {
 	{
 		friend class MaterialInstance;
 	public:
-		Material(const Ref<ShaderAsset>& shaderAsset);
+		Material(const Ref<Shader>& shader);
 		~Material();
 
 
@@ -82,7 +82,6 @@ namespace XYZ {
 
 		Ref<Shader>& GetShader() { return m_Shader; }
 		const Ref<Shader>& GetShader() const { return m_Shader; }
-		const Ref<ShaderAsset>& GetShaderAsset() { return m_ShaderAsset; }
 		const std::vector<Ref<Texture>>& GetTextures() const { return m_Textures; }
 
 		const uint8_t* GetVSUniformBuffer() const { return m_VSUniformBuffer; }
@@ -106,9 +105,7 @@ namespace XYZ {
 
 	private:
 		Ref<Shader> m_Shader;
-		Ref<ShaderAsset> m_ShaderAsset;
 		std::vector<Ref<Texture>> m_Textures;
-
 		std::unordered_set<MaterialInstance*> m_MaterialInstances;
 
 		ByteBuffer m_VSUniformBuffer;

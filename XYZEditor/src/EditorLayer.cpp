@@ -52,8 +52,8 @@ namespace XYZ {
 		AssetManager::Init();
 		Renderer::Init();
 
-		auto shaderAsset = AssetManager::CreateAsset<ShaderAsset>("DefaultShader.glsl", AssetType::Shader, AssetManager::GetDirectoryHandle("Assets/Shaders"), "Assets/Shaders/DefaultShader.glsl");
-		m_Material = AssetManager::CreateAsset<Material>("Material.mat", AssetType::Material, AssetManager::GetDirectoryHandle("Assets/Materials"), shaderAsset);
+		auto shader = AssetManager::CreateAsset<Shader>("DefaultShader.glsl", AssetType::Shader, AssetManager::GetDirectoryHandle("Assets/Shaders"), "Assets/Shaders/DefaultShader.glsl");
+		m_Material = AssetManager::CreateAsset<Material>("Material.mat", AssetType::Material, AssetManager::GetDirectoryHandle("Assets/Materials"), shader);
 		m_Scene = AssetManager::CreateAsset<Scene>("Scene.xyz", AssetType::Scene, AssetManager::GetDirectoryHandle("Assets/Scenes"), "Scene");
 
 		ScriptEngine::Init("Assets/Scripts/XYZScriptExample.dll");

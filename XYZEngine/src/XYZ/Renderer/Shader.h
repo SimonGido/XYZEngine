@@ -64,7 +64,7 @@ namespace XYZ {
 	};
 
 	class ShaderAsset;
-	class Shader : public RefCount
+	class Shader : public Asset
 	{
 	public:
 		~Shader() = default;
@@ -98,20 +98,6 @@ namespace XYZ {
 		static Ref<Shader> Create(const std::string& path);
 		static Ref<Shader> Create(const std::string& name, const std::string& path);
 	};
-
-
-	class ShaderAsset : public Asset
-	{
-	public:
-		ShaderAsset(const std::string& filepath)
-			: 
-			Shader(Shader::Create(filepath)),
-			ShaderFilePath(filepath)
-		{}
-		Ref<Shader> Shader;
-		std::string ShaderFilePath;
-	};
-
 
 	class ShaderLibrary : public RefCount
 	{
