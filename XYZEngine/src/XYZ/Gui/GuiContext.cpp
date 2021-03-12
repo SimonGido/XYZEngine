@@ -136,16 +136,6 @@ namespace XYZ {
 		Ref<Framebuffer> fbo = Framebuffer::Create(fboSpecs);
 		m_RenderPass = RenderPass::Create({ fbo });
 
-		m_LineRenderView = &m_ECS->CreateView<LineRenderer>();
-		m_RenderView = &m_ECS->CreateView<CanvasRenderer, RectTransform>();
-		m_CanvasView = &m_ECS->CreateView<Canvas, CanvasRenderer, RectTransform>();
-		m_ButtonView = &m_ECS->CreateView<Button, CanvasRenderer, RectTransform>();
-		m_CheckboxView = &m_ECS->CreateView<Checkbox, CanvasRenderer, RectTransform>();
-		m_SliderView = &m_ECS->CreateView<Slider, CanvasRenderer, RectTransform>();
-		m_LayoutGroupView = &m_ECS->CreateView<LayoutGroup, Relationship, RectTransform>();
-		m_LayoutView = &m_ECS->CreateView<Layout, Relationship, CanvasRenderer, RectTransform>();
-		m_InputFieldView = &m_ECS->CreateView<InputField, CanvasRenderer, RectTransform>();
-
 		for (uint32_t i = 0; i < ecs->GetNumberOfEntities(); ++i)
 		{
 			if (ecs->Contains<Canvas>(i))
@@ -636,12 +626,13 @@ namespace XYZ {
 		m_Camera.SetProjectionMatrix(glm::ortho(-w * 0.5f, w * 0.5f, -h * 0.5f, h * 0.5f));
 		m_ViewportSize = { w, h };
 
-		for (size_t i = 0; i < m_CanvasView->Size(); ++i)
+		auto canvasView = m_ECS->CreateView<Canvas, CanvasRenderer, RectTransform>();
+		for (auto entity : canvasView)
 		{
-			auto& [canvas, renderer, transform] = (*m_CanvasView)[i];
+			auto [canvas, renderer, transform] = canvasView.Get<Canvas, CanvasRenderer, RectTransform>(entity);
 			transform.Size = m_ViewportSize;
 			transform.Position = glm::vec3(0.0f);
-			transform.Execute<ComponentResizedEvent>(ComponentResizedEvent({ m_CanvasView->GetEntity(i), m_ECS }));
+			transform.Execute<ComponentResizedEvent>(ComponentResizedEvent({ entity, m_ECS }));
 		}
 		
 	}
@@ -675,19 +666,21 @@ namespace XYZ {
 	}
 	void GuiContext::OnUpdate(Timestep ts)
 	{
-		for (size_t i = 0; i < m_CheckboxView->Size(); ++i)
+		auto checkboxView = m_ECS->CreateView<Checkbox, CanvasRenderer, RectTransform>();
+		for (auto entity : checkboxView)
 		{
-			auto& [checkbox,renderer, transform] = (*m_CheckboxView)[i];
+			auto [checkbox,renderer, transform] = checkboxView.Get<Checkbox, CanvasRenderer, RectTransform>(entity);
 			if (checkbox.Checked)
 				checkbox.Execute<CheckedEvent>(CheckedEvent{});
 		}
-
+		
 		for (auto& canvas : m_Canvases)
 			updateTransform(canvas, glm::vec3(0.0f));
-
-		for (size_t i = 0; i < m_LayoutGroupView->Size(); ++i)
+		
+		auto layoutView = m_ECS->CreateView<LayoutGroup, Relationship, RectTransform>();
+		for (auto entity : layoutView)
 		{
-			auto& [layout, relation, transform] = (*m_LayoutGroupView)[i];
+			auto [layout, relation, transform] = layoutView.Get<LayoutGroup, Relationship, RectTransform>(entity);
 			applyLayoutGroup(layout, relation, transform);
 		}
 	}
@@ -700,19 +693,22 @@ namespace XYZ {
 
 		GuiRenderer::BeginScene(renderCamera, m_ViewportSize);
 		
-		for (size_t i = 0; i < m_RenderView->Size(); ++i)
+		auto renderView = m_ECS->CreateView<CanvasRenderer, RectTransform>();
+		for (auto entity : renderView)
 		{
-			auto &[canvasRenderer, rectTransform] = (*m_RenderView)[i];
-			if (m_ECS->Contains<Slider>(m_RenderView->GetEntity(i)))
+			auto [canvasRenderer, rectTransform] = renderView.Get<CanvasRenderer, RectTransform>(entity);
+			if (m_ECS->Contains<Slider>(entity))
 			{
-				auto& rel = m_ECS->GetComponent<Relationship>(m_RenderView->GetEntity(i));
+				auto& rel = m_ECS->GetComponent<Relationship>(entity);
 				auto& childTrans = m_ECS->GetComponent<RectTransform>(rel.FirstChild);
 			}
 			GuiRenderer::SubmitWidget(&canvasRenderer, &rectTransform);
 		}
-		for (size_t i = 0; i < m_LineRenderView->Size(); ++i)
+
+		auto lineRenderView = m_ECS->CreateView<LineRenderer>();
+		for (auto entity : lineRenderView)
 		{
-			auto& [lineRenderer] = (*m_LineRenderView)[i];
+			auto [lineRenderer] = lineRenderView.Get<LineRenderer>(entity);
 			GuiRenderer::SubmitWidget(&lineRenderer);
 		}
 		GuiRenderer::EndScene();
@@ -774,20 +770,21 @@ namespace XYZ {
 	{
 		if (event.IsKeyPressed(KeyCode::KEY_BACKSPACE))
 		{
-			for (size_t i = 0; i < m_InputFieldView->Size(); ++i)
+			auto inputFieldView = m_ECS->CreateView<InputField, CanvasRenderer, RectTransform>();
+			for (auto entity : inputFieldView)
 			{
-				auto& [inputField, canvasRenderer, rectTransform] = (*m_InputFieldView)[i];
+				auto& [inputField, canvasRenderer, rectTransform] = inputFieldView.Get(entity);
 				if (inputField.Machine.GetCurrentState().GetID() == InputFieldState::Selected)
 				{
 					if (inputField.ECS && inputField.ECS->Contains<Text>(inputField.TextEntity))
 					{
 						auto& text = inputField.ECS->GetComponent<Text>(inputField.TextEntity);
 						auto& textRectTransform = inputField.ECS->GetComponent<RectTransform>(inputField.TextEntity);
-
+		
 						if (!text.Source.empty())
 						{
 							text.Source.pop_back();
-							textRectTransform.Execute<ComponentResizedEvent>(ComponentResizedEvent({ m_CanvasView->GetEntity(i), m_ECS }));
+							textRectTransform.Execute<ComponentResizedEvent>(ComponentResizedEvent({ entity, m_ECS }));
 						}
 						return true;
 					}
@@ -799,19 +796,20 @@ namespace XYZ {
 
 	bool GuiContext::onKeyTyped(KeyTypedEvent& event)
 	{
-		for (size_t i = 0; i < m_InputFieldView->Size(); ++i)
+		auto inputFieldView = m_ECS->CreateView<InputField, CanvasRenderer, RectTransform>();
+		for (auto entity : inputFieldView)
 		{
-			auto& [inputField, canvasRenderer, rectTransform] = (*m_InputFieldView)[i];
+			auto& [inputField, canvasRenderer, rectTransform] = inputFieldView.Get(entity);
 			if (inputField.Machine.GetCurrentState().GetID() == InputFieldState::Selected)
 			{
 				if (inputField.ECS && inputField.ECS->Contains<Text>(inputField.TextEntity))
 				{
 					auto& text = inputField.ECS->GetComponent<Text>(inputField.TextEntity);
 					auto& textRectTransform = inputField.ECS->GetComponent<RectTransform>(inputField.TextEntity);
-
-
+		
+		
 					text.Source += event.GetKey();
-					textRectTransform.Execute<ComponentResizedEvent>(ComponentResizedEvent({ m_CanvasView->GetEntity(i), m_ECS }));
+					textRectTransform.Execute<ComponentResizedEvent>(ComponentResizedEvent({ entity, m_ECS }));
 					return true;
 				}
 			}
@@ -821,14 +819,15 @@ namespace XYZ {
 
 	bool GuiContext::buttonOnMouseButtonPress(const glm::vec2& mousePosition)
 	{
-		for (int i = 0; i < m_ButtonView->Size(); ++i)
+		auto buttonView = m_ECS->CreateView<Button, CanvasRenderer, RectTransform>();
+		for (auto entity : buttonView)
 		{
-			auto [button, canvasRenderer, rectTransform] = (*m_ButtonView)[i];
+			auto [button, canvasRenderer, rectTransform] = buttonView.Get(entity);
 			if (Collide(rectTransform.WorldPosition, rectTransform.Size, mousePosition))
 			{
 				button.Machine.TransitionTo(ButtonState::Clicked);
 				SetMeshColor(canvasRenderer.Mesh, canvasRenderer.Color * button.ClickColor);
-				if (button.Execute<ClickEvent>(ClickEvent{{m_ButtonView->GetEntity(i), m_ECS} }))
+				if (button.Execute<ClickEvent>(ClickEvent{{entity, m_ECS} }))
 					return true;
 			}
 		}
@@ -837,13 +836,14 @@ namespace XYZ {
 
 	bool GuiContext::buttonOnMouseButtonRelease()
 	{
-		for (int i = 0; i < m_ButtonView->Size(); ++i)
+		auto buttonView = m_ECS->CreateView<Button, CanvasRenderer, RectTransform>();
+		for (auto entity : buttonView)
 		{
-			auto [button, canvasRenderer, rectTransform] = (*m_ButtonView)[i];
+			auto [button, canvasRenderer, rectTransform] = buttonView.Get(entity);
 			SetMeshColor(canvasRenderer.Mesh, canvasRenderer.Color);
 			if (button.Machine.TransitionTo(ButtonState::Released))
 			{
-				if (button.Execute<ReleaseEvent>(ReleaseEvent{ {m_ButtonView->GetEntity(i), m_ECS} }))
+				if (button.Execute<ReleaseEvent>(ReleaseEvent{ {entity, m_ECS} }))
 					return true;
 			}
 		}
@@ -852,9 +852,10 @@ namespace XYZ {
 
 	bool GuiContext::buttonOnMouseMove(const glm::vec2& mousePosition)
 	{
-		for (int i = 0; i < m_ButtonView->Size(); ++i)
+		auto buttonView = m_ECS->CreateView<Button, CanvasRenderer, RectTransform>();
+		for (auto entity : buttonView)
 		{
-			auto [button,canvasRenderer, rectTransform] = (*m_ButtonView)[i];
+			auto [button, canvasRenderer, rectTransform] = buttonView.Get(entity);
 			if (Collide(rectTransform.WorldPosition, rectTransform.Size, mousePosition)
 				&& button.Machine.TransitionTo(ButtonState::Hoovered))
 			{
@@ -873,9 +874,10 @@ namespace XYZ {
 
 	bool GuiContext::checkboxOnMouseButtonPress(const glm::vec2& mousePosition)
 	{
-		for (int i = 0; i < m_CheckboxView->Size(); ++i)
+		auto checkboxView = m_ECS->CreateView<Checkbox, CanvasRenderer, RectTransform>();
+		for (auto entity : checkboxView)
 		{
-			auto [checkbox, canvasRenderer, rectTransform] = (*m_CheckboxView)[i];
+			auto [checkbox, canvasRenderer, rectTransform] = checkboxView.Get(entity);
 			if (Collide(rectTransform.WorldPosition, rectTransform.Size, mousePosition))
 			{
 				if (checkbox.Checked)
@@ -899,9 +901,10 @@ namespace XYZ {
 
 	bool GuiContext::checkboxOnMouseMove(const glm::vec2& mousePosition)
 	{
-		for (int i = 0; i < m_CheckboxView->Size(); ++i)
+		auto checkboxView = m_ECS->CreateView<Checkbox, CanvasRenderer, RectTransform>();
+		for (auto entity : checkboxView)
 		{
-			auto [checkbox, canvasRenderer, rectTransform] = (*m_CheckboxView)[i];
+			auto [checkbox, canvasRenderer, rectTransform] = checkboxView.Get(entity);
 			if (Collide(rectTransform.WorldPosition, rectTransform.Size, mousePosition))
 			{
 				SetMeshColor(canvasRenderer.Mesh, canvasRenderer.Color * checkbox.HooverColor);
@@ -919,14 +922,15 @@ namespace XYZ {
 
 	bool GuiContext::sliderOnMouseButtonPress(const glm::vec2& mousePosition)
 	{
-		for (int i = 0; i < m_SliderView->Size(); ++i)
+		auto sliderView = m_ECS->CreateView<Slider, CanvasRenderer, RectTransform>();
+		for (auto entity : sliderView)
 		{
-			auto [slider, canvasRenderer, rectTransform] = (*m_SliderView)[i];
+			auto [slider, canvasRenderer, rectTransform] = sliderView.Get(entity);
 			if (Collide(rectTransform.WorldPosition, rectTransform.Size, mousePosition))
 			{
 				slider.Machine.TransitionTo(SliderState::Dragged);
 				SetMeshColor(canvasRenderer.Mesh, canvasRenderer.Color * slider.HooverColor);
-				slider.Execute<ClickEvent>(ClickEvent{ {m_SliderView->GetEntity(i), m_ECS} });
+				slider.Execute<ClickEvent>(ClickEvent{ { entity, m_ECS} });
 				return true;
 			}
 		}
@@ -935,13 +939,15 @@ namespace XYZ {
 
 	bool GuiContext::sliderOnMouseButtonRelease()
 	{
-		for (int i = 0; i < m_SliderView->Size(); ++i)
+		auto sliderView = m_ECS->CreateView<Slider, CanvasRenderer, RectTransform>();
+		for (auto entity : sliderView)
 		{
-			auto [slider, canvasRenderer, rectTransform] = (*m_SliderView)[i];
+			auto [slider, canvasRenderer, rectTransform] = sliderView.Get(entity);
+
 			SetMeshColor(canvasRenderer.Mesh, canvasRenderer.Color);
 			if (slider.Machine.TransitionTo(SliderState::Released))
 			{
-				if (slider.Execute<ReleaseEvent>(ReleaseEvent{ {m_SliderView->GetEntity(i), m_ECS} }))
+				if (slider.Execute<ReleaseEvent>(ReleaseEvent{ { entity, m_ECS} }))
 					return true;
 			}
 		}
@@ -950,16 +956,17 @@ namespace XYZ {
 
 	bool GuiContext::sliderOnMouseMove(const glm::vec2& mousePosition)
 	{
-		for (int i = 0; i < m_SliderView->Size(); ++i)
+		auto sliderView = m_ECS->CreateView<Slider, CanvasRenderer, RectTransform>();
+		for (auto entity : sliderView)
 		{
-			auto [slider, canvasRenderer, rectTransform] = (*m_SliderView)[i];
+			auto [slider, canvasRenderer, rectTransform] = sliderView.Get(entity);
 			if (slider.Machine.GetCurrentState().GetID() == SliderState::Dragged)
 			{
-				auto& rel = m_ECS->GetComponent<Relationship>(m_SliderView->GetEntity(i));
+				auto& rel = m_ECS->GetComponent<Relationship>(entity);
 				uint32_t handle = rel.FirstChild;
 				auto& handleTransform = m_ECS->GetComponent<RectTransform>(handle);
 				float diff = mousePosition.x - handleTransform.WorldPosition.x;
-	
+		
 				if (handleTransform.Position.x + (handleTransform.Size.x / 2.0f) + diff < (rectTransform.Size.x / 2.0f)
 				&& (handleTransform.Position.x - (handleTransform.Size.x / 2.0f) + diff > (-rectTransform.Size.x / 2.0f)))
 				{
@@ -974,8 +981,8 @@ namespace XYZ {
 					handleTransform.Position.x = (rectTransform.Size.x / 2.0f) - (handleTransform.Size.x / 2.0f);
 				}
 				slider.Value = handleTransform.Position.x  / (rectTransform.Size.x - handleTransform.Size.x) + 0.5f;
-				slider.Execute<DraggedEvent>(DraggedEvent({ m_SliderView->GetEntity(i), m_ECS }, slider.Value));
-				handleTransform.Execute<ComponentResizedEvent>(ComponentResizedEvent({ m_CanvasView->GetEntity(i), m_ECS }));
+				slider.Execute<DraggedEvent>(DraggedEvent({ entity, m_ECS }, slider.Value));
+				handleTransform.Execute<ComponentResizedEvent>(ComponentResizedEvent({ entity, m_ECS }));
 				return true;
 			}
 		}
@@ -984,14 +991,15 @@ namespace XYZ {
 
 	bool GuiContext::inputFieldOnMouseButtonPress(const glm::vec2& mousePosition)
 	{
-		for (int i = 0; i < m_InputFieldView->Size(); ++i)
+		auto inputFieldView = m_ECS->CreateView<InputField, CanvasRenderer, RectTransform>();
+		for (auto entity : inputFieldView)
 		{
-			auto [inputField, canvasRenderer, rectTransform] = (*m_InputFieldView)[i];
+			auto& [inputField, canvasRenderer, rectTransform] = inputFieldView.Get(entity);
 			if (inputField.Machine.GetCurrentState().GetID() == InputFieldState::Selected)
 			{
 				inputField.Machine.TransitionTo(InputFieldState::Released);
 				SetMeshColor(canvasRenderer.Mesh, canvasRenderer.Color);
-				inputField.Execute<ReleaseEvent>(ReleaseEvent({ m_InputFieldView->GetEntity(i), m_ECS }));
+				inputField.Execute<ReleaseEvent>(ReleaseEvent({ entity, m_ECS }));
 			}
 			if (Collide(rectTransform.WorldPosition, rectTransform.Size, mousePosition))
 			{
@@ -999,7 +1007,7 @@ namespace XYZ {
 				if (inputField.Machine.TransitionTo(InputFieldState::Selected))
 				{
 					SetMeshColor(canvasRenderer.Mesh, canvasRenderer.Color * inputField.SelectColor);
-					inputField.Execute<ClickEvent>(ClickEvent({ m_InputFieldView->GetEntity(i) , m_ECS }));
+					inputField.Execute<ClickEvent>(ClickEvent({ entity, m_ECS }));
 					return true;
 				}
 			}
@@ -1009,9 +1017,10 @@ namespace XYZ {
 
 	bool GuiContext::inputFieldOnMouseMove(const glm::vec2& mousePosition)
 	{
-		for (int i = 0; i < m_InputFieldView->Size(); ++i)
+		auto inputFieldView = m_ECS->CreateView<InputField, CanvasRenderer, RectTransform>();
+		for (auto entity : inputFieldView)
 		{
-			auto [inputField, canvasRenderer, rectTransform] = (*m_InputFieldView)[i];
+			auto& [inputField, canvasRenderer, rectTransform] = inputFieldView.Get(entity);
 			if (Collide(rectTransform.WorldPosition, rectTransform.Size, mousePosition))
 			{
 				if (inputField.Machine.TransitionTo(InputFieldState::Hoovered))

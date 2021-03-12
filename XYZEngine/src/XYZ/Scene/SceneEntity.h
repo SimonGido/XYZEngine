@@ -41,7 +41,7 @@ namespace XYZ {
 		template <typename T, typename ...Args>
 		T& EmplaceComponent(Args&&... args)
 		{
-			return m_Scene->m_ECS.EmplaceComponent<T, Args>(m_ID, std::forward<Args>(args)...);
+			return m_Scene->m_ECS.EmplaceComponent<T, Args...>(m_ID, std::forward<Args>(args)...);
 		}
 
 		template <typename T>

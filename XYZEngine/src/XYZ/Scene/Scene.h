@@ -69,12 +69,6 @@ namespace XYZ {
 
         std::vector<uint32_t> m_Entities;
 
-        ComponentView<TransformComponent, SpriteRenderer>* m_RenderView;
-        ComponentView<TransformComponent, ParticleComponent>* m_ParticleView;
-        ComponentView<TransformComponent, PointLight2D>* m_LightView;
-        ComponentView<TransformComponent, RigidBody2DComponent>* m_RigidBodyView;
-        ComponentView<AnimatorComponent>* m_AnimatorView;
-
         std::string m_Name;
         SceneState m_State = SceneState::Edit;
 

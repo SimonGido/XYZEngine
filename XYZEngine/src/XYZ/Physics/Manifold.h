@@ -4,8 +4,9 @@
 
 namespace XYZ {
 
-	struct Manifold
+	class Manifold
 	{
+	public:
 		void Initialize(const glm::vec2& gravity, float dt);            // Precalculations for impulse solving
 		void Solve();                 // Generate contact information
 		void ApplyImpulse();          // Solve impulse and apply

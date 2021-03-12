@@ -3,128 +3,54 @@
 #include "Component.h"
 #include "Types.h"
 
-
+#include <limits>
 
 namespace XYZ {	
-
-	class IComponentView
-	{
-	public:
-		virtual ~IComponentView() = default;
-		virtual void AddEntity(uint32_t entity) = 0;
-		virtual void RemoveEntity(uint32_t entity) = 0;
-		virtual void EntityComponentUpdated(uint32_t entity) = 0;
-		virtual bool HasEntity(uint32_t entity) const = 0;
-
-		const Signature& GetSignature() const { return m_Signature; }
-
-	protected:
-		Signature m_Signature;
-	};
-
-
 	class ECSManager;
 
 	template <typename ...Args>
-	class ComponentView : public IComponentView
+	class ComponentView
 	{
 	public:
-		ComponentView(ECSManager* ecs)
-			:
-			m_ECS(ecs)
+		std::tuple<Args&...> Get(uint32_t entity)
 		{
-			std::initializer_list<uint8_t> componentTypes{ IComponent::GetComponentID<Args>()... };
-			for (auto it : componentTypes)
-				m_Signature.set(it);
-			(m_ECS->ForceStorage<Args>(),...);
+			return std::tuple<Args&...>{ get<Args>(entity)... };
 		}
 
-		virtual void AddEntity(uint32_t entity) override
+		template <typename ...Args2>
+		std::tuple<Args2&...> Get(uint32_t entity)
 		{
-			if (m_EntityDataMap.size() <= entity)
-				m_EntityDataMap.resize(size_t(entity) + 1);
-
-			m_IndexGroups.push_back({});
-			uint32_t index = m_IndexGroups.size() - 1;
-			m_EntityDataMap[entity] = index;
-			m_IndexGroups[index].Entity = entity;
-			m_IndexGroups[index].Elements = { m_ECS->GetComponentIndex<Args>(entity)... };
+			return std::tuple<Args2&...>{ get<Args2>(entity)... };
 		}
 
-
-		virtual void RemoveEntity(uint32_t entity) override
-		{
-			if (m_IndexGroups.back().Entity != entity)
-			{
-				// Entity of last element in data pack
-				uint32_t lastEntity = m_IndexGroups.back().Entity;
-				// Index that is entity pointing to
-				uint32_t index = m_EntityDataMap[entity];
-				// Move last element in data pack at the place of removed component
-				m_IndexGroups[index] = std::move(m_IndexGroups.back());
-				// Point last entity to data new index;
-				m_EntityDataMap[lastEntity] = index;
-				// Pop back last element
-				
-				m_IndexGroups[index].Elements = { m_ECS->GetComponentIndex<Args>(m_IndexGroups[index].Entity)... };
-			}
-			m_IndexGroups.pop_back();
-		}
-
-
-		virtual void EntityComponentUpdated(uint32_t entity) override
-		{
-			m_IndexGroups[m_EntityDataMap[entity]].Elements = { m_ECS->GetComponentIndex<Args>(entity)... };
-		}
-
-		virtual bool HasEntity(uint32_t entity) const override
-		{
-			return m_EntityDataMap.size() > entity && m_IndexGroups.size() > m_EntityDataMap[entity]
-				&& m_IndexGroups[m_EntityDataMap[entity]].Entity == entity;
-		}
-
-		uint32_t GetEntity(size_t index) const
-		{
-			return m_IndexGroups[index].Entity;
-		}
-
-		std::tuple<Args&...> operator[] (size_t index)
-		{
-			return std::tuple<Args&...>{ get<Args>(index)... };
-		}
-
-		size_t Size() const { return m_IndexGroups.size(); }
+		std::vector<uint32_t>::const_iterator begin() const { return m_Entities->begin(); }
+		std::vector<uint32_t>::const_iterator end()   const { return m_Entities->end(); }
 
 	private:
+		ComponentView(ECSManager* ecs)
+		{
+			(ecs->ForceStorage<Args>(),...);
+			m_Storages = { &ecs->GetStorage<Args>()... };
+
+			size_t minimalSize = std::numeric_limits<size_t>::max();
+			ForEachInTuple(m_Storages, [&](const auto& storage) {
+				if (storage->Size() < minimalSize)
+					minimalSize = storage->Size();
+					m_Entities = &storage->GetDataEntityMap();
+				});
+		}
 
 		template <typename Type>
-		Type& get(uint32_t index)
+		Type& get(uint32_t entity)
 		{
-			auto& storage = m_ECS->GetStorage<Type>();
-			auto it = std::get<Element<Type>>(m_IndexGroups[index].Elements);
-			return storage.GetComponentAtIndex<Type>(it.Index);
+			auto it = std::get<ComponentStorage<Type>*>(m_Storages);
+			return it->GetComponent(entity);
 		}
 
 	private:
-		template <typename T>
-		struct Element
-		{
-			Element() = default;
-			Element(uint32_t index)
-				: Index(index)
-			{}
-			uint32_t Index = 0;
-		};
-		struct IndexGroup
-		{
-			std::tuple<Element<Args>...> Elements;
-			uint32_t Entity;
-		};
+		const std::vector<uint32_t>* m_Entities;
+		std::tuple<ComponentStorage<Args>*...> m_Storages;
 
-		ECSManager* m_ECS;
-		std::vector<IndexGroup> m_IndexGroups;
-		std::vector<uint32_t> m_EntityDataMap;
-
-		static constexpr size_t sc_ElementsPerGroup = sizeof...(Args);
+		friend class ECSManager;
 	};
 }

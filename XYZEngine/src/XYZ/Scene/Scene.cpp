@@ -35,12 +35,6 @@ namespace XYZ {
 		m_CameraMaterial->Set("u_Texture", m_CameraTexture);
 		m_CameraRenderer = SpriteRenderer(m_CameraMaterial, m_CameraSubTexture, glm::vec4(1.0f), 0);
 
-		m_RenderView = &m_ECS.CreateView<TransformComponent, SpriteRenderer>();
-		m_ParticleView = &m_ECS.CreateView<TransformComponent, ParticleComponent>();
-		m_LightView = &m_ECS.CreateView<TransformComponent, PointLight2D>();
-		m_AnimatorView = &m_ECS.CreateView<AnimatorComponent>();
-		m_RigidBodyView = &m_ECS.CreateView<TransformComponent, RigidBody2DComponent>();
-
 		m_ECS.ForceStorage<ScriptComponent>();
 	
 
@@ -156,10 +150,11 @@ namespace XYZ {
 		SceneEntity entity(m_ECS.CreateEntity(), this);
 		IDComponent id;
 		id.ID = guid;
-		entity.AddComponent<IDComponent>(id);
-		entity.AddComponent<Relationship>(Relationship());
-		entity.AddComponent<SceneTagComponent>(SceneTagComponent(name));
-		entity.AddComponent<TransformComponent>(TransformComponent(glm::vec3(0.0f, 0.0f, 0.0f)));
+
+		entity.EmplaceComponent<IDComponent>(guid);
+		entity.EmplaceComponent<Relationship>();
+		entity.EmplaceComponent<SceneTagComponent>(name);
+		entity.EmplaceComponent<TransformComponent>(glm::vec3(0.0f, 0.0f, 0.0f));
 
 
 		m_Entities.push_back(entity);
@@ -180,11 +175,11 @@ namespace XYZ {
 		}
 		m_ECS.DestroyEntity(entity);
 
-
-		auto& tagStorage = m_ECS.GetStorage<SceneTagComponent>();
-		for (size_t i = 0; i < tagStorage.Size(); ++i)
+		auto view = m_ECS.CreateView<SceneTagComponent, Relationship>();
+		for (auto entity : view)
 		{
-			std::cout << tagStorage[i].Name << std::endl;
+			auto [sceneTag] = view.Get<SceneTagComponent>(entity);
+			std::cout << sceneTag.Name << std::endl;
 		}
 	}
 
@@ -273,23 +268,28 @@ namespace XYZ {
 		auto& cameraTransform = cameraEntity.GetComponent<TransformComponent>();
 		renderCamera.Camera = cameraComponent.Camera;
 		renderCamera.ViewMatrix = glm::inverse(cameraTransform.GetTransform());
-
+		
 		SceneRenderer::GetOptions().ShowGrid = false;
 		SceneRenderer::BeginScene(this, renderCamera);
-		for (size_t i = 0; i < m_RenderView->Size(); ++i)
+
+		auto renderView = m_ECS.CreateView<TransformComponent, SpriteRenderer>();
+		for (auto entity : renderView)
 		{
-			auto [transform, renderer] = (*m_RenderView)[i];
+			auto [transform, renderer] = renderView.Get<TransformComponent, SpriteRenderer>(entity);
 			SceneRenderer::SubmitSprite(&renderer, &transform);
 		}
-		for (size_t i = 0; i < m_ParticleView->Size(); ++i)
+
+		auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponent>();
+		for (auto entity : particleView)
 		{
-			auto [transform, particle] = (*m_ParticleView)[i];
+			auto [transform, particle] = particleView.Get<TransformComponent, ParticleComponent>(entity);
 			SceneRenderer::SubmitParticles(&particle, &transform);
 		}
-
-		for (size_t i = 0; i < m_LightView->Size(); ++i)
+		
+		auto lightView = m_ECS.CreateView<TransformComponent, PointLight2D>();
+		for (auto entity : lightView)
 		{
-			auto [transform, light] = (*m_LightView)[i];
+			auto [transform, light] = lightView.Get<TransformComponent, PointLight2D>(entity);
 			SceneRenderer::SubmitLight(&light, transform.GetTransform());
 		}
 		
@@ -306,40 +306,34 @@ namespace XYZ {
 			ScriptComponent& scriptComponent = scriptStorage[i];
 			ScriptEngine::OnUpdateEntity({ scriptStorage.GetEntityAtIndex(i),this }, ts);
 		}
-
+		
 		auto& animatorStorage = m_ECS.GetStorage<AnimatorComponent>();
-		for (size_t i = 0; i < animatorStorage.Size(); ++i)
+		for (auto & anim : animatorStorage)
 		{
-			AnimatorComponent& anim = animatorStorage.GetComponentAtIndex<AnimatorComponent>(i);
 			anim.Controller.Update(ts);
 		}
-
-		for (size_t i = 0; i < m_AnimatorView->Size(); ++i)
+		
+		auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponent>();
+		for (auto entity : particleView)
 		{
-			auto [animator] = (*m_AnimatorView)[i];
-			animator.Controller.Update(ts);
-		}
-
-		for (size_t i = 0; i < m_ParticleView->Size(); ++i)
-		{
-			auto [transform, particle] = (*m_ParticleView)[i];
+			auto [transform, particle] = particleView.Get<TransformComponent, ParticleComponent>(entity);
 			auto material = particle.ComputeMaterial->GetParentMaterial();
 			auto materialInstance = particle.ComputeMaterial;
-
+		
 			materialInstance->Set("u_Time", ts);
 			materialInstance->Set("u_ParticlesInExistence", (int)std::ceil(particle.ParticleEffect->GetEmittedParticles()));
-
+		
 			material->GetShader()->Bind();
 			materialInstance->Bind();
-
+		
 			particle.ParticleEffect->Update(ts);
 			material->GetShader()->Compute(32, 32, 1);
 		}
-
 		
- 		for (size_t i = 0; i < m_RigidBodyView->Size(); ++i)
+		auto rigidBodyView = m_ECS.CreateView<TransformComponent, RigidBody2DComponent>();
+ 		for (auto entity : rigidBodyView)
 		{
-			auto [transform, rigidBody] = (*m_RigidBodyView)[i];
+			auto [transform, rigidBody] = rigidBodyView.Get<TransformComponent, RigidBody2DComponent>(entity);
 			transform.Translation.x = rigidBody.Body->GetPosition().x;
 			transform.Translation.y = rigidBody.Body->GetPosition().y;
 			//transform.Rotation.z = rigidBody.Body->GetAngle();
@@ -360,21 +354,26 @@ namespace XYZ {
 			else
 				showSelection(m_SelectedEntity);
 		}
-		for (size_t i = 0; i < m_RenderView->Size(); ++i)
+
+		auto renderView = m_ECS.CreateView<TransformComponent, SpriteRenderer>();
+		for (auto entity : renderView)
 		{
-			auto [transform, renderer] = (*m_RenderView)[i];
+			auto [transform, renderer] = renderView.Get<TransformComponent, SpriteRenderer>(entity);
 			if (renderer.IsVisible && renderer.SubTexture.Raw())
 				SceneRenderer::SubmitSprite(&renderer, &transform);
 		}
-		for (size_t i = 0; i < m_ParticleView->Size(); ++i)
+
+		auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponent>();
+		for (auto entity : particleView)
 		{
-			auto [transform, particle] = (*m_ParticleView)[i];
+			auto [transform, particle] = particleView.Get<TransformComponent, ParticleComponent>(entity);
 			SceneRenderer::SubmitParticles(&particle, &transform);
 		}
 		
-		for (size_t i = 0; i < m_LightView->Size(); ++i)
+		auto lightView = m_ECS.CreateView<TransformComponent, PointLight2D>();
+		for (auto entity : lightView)
 		{
-			auto [transform, light] = (*m_LightView)[i];
+			auto [transform, light] = lightView.Get<TransformComponent, PointLight2D>(entity);
 			SceneRenderer::SubmitLight(&light, transform.GetTransform());
 		}
 		m_SkeletalMesh->Update(0.01f);

@@ -4,7 +4,6 @@
 
 namespace XYZ {
 
-	class ComponentManager;
 	class Counter
 	{
 	public:
@@ -21,8 +20,6 @@ namespace XYZ {
 			static uint8_t nextType = 0;
 			return nextType++;
 		}
-
-		friend class ComponentManager;
 	};
 
 

@@ -7,7 +7,11 @@ namespace XYZ {
 	class IComponentStorage
 	{
 	public:
+		virtual ~IComponentStorage() = default;
 		virtual uint32_t EntityDestroyed(uint32_t entity) = 0;
+		virtual size_t Size() const = 0;
+
+		virtual const std::vector<uint32_t>& GetDataEntityMap() const = 0;
 	};
 
 	template <typename T>
@@ -18,6 +22,14 @@ namespace XYZ {
 		{
 			return RemoveComponent<T>(entity);
 		}
+		virtual size_t Size() const override 
+		{ 
+			return m_Data.size();  
+		}
+		virtual const std::vector<uint32_t>& GetDataEntityMap() const override
+		{ 
+			return m_DataEntityMap; 
+		}
 
 		template <typename ...Args>
 		T& EmplaceComponent(uint32_t entity, Args&& ... args)
@@ -26,7 +38,7 @@ namespace XYZ {
 				m_EntityDataMap.resize(size_t(entity) + 1);
 			
 			m_DataEntityMap.push_back(entity);
-			m_EntityDataMap[entity] = m_Data.Size();
+			m_EntityDataMap[entity] = m_Data.size();
 			m_Data.emplace_back(std::forward<Args>(args)...);
 			return m_Data.back();
 		}
@@ -72,16 +84,8 @@ namespace XYZ {
 				updatedEntity = lastEntity;
 			}
 			m_Data.pop_back();
+			m_DataEntityMap.pop_back();
 			return updatedEntity;
-		}
-
-		ComponentStorage<T> Clone() const
-		{
-			ComponentStorage<T> storage;
-			m_Data.Clone<T>(storage.m_Data);
-			storage.m_DataEntityMap = m_DataEntityMap;
-			storage.m_EntityDataMap = m_EntityDataMap;
-			return storage;
 		}
 
 		template <typename T>
@@ -106,8 +110,6 @@ namespace XYZ {
 			return m_DataEntityMap[index];
 		}
 
-		size_t Size() const { return m_Data.size();  }
-
 		T& operator[](size_t index)
 		{
 			return m_Data[index];
@@ -116,6 +118,13 @@ namespace XYZ {
 		{
 			return m_Data[index];
 		}
+
+		
+		
+		typename std::vector<T>::iterator begin() { return m_Data.begin(); }
+		typename std::vector<T>::iterator end() { return m_Data.end(); }
+		typename std::vector<T>::const_iterator begin() const { return m_Data.begin(); }
+		typename std::vector<T>::const_iterator end()   const { return m_Data.end(); }
 
 	private:
 		std::vector<T> m_Data;

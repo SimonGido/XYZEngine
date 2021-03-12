@@ -23,7 +23,7 @@ namespace XYZ {
 		template <typename T>
 		const T* Get(size_t offset) const
 		{
-			return reinterpret_cast<T*>((void*)&m_Data[offset]);
+			return reinterpret_cast<const T*>((void*)&m_Data[offset]);
 		}
 
 		template <typename T>

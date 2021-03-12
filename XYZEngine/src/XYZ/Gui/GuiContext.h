@@ -85,15 +85,6 @@ namespace XYZ {
 		glm::mat4 m_ViewMatrix;
 
 		ECSManager* m_ECS = nullptr;
-		ComponentView<LineRenderer>* m_LineRenderView;
-		ComponentView<CanvasRenderer, RectTransform>* m_RenderView;
-		ComponentView<Canvas, CanvasRenderer, RectTransform>* m_CanvasView;
-		ComponentView<Button, CanvasRenderer, RectTransform>* m_ButtonView;
-		ComponentView<Checkbox, CanvasRenderer, RectTransform>* m_CheckboxView;
-		ComponentView<Slider, CanvasRenderer, RectTransform>* m_SliderView;
-		ComponentView<LayoutGroup, Relationship, RectTransform>* m_LayoutGroupView;
-		ComponentView<Layout, Relationship, CanvasRenderer, RectTransform>* m_LayoutView;
-		ComponentView<InputField, CanvasRenderer, RectTransform>* m_InputFieldView;
 		GuiSpecification m_Specification;
 
 		Ref<RenderPass> m_RenderPass;

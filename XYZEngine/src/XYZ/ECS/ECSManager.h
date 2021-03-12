@@ -1,6 +1,7 @@
 #pragma once
 #include "ComponentManager.h"
 #include "EntityManager.h"
+#include "ComponentView.h"
 
 namespace XYZ {
 	 
@@ -23,7 +24,6 @@ namespace XYZ {
 			XYZ_ASSERT(!signature.test(IComponent::GetComponentID<T>()), "Entity already contains component");
 			signature.set(IComponent::GetComponentID<T>(), true);
 			auto& result = m_ComponentManager.EmplaceComponent<T>(entity, std::forward<Args>(args)...);
-			m_ComponentManager.AddToView(entity, signature);
 			return result;
 		}
 		template <typename T>
@@ -33,7 +33,6 @@ namespace XYZ {
 			XYZ_ASSERT(!signature.test(IComponent::GetComponentID<T>()), "Entity already contains component");
 			signature.set(IComponent::GetComponentID<T>(), true);
 			auto& result = m_ComponentManager.AddComponent<T>(entity, component);
-			m_ComponentManager.AddToView(entity, signature);
 			return result;
 		}
 		
@@ -101,30 +100,9 @@ namespace XYZ {
 		}
 
 		template <typename ...Args>
-		ComponentView<Args...>& GetView()
+		ComponentView<Args...> CreateView()
 		{
-			Signature signature;
-			std::initializer_list<uint16_t> componentTypes{ Args::GetComponentID()... };
-			for (auto it : componentTypes)
-				signature.set(it);
-
-			auto view = m_ComponentManager.GetView(signature);
-			
-			XYZ_ASSERT(view, "View does not exist");
-			return *(ComponentView<Args...>*)view;
-		}
-
-		template <typename ...Args>
-		ComponentView<Args...>& CreateView()
-		{
-			auto view = m_ComponentManager.CreateView<Args...>(this);
-			for (uint32_t i = 0; i < m_EntityManager.m_Signatures.Range(); ++i)
-			{
-				const Signature& signature = m_EntityManager.m_Signatures[i];
-				if ((view->GetSignature() & signature) == view->GetSignature())
-					view->AddEntity(i);
-			}
-			return *view;
+			return ComponentView<Args...>(this);
 		}
 
 		template <typename T>
