@@ -6,7 +6,6 @@
 #include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/SceneRenderer.h"
-#include "XYZ/ECS/ComponentGroup.h"
 #include "SceneEntity.h"
 
 
@@ -43,11 +42,7 @@ namespace XYZ {
 		m_RigidBodyView = &m_ECS.CreateView<TransformComponent, RigidBody2DComponent>();
 
 		m_ECS.ForceStorage<ScriptComponent>();
-		m_ScriptStorage = m_ECS.GetStorage<ScriptComponent>();
-		m_AnimatorStorage = m_ECS.GetStorage<AnimatorComponent>();
-
-
-
+	
 
 		////////////////////////
 		Skeleton skeleton;
@@ -197,7 +192,7 @@ namespace XYZ {
 			s_EditTransforms[entity] = ent.GetComponent<TransformComponent>();
 			if (ent.HasComponent<CameraComponent>())
 			{
-				ent.GetStorageComponent<CameraComponent>().Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+				ent.GetComponent<CameraComponent>().Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 				m_CameraEntity = ent;
 				foundCamera = true;
 			}
@@ -231,10 +226,11 @@ namespace XYZ {
 			XYZ_LOG_ERR("No camera found in the scene");
 			return;
 		}
-		for (size_t i = 0; i < m_ScriptStorage->Size(); ++i)
+		auto& scriptStorage = m_ECS.GetStorage<ScriptComponent>();
+		for (size_t i = 0; i < scriptStorage.Size(); ++i)
 		{
-			ScriptComponent& script = (*m_ScriptStorage)[i];
-			ScriptEngine::OnCreateEntity({ m_ScriptStorage->GetEntityAtIndex(i), this });
+			ScriptComponent& script = scriptStorage.GetComponentAtIndex<ScriptComponent>(i);
+			ScriptEngine::OnCreateEntity({ scriptStorage.GetEntityAtIndex(i), this });
 		}
 	}
 
@@ -266,8 +262,8 @@ namespace XYZ {
 		///////////////
 		Entity cameraEntity(m_CameraEntity, &m_ECS);
 		SceneRendererCamera renderCamera;
-		auto& cameraComponent = cameraEntity.GetStorageComponent<CameraComponent>();
-		auto& cameraTransform = cameraEntity.GetStorageComponent<TransformComponent>();
+		auto& cameraComponent = cameraEntity.GetComponent<CameraComponent>();
+		auto& cameraTransform = cameraEntity.GetComponent<TransformComponent>();
 		renderCamera.Camera = cameraComponent.Camera;
 		renderCamera.ViewMatrix = glm::inverse(cameraTransform.GetTransform());
 
@@ -297,15 +293,17 @@ namespace XYZ {
 	{
 		m_PhysicsWorld.Update(ts);
 		
-		for (size_t i = 0; i < m_ScriptStorage->Size(); ++i)
+		auto& scriptStorage = m_ECS.GetStorage<ScriptComponent>();
+		for (size_t i = 0; i < scriptStorage.Size(); ++i)
 		{
-			ScriptComponent& scriptComponent = (*m_ScriptStorage)[i];
-			ScriptEngine::OnUpdateEntity({ m_ScriptStorage->GetEntityAtIndex(i),this }, ts);
+			ScriptComponent& scriptComponent = scriptStorage.GetComponent<ScriptComponent>(i);
+			ScriptEngine::OnUpdateEntity({ scriptStorage.GetEntityAtIndex(i),this }, ts);
 		}
 
-		for (size_t i = 0; i < m_AnimatorStorage->Size(); ++i)
+		auto& animatorStorage = m_ECS.GetStorage<AnimatorComponent>();
+		for (size_t i = 0; i < animatorStorage.Size(); ++i)
 		{
-			AnimatorComponent& anim = (*m_AnimatorStorage)[i];
+			AnimatorComponent& anim = animatorStorage.GetComponentAtIndex<AnimatorComponent>(i);
 			anim.Controller.Update(ts);
 		}
 

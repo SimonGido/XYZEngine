@@ -34,7 +34,7 @@ namespace XYZ {
     {
         if (field.ECS && field.ECS->Contains<Text>(field.TextEntity))
         {
-            value = field.ECS->GetStorageComponent<Text>(field.TextEntity).Source;
+            value = field.ECS->GetComponent<Text>(field.TextEntity).Source;
             return true;
         }
         return false;
@@ -45,7 +45,7 @@ namespace XYZ {
     {
         if (field.ECS && field.ECS->Contains<Text>(field.TextEntity))
         {
-            value = (float)atof(field.ECS->GetStorageComponent<Text>(field.TextEntity).Source.c_str());
+            value = (float)atof(field.ECS->GetComponent<Text>(field.TextEntity).Source.c_str());
             return true;
         }
         return false;
@@ -56,7 +56,7 @@ namespace XYZ {
     {
         if (field.ECS && field.ECS->Contains<Text>(field.TextEntity))
         {
-            value = atoi(field.ECS->GetStorageComponent<Text>(field.TextEntity).Source.c_str());
+            value = atoi(field.ECS->GetComponent<Text>(field.TextEntity).Source.c_str());
             return true;
         }
         return false;

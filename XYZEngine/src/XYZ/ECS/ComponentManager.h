@@ -21,14 +21,14 @@ namespace XYZ {
 		template <typename T>
 		T& AddComponent(uint32_t entity, const T& component)
 		{
-			uint8_t id = T::GetComponentID();
+			uint8_t id = IComponent::GetComponentID<T>();
 			if (id >= m_Storages.size())
 			{
 				m_Storages.resize(size_t(id) + 1);
-				m_Storages[id] = ComponentStorage(id);
+				m_Storages[id].Init(id, sizeof(T));
 			}
-			else if (!m_Storages[id].GetComponentID() )
-				m_Storages[id] = ComponentStorage(id);
+			else if (!m_Storages[id].IsInitialized())
+				m_Storages[id].Init(id, sizeof(T));
 
 			return m_Storages[id].AddComponent<T>(entity, component);
 		}
@@ -37,13 +37,14 @@ namespace XYZ {
 		template <typename T>
 		void ForceStorage()
 		{
-			if (T::GetComponentID() >= m_Storages.size())
+			uint8_t id = IComponent::GetComponentID<T>();
+			if (id >= m_Storages.size())
 			{
-				m_Storages.resize(size_t(T::GetComponentID()) + 1);
-				m_Storages[T::GetComponentID()] = new ComponentStorage<T>();
+				m_Storages.resize(size_t(id) + 1);
+				m_Storages[id].Init(id, sizeof(T));
 			}
-			else if (!m_Storages[T::GetComponentID()])
-				m_Storages[T::GetComponentID()] = new ComponentStorage<T>();
+			else if (!m_Storages[id].IsInitialized())
+				m_Storages[id].Init(id, sizeof(T));
 		}
 
 		void AddToView(uint32_t entity,const Signature& signature)
@@ -71,7 +72,7 @@ namespace XYZ {
 		template <typename T>
 		void RemoveComponent(uint32_t entity, const Signature& signature)
 		{
-			ComponentStorage<T>* casted = (ComponentStorage<T>*)m_Storages[T::GetComponentID()];
+			ComponentStorage<T>* casted = (ComponentStorage<T>*)m_Storages[IComponent::GetComponentID<T>()];
 			uint32_t updatedEntity = casted->RemoveComponent(entity);
 			if (updatedEntity != NULL_ENTITY)
 				updateViews(entity,signature, updatedEntity);
@@ -80,20 +81,24 @@ namespace XYZ {
 		template <typename T>
 		T& GetComponent(uint32_t entity)
 		{
-			ComponentStorage<T>* casted = (ComponentStorage<T>*)m_Storages[T::GetComponentID()];
-			return casted->GetComponent(entity);
+			return m_Storages[IComponent::GetComponentID<T>()].GetComponent<T>(entity);
 		}
 		template <typename T>
-		T& GetComponent(uint32_t entity) const
+		const T& GetComponent(uint32_t entity) const
 		{
-			ComponentStorage<T>* casted = (ComponentStorage<T>*)m_Storages[T::GetComponentID()];
-			return casted->GetComponent(entity);
+			return m_Storages[IComponent::GetComponentID<T>()].GetComponent<T>(entity);
 		}
 
 		template <typename T>
 		ComponentStorage& GetStorage()
 		{
-			return m_Storages[(size_t)T::GetComponentID()];
+			return m_Storages[(size_t)IComponent::GetComponentID<T>()];
+		}
+
+		template <typename T>
+		const ComponentStorage& GetStorage() const
+		{
+			return m_Storages[(size_t)IComponent::GetComponentID<T>()];
 		}
 
 		IComponentView* GetView(const Signature& signature)
@@ -110,7 +115,7 @@ namespace XYZ {
 		ComponentView<Args...>* CreateView(ECSManager * ecs)
 		{
 			Signature signature;
-			std::initializer_list<uint16_t> componentTypes{ Args::GetComponentID()... };
+			std::initializer_list<uint16_t> componentTypes{ IComponent::GetComponentID<Args>()... };
 			for (auto it : componentTypes)
 				signature.set(it);
 			for (auto view : m_Views)

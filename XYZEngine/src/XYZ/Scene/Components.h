@@ -28,6 +28,11 @@ namespace XYZ {
 		{
 			return (std::string)ID == (std::string)other.ID;
 		}
+
+		virtual void Copy(IComponent* component) override
+		{
+
+		}
 		GUID ID;
 	};
 
@@ -65,6 +70,11 @@ namespace XYZ {
 			glm::decompose(transform, Scale, rotation, Translation, skew, perspective);
 			Rotation = glm::eulerAngles(rotation) * glm::pi<float>() / 180.f;
 		}
+
+		virtual void Copy(IComponent* component) override
+		{
+
+		}
 	};
 
 	struct SceneTagComponent : public IComponent
@@ -85,6 +95,11 @@ namespace XYZ {
 
 		operator std::string& () { return Name; }
 		operator const  std::string& () const { return Name; }
+
+		virtual void Copy(IComponent* component) override
+		{
+
+		}
 	};
 
 	struct SpriteRenderer : public IComponent
@@ -110,6 +125,11 @@ namespace XYZ {
 
 		uint32_t SortLayer = 0;
 		bool IsVisible = true;
+
+		virtual void Copy(IComponent* component) override
+		{
+
+		}
 	};
 
 
@@ -117,19 +137,24 @@ namespace XYZ {
 	{
 		SceneCamera Camera;
 		CameraComponent() = default;
+
+		virtual void Copy(IComponent* component) override
+		{
+
+		}
 	};
 
 
 	struct AnimatorComponent : public IComponent
 	{
 		AnimatorComponent() = default;
+		AnimationController Controller;
 
 		virtual void Copy(IComponent* component) override
 		{
 			Controller = static_cast<AnimatorComponent*>(component)->Controller;
 		}
 
-		AnimationController Controller;
 	};
 
 
@@ -141,6 +166,11 @@ namespace XYZ {
 		Ref<ParticleEffect> ParticleEffect;
 
 		uint32_t TextureID = 0;
+
+		virtual void Copy(IComponent* component) override
+		{
+
+		}
 	};
 
 	struct PointLight2D : public IComponent
@@ -149,6 +179,11 @@ namespace XYZ {
 
 		glm::vec3 Color = glm::vec3(1.0f);
 		float Intensity = 1.0f;
+
+		virtual void Copy(IComponent* component) override
+		{
+
+		}
 	};
 
 
@@ -161,6 +196,11 @@ namespace XYZ {
 
 		static void SetupRelation(uint32_t parent, uint32_t child, ECSManager& ecs);
 		static void RemoveRelation(uint32_t child, ECSManager& ecs);
+
+		virtual void Copy(IComponent* component) override
+		{
+
+		}
 	};
 
 	struct EntityScriptClass;
@@ -174,6 +214,11 @@ namespace XYZ {
 		ScriptComponent(const std::string & moduleName)
 			: ModuleName(moduleName) {}
 
+
+		virtual void Copy(IComponent* component) override
+		{
+
+		}
 	private:
 		EntityScriptClass* ScriptClass = nullptr;
 		
@@ -190,6 +235,11 @@ namespace XYZ {
 		BodyType Type;
 
 		PhysicsBody* Body = nullptr;
+
+		virtual void Copy(IComponent* component) override
+		{
+
+		}
 	};
 
 
@@ -200,6 +250,12 @@ namespace XYZ {
 		glm::vec2 Offset = glm::vec2(0.0f);
 		glm::vec2 Size = glm::vec2(1.0f);
 		float Density = 1.0f;
+
+
+		virtual void Copy(IComponent* component) override
+		{
+
+		}
 	};
 
 	struct CircleCollider2DComponent : public IComponent
@@ -209,5 +265,11 @@ namespace XYZ {
 		glm::vec2 Offset = glm::vec2(0.0f);
 		float Radius = 1.0f;
 		float Density = 1.0f;
+
+
+		virtual void Copy(IComponent* component) override
+		{
+
+		}
 	};
 }

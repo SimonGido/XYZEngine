@@ -27,5 +27,11 @@ namespace XYZ {
 		float	  Value = 0.0f;
 
 		StateMachine<SliderState::NumStates> Machine;
+
+
+		virtual void Copy(IComponent* component) override
+		{
+
+		}
 	};
 }

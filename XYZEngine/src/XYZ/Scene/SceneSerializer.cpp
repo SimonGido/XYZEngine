@@ -158,7 +158,7 @@ namespace XYZ {
 
 		out << YAML::Key << "SelectColor" << YAML::Value << val.SelectColor;
 		out << YAML::Key << "HooverColor" << YAML::Value << val.HooverColor;
-		out << YAML::Key << "TextEntity" << YAML::Value << ecs.GetStorageComponent<IDComponent>(val.TextEntity).ID;
+		out << YAML::Key << "TextEntity" << YAML::Value << ecs.GetComponent<IDComponent>(val.TextEntity).ID;
 
 		out << YAML::EndMap;
 	}

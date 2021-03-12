@@ -33,12 +33,10 @@ namespace XYZ {
 			:
 			m_ECS(ecs)
 		{
-			std::initializer_list<uint8_t> componentTypes{ Args::GetComponentID()... };
+			std::initializer_list<uint8_t> componentTypes{ IComponent::GetComponentID<Args>()... };
 			for (auto it : componentTypes)
 				m_Signature.set(it);
-
 			(m_ECS->ForceStorage<Args>(),...);
-			m_Storages = { m_ECS->GetStorage<Args>()... };
 		}
 
 		virtual void AddEntity(uint32_t entity) override
@@ -102,8 +100,9 @@ namespace XYZ {
 		template <typename Type>
 		Type& get(uint32_t index)
 		{
+			auto& storage = m_ECS->GetStorage<Type>();
 			auto it = std::get<Element<Type>>(m_IndexGroups[index].Elements);
-			return (*std::get<ComponentStorage<Type>*>(m_Storages))[it.Index];
+			return storage.GetComponentAtIndex<Type>(it.Index);
 		}
 
 	private:
@@ -125,7 +124,6 @@ namespace XYZ {
 		ECSManager* m_ECS;
 		std::vector<IndexGroup> m_IndexGroups;
 		std::vector<uint32_t> m_EntityDataMap;
-		std::tuple<ComponentStorage<Args>*...> m_Storages;
 
 		static constexpr size_t sc_ElementsPerGroup = sizeof...(Args);
 	};

@@ -17,6 +17,11 @@ namespace XYZ {
 		
 		Padding Padding;
 		glm::vec2 CellSpacing = glm::vec2(0.0f);
+
+		virtual void Copy(IComponent* component) override
+		{
+
+		}
 	};
 
 	class Layout : public IComponent
@@ -27,5 +32,11 @@ namespace XYZ {
 		std::vector<uint32_t> Elements;
 		glm::vec2 CellSpacing = glm::vec2(0.0f);
 		Padding Padding;
+
+
+		virtual void Copy(IComponent* component) override
+		{
+
+		}
 	};
 }

@@ -153,7 +153,7 @@ namespace XYZ {
 				m_Canvases.push_back(i);
 			}
 			
-			Relationship& rel = ecs->GetStorageComponent<Relationship>(i);
+			Relationship& rel = ecs->GetComponent<Relationship>(i);
 			if (rel.Parent == NULL_ENTITY && i != m_Canvases[0])
 			{
 				Relationship::SetupRelation(m_Canvases[0], i, *m_ECS);
@@ -705,8 +705,8 @@ namespace XYZ {
 			auto &[canvasRenderer, rectTransform] = (*m_RenderView)[i];
 			if (m_ECS->Contains<Slider>(m_RenderView->GetEntity(i)))
 			{
-				auto& rel = m_ECS->GetStorageComponent<Relationship>(m_RenderView->GetEntity(i));
-				auto& childTrans = m_ECS->GetStorageComponent<RectTransform>(rel.FirstChild);
+				auto& rel = m_ECS->GetComponent<Relationship>(m_RenderView->GetEntity(i));
+				auto& childTrans = m_ECS->GetComponent<RectTransform>(rel.FirstChild);
 			}
 			GuiRenderer::SubmitWidget(&canvasRenderer, &rectTransform);
 		}
@@ -781,8 +781,8 @@ namespace XYZ {
 				{
 					if (inputField.ECS && inputField.ECS->Contains<Text>(inputField.TextEntity))
 					{
-						auto& text = inputField.ECS->GetStorageComponent<Text>(inputField.TextEntity);
-						auto& textRectTransform = inputField.ECS->GetStorageComponent<RectTransform>(inputField.TextEntity);
+						auto& text = inputField.ECS->GetComponent<Text>(inputField.TextEntity);
+						auto& textRectTransform = inputField.ECS->GetComponent<RectTransform>(inputField.TextEntity);
 
 						if (!text.Source.empty())
 						{
@@ -806,8 +806,8 @@ namespace XYZ {
 			{
 				if (inputField.ECS && inputField.ECS->Contains<Text>(inputField.TextEntity))
 				{
-					auto& text = inputField.ECS->GetStorageComponent<Text>(inputField.TextEntity);
-					auto& textRectTransform = inputField.ECS->GetStorageComponent<RectTransform>(inputField.TextEntity);
+					auto& text = inputField.ECS->GetComponent<Text>(inputField.TextEntity);
+					auto& textRectTransform = inputField.ECS->GetComponent<RectTransform>(inputField.TextEntity);
 
 
 					text.Source += event.GetKey();
@@ -955,9 +955,9 @@ namespace XYZ {
 			auto [slider, canvasRenderer, rectTransform] = (*m_SliderView)[i];
 			if (slider.Machine.GetCurrentState().GetID() == SliderState::Dragged)
 			{
-				auto& rel = m_ECS->GetStorageComponent<Relationship>(m_SliderView->GetEntity(i));
+				auto& rel = m_ECS->GetComponent<Relationship>(m_SliderView->GetEntity(i));
 				uint32_t handle = rel.FirstChild;
-				auto& handleTransform = m_ECS->GetStorageComponent<RectTransform>(handle);
+				auto& handleTransform = m_ECS->GetComponent<RectTransform>(handle);
 				float diff = mousePosition.x - handleTransform.WorldPosition.x;
 	
 				if (handleTransform.Position.x + (handleTransform.Size.x / 2.0f) + diff < (rectTransform.Size.x / 2.0f)
@@ -1032,7 +1032,7 @@ namespace XYZ {
 
 	void GuiContext::updateTransform(uint32_t entity, const glm::vec3& parentPosition)
 	{
-		auto& rectTransform = m_ECS->GetStorageComponent<RectTransform>(entity);
+		auto& rectTransform = m_ECS->GetComponent<RectTransform>(entity);
 		rectTransform.WorldPosition = parentPosition + rectTransform.Position;
 
 		auto& currentRel = m_ECS->GetComponent<Relationship>(entity);

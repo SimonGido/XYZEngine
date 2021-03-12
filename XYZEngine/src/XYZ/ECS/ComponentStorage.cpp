@@ -3,11 +3,9 @@
 
 
 namespace XYZ {
-    ComponentStorage::ComponentStorage()
-        : m_Data(INVALID_COMPONENT)
+
+    void ComponentStorage::Init(uint8_t id, size_t elementSize)
     {
+        m_Data.Init(id, elementSize);
     }
-    ComponentStorage::ComponentStorage(uint8_t id)
-        : m_Data(id)
-    {}
 }

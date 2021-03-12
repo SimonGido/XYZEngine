@@ -36,31 +36,6 @@ namespace XYZ {
 		}
 
 		template<typename T>
-		T& GetGroupComponent()
-		{
-			return m_ECS->GetGroupComponent<T>(m_ID);
-		}
-
-		template<typename T>
-		const T& GetGroupComponent() const
-		{
-			return m_ECS->GetGroupComponent<T>(m_ID);
-		}
-
-		
-		template<typename T>
-		T& GetStorageComponent()
-		{
-			return m_ECS->GetStorageComponent<T>(m_ID);
-		}
-
-		template<typename T>
-		const T& GetStorageComponent() const
-		{
-			return m_ECS->GetStorageComponent<T>(m_ID);
-		}
-
-		template<typename T>
 		T& GetComponent()
 		{
 			return m_ECS->GetComponent<T>(m_ID);

@@ -8,9 +8,8 @@ namespace XYZ {
 	class ComponentStorage
 	{
 	public:
-		ComponentStorage();
-		ComponentStorage(uint8_t id);
-		
+		void Init(uint8_t id, size_t elementSize);
+
 		uint32_t EntityDestroyed(uint32_t entity)
 		{
 			uint32_t updatedEntity = NULL_ENTITY;
@@ -46,18 +45,18 @@ namespace XYZ {
 
 			m_DataEntityMap.push_back(entity);
 			m_EntityDataMap[entity] = m_Data.Size();
-			return *m_Data.Push({ component,entity });
+			return *m_Data.Push(component);
 		}
 		template <typename T>
 		T& GetComponent(uint32_t entity)
 		{
-			return m_Data.Get(m_EntityDataMap[entity]);
+			return m_Data.Get<T>(m_EntityDataMap[entity]);
 		}
 
 		template <typename T>
 		const T& GetComponent(uint32_t entity) const
 		{
-			return m_Data.Get(m_EntityDataMap[entity]);
+			return m_Data.Get<T>(m_EntityDataMap[entity]);
 		}
 
 		template <typename T>
@@ -83,10 +82,10 @@ namespace XYZ {
 			return updatedEntity;
 		}
 		template <typename T>
-		ComponentStorage Clone() override
+		ComponentStorage Clone() const
 		{
 			ComponentStorage storage;
-			m_Data.Clone(storage.m_Data);
+			m_Data.Clone<T>(storage.m_Data);
 			storage.m_DataEntityMap = m_DataEntityMap;
 			storage.m_EntityDataMap = m_EntityDataMap;
 			return storage;
@@ -95,13 +94,13 @@ namespace XYZ {
 		template <typename T>
 		T& GetComponentAtIndex(size_t index)
 		{
-			return m_Data.Get(index);
+			return m_Data.Get<T>(index);
 		}
 
 		template <typename T>
 		const T& GetComponentAtIndex(size_t index) const
 		{
-			return m_Data.Get(index);
+			return m_Data.Get<T>(index);
 		}
 
 		uint32_t GetComponentIndex(uint32_t entity) const
@@ -117,6 +116,8 @@ namespace XYZ {
 		size_t Size() const { return m_Data.Size(); }
 
 		uint8_t GetComponentID() const { return m_Data.GetID(); }
+	
+		bool IsInitialized() const { return m_Data.IsInitialized(); }
 	private:
 		ComponentAllocator m_Data;
 		std::vector<uint32_t> m_EntityDataMap;

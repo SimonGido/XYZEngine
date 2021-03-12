@@ -7,12 +7,13 @@ namespace XYZ {
 	{
 	public:
 		ComponentAllocator();
-		ComponentAllocator(uint8_t id, size_t elementSize);
 
-		template <typename T, typename T2>
+		void Init(uint8_t id, size_t elementSize);
+
+		template <typename T>
 		void Clone(ComponentAllocator& allocator) const
 		{
-			XYZ_ASSERT(T::GetComponentID() == m_ID && m_ID != INVALID_COMPONENT, "");
+			XYZ_ASSERT(IComponent::GetComponentID<T>() == m_ID && m_Initialized, "");
 			allocator.Clean<T2>();
 
 			allocator.m_ID = m_ID;
@@ -26,7 +27,7 @@ namespace XYZ {
 		template <typename T>
 		void Clean()
 		{
-			XYZ_ASSERT(T::GetComponentID() == m_ID && m_ID != INVALID_COMPONENT, "");
+			XYZ_ASSERT(IComponent::GetComponentID<T>() == m_ID && m_Initialized, "");
 			for (size_t i = 0; i < m_Size; i += sizeof(T))
 			{
 				T* casted = reinterpret_cast<T*>(&m_Buffer[i]);
@@ -54,7 +55,7 @@ namespace XYZ {
 		template <typename T>
 		T* Push(const T& elem)
 		{
-			XYZ_ASSERT(T::GetComponentID() == m_ID && m_ID != INVALID_COMPONENT, "");
+			XYZ_ASSERT(IComponent::GetComponentID<T>() == m_ID && m_Initialized, "");
 			if (m_Size + sizeof(T) >= m_Capacity)
 				reallocate<T>((m_Capacity * sc_CapacityMultiplier) + sizeof(T));
 
@@ -67,7 +68,7 @@ namespace XYZ {
 		template <typename T, typename ...Args>
 		T* Emplace(Args&&... args)
 		{
-			XYZ_ASSERT(T::GetComponentID() == m_ID && m_ID != INVALID_COMPONENT, "");
+			XYZ_ASSERT(IComponent::GetComponentID<T>() == m_ID && m_Initialized, "");
 			if (m_Size + sizeof(T) >= m_Capacity)
 				reallocate<T>((m_Capacity * sc_CapacityMultiplier) + sizeof(T));
 
@@ -80,7 +81,7 @@ namespace XYZ {
 		template <typename T>
 		void Erase(size_t index)
 		{
-			XYZ_ASSERT(T::GetComponentID() == m_ID && m_ID != INVALID_COMPONENT, "");
+			XYZ_ASSERT(IComponent::GetComponentID<T>() == m_ID && m_Initialized, "");
 			T* removed = reinterpret_cast<T*>(&m_Buffer[index * sizeof(T)]);
 			removed->~T();
 
@@ -116,7 +117,7 @@ namespace XYZ {
 		template <typename T>
 		void Move(size_t targetIndex, size_t sourceIndex)
 		{
-			XYZ_ASSERT(T::GetComponentID() == m_ID, "");
+			XYZ_ASSERT(IComponent::GetComponentID<T>() == m_ID, "");
 
 			size_t firstIndexInBuffer = targetIndex * sizeof(T);
 			size_t secondIndexInBuffer = sourceIndex * sizeof(T);
@@ -135,18 +136,19 @@ namespace XYZ {
 		template <typename T>
 		T& Get(size_t index)
 		{
-			XYZ_ASSERT(T::GetComponentID() == m_ID && m_ID != INVALID_COMPONENT, "");
+			XYZ_ASSERT(IComponent::GetComponentID<T>() == m_ID && m_Initialized, "");
 			return *reinterpret_cast<T*>(&m_Buffer[index * sizeof(T)]);
 		}
 
 		template <typename T>
 		const T& Get(size_t index) const
 		{
-			XYZ_ASSERT(T::GetComponentID() == m_ID && m_ID != INVALID_COMPONENT, "");
+			XYZ_ASSERT(IComponent::GetComponentID<T>() == m_ID && m_Initialized, "");
 			return *reinterpret_cast<T*>(&m_Buffer[index * sizeof(T)]);
 		}
-		uint8_t GetID() const { return m_ID; }
+		bool IsInitialized() const { return m_Initialized; }
 
+		uint8_t GetID() const { return m_ID; }
 		size_t Size() const { return m_Size / m_ElementSize; }
 		size_t GetElementSize() const { return m_ElementSize; }
 	private:
@@ -173,6 +175,8 @@ namespace XYZ {
 
 		uint8_t m_ID;
 		size_t m_ElementSize;
+		bool m_Initialized = false;
+
 		static constexpr size_t sc_CapacityMultiplier = 2;
 	};
 }
