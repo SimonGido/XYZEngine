@@ -23,7 +23,7 @@ namespace XYZ {
 				m_EntityDataMap[lastEntity] = index;
 				updatedEntity = lastEntity;
 			}
-			m_Data.Erase(m_Data.Size() - 1, m_Data.GetElementSize());
+			m_Data.Erase(m_Data.Size() - 1);
 			return updatedEntity;
 		}
 

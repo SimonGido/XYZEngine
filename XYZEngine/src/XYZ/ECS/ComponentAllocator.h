@@ -14,7 +14,7 @@ namespace XYZ {
 		void Clone(ComponentAllocator& allocator) const
 		{
 			XYZ_ASSERT(IComponent::GetComponentID<T>() == m_ID && m_Initialized, "");
-			allocator.Clean<T2>();
+			allocator.Clean<T>();
 
 			allocator.m_ID = m_ID;
 			allocator.m_Size = m_Size;
@@ -94,24 +94,23 @@ namespace XYZ {
 			m_Size -= sizeof(T);
 		}
 
-		void Erase(size_t index, size_t elementSize)
+		void Erase(size_t index)
 		{
-			IComponent* removed = reinterpret_cast<IComponent*>(&m_Buffer[index * elementSize]);
-			removed->~IComponent();
+			IComponent* removed = reinterpret_cast<IComponent*>(&m_Buffer[index * m_ElementSize]);
 
-			for (size_t i = (index + 1) * elementSize; i < m_Size; i += elementSize)
+			for (size_t i = (index + 1) * m_ElementSize; i < m_Size; i += m_ElementSize)
 			{
 				IComponent* casted = reinterpret_cast<IComponent*>(&m_Buffer[i]);
-				IComponent* dest = reinterpret_cast<IComponent*>(&m_Buffer[i - elementSize]);
+				IComponent* dest = reinterpret_cast<IComponent*>(&m_Buffer[i - m_ElementSize]);
 				dest->Copy(casted);
 			}
-			m_Size -= elementSize;
+			m_Size -= m_ElementSize;
 		}
 
 		template <typename T>
 		void Pop()
 		{
-			Erase<T>(Size<T>() - 1);
+			Erase<T>(Size() - 1);
 		}
 
 		template <typename T>

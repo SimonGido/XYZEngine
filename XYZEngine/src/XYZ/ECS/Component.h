@@ -19,7 +19,7 @@ namespace XYZ {
 		static uint8_t getNextID()
 		{
 			static uint8_t nextType = 0;
-			return ++nextType;
+			return nextType++;
 		}
 
 		friend class ComponentManager;
@@ -27,7 +27,7 @@ namespace XYZ {
 
 
 	template <typename Derived, typename DeriveFrom = Counter>
-	class Type : public IComponent
+	class Type : public Counter
 	{
 	public:
 		// return unique static id
