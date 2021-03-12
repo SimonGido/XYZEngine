@@ -179,6 +179,13 @@ namespace XYZ {
 			m_Entities.pop_back();
 		}
 		m_ECS.DestroyEntity(entity);
+
+
+		auto& tagStorage = m_ECS.GetStorage<SceneTagComponent>();
+		for (size_t i = 0; i < tagStorage.Size(); ++i)
+		{
+			std::cout << tagStorage.GetComponent<SceneTagComponent>(i).Name << std::endl;
+		}
 	}
 
 	void Scene::OnPlay()

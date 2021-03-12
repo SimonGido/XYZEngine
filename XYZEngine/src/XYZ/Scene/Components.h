@@ -31,7 +31,7 @@ namespace XYZ {
 
 		virtual void Copy(IComponent* component) override
 		{
-
+			ID = static_cast<IDComponent*>(component)->ID;
 		}
 		GUID ID;
 	};
@@ -73,7 +73,10 @@ namespace XYZ {
 
 		virtual void Copy(IComponent* component) override
 		{
-
+			TransformComponent* casted = static_cast<TransformComponent*>(component);
+			Translation = casted->Translation;
+			Rotation = casted->Rotation;
+			Scale = casted->Scale;
 		}
 	};
 
@@ -98,7 +101,7 @@ namespace XYZ {
 
 		virtual void Copy(IComponent* component) override
 		{
-
+			Name = static_cast<SceneTagComponent*>(component)->Name;
 		}
 	};
 
@@ -128,7 +131,11 @@ namespace XYZ {
 
 		virtual void Copy(IComponent* component) override
 		{
-
+			SpriteRenderer* casted = static_cast<SpriteRenderer*>(component);
+			Material = casted->Material;
+			SubTexture = casted->SubTexture;
+			Color = casted->Color;
+			IsVisible = casted->IsVisible;
 		}
 	};
 
@@ -140,7 +147,7 @@ namespace XYZ {
 
 		virtual void Copy(IComponent* component) override
 		{
-
+			Camera = static_cast<CameraComponent*>(component)->Camera;
 		}
 	};
 
@@ -154,7 +161,6 @@ namespace XYZ {
 		{
 			Controller = static_cast<AnimatorComponent*>(component)->Controller;
 		}
-
 	};
 
 
@@ -169,7 +175,10 @@ namespace XYZ {
 
 		virtual void Copy(IComponent* component) override
 		{
-
+			ParticleComponent* casted = static_cast<ParticleComponent*>(component);
+			RenderMaterial = casted->RenderMaterial;
+			ComputeMaterial = casted->ComputeMaterial;
+			ParticleEffect = casted->ParticleEffect;
 		}
 	};
 
@@ -182,7 +191,10 @@ namespace XYZ {
 
 		virtual void Copy(IComponent* component) override
 		{
-
+			PointLight2D* casted = static_cast<PointLight2D*>(component);
+			
+			Color = casted->Color;
+			Intensity = casted->Intensity;
 		}
 	};
 
@@ -199,7 +211,11 @@ namespace XYZ {
 
 		virtual void Copy(IComponent* component) override
 		{
-
+			Relationship* casted = static_cast<Relationship*>(component);
+			Parent = casted->Parent;
+			FirstChild = casted->FirstChild;
+			PreviousSibling = casted->PreviousSibling;
+			NextSibling = casted->NextSibling;
 		}
 	};
 
@@ -217,7 +233,11 @@ namespace XYZ {
 
 		virtual void Copy(IComponent* component) override
 		{
-
+			ScriptComponent* casted = static_cast<ScriptComponent*>(component);
+			ModuleName = casted->ModuleName;
+			Fields = casted->Fields;
+			ScriptClass = casted->ScriptClass;
+			Handle = casted->Handle;
 		}
 	private:
 		EntityScriptClass* ScriptClass = nullptr;
@@ -238,7 +258,9 @@ namespace XYZ {
 
 		virtual void Copy(IComponent* component) override
 		{
-
+			RigidBody2DComponent* casted = static_cast<RigidBody2DComponent*>(component);
+			Type = casted->Type;
+			Body = casted->Body;
 		}
 	};
 
@@ -254,7 +276,11 @@ namespace XYZ {
 
 		virtual void Copy(IComponent* component) override
 		{
-
+			BoxCollider2DComponent* casted = static_cast<BoxCollider2DComponent*>(component);
+			Shape = casted->Shape;
+			Offset = casted->Offset;
+			Size = casted->Size;
+			Density = casted->Density;
 		}
 	};
 
@@ -269,7 +295,11 @@ namespace XYZ {
 
 		virtual void Copy(IComponent* component) override
 		{
-
+			CircleCollider2DComponent* casted = static_cast<CircleCollider2DComponent*>(component);
+			Shape = casted->Shape;
+			Offset = casted->Offset;
+			Radius = casted->Radius;
+			Density = casted->Density;
 		}
 	};
 }

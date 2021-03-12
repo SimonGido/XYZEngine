@@ -52,9 +52,23 @@ namespace XYZ {
 		AssetManager::Init();
 		Renderer::Init();
 
-		auto shader = AssetManager::CreateAsset<Shader>("DefaultShader.glsl", AssetType::Shader, AssetManager::GetDirectoryHandle("Assets/Shaders"), "Assets/Shaders/DefaultShader.glsl");
+		auto shader = AssetManager::CreateAsset<Shader>("DefaultShader.glsl.shader", AssetType::Shader, AssetManager::GetDirectoryHandle("Assets/Shaders"), "Assets/Shaders/DefaultShader.glsl");
 		m_Material = AssetManager::CreateAsset<Material>("Material.mat", AssetType::Material, AssetManager::GetDirectoryHandle("Assets/Materials"), shader);
 		m_Scene = AssetManager::CreateAsset<Scene>("Scene.xyz", AssetType::Scene, AssetManager::GetDirectoryHandle("Assets/Scenes"), "Scene");
+
+		auto a = m_Scene->CreateEntity("A", GUID());
+		auto b = m_Scene->CreateEntity("B", GUID());
+		auto c = m_Scene->CreateEntity("C", GUID());
+		auto d = m_Scene->CreateEntity("D", GUID());
+		auto e = m_Scene->CreateEntity("E", GUID());
+		auto f = m_Scene->CreateEntity("F", GUID());
+		auto g = m_Scene->CreateEntity("G", GUID());
+		auto h = m_Scene->CreateEntity("H", GUID());
+		auto i = m_Scene->CreateEntity("I", GUID());
+
+
+		m_Scene->DestroyEntity(d);
+		m_Scene->DestroyEntity(f);
 
 		ScriptEngine::Init("Assets/Scripts/XYZScriptExample.dll");
 		ScriptEngine::SetSceneContext(m_Scene);
