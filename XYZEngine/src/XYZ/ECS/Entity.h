@@ -46,7 +46,11 @@ namespace XYZ {
 		{
 			return m_ECS->GetComponent<T>(m_ID);
 		}
-		
+		template <typename T, typename ...Args>
+		T& EmplaceComponent(Args&&... args)
+		{
+			return m_ECS->EmplaceComponent<T, Args>(m_ID, std::forward<Args>(args)...);
+		}
 		template <typename T>
 		T& AddComponent(const T& component)
 		{

@@ -27,31 +27,6 @@ namespace XYZ {
 		}
 
 		template<typename T>
-		T& GetGroupComponent()
-		{
-			return m_Scene->m_ECS.GetGroupComponent<T>(m_ID);
-		}
-
-		template<typename T>
-		const T& GetGroupComponent() const
-		{
-			return m_Scene->m_ECS.GetGroupComponent<T>(m_ID);
-		}
-
-
-		template<typename T>
-		T& GetStorageComponent()
-		{
-			return m_Scene->m_ECS.GetStorageComponent<T>(m_ID);
-		}
-
-		template<typename T>
-		const T& GetStorageComponent() const
-		{
-			return m_Scene->m_ECS.GetStorageComponent<T>(m_ID);
-		}
-
-		template<typename T>
 		T& GetComponent()
 		{
 			return m_Scene->m_ECS.GetComponent<T>(m_ID);
@@ -61,6 +36,12 @@ namespace XYZ {
 		const T& GetComponent() const
 		{
 			return m_Scene->m_ECS.GetComponent<T>(m_ID);
+		}
+
+		template <typename T, typename ...Args>
+		T& EmplaceComponent(Args&&... args)
+		{
+			return m_Scene->m_ECS.EmplaceComponent<T, Args>(m_ID, std::forward<Args>(args)...);
 		}
 
 		template <typename T>

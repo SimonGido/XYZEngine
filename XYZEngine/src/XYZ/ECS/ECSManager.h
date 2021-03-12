@@ -16,6 +16,16 @@ namespace XYZ {
 			m_EntityManager.DestroyEntity(entity); 
 		}
 
+		template <typename T, typename ...Args>
+		T& EmplaceComponent(uint32_t entity, Args&&... args)
+		{
+			Signature& signature = m_EntityManager.GetSignature(entity);
+			XYZ_ASSERT(!signature.test(IComponent::GetComponentID<T>()), "Entity already contains component");
+			signature.set(IComponent::GetComponentID<T>(), true);
+			auto& result = m_ComponentManager.EmplaceComponent<T>(entity, std::forward<Args>(args)...);
+			m_ComponentManager.AddToView(entity, signature);
+			return result;
+		}
 		template <typename T>
 		T& AddComponent(uint32_t entity, const T& component)
 		{

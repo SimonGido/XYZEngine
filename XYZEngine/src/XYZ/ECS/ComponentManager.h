@@ -18,6 +18,21 @@ namespace XYZ {
 			}
 		}
 
+		template <typename T, typename ...Args>
+		T& EmplaceComponent(uint32_t entity, Args&& ... args)
+		{
+			uint8_t id = IComponent::GetComponentID<T>();
+			if (id >= m_Storages.size())
+			{
+				m_Storages.resize(size_t(id) + 1);
+				m_Storages[id].Init(id, sizeof(T));
+			}
+			else if (!m_Storages[id].IsInitialized())
+				m_Storages[id].Init(id, sizeof(T));
+
+			return m_Storages[id].EmplaceComponent<T>(entity, std::forward<Args>(args)...);
+		}
+
 		template <typename T>
 		T& AddComponent(uint32_t entity, const T& component)
 		{
@@ -139,7 +154,7 @@ namespace XYZ {
 			std::vector<uint32_t> updated;
 			for (uint32_t i = 0; i < m_Storages.size(); ++i)
 			{
-				if (signature.test(i) && m_Storages[i].GetComponentID() != INVALID_COMPONENT)
+				if (signature.test(i) && m_Storages[i].IsInitialized())
 					updated.push_back(m_Storages[i].EntityDestroyed(entity));	
 			}
 			updateViews(entity, signature, updated);
