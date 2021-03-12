@@ -39,9 +39,9 @@ namespace XYZ {
 			m_Capacity = 0;
 		}
 
-		void Clean(size_t elementSize)
+		void Clean()
 		{
-			for (size_t i = 0; i < m_Size; i += elementSize)
+			for (size_t i = 0; i < m_Size; i += m_ElementSize)
 			{
 				IComponent* casted = reinterpret_cast<IComponent*>(&m_Buffer[i]);
 				casted->~IComponent();
@@ -82,13 +82,14 @@ namespace XYZ {
 		void Erase(size_t index)
 		{
 			XYZ_ASSERT(IComponent::GetComponentID<T>() == m_ID && m_Initialized, "");
-			T* removed = reinterpret_cast<T*>(&m_Buffer[index * sizeof(T)]);
-			removed->~T();
+			size_t size = sizeof(T);
 
-			for (size_t i = (index + 1) * sizeof(T); i < m_Size; i += sizeof(T))
+			T* removed = reinterpret_cast<T*>(&m_Buffer[index * size]);
+			removed->~T();
+			for (size_t i = (index + 1) * size; i < m_Size; i += size)
 			{
 				T* casted = reinterpret_cast<T*>(&m_Buffer[i]);
-				new ((void*)&m_Buffer[i - sizeof(T)]) T(*casted);
+				new ((void*)&m_Buffer[i - size]) T(*casted);
 				casted->~T();
 			}
 			m_Size -= sizeof(T);
@@ -136,14 +137,16 @@ namespace XYZ {
 		T& Get(size_t index)
 		{
 			XYZ_ASSERT(IComponent::GetComponentID<T>() == m_ID && m_Initialized, "");
-			return *reinterpret_cast<T*>(&m_Buffer[index * sizeof(T)]);
+			T* buffer = (T*)m_Buffer;
+			return *reinterpret_cast<T*>(buffer + index);
 		}
 
 		template <typename T>
 		const T& Get(size_t index) const
 		{
 			XYZ_ASSERT(IComponent::GetComponentID<T>() == m_ID && m_Initialized, "");
-			return *reinterpret_cast<T*>(&m_Buffer[index * sizeof(T)]);
+			T* buffer = (T*)m_Buffer;
+			return *reinterpret_cast<T*>(buffer + index);
 		}
 		bool IsInitialized() const { return m_Initialized; }
 
