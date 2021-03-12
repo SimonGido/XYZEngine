@@ -237,7 +237,7 @@ namespace XYZ {
 		Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
 		XYZ_ASSERT(scene.Raw(), "No active scene!");
 
-		ComponentStorage& scriptStorage = scene->m_ECS.GetStorage<ScriptComponent>();
+		ComponentStorage<ScriptComponent>& scriptStorage = scene->m_ECS.GetStorage<ScriptComponent>();
 		for (size_t i = 0; i < scriptStorage.Size(); ++i)
 		{
 			InitScriptEntity(SceneEntity{ scriptStorage.GetEntityAtIndex(i), scene.Raw() });

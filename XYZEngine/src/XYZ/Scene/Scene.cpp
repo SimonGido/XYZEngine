@@ -184,7 +184,7 @@ namespace XYZ {
 		auto& tagStorage = m_ECS.GetStorage<SceneTagComponent>();
 		for (size_t i = 0; i < tagStorage.Size(); ++i)
 		{
-			std::cout << tagStorage.GetComponent<SceneTagComponent>(i).Name << std::endl;
+			std::cout << tagStorage[i].Name << std::endl;
 		}
 	}
 
@@ -303,7 +303,7 @@ namespace XYZ {
 		auto& scriptStorage = m_ECS.GetStorage<ScriptComponent>();
 		for (size_t i = 0; i < scriptStorage.Size(); ++i)
 		{
-			ScriptComponent& scriptComponent = scriptStorage.GetComponent<ScriptComponent>(i);
+			ScriptComponent& scriptComponent = scriptStorage[i];
 			ScriptEngine::OnUpdateEntity({ scriptStorage.GetEntityAtIndex(i),this }, ts);
 		}
 

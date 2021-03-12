@@ -3,63 +3,38 @@
 #include "ComponentView.h"
 #include "Component.h"
 #include "Types.h"
+#include "Pool.h"
 
 namespace XYZ {
 
 	class ComponentManager
 	{
 	public:
-		~ComponentManager()
-		{
-			for (auto view : m_Views)
-			{
-				if (view)
-					delete view;
-			}
-		}
+		ComponentManager();	
+		~ComponentManager();
+
+		void EntityDestroyed(uint32_t entity, const Signature& signature);	
+
 
 		template <typename T, typename ...Args>
 		T& EmplaceComponent(uint32_t entity, Args&& ... args)
 		{
-			uint8_t id = IComponent::GetComponentID<T>();
-			if (id >= m_Storages.size())
-			{
-				m_Storages.resize(size_t(id) + 1);
-				m_Storages[id].Init(id, sizeof(T));
-			}
-			else if (!m_Storages[id].IsInitialized())
-				m_Storages[id].Init(id, sizeof(T));
-
-			return m_Storages[id].EmplaceComponent<T>(entity, std::forward<Args>(args)...);
+			ComponentStorage<T>* storage = getOrCreateStorage<T>();
+			return storage->EmplaceComponent<T>(entity, std::forward<Args>(args)...);
 		}
 
 		template <typename T>
 		T& AddComponent(uint32_t entity, const T& component)
 		{
-			uint8_t id = IComponent::GetComponentID<T>();
-			if (id >= m_Storages.size())
-			{
-				m_Storages.resize(size_t(id) + 1);
-				m_Storages[id].Init(id, sizeof(T));
-			}
-			else if (!m_Storages[id].IsInitialized())
-				m_Storages[id].Init(id, sizeof(T));
-
-			return m_Storages[id].AddComponent<T>(entity, component);
+			ComponentStorage<T>* storage = getOrCreateStorage<T>();
+			return storage->AddComponent<T>(entity, component);
 		}
 
 
 		template <typename T>
 		void ForceStorage()
 		{
-			uint8_t id = IComponent::GetComponentID<T>();
-			if (id >= m_Storages.size())
-			{
-				m_Storages.resize(size_t(id) + 1);
-				m_Storages[id].Init(id, sizeof(T));
-			}
-			else if (!m_Storages[id].IsInitialized())
-				m_Storages[id].Init(id, sizeof(T));
+			getOrCreateStorage<T>();
 		}
 
 		void AddToView(uint32_t entity,const Signature& signature)
@@ -73,7 +48,7 @@ namespace XYZ {
 			}
 		}
 
-	
+
 		void RemoveFromView(uint32_t entity)
 		{
 			for (auto view : m_Views)
@@ -83,12 +58,11 @@ namespace XYZ {
 			}
 		}
 
-		
 		template <typename T>
 		void RemoveComponent(uint32_t entity, const Signature& signature)
 		{
-			ComponentStorage<T>* casted = (ComponentStorage<T>*)m_Storages[IComponent::GetComponentID<T>()];
-			uint32_t updatedEntity = casted->RemoveComponent(entity);
+			size_t offset = IComponent::GetComponentID<T>() * sizeof(ComponentStorage<T>);
+			uint32_t updatedEntity = m_StoragePool.Get<ComponentStorage<T>>(offset)->RemoveComponent(entity);
 			if (updatedEntity != NULL_ENTITY)
 				updateViews(entity,signature, updatedEntity);
 		}
@@ -96,24 +70,30 @@ namespace XYZ {
 		template <typename T>
 		T& GetComponent(uint32_t entity)
 		{
-			return m_Storages[IComponent::GetComponentID<T>()].GetComponent<T>(entity);
+			size_t offset = IComponent::GetComponentID<T>() * sizeof(ComponentStorage<T>);
+			ComponentStorage<T>& storage = *m_StoragePool.Get<ComponentStorage<T>>(offset);
+			return storage.GetComponent<T>(entity);
 		}
+
 		template <typename T>
 		const T& GetComponent(uint32_t entity) const
 		{
-			return m_Storages[IComponent::GetComponentID<T>()].GetComponent<T>(entity);
+			size_t offset = IComponent::GetComponentID<T>() * sizeof(ComponentStorage<T>);
+			return m_StoragePool.Get<ComponentStorage<T>>(offset)->GetComponent<T>(entity);
 		}
 
 		template <typename T>
-		ComponentStorage& GetStorage()
+		ComponentStorage<T>& GetStorage()
 		{
-			return m_Storages[(size_t)IComponent::GetComponentID<T>()];
+			size_t offset = IComponent::GetComponentID<T>() * sizeof(ComponentStorage<T>);
+			return *m_StoragePool.Get<ComponentStorage<T>>(offset);
 		}
 
 		template <typename T>
-		const ComponentStorage& GetStorage() const
+		const ComponentStorage<T>& GetStorage() const
 		{
-			return m_Storages[(size_t)IComponent::GetComponentID<T>()];
+			size_t offset = IComponent::GetComponentID<T>() * sizeof(ComponentStorage<T>);
+			return *m_StoragePool.Get<ComponentStorage<T>>(offset);
 		}
 
 		IComponentView* GetView(const Signature& signature)
@@ -142,26 +122,33 @@ namespace XYZ {
 			return view;
 		}
 
-		uint32_t GetComponentIndex(uint32_t entity, uint32_t index) const
+		template <typename T>
+		uint32_t GetComponentIndex(uint32_t entity) const
 		{
-			return m_Storages[index].GetComponentIndex(entity);
+			size_t offset = IComponent::GetComponentID<T>() * sizeof(ComponentStorage<T>);
+			const ComponentStorage<T>& storage = *m_StoragePool.Get<ComponentStorage<T>>(offset);
+			return storage.GetComponentIndex(entity);
 		}
 
-		size_t GetNumberOfStorages() const { return m_Storages.size(); }
-
-		void EntityDestroyed(uint32_t entity, const Signature& signature)
-		{
-			std::vector<uint32_t> updated;
-			for (uint32_t i = 0; i < m_Storages.size(); ++i)
-			{
-				if (signature.test(i) && m_Storages[i].IsInitialized())
-					updated.push_back(m_Storages[i].EntityDestroyed(entity));	
-			}
-			updateViews(entity, signature, updated);
-		}
-
+		size_t GetNumberOfRegisteredStorages() const { return m_NumberOfStorages; }
 
 	private:
+		template <typename T>
+		ComponentStorage<T>* getOrCreateStorage()
+		{
+			uint8_t id = IComponent::GetComponentID<T>();
+			if (!m_StorageCreated[id])
+			{
+				storage = m_StoragePool.Allocate<ComponentStorage<T>>(id * sizeof(ComponentStorage<T>));
+				m_StorageCreated[id] = true;
+				m_NumberOfStorages++;
+			}
+			else
+			{
+				storage = m_StoragePool.Get<ComponentStorage<T>>(id * sizeof(ComponentStorage<T>));
+			}
+			return storage;
+		}
 		// This is called when entity index in storage has changed
 		void updateViews(uint32_t removedEntity, const Signature& signature, uint32_t updatedEntity)
 		{
@@ -190,7 +177,10 @@ namespace XYZ {
 		}
 
 	private:
-		std::vector<ComponentStorage> m_Storages;
+		Pool m_StoragePool;
+		std::vector<bool> m_StorageCreated;
+		size_t m_NumberOfStorages = 0;
+
 		std::vector<IComponentView*> m_Views;
 	};
 	

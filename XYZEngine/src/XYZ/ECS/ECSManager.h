@@ -89,13 +89,13 @@ namespace XYZ {
 		}
 
 		template <typename T>
-		ComponentStorage& GetStorage()
+		ComponentStorage<T>& GetStorage()
 		{
 			return m_ComponentManager.GetStorage<T>();
 		}
 
 		template <typename T>
-		const ComponentStorage& GetStorage() const
+		const ComponentStorage<T>& GetStorage() const
 		{
 			return m_ComponentManager.GetStorage<T>();
 		}
@@ -130,12 +130,7 @@ namespace XYZ {
 		template <typename T>
 		uint32_t GetComponentIndex(uint32_t entity) const
 		{
-			return m_ComponentManager.GetComponentIndex(entity, IComponent::GetComponentID<T>());
-		}
-
-		uint32_t GetComponentIndex(uint32_t entity, uint8_t id) const
-		{
-			return m_ComponentManager.GetComponentIndex(entity, id);
+			return m_ComponentManager.GetComponentIndex<T>(entity);
 		}
 
 		template <typename T>
@@ -154,7 +149,7 @@ namespace XYZ {
 
 		const uint32_t GetNumberOfEntities() const { return m_EntityManager.GetNumEntities(); }
 
-		size_t GetNumberOfRegisteredComponentTypes() const { return m_ComponentManager.GetNumberOfStorages(); }
+		size_t GetNumberOfRegisteredComponentTypes() const { return m_ComponentManager.GetNumberOfRegisteredStorages(); }
 	private:
 		ComponentManager m_ComponentManager;
 		EntityManager m_EntityManager;
