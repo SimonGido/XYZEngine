@@ -276,6 +276,7 @@ namespace XYZ {
                 {
                 }
             }
+            inGuiBoneHierarchy();
             InGui::End();
         }
     }
@@ -346,6 +347,40 @@ namespace XYZ {
             m_WeightBrushRadius -= event.GetOffsetY();
         }
         return false;
+    }
+    void SkinningEditorPanel::inGuiBoneHierarchy()
+    {
+        auto& nodes = m_BoneHierarchy.GetFlatNodes();
+        uint32_t currentDepth = 0;
+        m_BoneHierarchy.Traverse([&](void* parent, void* child) -> bool {
+
+            PreviewBone* childBone = static_cast<PreviewBone*>(child);
+            if (nodes[childBone->ID].Depth > currentDepth)
+            {
+                InGui::BeginChildren();			
+            }
+            while (nodes[childBone->ID].Depth < currentDepth)
+            {
+                InGui::EndChildren();
+                currentDepth--;
+            }
+            bool open = true;
+            if (parent)
+            {
+                PreviewBone* parentBone = static_cast<PreviewBone*>(parent);
+                open = parentBone->Open;
+            }
+            if (open)
+            {
+                if (IS_SET(InGui::PushNode(childBone->Name.c_str(), glm::vec2(25.0f), childBone->Open, false), InGuiReturnType::Clicked))
+                    m_SelectedBone = childBone;
+            }
+            else
+                return true;
+
+             currentDepth = nodes[childBone->ID].Depth;
+             return false;
+        });
     }
     void SkinningEditorPanel::clear()
     {
@@ -517,7 +552,7 @@ namespace XYZ {
                     }
 
                     m_PreviewVertices.push_back({
-                        glm::vec3(1.0f),
+                        glm::vec3(0.0f),
                         glm::vec3(vertex.X, vertex.Y, 0.0f),
                         CalculateTexCoord(glm::vec2(vertex.X, vertex.Y),m_ContextSize),
                         data
@@ -529,22 +564,22 @@ namespace XYZ {
         {
             m_PreviewVertices.reserve(4);
             m_PreviewVertices.push_back({
-                glm::vec3(1.0f),
+                glm::vec3(0.0f),
                 glm::vec3(-m_ContextSize.x / 2.0f, -m_ContextSize.y / 2.0f, 0.0f),
                 glm::vec2(0.0f)
                 });
             m_PreviewVertices.push_back({
-                glm::vec3(1.0f),
+                glm::vec3(0.0f),
                 glm::vec3(m_ContextSize.x / 2.0f, -m_ContextSize.y / 2.0f, 0.0f),
                 glm::vec2(1.0f,0.0f)
                 });
             m_PreviewVertices.push_back({
-                glm::vec3(1.0f),
+                glm::vec3(0.0f),
                 glm::vec3(m_ContextSize.x / 2.0f,  m_ContextSize.y / 2.0f, 0.0f),
                 glm::vec2(1.0f)
                 });
             m_PreviewVertices.push_back({
-                glm::vec3(1.0f),
+                glm::vec3(0.0f),
                 glm::vec3(-m_ContextSize.x / 2.0f, m_ContextSize.y / 2.0f, 0.0f),
                 glm::vec2(0.0f, 1.0f)
                 });
@@ -712,8 +747,13 @@ namespace XYZ {
         else
         {  
             PreviewBone* newBone = m_BonePool.Allocate<PreviewBone>();
+            char buffer[20];
+            sprintf(buffer, "bone_%u", s_NextBone);
+            newBone->Name = buffer;
+
             newBone->Color = RandomColor(m_ColorIDs[s_NextBone++]);
             newBone->Start = m_NewBoneData.Start;
+           
             m_Bones.push_back(newBone);
             if (m_NewBoneData.Parent)
             {
@@ -885,7 +925,7 @@ namespace XYZ {
             }
         }
         if (!hasBone)
-            return vertex.Color;
+            return glm::vec3(0.0f);
         return color;
     }
     glm::vec2 SkinningEditorPanel::getPositionFromBones(const BoneVertex& vertex)
@@ -957,15 +997,19 @@ namespace XYZ {
     {
         Renderer2D::BeginScene(viewProjection);
         uint32_t counter = 0;
+        uint32_t offset = 0;
         for (auto& subMesh : m_SubMeshes)
         {
             for (auto& triangle : subMesh.Triangles)
-                renderTriangle(counter, triangle, m_Colors[TriangleColor]);
+            {
+                renderTriangle(counter, offset, triangle, m_Colors[TriangleColor]);
+                if (m_FoundTriangle && triangle == *m_FoundTriangle)
+                    renderTriangle(m_FoundSubmeshIndex, offset, *m_FoundTriangle, m_Colors[TriangleHighlightColor]);
+            }
             counter++;
+            offset += subMesh.Vertices.size();
         }
-        if (m_FoundTriangle)
-            renderTriangle(m_FoundSubmeshIndex, *m_FoundTriangle, m_Colors[TriangleHighlightColor]);
-        
+      
         if (IS_SET(m_Flags, CreateBone))
             previewBoneCreate();
 
@@ -1045,13 +1089,13 @@ namespace XYZ {
         Renderer2D::SubmitLine(glm::vec3(start + normal * m_PointRadius, 0.0f), glm::vec3(end, 0.0f), glm::vec4(child->Color, 0.2f));
         Renderer2D::SubmitLine(glm::vec3(start - normal * m_PointRadius, 0.0f), glm::vec3(end, 0.0f), glm::vec4(child->Color, 0.2f));
     }
-    void SkinningEditorPanel::renderTriangle(uint32_t subMeshIndex, const Triangle& triangle, const glm::vec4& color)
+    void SkinningEditorPanel::renderTriangle(uint32_t subMeshIndex,uint32_t vertexOffset, const Triangle& triangle, const glm::vec4& color)
     {
         if (IS_SET(m_Flags, PreviewPose))
         {
-            PreviewVertex& first = m_PreviewVertices[triangle.First];
-            PreviewVertex& second = m_PreviewVertices[triangle.Second];
-            PreviewVertex& third = m_PreviewVertices[triangle.Third];
+            PreviewVertex& first = m_PreviewVertices[size_t(triangle.First + vertexOffset)];
+            PreviewVertex& second = m_PreviewVertices[size_t(triangle.Second+ vertexOffset)];
+            PreviewVertex& third = m_PreviewVertices[size_t(triangle.Third+ vertexOffset)];
 
             Renderer2D::SubmitLine(glm::vec3(first.Position.x, first.Position.y, 0.0f), glm::vec3(second.Position.x, second.Position.y, 0.0f), color);
             Renderer2D::SubmitLine(glm::vec3(second.Position.x, second.Position.y, 0.0f), glm::vec3(third.Position.x, third.Position.y, 0.0f), color);

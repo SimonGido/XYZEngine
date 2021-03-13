@@ -63,6 +63,12 @@ namespace XYZ {
 			uint32_t First = 0;
 			uint32_t Second = 0;
 			uint32_t Third = 0;
+			bool operator==(const Triangle& other) const
+			{
+				return First == other.First 
+					&& Second == other.Second 
+					&& Third == other.Third;
+			}
 		};
 
 		struct Submesh
@@ -124,6 +130,7 @@ namespace XYZ {
 		bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
 		bool onMouseScroll(MouseScrollEvent& event);
 
+		void inGuiBoneHierarchy();
 		void clear();
 		void triangulate(Submesh& subMesh);
 		void initializePose();
@@ -153,7 +160,7 @@ namespace XYZ {
 		void renderMesh(const glm::mat4& viewProjection);
 		void renderPreviews(const glm::mat4& viewProjection);
 		void renderBoneRelation(PreviewBone* parent, PreviewBone* child);
-		void renderTriangle(uint32_t subMeshIndex, const Triangle& triangle, const glm::vec4& color);
+		void renderTriangle(uint32_t subMeshIndex, uint32_t vertexOffset, const Triangle& triangle, const glm::vec4& color);
 		void renderBone(float radius, const glm::vec2& start, const glm::vec2& end, const glm::vec2& normal, const glm::vec4& color);
 
 		std::pair<uint32_t, Triangle*> findTriangle(const glm::vec2& pos);
