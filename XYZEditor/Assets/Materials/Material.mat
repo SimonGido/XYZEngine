@@ -1,6 +1,6 @@
 Material: Material
-ShaderAsset: c23a713c-941b-47c3-b266-4d80899f4f6b
+ShaderAsset: 724bc6d3-3cfe-4028-808f-3805b45563d7
 Textures:
   []
 Values:
-  - u_Color: [-431602080, -431602080, -431602080, -431602080]
+  - u_Color: [1, 1, 1, 1]

@@ -901,6 +901,7 @@ namespace XYZ {
 		strStream << stream.rdbuf();
 		YAML::Node data = YAML::Load(strStream.str());
 
+		m_Scene->m_Name = data["Scene"].as<std::string>();
 		auto entities = data["Entities"];
 		if (entities)
 		{

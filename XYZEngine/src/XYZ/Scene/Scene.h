@@ -50,6 +50,7 @@ namespace XYZ {
         void OnRenderEditor(const EditorCamera& camera);
 
         SceneEntity GetEntity(uint32_t index);
+        SceneEntity GetEntityByName(const std::string& name);
         SceneEntity GetSelectedEntity();
         inline const std::vector<uint32_t>& GetEntities() const { return m_Entities; }
 

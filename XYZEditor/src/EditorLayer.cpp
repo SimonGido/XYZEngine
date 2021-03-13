@@ -52,23 +52,15 @@ namespace XYZ {
 		AssetManager::Init();
 		Renderer::Init();
 
-		auto shader = AssetManager::CreateAsset<Shader>("DefaultShader.glsl.shader", AssetType::Shader, AssetManager::GetDirectoryHandle("Assets/Shaders"), "Assets/Shaders/DefaultShader.glsl");
-		m_Material = AssetManager::CreateAsset<Material>("Material.mat", AssetType::Material, AssetManager::GetDirectoryHandle("Assets/Materials"), shader);
-		m_Scene = AssetManager::CreateAsset<Scene>("Scene.xyz", AssetType::Scene, AssetManager::GetDirectoryHandle("Assets/Scenes"), "Scene");
+		auto shader = AssetManager::GetAsset<Shader>(AssetManager::GetAssetHandle("Assets/Shaders/DefaultShader.glsl.shader"));
+		auto texture = AssetManager::GetAsset<Texture2D>(AssetManager::GetAssetHandle("Assets/Textures/player_sprite.png.tex"));
+		auto subTexture = AssetManager::GetAsset<SubTexture>(AssetManager::GetAssetHandle("Assets/SubTextures/player.subtex"));
+		auto material = AssetManager::GetAsset<Material>(AssetManager::GetAssetHandle("Assets/Materials/Material.mat"));
+		m_Scene = AssetManager::GetAsset<Scene>(AssetManager::GetAssetHandle("Assets/Scenes/scene.xyz"));
+		m_TestEntity = m_Scene->GetEntityByName("TestEntity");
+		
+		m_TestEntity.EmplaceComponent<ScriptComponent>("Example.Script");
 
-		auto a = m_Scene->CreateEntity("A", GUID());
-		auto b = m_Scene->CreateEntity("B", GUID());
-		auto c = m_Scene->CreateEntity("C", GUID());
-		auto d = m_Scene->CreateEntity("D", GUID());
-		auto e = m_Scene->CreateEntity("E", GUID());
-		auto f = m_Scene->CreateEntity("F", GUID());
-		auto g = m_Scene->CreateEntity("G", GUID());
-		auto h = m_Scene->CreateEntity("H", GUID());
-		auto i = m_Scene->CreateEntity("I", GUID());
-
-
-		m_Scene->DestroyEntity(d);
-		m_Scene->DestroyEntity(f);
 
 		ScriptEngine::Init("Assets/Scripts/XYZScriptExample.dll");
 		ScriptEngine::SetSceneContext(m_Scene);
@@ -79,81 +71,10 @@ namespace XYZ {
 		m_Scene->SetViewportSize(windowWidth, windowHeight);
 		
 
-		
-		m_Material->SetFlags(XYZ::RenderFlags::TransparentFlag);
 
-		m_TestEntity = m_Scene->GetEntity(2);
-		m_SpriteRenderer = &m_TestEntity.GetComponent<SpriteRenderer>();
-		m_Transform = &m_TestEntity.GetComponent<TransformComponent>();
-		m_TestEntity.AddComponent<ScriptComponent>(ScriptComponent("Example.Script"));
 		ScriptEngine::InitScriptEntity(m_TestEntity);
 		ScriptEngine::InstantiateEntityClass(m_TestEntity);
 
-
-		auto test = m_Scene->GetEntity(1);
-		test.AddComponent<ScriptComponent>(ScriptComponent("Example.Script"));
-		ScriptEngine::InitScriptEntity(test);
-		ScriptEngine::InstantiateEntityClass(test);
-
-		m_NewEntity = m_Scene->GetEntity(3);
-		
-		m_CharacterTexture = Texture2D::Create({ TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest }, "Assets/Textures/player_sprite.png");
-		m_CharacterSubTexture = Ref<SubTexture>::Create(m_CharacterTexture, glm::vec2(0, 0), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
-		m_CharacterSubTexture2 = Ref<SubTexture>::Create(m_CharacterTexture, glm::vec2(1, 2), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
-		m_CharacterSubTexture3 = Ref<SubTexture>::Create(m_CharacterTexture, glm::vec2(2, 2), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
-
-		//auto backgroundTexture = m_AssetManager.GetAsset<Texture2D>("Assets/Textures/Backgroundfield.png");
-		///////////////////////////////////////////////////////////
-
-		uint32_t count = 5000;
-		auto computeMat = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleComputeShader.glsl"));
-		auto renderMat = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShader.glsl"));
-
-		renderMat->Set("u_Texture", Texture2D::Create({TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest}, "Assets/Textures/flame.png"), 0);
-		renderMat->Set("u_Texture", Texture2D::Create({TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest}, "Assets/Textures/flame_emission.png"), 1);
-
-
-		m_Particle = &m_TestEntity.AddComponent<ParticleComponent>(ParticleComponent());
-		m_Particle->RenderMaterial = Ref<MaterialInstance>::Create(renderMat);
-		m_Particle->ComputeMaterial = Ref<MaterialInstance>::Create(computeMat);
-		m_Particle->ParticleEffect = Ref<ParticleEffect>::Create(ParticleEffectConfiguration(count, 2.0f), ParticleLayoutConfiguration());
-
-		m_Particle->ComputeMaterial->Set("u_Speed", 0.2f);
-		m_Particle->ComputeMaterial->Set("u_Gravity", 0.0f);
-		m_Particle->ComputeMaterial->Set("u_Loop", (int)1);
-		m_Particle->ComputeMaterial->Set("u_NumberRows", 8.0f);
-		m_Particle->ComputeMaterial->Set("u_NumberColumns", 8.0f);
-		m_Particle->ComputeMaterial->Set("u_ParticlesInExistence", 0.0f);
-		m_Particle->ComputeMaterial->Set("u_Time", 0.0f);
-
-
-		std::random_device rd;
-		std::mt19937 rng(rd());
-		std::uniform_real_distribution<> dist(-1, 1);
-
-		m_Vertices = new XYZ::ParticleVertex[count];
-		m_Data = new XYZ::ParticleInformation[count];
-
-		for (int i = 0; i < count; ++i)
-		{
-			m_Vertices[i].Position = glm::vec4(0.008f * i, 0.0f, 0.0f, 0.0f);
-			m_Vertices[i].Color = glm::vec4(0.3, 0.5, 1.0, 1);
-			m_Vertices[i].Rotation = 0.0f;
-			m_Vertices[i].TexCoordOffset = glm::vec2(0);
-
-			m_Data[i].DefaultPosition = m_Vertices[i].Position;
-			
-			m_Data[i].ColorBegin = m_Vertices[i].Color;
-			m_Data[i].ColorEnd = m_Vertices[i].Color;
-			m_Data[i].SizeBegin = 1.0f;
-			m_Data[i].SizeEnd = 0.1f;
-			m_Data[i].Rotation = dist(rng) * 15;
-			m_Data[i].Velocity = glm::vec2(0.0f, fabs(dist(rng)));
-			m_Data[i].DefaultVelocity = m_Data[i].Velocity;
-			m_Data[i].LifeTime = fabs(dist(rng)) + 4;
-		}
-		m_Particle->ParticleEffect->SetParticlesRange(m_Vertices, m_Data, 0, count);
-		///////////////////////////////////////////////////////////
 
 		Renderer::WaitAndRender();
 		
@@ -172,6 +93,7 @@ namespace XYZ {
 
 	void EditorLayer::OnDetach()
 	{
+		AssetSerializer::SerializeAsset(m_Scene);
 		Renderer::Shutdown();
 		AssetManager::Shutdown();
 	}
@@ -196,39 +118,6 @@ namespace XYZ {
 		{
 			m_SelectedEntity = m_Scene->GetSelectedEntity();
 			m_InspectorPanel.SetContext(m_SelectedEntity);
-		}
-
-		if (m_TestEntity.HasComponent<RigidBody2DComponent>())
-		{
-			float speed = 0.03;
-			auto body = m_TestEntity.GetComponent<RigidBody2DComponent>().Body;
-			if (body)
-			{
-				if (Input::IsKeyPressed(KeyCode::KEY_LEFT))
-					body->AddVelocity({ -speed,0.0f });
-				if (Input::IsKeyPressed(KeyCode::KEY_RIGHT))
-					body->AddVelocity({ speed,0.0f });
-				if (Input::IsKeyPressed(KeyCode::KEY_UP))
-					body->AddVelocity({ 0.0f, speed });
-				if (Input::IsKeyPressed(KeyCode::KEY_DOWN))
-					body->AddVelocity({ 0.0f, -speed });
-			}
-		}
-		if (m_NewEntity.HasComponent<RigidBody2DComponent>())
-		{			
-			float speed = 0.06f;
-			auto body = m_NewEntity.GetComponent<RigidBody2DComponent>().Body;
-			if (body)
-			{
-				if (Input::IsKeyPressed(KeyCode::KEY_A))
-					body->AddVelocity({ -speed,0.0f });
-				if (Input::IsKeyPressed(KeyCode::KEY_D))
-					body->AddVelocity({ speed,0.0f });
-				if (Input::IsKeyPressed(KeyCode::KEY_W))
-					body->AddVelocity({ 0.0f, speed });
-				if (Input::IsKeyPressed(KeyCode::KEY_S))
-					body->AddVelocity({ 0.0f, -speed });
-			}
 		}
 	}
 

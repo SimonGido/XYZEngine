@@ -40,9 +40,6 @@ namespace XYZ {
 		bool onKeyPress(KeyPressedEvent& event);
 		bool onKeyRelease(KeyReleasedEvent& event);
 
-		ParticleVertex* m_Vertices;
-		ParticleInformation* m_Data;
-		ParticleComponent* m_Particle;
 	private:
 		Ref<Scene> m_Scene;
 
@@ -51,23 +48,11 @@ namespace XYZ {
 		ScenePanel m_ScenePanel;
 		SkinningEditorPanel m_SkinningEditorPanel;
 
-
 	private:	
-		SceneEntity m_TestEntity;
-		SceneEntity m_NewEntity;
 		SceneEntity m_SelectedEntity;
-
-		SpriteRenderer* m_SpriteRenderer;
-		TransformComponent* m_Transform;
+		SceneEntity m_TestEntity;
 
 		glm::vec3 m_Position = { 0,0,0 };
 		glm::vec3 m_Rotation = { 0,0,0 };
-	
-		Ref<Material> m_Material;
-		Ref<Texture2D> m_CharacterTexture;
-
-		Ref<SubTexture> m_CharacterSubTexture;
-		Ref<SubTexture> m_CharacterSubTexture2;
-		Ref<SubTexture> m_CharacterSubTexture3;
 	};
 }

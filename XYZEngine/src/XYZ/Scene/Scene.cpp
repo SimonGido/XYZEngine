@@ -393,6 +393,10 @@ namespace XYZ {
 	{
 		return { m_Entities[index], this };
 	}
+	SceneEntity Scene::GetEntityByName(const std::string& name)
+	{
+		return { m_ECS.FindEntity<SceneTagComponent>(name), this };
+	}
 
 	SceneEntity Scene::GetSelectedEntity()
 	{

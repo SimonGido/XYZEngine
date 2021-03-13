@@ -13,7 +13,7 @@ namespace XYZ {
 		template <typename T, typename...Args>
 		inline typename std::enable_if<
 			(!std::is_same<T, Shader>::value) && 
-			(!std::is_same<T, Texture>::value), 
+			(!std::is_same<T, Texture2D>::value), 
 			Ref<T>
 		>::type
 		CreateRef(Args&&... args)
@@ -27,6 +27,13 @@ namespace XYZ {
 		CreateRef(Args&&... args)
 		{
 			return Shader::Create(std::forward<Args>(args)...);
+		}
+
+		template <typename T, typename ...Args>
+		inline typename std::enable_if<std::is_same<T, Texture2D>::value, Ref<T>>::type 
+			CreateRef(Args&&... args)
+		{
+			return Texture2D::Create(std::forward<Args>(args)...);
 		}
 	}
 
@@ -57,7 +64,6 @@ namespace XYZ {
 			asset->IsLoaded = true;
 			s_LoadedAssets[asset->Handle] = asset;
 			AssetSerializer::SerializeAsset(asset);
-
 			return asset;
 		}
 		
@@ -69,7 +75,7 @@ namespace XYZ {
 
 			if (!asset->IsLoaded && loadData)
 			{
-				asset = AssetSerializer::LoadAssetData(asset);
+				asset = AssetSerializer::LoadAsset(asset);
 			}
 			return asset.As<T>();
 		}

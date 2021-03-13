@@ -62,6 +62,7 @@ namespace XYZ
 		return GUID();
 	}
 
+
 	void AssetManager::processDirectory(const std::string& path, AssetDirectory& directory)
 	{
 		for (auto it : std::filesystem::directory_iterator(path))
@@ -97,7 +98,7 @@ namespace XYZ
 		{
 			if (s_LoadedAssets[asset->Handle]->IsLoaded)
 			{
-				asset = AssetSerializer::LoadAssetData(asset);
+				asset = AssetSerializer::LoadAsset(asset);
 			}
 		}
 		s_LoadedAssets[asset->Handle] = asset;

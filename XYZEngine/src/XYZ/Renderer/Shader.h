@@ -63,7 +63,6 @@ namespace XYZ {
 		uint32_t					Count = 0;
 	};
 
-	class ShaderAsset;
 	class Shader : public Asset
 	{
 	public:

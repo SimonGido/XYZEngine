@@ -117,6 +117,18 @@ namespace YAML {
 
 
 namespace XYZ {
+
+	// TODO: Temporary
+	static void CopyAsset(Ref<Asset>& target, Ref<Asset>& source)
+	{
+		target->DirectoryHandle = source->DirectoryHandle;
+		target->FileExtension = source->FileExtension;
+		target->FilePath = source->FilePath;
+		target->FileName = source->FileName;
+		target->Type = source->Type;
+		target->Handle = source->Handle;
+		target->IsLoaded = source->IsLoaded;
+	}
 	static YAML::Emitter& ToVec2(YAML::Emitter& out, const glm::vec2& v)
 	{
 		out << YAML::Flow;
@@ -259,6 +271,10 @@ namespace XYZ {
 		out << YAML::BeginMap;
 		
 		out << YAML::Key << "Texture" << YAML::Value << asset->FileName;
+		out << YAML::Key << "TextureFilePath" << YAML::Value << texture->GetFilepath();
+		out << YAML::Key << "Width" << YAML::Value << texture->GetWidth();
+		out << YAML::Key << "Height" << YAML::Value << texture->GetHeight();
+		out << YAML::Key << "Channels" << YAML::Value << texture->GetChannels();
 		out << YAML::Key << "Wrap" << YAML::Value << ToUnderlying(texture->GetSpecification().Wrap);
 		out << YAML::Key << "Param Min" << YAML::Value << ToUnderlying(texture->GetSpecification().MinParam);
 		out << YAML::Key << "Param Max" << YAML::Value << ToUnderlying(texture->GetSpecification().MagParam);
@@ -375,23 +391,32 @@ namespace XYZ {
 	{
 		std::ifstream stream(asset->FilePath);
 		TextureSpecs specs;
-		if (stream.is_open())
-		{
-			std::stringstream strStream;
-			strStream << stream.rdbuf();
-			YAML::Node data = YAML::Load(strStream.str());
+		
+		std::stringstream strStream;
+		strStream << stream.rdbuf();
+		YAML::Node data = YAML::Load(strStream.str());
 	
-			XYZ_ASSERT(data["Texture"], "Incorrect file format");
-			specs.Wrap = IntToTextureWrap(data["Wrap"].as<int>());
-			specs.MinParam = IntToTextureParam(data["Param Min"].as<int>());
-			specs.MagParam = IntToTextureParam(data["Param Max"].as<int>());
+		XYZ_ASSERT(data["Texture"], "Incorrect file format");
+
+		uint32_t width = data["Width"].as<uint32_t>();
+		uint32_t height = data["Height"].as<uint32_t>();
+		uint32_t channels = data["Channels"].as<uint32_t>();
+
+		specs.Wrap = IntToTextureWrap(data["Wrap"].as<int>());
+		specs.MinParam = IntToTextureParam(data["Param Min"].as<int>());
+		specs.MagParam = IntToTextureParam(data["Param Max"].as<int>());
+			
+		std::string textureFilePath = data["TextureFilePath"].as<std::string>();
+		Ref<Texture2D> texture;
+		if (!textureFilePath.empty())
+		{
+			texture = Texture2D::Create(specs, textureFilePath);			
 		}
 		else
 		{
-			XYZ_LOG_WARN("Missing texture meta data, setting default");
+			texture = Texture2D::Create(width, height, channels, specs);
 		}
-	
-		auto texture = Texture2D::Create(specs, asset->FilePath);
+		CopyAsset(texture.As<Asset>(), asset);
 		return texture.As<Asset>();
 	}
 
@@ -410,19 +435,22 @@ namespace XYZ {
 		glm::vec4 texCoords = data["TexCoords"].as<glm::vec4>();
 
 		auto ref = Ref<SubTexture>::Create(texture, texCoords);
-		return ref.As<SubTexture>();
+		CopyAsset(ref.As<Asset>(), asset);
+		
+		return ref.As<Asset>();
 	}
 
 	template <>
-	Ref<Asset> AssetSerializer::deserialize<ShaderAsset>(Ref<Asset> asset)
+	Ref<Asset> AssetSerializer::deserialize<Shader>(Ref<Asset> asset)
 	{
 		std::ifstream stream(asset->FilePath);
 		std::stringstream strStream;
 		strStream << stream.rdbuf();
 		YAML::Node data = YAML::Load(strStream.str());
 
-
-		return Shader::Create(data["ShaderFilePath"].as<std::string>());
+		Ref<Shader> shader =Shader::Create(data["ShaderFilePath"].as<std::string>());
+		CopyAsset(shader.As<Asset>(), asset);
+		return shader;
 	}
 
 	template <>
@@ -437,6 +465,7 @@ namespace XYZ {
 		auto shader = AssetManager::GetAsset<Shader>(shaderHandle);
 
 		Ref<Material> material = Ref<Material>::Create(shader);
+		CopyAsset(material.As<Asset>(), asset);
 
 		for (auto& seq : data["Textures"])
 		{
@@ -487,13 +516,16 @@ namespace XYZ {
 		std::string fontPath = data["FontPath"].as<std::string>();
 
 		auto ref = Ref<Font>::Create(pixelSize, fontPath);
+		CopyAsset(ref.As<Asset>(), asset);
 		return ref.As<Font>();
 	}
 
 	template <>
 	Ref<Asset> AssetSerializer::deserialize<Scene>(Ref<Asset> asset)
 	{
-		Ref<Scene> result;
+		Ref<Scene> result = Ref<Scene>::Create("");
+		CopyAsset(result.As<Asset>(), asset);
+
 		SceneSerializer sceneSerializer(result);
 		sceneSerializer.Deserialize();
 
@@ -530,7 +562,26 @@ namespace XYZ {
 		return asset;
 
 	}
-	Ref<Asset> AssetSerializer::LoadAssetData(Ref<Asset>& asset)
+	void AssetSerializer::SerializeAsset(Ref<Asset> asset)
+	{
+		switch (asset->Type)
+		{
+		case AssetType::Scene:
+			return serialize<Scene>(asset);
+		case AssetType::Texture:
+			return serialize<Texture2D>(asset);
+		case AssetType::SubTexture:
+			return serialize<SubTexture>(asset);
+		case AssetType::Material:
+			return serialize<Material>(asset);
+		case AssetType::Shader:
+			return serialize<Shader>(asset);
+		case AssetType::Font:
+			return serialize<Font>(asset);
+		}
+		createMetaFile(asset);
+	}
+	Ref<Asset> AssetSerializer::LoadAsset(Ref<Asset>& asset)
 	{
 		switch (asset->Type)
 		{
@@ -543,10 +594,11 @@ namespace XYZ {
 		case AssetType::Material:
 			return deserialize<Material>(asset);
 		case AssetType::Shader:
-			return deserialize<ShaderAsset>(asset);
+			return deserialize<Shader>(asset);
 		case AssetType::Font:
 			return deserialize<Font>(asset);
 		}
+		asset->IsLoaded = true;
 	}
 	void AssetSerializer::loadMetaFile(Ref<Asset> asset)
 	{

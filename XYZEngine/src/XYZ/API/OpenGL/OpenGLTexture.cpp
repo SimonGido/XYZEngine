@@ -8,7 +8,9 @@
 
 namespace XYZ {
 	OpenGLTexture2D::OpenGLTexture2D(const TextureSpecs& specs, const std::string& path)
-		: m_Specification(specs)
+		: 
+		m_Specification(specs),
+		m_Filepath(path)
 	{
 		int width, height, channels;
 		stbi_set_flip_vertically_on_load(1);	
