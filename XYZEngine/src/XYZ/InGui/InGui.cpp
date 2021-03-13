@@ -163,7 +163,7 @@ namespace XYZ {
 
 		Renderer2D::Flush();
 		Renderer2D::FlushLines();
-
+		
 		if (s_Context->FrameData.Scissors.size())
 		{		
 			s_Context->RenderData.ScissorBuffer->Update(s_Context->FrameData.Scissors.data(), s_Context->FrameData.Scissors.size() * sizeof(InGuiScissor));
@@ -1271,6 +1271,7 @@ namespace XYZ {
 					s_Context->Windows[id].Position = it["Position"].as<glm::vec2>();
 					s_Context->Windows[id].Size = it["Size"].as<glm::vec2>();
 					s_Context->Windows[id].Flags = it["Flags"].as<uint16_t>();
+
 					s_Context->EventListeners.push_back(id);
 				}
 			}

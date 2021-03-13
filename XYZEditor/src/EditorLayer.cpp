@@ -37,8 +37,8 @@ namespace XYZ {
 	EditorLayer::EditorLayer()
 		:
 		m_SceneHierarchyPanel(PanelID::SceneHierarchyPanel),
-		m_InspectorPanel(PanelID::InspectorPanel),
 		m_ScenePanel(PanelID::ScenePanel),
+		m_InspectorPanel(PanelID::InspectorPanel),
 		m_SkinningEditorPanel(PanelID::SkinningEditorPanel)
 	{		
 	}
