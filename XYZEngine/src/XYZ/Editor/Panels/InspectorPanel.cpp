@@ -50,7 +50,7 @@ namespace XYZ {
 				const InGuiWindow& window = InGui::GetWindow(m_PanelID);
 				auto layout = window.Layout;
 			
-				InGui::BeginScrollableArea(glm::vec2(InGui::GetWindow(m_PanelID).Size.x - 65.0f, 500.0f), m_ScrollOffset, m_ScrollScale, 10.0f);
+				InGui::BeginScrollableArea(glm::vec2(InGui::GetWindow(m_PanelID).Size.x - 20.0f, 500.0f), m_ScrollOffset, m_ScrollScale, 10.0f);
 				
 				layout.LeftPadding = 20.0f;
 				layout.RightPadding = 70.0f;

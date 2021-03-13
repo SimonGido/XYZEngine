@@ -108,11 +108,7 @@ namespace XYZ {
 
         InGui::ImageWindow(m_PanelID, "Skinning Editor", glm::vec2(0.0f), glm::vec2(200.0f), m_Context);
         InGui::End();
-
         const InGuiWindow& window = InGui::GetWindow(m_PanelID);
-        auto flags = window.Flags;
-        flags &= ~InGuiWindowFlags::EventBlocking;
-        InGui::SetWindowFlags(m_PanelID, flags);
 
         m_Shader = Shader::Create("Assets/Shaders/SkinningEditor.glsl");
 

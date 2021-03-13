@@ -38,10 +38,9 @@ namespace XYZ {
 		enum WindowFlags
 		{
 			Initialized = BIT(0),
-			EventBlocking = BIT(1),
-			Hoovered = BIT(2),
-			Collapsed = BIT(3),
-			Docked = BIT(4)
+			Hoovered = BIT(1),
+			Collapsed = BIT(2),
+			Docked = BIT(3)
 		};
 	}
 
@@ -156,28 +155,30 @@ namespace XYZ {
 
 	struct InGuiFrameData
 	{
-		void RestartValues();
+		void StartFrame();
+		void EndFrame();
 
 		static constexpr uint32_t NullID = 65536;
 	
-		glm::mat4				  ViewProjectionMatrix	= glm::mat4(1.0f);
-		glm::vec2				  MousePosition			= glm::vec2(0.0f);
-		glm::vec2				  MouseOffset			= glm::vec2(0.0f);
-		uint16_t				  Flags					= 0;
-		uint8_t					  ResizeFlags			= 0;
+		glm::mat4				  ViewProjectionMatrix	= glm::mat4(1.0f); 
+		glm::vec2				  MousePosition			= glm::vec2(0.0f); // Current mouse position
+		glm::vec2				  MouseOffset			= glm::vec2(0.0f); // Previous mouse position
+		uint16_t				  Flags					= 0; // Input flags
+		uint8_t					  ResizeFlags			= 0; // Resize flags
 		uint32_t				  ActiveWindowID		= NullID;
-		uint32_t				  MovedWindowID			= NullID;
+		uint32_t				  MovedWindowID			= NullID; 
 		uint32_t				  ResizedWindowID		= NullID;
-		uint32_t				  DropdownItemCount		= 0;
-		float					  ScrollableHeight		= 0.0f;
+		uint32_t				  DropdownItemCount		= 0; // Number of items in current drop down
+		float					  ScrollableHeight		= 0.0f; // Height of current scrollable
 		glm::vec2			      DropdownSize			= glm::vec2(0.0f);
 		glm::vec2				  LayoutOffset			= glm::vec2(0.0f);
 		InGuiMesh*				  CurrentMesh			= nullptr;
 		InGuiMesh*				  CurrentOverlayMesh	= nullptr;
 		InGuiTextCenter			  TextCenter			= InGuiTextCenter::Left;
 		bool					  ScrollableActive		= false;
-		bool					  ActiveWidgets			= true;
+		bool					  ActiveWidgets			= true; // Are widgets active
 		bool					  EraseOutOfLine		= true;
+		bool					  BlockEvents			= false;
 		float					  ScrollOffset			= 0.0f;
 		float					  HighestInRow			= 0.0f;
 

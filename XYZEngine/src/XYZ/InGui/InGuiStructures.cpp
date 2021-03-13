@@ -74,7 +74,12 @@ namespace XYZ {
 	{
 		s_FreeIDs.push(ID);
 	}
-	void InGuiFrameData::RestartValues()
+
+	void InGuiFrameData::StartFrame()
+	{
+		BlockEvents = false;
+	}
+	void InGuiFrameData::EndFrame()
 	{
 		ScrollOffset = 0.0f;
 		InputIndex = 0;

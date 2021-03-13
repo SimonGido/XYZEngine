@@ -12,10 +12,6 @@ namespace XYZ {
     {
         InGui::Begin(panelID, "Scene Hierarchy", glm::vec2(0.0f), glm::vec2(200.0f));
         InGui::End();
-
-        uint16_t flags = InGui::GetWindow(panelID).Flags;
-        flags &= ~InGuiWindowFlags::EventBlocking;
-        InGui::SetWindowFlags(panelID, flags);
     }
     SceneHierarchyPanel::~SceneHierarchyPanel()
     {

@@ -126,6 +126,7 @@ namespace XYZ {
 		glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f));
 		viewMatrix = glm::inverse(viewMatrix);
 
+		s_Context->FrameData.StartFrame();
 		Renderer2D::BeginScene(s_Context->FrameData.ViewProjectionMatrix * viewMatrix);
 		Renderer2D::SetMaterial(s_Context->RenderData.DefaultMaterial);
 		InGuiDockspace::beginFrame(s_Context, (s_Context->FrameData.MovedWindowID != InGuiFrameData::NullID));
@@ -195,7 +196,7 @@ namespace XYZ {
 			Renderer2D::Flush();
 			Renderer2D::FlushLines();
 		}
-		s_Context->FrameData.RestartValues();
+		s_Context->FrameData.EndFrame();
 
 		Renderer2D::EndScene();
 		Renderer::WaitAndRender();
@@ -353,7 +354,7 @@ namespace XYZ {
 			s_Context->Windows[id].Position = position;
 			s_Context->Windows[id].Size = size;
 			s_Context->Windows[id].ID = id;
-			s_Context->Windows[id].Flags |= (InGuiWindowFlags::Initialized | InGuiWindowFlags::EventBlocking);
+			s_Context->Windows[id].Flags |= InGuiWindowFlags::Initialized;
 			s_Context->EventListeners.push_back(id);
 		}
 		return s_Context->Windows[id];
@@ -489,6 +490,7 @@ namespace XYZ {
 
 		if (Collide(pos, size, s_Context->FrameData.MousePosition))
 		{
+			frameData.BlockEvents = true;
 			mesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
 			if (Collide(pos, buttonSize, s_Context->FrameData.MousePosition))
 			{
@@ -516,23 +518,13 @@ namespace XYZ {
 		);
 
 		InGuiFactory::GenerateFrame(window.ScrollableMesh, frameData.LayoutOffset, size, s_Context->RenderData);
-		bool activeWidgets = false;
 		if (Collide(frameData.LayoutOffset, size, s_Context->FrameData.MousePosition))
 		{
-			activeWidgets = true;
+			frameData.ActiveWidgets = true;
 			offset -= frameData.ScrollOffset * scrollSpeed;
 		}
-		//////////////////// SLIDER LOGIC ///////////////////////
-		frameData.LayoutOffset.x += (size.x + window.Layout.LeftPadding);
-		float val = offset / scale;
-		InGui::SliderVertical("", glm::vec2(25.0f, size.y), val);
-		offset = val * scale;
-		////////////////////////////////////////////////////////
 		frameData.LayoutOffset.x = positionX;
 		frameData.HighestInRow = 0.0f;
-
-
-		frameData.ActiveWidgets = activeWidgets;
 		frameData.ScrollableHeight = frameData.LayoutOffset.y + size.y;
 		frameData.LayoutOffset.y -= offset - window.Layout.SpacingY;
 		frameData.ScrollableActive = true;
@@ -577,6 +569,7 @@ namespace XYZ {
 
 		if (Collide(pos, genSize, s_Context->FrameData.MousePosition))
 		{
+			frameData.BlockEvents = true;
 			if (Collide(pos, size, s_Context->FrameData.MousePosition))
 			{
 				mesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
@@ -632,6 +625,7 @@ namespace XYZ {
 
 		if (Collide(pos, size, s_Context->FrameData.MousePosition))
 		{
+			frameData.BlockEvents = true;
 			mesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
 			if (TurnOffFlag<uint16_t>(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked))
 			{
@@ -683,6 +677,7 @@ namespace XYZ {
 
 		if (Collide(pos, frameData.DropdownSize, s_Context->FrameData.MousePosition))
 		{
+			frameData.BlockEvents = true;
 			mesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
 			if (TurnOffFlag<uint16_t>(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked))
 			{
@@ -732,6 +727,7 @@ namespace XYZ {
 
 		if (Collide(frameData.LayoutOffset, size, s_Context->FrameData.MousePosition))
 		{
+			frameData.BlockEvents = true;
 			returnType |= InGuiReturnType::Hoovered;
 			mesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
 			if (TurnOffFlag<uint16_t>(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked))
@@ -770,6 +766,7 @@ namespace XYZ {
 
 		if (Collide(frameData.LayoutOffset, size, s_Context->FrameData.MousePosition))
 		{
+			frameData.BlockEvents = true;
 			returnType |= InGuiReturnType::Hoovered;
 			mesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
 			if (TurnOffFlag<uint16_t>(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked))
@@ -820,6 +817,7 @@ namespace XYZ {
 
 		if (Collide(frameData.LayoutOffset, size, s_Context->FrameData.MousePosition))
 		{
+			frameData.BlockEvents = true;
 			returnType |= InGuiReturnType::Hoovered;
 			mesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
 			if (IS_SET(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked))
@@ -866,6 +864,7 @@ namespace XYZ {
 
 		if (Collide(frameData.LayoutOffset, size, s_Context->FrameData.MousePosition))
 		{
+			frameData.BlockEvents = true;
 			returnType |= InGuiReturnType::Hoovered;
 			mesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
 			if (IS_SET(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked))
@@ -906,6 +905,7 @@ namespace XYZ {
 
 		if (Collide(frameData.LayoutOffset, genSize, s_Context->FrameData.MousePosition))
 		{
+			frameData.BlockEvents = true;
 			returnType |= InGuiReturnType::Hoovered;
 			for (size_t i = oldQuadCount; i < mesh.Quads.size(); ++i)
 				mesh.Quads[i].Color = s_Context->RenderData.Color[InGuiRenderData::SELECT_COLOR];
@@ -971,6 +971,7 @@ namespace XYZ {
 
 		if (Collide(frameData.LayoutOffset, size, s_Context->FrameData.MousePosition))
 		{
+			frameData.BlockEvents = true;
 			returnType |= InGuiReturnType::Hoovered;
 			mesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
 			if (TurnOffFlag<uint16_t>(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked))
@@ -1050,6 +1051,7 @@ namespace XYZ {
 
 		if (Collide(frameData.LayoutOffset, size, s_Context->FrameData.MousePosition))
 		{
+			frameData.BlockEvents = true;
 			returnType |= InGuiReturnType::Hoovered;
 			mesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
 			if (TurnOffFlag<uint16_t>(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked))
@@ -1130,6 +1132,7 @@ namespace XYZ {
 
 		if (Collide(frameData.LayoutOffset, size, s_Context->FrameData.MousePosition))
 		{
+			frameData.BlockEvents = true;
 			returnType |= InGuiReturnType::Hoovered;
 			mesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
 			if (TurnOffFlag<uint16_t>(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked))
@@ -1181,6 +1184,7 @@ namespace XYZ {
 
 		if (Collide(frameData.LayoutOffset, size, s_Context->FrameData.MousePosition))
 		{
+			frameData.BlockEvents = true;
 			returnType |= InGuiReturnType::Hoovered;
 			mesh.Quads[oldQuadCount].Color = s_Context->RenderData.Color[InGuiRenderData::HOOVER_COLOR];
 			if (TurnOffFlag<uint16_t>(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked))
@@ -1334,11 +1338,14 @@ namespace XYZ {
 				return first.Flags < second.Flags;
 			});
 
+			InGuiFrameData& frameData = s_Context->FrameData;
 			const glm::vec2& mousePos = s_Context->FrameData.MousePosition;
 			if (InGuiDockspace::onMouseLeftPress(mousePos))
 				return true;
-			s_Context->FrameData.Flags |= InGuiInputFlags::LeftClicked;
-			for (auto& it : s_Context->FrameData.HandleInput) it = false;
+			
+			frameData.Flags |= InGuiInputFlags::LeftClicked;
+			for (auto& it : frameData.HandleInput) 
+				it = false;
 				
 			for (uint32_t id : s_Context->EventListeners)
 			{
@@ -1357,8 +1364,8 @@ namespace XYZ {
 						}
 						else
 						{
-							s_Context->FrameData.MovedWindowID = window.ID;
-							s_Context->FrameData.MouseOffset = mousePos - window.Position;
+							frameData.MovedWindowID = window.ID;
+							frameData.MouseOffset = mousePos - window.Position;
 							handled = true;
 							if (InGuiDockspace::removeWindow(window.ID))
 								TurnOffFlag<uint16_t>(window.Flags, InGuiWindowFlags::Docked);
@@ -1368,29 +1375,29 @@ namespace XYZ {
 					{
 						if (mousePos.x < window.Position.x + 5.0f) // Left resize
 						{
-							s_Context->FrameData.ResizeFlags |= InGuiResizeFlags::Left;
-							s_Context->FrameData.ResizedWindowID = window.ID;
+							frameData.ResizeFlags |= InGuiResizeFlags::Left;
+							frameData.ResizedWindowID = window.ID;
 							handled = true;
 						}
 						else if (mousePos.x > window.Position.x + window.Size.x - 5.0f) // Right resize
 						{
-							s_Context->FrameData.ResizeFlags |= InGuiResizeFlags::Right;
-							s_Context->FrameData.ResizedWindowID = window.ID;
+							frameData.ResizeFlags |= InGuiResizeFlags::Right;
+							frameData.ResizedWindowID = window.ID;
 							handled = true;
 						}
 						if (mousePos.y > window.Position.y + window.Size.y - 5.0f) // Bottom
 						{
-							s_Context->FrameData.ResizeFlags |= InGuiResizeFlags::Bottom;
-							s_Context->FrameData.ResizedWindowID = window.ID;
+							frameData.ResizeFlags |= InGuiResizeFlags::Bottom;
+							frameData.ResizedWindowID = window.ID;
 							handled = true;
 							
 						}
 					}
 					if (handled)
 					{
-						TurnOffFlag<uint16_t>(s_Context->FrameData.Flags, InGuiInputFlags::LeftClicked);
-						return IS_SET(window.Flags, InGuiWindowFlags::EventBlocking);
+						TurnOffFlag<uint16_t>(frameData.Flags, InGuiInputFlags::LeftClicked);
 					}
+					return frameData.BlockEvents;
 				}
 			}		
 		}
@@ -1401,35 +1408,32 @@ namespace XYZ {
 	{
 		if (event.IsButtonReleased(MouseCode::MOUSE_BUTTON_LEFT))
 		{
-			bool handled = false;
+			InGuiFrameData& frameData = s_Context->FrameData;
 			InGuiDockspace::onMouseLeftRelease();
 			if (s_Context->FrameData.MovedWindowID != InGuiFrameData::NullID)
 			{
-				InGuiWindow& window = s_Context->Windows[s_Context->FrameData.MovedWindowID];
-				if (InGuiDockspace::insertWindow(window.ID, s_Context->FrameData.MousePosition))
+				InGuiWindow& window = s_Context->Windows[frameData.MovedWindowID];
+				if (InGuiDockspace::insertWindow(window.ID, frameData.MousePosition))
 				{
 					TurnOnFlag<uint16_t>(window.Flags, InGuiWindowFlags::Docked);
 				}
 			}
 
-			s_Context->FrameData.MovedWindowID = InGuiFrameData::NullID;
-			s_Context->FrameData.ResizedWindowID = InGuiFrameData::NullID;
-			s_Context->FrameData.ResizeFlags = 0;
-			s_Context->FrameData.Flags &= ~InGuiInputFlags::LeftClicked;
+			frameData.MovedWindowID = InGuiFrameData::NullID;
+			frameData.ResizedWindowID = InGuiFrameData::NullID;
+			frameData.ResizeFlags = 0;
+			frameData.Flags &= ~InGuiInputFlags::LeftClicked;
 
 			
 			for (auto& window : s_Context->Windows)
 			{
 				if (IS_SET(window.Flags, InGuiWindowFlags::Initialized)
-					&& Collide(window.Position, window.Size, s_Context->FrameData.MousePosition))
+					&& Collide(window.Position, window.Size, frameData.MousePosition))
 				{
-					if (window.Flags & InGuiWindowFlags::EventBlocking)
-						handled = true;
+					return frameData.BlockEvents;
 				}
 			}
-			return handled;
 		}
-
 		return false;
 	}
 
@@ -1441,7 +1445,7 @@ namespace XYZ {
 				&& Collide(window.Position, window.Size, s_Context->FrameData.MousePosition))
 			{
 				s_Context->FrameData.ScrollOffset = event.GetOffsetY();
-				return false;
+				return s_Context->FrameData.BlockEvents;
 			}
 		}
 		return false;
@@ -1464,7 +1468,7 @@ namespace XYZ {
 				hoovered = true;
 			}
 		}
-		return false;
+		return s_Context->FrameData.BlockEvents && hoovered;
 	}
 	bool InGui::onKeyTyped(KeyTypedEvent& event)
 	{
@@ -1473,7 +1477,7 @@ namespace XYZ {
 		{
 			frameData.ModifyTextBuffer[frameData.ModifyTextIndex++] = (char)event.GetKey();
 		}
-		return false;
+		return frameData.BlockEvents;
 	}
 	bool InGui::onKeyPressed(KeyPressedEvent& event)
 	{
@@ -1484,6 +1488,6 @@ namespace XYZ {
 				frameData.ModifyTextIndex--;
 			frameData.ModifyTextBuffer[frameData.ModifyTextIndex] = '\0';
 		}
-		return false;
+		return frameData.BlockEvents;
 	}
 }
