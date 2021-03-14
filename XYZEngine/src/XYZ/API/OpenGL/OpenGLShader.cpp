@@ -415,9 +415,10 @@ namespace XYZ {
 		m_ShaderSources = preProcess(source);
 		parse();
 
-		Renderer::Submit([=]() {
-			compileAndUpload();
-			resolveUniforms();
+		Ref<OpenGLShader> instance = this;
+		Renderer::Submit([instance]() mutable {
+			instance->compileAndUpload();
+			instance->resolveUniforms();
 		});
 	}
 

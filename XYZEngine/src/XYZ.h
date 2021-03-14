@@ -80,3 +80,7 @@
 
 //------Asset---------//
 #include "XYZ/Asset/AssetManager.h"
+
+
+
+#include "XYZ/InGuiTest/InGuiTest.h"

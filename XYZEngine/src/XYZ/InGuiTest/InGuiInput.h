@@ -4,12 +4,13 @@
 
 namespace XYZ {
 
+	class IGContext;
 	class IGInput
 	{
 	public:
-		bool OnMouseButtonPress(MouseButtonPressEvent& e, IGAllocator& allocator);
-		bool OnMouseButtonRelease(MouseButtonReleaseEvent& e, IGAllocator& allocator);
-		bool OnMouseMove(MouseMovedEvent& e, IGAllocator& allocator);
-		bool OnMouseScroll(MouseScrollEvent& e, IGAllocator& allocator);
+		bool OnMouseButtonPress(MouseButtonPressEvent& e, IGContext& context);
+		bool OnMouseButtonRelease(MouseButtonReleaseEvent& e, IGContext& context);
+		bool OnMouseMove(MouseMovedEvent& e, IGContext& context);
+		bool OnMouseScroll(MouseScrollEvent& e, IGContext& context);
 	};
 }

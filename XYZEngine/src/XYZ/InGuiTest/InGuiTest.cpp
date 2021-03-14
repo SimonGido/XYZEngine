@@ -1,8 +1,13 @@
 #include "stdafx.h"
 #include "InGuiTest.h"
 
-
 #include "InGuiContext.h"
+#include "XYZ/Core/Input.h"
+#include "XYZ/Renderer/Renderer2D.h"
+#include "XYZ/Renderer/Renderer.h"
+
+
+#include <glm/gtx/transform.hpp>
 
 namespace XYZ {
 	static IGContext* s_Context;
@@ -69,12 +74,71 @@ namespace XYZ {
 		}
 	}
 
-	void IG::BeginFrame()
+	void IG::Init()
 	{
+		s_Context = new IGContext();
+	}
+
+	void IG::Shutdown()
+	{
+		delete s_Context;
+	}
+
+	void IG::BeginFrame(const glm::mat4& viewProjectionMatrix)
+	{
+		XYZ_ASSERT(s_Context, "InGuiContext is not initialized");
+		glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f));
+		viewMatrix = glm::inverse(viewMatrix);
+		
+		for (auto& pool : s_Context->Allocator.GetPools())
+		{
+			for (size_t i = 0; i < pool.Size(); ++i)
+				pool[i]->Active = false;
+		}
+
+		if (s_Context->RenderData.Rebuild)
+		{
+			s_Context->Mesh.Quads.clear();
+			s_Context->Mesh.Lines.clear();
+		}
+		Renderer2D::BeginScene(viewProjectionMatrix * viewMatrix);	
 	}
 
 	void IG::EndFrame()
 	{
+		Renderer2D::SetMaterial(s_Context->RenderData.Material);
+		for (auto& it : s_Context->Mesh.Quads)
+		{
+			Renderer2D::SubmitQuadNotCentered(it.Position, it.Size, it.TexCoord, it.TextureID, it.Color);
+		}
+		for (auto& it : s_Context->Mesh.Lines)
+		{
+			Renderer2D::SubmitLine(it.P0, it.P1, it.Color);
+		}
+
+		Renderer2D::Flush();
+		Renderer2D::FlushLines();
+		Renderer2D::EndScene();
+		Renderer::WaitAndRender();
+		s_Context->RenderData.Rebuild = false;
+	}
+
+	void IG::OnEvent(Event& event)
+	{
+		if (event.GetEventType() == EventType::MouseButtonPressed)
+		{
+			s_Context->Input.OnMouseButtonPress((MouseButtonPressEvent&)event, *s_Context);
+		}
+		else if (event.GetEventType() == EventType::MouseButtonReleased)
+		{
+			s_Context->Input.OnMouseButtonRelease((MouseButtonReleaseEvent&)event, *s_Context);
+		}
+		else if (event.GetEventType() == EventType::MouseMoved)
+		{
+			s_Context->Input.OnMouseMove((MouseMovedEvent&)event, *s_Context);
+		}
+		if (event.Handled)
+			s_Context->RenderData.Rebuild = true;
 	}
 
 	void IG::BeginUI(size_t handle)
@@ -110,6 +174,7 @@ namespace XYZ {
 	{
 		IGWindow* window = s_Context->Allocator.Get<IGWindow>(s_PoolHandle, handle);
 		window->Parent = s_Parent;
+		window->Active = true;
 
 		size_t oldQuadCount = s_Context->Mesh.Quads.size();
 		Helper::AbsolutePosition(window, window->Parent);
@@ -125,8 +190,16 @@ namespace XYZ {
 	{
 		IGCheckbox* checkbox = s_Context->Allocator.Get<IGCheckbox>(s_PoolHandle, handle);
 		checkbox->Parent = s_Parent;
+		checkbox->Active = true;
 
 		s_Parent = checkbox;
 		return checkbox->ReturnType;
+	}
+
+
+	template<>
+	uint8_t IG::GetFlags<IGElementType::Window>(size_t handle)
+	{
+		return s_Context->Allocator.Get<IGWindow>(s_PoolHandle, handle)->Flags;
 	}
 }

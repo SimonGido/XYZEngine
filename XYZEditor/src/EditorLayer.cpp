@@ -87,6 +87,19 @@ namespace XYZ {
 		m_ScenePanel.SetContext(m_Scene);
 		m_ScenePanel.SetSubTexture(renderSubTexture);
 		m_SkinningEditorPanel.SetContext(robotSubTexture);
+
+
+		std::initializer_list<IGElementType> types{
+			IGElementType::Window,
+			IGElementType::Window,
+			IGElementType::Window,	
+		};
+		m_HandleCount = types.size();
+
+		IG::AllocateUI(
+			types, 
+			&m_Handles
+		);
 	}	
 
 
@@ -135,10 +148,35 @@ namespace XYZ {
 
 	void EditorLayer::OnInGuiRender()
 	{
-		m_SceneHierarchyPanel.OnInGuiRender();
-		m_InspectorPanel.OnInGuiRender();
-		m_ScenePanel.OnInGuiRender();
-		m_SkinningEditorPanel.OnInGuiRender();
+		//m_SceneHierarchyPanel.OnInGuiRender();
+		//m_InspectorPanel.OnInGuiRender();
+		//m_ScenePanel.OnInGuiRender();
+		//m_SkinningEditorPanel.OnInGuiRender();
+
+		IG::BeginUI(0);
+
+		for (size_t i = 0; i < m_HandleCount; ++i)
+		{
+			IG::UI<IGElementType::Window>(m_Handles[i], "Test 1");
+			IG::End(m_Handles[i]);
+		}
+
+		//IG::UI<IGElementType::Window>(m_Handles[0], "Test 1");
+		//IG::End(m_Handles[2]);
+		//if (!IS_SET(IG::GetFlags<IGElementType::Window>(m_Handles[0]), IGWindow::Flags::Collapsed))
+		//{			
+		//	IG::UI<IGElementType::Window>(m_Handles[1], "Test 2");
+		//	IG::End(m_Handles[1]);
+		//	IG::UI<IGElementType::Window>(m_Handles[2], "Test 3");		
+		//	IG::End(m_Handles[0]);
+		//}
+		
+		
+		
+		
+		
+		IG::EndUI();
+
 	}
 
 	

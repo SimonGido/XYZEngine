@@ -9,35 +9,35 @@ namespace XYZ {
 		m_Elements(types)
 	{
 		m_Capacity = 0;
-		*handles = new size_t[types.size()];
+		*handles = new size_t[m_Elements.size()];
 
 		uint32_t counter = 0;
-		for (auto it : types)
+		for (auto it : m_Elements)
 		{
 			switch (it)
 			{
 			case XYZ::IGElementType::Window:
-				*handles[counter++] = m_Capacity;
+				(*handles)[counter++] = m_Capacity;
 				m_Handles.push_back(m_Capacity);
 				m_Capacity += sizeof(IGWindow);
 				break;
 			case XYZ::IGElementType::ImageWindow:
-				*handles[counter++] = m_Capacity;
+				(*handles)[counter++] = m_Capacity;
 				m_Handles.push_back(m_Capacity);
 				m_Capacity += sizeof(IGImageWindow);
 				break;
 			case XYZ::IGElementType::Button:
-				*handles[counter++] = m_Capacity;
+				(*handles)[counter++] = m_Capacity;
 				m_Handles.push_back(m_Capacity);
 				m_Capacity += sizeof(IGButton);
 				break;
 			case XYZ::IGElementType::Checkbox:
-				*handles[counter++] = m_Capacity;
+				(*handles)[counter++] = m_Capacity;
 				m_Handles.push_back(m_Capacity);
 				m_Capacity += sizeof(IGCheckbox);
 				break;
 			case XYZ::IGElementType::Slider:
-				*handles[counter++] = m_Capacity;
+				(*handles)[counter++] = m_Capacity;
 				m_Handles.push_back(m_Capacity);
 				m_Capacity += sizeof(IGSlider);
 				break;
@@ -48,6 +48,32 @@ namespace XYZ {
 			}
 		}
 		m_Data = new uint8_t[m_Capacity];
+
+		for (auto it : m_Elements)
+		{
+			switch (it)
+			{
+			case XYZ::IGElementType::Window:
+				Allocate<IGWindow>(glm::vec2(0.0f), glm::vec2(200.0f), glm::vec4(1.0f));
+				break;
+			case XYZ::IGElementType::ImageWindow:
+				
+				break;
+			case XYZ::IGElementType::Button:
+	
+				break;
+			case XYZ::IGElementType::Checkbox:
+			
+				break;
+			case XYZ::IGElementType::Slider:
+			
+				break;
+			case XYZ::IGElementType::None:
+				break;
+			default:
+				break;
+			}
+		}
 	}
 
 	IGPool::~IGPool()

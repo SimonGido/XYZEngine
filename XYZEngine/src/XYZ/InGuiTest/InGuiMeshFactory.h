@@ -2,13 +2,23 @@
 #include "InGuiRenderer.h"
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Renderer/Font.h"
+#include "XYZ/Renderer/Material.h"
+#include "XYZ/Renderer/Buffer.h"
 
 namespace XYZ {
 
+	struct IGScissor
+	{
+		float X;
+		float Y;
+		float Width;
+		float Height;
+	};
 
 	class IGRenderData
 	{
 	public:
+		IGRenderData();
 		enum 
 		{
 			Button = 0,
@@ -26,13 +36,16 @@ namespace XYZ {
 			DockSpace,
 			NumSubTextures = 32
 		};
-		Ref<SubTexture> SubTextures[NumSubTextures];
-		Ref<Font> Font;
+		Ref<Font>				 Font;
+		Ref<Texture2D>			 Texture;
+		Ref<Material>			 Material;
+		Ref<ShaderStorageBuffer> ScissorBuffer;
+		Ref<SubTexture>			 SubTextures[NumSubTextures];
+		bool					 Rebuild = true;
 
 		static constexpr uint32_t TextureID = 0;
 		static constexpr uint32_t FontTextureID = 1;
-		static constexpr uint32_t ColorPickerTextureID = 2;
-		static constexpr uint32_t DefaultTextureCount = 3;
+		static constexpr uint32_t DefaultTextureCount = 2;
 		static constexpr uint32_t MaxNumberOfScissors = 32;
 	};
 

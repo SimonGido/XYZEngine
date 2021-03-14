@@ -5,14 +5,14 @@ namespace XYZ {
 
 	namespace Helper {
 
-		static void CenterText(IGMesh& mesh, size_t startQuad, const glm::vec2& pos, const glm::vec2& size, float textLength, IGTextCenter center)
+		static void CenterText(IGMesh& mesh, size_t startQuad, const glm::vec2& pos, const glm::vec2& size, const glm::vec2& textSize, IGTextCenter center)
 		{
 			switch (center)
 			{
 			case XYZ::IGTextCenter::Left:
 				for (size_t i = startQuad; i < mesh.Quads.size(); ++i)
 				{
-					mesh.Quads[i].Position.y += std::floor((size.y / 2.0f) + (size.y / 2.0f));
+					mesh.Quads[i].Position.y += std::floor((size.y / 2.0f) + (textSize.y / 2.0f));
 				}
 				break;
 			case XYZ::IGTextCenter::Right:
@@ -25,8 +25,8 @@ namespace XYZ {
 			case XYZ::IGTextCenter::Middle:
 				for (size_t i = startQuad; i < mesh.Quads.size(); ++i)
 				{
-					mesh.Quads[i].Position.x += std::floor((size.x / 2.0f) - (size.x / 2.0f));
-					mesh.Quads[i].Position.y += std::floor((size.y / 2.0f) + (size.y / 2.0f));
+					mesh.Quads[i].Position.x += std::floor((size.x / 2.0f) - (textSize.x / 2.0f));
+					mesh.Quads[i].Position.y += std::floor((size.y / 2.0f) + (textSize.y / 2.0f));
 				}
 				break;
 			case XYZ::IGTextCenter::None:
@@ -120,6 +120,9 @@ namespace XYZ {
 	glm::vec2 IGMeshFactory::GenerateUI<IGElementType::Window>(const char* label, const glm::vec4& labelColor, const IGMeshFactoryData& data)
 	{
 		IGWindow* window = static_cast<IGWindow*>(data.Element);
+		if (!data.RenderData->Rebuild)
+			return window->Size;
+
 		if (!IS_SET(window->Flags, IGWindow::Collapsed))
 		{
 			if (window->Style.RenderFrame)
@@ -158,8 +161,37 @@ namespace XYZ {
 		);
 		Helper::CenterText(*data.Mesh, oldQuadCount, window->Position, 
 			{ window->Size.x, IGWindow::PanelHeight }, 
-			genTextSize.x, window->Style.LabelCenter
+			genTextSize, window->Style.LabelCenter
 		);
 		return window->Size;
+	}
+	IGRenderData::IGRenderData()
+	{
+		Ref<Shader> shader = Shader::Create("Assets/Shaders/InGuiShader.glsl");
+		Texture = Texture2D::Create({ TextureWrap::Clamp, TextureParam::Linear, TextureParam::Nearest }, "Assets/Textures/Gui/TexturePack_Dark.png");	
+		Font = Ref<XYZ::Font>::Create(14, "Assets/Fonts/arial.ttf");
+
+
+		Material = Ref<XYZ::Material>::Create(shader);
+		Material->Set("u_Texture", Texture, TextureID);
+		Material->Set("u_Texture", Font->GetTexture(), FontTextureID);
+		Material->Set("u_Color", glm::vec4(1.0f));
+
+		float divisor = 8.0f;
+		SubTextures[Button] = Ref<XYZ::SubTexture>::Create(Texture, glm::vec2(0, 0), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
+		SubTextures[CheckboxChecked] = Ref<XYZ::SubTexture>::Create(Texture, glm::vec2(1, 1), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
+		SubTextures[CheckboxUnChecked] = Ref<XYZ::SubTexture>::Create(Texture, glm::vec2(0, 1), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
+		SubTextures[Slider] = Ref<XYZ::SubTexture>::Create(Texture, glm::vec2(0, 0), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
+		SubTextures[SliderHandle] = Ref<XYZ::SubTexture>::Create(Texture, glm::vec2(1, 2), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
+		SubTextures[Window] = Ref<XYZ::SubTexture>::Create(Texture, glm::vec2(0, 3), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
+		SubTextures[MinimizeButton] = Ref<XYZ::SubTexture>::Create(Texture, glm::vec2(1, 3), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
+		SubTextures[CloseButton] = Ref<XYZ::SubTexture>::Create(Texture, glm::vec2(2, 0), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
+		SubTextures[DownArrow] = Ref<XYZ::SubTexture>::Create(Texture, glm::vec2(2, 3), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
+		SubTextures[RightArrow] = Ref<XYZ::SubTexture>::Create(Texture, glm::vec2(2, 2), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
+		SubTextures[LeftArrow] = Ref<XYZ::SubTexture>::Create(Texture, glm::vec2(3, 2), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
+		SubTextures[Pause] = Ref<XYZ::SubTexture>::Create(Texture, glm::vec2(2, 1), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
+		SubTextures[DockSpace] = Ref<XYZ::SubTexture>::Create(Texture, glm::vec2(0, 0), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
+
+		ScissorBuffer = ShaderStorageBuffer::Create(MaxNumberOfScissors * sizeof(IGScissor));
 	}
 }

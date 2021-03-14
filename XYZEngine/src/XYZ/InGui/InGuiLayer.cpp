@@ -6,6 +6,8 @@
 
 #include "InGui.h"	
 #include "InGuiDockspace.h"
+#include "XYZ/InGuiTest/InGuiTest.h"
+
 
 #include <glm/gtx/transform.hpp>
 
@@ -20,12 +22,15 @@ namespace XYZ {
 
 		InGui::Init();
 		InGuiDockspace::Init(glm::vec2(0.0f), { w, h });
+
+		IG::Init();
 	}
 
 	void InGuiLayer::OnDetach()
 	{
 		InGui::Destroy();
 		InGuiDockspace::Destroy();
+		IG::Shutdown();
 	}
 
 	void InGuiLayer::OnEvent(Event& event)
@@ -38,17 +43,22 @@ namespace XYZ {
 
 			m_Camera.SetProjectionMatrix(glm::ortho(0.0f, w, h, 0.0f));
 		}
-		InGui::OnEvent(event);
+		//InGui::OnEvent(event);
+		IG::OnEvent(event);
 	}
 
 	void InGuiLayer::Begin()
 	{
-		InGui::BeginFrame(m_Camera.GetProjectionMatrix());
+		//InGui::BeginFrame(m_Camera.GetProjectionMatrix());
+		IG::BeginFrame(m_Camera.GetProjectionMatrix());
+		
 	}
 
 	void InGuiLayer::End()
 	{
-		InGui::EndFrame();
+		//InGui::EndFrame();
+		
+		IG::EndFrame();
 	}
 
 }

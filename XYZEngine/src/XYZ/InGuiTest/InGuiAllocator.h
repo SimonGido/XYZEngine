@@ -13,7 +13,7 @@ namespace XYZ {
 		template <typename T, typename ...Args>
 		std::pair<T*, size_t> Allocate(Args&& ...args)
 		{
-			XYZ_ASSERT(m_Size + sizeof(T) < m_Capacity, "Out of range");
+			XYZ_ASSERT(m_Size + sizeof(T) <= m_Capacity, "Out of range");
 			T* tmp = new((void*)&m_Data[m_Size])T(std::forward<Args>(args)...);
 			std::pair<T*, size_t> result(tmp, m_Size);
 			m_Size += sizeof(T);

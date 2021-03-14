@@ -6,6 +6,12 @@
 
 
 namespace XYZ {
+
+	struct IGFrameData
+	{
+		glm::vec2 MouseOffset;
+	};
+
 	class IGContext
 	{
 	public:
@@ -13,5 +19,6 @@ namespace XYZ {
 		IGRenderData RenderData;
 		IGMesh		 Mesh;
 		IGInput		 Input;
+		IGFrameData  FrameData;
 	};
 }

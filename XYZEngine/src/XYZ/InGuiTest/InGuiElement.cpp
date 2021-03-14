@@ -30,19 +30,51 @@ namespace XYZ {
 		IGElement(position, size, color)
 	{
 	}
-	
+
 	bool IGWindow::OnLeftClick(const glm::vec2& mousePosition)
 	{
-		if (IS_SET(Flags, IGWindow::Collapsed))
-			return false;
-
 		if (Helper::Collide(AbsolutePosition, Size, mousePosition))
 		{
+			ReturnType = IGReturnType::Clicked;
 			glm::vec2 minButtonPos = { Position.x + Size.x - IGWindow::PanelHeight, Position.y };
 			if (Position.y + IGWindow::PanelHeight >= mousePosition.y)
 			{
-				//if (Helper::Collide(minButtonPos, {}))
+				if (Helper::Collide(minButtonPos, { IGWindow::PanelHeight, IGWindow::PanelHeight }, mousePosition))
+				{
+					Flags ^= IGWindow::Flags::Collapsed;
+				}
+				else
+				{
+					Flags |= IGWindow::Flags::Moved;
+				}
+				return true;
+			}
+			else
+			{
+				// TODO: Resizing
 			}
 		}
+		return false;
 	}
+
+	bool IGWindow::OnLeftRelease(const glm::vec2& mousePosition)
+	{
+		Flags &= ~IGWindow::Flags::Moved;
+		if (Helper::Collide(AbsolutePosition, Size, mousePosition))
+		{
+			ReturnType = IGReturnType::Released;
+			return true;
+		}
+		return false;
+	}
+
+	bool IGWindow::OnMouseMove(const glm::vec2& mousePosition)
+	{
+		if (Helper::Collide(AbsolutePosition, Size, mousePosition))
+		{
+			return true;
+		}
+		return false;
+	}
+
 }

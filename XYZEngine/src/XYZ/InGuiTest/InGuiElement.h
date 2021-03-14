@@ -21,11 +21,11 @@ namespace XYZ {
 
 	struct IGStyle
 	{
-		IGTextCenter LabelCenter = IGTextCenter::Middle;
+		IGTextCenter LabelCenter = IGTextCenter::Left;
 		IGLayout Layout;
 		bool AutoPosition = true;
 		bool NewRow = true;
-		bool RenderFrame = false;
+		bool RenderFrame = true;
 	};
 
 	enum class IGElementType
@@ -50,9 +50,11 @@ namespace XYZ {
 	{
 	public:
 		IGElement(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
+		virtual ~IGElement() = default;
 
-		virtual bool OnLeftClick(const glm::vec2& mousePosition) {};
-		virtual bool OnMouseHoover(const glm::vec2& mousePosition) {};
+		virtual bool OnLeftClick(const glm::vec2& mousePosition) { return false; };
+		virtual bool OnLeftRelease(const glm::vec2& mousePosition) { return false; }
+		virtual bool OnMouseMove(const glm::vec2& mousePosition) { return false; };
 
 		glm::vec2  AbsolutePosition;
 		glm::vec2  Position;
@@ -63,6 +65,7 @@ namespace XYZ {
 		IGStyle    Style;
 		IGElement* Parent = nullptr;
 		IGReturnType ReturnType = IGReturnType::None;
+		bool		 Active = false;
 	};
 
 	class IGWindow : public IGElement
@@ -71,13 +74,16 @@ namespace XYZ {
 		IGWindow(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
 		
 		virtual bool OnLeftClick(const glm::vec2& mousePosition) override;
-		
+		virtual bool OnLeftRelease(const glm::vec2& mousePosition) override;
+		virtual bool OnMouseMove(const glm::vec2& mousePosition) override;
+
 		enum Flags
 		{
 			Initialized = BIT(0),
-			Hoovered = BIT(1),
-			Collapsed = BIT(2),
-			Docked = BIT(3)
+			Hoovered	= BIT(1),
+			Moved       = BIT(2),
+			Collapsed   = BIT(3),
+			Docked	    = BIT(4)
 		};
 
 		uint8_t Flags = 0;
