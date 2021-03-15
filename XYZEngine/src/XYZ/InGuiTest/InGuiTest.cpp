@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "InGuiTest.h"
 
-#include "InGuiContext.h"
+
 #include "XYZ/Core/Input.h"
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/Renderer.h"
@@ -11,8 +11,6 @@
 
 namespace XYZ {
 	static IGContext* s_Context;
-
-	static IGElement* s_Parent = nullptr;
 	static size_t s_PoolHandle = 0;
 
 	static float s_HighestInRow = 0.0f;
@@ -38,7 +36,7 @@ namespace XYZ {
 				{
 					float xBorder = parent->AbsolutePosition.x + parent->Size.x - parent->Style.Layout.RightPadding;
 					float yBorder = parent->AbsolutePosition.y + parent->Size.y - parent->Style.Layout.BottomPadding;
-					if (s_AbsoluteOffset.x > genSize.x > xBorder)
+					if (s_AbsoluteOffset.x + genSize.x > xBorder)
 					{
 						if (!parent->Style.NewRow)
 						{
@@ -68,6 +66,7 @@ namespace XYZ {
 							return true;
 						}
 					}
+					element->AbsolutePosition = s_AbsoluteOffset;
 				}
 			}
 			return true;
@@ -152,54 +151,62 @@ namespace XYZ {
 
 	void IG::Separator()
 	{
-		XYZ_ASSERT(s_Parent, "No parent is active");
-		s_AbsoluteOffset.x = s_Parent->Position.x + s_Parent->Style.Layout.LeftPadding;
-		s_AbsoluteOffset.y += s_HighestInRow + s_Parent->Style.Layout.TopPadding;
-		s_HighestInRow = 0.0f;
+	
 	}
 
-	size_t IG::AllocateUI(const std::initializer_list<IGElementType>& types, size_t** handles)
+	std::pair<size_t, size_t> IG::AllocateUI(const std::initializer_list<IGHierarchy>& hierarchy, size_t** handles)
 	{
-		return s_Context->Allocator.CreatePool(types, handles);
+		return s_Context->Allocator.CreatePool(hierarchy, handles);
 	}
 
 	void IG::End(size_t handle)
 	{
-		IGElement* element = s_Context->Allocator.Get<IGElement>(s_PoolHandle, handle);
-		s_Parent = element->Parent;
+	
 	}
 
+
 	template <>
-	IGReturnType IG::UI<IGElementType::Window>(size_t handle, const char* label)
+	IGReturnType IG::UI<IGWindow>(size_t handle, const char* label)
 	{
 		IGWindow* window = s_Context->Allocator.Get<IGWindow>(s_PoolHandle, handle);
-		window->Parent = s_Parent;
 		window->Active = true;
 
 		size_t oldQuadCount = s_Context->Mesh.Quads.size();
-		Helper::AbsolutePosition(window, window->Parent);
-		IGMeshFactoryData data = { IGRenderData::Window, window, &s_Context->Mesh, &s_Context->RenderData };
-		glm::vec2 genSize = IGMeshFactory::GenerateUI<IGElementType::Window>(label, glm::vec4(1.0f), data);
+		Helper::AbsolutePosition(window, nullptr);
 
-		s_Parent = window;
+		IGMeshFactoryData data = { IGRenderData::Window, window, &s_Context->Mesh, &s_Context->RenderData };
+		glm::vec2 genSize = IGMeshFactory::GenerateUI<IGWindow>(label, glm::vec4(1.0f), data);
+
+		s_AbsoluteOffset = {
+			window->AbsolutePosition.x + window->Style.Layout.LeftPadding,
+			window->AbsolutePosition.y + IGWindow::PanelHeight + window->Style.Layout.TopPadding
+		};
 		return window->ReturnType;
 	}
 
 	template <>
-	IGReturnType IG::UI<IGElementType::Checkbox>(size_t handle, const char* label, bool& checked)
+	IGReturnType IG::UI<IGCheckbox>(size_t handle, const char* label, bool& checked)
 	{
 		IGCheckbox* checkbox = s_Context->Allocator.Get<IGCheckbox>(s_PoolHandle, handle);
-		checkbox->Parent = s_Parent;
-		checkbox->Active = true;
+		size_t oldQuadCount = s_Context->Mesh.Quads.size();
+		Helper::AbsolutePosition(checkbox, checkbox->Parent);
 
-		s_Parent = checkbox;
+		uint32_t subTextureIndex = IGRenderData::CheckboxChecked;
+		if (!checked)
+			subTextureIndex = IGRenderData::CheckboxUnChecked;
+		IGMeshFactoryData data = { subTextureIndex, checkbox, &s_Context->Mesh, &s_Context->RenderData };
+		glm::vec2 genSize = IGMeshFactory::GenerateUI<IGCheckbox>(label, glm::vec4(1.0f), data);
+
+		if (Helper::ResolvePosition(oldQuadCount, genSize, checkbox, checkbox->Parent, s_Context->Mesh))
+			checkbox->Active = true;
+
 		return checkbox->ReturnType;
 	}
 
 
-	template<>
-	uint8_t IG::GetFlags<IGElementType::Window>(size_t handle)
+
+	IGContext& IG::getContext()
 	{
-		return s_Context->Allocator.Get<IGWindow>(s_PoolHandle, handle)->Flags;
+		return *s_Context;
 	}
 }

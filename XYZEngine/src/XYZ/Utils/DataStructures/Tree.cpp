@@ -113,59 +113,22 @@ namespace XYZ {
         m_NodeCount--;
         m_Nodes.Erase(index);
     }
- 
-    //void Tree::Traverse(const std::function<bool(void*, void*)>& callback) const
-    //{
-    //    if (m_Root == TreeNode::sc_Invalid)
-    //        return;
-    //
-    //    std::stack<int32_t> stack;
-    //    stack.push(m_Root);
-    //    while (!stack.empty())
-    //    {
-    //        int32_t tmp = stack.top();
-    //        stack.pop();
-    //        const TreeNode& node = m_Nodes[tmp];
-    //       
-    //        int32_t sibling = node.NextSibling;
-    //        while (sibling != TreeNode::sc_Invalid)
-    //        {
-    //            const TreeNode& siblingNode = m_Nodes[sibling];
-    //            if (siblingNode.FirstChild != TreeNode::sc_Invalid)
-    //                stack.push(siblingNode.FirstChild);
-    //
-    //            void* parentData = nullptr;
-    //            void* data = siblingNode.Data;     
-    //            if (node.Parent != TreeNode::sc_Invalid)
-    //                parentData = m_Nodes[node.Parent].Data;
-    //            if (callback(parentData, data))
-    //                return;
-    //
-    //            sibling = siblingNode.NextSibling;
-    //        }
-    //        if (node.FirstChild != TreeNode::sc_Invalid)
-    //            stack.push(node.FirstChild);
-    //        
-    //        void* parentData = nullptr;
-    //        void* data = node.Data;
-    //        if (node.Parent != TreeNode::sc_Invalid)
-    //            parentData = m_Nodes[node.Parent].Data;
-    //        if (callback(parentData, data))
-    //            return;
-    //    }
-    //}
     void Tree::Traverse(const std::function<bool(void*, void*)>& callback) const
     {
         if (m_Root == TreeNode::sc_Invalid)
             return;
 
+        TraverseNode(m_Root, callback);
+    }
+    void Tree::TraverseNode(int32_t node, const std::function<bool(void*, void*)>& callback) const
+    { 
         std::stack<int32_t> stack;
-        stack.push(m_Root);
+        stack.push(node);
         while (!stack.empty())
         {
             int32_t tmp = stack.top();
             stack.pop();
-            
+
             const TreeNode& node = m_Nodes[tmp];        
             if (node.NextSibling != TreeNode::sc_Invalid)
                 stack.push(node.NextSibling);

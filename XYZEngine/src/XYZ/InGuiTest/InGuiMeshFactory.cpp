@@ -114,15 +114,33 @@ namespace XYZ {
 			line.P1 = glm::vec3(position, 0.0f);
 			mesh.Lines.push_back(line);
 		}
+
+		static void GenerateQuad(IGMesh& mesh, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, Ref<SubTexture> subTexture, uint32_t textureID, uint32_t scissorIndex)
+		{
+			const glm::vec4& oldTex = subTexture->GetTexCoords();
+			glm::vec4 texCoords = {
+				oldTex.x, oldTex.w, oldTex.z, oldTex.y
+			};
+			mesh.Quads.push_back(
+				{
+					color,
+					texCoords,
+				{position, 0.0f},
+				size,
+				textureID,
+				scissorIndex
+				});
+		}
+
 	}
 
 	template<>
-	glm::vec2 IGMeshFactory::GenerateUI<IGElementType::Window>(const char* label, const glm::vec4& labelColor, const IGMeshFactoryData& data)
+	glm::vec2 IGMeshFactory::GenerateUI<IGWindow>(const char* label, const glm::vec4& labelColor, const IGMeshFactoryData& data)
 	{
-		IGWindow* window = static_cast<IGWindow*>(data.Element);
 		if (!data.RenderData->Rebuild)
-			return window->Size;
+			return data.Element->Size;
 
+		IGWindow* window = static_cast<IGWindow*>(data.Element);
 		if (!IS_SET(window->Flags, IGWindow::Collapsed))
 		{
 			if (window->Style.RenderFrame)
@@ -165,6 +183,35 @@ namespace XYZ {
 		);
 		return window->Size;
 	}
+
+	template<>
+	glm::vec2 IGMeshFactory::GenerateUI<IGCheckbox>(const char* label, const glm::vec4& labelColor, const IGMeshFactoryData& data)
+	{
+		if (!data.RenderData->Rebuild)
+			return data.Element->Size;
+
+		Helper::GenerateQuad(
+			*data.Mesh, data.Element->Color, 
+			data.Element->Size, data.Element->AbsolutePosition,
+			data.RenderData->SubTextures[data.SubTextureIndex], 
+			IGRenderData::TextureID, 
+			data.ScissorIndex
+		);
+
+		glm::vec2 textPosition = { std::floor(data.Element->AbsolutePosition.x), std::floor(data.Element->AbsolutePosition.y) };
+		glm::vec2 textSize = { data.Element->Size.x, data.Element->Size.y };
+
+		glm::vec2 genTextSize = Helper::GenerateTextMesh(
+			label, data.RenderData->Font, labelColor,
+			textPosition, textSize, *data.Mesh, IGRenderData::FontTextureID, 1000, 0
+		);
+
+		float height = data.Element->Size.y;
+		if (height > genTextSize.y)
+			genTextSize.y = height;
+		return genTextSize;
+	}
+
 	IGRenderData::IGRenderData()
 	{
 		Ref<Shader> shader = Shader::Create("Assets/Shaders/InGuiShader.glsl");

@@ -31,7 +31,6 @@ namespace XYZ {
 	enum class IGElementType
 	{
 		Window,
-		ImageWindow,
 		Button,
 		Checkbox,
 		Slider,
@@ -46,6 +45,7 @@ namespace XYZ {
 		Released,
 	};
 
+	class IGWindow;
 	class IGElement
 	{
 	public:
@@ -62,9 +62,10 @@ namespace XYZ {
 		glm::vec4  Color;	
 		glm::vec4  FrameColor;
 	
-		IGStyle    Style;
-		IGElement* Parent = nullptr;
+		IGStyle		 Style;
 		IGReturnType ReturnType = IGReturnType::None;
+		IGElementType ElementType = IGElementType::None;
+
 		bool		 Active = false;
 	};
 
@@ -90,16 +91,28 @@ namespace XYZ {
 
 		static constexpr float PanelHeight = 25.0f;
 	};
-	class IGImageWindow : public IGElement
-	{
-	};
 	class IGButton : public IGElement
 	{
+	public:
+		IGButton(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
+
+
+		IGWindow*	 Parent = nullptr;
 	};
 	class IGCheckbox : public IGElement
 	{
+	public:
+		IGCheckbox(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
+
+
+		IGWindow*	 Parent = nullptr;
 	};
 	class IGSlider : public IGElement
 	{
+	public:
+		IGSlider(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
+
+
+		IGWindow*	 Parent = nullptr;
 	};
 }

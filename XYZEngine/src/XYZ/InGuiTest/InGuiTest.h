@@ -1,6 +1,7 @@
 #pragma once
 #include "InGuiElement.h"
 #include "InGuiAllocator.h"
+#include "InGuiContext.h"
 
 #include "XYZ/Event/Event.h"
 
@@ -20,17 +21,22 @@ namespace XYZ {
 		static void EndUI();
 		static void Separator();
 
-		static size_t AllocateUI(const std::initializer_list<IGElementType>& types, size_t** handles);
+		static std::pair<size_t, size_t> AllocateUI(const std::initializer_list<IGHierarchy>& hierarchy, size_t** handles);
 
 
-		template <IGElementType, typename ...Args>
+		template <typename T, typename ...Args>
 		static IGReturnType UI(size_t handle, const char* label, Args&& ...args);
 	
-		template <IGElementType>
-		static uint8_t GetFlags(size_t handle);
+		template <typename T>
+		static const T& GetUI(size_t handle)
+		{
+			return getContext().Allocator.Get<T>(s_PoolHandle, handle);
+		}
 
 		static void End(size_t handle);
 			
+	private:
+		static IGContext& getContext();
 	};
 
 }

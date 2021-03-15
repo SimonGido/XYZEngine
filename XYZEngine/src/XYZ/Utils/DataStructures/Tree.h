@@ -29,10 +29,12 @@ namespace XYZ {
 		void    Remove(int32_t index);
 
 		void    Traverse(const std::function<bool(void*, void*)>& callback) const;
-		void	SetData(int32_t index, void* data) { m_Nodes[index].Data = data; }
-		void*   GetData(int32_t index) { return m_Nodes[index].Data; }
-		void*	GetParentData(int32_t index);
-		int32_t GetRoot() const { return m_Root; }
+		void	TraverseNode(int32_t node, const std::function<bool(void*, void*)>& callback) const;
+
+		void	 SetData(int32_t index, void* data) { m_Nodes[index].Data = data; }
+		void*    GetData(int32_t index) { return m_Nodes[index].Data; }
+		void*	 GetParentData(int32_t index);
+		int32_t  GetRoot() const { return m_Root; }
 		uint32_t GetNodeCount() const { return m_NodeCount; }
 
 		const FreeList<TreeNode>& GetFlatNodes() const { return m_Nodes; }

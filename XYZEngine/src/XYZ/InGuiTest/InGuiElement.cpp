@@ -29,6 +29,7 @@ namespace XYZ {
 		:
 		IGElement(position, size, color)
 	{
+		ElementType = IGElementType::Window;
 	}
 
 	bool IGWindow::OnLeftClick(const glm::vec2& mousePosition)
@@ -72,9 +73,25 @@ namespace XYZ {
 	{
 		if (Helper::Collide(AbsolutePosition, Size, mousePosition))
 		{
+			ReturnType = IGReturnType::Hoovered;
 			return true;
 		}
 		return false;
 	}
 
+
+	IGButton::IGButton(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
+		:
+		IGElement(position, size, color)
+	{}
+	IGCheckbox::IGCheckbox(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
+		:
+		IGElement(position, size, color)
+	{
+	}
+	IGSlider::IGSlider(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
+		:
+		IGElement(position, size, color)
+	{
+	}
 }

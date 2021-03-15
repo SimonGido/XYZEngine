@@ -23,17 +23,25 @@ namespace XYZ {
 			glm::vec2 mousePosition = { mx ,my };
 			for (auto& pool : context.Allocator.GetPools())
 			{
-				for (size_t i = 0; i < pool.Size(); ++i)
+				for (int32_t id : pool.GetParentIDs())
 				{
-					IGElement* element = pool[i];
-					if (!element->Active)
-						continue;
-
-					element->ReturnType = IGReturnType::None;
-					if (!e.Handled && element->OnLeftClick(mousePosition))
+					IGElement* parent = static_cast<IGElement*>(pool.GetHierarchy().GetData(id));
+					if (Helper::Collide(parent->Position, parent->Size, mousePosition))
 					{
-						e.Handled = true;
-						context.FrameData.MouseOffset = mousePosition - element->Position;
+						context.RenderData.Rebuild = true;
+						context.FrameData.MouseOffset = mousePosition - parent->Position;
+						pool.GetHierarchy().TraverseNode(id, [&](void* parent, void* child) -> bool {
+
+							IGElement* childElement = static_cast<IGElement*>(child);
+							if (!childElement->Active)
+								return false;
+
+							if (childElement->OnLeftClick(mousePosition))
+							{
+								e.Handled = true;
+								return true;
+							}
+						});
 					}
 				}
 			}
@@ -65,22 +73,28 @@ namespace XYZ {
 	{
 		auto [mx, my] = Input::GetMousePosition();
 		glm::vec2 mousePosition = { mx , my };
+
 		for (auto& pool : context.Allocator.GetPools())
 		{
-			for (size_t i = 0; i < pool.Size(); ++i)
+			for (int32_t id : pool.GetParentIDs())
 			{
-				IGElement* element = pool[i];
-				if (!element->Active)
-					continue;
+				IGElement* parent = static_cast<IGElement*>(pool.GetHierarchy().GetData(id));
+				if (Helper::Collide(parent->Position, parent->Size, mousePosition))
+				{				
+					context.RenderData.Rebuild = true;
+					pool.GetHierarchy().TraverseNode(id, [&](void* parent, void* child) -> bool {
+						
+						IGElement* childElement = static_cast<IGElement*>(child);
+						if (!childElement->Active)
+							return false;
 
-				element->ReturnType = IGReturnType::None;
-				if (!e.Handled && element->OnMouseMove(mousePosition))
-					e.Handled = true;
-				if (auto window = dynamic_cast<IGWindow*>(element))
-				{
-					if (IS_SET(window->Flags, IGWindow::Moved))
-						window->Position = mousePosition - context.FrameData.MouseOffset;
+						childElement->OnMouseMove(mousePosition);
+						return false;
+					});
 				}
+				IGWindow* window = static_cast<IGWindow*>(parent);
+				if (IS_SET(window->Flags, IGWindow::Moved))
+					window->Position = mousePosition - context.FrameData.MouseOffset;
 			}
 		}
 		return false;

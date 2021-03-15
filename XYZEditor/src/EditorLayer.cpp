@@ -89,17 +89,18 @@ namespace XYZ {
 		m_SkinningEditorPanel.SetContext(robotSubTexture);
 
 
-		std::initializer_list<IGElementType> types{
+		std::initializer_list<IGHierarchy> types{{
 			IGElementType::Window,
-			IGElementType::Window,
-			IGElementType::Window,	
-		};
-		m_HandleCount = types.size();
-
-		IG::AllocateUI(
+			{
+				IGElementType::Checkbox,
+				IGElementType::Checkbox,
+				IGElementType::Checkbox,
+			}
+		}};
+		m_HandleCount = IG::AllocateUI(
 			types, 
 			&m_Handles
-		);
+		).second;
 	}	
 
 
@@ -154,29 +155,13 @@ namespace XYZ {
 		//m_SkinningEditorPanel.OnInGuiRender();
 
 		IG::BeginUI(0);
+	
+		IG::UI<IGWindow>(m_Handles[0], "Test 1");
 
-		for (size_t i = 0; i < m_HandleCount; ++i)
-		{
-			IG::UI<IGElementType::Window>(m_Handles[i], "Test 1");
-			IG::End(m_Handles[i]);
-		}
-
-		//IG::UI<IGElementType::Window>(m_Handles[0], "Test 1");
-		//IG::End(m_Handles[2]);
-		//if (!IS_SET(IG::GetFlags<IGElementType::Window>(m_Handles[0]), IGWindow::Flags::Collapsed))
-		//{			
-		//	IG::UI<IGElementType::Window>(m_Handles[1], "Test 2");
-		//	IG::End(m_Handles[1]);
-		//	IG::UI<IGElementType::Window>(m_Handles[2], "Test 3");		
-		//	IG::End(m_Handles[0]);
-		//}
-		
-		
-		
-		
+		bool checked = false;
+		IG::UI<IGCheckbox>(m_Handles[1], "Label", checked);
 		
 		IG::EndUI();
-
 	}
 
 	
