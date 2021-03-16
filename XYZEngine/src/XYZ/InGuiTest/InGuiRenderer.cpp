@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "InGuiRenderer.h"
-
+#include "InGuiUIElements.h"
 #include "InGuiAllocator.h"
 
 namespace XYZ {
@@ -24,20 +24,20 @@ namespace XYZ {
 						else if (offset.y + genSize.y < yBorder)
 						{
 							float oldX = mesh.Quads[oldQuadCount].Position.x;
-							mesh.Quads[oldQuadCount].Position.x = parent->Style.Layout.LeftPadding;
-							mesh.Quads[oldQuadCount].Position.y += highestInRow + parent->Style.Layout.TopPadding;
+							mesh.Quads[oldQuadCount].Position.x = parent->Style.Layout.LeftPadding + parent->GetAbsolutePosition().x;
+							mesh.Quads[oldQuadCount].Position.y += highestInRow + parent->Style.Layout.SpacingY + offset.y;
 							for (size_t i = oldQuadCount + 1; i < mesh.Quads.size(); ++i)
 							{
 								float diff = mesh.Quads[i].Position.x - oldX;
 								oldX = mesh.Quads[i].Position.x;
 
 								mesh.Quads[i].Position.x = mesh.Quads[i - 1].Position.x + diff;
-								mesh.Quads[i].Position.y += highestInRow + parent->Style.Layout.TopPadding;
+								mesh.Quads[i].Position.y += highestInRow + parent->Style.Layout.SpacingY + offset.y;
 							}
 
 							offset.x = parent->Style.Layout.LeftPadding;
 							offset.y += parent->Style.Layout.SpacingY + highestInRow;
-							highestInRow = genSize.y;
+							highestInRow = 0.0f;
 						}
 						else
 						{
@@ -67,12 +67,13 @@ namespace XYZ {
 				{
 					glm::vec2 offset = {
 						parentElement->Style.Layout.LeftPadding,
-						parentElement->Style.Layout.TopPadding
+						parentElement->Style.Layout.TopPadding + IGWindow::PanelHeight
 					};
 					float highestInRow = 0.0f;
 
 					pool.GetHierarchy().TraverseNodeChildren(id, [&](void* parent, void* child) -> bool {
 
+						parentElement = static_cast<IGElement*>(parent);
 						IGElement* childElement = static_cast<IGElement*>(child);
 						if (!childElement->Active)
 							return false;
@@ -80,6 +81,10 @@ namespace XYZ {
 						size_t oldQuadCount = mesh.Quads.size();
 						glm::vec2 genSize = childElement->GenerateQuads(mesh, *this);
 						Helper::ResolvePosition(oldQuadCount, genSize, childElement, parentElement, mesh, offset, highestInRow);
+						if (genSize.y > highestInRow)
+							highestInRow = genSize.y;
+
+						
 						return false;
 						});
 				}

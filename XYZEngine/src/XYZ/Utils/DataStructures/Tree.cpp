@@ -158,8 +158,6 @@ namespace XYZ {
             stack.pop();
 
             const TreeNode& node = m_Nodes[tmp];        
-            if (node.NextSibling != TreeNode::sc_Invalid)
-                stack.push(node.NextSibling);
             if (node.FirstChild != TreeNode::sc_Invalid)
                 stack.push(node.FirstChild);
 

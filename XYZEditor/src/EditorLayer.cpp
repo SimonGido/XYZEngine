@@ -169,7 +169,7 @@ namespace XYZ {
 		IG::UI<IGCheckbox>(m_Handles[4], "Label", checked);
 		IG::UI<IGCheckbox>(m_Handles[5], "Label", checked);
 		IG::UI<IGCheckbox>(m_Handles[6], "Label", checked);
-		
+		IG::UI<IGCheckbox>(m_Handles[7], "Label", checked);
 		IG::EndUI();
 	}
 

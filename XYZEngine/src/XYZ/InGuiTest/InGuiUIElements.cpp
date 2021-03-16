@@ -83,7 +83,7 @@ namespace XYZ {
 	glm::vec2 IGCheckbox::GenerateQuads(IGMesh& mesh, IGRenderData& renderData)
 	{
 		uint32_t subTextureIndex = IGRenderData::CheckboxChecked;
-		IGMeshFactoryData data = { IGRenderData::Window, this, &mesh, &renderData };
+		IGMeshFactoryData data = { subTextureIndex, this, &mesh, &renderData };
 		return IGMeshFactory::GenerateUI<IGCheckbox>(Label.c_str(), glm::vec4(1.0f), data);
 	}
 	IGSlider::IGSlider(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)

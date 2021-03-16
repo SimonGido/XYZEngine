@@ -214,8 +214,12 @@ namespace XYZ {
 
 
 		float height = data.Element->Size.y;
+		float width = data.Element->Size.x;
 		if (height > genTextSize.y)
 			genTextSize.y = height;
+		if (width > genTextSize.x)
+			genTextSize.x = width;
+
 		return genTextSize;
 	}
 
