@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "InGuiAllocator.h"
+#include "InGuiUIElements.h"
 
 namespace XYZ {
 	
@@ -108,7 +109,7 @@ namespace XYZ {
 			{
 			case XYZ::IGElementType::Window:
 			{
-				lastParent = Allocate<IGWindow>(glm::vec2(0.0f), glm::vec2(200.0f), glm::vec4(1.0f)).first;
+				lastParent = Allocate<IGWindow>(glm::vec2(0.0f), glm::vec2(200.0f,400.0f), glm::vec4(1.0f)).first;
 				break;
 			}
 			case XYZ::IGElementType::Button:

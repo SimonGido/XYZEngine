@@ -31,11 +31,6 @@ namespace XYZ {
 				* glm::scale(glm::mat4(1.0f), glm::vec3(Scale, 1.0f));
 		}
 
-		virtual void Copy(IComponent* component) override
-		{
-
-		}
-
 	private:
 		bool onResize(ComponentResizedEvent& event);
 	};

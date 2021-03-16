@@ -31,6 +31,10 @@ namespace XYZ {
 		{
 			instance->~T();
 		}
+		uint8_t* GetRawData()
+		{
+			return m_Data;
+		}
 
 	private:
 		uint8_t* m_Data;

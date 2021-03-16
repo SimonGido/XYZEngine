@@ -34,11 +34,5 @@ namespace XYZ {
 
 		template <typename T>
 		static bool GetValueAs(const InputField& field, T& value);
-
-
-		virtual void Copy(IComponent* component) override
-		{
-
-		}
 	};
 }

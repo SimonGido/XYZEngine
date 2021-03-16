@@ -11,6 +11,21 @@ namespace XYZ {
 		for (auto& it : m_StorageCreated)
 			it = false;
 	}
+	ComponentManager::ComponentManager(const ComponentManager& other)
+		:
+		m_StoragePool(sizeof(ComponentStorage<IComponent>) * MAX_COMPONENTS)
+	{
+		m_StorageCreated = other.m_StorageCreated;
+		for (size_t i = 0; i < m_StorageCreated.size(); ++i)
+		{
+			if (m_StorageCreated[i])
+			{
+				size_t offset = i * sizeof(ComponentStorage<IComponent>);
+				other.GetIStorage(offset)->Copy(&m_StoragePool.GetRawData()[offset]);
+				std::cout << m_StoragePool.Get<IComponentStorage>(offset)->Size() << std::endl;
+			}
+		}
+	}
 	ComponentManager::~ComponentManager()
 	{
 		

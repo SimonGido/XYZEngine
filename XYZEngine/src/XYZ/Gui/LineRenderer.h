@@ -17,12 +17,6 @@ namespace XYZ {
 		glm::vec4 Color;
 		LineMesh  LineMesh;
 		bool	  IsVisible = true;
-
-
-		virtual void Copy(IComponent* component) override
-		{
-
-		}
 	};
 	
 }

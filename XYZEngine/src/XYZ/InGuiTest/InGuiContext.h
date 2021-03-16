@@ -10,6 +10,7 @@ namespace XYZ {
 	struct IGFrameData
 	{
 		glm::vec2 MouseOffset;
+		uint32_t  ActiveWidgetCount = 0;
 	};
 
 	class IGContext

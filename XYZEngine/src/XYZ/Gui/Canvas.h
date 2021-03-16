@@ -22,9 +22,5 @@ namespace XYZ {
 		CanvasRenderMode RenderMode;
 		glm::vec4 Color;
 
-		virtual void Copy(IComponent* component) override
-		{
-
-		}
 	};
 }

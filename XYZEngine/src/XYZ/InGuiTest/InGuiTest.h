@@ -1,5 +1,6 @@
 #pragma once
 #include "InGuiElement.h"
+#include "InGuiUIElements.h"
 #include "InGuiAllocator.h"
 #include "InGuiContext.h"
 
@@ -26,7 +27,14 @@ namespace XYZ {
 
 		template <typename T, typename ...Args>
 		static IGReturnType UI(size_t handle, const char* label, Args&& ...args);
-	
+
+		template <typename T>
+		static T& GetUI(size_t handle)
+		{
+			getContext().RenderData.Rebuild = true;
+			return getContext().Allocator.Get<T>(s_PoolHandle, handle);
+		}
+
 		template <typename T>
 		static const T& GetUI(size_t handle)
 		{
@@ -34,7 +42,7 @@ namespace XYZ {
 		}
 
 		static void End(size_t handle);
-			
+
 	private:
 		static IGContext& getContext();
 	};

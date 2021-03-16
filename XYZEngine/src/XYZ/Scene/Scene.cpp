@@ -137,7 +137,6 @@ namespace XYZ {
 			//data.EndPosition = glm::vec3(-1.0f);
 			//anim.KeyFrames.back().AffectedJoints.push_back(data);
 		}
-		
 	}
 
 	Scene::~Scene()
@@ -231,7 +230,7 @@ namespace XYZ {
 		auto& scriptStorage = m_ECS.GetStorage<ScriptComponent>();
 		for (size_t i = 0; i < scriptStorage.Size(); ++i)
 		{
-			ScriptComponent& script = scriptStorage.GetComponentAtIndex<ScriptComponent>(i);
+			ScriptComponent& script = scriptStorage.GetComponentAtIndex(i);
 			ScriptEngine::OnCreateEntity({ scriptStorage.GetEntityAtIndex(i), this });
 		}
 	}
@@ -395,6 +394,8 @@ namespace XYZ {
 	}
 	SceneEntity Scene::GetEntityByName(const std::string& name)
 	{
+		ECSManager newECs(m_ECS);
+
 		return { m_ECS.FindEntity<SceneTagComponent>(name), this };
 	}
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "XYZ/Renderer/SubTexture.h"
+#include "InGuiRenderer.h"
 
 #include <glm/glm.hpp>
 
@@ -45,7 +45,6 @@ namespace XYZ {
 		Released,
 	};
 
-	class IGWindow;
 	class IGElement
 	{
 	public:
@@ -55,64 +54,26 @@ namespace XYZ {
 		virtual bool OnLeftClick(const glm::vec2& mousePosition) { return false; };
 		virtual bool OnLeftRelease(const glm::vec2& mousePosition) { return false; }
 		virtual bool OnMouseMove(const glm::vec2& mousePosition) { return false; };
+		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData) { return glm::vec2(0.0f); };
 
-		glm::vec2  AbsolutePosition;
-		glm::vec2  Position;
-		glm::vec2  Size;
-		glm::vec4  Color;	
-		glm::vec4  FrameColor;
-	
-		IGStyle		 Style;
+
+		glm::vec2	Position;
+		glm::vec2	Size;
+		glm::vec4	Color;	
+		glm::vec4	FrameColor;
+		std::string Label = "Test";
+		IGStyle		Style;
+		IGElement*	Parent = nullptr;
+		bool		Active = false;
+
+
+		glm::vec2 GetAbsolutePosition() const;
+		IGReturnType GetAndRestartReturnType();
+	protected:
 		IGReturnType ReturnType = IGReturnType::None;
 		IGElementType ElementType = IGElementType::None;
 
-		bool		 Active = false;
 	};
 
-	class IGWindow : public IGElement
-	{
-	public:
-		IGWindow(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
-		
-		virtual bool OnLeftClick(const glm::vec2& mousePosition) override;
-		virtual bool OnLeftRelease(const glm::vec2& mousePosition) override;
-		virtual bool OnMouseMove(const glm::vec2& mousePosition) override;
-
-		enum Flags
-		{
-			Initialized = BIT(0),
-			Hoovered	= BIT(1),
-			Moved       = BIT(2),
-			Collapsed   = BIT(3),
-			Docked	    = BIT(4)
-		};
-
-		uint8_t Flags = 0;
-
-		static constexpr float PanelHeight = 25.0f;
-	};
-	class IGButton : public IGElement
-	{
-	public:
-		IGButton(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
-
-
-		IGWindow*	 Parent = nullptr;
-	};
-	class IGCheckbox : public IGElement
-	{
-	public:
-		IGCheckbox(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
-
-
-		IGWindow*	 Parent = nullptr;
-	};
-	class IGSlider : public IGElement
-	{
-	public:
-		IGSlider(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
-
-
-		IGWindow*	 Parent = nullptr;
-	};
+	
 }

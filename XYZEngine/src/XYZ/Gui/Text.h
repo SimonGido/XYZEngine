@@ -22,10 +22,5 @@ namespace XYZ {
 		Ref<Font>     Font;
 		glm::vec4	  Color;
 		TextAlignment Alignment;
-
-		virtual void Copy(IComponent* component) override
-		{
-
-		}
 	};
 }

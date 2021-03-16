@@ -34,11 +34,5 @@ namespace XYZ {
 
 		StateMachine<CheckboxState::NumStates> Machine;
 		bool Checked = false;
-
-
-		virtual void Copy(IComponent* component) override
-		{
-
-		}
 	};
 }

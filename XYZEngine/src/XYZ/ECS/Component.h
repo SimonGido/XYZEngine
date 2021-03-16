@@ -40,8 +40,6 @@ namespace XYZ {
 	public:
 		virtual ~IComponent() {}
 
-		virtual void Copy(IComponent* component) = 0;
-
 		template <typename T>
 		static uint8_t GetComponentID()
 		{

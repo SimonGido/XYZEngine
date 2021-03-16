@@ -32,10 +32,5 @@ namespace XYZ {
 		glm::vec4   HooverColor;
 
 		StateMachine<ButtonState::NumStates> Machine;
-
-		virtual void Copy(IComponent* component) override
-		{
-
-		}
 	};
 }

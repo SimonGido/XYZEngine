@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "InGuiInput.h"
 #include "InGuiContext.h"
+#include "InGuiUIElements.h"
 
 #include "XYZ/Core/Input.h"
 
@@ -14,7 +15,6 @@ namespace XYZ {
 				pos.y < point.y);
 		}
 	}
-
 	bool IGInput::OnMouseButtonPress(MouseButtonPressEvent& e, IGContext& context)
 	{
 		if (e.IsButtonPressed(MouseCode::MOUSE_BUTTON_LEFT))
@@ -26,7 +26,7 @@ namespace XYZ {
 				for (int32_t id : pool.GetParentIDs())
 				{
 					IGElement* parent = static_cast<IGElement*>(pool.GetHierarchy().GetData(id));
-					if (Helper::Collide(parent->Position, parent->Size, mousePosition))
+					if (Helper::Collide(parent->Position, parent->Size, mousePosition) && parent->Active)
 					{
 						context.RenderData.Rebuild = true;
 						context.FrameData.MouseOffset = mousePosition - parent->Position;
@@ -41,7 +41,7 @@ namespace XYZ {
 								e.Handled = true;
 								return true;
 							}
-						});
+							});
 					}
 				}
 			}
@@ -62,7 +62,6 @@ namespace XYZ {
 					if (!element->Active)
 						continue;
 
-					element->ReturnType = IGReturnType::None;
 					element->OnLeftRelease(mousePosition);
 				}
 			}
@@ -79,21 +78,21 @@ namespace XYZ {
 			for (int32_t id : pool.GetParentIDs())
 			{
 				IGElement* parent = static_cast<IGElement*>(pool.GetHierarchy().GetData(id));
-				if (Helper::Collide(parent->Position, parent->Size, mousePosition))
+				if (Helper::Collide(parent->Position, parent->Size, mousePosition) && parent->Active)
 				{				
 					context.RenderData.Rebuild = true;
 					pool.GetHierarchy().TraverseNode(id, [&](void* parent, void* child) -> bool {
-						
+
 						IGElement* childElement = static_cast<IGElement*>(child);
 						if (!childElement->Active)
 							return false;
 
 						childElement->OnMouseMove(mousePosition);
 						return false;
-					});
+						});
 				}
-				IGWindow* window = static_cast<IGWindow*>(parent);
-				if (IS_SET(window->Flags, IGWindow::Moved))
+				IGWindow* window = dynamic_cast<IGWindow*>(parent);
+				if (window && IS_SET(window->Flags, IGWindow::Moved))
 					window->Position = mousePosition - context.FrameData.MouseOffset;
 			}
 		}

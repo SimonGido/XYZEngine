@@ -31,11 +31,5 @@ namespace XYZ {
 		uint32_t		  SortLayer;
 		float			  TilingFactor = 1.0f;
 		bool			  IsVisible = true;
-
-
-		virtual void Copy(IComponent* component) override
-		{
-
-		}
 	};
 }

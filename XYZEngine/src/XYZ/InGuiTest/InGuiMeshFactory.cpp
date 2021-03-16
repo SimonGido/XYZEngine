@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include "InGuiMeshFactory.h"
 
+#include "InGuiUIElements.h"
+
+
 namespace XYZ {
 
 	namespace Helper {
@@ -141,37 +144,39 @@ namespace XYZ {
 			return data.Element->Size;
 
 		IGWindow* window = static_cast<IGWindow*>(data.Element);
+		
+		glm::vec2 absolutePosition = window->GetAbsolutePosition();
 		if (!IS_SET(window->Flags, IGWindow::Collapsed))
 		{
 			if (window->Style.RenderFrame)
-				Helper::GenerateFrame(*data.Mesh, window->AbsolutePosition, window->Size, window->FrameColor);
-		
+				Helper::GenerateFrame(*data.Mesh,absolutePosition, window->Size, window->FrameColor);
+
 			data.Mesh->Quads.push_back({
-					window->Color,
-					data.RenderData->SubTextures[data.SubTextureIndex]->GetTexCoords(),
-					{window->AbsolutePosition, 0.0f},
-					window->Size,
-					IGRenderData::TextureID
+				window->Color,
+				data.RenderData->SubTextures[data.SubTextureIndex]->GetTexCoords(),
+				{absolutePosition, 0.0f},
+				window->Size,
+				IGRenderData::TextureID
 				});
 		}
 		data.Mesh->Quads.push_back({
-				window->Color,
-				data.RenderData->SubTextures[IGRenderData::Button]->GetTexCoords(),
-				{window->AbsolutePosition, 0.0f},
-				{window->Size.x, IGWindow::PanelHeight },
-				IGRenderData::TextureID
+			window->Color,
+			data.RenderData->SubTextures[IGRenderData::Button]->GetTexCoords(),
+			{absolutePosition, 0.0f},
+			{window->Size.x, IGWindow::PanelHeight },
+			IGRenderData::TextureID
 			});
 		data.Mesh->Quads.push_back({
-				window->Color,
-				data.RenderData->SubTextures[IGRenderData::MinimizeButton]->GetTexCoords(),
-				{window->AbsolutePosition.x + window->Size.x - IGWindow::PanelHeight, window->AbsolutePosition.y, 0.0f},
-				{IGWindow::PanelHeight, IGWindow::PanelHeight },
-				IGRenderData::TextureID
+			window->Color,
+			data.RenderData->SubTextures[IGRenderData::MinimizeButton]->GetTexCoords(),
+			{absolutePosition.x + window->Size.x - IGWindow::PanelHeight, absolutePosition.y, 0.0f},
+			{IGWindow::PanelHeight, IGWindow::PanelHeight },
+			IGRenderData::TextureID
 			});
 
 
 		size_t oldQuadCount = data.Mesh->Quads.size();
-		glm::vec2 textPosition = { std::floor(window->AbsolutePosition.x), std::floor(window->AbsolutePosition.y) };
+		glm::vec2 textPosition = { std::floor(absolutePosition.x), std::floor(absolutePosition.y) };
 		glm::vec2 textSize = { window->Size.x, window->Size.y };
 		glm::vec2 genTextSize = Helper::GenerateTextMesh(
 			label, data.RenderData->Font, labelColor,
@@ -190,21 +195,23 @@ namespace XYZ {
 		if (!data.RenderData->Rebuild)
 			return data.Element->Size;
 
+		glm::vec2 absolutePosition = data.Element->GetAbsolutePosition();
 		Helper::GenerateQuad(
 			*data.Mesh, data.Element->Color, 
-			data.Element->Size, data.Element->AbsolutePosition,
+			data.Element->Size, absolutePosition,
 			data.RenderData->SubTextures[data.SubTextureIndex], 
 			IGRenderData::TextureID, 
 			data.ScissorIndex
 		);
 
-		glm::vec2 textPosition = { std::floor(data.Element->AbsolutePosition.x), std::floor(data.Element->AbsolutePosition.y) };
+		glm::vec2 textPosition = { std::floor(absolutePosition.x), std::floor(absolutePosition.y) };
 		glm::vec2 textSize = { data.Element->Size.x, data.Element->Size.y };
 
 		glm::vec2 genTextSize = Helper::GenerateTextMesh(
 			label, data.RenderData->Font, labelColor,
 			textPosition, textSize, *data.Mesh, IGRenderData::FontTextureID, 1000, 0
 		);
+
 
 		float height = data.Element->Size.y;
 		if (height > genTextSize.y)

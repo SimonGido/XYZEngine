@@ -1,6 +1,11 @@
 #pragma once
 
-#include "InGuiElement.h"
+
+#include "XYZ/Renderer/SubTexture.h"
+#include "XYZ/Renderer/Font.h"
+#include "XYZ/Renderer/Material.h"
+#include "XYZ/Renderer/Buffer.h"
+
 
 namespace XYZ {
 
@@ -27,11 +32,48 @@ namespace XYZ {
 		std::vector<IGLine>	Lines;
 	};
 
-	class IGRenderer
+	struct IGScissor
+	{
+		float X;
+		float Y;
+		float Width;
+		float Height;
+	};
+
+	class IGAllocator;
+	class IGRenderData
 	{
 	public:
-	
-	private:
-		IGMesh m_Mesh;
+		IGRenderData();
+		enum 
+		{
+			Button = 0,
+			CheckboxChecked,
+			CheckboxUnChecked,
+			Slider,
+			SliderHandle,
+			Window,
+			MinimizeButton,
+			CloseButton,
+			DownArrow,
+			RightArrow,
+			LeftArrow,
+			Pause,
+			DockSpace,
+			NumSubTextures = 32
+		};
+		void RebuildMesh(IGAllocator& allocator, IGMesh& mesh);
+
+		Ref<Font>				 Font;
+		Ref<Texture2D>			 Texture;
+		Ref<Material>			 Material;
+		Ref<ShaderStorageBuffer> ScissorBuffer;
+		Ref<SubTexture>			 SubTextures[NumSubTextures];
+		bool					 Rebuild = true;
+
+		static constexpr uint32_t TextureID = 0;
+		static constexpr uint32_t FontTextureID = 1;
+		static constexpr uint32_t DefaultTextureCount = 2;
+		static constexpr uint32_t MaxNumberOfScissors = 32;
 	};
 }

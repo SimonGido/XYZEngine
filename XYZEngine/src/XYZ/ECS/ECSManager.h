@@ -8,6 +8,9 @@ namespace XYZ {
 	class ECSManager
 	{
 	public:
+		ECSManager() = default;
+		ECSManager(const ECSManager& other);
+			
 		uint32_t CreateEntity() { return m_EntityManager.CreateEntity(); };
 
 		void DestroyEntity(uint32_t entity) 

@@ -10,6 +10,8 @@ namespace XYZ {
 		virtual ~IComponentStorage() = default;
 		virtual uint32_t EntityDestroyed(uint32_t entity) = 0;
 		virtual size_t Size() const = 0;
+		virtual IComponentStorage* Copy(uint8_t* buffer) const = 0;
+		
 
 		virtual const std::vector<uint32_t>& GetDataEntityMap() const = 0;
 	};
@@ -20,11 +22,19 @@ namespace XYZ {
 	public:
 		virtual uint32_t EntityDestroyed(uint32_t entity) override
 		{
-			return RemoveComponent<T>(entity);
+			return RemoveComponent(entity);
 		}
 		virtual size_t Size() const override 
 		{ 
 			return m_Data.size();  
+		}
+		virtual IComponentStorage* Copy(uint8_t* buffer) const override
+		{
+			ComponentStorage<T>* clone = new ((void*)buffer)ComponentStorage<T>();
+			clone->m_Data = m_Data;
+			clone->m_DataEntityMap = m_DataEntityMap;
+			clone->m_EntityDataMap = m_EntityDataMap;
+			return clone;
 		}
 		virtual const std::vector<uint32_t>& GetDataEntityMap() const override
 		{ 
@@ -64,7 +74,7 @@ namespace XYZ {
 			return m_Data[m_EntityDataMap[entity]];
 		}
 
-		template <typename T>
+
 		uint32_t RemoveComponent(uint32_t entity)
 		{
 			uint32_t updatedEntity = NULL_ENTITY;
@@ -88,13 +98,11 @@ namespace XYZ {
 			return updatedEntity;
 		}
 
-		template <typename T>
 		T& GetComponentAtIndex(size_t index)
 		{
 			return m_Data[index];
 		}
 
-		template <typename T>
 		const T& GetComponentAtIndex(size_t index) const
 		{
 			return m_Data[index];

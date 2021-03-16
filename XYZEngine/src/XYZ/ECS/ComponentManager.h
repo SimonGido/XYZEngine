@@ -10,6 +10,8 @@ namespace XYZ {
 	{
 	public:
 		ComponentManager();	
+		ComponentManager(const ComponentManager& other);
+
 		~ComponentManager();
 
 		void EntityDestroyed(uint32_t entity, const Signature& signature);	
@@ -73,6 +75,10 @@ namespace XYZ {
 			return *m_StoragePool.Get<ComponentStorage<T>>(offset);
 		}
 
+		const IComponentStorage* GetIStorage(size_t offset) const
+		{
+			return m_StoragePool.Get<IComponentStorage>(offset);
+		}
 
 		template <typename T>
 		uint32_t GetComponentIndex(uint32_t entity) const
