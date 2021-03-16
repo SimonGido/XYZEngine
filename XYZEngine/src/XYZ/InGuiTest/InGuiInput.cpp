@@ -79,7 +79,7 @@ namespace XYZ {
 			{
 				IGElement* parent = static_cast<IGElement*>(pool.GetHierarchy().GetData(id));
 				if (Helper::Collide(parent->Position, parent->Size, mousePosition) && parent->Active)
-				{				
+				{
 					context.RenderData.Rebuild = true;
 					pool.GetHierarchy().TraverseNode(id, [&](void* parent, void* child) -> bool {
 
@@ -93,7 +93,10 @@ namespace XYZ {
 				}
 				IGWindow* window = dynamic_cast<IGWindow*>(parent);
 				if (window && IS_SET(window->Flags, IGWindow::Moved))
+				{
 					window->Position = mousePosition - context.FrameData.MouseOffset;
+					context.RenderData.Rebuild = true;
+				}
 			}
 		}
 		return false;
