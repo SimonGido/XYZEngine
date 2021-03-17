@@ -62,6 +62,7 @@ namespace XYZ {
 		glm::vec4	Color;	
 		glm::vec4	FrameColor;
 		std::string Label = "Test";
+
 		IGStyle		Style;
 		IGElement*	Parent = nullptr;
 		bool		Active = false;

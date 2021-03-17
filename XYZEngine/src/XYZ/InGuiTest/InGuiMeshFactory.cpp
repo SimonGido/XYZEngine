@@ -135,6 +135,22 @@ namespace XYZ {
 				});
 		}
 
+		static glm::vec2 GetMaxSize(const glm::vec2& firstMinPosition, const glm::vec2& firstMaxPosition, const glm::vec2& secondMinPosition, const glm::vec2& secondMaxPosition)
+		{		
+			glm::vec2 minPosition = firstMinPosition;
+			if (minPosition.x > secondMinPosition.x)
+				minPosition.x = secondMinPosition.x;
+			if (minPosition.y > secondMinPosition.y)
+				minPosition.y = secondMinPosition.y;
+
+			glm::vec2 maxPosition = firstMaxPosition;
+			if (maxPosition.x < secondMaxPosition.x)
+				maxPosition.x = secondMaxPosition.x;
+			if (maxPosition.y < secondMaxPosition.y)
+				maxPosition.y = secondMaxPosition.y;
+
+			return maxPosition - minPosition;
+		}
 	}
 
 	template<>
@@ -176,12 +192,13 @@ namespace XYZ {
 
 
 		size_t oldQuadCount = data.Mesh->Quads.size();
-		glm::vec2 textPosition = { std::floor(absolutePosition.x), std::floor(absolutePosition.y) };
+		glm::vec2 textPosition = { std::floor(window->Style.Layout.LeftPadding + absolutePosition.x), std::floor(absolutePosition.y) };
 		glm::vec2 textSize = { window->Size.x, window->Size.y };
 		glm::vec2 genTextSize = Helper::GenerateTextMesh(
 			label, data.RenderData->Font, labelColor,
 			textPosition, textSize, *data.Mesh, IGRenderData::FontTextureID, 1000, 0
 		);
+
 		Helper::CenterText(*data.Mesh, oldQuadCount, window->Position, 
 			{ window->Size.x, IGWindow::PanelHeight }, 
 			genTextSize, window->Style.LabelCenter
@@ -204,7 +221,8 @@ namespace XYZ {
 			data.ScissorIndex
 		);
 
-		glm::vec2 textPosition = { std::floor(absolutePosition.x), std::floor(absolutePosition.y) };
+		size_t oldQuadCount = data.Mesh->Quads.size();
+		glm::vec2 textPosition = { std::floor(absolutePosition.x + data.Element->Size.x), std::floor(absolutePosition.y) };
 		glm::vec2 textSize = { data.Element->Size.x, data.Element->Size.y };
 
 		glm::vec2 genTextSize = Helper::GenerateTextMesh(
@@ -212,15 +230,17 @@ namespace XYZ {
 			textPosition, textSize, *data.Mesh, IGRenderData::FontTextureID, 1000, 0
 		);
 
+		Helper::CenterText(*data.Mesh, oldQuadCount, 
+			data.Element->Position, data.Element->Size, 
+			genTextSize, data.Element->Style.LabelCenter
+		);
 
-		float height = data.Element->Size.y;
-		float width = data.Element->Size.x;
-		if (height > genTextSize.y)
-			genTextSize.y = height;
-		if (width > genTextSize.x)
-			genTextSize.x = width;
-
-		return genTextSize;
+		return Helper::GetMaxSize(
+			absolutePosition,
+			absolutePosition + data.Element->Size,
+			textPosition - glm::vec2(0.0f, genTextSize.y),
+			textPosition + glm::vec2(genTextSize.x, 0.0f)
+		);
 	}
 
 	IGRenderData::IGRenderData()
