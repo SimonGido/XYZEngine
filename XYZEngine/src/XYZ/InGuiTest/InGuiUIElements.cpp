@@ -81,9 +81,22 @@ namespace XYZ {
 		IGElement(position, size, color)
 	{
 	}
+	bool IGCheckbox::OnLeftClick(const glm::vec2& mousePosition)
+	{
+		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
+		{
+			ReturnType = IGReturnType::Clicked;
+			Checked = !Checked;
+			return true;
+		}
+		return false;
+	}
 	glm::vec2 IGCheckbox::GenerateQuads(IGMesh& mesh, IGRenderData& renderData)
 	{
-		uint32_t subTextureIndex = IGRenderData::CheckboxChecked;
+		uint32_t subTextureIndex = IGRenderData::CheckboxUnChecked;
+		if (Checked)
+			subTextureIndex = IGRenderData::CheckboxChecked;
+
 		IGMeshFactoryData data = { subTextureIndex, this, &mesh, &renderData };
 		return IGMeshFactory::GenerateUI<IGCheckbox>(Label.c_str(), glm::vec4(1.0f), data);
 	}
