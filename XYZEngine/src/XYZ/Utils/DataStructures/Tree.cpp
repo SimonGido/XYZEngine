@@ -145,30 +145,21 @@ namespace XYZ {
     }
     void Tree::TraverseNodeChildren(int32_t node, const std::function<bool(void*, void*)>& callback) const
     { 
-        std::stack<int32_t> stack;
         uint32_t child = m_Nodes[node].FirstChild;
         while (child != TreeNode::sc_Invalid)
         {
-            stack.push(child);
-            child = m_Nodes[child].NextSibling;
-        }
-        while (!stack.empty())
-        {
-            int32_t tmp = stack.top();
-            stack.pop();
-
-            const TreeNode& node = m_Nodes[tmp];        
-            if (node.FirstChild != TreeNode::sc_Invalid)
-                stack.push(node.FirstChild);
-
+            const TreeNode& node = m_Nodes[child];   
             void* parentData = nullptr;
             void* data = node.Data;
             if (node.Parent != TreeNode::sc_Invalid)
                 parentData = m_Nodes[node.Parent].Data;
             if (callback(parentData, data))
                 return;
+            
+            child = m_Nodes[child].NextSibling;
         }
     }
+    
     void* Tree::GetParentData(int32_t index)
     {
         if (m_Nodes[index].Parent != TreeNode::sc_Invalid)

@@ -5,16 +5,16 @@
 
 namespace XYZ {
 
-	struct IGHierarchy
+	struct IGHierarchyElement
 	{
-		IGElementType Parent; // Only image window / window
-		std::vector<IGElementType> Children;
+		IGElementType Element; // Only image window / window
+		std::vector<IGHierarchyElement> Children;
 	};
 
 	class IGPool
 	{
 	public:
-		IGPool(const std::initializer_list<IGHierarchy>& hierarchy, size_t ** handles);
+		IGPool(const std::initializer_list<IGHierarchyElement>& hierarchy, size_t ** handles);
 		~IGPool();
 
 		template <typename T, typename ...Args>
@@ -48,7 +48,8 @@ namespace XYZ {
 			return m_Hierarchy;
 		}
 
-		const std::vector<int32_t>& GetParentIDs() const { return m_ParentHierarchyIDs; }
+		const std::vector<int32_t>& GetRootElementIDs() const { return m_RootElements; }
+
 	private:
 		template <typename T>
 		void destroy(size_t offset)
@@ -57,8 +58,10 @@ namespace XYZ {
 			tmp->~T();
 		}
 
-		void resolveHandles(const std::initializer_list<IGHierarchy>& hierarchy, size_t**handles);
-		void allocateMemory();
+		void resolveHandles(const std::vector<IGHierarchyElement>& hierarchy, size_t**handles, size_t & counter);
+		void allocateMemory(const std::vector<IGHierarchyElement>& hierarchy, IGElement* parent);
+		void insertToHierarchy(int32_t parentID, const std::vector<IGHierarchyElement>& hierarchy, size_t& counter, uint32_t & iteration);
+		size_t getSize(const std::vector<IGHierarchyElement>& hierarchy);
 
 	private:
 		size_t   m_Size;
@@ -67,14 +70,14 @@ namespace XYZ {
 		Tree	 m_Hierarchy;
 		std::vector<size_t> m_Handles;
 		std::vector<IGElementType> m_Elements;
-		std::vector<int32_t> m_ParentHierarchyIDs;
+		std::vector<int32_t> m_RootElements;
 	};
 
 
 	class IGAllocator
 	{
 	public:
-		std::pair<size_t, size_t> CreatePool(const std::initializer_list<IGHierarchy>& hierarchy, size_t ** handles);
+		std::pair<size_t, size_t> CreatePool(const std::initializer_list<IGHierarchyElement>& hierarchy, size_t ** handles);
 	
 		template <typename T, typename ...Args>
 		std::pair<T*, size_t> Allocate(size_t poolHandle, Args&&... args)

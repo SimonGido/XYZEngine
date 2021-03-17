@@ -89,16 +89,16 @@ namespace XYZ {
 		m_SkinningEditorPanel.SetContext(robotSubTexture);
 
 
-		std::initializer_list<IGHierarchy> types{{
+		std::initializer_list<IGHierarchyElement> types{{
 			IGElementType::Window,
 			{
-				IGElementType::Checkbox,
-				IGElementType::Checkbox,
-				IGElementType::Checkbox,
-				IGElementType::Checkbox,
-				IGElementType::Checkbox,
-				IGElementType::Checkbox,
-				IGElementType::Checkbox,
+				{IGElementType::Checkbox, {}},
+				{IGElementType::Checkbox, {}},
+				{IGElementType::Checkbox, {}},
+				{IGElementType::Checkbox, {}},
+				{IGElementType::Checkbox, {}},
+				{IGElementType::Checkbox, {}},
+				{IGElementType::Checkbox, {}},
 			}
 		}};
 		m_HandleCount = IG::AllocateUI(

@@ -22,7 +22,7 @@ namespace XYZ {
 		static void EndUI();
 		static void Separator();
 
-		static std::pair<size_t, size_t> AllocateUI(const std::initializer_list<IGHierarchy>& hierarchy, size_t** handles);
+		static std::pair<size_t, size_t> AllocateUI(const std::initializer_list<IGHierarchyElement>& hierarchy, size_t** handles);
 
 
 		template <typename T, typename ...Args>

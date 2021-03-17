@@ -92,7 +92,7 @@ namespace XYZ {
 
 	}
 
-	std::pair<size_t, size_t> IG::AllocateUI(const std::initializer_list<IGHierarchy>& hierarchy, size_t** handles)
+	std::pair<size_t, size_t> IG::AllocateUI(const std::initializer_list<IGHierarchyElement>& hierarchy, size_t** handles)
 	{
 		return s_Context->Allocator.CreatePool(hierarchy, handles);
 	}

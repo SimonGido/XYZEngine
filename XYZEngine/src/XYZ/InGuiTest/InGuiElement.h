@@ -69,7 +69,7 @@ namespace XYZ {
 		bool	    ActiveChildren = true;
 
 		glm::vec2 GetAbsolutePosition() const;
-		
+		int32_t GetID() const { return ID; }
 	private:
 		IGReturnType getAndRestartReturnType();
 
@@ -77,9 +77,11 @@ namespace XYZ {
 	protected:
 		IGReturnType ReturnType = IGReturnType::None;
 		IGElementType ElementType = IGElementType::None;
+		int32_t		 ID = -1;
 
 
 		friend class IG;
+		friend class IGPool;
 	};
 
 	

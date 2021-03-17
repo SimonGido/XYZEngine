@@ -55,39 +55,45 @@ namespace XYZ {
 			return true;
 		}
 	}
+
+	static void RebuildMeshRecursive(IGElement* parentElement, IGPool& pool, IGMesh& mesh, IGRenderData& data)
+	{
+		if (parentElement->Active)
+		{
+			glm::vec2 offset = {
+				parentElement->Style.Layout.LeftPadding,
+				parentElement->Style.Layout.TopPadding + IGWindow::PanelHeight
+			};
+			float highestInRow = 0.0f;
+
+			pool.GetHierarchy().TraverseNodeChildren(parentElement->GetID(), [&](void* parent, void* child) -> bool {
+
+				parentElement = static_cast<IGElement*>(parent);
+				IGElement* childElement = static_cast<IGElement*>(child);
+				if (childElement->Active)
+				{
+					size_t oldQuadCount = mesh.Quads.size();
+					glm::vec2 genSize = childElement->GenerateQuads(mesh, data);
+					Helper::ResolvePosition(oldQuadCount, genSize, childElement, parentElement, mesh, offset, highestInRow);
+					if (genSize.y > highestInRow)
+						highestInRow = genSize.y;
+
+					RebuildMeshRecursive(childElement, pool, mesh, data);
+				}
+				return false;
+			});
+		}	
+	}
+
 	void IGRenderData::RebuildMesh(IGAllocator& allocator, IGMesh& mesh)
 	{
 		for (auto& pool : allocator.GetPools())
-		{
-			for (int32_t id : pool.GetParentIDs())
+		{		
+			for (int32_t id : pool.GetRootElementIDs())
 			{
 				IGElement* parentElement = static_cast<IGElement*>(pool.GetHierarchy().GetData(id));
 				parentElement->GenerateQuads(mesh, *this);
-				if (parentElement->Active)
-				{
-					glm::vec2 offset = {
-						parentElement->Style.Layout.LeftPadding,
-						parentElement->Style.Layout.TopPadding + IGWindow::PanelHeight
-					};
-					float highestInRow = 0.0f;
-
-					pool.GetHierarchy().TraverseNodeChildren(id, [&](void* parent, void* child) -> bool {
-
-						parentElement = static_cast<IGElement*>(parent);
-						IGElement* childElement = static_cast<IGElement*>(child);
-						if (!childElement->Active)
-							return false;
-
-						size_t oldQuadCount = mesh.Quads.size();
-						glm::vec2 genSize = childElement->GenerateQuads(mesh, *this);
-						Helper::ResolvePosition(oldQuadCount, genSize, childElement, parentElement, mesh, offset, highestInRow);
-						if (genSize.y > highestInRow)
-							highestInRow = genSize.y;
-
-						
-						return false;
-						});
-				}
+				RebuildMeshRecursive(parentElement, pool, mesh, *this);
 			}
 		}
 	}
