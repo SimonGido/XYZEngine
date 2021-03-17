@@ -23,21 +23,8 @@ namespace XYZ {
 						}
 						else if (offset.y + genSize.y < yBorder)
 						{
-							float oldX = mesh.Quads[oldQuadCount].Position.x;
-							mesh.Quads[oldQuadCount].Position.x = parent->Style.Layout.LeftPadding + parent->GetAbsolutePosition().x;
-							mesh.Quads[oldQuadCount].Position.y += highestInRow + parent->Style.Layout.SpacingY + offset.y;
-							for (size_t i = oldQuadCount + 1; i < mesh.Quads.size(); ++i)
-							{
-								float diff = mesh.Quads[i].Position.x - oldX;
-								oldX = mesh.Quads[i].Position.x;
-
-								mesh.Quads[i].Position.x = mesh.Quads[i - 1].Position.x + diff;
-								mesh.Quads[i].Position.y += highestInRow + parent->Style.Layout.SpacingY + offset.y;
-							}
-
 							offset.x = parent->Style.Layout.LeftPadding;
 							offset.y += parent->Style.Layout.SpacingY + highestInRow;
-							highestInRow = 0.0f;
 						}
 						else
 						{
@@ -45,20 +32,18 @@ namespace XYZ {
 							return false;
 						}
 					}
-					else
-					{
-						element->Position = offset;
-						offset.x += genSize.x + parent->Style.Layout.SpacingX;
-					}
 				}
+				element->Position = offset;
+				offset.x += genSize.x + parent->Style.Layout.SpacingX;
 			}
+			
 			return true;
 		}
 	}
 
 	static void RebuildMeshRecursive(IGElement* parentElement, IGPool& pool, IGMesh& mesh, IGRenderData& data)
 	{
-		if (parentElement->Active)
+		if (parentElement->Active && parentElement->ActiveChildren)
 		{
 			glm::vec2 offset = {
 				parentElement->Style.Layout.LeftPadding,

@@ -19,7 +19,7 @@ namespace XYZ {
 	static bool OnMouseButtonPressRecursive(IGElement* parentElement, IGContext& context, IGPool& pool, const glm::vec2& mousePosition)
 	{
 		bool result = false;
-		if (Helper::Collide(parentElement->Position, parentElement->Size, mousePosition) && parentElement->Active)
+		if (parentElement->Active && parentElement->ActiveChildren && Helper::Collide(parentElement->Position, parentElement->Size, mousePosition))
 		{
 			context.RenderData.Rebuild = true;
 			context.FrameData.MouseOffset = mousePosition - parentElement->Position;
@@ -85,7 +85,7 @@ namespace XYZ {
 
 	static bool OnMouseMoveRecursive(IGElement* parentElement, IGContext& context, IGPool& pool, const glm::vec2& mousePosition)
 	{
-		if (Helper::Collide(parentElement->Position, parentElement->Size, mousePosition) && parentElement->Active)
+		if (parentElement->Active && parentElement->ActiveChildren && Helper::Collide(parentElement->Position, parentElement->Size, mousePosition))
 		{
 			context.RenderData.Rebuild = true;
 			pool.GetHierarchy().TraverseNodeChildren(parentElement->GetID(), [&](void* parent, void* child) -> bool {
