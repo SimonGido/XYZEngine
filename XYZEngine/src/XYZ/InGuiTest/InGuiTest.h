@@ -26,7 +26,7 @@ namespace XYZ {
 
 
 		template <typename T, typename ...Args>
-		static IGReturnType UI(size_t handle, const char* label, Args&& ...args);
+		static IGReturnType UI(size_t handle, Args&& ...args);
 
 		template <typename T>
 		static T& GetUI(size_t handle)

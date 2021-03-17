@@ -157,16 +157,15 @@ namespace XYZ {
 
 		IG::BeginUI(0);
 	
-		IG::UI<IGWindow>(m_Handles[0], "Test 1");
+		IG::UI<IGWindow>(m_Handles[0]);
 
-		//bool checked = false;
-		//IG::UI<IGCheckbox>(m_Handles[1], "Label", checked);
-		//IG::UI<IGCheckbox>(m_Handles[2], "Label", checked);
-		//IG::UI<IGCheckbox>(m_Handles[3], "Label", checked);
-		//IG::UI<IGCheckbox>(m_Handles[4], "Label", checked);
-		//IG::UI<IGCheckbox>(m_Handles[5], "Label", checked);
-		//IG::UI<IGCheckbox>(m_Handles[6], "Label", checked);
-		//IG::UI<IGCheckbox>(m_Handles[7], "Label", checked);
+		//IG::UI<IGCheckbox>(m_Handles[1]);
+		//IG::UI<IGCheckbox>(m_Handles[2]);
+		//IG::UI<IGCheckbox>(m_Handles[3]);
+		//IG::UI<IGCheckbox>(m_Handles[4]);
+		//IG::UI<IGCheckbox>(m_Handles[5]);
+		//IG::UI<IGCheckbox>(m_Handles[6]);
+		//IG::UI<IGCheckbox>(m_Handles[7]);
 		IG::EndUI();
 	}
 

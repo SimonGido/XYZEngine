@@ -104,14 +104,14 @@ namespace XYZ {
 
 
 	template <>
-	IGReturnType IG::UI<IGWindow>(size_t handle, const char* label)
+	IGReturnType IG::UI<IGWindow>(size_t handle)
 	{
 		IGWindow* window = s_Context->Allocator.Get<IGWindow>(s_PoolHandle, handle);
 		return window->getAndRestartReturnType();
 	}
 
 	template <>
-	IGReturnType IG::UI<IGCheckbox>(size_t handle, const char* label, bool& checked)
+	IGReturnType IG::UI<IGCheckbox>(size_t handle)
 	{	
 		IGCheckbox* checkbox = s_Context->Allocator.Get<IGCheckbox>(s_PoolHandle, handle);
 		return checkbox->getAndRestartReturnType();
