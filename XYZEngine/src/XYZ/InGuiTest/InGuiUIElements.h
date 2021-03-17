@@ -31,7 +31,8 @@ namespace XYZ {
 	public:
 		IGButton(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
 
-
+		virtual bool OnLeftClick(const glm::vec2& mousePosition) override;
+		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData) override;
 	};
 	class IGCheckbox : public IGElement
 	{

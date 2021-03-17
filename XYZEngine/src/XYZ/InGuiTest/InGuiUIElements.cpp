@@ -76,6 +76,22 @@ namespace XYZ {
 		:
 		IGElement(position, size, color)
 	{}
+
+	bool IGButton::OnLeftClick(const glm::vec2& mousePosition)
+	{
+		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
+		{
+			ReturnType = IGReturnType::Clicked;
+			return true;
+		}
+		return false;
+	}
+	glm::vec2 IGButton::GenerateQuads(IGMesh& mesh, IGRenderData& renderData)
+	{
+		IGMeshFactoryData data = { IGRenderData::Button, this, &mesh, &renderData };
+		return IGMeshFactory::GenerateUI<IGCheckbox>(Label.c_str(), glm::vec4(1.0f), data);
+	}
+
 	IGCheckbox::IGCheckbox(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
 		:
 		IGElement(position, size, color)

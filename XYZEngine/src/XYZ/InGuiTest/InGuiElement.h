@@ -75,9 +75,9 @@ namespace XYZ {
 
 
 	protected:
-		IGReturnType ReturnType = IGReturnType::None;
+		IGReturnType  ReturnType = IGReturnType::None;
 		IGElementType ElementType = IGElementType::None;
-		int32_t		 ID = -1;
+		int32_t		  ID = -1;
 
 
 		friend class IG;
