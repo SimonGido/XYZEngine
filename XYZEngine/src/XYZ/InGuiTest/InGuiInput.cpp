@@ -30,7 +30,7 @@ namespace XYZ {
 					{
 						context.RenderData.Rebuild = true;
 						context.FrameData.MouseOffset = mousePosition - parent->Position;
-						pool.GetHierarchy().TraverseNode(id, [&](void* parent, void* child) -> bool {
+						pool.GetHierarchy().TraverseNodeChildren(id, [&](void* parent, void* child) -> bool {
 
 							IGElement* childElement = static_cast<IGElement*>(child);
 							if (!childElement->Active)
@@ -41,7 +41,7 @@ namespace XYZ {
 								e.Handled = true;
 								return true;
 							}
-							});
+						});
 					}
 				}
 			}
@@ -81,7 +81,7 @@ namespace XYZ {
 				if (Helper::Collide(parent->Position, parent->Size, mousePosition) && parent->Active)
 				{
 					context.RenderData.Rebuild = true;
-					pool.GetHierarchy().TraverseNode(id, [&](void* parent, void* child) -> bool {
+					pool.GetHierarchy().TraverseNodeChildren(id, [&](void* parent, void* child) -> bool {
 
 						IGElement* childElement = static_cast<IGElement*>(child);
 						if (!childElement->Active)

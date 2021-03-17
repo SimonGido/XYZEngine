@@ -25,7 +25,7 @@ namespace XYZ {
 		return Position;
 	}
 
-	IGReturnType IGElement::GetAndRestartReturnType()
+	IGReturnType IGElement::getAndRestartReturnType()
 	{
 		IGReturnType old = ReturnType;
 		ReturnType = IGReturnType::None;

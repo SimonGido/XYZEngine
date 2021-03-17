@@ -29,6 +29,7 @@ namespace XYZ {
 				if (Helper::Collide(minButtonPos, { IGWindow::PanelHeight, IGWindow::PanelHeight }, mousePosition))
 				{
 					Flags ^= IGWindow::Flags::Collapsed;
+					ActiveChildren = IS_SET(Flags, IGWindow::Flags::Collapsed);
 				}
 				else
 				{

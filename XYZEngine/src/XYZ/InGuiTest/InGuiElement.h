@@ -65,15 +65,21 @@ namespace XYZ {
 
 		IGStyle		Style;
 		IGElement*	Parent = nullptr;
-		bool		Active = false;
-
+		bool		Active = true;
+		bool	    ActiveChildren = true;
 
 		glm::vec2 GetAbsolutePosition() const;
-		IGReturnType GetAndRestartReturnType();
+		
+	private:
+		IGReturnType getAndRestartReturnType();
+
+
 	protected:
 		IGReturnType ReturnType = IGReturnType::None;
 		IGElementType ElementType = IGElementType::None;
 
+
+		friend class IG;
 	};
 
 	

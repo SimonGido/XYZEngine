@@ -14,7 +14,6 @@ namespace XYZ {
 	static size_t s_PoolHandle = 0;
 	static glm::vec2 s_MousePosition = glm::vec2(0.0f);
 
-	static uint32_t s_UICounter = 0;
 
 	void IG::Init()
 	{
@@ -33,15 +32,6 @@ namespace XYZ {
 		viewMatrix = glm::inverse(viewMatrix);
 
 
-		//for (auto& pool : s_Context->Allocator.GetPools())
-		//{
-		//	for (size_t i = 0; i < pool.Size(); ++i)
-		//		pool[i]->Active = false;
-		//}
-
-		if (s_UICounter != s_Context->FrameData.ActiveWidgetCount)
-			s_Context->RenderData.Rebuild = true;
-
 		if (s_Context->RenderData.Rebuild)
 		{
 			s_Context->Mesh.Quads.clear();
@@ -49,9 +39,6 @@ namespace XYZ {
 			s_Context->RenderData.RebuildMesh(s_Context->Allocator, s_Context->Mesh);
 		}
 		Renderer2D::BeginScene(viewProjectionMatrix * viewMatrix);	
-
-		s_Context->FrameData.ActiveWidgetCount = s_UICounter;
-		s_UICounter = 0;
 	}
 
 	void IG::EndFrame()
@@ -120,36 +107,15 @@ namespace XYZ {
 	IGReturnType IG::UI<IGWindow>(size_t handle, const char* label)
 	{
 		IGWindow* window = s_Context->Allocator.Get<IGWindow>(s_PoolHandle, handle);
-		window->Active = true;
-
-		//size_t oldQuadCount = s_Context->Mesh.Quads.size();
-		//
-		//IGMeshFactoryData data = { IGRenderData::Window, window, &s_Context->Mesh, &s_Context->RenderData };
-		//glm::vec2 genSize = IGMeshFactory::GenerateUI<IGWindow>(label, glm::vec4(1.0f), data);
-		//
-		//s_UICounter++;
-		return window->GetAndRestartReturnType();
+		return window->getAndRestartReturnType();
 	}
 
 	template <>
 	IGReturnType IG::UI<IGCheckbox>(size_t handle, const char* label, bool& checked)
 	{	
 		IGCheckbox* checkbox = s_Context->Allocator.Get<IGCheckbox>(s_PoolHandle, handle);
-		//size_t oldQuadCount = s_Context->Mesh.Quads.size();
-		//
-		//uint32_t subTextureIndex = IGRenderData::CheckboxChecked;
-		//if (!checked)
-		//	subTextureIndex = IGRenderData::CheckboxUnChecked;
-		//IGMeshFactoryData data = { subTextureIndex, checkbox, &s_Context->Mesh, &s_Context->RenderData };
-		//glm::vec2 genSize = IGMeshFactory::GenerateUI<IGCheckbox>(label, glm::vec4(1.0f), data);
-
-	
-		checkbox->Active = true;
-		s_UICounter++;
-		return checkbox->GetAndRestartReturnType();
+		return checkbox->getAndRestartReturnType();
 	}
-
-
 
 	IGContext& IG::getContext()
 	{
