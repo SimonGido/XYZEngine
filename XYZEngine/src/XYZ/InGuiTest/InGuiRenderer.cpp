@@ -12,26 +12,28 @@ namespace XYZ {
 				if (parent->Style.AutoPosition)
 				{
 					float xBorder = parent->Size.x - parent->Style.Layout.RightPadding;
-					float yBorder = parent->Size.y - parent->Style.Layout.BottomPadding;
+					float yBorder = parent->Size.y - parent->Style.Layout.BottomPadding - parent->Style.Layout.TopPadding - IGWindow::PanelHeight;
+					
 					if (offset.x + genSize.x > xBorder)
 					{
-						if (!parent->Style.NewRow)
+						if (offset.y + genSize.y > yBorder)
+						{
+							mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
+							return false;
+						}
+						else if (!parent->Style.NewRow)
 						{
 							offset.x += genSize.x + parent->Style.Layout.SpacingX;
 							mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
 							return false;
 						}
-						else if (offset.y + genSize.y < yBorder)
+						else
 						{
 							offset.x = parent->Style.Layout.LeftPadding;
 							offset.y += parent->Style.Layout.SpacingY + highestInRow;
-						}
-						else
-						{
-							mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
-							return false;
-						}
+						}						
 					}
+					
 				}
 				element->Position = offset;
 				offset.x += genSize.x + parent->Style.Layout.SpacingX;
@@ -59,11 +61,17 @@ namespace XYZ {
 				{
 					size_t oldQuadCount = mesh.Quads.size();
 					glm::vec2 genSize = childElement->GenerateQuads(mesh, data);
-					Helper::ResolvePosition(oldQuadCount, genSize, childElement, parentElement, mesh, offset, highestInRow);
-					if (genSize.y > highestInRow)
-						highestInRow = genSize.y;
+					if (Helper::ResolvePosition(oldQuadCount, genSize, childElement, parentElement, mesh, offset, highestInRow))
+					{
+						if (genSize.y > highestInRow)
+							highestInRow = genSize.y;
 
-					RebuildMeshRecursive(childElement, pool, mesh, data);
+						RebuildMeshRecursive(childElement, pool, mesh, data);
+					}
+					else
+					{
+						return true;
+					}
 				}
 				return false;
 			});
