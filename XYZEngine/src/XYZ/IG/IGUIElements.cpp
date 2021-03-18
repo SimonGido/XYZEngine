@@ -11,6 +11,25 @@ namespace XYZ {
 				pos.y + size.y >  point.y &&
 				pos.y < point.y);
 		}
+
+		static uint32_t FindNumCharacters(const char* source, float maxWidth, Ref<Font> font)
+		{
+			if (!source)
+				return 0;
+
+			float xCursor = 0.0f;
+			uint32_t counter = 0;
+			while (source[counter] != '\0')
+			{
+				auto& character = font->GetCharacter(source[counter]);
+				if (xCursor + (float)character.XAdvance >= maxWidth)
+					break;
+
+				xCursor += character.XAdvance;
+				counter++;
+			}
+			return counter;
+		}
 	}
 
 	IGWindow::IGWindow(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
@@ -237,17 +256,20 @@ namespace XYZ {
 	bool IGFloat::OnLeftClick(const glm::vec2& mousePosition)
 	{
 		Listen = false;
+		Color = IGRenderData::Colors[IGRenderData::DefaultColor];
 		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
 		{
 			ReturnType = IGReturnType::Clicked;
 			Listen = true;
+			Color = IGRenderData::Colors[IGRenderData::HooverColor];
 			return true;
 		}
 		return false;
 	}
 	bool IGFloat::OnMouseMove(const glm::vec2& mousePosition)
 	{
-		Color = IGRenderData::Colors[IGRenderData::DefaultColor];
+		if (!Listen)
+			Color = IGRenderData::Colors[IGRenderData::DefaultColor];
 		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
 		{
 			ReturnType = IGReturnType::Hoovered;
@@ -284,6 +306,11 @@ namespace XYZ {
 	}
 	glm::vec2 IGFloat::GenerateQuads(IGMesh& mesh, IGRenderData& renderData)
 	{
+		float textWidth = Size.x - Style.Layout.LeftPadding - Style.Layout.RightPadding;
+		size_t numChar = Helper::FindNumCharacters(Buffer, textWidth, renderData.Font);
+		Buffer[numChar] = '\0';
+		ModifiedIndex = numChar;
+
 		IGMeshFactoryData data = { IGRenderData::Slider, this, &mesh, &renderData };
 		return IGMeshFactory::GenerateUI<IGFloat>(Label.c_str(), Color, data);
 	}

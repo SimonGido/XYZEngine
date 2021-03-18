@@ -289,13 +289,15 @@ namespace XYZ {
 	{
 		IGFloat* floatInput = static_cast<IGFloat*>(data.Element);
 		glm::vec2 absolutePosition = data.Element->GetAbsolutePosition();
-
+		glm::vec2 textPosition = absolutePosition + glm::vec2(floatInput->Style.Layout.LeftPadding, 0.0f);
+		glm::vec2 textSize = data.Element->Size - glm::vec2(floatInput->Style.Layout.RightPadding + floatInput->Style.Layout.LeftPadding);
+		
 		glm::vec2 result = Helper::GenerateLabeledQuad(label, labelColor, data);
 
 		size_t oldQuadCount = data.Mesh->Quads.size();
 		glm::vec2 valueTextSize = Helper::GenerateTextMesh(
 			floatInput->GetBuffer(), data.RenderData->Font, labelColor,
-			absolutePosition, data.Element->Size, *data.Mesh,
+			textPosition, textSize, *data.Mesh,
 			IGRenderData::FontTextureID, 1000, data.ScissorIndex
 		);
 		Helper::CenterText(*data.Mesh, oldQuadCount, absolutePosition, floatInput->Size, valueTextSize, IGTextCenter::Left);
