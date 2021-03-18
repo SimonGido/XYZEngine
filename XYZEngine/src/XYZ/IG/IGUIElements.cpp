@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "IGUIElements.h"
+#include "XYZ/Core/KeyCodes.h"
 
 namespace XYZ {
 	namespace Helper {
@@ -11,6 +12,7 @@ namespace XYZ {
 				pos.y < point.y);
 		}
 	}
+
 	IGWindow::IGWindow(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
 		:
 		IGElement(position, size, color)
@@ -20,11 +22,13 @@ namespace XYZ {
 
 	bool IGWindow::OnLeftClick(const glm::vec2& mousePosition)
 	{
-		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
+		bool handled = false;
+		glm::vec2 absolutePosition = GetAbsolutePosition();
+		if (Helper::Collide(absolutePosition, Size, mousePosition))
 		{
 			ReturnType = IGReturnType::Clicked;
-			glm::vec2 minButtonPos = { Position.x + Size.x - IGWindow::PanelHeight, Position.y };
-			if (Position.y + IGWindow::PanelHeight >= mousePosition.y)
+			glm::vec2 minButtonPos = { absolutePosition.x + Size.x - IGWindow::PanelHeight, absolutePosition.y };
+			if (absolutePosition.y + IGWindow::PanelHeight >= mousePosition.y)
 			{
 				if (Helper::Collide(minButtonPos, { IGWindow::PanelHeight, IGWindow::PanelHeight }, mousePosition))
 				{
@@ -35,19 +39,34 @@ namespace XYZ {
 				{
 					Flags |= IGWindow::Flags::Moved;
 				}
-				return true;
+				handled = true;
 			}
 			else
 			{
-				// TODO: Resizing
+				if (mousePosition.x < absolutePosition.x + 5.0f) // Left resize
+				{
+					Flags |= LeftResize;
+					handled = true;
+				}
+				else if (mousePosition.x > absolutePosition.x + Size.x - 5.0f) // Right resize
+				{
+					Flags |= RightResize;
+					handled = true;
+				}
+				if (mousePosition.y > absolutePosition.y + Size.y - 5.0f) // Bottom
+				{
+					Flags |= BottomResize;
+					handled = true;
+				}
 			}
 		}
-		return false;
+		return handled;
 	}
 
 	bool IGWindow::OnLeftRelease(const glm::vec2& mousePosition)
 	{
-		Flags &= ~IGWindow::Flags::Moved;
+		Flags &= ~Moved;
+		Flags &= ~(LeftResize | RightResize | BottomResize);
 		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
 		{
 			ReturnType = IGReturnType::Released;
@@ -203,5 +222,74 @@ namespace XYZ {
 	{
 		IGMeshFactoryData data = { 0, this, &mesh, &renderData };
 		return IGMeshFactory::GenerateUI<IGText>(Text.c_str(), Color, data);
+	}
+
+	IGFloat::IGFloat(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
+		:
+		IGElement(position, size, color)
+	{
+		memset(Buffer, 0, BufferSize);
+		snprintf(Buffer, sizeof(Buffer), "%f", Value);
+		ModifiedIndex = 0;
+		while (Buffer[ModifiedIndex] != '\0')
+			ModifiedIndex++;
+	}
+	bool IGFloat::OnLeftClick(const glm::vec2& mousePosition)
+	{
+		Listen = false;
+		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
+		{
+			ReturnType = IGReturnType::Clicked;
+			Listen = true;
+			return true;
+		}
+		return false;
+	}
+	bool IGFloat::OnMouseMove(const glm::vec2& mousePosition)
+	{
+		Color = IGRenderData::Colors[IGRenderData::DefaultColor];
+		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
+		{
+			ReturnType = IGReturnType::Hoovered;
+			Color = IGRenderData::Colors[IGRenderData::HooverColor];
+			return true;
+		}
+		return false;
+	}
+	bool IGFloat::OnKeyType(char character)
+	{
+		if (Listen)
+		{		
+			if (character >= toascii('0') && character <= toascii('9') || character == toascii('.'))
+			{
+				Buffer[ModifiedIndex++] = character;
+				return true;
+			}
+		}
+		return false;
+	}
+	bool IGFloat::OnKeyPress(int32_t mode, int32_t key)
+	{
+		if (Listen)
+		{
+			if (key == ToUnderlying(KeyCode::KEY_BACKSPACE))
+			{
+				if (ModifiedIndex > 0)
+					ModifiedIndex--;
+				Buffer[ModifiedIndex] = '\0';
+				return true;
+			}
+		}
+		return false;
+	}
+	glm::vec2 IGFloat::GenerateQuads(IGMesh& mesh, IGRenderData& renderData)
+	{
+		IGMeshFactoryData data = { IGRenderData::Slider, this, &mesh, &renderData };
+		return IGMeshFactory::GenerateUI<IGFloat>(Label.c_str(), Color, data);
+	}
+
+	float IGFloat::GetValue() const
+	{
+		return (float)atof(Buffer);
 	}
 }

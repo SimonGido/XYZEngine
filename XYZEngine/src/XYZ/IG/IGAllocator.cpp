@@ -48,6 +48,10 @@ namespace XYZ {
 				destroy<IGText>(offset);
 				offset += sizeof(IGText);
 				break;
+			case XYZ::IGElementType::Float:
+				destroy<IGFloat>(offset);
+				offset += sizeof(IGFloat);
+				break;
 			case XYZ::IGElementType::None:
 				break;
 			default:
@@ -80,6 +84,9 @@ namespace XYZ {
 				break;
 			case XYZ::IGElementType::Text:
 				m_Capacity += sizeof(IGText);
+				break;
+			case XYZ::IGElementType::Float:
+				m_Capacity += sizeof(IGFloat);
 				break;
 			case XYZ::IGElementType::None:
 				break;
@@ -127,6 +134,13 @@ namespace XYZ {
 			case XYZ::IGElementType::Text:
 			{
 				auto [element, handle] = Allocate<IGText>(glm::vec2(0.0f), glm::vec2(50.0f, 35.0f), glm::vec4(1.0f));
+				element->Parent = parent;
+				allocateMemory(it.Children, element);
+				break;
+			}
+			case XYZ::IGElementType::Float:
+			{
+				auto [element, handle] = Allocate<IGFloat>(glm::vec2(0.0f), glm::vec2(50.0f, 35.0f), glm::vec4(1.0f));
 				element->Parent = parent;
 				allocateMemory(it.Children, element);
 				break;

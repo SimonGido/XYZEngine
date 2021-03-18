@@ -285,6 +285,25 @@ namespace XYZ {
 	}
 
 	template<>
+	glm::vec2 IGMeshFactory::GenerateUI<IGFloat>(const char* label, const glm::vec4& labelColor, const IGMeshFactoryData& data)
+	{
+		IGFloat* floatInput = static_cast<IGFloat*>(data.Element);
+		glm::vec2 absolutePosition = data.Element->GetAbsolutePosition();
+
+		glm::vec2 result = Helper::GenerateLabeledQuad(label, labelColor, data);
+
+		size_t oldQuadCount = data.Mesh->Quads.size();
+		glm::vec2 valueTextSize = Helper::GenerateTextMesh(
+			floatInput->GetBuffer(), data.RenderData->Font, labelColor,
+			absolutePosition, data.Element->Size, *data.Mesh,
+			IGRenderData::FontTextureID, 1000, data.ScissorIndex
+		);
+		Helper::CenterText(*data.Mesh, oldQuadCount, absolutePosition, floatInput->Size, valueTextSize, IGTextCenter::Left);
+
+		return result;
+	}
+
+	template<>
 	glm::vec2 IGMeshFactory::GenerateUI<IGText>(const char* text, const glm::vec4& labelColor, const IGMeshFactoryData& data)
 	{
 		size_t oldQuadCount = data.Mesh->Quads.size();

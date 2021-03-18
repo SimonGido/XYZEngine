@@ -106,7 +106,8 @@ namespace XYZ {
 					{IGElementType::Text, {}},
 					{IGElementType::Slider, {}},
 					{IGElementType::Slider, {}},
-				}
+					{IGElementType::Float, {}},		
+			}
 			},
 			{
 				IGElementType::Window,

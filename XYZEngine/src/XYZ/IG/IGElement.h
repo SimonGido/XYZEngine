@@ -35,6 +35,7 @@ namespace XYZ {
 		Checkbox,
 		Slider,
 		Text,
+		Float,
 		None
 	};
 
@@ -55,6 +56,8 @@ namespace XYZ {
 		virtual bool OnLeftClick(const glm::vec2& mousePosition) { return false; };
 		virtual bool OnLeftRelease(const glm::vec2& mousePosition) { return false; }
 		virtual bool OnMouseMove(const glm::vec2& mousePosition) { return false; };
+		virtual bool OnKeyType(char character) { return false; }
+		virtual bool OnKeyPress(int32_t mode, int32_t key) { return false; }
 		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData) { return glm::vec2(0.0f); };
 
 

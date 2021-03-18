@@ -74,6 +74,15 @@ namespace XYZ {
 		{
 			s_Context->Input.OnMouseMove((MouseMovedEvent&)event, *s_Context);
 		}
+		else if (event.GetEventType() == EventType::KeyTyped)
+		{
+			s_Context->Input.OnKeyType((KeyTypedEvent&)event, *s_Context);
+		}
+		else if (event.GetEventType() == EventType::KeyPressed)
+		{
+			s_Context->Input.OnKeyPress((KeyPressedEvent&)event, *s_Context);
+		}
+		
 		if (event.Handled)
 			s_Context->RenderData.Rebuild = true;
 	}

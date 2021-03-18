@@ -30,10 +30,7 @@ namespace XYZ {
 				{
 					result = OnMouseButtonPressRecursive(childElement, context, pool, mousePosition);
 					if (!result && childElement->OnLeftClick(mousePosition))
-					{
 						result = true;
-						return true;
-					}
 				}
 				return false;
 			});
@@ -118,10 +115,30 @@ namespace XYZ {
 					e.Handled = true;
 				
 				IGWindow* window = dynamic_cast<IGWindow*>(parentElement);
-				if (window && IS_SET(window->Flags, IGWindow::Moved))
+				if (window)
 				{
-					window->Position = mousePosition - context.FrameData.MouseOffset;
-					context.RenderData.Rebuild = true;
+					if (IS_SET(window->Flags, IGWindow::Moved))
+					{
+						window->Position = mousePosition - context.FrameData.MouseOffset;
+						context.RenderData.Rebuild = true;
+					}
+					else if (IS_SET(window->Flags, IGWindow::LeftResize))
+					{
+						window->Size.x = window->GetAbsolutePosition().x + window->Size.x - mousePosition.x;
+						window->Position.x = mousePosition.x;
+						context.RenderData.Rebuild = true;
+					}
+					else if (IS_SET(window->Flags, IGWindow::RightResize))
+					{
+						window->Size.x = mousePosition.x - window->GetAbsolutePosition().x;
+						context.RenderData.Rebuild = true;
+					}
+
+					if (IS_SET(window->Flags, IGWindow::BottomResize))
+					{
+						window->Size.y = mousePosition.y - window->GetAbsolutePosition().y;
+						context.RenderData.Rebuild = true;
+					}
 				}
 			}
 		}
@@ -130,5 +147,40 @@ namespace XYZ {
 	bool IGInput::OnMouseScroll(MouseScrollEvent& e, IGContext& context)
 	{
 		return false;
+	}
+
+	bool IGInput::OnKeyType(KeyTypedEvent& e, IGContext& context)
+	{
+		for (auto& pool : context.Allocator.GetPools())
+		{
+			pool.GetHierarchy().Traverse([&](void* parent, void* child) -> bool {
+
+				IGElement* childElement = static_cast<IGElement*>(child);
+				if (childElement->OnKeyType((char)e.GetKey()))
+				{
+					e.Handled = true;
+					return true;
+				}
+				return false;
+			});
+		}
+		return e.Handled;
+	}
+	bool IGInput::OnKeyPress(KeyPressedEvent& e, IGContext& context)
+	{
+		for (auto& pool : context.Allocator.GetPools())
+		{
+			pool.GetHierarchy().Traverse([&](void* parent, void* child) -> bool {
+
+				IGElement* childElement = static_cast<IGElement*>(child);
+				if (childElement->OnKeyPress(e.GetMod(), e.GetKey()))
+				{
+					e.Handled = true;
+					return true;
+				}
+				return false;
+			});
+		}
+		return e.Handled;
 	}
 }

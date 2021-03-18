@@ -12,5 +12,7 @@ namespace XYZ {
 		bool OnMouseButtonRelease(MouseButtonReleaseEvent& e, IGContext& context);
 		bool OnMouseMove(MouseMovedEvent& e, IGContext& context);
 		bool OnMouseScroll(MouseScrollEvent& e, IGContext& context);
+		bool OnKeyType(KeyTypedEvent& e, IGContext& context);
+		bool OnKeyPress(KeyPressedEvent& e, IGContext& context);
 	};
 }
