@@ -89,24 +89,44 @@ namespace XYZ {
 		m_SkinningEditorPanel.SetContext(robotSubTexture);
 
 
-		std::initializer_list<IGHierarchyElement> types{{
-			IGElementType::Window,
+		std::initializer_list<IGHierarchyElement> types{
 			{
-				{IGElementType::Checkbox, {}},
-				{IGElementType::Checkbox, {}},
-				{IGElementType::Checkbox, {}},
-				{IGElementType::Checkbox, {}},
-				{IGElementType::Checkbox, {}},
-				{IGElementType::Button, {}},
-				{IGElementType::Button, {}},
-				{IGElementType::Button, {}},
-				{IGElementType::Text, {}},
-				{IGElementType::Text, {}},
-				{IGElementType::Text, {}},
-				{IGElementType::Slider, {}},
-				{IGElementType::Slider, {}},
+				IGElementType::Window,
+				{
+					{IGElementType::Checkbox, {}},
+					{IGElementType::Checkbox, {}},
+					{IGElementType::Checkbox, {}},
+					{IGElementType::Checkbox, {}},
+					{IGElementType::Checkbox, {}},
+					{IGElementType::Button, {}},
+					{IGElementType::Button, {}},
+					{IGElementType::Button, {}},
+					{IGElementType::Text, {}},
+					{IGElementType::Text, {}},
+					{IGElementType::Text, {}},
+					{IGElementType::Slider, {}},
+					{IGElementType::Slider, {}},
+				}
+			},
+			{
+				IGElementType::Window,
+				{
+					{IGElementType::Checkbox, {}},
+					{IGElementType::Checkbox, {}},
+					{IGElementType::Checkbox, {}},
+					{IGElementType::Checkbox, {}},
+					{IGElementType::Checkbox, {}},
+					{IGElementType::Button, {}},
+					{IGElementType::Button, {}},
+					{IGElementType::Button, {}},
+					{IGElementType::Text, {}},
+					{IGElementType::Text, {}},
+					{IGElementType::Text, {}},
+					{IGElementType::Slider, {}},
+					{IGElementType::Slider, {}},
+				}
 			}
-		}};
+		};
 		m_HandleCount = IG::AllocateUI(
 			types, 
 			&m_Handles

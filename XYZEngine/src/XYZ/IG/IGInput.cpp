@@ -53,9 +53,10 @@ namespace XYZ {
 				{
 					IGElement* parentElement = static_cast<IGElement*>(pool.GetHierarchy().GetData(id));
 					bool result = OnMouseButtonPressRecursive(parentElement, context, pool, mousePosition);
-					if (!result && parentElement->OnLeftClick(mousePosition))
+					if (result || parentElement->OnLeftClick(mousePosition))
 					{
 						e.Handled = true;
+						return true;
 					}
 				}
 			}
@@ -113,7 +114,7 @@ namespace XYZ {
 			{
 				IGElement* parentElement = static_cast<IGElement*>(pool.GetHierarchy().GetData(id));
 				bool result = OnMouseMoveRecursive(parentElement, context, pool, mousePosition);
-				if (!result && parentElement->OnMouseMove(mousePosition))
+				if (result || parentElement->OnMouseMove(mousePosition))
 					e.Handled = true;
 				
 				IGWindow* window = dynamic_cast<IGWindow*>(parentElement);

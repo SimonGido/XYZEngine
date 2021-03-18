@@ -60,7 +60,7 @@ namespace XYZ {
 
 		void resolveHandles(const std::vector<IGHierarchyElement>& hierarchy, size_t**handles, size_t & counter);
 		void allocateMemory(const std::vector<IGHierarchyElement>& hierarchy, IGElement* parent);
-		void insertToHierarchy(int32_t parentID, const std::vector<IGHierarchyElement>& hierarchy, size_t& counter, uint32_t & iteration);
+		void insertToHierarchy(int32_t parentID, const std::vector<IGHierarchyElement>& hierarchy, size_t& counter, uint32_t iteration);
 		size_t getSize(const std::vector<IGHierarchyElement>& hierarchy);
 
 	private:

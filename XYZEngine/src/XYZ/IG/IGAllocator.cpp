@@ -18,8 +18,7 @@ namespace XYZ {
 		allocateMemory(hierarchy, nullptr);
 
 		counter = 0;
-		uint32_t iterCounter = 0;
-		insertToHierarchy(-1, hierarchy, counter, iterCounter);
+		insertToHierarchy(-1, hierarchy, counter, 0);
 	}
 
 	IGPool::~IGPool()
@@ -140,7 +139,7 @@ namespace XYZ {
 		}
 	}
 
-	void IGPool::insertToHierarchy(int32_t parentID, const std::vector<IGHierarchyElement>& hierarchy, size_t& counter, uint32_t & iteration)
+	void IGPool::insertToHierarchy(int32_t parentID, const std::vector<IGHierarchyElement>& hierarchy, size_t& counter, uint32_t iteration)
 	{
 		bool firstIteration = !iteration;
 		for (auto& it : hierarchy)
@@ -160,7 +159,7 @@ namespace XYZ {
 			}
 			if (firstIteration)
 				m_RootElements.push_back(newParentID);
-			insertToHierarchy(newParentID, it.Children, counter, ++iteration);
+			insertToHierarchy(newParentID, it.Children, counter, iteration + 1);
 		}
 		if (parentID != -1)
 			m_Hierarchy.ReverseNodeChildren(parentID);
