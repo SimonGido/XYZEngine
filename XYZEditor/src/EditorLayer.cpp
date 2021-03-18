@@ -99,6 +99,12 @@ namespace XYZ {
 				{IGElementType::Checkbox, {}},
 				{IGElementType::Button, {}},
 				{IGElementType::Button, {}},
+				{IGElementType::Button, {}},
+				{IGElementType::Text, {}},
+				{IGElementType::Text, {}},
+				{IGElementType::Text, {}},
+				{IGElementType::Slider, {}},
+				{IGElementType::Slider, {}},
 			}
 		}};
 		m_HandleCount = IG::AllocateUI(

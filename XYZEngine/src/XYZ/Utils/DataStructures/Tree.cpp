@@ -113,6 +113,20 @@ namespace XYZ {
         m_NodeCount--;
         m_Nodes.Erase(index);
     }
+    void Tree::ReverseNodeChildren(int32_t node)
+    {
+        int32_t current = m_Nodes[node].FirstChild;
+        int32_t next = TreeNode::sc_Invalid;
+        int32_t prev = TreeNode::sc_Invalid;
+        while (current != TreeNode::sc_Invalid)
+        {
+            next = m_Nodes[current].NextSibling;
+            m_Nodes[current].NextSibling = prev;
+            prev = current;
+            current = next;
+        }
+        m_Nodes[node].FirstChild = prev;
+    }
     void Tree::Traverse(const std::function<bool(void*, void*)>& callback) const
     {
         if (m_Root == TreeNode::sc_Invalid)
@@ -159,6 +173,7 @@ namespace XYZ {
             child = m_Nodes[child].NextSibling;
         }
     }
+
     
     void* Tree::GetParentData(int32_t index)
     {
