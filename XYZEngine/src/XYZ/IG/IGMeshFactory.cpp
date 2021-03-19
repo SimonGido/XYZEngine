@@ -84,7 +84,7 @@ namespace XYZ {
 				glm::vec4 charTexCoord = {
 					(float)(character.X0Coord) / (float)(font->GetWidth()), (float)(character.Y0Coord) / (float)(font->GetHeight()),
 					(float)(character.X1Coord) / (float)(font->GetWidth()), (float)(character.Y1Coord) / (float)(font->GetHeight())
-				};		
+				};
 
 				mesh.Quads.push_back({ color, charTexCoord, glm::vec3{charPosition, 0.0f}, charSize, textureID, scissorIndex });
 
@@ -136,7 +136,7 @@ namespace XYZ {
 		}
 
 		static glm::vec2 GetMaxSize(const glm::vec2& firstMinPosition, const glm::vec2& firstMaxPosition, const glm::vec2& secondMinPosition, const glm::vec2& secondMaxPosition)
-		{		
+		{
 			glm::vec2 minPosition = firstMinPosition;
 			if (minPosition.x > secondMinPosition.x)
 				minPosition.x = secondMinPosition.x;
@@ -159,10 +159,10 @@ namespace XYZ {
 
 			glm::vec2 absolutePosition = data.Element->GetAbsolutePosition();
 			Helper::GenerateQuad(
-				*data.Mesh, data.Element->Color, 
+				*data.Mesh, data.Element->Color,
 				data.Element->Size, absolutePosition,
-				data.RenderData->SubTextures[data.SubTextureIndex], 
-				IGRenderData::TextureID, 
+				data.RenderData->SubTextures[data.SubTextureIndex],
+				IGRenderData::TextureID,
 				data.ScissorIndex
 			);
 
@@ -175,8 +175,8 @@ namespace XYZ {
 				textPosition, textSize, *data.Mesh, IGRenderData::FontTextureID, 1000, data.ScissorIndex
 			);
 
-			Helper::CenterText(*data.Mesh, oldQuadCount, 
-				data.Element->Position, data.Element->Size, 
+			Helper::CenterText(*data.Mesh, oldQuadCount,
+				data.Element->Position, data.Element->Size,
 				genTextSize, data.Element->Style.LabelCenter
 			);
 
@@ -186,17 +186,17 @@ namespace XYZ {
 				textPosition - glm::vec2(0.0f, genTextSize.y),
 				textPosition + glm::vec2(genTextSize.x, 0.0f)
 			);
-		}		
+		}
 
-		static glm::vec2 GenerateLabeledQuad(const char* label, 
+		static glm::vec2 GenerateLabeledQuad(const char* label,
 			const glm::vec4& labelColor,
 			const glm::vec4& color,
-			const glm::vec2& position, 
-			const glm::vec2& size, 
+			const glm::vec2& position,
+			const glm::vec2& size,
 			const glm::vec2& textSize,
 			uint32_t subTextureIndex,
 			uint32_t scissorIndex,
-			IGMesh*  mesh,
+			IGMesh* mesh,
 			IGRenderData* renderData,
 			IGTextCenter center)
 		{
@@ -204,10 +204,10 @@ namespace XYZ {
 				return size;
 
 			Helper::GenerateQuad(
-				*mesh, color, 
+				*mesh, color,
 				size, position,
-				renderData->SubTextures[subTextureIndex], 
-				IGRenderData::TextureID, 
+				renderData->SubTextures[subTextureIndex],
+				IGRenderData::TextureID,
 				scissorIndex
 			);
 
@@ -219,8 +219,8 @@ namespace XYZ {
 				textPosition, textSize, *mesh, IGRenderData::FontTextureID, 1000, scissorIndex
 			);
 
-			Helper::CenterText(*mesh, oldQuadCount, 
-				position, size, 
+			Helper::CenterText(*mesh, oldQuadCount,
+				position, size,
 				genTextSize, center
 			);
 
@@ -230,7 +230,7 @@ namespace XYZ {
 				textPosition - glm::vec2(0.0f, genTextSize.y),
 				textPosition + glm::vec2(genTextSize.x, 0.0f)
 			);
-		}		
+		}
 	}
 
 	template<>
@@ -240,12 +240,12 @@ namespace XYZ {
 			return data.Element->Size;
 
 		IGWindow* window = static_cast<IGWindow*>(data.Element);
-		
+
 		glm::vec2 absolutePosition = window->GetAbsolutePosition();
 		if (!IS_SET(window->Flags, IGWindow::Collapsed))
 		{
 			if (window->Style.RenderFrame)
-				Helper::GenerateFrame(*data.Mesh,absolutePosition, window->Size, window->FrameColor);
+				Helper::GenerateFrame(*data.Mesh, absolutePosition, window->Size, window->FrameColor);
 
 			data.Mesh->Quads.push_back({
 				window->Color,
@@ -279,8 +279,8 @@ namespace XYZ {
 			textPosition, textSize, *data.Mesh, IGRenderData::FontTextureID, 1000, data.ScissorIndex
 		);
 
-		Helper::CenterText(*data.Mesh, oldQuadCount, window->Position, 
-			{ window->Size.x, IGWindow::PanelHeight }, 
+		Helper::CenterText(*data.Mesh, oldQuadCount, window->Position,
+			{ window->Size.x, IGWindow::PanelHeight },
 			genTextSize, window->Style.LabelCenter
 		);
 		return window->Size;
@@ -303,7 +303,7 @@ namespace XYZ {
 	glm::vec2 IGMeshFactory::GenerateUI<IGSlider>(const char* label, const glm::vec4& labelColor, const IGMeshFactoryData& data)
 	{
 		IGSlider* slider = static_cast<IGSlider*>(data.Element);
-		
+
 		glm::vec2 absolutePosition = data.Element->GetAbsolutePosition();
 		glm::vec2 handleSize = glm::vec2(data.Element->Size.y, data.Element->Size.y);
 		glm::vec2 handlePosition = absolutePosition + glm::vec2((slider->Size.x - slider->Size.y) * slider->Value, 0.0f);
@@ -312,9 +312,9 @@ namespace XYZ {
 		int ret = snprintf(value, sizeof(value), "%f", slider->Value);
 
 		glm::vec2 result = Helper::GenerateLabeledQuad(label, labelColor, data);
-		Helper::GenerateQuad(*data.Mesh, slider->Color, 
-			handleSize, handlePosition, 
-			data.RenderData->SubTextures[IGRenderData::SliderHandle], 
+		Helper::GenerateQuad(*data.Mesh, slider->Color,
+			handleSize, handlePosition,
+			data.RenderData->SubTextures[IGRenderData::SliderHandle],
 			IGRenderData::TextureID, data.ScissorIndex
 		);
 
@@ -324,7 +324,7 @@ namespace XYZ {
 			IGRenderData::FontTextureID, 1000, data.ScissorIndex
 		);
 		Helper::CenterText(*data.Mesh, oldQuadCount, absolutePosition, slider->Size, valueTextSize, IGTextCenter::Middle);
-		
+
 		return result;
 	}
 
@@ -335,7 +335,7 @@ namespace XYZ {
 		glm::vec2 absolutePosition = data.Element->GetAbsolutePosition();
 		glm::vec2 textPosition = absolutePosition + glm::vec2(floatInput->Style.Layout.LeftPadding, 0.0f);
 		glm::vec2 textSize = data.Element->Size - glm::vec2(floatInput->Style.Layout.RightPadding + floatInput->Style.Layout.LeftPadding);
-		
+
 		glm::vec2 result = Helper::GenerateLabeledQuad(label, labelColor, data);
 
 		size_t oldQuadCount = data.Mesh->Quads.size();
@@ -398,20 +398,47 @@ namespace XYZ {
 			}
 			if (open)
 			{
+				childItem->Position = absolutePosition + offset;
 				glm::vec2 genSize = Helper::GenerateLabeledQuad(
-					childItem->Label.c_str(), labelColor, childItem->Color,
-					absolutePosition + offset, data.Element->Size, textSize, data.SubTextureIndex,
+					childItem->Label.c_str(), childItem->Color, childItem->Color,
+					childItem->Position, data.Element->Size, textSize, data.SubTextureIndex,
 					data.ScissorIndex, data.Mesh, data.RenderData, IGTextCenter::Left
 				);
 				offset.y += genSize.y;
 			}
 			else
-				return true;
+				childItem->Open = false;
+
 
 			currentDepth = nodes[childItem->ID].Depth;
 			return false;
-		});
-		
+			});
+
 		return offset;
+	}
+	template <>
+	glm::vec2 IGMeshFactory::GenerateUI<IGGroup>(const char* label, const glm::vec4& labelColor, const IGMeshFactoryData& data)
+	{
+		IGGroup* group = static_cast<IGGroup*>(data.Element);
+		glm::vec2 absolutePosition = group->GetAbsolutePosition();
+
+		glm::vec2 result = Helper::GenerateLabeledQuad(
+			nullptr, labelColor, group->Color,
+			absolutePosition, { group->Size.x, IGGroup::PanelHeight }, group->Size, data.SubTextureIndex,
+			data.ScissorIndex, data.Mesh, data.RenderData, IGTextCenter::Left
+		);
+
+
+		uint32_t subTextureIndex = IGRenderData::RightArrow;
+		if (group->Open)
+			subTextureIndex = IGRenderData::DownArrow;
+
+		Helper::GenerateLabeledQuad(
+			label, labelColor, group->Color,
+			absolutePosition, { IGGroup::PanelHeight, IGGroup::PanelHeight }, group->Size, subTextureIndex,
+			data.ScissorIndex, data.Mesh, data.RenderData, IGTextCenter::Left
+		);
+
+		return result;
 	}
 }

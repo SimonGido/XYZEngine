@@ -115,7 +115,8 @@ namespace XYZ {
 
 			std::string Label;
 			int32_t		ID = -1;
-			bool		Open = true;
+			bool		Open = false;
+			glm::vec2	Position = glm::vec2(0.0f);
 			glm::vec4	Color = glm::vec4(1.0f);
 		};
 
@@ -141,4 +142,18 @@ namespace XYZ {
 		friend class IGMeshFactory;
 	};
 
+	class IGGroup : public IGElement
+	{
+	public:
+		IGGroup(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
+
+		virtual bool OnLeftClick(const glm::vec2& mousePosition) override;
+		virtual bool OnMouseMove(const glm::vec2& mousePosition) override;
+		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData) override;
+
+		bool Open = false;
+
+
+		static constexpr float PanelHeight = 25.0f;
+	};
 }

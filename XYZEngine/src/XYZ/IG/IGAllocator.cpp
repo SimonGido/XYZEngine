@@ -32,6 +32,10 @@ namespace XYZ {
 				destroy<IGWindow>(offset);
 				offset += sizeof(IGWindow);
 				break;
+			case XYZ::IGElementType::Group:
+				destroy<IGGroup>(offset);
+				offset += sizeof(IGGroup);
+				break;
 			case XYZ::IGElementType::Button:
 				destroy<IGButton>(offset);
 				offset += sizeof(IGButton);
@@ -77,6 +81,9 @@ namespace XYZ {
 			case XYZ::IGElementType::Window:
 				m_Capacity += sizeof(IGWindow);
 				break;
+			case XYZ::IGElementType::Group:
+				m_Capacity += sizeof(IGGroup);
+				break;
 			case XYZ::IGElementType::Button:		
 				m_Capacity += sizeof(IGButton);
 				break;
@@ -113,6 +120,13 @@ namespace XYZ {
 			case XYZ::IGElementType::Window:
 			{
 				auto [element, handle] = Allocate<IGWindow>(glm::vec2(0.0f), glm::vec2(400.0f,500.0f), glm::vec4(1.0f));
+				element->Parent = parent;
+				allocateMemory(it.Children, element);
+				break;
+			}
+			case XYZ::IGElementType::Group:
+			{
+				auto [element, handle] = Allocate<IGGroup>(glm::vec2(0.0f), glm::vec2(350.0f,450.0f), glm::vec4(1.0f));
 				element->Parent = parent;
 				allocateMemory(it.Children, element);
 				break;

@@ -330,10 +330,27 @@ namespace XYZ {
 
 	bool IGTree::OnLeftClick(const glm::vec2& mousePosition)
 	{
+		Hierarchy.Traverse([&](void* parent, void* child) ->bool {
+			IGTreeItem* childItem = static_cast<IGTreeItem*>(child);
+			if (Helper::Collide(childItem->Position, Size, mousePosition))
+			{
+				childItem->Open = !childItem->Open;
+			}
+			return false;
+		});
 		return false;
 	}
 	bool IGTree::OnMouseMove(const glm::vec2& mousePosition)
 	{
+		Hierarchy.Traverse([&](void* parent, void* child) ->bool {
+			IGTreeItem* childItem = static_cast<IGTreeItem*>(child);
+			childItem->Color = IGRenderData::Colors[IGRenderData::DefaultColor];
+			if (Helper::Collide(childItem->Position, Size, mousePosition))
+			{
+				childItem->Color = IGRenderData::Colors[IGRenderData::HooverColor];
+			}
+			return false;
+		});
 		return false;
 	}
 	glm::vec2 IGTree::GenerateQuads(IGMesh& mesh, IGRenderData& renderData)
@@ -392,5 +409,29 @@ namespace XYZ {
 		{
 			XYZ_LOG_WARN("Item with the name: ", name, "does not exist");
 		}
+	}
+	IGGroup::IGGroup(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
+		: IGElement(position, size, color)
+	{
+		ActiveChildren = Open;
+	}
+	bool IGGroup::OnLeftClick(const glm::vec2& mousePosition)
+	{
+		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
+		{
+			Open = !Open;
+			ActiveChildren = Open;
+			return true;
+		}
+		return false;
+	}
+	bool IGGroup::OnMouseMove(const glm::vec2& mousePosition)
+	{
+		return false;
+	}
+	glm::vec2 IGGroup::GenerateQuads(IGMesh& mesh, IGRenderData& renderData)
+	{
+		IGMeshFactoryData data = { IGRenderData::Button, this, &mesh, &renderData };
+		return IGMeshFactory::GenerateUI<IGGroup>(Label.c_str(), Color, data);
 	}
 }

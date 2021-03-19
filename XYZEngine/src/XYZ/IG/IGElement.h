@@ -31,6 +31,7 @@ namespace XYZ {
 	enum class IGElementType
 	{
 		Window,
+		Group,
 		Button,
 		Checkbox,
 		Slider,
