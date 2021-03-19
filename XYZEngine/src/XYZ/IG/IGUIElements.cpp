@@ -281,7 +281,7 @@ namespace XYZ {
 	bool IGFloat::OnKeyType(char character)
 	{
 		if (Listen)
-		{		
+		{
 			if (character >= toascii('0') && character <= toascii('9') || character == toascii('.'))
 			{
 				Buffer[ModifiedIndex++] = character;
@@ -318,5 +318,79 @@ namespace XYZ {
 	float IGFloat::GetValue() const
 	{
 		return (float)atof(Buffer);
+	}
+
+
+	IGTree::IGTree(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
+		:
+		IGElement(position, size, color),
+		Pool(sizeof(IGTreeItem)* NumberOfItemsPerBlockInPool)
+	{
+	}
+
+	bool IGTree::OnLeftClick(const glm::vec2& mousePosition)
+	{
+		return false;
+	}
+	bool IGTree::OnMouseMove(const glm::vec2& mousePosition)
+	{
+		return false;
+	}
+	glm::vec2 IGTree::GenerateQuads(IGMesh& mesh, IGRenderData& renderData)
+	{
+		IGMeshFactoryData data = { IGRenderData::RightArrow, this, &mesh, &renderData };
+		return IGMeshFactory::GenerateUI<IGTree>(Label.c_str(), Color, data);
+	}
+	IGTree::IGTreeItem& IGTree::GetItem(const char* name)
+	{
+		auto it = NameIDMap.find(name);
+		XYZ_ASSERT(it != NameIDMap.end(), "");
+		
+		return *static_cast<IGTreeItem*>(Hierarchy.GetData(it->second));
+	}
+	void IGTree::AddItem(const char* name, const char* parent, const IGTreeItem& item)
+	{
+		auto it = NameIDMap.find(name);
+		if (it == NameIDMap.end())
+		{
+			IGTreeItem* ptr = Pool.Allocate<IGTreeItem>(item.Label);
+			if (parent)
+			{
+				auto parentIt = NameIDMap.find(parent);
+				if (parentIt != NameIDMap.end())
+				{
+					ptr->ID = Hierarchy.Insert(ptr, parentIt->second);
+					NameIDMap[name] = ptr->ID;
+				}
+				else
+				{
+					XYZ_LOG_WARN("Parent item with the name: ", parent, "does not exist");
+				}
+			}
+			else
+			{
+				ptr->ID = Hierarchy.Insert(ptr);
+				NameIDMap[name] = ptr->ID;
+			}
+		}
+		else
+		{
+			XYZ_LOG_WARN("Item with the name: ", name, "already exists");
+		}
+	}
+	void IGTree::RemoveItem(const char* name)
+	{
+		auto it = NameIDMap.find(name);
+		if (it != NameIDMap.end())
+		{
+			IGTreeItem* ptr = static_cast<IGTreeItem*>(Hierarchy.GetData(it->second));
+			Pool.Deallocate(ptr);
+			Hierarchy.Remove(it->second);
+			NameIDMap.erase(it);
+		}
+		else
+		{
+			XYZ_LOG_WARN("Item with the name: ", name, "does not exist");
+		}
 	}
 }

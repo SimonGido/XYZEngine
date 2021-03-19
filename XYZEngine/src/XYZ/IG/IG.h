@@ -29,16 +29,10 @@ namespace XYZ {
 		static IGReturnType UI(size_t handle, Args&& ...args);
 
 		template <typename T>
-		static T& GetUI(size_t handle)
+		static T& GetUI(size_t poolHandle,size_t handle)
 		{
 			getContext().RenderData.Rebuild = true;
-			return getContext().Allocator.Get<T>(s_PoolHandle, handle);
-		}
-
-		template <typename T>
-		static const T& GetUI(size_t handle)
-		{
-			return getContext().Allocator.Get<T>(s_PoolHandle, handle);
+			return *getContext().Allocator.Get<T>(poolHandle, handle);
 		}
 
 		static void End(size_t handle);

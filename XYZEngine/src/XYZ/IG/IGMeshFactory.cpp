@@ -187,6 +187,50 @@ namespace XYZ {
 				textPosition + glm::vec2(genTextSize.x, 0.0f)
 			);
 		}		
+
+		static glm::vec2 GenerateLabeledQuad(const char* label, 
+			const glm::vec4& labelColor,
+			const glm::vec4& color,
+			const glm::vec2& position, 
+			const glm::vec2& size, 
+			const glm::vec2& textSize,
+			uint32_t subTextureIndex,
+			uint32_t scissorIndex,
+			IGMesh*  mesh,
+			IGRenderData* renderData,
+			IGTextCenter center)
+		{
+			if (!renderData->Rebuild)
+				return size;
+
+			Helper::GenerateQuad(
+				*mesh, color, 
+				size, position,
+				renderData->SubTextures[subTextureIndex], 
+				IGRenderData::TextureID, 
+				scissorIndex
+			);
+
+			size_t oldQuadCount = mesh->Quads.size();
+			glm::vec2 textPosition = { std::floor(position.x + size.x), std::floor(position.y) };
+
+			glm::vec2 genTextSize = Helper::GenerateTextMesh(
+				label, renderData->Font, labelColor,
+				textPosition, textSize, *mesh, IGRenderData::FontTextureID, 1000, scissorIndex
+			);
+
+			Helper::CenterText(*mesh, oldQuadCount, 
+				position, size, 
+				genTextSize, center
+			);
+
+			return Helper::GetMaxSize(
+				position,
+				position + size,
+				textPosition - glm::vec2(0.0f, genTextSize.y),
+				textPosition + glm::vec2(genTextSize.x, 0.0f)
+			);
+		}		
 	}
 
 	template<>
@@ -316,5 +360,58 @@ namespace XYZ {
 
 		Helper::CenterText(*data.Mesh, oldQuadCount, absolutePosition, data.Element->Size, textSize, IGTextCenter::Middle);
 		return data.Element->Size;
+	}
+
+	template <>
+	glm::vec2 IGMeshFactory::GenerateUI<IGTree>(const char* text, const glm::vec4& labelColor, const IGMeshFactoryData& data)
+	{
+		constexpr float nodeOffset = 25.0f;
+
+		IGTree* tree = static_cast<IGTree*>(data.Element);
+		glm::vec2 absolutePosition = tree->GetAbsolutePosition();
+		glm::vec2 textSize = tree->Size;
+		if (tree->Parent)
+			textSize.x = tree->Parent->Size.x - tree->Parent->Style.Layout.LeftPadding - tree->Parent->Style.Layout.RightPadding;
+
+		auto& nodes = tree->Hierarchy.GetFlatNodes();
+		uint32_t currentDepth = 0;
+		glm::vec2 offset = glm::vec2(0.0f);
+		tree->Hierarchy.Traverse([&](void* parent, void* child) ->bool {
+
+			IGTree::IGTreeItem* childItem = static_cast<IGTree::IGTreeItem*>(child);
+			if (nodes[childItem->ID].Depth > currentDepth)
+			{
+				offset.x += nodeOffset;
+				textSize.x -= nodeOffset;
+			}
+			while (nodes[childItem->ID].Depth < currentDepth)
+			{
+				offset.x -= nodeOffset;
+				textSize.x += nodeOffset;
+				currentDepth--;
+			}
+			bool open = true;
+			if (parent)
+			{
+				IGTree::IGTreeItem* parentItem = static_cast<IGTree::IGTreeItem*>(parent);
+				open = parentItem->Open;
+			}
+			if (open)
+			{
+				glm::vec2 genSize = Helper::GenerateLabeledQuad(
+					childItem->Label.c_str(), labelColor, childItem->Color,
+					absolutePosition + offset, data.Element->Size, textSize, data.SubTextureIndex,
+					data.ScissorIndex, data.Mesh, data.RenderData, IGTextCenter::Left
+				);
+				offset.y += genSize.y;
+			}
+			else
+				return true;
+
+			currentDepth = nodes[childItem->ID].Depth;
+			return false;
+		});
+		
+		return offset;
 	}
 }

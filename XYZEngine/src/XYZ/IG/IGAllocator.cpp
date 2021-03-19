@@ -52,6 +52,10 @@ namespace XYZ {
 				destroy<IGFloat>(offset);
 				offset += sizeof(IGFloat);
 				break;
+			case XYZ::IGElementType::Tree:
+				destroy<IGTree>(offset);
+				offset += sizeof(IGTree);
+				break;
 			case XYZ::IGElementType::None:
 				break;
 			default:
@@ -87,6 +91,9 @@ namespace XYZ {
 				break;
 			case XYZ::IGElementType::Float:
 				m_Capacity += sizeof(IGFloat);
+				break;
+			case XYZ::IGElementType::Tree:
+				m_Capacity += sizeof(IGTree);
 				break;
 			case XYZ::IGElementType::None:
 				break;
@@ -141,6 +148,13 @@ namespace XYZ {
 			case XYZ::IGElementType::Float:
 			{
 				auto [element, handle] = Allocate<IGFloat>(glm::vec2(0.0f), glm::vec2(50.0f, 35.0f), glm::vec4(1.0f));
+				element->Parent = parent;
+				allocateMemory(it.Children, element);
+				break;
+			}
+			case XYZ::IGElementType::Tree:
+			{
+				auto [element, handle] = Allocate<IGTree>(glm::vec2(0.0f), glm::vec2(25.0f), glm::vec4(1.0f));
 				element->Parent = parent;
 				allocateMemory(it.Children, element);
 				break;

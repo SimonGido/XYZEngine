@@ -106,25 +106,13 @@ namespace XYZ {
 					{IGElementType::Text, {}},
 					{IGElementType::Slider, {}},
 					{IGElementType::Slider, {}},
-					{IGElementType::Float, {}},		
+					{IGElementType::Float, {}}
 			}
 			},
 			{
 				IGElementType::Window,
 				{
-					{IGElementType::Checkbox, {}},
-					{IGElementType::Checkbox, {}},
-					{IGElementType::Checkbox, {}},
-					{IGElementType::Checkbox, {}},
-					{IGElementType::Checkbox, {}},
-					{IGElementType::Button, {}},
-					{IGElementType::Button, {}},
-					{IGElementType::Button, {}},
-					{IGElementType::Text, {}},
-					{IGElementType::Text, {}},
-					{IGElementType::Text, {}},
-					{IGElementType::Slider, {}},
-					{IGElementType::Slider, {}},
+					{IGElementType::Tree, {}}
 				}
 			}
 		};
@@ -132,6 +120,12 @@ namespace XYZ {
 			types, 
 			&m_Handles
 		).second;
+
+		IG::GetUI<IGTree>(0, m_Handles[16]).AddItem("1", nullptr, IGTree::IGTreeItem("zajko"));
+		IG::GetUI<IGTree>(0, m_Handles[16]).AddItem("2", nullptr, IGTree::IGTreeItem("opica"));
+		IG::GetUI<IGTree>(0, m_Handles[16]).AddItem("3", nullptr, IGTree::IGTreeItem("leopard"));
+		IG::GetUI<IGTree>(0, m_Handles[16]).AddItem("4", "1", IGTree::IGTreeItem("drak"));
+		IG::GetUI<IGTree>(0, m_Handles[16]).AddItem("5", "1", IGTree::IGTreeItem("pekac"));
 	}	
 
 

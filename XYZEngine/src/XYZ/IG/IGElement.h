@@ -36,6 +36,7 @@ namespace XYZ {
 		Slider,
 		Text,
 		Float,
+		Tree,
 		None
 	};
 
