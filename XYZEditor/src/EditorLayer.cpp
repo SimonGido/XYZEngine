@@ -112,6 +112,25 @@ namespace XYZ {
 							{IGElementType::Float, {}},
 						}
 					},
+					{
+						IGElementType::Group, 
+						{
+							{IGElementType::Checkbox, {}},
+							{IGElementType::Checkbox, {}},
+							{IGElementType::Checkbox, {}},
+							{IGElementType::Checkbox, {}},
+							{IGElementType::Checkbox, {}},
+							{IGElementType::Button, {}},
+							{IGElementType::Button, {}},
+							{IGElementType::Button, {}},
+							{IGElementType::Text, {}},
+							{IGElementType::Text, {}},
+							{IGElementType::Text, {}},
+							{IGElementType::Slider, {}},
+							{IGElementType::Slider, {}},
+							{IGElementType::Float, {}},
+						}
+					},
 				}
 			},
 			{
@@ -126,15 +145,17 @@ namespace XYZ {
 			&m_Handles
 		).second;
 
-		IG::GetUI<IGTree>(0, m_Handles[17]).AddItem("1", nullptr, IGTree::IGTreeItem("zajko"));
-		IG::GetUI<IGTree>(0, m_Handles[17]).AddItem("2", nullptr, IGTree::IGTreeItem("opica"));
-		IG::GetUI<IGTree>(0, m_Handles[17]).AddItem("3", nullptr, IGTree::IGTreeItem("leopard"));
-		IG::GetUI<IGTree>(0, m_Handles[17]).AddItem("4", "1", IGTree::IGTreeItem("drak"));
-		IG::GetUI<IGTree>(0, m_Handles[17]).AddItem("5", "1", IGTree::IGTreeItem("pekac"));
-		IG::GetUI<IGTree>(0, m_Handles[17]).AddItem("6", "2", IGTree::IGTreeItem("drak"));
-		IG::GetUI<IGTree>(0, m_Handles[17]).AddItem("7", "6", IGTree::IGTreeItem("pekac"));
-		IG::GetUI<IGTree>(0, m_Handles[17]).AddItem("8", "3", IGTree::IGTreeItem("drak"));
-		IG::GetUI<IGTree>(0, m_Handles[17]).AddItem("9", "8", IGTree::IGTreeItem("pekac"));
+
+		IG::GetUI<IGGroup>(0, m_Handles[1]).Open = false;
+		IG::GetUI<IGTree>(0, m_Handles[32]).AddItem("1", nullptr, IGTree::IGTreeItem("zajko"));
+		IG::GetUI<IGTree>(0, m_Handles[32]).AddItem("2", nullptr, IGTree::IGTreeItem("opica"));
+		IG::GetUI<IGTree>(0, m_Handles[32]).AddItem("3", nullptr, IGTree::IGTreeItem("leopard"));
+		IG::GetUI<IGTree>(0, m_Handles[32]).AddItem("4", "1", IGTree::IGTreeItem("drak"));
+		IG::GetUI<IGTree>(0, m_Handles[32]).AddItem("5", "1", IGTree::IGTreeItem("pekac"));
+		IG::GetUI<IGTree>(0, m_Handles[32]).AddItem("6", "2", IGTree::IGTreeItem("drak"));
+		IG::GetUI<IGTree>(0, m_Handles[32]).AddItem("7", "6", IGTree::IGTreeItem("pekac"));
+		IG::GetUI<IGTree>(0, m_Handles[32]).AddItem("8", "3", IGTree::IGTreeItem("drak"));
+		IG::GetUI<IGTree>(0, m_Handles[32]).AddItem("9", "8", IGTree::IGTreeItem("pekac"));
 	}	
 
 

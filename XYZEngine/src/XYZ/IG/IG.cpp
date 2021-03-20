@@ -31,13 +31,8 @@ namespace XYZ {
 		glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f));
 		viewMatrix = glm::inverse(viewMatrix);
 
-
-		if (s_Context->RenderData.Rebuild)
-		{
-			s_Context->Mesh.Quads.clear();
-			s_Context->Mesh.Lines.clear();
-			s_Context->RenderData.RebuildMesh(s_Context->Allocator, s_Context->Mesh);
-		}
+	
+		s_Context->RenderData.RebuildMesh(s_Context->Allocator, s_Context->Mesh);
 		Renderer2D::BeginScene(viewProjectionMatrix * viewMatrix);	
 	}
 
@@ -57,7 +52,6 @@ namespace XYZ {
 		Renderer2D::FlushLines();
 		Renderer2D::EndScene();
 		Renderer::WaitAndRender();
-		s_Context->RenderData.Rebuild = false;
 	}
 
 	void IG::OnEvent(Event& event)
@@ -103,7 +97,10 @@ namespace XYZ {
 
 	std::pair<size_t, size_t> IG::AllocateUI(const std::initializer_list<IGHierarchyElement>& hierarchy, size_t** handles)
 	{
-		return s_Context->Allocator.CreatePool(hierarchy, handles);
+		auto result = s_Context->Allocator.CreatePool(hierarchy, handles);
+		s_Context->RenderData.Rebuild = true;
+		s_Context->RenderData.RebuildMesh(s_Context->Allocator, s_Context->Mesh);
+		return result;
 	}
 
 	void IG::End(size_t handle)

@@ -151,7 +151,7 @@ namespace XYZ {
 		virtual bool OnMouseMove(const glm::vec2& mousePosition) override;
 		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData) override;
 
-		bool Open = false;
+		bool Open = true;
 
 
 		static constexpr float PanelHeight = 25.0f;

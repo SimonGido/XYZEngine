@@ -417,7 +417,7 @@ namespace XYZ {
 	}
 	bool IGGroup::OnLeftClick(const glm::vec2& mousePosition)
 	{
-		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
+		if (Helper::Collide(GetAbsolutePosition(), { Size.x, PanelHeight}, mousePosition))
 		{
 			Open = !Open;
 			ActiveChildren = Open;
@@ -431,6 +431,7 @@ namespace XYZ {
 	}
 	glm::vec2 IGGroup::GenerateQuads(IGMesh& mesh, IGRenderData& renderData)
 	{
+		ActiveChildren = Open;
 		IGMeshFactoryData data = { IGRenderData::Button, this, &mesh, &renderData };
 		return IGMeshFactory::GenerateUI<IGGroup>(Label.c_str(), Color, data);
 	}

@@ -24,9 +24,11 @@ namespace XYZ {
 			pool.GetHierarchy().TraverseNodeChildren(parentElement->GetID(), [&](void* parent, void* child) -> bool {
 
 				IGElement* childElement = static_cast<IGElement*>(child);
-				if (childElement->Active)
+				if (childElement->Active && childElement->ListenToInput)
 				{
-					result = OnMouseButtonPressRecursive(childElement, context, pool, mousePosition);
+					bool tmp  = OnMouseButtonPressRecursive(childElement, context, pool, mousePosition);	 
+					if (!result)
+						result = tmp;
 					if (!result && childElement->OnLeftClick(mousePosition))
 						result = true;
 				}
@@ -42,7 +44,6 @@ namespace XYZ {
 		{
 			auto [mx, my] = Input::GetMousePosition();
 			glm::vec2 mousePosition = { mx ,my };
-			context.RenderData.Rebuild = true;
 			for (auto& pool : context.Allocator.GetPools())
 			{
 				for (auto id : pool.GetRootElementIDs())
@@ -89,7 +90,7 @@ namespace XYZ {
 			pool.GetHierarchy().TraverseNodeChildren(parentElement->GetID(), [&](void* parent, void* child) -> bool {
 
 				IGElement* childElement = static_cast<IGElement*>(child);
-				if (childElement->Active)
+				if (childElement->Active && childElement->ListenToInput)
 				{
 					childElement->OnMouseMove(mousePosition);
 					OnMouseMoveRecursive(childElement, context, pool, mousePosition);
@@ -120,24 +121,24 @@ namespace XYZ {
 					if (IS_SET(window->Flags, IGWindow::Moved))
 					{
 						window->Position = mousePosition - context.FrameData.MouseOffset;
-						context.RenderData.Rebuild = true;
+						e.Handled = true;
 					}
 					else if (IS_SET(window->Flags, IGWindow::LeftResize))
 					{
 						window->Size.x = window->GetAbsolutePosition().x + window->Size.x - mousePosition.x;
 						window->Position.x = mousePosition.x;
-						context.RenderData.Rebuild = true;
+						e.Handled = true;
 					}
 					else if (IS_SET(window->Flags, IGWindow::RightResize))
 					{
 						window->Size.x = mousePosition.x - window->GetAbsolutePosition().x;
-						context.RenderData.Rebuild = true;
+						e.Handled = true;
 					}
 
 					if (IS_SET(window->Flags, IGWindow::BottomResize))
 					{
 						window->Size.y = mousePosition.y - window->GetAbsolutePosition().y;
-						context.RenderData.Rebuild = true;
+						e.Handled = true;
 					}
 				}
 			}

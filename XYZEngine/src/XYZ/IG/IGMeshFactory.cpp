@@ -432,7 +432,7 @@ namespace XYZ {
 		uint32_t subTextureIndex = IGRenderData::RightArrow;
 		if (group->Open)
 			subTextureIndex = IGRenderData::DownArrow;
-
+		
 		Helper::GenerateLabeledQuad(
 			label, labelColor, group->Color,
 			absolutePosition, { IGGroup::PanelHeight, IGGroup::PanelHeight }, group->Size, subTextureIndex,

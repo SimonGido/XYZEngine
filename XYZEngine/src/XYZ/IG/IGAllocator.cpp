@@ -126,7 +126,7 @@ namespace XYZ {
 			}
 			case XYZ::IGElementType::Group:
 			{
-				auto [element, handle] = Allocate<IGGroup>(glm::vec2(0.0f), glm::vec2(350.0f,450.0f), glm::vec4(1.0f));
+				auto [element, handle] = Allocate<IGGroup>(glm::vec2(0.0f), glm::vec2(350.0f,200.0f), glm::vec4(1.0f));
 				element->Parent = parent;
 				allocateMemory(it.Children, element);
 				break;

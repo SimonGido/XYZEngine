@@ -73,6 +73,7 @@ namespace XYZ {
 		IGElement*	Parent = nullptr;
 		bool		Active = true;
 		bool	    ActiveChildren = true;
+		bool		ListenToInput = true;
 
 		glm::vec2 GetAbsolutePosition() const;
 		int32_t GetID() const { return ID; }

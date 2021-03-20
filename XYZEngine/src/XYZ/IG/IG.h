@@ -32,7 +32,10 @@ namespace XYZ {
 		static T& GetUI(size_t poolHandle,size_t handle)
 		{
 			getContext().RenderData.Rebuild = true;
-			return *getContext().Allocator.Get<T>(poolHandle, handle);
+			IGElement* element = getContext().Allocator.Get<IGElement>(poolHandle, handle);
+			T* result = dynamic_cast<T*>(element);
+			XYZ_ASSERT(result, "");
+			return *result;
 		}
 
 		static void End(size_t handle);

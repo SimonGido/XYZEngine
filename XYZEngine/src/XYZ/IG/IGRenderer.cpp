@@ -5,7 +5,7 @@
 
 namespace XYZ {
 	namespace Helper {
-		static bool ResolvePosition(size_t oldQuadCount, const glm::vec2& genSize, IGElement* element, IGElement* parent, IGMesh& mesh, glm::vec2& offset, float highestInRow)
+		static bool ResolvePosition(size_t oldQuadCount, const glm::vec2& genSize, IGElement* element, IGElement* parent, IGMesh& mesh, glm::vec2& offset, float& highestInRow, const glm::vec2& rootBorder)
 		{
 			if (parent)
 			{
@@ -31,11 +31,27 @@ namespace XYZ {
 						{
 							offset.x = parent->Style.Layout.LeftPadding;
 							offset.y += parent->Style.Layout.SpacingY + highestInRow;
-						}						
-					}
-					
+							highestInRow = 0.0f;
+							// It is generally bigger than xBorder erase it
+							if (offset.x + genSize.x > xBorder)
+							{
+								mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
+								return false;
+							}
+							for (size_t i = oldQuadCount; i < mesh.Quads.size(); ++i)
+							{
+								mesh.Quads[i].Position.x += offset.x - element->Position.x;
+								mesh.Quads[i].Position.y += offset.y - element->Position.y;
+							}
+						}
+					}		
 				}
 				element->Position = offset;
+				if (element->GetAbsolutePosition().y + genSize.y > rootBorder.y)
+				{
+					mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
+					return false;
+				}
 				offset.x += genSize.x + parent->Style.Layout.SpacingX;
 			}
 			
@@ -43,40 +59,7 @@ namespace XYZ {
 		}
 	}
 
-	static void RebuildMeshRecursive(IGElement* parentElement, IGPool& pool, IGMesh& mesh, IGRenderData& data)
-	{
-		if (parentElement->Active && parentElement->ActiveChildren)
-		{
-			glm::vec2 offset = {
-				parentElement->Style.Layout.LeftPadding,
-				parentElement->Style.Layout.TopPadding + IGWindow::PanelHeight
-			};
-			float highestInRow = 0.0f;
-
-			pool.GetHierarchy().TraverseNodeChildren(parentElement->GetID(), [&](void* parent, void* child) -> bool {
-
-				parentElement = static_cast<IGElement*>(parent);
-				IGElement* childElement = static_cast<IGElement*>(child);
-				if (childElement->Active)
-				{
-					size_t oldQuadCount = mesh.Quads.size();
-					glm::vec2 genSize = childElement->GenerateQuads(mesh, data);
-					if (Helper::ResolvePosition(oldQuadCount, genSize, childElement, parentElement, mesh, offset, highestInRow))
-					{
-						if (genSize.y > highestInRow)
-							highestInRow = genSize.y;
-
-						RebuildMeshRecursive(childElement, pool, mesh, data);
-					}
-					else
-					{
-						return true;
-					}
-				}
-				return false;
-			});
-		}	
-	}
+	
 
 	glm::vec4 IGRenderData::Colors[IGRenderData::NumColors];
 
@@ -113,16 +96,72 @@ namespace XYZ {
 		Colors[HooverColor] = glm::vec4(0.5f, 0.7f, 1.0f, 1.0f);
 	}
 
+
+	static glm::vec2 RebuildMeshRecursive(IGElement* parentElement, IGPool& pool, IGMesh& mesh, IGRenderData& data, const glm::vec2& rootBorder)
+	{
+		if (parentElement->Active && parentElement->ActiveChildren)
+		{			
+			glm::vec2 offset = {
+				parentElement->Style.Layout.LeftPadding,
+				parentElement->Style.Layout.TopPadding + IGWindow::PanelHeight
+			};
+			glm::vec2 oldOffset = offset;
+			float highestInRow = 0.0f;
+
+			bool outOfRange = false;
+			pool.GetHierarchy().TraverseNodeChildren(parentElement->GetID(), [&](void* parent, void* child) -> bool {
+				
+				IGElement* childElement = static_cast<IGElement*>(child);
+				if (childElement->Active)
+				{
+					// Previous element was out of range and erased , turn off listening to input
+					if (outOfRange)
+					{
+						childElement->ListenToInput = false;
+						return false;
+					}
+					size_t oldQuadCount = mesh.Quads.size();
+					glm::vec2 genSize = childElement->GenerateQuads(mesh, data);
+					if (Helper::ResolvePosition(oldQuadCount, genSize, childElement, parentElement, mesh, offset, highestInRow, rootBorder))
+					{
+						childElement->ListenToInput = true;
+						if (genSize.y > highestInRow)
+							highestInRow = genSize.y;
+
+						offset += RebuildMeshRecursive(childElement, pool, mesh, data, rootBorder);
+					}
+					else
+					{
+						outOfRange = true;
+						childElement->ListenToInput = false;
+					}
+				}
+				return false;
+			});
+			glm::vec2 result = offset - oldOffset;
+			result.y += highestInRow;
+			return result;
+		}	
+		return glm::vec2(0.0f);
+	}
+
 	void IGRenderData::RebuildMesh(IGAllocator& allocator, IGMesh& mesh)
 	{
-		for (auto& pool : allocator.GetPools())
-		{		
-			for (int32_t id : pool.GetRootElementIDs())
+		if (Rebuild)
+		{
+			mesh.Quads.clear();
+			mesh.Lines.clear();
+
+			for (auto& pool : allocator.GetPools())
 			{
-				IGElement* parentElement = static_cast<IGElement*>(pool.GetHierarchy().GetData(id));
-				parentElement->GenerateQuads(mesh, *this);
-				RebuildMeshRecursive(parentElement, pool, mesh, *this);
+				for (int32_t id : pool.GetRootElementIDs())
+				{
+					IGElement* parentElement = static_cast<IGElement*>(pool.GetHierarchy().GetData(id));
+					parentElement->GenerateQuads(mesh, *this);
+					RebuildMeshRecursive(parentElement, pool, mesh, *this, parentElement->Position + parentElement->Size);
+				}
 			}
+			Rebuild = false;
 		}
 	}
 }
