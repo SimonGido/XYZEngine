@@ -10,9 +10,9 @@ namespace XYZ {
 	public:
 		IGWindow(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
 
-		virtual bool OnLeftClick(const glm::vec2& mousePosition) override;
-		virtual bool OnLeftRelease(const glm::vec2& mousePosition) override;
-		virtual bool OnMouseMove(const glm::vec2& mousePosition) override;
+		virtual bool OnLeftClick(const glm::vec2& mousePosition, bool& handled) override;
+		virtual bool OnLeftRelease(const glm::vec2& mousePosition, bool& handled) override;
+		virtual bool OnMouseMove(const glm::vec2& mousePosition, bool& handled) override;
 		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData) override;
 
 		enum Flags
@@ -37,8 +37,8 @@ namespace XYZ {
 	public:
 		IGButton(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
 
-		virtual bool OnLeftClick(const glm::vec2& mousePosition) override;
-		virtual bool OnMouseMove(const glm::vec2& mousePosition) override;
+		virtual bool OnLeftClick(const glm::vec2& mousePosition, bool& handled) override;
+		virtual bool OnMouseMove(const glm::vec2& mousePosition, bool& handled) override;
 		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData) override;
 	};
 	class IGCheckbox : public IGElement
@@ -46,8 +46,8 @@ namespace XYZ {
 	public:
 		IGCheckbox(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
 
-		virtual bool OnLeftClick(const glm::vec2& mousePosition) override;
-		virtual bool OnMouseMove(const glm::vec2& mousePosition) override;
+		virtual bool OnLeftClick(const glm::vec2& mousePosition, bool& handled) override;
+		virtual bool OnMouseMove(const glm::vec2& mousePosition, bool& handled) override;
 		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData) override;
 
 		bool Checked = false;
@@ -57,9 +57,9 @@ namespace XYZ {
 	public:
 		IGSlider(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
 
-		virtual bool OnLeftClick(const glm::vec2& mousePosition) override;
-		virtual bool OnLeftRelease(const glm::vec2& mousePosition) override;
-		virtual bool OnMouseMove(const glm::vec2& mousePosition) override;
+		virtual bool OnLeftClick(const glm::vec2& mousePosition, bool& handled) override;
+		virtual bool OnLeftRelease(const glm::vec2& mousePosition, bool& handled) override;
+		virtual bool OnMouseMove(const glm::vec2& mousePosition, bool& handled) override;
 		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData) override;
 
 
@@ -73,8 +73,8 @@ namespace XYZ {
 	public:
 		IGText(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
 	
-		virtual bool OnLeftClick(const glm::vec2& mousePosition) override;
-		virtual bool OnMouseMove(const glm::vec2& mousePosition) override;
+		virtual bool OnLeftClick(const glm::vec2& mousePosition, bool& handled) override;
+		virtual bool OnMouseMove(const glm::vec2& mousePosition, bool& handled) override;
 		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData) override;
 
 		std::string Text = "Text";
@@ -85,10 +85,10 @@ namespace XYZ {
 	public:
 		IGFloat(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
 
-		virtual bool OnLeftClick(const glm::vec2& mousePosition) override;
-		virtual bool OnMouseMove(const glm::vec2& mousePosition) override;
-		virtual bool OnKeyType(char character) override;
-		virtual bool OnKeyPress(int32_t mode, int32_t key) override;
+		virtual bool OnLeftClick(const glm::vec2& mousePosition, bool& handled) override;
+		virtual bool OnMouseMove(const glm::vec2& mousePosition, bool& handled) override;
+		virtual bool OnKeyType(char character, bool& handled) override;
+		virtual bool OnKeyPress(int32_t mode, int32_t key, bool& handled) override;
 		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData) override;
 
 		
@@ -123,8 +123,8 @@ namespace XYZ {
 	public:
 		IGTree(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
 
-		virtual bool OnLeftClick(const glm::vec2& mousePosition) override;
-		virtual bool OnMouseMove(const glm::vec2& mousePosition) override;
+		virtual bool OnLeftClick(const glm::vec2& mousePosition, bool& handled) override;
+		virtual bool OnMouseMove(const glm::vec2& mousePosition, bool& handled) override;
 		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData) override;
 
 		void AddItem(const char* name, const char* parent, const IGTreeItem& item);
@@ -147,12 +147,12 @@ namespace XYZ {
 	public:
 		IGGroup(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
 
-		virtual bool OnLeftClick(const glm::vec2& mousePosition) override;
-		virtual bool OnMouseMove(const glm::vec2& mousePosition) override;
+		virtual bool OnLeftClick(const glm::vec2& mousePosition, bool& handled) override;
+		virtual bool OnMouseMove(const glm::vec2& mousePosition, bool& handled) override;
 		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData) override;
 
 		bool Open = true;
-
+		bool AdjustToParent = true;
 
 		static constexpr float PanelHeight = 25.0f;
 	};

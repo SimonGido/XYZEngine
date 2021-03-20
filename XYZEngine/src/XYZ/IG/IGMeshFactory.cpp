@@ -390,18 +390,32 @@ namespace XYZ {
 				textSize.x += nodeOffset;
 				currentDepth--;
 			}
+			childItem->Position = absolutePosition + offset;
+
+
 			bool open = true;
 			if (parent)
 			{
 				IGTree::IGTreeItem* parentItem = static_cast<IGTree::IGTreeItem*>(parent);
 				open = parentItem->Open;
+				if (open)
+				{
+					glm::vec3 lineStart = glm::vec3(parentItem->Position.x + data.Element->Size.x / 2.0f, parentItem->Position.y + data.Element->Size.y, 0.0f);
+					glm::vec3 lineEnd = glm::vec3(childItem->Position.x, childItem->Position.y + data.Element->Size.y / 2.0f, 0.0f);
+					glm::vec3 lineMiddle = glm::vec3(lineStart.x, lineEnd.y, 0.0f);
+
+					data.Mesh->Lines.push_back({ glm::vec4(1.0f), lineStart, lineMiddle });
+					data.Mesh->Lines.push_back({ glm::vec4(1.0f), lineMiddle, lineEnd });
+				}
 			}
 			if (open)
 			{
-				childItem->Position = absolutePosition + offset;
+				uint32_t subTextureIndex = IGRenderData::RightArrow;
+				if (childItem->Open)
+					subTextureIndex = IGRenderData::DownArrow;
 				glm::vec2 genSize = Helper::GenerateLabeledQuad(
 					childItem->Label.c_str(), childItem->Color, childItem->Color,
-					childItem->Position, data.Element->Size, textSize, data.SubTextureIndex,
+					childItem->Position, data.Element->Size, textSize, subTextureIndex,
 					data.ScissorIndex, data.Mesh, data.RenderData, IGTextCenter::Left
 				);
 				offset.y += genSize.y;

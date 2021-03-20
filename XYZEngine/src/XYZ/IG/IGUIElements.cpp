@@ -39,11 +39,10 @@ namespace XYZ {
 		ElementType = IGElementType::Window;
 	}
 
-	bool IGWindow::OnLeftClick(const glm::vec2& mousePosition)
+	bool IGWindow::OnLeftClick(const glm::vec2& mousePosition, bool& handled)
 	{
-		bool handled = false;
 		glm::vec2 absolutePosition = GetAbsolutePosition();
-		if (Helper::Collide(absolutePosition, Size, mousePosition))
+		if (!handled && Helper::Collide(absolutePosition, Size, mousePosition))
 		{
 			ReturnType = IGReturnType::Clicked;
 			glm::vec2 minButtonPos = { absolutePosition.x + Size.x - IGWindow::PanelHeight, absolutePosition.y };
@@ -82,7 +81,7 @@ namespace XYZ {
 		return handled;
 	}
 
-	bool IGWindow::OnLeftRelease(const glm::vec2& mousePosition)
+	bool IGWindow::OnLeftRelease(const glm::vec2& mousePosition, bool& handled)
 	{
 		Flags &= ~Moved;
 		Flags &= ~(LeftResize | RightResize | BottomResize);
@@ -94,7 +93,7 @@ namespace XYZ {
 		return false;
 	}
 
-	bool IGWindow::OnMouseMove(const glm::vec2& mousePosition)
+	bool IGWindow::OnMouseMove(const glm::vec2& mousePosition, bool& handled)
 	{
 		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
 		{
@@ -115,16 +114,17 @@ namespace XYZ {
 		IGElement(position, size, color)
 	{}
 
-	bool IGButton::OnLeftClick(const glm::vec2& mousePosition)
+	bool IGButton::OnLeftClick(const glm::vec2& mousePosition, bool& handled)
 	{
-		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
+		if (!handled && Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
 		{
+			handled = true;
 			ReturnType = IGReturnType::Clicked;
 			return true;
 		}
 		return false;
 	}
-	bool IGButton::OnMouseMove(const glm::vec2& mousePosition)
+	bool IGButton::OnMouseMove(const glm::vec2& mousePosition, bool& handled)
 	{
 		Color = IGRenderData::Colors[IGRenderData::DefaultColor];
 		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
@@ -146,17 +146,18 @@ namespace XYZ {
 		IGElement(position, size, color)
 	{
 	}
-	bool IGCheckbox::OnLeftClick(const glm::vec2& mousePosition)
+	bool IGCheckbox::OnLeftClick(const glm::vec2& mousePosition, bool& handled)
 	{
-		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
+		if (!handled && Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
 		{
 			ReturnType = IGReturnType::Clicked;
 			Checked = !Checked;
+			handled = true;
 			return true;
 		}
 		return false;
 	}
-	bool IGCheckbox::OnMouseMove(const glm::vec2& mousePosition)
+	bool IGCheckbox::OnMouseMove(const glm::vec2& mousePosition, bool& handled)
 	{
 		Color = IGRenderData::Colors[IGRenderData::DefaultColor];
 		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
@@ -181,22 +182,23 @@ namespace XYZ {
 		IGElement(position, size, color)
 	{
 	}
-	bool IGSlider::OnLeftClick(const glm::vec2& mousePosition)
+	bool IGSlider::OnLeftClick(const glm::vec2& mousePosition, bool& handled)
 	{
-		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
+		if (!handled && Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
 		{
 			ReturnType = IGReturnType::Clicked;
 			Modified = true;
+			handled = true;
 			return true;
 		}
 		return false;
 	}
-	bool IGSlider::OnLeftRelease(const glm::vec2& mousePosition)
+	bool IGSlider::OnLeftRelease(const glm::vec2& mousePosition, bool& handled)
 	{
 		Modified = false;
 		return false;
 	}
-	bool IGSlider::OnMouseMove(const glm::vec2& mousePosition)
+	bool IGSlider::OnMouseMove(const glm::vec2& mousePosition, bool& handled)
 	{
 		Color = IGRenderData::Colors[IGRenderData::DefaultColor];
 		if (Modified)
@@ -222,11 +224,11 @@ namespace XYZ {
 		IGElement(position, size, color)
 	{
 	}
-	bool IGText::OnLeftClick(const glm::vec2& mousePosition)
+	bool IGText::OnLeftClick(const glm::vec2& mousePosition, bool& handled)
 	{
 		return false;
 	}
-	bool IGText::OnMouseMove(const glm::vec2& mousePosition)
+	bool IGText::OnMouseMove(const glm::vec2& mousePosition, bool& handled)
 	{
 		Color = IGRenderData::Colors[IGRenderData::DefaultColor];
 		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
@@ -253,20 +255,21 @@ namespace XYZ {
 		while (Buffer[ModifiedIndex] != '\0')
 			ModifiedIndex++;
 	}
-	bool IGFloat::OnLeftClick(const glm::vec2& mousePosition)
+	bool IGFloat::OnLeftClick(const glm::vec2& mousePosition, bool& handled)
 	{
 		Listen = false;
 		Color = IGRenderData::Colors[IGRenderData::DefaultColor];
-		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
+		if (!handled && Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
 		{
-			ReturnType = IGReturnType::Clicked;
 			Listen = true;
+			handled = true;
+			ReturnType = IGReturnType::Clicked;
 			Color = IGRenderData::Colors[IGRenderData::HooverColor];
 			return true;
 		}
 		return false;
 	}
-	bool IGFloat::OnMouseMove(const glm::vec2& mousePosition)
+	bool IGFloat::OnMouseMove(const glm::vec2& mousePosition, bool& handled)
 	{
 		if (!Listen)
 			Color = IGRenderData::Colors[IGRenderData::DefaultColor];
@@ -278,10 +281,11 @@ namespace XYZ {
 		}
 		return false;
 	}
-	bool IGFloat::OnKeyType(char character)
+	bool IGFloat::OnKeyType(char character, bool& handled)
 	{
-		if (Listen)
+		if (Listen && !handled)
 		{
+			handled = true;
 			if (character >= toascii('0') && character <= toascii('9') || character == toascii('.'))
 			{
 				Buffer[ModifiedIndex++] = character;
@@ -290,15 +294,16 @@ namespace XYZ {
 		}
 		return false;
 	}
-	bool IGFloat::OnKeyPress(int32_t mode, int32_t key)
+	bool IGFloat::OnKeyPress(int32_t mode, int32_t key, bool& handled)
 	{
-		if (Listen)
+		if (Listen && !handled)
 		{
 			if (key == ToUnderlying(KeyCode::KEY_BACKSPACE))
 			{
 				if (ModifiedIndex > 0)
 					ModifiedIndex--;
 				Buffer[ModifiedIndex] = '\0';
+				handled = true;
 				return true;
 			}
 		}
@@ -328,19 +333,21 @@ namespace XYZ {
 	{
 	}
 
-	bool IGTree::OnLeftClick(const glm::vec2& mousePosition)
+	bool IGTree::OnLeftClick(const glm::vec2& mousePosition, bool& handled)
 	{
 		Hierarchy.Traverse([&](void* parent, void* child) ->bool {
 			IGTreeItem* childItem = static_cast<IGTreeItem*>(child);
-			if (Helper::Collide(childItem->Position, Size, mousePosition))
+			if (!handled && Helper::Collide(childItem->Position, Size, mousePosition))
 			{
 				childItem->Open = !childItem->Open;
+				handled = true;
+				return true;
 			}
 			return false;
 		});
 		return false;
 	}
-	bool IGTree::OnMouseMove(const glm::vec2& mousePosition)
+	bool IGTree::OnMouseMove(const glm::vec2& mousePosition, bool& handled)
 	{
 		Hierarchy.Traverse([&](void* parent, void* child) ->bool {
 			IGTreeItem* childItem = static_cast<IGTreeItem*>(child);
@@ -415,22 +422,27 @@ namespace XYZ {
 	{
 		ActiveChildren = Open;
 	}
-	bool IGGroup::OnLeftClick(const glm::vec2& mousePosition)
+	bool IGGroup::OnLeftClick(const glm::vec2& mousePosition, bool& handled)
 	{
-		if (Helper::Collide(GetAbsolutePosition(), { Size.x, PanelHeight}, mousePosition))
+		if (!handled && Helper::Collide(GetAbsolutePosition(), { Size.x, PanelHeight}, mousePosition))
 		{
 			Open = !Open;
 			ActiveChildren = Open;
+			handled = true;
 			return true;
 		}
 		return false;
 	}
-	bool IGGroup::OnMouseMove(const glm::vec2& mousePosition)
+	bool IGGroup::OnMouseMove(const glm::vec2& mousePosition, bool& handled)
 	{
 		return false;
 	}
 	glm::vec2 IGGroup::GenerateQuads(IGMesh& mesh, IGRenderData& renderData)
 	{
+		if (AdjustToParent && Parent)
+		{
+			Size.x = Parent->Size.x - Parent->Style.Layout.LeftPadding - Parent->Style.Layout.RightPadding;
+		}
 		ActiveChildren = Open;
 		IGMeshFactoryData data = { IGRenderData::Button, this, &mesh, &renderData };
 		return IGMeshFactory::GenerateUI<IGGroup>(Label.c_str(), Color, data);

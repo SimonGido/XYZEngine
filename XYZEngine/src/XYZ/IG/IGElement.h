@@ -55,11 +55,12 @@ namespace XYZ {
 		IGElement(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
 		virtual ~IGElement() = default;
 
-		virtual bool OnLeftClick(const glm::vec2& mousePosition) { return false; };
-		virtual bool OnLeftRelease(const glm::vec2& mousePosition) { return false; }
-		virtual bool OnMouseMove(const glm::vec2& mousePosition) { return false; };
-		virtual bool OnKeyType(char character) { return false; }
-		virtual bool OnKeyPress(int32_t mode, int32_t key) { return false; }
+		virtual bool OnLeftClick(const glm::vec2& mousePosition, bool& handled) { return false; };
+		virtual bool OnLeftRelease(const glm::vec2& mousePosition, bool& handled) { return false; }
+		virtual bool OnMouseMove(const glm::vec2& mousePosition, bool& handled) { return false; };
+		virtual bool OnKeyType(char character, bool& handled) { return false; }
+
+		virtual bool OnKeyPress(int32_t mode, int32_t key, bool& handled) { return false; }
 		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData) { return glm::vec2(0.0f); };
 
 

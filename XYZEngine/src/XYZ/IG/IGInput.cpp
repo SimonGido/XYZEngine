@@ -16,7 +16,7 @@ namespace XYZ {
 		}
 	}
 
-	static bool OnMouseButtonPressRecursive(IGElement* parentElement, IGContext& context, IGPool& pool, const glm::vec2& mousePosition)
+	static bool OnMouseButtonPressRecursive(IGElement* parentElement, IGContext& context, IGPool& pool, const glm::vec2& mousePosition, bool& handled)
 	{
 		bool result = false;
 		if (parentElement->Active && parentElement->ActiveChildren)
@@ -26,16 +26,13 @@ namespace XYZ {
 				IGElement* childElement = static_cast<IGElement*>(child);
 				if (childElement->Active && childElement->ListenToInput)
 				{
-					bool tmp  = OnMouseButtonPressRecursive(childElement, context, pool, mousePosition);	 
-					if (!result)
-						result = tmp;
-					if (!result && childElement->OnLeftClick(mousePosition))
-						result = true;
+					OnMouseButtonPressRecursive(childElement, context, pool, mousePosition, handled);	 
+					childElement->OnLeftClick(mousePosition, handled);
 				}
 				return false;
 			});
 		}	
-		return result;
+		return handled;
 	}
 
 	bool IGInput::OnMouseButtonPress(MouseButtonPressEvent& e, IGContext& context)
@@ -49,11 +46,10 @@ namespace XYZ {
 				for (auto id : pool.GetRootElementIDs())
 				{
 					IGElement* parentElement = static_cast<IGElement*>(pool.GetHierarchy().GetData(id));			
-					bool result = OnMouseButtonPressRecursive(parentElement, context, pool, mousePosition);
-					if (result || parentElement->OnLeftClick(mousePosition))
+					bool result = OnMouseButtonPressRecursive(parentElement, context, pool, mousePosition, e.Handled);
+					if (result || parentElement->OnLeftClick(mousePosition, e.Handled))
 					{
 						context.FrameData.MouseOffset = mousePosition - parentElement->Position;
-						e.Handled = true;
 						return true;
 					}
 				}
@@ -75,16 +71,16 @@ namespace XYZ {
 					if (!element->Active)
 						continue;
 
-					element->OnLeftRelease(mousePosition);
+					element->OnLeftRelease(mousePosition, e.Handled);
 				}
 			}
 		}
 		return false;
 	}
 
-	static bool OnMouseMoveRecursive(IGElement* parentElement, IGContext& context, IGPool& pool, const glm::vec2& mousePosition)
+	static bool OnMouseMoveRecursive(IGElement* parentElement, IGContext& context, IGPool& pool, const glm::vec2& mousePosition, bool& handled)
 	{
-		if (parentElement->Active && parentElement->ActiveChildren && Helper::Collide(parentElement->Position, parentElement->Size, mousePosition))
+		if (parentElement->Active && parentElement->ActiveChildren)
 		{
 			context.RenderData.Rebuild = true;
 			pool.GetHierarchy().TraverseNodeChildren(parentElement->GetID(), [&](void* parent, void* child) -> bool {
@@ -92,8 +88,8 @@ namespace XYZ {
 				IGElement* childElement = static_cast<IGElement*>(child);
 				if (childElement->Active && childElement->ListenToInput)
 				{
-					childElement->OnMouseMove(mousePosition);
-					OnMouseMoveRecursive(childElement, context, pool, mousePosition);
+					childElement->OnMouseMove(mousePosition, handled);
+					OnMouseMoveRecursive(childElement, context, pool, mousePosition, handled);
 				}
 				return false;
 			});
@@ -111,10 +107,9 @@ namespace XYZ {
 			for (auto id : pool.GetRootElementIDs())
 			{
 				IGElement* parentElement = static_cast<IGElement*>(pool.GetHierarchy().GetData(id));
-				bool result = OnMouseMoveRecursive(parentElement, context, pool, mousePosition);
-				if (result || parentElement->OnMouseMove(mousePosition))
-					e.Handled = true;
-				
+				bool result = OnMouseMoveRecursive(parentElement, context, pool, mousePosition, e.Handled);
+				parentElement->OnMouseMove(mousePosition, e.Handled);
+			
 				IGWindow* window = dynamic_cast<IGWindow*>(parentElement);
 				if (window)
 				{
@@ -157,11 +152,9 @@ namespace XYZ {
 			pool.GetHierarchy().Traverse([&](void* parent, void* child) -> bool {
 
 				IGElement* childElement = static_cast<IGElement*>(child);
-				if (childElement->OnKeyType((char)e.GetKey()))
-				{
-					e.Handled = true;
+				if (childElement->OnKeyType((char)e.GetKey(), e.Handled))
 					return true;
-				}
+				
 				return false;
 			});
 		}
@@ -174,11 +167,9 @@ namespace XYZ {
 			pool.GetHierarchy().Traverse([&](void* parent, void* child) -> bool {
 
 				IGElement* childElement = static_cast<IGElement*>(child);
-				if (childElement->OnKeyPress(e.GetMod(), e.GetKey()))
-				{
-					e.Handled = true;
+				if (childElement->OnKeyPress(e.GetMod(), e.GetKey(), e.Handled))
 					return true;
-				}
+
 				return false;
 			});
 		}

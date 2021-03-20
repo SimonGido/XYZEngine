@@ -96,28 +96,17 @@ namespace XYZ {
 					{
 						IGElementType::Group, 
 						{
-							{IGElementType::Checkbox, {}},
-							{IGElementType::Checkbox, {}},
-							{IGElementType::Checkbox, {}},
-							{IGElementType::Checkbox, {}},
-							{IGElementType::Checkbox, {}},
-							{IGElementType::Button, {}},
-							{IGElementType::Button, {}},
-							{IGElementType::Button, {}},
-							{IGElementType::Text, {}},
-							{IGElementType::Text, {}},
-							{IGElementType::Text, {}},
 							{IGElementType::Slider, {}},
 							{IGElementType::Slider, {}},
+							{IGElementType::Float, {}},
+							{IGElementType::Float, {}},
+							{IGElementType::Float, {}},
 							{IGElementType::Float, {}},
 						}
 					},
 					{
 						IGElementType::Group, 
 						{
-							{IGElementType::Checkbox, {}},
-							{IGElementType::Checkbox, {}},
-							{IGElementType::Checkbox, {}},
 							{IGElementType::Checkbox, {}},
 							{IGElementType::Checkbox, {}},
 							{IGElementType::Button, {}},
@@ -147,15 +136,15 @@ namespace XYZ {
 
 
 		IG::GetUI<IGGroup>(0, m_Handles[1]).Open = false;
-		IG::GetUI<IGTree>(0, m_Handles[32]).AddItem("1", nullptr, IGTree::IGTreeItem("zajko"));
-		IG::GetUI<IGTree>(0, m_Handles[32]).AddItem("2", nullptr, IGTree::IGTreeItem("opica"));
-		IG::GetUI<IGTree>(0, m_Handles[32]).AddItem("3", nullptr, IGTree::IGTreeItem("leopard"));
-		IG::GetUI<IGTree>(0, m_Handles[32]).AddItem("4", "1", IGTree::IGTreeItem("drak"));
-		IG::GetUI<IGTree>(0, m_Handles[32]).AddItem("5", "1", IGTree::IGTreeItem("pekac"));
-		IG::GetUI<IGTree>(0, m_Handles[32]).AddItem("6", "2", IGTree::IGTreeItem("drak"));
-		IG::GetUI<IGTree>(0, m_Handles[32]).AddItem("7", "6", IGTree::IGTreeItem("pekac"));
-		IG::GetUI<IGTree>(0, m_Handles[32]).AddItem("8", "3", IGTree::IGTreeItem("drak"));
-		IG::GetUI<IGTree>(0, m_Handles[32]).AddItem("9", "8", IGTree::IGTreeItem("pekac"));
+		IG::GetUI<IGTree>(0, m_Handles[21]).AddItem("1", nullptr, IGTree::IGTreeItem("zajko"));
+		IG::GetUI<IGTree>(0, m_Handles[21]).AddItem("2", nullptr, IGTree::IGTreeItem("opica"));
+		IG::GetUI<IGTree>(0, m_Handles[21]).AddItem("3", nullptr, IGTree::IGTreeItem("leopard"));
+		IG::GetUI<IGTree>(0, m_Handles[21]).AddItem("4", "1", IGTree::IGTreeItem("drak"));
+		IG::GetUI<IGTree>(0, m_Handles[21]).AddItem("5", "1", IGTree::IGTreeItem("pekac"));
+		IG::GetUI<IGTree>(0, m_Handles[21]).AddItem("6", "2", IGTree::IGTreeItem("drak"));
+		IG::GetUI<IGTree>(0, m_Handles[21]).AddItem("7", "6", IGTree::IGTreeItem("pekac"));
+		IG::GetUI<IGTree>(0, m_Handles[21]).AddItem("8", "3", IGTree::IGTreeItem("drak"));
+		IG::GetUI<IGTree>(0, m_Handles[21]).AddItem("9", "8", IGTree::IGTreeItem("pekac"));
 	}	
 
 
