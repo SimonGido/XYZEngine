@@ -156,9 +156,6 @@ namespace XYZ {
 
 		static glm::vec2 GenerateLabeledQuad(const char* label, const glm::vec4& labelColor, const IGMeshFactoryData& data)
 		{
-			if (!data.RenderData->Rebuild)
-				return data.Element->Size;
-
 			glm::vec2 absolutePosition = data.Element->GetAbsolutePosition();
 			Helper::GenerateQuad(
 				*data.Mesh, data.Element->Color,
@@ -236,9 +233,6 @@ namespace XYZ {
 	template<>
 	glm::vec2 IGMeshFactory::GenerateUI<IGWindow>(const char* label, const glm::vec4& labelColor, const IGMeshFactoryData& data)
 	{
-		if (!data.RenderData->Rebuild)
-			return data.Element->Size;
-
 		IGWindow* window = static_cast<IGWindow*>(data.Element);
 
 		glm::vec2 absolutePosition = window->GetAbsolutePosition();
@@ -288,9 +282,6 @@ namespace XYZ {
 	template<>
 	glm::vec2 IGMeshFactory::GenerateUI<IGImageWindow>(const char* label, const glm::vec4& labelColor, const IGMeshFactoryData& data)
 	{
-		if (!data.RenderData->Rebuild)
-			return data.Element->Size;
-
 		IGWindow* window = static_cast<IGWindow*>(data.Element);
 
 		glm::vec2 absolutePosition = window->GetAbsolutePosition();
@@ -508,6 +499,18 @@ namespace XYZ {
 		);
 
 		return result;
+	}
+
+	template <>
+	glm::vec2 IGMeshFactory::GenerateUI<IGScrollbox>(const char* label, const glm::vec4& labelColor, const IGMeshFactoryData& data)
+	{
+		Helper::GenerateQuad(
+			*data.Mesh, data.Element->Color, data.Element->Size,
+			data.Element->GetAbsolutePosition(), data.SubTexture,
+			IGRenderData::TextureID,
+			data.ScissorIndex
+		);
+		return data.Element->Size;
 	}
 
 	void IGMeshFactory::GenerateDockNodeQuads(IGDockNode& node,const IGQuadData& data)

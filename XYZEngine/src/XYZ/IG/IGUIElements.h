@@ -13,7 +13,8 @@ namespace XYZ {
 		virtual bool OnLeftClick(const glm::vec2& mousePosition, bool& handled) override;
 		virtual bool OnLeftRelease(const glm::vec2& mousePosition, bool& handled) override;
 		virtual bool OnMouseMove(const glm::vec2& mousePosition, bool& handled) override;
-		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData) override;
+		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData , uint32_t scissorIndex = 0) override;
+		//virtual glm::vec2 BuildMesh(IGMesh& mesh, IGRenderData& renderData, IGPool& pool, const glm::vec2& rootBorder) override;
 
 		void HandleActions(const glm::vec2& mousePosition, const glm::vec2& mouseDiff, bool& handled);
 
@@ -41,7 +42,7 @@ namespace XYZ {
 	public:
 		IGImageWindow(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
 
-		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData) override;
+		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData, uint32_t scissorIndex = 0) override;
 
 		Ref<SubTexture> SubTexture;
 	};
@@ -53,7 +54,8 @@ namespace XYZ {
 
 		virtual bool OnLeftClick(const glm::vec2& mousePosition, bool& handled) override;
 		virtual bool OnMouseMove(const glm::vec2& mousePosition, bool& handled) override;
-		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData) override;
+		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData, uint32_t scissorIndex = 0) override;
+	
 	};
 	class IGCheckbox : public IGElement
 	{
@@ -62,8 +64,8 @@ namespace XYZ {
 
 		virtual bool OnLeftClick(const glm::vec2& mousePosition, bool& handled) override;
 		virtual bool OnMouseMove(const glm::vec2& mousePosition, bool& handled) override;
-		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData) override;
-
+		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData, uint32_t scissorIndex = 0) override;
+		
 		bool Checked = false;
 	};
 	class IGSlider : public IGElement
@@ -74,8 +76,8 @@ namespace XYZ {
 		virtual bool OnLeftClick(const glm::vec2& mousePosition, bool& handled) override;
 		virtual bool OnLeftRelease(const glm::vec2& mousePosition, bool& handled) override;
 		virtual bool OnMouseMove(const glm::vec2& mousePosition, bool& handled) override;
-		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData) override;
-
+		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData, uint32_t scissorIndex = 0) override;
+	
 
 		float Value = 0.0f;
 	private:
@@ -89,7 +91,8 @@ namespace XYZ {
 	
 		virtual bool OnLeftClick(const glm::vec2& mousePosition, bool& handled) override;
 		virtual bool OnMouseMove(const glm::vec2& mousePosition, bool& handled) override;
-		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData) override;
+		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData, uint32_t scissorIndex = 0) override;
+		
 
 		std::string Text = "Text";
 	};
@@ -103,8 +106,8 @@ namespace XYZ {
 		virtual bool OnMouseMove(const glm::vec2& mousePosition, bool& handled) override;
 		virtual bool OnKeyType(char character, bool& handled) override;
 		virtual bool OnKeyPress(int32_t mode, int32_t key, bool& handled) override;
-		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData) override;
-
+		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData, uint32_t scissorIndex = 0) override;
+	
 		
 		float GetValue() const;
 		const char* GetBuffer() const { return Buffer; }
@@ -139,7 +142,8 @@ namespace XYZ {
 
 		virtual bool OnLeftClick(const glm::vec2& mousePosition, bool& handled) override;
 		virtual bool OnMouseMove(const glm::vec2& mousePosition, bool& handled) override;
-		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData) override;
+		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData, uint32_t scissorIndex = 0) override;
+	
 
 		void AddItem(const char* name, const char* parent, const IGTreeItem& item);
 		void RemoveItem(const char* name);
@@ -163,9 +167,10 @@ namespace XYZ {
 
 		virtual bool OnLeftClick(const glm::vec2& mousePosition, bool& handled) override;
 		virtual bool OnMouseMove(const glm::vec2& mousePosition, bool& handled) override;
-		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData) override;
+		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData, uint32_t scissorIndex = 0) override;
 
-		bool Open = true;
+
+		bool Open = false;
 		bool AdjustToParent = true;
 
 		static constexpr float PanelHeight = 25.0f;
@@ -176,8 +181,25 @@ namespace XYZ {
 	public:
 		IGSeparator(const glm::vec2& position, const glm::vec2& size);
 
-		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData) override;
+		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData, uint32_t scissorIndex = 0) override;
+	
+		bool AdjustToParent = true;
+	};
+
+	class IGScrollbox : public IGElement
+	{
+	public:
+		IGScrollbox(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
+
+		virtual bool OnMouseScroll(const glm::vec2& mousePosition, float offset, bool& handled);
+		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData, uint32_t scissorIndex = 0) override;
+		virtual glm::vec2 BuildMesh(IGMesh& mesh, IGRenderData& renderData, IGPool& pool, const glm::vec2& rootBorder) override;
+
 
 		bool AdjustToParent = true;
+
+		glm::vec2 Offset = glm::vec2(0.0f);
+
+		static constexpr float ScrollSpeed = 4.0f;
 	};
 }

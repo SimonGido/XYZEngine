@@ -28,7 +28,6 @@ namespace XYZ {
 		ScissorMaterial->Set("u_Texture", Font->GetTexture(), FontTextureID);
 		ScissorMaterial->Set("u_Texture", colorPickerTexture, ColorPickerTextureID);
 		ScissorMaterial->Set("u_Color", glm::vec4(1.0f));
-		ScissorMaterial->Set("u_NumberScissors", 0);
 
 		float divisor = 8.0f;
 		SubTexture[BUTTON] = Ref<XYZ::SubTexture>::Create(Texture, glm::vec2(0, 0), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));

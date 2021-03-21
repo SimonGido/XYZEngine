@@ -58,7 +58,6 @@ in flat float v_TextureID;
 in flat float v_ScissorIndex;
 
 uniform vec4 u_Color;
-uniform int u_NumberScissors;
 uniform sampler2D u_Texture[32];
 
 void main()

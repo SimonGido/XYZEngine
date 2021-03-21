@@ -168,7 +168,6 @@ namespace XYZ {
 		{		
 			s_Context->RenderData.ScissorBuffer->Update(s_Context->FrameData.Scissors.data(), s_Context->FrameData.Scissors.size() * sizeof(InGuiScissor));
 			s_Context->RenderData.ScissorBuffer->BindRange(0, s_Context->FrameData.Scissors.size() * sizeof(InGuiScissor), 0);
-			s_Context->RenderData.ScissorMaterial->Set("u_NumberScissors", s_Context->FrameData.Scissors.size());
 			Renderer2D::SetMaterial(s_Context->RenderData.ScissorMaterial);
 			for (auto& texture : s_Context->FrameData.CustomTextures)
 				Renderer2D::SetTexture(texture);

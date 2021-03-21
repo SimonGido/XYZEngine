@@ -69,20 +69,28 @@ namespace XYZ {
 			NumColors
 		};
 
-		void RebuildMesh(IGAllocator& allocator, IGMesh& mesh);
+		void RebuildMesh(IGAllocator& allocator);
 
+		IGMesh						 Mesh;
+		IGMesh						 ScrollableMesh;
 		Ref<Font>					 Font;
 		Ref<Texture2D>				 Texture;
-		Ref<Material>				 Material;
+		Ref<Material>				 DefaultMaterial;
+		Ref<Material>				 ScissorMaterial;
 		Ref<ShaderStorageBuffer>	 ScissorBuffer;
 		Ref<SubTexture>				 SubTextures[NumSubTextures];
 		std::vector<Ref<SubTexture>> CustomSubTextures;
+		std::vector<IGScissor>		 Scissors;
 		bool						 Rebuild = true;
+		bool						 RebuildTwice = false;
 
-		static glm::vec4		  Colors[NumColors];
-		static constexpr uint32_t TextureID = 0;
-		static constexpr uint32_t FontTextureID = 1;
-		static constexpr uint32_t DefaultTextureCount = 2;
-		static constexpr uint32_t MaxNumberOfScissors = 32;
+		static glm::vec4			 Colors[NumColors];
+		static constexpr uint32_t	 TextureID = 0;
+		static constexpr uint32_t	 FontTextureID = 1;
+		static constexpr uint32_t	 DefaultTextureCount = 2;
+		static constexpr uint32_t	 MaxNumberOfScissors = 32;
+
+	private:
+		void rebuildMesh(IGAllocator& allocator);
 	};
 }

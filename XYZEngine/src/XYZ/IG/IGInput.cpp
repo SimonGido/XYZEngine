@@ -145,7 +145,20 @@ namespace XYZ {
 	}
 	bool IGInput::OnMouseScroll(MouseScrollEvent& e, IGContext& context)
 	{
-		return false;
+		auto [mx, my] = Input::GetMousePosition();
+		glm::vec2 mousePosition = { mx , my };
+		for (auto& pool : context.Allocator.GetPools())
+		{
+			pool.GetHierarchy().Traverse([&](void* parent, void* child) -> bool {
+
+				IGElement* childElement = static_cast<IGElement*>(child);
+				if (childElement->OnMouseScroll(mousePosition, e.GetOffsetY(), e.Handled))
+					return true;
+
+				return false;
+			});
+		}
+		return e.Handled;
 	}
 
 	bool IGInput::OnKeyType(KeyTypedEvent& e, IGContext& context)

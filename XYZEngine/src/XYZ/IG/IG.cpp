@@ -35,17 +35,17 @@ namespace XYZ {
 
 	
 		Renderer2D::BeginScene(viewProjectionMatrix * viewMatrix);	
-		Renderer2D::SetMaterial(s_Context->RenderData.Material);
-		s_Context->RenderData.RebuildMesh(s_Context->Allocator, s_Context->Mesh);
+		Renderer2D::SetMaterial(s_Context->RenderData.DefaultMaterial);
+		s_Context->RenderData.RebuildMesh(s_Context->Allocator);
 	}
 
 	void IG::EndFrame()
 	{
-		for (auto& it : s_Context->Mesh.Quads)
+		for (auto& it : s_Context->RenderData.Mesh.Quads)
 		{
 			Renderer2D::SubmitQuadNotCentered(it.Position, it.Size, it.TexCoord, it.TextureID, it.Color);
 		}
-		for (auto& it : s_Context->Mesh.Lines)
+		for (auto& it : s_Context->RenderData.Mesh.Lines)
 		{
 			Renderer2D::SubmitLine(it.P0, it.P1, it.Color);
 		}
@@ -53,6 +53,24 @@ namespace XYZ {
 
 		Renderer2D::Flush();
 		Renderer2D::FlushLines();
+
+		if (s_Context->RenderData.Scissors.size())
+		{
+			s_Context->RenderData.ScissorBuffer->Update(s_Context->RenderData.Scissors.data(),s_Context->RenderData. Scissors.size() * sizeof(IGScissor));
+			s_Context->RenderData.ScissorBuffer->BindRange(0, s_Context->RenderData.Scissors.size() * sizeof(IGScissor), 0);
+			Renderer2D::SetMaterial(s_Context->RenderData.ScissorMaterial);
+			for (auto& it : s_Context->RenderData.ScrollableMesh.Quads)
+			{
+				Renderer2D::SubmitQuadNotCentered(it.Position, it.Size, it.TexCoord, it.TextureID, it.Color, it.ScissorIndex);
+			}
+			for (auto& it : s_Context->RenderData.ScrollableMesh.Lines)
+			{
+				Renderer2D::SubmitLine(it.P0, it.P1, it.Color);
+			}
+		
+			Renderer2D::Flush();
+			Renderer2D::FlushLines();
+		}
 		Renderer2D::EndScene();
 		Renderer::WaitAndRender();
 	}
@@ -71,6 +89,10 @@ namespace XYZ {
 		{
 			s_Context->Input.OnMouseMove((MouseMovedEvent&)event, *s_Context);
 		}
+		else if (event.GetEventType() == EventType::MouseScroll)
+		{
+			s_Context->Input.OnMouseScroll((MouseScrollEvent&)event, *s_Context);
+		}
 		else if (event.GetEventType() == EventType::KeyTyped)
 		{
 			s_Context->Input.OnKeyType((KeyTypedEvent&)event, *s_Context);
@@ -79,9 +101,12 @@ namespace XYZ {
 		{
 			s_Context->Input.OnKeyPress((KeyPressedEvent&)event, *s_Context);
 		}
-		
+
 		if (event.Handled)
+		{
 			s_Context->RenderData.Rebuild = true;
+			s_Context->RenderData.RebuildTwice = true;
+		}
 	}
 
 	void IG::BeginUI(size_t handle)
@@ -102,7 +127,7 @@ namespace XYZ {
 	{
 		auto result = s_Context->Allocator.CreatePool(hierarchy, handles);
 		s_Context->RenderData.Rebuild = true;
-		s_Context->RenderData.RebuildMesh(s_Context->Allocator, s_Context->Mesh);
+		s_Context->RenderData.RebuildMesh(s_Context->Allocator);
 		return result;
 	}
 

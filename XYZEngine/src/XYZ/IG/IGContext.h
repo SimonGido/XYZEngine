@@ -18,7 +18,6 @@ namespace XYZ {
 	public:
 		IGAllocator	 Allocator;
 		IGRenderData RenderData;
-		IGMesh		 Mesh;
 		IGInput		 Input;
 		IGFrameData  FrameData;
 		IGDockspace  Dockspace;

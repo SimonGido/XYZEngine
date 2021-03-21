@@ -40,6 +40,7 @@ namespace XYZ {
 		Text,
 		Float,
 		Tree,
+		Scrollbox,
 		None
 	};
 
@@ -51,20 +52,22 @@ namespace XYZ {
 		Released,
 	};
 
+	class IGPool;
 	class IGElement
 	{
 	public:
-		IGElement(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
+		IGElement(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, IGElementType type);
 		virtual ~IGElement() = default;
 
 		virtual bool OnLeftClick(const glm::vec2& mousePosition, bool& handled) { return false; };
 		virtual bool OnLeftRelease(const glm::vec2& mousePosition, bool& handled) { return false; }
 		virtual bool OnMouseMove(const glm::vec2& mousePosition, bool& handled) { return false; };
+		virtual bool OnMouseScroll(const glm::vec2& mousePosition, float offset, bool& handled) { return false; }
 		virtual bool OnKeyType(char character, bool& handled) { return false; }
 
 		virtual bool OnKeyPress(int32_t mode, int32_t key, bool& handled) { return false; }
-		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData) { return glm::vec2(0.0f); };
-
+		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData, uint32_t scissorIndex = 0) { return glm::vec2(0.0f); };
+		virtual glm::vec2 BuildMesh(IGMesh& mesh,IGRenderData& renderData, IGPool& pool, const glm::vec2& rootBorder);
 
 		glm::vec2	Position;
 		glm::vec2	Size;
@@ -72,11 +75,12 @@ namespace XYZ {
 		glm::vec4	FrameColor;
 		std::string Label = "Test";
 
-		IGStyle		Style;
-		IGElement*	Parent = nullptr;
-		bool		Active = true;
-		bool	    ActiveChildren = true;
-		bool		ListenToInput = true;
+		IGStyle				Style;
+		IGElement*			Parent = nullptr;
+		bool				Active = true;
+		bool				ActiveChildren = true;
+		bool				ListenToInput = true;
+		const IGElementType	ElementType = IGElementType::None;
 
 		glm::vec2 GetAbsolutePosition() const;
 		int32_t GetID() const { return ID; }
@@ -86,7 +90,7 @@ namespace XYZ {
 
 	protected:
 		IGReturnType  ReturnType = IGReturnType::None;
-		IGElementType ElementType = IGElementType::None;
+		
 		int32_t		  ID = -1;
 
 
