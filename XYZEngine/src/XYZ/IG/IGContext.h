@@ -3,6 +3,7 @@
 #include "IGAllocator.h"
 #include "IGRenderer.h"
 #include "IGInput.h"
+#include "IGDockspace.h"
 
 
 namespace XYZ {
@@ -20,5 +21,6 @@ namespace XYZ {
 		IGMesh		 Mesh;
 		IGInput		 Input;
 		IGFrameData  FrameData;
+		IGDockspace  Dockspace;
 	};
 }

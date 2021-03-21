@@ -2,7 +2,9 @@
 
 #include "IGMeshFactory.h"
 #include "IGUIElements.h"
+#include "IGDockspace.h"
 
+#include "XYZ/Renderer/Renderer2D.h"
 
 namespace XYZ {
 
@@ -161,7 +163,7 @@ namespace XYZ {
 			Helper::GenerateQuad(
 				*data.Mesh, data.Element->Color,
 				data.Element->Size, absolutePosition,
-				data.RenderData->SubTextures[data.SubTextureIndex],
+				data.SubTexture,
 				IGRenderData::TextureID,
 				data.ScissorIndex
 			);
@@ -194,19 +196,17 @@ namespace XYZ {
 			const glm::vec2& position,
 			const glm::vec2& size,
 			const glm::vec2& textSize,
-			uint32_t subTextureIndex,
+			Ref<SubTexture> subTexture,
+			Ref<Font> font,
 			uint32_t scissorIndex,
 			IGMesh* mesh,
-			IGRenderData* renderData,
-			IGTextCenter center)
+			IGTextCenter center
+		)
 		{
-			if (!renderData->Rebuild)
-				return size;
-
 			Helper::GenerateQuad(
 				*mesh, color,
 				size, position,
-				renderData->SubTextures[subTextureIndex],
+				subTexture,
 				IGRenderData::TextureID,
 				scissorIndex
 			);
@@ -215,7 +215,7 @@ namespace XYZ {
 			glm::vec2 textPosition = { std::floor(position.x + size.x), std::floor(position.y) };
 
 			glm::vec2 genTextSize = Helper::GenerateTextMesh(
-				label, renderData->Font, labelColor,
+				label, font, labelColor,
 				textPosition, textSize, *mesh, IGRenderData::FontTextureID, 1000, scissorIndex
 			);
 
@@ -249,7 +249,7 @@ namespace XYZ {
 
 			data.Mesh->Quads.push_back({
 				window->Color,
-				data.RenderData->SubTextures[data.SubTextureIndex]->GetTexCoords(),
+				data.SubTexture->GetTexCoords(),
 				{absolutePosition, 0.0f},
 				window->Size,
 				IGRenderData::TextureID
@@ -285,6 +285,62 @@ namespace XYZ {
 		);
 		return window->Size;
 	}
+	template<>
+	glm::vec2 IGMeshFactory::GenerateUI<IGImageWindow>(const char* label, const glm::vec4& labelColor, const IGMeshFactoryData& data)
+	{
+		if (!data.RenderData->Rebuild)
+			return data.Element->Size;
+
+		IGWindow* window = static_cast<IGWindow*>(data.Element);
+
+		glm::vec2 absolutePosition = window->GetAbsolutePosition();
+		if (!IS_SET(window->Flags, IGWindow::Collapsed))
+		{
+			if (window->Style.RenderFrame)
+				Helper::GenerateFrame(*data.Mesh, absolutePosition, window->Size, window->FrameColor);
+
+			if (data.SubTexture.Raw())
+			{
+				data.Mesh->Quads.push_back({
+					window->Color,
+					data.SubTexture->GetTexCoords(),
+					{absolutePosition, 0.0f},
+					window->Size,
+					Renderer2D::SetTexture(data.SubTexture->GetTexture())
+				});
+			}
+		}
+		data.Mesh->Quads.push_back({
+			window->Color,
+			data.RenderData->SubTextures[IGRenderData::Button]->GetTexCoords(),
+			{absolutePosition, 0.0f},
+			{window->Size.x, IGWindow::PanelHeight },
+			IGRenderData::TextureID
+			});
+		data.Mesh->Quads.push_back({
+			window->Color,
+			data.RenderData->SubTextures[IGRenderData::MinimizeButton]->GetTexCoords(),
+			{absolutePosition.x + window->Size.x - IGWindow::PanelHeight, absolutePosition.y, 0.0f},
+			{IGWindow::PanelHeight, IGWindow::PanelHeight },
+			IGRenderData::TextureID
+			});
+
+
+		size_t oldQuadCount = data.Mesh->Quads.size();
+		glm::vec2 textPosition = { std::floor(window->Style.Layout.LeftPadding + absolutePosition.x), std::floor(absolutePosition.y) };
+		glm::vec2 textSize = { window->Size.x, window->Size.y };
+		glm::vec2 genTextSize = Helper::GenerateTextMesh(
+			label, data.RenderData->Font, labelColor,
+			textPosition, textSize, *data.Mesh, IGRenderData::FontTextureID, 1000, data.ScissorIndex
+		);
+
+		Helper::CenterText(*data.Mesh, oldQuadCount, window->Position,
+			{ window->Size.x, IGWindow::PanelHeight },
+			genTextSize, window->Style.LabelCenter
+		);
+		return window->Size;
+	}
+
 
 
 	template<>
@@ -415,8 +471,9 @@ namespace XYZ {
 					subTextureIndex = IGRenderData::DownArrow;
 				glm::vec2 genSize = Helper::GenerateLabeledQuad(
 					childItem->Label.c_str(), childItem->Color, childItem->Color,
-					childItem->Position, data.Element->Size, textSize, subTextureIndex,
-					data.ScissorIndex, data.Mesh, data.RenderData, IGTextCenter::Left
+					childItem->Position, data.Element->Size, textSize, 
+					data.RenderData->SubTextures[subTextureIndex],data.RenderData->Font,
+					data.ScissorIndex, data.Mesh, IGTextCenter::Left
 				);
 				offset.y += genSize.y;
 			}
@@ -438,21 +495,74 @@ namespace XYZ {
 
 		glm::vec2 result = Helper::GenerateLabeledQuad(
 			nullptr, labelColor, group->Color,
-			absolutePosition, { group->Size.x, IGGroup::PanelHeight }, group->Size, data.SubTextureIndex,
-			data.ScissorIndex, data.Mesh, data.RenderData, IGTextCenter::Left
+			absolutePosition, { group->Size.x, IGGroup::PanelHeight }, group->Size, 
+			data.RenderData->SubTextures[IGRenderData::Button], data.RenderData->Font,
+			data.ScissorIndex, data.Mesh, IGTextCenter::Left
 		);
 
-
-		uint32_t subTextureIndex = IGRenderData::RightArrow;
-		if (group->Open)
-			subTextureIndex = IGRenderData::DownArrow;
-		
 		Helper::GenerateLabeledQuad(
 			label, labelColor, group->Color,
-			absolutePosition, { IGGroup::PanelHeight, IGGroup::PanelHeight }, group->Size, subTextureIndex,
-			data.ScissorIndex, data.Mesh, data.RenderData, IGTextCenter::Left
+			absolutePosition, { IGGroup::PanelHeight, IGGroup::PanelHeight }, group->Size, 
+			data.SubTexture, data.RenderData->Font,
+			data.ScissorIndex, data.Mesh, IGTextCenter::Left
 		);
 
 		return result;
+	}
+
+	void IGMeshFactory::GenerateDockNodeQuads(IGDockNode& node,const IGQuadData& data)
+	{
+		glm::vec2 middlePos = node.Data.Position + ((node.Data.Size - data.Size) / 2.0f);
+		glm::vec2 leftPos = node.Data.Position + glm::vec2(0.0f, (node.Data.Size.y - data.Size.y) / 2.0f);
+		glm::vec2 rightPos = node.Data.Position + glm::vec2(node.Data.Size.x - data.Size.x, (node.Data.Size.y - data.Size.y) / 2.0f);
+		glm::vec2 topPos = node.Data.Position + glm::vec2((node.Data.Size.x -  data.Size.x) / 2.0f, 0.0f);
+		glm::vec2 bottomPos = node.Data.Position + glm::vec2((node.Data.Size.x - data.Size.x) / 2.0f, node.Data.Size.y - data.Size.y);
+		
+		Helper::GenerateQuad(
+			*data.Mesh, data.Color,
+			data.Size, middlePos,
+			data.SubTexture,
+			data.TextureID,
+			data.ScissorIndex
+		);
+		Helper::GenerateQuad(
+			*data.Mesh, data.Color,
+			data.Size, leftPos,
+			data.SubTexture,
+			data.TextureID,
+			data.ScissorIndex
+		);
+		Helper::GenerateQuad(
+			*data.Mesh, data.Color,
+			data.Size, rightPos,
+			data.SubTexture,
+			data.TextureID,
+			data.ScissorIndex
+		);
+		Helper::GenerateQuad(
+			*data.Mesh, data.Color,
+			data.Size, bottomPos,
+			data.SubTexture,
+			data.TextureID,
+			data.ScissorIndex
+		);
+		Helper::GenerateQuad(
+			*data.Mesh, data.Color,
+			data.Size, topPos,
+			data.SubTexture,
+			data.TextureID,
+			data.ScissorIndex
+		);
+	}
+
+	void IGMeshFactory::GenerateQuad(const IGQuadData& data)
+	{
+		Helper::GenerateQuad(
+			*data.Mesh, data.Color,
+			data.Size, data.Position,
+			data.SubTexture,
+			data.TextureID,
+			data.ScissorIndex
+		);
 	}
 }

@@ -59,7 +59,7 @@ namespace XYZ {
 			RightArrow,
 			LeftArrow,
 			Pause,
-			DockSpace,
+			White,
 			NumSubTextures = 32
 		};
 		enum
@@ -71,12 +71,13 @@ namespace XYZ {
 
 		void RebuildMesh(IGAllocator& allocator, IGMesh& mesh);
 
-		Ref<Font>				 Font;
-		Ref<Texture2D>			 Texture;
-		Ref<Material>			 Material;
-		Ref<ShaderStorageBuffer> ScissorBuffer;
-		Ref<SubTexture>			 SubTextures[NumSubTextures];
-		bool					 Rebuild = true;
+		Ref<Font>					 Font;
+		Ref<Texture2D>				 Texture;
+		Ref<Material>				 Material;
+		Ref<ShaderStorageBuffer>	 ScissorBuffer;
+		Ref<SubTexture>				 SubTextures[NumSubTextures];
+		std::vector<Ref<SubTexture>> CustomSubTextures;
+		bool						 Rebuild = true;
 
 		static glm::vec4		  Colors[NumColors];
 		static constexpr uint32_t TextureID = 0;

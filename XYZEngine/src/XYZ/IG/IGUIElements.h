@@ -15,6 +15,8 @@ namespace XYZ {
 		virtual bool OnMouseMove(const glm::vec2& mousePosition, bool& handled) override;
 		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData) override;
 
+		void HandleActions(const glm::vec2& mousePosition, const glm::vec2& mouseDiff, bool& handled);
+
 		enum Flags
 		{
 			Initialized	 = BIT(0),
@@ -29,9 +31,21 @@ namespace XYZ {
 	
 
 		uint8_t Flags = 0;
+		std::function<void(const glm::vec2&)> ResizeCallback;
 
 		static constexpr float PanelHeight = 25.0f;
 	};
+
+	class IGImageWindow : public IGWindow
+	{
+	public:
+		IGImageWindow(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
+
+		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData) override;
+
+		Ref<SubTexture> SubTexture;
+	};
+
 	class IGButton : public IGElement
 	{
 	public:
@@ -155,5 +169,15 @@ namespace XYZ {
 		bool AdjustToParent = true;
 
 		static constexpr float PanelHeight = 25.0f;
+	};
+
+	class IGSeparator : public IGElement
+	{
+	public:
+		IGSeparator(const glm::vec2& position, const glm::vec2& size);
+
+		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData) override;
+
+		bool AdjustToParent = true;
 	};
 }

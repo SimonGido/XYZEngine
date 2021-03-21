@@ -6,7 +6,7 @@
 
 #include "InGui.h"	
 #include "InGuiDockspace.h"
-#include "XYZ/InGuiTest/InGuiTest.h"
+#include "XYZ/IG/IG.h"
 
 
 #include <glm/gtx/transform.hpp>

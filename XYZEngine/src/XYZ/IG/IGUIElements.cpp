@@ -56,6 +56,7 @@ namespace XYZ {
 				else
 				{
 					Flags |= IGWindow::Flags::Moved;
+					Flags &= ~Docked;
 				}
 				handled = true;
 			}
@@ -83,6 +84,10 @@ namespace XYZ {
 
 	bool IGWindow::OnLeftRelease(const glm::vec2& mousePosition, bool& handled)
 	{
+		if (IS_SET(Flags, (Moved | LeftResize | RightResize | BottomResize)))
+		{
+			handled = true;
+		}
 		Flags &= ~Moved;
 		Flags &= ~(LeftResize | RightResize | BottomResize);
 		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
@@ -105,8 +110,52 @@ namespace XYZ {
 
 	glm::vec2 IGWindow::GenerateQuads(IGMesh& mesh, IGRenderData& renderData)
 	{
-		IGMeshFactoryData data = { IGRenderData::Window, this, &mesh, &renderData };
+		IGMeshFactoryData data = { renderData.SubTextures[IGRenderData::Window], this, &mesh, &renderData };
 		return IGMeshFactory::GenerateUI<IGWindow>(Label.c_str(), glm::vec4(1.0f), data);
+	}
+
+	void IGWindow::HandleActions(const glm::vec2& mousePosition,const glm::vec2& mouseDiff, bool& handled)
+	{
+		if (IS_SET(Flags, IGWindow::Moved))
+		{
+			Position = mouseDiff;
+			handled = true;
+		}
+		else if (IS_SET(Flags, IGWindow::LeftResize))
+		{
+			Size.x = GetAbsolutePosition().x + Size.x - mousePosition.x;
+			Position.x = mousePosition.x;
+			handled = true;
+			if (ResizeCallback)
+				ResizeCallback(Size);
+		}
+		else if (IS_SET(Flags, IGWindow::RightResize))
+		{
+			Size.x = mousePosition.x - GetAbsolutePosition().x;
+			handled = true;
+			if (ResizeCallback)
+				ResizeCallback(Size);
+		}
+
+		if (IS_SET(Flags, IGWindow::BottomResize))
+		{
+			Size.y = mousePosition.y - GetAbsolutePosition().y;
+			handled = true;
+			if (ResizeCallback)
+				ResizeCallback(Size);
+		}
+	}
+
+	IGImageWindow::IGImageWindow(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
+		:
+		IGWindow(position, size, color)
+	{
+	}
+	
+	glm::vec2 IGImageWindow::GenerateQuads(IGMesh& mesh, IGRenderData& renderData)
+	{
+		IGMeshFactoryData data = { SubTexture, this, &mesh, &renderData };
+		return IGMeshFactory::GenerateUI<IGImageWindow>(Label.c_str(), glm::vec4(1.0f), data);
 	}
 
 	IGButton::IGButton(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
@@ -137,7 +186,7 @@ namespace XYZ {
 	}
 	glm::vec2 IGButton::GenerateQuads(IGMesh& mesh, IGRenderData& renderData)
 	{
-		IGMeshFactoryData data = { IGRenderData::Button, this, &mesh, &renderData };
+		IGMeshFactoryData data = { renderData.SubTextures[IGRenderData::Button], this, &mesh, &renderData };
 		return IGMeshFactory::GenerateUI<IGButton>(Label.c_str(), glm::vec4(1.0f), data);
 	}
 
@@ -174,7 +223,7 @@ namespace XYZ {
 		if (Checked)
 			subTextureIndex = IGRenderData::CheckboxChecked;
 
-		IGMeshFactoryData data = { subTextureIndex, this, &mesh, &renderData };
+		IGMeshFactoryData data = { renderData.SubTextures[subTextureIndex], this, &mesh, &renderData };
 		return IGMeshFactory::GenerateUI<IGCheckbox>(Label.c_str(), glm::vec4(1.0f), data);
 	}
 	IGSlider::IGSlider(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
@@ -216,7 +265,7 @@ namespace XYZ {
 	}
 	glm::vec2 IGSlider::GenerateQuads(IGMesh& mesh, IGRenderData& renderData)
 	{
-		IGMeshFactoryData data = { IGRenderData::Slider, this, &mesh, &renderData };
+		IGMeshFactoryData data = { renderData.SubTextures[IGRenderData::Slider], this, &mesh, &renderData };
 		return IGMeshFactory::GenerateUI<IGSlider>(Label.c_str(), Color, data);
 	}
 	IGText::IGText(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
@@ -241,7 +290,7 @@ namespace XYZ {
 	}
 	glm::vec2 IGText::GenerateQuads(IGMesh& mesh, IGRenderData& renderData)
 	{
-		IGMeshFactoryData data = { 0, this, &mesh, &renderData };
+		IGMeshFactoryData data = { nullptr, this, &mesh, &renderData };
 		return IGMeshFactory::GenerateUI<IGText>(Text.c_str(), Color, data);
 	}
 
@@ -316,7 +365,7 @@ namespace XYZ {
 		Buffer[numChar] = '\0';
 		ModifiedIndex = numChar;
 
-		IGMeshFactoryData data = { IGRenderData::Slider, this, &mesh, &renderData };
+		IGMeshFactoryData data = {renderData.SubTextures[IGRenderData::Slider], this, &mesh, &renderData };
 		return IGMeshFactory::GenerateUI<IGFloat>(Label.c_str(), Color, data);
 	}
 
@@ -362,7 +411,7 @@ namespace XYZ {
 	}
 	glm::vec2 IGTree::GenerateQuads(IGMesh& mesh, IGRenderData& renderData)
 	{
-		IGMeshFactoryData data = { IGRenderData::RightArrow, this, &mesh, &renderData };
+		IGMeshFactoryData data = { renderData.SubTextures[IGRenderData::RightArrow], this, &mesh, &renderData };
 		return IGMeshFactory::GenerateUI<IGTree>(Label.c_str(), Color, data);
 	}
 	IGTree::IGTreeItem& IGTree::GetItem(const char* name)
@@ -444,7 +493,24 @@ namespace XYZ {
 			Size.x = Parent->Size.x - Parent->Style.Layout.LeftPadding - Parent->Style.Layout.RightPadding;
 		}
 		ActiveChildren = Open;
-		IGMeshFactoryData data = { IGRenderData::Button, this, &mesh, &renderData };
+		uint32_t subTextureIndex = IGRenderData::RightArrow;
+		if (Open)
+			subTextureIndex = IGRenderData::DownArrow;
+		IGMeshFactoryData data = { renderData.SubTextures[subTextureIndex], this, &mesh, &renderData };
 		return IGMeshFactory::GenerateUI<IGGroup>(Label.c_str(), Color, data);
 	}
+	IGSeparator::IGSeparator(const glm::vec2& position, const glm::vec2& size)
+		:
+		IGElement(position, size, glm::vec4(1.0f))
+	{
+	}
+	glm::vec2 IGSeparator::GenerateQuads(IGMesh& mesh, IGRenderData& renderData)
+	{
+		if (AdjustToParent && Parent)
+		{
+			Size.x = Parent->Size.x - Parent->Style.Layout.LeftPadding - Parent->Style.Layout.RightPadding;
+		}
+		return Size;
+	}
+	
 }

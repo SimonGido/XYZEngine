@@ -17,6 +17,7 @@ namespace XYZ {
 
 		static void SetRootSize(const glm::vec2& size);
 
+
 	private:
 		static void beginFrame(InGuiContext* context, bool preview);
 		static void endFrame(InGuiContext* context);

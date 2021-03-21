@@ -32,9 +32,17 @@ namespace XYZ {
 				destroy<IGWindow>(offset);
 				offset += sizeof(IGWindow);
 				break;
+			case XYZ::IGElementType::ImageWindow:
+				destroy<IGImageWindow>(offset);
+				offset += sizeof(IGImageWindow);
+				break;
 			case XYZ::IGElementType::Group:
 				destroy<IGGroup>(offset);
 				offset += sizeof(IGGroup);
+				break;
+			case XYZ::IGElementType::Separator:
+				destroy<IGSeparator>(offset);
+				offset += sizeof(IGSeparator);
 				break;
 			case XYZ::IGElementType::Button:
 				destroy<IGButton>(offset);
@@ -81,8 +89,14 @@ namespace XYZ {
 			case XYZ::IGElementType::Window:
 				m_Capacity += sizeof(IGWindow);
 				break;
+			case XYZ::IGElementType::ImageWindow:
+				m_Capacity += sizeof(IGImageWindow);
+				break;
 			case XYZ::IGElementType::Group:
 				m_Capacity += sizeof(IGGroup);
+				break;
+			case XYZ::IGElementType::Separator:
+				m_Capacity += sizeof(IGSeparator);
 				break;
 			case XYZ::IGElementType::Button:		
 				m_Capacity += sizeof(IGButton);
@@ -124,9 +138,23 @@ namespace XYZ {
 				allocateMemory(it.Children, element);
 				break;
 			}
+			case XYZ::IGElementType::ImageWindow:
+			{
+				auto [element, handle] = Allocate<IGImageWindow>(glm::vec2(0.0f), glm::vec2(400.0f,500.0f), glm::vec4(1.0f));
+				element->Parent = parent;
+				allocateMemory(it.Children, element);
+				break;
+			}
 			case XYZ::IGElementType::Group:
 			{
 				auto [element, handle] = Allocate<IGGroup>(glm::vec2(0.0f), glm::vec2(350.0f,200.0f), glm::vec4(1.0f));
+				element->Parent = parent;
+				allocateMemory(it.Children, element);
+				break;
+			}
+			case XYZ::IGElementType::Separator:
+			{
+				auto [element, handle] = Allocate<IGSeparator>(glm::vec2(0.0f), glm::vec2(400.0f,10.0f));
 				element->Parent = parent;
 				allocateMemory(it.Children, element);
 				break;

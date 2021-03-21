@@ -41,15 +41,22 @@ namespace XYZ {
 		{
 			auto [mx, my] = Input::GetMousePosition();
 			glm::vec2 mousePosition = { mx ,my };
+			
+			if (context.Dockspace.OnMouseLeftPress(mousePosition, e.Handled))
+				return true;
 			for (auto& pool : context.Allocator.GetPools())
 			{
 				for (auto id : pool.GetRootElementIDs())
 				{
-					IGElement* parentElement = static_cast<IGElement*>(pool.GetHierarchy().GetData(id));			
+					IGWindow* parentElement = static_cast<IGWindow*>(pool.GetHierarchy().GetData(id));			
 					bool result = OnMouseButtonPressRecursive(parentElement, context, pool, mousePosition, e.Handled);
 					if (result || parentElement->OnLeftClick(mousePosition, e.Handled))
 					{
-						context.FrameData.MouseOffset = mousePosition - parentElement->Position;
+						if (IS_SET(parentElement->Flags, IGWindow::Moved))
+						{
+							context.FrameData.MouseOffset = mousePosition - parentElement->Position;
+							context.Dockspace.RemoveWindow(parentElement);
+						}
 						return true;
 					}
 				}
@@ -63,8 +70,21 @@ namespace XYZ {
 		{
 			auto [mx, my] = Input::GetMousePosition();
 			glm::vec2 mousePosition = { mx , my };
+			context.Dockspace.OnMouseLeftRelease();
+			context.Dockspace.SetVisibility(false);
+
+			
 			for (auto& pool : context.Allocator.GetPools())
 			{
+				for (auto id : pool.GetRootElementIDs())
+				{
+					IGWindow* window = static_cast<IGWindow*>(pool.GetHierarchy().GetData(id));
+					if (IS_SET(window->Flags, IGWindow::Moved))
+					{
+						if (context.Dockspace.InsertWindow(window, mousePosition))
+							window->Flags |= IGWindow::Docked;
+					}
+				}
 				for (size_t i = 0; i < pool.Size(); ++i)
 				{
 					IGElement* element = pool[i];
@@ -101,7 +121,8 @@ namespace XYZ {
 	{
 		auto [mx, my] = Input::GetMousePosition();
 		glm::vec2 mousePosition = { mx , my };
-	
+		
+		context.Dockspace.OnMouseMove(mousePosition, e.Handled);
 		for (auto& pool : context.Allocator.GetPools())
 		{
 			for (auto id : pool.GetRootElementIDs())
@@ -113,28 +134,10 @@ namespace XYZ {
 				IGWindow* window = dynamic_cast<IGWindow*>(parentElement);
 				if (window)
 				{
+					glm::vec2 mouseDiff = mousePosition - context.FrameData.MouseOffset;
+					window->HandleActions(mousePosition, mouseDiff, e.Handled);
 					if (IS_SET(window->Flags, IGWindow::Moved))
-					{
-						window->Position = mousePosition - context.FrameData.MouseOffset;
-						e.Handled = true;
-					}
-					else if (IS_SET(window->Flags, IGWindow::LeftResize))
-					{
-						window->Size.x = window->GetAbsolutePosition().x + window->Size.x - mousePosition.x;
-						window->Position.x = mousePosition.x;
-						e.Handled = true;
-					}
-					else if (IS_SET(window->Flags, IGWindow::RightResize))
-					{
-						window->Size.x = mousePosition.x - window->GetAbsolutePosition().x;
-						e.Handled = true;
-					}
-
-					if (IS_SET(window->Flags, IGWindow::BottomResize))
-					{
-						window->Size.y = mousePosition.y - window->GetAbsolutePosition().y;
-						e.Handled = true;
-					}
+						context.Dockspace.SetVisibility(true);
 				}
 			}
 		}

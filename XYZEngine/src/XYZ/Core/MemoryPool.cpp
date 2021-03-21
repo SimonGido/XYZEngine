@@ -10,7 +10,6 @@ namespace XYZ {
 	{
 	}
 
-
 	MemoryPool::~MemoryPool()
 	{
 		for (auto& block : m_Blocks)
@@ -55,9 +54,10 @@ namespace XYZ {
 	std::pair<uint8_t, uint32_t> MemoryPool::findAvailableIndex(uint32_t size)
 	{
 		uint32_t counter = 0;
+		size_t spaceRequirement = size + sizeof(uint32_t) + sizeof(uint8_t);
 		for (auto& chunk : m_FreeChunks)
 		{
-			if (chunk.Size >= size + sizeof(uint32_t) + sizeof(uint8_t))
+			if (chunk.Size >= spaceRequirement)
 			{
 				Chunk tmp = chunk;
 				m_FreeChunks.erase(m_FreeChunks.begin() + counter);
@@ -66,8 +66,8 @@ namespace XYZ {
 			else if (counter == m_FreeChunks.size() - 1)
 			{
 				Block& block = m_Blocks[chunk.BlockIndex];
-				// If there is not occupied memory after the last free chunk, uset he last chunk space together with not occupied memory
-				if (chunk.ChunkIndex + size == block.NextAvailableIndex && chunk.ChunkIndex + size < m_BlockSize)
+				// If there is not occupied memory after the last free chunk, use the last chunk space together with not occupied memory
+				if ((size_t)chunk.ChunkIndex + size == block.NextAvailableIndex && (size_t)chunk.ChunkIndex + size < m_BlockSize)
 				{
 					Chunk tmp = chunk;
 					m_FreeChunks.erase(m_FreeChunks.begin() + counter);
@@ -79,7 +79,7 @@ namespace XYZ {
 		}
 
 		Block* last = &m_Blocks.back();
-		if (last->NextAvailableIndex + size + sizeof(uint32_t) + sizeof(uint8_t) > m_BlockSize)
+		if ((size_t)last->NextAvailableIndex + spaceRequirement > m_BlockSize)
 		{
 			m_Blocks.push_back(Block());
 			last = &m_Blocks.back();
@@ -88,9 +88,12 @@ namespace XYZ {
 		}
 		uint32_t chunkIndex = last->NextAvailableIndex;
 		uint8_t blockIndex = (uint8_t)m_Blocks.size() - 1;
-		last->NextAvailableIndex += size + sizeof(uint32_t) + sizeof(uint8_t);
-		*(uint8_t*)&m_Blocks[blockIndex].Data[size + chunkIndex] = blockIndex; // Store block index
-		*(uint32_t*)&m_Blocks[blockIndex].Data[size + chunkIndex + sizeof(uint8_t)] = chunkIndex; // Store chunk index
+		last->NextAvailableIndex += spaceRequirement + 1;
+		size_t blockIndexInMemory = (size_t)size + (size_t)chunkIndex;
+		size_t chunkIndexInMemory = (size_t)size + (size_t)chunkIndex + sizeof(uint8_t);
+		
+		memcpy(&m_Blocks[blockIndex].Data[blockIndexInMemory], &blockIndex, sizeof(uint8_t));	// Store block index
+		memcpy(&m_Blocks[blockIndex].Data[chunkIndexInMemory], &chunkIndex, sizeof(uint32_t));	// Store chunk index
 
 		return { blockIndex, chunkIndex };
 	}

@@ -79,7 +79,7 @@ namespace XYZ {
 		Renderer::WaitAndRender();
 		
 		Ref<RenderTexture> renderTexture = RenderTexture::Create(SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer);
-		Ref<SubTexture> renderSubTexture = Ref<SubTexture>::Create(renderTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+		Ref<SubTexture> renderSubTexture = Ref<SubTexture>::Create(renderTexture, glm::vec4(1.0f, 1.0f, 0.0f, 0.0f));
 		Ref<Texture> robotTexture = Texture2D::Create({}, "Assets/Textures/Robot.png");
 		Ref<SubTexture> robotSubTexture = Ref<SubTexture>::Create(robotTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 
@@ -98,6 +98,7 @@ namespace XYZ {
 						{
 							{IGElementType::Slider, {}},
 							{IGElementType::Slider, {}},
+							{IGElementType::Separator, {}},
 							{IGElementType::Float, {}},
 							{IGElementType::Float, {}},
 							{IGElementType::Float, {}},
@@ -127,6 +128,12 @@ namespace XYZ {
 				{				
 					{IGElementType::Tree, {}},
 				}
+			},
+			{
+				IGElementType::ImageWindow,
+				{				
+						
+				}
 			}
 		};
 		m_HandleCount = IG::AllocateUI(
@@ -136,15 +143,17 @@ namespace XYZ {
 
 
 		IG::GetUI<IGGroup>(0, m_Handles[1]).Open = false;
-		IG::GetUI<IGTree>(0, m_Handles[21]).AddItem("1", nullptr, IGTree::IGTreeItem("zajko"));
-		IG::GetUI<IGTree>(0, m_Handles[21]).AddItem("2", nullptr, IGTree::IGTreeItem("opica"));
-		IG::GetUI<IGTree>(0, m_Handles[21]).AddItem("3", nullptr, IGTree::IGTreeItem("leopard"));
-		IG::GetUI<IGTree>(0, m_Handles[21]).AddItem("4", "1", IGTree::IGTreeItem("drak"));
-		IG::GetUI<IGTree>(0, m_Handles[21]).AddItem("5", "1", IGTree::IGTreeItem("pekac"));
-		IG::GetUI<IGTree>(0, m_Handles[21]).AddItem("6", "2", IGTree::IGTreeItem("drak"));
-		IG::GetUI<IGTree>(0, m_Handles[21]).AddItem("7", "6", IGTree::IGTreeItem("pekac"));
-		IG::GetUI<IGTree>(0, m_Handles[21]).AddItem("8", "3", IGTree::IGTreeItem("drak"));
-		IG::GetUI<IGTree>(0, m_Handles[21]).AddItem("9", "8", IGTree::IGTreeItem("pekac"));
+		IG::GetUI<IGTree>(0, m_Handles[22]).AddItem("1", nullptr, IGTree::IGTreeItem("zajko"));
+		IG::GetUI<IGTree>(0, m_Handles[22]).AddItem("2", nullptr, IGTree::IGTreeItem("opica"));
+		IG::GetUI<IGTree>(0, m_Handles[22]).AddItem("3", nullptr, IGTree::IGTreeItem("leopard"));
+		IG::GetUI<IGTree>(0, m_Handles[22]).AddItem("4", "1", IGTree::IGTreeItem("drak"));
+		IG::GetUI<IGTree>(0, m_Handles[22]).AddItem("5", "1", IGTree::IGTreeItem("pekac"));
+		IG::GetUI<IGTree>(0, m_Handles[22]).AddItem("6", "2", IGTree::IGTreeItem("drak"));
+		IG::GetUI<IGTree>(0, m_Handles[22]).AddItem("7", "6", IGTree::IGTreeItem("pekac"));
+		IG::GetUI<IGTree>(0, m_Handles[22]).AddItem("8", "3", IGTree::IGTreeItem("drak"));
+		IG::GetUI<IGTree>(0, m_Handles[22]).AddItem("9", "8", IGTree::IGTreeItem("pekac"));
+
+		IG::GetUI<IGImageWindow>(0, m_Handles[23]).SubTexture = renderSubTexture;
 	}	
 
 

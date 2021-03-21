@@ -18,6 +18,8 @@ namespace XYZ {
 	void IG::Init()
 	{
 		s_Context = new IGContext();
+		auto [width, height] = Input::GetWindowSize();
+		s_Context->Dockspace.SetRootSize({ width, height });
 	}
 
 	void IG::Shutdown()
@@ -32,13 +34,13 @@ namespace XYZ {
 		viewMatrix = glm::inverse(viewMatrix);
 
 	
-		s_Context->RenderData.RebuildMesh(s_Context->Allocator, s_Context->Mesh);
 		Renderer2D::BeginScene(viewProjectionMatrix * viewMatrix);	
+		Renderer2D::SetMaterial(s_Context->RenderData.Material);
+		s_Context->RenderData.RebuildMesh(s_Context->Allocator, s_Context->Mesh);
 	}
 
 	void IG::EndFrame()
 	{
-		Renderer2D::SetMaterial(s_Context->RenderData.Material);
 		for (auto& it : s_Context->Mesh.Quads)
 		{
 			Renderer2D::SubmitQuadNotCentered(it.Position, it.Size, it.TexCoord, it.TextureID, it.Color);
@@ -47,6 +49,7 @@ namespace XYZ {
 		{
 			Renderer2D::SubmitLine(it.P0, it.P1, it.Color);
 		}
+		s_Context->Dockspace.SubmitToRenderer(&s_Context->RenderData);
 
 		Renderer2D::Flush();
 		Renderer2D::FlushLines();

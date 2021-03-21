@@ -88,7 +88,7 @@ namespace XYZ {
 		SubTextures[RightArrow] = Ref<XYZ::SubTexture>::Create(Texture, glm::vec2(2, 2), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
 		SubTextures[LeftArrow] = Ref<XYZ::SubTexture>::Create(Texture, glm::vec2(3, 2), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
 		SubTextures[Pause] = Ref<XYZ::SubTexture>::Create(Texture, glm::vec2(2, 1), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
-		SubTextures[DockSpace] = Ref<XYZ::SubTexture>::Create(Texture, glm::vec2(0, 0), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
+		SubTextures[White] = Ref<XYZ::SubTexture>::Create(Texture, glm::vec2(3, 0), glm::vec2(Texture->GetWidth() / divisor, Texture->GetHeight() / divisor));
 
 		ScissorBuffer = ShaderStorageBuffer::Create(MaxNumberOfScissors * sizeof(IGScissor));
 
@@ -127,7 +127,6 @@ namespace XYZ {
 						childElement->ListenToInput = true;
 						if (genSize.y > highestInRow)
 							highestInRow = genSize.y;
-
 						offset += RebuildMeshRecursive(childElement, pool, mesh, data, rootBorder);
 					}
 					else
