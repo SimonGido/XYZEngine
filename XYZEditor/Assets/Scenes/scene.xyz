@@ -15,3 +15,12 @@ Entities:
       IsVisible: true
     Relationship:
       {}
+  - Entity: f1f3167d-2b4f-4bac-a50d-bd858dd34efc
+    SceneTagComponent:
+      Name: Test
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      {}

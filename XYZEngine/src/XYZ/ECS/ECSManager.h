@@ -1,6 +1,7 @@
 #pragma once
 #include "ComponentManager.h"
 #include "EntityManager.h"
+#include "CallbackManager.h"
 #include "ComponentView.h"
 
 namespace XYZ {
@@ -17,7 +18,20 @@ namespace XYZ {
 		{ 
 			auto& signature = m_EntityManager.GetSignature(entity);
 			m_ComponentManager.EntityDestroyed(entity, signature);
+			m_CallbackManager.OnEntityDestroyed(entity, signature);
 			m_EntityManager.DestroyEntity(entity); 
+		}
+
+		template <typename T>
+		void AddListener(void(*callback)(void*, uint32_t, CallbackType), void* instance)
+		{
+			m_CallbackManager.AddListener<T>(callback, instance);
+		}
+
+		template <typename T>
+		void RemoveListener(void* instance)
+		{
+			m_CallbackManager.RemoveListener<T>(instance);
 		}
 
 		template <typename T, typename ...Args>
@@ -27,6 +41,8 @@ namespace XYZ {
 			XYZ_ASSERT(!signature.test(IComponent::GetComponentID<T>()), "Entity already contains component");
 			signature.set(IComponent::GetComponentID<T>(), true);
 			auto& result = m_ComponentManager.EmplaceComponent<T>(entity, std::forward<Args>(args)...);
+			m_CallbackManager.OnComponentCreate<T>(entity);
+
 			return result;
 		}
 		template <typename T>
@@ -36,6 +52,8 @@ namespace XYZ {
 			XYZ_ASSERT(!signature.test(IComponent::GetComponentID<T>()), "Entity already contains component");
 			signature.set(IComponent::GetComponentID<T>(), true);
 			auto& result = m_ComponentManager.AddComponent<T>(entity, component);
+			m_CallbackManager.OnComponentCreate<T>(entity);
+
 			return result;
 		}
 		
@@ -47,6 +65,8 @@ namespace XYZ {
 			
 			signature.set(IComponent::GetComponentID<T>(), false);
 			m_ComponentManager.RemoveComponent<T>(entity, signature);
+			m_CallbackManager.OnComponentRemove<T>(entity);
+
 			return true;
 		}
 
@@ -133,6 +153,7 @@ namespace XYZ {
 		size_t GetNumberOfRegisteredComponentTypes() const { return m_ComponentManager.GetNumberOfRegisteredStorages(); }
 	private:
 		ComponentManager m_ComponentManager;
+		CallbackManager m_CallbackManager;
 		EntityManager m_EntityManager;
 	};
 	

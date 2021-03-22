@@ -24,11 +24,16 @@ namespace XYZ {
     }
     SceneHierarchyPanel::~SceneHierarchyPanel()
     {
-
+        m_Context->m_ECS.RemoveListener<SceneTagComponent>(this);
     }
     void SceneHierarchyPanel::SetContext(Ref<Scene> context)
     {
         m_Context = context;
+        m_Context->m_ECS.AddListener<SceneTagComponent>([](void* instance, uint32_t entity, CallbackType type) {
+            
+
+        }, this);
+     
         rebuildTree();
     }
     void SceneHierarchyPanel::OnInGuiRender()
