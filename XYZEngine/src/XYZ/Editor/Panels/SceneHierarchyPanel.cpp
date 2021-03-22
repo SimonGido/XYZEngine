@@ -28,6 +28,10 @@ namespace XYZ {
     }
     void SceneHierarchyPanel::SetContext(Ref<Scene> context)
     {
+        if (m_Context.Raw())
+            m_Context->m_ECS.RemoveListener<SceneTagComponent>(this);
+       
+
         m_Context = context;
         m_Context->m_ECS.AddListener<SceneTagComponent>([](void* instance, uint32_t entity, CallbackType type) {
             
