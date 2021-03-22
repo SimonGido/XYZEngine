@@ -67,7 +67,7 @@ namespace XYZ {
 
 		virtual bool OnKeyPress(int32_t mode, int32_t key, bool& handled) { return false; }
 		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData, uint32_t scissorIndex = 0) { return glm::vec2(0.0f); };
-		virtual glm::vec2 BuildMesh(IGMesh& mesh,IGRenderData& renderData, IGPool& pool, const glm::vec2& rootBorder);
+		virtual glm::vec2 BuildMesh(IGMesh& mesh,IGRenderData& renderData, IGPool& pool, const glm::vec2& rootBorder, uint32_t scissorIndex = 0);
 
 		glm::vec2	Position;
 		glm::vec2	Size;

@@ -33,23 +33,20 @@ namespace XYZ {
 			}
 			return counter;
 		}
-		static bool ResolvePosition(size_t oldQuadCount, const glm::vec2& genSize, IGElement* element, IGElement* parent, IGMesh& mesh, glm::vec2& offset, float& highestInRow, const glm::vec2& rootBorder)
+		static bool ResolvePosition(size_t oldQuadCount, const glm::vec2& genSize, IGElement* element, IGElement* parent, IGMesh& mesh, glm::vec2& offset, float& highestInRow, const glm::vec2& parentBorder, const glm::vec2& rootBorder)
 		{
 			if (parent)
 			{
 				if (parent->Style.AutoPosition)
 				{
-					float xBorder = parent->Size.x - parent->Style.Layout.RightPadding;
-					float yBorder = parent->Size.y - parent->Style.Layout.BottomPadding - parent->Style.Layout.TopPadding - IGWindow::PanelHeight;
-
-					if (offset.x + genSize.x > xBorder)
+					if (offset.y + genSize.y > parentBorder.y)
 					{
-						if (offset.y + genSize.y > yBorder)
-						{
-							mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
-							return false;
-						}
-						else if (!parent->Style.NewRow)
+						mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
+						return false;
+					}
+					if (offset.x + genSize.x > parentBorder.x)
+					{
+						if (!parent->Style.NewRow)
 						{
 							offset.x += genSize.x + parent->Style.Layout.SpacingX;
 							mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
@@ -60,8 +57,14 @@ namespace XYZ {
 							offset.x = parent->Style.Layout.LeftPadding;
 							offset.y += parent->Style.Layout.SpacingY + highestInRow;
 							highestInRow = 0.0f;
+							// It does not fit to the new row
+							if (offset.y + genSize.y > parentBorder.y)
+							{
+								mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
+								return false;
+							}
 							// It is generally bigger than xBorder erase it
-							if (offset.x + genSize.x > xBorder)
+							if (offset.x + genSize.x > parentBorder.x)
 							{
 								mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
 								return false;
@@ -84,6 +87,12 @@ namespace XYZ {
 			}
 
 			return true;
+		}
+
+		static bool IsInside(const glm::vec2& parentPos, const glm::vec2& parentSize, const glm::vec2& pos, const glm::vec2& size)
+		{
+			return !(pos.x < parentPos.x || pos.x + size.x > parentPos.x + parentSize.x
+				  || pos.y < parentPos.y || pos.y + size.y > parentPos.y + parentSize.y);
 		}
 	}
 
@@ -647,7 +656,7 @@ namespace XYZ {
 		return IGMeshFactory::GenerateUI<IGScrollbox>(Label.c_str(), Color, data);
 	}
 
-	glm::vec2 IGScrollbox::BuildMesh(IGMesh& mesh, IGRenderData& renderData, IGPool& pool, const glm::vec2& rootBorder)
+	glm::vec2 IGScrollbox::BuildMesh(IGMesh& mesh, IGRenderData& renderData, IGPool& pool, const glm::vec2& rootBorder, uint32_t scissorIndex)
 	{
 		if (Active && ActiveChildren)
 		{	
@@ -655,30 +664,24 @@ namespace XYZ {
 				Style.Layout.LeftPadding + Offset.x,
 				Style.Layout.TopPadding + IGWindow::PanelHeight + Offset.y
 			};
-
+			uint32_t scissorIndex = renderData.Scissors.size() - 1;
 			float highestInRow = 0.0f;
-			bool outOfRange = false;
 			pool.GetHierarchy().TraverseNodeChildren(ID, [&](void* parent, void* child) -> bool {
 	
 				IGElement* childElement = static_cast<IGElement*>(child);
-				// Previous element was out of range and erased , turn off listening to input
-				if (outOfRange)
-				{
-					childElement->ListenToInput = false;
-					return false;
-				}
+
+				glm::vec2 border = Size + childElement->Size + Style.Layout.TopPadding;
 				size_t oldQuadCount = renderData.ScrollableMesh.Quads.size();
-				glm::vec2 genSize = childElement->GenerateQuads(renderData.ScrollableMesh, renderData, renderData.Scissors.size() - 1);
-				if (Helper::ResolvePosition(oldQuadCount, genSize, childElement, this, renderData.ScrollableMesh, offset, highestInRow, rootBorder))
-				{
-					childElement->ListenToInput = true;
+				glm::vec2 genSize = childElement->GenerateQuads(renderData.ScrollableMesh, renderData, scissorIndex );
+				if (Helper::ResolvePosition(oldQuadCount, genSize, childElement, this, renderData.ScrollableMesh, offset, highestInRow, border, rootBorder))
+				{				
+					childElement->ListenToInput = Helper::IsInside(GetAbsolutePosition(), Size, childElement->GetAbsolutePosition(), childElement->Size);
 					if (genSize.y > highestInRow)
 						highestInRow = genSize.y;
-					offset += childElement->BuildMesh(renderData.ScrollableMesh, renderData, pool, rootBorder);
+					offset += childElement->BuildMesh(renderData.ScrollableMesh, renderData, pool, rootBorder, scissorIndex);
 				}
 				else
 				{
-					outOfRange = true;
 					childElement->ListenToInput = false;
 				}
 				return false;

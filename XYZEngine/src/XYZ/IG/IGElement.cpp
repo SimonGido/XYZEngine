@@ -72,7 +72,7 @@ namespace XYZ {
 	{
 	}
 
-	glm::vec2 IGElement::BuildMesh(IGMesh& mesh, IGRenderData& renderData, IGPool& pool, const glm::vec2& rootBorder)
+	glm::vec2 IGElement::BuildMesh(IGMesh& mesh, IGRenderData& renderData, IGPool& pool, const glm::vec2& rootBorder, uint32_t scissorIndex)
 	{
 		if (Active && ActiveChildren)
 		{			
