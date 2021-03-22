@@ -15,6 +15,8 @@ namespace XYZ {
 	{
 	public:
 		IGPool(const std::initializer_list<IGHierarchyElement>& hierarchy, size_t ** handles);
+		IGPool(const IGPool& other) = delete;
+		IGPool(IGPool&& other) noexcept;
 		~IGPool();
 
 		template <typename T, typename ...Args>
@@ -29,6 +31,12 @@ namespace XYZ {
 
 		template <typename T>
 		T* Get(size_t index)
+		{
+			return reinterpret_cast<T*>((void*)&m_Data[index]);
+		}
+
+		template <typename T>
+		const T* Get(size_t index) const
 		{
 			return reinterpret_cast<T*>((void*)&m_Data[index]);
 		}

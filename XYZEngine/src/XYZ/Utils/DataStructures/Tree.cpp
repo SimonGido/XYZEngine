@@ -127,6 +127,12 @@ namespace XYZ {
         }
         m_Nodes[node].FirstChild = prev;
     }
+    void Tree::Clear()
+    {
+        m_Nodes.Clear();
+        m_NodeCount = 0;
+        m_Root = TreeNode::sc_Invalid;
+    }
     void Tree::Traverse(const std::function<bool(void*, void*)>& callback) const
     {
         if (m_Root == TreeNode::sc_Invalid)

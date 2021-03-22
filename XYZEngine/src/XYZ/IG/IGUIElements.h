@@ -122,21 +122,21 @@ namespace XYZ {
 		char Buffer[BufferSize];
 	};
 
-	class IGTree : public IGElement
+
+	struct IGTreeItem
 	{
-	public:
-		struct IGTreeItem
-		{
-			IGTreeItem(const std::string& label)
-				: Label(label) {};
+		IGTreeItem(const std::string& label)
+			: Label(label) {};
 
-			std::string Label;
-			int32_t		ID = -1;
-			bool		Open = false;
-			glm::vec2	Position = glm::vec2(0.0f);
-			glm::vec4	Color = glm::vec4(1.0f);
-		};
+		std::string Label;
+		int32_t		ID = -1;
+		bool		Open = false;
+		glm::vec2	Position = glm::vec2(0.0f);
+		glm::vec4	Color = glm::vec4(1.0f);
+	};
 
+	class IGTree : public IGElement
+	{	
 	public:
 		IGTree(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
 
@@ -147,6 +147,7 @@ namespace XYZ {
 
 		void AddItem(const char* name, const char* parent, const IGTreeItem& item);
 		void RemoveItem(const char* name);
+		void Clear();
 
 		IGTreeItem& GetItem(const char* name);
 	private:

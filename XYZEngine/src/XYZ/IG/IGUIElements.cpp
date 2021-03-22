@@ -520,7 +520,8 @@ namespace XYZ {
 		IGMeshFactoryData data = { renderData.SubTextures[IGRenderData::RightArrow], this, &mesh, &renderData, scissorIndex };
 		return IGMeshFactory::GenerateUI<IGTree>(Label.c_str(), Color, data);
 	}
-	IGTree::IGTreeItem& IGTree::GetItem(const char* name)
+
+	IGTreeItem& IGTree::GetItem(const char* name)
 	{
 		auto it = NameIDMap.find(name);
 		XYZ_ASSERT(it != NameIDMap.end(), "");
@@ -573,6 +574,17 @@ namespace XYZ {
 			XYZ_LOG_WARN("Item with the name: ", name, "does not exist");
 		}
 	}
+
+	void IGTree::Clear()
+	{
+		NameIDMap.clear();	
+		Hierarchy.Traverse([&](void* parent, void* child) -> bool {
+			Pool.Deallocate<IGTreeItem>(static_cast<IGTreeItem*>(child));
+			return false;
+		});
+		Hierarchy.Clear();
+	}
+
 	IGGroup::IGGroup(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
 		: IGElement(position, size, color, IGElementType::Group)
 	{
@@ -670,8 +682,8 @@ namespace XYZ {
 	
 				IGElement* childElement = static_cast<IGElement*>(child);
 
-				glm::vec2 border = Size + childElement->Size + Style.Layout.TopPadding;
 				size_t oldQuadCount = renderData.ScrollableMesh.Quads.size();
+				glm::vec2 border = Size + childElement->Size + Style.Layout.TopPadding;
 				glm::vec2 genSize = childElement->GenerateQuads(renderData.ScrollableMesh, renderData, scissorIndex );
 				if (Helper::ResolvePosition(oldQuadCount, genSize, childElement, this, renderData.ScrollableMesh, offset, highestInRow, border, rootBorder))
 				{				

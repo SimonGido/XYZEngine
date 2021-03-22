@@ -7,7 +7,7 @@ namespace XYZ {
 	class SceneHierarchyPanel
 	{
 	public:
-		SceneHierarchyPanel(uint32_t panelID);
+		SceneHierarchyPanel();
 		~SceneHierarchyPanel();
 
 		void SetContext(Ref<Scene> context);
@@ -16,18 +16,17 @@ namespace XYZ {
 		void OnInGuiRender();
 		void OnEvent(Event& event);
 	private:
-		void resizeEntities();
+		void rebuildTree();
+		void updateTree();
 
 		bool onMouseButtonPress(MouseButtonPressEvent& event);
 		bool onKeyPressed(KeyPressedEvent& event);
 
 	private:
-		uint32_t m_PanelID;
 		Ref<Scene> m_Context;
 
-		glm::vec2 m_DropdownPosition = glm::vec2(0.0f);
-		bool m_DropdownOpen = false;
-		bool* m_EntitiesOpen = nullptr;
-		size_t m_CurrentSize = 0;
+		size_t* m_Handles;
+		size_t m_HandleCount;
+		size_t m_ID;
 	};
 }

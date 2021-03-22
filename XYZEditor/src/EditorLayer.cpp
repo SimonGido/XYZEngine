@@ -36,7 +36,7 @@ namespace XYZ {
 	
 	EditorLayer::EditorLayer()
 		:
-		m_SceneHierarchyPanel(PanelID::SceneHierarchyPanel),
+		m_SceneHierarchyPanel(),
 		m_ScenePanel(PanelID::ScenePanel),
 		m_InspectorPanel(PanelID::InspectorPanel),
 		m_SkinningEditorPanel(PanelID::SkinningEditorPanel)
@@ -152,19 +152,19 @@ namespace XYZ {
 			types, 
 			&m_Handles
 		).second;
-
-
-		IG::GetUI<IGTree>(0, m_Handles[30]).AddItem("1", nullptr, IGTree::IGTreeItem("zajko"));
-		IG::GetUI<IGTree>(0, m_Handles[30]).AddItem("2", nullptr, IGTree::IGTreeItem("opica"));
-		IG::GetUI<IGTree>(0, m_Handles[30]).AddItem("3", nullptr, IGTree::IGTreeItem("leopard"));
-		IG::GetUI<IGTree>(0, m_Handles[30]).AddItem("4", "1", IGTree::IGTreeItem("drak"));
-		IG::GetUI<IGTree>(0, m_Handles[30]).AddItem("5", "1", IGTree::IGTreeItem("pekac"));
-		IG::GetUI<IGTree>(0, m_Handles[30]).AddItem("6", "2", IGTree::IGTreeItem("drak"));
-		IG::GetUI<IGTree>(0, m_Handles[30]).AddItem("7", "6", IGTree::IGTreeItem("pekac"));
-		IG::GetUI<IGTree>(0, m_Handles[30]).AddItem("8", "3", IGTree::IGTreeItem("drak"));
-		IG::GetUI<IGTree>(0, m_Handles[30]).AddItem("9", "8", IGTree::IGTreeItem("pekac"));
-
-		IG::GetUI<IGImageWindow>(0, m_Handles[31]).SubTexture = renderSubTexture;
+		//
+		//
+		//IG::GetUI<IGTree>(0, m_Handles[30]).AddItem("1", nullptr, IGTreeItem("zajko"));
+		//IG::GetUI<IGTree>(0, m_Handles[30]).AddItem("2", nullptr, IGTreeItem("opica"));
+		//IG::GetUI<IGTree>(0, m_Handles[30]).AddItem("3", nullptr, IGTreeItem("leopard"));
+		//IG::GetUI<IGTree>(0, m_Handles[30]).AddItem("4", "1", IGTreeItem("drak"));
+		//IG::GetUI<IGTree>(0, m_Handles[30]).AddItem("5", "1", IGTreeItem("pekac"));
+		//IG::GetUI<IGTree>(0, m_Handles[30]).AddItem("6", "2", IGTreeItem("drak"));
+		//IG::GetUI<IGTree>(0, m_Handles[30]).AddItem("7", "6", IGTreeItem("pekac"));
+		//IG::GetUI<IGTree>(0, m_Handles[30]).AddItem("8", "3", IGTreeItem("drak"));
+		//IG::GetUI<IGTree>(0, m_Handles[30]).AddItem("9", "8", IGTreeItem("pekac"));
+		//
+		//IG::GetUI<IGImageWindow>(0, m_Handles[31]).SubTexture = renderSubTexture;
 	}	
 
 
@@ -218,9 +218,9 @@ namespace XYZ {
 		//m_ScenePanel.OnInGuiRender();
 		//m_SkinningEditorPanel.OnInGuiRender();
 
-		IG::BeginUI(0);
-	
-		IG::UI<IGWindow>(m_Handles[0]);
+		//IG::BeginUI(0);
+		//
+		//IG::UI<IGWindow>(m_Handles[0]);
 
 		//IG::UI<IGCheckbox>(m_Handles[1]);
 		//IG::UI<IGCheckbox>(m_Handles[2]);
@@ -229,7 +229,7 @@ namespace XYZ {
 		//IG::UI<IGCheckbox>(m_Handles[5]);
 		//IG::UI<IGCheckbox>(m_Handles[6]);
 		//IG::UI<IGCheckbox>(m_Handles[7]);
-		IG::EndUI();
+		//IG::EndUI();
 	}
 
 	

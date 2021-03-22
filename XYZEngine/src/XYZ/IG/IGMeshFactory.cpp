@@ -425,7 +425,7 @@ namespace XYZ {
 		glm::vec2 offset = glm::vec2(0.0f);
 		tree->Hierarchy.Traverse([&](void* parent, void* child) ->bool {
 
-			IGTree::IGTreeItem* childItem = static_cast<IGTree::IGTreeItem*>(child);
+			IGTreeItem* childItem = static_cast<IGTreeItem*>(child);
 			if (nodes[childItem->ID].Depth > currentDepth)
 			{
 				offset.x += nodeOffset;
@@ -443,7 +443,7 @@ namespace XYZ {
 			bool open = true;
 			if (parent)
 			{
-				IGTree::IGTreeItem* parentItem = static_cast<IGTree::IGTreeItem*>(parent);
+				IGTreeItem* parentItem = static_cast<IGTreeItem*>(parent);
 				open = parentItem->Open;
 				if (open)
 				{

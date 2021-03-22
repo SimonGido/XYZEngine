@@ -4,61 +4,36 @@
 #include "XYZ/Core/Input.h"
 #include "XYZ/InGui/InGui.h"
 #include "XYZ/Scene/SceneEntity.h"
+#include "XYZ/IG/IG.h"
 
 namespace XYZ {
-    SceneHierarchyPanel::SceneHierarchyPanel(uint32_t panelID)
-        : 
-        m_PanelID(panelID)
+    SceneHierarchyPanel::SceneHierarchyPanel()
     {
-        InGui::Begin(panelID, "Scene Hierarchy", glm::vec2(0.0f), glm::vec2(200.0f));
-        InGui::End();
+        std::initializer_list<IGHierarchyElement> types{
+            {
+                IGElementType::Window,
+                {
+                    {IGElementType::Tree,{}}
+                }
+            }
+        };
+               
+        auto [id, count] =  IG::AllocateUI(types, &m_Handles);
+        m_ID = id;
+        m_HandleCount = count;
     }
     SceneHierarchyPanel::~SceneHierarchyPanel()
     {
-        if (m_EntitiesOpen)
-            delete m_EntitiesOpen;
+
     }
     void SceneHierarchyPanel::SetContext(Ref<Scene> context)
     {
         m_Context = context;
-        if (m_CurrentSize < context->m_Entities.size())
-            resizeEntities();
+        rebuildTree();
     }
     void SceneHierarchyPanel::OnInGuiRender()
     {
-        if (InGui::Begin(m_PanelID, "Scene Hierarchy", glm::vec2(0.0f), glm::vec2(200.0f)))
-        {
-            if (m_Context.Raw())
-            {
-                if (m_CurrentSize < m_Context->m_Entities.size())
-                    resizeEntities();
-                uint32_t counter = 0;
-                for (auto entityID : m_Context->m_Entities)
-                {
-                    SceneEntity entity(entityID, m_Context.Raw());
-                    bool hightlight = (m_Context->GetSelectedEntity() == entity);
-                    if (uint8_t res = InGui::PushNode(entity.GetComponent<SceneTagComponent>().Name.c_str(), glm::vec2(25.0f), m_EntitiesOpen[counter], hightlight))
-                    {
-                        if (IS_SET(res, InGuiReturnType::Clicked))
-                        {
-                            m_Context->SetSelectedEntity(entity);
-                        }
-                    }
-                    counter++;
-                }
-         
-                InGui::SetPositionOfNext(m_DropdownPosition);
-                if (m_DropdownOpen)
-                {
-                    if (IS_SET(InGui::Dropdown("New Entity", { 150.0f, 30.0f }, m_DropdownOpen), InGuiReturnType::Clicked))
-                    {
-
-                    }
-                    InGui::EndDropdown();
-                }        
-            }
-        }
-        InGui::End();
+        
     }
     void SceneHierarchyPanel::OnEvent(Event& event)
     {
@@ -66,27 +41,30 @@ namespace XYZ {
         dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&SceneHierarchyPanel::onMouseButtonPress, this));
         dispatcher.Dispatch<KeyPressedEvent>(Hook(&SceneHierarchyPanel::onKeyPressed, this));
     }
-    void SceneHierarchyPanel::resizeEntities()
+    void SceneHierarchyPanel::rebuildTree()
     {
-        if (m_EntitiesOpen)
+        IGTree& tree = IG::GetUI<IGTree>(m_ID, m_Handles[1]);
+        tree.Clear();
+        ECSManager& ecs = m_Context->m_ECS;
+        for (uint32_t entity : m_Context->m_Entities)
         {
-            delete[] m_EntitiesOpen;
-            m_EntitiesOpen = nullptr;
+            IDComponent& id = ecs.GetComponent<IDComponent>(entity);
+            SceneTagComponent& sceneTag = ecs.GetComponent<SceneTagComponent>(entity);
+ 
+            std::string idStr = (std::string)id.ID;
+            tree.AddItem(idStr.c_str(), nullptr, IGTreeItem(sceneTag.Name));
         }
-        m_EntitiesOpen = new bool[m_Context->m_Entities.size()];
-        memset(m_EntitiesOpen, 0, m_Context->m_Entities.size());
-        m_CurrentSize = m_Context->m_Entities.size();
     }
+
+    void SceneHierarchyPanel::updateTree()
+    {
+    }
+
     bool SceneHierarchyPanel::onMouseButtonPress(MouseButtonPressEvent& event)
     {
         if (event.IsButtonPressed(MouseCode::MOUSE_BUTTON_RIGHT))
         {
-            if (IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
-            {
-                m_DropdownPosition = { Input::GetMouseX(), Input::GetMouseY() };
-                m_DropdownOpen = !m_DropdownOpen;
-                return true;
-            }
+          
         }
         
         return false;

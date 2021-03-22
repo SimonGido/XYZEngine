@@ -28,7 +28,7 @@ namespace XYZ {
 		int32_t Insert(void* data, int32_t parent);
 		void    Remove(int32_t index);
 		void    ReverseNodeChildren(int32_t node);
-
+		void    Clear();
 
 		void    Traverse(const std::function<bool(void*, void*)>& callback) const;
 		void	TraverseNode(int32_t node, const std::function<bool(void*, void*)>& callback) const;

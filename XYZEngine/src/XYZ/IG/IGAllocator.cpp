@@ -21,6 +21,93 @@ namespace XYZ {
 		insertToHierarchy(-1, hierarchy, counter, 0);
 	}
 
+	//IGPool::IGPool(const IGPool& other)
+	//	:
+	//	m_Capacity(other.m_Capacity),
+	//	m_Size(other.m_Size),
+	//	m_Handles(other.m_Handles),
+	//	m_Elements(other.m_Elements),
+	//	m_RootElements(other.m_RootElements)
+	//{
+	//	m_Data = new uint8_t[m_Capacity];
+	//	memcpy(m_Data, other.m_Data, m_Size);
+	//	size_t offset = 0;
+	//	for (auto element : other.m_Elements)
+	//	{
+	//		switch (element)
+	//		{
+	//		case XYZ::IGElementType::Window:
+	//			new (&m_Data[offset])IGWindow(*other.Get<IGWindow>(offset));
+	//			offset += sizeof(IGWindow);
+	//			break;
+	//		case XYZ::IGElementType::ImageWindow:
+	//			new (&m_Data[offset])IGImageWindow(*other.Get<IGImageWindow>(offset));
+	//			offset += sizeof(IGImageWindow);
+	//			break;
+	//		case XYZ::IGElementType::Group:
+	//			new (&m_Data[offset])IGGroup(*other.Get<IGGroup>(offset));
+	//			offset += sizeof(IGGroup);
+	//			break;
+	//		case XYZ::IGElementType::Separator:
+	//			new (&m_Data[offset])IGSeparator(*other.Get<IGSeparator>(offset));
+	//			offset += sizeof(IGSeparator);
+	//			break;
+	//		case XYZ::IGElementType::Button:
+	//			new (&m_Data[offset])IGButton(*other.Get<IGButton>(offset));
+	//			offset += sizeof(IGButton);
+	//			break;
+	//		case XYZ::IGElementType::Checkbox:
+	//			new (&m_Data[offset])IGCheckbox(*other.Get<IGCheckbox>(offset));
+	//			offset += sizeof(IGCheckbox);
+	//			break;
+	//		case XYZ::IGElementType::Slider:
+	//			new (&m_Data[offset])IGSlider(*other.Get<IGSlider>(offset));
+	//			offset += sizeof(IGSlider);
+	//			break;
+	//		case XYZ::IGElementType::Text:
+	//			new (&m_Data[offset])IGText(*other.Get<IGText>(offset));
+	//			offset += sizeof(IGText);
+	//			break;
+	//		case XYZ::IGElementType::Float:
+	//			new (&m_Data[offset])IGFloat(*other.Get<IGFloat>(offset));
+	//			offset += sizeof(IGFloat);
+	//			break;
+	//		case XYZ::IGElementType::Tree:
+	//			new (&m_Data[offset])IGTree(*other.Get<IGTree>(offset));
+	//			offset += sizeof(IGTree);
+	//			break;
+	//		case XYZ::IGElementType::Scrollbox:
+	//			new (&m_Data[offset])IGScrollbox(*other.Get<IGScrollbox>(offset));
+	//			offset += sizeof(IGScrollbox);
+	//			break;
+	//		case XYZ::IGElementType::None:
+	//			break;
+	//		default:
+	//			break;
+	//		}
+	//	}
+	//}
+
+	IGPool::IGPool(IGPool&& other) noexcept
+		:
+		m_Capacity(other.m_Capacity),
+		m_Size(other.m_Size),
+		m_Hierarchy(other.m_Hierarchy)
+	{
+		m_Data = other.m_Data;
+		m_Handles = std::move(other.m_Handles);
+		m_Elements = std::move(other.m_Elements);
+		m_RootElements = std::move(other.m_RootElements);
+		
+		other.m_Data = nullptr;
+		other.m_Capacity = 0;
+		other.m_Size = 0;
+
+		other.m_Elements.clear();
+		other.m_Handles.clear();
+		other.m_RootElements.clear();
+	}
+
 	IGPool::~IGPool()
 	{
 		size_t offset = 0;
