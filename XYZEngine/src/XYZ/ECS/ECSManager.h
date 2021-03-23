@@ -17,13 +17,13 @@ namespace XYZ {
 		void DestroyEntity(uint32_t entity) 
 		{ 
 			auto& signature = m_EntityManager.GetSignature(entity);
-			m_ComponentManager.EntityDestroyed(entity, signature);
 			m_CallbackManager.OnEntityDestroyed(entity, signature);
+			m_ComponentManager.EntityDestroyed(entity, signature);
 			m_EntityManager.DestroyEntity(entity); 
 		}
 
 		template <typename T>
-		void AddListener(void(*callback)(void*, uint32_t, CallbackType), void* instance)
+		void AddListener(const std::function<void(uint32_t, CallbackType)>& callback, void* instance)
 		{
 			m_CallbackManager.AddListener<T>(callback, instance);
 		}
@@ -64,8 +64,8 @@ namespace XYZ {
 			XYZ_ASSERT(signature.test(IComponent::GetComponentID<T>()), "Entity does not have component");
 			
 			signature.set(IComponent::GetComponentID<T>(), false);
-			m_ComponentManager.RemoveComponent<T>(entity, signature);
 			m_CallbackManager.OnComponentRemove<T>(entity);
+			m_ComponentManager.RemoveComponent<T>(entity, signature);
 
 			return true;
 		}

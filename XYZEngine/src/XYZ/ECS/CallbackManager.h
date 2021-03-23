@@ -13,7 +13,7 @@ namespace XYZ {
 		CallbackManager();
 
 		template <typename T>
-		void AddListener(void(*callback)(void*, uint32_t, CallbackType), void* instance)
+		void AddListener(const std::function<void(uint32_t, CallbackType)>& callback, void* instance)
 		{
 			CallbackStorage<T>* storage = getOrCreateStorage<T>();
 			storage->AddListener(callback, instance);

@@ -14,7 +14,6 @@ namespace XYZ {
 
 		void OnInGuiRender();
 		void OnEvent(Event& event);
-		void OnSceneTagChanged(uint32_t entity, const SceneTagComponent& oldTag, const SceneTagComponent& newTag);
 
 	private:
 		void rebuildTree();

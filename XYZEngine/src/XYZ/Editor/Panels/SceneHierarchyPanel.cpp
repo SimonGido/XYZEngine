@@ -33,9 +33,22 @@ namespace XYZ {
        
 
         m_Context = context;
-        m_Context->m_ECS.AddListener<SceneTagComponent>([](void* instance, uint32_t entity, CallbackType type) {
+        m_Context->m_ECS.AddListener<SceneTagComponent>([this](uint32_t entity, CallbackType type) {
             
-
+            ECSManager& ecs = m_Context->m_ECS;
+            IGTree& tree = IG::GetUI<IGTree>(m_ID, m_Handles[1]);
+            if (type == CallbackType::ComponentCreate)
+            {
+                IDComponent& id = ecs.GetComponent<IDComponent>(entity);
+                SceneTagComponent& sceneTag = ecs.GetComponent<SceneTagComponent>(entity);
+                tree.AddItem(std::string(id.ID).c_str(), nullptr, IGTreeItem(sceneTag.Name));
+            }
+            else if (type == CallbackType::ComponentRemove || type == CallbackType::EntityDestroy)
+            {
+                IDComponent& id = ecs.GetComponent<IDComponent>(entity);
+                tree.RemoveItem(std::string(id.ID).c_str());
+            }
+  
         }, this);
      
         rebuildTree();

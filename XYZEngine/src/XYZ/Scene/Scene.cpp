@@ -173,13 +173,6 @@ namespace XYZ {
 			m_Entities.pop_back();
 		}
 		m_ECS.DestroyEntity(entity);
-
-		auto view = m_ECS.CreateView<SceneTagComponent, Relationship>();
-		for (auto entity : view)
-		{
-			auto [sceneTag] = view.Get<SceneTagComponent>(entity);
-			std::cout << sceneTag.Name << std::endl;
-		}
 	}
 
 	void Scene::OnPlay()

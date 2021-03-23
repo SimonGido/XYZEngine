@@ -202,6 +202,19 @@ namespace XYZ {
 
 	void EditorLayer::OnEvent(Event& event)
 	{			
+		if (event.GetEventType() == EventType::MouseButtonPressed)
+		{
+			MouseButtonPressEvent& e = (MouseButtonPressEvent&)event;
+			if (e.IsButtonPressed(MouseCode::MOUSE_BUTTON_LEFT))
+			{
+				m_Scene->CreateEntity("Hopica", GUID());
+			}
+			else
+			{
+				m_Scene->DestroyEntity(m_Scene->GetEntity(1));
+			}
+		}
+		
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&EditorLayer::onMouseButtonPress, this));
 		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorLayer::onMouseButtonRelease, this));	
@@ -210,6 +223,7 @@ namespace XYZ {
 		m_SceneHierarchyPanel.OnEvent(event);
 		m_ScenePanel.OnEvent(event);
 		m_SkinningEditorPanel.OnEvent(event);
+		
 	}
 
 	void EditorLayer::OnInGuiRender()

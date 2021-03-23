@@ -13,7 +13,7 @@ namespace XYZ {
 
 	struct Listener
 	{
-		void(*Callback)(void*, uint32_t, CallbackType);
+		std::function<void(uint32_t, CallbackType)> Callback;
 		void* Instance;
 	};
 
@@ -33,11 +33,11 @@ namespace XYZ {
 		{
 			for (auto& listener : m_Listeners)
 			{
-				listener.Callback(listener.Instance, entity, type);
+				listener.Callback(entity, type);
 			}
 		}
 
-		void AddListener(void(*callback)(void*, uint32_t, CallbackType), void* instance)
+		void AddListener(const std::function<void(uint32_t, CallbackType)>& callback, void* instance)
 		{
 			XYZ_ASSERT(std::invoke([this, instance]() -> bool {
 				for (auto it : m_Listeners)
