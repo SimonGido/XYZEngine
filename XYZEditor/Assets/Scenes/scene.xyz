@@ -24,3 +24,39 @@ Entities:
       Scale: [1, 1, 1]
     Relationship:
       {}
+  - Entity: 60c2202f-d793-4189-b88b-68a86daf6765
+    SceneTagComponent:
+      Name: Hopica
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      {}
+  - Entity: e4aef56c-773f-4a5c-9b06-f947f963c7c3
+    SceneTagComponent:
+      Name: Hopica
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      {}
+  - Entity: c928e8c7-59a3-4dcd-b52b-47354043eff0
+    SceneTagComponent:
+      Name: Hopica
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      {}
+  - Entity: b5052695-cb8d-46ec-8e0a-cfacf879385b
+    SceneTagComponent:
+      Name: Hopica
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      {}

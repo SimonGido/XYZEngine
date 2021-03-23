@@ -59,6 +59,7 @@ namespace XYZ {
 		IGDockNode* m_Root;
 		IGDockNode* m_ResizedNode = nullptr;
 		bool		m_Visible = false;
+	
+		friend class IGSerializer;
 	};
-
 }

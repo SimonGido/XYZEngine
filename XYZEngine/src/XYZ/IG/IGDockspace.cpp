@@ -418,7 +418,9 @@ namespace XYZ {
 
 	bool IGDockspace::OnMouseLeftPress(const glm::vec2& mousePos, bool& handled)
 	{
-		return Helper::FindResizeRecursive(m_Root, &m_ResizedNode, mousePos);
+		if (Helper::FindResizeRecursive(m_Root, &m_ResizedNode, mousePos))
+			handled = true;
+		return handled;
 	}
 
 	bool IGDockspace::OnMouseLeftRelease()
