@@ -14,7 +14,7 @@ namespace XYZ {
 			
 		uint32_t CreateEntity() { return m_EntityManager.CreateEntity(); };
 
-		void DestroyEntity(uint32_t entity) 
+		void DestroyEntity(Entity entity) 
 		{ 
 			auto& signature = m_EntityManager.GetSignature(entity);
 			m_CallbackManager.OnEntityDestroyed(entity, signature);
@@ -35,7 +35,7 @@ namespace XYZ {
 		}
 
 		template <typename T, typename ...Args>
-		T& EmplaceComponent(uint32_t entity, Args&&... args)
+		T& EmplaceComponent(Entity entity, Args&&... args)
 		{
 			Signature& signature = m_EntityManager.GetSignature(entity);
 			XYZ_ASSERT(!signature.test(IComponent::GetComponentID<T>()), "Entity already contains component");
@@ -46,7 +46,7 @@ namespace XYZ {
 			return result;
 		}
 		template <typename T>
-		T& AddComponent(uint32_t entity, const T& component)
+		T& AddComponent(Entity entity, const T& component)
 		{
 			Signature& signature = m_EntityManager.GetSignature(entity);
 			XYZ_ASSERT(!signature.test(IComponent::GetComponentID<T>()), "Entity already contains component");
@@ -58,7 +58,7 @@ namespace XYZ {
 		}
 		
 		template <typename T>
-		bool RemoveComponent(uint32_t entity)
+		bool RemoveComponent(Entity entity)
 		{
 			Signature& signature = m_EntityManager.GetSignature(entity);
 			XYZ_ASSERT(signature.test(IComponent::GetComponentID<T>()), "Entity does not have component");
@@ -71,7 +71,7 @@ namespace XYZ {
 		}
 
 		template <typename T>
-		T& GetComponent(uint32_t entity)
+		T& GetComponent(Entity entity)
 		{
 			Signature& signature = m_EntityManager.GetSignature(entity);
 			XYZ_ASSERT(signature.test(IComponent::GetComponentID<T>()), "Entity does not have component");
@@ -79,7 +79,7 @@ namespace XYZ {
 		}
 
 		template <typename T>
-		const T& GetComponent(uint32_t entity) const
+		const T& GetComponent(Entity entity) const
 		{
 			const Signature& signature = m_EntityManager.GetSignature(entity);
 			XYZ_ASSERT(signature.test(IComponent::GetComponentID<T>()), "Entity does not have component");
@@ -87,21 +87,21 @@ namespace XYZ {
 		}
 
 
-		const Signature& GetEntitySignature(uint32_t entity) const
+		const Signature& GetEntitySignature(Entity entity) const
 		{
 			return m_EntityManager.GetSignature(entity);
 		}
 
 		template <typename T>
-		bool Contains(uint32_t entity) const
+		bool Contains(Entity entity) const
 		{
 			auto& signature = m_EntityManager.GetSignature(entity);
 			return signature.test(IComponent::GetComponentID<T>());
 		}
 
-		bool IsValid(uint32_t entity) const
+		bool IsValid(Entity entity) const
 		{
-			return m_EntityManager.m_Valid.size() > entity && m_EntityManager.m_Valid[entity];
+			return m_EntityManager.m_Valid.size() > (uint32_t)entity && m_EntityManager.m_Valid[(uint32_t)entity];
 		}
 
 		template <typename T>
@@ -129,13 +129,13 @@ namespace XYZ {
 		}
 
 		template <typename T>
-		uint32_t GetComponentIndex(uint32_t entity) const
+		uint32_t GetComponentIndex(Entity entity) const
 		{
 			return m_ComponentManager.GetComponentIndex<T>(entity);
 		}
 
 		template <typename T>
-		uint32_t FindEntity(const T& component) const
+		Entity FindEntity(const T& component) const
 		{
 			for (int32_t i = 0; i < m_EntityManager.m_Signatures.Range();++i)
 			{
@@ -145,7 +145,7 @@ namespace XYZ {
 						return i;
 				}
 			}
-			return NULL_ENTITY;
+			return Entity();
 		}
 
 		const uint32_t GetNumberOfEntities() const { return m_EntityManager.GetNumEntities(); }

@@ -2,6 +2,7 @@
 #include "ComponentStorage.h"
 #include "Component.h"
 #include "Types.h"
+#include "Entity.h"
 #include "Pool.h"
 
 namespace XYZ {
@@ -14,18 +15,18 @@ namespace XYZ {
 
 		~ComponentManager();
 
-		void EntityDestroyed(uint32_t entity, const Signature& signature);	
+		void EntityDestroyed(Entity entity, const Signature& signature);	
 
 
 		template <typename T, typename ...Args>
-		T& EmplaceComponent(uint32_t entity, Args&& ... args)
+		T& EmplaceComponent(Entity entity, Args&& ... args)
 		{
 			ComponentStorage<T>* storage = getOrCreateStorage<T>();
 			return storage->EmplaceComponent(entity, std::forward<Args>(args)...);
 		}
 
 		template <typename T>
-		T& AddComponent(uint32_t entity, const T& component)
+		T& AddComponent(Entity entity, const T& component)
 		{
 			ComponentStorage<T>* storage = getOrCreateStorage<T>();
 			return storage->AddComponent(entity, component);
@@ -39,14 +40,14 @@ namespace XYZ {
 		}	
 
 		template <typename T>
-		void RemoveComponent(uint32_t entity, const Signature& signature)
+		void RemoveComponent(Entity entity, const Signature& signature)
 		{
 			size_t offset = IComponent::GetComponentID<T>() * sizeof(ComponentStorage<T>);
 			uint32_t updatedEntity = m_StoragePool.Get<ComponentStorage<T>>(offset)->RemoveComponent(entity);
 		}
 
 		template <typename T>
-		T& GetComponent(uint32_t entity)
+		T& GetComponent(Entity entity)
 		{
 			size_t offset = IComponent::GetComponentID<T>() * sizeof(ComponentStorage<T>);
 			ComponentStorage<T>* storage = static_cast<ComponentStorage<T>*>(m_StoragePool.Get<IComponentStorage>(offset));
@@ -54,7 +55,7 @@ namespace XYZ {
 		}
 
 		template <typename T>
-		const T& GetComponent(uint32_t entity) const
+		const T& GetComponent(Entity entity) const
 		{
 			size_t offset = IComponent::GetComponentID<T>() * sizeof(ComponentStorage<T>);
 			const ComponentStorage<T>* storage = static_cast<const ComponentStorage<T>*>(m_StoragePool.Get<IComponentStorage>(offset));
@@ -81,7 +82,7 @@ namespace XYZ {
 		}
 
 		template <typename T>
-		uint32_t GetComponentIndex(uint32_t entity) const
+		uint32_t GetComponentIndex(Entity entity) const
 		{
 			size_t offset = IComponent::GetComponentID<T>() * sizeof(ComponentStorage<T>);
 			const ComponentStorage<T>& storage = *m_StoragePool.Get<ComponentStorage<T>>(offset);

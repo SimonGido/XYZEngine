@@ -2,6 +2,7 @@
 #include "ComponentStorage.h"
 #include "Component.h"
 #include "Types.h"
+#include "Entity.h"
 
 #include <limits>
 
@@ -12,19 +13,19 @@ namespace XYZ {
 	class ComponentView
 	{
 	public:
-		std::tuple<Args&...> Get(uint32_t entity)
+		std::tuple<Args&...> Get(Entity entity)
 		{
 			return std::tuple<Args&...>{ get<Args>(entity)... };
 		}
 
 		template <typename ...Args2>
-		std::tuple<Args2&...> Get(uint32_t entity)
+		std::tuple<Args2&...> Get(Entity entity)
 		{
 			return std::tuple<Args2&...>{ get<Args2>(entity)... };
 		}
 
-		std::vector<uint32_t>::const_iterator begin() const { return m_Entities->begin(); }
-		std::vector<uint32_t>::const_iterator end()   const { return m_Entities->end(); }
+		std::vector<Entity>::const_iterator begin() const { return m_Entities->begin(); }
+		std::vector<Entity>::const_iterator end()   const { return m_Entities->end(); }
 
 	private:
 		ComponentView(ECSManager* ecs)
@@ -41,14 +42,14 @@ namespace XYZ {
 		}
 
 		template <typename Type>
-		Type& get(uint32_t entity)
+		Type& get(Entity entity)
 		{
 			auto it = std::get<ComponentStorage<Type>*>(m_Storages);
 			return it->GetComponent(entity);
 		}
 
 	private:
-		const std::vector<uint32_t>* m_Entities;
+		const std::vector<Entity>* m_Entities;
 		std::tuple<ComponentStorage<Args>*...> m_Storages;
 
 		friend class ECSManager;

@@ -8,8 +8,7 @@ namespace XYZ {
 	public:
 		SceneEntity()
 			:
-			m_Scene(nullptr),
-			m_ID(NULL_ENTITY)
+			m_Scene(nullptr)
 		{
 		}
 
@@ -19,13 +18,13 @@ namespace XYZ {
 			m_ID(other.m_ID)
 		{}
 
-		SceneEntity(uint32_t id, Scene* scene)
+		SceneEntity(Entity id, Scene* scene)
 			:
 			m_Scene(scene),
 			m_ID(id)
 		{
 		}
-
+	
 		template<typename T>
 		T& GetComponent()
 		{
@@ -82,14 +81,14 @@ namespace XYZ {
 
 		operator bool() const
 		{
-			return m_Scene && m_ID != NULL_ENTITY;
+			return m_Scene && m_ID;
 		}
 
 		operator uint32_t () const { return m_ID; }
 
 	private:
 		Scene*   m_Scene;
-		uint32_t m_ID;
+		Entity   m_ID;
 
 
 		friend class Scene;

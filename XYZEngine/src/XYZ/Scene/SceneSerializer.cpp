@@ -3,7 +3,6 @@
 
 #include "XYZ/Scene/SceneEntity.h"
 #include "XYZ/Scene/Components.h"
-#include "XYZ/Gui/GuiContext.h"
 #include "XYZ/Asset/AssetManager.h"
 
 
@@ -151,29 +150,18 @@ namespace XYZ {
 		return { translation, orientation, scale };
 	}
 
-	static void SerializeInputField(ECSManager& ecs, YAML::Emitter& out, const InputField& val)
-	{
-		out << YAML::Key << "InputField";
-		out << YAML::BeginMap;
-
-		out << YAML::Key << "SelectColor" << YAML::Value << val.SelectColor;
-		out << YAML::Key << "HooverColor" << YAML::Value << val.HooverColor;
-		out << YAML::Key << "TextEntity" << YAML::Value << ecs.GetComponent<IDComponent>(val.TextEntity).ID;
-
-		out << YAML::EndMap;
-	}
 	static void SerializeRelationship(ECSManager& ecs, YAML::Emitter& out, const Relationship& val)
 	{
 		out << YAML::Key << "Relationship";
 		out << YAML::BeginMap;
 
-		if (val.Parent != NULL_ENTITY)
+		if ((bool)val.Parent)
 			out << YAML::Key << "Parent" << YAML::Value << ecs.GetComponent<IDComponent>(val.Parent).ID;
-		if (val.NextSibling != NULL_ENTITY)
+		if ((bool)val.NextSibling)
 			out << YAML::Key << "NextSibling" << YAML::Value << ecs.GetComponent<IDComponent>(val.NextSibling).ID;
-		if (val.PreviousSibling != NULL_ENTITY)
+		if ((bool)val.PreviousSibling)
 			out << YAML::Key << "PreviousSibling" << YAML::Value << ecs.GetComponent<IDComponent>(val.PreviousSibling).ID;
-		if (val.FirstChild != NULL_ENTITY)
+		if ((bool)val.FirstChild)
 			out << YAML::Key << "FirstChild" << YAML::Value << ecs.GetComponent<IDComponent>(val.FirstChild).ID;
 		out << YAML::EndMap;
 	}
@@ -245,131 +233,7 @@ namespace XYZ {
 		out << YAML::Key << "Intensity" << YAML::Value << val.Intensity;
 		out << YAML::EndMap; // Point Light
 	}
-	template <>
-	void SceneSerializer::serialize<RectTransform>(YAML::Emitter& out, const RectTransform& val)
-	{
-		out << YAML::Key << "RectTransformComponent";
-		out << YAML::BeginMap;
-
-		out << YAML::Key << "WorldPosition" << YAML::Value << val.WorldPosition;
-		out << YAML::Key << "Position" << YAML::Value << val.Position;
-		out << YAML::Key << "Size" << YAML::Value << val.Size;
-		out << YAML::Key << "Scale" << YAML::Value << val.Scale;
-
-		out << YAML::EndMap;
-	}
-
-	template <>
-	void SceneSerializer::serialize<CanvasRenderer>(YAML::Emitter& out, const CanvasRenderer& val)
-	{
-		out << YAML::Key << "CanvasRenderer";
-		out << YAML::BeginMap;
-
-		out << YAML::Key << "MaterialAsset" << YAML::Value << val.Material->Handle;
-		out << YAML::Key << "SubTextureAsset" << YAML::Value << val.SubTexture->Handle;
-		out << YAML::Key << "Color" << YAML::Value << val.Color;
-		out << YAML::Key << "SortLayer" << YAML::Value << val.SortLayer;
-		out << YAML::Key << "IsVisible" << YAML::Value << val.IsVisible;
-		out << YAML::EndMap;
-	}
-
-	template <>
-	void SceneSerializer::serialize<LineRenderer>(YAML::Emitter& out, const LineRenderer& val)
-	{
-		out << YAML::Key << "LineRenderer";
-		out << YAML::BeginMap;
-
-		out << YAML::Key << "Color" << YAML::Value << val.Color;
-		out << YAML::Key << "IsVisible" << YAML::Value << val.IsVisible;
-
-		out << YAML::Key << "Points";
-		out << YAML::Value << YAML::BeginSeq;
-		for (auto& it : val.LineMesh.Points)
-		{
-			out << YAML::BeginMap;
-			out << YAML::Key << "Point" << YAML::Value << it;
-			out << YAML::EndMap;
-		}
-		out << YAML::EndSeq;
-		out << YAML::EndMap; // LineRenderer
-	}
-
-	template <>
-	void SceneSerializer::serialize<LayoutGroup>(YAML::Emitter& out, const LayoutGroup& val)
-	{
-		out << YAML::Key << "LayoutGroup";
-		out << YAML::BeginMap;
-
-		out << YAML::Key << "LeftPadding" << YAML::Value << val.Padding.Left;
-		out << YAML::Key << "RightPadding" << YAML::Value << val.Padding.Right;
-		out << YAML::Key << "TopPadding" << YAML::Value << val.Padding.Top;
-		out << YAML::Key << "BottomPadding" << YAML::Value << val.Padding.Bottom;
-		out << YAML::Key << "CellSpacing" << YAML::Value << val.CellSpacing;
-
-		out << YAML::EndMap;
-	}
-
-	template <>
-	void SceneSerializer::serialize<Button>(YAML::Emitter& out, const Button& val)
-	{
-		out << YAML::Key << "Button";
-		out << YAML::BeginMap;
-
-		out << YAML::Key << "ClickColor" << YAML::Value << val.ClickColor;
-		out << YAML::Key << "HooverColor" << YAML::Value << val.HooverColor;
-
-		out << YAML::EndMap;
-	}
-
-	template <>
-	void SceneSerializer::serialize<Checkbox>(YAML::Emitter& out, const Checkbox& val)
-	{
-		out << YAML::Key << "Checkbox";
-		out << YAML::BeginMap;
-
-		out << YAML::Key << "HooverColor" << YAML::Value << val.HooverColor;
-
-		out << YAML::EndMap;
-	}
-	template <>
-	void SceneSerializer::serialize<Slider>(YAML::Emitter& out, const Slider& val)
-	{
-		out << YAML::Key << "Slider";
-		out << YAML::BeginMap;
-
-		out << YAML::Key << "Value" << YAML::Value << val.Value;
-		out << YAML::Key << "HooverColor" << YAML::Value << val.HooverColor;
-
-		out << YAML::EndMap;
-	}
-
-
-	template <>
-	void SceneSerializer::serialize<Canvas>(YAML::Emitter& out, const Canvas& val)
-	{
-		out << YAML::Key << "Canvas";
-		out << YAML::BeginMap;
-
-		out << YAML::Key << "Color" << YAML::Value << val.Color;
-
-		out << YAML::EndMap;
-	}
-
-
-	template <>
-	void SceneSerializer::serialize<Text>(YAML::Emitter& out, const Text& val)
-	{
-		out << YAML::Key << "Text";
-		out << YAML::BeginMap;
-
-		out << YAML::Key << "FontAsset" << YAML::Value << val.Font->Handle;
-		out << YAML::Key << "Source" << YAML::Value << val.Source;
-		out << YAML::Key << "Color" << YAML::Value << val.Color;
-		out << YAML::Key << "Alignment" << YAML::Value << ToUnderlying(val.Alignment);
-
-
-		out << YAML::EndMap; // Text
-	}
+	
 
 	template <>
 	void SceneSerializer::serialize<RigidBody2DComponent>(YAML::Emitter& out, const RigidBody2DComponent& val)
@@ -428,52 +292,10 @@ namespace XYZ {
 		{
 			serialize<SpriteRenderer>(out, val.GetComponent<SpriteRenderer>());
 		}
-		if (val.HasComponent<Button>())
-		{
-			serialize<Button>(out, val.GetComponent<Button>());
-		}
-		if (val.HasComponent<Checkbox>())
-		{
-			serialize<Checkbox>(out, val.GetComponent<Checkbox>());
-		}
-		if (val.HasComponent<Slider>())
-		{
-			serialize<Slider>(out, val.GetComponent<Slider>());
-		}
-		if (val.HasComponent<InputField>())
-		{
-			SerializeInputField(val.m_Scene->m_ECS, out, val.GetComponent<InputField>());
-		}
-		if (val.HasComponent<LayoutGroup>())
-		{
-			serialize<LayoutGroup>(out, val.GetComponent<LayoutGroup>());
-		}
 		if (val.HasComponent<Relationship>())
 		{
 			SerializeRelationship(val.m_Scene->m_ECS, out, val.GetComponent<Relationship>());
 		}
-		if (val.HasComponent<CanvasRenderer>())
-		{
-			serialize<CanvasRenderer>(out, val.GetComponent<CanvasRenderer>());
-		}
-		if (val.HasComponent<RectTransform>())
-		{
-			serialize<RectTransform>(out, val.GetComponent<RectTransform>());
-		}
-		if (val.HasComponent<Canvas>())
-		{
-			serialize<Canvas>(out, val.GetComponent<Canvas>());
-		}
-		if (val.HasComponent<Text>())
-		{
-			serialize<Text>(out, val.GetComponent<Text>());
-		}
-
-		if (val.HasComponent<LineRenderer>())
-		{
-			serialize<LineRenderer>(out, val.GetComponent<LineRenderer>());
-		}
-
 		if (val.HasComponent<RigidBody2DComponent>())
 		{
 			serialize<RigidBody2DComponent>(out, val.GetComponent<RigidBody2DComponent>());
@@ -558,99 +380,12 @@ namespace XYZ {
 	}
 
 	template <>
-	RectTransform SceneSerializer::deserialize<RectTransform>(YAML::Node& data)
-	{
-		RectTransform transform(data["Position"].as<glm::vec3>(), data["Size"].as<glm::vec2>());
-
-		glm::vec3 worldPosition = data["WorldPosition"].as<glm::vec3>();
-		glm::vec2 scale = data["Scale"].as<glm::vec2>();
-
-		transform.WorldPosition = worldPosition;
-		transform.Scale = scale;
-		return transform;
-	}
-
-	template <>
-	CanvasRenderer SceneSerializer::deserialize<CanvasRenderer>(YAML::Node& data)
-	{
-		GUID materialHandle(data["MaterialAsset"].as<std::string>());
-		GUID subTextureHandle(data["SubTextureAsset"].as<std::string>());
-		glm::vec4 color = data["Color"].as<glm::vec4>();
-		uint16_t sortLayer = data["SortLayer"].as<uint16_t>();
-
-		Ref<Material> material = AssetManager::GetAsset<Material>(materialHandle);
-		Ref<SubTexture> subTexture = AssetManager::GetAsset<SubTexture>(subTextureHandle);
-
-		return CanvasRenderer(
-			material, subTexture, color, Mesh(), sortLayer
-		);
-	}
-
-	template <>
 	PointLight2D SceneSerializer::deserialize<PointLight2D>(YAML::Node& data)
 	{
 		PointLight2D light;
 		light.Color = data["Color"].as<glm::vec3>();
 		light.Intensity = data["Intensity"].as<float>();
 		return light;
-	}
-
-	template <>
-	Button SceneSerializer::deserialize<Button>(YAML::Node& data)
-	{
-		glm::vec4 hooverColor = data["HooverColor"].as<glm::vec4>();
-		glm::vec4 clickColor = data["ClickColor"].as<glm::vec4>();
-
-		return Button(clickColor, hooverColor);
-	}
-
-	template <>
-	Checkbox SceneSerializer::deserialize<Checkbox>(YAML::Node& data)
-	{
-		glm::vec4 hooverColor = data["HooverColor"].as<glm::vec4>();
-		return Checkbox(hooverColor);
-	}
-
-	template <>
-	Slider SceneSerializer::deserialize<Slider>(YAML::Node& data)
-	{
-		glm::vec4 hooverColor = data["HooverColor"].as<glm::vec4>();
-		Slider slider(hooverColor);
-		slider.Value = data["Value"].as<float>();
-		return slider;
-	}
-
-
-
-
-	template <>
-	LayoutGroup SceneSerializer::deserialize<LayoutGroup>(YAML::Node& data)
-	{
-		LayoutGroup layout;
-		layout.Padding.Left = data["LeftPadding"].as<float>();
-		layout.Padding.Right = data["RightPadding"].as<float>();
-		layout.Padding.Top = data["TopPadding"].as<float>();
-		layout.Padding.Bottom = data["BottomPadding"].as<float>();
-		layout.CellSpacing = data["CellSpacing"].as<glm::vec2>();
-
-		return layout;
-	}
-	template <>
-	Canvas SceneSerializer::deserialize<Canvas>(YAML::Node& data)
-	{
-		glm::vec4 color = data["Color"].as<glm::vec4>();
-		return Canvas(CanvasRenderMode::ScreenSpace, color);
-	}
-
-	static InputField DeserializeInputField(ECSManager& ecs, YAML::Node& data)
-	{
-		glm::vec4 selectColor = data["SelectColor"].as<glm::vec4>();
-		glm::vec4 hooverColor = data["HooverColor"].as<glm::vec4>();
-		uint32_t textEntity = ecs.FindEntity<IDComponent>(IDComponent({ data["TextEntity"].as<std::string>() }));
-		InputField val(
-			selectColor, hooverColor, textEntity, &ecs
-		);
-		return val;
 	}
 
 	static Relationship DeserializeRelationship(const ECSManager& ecs, YAML::Node& data)
@@ -677,42 +412,6 @@ namespace XYZ {
 			relationship.FirstChild = ecs.FindEntity<IDComponent>(IDComponent({ firstChild }));
 		}
 		return relationship;
-	}
-
-	template <>
-	Text SceneSerializer::deserialize<Text>(YAML::Node& data)
-	{
-		Ref<Font> font = AssetManager::GetAsset<Font>(GUID(data["FontAsset"].as<std::string>()));
-		std::string source = data["Source"].as<std::string>();
-		glm::vec4 color = data["Color"].as<glm::vec4>();
-		TextAlignment alignment = TextAlignment::None;
-		uint32_t align = data["Alignment"].as<uint32_t>();
-		switch (align)
-		{
-		case ToUnderlying(TextAlignment::Center):
-			alignment = TextAlignment::Center;
-			break;
-		case ToUnderlying(TextAlignment::Left):
-			alignment = TextAlignment::Left;
-			break;
-		case ToUnderlying(TextAlignment::Right):
-			alignment = TextAlignment::Right;
-			break;
-		}
-		return Text(source, font, color, alignment);
-	}
-
-	template<>
-	LineRenderer SceneSerializer::deserialize<LineRenderer>(YAML::Node& data)
-	{
-		LineMesh mesh;
-		glm::vec4 color = data["Color"].as<glm::vec4>();
-		for (auto& seq : data["Points"])
-		{
-			mesh.Points.push_back(seq["Point"].as<glm::vec3>());
-		}
-
-		return LineRenderer(color, mesh);
 	}
 
 	template <>
@@ -785,59 +484,10 @@ namespace XYZ {
 		{
 			entity.AddComponent<SpriteRenderer>(deserialize<SpriteRenderer>(spriteRenderer));
 		}
-
-		auto button = data["Button"];
-		if (button)
-		{
-			entity.AddComponent<Button>(deserialize<Button>(button));
-		}
-		auto checkbox = data["Checkbox"];
-		if (checkbox)
-		{
-			entity.AddComponent<Checkbox>(deserialize<Checkbox>(checkbox));
-		}
-		auto slider = data["Slider"];
-		if (slider)
-		{
-			entity.AddComponent<Slider>(deserialize<Slider>(slider));
-		}
-		auto layoutGroup = data["LayoutGroup"];
-		if (layoutGroup)
-		{
-			entity.AddComponent<LayoutGroup>(deserialize<LayoutGroup>(layoutGroup));
-		}
-		auto canvas = data["Canvas"];
-		if (canvas)
-		{
-			entity.AddComponent<Canvas>(deserialize<Canvas>(canvas));
-		}
-		auto rectTransform = data["RectTransformComponent"];
-		if (rectTransform)
-		{
-			entity.AddComponent<RectTransform>(deserialize<RectTransform>(rectTransform));
-		}
-		auto canvasRenderer = data["CanvasRenderer"];
-		if (canvasRenderer)
-		{
-			entity.AddComponent<CanvasRenderer>(deserialize<CanvasRenderer>(canvasRenderer));
-		}
-
 		auto pointLight = data["PointLight2D"];
 		if (pointLight)
 		{
 			entity.AddComponent<PointLight2D>(deserialize<PointLight2D>(pointLight));
-		}
-
-		auto text = data["Text"];
-		if (text)
-		{
-			entity.AddComponent<Text>(deserialize<Text>(text));
-		}
-
-		auto lineRenderer = data["LineRenderer"];
-		if (lineRenderer)
-		{
-			entity.AddComponent<LineRenderer>(deserialize<LineRenderer>(lineRenderer));
 		}
 
 		auto rigidBody = data["RigidBody2D"];
@@ -857,13 +507,6 @@ namespace XYZ {
 		{
 			entity.AddComponent<CircleCollider2DComponent>(deserialize<CircleCollider2DComponent>(circleCollider));
 		}
-
-		if (entity.HasComponent<CanvasRenderer>() && entity.HasComponent<RectTransform>())
-		{
-			auto& transform = entity.GetComponent<RectTransform>();
-			transform.Execute<ComponentResizedEvent>(ComponentResizedEvent({ entity, &entity.m_Scene->m_ECS }));
-		}
-
 		return entity;
 	}
 

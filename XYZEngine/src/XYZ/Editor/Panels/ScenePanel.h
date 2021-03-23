@@ -1,6 +1,7 @@
 #pragma once
 
 #include "XYZ/Scene/Scene.h"
+#include "XYZ/Scene/SceneEntity.h"
 #include "XYZ/Event/ApplicationEvent.h"
 #include "XYZ/Event/InputEvent.h"
 
@@ -55,7 +56,7 @@ namespace XYZ {
 		Ref<SubTexture> m_ButtonSubTextures[NumStates];
 		uint32_t m_State = Play;
 
-		uint32_t m_SelectedEntity = NULL_ENTITY;
+		SceneEntity m_SelectedEntity;
 		uint8_t m_ModifyFlags = 0;
 		float m_MoveSpeed = 100.0f;
 		glm::vec2 m_OldMousePosition = glm::vec2(0.0f);

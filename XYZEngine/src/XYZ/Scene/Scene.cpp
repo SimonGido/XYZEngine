@@ -21,8 +21,6 @@ namespace XYZ {
 	Scene::Scene(const std::string& name)
 		:
 		m_Name(name),
-		m_SelectedEntity(NULL_ENTITY),
-		m_CameraEntity(NULL_ENTITY),
 		m_PhysicsWorld(glm::vec2(0.0f, -9.8f))
 	{
 		m_ViewportWidth = 0;
@@ -146,9 +144,10 @@ namespace XYZ {
 
 	SceneEntity Scene::CreateEntity(const std::string& name, const GUID& guid)
 	{
-		SceneEntity entity(m_ECS.CreateEntity(), this);
-		IDComponent id;
-		id.ID = guid;
+		Entity id = m_ECS.CreateEntity();
+		SceneEntity entity(id, this);
+		IDComponent idComp;
+		idComp.ID = guid;
 
 		entity.EmplaceComponent<IDComponent>(guid);
 		entity.EmplaceComponent<Relationship>();
@@ -156,23 +155,26 @@ namespace XYZ {
 		entity.EmplaceComponent<TransformComponent>(glm::vec3(0.0f, 0.0f, 0.0f));
 
 
-		m_Entities.push_back(entity);
+		m_Entities.push_back(id);
 		return entity;
 	}
 
 	void Scene::DestroyEntity(SceneEntity entity)
 	{
-		uint32_t lastEntity = m_Entities.back();
+		Entity lastEntity = m_Entities.back();
 		if (entity.m_ID == m_SelectedEntity)
-			m_SelectedEntity = NULL_ENTITY;
-		// Swap with last and delete
-		auto it = std::find(m_Entities.begin(), m_Entities.end(), (uint32_t)entity);
-		if (it != m_Entities.end())
+			m_SelectedEntity = Entity();
+		
+		for (auto it = m_Entities.begin(); it != m_Entities.end(); ++it)
 		{
-			*it = std::move(m_Entities.back());
-			m_Entities.pop_back();
+			if ((*it) == entity.m_ID)
+			{
+				*it = std::move(m_Entities.back());
+				m_Entities.pop_back();
+				break;
+			}
 		}
-		m_ECS.DestroyEntity(entity);
+		m_ECS.DestroyEntity(Entity(entity.m_ID));
 	}
 
 	void Scene::OnPlay()
@@ -182,12 +184,12 @@ namespace XYZ {
 		s_EditTransforms.resize(m_ECS.GetNumberOfEntities());		
 		for (auto entity : m_Entities)
 		{
-			Entity ent(entity, &m_ECS);
+			SceneEntity ent(entity, this);
 			s_EditTransforms[entity] = ent.GetComponent<TransformComponent>();
 			if (ent.HasComponent<CameraComponent>())
 			{
 				ent.GetComponent<CameraComponent>().Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
-				m_CameraEntity = ent;
+				m_CameraEntity = entity;
 				foundCamera = true;
 			}
 			if (m_ECS.Contains<RigidBody2DComponent>(entity))
@@ -232,8 +234,8 @@ namespace XYZ {
 	{
 		for (auto entity : m_Entities)
 		{
-			Entity ent(entity, &m_ECS);
-			ent.GetComponent<TransformComponent>() = s_EditTransforms[entity];
+			SceneEntity ent(entity, this);
+			ent.GetComponent<TransformComponent>() = s_EditTransforms[(uint32_t)entity];
 			if (m_ECS.Contains<RigidBody2DComponent>(entity))
 			{
 				RigidBody2DComponent& rigidBody = m_ECS.GetComponent<RigidBody2DComponent>(entity);
@@ -254,7 +256,7 @@ namespace XYZ {
 		// 3D part here
 
 		///////////////
-		Entity cameraEntity(m_CameraEntity, &m_ECS);
+		SceneEntity cameraEntity(m_CameraEntity, this);
 		SceneRendererCamera renderCamera;
 		auto& cameraComponent = cameraEntity.GetComponent<CameraComponent>();
 		auto& cameraTransform = cameraEntity.GetComponent<TransformComponent>();
@@ -336,7 +338,7 @@ namespace XYZ {
 	{
 		SceneRenderer::BeginScene(this, camera.GetViewProjection());
 		
-		if (m_SelectedEntity != NULL_ENTITY)
+		if ((bool)m_SelectedEntity)
 		{
 			if (m_ECS.Contains<CameraComponent>(m_SelectedEntity))
 			{

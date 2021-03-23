@@ -150,13 +150,13 @@ namespace XYZ {
 
 	struct Relationship : public IComponent
 	{
-		uint32_t Parent			 = NULL_ENTITY;
-		uint32_t FirstChild		 = NULL_ENTITY;
-		uint32_t PreviousSibling = NULL_ENTITY;
-		uint32_t NextSibling	 = NULL_ENTITY;
+		Entity Parent;
+		Entity FirstChild;
+		Entity PreviousSibling;
+		Entity NextSibling;
 
-		static void SetupRelation(uint32_t parent, uint32_t child, ECSManager& ecs);
-		static void RemoveRelation(uint32_t child, ECSManager& ecs);
+		static void SetupRelation(Entity parent, Entity child, ECSManager& ecs);
+		static void RemoveRelation(Entity child, ECSManager& ecs);
 	};
 
 	struct EntityScriptClass;

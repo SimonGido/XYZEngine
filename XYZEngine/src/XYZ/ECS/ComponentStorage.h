@@ -1,6 +1,6 @@
 #pragma once
 #include "Types.h"
-
+#include "Entity.h"
 
 namespace XYZ {
 
@@ -8,19 +8,19 @@ namespace XYZ {
 	{
 	public:
 		virtual ~IComponentStorage() = default;
-		virtual uint32_t EntityDestroyed(uint32_t entity) = 0;
+		virtual Entity EntityDestroyed(Entity entity) = 0;
 		virtual size_t Size() const = 0;
 		virtual IComponentStorage* Copy(uint8_t* buffer) const = 0;
 		
 
-		virtual const std::vector<uint32_t>& GetDataEntityMap() const = 0;
+		virtual const std::vector<Entity>& GetDataEntityMap() const = 0;
 	};
 
 	template <typename T>
 	class ComponentStorage : public IComponentStorage
 	{
 	public:
-		virtual uint32_t EntityDestroyed(uint32_t entity) override
+		virtual Entity EntityDestroyed(Entity entity) override
 		{
 			return RemoveComponent(entity);
 		}
@@ -36,60 +36,60 @@ namespace XYZ {
 			clone->m_EntityDataMap = m_EntityDataMap;
 			return clone;
 		}
-		virtual const std::vector<uint32_t>& GetDataEntityMap() const override
+		virtual const std::vector<Entity>& GetDataEntityMap() const override
 		{ 
 			return m_DataEntityMap; 
 		}
 
 		template <typename ...Args>
-		T& EmplaceComponent(uint32_t entity, Args&& ... args)
+		T& EmplaceComponent(Entity entity, Args&& ... args)
 		{
-			if (m_EntityDataMap.size() <= entity)
-				m_EntityDataMap.resize(size_t(entity) + 1);
+			if (m_EntityDataMap.size() <= (uint32_t)entity)
+				m_EntityDataMap.resize((uint32_t)entity + 1);
 			
 			m_DataEntityMap.push_back(entity);
-			m_EntityDataMap[entity] = m_Data.size();
+			m_EntityDataMap[(uint32_t)entity] = m_Data.size();
 			m_Data.emplace_back(std::forward<Args>(args)...);
 			return m_Data.back();
 		}
 
-		T& AddComponent(uint32_t entity, const T& component)
+		T& AddComponent(Entity entity, const T& component)
 		{
-			if (m_EntityDataMap.size() <= entity)
-				m_EntityDataMap.resize(size_t(entity) + 1);
+			if (m_EntityDataMap.size() <= (uint32_t)entity)
+				m_EntityDataMap.resize((uint32_t)entity + 1);
 
 			m_DataEntityMap.push_back(entity);
-			m_EntityDataMap[entity] = m_Data.size();
+			m_EntityDataMap[(uint32_t)entity] = m_Data.size();
 			m_Data.push_back(component);
 			return m_Data.back();
 		}
 
-		T& GetComponent(uint32_t entity)
+		T& GetComponent(Entity entity)
 		{
-			return m_Data[m_EntityDataMap[entity]];
+			return m_Data[m_EntityDataMap[(uint32_t)entity]];
 		}
 
-		const T& GetComponent(uint32_t entity) const
+		const T& GetComponent(Entity entity) const
 		{
-			return m_Data[m_EntityDataMap[entity]];
+			return m_Data[m_EntityDataMap[(uint32_t)entity]];
 		}
 
 
-		uint32_t RemoveComponent(uint32_t entity)
+		uint32_t RemoveComponent(Entity entity)
 		{
-			uint32_t updatedEntity = NULL_ENTITY;
+			Entity updatedEntity;
 			if (entity != m_DataEntityMap.back())
 			{
 				// Entity of last element in data pack
-				uint32_t lastEntity = m_DataEntityMap.back();
+				Entity lastEntity = m_DataEntityMap.back();
 				// Index that is entity pointing to
-				uint32_t index = m_EntityDataMap[entity];
+				uint32_t index = m_EntityDataMap[(uint32_t)entity];
 				// Move last element in data pack at the place of removed component
 				m_Data[index] = std::move(m_Data.back());
 				// Point data entity map at index to last entity
 				m_DataEntityMap[index] = lastEntity;
 				// Point last entity to data new index;
-				m_EntityDataMap[lastEntity] = index;
+				m_EntityDataMap[(uint32_t)lastEntity] = index;
 				// Pop back last element
 				updatedEntity = lastEntity;
 			}
@@ -108,12 +108,12 @@ namespace XYZ {
 			return m_Data[index];
 		}
 
-		uint32_t GetComponentIndex(uint32_t entity) const
+		uint32_t GetComponentIndex(Entity entity) const
 		{
-			return m_EntityDataMap[entity];
+			return m_EntityDataMap[(uint32_t)entity];
 		}
 
-		uint32_t GetEntityAtIndex(size_t index) const
+		Entity GetEntityAtIndex(size_t index) const
 		{
 			return m_DataEntityMap[index];
 		}
@@ -136,7 +136,7 @@ namespace XYZ {
 
 	private:
 		std::vector<T> m_Data;
+		std::vector<Entity> m_DataEntityMap;
 		std::vector<uint32_t> m_EntityDataMap;
-		std::vector<uint32_t> m_DataEntityMap;
 	};
 }

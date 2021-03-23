@@ -2,10 +2,8 @@
 #include <bitset>
 
 namespace XYZ {
-	#define MAX_ENTITIES 65536
 	#define MAX_COMPONENTS 254
 	#define INVALID_COMPONENT MAX_COMPONENTS + 1
-	#define NULL_ENTITY MAX_ENTITIES + 1
 
 	using Signature = std::bitset<MAX_COMPONENTS>;
 

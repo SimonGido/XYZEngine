@@ -198,6 +198,7 @@ namespace XYZ {
 			m_SelectedEntity = m_Scene->GetSelectedEntity();
 			m_InspectorPanel.SetContext(m_SelectedEntity);
 		}
+
 	}
 
 	void EditorLayer::OnEvent(Event& event)

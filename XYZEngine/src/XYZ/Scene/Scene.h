@@ -41,7 +41,7 @@ namespace XYZ {
         void DestroyEntity(SceneEntity entity);
         void SetState(SceneState state) { m_State = state; }
         void SetViewportSize(uint32_t width, uint32_t height);
-        void SetSelectedEntity(uint32_t entity) { m_SelectedEntity = entity; }
+        void SetSelectedEntity(Entity entity) { m_SelectedEntity = entity; }
 
         void OnPlay();
         void OnStop();
@@ -52,7 +52,7 @@ namespace XYZ {
         SceneEntity GetEntity(uint32_t index);
         SceneEntity GetEntityByName(const std::string& name);
         SceneEntity GetSelectedEntity();
-        inline const std::vector<uint32_t>& GetEntities() const { return m_Entities; }
+        inline const std::vector<Entity>& GetEntities() const { return m_Entities; }
 
         inline SceneState GetState() const { return m_State; }
         inline const GUID& GetUUID() const { return m_UUID; }
@@ -68,13 +68,13 @@ namespace XYZ {
         GUID m_UUID;
         PhysicsWorld m_PhysicsWorld;
 
-        std::vector<uint32_t> m_Entities;
+        std::vector<Entity> m_Entities;
 
         std::string m_Name;
         SceneState m_State = SceneState::Edit;
 
-        uint32_t m_SelectedEntity;
-        uint32_t m_CameraEntity;
+        Entity m_SelectedEntity;
+        Entity m_CameraEntity;
 
 
         uint32_t m_ViewportWidth;

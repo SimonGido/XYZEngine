@@ -29,7 +29,7 @@ namespace XYZ {
 	{
 		
 	}
-	void ComponentManager::EntityDestroyed(uint32_t entity, const Signature& signature)
+	void ComponentManager::EntityDestroyed(Entity entity, const Signature& signature)
 	{
 		for (uint32_t i = 0; i < m_StorageCreated.size(); ++i)
 		{

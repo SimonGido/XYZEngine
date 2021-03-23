@@ -50,11 +50,6 @@
 #include "XYZ/Audio/Audio.h"
 
 
-//------UI-------//
-#include "XYZ/Gui/Text.h"
-#include "XYZ/Gui/Button.h"
-#include "XYZ/Gui/Checkbox.h"
-
 
 //------Scripting-------//
 #include "XYZ/Script/ScriptEngine.h"

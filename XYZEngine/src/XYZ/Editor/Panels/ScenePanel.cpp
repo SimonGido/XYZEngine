@@ -67,12 +67,12 @@ namespace XYZ {
 			m_EditorCamera.OnUpdate(ts);	
 			if (m_Context.Raw())
 			{
-				if (m_SelectedEntity != (uint32_t)m_Context->GetSelectedEntity())
+				if ((uint32_t)m_SelectedEntity != (uint32_t)m_Context->GetSelectedEntity())
 				{
 					m_SelectedEntity = m_Context->GetSelectedEntity();
 					m_ModifyFlags = 0;
 				}
-				if (m_ModifyFlags && (uint32_t)m_Context->GetSelectedEntity() != NULL_ENTITY)
+				if (m_ModifyFlags && (bool)m_Context->GetSelectedEntity())
 				{
 					auto [mx, my] = Input::GetMousePosition();
 					float distX = mx - m_OldMousePosition.x;
@@ -165,14 +165,12 @@ namespace XYZ {
 		{
 			if (IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
 			{
-				m_Context->SetSelectedEntity(NULL_ENTITY);
+				m_Context->SetSelectedEntity(Entity());
 				auto [mouseX, mouseY] = getMouseViewportSpace();
 				auto [origin, direction] = castRay(mouseX, mouseY);
 				Ray ray = { origin,direction };
-
-				uint32_t res = NULL_ENTITY;
 		
-				for (uint32_t entityID : m_Context->GetEntities())
+				for (Entity entityID : m_Context->GetEntities())
 				{
 					SceneEntity entity(entityID, m_Context.Raw());
 					TransformComponent& transformComponent = entity.GetComponent<TransformComponent>();
@@ -196,7 +194,7 @@ namespace XYZ {
 	}
 	bool ScenePanel::onKeyPress(KeyPressedEvent& event)
 	{
-		if ((uint32_t)m_Context->GetSelectedEntity() != NULL_ENTITY)
+		if ((bool)m_Context->GetSelectedEntity())
 		{
 			if (m_ModifyFlags)
 			{
