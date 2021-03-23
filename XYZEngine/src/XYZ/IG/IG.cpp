@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "IG.h"
-
+#include "IGSerializer.h"
 
 #include "XYZ/Core/Input.h"
 #include "XYZ/Renderer/Renderer2D.h"
@@ -24,6 +24,7 @@ namespace XYZ {
 
 	void IG::Shutdown()
 	{
+		IGSerializer::Serialize("IG.ig", *s_Context);
 		delete s_Context;
 	}
 

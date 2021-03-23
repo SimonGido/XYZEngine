@@ -56,6 +56,11 @@ namespace XYZ {
 			return m_Hierarchy;
 		}
 
+		const Tree& GetHierarchy() const
+		{
+			return m_Hierarchy;
+		}
+
 		const std::vector<int32_t>& GetRootElementIDs() const { return m_RootElements; }
 
 	private:
@@ -102,6 +107,7 @@ namespace XYZ {
 		}
 
 		std::vector<IGPool> & GetPools() { return m_Pools; }
+		const std::vector<IGPool> & GetPools() const { return m_Pools; }
 	private:
 		std::vector<IGPool> m_Pools;
 	};

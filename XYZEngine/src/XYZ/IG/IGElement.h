@@ -96,6 +96,7 @@ namespace XYZ {
 
 		friend class IG;
 		friend class IGPool;
+		friend class IGSerializer;
 	};
 
 	

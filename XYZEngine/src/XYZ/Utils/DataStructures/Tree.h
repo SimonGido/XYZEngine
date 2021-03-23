@@ -24,21 +24,22 @@ namespace XYZ {
 		Tree() = default;
 		Tree(const Tree& other);
 
-		int32_t Insert(void* data);
-		int32_t Insert(void* data, int32_t parent);
-		void    Remove(int32_t index);
-		void    ReverseNodeChildren(int32_t node);
-		void    Clear();
+		int32_t     Insert(void* data);
+		int32_t     Insert(void* data, int32_t parent);
+		void        Remove(int32_t index);
+		void        ReverseNodeChildren(int32_t node);
+		void        Clear();
 
-		void    Traverse(const std::function<bool(void*, void*)>& callback) const;
-		void	TraverseNode(int32_t node, const std::function<bool(void*, void*)>& callback) const;
-		void	TraverseNodeChildren(int32_t node, const std::function<bool(void*, void*)>& callback) const;
+		void        Traverse(const std::function<bool(void*, void*)>& callback) const;
+		void	    TraverseNode(int32_t node, const std::function<bool(void*, void*)>& callback) const;
+		void	    TraverseNodeChildren(int32_t node, const std::function<bool(void*, void*)>& callback) const;
 		
-		void	 SetData(int32_t index, void* data) { m_Nodes[index].Data = data; }
-		void*    GetData(int32_t index) { return m_Nodes[index].Data; }
-		void*	 GetParentData(int32_t index);
-		int32_t  GetRoot() const { return m_Root; }
-		uint32_t GetNodeCount() const { return m_NodeCount; }
+		void	    SetData(int32_t index, void* data) { m_Nodes[index].Data = data; }
+		void*       GetData(int32_t index) { return m_Nodes[index].Data; }
+		const void* GetData(int32_t index) const { return m_Nodes[index].Data; }
+		void*	    GetParentData(int32_t index);
+		int32_t     GetRoot() const { return m_Root; }
+		uint32_t    GetNodeCount() const { return m_NodeCount; }
 
 		const FreeList<TreeNode>& GetFlatNodes() const { return m_Nodes; }
 	private:	
