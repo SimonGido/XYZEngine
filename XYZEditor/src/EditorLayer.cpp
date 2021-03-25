@@ -166,9 +166,9 @@ namespace XYZ {
 		//IG::GetUI<IGTree>(0, m_Handles[30]).AddItem("9", "8", IGTreeItem("pekac"));
 		//
 		//IG::GetUI<IGImageWindow>(0, m_Handles[31]).SubTexture = renderSubTexture;
+
+		IG::LoadLayout("IG.IG");
 	}	
-
-
 
 	void EditorLayer::OnDetach()
 	{
@@ -223,9 +223,7 @@ namespace XYZ {
 		dispatcher.Dispatch<KeyPressedEvent>(Hook(&EditorLayer::onKeyPress, this));
 		m_SceneHierarchyPanel.OnEvent(event);
 		m_ScenePanel.OnEvent(event);
-		m_SkinningEditorPanel.OnEvent(event);
-		
-		IG::LoadLayout("IG.IG");
+		m_SkinningEditorPanel.OnEvent(event);	
 	}
 
 	void EditorLayer::OnInGuiRender()

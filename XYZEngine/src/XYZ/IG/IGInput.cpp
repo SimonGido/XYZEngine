@@ -41,7 +41,6 @@ namespace XYZ {
 		{
 			auto [mx, my] = Input::GetMousePosition();
 			glm::vec2 mousePosition = { mx ,my };
-			
 			if (context.Dockspace.OnMouseLeftPress(mousePosition, e.Handled))
 				return true;
 			for (auto& pool : context.Allocator.GetPools())
@@ -73,7 +72,6 @@ namespace XYZ {
 			context.Dockspace.OnMouseLeftRelease();
 			context.Dockspace.SetVisibility(false);
 
-			
 			for (auto& pool : context.Allocator.GetPools())
 			{
 				for (auto id : pool.GetRootElementIDs())
@@ -121,8 +119,9 @@ namespace XYZ {
 	{
 		auto [mx, my] = Input::GetMousePosition();
 		glm::vec2 mousePosition = { mx , my };
-		
+
 		context.Dockspace.OnMouseMove(mousePosition, e.Handled);
+
 		for (auto& pool : context.Allocator.GetPools())
 		{
 			for (auto id : pool.GetRootElementIDs())

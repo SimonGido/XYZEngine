@@ -32,6 +32,7 @@ namespace XYZ {
 	
 
 		uint8_t Flags = 0;
+
 		std::function<void(const glm::vec2&)> ResizeCallback;
 
 		static constexpr float PanelHeight = 25.0f;

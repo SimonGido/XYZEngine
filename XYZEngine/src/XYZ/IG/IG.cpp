@@ -42,11 +42,13 @@ namespace XYZ {
 	
 		Renderer2D::BeginScene(viewProjectionMatrix * viewMatrix);	
 		Renderer2D::SetMaterial(s_Context->RenderData.DefaultMaterial);
+
 		s_Context->RenderData.RebuildMesh(s_Context->Allocator);
 	}
 
 	void IG::EndFrame()
 	{
+
 		for (auto& it : s_Context->RenderData.Mesh.Quads)
 		{
 			Renderer2D::SubmitQuadNotCentered(it.Position, it.Size, it.TexCoord, it.TextureID, it.Color);

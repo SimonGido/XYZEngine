@@ -3,7 +3,6 @@
 #include "IGUIElements.h"
 
 namespace XYZ {
-	
 	IGPool::IGPool(const std::initializer_list<IGHierarchyElement>& hierarchy, size_t ** handles)
 		:
 		m_Size(0)

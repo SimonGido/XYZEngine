@@ -102,7 +102,7 @@ static YAML::Emitter& ToVec4(YAML::Emitter& out, const glm::vec4& v)
 
 namespace XYZ {
 
-	static void SerializeDockNode(IGDockNode* node, const std::unordered_map<int32_t, uint32_t>& poolMap, YAML::Emitter& out)
+	static void SerializeDockNode(IGDockNode* node, const std::unordered_map<size_t, uint32_t>& poolMap, YAML::Emitter& out)
 	{
 		if (node)
 		{
@@ -116,9 +116,10 @@ namespace XYZ {
 			out << YAML::Key << "Windows" << YAML::Value << YAML::BeginSeq;
 			for (auto win : node->Data.Windows)
 			{
-				auto& it = poolMap.find(win->GetID());
+				std::hash<const IGWindow*> hasher;
+				auto& it = poolMap.find(hasher(win));
 				out << YAML::BeginMap;
-				out << YAML::Key << "HierarchyIndex" << YAML::Value << it->first;
+				out << YAML::Key << "HierarchyIndex" << YAML::Value << win->GetID();
 				out << YAML::Key << "PoolIndex" << YAML::Value << it->second;	
 				out << YAML::EndMap;
 			}
@@ -146,13 +147,16 @@ namespace XYZ {
 		out << YAML::Key << "Root Elements";
 		out << YAML::Value << YAML::BeginSeq;
 		uint32_t counter = 0;
-		std::unordered_map<int32_t, uint32_t> poolMap;
+		std::unordered_map<size_t, uint32_t> poolMap;
 		for (auto& pool : context.Allocator.GetPools())
 		{
 			for (auto root : pool.GetRootElementIDs())
 			{
 				const IGWindow* window = static_cast<const IGWindow*>(pool.GetHierarchy().GetData(root));
-				poolMap[window->GetID()] = counter;
+
+				std::hash<const IGWindow*> hasher;
+				poolMap[hasher(window)] = counter;
+
 				out << YAML::BeginMap;
 				out << YAML::Key << "Position" << YAML::Value;
 				ToVec2(out, window->Position);

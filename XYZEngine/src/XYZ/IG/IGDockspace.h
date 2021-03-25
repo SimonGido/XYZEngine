@@ -52,7 +52,6 @@ namespace XYZ {
 		bool OnMouseLeftPress(const glm::vec2& mousePos, bool& handled);
 		bool OnMouseLeftRelease();
 		bool OnMouseMove(const glm::vec2& mousePos, bool& handled);
-
 	private:
 		static void setNextID(uint32_t nextID);
 
