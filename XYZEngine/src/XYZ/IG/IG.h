@@ -40,6 +40,7 @@ namespace XYZ {
 		}
 
 		static void End(size_t handle);
+		static IGContext& GetContext();
 
 	private:
 		static IGContext& getContext();

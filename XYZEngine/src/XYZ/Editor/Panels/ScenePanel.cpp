@@ -3,9 +3,9 @@
 
 #include "XYZ/Core/Input.h"
 #include "XYZ/Core/Application.h"
-#include "XYZ/InGui/InGui.h"
 #include "XYZ/Scene/SceneEntity.h"
 #include "XYZ/Renderer/SceneRenderer.h"
+
 
 namespace XYZ {
 
@@ -26,30 +26,48 @@ namespace XYZ {
 	std::pair<float, float> ScenePanel::getMouseViewportSpace() const
 	{
 		auto [mx, my] = Input::GetMousePosition();
-		auto& window = InGui::GetWindow(m_PanelID);
-		mx -= window.Position.x;
-		my -= window.Position.y;
+		mx -= m_Window->Position.x;
+		my -= m_Window->Position.y;
 
-		auto viewportWidth = window.Size.x;
-		auto viewportHeight = window.Size.y;
+		auto viewportWidth = m_Window->Size.x;
+		auto viewportHeight = m_Window->Size.y;
 
 		return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f };
 	}
 
-	ScenePanel::ScenePanel(uint32_t panelID)
-		:
-		m_PanelID(panelID)
+	ScenePanel::ScenePanel()
 	{
 		m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
 		uint32_t windowWidth = Application::Get().GetWindow().GetWidth();
 		uint32_t windowHeight = Application::Get().GetWindow().GetHeight();
 		m_EditorCamera.SetViewportSize((float)windowWidth, (float)windowHeight);
 
-		InGui::ImageWindow(m_PanelID, "Scene", glm::vec2(0.0f), glm::vec2(200.0f), m_SubTexture);
-		InGui::End();
+		std::initializer_list<IGHierarchyElement> types{
+			{
+				IGElementType::ImageWindow,
+				{	
+					{IGElementType::Image, {}}, // TODO: Implement
+					{IGElementType::Image, {}}
+				}
+			}
+		};
+		auto [poolHandle, handleCount] = IG::AllocateUI(types, &m_Handles);
+		m_PoolHandle = poolHandle;
+		m_HandleCount = handleCount;
+		m_Window = &IG::GetUI<IGImageWindow>(m_PoolHandle, m_Handles[0]);	
+		m_Window->Label = "Scene";
+		m_Window->ResizeCallback = [&](const glm::vec2& size) {
 
-		m_ButtonSubTextures[Play] = InGui::GetContext().RenderData.SubTexture[InGuiRenderData::RIGHT_ARROW];
-		m_ButtonSubTextures[Pause] = InGui::GetContext().RenderData.SubTexture[InGuiRenderData::PAUSE];
+			m_ViewportSize = size;
+			SceneRenderer::SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
+			m_Context->SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		};
+
+		m_PlayButton = &IG::GetUI<IGImage>(m_PoolHandle, m_Handles[1]);
+		m_PauseButton = &IG::GetUI<IGImage>(m_PoolHandle, m_Handles[2]);
+		m_PlayButton->SubTexture = IG::GetContext().RenderData.SubTextures[IGRenderData::RightArrow];
+		m_PauseButton->SubTexture = IG::GetContext().RenderData.SubTextures[IGRenderData::Pause];
 	}
 	void ScenePanel::SetContext(Ref<Scene> context)
 	{
@@ -57,12 +75,12 @@ namespace XYZ {
 	}
 	void ScenePanel::SetSubTexture(Ref<SubTexture> subTexture)
 	{
-		m_SubTexture = subTexture;
+		m_Window->SubTexture = subTexture;
 	}
 
 	void ScenePanel::OnUpdate(Timestep ts)
 	{
-		if (IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
+		if (IS_SET(m_Window->Flags, IGWindow::Hoovered))
 		{
 			m_EditorCamera.OnUpdate(ts);	
 			if (m_Context.Raw())
@@ -106,40 +124,31 @@ namespace XYZ {
 				}
 			}
 		}
-
-		glm::vec2 newViewportSize = InGui::GetWindow(m_PanelID).Size;
-		if (m_Context.Raw() && m_ViewportSize != newViewportSize)
-		{
-			m_ViewportSize = newViewportSize;
-			SceneRenderer::SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-			m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
-			m_Context->SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-		}
 	}
 	void ScenePanel::OnInGuiRender()
 	{
-		if (InGui::ImageWindow(m_PanelID, "Scene", glm::vec2(0.0f), glm::vec2(200.0f), m_SubTexture))
-		{
-			if (IS_SET(InGui::Image(glm::vec2(50.0f), m_ButtonSubTextures[m_State]), InGuiReturnType::Clicked))
-			{
-				if (m_Context.Raw())
-				{
-					if (m_State == Play)
-					{
-						m_State = Pause;
-						m_Context->SetState(SceneState::Play);
-						m_Context->OnPlay();
-					}
-					else
-					{
-						m_State = Play;
-						m_Context->SetState(SceneState::Edit);
-						m_Context->OnStop();
-					}
-				}
-			}
-		}
-		InGui::End();
+		//if (InGui::ImageWindow(m_PanelID, "Scene", glm::vec2(0.0f), glm::vec2(200.0f), m_SubTexture))
+		//{
+		//	if (IS_SET(InGui::Image(glm::vec2(50.0f), m_ButtonSubTextures[m_State]), InGuiReturnType::Clicked))
+		//	{
+		//		if (m_Context.Raw())
+		//		{
+		//			if (m_State == Play)
+		//			{
+		//				m_State = Pause;
+		//				m_Context->SetState(SceneState::Play);
+		//				m_Context->OnPlay();
+		//			}
+		//			else
+		//			{
+		//				m_State = Play;
+		//				m_Context->SetState(SceneState::Edit);
+		//				m_Context->OnStop();
+		//			}
+		//		}
+		//	}
+		//}
+		//InGui::End();
 	}
 	void ScenePanel::OnEvent(Event& event)
 	{
@@ -148,7 +157,7 @@ namespace XYZ {
 			EventDispatcher dispatcher(event);
 			dispatcher.Dispatch<WindowResizeEvent>(Hook(&ScenePanel::onWindowResize, this));
 			dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&ScenePanel::onMouseButtonPress, this));
-			if (IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
+			if (IS_SET(m_Window->Flags, IGWindow::Hoovered))
 			{
 				dispatcher.Dispatch<KeyPressedEvent>(Hook(&ScenePanel::onKeyPress, this));
 				m_EditorCamera.OnEvent(event);
@@ -163,7 +172,7 @@ namespace XYZ {
 	{
 		if (event.IsButtonPressed(MouseCode::MOUSE_BUTTON_LEFT) && !Input::IsKeyPressed(KeyCode::KEY_LEFT_ALT))
 		{
-			if (IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
+			if (IS_SET(m_Window->Flags, IGWindow::Hoovered))
 			{
 				m_Context->SetSelectedEntity(Entity());
 				auto [mouseX, mouseY] = getMouseViewportSpace();

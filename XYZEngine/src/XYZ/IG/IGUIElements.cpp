@@ -702,4 +702,10 @@ namespace XYZ {
 		return glm::vec2(0.0f);
 	}
 
+	IGImage::IGImage(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
+		:
+		IGElement(position, size, color, IGElementType::Scrollbox)
+	{
+	}
+
 }

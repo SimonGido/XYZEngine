@@ -42,6 +42,8 @@ namespace XYZ {
 			{
 				window->Position = node->Data.Position;
 				window->Size = node->Data.Size;
+				if (window->ResizeCallback)
+					window->ResizeCallback(window->Size);
 			}
 		}
 		static void DestroyRecursive(IGDockNode* node, MemoryPool& pool)

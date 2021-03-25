@@ -158,6 +158,7 @@ namespace XYZ {
 				poolMap[hasher(window)] = counter;
 
 				out << YAML::BeginMap;
+				out << YAML::Key << "Label" << YAML::Value << window->Label;
 				out << YAML::Key << "Position" << YAML::Value;
 				ToVec2(out, window->Position);
 				out << YAML::Key << "Size" << YAML::Value;
@@ -200,6 +201,7 @@ namespace XYZ {
 					size_t  poolIndex		= it["Pool"].as<size_t>();
 					IGPool& pool			= context.Allocator.GetPools()[poolIndex];
 					IGWindow* window		= static_cast<IGWindow*>(pool.GetHierarchy().GetData(id));
+					window->Label			= it["Label"].as<std::string>();
 					window->Position		= it["Position"].as<glm::vec2>();
 					window->Size			= it["Size"].as<glm::vec2>();
 					window->Color			= it["Color"].as<glm::vec4>();

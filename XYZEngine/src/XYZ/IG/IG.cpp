@@ -48,7 +48,6 @@ namespace XYZ {
 
 	void IG::EndFrame()
 	{
-
 		for (auto& it : s_Context->RenderData.Mesh.Quads)
 		{
 			Renderer2D::SubmitQuadNotCentered(it.Position, it.Size, it.TexCoord, it.TextureID, it.Color);
@@ -142,6 +141,11 @@ namespace XYZ {
 	void IG::End(size_t handle)
 	{
 
+	}
+
+	IGContext& IG::GetContext()
+	{
+		return *s_Context;
 	}
 
 

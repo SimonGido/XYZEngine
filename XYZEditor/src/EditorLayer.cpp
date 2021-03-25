@@ -37,7 +37,7 @@ namespace XYZ {
 	EditorLayer::EditorLayer()
 		:
 		m_SceneHierarchyPanel(),
-		m_ScenePanel(PanelID::ScenePanel),
+		m_ScenePanel(),
 		m_InspectorPanel(PanelID::InspectorPanel),
 		m_SkinningEditorPanel(PanelID::SkinningEditorPanel)
 	{		
@@ -140,12 +140,6 @@ namespace XYZ {
 				{				
 					{IGElementType::Tree, {}},
 				}
-			},
-			{
-				IGElementType::ImageWindow,
-				{				
-						
-				}
 			}
 		};
 		m_HandleCount = IG::AllocateUI(
@@ -153,21 +147,8 @@ namespace XYZ {
 			&m_Handles
 		).second;
 
-		//
-		//
-		//IG::GetUI<IGTree>(0, m_Handles[30]).AddItem("1", nullptr, IGTreeItem("zajko"));
-		//IG::GetUI<IGTree>(0, m_Handles[30]).AddItem("2", nullptr, IGTreeItem("opica"));
-		//IG::GetUI<IGTree>(0, m_Handles[30]).AddItem("3", nullptr, IGTreeItem("leopard"));
-		//IG::GetUI<IGTree>(0, m_Handles[30]).AddItem("4", "1", IGTreeItem("drak"));
-		//IG::GetUI<IGTree>(0, m_Handles[30]).AddItem("5", "1", IGTreeItem("pekac"));
-		//IG::GetUI<IGTree>(0, m_Handles[30]).AddItem("6", "2", IGTreeItem("drak"));
-		//IG::GetUI<IGTree>(0, m_Handles[30]).AddItem("7", "6", IGTreeItem("pekac"));
-		//IG::GetUI<IGTree>(0, m_Handles[30]).AddItem("8", "3", IGTreeItem("drak"));
-		//IG::GetUI<IGTree>(0, m_Handles[30]).AddItem("9", "8", IGTreeItem("pekac"));
-		//
-		//IG::GetUI<IGImageWindow>(0, m_Handles[31]).SubTexture = renderSubTexture;
 
-		IG::LoadLayout("IG.IG");
+		//IG::LoadLayout("IG.IG");
 	}	
 
 	void EditorLayer::OnDetach()

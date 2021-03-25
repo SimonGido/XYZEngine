@@ -91,6 +91,10 @@ namespace XYZ {
 				destroy<IGScrollbox>(offset);
 				offset += sizeof(IGScrollbox);
 				break;
+			case XYZ::IGElementType::Image:
+				destroy<IGImage>(offset);
+				offset += sizeof(IGImage);
+				break;
 			case XYZ::IGElementType::None:
 				break;
 			default:
@@ -141,6 +145,9 @@ namespace XYZ {
 				break;
 			case XYZ::IGElementType::Scrollbox:
 				m_Capacity += sizeof(IGScrollbox);
+				break;
+			case XYZ::IGElementType::Image:
+				m_Capacity += sizeof(IGImage);
 				break;
 			case XYZ::IGElementType::None:
 				break;
@@ -230,6 +237,13 @@ namespace XYZ {
 			case XYZ::IGElementType::Scrollbox:
 			{
 				auto [element, handle] = Allocate<IGScrollbox>(glm::vec2(300.0f), glm::vec2(300.0f), glm::vec4(0.1f, 0.1f, 0.2f, 1.0f));
+				element->Parent = parent;
+				allocateMemory(it.Children, element);
+				break;
+			}
+			case XYZ::IGElementType::Image:
+			{
+				auto [element, handle] = Allocate<IGImage>(glm::vec2(0.0f), glm::vec2(50.0f), glm::vec4(1.0f));
 				element->Parent = parent;
 				allocateMemory(it.Children, element);
 				break;

@@ -41,6 +41,7 @@ namespace XYZ {
 		Float,
 		Tree,
 		Scrollbox,
+		Image,
 		None
 	};
 

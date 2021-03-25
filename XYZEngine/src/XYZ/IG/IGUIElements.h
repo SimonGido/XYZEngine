@@ -204,4 +204,12 @@ namespace XYZ {
 
 		static constexpr float ScrollSpeed = 4.0f;
 	};
+
+	class IGImage : public IGElement
+	{
+	public:
+		IGImage(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
+
+		Ref<SubTexture> SubTexture;
+	};
 }

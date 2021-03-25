@@ -4,13 +4,14 @@
 #include "XYZ/Scene/SceneEntity.h"
 #include "XYZ/Event/ApplicationEvent.h"
 #include "XYZ/Event/InputEvent.h"
+#include "XYZ/IG/IG.h"
 
 namespace XYZ {
 
 	class ScenePanel
 	{
 	public:
-		ScenePanel(uint32_t panelID);
+		ScenePanel();
 
 		void SetContext(Ref<Scene> context);
 		void SetSubTexture(Ref<SubTexture> subTexture);
@@ -29,13 +30,18 @@ namespace XYZ {
 		std::pair<glm::vec3, glm::vec3> castRay(float mx, float my) const;
 		std::pair<float, float> getMouseViewportSpace() const;
 	private:
-		uint32_t m_PanelID;
 		Ref<Scene> m_Context;
-		Ref<SubTexture> m_SubTexture;
 		glm::vec2 m_ViewportSize = glm::vec2(0.0f);
 
 		EditorCamera m_EditorCamera;
 
+		IGImageWindow* m_Window;
+		IGImage* m_PlayButton;
+		IGImage* m_PauseButton;
+
+		size_t* m_Handles;
+		size_t m_HandleCount;
+		size_t m_PoolHandle;
 
 		enum ModifyFlags
 		{
