@@ -225,6 +225,7 @@ namespace XYZ {
 		m_ScenePanel.OnEvent(event);
 		m_SkinningEditorPanel.OnEvent(event);
 		
+		IG::LoadLayout("IG.IG");
 	}
 
 	void EditorLayer::OnInGuiRender()

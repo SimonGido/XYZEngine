@@ -96,7 +96,6 @@ namespace XYZ {
                 m_Nodes.Erase(tmp);
             }
         }
-
         if (removed.Parent != TreeNode::sc_Invalid)
         {
             TreeNode& parent = m_Nodes[removed.Parent];
@@ -106,9 +105,12 @@ namespace XYZ {
         if (removed.NextSibling != TreeNode::sc_Invalid)
         {
             TreeNode& nextSibling = m_Nodes[removed.NextSibling];
-            nextSibling.PreviousSibling = removed.PreviousSibling;
-            if (removed.PreviousSibling != TreeNode::sc_Invalid)
-                m_Nodes[removed.PreviousSibling].NextSibling = removed.NextSibling;
+            nextSibling.PreviousSibling = removed.PreviousSibling;          
+        }
+        if (removed.PreviousSibling != TreeNode::sc_Invalid)
+        {
+            TreeNode& previousSibling = m_Nodes[removed.PreviousSibling];
+            previousSibling.NextSibling = removed.NextSibling;
         }
         m_NodeCount--;
         m_Nodes.Erase(index);

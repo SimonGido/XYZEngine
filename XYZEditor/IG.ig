@@ -1,71 +1,89 @@
 IG: IG
 Root Elements:
-  - Position: [1464, 0]
-    Size: [1096, 688.5]
+  - Position: [960, 0]
+    Size: [960, 508.5]
     Color: [1, 1, 1, 1]
     FrameColor: [1, 1, 1, 1]
     Flags: 128
-  - Position: [0, 807]
-    Size: [1464, 570]
+    ID: 0
+    Pool: 0
+  - Position: [960, 508.5]
+    Size: [960, 508.5]
     Color: [1, 1, 1, 1]
     FrameColor: [1, 1, 1, 1]
     Flags: 128
-  - Position: [1464, 688.5]
-    Size: [1096, 688.5]
+    ID: 0
+    Pool: 1
+  - Position: [0, 508.5]
+    Size: [960, 508.5]
     Color: [1, 1, 1, 1]
     FrameColor: [1, 1, 1, 1]
     Flags: 128
+    ID: 29
+    Pool: 1
   - Position: [0, 0]
-    Size: [1464, 807]
+    Size: [960, 508.5]
     Color: [1, 1, 1, 1]
     FrameColor: [1, 1, 1, 1]
     Flags: 128
+    ID: 31
+    Pool: 1
 Dockspace:
-  - DockNode: 0
+  - ID: 0
     Position: [0, 0]
-    Size: [2560, 1377]
+    Size: [1920, 1017]
     Type: 2
     Windows:
       []
-    FirstChild: 1
-    SecondChild: 2
-  - DockNode: 1
+    FirstChild: 7
+    SecondChild: 10
+  - ID: 7
     Position: [0, 0]
-    Size: [1464, 1377]
+    Size: [960, 1017]
     Type: 1
     Windows:
       []
-    FirstChild: 3
-    SecondChild: 4
-  - DockNode: 3
+    Parent: 0
+    FirstChild: 8
+    SecondChild: 9
+  - ID: 8
     Position: [0, 0]
-    Size: [1464, 807]
+    Size: [960, 508.5]
     Type: 0
     Windows:
-      - 31
-  - DockNode: 4
-    Position: [0, 807]
-    Size: [1464, 570]
+      - HierarchyIndex: 31
+        PoolIndex: 1
+    Parent: 7
+  - ID: 9
+    Position: [0, 508.5]
+    Size: [960, 508.5]
     Type: 0
     Windows:
-      - 0
-  - DockNode: 2
-    Position: [1464, 0]
-    Size: [1096, 1377]
+      - HierarchyIndex: 29
+        PoolIndex: 1
+    Parent: 7
+  - ID: 10
+    Position: [960, 0]
+    Size: [960, 1017]
     Type: 1
     Windows:
       []
-    FirstChild: 5
-    SecondChild: 6
-  - DockNode: 5
-    Position: [1464, 0]
-    Size: [1096, 688.5]
+    Parent: 0
+    FirstChild: 11
+    SecondChild: 12
+  - ID: 11
+    Position: [960, 0]
+    Size: [960, 508.5]
     Type: 0
     Windows:
-      - 0
-  - DockNode: 6
-    Position: [1464, 688.5]
-    Size: [1096, 688.5]
+      - HierarchyIndex: 0
+        PoolIndex: 1
+    Parent: 10
+  - ID: 12
+    Position: [960, 508.5]
+    Size: [960, 508.5]
     Type: 0
     Windows:
-      - 29
+      - HierarchyIndex: 0
+        PoolIndex: 1
+    Parent: 10

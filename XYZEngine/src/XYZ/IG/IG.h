@@ -13,6 +13,7 @@ namespace XYZ {
 	public:
 		static void Init();
 		static void Shutdown();
+		static void LoadLayout(const char* filepath);
 
 		static void BeginFrame(const glm::mat4& viewProjectionMatrix);
 		static void EndFrame();

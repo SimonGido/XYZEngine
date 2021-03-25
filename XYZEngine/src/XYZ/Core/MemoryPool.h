@@ -25,11 +25,7 @@ namespace XYZ {
 		T* Allocate(Args&&... args)
 		{
 			if (!m_Blocks.size())
-			{
-				m_Blocks.push_back(Block());
-				m_Blocks.back().Data = new uint8_t[m_BlockSize];
-				memset(m_Blocks.back().Data, 0, m_BlockSize);
-			}
+				createBlock();
 			auto [blockIndex, chunkIndex] = findAvailableIndex((uint32_t)sizeof(T));
 			return new((void*)&m_Blocks[blockIndex].Data[chunkIndex])T(std::forward<Args>(args)...);
 		}
@@ -43,18 +39,31 @@ namespace XYZ {
 			uint32_t chunkIndex = *(uint32_t*)(tmp + sizeof(uint8_t));
 
 			Chunk chunk{ sizeof(T) + sizeof(uint32_t) + sizeof(uint8_t), chunkIndex, blockIndex };
-			// Removed chunk is at the end of used memory so just move available index backwards
-			if (chunk.ChunkIndex + chunk.Size == m_Blocks[blockIndex].NextAvailableIndex)
-				m_Blocks[blockIndex].NextAvailableIndex -= chunk.ChunkIndex + chunk.BlockIndex + chunk.Size;
-			else
-			{
-				m_FreeChunks.push_back(chunk);
-				mergeFreeChunks();
-			}
+			m_FreeChunks.push_back(chunk);
+			mergeFreeChunks();
+			reverseMergeFreeChunks();
+		}
+
+		template <typename T>
+		T* Get(uint32_t chunkIndex, uint8_t blockIndex)
+		{
+			return reinterpret_cast<T*>(&m_Blocks[blockIndex].Data[chunkIndex]);
+		}
+
+		template <typename T>
+		std::pair<uint32_t, uint8_t> ExtractIndices(T* ptr) const
+		{
+			uint8_t* tmp = (uint8_t*)ptr + sizeof(T);
+			uint8_t blockIndex = *tmp;
+			uint32_t chunkIndex = *(uint32_t*)(tmp + sizeof(uint8_t));
+			return { chunkIndex, blockIndex };
 		}
 
 	private:
 		void mergeFreeChunks();
+		void reverseMergeFreeChunks();
+		Block* createBlock();
+
 		std::pair<uint8_t, uint32_t> findAvailableIndex(uint32_t size);
 
 	private:

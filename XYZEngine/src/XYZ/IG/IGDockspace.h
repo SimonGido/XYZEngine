@@ -54,6 +54,9 @@ namespace XYZ {
 		bool OnMouseMove(const glm::vec2& mousePos, bool& handled);
 
 	private:
+		static void setNextID(uint32_t nextID);
+
+	private:
 		IGMesh      m_Mesh;
 		MemoryPool  m_Pool;
 		IGDockNode* m_Root;

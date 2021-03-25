@@ -441,4 +441,8 @@ namespace XYZ {
 		return false;
 	}
 
+	void IGDockspace::setNextID(uint32_t nextID)
+	{
+		s_NextID = nextID;
+	}
 }

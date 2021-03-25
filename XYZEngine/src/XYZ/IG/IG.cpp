@@ -28,6 +28,11 @@ namespace XYZ {
 		delete s_Context;
 	}
 
+	void IG::LoadLayout(const char* filepath)
+	{
+		IGSerializer::Deserialize(filepath, *s_Context);
+	}
+
 	void IG::BeginFrame(const glm::mat4& viewProjectionMatrix)
 	{
 		XYZ_ASSERT(s_Context, "InGuiContext is not initialized");
