@@ -14,7 +14,7 @@ namespace XYZ {
 	MemoryPool::MemoryPool(size_t blockSize)
 		:
 		m_BlockSize(blockSize),
-		m_ChunkIndexSize(Helper::NumBytesToStore(blockSize))
+		m_SizeOfChunkIndex(Helper::NumBytesToStore(blockSize))
 	{
 	}
 
@@ -27,14 +27,17 @@ namespace XYZ {
 		}
 	}
 
-	void MemoryPool::mergeFreeChunks()
+	void MemoryPool::sortFreeChunks()
 	{
 		std::sort(m_FreeChunks.begin(), m_FreeChunks.end(), [](const Chunk& a, const Chunk& b) {
 			if (a.BlockIndex == b.BlockIndex)
 				return a.ChunkIndex < b.ChunkIndex;
 			return a.BlockIndex < b.BlockIndex;
 		});
+	}
 
+	void MemoryPool::mergeFreeChunks()
+	{		
 		for (auto it = m_FreeChunks.begin(); it != m_FreeChunks.end(); ++it)
 		{
 			for (auto it2 = it + 1; it2 != m_FreeChunks.end();)
@@ -74,6 +77,7 @@ namespace XYZ {
 	}
 	MemoryPool::Block* MemoryPool::createBlock()
 	{
+		XYZ_ASSERT(m_Blocks.size() < sc_MaxNumberOfBlocks, "Maximum number of blocks is ", sc_MaxNumberOfBlocks);
 		m_Blocks.push_back(Block());
 		m_Blocks.back().Data = new uint8_t[m_BlockSize];
 		memset(m_Blocks.back().Data, 0, m_BlockSize);
@@ -82,7 +86,7 @@ namespace XYZ {
 	std::pair<uint8_t, uint32_t> MemoryPool::findAvailableIndex(uint32_t size)
 	{
 		uint32_t counter = 0;
-		size_t spaceRequirement = size + m_ChunkIndexSize + sizeof(uint8_t);
+		size_t spaceRequirement = size + m_SizeOfChunkIndex + sizeof(uint8_t);
 		for (auto& chunk : m_FreeChunks)
 		{
 			if (chunk.Size > spaceRequirement)
@@ -113,7 +117,7 @@ namespace XYZ {
 		size_t chunkIndexInMemory = (size_t)size + (size_t)chunkIndex + sizeof(uint8_t);
 		
 		memcpy(&m_Blocks[blockIndex].Data[blockIndexInMemory], &blockIndex, sizeof(uint8_t));	// Store block index
-		memcpy(&m_Blocks[blockIndex].Data[chunkIndexInMemory], &chunkIndex, (size_t)m_ChunkIndexSize);	// Store chunk index
+		memcpy(&m_Blocks[blockIndex].Data[chunkIndexInMemory], &chunkIndex, (size_t)m_SizeOfChunkIndex);	// Store chunk index
 
 		return { blockIndex, chunkIndex };
 	}

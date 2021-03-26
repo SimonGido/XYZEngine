@@ -38,8 +38,9 @@ namespace XYZ {
 			uint8_t blockIndex = *tmp;
 			uint32_t chunkIndex = *(uint32_t*)(tmp + sizeof(uint8_t));
 
-			Chunk chunk{ sizeof(T) + m_ChunkIndexSize + sizeof(uint8_t), chunkIndex, blockIndex };
+			Chunk chunk{ sizeof(T) + m_SizeOfChunkIndex + sizeof(uint8_t), chunkIndex, blockIndex };
 			m_FreeChunks.push_back(chunk);
+			sortFreeChunks();
 			mergeFreeChunks();
 			reverseMergeFreeChunks();
 		}
@@ -60,6 +61,7 @@ namespace XYZ {
 		}
 
 	private:
+		void sortFreeChunks();
 		void mergeFreeChunks();
 		void reverseMergeFreeChunks();
 		Block* createBlock();
@@ -68,9 +70,11 @@ namespace XYZ {
 
 	private:
 		const size_t m_BlockSize;
-		const size_t m_ChunkIndexSize;
+		const size_t m_SizeOfChunkIndex;
 
 		std::vector<Block> m_Blocks;
 		std::vector<Chunk> m_FreeChunks;
+		
+		static constexpr size_t sc_MaxNumberOfBlocks = 255;
 	};
 }
