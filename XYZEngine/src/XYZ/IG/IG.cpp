@@ -5,6 +5,7 @@
 #include "XYZ/Core/Input.h"
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/Renderer.h"
+#include "XYZ/Event/ApplicationEvent.h"
 
 
 #include <glm/gtx/transform.hpp>
@@ -108,11 +109,16 @@ namespace XYZ {
 		{
 			s_Context->Input.OnKeyPress((KeyPressedEvent&)event, *s_Context);
 		}
+		else if (event.GetEventType() == EventType::WindowResized)
+		{
+			WindowResizeEvent& e = (WindowResizeEvent&)event;
+			s_Context->Dockspace.SetRootSize({(float)e.GetWidth(), (float)e.GetHeight() });
+			event.Handled = true;
+		}
 
 		if (event.Handled)
 		{
-			s_Context->RenderData.Rebuild = true;
-			s_Context->RenderData.RebuildTwice = true;
+			RebuildUI();
 		}
 	}
 
@@ -125,9 +131,10 @@ namespace XYZ {
 	{
 	}
 
-	void IG::Separator()
+	void IG::RebuildUI()
 	{
-
+		s_Context->RenderData.Rebuild = true;
+		s_Context->RenderData.RebuildTwice = true;
 	}
 
 	std::pair<size_t, size_t> IG::AllocateUI(const std::initializer_list<IGHierarchyElement>& hierarchy, size_t** handles)
@@ -138,9 +145,12 @@ namespace XYZ {
 		return result;
 	}
 
-	void IG::End(size_t handle)
+	std::pair<size_t, size_t> IG::AllocateUI(const std::vector<IGHierarchyElement>& hierarchy, size_t** handles)
 	{
-
+		auto result = s_Context->Allocator.CreatePool(hierarchy, handles);
+		s_Context->RenderData.Rebuild = true;
+		s_Context->RenderData.RebuildMesh(s_Context->Allocator);
+		return result;
 	}
 
 	IGContext& IG::GetContext()

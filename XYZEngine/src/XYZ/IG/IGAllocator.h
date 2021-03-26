@@ -15,6 +15,7 @@ namespace XYZ {
 	{
 	public:
 		IGPool(const std::initializer_list<IGHierarchyElement>& hierarchy, size_t ** handles);
+		IGPool(const std::vector<IGHierarchyElement>& hierarchy, size_t ** handles);
 		IGPool(const IGPool& other) = delete;
 		IGPool(IGPool&& other) noexcept;
 		~IGPool();
@@ -91,7 +92,8 @@ namespace XYZ {
 	{
 	public:
 		std::pair<size_t, size_t> CreatePool(const std::initializer_list<IGHierarchyElement>& hierarchy, size_t ** handles);
-	
+		std::pair<size_t, size_t> CreatePool(const std::vector<IGHierarchyElement>& hierarchy, size_t ** handles);
+
 		template <typename T, typename ...Args>
 		std::pair<T*, size_t> Allocate(size_t poolHandle, Args&&... args)
 		{

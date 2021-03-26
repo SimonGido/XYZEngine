@@ -21,9 +21,10 @@ namespace XYZ {
 
 		static void BeginUI(size_t handle);
 		static void EndUI();
-		static void Separator();
+		static void RebuildUI();
 
 		static std::pair<size_t, size_t> AllocateUI(const std::initializer_list<IGHierarchyElement>& hierarchy, size_t** handles);
+		static std::pair<size_t, size_t> AllocateUI(const std::vector<IGHierarchyElement>& hierarchy, size_t** handles);
 
 
 		template <typename T, typename ...Args>
@@ -39,7 +40,7 @@ namespace XYZ {
 			return *result;
 		}
 
-		static void End(size_t handle);
+
 		static IGContext& GetContext();
 
 	private:

@@ -383,6 +383,7 @@ namespace XYZ {
 	{
 		glm::vec2 scale = size / m_Root->Data.Size;
 		Helper::ScaleRecursive(m_Root, scale);
+		Helper::UpdateWindowsRecursive(m_Root);
 	}
 
 	void IGDockspace::SubmitToRenderer(IGRenderData* renderData)
@@ -442,7 +443,6 @@ namespace XYZ {
 		}
 		return false;
 	}
-
 	void IGDockspace::setNextID(uint32_t nextID)
 	{
 		s_NextID = nextID;

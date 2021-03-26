@@ -20,6 +20,23 @@ namespace XYZ {
 		insertToHierarchy(-1, hierarchy, counter, 0);
 	}
 
+	IGPool::IGPool(const std::vector<IGHierarchyElement>& hierarchy, size_t ** handles)
+		:
+		m_Size(0)
+	{
+		m_Capacity = 0;
+		*handles = new size_t[getSize(hierarchy)];
+
+		size_t counter = 0;
+		resolveHandles(hierarchy, handles, counter);
+
+		m_Data = new uint8_t[m_Capacity];
+		allocateMemory(hierarchy, nullptr);
+
+		counter = 0;
+		insertToHierarchy(-1, hierarchy, counter, 0);
+	}
+
 	IGPool::IGPool(IGPool&& other) noexcept
 		:
 		m_Capacity(other.m_Capacity),
@@ -180,7 +197,7 @@ namespace XYZ {
 			}
 			case XYZ::IGElementType::Group:
 			{
-				auto [element, handle] = Allocate<IGGroup>(glm::vec2(0.0f), glm::vec2(350.0f,200.0f), glm::vec4(1.0f));
+				auto [element, handle] = Allocate<IGGroup>(glm::vec2(0.0f), glm::vec2(350.0f,300.0f), glm::vec4(1.0f));
 				element->Parent = parent;
 				allocateMemory(it.Children, element);
 				break;
@@ -295,5 +312,9 @@ namespace XYZ {
 		m_Pools.emplace_back(hierarchy, handles);
 		return { m_Pools.size() - 1, m_Pools.back().Size() };
 	}
-
+	std::pair<size_t, size_t> IGAllocator::CreatePool(const std::vector<IGHierarchyElement>& hierarchy, size_t ** handles)
+	{
+		m_Pools.emplace_back(hierarchy, handles);
+		return { m_Pools.size() - 1, m_Pools.back().Size() };
+	}
 }

@@ -167,7 +167,7 @@ namespace XYZ {
 
 			size_t oldQuadCount = data.Mesh->Quads.size();
 			glm::vec2 textPosition = { std::floor(absolutePosition.x + data.Element->Size.x), std::floor(absolutePosition.y) };
-			glm::vec2 textSize = { data.Element->Size.x, data.Element->Size.y };
+			glm::vec2 textSize = { 1000.0f, data.Element->Size.y };
 
 			glm::vec2 genTextSize = Helper::GenerateTextMesh(
 				label, data.RenderData->Font, labelColor,

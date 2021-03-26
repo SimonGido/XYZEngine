@@ -38,7 +38,7 @@ namespace XYZ {
 		:
 		m_SceneHierarchyPanel(),
 		m_ScenePanel(),
-		m_InspectorPanel(PanelID::InspectorPanel),
+		m_InspectorPanel(),
 		m_SkinningEditorPanel(PanelID::SkinningEditorPanel)
 	{		
 	}
@@ -87,66 +87,6 @@ namespace XYZ {
 		m_ScenePanel.SetContext(m_Scene);
 		m_ScenePanel.SetSubTexture(renderSubTexture);
 		m_SkinningEditorPanel.SetContext(robotSubTexture);
-
-
-		std::initializer_list<IGHierarchyElement> types{
-			{
-				IGElementType::Window,
-				{
-					{
-						IGElementType::Group, 
-						{
-							{IGElementType::Slider, {}},
-							{IGElementType::Slider, {}},
-							{IGElementType::Separator, {}},
-							{IGElementType::Float, {}},
-							{IGElementType::Float, {}},
-							{IGElementType::Float, {}},
-							{IGElementType::Float, {}},
-						}
-					},
-					{
-						IGElementType::Scrollbox, 
-						{
-							{IGElementType::Slider, {}},
-							{IGElementType::Slider, {}},
-							{IGElementType::Separator, {}},
-							{IGElementType::Float, {}},
-							{IGElementType::Float, {}},
-							{IGElementType::Float, {}},
-							{IGElementType::Float, {}},
-						}
-					},
-					{
-						IGElementType::Group, 
-						{
-							{IGElementType::Checkbox, {}},
-							{IGElementType::Checkbox, {}},
-							{IGElementType::Button, {}},
-							{IGElementType::Button, {}},
-							{IGElementType::Button, {}},
-							{IGElementType::Text, {}},
-							{IGElementType::Text, {}},
-							{IGElementType::Text, {}},
-							{IGElementType::Slider, {}},
-							{IGElementType::Slider, {}},
-							{IGElementType::Float, {}},
-						}
-					},
-				}
-			},
-			{
-				IGElementType::Window,
-				{				
-					{IGElementType::Tree, {}},
-				}
-			}
-		};
-		m_HandleCount = IG::AllocateUI(
-			types, 
-			&m_Handles
-		).second;
-
 
 		//IG::LoadLayout("IG.IG");
 	}	
