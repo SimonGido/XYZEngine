@@ -163,7 +163,6 @@ namespace XYZ {
 		Renderer::SetClearColor({ 0.1f,0.1f,0.1f,0.1f });
 		m_ScenePanel.OnUpdate(ts);
 		m_SkinningEditorPanel.OnUpdate(ts);
-
 		if (m_Scene->GetState() == SceneState::Play)
 		{
 			m_Scene->OnUpdate(ts);

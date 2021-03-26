@@ -4,9 +4,17 @@
 
 namespace XYZ {
 
+	namespace Helper {
+		size_t NumBytesToStore(size_t size)
+		{
+			return (size_t)std::ceil((log(size) / log(2)) / 4.0f);
+		}
+	}
+
 	MemoryPool::MemoryPool(size_t blockSize)
 		:
-		m_BlockSize(blockSize)
+		m_BlockSize(blockSize),
+		m_ChunkIndexSize(Helper::NumBytesToStore(blockSize))
 	{
 	}
 
@@ -74,7 +82,7 @@ namespace XYZ {
 	std::pair<uint8_t, uint32_t> MemoryPool::findAvailableIndex(uint32_t size)
 	{
 		uint32_t counter = 0;
-		size_t spaceRequirement = size + sizeof(uint32_t) + sizeof(uint8_t);
+		size_t spaceRequirement = size + m_ChunkIndexSize + sizeof(uint8_t);
 		for (auto& chunk : m_FreeChunks)
 		{
 			if (chunk.Size > spaceRequirement)
@@ -88,8 +96,6 @@ namespace XYZ {
 			{
 				Chunk tmp = chunk;
 				m_FreeChunks.erase(m_FreeChunks.begin() + counter);
-				//Block& block = m_Blocks[chunk.BlockIndex];
-				//block.NextAvailableIndex = tmp.ChunkIndex + spaceRequirement;
 				return { tmp.BlockIndex, tmp.ChunkIndex };
 			}
 			counter++;
@@ -107,7 +113,7 @@ namespace XYZ {
 		size_t chunkIndexInMemory = (size_t)size + (size_t)chunkIndex + sizeof(uint8_t);
 		
 		memcpy(&m_Blocks[blockIndex].Data[blockIndexInMemory], &blockIndex, sizeof(uint8_t));	// Store block index
-		memcpy(&m_Blocks[blockIndex].Data[chunkIndexInMemory], &chunkIndex, sizeof(uint32_t));	// Store chunk index
+		memcpy(&m_Blocks[blockIndex].Data[chunkIndexInMemory], &chunkIndex, (size_t)m_ChunkIndexSize);	// Store chunk index
 
 		return { blockIndex, chunkIndex };
 	}
