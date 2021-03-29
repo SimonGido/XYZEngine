@@ -7,55 +7,47 @@
 namespace XYZ {
 	
 	namespace Helper {
-		static bool ResolvePosition(size_t oldQuadCount, const glm::vec2& genSize, IGElement* element, IGElement* parent, IGMesh& mesh, glm::vec2& offset, float& highestInRow, const glm::vec2& rootBorder)
+		static bool ResolvePosition(size_t oldQuadCount, const glm::vec2& genSize, IGElement* element, const IGElement& root, IGMesh& mesh, glm::vec2& offset, float& highestInRow)
 		{
-			if (parent)
+			if (root.Style.AutoPosition)
 			{
-				if (parent->Style.AutoPosition)
-				{
-					float xBorder = parent->Size.x - parent->Style.Layout.RightPadding;
-					float yBorder = parent->Size.y - parent->Style.Layout.BottomPadding - parent->Style.Layout.TopPadding - IGWindow::PanelHeight;
+				float xBorder = root.Size.x - root.Style.Layout.RightPadding;
+				float yBorder = root.Size.y - root.Style.Layout.BottomPadding - root.Style.Layout.TopPadding - IGWindow::PanelHeight;
 
-					if (offset.x + genSize.x > xBorder)
-					{
-						if (offset.y + genSize.y > yBorder)
-						{
-							mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
-							return false;
-						}
-						else if (!parent->Style.NewRow)
-						{
-							offset.x += genSize.x + parent->Style.Layout.SpacingX;
-							mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
-							return false;
-						}
-						else
-						{
-							offset.x = parent->Style.Layout.LeftPadding;
-							offset.y += parent->Style.Layout.SpacingY + highestInRow;
-							highestInRow = 0.0f;
-							// It is generally bigger than xBorder erase it
-							if (offset.x + genSize.x > xBorder)
-							{
-								mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
-								return false;
-							}
-							for (size_t i = oldQuadCount; i < mesh.Quads.size(); ++i)
-							{
-								mesh.Quads[i].Position.x += offset.x - element->Position.x;
-								mesh.Quads[i].Position.y += offset.y - element->Position.y;
-							}
-						}
-					}		
-				}
-				element->Position = offset;
-				if (element->GetAbsolutePosition().y + genSize.y > rootBorder.y)
+				if (offset.x + genSize.x > xBorder)
 				{
-					mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
-					return false;
-				}
-				offset.x += genSize.x + parent->Style.Layout.SpacingX;
+					if (offset.y + genSize.y > yBorder)
+					{
+						mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
+						return false;
+					}
+					else if (!root.Style.NewRow)
+					{
+						offset.x += genSize.x + root.Style.Layout.SpacingX;
+						mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
+						return false;
+					}
+					else
+					{
+						offset.x =  root.Style.Layout.LeftPadding;
+						offset.y += root.Style.Layout.SpacingY + highestInRow;
+						highestInRow = 0.0f;
+						// It is generally bigger than xBorder erase it
+						if (offset.x + genSize.x > xBorder)
+						{
+							mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
+							return false;
+						}
+						for (size_t i = oldQuadCount; i < mesh.Quads.size(); ++i)
+						{
+							mesh.Quads[i].Position.x += offset.x - element->Position.x;
+							mesh.Quads[i].Position.y += offset.y - element->Position.y;
+						}
+					}
+				}		
 			}
+			element->Position = offset;
+			offset.x += genSize.x + root.Style.Layout.SpacingX;
 
 			return true;
 		}
@@ -72,7 +64,7 @@ namespace XYZ {
 	{
 	}
 
-	glm::vec2 IGElement::BuildMesh(IGMesh& mesh, IGRenderData& renderData, IGPool& pool, const glm::vec2& rootBorder, uint32_t scissorIndex)
+	glm::vec2 IGElement::BuildMesh(IGMesh& mesh, IGRenderData& renderData, IGPool& pool, const IGElement& root, uint32_t scissorIndex)
 	{
 		if (Active && ActiveChildren)
 		{			
@@ -98,12 +90,12 @@ namespace XYZ {
 					}
 					size_t oldQuadCount = mesh.Quads.size();
 					glm::vec2 genSize = childElement->GenerateQuads(mesh, renderData);
-					if (Helper::ResolvePosition(oldQuadCount, genSize, childElement, this, mesh, offset, highestInRow, rootBorder))
+					if (Helper::ResolvePosition(oldQuadCount, genSize, childElement, root, mesh, offset, highestInRow))
 					{
 						childElement->ListenToInput = true;
 						if (genSize.y > highestInRow)
 							highestInRow = genSize.y;
-						offset += childElement->BuildMesh(mesh, renderData, pool, rootBorder);
+						offset += childElement->BuildMesh(mesh, renderData, pool, root);
 					}
 					else
 					{

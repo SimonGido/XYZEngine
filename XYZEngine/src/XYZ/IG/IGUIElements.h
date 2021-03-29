@@ -195,7 +195,7 @@ namespace XYZ {
 
 		virtual bool OnMouseScroll(const glm::vec2& mousePosition, float offset, bool& handled);
 		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData, uint32_t scissorIndex = 0) override;
-		virtual glm::vec2 BuildMesh(IGMesh& mesh, IGRenderData& renderData, IGPool& pool, const glm::vec2& rootBorder, uint32_t scissorIndex = 0) override;
+		virtual glm::vec2 BuildMesh(IGMesh& mesh, IGRenderData& renderData, IGPool& pool, const IGElement& root, uint32_t scissorIndex = 0) override;
 
 
 		bool AdjustToParent = true;
