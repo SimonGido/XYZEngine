@@ -1,5 +1,6 @@
 #pragma once
 #include "ComponentStorage.h"
+#include "ComponentManager.h"
 #include "Component.h"
 #include "Types.h"
 #include "Entity.h"
@@ -7,8 +8,6 @@
 #include <limits>
 
 namespace XYZ {	
-	class ECSManager;
-
 	template <typename ...Args>
 	class ComponentView
 	{
@@ -28,10 +27,10 @@ namespace XYZ {
 		std::vector<Entity>::const_iterator end()   const { return m_Entities->end(); }
 
 	private:
-		ComponentView(ECSManager* ecs)
+		ComponentView(ComponentManager& componentManager)
 		{
-			(ecs->ForceStorage<Args>(),...);
-			m_Storages = { &ecs->GetStorage<Args>()... };
+			(componentManager.ForceStorage<Args>(),...);
+			m_Storages = { &componentManager.GetStorage<Args>()... };
 
 			size_t minimalSize = std::numeric_limits<size_t>::max();
 			ForEachInTuple(m_Storages, [&](const auto& storage) {

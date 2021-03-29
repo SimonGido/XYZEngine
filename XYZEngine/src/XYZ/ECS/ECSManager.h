@@ -125,7 +125,7 @@ namespace XYZ {
 		template <typename ...Args>
 		ComponentView<Args...> CreateView()
 		{
-			return ComponentView<Args...>(this);
+			return ComponentView<Args...>(m_ComponentManager);
 		}
 
 		template <typename T>

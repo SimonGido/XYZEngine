@@ -8,7 +8,7 @@ namespace XYZ {
 		m_StoragePool(sizeof(ComponentStorage<IComponent>) * MAX_COMPONENTS)
 	{
 		m_StorageCreated.resize(MAX_COMPONENTS);
-		for (auto& it : m_StorageCreated)
+		for (auto&& it : m_StorageCreated)
 			it = false;
 	}
 	ComponentManager::ComponentManager(const ComponentManager& other)

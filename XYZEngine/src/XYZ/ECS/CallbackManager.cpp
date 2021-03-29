@@ -7,7 +7,7 @@ namespace XYZ {
 		m_StoragePool(sizeof(CallbackStorage<IComponent>) * MAX_COMPONENTS)
 	{
 		m_StorageCreated.resize(MAX_COMPONENTS);
-		for (auto& it : m_StorageCreated)
+		for (auto&& it : m_StorageCreated)
 			it = false;
 	}
 	void CallbackManager::OnEntityDestroyed(uint32_t entity, const Signature& signature)
