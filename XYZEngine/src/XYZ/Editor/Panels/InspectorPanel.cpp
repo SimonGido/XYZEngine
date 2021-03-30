@@ -41,7 +41,7 @@ namespace XYZ {
 		types[0].Children.push_back({ IGElementType::Scrollbox, {} });
 
 		size_t handleOffset = 2;
-		m_HandleStart[Transform] = handleOffset;
+		m_HandleStart[TransformComponent] = handleOffset;
 		handleOffset += transformComponentUI(types[0].Children[0]);
 		m_HandleStart[SpriteRenderer] = handleOffset;
 		handleOffset += spriteRendererUI(types[0].Children[0]);
@@ -58,32 +58,94 @@ namespace XYZ {
 		m_Context = context;
 		if (m_Context)
 		{
-			
+			IG::GetUI<IGGroup>(m_PoolHandle, m_Handles[m_HandleStart[TransformComponent]]).Active = m_Context.HasComponent<XYZ::TransformComponent>();
+			IG::GetUI<IGGroup>(m_PoolHandle, m_Handles[m_HandleStart[SpriteRenderer]]).Active = m_Context.HasComponent<XYZ::SpriteRenderer>();
 		}
 	}
 	void InspectorPanel::OnUpdate()
 	{
-
-	}
-	void InspectorPanel::updateTransformComponentUI()
-	{
 		if (m_Context)
 		{
-			IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[m_HandleStart[Transform] + 1]).Label = "X";
-			IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[m_HandleStart[Transform] + 2]).Label = "Y";
-			IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[m_HandleStart[Transform] + 3]).Label = "Z";
-
-			IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[m_HandleStart[Transform] + 6]).Label = "X";
-			IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[m_HandleStart[Transform] + 7]).Label = "Y";
-			IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[m_HandleStart[Transform] + 8]).Label = "Z";
-
-			IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[m_HandleStart[Transform] + 11]).Label = "X";
-			IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[m_HandleStart[Transform] + 12]).Label = "Y";
-			IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[m_HandleStart[Transform] + 13]).Label = "Z";
+			updateTransformComponentUI();
+			updateSpriteRendererUI();
 		}
+	}
+	void InspectorPanel::updateTransformComponentUI()
+	{		
+		XYZ::TransformComponent& transform = m_Context.GetComponent<XYZ::TransformComponent>();
+
+		uint32_t handle = m_HandleStart[TransformComponent];
+
+		IGFloat& translationX = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 1]);
+		IGFloat& translationY = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 2]);
+		IGFloat& translationZ = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 3]);
+		
+		translationX.SetValue(transform.Translation.x);
+		transform.Translation.x = translationX.GetValue();
+		
+		translationY.SetValue(transform.Translation.y);
+		transform.Translation.y = translationY.GetValue();
+		
+		translationZ.SetValue(transform.Translation.z);
+		transform.Translation.z = translationZ.GetValue();
+
+		IGFloat& rotationX = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 6]);
+		IGFloat& rotationY = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 7]);
+		IGFloat& rotationZ = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 8]);
+
+		rotationX.SetValue(transform.Rotation.x);
+		transform.Rotation.x = rotationX.GetValue();
+
+		rotationY.SetValue(transform.Rotation.y);
+		transform.Rotation.y = rotationY.GetValue();
+
+		rotationZ.SetValue(transform.Rotation.z);
+		transform.Rotation.z = rotationZ.GetValue();
+
+		IGFloat& scaleX = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 11]);
+		IGFloat& scaleY = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 12]);
+		IGFloat& scaleZ = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 13]);
+
+		scaleX.SetValue(transform.Scale.x);
+		transform.Scale.x = scaleX.GetValue();
+
+		scaleY.SetValue(transform.Scale.y);
+		transform.Scale.y = scaleY.GetValue();
+
+		scaleZ.SetValue(transform.Scale.z);
+		transform.Scale.z = scaleZ.GetValue();
 	}
 	void InspectorPanel::updateSpriteRendererUI()
 	{
+		if (m_Context.HasComponent<XYZ::SpriteRenderer>())
+		{
+			XYZ::SpriteRenderer& spriteRenderer = m_Context.GetComponent<XYZ::SpriteRenderer>();
+			uint32_t handle = m_HandleStart[SpriteRenderer];
+			IGFloat& colorR = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 1]);
+			IGFloat& colorG = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 2]);
+			IGFloat& colorB = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 3]);
+			IGFloat& colorA = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 4]);
+
+			IGInt& sortLayer = IG::GetUI<IGInt>(m_PoolHandle, m_Handles[handle + 6]);
+			IGCheckbox& visible = IG::GetUI<IGCheckbox>(m_PoolHandle, m_Handles[handle + 8]);
+			
+			colorR.SetValue(spriteRenderer.Color.r);
+			spriteRenderer.Color.r = colorR.GetValue();
+
+			colorG.SetValue(spriteRenderer.Color.g);
+			spriteRenderer.Color.g = colorR.GetValue();
+
+			colorB.SetValue(spriteRenderer.Color.b);
+			spriteRenderer.Color.b = colorR.GetValue();
+
+			colorA.SetValue(spriteRenderer.Color.a);
+			spriteRenderer.Color.a = colorR.GetValue();
+			
+			sortLayer.SetValue(spriteRenderer.SortLayer);
+			spriteRenderer.SortLayer = sortLayer.GetValue();
+
+			spriteRenderer.IsVisible = visible.Checked;
+		}
 	}
 	//void InspectorPanel::OnInGuiRender()
 	//{
@@ -400,7 +462,7 @@ namespace XYZ {
 		element.Children.push_back({ IGElementType::Float, {} });
 		element.Children.push_back({ IGElementType::Float, {} });
 		element.Children.push_back({ IGElementType::Separator, {} });
-		element.Children.push_back({ IGElementType::Float, {} });
+		element.Children.push_back({ IGElementType::Int, {} });
 		element.Children.push_back({ IGElementType::Separator, {} });
 		element.Children.push_back({ IGElementType::Checkbox, {} });
 		parent.Children.push_back(element);
@@ -429,38 +491,41 @@ namespace XYZ {
 	void InspectorPanel::setupTransformComponentUI()
 	{
 		Ref<Font> font = IG::GetContext().RenderData.Font;
-		IG::GetUI<IGGroup>(m_PoolHandle, m_Handles[m_HandleStart[Transform]]).Label = "Transform Component";
+		uint32_t handle = m_HandleStart[TransformComponent];
+		IG::GetUI<IGGroup>(m_PoolHandle, m_Handles[handle]).Label = "Transform Component";
 		
-		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[m_HandleStart[Transform] + 1]).Label = "X";
-		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[m_HandleStart[Transform] + 2]).Label = "Y";
-		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[m_HandleStart[Transform] + 3]).Label = "Z";
-		IG::GetUI<IGText>(m_PoolHandle, m_Handles[m_HandleStart[Transform] + 4]).Text = "Translation";
-		IG::GetUI<IGText>(m_PoolHandle, m_Handles[m_HandleStart[Transform] + 4]).Size.x = Helper::FindTextLength("Translation", font) + 1.0f;
+		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 1]).Label = "X";
+		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 2]).Label = "Y";
+		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 3]).Label = "Z";
+		IG::GetUI<IGText>(m_PoolHandle, m_Handles[handle + 4]).Text = "Translation";
+		IG::GetUI<IGText>(m_PoolHandle, m_Handles[handle + 4]).Size.x = Helper::FindTextLength("Translation", font) + 1.0f;
 
-		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[m_HandleStart[Transform] + 6]).Label = "X";
-		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[m_HandleStart[Transform] + 7]).Label = "Y";
-		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[m_HandleStart[Transform] + 8]).Label = "Z";
-		IG::GetUI<IGText>(m_PoolHandle, m_Handles[m_HandleStart[Transform] + 9]).Text = "Rotation";
-		IG::GetUI<IGText>(m_PoolHandle, m_Handles[m_HandleStart[Transform] + 9]).Size.x = Helper::FindTextLength("Rotation", font) + 1.0f;
+		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 6]).Label = "X";
+		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 7]).Label = "Y";
+		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 8]).Label = "Z";
+		IG::GetUI<IGText>(m_PoolHandle, m_Handles[handle + 9]).Text = "Rotation";
+		IG::GetUI<IGText>(m_PoolHandle, m_Handles[handle + 9]).Size.x = Helper::FindTextLength("Rotation", font) + 1.0f;
 
-		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[m_HandleStart[Transform] + 11]).Label = "X";
-		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[m_HandleStart[Transform] + 12]).Label = "Y";
-		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[m_HandleStart[Transform] + 13]).Label = "Z";
-		IG::GetUI<IGText>(m_PoolHandle, m_Handles[m_HandleStart[Transform] + 14]).Text = "Scale";
-		IG::GetUI<IGText>(m_PoolHandle, m_Handles[m_HandleStart[Transform] + 14]).Size.x = Helper::FindTextLength("Scale", font) + 1.0f;
+		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 11]).Label = "X";
+		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 12]).Label = "Y";
+		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 13]).Label = "Z";
+		IG::GetUI<IGText>(m_PoolHandle, m_Handles[handle + 14]).Text = "Scale";
+		IG::GetUI<IGText>(m_PoolHandle, m_Handles[handle + 14]).Size.x = Helper::FindTextLength("Scale", font) + 1.0f;
 	}
 	void InspectorPanel::setupSpriteRendererUI()
 	{
 		Ref<Font> font = IG::GetContext().RenderData.Font;
-		IG::GetUI<IGGroup>(m_PoolHandle, m_Handles[m_HandleStart[SpriteRenderer]]).Label = "Sprite Renderer";
-		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[m_HandleStart[SpriteRenderer] + 1]).Label = "R";
-		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[m_HandleStart[SpriteRenderer] + 2]).Label = "G";
-		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[m_HandleStart[SpriteRenderer] + 3]).Label = "B";
-		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[m_HandleStart[SpriteRenderer] + 4]).Label = "A";
+		uint32_t handle = m_HandleStart[SpriteRenderer];
+
+		IG::GetUI<IGGroup>(m_PoolHandle, m_Handles[handle]).Label = "Sprite Renderer";
+		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 1]).Label = "R";
+		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 2]).Label = "G";
+		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 3]).Label = "B";
+		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 4]).Label = "A";
 		
-		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[m_HandleStart[SpriteRenderer] + 6]).Label = "Sort Layer";
-		IG::GetUI<IGCheckbox>(m_PoolHandle, m_Handles[m_HandleStart[SpriteRenderer] + 8]).Label = "Visible";
-		IG::GetUI<IGCheckbox>(m_PoolHandle, m_Handles[m_HandleStart[SpriteRenderer] + 8]).Size = { 25.0f, 25.0f };
+		IG::GetUI<IGInt>(m_PoolHandle, m_Handles[handle + 6]).Label = "Sort Layer";
+		IG::GetUI<IGCheckbox>(m_PoolHandle, m_Handles[handle + 8]).Label = "Visible";
+		IG::GetUI<IGCheckbox>(m_PoolHandle, m_Handles[handle + 8]).Size = { 25.0f, 25.0f };
 	}
 	void InspectorPanel::setupPointLight2DUI()
 	{

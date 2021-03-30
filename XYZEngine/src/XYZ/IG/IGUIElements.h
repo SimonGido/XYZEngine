@@ -123,6 +123,31 @@ namespace XYZ {
 		char Buffer[BufferSize];
 	};
 
+	class IGInt : public IGElement
+	{
+	public:
+		IGInt(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
+
+		virtual bool OnLeftClick(const glm::vec2& mousePosition, bool& handled) override;
+		virtual bool OnMouseMove(const glm::vec2& mousePosition, bool& handled) override;
+		virtual bool OnKeyType(char character, bool& handled) override;
+		virtual bool OnKeyPress(int32_t mode, int32_t key, bool& handled) override;
+		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData, uint32_t scissorIndex = 0) override;
+
+		void SetValue(int32_t val);
+		int32_t GetValue() const;
+		const char* GetBuffer() const { return Buffer; }
+
+
+		bool  Listen = false;
+		static constexpr size_t BufferSize = 60;
+
+	private:
+		mutable int32_t Value = 0;
+		uint32_t ModifiedIndex;
+		char Buffer[BufferSize];
+	};
+
 
 	struct IGTreeItem
 	{

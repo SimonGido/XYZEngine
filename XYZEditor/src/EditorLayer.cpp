@@ -79,7 +79,7 @@ namespace XYZ {
 		Renderer::WaitAndRender();
 		
 		Ref<RenderTexture> renderTexture = RenderTexture::Create(SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer);
-		Ref<SubTexture> renderSubTexture = Ref<SubTexture>::Create(renderTexture, glm::vec4(1.0f, 1.0f, 0.0f, 0.0f));
+		Ref<SubTexture> renderSubTexture = Ref<SubTexture>::Create(renderTexture, glm::vec4(0.0f, 1.0f, 1.0f, 0.0f));
 		Ref<Texture> robotTexture = Texture2D::Create({}, "Assets/Textures/Robot.png");
 		Ref<SubTexture> robotSubTexture = Ref<SubTexture>::Create(robotTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 
@@ -102,8 +102,10 @@ namespace XYZ {
 		Renderer::Clear();
 		Renderer::SetClearColor({ 0.1f,0.1f,0.1f,0.1f });
 		m_ScenePanel.OnUpdate(ts);
+		m_InspectorPanel.OnUpdate();
 		m_SceneHierarchyPanel.OnUpdate();
-		m_SkinningEditorPanel.OnUpdate(ts);
+		m_SkinningEditorPanel.OnUpdate();
+
 		if (m_Scene->GetState() == SceneState::Play)
 		{
 			m_Scene->OnUpdate(ts);

@@ -39,6 +39,7 @@ namespace XYZ {
 		Slider,
 		Text,
 		Float,
+		Int,
 		Tree,
 		Scrollbox,
 		Image,

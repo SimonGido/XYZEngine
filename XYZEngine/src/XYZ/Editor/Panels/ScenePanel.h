@@ -17,7 +17,6 @@ namespace XYZ {
 		void SetSubTexture(Ref<SubTexture> subTexture);
 
 		void OnUpdate(Timestep ts);
-		void OnInGuiRender();
 		void OnEvent(Event& event);
 
 		EditorCamera& GetEditorCamera() { return m_EditorCamera; }

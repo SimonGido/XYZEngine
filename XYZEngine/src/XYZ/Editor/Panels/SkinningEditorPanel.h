@@ -22,8 +22,7 @@ namespace XYZ {
 		SkinningEditorPanel(uint32_t panelID);
 		void SetContext(Ref<SubTexture> context);
 
-		void OnUpdate(Timestep ts);
-		void OnInGuiRender();
+		void OnUpdate();
 		void OnEvent(Event& event);
 
 	private:

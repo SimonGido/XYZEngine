@@ -34,9 +34,9 @@ namespace XYZ {
 	private:
 		SceneEntity m_Context;
 
-		enum ComponentTypeUI
+		enum ComponentType
 		{
-			Transform,
+			TransformComponent,
 			SpriteRenderer,
 			PointLight2D,
 			RigidBody2D,

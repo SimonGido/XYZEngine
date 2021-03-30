@@ -154,9 +154,11 @@ namespace XYZ {
 
 	bool IGWindow::OnMouseMove(const glm::vec2& mousePosition, bool& handled)
 	{
+		Flags &= ~Hoovered;
 		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
 		{
 			ReturnType = IGReturnType::Hoovered;
+			Flags |= Hoovered;
 			return true;
 		}
 		return false;
@@ -392,7 +394,9 @@ namespace XYZ {
 		if (Listen && !handled)
 		{
 			handled = true;
-			if (character >= toascii('0') && character <= toascii('9') || character == toascii('.'))
+			if (character >= toascii('0') && character <= toascii('9') 
+			|| (character == toascii('-') && ModifiedIndex == 0)
+			|| character == toascii('.'))
 			{
 				Buffer[ModifiedIndex++] = character;
 				ReturnType = IGReturnType::Modified;
@@ -429,16 +433,114 @@ namespace XYZ {
 
 	void IGFloat::SetValue(float val)
 	{
-		memset(Buffer, 0, BufferSize);
-		snprintf(Buffer, sizeof(Buffer), "%f", val);
-		ModifiedIndex = 0;
-		while (Buffer[ModifiedIndex] != '\0')
-			ModifiedIndex++;
+		if (!Listen)
+		{
+			memset(Buffer, 0, BufferSize);
+			snprintf(Buffer, sizeof(Buffer), "%f", val);
+			ModifiedIndex = 0;
+			while (Buffer[ModifiedIndex] != '\0')
+				ModifiedIndex++;
+		}
 	}
 
 	float IGFloat::GetValue() const
 	{
 		Value = (float)atof(Buffer);
+		return Value;
+	}
+
+
+
+	IGInt::IGInt(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
+		:
+		IGElement(position, size, color, IGElementType::Float)
+	{
+		SetValue(0);
+	}
+	bool IGInt::OnLeftClick(const glm::vec2& mousePosition, bool& handled)
+	{
+		bool old = Listen;
+		Listen = false;
+		Color = IGRenderData::Colors[IGRenderData::DefaultColor];
+		if (!handled && Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
+		{
+			Listen = !old;
+			handled = true;
+			ReturnType = IGReturnType::Clicked;
+			if (Listen)
+				Color = IGRenderData::Colors[IGRenderData::HooverColor];
+			return true;
+		}
+		return false;
+	}
+	bool IGInt::OnMouseMove(const glm::vec2& mousePosition, bool& handled)
+	{
+		if (!Listen)
+			Color = IGRenderData::Colors[IGRenderData::DefaultColor];
+		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
+		{
+			ReturnType = IGReturnType::Hoovered;
+			Color = IGRenderData::Colors[IGRenderData::HooverColor];
+			return true;
+		}
+		return false;
+	}
+	bool IGInt::OnKeyType(char character, bool& handled)
+	{
+		if (Listen && !handled)
+		{
+			handled = true;
+			if (character >= toascii('0') && character <= toascii('9')
+			|| (character == toascii('-') && ModifiedIndex == 0))
+			{
+				Buffer[ModifiedIndex++] = character;
+				ReturnType = IGReturnType::Modified;
+				return true;
+			}
+		}
+		return false;
+	}
+	bool IGInt::OnKeyPress(int32_t mode, int32_t key, bool& handled)
+	{
+		if (Listen && !handled)
+		{
+			if (key == ToUnderlying(KeyCode::KEY_BACKSPACE))
+			{
+				if (ModifiedIndex > 0)
+					ModifiedIndex--;
+				Buffer[ModifiedIndex] = '\0';
+				handled = true;
+				return true;
+			}
+		}
+		return false;
+	}
+	glm::vec2 IGInt::GenerateQuads(IGMesh& mesh, IGRenderData& renderData, uint32_t scissorIndex)
+	{
+		float textWidth = Size.x - Style.Layout.LeftPadding - Style.Layout.RightPadding;
+		size_t numChar = Helper::FindNumCharacters(Buffer, textWidth, renderData.Font);
+		Buffer[numChar] = '\0';
+		ModifiedIndex = numChar;
+
+		IGMeshFactoryData data = {renderData.SubTextures[IGRenderData::Slider], this, &mesh, &renderData, scissorIndex };
+		return IGMeshFactory::GenerateUI<IGInt>(Label.c_str(), Color, data);
+	}
+
+	void IGInt::SetValue(int32_t val)
+	{
+		if (!Listen)
+		{
+			memset(Buffer, 0, BufferSize);
+			snprintf(Buffer, sizeof(Buffer), "%d", val);
+			ModifiedIndex = 0;
+			while (Buffer[ModifiedIndex] != '\0')
+				ModifiedIndex++;
+		}
+	}
+
+	int32_t IGInt::GetValue() const
+	{
+		Value = (int32_t)atoi(Buffer);
 		return Value;
 	}
 
@@ -489,6 +591,7 @@ namespace XYZ {
 		IGMeshFactoryData data = { renderData.SubTextures[IGRenderData::RightArrow], this, &mesh, &renderData, scissorIndex };
 		return IGMeshFactory::GenerateUI<IGTree>(Label.c_str(), Color, data);
 	}
+
 
 	IGTreeItem& IGTree::GetItem(uint32_t key)
 	{
@@ -660,19 +763,21 @@ namespace XYZ {
 			pool.GetHierarchy().TraverseNodeChildren(ID, [&](void* parent, void* child) -> bool {
 	
 				IGElement* childElement = static_cast<IGElement*>(child);
-
-				size_t oldQuadCount = renderData.ScrollableMesh.Quads.size();
-				glm::vec2 genSize = childElement->GenerateQuads(renderData.ScrollableMesh, renderData, scissorIndex );
-				if (Helper::ResolvePosition(oldQuadCount, genSize, childElement, root, renderData.ScrollableMesh, offset, highestInRow))
-				{				
-					childElement->ListenToInput = Helper::IsInside(GetAbsolutePosition(), Size, childElement->GetAbsolutePosition(), childElement->Size);
-					highestInRow = std::max(genSize.y, highestInRow);
-					// Scrollbox becomes new root for all its children
-					offset += childElement->BuildMesh(renderData.ScrollableMesh, renderData, pool, *this, scissorIndex);
-				}
-				else
+				if (childElement->Active)
 				{
-					childElement->ListenToInput = false;
+					size_t oldQuadCount = renderData.ScrollableMesh.Quads.size();
+					glm::vec2 genSize = childElement->GenerateQuads(renderData.ScrollableMesh, renderData, scissorIndex);
+					if (Helper::ResolvePosition(oldQuadCount, genSize, childElement, root, renderData.ScrollableMesh, offset, highestInRow))
+					{
+						childElement->ListenToInput = Helper::IsInside(GetAbsolutePosition(), Size, childElement->GetAbsolutePosition(), childElement->Size);
+						highestInRow = std::max(genSize.y, highestInRow);
+						// Scrollbox becomes new root for all its children
+						offset += childElement->BuildMesh(renderData.ScrollableMesh, renderData, pool, *this, scissorIndex);
+					}
+					else
+					{
+						childElement->ListenToInput = false;
+					}
 				}
 				return false;
 			});

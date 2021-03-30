@@ -125,31 +125,7 @@ namespace XYZ {
 			}
 		}
 	}
-	void ScenePanel::OnInGuiRender()
-	{
-		//if (InGui::ImageWindow(m_PanelID, "Scene", glm::vec2(0.0f), glm::vec2(200.0f), m_SubTexture))
-		//{
-		//	if (IS_SET(InGui::Image(glm::vec2(50.0f), m_ButtonSubTextures[m_State]), InGuiReturnType::Clicked))
-		//	{
-		//		if (m_Context.Raw())
-		//		{
-		//			if (m_State == Play)
-		//			{
-		//				m_State = Pause;
-		//				m_Context->SetState(SceneState::Play);
-		//				m_Context->OnPlay();
-		//			}
-		//			else
-		//			{
-		//				m_State = Play;
-		//				m_Context->SetState(SceneState::Edit);
-		//				m_Context->OnStop();
-		//			}
-		//		}
-		//	}
-		//}
-		//InGui::End();
-	}
+	
 	void ScenePanel::OnEvent(Event& event)
 	{
 		if (m_Context.Raw())
