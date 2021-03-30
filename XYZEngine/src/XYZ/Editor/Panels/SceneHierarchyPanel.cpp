@@ -56,9 +56,14 @@ namespace XYZ {
      
         rebuildTree();
     }
-    void SceneHierarchyPanel::OnInGuiRender()
+    void SceneHierarchyPanel::OnUpdate()
     {
-        
+        if (m_Context.Raw())
+        {
+            IGTree& tree = IG::GetUI<IGTree>(m_ID, m_Handles[1]);
+            if (m_Context->m_SelectedEntity)
+                tree.GetItem(m_Context->m_SelectedEntity).Color = IG::GetContext().RenderData.Colors[IGRenderData::HooverColor];
+        }
     }
     void SceneHierarchyPanel::OnEvent(Event& event)
     {

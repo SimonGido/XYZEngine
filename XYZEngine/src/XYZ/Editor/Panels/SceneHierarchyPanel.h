@@ -12,7 +12,7 @@ namespace XYZ {
 
 		void SetContext(Ref<Scene> context);
 
-		void OnInGuiRender();
+		void OnUpdate();
 		void OnEvent(Event& event);
 
 	private:
