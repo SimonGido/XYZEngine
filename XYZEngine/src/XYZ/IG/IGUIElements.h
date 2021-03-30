@@ -171,7 +171,6 @@ namespace XYZ {
 		virtual bool OnMouseMove(const glm::vec2& mousePosition, bool& handled) override;
 		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData, uint32_t scissorIndex = 0) override;
 
-
 		bool Open = false;
 		bool AdjustToParent = true;
 

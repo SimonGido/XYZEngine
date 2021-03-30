@@ -19,15 +19,16 @@ namespace XYZ {
 	static bool OnMouseButtonPressRecursive(IGElement* parentElement, IGContext& context, IGPool& pool, const glm::vec2& mousePosition, bool& handled)
 	{
 		bool result = false;
-		if (parentElement->Active && parentElement->ActiveChildren)
+		if (parentElement->ActiveChildren)
 		{
 			pool.GetHierarchy().TraverseNodeChildren(parentElement->GetID(), [&](void* parent, void* child) -> bool {
 
 				IGElement* childElement = static_cast<IGElement*>(child);
-				if (childElement->Active && childElement->ListenToInput)
+				if (childElement->Active)
 				{
 					OnMouseButtonPressRecursive(childElement, context, pool, mousePosition, handled);	 
-					childElement->OnLeftClick(mousePosition, handled);
+					if (childElement->ListenToInput)
+						childElement->OnLeftClick(mousePosition, handled);
 				}
 				return false;
 			});
@@ -98,15 +99,16 @@ namespace XYZ {
 
 	static bool OnMouseMoveRecursive(IGElement* parentElement, IGContext& context, IGPool& pool, const glm::vec2& mousePosition, bool& handled)
 	{
-		if (parentElement->Active && parentElement->ActiveChildren)
+		if (parentElement->ActiveChildren)
 		{
 			context.RenderData.Rebuild = true;
 			pool.GetHierarchy().TraverseNodeChildren(parentElement->GetID(), [&](void* parent, void* child) -> bool {
 
 				IGElement* childElement = static_cast<IGElement*>(child);
-				if (childElement->Active && childElement->ListenToInput)
+				if (childElement->Active)
 				{
-					childElement->OnMouseMove(mousePosition, handled);
+					if (childElement->ListenToInput)
+						childElement->OnMouseMove(mousePosition, handled);
 					OnMouseMoveRecursive(childElement, context, pool, mousePosition, handled);
 				}
 				return false;

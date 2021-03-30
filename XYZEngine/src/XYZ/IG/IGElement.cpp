@@ -51,6 +51,11 @@ namespace XYZ {
 
 			return true;
 		}
+		static bool IsInside(const glm::vec2& parentPos, const glm::vec2& parentSize, const glm::vec2& pos, const glm::vec2& size)
+		{
+			return !(pos.x < parentPos.x || pos.x + size.x > parentPos.x + parentSize.x
+				|| pos.y < parentPos.y || pos.y + size.y > parentPos.y + parentSize.y);
+		}
 	}
 
 
@@ -92,9 +97,8 @@ namespace XYZ {
 					glm::vec2 genSize = childElement->GenerateQuads(mesh, renderData);
 					if (Helper::ResolvePosition(oldQuadCount, genSize, childElement, root, mesh, offset, highestInRow))
 					{
-						childElement->ListenToInput = true;
-						if (genSize.y > highestInRow)
-							highestInRow = genSize.y;
+						childElement->ListenToInput = Helper::IsInside(root.GetAbsolutePosition(), root.Size, childElement->GetAbsolutePosition(), childElement->Size);
+						highestInRow = std::max(genSize.y, highestInRow);
 						offset += childElement->BuildMesh(mesh, renderData, pool, root);
 					}
 					else

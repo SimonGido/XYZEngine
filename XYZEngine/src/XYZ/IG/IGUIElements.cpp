@@ -573,6 +573,7 @@ namespace XYZ {
 		return IGMeshFactory::GenerateUI<IGGroup>(Label.c_str(), Color, data);
 	}
 	
+
 	IGSeparator::IGSeparator(const glm::vec2& position, const glm::vec2& size)
 		:
 		IGElement(position, size, glm::vec4(1.0f),IGElementType::Separator)
@@ -628,7 +629,7 @@ namespace XYZ {
 		{	
 			glm::vec2 offset = {
 				Style.Layout.LeftPadding + Offset.x,
-				Style.Layout.TopPadding + IGWindow::PanelHeight + Offset.y
+				Style.Layout.TopPadding  + Offset.y
 			};
 			uint32_t scissorIndex = renderData.Scissors.size() - 1;
 			float highestInRow = 0.0f;
@@ -641,9 +642,8 @@ namespace XYZ {
 				if (Helper::ResolvePosition(oldQuadCount, genSize, childElement, root, renderData.ScrollableMesh, offset, highestInRow))
 				{				
 					childElement->ListenToInput = Helper::IsInside(GetAbsolutePosition(), Size, childElement->GetAbsolutePosition(), childElement->Size);
-					if (genSize.y > highestInRow)
-						highestInRow = genSize.y;
-					offset += childElement->BuildMesh(renderData.ScrollableMesh, renderData, pool, root, scissorIndex);
+					highestInRow = std::max(genSize.y, highestInRow);
+					offset += childElement->BuildMesh(renderData.ScrollableMesh, renderData, pool, *this, scissorIndex);
 				}
 				else
 				{
