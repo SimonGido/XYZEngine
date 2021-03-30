@@ -365,14 +365,16 @@ namespace XYZ {
 	}
 	bool IGFloat::OnLeftClick(const glm::vec2& mousePosition, bool& handled)
 	{
+		bool old = Listen;
 		Listen = false;
 		Color = IGRenderData::Colors[IGRenderData::DefaultColor];
 		if (!handled && Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
 		{
-			Listen = true;
+			Listen = !old;
 			handled = true;
 			ReturnType = IGReturnType::Clicked;
-			Color = IGRenderData::Colors[IGRenderData::HooverColor];
+			if (Listen)
+				Color = IGRenderData::Colors[IGRenderData::HooverColor];
 			return true;
 		}
 		return false;
@@ -445,13 +447,21 @@ namespace XYZ {
 	{
 		Hierarchy.Traverse([&](void* parent, void* child) ->bool {
 			IGTreeItem* childItem = static_cast<IGTreeItem*>(child);
-			if (!handled && Helper::Collide(childItem->Position, Size, mousePosition))
+			if (!handled)
 			{
-				childItem->Open = !childItem->Open;
-				handled = true;
-				return true;
+				if (Helper::Collide(childItem->Position + glm::vec2(Size.x, 0.0f), childItem->TextSize, mousePosition))
+				{
+					if (OnSelect)
+						OnSelect(childItem->Key);
+					handled = true;
+				}
+				else if (Helper::Collide(childItem->Position, Size, mousePosition))
+				{
+					childItem->Open = !childItem->Open;
+					handled = true;
+				}
 			}
-			return false;
+			return handled;
 		});
 		return false;
 	}
@@ -460,7 +470,7 @@ namespace XYZ {
 		Hierarchy.Traverse([&](void* parent, void* child) ->bool {
 			IGTreeItem* childItem = static_cast<IGTreeItem*>(child);
 			childItem->Color = IGRenderData::Colors[IGRenderData::DefaultColor];
-			if (Helper::Collide(childItem->Position, Size, mousePosition))
+			if (Helper::Collide(childItem->Position, Size + glm::vec2(childItem->TextSize.x, 0.0f), mousePosition))
 			{
 				childItem->Color = IGRenderData::Colors[IGRenderData::HooverColor];
 			}
@@ -474,47 +484,55 @@ namespace XYZ {
 		return IGMeshFactory::GenerateUI<IGTree>(Label.c_str(), Color, data);
 	}
 
-	IGTreeItem& IGTree::GetItem(const char* name)
+	IGTreeItem& IGTree::GetItem(uint32_t key)
 	{
-		auto it = NameIDMap.find(name);
+		auto it = NameIDMap.find(key);
 		XYZ_ASSERT(it != NameIDMap.end(), "");
 		
 		return *static_cast<IGTreeItem*>(Hierarchy.GetData(it->second));
 	}
 	
-	void IGTree::AddItem(const char* name, const char* parent, const IGTreeItem& item)
+	void IGTree::AddItem(uint32_t key, uint32_t parent, const IGTreeItem& item)
 	{
-		auto it = NameIDMap.find(name);
+		auto it = NameIDMap.find(key);
 		if (it == NameIDMap.end())
 		{
-			IGTreeItem* ptr = Pool.Allocate<IGTreeItem>(item.Label);
-			if (parent)
+			IGTreeItem* ptr = Pool.Allocate<IGTreeItem>(item.Label);		
+			auto parentIt = NameIDMap.find(parent);
+			if (parentIt != NameIDMap.end())
 			{
-				auto parentIt = NameIDMap.find(parent);
-				if (parentIt != NameIDMap.end())
-				{
-					ptr->ID = Hierarchy.Insert(ptr, parentIt->second);
-					NameIDMap[name] = ptr->ID;
-				}
-				else
-				{
-					XYZ_LOG_WARN("Parent item with the name: ", parent, "does not exist");
-				}
+				ptr->ID = Hierarchy.Insert(ptr, parentIt->second);
+				ptr->Key = key;
+				NameIDMap[key] = ptr->ID;
 			}
 			else
 			{
-				ptr->ID = Hierarchy.Insert(ptr);
-				NameIDMap[name] = ptr->ID;
+				XYZ_LOG_WARN("Parent item with the key: ", parent, "does not exist");
 			}
 		}
 		else
 		{
-			XYZ_LOG_WARN("Item with the name: ", name, "already exists");
+			XYZ_LOG_WARN("Item with the key: ", key, "already exists");
 		}
 	}
-	void IGTree::RemoveItem(const char* name)
+	void IGTree::AddItem(uint32_t key, const IGTreeItem& item)
 	{
-		auto it = NameIDMap.find(name);
+		auto it = NameIDMap.find(key);
+		if (it == NameIDMap.end())
+		{
+			IGTreeItem* ptr = Pool.Allocate<IGTreeItem>(item.Label);	
+			ptr->ID = Hierarchy.Insert(ptr);
+			ptr->Key = key;
+			NameIDMap[key] = ptr->ID;
+		}
+		else
+		{
+			XYZ_LOG_WARN("Item with the key: ", key, "already exists");
+		}
+	}
+	void IGTree::RemoveItem(uint32_t child)
+	{
+		auto it = NameIDMap.find(child);
 		if (it != NameIDMap.end())
 		{
 			IGTreeItem* ptr = static_cast<IGTreeItem*>(Hierarchy.GetData(it->second));
@@ -524,7 +542,7 @@ namespace XYZ {
 		}
 		else
 		{
-			XYZ_LOG_WARN("Item with the name: ", name, "does not exist");
+			XYZ_LOG_WARN("Item with the name: ", child, "does not exist");
 		}
 	}
 
@@ -611,9 +629,9 @@ namespace XYZ {
 		if (AdjustToParent && Parent)
 		{
 			Size.x = Parent->Size.x - Parent->Style.Layout.LeftPadding - Parent->Style.Layout.RightPadding;
+			Size.y = Parent->Size.y - Parent->Style.Layout.BottomPadding - Position.y;
 		}
-
-		IGMeshFactoryData data = { renderData.SubTextures[IGRenderData::White], this, &mesh, &renderData };
+		IGMeshFactoryData data = { renderData.SubTextures[IGRenderData::Window], this, &mesh, &renderData };
 
 		auto [width, height] = Input::GetWindowSize();
 		glm::vec2 absolutePos = GetAbsolutePosition();
@@ -643,6 +661,7 @@ namespace XYZ {
 				{				
 					childElement->ListenToInput = Helper::IsInside(GetAbsolutePosition(), Size, childElement->GetAbsolutePosition(), childElement->Size);
 					highestInRow = std::max(genSize.y, highestInRow);
+					// Scrollbox becomes new root for all its children
 					offset += childElement->BuildMesh(renderData.ScrollableMesh, renderData, pool, *this, scissorIndex);
 				}
 				else

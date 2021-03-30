@@ -253,7 +253,7 @@ namespace XYZ {
 			}
 			case XYZ::IGElementType::Scrollbox:
 			{
-				auto [element, handle] = Allocate<IGScrollbox>(glm::vec2(300.0f), glm::vec2(300.0f), glm::vec4(0.1f, 0.1f, 0.2f, 1.0f));
+				auto [element, handle] = Allocate<IGScrollbox>(glm::vec2(300.0f), glm::vec2(300.0f), glm::vec4(1.0f));
 				element->Parent = parent;
 				allocateMemory(it.Children, element);
 				break;

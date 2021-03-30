@@ -21,6 +21,11 @@ namespace XYZ {
         auto [id, count] =  IG::AllocateUI(types, &m_Handles);
         m_ID = id;
         m_HandleCount = count;
+        IGTree& tree = IG::GetUI<IGTree>(m_ID, m_Handles[1]);
+        tree.OnSelect = [&](uint32_t key) {
+            if (m_Context.Raw())
+                m_Context->SetSelectedEntity(key);
+        };
     }
     SceneHierarchyPanel::~SceneHierarchyPanel()
     {
@@ -39,14 +44,12 @@ namespace XYZ {
             IGTree& tree = IG::GetUI<IGTree>(m_ID, m_Handles[1]);
             if (type == CallbackType::ComponentCreate)
             {
-                IDComponent& id = ecs.GetComponent<IDComponent>(entity);
                 SceneTagComponent& sceneTag = ecs.GetComponent<SceneTagComponent>(entity);
-                tree.AddItem(std::string(id.ID).c_str(), nullptr, IGTreeItem(sceneTag.Name));
+                tree.AddItem(entity, IGTreeItem(sceneTag.Name));
             }
             else if (type == CallbackType::ComponentRemove || type == CallbackType::EntityDestroy)
             {
-                IDComponent& id = ecs.GetComponent<IDComponent>(entity);
-                tree.RemoveItem(std::string(id.ID).c_str());
+                tree.RemoveItem(entity);
             }
   
         }, this);
@@ -70,11 +73,8 @@ namespace XYZ {
         ECSManager& ecs = m_Context->m_ECS;
         for (uint32_t entity : m_Context->m_Entities)
         {
-            IDComponent& id = ecs.GetComponent<IDComponent>(entity);
             SceneTagComponent& sceneTag = ecs.GetComponent<SceneTagComponent>(entity);
- 
-            std::string idStr = (std::string)id.ID;
-            tree.AddItem(idStr.c_str(), nullptr, IGTreeItem(sceneTag.Name));
+            tree.AddItem(entity, IGTreeItem(sceneTag.Name));
         }
     }
 
@@ -86,7 +86,8 @@ namespace XYZ {
     {
         if (event.IsButtonPressed(MouseCode::MOUSE_BUTTON_RIGHT))
         {
-          
+            IGTree& tree = IG::GetUI<IGTree>(m_ID, m_Handles[1]);
+            
         }
         
         return false;

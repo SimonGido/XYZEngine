@@ -131,8 +131,10 @@ namespace XYZ {
 
 		std::string Label;
 		int32_t		ID = -1;
+		uint32_t    Key = 0;
 		bool		Open = false;
 		glm::vec2	Position = glm::vec2(0.0f);
+		glm::vec2	TextSize = glm::vec2(0.0f);
 		glm::vec4	Color = glm::vec4(1.0f);
 	};
 
@@ -146,16 +148,20 @@ namespace XYZ {
 		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData, uint32_t scissorIndex = 0) override;
 	
 
-		void AddItem(const char* name, const char* parent, const IGTreeItem& item);
-		void RemoveItem(const char* name);
+		void AddItem(uint32_t key, uint32_t parent, const IGTreeItem& item);
+		void AddItem(uint32_t key, const IGTreeItem& item);
+		void RemoveItem(uint32_t key);
 		void Clear();
 
-		IGTreeItem& GetItem(const char* name);
+		IGTreeItem& GetItem(uint32_t child);
+
+		std::function<void(uint32_t)> OnSelect;
+
 	private:
 		Tree Hierarchy;
 		MemoryPool Pool;
 	
-		std::unordered_map<std::string, int32_t> NameIDMap;
+		std::unordered_map<uint32_t, int32_t> NameIDMap;
 
 		static constexpr size_t NumberOfItemsPerBlockInPool = 10;
 

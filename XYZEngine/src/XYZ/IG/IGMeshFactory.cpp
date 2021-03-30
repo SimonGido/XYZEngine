@@ -466,6 +466,7 @@ namespace XYZ {
 					data.RenderData->SubTextures[subTextureIndex],data.RenderData->Font,
 					data.ScissorIndex, data.Mesh, IGTextCenter::Left
 				);
+				childItem->TextSize = genSize - glm::vec2(data.Element->Size.x, 0.0f);
 				offset.y += genSize.y;
 			}
 			else
