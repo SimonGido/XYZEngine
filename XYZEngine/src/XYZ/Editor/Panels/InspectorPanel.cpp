@@ -61,8 +61,32 @@ namespace XYZ {
 			
 		}
 	}
-	void InspectorPanel::OnInGuiRender()
+	void InspectorPanel::OnUpdate()
 	{
+
+	}
+	void InspectorPanel::updateTransformComponentUI()
+	{
+		if (m_Context)
+		{
+			IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[m_HandleStart[Transform] + 1]).Label = "X";
+			IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[m_HandleStart[Transform] + 2]).Label = "Y";
+			IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[m_HandleStart[Transform] + 3]).Label = "Z";
+
+			IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[m_HandleStart[Transform] + 6]).Label = "X";
+			IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[m_HandleStart[Transform] + 7]).Label = "Y";
+			IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[m_HandleStart[Transform] + 8]).Label = "Z";
+
+			IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[m_HandleStart[Transform] + 11]).Label = "X";
+			IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[m_HandleStart[Transform] + 12]).Label = "Y";
+			IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[m_HandleStart[Transform] + 13]).Label = "Z";
+		}
+	}
+	void InspectorPanel::updateSpriteRendererUI()
+	{
+	}
+	//void InspectorPanel::OnInGuiRender()
+	//{
 		//if (InGui::Begin(m_PanelID, "Inspector", glm::vec2(0.0f), glm::vec2(200.0f)))
 		//{
 		//	if (m_Context)
@@ -342,7 +366,7 @@ namespace XYZ {
 		//	}
 		//}
 		//InGui::End();
-	}
+	//}
 	size_t InspectorPanel::transformComponentUI(IGHierarchyElement& parent)
 	{
 		IGHierarchyElement element;

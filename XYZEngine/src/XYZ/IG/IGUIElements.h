@@ -109,7 +109,7 @@ namespace XYZ {
 		virtual bool OnKeyPress(int32_t mode, int32_t key, bool& handled) override;
 		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData, uint32_t scissorIndex = 0) override;
 	
-		
+		void SetValue(float val);
 		float GetValue() const;
 		const char* GetBuffer() const { return Buffer; }
 
@@ -118,7 +118,7 @@ namespace XYZ {
 		static constexpr size_t BufferSize = 60;
 
 	private:
-		float Value = 0.0f;
+		mutable float Value = 0.0f;
 		uint32_t ModifiedIndex;
 		char Buffer[BufferSize];
 	};

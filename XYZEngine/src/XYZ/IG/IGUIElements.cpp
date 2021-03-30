@@ -357,11 +357,7 @@ namespace XYZ {
 		:
 		IGElement(position, size, color, IGElementType::Float)
 	{
-		memset(Buffer, 0, BufferSize);
-		snprintf(Buffer, sizeof(Buffer), "%f", Value);
-		ModifiedIndex = 0;
-		while (Buffer[ModifiedIndex] != '\0')
-			ModifiedIndex++;
+		SetValue(0.0f);
 	}
 	bool IGFloat::OnLeftClick(const glm::vec2& mousePosition, bool& handled)
 	{
@@ -399,6 +395,7 @@ namespace XYZ {
 			if (character >= toascii('0') && character <= toascii('9') || character == toascii('.'))
 			{
 				Buffer[ModifiedIndex++] = character;
+				ReturnType = IGReturnType::Modified;
 				return true;
 			}
 		}
@@ -430,11 +427,20 @@ namespace XYZ {
 		return IGMeshFactory::GenerateUI<IGFloat>(Label.c_str(), Color, data);
 	}
 
-	float IGFloat::GetValue() const
+	void IGFloat::SetValue(float val)
 	{
-		return (float)atof(Buffer);
+		memset(Buffer, 0, BufferSize);
+		snprintf(Buffer, sizeof(Buffer), "%f", val);
+		ModifiedIndex = 0;
+		while (Buffer[ModifiedIndex] != '\0')
+			ModifiedIndex++;
 	}
 
+	float IGFloat::GetValue() const
+	{
+		Value = (float)atof(Buffer);
+		return Value;
+	}
 
 	IGTree::IGTree(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
 		:

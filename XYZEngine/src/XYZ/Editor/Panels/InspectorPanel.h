@@ -11,9 +11,12 @@ namespace XYZ {
 		InspectorPanel();
 		void SetContext(SceneEntity context);
 
-		void OnInGuiRender();
+		void OnUpdate();
 
 	private:
+		void updateTransformComponentUI();
+		void updateSpriteRendererUI();
+
 		size_t transformComponentUI(IGHierarchyElement& parent);
 		size_t spriteRendererUI(IGHierarchyElement& parent);
 		size_t pointLight2DUI(IGHierarchyElement& parent);

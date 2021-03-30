@@ -24,3 +24,21 @@ Entities:
       Scale: [1, 1, 1]
     Relationship:
       {}
+  - Entity: 04aa7dc2-8937-4a8c-ba42-c34efe20a641
+    SceneTagComponent:
+      Name: Hopica
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      {}
+  - Entity: 796be614-d399-4f20-871a-99312da6cd65
+    SceneTagComponent:
+      Name: Hopica
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      {}

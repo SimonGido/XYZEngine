@@ -51,6 +51,7 @@ namespace XYZ {
 		Hoovered,
 		Clicked,
 		Released,
+		Modified,
 	};
 
 	class IGPool;

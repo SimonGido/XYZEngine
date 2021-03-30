@@ -88,7 +88,7 @@ namespace XYZ {
 		m_ScenePanel.SetSubTexture(renderSubTexture);
 		m_SkinningEditorPanel.SetContext(robotSubTexture);
 
-		//IG::LoadLayout("IG.IG");
+		IG::LoadLayout("IG.IG");
 	}	
 
 	void EditorLayer::OnDetach()
