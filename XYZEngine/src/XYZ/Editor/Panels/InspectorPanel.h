@@ -24,6 +24,8 @@ namespace XYZ {
 		size_t boxCollider2DComponentUI(IGHierarchyElement& parent);
 		size_t scriptComponentUI(IGHierarchyElement& parent);
 
+		void prepareTransformComponentUI();
+		void prepareSpriteRendererUI();
 
 		void setupTransformComponentUI();
 		void setupSpriteRendererUI();

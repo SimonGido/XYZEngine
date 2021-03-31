@@ -58,8 +58,8 @@ namespace XYZ {
 		m_Context = context;
 		if (m_Context)
 		{
-			IG::GetUI<IGGroup>(m_PoolHandle, m_Handles[m_HandleStart[TransformComponent]]).Active = m_Context.HasComponent<XYZ::TransformComponent>();
-			IG::GetUI<IGGroup>(m_PoolHandle, m_Handles[m_HandleStart[SpriteRenderer]]).Active = m_Context.HasComponent<XYZ::SpriteRenderer>();
+			prepareTransformComponentUI();
+			prepareSpriteRendererUI();
 		}
 	}
 	void InspectorPanel::OnUpdate()
@@ -487,6 +487,60 @@ namespace XYZ {
 	{
 		IGHierarchyElement element;
 		return element.Children.size() + 1;
+	}
+	void InspectorPanel::prepareTransformComponentUI()
+	{
+		uint32_t handle = m_HandleStart[TransformComponent];
+		IGGroup& transformGroup = IG::GetUI<IGGroup>(m_PoolHandle, m_Handles[handle]);
+		if (transformGroup.Active = m_Context.HasComponent<XYZ::TransformComponent>())
+		{
+			XYZ::TransformComponent& transform = m_Context.GetComponent<XYZ::TransformComponent>();
+			IGFloat& translationX = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 1]);
+			IGFloat& translationY = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 2]);
+			IGFloat& translationZ = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 3]);
+
+			translationX.SetValue(transform.Translation.x);
+			translationY.SetValue(transform.Translation.y);
+			translationZ.SetValue(transform.Translation.z);
+
+			IGFloat& rotationX = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 6]);
+			IGFloat& rotationY = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 7]);
+			IGFloat& rotationZ = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 8]);
+
+			rotationX.SetValue(transform.Rotation.x);
+			rotationY.SetValue(transform.Rotation.y);
+			rotationZ.SetValue(transform.Rotation.z);
+
+			IGFloat& scaleX = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 11]);
+			IGFloat& scaleY = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 12]);
+			IGFloat& scaleZ = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 13]);
+
+			scaleX.SetValue(transform.Scale.x);
+			scaleY.SetValue(transform.Scale.y);
+			scaleZ.SetValue(transform.Scale.z);
+		}
+	}
+	void InspectorPanel::prepareSpriteRendererUI()
+	{
+		uint32_t handle = m_HandleStart[SpriteRenderer];
+		IGGroup& spriteRendererGroup = IG::GetUI<IGGroup>(m_PoolHandle, m_Handles[handle]);
+		if (spriteRendererGroup.Active = m_Context.HasComponent<XYZ::SpriteRenderer>())
+		{
+			XYZ::SpriteRenderer& spriteRenderer = m_Context.GetComponent<XYZ::SpriteRenderer>();
+			IGFloat& colorR = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 1]);
+			IGFloat& colorG = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 2]);
+			IGFloat& colorB = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 3]);
+			IGFloat& colorA = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 4]);
+			IGInt& sortLayer = IG::GetUI<IGInt>(m_PoolHandle, m_Handles[handle + 6]);
+			IGCheckbox& visible = IG::GetUI<IGCheckbox>(m_PoolHandle, m_Handles[handle + 8]);
+
+			colorR.SetValue(spriteRenderer.Color.r);
+			colorG.SetValue(spriteRenderer.Color.g);
+			colorB.SetValue(spriteRenderer.Color.b);
+			colorA.SetValue(spriteRenderer.Color.a);
+			sortLayer.SetValue(spriteRenderer.SortLayer);
+			visible.Checked = spriteRenderer.IsVisible;
+		}
 	}
 	void InspectorPanel::setupTransformComponentUI()
 	{
