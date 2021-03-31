@@ -158,7 +158,6 @@ namespace XYZ {
 		s_Context->Allocator.GetPools()[handle].Rebuild(hierarchy, handles);
 		s_Context->RenderData.Rebuild = true;
 		s_Context->RenderData.RebuildMesh(s_Context->Allocator);
-		s_Context->Dockspace.UpdateWindows();
 		return s_Context->Allocator.GetPools()[handle].Size();
 	}
 
