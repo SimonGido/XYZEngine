@@ -87,10 +87,9 @@ namespace XYZ {
 			m_HandleCount = IG::ReallocateUI(m_PoolHandle, m_Layout, &m_Handles);
 			
 			window = &IG::GetUI<IGWindow>(m_PoolHandle, m_Handles[0]);
-			if (node)
-				node->Data.Windows.push_back(window);
-			
+			if (node) node->Data.Windows.push_back(window);	
 			window->Node = node;
+			IG::UpdateDockspace();
 		}
 		else
 		{

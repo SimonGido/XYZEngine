@@ -134,7 +134,12 @@ namespace XYZ {
 	void IG::RebuildUI()
 	{
 		s_Context->RenderData.Rebuild = true;
-		s_Context->RenderData.RebuildTwice = true;
+		s_Context->RenderData.RebuildTwice = true;		
+	}
+
+	void IG::UpdateDockspace()
+	{
+		s_Context->Dockspace.UpdateWindows();
 	}
 
 	std::pair<size_t, size_t> IG::AllocateUI(const std::initializer_list<IGHierarchyElement>& hierarchy, size_t** handles)
