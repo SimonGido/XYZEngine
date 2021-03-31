@@ -1,6 +1,7 @@
 #pragma once
 #include "IGElement.h"
 #include "IGMeshFactory.h"
+#include "IGAllocator.h"
 #include "XYZ/Utils/DataStructures/Tree.h"
 #include "XYZ/Core/MemoryPool.h"
 
@@ -264,5 +265,26 @@ namespace XYZ {
 		IGImage(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
 
 		Ref<SubTexture> SubTexture;
+	};
+
+	class IGPack : public IGElement
+	{
+	public:
+		IGPack(const std::vector<IGHierarchyElement>& elements, size_t** handles);
+		
+		virtual glm::vec2 BuildMesh(IGMesh& mesh, IGRenderData& renderData, IGPool& pool, const IGElement& root, uint32_t scissorIndex = 0) override;
+
+
+		void Rebuild(const std::vector<IGHierarchyElement>& elements, size_t** handles);
+		
+		size_t Size() const;
+		Tree& GetHierarchy();
+		const Tree& GetHierarchy() const;
+
+		IGElement& operator[](size_t index);
+		const IGElement& operator[](size_t index) const;
+
+	private:
+		IGPool Pool;
 	};
 }

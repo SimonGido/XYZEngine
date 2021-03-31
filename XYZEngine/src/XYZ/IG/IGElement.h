@@ -33,6 +33,7 @@ namespace XYZ {
 		Window,
 		ImageWindow,
 		Group,
+		Pack,
 		Separator,
 		Button,
 		Checkbox,

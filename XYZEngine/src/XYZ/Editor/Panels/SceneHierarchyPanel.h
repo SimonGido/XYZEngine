@@ -25,7 +25,6 @@ namespace XYZ {
 	private:
 		Ref<Scene> m_Context;
 
-		size_t* m_Handles;
 		size_t m_HandleCount;
 		size_t m_ID;
 	};

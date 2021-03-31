@@ -51,10 +51,11 @@ namespace XYZ {
 				}
 			}
 		};
-		auto [poolHandle, handleCount] = IG::AllocateUI(types, &m_Handles);
+		size_t* handles = nullptr;
+		auto [poolHandle, handleCount] = IG::AllocateUI(types, &handles);
 		m_PoolHandle = poolHandle;
 		m_HandleCount = handleCount;
-		m_Window = &IG::GetUI<IGImageWindow>(m_PoolHandle, m_Handles[0]);	
+		m_Window = &IG::GetUI<IGImageWindow>(m_PoolHandle, 0);	
 		m_Window->Label = "Scene";
 		m_Window->ResizeCallback = [&](const glm::vec2& size) {
 
@@ -64,8 +65,8 @@ namespace XYZ {
 			m_Context->SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		};
 
-		m_PlayButton = &IG::GetUI<IGImage>(m_PoolHandle, m_Handles[1]);
-		m_PauseButton = &IG::GetUI<IGImage>(m_PoolHandle, m_Handles[2]);
+		m_PlayButton = &IG::GetUI<IGImage>(m_PoolHandle, 1);
+		m_PauseButton = &IG::GetUI<IGImage>(m_PoolHandle, 2);
 		m_PlayButton->SubTexture = IG::GetContext().RenderData.SubTextures[IGRenderData::RightArrow];
 		m_PauseButton->SubTexture = IG::GetContext().RenderData.SubTextures[IGRenderData::Pause];
 	}

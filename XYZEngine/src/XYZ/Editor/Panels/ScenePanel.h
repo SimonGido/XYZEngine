@@ -38,7 +38,6 @@ namespace XYZ {
 		IGImage* m_PlayButton;
 		IGImage* m_PauseButton;
 
-		size_t* m_Handles;
 		size_t m_HandleCount;
 		size_t m_PoolHandle;
 

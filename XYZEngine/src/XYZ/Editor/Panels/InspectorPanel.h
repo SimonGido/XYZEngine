@@ -52,7 +52,6 @@ namespace XYZ {
 			NumComponents
 		};
 
-		size_t* m_Handles;
 		size_t m_HandleCount;
 		size_t m_PoolHandle;
 		size_t m_HandleStart[NumComponents];

@@ -22,7 +22,6 @@ namespace XYZ {
 		static void BeginUI(size_t handle);
 		static void EndUI();
 		static void RebuildUI();
-		static void UpdateDockspace();
 
 		static std::pair<size_t, size_t> AllocateUI(const std::initializer_list<IGHierarchyElement>& hierarchy, size_t** handles);
 		static std::pair<size_t, size_t> AllocateUI(const std::vector<IGHierarchyElement>& hierarchy, size_t** handles);
@@ -30,10 +29,10 @@ namespace XYZ {
 
 
 		template <typename T>
-		static T& GetUI(size_t poolHandle,size_t handle)
+		static T& GetUI(size_t poolHandle, size_t index)
 		{
-			getContext().RenderData.Rebuild = true;
-			IGElement* element = getContext().Allocator.Get<IGElement>(poolHandle, handle);
+			GetContext().RenderData.Rebuild = true;
+			IGElement* element = GetContext().Allocator.GetPools()[poolHandle][index];
 			T* result = dynamic_cast<T*>(element);
 			XYZ_ASSERT(result, "");
 			return *result;
@@ -41,9 +40,6 @@ namespace XYZ {
 
 
 		static IGContext& GetContext();
-
-	private:
-		static IGContext& getContext();
 	};
 
 }

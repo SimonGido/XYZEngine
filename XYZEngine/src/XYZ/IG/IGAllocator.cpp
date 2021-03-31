@@ -112,6 +112,10 @@ namespace XYZ {
 				destroy<IGGroup>(offset);
 				offset += sizeof(IGGroup);
 				break;
+			case XYZ::IGElementType::Pack:
+				destroy<IGPack>(offset);
+				offset += sizeof(IGPack);
+				break;
 			case XYZ::IGElementType::Separator:
 				destroy<IGSeparator>(offset);
 				offset += sizeof(IGSeparator);
@@ -183,6 +187,9 @@ namespace XYZ {
 			case XYZ::IGElementType::Group:
 				m_Capacity += sizeof(IGGroup);
 				break;
+			case XYZ::IGElementType::Pack:
+				m_Capacity += sizeof(IGPack);
+				break;
 			case XYZ::IGElementType::Separator:
 				m_Capacity += sizeof(IGSeparator);
 				break;
@@ -248,6 +255,15 @@ namespace XYZ {
 			case XYZ::IGElementType::Group:
 			{
 				auto [element, handle] = Allocate<IGGroup>(glm::vec2(0.0f), glm::vec2(350.0f,300.0f), glm::vec4(1.0f));
+				element->Parent = parent;
+				allocateMemory(it.Children, element);
+				break;
+			}
+			case XYZ::IGElementType::Pack:
+			{
+				size_t* handles = nullptr;
+				std::vector<IGHierarchyElement> tmp;
+				auto [element, handle] = Allocate<IGPack>(tmp, &handles);
 				element->Parent = parent;
 				allocateMemory(it.Children, element);
 				break;

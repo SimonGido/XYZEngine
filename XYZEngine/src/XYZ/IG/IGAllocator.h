@@ -48,6 +48,10 @@ namespace XYZ {
 		{
 			return reinterpret_cast<IGElement*>((void*)&m_Data[m_Handles[index]]);
 		}
+		const IGElement* operator[](size_t index) const
+		{
+			return reinterpret_cast<IGElement*>((void*)&m_Data[m_Handles[index]]);
+		}
 
 		size_t Size() const
 		{

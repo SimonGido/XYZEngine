@@ -418,6 +418,27 @@ namespace XYZ {
 	}
 
 	template<>
+	glm::vec2 IGMeshFactory::GenerateUI<IGString>(const char* label, const glm::vec4& labelColor, const IGMeshFactoryData& data)
+	{
+		IGString* intInput = static_cast<IGString*>(data.Element);
+		glm::vec2 absolutePosition = data.Element->GetAbsolutePosition();
+		glm::vec2 textPosition = absolutePosition + glm::vec2(intInput->Style.Layout.LeftPadding, 0.0f);
+		glm::vec2 textSize = data.Element->Size - glm::vec2(intInput->Style.Layout.RightPadding + intInput->Style.Layout.LeftPadding);
+
+		glm::vec2 result = Helper::GenerateLabeledQuad(label, labelColor, data);
+
+		size_t oldQuadCount = data.Mesh->Quads.size();
+		glm::vec2 valueTextSize = Helper::GenerateTextMesh(
+			intInput->GetBuffer(), data.RenderData->Font, labelColor,
+			textPosition, textSize, *data.Mesh,
+			IGRenderData::FontTextureID, 1000, data.ScissorIndex
+		);
+		Helper::CenterText(*data.Mesh, oldQuadCount, absolutePosition, intInput->Size, valueTextSize, IGTextCenter::Left);
+
+		return result;
+	}
+
+	template<>
 	glm::vec2 IGMeshFactory::GenerateUI<IGText>(const char* text, const glm::vec4& labelColor, const IGMeshFactoryData& data)
 	{
 		size_t oldQuadCount = data.Mesh->Quads.size();

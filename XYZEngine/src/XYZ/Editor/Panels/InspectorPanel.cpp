@@ -50,7 +50,6 @@ namespace XYZ {
 	}
 	void InspectorPanel::OnUpdate()
 	{
-		invalidateUI();
 		if (m_Context)
 		{
 			updateTransformComponentUI();
@@ -78,22 +77,21 @@ namespace XYZ {
 		m_HandleStart[ScriptComponent] = handleOffset;
 		handleOffset += scriptComponentUI(m_Layout[0].Children[0]);
 
+		size_t* handles = nullptr;
 		if (reallocate)
 		{
-			IGWindow* window = &IG::GetUI<IGWindow>(m_PoolHandle, m_Handles[0]);
+			IGWindow* window = &IG::GetUI<IGWindow>(m_PoolHandle, 0);
 			IGDockNode* node = window->Node;
-	
-			delete[]m_Handles;
-			m_HandleCount = IG::ReallocateUI(m_PoolHandle, m_Layout, &m_Handles);
+
+			m_HandleCount = IG::ReallocateUI(m_PoolHandle, m_Layout, &handles);
 			
-			window = &IG::GetUI<IGWindow>(m_PoolHandle, m_Handles[0]);
+			window = &IG::GetUI<IGWindow>(m_PoolHandle, 0);
 			if (node) node->Data.Windows.push_back(window);	
 			window->Node = node;
-			IG::UpdateDockspace();
 		}
 		else
 		{
-			auto [poolHandle, handleCount] = IG::AllocateUI(m_Layout, &m_Handles);
+			auto [poolHandle, handleCount] = IG::AllocateUI(m_Layout, &handles);
 			m_PoolHandle = poolHandle;
 			m_HandleCount = handleCount;
 		}
@@ -115,11 +113,11 @@ namespace XYZ {
 	{		
 		XYZ::TransformComponent& transform = m_Context.GetComponent<XYZ::TransformComponent>();
 
-		uint32_t handle = m_HandleStart[TransformComponent];
+		size_t index = m_HandleStart[TransformComponent];
 
-		IGFloat& translationX = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 1]);
-		IGFloat& translationY = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 2]);
-		IGFloat& translationZ = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 3]);
+		IGFloat& translationX = IG::GetUI<IGFloat>(m_PoolHandle, index + 1);
+		IGFloat& translationY = IG::GetUI<IGFloat>(m_PoolHandle, index + 2);
+		IGFloat& translationZ = IG::GetUI<IGFloat>(m_PoolHandle, index + 3);
 		
 		translationX.SetValue(transform.Translation.x);
 		transform.Translation.x = translationX.GetValue();
@@ -130,9 +128,9 @@ namespace XYZ {
 		translationZ.SetValue(transform.Translation.z);
 		transform.Translation.z = translationZ.GetValue();
 
-		IGFloat& rotationX = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 6]);
-		IGFloat& rotationY = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 7]);
-		IGFloat& rotationZ = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 8]);
+		IGFloat& rotationX = IG::GetUI<IGFloat>(m_PoolHandle, index + 6);
+		IGFloat& rotationY = IG::GetUI<IGFloat>(m_PoolHandle, index + 7);
+		IGFloat& rotationZ = IG::GetUI<IGFloat>(m_PoolHandle, index + 8);
 
 		rotationX.SetValue(transform.Rotation.x);
 		transform.Rotation.x = rotationX.GetValue();
@@ -143,9 +141,9 @@ namespace XYZ {
 		rotationZ.SetValue(transform.Rotation.z);
 		transform.Rotation.z = rotationZ.GetValue();
 
-		IGFloat& scaleX = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 11]);
-		IGFloat& scaleY = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 12]);
-		IGFloat& scaleZ = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 13]);
+		IGFloat& scaleX = IG::GetUI<IGFloat>(m_PoolHandle, index + 11);
+		IGFloat& scaleY = IG::GetUI<IGFloat>(m_PoolHandle, index + 12);
+		IGFloat& scaleZ = IG::GetUI<IGFloat>(m_PoolHandle, index + 13);
 
 		scaleX.SetValue(transform.Scale.x);
 		transform.Scale.x = scaleX.GetValue();
@@ -161,14 +159,15 @@ namespace XYZ {
 		if (m_Context.HasComponent<XYZ::SpriteRenderer>())
 		{
 			XYZ::SpriteRenderer& spriteRenderer = m_Context.GetComponent<XYZ::SpriteRenderer>();
-			uint32_t handle = m_HandleStart[SpriteRenderer];
-			IGFloat& colorR = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 1]);
-			IGFloat& colorG = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 2]);
-			IGFloat& colorB = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 3]);
-			IGFloat& colorA = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 4]);
+			size_t index = m_HandleStart[SpriteRenderer];
 
-			IGInt& sortLayer = IG::GetUI<IGInt>(m_PoolHandle, m_Handles[handle + 6]);
-			IGCheckbox& visible = IG::GetUI<IGCheckbox>(m_PoolHandle, m_Handles[handle + 8]);
+			IGFloat& colorR = IG::GetUI<IGFloat>(m_PoolHandle, index + 1);
+			IGFloat& colorG = IG::GetUI<IGFloat>(m_PoolHandle, index + 2);
+			IGFloat& colorB = IG::GetUI<IGFloat>(m_PoolHandle, index + 3);
+			IGFloat& colorA = IG::GetUI<IGFloat>(m_PoolHandle, index + 4);
+
+			IGInt& sortLayer = IG::GetUI<IGInt>(m_PoolHandle, index + 6);
+			IGCheckbox& visible = IG::GetUI<IGCheckbox>(m_PoolHandle, index + 8);
 			
 			colorR.SetValue(spriteRenderer.Color.r);
 			spriteRenderer.Color.r = colorR.GetValue();
@@ -193,13 +192,14 @@ namespace XYZ {
 		if (m_Context.HasComponent<XYZ::ScriptComponent>())
 		{
 			XYZ::ScriptComponent& scriptComponent = m_Context.GetComponent<XYZ::ScriptComponent>();
-			uint32_t handle = m_HandleStart[ScriptComponent];
-			uint32_t counter = 1;
+			size_t counter = 0;
+			size_t index = m_HandleStart[ScriptComponent];
+			IGPack& pack = IG::GetUI<IGPack>(m_PoolHandle, index + 1);
 			for (auto& field : scriptComponent.Fields)
 			{
 				if (field.GetType() == PublicFieldType::Float)
 				{
-					IGFloat& fieldFloat = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + counter++]);
+					IGFloat& fieldFloat = *static_cast<IGFloat*>(&pack[counter++]);
 					fieldFloat.SetValue(field.GetStoredValue<float>());
 					float newValue = fieldFloat.GetValue();
 					field.SetStoredValue<float>(newValue);
@@ -207,7 +207,7 @@ namespace XYZ {
 				}
 				else if (field.GetType() == PublicFieldType::Int)
 				{
-					IGInt& fieldInt = IG::GetUI<IGInt>(m_PoolHandle, m_Handles[handle + counter++]);
+					IGInt& fieldInt = *static_cast<IGInt*>(&pack[counter++]);
 					fieldInt.SetValue(field.GetStoredValue<int32_t>());
 					int32_t newValue = fieldInt.GetValue();
 					field.SetStoredValue<int32_t>(newValue);
@@ -215,7 +215,7 @@ namespace XYZ {
 				}
 				else if (field.GetType() == PublicFieldType::UnsignedInt)
 				{
-					IGInt& fieldInt = IG::GetUI<IGInt>(m_PoolHandle, m_Handles[handle + counter++]);
+					IGInt& fieldInt = *static_cast<IGInt*>(&pack[counter++]);
 					fieldInt.SetValue(field.GetStoredValue<int32_t>());
 					int32_t newValue = fieldInt.GetValue();
 					field.SetStoredValue<int32_t>(newValue);
@@ -223,8 +223,8 @@ namespace XYZ {
 				}
 				else if (field.GetType() == PublicFieldType::Vec2)
 				{
-					IGFloat& firstFloat = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + counter++]);
-					IGFloat& secondFloat = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + counter++]);
+					IGFloat& firstFloat =  *static_cast<IGFloat*>(&pack[counter++]);
+					IGFloat& secondFloat = *static_cast<IGFloat*>(&pack[counter++]);
 
 					glm::vec2 value = field.GetStoredValue<glm::vec2>();
 
@@ -236,9 +236,9 @@ namespace XYZ {
 				}
 				else if (field.GetType() == PublicFieldType::Vec3)
 				{
-					IGFloat& firstFloat = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + counter++]);
-					IGFloat& secondFloat = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + counter++]);
-					IGFloat& thirdFloat = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + counter++]);
+					IGFloat& firstFloat  = *static_cast<IGFloat*>(&pack[counter++]);
+					IGFloat& secondFloat = *static_cast<IGFloat*>(&pack[counter++]);
+					IGFloat& thirdFloat  = *static_cast<IGFloat*>(&pack[counter++]);
 					glm::vec3 value = field.GetStoredValue<glm::vec3>();
 
 					firstFloat.SetValue(value.x);
@@ -250,10 +250,10 @@ namespace XYZ {
 				}
 				else if (field.GetType() == PublicFieldType::Vec4)
 				{
-					IGFloat& firstFloat = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + counter++]);
-					IGFloat& secondFloat = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + counter++]);
-					IGFloat& thirdFloat = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + counter++]);
-					IGFloat& fourthFloat = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + counter++]);
+					IGFloat& firstFloat  = *static_cast<IGFloat*>(&pack[counter++]);
+					IGFloat& secondFloat = *static_cast<IGFloat*>(&pack[counter++]);
+					IGFloat& thirdFloat  = *static_cast<IGFloat*>(&pack[counter++]);
+					IGFloat& fourthFloat = *static_cast<IGFloat*>(&pack[counter++]);
 					glm::vec4 value = field.GetStoredValue<glm::vec4>();
 
 					firstFloat.SetValue(value.x);
@@ -266,11 +266,12 @@ namespace XYZ {
 				}
 				else if (field.GetType() == PublicFieldType::String)
 				{
-					IGString& str = IG::GetUI<IGString>(m_PoolHandle, m_Handles[handle + counter++]);
+					IGString& str = *static_cast<IGString*>(&pack[counter++]);
 					
-					str.SetValue(field.GetStoredValue<std::string>());
-					field.SetStoredValue<std::string>(str.GetBuffer());
-					field.SetRuntimeValue<std::string>(str.GetBuffer());
+					str.SetValue(field.GetStoredValue<char*>());
+					std::string val = str.GetValue();
+					field.SetStoredValue<const char*>(val.c_str());
+					field.SetRuntimeValue<const char*>(val.c_str());
 				}
 			}
 		}
@@ -615,35 +616,36 @@ namespace XYZ {
 	{
 		IGHierarchyElement element;
 		element.Element = IGElementType::Group;	
+		element.Children.push_back({ IGElementType::Pack, {} });
 		parent.Children.push_back(element);
 		return element.Children.size() + 1;
 	}
 	void InspectorPanel::prepareTransformComponentUI()
 	{
-		uint32_t handle = m_HandleStart[TransformComponent];
-		IGGroup& transformGroup = IG::GetUI<IGGroup>(m_PoolHandle, m_Handles[handle]);
+		size_t index = m_HandleStart[TransformComponent];
+		IGGroup& transformGroup = IG::GetUI<IGGroup>(m_PoolHandle, index);
 		if (transformGroup.Active = m_Context.HasComponent<XYZ::TransformComponent>())
 		{
 			XYZ::TransformComponent& transform = m_Context.GetComponent<XYZ::TransformComponent>();
-			IGFloat& translationX = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 1]);
-			IGFloat& translationY = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 2]);
-			IGFloat& translationZ = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 3]);
+			IGFloat& translationX = IG::GetUI<IGFloat>(m_PoolHandle, index + 1);
+			IGFloat& translationY = IG::GetUI<IGFloat>(m_PoolHandle, index + 2);
+			IGFloat& translationZ = IG::GetUI<IGFloat>(m_PoolHandle, index + 3);
 
 			translationX.SetValue(transform.Translation.x);
 			translationY.SetValue(transform.Translation.y);
 			translationZ.SetValue(transform.Translation.z);
 
-			IGFloat& rotationX = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 6]);
-			IGFloat& rotationY = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 7]);
-			IGFloat& rotationZ = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 8]);
+			IGFloat& rotationX = IG::GetUI<IGFloat>(m_PoolHandle, index + 6);
+			IGFloat& rotationY = IG::GetUI<IGFloat>(m_PoolHandle, index + 7);
+			IGFloat& rotationZ = IG::GetUI<IGFloat>(m_PoolHandle, index + 8);
 
 			rotationX.SetValue(transform.Rotation.x);
 			rotationY.SetValue(transform.Rotation.y);
 			rotationZ.SetValue(transform.Rotation.z);
 
-			IGFloat& scaleX = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 11]);
-			IGFloat& scaleY = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 12]);
-			IGFloat& scaleZ = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 13]);
+			IGFloat& scaleX = IG::GetUI<IGFloat>(m_PoolHandle, index + 11);
+			IGFloat& scaleY = IG::GetUI<IGFloat>(m_PoolHandle, index + 12);
+			IGFloat& scaleZ = IG::GetUI<IGFloat>(m_PoolHandle, index + 13);
 
 			scaleX.SetValue(transform.Scale.x);
 			scaleY.SetValue(transform.Scale.y);
@@ -652,17 +654,17 @@ namespace XYZ {
 	}
 	void InspectorPanel::prepareSpriteRendererUI()
 	{
-		uint32_t handle = m_HandleStart[SpriteRenderer];
-		IGGroup& spriteRendererGroup = IG::GetUI<IGGroup>(m_PoolHandle, m_Handles[handle]);
+		size_t index = m_HandleStart[SpriteRenderer];
+		IGGroup& spriteRendererGroup = IG::GetUI<IGGroup>(m_PoolHandle, index);
 		if (spriteRendererGroup.Active = m_Context.HasComponent<XYZ::SpriteRenderer>())
 		{
 			XYZ::SpriteRenderer& spriteRenderer = m_Context.GetComponent<XYZ::SpriteRenderer>();
-			IGFloat& colorR = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 1]);
-			IGFloat& colorG = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 2]);
-			IGFloat& colorB = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 3]);
-			IGFloat& colorA = IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 4]);
-			IGInt& sortLayer = IG::GetUI<IGInt>(m_PoolHandle, m_Handles[handle + 6]);
-			IGCheckbox& visible = IG::GetUI<IGCheckbox>(m_PoolHandle, m_Handles[handle + 8]);
+			IGFloat& colorR = IG::GetUI<IGFloat>(m_PoolHandle, index + 1);
+			IGFloat& colorG = IG::GetUI<IGFloat>(m_PoolHandle, index + 2);
+			IGFloat& colorB = IG::GetUI<IGFloat>(m_PoolHandle, index + 3);
+			IGFloat& colorA = IG::GetUI<IGFloat>(m_PoolHandle, index + 4);
+			IGInt& sortLayer = IG::GetUI<IGInt>(m_PoolHandle,  index + 6);
+			IGCheckbox& visible = IG::GetUI<IGCheckbox>(m_PoolHandle, index + 8);
 
 			colorR.SetValue(spriteRenderer.Color.r);
 			colorG.SetValue(spriteRenderer.Color.g);
@@ -674,55 +676,93 @@ namespace XYZ {
 	}
 	void InspectorPanel::prepareScriptComponentUI()
 	{
-		uint32_t handle = m_HandleStart[ScriptComponent];
-		IGGroup& scriptComponentGroup = IG::GetUI<IGGroup>(m_PoolHandle, m_Handles[handle]);
+		size_t index = m_HandleStart[ScriptComponent];
+		IGGroup& scriptComponentGroup = IG::GetUI<IGGroup>(m_PoolHandle, index);
 		if (scriptComponentGroup.Active = m_Context.HasComponent<XYZ::ScriptComponent>())
 		{
+			IGPack& pack = IG::GetUI<IGPack>(m_PoolHandle, index + 1);
+			size_t* handles = nullptr;
+			std::vector<IGHierarchyElement> hierarchyElements;
+
 			XYZ::ScriptComponent& scriptComponent = m_Context.GetComponent<XYZ::ScriptComponent>();
 			for (auto& field : scriptComponent.Fields)
 			{
-
+				if (field.GetType() == PublicFieldType::Float)
+				{
+					hierarchyElements.push_back({ IGElementType::Float,{} });
+				}
+				else if (field.GetType() == PublicFieldType::Int)
+				{
+					hierarchyElements.push_back({ IGElementType::Int,{} });
+				}
+				else if (field.GetType() == PublicFieldType::UnsignedInt)
+				{
+					hierarchyElements.push_back({ IGElementType::Int,{} });
+				}
+				else if (field.GetType() == PublicFieldType::Vec2)
+				{
+					hierarchyElements.push_back({ IGElementType::Float,{} });
+					hierarchyElements.push_back({ IGElementType::Float,{} });
+				}
+				else if (field.GetType() == PublicFieldType::Vec3)
+				{
+					hierarchyElements.push_back({ IGElementType::Float,{} });
+					hierarchyElements.push_back({ IGElementType::Float,{} });
+					hierarchyElements.push_back({ IGElementType::Float,{} });
+				}
+				else if (field.GetType() == PublicFieldType::Vec4)
+				{
+					hierarchyElements.push_back({ IGElementType::Float,{} });
+					hierarchyElements.push_back({ IGElementType::Float,{} });
+					hierarchyElements.push_back({ IGElementType::Float,{} });
+					hierarchyElements.push_back({ IGElementType::Float,{} });
+				}
+				else if (field.GetType() == PublicFieldType::String)
+				{
+					hierarchyElements.push_back({ IGElementType::String,{} });
+				}
 			}
+			pack.Rebuild(hierarchyElements, &handles);
 		}
 	}
 	void InspectorPanel::setupTransformComponentUI()
 	{
 		Ref<Font> font = IG::GetContext().RenderData.Font;
-		uint32_t handle = m_HandleStart[TransformComponent];
-		IG::GetUI<IGGroup>(m_PoolHandle, m_Handles[handle]).Label = "Transform Component";
+		size_t index = m_HandleStart[TransformComponent];
+		IG::GetUI<IGGroup>(m_PoolHandle, index).Label = "Transform Component";
 		
-		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 1]).Label = "X";
-		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 2]).Label = "Y";
-		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 3]).Label = "Z";
-		IG::GetUI<IGText>(m_PoolHandle, m_Handles[handle + 4]).Text = "Translation";
-		IG::GetUI<IGText>(m_PoolHandle, m_Handles[handle + 4]).Size.x = Helper::FindTextLength("Translation", font) + 1.0f;
+		IG::GetUI<IGFloat>(m_PoolHandle, index + 1).Label = "X";
+		IG::GetUI<IGFloat>(m_PoolHandle, index + 2).Label = "Y";
+		IG::GetUI<IGFloat>(m_PoolHandle, index + 3).Label = "Z";
+		IG::GetUI<IGText>(m_PoolHandle,  index + 4).Text = "Translation";
+		IG::GetUI<IGText>(m_PoolHandle,  index + 4).Size.x = Helper::FindTextLength("Translation", font) + 1.0f;
 
-		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 6]).Label = "X";
-		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 7]).Label = "Y";
-		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 8]).Label = "Z";
-		IG::GetUI<IGText>(m_PoolHandle, m_Handles[handle + 9]).Text = "Rotation";
-		IG::GetUI<IGText>(m_PoolHandle, m_Handles[handle + 9]).Size.x = Helper::FindTextLength("Rotation", font) + 1.0f;
+		IG::GetUI<IGFloat>(m_PoolHandle, index + 6).Label = "X";
+		IG::GetUI<IGFloat>(m_PoolHandle, index + 7).Label = "Y";
+		IG::GetUI<IGFloat>(m_PoolHandle, index + 8).Label = "Z";
+		IG::GetUI<IGText>(m_PoolHandle,  index + 9).Text = "Rotation";
+		IG::GetUI<IGText>(m_PoolHandle,  index + 9).Size.x = Helper::FindTextLength("Rotation", font) + 1.0f;
 
-		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 11]).Label = "X";
-		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 12]).Label = "Y";
-		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 13]).Label = "Z";
-		IG::GetUI<IGText>(m_PoolHandle, m_Handles[handle + 14]).Text = "Scale";
-		IG::GetUI<IGText>(m_PoolHandle, m_Handles[handle + 14]).Size.x = Helper::FindTextLength("Scale", font) + 1.0f;
+		IG::GetUI<IGFloat>(m_PoolHandle, index + 11).Label = "X";
+		IG::GetUI<IGFloat>(m_PoolHandle, index + 12).Label = "Y";
+		IG::GetUI<IGFloat>(m_PoolHandle, index + 13).Label = "Z";
+		IG::GetUI<IGText>(m_PoolHandle,  index + 14).Text = "Scale";
+		IG::GetUI<IGText>(m_PoolHandle,  index + 14).Size.x = Helper::FindTextLength("Scale", font) + 1.0f;
 	}
 	void InspectorPanel::setupSpriteRendererUI()
 	{
 		Ref<Font> font = IG::GetContext().RenderData.Font;
-		uint32_t handle = m_HandleStart[SpriteRenderer];
+		size_t index = m_HandleStart[SpriteRenderer];
 
-		IG::GetUI<IGGroup>(m_PoolHandle, m_Handles[handle]).Label = "Sprite Renderer";
-		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 1]).Label = "R";
-		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 2]).Label = "G";
-		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 3]).Label = "B";
-		IG::GetUI<IGFloat>(m_PoolHandle, m_Handles[handle + 4]).Label = "A";
+		IG::GetUI<IGGroup>(m_PoolHandle, index).Label = "Sprite Renderer";
+		IG::GetUI<IGFloat>(m_PoolHandle, index + 1).Label = "R";
+		IG::GetUI<IGFloat>(m_PoolHandle, index + 2).Label = "G";
+		IG::GetUI<IGFloat>(m_PoolHandle, index + 3).Label = "B";
+		IG::GetUI<IGFloat>(m_PoolHandle, index + 4).Label = "A";
 		
-		IG::GetUI<IGInt>(m_PoolHandle, m_Handles[handle + 6]).Label = "Sort Layer";
-		IG::GetUI<IGCheckbox>(m_PoolHandle, m_Handles[handle + 8]).Label = "Visible";
-		IG::GetUI<IGCheckbox>(m_PoolHandle, m_Handles[handle + 8]).Size = { 25.0f, 25.0f };
+		IG::GetUI<IGInt>(m_PoolHandle, index + 6).Label = "Sort Layer";
+		IG::GetUI<IGCheckbox>(m_PoolHandle, index + 8).Label = "Visible";
+		IG::GetUI<IGCheckbox>(m_PoolHandle, index + 8).Size = { 25.0f, 25.0f };
 	}
 	void InspectorPanel::setupPointLight2DUI()
 	{
@@ -736,8 +776,8 @@ namespace XYZ {
 	void InspectorPanel::setupScriptComponentUI()
 	{
 		Ref<Font> font = IG::GetContext().RenderData.Font;
-		uint32_t handle = m_HandleStart[ScriptComponent];
+		uint32_t index = m_HandleStart[ScriptComponent];
 
-		IG::GetUI<IGGroup>(m_PoolHandle, m_Handles[handle]).Label = "Script Component";
+		IG::GetUI<IGGroup>(m_PoolHandle, index).Label = "Script Component";
 	}
 }

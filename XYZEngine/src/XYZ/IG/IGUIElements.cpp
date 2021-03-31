@@ -96,11 +96,6 @@ namespace XYZ {
 
 	IGWindow::~IGWindow()
 	{
-		if (Node)
-		{
-			auto it = std::find(Node->Data.Windows.begin(), Node->Data.Windows.end(), this);
-			Node->Data.Windows.erase(it);
-		}
 	}
 
 	bool IGWindow::OnLeftClick(const glm::vec2& mousePosition, bool& handled)
@@ -631,14 +626,15 @@ namespace XYZ {
 		ModifiedIndex = numChar;
 
 		IGMeshFactoryData data = {renderData.SubTextures[IGRenderData::Slider], this, &mesh, &renderData, scissorIndex };
-		return IGMeshFactory::GenerateUI<IGInt>(Label.c_str(), Color, data);
+		return IGMeshFactory::GenerateUI<IGString>(Label.c_str(), Color, data);
 	}
 
 	void IGString::SetValue(const std::string& val)
 	{
 		if (!Listen)
 		{
-			memcpy(Buffer, val.c_str(), val.size());
+			memcpy(Buffer, val.c_str(), val.size()); 
+			Buffer[val.size()] = '\0';
 			ModifiedIndex = 0;
 			while (Buffer[ModifiedIndex] != '\0')
 				ModifiedIndex++;
@@ -647,7 +643,11 @@ namespace XYZ {
 
 	std::string IGString::GetValue() const
 	{
-		return Buffer;
+		std::string test;
+		test.push_back(Buffer[0]);
+		test.push_back(Buffer[1]);
+		test.push_back(Buffer[2]);
+		return test;
 	}
 
 	IGTree::IGTree(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
@@ -898,4 +898,59 @@ namespace XYZ {
 	{
 	}
 
+	IGPack::IGPack(const std::vector<IGHierarchyElement>& elements, size_t** handles)
+		:
+		IGElement(glm::vec2(0.0f), glm::vec2(0.0f), glm::vec4(0.0f), IGElementType::Pack),
+		Pool(elements, handles)
+	{
+	}
+
+	void IGPack::Rebuild(const std::vector<IGHierarchyElement>& elements, size_t** handles)
+	{
+		Pool.Rebuild(elements, handles);
+	}
+
+	glm::vec2 IGPack::BuildMesh(IGMesh& mesh, IGRenderData& renderData, IGPool& pool, const IGElement& root, uint32_t scissorIndex)
+	{
+		glm::vec2 offset(0.0f);
+		if (Active && ActiveChildren)
+		{
+			float highestInRow = 0.0f;
+			for (size_t i = 0; i < Pool.Size(); ++i)
+			{			
+				size_t oldQuadCount = mesh.Quads.size();
+				glm::vec2 genSize = Pool[i]->GenerateQuads(mesh, renderData, scissorIndex);
+				if (Helper::ResolvePosition(oldQuadCount, genSize, Pool[i], root, mesh, offset, highestInRow))
+				{
+					offset += Pool[i]->BuildMesh(mesh, renderData, Pool, root, scissorIndex);
+				}
+			}
+		}
+		return offset;
+	}
+
+	size_t IGPack::Size() const
+	{
+		return Pool.Size();
+	}
+
+	Tree& IGPack::GetHierarchy()
+	{
+		return Pool.GetHierarchy();
+	}
+
+	const Tree& IGPack::GetHierarchy() const
+	{
+		return Pool.GetHierarchy();
+	}
+
+	IGElement& IGPack::operator[] (size_t index)
+	{
+		return *Pool[index];
+	}
+
+	const IGElement& IGPack::operator[] (size_t index) const
+	{
+		return *Pool[index];
+	}
 }

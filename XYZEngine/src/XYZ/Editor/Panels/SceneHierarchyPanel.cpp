@@ -18,10 +18,11 @@ namespace XYZ {
             }
         };
                
-        auto [id, count] =  IG::AllocateUI(types, &m_Handles);
+        size_t* handles = nullptr;
+        auto [id, count] =  IG::AllocateUI(types, &handles);
         m_ID = id;
         m_HandleCount = count;
-        IGTree& tree = IG::GetUI<IGTree>(m_ID, m_Handles[1]);
+        IGTree& tree = IG::GetUI<IGTree>(m_ID, 1);
         tree.OnSelect = [&](uint32_t key) {
             if (m_Context.Raw())
                 m_Context->SetSelectedEntity(key);
@@ -41,7 +42,7 @@ namespace XYZ {
         m_Context->m_ECS.AddListener<SceneTagComponent>([this](uint32_t entity, CallbackType type) {
             
             ECSManager& ecs = m_Context->m_ECS;
-            IGTree& tree = IG::GetUI<IGTree>(m_ID, m_Handles[1]);
+            IGTree& tree = IG::GetUI<IGTree>(m_ID, 1);
             if (type == CallbackType::ComponentCreate)
             {
                 SceneTagComponent& sceneTag = ecs.GetComponent<SceneTagComponent>(entity);
@@ -60,7 +61,7 @@ namespace XYZ {
     {
         if (m_Context.Raw())
         {
-            IGTree& tree = IG::GetUI<IGTree>(m_ID, m_Handles[1]);
+            IGTree& tree = IG::GetUI<IGTree>(m_ID, 1);
             if (m_Context->m_SelectedEntity)
                 tree.GetItem(m_Context->m_SelectedEntity).Color = IG::GetContext().RenderData.Colors[IGRenderData::HooverColor];
         }
@@ -73,7 +74,7 @@ namespace XYZ {
     }
     void SceneHierarchyPanel::rebuildTree()
     {
-        IGTree& tree = IG::GetUI<IGTree>(m_ID, m_Handles[1]);
+        IGTree& tree = IG::GetUI<IGTree>(m_ID, 1);
         tree.Clear();
         ECSManager& ecs = m_Context->m_ECS;
         for (uint32_t entity : m_Context->m_Entities)
@@ -91,7 +92,7 @@ namespace XYZ {
     {
         if (event.IsButtonPressed(MouseCode::MOUSE_BUTTON_RIGHT))
         {
-            IGTree& tree = IG::GetUI<IGTree>(m_ID, m_Handles[1]);
+            IGTree& tree = IG::GetUI<IGTree>(m_ID, 1);
             
         }
         

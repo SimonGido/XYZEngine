@@ -34,19 +34,23 @@ namespace XYZ {
 		}
 
 		template <>
-		std::string GetStoredValue() const
+		char* GetStoredValue() const
 		{
 			char* value;
 			getStoredString_Internal(&value);
-			std::string res(value);
-			delete[]value;
-			return res;
+			return value;
 		}
 
 		template<typename T>
 		void SetStoredValue(T value) const
 		{
 			setStoredValue_Internal(&value);
+		}
+
+		template<>
+		void SetStoredValue(const char* value) const
+		{
+			setStoredString_Internal(value);
 		}
 
 		template<typename T>
@@ -58,12 +62,11 @@ namespace XYZ {
 		}
 
 		template <>
-		std::string GetRuntimeValue() const
+		char* GetRuntimeValue() const
 		{
 			char* value;
 			getRuntimeString_Internal(&value);
-			std::string res(value);
-			return res;
+			return value;
 		}
 
 		template<typename T>
@@ -83,10 +86,11 @@ namespace XYZ {
 		const std::string& GetName() const { return m_Name; }
 		PublicFieldType GetType() const { return m_Type; }
 	private:
-		uint8_t* allocateBuffer(PublicFieldType type);
+		uint8_t* allocateBuffer(uint32_t size) const;
 		void setStoredValue_Internal(void* value) const;
 		void getStoredValue_Internal(void* outValue) const;
 
+		void setStoredString_Internal(const char* value) const;
 		void getStoredString_Internal(char** outValue) const;
 		
 		void setRuntimeValue_Internal(void* value) const;
@@ -97,7 +101,8 @@ namespace XYZ {
 
 	private:
 		MonoClassField* m_MonoClassField;
-		uint8_t* m_StoredValueBuffer = nullptr;
+		mutable uint8_t* m_StoredValueBuffer = nullptr;
+		mutable uint32_t m_Size;
 		uint32_t m_Handle;
 		
 		std::string m_Name;

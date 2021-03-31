@@ -38,13 +38,14 @@ namespace XYZ {
 		m_Name(name),
 		m_Type(type)
 	{
-		m_StoredValueBuffer = allocateBuffer(type);
+		m_StoredValueBuffer = allocateBuffer(GetFieldSize(type));
 	}
 
 	PublicField::PublicField(const PublicField& other)
 		:
 		m_Name(other.m_Name),
-		m_Type(other.m_Type)
+		m_Type(other.m_Type),
+		m_Size(other.m_Size)
 	{
 		m_Handle = other.m_Handle;
 		m_MonoClassField = other.m_MonoClassField;
@@ -52,14 +53,15 @@ namespace XYZ {
 		if (m_StoredValueBuffer && m_Type != PublicFieldType::String)
 			delete[]m_StoredValueBuffer;
 
-		m_StoredValueBuffer = allocateBuffer(m_Type);
-		memcpy(m_StoredValueBuffer, other.m_StoredValueBuffer, GetFieldSize(other.m_Type));
+		m_StoredValueBuffer = allocateBuffer(other.m_Size);
+		memcpy(m_StoredValueBuffer, other.m_StoredValueBuffer, other.m_Size);
 	}
 
 	PublicField::PublicField(PublicField&& other) noexcept
 		:
 		m_Name(std::move(other.m_Name)),
-		m_Type(other.m_Type)
+		m_Type(other.m_Type),
+		m_Size(other.m_Size)
 	{
 		m_Handle = other.m_Handle;
 		m_MonoClassField = other.m_MonoClassField;
@@ -84,7 +86,7 @@ namespace XYZ {
 		m_Handle = other.m_Handle;
 		m_MonoClassField = other.m_MonoClassField;
 
-		m_StoredValueBuffer = allocateBuffer(m_Type);
+		m_StoredValueBuffer = allocateBuffer(GetFieldSize(m_Type));
 		memcpy(m_StoredValueBuffer, other.m_StoredValueBuffer, GetFieldSize(other.m_Type));
 		return *this;
 	}
@@ -111,10 +113,10 @@ namespace XYZ {
 		memcpy(m_StoredValueBuffer, src, size);
 
 	}
-	uint8_t* PublicField::allocateBuffer(PublicFieldType type)
+	uint8_t* PublicField::allocateBuffer(uint32_t size) const
 	{
-		uint32_t size = GetFieldSize(type);
-		uint8_t* buffer = new uint8_t[size];
+		m_Size = size;
+		uint8_t* buffer = new uint8_t[m_Size];
 		memset(buffer, 0, size);
 		return buffer;
 	}
@@ -128,9 +130,19 @@ namespace XYZ {
 		uint32_t size = GetFieldSize(m_Type);
 		memcpy(outValue, m_StoredValueBuffer, size);
 	}
+	void PublicField::setStoredString_Internal(const char* value) const
+	{
+		size_t size = strlen(value) + 1;
+		if (m_Size < size)
+		{
+			delete[]m_StoredValueBuffer;
+			m_StoredValueBuffer = allocateBuffer(size);
+		}
+		memcpy(m_StoredValueBuffer, value, size);
+	}
 	void PublicField::getStoredString_Internal(char** outValue) const
 	{
-		uint32_t size = GetFieldSize(m_Type);
+		size_t size = strlen((char*)m_StoredValueBuffer) + 1;
 		*outValue = new char[size];
 		memcpy(*outValue, m_StoredValueBuffer, size);
 	}
