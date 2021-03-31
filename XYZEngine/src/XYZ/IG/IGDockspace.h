@@ -42,9 +42,11 @@ namespace XYZ {
 		IGDockspace(const glm::vec2& pos, const glm::vec2& size);
 		~IGDockspace();
 
+		void UpdateWindows();
 		void SetRootSize(const glm::vec2& size);
 		void SubmitToRenderer(IGRenderData* renderData);
 		void SetVisibility(bool visibility) { m_Visible = visibility; }
+
 
 		bool InsertWindow(IGWindow* window, const glm::vec2& mousePos);
 		bool RemoveWindow(IGWindow* window);

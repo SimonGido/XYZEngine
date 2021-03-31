@@ -43,6 +43,12 @@ namespace XYZ {
 		m_Size(other.m_Size),
 		m_Hierarchy(other.m_Hierarchy)
 	{
+		deallocateAll();
+		if (m_Data)
+		{
+			delete[]m_Data;
+			m_Data = nullptr;
+		}
 		m_Data = other.m_Data;
 		m_Handles = std::move(other.m_Handles);
 		m_Elements = std::move(other.m_Elements);
@@ -58,6 +64,36 @@ namespace XYZ {
 	}
 
 	IGPool::~IGPool()
+	{
+		deallocateAll();
+		if (m_Data)
+			delete[]m_Data;
+	}
+
+	void IGPool::Rebuild(const std::vector<IGHierarchyElement>& hierarchy, size_t** handles)
+	{
+		deallocateAll();
+		if (m_Data)
+			delete[]m_Data;
+		m_Size = 0;
+		m_Capacity = 0;
+		m_Handles.clear();
+		m_Elements.clear();
+		m_RootElements.clear();
+		m_Hierarchy.Clear();
+
+		*handles = new size_t[getSize(hierarchy)];
+		size_t counter = 0;
+		resolveHandles(hierarchy, handles, counter);
+
+		m_Data = new uint8_t[m_Capacity];
+		allocateMemory(hierarchy, nullptr);
+
+		counter = 0;
+		insertToHierarchy(-1, hierarchy, counter, 0);
+	}
+
+	void IGPool::deallocateAll()
 	{
 		size_t offset = 0;
 		for (auto it : m_Elements)
@@ -103,6 +139,10 @@ namespace XYZ {
 			case XYZ::IGElementType::Int:
 				destroy<IGInt>(offset);
 				offset += sizeof(IGInt);
+				break;
+			case XYZ::IGElementType::String:
+				destroy<IGString>(offset);
+				offset += sizeof(IGString);
 				break;
 			case XYZ::IGElementType::Tree:
 				destroy<IGTree>(offset);
@@ -164,6 +204,9 @@ namespace XYZ {
 			case XYZ::IGElementType::Int:
 				m_Capacity += sizeof(IGInt);
 				break;
+			case XYZ::IGElementType::String:
+				m_Capacity += sizeof(IGString);
+				break;
 			case XYZ::IGElementType::Tree:
 				m_Capacity += sizeof(IGTree);
 				break;
@@ -211,7 +254,7 @@ namespace XYZ {
 			}
 			case XYZ::IGElementType::Separator:
 			{
-				auto [element, handle] = Allocate<IGSeparator>(glm::vec2(0.0f), glm::vec2(400.0f,10.0f));
+				auto [element, handle] = Allocate<IGSeparator>(glm::vec2(0.0f), glm::vec2(400.0f, 0.0f));
 				element->Parent = parent;
 				allocateMemory(it.Children, element);
 				break;
@@ -254,6 +297,13 @@ namespace XYZ {
 			case XYZ::IGElementType::Int:
 			{
 				auto [element, handle] = Allocate<IGInt>(glm::vec2(0.0f), glm::vec2(50.0f, 35.0f), glm::vec4(1.0f));
+				element->Parent = parent;
+				allocateMemory(it.Children, element);
+				break;
+			}
+			case XYZ::IGElementType::String:
+			{
+				auto [element, handle] = Allocate<IGString>(glm::vec2(0.0f), glm::vec2(50.0f, 35.0f), glm::vec4(1.0f));
 				element->Parent = parent;
 				allocateMemory(it.Children, element);
 				break;

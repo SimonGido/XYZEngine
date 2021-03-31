@@ -14,8 +14,12 @@ namespace XYZ {
 		void OnUpdate();
 
 	private:
+		void invalidateUI();
+
+	private:
 		void updateTransformComponentUI();
 		void updateSpriteRendererUI();
+		void updateScriptComponentUI();
 
 		size_t transformComponentUI(IGHierarchyElement& parent);
 		size_t spriteRendererUI(IGHierarchyElement& parent);
@@ -26,6 +30,7 @@ namespace XYZ {
 
 		void prepareTransformComponentUI();
 		void prepareSpriteRendererUI();
+		void prepareScriptComponentUI();
 
 		void setupTransformComponentUI();
 		void setupSpriteRendererUI();
@@ -51,5 +56,7 @@ namespace XYZ {
 		size_t m_HandleCount;
 		size_t m_PoolHandle;
 		size_t m_HandleStart[NumComponents];
+
+		std::vector<IGHierarchyElement> m_Layout;
 	};
 }

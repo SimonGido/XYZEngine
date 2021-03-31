@@ -25,10 +25,8 @@ namespace XYZ {
 
 		static std::pair<size_t, size_t> AllocateUI(const std::initializer_list<IGHierarchyElement>& hierarchy, size_t** handles);
 		static std::pair<size_t, size_t> AllocateUI(const std::vector<IGHierarchyElement>& hierarchy, size_t** handles);
+		static size_t ReallocateUI(size_t handle, const std::vector<IGHierarchyElement>& hierarchy, size_t** handles);
 
-
-		template <typename T, typename ...Args>
-		static IGReturnType UI(size_t handle, Args&& ...args);
 
 		template <typename T>
 		static T& GetUI(size_t poolHandle,size_t handle)

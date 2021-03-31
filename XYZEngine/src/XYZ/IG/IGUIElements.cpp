@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "IGUIElements.h"
 #include "IGAllocator.h"
+#include "IGDockspace.h"
 
 #include "XYZ/Core/KeyCodes.h"
 #include "XYZ/Core/Input.h"
@@ -91,6 +92,15 @@ namespace XYZ {
 		:
 		IGElement(position, size, color, IGElementType::Window)
 	{
+	}
+
+	IGWindow::~IGWindow()
+	{
+		if (Node)
+		{
+			auto it = std::find(Node->Data.Windows.begin(), Node->Data.Windows.end(), this);
+			Node->Data.Windows.erase(it);
+		}
 	}
 
 	bool IGWindow::OnLeftClick(const glm::vec2& mousePosition, bool& handled)
@@ -544,6 +554,102 @@ namespace XYZ {
 		return Value;
 	}
 
+	IGString::IGString(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
+		:
+		IGElement(position, size, color, IGElementType::Float)
+	{
+		SetValue("");
+	}
+
+	bool IGString::OnLeftClick(const glm::vec2& mousePosition, bool& handled)
+	{
+		bool old = Listen;
+		Listen = false;
+		Color = IGRenderData::Colors[IGRenderData::DefaultColor];
+		if (!handled && Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
+		{
+			Listen = !old;
+			handled = true;
+			ReturnType = IGReturnType::Clicked;
+			if (Listen)
+				Color = IGRenderData::Colors[IGRenderData::HooverColor];
+			return true;
+		}
+		return false;
+	}
+
+	bool IGString::OnMouseMove(const glm::vec2& mousePosition, bool& handled)
+	{
+		if (!Listen)
+			Color = IGRenderData::Colors[IGRenderData::DefaultColor];
+		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
+		{
+			ReturnType = IGReturnType::Hoovered;
+			Color = IGRenderData::Colors[IGRenderData::HooverColor];
+			return true;
+		}
+		return false;
+	}
+
+	bool IGString::OnKeyType(char character, bool& handled)
+	{
+		if (Listen && !handled)
+		{
+			handled = true;
+			if (character >= toascii('0') && character <= toascii('9')
+				|| (character == toascii('-') && ModifiedIndex == 0))
+			{
+				Buffer[ModifiedIndex++] = character;
+				ReturnType = IGReturnType::Modified;
+				return true;
+			}
+		}
+		return false;
+	}
+
+	bool IGString::OnKeyPress(int32_t mode, int32_t key, bool& handled)
+	{
+		if (Listen && !handled)
+		{
+			if (key == ToUnderlying(KeyCode::KEY_BACKSPACE))
+			{
+				if (ModifiedIndex > 0)
+					ModifiedIndex--;
+				Buffer[ModifiedIndex] = '\0';
+				handled = true;
+				return true;
+			}
+		}
+		return false;
+	}
+
+	glm::vec2 IGString::GenerateQuads(IGMesh& mesh, IGRenderData& renderData, uint32_t scissorIndex)
+	{
+		float textWidth = Size.x - Style.Layout.LeftPadding - Style.Layout.RightPadding;
+		size_t numChar = Helper::FindNumCharacters(Buffer, textWidth, renderData.Font);
+		Buffer[numChar] = '\0';
+		ModifiedIndex = numChar;
+
+		IGMeshFactoryData data = {renderData.SubTextures[IGRenderData::Slider], this, &mesh, &renderData, scissorIndex };
+		return IGMeshFactory::GenerateUI<IGInt>(Label.c_str(), Color, data);
+	}
+
+	void IGString::SetValue(const std::string& val)
+	{
+		if (!Listen)
+		{
+			memcpy(Buffer, val.c_str(), val.size());
+			ModifiedIndex = 0;
+			while (Buffer[ModifiedIndex] != '\0')
+				ModifiedIndex++;
+		}
+	}
+
+	std::string IGString::GetValue() const
+	{
+		return Buffer;
+	}
+
 	IGTree::IGTree(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
 		:
 		IGElement(position, size, color, IGElementType::Tree),
@@ -712,6 +818,7 @@ namespace XYZ {
 		if (AdjustToParent && Parent)
 		{
 			Size.x = Parent->Size.x - Parent->Style.Layout.LeftPadding - Parent->Style.Layout.RightPadding;
+			Size.y = 0.0f;
 		}
 		return Size;
 	}

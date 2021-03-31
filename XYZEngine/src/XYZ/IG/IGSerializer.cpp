@@ -239,6 +239,7 @@ namespace XYZ {
 					IGWindow* window		= static_cast<IGWindow*>(pool.GetHierarchy().GetData(hierarchyIndex));
 					window->Flags		    |= IGWindow::Docked;
 					node->Data.Windows.push_back(window);
+					window->Node = node;
 				}
 				auto parent = it["Parent"];
 				auto firstChild = it["FirstChild"];

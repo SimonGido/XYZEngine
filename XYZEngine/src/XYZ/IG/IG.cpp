@@ -153,25 +153,20 @@ namespace XYZ {
 		return result;
 	}
 
+	size_t IG::ReallocateUI(size_t handle, const std::vector<IGHierarchyElement>& hierarchy, size_t** handles)
+	{
+		s_Context->Allocator.GetPools()[handle].Rebuild(hierarchy, handles);
+		s_Context->RenderData.Rebuild = true;
+		s_Context->RenderData.RebuildMesh(s_Context->Allocator);
+		s_Context->Dockspace.UpdateWindows();
+		return s_Context->Allocator.GetPools()[handle].Size();
+	}
+
 	IGContext& IG::GetContext()
 	{
 		return *s_Context;
 	}
 
-
-	template <>
-	IGReturnType IG::UI<IGWindow>(size_t handle)
-	{
-		IGWindow* window = s_Context->Allocator.Get<IGWindow>(s_PoolHandle, handle);
-		return window->getAndRestartReturnType();
-	}
-
-	template <>
-	IGReturnType IG::UI<IGCheckbox>(size_t handle)
-	{	
-		IGCheckbox* checkbox = s_Context->Allocator.Get<IGCheckbox>(s_PoolHandle, handle);
-		return checkbox->getAndRestartReturnType();
-	}
 
 	IGContext& IG::getContext()
 	{

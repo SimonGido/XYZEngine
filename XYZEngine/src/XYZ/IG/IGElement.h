@@ -40,6 +40,7 @@ namespace XYZ {
 		Text,
 		Float,
 		Int,
+		String,
 		Tree,
 		Scrollbox,
 		Image,

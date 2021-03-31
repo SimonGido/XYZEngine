@@ -150,13 +150,17 @@ namespace XYZ {
 				if (Collide(middlePos, quadSize, mousePos))
 				{
 					node->Data.Windows.push_back(window);
+					window->Node = node;
 					return true;
 				}
 				else if (Collide(leftPos, quadSize, mousePos))
 				{
 					SplitNode(node, IGSplitType::Vertical, pool);
 					node->FirstChild->Data.Windows.push_back(window);
+					window->Node = node->FirstChild;
 					node->SecondChild->Data.Windows = std::move(node->Data.Windows);
+					for (auto window : node->SecondChild->Data.Windows)
+						window->Node = node->SecondChild;
 					node->Data.Windows.clear();
 					return true;
 				}
@@ -165,6 +169,8 @@ namespace XYZ {
 					SplitNode(node, IGSplitType::Vertical, pool);
 					node->SecondChild->Data.Windows.push_back(window);
 					node->FirstChild->Data.Windows = std::move(node->Data.Windows);
+					for (auto window : node->FirstChild->Data.Windows)
+						window->Node = node->FirstChild;
 					node->Data.Windows.clear();
 					return true;
 				}
@@ -172,7 +178,10 @@ namespace XYZ {
 				{
 					SplitNode(node, IGSplitType::Horizontal, pool);
 					node->FirstChild->Data.Windows.push_back(window);
+					window->Node = node->FirstChild;
 					node->SecondChild->Data.Windows = std::move(node->Data.Windows);
+					for (auto window : node->SecondChild->Data.Windows)
+						window->Node = node->SecondChild;
 					node->Data.Windows.clear();
 					return true;
 				}
@@ -180,7 +189,10 @@ namespace XYZ {
 				{
 					SplitNode(node, IGSplitType::Horizontal, pool);
 					node->SecondChild->Data.Windows.push_back(window);
+					window->Node = node->SecondChild;
 					node->FirstChild->Data.Windows = std::move(node->Data.Windows);
+					for (auto window : node->SecondChild->Data.Windows)
+						window->Node = node->SecondChild;
 					node->Data.Windows.clear();
 					return true;
 				}
@@ -214,6 +226,9 @@ namespace XYZ {
 			else
 			{
 				parent->Data.Windows = std::move(parent->FirstChild->Data.Windows);
+				for (auto window : parent->Data.Windows)
+					window->Node = parent;
+				
 				parent->Type = parent->FirstChild->Type;
 				IGDockNode* tmp = parent->FirstChild;
 				if (parent->FirstChild->Type != IGSplitType::None)
@@ -299,6 +314,7 @@ namespace XYZ {
 			auto it = std::find(node->Data.Windows.begin(), node->Data.Windows.end(), window);
 			if (it != node->Data.Windows.end())
 			{
+				window->Node = nullptr;
 				node->Data.Windows.erase(it);
 				if (node->Data.Windows.empty() && node->Parent)
 				{
@@ -378,6 +394,11 @@ namespace XYZ {
 		Helper::DestroyRecursive(m_Root, m_Pool);
 	}
 
+
+	void IGDockspace::UpdateWindows()
+	{
+		Helper::UpdateWindowsRecursive(m_Root);
+	}
 
 	void IGDockspace::SetRootSize(const glm::vec2& size)
 	{

@@ -20,6 +20,8 @@ namespace XYZ {
 		IGPool(IGPool&& other) noexcept;
 		~IGPool();
 
+		void Rebuild(const std::vector<IGHierarchyElement>& hierarchy, size_t** handles);
+
 		template <typename T, typename ...Args>
 		std::pair<T*, size_t> Allocate(Args&& ...args)
 		{
@@ -65,11 +67,18 @@ namespace XYZ {
 		const std::vector<int32_t>& GetRootElementIDs() const { return m_RootElements; }
 
 	private:
+		void deallocateAll();
+
 		template <typename T>
 		void destroy(size_t offset)
 		{
 			T* tmp = reinterpret_cast<T*>((void*)&m_Data[offset]);
 			tmp->~T();
+		}
+		template <typename T>
+		void copy(size_t offset, const T& other)
+		{
+			new((void*)&m_Data[offset])T(other);
 		}
 
 		void resolveHandles(const std::vector<IGHierarchyElement>& hierarchy, size_t**handles, size_t & counter);
@@ -80,7 +89,7 @@ namespace XYZ {
 	private:
 		size_t   m_Size;
 		size_t   m_Capacity;
-		uint8_t* m_Data;
+		uint8_t* m_Data = nullptr;
 		Tree	 m_Hierarchy;
 		std::vector<size_t> m_Handles;
 		std::vector<IGElementType> m_Elements;

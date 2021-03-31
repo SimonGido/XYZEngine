@@ -9,12 +9,12 @@ namespace XYZ {
 	{
 	public:
 		IGWindow(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
+		~IGWindow();
 
 		virtual bool OnLeftClick(const glm::vec2& mousePosition, bool& handled) override;
 		virtual bool OnLeftRelease(const glm::vec2& mousePosition, bool& handled) override;
 		virtual bool OnMouseMove(const glm::vec2& mousePosition, bool& handled) override;
 		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData , uint32_t scissorIndex = 0) override;
-		//virtual glm::vec2 BuildMesh(IGMesh& mesh, IGRenderData& renderData, IGPool& pool, const glm::vec2& rootBorder) override;
 
 		void HandleActions(const glm::vec2& mousePosition, const glm::vec2& mouseDiff, bool& handled);
 
@@ -32,7 +32,7 @@ namespace XYZ {
 	
 
 		uint8_t Flags = 0;
-
+		IGDockNode* Node = nullptr;
 		std::function<void(const glm::vec2&)> ResizeCallback;
 
 		static constexpr float PanelHeight = 25.0f;
@@ -148,6 +148,29 @@ namespace XYZ {
 		char Buffer[BufferSize];
 	};
 
+	class IGString : public IGElement
+	{
+	public:
+		IGString(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
+
+		virtual bool OnLeftClick(const glm::vec2& mousePosition, bool& handled) override;
+		virtual bool OnMouseMove(const glm::vec2& mousePosition, bool& handled) override;
+		virtual bool OnKeyType(char character, bool& handled) override;
+		virtual bool OnKeyPress(int32_t mode, int32_t key, bool& handled) override;
+		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData, uint32_t scissorIndex = 0) override;
+
+		void SetValue(const std::string& val);
+		std::string GetValue() const;
+		const char* GetBuffer() const { return Buffer; }
+
+
+		bool  Listen = false;
+		static constexpr size_t BufferSize = 60;
+
+	private:
+		uint32_t ModifiedIndex;
+		char Buffer[BufferSize];
+	};
 
 	struct IGTreeItem
 	{
