@@ -912,9 +912,10 @@ namespace XYZ {
 
 	glm::vec2 IGPack::BuildMesh(IGMesh& mesh, IGRenderData& renderData, IGPool& pool, const IGElement& root, uint32_t scissorIndex)
 	{
-		glm::vec2 offset(0.0f);
 		if (Active && ActiveChildren)
 		{
+			glm::vec2 offset(0.0f);
+			glm::vec2 oldOffset = offset;
 			float highestInRow = 0.0f;
 			for (size_t i = 0; i < Pool.Size(); ++i)
 			{			
@@ -925,8 +926,10 @@ namespace XYZ {
 					offset += Pool[i]->BuildMesh(mesh, renderData, Pool, root, scissorIndex);
 				}
 			}
+			glm::vec2 result = offset - oldOffset;
+			result.y += highestInRow;
 		}
-		return offset;
+		return glm::vec2(0.0f);
 	}
 
 	size_t IGPack::Size() const
