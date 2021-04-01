@@ -22,7 +22,6 @@ namespace XYZ {
 
 		InGui::Init();
 		InGuiDockspace::Init(glm::vec2(0.0f), { w, h });
-
 		IG::Init();
 	}
 

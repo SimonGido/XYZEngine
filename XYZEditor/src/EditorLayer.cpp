@@ -60,7 +60,7 @@ namespace XYZ {
 		m_TestEntity = m_Scene->GetEntityByName("TestEntity");
 		
 		m_TestEntity.EmplaceComponent<ScriptComponent>("Example.Script");
-
+		_CrtDumpMemoryLeaks();
 
 		ScriptEngine::Init("Assets/Scripts/XYZScriptExample.dll");
 		ScriptEngine::SetSceneContext(m_Scene);
@@ -77,7 +77,7 @@ namespace XYZ {
 
 
 		Renderer::WaitAndRender();
-		
+
 		Ref<RenderTexture> renderTexture = RenderTexture::Create(SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer);
 		Ref<SubTexture> renderSubTexture = Ref<SubTexture>::Create(renderTexture, glm::vec4(0.0f, 1.0f, 1.0f, 0.0f));
 		Ref<Texture> robotTexture = Texture2D::Create({}, "Assets/Textures/Robot.png");
@@ -93,7 +93,7 @@ namespace XYZ {
 
 	void EditorLayer::OnDetach()
 	{
-		AssetSerializer::SerializeAsset(m_Scene);
+		AssetSerializer::SerializeAsset(m_Scene);		
 		Renderer::Shutdown();
 		AssetManager::Shutdown();
 	}

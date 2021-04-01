@@ -21,7 +21,7 @@ Root Elements:
     Size: [1470.33325, 1377]
     Color: [1, 1, 1, 1]
     FrameColor: [1, 1, 1, 1]
-    Flags: 130
+    Flags: 128
     ID: 0
     Pool: 2
 Dockspace:
