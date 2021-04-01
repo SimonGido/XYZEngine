@@ -304,7 +304,7 @@ namespace XYZ {
 			auto location = glGetUniformLocation(m_RendererID, name.c_str());
 			XYZ_ASSERT(location != -1, "Uniform ", name, " does not exist");
 			uploadFloat(location, value);
-			});
+		});
 	}
 
 	void OpenGLShader::SetFloat2(const std::string& name, const glm::vec2& value)

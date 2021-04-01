@@ -45,7 +45,7 @@ namespace XYZ {
 		{
 			prepareTransformComponentUI();
 			prepareSpriteRendererUI();
-			//prepareScriptComponentUI();
+			prepareScriptComponentUI();
 		}
 	}
 	void InspectorPanel::OnUpdate()
