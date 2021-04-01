@@ -14,13 +14,13 @@ namespace XYZ {
 	class IGPool
 	{
 	public:
-		IGPool(const std::initializer_list<IGHierarchyElement>& hierarchy, size_t ** handles);
-		IGPool(const std::vector<IGHierarchyElement>& hierarchy, size_t ** handles);
+		IGPool(const std::initializer_list<IGHierarchyElement>& hierarchy);
+		IGPool(const std::vector<IGHierarchyElement>& hierarchy);
 		IGPool(const IGPool& other) = delete;
 		IGPool(IGPool&& other) noexcept;
 		~IGPool();
 
-		void Rebuild(const std::vector<IGHierarchyElement>& hierarchy, size_t** handles);
+		void Rebuild(const std::vector<IGHierarchyElement>& hierarchy);
 
 		template <typename T, typename ...Args>
 		std::pair<T*, size_t> Allocate(Args&& ...args)
@@ -35,13 +35,13 @@ namespace XYZ {
 		template <typename T>
 		T* Get(size_t index)
 		{
-			return reinterpret_cast<T*>((void*)&m_Data[index]);
+			return reinterpret_cast<T*>((void*)&m_Data[m_Handles[index]]);
 		}
 
 		template <typename T>
 		const T* Get(size_t index) const
 		{
-			return reinterpret_cast<T*>((void*)&m_Data[index]);
+			return reinterpret_cast<T*>((void*)&m_Data[m_Handles[index]]);
 		}
 
 		IGElement* operator[](size_t index)
@@ -85,7 +85,7 @@ namespace XYZ {
 			new((void*)&m_Data[offset])T(other);
 		}
 
-		void resolveHandles(const std::vector<IGHierarchyElement>& hierarchy, size_t**handles, size_t & counter);
+		void resolveHandles(const std::vector<IGHierarchyElement>& hierarchy, size_t & counter);
 		void allocateMemory(const std::vector<IGHierarchyElement>& hierarchy, IGElement* parent);
 		void insertToHierarchy(int32_t parentID, const std::vector<IGHierarchyElement>& hierarchy, size_t& counter, uint32_t iteration);
 		size_t getSize(const std::vector<IGHierarchyElement>& hierarchy);
@@ -104,8 +104,8 @@ namespace XYZ {
 	class IGAllocator
 	{
 	public:
-		std::pair<size_t, size_t> CreatePool(const std::initializer_list<IGHierarchyElement>& hierarchy, size_t ** handles);
-		std::pair<size_t, size_t> CreatePool(const std::vector<IGHierarchyElement>& hierarchy, size_t ** handles);
+		std::pair<size_t, size_t> CreatePool(const std::initializer_list<IGHierarchyElement>& hierarchy);
+		std::pair<size_t, size_t> CreatePool(const std::vector<IGHierarchyElement>& hierarchy);
 
 		template <typename T, typename ...Args>
 		std::pair<T*, size_t> Allocate(size_t poolHandle, Args&&... args)

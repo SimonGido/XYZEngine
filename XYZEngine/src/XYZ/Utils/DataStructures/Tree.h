@@ -23,6 +23,7 @@ namespace XYZ {
 	public:
 		Tree() = default;
 		Tree(const Tree& other);
+		Tree(Tree&& other) noexcept;
 
 		int32_t     Insert(void* data);
 		int32_t     Insert(void* data, int32_t parent);

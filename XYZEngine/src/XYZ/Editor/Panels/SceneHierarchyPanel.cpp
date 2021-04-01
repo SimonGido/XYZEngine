@@ -18,8 +18,7 @@ namespace XYZ {
             }
         };
                
-        size_t* handles = nullptr;
-        auto [id, count] =  IG::AllocateUI(types, &handles);
+        auto [id, count] =  IG::AllocateUI(types);
         m_ID = id;
         m_HandleCount = count;
         IGTree& tree = IG::GetUI<IGTree>(m_ID, 1);

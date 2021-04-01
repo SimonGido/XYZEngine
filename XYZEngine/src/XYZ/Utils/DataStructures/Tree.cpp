@@ -12,6 +12,13 @@ namespace XYZ {
         m_NodeCount(other.m_NodeCount)
     {
     }
+    Tree::Tree(Tree&& other) noexcept
+    {
+        m_Root = other.m_Root;
+        other.m_Root = TreeNode::sc_Invalid;
+        m_Nodes = std::move(other.m_Nodes);
+        m_NodeCount = other.m_NodeCount;
+    }
     int32_t Tree::Insert(void* data)
     {
         TreeNode newNode;

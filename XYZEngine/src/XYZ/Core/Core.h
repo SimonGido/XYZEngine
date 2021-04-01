@@ -2,6 +2,8 @@
 #include <memory>
 #include <functional>
 
+
+
 #define _AMD64_
 
 #ifdef _WIN32
@@ -15,8 +17,9 @@
 #endif
 
 #ifdef XYZ_DEBUG
-#define XYZ_ENABLE_ASSERTS
+	#define XYZ_ENABLE_ASSERTS
 #endif
+
 
 #define BIND_EVENT_FN(x) std::bind(&Application::x, this, std::placeholders::_1)
 
@@ -30,9 +33,13 @@
 #endif
 
 
+
 #ifndef __FUNCTION__
 #define __FUNCTION__ "Function:"
 #endif
+
+
+
 
 
 namespace XYZ {

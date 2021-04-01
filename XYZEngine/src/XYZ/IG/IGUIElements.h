@@ -270,12 +270,12 @@ namespace XYZ {
 	class IGPack : public IGElement
 	{
 	public:
-		IGPack(const std::vector<IGHierarchyElement>& elements, size_t** handles);
+		IGPack(const std::vector<IGHierarchyElement>& elements);
 		
 		virtual glm::vec2 BuildMesh(IGMesh& mesh, IGRenderData& renderData, IGPool& pool, const IGElement& root, uint32_t scissorIndex = 0) override;
 
 
-		void Rebuild(const std::vector<IGHierarchyElement>& elements, size_t** handles);
+		void Rebuild(const std::vector<IGHierarchyElement>& elements);
 		
 		size_t Size() const;
 		Tree& GetHierarchy();

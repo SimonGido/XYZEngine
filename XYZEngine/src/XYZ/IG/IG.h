@@ -23,9 +23,9 @@ namespace XYZ {
 		static void EndUI();
 		static void RebuildUI();
 
-		static std::pair<size_t, size_t> AllocateUI(const std::initializer_list<IGHierarchyElement>& hierarchy, size_t** handles);
-		static std::pair<size_t, size_t> AllocateUI(const std::vector<IGHierarchyElement>& hierarchy, size_t** handles);
-		static size_t ReallocateUI(size_t handle, const std::vector<IGHierarchyElement>& hierarchy, size_t** handles);
+		static std::pair<size_t, size_t> AllocateUI(const std::initializer_list<IGHierarchyElement>& hierarchy);
+		static std::pair<size_t, size_t> AllocateUI(const std::vector<IGHierarchyElement>& hierarchy);
+		static size_t ReallocateUI(size_t handle, const std::vector<IGHierarchyElement>& hierarchy);
 
 
 		template <typename T>

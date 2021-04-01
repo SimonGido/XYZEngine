@@ -7,12 +7,12 @@
 namespace XYZ {
 	
 	namespace Helper {
-		static bool ResolvePosition(size_t oldQuadCount, const glm::vec2& genSize, IGElement* element, const IGElement& root, IGMesh& mesh, glm::vec2& offset, float& highestInRow)
+		static bool ResolvePosition(size_t oldQuadCount, const glm::vec2& genSize, IGElement* element, const IGElement& root, const IGLayout& layout, IGMesh& mesh, glm::vec2& offset, float& highestInRow)
 		{
 			if (root.Style.AutoPosition)
 			{
-				float xBorder = root.Size.x - root.Style.Layout.RightPadding;
-				float yBorder = root.Size.y - root.Style.Layout.BottomPadding - root.Style.Layout.TopPadding - IGWindow::PanelHeight;
+				float xBorder = root.Size.x - layout.RightPadding;
+				float yBorder = root.Size.y - layout.BottomPadding - layout.TopPadding - IGWindow::PanelHeight;
 
 				if (offset.x + genSize.x > xBorder)
 				{
@@ -23,14 +23,14 @@ namespace XYZ {
 					}
 					else if (!root.Style.NewRow)
 					{
-						offset.x += genSize.x + root.Style.Layout.SpacingX;
+						offset.x += genSize.x + layout.SpacingX;
 						mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
 						return false;
 					}
 					else
 					{
-						offset.x =  root.Style.Layout.LeftPadding;
-						offset.y += root.Style.Layout.SpacingY + highestInRow;
+						offset.x =  layout.LeftPadding;
+						offset.y += layout.SpacingY + highestInRow;
 						highestInRow = 0.0f;
 						// It is generally bigger than xBorder erase it
 						if (offset.x + genSize.x > xBorder)
@@ -47,7 +47,7 @@ namespace XYZ {
 				}		
 			}
 			element->Position = offset;
-			offset.x += genSize.x + root.Style.Layout.SpacingX;
+			offset.x += genSize.x + layout.SpacingX;
 
 			return true;
 		}
@@ -95,7 +95,7 @@ namespace XYZ {
 					}
 					size_t oldQuadCount = mesh.Quads.size();
 					glm::vec2 genSize = childElement->GenerateQuads(mesh, renderData);
-					if (Helper::ResolvePosition(oldQuadCount, genSize, childElement, root, mesh, offset, highestInRow))
+					if (Helper::ResolvePosition(oldQuadCount, genSize, childElement, root, Style.Layout, mesh, offset, highestInRow))
 					{
 						childElement->ListenToInput = Helper::IsInside(root.GetAbsolutePosition(), root.Size, childElement->GetAbsolutePosition(), childElement->Size);
 						highestInRow = std::max(genSize.y, highestInRow);

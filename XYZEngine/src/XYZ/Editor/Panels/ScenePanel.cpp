@@ -52,7 +52,7 @@ namespace XYZ {
 			}
 		};
 		size_t* handles = nullptr;
-		auto [poolHandle, handleCount] = IG::AllocateUI(types, &handles);
+		auto [poolHandle, handleCount] = IG::AllocateUI(types);
 		m_PoolHandle = poolHandle;
 		m_HandleCount = handleCount;
 		m_Window = &IG::GetUI<IGImageWindow>(m_PoolHandle, 0);	

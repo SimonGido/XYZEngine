@@ -45,7 +45,7 @@ namespace XYZ {
 		{
 			prepareTransformComponentUI();
 			prepareSpriteRendererUI();
-			prepareScriptComponentUI();
+			//prepareScriptComponentUI();
 		}
 	}
 	void InspectorPanel::OnUpdate()
@@ -83,7 +83,7 @@ namespace XYZ {
 			IGWindow* window = &IG::GetUI<IGWindow>(m_PoolHandle, 0);
 			IGDockNode* node = window->Node;
 
-			m_HandleCount = IG::ReallocateUI(m_PoolHandle, m_Layout, &handles);
+			m_HandleCount = IG::ReallocateUI(m_PoolHandle, m_Layout);
 			
 			window = &IG::GetUI<IGWindow>(m_PoolHandle, 0);
 			if (node) node->Data.Windows.push_back(window);	
@@ -91,7 +91,7 @@ namespace XYZ {
 		}
 		else
 		{
-			auto [poolHandle, handleCount] = IG::AllocateUI(m_Layout, &handles);
+			auto [poolHandle, handleCount] = IG::AllocateUI(m_Layout);
 			m_PoolHandle = poolHandle;
 			m_HandleCount = handleCount;
 		}
@@ -681,7 +681,6 @@ namespace XYZ {
 		if (scriptComponentGroup.Active = m_Context.HasComponent<XYZ::ScriptComponent>())
 		{
 			IGPack& pack = IG::GetUI<IGPack>(m_PoolHandle, index + 1);
-			size_t* handles = nullptr;
 			std::vector<IGHierarchyElement> hierarchyElements;
 
 			XYZ::ScriptComponent& scriptComponent = m_Context.GetComponent<XYZ::ScriptComponent>();
@@ -722,7 +721,7 @@ namespace XYZ {
 					hierarchyElements.push_back({ IGElementType::String,{} });
 				}
 			}
-			pack.Rebuild(hierarchyElements, &handles);
+			pack.Rebuild(hierarchyElements);
 		}
 	}
 	void InspectorPanel::setupTransformComponentUI()

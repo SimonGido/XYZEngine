@@ -34,7 +34,7 @@ namespace XYZ {
 			}
 			return counter;
 		}
-		static bool ResolvePosition(size_t oldQuadCount, const glm::vec2& genSize, IGElement* element, const IGElement& root, IGMesh& mesh, glm::vec2& offset, float& highestInRow)
+		static bool ResolvePosition(size_t oldQuadCount, const glm::vec2& genSize, IGElement* element, const IGElement& root, const IGLayout& layout, IGMesh& mesh, glm::vec2& offset, float& highestInRow)
 		{
 			if (root.Style.AutoPosition)
 			{
@@ -47,14 +47,14 @@ namespace XYZ {
 				{
 					if (!root.Style.NewRow)
 					{
-						offset.x += genSize.x + root.Style.Layout.SpacingX;
+						offset.x += genSize.x + layout.SpacingX;
 						mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
 						return false;
 					}
 					else
 					{
-						offset.x = root.Style.Layout.LeftPadding;
-						offset.y += root.Style.Layout.SpacingY + highestInRow;
+						offset.x =  layout.LeftPadding;
+						offset.y += layout.SpacingY + highestInRow;
 						highestInRow = 0.0f;
 						// It does not fit to the new row
 						if (offset.y + genSize.y > root.Size.y)
@@ -77,7 +77,7 @@ namespace XYZ {
 				}		
 			}
 			element->Position = offset;			
-			offset.x += genSize.x + root.Style.Layout.SpacingX;
+			offset.x += genSize.x + layout.SpacingX;
 			return true;
 		}
 
@@ -643,11 +643,7 @@ namespace XYZ {
 
 	std::string IGString::GetValue() const
 	{
-		std::string test;
-		test.push_back(Buffer[0]);
-		test.push_back(Buffer[1]);
-		test.push_back(Buffer[2]);
-		return test;
+		return Buffer;
 	}
 
 	IGTree::IGTree(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
@@ -874,7 +870,7 @@ namespace XYZ {
 				{
 					size_t oldQuadCount = renderData.ScrollableMesh.Quads.size();
 					glm::vec2 genSize = childElement->GenerateQuads(renderData.ScrollableMesh, renderData, scissorIndex);
-					if (Helper::ResolvePosition(oldQuadCount, genSize, childElement, root, renderData.ScrollableMesh, offset, highestInRow))
+					if (Helper::ResolvePosition(oldQuadCount, genSize, childElement, root, Style.Layout, renderData.ScrollableMesh, offset, highestInRow))
 					{
 						childElement->ListenToInput = Helper::IsInside(GetAbsolutePosition(), Size, childElement->GetAbsolutePosition(), childElement->Size);
 						highestInRow = std::max(genSize.y, highestInRow);
@@ -898,16 +894,22 @@ namespace XYZ {
 	{
 	}
 
-	IGPack::IGPack(const std::vector<IGHierarchyElement>& elements, size_t** handles)
+	IGPack::IGPack(const std::vector<IGHierarchyElement>& elements)
 		:
 		IGElement(glm::vec2(0.0f), glm::vec2(0.0f), glm::vec4(0.0f), IGElementType::Pack),
-		Pool(elements, handles)
+		Pool(elements)
 	{
+		Style.Layout.LeftPadding = 0.0f;
+		Style.Layout.RightPadding = 0.0f;
+		Style.Layout.TopPadding = 0.0f;
+		Style.Layout.BottomPadding = 0.0f;
 	}
 
-	void IGPack::Rebuild(const std::vector<IGHierarchyElement>& elements, size_t** handles)
+	void IGPack::Rebuild(const std::vector<IGHierarchyElement>& elements)
 	{
-		Pool.Rebuild(elements, handles);
+		Pool.Rebuild(elements);
+		for (size_t i = 0; i < Pool.Size(); ++i)
+			Pool[i]->Parent = this;
 	}
 
 	glm::vec2 IGPack::BuildMesh(IGMesh& mesh, IGRenderData& renderData, IGPool& pool, const IGElement& root, uint32_t scissorIndex)
@@ -921,9 +923,11 @@ namespace XYZ {
 			{			
 				size_t oldQuadCount = mesh.Quads.size();
 				glm::vec2 genSize = Pool[i]->GenerateQuads(mesh, renderData, scissorIndex);
-				if (Helper::ResolvePosition(oldQuadCount, genSize, Pool[i], root, mesh, offset, highestInRow))
+				if (Helper::ResolvePosition(oldQuadCount, genSize, Pool[i], root, Style.Layout, mesh, offset, highestInRow))
 				{
+					Pool[i]->ListenToInput = Helper::IsInside(root.GetAbsolutePosition(), root.Size, Pool[i]->GetAbsolutePosition(),Pool[i]->Size);
 					offset += Pool[i]->BuildMesh(mesh, renderData, Pool, root, scissorIndex);
+					highestInRow = std::max(genSize.y, highestInRow);
 				}
 			}
 			glm::vec2 result = offset - oldOffset;

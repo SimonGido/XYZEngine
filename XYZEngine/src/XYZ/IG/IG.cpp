@@ -138,25 +138,25 @@ namespace XYZ {
 	}
 
 
-	std::pair<size_t, size_t> IG::AllocateUI(const std::initializer_list<IGHierarchyElement>& hierarchy, size_t** handles)
+	std::pair<size_t, size_t> IG::AllocateUI(const std::initializer_list<IGHierarchyElement>& hierarchy)
 	{
-		auto result = s_Context->Allocator.CreatePool(hierarchy, handles);
+		auto result = s_Context->Allocator.CreatePool(hierarchy);
 		s_Context->RenderData.Rebuild = true;
 		s_Context->RenderData.RebuildMesh(s_Context->Allocator);
 		return result;
 	}
 
-	std::pair<size_t, size_t> IG::AllocateUI(const std::vector<IGHierarchyElement>& hierarchy, size_t** handles)
+	std::pair<size_t, size_t> IG::AllocateUI(const std::vector<IGHierarchyElement>& hierarchy)
 	{
-		auto result = s_Context->Allocator.CreatePool(hierarchy, handles);
+		auto result = s_Context->Allocator.CreatePool(hierarchy);
 		s_Context->RenderData.Rebuild = true;
 		s_Context->RenderData.RebuildMesh(s_Context->Allocator);
 		return result;
 	}
 
-	size_t IG::ReallocateUI(size_t handle, const std::vector<IGHierarchyElement>& hierarchy, size_t** handles)
+	size_t IG::ReallocateUI(size_t handle, const std::vector<IGHierarchyElement>& hierarchy)
 	{
-		s_Context->Allocator.GetPools()[handle].Rebuild(hierarchy, handles);
+		s_Context->Allocator.GetPools()[handle].Rebuild(hierarchy);
 		s_Context->RenderData.Rebuild = true;
 		s_Context->RenderData.RebuildMesh(s_Context->Allocator);
 		return s_Context->Allocator.GetPools()[handle].Size();

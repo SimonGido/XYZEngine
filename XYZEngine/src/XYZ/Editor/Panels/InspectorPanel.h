@@ -9,6 +9,7 @@ namespace XYZ {
 	{
 	public:
 		InspectorPanel();
+
 		void SetContext(SceneEntity context);
 
 		void OnUpdate();
