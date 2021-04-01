@@ -60,7 +60,6 @@ namespace XYZ {
 		m_TestEntity = m_Scene->GetEntityByName("TestEntity");
 		
 		m_TestEntity.EmplaceComponent<ScriptComponent>("Example.Script");
-		_CrtDumpMemoryLeaks();
 
 		ScriptEngine::Init("Assets/Scripts/XYZScriptExample.dll");
 		ScriptEngine::SetSceneContext(m_Scene);

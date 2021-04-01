@@ -916,6 +916,8 @@ namespace XYZ {
 	{
 		if (Active && ActiveChildren)
 		{
+			if (Parent) Size = Parent->Size;
+
 			glm::vec2 offset(0.0f);
 			glm::vec2 oldOffset = offset;
 			float highestInRow = 0.0f;
@@ -936,7 +938,7 @@ namespace XYZ {
 		return glm::vec2(0.0f);
 	}
 
-	size_t IGPack::Size() const
+	size_t IGPack::PoolSize() const
 	{
 		return Pool.Size();
 	}

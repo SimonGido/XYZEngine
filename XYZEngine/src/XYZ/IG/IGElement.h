@@ -78,7 +78,7 @@ namespace XYZ {
 		glm::vec2	Size;
 		glm::vec4	Color;	
 		glm::vec4	FrameColor;
-		std::string Label = "Test";
+		std::string Label;
 
 		IGStyle				Style;
 		IGElement*			Parent = nullptr;

@@ -274,12 +274,12 @@ namespace XYZ {
 		
 		virtual glm::vec2 BuildMesh(IGMesh& mesh, IGRenderData& renderData, IGPool& pool, const IGElement& root, uint32_t scissorIndex = 0) override;
 
-
 		void Rebuild(const std::vector<IGHierarchyElement>& elements);
+
 		
-		size_t Size() const;
 		Tree& GetHierarchy();
 		const Tree& GetHierarchy() const;
+		size_t PoolSize() const;
 
 		IGElement& operator[](size_t index);
 		const IGElement& operator[](size_t index) const;

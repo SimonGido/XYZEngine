@@ -297,7 +297,6 @@ namespace XYZ {
 	}
 
 
-
 	void OpenGLShader::SetFloat(const std::string& name, float value)
 	{
 		Renderer::Submit([=]() {

@@ -718,10 +718,23 @@ namespace XYZ {
 				}
 				else if (field.GetType() == PublicFieldType::String)
 				{
-					hierarchyElements.push_back({ IGElementType::String,{} });
+					hierarchyElements.push_back({ IGElementType::String,{} });					
 				}
+				hierarchyElements.push_back({ IGElementType::Separator, {} });
 			}
 			pack.Rebuild(hierarchyElements);
+			uint32_t counter = 0;
+			for (auto& field : scriptComponent.Fields)
+			{
+				if (field.GetType() == PublicFieldType::Vec2)
+					counter++;
+				else if (field.GetType() == PublicFieldType::Vec3)
+					counter += 2;
+				else if (field.GetType() == PublicFieldType::Vec4)
+					counter += 3;
+				pack[counter].Label = field.GetName();
+				counter += 2;
+			}
 		}
 	}
 	void InspectorPanel::setupTransformComponentUI()
