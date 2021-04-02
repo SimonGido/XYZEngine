@@ -44,22 +44,22 @@ namespace XYZ {
 		template <typename ...Args>
 		T& EmplaceComponent(Entity entity, Args&& ... args)
 		{
-			if (m_EntityDataMap.size() <= (uint32_t)entity)
-				m_EntityDataMap.resize((uint32_t)entity + 1);
+			if (m_EntityDataMap.size() <= (size_t)entity)
+				m_EntityDataMap.resize((size_t)entity + 1);
 			
 			m_DataEntityMap.push_back(entity);
-			m_EntityDataMap[(uint32_t)entity] = m_Data.size();
+			m_EntityDataMap[(size_t)entity] = m_Data.size();
 			m_Data.emplace_back(std::forward<Args>(args)...);
 			return m_Data.back();
 		}
 
 		T& AddComponent(Entity entity, const T& component)
 		{
-			if (m_EntityDataMap.size() <= (uint32_t)entity)
-				m_EntityDataMap.resize((uint32_t)entity + 1);
+			if (m_EntityDataMap.size() <= (size_t)entity)
+				m_EntityDataMap.resize((size_t)entity + 1);
 
 			m_DataEntityMap.push_back(entity);
-			m_EntityDataMap[(uint32_t)entity] = m_Data.size();
+			m_EntityDataMap[(size_t)entity] = m_Data.size();
 			m_Data.push_back(component);
 			return m_Data.back();
 		}

@@ -15,39 +15,3 @@ Entities:
       IsVisible: true
     Relationship:
       {}
-  - Entity: 71957d26-af99-44a8-aab2-41302cd79b78
-    SceneTagComponent:
-      Name: Hopica
-    TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    Relationship:
-      {}
-  - Entity: 04aa7dc2-8937-4a8c-ba42-c34efe20a641
-    SceneTagComponent:
-      Name: Hopica
-    TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    Relationship:
-      {}
-  - Entity: 796be614-d399-4f20-871a-99312da6cd65
-    SceneTagComponent:
-      Name: Hopica
-    TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    Relationship:
-      {}
-  - Entity: 7c5c1659-0636-4018-a3c8-e87afa35143a
-    SceneTagComponent:
-      Name: Hopica
-    TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    Relationship:
-      {}

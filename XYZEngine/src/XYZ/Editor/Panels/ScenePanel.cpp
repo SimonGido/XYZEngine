@@ -62,17 +62,22 @@ namespace XYZ {
 			m_ViewportSize = size;
 			SceneRenderer::SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 			m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
-			m_Context->SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			if (m_Context.Raw())
+				m_Context->SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		};
+		m_Window->ResizeCallback(m_Window->Size);
 
 		m_PlayButton = &IG::GetUI<IGImage>(m_PoolHandle, 1);
 		m_PauseButton = &IG::GetUI<IGImage>(m_PoolHandle, 2);
+		m_PlayButton->Size = glm::vec2(25.0f);
+		m_PauseButton->Size = glm::vec2(25.0f);
 		m_PlayButton->SubTexture = IG::GetContext().RenderData.SubTextures[IGRenderData::RightArrow];
 		m_PauseButton->SubTexture = IG::GetContext().RenderData.SubTextures[IGRenderData::Pause];
 	}
 	void ScenePanel::SetContext(Ref<Scene> context)
 	{
 		m_Context = context;
+		m_Context->SetViewportSize((uint32_t)m_Window->Size.x, (uint32_t)m_Window->Size.y);
 	}
 	void ScenePanel::SetSubTexture(Ref<SubTexture> subTexture)
 	{
@@ -91,7 +96,7 @@ namespace XYZ {
 					m_SelectedEntity = m_Context->GetSelectedEntity();
 					m_ModifyFlags = 0;
 				}
-				if (m_ModifyFlags && (bool)m_Context->GetSelectedEntity())
+				if (m_ModifyFlags && m_Context->GetSelectedEntity().IsValid())
 				{
 					auto [mx, my] = Input::GetMousePosition();
 					float distX = mx - m_OldMousePosition.x;
@@ -180,7 +185,7 @@ namespace XYZ {
 	}
 	bool ScenePanel::onKeyPress(KeyPressedEvent& event)
 	{
-		if ((bool)m_Context->GetSelectedEntity())
+		if (m_Context->GetSelectedEntity().IsValid())
 		{
 			if (m_ModifyFlags)
 			{

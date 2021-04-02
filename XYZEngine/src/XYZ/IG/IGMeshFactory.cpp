@@ -347,6 +347,12 @@ namespace XYZ {
 	}
 
 	template<>
+	glm::vec2 IGMeshFactory::GenerateUI<IGImage>(const char* label, const glm::vec4& labelColor, const IGMeshFactoryData& data)
+	{
+		return Helper::GenerateLabeledQuad(label, labelColor, data);
+	}
+
+	template<>
 	glm::vec2 IGMeshFactory::GenerateUI<IGSlider>(const char* label, const glm::vec4& labelColor, const IGMeshFactoryData& data)
 	{
 		IGSlider* slider = static_cast<IGSlider*>(data.Element);

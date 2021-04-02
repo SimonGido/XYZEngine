@@ -262,17 +262,17 @@ namespace XYZ {
 				IGDockNode* node = nodeData.Node;
 				if (nodeData.Parent != -1)
 				{
-					IGDockNode* parent = nodeMap[nodeData.Parent].Node;
+					IGDockNode* parent = nodeMap[(uint32_t)nodeData.Parent].Node;
 					node->Parent = parent;
 				}
 				if (nodeData.FirstChild != -1)
 				{
-					IGDockNode* firstChild = nodeMap[nodeData.FirstChild].Node;
+					IGDockNode* firstChild = nodeMap[(uint32_t)nodeData.FirstChild].Node;
 					node->FirstChild = firstChild;
 				}
 				if (nodeData.SecondChild != -1)
 				{
-					IGDockNode* secondChild = nodeMap[nodeData.SecondChild].Node;
+					IGDockNode* secondChild = nodeMap[(uint32_t)nodeData.SecondChild].Node;
 					node->SecondChild = secondChild;
 				}
 			}

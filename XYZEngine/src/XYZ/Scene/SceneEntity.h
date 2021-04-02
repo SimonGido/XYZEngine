@@ -65,7 +65,11 @@ namespace XYZ {
 			m_Scene->DestroyEntity(*this);
 		}
 
-		size_t NumberOfTypes() const { return m_Scene->m_ECS.GetNumberOfRegisteredComponentTypes(); }
+		bool IsValid() const
+		{
+			return m_Scene && m_ID && m_Scene->m_ECS.IsValid(m_ID);
+		}
+
 
 		SceneEntity& operator =(const SceneEntity& other)
 		{
@@ -79,11 +83,7 @@ namespace XYZ {
 			return (m_ID == other.m_ID && m_Scene == other.m_Scene);
 		}
 
-		operator bool() const
-		{
-			return m_Scene && m_ID;
-		}
-
+		
 		operator uint32_t () const { return m_ID; }
 
 	private:

@@ -50,7 +50,7 @@ namespace XYZ {
 	}
 	void InspectorPanel::OnUpdate()
 	{
-		if (m_Context)
+		if (m_Context.IsValid())
 		{
 			updateTransformComponentUI();
 			updateSpriteRendererUI();
@@ -742,7 +742,8 @@ namespace XYZ {
 		Ref<Font> font = IG::GetContext().RenderData.Font;
 		size_t index = m_HandleStart[TransformComponent];
 		IG::GetUI<IGGroup>(m_PoolHandle, index).Label = "Transform Component";
-		
+		IG::GetUI<IGGroup>(m_PoolHandle, index).Active = false;
+
 		IG::GetUI<IGFloat>(m_PoolHandle, index + 1).Label = "X";
 		IG::GetUI<IGFloat>(m_PoolHandle, index + 2).Label = "Y";
 		IG::GetUI<IGFloat>(m_PoolHandle, index + 3).Label = "Z";
@@ -767,6 +768,8 @@ namespace XYZ {
 		size_t index = m_HandleStart[SpriteRenderer];
 
 		IG::GetUI<IGGroup>(m_PoolHandle, index).Label = "Sprite Renderer";
+		IG::GetUI<IGGroup>(m_PoolHandle, index).Active = false;
+
 		IG::GetUI<IGFloat>(m_PoolHandle, index + 1).Label = "R";
 		IG::GetUI<IGFloat>(m_PoolHandle, index + 2).Label = "G";
 		IG::GetUI<IGFloat>(m_PoolHandle, index + 3).Label = "B";
@@ -791,5 +794,6 @@ namespace XYZ {
 		uint32_t index = m_HandleStart[ScriptComponent];
 
 		IG::GetUI<IGGroup>(m_PoolHandle, index).Label = "Script Component";
+		IG::GetUI<IGGroup>(m_PoolHandle, index).Active = false;
 	}
 }

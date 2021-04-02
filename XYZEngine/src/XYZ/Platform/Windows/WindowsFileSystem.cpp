@@ -1,9 +1,10 @@
 #include "stdafx.h"
 #include "XYZ/Utils/FileSystem.h"
 
-
-#include <Windows.h>
 #include <filesystem>
+
+#ifdef XYZ_PLATFORM_WINDOWS
+#include <Windows.h>
 
 namespace XYZ {
 
@@ -84,5 +85,6 @@ namespace XYZ {
 		s_IgnoreNextChange = false;
 		return result == 0;
 	}
-
 }
+
+#endif

@@ -43,6 +43,7 @@ namespace XYZ {
 		Int,
 		String,
 		Tree,
+		Dropdown,
 		Scrollbox,
 		Image,
 		None

@@ -428,7 +428,7 @@ namespace XYZ {
 	glm::vec2 IGFloat::GenerateQuads(IGMesh& mesh, IGRenderData& renderData, uint32_t scissorIndex)
 	{
 		float textWidth = Size.x - Style.Layout.LeftPadding - Style.Layout.RightPadding;
-		size_t numChar = Helper::FindNumCharacters(Buffer, textWidth, renderData.Font);
+		uint32_t numChar = Helper::FindNumCharacters(Buffer, textWidth, renderData.Font);
 		Buffer[numChar] = '\0';
 		ModifiedIndex = numChar;
 
@@ -894,6 +894,39 @@ namespace XYZ {
 	{
 	}
 
+	glm::vec2 IGImage::GenerateQuads(IGMesh& mesh, IGRenderData& renderData, uint32_t scissorIndex)
+	{
+		if (SubTexture.Raw())
+		{
+			IGMeshFactoryData data = { SubTexture, this, &mesh, &renderData, scissorIndex };
+			return IGMeshFactory::GenerateUI<IGImage>(Label.c_str(), glm::vec4(1.0f), data);
+		}
+		return glm::vec2(0.0f);
+	}
+
+	bool IGImage::OnLeftClick(const glm::vec2& mousePosition, bool& handled)
+	{
+		if (!handled && Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
+		{
+			handled = true;
+			ReturnType = IGReturnType::Clicked;
+			return true;
+		}
+		return false;
+	}
+
+	bool IGImage::OnMouseMove(const glm::vec2& mousePosition, bool& handled)
+	{
+		Color = IGRenderData::Colors[IGRenderData::DefaultColor];
+		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
+		{
+			ReturnType = IGReturnType::Hoovered;
+			Color = IGRenderData::Colors[IGRenderData::HooverColor];
+			return true;
+		}
+		return false;
+	}
+
 	IGPack::IGPack(const std::vector<IGHierarchyElement>& elements)
 		:
 		IGElement(glm::vec2(0.0f), glm::vec2(0.0f), glm::vec4(0.0f), IGElementType::Pack),
@@ -916,18 +949,24 @@ namespace XYZ {
 	{
 		if (Active && ActiveChildren)
 		{
-			if (Parent) Size = Parent->Size;
-
 			glm::vec2 offset(0.0f);
 			glm::vec2 oldOffset = offset;
 			float highestInRow = 0.0f;
+			bool outOfRange = false;
 			for (size_t i = 0; i < Pool.Size(); ++i)
 			{			
+				if (outOfRange)
+				{
+					Pool[i]->ListenToInput = false;
+					continue;
+				}
+				
 				size_t oldQuadCount = mesh.Quads.size();
 				glm::vec2 genSize = Pool[i]->GenerateQuads(mesh, renderData, scissorIndex);
-				if (Helper::ResolvePosition(oldQuadCount, genSize, Pool[i], root, Style.Layout, mesh, offset, highestInRow))
+				outOfRange = !Helper::ResolvePosition(oldQuadCount, genSize, Pool[i], root, Style.Layout, mesh, offset, highestInRow);
+				Pool[i]->ListenToInput = Helper::IsInside(root.GetAbsolutePosition(), root.Size, Pool[i]->GetAbsolutePosition(),Pool[i]->Size);
+				if (!outOfRange)
 				{
-					Pool[i]->ListenToInput = Helper::IsInside(root.GetAbsolutePosition(), root.Size, Pool[i]->GetAbsolutePosition(),Pool[i]->Size);
 					offset += Pool[i]->BuildMesh(mesh, renderData, Pool, root, scissorIndex);
 					highestInRow = std::max(genSize.y, highestInRow);
 				}
@@ -935,6 +974,15 @@ namespace XYZ {
 			glm::vec2 result = offset - oldOffset;
 			result.y += highestInRow;
 		}
+		return glm::vec2(0.0f);
+	}
+
+
+	glm::vec2 IGPack::GenerateQuads(IGMesh& mesh, IGRenderData& renderData, uint32_t scissorIndex)
+	{
+		if (Parent)
+			Size = Parent->Size;
+
 		return glm::vec2(0.0f);
 	}
 
@@ -958,8 +1006,55 @@ namespace XYZ {
 		return *Pool[index];
 	}
 
+	bool IGPack::OnLeftClick(const glm::vec2& mousePosition, bool& handled)
+	{
+		if (Active && ActiveChildren)
+		{
+			Pool.GetHierarchy().Traverse([&](void* parent, void* child) -> bool {
+
+				IGElement* childElement = static_cast<IGElement*>(child);
+				childElement->OnLeftClick(mousePosition, handled);	
+				return false;
+			});
+		}
+		return false;
+	}
+
+	bool IGPack::OnMouseMove(const glm::vec2& mousePosition, bool& handled)
+	{
+		if (Active && ActiveChildren)
+		{
+			Pool.GetHierarchy().Traverse([&](void* parent, void* child) -> bool {
+				
+				IGElement* childElement = static_cast<IGElement*>(child);
+				childElement->OnMouseMove(mousePosition, handled);	
+				return false;
+			});
+		}
+		return false;
+	}
+
+	bool IGPack::OnLeftRelease(const glm::vec2& mousePosition, bool& handled)
+	{
+		if (Active && ActiveChildren)
+		{
+			Pool.GetHierarchy().Traverse([&](void* parent, void* child) -> bool {
+
+				IGElement* childElement = static_cast<IGElement*>(child);
+				childElement->OnLeftRelease(mousePosition, handled);			
+				return false;	
+			});
+		}
+		return false;
+	}
+
 	const IGElement& IGPack::operator[] (size_t index) const
 	{
 		return *Pool[index];
+	}
+	IGDropdown::IGDropdown(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
+		:
+		IGElement(position, size, color, IGElementType::Dropdown)
+	{
 	}
 }

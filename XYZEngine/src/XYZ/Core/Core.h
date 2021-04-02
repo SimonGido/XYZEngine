@@ -10,6 +10,8 @@
 
 #ifdef _WIN64
 	#define XYZ_PLATFORM_WINDOWS
+#elif __linux__
+	#define XYZ_PLATFORM_LINUX
 #else
 	#error "x86 Builds are not supported!"
 #endif

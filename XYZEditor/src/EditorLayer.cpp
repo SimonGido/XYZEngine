@@ -49,9 +49,6 @@ namespace XYZ {
 
 	void EditorLayer::OnAttach()
 	{
-		AssetManager::Init();
-		Renderer::Init();
-
 		auto shader = AssetManager::GetAsset<Shader>(AssetManager::GetAssetHandle("Assets/Shaders/DefaultShader.glsl.shader"));
 		auto texture = AssetManager::GetAsset<Texture2D>(AssetManager::GetAssetHandle("Assets/Textures/player_sprite.png.tex"));
 		auto subTexture = AssetManager::GetAsset<SubTexture>(AssetManager::GetAssetHandle("Assets/SubTextures/player.subtex"));
@@ -93,8 +90,6 @@ namespace XYZ {
 	void EditorLayer::OnDetach()
 	{
 		AssetSerializer::SerializeAsset(m_Scene);		
-		Renderer::Shutdown();
-		AssetManager::Shutdown();
 	}
 	void EditorLayer::OnUpdate(Timestep ts)
 	{
@@ -125,19 +120,6 @@ namespace XYZ {
 
 	void EditorLayer::OnEvent(Event& event)
 	{			
-		if (event.GetEventType() == EventType::MouseButtonPressed)
-		{
-			MouseButtonPressEvent& e = (MouseButtonPressEvent&)event;
-			if (e.IsButtonPressed(MouseCode::MOUSE_BUTTON_LEFT))
-			{
-				m_Scene->CreateEntity("Hopica", GUID());
-			}
-			else
-			{
-				m_Scene->DestroyEntity(m_Scene->GetEntity(1));
-			}
-		}
-		
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&EditorLayer::onMouseButtonPress, this));
 		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorLayer::onMouseButtonRelease, this));	

@@ -95,16 +95,12 @@ namespace XYZ {
 					}
 					size_t oldQuadCount = mesh.Quads.size();
 					glm::vec2 genSize = childElement->GenerateQuads(mesh, renderData);
-					if (Helper::ResolvePosition(oldQuadCount, genSize, childElement, root, Style.Layout, mesh, offset, highestInRow))
+					outOfRange = !Helper::ResolvePosition(oldQuadCount, genSize, childElement, root, Style.Layout, mesh, offset, highestInRow);
+					childElement->ListenToInput = Helper::IsInside(root.GetAbsolutePosition(), root.Size, childElement->GetAbsolutePosition(), childElement->Size);
+					if (!outOfRange)
 					{
-						childElement->ListenToInput = Helper::IsInside(root.GetAbsolutePosition(), root.Size, childElement->GetAbsolutePosition(), childElement->Size);
 						highestInRow = std::max(genSize.y, highestInRow);
 						offset += childElement->BuildMesh(mesh, renderData, pool, root);
-					}
-					else
-					{
-						outOfRange = true;
-						childElement->ListenToInput = false;
 					}
 				}
 				return false;

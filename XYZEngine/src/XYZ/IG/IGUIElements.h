@@ -217,6 +217,12 @@ namespace XYZ {
 		friend class IGMeshFactory;
 	};
 
+	class IGDropdown : public IGElement
+	{
+	public:
+		IGDropdown(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
+	};
+
 	class IGGroup : public IGElement
 	{
 	public:
@@ -264,6 +270,11 @@ namespace XYZ {
 	public:
 		IGImage(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
 
+		virtual bool OnLeftClick(const glm::vec2& mousePosition, bool& handled) override;
+		virtual bool OnMouseMove(const glm::vec2& mousePosition, bool& handled) override;
+		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData, uint32_t scissorIndex = 0) override;
+
+
 		Ref<SubTexture> SubTexture;
 	};
 
@@ -272,7 +283,13 @@ namespace XYZ {
 	public:
 		IGPack(const std::vector<IGHierarchyElement>& elements);
 		
+		virtual bool OnLeftClick(const glm::vec2& mousePosition, bool& handled) override;
+		virtual bool OnLeftRelease(const glm::vec2& mousePosition, bool& handled) override;
+		virtual bool OnMouseMove(const glm::vec2& mousePosition, bool& handled) override;
+
 		virtual glm::vec2 BuildMesh(IGMesh& mesh, IGRenderData& renderData, IGPool& pool, const IGElement& root, uint32_t scissorIndex = 0) override;
+		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData, uint32_t scissorIndex = 0) override;
+
 
 		void Rebuild(const std::vector<IGHierarchyElement>& elements);
 
