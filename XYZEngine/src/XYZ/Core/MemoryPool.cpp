@@ -27,13 +27,21 @@ namespace XYZ {
 		}
 	}
 
+	void MemoryPool::cleanUp()
+	{
+		sortFreeChunks();
+		mergeFreeChunks();
+		reverseMergeFreeChunks();
+		m_Dirty = false;
+	}
+
 	void MemoryPool::sortFreeChunks()
 	{
 		std::sort(m_FreeChunks.begin(), m_FreeChunks.end(), [](const Chunk& a, const Chunk& b) {
 			if (a.BlockIndex == b.BlockIndex)
 				return a.ChunkIndex < b.ChunkIndex;
 			return a.BlockIndex < b.BlockIndex;
-		});
+			});
 	}
 
 	void MemoryPool::mergeFreeChunks()
@@ -77,7 +85,6 @@ namespace XYZ {
 	}
 	MemoryPool::Block* MemoryPool::createBlock()
 	{
-		XYZ_ASSERT(m_Blocks.size() < sc_MaxNumberOfBlocks, "Maximum number of blocks is ", sc_MaxNumberOfBlocks);
 		m_Blocks.push_back(Block());
 		m_Blocks.back().Data = new uint8_t[m_BlockSize];
 		memset(m_Blocks.back().Data, 0, m_BlockSize);
@@ -108,14 +115,14 @@ namespace XYZ {
 		Block* last = &m_Blocks.back();
 		if ((size_t)last->NextAvailableIndex + spaceRequirement > m_BlockSize)
 			last = createBlock();
-		
+
 
 		uint32_t chunkIndex = last->NextAvailableIndex;
 		uint8_t blockIndex = (uint8_t)m_Blocks.size() - 1;
 		last->NextAvailableIndex += spaceRequirement;
 		size_t blockIndexInMemory = (size_t)size + (size_t)chunkIndex;
 		size_t chunkIndexInMemory = (size_t)size + (size_t)chunkIndex + sizeof(uint8_t);
-		
+
 		memcpy(&m_Blocks[blockIndex].Data[blockIndexInMemory], &blockIndex, sizeof(uint8_t));	// Store block index
 		memcpy(&m_Blocks[blockIndex].Data[chunkIndexInMemory], &chunkIndex, (size_t)m_SizeOfChunkIndex);	// Store chunk index
 

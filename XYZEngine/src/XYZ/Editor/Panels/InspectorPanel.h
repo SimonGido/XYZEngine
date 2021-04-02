@@ -57,6 +57,7 @@ namespace XYZ {
 		size_t m_PoolHandle;
 		size_t m_HandleStart[NumComponents];
 
+		IGWindow* m_Window;
 		std::vector<IGHierarchyElement> m_Layout;
 	};
 }

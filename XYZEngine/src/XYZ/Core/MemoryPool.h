@@ -26,6 +26,8 @@ namespace XYZ {
 		{
 			if (!m_Blocks.size())
 				createBlock();
+			if (m_Dirty)
+				cleanUp();
 			auto [blockIndex, chunkIndex] = findAvailableIndex((uint32_t)sizeof(T));
 			return new((void*)&m_Blocks[blockIndex].Data[chunkIndex])T(std::forward<Args>(args)...);
 		}
@@ -36,13 +38,12 @@ namespace XYZ {
 			val->~T();
 			uint8_t* tmp = (uint8_t*)val + sizeof(T);
 			uint8_t blockIndex = *tmp;
-			uint32_t chunkIndex = *(uint32_t*)(tmp + sizeof(uint8_t));
+			uint32_t chunkIndex = 0;
+			memcpy(&chunkIndex, tmp + sizeof(uint8_t), m_SizeOfChunkIndex);
 
-			Chunk chunk{ sizeof(T) + m_SizeOfChunkIndex + sizeof(uint8_t), chunkIndex, blockIndex };
+			Chunk chunk{ toChunkSize<T>(), chunkIndex, blockIndex };
 			m_FreeChunks.push_back(chunk);
-			sortFreeChunks();
-			mergeFreeChunks();
-			reverseMergeFreeChunks();
+			m_Dirty = true;
 		}
 
 		template <typename T>
@@ -61,6 +62,14 @@ namespace XYZ {
 		}
 
 	private:
+		template <typename T>
+		size_t toChunkSize()
+		{
+			return sizeof(T) + m_SizeOfChunkIndex + sizeof(uint8_t);
+		}
+
+		void cleanUp();
+
 		void sortFreeChunks();
 		void mergeFreeChunks();
 		void reverseMergeFreeChunks();
@@ -74,7 +83,8 @@ namespace XYZ {
 
 		std::vector<Block> m_Blocks;
 		std::vector<Chunk> m_FreeChunks;
-		
+
+		bool m_Dirty = false;
 		static constexpr size_t sc_MaxNumberOfBlocks = 255;
 	};
 }

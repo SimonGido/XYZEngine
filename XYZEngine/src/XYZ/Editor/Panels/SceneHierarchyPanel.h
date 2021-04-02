@@ -1,6 +1,7 @@
 #pragma once
 
 #include "XYZ/Scene/Scene.h"
+#include "XYZ/IG/IG.h"
 
 namespace XYZ {
 
@@ -24,8 +25,9 @@ namespace XYZ {
 
 	private:
 		Ref<Scene> m_Context;
+		IGWindow* m_Window;
 
 		size_t m_HandleCount;
-		size_t m_ID;
+		size_t m_PoolHandle;
 	};
 }

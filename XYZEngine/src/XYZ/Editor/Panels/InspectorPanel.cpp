@@ -96,6 +96,9 @@ namespace XYZ {
 			m_HandleCount = handleCount;
 		}
 
+		m_Window = &IG::GetUI<IGWindow>(m_PoolHandle, 0);
+		m_Window->Label = "Inspector Panel";
+
 		setupTransformComponentUI();
 		setupSpriteRendererUI();
 		setupPointLight2DUI();

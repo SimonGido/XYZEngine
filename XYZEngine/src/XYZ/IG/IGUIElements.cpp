@@ -1048,6 +1048,34 @@ namespace XYZ {
 		return false;
 	}
 
+	bool IGPack::OnKeyType(char character, bool& handled)
+	{
+		if (Active && ActiveChildren)
+		{
+			Pool.GetHierarchy().Traverse([&](void* parent, void* child) -> bool {
+
+				IGElement* childElement = static_cast<IGElement*>(child);
+				childElement->OnKeyType(character, handled);			
+				return false;	
+			});
+		}
+		return false;
+	}
+
+	bool IGPack::OnKeyPress(int32_t mode, int32_t key, bool& handled)
+	{
+		if (Active && ActiveChildren)
+		{
+			Pool.GetHierarchy().Traverse([&](void* parent, void* child) -> bool {
+
+				IGElement* childElement = static_cast<IGElement*>(child);
+				childElement->OnKeyPress(mode, key, handled);			
+				return false;	
+			});
+		}
+		return false;
+	}
+
 	const IGElement& IGPack::operator[] (size_t index) const
 	{
 		return *Pool[index];

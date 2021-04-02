@@ -286,6 +286,8 @@ namespace XYZ {
 		virtual bool OnLeftClick(const glm::vec2& mousePosition, bool& handled) override;
 		virtual bool OnLeftRelease(const glm::vec2& mousePosition, bool& handled) override;
 		virtual bool OnMouseMove(const glm::vec2& mousePosition, bool& handled) override;
+		virtual bool OnKeyType(char character, bool& handled) override;
+		virtual bool OnKeyPress(int32_t mode, int32_t key, bool& handled) override;
 
 		virtual glm::vec2 BuildMesh(IGMesh& mesh, IGRenderData& renderData, IGPool& pool, const IGElement& root, uint32_t scissorIndex = 0) override;
 		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData, uint32_t scissorIndex = 0) override;
