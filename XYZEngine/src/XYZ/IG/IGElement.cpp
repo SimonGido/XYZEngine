@@ -14,6 +14,7 @@ namespace XYZ {
 				float xBorder = root.Size.x - layout.RightPadding;
 				float yBorder = root.Size.y - layout.BottomPadding - layout.TopPadding - IGWindow::PanelHeight;
 
+	
 				if (offset.x + genSize.x > xBorder)
 				{
 					if (offset.y + genSize.y > yBorder)

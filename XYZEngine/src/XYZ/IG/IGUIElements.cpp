@@ -955,19 +955,21 @@ namespace XYZ {
 			bool outOfRange = false;
 			for (size_t i = 0; i < Pool.Size(); ++i)
 			{			
+				IGElement* element = Pool[i];
 				if (outOfRange)
 				{
-					Pool[i]->ListenToInput = false;
+					element->ListenToInput = false;
 					continue;
 				}
 				
 				size_t oldQuadCount = mesh.Quads.size();
-				glm::vec2 genSize = Pool[i]->GenerateQuads(mesh, renderData, scissorIndex);
+				glm::vec2 genSize = element->GenerateQuads(mesh, renderData, scissorIndex);
 				outOfRange = !Helper::ResolvePosition(oldQuadCount, genSize, Pool[i], root, Style.Layout, mesh, offset, highestInRow);
-				Pool[i]->ListenToInput = Helper::IsInside(root.GetAbsolutePosition(), root.Size, Pool[i]->GetAbsolutePosition(),Pool[i]->Size);
+				element->ListenToInput = Helper::IsInside(root.GetAbsolutePosition(), root.Size, element->GetAbsolutePosition(), element->Size);
+				
 				if (!outOfRange)
 				{
-					offset += Pool[i]->BuildMesh(mesh, renderData, Pool, root, scissorIndex);
+					offset += element->BuildMesh(mesh, renderData, Pool, root, scissorIndex);
 					highestInRow = std::max(genSize.y, highestInRow);
 				}
 			}
