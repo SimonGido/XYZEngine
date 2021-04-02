@@ -255,7 +255,7 @@ namespace XYZ {
 
 		virtual bool OnMouseScroll(const glm::vec2& mousePosition, float offset, bool& handled);
 		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData, uint32_t scissorIndex = 0) override;
-		virtual glm::vec2 BuildMesh(IGMesh& mesh, IGRenderData& renderData, IGPool& pool, const IGElement& root, uint32_t scissorIndex = 0) override;
+		virtual glm::vec2 BuildMesh(IGElement* root, IGRenderData& renderData, IGPool& pool, IGMesh& mesh, uint32_t scissorIndex = 0) override;
 
 
 		bool AdjustToParent = true;
@@ -289,7 +289,7 @@ namespace XYZ {
 		virtual bool OnKeyType(char character, bool& handled) override;
 		virtual bool OnKeyPress(int32_t mode, int32_t key, bool& handled) override;
 
-		virtual glm::vec2 BuildMesh(IGMesh& mesh, IGRenderData& renderData, IGPool& pool, const IGElement& root, uint32_t scissorIndex = 0) override;
+		virtual glm::vec2 BuildMesh(IGElement* root, IGRenderData& renderData, IGPool& pool, IGMesh& mesh, uint32_t scissorIndex = 0) override;
 		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData, uint32_t scissorIndex = 0) override;
 
 

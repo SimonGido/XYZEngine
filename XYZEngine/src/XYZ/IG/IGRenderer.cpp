@@ -77,7 +77,7 @@ namespace XYZ {
 			{
 				IGElement* parentElement = static_cast<IGElement*>(pool.GetHierarchy().GetData(id));
 				parentElement->GenerateQuads(Mesh, *this);
-				parentElement->BuildMesh(Mesh, *this, pool, *parentElement);
+				parentElement->BuildMesh(parentElement, *this, pool, Mesh);
 			}
 		}
 	}

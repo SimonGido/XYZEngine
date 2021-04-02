@@ -7,34 +7,34 @@
 namespace XYZ {
 	
 	namespace Helper {
-		static bool ResolvePosition(size_t oldQuadCount, const glm::vec2& genSize, IGElement* element, const IGElement& root, const IGLayout& layout, IGMesh& mesh, glm::vec2& offset, float& highestInRow)
-		{
-			if (root.Style.AutoPosition)
+		static bool ResolvePosition(
+			IGElement* element, 
+			const glm::vec2& border, const glm::vec2& genSize, const IGStyle& style, 
+			IGMesh& mesh, glm::vec2& offset, float& maxY, 
+			size_t oldQuadCount)
+		{		
+			if (style.AutoPosition)
 			{
-				float xBorder = root.Size.x - layout.RightPadding;
-				float yBorder = root.Size.y - layout.BottomPadding - layout.TopPadding - IGWindow::PanelHeight;
-
-	
-				if (offset.x + genSize.x > xBorder)
+				if (offset.x + genSize.x > border.x)
 				{
-					if (offset.y + genSize.y > yBorder)
+					if (offset.y + genSize.y > border.y)
 					{
 						mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
 						return false;
 					}
-					else if (!root.Style.NewRow)
+					else if (!style.NewRow)
 					{
-						offset.x += genSize.x + layout.SpacingX;
+						offset.x += genSize.x + style.Layout.SpacingX;
 						mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
 						return false;
 					}
 					else
 					{
-						offset.x =  layout.LeftPadding;
-						offset.y += layout.SpacingY + highestInRow;
-						highestInRow = 0.0f;
+						offset.x = style.Layout.LeftPadding;
+						offset.y += style.Layout.SpacingY + maxY;
+						maxY = 0.0f;
 						// It is generally bigger than xBorder erase it
-						if (offset.x + genSize.x > xBorder)
+						if (offset.x + genSize.x > border.x)
 						{
 							mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
 							return false;
@@ -45,13 +45,19 @@ namespace XYZ {
 							mesh.Quads[i].Position.y += offset.y - element->Position.y;
 						}
 					}
-				}		
+				}
+				element->Position = offset;
+				offset.x += genSize.x + style.Layout.SpacingX;
 			}
-			element->Position = offset;
-			offset.x += genSize.x + layout.SpacingX;
-
 			return true;
 		}
+		static glm::vec2 Border(IGElement* element)
+		{
+			float xBorder = element->Size.x - element->Style.Layout.RightPadding;
+			float yBorder = element->Size.y - element->Style.Layout.BottomPadding - element->Style.Layout.TopPadding;
+			return { xBorder, yBorder };
+		}
+		
 		static bool IsInside(const glm::vec2& parentPos, const glm::vec2& parentSize, const glm::vec2& pos, const glm::vec2& size)
 		{
 			return !(pos.x < parentPos.x || pos.x + size.x > parentPos.x + parentSize.x
@@ -70,42 +76,43 @@ namespace XYZ {
 	{
 	}
 
-	glm::vec2 IGElement::BuildMesh(IGMesh& mesh, IGRenderData& renderData, IGPool& pool, const IGElement& root, uint32_t scissorIndex)
+
+	glm::vec2 IGElement::BuildMesh(IGElement* root, IGRenderData& renderData, IGPool& pool, IGMesh& mesh, uint32_t scissorIndex)
 	{
 		if (Active && ActiveChildren)
 		{			
 			glm::vec2 offset = {
 				Style.Layout.LeftPadding,
-				Style.Layout.TopPadding + IGWindow::PanelHeight
+				Style.Layout.TopPadding
 			};
 
 			glm::vec2 oldOffset = offset;
 			float highestInRow = 0.0f;
 
-			bool outOfRange = false;
+			bool out = false;
 			pool.GetHierarchy().TraverseNodeChildren(ID, [&](void* parent, void* child) -> bool {
 
 				IGElement* childElement = static_cast<IGElement*>(child);
 				if (childElement->Active)
 				{
 					// Previous element was out of range and erased , turn off listening to input
-					if (outOfRange)
+					if (out)
 					{
 						childElement->ListenToInput = false;
 						return false;
 					}
 					size_t oldQuadCount = mesh.Quads.size();
 					glm::vec2 genSize = childElement->GenerateQuads(mesh, renderData);
-					outOfRange = !Helper::ResolvePosition(oldQuadCount, genSize, childElement, root, Style.Layout, mesh, offset, highestInRow);
-					childElement->ListenToInput = Helper::IsInside(root.GetAbsolutePosition(), root.Size, childElement->GetAbsolutePosition(), childElement->Size);
-					if (!outOfRange)
+					out = !Helper::ResolvePosition(childElement, Helper::Border(root), genSize, root->Style, mesh, offset, highestInRow, oldQuadCount);
+					childElement->ListenToInput = Helper::IsInside(root->GetAbsolutePosition(), root->Size, childElement->GetAbsolutePosition(), childElement->Size);
+					if (!out)
 					{
 						highestInRow = std::max(genSize.y, highestInRow);
-						offset += childElement->BuildMesh(mesh, renderData, pool, root);
+						offset += childElement->BuildMesh(root, renderData, pool, mesh, scissorIndex);
 					}
 				}
 				return false;
-			});
+				});
 
 
 			glm::vec2 result = offset - oldOffset;

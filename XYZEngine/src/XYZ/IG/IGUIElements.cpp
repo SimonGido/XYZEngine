@@ -34,36 +34,34 @@ namespace XYZ {
 			}
 			return counter;
 		}
-		static bool ResolvePosition(size_t oldQuadCount, const glm::vec2& genSize, IGElement* element, const IGElement& root, const IGLayout& layout, IGMesh& mesh, glm::vec2& offset, float& highestInRow)
-		{
-			if (root.Style.AutoPosition)
+		static bool ResolvePosition(
+			IGElement* element, 
+			const glm::vec2& border, const glm::vec2& genSize, const IGStyle& style, 
+			IGMesh& mesh, glm::vec2& offset, float& maxY, 
+			size_t oldQuadCount)
+		{		
+			if (style.AutoPosition)
 			{
-				if (offset.y + genSize.y > root.Size.y)
+				if (offset.x + genSize.x > border.x)
 				{
-					mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
-					return false;
-				}
-				if (offset.x + genSize.x > root.Size.x)
-				{
-					if (!root.Style.NewRow)
+					if (offset.y + genSize.y > border.y)
 					{
-						offset.x += genSize.x + layout.SpacingX;
+						mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
+						return false;
+					}
+					else if (!style.NewRow)
+					{
+						offset.x += genSize.x + style.Layout.SpacingX;
 						mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
 						return false;
 					}
 					else
 					{
-						offset.x =  layout.LeftPadding;
-						offset.y += layout.SpacingY + highestInRow;
-						highestInRow = 0.0f;
-						// It does not fit to the new row
-						if (offset.y + genSize.y > root.Size.y)
-						{
-							mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
-							return false;
-						}
+						offset.x = style.Layout.LeftPadding;
+						offset.y += style.Layout.SpacingY + maxY;
+						maxY = 0.0f;
 						// It is generally bigger than xBorder erase it
-						if (offset.x + genSize.x > root.Size.x)
+						if (offset.x + genSize.x > border.x)
 						{
 							mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
 							return false;
@@ -74,10 +72,10 @@ namespace XYZ {
 							mesh.Quads[i].Position.y += offset.y - element->Position.y;
 						}
 					}
-				}		
+				}
+				element->Position = offset;
+				offset.x += genSize.x + style.Layout.SpacingX;
 			}
-			element->Position = offset;			
-			offset.x += genSize.x + layout.SpacingX;
 			return true;
 		}
 
@@ -92,6 +90,7 @@ namespace XYZ {
 		:
 		IGElement(position, size, color, IGElementType::Window)
 	{
+		Style.Layout.TopPadding += IGWindow::PanelHeight;
 	}
 
 	IGWindow::~IGWindow()
@@ -771,6 +770,7 @@ namespace XYZ {
 		: IGElement(position, size, color, IGElementType::Group)
 	{
 		ActiveChildren = Open;
+		Style.Layout.TopPadding += IGGroup::PanelHeight;
 	}
 	bool IGGroup::OnLeftClick(const glm::vec2& mousePosition, bool& handled)
 	{
@@ -792,7 +792,7 @@ namespace XYZ {
 		if (AdjustToParent && Parent)
 		{
 			Size.x = Parent->Size.x - Parent->Style.Layout.LeftPadding - Parent->Style.Layout.RightPadding;
-			Size.y = IGWindow::PanelHeight;
+			Size.y = IGGroup::PanelHeight;
 		}
 		ActiveChildren = Open;
 		uint32_t subTextureIndex = IGRenderData::RightArrow;
@@ -853,7 +853,7 @@ namespace XYZ {
 		return IGMeshFactory::GenerateUI<IGScrollbox>(Label.c_str(), Color, data);
 	}
 
-	glm::vec2 IGScrollbox::BuildMesh(IGMesh& mesh, IGRenderData& renderData, IGPool& pool, const IGElement& root, uint32_t scissorIndex)
+	glm::vec2 IGScrollbox::BuildMesh(IGElement* root, IGRenderData& renderData, IGPool& pool, IGMesh& mesh, uint32_t scissorIndex)
 	{
 		if (Active && ActiveChildren)
 		{	
@@ -861,26 +861,30 @@ namespace XYZ {
 				Style.Layout.LeftPadding + Offset.x,
 				Style.Layout.TopPadding  + Offset.y
 			};
-			uint32_t scissorIndex = renderData.Scissors.size() - 1;
+			uint32_t newScissorIndex = renderData.Scissors.size() - 1;
 			float highestInRow = 0.0f;
+			bool out = false;
+
 			pool.GetHierarchy().TraverseNodeChildren(ID, [&](void* parent, void* child) -> bool {
 	
 				IGElement* childElement = static_cast<IGElement*>(child);
 				if (childElement->Active)
 				{
-					size_t oldQuadCount = renderData.ScrollableMesh.Quads.size();
-					glm::vec2 genSize = childElement->GenerateQuads(renderData.ScrollableMesh, renderData, scissorIndex);
-					if (Helper::ResolvePosition(oldQuadCount, genSize, childElement, root, Style.Layout, renderData.ScrollableMesh, offset, highestInRow))
-					{
-						childElement->ListenToInput = Helper::IsInside(GetAbsolutePosition(), Size, childElement->GetAbsolutePosition(), childElement->Size);
-						highestInRow = std::max(genSize.y, highestInRow);
-						// Scrollbox becomes new root for all its children
-						offset += childElement->BuildMesh(renderData.ScrollableMesh, renderData, pool, *this, scissorIndex);
-					}
-					else
+					if (out)
 					{
 						childElement->ListenToInput = false;
+						return false;
 					}
+					size_t oldQuadCount = renderData.ScrollableMesh.Quads.size();
+					glm::vec2 genSize = childElement->GenerateQuads(renderData.ScrollableMesh, renderData, newScissorIndex);
+					out = !Helper::ResolvePosition(childElement, root->Size, genSize, root->Style, mesh, offset, highestInRow, oldQuadCount);
+					childElement->ListenToInput = Helper::IsInside(GetAbsolutePosition(), Size, childElement->GetAbsolutePosition(), childElement->Size);
+					
+					if (!out)
+					{				
+						highestInRow = std::max(genSize.y, highestInRow);
+						offset += childElement->BuildMesh(this, renderData, pool, renderData.ScrollableMesh, newScissorIndex);
+					}			
 				}
 				return false;
 			});
@@ -945,18 +949,18 @@ namespace XYZ {
 			Pool[i]->Parent = this;
 	}
 
-	glm::vec2 IGPack::BuildMesh(IGMesh& mesh, IGRenderData& renderData, IGPool& pool, const IGElement& root, uint32_t scissorIndex)
+	glm::vec2 IGPack::BuildMesh(IGElement* root, IGRenderData& renderData, IGPool& pool, IGMesh& mesh, uint32_t scissorIndex)
 	{
 		if (Active && ActiveChildren)
 		{
 			glm::vec2 offset(0.0f);
 			glm::vec2 oldOffset = offset;
 			float highestInRow = 0.0f;
-			bool outOfRange = false;
+			bool out = false;
 			for (size_t i = 0; i < Pool.Size(); ++i)
 			{			
 				IGElement* element = Pool[i];
-				if (outOfRange)
+				if (out)
 				{
 					element->ListenToInput = false;
 					continue;
@@ -964,13 +968,13 @@ namespace XYZ {
 				
 				size_t oldQuadCount = mesh.Quads.size();
 				glm::vec2 genSize = element->GenerateQuads(mesh, renderData, scissorIndex);
-				outOfRange = !Helper::ResolvePosition(oldQuadCount, genSize, Pool[i], root, Style.Layout, mesh, offset, highestInRow);
-				element->ListenToInput = Helper::IsInside(root.GetAbsolutePosition(), root.Size, element->GetAbsolutePosition(), element->Size);
+				out = !Helper::ResolvePosition(element, root->Size, genSize, Style, mesh, offset, highestInRow, oldQuadCount);
+				element->ListenToInput = Helper::IsInside(root->GetAbsolutePosition(), root->Size, element->GetAbsolutePosition(), element->Size);
 				
-				if (!outOfRange)
+				if (!out)
 				{
-					offset += element->BuildMesh(mesh, renderData, Pool, root, scissorIndex);
 					highestInRow = std::max(genSize.y, highestInRow);
+					offset += element->BuildMesh(root, renderData, Pool, mesh, scissorIndex);
 				}
 			}
 			glm::vec2 result = offset - oldOffset;
