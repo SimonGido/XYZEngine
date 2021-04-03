@@ -7,7 +7,7 @@
 
 #include "XYZ/Event/Event.h"
 #include "XYZ/Event/InputEvent.h"
-#include "XYZ/InGui/InGui.h"
+#include "XYZ/IG/IG.h"
 #include "XYZ/Core/Timestep.h"
 #include "XYZ/Utils/DataStructures/Tree.h"
 #include "XYZ/Core/MemoryPool.h"
@@ -19,7 +19,7 @@ namespace XYZ {
 	class SkinningEditorPanel
 	{
 	public:
-		SkinningEditorPanel(uint32_t panelID);
+		SkinningEditorPanel();
 		void SetContext(Ref<SubTexture> context);
 
 		void OnUpdate();
@@ -125,9 +125,13 @@ namespace XYZ {
 			NumColors
 		};
 	private:
+		void setupUI();
+		
+	private:
 		bool onMouseButtonPress(MouseButtonPressEvent& event);
 		bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
 		bool onMouseScroll(MouseScrollEvent& event);
+
 
 		void inGuiBoneHierarchy();
 		void clear();
@@ -166,10 +170,14 @@ namespace XYZ {
 		std::pair<uint32_t, BoneVertex*> findVertex(const glm::vec2& pos);
 		PreviewBone* findBone(const glm::vec2& pos);
 		void findVerticesInRadius(const glm::vec2& pos, float radius, std::vector<BoneVertex*>& vertices);
-	private:
-		const uint32_t m_PanelID;
+	
+private:
 		const glm::vec4 m_Colors[Color::NumColors];
 		const float m_PointRadius;
+
+		size_t m_HandleCount;
+		size_t m_PoolHandle;
+		IGImageWindow* m_Window;
 
 		Ref<SubTexture> m_Context;
 		glm::vec2 m_ContextSize = glm::vec2(0.0f);
@@ -180,6 +188,7 @@ namespace XYZ {
 		Ref<VertexArray> m_VertexArray;
 		Ref<VertexBuffer> m_VertexBuffer;
 		Ref<Shader> m_Shader;
+		glm::mat4 m_ViewProjection;
 		glm::vec2 m_ViewportSize;
 		glm::vec2 m_MousePosition;
 

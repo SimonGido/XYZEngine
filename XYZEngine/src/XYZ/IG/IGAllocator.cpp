@@ -52,12 +52,12 @@ namespace XYZ {
 			delete[]m_Data;
 			m_Data = nullptr;
 		}
-		
+
 		m_Data = other.m_Data;
 		m_Handles = std::move(other.m_Handles);
 		m_Elements = std::move(other.m_Elements);
 		m_RootElements = std::move(other.m_RootElements);
-		
+
 		other.m_Data = nullptr;
 		other.m_Capacity = 0;
 		other.m_Size = 0;
@@ -361,13 +361,13 @@ namespace XYZ {
 			int32_t newParentID = -1;
 			if (parentID != -1)
 			{
-				newParentID = m_Hierarchy.Insert(Get<void>(counter), parentID);
+				newParentID = m_Hierarchy.Insert(Get<IGElement>(counter), parentID);
 				Get<IGElement>(counter)->ID = newParentID;
 				counter++;
 			}
 			else
 			{
-				newParentID = m_Hierarchy.Insert(Get<void>(counter));
+				newParentID = m_Hierarchy.Insert(Get<IGElement>(counter));
 				Get<IGElement>(counter)->ID = newParentID;
 				counter++;
 			}
@@ -375,6 +375,8 @@ namespace XYZ {
 				m_RootElements.push_back(newParentID);
 			insertToHierarchy(newParentID, it.Children, counter, iteration + 1);
 		}
+		if (firstIteration && m_Hierarchy.GetNodeCount())
+			m_Hierarchy.ReverseNode(0);
 		if (parentID != -1)
 			m_Hierarchy.ReverseNodeChildren(parentID);
 	}

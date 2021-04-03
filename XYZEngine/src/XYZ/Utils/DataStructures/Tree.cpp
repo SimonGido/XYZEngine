@@ -13,11 +13,13 @@ namespace XYZ {
     {
     }
     Tree::Tree(Tree&& other) noexcept
+        :
+        m_Root(other.m_Root),
+        m_NodeCount(other.m_NodeCount),
+        m_Nodes(std::move(other.m_Nodes))
     {
-        m_Root = other.m_Root;
         other.m_Root = TreeNode::sc_Invalid;
-        m_Nodes = std::move(other.m_Nodes);
-        m_NodeCount = other.m_NodeCount;
+
     }
     int32_t Tree::Insert(void* data)
     {
@@ -124,17 +126,37 @@ namespace XYZ {
     }
     void Tree::ReverseNodeChildren(int32_t node)
     {
+        int32_t lastValid = TreeNode::sc_Invalid;
+        int32_t tmp = TreeNode::sc_Invalid;
         int32_t current = m_Nodes[node].FirstChild;
-        int32_t next = TreeNode::sc_Invalid;
-        int32_t prev = TreeNode::sc_Invalid;
         while (current != TreeNode::sc_Invalid)
         {
-            next = m_Nodes[current].NextSibling;
-            m_Nodes[current].NextSibling = prev;
-            prev = current;
-            current = next;
+            tmp = m_Nodes[current].PreviousSibling;
+            m_Nodes[current].PreviousSibling = m_Nodes[current].NextSibling;
+            m_Nodes[current].NextSibling = tmp;
+            lastValid = current;
+            current = m_Nodes[current].PreviousSibling;            
         }
-        m_Nodes[node].FirstChild = prev;
+        m_Nodes[node].FirstChild = lastValid;
+    }
+    void Tree::ReverseNode(int32_t node)
+    {
+        int32_t lastValid = TreeNode::sc_Invalid;
+        int32_t current = node;
+        int32_t tmp = TreeNode::sc_Invalid;
+        while (current != TreeNode::sc_Invalid)
+        {
+            tmp = m_Nodes[current].PreviousSibling;
+            m_Nodes[current].PreviousSibling = m_Nodes[current].NextSibling;
+            m_Nodes[current].NextSibling = tmp;
+            lastValid = current;
+            current = m_Nodes[current].PreviousSibling;
+        }
+        int32_t parent = m_Nodes[lastValid].Parent;
+        if (parent != TreeNode::sc_Invalid)
+            m_Nodes[parent].FirstChild = lastValid;
+        if (node == m_Root)
+            m_Root = lastValid;
     }
     void Tree::Clear()
     {
@@ -197,5 +219,35 @@ namespace XYZ {
             return m_Nodes[m_Nodes[index].Parent].Data;
         }
         return nullptr;
+    }
+    TreeNode::TreeNode(const TreeNode& other)
+        :
+        Data(other.Data),
+        Parent(other.Parent),
+        FirstChild(other.FirstChild),
+        NextSibling(other.NextSibling),
+        PreviousSibling(other.PreviousSibling),
+        Depth(other.Depth)
+    {
+    }
+    TreeNode::TreeNode(TreeNode&& other) noexcept
+        :
+        Data(other.Data),
+        Parent(other.Parent),
+        FirstChild(other.FirstChild),
+        NextSibling(other.NextSibling),
+        PreviousSibling(other.PreviousSibling),
+        Depth(other.Depth)
+    {
+    }
+    TreeNode& TreeNode::operator=(const TreeNode& other)
+    {
+        Data = other.Data;
+        Parent = other.Parent;
+        FirstChild = other.FirstChild;
+        NextSibling = other.NextSibling;
+        PreviousSibling = other.PreviousSibling;
+        Depth = other.Depth;
+        return *this;
     }
 }

@@ -23,11 +23,22 @@ namespace XYZ {
 		static void EndUI();
 		static void RebuildUI();
 
+
 		static std::pair<size_t, size_t> AllocateUI(const std::initializer_list<IGHierarchyElement>& hierarchy);
 		static std::pair<size_t, size_t> AllocateUI(const std::vector<IGHierarchyElement>& hierarchy);
 		static size_t ReallocateUI(size_t handle, const std::vector<IGHierarchyElement>& hierarchy);
 
-
+		template <typename T>
+		static void ForEach(size_t poolHandle, const std::function<void(T&)>& callback)
+		{
+			IGPool& pool = GetContext().Allocator.GetPools()[poolHandle];
+			for (size_t i = 0; i < pool.Size(); ++i)
+			{
+				T* elem = dynamic_cast<T*>(pool[i]);
+				if (elem)
+					callback(*elem);
+			}
+		}
 		template <typename T>
 		static T& GetUI(size_t poolHandle, size_t index)
 		{

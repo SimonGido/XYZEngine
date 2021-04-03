@@ -18,6 +18,16 @@ namespace XYZ {
 	{
 	}
 
+	MemoryPool::MemoryPool(MemoryPool&& other) noexcept
+		:
+		m_BlockSize(other.m_BlockSize),
+		m_SizeOfChunkIndex(other.m_SizeOfChunkIndex),
+		m_Blocks(std::move(other.m_Blocks)),
+		m_FreeChunks(std::move(other.m_FreeChunks)),
+		m_Dirty(other.m_Dirty)
+	{
+	}
+
 	MemoryPool::~MemoryPool()
 	{
 		for (auto& block : m_Blocks)

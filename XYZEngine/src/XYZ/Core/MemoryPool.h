@@ -19,6 +19,7 @@ namespace XYZ {
 
 	public:
 		MemoryPool(size_t blockSize);
+		MemoryPool(MemoryPool&& other) noexcept;
 		~MemoryPool();
 
 		template <typename T, typename ...Args>

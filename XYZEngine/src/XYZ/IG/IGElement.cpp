@@ -76,6 +76,25 @@ namespace XYZ {
 	{
 	}
 
+	IGElement::IGElement(IGElement&& other) noexcept
+		:
+		Position(other.Position),
+		Size(other.Size),
+		Color(other.Color),
+		FrameColor(other.FrameColor),
+		Label(std::move(other.Label)),
+		Style(other.Style),
+		Parent(other.Parent),
+		Active(other.Active),
+		ActiveChildren(other.ActiveChildren),
+		ListenToInput(other.ListenToInput),
+		ElementType(other.ElementType),
+		ReturnType(other.ReturnType),
+		ID(other.ID)
+	{
+		other.Parent = nullptr;
+	}
+
 
 	glm::vec2 IGElement::BuildMesh(IGElement* root, IGRenderData& renderData, IGPool& pool, IGMesh& mesh, uint32_t scissorIndex)
 	{
@@ -86,10 +105,12 @@ namespace XYZ {
 				Style.Layout.TopPadding
 			};
 
+			glm::vec2 rootBorder = Helper::Border(root);
 			glm::vec2 oldOffset = offset;
 			float highestInRow = 0.0f;
 
 			bool out = false;
+		
 			pool.GetHierarchy().TraverseNodeChildren(ID, [&](void* parent, void* child) -> bool {
 
 				IGElement* childElement = static_cast<IGElement*>(child);
@@ -103,7 +124,7 @@ namespace XYZ {
 					}
 					size_t oldQuadCount = mesh.Quads.size();
 					glm::vec2 genSize = childElement->GenerateQuads(mesh, renderData);
-					out = !Helper::ResolvePosition(childElement, Helper::Border(root), genSize, root->Style, mesh, offset, highestInRow, oldQuadCount);
+					out = !Helper::ResolvePosition(childElement, rootBorder, genSize, root->Style, mesh, offset, highestInRow, oldQuadCount);
 					childElement->ListenToInput = Helper::IsInside(root->GetAbsolutePosition(), root->Size, childElement->GetAbsolutePosition(), childElement->Size);
 					if (!out)
 					{
@@ -120,6 +141,15 @@ namespace XYZ {
 			return result;
 		}	
 		return glm::vec2(0.0f);
+	}
+
+	IGElement* IGElement::FindRoot()
+	{
+		if (Parent)
+		{
+			return Parent->FindRoot();
+		}
+		return this;
 	}
 
 	glm::vec2 IGElement::GetAbsolutePosition() const

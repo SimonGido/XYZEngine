@@ -25,11 +25,19 @@ namespace XYZ {
 		}
 
 		FreeList(const FreeList<T>& other)
+			:
+			m_Data(other.m_Data),
+			m_FirstFree(other.m_FirstFree)
 		{
-			m_FirstFree = other.m_FirstFree;
-			m_Data = other.m_Data;
 		}
 		
+		FreeList(FreeList<T>&& other) noexcept
+			:
+			m_Data(std::move(other.m_Data)),
+			m_FirstFree(other.m_FirstFree)
+		{
+		}
+
 		FreeList<T>& operator=(const FreeList<T>& other)
 		{
 			m_FirstFree = other.m_FirstFree;
@@ -132,7 +140,7 @@ namespace XYZ {
 				: Element(other.Element)
 			{}
 			FreeElement(FreeElement&& other) noexcept
-				: Element(other.Element)
+				: Element(std::move(other.Element))
 			{}
 
 			~FreeElement()

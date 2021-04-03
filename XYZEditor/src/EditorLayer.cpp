@@ -35,11 +35,6 @@ namespace XYZ {
 	
 	
 	EditorLayer::EditorLayer()
-		:
-		m_SceneHierarchyPanel(),
-		m_ScenePanel(),
-		m_InspectorPanel(),
-		m_SkinningEditorPanel(PanelID::SkinningEditorPanel)
 	{		
 	}
 
@@ -115,7 +110,6 @@ namespace XYZ {
 			m_SelectedEntity = m_Scene->GetSelectedEntity();
 			m_InspectorPanel.SetContext(m_SelectedEntity);
 		}
-
 	}
 
 	void EditorLayer::OnEvent(Event& event)

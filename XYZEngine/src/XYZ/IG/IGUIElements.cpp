@@ -674,6 +674,15 @@ namespace XYZ {
 		});
 		return false;
 	}
+	IGTree::IGTree(IGTree&& other) noexcept
+		:
+		IGElement(std::move(other)),
+		OnSelect(std::move(other.OnSelect)),
+		Hierarchy(std::move(other.Hierarchy)),
+		Pool(std::move(other.Pool)),
+		NameIDMap(std::move(other.NameIDMap))
+	{
+	}
 	bool IGTree::OnMouseMove(const glm::vec2& mousePosition, bool& handled)
 	{
 		Hierarchy.Traverse([&](void* parent, void* child) ->bool {
@@ -807,14 +816,20 @@ namespace XYZ {
 		:
 		IGElement(position, size, glm::vec4(1.0f),IGElementType::Separator)
 	{
+		Flags = AdjustToParent;
 	}
 
 	glm::vec2 IGSeparator::GenerateQuads(IGMesh& mesh, IGRenderData& renderData, uint32_t scissorIndex)
 	{
-		if (AdjustToParent && Parent)
+		if (IS_SET(Flags, AdjustToParent) && Parent)
 		{
 			Size.x = Parent->Size.x - Parent->Style.Layout.LeftPadding - Parent->Style.Layout.RightPadding;
 			Size.y = 0.0f;
+		}
+		if (IS_SET(Flags, AdjustToRoot))
+		{
+			auto root = FindRoot();
+			Size.x = root->Size.x - root->Style.Layout.LeftPadding - root->Style.Layout.RightPadding;
 		}
 		return Size;
 	}
@@ -946,7 +961,10 @@ namespace XYZ {
 	{
 		Pool.Rebuild(elements);
 		for (size_t i = 0; i < Pool.Size(); ++i)
-			Pool[i]->Parent = this;
+		{
+			IGElement* elem = Pool[i];
+			elem->Parent = this;
+		}
 	}
 
 	glm::vec2 IGPack::BuildMesh(IGElement* root, IGRenderData& renderData, IGPool& pool, IGMesh& mesh, uint32_t scissorIndex)
@@ -1024,6 +1042,13 @@ namespace XYZ {
 			});
 		}
 		return false;
+	}
+
+	IGPack::IGPack(IGPack&& other) noexcept
+		:
+		IGElement(std::move(other)),
+		Pool(std::move(other.Pool))
+	{
 	}
 
 	bool IGPack::OnMouseMove(const glm::vec2& mousePosition, bool& handled)

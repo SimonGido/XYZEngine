@@ -84,6 +84,11 @@ namespace XYZ {
 		{
 			new((void*)&m_Data[offset])T(other);
 		}
+		template <typename T>
+		void move(size_t offset, T&& other)
+		{
+			new((void*)&m_Data[offset])T(std::move(other));
+		}
 
 		void resolveHandles(const std::vector<IGHierarchyElement>& hierarchy, size_t & counter);
 		void allocateMemory(const std::vector<IGHierarchyElement>& hierarchy, IGElement* parent);

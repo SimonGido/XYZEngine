@@ -277,6 +277,7 @@ namespace XYZ {
 				}
 			}
 			IGDockspace::setNextID(maxID + 1);
+			context.Dockspace.UpdateWindows();
 		}
 		stream.close();
 	}

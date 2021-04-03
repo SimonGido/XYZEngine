@@ -91,9 +91,8 @@ namespace XYZ {
     }
 
 
-    SkinningEditorPanel::SkinningEditorPanel(uint32_t panelID)
+    SkinningEditorPanel::SkinningEditorPanel()
         :
-        m_PanelID(panelID),
         m_BonePool(15 * sizeof(SkinningEditorPanel::PreviewBone)),
         m_Colors{
             glm::vec4(0.0f, 0.7f, 0.8f, 1.0f),
@@ -106,18 +105,66 @@ namespace XYZ {
         for (uint32_t i = 0; i < NumCategories; ++i)
             m_CategoriesOpen[i] = false;
 
-        InGui::ImageWindow(m_PanelID, "Skinning Editor", glm::vec2(0.0f), glm::vec2(200.0f), m_Context);
-        InGui::End();
-        const InGuiWindow& window = InGui::GetWindow(m_PanelID);
+        std::initializer_list<IGHierarchyElement> types{
+            {
+                IGElementType::ImageWindow,
+                {	
+                    {IGElementType::Group, { // Bones
+                        {IGElementType::Separator, {}},
+                        {IGElementType::Button, {}}, // Preview pose
+                        {IGElementType::Separator, {}},
+                        {IGElementType::Button, {}}, // Create bone
+                        {IGElementType::Separator, {}},
+                        {IGElementType::Button, {}}, // Edit bone
+                        {IGElementType::Separator, {}},
+                        {IGElementType::Button, {}}  // Delete bone
+                    }},
+                    {IGElementType::Separator, {}}, 
+                    {IGElementType::Group, { // Vertices
+                        {IGElementType::Separator, {}},
+                        {IGElementType::Button, {}},  // Create submesh
+                        {IGElementType::Separator, {}},
+                        {IGElementType::Button, {}},  // Create vertex
+                        {IGElementType::Separator, {}},
+                        {IGElementType::Button, {}},  // Edit vertex
+                        {IGElementType::Separator, {}},
+                        {IGElementType::Button, {}},  // Delete vertex
+                        {IGElementType::Separator, {}},
+                        {IGElementType::Button, {}},  // Delete triangle
+                        {IGElementType::Separator, {}},
+                        {IGElementType::Button, {}},  // Clear
+                        {IGElementType::Separator, {}},
+                        {IGElementType::Button, {}}   // Triangulate
+                    }},
+                    {IGElementType::Separator, {}},
+                    {IGElementType::Group, { // Weights
+                        {IGElementType::Separator, {}},
+                        {IGElementType::Button, {}}  // Weigths brush
+                    }},
+                    {IGElementType::Separator, {}}, // Bone hierarchy tree
+                    {IGElementType::Tree, {}}
+                }
+            }   
+        };
+
+        auto [poolHandle, handleCount] = IG::AllocateUI(types);
+        m_PoolHandle = poolHandle;
+        m_HandleCount = handleCount;
+        m_Window = &IG::GetUI<IGImageWindow>(m_PoolHandle, 0);
+        m_Window->Label = "Skinning Editor";
+
+        m_ViewportSize = m_Window->Size;
+        m_MousePosition = glm::vec2(0.0f);
+        m_ViewProjection = glm::ortho(
+            -m_Window->Size.x / 2.0f, m_Window->Size.x / 2.0f, 
+            -m_Window->Size.y / 2.0f, m_Window->Size.y / 2.0f
+        );
 
         m_Shader = Shader::Create("Assets/Shaders/SkinningEditor.glsl");
 
-        m_ViewportSize = window.Size;
-        m_MousePosition = glm::vec2(0.0f);
-
         FramebufferSpecs specs;
-        specs.Width = (uint32_t)window.Size.x;
-        specs.Height = (uint32_t)window.Size.y;
+        specs.Width = (uint32_t)m_ViewportSize.x;
+        specs.Height = (uint32_t)m_ViewportSize.y;
         specs.ClearColor = { 0.1f,0.1f,0.1f,1.0f };
         specs.Attachments = {
             FramebufferTextureSpecs(FramebufferTextureFormat::RGBA16F),
@@ -125,12 +172,25 @@ namespace XYZ {
         };
         m_Framebuffer = Framebuffer::Create(specs);
         m_RenderTexture = RenderTexture::Create(m_Framebuffer);
-        m_RenderSubTexture = Ref<SubTexture>::Create(m_RenderTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+        m_RenderSubTexture = Ref<SubTexture>::Create(m_RenderTexture, glm::vec4(1.0f, 1.0f, 0.0f, 0.0f));
+        m_Window->SubTexture = m_RenderSubTexture;
+
         rebuildRenderBuffers();
+        m_Window->ResizeCallback = [&](const glm::vec2& size) {
+            m_Framebuffer->Resize((uint32_t)size.x, (uint32_t)size.y);
+            m_ViewProjection = glm::ortho(
+                -m_Window->Size.x / 2.0f, m_Window->Size.x / 2.0f, 
+                -m_Window->Size.y / 2.0f, m_Window->Size.y / 2.0f
+            );
+        };
+
 
         for (uint32_t i = 0; i < MAX_BONES; ++i)
             m_ColorIDs[i] = i;
         std::shuffle(&m_ColorIDs[0], &m_ColorIDs[MAX_BONES - 1], std::default_random_engine(0));
+
+
+        setupUI();
     }
     void SkinningEditorPanel::SetContext(Ref<SubTexture> context)
     {
@@ -142,8 +202,7 @@ namespace XYZ {
     }
     void SkinningEditorPanel::OnUpdate()
     {
-        const InGuiWindow& window = InGui::GetWindow(m_PanelID);
-        if (IS_SET(window.Flags, InGuiWindowFlags::Hoovered))
+        if (IS_SET(m_Window->Flags, IGWindow::Hoovered))
         {
             m_MousePosition = getMouseWindowSpace();
             {
@@ -279,12 +338,32 @@ namespace XYZ {
     void SkinningEditorPanel::OnEvent(Event& event)
     {
         EventDispatcher dispatcher(event);
-        if (IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
+        if (IS_SET(m_Window->Flags, IGWindow::Hoovered))
         {
             dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&SkinningEditorPanel::onMouseButtonPress, this));
             dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&SkinningEditorPanel::onMouseButtonRelease, this));
             dispatcher.Dispatch<MouseScrollEvent>(Hook(&SkinningEditorPanel::onMouseScroll, this));
         }
+    }
+    void SkinningEditorPanel::setupUI()
+    {
+        IG::ForEach<IGSeparator>(m_PoolHandle, [](IGSeparator& separator) {
+            separator.Flags |= IGSeparator::AdjustToRoot;
+            });
+        IG::ForEach<IGButton>(m_PoolHandle, [](IGButton& button) {
+            button.Size.y = 30.0f;
+            });
+        
+        auto& boneGroup = IG::GetUI<IGGroup>(m_PoolHandle, 1);
+
+        boneGroup.AdjustToParent = false;
+        boneGroup.Size.x = 150.0f;
+        boneGroup.Label = "Bone";
+
+        auto& vertexGroup = IG::GetUI<IGGroup>(m_PoolHandle, 11);
+        vertexGroup.AdjustToParent = false;
+        vertexGroup.Size.x = 150.0f;
+        vertexGroup.Label = "Vertex";
     }
     bool SkinningEditorPanel::onMouseButtonPress(MouseButtonPressEvent& event)
     {
@@ -346,37 +425,37 @@ namespace XYZ {
     }
     void SkinningEditorPanel::inGuiBoneHierarchy()
     {
-        auto& nodes = m_BoneHierarchy.GetFlatNodes();
-        uint32_t currentDepth = 0;
-        m_BoneHierarchy.Traverse([&](void* parent, void* child) -> bool {
-
-            PreviewBone* childBone = static_cast<PreviewBone*>(child);
-            if (nodes[childBone->ID].Depth > currentDepth)
-            {
-                InGui::BeginChildren();			
-            }
-            while (nodes[childBone->ID].Depth < currentDepth)
-            {
-                InGui::EndChildren();
-                currentDepth--;
-            }
-            bool open = true;
-            if (parent)
-            {
-                PreviewBone* parentBone = static_cast<PreviewBone*>(parent);
-                open = parentBone->Open;
-            }
-            if (open)
-            {
-                if (IS_SET(InGui::PushNode(childBone->Name.c_str(), glm::vec2(25.0f), childBone->Open, false), InGuiReturnType::Clicked))
-                    m_SelectedBone = childBone;
-            }
-            else
-                return true;
-
-             currentDepth = nodes[childBone->ID].Depth;
-             return false;
-        });
+        //auto& nodes = m_BoneHierarchy.GetFlatNodes();
+        //uint32_t currentDepth = 0;
+        //m_BoneHierarchy.Traverse([&](void* parent, void* child) -> bool {
+        //
+        //    PreviewBone* childBone = static_cast<PreviewBone*>(child);
+        //    if (nodes[childBone->ID].Depth > currentDepth)
+        //    {
+        //        InGui::BeginChildren();			
+        //    }
+        //    while (nodes[childBone->ID].Depth < currentDepth)
+        //    {
+        //        InGui::EndChildren();
+        //        currentDepth--;
+        //    }
+        //    bool open = true;
+        //    if (parent)
+        //    {
+        //        PreviewBone* parentBone = static_cast<PreviewBone*>(parent);
+        //        open = parentBone->Open;
+        //    }
+        //    if (open)
+        //    {
+        //        if (IS_SET(InGui::PushNode(childBone->Name.c_str(), glm::vec2(25.0f), childBone->Open, false), InGuiReturnType::Clicked))
+        //            m_SelectedBone = childBone;
+        //    }
+        //    else
+        //        return true;
+        //
+        //     currentDepth = nodes[childBone->ID].Depth;
+        //     return false;
+        //});
     }
     void SkinningEditorPanel::clear()
     {
@@ -943,21 +1022,20 @@ namespace XYZ {
     }
     glm::vec2 SkinningEditorPanel::getMouseWindowSpace() const
     {
-        const InGuiWindow& window = InGui::GetWindow(m_PanelID);
         auto [mx, my] = getMouseViewportSpace();
-        mx *= window.Size.x / 2.0f;
-        my *= window.Size.y / 2.0f;
+        mx *= m_Window->Size.x / 2.0f;
+        my *= m_Window->Size.y / 2.0f;
         return { mx , my };
     }
     std::pair<float, float> SkinningEditorPanel::getMouseViewportSpace() const
     {
         auto [mx, my] = Input::GetMousePosition();
-        auto& window = InGui::GetWindow(m_PanelID);
-        mx -= window.Position.x;
-        my -= window.Position.y;
+        glm::vec2 position = m_Window->GetAbsolutePosition();
+        mx -= position.x;
+        my -= position.y;
 
-        auto viewportWidth = window.Size.x;
-        auto viewportHeight = window.Size.y;
+        auto viewportWidth =  m_Window->Size.x;
+        auto viewportHeight = m_Window->Size.y;
 
         return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f };
     }
@@ -968,10 +1046,8 @@ namespace XYZ {
         Renderer::SetClearColor(m_Framebuffer->GetSpecification().ClearColor);
         Renderer::Clear();;
 
-        const InGuiWindow& window = InGui::GetWindow(m_PanelID);
-        glm::mat4 projection = glm::ortho(-window.Size.x / 2.0f, window.Size.x / 2.0f, -window.Size.y / 2.0f, window.Size.y / 2.0f);
-        renderMesh(projection);
-        renderPreviews(projection);
+        renderMesh(m_ViewProjection);
+        renderPreviews(m_ViewProjection);
         m_Framebuffer->Unbind();
     }
     void SkinningEditorPanel::renderMesh(const glm::mat4& viewProjection)

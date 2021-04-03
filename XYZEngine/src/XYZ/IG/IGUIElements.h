@@ -191,6 +191,7 @@ namespace XYZ {
 	{	
 	public:
 		IGTree(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);
+		IGTree(IGTree&& other) noexcept;
 
 		virtual bool OnLeftClick(const glm::vec2& mousePosition, bool& handled) override;
 		virtual bool OnMouseMove(const glm::vec2& mousePosition, bool& handled) override;
@@ -245,7 +246,13 @@ namespace XYZ {
 
 		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData, uint32_t scissorIndex = 0) override;
 	
-		bool AdjustToParent = true;
+		enum Flags
+		{
+			AdjustToParent = BIT(0),
+			AdjustToRoot   = BIT(1)
+		};
+
+		uint8_t Flags;
 	};
 
 	class IGScrollbox : public IGElement
@@ -282,7 +289,8 @@ namespace XYZ {
 	{
 	public:
 		IGPack(const std::vector<IGHierarchyElement>& elements);
-		
+		IGPack(IGPack&& other) noexcept;
+
 		virtual bool OnLeftClick(const glm::vec2& mousePosition, bool& handled) override;
 		virtual bool OnLeftRelease(const glm::vec2& mousePosition, bool& handled) override;
 		virtual bool OnMouseMove(const glm::vec2& mousePosition, bool& handled) override;
@@ -298,6 +306,7 @@ namespace XYZ {
 		
 		Tree& GetHierarchy();
 		const Tree& GetHierarchy() const;
+		const IGPool& GetPool() const {return Pool; }
 		size_t PoolSize() const;
 
 		IGElement& operator[](size_t index);

@@ -63,6 +63,7 @@ namespace XYZ {
 	{
 	public:
 		IGElement(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color, IGElementType type);
+		IGElement(IGElement&& other) noexcept;
 		virtual ~IGElement() = default;
 
 		virtual bool OnLeftClick(const glm::vec2& mousePosition, bool& handled) { return false; };
@@ -74,6 +75,8 @@ namespace XYZ {
 		virtual bool OnKeyPress(int32_t mode, int32_t key, bool& handled) { return false; }
 		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData, uint32_t scissorIndex = 0) { return glm::vec2(0.0f); };
 		virtual glm::vec2 BuildMesh(IGElement* root, IGRenderData& renderData, IGPool& pool, IGMesh& mesh, uint32_t scissorIndex = 0);
+
+		IGElement* FindRoot();
 
 		glm::vec2	Position;
 		glm::vec2	Size;

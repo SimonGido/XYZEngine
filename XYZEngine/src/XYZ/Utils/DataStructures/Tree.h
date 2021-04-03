@@ -7,6 +7,12 @@ namespace XYZ {
 
 	struct TreeNode
 	{
+		TreeNode() = default;
+		TreeNode(const TreeNode& other);
+		TreeNode(TreeNode&& other) noexcept;
+
+		TreeNode& operator = (const TreeNode& other);
+
 		static constexpr int32_t sc_Invalid = -1;
 
 		void* Data = nullptr;
@@ -29,6 +35,7 @@ namespace XYZ {
 		int32_t     Insert(void* data, int32_t parent);
 		void        Remove(int32_t index);
 		void        ReverseNodeChildren(int32_t node);
+		void        ReverseNode(int32_t node);
 		void        Clear();
 
 		void        Traverse(const std::function<bool(void*, void*)>& callback) const;

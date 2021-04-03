@@ -46,7 +46,7 @@ namespace XYZ {
 			{
 				IGElementType::ImageWindow,
 				{	
-					{IGElementType::Image, {}}, // TODO: Implement
+					{IGElementType::Image, {}},
 					{IGElementType::Image, {}}
 				}
 			}

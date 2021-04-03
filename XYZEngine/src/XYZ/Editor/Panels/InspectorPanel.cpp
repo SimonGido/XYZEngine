@@ -725,6 +725,8 @@ namespace XYZ {
 				}
 				hierarchyElements.push_back({ IGElementType::Separator, {} });
 			}
+			std::cout << sizeof(IGElement) << std::endl;
+			std::cout << sizeof(IGSeparator) << std::endl;
 			pack.Rebuild(hierarchyElements);
 			uint32_t counter = 0;
 			for (auto& field : scriptComponent.Fields)
@@ -738,6 +740,8 @@ namespace XYZ {
 				pack[counter].Label = field.GetName();
 				counter += 2;
 			}
+		
+
 		}
 	}
 	void InspectorPanel::setupTransformComponentUI()
