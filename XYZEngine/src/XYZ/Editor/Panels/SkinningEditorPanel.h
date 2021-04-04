@@ -74,7 +74,6 @@ namespace XYZ {
 		{
 			std::vector<BoneVertex> Vertices;
 			std::vector<Triangle> Triangles;
-			bool Triangulated;
 		};
 
 		struct PreviewBone
@@ -131,9 +130,8 @@ namespace XYZ {
 		bool onMouseButtonPress(MouseButtonPressEvent& event);
 		bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
 		bool onMouseScroll(MouseScrollEvent& event);
+		bool onKeyPress(KeyPressedEvent& event);
 
-
-		void inGuiBoneHierarchy();
 		void clear();
 		void triangulate(Submesh& subMesh);
 		void initializePose();
@@ -143,6 +141,7 @@ namespace XYZ {
 		void eraseEmptyPoints();
 		void eraseVertexAtPosition(const glm::vec2& pos);
 		void eraseTriangleAtPosition(const glm::vec2& pos);
+		void eraseBone(PreviewBone* bone);
 		void decomposeBone(PreviewBone* bone, glm::vec2& start, glm::vec2& end, float& rot, glm::vec2& normal, bool finalTransform = true);
 
 		void previewBoneCreate();
@@ -178,6 +177,7 @@ private:
 		size_t m_HandleCount;
 		size_t m_PoolHandle;
 		IGImageWindow* m_Window;
+		IGTree* m_Tree;
 
 		Ref<SubTexture> m_Context;
 		glm::vec2 m_ContextSize = glm::vec2(0.0f);
@@ -226,6 +226,7 @@ private:
 		float m_WeightBrushStrength = 0.01f;
 
 		uint16_t m_Flags = 0;
+		bool m_Triangulated = false;
 		bool m_CategoriesOpen[Categories::NumCategories];
 		uint32_t m_ColorIDs[MAX_BONES];
 	};

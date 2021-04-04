@@ -38,7 +38,7 @@ namespace XYZ {
 			IGElement* element, 
 			const glm::vec2& border, const glm::vec2& genSize, const IGStyle& style, 
 			IGMesh& mesh, glm::vec2& offset, float& maxY, 
-			size_t oldQuadCount)
+			size_t oldQuadCount, size_t oldLineCount)
 		{		
 			if (style.AutoPosition)
 			{
@@ -47,12 +47,14 @@ namespace XYZ {
 					if (offset.y + genSize.y > border.y)
 					{
 						mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
+						mesh.Lines.erase(mesh.Lines.begin() + oldLineCount, mesh.Lines.end());
 						return false;
 					}
 					else if (!style.NewRow)
 					{
 						offset.x += genSize.x + style.Layout.SpacingX;
 						mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
+						mesh.Lines.erase(mesh.Lines.begin() + oldLineCount, mesh.Lines.end());
 						return false;
 					}
 					else
@@ -64,6 +66,7 @@ namespace XYZ {
 						if (offset.x + genSize.x > border.x)
 						{
 							mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
+							mesh.Lines.erase(mesh.Lines.begin() + oldLineCount, mesh.Lines.end());
 							return false;
 						}
 						for (size_t i = oldQuadCount; i < mesh.Quads.size(); ++i)
@@ -726,12 +729,12 @@ namespace XYZ {
 			}
 			else
 			{
-				XYZ_LOG_WARN("Parent item with the key: ", parent, "does not exist");
+				XYZ_LOG_WARN("Parent item with the key: ", parent, " does not exist");
 			}
 		}
 		else
 		{
-			XYZ_LOG_WARN("Item with the key: ", key, "already exists");
+			XYZ_LOG_WARN("Item with the key: ", key, " already exists");
 		}
 	}
 	void IGTree::AddItem(uint32_t key, const IGTreeItem& item)
@@ -746,7 +749,7 @@ namespace XYZ {
 		}
 		else
 		{
-			XYZ_LOG_WARN("Item with the key: ", key, "already exists");
+			XYZ_LOG_WARN("Item with the key: ", key, " already exists");
 		}
 	}
 	void IGTree::RemoveItem(uint32_t child)
@@ -754,14 +757,17 @@ namespace XYZ {
 		auto it = NameIDMap.find(child);
 		if (it != NameIDMap.end())
 		{
-			IGTreeItem* ptr = static_cast<IGTreeItem*>(Hierarchy.GetData(it->second));
-			Pool.Deallocate(ptr);
-			Hierarchy.Remove(it->second);
-			NameIDMap.erase(it);
+			Hierarchy.TraverseNode(it->second, [&](void* parent, void* child)->bool {
+			
+				IGTreeItem* childItem = static_cast<IGTreeItem*>(child);
+				NameIDMap.erase(childItem->Key);
+				Pool.Deallocate(childItem);
+				return false;
+			});
 		}
 		else
 		{
-			XYZ_LOG_WARN("Item with the name: ", child, "does not exist");
+			XYZ_LOG_WARN("Item with the key: ", child, " does not exist");
 		}
 	}
 
@@ -891,8 +897,9 @@ namespace XYZ {
 						return false;
 					}
 					size_t oldQuadCount = renderData.ScrollableMesh.Quads.size();
+					size_t oldLineCount = renderData.ScrollableMesh.Lines.size();
 					glm::vec2 genSize = childElement->GenerateQuads(renderData.ScrollableMesh, renderData, newScissorIndex);
-					out = !Helper::ResolvePosition(childElement, root->Size, genSize, root->Style, mesh, offset, highestInRow, oldQuadCount);
+					out = !Helper::ResolvePosition(childElement, root->Size, genSize, Style, mesh, offset, highestInRow, oldQuadCount, oldLineCount);
 					childElement->ListenToInput = Helper::IsInside(GetAbsolutePosition(), Size, childElement->GetAbsolutePosition(), childElement->Size);
 					
 					if (!out)
@@ -985,8 +992,9 @@ namespace XYZ {
 				}
 				
 				size_t oldQuadCount = mesh.Quads.size();
+				size_t oldLineCount = mesh.Lines.size();
 				glm::vec2 genSize = element->GenerateQuads(mesh, renderData, scissorIndex);
-				out = !Helper::ResolvePosition(element, root->Size, genSize, Style, mesh, offset, highestInRow, oldQuadCount);
+				out = !Helper::ResolvePosition(element, root->Size, genSize, Style, mesh, offset, highestInRow, oldQuadCount, oldLineCount);
 				element->ListenToInput = Helper::IsInside(root->GetAbsolutePosition(), root->Size, element->GetAbsolutePosition(), element->Size);
 				
 				if (!out)

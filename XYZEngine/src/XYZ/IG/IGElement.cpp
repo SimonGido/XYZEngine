@@ -11,7 +11,7 @@ namespace XYZ {
 			IGElement* element, 
 			const glm::vec2& border, const glm::vec2& genSize, const IGStyle& style, 
 			IGMesh& mesh, glm::vec2& offset, float& maxY, 
-			size_t oldQuadCount)
+			size_t oldQuadCount, size_t oldLineCount)
 		{		
 			if (style.AutoPosition)
 			{
@@ -20,12 +20,14 @@ namespace XYZ {
 					if (offset.y + genSize.y > border.y)
 					{
 						mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
+						mesh.Lines.erase(mesh.Lines.begin() + oldLineCount, mesh.Lines.end());
 						return false;
 					}
 					else if (!style.NewRow)
 					{
 						offset.x += genSize.x + style.Layout.SpacingX;
 						mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
+						mesh.Lines.erase(mesh.Lines.begin() + oldLineCount, mesh.Lines.end());
 						return false;
 					}
 					else
@@ -37,6 +39,7 @@ namespace XYZ {
 						if (offset.x + genSize.x > border.x)
 						{
 							mesh.Quads.erase(mesh.Quads.begin() + oldQuadCount, mesh.Quads.end());
+							mesh.Lines.erase(mesh.Lines.begin() + oldLineCount, mesh.Lines.end());
 							return false;
 						}
 						for (size_t i = oldQuadCount; i < mesh.Quads.size(); ++i)
@@ -123,8 +126,9 @@ namespace XYZ {
 						return false;
 					}
 					size_t oldQuadCount = mesh.Quads.size();
+					size_t oldLineCount = mesh.Lines.size();
 					glm::vec2 genSize = childElement->GenerateQuads(mesh, renderData);
-					out = !Helper::ResolvePosition(childElement, rootBorder, genSize, root->Style, mesh, offset, highestInRow, oldQuadCount);
+					out = !Helper::ResolvePosition(childElement, rootBorder, genSize, Style, mesh, offset, highestInRow, oldQuadCount, oldLineCount);
 					childElement->ListenToInput = Helper::IsInside(root->GetAbsolutePosition(), root->Size, childElement->GetAbsolutePosition(), childElement->Size);
 					if (!out)
 					{
@@ -143,6 +147,17 @@ namespace XYZ {
 		return glm::vec2(0.0f);
 	}
 
+	bool IGElement::Is(IGReturnType returnType)
+	{
+		if (ReturnType == returnType)
+		{
+			// Return type is equal so the state was satisfied, set it to none
+			ReturnType = IGReturnType::None;
+			return true;
+		}
+		return false;
+	}
+
 	IGElement* IGElement::FindRoot()
 	{
 		if (Parent)
@@ -151,6 +166,7 @@ namespace XYZ {
 		}
 		return this;
 	}
+
 
 	glm::vec2 IGElement::GetAbsolutePosition() const
 	{
@@ -161,10 +177,5 @@ namespace XYZ {
 		return Position;
 	}
 
-	IGReturnType IGElement::getAndRestartReturnType()
-	{
-		IGReturnType old = ReturnType;
-		ReturnType = IGReturnType::None;
-		return old;
-	}
+	
 }

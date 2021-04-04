@@ -152,6 +152,7 @@ namespace XYZ {
         m_HandleCount = handleCount;
         m_Window = &IG::GetUI<IGImageWindow>(m_PoolHandle, 0);
         m_Window->Label = "Skinning Editor";
+        m_Tree = &IG::GetUI<IGTree>(m_PoolHandle, 31);
 
         m_ViewportSize = m_Window->Size;
         m_MousePosition = glm::vec2(0.0f);
@@ -172,7 +173,7 @@ namespace XYZ {
         };
         m_Framebuffer = Framebuffer::Create(specs);
         m_RenderTexture = RenderTexture::Create(m_Framebuffer);
-        m_RenderSubTexture = Ref<SubTexture>::Create(m_RenderTexture, glm::vec4(1.0f, 1.0f, 0.0f, 0.0f));
+        m_RenderSubTexture = Ref<SubTexture>::Create(m_RenderTexture, glm::vec4(0.0f, 1.0f, 1.0f, 0.0f));
         m_Window->SubTexture = m_RenderSubTexture;
 
         rebuildRenderBuffers();
@@ -233,6 +234,78 @@ namespace XYZ {
             {
                 handleWeightsBrush();
             }
+            
+            // Bone group
+            if (IG::GetUI<IGButton>(m_PoolHandle, 3).Is(IGReturnType::Clicked)) // Preview Pose
+            {
+                m_Flags = ToggleBit(m_Flags, PreviewPose);
+                initializePose();
+                updateVertexBuffer();
+            }
+            else if (IG::GetUI<IGButton>(m_PoolHandle, 5).Is(IGReturnType::Clicked)) // Create bone
+            {
+                m_Flags = ToggleBit(m_Flags, CreateBone);
+            }
+            else if (IG::GetUI<IGButton>(m_PoolHandle, 7).Is(IGReturnType::Clicked)) // Edit bone
+            {
+                uint16_t previewPose = m_Flags & PreviewPose;
+                m_Flags = ToggleBit(m_Flags, EditBone);
+                m_Flags |= previewPose;
+            }
+            else if (IG::GetUI<IGButton>(m_PoolHandle, 9).Is(IGReturnType::Clicked)) // Edit bone
+            {
+                m_Flags = ToggleBit(m_Flags, DeleteBone);
+            }
+            else if (IG::GetUI<IGButton>(m_PoolHandle, 9).Is(IGReturnType::Clicked)) // Delete bone
+            {
+                m_Flags = ToggleBit(m_Flags, DeleteBone);
+            }
+            // Vertex group
+            if (IG::GetUI<IGButton>(m_PoolHandle, 13).Is(IGReturnType::Clicked)) // Create Submesh
+            {
+                m_SubMeshes.push_back({});
+            }
+            else if (IG::GetUI<IGButton>(m_PoolHandle, 15).Is(IGReturnType::Clicked)) // Create Vertex
+            {
+                m_Flags = ToggleBit(m_Flags, CreateVertex);
+            }
+            else if (IG::GetUI<IGButton>(m_PoolHandle, 17).Is(IGReturnType::Clicked)) // Edit Vertex
+            {
+                m_Flags = ToggleBit(m_Flags, EditVertex);
+            }
+            else if (IG::GetUI<IGButton>(m_PoolHandle, 19).Is(IGReturnType::Clicked)) // Delete Vertex
+            {
+                m_Flags = ToggleBit(m_Flags, DeleteVertex);
+            }
+            else if (IG::GetUI<IGButton>(m_PoolHandle, 21).Is(IGReturnType::Clicked)) // Delete Triangle
+            {
+                m_Flags = ToggleBit(m_Flags, DeleteTriangle);
+            }
+            else if (IG::GetUI<IGButton>(m_PoolHandle, 23).Is(IGReturnType::Clicked)) // Clear
+            {
+                clear();
+            }
+            else if (IG::GetUI<IGButton>(m_PoolHandle, 25).Is(IGReturnType::Clicked)) // Triangulate
+            {
+                if (!m_Triangulated)
+                {
+                    for (auto& subMesh : m_SubMeshes)
+                    {
+                        triangulate(subMesh);
+                    }
+                    rebuildRenderBuffers();
+                    m_Triangulated = true;
+                }
+                else
+                {
+                    XYZ_LOG_WARN("Mesh was already triangulated");
+                }
+            }
+            // Weight group
+            if (IG::GetUI<IGButton>(m_PoolHandle, 29).Is(IGReturnType::Clicked))
+            {
+                m_Flags = ToggleBit(m_Flags, WeightBrush);
+            }
         }
         if (IS_SET(m_Flags, PreviewPose))
         {
@@ -241,100 +314,7 @@ namespace XYZ {
         }
         renderAll();
     }
-    //void SkinningEditorPanel::OnInGuiRender()
-    //{
-    //    if (m_Context.Raw())
-    //    {
-    //        if (InGui::ImageWindow(m_PanelID, "Sprite Editor", glm::vec2(0.0f), glm::vec2(200.0f), m_RenderSubTexture))
-    //        {
-    //            glm::vec2 size = { 150.0f, InGuiWindow::PanelHeight };
-    //            if (InGui::BeginGroup("Bones", size, m_CategoriesOpen[Bones]))
-    //            {
-    //                if (IS_SET(InGui::Button("Preview Pose", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
-    //                {
-    //                    m_Flags = ToggleBit(m_Flags, PreviewPose);
-    //                    initializePose();
-    //                    updateVertexBuffer();
-    //                }
-    //                InGui::Separator();
-    //                if (IS_SET(InGui::Button("Create Bone", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
-    //                {
-    //                    m_Flags = ToggleBit(m_Flags, CreateBone);
-    //                }
-    //                InGui::Separator();
-    //                if (IS_SET(InGui::Button("Edit Bone", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
-    //                {
-    //                    uint16_t previewPose = m_Flags & PreviewPose;
-    //                    m_Flags = ToggleBit(m_Flags, EditBone);
-    //                    m_Flags |= previewPose;
-    //                }
-    //                InGui::Separator();
-    //                if (IS_SET(InGui::Button("Delete Bone", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
-    //                {
-    //                    m_Flags = ToggleBit(m_Flags, DeleteBone);
-    //                }
-    //            }
-    //            InGui::Separator();
-    //            if (InGui::BeginGroup("Geometry", size, m_CategoriesOpen[Geometry]))
-    //            {
-    //                if (IS_SET(InGui::Button("Create Submesh", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
-    //                {
-    //                    m_SubMeshes.push_back({});
-    //                }
-    //                InGui::Separator();
-    //                if (IS_SET(InGui::Button("Create Vertex", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
-    //                {
-    //                    m_Flags = ToggleBit(m_Flags, CreateVertex);
-    //                }
-    //                InGui::Separator();
-    //                if (IS_SET(InGui::Button("Edit Vertex", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
-    //                {
-    //                    m_Flags = ToggleBit(m_Flags, EditVertex);
-    //                }
-    //                InGui::Separator();
-    //                if (IS_SET(InGui::Button("Delete Vertex", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
-    //                {           
-    //                    m_Flags = ToggleBit(m_Flags, DeleteVertex);
-    //                }
-    //                InGui::Separator();
-    //                if (IS_SET(InGui::Button("Delete Triangle", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
-    //                {
-    //                    m_Flags = ToggleBit(m_Flags, DeleteTriangle);
-    //                }
-    //                InGui::Separator();
-    //                if (IS_SET(InGui::Button("Clear", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
-    //                {
-    //                    clear();
-    //                }
-    //                InGui::Separator();
-    //                if (IS_SET(InGui::Button("Triangulate", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
-    //                {
-    //                    for (auto& subMesh : m_SubMeshes)
-    //                    {
-    //                        if (!subMesh.Triangulated)
-    //                            triangulate(subMesh);
-    //                    }
-    //                    rebuildRenderBuffers();
-    //                }
-    //            }
-    //            InGui::Separator();
-    //            if (InGui::BeginGroup("Weights", size, m_CategoriesOpen[Weights]))
-    //            {
-    //                if (IS_SET(InGui::Button("Weight Brush", glm::vec2(50.0f, 25.0f)), InGuiReturnType::Clicked))
-    //                {
-    //                    m_Flags = ToggleBit(m_Flags, WeightBrush);
-    //                }
-    //            }
-    //            InGui::Separator();
-    //
-    //            if (!IS_SET(InGui::GetWindow(m_PanelID).Flags, InGuiWindowFlags::Hoovered))
-    //            {
-    //            }
-    //        }
-    //        inGuiBoneHierarchy();
-    //        InGui::End();
-    //    }
-    //}
+ 
     void SkinningEditorPanel::OnEvent(Event& event)
     {
         EventDispatcher dispatcher(event);
@@ -343,6 +323,7 @@ namespace XYZ {
             dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&SkinningEditorPanel::onMouseButtonPress, this));
             dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&SkinningEditorPanel::onMouseButtonRelease, this));
             dispatcher.Dispatch<MouseScrollEvent>(Hook(&SkinningEditorPanel::onMouseScroll, this));
+            dispatcher.Dispatch<KeyPressedEvent>(Hook(&SkinningEditorPanel::onKeyPress, this));
         }
     }
     void SkinningEditorPanel::setupUI()
@@ -355,15 +336,34 @@ namespace XYZ {
             });
         
         auto& boneGroup = IG::GetUI<IGGroup>(m_PoolHandle, 1);
-
+        boneGroup.Style.Layout.SpacingY = 0.0f;
         boneGroup.AdjustToParent = false;
         boneGroup.Size.x = 150.0f;
         boneGroup.Label = "Bone";
+        IG::GetUI<IGButton>(m_PoolHandle, 3).Label = "Preview Pose";
+        IG::GetUI<IGButton>(m_PoolHandle, 5).Label = "Create Bone";
+        IG::GetUI<IGButton>(m_PoolHandle, 7).Label = "Edit Bone";
+        IG::GetUI<IGButton>(m_PoolHandle, 9).Label = "Delete Bone";
 
         auto& vertexGroup = IG::GetUI<IGGroup>(m_PoolHandle, 11);
+        vertexGroup.Style.Layout.SpacingY = 0.0f;
         vertexGroup.AdjustToParent = false;
         vertexGroup.Size.x = 150.0f;
         vertexGroup.Label = "Vertex";
+        IG::GetUI<IGButton>(m_PoolHandle, 13).Label = "Create Submesh";
+        IG::GetUI<IGButton>(m_PoolHandle, 15).Label = "Create Vertex";
+        IG::GetUI<IGButton>(m_PoolHandle, 17).Label = "Edit Vertex";
+        IG::GetUI<IGButton>(m_PoolHandle, 19).Label = "Delete Vertex";
+        IG::GetUI<IGButton>(m_PoolHandle, 21).Label = "Delete Triangle";
+        IG::GetUI<IGButton>(m_PoolHandle, 23).Label = "Clear";
+        IG::GetUI<IGButton>(m_PoolHandle, 25).Label = "Triangulate";
+
+        auto& weightGroup = IG::GetUI<IGGroup>(m_PoolHandle, 27);
+        weightGroup.Style.Layout.SpacingY = 0.0f;
+        weightGroup.AdjustToParent = false;
+        weightGroup.Size.x = 150.0f;
+        weightGroup.Label = "Weight";
+        IG::GetUI<IGButton>(m_PoolHandle, 29).Label = "Weight Brush";
     }
     bool SkinningEditorPanel::onMouseButtonPress(MouseButtonPressEvent& event)
     {
@@ -373,13 +373,27 @@ namespace XYZ {
             {
                 handleBoneCreate();
             }
+            else if (IS_SET(m_Flags, DeleteBone))
+            {
+                if (m_FoundBone)
+                    eraseBone(m_FoundBone);
+                m_FoundBone = nullptr;
+                m_SelectedBone = nullptr;
+            }
             else if (IS_SET(m_Flags, CreateVertex))
             {
                 m_SelectedVertex = nullptr;
-                if (m_SubMeshes.empty() || m_SubMeshes.back().Triangulated)
-                    m_SubMeshes.push_back({});
-                m_SubMeshes.back().Vertices.push_back({ m_MousePosition.x, m_MousePosition.y });
-                return true;
+                if (!m_Triangulated)
+                {
+                    if (m_SubMeshes.empty())
+                        m_SubMeshes.push_back({});
+                    m_SubMeshes.back().Vertices.push_back({ m_MousePosition.x, m_MousePosition.y });
+                    return true;
+                }
+                else
+                {
+                    XYZ_LOG_WARN("Mesh was already triangulated, can not add new vertices");
+                }
             }
             else if (IS_SET(m_Flags, DeleteVertex))
             {
@@ -423,39 +437,13 @@ namespace XYZ {
         }
         return false;
     }
-    void SkinningEditorPanel::inGuiBoneHierarchy()
+    bool SkinningEditorPanel::onKeyPress(KeyPressedEvent& event)
     {
-        //auto& nodes = m_BoneHierarchy.GetFlatNodes();
-        //uint32_t currentDepth = 0;
-        //m_BoneHierarchy.Traverse([&](void* parent, void* child) -> bool {
-        //
-        //    PreviewBone* childBone = static_cast<PreviewBone*>(child);
-        //    if (nodes[childBone->ID].Depth > currentDepth)
-        //    {
-        //        InGui::BeginChildren();			
-        //    }
-        //    while (nodes[childBone->ID].Depth < currentDepth)
-        //    {
-        //        InGui::EndChildren();
-        //        currentDepth--;
-        //    }
-        //    bool open = true;
-        //    if (parent)
-        //    {
-        //        PreviewBone* parentBone = static_cast<PreviewBone*>(parent);
-        //        open = parentBone->Open;
-        //    }
-        //    if (open)
-        //    {
-        //        if (IS_SET(InGui::PushNode(childBone->Name.c_str(), glm::vec2(25.0f), childBone->Open, false), InGuiReturnType::Clicked))
-        //            m_SelectedBone = childBone;
-        //    }
-        //    else
-        //        return true;
-        //
-        //     currentDepth = nodes[childBone->ID].Depth;
-        //     return false;
-        //});
+        if (event.IsKeyPressed(KeyCode::KEY_DELETE))
+        {
+        
+        }
+        return false;
     }
     void SkinningEditorPanel::clear()
     {
@@ -472,6 +460,7 @@ namespace XYZ {
         m_SelectedBone = nullptr;
         m_SelectedTriangle = nullptr;
         m_SelectedVertex = nullptr;
+        m_Triangulated = false;
         rebuildRenderBuffers();
     }
     void SkinningEditorPanel::triangulate(Submesh& subMesh)
@@ -532,7 +521,6 @@ namespace XYZ {
                 (uint32_t)keypointIdx3
                 });
         }
-        subMesh.Triangulated = true;
     }
     void SkinningEditorPanel::initializePose()
     {
@@ -748,6 +736,34 @@ namespace XYZ {
             }
         }
     }
+    void SkinningEditorPanel::eraseBone(PreviewBone* bone)
+    {
+        for (size_t i = 0; i < m_Bones.size(); ++i)
+        {
+            if (m_Bones[i]->ID == bone->ID)
+            {
+                m_Bones.erase(m_Bones.begin() + i);
+                break;
+            }
+        }
+        m_BoneHierarchy.TraverseNodeChildren(bone->ID, [&](void* parent, void* child)->bool {
+            
+            PreviewBone* childBone = static_cast<PreviewBone*>(child);           
+            for (size_t i = 0; i < m_Bones.size(); ++i)
+            {
+                if (m_Bones[i]->ID == childBone->ID)
+                {
+                    m_Bones.erase(m_Bones.begin() + i);
+                    break;
+                }
+            }
+            m_BonePool.Deallocate<PreviewBone>(childBone);
+            return false;
+        });
+
+        m_BoneHierarchy.Remove(bone->ID);
+        m_Tree->RemoveItem(bone->ID);
+    }
     void SkinningEditorPanel::decomposeBone(PreviewBone* bone, glm::vec2& start, glm::vec2& end, float& rot, glm::vec2& normal, bool finalTransform)
     {
         glm::vec3 scale;
@@ -833,12 +849,15 @@ namespace XYZ {
             if (m_NewBoneData.Parent)
             {
                 newBone->ID = m_BoneHierarchy.Insert(newBone, m_NewBoneData.Parent->ID);
+                m_Tree->AddItem(newBone->ID, m_NewBoneData.Parent->ID, IGTreeItem(newBone->Name));
+  
                 newBone->End = m_MousePosition - newBone->Start;
                 newBone->Start -= m_NewBoneData.Parent->WorldStart;
             }
             else
             {
                 newBone->ID = m_BoneHierarchy.Insert(newBone);
+                m_Tree->AddItem(newBone->ID, IGTreeItem(newBone->Name));
                 newBone->End = m_MousePosition - newBone->Start;
             }
             m_NewBoneData.Creating = false;
