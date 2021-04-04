@@ -13,7 +13,8 @@ namespace XYZ {
 		Shader,
 		Font,
 		Audio,
-		Script
+		Script,
+		SkeletalMesh
 	};
 
 

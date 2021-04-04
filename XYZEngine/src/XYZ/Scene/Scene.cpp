@@ -34,112 +34,11 @@ namespace XYZ {
 		m_CameraRenderer = SpriteRenderer(m_CameraMaterial, m_CameraSubTexture, glm::vec4(1.0f), 0);
 
 		m_ECS.ForceStorage<ScriptComponent>();
-	
-
-		////////////////////////
-		Skeleton skeleton;
-		skeleton.Bones.push_back({});
-		skeleton.Bones.push_back({}); // Left hand
-		skeleton.Bones.push_back({}); // Right hand
-		skeleton.Bones.push_back({}); // Left knee
-		skeleton.Bones.push_back({}); // Right knee
-		skeleton.Bones.push_back({}); // Left foot
-		skeleton.Bones.push_back({}); // Right foot
-
-		skeleton.Bones[0].Transform = glm::translate(glm::vec3( 0.0f,  0.0f, 0.0f));
-		skeleton.Bones[1].Transform = glm::translate(glm::vec3(-1.0f,  0.0f, 0.0f));
-		skeleton.Bones[2].Transform = glm::translate(glm::vec3( 1.0f,  0.0f, 0.0f));
-		skeleton.Bones[3].Transform = glm::translate(glm::vec3(-0.5f, -1.0f, 0.0f));
-		skeleton.Bones[4].Transform = glm::translate(glm::vec3( 0.5f, -1.0f, 0.0f));
-		skeleton.Bones[5].Transform = glm::translate(glm::vec3( 0.0f, -1.0f, 0.0f));
-		skeleton.Bones[6].Transform = glm::translate(glm::vec3( 0.0f, -1.0f, 0.0f));
-
-		int32_t root		= skeleton.BoneHierarchy.Insert(&skeleton.Bones[0], 0);
-		int32_t leftHand	= skeleton.BoneHierarchy.Insert(&skeleton.Bones[1]);
-		int32_t rightHand	= skeleton.BoneHierarchy.Insert(&skeleton.Bones[2]);
-		int32_t leftKnee	= skeleton.BoneHierarchy.Insert(&skeleton.Bones[3], root);
-		int32_t rightKnee	= skeleton.BoneHierarchy.Insert(&skeleton.Bones[4], root);
-		int32_t leftFoot	= skeleton.BoneHierarchy.Insert(&skeleton.Bones[5], leftKnee);
-		int32_t rightFoot	= skeleton.BoneHierarchy.Insert(&skeleton.Bones[6], rightKnee);
-
-
-		skeleton.Bones[0].ID = root;
-		skeleton.Bones[1].ID = leftHand;
-		skeleton.Bones[2].ID = rightHand;
-		skeleton.Bones[3].ID = leftKnee;
-		skeleton.Bones[4].ID = rightKnee;
-		skeleton.Bones[5].ID = leftFoot;
-		skeleton.Bones[6].ID = rightFoot;
-
-		skeleton.Bones[0].Name = "Root";
-		skeleton.Bones[1].Name = "Left Hand";
-		skeleton.Bones[2].Name = "Right Hand";
-		skeleton.Bones[3].Name = "Left Knee";
-		skeleton.Bones[4].Name = "Right Knee";
-		skeleton.Bones[5].Name = "Left Foot";
-		skeleton.Bones[6].Name = "Right Foot";
-
-
-		glm::vec2 texCoords[4] = {
-		    {0.0f, 0.0f},
-		    {1.0f, 0.0f},
-		    {1.0f, 1.0f},
-		    {0.0f, 1.0f}
-		};
-		glm::vec3 firstQuad[4] = {
-			{-0.5f, -0.5f, 0.0f},
-			{ 0.5f, -0.5f, 0.0f},
-			{ 0.5f,  0.5f, 0.0f},
-			{-0.5f,  0.5f, 0.0f},
-		};
-
-		m_SkeletalMesh = new SkeletalMesh(skeleton, Ref<Material>::Create(Shader::Create("Assets/Shaders/SkeletalAnimationShader.glsl")));
-		
-		VertexBoneData data;
-		data.Weights[0] = 1.0f;
-		data.IDs[0] = 5;
-		m_SkeletalMesh->m_Vertices.push_back({ firstQuad[0], texCoords[0], data });
-		m_SkeletalMesh->m_Vertices.push_back({ firstQuad[1], texCoords[1], data });
-		data.IDs[0] = 3;
-		m_SkeletalMesh->m_Vertices.push_back({ firstQuad[2], texCoords[2], data });
-		m_SkeletalMesh->m_Vertices.push_back({ firstQuad[3], texCoords[3], data });
-
-		m_SkeletalMesh->m_Indices.push_back(0);
-		m_SkeletalMesh->m_Indices.push_back(1);
-		m_SkeletalMesh->m_Indices.push_back(2);
-		m_SkeletalMesh->m_Indices.push_back(2);
-		m_SkeletalMesh->m_Indices.push_back(3);
-		m_SkeletalMesh->m_Indices.push_back(0);
-		m_SkeletalMesh->RebuildBuffers();
-
-		{
-			//KeyFrame::Data data;
-			//data.Joint = &anim.Skeleton.Joints[0];
-			//data.StartPosition = glm::vec3(0.0f);
-			//data.EndPosition = glm::vec3(1.0f);
-			//anim.KeyFrames.push_back({});
-			//anim.KeyFrames.back().AffectedJoints.push_back(data);
-			//anim.KeyFrames.back().Length = 5.0f;
-		}
-		{
-			//KeyFrame::Data data;
-			//data.Joint = &anim.Skeleton.Joints[1];
-			//data.StartPosition = glm::vec3(0.0f,-4.0f, 0.0f);
-			//data.EndPosition = glm::vec3(1.0f);
-			//anim.KeyFrames.push_back({});
-			//anim.KeyFrames.back().AffectedJoints.push_back(data);
-			//anim.KeyFrames.back().Length = 5.0f;
-			//
-			//data.Joint = &anim.Skeleton.Joints[2];
-			//data.StartPosition = glm::vec3(0.0f, -4.0f, 0.0f);
-			//data.EndPosition = glm::vec3(-1.0f);
-			//anim.KeyFrames.back().AffectedJoints.push_back(data);
-		}
 	}
 
 	Scene::~Scene()
 	{
-		delete m_SkeletalMesh;
+		
 	}
 
 	SceneEntity Scene::CreateEntity(const std::string& name, const GUID& guid)
@@ -369,11 +268,7 @@ namespace XYZ {
 		{
 			auto [transform, light] = lightView.Get<TransformComponent, PointLight2D>(entity);
 			SceneRenderer::SubmitLight(&light, transform.GetTransform());
-		}
-		m_SkeletalMesh->Update(0.01f);
-		SceneRenderer::SubmitSkeletalMesh(m_SkeletalMesh);
-		
-		
+		}	
 		SceneRenderer::EndScene();
 	}
 

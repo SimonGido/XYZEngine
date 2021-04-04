@@ -5,6 +5,7 @@
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Renderer/Font.h"
+#include "XYZ/Renderer/SkeletalMesh.h"
 #include "XYZ/Scene/Scene.h"
 
 #include "XYZ/Scene/SceneSerializer.h"
@@ -113,10 +114,65 @@ namespace YAML {
 			return true;
 		}
 	};
+
+	template<>
+	struct convert<XYZ::AnimatedVertex>
+	{
+		static Node encode(const XYZ::AnimatedVertex& rhs)
+		{
+			Node node;
+			node.push_back(rhs.Position.x);
+			node.push_back(rhs.Position.y);
+			node.push_back(rhs.Position.z);
+			node.push_back(rhs.TexCoord.x);
+			node.push_back(rhs.TexCoord.y);
+			for (size_t i = 0; i < 4; ++i)
+			{
+				node.push_back(rhs.BoneData.Weights[i]);
+				node.push_back(rhs.BoneData.IDs[i]);
+			}
+		
+			return node;
+		}
+
+		static bool decode(const Node& node, XYZ::AnimatedVertex& rhs)
+		{
+			if (!node.IsSequence() || node.size() != 4)
+				return false;
+
+			rhs.Position.x = node[0].as<float>();
+			rhs.Position.y = node[1].as<float>();
+			rhs.Position.z = node[2].as<float>();
+			rhs.TexCoord.x = node[3].as<float>();
+			rhs.TexCoord.y = node[4].as<float>();
+
+			size_t counter = 5;
+			for (size_t i = 0; i < 4; ++i)
+			{
+				rhs.BoneData.Weights[i] = node[counter++].as<float>();
+				rhs.BoneData.IDs[i] = node[counter++].as<uint32_t>();
+			}
+			
+			return true;
+		}
+	};
 }
 
 
 namespace XYZ {
+	YAML::Emitter& operator<<(YAML::Emitter& out, const AnimatedVertex& v)
+	{
+		out << YAML::Flow;
+		out << YAML::BeginSeq 
+			<< v.Position.x << v.Position.y << v.Position.z 
+			<< v.TexCoord.x << v.TexCoord.y
+			<< v.BoneData.Weights[0] << v.BoneData.IDs[0]
+			<< v.BoneData.Weights[1] << v.BoneData.IDs[1]
+			<< v.BoneData.Weights[2] << v.BoneData.IDs[2]
+			<< v.BoneData.Weights[3] << v.BoneData.IDs[3]
+			<< YAML::EndSeq;
+		return out;
+	}
 
 	// TODO: Temporary
 	static void CopyAsset(Ref<Asset>& target, Ref<Asset>& source)
@@ -196,7 +252,6 @@ namespace XYZ {
 	}
 	static TextureWrap IntToTextureWrap(int wrap)
 	{
-
 		if (wrap == ToUnderlying(TextureWrap::Clamp))
 			return TextureWrap::Clamp;
 		if (wrap == ToUnderlying(TextureWrap::Repeat))
@@ -377,6 +432,24 @@ namespace XYZ {
 	}
 
 	template <>
+	void AssetSerializer::serialize<SkeletalMesh>(const Ref<Asset>& asset)
+	{
+		XYZ_ASSERT(!asset->FilePath.empty(), "Filepath is empty");
+		Ref<SkeletalMesh> mesh = Ref<SkeletalMesh>((SkeletalMesh*)asset.Raw());
+		YAML::Emitter out;
+		out << YAML::BeginMap; // Skeletal Mesh
+
+		out << YAML::Key << "SkeletalMesh" << YAML::Value << asset->FileName;
+		out << YAML::Key << "MaterialAsset" << YAML::Value << mesh->GetMaterial()->Handle;
+		out << YAML::Key << "AnimatedVertices" << YAML::Value << mesh->GetVertices();
+		out << YAML::Key << "Indices" << YAML::Value << mesh->GetIndicies();
+		out << YAML::EndMap; // Skeletal Mesh
+
+		std::ofstream fout(asset->FilePath);
+		fout << out.c_str();	
+	}
+
+	template <>
 	void AssetSerializer::serialize<Scene>(const Ref<Asset>& asset)
 	{
 		XYZ_ASSERT(!asset->FilePath.empty(), "Filepath is empty");
@@ -521,6 +594,17 @@ namespace XYZ {
 	}
 
 	template <>
+	Ref<Asset> AssetSerializer::deserialize<SkeletalMesh>(Ref<Asset> asset)
+	{
+		Ref<Material> material;
+		std::vector<AnimatedVertex> vertices;
+		std::vector<uint32_t> indices;
+		auto ref = Ref<SkeletalMesh>::Create(vertices, indices, material);
+		CopyAsset(ref.As<Asset>(), asset);
+		return ref.As<Font>();
+	}
+
+	template <>
 	Ref<Asset> AssetSerializer::deserialize<Scene>(Ref<Asset> asset)
 	{
 		Ref<Scene> result = Ref<Scene>::Create("");
@@ -578,6 +662,8 @@ namespace XYZ {
 			return serialize<Shader>(asset);
 		case AssetType::Font:
 			return serialize<Font>(asset);
+		case AssetType::SkeletalMesh:
+			return serialize<SkeletalMesh>(asset);
 		}
 		createMetaFile(asset);
 	}
@@ -597,6 +683,8 @@ namespace XYZ {
 			return deserialize<Shader>(asset);
 		case AssetType::Font:
 			return deserialize<Font>(asset);
+		case AssetType::SkeletalMesh:
+			return deserialize<SkeletalMesh>(asset);
 		}
 		asset->IsLoaded = true;
 	}

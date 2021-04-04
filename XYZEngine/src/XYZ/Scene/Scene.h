@@ -87,9 +87,6 @@ namespace XYZ {
 
 
         
-        ////////////////////////
-        SkeletalMesh *m_SkeletalMesh;
-
 
         friend class SceneEntity;
         friend class SceneSerializer;

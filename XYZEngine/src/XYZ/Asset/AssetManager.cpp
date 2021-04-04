@@ -23,6 +23,7 @@ namespace XYZ
 		s_AssetTypes["mat"] = AssetType::Material;
 		s_AssetTypes["shader"] = AssetType::Shader;
 		s_AssetTypes["cs"] = AssetType::Script;
+		s_AssetTypes["skm"] = AssetType::SkeletalMesh;
 
 
 		AssetDirectory newDirectory;

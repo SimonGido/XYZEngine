@@ -3,6 +3,7 @@
 #include "XYZ/Utils/StringUtils.h"
 #include "XYZ/Renderer/Shader.h"
 #include "XYZ/Renderer/Texture.h"
+#include "XYZ/Renderer/SkeletalMesh.h"
 #include "AssetSerializer.h"
 #include "Asset.h"
 

@@ -6,6 +6,7 @@
 #include "XYZ/Renderer/Renderer.h"
 
 #include "XYZ/Utils/Math/Math.h"
+#include "XYZ/Asset/AssetManager.h"
 
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
@@ -241,6 +242,7 @@ namespace XYZ {
                 m_Flags = ToggleBit(m_Flags, PreviewPose);
                 initializePose();
                 updateVertexBuffer();
+                Save();
             }
             else if (IG::GetUI<IGButton>(m_PoolHandle, 5).Is(IGReturnType::Clicked)) // Create bone
             {
@@ -326,6 +328,24 @@ namespace XYZ {
             dispatcher.Dispatch<KeyPressedEvent>(Hook(&SkinningEditorPanel::onKeyPress, this));
         }
     }
+    void SkinningEditorPanel::Save()
+    {
+        Ref<Material> material = AssetManager::GetAsset<Material>(AssetManager::GetAssetHandle("Assets/Materials/Material.mat"));
+        std::vector<XYZ::AnimatedVertex> vertices;
+        std::vector<uint32_t> indices;
+        for (auto& vertex : m_PreviewVertices)
+            vertices.push_back({ vertex.Position, vertex.TexCoord, vertex.BoneData });
+        for (auto& subMesh : m_SubMeshes)
+        {
+            for (auto& triangle : subMesh.Triangles)
+            {
+                indices.push_back(triangle.First);
+                indices.push_back(triangle.Second);
+                indices.push_back(triangle.Third);
+            }
+        }
+        AssetManager::CreateAsset<SkeletalMesh>("SkeletalMesh.skm", AssetType::SkeletalMesh, AssetManager::GetDirectoryHandle("Assets/Meshes"), vertices, indices, material);
+    }
     void SkinningEditorPanel::setupUI()
     {
         IG::ForEach<IGSeparator>(m_PoolHandle, [](IGSeparator& separator) {
@@ -380,6 +400,10 @@ namespace XYZ {
                 m_FoundBone = nullptr;
                 m_SelectedBone = nullptr;
             }
+            else if (IS_SET(m_Flags, EditBone))
+            {
+                setEditBone(m_FoundBone);
+            }
             else if (IS_SET(m_Flags, CreateVertex))
             {
                 m_SelectedVertex = nullptr;
@@ -427,6 +451,10 @@ namespace XYZ {
     }
     bool SkinningEditorPanel::onMouseButtonRelease(MouseButtonReleaseEvent& event)
     {
+        if (event.IsButtonReleased(MouseCode::MOUSE_BUTTON_RIGHT))
+        {
+            setEditBone(nullptr);
+        }
         return false;
     }
     bool SkinningEditorPanel::onMouseScroll(MouseScrollEvent& event)
@@ -763,6 +791,20 @@ namespace XYZ {
 
         m_BoneHierarchy.Remove(bone->ID);
         m_Tree->RemoveItem(bone->ID);
+        m_BonePool.Deallocate<PreviewBone>(bone);
+    }
+    void SkinningEditorPanel::setEditBone(PreviewBone* bone)
+    {
+        m_EditBoneData.Bone = bone;
+        m_EditBoneData.Rotate = false;
+        if (IS_SET(m_Flags, PreviewPose) && bone)
+        {
+            float rot;
+            glm::vec2 start, end, normal;
+            decomposeBone(bone, start, end, rot, normal);
+            if (glm::distance(m_MousePosition, start) > m_PointRadius * 2.0f)
+                m_EditBoneData.Rotate = true;
+        }
     }
     void SkinningEditorPanel::decomposeBone(PreviewBone* bone, glm::vec2& start, glm::vec2& end, float& rot, glm::vec2& normal, bool finalTransform)
     {
@@ -866,40 +908,40 @@ namespace XYZ {
     }
     void SkinningEditorPanel::handleBoneEdit()
     {
-        if (m_SelectedBone)
-        {
-            if (Input::IsMouseButtonPressed(MouseCode::MOUSE_BUTTON_RIGHT))
+        if (m_EditBoneData.Bone)
+        {        
+            if (IS_SET(m_Flags, PreviewPose))
             {
-                if (IS_SET(m_Flags, PreviewPose))
+                float rot;
+                glm::vec2 start, end, normal;
+                decomposeBone(m_SelectedBone, start, end, rot, normal);
+                             
+                if (m_EditBoneData.Rotate)
                 {
-                    float rot;
-                    glm::vec2 start, end, normal;
-                    decomposeBone(m_SelectedBone, start, end, rot, normal);
-                    if (glm::distance(m_MousePosition, start) < m_PointRadius * 2.0f)
+                    glm::vec2 origDir = glm::normalize(end - start);
+                    glm::vec2 dir = glm::normalize(m_MousePosition - start);
+                    if (glm::distance(origDir, dir) > FLT_MIN)
                     {
-                        glm::vec2 translation = m_MousePosition - start;
-                        m_SelectedBone->PreviewTransform = glm::translate(m_SelectedBone->PreviewTransform, glm::vec3(translation, 0.0f));
-                    }
-                    else
-                    {
-                        glm::vec2 origDir = glm::normalize(end - start);
-                        glm::vec2 dir = glm::normalize(m_MousePosition - start);
-                                       
                         float angle = glm::atan(dir.y, dir.x) - glm::atan(origDir.y, origDir.x);
                         m_SelectedBone->PreviewTransform = glm::rotate(m_SelectedBone->PreviewTransform, angle, glm::vec3(0.0f, 0.0f, 1.0f));
                     }
                 }
                 else
                 {
-                    m_SelectedBone->Start = m_MousePosition;
-                    if (auto parent = m_BoneHierarchy.GetParentData(m_SelectedBone->ID))
-                    {
-                        PreviewBone* parentBone = static_cast<PreviewBone*>(parent);
-                        m_SelectedBone->Start -= parentBone->WorldStart;
-                    }
+                    glm::vec2 translation = m_MousePosition - start;
+                    m_SelectedBone->PreviewTransform = glm::translate(m_SelectedBone->PreviewTransform, glm::vec3(translation, 0.0f));
                 }
-                updateVertexBuffer();
             }
+            else
+            {
+                m_SelectedBone->Start = m_MousePosition;
+                if (auto parent = m_BoneHierarchy.GetParentData(m_SelectedBone->ID))
+                {
+                    PreviewBone* parentBone = static_cast<PreviewBone*>(parent);
+                    m_SelectedBone->Start -= parentBone->WorldStart;
+                }
+            }
+            updateVertexBuffer();
         }
     }
     void SkinningEditorPanel::handleVertexEdit()
@@ -1185,8 +1227,8 @@ namespace XYZ {
         if (IS_SET(m_Flags, PreviewPose))
         {
             PreviewVertex& first = m_PreviewVertices[size_t(triangle.First + vertexOffset)];
-            PreviewVertex& second = m_PreviewVertices[size_t(triangle.Second+ vertexOffset)];
-            PreviewVertex& third = m_PreviewVertices[size_t(triangle.Third+ vertexOffset)];
+            PreviewVertex& second = m_PreviewVertices[size_t(triangle.Second + vertexOffset)];
+            PreviewVertex& third = m_PreviewVertices[size_t(triangle.Third + vertexOffset)];
 
             Renderer2D::SubmitLine(glm::vec3(first.Position.x, first.Position.y, 0.0f), glm::vec3(second.Position.x, second.Position.y, 0.0f), color);
             Renderer2D::SubmitLine(glm::vec3(second.Position.x, second.Position.y, 0.0f), glm::vec3(third.Position.x, third.Position.y, 0.0f), color);

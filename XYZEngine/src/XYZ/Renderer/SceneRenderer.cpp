@@ -172,11 +172,10 @@ namespace XYZ {
 
 		FlushDrawList();
 	}
-	static SkeletalMesh* s_Mesh;
 
 	void SceneRenderer::SubmitSkeletalMesh(SkeletalMesh* mesh)
 	{
-		s_Mesh = mesh;
+
 	}
 
 	void SceneRenderer::SubmitSprite(SpriteRenderer* sprite, TransformComponent* transform)
@@ -280,8 +279,6 @@ namespace XYZ {
 			uint32_t textureID = Renderer2D::SetTexture(dc.Sprite->SubTexture->GetTexture());
 			Renderer2D::SubmitQuad(dc.Transform->GetTransform(), dc.Sprite->SubTexture->GetTexCoords(), textureID, dc.Sprite->Color);
 		}
-		s_Mesh->Render(s_Data.ViewProjectionMatrix);
-
 		Renderer2D::Flush();
 		Renderer2D::FlushLines();
 		Renderer2D::FlushCollisions();

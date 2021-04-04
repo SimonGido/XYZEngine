@@ -10,8 +10,6 @@
 #include <glm/gtx/quaternion.hpp>
 
 namespace XYZ {
-
- 
     static bool s_Pressed = false;
 
     static uint32_t s_LastSelected = 0;
@@ -46,13 +44,6 @@ namespace XYZ {
         }
     }
 
- 
-    SkeletalMesh::SkeletalMesh(const Skeleton& skeleton, Ref<Material> material)
-        :
-        m_Skeleton(skeleton),
-        m_Material(material)
-    {
-    }
     void SkeletalMesh::Update(float ts)
     {  
         m_Skeleton.BoneHierarchy.Traverse([](void* parent, void* child) -> bool {
@@ -73,67 +64,9 @@ namespace XYZ {
         m_Skeleton.BoneHierarchy.Traverse([&](void* parent, void* child) -> bool {
 
             Bone* childBone = static_cast<Bone*>(child);
-            glm::vec4 color = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
-            if (m_Selected && m_Selected->ID == childBone->ID)
-                color = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-           
-
-            glm::vec3 scale;
-            glm::quat rotation;
-            glm::vec3 translation;
-            glm::vec3 skew;
-            glm::vec4 perspective;
-            glm::decompose(childBone->FinalTransform, scale, rotation, translation, skew, perspective);
-            Renderer2D::SubmitCircle(translation, 0.05f, 10, color);
-
-
-            glm::vec3 endPoint = glm::vec3(0.0f, -childBone->Length, 0.0f);;
-            endPoint = childBone->FinalTransform * glm::vec4(endPoint, 1.0f);
-            Renderer2D::SubmitLine(translation, endPoint, glm::vec4(1.0f, 0.0f, 1.0f, 1.0f));
-   
+          
             return false;
         });
-
-      
-        if (Input::IsKeyPressed(KeyCode::KEY_SPACE) && !s_Pressed)
-        {
-            s_Pressed = true;
-            uint32_t counter = 0;
-            m_Skeleton.BoneHierarchy.Traverse([&](void* parent, void* child) -> bool {
-        
-                if (counter == s_LastSelected)
-                {
-                    m_Selected = static_cast<Bone*>(child);
-                    
-                    s_LastSelected++;
-                    if (s_LastSelected >= m_Skeleton.Bones.size())
-                        s_LastSelected = 0;
-                    return true;
-                }
-                counter++;
-                return false;
-            });
-        }
-        if (!Input::IsKeyPressed(KeyCode::KEY_SPACE))
-        {
-            s_Pressed = false;
-        }
-        if (Input::IsMouseButtonPressed(MouseCode::MOUSE_BUTTON_LEFT) && m_Selected)
-        {
-            auto [mx, my] = Input::GetMousePosition();
-           
-            m_Selected->Transform = m_Selected->Transform * glm::rotate(0.001f, glm::vec3(0.0f, 0.0f, 1.0f));
-        }
-        if (Input::IsMouseButtonPressed(MouseCode::MOUSE_BUTTON_RIGHT) && m_Selected)
-        {
-            auto [mx, my] = Input::GetMousePosition();
-
-            glm::vec3 translation = glm::vec3((mx - m_OldMousePosition.x) / 100.0f, -(my - m_OldMousePosition.y) / 100.0f, 0.0f);
-            m_Selected->Transform = glm::translate(m_Selected->Transform, translation);
-        }
-
-        auto [mx, my] = Input::GetMousePosition();
-        m_OldMousePosition = glm::vec2( mx, my );
     }
 
     void SkeletalMesh::RebuildBuffers()
@@ -152,6 +85,31 @@ namespace XYZ {
 
         Ref<IndexBuffer> ibo = IndexBuffer::Create(m_Indices.data(), m_Indices.size());
         m_VertexArray->SetIndexBuffer(ibo);
+    }
+
+    SkeletalMesh::SkeletalMesh(
+        const std::vector<AnimatedVertex>& vertices,
+        const std::vector<uint32_t>& indices,
+        Ref<Material> material
+    )
+        :
+        m_Vertices(vertices),
+        m_Indices(indices),
+        m_Material(material)
+    {
+
+    }
+
+    SkeletalMesh::SkeletalMesh(
+        std::vector<AnimatedVertex>&& vertices, 
+        std::vector<uint32_t>&& indices, 
+        Ref<Material> material
+    )
+        :
+        m_Vertices(std::move(vertices)),
+        m_Indices(std::move(indices)),
+        m_Material(material)
+    {
     }
 
     void SkeletalMesh::Render(const glm::mat4& viewProjectionMatrix)

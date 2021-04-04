@@ -757,13 +757,19 @@ namespace XYZ {
 		auto it = NameIDMap.find(child);
 		if (it != NameIDMap.end())
 		{
-			Hierarchy.TraverseNode(it->second, [&](void* parent, void* child)->bool {
+			Hierarchy.TraverseNodeChildren(it->second, [&](void* parent, void* child)->bool {
 			
 				IGTreeItem* childItem = static_cast<IGTreeItem*>(child);
 				NameIDMap.erase(childItem->Key);
+				Hierarchy.Remove(childItem->ID);
 				Pool.Deallocate(childItem);
 				return false;
 			});
+
+			IGTreeItem* item = static_cast<IGTreeItem*>(Hierarchy.GetData(NameIDMap[child]));
+			Hierarchy.Remove(item->ID);
+			NameIDMap.erase(item->Key);
+			Pool.Deallocate(item);
 		}
 		else
 		{

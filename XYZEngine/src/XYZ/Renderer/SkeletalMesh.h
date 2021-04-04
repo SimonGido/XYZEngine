@@ -1,5 +1,5 @@
 #pragma once
-#include "XYZ/Core/Ref.h"
+#include "XYZ/Asset/Asset.h"
 #include "XYZ/Core/MemoryPool.h"
 #include "XYZ/Renderer/VertexArray.h"
 #include "XYZ/Renderer/Material.h"
@@ -38,11 +38,7 @@ namespace XYZ {
 	{
 		glm::mat4 FinalTransform;
 		glm::mat4 Transform;
-		float Length = 1.0f;
 		int32_t ID;
-
-		// Debug 
-		std::string Name;
 	};
 
 	struct Skeleton
@@ -54,29 +50,37 @@ namespace XYZ {
 		std::vector<Bone> Bones;
 	};
 
-	class SkeletalMesh : public RefCount
+	class SkeletalMesh : public Asset
 	{
 	public:
-		SkeletalMesh(const Skeleton& skeleton, Ref<Material> material);
+		SkeletalMesh(
+			const std::vector<AnimatedVertex>& vertices, 
+			const std::vector<uint32_t>& indices,
+			Ref<Material> material
+		);
+		SkeletalMesh(
+			std::vector<AnimatedVertex>&& vertices, 
+			std::vector<uint32_t>&& indices,
+			Ref<Material> material
+		);
 
 		void Update(float ts);
 		void RebuildBuffers();
 
 		void Render(const glm::mat4& viewProjectionMatrix);
 
-	//private:
+		const Ref<Material>& GetMaterial() const { return m_Material; }
+		const std::vector<AnimatedVertex>& GetVertices() const { return m_Vertices; }
+		const std::vector<uint32_t>&  GetIndicies() const { return m_Indices; }
+	private:
 		Ref<VertexArray> m_VertexArray;
 		Ref<Material> m_Material;
 
 		std::vector<AnimatedVertex> m_Vertices;
-		std::vector<uint32_t> m_Indices;
-
-		Bone* m_Selected = nullptr;
-		glm::vec2 m_OldMousePosition = glm::vec2(0.0f);
-
+		std::vector<uint32_t> m_Indices;	
 		Skeleton m_Skeleton;
-		uint32_t m_CurrentFrame = 0;
 
+		uint32_t m_CurrentFrame = 0;
 		float m_CurrentTime = 0.0f;
 		float m_Repeat = true;
 	};

@@ -121,6 +121,9 @@ namespace XYZ {
             TreeNode& previousSibling = m_Nodes[removed.PreviousSibling];
             previousSibling.NextSibling = removed.NextSibling;
         }
+        if (index == m_Root)
+            m_Root = TreeNode::sc_Invalid;
+
         m_NodeCount--;
         m_Nodes.Erase(index);
     }

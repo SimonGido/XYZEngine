@@ -25,6 +25,7 @@ namespace XYZ {
 		void OnUpdate();
 		void OnEvent(Event& event);
 
+		void Save();
 	private:
 		struct BoneData
 		{
@@ -142,6 +143,7 @@ namespace XYZ {
 		void eraseVertexAtPosition(const glm::vec2& pos);
 		void eraseTriangleAtPosition(const glm::vec2& pos);
 		void eraseBone(PreviewBone* bone);
+		void setEditBone(PreviewBone* bone);
 		void decomposeBone(PreviewBone* bone, glm::vec2& start, glm::vec2& end, float& rot, glm::vec2& normal, bool finalTransform = true);
 
 		void previewBoneCreate();
@@ -220,6 +222,13 @@ private:
 			bool Creating = false;
 		};
 		NewBoneData m_NewBoneData;
+		
+		struct EditBoneData
+		{
+			PreviewBone* Bone = nullptr;
+			bool Rotate = false;
+		};
+		EditBoneData m_EditBoneData;
 
 
 		float m_WeightBrushRadius = 15.0f;
