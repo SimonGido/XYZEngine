@@ -27,6 +27,8 @@ namespace XYZ {
         TreeNode newNode;
         newNode.Data = data;
         int32_t newInserted = m_Nodes.Insert(newNode);
+        m_Nodes[newInserted].ID = newInserted;
+
         if (m_NodeValid.size() <= newInserted)
             m_NodeValid.resize((size_t)newInserted + 1);
         m_NodeValid[newInserted] = true;
@@ -59,6 +61,8 @@ namespace XYZ {
         TreeNode newNode;
         newNode.Data = data;
         int32_t newInserted = m_Nodes.Insert(newNode);
+        m_Nodes[newInserted].ID = newInserted;
+
         if (m_NodeValid.size() <= newInserted)
             m_NodeValid.resize((size_t)newInserted + 1);
         m_NodeValid[newInserted] = true;
@@ -237,6 +241,7 @@ namespace XYZ {
     TreeNode::TreeNode(const TreeNode& other)
         :
         Data(other.Data),
+        ID(other.ID),
         Parent(other.Parent),
         FirstChild(other.FirstChild),
         NextSibling(other.NextSibling),
@@ -247,6 +252,7 @@ namespace XYZ {
     TreeNode::TreeNode(TreeNode&& other) noexcept
         :
         Data(other.Data),
+        ID(other.ID),
         Parent(other.Parent),
         FirstChild(other.FirstChild),
         NextSibling(other.NextSibling),

@@ -120,6 +120,35 @@ namespace YAML {
 	};
 
 	template<>
+	struct convert<XYZ::TreeNode>
+	{
+		static Node encode(const XYZ::TreeNode& rhs)
+		{
+			Node node;
+			node.push_back(rhs.ID);
+			node.push_back(rhs.Parent);
+			node.push_back(rhs.FirstChild);
+			node.push_back(rhs.NextSibling);
+			node.push_back(rhs.PreviousSibling);
+	
+			return node;
+		}
+
+		static bool decode(const Node& node, XYZ::TreeNode& rhs)
+		{
+			if (!node.IsSequence() || node.size() != 5)
+				return false;
+
+			rhs.ID = node[0].as<int32_t>();
+			rhs.Parent = node[1].as<int32_t>();
+			rhs.FirstChild = node[2].as<int32_t>();
+			rhs.NextSibling = node[3].as<int32_t>();
+			rhs.PreviousSibling = node[4].as<int32_t>();
+
+			return true;
+		}
+	};
+	template<>
 	struct convert<XYZ::AnimatedVertex>
 	{
 		static Node encode(const XYZ::AnimatedVertex& rhs)
@@ -141,7 +170,7 @@ namespace YAML {
 
 		static bool decode(const Node& node, XYZ::AnimatedVertex& rhs)
 		{
-			if (!node.IsSequence())
+			if (!node.IsSequence() || node.size() != 13)
 				return false;
 
 			rhs.Position.x = node[0].as<float>();
@@ -172,12 +201,14 @@ namespace XYZ {
 			if (tree.IsNodeValid(i))
 			{
 				const TreeNode& node = tree.GetFlatNodes()[i];
-				out << YAML::BeginMap;
-				out << YAML::Key << "Parent" << node.Parent;
-				out << YAML::Key << "FirstChild" << node.FirstChild;
-				out << YAML::Key << "NextSibling" << node.NextSibling;
-				out << YAML::Key << "PreviousSibling" << node.PreviousSibling;
-				out << YAML::EndMap;
+				out << YAML::Flow;
+				out << YAML::BeginSeq
+				<< node.ID
+				<< node.Parent
+				<< node.FirstChild
+				<< node.NextSibling
+				<< node.PreviousSibling
+				<< YAML::EndSeq;
 			}
 		}
 		out << YAML::EndSeq;
@@ -649,11 +680,21 @@ namespace XYZ {
 	template <>
 	Ref<Asset> AssetSerializer::deserialize<SkeletalMesh>(Ref<Asset> asset)
 	{
-		Ref<Material> material;
-		std::vector<AnimatedVertex> vertices;
-		std::vector<uint32_t> indices;
+		std::ifstream stream(asset->FilePath);
+		std::stringstream strStream;
+		strStream << stream.rdbuf();
+		YAML::Node data = YAML::Load(strStream.str());
+
+		GUID materialHandle(data["MaterialAsset"].as<std::string>());
+		Ref<Material> material = AssetManager::GetAsset<Shader>(materialHandle);
+
+		std::vector<AnimatedVertex> vertices = data["AnimatedVertices"].as<std::vector<AnimatedVertex>>();
+		std::vector<uint32_t> indices = data["Indices"].as<std::vector<uint32_t>>();
 		std::vector<Bone> bones;
+		std::vector<TreeNode> hierarchy;
+
 		Tree boneHierarchy;
+
 		auto ref = Ref<SkeletalMesh>::Create(vertices, indices, bones, boneHierarchy, material);
 		CopyAsset(ref.As<Asset>(), asset);
 		return ref.As<Font>();

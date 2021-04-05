@@ -16,7 +16,7 @@ namespace XYZ {
 		static constexpr int32_t sc_Invalid = -1;
 
 		void* Data = nullptr;
-
+		int32_t ID				= sc_Invalid;
 		int32_t Parent			= sc_Invalid;
 		int32_t FirstChild		= sc_Invalid;
 		int32_t NextSibling		= sc_Invalid;
