@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "IGDockspace.h"
 
-#include "XYZ/Core/MemoryPool.h"
+#include "XYZ/Utils/DataStructures/MemoryPool.h"
 #include "XYZ/Renderer/Renderer2D.h"
 
 namespace XYZ {

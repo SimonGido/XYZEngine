@@ -32,82 +32,38 @@ namespace XYZ {
             * glm::scale(glm::mat4(1.0f), scale);
     }
 
-
-    Skeleton::Skeleton(const Skeleton& other)
-        :
-        BoneHierarchy(other.BoneHierarchy),
-        Bones(other.Bones)
-    {
-        for (auto& bone : Bones)
-        {
-            BoneHierarchy.SetData(bone.ID, &bone);
-        }
-    }
-
-    void SkeletalMesh::Update(float ts)
-    {  
-        m_Skeleton.BoneHierarchy.Traverse([](void* parent, void* child) -> bool {
-           
-            Bone* childBone = static_cast<Bone*>(child);
-            if (parent)
-            {
-                Bone* parentBone = static_cast<Bone*>(parent);
-                childBone->FinalTransform = parentBone->FinalTransform * childBone->Transform;
-            }
-            else
-            {
-                childBone->FinalTransform = childBone->Transform;
-            }
-            return false;
-        });
-
-        m_Skeleton.BoneHierarchy.Traverse([&](void* parent, void* child) -> bool {
-
-            Bone* childBone = static_cast<Bone*>(child);
-          
-            return false;
-        });
-    }
-
-    void SkeletalMesh::RebuildBuffers()
-    {
-        m_VertexArray = VertexArray::Create();
-
-        Ref<VertexBuffer> vbo = VertexBuffer::Create(m_Vertices.data(), m_Vertices.size() * sizeof(AnimatedVertex));
-        vbo->SetLayout({
-            {0, XYZ::ShaderDataComponent::Float3, "a_Position" },
-            {1, XYZ::ShaderDataComponent::Float2, "a_TexCoord" },
-            {2, XYZ::ShaderDataComponent::Int4,   "a_BoneIDs"  },
-            {3, XYZ::ShaderDataComponent::Float4, "a_Weights"  }
-        });
-
-        m_VertexArray->AddVertexBuffer(vbo);
-
-        Ref<IndexBuffer> ibo = IndexBuffer::Create(m_Indices.data(), m_Indices.size());
-        m_VertexArray->SetIndexBuffer(ibo);
-    }
-
     SkeletalMesh::SkeletalMesh(
         const std::vector<AnimatedVertex>& vertices,
         const std::vector<uint32_t>& indices,
+        const std::vector<Bone>& bones,
+        const Tree& hierarchy,
         Ref<Material> material
     )
         :
         m_Vertices(vertices),
         m_Indices(indices),
+        m_Bones(bones),
+        m_BoneHierarchy(hierarchy),
         m_Material(material)
     {
-
+        for (auto& bone : m_Bones)
+        {
+            m_BoneHierarchy.SetData(bone.ID, &bone);
+        }
     }
 
     SkeletalMesh::SkeletalMesh(
         std::vector<AnimatedVertex>&& vertices, 
         std::vector<uint32_t>&& indices, 
+        std::vector<Bone>&& bones,
+        Tree&& hierarchy,
         Ref<Material> material
     )
         :
         m_Vertices(std::move(vertices)),
         m_Indices(std::move(indices)),
+        m_Bones(std::move(bones)),
+        m_BoneHierarchy(std::move(hierarchy)),
         m_Material(material)
     {
     }
@@ -122,14 +78,32 @@ namespace XYZ {
         shader->SetFloat4("u_Color", glm::vec4(1.0f));
 
         uint32_t counter = 0;
-        for (auto& bone : m_Skeleton.Bones)
+        for (auto& bone : m_FinalTransformations)
         {
             char name[12];
             sprintf(name, "u_Bones[%u]", counter++);
-            shader->SetMat4(name, bone.FinalTransform);
+            shader->SetMat4(name, bone);
         }
 
         m_VertexArray->Bind();
         Renderer::DrawIndexed(PrimitiveType::Triangles, m_Indices.size());
+    }
+
+    void SkeletalMesh::RebuildBuffers()
+    {
+        m_VertexArray = VertexArray::Create();
+
+        Ref<VertexBuffer> vbo = VertexBuffer::Create(m_Vertices.data(), m_Vertices.size() * sizeof(AnimatedVertex));
+        vbo->SetLayout({
+            {0, XYZ::ShaderDataComponent::Float3, "a_Position" },
+            {1, XYZ::ShaderDataComponent::Float2, "a_TexCoord" },
+            {2, XYZ::ShaderDataComponent::Int4,   "a_BoneIDs"  },
+            {3, XYZ::ShaderDataComponent::Float4, "a_Weights"  }
+            });
+
+        m_VertexArray->AddVertexBuffer(vbo);
+
+        Ref<IndexBuffer> ibo = IndexBuffer::Create(m_Indices.data(), m_Indices.size());
+        m_VertexArray->SetIndexBuffer(ibo);
     }
 }

@@ -25,11 +25,11 @@
 #include "XYZ/Renderer/Font.h"
 #include "XYZ/Renderer/Framebuffer.h"
 #include "XYZ/Renderer/SubTexture.h"
+#include "XYZ/Renderer/Animation.h"
 
 
 //-----Scene-----//
 #include "XYZ/Scene/SceneCamera.h"
-#include "XYZ/Scene/Animation.h"
 #include "XYZ/Scene/SceneEntity.h"
 #include "XYZ/Scene/Scene.h"
 
@@ -57,8 +57,8 @@
 #include "XYZ/Script/LuaEntity.h"
 
 //------Utils-------//
-#include "XYZ/Utils/DataStructures/HashGrid2D.h"
 #include "XYZ/Utils/DataStructures/ByteBuffer.h"
+#include "XYZ/Utils/DataStructures/MemoryPool.h"
 #include "XYZ/Utils/Math/Ray.h"
 
 

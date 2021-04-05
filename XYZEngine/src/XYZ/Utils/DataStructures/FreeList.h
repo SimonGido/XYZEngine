@@ -102,11 +102,6 @@ namespace XYZ {
 			m_FirstFree = -1;
 		}
 
-		bool Valid(int32_t index) const
-		{
-			return m_Data[index].Next != -1;
-		}
-
 		// Returns the range of valid indices.
 		int32_t Range() const
 		{
@@ -125,7 +120,6 @@ namespace XYZ {
 		{
 			return m_Data[index].Element;
 		}
-
 	private:
 		union FreeElement
 		{
@@ -151,6 +145,8 @@ namespace XYZ {
 				Element = other.Element;
 				return *this;
 			}
+			operator T& () { return Element; }
+			operator const T& () const { return Element; }
 
 			T Element;
 			int32_t Next;

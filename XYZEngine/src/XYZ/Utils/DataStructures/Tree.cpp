@@ -9,23 +9,28 @@ namespace XYZ {
         :
         m_Root(other.m_Root),
         m_Nodes(other.m_Nodes),
-        m_NodeCount(other.m_NodeCount)
+        m_NodeCount(other.m_NodeCount),
+        m_NodeValid(other.m_NodeValid)
     {
     }
     Tree::Tree(Tree&& other) noexcept
         :
         m_Root(other.m_Root),
         m_NodeCount(other.m_NodeCount),
-        m_Nodes(std::move(other.m_Nodes))
+        m_Nodes(std::move(other.m_Nodes)),
+        m_NodeValid(std::move(other.m_NodeValid))
     {
         other.m_Root = TreeNode::sc_Invalid;
-
     }
     int32_t Tree::Insert(void* data)
     {
         TreeNode newNode;
         newNode.Data = data;
         int32_t newInserted = m_Nodes.Insert(newNode);
+        if (m_NodeValid.size() <= newInserted)
+            m_NodeValid.resize((size_t)newInserted + 1);
+        m_NodeValid[newInserted] = true;
+
         if (m_Root == TreeNode::sc_Invalid)
         {
             m_Root = newInserted;
@@ -54,6 +59,9 @@ namespace XYZ {
         TreeNode newNode;
         newNode.Data = data;
         int32_t newInserted = m_Nodes.Insert(newNode);
+        if (m_NodeValid.size() <= newInserted)
+            m_NodeValid.resize((size_t)newInserted + 1);
+        m_NodeValid[newInserted] = true;
 
         if (m_Root == TreeNode::sc_Invalid)
         {
@@ -72,8 +80,10 @@ namespace XYZ {
         m_Nodes[newInserted].Parent = parent;
         m_Nodes[newInserted].Depth = m_Nodes[parent].Depth + 1;
         parentNode.FirstChild = newInserted;
-
         m_NodeCount++;
+
+        
+
         return newInserted;
     }
     void Tree::Remove(int32_t index)
@@ -126,6 +136,7 @@ namespace XYZ {
 
         m_NodeCount--;
         m_Nodes.Erase(index);
+        m_NodeValid[index] = false;
     }
     void Tree::ReverseNodeChildren(int32_t node)
     {

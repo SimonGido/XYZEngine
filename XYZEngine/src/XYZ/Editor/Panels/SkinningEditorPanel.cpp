@@ -331,8 +331,12 @@ namespace XYZ {
     void SkinningEditorPanel::Save()
     {
         Ref<Material> material = AssetManager::GetAsset<Material>(AssetManager::GetAssetHandle("Assets/Materials/Material.mat"));
+       
         std::vector<XYZ::AnimatedVertex> vertices;
         std::vector<uint32_t> indices;
+        std::vector<Bone> bones;
+        Tree boneHierarchy;
+
         for (auto& vertex : m_PreviewVertices)
             vertices.push_back({ vertex.Position, vertex.TexCoord, vertex.BoneData });
         for (auto& subMesh : m_SubMeshes)
@@ -344,7 +348,38 @@ namespace XYZ {
                 indices.push_back(triangle.Third);
             }
         }
-        AssetManager::CreateAsset<SkeletalMesh>("SkeletalMesh.skm", AssetType::SkeletalMesh, AssetManager::GetDirectoryHandle("Assets/Meshes"), vertices, indices, material);
+        
+        uint32_t counter = 0;
+        bones.resize(m_Bones.size());
+        std::unordered_map<int32_t, uint32_t> boneMap;
+        m_BoneHierarchy.Traverse([&](void* parent, void* child) -> bool {
+            
+            PreviewBone* childBone = static_cast<PreviewBone*>(child);
+            bones[counter] = { 
+                childBone->PreviewFinalTransform, 
+                childBone->PreviewTransform,
+            };      
+            boneMap[childBone->ID] = counter;
+            counter++;
+            return false;
+        });
+        m_BoneHierarchy.Traverse([&](void* parent, void* child) -> bool {
+            
+            PreviewBone* childBone = static_cast<PreviewBone*>(child);
+            uint32_t childBoneIndex = boneMap[childBone->ID];
+            if (parent)
+            {
+                PreviewBone* parentBone = static_cast<PreviewBone*>(parent);
+                uint32_t parentBoneIndex = boneMap[parentBone->ID];
+                bones[childBoneIndex].ID = boneHierarchy.Insert(&bones[childBoneIndex], bones[parentBoneIndex].ID);
+            }
+            else
+            {
+                bones[childBoneIndex].ID = boneHierarchy.Insert(&bones[childBoneIndex]);
+            }
+            return false;
+        });
+        AssetManager::CreateAsset<SkeletalMesh>("SkeletalMesh.skm", AssetType::SkeletalMesh, AssetManager::GetDirectoryHandle("Assets/Meshes"), vertices, indices, bones, boneHierarchy, material);
     }
     void SkinningEditorPanel::setupUI()
     {

@@ -203,7 +203,7 @@ namespace XYZ {
 		auto& animatorStorage = m_ECS.GetStorage<AnimatorComponent>();
 		for (auto & anim : animatorStorage)
 		{
-			anim.Controller.Update(ts);
+			
 		}
 		
 		auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponent>();

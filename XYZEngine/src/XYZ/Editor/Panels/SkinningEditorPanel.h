@@ -10,7 +10,7 @@
 #include "XYZ/IG/IG.h"
 #include "XYZ/Core/Timestep.h"
 #include "XYZ/Utils/DataStructures/Tree.h"
-#include "XYZ/Core/MemoryPool.h"
+#include "XYZ/Utils/DataStructures/MemoryPool.h"
 
 
 

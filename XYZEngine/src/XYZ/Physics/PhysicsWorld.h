@@ -1,5 +1,5 @@
 #pragma once
-#include "XYZ/Core/MemoryPool.h"
+#include "XYZ/Utils/DataStructures/MemoryPool.h"
 #include "XYZ/Core/Timestep.h"
 #include "DynamicTree.h"
 #include "PhysicsBody.h"

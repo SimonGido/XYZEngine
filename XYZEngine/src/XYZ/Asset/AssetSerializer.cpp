@@ -15,6 +15,10 @@
 #include <yaml-cpp/yaml.h>
 
 
+#include <glm/glm.hpp>
+#include <glm/gtx/transform.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
+
 namespace YAML {
 
 	template<>
@@ -137,7 +141,7 @@ namespace YAML {
 
 		static bool decode(const Node& node, XYZ::AnimatedVertex& rhs)
 		{
-			if (!node.IsSequence() || node.size() != 4)
+			if (!node.IsSequence())
 				return false;
 
 			rhs.Position.x = node[0].as<float>();
@@ -160,6 +164,26 @@ namespace YAML {
 
 
 namespace XYZ {
+	YAML::Emitter& operator<<(YAML::Emitter& out, const Tree& tree)
+	{		
+		out << YAML::Value << YAML::BeginSeq;
+		for (int32_t i = 0; i < tree.GetFlatNodes().Range(); ++i)
+		{
+			if (tree.IsNodeValid(i))
+			{
+				const TreeNode& node = tree.GetFlatNodes()[i];
+				out << YAML::BeginMap;
+				out << YAML::Key << "Parent" << node.Parent;
+				out << YAML::Key << "FirstChild" << node.FirstChild;
+				out << YAML::Key << "NextSibling" << node.NextSibling;
+				out << YAML::Key << "PreviousSibling" << node.PreviousSibling;
+				out << YAML::EndMap;
+			}
+		}
+		out << YAML::EndSeq;
+		return out;
+	}
+
 	YAML::Emitter& operator<<(YAML::Emitter& out, const AnimatedVertex& v)
 	{
 		out << YAML::Flow;
@@ -170,6 +194,25 @@ namespace XYZ {
 			<< v.BoneData.Weights[1] << v.BoneData.IDs[1]
 			<< v.BoneData.Weights[2] << v.BoneData.IDs[2]
 			<< v.BoneData.Weights[3] << v.BoneData.IDs[3]
+			<< YAML::EndSeq;
+		return out;
+	}
+
+	YAML::Emitter& operator<<(YAML::Emitter& out, const Bone& bone)
+	{		
+		glm::vec3 skew;
+		glm::vec4 perspective;
+		glm::vec3 translation;
+		glm::quat rotation;
+		glm::vec3 scale;
+		glm::decompose(bone.Transform, scale, rotation, translation, skew, perspective);
+
+		out << YAML::Flow;
+		out << YAML::BeginSeq 
+			<< translation.x << translation.y << translation.z
+			<< rotation.x << rotation.y << rotation.z
+			<< scale.x << scale.y << scale.z
+			<< bone.ID
 			<< YAML::EndSeq;
 		return out;
 	}
@@ -203,6 +246,13 @@ namespace XYZ {
 	{
 		out << YAML::Flow;
 		out << YAML::BeginSeq << v.x << v.y << v.z << v.w << YAML::EndSeq;
+		return out;
+	}
+
+	static YAML::Emitter& ToQuat(YAML::Emitter& out, const glm::quat& v)
+	{
+		out << YAML::Flow;
+		out << YAML::BeginSeq << v.w << v.x << v.y << v.z << YAML::EndSeq;
 		return out;
 	}
 
@@ -443,6 +493,9 @@ namespace XYZ {
 		out << YAML::Key << "MaterialAsset" << YAML::Value << mesh->GetMaterial()->Handle;
 		out << YAML::Key << "AnimatedVertices" << YAML::Value << mesh->GetVertices();
 		out << YAML::Key << "Indices" << YAML::Value << mesh->GetIndicies();
+		out << YAML::Key << "Hierachy" << YAML::Value << mesh->GetBoneHierarchy();
+		out << YAML::Key << "Bones" << YAML::Value << mesh->GetBones();
+
 		out << YAML::EndMap; // Skeletal Mesh
 
 		std::ofstream fout(asset->FilePath);
@@ -599,7 +652,9 @@ namespace XYZ {
 		Ref<Material> material;
 		std::vector<AnimatedVertex> vertices;
 		std::vector<uint32_t> indices;
-		auto ref = Ref<SkeletalMesh>::Create(vertices, indices, material);
+		std::vector<Bone> bones;
+		Tree boneHierarchy;
+		auto ref = Ref<SkeletalMesh>::Create(vertices, indices, bones, boneHierarchy, material);
 		CopyAsset(ref.As<Asset>(), asset);
 		return ref.As<Font>();
 	}

@@ -153,12 +153,6 @@ namespace XYZ {
 			type["Get"] = &Ref<SubTexture>::Get;
 		}
 
-		// AnimationController
-		{
-			sol::usertype<AnimationController> type = m_L.new_usertype<AnimationController>("AnimationController");
-			type["TransitionTo"] = &AnimationController::TransitionTo;
-		}
-
 
 		// Transform
 		{
@@ -178,7 +172,7 @@ namespace XYZ {
 		// AnimatorComponent
 		{
 			sol::usertype <AnimatorComponent> type = m_L.new_usertype<AnimatorComponent>("AnimatorComponent");
-			type["Controller"] = &AnimatorComponent::Controller;
+			
 		}
 
 		// LuaEntity

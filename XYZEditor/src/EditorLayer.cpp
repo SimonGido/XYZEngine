@@ -80,6 +80,10 @@ namespace XYZ {
 		m_SkinningEditorPanel.SetContext(robotSubTexture);
 
 		IG::LoadLayout("IG.IG");
+
+		glm::vec3 tmpVal;
+		Property<glm::vec3> prop(tmpVal);
+		prop.AddKeyFrame(glm::vec3(0.5f), 2.0f);
 	}	
 
 	void EditorLayer::OnDetach()

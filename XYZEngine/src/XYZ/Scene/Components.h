@@ -10,7 +10,6 @@
 #include "XYZ/Physics/PhysicsBody.h"
 
 #include "SceneCamera.h"
-#include "AnimationController.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
@@ -124,7 +123,6 @@ namespace XYZ {
 	struct AnimatorComponent : public IComponent
 	{
 		AnimatorComponent() = default;
-		AnimationController Controller;
 
 	};
 

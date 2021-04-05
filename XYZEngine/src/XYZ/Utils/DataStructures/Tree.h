@@ -48,11 +48,15 @@ namespace XYZ {
 		void*	    GetParentData(int32_t index);
 		int32_t     GetRoot() const { return m_Root; }
 		uint32_t    GetNodeCount() const { return m_NodeCount; }
-
+		bool		IsNodeValid(int32_t index) const { return m_NodeValid[index]; }
 		const FreeList<TreeNode>& GetFlatNodes() const { return m_Nodes; }
+
+
+
 	private:	
 		int32_t m_Root = TreeNode::sc_Invalid;
 		FreeList<TreeNode> m_Nodes;
+		std::vector<bool> m_NodeValid;
 
 		uint32_t m_NodeCount = 0;
 	};
