@@ -284,8 +284,6 @@ namespace XYZ {
 	}
 	SceneEntity Scene::GetEntityByName(const std::string& name)
 	{
-		ECSManager newECs(m_ECS);
-
 		return { m_ECS.FindEntity<SceneTagComponent>(name), this };
 	}
 

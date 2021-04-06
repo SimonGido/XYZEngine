@@ -9,24 +9,24 @@ Root Elements:
     ID: 0
     Pool: 0
   - Label: Inspector Panel
-    Position: [1442, 0]
-    Size: [478, 1017]
+    Position: [1172, 0]
+    Size: [748, 1017]
     Color: [1, 1, 1, 1]
     FrameColor: [1, 1, 1, 1]
-    Flags: 128
+    Flags: 130
     ID: 0
     Pool: 1
   - Label: Scene
     Position: [422, 0]
-    Size: [1020, 529]
+    Size: [750, 345]
     Color: [1, 1, 1, 1]
     FrameColor: [1, 1, 1, 1]
     Flags: 128
     ID: 0
     Pool: 2
   - Label: Skinning Editor
-    Position: [422, 529]
-    Size: [1020, 488]
+    Position: [422, 345]
+    Size: [750, 672]
     Color: [1, 1, 1, 1]
     FrameColor: [1, 1, 1, 1]
     Flags: 128
@@ -60,7 +60,7 @@ Dockspace:
     SecondChild: 6
   - ID: 3
     Position: [422, 0]
-    Size: [1020, 1017]
+    Size: [750, 1017]
     Type: 1
     Windows:
       []
@@ -69,23 +69,23 @@ Dockspace:
     SecondChild: 5
   - ID: 4
     Position: [422, 0]
-    Size: [1020, 529]
+    Size: [750, 345]
     Type: 0
     Windows:
       - HierarchyIndex: 0
         PoolIndex: 2
     Parent: 3
   - ID: 5
-    Position: [422, 529]
-    Size: [1020, 488]
+    Position: [422, 345]
+    Size: [750, 672]
     Type: 0
     Windows:
       - HierarchyIndex: 0
         PoolIndex: 3
     Parent: 3
   - ID: 6
-    Position: [1442, 0]
-    Size: [478, 1017]
+    Position: [1172, 0]
+    Size: [748, 1017]
     Type: 0
     Windows:
       - HierarchyIndex: 0

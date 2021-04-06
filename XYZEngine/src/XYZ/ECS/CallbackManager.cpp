@@ -19,7 +19,7 @@ namespace XYZ {
 		{
 			if (m_StorageCreated[i])
 			{
-				size_t offset = i * sizeof(ICallbackStorage);		
+				size_t offset = i * sizeof(CallbackStorage<IComponent>);
 				other.GetIStorage(offset)->Copy(&m_StoragePool.GetRawData()[offset]);
 			}
 		}
