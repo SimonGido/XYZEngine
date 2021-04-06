@@ -11,6 +11,8 @@ namespace XYZ {
 	{
 	public:
 		CallbackManager();
+		CallbackManager(const CallbackManager& other);
+		~CallbackManager();
 
 		template <typename T>
 		void AddListener(const std::function<void(uint32_t, CallbackType)>& callback, void* instance)
@@ -42,6 +44,10 @@ namespace XYZ {
 
 		void OnEntityDestroyed(uint32_t entity, const Signature& signature);
 		
+		const ICallbackStorage* GetIStorage(size_t offset) const
+		{
+			return m_StoragePool.Get<ICallbackStorage>(offset);
+		}
 
 	private:
 		template <typename T>

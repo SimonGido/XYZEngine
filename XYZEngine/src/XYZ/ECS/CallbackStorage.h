@@ -23,12 +23,19 @@ namespace XYZ {
 		virtual ~ICallbackStorage() = default;
 
 		virtual void Execute(uint32_t entity, CallbackType type) = 0;
+		virtual ICallbackStorage* Copy(uint8_t* buffer) const = 0;
 	};
 
 	template <typename T>
 	class CallbackStorage : public ICallbackStorage
 	{
 	public:
+		CallbackStorage() = default;
+		CallbackStorage(const CallbackStorage<T>& other)
+			:
+			m_Listeners(other.m_Listeners)
+		{}
+
 		virtual void Execute(uint32_t entity, CallbackType type) override
 		{
 			for (auto& listener : m_Listeners)
@@ -62,6 +69,11 @@ namespace XYZ {
 			}
 		}
 		
+		virtual ICallbackStorage* Copy(uint8_t* buffer) const override
+		{
+			return new (buffer)CallbackStorage<T>(*this);
+		}
+
 	private:
 		std::vector<Listener> m_Listeners;
 	};
