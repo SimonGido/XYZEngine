@@ -27,7 +27,14 @@ namespace XYZ {
 	}
 	ComponentManager::~ComponentManager()
 	{
-		
+		for (size_t i = 0; i < m_StorageCreated.size(); ++i)
+		{
+			if (m_StorageCreated[i])
+			{
+				size_t offset = i * sizeof(ComponentStorage<IComponent>);
+				m_StoragePool.Destroy<IComponentStorage>(m_StoragePool.Get<IComponentStorage>(offset));
+			}
+		}
 	}
 	void ComponentManager::EntityDestroyed(Entity entity, const Signature& signature)
 	{
