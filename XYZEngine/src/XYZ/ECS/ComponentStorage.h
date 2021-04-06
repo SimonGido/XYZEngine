@@ -20,6 +20,14 @@ namespace XYZ {
 	class ComponentStorage : public IComponentStorage
 	{
 	public:
+		ComponentStorage() = default;
+		ComponentStorage(const ComponentStorage<T>& other)
+			: 
+			m_Data(other.m_Data),
+			m_DataEntityMap(other.m_DataEntityMap),
+			m_EntityDataMap(other.m_EntityDataMap)
+		{}
+
 		virtual Entity EntityDestroyed(Entity entity) override
 		{
 			return RemoveComponent(entity);
@@ -30,11 +38,7 @@ namespace XYZ {
 		}
 		virtual IComponentStorage* Copy(uint8_t* buffer) const override
 		{
-			ComponentStorage<T>* clone = new ((void*)buffer)ComponentStorage<T>();
-			clone->m_Data = m_Data;
-			clone->m_DataEntityMap = m_DataEntityMap;
-			clone->m_EntityDataMap = m_EntityDataMap;
-			return clone;
+			return new ((void*)buffer)ComponentStorage<T>(*this);
 		}
 		virtual const std::vector<Entity>& GetDataEntityMap() const override
 		{ 
