@@ -36,7 +36,6 @@ namespace XYZ {
 
 	struct Bone
 	{
-		glm::mat4 FinalTransform;
 		glm::mat4 Transform;
 		int32_t ID;
 	};

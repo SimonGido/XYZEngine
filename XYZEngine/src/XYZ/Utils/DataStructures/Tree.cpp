@@ -90,6 +90,47 @@ namespace XYZ {
 
         return newInserted;
     }
+    void Tree::SetParent(int32_t child, int32_t parent)
+    {
+        TreeNode& childNode = m_Nodes[child];
+        TreeNode& newParentNode = m_Nodes[parent];
+
+        // If it has parent it is first child
+        if (childNode.PreviousSibling == TreeNode::sc_Invalid)
+        {
+            // If next sibling is not invalid change its previous sibling
+            if (childNode.NextSibling != TreeNode::sc_Invalid)
+            {
+                TreeNode& nextSibling = m_Nodes[childNode.NextSibling];
+                nextSibling.PreviousSibling = TreeNode::sc_Invalid;
+            }
+            // It is first child of parent, set its next sibling to parent first child
+            if (childNode.Parent != TreeNode::sc_Invalid)
+            {
+                TreeNode& oldParentNode = m_Nodes[childNode.Parent];
+                oldParentNode.FirstChild = childNode.NextSibling;
+            }
+        }
+        else
+        {
+            TreeNode& previousSibling = m_Nodes[childNode.PreviousSibling];
+            previousSibling.NextSibling = childNode.NextSibling;
+            if (childNode.NextSibling != TreeNode::sc_Invalid)
+            {
+                TreeNode& nextSibling = m_Nodes[childNode.NextSibling];
+                nextSibling.PreviousSibling = childNode.PreviousSibling;
+            }
+        }
+
+        if (newParentNode.FirstChild != TreeNode::sc_Invalid)
+        {
+            int32_t tmp = newParentNode.FirstChild;
+            childNode.NextSibling = tmp;
+            m_Nodes[tmp].PreviousSibling = child;
+        }
+        childNode.Parent = parent;
+        childNode.Depth = m_Nodes[parent].Depth + 1;
+    }
     void Tree::Remove(int32_t index)
     {
         TreeNode& removed = m_Nodes[index];

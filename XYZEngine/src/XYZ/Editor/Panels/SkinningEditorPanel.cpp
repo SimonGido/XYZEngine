@@ -356,7 +356,6 @@ namespace XYZ {
             
             PreviewBone* childBone = static_cast<PreviewBone*>(child);
             bones[counter] = { 
-                childBone->PreviewFinalTransform, 
                 childBone->PreviewTransform,
             };      
             boneMap[childBone->ID] = counter;
@@ -379,8 +378,8 @@ namespace XYZ {
             }
             return false;
         });
-        AssetManager::GetAsset<SkeletalMesh>(AssetManager::GetAssetHandle("Assets/Meshes/SkeletalMesh.skm"));
-        AssetManager::CreateAsset<SkeletalMesh>("SkeletalMesh.skm", AssetType::SkeletalMesh, AssetManager::GetDirectoryHandle("Assets/Meshes"), vertices, indices, bones, boneHierarchy, material);
+        //AssetManager::GetAsset<SkeletalMesh>(AssetManager::GetAssetHandle("Assets/Meshes/SkeletalMesh.skm"));
+        //AssetManager::CreateAsset<SkeletalMesh>("SkeletalMesh.skm", AssetType::SkeletalMesh, AssetManager::GetDirectoryHandle("Assets/Meshes"), vertices, indices, bones, boneHierarchy, material);
     }
     void SkinningEditorPanel::setupUI()
     {

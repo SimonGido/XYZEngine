@@ -33,6 +33,7 @@ namespace XYZ {
 
 		int32_t     Insert(void* data);
 		int32_t     Insert(void* data, int32_t parent);
+		void		SetParent(int32_t child, int32_t parent);
 		void        Remove(int32_t index);
 		void        ReverseNodeChildren(int32_t node);
 		void        ReverseNode(int32_t node);
@@ -50,7 +51,6 @@ namespace XYZ {
 		uint32_t    GetNodeCount() const { return m_NodeCount; }
 		bool		IsNodeValid(int32_t index) const { return m_NodeValid[index]; }
 		const FreeList<TreeNode>& GetFlatNodes() const { return m_Nodes; }
-
 
 
 	private:	

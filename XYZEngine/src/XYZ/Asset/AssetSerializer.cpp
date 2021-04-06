@@ -16,8 +16,10 @@
 
 
 #include <glm/glm.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
+
 
 namespace YAML {
 
@@ -189,10 +191,79 @@ namespace YAML {
 			return true;
 		}
 	};
+
+	template<>
+	struct convert<XYZ::Bone>
+	{
+		static Node encode(const XYZ::Bone& rhs)
+		{
+			Node node;
+			glm::vec3 skew;
+			glm::vec4 perspective;
+			glm::vec3 translation;
+			glm::quat rotation;
+			glm::vec3 scale;
+			glm::decompose(rhs.Transform, scale, rotation, translation, skew, perspective);
+			
+			node.push_back(translation.x);
+			node.push_back(translation.y);
+			node.push_back(translation.z);
+			node.push_back(rotation.x);
+			node.push_back(rotation.y);
+			node.push_back(rotation.z);
+			node.push_back(rotation.w);
+			node.push_back(scale.x);
+			node.push_back(scale.y);
+			node.push_back(scale.z);
+			node.push_back(rhs.ID);
+			return node;
+		}
+
+		static bool decode(const Node& node, XYZ::Bone& rhs)
+		{
+			if (!node.IsSequence() || node.size() != 11)
+				return false;
+
+			glm::vec3 translation;
+			glm::quat rotation;
+			glm::vec3 scale;
+			translation.x = node[0].as<float>();
+			translation.y = node[1].as<float>();
+			translation.z = node[2].as<float>();
+			rotation.x	  = node[3].as<float>();
+			rotation.y	  = node[4].as<float>();
+			rotation.z	  = node[5].as<float>();
+			rotation.w	  = node[6].as<float>();
+			scale.x		  = node[7].as<float>();
+			scale.y		  = node[8].as<float>();
+			scale.z		  = node[9].as<float>();
+			rhs.ID		  = node[10].as<int32_t>();
+			rhs.Transform = glm::translate(translation) 
+				* glm::toMat4(rotation) 
+				* glm::scale(glm::mat4(1.0f), scale);
+			return true;
+		}
+	};
 }
 
 
 namespace XYZ {
+	YAML::Emitter& operator<<(YAML::Emitter& out, const TreeNode& node)
+	{
+		out << YAML::Flow;
+		out << YAML::BeginSeq
+			<< node.ID
+			<< node.Parent
+			<< node.FirstChild
+			<< node.NextSibling
+			<< node.PreviousSibling
+			<< YAML::EndSeq;
+		return out;
+	}
+
+
+
+
 	YAML::Emitter& operator<<(YAML::Emitter& out, const Tree& tree)
 	{		
 		out << YAML::Value << YAML::BeginSeq;
@@ -201,19 +272,13 @@ namespace XYZ {
 			if (tree.IsNodeValid(i))
 			{
 				const TreeNode& node = tree.GetFlatNodes()[i];
-				out << YAML::Flow;
-				out << YAML::BeginSeq
-				<< node.ID
-				<< node.Parent
-				<< node.FirstChild
-				<< node.NextSibling
-				<< node.PreviousSibling
-				<< YAML::EndSeq;
+				out << node;
 			}
 		}
 		out << YAML::EndSeq;
 		return out;
 	}
+
 
 	YAML::Emitter& operator<<(YAML::Emitter& out, const AnimatedVertex& v)
 	{
@@ -241,7 +306,7 @@ namespace XYZ {
 		out << YAML::Flow;
 		out << YAML::BeginSeq 
 			<< translation.x << translation.y << translation.z
-			<< rotation.x << rotation.y << rotation.z
+			<< rotation.x << rotation.y << rotation.z << rotation.w
 			<< scale.x << scale.y << scale.z
 			<< bone.ID
 			<< YAML::EndSeq;
@@ -520,11 +585,12 @@ namespace XYZ {
 		YAML::Emitter out;
 		out << YAML::BeginMap; // Skeletal Mesh
 
+		
 		out << YAML::Key << "SkeletalMesh" << YAML::Value << asset->FileName;
 		out << YAML::Key << "MaterialAsset" << YAML::Value << mesh->GetMaterial()->Handle;
 		out << YAML::Key << "AnimatedVertices" << YAML::Value << mesh->GetVertices();
 		out << YAML::Key << "Indices" << YAML::Value << mesh->GetIndicies();
-		out << YAML::Key << "Hierachy" << YAML::Value << mesh->GetBoneHierarchy();
+		out << YAML::Key << "Hierarchy" << YAML::Value << mesh->GetBoneHierarchy();
 		out << YAML::Key << "Bones" << YAML::Value << mesh->GetBones();
 
 		out << YAML::EndMap; // Skeletal Mesh
@@ -677,6 +743,30 @@ namespace XYZ {
 		return ref.As<Font>();
 	}
 
+	
+	static void BuildBoneTree(Tree& tree, std::vector<Bone>& bones, std::vector<TreeNode>& nodes)
+	{
+		std::unordered_map<int32_t, int32_t> hierarchyMap;
+		for (TreeNode& node : nodes)
+		{
+			auto it = std::find_if(bones.begin(), bones.end(), [&](const Bone& a) {
+				return a.ID == node.ID;
+			});
+			int32_t id = tree.Insert(&(*it));
+			hierarchyMap[node.ID] = tree.Insert(&(*it));	
+			it->ID = id;
+		}
+		for (TreeNode& node : nodes)
+		{
+			if (node.Parent != TreeNode::sc_Invalid)
+			{
+				int32_t newParentID = hierarchyMap[node.Parent];
+				int32_t newID = hierarchyMap[node.ID];
+				tree.SetParent(newID, newParentID);
+			}
+		}
+	}
+
 	template <>
 	Ref<Asset> AssetSerializer::deserialize<SkeletalMesh>(Ref<Asset> asset)
 	{
@@ -690,12 +780,19 @@ namespace XYZ {
 
 		std::vector<AnimatedVertex> vertices = data["AnimatedVertices"].as<std::vector<AnimatedVertex>>();
 		std::vector<uint32_t> indices = data["Indices"].as<std::vector<uint32_t>>();
-		std::vector<Bone> bones;
-		std::vector<TreeNode> hierarchy;
+		std::vector<TreeNode> hierarchy = data["Hierarchy"].as<std::vector<TreeNode>>();
+		std::vector<Bone> bones = data["Bones"].as<std::vector<Bone>>();
 
 		Tree boneHierarchy;
-
-		auto ref = Ref<SkeletalMesh>::Create(vertices, indices, bones, boneHierarchy, material);
+		BuildBoneTree(boneHierarchy, bones, hierarchy);
+	
+		auto ref = Ref<SkeletalMesh>::Create(
+			std::move(vertices), 
+			std::move(indices), 
+			std::move(bones),
+			std::move(boneHierarchy), 
+			material
+		);
 		CopyAsset(ref.As<Asset>(), asset);
 		return ref.As<Font>();
 	}
