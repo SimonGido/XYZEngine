@@ -15,6 +15,8 @@ namespace XYZ {
 		CallbackManager(CallbackManager&& other) noexcept;
 		~CallbackManager();
 
+		CallbackManager& operator=(CallbackManager&& other) noexcept;
+
 		template <typename T>
 		void AddListener(const std::function<void(uint32_t, CallbackType)>& callback, void* instance)
 		{
@@ -63,7 +65,7 @@ namespace XYZ {
 			}
 			return m_StoragePool.Get<CallbackStorage<T>>((size_t)id * sizeof(CallbackStorage<T>));
 		}
-		
+		void deallocateStorages();
 	private:
 		Pool m_StoragePool;
 		std::vector<bool> m_StorageCreated;

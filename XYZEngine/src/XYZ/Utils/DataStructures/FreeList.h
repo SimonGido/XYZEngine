@@ -44,6 +44,13 @@ namespace XYZ {
 			m_Data = other.m_Data;
 			return *this;
 		}
+
+		FreeList<T>& operator = (FreeList<T>&& other) noexcept
+		{
+			m_FirstFree = other.m_FirstFree;
+			m_Data = std::move(other.m_Data);
+			return *this;
+		}
 		
 		// Inserts an element to the free list and returns an index to it.
 		int32_t Insert(const T& elem)

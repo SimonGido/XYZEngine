@@ -23,6 +23,13 @@ namespace XYZ {
 		m_EntitiesInUse(other.m_EntitiesInUse)
 	{
 	}
+	EntityManager& EntityManager::operator=(EntityManager&& other) noexcept
+	{
+		m_Signatures = std::move(other.m_Signatures);
+		m_Valid = std::move(other.m_Valid);
+		m_EntitiesInUse = other.m_EntitiesInUse;
+		return *this;
+	}
 	Entity EntityManager::CreateEntity()
 	{
 		m_EntitiesInUse++;

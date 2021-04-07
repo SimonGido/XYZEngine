@@ -14,6 +14,8 @@ namespace XYZ {
 		EntityManager(const EntityManager& other);
 		EntityManager(EntityManager&& other) noexcept;
 
+		EntityManager& operator=(EntityManager&& other) noexcept;
+
 		Entity CreateEntity();
 
 		Signature& GetSignature(Entity entity);

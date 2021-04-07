@@ -36,6 +36,14 @@ namespace XYZ {
 	{
 		deallocateStorages();
 	}
+	ComponentManager& ComponentManager::operator=(ComponentManager&& other) noexcept
+	{
+		deallocateStorages();
+		m_StoragePool = std::move(other.m_StoragePool);
+		m_StorageCreated = std::move(other.m_StorageCreated);
+		m_NumberOfStorages = other.m_NumberOfStorages;
+		return *this;
+	}
 	void ComponentManager::EntityDestroyed(Entity entity, const Signature& signature)
 	{
 		for (uint32_t i = 0; i < m_StorageCreated.size(); ++i)
@@ -55,6 +63,7 @@ namespace XYZ {
 			{
 				size_t offset = i * sizeof(ComponentStorage<IComponent>);
 				m_StoragePool.Destroy<IComponentStorage>(m_StoragePool.Get<IComponentStorage>(offset));
+				m_StorageCreated[i] = false;
 			}
 		}
 	}
