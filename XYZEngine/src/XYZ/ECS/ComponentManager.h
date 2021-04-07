@@ -111,6 +111,8 @@ namespace XYZ {
 		Pool m_StoragePool;
 		std::vector<bool> m_StorageCreated;
 		size_t m_NumberOfStorages = 0;
+
+		friend class ECSSerializer;
 	};
 	
 }

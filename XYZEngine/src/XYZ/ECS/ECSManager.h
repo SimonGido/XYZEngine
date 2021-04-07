@@ -158,6 +158,8 @@ namespace XYZ {
 		ComponentManager m_ComponentManager;
 		CallbackManager m_CallbackManager;
 		EntityManager m_EntityManager;
+	
+		friend class ECSSerializer;
 	};
 	
 }

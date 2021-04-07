@@ -34,5 +34,6 @@ namespace XYZ {
 
 		static constexpr uint32_t sc_MaxEntity = UINT32_MAX - 1;
 		friend class ECSManager;
+		friend class ECSSerializer;
 	};
 }

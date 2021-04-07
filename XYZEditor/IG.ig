@@ -13,7 +13,7 @@ Root Elements:
     Size: [748, 1017]
     Color: [1, 1, 1, 1]
     FrameColor: [1, 1, 1, 1]
-    Flags: 130
+    Flags: 128
     ID: 0
     Pool: 1
   - Label: Scene

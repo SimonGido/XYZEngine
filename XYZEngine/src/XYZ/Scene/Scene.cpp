@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Scene.h"
+#include "XYZ/ECS/Serialization/ECSSerializer.h"
 
 #include "XYZ/Core/Input.h"
 #include "XYZ/Core/Application.h"
@@ -36,9 +37,18 @@ namespace XYZ {
 		m_ECS.ForceStorage<ScriptComponent>();
 	}
 
+	ByteStream& operator <<(ByteStream& out, const IDComponent& val)
+	{
+
+		return out;
+	}
+
 	Scene::~Scene()
 	{
-		
+		ByteStream out;
+		ECSSerializer::Serialize<
+		IDComponent
+		>(m_ECS, out);
 	}
 
 	SceneEntity Scene::CreateEntity(const std::string& name, const GUID& guid)
