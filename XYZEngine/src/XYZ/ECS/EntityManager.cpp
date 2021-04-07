@@ -9,6 +9,20 @@ namespace XYZ {
 		// Invalid
 		m_Signatures.Insert(Signature());
 	}
+	EntityManager::EntityManager(const EntityManager& other)
+		:
+		m_Signatures(other.m_Signatures),
+		m_Valid(other.m_Valid),
+		m_EntitiesInUse(other.m_EntitiesInUse)
+	{
+	}
+	EntityManager::EntityManager(EntityManager&& other) noexcept
+		:
+		m_Signatures(std::move(other.m_Signatures)),
+		m_Valid(std::move(other.m_Valid)),
+		m_EntitiesInUse(other.m_EntitiesInUse)
+	{
+	}
 	Entity EntityManager::CreateEntity()
 	{
 		m_EntitiesInUse++;

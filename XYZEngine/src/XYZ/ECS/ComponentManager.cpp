@@ -25,16 +25,16 @@ namespace XYZ {
 			}
 		}
 	}
+	ComponentManager::ComponentManager(ComponentManager&& other) noexcept
+		:
+		m_StoragePool(std::move(other.m_StoragePool)),
+		m_StorageCreated(std::move(other.m_StorageCreated)),
+		m_NumberOfStorages(other.m_NumberOfStorages)
+	{
+	}
 	ComponentManager::~ComponentManager()
 	{
-		for (size_t i = 0; i < m_StorageCreated.size(); ++i)
-		{
-			if (m_StorageCreated[i])
-			{
-				size_t offset = i * sizeof(ComponentStorage<IComponent>);
-				m_StoragePool.Destroy<IComponentStorage>(m_StoragePool.Get<IComponentStorage>(offset));
-			}
-		}
+		deallocateStorages();
 	}
 	void ComponentManager::EntityDestroyed(Entity entity, const Signature& signature)
 	{
@@ -44,6 +44,17 @@ namespace XYZ {
 			{
 				auto storage = m_StoragePool.Get<IComponentStorage>(i * sizeof(ComponentStorage<IComponent>));
 				storage->EntityDestroyed(entity);
+			}
+		}
+	}
+	void ComponentManager::deallocateStorages()
+	{
+		for (size_t i = 0; i < m_StorageCreated.size(); ++i)
+		{
+			if (m_StorageCreated[i])
+			{
+				size_t offset = i * sizeof(ComponentStorage<IComponent>);
+				m_StoragePool.Destroy<IComponentStorage>(m_StoragePool.Get<IComponentStorage>(offset));
 			}
 		}
 	}

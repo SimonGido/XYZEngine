@@ -12,6 +12,7 @@ namespace XYZ {
 	public:
 		CallbackManager();
 		CallbackManager(const CallbackManager& other);
+		CallbackManager(CallbackManager&& other) noexcept;
 		~CallbackManager();
 
 		template <typename T>

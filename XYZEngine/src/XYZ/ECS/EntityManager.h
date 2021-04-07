@@ -10,8 +10,9 @@ namespace XYZ {
 	{
 		friend class ECSManager;
 	public:
-	
 		EntityManager();
+		EntityManager(const EntityManager& other);
+		EntityManager(EntityManager&& other) noexcept;
 
 		Entity CreateEntity();
 

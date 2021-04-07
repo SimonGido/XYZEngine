@@ -6,7 +6,10 @@ namespace XYZ {
 	{
 	public:
 		Pool(size_t size);
+		Pool(Pool&& other) noexcept;
 		~Pool();
+
+		Pool& operator =(Pool&& other) noexcept;
 
 		template <typename T, typename ...Args>
 		T* Allocate(size_t offset, Args&& ...args)

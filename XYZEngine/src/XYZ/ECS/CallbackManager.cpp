@@ -24,6 +24,13 @@ namespace XYZ {
 			}
 		}
 	}
+	CallbackManager::CallbackManager(CallbackManager&& other) noexcept
+		:
+		m_StoragePool(std::move(other.m_StoragePool)),
+		m_StorageCreated(std::move(other.m_StorageCreated)),
+		m_NumberOfStorages(other.m_NumberOfStorages)
+	{
+	}
 	CallbackManager::~CallbackManager()
 	{
 		for (size_t i = 0; i < m_StorageCreated.size(); ++i)

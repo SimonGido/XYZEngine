@@ -12,6 +12,7 @@ namespace XYZ {
 	public:
 		ComponentManager();	
 		ComponentManager(const ComponentManager& other);
+		ComponentManager(ComponentManager&& other) noexcept;
 
 		~ComponentManager();
 
@@ -104,7 +105,7 @@ namespace XYZ {
 			}
 			return m_StoragePool.Get<ComponentStorage<T>>((size_t)id * sizeof(ComponentStorage<T>));
 		}
-	
+		void deallocateStorages();
 	private:
 		Pool m_StoragePool;
 		std::vector<bool> m_StorageCreated;
