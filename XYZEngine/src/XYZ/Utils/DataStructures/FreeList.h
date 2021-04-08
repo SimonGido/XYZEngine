@@ -17,11 +17,16 @@ namespace XYZ {
 	{
 	public:
 		// Creates a new free list.
-		FreeList(size_t reserve = 0)
-			: m_FirstFree(-1)
+		FreeList(size_t size = 0)		
 		{
-			if (reserve)
-				m_Data.reserve(reserve);
+			m_FirstFree = -1;
+			if (size > 0)
+			{
+				m_Data.resize(size);
+				m_FirstFree = 0;
+				for (size_t i = 0; i < m_Data.size() - 1; ++i)
+					m_Data[i].Next = i + 1;
+			}	
 		}
 
 		FreeList(const FreeList<T>& other)

@@ -11,12 +11,23 @@ namespace XYZ {
 		template <typename ...ComponentTypes>
 		static void Serialize(const ECSManager& ecs, ByteStream& out)
 		{
+			out << ecs.m_EntityManager.m_Signatures.Range();
 			std::tuple<const ComponentStorage<ComponentTypes>&...> storages = { ecs.GetStorage<ComponentTypes>()... };
 			ForEachInTuple(storages, [&](const auto& stor) {
 				SerializeStorage(stor, out);
 			});
 		}
-		static void Deserialize(ECSManager& ecs, const ByteStream& out);
+		template <typename ...ComponentTypes>
+		static void Deserialize(ECSManager& ecs, const ByteStream& out)
+		{
+			size_t size = 0;
+			out >> size;
+			ecs.m_EntityManager.m_Signatures = FreeList<Signature>(size);
+			std::tuple<const ComponentStorage<ComponentTypes>&...> storages = { ecs.GetStorage<ComponentTypes>()... };
+			ForEachInTuple(storages, [&](auto& stor) {
+				DeserializeStorage(stor, out);
+			});
+		}
 
 		template <typename T>
 		static void SerializeComponent(Entity entity, const T& component, ByteStream& out)
