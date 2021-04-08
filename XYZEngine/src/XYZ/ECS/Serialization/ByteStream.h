@@ -23,7 +23,7 @@ namespace XYZ {
 		}
 
 		template <typename T>
-		ByteStream& operator >>(T& value) const
+		const ByteStream& operator >>(T& value) const
 		{
 			static_assert(std::is_trivially_copyable<T>::value, "Value must be trivially copyable");
 			size_t size = sizeof(T);
