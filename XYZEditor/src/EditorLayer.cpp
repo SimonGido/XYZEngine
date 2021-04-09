@@ -32,10 +32,11 @@ namespace XYZ {
 			return true;
 		return false;
 	}
-	
-	
+
+
+
 	EditorLayer::EditorLayer()
-	{		
+	{			
 	}
 
 	EditorLayer::~EditorLayer()

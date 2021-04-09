@@ -1,6 +1,7 @@
 #pragma once
 
 #include <bitset>
+#include <type_traits>
 
 namespace XYZ {
 
@@ -15,11 +16,8 @@ namespace XYZ {
 		}
 	
 	private:
-		static uint8_t getNextID()
-		{
-			static uint8_t nextType = 0;
-			return nextType++;
-		}
+		static uint8_t getNextID();
+		
 	};
 
 
@@ -43,6 +41,7 @@ namespace XYZ {
 		template <typename T>
 		static uint8_t GetComponentID()
 		{
+			static_assert(std::is_base_of<IComponent, T>::value, "Type T does not inherit from IComponent");
 			return Type<T>::GetComponentID();
 		}
 	};
