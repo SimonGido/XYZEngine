@@ -157,11 +157,11 @@ namespace XYZ {
 
         m_ViewportSize = m_Window->Size;
         m_MousePosition = glm::vec2(0.0f);
-        m_CameraPosition = glm::vec2(0.0f);
-        m_ViewProjection = glm::ortho(
+        m_Camera.ProjectionMatrix = glm::ortho(
             -m_Window->Size.x / 2.0f, m_Window->Size.x / 2.0f, 
             -m_Window->Size.y / 2.0f, m_Window->Size.y / 2.0f
         );
+        m_Camera.UpdateViewProjection();
 
         m_Shader = Shader::Create("Assets/Shaders/SkinningEditor.glsl");
 
@@ -181,10 +181,11 @@ namespace XYZ {
         rebuildRenderBuffers();
         m_Window->ResizeCallback = [&](const glm::vec2& size) {
             m_Framebuffer->Resize((uint32_t)size.x, (uint32_t)size.y);
-            m_ViewProjection = glm::ortho(
+            m_Camera.ProjectionMatrix  = glm::ortho(
                 -m_Window->Size.x / 2.0f, m_Window->Size.x / 2.0f, 
                 -m_Window->Size.y / 2.0f, m_Window->Size.y / 2.0f
             );
+            m_Camera.UpdateViewProjection();
         };
 
 
@@ -194,6 +195,14 @@ namespace XYZ {
 
 
         setupUI();
+
+        //m_SkeletalMesh = AssetManager::GetAsset<SkeletalMesh>(AssetManager::GetAssetHandle("Assets/Meshes/SkeletalMesh.skm"));      
+        Ref<Material> material = AssetManager::GetAsset<Material>(AssetManager::GetAssetHandle("Assets/Materials/SkeletalMaterial.mat"));
+        Ref<Texture2D> texture = AssetManager::GetAsset<Texture2D>(AssetManager::GetAssetHandle("Assets/Textures/SimpleChar.tex"));
+        material->Set("u_Texture", texture);
+
+        material = AssetManager::GetAsset<Material>(AssetManager::GetAssetHandle("Assets/Materials/SkeletalMaterial.mat"));
+        material->Bind();
     }
     void SkinningEditorPanel::SetContext(Ref<SubTexture> context)
     {
@@ -244,7 +253,7 @@ namespace XYZ {
                 m_Flags = ToggleBit(m_Flags, PreviewPose);
                 initializePose();
                 updateVertexBuffer();
-                Save();
+               // Save();
             }
             else if (IG::GetUI<IGButton>(m_PoolHandle, 5).Is(IGReturnType::Clicked)) // Create bone
             {
@@ -332,15 +341,35 @@ namespace XYZ {
     }
     void SkinningEditorPanel::Save()
     {
-        Ref<Material> material = AssetManager::GetAsset<Material>(AssetManager::GetAssetHandle("Assets/Materials/Material.mat"));
-       
+        Ref<Shader> shader = AssetManager::GetAsset<Shader>(AssetManager::GetAssetHandle("Assets/Shaders/SkeletalShader.glsl.shader"));
+        Ref<Material> material = AssetManager::GetAsset<Material>(AssetManager::GetAssetHandle("Assets/Materials/SkeletalMaterial.mat"));
+        Ref<Texture2D> texture = AssetManager::GetAsset<Texture2D>(AssetManager::GetAssetHandle("Assets/Textures/SimpleChar.tex"));
+        material->Set("u_Texture", texture);
+        material->Set("u_Color", glm::vec4(1.0f));
+
         std::vector<XYZ::AnimatedVertex> vertices;
         std::vector<uint32_t> indices;
         std::vector<Bone> bones;
         Tree boneHierarchy;
 
-        for (auto& vertex : m_PreviewVertices)
-            vertices.push_back({ vertex.Position, vertex.TexCoord, vertex.BoneData });
+        uint32_t counter = 0;
+        for (auto& subMesh : m_SubMeshes)
+        {
+            for (auto& vertex : subMesh.Vertices)
+            {
+                auto& previewVertex = m_PreviewVertices[counter];
+                for (size_t i = 0; i < BoneData::sc_MaxBonesPerVertex; ++i)
+                {
+                    if (vertex.Data.IDs[i] != -1)
+                    {
+                        previewVertex.BoneData.IDs[i] = vertex.Data.IDs[i];
+                        previewVertex.BoneData.Weights[i] = vertex.Data.Weights[i];
+                    }
+                }
+                vertices.push_back({ previewVertex.Position, previewVertex.TexCoord, previewVertex.BoneData });
+                counter++;
+            }
+        }
         for (auto& subMesh : m_SubMeshes)
         {
             for (auto& triangle : subMesh.Triangles)
@@ -351,7 +380,7 @@ namespace XYZ {
             }
         }
         
-        uint32_t counter = 0;
+        counter = 0;
         bones.resize(m_Bones.size());
         std::unordered_map<int32_t, uint32_t> boneMap;
         m_BoneHierarchy.Traverse([&](void* parent, void* child) -> bool {
@@ -378,10 +407,11 @@ namespace XYZ {
             {
                 bones[childBoneIndex].ID = boneHierarchy.Insert(&bones[childBoneIndex]);
             }
+            bones[childBoneIndex].Name = childBone->Name;
             return false;
         });
         //AssetManager::GetAsset<SkeletalMesh>(AssetManager::GetAssetHandle("Assets/Meshes/SkeletalMesh.skm"));
-        //AssetManager::CreateAsset<SkeletalMesh>("SkeletalMesh.skm", AssetType::SkeletalMesh, AssetManager::GetDirectoryHandle("Assets/Meshes"), vertices, indices, bones, boneHierarchy, material);
+        AssetManager::CreateAsset<SkeletalMesh>("SkeletalMesh.skm", AssetType::SkeletalMesh, AssetManager::GetDirectoryHandle("Assets/Meshes"), vertices, indices, bones, boneHierarchy, material);
     }
     void SkinningEditorPanel::setupUI()
     {
@@ -514,19 +544,23 @@ namespace XYZ {
     {
         if (Input::IsKeyPressed(KeyCode::KEY_LEFT))
         {
-            m_CameraPosition.x -= m_CameraSpeed * ts;
+            m_Camera.Position.x -= m_Camera.Speed * ts;
+            m_Camera.UpdateViewProjection();
         }
         if (Input::IsKeyPressed(KeyCode::KEY_RIGHT))
         {
-            m_CameraPosition.x += m_CameraSpeed * ts;
+            m_Camera.Position.x += m_Camera.Speed * ts;
+            m_Camera.UpdateViewProjection();
         }
         if (Input::IsKeyPressed(KeyCode::KEY_UP))
         {
-            m_CameraPosition.y += m_CameraSpeed * ts;
+            m_Camera.Position.y += m_Camera.Speed * ts;
+            m_Camera.UpdateViewProjection();
         }
         if (Input::IsKeyPressed(KeyCode::KEY_DOWN))
         {
-            m_CameraPosition.y -= m_CameraSpeed * ts;
+            m_Camera.Position.y -= m_Camera.Speed * ts;
+            m_Camera.UpdateViewProjection();
         }
     }
     void SkinningEditorPanel::clear()
@@ -853,6 +887,7 @@ namespace XYZ {
     {
         m_EditBoneData.Bone = bone;
         m_EditBoneData.Rotate = false;
+        
         if (IS_SET(m_Flags, PreviewPose) && bone)
         {
             float rot;
@@ -969,22 +1004,22 @@ namespace XYZ {
             if (IS_SET(m_Flags, PreviewPose))
             {
                 float rot;
-                glm::vec2 start, end, normal;
-                decomposeBone(m_SelectedBone, start, end, rot, normal);
-                             
+                glm::vec2 start, end, normal;   
+                decomposeBone(m_EditBoneData.Bone, start, end, rot, normal);
                 if (m_EditBoneData.Rotate)
-                {
+                {          
                     glm::vec2 origDir = glm::normalize(end - start);
                     glm::vec2 dir = glm::normalize(m_MousePosition - start);
                     if (glm::distance(origDir, dir) > FLT_MIN)
                     {
                         float angle = glm::atan(dir.y, dir.x) - glm::atan(origDir.y, origDir.x);
-                        m_SelectedBone->PreviewTransform = glm::rotate(m_SelectedBone->PreviewTransform, angle, glm::vec3(0.0f, 0.0f, 1.0f));
+                        m_EditBoneData.Bone->PreviewTransform = glm::rotate(m_EditBoneData.Bone->PreviewTransform, angle, glm::vec3(0.0f, 0.0f, 1.0f));
                     }
                 }
                 else
                 {
-                    m_SelectedBone->PreviewTransform = glm::translate(glm::vec3(m_MousePosition, 0.0f)) * glm::rotate(glm::mat4(1.0f), rot, { 0.0f, 0.0f, 1.0f });
+                    glm::vec2 translation = m_MousePosition - start;
+                    m_SelectedBone->PreviewTransform = glm::translate(m_SelectedBone->PreviewTransform, glm::vec3(translation, 0.0f));
                 }
             }
             else
@@ -1141,8 +1176,8 @@ namespace XYZ {
         auto [mx, my] = getMouseViewportSpace();
         mx *= m_Window->Size.x / 2.0f;
         my *= m_Window->Size.y / 2.0f;
-        mx += m_CameraPosition.x;
-        my += m_CameraPosition.y;
+        mx += m_Camera.Position.x;
+        my += m_Camera.Position.y;
         return { mx , my };
     }
     std::pair<float, float> SkinningEditorPanel::getMouseViewportSpace() const
@@ -1164,10 +1199,8 @@ namespace XYZ {
         Renderer::SetClearColor(m_Framebuffer->GetSpecification().ClearColor);
         Renderer::Clear();;
 
-        glm::mat4 viewMatrix = glm::inverse(glm::translate(glm::vec3(m_CameraPosition, 0.0f)));
-        glm::mat4 viewProjection = m_ViewProjection * viewMatrix;
-        renderMesh(viewProjection);
-        renderPreviews(viewProjection);
+        renderMesh(m_Camera.ViewProjectionMatrix);
+        renderPreviews(m_Camera.ViewProjectionMatrix);
         m_Framebuffer->Unbind();
     }
     void SkinningEditorPanel::renderMesh(const glm::mat4& viewProjection)
@@ -1178,12 +1211,14 @@ namespace XYZ {
             m_Shader->SetInt("u_ColorEnabled", 1);
         else
             m_Shader->SetInt("u_ColorEnabled", 0);
-
+        
         m_Shader->SetMat4("u_Transform", glm::mat4(1.0f));
         m_Context->GetTexture()->Bind();
-
+        
         m_VertexArray->Bind();
         Renderer::DrawIndexed(PrimitiveType::Triangles, m_VertexArray->GetIndexBuffer()->GetCount());
+    
+        //m_SkeletalMesh->Render(viewProjection);
     }
     void SkinningEditorPanel::renderPreviews(const glm::mat4& viewProjection)
     {
@@ -1285,9 +1320,9 @@ namespace XYZ {
     {
         if (IS_SET(m_Flags, PreviewPose))
         {
-            PreviewVertex& first = m_PreviewVertices[size_t(triangle.First + vertexOffset)];
-            PreviewVertex& second = m_PreviewVertices[size_t(triangle.Second + vertexOffset)];
-            PreviewVertex& third = m_PreviewVertices[size_t(triangle.Third + vertexOffset)];
+            PreviewVertex& first = m_PreviewVertices[size_t(triangle.First) + vertexOffset];
+            PreviewVertex& second = m_PreviewVertices[size_t(triangle.Second) + vertexOffset];
+            PreviewVertex& third = m_PreviewVertices[size_t(triangle.Third) + vertexOffset];
 
             Renderer2D::SubmitLine(glm::vec3(first.Position.x, first.Position.y, 0.0f), glm::vec3(second.Position.x, second.Position.y, 0.0f), color);
             Renderer2D::SubmitLine(glm::vec3(second.Position.x, second.Position.y, 0.0f), glm::vec3(third.Position.x, third.Position.y, 0.0f), color);
@@ -1392,5 +1427,10 @@ namespace XYZ {
                 }
             }
         }
+    }
+    void SkinningEditorPanel::Camera::UpdateViewProjection()
+    {
+        glm::mat4 viewMatrix = glm::inverse(glm::translate(glm::vec3(Position, 0.0f)));
+        ViewProjectionMatrix = ProjectionMatrix * viewMatrix;
     }
 }

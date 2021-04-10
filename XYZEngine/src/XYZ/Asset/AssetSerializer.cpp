@@ -216,12 +216,13 @@ namespace YAML {
 			node.push_back(scale.y);
 			node.push_back(scale.z);
 			node.push_back(rhs.ID);
+			node.push_back(rhs.Name);
 			return node;
 		}
 
 		static bool decode(const Node& node, XYZ::Bone& rhs)
 		{
-			if (!node.IsSequence() || node.size() != 11)
+			if (!node.IsSequence() || node.size() != 12)
 				return false;
 
 			glm::vec3 translation;
@@ -238,6 +239,8 @@ namespace YAML {
 			scale.y		  = node[8].as<float>();
 			scale.z		  = node[9].as<float>();
 			rhs.ID		  = node[10].as<int32_t>();
+			rhs.Name	  = node[11].as<std::string>();
+
 			rhs.Transform = glm::translate(translation) 
 				* glm::toMat4(rotation) 
 				* glm::scale(glm::mat4(1.0f), scale);
@@ -260,9 +263,6 @@ namespace XYZ {
 			<< YAML::EndSeq;
 		return out;
 	}
-
-
-
 
 	YAML::Emitter& operator<<(YAML::Emitter& out, const Tree& tree)
 	{		
@@ -314,7 +314,7 @@ namespace XYZ {
 	}
 
 	// TODO: Temporary
-	static void CopyAsset(Ref<Asset>& target, Ref<Asset>& source)
+	static void CopyAsset(Ref<Asset>& target, const Ref<Asset>& source)
 	{
 		target->DirectoryHandle = source->DirectoryHandle;
 		target->FileExtension = source->FileExtension;
@@ -610,7 +610,7 @@ namespace XYZ {
 	}
 
 	template <>
-	Ref<Asset> AssetSerializer::deserialize<Texture2D>(Ref<Asset> asset)
+	Ref<Asset> AssetSerializer::deserialize<Texture2D>(const Ref<Asset>& asset)
 	{
 		std::ifstream stream(asset->FilePath);
 		TextureSpecs specs;
@@ -644,7 +644,7 @@ namespace XYZ {
 	}
 
 	template <>
-	Ref<Asset> AssetSerializer::deserialize<SubTexture>(Ref<Asset> asset)
+	Ref<Asset> AssetSerializer::deserialize<SubTexture>(const Ref<Asset>& asset)
 	{
 		std::ifstream stream(asset->FilePath);
 		std::stringstream strStream;
@@ -664,7 +664,7 @@ namespace XYZ {
 	}
 
 	template <>
-	Ref<Asset> AssetSerializer::deserialize<Shader>(Ref<Asset> asset)
+	Ref<Asset> AssetSerializer::deserialize<Shader>(const Ref<Asset>& asset)
 	{
 		std::ifstream stream(asset->FilePath);
 		std::stringstream strStream;
@@ -677,7 +677,7 @@ namespace XYZ {
 	}
 
 	template <>
-	Ref<Asset> AssetSerializer::deserialize<Material>(Ref<Asset> asset)
+	Ref<Asset> AssetSerializer::deserialize<Material>(const Ref<Asset>& asset)
 	{
 		std::ifstream stream(asset->FilePath);
 		std::stringstream strStream;
@@ -727,7 +727,7 @@ namespace XYZ {
 		return material;
 	}
 	template <>
-	Ref<Asset> AssetSerializer::deserialize<Font>(Ref<Asset> asset)
+	Ref<Asset> AssetSerializer::deserialize<Font>(const Ref<Asset>& asset)
 	{
 		std::ifstream stream(asset->FilePath);
 		std::stringstream strStream;
@@ -768,7 +768,7 @@ namespace XYZ {
 	}
 
 	template <>
-	Ref<Asset> AssetSerializer::deserialize<SkeletalMesh>(Ref<Asset> asset)
+	Ref<Asset> AssetSerializer::deserialize<SkeletalMesh>(const Ref<Asset>& asset)
 	{
 		std::ifstream stream(asset->FilePath);
 		std::stringstream strStream;
@@ -776,7 +776,7 @@ namespace XYZ {
 		YAML::Node data = YAML::Load(strStream.str());
 
 		GUID materialHandle(data["MaterialAsset"].as<std::string>());
-		Ref<Material> material = AssetManager::GetAsset<Shader>(materialHandle);
+		Ref<Material> material = AssetManager::GetAsset<Material>(materialHandle);
 
 		std::vector<AnimatedVertex> vertices = data["AnimatedVertices"].as<std::vector<AnimatedVertex>>();
 		std::vector<uint32_t> indices = data["Indices"].as<std::vector<uint32_t>>();
@@ -798,7 +798,7 @@ namespace XYZ {
 	}
 
 	template <>
-	Ref<Asset> AssetSerializer::deserialize<Scene>(Ref<Asset> asset)
+	Ref<Asset> AssetSerializer::deserialize<Scene>(const Ref<Asset>& asset)
 	{
 		Ref<Scene> result = Ref<Scene>::Create("");
 		CopyAsset(result.As<Asset>(), asset);
@@ -839,7 +839,7 @@ namespace XYZ {
 		return asset;
 
 	}
-	void AssetSerializer::SerializeAsset(Ref<Asset> asset)
+	void AssetSerializer::SerializeAsset(const Ref<Asset>& asset)
 	{
 		switch (asset->Type)
 		{
@@ -878,10 +878,9 @@ namespace XYZ {
 			return deserialize<Font>(asset);
 		case AssetType::SkeletalMesh:
 			return deserialize<SkeletalMesh>(asset);
-		}
-		asset->IsLoaded = true;
+		}	
 	}
-	void AssetSerializer::loadMetaFile(Ref<Asset> asset)
+	void AssetSerializer::loadMetaFile(Ref<Asset>& asset)
 	{
 		std::ifstream stream(asset->FilePath + ".meta");
 		std::stringstream strStream;
@@ -894,7 +893,7 @@ namespace XYZ {
 		asset->FilePath = data["FilePath"].as<std::string>();
 		asset->Type = (AssetType)data["Type"].as<int>();
 	}
-	void AssetSerializer::createMetaFile(Ref<Asset> asset)
+	void AssetSerializer::createMetaFile(const Ref<Asset>& asset)
 	{
 		YAML::Emitter out;
 		out << YAML::BeginMap;

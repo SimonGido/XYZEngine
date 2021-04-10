@@ -73,10 +73,12 @@ namespace XYZ {
 		{
 			XYZ_ASSERT(s_LoadedAssets.find(assetHandle) != s_LoadedAssets.end(),"");
 			Ref<Asset> asset = s_LoadedAssets[assetHandle];
-
+		
 			if (!asset->IsLoaded && loadData)
 			{
 				asset = AssetSerializer::LoadAsset(asset);
+				asset->IsLoaded = true;
+				s_LoadedAssets[assetHandle] = asset;
 			}
 			return asset.As<T>();
 		}

@@ -40,7 +40,7 @@ namespace XYZ {
 		static void DeserializeComponent(Entity& entity, T& component, const ByteStream& out)
 		{
 			static_assert(std::is_base_of<IComponent, T>::value, "");
-			out >> (uint32_t*)&entity;
+			out >> *(uint32_t*)&entity;
 			out >> component;
 		}
 

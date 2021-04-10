@@ -22,6 +22,14 @@ namespace XYZ {
     {
         other.m_Root = TreeNode::sc_Invalid;
     }
+    Tree& Tree::operator=(const Tree& other)
+    {
+        m_NodeCount = other.m_NodeCount;
+        m_Nodes = other.m_Nodes;
+        m_NodeValid = other.m_NodeValid;
+        m_Root = other.m_Root;
+        return *this;
+    }
     int32_t Tree::Insert(void* data)
     {
         TreeNode newNode;

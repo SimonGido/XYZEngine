@@ -17,6 +17,11 @@ namespace XYZ {
 		{
 			Reset();
 		}
+		VertexBoneData(const VertexBoneData& other)
+		{
+			memcpy(IDs, other.IDs, sc_MaxBonesPerVertex * sizeof(uint32_t));
+			memcpy(Weights, other.Weights, sc_MaxBonesPerVertex * sizeof(float));
+		}
 		void Reset()
 		{
 			memset(IDs, 0, sc_MaxBonesPerVertex * sizeof(uint32_t));
@@ -37,6 +42,8 @@ namespace XYZ {
 	struct Bone
 	{
 		glm::mat4 Transform;
+		glm::mat4 WorldTransform;
+		std::string Name;
 		int32_t ID;
 	};
 
@@ -68,6 +75,10 @@ namespace XYZ {
 		const std::vector<Bone>& GetBones() const { return m_Bones; }
 		const Tree& GetBoneHierarchy() const { return m_BoneHierarchy; }
 
+
+	private:
+		// TODO: this is going to be handled by animation
+		void setupFinalTransform();
 
 	private:
 		Ref<VertexArray> m_VertexArray;

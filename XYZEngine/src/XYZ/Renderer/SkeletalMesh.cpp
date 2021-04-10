@@ -50,6 +50,8 @@ namespace XYZ {
         {
             m_BoneHierarchy.SetData(bone.ID, &bone);
         }
+        RebuildBuffers();
+        setupFinalTransform();
     }
 
     SkeletalMesh::SkeletalMesh(
@@ -66,13 +68,14 @@ namespace XYZ {
         m_BoneHierarchy(std::move(hierarchy)),
         m_Material(material)
     {
+        RebuildBuffers();
+        setupFinalTransform();
     }
 
     void SkeletalMesh::Render(const glm::mat4& viewProjectionMatrix)
     {
         Ref<Shader> shader = m_Material->GetShader();
-
-        shader->Bind();
+        m_Material->Bind();
         shader->SetMat4("u_Transform", glm::translate(glm::vec3(0.0f)));
         shader->SetMat4("u_ViewProjectionMatrix", viewProjectionMatrix);
         shader->SetFloat4("u_Color", glm::vec4(1.0f));
@@ -105,5 +108,23 @@ namespace XYZ {
 
         Ref<IndexBuffer> ibo = IndexBuffer::Create(m_Indices.data(), m_Indices.size());
         m_VertexArray->SetIndexBuffer(ibo);
+    }
+    void SkeletalMesh::setupFinalTransform()
+    {
+        m_BoneHierarchy.Traverse([&](void* parent, void* child) -> bool {
+
+            Bone* childBone = static_cast<Bone*>(child);
+            if (parent)
+            {
+                Bone* parentBone = static_cast<Bone*>(parent);
+                childBone->WorldTransform = parentBone->WorldTransform * childBone->Transform;
+            }
+            else
+            {
+                childBone->WorldTransform = childBone->Transform;
+            }
+            m_FinalTransformations.push_back(childBone->WorldTransform);
+            return false;
+     });
     }
 }

@@ -1,4 +1,6 @@
 #pragma once
+#include "XYZ/ECS/Entity.h"
+#include "XYZ/ECS/Component.h"
 
 
 namespace XYZ {
@@ -65,4 +67,78 @@ namespace XYZ {
 
 		static constexpr size_t sc_CapacityMultiplier = 2;
 	};
+
+
+	inline ByteStream& operator << (ByteStream& out, const IComponent& component)
+	{
+		return out;
+	}
+
+	inline const ByteStream& operator >> (const ByteStream& out, IComponent& component)
+	{
+
+		return out;
+	}
+
+	inline ByteStream& operator << (ByteStream & out, const std::vector<Entity>& vec)
+	{
+		return out;
+	}
+
+	inline const ByteStream& operator >> (const ByteStream& out, std::vector<Entity>& vec)
+	{
+		return out;
+	}
+
+	inline ByteStream& operator << (ByteStream & out, Entity entity)
+	{
+		out << (uint32_t)entity;
+		return out;
+	}
+
+	inline const ByteStream& operator >> (const ByteStream& out, Entity& entity)
+	{
+		out >> (uint32_t&)entity;
+		return out;
+	}
+
+	inline ByteStream& operator <<(ByteStream& out, const std::string& val)
+	{
+		out << val.size();
+		for (char c : val)
+			out << c;
+		return out;
+	}
+	inline const ByteStream& operator >>(const ByteStream& out, std::string& val)
+	{
+		size_t size = 0;
+		out >> size;
+		for (size_t i = 0; i < size; ++i)
+		{
+			char c;
+			out >> c;
+			val.push_back(c);
+		}
+		return out;
+	}
+	template <typename T>
+	inline ByteStream& operator <<(ByteStream& out, const std::vector<T>& vec)
+	{
+		out << vec.size();
+		for (auto& val : vec)
+			out << val;
+	}
+	template <typename T>
+	inline const ByteStream& operator >>(const ByteStream& out, std::vector<T>& vec)
+	{
+		size_t size;
+		out >> size;
+		vec.reserve(size);
+		for (size_t i = 0; i < size; ++i)
+		{
+			T stored;
+			out >> stored;
+			vec.push_back(stored);
+		}
+	}
 }

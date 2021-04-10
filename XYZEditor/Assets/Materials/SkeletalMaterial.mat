@@ -1,0 +1,6 @@
+Material: SkeletalMaterial
+ShaderAsset: 53508a63-460e-4b60-9fe6-9116a0667641
+Textures:
+  []
+Values:
+  - u_Color: [-431602080, -431602080, -431602080, -431602080]
