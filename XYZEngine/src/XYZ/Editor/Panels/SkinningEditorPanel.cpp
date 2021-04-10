@@ -157,6 +157,7 @@ namespace XYZ {
 
         m_ViewportSize = m_Window->Size;
         m_MousePosition = glm::vec2(0.0f);
+        m_CameraPosition = glm::vec2(0.0f);
         m_ViewProjection = glm::ortho(
             -m_Window->Size.x / 2.0f, m_Window->Size.x / 2.0f, 
             -m_Window->Size.y / 2.0f, m_Window->Size.y / 2.0f
@@ -202,11 +203,12 @@ namespace XYZ {
 
         rebuildRenderBuffers();
     }
-    void SkinningEditorPanel::OnUpdate()
+    void SkinningEditorPanel::OnUpdate(Timestep ts)
     {
         if (IS_SET(m_Window->Flags, IGWindow::Hoovered))
         {
             m_MousePosition = getMouseWindowSpace();
+            updateCamera(ts);
             {
                 auto [index, vertex] = findVertex(m_MousePosition);
                 m_FoundVertex = vertex;
@@ -507,6 +509,25 @@ namespace XYZ {
         
         }
         return false;
+    }
+    void SkinningEditorPanel::updateCamera(Timestep ts)
+    {
+        if (Input::IsKeyPressed(KeyCode::KEY_LEFT))
+        {
+            m_CameraPosition.x -= m_CameraSpeed * ts;
+        }
+        if (Input::IsKeyPressed(KeyCode::KEY_RIGHT))
+        {
+            m_CameraPosition.x += m_CameraSpeed * ts;
+        }
+        if (Input::IsKeyPressed(KeyCode::KEY_UP))
+        {
+            m_CameraPosition.y += m_CameraSpeed * ts;
+        }
+        if (Input::IsKeyPressed(KeyCode::KEY_DOWN))
+        {
+            m_CameraPosition.y -= m_CameraSpeed * ts;
+        }
     }
     void SkinningEditorPanel::clear()
     {
@@ -963,8 +984,7 @@ namespace XYZ {
                 }
                 else
                 {
-                    glm::vec2 translation = m_MousePosition - start;
-                    m_SelectedBone->PreviewTransform = glm::translate(m_SelectedBone->PreviewTransform, glm::vec3(translation, 0.0f));
+                    m_SelectedBone->PreviewTransform = glm::translate(glm::vec3(m_MousePosition, 0.0f)) * glm::rotate(glm::mat4(1.0f), rot, { 0.0f, 0.0f, 1.0f });
                 }
             }
             else
@@ -1121,6 +1141,8 @@ namespace XYZ {
         auto [mx, my] = getMouseViewportSpace();
         mx *= m_Window->Size.x / 2.0f;
         my *= m_Window->Size.y / 2.0f;
+        mx += m_CameraPosition.x;
+        my += m_CameraPosition.y;
         return { mx , my };
     }
     std::pair<float, float> SkinningEditorPanel::getMouseViewportSpace() const
@@ -1142,8 +1164,10 @@ namespace XYZ {
         Renderer::SetClearColor(m_Framebuffer->GetSpecification().ClearColor);
         Renderer::Clear();;
 
-        renderMesh(m_ViewProjection);
-        renderPreviews(m_ViewProjection);
+        glm::mat4 viewMatrix = glm::inverse(glm::translate(glm::vec3(m_CameraPosition, 0.0f)));
+        glm::mat4 viewProjection = m_ViewProjection * viewMatrix;
+        renderMesh(viewProjection);
+        renderPreviews(viewProjection);
         m_Framebuffer->Unbind();
     }
     void SkinningEditorPanel::renderMesh(const glm::mat4& viewProjection)

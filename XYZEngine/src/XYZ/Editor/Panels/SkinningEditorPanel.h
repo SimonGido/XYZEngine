@@ -22,7 +22,7 @@ namespace XYZ {
 		SkinningEditorPanel();
 		void SetContext(Ref<SubTexture> context);
 
-		void OnUpdate();
+		void OnUpdate(Timestep ts);
 		void OnEvent(Event& event);
 
 		void Save();
@@ -132,6 +132,7 @@ namespace XYZ {
 		bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
 		bool onMouseScroll(MouseScrollEvent& event);
 		bool onKeyPress(KeyPressedEvent& event);
+		void updateCamera(Timestep ts);
 
 		void clear();
 		void triangulate(Submesh& subMesh);
@@ -191,9 +192,9 @@ private:
 		Ref<VertexBuffer> m_VertexBuffer;
 		Ref<Shader> m_Shader;
 		glm::mat4 m_ViewProjection;
+		glm::vec2 m_CameraPosition;
 		glm::vec2 m_ViewportSize;
 		glm::vec2 m_MousePosition;
-
 
 		Tree m_BoneHierarchy;
 		MemoryPool m_BonePool;
@@ -202,6 +203,7 @@ private:
 		std::vector<Submesh> m_SubMeshes;
 		std::vector<PreviewVertex> m_PreviewVertices;
 
+		float m_CameraSpeed = 100.0f;
 		float m_Scale = 1.0f;
 		float m_ScrollOffset = 0.0f;
 
