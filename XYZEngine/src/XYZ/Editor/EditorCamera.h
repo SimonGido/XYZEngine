@@ -20,8 +20,8 @@ namespace XYZ {
 
 		inline float GetDistance() const { return m_Distance; }
 		inline void SetDistance(float distance) { m_Distance = distance; }
-
 		inline void SetViewportSize(float width, float height) { m_ViewportWidth = width; m_ViewportHeight = height; updateProjection(); }
+		inline void LockOrtho(bool val) { m_LockOrtho = val; }
 
 		const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
 		glm::mat4 GetViewProjection() const { return m_ProjectionMatrix * m_ViewMatrix; }
@@ -34,6 +34,7 @@ namespace XYZ {
 
 		float GetPitch() const { return m_Pitch; }
 		float GetYaw() const { return m_Yaw; }
+
 	private:
 		void updateProjection();
 		void updateView();
@@ -64,6 +65,7 @@ namespace XYZ {
 		float m_ViewportWidth = 1280, m_ViewportHeight = 720;
 		
 		bool m_LockOrtho = false;
+
 	};
 
 }

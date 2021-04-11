@@ -13,20 +13,20 @@ Root Elements:
     Size: [457, 1017]
     Color: [1, 1, 1, 1]
     FrameColor: [1, 1, 1, 1]
-    Flags: 128
+    Flags: 130
     ID: 0
     Pool: 1
   - Label: Scene
     Position: [236, 0]
-    Size: [1227, 165]
+    Size: [1227, 172]
     Color: [1, 1, 1, 1]
     FrameColor: [1, 1, 1, 1]
-    Flags: 130
+    Flags: 128
     ID: 0
     Pool: 2
   - Label: Skinning Editor
-    Position: [236, 165]
-    Size: [1227, 852]
+    Position: [236, 172]
+    Size: [1227, 845]
     Color: [1, 1, 1, 1]
     FrameColor: [1, 1, 1, 1]
     Flags: 128
@@ -69,15 +69,15 @@ Dockspace:
     SecondChild: 5
   - ID: 4
     Position: [236, 0]
-    Size: [1227, 165]
+    Size: [1227, 172]
     Type: 0
     Windows:
       - HierarchyIndex: 0
         PoolIndex: 2
     Parent: 3
   - ID: 5
-    Position: [236, 165]
-    Size: [1227, 852]
+    Position: [236, 172]
+    Size: [1227, 845]
     Type: 0
     Windows:
       - HierarchyIndex: 0
