@@ -1018,8 +1018,14 @@ namespace XYZ {
                 }
                 else
                 {
-                    glm::vec2 translation = m_MousePosition - start;
-                    m_SelectedBone->PreviewTransform = glm::translate(m_SelectedBone->PreviewTransform, glm::vec3(translation, 0.0f));
+                    glm::mat4 translation = glm::translate(glm::vec3(m_MousePosition, 0.0f));
+                    if (auto parent = m_BoneHierarchy.GetParentData(m_EditBoneData.Bone->ID))
+                    {
+                        PreviewBone* parentBone = static_cast<PreviewBone*>(parent);
+                        translation = glm::inverse(parentBone->PreviewFinalTransform) * translation;
+                    }       
+                    glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), rot, glm::vec3(0.0f, 0.0f, 1.0f));
+                    m_SelectedBone->PreviewTransform = translation * rotation;
                 }
             }
             else
