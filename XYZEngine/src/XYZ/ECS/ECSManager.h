@@ -121,15 +121,15 @@ namespace XYZ {
 			return m_ComponentManager.GetStorage<T>();
 		}
 
-		IComponentStorage& GetIStorage(size_t index)
+		IComponentStorage& GetIStorage(uint16_t index)
 		{
-			size_t offset = index * sizeof(ComponentStorage<IComponent>);
+			size_t offset = (size_t)index * sizeof(ComponentStorage<IComponent>);
 			return *m_ComponentManager.GetIStorage(index);
 		}
 
-		const IComponentStorage& GetIStorage(size_t index) const
+		const IComponentStorage& GetIStorage(uint16_t index) const
 		{
-			size_t offset = index * sizeof(ComponentStorage<IComponent>);
+			size_t offset = (size_t)index * sizeof(ComponentStorage<IComponent>);
 			return *m_ComponentManager.GetIStorage(index);
 		}
 

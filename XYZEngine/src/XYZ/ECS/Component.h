@@ -9,14 +9,14 @@ namespace XYZ {
 	{
 	public:
 		template <typename T>
-		static uint8_t GetID()
+		static uint16_t GetID()
 		{
-			static uint8_t compType = getNextID();
+			static uint16_t compType = getNextID();
 			return compType;
 		}
 	
 	private:
-		static uint8_t getNextID();
+		static uint16_t getNextID();
 		
 	};
 
@@ -26,7 +26,7 @@ namespace XYZ {
 	{
 	public:
 		// return unique static id
-		static uint8_t GetComponentID()
+		static uint16_t GetComponentID()
 		{
 			return Counter::GetID<Derived>();
 		}
@@ -39,7 +39,7 @@ namespace XYZ {
 		virtual ~IComponent() {}
 
 		template <typename T>
-		static uint8_t GetComponentID()
+		static uint16_t GetComponentID()
 		{
 			static_assert(std::is_base_of<IComponent, T>::value, "Type T does not inherit from IComponent");
 			return Type<T>::GetComponentID();

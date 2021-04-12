@@ -30,7 +30,7 @@ namespace XYZ {
         ecs.Clear();
         while (!in.End())
         {
-            uint8_t componentID = 0;
+            uint16_t componentID = 0;
             size_t size = 0;
             in >> componentID;
             in >> size;

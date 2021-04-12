@@ -3,9 +3,9 @@
 
 
 namespace XYZ {
-    uint8_t Counter::getNextID()
+    uint16_t Counter::getNextID()
 	{
-		static uint8_t nextType = 0;
+		static uint16_t nextType = 0;
 		return nextType++;
 	}
 }

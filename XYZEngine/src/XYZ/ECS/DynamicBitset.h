@@ -19,7 +19,7 @@ namespace XYZ {
 		Signature& GetSignature(int32_t index);
 		const Signature& GetSignature(int32_t index) const;
 
-		void SetNumberBits(uint8_t count);
+		void SetNumberBits(uint16_t count);
 		void Clear();
 
 		Signature& operator[](int32_t index);		
@@ -31,7 +31,7 @@ namespace XYZ {
 		// Bitset must be under signatures or it will be destroyed earlier -> results in crash
 		std::vector<bool> m_Bitset;
 
-		uint8_t m_BitCount = 0;
+		uint16_t m_BitCount = 0;
 
 		friend class Signature;
 	};

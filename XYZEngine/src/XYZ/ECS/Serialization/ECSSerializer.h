@@ -63,7 +63,7 @@ namespace XYZ {
 		template <typename T>
 		static void DeserializeStorage(ComponentStorage<T>& storage, const ByteStream& in)
 		{
-			uint8_t id;
+			uint16_t id;
 			size_t size;
 			in >> id;
 			in >> size;

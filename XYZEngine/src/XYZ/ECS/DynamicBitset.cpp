@@ -51,18 +51,18 @@ namespace XYZ {
     {
         return m_Signatures[index];
     }
-    void DynamicBitset::SetNumberBits(uint8_t count)
+    void DynamicBitset::SetNumberBits(uint16_t count)
     {
         if (m_BitCount == count)
             return;
-        uint8_t oldCount = m_BitCount;
-        int16_t diff = count - oldCount;
+        uint16_t oldCount = m_BitCount;
+        uint16_t diff = count - oldCount;
         m_BitCount = count;
-
 
         std::vector<bool> newBitset((size_t)m_Signatures.Range() * count);
         std::fill(newBitset.begin(), newBitset.end(), false);
 
+        // Remap bits
         uint32_t counter = 0;
         uint32_t multiplier = 0;
         for (size_t i = 0; i < m_Bitset.size(); ++i)
