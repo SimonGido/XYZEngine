@@ -24,15 +24,15 @@ namespace XYZ {
 		template <typename T, typename ...Args>
 		T& EmplaceComponent(Entity entity, Args&& ... args)
 		{
-			ComponentStorage<T>* storage = GetStorage<T>();
-			return storage->EmplaceComponent(entity, std::forward<Args>(args)...);
+			ComponentStorage<T>& storage = GetStorage<T>();
+			return storage.EmplaceComponent(entity, std::forward<Args>(args)...);
 		}
 
 		template <typename T>
 		T& AddComponent(Entity entity, const T& component)
 		{
-			ComponentStorage<T>* storage = GetStorage<T>();
-			return storage->AddComponent(entity, component);
+			ComponentStorage<T>& storage = GetStorage<T>();
+			return storage.AddComponent(entity, component);
 		}
 
 
