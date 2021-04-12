@@ -4,19 +4,18 @@
 namespace XYZ {
 	
 	Pool::Pool(size_t size)
-		: m_Size(size), m_Capacity(size)
+		:
+		m_Size(size)
 	{
-		m_Data = new uint8_t[m_Capacity];
+		m_Data = new uint8_t[m_Size];
 	}
 	Pool::Pool(Pool&& other) noexcept
 		:
 		m_Size(other.m_Size),
-		m_Capacity(other.m_Capacity),
 		m_Data(other.m_Data)
 	{
 		other.m_Data = nullptr;
 		other.m_Size = 0;
-		other.m_Capacity = 0;
 	}
 	Pool::~Pool()
 	{
@@ -29,11 +28,9 @@ namespace XYZ {
 			delete[]m_Data;
 		m_Data = other.m_Data;
 		m_Size = other.m_Size;
-		m_Capacity = other.m_Capacity;
 
 		other.m_Data = nullptr;
 		other.m_Size = 0;
-		other.m_Capacity = 0;
 		return *this;
 	}
 }

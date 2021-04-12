@@ -1,5 +1,7 @@
 #pragma once
 
+#include <type_traits>
+
 namespace XYZ {
 	
 	class Pool
@@ -46,7 +48,6 @@ namespace XYZ {
 	private:
 		uint8_t* m_Data;
 		size_t m_Size;
-		size_t m_Capacity;
 
 		static constexpr size_t sc_CapacityMultiplier = 2;
 	};

@@ -86,8 +86,7 @@ namespace XYZ {
 		m_StoragePool = std::move(newPool);
 
 		m_StorageCreated.resize(count);
-		for (size_t i = m_Count; i < count; ++i)
-			m_StorageCreated[i] = false;
+		std::fill(m_StorageCreated.begin() + m_Count, m_StorageCreated.end(), false);
 		m_Count = count;
 	}
 	void CallbackManager::deallocateStorages()

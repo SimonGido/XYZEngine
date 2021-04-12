@@ -35,7 +35,6 @@ namespace XYZ {
 			return storage.AddComponent(entity, component);
 		}
 
-
 		template <typename T>
 		void ForceStorage()
 		{
@@ -99,7 +98,6 @@ namespace XYZ {
 		size_t GetNumberOfRegisteredStorages() const { return m_NumberOfStorages; }
 
 	private:
-
 		template <typename T>
 		ComponentStorage<T>* getOrCreateStorage()
 		{
