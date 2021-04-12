@@ -4,20 +4,20 @@
 
 namespace XYZ {
 
-    uint8_t DynamicBitset::s_BitCount = 0;
-
     DynamicBitset::DynamicBitset(const DynamicBitset& other)
         :
         m_Signatures(other.m_Signatures),
-        m_Bitset(other.m_Bitset)
+        m_Bitset(other.m_Bitset),
+        m_BitCount(other.m_BitCount)
     {
         for (int32_t i = 0; i < m_Signatures.Range(); ++i)
-            m_Signatures[i].m_Bitset = m_Bitset;
+            m_Signatures[i].m_Bitset = this;
     }
     DynamicBitset::DynamicBitset(DynamicBitset&& other) noexcept
         :
         m_Signatures(std::move(other.m_Signatures)),
-        m_Bitset(std::move(other.m_Bitset))
+        m_Bitset(std::move(other.m_Bitset)),
+        m_BitCount(other.m_BitCount)
     {
     }
     DynamicBitset& DynamicBitset::operator=(DynamicBitset&& other) noexcept
@@ -26,15 +26,15 @@ namespace XYZ {
         m_Bitset = std::move(other.m_Bitset);
         return *this;
     }
-    void DynamicBitset::CreateSignature()
+    int32_t DynamicBitset::CreateSignature()
     {
         int32_t next = m_Signatures.Next();
         if (next == m_Signatures.Range())
         {
-            for (uint8_t i = 0; i < s_BitCount; ++i)
+            for (uint8_t i = 0; i < m_BitCount; ++i)
                 m_Bitset.push_back(false);
         }
-        m_Signatures.Emplace(s_BitCount, next, m_Bitset);
+        return m_Signatures.Emplace(next, this);
     }
 
     void DynamicBitset::DestroySignature(int32_t index)
@@ -53,23 +53,42 @@ namespace XYZ {
     }
     void DynamicBitset::SetNumberBits(uint8_t count)
     {
-        uint8_t oldCount = s_BitCount;
+        if (m_BitCount == count)
+            return;
+        uint8_t oldCount = m_BitCount;
         int16_t diff = count - oldCount;
-        s_BitCount = count;
+        m_BitCount = count;
 
 
-        std::vector<bool> newBitset(m_Signatures.Range() * count);
+        std::vector<bool> newBitset((size_t)m_Signatures.Range() * count);
         std::fill(newBitset.begin(), newBitset.end(), false);
 
         uint32_t counter = 0;
-        for (auto&& val : m_Bitset)
+        uint32_t multiplier = 0;
+        for (size_t i = 0; i < m_Bitset.size(); ++i)
         {
-            if (!(counter % oldCount))
-                counter += diff;
-            newBitset[counter++] = val;
+            if (counter == oldCount)
+            {
+                counter = 0;
+                multiplier++;
+            }
+            uint32_t index = (multiplier * count) + counter;
+            newBitset[index] = m_Bitset[i];
+            counter++;
         }
         m_Bitset = std::move(newBitset);
-        for (int32_t i = 0; i < m_Signatures.Range(); ++i)
-            m_Signatures[i] = Signature(s_BitCount, i, m_Bitset);
+    }
+    void DynamicBitset::Clear()
+    {
+        m_Bitset.clear();
+        CreateSignature();
+    }
+    Signature& DynamicBitset::operator[](int32_t index)
+    {
+        return m_Signatures[index];
+    }
+    const Signature& DynamicBitset::operator[](int32_t index) const
+    {
+        return m_Signatures[index];
     }
 }

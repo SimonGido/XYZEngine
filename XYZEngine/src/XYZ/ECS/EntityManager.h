@@ -1,8 +1,8 @@
 #pragma once
 #include "Types.h"
 #include "Entity.h"
-
-#include "XYZ/Utils/DataStructures/FreeList.h"
+#include "Signature.h"
+#include "DynamicBitset.h"
 
 namespace XYZ {
 
@@ -22,14 +22,15 @@ namespace XYZ {
 		const Signature& GetSignature(Entity entity)const;
 
 		void DestroyEntity(Entity entity);
-	
+		void SetNumberOfComponents(size_t number);
 		void SetSignature(Entity entity, Signature signature);
+		void Clear();
 
 		uint32_t GetNumEntities() const { return m_EntitiesInUse; }
 	private:
 		uint32_t m_EntitiesInUse;
 
-		FreeList<Signature> m_Signatures;
+		DynamicBitset m_Bitset;
 		std::vector<bool> m_Valid;
 
 		static constexpr uint32_t sc_MaxEntity = UINT32_MAX - 1;

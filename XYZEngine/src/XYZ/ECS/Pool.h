@@ -34,13 +34,20 @@ namespace XYZ {
 		{
 			instance->~T();
 		}
-		uint8_t* GetRawData()
+	
+		operator uint8_t*()
 		{
 			return m_Data;
 		}
-
+		operator const uint8_t*() const
+		{
+			return m_Data;
+		}
 	private:
 		uint8_t* m_Data;
 		size_t m_Size;
+		size_t m_Capacity;
+
+		static constexpr size_t sc_CapacityMultiplier = 2;
 	};
 }

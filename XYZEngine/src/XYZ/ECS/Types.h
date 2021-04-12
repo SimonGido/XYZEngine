@@ -2,12 +2,7 @@
 #include <bitset>
 
 namespace XYZ {
-	#define MAX_COMPONENTS 254
-	#define INVALID_COMPONENT MAX_COMPONENTS + 1
-
-	using Signature = std::bitset<MAX_COMPONENTS>;
-
-
+	
 	template <int I, class... Ts>
 	decltype(auto) get(Ts&&... ts)
 	{

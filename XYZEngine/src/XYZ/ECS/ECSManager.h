@@ -15,15 +15,9 @@ namespace XYZ {
 
 		ECSManager& operator=(ECSManager&& other) noexcept;
 
-		uint32_t CreateEntity() { return m_EntityManager.CreateEntity(); };
-
-		void DestroyEntity(Entity entity) 
-		{ 
-			auto& signature = m_EntityManager.GetSignature(entity);
-			m_CallbackManager.OnEntityDestroyed(entity, signature);
-			m_ComponentManager.EntityDestroyed(entity, signature);
-			m_EntityManager.DestroyEntity(entity); 
-		}
+		uint32_t CreateEntity();
+		void DestroyEntity(Entity entity);
+		void Clear();
 
 		template <typename T>
 		void AddListener(const std::function<void(uint32_t, CallbackType)>& callback, void* instance)
@@ -40,23 +34,25 @@ namespace XYZ {
 		template <typename T, typename ...Args>
 		T& EmplaceComponent(Entity entity, Args&&... args)
 		{
+			m_ComponentManager.ForceStorage<T>();
+			m_EntityManager.SetNumberOfComponents(m_ComponentManager.m_Count);
 			Signature& signature = m_EntityManager.GetSignature(entity);
-			XYZ_ASSERT(!signature.test(IComponent::GetComponentID<T>()), "Entity already contains component");
-			signature.set(IComponent::GetComponentID<T>(), true);
+			XYZ_ASSERT(!signature[IComponent::GetComponentID<T>()], "Entity already contains component");
+			signature.Set(IComponent::GetComponentID<T>(), true);
 			auto& result = m_ComponentManager.EmplaceComponent<T>(entity, std::forward<Args>(args)...);
 			m_CallbackManager.OnComponentCreate<T>(entity);
-
 			return result;
 		}
 		template <typename T>
 		T& AddComponent(Entity entity, const T& component)
 		{
+			m_ComponentManager.ForceStorage<T>();
+			m_EntityManager.SetNumberOfComponents(m_ComponentManager.m_Count);
 			Signature& signature = m_EntityManager.GetSignature(entity);
-			XYZ_ASSERT(!signature.test(IComponent::GetComponentID<T>()), "Entity already contains component");
-			signature.set(IComponent::GetComponentID<T>(), true);
+			XYZ_ASSERT(!signature[IComponent::GetComponentID<T>()], "Entity already contains component");
+			signature.Set(IComponent::GetComponentID<T>(), true);
 			auto& result = m_ComponentManager.AddComponent<T>(entity, component);
 			m_CallbackManager.OnComponentCreate<T>(entity);
-
 			return result;
 		}
 		
@@ -64,7 +60,7 @@ namespace XYZ {
 		bool RemoveComponent(Entity entity)
 		{
 			Signature& signature = m_EntityManager.GetSignature(entity);
-			XYZ_ASSERT(signature.test(IComponent::GetComponentID<T>()), "Entity does not have component");
+			XYZ_ASSERT(signature[IComponent::GetComponentID<T>()], "Entity does not have component");
 			
 			signature.set(IComponent::GetComponentID<T>(), false);
 			m_CallbackManager.OnComponentRemove<T>(entity);
@@ -77,7 +73,7 @@ namespace XYZ {
 		T& GetComponent(Entity entity)
 		{
 			Signature& signature = m_EntityManager.GetSignature(entity);
-			XYZ_ASSERT(signature.test(IComponent::GetComponentID<T>()), "Entity does not have component");
+			XYZ_ASSERT(signature[IComponent::GetComponentID<T>()], "Entity does not have component");
 			return m_ComponentManager.GetComponent<T>(entity);
 		}
 
@@ -85,7 +81,7 @@ namespace XYZ {
 		const T& GetComponent(Entity entity) const
 		{
 			const Signature& signature = m_EntityManager.GetSignature(entity);
-			XYZ_ASSERT(signature.test(IComponent::GetComponentID<T>()), "Entity does not have component");
+			XYZ_ASSERT(signature[IComponent::GetComponentID<T>()], "Entity does not have component");
 			return m_ComponentManager.GetComponent<T>(entity);
 		}
 
@@ -99,7 +95,7 @@ namespace XYZ {
 		bool Contains(Entity entity) const
 		{
 			auto& signature = m_EntityManager.GetSignature(entity);
-			return signature.test(IComponent::GetComponentID<T>());
+			return signature[IComponent::GetComponentID<T>()];
 		}
 
 		bool IsValid(Entity entity) const
@@ -125,6 +121,18 @@ namespace XYZ {
 			return m_ComponentManager.GetStorage<T>();
 		}
 
+		IComponentStorage& GetIStorage(size_t index)
+		{
+			size_t offset = index * sizeof(ComponentStorage<IComponent>);
+			return *m_ComponentManager.GetIStorage(index);
+		}
+
+		const IComponentStorage& GetIStorage(size_t index) const
+		{
+			size_t offset = index * sizeof(ComponentStorage<IComponent>);
+			return *m_ComponentManager.GetIStorage(index);
+		}
+
 		template <typename ...Args>
 		ComponentView<Args...> CreateView()
 		{
@@ -140,9 +148,9 @@ namespace XYZ {
 		template <typename T>
 		Entity FindEntity(const T& component) const
 		{
-			for (int32_t i = 0; i < m_EntityManager.m_Signatures.Range();++i)
+			for (int32_t i = 0; i < m_EntityManager.m_Bitset.GetNumberOfSignatures(); ++i)
 			{
-				if (m_EntityManager.m_Signatures[i].test(IComponent::GetComponentID<T>()))
+				if (m_EntityManager.m_Bitset[i][IComponent::GetComponentID<T>()])
 				{
 					if (component == m_ComponentManager.GetComponent<T>(i))
 						return i;

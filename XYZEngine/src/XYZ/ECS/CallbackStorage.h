@@ -22,6 +22,8 @@ namespace XYZ {
 	public:
 		virtual ~ICallbackStorage() = default;
 
+		virtual void Clear() = 0;
+		virtual void Move(uint8_t* buffer) = 0;
 		virtual void Execute(uint32_t entity, CallbackType type) = 0;
 		virtual ICallbackStorage* Copy(uint8_t* buffer) const = 0;
 	};
@@ -36,6 +38,19 @@ namespace XYZ {
 			m_Listeners(other.m_Listeners)
 		{}
 
+		CallbackStorage(CallbackStorage<T>&& other) noexcept
+			:
+			m_Listeners(std::move(other.m_Listeners))
+		{}
+
+		virtual void Clear() override
+		{
+			m_Listeners.clear();
+		}
+		virtual void Move(uint8_t* buffer) override
+		{
+			new (buffer)CallbackStorage<T>(std::move(*this));
+		}
 		virtual void Execute(uint32_t entity, CallbackType type) override
 		{
 			for (auto& listener : m_Listeners)

@@ -13,24 +13,38 @@ namespace XYZ {
 		ByteStream(ByteStream&& other) noexcept;
 		~ByteStream();
 
+		ByteStream& operator=(ByteStream&& other) noexcept;
+
 		template <typename T>
 		ByteStream& operator <<(T value)
 		{
-			static_assert(std::is_trivially_copyable<T>::value, "Value must be trivially copyable");
-			size_t size = sizeof(T);
-			handleMemorySize(size);
-			memcpy(&m_Data[m_Size], &value, size);
-			m_Size += size;
+			if (std::is_trivially_copyable<T>::value)
+			{
+				size_t size = sizeof(T);
+				handleMemorySize(size);
+				memcpy(&m_Data[m_Size], &value, size);
+				m_Size += size;
+			}
+			else
+			{
+				XYZ_LOG_WARN("Value must be trivially copyable, data was not deserialized");
+			}
 			return *this;
 		}
 
 		template <typename T>
 		const ByteStream& operator >>(T& value) const
 		{
-			static_assert(std::is_trivially_copyable<T>::value, "Value must be trivially copyable");
-			size_t size = sizeof(T);
-			memcpy(&value, &m_Data[m_Iterator], size);
-			m_Iterator += size;
+			if (std::is_trivially_copyable<T>::value)
+			{
+				size_t size = sizeof(T);
+				memcpy(&value, &m_Data[m_Iterator], size);
+				m_Iterator += size;
+			}
+			else
+			{
+				XYZ_LOG_WARN("Value must be trivially copyable, data was not serialized");
+			}
 			return *this;
 		}
 
@@ -56,6 +70,8 @@ namespace XYZ {
 		{
 			return m_Data;
 		}
+		size_t Size() const { return m_Size; }
+		bool End() const { return m_Iterator == m_Size; }
 	private:
 		void handleMemorySize(size_t sizeReq);
 
@@ -75,17 +91,6 @@ namespace XYZ {
 	}
 
 	inline const ByteStream& operator >> (const ByteStream& out, IComponent& component)
-	{
-
-		return out;
-	}
-
-	inline ByteStream& operator << (ByteStream & out, const std::vector<Entity>& vec)
-	{
-		return out;
-	}
-
-	inline const ByteStream& operator >> (const ByteStream& out, std::vector<Entity>& vec)
 	{
 		return out;
 	}
@@ -127,6 +132,7 @@ namespace XYZ {
 		out << vec.size();
 		for (auto& val : vec)
 			out << val;
+		return out;
 	}
 	template <typename T>
 	inline const ByteStream& operator >>(const ByteStream& out, std::vector<T>& vec)
@@ -140,5 +146,6 @@ namespace XYZ {
 			out >> stored;
 			vec.push_back(stored);
 		}
+		return out;
 	}
 }

@@ -24,4 +24,21 @@ namespace XYZ {
 		m_EntityManager = std::move(other.m_EntityManager);
 		return *this;
 	}
+	uint32_t ECSManager::CreateEntity()
+	{ 
+		return m_EntityManager.CreateEntity(); 
+	}
+	void ECSManager::DestroyEntity(Entity entity)
+	{ 
+		auto& signature = m_EntityManager.GetSignature(entity);
+		m_CallbackManager.OnEntityDestroyed(entity, signature);
+		m_ComponentManager.EntityDestroyed(entity, signature);
+		m_EntityManager.DestroyEntity(entity); 
+	}
+	void ECSManager::Clear()
+	{
+		m_ComponentManager.Clear();
+		m_EntityManager.Clear();
+		m_CallbackManager.Clear();
+	}
 }

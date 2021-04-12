@@ -3,6 +3,7 @@
 #include "CallbackStorage.h"
 #include "Component.h"
 #include "Types.h"
+#include "Signature.h"
 
 namespace XYZ {
 
@@ -16,6 +17,8 @@ namespace XYZ {
 		~CallbackManager();
 
 		CallbackManager& operator=(CallbackManager&& other) noexcept;
+
+		void Clear();
 
 		template <typename T>
 		void AddListener(const std::function<void(uint32_t, CallbackType)>& callback, void* instance)
@@ -47,6 +50,10 @@ namespace XYZ {
 
 		void OnEntityDestroyed(uint32_t entity, const Signature& signature);
 		
+		ICallbackStorage* GetIStorage(size_t offset)
+		{
+			return m_StoragePool.Get<ICallbackStorage>(offset);
+		}
 		const ICallbackStorage* GetIStorage(size_t offset) const
 		{
 			return m_StoragePool.Get<ICallbackStorage>(offset);
@@ -56,19 +63,28 @@ namespace XYZ {
 		template <typename T>
 		CallbackStorage<T>* getOrCreateStorage()
 		{
-			uint8_t id = IComponent::GetComponentID<T>();
+			size_t id = (size_t)IComponent::GetComponentID<T>();
+			size_t offset = id * sizeof(CallbackStorage<T>);
+
+			if (id >= m_Count)
+				resizeStorages(id + 1);	
 			if (!m_StorageCreated[id])
 			{
-				m_StoragePool.Allocate<CallbackStorage<T>>((size_t)id * sizeof(CallbackStorage<T>));
+				m_StoragePool.Allocate<CallbackStorage<T>>(offset);
 				m_StorageCreated[id] = true;
 				m_NumberOfStorages++;
 			}
-			return m_StoragePool.Get<CallbackStorage<T>>((size_t)id * sizeof(CallbackStorage<T>));
+			return m_StoragePool.Get<CallbackStorage<T>>(offset);
 		}
+
+		void resizeStorages(size_t count);
 		void deallocateStorages();
 	private:
 		Pool m_StoragePool;
 		std::vector<bool> m_StorageCreated;
-		size_t m_NumberOfStorages = 0;
+		size_t m_Count;
+		size_t  m_NumberOfStorages;
+
+		static constexpr size_t sc_InitialStorageCapacity = 10;
 	};
 }

@@ -13,7 +13,8 @@ namespace XYZ {
 	ByteStream::ByteStream(const ByteStream& other)
 		:
 		m_Size(other.m_Size),
-		m_Capacity(other.m_Capacity)
+		m_Capacity(other.m_Capacity),
+		m_Iterator(other.m_Iterator)
 	{
 		m_Data = new uint8_t[other.m_Capacity];
 		memcpy(m_Data, other.m_Data, other.m_Size);
@@ -21,7 +22,8 @@ namespace XYZ {
 	ByteStream::ByteStream(ByteStream&& other) noexcept
 		:
 		m_Size(other.m_Size),
-		m_Capacity(other.m_Capacity)
+		m_Capacity(other.m_Capacity),
+		m_Iterator(other.m_Iterator)
 	{
 		m_Data = other.m_Data;
 		other.m_Data = nullptr;
@@ -34,6 +36,19 @@ namespace XYZ {
 		{
 			delete[]m_Data;
 		}
+	}
+	ByteStream& ByteStream::operator=(ByteStream&& other) noexcept
+	{
+		m_Data = other.m_Data;
+		m_Capacity = other.m_Capacity;
+		m_Size = other.m_Size;
+		m_Iterator = other.m_Iterator;
+
+		other.m_Data = nullptr;
+		other.m_Size = 0;
+		other.m_Capacity = 0;
+		other.m_Iterator = 0;
+		return *this;
 	}
 	void ByteStream::handleMemorySize(size_t sizeReq)
 	{

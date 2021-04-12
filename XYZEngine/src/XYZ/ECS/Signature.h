@@ -2,10 +2,11 @@
 
 namespace XYZ {
 
+	class DynamicBitset;
 	class Signature
 	{
 	public:
-		Signature(uint8_t bitCount, int32_t index, std::vector<bool>& bitset);
+		Signature(int32_t index, DynamicBitset* bitset);
 		Signature(const Signature& other);
 		~Signature();
 
@@ -23,20 +24,18 @@ namespace XYZ {
 
 		bool operator[](uint8_t bitIndex) const;
 
-		std::vector<bool>::iterator begin() { return m_Bitset.begin() + getIndex(*this, 0); }
-		std::vector<bool>::iterator end()   { return m_Bitset.begin() + getIndex(*this, m_BitCount); }
-		std::vector<bool>::const_iterator begin() const { return m_Bitset.begin() + getIndex(*this, 0); }
-		std::vector<bool>::const_iterator end()   const { return m_Bitset.begin() + getIndex(*this, m_BitCount); }
+		std::vector<bool>::iterator begin();
+		std::vector<bool>::iterator end();
+		std::vector<bool>::const_iterator begin() const;
+		std::vector<bool>::const_iterator end()   const;
 
 		int32_t GetIndex() const { return m_Index; }
 	private:
 		static size_t getIndex(const Signature& signature, uint8_t bitIndex);
 
 	private:
-		std::vector<bool>& m_Bitset;
-
+		DynamicBitset* m_Bitset;
 		int32_t m_Index;
-		uint8_t m_BitCount;	
 
 		friend class DynamicBitset;
 	};

@@ -119,14 +119,17 @@ namespace XYZ {
 		{
 			return static_cast<int32_t>(m_Data.size());
 		}
-
+		int32_t Next() const
+		{
+			if (m_FirstFree == -1)
+				return (int32_t)m_Data.size();
+			return m_FirstFree;
+		}
 		// Returns the nth element.
 		T& operator[](int32_t index)
 		{
 			return m_Data[index].Element;
 		}
-
-	
 		// Returns the nth element.
 		const T& operator[](int32_t index) const
 		{

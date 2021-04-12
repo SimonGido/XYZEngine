@@ -8,24 +8,30 @@ namespace XYZ {
 	class ECSSerializer
 	{
 	public:
+		// Serialize everything, in order of component storages
+		static void SerializeRaw(const ECSManager& ecs, ByteStream& out);
+
+		// Resolves entities and component types and deserialize them, does not require data to be in order
+		static void DeserializeRaw(ECSManager& ecs, const ByteStream& in);
+
 		template <typename ...ComponentTypes>
 		static void Serialize(const ECSManager& ecs, ByteStream& out)
 		{
-			out << ecs.m_EntityManager.m_Signatures.Range();
+			out << ecs.m_EntityManager.m_Bitset.GetNumberOfSignatures();
 			std::tuple<const ComponentStorage<ComponentTypes>&...> storages = { ecs.GetStorage<ComponentTypes>()... };
 			ForEachInTuple(storages, [&](const auto& stor) {
 				SerializeStorage(stor, out);
 			});
 		}
 		template <typename ...ComponentTypes>
-		static void Deserialize(ECSManager& ecs, const ByteStream& out)
+		static void Deserialize(ECSManager& ecs, const ByteStream& in)
 		{
 			size_t size = 0;
-			out >> size;
+			in >> size;
 			ecs.m_EntityManager.m_Signatures = FreeList<Signature>(size);
 			std::tuple<const ComponentStorage<ComponentTypes>&...> storages = { ecs.GetStorage<ComponentTypes>()... };
 			ForEachInTuple(storages, [&](auto& stor) {
-				DeserializeStorage(stor, out);
+				DeserializeStorage(stor, in);
 			});
 		}
 
@@ -37,11 +43,11 @@ namespace XYZ {
 			out << component;
 		}
 		template <typename T>
-		static void DeserializeComponent(Entity& entity, T& component, const ByteStream& out)
+		static void DeserializeComponent(Entity& entity, T& component, const ByteStream& in)
 		{
 			static_assert(std::is_base_of<IComponent, T>::value, "");
-			out >> *(uint32_t*)&entity;
-			out >> component;
+			in >> *(uint32_t*)&entity;
+			in >> component;
 		}
 
 		template <typename T>
@@ -55,12 +61,12 @@ namespace XYZ {
 		}
 
 		template <typename T>
-		static void DeserializeStorage(ComponentStorage<T>& storage, const ByteStream& out)
+		static void DeserializeStorage(ComponentStorage<T>& storage, const ByteStream& in)
 		{
 			uint8_t id;
 			size_t size;
-			out >> id;
-			out >> size;
+			in >> id;
+			in >> size;
 			for (size_t i = 0; i < size; ++i)
 			{
 				Entity entity;

@@ -1,17 +1,25 @@
 #pragma once
 #include "Types.h"
 #include "Entity.h"
+#include "Serialization/ByteStream.h"
 
 namespace XYZ {
 
 	class IComponentStorage
 	{
 	public:
-		virtual ~IComponentStorage() = default;
-		virtual Entity EntityDestroyed(Entity entity) = 0;
-		virtual size_t Size() const = 0;
+		virtual					  ~IComponentStorage() = default;
+		virtual void			   Clear() = 0;
+		virtual void			   Move(uint8_t* buffer) = 0;
+		virtual void			   CopyComponentData(Entity entity, ByteStream& out) const = 0;
+		virtual void			   UpdateComponentData(Entity entity, const ByteStream& in) = 0;
+		virtual Entity			   EntityDestroyed(Entity entity) = 0;
+		virtual uint32_t		   GetComponentIndex(Entity entity) const = 0;
+		virtual Entity			   GetEntityAtIndex(size_t index) const = 0;
+	
+		virtual size_t			   Size() const = 0;
+		virtual uint8_t			   ID() const = 0;
 		virtual IComponentStorage* Copy(uint8_t* buffer) const = 0;
-		
 
 		virtual const std::vector<Entity>& GetDataEntityMap() const = 0;
 	};
@@ -27,14 +35,50 @@ namespace XYZ {
 			m_DataEntityMap(other.m_DataEntityMap),
 			m_EntityDataMap(other.m_EntityDataMap)
 		{}
+		ComponentStorage(ComponentStorage<T>&& other) noexcept
+			:
+			m_Data(std::move(other.m_Data)),
+			m_DataEntityMap(std::move(other.m_DataEntityMap)),
+			m_EntityDataMap(std::move(other.m_EntityDataMap))
+		{}
 
+		virtual void Clear() override
+		{
+			m_DataEntityMap.clear();
+			m_EntityDataMap.clear();
+			m_Data.clear();
+		}
+		virtual void Move(uint8_t* buffer) override
+		{
+			new (buffer)ComponentStorage<T>(std::move(*this));
+		}
+		virtual void CopyComponentData(Entity entity, ByteStream& out) const override
+		{
+			out << m_Data[m_EntityDataMap[(uint32_t)entity]];
+		}
+		virtual void UpdateComponentData(Entity entity, const ByteStream& in) override
+		{
+			in >> m_Data[m_EntityDataMap[(uint32_t)entity]];
+		}
 		virtual Entity EntityDestroyed(Entity entity) override
 		{
 			return RemoveComponent(entity);
 		}
+		virtual uint32_t GetComponentIndex(Entity entity) const override
+		{
+			return m_EntityDataMap[(uint32_t)entity];
+		}
+		virtual Entity GetEntityAtIndex(size_t index) const override
+		{
+			return m_DataEntityMap[index];
+		}
 		virtual size_t Size() const override 
 		{ 
 			return m_Data.size();  
+		}
+		virtual uint8_t ID() const override
+		{
+			return IComponent::GetComponentID<T>();
 		}
 		virtual IComponentStorage* Copy(uint8_t* buffer) const override
 		{
@@ -77,8 +121,6 @@ namespace XYZ {
 		{
 			return m_Data[m_EntityDataMap[(uint32_t)entity]];
 		}
-
-
 		uint32_t RemoveComponent(Entity entity)
 		{
 			Entity updatedEntity;
@@ -112,16 +154,6 @@ namespace XYZ {
 			return m_Data[index];
 		}
 
-		uint32_t GetComponentIndex(Entity entity) const
-		{
-			return m_EntityDataMap[(uint32_t)entity];
-		}
-
-		Entity GetEntityAtIndex(size_t index) const
-		{
-			return m_DataEntityMap[index];
-		}
-
 		T& operator[](size_t index)
 		{
 			return m_Data[index];
@@ -130,8 +162,6 @@ namespace XYZ {
 		{
 			return m_Data[index];
 		}
-
-		
 		
 		typename std::vector<T>::iterator begin() { return m_Data.begin(); }
 		typename std::vector<T>::iterator end() { return m_Data.end(); }
@@ -142,5 +172,7 @@ namespace XYZ {
 		std::vector<T> m_Data;
 		std::vector<Entity> m_DataEntityMap;
 		std::vector<uint32_t> m_EntityDataMap;
+
+		friend class ECSSerializer;
 	};
 }
