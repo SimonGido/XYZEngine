@@ -67,7 +67,7 @@ namespace XYZ {
 			size_t offset = id * sizeof(CallbackStorage<T>);
 
 			if (id >= m_Count)
-				resizeStorages(id + 1);	
+				resizeStorages(id + 1 + sc_StorageCapacityInc);	
 			if (!m_StorageCreated[id])
 			{
 				m_StoragePool.Allocate<CallbackStorage<T>>(offset);
@@ -84,7 +84,7 @@ namespace XYZ {
 		std::vector<bool> m_StorageCreated;
 		size_t m_Count;
 		size_t  m_NumberOfStorages;
-
+		static constexpr size_t sc_StorageCapacityInc = 5;
 		static constexpr size_t sc_InitialStorageCapacity = 10;
 	};
 }

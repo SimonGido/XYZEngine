@@ -107,7 +107,7 @@ namespace XYZ {
 			size_t offset = id * sizeof(ComponentStorage<T>);
 			
 			if (id >= m_Count)
-				resizeStorages(id + 1);		
+				resizeStorages(id + 1 + sc_StorageCapacityInc);		
 			if (!m_StorageCreated[id])
 			{
 				m_StoragePool.Allocate<ComponentStorage<T>>(offset);
@@ -124,7 +124,10 @@ namespace XYZ {
 		size_t m_Count;
 		size_t m_NumberOfStorages;
 
+
+		static constexpr size_t sc_StorageCapacityInc = 5;
 		static constexpr size_t sc_InitialStorageCapacity = 10;
+
 		friend class ECSSerializer;
 		friend class ECSManager;
 	};
