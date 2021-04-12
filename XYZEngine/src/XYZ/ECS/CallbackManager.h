@@ -82,7 +82,7 @@ namespace XYZ {
 	private:
 		Pool m_StoragePool;
 		std::vector<bool> m_StorageCreated;
-		size_t m_Count;
+		size_t  m_Count;
 		size_t  m_NumberOfStorages;
 		static constexpr size_t sc_StorageCapacityInc = 5;
 		static constexpr size_t sc_InitialStorageCapacity = 10;
