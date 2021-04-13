@@ -24,7 +24,7 @@ namespace XYZ {
 		m_EntityManager = std::move(other.m_EntityManager);
 		return *this;
 	}
-	uint32_t ECSManager::CreateEntity()
+	Entity ECSManager::CreateEntity()
 	{ 
 		return m_EntityManager.CreateEntity(); 
 	}

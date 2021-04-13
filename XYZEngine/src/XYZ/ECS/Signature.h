@@ -10,7 +10,7 @@ namespace XYZ {
 		Signature(const Signature& other);
 		~Signature();
 
-		void Set(uint8_t bitIndex, bool val = true);
+		void Set(uint16_t bitIndex, bool val = true);
 		void Reset();
 
 		Signature& operator =(const Signature& other);
@@ -22,7 +22,7 @@ namespace XYZ {
 		Signature operator &(const Signature& other) const;
 		Signature operator |(const Signature& other) const;
 
-		bool operator[](uint8_t bitIndex) const;
+		bool operator[](uint16_t bitIndex) const;
 
 		std::vector<bool>::iterator begin();
 		std::vector<bool>::iterator end();

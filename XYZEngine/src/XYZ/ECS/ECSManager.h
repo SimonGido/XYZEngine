@@ -15,7 +15,7 @@ namespace XYZ {
 
 		ECSManager& operator=(ECSManager&& other) noexcept;
 
-		uint32_t CreateEntity();
+		Entity CreateEntity();
 		void DestroyEntity(Entity entity);
 		void Clear();
 

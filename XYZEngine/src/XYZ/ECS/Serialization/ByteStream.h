@@ -107,6 +107,14 @@ namespace XYZ {
 		return out;
 	}
 
+	inline ByteStream& operator <<(ByteStream& out, const std::vector<bool>& vec)
+	{
+		out << vec.size();
+		for (auto val : vec)
+			out << val;
+		return out;
+	}
+
 	inline ByteStream& operator <<(ByteStream& out, const std::string& val)
 	{
 		out << val.size();

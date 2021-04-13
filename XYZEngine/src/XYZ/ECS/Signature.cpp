@@ -26,7 +26,7 @@ namespace XYZ {
 		Reset();
 	}
 
-	void Signature::Set(uint8_t bitIndex, bool val)
+	void Signature::Set(uint16_t bitIndex, bool val)
 	{
 		size_t index = getIndex(*this, bitIndex);
 		m_Bitset->m_Bitset[index] = val;
@@ -100,7 +100,7 @@ namespace XYZ {
 		}
 		return result;
 	}
-	bool Signature::operator[](uint8_t bitIndex) const
+	bool Signature::operator[](uint16_t bitIndex) const
 	{
 		return m_Bitset->m_Bitset[getIndex(*this, bitIndex)];
 	}
