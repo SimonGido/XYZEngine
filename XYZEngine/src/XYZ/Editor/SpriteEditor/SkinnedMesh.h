@@ -1,4 +1,5 @@
 #pragma once
+#include "XYZ/Utils/DataStructures/Tree.h"
 
 #include <glm/glm.hpp>
 
@@ -65,19 +66,13 @@ namespace XYZ {
 		{
 		public:
 			SkinnedMesh();
-			void Render();
-			void RenderVertices();
-			void RenderTriangles();
 			void Triangulate();
 			bool EraseVertexAtPosition(const glm::vec2& pos);
 			bool EraseTriangleAtPosition(const glm::vec2& pos);
-
-			
-			
-		
-			static void RenderTriangle(const glm::vec2& firstPosition, const glm::vec2& secondPosition, const glm::vec2& thirdPosition, const glm::vec4& color);
+			void BuildPreviewVertices(const Tree& hierarchy, const glm::vec2& contextSize, bool preview, bool weight);
 			
 			std::vector<Submesh> Submeshes;
+			std::vector<PreviewVertex> PreviewVertices;
 
 			enum Colors
 			{
@@ -92,6 +87,9 @@ namespace XYZ {
 			static bool trianglesHaveIndex(const Submesh& subMesh, uint32_t index);
 			static void triangulateSubmesh(Submesh& subMesh);
 			static void eraseEmptyPoints(Submesh& subMesh);
+			static void getPositionLocalToBone(BoneVertex& vertex, const Tree& hierarchy);
+			static void getPositionFromBones(BoneVertex& vertex, const Tree& hierarchy);
+			static void getColorFromBoneWeights(BoneVertex& vertex, const Tree& hierarchy);
 		};
 	}
 }

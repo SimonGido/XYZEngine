@@ -95,6 +95,8 @@ namespace XYZ {
 		bool Contains(Entity entity) const
 		{
 			auto& signature = m_EntityManager.GetSignature(entity);
+			if (signature.Size() <= IComponent::GetComponentID<T>())
+				return false;
 			return signature[IComponent::GetComponentID<T>()];
 		}
 

@@ -2,10 +2,11 @@
 #include "SkinnedMesh.h"
 
 #include "XYZ/Utils/Math/Math.h"
-#include "XYZ/Renderer/Renderer2D.h"
+#include "PreviewBone.h"
+
+#include <glm/gtx/transform.hpp>
 
 #include <tpp_interface.hpp>
-
 
 namespace XYZ {
 	namespace Editor {
@@ -23,6 +24,11 @@ namespace XYZ {
                     x = sPoint[0];
                     y = sPoint[1];
                 }
+            }
+            static glm::vec2 CalculateTexCoord(const glm::vec2& pos, const glm::vec2& size)
+            {
+                glm::vec2 position = pos + size / 2.0f;
+                return glm::vec2(position.x / size.x, position.y / size.y);
             }
 
         }
@@ -55,42 +61,10 @@ namespace XYZ {
             Colors[VertexColor] = glm::vec4(0.7f, 0.4f, 1.0f, 1.0f);
         }
 
-        void SkinnedMesh::Render()
-        {
-            RenderTriangles();
-            RenderVertices();
-        }
-
-        void SkinnedMesh::RenderVertices()
-        {
-            for (auto& subMesh : Submeshes)
-            {
-                for (auto& vertex : subMesh.Vertices)
-                    Renderer2D::SubmitCircle(glm::vec3(vertex.Position.x, vertex.Position.y, 0.0f), PointRadius, 20, Colors[VertexColor]);
-            }
-        }
-
-        void SkinnedMesh::RenderTriangles()
-        {
-            uint32_t counter = 0;
-            uint32_t offset = 0;
-            for (auto& subMesh : Submeshes)
-            {
-                for (auto& triangle : subMesh.Triangles)
-                {
-                    BoneVertex& first =  Submeshes[counter].Vertices[triangle.First];
-                    BoneVertex& second = Submeshes[counter].Vertices[triangle.Second];
-                    BoneVertex& third =  Submeshes[counter].Vertices[triangle.Third];
-                    RenderTriangle(first.Position, second.Position, third.Position, Colors[TriangleColor]);
-                }
-                counter++;
-                offset += subMesh.Vertices.size();
-            }
-        }
-
+       
         void SkinnedMesh::Triangulate()
 		{
-            for (Submesh subMesh : Submeshes)
+            for (Submesh& subMesh : Submeshes)
                 triangulateSubmesh(subMesh);
 		}
 		bool SkinnedMesh::EraseVertexAtPosition(const glm::vec2& pos)
@@ -131,13 +105,33 @@ namespace XYZ {
             }
             return false;
 		}
-    
-        void SkinnedMesh::RenderTriangle(const glm::vec2& firstPosition, const glm::vec2& secondPosition, const glm::vec2& thirdPosition, const glm::vec4& color)
+
+        void SkinnedMesh::BuildPreviewVertices(const Tree& hierarchy, const glm::vec2& contextSize, bool preview, bool weight)
         {
-            Renderer2D::SubmitLine(glm::vec3(firstPosition.x, firstPosition.y, 0.0f), glm::vec3(secondPosition.x, secondPosition.y, 0.0f), color);
-            Renderer2D::SubmitLine(glm::vec3(secondPosition.x, secondPosition.y, 0.0f), glm::vec3(thirdPosition.x, thirdPosition.y, 0.0f), color);
-            Renderer2D::SubmitLine(glm::vec3(thirdPosition.x, thirdPosition.y, 0.0f), glm::vec3(firstPosition.x, firstPosition.y, 0.0f), color);
+            PreviewVertices.clear();
+            for (auto& subMesh : Submeshes)
+            {
+                for (auto& vertex : subMesh.Vertices)
+                {
+                    BoneVertex vertexLocalToBone = vertex;
+                    if (preview)
+                    {
+                        getPositionLocalToBone(vertexLocalToBone, hierarchy);
+                        getPositionFromBones(vertexLocalToBone, hierarchy);
+                    }
+                    if (weight)
+                    {
+                        getColorFromBoneWeights(vertexLocalToBone, hierarchy);
+                    }
+                    PreviewVertices.push_back({
+                        vertex.Color,
+                        glm::vec3(vertex.Position, 1.0f),
+                        Helper::CalculateTexCoord(vertex.Position, contextSize)
+                    });
+                }
+            }
         }
+ 
        
 		bool SkinnedMesh::trianglesHaveIndex(const Submesh& subMesh, uint32_t index)
 		{
@@ -226,6 +220,63 @@ namespace XYZ {
                         triange.Third--;
                 }
             }
+        }
+
+        void SkinnedMesh::getPositionLocalToBone(BoneVertex& vertex, const Tree& hierarchy)
+        {
+            glm::mat4 boneTransform = glm::mat4(0.0f);
+            bool hasBone = false;
+            for (uint32_t i = 0; i < 4; ++i)
+            {
+                if (vertex.Data.IDs[i] != -1)
+                {
+                    const PreviewBone* bone = static_cast<const PreviewBone*>(hierarchy.GetData(vertex.Data.IDs[i]));
+                    boneTransform += glm::translate(glm::vec3(bone->LocalPosition, 0.0f)) * vertex.Data.Weights[i];
+                    hasBone = true;
+                }
+            }
+            if (hasBone)
+            {
+                glm::vec4 localToBone = glm::inverse(boneTransform) * glm::vec4(vertex.Position, 0.0f, 1.0f);
+                vertex.Position.x = localToBone.x;
+                vertex.Position.y = localToBone.y;
+            }
+        }
+        void SkinnedMesh::getPositionFromBones(BoneVertex& vertex, const Tree& hierarchy)
+        {
+            bool hasBone = false;
+            glm::mat4 boneTransform = glm::mat4(0.0f);
+            for (uint32_t i = 0; i < 4; ++i)
+            {
+                if (vertex.Data.IDs[i] != -1)
+                {
+                    const PreviewBone* bone = static_cast<const PreviewBone*>(hierarchy.GetData(vertex.Data.IDs[i]));
+                    boneTransform += bone->LocalTransform * vertex.Data.Weights[i];
+                    hasBone = true;
+                }
+            }
+            if (hasBone)
+            {
+                glm::vec4 positionFromBone = boneTransform * glm::vec4(vertex.Position, 0.0f, 1.0f);
+                vertex.Position.x = positionFromBone.x;
+                vertex.Position.y = positionFromBone.y;
+            }
+        }
+        void SkinnedMesh::getColorFromBoneWeights(BoneVertex& vertex, const Tree& hierarchy)
+        {
+            bool hasBone = false;
+            glm::vec3 color = glm::vec3(1.0f);
+            for (uint32_t i = 0; i < 4; ++i)
+            {
+                if (vertex.Data.IDs[i] != -1)
+                {
+                    const PreviewBone* bone = static_cast<const PreviewBone*>(hierarchy.GetData(vertex.Data.IDs[i]));
+                    color *= bone->Color * vertex.Data.Weights[i];
+                    hasBone = true;
+                }
+            }
+            if (hasBone)
+                vertex.Color = color;
         }
 	}
 }

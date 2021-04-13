@@ -26,15 +26,31 @@ namespace XYZ {
 
 			static constexpr size_t MaxBones = 60;
 		private:
+			// Events
 			bool onMouseButtonPress(MouseButtonPressEvent& event);
 			bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
 			bool onMouseScroll(MouseScrollEvent& event);
 			bool onKeyPress(KeyPressedEvent& event);
 
+			// Rendering
+			void renderAll();
+			void renderPreviewMesh(const glm::mat4& viewProjection);
+
+			// Buffers and mesh data
+			void clear();
+			void eraseBone(PreviewBone* bone);
+			void createVertex(const glm::vec2& pos);
+			void initializePose();
+			void updateBoneHierarchy();
 			void updateRenderBuffers();
 			void rebuildRenderBuffers();
-			void buildPreviewVertices();
 
+			void handleBoneCreate();
+			void handleBoneEdit();
+			void handleVertexEdit();
+			void handleWeightsBrush();
+
+			// Helper functions
 			glm::vec2 getMouseWindowSpace() const;
 			std::pair<float, float> getMouseViewportSpace() const;
 
@@ -79,6 +95,11 @@ namespace XYZ {
 			BoneVertex* m_SelectedVertex;
 			Triangle* m_SelectedTriangle;
 
+			Submesh* m_FoundSubmesh;
+			PreviewBone* m_FoundBone;
+			BoneVertex* m_FoundVertex;
+			Triangle* m_FoundTriangle;
+
 			Ref<SubTexture> m_Context;
 			glm::vec2 m_ContextSize;
 
@@ -88,10 +109,8 @@ namespace XYZ {
 			Ref<RenderTexture> m_RenderTexture;
 			Ref<SubTexture> m_RenderSubTexture;
 
-
-			std::vector<PreviewVertex> m_PreviewVertices;
 			SkinnedMesh m_Mesh;
-
+			std::vector<PreviewBone*> m_Bones;
 
 			Ref<VertexArray> m_VertexArray;
 			Ref<VertexBuffer> m_VertexBuffer;
