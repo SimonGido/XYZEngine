@@ -29,7 +29,7 @@ namespace XYZ {
 		std::vector<bool>::const_iterator begin() const;
 		std::vector<bool>::const_iterator end()   const;
 
-		int32_t GetIndex() const { return m_Index; }
+		uint16_t Size() const;
 	private:
 		static size_t getIndex(const Signature& signature, uint8_t bitIndex);
 

@@ -9,6 +9,7 @@ namespace XYZ {
 		m_Bitset(bitset),
 		m_Index(index)
 	{
+		XYZ_ASSERT(m_Bitset, "");
 		for (uint8_t i = 0; i < m_Bitset->m_BitCount; ++i)
 			m_Bitset->m_Bitset[getIndex(*this, i)] = false;
 	}
@@ -118,6 +119,10 @@ namespace XYZ {
 	std::vector<bool>::const_iterator Signature::end() const
 	{
 		return m_Bitset->m_Bitset.begin() + getIndex(*this, m_Bitset->m_BitCount);
+	}
+	uint16_t Signature::Size() const
+	{
+		return m_Bitset->m_BitCount;
 	}
 	size_t Signature::getIndex(const Signature& signature, uint8_t bitIndex)
 	{
