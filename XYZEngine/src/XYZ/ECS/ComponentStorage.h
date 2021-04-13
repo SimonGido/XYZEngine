@@ -11,6 +11,7 @@ namespace XYZ {
 		virtual					  ~IComponentStorage() = default;
 		virtual void			   Clear() = 0;
 		virtual void			   Move(uint8_t* buffer) = 0;
+		virtual void			   AddRawComponent(Entity entity, const ByteStream& in) = 0;
 		virtual void			   CopyComponentData(Entity entity, ByteStream& out) const = 0;
 		virtual void			   UpdateComponentData(Entity entity, const ByteStream& in) = 0;
 		virtual Entity			   EntityDestroyed(Entity entity) = 0;
@@ -18,7 +19,7 @@ namespace XYZ {
 		virtual Entity			   GetEntityAtIndex(size_t index) const = 0;
 	
 		virtual size_t			   Size() const = 0;
-		virtual uint8_t			   ID() const = 0;
+		virtual uint16_t		   ID() const = 0;
 		virtual IComponentStorage* Copy(uint8_t* buffer) const = 0;
 
 		virtual const std::vector<Entity>& GetDataEntityMap() const = 0;
@@ -52,6 +53,12 @@ namespace XYZ {
 		{
 			new (buffer)ComponentStorage<T>(std::move(*this));
 		}
+		virtual void AddRawComponent(Entity entity, const ByteStream& in) override
+		{
+			T component;
+			in >> component;
+			AddComponent(entity, component);
+		}
 		virtual void CopyComponentData(Entity entity, ByteStream& out) const override
 		{
 			out << m_Data[m_EntityDataMap[(uint32_t)entity]];
@@ -76,7 +83,7 @@ namespace XYZ {
 		{ 
 			return m_Data.size();  
 		}
-		virtual uint8_t ID() const override
+		virtual uint16_t ID() const override
 		{
 			return IComponent::GetComponentID<T>();
 		}

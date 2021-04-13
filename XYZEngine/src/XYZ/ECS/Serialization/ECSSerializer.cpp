@@ -17,6 +17,7 @@ namespace XYZ {
                 for (size_t i = 0; i < storage->Size(); ++i)
                 {
                     Entity entity = storage->GetEntityAtIndex(i);
+                    out << entity;
                     storage->CopyComponentData(entity, out);
                 }
             }
@@ -25,7 +26,7 @@ namespace XYZ {
     }
     void ECSSerializer::DeserializeRaw(ECSManager& ecs, const ByteStream& in)
     {
-        uint32_t maxEntity = 0;
+        size_t maxEntity = 0;
         in >> maxEntity;
         ecs.Clear();
         while (!in.End())
@@ -39,7 +40,7 @@ namespace XYZ {
                 IComponentStorage& storage = ecs.GetIStorage((size_t)componentID);
                 Entity entity;
                 in >> entity;
-                storage.UpdateComponentData(entity, in);
+                storage.AddRawComponent(entity, in);
             }
         }
     }
