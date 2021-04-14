@@ -99,6 +99,14 @@ namespace XYZ {
 				return false;
 			return signature[IComponent::GetComponentID<T>()];
 		}
+	
+		bool Contains(Entity entity, uint16_t componentID) const
+		{
+			auto& signature = m_EntityManager.GetSignature(entity);
+			if (signature.Size() <= componentID)
+				return false;
+			return signature[componentID];
+		}
 
 		bool IsValid(Entity entity) const
 		{

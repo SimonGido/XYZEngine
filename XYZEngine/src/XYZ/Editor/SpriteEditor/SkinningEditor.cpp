@@ -335,8 +335,8 @@ namespace XYZ {
             Renderer::SetClearColor(m_Framebuffer->GetSpecification().ClearColor);
             Renderer::Clear();
 
-            PreviewRenderer::RenderSkinnedMesh(m_Mesh, IS_SET(m_Flags, PreviewPose));
             renderPreviewMesh(m_Camera.ViewProjectionMatrix);
+            PreviewRenderer::RenderSkinnedMesh(m_Mesh, IS_SET(m_Flags, PreviewPose));
             PreviewRenderer::RenderHierarchy(m_BoneHierarchy, IS_SET(m_Flags, PreviewPose));
 
             m_Framebuffer->Unbind();
