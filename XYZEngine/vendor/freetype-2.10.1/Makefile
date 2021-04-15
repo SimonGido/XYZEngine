@@ -12,19 +12,19 @@ endif
 
 ifeq ($(config),debug)
   RESCOMP = windres
-  TARGETDIR = bin/Debug-linux-x86_64/Lua
-  TARGET = $(TARGETDIR)/libLua.a
-  OBJDIR = bin-int/Debug-linux-x86_64/Lua
-  DEFINES +=
-  INCLUDES +=
+  TARGETDIR = bin/Debug
+  TARGET = $(TARGETDIR)/libFreeType.a
+  OBJDIR = obj/Debug
+  DEFINES += -D_LIB -DFT2_BUILD_LIBRARY -DFT_DEBUG_LEVEL_ERROR -DFT_DEBUG_LEVEL_TRACE
+  INCLUDES += -Iinclude
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
-  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -g
-  ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -g
+  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
+  ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
   LIBS +=
   LDDEPS +=
-  ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64
+  ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s
   LINKCMD = $(AR) -rcs "$@" $(OBJECTS)
   define PREBUILDCMDS
   endef
@@ -39,15 +39,15 @@ endif
 
 ifeq ($(config),release)
   RESCOMP = windres
-  TARGETDIR = bin/Release-linux-x86_64/Lua
-  TARGET = $(TARGETDIR)/libLua.a
-  OBJDIR = bin-int/Release-linux-x86_64/Lua
-  DEFINES +=
-  INCLUDES +=
+  TARGETDIR = bin/Release
+  TARGET = $(TARGETDIR)/libFreeType.a
+  OBJDIR = obj/Release
+  DEFINES += -D_LIB -DFT2_BUILD_LIBRARY -DNDEBUG
+  INCLUDES += -Iinclude
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
-  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2
-  ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -O2
+  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64
+  ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
   LIBS +=
   LDDEPS +=
@@ -65,39 +65,39 @@ all: prebuild prelink $(TARGET)
 endif
 
 OBJECTS := \
-	$(OBJDIR)/lapi.o \
-	$(OBJDIR)/lauxlib.o \
-	$(OBJDIR)/lbaselib.o \
-	$(OBJDIR)/lcode.o \
-	$(OBJDIR)/lcorolib.o \
-	$(OBJDIR)/lctype.o \
-	$(OBJDIR)/ldblib.o \
-	$(OBJDIR)/ldebug.o \
-	$(OBJDIR)/ldo.o \
-	$(OBJDIR)/ldump.o \
-	$(OBJDIR)/lfunc.o \
-	$(OBJDIR)/lgc.o \
-	$(OBJDIR)/linit.o \
-	$(OBJDIR)/liolib.o \
-	$(OBJDIR)/llex.o \
-	$(OBJDIR)/lmathlib.o \
-	$(OBJDIR)/lmem.o \
-	$(OBJDIR)/loadlib.o \
-	$(OBJDIR)/lobject.o \
-	$(OBJDIR)/lopcodes.o \
-	$(OBJDIR)/loslib.o \
-	$(OBJDIR)/lparser.o \
-	$(OBJDIR)/lstate.o \
-	$(OBJDIR)/lstring.o \
-	$(OBJDIR)/lstrlib.o \
-	$(OBJDIR)/ltable.o \
-	$(OBJDIR)/ltablib.o \
-	$(OBJDIR)/ltm.o \
-	$(OBJDIR)/lundump.o \
-	$(OBJDIR)/lutf8lib.o \
-	$(OBJDIR)/lvm.o \
-	$(OBJDIR)/lzio.o \
-	$(OBJDIR)/wmain.o \
+	$(OBJDIR)/autofit.o \
+	$(OBJDIR)/ftbase.o \
+	$(OBJDIR)/ftbbox.o \
+	$(OBJDIR)/ftbitmap.o \
+	$(OBJDIR)/ftfstype.o \
+	$(OBJDIR)/ftglyph.o \
+	$(OBJDIR)/ftgxval.o \
+	$(OBJDIR)/ftinit.o \
+	$(OBJDIR)/ftlcdfil.o \
+	$(OBJDIR)/ftmm.o \
+	$(OBJDIR)/ftotval.o \
+	$(OBJDIR)/ftpatent.o \
+	$(OBJDIR)/ftpfr.o \
+	$(OBJDIR)/ftstroke.o \
+	$(OBJDIR)/ftsynth.o \
+	$(OBJDIR)/ftsystem.o \
+	$(OBJDIR)/bdf.o \
+	$(OBJDIR)/ftcache.o \
+	$(OBJDIR)/cff.o \
+	$(OBJDIR)/type1cid.o \
+	$(OBJDIR)/ftgzip.o \
+	$(OBJDIR)/ftlzw.o \
+	$(OBJDIR)/pcf.o \
+	$(OBJDIR)/pfr.o \
+	$(OBJDIR)/psaux.o \
+	$(OBJDIR)/pshinter.o \
+	$(OBJDIR)/psmodule.o \
+	$(OBJDIR)/raster.o \
+	$(OBJDIR)/sfnt.o \
+	$(OBJDIR)/smooth.o \
+	$(OBJDIR)/truetype.o \
+	$(OBJDIR)/type1.o \
+	$(OBJDIR)/type42.o \
 
 RESOURCES := \
 
@@ -109,7 +109,7 @@ ifeq (.exe,$(findstring .exe,$(ComSpec)))
 endif
 
 $(TARGET): $(GCH) ${CUSTOMFILES} $(OBJECTS) $(LDDEPS) $(RESOURCES) | $(TARGETDIR)
-	@echo Linking Lua
+	@echo Linking FreeType
 	$(SILENT) $(LINKCMD)
 	$(POSTBUILDCMDS)
 
@@ -132,7 +132,7 @@ else
 endif
 
 clean:
-	@echo Cleaning Lua
+	@echo Cleaning FreeType
 ifeq (posix,$(SHELLTYPE))
 	$(SILENT) rm -f  $(TARGET)
 	$(SILENT) rm -rf $(OBJDIR)
@@ -151,108 +151,108 @@ ifneq (,$(PCH))
 $(OBJECTS): $(GCH) $(PCH) | $(OBJDIR)
 $(GCH): $(PCH) | $(OBJDIR)
 	@echo $(notdir $<)
-	$(SILENT) $(CC) -x c-header $(ALL_CFLAGS) -o "$@" -MF "$(@:%.gch=%.d)" -c "$<"
+	$(SILENT) $(CXX) -x c++-header $(ALL_CXXFLAGS) -o "$@" -MF "$(@:%.gch=%.d)" -c "$<"
 else
 $(OBJECTS): | $(OBJDIR)
 endif
 
-$(OBJDIR)/lapi.o: src/lapi.c
+$(OBJDIR)/autofit.o: src/autofit/autofit.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/lauxlib.o: src/lauxlib.c
+$(OBJDIR)/ftbase.o: src/base/ftbase.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/lbaselib.o: src/lbaselib.c
+$(OBJDIR)/ftbbox.o: src/base/ftbbox.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/lcode.o: src/lcode.c
+$(OBJDIR)/ftbitmap.o: src/base/ftbitmap.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/lcorolib.o: src/lcorolib.c
+$(OBJDIR)/ftfstype.o: src/base/ftfstype.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/lctype.o: src/lctype.c
+$(OBJDIR)/ftglyph.o: src/base/ftglyph.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/ldblib.o: src/ldblib.c
+$(OBJDIR)/ftgxval.o: src/base/ftgxval.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/ldebug.o: src/ldebug.c
+$(OBJDIR)/ftinit.o: src/base/ftinit.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/ldo.o: src/ldo.c
+$(OBJDIR)/ftlcdfil.o: src/base/ftlcdfil.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/ldump.o: src/ldump.c
+$(OBJDIR)/ftmm.o: src/base/ftmm.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/lfunc.o: src/lfunc.c
+$(OBJDIR)/ftotval.o: src/base/ftotval.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/lgc.o: src/lgc.c
+$(OBJDIR)/ftpatent.o: src/base/ftpatent.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/linit.o: src/linit.c
+$(OBJDIR)/ftpfr.o: src/base/ftpfr.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/liolib.o: src/liolib.c
+$(OBJDIR)/ftstroke.o: src/base/ftstroke.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/llex.o: src/llex.c
+$(OBJDIR)/ftsynth.o: src/base/ftsynth.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/lmathlib.o: src/lmathlib.c
+$(OBJDIR)/ftsystem.o: src/base/ftsystem.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/lmem.o: src/lmem.c
+$(OBJDIR)/bdf.o: src/bdf/bdf.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/loadlib.o: src/loadlib.c
+$(OBJDIR)/ftcache.o: src/cache/ftcache.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/lobject.o: src/lobject.c
+$(OBJDIR)/cff.o: src/cff/cff.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/lopcodes.o: src/lopcodes.c
+$(OBJDIR)/type1cid.o: src/cid/type1cid.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/loslib.o: src/loslib.c
+$(OBJDIR)/ftgzip.o: src/gzip/ftgzip.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/lparser.o: src/lparser.c
+$(OBJDIR)/ftlzw.o: src/lzw/ftlzw.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/lstate.o: src/lstate.c
+$(OBJDIR)/pcf.o: src/pcf/pcf.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/lstring.o: src/lstring.c
+$(OBJDIR)/pfr.o: src/pfr/pfr.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/lstrlib.o: src/lstrlib.c
+$(OBJDIR)/psaux.o: src/psaux/psaux.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/ltable.o: src/ltable.c
+$(OBJDIR)/pshinter.o: src/pshinter/pshinter.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/ltablib.o: src/ltablib.c
+$(OBJDIR)/psmodule.o: src/psnames/psmodule.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/ltm.o: src/ltm.c
+$(OBJDIR)/raster.o: src/raster/raster.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/lundump.o: src/lundump.c
+$(OBJDIR)/sfnt.o: src/sfnt/sfnt.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/lutf8lib.o: src/lutf8lib.c
+$(OBJDIR)/smooth.o: src/smooth/smooth.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/lvm.o: src/lvm.c
+$(OBJDIR)/truetype.o: src/truetype/truetype.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/lzio.o: src/lzio.c
+$(OBJDIR)/type1.o: src/type1/type1.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/wmain.o: src/wmain.c
+$(OBJDIR)/type42.o: src/type42/type42.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 
