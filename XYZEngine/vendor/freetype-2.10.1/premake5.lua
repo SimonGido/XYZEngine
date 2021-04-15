@@ -6,7 +6,11 @@ project "FreeType"
     {
        "include"
     }
-    
+    defines
+    {
+	"_LIB",
+	"FT2_BUILD_LIBRARY",
+    }
     files
     {
         "src/autofit/autofit.c",
@@ -61,9 +65,8 @@ project "FreeType"
         		"WIN32",
         		"WIN32_LEAN_AND_MEAN",
         		"VC_EXTRALEAN",
-        		"_CRT_SECURE_NO_WARNINGS",
-        		"FT2_BUILD_LIBRARY",      
-   		 }    
+        		"_CRT_SECURE_NO_WARNINGS",   
+   		}    
     
 
 	filter "configurations:Debug"
