@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "OpenGLAPIContext.h"
 
-#include <GLFW\glfw3.h>
-#include <GL\glew.h>
+#include <GLFW/glfw3.h>
+#include <GL/glew.h>
 #include <GL/GL.h>
 #include <csignal>
 
