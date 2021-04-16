@@ -37,18 +37,9 @@ namespace XYZ {
 		m_ECS.ForceStorage<ScriptComponent>();
 	}
 
-	ByteStream& operator <<(ByteStream& out, const IDComponent& val)
-	{
-
-		return out;
-	}
-
 	Scene::~Scene()
 	{
-		ByteStream out;
-		ECSSerializer::Serialize<
-		IDComponent
-		>(m_ECS, out);
+	
 	}
 
 	SceneEntity Scene::CreateEntity(const std::string& name, const GUID& guid)
