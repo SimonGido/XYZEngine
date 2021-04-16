@@ -34,6 +34,7 @@ namespace XYZ {
 		template <typename T, typename ...Args>
 		T& EmplaceComponent(Entity entity, Args&&... args)
 		{
+			XYZ_ASSERT(IsValid(entity), "Entity is invalid");
 			m_ComponentManager.ForceStorage<T>();
 			m_EntityManager.SetNumberOfComponents(m_ComponentManager.m_Count);
 			Signature& signature = m_EntityManager.GetSignature(entity);
@@ -46,6 +47,7 @@ namespace XYZ {
 		template <typename T>
 		T& AddComponent(Entity entity, const T& component)
 		{
+			XYZ_ASSERT(IsValid(entity), "Entity is invalid");
 			m_ComponentManager.ForceStorage<T>();
 			m_EntityManager.SetNumberOfComponents(m_ComponentManager.m_Count);
 			Signature& signature = m_EntityManager.GetSignature(entity);
@@ -59,6 +61,7 @@ namespace XYZ {
 		template <typename T>
 		bool RemoveComponent(Entity entity)
 		{
+			XYZ_ASSERT(IsValid(entity), "Entity is invalid");
 			Signature& signature = m_EntityManager.GetSignature(entity);
 			XYZ_ASSERT(signature[IComponent::GetComponentID<T>()], "Entity does not have component");
 			
@@ -72,6 +75,7 @@ namespace XYZ {
 		template <typename T>
 		T& GetComponent(Entity entity)
 		{
+			XYZ_ASSERT(IsValid(entity), "Entity is invalid");
 			Signature& signature = m_EntityManager.GetSignature(entity);
 			XYZ_ASSERT(signature[IComponent::GetComponentID<T>()], "Entity does not have component");
 			return m_ComponentManager.GetComponent<T>(entity);
@@ -80,6 +84,7 @@ namespace XYZ {
 		template <typename T>
 		const T& GetComponent(Entity entity) const
 		{
+			XYZ_ASSERT(IsValid(entity), "Entity is invalid");
 			const Signature& signature = m_EntityManager.GetSignature(entity);
 			XYZ_ASSERT(signature[IComponent::GetComponentID<T>()], "Entity does not have component");
 			return m_ComponentManager.GetComponent<T>(entity);
@@ -88,12 +93,14 @@ namespace XYZ {
 
 		const Signature& GetEntitySignature(Entity entity) const
 		{
+			XYZ_ASSERT(IsValid(entity), "Entity is invalid");
 			return m_EntityManager.GetSignature(entity);
 		}
 
 		template <typename T>
 		bool Contains(Entity entity) const
 		{
+			XYZ_ASSERT(IsValid(entity), "Entity is invalid");
 			auto& signature = m_EntityManager.GetSignature(entity);
 			if (signature.Size() <= IComponent::GetComponentID<T>())
 				return false;
@@ -102,6 +109,7 @@ namespace XYZ {
 	
 		bool Contains(Entity entity, uint16_t componentID) const
 		{
+			XYZ_ASSERT(IsValid(entity), "Entity is invalid");
 			auto& signature = m_EntityManager.GetSignature(entity);
 			if (signature.Size() <= componentID)
 				return false;
@@ -113,10 +121,11 @@ namespace XYZ {
 			return m_EntityManager.m_Valid.size() > (uint32_t)entity && m_EntityManager.m_Valid[(uint32_t)entity];
 		}
 
-		template <typename T>
+		template <typename ...Args>
 		void ForceStorage()
 		{
-			m_ComponentManager.ForceStorage<T>();
+			(m_ComponentManager.ForceStorage<Args>(), ...);
+			m_EntityManager.SetNumberOfComponents(m_ComponentManager.m_Count);
 		}
 
 		template <typename T>

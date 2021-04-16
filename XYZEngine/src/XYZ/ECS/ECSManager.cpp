@@ -30,6 +30,7 @@ namespace XYZ {
 	}
 	void ECSManager::DestroyEntity(Entity entity)
 	{ 
+		XYZ_ASSERT(IsValid(entity), "Entity is invalid");
 		auto& signature = m_EntityManager.GetSignature(entity);
 		m_CallbackManager.OnEntityDestroyed(entity, signature);
 		m_ComponentManager.EntityDestroyed(entity, signature);
