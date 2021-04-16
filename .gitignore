@@ -12,3 +12,7 @@ obj/
 **.vcxproj.filters
 **.vcxproj.user
 **.csproj
+
+
+# Makefiles
+**/Makefile
