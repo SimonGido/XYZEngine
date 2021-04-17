@@ -10,17 +10,6 @@
 
 
 namespace XYZ {
-	namespace PanelID {
-		enum PanelID
-		{
-			SceneHierarchyPanel,
-			ScenePanel,
-			InspectorPanel,
-			SkinningEditorPanel,
-			NumPanels
-		};
-	}
-	
 	class EditorLayer : public Layer
 	{
 	public:
@@ -46,8 +35,8 @@ namespace XYZ {
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		InspectorPanel m_InspectorPanel;
 		ScenePanel m_ScenePanel;
-		SkinningEditorPanel m_SkinningEditorPanel;
-
+		//SkinningEditorPanel m_SkinningEditorPanel;
+		Editor::SkinningEditor m_SkinningEditor;
 	private:	
 		SceneEntity m_SelectedEntity;
 		SceneEntity m_TestEntity;

@@ -108,7 +108,6 @@ namespace XYZ {
 
         void SkinnedMesh::BuildPreviewVertices(const Tree& hierarchy, const glm::vec2& contextSize, bool preview, bool weight)
         {
-            PreviewVertices.clear();
             for (auto& subMesh : Submeshes)
             {
                 for (auto& vertex : subMesh.Vertices)
@@ -124,8 +123,8 @@ namespace XYZ {
                         getColorFromBoneWeights(vertexLocalToBone, hierarchy);
                     }
                     PreviewVertices.push_back({
-                        vertex.Color,
-                        glm::vec3(vertex.Position, 1.0f),
+                        vertexLocalToBone.Color,
+                        glm::vec3(vertexLocalToBone.Position, 1.0f),
                         Helper::CalculateTexCoord(vertex.Position, contextSize)
                     });
                 }
@@ -226,7 +225,7 @@ namespace XYZ {
         {
             glm::mat4 boneTransform = glm::mat4(0.0f);
             bool hasBone = false;
-            for (uint32_t i = 0; i < 4; ++i)
+            for (uint32_t i = 0; i < BoneData::sc_MaxBonesPerVertex; ++i)
             {
                 if (vertex.Data.IDs[i] != -1)
                 {
@@ -251,7 +250,7 @@ namespace XYZ {
                 if (vertex.Data.IDs[i] != -1)
                 {
                     const PreviewBone* bone = static_cast<const PreviewBone*>(hierarchy.GetData(vertex.Data.IDs[i]));
-                    boneTransform += bone->LocalTransform * vertex.Data.Weights[i];
+                    boneTransform += bone->WorldTransform * vertex.Data.Weights[i];
                     hasBone = true;
                 }
             }
@@ -264,19 +263,36 @@ namespace XYZ {
         }
         void SkinnedMesh::getColorFromBoneWeights(BoneVertex& vertex, const Tree& hierarchy)
         {
-            bool hasBone = false;
-            glm::vec3 color = glm::vec3(1.0f);
+            glm::vec3 color = glm::vec3(0.0f);
             for (uint32_t i = 0; i < 4; ++i)
             {
                 if (vertex.Data.IDs[i] != -1)
                 {
                     const PreviewBone* bone = static_cast<const PreviewBone*>(hierarchy.GetData(vertex.Data.IDs[i]));
-                    color *= bone->Color * vertex.Data.Weights[i];
-                    hasBone = true;
+                    color += bone->Color * vertex.Data.Weights[i];
                 }
             }
-            if (hasBone)
-                vertex.Color = color;
+            vertex.Color = color;
         }
-	}
+        BoneVertex::BoneVertex()
+            :
+            Position(glm::vec2(0.0f)),
+            Color(glm::vec4(0.0f))
+        {
+        }
+        BoneVertex::BoneVertex(const glm::vec2& pos)
+            :
+            Position(pos),
+            Color(glm::vec4(0.0f))
+        {
+        }
+        BoneVertex::BoneVertex(const BoneVertex& other)
+            :
+            Position(other.Position),
+            Color(other.Color)
+        {
+            memcpy(Data.IDs, other.Data.IDs, BoneData::sc_MaxBonesPerVertex * sizeof(int32_t));
+            memcpy(Data.Weights, other.Data.Weights, BoneData::sc_MaxBonesPerVertex * sizeof(float));
+        }
+}
 }

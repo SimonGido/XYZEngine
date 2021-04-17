@@ -78,7 +78,7 @@ namespace XYZ {
 		m_SceneHierarchyPanel.SetContext(m_Scene);
 		m_ScenePanel.SetContext(m_Scene);
 		m_ScenePanel.SetSubTexture(renderSubTexture);
-		m_SkinningEditorPanel.SetContext(robotSubTexture);
+		m_SkinningEditor.SetContext(robotSubTexture);
 
 		IG::LoadLayout("IG.IG");
 
@@ -98,7 +98,7 @@ namespace XYZ {
 		m_ScenePanel.OnUpdate(ts);
 		m_InspectorPanel.OnUpdate();
 		m_SceneHierarchyPanel.OnUpdate();
-		m_SkinningEditorPanel.OnUpdate(ts);
+		m_SkinningEditor.OnUpdate(ts);
 
 		if (m_Scene->GetState() == SceneState::Play)
 		{
@@ -126,7 +126,7 @@ namespace XYZ {
 		dispatcher.Dispatch<KeyPressedEvent>(Hook(&EditorLayer::onKeyPress, this));
 		m_SceneHierarchyPanel.OnEvent(event);
 		m_ScenePanel.OnEvent(event);
-		m_SkinningEditorPanel.OnEvent(event);	
+		m_SkinningEditor.OnEvent(event);	
 	}
 
 	void EditorLayer::OnInGuiRender()

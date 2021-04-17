@@ -22,7 +22,8 @@ namespace XYZ {
 			void OnEvent(Event& event);
 
 
-			void SetupUI(std::vector<IGHierarchyElement>& elements);
+			void PushUI(std::vector<IGHierarchyElement>& elements);
+			void SetupUI();
 
 			static constexpr size_t MaxBones = 60;
 		private:
@@ -34,25 +35,31 @@ namespace XYZ {
 
 			// Rendering
 			void renderAll();
+			void renderSelection();
 			void renderPreviewMesh(const glm::mat4& viewProjection);
+			void updateUIColor();
 
 			// Buffers and mesh data
 			void clear();
 			void eraseBone(PreviewBone* bone);
+			void createBone();
 			void createVertex(const glm::vec2& pos);
 			void initializePose();
 			void updateBoneHierarchy();
 			void updateRenderBuffers();
 			void rebuildRenderBuffers();
 
-			void handleBoneCreate();
+			void handleSelection();
 			void handleBoneEdit();
 			void handleVertexEdit();
 			void handleWeightsBrush();
 
+			
 			// Helper functions
 			glm::vec2 getMouseWindowSpace() const;
 			std::pair<float, float> getMouseViewportSpace() const;
+			uint8_t findEditBoneFlag(const PreviewBone& bone);
+			std::vector<BoneVertex*> findVerticesInRadius(const glm::vec2& pos, float radius);
 
 			std::pair<Submesh*, BoneVertex*> findVertex(const glm::vec2& pos);
 			std::pair<Submesh*, Triangle*> findTriangle(const glm::vec2& pos);
@@ -68,19 +75,22 @@ namespace XYZ {
 
 			enum Flags
 			{
-				PreviewPose = BIT(0),
-				CreateBone = BIT(1),
-				EditBone = BIT(2),
-				DeleteBone = BIT(3),
+				// Bones
+				PreviewPose    = BIT(0),
+				CreateBone     = BIT(1),
+				EditBone       = BIT(2),
+				DeleteBone     = BIT(3),
 
-				CreateSubMesh = BIT(4),
-				CreateVertex = BIT(5),
-				EditVertex = BIT(6),
-				DeleteVertex = BIT(7),
+				// Vertices / Triangles
+				CreateVertex   = BIT(5),
+				EditVertex     = BIT(6),
+				DeleteVertex   = BIT(7),
 				DeleteTriangle = BIT(8),
 
-				WeightBrush = BIT(9)
+				// Weights
+				WeightBrush    = BIT(9)
 			};
+
 		private:
 			size_t m_PoolHandle;
 			IGImageWindow* m_Window;
@@ -118,12 +128,16 @@ namespace XYZ {
 
 			float m_WeightBrushRadius;
 			float m_WeightBrushStrength;
+			static constexpr float sc_WeightBrushDivisor = 100.0f;
 
+			glm::vec4 m_HighlightColor;
+			glm::vec4 m_UIHighlightColor;
 			uint32_t m_ColorIDs[MaxBones];
 			uint16_t m_Flags;
+			uint8_t m_BoneEditFlags;
 
 			bool m_CategoriesOpen[Categories::NumCategories];
-			bool m_Triangulated = false;
+			bool m_Triangulated = false;			
 		};
 	}
 }

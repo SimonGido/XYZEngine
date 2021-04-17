@@ -897,6 +897,7 @@ namespace XYZ {
 				IGElement* childElement = static_cast<IGElement*>(child);
 				if (childElement->Active)
 				{
+					
 					if (out)
 					{
 						childElement->ListenToInput = false;

@@ -81,9 +81,10 @@ namespace XYZ {
                     {
                         PreviewBone* parentBone = static_cast<PreviewBone*>(parent);
                         end += parentBone->WorldPosition;
+   
                         glm::vec2 dir = glm::normalize(end - parentBone->WorldPosition);
                         glm::vec2 relNormal = { -dir.y, dir.x };
-                        RenderBone(parentBone->WorldPosition, end, relNormal, glm::vec4(childBone->Color, 0.2f), PreviewBone::PointRadius);
+                        RenderBone(parentBone->WorldPosition, childBone->WorldPosition, relNormal, glm::vec4(childBone->Color, 0.2f), PreviewBone::PointRadius);
                     }      
                     glm::vec2 dir = glm::normalize(end - childBone->WorldPosition);
                     glm::vec2 normal = { -dir.y, dir.x };
@@ -101,11 +102,37 @@ namespace XYZ {
             Renderer2D::SubmitLine(glm::vec3(start - (normal * radius),0.0f), glm::vec3(end, 0.0f), color);
         }
 
+        void PreviewRenderer::RenderBone(const PreviewBone& child, const glm::vec4& color, float radius, bool preview)
+        {
+            if (preview)
+            {
+                float rot;
+                glm::vec2 start, end, normal;
+                child.Decompose(start, end, rot, normal);                       
+                RenderBone(start, end, normal, color, radius);
+            }
+            else
+            {
+                glm::vec2 end = child.WorldPosition + (child.Direction * child.Length);
+                glm::vec2 dir = glm::normalize(end - child.WorldPosition);
+                glm::vec2 normal = { -dir.y, dir.x };
+                RenderBone(child.WorldPosition, end, normal, color, radius);
+            }
+        }
+
         void PreviewRenderer::RenderTriangle(const glm::vec2& firstPosition, const glm::vec2& secondPosition, const glm::vec2& thirdPosition, const glm::vec4& color)
         {
             Renderer2D::SubmitLine(glm::vec3(firstPosition.x, firstPosition.y, 0.0f), glm::vec3(secondPosition.x, secondPosition.y, 0.0f), color);
             Renderer2D::SubmitLine(glm::vec3(secondPosition.x, secondPosition.y, 0.0f), glm::vec3(thirdPosition.x, thirdPosition.y, 0.0f), color);
             Renderer2D::SubmitLine(glm::vec3(thirdPosition.x, thirdPosition.y, 0.0f), glm::vec3(firstPosition.x, firstPosition.y, 0.0f), color);
+        }
+
+        void PreviewRenderer::RenderTriangle(const Submesh& mesh, const Triangle& triangle, const glm::vec4& color)
+        {
+            const BoneVertex& first = mesh.Vertices[triangle.First];
+            const BoneVertex& second = mesh.Vertices[triangle.Second];
+            const BoneVertex& third = mesh.Vertices[triangle.Third];
+            RenderTriangle(first.Position, second.Position, third.Position, color);
         }
 
 	}

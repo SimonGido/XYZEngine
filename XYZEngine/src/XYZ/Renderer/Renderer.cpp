@@ -99,6 +99,13 @@ namespace XYZ {
 		});
 	}
 
+	void Renderer::SetLineThickness(float thickness)
+	{
+		Renderer::Submit([=]() {
+			RendererAPI::SetLineThickness(thickness);
+			});
+	}
+
 	void Renderer::SetPointSize(float size)
 	{
 		Renderer::Submit([=]() {

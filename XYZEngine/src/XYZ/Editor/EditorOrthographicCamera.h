@@ -1,4 +1,5 @@
 #pragma once
+#include "XYZ/Core/Timestep.h"
 
 #include <glm/glm.hpp>
 
@@ -8,6 +9,7 @@ namespace XYZ {
 		struct EditorOrthographicCamera
 		{
 			void UpdateViewProjection();
+			void Update(Timestep ts);
 
 			glm::mat4 ViewProjectionMatrix = glm::mat4(1.0f);
 			glm::mat4 ProjectionMatrix = glm::mat4(1.0f);

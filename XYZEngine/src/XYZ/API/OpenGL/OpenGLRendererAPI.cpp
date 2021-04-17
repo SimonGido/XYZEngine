@@ -40,6 +40,11 @@ namespace XYZ {
 			glDisable(GL_SCISSOR_TEST);
 	}
 
+	void RendererAPI::SetLineThickness(float thickness)
+	{
+		glLineWidth(thickness);
+	}
+
 	void RendererAPI::SetPointSize(float size)
 	{
 		glPointSize(size);

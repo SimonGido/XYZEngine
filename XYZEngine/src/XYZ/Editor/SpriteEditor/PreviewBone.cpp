@@ -24,26 +24,37 @@ namespace XYZ {
 			glm::vec3 euler = glm::eulerAngles(rotation);
 			rot = euler.z;
 
-			glm::vec2 tmpEnd = start + (Direction * Length);
 			start = glm::vec2(translation.x, translation.y);
-			glm::vec4 rotatedEnd = glm::toMat4(rotation) * glm::vec4(tmpEnd, 0.0f, 1.0f);
+			glm::vec2 worldEnd = WorldPosition + (Direction * Length);
+			glm::vec2 localEnd = worldEnd - WorldPosition;
+			glm::vec4 rotatedEnd = glm::toMat4(rotation) * glm::vec4(localEnd, 0.0f, 1.0f);
 			end = start + glm::vec2(rotatedEnd.x, rotatedEnd.y);
 			glm::vec2 dir = glm::normalize(end - start);
 			normal = { -dir.y, dir.x };
 		}
-		bool PreviewBone::Collide(const glm::vec2& position, uint8_t collisionFlags) const
+		bool PreviewBone::Collide(const glm::vec2& position, uint8_t collisionFlags, bool transform) const
 		{
 			float rot;
 			glm::vec2 start, end, normal;
-			Decompose(start, end, rot, normal);
+			if (transform)
+			{
+				Decompose(start, end, rot, normal);
+			}
+			else
+			{
+				start = WorldPosition;
+				end = start + (Direction * Length);
+				glm::vec2 dir = glm::normalize(Direction);
+				normal = { -dir.y, dir.x };
+			}
 			if (IS_SET(collisionFlags, Start))
 			{
-				if (glm::distance(position, start) > PointRadius * 2.0f)
+				if (glm::distance(position, start) < PointRadius)
 					return true;
 			}
 			if (IS_SET(collisionFlags, End))
 			{
-				if (glm::distance(position, end) > PointRadius * 2.0f)
+				if (glm::distance(position, end) < PointRadius)
 					return true;
 			}
 			if (IS_SET(collisionFlags, Body))

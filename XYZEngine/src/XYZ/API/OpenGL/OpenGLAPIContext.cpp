@@ -9,7 +9,7 @@
 namespace XYZ {
 
 #ifdef XYZ_DEBUG
-	void APIENTRY OpenglCallbackFunction(
+	void OpenglCallbackFunction(
 		GLenum source,
 		GLenum Component,
 		GLuint id,
@@ -36,28 +36,28 @@ namespace XYZ {
 		switch (Component)
 		{
 		case GL_DEBUG_TYPE_ERROR:
-			XYZ_LOG_API("ERROR ", message);
+			XYZ_LOG_API("Error ", message);
 			XYZ_LOG_API("ID: ", id);
 			XYZ_LOG_API("Severity: ", severityMessage);
 			XYZ_ASSERT("", false);
 			break;
 		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
-			XYZ_LOG_API("DEPRECATED_BEHAVIOR: ", message);
+			XYZ_LOG_API("Deprecated Behaviour: ", message);
 			XYZ_LOG_API("ID: ", id);
 			XYZ_LOG_API("Severity: ", severityMessage);
 			break;
 		case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
-			XYZ_LOG_API("UNDEFINED_BEHAVIOR: ", message);
+			XYZ_LOG_API("Undefined Behaviour: ", message);
 			XYZ_LOG_API("ID: ", id);
 			XYZ_LOG_API("Severity: ", severityMessage);
 			break;
 		case GL_DEBUG_TYPE_PORTABILITY:
-			XYZ_LOG_API("PORTABILITY: ", message);
+			XYZ_LOG_API("Portability: ", message);
 			XYZ_LOG_API("ID: ", id);
 			XYZ_LOG_API("Severity: ", severityMessage);
 			break;
 		case GL_DEBUG_TYPE_PERFORMANCE:
-			XYZ_LOG_API("PERFORMANCE: ", message);
+			XYZ_LOG_API("Performance: ", message);
 			XYZ_LOG_API("ID: ", id);
 			XYZ_LOG_API("Severity: ", severityMessage);
 			break;

@@ -1024,6 +1024,7 @@ namespace XYZ {
                         PreviewBone* parentBone = static_cast<PreviewBone*>(parent);
                         translation = glm::inverse(parentBone->PreviewFinalTransform) * translation;
                     }       
+
                     glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), rot, glm::vec3(0.0f, 0.0f, 1.0f));
                     m_SelectedBone->PreviewTransform = translation * rotation;
                 }

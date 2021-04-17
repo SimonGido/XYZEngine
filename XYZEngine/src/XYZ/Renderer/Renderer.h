@@ -33,6 +33,7 @@ namespace XYZ {
 		static void Clear();
 		static void SetClearColor(const glm::vec4& color);
 		static void SetViewPort(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
+		static void SetLineThickness(float thickness);
 		static void SetPointSize(float size);
 		static void SetDepthTest(bool val);
 		static void SetScissorTest(bool val);

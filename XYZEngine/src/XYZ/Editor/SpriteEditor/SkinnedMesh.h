@@ -25,9 +25,13 @@ namespace XYZ {
 		// Used while editing mesh
 		struct BoneVertex
 		{
+			BoneVertex();
+			BoneVertex(const glm::vec2& pos);
+			BoneVertex(const BoneVertex& other);
+
 			glm::vec2 Position;
 			BoneData  Data;
-			glm::vec3 Color = glm::vec3(0.0f);
+			glm::vec3 Color;
 		};
 
 		// Used to actually draw mesh in shader
@@ -90,6 +94,8 @@ namespace XYZ {
 			static void getPositionLocalToBone(BoneVertex& vertex, const Tree& hierarchy);
 			static void getPositionFromBones(BoneVertex& vertex, const Tree& hierarchy);
 			static void getColorFromBoneWeights(BoneVertex& vertex, const Tree& hierarchy);
+		
+			
 		};
 	}
 }

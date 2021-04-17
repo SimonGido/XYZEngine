@@ -12,7 +12,7 @@ namespace XYZ {
 			};
 
 			void Decompose(glm::vec2& start, glm::vec2& end, float& rot, glm::vec2& normal, bool worldTransform = true) const;
-			bool Collide(const glm::vec2& position, uint8_t collisionFlags) const;
+			bool Collide(const glm::vec2& position, uint8_t collisionFlags, bool transform) const;
 			void Rotate(const glm::vec2& position);
 			void Translate(const glm::vec2& position, const glm::mat4& parentSpace);
 

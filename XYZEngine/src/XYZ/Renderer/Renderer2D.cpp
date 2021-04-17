@@ -333,7 +333,6 @@ namespace XYZ {
 		s_Data.QuadMaterial = material;
 	}
 
-
 	void Renderer2D::SubmitCircle(const glm::vec3& pos, float radius, uint32_t sides, const glm::vec4& color)
 	{
 		if (s_Data.LineIndexCount + (sides * 3) >= s_Data.MaxLineIndices)
