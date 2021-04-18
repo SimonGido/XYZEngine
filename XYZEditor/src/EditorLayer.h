@@ -20,7 +20,6 @@ namespace XYZ {
 		virtual void OnDetach() override;
 		virtual void OnUpdate(Timestep ts) override;
 		virtual void OnEvent(Event& event) override;
-		virtual void OnInGuiRender() override;
 
 	private:
 		bool onMouseButtonPress(MouseButtonPressEvent& event);
@@ -31,12 +30,8 @@ namespace XYZ {
 
 	private:
 		Ref<Scene> m_Scene;
+		EditorCamera m_EditorCamera;
 
-		SceneHierarchyPanel m_SceneHierarchyPanel;
-		InspectorPanel m_InspectorPanel;
-		ScenePanel m_ScenePanel;
-		//SkinningEditorPanel m_SkinningEditorPanel;
-		Editor::SkinningEditor m_SkinningEditor;
 	private:	
 		SceneEntity m_SelectedEntity;
 		SceneEntity m_TestEntity;

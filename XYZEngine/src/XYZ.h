@@ -77,3 +77,7 @@
 
 //------IG-------//
 #include "XYZ/IG/IG.h"
+
+
+#include "XYZ/BasicUI/BasicUI.h"
+#include "XYZ/BasicUI/BasicUILoader.h"

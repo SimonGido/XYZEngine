@@ -60,9 +60,10 @@ namespace XYZ {
 		uint32_t windowWidth = Application::Get().GetWindow().GetWidth();
 		uint32_t windowHeight = Application::Get().GetWindow().GetHeight();
 		SceneRenderer::SetViewportSize(windowWidth, windowHeight);
-		m_Scene->SetViewportSize(windowWidth, windowHeight);
-		
 
+		m_Scene->SetViewportSize(windowWidth, windowHeight);		
+		m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
+		m_EditorCamera.SetViewportSize((float)windowWidth, (float)windowHeight);
 
 		ScriptEngine::InitScriptEntity(m_TestEntity);
 		ScriptEngine::InstantiateEntityClass(m_TestEntity);
@@ -75,31 +76,37 @@ namespace XYZ {
 		Ref<Texture> robotTexture = Texture2D::Create({}, "Assets/Textures/full_simple_char.png");
 		Ref<SubTexture> robotSubTexture = Ref<SubTexture>::Create(robotTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 
-		m_SceneHierarchyPanel.SetContext(m_Scene);
-		m_ScenePanel.SetContext(m_Scene);
-		m_ScenePanel.SetSubTexture(renderSubTexture);
-		m_SkinningEditor.SetContext(robotSubTexture);
-
-		IG::LoadLayout("IG.IG");
-
 		glm::vec3 tmpVal;
 		Property<glm::vec3> prop(tmpVal);
 		prop.AddKeyFrame(glm::vec3(0.5f), 2.0f);
+
+
+
+		bUI::Init();
+		bUILoader::Load("Test.yaml");
+
+		Ref<Texture2D> tmpTexture = Texture2D::Create({ TextureWrap::Clamp, TextureParam::Linear, TextureParam::Nearest }, "Assets/Textures/Gui/TexturePack_Dark.png");	
+		Ref<Font> tmpFont = Ref<XYZ::Font>::Create(14, "Assets/Fonts/arial.ttf");
+		bUI::GetConfig().SetTexture(tmpTexture);
+		bUI::GetConfig().SetFont(tmpFont);
+
+		float divisor = 8.0f;
+		Ref<SubTexture> tmpSubTexture = Ref<XYZ::SubTexture>::Create(tmpTexture, glm::vec2(0, 0), glm::vec2(tmpTexture->GetWidth() / divisor, tmpTexture->GetHeight() / divisor));		
+		bUI::GetConfig().SetSubTexture(tmpSubTexture, bUIConfig::Button);
 	}	
 
 	void EditorLayer::OnDetach()
 	{
+		bUI::Shutdown();
 		AssetSerializer::SerializeAsset(m_Scene);		
 	}
 	void EditorLayer::OnUpdate(Timestep ts)
 	{
 		Renderer::Clear();
 		Renderer::SetClearColor({ 0.1f,0.1f,0.1f,0.1f });
-		m_ScenePanel.OnUpdate(ts);
-		m_InspectorPanel.OnUpdate();
-		m_SceneHierarchyPanel.OnUpdate();
-		m_SkinningEditor.OnUpdate(ts);
+		
 
+		m_EditorCamera.OnUpdate(ts);
 		if (m_Scene->GetState() == SceneState::Play)
 		{
 			m_Scene->OnUpdate(ts);
@@ -107,14 +114,9 @@ namespace XYZ {
 		}
 		else
 		{
-			m_Scene->OnRenderEditor(m_ScenePanel.GetEditorCamera());
+			m_Scene->OnRenderEditor(m_EditorCamera);
 		}
-
-		if ((uint32_t)m_Scene->GetSelectedEntity() != (uint32_t)m_SelectedEntity)
-		{
-			m_SelectedEntity = m_Scene->GetSelectedEntity();
-			m_InspectorPanel.SetContext(m_SelectedEntity);
-		}
+		bUI::Update();
 	}
 
 	void EditorLayer::OnEvent(Event& event)
@@ -124,32 +126,9 @@ namespace XYZ {
 		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorLayer::onMouseButtonRelease, this));	
 		dispatcher.Dispatch<WindowResizeEvent>(Hook(&EditorLayer::onWindowResize, this));
 		dispatcher.Dispatch<KeyPressedEvent>(Hook(&EditorLayer::onKeyPress, this));
-		m_SceneHierarchyPanel.OnEvent(event);
-		m_ScenePanel.OnEvent(event);
-		m_SkinningEditor.OnEvent(event);	
+		m_EditorCamera.OnEvent(event);
+		bUI::OnEvent(event);
 	}
-
-	void EditorLayer::OnInGuiRender()
-	{
-		//m_SceneHierarchyPanel.OnInGuiRender();
-		//m_InspectorPanel.OnInGuiRender();
-		//m_ScenePanel.OnInGuiRender();
-		//m_SkinningEditorPanel.OnInGuiRender();
-
-		//IG::BeginUI(0);
-		//
-		//IG::UI<IGWindow>(m_Handles[0]);
-
-		//IG::UI<IGCheckbox>(m_Handles[1]);
-		//IG::UI<IGCheckbox>(m_Handles[2]);
-		//IG::UI<IGCheckbox>(m_Handles[3]);
-		//IG::UI<IGCheckbox>(m_Handles[4]);
-		//IG::UI<IGCheckbox>(m_Handles[5]);
-		//IG::UI<IGCheckbox>(m_Handles[6]);
-		//IG::UI<IGCheckbox>(m_Handles[7]);
-		//IG::EndUI();
-	}
-
 	
 	bool EditorLayer::onMouseButtonPress(MouseButtonPressEvent& event)
 	{	
@@ -161,6 +140,10 @@ namespace XYZ {
 	}
 	bool EditorLayer::onWindowResize(WindowResizeEvent& event)
 	{
+		SceneRenderer::SetViewportSize((uint32_t)event.GetWidth(), (uint32_t)event.GetHeight());
+		m_EditorCamera.SetViewportSize((uint32_t)event.GetWidth(), (uint32_t)event.GetHeight());
+		if (m_Scene.Raw())
+			m_Scene->SetViewportSize((uint32_t)event.GetWidth(), (uint32_t)event.GetHeight());
 		return false;
 	}
 

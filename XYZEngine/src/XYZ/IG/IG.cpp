@@ -36,7 +36,7 @@ namespace XYZ {
 
 	void IG::BeginFrame(const glm::mat4& viewProjectionMatrix)
 	{
-		XYZ_ASSERT(s_Context, "InGuiContext is not initialized");
+		XYZ_ASSERT(s_Context, "IG is not initialized");
 		glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f));
 		viewMatrix = glm::inverse(viewMatrix);
 
@@ -113,7 +113,6 @@ namespace XYZ {
 		{
 			WindowResizeEvent& e = (WindowResizeEvent&)event;
 			s_Context->Dockspace.SetRootSize({(float)e.GetWidth(), (float)e.GetHeight() });
-			event.Handled = true;
 		}
 
 		if (event.Handled)

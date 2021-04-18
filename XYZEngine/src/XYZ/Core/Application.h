@@ -2,7 +2,6 @@
 #include "Window.h"
 #include "LayerStack.h"
 
-#include "XYZ/IG/IGLayer.h"
 
 /**	@class Application
  *  Singleton class.
@@ -79,8 +78,7 @@ namespace XYZ {
 
 	private:
 		LayerStack m_LayerStack;
-		IGLayer* m_IGLayer;
-
+	
 		std::unique_ptr<Window> m_Window;
 
 		bool m_Running;
