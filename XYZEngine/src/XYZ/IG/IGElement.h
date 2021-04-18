@@ -76,6 +76,7 @@ namespace XYZ {
 		virtual glm::vec2 GenerateQuads(IGMesh& mesh, IGRenderData& renderData, uint32_t scissorIndex = 0) { return glm::vec2(0.0f); };
 		virtual glm::vec2 BuildMesh(IGElement* root, IGRenderData& renderData, IGPool& pool, IGMesh& mesh, uint32_t scissorIndex = 0);
 
+		
 		bool Is(IGReturnType returnType);
 		IGElement* FindRoot();
 
