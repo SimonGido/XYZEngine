@@ -67,8 +67,8 @@ namespace XYZ {
 					size_t oldLineCount = mesh.Lines.size();
 					glm::vec2 genSize = childElement->GenerateQuads(mesh, renderData);
 					IGHelper::ResolvePosition(rootBorder, genSize, Style, offset, *childElement, mesh, highestInRow, oldQuadCount, oldLineCount);
-					in = IGHelper::IsInside(root->GetAbsolutePosition(), root->Size, childElement->GetAbsolutePosition(), childElement->Size, (IGHelper::Right | IGHelper::Bottom));
-					childElement->ListenToInput = IGHelper::IsInside(root->GetAbsolutePosition(), root->Size, childElement->GetAbsolutePosition(), childElement->Size, (IGHelper::Left | IGHelper::Right | IGHelper::Top | IGHelper::Bottom));
+					in = IGHelper::IsInside(root->GetAbsolutePosition(), root->Size, childElement->GetAbsolutePosition(), genSize, (IGHelper::Right | IGHelper::Bottom));
+					childElement->ListenToInput = IGHelper::IsInside(root->GetAbsolutePosition(), root->Size, childElement->GetAbsolutePosition(), genSize, (IGHelper::Left | IGHelper::Right | IGHelper::Top | IGHelper::Bottom));
 					if (in)
 					{						
 						highestInRow = std::max(genSize.y, highestInRow);

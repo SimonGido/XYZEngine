@@ -837,6 +837,7 @@ namespace XYZ {
 				Style.Layout.TopPadding  + Offset.y
 			};
 			uint32_t newScissorIndex = renderData.Scissors.size() - 1;
+			
 			float highestInRow = 0.0f;
 			bool in = true;
 
@@ -854,8 +855,8 @@ namespace XYZ {
 					size_t oldLineCount = renderData.ScrollableMesh.Lines.size();
 					glm::vec2 genSize = childElement->GenerateQuads(renderData.ScrollableMesh, renderData, newScissorIndex);
 					IGHelper::ResolvePosition(root->Size, genSize, Style, offset, *childElement, mesh, highestInRow, oldQuadCount, oldLineCount);
-					in = IGHelper::IsInside(root->GetAbsolutePosition(), root->Size, childElement->GetAbsolutePosition(), childElement->Size, (IGHelper::Right | IGHelper::Bottom));
-					childElement->ListenToInput = IGHelper::IsInside(GetAbsolutePosition(), Size, childElement->GetAbsolutePosition(), childElement->Size, (IGHelper::Left | IGHelper::Right | IGHelper::Top | IGHelper::Bottom));			
+					in = IGHelper::IsInside(root->GetAbsolutePosition(), root->Size, childElement->GetAbsolutePosition(), genSize, (IGHelper::Right | IGHelper::Bottom));
+					childElement->ListenToInput = IGHelper::IsInside(GetAbsolutePosition(), Size, childElement->GetAbsolutePosition(), genSize, (IGHelper::Left | IGHelper::Right | IGHelper::Top | IGHelper::Bottom));			
 					if (in)
 					{				
 						highestInRow = std::max(genSize.y, highestInRow);
@@ -953,8 +954,8 @@ namespace XYZ {
 				size_t oldLineCount = mesh.Lines.size();
 				glm::vec2 genSize = element->GenerateQuads(mesh, renderData);
 				IGHelper::ResolvePosition(root->Size, genSize, Style, offset, *element, mesh, highestInRow, oldQuadCount, oldLineCount);
-				in = IGHelper::IsInside(root->GetAbsolutePosition(), root->Size, element->GetAbsolutePosition(), element->Size, (IGHelper::Right | IGHelper::Bottom));
-				element->ListenToInput = IGHelper::IsInside(root->GetAbsolutePosition(), root->Size, element->GetAbsolutePosition(), element->Size, (IGHelper::Left | IGHelper::Right | IGHelper::Top | IGHelper::Bottom));
+				in = IGHelper::IsInside(root->GetAbsolutePosition(), root->Size, element->GetAbsolutePosition(), genSize, (IGHelper::Right | IGHelper::Bottom));
+				element->ListenToInput = IGHelper::IsInside(root->GetAbsolutePosition(), root->Size, element->GetAbsolutePosition(), genSize, (IGHelper::Left | IGHelper::Right | IGHelper::Top | IGHelper::Bottom));
 				if (in)
 				{						
 					highestInRow = std::max(genSize.y, highestInRow);
