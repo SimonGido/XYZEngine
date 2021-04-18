@@ -16,7 +16,7 @@ workspace "XYZEngine"
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 IncludeDir = {}
-IncludeDir["GLFW"] = "XYZEngine/vendor/GLFW/include"
+IncludeDir["GLFW"] = "XYZEngine/vendor/glfw/include"
 IncludeDir["GLEW"] = "XYZEngine/vendor/GLEW/include"
 IncludeDir["glm"] = "XYZEngine/vendor/glm"
 IncludeDir["OpenAL"] = "XYZEngine/vendor/OpenAL-Soft"
@@ -32,7 +32,7 @@ IncludeDir["TrianglePP"] = "XYZEngine/vendor/TrianglePP/source"
 LibraryDir = {}
 LibraryDir["mono"] = "vendor/mono/lib/Debug/mono-2.0-sgen.lib"
 
-include "XYZEngine/vendor/GLFW"
+include "XYZEngine/vendor/glfw"
 include "XYZEngine/vendor/GLEW"
 include "XYZEngine/vendor/OpenAL-Soft"
 include "XYZEngine/vendor/freetype-2.10.1"

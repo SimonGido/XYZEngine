@@ -1,8 +1,8 @@
 #pragma once
 #include "Window.h"
 #include "LayerStack.h"
-#include "XYZ/InGui/InGuiLayer.h"
 
+#include "XYZ/IG/IGLayer.h"
 
 /**	@class Application
  *  Singleton class.
@@ -79,7 +79,7 @@ namespace XYZ {
 
 	private:
 		LayerStack m_LayerStack;
-		InGuiLayer* m_InGuiLayer;
+		IGLayer* m_IGLayer;
 
 		std::unique_ptr<Window> m_Window;
 

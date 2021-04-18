@@ -71,10 +71,6 @@
 #include "XYZ/Net/NetConnection.h"
 
 
-//------InGui---------//
-#include "XYZ/InGui/InGui.h"
-#include "XYZ/InGui/InGuiDockspace.h"
-
 //------Asset---------//
 #include "XYZ/Asset/AssetManager.h"
 

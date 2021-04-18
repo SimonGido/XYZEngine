@@ -2,7 +2,6 @@
 #include "SceneHierarchyPanel.h"
 
 #include "XYZ/Core/Input.h"
-#include "XYZ/InGui/InGui.h"
 #include "XYZ/Scene/SceneEntity.h"
 
 namespace XYZ {

@@ -12,7 +12,6 @@
 
 #include "XYZ/Asset/Asset.h"
 
-#include "XYZ/Physics/DynamicTree.h"
 #include "XYZ/Physics/PhysicsWorld.h"
 
 #include "XYZ/Renderer/SkeletalMesh.h"

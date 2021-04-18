@@ -27,8 +27,8 @@ namespace XYZ {
 
 		m_Window->RegisterCallback(Hook(&Application::OnEvent, this));	
 
-		m_InGuiLayer = new InGuiLayer();
-		m_LayerStack.PushOverlay(m_InGuiLayer);
+		m_IGLayer = new IGLayer();
+		m_LayerStack.PushOverlay(m_IGLayer);
 
 		TCHAR NPath[MAX_PATH];
 		GetCurrentDirectory(MAX_PATH, NPath);
@@ -58,10 +58,10 @@ namespace XYZ {
 				for (Layer* layer : m_LayerStack)	
 					layer->OnUpdate(timestep);
 
-				m_InGuiLayer->Begin();
+				m_IGLayer->Begin();
 				for (Layer* layer : m_LayerStack)
 					layer->OnInGuiRender();
-				m_InGuiLayer->End();
+				m_IGLayer->End();
 			
 			}
 			m_Window->Update();
