@@ -1,286 +1,133 @@
 #pragma once
 #include "ComponentStorage.h"
-#include "ComponentGroup.h"
-#include "ComponentView.h"
 #include "Component.h"
 #include "Types.h"
+#include "Entity.h"
+#include "Pool.h"
+#include "Signature.h"
 
 namespace XYZ {
 
 	class ComponentManager
 	{
 	public:
-		~ComponentManager()
+		ComponentManager();	
+		ComponentManager(const ComponentManager& other);
+		ComponentManager(ComponentManager&& other) noexcept;
+		~ComponentManager();
+
+		ComponentManager& operator=(ComponentManager&& other) noexcept;
+
+		void EntityDestroyed(Entity entity, const Signature& signature);	
+		void Clear();
+
+		template <typename T, typename ...Args>
+		T& EmplaceComponent(Entity entity, Args&& ... args)
 		{
-			for (auto storage : m_Storages)
-			{
-				if (storage)
-					delete storage;
-			}
-			for (auto group : m_Groups)
-			{
-				if (group)
-					delete group;
-			}
-			for (auto view : m_Views)
-			{
-				if (view)
-					delete view;
-			}
+			ComponentStorage<T>& storage = GetStorage<T>();
+			return storage.EmplaceComponent(entity, std::forward<Args>(args)...);
 		}
 
 		template <typename T>
-		T& AddComponent(uint32_t entity, const T& component)
+		T& AddComponent(Entity entity, const T& component)
 		{
-			if (T::GetComponentID() >= m_Storages.size())
-			{
-				m_Storages.resize(size_t(T::GetComponentID()) + 1);
-				m_Storages[T::GetComponentID()] = new ComponentStorage<T>();
-			}
-			else if (!m_Storages[T::GetComponentID()])
-				m_Storages[T::GetComponentID()] = new ComponentStorage<T>();
-
-			ComponentStorage<T>* casted = (ComponentStorage<T>*)m_Storages[T::GetComponentID()];
-			return casted->AddComponent(entity, component);
+			ComponentStorage<T>& storage = GetStorage<T>();
+			return storage.AddComponent(entity, component);
 		}
-
 
 		template <typename T>
 		void ForceStorage()
 		{
-			if (T::GetComponentID() >= m_Storages.size())
-			{
-				m_Storages.resize(size_t(T::GetComponentID()) + 1);
-				m_Storages[T::GetComponentID()] = new ComponentStorage<T>();
-			}
-			else if (!m_Storages[T::GetComponentID()])
-				m_Storages[T::GetComponentID()] = new ComponentStorage<T>();
-		}
+			getOrCreateStorage<T>();
+		}	
 
-		void AddRawComponent(uint32_t entity, uint8_t* component, uint8_t componentID)
-		{
-			m_Storages[componentID]->AddRawComponent(entity, component);
-		}
-
-		void AddToGroup(uint32_t entity, Signature& signature, ECSManager* ecs)
-		{
-			for (auto group : m_Groups)
-			{
-				if ((group->GetSignature() & signature) == group->GetSignature()
-				 && !group->HasEntity(entity))
-				{
-					group->AddEntity(entity, signature, ecs);
-				}
-			}
-		}
-
-		void AddToView(uint32_t entity,const Signature& signature)
-		{
-			for (auto view : m_Views)
-			{
-				if ((view->GetSignature() & signature) == view->GetSignature() && !view->HasEntity(entity))
-				{
-					view->AddEntity(entity);
-				}
-			}
-		}
-
-		void RemoveFromGroup(uint32_t entity, uint8_t id, Signature& signature, ECSManager* ecs)
-		{
-			for (auto group : m_Groups)
-			{
-				auto& groupSignature = group->GetSignature();
-				if ((groupSignature & signature) == groupSignature && group->HasEntity(entity))
-				{
-					signature.set(id, false);
-					
-					auto memoryLayout = group->GetMemoryLayout();
-					auto numElements = group->GetNumberOfElements();
-					// Rest of the elements that no longer belong to group are removed and copied to the separate storages
-					for (size_t i = 0; i < numElements; ++i)
-					{
-						if (signature.test(memoryLayout[i].ID))
-						{
-							uint8_t* component = nullptr;
-							group->FindComponent(&component, entity, memoryLayout[i].ID);
-							AddRawComponent(entity, component, memoryLayout[i].ID);
-						}
-					}
-					group->RemoveEntity(entity);
-					return;
-				}
-			}
-		}
-
-		void RemoveFromView(uint32_t entity)
-		{
-			for (auto view : m_Views)
-			{
-				if (view->HasEntity(entity))
-					view->RemoveEntity(entity);
-			}
-		}
-
-		void GetFromGroup(uint32_t entity,const Signature& signature, uint8_t componentID, uint8_t** component)
-		{
-			for (auto group : m_Groups)
-			{
-				if ((group->GetSignature() & signature) == group->GetSignature()
-					&& group->HasEntity(entity))
-				{
-					group->FindComponent(component, entity, componentID);
-					return;
-				}
-			}
-		}
-		void GetFromGroup(uint32_t entity, const Signature& signature, uint8_t componentID, uint8_t** component) const
-		{
-			for (auto group : m_Groups)
-			{
-				if ((group->GetSignature() & signature) == group->GetSignature()
-					&& group->HasEntity(entity))
-				{
-					group->FindComponent(component, entity, componentID);
-					return;
-				}
-			}
-		}
 		template <typename T>
-		void RemoveComponent(uint32_t entity, const Signature& signature)
+		void RemoveComponent(Entity entity, const Signature& signature)
 		{
-			ComponentStorage<T>* casted = (ComponentStorage<T>*)m_Storages[T::GetComponentID()];
-			uint32_t updatedEntity = casted->RemoveComponent(entity);
-			if (updatedEntity != NULL_ENTITY)
-				updateViews(entity,signature, updatedEntity);
+			size_t offset = IComponent::GetComponentID<T>() * sizeof(ComponentStorage<T>);
+			uint32_t updatedEntity = m_StoragePool.Get<ComponentStorage<T>>(offset)->RemoveComponent(entity);
 		}
 
 		template <typename T>
-		T& GetComponent(uint32_t entity)
+		T& GetComponent(Entity entity)
 		{
-			ComponentStorage<T>* casted = (ComponentStorage<T>*)m_Storages[T::GetComponentID()];
-			return casted->GetComponent(entity);
+			size_t offset = IComponent::GetComponentID<T>() * sizeof(ComponentStorage<T>);
+			ComponentStorage<T>* storage = static_cast<ComponentStorage<T>*>(m_StoragePool.Get<IComponentStorage>(offset));
+			return storage->GetComponent(entity);
 		}
+
 		template <typename T>
-		T& GetComponent(uint32_t entity) const
+		const T& GetComponent(Entity entity) const
 		{
-			ComponentStorage<T>* casted = (ComponentStorage<T>*)m_Storages[T::GetComponentID()];
-			return casted->GetComponent(entity);
+			size_t offset = IComponent::GetComponentID<T>() * sizeof(ComponentStorage<T>);
+			const ComponentStorage<T>* storage = static_cast<const ComponentStorage<T>*>(m_StoragePool.Get<IComponentStorage>(offset));
+			return storage->GetComponent(entity);
 		}
 
-		IComponentStorage* GetStorage(uint8_t index)
+		template <typename T>
+		ComponentStorage<T>& GetStorage()
 		{
-			return m_Storages[(size_t)index];
+			size_t offset = IComponent::GetComponentID<T>() * sizeof(ComponentStorage<T>);
+			return *m_StoragePool.Get<ComponentStorage<T>>(offset);
 		}
 
-		IComponentGroup* GetGroup(const Signature& signature)
+		template <typename T>
+		const ComponentStorage<T>& GetStorage() const
 		{
-			for (auto group : m_Groups)
-			{
-				if ((group->GetSignature() & signature) == group->GetSignature())
-					return group;
-			}
-			return nullptr;
-		}
-		IComponentView* GetView(const Signature& signature)
-		{
-			for (auto view : m_Views)
-			{
-				if ((view->GetSignature() & signature) == view->GetSignature())
-					return view;
-			}
-			return nullptr;
+			size_t offset = IComponent::GetComponentID<T>() * sizeof(ComponentStorage<T>);
+			return *m_StoragePool.Get<ComponentStorage<T>>(offset);
 		}
 
-		template <typename ...Args>
-		ComponentGroup<Args...>* CreateGroup()
+		IComponentStorage* GetIStorage(size_t offset)
 		{
-			Signature signature;
-			std::initializer_list<uint16_t> componentTypes{ Args::GetComponentID()... };
-			for (auto it : componentTypes)
-				signature.set(it);
+			return m_StoragePool.Get<IComponentStorage>(offset);
+		}
+		const IComponentStorage* GetIStorage(size_t offset) const
+		{
+			return m_StoragePool.Get<IComponentStorage>(offset);
+		}
+
+		template <typename T>
+		uint32_t GetComponentIndex(Entity entity) const
+		{
+			size_t offset = IComponent::GetComponentID<T>() * sizeof(ComponentStorage<T>);
+			const ComponentStorage<T>& storage = *m_StoragePool.Get<ComponentStorage<T>>(offset);
+			return storage.GetComponentIndex(entity);
+		}
+
+		size_t GetNumberOfRegisteredStorages() const { return m_NumberOfStorages; }
+
+	private:
+		template <typename T>
+		ComponentStorage<T>* getOrCreateStorage()
+		{
+			size_t id = (size_t)IComponent::GetComponentID<T>();
+			size_t offset = id * sizeof(ComponentStorage<T>);
 			
-			for (auto group : m_Groups)
-			{		
-				XYZ_ASSERT(!(group->GetSignature() & signature).any(), "Component is already owned by different group");
-			}
-
-			auto group = new ComponentGroup<Args...>();
-			m_Groups.push_back(group);
-			return group;
-		}
-
-		template <typename ...Args>
-		ComponentView<Args...>* CreateView(ECSManager * ecs)
-		{
-			Signature signature;
-			std::initializer_list<uint16_t> componentTypes{ Args::GetComponentID()... };
-			for (auto it : componentTypes)
-				signature.set(it);
-			for (auto view : m_Views)
+			if (id >= m_Count)
+				resizeStorages(id + 1 + sc_StorageCapacityInc);		
+			if (!m_StorageCreated[id])
 			{
-				XYZ_ASSERT(view->GetSignature() != signature, "View already exists");
+				m_StoragePool.Allocate<ComponentStorage<T>>(offset);
+				m_StorageCreated[id] = true;
+				m_NumberOfStorages++;
 			}
-			auto view = new ComponentView<Args...>(ecs);
-			m_Views.push_back(view);
-			return view;
+			return m_StoragePool.Get<ComponentStorage<T>>(offset);
 		}
-
-		uint32_t GetComponentIndex(uint32_t entity, uint32_t index) const
-		{
-			return m_Storages[index]->GetComponentIndex(entity);
-		}
-
-		size_t GetNumberOfStorages() const { return m_Storages.size(); }
-
-		void EntityDestroyed(uint32_t entity, const Signature& signature, ECSManager* ecs)
-		{
-			std::vector<uint32_t> updated;
-			for (uint32_t i = 0; i < m_Storages.size(); ++i)
-			{
-				if (signature.test(i) && m_Storages[i])
-					updated.push_back(m_Storages[i]->EntityDestroyed(entity));	
-			}
-			for (auto group : m_Groups)
-			{
-				if (group->HasEntity(entity))
-					group->RemoveEntity(entity);
-			}
-			updateViews(entity, signature, updated);
-		}
-
-
+		void resizeStorages(size_t count);
+		void deallocateStorages();
 	private:
-		// This is called when entity index in storage has changed
-		void updateViews(uint32_t removedEntity, const Signature& signature, uint32_t updatedEntity)
-		{
-			for (auto view : m_Views)
-			{
-				if (view->HasEntity(removedEntity) && (view->GetSignature() & signature) == view->GetSignature())
-					view->RemoveEntity(removedEntity);
+		Pool m_StoragePool;
+		std::vector<bool> m_StorageCreated;
+		size_t m_Count;
+		size_t m_NumberOfStorages;
 
-				if (view->HasEntity(updatedEntity))
-					view->EntityComponentUpdated(updatedEntity);
-			}
-		}
-		void updateViews(uint32_t removedEntity, const Signature& signature, const std::vector<uint32_t>& updatedEntities)
-		{
-			for (auto view : m_Views)
-			{
-				if (view->HasEntity(removedEntity) && (view->GetSignature() & signature) == view->GetSignature())
-					view->RemoveEntity(removedEntity);
 
-				for (auto updatedEntity : updatedEntities)
-				{
-					if (view->HasEntity(updatedEntity))
-						view->EntityComponentUpdated(updatedEntity);
-				}
-			}
-		}
+		static constexpr size_t sc_StorageCapacityInc = 5;
+		static constexpr size_t sc_InitialStorageCapacity = 10;
 
-	private:
-		std::vector<IComponentStorage*> m_Storages;
-		std::vector<IComponentGroup*> m_Groups;
-		std::vector<IComponentView*> m_Views;
+		friend class ECSSerializer;
+		friend class ECSManager;
 	};
 	
 }

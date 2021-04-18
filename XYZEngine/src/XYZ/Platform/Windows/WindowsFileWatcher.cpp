@@ -2,8 +2,10 @@
 #include "WindowsFileWatcher.h"
 
 #include <future> 
-#include <windows.h>
 
+#ifdef XYZ_PLATFORM_WINDOWS
+
+#include <windows.h>
 namespace XYZ {
 
 	static void FileWatcherThread(std::shared_ptr<FileWatcher> watcherObj)
@@ -75,9 +77,6 @@ namespace XYZ {
 		CloseHandle(hDir);
 	}
 
-
-
-
 	WindowsFileWatcher::WindowsFileWatcher(const std::wstring& dir)
 		:
 		FileWatcher(dir)
@@ -99,3 +98,5 @@ namespace XYZ {
 		return std::make_shared<WindowsFileWatcher>(dir);
 	}
 }
+
+#endif

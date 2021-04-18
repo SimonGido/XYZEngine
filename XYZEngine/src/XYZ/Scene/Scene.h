@@ -10,11 +10,15 @@
 #include "SceneCamera.h"
 #include "Components.h"
 
-#include "Serializable.h"
+#include "XYZ/Asset/Asset.h"
 
+#include "XYZ/Physics/DynamicTree.h"
+#include "XYZ/Physics/PhysicsWorld.h"
 
-class b2World;
+#include "XYZ/Renderer/SkeletalMesh.h"
+
 namespace XYZ {
+
 
     enum class SceneState
     {
@@ -23,13 +27,11 @@ namespace XYZ {
         Pause
     };
 
-
-    template <typename T>
-    class Asset;
+    /*! @class Scene
+    *	@brief Holds all data relevant to a Scene
+    */
     class SceneEntity;
-    
-    class Scene : public RefCount,
-        public Serializable
+    class Scene : public Asset
     {
     public:
         Scene(const std::string& name);
@@ -39,26 +41,22 @@ namespace XYZ {
         void DestroyEntity(SceneEntity entity);
         void SetState(SceneState state) { m_State = state; }
         void SetViewportSize(uint32_t width, uint32_t height);
-        void SetSelectedEntity(uint32_t entity) { m_SelectedEntity = entity; }
+        void SetSelectedEntity(Entity entity) { m_SelectedEntity = entity; }
 
         void OnPlay();
         void OnStop();
-        void OnEvent(Event& e);
         void OnUpdate(Timestep ts);
         void OnRender();
         void OnRenderEditor(const EditorCamera& camera);
 
         SceneEntity GetEntity(uint32_t index);
+        SceneEntity GetEntityByName(const std::string& name);
         SceneEntity GetSelectedEntity();
-        const std::vector<uint32_t>& GetEntities() const { return m_Entities; }
+        inline const std::vector<Entity>& GetEntities() const { return m_Entities; }
 
-        SceneState GetState() const { return m_State; }
-        ECSManager& GetECS() { return m_ECS; }
-        const GUID& GetUUID() const { return m_UUID; }
-
+        inline SceneState GetState() const { return m_State; }
+        inline const GUID& GetUUID() const { return m_UUID; }
         inline const std::string& GetName() const { return m_Name; }
-
-
 
     private:
         void showSelection(uint32_t entity);
@@ -68,25 +66,15 @@ namespace XYZ {
     private:
         ECSManager m_ECS;
         GUID m_UUID;
+        PhysicsWorld m_PhysicsWorld;
 
-        std::vector<uint32_t> m_Entities;
-        SceneEntity* m_PhysicsBodyEntityBuffer = nullptr;
-
-
-        ComponentView<TransformComponent, SpriteRenderer>* m_RenderView;
-        ComponentView<TransformComponent, ParticleComponent>* m_ParticleView;
-        ComponentView<TransformComponent, PointLight2D>* m_LightView;
-        ComponentView<TransformComponent, RigidBody2DComponent>* m_RigidBodyView;
-
-        ComponentView<AnimatorComponent>* m_AnimatorView;
-        ComponentStorage<ScriptComponent>* m_ScriptStorage;
-        ComponentStorage<AnimatorComponent>* m_AnimatorStorage;
+        std::vector<Entity> m_Entities;
 
         std::string m_Name;
         SceneState m_State = SceneState::Edit;
 
-        uint32_t m_SelectedEntity;
-        uint32_t m_CameraEntity;
+        Entity m_SelectedEntity;
+        Entity m_CameraEntity;
 
 
         uint32_t m_ViewportWidth;
@@ -97,12 +85,14 @@ namespace XYZ {
         Ref<Material> m_CameraMaterial;
         SpriteRenderer m_CameraRenderer;
 
-        b2World* m_PhysicsWorld;
+
+        
 
         friend class SceneEntity;
-        friend class Serializer;
+        friend class SceneSerializer;
         friend class ScriptEngine;
         friend class ScenePanel;
+        friend class LuaEntity;
         friend class SceneHierarchyPanel;
     };
 }

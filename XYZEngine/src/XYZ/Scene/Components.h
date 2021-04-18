@@ -7,9 +7,9 @@
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Script/ScriptPublicField.h"
 #include "XYZ/Utils/Math/AABB.h"
+#include "XYZ/Physics/PhysicsBody.h"
 
 #include "SceneCamera.h"
-#include "AnimationController.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
@@ -17,7 +17,7 @@
 
 namespace XYZ {
 
-	struct IDComponent : public Type<IDComponent>
+	struct IDComponent : public IComponent
 	{
 		IDComponent() = default;
 		IDComponent(const GUID& id) 
@@ -27,10 +27,11 @@ namespace XYZ {
 		{
 			return (std::string)ID == (std::string)other.ID;
 		}
+
 		GUID ID;
 	};
 
-	class TransformComponent : public Type<TransformComponent>
+	class TransformComponent : public IComponent
 	{
 	public:
 		TransformComponent() = default;
@@ -57,9 +58,7 @@ namespace XYZ {
 
 		void DecomposeTransform(const glm::mat4& transform)
 		{
-			glm::vec3 scale;
 			glm::quat rotation;
-			glm::vec3 translation;
 			glm::vec3 skew;
 			glm::vec4 perspective;
 				
@@ -68,7 +67,7 @@ namespace XYZ {
 		}
 	};
 
-	struct SceneTagComponent : public Type<SceneTagComponent>
+	struct SceneTagComponent : public IComponent
 	{
 		std::string Name;
 		SceneTagComponent() = default;
@@ -88,7 +87,7 @@ namespace XYZ {
 		operator const  std::string& () const { return Name; }
 	};
 
-	struct SpriteRenderer : public Type<SpriteRenderer>
+	struct SpriteRenderer : public IComponent
 	{
 		SpriteRenderer() = default;
 		SpriteRenderer(
@@ -114,22 +113,21 @@ namespace XYZ {
 	};
 
 
-	struct CameraComponent : public Type<CameraComponent>
+	struct CameraComponent : public IComponent
 	{
 		SceneCamera Camera;
 		CameraComponent() = default;
 	};
 
 
-	struct AnimatorComponent : public Type<AnimatorComponent>
+	struct AnimatorComponent : public IComponent
 	{
 		AnimatorComponent() = default;
 
-		AnimationController Controller;
 	};
 
 
-	struct ParticleComponent : public Type<ParticleComponent>
+	struct ParticleComponent : public IComponent
 	{
 		ParticleComponent() = default;
 		Ref<MaterialInstance> RenderMaterial;
@@ -139,7 +137,7 @@ namespace XYZ {
 		uint32_t TextureID = 0;
 	};
 
-	struct PointLight2D : public Type<PointLight2D>
+	struct PointLight2D : public IComponent
 	{
 		PointLight2D() = default;
 
@@ -148,19 +146,19 @@ namespace XYZ {
 	};
 
 
-	struct Relationship : public Type<Relationship>
+	struct Relationship : public IComponent
 	{
-		uint32_t Parent			 = NULL_ENTITY;
-		uint32_t FirstChild		 = NULL_ENTITY;
-		uint32_t PreviousSibling = NULL_ENTITY;
-		uint32_t NextSibling	 = NULL_ENTITY;
+		Entity Parent;
+		Entity FirstChild;
+		Entity PreviousSibling;
+		Entity NextSibling;
 
-		static void SetupRelation(uint32_t parent, uint32_t child, ECSManager& ecs);
-		static void RemoveRelation(uint32_t child, ECSManager& ecs);
+		static void SetupRelation(Entity parent, Entity child, ECSManager& ecs);
+		static void RemoveRelation(Entity child, ECSManager& ecs);
 	};
 
 	struct EntityScriptClass;
-	struct ScriptComponent : public Type<ScriptComponent>
+	struct ScriptComponent : public IComponent
 	{
 		std::string ModuleName;
 		std::vector<PublicField> Fields;
@@ -179,21 +177,31 @@ namespace XYZ {
 	};
 
 
-	struct RigidBody2DComponent : public Type<RigidBody2DComponent>
+	struct RigidBody2DComponent : public IComponent
 	{
-		enum class Type { Static, Dynamic, Kinematic };
-		Type BodyType = Type::Dynamic;
+		enum class BodyType { Static, Dynamic, Kinematic };
 
-		void* RuntimeBody = nullptr;
+		BodyType Type;
+
+		PhysicsBody* Body = nullptr;
 	};
 
 
-	struct BoxCollider2DComponent : public Type<BoxCollider2DComponent>
+	struct BoxCollider2DComponent : public IComponent
 	{
+		PhysicsShape* Shape = nullptr;
+
+		glm::vec2 Offset = glm::vec2(0.0f);
 		glm::vec2 Size = glm::vec2(1.0f);
 		float Density = 1.0f;
-		float Friction = 0.0f;
+	};
 
-		void* RuntimeFixture = nullptr;
+	struct CircleCollider2DComponent : public IComponent
+	{
+		PhysicsShape* Shape = nullptr;
+
+		glm::vec2 Offset = glm::vec2(0.0f);
+		float Radius = 1.0f;
+		float Density = 1.0f;
 	};
 }

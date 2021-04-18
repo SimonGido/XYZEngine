@@ -2,6 +2,8 @@
 
 #include "XYZ/Core/Logger.h"
 
+#ifdef XYZ_PLATFORM_LINUX
+
 namespace XYZ {
 	enum AnsiCode
 	{
@@ -42,3 +44,5 @@ namespace XYZ {
 		printf("\033[1;%dm", color);
 	}
 }
+
+#endif // XYZ_PLATFORM_LINUX

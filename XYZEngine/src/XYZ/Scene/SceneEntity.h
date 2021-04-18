@@ -8,8 +8,7 @@ namespace XYZ {
 	public:
 		SceneEntity()
 			:
-			m_Scene(nullptr),
-			m_ID(NULL_ENTITY)
+			m_Scene(nullptr)
 		{
 		}
 
@@ -19,38 +18,13 @@ namespace XYZ {
 			m_ID(other.m_ID)
 		{}
 
-		SceneEntity(uint32_t id, Scene* scene)
+		SceneEntity(Entity id, Scene* scene)
 			:
 			m_Scene(scene),
 			m_ID(id)
 		{
 		}
-
-		template<typename T>
-		T& GetGroupComponent()
-		{
-			return m_Scene->m_ECS.GetGroupComponent<T>(m_ID);
-		}
-
-		template<typename T>
-		const T& GetGroupComponent() const
-		{
-			return m_Scene->m_ECS.GetGroupComponent<T>(m_ID);
-		}
-
-
-		template<typename T>
-		T& GetStorageComponent()
-		{
-			return m_Scene->m_ECS.GetStorageComponent<T>(m_ID);
-		}
-
-		template<typename T>
-		const T& GetStorageComponent() const
-		{
-			return m_Scene->m_ECS.GetStorageComponent<T>(m_ID);
-		}
-
+	
 		template<typename T>
 		T& GetComponent()
 		{
@@ -61,6 +35,12 @@ namespace XYZ {
 		const T& GetComponent() const
 		{
 			return m_Scene->m_ECS.GetComponent<T>(m_ID);
+		}
+
+		template <typename T, typename ...Args>
+		T& EmplaceComponent(Args&&... args)
+		{
+			return m_Scene->m_ECS.EmplaceComponent<T, Args...>(m_ID, std::forward<Args>(args)...);
 		}
 
 		template <typename T>
@@ -85,7 +65,11 @@ namespace XYZ {
 			m_Scene->DestroyEntity(*this);
 		}
 
-		size_t NumberOfTypes() const { return m_Scene->m_ECS.GetNumberOfRegisteredComponentTypes(); }
+		bool IsValid() const
+		{
+			return m_Scene && m_ID && m_Scene->m_ECS.IsValid(m_ID);
+		}
+
 
 		SceneEntity& operator =(const SceneEntity& other)
 		{
@@ -99,19 +83,16 @@ namespace XYZ {
 			return (m_ID == other.m_ID && m_Scene == other.m_Scene);
 		}
 
-		operator bool() const
-		{
-			return m_Scene && m_ID != NULL_ENTITY;
-		}
-
+		
 		operator uint32_t () const { return m_ID; }
 
 	private:
 		Scene*   m_Scene;
-		uint32_t m_ID;
+		Entity   m_ID;
 
 
 		friend class Scene;
+		friend class SceneSerializer;
 		friend class ScriptEngine;
 	};
 }

@@ -31,6 +31,7 @@ namespace XYZ {
 
 
 		Ref<ShaderStorageBuffer> LightStorageBuffer;
+		
 
 		struct SpriteDrawCommand
 		{
@@ -55,6 +56,7 @@ namespace XYZ {
 			glm::vec3 Color;
 			float Intensity = 1.0f;
 		};
+
 
 		std::vector<CollisionDrawCommand> CollisionList;
 		std::vector<SpriteDrawCommand> SpriteDrawList;
@@ -171,6 +173,11 @@ namespace XYZ {
 		FlushDrawList();
 	}
 
+	void SceneRenderer::SubmitSkeletalMesh(SkeletalMesh* mesh)
+	{
+
+	}
+
 	void SceneRenderer::SubmitSprite(SpriteRenderer* sprite, TransformComponent* transform)
 	{
 		s_Data.SpriteDrawList.push_back({ sprite,transform });
@@ -255,6 +262,7 @@ namespace XYZ {
 		//int clearValue = -1;
 		//s_Data.GeometryPass->GetSpecification().TargetFramebuffer->ClearColorAttachment(2, &clearValue);
 
+		
 		if (s_Data.Options.ShowGrid)
 		{
 			Renderer2D::SubmitGrid(s_Data.GridProps.Transform, s_Data.GridProps.Scale, s_Data.GridProps.LineWidth);
@@ -271,10 +279,10 @@ namespace XYZ {
 			uint32_t textureID = Renderer2D::SetTexture(dc.Sprite->SubTexture->GetTexture());
 			Renderer2D::SubmitQuad(dc.Transform->GetTransform(), dc.Sprite->SubTexture->GetTexCoords(), textureID, dc.Sprite->Color);
 		}
-
 		Renderer2D::Flush();
 		Renderer2D::FlushLines();
 		Renderer2D::FlushCollisions();
+		Renderer2D::FlushPoints();
 
 		for (auto& dc : s_Data.ParticleDrawList)
 		{

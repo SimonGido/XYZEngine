@@ -1,9 +1,8 @@
 #pragma once
 #include "Types.h"
-#include "XYZ/Utils/DataStructures/FreeList.h"
-
-#include <queue>
-#include <array>
+#include "Entity.h"
+#include "Signature.h"
+#include "DynamicBitset.h"
 
 namespace XYZ {
 
@@ -11,25 +10,31 @@ namespace XYZ {
 	{
 		friend class ECSManager;
 	public:
-	
 		EntityManager();
+		EntityManager(const EntityManager& other);
+		EntityManager(EntityManager&& other) noexcept;
 
-		uint32_t CreateEntity();
+		EntityManager& operator=(EntityManager&& other) noexcept;
 
-		Signature& GetSignature(uint32_t entity);
-		const Signature& GetSignature(uint32_t entity)const;
+		Entity CreateEntity();
 
-		void DestroyEntity(uint32_t entity);
-	
-		void SetSignature(uint32_t entity, Signature signature);
+		Signature& GetSignature(Entity entity);
+		const Signature& GetSignature(Entity entity)const;
+
+		void DestroyEntity(Entity entity);
+		void SetNumberOfComponents(size_t number);
+		void SetSignature(Entity entity, Signature signature);
+		void Clear();
 
 		uint32_t GetNumEntities() const { return m_EntitiesInUse; }
 	private:
 		uint32_t m_EntitiesInUse;
 
-		FreeList<Signature> m_Signatures;
+		DynamicBitset m_Bitset;
 		std::vector<bool> m_Valid;
 
+		static constexpr uint32_t sc_MaxEntity = UINT32_MAX - 1;
 		friend class ECSManager;
+		friend class ECSSerializer;
 	};
 }

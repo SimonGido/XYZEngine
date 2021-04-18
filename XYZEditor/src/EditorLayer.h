@@ -2,10 +2,6 @@
 
 #include <XYZ.h>
 
-#include "Panels/SceneHierarchyPanel.h"
-#include "Panels/ScenePanel.h"
-#include "Panels/InspectorPanel.h"
-
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
@@ -14,16 +10,6 @@
 
 
 namespace XYZ {
-	namespace PanelID {
-		enum PanelID
-		{
-			SceneHierarchyPanel,
-			ScenePanel,
-			InspectorPanel,
-			NumPanels
-		};
-	}
-	
 	class EditorLayer : public Layer
 	{
 	public:
@@ -43,34 +29,23 @@ namespace XYZ {
 		bool onKeyPress(KeyPressedEvent& event);
 		bool onKeyRelease(KeyReleasedEvent& event);
 
-		ParticleVertex* m_Vertices;
-		ParticleInformation* m_Data;
-		ParticleComponent* m_Particle;
 	private:
 		Ref<Scene> m_Scene;
 
-		AssetManager m_AssetManager;
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		InspectorPanel m_InspectorPanel;
 		ScenePanel m_ScenePanel;
-
-
+		//SkinningEditorPanel m_SkinningEditorPanel;
+		Editor::SkinningEditor m_SkinningEditor;
 	private:	
-		SceneEntity m_TestEntity;
-		SceneEntity m_NewEntity;
 		SceneEntity m_SelectedEntity;
-
-		SpriteRenderer* m_SpriteRenderer;
-		TransformComponent* m_Transform;
+		SceneEntity m_TestEntity;
 
 		glm::vec3 m_Position = { 0,0,0 };
 		glm::vec3 m_Rotation = { 0,0,0 };
-	
-		Ref<Material> m_Material;
-		Ref<Texture2D> m_CharacterTexture;
 
-		Ref<SubTexture> m_CharacterSubTexture;
-		Ref<SubTexture> m_CharacterSubTexture2;
-		Ref<SubTexture> m_CharacterSubTexture3;
+
+		size_t* m_Handles = nullptr;
+		size_t m_HandleCount = 0;
 	};
 }

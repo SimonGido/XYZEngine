@@ -1,7 +1,0 @@
-#pragma once
-
-
-Deselected,
-EntitySelected,
-AnimatorSelected,
-SpriteSelected,

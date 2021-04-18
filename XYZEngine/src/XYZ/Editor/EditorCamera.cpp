@@ -27,6 +27,8 @@ namespace XYZ {
 	void EditorCamera::updateProjection()
 	{
 		m_AspectRatio = m_ViewportWidth / m_ViewportHeight;
+		if (std::isnan(m_AspectRatio))
+			return;
 		m_ProjectionMatrix = glm::perspective(glm::radians(m_FOV), m_AspectRatio, m_NearClip, m_FarClip);
 	}
 

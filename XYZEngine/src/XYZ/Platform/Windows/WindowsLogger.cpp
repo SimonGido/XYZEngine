@@ -1,10 +1,11 @@
 #include "stdafx.h"
 #include "XYZ/Core/Logger.h"
 
+#ifdef XYZ_PLATFORM_WINDOWS
+
 #include <Windows.h>
 
 namespace XYZ {
-
 	static void* s_Handle = nullptr;
 
 	enum WindowsColor
@@ -37,3 +38,4 @@ namespace XYZ {
 	}
 
 }
+#endif

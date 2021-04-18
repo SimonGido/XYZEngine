@@ -70,7 +70,6 @@ namespace XYZ {
             t = glm::dot(AO, N) * invdet;
             return (det >= 1e-6f && t >= 0.0f && u >= 0.0f && v >= 0.0f && (u + v) <= 1.0f);
         }
-
     };
 
 }

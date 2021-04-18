@@ -2,8 +2,7 @@
 #include "Shader.h"
 #include "Texture.h"
 #include "RenderFlags.h"
-#include "XYZ/Core/Ref.h"
-#include "XYZ/Scene/Serializable.h"
+#include "XYZ/Asset/Asset.h"
 #include "XYZ/Utils/DataStructures/ByteBuffer.h"
 
 #include <queue>
@@ -12,8 +11,7 @@
 
 namespace XYZ {
 
-	class Material : public RefCount,
-					 public Serializable
+	class Material : public Asset
 	{
 		friend class MaterialInstance;
 	public:
@@ -56,6 +54,17 @@ namespace XYZ {
 				
 			m_Textures[size_t(tex->Slot) + size_t(index)] = texture;
 		}
+		void Set(const std::string& name, const Ref<Texture>& texture, uint32_t index = 0)
+		{
+			auto tex = findTexture(name);
+			XYZ_ASSERT(tex, "Material texture does not exist ", name.c_str());
+
+			if ((uint32_t)m_Textures.size() <= tex->Slot + index)
+				m_Textures.resize((size_t)tex->Slot + 1 + index);
+
+			m_Textures[size_t(tex->Slot) + size_t(index)] = texture;
+		}
+
 		template <typename T>
 		T& Get(const std::string& name)
 		{
@@ -66,17 +75,17 @@ namespace XYZ {
 		}
 
 		void Bind() const;
+		void ClearTextures() { m_Textures.clear(); }
 		void SetFlags(RenderFlags renderFlags) { m_Flags |= renderFlags; }
 		uint64_t GetFlags() const { return m_Flags; }
 	
 
 		Ref<Shader>& GetShader() { return m_Shader; }
 		const Ref<Shader>& GetShader() const { return m_Shader; }
+		const std::vector<Ref<Texture>>& GetTextures() const { return m_Textures; }
 
 		const uint8_t* GetVSUniformBuffer() const { return m_VSUniformBuffer; }
 		const uint8_t* GetFSUniformBuffer() const { return m_FSUniformBuffer; }
-
-		const std::vector<Ref<Texture>>& GetTextures() const { return m_Textures; }
 		
 		bool operator ==(const Material& other) const
 		{
@@ -96,8 +105,8 @@ namespace XYZ {
 
 	private:
 		Ref<Shader> m_Shader;
-		std::unordered_set<MaterialInstance*> m_MaterialInstances;
 		std::vector<Ref<Texture>> m_Textures;
+		std::unordered_set<MaterialInstance*> m_MaterialInstances;
 
 		ByteBuffer m_VSUniformBuffer;
 		ByteBuffer m_FSUniformBuffer;

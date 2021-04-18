@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#ifdef _WIN64
+#ifdef XYZ_PLATFORM_WINDOWS
 #include "XYZ/Core/Input.h"
 
 #include "XYZ/Core/Application.h"

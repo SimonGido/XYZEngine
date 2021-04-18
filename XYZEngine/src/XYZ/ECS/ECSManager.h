@@ -1,233 +1,192 @@
 #pragma once
 #include "ComponentManager.h"
 #include "EntityManager.h"
+#include "CallbackManager.h"
+#include "ComponentView.h"
 
 namespace XYZ {
 	 
 	class ECSManager
 	{
 	public:
-		uint32_t CreateEntity() { return m_EntityManager.CreateEntity(); };
+		ECSManager() = default;
+		ECSManager(const ECSManager& other);
+		ECSManager(ECSManager&& other) noexcept;
 
-		void DestroyEntity(uint32_t entity) 
-		{ 
-			auto& signature = m_EntityManager.GetSignature(entity);
-			signature.set(HAS_GROUP_BIT, false);
-			m_ComponentManager.EntityDestroyed(entity, signature, this);
-			m_EntityManager.DestroyEntity(entity); 
+		ECSManager& operator=(ECSManager&& other) noexcept;
+
+		Entity CreateEntity();
+		void DestroyEntity(Entity entity);
+		void Clear();
+
+		template <typename T>
+		void AddListener(const std::function<void(uint32_t, CallbackType)>& callback, void* instance)
+		{
+			m_CallbackManager.AddListener<T>(callback, instance);
 		}
 
 		template <typename T>
-		T& AddComponent(uint32_t entity, const T& component)
+		void RemoveListener(void* instance)
 		{
+			m_CallbackManager.RemoveListener<T>(instance);
+		}
+
+		template <typename T, typename ...Args>
+		T& EmplaceComponent(Entity entity, Args&&... args)
+		{
+			XYZ_ASSERT(IsValid(entity), "Entity is invalid");
+			m_ComponentManager.ForceStorage<T>();
+			m_EntityManager.SetNumberOfComponents(m_ComponentManager.m_Count);
 			Signature& signature = m_EntityManager.GetSignature(entity);
-			XYZ_ASSERT(!signature.test(T::GetComponentID()), "Entity already contains component");
-			signature.set(T::GetComponentID(), true);
+			XYZ_ASSERT(!signature[IComponent::GetComponentID<T>()], "Entity already contains component");
+			signature.Set(IComponent::GetComponentID<T>(), true);
+			auto& result = m_ComponentManager.EmplaceComponent<T>(entity, std::forward<Args>(args)...);
+			m_CallbackManager.OnComponentCreate<T>(entity);
+			return result;
+		}
+		template <typename T>
+		T& AddComponent(Entity entity, const T& component)
+		{
+			XYZ_ASSERT(IsValid(entity), "Entity is invalid");
+			m_ComponentManager.ForceStorage<T>();
+			m_EntityManager.SetNumberOfComponents(m_ComponentManager.m_Count);
+			Signature& signature = m_EntityManager.GetSignature(entity);
+			XYZ_ASSERT(!signature[IComponent::GetComponentID<T>()], "Entity already contains component");
+			signature.Set(IComponent::GetComponentID<T>(), true);
 			auto& result = m_ComponentManager.AddComponent<T>(entity, component);
-			m_ComponentManager.AddToGroup(entity, signature, this);
-			m_ComponentManager.AddToView(entity, signature);
+			m_CallbackManager.OnComponentCreate<T>(entity);
 			return result;
 		}
 		
 		template <typename T>
-		bool RemoveComponent(uint32_t entity)
+		bool RemoveComponent(Entity entity)
 		{
+			XYZ_ASSERT(IsValid(entity), "Entity is invalid");
 			Signature& signature = m_EntityManager.GetSignature(entity);
-			XYZ_ASSERT(signature.test(T::GetComponentID()), "Entity does not have component");
+			XYZ_ASSERT(signature[IComponent::GetComponentID<T>()], "Entity does not have component");
 			
-			if (signature.test(HAS_GROUP_BIT))
-			{
-				m_ComponentManager.RemoveFromGroup(entity, T::GetComponentID(), signature, this);			
-				return true;
-			}
-			signature.set(T::GetComponentID(), false);
+			signature.set(IComponent::GetComponentID<T>(), false);
+			m_CallbackManager.OnComponentRemove<T>(entity);
 			m_ComponentManager.RemoveComponent<T>(entity, signature);
+
 			return true;
 		}
 
 		template <typename T>
-		T& GetComponent(uint32_t entity)
+		T& GetComponent(Entity entity)
 		{
+			XYZ_ASSERT(IsValid(entity), "Entity is invalid");
 			Signature& signature = m_EntityManager.GetSignature(entity);
-			XYZ_ASSERT(signature.test(T::GetComponentID()), "Entity does not have component");
-			if (signature.test(HAS_GROUP_BIT))
-			{
-				uint8_t* component = nullptr;
-				m_ComponentManager.GetFromGroup(entity, signature, T::GetComponentID(), &component);
-				if (component)
-					return *(T*)component;		
-			}
+			XYZ_ASSERT(signature[IComponent::GetComponentID<T>()], "Entity does not have component");
 			return m_ComponentManager.GetComponent<T>(entity);
 		}
 
 		template <typename T>
-		const T& GetComponent(uint32_t entity) const
+		const T& GetComponent(Entity entity) const
 		{
+			XYZ_ASSERT(IsValid(entity), "Entity is invalid");
 			const Signature& signature = m_EntityManager.GetSignature(entity);
-			XYZ_ASSERT(signature.test(T::GetComponentID()), "Entity does not have component");
-			if (signature.test(HAS_GROUP_BIT))
-			{
-				uint8_t* component = nullptr;
-				m_ComponentManager.GetFromGroup(entity, signature, T::GetComponentID(), &component);
-				if (component)
-					return *(T*)component;
-			}
-			return m_ComponentManager.GetComponent<T>(entity);
-		}
-
-		template <typename T>
-		T& GetGroupComponent(uint32_t entity)
-		{
-			Signature& signature = m_EntityManager.GetSignature(entity);
-			XYZ_ASSERT(signature.test(T::GetComponentID()), "Entity does not have component");
-			XYZ_ASSERT(signature.test(HAS_GROUP_BIT), "Entity does not have group");
-			
-			uint8_t* component = nullptr;
-			m_ComponentManager.GetFromGroup(entity, signature, T::GetComponentID(), &component);
-			XYZ_ASSERT(component, "Group does not contain entity");
-			return *(T*)component;		
-		}
-
-		template <typename T>
-		const T& GetGroupComponent(uint32_t entity) const
-		{
-			Signature& signature = m_EntityManager.GetSignature(entity);
-			XYZ_ASSERT(signature.test(T::GetComponentID()), "Entity does not have component");
-			XYZ_ASSERT(signature.test(HAS_GROUP_BIT), "Entity does not have group");
-
-			uint8_t* component = nullptr;
-			m_ComponentManager.GetFromGroup(entity, signature, T::GetComponentID(), &component);
-			XYZ_ASSERT(component, "Group does not contain entity");
-			return *(T*)component;
-		}
-
-		template <typename T>
-		T& GetStorageComponent(uint32_t entity)
-		{
-			XYZ_ASSERT(m_EntityManager.GetSignature(entity).test(T::GetComponentID()), "Entity does not have component");
+			XYZ_ASSERT(signature[IComponent::GetComponentID<T>()], "Entity does not have component");
 			return m_ComponentManager.GetComponent<T>(entity);
 		}
 
 
-		template <typename T>
-		const T& GetStorageComponent(uint32_t entity) const
+		const Signature& GetEntitySignature(Entity entity) const
 		{
-			XYZ_ASSERT(m_EntityManager.GetSignature(entity).test(T::GetComponentID()), "Entity does not have component");
-			return m_ComponentManager.GetComponent<T>(entity);
-		}
-
-		const Signature& GetEntitySignature(uint32_t entity) const
-		{
+			XYZ_ASSERT(IsValid(entity), "Entity is invalid");
 			return m_EntityManager.GetSignature(entity);
 		}
 
-		bool HasGroup(uint32_t entity) const
-		{
-			auto& signature = m_EntityManager.GetSignature(entity);
-			return signature.test(HAS_GROUP_BIT);
-		}
-
 		template <typename T>
-		bool Contains(uint32_t entity) const
+		bool Contains(Entity entity) const
 		{
+			XYZ_ASSERT(IsValid(entity), "Entity is invalid");
 			auto& signature = m_EntityManager.GetSignature(entity);
-			return signature.test(T::GetComponentID());
+			if (signature.Size() <= IComponent::GetComponentID<T>())
+				return false;
+			return signature[IComponent::GetComponentID<T>()];
 		}
-
-		bool IsValid(uint32_t entity) const
+	
+		bool Contains(Entity entity, uint16_t componentID) const
 		{
-			return m_EntityManager.m_Valid.size() > entity && m_EntityManager.m_Valid[entity];
+			XYZ_ASSERT(IsValid(entity), "Entity is invalid");
+			auto& signature = m_EntityManager.GetSignature(entity);
+			if (signature.Size() <= componentID)
+				return false;
+			return signature[componentID];
 		}
 
-		template <typename T>
+		bool IsValid(Entity entity) const
+		{
+			return m_EntityManager.m_Valid.size() > (uint32_t)entity && m_EntityManager.m_Valid[(uint32_t)entity];
+		}
+
+		template <typename ...Args>
 		void ForceStorage()
 		{
-			m_ComponentManager.ForceStorage<T>();
+			(m_ComponentManager.ForceStorage<Args>(), ...);
+			m_EntityManager.SetNumberOfComponents(m_ComponentManager.m_Count);
 		}
 
 		template <typename T>
-		ComponentStorage<T>* GetStorage()
+		ComponentStorage<T>& GetStorage()
 		{
-			return (ComponentStorage<T>*)m_ComponentManager.GetStorage(T::GetComponentID());
+			return m_ComponentManager.GetStorage<T>();
+		}
+
+		template <typename T>
+		const ComponentStorage<T>& GetStorage() const
+		{
+			return m_ComponentManager.GetStorage<T>();
+		}
+
+		IComponentStorage& GetIStorage(uint16_t index)
+		{
+			size_t offset = (size_t)index * sizeof(ComponentStorage<IComponent>);
+			return *m_ComponentManager.GetIStorage(offset);
+		}
+
+		const IComponentStorage& GetIStorage(uint16_t index) const
+		{
+			size_t offset = (size_t)index * sizeof(ComponentStorage<IComponent>);
+			return *m_ComponentManager.GetIStorage(offset);
 		}
 
 		template <typename ...Args>
-		ComponentGroup<Args...>& GetGroup()
+		ComponentView<Args...> CreateView()
 		{
-			Signature signature;
-			std::initializer_list<uint16_t> componentTypes{ Args::GetComponentID()... };
-			for (auto it : componentTypes)
-				signature.set(it);
-
-			auto group = m_ComponentManager.GetGroup(signature);
-			XYZ_ASSERT(group, "Group does not exist");
-			return *(ComponentGroup<Args...>*)group;
+			return ComponentView<Args...>(m_ComponentManager);
 		}
 
-		template <typename ...Args>
-		ComponentView<Args...>& GetView()
+		template <typename T>
+		uint32_t GetComponentIndex(Entity entity) const
 		{
-			Signature signature;
-			std::initializer_list<uint16_t> componentTypes{ Args::GetComponentID()... };
-			for (auto it : componentTypes)
-				signature.set(it);
-
-			auto view = m_ComponentManager.GetView(signature);
-			
-			XYZ_ASSERT(view, "View does not exist");
-			return *(ComponentView<Args...>*)view;
+			return m_ComponentManager.GetComponentIndex<T>(entity);
 		}
 
-		template <typename ...Args>
-		ComponentGroup<Args...>& CreateGroup()
+		template <typename T>
+		Entity FindEntity(const T& component) const
 		{
-			return *m_ComponentManager.CreateGroup<Args...>();
-		}
-
-		template <typename ...Args>
-		ComponentView<Args...>& CreateView()
-		{
-			auto view = m_ComponentManager.CreateView<Args...>(this);
-			for (uint32_t i = 0; i < m_EntityManager.m_Signatures.Range(); ++i)
+			for (int32_t i = 0; i < m_EntityManager.m_Bitset.GetNumberOfSignatures(); ++i)
 			{
-				const Signature& signature = m_EntityManager.m_Signatures[i];
-				if ((view->GetSignature() & signature) == view->GetSignature())
-					view->AddEntity(i);
-			}
-			return *view;
-		}
-
-		template <typename T>
-		uint32_t GetComponentIndex(uint32_t entity) const
-		{
-			return m_ComponentManager.GetComponentIndex(entity, T::GetComponentID());
-		}
-
-		uint32_t GetComponentIndex(uint32_t entity, uint8_t id) const
-		{
-			return m_ComponentManager.GetComponentIndex(entity, id);
-		}
-
-		template <typename T>
-		uint32_t FindEntity(const T& component) const
-		{
-			for (int32_t i = 0; i < m_EntityManager.m_Signatures.Range();++i)
-			{
-				if (m_EntityManager.m_Signatures[i].test(T::GetComponentID()))
+				if (m_EntityManager.m_Bitset[i][IComponent::GetComponentID<T>()])
 				{
 					if (component == m_ComponentManager.GetComponent<T>(i))
 						return i;
 				}
 			}
-			return NULL_ENTITY;
+			return Entity();
 		}
 
 		const uint32_t GetNumberOfEntities() const { return m_EntityManager.GetNumEntities(); }
 
-		size_t GetNumberOfRegisteredComponentTypes() const { return m_ComponentManager.GetNumberOfStorages(); }
+		size_t GetNumberOfRegisteredComponentTypes() const { return m_ComponentManager.GetNumberOfRegisteredStorages(); }
 	private:
 		ComponentManager m_ComponentManager;
+		CallbackManager m_CallbackManager;
 		EntityManager m_EntityManager;
+	
+		friend class ECSSerializer;
 	};
 	
 }

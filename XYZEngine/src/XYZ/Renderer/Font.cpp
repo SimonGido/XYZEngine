@@ -13,7 +13,8 @@ namespace XYZ {
 
 	Font::Font(uint32_t pixelSize, const std::string& path)
 		:
-		m_PixelSize(pixelSize)
+		m_PixelSize(pixelSize),
+		m_Filepath(path)
 	{
 		FT_Library ft;
 		if (FT_Init_FreeType(&ft))

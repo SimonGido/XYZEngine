@@ -1,6 +1,3 @@
-[submodule "box2d"]
-	path = box2d
-	url = https://github.com/Bodka0904/box2d.git
-[submodule "XYZEngine/vendor/box2d"]
-	path = XYZEngine/vendor/box2d
-	url = https://github.com/Bodka0904/box2d.git
+[submodule "XYZEngine/vendor/GLFW"]
+	path = XYZEngine/vendor/GLFW
+	url = https://github.com/Bodka0904/glfw.git

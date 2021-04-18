@@ -17,23 +17,43 @@ namespace XYZ {
 	{
 	public:
 		// Creates a new free list.
-		FreeList(size_t reserve = 0)
-			: m_FirstFree(-1)
+		FreeList(size_t size = 0)		
 		{
-			if (reserve)
-				m_Data.reserve(reserve);
+			m_FirstFree = -1;
+			if (size > 0)
+			{
+				m_Data.resize(size);
+				m_FirstFree = 0;
+				for (size_t i = 0; i < m_Data.size() - 1; ++i)
+					m_Data[i].Next = i + 1;
+			}	
 		}
 
 		FreeList(const FreeList<T>& other)
+			:
+			m_Data(other.m_Data),
+			m_FirstFree(other.m_FirstFree)
 		{
-			m_FirstFree = other.m_FirstFree;
-			m_Data = other.m_Data;
 		}
 		
+		FreeList(FreeList<T>&& other) noexcept
+			:
+			m_Data(std::move(other.m_Data)),
+			m_FirstFree(other.m_FirstFree)
+		{
+		}
+
 		FreeList<T>& operator=(const FreeList<T>& other)
 		{
 			m_FirstFree = other.m_FirstFree;
 			m_Data = other.m_Data;
+			return *this;
+		}
+
+		FreeList<T>& operator = (FreeList<T>&& other) noexcept
+		{
+			m_FirstFree = other.m_FirstFree;
+			m_Data = std::move(other.m_Data);
 			return *this;
 		}
 		
@@ -94,30 +114,27 @@ namespace XYZ {
 			m_FirstFree = -1;
 		}
 
-		bool Valid(int32_t index) const
-		{
-			return m_Data[index].Next != -1;
-		}
-
 		// Returns the range of valid indices.
 		int32_t Range() const
 		{
 			return static_cast<int32_t>(m_Data.size());
 		}
-
+		int32_t Next() const
+		{
+			if (m_FirstFree == -1)
+				return (int32_t)m_Data.size();
+			return m_FirstFree;
+		}
 		// Returns the nth element.
 		T& operator[](int32_t index)
 		{
 			return m_Data[index].Element;
 		}
-
-	
 		// Returns the nth element.
 		const T& operator[](int32_t index) const
 		{
 			return m_Data[index].Element;
 		}
-
 	private:
 		union FreeElement
 		{
@@ -132,7 +149,7 @@ namespace XYZ {
 				: Element(other.Element)
 			{}
 			FreeElement(FreeElement&& other) noexcept
-				: Element(other.Element)
+				: Element(std::move(other.Element))
 			{}
 
 			~FreeElement()
@@ -143,6 +160,8 @@ namespace XYZ {
 				Element = other.Element;
 				return *this;
 			}
+			operator T& () { return Element; }
+			operator const T& () const { return Element; }
 
 			T Element;
 			int32_t Next;

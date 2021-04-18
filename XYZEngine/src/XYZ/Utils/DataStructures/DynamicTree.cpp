@@ -10,7 +10,7 @@
 
 
 namespace XYZ {
-	bool DynamicTree::RayCast(const Ray& ray, void*& result)
+	bool DynamicTree::RayCast(const Ray& ray, uint32_t& result)
 	{
 		std::stack<int32_t> stack;
 		stack.push(m_RootIndex);
@@ -24,9 +24,10 @@ namespace XYZ {
 			}
 			if (m_Nodes[index].IsLeaf())
 			{
+				uint32_t objectIndex = m_Nodes[index].DataIndex;
 				if (ray.IntersectsAABB(m_Nodes[index].Box))
 				{
-					result = m_Nodes[index].UserData;
+					result = objectIndex;
 					return true;
 				}
 			}
@@ -66,9 +67,9 @@ namespace XYZ {
 			}
 		}
 	}
-	int32_t DynamicTree::Insert(void* userData, const AABB& box)
+	int32_t DynamicTree::Insert(uint32_t objectIndex, const AABB& box)
 	{
-		int32_t leaf = m_Nodes.Insert({ box , userData });
+		int32_t leaf = m_Nodes.Insert({ box , objectIndex });
 		
 		if (m_MovedNodes.size() < m_Nodes.Range())
 			m_MovedNodes.resize(m_Nodes.Range());
@@ -105,10 +106,10 @@ namespace XYZ {
 
 			AABB box = m_Nodes[index].Box;
 
-			Renderer2D::SubmitLine(box.Min, glm::vec3(box.Max.x, box.Min.y, box.Min.z));
-			Renderer2D::SubmitLine(glm::vec3(box.Max.x, box.Min.y, box.Min.z), glm::vec3(box.Max.x, box.Max.y, box.Min.z));
-			Renderer2D::SubmitLine(glm::vec3(box.Max.x, box.Max.y, box.Min.z), glm::vec3(box.Min.x, box.Max.y, box.Min.z));
-			Renderer2D::SubmitLine(glm::vec3(box.Min.x, box.Max.y, box.Min.z), box.Min);
+			//Renderer2D::SubmitLine(box.Min, glm::vec3(box.Max.x, box.Min.y, box.Min.z));
+			//Renderer2D::SubmitLine(glm::vec3(box.Max.x, box.Min.y, box.Min.z), glm::vec3(box.Max.x, box.Max.y, box.Min.z));
+			//Renderer2D::SubmitLine(glm::vec3(box.Max.x, box.Max.y, box.Min.z), glm::vec3(box.Min.x, box.Max.y, box.Min.z));
+			//Renderer2D::SubmitLine(glm::vec3(box.Min.x, box.Max.y, box.Min.z), box.Min);
 
 
 			Renderer2D::SubmitLine(glm::vec3(box.Min.x, box.Min.y, box.Max.z), glm::vec3(box.Max.x, box.Min.y, box.Max.z));
@@ -117,12 +118,12 @@ namespace XYZ {
 			Renderer2D::SubmitLine(glm::vec3(box.Min.x, box.Max.y, box.Max.z), glm::vec3(box.Min.x, box.Min.y, box.Max.z));
 
 
-			Renderer2D::SubmitLine(box.Min, glm::vec3(box.Min.x, box.Min.y, box.Max.z));
-			Renderer2D::SubmitLine(glm::vec3(box.Min.x, box.Max.y, box.Min.z), glm::vec3(box.Min.x, box.Max.y, box.Max.z));
-
-
-			Renderer2D::SubmitLine(glm::vec3(box.Max.x, box.Min.y, box.Min.z), glm::vec3(box.Max.x, box.Min.y, box.Max.z));
-			Renderer2D::SubmitLine(glm::vec3(box.Max.x, box.Max.y, box.Min.z), glm::vec3(box.Max.x, box.Max.y, box.Max.z));
+			//Renderer2D::SubmitLine(box.Min, glm::vec3(box.Min.x, box.Min.y, box.Max.z));
+			//Renderer2D::SubmitLine(glm::vec3(box.Min.x, box.Max.y, box.Min.z), glm::vec3(box.Min.x, box.Max.y, box.Max.z));
+			//
+			//
+			//Renderer2D::SubmitLine(glm::vec3(box.Max.x, box.Min.y, box.Min.z), glm::vec3(box.Max.x, box.Min.y, box.Max.z));
+			//Renderer2D::SubmitLine(glm::vec3(box.Max.x, box.Max.y, box.Min.z), glm::vec3(box.Max.x, box.Max.y, box.Max.z));
 
 
 			if (m_Nodes[index].IsLeaf())

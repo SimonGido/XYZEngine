@@ -28,7 +28,7 @@ namespace XYZ {
 			: m_Instance(nullptr)
 		{
 		}
-
+		
 		Ref(std::nullptr_t n)
 			: m_Instance(nullptr)
 		{
@@ -37,7 +37,7 @@ namespace XYZ {
 		Ref(T* instance)
 			: m_Instance(instance)
 		{
-			static_assert(std::is_base_of<RefCount, T>::value, "Class is not RefCount!");
+			static_assert(std::is_base_of<RefCount, T>::value, "Class is not RefCounted!");
 
 			IncRef();
 		}
@@ -45,14 +45,14 @@ namespace XYZ {
 		template<typename T2>
 		Ref(const Ref<T2>& other)
 		{
-			m_Instance = other.m_Instance;
+			m_Instance = (T*)other.m_Instance;
 			IncRef();
 		}
 
 		template<typename T2>
 		Ref(Ref<T2>&& other)
 		{
-			m_Instance = other.m_Instance;
+			m_Instance = (T*)other.m_Instance;
 			other.m_Instance = nullptr;
 		}
 
@@ -60,7 +60,6 @@ namespace XYZ {
 		{
 			DecRef();
 		}
-
 
 		Ref(const Ref<T>& other)
 			: m_Instance(other.m_Instance)
@@ -104,9 +103,6 @@ namespace XYZ {
 			return *this;
 		}
 
-	
-		//operator bool() { return m_Instance != nullptr; }
-		//operator bool() const { return m_Instance != nullptr; }
 
 		T* operator->() { return m_Instance; }
 		const T* operator->() const { return m_Instance; }
@@ -123,6 +119,12 @@ namespace XYZ {
 		{
 			DecRef();
 			m_Instance = instance;
+		}
+
+		template<typename T2>
+		Ref<T2> As()
+		{
+			return Ref<T2>(*this);
 		}
 
 		template<typename... Args>

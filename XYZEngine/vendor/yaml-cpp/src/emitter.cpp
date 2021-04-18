@@ -969,3 +969,5 @@ Emitter& Emitter::Write(const Binary& binary) {
   return *this;
 }
 }  // namespace YAML
+
+

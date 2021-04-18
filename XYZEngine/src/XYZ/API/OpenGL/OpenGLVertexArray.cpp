@@ -62,7 +62,10 @@ namespace XYZ {
 			for (const auto& element : vbl)
 			{
 				glEnableVertexAttribArray(element.Index);
-				if (element.Component == ShaderDataComponent::Int)
+				if (element.Component == ShaderDataComponent::Int 
+				 || element.Component == ShaderDataComponent::Int2
+				 || element.Component == ShaderDataComponent::Int3
+				 || element.Component == ShaderDataComponent::Int4)
 				{
 					glVertexAttribIPointer(element.Index,
 						element.GetComponentCount(),

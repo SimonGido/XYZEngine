@@ -32,15 +32,11 @@ namespace XYZ {
 			return true;
 		return false;
 	}
-	
-	
+
+
+
 	EditorLayer::EditorLayer()
-		:
-		m_AssetManager("Assets"),
-		m_SceneHierarchyPanel(PanelID::SceneHierarchyPanel),
-		m_InspectorPanel(PanelID::InspectorPanel),
-		m_ScenePanel(PanelID::ScenePanel)
-	{		
+	{			
 	}
 
 	EditorLayer::~EditorLayer()
@@ -49,8 +45,15 @@ namespace XYZ {
 
 	void EditorLayer::OnAttach()
 	{
-		Renderer::Init();
-		m_Scene = m_AssetManager.GetAsset<Scene>("Assets/Scenes/scene.xyz")->GetHandle();
+		auto shader = AssetManager::GetAsset<Shader>(AssetManager::GetAssetHandle("Assets/Shaders/DefaultShader.glsl.shader"));
+		auto texture = AssetManager::GetAsset<Texture2D>(AssetManager::GetAssetHandle("Assets/Textures/player_sprite.png.tex"));
+		auto subTexture = AssetManager::GetAsset<SubTexture>(AssetManager::GetAssetHandle("Assets/SubTextures/player.subtex"));
+		auto material = AssetManager::GetAsset<Material>(AssetManager::GetAssetHandle("Assets/Materials/Material.mat"));
+		m_Scene = AssetManager::GetAsset<Scene>(AssetManager::GetAssetHandle("Assets/Scenes/scene.xyz"));
+		m_TestEntity = m_Scene->GetEntityByName("TestEntity");
+		
+		m_TestEntity.EmplaceComponent<ScriptComponent>("Example.Script");
+
 		ScriptEngine::Init("Assets/Scripts/XYZScriptExample.dll");
 		ScriptEngine::SetSceneContext(m_Scene);
 
@@ -60,141 +63,58 @@ namespace XYZ {
 		m_Scene->SetViewportSize(windowWidth, windowHeight);
 		
 
-		m_Material = m_AssetManager.GetAsset<Material>("Assets/Materials/material.mat")->GetHandle();
-		m_Material->SetFlags(XYZ::RenderFlags::TransparentFlag);
 
-		m_TestEntity = m_Scene->GetEntity(2);
-		m_SpriteRenderer = &m_TestEntity.GetComponent<SpriteRenderer>();
-		m_Transform = &m_TestEntity.GetComponent<TransformComponent>();
-		m_TestEntity.AddComponent<ScriptComponent>(ScriptComponent("Example.Script"));
 		ScriptEngine::InitScriptEntity(m_TestEntity);
 		ScriptEngine::InstantiateEntityClass(m_TestEntity);
 
 
-		auto test = m_Scene->GetEntity(1);
-		test.AddComponent<ScriptComponent>(ScriptComponent("Example.Script"));
-		ScriptEngine::InitScriptEntity(test);
-		ScriptEngine::InstantiateEntityClass(test);
-
-		m_NewEntity = m_Scene->GetEntity(3);
-		
-		m_CharacterTexture = Texture2D::Create({ TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest }, "Assets/Textures/player_sprite.png");
-		m_CharacterSubTexture = Ref<SubTexture>::Create(m_CharacterTexture, glm::vec2(0, 0), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
-		m_CharacterSubTexture2 = Ref<SubTexture>::Create(m_CharacterTexture, glm::vec2(1, 2), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
-		m_CharacterSubTexture3 = Ref<SubTexture>::Create(m_CharacterTexture, glm::vec2(2, 2), glm::vec2(m_CharacterTexture->GetWidth() / 8, m_CharacterTexture->GetHeight() / 3));
-
-		auto backgroundTexture = m_AssetManager.GetAsset<Texture2D>("Assets/Textures/Backgroundfield.png");
-		///////////////////////////////////////////////////////////
-
-		uint32_t count = 5000;
-		auto computeMat = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleComputeShader.glsl"));
-		auto renderMat = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShader.glsl"));
-
-		renderMat->Set("u_Texture", Texture2D::Create({TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest}, "Assets/Textures/flame.png"), 0);
-		renderMat->Set("u_Texture", Texture2D::Create({TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest}, "Assets/Textures/flame_emission.png"), 1);
-
-
-		m_Particle = &m_TestEntity.AddComponent<ParticleComponent>(ParticleComponent());
-		m_Particle->RenderMaterial = Ref<MaterialInstance>::Create(renderMat);
-		m_Particle->ComputeMaterial = Ref<MaterialInstance>::Create(computeMat);
-		m_Particle->ParticleEffect = Ref<ParticleEffect>::Create(ParticleEffectConfiguration(count, 2.0f), ParticleLayoutConfiguration());
-
-		m_Particle->ComputeMaterial->Set("u_Speed", 0.2f);
-		m_Particle->ComputeMaterial->Set("u_Gravity", 0.0f);
-		m_Particle->ComputeMaterial->Set("u_Loop", (int)1);
-		m_Particle->ComputeMaterial->Set("u_NumberRows", 8.0f);
-		m_Particle->ComputeMaterial->Set("u_NumberColumns", 8.0f);
-		m_Particle->ComputeMaterial->Set("u_ParticlesInExistence", 0.0f);
-		m_Particle->ComputeMaterial->Set("u_Time", 0.0f);
-
-
-		std::random_device rd;
-		std::mt19937 rng(rd());
-		std::uniform_real_distribution<> dist(-1, 1);
-
-		m_Vertices = new XYZ::ParticleVertex[count];
-		m_Data = new XYZ::ParticleInformation[count];
-
-		for (int i = 0; i < count; ++i)
-		{
-			m_Vertices[i].Position = glm::vec4(0.008f * i, 0.0f, 0.0f, 0.0f);
-			m_Vertices[i].Color = glm::vec4(0.3, 0.5, 1.0, 1);
-			m_Vertices[i].Rotation = 0.0f;
-			m_Vertices[i].TexCoordOffset = glm::vec2(0);
-
-			m_Data[i].DefaultPosition = m_Vertices[i].Position;
-			
-			m_Data[i].ColorBegin = m_Vertices[i].Color;
-			m_Data[i].ColorEnd = m_Vertices[i].Color;
-			m_Data[i].SizeBegin = 1.0f;
-			m_Data[i].SizeEnd = 0.1f;
-			m_Data[i].Rotation = dist(rng) * 15;
-			m_Data[i].Velocity = glm::vec2(0.0f, fabs(dist(rng)));
-			m_Data[i].DefaultVelocity = m_Data[i].Velocity;
-			m_Data[i].LifeTime = fabs(dist(rng)) + 4;
-		}
-		m_Particle->ParticleEffect->SetParticlesRange(m_Vertices, m_Data, 0, count);
-		///////////////////////////////////////////////////////////
-
 		Renderer::WaitAndRender();
-		
+
 		Ref<RenderTexture> renderTexture = RenderTexture::Create(SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer);
-		Ref<SubTexture> renderSubTexture = Ref<SubTexture>::Create(renderTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
-	
+		Ref<SubTexture> renderSubTexture = Ref<SubTexture>::Create(renderTexture, glm::vec4(0.0f, 1.0f, 1.0f, 0.0f));
+		Ref<Texture> robotTexture = Texture2D::Create({}, "Assets/Textures/full_simple_char.png");
+		Ref<SubTexture> robotSubTexture = Ref<SubTexture>::Create(robotTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+
 		m_SceneHierarchyPanel.SetContext(m_Scene);
 		m_ScenePanel.SetContext(m_Scene);
 		m_ScenePanel.SetSubTexture(renderSubTexture);
+		m_SkinningEditor.SetContext(robotSubTexture);
 
-		m_Scene->OnPlay();
+		IG::LoadLayout("IG.IG");
+
+		glm::vec3 tmpVal;
+		Property<glm::vec3> prop(tmpVal);
+		prop.AddKeyFrame(glm::vec3(0.5f), 2.0f);
 	}	
-
-
 
 	void EditorLayer::OnDetach()
 	{
-		Renderer::Shutdown();
-		m_AssetManager.Serialize();
-		m_Scene->OnStop();
+		AssetSerializer::SerializeAsset(m_Scene);		
 	}
 	void EditorLayer::OnUpdate(Timestep ts)
 	{
 		Renderer::Clear();
 		Renderer::SetClearColor({ 0.1f,0.1f,0.1f,0.1f });
 		m_ScenePanel.OnUpdate(ts);
-		m_Scene->OnUpdate(ts);
-		m_Scene->OnRenderEditor(m_ScenePanel.GetEditorCamera());	
+		m_InspectorPanel.OnUpdate();
+		m_SceneHierarchyPanel.OnUpdate();
+		m_SkinningEditor.OnUpdate(ts);
+
+		if (m_Scene->GetState() == SceneState::Play)
+		{
+			m_Scene->OnUpdate(ts);
+			m_Scene->OnRender();
+		}
+		else
+		{
+			m_Scene->OnRenderEditor(m_ScenePanel.GetEditorCamera());
+		}
+
 		if ((uint32_t)m_Scene->GetSelectedEntity() != (uint32_t)m_SelectedEntity)
 		{
 			m_SelectedEntity = m_Scene->GetSelectedEntity();
 			m_InspectorPanel.SetContext(m_SelectedEntity);
 		}
-
-		//if (m_TestEntity.HasComponent<BoxColliderComponent>())
-		//{
-		//	float speed = 0.05f;
-		//	auto body = m_TestEntity.GetComponent<BoxColliderComponent>().Body;
-		//	if (Input::IsKeyPressed(KeyCode::KEY_LEFT))
-		//		body->m_LinearVelocity.x += -speed;
-		//	if (Input::IsKeyPressed(KeyCode::KEY_RIGHT))
-		//		body->m_LinearVelocity.x += speed;
-		//	if (Input::IsKeyPressed(KeyCode::KEY_UP))
-		//		body->m_LinearVelocity.y += speed;
-		//	if (Input::IsKeyPressed(KeyCode::KEY_DOWN))
-		//		body->m_LinearVelocity.y += -speed;
-		//}
-		//if (m_NewEntity.HasComponent<BoxColliderComponent>())
-		//{
-		//	float speed = 0.05f;
-		//	auto body = m_NewEntity.GetComponent<BoxColliderComponent>().Body;
-		//	if (Input::IsKeyPressed(KeyCode::KEY_A))
-		//		body->m_LinearVelocity.x += -speed;
-		//	if (Input::IsKeyPressed(KeyCode::KEY_D))
-		//		body->m_LinearVelocity.x += speed;
-		//	if (Input::IsKeyPressed(KeyCode::KEY_W))
-		//		body->m_LinearVelocity.y += speed;
-		//	if (Input::IsKeyPressed(KeyCode::KEY_S))
-		//		body->m_LinearVelocity.y += -speed;
-		//}
 	}
 
 	void EditorLayer::OnEvent(Event& event)
@@ -206,13 +126,28 @@ namespace XYZ {
 		dispatcher.Dispatch<KeyPressedEvent>(Hook(&EditorLayer::onKeyPress, this));
 		m_SceneHierarchyPanel.OnEvent(event);
 		m_ScenePanel.OnEvent(event);
+		m_SkinningEditor.OnEvent(event);	
 	}
 
 	void EditorLayer::OnInGuiRender()
 	{
-		m_SceneHierarchyPanel.OnInGuiRender();
-		m_InspectorPanel.OnInGuiRender();
-		m_ScenePanel.OnInGuiRender();
+		//m_SceneHierarchyPanel.OnInGuiRender();
+		//m_InspectorPanel.OnInGuiRender();
+		//m_ScenePanel.OnInGuiRender();
+		//m_SkinningEditorPanel.OnInGuiRender();
+
+		//IG::BeginUI(0);
+		//
+		//IG::UI<IGWindow>(m_Handles[0]);
+
+		//IG::UI<IGCheckbox>(m_Handles[1]);
+		//IG::UI<IGCheckbox>(m_Handles[2]);
+		//IG::UI<IGCheckbox>(m_Handles[3]);
+		//IG::UI<IGCheckbox>(m_Handles[4]);
+		//IG::UI<IGCheckbox>(m_Handles[5]);
+		//IG::UI<IGCheckbox>(m_Handles[6]);
+		//IG::UI<IGCheckbox>(m_Handles[7]);
+		//IG::EndUI();
 	}
 
 	

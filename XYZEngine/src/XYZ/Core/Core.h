@@ -2,12 +2,16 @@
 #include <memory>
 #include <functional>
 
+
+
 #define _AMD64_
 
 #ifdef _WIN32
 
 #ifdef _WIN64
 	#define XYZ_PLATFORM_WINDOWS
+#elif __linux__
+	#define XYZ_PLATFORM_LINUX
 #else
 	#error "x86 Builds are not supported!"
 #endif
@@ -15,24 +19,38 @@
 #endif
 
 #ifdef XYZ_DEBUG
-#define XYZ_ENABLE_ASSERTS
+	#define XYZ_ENABLE_ASSERTS
 #endif
+
 
 #define BIND_EVENT_FN(x) std::bind(&Application::x, this, std::placeholders::_1)
 
 #define BIT(x) (1 << x)
 #define IS_SET(x, flag) ( x & flag )
 
+
 #ifdef XYZ_ENABLE_ASSERTS
-#define XYZ_ASSERT(x, ...) { if(!(x)) { XYZ_LOG_ERR("Assertion Failed: ", __VA_ARGS__ ); __debugbreak(); } }
+
+//#ifdef _MSC_VER
+//#define DEBUG_BREAK __debugbreak()
+//#elif __GNUC__
+#include <signal.h>
+#define DEBUG_BREAK raise(0); 
+//#endif
+
+#define XYZ_ASSERT(x, ...) { if(!(x)) { XYZ_LOG_ERR("Assertion Failed: ", __VA_ARGS__ ); DEBUG_BREAK; } }
 #else
 #define XYZ_ASSERT(x, ...) 
 #endif
 
 
+
 #ifndef __FUNCTION__
 #define __FUNCTION__ "Function:"
 #endif
+
+
+
 
 
 namespace XYZ {

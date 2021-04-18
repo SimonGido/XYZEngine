@@ -297,14 +297,13 @@ namespace XYZ {
 	}
 
 
-
 	void OpenGLShader::SetFloat(const std::string& name, float value)
 	{
 		Renderer::Submit([=]() {
 			auto location = glGetUniformLocation(m_RendererID, name.c_str());
 			XYZ_ASSERT(location != -1, "Uniform ", name, " does not exist");
 			uploadFloat(location, value);
-			});
+		});
 	}
 
 	void OpenGLShader::SetFloat2(const std::string& name, const glm::vec2& value)
@@ -415,9 +414,10 @@ namespace XYZ {
 		m_ShaderSources = preProcess(source);
 		parse();
 
-		Renderer::Submit([=]() {
-			compileAndUpload();
-			resolveUniforms();
+		Ref<OpenGLShader> instance = this;
+		Renderer::Submit([instance]() mutable {
+			instance->compileAndUpload();
+			instance->resolveUniforms();
 		});
 	}
 

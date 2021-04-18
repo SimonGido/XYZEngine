@@ -1,6 +1,6 @@
 #pragma once
 
-#include "XYZ/Core/Ref.h"
+#include "XYZ/Asset/Asset.h"
 #include "XYZ/Utils/DataStructures/ByteBuffer.h"
 
 #include <unordered_map>
@@ -63,7 +63,7 @@ namespace XYZ {
 		uint32_t					Count = 0;
 	};
 
-	class Shader : public RefCount
+	class Shader : public Asset
 	{
 	public:
 		~Shader() = default;
@@ -98,10 +98,8 @@ namespace XYZ {
 		static Ref<Shader> Create(const std::string& name, const std::string& path);
 	};
 
-
-	class ShaderLibrary
+	class ShaderLibrary : public RefCount
 	{
-		std::unordered_map<std::string, Ref<Shader>> m_Shaders;
 	public:
 		void Add(const Ref<Shader>& shader);
 		//void Add(const std::string& name, const Ref<Shader>& shader);
@@ -110,6 +108,9 @@ namespace XYZ {
 		Ref<Shader> Load(const std::string& name, const std::string& path);
 		Ref<Shader> Get(const std::string& name);
 		bool Exists(const std::string& name);
+
+	private:
+		std::unordered_map<std::string, Ref<Shader>> m_Shaders;
 	};
 
 }

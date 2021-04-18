@@ -4,7 +4,6 @@
 
 #include "XYZ/ECS/Entity.h"
 #include "XYZ/Scene/Components.h"
-#include "XYZ/Scene/Serializer.h"
 #include "XYZ/Core/Application.h"
 #include "XYZ/Core/Input.h"
 #include "XYZ/Core/KeyCodes.h"
@@ -154,12 +153,6 @@ namespace XYZ {
 			type["Get"] = &Ref<SubTexture>::Get;
 		}
 
-		// AnimationController
-		{
-			sol::usertype<AnimationController> type = m_L.new_usertype<AnimationController>("AnimationController");
-			type["TransitionTo"] = &AnimationController::TransitionTo;
-		}
-
 
 		// Transform
 		{
@@ -179,7 +172,7 @@ namespace XYZ {
 		// AnimatorComponent
 		{
 			sol::usertype <AnimatorComponent> type = m_L.new_usertype<AnimatorComponent>("AnimatorComponent");
-			type["Controller"] = &AnimatorComponent::Controller;
+			
 		}
 
 		// LuaEntity

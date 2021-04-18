@@ -2,13 +2,14 @@
 #include "Material.h"
 
 
+
 namespace XYZ {
 	
 	Material::Material(const Ref<Shader>& shader)
 	{
 		m_Shader = shader;
-		m_VSUniformBuffer.Allocate(shader->GetVSUniformList().Size);
-		m_FSUniformBuffer.Allocate(shader->GetFSUniformList().Size);
+		m_VSUniformBuffer.Allocate(m_Shader->GetVSUniformList().Size);
+		m_FSUniformBuffer.Allocate(m_Shader->GetFSUniformList().Size);
 
 		m_Shader->AddReloadCallback(std::bind(&Material::onShaderReload, this));
 		m_Flags = m_Shader->GetRendererID();

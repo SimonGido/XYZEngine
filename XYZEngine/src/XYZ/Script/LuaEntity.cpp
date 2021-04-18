@@ -20,7 +20,7 @@ namespace XYZ {
 	LuaEntity LuaEntity::FindEntity(const std::string& name)
 	{
 		LuaEntity entity;
-		entity.m_Entity = { s_Scene->GetECS().FindEntity<SceneTagComponent>({ name }), s_Scene.Raw() };
+		entity.m_Entity = { s_Scene->m_ECS.FindEntity<SceneTagComponent>({ name }), s_Scene.Raw() };
 		return entity;
 	}
 

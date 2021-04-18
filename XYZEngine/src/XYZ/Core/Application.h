@@ -1,7 +1,6 @@
 #pragma once
 #include "Window.h"
 #include "LayerStack.h"
-#include "XYZ/Gui/GuiLayer.h"
 #include "XYZ/InGui/InGuiLayer.h"
 
 
@@ -54,12 +53,6 @@ namespace XYZ {
 
 		bool OnEvent(Event& event);
 
-		GuiLayer* GetGuiLayer() { return m_GuiLayer; }
-		
-		std::string OpenFile(const char* filter = "All\0*.*\0") const;
-		std::string SaveFile(const char* filter = "All\0*.*\0") const;
-		std::string CreateNewFile(const char* filter = "All\0*.*\0") const;
-		std::string OpenFolder() const;
 		/**
 		* Return handler of the main Window
 		* @param[out] reference to the Window
@@ -86,7 +79,6 @@ namespace XYZ {
 
 	private:
 		LayerStack m_LayerStack;
-		GuiLayer* m_GuiLayer;
 		InGuiLayer* m_InGuiLayer;
 
 		std::unique_ptr<Window> m_Window;

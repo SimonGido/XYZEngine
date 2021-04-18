@@ -23,38 +23,35 @@
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Renderer/RenderTexture.h"
 #include "XYZ/Renderer/Font.h"
-
 #include "XYZ/Renderer/Framebuffer.h"
 #include "XYZ/Renderer/SubTexture.h"
+#include "XYZ/Renderer/Animation.h"
+
 
 //-----Scene-----//
 #include "XYZ/Scene/SceneCamera.h"
-#include "XYZ/Scene/AssetManager.h"
-#include "XYZ/Scene/Animation.h"
 #include "XYZ/Scene/SceneEntity.h"
 #include "XYZ/Scene/Scene.h"
 
 
-
 //---------Editor-----------//
 #include "XYZ/Editor/EditorCamera.h"
+#include "XYZ/Editor/Panels/ScenePanel.h"
+#include "XYZ/Editor/Panels/SceneHierarchyPanel.h"
+#include "XYZ/Editor/Panels/InspectorPanel.h"
+#include "XYZ/Editor/Panels/SkinningEditorPanel.h"
+#include "XYZ/Editor/SpriteEditor/SkinningEditor.h"
 
 //------ECS-----//
 #include "XYZ/ECS/ECSManager.h"
 #include "XYZ/ECS/Entity.h"
+#include "XYZ/ECS/Serialization/ECSSerializer.h"
 
 
 //-----Audio-----//
 #include "XYZ/Audio/Audio.h"
 
 
-//------UI-------//
-#include "XYZ/Gui/Text.h"
-#include "XYZ/Gui/Button.h"
-#include "XYZ/Gui/Checkbox.h"
-
-
-#include "XYZ/FSM/StateMachine.h"
 
 //------Scripting-------//
 #include "XYZ/Script/ScriptEngine.h"
@@ -62,13 +59,11 @@
 #include "XYZ/Script/LuaEntity.h"
 
 //------Utils-------//
-#include "XYZ/Utils/DataStructures/HashGrid2D.h"
 #include "XYZ/Utils/DataStructures/ByteBuffer.h"
-#include "XYZ/Utils/DataStructures/DynamicTree.h"
+#include "XYZ/Utils/DataStructures/MemoryPool.h"
 #include "XYZ/Utils/Math/Ray.h"
 
 
-#include "XYZ/Utils/DataStructures/Graph.h"
 
 //------Net---------//
 #include "XYZ/Net/NetServer.h"
@@ -76,8 +71,13 @@
 #include "XYZ/Net/NetConnection.h"
 
 
-
+//------InGui---------//
 #include "XYZ/InGui/InGui.h"
 #include "XYZ/InGui/InGuiDockspace.h"
 
+//------Asset---------//
+#include "XYZ/Asset/AssetManager.h"
 
+
+
+#include "XYZ/IG/IG.h"

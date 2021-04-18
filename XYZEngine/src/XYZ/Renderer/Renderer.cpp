@@ -3,14 +3,13 @@
 
 #include "Renderer2D.h"
 #include "SceneRenderer.h"
-#include "GuiRenderer.h"
 
 namespace XYZ {
 
 
 	struct RendererData
 	{
-		RenderCommandQueue CommandQueue;
+		RenderCommandQueue CommandQueue[RenderQueueType::NumTypes];
 		Ref<RenderPass> ActiveRenderPass;
 		Ref<VertexArray> FullscreenQuadVertexArray;
 		Ref<VertexBuffer> FullscreenQuadVertexBuffer;
@@ -18,6 +17,7 @@ namespace XYZ {
 
 	};
 
+	uint32_t Renderer::s_ActiveQueue = RenderQueueType::Default;
 	static RendererData s_Data;
 
 	static void SetupFullscreenQuad()
@@ -64,7 +64,6 @@ namespace XYZ {
 		RendererAPI::Init();
 		Renderer2D::Init();
 		SceneRenderer::Init();
-		GuiRenderer::Init();
 
 		SetupFullscreenQuad();
 	}
@@ -72,6 +71,11 @@ namespace XYZ {
 	void Renderer::Shutdown()
 	{
 		Renderer2D::Shutdown();
+	}
+
+	void Renderer::SetActiveQueue(uint32_t queueType)
+	{
+		s_ActiveQueue = queueType;
 	}
 
 	void Renderer::Clear()
@@ -93,6 +97,20 @@ namespace XYZ {
 		Renderer::Submit([=]() {
 			RendererAPI::SetViewport(x, y, width, height);
 		});
+	}
+
+	void Renderer::SetLineThickness(float thickness)
+	{
+		Renderer::Submit([=]() {
+			RendererAPI::SetLineThickness(thickness);
+			});
+	}
+
+	void Renderer::SetPointSize(float size)
+	{
+		Renderer::Submit([=]() {
+			RendererAPI::SetPointSize(size);
+			});
 	}
 
 	void Renderer::SetDepthTest(bool val)
@@ -125,11 +143,18 @@ namespace XYZ {
 			});
 	}
 
-	void Renderer::DrawIndexed(PrimitiveType type, uint32_t indexCount)
+	void Renderer::DrawArrays(PrimitiveType type, uint32_t count)
+	{
+		Renderer::Submit([=]() {
+			RendererAPI::DrawArrays(type, count);
+			});
+	}
+
+	void Renderer::DrawIndexed(PrimitiveType type, uint32_t indexCount, uint32_t queueType)
 	{
 		Renderer::Submit([=]() {
 			RendererAPI::DrawIndexed(type, indexCount);
-		});
+		}, queueType);
 	}
 
 	void Renderer::DrawInstanced(const Ref<VertexArray>& vertexArray, uint32_t count, uint32_t offset)
@@ -194,11 +219,13 @@ namespace XYZ {
 
 	void Renderer::WaitAndRender()
 	{
-		s_Data.CommandQueue.Execute();
+		s_Data.CommandQueue[Default].Execute();
+		s_Data.CommandQueue[Overlay].Execute();
 	}
 
 	RenderCommandQueue& Renderer::GetRenderCommandQueue()
 	{
-		return s_Data.CommandQueue;
+		XYZ_ASSERT(s_ActiveQueue < NumTypes, "");
+		return s_Data.CommandQueue[s_ActiveQueue];
 	}
 }
