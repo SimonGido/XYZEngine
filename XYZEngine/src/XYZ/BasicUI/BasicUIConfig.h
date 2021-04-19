@@ -36,6 +36,7 @@ namespace XYZ {
 		};
 		const Ref<SubTexture>& GetSubTexture(uint32_t index) const {return m_SubTextures[index]; }
 		const glm::vec4& GetColor(uint32_t index) const {return m_Colors[index]; }
+		const Ref<Font>& GetFont() const {return m_Font;}
 	private:
 		Ref<Material>   m_Material;
 		Ref<Texture2D>  m_Texture;

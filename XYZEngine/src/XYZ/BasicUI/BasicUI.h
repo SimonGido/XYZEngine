@@ -16,13 +16,18 @@ namespace XYZ {
 
 	struct bUIContext
 	{
-		bUIConfig   Config;
-		bUIData	    Data;
-		bUIRenderer Renderer;
-		bUIEditData EditData;
+		bUIConfig    Config;
+		bUIData		 Data;
+		bUIRenderer  Renderer;
+		bUIEditData  EditData;
 
 		glm::vec2   ViewportSize;
-		std::unordered_map<std::string, bUIElement*> ElementMap;
+	};
+
+	struct bUILayout
+	{
+		float SpacingX, SpacingY;
+		float LeftOffset, RightOffset, TopOffset;
 	};
 
 	class bUI
@@ -33,6 +38,7 @@ namespace XYZ {
 		static void Update();
 
 		static void OnEvent(Event& event);
+		static void SetupLayout(const std::string& uiName, const std::string& name, const bUILayout& layout);
 
 		static bUIConfig& GetConfig();
 		static const bUIContext& GetContext();

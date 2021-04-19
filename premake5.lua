@@ -170,12 +170,20 @@ project "XYZEditor"
 				runtime "Debug"
 				symbols "on"
 		
+		postbuildcommands 
+		{
+			'{COPY} "../XYZEngine/vendor/mono/bin/Debug/mono-2.0-sgen.dll" "%{cfg.targetdir}"'
+		}
 		
 		filter "configurations:Release"
 				defines "XYZ_RELEASE"
 				runtime "Release"
 				optimize "on"
-
+		
+		postbuildcommands 
+		{
+			'{COPY} "../XYZEngine/vendor/mono/bin/Release/mono-2.0-sgen.dll" "%{cfg.targetdir}"'
+		}
 
 project "XYZSandbox"
 		location "XYZSandbox"
@@ -226,6 +234,11 @@ project "XYZSandbox"
 				defines "XYZ_RELEASE"
 				runtime "Release"
 				optimize "on"
+
+		postbuildcommands 
+		{
+			'{COPY} "../XYZEngine/vendor/mono/bin/Release/mono-2.0-sgen.dll" "%{cfg.targetdir}"'
+		}
 
 project "XYZServer"
 		location "XYZServer"

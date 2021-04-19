@@ -9,13 +9,15 @@ namespace XYZ {
 	{
 	public:
 		static void Load(const char* filepath);
-
+		static void Save(const std::string& name, const char* filepath);
 
 	private:
 		static void findSize(size_t& size, const YAML::Node& data);
-		static void loadUIElements(bUIElement* parent, const glm::vec2& aspect, const YAML::Node& data);
-
+		static void loadUIElements(bUIAllocator* allocator, bUIElement* parent, const glm::vec2& aspect, const YAML::Node& data);
+		
 		static bUIElement* createElement(
+			bUIAllocator* allocator, 
+			bUIElement* parent,
 			const glm::vec2& coords,
 			const glm::vec2& size,
 			const glm::vec4& color,

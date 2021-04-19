@@ -43,7 +43,7 @@ namespace XYZ {
             float tmax = glm::min(glm::min(glm::max(t1, t2), glm::max(t3, t4)), glm::max(t5, t6));
 
             // if tmax < 0, ray (line) is intersecting AABB, but the whole AABB is behind us
-            if (tmax < 0)
+            if (tmax < 0.0f)
             {
                 return false;
             }
@@ -62,7 +62,7 @@ namespace XYZ {
             glm::vec3 E2 = C - A;
             glm::vec3 N = cross(E1, E2);
             float det = -glm::dot(Direction, N);
-            float invdet = 1.0 / det;
+            float invdet = 1.0f / det;
             glm::vec3 AO = Origin - A;
             glm::vec3 DAO = glm::cross(AO, Direction);
             float u = glm::dot(E2, DAO) * invdet;

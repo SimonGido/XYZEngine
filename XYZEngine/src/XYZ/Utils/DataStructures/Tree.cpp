@@ -261,6 +261,27 @@ namespace XYZ {
                 return;
         }
     }
+    void Tree::TraverseNodeSiblings(int32_t node, const std::function<bool(void*, void*)>& callback) const
+    {
+        std::stack<int32_t> stack;
+        stack.push(node);
+        while (!stack.empty())
+        {
+            int32_t tmp = stack.top();
+            stack.pop();
+
+            const TreeNode& node = m_Nodes[tmp];        
+            if (node.NextSibling != TreeNode::sc_Invalid)
+                stack.push(node.NextSibling);
+
+            void* parentData = nullptr;
+            void* data = node.Data;
+            if (node.Parent != TreeNode::sc_Invalid)
+                parentData = m_Nodes[node.Parent].Data;
+            if (callback(parentData, data))
+                return;
+        }
+    }
     void Tree::TraverseNodeChildren(int32_t node, const std::function<bool(void*, void*)>& callback) const
     { 
         uint32_t child = m_Nodes[node].FirstChild;

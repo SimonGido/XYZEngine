@@ -8,7 +8,7 @@ namespace XYZ {
 		m_Material = Ref<XYZ::Material>::Create(Shader::Create("Assets/Shaders/InGuiShader.glsl"));
 		m_Material->Set("u_Color", glm::vec4(2.0f));
 
-		m_Colors[HighlightColor] = { 1.8f, 0.8f, 2.1, 1.0f };
+		m_Colors[HighlightColor] = { 1.0f, 1.9f, 2.1, 1.0f };
 	}
 	void bUIConfig::SetTexture(const Ref<Texture2D>& texture)
 	{

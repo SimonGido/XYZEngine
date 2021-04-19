@@ -23,6 +23,8 @@ namespace XYZ {
 		Label(label),
 		Name(name),
 		Parent(nullptr),
+		Visible(true),
+		ChildrenVisible(true),
 		Type(type)
 	{
 	}
@@ -33,6 +35,14 @@ namespace XYZ {
 			return Parent->GetAbsolutePosition() + Coords;
 		}
 		return Coords;
+	}
+	uint32_t bUIElement::depth()
+	{
+		if (Parent)
+		{
+			return Parent->depth() + 1;
+		}
+		return 0;
 	}
 	bUIButton::bUIButton(const glm::vec2& coords, const glm::vec2& size, const glm::vec4& color, const std::string& label, const std::string& name, bUIElementType type)
 		:
@@ -85,5 +95,40 @@ namespace XYZ {
 		:
 		bUIElement(coords, size, color,  label, name, type)
 	{
+	}
+	void bUIGroup::PushQuads(bUIRenderer& renderer)
+	{
+		renderer.Submit<bUIGroup>(
+			*this, 
+			bUI::GetContext().Config.GetSubTexture(bUIConfig::Button), 
+			bUI::GetContext().Config.GetSubTexture(bUIConfig::MinimizeButton)
+		);
+	}
+	bool bUIGroup::OnMouseMoved(const glm::vec2& mousePosition)
+	{
+		if (Helper::Collide(GetAbsolutePosition(), {Size.x, ButtonSize.y}, mousePosition))
+		{
+			ActiveColor = bUI::GetConfig().GetColor(bUIConfig::HighlightColor);
+			for (auto& callback : Callbacks)
+				callback(bUICallbackType::Hoover);
+			return true;
+		}
+		ActiveColor = Color;
+		return false;
+	}
+	bool bUIGroup::OnLeftMousePressed(const glm::vec2& mousePosition)
+	{
+		if (Helper::Collide(GetAbsolutePosition(), ButtonSize, mousePosition))
+		{
+			ChildrenVisible = !ChildrenVisible;
+			for (auto& callback : Callbacks)
+				callback(bUICallbackType::Press);
+			return true;
+		}
+		return false;
+	}
+	bool bUIGroup::OnRightMousePressed(const glm::vec2& mousePosition)
+	{
+		return Helper::Collide(GetAbsolutePosition(), { Size.x, ButtonSize.y } , mousePosition);
 	}
 }

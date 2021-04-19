@@ -1,0 +1,39 @@
+Size: [1920, 1017]
+bUIElements:
+  - Coords: [50, 50]
+    Size: [400, 300]
+    Color: [1, 1, 1, 0.400000006]
+    Label: Test Group
+    Name: Test Havkac
+    Type: 3
+    bUIElements:
+      - Coords: [25, 35]
+        Size: [50, 50]
+        Color: [1, 1, 1, 1]
+        Label: Test Button
+        Name: Kravicka
+        Type: 0
+      - Coords: [25, 95]
+        Size: [50, 50]
+        Color: [1, 1, 1, 1]
+        Label: Test Button
+        Name: Kravicka
+        Type: 0
+      - Coords: [25, 95]
+        Size: [50, 50]
+        Color: [1, 1, 1, 1]
+        Label: Test Button
+        Name: Kravicka
+        Type: 0
+      - Coords: [25, 95]
+        Size: [50, 50]
+        Color: [1, 1, 1, 1]
+        Label: Test Button
+        Name: Kravicka
+        Type: 0
+  - Coords: [150.970001, 150.5]
+    Size: [80.0299988, 50.0499992]
+    Color: [1, 1, 1, 1]
+    Label: Test Button
+    Name: Test Name
+    Type: 0

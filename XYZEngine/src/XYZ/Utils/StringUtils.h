@@ -2,6 +2,7 @@
 
 namespace XYZ::Utils {
 	std::string GetFilename(const std::string& filepath);
+	std::string GetFilenameWithoutExtension(const std::string& filepath);
 	std::string GetExtension(const std::string& filename);
 	std::string RemoveExtension(const std::string& filename);
 	bool StartsWith(const std::string& string, const std::string& start);

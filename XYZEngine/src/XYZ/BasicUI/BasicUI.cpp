@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "BasicUI.h"
+#include "BasicUIInput.h"
+#include "BasicUIHelper.h"
 
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/Renderer.h"
@@ -26,10 +28,8 @@ namespace XYZ {
 	void bUI::Update()
 	{
 		s_Context->Renderer.Begin();
-		for (size_t i = 0; i < s_Context->Data.Size(); ++i)
-		{
-			s_Context->Data.GetElement<bUIElement>(i)->PushQuads(s_Context->Renderer);
-		}
+		s_Context->Data.BuildMesh(s_Context->Renderer);
+
 		glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f));
 		viewMatrix = glm::inverse(viewMatrix);
 		Renderer2D::BeginScene(glm::ortho(0.0f, s_Context->ViewportSize.x, s_Context->ViewportSize.y, 0.0f) * viewMatrix);
@@ -49,6 +49,13 @@ namespace XYZ {
 		dispatcher.Dispatch<MouseButtonReleaseEvent>(&onMouseButtonRelease);
 		dispatcher.Dispatch<MouseMovedEvent>(&onMouseMove);
 	}
+	void bUI::SetupLayout(const std::string& uiName, const std::string& name, const bUILayout& layout)
+	{
+		bUIAllocator& allocator = s_Context->Data.GetAllocator(uiName);
+		bUIElement* element = allocator.GetElement<bUIElement>(name);
+		bUIHelper::ResolvePosition(element->ID, allocator.m_Tree, layout);
+	}
+	
 	bUIConfig& bUI::GetConfig()
 	{
 		return s_Context->Config;
@@ -65,53 +72,15 @@ namespace XYZ {
 	}
 	bool bUI::onMouseButtonPress(MouseButtonPressEvent& event)
 	{
-		auto [mx, my] = Input::GetMousePosition();
-		glm::vec2 mousePosition = { mx , my };
-		if (event.IsButtonPressed(MouseCode::MOUSE_BUTTON_LEFT))
-		{
-			for (size_t i = 0; i < s_Context->Data.Size(); ++i)
-			{
-				if (s_Context->Data.GetElement<bUIElement>(i)->OnLeftMousePressed(mousePosition))
-					return true;
-			}
-		}
-		else if (event.IsButtonPressed(MouseCode::MOUSE_BUTTON_RIGHT))
-		{
-			for (size_t i = 0; i < s_Context->Data.Size(); ++i)
-			{
-				bUIElement* element = s_Context->Data.GetElement<bUIElement>(i);
-				if (element->OnRightMousePressed(mousePosition))
-				{
-					s_Context->EditData.Element = element;
-					s_Context->EditData.MouseOffset = mousePosition - element->Coords;
-					return true;
-				}
-			}
-		}
-		return false;
+		return bUIInput::OnMouseButtonPress(event, s_Context->EditData, s_Context->Data);
 	}
 	bool bUI::onMouseButtonRelease(MouseButtonReleaseEvent& event)
 	{
-		if (event.IsButtonReleased(MouseCode::MOUSE_BUTTON_RIGHT))
-		{
-			s_Context->EditData.Element = nullptr;
-		}
-		return false;
+		return bUIInput::OnMouseButtonRelease(event, s_Context->EditData, s_Context->Data);
 	}
 	bool bUI::onMouseMove(MouseMovedEvent& event)
 	{
-		auto [mx, my] = Input::GetMousePosition();
-		glm::vec2 mousePosition = { mx , my };
-		if (s_Context->EditData.Element)
-		{
-			s_Context->EditData.Element->Coords = mousePosition - s_Context->EditData.MouseOffset;
-		}
-		for (size_t i = 0; i < s_Context->Data.Size(); ++i)
-		{
-			if (s_Context->Data.GetElement<bUIElement>(i)->OnMouseMoved(mousePosition))
-				return true;
-		}
-		return false;
+		return bUIInput::OnMouseMove(event, s_Context->EditData, s_Context->Data);
 	}
 	bUIContext& bUI::getContext()
 	{

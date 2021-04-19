@@ -12,6 +12,13 @@ namespace XYZ::Utils {
 		return "";
 	}
 
+	std::string GetFilenameWithoutExtension(const std::string& filepath)
+	{
+		size_t offset = filepath.find_last_of("/\\") + 1;
+		size_t count = filepath.find_last_of('.') - offset;
+		return filepath.substr(offset, count);
+	}
+
 	std::string GetExtension(const std::string& filename)
 	{
 		std::vector<std::string> parts = SplitString(filename, '.');

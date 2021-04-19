@@ -1,92 +1,62 @@
 #include "stdafx.h"
 #include "BasicUIData.h"
 
+#include "BasicUI.h"
+
+#include "XYZ/Core/Input.h"
+
 namespace XYZ {
-	bUIData::bUIData()
-		:
-		m_Size(0),
-		m_Capacity(0),
-		m_Data(nullptr)
+	bUIAllocator& bUIData::CreateAllocator(const std::string& name, size_t size)
 	{
+		auto it = m_AllocatorMap.find(name);
+		XYZ_ASSERT(it == m_AllocatorMap.end(), "Allocator with name ", name, " already exists");
+		m_Allocators.emplace_back(size);
+		m_AllocatorMap[name] = m_Allocators.size() - 1;
+		return m_Allocators.back();
 	}
-	bUIData::bUIData(size_t capacity)
-		:
-		m_Size(0),
-		m_Capacity(capacity)
+	void bUIData::BuildMesh(bUIRenderer& renderer)
 	{
-		m_Data = new uint8_t[capacity];
-	}
-	bUIData::~bUIData()
-	{
-		if (m_Data)
-		{
-			size_t offset = 0;
-			for (Element& element : m_Elements)
-				destroy(element.Offset);
+		for (bUIAllocator& allocator : m_Allocators)
+		{	
+			Tree& tree = allocator.m_Tree;
+			tree.TraverseNodeSiblings(tree.GetRoot(), [&](void* parent, void* child)->bool {
 
-			delete[]m_Data;
+				bUIElement* childElement = static_cast<bUIElement*>(child);
+				if (childElement->Visible)
+					buildMesh(renderer, allocator, childElement);
+				return false;
+			});		
 		}
 	}
-
-	void bUIData::Reset()
+	bUIAllocator& bUIData::GetAllocator(const std::string& name)
 	{
-		if (m_Data)
+		auto it = m_AllocatorMap.find(name);
+		XYZ_ASSERT(it != m_AllocatorMap.end(), "Allocator with name ", name, " already exists");
+		return m_Allocators[it->second];
+	}
+	const bUIAllocator& bUIData::GetAllocator(const std::string& name) const
+	{
+		auto it = m_AllocatorMap.find(name);
+		XYZ_ASSERT(it != m_AllocatorMap.end(), "Allocator with name ", name, " already exists");
+		return m_Allocators[it->second];
+	}
+	bool bUIData::Exist(const std::string& name) const
+	{
+		return (m_AllocatorMap.find(name) != m_AllocatorMap.end());
+	}
+	void bUIData::buildMesh(bUIRenderer& renderer, bUIAllocator& allocator, bUIElement* element)
+	{
+		element->PushQuads(renderer);
+		Tree& tree = allocator.m_Tree;
+		if (element->ChildrenVisible)
 		{
-			for (Element& element : m_Elements)
-				destroy(element.Offset);
+			tree.TraverseNodeChildren(element->ID, [&](void* parent, void* child)->bool {
 
-			m_Elements.clear();
-			m_Size = 0;
-		}	
-	}
-
-	void bUIData::Reserve(size_t size)
-	{
-		Reset();
-		m_Data = new uint8_t[size];
-		m_Capacity = size;
-	}
-	
-	void bUIData::resize(size_t minimalSize)
-	{
-		m_Capacity *= sc_CapacityMultiplier;
-		if (m_Capacity < minimalSize)
-			m_Capacity = minimalSize * sc_CapacityMultiplier;
-
-		uint8_t* tmp = new uint8_t[m_Capacity];
-		for (Element element : m_Elements)
-		{
-			copy(element.Type, element.Offset, tmp);
-			destroy(element.Offset);
-		}
-		if (m_Data)
-			delete[]m_Data;
-		m_Data = tmp;
-	}
-
-	void bUIData::destroy(size_t offset)
-	{
-		bUIElement* tmp = reinterpret_cast<bUIElement*>(&m_Data[offset]);
-		tmp->~bUIElement();
-	}
-	void bUIData::copy(bUIElementType type, size_t offset, uint8_t* buffer)
-	{
-		switch (type)
-		{
-		case XYZ::bUIElementType::Button:
-			new(&buffer[offset])bUIButton(*reinterpret_cast<bUIButton*>(&m_Data[offset]));
-			break;
-		case XYZ::bUIElementType::Checkbox:
-			new(&buffer[offset])bUICheckbox(*reinterpret_cast<bUICheckbox*>(&m_Data[offset]));
-			break;
-		case XYZ::bUIElementType::Slider:
-			new(&buffer[offset])bUISlider(*reinterpret_cast<bUISlider*>(&m_Data[offset]));
-			break;
-		case XYZ::bUIElementType::Group:
-			new(&buffer[offset])bUIGroup(*reinterpret_cast<bUIGroup*>(&m_Data[offset]));
-			break;
-		default:
-			break;
+				bUIElement* childElement = static_cast<bUIElement*>(child);
+				if (childElement->Visible)
+					buildMesh(renderer, allocator, childElement);
+				return false;
+			});
 		}
 	}
 }

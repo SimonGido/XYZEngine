@@ -3,6 +3,7 @@
 
 #include "BasicUITypes.h"
 #include "BasicUI.h"
+#include "BasicUIHelper.h"
 
 namespace XYZ {
 	namespace Helper {
@@ -21,36 +22,6 @@ namespace XYZ {
 					textureID,
 				});
 		}
-
-		static glm::vec2 FindTextSize(const char* source, const Ref<Font>& font)
-		{
-			if (!source)
-				return { 0.0f, 0.0f };
-
-			float width = 0.0f;
-			float xCursor = 0.0f;
-			float yCursor = 0.0f;
-
-			uint32_t counter = 0;
-			while (source[counter] != '\0')
-			{
-				auto& character = font->GetCharacter(source[counter]);
-				if (source[counter] == '\n')
-				{
-					width = xCursor;
-					yCursor += font->GetLineHeight();
-					xCursor = 0.0f;
-					counter++;
-					continue;
-				}
-				xCursor += character.XAdvance;
-				counter++;
-			}
-			if (width < xCursor)
-				width = xCursor;
-			return { width, yCursor + font->GetLineHeight() };
-		}
-
 		static void GenerateTextMesh(
 			const char* source,
 			const Ref<Font>& font,
@@ -102,10 +73,26 @@ namespace XYZ {
 		glm::vec2 absolutePosition = element.GetAbsolutePosition();
 		Ref<Font> font = bUI::GetConfig().m_Font;
 		Helper::GenerateQuad(m_Mesh, element.ActiveColor, element.Size, absolutePosition, subTexture, 0);
-		glm::vec2 size = Helper::FindTextSize(element.Label.c_str(), font);
+		glm::vec2 size = bUIHelper::FindTextSize(element.Label.c_str(), font);
 		glm::vec2 textPosition = absolutePosition;
-		textPosition.x += (element.Size.x / 2.0f) - (size.x / 2.0f);
+		textPosition.x += element.Size.x + 2.0f;
 		textPosition.y += (element.Size.y / 2.0f) + (size.y / 2.0f);
+		Helper::GenerateTextMesh(element.Label.c_str(), font, glm::vec4(1.0f), textPosition, m_Mesh, 1);
+	}
+	template <>
+	void bUIRenderer::Submit<bUIGroup>(const bUIGroup& element, const Ref<SubTexture>& subTexture, const Ref<SubTexture>& minimizeSubTexture)
+	{
+		glm::vec2 absolutePosition = element.GetAbsolutePosition();
+		Ref<Font> font = bUI::GetConfig().m_Font;
+		if (element.ChildrenVisible)
+			Helper::GenerateQuad(m_Mesh, element.Color, element.Size, absolutePosition, subTexture, 0);
+		
+		Helper::GenerateQuad(m_Mesh, element.ActiveColor, { element.Size.x, element.ButtonSize.y }, absolutePosition, subTexture, 0);
+		Helper::GenerateQuad(m_Mesh, element.Color, element.ButtonSize, absolutePosition, minimizeSubTexture, 0);
+		glm::vec2 size = bUIHelper::FindTextSize(element.Label.c_str(), font);
+		glm::vec2 textPosition = absolutePosition;
+		textPosition.x += element.ButtonSize.x + 2.0f;
+		textPosition.y += (element.ButtonSize.y / 2.0f) + (size.y / 2.0f);
 		Helper::GenerateTextMesh(element.Label.c_str(), font, glm::vec4(1.0f), textPosition, m_Mesh, 1);
 	}
 	void bUIRenderer::Begin()

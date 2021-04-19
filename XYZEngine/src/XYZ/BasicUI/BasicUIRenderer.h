@@ -32,8 +32,8 @@ namespace XYZ {
 	public:
 		void Begin();
 		
-		template <typename T>
-		void Submit(const T& element, const Ref<SubTexture>& subTexture);
+		template <typename T, typename ...Args>
+		void Submit(const T& element, const Args& ...);
 
 
 		const bUIMesh& GetMesh()const { return m_Mesh; }

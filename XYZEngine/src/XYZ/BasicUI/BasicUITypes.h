@@ -46,9 +46,21 @@ namespace XYZ {
 		std::string			 Label;
 		std::string			 Name;
 		bUIElement*			 Parent;
+		bool				 Visible;
+		bool				 ChildrenVisible;
 		const bUIElementType Type;
 
 		std::vector<bUICallback> Callbacks;
+
+	private:
+		uint32_t depth();
+
+		int32_t ID = -1;
+
+		friend class bUILoader;
+		friend class bUIData;
+		friend class bUI;
+		friend class bUIAllocator;
 	};
 
 	struct bUIButton : public bUIElement
@@ -104,7 +116,13 @@ namespace XYZ {
 			const std::string& name,
 			bUIElementType type
 		);
-		std::vector<bUIElement*> Elements;
+
+		virtual void PushQuads(bUIRenderer& renderer) override;
+		virtual bool OnMouseMoved(const glm::vec2& mousePosition) override;
+		virtual bool OnLeftMousePressed(const glm::vec2& mousePosition) override;
+		virtual bool OnRightMousePressed(const glm::vec2& mousePosition) override;
+
+		glm::vec2 ButtonSize = { 25.0f, 25.0f };
 	};
 
 }

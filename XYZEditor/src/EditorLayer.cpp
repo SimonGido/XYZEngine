@@ -83,7 +83,8 @@ namespace XYZ {
 
 
 		bUI::Init();
-		bUILoader::Load("Test.yaml");
+		bUILoader::Load("Layouts/Test.bui");
+		bUILoader::Save("Test", "Layouts/Tmp.bui");
 
 		Ref<Texture2D> tmpTexture = Texture2D::Create({ TextureWrap::Clamp, TextureParam::Linear, TextureParam::Nearest }, "Assets/Textures/Gui/TexturePack_Dark.png");	
 		Ref<Font> tmpFont = Ref<XYZ::Font>::Create(14, "Assets/Fonts/arial.ttf");
@@ -91,8 +92,12 @@ namespace XYZ {
 		bUI::GetConfig().SetFont(tmpFont);
 
 		float divisor = 8.0f;
-		Ref<SubTexture> tmpSubTexture = Ref<XYZ::SubTexture>::Create(tmpTexture, glm::vec2(0, 0), glm::vec2(tmpTexture->GetWidth() / divisor, tmpTexture->GetHeight() / divisor));		
-		bUI::GetConfig().SetSubTexture(tmpSubTexture, bUIConfig::Button);
+		Ref<SubTexture> buttonSubTexture = Ref<XYZ::SubTexture>::Create(tmpTexture, glm::vec2(0, 0), glm::vec2(tmpTexture->GetWidth() / divisor, tmpTexture->GetHeight() / divisor));		
+		Ref<SubTexture> minimizeSubTexture = Ref<XYZ::SubTexture>::Create(tmpTexture, glm::vec2(1, 3), glm::vec2(tmpTexture->GetWidth() / divisor, tmpTexture->GetHeight() / divisor));
+		bUI::GetConfig().SetSubTexture(buttonSubTexture, bUIConfig::Button);
+		bUI::GetConfig().SetSubTexture(minimizeSubTexture, bUIConfig::MinimizeButton);
+
+		bUI::SetupLayout("Test", "Test Group", { 10.0f, 10.0f, 10.0f, 10.0f, 35.0f });
 	}	
 
 	void EditorLayer::OnDetach()
@@ -141,7 +146,7 @@ namespace XYZ {
 	bool EditorLayer::onWindowResize(WindowResizeEvent& event)
 	{
 		SceneRenderer::SetViewportSize((uint32_t)event.GetWidth(), (uint32_t)event.GetHeight());
-		m_EditorCamera.SetViewportSize((uint32_t)event.GetWidth(), (uint32_t)event.GetHeight());
+		m_EditorCamera.SetViewportSize((float)event.GetWidth(), (float)event.GetHeight());
 		if (m_Scene.Raw())
 			m_Scene->SetViewportSize((uint32_t)event.GetWidth(), (uint32_t)event.GetHeight());
 		return false;
