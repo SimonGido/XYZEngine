@@ -10,7 +10,7 @@ namespace XYZ {
 		Button,
 		Checkbox,
 		Slider,
-		Group,
+		Window,
 		Scrollbox
 	};
 
@@ -122,9 +122,9 @@ namespace XYZ {
 		bool Modified;
 	};
 
-	struct bUIGroup : public bUIElement
+	struct bUIWindow : public bUIElement
 	{
-		bUIGroup(
+		bUIWindow(
 			const glm::vec2& coords,
 			const glm::vec2& size,
 			const glm::vec4& color,
@@ -153,6 +153,7 @@ namespace XYZ {
 		);
 
 		virtual void PushQuads(bUIRenderer& renderer, uint32_t& scissorID) override;
+		virtual void OnUpdate();
 		virtual bool OnMouseMoved(const glm::vec2& mousePosition) override { return false; };
 		virtual bool OnLeftMousePressed(const glm::vec2& mousePosition) override { return false; };
 		virtual bool OnRightMousePressed(const glm::vec2& mousePosition) override { return false; };
@@ -162,6 +163,10 @@ namespace XYZ {
 		glm::vec2 GetAbsoluteScrollPosition() const;
 
 		glm::vec2 Offset;
+
+		float Speed = 5.0f;
+
+		bool FitParent = true;
 	};
 
 }

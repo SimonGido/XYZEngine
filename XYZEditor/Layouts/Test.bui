@@ -5,10 +5,10 @@ bUIElements:
     Color: [1, 1, 1, 0.4]
     Label: Test Group
     Name: Test Havkac
-    Type: Group 
+    Type: Window 
     bUIElements:
-      - Coords: [0, 25]
-        Size: [375.0, 250.0]
+      - Coords: [10, 25]
+        Size: [380.0, 265.0]
         Color: [0.1, 0.1, 0.1, 1]
         Label: ""
         Name: Scrollbox

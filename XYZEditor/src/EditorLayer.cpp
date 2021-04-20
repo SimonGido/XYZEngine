@@ -136,12 +136,13 @@ namespace XYZ {
 	void EditorLayer::OnEvent(Event& event)
 	{			
 		EventDispatcher dispatcher(event);
+		bUI::OnEvent(event);
+
 		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&EditorLayer::onMouseButtonPress, this));
 		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorLayer::onMouseButtonRelease, this));	
 		dispatcher.Dispatch<WindowResizeEvent>(Hook(&EditorLayer::onWindowResize, this));
 		dispatcher.Dispatch<KeyPressedEvent>(Hook(&EditorLayer::onKeyPress, this));
 		m_EditorCamera.OnEvent(event);
-		bUI::OnEvent(event);
 	}
 	
 	bool EditorLayer::onMouseButtonPress(MouseButtonPressEvent& event)

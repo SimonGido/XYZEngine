@@ -17,8 +17,8 @@ namespace XYZ {
 				return sizeof(bUICheckbox);
 			case XYZ::bUIElementType::Slider:
 				return sizeof(bUISlider);
-			case XYZ::bUIElementType::Group:
-				return sizeof(bUIGroup);
+			case XYZ::bUIElementType::Window:
+				return sizeof(bUIWindow);
 			case XYZ::bUIElementType::Scrollbox:
 				return sizeof(bUIScrollbox);
 			default:
@@ -33,8 +33,8 @@ namespace XYZ {
 				return bUIElementType::Checkbox;
 			if (str == "Slider")
 				return bUIElementType::Slider;
-			if (str == "Group")
-				return bUIElementType::Group;
+			if (str == "Window")
+				return bUIElementType::Window;
 			if (str == "Scrollbox")
 				return bUIElementType::Scrollbox;
 			
@@ -51,8 +51,8 @@ namespace XYZ {
 				return "Checkbox";
 			case XYZ::bUIElementType::Slider:
 				return "Slider";
-			case XYZ::bUIElementType::Group:
-				return "Group";
+			case XYZ::bUIElementType::Window:
+				return "Window";
 			case XYZ::bUIElementType::Scrollbox:
 				return "Scrollbox";
 			}
@@ -199,8 +199,8 @@ namespace XYZ {
 		case XYZ::bUIElementType::Slider:
 			element = allocator->CreateElement<bUISlider>(parent,coords, size, color, label, name, type);
 			break;
-		case XYZ::bUIElementType::Group:
-			element = allocator->CreateElement<bUIGroup>(parent, coords, size, color, label, name, type);
+		case XYZ::bUIElementType::Window:
+			element = allocator->CreateElement<bUIWindow>(parent, coords, size, color, label, name, type);
 			break;
 		case XYZ::bUIElementType::Scrollbox:
 			element = allocator->CreateElement<bUIScrollbox>(parent, coords, size, color, label, name, type);

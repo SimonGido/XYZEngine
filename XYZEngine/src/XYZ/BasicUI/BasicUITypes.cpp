@@ -175,23 +175,25 @@ namespace XYZ {
 		Modified = false;
 		return old;
 	}
-	bUIGroup::bUIGroup(const glm::vec2& coords, const glm::vec2& size, const glm::vec4& color,  const std::string& label, const std::string& name, bUIElementType type)
+	bUIWindow::bUIWindow(const glm::vec2& coords, const glm::vec2& size, const glm::vec4& color,  const std::string& label, const std::string& name, bUIElementType type)
 		:
 		bUIElement(coords, size, color,  label, name, type)
 	{
 	}
-	void bUIGroup::PushQuads(bUIRenderer& renderer, uint32_t& scissorID)
+	void bUIWindow::PushQuads(bUIRenderer& renderer, uint32_t& scissorID)
 	{
-		renderer.Submit<bUIGroup>(
+		renderer.Submit<bUIWindow>(
 			*this, 
 			scissorID, 
 			bUI::GetContext().Config.GetSubTexture(bUIConfig::Button), 
 			bUI::GetContext().Config.GetSubTexture(bUIConfig::MinimizeButton)
 		);
 	}
-	bool bUIGroup::OnMouseMoved(const glm::vec2& mousePosition)
+	bool bUIWindow::OnMouseMoved(const glm::vec2& mousePosition)
 	{
-		if (Helper::Collide(GetAbsolutePosition(), {Size.x, ButtonSize.y}, mousePosition))
+		glm::vec2 panelSize = { Size.x, ButtonSize.y };
+		glm::vec2 absolutePosition = GetAbsolutePosition() - glm::vec2(0.0f, panelSize.y);
+		if (Helper::Collide(absolutePosition, {Size.x, ButtonSize.y}, mousePosition))
 		{
 			ActiveColor = bUI::GetConfig().GetColor(bUIConfig::HighlightColor);
 			for (auto& callback : Callbacks)
@@ -201,9 +203,11 @@ namespace XYZ {
 		ActiveColor = Color;
 		return false;
 	}
-	bool bUIGroup::OnLeftMousePressed(const glm::vec2& mousePosition)
+	bool bUIWindow::OnLeftMousePressed(const glm::vec2& mousePosition)
 	{
-		if (Helper::Collide(GetAbsolutePosition(), ButtonSize, mousePosition))
+		glm::vec2 panelSize = { Size.x, ButtonSize.y };
+		glm::vec2 absolutePosition = GetAbsolutePosition() - glm::vec2(0.0f, panelSize.y);
+		if (Helper::Collide(absolutePosition, ButtonSize, mousePosition))
 		{
 			ChildrenVisible = !ChildrenVisible;
 			for (auto& callback : Callbacks)
@@ -212,9 +216,11 @@ namespace XYZ {
 		}
 		return false;
 	}
-	bool bUIGroup::OnRightMousePressed(const glm::vec2& mousePosition)
+	bool bUIWindow::OnRightMousePressed(const glm::vec2& mousePosition)
 	{
-		return Helper::Collide(GetAbsolutePosition(), { Size.x, ButtonSize.y } , mousePosition);
+		glm::vec2 panelSize = { Size.x, ButtonSize.y };
+		glm::vec2 absolutePosition = GetAbsolutePosition() - glm::vec2(0.0f, panelSize.y);
+		return Helper::Collide(absolutePosition, panelSize, mousePosition);
 	}
 	bUIScrollbox::bUIScrollbox(const glm::vec2& coords, const glm::vec2& size, const glm::vec4& color, const std::string& label, const std::string& name, bUIElementType type)
 		:
@@ -228,11 +234,20 @@ namespace XYZ {
 		scissorID = renderer.GetMesh().Scissors.size() - 1;
 	}
 
+	void bUIScrollbox::OnUpdate()
+	{
+		if (FitParent && Parent)
+		{
+			Coords = glm::vec2(0.0f);
+			Size = Parent->Size;
+		}
+	}
+
 	bool bUIScrollbox::OnMouseScrolled(const glm::vec2& mousePosition, const glm::vec2& offset)
 	{
 		if (Helper::Collide(GetAbsoluteScrollPosition(), Size, mousePosition))
 		{
-			Offset += offset;
+			Offset += offset * Speed;
 			return true;
 		}
 		return false;
