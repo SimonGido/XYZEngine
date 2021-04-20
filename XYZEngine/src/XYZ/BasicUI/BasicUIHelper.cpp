@@ -58,4 +58,13 @@ namespace XYZ {
 			return false;
 		});
 	}
+	bool bUIHelper::IsInside(const glm::vec2& posA, const glm::vec2& sizeA, const glm::vec2& posB, const glm::vec2& sizeB)
+	{
+		// A inside B	
+		return (posB.x		     < posA.x
+			&&  posB.x + sizeB.x > posA.x + sizeA.x
+			&&  posB.y			 < posA.y
+			&&  posB.y + sizeB.y > posA.y + sizeA.y
+			);
+	}
 }

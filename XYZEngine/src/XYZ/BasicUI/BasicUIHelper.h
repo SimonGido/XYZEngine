@@ -12,5 +12,6 @@ namespace XYZ {
 	public:
 		static glm::vec2 FindTextSize(const char* source, const Ref<Font>& font);
 		static void ResolvePosition(int32_t elementID, Tree& tree, const bUILayout& layout);
+		static bool IsInside(const glm::vec2& posA, const glm::vec2& sizeA, const glm::vec2& posB, const glm::vec2& sizeB);
 	};
 }
