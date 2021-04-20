@@ -155,6 +155,47 @@ namespace XYZ {
 		m_Mesh.Scissors.push_back({ absolutePosition.x, absolutePosition.y, element.Size.x, element.Size.y });
 	}
 
+	template <>
+	void bUIRenderer::Submit<bUITree>(const bUITree& element, uint32_t& scissorID, const Ref<SubTexture>& closedSubTexture, const Ref<SubTexture>& openSubTexture)
+	{
+		glm::vec2 absolutePosition = element.GetAbsolutePosition();
+		Ref<Font> font = bUI::GetConfig().m_Font;
+		
+		element.Hierarchy.Traverse([&](void* parent, void* child)->bool {
+
+			bUITreeItem* childItem = static_cast<bUITreeItem*>(child);
+			glm::vec2 childAbsolutePosition = absolutePosition + childItem->GetCoords();
+			if (parent)
+			{
+				bUITreeItem* parentItem = static_cast<bUITreeItem*>(parent);
+				glm::vec2 parentAbsolutePosition = absolutePosition + parentItem->GetCoords();
+				if (!parentItem->Open)
+					return false;
+				else
+				{
+					glm::vec3 lineStart = glm::vec3(parentAbsolutePosition.x + element.Size.x / 2.0f, parentAbsolutePosition.y + element.Size.y, 0.0f);
+					glm::vec3 lineEnd = glm::vec3(childAbsolutePosition.x, childAbsolutePosition.y + element.Size.y / 2.0f, 0.0f);
+					glm::vec3 lineMiddle = glm::vec3(lineStart.x, lineEnd.y, 0.0f);
+					m_Mesh.Lines.push_back({ glm::vec4(1.0f), lineStart, lineMiddle });
+					m_Mesh.Lines.push_back({ glm::vec4(1.0f), lineMiddle, lineEnd });
+				}
+			}
+
+		
+			if (childItem->Open)
+				Helper::GenerateQuad(m_Mesh, childItem->Color, element.Size, childAbsolutePosition, openSubTexture, 0, scissorID);
+			else
+				Helper::GenerateQuad(m_Mesh, childItem->Color, element.Size, childAbsolutePosition, closedSubTexture, 0, scissorID);
+			
+			glm::vec2 size = bUIHelper::FindTextSize(childItem->Label.c_str(), font);
+			glm::vec2 textPosition = childAbsolutePosition;
+			textPosition.x += element.Size.x + 2.0f;
+			textPosition.y += (element.Size.y / 2.0f) + (size.y / 2.0f);
+			Helper::GenerateTextMesh(childItem->Label.c_str(), font, childItem->Color, textPosition, m_Mesh, 1, scissorID);
+			return false;
+		});
+	}
+
 	void bUIRenderer::Begin()
 	{
 		m_Mesh.Quads.clear();

@@ -1,5 +1,11 @@
 Size: [1920, 1017]
 bUIElements:
+  - Coords: [100, 400]
+    Size: [30.0, 30.0]
+    Color: [1, 1, 1, 1]
+    Label: ""
+    Name: Tree
+    Type: Tree 
   - Coords: [50, 50]
     Size: [400.0, 300.0]
     Color: [1, 1, 1, 0.4]

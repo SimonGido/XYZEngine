@@ -35,6 +35,7 @@ namespace XYZ {
 		enum Colors
 		{
 			HighlightColor,
+			TextHighlightColor,
 			NumColors
 		};
 		const Ref<SubTexture>& GetSubTexture(uint32_t index) const {return m_SubTextures[index]; }

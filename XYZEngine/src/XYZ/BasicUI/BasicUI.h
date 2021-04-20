@@ -21,7 +21,9 @@ namespace XYZ {
 		bUIRenderer  Renderer;
 		bUIEditData  EditData;
 
-		glm::vec2   ViewportSize;
+		glm::vec2    ViewportSize;
+
+
 	};
 
 	struct bUILayout
@@ -39,6 +41,14 @@ namespace XYZ {
 
 		static void OnEvent(Event& event);
 		static void SetupLayout(const std::string& uiName, const std::string& name, const bUILayout& layout);
+
+		template <typename T>
+		static T& GetUI(const std::string& uiName, const std::string& name)
+		{
+			static_assert(std::is_base_of<bUIElement, T>::value, "Type T must inherit from bUIElement");
+			return *getContext().Data.GetAllocator(uiName).GetElement<T>(name);
+		}
+		
 
 		static bUIConfig& GetConfig();
 		static const bUIContext& GetContext();

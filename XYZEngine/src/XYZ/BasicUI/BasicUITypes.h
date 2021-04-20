@@ -1,4 +1,6 @@
 #pragma once
+#include "XYZ/Utils/DataStructures/MemoryPool.h"
+#include "XYZ/Utils/DataStructures/Tree.h"
 
 #include <glm/glm.hpp>
 
@@ -11,7 +13,10 @@ namespace XYZ {
 		Checkbox,
 		Slider,
 		Window,
-		Scrollbox
+		Scrollbox,
+		Float,
+		String,
+		Tree
 	};
 
 	enum class bUICallbackType
@@ -43,6 +48,9 @@ namespace XYZ {
 		virtual bool OnRightMousePressed(const glm::vec2& mousePosition);
 		virtual bool OnLeftMouseReleased() { return false; };
 		virtual bool OnMouseScrolled(const glm::vec2& mousePosition, const glm::vec2& offset) { return false; }
+		virtual bool OnKeyPressed(int32_t mode, int32_t key) { return false; }
+		virtual bool OnKeyTyped(char character) { return false; }
+
 		virtual glm::vec2 GetAbsolutePosition() const;
 		void HandleVisibility(uint32_t scissorID);
 
@@ -58,6 +66,10 @@ namespace XYZ {
 		const bUIElementType Type;
 
 		std::vector<bUICallback> Callbacks;
+
+	protected:
+		template <typename T>
+		static void setInputListener(T* listener);
 
 	private:
 		uint32_t depth();
@@ -181,5 +193,98 @@ namespace XYZ {
 		bool FitParent = true;
 	};
 
+	struct bUITreeItem
+	{
+		bUITreeItem(const std::string& label)
+			: Label(label) {};
+
+		std::string Label;
+		glm::vec4	Color = glm::vec4(1.0f);
+		bool		Open = false;
+
+		const glm::vec2& GetCoords() const { return Coords;  }
+		uint32_t GetKey() const { return Key; }
+	private:
+		glm::vec2	Coords = glm::vec2(0.0f);
+		uint32_t    Key = 0;
+		int32_t		ID = -1;
+		
+		friend class bUITree;
+	};
+
+	class bUITree : public bUIElement
+	{
+	public:
+		bUITree(
+			const glm::vec2& coords,
+			const glm::vec2& size,
+			const glm::vec4& color,
+			const std::string& label,
+			const std::string& name,
+			bUIElementType type
+		);
+		bUITree(bUITree&& other) noexcept;
+
+		virtual void PushQuads(bUIRenderer& renderer, uint32_t& scissorID) override;
+		virtual bool OnMouseMoved(const glm::vec2& mousePosition) override;
+		virtual bool OnLeftMousePressed(const glm::vec2& mousePosition) override;
+		virtual bool OnRightMousePressed(const glm::vec2& mousePosition) override;
+
+		void AddItem(uint32_t key, uint32_t parent, const bUITreeItem& item);
+		void AddItem(uint32_t key, const bUITreeItem& item);
+		void RemoveItem(uint32_t key);
+		void Clear();
+
+		bUITreeItem& GetItem(uint32_t key);
+		std::function<void(uint32_t)> OnSelect;
+
+	private:
+		void solveTreePosition();
+
+	private:
+		Tree Hierarchy;
+		MemoryPool Pool;
+
+		std::unordered_map<uint32_t, int32_t> NameIDMap;
+
+		static constexpr size_t sc_NumberOfItemsPerBlockInPool = 10;
+		static constexpr float sc_NodeOffset = 25.0f;
+
+		friend class bUIRenderer;
+	};
+
+	class bUIFloat : public bUIElement
+	{
+	public:
+		bUIFloat(
+			const glm::vec2& coords,
+			const glm::vec2& size,
+			const glm::vec4& color,
+			const std::string& label,
+			const std::string& name,
+			bUIElementType type
+		);
+
+		virtual void PushQuads(bUIRenderer& renderer, uint32_t& scissorID) override;
+		virtual bool OnMouseMoved(const glm::vec2& mousePosition) override;
+		virtual bool OnLeftMousePressed(const glm::vec2& mousePosition) override;
+		virtual bool OnKeyPressed(int32_t mode, int32_t key) override;
+		virtual bool OnKeyTyped(char character) override;
+
+		void	    SetValue(float val);
+		float	    GetValue() const;
+		const char* GetBuffer() const { return Buffer; }
+
+		bool Listen = false;
+		static constexpr size_t BufferSize = 60;
+
+		static bUIFloat* s_CurrentListener;
+	private:
+		mutable int32_t Value = 0;
+		uint32_t InsertionIndex;
+		char Buffer[BufferSize];
+
+		
+	};
 }
 

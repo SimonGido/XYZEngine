@@ -58,13 +58,12 @@ namespace XYZ {
 	{
 		element->PushQuads(renderer, scissorID);
 		Tree& tree = allocator.m_Tree;
-		if (element->ChildrenVisible)
+		if (element->ChildrenVisible && element->Visible)
 		{
 			tree.TraverseNodeChildren(element->ID, [&](void* parent, void* child)->bool {
 
 				bUIElement* childElement = static_cast<bUIElement*>(child);
-				if (childElement->Visible)
-					buildMesh(renderer, allocator, childElement, scissorID);
+				buildMesh(renderer, allocator, childElement, scissorID);
 				return false;
 			});
 		}

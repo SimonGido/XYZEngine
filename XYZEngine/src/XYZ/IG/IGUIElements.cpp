@@ -658,7 +658,7 @@ namespace XYZ {
 	{
 		auto it = NameIDMap.find(key);
 		XYZ_ASSERT(it != NameIDMap.end(), "");
-		
+	
 		return *static_cast<IGTreeItem*>(Hierarchy.GetData(it->second));
 	}
 	

@@ -42,9 +42,11 @@ namespace XYZ {
 		Renderer2D::SetMaterial(s_Context->Config.m_Material);
 		for (const bUIQuad& quad : s_Context->Renderer.GetMesh().Quads)
 			Renderer2D::SubmitQuadNotCentered(quad.Position, quad.Size, quad.TexCoord, quad.TextureID, quad.Color, (float)quad.ScissorID);
-
+		for (const bUILine& line : s_Context->Renderer.GetMesh().Lines)
+			Renderer2D::SubmitLine(line.P0, line.P1, line.Color);
 		
 		Renderer2D::Flush();
+		Renderer2D::FlushLines();
 		Renderer2D::EndScene();
 		Renderer::WaitAndRender();
 	}
@@ -63,7 +65,7 @@ namespace XYZ {
 		bUIElement* element = allocator.GetElement<bUIElement>(name);
 		bUIHelper::ResolvePosition(element->ID, allocator.m_Tree, layout);
 	}
-	
+
 	bUIConfig& bUI::GetConfig()
 	{
 		return s_Context->Config;

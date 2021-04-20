@@ -99,6 +99,9 @@ namespace XYZ {
 		Ref<SubTexture> sliderSubTexture = Ref<XYZ::SubTexture>::Create(tmpTexture, glm::vec2(0, 0), glm::vec2(tmpTexture->GetWidth() / divisor, tmpTexture->GetHeight() / divisor));
 		Ref<SubTexture> handleSubTexture = Ref<XYZ::SubTexture>::Create(tmpTexture, glm::vec2(1, 2), glm::vec2(tmpTexture->GetWidth() / divisor, tmpTexture->GetHeight() / divisor));
 		Ref<SubTexture> whiteSubTexture =  Ref<XYZ::SubTexture>::Create(tmpTexture, glm::vec2(3, 0), glm::vec2(tmpTexture->GetWidth() / divisor, tmpTexture->GetHeight() / divisor));
+		Ref<SubTexture> rightArrowSubTexture = Ref<XYZ::SubTexture>::Create(tmpTexture, glm::vec2(2, 2), glm::vec2(tmpTexture->GetWidth() / divisor, tmpTexture->GetHeight() / divisor));
+		Ref<SubTexture> downArrowSubTexture = Ref<XYZ::SubTexture>::Create(tmpTexture, glm::vec2(2, 3), glm::vec2(tmpTexture->GetWidth() / divisor, tmpTexture->GetHeight() / divisor));
+		
 		bUI::GetConfig().SetSubTexture(buttonSubTexture, bUIConfig::Button);
 		bUI::GetConfig().SetSubTexture(minimizeSubTexture, bUIConfig::MinimizeButton);
 		bUI::GetConfig().SetSubTexture(checkedSubTexture, bUIConfig::CheckboxChecked);
@@ -106,7 +109,14 @@ namespace XYZ {
 		bUI::GetConfig().SetSubTexture(sliderSubTexture, bUIConfig::Slider);
 		bUI::GetConfig().SetSubTexture(handleSubTexture, bUIConfig::SliderHandle);
 		bUI::GetConfig().SetSubTexture(whiteSubTexture, bUIConfig::White);
-		bUI::SetupLayout("Test", "Scrollbox", { 10.0f, 10.0f, 10.0f, 10.0f, 35.0f });
+		bUI::GetConfig().SetSubTexture(rightArrowSubTexture, bUIConfig::RightArrow);
+		bUI::GetConfig().SetSubTexture(downArrowSubTexture, bUIConfig::DownArrow);
+		bUI::SetupLayout("Test", "Scrollbox", { 10.0f, 10.0f, 10.0f, 10.0f, 10.0f });
+
+		bUI::GetUI<bUITree>("Test", "Tree").AddItem(0, bUITreeItem("Havko"));
+		bUI::GetUI<bUITree>("Test", "Tree").AddItem(1, 0, bUITreeItem("Opica"));
+		bUI::GetUI<bUITree>("Test", "Tree").AddItem(2, 1, bUITreeItem("Opica"));
+		bUI::GetUI<bUITree>("Test", "Tree").AddItem(3, 0, bUITreeItem("Opica"));
 	}	
 
 	void EditorLayer::OnDetach()

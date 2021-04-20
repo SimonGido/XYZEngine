@@ -68,7 +68,6 @@ namespace XYZ {
 	private:
 		void resize(size_t minimalSize);
 		void destroy(size_t offset);	
-		void copy(bUIElementType type, size_t offset, uint8_t* buffer);
 
 	private:
 		struct Element

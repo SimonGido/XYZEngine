@@ -21,6 +21,8 @@ namespace XYZ {
 				return sizeof(bUIWindow);
 			case XYZ::bUIElementType::Scrollbox:
 				return sizeof(bUIScrollbox);
+			case XYZ::bUIElementType::Tree:
+				return sizeof(bUITree);
 			default:
 				return 0;
 			}
@@ -37,6 +39,8 @@ namespace XYZ {
 				return bUIElementType::Window;
 			if (str == "Scrollbox")
 				return bUIElementType::Scrollbox;
+			if (str == "Tree")
+				return bUIElementType::Tree;
 			
 			XYZ_ASSERT(false, "Invalid type");
 			return bUIElementType::None;
@@ -55,6 +59,8 @@ namespace XYZ {
 				return "Window";
 			case XYZ::bUIElementType::Scrollbox:
 				return "Scrollbox";
+			case XYZ::bUIElementType::Tree:
+				return "Tree";
 			}
 			XYZ_ASSERT(false, "Type is none");
 			return "None";
@@ -204,6 +210,9 @@ namespace XYZ {
 			break;
 		case XYZ::bUIElementType::Scrollbox:
 			element = allocator->CreateElement<bUIScrollbox>(parent, coords, size, color, label, name, type);
+			break;
+		case XYZ::bUIElementType::Tree:
+			element = allocator->CreateElement<bUITree>(parent, coords, size, color, label, name, type);
 			break;
 		default:
 			break;

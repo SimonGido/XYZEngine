@@ -13,6 +13,7 @@ namespace XYZ {
 		m_Material->Set("u_Color", glm::vec4(2.0f));
 
 		m_Colors[HighlightColor] = { 1.0f, 1.9f, 2.1, 1.0f };
+		m_Colors[TextHighlightColor] = { 0.5f, 0.7f, 1.0f, 1.0f };
 	}
 	void bUIConfig::SetTexture(const Ref<Texture2D>& texture)
 	{

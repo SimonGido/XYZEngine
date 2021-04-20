@@ -79,7 +79,8 @@ namespace XYZ {
 		uint8_t* tmp = new uint8_t[m_Capacity];
 		for (Element element : m_Elements)
 		{
-			copy(element.Type, element.Offset, tmp);
+			//TODO: Move
+			//copy(element.Type, element.Offset, tmp);
 			destroy(element.Offset);
 		}
 		if (m_Data)
@@ -91,28 +92,5 @@ namespace XYZ {
 	{
 		bUIElement* tmp = reinterpret_cast<bUIElement*>(&m_Data[offset]);
 		tmp->~bUIElement();
-	}
-	void bUIAllocator::copy(bUIElementType type, size_t offset, uint8_t* buffer)
-	{
-		switch (type)
-		{
-		case XYZ::bUIElementType::Button:
-			new(&buffer[offset])bUIButton(*reinterpret_cast<bUIButton*>(&m_Data[offset]));
-			break;
-		case XYZ::bUIElementType::Checkbox:
-			new(&buffer[offset])bUICheckbox(*reinterpret_cast<bUICheckbox*>(&m_Data[offset]));
-			break;
-		case XYZ::bUIElementType::Slider:
-			new(&buffer[offset])bUISlider(*reinterpret_cast<bUISlider*>(&m_Data[offset]));
-			break;
-		case XYZ::bUIElementType::Window:
-			new(&buffer[offset])bUIWindow(*reinterpret_cast<bUIWindow*>(&m_Data[offset]));
-			break;
-		case XYZ::bUIElementType::Scrollbox:
-			new(&buffer[offset])bUIScrollbox(*reinterpret_cast<bUIScrollbox*>(&m_Data[offset]));
-			break;
-		default:
-			break;
-		}
 	}
 }
