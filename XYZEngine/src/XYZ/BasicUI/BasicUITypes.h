@@ -37,13 +37,14 @@ namespace XYZ {
 		virtual ~bUIElement() = default;
 
 		virtual void PushQuads(bUIRenderer& renderer, uint32_t& scissorID) {};
-		virtual void OnUpdate() {};
+		virtual void OnUpdate();
 		virtual bool OnMouseMoved(const glm::vec2& mousePosition);
 		virtual bool OnLeftMousePressed(const glm::vec2& mousePosition);
 		virtual bool OnRightMousePressed(const glm::vec2& mousePosition);
 		virtual bool OnLeftMouseReleased() { return false; };
 		virtual bool OnMouseScrolled(const glm::vec2& mousePosition, const glm::vec2& offset) { return false; }
 		virtual glm::vec2 GetAbsolutePosition() const;
+		void HandleVisibility(uint32_t scissorID);
 
 		glm::vec2			 Coords;
 		glm::vec2			 Size;
