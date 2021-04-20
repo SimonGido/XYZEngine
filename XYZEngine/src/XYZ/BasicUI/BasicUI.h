@@ -47,6 +47,7 @@ namespace XYZ {
 		static bool onMouseButtonPress(MouseButtonPressEvent& event);
 		static bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
 		static bool onMouseMove(MouseMovedEvent& event);
+		static bool onMouseScroll(MouseScrollEvent& event);
 
 		static bUIContext& getContext();
 

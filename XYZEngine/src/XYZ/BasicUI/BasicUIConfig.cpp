@@ -1,13 +1,15 @@
 #include "stdafx.h"
 #include "BasicUIConfig.h"
 
+#include "BasicUIRenderer.h"
 
 namespace XYZ {
 	bUIConfig::bUIConfig()
 		:
 		m_Lock(false)
 	{
-		m_Material = Ref<XYZ::Material>::Create(Shader::Create("Assets/Shaders/InGuiShader.glsl"));
+		m_ScissorBuffer = ShaderStorageBuffer::Create(sc_MaxNumberOfScissors * sizeof(bUIScissor));
+		m_Material = Ref<XYZ::Material>::Create(Shader::Create("Assets/Shaders/BasicUIShader.glsl"));
 		m_Material->Set("u_Color", glm::vec4(2.0f));
 
 		m_Colors[HighlightColor] = { 1.0f, 1.9f, 2.1, 1.0f };

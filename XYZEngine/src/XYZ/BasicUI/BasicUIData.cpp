@@ -33,7 +33,7 @@ namespace XYZ {
 
 				bUIElement* childElement = static_cast<bUIElement*>(child);
 				if (childElement->Visible)
-					buildMesh(renderer, allocator, childElement);
+					buildMesh(renderer, allocator, childElement, 0);
 				return false;
 			});		
 		}
@@ -54,9 +54,9 @@ namespace XYZ {
 	{
 		return (m_AllocatorMap.find(name) != m_AllocatorMap.end());
 	}
-	void bUIData::buildMesh(bUIRenderer& renderer, bUIAllocator& allocator, bUIElement* element)
+	void bUIData::buildMesh(bUIRenderer& renderer, bUIAllocator& allocator, bUIElement* element, uint32_t scissorID)
 	{
-		element->PushQuads(renderer);
+		element->PushQuads(renderer, scissorID);
 		Tree& tree = allocator.m_Tree;
 		if (element->ChildrenVisible)
 		{
@@ -64,7 +64,7 @@ namespace XYZ {
 
 				bUIElement* childElement = static_cast<bUIElement*>(child);
 				if (childElement->Visible)
-					buildMesh(renderer, allocator, childElement);
+					buildMesh(renderer, allocator, childElement, scissorID);
 				return false;
 			});
 		}

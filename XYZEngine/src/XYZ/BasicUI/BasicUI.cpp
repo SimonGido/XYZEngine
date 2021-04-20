@@ -34,10 +34,16 @@ namespace XYZ {
 		glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f));
 		viewMatrix = glm::inverse(viewMatrix);
 		Renderer2D::BeginScene(glm::ortho(0.0f, s_Context->ViewportSize.x, s_Context->ViewportSize.y, 0.0f) * viewMatrix);
+		if (s_Context->Renderer.GetMesh().Scissors.size())
+		{
+			s_Context->Renderer.UpdateScissorBuffer(s_Context->Config.m_ScissorBuffer);
+			s_Context->Config.m_ScissorBuffer->BindRange(0, s_Context->Renderer.GetMesh().Scissors.size() * sizeof(bUIScissor), 0);
+		}
 		Renderer2D::SetMaterial(s_Context->Config.m_Material);
 		for (const bUIQuad& quad : s_Context->Renderer.GetMesh().Quads)
-			Renderer2D::SubmitQuadNotCentered(quad.Position, quad.Size, quad.TexCoord, quad.TextureID, quad.Color);
+			Renderer2D::SubmitQuadNotCentered(quad.Position, quad.Size, quad.TexCoord, quad.TextureID, quad.Color, (float)quad.ScissorID);
 
+		
 		Renderer2D::Flush();
 		Renderer2D::EndScene();
 		Renderer::WaitAndRender();
@@ -49,6 +55,7 @@ namespace XYZ {
 		dispatcher.Dispatch<MouseButtonPressEvent>(&onMouseButtonPress);
 		dispatcher.Dispatch<MouseButtonReleaseEvent>(&onMouseButtonRelease);
 		dispatcher.Dispatch<MouseMovedEvent>(&onMouseMove);
+		dispatcher.Dispatch<MouseScrollEvent>(&onMouseScroll);
 	}
 	void bUI::SetupLayout(const std::string& uiName, const std::string& name, const bUILayout& layout)
 	{
@@ -82,6 +89,10 @@ namespace XYZ {
 	bool bUI::onMouseMove(MouseMovedEvent& event)
 	{
 		return bUIInput::OnMouseMove(event, s_Context->EditData, s_Context->Data);
+	}
+	bool bUI::onMouseScroll(MouseScrollEvent& event)
+	{
+		return bUIInput::OnMouseScroll(event, s_Context->EditData, s_Context->Data);
 	}
 	bUIContext& bUI::getContext()
 	{

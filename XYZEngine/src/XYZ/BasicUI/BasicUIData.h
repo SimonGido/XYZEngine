@@ -19,7 +19,7 @@ namespace XYZ {
 
 		bool Exist(const std::string& name) const;
 	private:
-		void buildMesh(bUIRenderer& renderer, bUIAllocator& allocator, bUIElement* element);
+		void buildMesh(bUIRenderer& renderer, bUIAllocator& allocator, bUIElement* element, uint32_t scissorID);
 
 	private:
 		std::vector<bUIAllocator> m_Allocators;

@@ -108,6 +108,9 @@ namespace XYZ {
 		case XYZ::bUIElementType::Group:
 			new(&buffer[offset])bUIGroup(*reinterpret_cast<bUIGroup*>(&m_Data[offset]));
 			break;
+		case XYZ::bUIElementType::Scrollbox:
+			new(&buffer[offset])bUIScrollbox(*reinterpret_cast<bUIScrollbox*>(&m_Data[offset]));
+			break;
 		default:
 			break;
 		}

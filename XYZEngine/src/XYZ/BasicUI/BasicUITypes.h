@@ -6,10 +6,12 @@ namespace XYZ {
 	
 	enum class bUIElementType
 	{
+		None,
 		Button,
 		Checkbox,
 		Slider,
-		Group
+		Group,
+		Scrollbox
 	};
 
 	enum class bUICallbackType
@@ -34,14 +36,14 @@ namespace XYZ {
 		);
 		virtual ~bUIElement() = default;
 
-		virtual void PushQuads(bUIRenderer& renderer) {};
+		virtual void PushQuads(bUIRenderer& renderer, uint32_t& scissorID) {};
 		virtual void OnUpdate() {};
 		virtual bool OnMouseMoved(const glm::vec2& mousePosition);
 		virtual bool OnLeftMousePressed(const glm::vec2& mousePosition);
 		virtual bool OnRightMousePressed(const glm::vec2& mousePosition);
 		virtual bool OnLeftMouseReleased() { return false; };
-
-		glm::vec2 GetAbsolutePosition() const;
+		virtual bool OnMouseScrolled(const glm::vec2& mousePosition, const glm::vec2& offset) { return false; }
+		virtual glm::vec2 GetAbsolutePosition() const;
 
 		glm::vec2			 Coords;
 		glm::vec2			 Size;
@@ -78,7 +80,7 @@ namespace XYZ {
 			bUIElementType type
 		);
 
-		virtual void PushQuads(bUIRenderer& renderer) override;
+		virtual void PushQuads(bUIRenderer& renderer, uint32_t& scissorID) override;
 	};
 
 	struct bUICheckbox : public bUIElement
@@ -92,7 +94,7 @@ namespace XYZ {
 			bUIElementType type
 		);
 
-		virtual void PushQuads(bUIRenderer& renderer) override;
+		virtual void PushQuads(bUIRenderer& renderer, uint32_t& scissorID) override;
 		virtual void OnUpdate() override;
 		virtual bool OnLeftMousePressed(const glm::vec2& mousePosition) override;
 
@@ -110,7 +112,7 @@ namespace XYZ {
 			bUIElementType type
 		);
 
-		virtual void PushQuads(bUIRenderer& renderer) override;
+		virtual void PushQuads(bUIRenderer& renderer, uint32_t& scissorID) override;
 		virtual bool OnMouseMoved(const glm::vec2& mousePosition) override;
 		virtual bool OnLeftMousePressed(const glm::vec2& mousePosition) override;
 		virtual bool OnLeftMouseReleased() override;
@@ -131,12 +133,35 @@ namespace XYZ {
 			bUIElementType type
 		);
 
-		virtual void PushQuads(bUIRenderer& renderer) override;
+		virtual void PushQuads(bUIRenderer& renderer, uint32_t& scissorID) override;
 		virtual bool OnMouseMoved(const glm::vec2& mousePosition) override;
 		virtual bool OnLeftMousePressed(const glm::vec2& mousePosition) override;
 		virtual bool OnRightMousePressed(const glm::vec2& mousePosition) override;
 
 		glm::vec2 ButtonSize = { 25.0f, 25.0f };
+	};
+
+	struct bUIScrollbox : public bUIElement
+	{
+		bUIScrollbox(
+			const glm::vec2& coords,
+			const glm::vec2& size,
+			const glm::vec4& color,
+			const std::string& label,
+			const std::string& name,
+			bUIElementType type
+		);
+
+		virtual void PushQuads(bUIRenderer& renderer, uint32_t& scissorID) override;
+		virtual bool OnMouseMoved(const glm::vec2& mousePosition) override { return false; };
+		virtual bool OnLeftMousePressed(const glm::vec2& mousePosition) override { return false; };
+		virtual bool OnRightMousePressed(const glm::vec2& mousePosition) override { return false; };
+		virtual bool OnLeftMouseReleased() override { return false; };
+		virtual bool OnMouseScrolled(const glm::vec2& mousePosition, const glm::vec2& offset) override;
+		virtual glm::vec2 GetAbsolutePosition() const override;
+		glm::vec2 GetAbsoluteScrollPosition() const;
+
+		glm::vec2 Offset;
 	};
 
 }

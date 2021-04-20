@@ -79,4 +79,19 @@ namespace XYZ {
 		}
 		return false;
 	}
+	bool bUIInput::OnMouseScroll(MouseScrollEvent& event, bUIEditData& editData, bUIData& data)
+	{
+		auto [mx, my] = Input::GetMousePosition();
+		glm::vec2 mousePosition = { mx, my };
+		for (bUIAllocator& allocator : data.m_Allocators)
+		{
+			for (size_t i = 0; i < allocator.Size(); ++i)
+			{
+				bUIElement* element = allocator.GetElement<bUIElement>(i);
+				if (element->OnMouseScrolled(mousePosition, { event.GetOffsetX() , event.GetOffsetY() }))
+					return true;
+			}
+		}
+		return false;
+	}
 }

@@ -5,47 +5,48 @@ bUIElements:
     Color: [1, 1, 1, 0.4]
     Label: Test Group
     Name: Test Havkac
-    Type: 3 
+    Type: Group 
     bUIElements:
-      - Coords: [25, 35]
-        Size: [50.0, 50.0]
-        Color: [1, 1, 1, 1]
-        Label: Test Button
-        Name: Kravicka
-        Type: 0
-      - Coords: [25, 35]
-        Size: [150.0, 25.0]
-        Color: [1, 1, 1, 1]
-        Label: Test Button
-        Name: Kravicka
-        Type: 2
-      - Coords: [25, 35]
-        Size: [50.0, 50.0]
-        Color: [1, 1, 1, 1]
-        Label: Test Button
-        Name: Kravicka
-        Type: 1  
-      - Coords: [25, 95]
-        Size: [50.0, 50.0]
-        Color: [1, 1, 1, 1]
-        Label: Test Button
-        Name: Kravicka
-        Type: 0 
-      - Coords: [25, 95]
-        Size: [50.0, 50.0]
-        Color: [1, 1, 1, 1]
-        Label: Test Button
-        Name: Kravicka
-        Type: 0 
-      - Coords: [25, 95]
-        Size: [50.0, 50.0]
-        Color: [1, 1, 1, 1]
-        Label: Test Button
-        Name: Kravicka
-        Type: 0 
+      - Coords: [0, 25]
+        Size: [375.0, 250.0]
+        Color: [0.1, 0.1, 0.1, 1]
+        Label: ""
+        Name: Scrollbox
+        Type: Scrollbox
+        bUIElements:
+          - Coords: [25, 35]
+            Size: [150.0, 25.0]
+            Color: [1, 1, 1, 1]
+            Label: Test Button
+            Name: Kravicka
+            Type: Slider
+          - Coords: [25, 35]
+            Size: [50.0, 50.0]
+            Color: [1, 1, 1, 1]
+            Label: Test Button
+            Name: Kravicka
+            Type: Checkbox  
+          - Coords: [25, 95]
+            Size: [50.0, 50.0]
+            Color: [1, 1, 1, 1]
+            Label: Test Button
+            Name: Kravicka
+            Type: Button 
+          - Coords: [25, 95]
+            Size: [50.0, 50.0]
+            Color: [1, 1, 1, 1]
+            Label: Test Button
+            Name: Kravicka
+            Type: Button 
+          - Coords: [25, 95]
+            Size: [50.0, 50.0]
+            Color: [1, 1, 1, 1]
+            Label: Test Button
+            Name: Kravicka
+            Type: Button 
   - Coords: [150.97, 150.5]
     Size: [80.03, 50.05]
     Color: [1, 1, 1, 1]
     Label: Test Button
     Name: Test Name
-    Type: 0 
+    Type: Button 

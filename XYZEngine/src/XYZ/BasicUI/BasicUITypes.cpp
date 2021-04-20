@@ -75,9 +75,9 @@ namespace XYZ {
 		bUIElement(coords, size, color,  label, name, type)
 	{
 	}
-	void bUIButton::PushQuads(bUIRenderer& renderer)
+	void bUIButton::PushQuads(bUIRenderer& renderer, uint32_t& scissorID)
 	{
-		renderer.Submit<bUIButton>(*this, bUI::GetContext().Config.GetSubTexture(bUIConfig::Button));
+		renderer.Submit<bUIButton>(*this, scissorID, bUI::GetContext().Config.GetSubTexture(bUIConfig::Button));
 	}
 	
 	bUICheckbox::bUICheckbox(const glm::vec2& coords, const glm::vec2& size, const glm::vec4& color,  const std::string& label, const std::string& name, bUIElementType type)
@@ -86,12 +86,12 @@ namespace XYZ {
 		Checked(false)
 	{
 	}
-	void bUICheckbox::PushQuads(bUIRenderer& renderer)
+	void bUICheckbox::PushQuads(bUIRenderer& renderer, uint32_t& scissorID)
 	{
 		if (Checked)
-			renderer.Submit<bUICheckbox>(*this, bUI::GetContext().Config.GetSubTexture(bUIConfig::CheckboxChecked));
+			renderer.Submit<bUICheckbox>(*this, scissorID, bUI::GetContext().Config.GetSubTexture(bUIConfig::CheckboxChecked));
 		else
-			renderer.Submit<bUICheckbox>(*this, bUI::GetContext().Config.GetSubTexture(bUIConfig::CheckboxUnChecked));
+			renderer.Submit<bUICheckbox>(*this, scissorID, bUI::GetContext().Config.GetSubTexture(bUIConfig::CheckboxUnChecked));
 	}
 
 	void bUICheckbox::OnUpdate()
@@ -125,11 +125,12 @@ namespace XYZ {
 		Modified(false)
 	{
 	}
-	void bUISlider::PushQuads(bUIRenderer& renderer)
+	void bUISlider::PushQuads(bUIRenderer& renderer, uint32_t& scissorID)
 	{
 		glm::vec2 handlePosition = GetAbsolutePosition() + glm::vec2((Size.x - Size.y) * Value , 0.0f);
 		renderer.Submit<bUISlider>(
 			*this, 
+			scissorID, 
 			bUI::GetContext().Config.GetSubTexture(bUIConfig::Slider),
 			bUI::GetContext().Config.GetSubTexture(bUIConfig::SliderHandle),
 			handlePosition,
@@ -179,10 +180,11 @@ namespace XYZ {
 		bUIElement(coords, size, color,  label, name, type)
 	{
 	}
-	void bUIGroup::PushQuads(bUIRenderer& renderer)
+	void bUIGroup::PushQuads(bUIRenderer& renderer, uint32_t& scissorID)
 	{
 		renderer.Submit<bUIGroup>(
 			*this, 
+			scissorID, 
 			bUI::GetContext().Config.GetSubTexture(bUIConfig::Button), 
 			bUI::GetContext().Config.GetSubTexture(bUIConfig::MinimizeButton)
 		);
@@ -214,4 +216,44 @@ namespace XYZ {
 	{
 		return Helper::Collide(GetAbsolutePosition(), { Size.x, ButtonSize.y } , mousePosition);
 	}
+	bUIScrollbox::bUIScrollbox(const glm::vec2& coords, const glm::vec2& size, const glm::vec4& color, const std::string& label, const std::string& name, bUIElementType type)
+		:
+		bUIElement(coords, size, color,  label, name, type),
+		Offset(0.0f)
+	{
+	}
+	void bUIScrollbox::PushQuads(bUIRenderer& renderer, uint32_t& scissorID)
+	{
+		renderer.Submit(*this, scissorID, bUI::GetConfig().GetSubTexture(bUIConfig::White));
+		scissorID = renderer.GetMesh().Scissors.size() - 1;
+	}
+
+	bool bUIScrollbox::OnMouseScrolled(const glm::vec2& mousePosition, const glm::vec2& offset)
+	{
+		if (Helper::Collide(GetAbsoluteScrollPosition(), Size, mousePosition))
+		{
+			Offset += offset;
+			return true;
+		}
+		return false;
+	}
+
+	glm::vec2 bUIScrollbox::GetAbsolutePosition() const
+	{
+		if (Parent)
+		{
+			return Parent->GetAbsolutePosition() + Coords + Offset;
+		}
+		return Coords;
+	}
+
+	glm::vec2 bUIScrollbox::GetAbsoluteScrollPosition() const
+	{
+		if (Parent)
+		{
+			return Parent->GetAbsolutePosition() + Coords;
+		}
+		return Coords;
+	}
+	
 }

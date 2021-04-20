@@ -19,9 +19,45 @@ namespace XYZ {
 				return sizeof(bUISlider);
 			case XYZ::bUIElementType::Group:
 				return sizeof(bUIGroup);
+			case XYZ::bUIElementType::Scrollbox:
+				return sizeof(bUIScrollbox);
 			default:
 				return 0;
 			}
+		}
+		static bUIElementType StringToType(const std::string& str)
+		{
+			if (str == "Button")
+				return bUIElementType::Button;
+			if (str == "Checkbox")
+				return bUIElementType::Checkbox;
+			if (str == "Slider")
+				return bUIElementType::Slider;
+			if (str == "Group")
+				return bUIElementType::Group;
+			if (str == "Scrollbox")
+				return bUIElementType::Scrollbox;
+			
+			XYZ_ASSERT(false, "Invalid type");
+			return bUIElementType::None;
+		}
+		static std::string TypeToString(bUIElementType type)
+		{
+			switch (type)
+			{
+			case XYZ::bUIElementType::Button:
+				return "Button";
+			case XYZ::bUIElementType::Checkbox:
+				return "Checkbox";
+			case XYZ::bUIElementType::Slider:
+				return "Slider";
+			case XYZ::bUIElementType::Group:
+				return "Group";
+			case XYZ::bUIElementType::Scrollbox:
+				return "Scrollbox";
+			}
+			XYZ_ASSERT(false, "Type is none");
+			return "None";
 		}
 	}
 	void bUILoader::Load(const char* filepath)
@@ -80,7 +116,7 @@ namespace XYZ {
 			out << YAML::Key << "Color"  << element->Color;
 			out << YAML::Key << "Label"  << YAML::Value << element->Label;
 			out << YAML::Key << "Name"   << YAML::Value << element->Name;
-			out << YAML::Key << "Type"   << YAML::Value << (uint32_t)element->Type;		
+			out << YAML::Key << "Type"   << YAML::Value << Helper::TypeToString(element->Type);
 
 			if (depth < nextDepth)
 			{
@@ -109,7 +145,7 @@ namespace XYZ {
 		out << YAML::Key << "Color"  << element->Color;
 		out << YAML::Key << "Label"  << element->Label;
 		out << YAML::Key << "Name"   << element->Name;
-		out << YAML::Key << "Type"   << (uint32_t)element->Type;
+		out << YAML::Key << "Type"   << YAML::Value << Helper::TypeToString(element->Type);
 		out << YAML::EndMap;
 
 		out << YAML::EndSeq;
@@ -124,7 +160,7 @@ namespace XYZ {
 	{
 		for (auto& element : data)
 		{
-			bUIElementType type = (bUIElementType)element["Type"].as<uint32_t>();
+			bUIElementType type = Helper::StringToType(element["Type"].as<std::string>());
 			size += Helper::TypeToSize(type);
 			auto children = element["bUIElements"];
 			if (children)
@@ -140,7 +176,7 @@ namespace XYZ {
 			glm::vec4 color			 = element["Color"].as<glm::vec4>();
 			std::string label		 = element["Label"].as<std::string>();
 			std::string name		 = element["Name"].as<std::string>();
-			bUIElementType type		 = (bUIElementType)element["Type"].as<uint32_t>();		
+			bUIElementType type		 = Helper::StringToType(element["Type"].as<std::string>());		
 			bUIElement* newParent	 = createElement(allocator, parent, coords / aspect, size / aspect, color, label, name, type);
 			newParent->Parent		 = parent;
 			auto children = element["bUIElements"];
@@ -165,6 +201,9 @@ namespace XYZ {
 			break;
 		case XYZ::bUIElementType::Group:
 			element = allocator->CreateElement<bUIGroup>(parent, coords, size, color, label, name, type);
+			break;
+		case XYZ::bUIElementType::Scrollbox:
+			element = allocator->CreateElement<bUIScrollbox>(parent, coords, size, color, label, name, type);
 			break;
 		default:
 			break;

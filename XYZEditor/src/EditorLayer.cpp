@@ -98,14 +98,15 @@ namespace XYZ {
 		Ref<SubTexture> unCheckedSubTexture = Ref<XYZ::SubTexture>::Create(tmpTexture, glm::vec2(0, 1), glm::vec2(tmpTexture->GetWidth() / divisor, tmpTexture->GetHeight() / divisor));
 		Ref<SubTexture> sliderSubTexture = Ref<XYZ::SubTexture>::Create(tmpTexture, glm::vec2(0, 0), glm::vec2(tmpTexture->GetWidth() / divisor, tmpTexture->GetHeight() / divisor));
 		Ref<SubTexture> handleSubTexture = Ref<XYZ::SubTexture>::Create(tmpTexture, glm::vec2(1, 2), glm::vec2(tmpTexture->GetWidth() / divisor, tmpTexture->GetHeight() / divisor));
+		Ref<SubTexture> whiteSubTexture =  Ref<XYZ::SubTexture>::Create(tmpTexture, glm::vec2(3, 0), glm::vec2(tmpTexture->GetWidth() / divisor, tmpTexture->GetHeight() / divisor));
 		bUI::GetConfig().SetSubTexture(buttonSubTexture, bUIConfig::Button);
 		bUI::GetConfig().SetSubTexture(minimizeSubTexture, bUIConfig::MinimizeButton);
 		bUI::GetConfig().SetSubTexture(checkedSubTexture, bUIConfig::CheckboxChecked);
 		bUI::GetConfig().SetSubTexture(unCheckedSubTexture, bUIConfig::CheckboxUnChecked);
 		bUI::GetConfig().SetSubTexture(sliderSubTexture, bUIConfig::Slider);
 		bUI::GetConfig().SetSubTexture(handleSubTexture, bUIConfig::SliderHandle);
-
-		bUI::SetupLayout("Test", "Test Group", { 10.0f, 10.0f, 10.0f, 10.0f, 35.0f });
+		bUI::GetConfig().SetSubTexture(whiteSubTexture, bUIConfig::White);
+		bUI::SetupLayout("Test", "Scrollbox", { 10.0f, 10.0f, 10.0f, 10.0f, 35.0f });
 	}	
 
 	void EditorLayer::OnDetach()
