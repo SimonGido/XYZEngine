@@ -137,8 +137,19 @@ namespace XYZ {
 		virtual bool OnMouseMoved(const glm::vec2& mousePosition) override;
 		virtual bool OnLeftMousePressed(const glm::vec2& mousePosition) override;
 		virtual bool OnRightMousePressed(const glm::vec2& mousePosition) override;
+		virtual bool OnLeftMouseReleased() override { ResizeFlags = 0; return false; };
 
 		glm::vec2 ButtonSize = { 25.0f, 25.0f };
+
+	private:
+		enum ResizeFlags
+		{
+			Right  = BIT(0),
+			Left   = BIT(1),
+			Bottom = BIT(2)
+		};
+		uint8_t ResizeFlags = 0;
+		static constexpr glm::vec2 sc_ResizeOffset = glm::vec2(5.0f);
 	};
 
 	struct bUIScrollbox : public bUIElement

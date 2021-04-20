@@ -192,27 +192,58 @@ namespace XYZ {
 	bool bUIWindow::OnMouseMoved(const glm::vec2& mousePosition)
 	{
 		glm::vec2 panelSize = { Size.x, ButtonSize.y };
-		glm::vec2 absolutePosition = GetAbsolutePosition() - glm::vec2(0.0f, panelSize.y);
-		if (Helper::Collide(absolutePosition, {Size.x, ButtonSize.y}, mousePosition))
+		glm::vec2 absolutePosition = GetAbsolutePosition();
+		glm::vec2 absolutePanelPosition = absolutePosition - glm::vec2(0.0f, panelSize.y);
+		if (Helper::Collide(absolutePanelPosition, {Size.x, ButtonSize.y}, mousePosition))
 		{
 			ActiveColor = bUI::GetConfig().GetColor(bUIConfig::HighlightColor);
 			for (auto& callback : Callbacks)
 				callback(bUICallbackType::Hoover, *this);
 			return true;
 		}
+		else if (ResizeFlags)
+		{
+			if (IS_SET(ResizeFlags, Right))
+			{
+				Size.x = mousePosition.x - absolutePosition.x;
+			}
+			else if (IS_SET(ResizeFlags, Left))
+			{
+				Size.x = absolutePosition.x + Size.x - mousePosition.x;
+				Coords.x = mousePosition.x;
+			}
+			if (IS_SET(ResizeFlags, Bottom))
+			{
+				Size.y = mousePosition.y - absolutePosition.y;
+			}
+			return true;
+		}
+
 		ActiveColor = Color;
 		return false;
 	}
 	bool bUIWindow::OnLeftMousePressed(const glm::vec2& mousePosition)
 	{
 		glm::vec2 panelSize = { Size.x, ButtonSize.y };
-		glm::vec2 absolutePosition = GetAbsolutePosition() - glm::vec2(0.0f, panelSize.y);
-		if (Helper::Collide(absolutePosition, ButtonSize, mousePosition))
+		glm::vec2 absolutePosition = GetAbsolutePosition();
+		glm::vec2 absolutePanelPosition = absolutePosition - glm::vec2(0.0f, panelSize.y);
+		if (Helper::Collide(absolutePanelPosition, ButtonSize, mousePosition))
 		{
 			ChildrenVisible = !ChildrenVisible;
 			for (auto& callback : Callbacks)
 				callback(bUICallbackType::Active, *this);
 			return true;
+		}
+		else if (Helper::Collide(absolutePosition, Size, mousePosition))
+		{
+			if (mousePosition.x > absolutePosition.x + Size.x - sc_ResizeOffset.x)
+				ResizeFlags |= Right;
+			else if (mousePosition.x < absolutePosition.x + sc_ResizeOffset.x)
+				ResizeFlags |= Left;
+			if (mousePosition.y > absolutePosition.y + Size.y - sc_ResizeOffset.y)
+				ResizeFlags |= Bottom;
+			
+			return ResizeFlags;
 		}
 		return false;
 	}

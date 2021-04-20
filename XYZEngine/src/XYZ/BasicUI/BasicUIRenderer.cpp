@@ -124,15 +124,16 @@ namespace XYZ {
 	void bUIRenderer::Submit<bUIWindow>(const bUIWindow& element, uint32_t& scissorID, const Ref<SubTexture>& subTexture, const Ref<SubTexture>& minimizeSubTexture)
 	{
 		glm::vec2 panelSize = { element.Size.x, element.ButtonSize.y };
-		glm::vec2 absolutePosition = element.GetAbsolutePosition() - glm::vec2(0.0f, panelSize.y);
+		glm::vec2 absolutePosition = element.GetAbsolutePosition();
+		glm::vec2 absolutePanelPosition = absolutePosition - glm::vec2(0.0f, panelSize.y);
 		Ref<Font> font = bUI::GetConfig().m_Font;
 		if (element.ChildrenVisible)
 			Helper::GenerateQuad(m_Mesh, element.Color, element.Size, absolutePosition, subTexture, 0, scissorID);
 		
-		Helper::GenerateQuad(m_Mesh, element.ActiveColor, panelSize, absolutePosition, subTexture, 0,scissorID);
-		Helper::GenerateQuad(m_Mesh, element.Color, element.ButtonSize, absolutePosition, minimizeSubTexture, 0, scissorID);
+		Helper::GenerateQuad(m_Mesh, element.ActiveColor, panelSize, absolutePanelPosition, subTexture, 0, scissorID);
+		Helper::GenerateQuad(m_Mesh, element.Color, element.ButtonSize, absolutePanelPosition, minimizeSubTexture, 0, scissorID);
 		glm::vec2 size = bUIHelper::FindTextSize(element.Label.c_str(), font);
-		glm::vec2 textPosition = absolutePosition;
+		glm::vec2 textPosition = absolutePanelPosition;
 		textPosition.x += element.ButtonSize.x + 2.0f;
 		textPosition.y += (element.ButtonSize.y / 2.0f) + (size.y / 2.0f);
 		Helper::GenerateTextMesh(element.Label.c_str(), font, glm::vec4(1.0f), textPosition, m_Mesh, 1, scissorID);
