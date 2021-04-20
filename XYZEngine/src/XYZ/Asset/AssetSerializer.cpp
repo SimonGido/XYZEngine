@@ -10,6 +10,7 @@
 
 #include "XYZ/Scene/SceneSerializer.h"
 #include "XYZ/Utils/FileSystem.h"
+#include "XYZ/Utils/YamlUtils.h"
 #include "AssetManager.h"
 
 #include <yaml-cpp/yaml.h>
@@ -22,104 +23,6 @@
 
 
 namespace YAML {
-
-	template<>
-	struct convert<glm::vec2>
-	{
-		static Node encode(const glm::vec2& rhs)
-		{
-			Node node;
-			node.push_back(rhs.x);
-			node.push_back(rhs.y);
-			return node;
-		}
-
-		static bool decode(const Node& node, glm::vec2& rhs)
-		{
-			if (!node.IsSequence() || node.size() != 2)
-				return false;
-
-			rhs.x = node[0].as<float>();
-			rhs.y = node[1].as<float>();
-			return true;
-		}
-	};
-
-	template<>
-	struct convert<glm::vec3>
-	{
-		static Node encode(const glm::vec3& rhs)
-		{
-			Node node;
-			node.push_back(rhs.x);
-			node.push_back(rhs.y);
-			node.push_back(rhs.z);
-			return node;
-		}
-
-		static bool decode(const Node& node, glm::vec3& rhs)
-		{
-			if (!node.IsSequence() || node.size() != 3)
-				return false;
-
-			rhs.x = node[0].as<float>();
-			rhs.y = node[1].as<float>();
-			rhs.z = node[2].as<float>();
-			return true;
-		}
-	};
-
-	template<>
-	struct convert<glm::vec4>
-	{
-		static Node encode(const glm::vec4& rhs)
-		{
-			Node node;
-			node.push_back(rhs.x);
-			node.push_back(rhs.y);
-			node.push_back(rhs.z);
-			node.push_back(rhs.w);
-			return node;
-		}
-
-		static bool decode(const Node& node, glm::vec4& rhs)
-		{
-			if (!node.IsSequence() || node.size() != 4)
-				return false;
-
-			rhs.x = node[0].as<float>();
-			rhs.y = node[1].as<float>();
-			rhs.z = node[2].as<float>();
-			rhs.w = node[3].as<float>();
-			return true;
-		}
-	};
-
-	template<>
-	struct convert<glm::quat>
-	{
-		static Node encode(const glm::quat& rhs)
-		{
-			Node node;
-			node.push_back(rhs.w);
-			node.push_back(rhs.x);
-			node.push_back(rhs.y);
-			node.push_back(rhs.z);
-			return node;
-		}
-
-		static bool decode(const Node& node, glm::quat& rhs)
-		{
-			if (!node.IsSequence() || node.size() != 4)
-				return false;
-
-			rhs.w = node[0].as<float>();
-			rhs.x = node[1].as<float>();
-			rhs.y = node[2].as<float>();
-			rhs.z = node[3].as<float>();
-			return true;
-		}
-	};
 
 	template<>
 	struct convert<XYZ::TreeNode>
@@ -495,9 +398,8 @@ namespace XYZ {
 		out << YAML::BeginMap;
 		out << YAML::Key << "SubTexture" << YAML::Value << subTexture->FileName;
 		out << YAML::Key << "TextureAsset" << YAML::Value << subTexture->GetTexture()->Handle;
-		out << YAML::Key << "TexCoords" << YAML::Value;
-		ToVec4(out, subTexture->GetTexCoords());
-		
+		out << YAML::Key << "Coords" << YAML::Value << subTexture->GetCoords();
+		out << YAML::Key << "Size" << YAML::Value << subTexture->GetSize();	
 		out << YAML::EndMap;
 		
 		std::ofstream fout(subTexture->FilePath);
@@ -655,9 +557,9 @@ namespace XYZ {
 		GUID textureHandle(data["TextureAsset"].as<std::string>());
 
 		auto texture = AssetManager::GetAsset<Texture2D>(textureHandle);
-		glm::vec4 texCoords = data["TexCoords"].as<glm::vec4>();
-
-		auto ref = Ref<SubTexture>::Create(texture, texCoords);
+		glm::vec2 coords = data["Coords"].as<glm::vec2>();
+		glm::vec2 size = data["Size"].as<glm::vec2>();
+		auto ref = Ref<SubTexture>::Create(texture, coords, size);
 		CopyAsset(ref.As<Asset>(), asset);
 		
 		return ref.As<Asset>();

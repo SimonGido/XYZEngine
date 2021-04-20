@@ -28,7 +28,7 @@ namespace XYZ {
 		m_ViewportHeight = 0;
 
 		m_CameraTexture = Texture2D::Create({ TextureWrap::Clamp, TextureParam::Linear, TextureParam::Nearest }, "Assets/Textures/Gui/Camera.png");
-		m_CameraSubTexture = Ref<SubTexture>::Create(m_CameraTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+		m_CameraSubTexture = Ref<SubTexture>::Create(m_CameraTexture, glm::vec2(0.0f, 0.0f));
 		m_CameraMaterial = Ref<Material>::Create(Shader::Create("Assets/Shaders/DefaultShader.glsl"));
 		m_CameraMaterial->Set("u_Color", glm::vec4(1.0f));
 		m_CameraMaterial->Set("u_Texture", m_CameraTexture);

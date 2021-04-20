@@ -148,7 +148,7 @@ namespace XYZ {
 		{
 			sol::usertype<Ref<SubTexture>> type = m_L.new_usertype<Ref<SubTexture>>("RefSubTexture",
 				sol::call_constructor, sol::factories(
-					[](const Ref<Texture>& texture, const glm::vec4& texCoords) { return Ref<SubTexture>::Create(texture, texCoords); }
+					[](const Ref<Texture>& texture, const glm::vec2& coords, const glm::vec2& size) { return Ref<SubTexture>::Create(texture, coords, size); }
 			));
 			type["Get"] = &Ref<SubTexture>::Get;
 		}

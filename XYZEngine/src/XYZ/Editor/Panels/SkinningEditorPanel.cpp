@@ -175,7 +175,7 @@ namespace XYZ {
         };
         m_Framebuffer = Framebuffer::Create(specs);
         m_RenderTexture = RenderTexture::Create(m_Framebuffer);
-        m_RenderSubTexture = Ref<SubTexture>::Create(m_RenderTexture, glm::vec4(0.0f, 1.0f, 1.0f, 0.0f));
+        m_RenderSubTexture = Ref<SubTexture>::Create(m_RenderTexture,glm::vec2(0.0f, 0.0f));
         m_Window->SubTexture = m_RenderSubTexture;
 
         rebuildRenderBuffers();
