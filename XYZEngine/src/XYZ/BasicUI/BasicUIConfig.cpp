@@ -4,6 +4,8 @@
 
 namespace XYZ {
 	bUIConfig::bUIConfig()
+		:
+		m_Lock(false)
 	{
 		m_Material = Ref<XYZ::Material>::Create(Shader::Create("Assets/Shaders/InGuiShader.glsl"));
 		m_Material->Set("u_Color", glm::vec4(2.0f));

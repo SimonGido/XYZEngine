@@ -12,7 +12,19 @@ bUIElements:
         Color: [1, 1, 1, 1]
         Label: Test Button
         Name: Kravicka
-        Type: 0 
+        Type: 0
+      - Coords: [25, 35]
+        Size: [150.0, 25.0]
+        Color: [1, 1, 1, 1]
+        Label: Test Button
+        Name: Kravicka
+        Type: 2
+      - Coords: [25, 35]
+        Size: [50.0, 50.0]
+        Color: [1, 1, 1, 1]
+        Label: Test Button
+        Name: Kravicka
+        Type: 1  
       - Coords: [25, 95]
         Size: [50.0, 50.0]
         Color: [1, 1, 1, 1]

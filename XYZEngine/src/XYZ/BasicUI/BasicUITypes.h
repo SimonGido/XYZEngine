@@ -15,10 +15,11 @@ namespace XYZ {
 	enum class bUICallbackType
 	{
 		Hoover,
-		Press
+		Active
 	};
 
-	using bUICallback = std::function<void(bUICallbackType)>;
+	struct bUIElement;
+	using bUICallback = std::function<void(bUICallbackType, bUIElement&)>;
 
 	class bUIRenderer;
 	struct bUIElement
@@ -34,9 +35,12 @@ namespace XYZ {
 		virtual ~bUIElement() = default;
 
 		virtual void PushQuads(bUIRenderer& renderer) {};
-		virtual bool OnMouseMoved(const glm::vec2& mousePosition) { return false; };
-		virtual bool OnLeftMousePressed(const glm::vec2& mousePosition) { return false; };
-		virtual bool OnRightMousePressed(const glm::vec2& mousePosition) { return false; };
+		virtual void OnUpdate() {};
+		virtual bool OnMouseMoved(const glm::vec2& mousePosition);
+		virtual bool OnLeftMousePressed(const glm::vec2& mousePosition);
+		virtual bool OnRightMousePressed(const glm::vec2& mousePosition);
+		virtual bool OnLeftMouseReleased() { return false; };
+
 		glm::vec2 GetAbsolutePosition() const;
 
 		glm::vec2			 Coords;
@@ -75,9 +79,6 @@ namespace XYZ {
 		);
 
 		virtual void PushQuads(bUIRenderer& renderer) override;
-		virtual bool OnMouseMoved(const glm::vec2& mousePosition) override;
-		virtual bool OnLeftMousePressed(const glm::vec2& mousePosition) override;
-		virtual bool OnRightMousePressed(const glm::vec2& mousePosition) override;
 	};
 
 	struct bUICheckbox : public bUIElement
@@ -90,6 +91,11 @@ namespace XYZ {
 			const std::string& name,
 			bUIElementType type
 		);
+
+		virtual void PushQuads(bUIRenderer& renderer) override;
+		virtual void OnUpdate() override;
+		virtual bool OnLeftMousePressed(const glm::vec2& mousePosition) override;
+
 		bool Checked;
 	};
 
@@ -103,7 +109,15 @@ namespace XYZ {
 			const std::string& name,
 			bUIElementType type
 		);
+
+		virtual void PushQuads(bUIRenderer& renderer) override;
+		virtual bool OnMouseMoved(const glm::vec2& mousePosition) override;
+		virtual bool OnLeftMousePressed(const glm::vec2& mousePosition) override;
+		virtual bool OnLeftMouseReleased() override;
+
 		float Value;
+	private:
+		bool Modified;
 	};
 
 	struct bUIGroup : public bUIElement

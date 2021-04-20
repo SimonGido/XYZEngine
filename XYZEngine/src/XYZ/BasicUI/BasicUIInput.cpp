@@ -22,16 +22,19 @@ namespace XYZ {
 		}
 		else if (event.IsButtonPressed(MouseCode::MOUSE_BUTTON_RIGHT))
 		{
-			for (bUIAllocator& allocator : data.m_Allocators)
+			if (!bUI::GetConfig().IsLocked())
 			{
-				for (size_t i = 0; i < allocator.Size(); ++i)
+				for (bUIAllocator& allocator : data.m_Allocators)
 				{
-					bUIElement* element = allocator.GetElement<bUIElement>(i);
-					if (element->OnRightMousePressed(mousePosition))
+					for (size_t i = 0; i < allocator.Size(); ++i)
 					{
-						editData.Element = element;
-						editData.MouseOffset = mousePosition - element->Coords;
-						return true;
+						bUIElement* element = allocator.GetElement<bUIElement>(i);
+						if (element->OnRightMousePressed(mousePosition))
+						{
+							editData.Element = element;
+							editData.MouseOffset = mousePosition - element->Coords;
+							return true;
+						}
 					}
 				}
 			}
@@ -40,7 +43,19 @@ namespace XYZ {
 	}
 	bool bUIInput::OnMouseButtonRelease(MouseButtonReleaseEvent& event, bUIEditData& editData, bUIData& data)
 	{
-		if (event.IsButtonReleased(MouseCode::MOUSE_BUTTON_RIGHT))
+		if (event.IsButtonReleased(MouseCode::MOUSE_BUTTON_LEFT))
+		{
+			for (bUIAllocator& allocator : data.m_Allocators)
+			{
+				for (size_t i = 0; i < allocator.Size(); ++i)
+				{
+					bUIElement* element = allocator.GetElement<bUIElement>(i);
+					if (element->OnLeftMouseReleased())
+						return true;
+				}
+			}
+		}
+		else if (event.IsButtonReleased(MouseCode::MOUSE_BUTTON_RIGHT))
 		{
 			editData.Element = nullptr;
 		}

@@ -51,7 +51,8 @@ namespace XYZ {
 				offset.y += highestInRow + layout.SpacingY;
 				highestInRow = 0.0f;
 			}
-			highestInRow = std::max(childElement->Size.y, textSize.y);
+			float height = std::max(childElement->Size.y, textSize.y);
+			highestInRow = std::max(highestInRow, height);
 			childElement->Coords = offset;
 			offset.x += xOffset + layout.SpacingX;
 			return false;

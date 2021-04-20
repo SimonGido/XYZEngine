@@ -14,6 +14,16 @@ namespace XYZ {
 		m_AllocatorMap[name] = m_Allocators.size() - 1;
 		return m_Allocators.back();
 	}
+	void bUIData::Update()
+	{
+		for (bUIAllocator& allocator : m_Allocators)
+		{
+			for (size_t i = 0; i < allocator.Size(); ++i)
+			{
+				allocator.GetElement<bUIElement>(i)->OnUpdate();
+			}
+		}
+	}
 	void bUIData::BuildMesh(bUIRenderer& renderer)
 	{
 		for (bUIAllocator& allocator : m_Allocators)

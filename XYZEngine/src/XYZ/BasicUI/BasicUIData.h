@@ -11,6 +11,7 @@ namespace XYZ {
 	public:
 		bUIAllocator& CreateAllocator(const std::string& name, size_t size);
 
+		void Update();
 		void BuildMesh(bUIRenderer& renderer);
 
 		bUIAllocator& GetAllocator(const std::string& name);

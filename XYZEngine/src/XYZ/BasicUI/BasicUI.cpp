@@ -28,6 +28,7 @@ namespace XYZ {
 	void bUI::Update()
 	{
 		s_Context->Renderer.Begin();
+		s_Context->Data.Update();
 		s_Context->Data.BuildMesh(s_Context->Renderer);
 
 		glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f));

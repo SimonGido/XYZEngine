@@ -1,38 +1,50 @@
-Size: [1920, 1017]
+Size: [2560, 1377]
 bUIElements:
-  - Coords: [50, 50]
-    Size: [400, 300]
+  - Coords: [66.6666641, 67.6991119]
+    Size: [533.333313, 406.194672]
     Color: [1, 1, 1, 0.400000006]
     Label: Test Group
     Name: Test Havkac
     Type: 3
     bUIElements:
-      - Coords: [25, 35]
-        Size: [50, 50]
+      - Coords: [33.3333321, 47.3893814]
+        Size: [66.6666641, 67.6991119]
         Color: [1, 1, 1, 1]
         Label: Test Button
         Name: Kravicka
         Type: 0
-      - Coords: [25, 95]
-        Size: [50, 50]
+      - Coords: [33.3333321, 47.3893814]
+        Size: [200, 33.849556]
+        Color: [1, 1, 1, 1]
+        Label: Test Button
+        Name: Kravicka
+        Type: 2
+      - Coords: [33.3333321, 47.3893814]
+        Size: [66.6666641, 67.6991119]
+        Color: [1, 1, 1, 1]
+        Label: Test Button
+        Name: Kravicka
+        Type: 1
+      - Coords: [33.3333321, 128.628311]
+        Size: [66.6666641, 67.6991119]
         Color: [1, 1, 1, 1]
         Label: Test Button
         Name: Kravicka
         Type: 0
-      - Coords: [25, 95]
-        Size: [50, 50]
+      - Coords: [33.3333321, 128.628311]
+        Size: [66.6666641, 67.6991119]
         Color: [1, 1, 1, 1]
         Label: Test Button
         Name: Kravicka
         Type: 0
-      - Coords: [25, 95]
-        Size: [50, 50]
+      - Coords: [33.3333321, 128.628311]
+        Size: [66.6666641, 67.6991119]
         Color: [1, 1, 1, 1]
         Label: Test Button
         Name: Kravicka
         Type: 0
-  - Coords: [150.970001, 150.5]
-    Size: [80.0299988, 50.0499992]
+  - Coords: [201.293335, 203.774338]
+    Size: [106.706665, 67.7668152]
     Color: [1, 1, 1, 1]
     Label: Test Button
     Name: Test Name

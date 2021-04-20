@@ -79,6 +79,45 @@ namespace XYZ {
 		textPosition.y += (element.Size.y / 2.0f) + (size.y / 2.0f);
 		Helper::GenerateTextMesh(element.Label.c_str(), font, glm::vec4(1.0f), textPosition, m_Mesh, 1);
 	}
+
+	template <>
+	void bUIRenderer::Submit<bUICheckbox>(const bUICheckbox& element, const Ref<SubTexture>& subTexture)
+	{
+		glm::vec2 absolutePosition = element.GetAbsolutePosition();
+		Ref<Font> font = bUI::GetConfig().m_Font;
+		Helper::GenerateQuad(m_Mesh, element.ActiveColor, element.Size, absolutePosition, subTexture, 0);
+		glm::vec2 size = bUIHelper::FindTextSize(element.Label.c_str(), font);
+		glm::vec2 textPosition = absolutePosition;
+		textPosition.x += element.Size.x + 2.0f;
+		textPosition.y += (element.Size.y / 2.0f) + (size.y / 2.0f);
+		Helper::GenerateTextMesh(element.Label.c_str(), font, glm::vec4(1.0f), textPosition, m_Mesh, 1);
+	}
+
+	template <>
+	void bUIRenderer::Submit<bUISlider>(const bUISlider& element, const Ref<SubTexture>& sliderSubTexture, const Ref<SubTexture>& handleSubTexture, const glm::vec2& handlePosition, const float& value)
+	{
+		glm::vec2 absolutePosition = element.GetAbsolutePosition();
+		Ref<Font> font = bUI::GetConfig().m_Font;
+		Helper::GenerateQuad(m_Mesh, element.ActiveColor, element.Size, absolutePosition, sliderSubTexture, 0);
+		Helper::GenerateQuad(m_Mesh, element.ActiveColor, { element.Size.y, element.Size.y } , handlePosition, handleSubTexture, 0);
+		{
+			char buffer[10];
+			sprintf(buffer, "%f", value);
+			glm::vec2 size = bUIHelper::FindTextSize(buffer, font);
+			glm::vec2 textPosition = absolutePosition;
+			textPosition.x += (element.Size.x / 2.0f) - (size.x / 2.0f);
+			textPosition.y += (element.Size.y / 2.0f) + (size.y / 2.0f);
+			Helper::GenerateTextMesh(buffer, font, glm::vec4(1.0f), textPosition, m_Mesh, 1);
+		}
+		{
+			glm::vec2 size = bUIHelper::FindTextSize(element.Label.c_str(), font);
+			glm::vec2 textPosition = absolutePosition;
+			textPosition.x += element.Size.x + 2.0f;
+			textPosition.y += (element.Size.y / 2.0f) + (size.y / 2.0f);
+			Helper::GenerateTextMesh(element.Label.c_str(), font, glm::vec4(1.0f), textPosition, m_Mesh, 1);
+		}
+	}
+
 	template <>
 	void bUIRenderer::Submit<bUIGroup>(const bUIGroup& element, const Ref<SubTexture>& subTexture, const Ref<SubTexture>& minimizeSubTexture)
 	{

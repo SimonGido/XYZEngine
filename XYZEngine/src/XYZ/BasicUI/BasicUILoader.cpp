@@ -61,8 +61,8 @@ namespace XYZ {
 		bUIAllocator& allocator = bUI::getContext().Data.GetAllocator(name);
 		bUIElement* parent = nullptr;
 
-		out << YAML::BeginMap;
-		out << YAML::Key << "Size" << glm::vec2(1920.0f, 1017.0f);
+		out << YAML::BeginMap;	
+		out << YAML::Key << "Size" << bUI::getContext().ViewportSize;
 		out << YAML::Key << "bUIElements";
 		out << YAML::Value << YAML::BeginSeq;
 		for (size_t i = 0; i < allocator.Size() - 1; ++i)
