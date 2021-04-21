@@ -78,7 +78,7 @@ namespace XYZ {
 		glm::vec2 size = bUIHelper::FindTextSize(element.Label.c_str(), font);
 		glm::vec2 textPosition = absolutePosition;
 		textPosition.x += element.Size.x + 2.0f;
-		textPosition.y += (element.Size.y / 2.0f) + (size.y / 2.0f);
+		textPosition.y = absolutePosition.y + ((element.Size.y - size.y) / 2.0f) + font->GetLineHeight();
 		Helper::GenerateTextMesh(element.Label.c_str(), font, glm::vec4(1.0f), textPosition, m_Mesh, 1, scissorID);
 	}
 
@@ -92,15 +92,15 @@ namespace XYZ {
 			glm::vec2 size = bUIHelper::FindTextSize(element.Label.c_str(), font);
 			glm::vec2 textPosition = absolutePosition;
 			textPosition.x += element.Size.x + 2.0f;
-			textPosition.y += (element.Size.y / 2.0f) + (size.y / 2.0f);
+			textPosition.y = absolutePosition.y + ((element.Size.y - size.y) / 2.0f) + font->GetLineHeight();
 			Helper::GenerateTextMesh(element.Label.c_str(), font, glm::vec4(1.0f), textPosition, m_Mesh, 1, scissorID);
 		}
 		Helper::GenerateQuad(m_Mesh, element.ActiveColor, element.Size, absolutePosition, subTexture, 0, scissorID);
 		{
 			glm::vec2 size = bUIHelper::FindTextSize(element.GetBuffer(), font);
 			glm::vec2 textPosition = absolutePosition;
-			textPosition.x += (element.Size.x / 2.0f) - (size.x / 2.0f);
-			textPosition.y += (element.Size.y / 2.0f) + (size.y / 2.0f);
+			textPosition.x = absolutePosition.x + ((element.Size.x - size.x) / 2.0f);
+			textPosition.y = absolutePosition.y + ((element.Size.y - size.y) / 2.0f) + font->GetLineHeight();
 			Helper::GenerateTextMesh(element.GetBuffer(), font, glm::vec4(1.0f), textPosition, m_Mesh, 1, scissorID);
 		}
 	}
@@ -115,7 +115,7 @@ namespace XYZ {
 			glm::vec2 size = bUIHelper::FindTextSize(element.Label.c_str(), font);
 			glm::vec2 textPosition = absolutePosition;
 			textPosition.x += element.Size.x + 2.0f;
-			textPosition.y += (element.Size.y / 2.0f) + (size.y / 2.0f);
+			textPosition.y = absolutePosition.y + ((element.Size.y - size.y) / 2.0f) + font->GetLineHeight();
 			Helper::GenerateTextMesh(element.Label.c_str(), font, glm::vec4(1.0f), textPosition, m_Mesh, 1, scissorID);
 		}
 		Helper::GenerateQuad(m_Mesh, element.ActiveColor, element.Size, absolutePosition, subTexture, 0, scissorID);
@@ -138,7 +138,7 @@ namespace XYZ {
 		glm::vec2 size = bUIHelper::FindTextSize(element.Label.c_str(), font);
 		glm::vec2 textPosition = absolutePosition;
 		textPosition.x += element.Size.x + 2.0f;
-		textPosition.y += (element.Size.y / 2.0f) + (size.y / 2.0f);
+		textPosition.y = absolutePosition.y + ((element.Size.y - size.y) / 2.0f) + font->GetLineHeight();
 		Helper::GenerateTextMesh(element.Label.c_str(), font, glm::vec4(1.0f), textPosition, m_Mesh, 1, scissorID);
 	}
 
@@ -154,15 +154,15 @@ namespace XYZ {
 			sprintf(buffer, "%f", value);
 			glm::vec2 size = bUIHelper::FindTextSize(buffer, font);
 			glm::vec2 textPosition = absolutePosition;
-			textPosition.x += (element.Size.x / 2.0f) - (size.x / 2.0f);
-			textPosition.y += (element.Size.y / 2.0f) + (size.y / 2.0f);
+			textPosition.x = absolutePosition.x + ((element.Size.x - size.x) / 2.0f);
+			textPosition.y = absolutePosition.y + ((element.Size.y - size.y) / 2.0f) + font->GetLineHeight();
 			Helper::GenerateTextMesh(buffer, font, glm::vec4(1.0f), textPosition, m_Mesh, 1, scissorID);
 		}
 		{
 			glm::vec2 size = bUIHelper::FindTextSize(element.Label.c_str(), font);
 			glm::vec2 textPosition = absolutePosition;
 			textPosition.x += element.Size.x + 2.0f;
-			textPosition.y += (element.Size.y / 2.0f) + (size.y / 2.0f);
+			textPosition.y = absolutePosition.y + ((element.Size.y - size.y) / 2.0f) + font->GetLineHeight();
 			Helper::GenerateTextMesh(element.Label.c_str(), font, glm::vec4(1.0f), textPosition, m_Mesh, 1, scissorID);
 		}
 	}
