@@ -292,11 +292,36 @@ namespace XYZ {
 
 		static constexpr size_t BufferSize = 60;
 	private:
-		mutable int32_t Value = 0;
-		uint32_t InsertionIndex;
-		char Buffer[BufferSize];
+		uint32_t	  InsertionIndex;
+		char		  Buffer[BufferSize];	
+	};
 
-		
+	class bUIString : public bUIElement,
+					  public bUIListener
+	{
+	public:
+		bUIString(
+			const glm::vec2& coords,
+			const glm::vec2& size,
+			const glm::vec4& color,
+			const std::string& label,
+			const std::string& name,
+			bUIElementType type
+		);
+
+		virtual void PushQuads(bUIRenderer& renderer, uint32_t& scissorID) override;
+		virtual bool OnMouseMoved(const glm::vec2& mousePosition) override;
+		virtual bool OnLeftMousePressed(const glm::vec2& mousePosition) override;
+		virtual bool OnKeyPressed(int32_t mode, int32_t key) override;
+		virtual bool OnKeyTyped(char character) override;
+
+		void			   SetValue(const std::string& value);
+		const std::string& GetValue() const { return Buffer; }
+
+		static constexpr size_t BufferSize = 60;
+	private:
+		uint32_t		InsertionIndex;
+		std::string		Buffer;
 	};
 }
 

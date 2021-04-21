@@ -25,6 +25,8 @@ namespace XYZ {
 				return sizeof(bUITree);
 			case XYZ::bUIElementType::Float:
 				return sizeof(bUIFloat);
+			case XYZ::bUIElementType::String:
+				return sizeof(bUIString);
 			default:
 				return 0;
 			}
@@ -45,6 +47,8 @@ namespace XYZ {
 				return bUIElementType::Tree;
 			if (str == "Float")
 				return bUIElementType::Float;
+			if (str == "String")
+				return bUIElementType::String;
 			
 			XYZ_ASSERT(false, "Invalid type");
 			return bUIElementType::None;
@@ -67,6 +71,8 @@ namespace XYZ {
 				return "Tree";
 			case XYZ::bUIElementType::Float:
 				return "Float";
+			case XYZ::bUIElementType::String:
+				return "String";
 			}
 			XYZ_ASSERT(false, "Type is none");
 			return "None";
@@ -222,6 +228,9 @@ namespace XYZ {
 			break;
 		case XYZ::bUIElementType::Float:
 			element = allocator->CreateElement<bUIFloat>(parent, coords, size, color, label, name, type);
+			break;
+		case XYZ::bUIElementType::String:
+			element = allocator->CreateElement<bUIString>(parent, coords, size, color, label, name, type);
 			break;
 		default:
 			XYZ_ASSERT(false, "");

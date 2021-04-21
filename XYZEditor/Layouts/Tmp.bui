@@ -17,6 +17,12 @@ bUIElements:
     Color: [1, 1, 1, 1]
     Label: Test Float
     Name: Kravicka
+    Type: String
+  - Coords: [33.3333321, 47.3893814]
+    Size: [66.6666641, 67.6991119]
+    Color: [1, 1, 1, 1]
+    Label: Test Float
+    Name: Kravicka
     Type: Float
   - Coords: [66.6666641, 67.6991119]
     Size: [533.333313, 406.194672]

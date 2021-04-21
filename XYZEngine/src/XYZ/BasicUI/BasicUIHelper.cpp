@@ -18,7 +18,7 @@ namespace XYZ {
 			auto& character = font->GetCharacter(source[counter]);
 			if (source[counter] == '\n')
 			{
-				width = xCursor;
+				width = std::max(width, xCursor);
 				yCursor += font->GetLineHeight();
 				xCursor = 0.0f;
 				counter++;

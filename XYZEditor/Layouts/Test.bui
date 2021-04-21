@@ -11,7 +11,13 @@ bUIElements:
     Color: [1, 1, 1, 1]
     Label: Test Float
     Name: Kravicka
-    Type: Float 
+    Type: Float
+  - Coords: [25, 35]
+    Size: [50.0, 50.0]
+    Color: [1, 1, 1, 1]
+    Label: Test Float
+    Name: Kravicka
+    Type: String  
   - Coords: [25, 35]
     Size: [50.0, 50.0]
     Color: [1, 1, 1, 1]

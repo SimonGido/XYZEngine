@@ -687,8 +687,7 @@ namespace XYZ {
 
 	float bUIFloat::GetValue() const
 	{
-		Value = (float)atof(Buffer);
-		return Value;
+		return (float)atof(Buffer);
 	}
 
 	void bUIListener::setListener(bUIListener* listener)
@@ -700,6 +699,99 @@ namespace XYZ {
 				casted->ActiveColor = casted->Color;
 		}
 		s_Selected = listener;
+	}
+
+	bUIString::bUIString(const glm::vec2& coords, const glm::vec2& size, const glm::vec4& color, const std::string& label, const std::string& name, bUIElementType type)
+		:
+		bUIElement(coords, size, color,  label, name, type)
+	{
+		SetValue("");
+	}
+
+	void bUIString::PushQuads(bUIRenderer& renderer, uint32_t& scissorID)
+	{
+		HandleVisibility(scissorID);
+		if (!Visible)
+			return;
+		renderer.Submit<bUIString>(*this, scissorID, bUI::GetContext().Config.GetSubTexture(bUIConfig::Button));
+	}
+
+	bool bUIString::OnMouseMoved(const glm::vec2& mousePosition)
+	{
+		return false;
+	}
+
+	bool bUIString::OnLeftMousePressed(const glm::vec2& mousePosition)
+	{
+		if (!Visible) 
+			return false;
+
+		bool listen = Listen;
+		Listen = false;
+		ActiveColor = Color;
+		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
+		{		
+			bUIListener::setListener(this);
+			Listen = !listen;
+			if (Listen)
+				ActiveColor = bUI::GetConfig().GetColor(bUIConfig::HighlightColor);
+
+			for (auto& callback : Callbacks)
+				callback(bUICallbackType::Active, *this);
+			return true;
+		}
+		return false;
+	}
+
+	bool bUIString::OnKeyPressed(int32_t mode, int32_t key)
+	{
+		if (Listen && Visible)
+		{
+			if (key == ToUnderlying(KeyCode::KEY_BACKSPACE))
+			{
+				if (InsertionIndex > 0)
+					InsertionIndex--;
+				Buffer.erase(Buffer.begin() + InsertionIndex);
+				for (auto& callback : Callbacks)
+					callback(bUICallbackType::Active, *this);
+
+				if (FitText)
+					Size = bUIHelper::FindTextSize(Buffer.c_str(), bUI::GetConfig().GetFont()) + (Borders * 2.0f);
+				return true;
+			}
+			else if (key == ToUnderlying(KeyCode::KEY_ENTER))
+			{
+				Buffer.push_back('\n');
+				InsertionIndex++;
+				if (FitText)
+					Size = bUIHelper::FindTextSize(Buffer.c_str(), bUI::GetConfig().GetFont()) + (Borders * 2.0f);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	bool bUIString::OnKeyTyped(char character)
+	{
+		if (Listen && Visible)
+		{		
+			Buffer.push_back(character);
+			InsertionIndex++;
+			for (auto& callback : Callbacks)
+				callback(bUICallbackType::Active, *this);
+
+			if (FitText)
+				Size = bUIHelper::FindTextSize(Buffer.c_str(), bUI::GetConfig().GetFont()) + (Borders * 2.0f);
+
+			return true;
+		}
+		return false;
+	}
+
+	void bUIString::SetValue(const std::string& value)
+	{
+		Buffer = value;
+		InsertionIndex = Buffer.size();
 	}
 
 }
