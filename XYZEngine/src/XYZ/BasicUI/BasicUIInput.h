@@ -13,6 +13,8 @@ namespace XYZ {
 		static bool OnMouseButtonRelease(MouseButtonReleaseEvent& event, bUIEditData& editData, bUIData& data);
 		static bool OnMouseMove(MouseMovedEvent& event, bUIEditData& editData, bUIData& data);
 		static bool OnMouseScroll(MouseScrollEvent& event, bUIEditData& editData, bUIData& data);
+		static bool OnKeyType(KeyTypedEvent& event);
+		static bool OnKeyPress(KeyPressedEvent& event);
 	};
 
 }

@@ -94,4 +94,20 @@ namespace XYZ {
 		}
 		return false;
 	}
+	bool bUIInput::OnKeyType(KeyTypedEvent& event)
+	{
+		if (bUIListener::GetListener())
+		{
+			return bUIListener::GetListener()->OnKeyTyped(event.GetKey());
+		}
+		return false;
+	}
+	bool bUIInput::OnKeyPress(KeyPressedEvent& event)
+	{
+		if (bUIListener::GetListener())
+		{
+			return bUIListener::GetListener()->OnKeyPressed(event.GetMod(), event.GetKey());
+		}
+		return false;
+	}
 }

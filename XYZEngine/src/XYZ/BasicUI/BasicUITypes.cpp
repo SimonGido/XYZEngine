@@ -16,7 +16,7 @@ namespace XYZ {
 		}
 	}
 
-	bUIFloat* bUIFloat::s_CurrentListener = nullptr;
+	bUIListener* bUIListener::s_Selected = nullptr;
 
 	bUIElement::bUIElement(const glm::vec2& coords, const glm::vec2& size, const glm::vec4& color, const std::string& label, const std::string& name, bUIElementType type)
 		:
@@ -95,15 +95,7 @@ namespace XYZ {
 		}
 		return 0;
 	}
-	template <>
-	void bUIElement::setInputListener<bUIFloat>(bUIFloat* listener)
-	{
-		if (bUIFloat::s_CurrentListener)
-		{
-			bUIFloat::s_CurrentListener->Listen = false;
-		}
-		bUIFloat::s_CurrentListener = listener;
-	}
+	
 
 	bUIButton::bUIButton(const glm::vec2& coords, const glm::vec2& size, const glm::vec4& color, const std::string& label, const std::string& name, bUIElementType type)
 		:
@@ -389,6 +381,7 @@ namespace XYZ {
 
 	void bUITree::PushQuads(bUIRenderer& renderer, uint32_t& scissorID)
 	{
+		HandleVisibility(scissorID);
 		if (!Visible)
 			return;
 
@@ -606,6 +599,10 @@ namespace XYZ {
 
 	void bUIFloat::PushQuads(bUIRenderer& renderer, uint32_t& scissorID)
 	{
+		HandleVisibility(scissorID);
+		if (!Visible)
+			return;
+		renderer.Submit<bUIFloat>(*this, scissorID, bUI::GetContext().Config.GetSubTexture(bUIConfig::Button));
 	}
 
 	bool bUIFloat::OnMouseMoved(const glm::vec2& mousePosition)
@@ -623,7 +620,7 @@ namespace XYZ {
 		ActiveColor = Color;
 		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
 		{		
-			bUIElement::setInputListener(this);		
+			bUIListener::setListener(this);
 			Listen = !listen;
 			if (Listen)
 				ActiveColor = bUI::GetConfig().GetColor(bUIConfig::HighlightColor);
@@ -685,6 +682,17 @@ namespace XYZ {
 	{
 		Value = (float)atof(Buffer);
 		return Value;
+	}
+
+	void bUIListener::setListener(bUIListener* listener)
+	{
+		if (s_Selected)
+		{
+			s_Selected->Listen = false;
+			if (auto casted = dynamic_cast<bUIElement*>(s_Selected))
+				casted->ActiveColor = casted->Color;
+		}
+		s_Selected = listener;
 	}
 
 }

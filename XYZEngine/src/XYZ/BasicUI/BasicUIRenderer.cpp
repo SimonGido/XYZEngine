@@ -83,6 +83,19 @@ namespace XYZ {
 	}
 
 	template <>
+	void bUIRenderer::Submit<bUIFloat>(const bUIFloat& element, uint32_t& scissorID, const Ref<SubTexture>& subTexture)
+	{
+		glm::vec2 absolutePosition = element.GetAbsolutePosition();
+		Ref<Font> font = bUI::GetConfig().m_Font;
+		Helper::GenerateQuad(m_Mesh, element.ActiveColor, element.Size, absolutePosition, subTexture, 0, scissorID);
+		glm::vec2 size = bUIHelper::FindTextSize(element.Label.c_str(), font);
+		glm::vec2 textPosition = absolutePosition;
+		textPosition.x += element.Size.x + 2.0f;
+		textPosition.y += (element.Size.y / 2.0f) + (size.y / 2.0f);
+		Helper::GenerateTextMesh(element.Label.c_str(), font, glm::vec4(1.0f), textPosition, m_Mesh, 1, scissorID);
+	}
+
+	template <>
 	void bUIRenderer::Submit<bUICheckbox>(const bUICheckbox& element, uint32_t& scissorID, const Ref<SubTexture>& subTexture)
 	{
 		glm::vec2 absolutePosition = element.GetAbsolutePosition();

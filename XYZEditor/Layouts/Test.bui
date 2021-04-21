@@ -5,7 +5,19 @@ bUIElements:
     Color: [1, 1, 1, 1]
     Label: ""
     Name: Tree
-    Type: Tree 
+    Type: Tree
+  - Coords: [25, 35]
+    Size: [50.0, 50.0]
+    Color: [1, 1, 1, 1]
+    Label: Test Float
+    Name: Kravicka
+    Type: Float 
+  - Coords: [25, 35]
+    Size: [50.0, 50.0]
+    Color: [1, 1, 1, 1]
+    Label: Test Float
+    Name: Kravicka
+    Type: Float 
   - Coords: [50, 50]
     Size: [400.0, 300.0]
     Color: [1, 1, 1, 0.4]

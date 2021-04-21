@@ -48,8 +48,6 @@ namespace XYZ {
 		virtual bool OnRightMousePressed(const glm::vec2& mousePosition);
 		virtual bool OnLeftMouseReleased() { return false; };
 		virtual bool OnMouseScrolled(const glm::vec2& mousePosition, const glm::vec2& offset) { return false; }
-		virtual bool OnKeyPressed(int32_t mode, int32_t key) { return false; }
-		virtual bool OnKeyTyped(char character) { return false; }
 
 		virtual glm::vec2 GetAbsolutePosition() const;
 		void HandleVisibility(uint32_t scissorID);
@@ -67,9 +65,6 @@ namespace XYZ {
 
 		std::vector<bUICallback> Callbacks;
 
-	protected:
-		template <typename T>
-		static void setInputListener(T* listener);
 
 	private:
 		uint32_t depth();
@@ -80,6 +75,22 @@ namespace XYZ {
 		friend class bUIData;
 		friend class bUI;
 		friend class bUIAllocator;
+	};
+
+
+	struct bUIListener
+	{
+		virtual bool OnKeyPressed(int32_t mode, int32_t key) { return false; }
+		virtual bool OnKeyTyped(char character) { return false; }
+
+		static bUIListener* GetListener() { return s_Selected; }
+
+		bool Listen = false;
+	protected:
+		static void setListener(bUIListener* listener);
+
+	private:
+		static bUIListener* s_Selected;
 	};
 
 	struct bUIButton : public bUIElement
@@ -253,7 +264,8 @@ namespace XYZ {
 		friend class bUIRenderer;
 	};
 
-	class bUIFloat : public bUIElement
+	class bUIFloat : public bUIElement,
+					 public bUIListener
 	{
 	public:
 		bUIFloat(
@@ -275,10 +287,7 @@ namespace XYZ {
 		float	    GetValue() const;
 		const char* GetBuffer() const { return Buffer; }
 
-		bool Listen = false;
 		static constexpr size_t BufferSize = 60;
-
-		static bUIFloat* s_CurrentListener;
 	private:
 		mutable int32_t Value = 0;
 		uint32_t InsertionIndex;
