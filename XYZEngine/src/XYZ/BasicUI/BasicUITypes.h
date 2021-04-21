@@ -85,8 +85,11 @@ namespace XYZ {
 
 		static bUIListener* GetListener() { return s_Selected; }
 
-		bool Listen = false;
+		glm::vec2 Borders = glm::vec2(10.0f);
+		bool FitText = true;
 	protected:
+		bool Listen = false;
+
 		static void setListener(bUIListener* listener);
 
 	private:

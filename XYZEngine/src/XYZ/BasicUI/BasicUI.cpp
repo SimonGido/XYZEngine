@@ -58,6 +58,8 @@ namespace XYZ {
 		dispatcher.Dispatch<MouseButtonReleaseEvent>(&onMouseButtonRelease);
 		dispatcher.Dispatch<MouseMovedEvent>(&onMouseMove);
 		dispatcher.Dispatch<MouseScrollEvent>(&onMouseScroll);
+		dispatcher.Dispatch<KeyTypedEvent>(&onKeyType);
+		dispatcher.Dispatch<KeyPressedEvent>(&onKeyPress);
 	}
 	void bUI::SetupLayout(const std::string& uiName, const std::string& name, const bUILayout& layout)
 	{
@@ -95,6 +97,14 @@ namespace XYZ {
 	bool bUI::onMouseScroll(MouseScrollEvent& event)
 	{
 		return bUIInput::OnMouseScroll(event, s_Context->EditData, s_Context->Data);
+	}
+	bool bUI::onKeyType(KeyTypedEvent& event)
+	{
+		return bUIInput::OnKeyType(event);
+	}
+	bool bUI::onKeyPress(KeyPressedEvent& event)
+	{
+		return bUIInput::OnKeyPress(event);
 	}
 	bUIContext& bUI::getContext()
 	{

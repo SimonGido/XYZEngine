@@ -643,6 +643,9 @@ namespace XYZ {
 				Buffer[InsertionIndex] = '\0';
 				for (auto& callback : Callbacks)
 					callback(bUICallbackType::Active, *this);
+
+				if (FitText)
+					Size = bUIHelper::FindTextSize(Buffer, bUI::GetConfig().GetFont()) + (Borders * 2.0f);
 				return true;
 			}
 		}
@@ -660,6 +663,10 @@ namespace XYZ {
 				Buffer[InsertionIndex++] = character;
 				for (auto& callback : Callbacks)
 					callback(bUICallbackType::Active, *this);
+
+				if (FitText)
+					Size = bUIHelper::FindTextSize(Buffer, bUI::GetConfig().GetFont()) + (Borders * 2.0f);
+
 				return true;
 			}
 		}
