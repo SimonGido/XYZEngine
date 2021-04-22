@@ -29,6 +29,7 @@ namespace XYZ {
 		Parent(nullptr),
 		Visible(true),
 		ChildrenVisible(true),
+		Locked(false),
 		Type(type)
 	{
 	}
@@ -266,6 +267,8 @@ namespace XYZ {
 			{
 				Size.y = mousePosition.y - absolutePosition.y;
 			}
+			if (OnResize)
+				OnResize(Size);
 			return true;
 		}
 
@@ -418,6 +421,7 @@ namespace XYZ {
 	bool bUITree::OnLeftMousePressed(const glm::vec2& mousePosition)
 	{
 		glm::vec2 absolutePosition = GetAbsolutePosition();
+		bool result = false;
 		Hierarchy.Traverse([&](void* parent, void* child) ->bool {
 			if (parent)
 			{
@@ -429,20 +433,22 @@ namespace XYZ {
 			glm::vec2 itemAbsolutePosition = absolutePosition + childItem->Coords;
 			glm::vec2 textPosition = itemAbsolutePosition + glm::vec2(Size.x, 0.0f);
 			glm::vec2 textSize = bUIHelper::FindTextSize(childItem->Label.c_str(), bUI::GetConfig().GetFont());
+			textSize.y = std::max(Size.y, textSize.y);
+
 			if (Helper::Collide(itemAbsolutePosition, Size, mousePosition))
 			{
 				childItem->Open = !childItem->Open;
-				return true;
+				result = true;
 			}
-			if (Helper::Collide(textPosition, textSize, mousePosition))
+			else if (Helper::Collide(textPosition, textSize, mousePosition))
 			{
 				if (OnSelect)
 					OnSelect(childItem->GetKey());
-				return true;
+				result = true;
 			}
-			return false;
+			return result;
 		});
-		return false;
+		return result;
 	}
 
 	bool bUITree::OnRightMousePressed(const glm::vec2& mousePosition)
@@ -664,6 +670,7 @@ namespace XYZ {
 				for (auto& callback : Callbacks)
 					callback(bUICallbackType::Active, *this);
 
+				
 				if (FitText)
 					Size = bUIHelper::FindTextSize(Buffer, bUI::GetConfig().GetFont()) + (Borders * 2.0f);
 
@@ -794,4 +801,22 @@ namespace XYZ {
 		InsertionIndex = Buffer.size();
 	}
 
+	bUIImage::bUIImage(const glm::vec2& coords, const glm::vec2& size, const glm::vec4& color, const std::string& label, const std::string& name, bUIElementType type)
+		:
+		bUIElement(coords, size, color,  label, name, type)
+	{
+	}
+
+	void bUIImage::PushQuads(bUIRenderer& renderer, uint32_t& scissorID)
+	{
+		renderer.Submit<bUIImage>(*this, scissorID);
+	}
+	void bUIImage::OnUpdate()
+	{
+		if (FitParent && Parent)
+		{
+			Coords = glm::vec2(0.0f);
+			Size = Parent->Size;
+		}
+	}
 }

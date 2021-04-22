@@ -1,6 +1,7 @@
 #pragma once
 #include "XYZ/Utils/DataStructures/MemoryPool.h"
 #include "XYZ/Utils/DataStructures/Tree.h"
+#include "XYZ/Renderer/SubTexture.h"
 
 #include <glm/glm.hpp>
 
@@ -16,7 +17,8 @@ namespace XYZ {
 		Scrollbox,
 		Float,
 		String,
-		Tree
+		Tree,
+		Image
 	};
 
 	enum class bUICallbackType
@@ -52,6 +54,8 @@ namespace XYZ {
 		virtual glm::vec2 GetAbsolutePosition() const;
 		void HandleVisibility(uint32_t scissorID);
 
+		int32_t GetID() const { return ID; }
+
 		glm::vec2			 Coords;
 		glm::vec2			 Size;
 		glm::vec4			 Color;
@@ -61,6 +65,7 @@ namespace XYZ {
 		bUIElement*			 Parent;
 		bool				 Visible;
 		bool				 ChildrenVisible;
+		bool				 Locked;
 		const bUIElementType Type;
 
 		std::vector<bUICallback> Callbacks;
@@ -86,7 +91,8 @@ namespace XYZ {
 		static bUIListener* GetListener() { return s_Selected; }
 
 		glm::vec2 Borders = glm::vec2(10.0f);
-		bool FitText = true;
+		bool FitText = false;
+		bool CutTextOutside = true;
 	protected:
 		bool Listen = false;
 
@@ -168,6 +174,7 @@ namespace XYZ {
 
 		glm::vec2 ButtonSize = { 25.0f, 25.0f };
 
+		std::function<void(const glm::vec2&)> OnResize;
 	private:
 		enum ResizeFlags
 		{
@@ -322,6 +329,27 @@ namespace XYZ {
 	private:
 		uint32_t		InsertionIndex;
 		std::string		Buffer;
+	};
+
+
+	class bUIImage : public bUIElement
+	{
+	public:
+		bUIImage(
+			const glm::vec2& coords,
+			const glm::vec2& size,
+			const glm::vec4& color,
+			const std::string& label,
+			const std::string& name,
+			bUIElementType type
+		);
+		virtual void PushQuads(bUIRenderer& renderer, uint32_t& scissorID) override;
+		virtual void OnUpdate();
+
+
+		Ref<SubTexture> ImageSubTexture;
+
+		bool FitParent = true;
 	};
 }
 

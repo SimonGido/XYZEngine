@@ -1,76 +1,81 @@
-Size: [2560, 1377]
+Size: [1920, 1017]
 bUIElements:
-  - Coords: [133.333328, 541.592896]
-    Size: [40, 40.6194687]
-    Color: [1, 1, 1, 1]
-    Label: ""
-    Name: Tree
-    Type: Tree
-  - Coords: [33.3333321, 47.3893814]
-    Size: [66.6666641, 67.6991119]
+  - Coords: [25, 35]
+    Size: [50, 50]
     Color: [1, 1, 1, 1]
     Label: Test Float
     Name: Kravicka
+    Locked: false
     Type: Float
-  - Coords: [33.3333321, 47.3893814]
-    Size: [66.6666641, 67.6991119]
+  - Coords: [25, 35]
+    Size: [50, 50]
     Color: [1, 1, 1, 1]
     Label: Test Float
     Name: Kravicka
+    Locked: false
     Type: String
-  - Coords: [33.3333321, 47.3893814]
-    Size: [66.6666641, 67.6991119]
+  - Coords: [25, 35]
+    Size: [50, 50]
     Color: [1, 1, 1, 1]
     Label: Test Float
     Name: Kravicka
+    Locked: false
     Type: Float
-  - Coords: [66.6666641, 67.6991119]
-    Size: [533.333313, 406.194672]
+  - Coords: [50, 50]
+    Size: [400, 300]
     Color: [1, 1, 1, 0.400000006]
     Label: Test Group
     Name: Test Havkac
+    Locked: true
     Type: Window
     bUIElements:
-      - Coords: [13.333333, 33.849556]
-        Size: [506.666656, 358.805298]
+      - Coords: [10, 25]
+        Size: [380, 265]
         Color: [0.100000001, 0.100000001, 0.100000001, 1]
         Label: ""
         Name: Scrollbox
+        Locked: false
         Type: Scrollbox
         bUIElements:
-          - Coords: [33.3333321, 47.3893814]
-            Size: [200, 33.849556]
+          - Coords: [25, 35]
+            Size: [150, 25]
             Color: [1, 1, 1, 1]
             Label: Test Button
             Name: Kravicka
+            Locked: false
             Type: Slider
-          - Coords: [33.3333321, 47.3893814]
-            Size: [66.6666641, 67.6991119]
+          - Coords: [25, 35]
+            Size: [50, 50]
             Color: [1, 1, 1, 1]
             Label: Test Button
             Name: Kravicka
+            Locked: false
             Type: Checkbox
-          - Coords: [33.3333321, 128.628311]
-            Size: [66.6666641, 67.6991119]
+          - Coords: [25, 95]
+            Size: [50, 50]
             Color: [1, 1, 1, 1]
             Label: Test Button
             Name: Kravicka
+            Locked: false
             Type: Button
-          - Coords: [33.3333321, 128.628311]
-            Size: [66.6666641, 67.6991119]
+          - Coords: [25, 95]
+            Size: [50, 50]
             Color: [1, 1, 1, 1]
             Label: Test Button
             Name: Kravicka
+            Locked: false
             Type: Button
-          - Coords: [33.3333321, 128.628311]
-            Size: [66.6666641, 67.6991119]
+          - Coords: [25, 95]
+            Size: [50, 50]
             Color: [1, 1, 1, 1]
             Label: Test Button
             Name: Kravicka
+            Locked: false
             Type: Button
-  - Coords: [201.293335, 203.774338]
-    Size: [106.706665, 67.7668152]
+  - Coords: [150.970001, 150.5]
+    Size: [80.0299988, 50.0499992]
     Color: [1, 1, 1, 1]
     Label: Test Button
     Name: Test Name
+    Locked: false
     Type: Button

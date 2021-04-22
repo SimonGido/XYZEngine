@@ -1,7 +1,7 @@
 #pragma once
 
 #include "XYZ/Scene/Scene.h"
-#include "XYZ/IG/IG.h"
+#include "XYZ/BasicUI/BasicUI.h"
 
 namespace XYZ {
 
@@ -25,9 +25,7 @@ namespace XYZ {
 
 	private:
 		Ref<Scene> m_Context;
-		IGWindow* m_Window;
-
-		size_t m_HandleCount;
-		size_t m_PoolHandle;
+		bUIWindow* m_Window;
+		bUITree* m_Tree;
 	};
 }

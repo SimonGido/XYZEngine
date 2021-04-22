@@ -31,7 +31,7 @@ namespace XYZ {
 	private:
 		Ref<Scene> m_Scene;
 		EditorCamera m_EditorCamera;
-
+		SceneHierarchyPanel m_SceneHierarchy;
 	private:	
 		SceneEntity m_SelectedEntity;
 		SceneEntity m_TestEntity;

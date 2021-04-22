@@ -30,7 +30,8 @@ namespace XYZ {
 			const glm::vec2& pos,
 			bUIMesh& mesh,
 			uint32_t textureID,
-			uint32_t scissorID
+			uint32_t scissorID,
+			uint32_t maxCharacters = UINT32_MAX
 		)
 		{
 			if (!source)
@@ -40,7 +41,7 @@ namespace XYZ {
 			float yCursor = 0.0f;
 
 			uint32_t counter = 0;
-			while (source[counter] != '\0')
+			while (source[counter] != '\0' && counter < maxCharacters)
 			{
 				auto& character = font->GetCharacter(source[counter]);
 				if (source[counter] == '\n')
@@ -83,6 +84,38 @@ namespace XYZ {
 	}
 
 	template <>
+	void bUIRenderer::Submit<bUIImage>(const bUIImage& element, uint32_t& scissorID)
+	{
+		glm::vec2 absolutePosition = element.GetAbsolutePosition();
+		Ref<Font> font = bUI::GetConfig().m_Font;
+		if (element.ImageSubTexture.Raw())
+		{
+			uint32_t textureID = 0;
+			for (size_t i = 0; i < m_CustomTextures.size(); ++i)
+			{
+				if (m_CustomTextures[i].Raw() == element.ImageSubTexture->GetTexture().Raw())
+				{
+					textureID = i + 2;
+					break;
+				}
+			}
+			if (!textureID)
+			{
+				textureID = m_CustomTextures.size() + 2;
+				m_CustomTextures.push_back(element.ImageSubTexture->GetTexture());
+			}
+			Helper::GenerateQuad(m_Mesh, element.ActiveColor, element.Size, absolutePosition, element.ImageSubTexture, textureID, scissorID);
+		}
+		else
+			Helper::GenerateQuad(m_Mesh, element.ActiveColor, element.Size, absolutePosition, bUI::GetConfig().GetSubTexture(bUIConfig::White), 0, scissorID);
+		glm::vec2 size = bUIHelper::FindTextSize(element.Label.c_str(), font);
+		glm::vec2 textPosition = absolutePosition;
+		textPosition.x += element.Size.x + 2.0f;
+		textPosition.y = absolutePosition.y + ((element.Size.y - size.y) / 2.0f) + font->GetLineHeight();
+		Helper::GenerateTextMesh(element.Label.c_str(), font, glm::vec4(1.0f), textPosition, m_Mesh, 1, scissorID);
+	}
+
+	template <>
 	void bUIRenderer::Submit<bUIFloat>(const bUIFloat& element, uint32_t& scissorID, const Ref<SubTexture>& subTexture)
 	{
 		glm::vec2 absolutePosition = element.GetAbsolutePosition();
@@ -97,11 +130,14 @@ namespace XYZ {
 		}
 		Helper::GenerateQuad(m_Mesh, element.ActiveColor, element.Size, absolutePosition, subTexture, 0, scissorID);
 		{
-			glm::vec2 size = bUIHelper::FindTextSize(element.GetBuffer(), font);
+			uint32_t maxCharacters = UINT32_MAX;
+			if (element.CutTextOutside)
+				maxCharacters = bUIHelper::FindNumCharacterToFit(element.Size, element.GetBuffer(), font);
+			glm::vec2 size = bUIHelper::FindTextSize(element.GetBuffer(), font, maxCharacters);
 			glm::vec2 textPosition = absolutePosition;
 			textPosition.x = absolutePosition.x + ((element.Size.x - size.x) / 2.0f);
 			textPosition.y = absolutePosition.y + ((element.Size.y - size.y) / 2.0f) + font->GetLineHeight();
-			Helper::GenerateTextMesh(element.GetBuffer(), font, glm::vec4(1.0f), textPosition, m_Mesh, 1, scissorID);
+			Helper::GenerateTextMesh(element.GetBuffer(), font, glm::vec4(1.0f), textPosition, m_Mesh, 1, scissorID, maxCharacters);
 		}
 	}
 
@@ -182,7 +218,7 @@ namespace XYZ {
 		glm::vec2 size = bUIHelper::FindTextSize(element.Label.c_str(), font);
 		glm::vec2 textPosition = absolutePanelPosition;
 		textPosition.x += element.ButtonSize.x + 2.0f;
-		textPosition.y += (element.ButtonSize.y / 2.0f) + (size.y / 2.0f);
+		textPosition.y += ((element.ButtonSize.y - size.y) / 2.0f) + font->GetLineHeight();
 		Helper::GenerateTextMesh(element.Label.c_str(), font, glm::vec4(1.0f), textPosition, m_Mesh, 1, scissorID);
 	}
 
@@ -195,7 +231,7 @@ namespace XYZ {
 		glm::vec2 size = bUIHelper::FindTextSize(element.Label.c_str(), font);
 		glm::vec2 textPosition = absolutePosition;
 		textPosition.x += element.Size.x + 2.0f;
-		textPosition.y += (element.Size.y / 2.0f) + (size.y / 2.0f);
+		textPosition.y += ((element.Size.y - size.y) / 2.0f) + font->GetLineHeight();
 		Helper::GenerateTextMesh(element.Label.c_str(), font, glm::vec4(1.0f), textPosition, m_Mesh, 1, scissorID);
 
 		absolutePosition.y = bUI::GetContext().ViewportSize.y - absolutePosition.y - element.Size.y;
@@ -237,7 +273,7 @@ namespace XYZ {
 			glm::vec2 size = bUIHelper::FindTextSize(childItem->Label.c_str(), font);
 			glm::vec2 textPosition = childAbsolutePosition;
 			textPosition.x += element.Size.x + 2.0f;
-			textPosition.y += (element.Size.y / 2.0f) + (size.y / 2.0f);
+			textPosition.y += ((element.Size.y - size.y) / 2.0f) + font->GetLineHeight();
 			Helper::GenerateTextMesh(childItem->Label.c_str(), font, childItem->Color, textPosition, m_Mesh, 1, scissorID);
 			return false;
 		});
@@ -249,6 +285,13 @@ namespace XYZ {
 		m_Mesh.Lines.clear();
 		m_Mesh.Scissors.clear();
 		m_Mesh.Scissors.push_back({ 0.0f, 0.0f, bUI::GetContext().ViewportSize.x, bUI::GetContext().ViewportSize.y });
+		m_CustomTextures.clear();
+	}
+	void bUIRenderer::BindCustomTextures()
+	{
+		uint32_t slot = 2;
+		for (auto& texture : m_CustomTextures)
+			texture->Bind(slot++);
 	}
 	void bUIRenderer::UpdateScissorBuffer(Ref<ShaderStorageBuffer> scissorBuffer)
 	{

@@ -1,0 +1,17 @@
+Size: [1920, 1017]
+bUIElements:
+  - Coords: [237, 361]
+    Size: [365, 500]
+    Color: [1, 1, 1, 1]
+    Label: Skinning Editor
+    Name: Skinning Editor
+    Locked: true
+    Type: Window
+    bUIElements:
+      - Coords: [0, 0]
+        Size: [365, 500]
+        Color: [1, 1, 1, 1]
+        Label: ""
+        Name: Skinning Editor Image
+        Locked: true
+        Type: Image

@@ -42,6 +42,7 @@ namespace XYZ {
 	{
 	public:
 		void Begin();
+		void BindCustomTextures();
 		void UpdateScissorBuffer(Ref<ShaderStorageBuffer> scissorBuffer);
 
 		template <typename T, typename ...Args>
@@ -52,5 +53,6 @@ namespace XYZ {
 
 	private:
 		bUIMesh m_Mesh;
+		std::vector<Ref<Texture2D>> m_CustomTextures;
 	};
 }

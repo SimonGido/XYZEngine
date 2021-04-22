@@ -3,7 +3,7 @@
 #include "BasicUI.h"
 
 namespace XYZ {
-	glm::vec2 bUIHelper::FindTextSize(const char* source, const Ref<Font>& font)
+	glm::vec2 bUIHelper::FindTextSize(const char* source, const Ref<Font>& font, uint32_t maxCharacters)
 	{
 		if (!source)
 			return { 0.0f, 0.0f };
@@ -13,7 +13,7 @@ namespace XYZ {
 		float yCursor = 0.0f;
 
 		uint32_t counter = 0;
-		while (source[counter] != '\0')
+		while (source[counter] != '\0' && counter < maxCharacters)
 		{
 			auto& character = font->GetCharacter(source[counter]);
 			if (source[counter] == '\n')
@@ -30,6 +30,32 @@ namespace XYZ {
 		if (width < xCursor)
 			width = xCursor;
 		return { width, yCursor + font->GetLineHeight() };
+	}
+	uint32_t bUIHelper::FindNumCharacterToFit(const glm::vec2& size, const char* source, const Ref<Font>& font)
+	{
+		if (!source)
+			return 0;
+
+		float width = 0.0f;
+		float xCursor = 0.0f;
+		float yCursor = 0.0f;
+
+		uint32_t counter = 0;
+		while (source[counter] != '\0' && xCursor < size.x && yCursor < size.y)
+		{
+			auto& character = font->GetCharacter(source[counter]);
+			if (source[counter] == '\n')
+			{
+				width = std::max(width, xCursor);
+				yCursor += font->GetLineHeight();
+				xCursor = 0.0f;
+				counter++;
+				continue;
+			}
+			xCursor += character.XAdvance;
+			counter++;
+		}
+		return counter;
 	}
 	void bUIHelper::ResolvePosition(int32_t elementID, Tree& tree, const bUILayout& layout)
 	{

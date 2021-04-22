@@ -4,52 +4,48 @@
 #include "XYZ/Core/Input.h"
 #include "XYZ/Scene/SceneEntity.h"
 
+#include "XYZ/BasicUI/BasicUILoader.h"
+
 namespace XYZ {
     SceneHierarchyPanel::SceneHierarchyPanel()
     {
-        std::initializer_list<IGHierarchyElement> types{
-            {
-                IGElementType::Window,
-                {
-                    {IGElementType::Tree,{}}
-                }
-            }
-        };
-               
-        auto [poolHandle, count] =  IG::AllocateUI(types);
-        m_PoolHandle = poolHandle;
-        m_HandleCount = count;
-        IGTree& tree = IG::GetUI<IGTree>(m_PoolHandle, 1);
-        tree.OnSelect = [&](uint32_t key) {
+        bUILoader::Load("Layouts/SceneHierarchy.bui");
+        m_Window = &bUI::GetUI<bUIWindow>("SceneHierarchy", "Scene Hierarchy");
+        m_Tree = &bUI::GetUI<bUITree>("SceneHierarchy", "Hierarchy Tree");
+
+        m_Tree->OnSelect = [&](uint32_t entity) {
             if (m_Context.Raw())
-                m_Context->SetSelectedEntity(key);
+            {
+                std::cout << "HERE";
+                if (m_Context->GetSelectedEntity() == entity)
+                    m_Context->SetSelectedEntity(Entity());
+                else
+                    m_Context->SetSelectedEntity(entity);
+            } 
         };
-        m_Window = &IG::GetUI<IGWindow>(m_PoolHandle, 0);
-        m_Window->Label = "Hierarchy Panel";
     }
     SceneHierarchyPanel::~SceneHierarchyPanel()
     {
         m_Context->m_ECS.RemoveListener<SceneTagComponent>(this);
+
     }
     void SceneHierarchyPanel::SetContext(Ref<Scene> context)
     {
         if (m_Context.Raw())
             m_Context->m_ECS.RemoveListener<SceneTagComponent>(this);
        
-
         m_Context = context;
         m_Context->m_ECS.AddListener<SceneTagComponent>([this](uint32_t entity, CallbackType type) {
             
             ECSManager& ecs = m_Context->m_ECS;
-            IGTree& tree = IG::GetUI<IGTree>(m_PoolHandle, 1);
             if (type == CallbackType::ComponentCreate)
             {
                 SceneTagComponent& sceneTag = ecs.GetComponent<SceneTagComponent>(entity);
-                tree.AddItem(entity, IGTreeItem(sceneTag.Name));
+                m_Tree->AddItem(entity, bUITreeItem(sceneTag.Name));
             }
             else if (type == CallbackType::ComponentRemove || type == CallbackType::EntityDestroy)
             {
-                tree.RemoveItem(entity);
+                m_Tree->RemoveItem(entity);
             }
   
         }, this);
@@ -60,9 +56,8 @@ namespace XYZ {
     {
         if (m_Context.Raw())
         {
-            IGTree& tree = IG::GetUI<IGTree>(m_PoolHandle, 1);
             if (m_Context->m_SelectedEntity)
-                tree.GetItem(m_Context->m_SelectedEntity).Color = IG::GetContext().RenderData.Colors[IGRenderData::HooverColor];
+                m_Tree->GetItem(m_Context->m_SelectedEntity).Color = glm::vec4(0.2f, 0.7f, 1.0f, 1.0f);
         }
     }
     void SceneHierarchyPanel::OnEvent(Event& event)
@@ -73,13 +68,12 @@ namespace XYZ {
     }
     void SceneHierarchyPanel::rebuildTree()
     {
-        IGTree& tree = IG::GetUI<IGTree>(m_PoolHandle, 1);
-        tree.Clear();
+        m_Tree->Clear();
         ECSManager& ecs = m_Context->m_ECS;
         for (uint32_t entity : m_Context->m_Entities)
         {
             SceneTagComponent& sceneTag = ecs.GetComponent<SceneTagComponent>(entity);
-            tree.AddItem(entity, IGTreeItem(sceneTag.Name));
+            m_Tree->AddItem(entity, bUITreeItem(sceneTag.Name));
         }
     }
 
@@ -91,10 +85,9 @@ namespace XYZ {
     {
         if (event.IsButtonPressed(MouseCode::MOUSE_BUTTON_RIGHT))
         {
-            IGTree& tree = IG::GetUI<IGTree>(m_PoolHandle, 1);
             
         }
-        
+       
         return false;
     }
     bool SceneHierarchyPanel::onKeyPressed(KeyPressedEvent& event)

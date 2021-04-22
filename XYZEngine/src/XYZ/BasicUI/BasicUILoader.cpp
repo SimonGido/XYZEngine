@@ -27,6 +27,8 @@ namespace XYZ {
 				return sizeof(bUIFloat);
 			case XYZ::bUIElementType::String:
 				return sizeof(bUIString);
+			case XYZ::bUIElementType::Image:
+				return sizeof(bUIImage);
 			default:
 				return 0;
 			}
@@ -49,6 +51,8 @@ namespace XYZ {
 				return bUIElementType::Float;
 			if (str == "String")
 				return bUIElementType::String;
+			if (str == "Image")
+				return bUIElementType::Image;
 			
 			XYZ_ASSERT(false, "Invalid type");
 			return bUIElementType::None;
@@ -73,6 +77,8 @@ namespace XYZ {
 				return "Float";
 			case XYZ::bUIElementType::String:
 				return "String";
+			case XYZ::bUIElementType::Image:
+				return "Image";
 			}
 			XYZ_ASSERT(false, "Type is none");
 			return "None";
@@ -134,6 +140,7 @@ namespace XYZ {
 			out << YAML::Key << "Color"  << element->Color;
 			out << YAML::Key << "Label"  << YAML::Value << element->Label;
 			out << YAML::Key << "Name"   << YAML::Value << element->Name;
+			out << YAML::Key << "Locked" << YAML::Value << element->Locked;
 			out << YAML::Key << "Type"   << YAML::Value << Helper::TypeToString(element->Type);
 
 			if (depth < nextDepth)
@@ -163,6 +170,7 @@ namespace XYZ {
 		out << YAML::Key << "Color"  << element->Color;
 		out << YAML::Key << "Label"  << element->Label;
 		out << YAML::Key << "Name"   << element->Name;
+		out << YAML::Key << "Locked" << YAML::Value << element->Locked;
 		out << YAML::Key << "Type"   << YAML::Value << Helper::TypeToString(element->Type);
 		out << YAML::EndMap;
 
@@ -194,8 +202,10 @@ namespace XYZ {
 			glm::vec4 color			 = element["Color"].as<glm::vec4>();
 			std::string label		 = element["Label"].as<std::string>();
 			std::string name		 = element["Name"].as<std::string>();
+			bool locked				 = element["Locked"].as<bool>();
 			bUIElementType type		 = Helper::StringToType(element["Type"].as<std::string>());		
 			bUIElement* newParent	 = createElement(allocator, parent, coords / aspect, size / aspect, color, label, name, type);
+			newParent->Locked		 = locked;
 			newParent->Parent		 = parent;
 			auto children = element["bUIElements"];
 			if (children)
@@ -231,6 +241,9 @@ namespace XYZ {
 			break;
 		case XYZ::bUIElementType::String:
 			element = allocator->CreateElement<bUIString>(parent, coords, size, color, label, name, type);
+			break;
+		case XYZ::bUIElementType::Image:
+			element = allocator->CreateElement<bUIImage>(parent, coords, size, color, label, name, type);
 			break;
 		default:
 			XYZ_ASSERT(false, "");

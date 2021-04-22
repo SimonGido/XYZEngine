@@ -32,6 +32,9 @@ namespace XYZ {
 		std::wstring tmp(&NPath[0]);
 		m_ApplicationDir = std::string(tmp.begin(), tmp.end());
 
+		m_bUILayer = new bUILayer();
+		m_LayerStack.PushOverlay(m_bUILayer);
+
 		AssetManager::Init();
 		Renderer::Init();
 	}

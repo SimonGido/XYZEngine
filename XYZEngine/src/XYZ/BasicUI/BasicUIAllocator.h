@@ -65,6 +65,8 @@ namespace XYZ {
 		{
 			return m_Elements.size();
 		}
+
+		Tree& GetHierarchy() { return m_Tree; }
 	private:
 		void resize(size_t minimalSize);
 		void destroy(size_t offset);	

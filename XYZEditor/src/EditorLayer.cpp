@@ -64,6 +64,7 @@ namespace XYZ {
 		m_Scene->SetViewportSize(windowWidth, windowHeight);		
 		m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
 		m_EditorCamera.SetViewportSize((float)windowWidth, (float)windowHeight);
+		m_SceneHierarchy.SetContext(m_Scene);
 
 		ScriptEngine::InitScriptEntity(m_TestEntity);
 		ScriptEngine::InstantiateEntityClass(m_TestEntity);
@@ -81,47 +82,15 @@ namespace XYZ {
 		prop.AddKeyFrame(glm::vec3(0.5f), 2.0f);
 
 
-		// TODO: In bUILayer
-		bUI::Init();
-		bUILoader::Load("Layouts/Test.bui");
-		bUILoader::Save("Test", "Layouts/Tmp.bui");
+		bUILoader::Load("Layouts/Tmp.bui");
+		bUILoader::Load("Layouts/SkinningEditor.bui");
 
-		Ref<Texture2D> tmpTexture = Texture2D::Create({ TextureWrap::Clamp, TextureParam::Linear, TextureParam::Nearest }, "Assets/Textures/Gui/TexturePack_Dark.png");	
-		Ref<Font> tmpFont = Ref<XYZ::Font>::Create(14, "Assets/Fonts/arial.ttf");
-		bUI::GetConfig().SetTexture(tmpTexture);
-		bUI::GetConfig().SetFont(tmpFont);
-
-		float divisor = 8.0f;
-		Ref<SubTexture> buttonSubTexture = Ref<XYZ::SubTexture>::Create(tmpTexture, glm::vec2(0, 0), glm::vec2(tmpTexture->GetWidth() / divisor, tmpTexture->GetHeight() / divisor));		
-		Ref<SubTexture> minimizeSubTexture = Ref<XYZ::SubTexture>::Create(tmpTexture, glm::vec2(1, 3), glm::vec2(tmpTexture->GetWidth() / divisor, tmpTexture->GetHeight() / divisor));
-		Ref<SubTexture> checkedSubTexture = Ref<XYZ::SubTexture>::Create(tmpTexture, glm::vec2(1, 1), glm::vec2(tmpTexture->GetWidth() / divisor, tmpTexture->GetHeight() / divisor));
-		Ref<SubTexture> unCheckedSubTexture = Ref<XYZ::SubTexture>::Create(tmpTexture, glm::vec2(0, 1), glm::vec2(tmpTexture->GetWidth() / divisor, tmpTexture->GetHeight() / divisor));
-		Ref<SubTexture> sliderSubTexture = Ref<XYZ::SubTexture>::Create(tmpTexture, glm::vec2(0, 0), glm::vec2(tmpTexture->GetWidth() / divisor, tmpTexture->GetHeight() / divisor));
-		Ref<SubTexture> handleSubTexture = Ref<XYZ::SubTexture>::Create(tmpTexture, glm::vec2(1, 2), glm::vec2(tmpTexture->GetWidth() / divisor, tmpTexture->GetHeight() / divisor));
-		Ref<SubTexture> whiteSubTexture =  Ref<XYZ::SubTexture>::Create(tmpTexture, glm::vec2(3, 0), glm::vec2(tmpTexture->GetWidth() / divisor, tmpTexture->GetHeight() / divisor));
-		Ref<SubTexture> rightArrowSubTexture = Ref<XYZ::SubTexture>::Create(tmpTexture, glm::vec2(2, 2), glm::vec2(tmpTexture->GetWidth() / divisor, tmpTexture->GetHeight() / divisor));
-		Ref<SubTexture> downArrowSubTexture = Ref<XYZ::SubTexture>::Create(tmpTexture, glm::vec2(2, 3), glm::vec2(tmpTexture->GetWidth() / divisor, tmpTexture->GetHeight() / divisor));
-		
-		bUI::GetConfig().SetSubTexture(buttonSubTexture, bUIConfig::Button);
-		bUI::GetConfig().SetSubTexture(minimizeSubTexture, bUIConfig::MinimizeButton);
-		bUI::GetConfig().SetSubTexture(checkedSubTexture, bUIConfig::CheckboxChecked);
-		bUI::GetConfig().SetSubTexture(unCheckedSubTexture, bUIConfig::CheckboxUnChecked);
-		bUI::GetConfig().SetSubTexture(sliderSubTexture, bUIConfig::Slider);
-		bUI::GetConfig().SetSubTexture(handleSubTexture, bUIConfig::SliderHandle);
-		bUI::GetConfig().SetSubTexture(whiteSubTexture, bUIConfig::White);
-		bUI::GetConfig().SetSubTexture(rightArrowSubTexture, bUIConfig::RightArrow);
-		bUI::GetConfig().SetSubTexture(downArrowSubTexture, bUIConfig::DownArrow);
-		bUI::SetupLayout("Test", "Scrollbox", { 10.0f, 10.0f, 10.0f, 10.0f, 10.0f });
-
-		bUI::GetUI<bUITree>("Test", "Tree").AddItem(0, bUITreeItem("Havko"));
-		bUI::GetUI<bUITree>("Test", "Tree").AddItem(1, 0, bUITreeItem("Opica"));
-		bUI::GetUI<bUITree>("Test", "Tree").AddItem(2, 1, bUITreeItem("Opica"));
-		bUI::GetUI<bUITree>("Test", "Tree").AddItem(3, 0, bUITreeItem("Opica"));
+		bUI::SetupLayout("Tmp", "Scrollbox", { 10.0f, 10.0f, 10.0f, 10.0f, 10.0f });
 	}	
 
 	void EditorLayer::OnDetach()
 	{
-		bUI::Shutdown();
+		bUILoader::Save("SkinningEditor", "Layouts/SkinningEditor.bui");
 		AssetSerializer::SerializeAsset(m_Scene);		
 	}
 	void EditorLayer::OnUpdate(Timestep ts)
@@ -129,7 +98,7 @@ namespace XYZ {
 		Renderer::Clear();
 		Renderer::SetClearColor({ 0.1f,0.1f,0.1f,0.1f });
 		
-
+		m_SceneHierarchy.OnUpdate();
 		m_EditorCamera.OnUpdate(ts);
 		if (m_Scene->GetState() == SceneState::Play)
 		{
@@ -146,12 +115,12 @@ namespace XYZ {
 	void EditorLayer::OnEvent(Event& event)
 	{			
 		EventDispatcher dispatcher(event);
-		bUI::OnEvent(event);
 
 		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&EditorLayer::onMouseButtonPress, this));
 		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorLayer::onMouseButtonRelease, this));	
 		dispatcher.Dispatch<WindowResizeEvent>(Hook(&EditorLayer::onWindowResize, this));
 		dispatcher.Dispatch<KeyPressedEvent>(Hook(&EditorLayer::onKeyPress, this));
+		m_SceneHierarchy.OnEvent(event);
 		m_EditorCamera.OnEvent(event);
 	}
 	
