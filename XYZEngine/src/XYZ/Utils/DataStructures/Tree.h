@@ -35,6 +35,8 @@ namespace XYZ {
 
 		int32_t     Insert(void* data);
 		int32_t     Insert(void* data, int32_t parent);
+		int32_t		InsertAtEnd(void* data);
+		int32_t		InsertAtEnd(void* data, int32_t parent);
 		void		SetParent(int32_t child, int32_t parent);
 		void        Remove(int32_t index);
 		void        ReverseNodeChildren(int32_t node);
@@ -45,7 +47,8 @@ namespace XYZ {
 		void	    TraverseNode(int32_t node, const std::function<bool(void*, void*)>& callback) const;
 		void	    TraverseNodeSiblings(int32_t node, const std::function<bool(void*, void*)>& callback) const;
 		void	    TraverseNodeChildren(int32_t node, const std::function<bool(void*, void*)>& callback) const;
-		
+
+
 		void	    SetData(int32_t index, void* data) { m_Nodes[index].Data = data; }
 		void*       GetData(int32_t index) { return m_Nodes[index].Data; }
 		const void* GetData(int32_t index) const { return m_Nodes[index].Data; }

@@ -22,14 +22,13 @@ namespace XYZ {
 		bUIEditData  EditData;
 
 		glm::vec2    ViewportSize;
-
-
 	};
 
 	struct bUILayout
 	{
 		float SpacingX, SpacingY;
 		float LeftOffset, RightOffset, TopOffset;
+		uint32_t ItemsPerRow = 0; // Keep zero to have unlimited number of items per row
 	};
 
 	class bUI
@@ -41,6 +40,38 @@ namespace XYZ {
 
 		static void OnEvent(Event& event);
 		static void SetupLayout(const std::string& uiName, const std::string& name, const bUILayout& layout);
+		static void SetupLayout(bUIAllocator& allocator, bUIElement& element, const bUILayout& layout);
+		
+		template <typename T>
+		static void ForEach(const std::string& uiName, const std::function<void(T&)>& func)
+		{
+			bUIAllocator& allocator = getContext().Data.GetAllocator(uiName);
+			for (size_t i = 0; i < allocator.Size(); ++i)
+				if (T* casted = dynamic_cast<T*>(allocator.GetElement<bUIElement>(i)))
+					func(*casted);
+		}
+
+		template <typename T>
+		static void ForEach(const std::string& uiName, const std::string& name, const std::function<void(T&)>& func)
+		{
+			bUIAllocator& allocator = getContext().Data.GetAllocator(uiName);
+			bUIElement* element = allocator.GetElement<bUIElement>(name);
+			forEach<T>(allocator, element, func);
+		}
+
+		template <typename T>
+		static void ForEach(bUIAllocator& allocator, const std::function<void(T&)>& func)
+		{
+			for (size_t i = 0; i < allocator.Size(); ++i)
+				if (T* casted = dynamic_cast<T*>(allocator.GetElement<bUIElement>(i)))
+					func(*casted);
+		}
+
+		template <typename T>
+		static void ForEach(bUIAllocator& allocator, bUIElement* element, const std::function<void(T&)>& func)
+		{
+			forEach<T>(allocator, element, func);
+		}
 
 		template <typename T>
 		static T& GetUI(const std::string& uiName, const std::string& name)
@@ -49,10 +80,24 @@ namespace XYZ {
 			return *getContext().Data.GetAllocator(uiName).GetElement<T>(name);
 		}
 		
-
 		static bUIConfig& GetConfig();
 		static const bUIContext& GetContext();
+		static bUIAllocator& GetAllocator(const std::string& name);
+
 	private:
+		template <typename T>
+		static void forEach(bUIAllocator& allocator, bUIElement* element, const std::function<void(T&)>& func)
+		{
+			Tree& tree = allocator.m_Tree;
+			tree.TraverseNodeChildren(element->ID, [&](void* parent, void* child) -> bool {
+				bUIElement* childElement = static_cast<bUIElement*>(child);
+				if (T* casted = dynamic_cast<T*>(childElement))
+					func(*casted);
+				forEach<T>(allocator, childElement, func);
+				return false;
+			});
+		}
+
 		static bool onWindowResize(WindowResizeEvent& event);
 		static bool onMouseButtonPress(MouseButtonPressEvent& event);
 		static bool onMouseButtonRelease(MouseButtonReleaseEvent& event);

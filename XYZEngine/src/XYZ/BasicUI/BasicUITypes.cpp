@@ -76,6 +76,10 @@ namespace XYZ {
 		}
 		return Coords;
 	}
+	glm::vec2 bUIElement::GetSize() const
+	{
+		return Size;
+	}
 	void bUIElement::HandleVisibility(uint32_t scissorID)
 	{
 		const bUIScissor& scissor = bUI::GetContext().Renderer.GetMesh().Scissors[scissorID];
@@ -238,6 +242,27 @@ namespace XYZ {
 			bUI::GetContext().Config.GetSubTexture(bUIConfig::MinimizeButton)
 		);
 	}
+
+	static bool AlmostEqual(float a, float b)
+	{
+		return fabs(a - b) < std::numeric_limits<float>::epsilon();
+	}
+
+	static bool AlmostEqual(const glm::vec2& a, const glm::vec2& b)
+	{
+		return AlmostEqual(a.x, b.x) && AlmostEqual(a.y, b.y);
+	}
+
+	void bUIWindow::OnUpdate()
+	{
+		if (FitParent && Parent)
+		{
+			glm::vec2 newSize = Parent->Size - glm::vec2(0.0f, ButtonSize.y);
+			if (!AlmostEqual(Size, newSize) && OnResize)
+				OnResize(newSize);
+			Size = newSize;
+		}
+	}
 	bool bUIWindow::OnMouseMoved(const glm::vec2& mousePosition)
 	{
 		if (!Visible) 
@@ -310,6 +335,13 @@ namespace XYZ {
 		glm::vec2 absolutePosition = GetAbsolutePosition() - glm::vec2(0.0f, panelSize.y);
 		return Helper::Collide(absolutePosition, panelSize, mousePosition);
 	}
+	glm::vec2 bUIWindow::GetSize() const
+	{
+		if (ChildrenVisible)
+			return Size + glm::vec2(0.0f, ButtonSize.y);
+		else
+			return { Size.x, ButtonSize.y };
+	}
 	bUIScrollbox::bUIScrollbox(const glm::vec2& coords, const glm::vec2& size, const glm::vec4& color, const std::string& label, const std::string& name, bUIElementType type)
 		:
 		bUIElement(coords, size, color,  label, name, type),
@@ -337,7 +369,7 @@ namespace XYZ {
 
 	bool bUIScrollbox::OnMouseScrolled(const glm::vec2& mousePosition, const glm::vec2& offset)
 	{
-		if (!Visible) 
+		if (!Visible || !EnableScroll) 
 			return false;
 		if (Helper::Collide(GetAbsoluteScrollPosition(), Size, mousePosition))
 		{
@@ -818,5 +850,18 @@ namespace XYZ {
 			Coords = glm::vec2(0.0f);
 			Size = Parent->Size;
 		}
+	}
+	bUIText::bUIText(const glm::vec2& coords, const glm::vec2& size, const glm::vec4& color, const std::string& label, const std::string& name, bUIElementType type)
+		:
+		bUIElement(coords, size, color,  label, name, type)
+	{
+	}
+	void bUIText::PushQuads(bUIRenderer& renderer, uint32_t& scissorID)
+	{
+		renderer.Submit<bUIText>(*this, scissorID);
+	}
+	glm::vec2 bUIText::GetSize() const
+	{
+		return bUIHelper::FindTextSize(Label.c_str(), bUI::GetConfig().GetFont());
 	}
 }

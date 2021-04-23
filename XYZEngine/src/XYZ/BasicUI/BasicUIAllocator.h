@@ -28,9 +28,9 @@ namespace XYZ {
 			m_ElementMap[element->Name] = m_Elements.size() - 1;
 			m_Size += sizeof(T);
 			if (parent)
-				static_cast<bUIElement*>(element)->ID = m_Tree.Insert(element, parent->ID);
+				static_cast<bUIElement*>(element)->ID = m_Tree.InsertAtEnd(element, parent->ID);
 			else
-				static_cast<bUIElement*>(element)->ID = m_Tree.Insert(element);
+				static_cast<bUIElement*>(element)->ID = m_Tree.InsertAtEnd(element);
 
 			return element;
 		}

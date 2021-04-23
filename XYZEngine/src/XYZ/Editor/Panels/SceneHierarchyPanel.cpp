@@ -16,7 +16,6 @@ namespace XYZ {
         m_Tree->OnSelect = [&](uint32_t entity) {
             if (m_Context.Raw())
             {
-                std::cout << "HERE";
                 if (m_Context->GetSelectedEntity() == entity)
                     m_Context->SetSelectedEntity(Entity());
                 else

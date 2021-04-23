@@ -94,8 +94,81 @@ namespace XYZ {
         parentNode.FirstChild = newInserted;
         m_NodeCount++;
 
-        
+        return newInserted;
+    }
+    int32_t Tree::InsertAtEnd(void* data)
+    {
+        TreeNode newNode;
+        newNode.Data = data;
+        int32_t newInserted = m_Nodes.Insert(newNode);
+        m_Nodes[newInserted].ID = newInserted;
 
+        if (m_NodeValid.size() <= newInserted)
+            m_NodeValid.resize((size_t)newInserted + 1);
+        m_NodeValid[newInserted] = true;
+
+        if (m_Root == TreeNode::sc_Invalid)
+        {
+            m_Root = newInserted;
+            m_NodeCount++;
+            return newInserted;
+        }
+
+        int32_t tmpPrevious = m_Nodes[m_Root].PreviousSibling;
+        int32_t tmpNext = m_Nodes[m_Root].NextSibling;
+        while (tmpNext != TreeNode::sc_Invalid)
+        {
+            tmpPrevious = tmpNext;
+            tmpNext = m_Nodes[tmpNext].NextSibling;
+        }
+        if (tmpPrevious == TreeNode::sc_Invalid)
+        {
+            m_Nodes[m_Root].NextSibling = newInserted;
+            m_Nodes[newInserted].PreviousSibling = m_Root;
+        }
+        else
+        {
+            m_Nodes[tmpPrevious].NextSibling = newInserted;
+            m_Nodes[newInserted].PreviousSibling = tmpPrevious;
+        }
+        m_NodeCount++;
+        return newInserted;
+    }
+    int32_t Tree::InsertAtEnd(void* data, int32_t parent)
+    {
+        TreeNode newNode;
+        newNode.Data = data;
+        int32_t newInserted = m_Nodes.Insert(newNode);
+        m_Nodes[newInserted].ID = newInserted;
+
+        if (m_NodeValid.size() <= newInserted)
+            m_NodeValid.resize((size_t)newInserted + 1);
+        m_NodeValid[newInserted] = true;
+
+        if (m_Root == TreeNode::sc_Invalid)
+        {
+            m_Root = newInserted;
+            m_NodeCount++;
+            return newInserted;
+        }
+        int32_t tmpPrevious = TreeNode::sc_Invalid;
+        int32_t tmpNext = m_Nodes[parent].FirstChild;
+        while (tmpNext != TreeNode::sc_Invalid)
+        {
+            tmpPrevious = tmpNext;
+            tmpNext = m_Nodes[tmpNext].NextSibling;
+        }
+        if (tmpPrevious == TreeNode::sc_Invalid)
+        {
+            m_Nodes[parent].FirstChild = newInserted;
+            m_Nodes[newInserted].Parent = parent;
+        }
+        else
+        {
+            m_Nodes[tmpPrevious].NextSibling = newInserted;
+            m_Nodes[newInserted].PreviousSibling = tmpPrevious;
+        }
+        m_NodeCount++;
         return newInserted;
     }
     void Tree::SetParent(int32_t child, int32_t parent)

@@ -32,6 +32,7 @@ namespace XYZ {
 		Ref<Scene> m_Scene;
 		EditorCamera m_EditorCamera;
 		SceneHierarchyPanel m_SceneHierarchy;
+		InspectorPanel m_Inspector;
 	private:	
 		SceneEntity m_SelectedEntity;
 		SceneEntity m_TestEntity;

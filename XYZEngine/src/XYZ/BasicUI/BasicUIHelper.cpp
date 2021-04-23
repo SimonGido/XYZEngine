@@ -66,21 +66,26 @@ namespace XYZ {
 			parentElement->Size.y
 		);
 		float highestInRow = 0.0f;
+		uint32_t numItems = 0;
 		tree.TraverseNodeChildren(elementID, [&](void* parent, void* child)->bool {
 
 			bUIElement* childElement = static_cast<bUIElement*>(child);
 			glm::vec2 textSize = FindTextSize(childElement->Label.c_str(), bUI::GetConfig().GetFont());
-			float xOffset = childElement->Size.x + textSize.x;
-			if (offset.x + xOffset > border.x)
+			glm::vec2 size = childElement->GetSize();
+
+			float xOffset = size.x + textSize.x;
+			if (offset.x + xOffset > border.x || numItems == layout.ItemsPerRow)
 			{
 				offset.x = layout.LeftOffset;
 				offset.y += highestInRow + layout.SpacingY;
 				highestInRow = 0.0f;
+				numItems = 0;
 			}
-			float height = std::max(childElement->Size.y, textSize.y);
+			float height = std::max(size.y, textSize.y);
 			highestInRow = std::max(highestInRow, height);
 			childElement->Coords = offset;
 			offset.x += xOffset + layout.SpacingX;
+			numItems++;
 			return false;
 		});
 	}

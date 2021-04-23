@@ -70,6 +70,12 @@ namespace XYZ {
 		bUIHelper::ResolvePosition(element->ID, allocator.m_Tree, layout);
 	}
 
+	void bUI::SetupLayout(bUIAllocator& allocator, bUIElement& element, const bUILayout& layout)
+	{
+		bUIHelper::ResolvePosition(element.ID, allocator.m_Tree, layout);
+	}
+
+	
 	bUIConfig& bUI::GetConfig()
 	{
 		return s_Context->Config;
@@ -78,6 +84,12 @@ namespace XYZ {
 	{
 		return *s_Context;
 	}
+
+	bUIAllocator& bUI::GetAllocator(const std::string& name)
+	{
+		return s_Context->Data.GetAllocator(name);
+	}
+
 	bool bUI::onWindowResize(WindowResizeEvent& event)
 	{
 		glm::vec2 newViewportSize((float)event.GetWidth(), (float)event.GetHeight());

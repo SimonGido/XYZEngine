@@ -27,6 +27,24 @@ namespace XYZ {
 		return result;
 	}
 
+	static bool OnMouseScrollRecursive(bUIElement* element, bUIAllocator& allocator, const glm::vec2& mousePosition, const glm::vec2& offset)
+	{		
+		bool result = false;
+		allocator.GetHierarchy().TraverseNodeChildren(element->GetID(), [&](void* parent, void* child) -> bool {
+
+			bUIElement* childElement = static_cast<bUIElement*>(child);
+			if (OnMouseScrollRecursive(childElement, allocator, mousePosition, offset))
+				result = true;
+			return result;
+		});
+
+		if (!result)
+			result = element->OnMouseScrolled(mousePosition, offset);
+
+		return result;
+	}
+
+
 	bool bUIInput::OnMouseButtonPress(MouseButtonPressEvent& event, bUIEditData& editData, bUIData& data)
 	{
 		auto [mx, my] = Input::GetMousePosition();
@@ -103,16 +121,19 @@ namespace XYZ {
 	{
 		auto [mx, my] = Input::GetMousePosition();
 		glm::vec2 mousePosition = { mx, my };
+		glm::vec2 offset = { event.GetOffsetX(), event.GetOffsetY() };
+		bool result = false;
 		for (bUIAllocator& allocator : data.m_Allocators)
 		{
-			for (size_t i = 0; i < allocator.Size(); ++i)
-			{
-				bUIElement* element = allocator.GetElement<bUIElement>(i);
-				if (element->OnMouseScrolled(mousePosition, { event.GetOffsetX() , event.GetOffsetY() }))
-					return true;
-			}
+			int32_t root = allocator.GetHierarchy().GetRoot();
+			allocator.GetHierarchy().TraverseNodeSiblings(root, [&](void* parent, void* child) -> bool {			
+				bUIElement* childElement = static_cast<bUIElement*>(child);
+				if (OnMouseScrollRecursive(childElement, allocator, mousePosition, offset))
+					result = true;
+				return result;
+			});
 		}
-		return false;
+		return result;
 	}
 	bool bUIInput::OnKeyType(KeyTypedEvent& event)
 	{

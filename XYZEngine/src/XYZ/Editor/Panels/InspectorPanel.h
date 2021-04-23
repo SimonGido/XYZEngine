@@ -3,6 +3,8 @@
 #include "XYZ/Scene/SceneEntity.h"
 #include "XYZ/IG/IG.h"
 
+#include "XYZ/BasicUI/BasicUI.h"
+
 namespace XYZ {
 
 	class InspectorPanel
@@ -13,7 +15,6 @@ namespace XYZ {
 		void SetContext(SceneEntity context);
 
 		void OnUpdate();
-
 	private:
 		void invalidateUI();
 

@@ -17,6 +17,7 @@ namespace XYZ {
 	{
 		Reset();
 		m_Elements = std::move(other.m_Elements);
+		m_ElementMap = std::move(other.m_ElementMap);
 		m_Tree = std::move(other.m_Tree);
 		m_Data = other.m_Data;
 		other.m_Data = nullptr;
@@ -41,6 +42,7 @@ namespace XYZ {
 		m_Capacity = other.m_Capacity;
 		m_Size = other.m_Size;
 		m_Elements = std::move(other.m_Elements);
+		m_ElementMap = std::move(other.m_ElementMap);
 		m_Tree = std::move(other.m_Tree);
 		m_Data = other.m_Data;
 

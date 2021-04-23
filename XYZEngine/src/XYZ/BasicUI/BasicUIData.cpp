@@ -41,13 +41,13 @@ namespace XYZ {
 	bUIAllocator& bUIData::GetAllocator(const std::string& name)
 	{
 		auto it = m_AllocatorMap.find(name);
-		XYZ_ASSERT(it != m_AllocatorMap.end(), "Allocator with name ", name, " already exists");
+		XYZ_ASSERT(it != m_AllocatorMap.end(), "Allocator with name ", name, " does not exist");
 		return m_Allocators[it->second];
 	}
 	const bUIAllocator& bUIData::GetAllocator(const std::string& name) const
 	{
 		auto it = m_AllocatorMap.find(name);
-		XYZ_ASSERT(it != m_AllocatorMap.end(), "Allocator with name ", name, " already exists");
+		XYZ_ASSERT(it != m_AllocatorMap.end(), "Allocator with name ", name, " does not exist");
 		return m_Allocators[it->second];
 	}
 	bool bUIData::Exist(const std::string& name) const

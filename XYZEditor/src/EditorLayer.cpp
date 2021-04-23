@@ -80,17 +80,13 @@ namespace XYZ {
 		glm::vec3 tmpVal;
 		Property<glm::vec3> prop(tmpVal);
 		prop.AddKeyFrame(glm::vec3(0.5f), 2.0f);
-
-
-		bUILoader::Load("Layouts/Tmp.bui");
-		bUILoader::Load("Layouts/SkinningEditor.bui");
-
-		bUI::SetupLayout("Tmp", "Scrollbox", { 10.0f, 10.0f, 10.0f, 10.0f, 10.0f });
 	}	
 
 	void EditorLayer::OnDetach()
 	{
-		bUILoader::Save("SkinningEditor", "Layouts/SkinningEditor.bui");
+		bUILoader::Save("Inspector", "Layouts/Inspector.bui");
+		bUILoader::Save("SceneHierarchy", "Layouts/SceneHierarchy.bui");
+		//bUILoader::Save("SkinningEditor", "Layouts/SkinningEditor.bui");
 		AssetSerializer::SerializeAsset(m_Scene);		
 	}
 	void EditorLayer::OnUpdate(Timestep ts)
@@ -99,6 +95,8 @@ namespace XYZ {
 		Renderer::SetClearColor({ 0.1f,0.1f,0.1f,0.1f });
 		
 		m_SceneHierarchy.OnUpdate();
+		m_Inspector.OnUpdate();
+
 		m_EditorCamera.OnUpdate(ts);
 		if (m_Scene->GetState() == SceneState::Play)
 		{

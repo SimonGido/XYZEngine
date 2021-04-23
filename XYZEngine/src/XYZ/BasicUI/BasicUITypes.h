@@ -18,7 +18,8 @@ namespace XYZ {
 		Float,
 		String,
 		Tree,
-		Image
+		Image,
+		Text
 	};
 
 	enum class bUICallbackType
@@ -52,6 +53,7 @@ namespace XYZ {
 		virtual bool OnMouseScrolled(const glm::vec2& mousePosition, const glm::vec2& offset) { return false; }
 
 		virtual glm::vec2 GetAbsolutePosition() const;
+		virtual glm::vec2 GetSize() const;
 		void HandleVisibility(uint32_t scissorID);
 
 		int32_t GetID() const { return ID; }
@@ -167,14 +169,16 @@ namespace XYZ {
 		);
 
 		virtual void PushQuads(bUIRenderer& renderer, uint32_t& scissorID) override;
+		virtual void OnUpdate();
 		virtual bool OnMouseMoved(const glm::vec2& mousePosition) override;
 		virtual bool OnLeftMousePressed(const glm::vec2& mousePosition) override;
 		virtual bool OnRightMousePressed(const glm::vec2& mousePosition) override;
 		virtual bool OnLeftMouseReleased() override { ResizeFlags = 0; return false; };
+		virtual glm::vec2 GetSize() const override;
 
 		glm::vec2 ButtonSize = { 25.0f, 25.0f };
-
 		std::function<void(const glm::vec2&)> OnResize;
+		bool FitParent = false;
 	private:
 		enum ResizeFlags
 		{
@@ -208,9 +212,8 @@ namespace XYZ {
 		glm::vec2 GetAbsoluteScrollPosition() const;
 
 		glm::vec2 Offset;
-
 		float Speed = 5.0f;
-
+		bool EnableScroll = true;
 		bool FitParent = true;
 	};
 
@@ -350,6 +353,24 @@ namespace XYZ {
 		Ref<SubTexture> ImageSubTexture;
 
 		bool FitParent = true;
+	};
+
+	class bUIText : public bUIElement
+	{
+	public:
+		bUIText(
+			const glm::vec2& coords,
+			const glm::vec2& size,
+			const glm::vec4& color,
+			const std::string& label,
+			const std::string& name,
+			bUIElementType type
+		);
+
+		virtual void PushQuads(bUIRenderer& renderer, uint32_t& scissorID) override;
+		virtual glm::vec2 GetSize() const override;
+
+		std::string Text;
 	};
 }
 

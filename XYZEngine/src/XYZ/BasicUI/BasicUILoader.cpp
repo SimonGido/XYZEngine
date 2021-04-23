@@ -29,6 +29,8 @@ namespace XYZ {
 				return sizeof(bUIString);
 			case XYZ::bUIElementType::Image:
 				return sizeof(bUIImage);
+			case XYZ::bUIElementType::Text:
+				return sizeof(bUIText);
 			default:
 				return 0;
 			}
@@ -53,6 +55,8 @@ namespace XYZ {
 				return bUIElementType::String;
 			if (str == "Image")
 				return bUIElementType::Image;
+			if (str == "Text")
+				return bUIElementType::Text;
 			
 			XYZ_ASSERT(false, "Invalid type");
 			return bUIElementType::None;
@@ -79,6 +83,8 @@ namespace XYZ {
 				return "String";
 			case XYZ::bUIElementType::Image:
 				return "Image";
+			case XYZ::bUIElementType::Text:
+				return "Text";
 			}
 			XYZ_ASSERT(false, "Type is none");
 			return "None";
@@ -244,6 +250,9 @@ namespace XYZ {
 			break;
 		case XYZ::bUIElementType::Image:
 			element = allocator->CreateElement<bUIImage>(parent, coords, size, color, label, name, type);
+			break;
+		case XYZ::bUIElementType::Text:
+			element = allocator->CreateElement<bUIText>(parent, coords, size, color, label, name, type);
 			break;
 		default:
 			XYZ_ASSERT(false, "");
