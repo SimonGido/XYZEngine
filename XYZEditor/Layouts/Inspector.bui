@@ -1,6 +1,6 @@
 Size: [1920, 1017]
 bUIElements:
-  - Coords: [424, 207]
+  - Coords: [1492, 182]
     Size: [370, 468]
     Color: [1, 1, 1, 0.400000006]
     Label: Inspector
@@ -24,77 +24,69 @@ bUIElements:
             Locked: true
             Type: Window
             bUIElements:
-              - Coords: [0, 0]
-                Size: [350, 218]
-                Color: [0, 0, 0, 0]
-                Label: ""
-                Name: Transform Scrollbox
+              - Coords: [10, 10]
+                Size: [50, 50]
+                Color: [1, 1, 1, 1]
+                Label: X
+                Name: Translation X
                 Locked: true
-                Type: Scrollbox
-                bUIElements:
-                  - Coords: [10, 10]
-                    Size: [50, 50]
-                    Color: [1, 1, 1, 1]
-                    Label: X
-                    Name: Translation X
-                    Locked: true
-                    Type: Float
-                  - Coords: [79, 10]
-                    Size: [50, 50]
-                    Color: [1, 1, 1, 1]
-                    Label: Y
-                    Name: Translation Y
-                    Locked: true
-                    Type: Float
-                  - Coords: [148, 10]
-                    Size: [50, 50]
-                    Color: [1, 1, 1, 1]
-                    Label: Z  Translation
-                    Name: Translation Z
-                    Locked: true
-                    Type: Float
-                  - Coords: [10, 70]
-                    Size: [50, 50]
-                    Color: [1, 1, 1, 1]
-                    Label: X
-                    Name: Rotation X
-                    Locked: true
-                    Type: Float
-                  - Coords: [79, 70]
-                    Size: [50, 50]
-                    Color: [1, 1, 1, 1]
-                    Label: Y
-                    Name: Rotation Y
-                    Locked: true
-                    Type: Float
-                  - Coords: [148, 70]
-                    Size: [50, 50]
-                    Color: [1, 1, 1, 1]
-                    Label: Z  Rotation
-                    Name: Rotation Z
-                    Locked: true
-                    Type: Float
-                  - Coords: [10, 130]
-                    Size: [50, 50]
-                    Color: [1, 1, 1, 1]
-                    Label: X
-                    Name: Scale X
-                    Locked: true
-                    Type: Float
-                  - Coords: [79, 130]
-                    Size: [50, 50]
-                    Color: [1, 1, 1, 1]
-                    Label: Y
-                    Name: Scale Y
-                    Locked: true
-                    Type: Float
-                  - Coords: [148, 130]
-                    Size: [50, 50]
-                    Color: [1, 1, 1, 1]
-                    Label: Z  Scale
-                    Name: Scale Z
-                    Locked: true
-                    Type: Float
+                Type: Float
+              - Coords: [79, 10]
+                Size: [50, 50]
+                Color: [1, 1, 1, 1]
+                Label: Y
+                Name: Translation Y
+                Locked: true
+                Type: Float
+              - Coords: [148, 10]
+                Size: [50, 50]
+                Color: [1, 1, 1, 1]
+                Label: Z  Translation
+                Name: Translation Z
+                Locked: true
+                Type: Float
+              - Coords: [10, 70]
+                Size: [50, 50]
+                Color: [1, 1, 1, 1]
+                Label: X
+                Name: Rotation X
+                Locked: true
+                Type: Float
+              - Coords: [79, 70]
+                Size: [50, 50]
+                Color: [1, 1, 1, 1]
+                Label: Y
+                Name: Rotation Y
+                Locked: true
+                Type: Float
+              - Coords: [148, 70]
+                Size: [50, 50]
+                Color: [1, 1, 1, 1]
+                Label: Z  Rotation
+                Name: Rotation Z
+                Locked: true
+                Type: Float
+              - Coords: [10, 130]
+                Size: [50, 50]
+                Color: [1, 1, 1, 1]
+                Label: X
+                Name: Scale X
+                Locked: true
+                Type: Float
+              - Coords: [79, 130]
+                Size: [50, 50]
+                Color: [1, 1, 1, 1]
+                Label: Y
+                Name: Scale Y
+                Locked: true
+                Type: Float
+              - Coords: [148, 130]
+                Size: [50, 50]
+                Color: [1, 1, 1, 1]
+                Label: Z  Scale
+                Name: Scale Z
+                Locked: true
+                Type: Float
           - Coords: [10, 298]
             Size: [350, 92]
             Color: [0.699999988, 0.699999988, 0.699999988, 0.400000006]

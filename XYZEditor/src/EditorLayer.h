@@ -33,6 +33,7 @@ namespace XYZ {
 		EditorCamera m_EditorCamera;
 		SceneHierarchyPanel m_SceneHierarchy;
 		InspectorPanel m_Inspector;
+		MainPanel m_Main;
 	private:	
 		SceneEntity m_SelectedEntity;
 		SceneEntity m_TestEntity;

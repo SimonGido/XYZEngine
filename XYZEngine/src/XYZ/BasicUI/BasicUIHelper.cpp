@@ -70,6 +70,8 @@ namespace XYZ {
 		tree.TraverseNodeChildren(elementID, [&](void* parent, void* child)->bool {
 
 			bUIElement* childElement = static_cast<bUIElement*>(child);
+			childElement->Visible = true;
+
 			glm::vec2 textSize = FindTextSize(childElement->Label.c_str(), bUI::GetConfig().GetFont());
 			glm::vec2 size = childElement->GetSize();
 
@@ -80,6 +82,10 @@ namespace XYZ {
 				offset.y += highestInRow + layout.SpacingY;
 				highestInRow = 0.0f;
 				numItems = 0;
+			}
+			if (offset.y + size.y > border.y)
+			{
+				childElement->Visible = false;
 			}
 			float height = std::max(size.y, textSize.y);
 			highestInRow = std::max(highestInRow, height);

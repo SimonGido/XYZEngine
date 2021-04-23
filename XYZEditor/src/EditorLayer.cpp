@@ -86,6 +86,7 @@ namespace XYZ {
 	{
 		bUILoader::Save("Inspector", "Layouts/Inspector.bui");
 		bUILoader::Save("SceneHierarchy", "Layouts/SceneHierarchy.bui");
+		bUILoader::Save("Main", "Layouts/Main.bui");
 		//bUILoader::Save("SkinningEditor", "Layouts/SkinningEditor.bui");
 		AssetSerializer::SerializeAsset(m_Scene);		
 	}
@@ -96,7 +97,7 @@ namespace XYZ {
 		
 		m_SceneHierarchy.OnUpdate();
 		m_Inspector.OnUpdate();
-
+		m_Main.OnUpdate();
 		m_EditorCamera.OnUpdate(ts);
 		if (m_Scene->GetState() == SceneState::Play)
 		{
@@ -119,6 +120,7 @@ namespace XYZ {
 		dispatcher.Dispatch<WindowResizeEvent>(Hook(&EditorLayer::onWindowResize, this));
 		dispatcher.Dispatch<KeyPressedEvent>(Hook(&EditorLayer::onKeyPress, this));
 		m_SceneHierarchy.OnEvent(event);
+		m_Main.OnEvent(event);
 		m_EditorCamera.OnEvent(event);
 	}
 	

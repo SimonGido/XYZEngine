@@ -54,7 +54,7 @@ namespace XYZ {
 
 		virtual glm::vec2 GetAbsolutePosition() const;
 		virtual glm::vec2 GetSize() const;
-		void HandleVisibility(uint32_t scissorID);
+		bool HandleVisibility(uint32_t scissorID);
 
 		int32_t GetID() const { return ID; }
 
@@ -72,6 +72,8 @@ namespace XYZ {
 
 		std::vector<bUICallback> Callbacks;
 
+	protected:
+		uint32_t ScissorID = 0;
 
 	private:
 		uint32_t depth();

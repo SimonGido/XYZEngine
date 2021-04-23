@@ -40,10 +40,6 @@ namespace XYZ {
 		bUILoader::Load("Layouts/Inspector.bui");
 		bUI::SetupLayout("Inspector", "Scrollbox", { 10.0f, 10.0f, 10.0f, 10.0f, 10.0f });
 		bUI::SetupLayout("Inspector", "Transform Component", { 10.0f, 10.0f, 10.0f, 10.0f, 10.0f });
-		
-		bUI::ForEach<bUIScrollbox>("Inspector", "Scrollbox", [&](bUIScrollbox& scrollbox) {
-			scrollbox.EnableScroll = false;
-		});
 	}
 	void InspectorPanel::SetContext(SceneEntity context)
 	{
@@ -59,10 +55,9 @@ namespace XYZ {
 	{
 		bUIAllocator& allocator = bUI::GetAllocator("Inspector");
 		bUIScrollbox* scrollbox = allocator.GetElement<bUIScrollbox>("Scrollbox");
-		bUIScrollbox* transformScroll = allocator.GetElement<bUIScrollbox>("Transform Scrollbox");
+		bUIWindow* transformWindow = allocator.GetElement<bUIWindow>("Transform Component");
 
-		bUI::SetupLayout(allocator, *scrollbox, { 10.0f, 10.0f, 10.0f, 10.0f, 35.0f });
-		bUI::SetupLayout(allocator, *transformScroll, { 10.0f, 10.0f, 10.0f, 10.0f, 10.0f, 3 });
+		bUI::SetupLayout(allocator, *transformWindow, { 10.0f, 10.0f, 10.0f, 10.0f, 10.0f, 3 });
 		bUI::ForEach<bUIWindow>(allocator, scrollbox, [&](bUIWindow& win) {
 			win.Size.x = scrollbox->Size.x - 20.0f;
 		});

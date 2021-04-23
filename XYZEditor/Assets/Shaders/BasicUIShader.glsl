@@ -63,9 +63,9 @@ uniform sampler2D u_Texture[32];
 void main()
 {	
 	if ((gl_FragCoord.x < Scissors[int(v_ScissorIndex)].X 
-	 || gl_FragCoord.x > Scissors[int(v_ScissorIndex)].X + Scissors[int(v_ScissorIndex)].Width)
+	 ||  gl_FragCoord.x > Scissors[int(v_ScissorIndex)].X + Scissors[int(v_ScissorIndex)].Width)
 	 || (gl_FragCoord.y < Scissors[int(v_ScissorIndex)].Y 
-	 || gl_FragCoord.y > Scissors[int(v_ScissorIndex)].Y + Scissors[int(v_ScissorIndex)].Height))
+	 ||  gl_FragCoord.y > Scissors[int(v_ScissorIndex)].Y + Scissors[int(v_ScissorIndex)].Height))
 	{
 		discard;
 	}

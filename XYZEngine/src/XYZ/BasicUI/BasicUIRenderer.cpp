@@ -218,7 +218,7 @@ namespace XYZ {
 		glm::vec2 size = bUIHelper::FindTextSize(element.Label.c_str(), font);
 		glm::vec2 textPosition = absolutePanelPosition;
 		textPosition.x += element.ButtonSize.x + 2.0f;
-		textPosition.y += ((element.ButtonSize.y - size.y) / 2.0f) + font->GetLineHeight();
+		textPosition.y += std::floor(((element.ButtonSize.y - size.y) / 2.0f) + font->GetLineHeight());
 		Helper::GenerateTextMesh(element.Label.c_str(), font, glm::vec4(1.0f), textPosition, m_Mesh, 1, scissorID);
 	}
 

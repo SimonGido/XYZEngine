@@ -38,7 +38,7 @@ namespace XYZ {
 	}
 	bool bUIElement::OnMouseMoved(const glm::vec2& mousePosition)
 	{
-		if (!Visible) 
+		if (!Visible || !HandleVisibility(ScissorID))
 			return false;
 		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
 		{
@@ -52,7 +52,7 @@ namespace XYZ {
 	}
 	bool bUIElement::OnLeftMousePressed(const glm::vec2& mousePosition)
 	{
-		if (!Visible) 
+		if (!Visible || !HandleVisibility(ScissorID))
 			return false;
 		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
 		{
@@ -64,7 +64,7 @@ namespace XYZ {
 	}
 	bool bUIElement::OnRightMousePressed(const glm::vec2& mousePosition)
 	{
-		if (!Visible) 
+		if (!Visible || !HandleVisibility(ScissorID))
 			return false;
 		return Helper::Collide(GetAbsolutePosition(), Size, mousePosition);
 	}
@@ -80,7 +80,7 @@ namespace XYZ {
 	{
 		return Size;
 	}
-	void bUIElement::HandleVisibility(uint32_t scissorID)
+	bool bUIElement::HandleVisibility(uint32_t scissorID)
 	{
 		const bUIScissor& scissor = bUI::GetContext().Renderer.GetMesh().Scissors[scissorID];
 
@@ -90,7 +90,7 @@ namespace XYZ {
 		glm::vec2 rightBottomBorder = scissorPos + scissorSize + Size;
 		glm::vec2 size = rightBottomBorder - leftTopBorder;
 
-		Visible = bUIHelper::IsInside(GetAbsolutePosition(), Size, leftTopBorder, size);
+		return bUIHelper::IsInside(GetAbsolutePosition(), Size, leftTopBorder, size);
 	}
 	uint32_t bUIElement::depth()
 	{
@@ -109,8 +109,8 @@ namespace XYZ {
 	}
 	void bUIButton::PushQuads(bUIRenderer& renderer, uint32_t& scissorID)
 	{
-		HandleVisibility(scissorID);
-		if (!Visible)
+		ScissorID = scissorID;
+		if (!Visible || !HandleVisibility(ScissorID))
 			return;
 		renderer.Submit<bUIButton>(*this, scissorID, bUI::GetContext().Config.GetSubTexture(bUIConfig::Button));
 	}
@@ -123,8 +123,8 @@ namespace XYZ {
 	}
 	void bUICheckbox::PushQuads(bUIRenderer& renderer, uint32_t& scissorID)
 	{
-		HandleVisibility(scissorID);
-		if (!Visible)
+		ScissorID = scissorID;
+		if (!Visible || !HandleVisibility(ScissorID))
 			return;
 		if (Checked)
 			renderer.Submit<bUICheckbox>(*this, scissorID, bUI::GetContext().Config.GetSubTexture(bUIConfig::CheckboxChecked));
@@ -143,7 +143,7 @@ namespace XYZ {
 
 	bool bUICheckbox::OnLeftMousePressed(const glm::vec2& mousePosition)
 	{
-		if (!Visible) 
+		if (!Visible || !HandleVisibility(ScissorID))
 			return false;
 		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
 		{
@@ -167,8 +167,8 @@ namespace XYZ {
 	}
 	void bUISlider::PushQuads(bUIRenderer& renderer, uint32_t& scissorID)
 	{
-		HandleVisibility(scissorID);
-		if (!Visible)
+		ScissorID = scissorID;
+		if (!Visible || !HandleVisibility(ScissorID))
 			return;
 
 		glm::vec2 handlePosition = GetAbsolutePosition() + glm::vec2((Size.x - Size.y) * Value , 0.0f);
@@ -183,7 +183,7 @@ namespace XYZ {
 	}
 	bool bUISlider::OnMouseMoved(const glm::vec2& mousePosition)
 	{
-		if (!Visible) 
+		if (!Visible || !HandleVisibility(ScissorID))
 			return false;
 		if (Modified)
 		{
@@ -207,7 +207,7 @@ namespace XYZ {
 
 	bool bUISlider::OnLeftMousePressed(const glm::vec2& mousePosition)
 	{
-		if (!Visible) 
+		if (!Visible || !HandleVisibility(ScissorID))
 			return false;
 		glm::vec2 handleSize = { Size.y, Size.y };
 		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
@@ -219,7 +219,7 @@ namespace XYZ {
 	}
 	bool bUISlider::OnLeftMouseReleased()
 	{
-		if (!Visible) 
+		if (!Visible || !HandleVisibility(ScissorID))
 			return false;
 		bool old = Modified;
 		Modified = false;
@@ -232,8 +232,8 @@ namespace XYZ {
 	}
 	void bUIWindow::PushQuads(bUIRenderer& renderer, uint32_t& scissorID)
 	{
-		HandleVisibility(scissorID);
-		if (!Visible)
+		ScissorID = scissorID;
+		if (!Visible || !HandleVisibility(ScissorID))
 			return;
 		renderer.Submit<bUIWindow>(
 			*this, 
@@ -265,8 +265,9 @@ namespace XYZ {
 	}
 	bool bUIWindow::OnMouseMoved(const glm::vec2& mousePosition)
 	{
-		if (!Visible) 
+		if (!Visible || !HandleVisibility(ScissorID))
 			return false;
+
 		glm::vec2 panelSize = { Size.x, ButtonSize.y };
 		glm::vec2 absolutePosition = GetAbsolutePosition();
 		glm::vec2 absolutePanelPosition = absolutePosition - glm::vec2(0.0f, panelSize.y);
@@ -302,8 +303,9 @@ namespace XYZ {
 	}
 	bool bUIWindow::OnLeftMousePressed(const glm::vec2& mousePosition)
 	{
-		if (!Visible) 
+		if (!Visible || !HandleVisibility(ScissorID))
 			return false;
+
 		glm::vec2 panelSize = { Size.x, ButtonSize.y };
 		glm::vec2 absolutePosition = GetAbsolutePosition();
 		glm::vec2 absolutePanelPosition = absolutePosition - glm::vec2(0.0f, panelSize.y);
@@ -329,8 +331,9 @@ namespace XYZ {
 	}
 	bool bUIWindow::OnRightMousePressed(const glm::vec2& mousePosition)
 	{
-		if (!Visible) 
+		if (!Visible || !HandleVisibility(ScissorID))
 			return false;
+
 		glm::vec2 panelSize = { Size.x, ButtonSize.y };
 		glm::vec2 absolutePosition = GetAbsolutePosition() - glm::vec2(0.0f, panelSize.y);
 		return Helper::Collide(absolutePosition, panelSize, mousePosition);
@@ -350,8 +353,8 @@ namespace XYZ {
 	}
 	void bUIScrollbox::PushQuads(bUIRenderer& renderer, uint32_t& scissorID)
 	{
-		HandleVisibility(scissorID);
-		if (!Visible)
+		ScissorID = scissorID;
+		if (!Visible || !HandleVisibility(ScissorID))
 			return;
 
 		renderer.Submit(*this, scissorID, bUI::GetConfig().GetSubTexture(bUIConfig::White));
@@ -369,7 +372,7 @@ namespace XYZ {
 
 	bool bUIScrollbox::OnMouseScrolled(const glm::vec2& mousePosition, const glm::vec2& offset)
 	{
-		if (!Visible || !EnableScroll) 
+		if (!Visible || !EnableScroll || !HandleVisibility(ScissorID)) 
 			return false;
 		if (Helper::Collide(GetAbsoluteScrollPosition(), Size, mousePosition))
 		{
@@ -416,8 +419,8 @@ namespace XYZ {
 
 	void bUITree::PushQuads(bUIRenderer& renderer, uint32_t& scissorID)
 	{
-		HandleVisibility(scissorID);
-		if (!Visible)
+		ScissorID = scissorID;
+		if (!Visible || !HandleVisibility(ScissorID))
 			return;
 
 		solveTreePosition();
@@ -429,6 +432,9 @@ namespace XYZ {
 
 	bool bUITree::OnMouseMoved(const glm::vec2& mousePosition)
 	{
+		if (!Visible || !HandleVisibility(ScissorID))
+			return false;
+
 		glm::vec2 absolutePosition = GetAbsolutePosition();
 		Hierarchy.Traverse([&](void* parent, void* child) ->bool {
 			if (parent)
@@ -452,6 +458,9 @@ namespace XYZ {
 
 	bool bUITree::OnLeftMousePressed(const glm::vec2& mousePosition)
 	{
+		if (!Visible || !HandleVisibility(ScissorID))
+			return false;
+
 		glm::vec2 absolutePosition = GetAbsolutePosition();
 		bool result = false;
 		Hierarchy.Traverse([&](void* parent, void* child) ->bool {
@@ -485,6 +494,9 @@ namespace XYZ {
 
 	bool bUITree::OnRightMousePressed(const glm::vec2& mousePosition)
 	{
+		if (!Visible || !HandleVisibility(ScissorID))
+			return false;
+
 		bool result = false;
 		glm::vec2 absolutePosition = GetAbsolutePosition();
 		Hierarchy.Traverse([&](void* parent, void* child) ->bool {
@@ -637,8 +649,8 @@ namespace XYZ {
 
 	void bUIFloat::PushQuads(bUIRenderer& renderer, uint32_t& scissorID)
 	{
-		HandleVisibility(scissorID);
-		if (!Visible)
+		ScissorID = scissorID;
+		if (!Visible || !HandleVisibility(ScissorID))
 			return;
 		renderer.Submit<bUIFloat>(*this, scissorID, bUI::GetContext().Config.GetSubTexture(bUIConfig::Button));
 	}
@@ -650,7 +662,7 @@ namespace XYZ {
 
 	bool bUIFloat::OnLeftMousePressed(const glm::vec2& mousePosition)
 	{
-		if (!Visible) 
+		if (!Visible || !HandleVisibility(ScissorID))
 			return false;
 
 		bool listen = Listen;
@@ -672,7 +684,7 @@ namespace XYZ {
 
 	bool bUIFloat::OnKeyPressed(int32_t mode, int32_t key)
 	{
-		if (Listen && Visible)
+		if (Listen && Visible && HandleVisibility(ScissorID))
 		{
 			if (key == ToUnderlying(KeyCode::KEY_BACKSPACE))
 			{
@@ -692,7 +704,7 @@ namespace XYZ {
 
 	bool bUIFloat::OnKeyTyped(char character)
 	{
-		if (Listen && Visible)
+		if (Listen && Visible && HandleVisibility(ScissorID))
 		{
 			if (character >= toascii('0') && character <= toascii('9') 
 				|| (character == toascii('-') && InsertionIndex == 0)
@@ -749,8 +761,8 @@ namespace XYZ {
 
 	void bUIString::PushQuads(bUIRenderer& renderer, uint32_t& scissorID)
 	{
-		HandleVisibility(scissorID);
-		if (!Visible)
+		ScissorID = scissorID;
+		if (!Visible || !HandleVisibility(ScissorID))
 			return;
 		renderer.Submit<bUIString>(*this, scissorID, bUI::GetContext().Config.GetSubTexture(bUIConfig::Button));
 	}
@@ -762,7 +774,7 @@ namespace XYZ {
 
 	bool bUIString::OnLeftMousePressed(const glm::vec2& mousePosition)
 	{
-		if (!Visible) 
+		if (!Visible || !HandleVisibility(ScissorID))
 			return false;
 
 		bool listen = Listen;
@@ -784,7 +796,7 @@ namespace XYZ {
 
 	bool bUIString::OnKeyPressed(int32_t mode, int32_t key)
 	{
-		if (Listen && Visible)
+		if (Listen && Visible && HandleVisibility(ScissorID))
 		{
 			if (key == ToUnderlying(KeyCode::KEY_BACKSPACE))
 			{
@@ -812,7 +824,7 @@ namespace XYZ {
 
 	bool bUIString::OnKeyTyped(char character)
 	{
-		if (Listen && Visible)
+		if (Listen && Visible && HandleVisibility(ScissorID))
 		{		
 			Buffer.push_back(character);
 			InsertionIndex++;
@@ -841,6 +853,9 @@ namespace XYZ {
 
 	void bUIImage::PushQuads(bUIRenderer& renderer, uint32_t& scissorID)
 	{
+		ScissorID = scissorID;
+		if (!Visible || !HandleVisibility(ScissorID))
+			return;
 		renderer.Submit<bUIImage>(*this, scissorID);
 	}
 	void bUIImage::OnUpdate()
@@ -858,6 +873,9 @@ namespace XYZ {
 	}
 	void bUIText::PushQuads(bUIRenderer& renderer, uint32_t& scissorID)
 	{
+		ScissorID = scissorID;
+		if (!Visible || !HandleVisibility(ScissorID))
+			return;
 		renderer.Submit<bUIText>(*this, scissorID);
 	}
 	glm::vec2 bUIText::GetSize() const

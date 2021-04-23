@@ -1,0 +1,24 @@
+Size: [1920, 1017]
+bUIElements:
+  - Coords: [0, 0]
+    Size: [1920, 0]
+    Color: [1, 1, 1, 0.400000006]
+    Label: ""
+    Name: Scrollbox
+    Locked: true
+    Type: Scrollbox
+    bUIElements:
+      - Coords: [0, 25]
+        Size: [960, 150]
+        Color: [1, 1, 1, 0.400000006]
+        Label: File
+        Name: File
+        Locked: true
+        Type: Window
+      - Coords: [960, 25]
+        Size: [960, 150]
+        Color: [1, 1, 1, 0.400000006]
+        Label: View
+        Name: View
+        Locked: true
+        Type: Window
