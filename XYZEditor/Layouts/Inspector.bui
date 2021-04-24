@@ -16,7 +16,7 @@ bUIElements:
         Locked: true
         Type: Scrollbox
         bUIElements:
-          - Coords: [10, 45]
+          - Coords: [10, 20]
             Size: [350, 218]
             Color: [0.699999988, 0.699999988, 0.699999988, 0.400000006]
             Label: Transform Component
@@ -87,10 +87,53 @@ bUIElements:
                 Name: Scale Z
                 Locked: true
                 Type: Float
-          - Coords: [10, 298]
+          - Coords: [10, 273]
             Size: [350, 92]
             Color: [0.699999988, 0.699999988, 0.699999988, 0.400000006]
             Label: Sprite Renderer
             Name: Sprite Renderer
             Locked: true
             Type: Window
+            bUIElements:
+              - Coords: [10, 10]
+                Size: [50, 50]
+                Color: [1, 1, 1, 1]
+                Label: R
+                Name: Color R
+                Locked: true
+                Type: Float
+              - Coords: [80, 10]
+                Size: [50, 50]
+                Color: [1, 1, 1, 1]
+                Label: G
+                Name: Color G
+                Locked: true
+                Type: Float
+              - Coords: [151, 10]
+                Size: [50, 50]
+                Color: [1, 1, 1, 1]
+                Label: B
+                Name: Color B
+                Locked: true
+                Type: Float
+              - Coords: [220, 10]
+                Size: [50, 50]
+                Color: [1, 1, 1, 1]
+                Label: A   Color
+                Name: Color A
+                Locked: true
+                Type: Float
+              - Coords: [10, 70]
+                Size: [50, 50]
+                Color: [1, 1, 1, 1]
+                Label: Sort Layer
+                Name: Sort Layer
+                Locked: true
+                Type: Float
+              - Coords: [10, 130]
+                Size: [25, 25]
+                Color: [1, 1, 1, 1]
+                Label: Visible
+                Name: Visible
+                Locked: true
+                Type: Checkbox

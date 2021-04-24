@@ -66,24 +66,34 @@ namespace XYZ {
 			parentElement->Size.y
 		);
 		float highestInRow = 0.0f;
+		uint32_t row = 0;
 		uint32_t numItems = 0;
+		uint32_t itemsPerRow = 0;
+		if (!layout.ItemsPerRow.empty())
+			itemsPerRow = layout.ItemsPerRow[row];
+
 		tree.TraverseNodeChildren(elementID, [&](void* parent, void* child)->bool {
 
 			bUIElement* childElement = static_cast<bUIElement*>(child);
 			childElement->Visible = true;
-
+		
 			glm::vec2 textSize = FindTextSize(childElement->Label.c_str(), bUI::GetConfig().GetFont());
 			glm::vec2 size = childElement->GetSize();
 
 			float xOffset = size.x + textSize.x;
-			if (offset.x + xOffset > border.x || numItems == layout.ItemsPerRow)
+			if (offset.x + xOffset > border.x || numItems == itemsPerRow)
 			{
 				offset.x = layout.LeftOffset;
 				offset.y += highestInRow + layout.SpacingY;
 				highestInRow = 0.0f;
 				numItems = 0;
+				row++;
+				if (row == layout.ItemsPerRow.size())
+					row = 0;
+				if (!layout.ItemsPerRow.empty())
+					itemsPerRow = layout.ItemsPerRow[row];
 			}
-			if (offset.y + size.y > border.y)
+			if (offset.y + size.y > border.y && layout.EraseOut)
 			{
 				childElement->Visible = false;
 			}

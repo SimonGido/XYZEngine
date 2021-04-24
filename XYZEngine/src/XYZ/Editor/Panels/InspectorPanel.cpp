@@ -37,6 +37,9 @@ namespace XYZ {
 	}
 	InspectorPanel::InspectorPanel()
 	{
+		m_TransformLayout = { 10.0f, 10.0f, 10.0f, 10.0f, 10.0f, {3, 3, 3}, true };
+		m_SpriteRendererLayout = { 10.0f, 10.0f, 10.0f, 10.0f, 10.0f, {4, 1, 1}, true };
+
 		bUILoader::Load("Layouts/Inspector.bui");
 		bUI::SetupLayout("Inspector", "Scrollbox", { 10.0f, 10.0f, 10.0f, 10.0f, 10.0f });
 		bUI::SetupLayout("Inspector", "Transform Component", { 10.0f, 10.0f, 10.0f, 10.0f, 10.0f });
@@ -44,23 +47,23 @@ namespace XYZ {
 	void InspectorPanel::SetContext(SceneEntity context)
 	{
 		m_Context = context;
-		//if (m_Context)
-		//{
-		//	prepareTransformComponentUI();
-		//	prepareSpriteRendererUI();
-		//	prepareScriptComponentUI();
-		//}
 	}
 	void InspectorPanel::OnUpdate()
 	{
 		bUIAllocator& allocator = bUI::GetAllocator("Inspector");
 		bUIScrollbox* scrollbox = allocator.GetElement<bUIScrollbox>("Scrollbox");
-		bUIWindow* transformWindow = allocator.GetElement<bUIWindow>("Transform Component");
-
-		bUI::SetupLayout(allocator, *transformWindow, { 10.0f, 10.0f, 10.0f, 10.0f, 10.0f, 3 });
+		bUIWindow* last = nullptr;
 		bUI::ForEach<bUIWindow>(allocator, scrollbox, [&](bUIWindow& win) {
 			win.Size.x = scrollbox->Size.x - 20.0f;
+			if (last)
+				win.Coords.y = last->Coords.y + last->GetSize().y + 10.0f;
+			last = &win;
 		});
+	
+		bUIWindow* transformWindow = allocator.GetElement<bUIWindow>("Transform Component");
+		bUIWindow* spriteWindow = allocator.GetElement<bUIWindow>("Sprite Renderer");
+		bUI::SetupLayout(allocator, *transformWindow, m_TransformLayout);
+		bUI::SetupLayout(allocator, *spriteWindow, m_SpriteRendererLayout);
 	}
 	void InspectorPanel::invalidateUI()
 	{

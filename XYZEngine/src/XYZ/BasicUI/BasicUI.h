@@ -28,7 +28,8 @@ namespace XYZ {
 	{
 		float SpacingX, SpacingY;
 		float LeftOffset, RightOffset, TopOffset;
-		uint32_t ItemsPerRow = 0; // Keep zero to have unlimited number of items per row
+		std::vector<uint32_t> ItemsPerRow;
+		bool EraseOut;
 	};
 
 	class bUI

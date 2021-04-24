@@ -86,11 +86,11 @@ namespace XYZ {
 
 		glm::vec2 scissorPos = { scissor.X, bUI::GetContext().ViewportSize.y - scissor.Y - scissor.Height };
 		glm::vec2 scissorSize = { scissor.Width, scissor.Height };
-		glm::vec2 leftTopBorder = scissorPos - Size;
-		glm::vec2 rightBottomBorder = scissorPos + scissorSize + Size;
+		glm::vec2 leftTopBorder = scissorPos - GetSize();
+		glm::vec2 rightBottomBorder = scissorPos + scissorSize + GetSize();
 		glm::vec2 size = rightBottomBorder - leftTopBorder;
 
-		return bUIHelper::IsInside(GetAbsolutePosition(), Size, leftTopBorder, size);
+		return bUIHelper::IsInside(GetAbsolutePosition(), GetSize(), leftTopBorder, size);
 	}
 	uint32_t bUIElement::depth()
 	{
@@ -316,7 +316,7 @@ namespace XYZ {
 				callback(bUICallbackType::Active, *this);
 			return true;
 		}
-		else if (Helper::Collide(absolutePosition, Size, mousePosition))
+		else if (ChildrenVisible && Helper::Collide(absolutePosition, Size, mousePosition))
 		{
 			if (mousePosition.x > absolutePosition.x + Size.x - sc_ResizeOffset.x)
 				ResizeFlags |= Right;

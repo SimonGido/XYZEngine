@@ -16,6 +16,10 @@ namespace XYZ {
 
 		void OnUpdate();
 	private:
+		bUILayout m_TransformLayout;
+		bUILayout m_SpriteRendererLayout;
+
+	private:
 		void invalidateUI();
 
 	private:
