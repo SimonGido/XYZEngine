@@ -2,18 +2,27 @@
 #include "BasicUIData.h"
 
 #include "BasicUI.h"
+#include "BasicUILoader.h"
 
 #include "XYZ/Core/Input.h"
 
 namespace XYZ {
-	bUIAllocator& bUIData::CreateAllocator(const std::string& name, size_t size)
+	bUIAllocator& bUIData::CreateAllocator(const std::string& name, const std::string& filepath, size_t size)
 	{
 		auto it = m_AllocatorMap.find(name);
 		XYZ_ASSERT(it == m_AllocatorMap.end(), "Allocator with name ", name, " already exists");
 		m_Allocators.emplace_back(size);
 		m_AllocatorMap[name] = m_Allocators.size() - 1;
+		m_UIPaths.push_back(filepath);
 		return m_Allocators.back();
 	}
+
+	void bUIData::Reload()
+	{
+		for (auto& path : m_UIPaths)
+			bUILoader::Load(path.c_str());
+	}
+
 	void bUIData::Update()
 	{
 		for (bUIAllocator& allocator : m_Allocators)

@@ -17,12 +17,14 @@ namespace XYZ {
 
 		void OnUpdate();
 	private:
+		void setSceneTagComponent();
 		void setTransformComponent();
 		void setSpriteRenderer();
 		void setScriptComponent();
 		void buildScriptComponent();
 
 	private:
+		bUILayout m_SceneTagLayout;
 		bUILayout m_TransformLayout;
 		bUILayout m_SpriteRendererLayout;
 		bUILayout m_ScriptLayout;

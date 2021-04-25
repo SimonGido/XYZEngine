@@ -25,6 +25,12 @@ namespace XYZ {
 	{
 		delete s_Context;
 	}
+
+	void bUI::Reload()
+	{
+		s_Context->Data.Reload();
+	}
+
 	void bUI::Update()
 	{
 		s_Context->Renderer.Begin();

@@ -40,6 +40,7 @@ namespace XYZ {
 		m_TransformLayout = { 10.0f, 10.0f, 10.0f, 10.0f, 10.0f, {3, 3, 3}, true };
 		m_SpriteRendererLayout = { 10.0f, 10.0f, 10.0f, 10.0f, 10.0f, {4, 1, 1}, true };
 		m_ScriptLayout = { 10.0f, 10.0f, 10.0f, 10.0f, 10.0f, {1}, true };
+		m_SceneTagLayout =  { 10.0f, 10.0f, 10.0f, 10.0f, 10.0f, {1}, true };
 
 		bUILoader::Load("Layouts/Inspector.bui");
 
@@ -74,6 +75,7 @@ namespace XYZ {
 		}
 		m_Context = context;
 		bUILoader::Load("Layouts/Inspector.bui");
+		setSceneTagComponent();
 		setTransformComponent();
 		setSpriteRenderer();
 
@@ -102,6 +104,11 @@ namespace XYZ {
 		
 		if (m_Context && m_Context.IsValid())
 		{
+			if (m_Context.HasComponent<SceneTagComponent>())
+			{
+				bUIWindow* sceneTagWindow = allocator.GetElement<bUIWindow>("Scene Tag Component");
+				bUI::SetupLayout(allocator, *sceneTagWindow, m_SceneTagLayout);
+			}
 			if (m_Context.HasComponent<TransformComponent>())
 			{
 				bUIWindow* transformWindow = allocator.GetElement<bUIWindow>("Transform Component");
@@ -118,6 +125,26 @@ namespace XYZ {
 				bUI::SetupLayout(allocator, *scriptWindow, m_ScriptLayout);
 			}
 		}	
+	}
+
+	void InspectorPanel::setSceneTagComponent()
+	{
+		bUIAllocator& allocator = bUI::GetAllocator("Inspector");
+		if (m_Context.HasComponent<SceneTagComponent>())
+		{
+			auto& component = m_Context.GetComponent<SceneTagComponent>();
+			bUIString* sceneTag = allocator.GetElement<bUIString>("Scene Tag");
+			sceneTag->SetValue(component.Name);
+			sceneTag->Callbacks.push_back(
+				[&](bUICallbackType type, bUIElement& element) {
+					if (type == bUICallbackType::Active && m_Context)
+					{
+						bUIString& casted = static_cast<bUIString&>(element);
+						m_Context.GetComponent<SceneTagComponent>().Name = casted.GetValue();
+					}
+				}
+			);
+		}
 	}
 
 	void InspectorPanel::setTransformComponent()

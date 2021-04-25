@@ -37,6 +37,7 @@ namespace XYZ {
 	public:
 		static void Init();
 		static void Shutdown();
+		static void Reload();
 		static void Update();
 
 		static void OnEvent(Event& event);

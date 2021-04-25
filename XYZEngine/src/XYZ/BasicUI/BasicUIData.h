@@ -9,8 +9,9 @@ namespace XYZ {
 	class bUIData
 	{
 	public:
-		bUIAllocator& CreateAllocator(const std::string& name, size_t size);
+		bUIAllocator& CreateAllocator(const std::string& name, const std::string& filepath, size_t size);
 
+		void Reload();
 		void Update();
 		void BuildMesh(bUIRenderer& renderer);
 
@@ -24,6 +25,7 @@ namespace XYZ {
 	private:
 		std::vector<bUIAllocator> m_Allocators;
 		std::unordered_map<std::string, size_t> m_AllocatorMap;
+		std::vector<std::string> m_UIPaths;
 
 		friend class bUILoader;
 		friend class bUIInput;

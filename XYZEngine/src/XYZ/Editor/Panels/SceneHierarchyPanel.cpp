@@ -45,6 +45,8 @@ namespace XYZ {
                 }
             }
         );
+        Ref<Texture> plusTexture = Texture2D::Create({}, "Assets/Textures/Plus.png");
+        m_Image->ImageSubTexture = Ref<SubTexture>::Create(plusTexture, glm::vec2(0.0f));
     }
     SceneHierarchyPanel::~SceneHierarchyPanel()
     {

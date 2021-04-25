@@ -17,6 +17,21 @@ bUIElements:
         Type: Scrollbox
         bUIElements:
           - Coords: [10, 20]
+            Size: [452, 70]
+            Color: [0.699999988, 0.699999988, 0.699999988, 0.400000006]
+            Label: Scene Tag Component
+            Name: Scene Tag Component
+            Locked: true
+            Type: Window
+            bUIElements:
+              - Coords: [10, 10]
+                Size: [100, 30]
+                Color: [1, 1, 1, 1]
+                Label: Scene Tag
+                Name: Scene Tag
+                Locked: true
+                Type: String
+          - Coords: [10, 20]
             Size: [452, 218]
             Color: [0.699999988, 0.699999988, 0.699999988, 0.400000006]
             Label: Transform Component

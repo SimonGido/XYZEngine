@@ -26,7 +26,7 @@ bUIElements:
           - Coords: [50, 10]
             Size: [30, 30]
             Color: [1, 1, 1, 1]
-            Label: "Create Entity"
+            Label: Create Entity
             Name: Create Entity
             Locked: true
             Type: Image

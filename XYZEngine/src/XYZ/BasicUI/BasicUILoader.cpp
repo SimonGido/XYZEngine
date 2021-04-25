@@ -96,7 +96,7 @@ namespace XYZ {
 			return "None";
 		}
 	}
-	void bUILoader::Load(const char* filepath, bool scale)
+	void bUILoader::Load(const std::string& filepath, bool scale)
 	{
 		std::ifstream stream(filepath);
 		std::stringstream strStream;
@@ -123,7 +123,7 @@ namespace XYZ {
 		if (bUI::getContext().Data.Exist(name))
 			allocator = &bUI::getContext().Data.GetAllocator(name);
 		else
-			allocator = &bUI::getContext().Data.CreateAllocator(name, dataSize);
+			allocator = &bUI::getContext().Data.CreateAllocator(name, filepath, dataSize);
 
 		allocator->Reserve(dataSize);
 		loadUIElements(allocator, nullptr, aspect, elements);

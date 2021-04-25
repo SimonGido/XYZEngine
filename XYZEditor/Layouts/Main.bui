@@ -44,3 +44,18 @@ bUIElements:
             Name: Skinning Editor
             Locked: true
             Type: Checkbox
+      - Coords: [0, 25]
+        Size: [960, 150]
+        Color: [1, 1, 1, 0.400000006]
+        Label: UI
+        Name: UI
+        Locked: true
+        Type: Window
+        bUIElements:
+          - Coords: [10, 10]
+            Size: [35, 35]
+            Color: [1.5, 2.3, 2.4, 1]
+            Label: Reload
+            Name: Reload
+            Locked: true
+            Type: Button
