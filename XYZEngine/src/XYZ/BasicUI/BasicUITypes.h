@@ -16,6 +16,7 @@ namespace XYZ {
 		Window,
 		Scrollbox,
 		Float,
+		Int,
 		String,
 		Tree,
 		Image,
@@ -25,7 +26,8 @@ namespace XYZ {
 	enum class bUICallbackType
 	{
 		Hoover,
-		Active
+		Active,
+		StateChange
 	};
 
 	struct bUIElement;
@@ -42,6 +44,8 @@ namespace XYZ {
 			const std::string& name,
 			bUIElementType type
 		);
+		bUIElement(bUIElement&& other) noexcept;
+
 		virtual ~bUIElement() = default;
 
 		virtual void PushQuads(bUIRenderer& renderer, uint32_t& scissorID) {};
@@ -89,6 +93,8 @@ namespace XYZ {
 
 	struct bUIListener
 	{
+		virtual ~bUIListener() = default;
+
 		virtual bool OnKeyPressed(int32_t mode, int32_t key) { return false; }
 		virtual bool OnKeyTyped(char character) { return false; }
 
@@ -300,6 +306,35 @@ namespace XYZ {
 
 		void	    SetValue(float val);
 		float	    GetValue() const;
+		const char* GetBuffer() const { return Buffer; }
+
+		static constexpr size_t BufferSize = 60;
+	private:
+		uint32_t	  InsertionIndex;
+		char		  Buffer[BufferSize];	
+	};
+
+	class bUIInt : public bUIElement,
+				   public bUIListener
+	{
+	public:
+		bUIInt(
+			const glm::vec2& coords,
+			const glm::vec2& size,
+			const glm::vec4& color,
+			const std::string& label,
+			const std::string& name,
+			bUIElementType type
+		);
+
+		virtual void PushQuads(bUIRenderer& renderer, uint32_t& scissorID) override;
+		virtual bool OnMouseMoved(const glm::vec2& mousePosition) override;
+		virtual bool OnLeftMousePressed(const glm::vec2& mousePosition) override;
+		virtual bool OnKeyPressed(int32_t mode, int32_t key) override;
+		virtual bool OnKeyTyped(char character) override;
+
+		void	    SetValue(int32_t val);
+		int32_t	    GetValue() const;
 		const char* GetBuffer() const { return Buffer; }
 
 		static constexpr size_t BufferSize = 60;

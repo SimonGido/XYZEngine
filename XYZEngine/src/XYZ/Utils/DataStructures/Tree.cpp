@@ -30,6 +30,15 @@ namespace XYZ {
         m_Root = other.m_Root;
         return *this;
     }
+    Tree& Tree::operator=(Tree&& other) noexcept
+    {
+        m_Root = other.m_Root;
+        m_NodeCount = other.m_NodeCount;
+        m_Nodes = std::move(other.m_Nodes);
+        m_NodeValid = std::move(other.m_NodeValid);
+        other.m_Root = TreeNode::sc_Invalid;
+        return *this;
+    }
     int32_t Tree::Insert(void* data)
     {
         TreeNode newNode;
@@ -161,13 +170,13 @@ namespace XYZ {
         if (tmpPrevious == TreeNode::sc_Invalid)
         {
             m_Nodes[parent].FirstChild = newInserted;
-            m_Nodes[newInserted].Parent = parent;
         }
         else
         {
             m_Nodes[tmpPrevious].NextSibling = newInserted;
             m_Nodes[newInserted].PreviousSibling = tmpPrevious;
         }
+        m_Nodes[newInserted].Parent = parent;
         m_NodeCount++;
         return newInserted;
     }

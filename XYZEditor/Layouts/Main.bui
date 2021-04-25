@@ -16,9 +16,31 @@ bUIElements:
         Locked: true
         Type: Window
       - Coords: [960, 25]
-        Size: [960, 150]
+        Size: [960, 109]
         Color: [1, 1, 1, 0.400000006]
         Label: View
         Name: View
         Locked: true
         Type: Window
+        bUIElements:
+          - Coords: [10, 10]
+            Size: [25, 25]
+            Color: [1, 1, 1, 1]
+            Label: Inspector
+            Name: Inspector
+            Locked: true
+            Type: Checkbox
+          - Coords: [10, 40]
+            Size: [25, 25]
+            Color: [1, 1, 1, 1]
+            Label: Scene Hierarchy
+            Name: Scene Hierarchy
+            Locked: true
+            Type: Checkbox
+          - Coords: [10, 70]
+            Size: [25, 25]
+            Color: [1, 1, 1, 1]
+            Label: Skinning Editor
+            Name: Skinning Editor
+            Locked: true
+            Type: Checkbox

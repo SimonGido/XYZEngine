@@ -32,6 +32,7 @@ namespace XYZ {
 		Tree(Tree&& other) noexcept;
 
 		Tree& operator = (const Tree& other);
+		Tree& operator =(Tree&& other) noexcept;
 
 		int32_t     Insert(void* data);
 		int32_t     Insert(void* data, int32_t parent);

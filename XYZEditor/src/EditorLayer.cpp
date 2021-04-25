@@ -84,10 +84,6 @@ namespace XYZ {
 
 	void EditorLayer::OnDetach()
 	{
-		bUILoader::Save("Inspector", "Layouts/Inspector.bui");
-		bUILoader::Save("SceneHierarchy", "Layouts/SceneHierarchy.bui");
-		bUILoader::Save("Main", "Layouts/Main.bui");
-		//bUILoader::Save("SkinningEditor", "Layouts/SkinningEditor.bui");
 		AssetSerializer::SerializeAsset(m_Scene);		
 	}
 	void EditorLayer::OnUpdate(Timestep ts)
@@ -99,6 +95,8 @@ namespace XYZ {
 		m_Inspector.OnUpdate();
 		m_Main.OnUpdate();
 		m_EditorCamera.OnUpdate(ts);
+		m_Inspector.SetContext(m_Scene->GetSelectedEntity());
+
 		if (m_Scene->GetState() == SceneState::Play)
 		{
 			m_Scene->OnUpdate(ts);

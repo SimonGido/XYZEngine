@@ -39,14 +39,52 @@ namespace XYZ {
 	{
 		m_TransformLayout = { 10.0f, 10.0f, 10.0f, 10.0f, 10.0f, {3, 3, 3}, true };
 		m_SpriteRendererLayout = { 10.0f, 10.0f, 10.0f, 10.0f, 10.0f, {4, 1, 1}, true };
+		m_ScriptLayout = { 10.0f, 10.0f, 10.0f, 10.0f, 10.0f, {1}, true };
 
 		bUILoader::Load("Layouts/Inspector.bui");
-		bUI::SetupLayout("Inspector", "Scrollbox", { 10.0f, 10.0f, 10.0f, 10.0f, 10.0f });
-		bUI::SetupLayout("Inspector", "Transform Component", { 10.0f, 10.0f, 10.0f, 10.0f, 10.0f });
+
+		bUIAllocator& allocator = bUI::GetAllocator("Inspector");
+		bUIScrollbox* scrollbox = allocator.GetElement<bUIScrollbox>("Scrollbox");
+		bUI::ForEach<bUIWindow>(allocator, scrollbox, [&](bUIWindow& win) {
+			win.Visible = false;
+		});
+	}
+	InspectorPanel::~InspectorPanel()
+	{
+		/* Before destroying Inspector just reload 
+		it to destroy runtime created script component UI */
+		bUILoader::Load("Layouts/Inspector.bui", false);
+		bUILoader::Save("Inspector", "Layouts/Inspector.bui");
 	}
 	void InspectorPanel::SetContext(SceneEntity context)
 	{
+		if (!context)
+		{
+			bUIAllocator& allocator = bUI::GetAllocator("Inspector");
+			bUIScrollbox* scrollbox = allocator.GetElement<bUIScrollbox>("Scrollbox");
+			bUI::ForEach<bUIWindow>(allocator, scrollbox, [&](bUIWindow& win) {
+				win.Visible = false;
+			});
+			m_Context = context;
+			return;
+		}
+		else if (m_Context == context)
+		{
+			return;
+		}
 		m_Context = context;
+		bUILoader::Load("Layouts/Inspector.bui");
+		setTransformComponent();
+		setSpriteRenderer();
+
+		buildScriptComponent();
+		setScriptComponent();
+		
+		bUIAllocator& allocator = bUI::GetAllocator("Inspector");
+		bUIScrollbox* scrollbox = allocator.GetElement<bUIScrollbox>("Scrollbox");
+		bUI::ForEach<bUIWindow>(allocator, scrollbox, [&](bUIWindow& win) {
+			win.ChildrenVisible = false;
+		});
 	}
 	void InspectorPanel::OnUpdate()
 	{
@@ -57,754 +95,591 @@ namespace XYZ {
 			win.Size.x = scrollbox->Size.x - 20.0f;
 			if (last)
 				win.Coords.y = last->Coords.y + last->GetSize().y + 10.0f;
+			else
+				win.Coords.y = 35.0f;
 			last = &win;
 		});
-	
-		bUIWindow* transformWindow = allocator.GetElement<bUIWindow>("Transform Component");
-		bUIWindow* spriteWindow = allocator.GetElement<bUIWindow>("Sprite Renderer");
-		bUI::SetupLayout(allocator, *transformWindow, m_TransformLayout);
-		bUI::SetupLayout(allocator, *spriteWindow, m_SpriteRendererLayout);
+		
+		if (m_Context)
+		{
+			if (m_Context.HasComponent<TransformComponent>())
+			{
+				bUIWindow* transformWindow = allocator.GetElement<bUIWindow>("Transform Component");
+				bUI::SetupLayout(allocator, *transformWindow, m_TransformLayout);
+			}
+			if (m_Context.HasComponent<SpriteRenderer>())
+			{
+				bUIWindow* spriteWindow = allocator.GetElement<bUIWindow>("Sprite Renderer");
+				bUI::SetupLayout(allocator, *spriteWindow, m_SpriteRendererLayout);
+			}
+			if (m_Context.HasComponent<ScriptComponent>())
+			{
+				bUIWindow* scriptWindow = allocator.GetElement<bUIWindow>("Script Component");
+				bUI::SetupLayout(allocator, *scriptWindow, m_ScriptLayout);
+			}
+		}	
 	}
-	void InspectorPanel::invalidateUI()
+
+	void InspectorPanel::setTransformComponent()
 	{
-		bool reallocate = false;
-		if (!m_Layout.empty())
+		bUIAllocator& allocator = bUI::GetAllocator("Inspector");
+		if (m_Context.HasComponent<TransformComponent>())
 		{
-			m_Layout.clear();
-			reallocate = true;
-		}
-
-		m_Layout.push_back({ IGElementType::Window, {} });
-		m_Layout[0].Children.push_back({ IGElementType::Scrollbox, {} });
-
-		size_t handleOffset = 2;
-		m_HandleStart[TransformComponent] = handleOffset;
-		handleOffset += transformComponentUI(m_Layout[0].Children[0]);
-		m_HandleStart[SpriteRenderer] = handleOffset;
-		handleOffset += spriteRendererUI(m_Layout[0].Children[0]);
-		m_HandleStart[ScriptComponent] = handleOffset;
-		handleOffset += scriptComponentUI(m_Layout[0].Children[0]);
-
-		size_t* handles = nullptr;
-		if (reallocate)
-		{
-			IGWindow* window = &IG::GetUI<IGWindow>(m_PoolHandle, 0);
-			IGDockNode* node = window->Node;
-
-			m_HandleCount = IG::ReallocateUI(m_PoolHandle, m_Layout);
+			auto& component = m_Context.GetComponent<TransformComponent>();
 			
-			window = &IG::GetUI<IGWindow>(m_PoolHandle, 0);
-			if (node) node->Data.Windows.push_back(window);	
-			window->Node = node;
+			// Translation
+			bUIFloat* translationX = allocator.GetElement<bUIFloat>("Translation X");
+			translationX->SetValue(component.Translation.x);
+			translationX->Callbacks.push_back(
+				[&](bUICallbackType type, bUIElement& element) {
+					if (type == bUICallbackType::Active && m_Context)
+					{
+						bUIFloat& casted = static_cast<bUIFloat&>(element);
+						m_Context.GetComponent<TransformComponent>().Translation.x = casted.GetValue();
+					}
+				}
+			);
+			bUIFloat* translationY = allocator.GetElement<bUIFloat>("Translation Y");
+			translationY->SetValue(component.Translation.y);
+			translationY->Callbacks.push_back(
+				[&](bUICallbackType type, bUIElement& element) {
+					if (type == bUICallbackType::Active && m_Context)
+					{
+						bUIFloat& casted = static_cast<bUIFloat&>(element);
+						m_Context.GetComponent<TransformComponent>().Translation.y = casted.GetValue();
+					}
+				}
+			);
+
+			bUIFloat* translationZ = allocator.GetElement<bUIFloat>("Translation Z");
+			translationZ->SetValue(component.Translation.z);
+			translationZ->Callbacks.push_back(
+				[&](bUICallbackType type, bUIElement& element) {
+					if (type == bUICallbackType::Active && m_Context)
+					{
+						bUIFloat& casted = static_cast<bUIFloat&>(element);
+						m_Context.GetComponent<TransformComponent>().Translation.z = casted.GetValue();
+					}
+				}
+			);
+			// Translation
+
+			// Rotation
+			bUIFloat* rotationX = allocator.GetElement<bUIFloat>("Rotation X");
+			rotationX->SetValue(component.Rotation.x);
+			rotationX->Callbacks.push_back(
+				[&](bUICallbackType type, bUIElement& element) {
+					if (type == bUICallbackType::Active && m_Context)
+					{
+						bUIFloat& casted = static_cast<bUIFloat&>(element);
+						m_Context.GetComponent<TransformComponent>().Rotation.x = casted.GetValue();
+					}
+				}
+			);
+			bUIFloat* rotationY = allocator.GetElement<bUIFloat>("Rotation Y");
+			rotationY->SetValue(component.Rotation.y);
+			rotationY->Callbacks.push_back(
+				[&](bUICallbackType type, bUIElement& element) {
+					if (type == bUICallbackType::Active && m_Context)
+					{
+						bUIFloat& casted = static_cast<bUIFloat&>(element);
+						m_Context.GetComponent<TransformComponent>().Rotation.y = casted.GetValue();
+					}
+				}
+			);
+
+			bUIFloat* rotationZ = allocator.GetElement<bUIFloat>("Rotation Z");
+			rotationZ->SetValue(component.Rotation.z);
+			rotationZ->Callbacks.push_back(
+				[&](bUICallbackType type, bUIElement& element) {
+					if (type == bUICallbackType::Active && m_Context)
+					{
+						bUIFloat& casted = static_cast<bUIFloat&>(element);
+						m_Context.GetComponent<TransformComponent>().Rotation.z = casted.GetValue();
+					}
+				}
+			);
+			// Rotation
+
+			// Scale
+			bUIFloat* scaleX = allocator.GetElement<bUIFloat>("Scale X");
+			scaleX->SetValue(component.Scale.x);
+			scaleX->Callbacks.push_back(
+				[&](bUICallbackType type, bUIElement& element) {
+					if (type == bUICallbackType::Active && m_Context)
+					{
+						bUIFloat& casted = static_cast<bUIFloat&>(element);
+						m_Context.GetComponent<TransformComponent>().Scale.x = casted.GetValue();
+					}
+				}
+			);
+			bUIFloat* scaleY = allocator.GetElement<bUIFloat>("scale Y");
+			scaleY->SetValue(component.Scale.y);
+			scaleY->Callbacks.push_back(
+				[&](bUICallbackType type, bUIElement& element) {
+					if (type == bUICallbackType::Active && m_Context)
+					{
+						bUIFloat& casted = static_cast<bUIFloat&>(element);
+						m_Context.GetComponent<TransformComponent>().Scale.y = casted.GetValue();
+					}
+				}
+			);
+
+			bUIFloat* scaleZ = allocator.GetElement<bUIFloat>("scale Z");
+			scaleZ->SetValue(component.Scale.z);
+			scaleZ->Callbacks.push_back(
+				[&](bUICallbackType type, bUIElement& element) {
+					if (type == bUICallbackType::Active && m_Context)
+					{
+						bUIFloat& casted = static_cast<bUIFloat&>(element);
+						m_Context.GetComponent<TransformComponent>().Scale.z = casted.GetValue();
+					}
+				}
+			);
+			// Scale
 		}
 		else
 		{
-			auto [poolHandle, handleCount] = IG::AllocateUI(m_Layout);
-			m_PoolHandle = poolHandle;
-			m_HandleCount = handleCount;
-		}
-
-		m_Window = &IG::GetUI<IGWindow>(m_PoolHandle, 0);
-		m_Window->Label = "Inspector Panel";
-
-		setupTransformComponentUI();
-		setupSpriteRendererUI();
-		setupPointLight2DUI();
-		setupRigidBody2DComponentUI();
-		setupBoxCollider2DComponentUI();
-		setupScriptComponentUI();
-		if (m_Context)
-		{
-			prepareTransformComponentUI();
-			prepareSpriteRendererUI();
-			prepareScriptComponentUI();
+			bUIWindow* window = allocator.GetElement<bUIWindow>("Transform Component");
+			window->Visible = false;
 		}
 	}
-	void InspectorPanel::updateTransformComponentUI()
-	{		
-		XYZ::TransformComponent& transform = m_Context.GetComponent<XYZ::TransformComponent>();
 
-		size_t index = m_HandleStart[TransformComponent];
-
-		IGFloat& translationX = IG::GetUI<IGFloat>(m_PoolHandle, index + 1);
-		IGFloat& translationY = IG::GetUI<IGFloat>(m_PoolHandle, index + 2);
-		IGFloat& translationZ = IG::GetUI<IGFloat>(m_PoolHandle, index + 3);
-		
-		translationX.SetValue(transform.Translation.x);
-		transform.Translation.x = translationX.GetValue();
-		
-		translationY.SetValue(transform.Translation.y);
-		transform.Translation.y = translationY.GetValue();
-		
-		translationZ.SetValue(transform.Translation.z);
-		transform.Translation.z = translationZ.GetValue();
-
-		IGFloat& rotationX = IG::GetUI<IGFloat>(m_PoolHandle, index + 6);
-		IGFloat& rotationY = IG::GetUI<IGFloat>(m_PoolHandle, index + 7);
-		IGFloat& rotationZ = IG::GetUI<IGFloat>(m_PoolHandle, index + 8);
-
-		rotationX.SetValue(transform.Rotation.x);
-		transform.Rotation.x = rotationX.GetValue();
-
-		rotationY.SetValue(transform.Rotation.y);
-		transform.Rotation.y = rotationY.GetValue();
-
-		rotationZ.SetValue(transform.Rotation.z);
-		transform.Rotation.z = rotationZ.GetValue();
-
-		IGFloat& scaleX = IG::GetUI<IGFloat>(m_PoolHandle, index + 11);
-		IGFloat& scaleY = IG::GetUI<IGFloat>(m_PoolHandle, index + 12);
-		IGFloat& scaleZ = IG::GetUI<IGFloat>(m_PoolHandle, index + 13);
-
-		scaleX.SetValue(transform.Scale.x);
-		transform.Scale.x = scaleX.GetValue();
-
-		scaleY.SetValue(transform.Scale.y);
-		transform.Scale.y = scaleY.GetValue();
-
-		scaleZ.SetValue(transform.Scale.z);
-		transform.Scale.z = scaleZ.GetValue();
-	}
-	void InspectorPanel::updateSpriteRendererUI()
+	void InspectorPanel::setSpriteRenderer()
 	{
-		if (m_Context.HasComponent<XYZ::SpriteRenderer>())
+		bUIAllocator& allocator = bUI::GetAllocator("Inspector");
+		if (m_Context.HasComponent<SpriteRenderer>())
 		{
-			XYZ::SpriteRenderer& spriteRenderer = m_Context.GetComponent<XYZ::SpriteRenderer>();
-			size_t index = m_HandleStart[SpriteRenderer];
+			auto& component = m_Context.GetComponent<SpriteRenderer>();
 
-			IGFloat& colorR = IG::GetUI<IGFloat>(m_PoolHandle, index + 1);
-			IGFloat& colorG = IG::GetUI<IGFloat>(m_PoolHandle, index + 2);
-			IGFloat& colorB = IG::GetUI<IGFloat>(m_PoolHandle, index + 3);
-			IGFloat& colorA = IG::GetUI<IGFloat>(m_PoolHandle, index + 4);
+			// Color
+			bUIFloat* colorR = allocator.GetElement<bUIFloat>("Color R");
+			colorR->SetValue(component.Color.r);
+			colorR->Callbacks.push_back(
+				[&](bUICallbackType type, bUIElement& element) {
+					if (type == bUICallbackType::Active && m_Context)
+					{
+						bUIFloat& casted = static_cast<bUIFloat&>(element);
+						m_Context.GetComponent<SpriteRenderer>().Color.r = casted.GetValue();
+					}
+				}
+			);
 
-			IGInt& sortLayer = IG::GetUI<IGInt>(m_PoolHandle, index + 6);
-			IGCheckbox& visible = IG::GetUI<IGCheckbox>(m_PoolHandle, index + 8);
-			
-			colorR.SetValue(spriteRenderer.Color.r);
-			spriteRenderer.Color.r = colorR.GetValue();
+			bUIFloat* colorG = allocator.GetElement<bUIFloat>("Color G");
+			colorG->SetValue(component.Color.g);
+			colorG->Callbacks.push_back(
+				[&](bUICallbackType type, bUIElement& element) {
+					if (type == bUICallbackType::Active && m_Context)
+					{
+						bUIFloat& casted = static_cast<bUIFloat&>(element);
+						m_Context.GetComponent<SpriteRenderer>().Color.g = casted.GetValue();
+					}
+				}
+			);
 
-			colorG.SetValue(spriteRenderer.Color.g);
-			spriteRenderer.Color.g = colorR.GetValue();
+			bUIFloat* colorB = allocator.GetElement<bUIFloat>("Color B");
+			colorB->SetValue(component.Color.b);
+			colorB->Callbacks.push_back(
+				[&](bUICallbackType type, bUIElement& element) {
+					if (type == bUICallbackType::Active && m_Context)
+					{
+						bUIFloat& casted = static_cast<bUIFloat&>(element);
+						m_Context.GetComponent<SpriteRenderer>().Color.b = casted.GetValue();
+					}
+				}
+			);
 
-			colorB.SetValue(spriteRenderer.Color.b);
-			spriteRenderer.Color.b = colorR.GetValue();
+			bUIFloat* colorA = allocator.GetElement<bUIFloat>("Color A");
+			colorA->SetValue(component.Color.a);
+			colorA->Callbacks.push_back(
+				[&](bUICallbackType type, bUIElement& element) {
+					if (type == bUICallbackType::Active && m_Context)
+					{
+						bUIFloat& casted = static_cast<bUIFloat&>(element);
+						m_Context.GetComponent<SpriteRenderer>().Color.a = casted.GetValue();
+					}
+				}
+			);
+			// Color
 
-			colorA.SetValue(spriteRenderer.Color.a);
-			spriteRenderer.Color.a = colorR.GetValue();
-			
-			sortLayer.SetValue(spriteRenderer.SortLayer);
-			spriteRenderer.SortLayer = sortLayer.GetValue();
+			// Sort Layer
+			bUIInt* sortLayer = allocator.GetElement<bUIInt>("Sort Layer");
+			sortLayer->SetValue(component.SortLayer);
+			sortLayer->Callbacks.push_back(
+				[&](bUICallbackType type, bUIElement& element) {
+					if (type == bUICallbackType::Active && m_Context)
+					{
+						bUIInt& casted = static_cast<bUIInt&>(element);
+						m_Context.GetComponent<SpriteRenderer>().SortLayer = casted.GetValue();
+					}
+				}
+			);
+			// Sort Layer
 
-			spriteRenderer.IsVisible = visible.Checked;
+			// Visible
+			bUICheckbox* checkbox = allocator.GetElement<bUICheckbox>("Visible");
+			checkbox->Checked = component.IsVisible;
+			checkbox->Callbacks.push_back(
+				[&](bUICallbackType type, bUIElement& element) {
+					if (type == bUICallbackType::StateChange && m_Context)
+					{
+						bUICheckbox& casted = static_cast<bUICheckbox&>(element);
+						m_Context.GetComponent<SpriteRenderer>().IsVisible = casted.Checked;
+					}
+				}
+			);
+			// Visible
+		}
+		else
+		{
+			bUIWindow* window = allocator.GetElement<bUIWindow>("Sprite Renderer");
+			window->Visible = false;
 		}
 	}
-	void InspectorPanel::updateScriptComponentUI()
+
+	void InspectorPanel::setScriptComponent()
 	{
-		if (m_Context.HasComponent<XYZ::ScriptComponent>())
+		if (m_Context.HasComponent<ScriptComponent>())
 		{
-			XYZ::ScriptComponent& scriptComponent = m_Context.GetComponent<XYZ::ScriptComponent>();
-			size_t counter = 0;
-			size_t index = m_HandleStart[ScriptComponent];
-			IGPack& pack = IG::GetUI<IGPack>(m_PoolHandle, index + 1);
+			bUIAllocator& allocator = bUI::GetAllocator("Inspector");
+			ScriptComponent& scriptComponent = m_Context.GetComponent<ScriptComponent>();
 			for (auto& field : scriptComponent.Fields)
 			{
 				if (field.GetType() == PublicFieldType::Float)
 				{
-					IGFloat& fieldFloat = *static_cast<IGFloat*>(&pack[counter++]);
-					fieldFloat.SetValue(field.GetStoredValue<float>());
-					float newValue = fieldFloat.GetValue();
-					field.SetStoredValue<float>(newValue);
-					field.SetRuntimeValue<float>(newValue);
+					bUIFloat* element = allocator.GetElement<bUIFloat>(field.GetName());
+					element->SetValue(field.GetRuntimeValue<float>());
+					element->Callbacks.push_back(
+						[&](bUICallbackType type, bUIElement& elem) {
+							if (type == bUICallbackType::Active && m_Context)
+							{
+								bUIFloat& casted = static_cast<bUIFloat&>(elem);
+								field.SetStoredValue<float>(casted.GetValue());
+							}
+						}
+					);
 				}
 				else if (field.GetType() == PublicFieldType::Int)
 				{
-					IGInt& fieldInt = *static_cast<IGInt*>(&pack[counter++]);
-					fieldInt.SetValue(field.GetStoredValue<int32_t>());
-					int32_t newValue = fieldInt.GetValue();
-					field.SetStoredValue<int32_t>(newValue);
-					field.SetRuntimeValue<int32_t>(newValue);
+					bUIInt* element = allocator.GetElement<bUIInt>(field.GetName());
+					element->SetValue(field.GetRuntimeValue<int32_t>());
+					element->Callbacks.push_back(
+						[&](bUICallbackType type, bUIElement& elem) {
+							if (type == bUICallbackType::Active && m_Context)
+							{
+								bUIInt& casted = static_cast<bUIInt&>(elem);
+								field.SetStoredValue<int32_t>(casted.GetValue());
+							}
+						}
+					);
 				}
 				else if (field.GetType() == PublicFieldType::UnsignedInt)
 				{
-					IGInt& fieldInt = *static_cast<IGInt*>(&pack[counter++]);
-					fieldInt.SetValue(field.GetStoredValue<int32_t>());
-					int32_t newValue = fieldInt.GetValue();
-					field.SetStoredValue<int32_t>(newValue);
-					field.SetRuntimeValue<int32_t>(newValue);
+					bUIInt* element = allocator.GetElement<bUIInt>(field.GetName());
+					element->SetValue(field.GetRuntimeValue<uint32_t>());
+					element->Callbacks.push_back(
+						[&](bUICallbackType type, bUIElement& elem) {
+							if (type == bUICallbackType::Active && m_Context)
+							{
+								bUIInt& casted = static_cast<bUIInt&>(elem);
+								field.SetStoredValue<uint32_t>((uint32_t)casted.GetValue());
+							}
+						}
+					);
 				}
 				else if (field.GetType() == PublicFieldType::Vec2)
 				{
-					IGFloat& firstFloat =  *static_cast<IGFloat*>(&pack[counter++]);
-					IGFloat& secondFloat = *static_cast<IGFloat*>(&pack[counter++]);
+					glm::vec2 val = field.GetRuntimeValue<glm::vec2>();
+					bUIFloat* elementX = allocator.GetElement<bUIFloat>(field.GetName() + "X");
+					elementX->SetValue(val.x);
+					elementX->Callbacks.push_back(
+						[&](bUICallbackType type, bUIElement& elem) {
+							if (type == bUICallbackType::Active && m_Context)
+							{
+								bUIFloat& casted = static_cast<bUIFloat&>(elem);
+								glm::vec2 val = field.GetStoredValue<glm::vec2>();
+								val.x = casted.GetValue();
+								field.SetStoredValue<glm::vec2>(val);
+							}
+						}
+					);
 
-					glm::vec2 value = field.GetStoredValue<glm::vec2>();
-
-					firstFloat.SetValue(value.x);
-					secondFloat.SetValue(value.y);
-		
-					field.SetStoredValue<glm::vec2>({ firstFloat.GetValue(), secondFloat.GetValue() });
-					field.SetRuntimeValue<glm::vec2>({ firstFloat.GetValue(), secondFloat.GetValue() });
+					bUIFloat* elementY = allocator.GetElement<bUIFloat>(field.GetName() + "Y");
+					elementY->SetValue(val.y);
+					elementY->Callbacks.push_back(
+						[&](bUICallbackType type, bUIElement& elem) {
+							if (type == bUICallbackType::Active && m_Context)
+							{
+								bUIFloat& casted = static_cast<bUIFloat&>(elem);
+								glm::vec2 val = field.GetStoredValue<glm::vec2>();
+								val.y = casted.GetValue();
+								field.SetStoredValue<glm::vec2>(val);
+							}
+						}
+					);
 				}
 				else if (field.GetType() == PublicFieldType::Vec3)
 				{
-					IGFloat& firstFloat  = *static_cast<IGFloat*>(&pack[counter++]);
-					IGFloat& secondFloat = *static_cast<IGFloat*>(&pack[counter++]);
-					IGFloat& thirdFloat  = *static_cast<IGFloat*>(&pack[counter++]);
-					glm::vec3 value = field.GetStoredValue<glm::vec3>();
-
-					firstFloat.SetValue(value.x);
-					secondFloat.SetValue(value.y);
-					thirdFloat.SetValue(value.z);
-
-					field.SetStoredValue<glm::vec3>({ firstFloat.GetValue(), secondFloat.GetValue(), thirdFloat.GetValue() });
-					field.SetRuntimeValue<glm::vec3>({ firstFloat.GetValue(), secondFloat.GetValue(), thirdFloat.GetValue() });
+					glm::vec3 val = field.GetRuntimeValue<glm::vec3>();
+					bUIFloat* elementX = allocator.GetElement<bUIFloat>(field.GetName() + "X");
+					elementX->SetValue(val.x);
+					elementX->Callbacks.push_back(
+						[&](bUICallbackType type, bUIElement& elem) {
+							if (type == bUICallbackType::Active && m_Context)
+							{
+								bUIFloat& casted = static_cast<bUIFloat&>(elem);
+								glm::vec3 val = field.GetStoredValue<glm::vec3>();
+								val.x = casted.GetValue();
+								field.SetStoredValue<glm::vec3>(val);
+							}
+						}
+					);
+					bUIFloat* elementY = allocator.GetElement<bUIFloat>(field.GetName() + "Y");
+					elementY->SetValue(val.y);
+					elementY->Callbacks.push_back(
+						[&](bUICallbackType type, bUIElement& elem) {
+							if (type == bUICallbackType::Active && m_Context)
+							{
+								bUIFloat& casted = static_cast<bUIFloat&>(elem);
+								glm::vec3 val = field.GetStoredValue<glm::vec3>();
+								val.y = casted.GetValue();
+								field.SetStoredValue<glm::vec3>(val);
+							}
+						}
+					);
+					bUIFloat* elementZ = allocator.GetElement<bUIFloat>(field.GetName() + "Z");
+					elementZ->SetValue(val.z);
+					elementZ->Callbacks.push_back(
+						[&](bUICallbackType type, bUIElement& elem) {
+							if (type == bUICallbackType::Active && m_Context)
+							{
+								bUIFloat& casted = static_cast<bUIFloat&>(elem);
+								glm::vec3 val = field.GetStoredValue<glm::vec3>();
+								val.z = casted.GetValue();
+								field.SetStoredValue<glm::vec3>(val);
+							}
+						}
+					);
 				}
 				else if (field.GetType() == PublicFieldType::Vec4)
 				{
-					IGFloat& firstFloat  = *static_cast<IGFloat*>(&pack[counter++]);
-					IGFloat& secondFloat = *static_cast<IGFloat*>(&pack[counter++]);
-					IGFloat& thirdFloat  = *static_cast<IGFloat*>(&pack[counter++]);
-					IGFloat& fourthFloat = *static_cast<IGFloat*>(&pack[counter++]);
-					glm::vec4 value = field.GetStoredValue<glm::vec4>();
+					glm::vec4 val = field.GetRuntimeValue<glm::vec4>();
+					bUIFloat* elementX = allocator.GetElement<bUIFloat>(field.GetName() + "X");
+					elementX->SetValue(val.x);
+					elementX->Callbacks.push_back(
+						[&](bUICallbackType type, bUIElement& elem) {
+							if (type == bUICallbackType::Active && m_Context)
+							{
+								bUIFloat& casted = static_cast<bUIFloat&>(elem);
+								glm::vec4 val = field.GetStoredValue<glm::vec4>();
+								val.x = casted.GetValue();
+								field.SetStoredValue<glm::vec4>(val);
+							}
+						}
+					);
 
-					firstFloat.SetValue(value.x);
-					secondFloat.SetValue(value.y);
-					thirdFloat.SetValue(value.z);
-					fourthFloat.SetValue(value.w);
+					bUIFloat* elementY = allocator.GetElement<bUIFloat>(field.GetName() + "Y");
+					elementY->SetValue(val.y);
+					elementY->Callbacks.push_back(
+						[&](bUICallbackType type, bUIElement& elem) {
+							if (type == bUICallbackType::Active && m_Context)
+							{
+								bUIFloat& casted = static_cast<bUIFloat&>(elem);
+								glm::vec4 val = field.GetStoredValue<glm::vec4>();
+								val.y = casted.GetValue();
+								field.SetStoredValue<glm::vec4>(val);
+							}
+						}
+					);
 
-					field.SetStoredValue<glm::vec4>({ firstFloat.GetValue(), secondFloat.GetValue(), thirdFloat.GetValue(), fourthFloat.GetValue() });
-					field.SetRuntimeValue<glm::vec4>({ firstFloat.GetValue(), secondFloat.GetValue(), thirdFloat.GetValue(), fourthFloat.GetValue() });
+					bUIFloat* elementZ = allocator.GetElement<bUIFloat>(field.GetName() + "Z");
+					elementZ->SetValue(val.z);
+					elementZ->Callbacks.push_back(
+						[&](bUICallbackType type, bUIElement& elem) {
+							if (type == bUICallbackType::Active && m_Context)
+							{
+								bUIFloat& casted = static_cast<bUIFloat&>(elem);
+								glm::vec4 val = field.GetStoredValue<glm::vec4>();
+								val.z = casted.GetValue();
+								field.SetStoredValue<glm::vec4>(val);
+							}
+						}
+					);
+
+
+					bUIFloat* elementW = allocator.GetElement<bUIFloat>(field.GetName() + "W");
+					elementW->SetValue(val.w);
+					elementW->Callbacks.push_back(
+						[&](bUICallbackType type, bUIElement& elem) {
+							if (type == bUICallbackType::Active && m_Context)
+							{
+								bUIFloat& casted = static_cast<bUIFloat&>(elem);
+								glm::vec4 val = field.GetStoredValue<glm::vec4>();
+								val.w = casted.GetValue();
+								field.SetStoredValue<glm::vec4>(val);
+							}
+						}
+					);
+
 				}
 				else if (field.GetType() == PublicFieldType::String)
 				{
-					IGString& str = *static_cast<IGString*>(&pack[counter++]);
-					
-					str.SetValue(field.GetStoredValue<char*>());
-					std::string val = str.GetValue();
-					field.SetStoredValue<const char*>(val.c_str());
-					field.SetRuntimeValue<const char*>(val.c_str());
+					bUIString* element = allocator.GetElement<bUIString>(field.GetName());
+					element->SetValue(field.GetStoredValue<char*>());
+					element->Callbacks.push_back(
+						[&](bUICallbackType type, bUIElement& elem) {
+							if (type == bUICallbackType::Active && m_Context)
+							{
+								bUIString& casted = static_cast<bUIString&>(elem);
+								std::string val = casted.GetValue();
+								field.SetStoredValue<const char*>(val.c_str());
+							}
+						}
+					);
 				}
 			}
 		}
 	}
-	//void InspectorPanel::OnInGuiRender()
+
+	void InspectorPanel::buildScriptComponent()
+	{
+		if (m_Context.HasComponent<ScriptComponent>())
+		{
+			bUIAllocator& allocator = bUI::GetAllocator("Inspector");
+			ScriptComponent& scriptComponent = m_Context.GetComponent<ScriptComponent>();
+			m_ScriptLayout.ItemsPerRow.clear();
+			for (auto& field : scriptComponent.Fields)
+			{
+				switch (field.GetType())
+				{
+				case PublicFieldType::Float:
+					allocator.CreateElement<bUIFloat>("Script Component", glm::vec2(0.0f), glm::vec2(50.0f), glm::vec4(1.0f), field.GetName(), field.GetName(), bUIElementType::Float);
+					m_ScriptLayout.ItemsPerRow.push_back(1);
+					break;
+				case PublicFieldType::Int:
+					allocator.CreateElement<bUIInt>("Script Component", glm::vec2(0.0f), glm::vec2(50.0f), glm::vec4(1.0f), field.GetName(), field.GetName(), bUIElementType::Int);
+					m_ScriptLayout.ItemsPerRow.push_back(1);
+					break;
+				case PublicFieldType::UnsignedInt:
+					allocator.CreateElement<bUIInt>("Script Component", glm::vec2(0.0f), glm::vec2(50.0f), glm::vec4(1.0f), field.GetName(), field.GetName(), bUIElementType::Int);
+					m_ScriptLayout.ItemsPerRow.push_back(1);
+					break;
+				case PublicFieldType::Vec2:
+					allocator.CreateElement<bUIFloat>("Script Component", glm::vec2(0.0f), glm::vec2(50.0f), glm::vec4(1.0f), "", field.GetName() + "X", bUIElementType::Float);
+					allocator.CreateElement<bUIFloat>("Script Component", glm::vec2(0.0f), glm::vec2(50.0f), glm::vec4(1.0f), field.GetName(), field.GetName() + "Y", bUIElementType::Float);
+					m_ScriptLayout.ItemsPerRow.push_back(2);
+					break;
+				case PublicFieldType::Vec3:
+					allocator.CreateElement<bUIFloat>("Script Component", glm::vec2(0.0f), glm::vec2(50.0f), glm::vec4(1.0f), "", field.GetName() + "X", bUIElementType::Float);
+					allocator.CreateElement<bUIFloat>("Script Component", glm::vec2(0.0f), glm::vec2(50.0f), glm::vec4(1.0f), "", field.GetName() + "Y", bUIElementType::Float);
+					allocator.CreateElement<bUIFloat>("Script Component", glm::vec2(0.0f), glm::vec2(50.0f), glm::vec4(1.0f), field.GetName(), field.GetName() + "Z", bUIElementType::Float);
+					m_ScriptLayout.ItemsPerRow.push_back(3);
+					break;
+				case PublicFieldType::Vec4:
+					allocator.CreateElement<bUIFloat>("Script Component", glm::vec2(0.0f), glm::vec2(50.0f), glm::vec4(1.0f), "", field.GetName() + "X", bUIElementType::Float);
+					allocator.CreateElement<bUIFloat>("Script Component", glm::vec2(0.0f), glm::vec2(50.0f), glm::vec4(1.0f), "", field.GetName() + "Y", bUIElementType::Float);
+					allocator.CreateElement<bUIFloat>("Script Component", glm::vec2(0.0f), glm::vec2(50.0f), glm::vec4(1.0f), "", field.GetName() + "Z", bUIElementType::Float);
+					allocator.CreateElement<bUIFloat>("Script Component", glm::vec2(0.0f), glm::vec2(50.0f), glm::vec4(1.0f), field.GetName(), field.GetName() + "W", bUIElementType::Float);
+					m_ScriptLayout.ItemsPerRow.push_back(4);
+					break;
+				case PublicFieldType::String:
+					allocator.CreateElement<bUIString>("Script Component", glm::vec2(0.0f), glm::vec2(50.0f), glm::vec4(1.0f), field.GetName(), field.GetName(), bUIElementType::String);
+					m_ScriptLayout.ItemsPerRow.push_back(1);
+					break;
+				default:
+					break;
+				}
+			}
+		}
+	}
+	
+	//void InspectorPanel::updateScriptComponentUI()
 	//{
-		//if (InGui::Begin(m_PanelID, "Inspector", glm::vec2(0.0f), glm::vec2(200.0f)))
-		//{
-		//	if (m_Context)
-		//	{
-		//		if (m_CurrentSize < m_Context.NumberOfTypes())
-		//			resizeGroups();
-		//
-		//
-		//		const InGuiWindow& window = InGui::GetWindow(m_PanelID);
-		//		auto layout = window.Layout;
-		//	
-		//		InGui::BeginScrollableArea(glm::vec2(InGui::GetWindow(m_PanelID).Size.x - 20.0f, 500.0f), m_ScrollOffset, m_ScrollScale, 10.0f);
-		//		
-		//		layout.LeftPadding = 20.0f;
-		//		layout.RightPadding = 70.0f;
-		//		InGui::SetLayout(m_PanelID, layout);
-		//		
-		//		glm::vec2 size = {
-		//			window.Size.x - window.Layout.RightPadding - window.Layout.LeftPadding,
-		//			InGuiWindow::PanelHeight
-		//		};
-		//
-		//		uint32_t index = 0;
-		//		if (m_Context.HasComponent<TransformComponent>())
-		//		{
-		//			TransformComponent& transform = m_Context.GetComponent<TransformComponent>();
-		//			if (InGui::BeginGroup("Transform Component", size, m_ComponentGroups[index++]))
-		//			{
-		//				InGui::Text("Translation");
-		//				InGui::Separator();
-		//				InGui::Float("X", glm::vec2(50.0f, 30.0f), transform.Translation.x);
-		//				InGui::Float("Y", glm::vec2(50.0f, 30.0f), transform.Translation.y);
-		//				InGui::Float("Z", glm::vec2(50.0f, 30.0f), transform.Translation.z);
-		//				InGui::Separator();
-		//
-		//				InGui::Text("Rotation");
-		//				InGui::Separator();
-		//				InGui::Float("X", glm::vec2(50.0f, 30.0f), transform.Rotation.x);
-		//				InGui::Float("Y", glm::vec2(50.0f, 30.0f), transform.Rotation.y);
-		//				InGui::Float("Z", glm::vec2(50.0f, 30.0f), transform.Rotation.z);
-		//				InGui::Separator();
-		//
-		//				InGui::Text("Scale");
-		//				InGui::Separator();
-		//				InGui::Float("X", glm::vec2(50.0f, 30.0f), transform.Scale.x);
-		//				InGui::Float("Y", glm::vec2(50.0f, 30.0f), transform.Scale.y);
-		//				InGui::Float("Z", glm::vec2(50.0f, 30.0f), transform.Scale.z);
-		//				InGui::Separator();
-		//			}
-		//			InGui::Separator();
-		//		}
-		//		if (m_Context.HasComponent<SpriteRenderer>())
-		//		{
-		//			SpriteRenderer& spriteRenderer = m_Context.GetComponent<SpriteRenderer>();
-		//			if (InGui::BeginGroup("Sprite Renderer", size, m_ComponentGroups[index++]))
-		//			{
-		//				InGui::Text("Color");
-		//				InGui::Separator();
-		//				InGui::Float("R", glm::vec2(50.0f, 30.0f), spriteRenderer.Color.x);
-		//				InGui::Float("G", glm::vec2(50.0f, 30.0f), spriteRenderer.Color.y);
-		//				InGui::Float("B", glm::vec2(50.0f, 30.0f), spriteRenderer.Color.z);
-		//				InGui::Float("A", glm::vec2(50.0f, 30.0f), spriteRenderer.Color.w);
-		//				InGui::Separator();
-		//				InGui::Text("Sort Layer");
-		//				InGui::Separator();
-		//				InGui::UInt("", glm::vec2(50.0f, 30.0f), spriteRenderer.SortLayer);
-		//				InGui::Separator();
-		//				InGui::Checkbox("Visible", glm::vec2(30.0f), spriteRenderer.IsVisible);
-		//				InGui::Separator();
-		//			}
-		//			InGui::Separator();
-		//		}
-		//		if (m_Context.HasComponent<PointLight2D>())
-		//		{
-		//			PointLight2D& light = m_Context.GetComponent<PointLight2D>();
-		//			if (InGui::BeginGroup("Point Light 2D", size, m_ComponentGroups[index++]))
-		//			{
-		//				InGui::Text("Color");
-		//				InGui::Separator();
-		//				InGui::Float("R", glm::vec2(50.0f, 30.0f), light.Color.x);
-		//				InGui::Float("G", glm::vec2(50.0f, 30.0f), light.Color.y);
-		//				InGui::Float("B", glm::vec2(50.0f, 30.0f), light.Color.z);
-		//				InGui::Separator();
-		//				InGui::Text("Intensity");
-		//				InGui::Float("", glm::vec2(50.0f, 25.0f), light.Intensity);
-		//				InGui::Separator();
-		//			}
-		//			InGui::Separator();
-		//		}
-		//		if (m_Context.HasComponent<RigidBody2DComponent>())
-		//		{
-		//			RigidBody2DComponent& rigidBody = m_Context.GetComponent<RigidBody2DComponent>();
-		//			if (InGui::BeginGroup("RigidBody2D", size, m_ComponentGroups[index++]))
-		//			{
-		//				InGui::Dropdown(BodyTypeToString(rigidBody.Type), glm::vec2(100.0f, 25.0f), m_RigidBodyTypeOpen);
-		//				if (m_RigidBodyTypeOpen)
-		//				{
-		//					if (rigidBody.Type != RigidBody2DComponent::BodyType::Static)
-		//					{
-		//						if (IS_SET(InGui::DropdownItem("Static"), InGuiReturnType::Clicked))
-		//						{
-		//							rigidBody.Type = RigidBody2DComponent::BodyType::Static;
-		//							m_RigidBodyTypeOpen = false;
-		//						}
-		//					}
-		//					if (rigidBody.Type != RigidBody2DComponent::BodyType::Dynamic)
-		//					{
-		//						if (IS_SET(InGui::DropdownItem("Dynamic"), InGuiReturnType::Clicked))
-		//						{
-		//							rigidBody.Type = RigidBody2DComponent::BodyType::Dynamic;
-		//							m_RigidBodyTypeOpen = false;
-		//						}
-		//					}
-		//					if (rigidBody.Type != RigidBody2DComponent::BodyType::Kinematic)
-		//					{
-		//						if (IS_SET(InGui::DropdownItem("Kinematic"), InGuiReturnType::Clicked))
-		//						{
-		//							rigidBody.Type = RigidBody2DComponent::BodyType::Kinematic;
-		//							m_RigidBodyTypeOpen = false;
-		//						}
-		//					}	
-		//				}
-		//				InGui::EndDropdown();
-		//			}
-		//			InGui::Separator();
-		//		}
-		//		if (m_Context.HasComponent<BoxCollider2DComponent>())
-		//		{
-		//			BoxCollider2DComponent& boxCollider = m_Context.GetComponent<BoxCollider2DComponent>();
-		//			if (InGui::BeginGroup("BoxCollider2D", size, m_ComponentGroups[index++]))
-		//			{
-		//				InGui::Text("Offset");
-		//				InGui::Separator();
-		//				InGui::Float("X", glm::vec2(50.0f, 30.0f), boxCollider.Offset.x);
-		//				InGui::Float("Y", glm::vec2(50.0f, 30.0f), boxCollider.Offset.y);
-		//				InGui::Separator();
-		//
-		//				InGui::Text("Size");
-		//				InGui::Separator();
-		//				InGui::Float("X", glm::vec2(50.0f, 30.0f), boxCollider.Size.x);
-		//				InGui::Float("Y", glm::vec2(50.0f, 30.0f), boxCollider.Size.y);
-		//				InGui::Separator();
-		//
-		//				InGui::Text("Density");
-		//				InGui::Separator();
-		//				InGui::Float("", glm::vec2(50.0f, 30.0f), boxCollider.Density);
-		//				InGui::Separator();
-		//			}
-		//			InGui::Separator();
-		//		}
-		//		
-		//		if (m_Context.HasComponent<ScriptComponent>())
-		//		{
-		//			ScriptComponent& script = m_Context.GetComponent<ScriptComponent>();
-		//			if (InGui::BeginGroup("Script Component", size, m_ComponentGroups[index++]))
-		//			{
-		//				InGui::String("Module Name", glm::vec2(120.0f, 25.0f), script.ModuleName);
-		//				InGui::Separator();
-		//				InGui::Text("Public Fields:");
-		//				InGui::Separator();
-		//				for (auto& field : script.Fields)
-		//				{			
-		//					if (field.GetType() == PublicFieldType::Float)
-		//					{
-		//						float val = field.GetStoredValue<float>();
-		//						if (InGui::Float(field.GetName().c_str(), glm::vec2(50.0f, 30.0f), val) == InGuiReturnType::Modified)
-		//						{
-		//							field.SetStoredValue<float>(val);
-		//							field.SetRuntimeValue<float>(val);
-		//						}
-		//					}
-		//					else if (field.GetType() == PublicFieldType::Vec2)
-		//					{
-		//						glm::vec2 val = field.GetStoredValue<glm::vec2>();
-		//						if (InGui::Float("", glm::vec2(50.0f, 30.0f), val.x) == InGuiReturnType::Modified)
-		//						{
-		//							field.SetStoredValue<glm::vec2>(val);
-		//							field.SetRuntimeValue<glm::vec2>(val);
-		//						}
-		//						if (InGui::Float(field.GetName().c_str(), glm::vec2(50.0f, 30.0f), val.y) == InGuiReturnType::Modified)
-		//						{
-		//							field.SetStoredValue<glm::vec2>(val);
-		//							field.SetRuntimeValue<glm::vec2>(val);
-		//						}
-		//					}
-		//					else if (field.GetType() == PublicFieldType::Vec3)
-		//					{
-		//						glm::vec3 val = field.GetStoredValue<glm::vec3>();								
-		//						if (InGui::Float("", glm::vec2(50.0f, 30.0f), val.x) == InGuiReturnType::Modified)
-		//						{
-		//							field.SetStoredValue<glm::vec3>(val);
-		//							field.SetRuntimeValue<glm::vec3>(val);
-		//						}
-		//						if (InGui::Float("", glm::vec2(50.0f, 30.0f), val.y) == InGuiReturnType::Modified)
-		//						{
-		//							field.SetStoredValue<glm::vec3>(val);
-		//							field.SetRuntimeValue<glm::vec3>(val);
-		//						}
-		//						if (InGui::Float(field.GetName().c_str(), glm::vec2(50.0f, 30.0f), val.z) == InGuiReturnType::Modified)
-		//						{
-		//							field.SetStoredValue<glm::vec3>(val);
-		//							field.SetRuntimeValue<glm::vec3>(val);
-		//						}
-		//					}
-		//					else if (field.GetType() == PublicFieldType::Vec4)
-		//					{
-		//						glm::vec4 val = field.GetStoredValue<glm::vec4>();
-		//						if (InGui::Float("", glm::vec2(50.0f, 30.0f), val.x) == InGuiReturnType::Modified)
-		//						{
-		//							field.SetStoredValue<glm::vec4>(val);
-		//							field.SetRuntimeValue<glm::vec4>(val);
-		//						}
-		//						if (InGui::Float("", glm::vec2(50.0f, 30.0f), val.y) == InGuiReturnType::Modified)
-		//						{
-		//							field.SetStoredValue<glm::vec4>(val);
-		//							field.SetRuntimeValue<glm::vec4>(val);
-		//						}
-		//						if (InGui::Float("", glm::vec2(50.0f, 30.0f), val.z) == InGuiReturnType::Modified)
-		//						{
-		//							field.SetStoredValue<glm::vec4>(val);
-		//							field.SetRuntimeValue<glm::vec4>(val);
-		//						}
-		//						if (InGui::Float(field.GetName().c_str(), glm::vec2(50.0f, 30.0f), val.w) == InGuiReturnType::Modified)
-		//						{
-		//							field.SetStoredValue<glm::vec4>(val);
-		//							field.SetRuntimeValue<glm::vec4>(val);
-		//						}
-		//					}
-		//					else if (field.GetType() == PublicFieldType::String)
-		//					{
-		//						std::string val = field.GetStoredValue<std::string>();
-		//						if (InGui::String(field.GetName().c_str(), glm::vec2(50.0f, 30.0f), val) == InGuiReturnType::Modified)
-		//						{
-		//							field.SetStoredValue<std::string>(val);
-		//							field.SetRuntimeValue<std::string>(val);			
-		//						}
-		//					}
-		//					InGui::Separator();
-		//				}
-		//			}
-		//			InGui::Separator();
-		//		}
-		//		m_ScrollScale = InGui::GetPositionOfNext().y - InGui::GetWindow(m_PanelID).Position.y + m_ScrollOffset;
-		//		InGui::Separator();
-		//		InGui::EndScrollableArea();
-		//
-		//		layout.LeftPadding = 60.0f;
-		//		layout.RightPadding = 60.0f;
-		//		InGui::SetLayout(m_PanelID, layout);
-		//		InGui::Separator();
-		//		InGui::SetTextCenter(InGuiTextCenter::Middle);
-		//		InGui::Dropdown("Add Component", glm::vec2(InGui::GetWindow(m_PanelID).Size.x - 120.0f, 25.0f), m_AddComponentOpen);
-		//		if (m_AddComponentOpen)
-		//		{
-		//			if (!m_Context.HasComponent<ScriptComponent>())
-		//			{
-		//				if (IS_SET(InGui::DropdownItem("Add Script Component"), InGuiReturnType::Clicked))
-		//					m_AddComponentOpen = false;
-		//			}
-		//			if (!m_Context.HasComponent<RigidBody2DComponent>())
-		//			{
-		//				if (IS_SET(InGui::DropdownItem("Add RigidBody2D"), InGuiReturnType::Clicked))
-		//					m_AddComponentOpen = false;
-		//			}
-		//			if (!m_Context.HasComponent<BoxCollider2DComponent>())
-		//			{
-		//				if (IS_SET(InGui::DropdownItem("Add BoxCollider2D"), InGuiReturnType::Clicked))
-		//					m_AddComponentOpen = false;
-		//			}
-		//		}
-		//		InGui::EndDropdown();
-		//		
-		//		layout.LeftPadding = 10.0f;
-		//		layout.RightPadding = 10.0f;
-		//		InGui::SetLayout(m_PanelID, layout);
-		//		InGui::SetTextCenter(InGuiTextCenter::Left);
-		//	}
-		//}
-		//InGui::End();
+	//	if (m_Context.HasComponent<XYZ::ScriptComponent>())
+	//	{
+	//		XYZ::ScriptComponent& scriptComponent = m_Context.GetComponent<XYZ::ScriptComponent>();
+	//		size_t counter = 0;
+	//		size_t index = m_HandleStart[ScriptComponent];
+	//		IGPack& pack = IG::GetUI<IGPack>(m_PoolHandle, index + 1);
+	//		for (auto& field : scriptComponent.Fields)
+	//		{
+	//			if (field.GetType() == PublicFieldType::Float)
+	//			{
+	//				IGFloat& fieldFloat = *static_cast<IGFloat*>(&pack[counter++]);
+	//				fieldFloat.SetValue(field.GetStoredValue<float>());
+	//				float newValue = fieldFloat.GetValue();
+	//				field.SetStoredValue<float>(newValue);
+	//				field.SetRuntimeValue<float>(newValue);
+	//			}
+	//			else if (field.GetType() == PublicFieldType::Int)
+	//			{
+	//				IGInt& fieldInt = *static_cast<IGInt*>(&pack[counter++]);
+	//				fieldInt.SetValue(field.GetStoredValue<int32_t>());
+	//				int32_t newValue = fieldInt.GetValue();
+	//				field.SetStoredValue<int32_t>(newValue);
+	//				field.SetRuntimeValue<int32_t>(newValue);
+	//			}
+	//			else if (field.GetType() == PublicFieldType::UnsignedInt)
+	//			{
+	//				IGInt& fieldInt = *static_cast<IGInt*>(&pack[counter++]);
+	//				fieldInt.SetValue(field.GetStoredValue<int32_t>());
+	//				int32_t newValue = fieldInt.GetValue();
+	//				field.SetStoredValue<int32_t>(newValue);
+	//				field.SetRuntimeValue<int32_t>(newValue);
+	//			}
+	//			else if (field.GetType() == PublicFieldType::Vec2)
+	//			{
+	//				IGFloat& firstFloat =  *static_cast<IGFloat*>(&pack[counter++]);
+	//				IGFloat& secondFloat = *static_cast<IGFloat*>(&pack[counter++]);
+	//
+	//				glm::vec2 value = field.GetStoredValue<glm::vec2>();
+	//
+	//				firstFloat.SetValue(value.x);
+	//				secondFloat.SetValue(value.y);
+	//	
+	//				field.SetStoredValue<glm::vec2>({ firstFloat.GetValue(), secondFloat.GetValue() });
+	//				field.SetRuntimeValue<glm::vec2>({ firstFloat.GetValue(), secondFloat.GetValue() });
+	//			}
+	//			else if (field.GetType() == PublicFieldType::Vec3)
+	//			{
+	//				IGFloat& firstFloat  = *static_cast<IGFloat*>(&pack[counter++]);
+	//				IGFloat& secondFloat = *static_cast<IGFloat*>(&pack[counter++]);
+	//				IGFloat& thirdFloat  = *static_cast<IGFloat*>(&pack[counter++]);
+	//				glm::vec3 value = field.GetStoredValue<glm::vec3>();
+	//
+	//				firstFloat.SetValue(value.x);
+	//				secondFloat.SetValue(value.y);
+	//				thirdFloat.SetValue(value.z);
+	//
+	//				field.SetStoredValue<glm::vec3>({ firstFloat.GetValue(), secondFloat.GetValue(), thirdFloat.GetValue() });
+	//				field.SetRuntimeValue<glm::vec3>({ firstFloat.GetValue(), secondFloat.GetValue(), thirdFloat.GetValue() });
+	//			}
+	//			else if (field.GetType() == PublicFieldType::Vec4)
+	//			{
+	//				IGFloat& firstFloat  = *static_cast<IGFloat*>(&pack[counter++]);
+	//				IGFloat& secondFloat = *static_cast<IGFloat*>(&pack[counter++]);
+	//				IGFloat& thirdFloat  = *static_cast<IGFloat*>(&pack[counter++]);
+	//				IGFloat& fourthFloat = *static_cast<IGFloat*>(&pack[counter++]);
+	//				glm::vec4 value = field.GetStoredValue<glm::vec4>();
+	//
+	//				firstFloat.SetValue(value.x);
+	//				secondFloat.SetValue(value.y);
+	//				thirdFloat.SetValue(value.z);
+	//				fourthFloat.SetValue(value.w);
+	//
+	//				field.SetStoredValue<glm::vec4>({ firstFloat.GetValue(), secondFloat.GetValue(), thirdFloat.GetValue(), fourthFloat.GetValue() });
+	//				field.SetRuntimeValue<glm::vec4>({ firstFloat.GetValue(), secondFloat.GetValue(), thirdFloat.GetValue(), fourthFloat.GetValue() });
+	//			}
+	//			else if (field.GetType() == PublicFieldType::String)
+	//			{
+	//				IGString& str = *static_cast<IGString*>(&pack[counter++]);
+	//				
+	//				str.SetValue(field.GetStoredValue<char*>());
+	//				std::string val = str.GetValue();
+	//				field.SetStoredValue<const char*>(val.c_str());
+	//				field.SetRuntimeValue<const char*>(val.c_str());
+	//			}
+	//		}
+	//	}
 	//}
-	size_t InspectorPanel::transformComponentUI(IGHierarchyElement& parent)
-	{
-		IGHierarchyElement element;
-		element.Element = IGElementType::Group;		
-		element.Children.push_back({ IGElementType::Float, {} });
-		element.Children.push_back({ IGElementType::Float, {} });
-		element.Children.push_back({ IGElementType::Float, {} });
-		element.Children.push_back({ IGElementType::Text, {} }); // Translation
-		element.Children.push_back({ IGElementType::Separator, {} });
-
-		element.Children.push_back({ IGElementType::Float, {} });
-		element.Children.push_back({ IGElementType::Float, {} });
-		element.Children.push_back({ IGElementType::Float, {} });
-		element.Children.push_back({ IGElementType::Text, {} }); // Rotation
-		element.Children.push_back({ IGElementType::Separator, {} });
-
-		element.Children.push_back({ IGElementType::Float, {} });
-		element.Children.push_back({ IGElementType::Float, {} });
-		element.Children.push_back({ IGElementType::Float, {} });
-		element.Children.push_back({ IGElementType::Text, {} }); // Scale
-		element.Children.push_back({ IGElementType::Separator, {} });
-		parent.Children.push_back(element);
-		return element.Children.size() + 1;
-	}
-	size_t InspectorPanel::spriteRendererUI(IGHierarchyElement& parent)
-	{
-		IGHierarchyElement element;
-		element.Element = IGElementType::Group;	
-		element.Children.push_back({ IGElementType::Float, {} });
-		element.Children.push_back({ IGElementType::Float, {} });
-		element.Children.push_back({ IGElementType::Float, {} });
-		element.Children.push_back({ IGElementType::Float, {} });
-		element.Children.push_back({ IGElementType::Separator, {} });
-		element.Children.push_back({ IGElementType::Int, {} });
-		element.Children.push_back({ IGElementType::Separator, {} });
-		element.Children.push_back({ IGElementType::Checkbox, {} });
-		parent.Children.push_back(element);
-		return element.Children.size() + 1;
-	}
-	size_t InspectorPanel::pointLight2DUI(IGHierarchyElement& parent)
-	{
-		IGHierarchyElement element;
-		return element.Children.size() + 1;
-	}
-	size_t InspectorPanel::rigidBody2DComponentUI(IGHierarchyElement& parent)
-	{
-		IGHierarchyElement element;
-		return element.Children.size() + 1;
-	}
-	size_t InspectorPanel::boxCollider2DComponentUI(IGHierarchyElement& parent)
-	{
-		IGHierarchyElement element;
-		return element.Children.size() + 1;
-	}
-	size_t InspectorPanel::scriptComponentUI(IGHierarchyElement& parent)
-	{
-		IGHierarchyElement element;
-		element.Element = IGElementType::Group;	
-		element.Children.push_back({ IGElementType::Pack, {} });
-		parent.Children.push_back(element);
-		return element.Children.size() + 1;
-	}
-	void InspectorPanel::prepareTransformComponentUI()
-	{
-		size_t index = m_HandleStart[TransformComponent];
-		IGGroup& transformGroup = IG::GetUI<IGGroup>(m_PoolHandle, index);
-		if (transformGroup.Active = m_Context.HasComponent<XYZ::TransformComponent>())
-		{
-			XYZ::TransformComponent& transform = m_Context.GetComponent<XYZ::TransformComponent>();
-			IGFloat& translationX = IG::GetUI<IGFloat>(m_PoolHandle, index + 1);
-			IGFloat& translationY = IG::GetUI<IGFloat>(m_PoolHandle, index + 2);
-			IGFloat& translationZ = IG::GetUI<IGFloat>(m_PoolHandle, index + 3);
-
-			translationX.SetValue(transform.Translation.x);
-			translationY.SetValue(transform.Translation.y);
-			translationZ.SetValue(transform.Translation.z);
-
-			IGFloat& rotationX = IG::GetUI<IGFloat>(m_PoolHandle, index + 6);
-			IGFloat& rotationY = IG::GetUI<IGFloat>(m_PoolHandle, index + 7);
-			IGFloat& rotationZ = IG::GetUI<IGFloat>(m_PoolHandle, index + 8);
-
-			rotationX.SetValue(transform.Rotation.x);
-			rotationY.SetValue(transform.Rotation.y);
-			rotationZ.SetValue(transform.Rotation.z);
-
-			IGFloat& scaleX = IG::GetUI<IGFloat>(m_PoolHandle, index + 11);
-			IGFloat& scaleY = IG::GetUI<IGFloat>(m_PoolHandle, index + 12);
-			IGFloat& scaleZ = IG::GetUI<IGFloat>(m_PoolHandle, index + 13);
-
-			scaleX.SetValue(transform.Scale.x);
-			scaleY.SetValue(transform.Scale.y);
-			scaleZ.SetValue(transform.Scale.z);
-		}
-	}
-	void InspectorPanel::prepareSpriteRendererUI()
-	{
-		size_t index = m_HandleStart[SpriteRenderer];
-		IGGroup& spriteRendererGroup = IG::GetUI<IGGroup>(m_PoolHandle, index);
-		if (spriteRendererGroup.Active = m_Context.HasComponent<XYZ::SpriteRenderer>())
-		{
-			XYZ::SpriteRenderer& spriteRenderer = m_Context.GetComponent<XYZ::SpriteRenderer>();
-			IGFloat& colorR = IG::GetUI<IGFloat>(m_PoolHandle, index + 1);
-			IGFloat& colorG = IG::GetUI<IGFloat>(m_PoolHandle, index + 2);
-			IGFloat& colorB = IG::GetUI<IGFloat>(m_PoolHandle, index + 3);
-			IGFloat& colorA = IG::GetUI<IGFloat>(m_PoolHandle, index + 4);
-			IGInt& sortLayer = IG::GetUI<IGInt>(m_PoolHandle,  index + 6);
-			IGCheckbox& visible = IG::GetUI<IGCheckbox>(m_PoolHandle, index + 8);
-
-			colorR.SetValue(spriteRenderer.Color.r);
-			colorG.SetValue(spriteRenderer.Color.g);
-			colorB.SetValue(spriteRenderer.Color.b);
-			colorA.SetValue(spriteRenderer.Color.a);
-			sortLayer.SetValue(spriteRenderer.SortLayer);
-			visible.Checked = spriteRenderer.IsVisible;
-		}
-	}
-	void InspectorPanel::prepareScriptComponentUI()
-	{
-		size_t index = m_HandleStart[ScriptComponent];
-		IGGroup& scriptComponentGroup = IG::GetUI<IGGroup>(m_PoolHandle, index);
-		if (scriptComponentGroup.Active = m_Context.HasComponent<XYZ::ScriptComponent>())
-		{
-			IGPack& pack = IG::GetUI<IGPack>(m_PoolHandle, index + 1);
-			std::vector<IGHierarchyElement> hierarchyElements;
-
-			XYZ::ScriptComponent& scriptComponent = m_Context.GetComponent<XYZ::ScriptComponent>();
-			for (auto& field : scriptComponent.Fields)
-			{
-				if (field.GetType() == PublicFieldType::Float)
-				{
-					hierarchyElements.push_back({ IGElementType::Float,{} });
-				}
-				else if (field.GetType() == PublicFieldType::Int)
-				{
-					hierarchyElements.push_back({ IGElementType::Int,{} });
-				}
-				else if (field.GetType() == PublicFieldType::UnsignedInt)
-				{
-					hierarchyElements.push_back({ IGElementType::Int,{} });
-				}
-				else if (field.GetType() == PublicFieldType::Vec2)
-				{
-					hierarchyElements.push_back({ IGElementType::Float,{} });
-					hierarchyElements.push_back({ IGElementType::Float,{} });
-				}
-				else if (field.GetType() == PublicFieldType::Vec3)
-				{
-					hierarchyElements.push_back({ IGElementType::Float,{} });
-					hierarchyElements.push_back({ IGElementType::Float,{} });
-					hierarchyElements.push_back({ IGElementType::Float,{} });
-				}
-				else if (field.GetType() == PublicFieldType::Vec4)
-				{
-					hierarchyElements.push_back({ IGElementType::Float,{} });
-					hierarchyElements.push_back({ IGElementType::Float,{} });
-					hierarchyElements.push_back({ IGElementType::Float,{} });
-					hierarchyElements.push_back({ IGElementType::Float,{} });
-				}
-				else if (field.GetType() == PublicFieldType::String)
-				{
-					hierarchyElements.push_back({ IGElementType::String,{} });					
-				}
-				hierarchyElements.push_back({ IGElementType::Separator, {} });
-			}
-			pack.Rebuild(hierarchyElements);
-			uint32_t counter = 0;
-			for (auto& field : scriptComponent.Fields)
-			{
-				if (field.GetType() == PublicFieldType::Vec2)
-					counter++;
-				else if (field.GetType() == PublicFieldType::Vec3)
-					counter += 2;
-				else if (field.GetType() == PublicFieldType::Vec4)
-					counter += 3;
-				pack[counter].Label = field.GetName();
-				counter += 2;
-			}
-		}
-	}
-	void InspectorPanel::setupTransformComponentUI()
-	{
-		Ref<Font> font = IG::GetContext().RenderData.Font;
-		size_t index = m_HandleStart[TransformComponent];
-		IG::GetUI<IGGroup>(m_PoolHandle, index).Label = "Transform Component";
-		IG::GetUI<IGGroup>(m_PoolHandle, index).Active = false;
-
-		IG::GetUI<IGFloat>(m_PoolHandle, index + 1).Label = "X";
-		IG::GetUI<IGFloat>(m_PoolHandle, index + 2).Label = "Y";
-		IG::GetUI<IGFloat>(m_PoolHandle, index + 3).Label = "Z";
-		IG::GetUI<IGText>(m_PoolHandle,  index + 4).Text = "Translation";
-		IG::GetUI<IGText>(m_PoolHandle,  index + 4).Size.x = Helper::FindTextLength("Translation", font) + 1.0f;
-
-		IG::GetUI<IGFloat>(m_PoolHandle, index + 6).Label = "X";
-		IG::GetUI<IGFloat>(m_PoolHandle, index + 7).Label = "Y";
-		IG::GetUI<IGFloat>(m_PoolHandle, index + 8).Label = "Z";
-		IG::GetUI<IGText>(m_PoolHandle,  index + 9).Text = "Rotation";
-		IG::GetUI<IGText>(m_PoolHandle,  index + 9).Size.x = Helper::FindTextLength("Rotation", font) + 1.0f;
-
-		IG::GetUI<IGFloat>(m_PoolHandle, index + 11).Label = "X";
-		IG::GetUI<IGFloat>(m_PoolHandle, index + 12).Label = "Y";
-		IG::GetUI<IGFloat>(m_PoolHandle, index + 13).Label = "Z";
-		IG::GetUI<IGText>(m_PoolHandle,  index + 14).Text = "Scale";
-		IG::GetUI<IGText>(m_PoolHandle,  index + 14).Size.x = Helper::FindTextLength("Scale", font) + 1.0f;
-	}
-	void InspectorPanel::setupSpriteRendererUI()
-	{
-		Ref<Font> font = IG::GetContext().RenderData.Font;
-		size_t index = m_HandleStart[SpriteRenderer];
-
-		IG::GetUI<IGGroup>(m_PoolHandle, index).Label = "Sprite Renderer";
-		IG::GetUI<IGGroup>(m_PoolHandle, index).Active = false;
-
-		IG::GetUI<IGFloat>(m_PoolHandle, index + 1).Label = "R";
-		IG::GetUI<IGFloat>(m_PoolHandle, index + 2).Label = "G";
-		IG::GetUI<IGFloat>(m_PoolHandle, index + 3).Label = "B";
-		IG::GetUI<IGFloat>(m_PoolHandle, index + 4).Label = "A";
-		
-		IG::GetUI<IGInt>(m_PoolHandle, index + 6).Label = "Sort Layer";
-		IG::GetUI<IGCheckbox>(m_PoolHandle, index + 8).Label = "Visible";
-		IG::GetUI<IGCheckbox>(m_PoolHandle, index + 8).Size = { 25.0f, 25.0f };
-	}
-	void InspectorPanel::setupPointLight2DUI()
-	{
-	}
-	void InspectorPanel::setupRigidBody2DComponentUI()
-	{
-	}
-	void InspectorPanel::setupBoxCollider2DComponentUI()
-	{
-	}
-	void InspectorPanel::setupScriptComponentUI()
-	{
-		Ref<Font> font = IG::GetContext().RenderData.Font;
-		uint32_t index = m_HandleStart[ScriptComponent];
-
-		IG::GetUI<IGGroup>(m_PoolHandle, index).Label = "Script Component";
-		IG::GetUI<IGGroup>(m_PoolHandle, index).Active = false;
-	}
 }

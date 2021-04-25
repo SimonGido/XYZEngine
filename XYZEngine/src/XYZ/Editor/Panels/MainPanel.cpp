@@ -21,10 +21,47 @@ namespace XYZ {
 			window.ChildrenVisible = false;
 			counter++;
 		});
+		m_ViewLayout = { 10.0f, 5.0f, 10.0f, 10.0f, 10.0f, {1}, true };
+		
+		bUIAllocator& allocator = bUI::GetAllocator("Main");
+		
+		// Inspector
+		bUICheckbox* inspectorVisible = allocator.GetElement<bUICheckbox>("Inspector");
+		inspectorVisible->Checked = true;
+		inspectorVisible->Callbacks.push_back(
+			[&](bUICallbackType type, bUIElement& element) {
+				if (type == bUICallbackType::StateChange)
+				{
+					bUICheckbox& casted = static_cast<bUICheckbox&>(element);
+					bUI::GetUI<bUIWindow>("Inspector", "Inspector").Visible = casted.Checked;
+				}
+			}
+		);
+		// Inspector
+
+		// Scene Hierarchy
+		bUICheckbox* hierarchyVisible = allocator.GetElement<bUICheckbox>("Scene Hierarchy");
+		hierarchyVisible->Checked = true;
+		hierarchyVisible->Callbacks.push_back(
+			[&](bUICallbackType type, bUIElement& element) {
+				if (type == bUICallbackType::StateChange)
+				{
+					bUICheckbox& casted = static_cast<bUICheckbox&>(element);
+					bUI::GetUI<bUIWindow>("SceneHierarchy", "Scene Hierarchy").Visible = casted.Checked;
+				}
+			}
+		);
+		// Scene Hierarchy
+	}
+	MainPanel::~MainPanel()
+	{
+		bUILoader::Save("Main", "Layouts/Main.bui");
 	}
 	void MainPanel::OnUpdate()
 	{
-
+		bUIAllocator& allocator = bUI::GetAllocator("Main");
+		bUIWindow* viewWindow = allocator.GetElement<bUIWindow>("View");
+		bUI::SetupLayout(allocator, *viewWindow, m_ViewLayout);
 	}
 	void MainPanel::OnEvent(Event& event)
 	{

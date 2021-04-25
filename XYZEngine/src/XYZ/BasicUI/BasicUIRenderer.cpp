@@ -142,6 +142,32 @@ namespace XYZ {
 	}
 
 	template <>
+	void bUIRenderer::Submit<bUIInt>(const bUIInt& element, uint32_t& scissorID, const Ref<SubTexture>& subTexture)
+	{
+		glm::vec2 absolutePosition = element.GetAbsolutePosition();
+		Ref<Font> font = bUI::GetConfig().m_Font;
+		Helper::GenerateQuad(m_Mesh, element.ActiveColor, element.Size, absolutePosition, subTexture, 0, scissorID);
+		{
+			glm::vec2 size = bUIHelper::FindTextSize(element.Label.c_str(), font);
+			glm::vec2 textPosition = absolutePosition;
+			textPosition.x += element.Size.x + 2.0f;
+			textPosition.y = absolutePosition.y + ((element.Size.y - size.y) / 2.0f) + font->GetLineHeight();
+			Helper::GenerateTextMesh(element.Label.c_str(), font, glm::vec4(1.0f), textPosition, m_Mesh, 1, scissorID);
+		}
+		Helper::GenerateQuad(m_Mesh, element.ActiveColor, element.Size, absolutePosition, subTexture, 0, scissorID);
+		{
+			uint32_t maxCharacters = UINT32_MAX;
+			if (element.CutTextOutside)
+				maxCharacters = bUIHelper::FindNumCharacterToFit(element.Size, element.GetBuffer(), font);
+			glm::vec2 size = bUIHelper::FindTextSize(element.GetBuffer(), font, maxCharacters);
+			glm::vec2 textPosition = absolutePosition;
+			textPosition.x = absolutePosition.x + ((element.Size.x - size.x) / 2.0f);
+			textPosition.y = absolutePosition.y + ((element.Size.y - size.y) / 2.0f) + font->GetLineHeight();
+			Helper::GenerateTextMesh(element.GetBuffer(), font, glm::vec4(1.0f), textPosition, m_Mesh, 1, scissorID, maxCharacters);
+		}
+	}
+
+	template <>
 	void bUIRenderer::Submit<bUIString>(const bUIString& element, uint32_t& scissorID, const Ref<SubTexture>& subTexture)
 	{
 		glm::vec2 absolutePosition = element.GetAbsolutePosition();

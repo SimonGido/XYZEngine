@@ -7,10 +7,14 @@ namespace XYZ {
 	{
 	public:
 		MainPanel();
+		~MainPanel();
 
 		void OnUpdate();
 		void OnEvent(Event& event);
 	private:
 		float findPerWindowWidth();
+
+	private:
+		bUILayout m_ViewLayout;
 	};
 }

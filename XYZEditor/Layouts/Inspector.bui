@@ -1,7 +1,7 @@
 Size: [1920, 1017]
 bUIElements:
-  - Coords: [1492, 182]
-    Size: [370, 468]
+  - Coords: [1321, 132]
+    Size: [472, 647]
     Color: [1, 1, 1, 0.400000006]
     Label: Inspector
     Name: Inspector
@@ -9,7 +9,7 @@ bUIElements:
     Type: Window
     bUIElements:
       - Coords: [0, 0]
-        Size: [370, 468]
+        Size: [472, 647]
         Color: [0, 0, 0, 0]
         Label: ""
         Name: Scrollbox
@@ -17,7 +17,7 @@ bUIElements:
         Type: Scrollbox
         bUIElements:
           - Coords: [10, 20]
-            Size: [350, 218]
+            Size: [452, 218]
             Color: [0.699999988, 0.699999988, 0.699999988, 0.400000006]
             Label: Transform Component
             Name: Transform Component
@@ -88,7 +88,7 @@ bUIElements:
                 Locked: true
                 Type: Float
           - Coords: [10, 273]
-            Size: [350, 92]
+            Size: [452, 173]
             Color: [0.699999988, 0.699999988, 0.699999988, 0.400000006]
             Label: Sprite Renderer
             Name: Sprite Renderer
@@ -129,7 +129,7 @@ bUIElements:
                 Label: Sort Layer
                 Name: Sort Layer
                 Locked: true
-                Type: Float
+                Type: Int
               - Coords: [10, 130]
                 Size: [25, 25]
                 Color: [1, 1, 1, 1]
@@ -137,3 +137,10 @@ bUIElements:
                 Name: Visible
                 Locked: true
                 Type: Checkbox
+          - Coords: [10, 481]
+            Size: [452, 193]
+            Color: [0.699999988, 0.699999988, 0.699999988, 0.400000006]
+            Label: Script Component
+            Name: Script Component
+            Locked: true
+            Type: Window

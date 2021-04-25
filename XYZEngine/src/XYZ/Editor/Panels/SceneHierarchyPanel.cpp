@@ -26,7 +26,7 @@ namespace XYZ {
     SceneHierarchyPanel::~SceneHierarchyPanel()
     {
         m_Context->m_ECS.RemoveListener<SceneTagComponent>(this);
-
+        bUILoader::Save("SceneHierarchy", "Layouts/SceneHierarchy.bui");
     }
     void SceneHierarchyPanel::SetContext(Ref<Scene> context)
     {

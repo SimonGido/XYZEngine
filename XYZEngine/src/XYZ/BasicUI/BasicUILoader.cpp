@@ -25,6 +25,8 @@ namespace XYZ {
 				return sizeof(bUITree);
 			case XYZ::bUIElementType::Float:
 				return sizeof(bUIFloat);
+			case XYZ::bUIElementType::Int:
+				return sizeof(bUIInt);
 			case XYZ::bUIElementType::String:
 				return sizeof(bUIString);
 			case XYZ::bUIElementType::Image:
@@ -51,6 +53,8 @@ namespace XYZ {
 				return bUIElementType::Tree;
 			if (str == "Float")
 				return bUIElementType::Float;
+			if (str == "Int")
+				return bUIElementType::Int;
 			if (str == "String")
 				return bUIElementType::String;
 			if (str == "Image")
@@ -79,6 +83,8 @@ namespace XYZ {
 				return "Tree";
 			case XYZ::bUIElementType::Float:
 				return "Float";
+			case XYZ::bUIElementType::Int:
+				return "Int";
 			case XYZ::bUIElementType::String:
 				return "String";
 			case XYZ::bUIElementType::Image:
@@ -90,19 +96,22 @@ namespace XYZ {
 			return "None";
 		}
 	}
-	void bUILoader::Load(const char* filepath)
+	void bUILoader::Load(const char* filepath, bool scale)
 	{
 		std::ifstream stream(filepath);
 		std::stringstream strStream;
 		strStream << stream.rdbuf();
 		YAML::Node data = YAML::Load(strStream.str());
 
-		auto& app = Application::Get();
 		
 		glm::vec2 size = data["Size"].as<glm::vec2>();
-		glm::vec2 aspect = size / glm::vec2(app.GetWindow().GetWidth(), 
-											app.GetWindow().GetHeight());
-		
+		glm::vec2 aspect(1.0f);
+		if (scale)
+		{
+			auto& app = Application::Get();
+			aspect = size / glm::vec2(app.GetWindow().GetWidth(),
+									  app.GetWindow().GetHeight());
+		}
 		bUIElement* parent = nullptr;
 		auto elements = data["bUIElements"];
 		size_t dataSize = 0;
@@ -244,6 +253,9 @@ namespace XYZ {
 			break;
 		case XYZ::bUIElementType::Float:
 			element = allocator->CreateElement<bUIFloat>(parent, coords, size, color, label, name, type);
+			break;
+		case XYZ::bUIElementType::Int:
+			element = allocator->CreateElement<bUIInt>(parent, coords, size, color, label, name, type);
 			break;
 		case XYZ::bUIElementType::String:
 			element = allocator->CreateElement<bUIString>(parent, coords, size, color, label, name, type);

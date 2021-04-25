@@ -33,6 +33,24 @@ namespace XYZ {
 		Type(type)
 	{
 	}
+	bUIElement::bUIElement(bUIElement&& other) noexcept
+		:
+		Coords(other.Coords),
+		Size(other.Size),
+		Color(other.Color),
+		ActiveColor(other.ActiveColor),
+		Label(std::move(other.Label)),
+		Name(std::move(other.Name)),
+		Parent(other.Parent),
+		Visible(other.Visible),
+		ChildrenVisible(other.ChildrenVisible),
+		Locked(other.Locked),
+		Type(other.Type),
+		Callbacks(std::move(other.Callbacks)),
+		ScissorID(other.ScissorID),
+		ID(other.ID)
+	{
+	}
 	void bUIElement::OnUpdate()
 	{
 	}
@@ -148,12 +166,10 @@ namespace XYZ {
 		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
 		{
 			Checked = !Checked;
-			if (Checked)
-			{
-				for (auto& callback : Callbacks)
-					callback(bUICallbackType::Active, *this);
-				return true;
-			}
+			for (auto& callback : Callbacks)
+				callback(bUICallbackType::StateChange, *this);
+
+			return true;
 		}
 		return false;
 	}
@@ -638,6 +654,106 @@ namespace XYZ {
 			currentDepth = nodes[childItem->ID].Depth;
 			return false;
 		});
+	}
+
+	bUIInt::bUIInt(const glm::vec2& coords, const glm::vec2& size, const glm::vec4& color, const std::string& label, const std::string& name, bUIElementType type)
+		:
+		bUIElement(coords, size, color,  label, name, type)
+	{
+		SetValue(0);
+	}
+
+	void bUIInt::PushQuads(bUIRenderer& renderer, uint32_t& scissorID)
+	{
+		ScissorID = scissorID;
+		if (!Visible || !HandleVisibility(ScissorID))
+			return;
+		renderer.Submit<bUIInt>(*this, scissorID, bUI::GetContext().Config.GetSubTexture(bUIConfig::Button));
+	}
+
+	bool bUIInt::OnMouseMoved(const glm::vec2& mousePosition)
+	{
+		return false;
+	}
+
+	bool bUIInt::OnLeftMousePressed(const glm::vec2& mousePosition)
+	{
+		if (!Visible || !HandleVisibility(ScissorID))
+			return false;
+
+		bool listen = Listen;
+		Listen = false;
+		ActiveColor = Color;
+		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
+		{		
+			bUIListener::setListener(this);
+			Listen = !listen;
+			if (Listen)
+				ActiveColor = bUI::GetConfig().GetColor(bUIConfig::HighlightColor);
+
+			for (auto& callback : Callbacks)
+				callback(bUICallbackType::Active, *this);
+			return true;
+		}
+		return false;
+	}
+
+	bool bUIInt::OnKeyPressed(int32_t mode, int32_t key)
+	{
+		if (Listen && Visible && HandleVisibility(ScissorID))
+		{
+			if (key == ToUnderlying(KeyCode::KEY_BACKSPACE))
+			{
+				if (InsertionIndex > 0)
+					InsertionIndex--;
+				Buffer[InsertionIndex] = '\0';
+				for (auto& callback : Callbacks)
+					callback(bUICallbackType::Active, *this);
+
+				if (FitText)
+					Size = bUIHelper::FindTextSize(Buffer, bUI::GetConfig().GetFont()) + (Borders * 2.0f);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	bool bUIInt::OnKeyTyped(char character)
+	{
+		if (Listen && Visible && HandleVisibility(ScissorID))
+		{
+			if (character >= toascii('0') && character <= toascii('9') 
+			|| (character == toascii('-') && InsertionIndex == 0))
+			{
+				Buffer[InsertionIndex++] = character;
+				for (auto& callback : Callbacks)
+					callback(bUICallbackType::Active, *this);
+
+
+				if (FitText)
+					Size = bUIHelper::FindTextSize(Buffer, bUI::GetConfig().GetFont()) + (Borders * 2.0f);
+
+				return true;
+			}
+		}
+		return false;
+	}
+
+	void bUIInt::SetValue(int32_t val)
+	{
+		if (!Listen)
+		{
+			memset(Buffer, 0, BufferSize);
+			snprintf(Buffer, sizeof(Buffer), "%d", val);
+			InsertionIndex = 0;
+			while (Buffer[InsertionIndex] != '\0')
+				InsertionIndex++;
+		}
+	}
+
+	int32_t bUIInt::GetValue() const
+	{
+		return atoi(Buffer);
 	}
 
 	bUIFloat::bUIFloat(const glm::vec2& coords, const glm::vec2& size, const glm::vec4& color, const std::string& label, const std::string& name, bUIElementType type)

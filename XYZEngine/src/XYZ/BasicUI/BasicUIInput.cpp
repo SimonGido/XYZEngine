@@ -12,7 +12,7 @@ namespace XYZ {
 			return true;
 
 		bool result = false;
-		if (element->ChildrenVisible)
+		if (element->Visible && element->ChildrenVisible)
 		{
 			allocator.GetHierarchy().TraverseNodeChildren(element->GetID(), [&](void* parent, void* child) -> bool {
 
@@ -48,20 +48,39 @@ namespace XYZ {
 	static bool OnMouseScrollRecursive(bUIElement* element, bUIAllocator& allocator, const glm::vec2& mousePosition, const glm::vec2& offset)
 	{		
 		bool result = false;
-		allocator.GetHierarchy().TraverseNodeChildren(element->GetID(), [&](void* parent, void* child) -> bool {
+		if (element->Visible && element->ChildrenVisible)
+		{
+			allocator.GetHierarchy().TraverseNodeChildren(element->GetID(), [&](void* parent, void* child) -> bool {
 
-			bUIElement* childElement = static_cast<bUIElement*>(child);
-			if (OnMouseScrollRecursive(childElement, allocator, mousePosition, offset))
-				result = true;
-			return result;
-		});
-
+				bUIElement* childElement = static_cast<bUIElement*>(child);
+				if (OnMouseScrollRecursive(childElement, allocator, mousePosition, offset))
+					result = true;
+				return result;
+				});
+		}
 		if (!result)
 			result = element->OnMouseScrolled(mousePosition, offset);
 
 		return result;
 	}
 
+	static bool OnMouseMoveRecursive(bUIElement* element, bUIAllocator& allocator, const glm::vec2& mousePosition)
+	{
+		if (element->OnMouseMoved(mousePosition))
+			return true;
+		
+		bool result = false;
+		if (element->Visible && element->ChildrenVisible)
+		{
+			allocator.GetHierarchy().TraverseNodeChildren(element->GetID(), [&](void* parent, void* child) -> bool {
+
+				bUIElement* childElement = static_cast<bUIElement*>(child);
+				result = OnMouseMoveRecursive(childElement, allocator, mousePosition);
+				return result;
+			});
+		}
+		return result;
+	}
 
 	bool bUIInput::OnMouseButtonPress(MouseButtonPressEvent& event, bUIEditData& editData, bUIData& data)
 	{
@@ -128,15 +147,17 @@ namespace XYZ {
 		{
 			editData.Element->Coords = mousePosition - editData.MouseOffset;
 		}
+		bool result = false;
 		for (bUIAllocator& allocator : data.m_Allocators)
 		{
-			for (size_t i = 0; i < allocator.Size(); ++i)
-			{
-				if (allocator.GetElement<bUIElement>(i)->OnMouseMoved(mousePosition))
-					return true;
-			}
+			int32_t root = allocator.GetHierarchy().GetRoot();
+			allocator.GetHierarchy().TraverseNodeSiblings(root, [&](void* parent, void* child) -> bool {			
+				bUIElement* childElement = static_cast<bUIElement*>(child);
+				result = OnMouseMoveRecursive(childElement, allocator, mousePosition);
+				return result;
+			});
 		}
-		return false;
+		return result;
 	}
 	bool bUIInput::OnMouseScroll(MouseScrollEvent& event, bUIEditData& editData, bUIData& data)
 	{
