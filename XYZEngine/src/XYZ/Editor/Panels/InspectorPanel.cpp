@@ -100,7 +100,7 @@ namespace XYZ {
 			last = &win;
 		});
 		
-		if (m_Context)
+		if (m_Context && m_Context.IsValid())
 		{
 			if (m_Context.HasComponent<TransformComponent>())
 			{

@@ -27,5 +27,6 @@ namespace XYZ {
 		Ref<Scene> m_Context;
 		bUIWindow* m_Window;
 		bUITree* m_Tree;
+		bUIImage* m_Image;
 	};
 }
