@@ -1,6 +1,8 @@
 #pragma once
 #include "Window.h"
 #include "LayerStack.h"
+#include "ThreadPool.h"
+
 #include "XYZ/BasicUI/BasicUILayer.h"
 
 /**	@class Application
@@ -20,14 +22,15 @@ namespace XYZ {
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* overlayer);
 		void PopLayer(Layer* layer);
+		void Stop();
 
 
 		bool OnEvent(Event& event);
 
 		Window& GetWindow() { return *m_Window; }
+		ThreadPool& GetThreadPool() { return m_ThreadPool; }
 		const std::string& GetApplicationDir() const { return m_ApplicationDir; }
 
-		void Stop();
 		inline static Application& Get() { return *s_Application; }
 
 		static Application* CreateApplication();
@@ -37,6 +40,7 @@ namespace XYZ {
 		bool onWindowClosed(WindowCloseEvent& event);
 
 	private:
+		ThreadPool m_ThreadPool;
 		LayerStack m_LayerStack;
 		bUILayer* m_bUILayer;
 

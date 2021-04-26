@@ -15,13 +15,15 @@ namespace XYZ {
 		m_AllocatorMap[name] = { m_Allocators.size() - 1, filepath };
 		return m_Allocators.back();
 	}
-	void bUIData::Update()
+	void bUIData::Update(bUIQueue& queue)
 	{
 		for (bUIAllocator& allocator : m_Allocators)
 		{
 			for (size_t i = 0; i < allocator.Size(); ++i)
 			{
-				allocator.GetElement<bUIElement>(i)->OnUpdate();
+				bUIElement* element = allocator.GetElement<bUIElement>(i);
+				element->CopyToQueue(queue);
+				element->OnUpdate();
 			}
 		}
 	}

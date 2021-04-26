@@ -16,7 +16,7 @@ bUIElements:
         Locked: true
         Type: Window
       - Coords: [640, 25]
-        Size: [640, 109]
+        Size: [640, 150]
         Color: [1, 1, 1, 0.400000006]
         Label: View
         Name: View

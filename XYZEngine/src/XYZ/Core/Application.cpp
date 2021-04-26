@@ -16,6 +16,8 @@ namespace XYZ {
 
 
 	Application::Application()
+		:
+		m_ThreadPool(15)
 	{
 		Logger::Get().SetLogLevel(LogLevel::INFO | LogLevel::WARNING | LogLevel::ERR | LogLevel::API);
 		//Logger::Get().SetLogLevel(LogLevel::NOLOG);

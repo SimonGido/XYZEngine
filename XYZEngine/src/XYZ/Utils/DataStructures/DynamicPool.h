@@ -36,7 +36,7 @@ namespace XYZ {
 				reallocate();
 			new(&m_Data[m_Size])T(std::forward<Args>(args)...);
 			m_Handles.push_back(m_Size);
-			m_Size +=sizeof(T);
+			m_Size += sizeof(T);
 		}
 
 		void Erase(size_t index);

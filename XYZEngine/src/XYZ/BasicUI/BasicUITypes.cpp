@@ -4,6 +4,7 @@
 #include "BasicUIRenderer.h"
 #include "BasicUIHelper.h"
 #include "BasicUI.h"
+#include "BasicUIQueue.h"
 
 namespace XYZ {
 	namespace Helper {
@@ -31,6 +32,24 @@ namespace XYZ {
 		ChildrenVisible(true),
 		Locked(false),
 		Type(type)
+	{
+	}
+	bUIElement::bUIElement(const bUIElement& other)
+		:
+		Coords(other.Coords),
+		Size(other.Size),
+		Color(other.Color),
+		ActiveColor(other.ActiveColor),
+		Label(other.Label),
+		Name(other.Name),
+		Parent(other.Parent),
+		Visible(other.Visible),
+		ChildrenVisible(other.ChildrenVisible),
+		Locked(other.Locked),
+		Type(other.Type),
+		Callbacks(other.Callbacks),
+		ScissorID(other.ScissorID),
+		ID(other.ID)
 	{
 	}
 	bUIElement::bUIElement(bUIElement&& other) noexcept
@@ -86,6 +105,7 @@ namespace XYZ {
 			return false;
 		return Helper::Collide(GetAbsolutePosition(), Size, mousePosition);
 	}
+	
 	glm::vec2 bUIElement::GetAbsolutePosition() const
 	{
 		if (Parent)
@@ -125,12 +145,22 @@ namespace XYZ {
 		bUIElement(coords, size, color,  label, name, type)
 	{
 	}
+	bUIButton::bUIButton(const bUIButton& other)
+		:
+		bUIElement(other)
+	{
+	}
 	void bUIButton::PushQuads(bUIRenderer& renderer, uint32_t& scissorID)
 	{
 		ScissorID = scissorID;
 		if (!Visible || !HandleVisibility(ScissorID))
 			return;
 		renderer.Submit<bUIButton>(*this, scissorID, bUI::GetContext().Config.GetSubTexture(bUIConfig::Button));
+	}
+
+	void bUIButton::CopyToQueue(bUIQueue& queue)
+	{
+		queue.Allocate<bUIButton>(*this);
 	}
 	
 	bUICheckbox::bUICheckbox(const glm::vec2& coords, const glm::vec2& size, const glm::vec4& color,  const std::string& label, const std::string& name, bUIElementType type)

@@ -33,6 +33,7 @@ namespace XYZ {
 	struct bUIElement;
 	using bUICallback = std::function<void(bUICallbackType, bUIElement&)>;
 
+	class bUIQueue;
 	class bUIRenderer;
 	struct bUIElement
 	{
@@ -44,6 +45,7 @@ namespace XYZ {
 			const std::string& name,
 			bUIElementType type
 		);
+		bUIElement(const bUIElement& other);
 		bUIElement(bUIElement&& other) noexcept;
 
 		virtual ~bUIElement() = default;
@@ -55,6 +57,8 @@ namespace XYZ {
 		virtual bool OnRightMousePressed(const glm::vec2& mousePosition);
 		virtual bool OnLeftMouseReleased() { return false; };
 		virtual bool OnMouseScrolled(const glm::vec2& mousePosition, const glm::vec2& offset) { return false; }
+
+		virtual void CopyToQueue(bUIQueue& queue) {};
 
 		virtual glm::vec2 GetAbsolutePosition() const;
 		virtual glm::vec2 GetSize() const;
@@ -122,8 +126,10 @@ namespace XYZ {
 			const std::string& name,
 			bUIElementType type
 		);
+		bUIButton(const bUIButton& other);
 
 		virtual void PushQuads(bUIRenderer& renderer, uint32_t& scissorID) override;
+		virtual void CopyToQueue(bUIQueue& queue) override;
 	};
 
 	struct bUICheckbox : public bUIElement
