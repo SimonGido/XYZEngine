@@ -20,33 +20,20 @@ namespace XYZ {
     SceneHierarchyPanel::SceneHierarchyPanel()
     {
         bUILoader::Load("Layouts/SceneHierarchy.bui");
-        m_Window = &bUI::GetUI<bUIWindow>("SceneHierarchy", "Scene Hierarchy");
-        m_Tree = &bUI::GetUI<bUITree>("SceneHierarchy", "Hierarchy Tree");
-        m_Tree->OnSelect = [&](uint32_t entity) {
+        setupUI();
+
+        bUI::SetOnReloadCallback("SceneHierarchy", [&](bUIAllocator& allocator) {
+            setupUI();
             if (m_Context.Raw())
             {
-                if (m_Context->GetSelectedEntity() == entity)
-                    m_Context->SetSelectedEntity(Entity());
-                else
-                    m_Context->SetSelectedEntity(entity);
-            } 
-        };
-        m_Image = &bUI::GetUI<bUIImage>("SceneHierarchy", "Create Entity");
-        m_Image->FitParent = false;
-        m_Image->Visible = false;
-        m_Image->Callbacks.push_back(
-            [&](bUICallbackType type, bUIElement& element) {
-                if (type == bUICallbackType::Active)
+                ECSManager& ecs = m_Context->m_ECS;
+                for (Entity entity : m_Context->GetEntities())
                 {
-                    bUIImage& casted = static_cast<bUIImage&>(element);
-                    if (m_Context.Raw())
-                        m_Context->CreateEntity("New Entity", GUID());
-                    casted.Visible = false;
+                    SceneTagComponent& sceneTag = ecs.GetComponent<SceneTagComponent>(entity);
+                    m_Tree->AddItem(entity, bUITreeItem(sceneTag.Name));
                 }
             }
-        );
-        Ref<Texture> plusTexture = Texture2D::Create({}, "Assets/Textures/Plus.png");
-        m_Image->ImageSubTexture = Ref<SubTexture>::Create(plusTexture, glm::vec2(0.0f));
+          });
     }
     SceneHierarchyPanel::~SceneHierarchyPanel()
     {
@@ -81,8 +68,7 @@ namespace XYZ {
         if (m_Context.Raw())
         {
             if (m_Context->m_SelectedEntity)
-                m_Tree->GetItem(m_Context->m_SelectedEntity).Color = glm::vec4(0.2f, 0.7f, 1.0f, 1.0f);
-           
+                m_Tree->GetItem(m_Context->m_SelectedEntity).Color = glm::vec4(0.2f, 0.7f, 1.0f, 1.0f);           
         }
     }
     void SceneHierarchyPanel::OnEvent(Event& event)
@@ -90,6 +76,36 @@ namespace XYZ {
         EventDispatcher dispatcher(event);
         dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&SceneHierarchyPanel::onMouseButtonPress, this));
         dispatcher.Dispatch<KeyPressedEvent>(Hook(&SceneHierarchyPanel::onKeyPressed, this));
+    }
+    void SceneHierarchyPanel::setupUI()
+    {
+        m_Window = &bUI::GetUI<bUIWindow>("SceneHierarchy", "Scene Hierarchy");
+        m_Tree = &bUI::GetUI<bUITree>("SceneHierarchy", "Hierarchy Tree");
+        m_Tree->OnSelect = [&](uint32_t entity) {
+            if (m_Context.Raw())
+            {
+                if (m_Context->GetSelectedEntity() == entity)
+                    m_Context->SetSelectedEntity(Entity());
+                else
+                    m_Context->SetSelectedEntity(entity);
+            } 
+        };
+        m_Image = &bUI::GetUI<bUIImage>("SceneHierarchy", "Create Entity");
+        m_Image->FitParent = false;
+        m_Image->Visible = false;
+        m_Image->Callbacks.push_back(
+            [&](bUICallbackType type, bUIElement& element) {
+                if (type == bUICallbackType::Active)
+                {
+                    bUIImage& casted = static_cast<bUIImage&>(element);
+                    if (m_Context.Raw())
+                        m_Context->CreateEntity("New Entity", GUID());
+                    casted.Visible = false;
+                }
+            }
+        );
+        Ref<Texture> plusTexture = Texture2D::Create({}, "Assets/Textures/Plus.png");
+        m_Image->ImageSubTexture = Ref<SubTexture>::Create(plusTexture, glm::vec2(0.0f));
     }
     void SceneHierarchyPanel::rebuildTree()
     {

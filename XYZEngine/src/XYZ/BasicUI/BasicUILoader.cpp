@@ -96,27 +96,36 @@ namespace XYZ {
 			return "None";
 		}
 	}
-	void bUILoader::Load(const std::string& filepath, bool scale)
+	bool bUILoader::Load(const std::string& filepath, bool scale)
 	{
 		std::ifstream stream(filepath);
 		std::stringstream strStream;
 		strStream << stream.rdbuf();
-		YAML::Node data = YAML::Load(strStream.str());
+		YAML::Node data;
+		try
+		{
+			data = YAML::Load(strStream.str());
+		}
+		catch (YAML::ParserException& e)
+		{
+			XYZ_LOG_ERR("Failed to load UI ", e.what());
+			return false;
+		}
 
-		
+
 		glm::vec2 size = data["Size"].as<glm::vec2>();
 		glm::vec2 aspect(1.0f);
 		if (scale)
 		{
 			auto& app = Application::Get();
 			aspect = size / glm::vec2(app.GetWindow().GetWidth(),
-									  app.GetWindow().GetHeight());
+				app.GetWindow().GetHeight());
 		}
 		bUIElement* parent = nullptr;
 		auto elements = data["bUIElements"];
 		size_t dataSize = 0;
 		findSize(dataSize, elements);
-		
+
 		std::string name = Utils::GetFilenameWithoutExtension(filepath);
 
 		bUIAllocator* allocator = nullptr;
@@ -126,7 +135,8 @@ namespace XYZ {
 			allocator = &bUI::getContext().Data.CreateAllocator(name, filepath, dataSize);
 
 		allocator->Reserve(dataSize);
-		loadUIElements(allocator, nullptr, aspect, elements);
+		loadUIElements(allocator, nullptr, aspect, elements);		
+		return true;
 	}
 
 	void bUILoader::Save(const std::string& name, const char* filepath)
@@ -152,7 +162,7 @@ namespace XYZ {
 			out << YAML::BeginMap;
 			out << YAML::Key << "Coords" << YAML::Value << element->Coords;
 			out << YAML::Key << "Size"   << YAML::Value << element->Size;
-			out << YAML::Key << "Color"  << element->Color;
+			out << YAML::Key << "Color"  << YAML::Value << element->Color;
 			out << YAML::Key << "Label"  << YAML::Value << element->Label;
 			out << YAML::Key << "Name"   << YAML::Value << element->Name;
 			out << YAML::Key << "Locked" << YAML::Value << element->Locked;
@@ -222,7 +232,7 @@ namespace XYZ {
 			bUIElement* newParent	 = createElement(allocator, parent, coords / aspect, size / aspect, color, label, name, type);
 			newParent->Locked		 = locked;
 			newParent->Parent		 = parent;
-			auto children = element["bUIElements"];
+			auto children			 = element["bUIElements"];
 			if (children)
 				loadUIElements(allocator, newParent, aspect, children);
 		}

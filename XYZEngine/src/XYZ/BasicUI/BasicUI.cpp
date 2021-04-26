@@ -26,11 +26,7 @@ namespace XYZ {
 		delete s_Context;
 	}
 
-	void bUI::Reload()
-	{
-		s_Context->Data.Reload();
-	}
-
+	
 	void bUI::Update()
 	{
 		s_Context->Renderer.Begin();
@@ -58,6 +54,16 @@ namespace XYZ {
 		Renderer2D::EndScene();
 		Renderer::WaitAndRender();
 	}
+	void bUI::Reload()
+	{
+		s_Context->Data.Reload();
+	}
+
+	void bUI::Reload(const std::string& name)
+	{
+		s_Context->Data.Reload(name);
+	}
+
 	void bUI::OnEvent(Event& event)
 	{
 		EventDispatcher dispatcher(event);
@@ -79,6 +85,11 @@ namespace XYZ {
 	void bUI::SetupLayout(bUIAllocator& allocator, bUIElement& element, const bUILayout& layout)
 	{
 		bUIHelper::ResolvePosition(element.ID, allocator.m_Tree, layout);
+	}
+
+	void bUI::SetOnReloadCallback(const std::string& name, const bUIAllocatorReloadCallback& callback)
+	{
+		s_Context->Data.SetOnReloadCallback(name, callback);
 	}
 
 	

@@ -12,17 +12,9 @@ namespace XYZ {
 		auto it = m_AllocatorMap.find(name);
 		XYZ_ASSERT(it == m_AllocatorMap.end(), "Allocator with name ", name, " already exists");
 		m_Allocators.emplace_back(size);
-		m_AllocatorMap[name] = m_Allocators.size() - 1;
-		m_UIPaths.push_back(filepath);
+		m_AllocatorMap[name] = { m_Allocators.size() - 1, filepath };
 		return m_Allocators.back();
 	}
-
-	void bUIData::Reload()
-	{
-		for (auto& path : m_UIPaths)
-			bUILoader::Load(path.c_str());
-	}
-
 	void bUIData::Update()
 	{
 		for (bUIAllocator& allocator : m_Allocators)
@@ -31,6 +23,27 @@ namespace XYZ {
 			{
 				allocator.GetElement<bUIElement>(i)->OnUpdate();
 			}
+		}
+	}
+	void bUIData::Reload()
+	{
+		for (auto& [name, data] : m_AllocatorMap)
+		{
+			if (bUILoader::Load(data.Filepath))
+			{
+				if (data.OnReload)
+					data.OnReload(m_Allocators[data.Index]);
+			}
+		}
+	}
+	void bUIData::Reload(const std::string& name)
+	{
+		auto it = m_AllocatorMap.find(name);
+		XYZ_ASSERT(it != m_AllocatorMap.end(), "Allocator with name ", name, " does not exist");
+		if (bUILoader::Load(it->second.Filepath))
+		{
+			if (it->second.OnReload)
+				it->second.OnReload(m_Allocators[it->second.Index]);
 		}
 	}
 	void bUIData::BuildMesh(bUIRenderer& renderer)
@@ -47,17 +60,21 @@ namespace XYZ {
 			});		
 		}
 	}
+	void bUIData::SetOnReloadCallback(const std::string& name, const bUIAllocatorReloadCallback& callback)
+	{
+		m_AllocatorMap[name].OnReload = callback;
+	}
 	bUIAllocator& bUIData::GetAllocator(const std::string& name)
 	{
 		auto it = m_AllocatorMap.find(name);
 		XYZ_ASSERT(it != m_AllocatorMap.end(), "Allocator with name ", name, " does not exist");
-		return m_Allocators[it->second];
+		return m_Allocators[it->second.Index];
 	}
 	const bUIAllocator& bUIData::GetAllocator(const std::string& name) const
 	{
 		auto it = m_AllocatorMap.find(name);
 		XYZ_ASSERT(it != m_AllocatorMap.end(), "Allocator with name ", name, " does not exist");
-		return m_Allocators[it->second];
+		return m_Allocators[it->second.Index];
 	}
 	bool bUIData::Exist(const std::string& name) const
 	{

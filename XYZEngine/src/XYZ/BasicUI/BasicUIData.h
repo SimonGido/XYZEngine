@@ -6,14 +6,17 @@
 
 namespace XYZ {
 
+	using bUIAllocatorReloadCallback = std::function<void(bUIAllocator&)>;
 	class bUIData
 	{
 	public:
 		bUIAllocator& CreateAllocator(const std::string& name, const std::string& filepath, size_t size);
 
-		void Reload();
 		void Update();
+		void Reload();
+		void Reload(const std::string& name);
 		void BuildMesh(bUIRenderer& renderer);
+		void SetOnReloadCallback(const std::string& name, const bUIAllocatorReloadCallback& callback);
 
 		bUIAllocator& GetAllocator(const std::string& name);
 		const bUIAllocator& GetAllocator(const std::string& name) const;
@@ -24,8 +27,13 @@ namespace XYZ {
 
 	private:
 		std::vector<bUIAllocator> m_Allocators;
-		std::unordered_map<std::string, size_t> m_AllocatorMap;
-		std::vector<std::string> m_UIPaths;
+		struct AllocatorData
+		{
+			size_t Index;
+			std::string Filepath;
+			bUIAllocatorReloadCallback OnReload;
+		};
+		std::unordered_map<std::string, AllocatorData> m_AllocatorMap;
 
 		friend class bUILoader;
 		friend class bUIInput;

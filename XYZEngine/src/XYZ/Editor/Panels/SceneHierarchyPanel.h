@@ -17,6 +17,8 @@ namespace XYZ {
 		void OnEvent(Event& event);
 
 	private:
+		void setupUI();
+
 		void rebuildTree();
 		void updateTree();
 

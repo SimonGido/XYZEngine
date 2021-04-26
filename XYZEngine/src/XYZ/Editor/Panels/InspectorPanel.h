@@ -17,6 +17,8 @@ namespace XYZ {
 
 		void OnUpdate();
 	private:
+		void setContextUI();
+
 		void setSceneTagComponent();
 		void setTransformComponent();
 		void setSpriteRenderer();

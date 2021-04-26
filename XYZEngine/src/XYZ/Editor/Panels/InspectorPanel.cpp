@@ -49,6 +49,10 @@ namespace XYZ {
 		bUI::ForEach<bUIWindow>(allocator, scrollbox, [&](bUIWindow& win) {
 			win.Visible = false;
 		});
+
+		bUI::SetOnReloadCallback("Inspector", [&](bUIAllocator& allocator) {
+			setContextUI();
+		});
 	}
 	InspectorPanel::~InspectorPanel()
 	{
@@ -75,18 +79,7 @@ namespace XYZ {
 		}
 		m_Context = context;
 		bUILoader::Load("Layouts/Inspector.bui");
-		setSceneTagComponent();
-		setTransformComponent();
-		setSpriteRenderer();
-
-		buildScriptComponent();
-		setScriptComponent();
-		
-		bUIAllocator& allocator = bUI::GetAllocator("Inspector");
-		bUIScrollbox* scrollbox = allocator.GetElement<bUIScrollbox>("Scrollbox");
-		bUI::ForEach<bUIWindow>(allocator, scrollbox, [&](bUIWindow& win) {
-			win.ChildrenVisible = false;
-		});
+		setContextUI();
 	}
 	void InspectorPanel::OnUpdate()
 	{
@@ -125,6 +118,25 @@ namespace XYZ {
 				bUI::SetupLayout(allocator, *scriptWindow, m_ScriptLayout);
 			}
 		}	
+	}
+
+	void InspectorPanel::setContextUI()
+	{
+		if (m_Context && m_Context.IsValid())
+		{
+			setSceneTagComponent();
+			setTransformComponent();
+			setSpriteRenderer();
+
+			buildScriptComponent();
+			setScriptComponent();
+
+			bUIAllocator& allocator = bUI::GetAllocator("Inspector");
+			bUIScrollbox* scrollbox = allocator.GetElement<bUIScrollbox>("Scrollbox");
+			bUI::ForEach<bUIWindow>(allocator, scrollbox, [&](bUIWindow& win) {
+				win.ChildrenVisible = false;
+				});
+		}
 	}
 
 	void InspectorPanel::setSceneTagComponent()

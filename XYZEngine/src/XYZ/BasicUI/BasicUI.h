@@ -37,13 +37,15 @@ namespace XYZ {
 	public:
 		static void Init();
 		static void Shutdown();
-		static void Reload();
 		static void Update();
+		static void Reload();
+		static void Reload(const std::string& name);
 
 		static void OnEvent(Event& event);
 		static void SetupLayout(const std::string& uiName, const std::string& name, const bUILayout& layout);
 		static void SetupLayout(bUIAllocator& allocator, bUIElement& element, const bUILayout& layout);
-		
+		static void SetOnReloadCallback(const std::string& name, const bUIAllocatorReloadCallback& callback);
+
 		template <typename T>
 		static void ForEach(const std::string& uiName, const std::function<void(T&)>& func)
 		{

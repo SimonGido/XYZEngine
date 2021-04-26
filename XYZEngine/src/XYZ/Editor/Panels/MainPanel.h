@@ -12,6 +12,7 @@ namespace XYZ {
 		void OnUpdate();
 		void OnEvent(Event& event);
 	private:
+		void setupUI();
 		float findPerWindowWidth();
 
 	private:

@@ -8,7 +8,7 @@ namespace XYZ {
 	class bUILoader
 	{
 	public:
-		static void Load(const std::string& filepath, bool scale = true);
+		static bool Load(const std::string& filepath, bool scale = true);
 		static void Save(const std::string& name, const char* filepath);
 
 	private:
