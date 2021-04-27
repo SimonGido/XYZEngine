@@ -159,3 +159,10 @@ bUIElements:
             Name: Script Component
             Locked: true
             Type: Window
+          - Coords: [10, 481]
+            Size: [150, 30]
+            Color: [1, 1, 1, 1]
+            Label: Add Component
+            Name: Add Component
+            Locked: true 
+            Type: Dropdown

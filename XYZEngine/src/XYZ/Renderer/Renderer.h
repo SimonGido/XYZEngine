@@ -35,9 +35,6 @@ namespace XYZ {
 		static void SetLineThickness(float thickness);
 		static void SetPointSize(float size);
 		static void SetDepthTest(bool val);
-		static void SetScissorTest(bool val);
-		static void Scissor(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
-		static void ScissorArray(uint32_t count, ScissorSpecs* scissors);
 
 		static void DrawArrays(PrimitiveType type, uint32_t count);
 		static void DrawIndexed(PrimitiveType type, uint32_t indexCount = 0, uint32_t queueType = Default);

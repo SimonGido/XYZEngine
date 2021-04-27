@@ -56,6 +56,7 @@ namespace XYZ {
 		void*	    GetParentData(int32_t index);
 		int32_t     GetRoot() const { return m_Root; }
 		uint32_t    GetNodeCount() const { return m_NodeCount; }
+		bool		HasChildren(int32_t index) const;
 		bool		IsNodeValid(int32_t index) const { return m_NodeValid[index]; }
 		const FreeList<TreeNode>& GetFlatNodes() const { return m_Nodes; }
 

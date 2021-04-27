@@ -70,16 +70,6 @@ namespace XYZ {
 		glReadPixels(xCoord, yCoord, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	}
 
-	void RendererAPI::Scissor(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
-	{
-		glScissor(x, y, width, height);
-	}
-
-	void RendererAPI::ScissorArray(uint32_t count, uint8_t* scissors)
-	{
-		glScissorArrayv(0, count, (GLint*)scissors);
-	}
-
 	void RendererAPI::DrawArrays(PrimitiveType type, uint32_t count)
 	{
 		switch (type)

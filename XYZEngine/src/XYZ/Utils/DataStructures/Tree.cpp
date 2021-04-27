@@ -390,6 +390,11 @@ namespace XYZ {
         }
         return nullptr;
     }
+    bool Tree::HasChildren(int32_t index) const
+    {
+        return m_Nodes[index].FirstChild != TreeNode::sc_Invalid;
+    }
+   
     TreeNode::TreeNode(const TreeNode& other)
         :
         Data(other.Data),

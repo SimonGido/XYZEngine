@@ -20,7 +20,8 @@ namespace XYZ {
 		String,
 		Tree,
 		Image,
-		Text
+		Text,
+		Dropdown
 	};
 
 	enum class bUICallbackType
@@ -239,15 +240,42 @@ namespace XYZ {
 
 		const glm::vec2& GetCoords() const { return Coords;  }
 		uint32_t GetKey() const { return Key; }
+		int32_t GetID() const { return ID; }
 	private:
 		glm::vec2	Coords = glm::vec2(0.0f);
 		uint32_t    Key = 0;
 		int32_t		ID = -1;
 		
-		friend class bUITree;
+		friend class bUIHierarchyElement;
 	};
 
-	class bUITree : public bUIElement
+	class bUIHierarchyElement
+	{
+	public:
+		bUIHierarchyElement();
+		bUIHierarchyElement(bUIHierarchyElement&& other) noexcept;
+
+		void AddItem(uint32_t key, uint32_t parent, const bUITreeItem& item);
+		void AddItem(uint32_t key, const bUITreeItem& item);
+		void RemoveItem(uint32_t key);
+		void Clear();
+
+		bUITreeItem& GetItem(uint32_t key);
+	protected:
+		void solveTreePosition(const glm::vec2& size);
+
+	protected:
+		Tree Hierarchy;
+		MemoryPool Pool;
+
+		std::unordered_map<uint32_t, int32_t> NameIDMap;
+
+		static constexpr size_t sc_NumberOfItemsPerBlockInPool = 10;
+		static constexpr float sc_NodeOffset = 25.0f;
+	};
+
+	class bUITree : public bUIElement,
+					public bUIHierarchyElement
 	{
 	public:
 		bUITree(
@@ -265,25 +293,31 @@ namespace XYZ {
 		virtual bool OnLeftMousePressed(const glm::vec2& mousePosition) override;
 		virtual bool OnRightMousePressed(const glm::vec2& mousePosition) override;
 
-		void AddItem(uint32_t key, uint32_t parent, const bUITreeItem& item);
-		void AddItem(uint32_t key, const bUITreeItem& item);
-		void RemoveItem(uint32_t key);
-		void Clear();
-
-		bUITreeItem& GetItem(uint32_t key);
+		
 		std::function<void(uint32_t)> OnSelect;
 
-	private:
-		void solveTreePosition();
 
-	private:
-		Tree Hierarchy;
-		MemoryPool Pool;
+		friend class bUIRenderer;
+	};
 
-		std::unordered_map<uint32_t, int32_t> NameIDMap;
+	class bUIDropdown : public bUIElement,
+						public bUIHierarchyElement		
+	{
+	public:
+		bUIDropdown(
+			const glm::vec2& coords,
+			const glm::vec2& size,
+			const glm::vec4& color,
+			const std::string& label,
+			const std::string& name,
+			bUIElementType type
+		);
+		bUIDropdown(bUIDropdown&& other) noexcept;
 
-		static constexpr size_t sc_NumberOfItemsPerBlockInPool = 10;
-		static constexpr float sc_NodeOffset = 25.0f;
+		virtual void PushQuads(bUIRenderer& renderer, uint32_t& scissorID) override;
+		virtual bool OnMouseMoved(const glm::vec2& mousePosition) override;
+		virtual bool OnLeftMousePressed(const glm::vec2& mousePosition) override;
+		virtual bool OnRightMousePressed(const glm::vec2& mousePosition) override;
 
 		friend class bUIRenderer;
 	};

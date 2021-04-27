@@ -439,21 +439,154 @@ namespace XYZ {
 		}
 		return Coords;
 	}
+
+
+	bUIHierarchyElement::bUIHierarchyElement()
+		:
+		Pool(sc_NumberOfItemsPerBlockInPool * sizeof(bUITreeItem))
+	{
+	}
+
+	bUIHierarchyElement::bUIHierarchyElement(bUIHierarchyElement&& other) noexcept
+		:
+		Hierarchy(std::move(other.Hierarchy)),
+		Pool(std::move(other.Pool)),
+		NameIDMap(std::move(other.NameIDMap))
+	{
+	}
+
+	void bUIHierarchyElement::AddItem(uint32_t key, uint32_t parent, const bUITreeItem& item)
+	{
+		auto it = NameIDMap.find(key);
+		if (it == NameIDMap.end())
+		{
+			bUITreeItem* ptr = Pool.Allocate<bUITreeItem>(item.Label);		
+			auto parentIt = NameIDMap.find(parent);
+			if (parentIt != NameIDMap.end())
+			{
+				ptr->ID = Hierarchy.Insert(ptr, parentIt->second);
+				ptr->Key = key;
+				NameIDMap[key] = ptr->ID;
+			}
+			else
+			{
+				XYZ_LOG_WARN("Parent item with the key: ", parent, " does not exist");
+			}
+		}
+		else
+		{
+			XYZ_LOG_WARN("Item with the key: ", key, " already exists");
+		}
+	}
+
+	void bUIHierarchyElement::AddItem(uint32_t key, const bUITreeItem& item)
+	{
+		auto it = NameIDMap.find(key);
+		if (it == NameIDMap.end())
+		{
+			bUITreeItem* ptr = Pool.Allocate<bUITreeItem>(item.Label);	
+			ptr->ID = Hierarchy.Insert(ptr);
+			ptr->Key = key;
+			NameIDMap[key] = ptr->ID;
+		}
+		else
+		{
+			XYZ_LOG_WARN("Item with the key: ", key, " already exists");
+		}
+	}
+
+	void bUIHierarchyElement::RemoveItem(uint32_t key)
+	{
+		auto it = NameIDMap.find(key);
+		if (it != NameIDMap.end())
+		{
+			Hierarchy.TraverseNodeChildren(it->second, [&](void* parent, void* child)->bool {
+
+				bUITreeItem* childItem = static_cast<bUITreeItem*>(child);
+				NameIDMap.erase(childItem->Key);
+				Hierarchy.Remove(childItem->ID);
+				Pool.Deallocate(childItem);
+				return false;
+				});
+
+			bUITreeItem* item = static_cast<bUITreeItem*>(Hierarchy.GetData(NameIDMap[key]));
+			Hierarchy.Remove(item->ID);
+			NameIDMap.erase(item->Key);
+			Pool.Deallocate(item);
+		}
+		else
+		{
+			XYZ_LOG_WARN("Item with the key: ", key, " does not exist");
+		}
+	}
+
+	void bUIHierarchyElement::Clear()
+	{
+		NameIDMap.clear();	
+		Hierarchy.Traverse([&](void* parent, void* child) -> bool {
+			Pool.Deallocate<bUITreeItem>(static_cast<bUITreeItem*>(child));
+			return false;
+			});
+		Hierarchy.Clear();
+	}
+
+	bUITreeItem& bUIHierarchyElement::GetItem(uint32_t key)
+	{
+		auto it = NameIDMap.find(key);
+		XYZ_ASSERT(it != NameIDMap.end(), "");
+
+		return *static_cast<bUITreeItem*>(Hierarchy.GetData(it->second));
+	}
+
+	void bUIHierarchyElement::solveTreePosition(const glm::vec2& size)
+	{
+		uint32_t currentDepth = 0;
+		glm::vec2 offset = glm::vec2(0.0f);
+		auto& nodes = Hierarchy.GetFlatNodes();
+		Hierarchy.Traverse([&](void* parent, void* child) ->bool {
+
+			bUITreeItem* childItem = static_cast<bUITreeItem*>(child);
+			glm::vec2 textSize = bUIHelper::FindTextSize(childItem->Label.c_str(), bUI::GetConfig().GetFont());
+			glm::vec2 tmpSize = { size.x + textSize.x, std::max(size.y, textSize.y) };
+
+			if (nodes[childItem->GetID()].Depth > currentDepth)
+			{
+				offset.x += sc_NodeOffset;
+			}
+			while (nodes[childItem->GetID()].Depth < currentDepth)
+			{
+				offset.x -= sc_NodeOffset;
+				currentDepth--;
+			}
+			childItem->Coords = offset;
+			bool open = true;
+			if (parent)
+			{
+				bUITreeItem* parentItem = static_cast<bUITreeItem*>(parent);
+				open = parentItem->Open;
+			}
+			if (open)
+				offset.y += tmpSize.y;
+			else
+				childItem->Open = false;
+
+			currentDepth = nodes[childItem->ID].Depth;
+			return false;
+			});
+	}
+
 	
 	bUITree::bUITree(const glm::vec2& coords, const glm::vec2& size, const glm::vec4& color, const std::string& label, const std::string& name, bUIElementType type)
 		:
-		bUIElement(coords, size, color,  label, name, type),
-		Pool(sc_NumberOfItemsPerBlockInPool * sizeof(bUITreeItem))
+		bUIElement(coords, size, color,  label, name, type)		
 	{
 	}
 
 	bUITree::bUITree(bUITree&& other) noexcept
 		:
 		bUIElement(std::move(other)),
-		OnSelect(std::move(other.OnSelect)),
-		Hierarchy(std::move(other.Hierarchy)),
-		Pool(std::move(other.Pool)),
-		NameIDMap(std::move(other.NameIDMap))
+		bUIHierarchyElement(std::move(other)),
+		OnSelect(std::move(other.OnSelect))	
 	{
 	}
 
@@ -463,7 +596,7 @@ namespace XYZ {
 		if (!Visible || !HandleVisibility(ScissorID))
 			return;
 
-		solveTreePosition();
+		solveTreePosition(Size);
 		renderer.Submit<bUITree>(*this, scissorID,
 			bUI::GetConfig().GetSubTexture(bUIConfig::RightArrow),
 			bUI::GetConfig().GetSubTexture(bUIConfig::DownArrow)
@@ -486,7 +619,7 @@ namespace XYZ {
 			childItem->Color = Color;
 			glm::vec2 textSize = bUIHelper::FindTextSize(childItem->Label.c_str(), bUI::GetConfig().GetFont());
 			glm::vec2 size = { Size.x + textSize.x, std::max(Size.y, textSize.y) };
-			glm::vec2 itemAbsolutePosition = absolutePosition + childItem->Coords;
+			glm::vec2 itemAbsolutePosition = absolutePosition + childItem->GetCoords();
 			if (Helper::Collide(itemAbsolutePosition, size, mousePosition))
 			{
 				childItem->Color = bUI::GetConfig().GetColor(bUIConfig::HighlightColor);
@@ -511,7 +644,7 @@ namespace XYZ {
 			}
 			bUITreeItem* childItem = static_cast<bUITreeItem*>(child);
 
-			glm::vec2 itemAbsolutePosition = absolutePosition + childItem->Coords;
+			glm::vec2 itemAbsolutePosition = absolutePosition + childItem->GetCoords();
 			glm::vec2 textPosition = itemAbsolutePosition + glm::vec2(Size.x, 0.0f);
 			glm::vec2 textSize = bUIHelper::FindTextSize(childItem->Label.c_str(), bUI::GetConfig().GetFont());
 			textSize.y = std::max(Size.y, textSize.y);
@@ -549,7 +682,7 @@ namespace XYZ {
 
 			glm::vec2 textSize = bUIHelper::FindTextSize(childItem->Label.c_str(), bUI::GetConfig().GetFont());
 			glm::vec2 size = { Size.x + textSize.x, std::max(Size.y, textSize.y) };
-			glm::vec2 itemAbsolutePosition = absolutePosition + childItem->Coords;
+			glm::vec2 itemAbsolutePosition = absolutePosition + childItem->GetCoords();
 			if (Helper::Collide(itemAbsolutePosition, size, mousePosition))
 			{
 				result = true;
@@ -560,124 +693,40 @@ namespace XYZ {
 		return result;
 	}
 
-	void bUITree::AddItem(uint32_t key, uint32_t parent, const bUITreeItem& item)
+	bUIDropdown::bUIDropdown(const glm::vec2& coords, const glm::vec2& size, const glm::vec4& color, const std::string& label, const std::string& name, bUIElementType type)
+		:
+		bUIElement(coords, size, color,  label, name, type)
 	{
-		auto it = NameIDMap.find(key);
-		if (it == NameIDMap.end())
-		{
-			bUITreeItem* ptr = Pool.Allocate<bUITreeItem>(item.Label);		
-			auto parentIt = NameIDMap.find(parent);
-			if (parentIt != NameIDMap.end())
-			{
-				ptr->ID = Hierarchy.Insert(ptr, parentIt->second);
-				ptr->Key = key;
-				NameIDMap[key] = ptr->ID;
-			}
-			else
-			{
-				XYZ_LOG_WARN("Parent item with the key: ", parent, " does not exist");
-			}
-		}
-		else
-		{
-			XYZ_LOG_WARN("Item with the key: ", key, " already exists");
-		}
 	}
-
-	void bUITree::AddItem(uint32_t key, const bUITreeItem& item)
+	bUIDropdown::bUIDropdown(bUIDropdown&& other) noexcept
+		:
+		bUIElement(std::move(other)),
+		bUIHierarchyElement(std::move(other))
 	{
-		auto it = NameIDMap.find(key);
-		if (it == NameIDMap.end())
-		{
-			bUITreeItem* ptr = Pool.Allocate<bUITreeItem>(item.Label);	
-			ptr->ID = Hierarchy.Insert(ptr);
-			ptr->Key = key;
-			NameIDMap[key] = ptr->ID;
-		}
-		else
-		{
-			XYZ_LOG_WARN("Item with the key: ", key, " already exists");
-		}
 	}
-
-	void bUITree::RemoveItem(uint32_t key)
+	void bUIDropdown::PushQuads(bUIRenderer& renderer, uint32_t& scissorID)
 	{
-		auto it = NameIDMap.find(key);
-		if (it != NameIDMap.end())
-		{
-			Hierarchy.TraverseNodeChildren(it->second, [&](void* parent, void* child)->bool {
+		ScissorID = scissorID;
+		if (!Visible || !HandleVisibility(ScissorID))
+			return;
 
-				bUITreeItem* childItem = static_cast<bUITreeItem*>(child);
-				NameIDMap.erase(childItem->Key);
-				Hierarchy.Remove(childItem->ID);
-				Pool.Deallocate(childItem);
-				return false;
-				});
-
-			bUITreeItem* item = static_cast<bUITreeItem*>(Hierarchy.GetData(NameIDMap[key]));
-			Hierarchy.Remove(item->ID);
-			NameIDMap.erase(item->Key);
-			Pool.Deallocate(item);
-		}
-		else
-		{
-			XYZ_LOG_WARN("Item with the key: ", key, " does not exist");
-		}
+		solveTreePosition(Size);
+		renderer.Submit<bUIDropdown>(*this, scissorID,
+			bUI::GetConfig().GetSubTexture(bUIConfig::Button),
+			bUI::GetConfig().GetSubTexture(bUIConfig::RightArrow)
+		);
 	}
-
-	void bUITree::Clear()
+	bool bUIDropdown::OnMouseMoved(const glm::vec2& mousePosition)
 	{
-		NameIDMap.clear();	
-		Hierarchy.Traverse([&](void* parent, void* child) -> bool {
-			Pool.Deallocate<bUITreeItem>(static_cast<bUITreeItem*>(child));
-			return false;
-			});
-		Hierarchy.Clear();
+		return false;
 	}
-
-	bUITreeItem& bUITree::GetItem(uint32_t key)
+	bool bUIDropdown::OnLeftMousePressed(const glm::vec2& mousePosition)
 	{
-		auto it = NameIDMap.find(key);
-		XYZ_ASSERT(it != NameIDMap.end(), "");
-
-		return *static_cast<bUITreeItem*>(Hierarchy.GetData(it->second));
+		return false;
 	}
-
-	void bUITree::solveTreePosition()
+	bool bUIDropdown::OnRightMousePressed(const glm::vec2& mousePosition)
 	{
-		uint32_t currentDepth = 0;
-		glm::vec2 offset = glm::vec2(0.0f);
-		auto& nodes = Hierarchy.GetFlatNodes();
-		Hierarchy.Traverse([&](void* parent, void* child) ->bool {
-
-			bUITreeItem* childItem = static_cast<bUITreeItem*>(child);
-			glm::vec2 textSize = bUIHelper::FindTextSize(childItem->Label.c_str(), bUI::GetConfig().GetFont());
-			glm::vec2 size = { Size.x + textSize.x, std::max(Size.y, textSize.y) };
-
-			if (nodes[childItem->ID].Depth > currentDepth)
-			{
-				offset.x += sc_NodeOffset;
-			}
-			while (nodes[childItem->ID].Depth < currentDepth)
-			{
-				offset.x -= sc_NodeOffset;
-				currentDepth--;
-			}
-			childItem->Coords = offset;
-			bool open = true;
-			if (parent)
-			{
-				bUITreeItem* parentItem = static_cast<bUITreeItem*>(parent);
-				open = parentItem->Open;
-			}
-			if (open)
-				offset.y += size.y;
-			else
-				childItem->Open = false;
-
-			currentDepth = nodes[childItem->ID].Depth;
-			return false;
-		});
+		return false;
 	}
 
 	bUIInt::bUIInt(const glm::vec2& coords, const glm::vec2& size, const glm::vec4& color, const std::string& label, const std::string& name, bUIElementType type)
@@ -1022,4 +1071,6 @@ namespace XYZ {
 	{
 		return bUIHelper::FindTextSize(Label.c_str(), bUI::GetConfig().GetFont());
 	}
+	
+
 }

@@ -78,23 +78,17 @@ namespace XYZ {
 			return;
 		}
 		m_Context = context;
+		glm::vec2 oldPanelPosition = bUI::GetUI<bUIWindow>("Inspector", "Inspector").Coords;
 		bUILoader::Load("Layouts/Inspector.bui");
+		bUI::GetUI<bUIWindow>("Inspector", "Inspector").Coords = oldPanelPosition;
+		
 		setContextUI();
 	}
 	void InspectorPanel::OnUpdate()
 	{
 		bUIAllocator& allocator = bUI::GetAllocator("Inspector");
-		bUIScrollbox* scrollbox = allocator.GetElement<bUIScrollbox>("Scrollbox");
-		bUIWindow* last = nullptr;
-		bUI::ForEach<bUIWindow>(allocator, scrollbox, [&](bUIWindow& win) {
-			win.Size.x = scrollbox->Size.x - 20.0f;
-			if (last)
-				win.Coords.y = last->Coords.y + last->GetSize().y + 10.0f;
-			else
-				win.Coords.y = 35.0f;
-			last = &win;
-		});
-		
+		updateLayout(allocator);
+
 		if (m_Context && m_Context.IsValid())
 		{
 			if (m_Context.HasComponent<SceneTagComponent>())
@@ -118,6 +112,27 @@ namespace XYZ {
 				bUI::SetupLayout(allocator, *scriptWindow, m_ScriptLayout);
 			}
 		}	
+	}
+
+	void InspectorPanel::updateLayout(bUIAllocator& allocator)
+	{
+		bUIScrollbox* scrollbox = allocator.GetElement<bUIScrollbox>("Scrollbox");
+		bUIWindow* last = nullptr;
+		bUI::ForEach<bUIWindow>(allocator, scrollbox, [&](bUIWindow& win) {
+			win.Size.x = scrollbox->Size.x - 20.0f;
+			win.Coords.y = 35.0f;
+			if (last)
+				win.Coords.y = last->Coords.y + last->GetSize().y + 10.0f;
+			if (win.Visible)
+				last = &win;
+		});
+		
+		// Center dropdown
+		bUIDropdown* dropdown = allocator.GetElement<bUIDropdown>("Add Component");
+		dropdown->Coords.y = 35.0f;
+		if (last)
+			dropdown->Coords.y = last->Coords.y + last->GetSize().y + 10.0f;
+		dropdown->Coords.x = scrollbox->Coords.x + (scrollbox->Size.x - dropdown->Size.x) / 2.0f;
 	}
 
 	void InspectorPanel::setContextUI()

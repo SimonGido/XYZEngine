@@ -23,6 +23,8 @@ namespace XYZ {
 				return sizeof(bUIScrollbox);
 			case XYZ::bUIElementType::Tree:
 				return sizeof(bUITree);
+			case XYZ::bUIElementType::Dropdown:
+				return sizeof(bUIDropdown);
 			case XYZ::bUIElementType::Float:
 				return sizeof(bUIFloat);
 			case XYZ::bUIElementType::Int:
@@ -51,6 +53,8 @@ namespace XYZ {
 				return bUIElementType::Scrollbox;
 			if (str == "Tree")
 				return bUIElementType::Tree;
+			if (str == "Dropdown")
+				return bUIElementType::Dropdown;
 			if (str == "Float")
 				return bUIElementType::Float;
 			if (str == "Int")
@@ -81,6 +85,8 @@ namespace XYZ {
 				return "Scrollbox";
 			case XYZ::bUIElementType::Tree:
 				return "Tree";
+			case XYZ::bUIElementType::Dropdown:
+				return "Dropdown";
 			case XYZ::bUIElementType::Float:
 				return "Float";
 			case XYZ::bUIElementType::Int:
@@ -260,6 +266,9 @@ namespace XYZ {
 			break;
 		case XYZ::bUIElementType::Tree:
 			element = allocator->CreateElement<bUITree>(parent, coords, size, color, label, name, type);
+			break;
+		case XYZ::bUIElementType::Dropdown:
+			element = allocator->CreateElement<bUIDropdown>(parent, coords, size, color, label, name, type);
 			break;
 		case XYZ::bUIElementType::Float:
 			element = allocator->CreateElement<bUIFloat>(parent, coords, size, color, label, name, type);

@@ -146,12 +146,15 @@ namespace XYZ {
 		case XYZ::bUIElementType::Tree:
 			move<bUITree>(dest, offset);
 			break;
+		case XYZ::bUIElementType::Dropdown:
+			move<bUIDropdown>(dest, offset);
+			break;
 		case XYZ::bUIElementType::Image:
 			move<bUIImage>(dest, offset);
 			break;
 		case XYZ::bUIElementType::Text:
 			move<bUIText>(dest, offset);
-			break;
+			break;	
 		default:
 			break;
 		}

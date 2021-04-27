@@ -17,6 +17,7 @@ namespace XYZ {
 
 		void OnUpdate();
 	private:
+		void updateLayout(bUIAllocator& allocator);
 		void setContextUI();
 
 		void setSceneTagComponent();

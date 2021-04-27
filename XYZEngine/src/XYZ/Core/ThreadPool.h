@@ -16,7 +16,6 @@ namespace XYZ {
 		ThreadPool(const ThreadPool& other) = delete;
 		~ThreadPool();
 
-		
 		template <typename R, typename F>
 		std::future<R> PushJob(F&& f) const
 		{
