@@ -4,20 +4,21 @@
 #include "Renderer2D.h"
 #include "SceneRenderer.h"
 
+#include "XYZ/Core/Application.h"
+
 namespace XYZ {
-
-
 	struct RendererData
 	{
-		RenderCommandQueue CommandQueue[RenderQueueType::NumTypes];
+		RenderCommandQueue CommandQueue[2][NumTypes];
+		uint32_t			CurrentIndex = 0;
 		Ref<RenderPass> ActiveRenderPass;
 		Ref<VertexArray> FullscreenQuadVertexArray;
 		Ref<VertexBuffer> FullscreenQuadVertexBuffer;
 		Ref<IndexBuffer> FullscreenQuadIndexBuffer;
-
+		std::mutex Mutex;
+		std::atomic<bool> Ready = true;
 	};
 
-	uint32_t Renderer::s_ActiveQueue = RenderQueueType::Default;
 	static RendererData s_Data;
 
 	static void SetupFullscreenQuad()
@@ -61,7 +62,9 @@ namespace XYZ {
 
 	void Renderer::Init()
 	{
-		RendererAPI::Init();
+		Renderer::Submit([=]() {
+			RendererAPI::Init();
+		});
 		Renderer2D::Init();
 		SceneRenderer::Init();
 
@@ -71,11 +74,6 @@ namespace XYZ {
 	void Renderer::Shutdown()
 	{
 		Renderer2D::Shutdown();
-	}
-
-	void Renderer::SetActiveQueue(uint32_t queueType)
-	{
-		s_ActiveQueue = queueType;
 	}
 
 	void Renderer::Clear()
@@ -218,14 +216,27 @@ namespace XYZ {
 	}
 
 	void Renderer::WaitAndRender()
-	{
-		s_Data.CommandQueue[Default].Execute();
-		s_Data.CommandQueue[Overlay].Execute();
+	{		
+		if (s_Data.Ready)
+		{
+			s_Data.Ready = false;
+			uint32_t index = s_Data.CurrentIndex;
+			Application::Get().GetThreadPool().PushJob<void>([index](){
+				std::scoped_lock<std::mutex> lock(s_Data.Mutex);
+				RenderCommandQueue* queue = &s_Data.CommandQueue[index][Default];	
+				queue->Execute();
+				s_Data.Ready = true;
+			});		
+		
+			if (s_Data.CurrentIndex == 0)
+				s_Data.CurrentIndex = 1;
+			else
+				s_Data.CurrentIndex = 0;
+		}
 	}
 
-	RenderCommandQueue& Renderer::GetRenderCommandQueue()
+	RenderCommandQueue& Renderer::GetRenderCommandQueue(uint8_t type)
 	{
-		XYZ_ASSERT(s_ActiveQueue < NumTypes, "");
-		return s_Data.CommandQueue[s_ActiveQueue];
+		return s_Data.CommandQueue[s_Data.CurrentIndex][type];
 	}
 }

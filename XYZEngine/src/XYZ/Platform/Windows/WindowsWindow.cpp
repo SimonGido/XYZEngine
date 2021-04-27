@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "WindowsWindow.h"
 
+#include "XYZ/Renderer/Renderer.h"
 
 namespace XYZ {
 	static bool GLFWInitialized = false;
@@ -47,7 +48,9 @@ namespace XYZ {
 		}
 
 		m_Context = APIContext::Create(m_Window);
-		m_Context->Init();
+		Renderer::Submit([&]() {
+			m_Context->Init();
+			});
 
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 		SetVSync(true);

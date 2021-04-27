@@ -17,7 +17,7 @@ namespace XYZ {
 
 	Application::Application()
 		:
-		m_ThreadPool(15)
+		m_ThreadPool(1)
 	{
 		Logger::Get().SetLogLevel(LogLevel::INFO | LogLevel::WARNING | LogLevel::ERR | LogLevel::API);
 		//Logger::Get().SetLogLevel(LogLevel::NOLOG);
@@ -55,7 +55,7 @@ namespace XYZ {
 			float timestep = time - m_LastFrameTime;
 			m_LastFrameTime = time;
 			{
-				//Stopwatch watch;
+				Stopwatch watch;
 				
 				for (Layer* layer : m_LayerStack)	
 					layer->OnUpdate(timestep);		

@@ -32,6 +32,21 @@ namespace XYZ {
 			return future;
 		}
 
+		template <typename R, typename F>
+		std::future<R> PushJob(F&& f)
+		{
+			auto task = std::make_shared< std::packaged_task<R()> >(
+				std::bind(std::forward<F>(f))
+				);
+			std::future<R> future = task->get_future();
+			{
+				std::scoped_lock<std::mutex> lock(m_Mutex);
+				m_JobQueue.emplace([task] { (*task)(); });
+			}
+			m_Condition.notify_one();
+			return future;
+		}
+
 	private:
 		void stop();
 		void waitForJob();

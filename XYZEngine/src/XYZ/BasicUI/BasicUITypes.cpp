@@ -4,7 +4,6 @@
 #include "BasicUIRenderer.h"
 #include "BasicUIHelper.h"
 #include "BasicUI.h"
-#include "BasicUIQueue.h"
 
 namespace XYZ {
 	namespace Helper {
@@ -156,11 +155,6 @@ namespace XYZ {
 		if (!Visible || !HandleVisibility(ScissorID))
 			return;
 		renderer.Submit<bUIButton>(*this, scissorID, bUI::GetContext().Config.GetSubTexture(bUIConfig::Button));
-	}
-
-	void bUIButton::CopyToQueue(bUIQueue& queue)
-	{
-		queue.Allocate<bUIButton>(*this);
 	}
 	
 	bUICheckbox::bUICheckbox(const glm::vec2& coords, const glm::vec2& size, const glm::vec4& color,  const std::string& label, const std::string& name, bUIElementType type)

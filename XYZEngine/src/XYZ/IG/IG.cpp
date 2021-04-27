@@ -80,7 +80,7 @@ namespace XYZ {
 			Renderer2D::FlushLines();
 		}
 		Renderer2D::EndScene();
-		Renderer::WaitAndRender();
+		//Renderer::WaitAndRender();
 	}
 
 	void IG::OnEvent(Event& event)

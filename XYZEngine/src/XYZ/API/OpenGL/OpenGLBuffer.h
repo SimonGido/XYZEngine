@@ -24,7 +24,6 @@ namespace XYZ {
 		BufferUsage m_Usage;
 		BufferLayout m_Layout;
 		ByteBuffer m_LocalData;
-		std::vector<ByteBuffer> m_DataPool;
 	};
 
 	class OpenGLIndexBuffer : public IndexBuffer

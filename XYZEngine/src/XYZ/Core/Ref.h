@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include <atomic>
 
 namespace XYZ {
 
@@ -17,7 +18,7 @@ namespace XYZ {
 	
 		uint32_t GetRefCount() const { return m_RefCount; }
 	private:
-		mutable uint32_t m_RefCount = 0; // TODO: atomic
+		mutable std::atomic<uint32_t> m_RefCount = 0;
 	};
 
 	template<typename T>
@@ -38,7 +39,6 @@ namespace XYZ {
 			: m_Instance(instance)
 		{
 			static_assert(std::is_base_of<RefCount, T>::value, "Class is not RefCounted!");
-
 			IncRef();
 		}
 
@@ -150,10 +150,10 @@ namespace XYZ {
 				}
 			}
 		}
+		T* m_Instance;
 
 		template<class T2>
 		friend class Ref;
-		T* m_Instance;
 	};
 
 }

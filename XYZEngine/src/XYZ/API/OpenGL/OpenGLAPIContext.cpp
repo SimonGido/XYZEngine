@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "OpenGLAPIContext.h"
 
+
 #include <GLFW/glfw3.h>
 #include <GL/glew.h>
 #include <GL/GL.h>
@@ -80,7 +81,7 @@ namespace XYZ {
 	}
 
 	void OpenGLAPIContext::Init()
-	{
+	{		
 		glfwMakeContextCurrent(m_WindowHandle);
 
 		XYZ_LOG_WARN("OpenGL Info:");
@@ -109,7 +110,7 @@ namespace XYZ {
 	}
 
 	void OpenGLAPIContext::SwapBuffers()
-	{
+	{	
 		glfwSwapBuffers(m_WindowHandle);
 	}
 

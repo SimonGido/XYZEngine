@@ -1,7 +1,6 @@
 #pragma once
 #include "BasicUIAllocator.h"
 #include "BasicUIRenderer.h"
-#include "BasicUIQueue.h"
 
 #include "XYZ/Event/InputEvent.h"
 
@@ -13,7 +12,7 @@ namespace XYZ {
 	public:
 		bUIAllocator& CreateAllocator(const std::string& name, const std::string& filepath, size_t size);
 
-		void Update(bUIQueue& queue);
+		void Update();
 		void Reload();
 		void Reload(const std::string& name);
 		void BuildMesh(bUIRenderer& renderer);

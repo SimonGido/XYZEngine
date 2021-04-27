@@ -58,8 +58,6 @@ namespace XYZ {
 		virtual bool OnLeftMouseReleased() { return false; };
 		virtual bool OnMouseScrolled(const glm::vec2& mousePosition, const glm::vec2& offset) { return false; }
 
-		virtual void CopyToQueue(bUIQueue& queue) {};
-
 		virtual glm::vec2 GetAbsolutePosition() const;
 		virtual glm::vec2 GetSize() const;
 		bool HandleVisibility(uint32_t scissorID);
@@ -129,7 +127,6 @@ namespace XYZ {
 		bUIButton(const bUIButton& other);
 
 		virtual void PushQuads(bUIRenderer& renderer, uint32_t& scissorID) override;
-		virtual void CopyToQueue(bUIQueue& queue) override;
 	};
 
 	struct bUICheckbox : public bUIElement

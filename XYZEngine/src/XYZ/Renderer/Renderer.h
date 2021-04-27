@@ -28,7 +28,6 @@ namespace XYZ {
 		*/
 		static void Init();
 		static void Shutdown();
-		static void SetActiveQueue(uint32_t queueType);
 
 		static void Clear();
 		static void SetClearColor(const glm::vec4& color);
@@ -55,7 +54,7 @@ namespace XYZ {
 
 				pFunc->~FuncT(); // Call destructor
 			};
-			auto storageBuffer = GetRenderCommandQueue().Allocate(renderCmd, sizeof(func));
+			auto storageBuffer = GetRenderCommandQueue(type).Allocate(renderCmd, sizeof(func));
 			new (storageBuffer) FuncT(std::forward<FuncT>(func));
 		}
 
@@ -73,9 +72,8 @@ namespace XYZ {
 		static void WaitAndRender();
 
 	private:
-		static RenderCommandQueue& GetRenderCommandQueue();
+		static RenderCommandQueue& GetRenderCommandQueue(uint8_t type);
 
-		static uint32_t s_ActiveQueue;
 	};
 
 }
