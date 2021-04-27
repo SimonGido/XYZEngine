@@ -1,22 +1,22 @@
-Size: [2560, 1377]
+Size: [1920, 1017]
 bUIElements:
   - Coords: [0, 0]
-    Size: [2560, 0]
+    Size: [1920, 0]
     Color: [1, 1, 1, 0.400000006]
     Label: ""
     Name: Scrollbox
     Locked: true
     Type: Scrollbox
     bUIElements:
-      - Coords: [0, 33.849556]
-        Size: [853.333313, 203.097336]
+      - Coords: [0, 25]
+        Size: [640, 150]
         Color: [1, 1, 1, 0.400000006]
         Label: File
         Name: File
         Locked: true
         Type: Window
-      - Coords: [853.333313, 33.849556]
-        Size: [853.333313, 203.097336]
+      - Coords: [640, 25]
+        Size: [640, 150]
         Color: [1, 1, 1, 0.400000006]
         Label: View
         Name: View
@@ -24,36 +24,36 @@ bUIElements:
         Type: Window
         bUIElements:
           - Coords: [10, 10]
-            Size: [33.3333321, 33.849556]
+            Size: [25, 25]
             Color: [1, 1, 1, 1]
             Label: Inspector
             Name: Inspector
             Locked: true
             Type: Checkbox
-          - Coords: [10, 48.849556]
-            Size: [33.3333321, 33.849556]
+          - Coords: [10, 40]
+            Size: [25, 25]
             Color: [1, 1, 1, 1]
             Label: Scene Hierarchy
             Name: Scene Hierarchy
             Locked: true
             Type: Checkbox
-          - Coords: [10, 87.6991119]
-            Size: [33.3333321, 33.849556]
+          - Coords: [10, 70]
+            Size: [25, 25]
             Color: [1, 1, 1, 1]
             Label: Skinning Editor
             Name: Skinning Editor
             Locked: true
             Type: Checkbox
-      - Coords: [1706.66663, 33.849556]
-        Size: [853.333313, 203.097336]
+      - Coords: [1280, 25]
+        Size: [640, 150]
         Color: [1, 1, 1, 0.400000006]
         Label: UI
         Name: UI
         Locked: true
         Type: Window
         bUIElements:
-          - Coords: [13.333333, 13.5398226]
-            Size: [46.6666679, 47.3893814]
+          - Coords: [10, 10]
+            Size: [35, 35]
             Color: [1.5, 2.29999995, 2.4000001, 1]
             Label: Reload
             Name: Reload

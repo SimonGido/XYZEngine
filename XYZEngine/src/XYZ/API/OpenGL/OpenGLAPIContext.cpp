@@ -114,7 +114,7 @@ namespace XYZ {
 		Renderer::Submit([&] {
 			glFlush();
 			glFinish();
-			});
+		});
 		glfwSwapBuffers(m_WindowHandle);
 	}
 

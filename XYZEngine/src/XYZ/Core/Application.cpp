@@ -20,6 +20,8 @@ namespace XYZ {
 	{
 		Logger::Get().SetLogLevel(LogLevel::INFO | LogLevel::WARNING | LogLevel::ERR | LogLevel::API);
 		//Logger::Get().SetLogLevel(LogLevel::NOLOG);
+		AssetManager::Init();
+		Renderer::Init();
 		s_Application = this;
 		m_Running = true;
 
@@ -34,10 +36,7 @@ namespace XYZ {
 		m_ApplicationDir = std::string(tmp.begin(), tmp.end());
 
 		m_bUILayer = new bUILayer();
-		m_LayerStack.PushOverlay(m_bUILayer);
-
-		AssetManager::Init();
-		Renderer::Init();
+		m_LayerStack.PushOverlay(m_bUILayer);	
 	}
 
 	Application::~Application()

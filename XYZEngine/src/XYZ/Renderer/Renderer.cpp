@@ -8,16 +8,21 @@
 #include "XYZ/Timer.h"
 
 namespace XYZ {
+	
+	
 	struct RendererData
 	{
-		RenderCommandQueue CommandQueue[2][NumTypes];
-		uint32_t			CurrentIndex = 0;
-		Ref<RenderPass> ActiveRenderPass;
-		Ref<VertexArray> FullscreenQuadVertexArray;
-		Ref<VertexBuffer> FullscreenQuadVertexBuffer;
-		Ref<IndexBuffer> FullscreenQuadIndexBuffer;
-		std::mutex Mutex;
-		std::atomic<bool> Ready = true;
+		enum { Read, Write, Num };
+		RenderCommandQueue	CommandQueue[Num][NumTypes];
+
+		Ref<RenderPass>		ActiveRenderPass;
+		Ref<VertexArray>	FullscreenQuadVertexArray;
+		Ref<VertexBuffer>	FullscreenQuadVertexBuffer;
+		Ref<IndexBuffer>	FullscreenQuadIndexBuffer;
+
+		std::atomic<bool>	SwapQueues = true;
+		std::mutex			Mutex;
+		uint32_t			ReadQueueIndex = Read;
 	};
 
 	static RendererData s_Data;
@@ -68,7 +73,7 @@ namespace XYZ {
 		});
 		Renderer2D::Init();
 		SceneRenderer::Init();
-
+		
 		SetupFullscreenQuad();
 	}
 
@@ -218,26 +223,30 @@ namespace XYZ {
 
 	void Renderer::WaitAndRender()
 	{		
-		if (s_Data.Ready)
+		if (s_Data.SwapQueues)
 		{
-			s_Data.Ready = false;		
-			RenderCommandQueue* queue = &s_Data.CommandQueue[s_Data.CurrentIndex][Default];
-			std::future<bool> test = Application::GetThreadPool().PushJob<bool>([queue]() {
-				std::scoped_lock<std::mutex> lock(s_Data.Mutex);
-				queue->Execute();
-				s_Data.Ready = true;
-				return true;
-			});
+			s_Data.SwapQueues = false;		
+			RenderCommandQueue* read[NumTypes];
+			for (size_t i = 0; i < NumTypes; ++i)
+				read[i] = &s_Data.CommandQueue[s_Data.ReadQueueIndex][i];
 
-			if (s_Data.CurrentIndex == 0)
-				s_Data.CurrentIndex = 1;
+			Application::GetThreadPool().PushJob<void>([read]() {
+				std::scoped_lock<std::mutex> lock(s_Data.Mutex);
+				read[Default]->Execute();
+				read[Overlay]->Execute();
+				s_Data.SwapQueues = true;
+			});
+			
+			// Perform "swap" of queues for read and write
+			if (s_Data.ReadQueueIndex == RendererData::Read)
+				s_Data.ReadQueueIndex = RendererData::Write;
 			else
-				s_Data.CurrentIndex = 0;
+				s_Data.ReadQueueIndex = RendererData::Read;
 		}
 	}
 
 	RenderCommandQueue& Renderer::GetRenderCommandQueue(uint8_t type)
 	{
-		return s_Data.CommandQueue[s_Data.CurrentIndex][type];
+		return s_Data.CommandQueue[s_Data.ReadQueueIndex][type];
 	}
 }
