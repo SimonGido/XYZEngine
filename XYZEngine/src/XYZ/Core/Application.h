@@ -28,7 +28,7 @@ namespace XYZ {
 		bool OnEvent(Event& event);
 
 		Window& GetWindow() { return *m_Window; }
-		ThreadPool& GetThreadPool() { return m_ThreadPool; }
+		static ThreadPool& GetThreadPool() { return s_ThreadPool; }
 		const std::string& GetApplicationDir() const { return m_ApplicationDir; }
 
 		inline static Application& Get() { return *s_Application; }
@@ -40,7 +40,6 @@ namespace XYZ {
 		bool onWindowClosed(WindowCloseEvent& event);
 
 	private:
-		ThreadPool m_ThreadPool;
 		LayerStack m_LayerStack;
 		bUILayer* m_bUILayer;
 
@@ -51,6 +50,7 @@ namespace XYZ {
 
 		std::string m_ApplicationDir;
 
+		static ThreadPool s_ThreadPool;
 		static Application* s_Application;
 	};
 

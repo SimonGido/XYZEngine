@@ -5,6 +5,7 @@
 #include "SceneRenderer.h"
 
 #include "XYZ/Core/Application.h"
+#include "XYZ/Timer.h"
 
 namespace XYZ {
 	struct RendererData
@@ -197,7 +198,7 @@ namespace XYZ {
 			Renderer::Submit([=]() {
 				RendererAPI::SetClearColor(clearColor);
 				RendererAPI::Clear();
-				});
+			});
 
 			if (specs.Scissors.size())
 			{
@@ -219,15 +220,15 @@ namespace XYZ {
 	{		
 		if (s_Data.Ready)
 		{
-			s_Data.Ready = false;
-			uint32_t index = s_Data.CurrentIndex;
-			Application::Get().GetThreadPool().PushJob<void>([index](){
+			s_Data.Ready = false;		
+			RenderCommandQueue* queue = &s_Data.CommandQueue[s_Data.CurrentIndex][Default];
+			std::future<bool> test = Application::GetThreadPool().PushJob<bool>([queue]() {
 				std::scoped_lock<std::mutex> lock(s_Data.Mutex);
-				RenderCommandQueue* queue = &s_Data.CommandQueue[index][Default];	
 				queue->Execute();
 				s_Data.Ready = true;
-			});		
-		
+				return true;
+			});
+
 			if (s_Data.CurrentIndex == 0)
 				s_Data.CurrentIndex = 1;
 			else

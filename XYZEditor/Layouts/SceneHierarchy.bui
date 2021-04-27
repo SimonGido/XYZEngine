@@ -1,7 +1,7 @@
-Size: [1920, 1017]
+Size: [2560, 1377]
 bUIElements:
-  - Coords: [250, 283]
-    Size: [256, 333]
+  - Coords: [565.333374, 436.176971]
+    Size: [341.333344, 450.876099]
     Color: [1, 1, 1, 1]
     Label: Scene Hierarchy
     Name: Scene Hierarchy
@@ -9,22 +9,22 @@ bUIElements:
     Type: Window
     bUIElements:
       - Coords: [0, 0]
-        Size: [256, 333]
+        Size: [341.333344, 450.876099]
         Color: [0, 0, 0, 0]
         Label: ""
         Name: Scrollbox
         Locked: true
         Type: Scrollbox
         bUIElements:
-          - Coords: [10, 10]
-            Size: [30, 30]
+          - Coords: [13.333333, 13.5398226]
+            Size: [40, 40.6194687]
             Color: [1, 1, 1, 1]
             Label: ""
             Name: Hierarchy Tree
             Locked: true
             Type: Tree
-          - Coords: [50, 10]
-            Size: [30, 30]
+          - Coords: [66.6666641, 13.5398226]
+            Size: [40, 40.6194687]
             Color: [1, 1, 1, 1]
             Label: Create Entity
             Name: Create Entity

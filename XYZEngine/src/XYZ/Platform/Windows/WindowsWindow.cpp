@@ -2,6 +2,7 @@
 #include "WindowsWindow.h"
 
 #include "XYZ/Renderer/Renderer.h"
+#include "XYZ/Core/Application.h"
 
 namespace XYZ {
 	static bool GLFWInitialized = false;
@@ -48,9 +49,12 @@ namespace XYZ {
 		}
 
 		m_Context = APIContext::Create(m_Window);
-		Renderer::Submit([&]() {
+
+		std::future<bool> done = Application::GetThreadPool().PushJob<bool>([&] {
 			m_Context->Init();
-			});
+			return true;
+		});
+		done.wait();
 
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 		SetVSync(true);

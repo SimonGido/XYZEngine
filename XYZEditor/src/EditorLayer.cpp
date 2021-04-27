@@ -106,7 +106,6 @@ namespace XYZ {
 		{
 			m_Scene->OnRenderEditor(m_EditorCamera);
 		}
-		bUI::Update();
 	}
 
 	void EditorLayer::OnEvent(Event& event)

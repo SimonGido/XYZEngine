@@ -14,10 +14,9 @@
 namespace XYZ {
 	Application* Application::s_Application = nullptr;
 
+	ThreadPool Application::s_ThreadPool(1);
 
 	Application::Application()
-		:
-		m_ThreadPool(1)
 	{
 		Logger::Get().SetLogLevel(LogLevel::INFO | LogLevel::WARNING | LogLevel::ERR | LogLevel::API);
 		//Logger::Get().SetLogLevel(LogLevel::NOLOG);

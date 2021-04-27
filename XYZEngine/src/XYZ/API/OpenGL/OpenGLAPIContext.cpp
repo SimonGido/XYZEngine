@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "OpenGLAPIContext.h"
-
+#include "XYZ/Renderer/Renderer.h"
 
 #include <GLFW/glfw3.h>
 #include <GL/glew.h>
@@ -110,7 +110,11 @@ namespace XYZ {
 	}
 
 	void OpenGLAPIContext::SwapBuffers()
-	{	
+	{
+		Renderer::Submit([&] {
+			glFlush();
+			glFinish();
+			});
 		glfwSwapBuffers(m_WindowHandle);
 	}
 
