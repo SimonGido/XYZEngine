@@ -91,8 +91,8 @@ namespace XYZ {
 	{
 		SpriteRenderer() = default;
 		SpriteRenderer(
-			Ref<Material> material,
-			Ref<SubTexture> subTexture,
+			const Ref<Material>& material,
+			const Ref<SubTexture>& subTexture,
 			const glm::vec4& color,
 			uint32_t sortLayer,
 			bool isVisible = true
@@ -104,12 +104,12 @@ namespace XYZ {
 
 		SpriteRenderer& operator =(const SpriteRenderer& other);
 
-		Ref<Material> Material;
+		Ref<Material>	Material;
 		Ref<SubTexture> SubTexture;
-		glm::vec4 Color;
-
-		uint32_t SortLayer = 0;
-		bool IsVisible = true;
+		
+		glm::vec4 Color = glm::vec4(1.0f);
+		uint32_t  SortLayer = 0;
+		bool	  IsVisible = true;
 	};
 
 

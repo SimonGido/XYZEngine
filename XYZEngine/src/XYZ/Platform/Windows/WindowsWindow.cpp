@@ -11,6 +11,7 @@ namespace XYZ {
 	{
 		return std::make_unique<WindowsWindow>(props);
 	}
+	
 
 	WindowsWindow::WindowsWindow(const WindowProperties& props)
 	{
@@ -57,7 +58,6 @@ namespace XYZ {
 		done.wait();
 
 		glfwSetWindowUserPointer(m_Window, &m_Data);
-		SetVSync(true);
 
 		
 		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
@@ -166,9 +166,9 @@ namespace XYZ {
 		m_Context->SwapBuffers();
 	}
 
-	void WindowsWindow::SetVSync(bool enabled)
+	void WindowsWindow::SetVSync(int32_t frames)
 	{
-		glfwSwapInterval(enabled);
+		glfwSwapInterval(frames);
 	}
 
 	bool WindowsWindow::IsClosed()

@@ -1,7 +1,7 @@
 Size: [1920, 1017]
 bUIElements:
-  - Coords: [152, 298]
-    Size: [256, 333]
+  - Coords: [180, 92]
+    Size: [328, 494]
     Color: [1, 1, 1, 1]
     Label: Scene Hierarchy
     Name: Scene Hierarchy
@@ -9,7 +9,7 @@ bUIElements:
     Type: Window
     bUIElements:
       - Coords: [0, 0]
-        Size: [256, 333]
+        Size: [328, 494]
         Color: [0, 0, 0, 0]
         Label: ""
         Name: Scrollbox

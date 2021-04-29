@@ -5,7 +5,7 @@
 
 
 namespace XYZ {
-	SpriteRenderer::SpriteRenderer(XYZ::Ref<XYZ::Material> material, Ref<XYZ::SubTexture> subTexture, const glm::vec4& color, uint32_t sortLayer, bool isVisible)
+	SpriteRenderer::SpriteRenderer(const XYZ::Ref<XYZ::Material>& material, const Ref<XYZ::SubTexture>& subTexture, const glm::vec4& color, uint32_t sortLayer, bool isVisible)
 		:
 		Material(material),
 		SubTexture(subTexture),

@@ -160,9 +160,9 @@ bUIElements:
             Locked: true
             Type: Window
           - Coords: [10, 481]
-            Size: [150, 30]
+            Size: [200, 30]
             Color: [1, 1, 1, 1]
             Label: Add Component
             Name: Add Component
-            Locked: true 
+            Locked: true
             Type: Dropdown

@@ -272,11 +272,11 @@ namespace XYZ {
 		
 		element.Hierarchy.Traverse([&](void* parent, void* child)->bool {
 
-			bUITreeItem* childItem = static_cast<bUITreeItem*>(child);
+			hUIHierarchyItem* childItem = static_cast<hUIHierarchyItem*>(child);
 			glm::vec2 childAbsolutePosition = absolutePosition + childItem->GetCoords();
 			if (parent)
 			{
-				bUITreeItem* parentItem = static_cast<bUITreeItem*>(parent);
+				hUIHierarchyItem* parentItem = static_cast<hUIHierarchyItem*>(parent);
 				glm::vec2 parentAbsolutePosition = absolutePosition + parentItem->GetCoords();
 				if (!parentItem->Open)
 					return false;
@@ -318,36 +318,32 @@ namespace XYZ {
 			textPosition.y += ((element.Size.y - size.y) / 2.0f) + font->GetLineHeight();
 			Helper::GenerateTextMesh(element.Label.c_str(), font, element.Color, textPosition, m_Mesh, 1, scissorID);
 		}
+		if (!element.ChildrenVisible)
+			return;
 
 		absolutePosition.y += element.Size.y;
 		element.Hierarchy.Traverse([&](void* parent, void* child)->bool {
 
-			bUITreeItem* childItem = static_cast<bUITreeItem*>(child);
+			hUIHierarchyItem* childItem = static_cast<hUIHierarchyItem*>(child);
 			glm::vec2 childAbsolutePosition = absolutePosition + childItem->GetCoords();
 			if (parent)
 			{
-				bUITreeItem* parentItem = static_cast<bUITreeItem*>(parent);
+				hUIHierarchyItem* parentItem = static_cast<hUIHierarchyItem*>(parent);
 				glm::vec2 parentAbsolutePosition = absolutePosition + parentItem->GetCoords();
 				if (!parentItem->Open)
 					return false;
-				else
-				{
-					glm::vec3 lineStart = glm::vec3(parentAbsolutePosition.x + element.Size.x / 2.0f, parentAbsolutePosition.y + element.Size.y, 0.0f);
-					glm::vec3 lineEnd = glm::vec3(childAbsolutePosition.x, childAbsolutePosition.y + element.Size.y / 2.0f, 0.0f);
-					glm::vec3 lineMiddle = glm::vec3(lineStart.x, lineEnd.y, 0.0f);
-					m_Mesh.Lines.push_back({ glm::vec4(1.0f), lineStart, lineMiddle });
-					m_Mesh.Lines.push_back({ glm::vec4(1.0f), lineMiddle, lineEnd });
-				}
 			}
 
-			glm::vec2 arrowSize(element.Size.y, element.Size.y);
 			Helper::GenerateQuad(m_Mesh, childItem->Color, element.Size, childAbsolutePosition, quadSubTexture, 0, scissorID);
 			if (element.Hierarchy.HasChildren(childItem->GetID()))
-				Helper::GenerateQuad(m_Mesh, childItem->Color, arrowSize, childAbsolutePosition, arrowSubTexture, 0, scissorID);
-
+			{
+				glm::vec2 arrowSize(element.Size.y, element.Size.y);
+				glm::vec2 arrowPosition(childAbsolutePosition.x + element.Size.x - arrowSize.x, childAbsolutePosition.y);
+				Helper::GenerateQuad(m_Mesh, childItem->Color, arrowSize, arrowPosition, arrowSubTexture, 0, scissorID);
+			}
 			glm::vec2 size = bUIHelper::FindTextSize(childItem->Label.c_str(), font);
 			glm::vec2 textPosition = childAbsolutePosition;
-			textPosition.x += element.Size.x + 2.0f;
+			textPosition.x += 2.0f;
 			textPosition.y += ((element.Size.y - size.y) / 2.0f) + font->GetLineHeight();
 			Helper::GenerateTextMesh(childItem->Label.c_str(), font, childItem->Color, textPosition, m_Mesh, 1, scissorID);
 			return false;

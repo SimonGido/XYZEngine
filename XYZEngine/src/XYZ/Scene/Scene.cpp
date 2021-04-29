@@ -198,7 +198,8 @@ namespace XYZ {
 		for (size_t i = 0; i < scriptStorage.Size(); ++i)
 		{
 			ScriptComponent& scriptComponent = scriptStorage[i];
-			ScriptEngine::OnUpdateEntity({ scriptStorage.GetEntityAtIndex(i),this }, ts);
+			if (!scriptComponent.ModuleName.empty())
+				ScriptEngine::OnUpdateEntity({ scriptStorage.GetEntityAtIndex(i),this }, ts);
 		}
 		
 		auto& animatorStorage = m_ECS.GetStorage<AnimatorComponent>();
@@ -253,7 +254,7 @@ namespace XYZ {
 		for (auto entity : renderView)
 		{
 			auto [transform, renderer] = renderView.Get<TransformComponent, SpriteRenderer>(entity);
-			if (renderer.IsVisible && renderer.SubTexture.Raw())
+			if (renderer.IsVisible && renderer.SubTexture.Raw() && renderer.Material.Raw())
 				SceneRenderer::SubmitSprite(&renderer, &transform);
 		}
 

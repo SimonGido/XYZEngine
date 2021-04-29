@@ -41,7 +41,7 @@ namespace XYZ {
 		virtual uint32_t GetHeight() const = 0;
 
 		// Window attributes
-		virtual void SetVSync(bool enabled) = 0;
+		virtual void SetVSync(int32_t frames) = 0;
 		virtual void SetStandardCursor(uint8_t cursor) = 0;
 		virtual void SetCustomCursor(void* cursor) = 0;
 

@@ -19,15 +19,12 @@ namespace XYZ {
 	Application::Application()
 	{
 		Logger::Get().SetLogLevel(LogLevel::INFO | LogLevel::WARNING | LogLevel::ERR | LogLevel::API);
-		//Logger::Get().SetLogLevel(LogLevel::NOLOG);
 		AssetManager::Init();
 		Renderer::Init();
 		s_Application = this;
 		m_Running = true;
 
 		m_Window = Window::Create();
-		m_Window->SetVSync(false);
-
 		m_Window->RegisterCallback(Hook(&Application::OnEvent, this));	
 
 		TCHAR NPath[MAX_PATH];

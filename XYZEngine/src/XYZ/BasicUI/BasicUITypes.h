@@ -229,9 +229,9 @@ namespace XYZ {
 		bool FitParent = true;
 	};
 
-	struct bUITreeItem
+	struct hUIHierarchyItem
 	{
-		bUITreeItem(const std::string& label)
+		hUIHierarchyItem(const std::string& label)
 			: Label(label) {};
 
 		std::string Label;
@@ -255,12 +255,12 @@ namespace XYZ {
 		bUIHierarchyElement();
 		bUIHierarchyElement(bUIHierarchyElement&& other) noexcept;
 
-		void AddItem(uint32_t key, uint32_t parent, const bUITreeItem& item);
-		void AddItem(uint32_t key, const bUITreeItem& item);
+		void AddItem(uint32_t key, uint32_t parent, const hUIHierarchyItem& item);
+		void AddItem(uint32_t key, const hUIHierarchyItem& item);
 		void RemoveItem(uint32_t key);
 		void Clear();
 
-		bUITreeItem& GetItem(uint32_t key);
+		hUIHierarchyItem& GetItem(uint32_t key);
 	protected:
 		void solveTreePosition(const glm::vec2& size);
 
@@ -318,6 +318,8 @@ namespace XYZ {
 		virtual bool OnMouseMoved(const glm::vec2& mousePosition) override;
 		virtual bool OnLeftMousePressed(const glm::vec2& mousePosition) override;
 		virtual bool OnRightMousePressed(const glm::vec2& mousePosition) override;
+
+		std::function<void(uint32_t)> OnSelect;
 
 		friend class bUIRenderer;
 	};

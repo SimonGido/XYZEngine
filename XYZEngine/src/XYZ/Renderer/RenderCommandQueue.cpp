@@ -4,9 +4,9 @@
 namespace XYZ {
 	RenderCommandQueue::RenderCommandQueue()
 	{
-		m_CommandBuffer = new uint8_t[100 * 1024 * 1024]; // 100mb buffer
+		m_CommandBuffer = new uint8_t[10 * 1024 * 1024]; // 10mb buffer
 		m_CommandBufferPtr = m_CommandBuffer;
-		memset(m_CommandBuffer, 0, 100 * 1024 * 1024);
+		memset(m_CommandBuffer, 0, 10 * 1024 * 1024);
 	}
 
 	RenderCommandQueue::~RenderCommandQueue()

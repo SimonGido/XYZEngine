@@ -68,6 +68,10 @@ namespace XYZ {
 			break;
 		}
 	}
+	void GLFWErrorCallback(int code, const char* description)
+	{
+		XYZ_LOG_ERR(code, " ", description);
+	}
 #endif
 
 	OpenGLAPIContext::OpenGLAPIContext(GLFWwindow* windowHandle)
@@ -83,7 +87,7 @@ namespace XYZ {
 	void OpenGLAPIContext::Init()
 	{		
 		glfwMakeContextCurrent(m_WindowHandle);
-
+		
 		XYZ_LOG_WARN("OpenGL Info:");
 		XYZ_LOG_WARN("Vendor: ", (char*)glGetString(GL_VENDOR));
 		XYZ_LOG_WARN("Renderer: ", (char*)glGetString(GL_RENDERER));
@@ -106,6 +110,7 @@ namespace XYZ {
 			GLuint unusedIds = 0;
 			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, &unusedIds, true);
 		}
+		glfwSetErrorCallback(GLFWErrorCallback);
 #endif
 	}
 

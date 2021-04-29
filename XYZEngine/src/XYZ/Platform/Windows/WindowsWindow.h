@@ -21,7 +21,7 @@ namespace XYZ {
 		virtual ~WindowsWindow();
 
 		virtual void Update() override;
-		virtual void SetVSync(bool enabled) override;
+		virtual void SetVSync(int32_t frames) override;
 		virtual bool IsClosed() override;
 		virtual void SetStandardCursor(uint8_t cursor) override;
 		virtual void SetCustomCursor(void* cursor) override;

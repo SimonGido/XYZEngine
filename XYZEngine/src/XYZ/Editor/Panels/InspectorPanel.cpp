@@ -61,7 +61,7 @@ namespace XYZ {
 		bUILoader::Load("Layouts/Inspector.bui", false);
 		bUILoader::Save("Inspector", "Layouts/Inspector.bui");
 	}
-	void InspectorPanel::SetContext(SceneEntity context)
+	void InspectorPanel::SetContext(SceneEntity context, bool forceRebuildUI)
 	{
 		if (!context)
 		{
@@ -71,9 +71,11 @@ namespace XYZ {
 				win.Visible = false;
 			});
 			m_Context = context;
+			bUIDropdown* dropdown = allocator.GetElement<bUIDropdown>("Add Component");
+			dropdown->Visible = false;
 			return;
 		}
-		else if (m_Context == context)
+		else if (m_Context == context && !forceRebuildUI)
 		{
 			return;
 		}
@@ -88,7 +90,11 @@ namespace XYZ {
 	{
 		bUIAllocator& allocator = bUI::GetAllocator("Inspector");
 		updateLayout(allocator);
-
+		if (m_ReloadContext)
+		{
+			SetContext(m_Context, true);
+			m_ReloadContext = false;
+		}
 		if (m_Context && m_Context.IsValid())
 		{
 			if (m_Context.HasComponent<SceneTagComponent>())
@@ -135,6 +141,22 @@ namespace XYZ {
 		dropdown->Coords.x = scrollbox->Coords.x + (scrollbox->Size.x - dropdown->Size.x) / 2.0f;
 	}
 
+	void InspectorPanel::addComponent(uint16_t id)
+	{
+		if (id == IComponent::GetComponentID<TransformComponent>())
+		{
+			m_Context.EmplaceComponent<TransformComponent>();
+		}
+		else if (id == IComponent::GetComponentID<SpriteRenderer>())
+		{
+			m_Context.EmplaceComponent<SpriteRenderer>();
+		}
+		else if (id == IComponent::GetComponentID<ScriptComponent>())
+		{
+			m_Context.EmplaceComponent<ScriptComponent>();
+		}
+	}
+
 	void InspectorPanel::setContextUI()
 	{
 		if (m_Context && m_Context.IsValid())
@@ -151,6 +173,12 @@ namespace XYZ {
 			bUI::ForEach<bUIWindow>(allocator, scrollbox, [&](bUIWindow& win) {
 				win.ChildrenVisible = false;
 				});
+			bUIDropdown* dropdown = allocator.GetElement<bUIDropdown>("Add Component");
+			dropdown->ChildrenVisible = false;
+			dropdown->OnSelect = [this](uint32_t key) {
+				addComponent((uint16_t)key);
+				m_ReloadContext = true;
+			};
 		}
 	}
 
@@ -296,6 +324,9 @@ namespace XYZ {
 		{
 			bUIWindow* window = allocator.GetElement<bUIWindow>("Transform Component");
 			window->Visible = false;
+
+			bUIDropdown* dropdown = allocator.GetElement<bUIDropdown>("Add Component");
+			dropdown->AddItem(IComponent::GetComponentID<TransformComponent>(), hUIHierarchyItem("Transform Component"));
 		}
 	}
 
@@ -388,6 +419,9 @@ namespace XYZ {
 		{
 			bUIWindow* window = allocator.GetElement<bUIWindow>("Sprite Renderer");
 			window->Visible = false;
+
+			bUIDropdown* dropdown = allocator.GetElement<bUIDropdown>("Add Component");
+			dropdown->AddItem(IComponent::GetComponentID<SpriteRenderer>(), hUIHierarchyItem("Sprite Renderer"));
 		}
 	}
 
@@ -592,6 +626,15 @@ namespace XYZ {
 					);
 				}
 			}
+		}
+		else
+		{
+			bUIAllocator& allocator = bUI::GetAllocator("Inspector");
+			bUIWindow* window = allocator.GetElement<bUIWindow>("Script Component");
+			window->Visible = false;
+			
+			bUIDropdown* dropdown = allocator.GetElement<bUIDropdown>("Add Component");
+			dropdown->AddItem(IComponent::GetComponentID<ScriptComponent>(), hUIHierarchyItem("Script Component"));
 		}
 	}
 

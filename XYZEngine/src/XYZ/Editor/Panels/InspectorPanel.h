@@ -13,11 +13,12 @@ namespace XYZ {
 		InspectorPanel();
 		~InspectorPanel();
 
-		void SetContext(SceneEntity context);
+		void SetContext(SceneEntity context, bool forceRebuildUI = false);
 
 		void OnUpdate();
 	private:
 		void updateLayout(bUIAllocator& allocator);
+		void addComponent(uint16_t id);
 		void setContextUI();
 
 		void setSceneTagComponent();
@@ -33,5 +34,6 @@ namespace XYZ {
 		bUILayout m_ScriptLayout;
 
 		SceneEntity m_Context;
+		bool		m_ReloadContext = false;
 	};
 }
