@@ -26,6 +26,9 @@ namespace XYZ {
 			static constexpr size_t sc_MaxBones = 60;
 		private:
 			void setupUI();
+			void setupBoneUI();
+			void setupVertexUI();
+			void setupWeightsUI();
 			void updateLayout(bUIAllocator& allocator);
 			
 
@@ -39,8 +42,7 @@ namespace XYZ {
 			void renderAll();
 			void renderSelection();
 			void renderPreviewMesh(const glm::mat4& viewProjection);
-			void updateUIColor();
-
+	
 			// Buffers and mesh data
 			void clear();
 			void eraseBone(PreviewBone* bone);
@@ -97,7 +99,7 @@ namespace XYZ {
 			bUIWindow* m_Window;
 			bUIWindow* m_PreviewWindow;
 			bUIImage* m_Image;
-			bUITree* m_Tree;
+			//bUITree* m_Tree;
 			bUILayout m_Layout;
 
 			Tree m_BoneHierarchy;

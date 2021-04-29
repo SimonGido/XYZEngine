@@ -30,6 +30,7 @@ namespace XYZ {
 		Visible(true),
 		ChildrenVisible(true),
 		Locked(false),
+		BlockEvents(true),
 		Type(type)
 	{
 	}
@@ -45,6 +46,7 @@ namespace XYZ {
 		Visible(other.Visible),
 		ChildrenVisible(other.ChildrenVisible),
 		Locked(other.Locked),
+		BlockEvents(other.BlockEvents),
 		Type(other.Type),
 		Callbacks(other.Callbacks),
 		ScissorID(other.ScissorID),
@@ -63,6 +65,7 @@ namespace XYZ {
 		Visible(other.Visible),
 		ChildrenVisible(other.ChildrenVisible),
 		Locked(other.Locked),
+		BlockEvents(other.BlockEvents),
 		Type(other.Type),
 		Callbacks(std::move(other.Callbacks)),
 		ScissorID(other.ScissorID),
@@ -94,7 +97,7 @@ namespace XYZ {
 		{
 			for (auto& callback : Callbacks)
 				callback(bUICallbackType::Active, *this);
-			return true;
+			return BlockEvents;
 		}
 		return false;
 	}
@@ -195,7 +198,7 @@ namespace XYZ {
 			for (auto& callback : Callbacks)
 				callback(bUICallbackType::StateChange, *this);
 
-			return true;
+			return BlockEvents;
 		}
 		return false;
 	}
@@ -241,7 +244,7 @@ namespace XYZ {
 			ActiveColor = bUI::GetConfig().GetColor(bUIConfig::HighlightColor);
 			for (auto& callback : Callbacks)
 				callback(bUICallbackType::Hoover, *this);
-			return true;
+			return BlockEvents;
 		}
 		ActiveColor = Color;
 		return false;
@@ -255,7 +258,7 @@ namespace XYZ {
 		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
 		{
 			Modified = true;
-			return true;
+			return BlockEvents;
 		}
 		return false;
 	}
@@ -318,7 +321,7 @@ namespace XYZ {
 			ActiveColor = bUI::GetConfig().GetColor(bUIConfig::HighlightColor);
 			for (auto& callback : Callbacks)
 				callback(bUICallbackType::Hoover, *this);
-			return true;
+			return BlockEvents;
 		}
 		else if (ResizeFlags)
 		{
@@ -337,7 +340,7 @@ namespace XYZ {
 			}
 			if (OnResize)
 				OnResize(Size);
-			return true;
+			return BlockEvents;
 		}
 
 		ActiveColor = Color;
@@ -356,7 +359,7 @@ namespace XYZ {
 			ChildrenVisible = !ChildrenVisible;
 			for (auto& callback : Callbacks)
 				callback(bUICallbackType::Active, *this);
-			return true;
+			return BlockEvents;
 		}
 		else if (ChildrenVisible && Helper::Collide(absolutePosition, Size, mousePosition))
 		{
@@ -419,7 +422,7 @@ namespace XYZ {
 		if (Helper::Collide(GetAbsoluteScrollPosition(), Size, mousePosition))
 		{
 			Offset += offset * Speed;
-			return true;
+			return BlockEvents;
 		}
 		return false;
 	}
@@ -752,7 +755,7 @@ namespace XYZ {
 			ChildrenVisible = !ChildrenVisible;
 			for (auto& callback : Callbacks)
 				callback(bUICallbackType::Active, *this);
-			return true;
+			return BlockEvents;
 		}
 
 		bool result = false;
@@ -817,7 +820,7 @@ namespace XYZ {
 
 			for (auto& callback : Callbacks)
 				callback(bUICallbackType::Active, *this);
-			return true;
+			return BlockEvents;
 		}
 		return false;
 	}
@@ -836,7 +839,7 @@ namespace XYZ {
 
 				if (FitText)
 					Size = bUIHelper::FindTextSize(Buffer, bUI::GetConfig().GetFont()) + (Borders * 2.0f);
-				return true;
+				return BlockEvents;
 			}
 		}
 		return false;
@@ -857,7 +860,7 @@ namespace XYZ {
 				if (FitText)
 					Size = bUIHelper::FindTextSize(Buffer, bUI::GetConfig().GetFont()) + (Borders * 2.0f);
 
-				return true;
+				return BlockEvents;
 			}
 		}
 		return false;
@@ -917,7 +920,7 @@ namespace XYZ {
 
 			for (auto& callback : Callbacks)
 				callback(bUICallbackType::Active, *this);
-			return true;
+			return BlockEvents;
 		}
 		return false;
 	}
@@ -936,7 +939,7 @@ namespace XYZ {
 
 				if (FitText)
 					Size = bUIHelper::FindTextSize(Buffer, bUI::GetConfig().GetFont()) + (Borders * 2.0f);
-				return true;
+				return BlockEvents;
 			}
 		}
 		return false;
@@ -958,7 +961,7 @@ namespace XYZ {
 				if (FitText)
 					Size = bUIHelper::FindTextSize(Buffer, bUI::GetConfig().GetFont()) + (Borders * 2.0f);
 
-				return true;
+				return BlockEvents;
 			}
 		}
 		return false;
@@ -1029,7 +1032,7 @@ namespace XYZ {
 
 			for (auto& callback : Callbacks)
 				callback(bUICallbackType::Active, *this);
-			return true;
+			return BlockEvents;
 		}
 		return false;
 	}
@@ -1048,7 +1051,7 @@ namespace XYZ {
 
 				if (FitText)
 					Size = bUIHelper::FindTextSize(Buffer.c_str(), bUI::GetConfig().GetFont()) + (Borders * 2.0f);
-				return true;
+				return BlockEvents;
 			}
 			else if (key == ToUnderlying(KeyCode::KEY_ENTER))
 			{
@@ -1056,7 +1059,7 @@ namespace XYZ {
 				InsertionIndex++;
 				if (FitText)
 					Size = bUIHelper::FindTextSize(Buffer.c_str(), bUI::GetConfig().GetFont()) + (Borders * 2.0f);
-				return true;
+				return BlockEvents;
 			}
 		}
 		return false;
@@ -1074,7 +1077,7 @@ namespace XYZ {
 			if (FitText)
 				Size = bUIHelper::FindTextSize(Buffer.c_str(), bUI::GetConfig().GetFont()) + (Borders * 2.0f);
 
-			return true;
+			return BlockEvents;
 		}
 		return false;
 	}
@@ -1116,7 +1119,7 @@ namespace XYZ {
 				ActiveColor = bUI::GetConfig().GetColor(bUIConfig::HighlightColor);
 			for (auto& callback : Callbacks)
 				callback(bUICallbackType::Hoover, *this);
-			return true;
+			return BlockEvents;
 		}
 		ActiveColor = Color;
 		return false;

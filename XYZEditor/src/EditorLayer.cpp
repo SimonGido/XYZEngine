@@ -95,6 +95,7 @@ namespace XYZ {
 		m_SceneHierarchy.OnUpdate();
 		m_Inspector.OnUpdate();
 		m_Main.OnUpdate();
+		m_SkinningEditor.OnUpdate(ts);		
 		m_EditorCamera.OnUpdate(ts);
 		m_Inspector.SetContext(m_Scene->GetSelectedEntity());
 
@@ -107,7 +108,6 @@ namespace XYZ {
 		{
 			m_Scene->OnRenderEditor(m_EditorCamera);
 		}
-		m_SkinningEditor.OnUpdate(ts);		
 	}
 
 	void EditorLayer::OnEvent(Event& event)
@@ -118,7 +118,10 @@ namespace XYZ {
 		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorLayer::onMouseButtonRelease, this));	
 		dispatcher.Dispatch<WindowResizeEvent>(Hook(&EditorLayer::onWindowResize, this));
 		dispatcher.Dispatch<KeyPressedEvent>(Hook(&EditorLayer::onKeyPress, this));
+		
+
 		m_SceneHierarchy.OnEvent(event);
+		m_SkinningEditor.OnEvent(event);
 		m_Main.OnEvent(event);
 		m_EditorCamera.OnEvent(event);
 	}

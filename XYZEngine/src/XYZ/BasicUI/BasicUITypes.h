@@ -75,6 +75,7 @@ namespace XYZ {
 		bool				 Visible;
 		bool				 ChildrenVisible;
 		bool				 Locked;
+		bool				 BlockEvents;
 		const bUIElementType Type;
 
 		std::vector<bUICallback> Callbacks;

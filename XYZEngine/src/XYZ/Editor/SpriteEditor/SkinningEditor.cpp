@@ -101,7 +101,7 @@ namespace XYZ {
             :
             m_ContextSize(glm::vec2(0.0f)),
             m_Window(nullptr),
-            m_Tree(nullptr),
+            //m_Tree(nullptr),
             m_BonePool(15 * sizeof(PreviewBone)),
             m_SelectedSubmesh(nullptr),
             m_SelectedVertex(nullptr),
@@ -122,18 +122,10 @@ namespace XYZ {
             for (uint32_t i = 0; i < NumCategories; ++i)
                 m_CategoriesOpen[i] = false;
 
-            bUILoader::Load("Layouts/SkinningEditor.bui");
-            bUI::SetOnReloadCallback("SkinningEditor", [&](bUIAllocator& allocator) {
-                setupUI();
-                });
-            
-            setupUI();       
-            m_Layout = { 10.0f, 10.0f, 10.0f, 10.0f, 10.0f, {1}, true };
-            m_ViewportSize = m_PreviewWindow->Size;
 
             FramebufferSpecs specs;
-            specs.Width = (uint32_t)m_ViewportSize.x;
-            specs.Height = (uint32_t)m_ViewportSize.y;
+            specs.Width = 10;
+            specs.Height = 10;
             specs.ClearColor = { 0.1f,0.2f,0.2f,1.0f };
             specs.Attachments = {
                 FramebufferTextureSpecs(FramebufferTextureFormat::RGBA16F),
@@ -142,19 +134,17 @@ namespace XYZ {
             m_Framebuffer = Framebuffer::Create(specs);
             m_RenderTexture = RenderTexture::Create(m_Framebuffer);
             m_RenderSubTexture = Ref<SubTexture>::Create(m_RenderTexture, glm::vec2(0.0f, 0.0f));
-            m_Image->ImageSubTexture = m_RenderSubTexture;
+
+
+            bUILoader::Load("Layouts/SkinningEditor.bui");
+            bUI::SetOnReloadCallback("SkinningEditor", [&](bUIAllocator& allocator) {
+                setupUI();
+             });
             
+            m_Layout = { 10.0f, 10.0f, 10.0f, 10.0f, 10.0f, {1}, true };
+            setupUI();                    
             rebuildRenderBuffers();
-            m_PreviewWindow->OnResize = [&](const glm::vec2& size) {
-                m_Framebuffer->Resize((uint32_t)size.x, (uint32_t)size.y);
-
-                m_Camera.ProjectionMatrix = glm::ortho(
-                    -m_Window->Size.x / 2.0f, m_Window->Size.x / 2.0f,
-                    -m_Window->Size.y / 2.0f, m_Window->Size.y / 2.0f
-                );
-                m_Camera.UpdateViewProjection();
-            };
-
+          
             for (uint32_t i = 0; i < sc_MaxBones; ++i)
                 m_ColorIDs[i] = i;
             std::shuffle(&m_ColorIDs[0], &m_ColorIDs[sc_MaxBones - 1], std::default_random_engine(0));
@@ -174,108 +164,32 @@ namespace XYZ {
         {
             bUIAllocator& allocator = bUI::GetAllocator("SkinningEditor");
             updateLayout(allocator);
-            bUIWindow* boneWindow = allocator.GetElement<bUIWindow>("Bone Window");
-            bUI::SetupLayout(allocator, *boneWindow, m_Layout);
-            m_Camera.Update(ts);
 
-            //if (IS_SET(m_Window->Flags, IGWindow::Hoovered))
-            //{
-            //    m_MousePosition = getMouseWindowSpace();
-            //    auto [subMesh, triangle] = findTriangle(m_MousePosition);
-            //    m_FoundSubmesh = subMesh;
-            //    m_FoundTriangle = triangle;
-            //    m_FoundVertex = findVertex(m_MousePosition).second;
-            //    m_FoundBone = findBone(m_MousePosition);
-            //    m_Camera.Update(ts);
-            //    
-            //    if (IS_SET(m_Flags, EditBone))
-            //    {
-            //        handleBoneEdit();
-            //    }
-            //    else if (IS_SET(m_Flags, EditVertex))
-            //    {
-            //        handleVertexEdit();
-            //    }
-            //    else if (IS_SET(m_Flags, WeightBrush))
-            //    {
-            //        m_WeightBrushStrength = IG::GetUI<IGSlider>(m_PoolHandle, 31).Value / sc_WeightBrushDivisor;
-            //        handleWeightsBrush();
-            //    }
-            // 
-            //    // Bone group
-            //    if (IG::GetUI<IGButton>(m_PoolHandle, 3).Is(IGReturnType::Clicked)) // Preview Pose
-            //    {
-            //        m_Flags = ToggleBit(m_Flags, PreviewPose);
-            //        initializePose();
-            //        updateRenderBuffers();
-            //    }
-            //    else if (IG::GetUI<IGButton>(m_PoolHandle, 5).Is(IGReturnType::Clicked)) // Create bone
-            //    {
-            //        m_Flags = ToggleBit(m_Flags, CreateBone);
-            //    }
-            //    else if (IG::GetUI<IGButton>(m_PoolHandle, 7).Is(IGReturnType::Clicked)) // Edit bone
-            //    {
-            //        uint16_t previewPose = m_Flags & PreviewPose;
-            //        m_Flags = ToggleBit(m_Flags, EditBone);
-            //        m_Flags |= previewPose;
-            //    }
-            //    else if (IG::GetUI<IGButton>(m_PoolHandle, 9).Is(IGReturnType::Clicked)) // Edit bone
-            //    {
-            //        m_Flags = ToggleBit(m_Flags, DeleteBone);
-            //    }
-            //    else if (IG::GetUI<IGButton>(m_PoolHandle, 9).Is(IGReturnType::Clicked)) // Delete bone
-            //    {
-            //        m_Flags = ToggleBit(m_Flags, DeleteBone);
-            //    }
-            //    // Vertex group
-            //    if (IG::GetUI<IGButton>(m_PoolHandle, 13).Is(IGReturnType::Clicked)) // Create Submesh
-            //    {
-            //        m_Mesh.Submeshes.push_back({});
-            //    }
-            //    else if (IG::GetUI<IGButton>(m_PoolHandle, 15).Is(IGReturnType::Clicked)) // Create Vertex
-            //    {
-            //        m_Flags = ToggleBit(m_Flags, CreateVertex);
-            //    }
-            //    else if (IG::GetUI<IGButton>(m_PoolHandle, 17).Is(IGReturnType::Clicked)) // Edit Vertex
-            //    {
-            //        m_Flags = ToggleBit(m_Flags, EditVertex);
-            //    }
-            //    else if (IG::GetUI<IGButton>(m_PoolHandle, 19).Is(IGReturnType::Clicked)) // Delete Vertex
-            //    {
-            //        m_Flags = ToggleBit(m_Flags, DeleteVertex);
-            //    }
-            //    else if (IG::GetUI<IGButton>(m_PoolHandle, 21).Is(IGReturnType::Clicked)) // Delete Triangle
-            //    {
-            //        m_Flags = ToggleBit(m_Flags, DeleteTriangle);
-            //    }
-            //    else if (IG::GetUI<IGButton>(m_PoolHandle, 23).Is(IGReturnType::Clicked)) // Clear
-            //    {
-            //        clear();
-            //    }
-            //    else if (IG::GetUI<IGButton>(m_PoolHandle, 25).Is(IGReturnType::Clicked)) // Triangulate
-            //    {
-            //        if (!m_Triangulated)
-            //        {
-            //            m_Mesh.Triangulate();
-            //            rebuildRenderBuffers();
-            //            m_Triangulated = true;
-            //        }
-            //        else
-            //        {
-            //            XYZ_LOG_WARN("Mesh was already triangulated");
-            //        }
-            //    }
-            //    // Weight group
-            //    if (IG::GetUI<IGButton>(m_PoolHandle, 29).Is(IGReturnType::Clicked))
-            //    {
-            //        m_Flags = ToggleBit(m_Flags, WeightBrush);
-            //    }
-            //}
-            
-            //updateBoneHierarchy();
-            //if (IS_SET(m_Flags, PreviewPose))
-            //    updateRenderBuffers();
-            //updateUIColor();
+            m_MousePosition = getMouseWindowSpace();
+            auto [subMesh, triangle] = findTriangle(m_MousePosition);
+            m_FoundSubmesh = subMesh;
+            m_FoundTriangle = triangle;
+            m_FoundVertex = findVertex(m_MousePosition).second;
+            m_FoundBone = findBone(m_MousePosition);
+            m_Camera.Update(ts);
+        
+            if (IS_SET(m_Flags, EditBone))
+            {
+                handleBoneEdit();
+            }
+            else if (IS_SET(m_Flags, EditVertex))
+            {
+                handleVertexEdit();
+            }
+            else if (IS_SET(m_Flags, WeightBrush))
+            {             
+                m_WeightBrushStrength = allocator.GetElement<bUISlider>("Brush Strength")->Value / sc_WeightBrushDivisor;
+                handleWeightsBrush();
+            }
+           
+            updateBoneHierarchy();
+            if (IS_SET(m_Flags, PreviewPose))
+                updateRenderBuffers();
             renderAll();
         }
        
@@ -284,99 +198,203 @@ namespace XYZ {
         {
             EventDispatcher dispatcher(event);
             //if (IS_SET(m_Window->Flags, IGWindow::Hoovered))
-            //{
-            //    dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&SkinningEditor::onMouseButtonPress, this));
-            //    dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&SkinningEditor::onMouseButtonRelease, this));
-            //    dispatcher.Dispatch<MouseScrollEvent>(Hook(&SkinningEditor::onMouseScroll, this));
-            //    dispatcher.Dispatch<KeyPressedEvent>(Hook(&SkinningEditor::onKeyPress, this));
-            //}
+            {
+                dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&SkinningEditor::onMouseButtonPress, this));
+                dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&SkinningEditor::onMouseButtonRelease, this));
+                dispatcher.Dispatch<MouseScrollEvent>(Hook(&SkinningEditor::onMouseScroll, this));
+                dispatcher.Dispatch<KeyPressedEvent>(Hook(&SkinningEditor::onKeyPress, this));
+            }
         }
-        //void SkinningEditor::PushUI(std::vector<IGHierarchyElement>& elements)
-		//{
-        //    elements.push_back({IGElementType::Group, { // Bones
-        //        {IGElementType::Separator, {}},
-        //        {IGElementType::Button, {}}, // Preview pose
-        //        {IGElementType::Separator, {}},
-        //        {IGElementType::Button, {}}, // Create bone
-        //        {IGElementType::Separator, {}},
-        //        {IGElementType::Button, {}}, // Edit bone
-        //        {IGElementType::Separator, {}},
-        //        {IGElementType::Button, {}}  // Delete bone
-        //        }});
-        //    elements.push_back({ IGElementType::Separator, {} });
-        //    elements.push_back({ IGElementType::Group, { // Vertices
-        //        {IGElementType::Separator, {}},
-        //        {IGElementType::Button, {}},  // Create submesh
-        //        {IGElementType::Separator, {}},
-        //        {IGElementType::Button, {}},  // Create vertex
-        //        {IGElementType::Separator, {}},
-        //        {IGElementType::Button, {}},  // Edit vertex
-        //        {IGElementType::Separator, {}},
-        //        {IGElementType::Button, {}},  // Delete vertex
-        //        {IGElementType::Separator, {}},
-        //        {IGElementType::Button, {}},  // Delete triangle
-        //        {IGElementType::Separator, {}},
-        //        {IGElementType::Button, {}},  // Clear
-        //        {IGElementType::Separator, {}},
-        //        {IGElementType::Button, {}}   // Triangulate
-        //        } });
-        //
-        //    elements.push_back({ IGElementType::Separator, {} });
-        //    elements.push_back({ IGElementType::Group, { // Weights
-        //        {IGElementType::Separator, {}},
-        //        {IGElementType::Button, {}},  // Weigths brush
-        //        {IGElementType::Separator, {}},
-        //        {IGElementType::Slider, {}}
-        //        } });
-        //    elements.push_back({ IGElementType::Separator, {} });
-        //    elements.push_back({ IGElementType::Tree, {} });
-		//}
+       
         void SkinningEditor::setupUI()
         {
             bUIAllocator& allocator = bUI::GetAllocator("SkinningEditor");
             m_Window = allocator.GetElement<bUIWindow>("Skinning Editor");
             m_PreviewWindow = allocator.GetElement<bUIWindow>("Skinning Preview");
+            m_PreviewWindow->BlockEvents = false;
             m_Image = allocator.GetElement<bUIImage>("Skinning Editor Image");
+            m_Image->BlockEvents = false;
+
+            m_ViewportSize = m_Image->Size;
+            m_Camera.ProjectionMatrix = glm::ortho(
+                -m_Image->Size.x / 2.0f, m_Image->Size.x / 2.0f,
+                -m_Image->Size.y / 2.0f, m_Image->Size.y / 2.0f
+            );
+            m_Camera.UpdateViewProjection();
+
+            m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
             
+            m_Image->ImageSubTexture = m_RenderSubTexture;
+
+            m_PreviewWindow->OnResize = [&](const glm::vec2& size) {
+                m_Framebuffer->Resize((uint32_t)size.x, (uint32_t)size.y);
+                m_ViewportSize = m_Image->Size;
+                m_Camera.ProjectionMatrix = glm::ortho(
+                    -m_Image->Size.x / 2.0f, m_Image->Size.x / 2.0f,
+                    -m_Image->Size.y / 2.0f, m_Image->Size.y / 2.0f
+                );
+                m_Camera.UpdateViewProjection();
+            };
+       
+            setupBoneUI();
+            setupVertexUI();
+            setupWeightsUI();
+        }
+        void SkinningEditor::setupBoneUI()
+        {
+            bUIAllocator& allocator = bUI::GetAllocator("SkinningEditor");
             
-            //m_Tree = allocator.GetElement<bUITree>("")
-            //IG::ForEach<IGSeparator>(m_PoolHandle, [](IGSeparator& separator) {
-            //    separator.Flags |= IGSeparator::AdjustToRoot;
-            //    });
-            //IG::ForEach<IGButton>(m_PoolHandle, [](IGButton& button) {
-            //    button.Size.y = 30.0f;
-            //    });
-            //
-            //auto& boneGroup = IG::GetUI<IGGroup>(m_PoolHandle, 1);
-            //boneGroup.Style.Layout.SpacingY = 0.0f;
-            //boneGroup.AdjustToParent = false;
-            //boneGroup.Size.x = 150.0f;
-            //boneGroup.Label = "Bone";
-            //IG::GetUI<IGButton>(m_PoolHandle, 3).Label = "Preview Pose";
-            //IG::GetUI<IGButton>(m_PoolHandle, 5).Label = "Create Bone";
-            //IG::GetUI<IGButton>(m_PoolHandle, 7).Label = "Edit Bone";
-            //IG::GetUI<IGButton>(m_PoolHandle, 9).Label = "Delete Bone";
-            //
-            //auto& vertexGroup = IG::GetUI<IGGroup>(m_PoolHandle, 11);
-            //vertexGroup.Style.Layout.SpacingY = 0.0f;
-            //vertexGroup.AdjustToParent = false;
-            //vertexGroup.Size.x = 150.0f;
-            //vertexGroup.Label = "Vertex";
-            //IG::GetUI<IGButton>(m_PoolHandle, 13).Label = "Create Submesh";
-            //IG::GetUI<IGButton>(m_PoolHandle, 15).Label = "Create Vertex";
-            //IG::GetUI<IGButton>(m_PoolHandle, 17).Label = "Edit Vertex";
-            //IG::GetUI<IGButton>(m_PoolHandle, 19).Label = "Delete Vertex";
-            //IG::GetUI<IGButton>(m_PoolHandle, 21).Label = "Delete Triangle";
-            //IG::GetUI<IGButton>(m_PoolHandle, 23).Label = "Clear";
-            //IG::GetUI<IGButton>(m_PoolHandle, 25).Label = "Triangulate";
-            //
-            //auto& weightGroup = IG::GetUI<IGGroup>(m_PoolHandle, 27);
-            //weightGroup.Style.Layout.SpacingY = 0.0f;
-            //weightGroup.AdjustToParent = false;
-            //weightGroup.Size.x = 150.0f;
-            //weightGroup.Label = "Weight";
-            //IG::GetUI<IGButton>(m_PoolHandle, 29).Label = "Weight Brush";
-            //IG::GetUI<IGSlider>(m_PoolHandle, 31).Label = "Brush Strength";
+            bUICheckbox* previewPose = allocator.GetElement<bUICheckbox>("Preview Pose");
+            previewPose->Callbacks.push_back([&](bUICallbackType type, bUIElement& element) {
+                bUICheckbox& casted = static_cast<bUICheckbox&>(element);
+                if (type == bUICallbackType::StateChange)
+                {
+                    if (casted.Checked)
+                    {
+                        m_Flags = ToggleBit(m_Flags, PreviewPose);
+                        initializePose();
+                        updateRenderBuffers();
+                    }
+                }
+             });
+
+
+            bUICheckbox* createBone = allocator.GetElement<bUICheckbox>("Create Bone");
+            createBone->Callbacks.push_back([&](bUICallbackType type, bUIElement& element) {
+                bUICheckbox& casted = static_cast<bUICheckbox&>(element);
+                if (type == bUICallbackType::StateChange)
+                {
+                    if (casted.Checked)
+                    {
+                        m_Flags = ToggleBit(m_Flags, CreateBone);
+                    }
+                }
+               });
+            bUICheckbox * editBone = allocator.GetElement<bUICheckbox>("Edit Bone");
+            editBone->Callbacks.push_back([&](bUICallbackType type, bUIElement& element) {
+                bUICheckbox& casted = static_cast<bUICheckbox&>(element);
+                if (type == bUICallbackType::StateChange)
+                {
+                    if (casted.Checked)
+                    {
+                        uint16_t previewPose = m_Flags & PreviewPose;
+                        m_Flags = ToggleBit(m_Flags, EditBone);
+                        m_Flags |= previewPose;
+                    }
+                }
+            });
+
+          
+            bUICheckbox* deleteBone = allocator.GetElement<bUICheckbox>("Delete Bone");
+            deleteBone->Callbacks.push_back([&](bUICallbackType type, bUIElement& element) {
+                bUICheckbox& casted = static_cast<bUICheckbox&>(element);
+                if (type == bUICallbackType::StateChange)
+                {
+                    if (casted.Checked)
+                    {
+                        m_Flags = ToggleBit(m_Flags, DeleteBone);
+                    }
+                }
+             });
+        }
+        void SkinningEditor::setupVertexUI()
+        {
+            bUIAllocator& allocator = bUI::GetAllocator("SkinningEditor");
+
+            bUICheckbox* createSubmesh = allocator.GetElement<bUICheckbox>("Create Submesh");
+            createSubmesh->Callbacks.push_back([&](bUICallbackType type, bUIElement& element) {
+                bUICheckbox& casted = static_cast<bUICheckbox&>(element);
+                if (type == bUICallbackType::StateChange)
+                {
+                    if (casted.Checked)
+                    {
+                        m_Mesh.Submeshes.push_back({});
+                    }
+                }
+            });
+
+
+            bUICheckbox* createVertex = allocator.GetElement<bUICheckbox>("Create Vertex");
+            createVertex->Callbacks.push_back([&](bUICallbackType type, bUIElement& element) {
+                bUICheckbox& casted = static_cast<bUICheckbox&>(element);
+                if (type == bUICallbackType::StateChange)
+                {
+                    if (casted.Checked)
+                    {
+                        m_Flags = ToggleBit(m_Flags, CreateVertex);
+                    }
+                }
+                });
+
+
+            bUICheckbox* editVertex = allocator.GetElement<bUICheckbox>("Edit Vertex");
+            editVertex->Callbacks.push_back([&](bUICallbackType type, bUIElement& element) {
+                bUICheckbox& casted = static_cast<bUICheckbox&>(element);
+                if (type == bUICallbackType::StateChange)
+                {
+                    if (casted.Checked)
+                    {
+                        m_Flags = ToggleBit(m_Flags, EditVertex);
+                    }
+                }
+                });
+
+            bUICheckbox* deleteVertex = allocator.GetElement<bUICheckbox>("Delete Vertex");
+            deleteVertex->Callbacks.push_back([&](bUICallbackType type, bUIElement& element) {
+                bUICheckbox& casted = static_cast<bUICheckbox&>(element);
+                if (type == bUICallbackType::StateChange)
+                {
+                    if (casted.Checked)
+                    {
+                        m_Flags = ToggleBit(m_Flags, DeleteVertex);
+                    }
+                }
+                });
+
+            bUICheckbox* deleteTriangle = allocator.GetElement<bUICheckbox>("Delete Triangle");
+            deleteTriangle->Callbacks.push_back([&](bUICallbackType type, bUIElement& element) {
+                bUICheckbox& casted = static_cast<bUICheckbox&>(element);
+                if (type == bUICallbackType::StateChange)
+                {
+                    if (casted.Checked)
+                    {
+                        m_Flags = ToggleBit(m_Flags, DeleteTriangle);
+                    }
+                }
+                });
+            bUIButton* triangulate = allocator.GetElement<bUIButton>("Triangulate");
+            triangulate->Callbacks.push_back([&](bUICallbackType type, bUIElement& element) {
+                bUIButton& casted = static_cast<bUIButton&>(element);
+                if (type == bUICallbackType::Active)
+                {
+                    if (!m_Triangulated)
+                    {
+                        m_Mesh.Triangulate();
+                        rebuildRenderBuffers();
+                        m_Triangulated = true;
+                    }
+                    else
+                    {
+                        XYZ_LOG_WARN("Mesh was already triangulated");
+                    }
+                }
+               });
+        }
+        void SkinningEditor::setupWeightsUI()
+        {
+            bUIAllocator& allocator = bUI::GetAllocator("SkinningEditor");
+            
+            bUICheckbox* weigthBrush = allocator.GetElement<bUICheckbox>("Weight Brush");
+            weigthBrush->Callbacks.push_back([&](bUICallbackType type, bUIElement& element) {
+                bUICheckbox& casted = static_cast<bUICheckbox&>(element);
+                if (type == bUICallbackType::StateChange)
+                {
+                    if (casted.Checked)
+                    {
+                        m_Flags = ToggleBit(m_Flags, WeightBrush);
+                    }
+                }
+            });
         }
         void SkinningEditor::updateLayout(bUIAllocator& allocator)
         {
@@ -390,6 +408,13 @@ namespace XYZ {
                 if (win.Visible)
                     last = &win;
                });
+
+            bUIWindow* boneWindow = allocator.GetElement<bUIWindow>("Bone Window");
+            bUI::SetupLayout(allocator, *boneWindow, m_Layout);
+            bUIWindow* vertexWindow = allocator.GetElement<bUIWindow>("Vertex Window");
+            bUI::SetupLayout(allocator, *vertexWindow, m_Layout);
+            bUIWindow* weightsWindow = allocator.GetElement<bUIWindow>("Weights Window");
+            bUI::SetupLayout(allocator, *weightsWindow, m_Layout);
         }
         bool SkinningEditor::onMouseButtonPress(MouseButtonPressEvent& event)
         {
@@ -423,6 +448,7 @@ namespace XYZ {
                 {
                     createVertex(m_MousePosition);
                     m_SelectedVertex = nullptr;
+                    m_FoundVertex = nullptr;
                 }
                 else if (IS_SET(m_Flags, DeleteVertex))
                 {
@@ -488,9 +514,6 @@ namespace XYZ {
             Renderer2D::EndScene();
             Renderer::SetLineThickness(2.0f);
             m_Framebuffer->Unbind();
-
-            auto [width, height] = Input::GetWindowSize();
-            Renderer::SetViewPort(0, 0, (uint32_t)width, (uint32_t)height);
         }
 
         void SkinningEditor::renderSelection()
@@ -532,36 +555,13 @@ namespace XYZ {
             Renderer::DrawIndexed(PrimitiveType::Triangles, m_VertexArray->GetIndexBuffer()->GetCount());
 
         }
-        void SkinningEditor::updateUIColor()
-        {
-            //if (IS_SET(m_Flags, PreviewPose))
-            //    IG::GetUI<IGButton>(m_PoolHandle, 3).Color = m_UIHighlightColor;
-            //if (IS_SET(m_Flags, CreateBone))
-            //    IG::GetUI<IGButton>(m_PoolHandle, 5).Color = m_UIHighlightColor;
-            //if (IS_SET(m_Flags, EditBone))
-            //    IG::GetUI<IGButton>(m_PoolHandle, 7).Color = m_UIHighlightColor;
-            //if (IS_SET(m_Flags, DeleteBone))
-            //    IG::GetUI<IGButton>(m_PoolHandle, 9).Color = m_UIHighlightColor;
-            //
-            //
-            //if (IS_SET(m_Flags, CreateVertex))
-            //    IG::GetUI<IGButton>(m_PoolHandle, 15).Color = m_UIHighlightColor;
-            //if (IS_SET(m_Flags, EditVertex))
-            //    IG::GetUI<IGButton>(m_PoolHandle, 17).Color = m_UIHighlightColor;
-            //if (IS_SET(m_Flags, DeleteVertex))
-            //    IG::GetUI<IGButton>(m_PoolHandle, 19).Color = m_UIHighlightColor;
-            //if (IS_SET(m_Flags, DeleteTriangle))
-            //    IG::GetUI<IGButton>(m_PoolHandle, 21).Color = m_UIHighlightColor;
-            //
-            //if (IS_SET(m_Flags, WeightBrush))
-            //    IG::GetUI<IGButton>(m_PoolHandle, 29).Color = m_UIHighlightColor;
-        }
+       
         void SkinningEditor::clear()
         {
             m_Flags = 0;
             m_Mesh.Submeshes.clear();
             m_Mesh.PreviewVertices.clear();
-            m_Tree->Clear();
+            //m_Tree->Clear();
             m_BoneHierarchy.Clear();
             for (auto bone : m_Bones)
                 m_BonePool.Deallocate<PreviewBone>(bone);
@@ -603,18 +603,16 @@ namespace XYZ {
                 });
 
             m_BoneHierarchy.Remove(bone->ID);
-            m_Tree->RemoveItem(bone->ID);
+           // m_Tree->RemoveItem(bone->ID);
             m_BonePool.Deallocate<PreviewBone>(bone);
         }
         void SkinningEditor::createVertex(const glm::vec2& pos)
         {
-            m_SelectedVertex = nullptr;
-            m_FoundVertex = nullptr;
             if (!m_Triangulated)
             {
                 if (m_Mesh.Submeshes.empty()) 
                     m_Mesh.Submeshes.push_back({});
-                m_Mesh.Submeshes.back().Vertices.push_back({ m_MousePosition });
+                m_Mesh.Submeshes.back().Vertices.push_back({ pos });
             }
             else
             {
@@ -711,29 +709,29 @@ namespace XYZ {
 
         void SkinningEditor::createBone()
         {
-            //PreviewBone* newBone = m_BonePool.Allocate<PreviewBone>();
-            //m_Bones.push_back(newBone);
-            //
-            //char buffer[20];
-            //sprintf(buffer, "bone_%u", s_NextBone);
-            //newBone->Name = buffer;
-            //newBone->Color = Helper::RandomColor(m_ColorIDs[s_NextBone++]);        
-            //newBone->WorldPosition = m_MousePosition;
-            //
-            //if (m_SelectedBone)
-            //{
-            //    newBone->ID = m_BoneHierarchy.Insert(newBone, m_SelectedBone->ID);
-            //    m_Tree->AddItem(newBone->ID, m_SelectedBone->ID, IGTreeItem(newBone->Name));             
-            //    newBone->LocalPosition = m_MousePosition - m_SelectedBone->WorldPosition;
-            //}
-            //else
-            //{
-            //    newBone->ID = m_BoneHierarchy.Insert(newBone);
-            //    m_Tree->AddItem(newBone->ID, IGTreeItem(newBone->Name));
-            //    newBone->LocalPosition = m_MousePosition;
-            //}
-            //
-            //m_SelectedBone = newBone;
+            PreviewBone* newBone = m_BonePool.Allocate<PreviewBone>();
+            m_Bones.push_back(newBone);
+            
+            char buffer[20];
+            sprintf(buffer, "bone_%u", s_NextBone);
+            newBone->Name = buffer;
+            newBone->Color = Helper::RandomColor(m_ColorIDs[s_NextBone++]);        
+            newBone->WorldPosition = m_MousePosition;
+            
+            if (m_SelectedBone)
+            {
+                newBone->ID = m_BoneHierarchy.Insert(newBone, m_SelectedBone->ID);
+                //m_Tree->AddItem(newBone->ID, m_SelectedBone->ID, IGTreeItem(newBone->Name));             
+                newBone->LocalPosition = m_MousePosition - m_SelectedBone->WorldPosition;
+            }
+            else
+            {
+                newBone->ID = m_BoneHierarchy.Insert(newBone);
+                //m_Tree->AddItem(newBone->ID, IGTreeItem(newBone->Name));
+                newBone->LocalPosition = m_MousePosition;
+            }
+            
+            m_SelectedBone = newBone;
         }
 
 
@@ -769,8 +767,7 @@ namespace XYZ {
                     m_SelectedBone = nullptr;
             }
             else
-            {
-                
+            {              
                 m_SelectedBone     = nullptr;
             }
         }
@@ -912,8 +909,8 @@ namespace XYZ {
         glm::vec2 SkinningEditor::getMouseWindowSpace() const
         {
             auto [mx, my] = getMouseViewportSpace();
-            mx *= m_Window->Size.x / 2.0f;
-            my *= m_Window->Size.y / 2.0f;
+            mx *= m_Image->Size.x / 2.0f;
+            my *= m_Image->Size.y / 2.0f;
             mx += m_Camera.Position.x;
             my += m_Camera.Position.y;
             return { mx , my };
@@ -922,12 +919,12 @@ namespace XYZ {
         std::pair<float, float> SkinningEditor::getMouseViewportSpace() const
         {
             auto [mx, my] = Input::GetMousePosition();
-            glm::vec2 position = m_Window->GetAbsolutePosition();
+            glm::vec2 position = m_Image->GetAbsolutePosition();
             mx -= position.x;
             my -= position.y;
 
-            auto viewportWidth =  m_Window->Size.x;
-            auto viewportHeight = m_Window->Size.y;
+            auto viewportWidth =  m_Image->Size.x;
+            auto viewportHeight = m_Image->Size.y;
 
             return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f };
         }

@@ -1,7 +1,7 @@
 Size: [1920, 1017]
 bUIElements:
-  - Coords: [934, 288]
-    Size: [365, 500]
+  - Coords: [459, 58]
+    Size: [1347, 851]
     Color: [1, 1, 1, 1]
     Label: Skinning Preview
     Name: Skinning Preview
@@ -9,14 +9,14 @@ bUIElements:
     Type: Window
     bUIElements:
       - Coords: [0, 0]
-        Size: [365, 500]
+        Size: [1347, 851]
         Color: [0.5, 0.5, 0.5, 1]
         Label: ""
         Name: Skinning Editor Image
         Locked: true
         Type: Image
-  - Coords: [237, 361]
-    Size: [365, 500]
+  - Coords: [63, 168]
+    Size: [420, 807]
     Color: [1, 1, 1, 1]
     Label: Skinning Editor
     Name: Skinning Editor
@@ -24,7 +24,7 @@ bUIElements:
     Type: Window
     bUIElements:
       - Coords: [0, 0]
-        Size: [365, 500]
+        Size: [420, 807]
         Color: [0, 0, 0, 0]
         Label: ""
         Name: Scrollbox
@@ -32,7 +32,7 @@ bUIElements:
         Type: Scrollbox
         bUIElements:
           - Coords: [10, 35]
-            Size: [345, 250]
+            Size: [400, 189]
             Color: [0.699999988, 0.699999988, 0.699999988, 0.400000006]
             Label: Bone
             Name: Bone Window
@@ -67,3 +67,75 @@ bUIElements:
                 Name: Delete Bone
                 Locked: true
                 Type: Checkbox
+          - Coords: [10, 259]
+            Size: [400, 236]
+            Color: [0.699999988, 0.699999988, 0.699999988, 0.400000006]
+            Label: Vertex
+            Name: Vertex Window
+            Locked: true
+            Type: Window
+            bUIElements:
+              - Coords: [10, 10]
+                Size: [35, 35]
+                Color: [1, 1, 1, 1]
+                Label: Create Submesh
+                Name: Create Submesh
+                Locked: true
+                Type: Checkbox
+              - Coords: [10, 55]
+                Size: [35, 35]
+                Color: [1, 1, 1, 1]
+                Label: Create Vertex
+                Name: Create Vertex
+                Locked: true
+                Type: Checkbox
+              - Coords: [10, 100]
+                Size: [35, 35]
+                Color: [1, 1, 1, 1]
+                Label: Edit Vertex
+                Name: Edit Vertex
+                Locked: true
+                Type: Checkbox
+              - Coords: [10, 145]
+                Size: [35, 35]
+                Color: [1, 1, 1, 1]
+                Label: Delete Vertex
+                Name: Delete Vertex
+                Locked: true
+                Type: Checkbox
+              - Coords: [10, 190]
+                Size: [35, 35]
+                Color: [1, 1, 1, 1]
+                Label: Delete Triangle
+                Name: Delete Triangle
+                Locked: true
+                Type: Checkbox
+              - Coords: [10, 235]
+                Size: [35, 35]
+                Color: [1, 1, 1, 1]
+                Label: Triangulate
+                Name: Triangulate
+                Locked: true
+                Type: Button
+          - Coords: [10, 530]
+            Size: [400, 114]
+            Color: [0.699999988, 0.699999988, 0.699999988, 0.400000006]
+            Label: Weights
+            Name: Weights Window
+            Locked: true
+            Type: Window
+            bUIElements:
+              - Coords: [10, 10]
+                Size: [35, 35]
+                Color: [1, 1, 1, 1]
+                Label: Weight Brush
+                Name: Weight Brush
+                Locked: true
+                Type: Checkbox
+              - Coords: [10, 55]
+                Size: [125, 25]
+                Color: [1, 1, 1, 1]
+                Label: Brush Strength
+                Name: Brush Strength
+                Locked: true
+                Type: Slider
