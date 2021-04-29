@@ -1,5 +1,5 @@
 #pragma once
-#include "XYZ/IG/IG.h"
+#include "XYZ/BasicUI/BasicUI.h"
 #include "XYZ/Renderer/Framebuffer.h"
 #include "XYZ/Renderer/RenderTexture.h"
 #include "XYZ/Renderer/VertexArray.h"
@@ -17,16 +17,18 @@ namespace XYZ {
 		{
 		public:		
 			SkinningEditor();
+			~SkinningEditor();
+
 			void SetContext(Ref<SubTexture> context);
 			void OnUpdate(Timestep ts);
 			void OnEvent(Event& event);
 
-
-			void PushUI(std::vector<IGHierarchyElement>& elements);
-			void SetupUI();
-
-			static constexpr size_t MaxBones = 60;
+			static constexpr size_t sc_MaxBones = 60;
 		private:
+			void setupUI();
+			void updateLayout(bUIAllocator& allocator);
+			
+
 			// Events
 			bool onMouseButtonPress(MouseButtonPressEvent& event);
 			bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
@@ -92,9 +94,11 @@ namespace XYZ {
 			};
 
 		private:
-			size_t m_PoolHandle;
-			IGImageWindow* m_Window;
-			IGTree* m_Tree;
+			bUIWindow* m_Window;
+			bUIWindow* m_PreviewWindow;
+			bUIImage* m_Image;
+			bUITree* m_Tree;
+			bUILayout m_Layout;
 
 			Tree m_BoneHierarchy;
 			MemoryPool m_BonePool;
@@ -132,7 +136,7 @@ namespace XYZ {
 
 			glm::vec4 m_HighlightColor;
 			glm::vec4 m_UIHighlightColor;
-			uint32_t m_ColorIDs[MaxBones];
+			uint32_t m_ColorIDs[sc_MaxBones];
 			uint16_t m_Flags;
 			uint8_t m_BoneEditFlags;
 

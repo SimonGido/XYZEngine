@@ -34,6 +34,7 @@ namespace XYZ {
 		SceneHierarchyPanel m_SceneHierarchy;
 		InspectorPanel m_Inspector;
 		MainPanel m_Main;
+		Editor::SkinningEditor m_SkinningEditor;
 	private:	
 		SceneEntity m_SelectedEntity;
 		SceneEntity m_TestEntity;

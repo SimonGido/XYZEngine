@@ -3,8 +3,8 @@ bUIElements:
   - Coords: [237, 361]
     Size: [365, 500]
     Color: [1, 1, 1, 1]
-    Label: Skinning Editor
-    Name: Skinning Editor
+    Label: Skinning Preview
+    Name: Skinning Preview
     Locked: true
     Type: Window
     bUIElements:
@@ -15,3 +15,55 @@ bUIElements:
         Name: Skinning Editor Image
         Locked: true
         Type: Image
+  - Coords: [237, 361]
+    Size: [365, 500]
+    Color: [1, 1, 1, 1]
+    Label: Skinning Editor
+    Name: Skinning Editor
+    Locked: true
+    Type: Window
+    bUIElements:
+      - Coords: [0, 0]
+        Size: [472, 647]
+        Color: [0, 0, 0, 0]
+        Label: ""
+        Name: Scrollbox
+        Locked: true
+        Type: Scrollbox
+        bUIElements:
+          - Coords: [10, 20]
+            Size: [452, 250]
+            Color: [0.699999988, 0.699999988, 0.699999988, 0.400000006]
+            Label: Bone
+            Name: Bone Window
+            Locked: true
+            Type: Window
+            bUIElements:
+              - Coords: [10, 10]
+                Size: [35, 35]
+                Color: [1, 1, 1, 1]
+                Label: Preview Pose
+                Name: Preview Pose
+                Locked: true
+                Type: Checkbox
+              - Coords: [10, 10]
+                Size: [35, 35]
+                Color: [1, 1, 1, 1]
+                Label: Create Bone
+                Name: Create Bone
+                Locked: true
+                Type: Checkbox
+              - Coords: [10, 10]
+                Size: [35, 35]
+                Color: [1, 1, 1, 1]
+                Label: Edit Bone
+                Name: Edit Bone
+                Locked: true
+                Type: Checkbox
+              - Coords: [10, 10]
+                Size: [35, 35]
+                Color: [1, 1, 1, 1]
+                Label: Delete Bone
+                Name: Delete Bone
+                Locked: true
+                Type: Checkbox

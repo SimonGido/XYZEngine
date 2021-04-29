@@ -76,6 +76,7 @@ namespace XYZ {
 		Ref<SubTexture> renderSubTexture = Ref<SubTexture>::Create(renderTexture, glm::vec2(0.0f, 0.0f));
 		Ref<Texture> robotTexture = Texture2D::Create({}, "Assets/Textures/full_simple_char.png");
 		Ref<SubTexture> robotSubTexture = Ref<SubTexture>::Create(robotTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+		m_SkinningEditor.SetContext(robotSubTexture);
 
 		glm::vec3 tmpVal;
 		Property<glm::vec3> prop(tmpVal);
@@ -94,6 +95,7 @@ namespace XYZ {
 		m_SceneHierarchy.OnUpdate();
 		m_Inspector.OnUpdate();
 		m_Main.OnUpdate();
+		m_SkinningEditor.OnUpdate(ts);
 		m_EditorCamera.OnUpdate(ts);
 		m_Inspector.SetContext(m_Scene->GetSelectedEntity());
 

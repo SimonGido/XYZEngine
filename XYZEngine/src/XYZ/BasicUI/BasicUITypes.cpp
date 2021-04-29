@@ -283,14 +283,14 @@ namespace XYZ {
 		);
 	}
 
-	static bool AlmostEqual(float a, float b)
+	static bool AlmostEqual(float a, float b, float tolerance)
 	{
-		return fabs(a - b) < std::numeric_limits<float>::epsilon();
+		return fabs(a - b) < tolerance;
 	}
 
 	static bool AlmostEqual(const glm::vec2& a, const glm::vec2& b)
 	{
-		return AlmostEqual(a.x, b.x) && AlmostEqual(a.y, b.y);
+		return AlmostEqual(a.x, b.x, 0.1f) && AlmostEqual(a.y, b.y, 0.1f);
 	}
 
 	void bUIWindow::OnUpdate()
