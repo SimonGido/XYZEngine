@@ -41,9 +41,5 @@ namespace XYZ {
 
 		glm::vec3 m_Position = { 0,0,0 };
 		glm::vec3 m_Rotation = { 0,0,0 };
-
-
-		size_t* m_Handles = nullptr;
-		size_t m_HandleCount = 0;
 	};
 }

@@ -95,6 +95,22 @@ namespace XYZ {
 			}
 		);
 		// Scene Hierarchy
+
+		// Skinning Editor
+		bUICheckbox* skinningVisible = allocator.GetElement<bUICheckbox>("Skinning Editor");
+		skinningVisible->Checked = true;
+		skinningVisible->Callbacks.push_back(
+			[&](bUICallbackType type, bUIElement& element) {
+				if (type == bUICallbackType::StateChange)
+				{
+					bUICheckbox& casted = static_cast<bUICheckbox&>(element);
+					bUI::GetUI<bUIWindow>("SkinningEditor", "Skinning Editor").Visible = casted.Checked;
+					bUI::GetUI<bUIWindow>("SkinningEditor", "Skinning Preview").Visible = casted.Checked;
+				}
+			}
+		);
+
+		// Skinning Editor
 	}
 	float MainPanel::findPerWindowWidth()
 	{

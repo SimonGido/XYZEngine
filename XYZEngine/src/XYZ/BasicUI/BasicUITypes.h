@@ -424,10 +424,12 @@ namespace XYZ {
 		);
 		virtual void PushQuads(bUIRenderer& renderer, uint32_t& scissorID) override;
 		virtual void OnUpdate();
+		virtual bool OnMouseMoved(const glm::vec2& mousePosition) override;
 
 
 		Ref<SubTexture> ImageSubTexture;
 
+		bool EnableHighlight = false;
 		bool FitParent = true;
 	};
 

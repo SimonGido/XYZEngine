@@ -119,8 +119,10 @@ namespace XYZ {
 	}
 	bool bUIElement::HandleVisibility(uint32_t scissorID)
 	{
+		if (bUI::GetContext().Renderer.GetMesh().Scissors.size() <= scissorID)
+			return false;
+		
 		const bUIScissor& scissor = bUI::GetContext().Renderer.GetMesh().Scissors[scissorID];
-
 		glm::vec2 scissorPos = { scissor.X, bUI::GetContext().ViewportSize.y - scissor.Y - scissor.Height };
 		glm::vec2 scissorSize = { scissor.Width, scissor.Height };
 		glm::vec2 leftTopBorder = scissorPos - GetSize();
@@ -1103,6 +1105,21 @@ namespace XYZ {
 			Coords = glm::vec2(0.0f);
 			Size = Parent->Size;
 		}
+	}
+	bool bUIImage::OnMouseMoved(const glm::vec2& mousePosition)
+	{
+		if (!Visible || !HandleVisibility(ScissorID))
+			return false;
+		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
+		{
+			if (EnableHighlight)
+				ActiveColor = bUI::GetConfig().GetColor(bUIConfig::HighlightColor);
+			for (auto& callback : Callbacks)
+				callback(bUICallbackType::Hoover, *this);
+			return true;
+		}
+		ActiveColor = Color;
+		return false;
 	}
 	bUIText::bUIText(const glm::vec2& coords, const glm::vec2& size, const glm::vec4& color, const std::string& label, const std::string& name, bUIElementType type)
 		:

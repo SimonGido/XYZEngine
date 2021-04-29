@@ -134,7 +134,7 @@ namespace XYZ {
             FramebufferSpecs specs;
             specs.Width = (uint32_t)m_ViewportSize.x;
             specs.Height = (uint32_t)m_ViewportSize.y;
-            specs.ClearColor = { 0.1f,0.1f,0.1f,1.0f };
+            specs.ClearColor = { 0.1f,0.2f,0.2f,1.0f };
             specs.Attachments = {
                 FramebufferTextureSpecs(FramebufferTextureFormat::RGBA16F),
                 FramebufferTextureSpecs(FramebufferTextureFormat::DEPTH24STENCIL8)
@@ -147,6 +147,7 @@ namespace XYZ {
             rebuildRenderBuffers();
             m_PreviewWindow->OnResize = [&](const glm::vec2& size) {
                 m_Framebuffer->Resize((uint32_t)size.x, (uint32_t)size.y);
+
                 m_Camera.ProjectionMatrix = glm::ortho(
                     -m_Window->Size.x / 2.0f, m_Window->Size.x / 2.0f,
                     -m_Window->Size.y / 2.0f, m_Window->Size.y / 2.0f
@@ -468,6 +469,7 @@ namespace XYZ {
             m_Framebuffer->Bind();
             Renderer::SetClearColor(m_Framebuffer->GetSpecification().ClearColor);
             Renderer::Clear();
+            
 
             renderPreviewMesh(m_Camera.ViewProjectionMatrix);
             Renderer2D::BeginScene(m_Camera.ViewProjectionMatrix);
@@ -486,6 +488,9 @@ namespace XYZ {
             Renderer2D::EndScene();
             Renderer::SetLineThickness(2.0f);
             m_Framebuffer->Unbind();
+
+            auto [width, height] = Input::GetWindowSize();
+            Renderer::SetViewPort(0, 0, (uint32_t)width, (uint32_t)height);
         }
 
         void SkinningEditor::renderSelection()

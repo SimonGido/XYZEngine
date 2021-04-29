@@ -53,7 +53,7 @@ namespace XYZ {
 				//Stopwatch watch;
 				
 				for (Layer* layer : m_LayerStack)	
-					layer->OnUpdate(timestep);		
+					layer->OnUpdate(timestep);	
 			}
 			m_Window->Update();
 		}
