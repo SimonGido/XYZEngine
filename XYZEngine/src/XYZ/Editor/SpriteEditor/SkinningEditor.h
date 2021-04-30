@@ -41,7 +41,7 @@ namespace XYZ {
 			// Rendering
 			void renderAll();
 			void renderSelection();
-			void renderPreviewMesh(const glm::mat4& viewProjection);
+			void renderPreviewMesh();
 	
 			// Buffers and mesh data
 			void clear();

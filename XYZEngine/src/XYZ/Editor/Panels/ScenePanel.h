@@ -4,7 +4,6 @@
 #include "XYZ/Scene/SceneEntity.h"
 #include "XYZ/Event/ApplicationEvent.h"
 #include "XYZ/Event/InputEvent.h"
-#include "XYZ/IG/IG.h"
 
 namespace XYZ {
 
@@ -34,9 +33,9 @@ namespace XYZ {
 
 		EditorCamera m_EditorCamera;
 
-		IGImageWindow* m_Window;
-		IGImage* m_PlayButton;
-		IGImage* m_PauseButton;
+		//IGImageWindow* m_Window;
+		//IGImage* m_PlayButton;
+		//IGImage* m_PauseButton;
 
 		size_t m_HandleCount;
 		size_t m_PoolHandle;

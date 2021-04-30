@@ -1,6 +1,6 @@
 Size: [1920, 1017]
 bUIElements:
-  - Coords: [459, 58]
+  - Coords: [494, 116]
     Size: [1347, 851]
     Color: [1, 1, 1, 1]
     Label: Skinning Preview
@@ -10,7 +10,7 @@ bUIElements:
     bUIElements:
       - Coords: [0, 0]
         Size: [1347, 851]
-        Color: [0.5, 0.5, 0.5, 1]
+        Color: [1, 1, 1, 1]
         Label: ""
         Name: Skinning Editor Image
         Locked: true

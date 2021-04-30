@@ -6,12 +6,12 @@ layout(location = 1) in int a_ObjectID;
 
 out flat int v_ObjectID;
 
-uniform mat4 u_ViewProjectionMatrix;
+uniform mat4 u_ViewProjection;
 
 void main()
 {
 	v_ObjectID = a_ObjectID;
-	gl_Position = u_ViewProjectionMatrix * vec4(a_Position, 1.0);
+	gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
 }
 
 

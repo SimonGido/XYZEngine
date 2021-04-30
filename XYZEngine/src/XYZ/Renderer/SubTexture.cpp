@@ -34,8 +34,8 @@ namespace XYZ {
 	void SubTexture::calculatePixelCorrectedTexCoords()
 	{
 		m_TexCoords = {  
-			((m_Coords.x      * m_Size.x) + 0.5f) / m_Texture->GetWidth(),  ((m_Coords.y      * m_Size.y) + 0.5f) / m_Texture->GetHeight(),
-			(((m_Coords.x + 1) * m_Size.x) - 0.5f) / m_Texture->GetWidth(), (((m_Coords.y + 1) * m_Size.y) - 0.5f) / m_Texture->GetHeight() 
+			((m_Coords.x      * m_Size.x)) / m_Texture->GetWidth(),  ((m_Coords.y      * m_Size.y)) / m_Texture->GetHeight(),
+			(((m_Coords.x + 1) * m_Size.x)) / m_Texture->GetWidth(), (((m_Coords.y + 1) * m_Size.y)) / m_Texture->GetHeight() 
 		};
 	}
 

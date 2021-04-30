@@ -74,6 +74,12 @@ namespace XYZ {
 			return *(T*)&buffer[uni->Offset];
 		}
 
+		bool HasProperty(const std::string& name) const
+		{
+			auto uni = findUniform(name);
+			return uni;
+		}
+
 		void Bind() const;
 		void ClearTextures() { m_Textures.clear(); }
 		void SetFlags(RenderFlags renderFlags) { m_Flags |= renderFlags; }
@@ -100,8 +106,8 @@ namespace XYZ {
 	private:
 		void onShaderReload();
 		ByteBuffer& getUniformBufferTarget(ShaderType type);
-		const Uniform* findUniform(const std::string& name);
-		const TextureUniform* findTexture(const std::string& name);
+		const Uniform* findUniform(const std::string& name) const;
+		const TextureUniform* findTexture(const std::string& name) const;
 
 	private:
 		Ref<Shader> m_Shader;

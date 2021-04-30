@@ -227,7 +227,7 @@ namespace XYZ {
             m_Image->ImageSubTexture = m_RenderSubTexture;
 
             m_PreviewWindow->OnResize = [&](const glm::vec2& size) {
-                m_Framebuffer->Resize((uint32_t)size.x, (uint32_t)size.y);
+                m_Framebuffer->Resize((uint32_t)m_Image->Size.x, (uint32_t)m_Image->Size.y);
                 m_ViewportSize = m_Image->Size;
                 m_Camera.ProjectionMatrix = glm::ortho(
                     -m_Image->Size.x / 2.0f, m_Image->Size.x / 2.0f,
@@ -497,23 +497,24 @@ namespace XYZ {
             Renderer::Clear();
             
 
-            renderPreviewMesh(m_Camera.ViewProjectionMatrix);
+            renderPreviewMesh();
             Renderer2D::BeginScene(m_Camera.ViewProjectionMatrix);
             PreviewRenderer::RenderSkinnedMesh(m_Mesh, IS_SET(m_Flags, PreviewPose));
             PreviewRenderer::RenderHierarchy(m_BoneHierarchy, IS_SET(m_Flags, PreviewPose));
             Renderer2D::FlushLines();
-
+            
             Renderer::SetLineThickness(4.0f);
             renderSelection();
-
+            
             if (IS_SET(m_Flags, WeightBrush))
                 Renderer2D::SubmitCircle(glm::vec3(m_MousePosition, 0.0f), m_WeightBrushRadius, 20);
-
+            
             Renderer2D::FlushLines();
-
             Renderer2D::EndScene();
             Renderer::SetLineThickness(2.0f);
             m_Framebuffer->Unbind();
+            auto [width, height] = Input::GetWindowSize();
+            Renderer::SetViewPort(0, 0, (uint32_t)width, (uint32_t)height);
         }
 
         void SkinningEditor::renderSelection()
@@ -539,10 +540,10 @@ namespace XYZ {
                 PreviewRenderer::RenderBone(*m_SelectedBone, m_HighlightColor, PreviewBone::PointRadius, IS_SET(m_Flags, PreviewPose));
         }
       
-        void SkinningEditor::renderPreviewMesh(const glm::mat4& viewProjection)
+        void SkinningEditor::renderPreviewMesh()
         {
             m_Shader->Bind();
-            m_Shader->SetMat4("u_ViewProjectionMatrix", viewProjection);
+            m_Shader->SetMat4("u_ViewProjection", m_Camera.ViewProjectionMatrix);
             if (IS_SET(m_Flags, WeightBrush))
                 m_Shader->SetInt("u_ColorEnabled", 1);
             else
@@ -553,7 +554,6 @@ namespace XYZ {
 
             m_VertexArray->Bind();
             Renderer::DrawIndexed(PrimitiveType::Triangles, m_VertexArray->GetIndexBuffer()->GetCount());
-
         }
        
         void SkinningEditor::clear()

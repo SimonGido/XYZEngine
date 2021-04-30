@@ -39,7 +39,6 @@
 #include "XYZ/Editor/Panels/ScenePanel.h"
 #include "XYZ/Editor/Panels/SceneHierarchyPanel.h"
 #include "XYZ/Editor/Panels/InspectorPanel.h"
-#include "XYZ/Editor/Panels/SkinningEditorPanel.h"
 #include "XYZ/Editor/Panels/MainPanel.h"
 #include "XYZ/Editor/SpriteEditor/SkinningEditor.h"
 
@@ -76,9 +75,6 @@
 #include "XYZ/Asset/AssetManager.h"
 
 
-//------IG-------//
-#include "XYZ/IG/IG.h"
-
-
+//------BasicUI-------//
 #include "XYZ/BasicUI/BasicUI.h"
 #include "XYZ/BasicUI/BasicUILoader.h"

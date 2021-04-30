@@ -190,6 +190,7 @@ namespace XYZ {
 		if (s_Data.SwapQueues)
 		{
 			s_Data.SwapQueues = false;		
+			
 			RenderCommandQueue* read[NumTypes];
 			for (size_t i = 0; i < NumTypes; ++i)
 				read[i] = &s_Data.CommandQueue[s_Data.ReadQueueIndex][i];
@@ -200,6 +201,7 @@ namespace XYZ {
 				read[Overlay]->Execute();
 				s_Data.SwapQueues = true;
 			});
+
 			
 			// Perform "swap" of queues for read and write
 			if (s_Data.ReadQueueIndex == RendererData::Read)

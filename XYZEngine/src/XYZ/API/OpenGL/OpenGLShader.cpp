@@ -469,8 +469,7 @@ namespace XYZ {
 		auto dataType = StringToType(typeString);
 		auto size = SizeOfUniformType(dataType);
 		if (dataType != UniformDataType::NONE)
-		{
-			
+		{			
 			if (type == ShaderType::Vertex)
 			{
 				Uniform uniform{

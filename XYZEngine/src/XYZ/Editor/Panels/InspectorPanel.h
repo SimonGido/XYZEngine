@@ -1,8 +1,6 @@
 #pragma once
 
 #include "XYZ/Scene/SceneEntity.h"
-#include "XYZ/IG/IG.h"
-
 #include "XYZ/BasicUI/BasicUI.h"
 
 namespace XYZ {

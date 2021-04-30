@@ -16,7 +16,7 @@ out flat float v_TextureID;
 out flat float v_ScissorIndex;
 
 
-uniform mat4 u_ViewProjectionMatrix;
+uniform mat4 u_ViewProjection;
 
 void main()
 {
@@ -25,7 +25,7 @@ void main()
 	v_TexCoord = a_TexCoord;
 	v_TextureID = a_TextureID;
 	v_ScissorIndex = a_ScissorIndex;
-	gl_Position = u_ViewProjectionMatrix * vec4(a_Position, 1.0);
+	gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
 
 }
 
@@ -70,6 +70,42 @@ void main()
 		discard;
 	}
 
-	o_Color = texture(u_Texture[int(v_TextureID)], v_TexCoord) * v_Color * u_Color;
+	vec4 color = v_Color * u_Color;
+	switch (int(v_TextureID))
+	{
+	case  0: color *= texture(u_Texture[0], v_TexCoord); break;
+	case  1: color *= texture(u_Texture[1], v_TexCoord); break;
+	case  2: color *= texture(u_Texture[2], v_TexCoord); break;
+	case  3: color *= texture(u_Texture[3], v_TexCoord); break;
+	case  4: color *= texture(u_Texture[4], v_TexCoord); break;
+	case  5: color *= texture(u_Texture[5], v_TexCoord); break;
+	case  6: color *= texture(u_Texture[6], v_TexCoord); break;
+	case  7: color *= texture(u_Texture[6], v_TexCoord); break;
+	case  8: color *= texture(u_Texture[6], v_TexCoord); break;
+	case  9: color *= texture(u_Texture[6], v_TexCoord); break;
+	case  10: color *= texture(u_Texture[6], v_TexCoord); break;
+	case  11: color *= texture(u_Texture[6], v_TexCoord); break;
+	case  12: color *= texture(u_Texture[6], v_TexCoord); break;
+	case  13: color *= texture(u_Texture[6], v_TexCoord); break;
+	case  14: color *= texture(u_Texture[6], v_TexCoord); break;
+	case  15: color *= texture(u_Texture[6], v_TexCoord); break;
+	case  16: color *= texture(u_Texture[0], v_TexCoord); break;
+	case  17: color *= texture(u_Texture[1], v_TexCoord); break;
+	case  18: color *= texture(u_Texture[2], v_TexCoord); break;
+	case  19: color *= texture(u_Texture[3], v_TexCoord); break;
+	case  20: color *= texture(u_Texture[4], v_TexCoord); break;
+	case  21: color *= texture(u_Texture[5], v_TexCoord); break;
+	case  22: color *= texture(u_Texture[6], v_TexCoord); break;
+	case  23: color *= texture(u_Texture[6], v_TexCoord); break;
+	case  24: color *= texture(u_Texture[6], v_TexCoord); break;
+	case  25: color *= texture(u_Texture[6], v_TexCoord); break;
+	case  26: color *= texture(u_Texture[6], v_TexCoord); break;
+	case  27: color *= texture(u_Texture[6], v_TexCoord); break;
+	case  28: color *= texture(u_Texture[6], v_TexCoord); break;
+	case  29: color *= texture(u_Texture[6], v_TexCoord); break;
+	case  30: color *= texture(u_Texture[6], v_TexCoord); break;
+	case  31: color *= texture(u_Texture[6], v_TexCoord); break;
+	}
+	o_Color = color;
 	o_Position = vec4(v_Position, 1.0);
 }

@@ -9,14 +9,13 @@ layout(location = 2) in float a_Radius;
 out vec4 v_Color;
 out float v_Radius;
 
-uniform mat4 u_ViewProjectionMatrix;
-
+uniform mat4 u_ViewProjection;
 void main()
 {
 	v_Color = a_Color;
 	v_Radius = a_Radius;
 
-	gl_Position = u_ViewProjectionMatrix * vec4(a_Position, 1.0);
+	gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
 	gl_PointSize = a_Radius;
 }
 

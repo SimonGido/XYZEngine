@@ -4,6 +4,7 @@
 #include "VertexArray.h"
 #include "Renderer.h"
 
+#include <glm/gtc/type_ptr.hpp>
 #include <array>
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -65,19 +66,20 @@ namespace XYZ {
 		Ref<Material> DefaultQuadMaterial;
 		Ref<Material> QuadMaterial;
 		Ref<Material> GridMaterial;
-		Ref<Shader> LineShader;
-		Ref<Shader> CollisionShader;
-		Ref<Shader> PointShader;
+		Ref<Shader>   LineShader;
+		Ref<Shader>   CollisionShader;
+		Ref<Shader>   PointShader;
+		
 
 		Ref<Texture> TextureSlots[MaxTextures];
-		uint32_t TextureSlotIndex = 0;
+		uint32_t	 TextureSlotIndex = 0;
 	
-		Ref<VertexArray> GridVertexArray;
-		Ref<VertexArray> QuadVertexArray;
+		Ref<VertexArray>  GridVertexArray;
+		Ref<VertexArray>  QuadVertexArray;
 		Ref<VertexBuffer> QuadVertexBuffer;
 
 
-		uint32_t IndexCount = 0;
+		uint32_t  IndexCount = 0;
 		Vertex2D* BufferBase = nullptr;
 		Vertex2D* BufferPtr = nullptr;
 
@@ -89,29 +91,36 @@ namespace XYZ {
 			{ -0.5f,  0.5f, 0.0f, 1.0f }
 		};
 
-		Ref<VertexArray> LineVertexArray;
+		Ref<VertexArray>  LineVertexArray;
 		Ref<VertexBuffer> LineVertexBuffer;
 
-		uint32_t LineIndexCount = 0;
+		uint32_t    LineIndexCount = 0;
 		LineVertex* LineBufferBase = nullptr;
 		LineVertex* LineBufferPtr = nullptr;
 
 
 		Ref<VertexArray>  CollisionVertexArray;
 		Ref<VertexBuffer> CollisionVertexBuffer;
+		
 		uint32_t PointCount = 0;
-		Point* PointBufferBase = nullptr;
-		Point* PointBufferPtr = nullptr;
+		Point*	 PointBufferBase = nullptr;
+		Point*	 PointBufferPtr = nullptr;
 
-		uint32_t CollisionIndexCount = 0;
+		uint32_t	     CollisionIndexCount = 0;
 		CollisionVertex* CollisionBufferBase = nullptr;
 		CollisionVertex* CollisionBufferPtr = nullptr;
 
 
-		Ref<VertexArray> PointsVertexArray;
+		Ref<VertexArray>  PointsVertexArray;
 		Ref<VertexBuffer> PointsVertexBuffer;
 
-		glm::mat4 ViewProjectionMatrix;
+		struct CameraData
+		{
+			glm::mat4 ViewProjectionMatrix;
+		};
+
+		CameraData CameraBuffer;
+		Ref<UniformBuffer> CameraUniformBuffer;
 		Renderer2DStats Stats;
 	};
 
@@ -288,6 +297,7 @@ namespace XYZ {
 		s_Data.ResetLines();
 		s_Data.ResetCollisions();
 		s_Data.ResetPoints();
+		s_Data.CameraUniformBuffer = UniformBuffer::Create(sizeof(Renderer2DData::CameraData), 0);
 	}
 
 	void Renderer2D::Shutdown()
@@ -300,8 +310,9 @@ namespace XYZ {
 
 	void Renderer2D::BeginScene(const glm::mat4& viewProjectionMatrix)
 	{
-		s_Data.ViewProjectionMatrix = viewProjectionMatrix;
 		s_Data.QuadMaterial = s_Data.DefaultQuadMaterial;
+		s_Data.CameraBuffer.ViewProjectionMatrix = viewProjectionMatrix;
+		s_Data.CameraUniformBuffer->Update(&s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData), 0);
 	}
 
 	uint32_t Renderer2D::SetTexture(const Ref<Texture>& texture)
@@ -479,58 +490,6 @@ namespace XYZ {
 		s_Data.CollisionIndexCount += 6;
 	}
 
-
-	void Renderer2D::SubmitQuads(const Vertex* vertices, uint32_t countQuads, uint32_t textureID, float tilingFactor)
-	{
-		if (s_Data.IndexCount + countQuads * 6 >= s_Data.MaxIndices)
-			Flush();
-
-		for (uint32_t i = 0; i < countQuads * 4; ++i)
-		{
-			s_Data.BufferPtr->Position = vertices[i].Position;
-			s_Data.BufferPtr->Color = vertices[i].Color;
-			s_Data.BufferPtr->TexCoord = vertices[i].TexCoord;
-			s_Data.BufferPtr->TextureID = (float)textureID;
-			s_Data.BufferPtr->TilingFactor = tilingFactor;
-			s_Data.BufferPtr++;
-		}
-		s_Data.IndexCount += countQuads * 6;
-	}
-
-	void Renderer2D::SubmitQuads(const AnimatedVertex* vertices, uint32_t countQuads, uint32_t textureID, const glm::vec4& color, float tilingFactor)
-	{
-		if (s_Data.IndexCount + countQuads * 6 >= s_Data.MaxIndices)
-			Flush();
-
-		for (uint32_t i = 0; i < countQuads * 4; ++i)
-		{
-			s_Data.BufferPtr->Position = vertices[i].Position;
-			s_Data.BufferPtr->Color = color;
-			s_Data.BufferPtr->TexCoord = vertices[i].TexCoord;
-			s_Data.BufferPtr->TextureID = (float)textureID;
-			s_Data.BufferPtr->TilingFactor = tilingFactor;
-			s_Data.BufferPtr++;
-		}
-		s_Data.IndexCount += countQuads * 6;
-	}
-
-	void Renderer2D::SubmitQuads(const glm::mat4& transform, const Vertex* vertices, uint32_t countQuads, uint32_t textureID, float tilingFactor)
-	{
-		if (s_Data.IndexCount + countQuads * 6 >= s_Data.MaxIndices)
-			Flush();
-
-		for (uint32_t i = 0; i < countQuads * 4; ++i)
-		{
-			s_Data.BufferPtr->Position = transform * glm::vec4(vertices[i].Position, 1.0f);
-			s_Data.BufferPtr->Color = vertices[i].Color;
-			s_Data.BufferPtr->TexCoord = vertices[i].TexCoord;
-			s_Data.BufferPtr->TextureID = (float)textureID;
-			s_Data.BufferPtr->TilingFactor = tilingFactor;
-			s_Data.BufferPtr++;
-		}
-		s_Data.IndexCount += 6 * countQuads;
-	}
-
 	void Renderer2D::SubmitQuadNotCentered(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, uint32_t textureID, const glm::vec4& color, float tilingFactor)
 	{
 		constexpr size_t quadVertexCount = 4;
@@ -567,7 +526,6 @@ namespace XYZ {
 	{
 		auto shader = s_Data.GridMaterial->GetShader();
 		s_Data.GridMaterial->Bind();
-		shader->SetMat4("u_ViewProjectionMatrix", s_Data.ViewProjectionMatrix);
 		shader->SetMat4("u_Transform", transform);
 		shader->SetFloat2("u_Scale", scale);
 		shader->SetFloat(("u_LineWidth"), lineWidth);
@@ -587,9 +545,9 @@ namespace XYZ {
 			uint32_t textureSlotOffset = s_Data.QuadMaterial->GetTextures().size();
 			for (uint32_t i = 0; i < s_Data.TextureSlotIndex; ++i)
 				s_Data.TextureSlots[i]->Bind(i + textureSlotOffset);
-
-			s_Data.QuadMaterial->GetShader()->SetMat4("u_ViewProjectionMatrix", s_Data.ViewProjectionMatrix);
-					
+			
+			s_Data.QuadMaterial->GetShader()->SetMat4("u_ViewProjection", s_Data.CameraBuffer.ViewProjectionMatrix);
+			
 			s_Data.QuadVertexBuffer->Update(s_Data.BufferBase, dataSize);
 			s_Data.QuadVertexArray->Bind();
 			Renderer::DrawIndexed(PrimitiveType::Triangles, s_Data.IndexCount);
@@ -603,8 +561,6 @@ namespace XYZ {
 		if (dataSize)
 		{
 			s_Data.LineShader->Bind();
-			s_Data.LineShader->SetMat4("u_ViewProjectionMatrix", s_Data.ViewProjectionMatrix);
-
 			s_Data.LineVertexBuffer->Update(s_Data.LineBufferBase, dataSize);
 			s_Data.LineVertexArray->Bind();
 			Renderer::DrawIndexed(PrimitiveType::Lines, s_Data.LineIndexCount);
@@ -620,8 +576,6 @@ namespace XYZ {
 		if (dataSize)
 		{
 			s_Data.CollisionShader->Bind();
-			s_Data.CollisionShader->SetMat4("u_ViewProjectionMatrix", s_Data.ViewProjectionMatrix);
-
 			s_Data.CollisionVertexBuffer->Update(s_Data.CollisionBufferBase, dataSize);
 			s_Data.CollisionVertexArray->Bind();
 			Renderer::DrawIndexed(PrimitiveType::Triangles, s_Data.CollisionIndexCount);
@@ -637,8 +591,6 @@ namespace XYZ {
 		if (dataSize)
 		{
 			s_Data.PointShader->Bind();
-			s_Data.PointShader->SetMat4("u_ViewProjectionMatrix", s_Data.ViewProjectionMatrix);
-
 			s_Data.PointsVertexBuffer->Update(s_Data.PointBufferBase, dataSize);
 			s_Data.PointsVertexArray->Bind();
 

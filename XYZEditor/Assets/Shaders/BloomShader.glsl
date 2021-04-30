@@ -23,7 +23,7 @@ in vec2 v_TexCoords;
 
 
 uniform float u_Exposure;
-uniform sampler2D u_Texture;
+layout (binding = 0) uniform sampler2D u_Texture;
 
 const vec3 c_Luminance = vec3(0.2126, 0.7152, 0.0722);
 

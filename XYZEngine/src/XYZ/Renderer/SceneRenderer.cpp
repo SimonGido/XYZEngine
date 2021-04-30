@@ -134,9 +134,9 @@ namespace XYZ {
 			s_Data.GaussianBlurPass = RenderPass::Create({ fbo });
 		}
 		s_Data.GaussianBlurShader = Shader::Create("Assets/Shaders/GaussianBlurShader.glsl");
-		s_Data.BloomShader = Shader::Create("Assets/Shaders/BloomShader.glsl");
-		s_Data.CompositeShader = Shader::Create("Assets/Shaders/CompositeShader.glsl");
-		s_Data.LightShader = Shader::Create("Assets/Shaders/LightShader.glsl");
+		s_Data.BloomShader		  = Shader::Create("Assets/Shaders/BloomShader.glsl");
+		s_Data.CompositeShader	  = Shader::Create("Assets/Shaders/CompositeShader.glsl");
+		s_Data.LightShader		  = Shader::Create("Assets/Shaders/LightShader.glsl");
 		s_Data.LightStorageBuffer = ShaderStorageBuffer::Create(s_Data.MaxNumberOfLights * sizeof(SceneRendererData::PointLight));
 	}
 
@@ -248,8 +248,7 @@ namespace XYZ {
 
 		auto [width, height] = Input::GetWindowSize();
 		Renderer::SetViewPort(0, 0, (uint32_t)width, (uint32_t)height);
-		Renderer::WaitAndRender();
-
+		
 		s_Data.CollisionList.clear();
 		s_Data.SpriteDrawList.clear();
 		s_Data.ParticleDrawList.clear();
@@ -290,7 +289,6 @@ namespace XYZ {
 			auto material = dc.Particle->RenderMaterial->GetParentMaterial();
 			auto materialInstace = dc.Particle->RenderMaterial;
 
-			material->Set("u_ViewProjectionMatrix", s_Data.ViewProjectionMatrix);
 			material->Bind();
 			materialInstace->Set("u_Transform", dc.Transform->GetTransform());
 			materialInstace->Bind();

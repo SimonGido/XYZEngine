@@ -57,7 +57,7 @@ namespace XYZ {
 		return m_FSUniformBuffer;
 	}
 
-	const Uniform* Material::findUniform(const std::string& name)
+	const Uniform* Material::findUniform(const std::string& name) const
 	{
 		for (auto& uni : m_Shader->GetVSUniformList().Uniforms)
 		{
@@ -72,7 +72,7 @@ namespace XYZ {
 		return nullptr;
 	}
 
-	const TextureUniform* Material::findTexture(const std::string& name)
+	const TextureUniform* Material::findTexture(const std::string& name) const
 	{
 		for (auto& uni : m_Shader->GetTextureList().Textures)
 		{

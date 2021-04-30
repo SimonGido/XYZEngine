@@ -77,7 +77,6 @@ namespace XYZ {
         Ref<Shader> shader = m_Material->GetShader();
         m_Material->Bind();
         shader->SetMat4("u_Transform", glm::translate(glm::vec3(0.0f)));
-        shader->SetMat4("u_ViewProjectionMatrix", viewProjectionMatrix);
         shader->SetFloat4("u_Color", glm::vec4(1.0f));
 
         uint32_t counter = 0;

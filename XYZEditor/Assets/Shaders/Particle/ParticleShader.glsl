@@ -17,7 +17,8 @@ layout(location = 9) in float a_IAlignment3;
 out vec4 v_Color;
 out vec2 v_TexCoord;
 
-uniform mat4 u_ViewProjectionMatrix;
+
+uniform mat4 u_ViewProjection;
 uniform mat4 u_Transform;
 
 float GetRadians(float angleInDegrees)
@@ -39,7 +40,7 @@ void main()
 	vec2 pos = RotationZ(GetRadians(a_IAngle)) * a_Position.xy;
 	pos *= a_ISize;
 
-	gl_Position = u_ViewProjectionMatrix * u_Transform * vec4(pos.x + a_IPosition.x,pos.y + a_IPosition.y, 0.0, 1.0);
+	gl_Position = u_ViewProjection * u_Transform * vec4(pos.x + a_IPosition.x,pos.y + a_IPosition.y, 0.0, 1.0);
 	v_Color = a_IColor;
 	v_TexCoord = a_TexCoord + a_ITexCoordOffset;
 }

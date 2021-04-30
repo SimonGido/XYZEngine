@@ -263,4 +263,35 @@ namespace XYZ {
 			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, m_RendererID);
 		});
 	}
+
+
+	OpenGLUniformBuffer::OpenGLUniformBuffer(uint32_t size, uint32_t binding)
+	{
+		Ref<OpenGLUniformBuffer> instance = this;
+		Renderer::Submit([instance, size, binding]() mutable {
+			glCreateBuffers(1, &instance->m_RendererID);
+			glNamedBufferData(instance->m_RendererID, size, nullptr, GL_DYNAMIC_DRAW);
+			glBindBufferBase(GL_UNIFORM_BUFFER, binding, instance->m_RendererID);
+		});
+	}
+
+	OpenGLUniformBuffer::~OpenGLUniformBuffer()
+	{
+		Ref<OpenGLUniformBuffer> instance = this;
+		Renderer::Submit([instance]() mutable {
+			glDeleteBuffers(1, &instance->m_RendererID);
+		});
+	}
+
+	void OpenGLUniformBuffer::Update(const void* data, uint32_t size, uint32_t offset)
+	{
+		Ref<OpenGLUniformBuffer> instance = this;
+		ByteBuffer buffer;
+		buffer.Allocate(size);
+		buffer.Write((void*)data, size, offset);
+		Renderer::Submit([instance, offset, size, buffer]() mutable {
+			glNamedBufferSubData(instance->m_RendererID, offset, size, buffer);
+			delete[]buffer;
+		});
+	}
 }

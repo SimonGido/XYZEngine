@@ -54,6 +54,8 @@ namespace XYZ {
 				
 				for (Layer* layer : m_LayerStack)	
 					layer->OnUpdate(timestep);	
+
+				Renderer::WaitAndRender();
 			}
 			m_Window->Update();
 		}

@@ -14,7 +14,8 @@ const int MAX_BONES = 60;
 uniform mat4 u_Bones[MAX_BONES];
 uniform mat4 u_Transform;
 
-uniform mat4 u_ViewProjectionMatrix;
+
+uniform mat4 u_ViewProjection;
 
 void main()
 {
@@ -25,7 +26,7 @@ void main()
 
 	mat4 transform = u_Transform * boneTransform;
 	vec4 position = transform * vec4(a_Position, 1.0);
-	gl_Position = u_ViewProjectionMatrix * position;
+	gl_Position = u_ViewProjection * position;
 
 	v_Position = position;
 	v_TexCoord = a_TexCoord;

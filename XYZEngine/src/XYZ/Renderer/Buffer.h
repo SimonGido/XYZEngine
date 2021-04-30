@@ -264,13 +264,13 @@ namespace XYZ {
 		virtual void SetLayout(const BufferLayout& layout) = 0;
 		virtual const BufferLayout& GetLayout() const = 0;
 		virtual uint32_t GetRendererID() const = 0;
+		
 		/**
 		* Create empty ShaderStorageBuffer, Buffer usage is Dynamic
 		* @param[in] size	Size of the buffer in bytes
 		* @return shared_ptr to ShaderStorageBuffer
 		*/
 		static Ref<ShaderStorageBuffer> Create(uint32_t size);
-
 
 		/**
 		* Create ShaderStorageBuffer
@@ -325,5 +325,17 @@ namespace XYZ {
 		virtual void BindBase(uint32_t index) = 0;
 
 		static Ref<IndirectBuffer> Create(void * drawCommand,uint32_t size);
+	};
+
+
+	class UniformBuffer : public RefCount
+	{
+	public:
+		virtual ~UniformBuffer() = default;
+
+		virtual void Update(const void* data, uint32_t size, uint32_t offset) = 0;
+
+
+		static Ref<UniformBuffer> Create(uint32_t size, uint32_t binding);
 	};
 }
