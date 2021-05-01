@@ -38,6 +38,13 @@ bUIElements:
             Name: Clear
             Locked: true
             Type: Button
+          - Coords: [10, 721]
+            Size: [60, 35]
+            Color: [2, 2, 2, 1]
+            Label: Save
+            Name: Save
+            Locked: true
+            Type: Button
           - Coords: [10, 35]
             Size: [400, 189]
             Color: [0.699999988, 0.699999988, 0.699999988, 1]

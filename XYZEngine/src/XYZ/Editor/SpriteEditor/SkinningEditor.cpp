@@ -4,6 +4,7 @@
 #include "XYZ/Core/Input.h"
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/Renderer.h"
+#include "XYZ/Asset/AssetManager.h"
 #include "PreviewRenderer.h"
 
 
@@ -15,6 +16,7 @@ namespace XYZ {
     namespace Editor {
 
         static uint32_t s_NextBone = 1;
+        static Ref<SkeletalMesh> s_SkeletalMesh;
 
         namespace Helper {
             void GenerateQuad(std::vector<PreviewVertex>& vertices, const glm::vec2& size)
@@ -206,6 +208,95 @@ namespace XYZ {
             }
         }
        
+        void SkinningEditor::save()
+        {
+            Ref<Shader> shader = AssetManager::GetAsset<Shader>(AssetManager::GetAssetHandle("Assets/Shaders/SkeletalShader.glsl.shader"));
+            Ref<Material> material = AssetManager::GetAsset<Material>(AssetManager::GetAssetHandle("Assets/Materials/SkeletalMaterial.mat"));
+            Ref<Texture2D> texture = AssetManager::GetAsset<Texture2D>(AssetManager::GetAssetHandle("Assets/Textures/SimpleChar.tex"));
+            material->Set("u_Texture", texture);
+            material->Set("u_Color", glm::vec4(1.0f));
+
+            std::vector<XYZ::AnimatedVertex> vertices;
+            std::vector<uint32_t> indices;
+            std::vector<Bone> bones;
+            Tree boneHierarchy;
+
+            uint32_t counter = 0;
+            for (auto& subMesh :  m_Mesh.Submeshes)
+            {
+                for (auto& vertex : subMesh.Vertices)
+                {
+                    auto& previewVertex =  m_Mesh.PreviewVertices[counter];
+                    VertexBoneData boneData;
+                    for (size_t i = 0; i < BoneData::sc_MaxBonesPerVertex; ++i)
+                    {
+                        if (vertex.Data.IDs[i] != -1)
+                        {
+                            boneData.IDs[i] = vertex.Data.IDs[i];
+                            boneData.Weights[i] = vertex.Data.Weights[i];
+                        }
+                    }          
+                    vertices.push_back({ previewVertex.Position, previewVertex.TexCoord, boneData });
+                    counter++;
+                }
+            }
+            for (auto& subMesh : m_Mesh.Submeshes)
+            {
+                for (auto& triangle : subMesh.Triangles)
+                {
+                    indices.push_back(triangle.First);
+                    indices.push_back(triangle.Second);
+                    indices.push_back(triangle.Third);
+                }
+            }
+
+            counter = 0;
+            bones.resize(m_Bones.size());
+            std::unordered_map<int32_t, uint32_t> boneMap;
+            m_BoneHierarchy.Traverse([&](void* parent, void* child) -> bool {
+
+                PreviewBone* childBone = static_cast<PreviewBone*>(child);
+                bones[counter] = { 
+                    childBone->LocalTransform,
+                };      
+                boneMap[childBone->ID] = counter;
+                counter++;
+                return false;
+                });
+            m_BoneHierarchy.Traverse([&](void* parent, void* child) -> bool {
+
+                PreviewBone* childBone = static_cast<PreviewBone*>(child);
+                uint32_t childBoneIndex = boneMap[childBone->ID];
+                if (parent)
+                {
+                    PreviewBone* parentBone = static_cast<PreviewBone*>(parent);
+                    uint32_t parentBoneIndex = boneMap[parentBone->ID];
+                    bones[childBoneIndex].ID = boneHierarchy.Insert(&bones[childBoneIndex], bones[parentBoneIndex].ID);
+                }
+                else
+                {
+                    bones[childBoneIndex].ID = boneHierarchy.Insert(&bones[childBoneIndex]);
+                }
+                bones[childBoneIndex].Name = childBone->Name;
+                return false;
+                });
+            Ref<SkeletalMesh> mesh = AssetManager::GetAsset<SkeletalMesh>(AssetManager::GetAssetHandle("Assets/Meshes/SkeletalMesh.skm"));
+            
+            AssetManager::CreateAsset<SkeletalMesh>(
+                "CopySkeletalMesh.skm", 
+                AssetType::SkeletalMesh, 
+                AssetManager::GetDirectoryHandle("Assets/Meshes"), 
+                mesh->GetVertices(), 
+                mesh->GetIndicies(), 
+                mesh->GetBones(), 
+                mesh->GetBoneHierarchy(), 
+                mesh->GetMaterial()
+                );
+
+            s_SkeletalMesh = mesh;
+            //AssetManager::CreateAsset<SkeletalMesh>("SkeletalMesh.skm", AssetType::SkeletalMesh, AssetManager::GetDirectoryHandle("Assets/Meshes"), vertices, indices, bones, boneHierarchy, material);
+        }
+
         void SkinningEditor::setupUI()
         {
             bUIAllocator& allocator = bUI::GetAllocator("SkinningEditor");
@@ -242,6 +333,12 @@ namespace XYZ {
                 if (type == bUICallbackType::Active)
                     clear();
             });
+
+            bUIButton* saveButton = allocator.GetElement<bUIButton>("Save");
+            saveButton->Callbacks.push_back([&](bUICallbackType type, bUIElement& element) {
+                if (type == bUICallbackType::Active)
+                    save();
+             });
             setupBoneUI();
             setupVertexUI();
             setupWeightsUI();
@@ -480,7 +577,7 @@ namespace XYZ {
         {
             bUIScrollbox* scrollbox = allocator.GetElement<bUIScrollbox>("Scrollbox");
             bUIButton* clearButton = allocator.GetElement<bUIButton>("Clear");
-
+            bUIButton* saveButton = allocator.GetElement<bUIButton>("Save");
             bUIWindow* last = nullptr;
             bUI::ForEach<bUIWindow>(allocator, scrollbox, [&](bUIWindow& win) {
                 win.Size.x = scrollbox->Size.x - 20.0f;
@@ -491,6 +588,7 @@ namespace XYZ {
                     last = &win;
             });
             clearButton->Coords.y = last->Coords.y + last->GetSize().y;
+            saveButton->Coords.y = clearButton->Coords.y + clearButton->Size.y + 10.0f;
 
             bUIWindow* boneWindow = allocator.GetElement<bUIWindow>("Bone Window");
             bUI::SetupLayout(allocator, *boneWindow, m_Layout);
@@ -591,7 +689,15 @@ namespace XYZ {
             
 
             Renderer2D::BeginScene(m_Camera.ViewProjectionMatrix);
-            renderPreviewMesh();
+            
+            if (s_SkeletalMesh.Raw())
+            {
+                s_SkeletalMesh->Render();
+            }
+            else
+            {
+                renderPreviewMesh();
+            }
             PreviewRenderer::RenderSkinnedMesh(m_Mesh, IS_SET(m_Flags, PreviewPose));
             PreviewRenderer::RenderHierarchy(m_BoneHierarchy, IS_SET(m_Flags, PreviewPose));
             Renderer2D::FlushLines();

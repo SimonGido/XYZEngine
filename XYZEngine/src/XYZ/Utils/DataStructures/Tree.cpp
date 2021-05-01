@@ -185,39 +185,32 @@ namespace XYZ {
         TreeNode& childNode = m_Nodes[child];
         TreeNode& newParentNode = m_Nodes[parent];
 
-        // If it has parent it is first child
-        if (childNode.PreviousSibling == TreeNode::sc_Invalid)
+        // Removes child node from linked list
+        if (childNode.PreviousSibling != TreeNode::sc_Invalid)
         {
-            // If next sibling is not invalid change its previous sibling
-            if (childNode.NextSibling != TreeNode::sc_Invalid)
-            {
-                TreeNode& nextSibling = m_Nodes[childNode.NextSibling];
-                nextSibling.PreviousSibling = TreeNode::sc_Invalid;
-            }
-            // It is first child of parent, set its next sibling to parent first child
-            if (childNode.Parent != TreeNode::sc_Invalid)
-            {
-                TreeNode& oldParentNode = m_Nodes[childNode.Parent];
-                oldParentNode.FirstChild = childNode.NextSibling;
-            }
+            TreeNode& previous = m_Nodes[childNode.PreviousSibling];
+            previous.NextSibling = childNode.NextSibling;
         }
-        else
+        else if (childNode.Parent != TreeNode::sc_Invalid)
         {
-            TreeNode& previousSibling = m_Nodes[childNode.PreviousSibling];
-            previousSibling.NextSibling = childNode.NextSibling;
-            if (childNode.NextSibling != TreeNode::sc_Invalid)
-            {
-                TreeNode& nextSibling = m_Nodes[childNode.NextSibling];
-                nextSibling.PreviousSibling = childNode.PreviousSibling;
-            }
+            TreeNode& parent = m_Nodes[childNode.Parent];
+            parent.FirstChild = childNode.NextSibling;
         }
 
+        if (childNode.NextSibling != TreeNode::sc_Invalid)
+        {
+            TreeNode& next = m_Nodes[childNode.NextSibling];
+            next.PreviousSibling = childNode.PreviousSibling;
+        }
+
+        // Insert child node in new linked list
         if (newParentNode.FirstChild != TreeNode::sc_Invalid)
         {
-            int32_t tmp = newParentNode.FirstChild;
-            childNode.NextSibling = tmp;
-            m_Nodes[tmp].PreviousSibling = child;
+            int32_t oldFirstChild = newParentNode.FirstChild;         
+            m_Nodes[oldFirstChild].PreviousSibling = child;
+            childNode.NextSibling = oldFirstChild;
         }
+        newParentNode.FirstChild = child;
         childNode.Parent = parent;
         childNode.Depth = m_Nodes[parent].Depth + 1;
     }

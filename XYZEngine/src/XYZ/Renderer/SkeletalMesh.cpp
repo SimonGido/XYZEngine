@@ -37,7 +37,7 @@ namespace XYZ {
         const std::vector<uint32_t>& indices,
         const std::vector<Bone>& bones,
         const Tree& hierarchy,
-        Ref<Material> material
+        const Ref<Material>& material
     )
         :
         m_Vertices(vertices),
@@ -59,20 +59,20 @@ namespace XYZ {
         std::vector<uint32_t>&& indices, 
         std::vector<Bone>&& bones,
         Tree&& hierarchy,
-        Ref<Material> material
+        Ref<Material>&& material
     )
         :
         m_Vertices(std::move(vertices)),
         m_Indices(std::move(indices)),
         m_Bones(std::move(bones)),
         m_BoneHierarchy(std::move(hierarchy)),
-        m_Material(material)
+        m_Material(std::move(material))
     {
         RebuildBuffers();
         setupFinalTransform();
     }
 
-    void SkeletalMesh::Render(const glm::mat4& viewProjectionMatrix)
+    void SkeletalMesh::Render()
     {
         Ref<Shader> shader = m_Material->GetShader();
         m_Material->Bind();

@@ -25,6 +25,8 @@ namespace XYZ {
 
 			static constexpr size_t sc_MaxBones = 60;
 		private:
+			void save();
+
 			void setupUI();
 			void setupBoneUI();
 			void setupVertexUI();

@@ -212,6 +212,7 @@ namespace XYZ {
 			<< rotation.x << rotation.y << rotation.z << rotation.w
 			<< scale.x << scale.y << scale.z
 			<< bone.ID
+			<< bone.Name
 			<< YAML::EndSeq;
 		return out;
 	}
@@ -648,23 +649,17 @@ namespace XYZ {
 	
 	static void BuildBoneTree(Tree& tree, std::vector<Bone>& bones, std::vector<TreeNode>& nodes)
 	{
-		std::unordered_map<int32_t, int32_t> hierarchyMap;
 		for (TreeNode& node : nodes)
 		{
-			auto it = std::find_if(bones.begin(), bones.end(), [&](const Bone& a) {
-				return a.ID == node.ID;
-			});
-			int32_t id = tree.Insert(&(*it));
-			hierarchyMap[node.ID] = tree.Insert(&(*it));	
-			it->ID = id;
+			node.ID = tree.Insert(nullptr);
 		}
-		for (TreeNode& node : nodes)
+		for (const TreeNode& node : nodes)
 		{
 			if (node.Parent != TreeNode::sc_Invalid)
 			{
-				int32_t newParentID = hierarchyMap[node.Parent];
-				int32_t newID = hierarchyMap[node.ID];
-				tree.SetParent(newID, newParentID);
+				int32_t parentID = node.Parent;
+				int32_t id = node.ID;
+				tree.SetParent(id, parentID);
 			}
 		}
 	}

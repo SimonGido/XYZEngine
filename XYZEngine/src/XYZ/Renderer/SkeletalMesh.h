@@ -55,18 +55,18 @@ namespace XYZ {
 			const std::vector<uint32_t>& indices,
 			const std::vector<Bone>& bones,
 			const Tree& hierarchy,
-			Ref<Material> material
+			const Ref<Material>& material
 		);
 		SkeletalMesh(
 			std::vector<AnimatedVertex>&& vertices, 
 			std::vector<uint32_t>&& indices,
 			std::vector<Bone>&& bones,
 			Tree&& hierarchy,
-			Ref<Material> material
+			Ref<Material>&& material
 		);
 
 
-		void Render(const glm::mat4& viewProjectionMatrix);
+		void Render();
 		void RebuildBuffers();
 
 		const Ref<Material>& GetMaterial() const { return m_Material; }

@@ -60,7 +60,7 @@ namespace XYZ {
 			// This vector is filled after triangulation to store the original vertices
 			std::vector<BoneVertex> OriginalVertices;
 			std::vector<BoneVertex> Vertices;
-			std::vector<Triangle> Triangles;
+			std::vector<Triangle>	Triangles;
 
 			BoneVertex* FindVertex(const glm::vec2& pos, float radius);
 			Triangle* FindTriangle(const glm::vec2& pos, float radius);
