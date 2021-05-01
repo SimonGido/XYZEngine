@@ -30,7 +30,7 @@ namespace XYZ {
                 for (Entity entity : m_Context->GetEntities())
                 {
                     SceneTagComponent& sceneTag = ecs.GetComponent<SceneTagComponent>(entity);
-                    m_Tree->AddItem(entity, hUIHierarchyItem(sceneTag.Name));
+                    m_Tree->AddItem(entity, bUIHierarchyItem(sceneTag.Name));
                 }
             }
           });
@@ -52,7 +52,7 @@ namespace XYZ {
             if (type == CallbackType::ComponentCreate)
             {
                 SceneTagComponent& sceneTag = ecs.GetComponent<SceneTagComponent>(entity);
-                m_Tree->AddItem(entity, hUIHierarchyItem(sceneTag.Name));
+                m_Tree->AddItem(entity, bUIHierarchyItem(sceneTag.Name));
             }
             else if (type == CallbackType::ComponentRemove || type == CallbackType::EntityDestroy)
             {
@@ -114,7 +114,7 @@ namespace XYZ {
         for (uint32_t entity : m_Context->m_Entities)
         {
             SceneTagComponent& sceneTag = ecs.GetComponent<SceneTagComponent>(entity);
-            m_Tree->AddItem(entity, hUIHierarchyItem(sceneTag.Name));
+            m_Tree->AddItem(entity, bUIHierarchyItem(sceneTag.Name));
         }
     }
 

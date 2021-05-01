@@ -381,6 +381,36 @@ namespace XYZ {
         }
     }
 
+    void Tree::TraverseNodeSiblingsReverse(int32_t node, const std::function<bool(void*, void*)>& callback) const
+    {     
+        int32_t next = m_Nodes[node].NextSibling;
+        int32_t last = node;
+        while (next != TreeNode::sc_Invalid)
+        {
+            last = next;
+            next = m_Nodes[next].NextSibling;
+        }
+
+        std::stack<int32_t> stack;
+        stack.push(last);
+        while (!stack.empty())
+        {
+            int32_t tmp = stack.top();
+            stack.pop();
+
+            const TreeNode& node = m_Nodes[tmp];        
+            if (node.PreviousSibling != TreeNode::sc_Invalid)
+                stack.push(node.PreviousSibling);
+
+            void* parentData = nullptr;
+            void* data = node.Data;
+            if (node.Parent != TreeNode::sc_Invalid)
+                parentData = m_Nodes[node.Parent].Data;
+            if (callback(parentData, data))
+                return;
+        }
+    }
+
     
     void* Tree::GetParentData(int32_t index)
     {

@@ -44,6 +44,7 @@ namespace XYZ {
 		Renderer2D::SetMaterial(s_Context->Config.m_Material);
 		s_Context->Renderer.BindCustomTextures();
 
+
 		for (const bUIQuad& quad : s_Context->Renderer.GetMesh().Quads)
 			Renderer2D::SubmitQuadNotCentered(quad.Position, quad.Size, quad.TexCoord, quad.TextureID, quad.Color, (float)quad.ScissorID);
 		for (const bUILine& line : s_Context->Renderer.GetMesh().Lines)

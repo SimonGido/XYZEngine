@@ -106,6 +106,7 @@ namespace XYZ {
 					bUICheckbox& casted = static_cast<bUICheckbox&>(element);
 					bUI::GetUI<bUIWindow>("SkinningEditor", "Skinning Editor").Visible = casted.Checked;
 					bUI::GetUI<bUIWindow>("SkinningEditor", "Skinning Preview").Visible = casted.Checked;
+					bUI::GetUI<bUIWindow>("SkinningEditor", "Bone Hierarchy").Visible = casted.Checked;
 				}
 			}
 		);

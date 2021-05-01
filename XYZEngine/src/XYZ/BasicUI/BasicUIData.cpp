@@ -50,7 +50,7 @@ namespace XYZ {
 	void bUIData::BuildMesh(bUIRenderer& renderer)
 	{
 		for (bUIAllocator& allocator : m_Allocators)
-		{	
+		{
 			Tree& tree = allocator.m_Tree;
 			tree.TraverseNodeSiblings(tree.GetRoot(), [&](void* parent, void* child)->bool {
 
@@ -58,7 +58,7 @@ namespace XYZ {
 				if (childElement->Visible)
 					buildMesh(renderer, allocator, childElement, 0);
 				return false;
-			});		
+				});
 		}
 	}
 	void bUIData::SetOnReloadCallback(const std::string& name, const bUIAllocatorReloadCallback& callback)

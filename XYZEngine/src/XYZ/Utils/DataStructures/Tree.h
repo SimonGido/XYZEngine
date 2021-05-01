@@ -48,7 +48,8 @@ namespace XYZ {
 		void	    TraverseNode(int32_t node, const std::function<bool(void*, void*)>& callback) const;
 		void	    TraverseNodeSiblings(int32_t node, const std::function<bool(void*, void*)>& callback) const;
 		void	    TraverseNodeChildren(int32_t node, const std::function<bool(void*, void*)>& callback) const;
-
+		
+		void		TraverseNodeSiblingsReverse(int32_t node, const std::function<bool(void*, void*)>& callback) const;
 
 		void	    SetData(int32_t index, void* data) { m_Nodes[index].Data = data; }
 		void*       GetData(int32_t index) { return m_Nodes[index].Data; }

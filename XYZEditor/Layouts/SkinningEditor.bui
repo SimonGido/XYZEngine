@@ -15,7 +15,7 @@ bUIElements:
         Name: Skinning Editor Image
         Locked: true
         Type: Image
-  - Coords: [63, 168]
+  - Coords: [31, 227]
     Size: [420, 807]
     Color: [1, 1, 1, 1]
     Label: Skinning Editor
@@ -31,6 +31,13 @@ bUIElements:
         Locked: true
         Type: Scrollbox
         bUIElements:
+          - Coords: [10, 721]
+            Size: [60, 35]
+            Color: [2, 2, 2, 1]
+            Label: Clear
+            Name: Clear
+            Locked: true
+            Type: Button
           - Coords: [10, 35]
             Size: [400, 189]
             Color: [0.699999988, 0.699999988, 0.699999988, 1]
@@ -68,7 +75,7 @@ bUIElements:
                 Locked: true
                 Type: Checkbox
           - Coords: [10, 259]
-            Size: [400, 236]
+            Size: [400, 288]
             Color: [0.699999988, 0.699999988, 0.699999988, 1]
             Label: Vertex
             Name: Vertex Window
@@ -81,7 +88,7 @@ bUIElements:
                 Label: Create Submesh
                 Name: Create Submesh
                 Locked: true
-                Type: Checkbox
+                Type: Button
               - Coords: [10, 55]
                 Size: [35, 35]
                 Color: [1, 1, 1, 1]
@@ -117,7 +124,7 @@ bUIElements:
                 Name: Triangulate
                 Locked: true
                 Type: Button
-          - Coords: [10, 530]
+          - Coords: [10, 582]
             Size: [400, 114]
             Color: [0.699999988, 0.699999988, 0.699999988, 1]
             Label: Weights
@@ -139,3 +146,18 @@ bUIElements:
                 Name: Brush Strength
                 Locked: true
                 Type: Slider
+  - Coords: [43, 75]
+    Size: [400, 114]
+    Color: [1, 1, 1, 1]
+    Label: Bone Hierarchy
+    Name: Bone Hierarchy
+    Locked: true
+    Type: Window
+    bUIElements:
+      - Coords: [0, 0]
+        Size: [35, 35]
+        Color: [1, 1, 1, 1]
+        Label: ""
+        Name: Bones
+        Locked: true
+        Type: Tree

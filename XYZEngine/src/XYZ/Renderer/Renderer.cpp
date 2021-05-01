@@ -187,28 +187,28 @@ namespace XYZ {
 
 	void Renderer::WaitAndRender()
 	{		
-		if (s_Data.SwapQueues)
-		{
-			s_Data.SwapQueues = false;		
+		//if (s_Data.SwapQueues)
+		//{
+		//	s_Data.SwapQueues = false;		
 			
 			RenderCommandQueue* read[NumTypes];
 			for (size_t i = 0; i < NumTypes; ++i)
 				read[i] = &s_Data.CommandQueue[s_Data.ReadQueueIndex][i];
 
-			Application::GetThreadPool().PushJob<void>([read]() {
-				std::scoped_lock<std::mutex> lock(s_Data.Mutex);
+			//Application::GetThreadPool().PushJob<void>([read]() {
+			//	std::scoped_lock<std::mutex> lock(s_Data.Mutex);
 				read[Default]->Execute();
 				read[Overlay]->Execute();
-				s_Data.SwapQueues = true;
-			});
+				//s_Data.SwapQueues = true;
+			//});
 
 			
 			// Perform "swap" of queues for read and write
-			if (s_Data.ReadQueueIndex == RendererData::Read)
-				s_Data.ReadQueueIndex = RendererData::Write;
-			else
-				s_Data.ReadQueueIndex = RendererData::Read;
-		}
+			//if (s_Data.ReadQueueIndex == RendererData::Read)
+			//	s_Data.ReadQueueIndex = RendererData::Write;
+			//else
+			//	s_Data.ReadQueueIndex = RendererData::Read;
+		//}
 	}
 
 	RenderCommandQueue& Renderer::GetRenderCommandQueue(uint8_t type)

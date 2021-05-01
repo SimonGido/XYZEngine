@@ -101,7 +101,7 @@ namespace XYZ {
             :
             m_ContextSize(glm::vec2(0.0f)),
             m_Window(nullptr),
-            //m_Tree(nullptr),
+            m_Tree(nullptr),
             m_BonePool(15 * sizeof(PreviewBone)),
             m_SelectedSubmesh(nullptr),
             m_SelectedVertex(nullptr),
@@ -214,7 +214,8 @@ namespace XYZ {
             m_PreviewWindow->BlockEvents = false;
             m_Image = allocator.GetElement<bUIImage>("Skinning Editor Image");
             m_Image->BlockEvents = false;
-
+            m_Tree = allocator.GetElement<bUITree>("Bones");
+            
             m_ViewportSize = m_Image->Size;
             m_Camera.ProjectionMatrix = glm::ortho(
                 -m_Image->Size.x / 2.0f, m_Image->Size.x / 2.0f,
@@ -236,6 +237,11 @@ namespace XYZ {
                 m_Camera.UpdateViewProjection();
             };
        
+            bUIButton* clearButton = allocator.GetElement<bUIButton>("Clear");
+            clearButton->Callbacks.push_back([&](bUICallbackType type, bUIElement& element) {
+                if (type == bUICallbackType::Active)
+                    clear();
+            });
             setupBoneUI();
             setupVertexUI();
             setupWeightsUI();
@@ -254,6 +260,15 @@ namespace XYZ {
                         m_Flags = ToggleBit(m_Flags, PreviewPose);
                         initializePose();
                         updateRenderBuffers();
+                        int32_t id = casted.GetID();
+                        bUI::ForEach<bUICheckbox>("SkinningEditor", [id](bUICheckbox& checkbox) {
+                            if (checkbox.GetID() != id)
+                                checkbox.Checked = false;
+                            });
+                    }
+                    else
+                    {
+                        m_Flags &= ~PreviewPose;
                     }
                 }
              });
@@ -267,6 +282,15 @@ namespace XYZ {
                     if (casted.Checked)
                     {
                         m_Flags = ToggleBit(m_Flags, CreateBone);
+                        int32_t id = casted.GetID();
+                        bUI::ForEach<bUICheckbox>("SkinningEditor", [id](bUICheckbox& checkbox) {
+                            if (checkbox.GetID() != id)
+                                checkbox.Checked = false;
+                        });
+                    }
+                    else
+                    {
+                        m_Flags &= ~CreateBone;
                     }
                 }
                });
@@ -281,6 +305,10 @@ namespace XYZ {
                         m_Flags = ToggleBit(m_Flags, EditBone);
                         m_Flags |= previewPose;
                     }
+                    else
+                    {
+                        m_Flags &= ~PreviewPose;
+                    }
                 }
             });
 
@@ -293,6 +321,15 @@ namespace XYZ {
                     if (casted.Checked)
                     {
                         m_Flags = ToggleBit(m_Flags, DeleteBone);
+                        int32_t id = casted.GetID();
+                        bUI::ForEach<bUICheckbox>("SkinningEditor", [id](bUICheckbox& checkbox) {
+                            if (checkbox.GetID() != id)
+                                checkbox.Checked = false;
+                        });
+                    }
+                    else
+                    {
+                        m_Flags &= ~DeleteBone;
                     }
                 }
              });
@@ -301,16 +338,14 @@ namespace XYZ {
         {
             bUIAllocator& allocator = bUI::GetAllocator("SkinningEditor");
 
-            bUICheckbox* createSubmesh = allocator.GetElement<bUICheckbox>("Create Submesh");
+            bUIButton* createSubmesh = allocator.GetElement<bUIButton>("Create Submesh");
             createSubmesh->Callbacks.push_back([&](bUICallbackType type, bUIElement& element) {
-                bUICheckbox& casted = static_cast<bUICheckbox&>(element);
-                if (type == bUICallbackType::StateChange)
+                if (type == bUICallbackType::Active)
                 {
-                    if (casted.Checked)
-                    {
+                    if (!m_Triangulated)
                         m_Mesh.Submeshes.push_back({});
-                    }
                 }
+                
             });
 
 
@@ -322,6 +357,15 @@ namespace XYZ {
                     if (casted.Checked)
                     {
                         m_Flags = ToggleBit(m_Flags, CreateVertex);
+                        int32_t id = casted.GetID();
+                        bUI::ForEach<bUICheckbox>("SkinningEditor", [id](bUICheckbox& checkbox) {
+                            if (checkbox.GetID() != id)
+                                checkbox.Checked = false;
+                            });
+                    }
+                    else
+                    {
+                        m_Flags &= ~CreateVertex;
                     }
                 }
                 });
@@ -335,6 +379,15 @@ namespace XYZ {
                     if (casted.Checked)
                     {
                         m_Flags = ToggleBit(m_Flags, EditVertex);
+                        int32_t id = casted.GetID();
+                        bUI::ForEach<bUICheckbox>("SkinningEditor", [id](bUICheckbox& checkbox) {
+                            if (checkbox.GetID() != id)
+                                checkbox.Checked = false;
+                            });
+                    }
+                    else
+                    {
+                        m_Flags &= ~EditVertex;
                     }
                 }
                 });
@@ -347,6 +400,15 @@ namespace XYZ {
                     if (casted.Checked)
                     {
                         m_Flags = ToggleBit(m_Flags, DeleteVertex);
+                        int32_t id = casted.GetID();
+                        bUI::ForEach<bUICheckbox>("SkinningEditor", [id](bUICheckbox& checkbox) {
+                            if (checkbox.GetID() != id)
+                                checkbox.Checked = false;
+                            });
+                    }
+                    else
+                    {
+                        m_Flags &= ~DeleteVertex;
                     }
                 }
                 });
@@ -359,6 +421,15 @@ namespace XYZ {
                     if (casted.Checked)
                     {
                         m_Flags = ToggleBit(m_Flags, DeleteTriangle);
+                        int32_t id = casted.GetID();
+                        bUI::ForEach<bUICheckbox>("SkinningEditor", [id](bUICheckbox& checkbox) {
+                            if (checkbox.GetID() != id)
+                                checkbox.Checked = false;
+                            });
+                    }
+                    else
+                    {
+                        m_Flags &= ~DeleteTriangle;
                     }
                 }
                 });
@@ -392,6 +463,15 @@ namespace XYZ {
                     if (casted.Checked)
                     {
                         m_Flags = ToggleBit(m_Flags, WeightBrush);
+                        int32_t id = casted.GetID();
+                        bUI::ForEach<bUICheckbox>("SkinningEditor", [id](bUICheckbox& checkbox) {
+                            if (checkbox.GetID() != id)
+                                checkbox.Checked = false;
+                            });
+                    }
+                    else
+                    {
+                        m_Flags &= ~WeightBrush;
                     }
                 }
             });
@@ -399,6 +479,8 @@ namespace XYZ {
         void SkinningEditor::updateLayout(bUIAllocator& allocator)
         {
             bUIScrollbox* scrollbox = allocator.GetElement<bUIScrollbox>("Scrollbox");
+            bUIButton* clearButton = allocator.GetElement<bUIButton>("Clear");
+
             bUIWindow* last = nullptr;
             bUI::ForEach<bUIWindow>(allocator, scrollbox, [&](bUIWindow& win) {
                 win.Size.x = scrollbox->Size.x - 20.0f;
@@ -407,7 +489,8 @@ namespace XYZ {
                     win.Coords.y = last->Coords.y + last->GetSize().y + 10.0f;
                 if (win.Visible)
                     last = &win;
-               });
+            });
+            clearButton->Coords.y = last->Coords.y + last->GetSize().y;
 
             bUIWindow* boneWindow = allocator.GetElement<bUIWindow>("Bone Window");
             bUI::SetupLayout(allocator, *boneWindow, m_Layout);
@@ -428,10 +511,7 @@ namespace XYZ {
                 {
                     createBone();
                     m_BoneEditFlags = PreviewBone::End;
-                    if (Input::IsKeyPressed(KeyCode::KEY_LEFT_CONTROL))
-                        m_Flags |= EditBone;
-                    else
-                        m_Flags = EditBone;
+                    m_Flags |= EditBone;
                 }
                 else if (IS_SET(m_Flags, DeleteBone))
                 {
@@ -452,13 +532,23 @@ namespace XYZ {
                 }
                 else if (IS_SET(m_Flags, DeleteVertex))
                 {
-                    m_Mesh.EraseVertexAtPosition(m_MousePosition);
+                    // TODO: Implement
+                    if (!m_Triangulated)
+                        m_Mesh.EraseVertexAtPosition(m_MousePosition);
                     m_SelectedVertex = nullptr;
+                    m_FoundVertex = nullptr;
                 }
                 else if (IS_SET(m_Flags, DeleteTriangle))
                 {
-                    m_Mesh.EraseTriangleAtPosition(m_MousePosition);
-                    m_SelectedVertex = nullptr;
+                    if (m_Mesh.EraseTriangleAtPosition(m_MousePosition))
+                    {
+                        rebuildRenderBuffers();
+                        m_SelectedTriangle = nullptr;
+                        m_FoundTriangle = nullptr;
+
+                        m_SelectedVertex = nullptr;
+                        m_FoundVertex = nullptr;
+                    }
                 }
             }
             else if (event.IsButtonPressed(MouseCode::MOUSE_BUTTON_MIDDLE))
@@ -474,6 +564,9 @@ namespace XYZ {
         {
             if (event.IsButtonReleased(MouseCode::MOUSE_BUTTON_RIGHT))
             {
+                // Edit bone was set right after creation of bone
+                if (IS_SET(m_Flags, (CreateBone & EditBone)))
+                    m_Flags &= ~EditBone;
                 m_BoneEditFlags = 0;
             }
             return false;
@@ -529,7 +622,7 @@ namespace XYZ {
                         Renderer2D::SubmitCircle(glm::vec3(m_FoundVertex->Position, 0.0f), SkinnedMesh::PointRadius, 20, m_HighlightColor);
 
                     if (m_SelectedTriangle)
-                        PreviewRenderer::RenderTriangle(*m_FoundSubmesh, *m_SelectedTriangle, m_HighlightColor);
+                        PreviewRenderer::RenderTriangle(*m_SelectedSubmesh, *m_SelectedTriangle, m_HighlightColor);
                     if (m_SelectedVertex)
                         Renderer2D::SubmitCircle(glm::vec3(m_SelectedVertex->Position, 0.0f), SkinnedMesh::PointRadius, 20, m_HighlightColor);
                 }
@@ -560,7 +653,7 @@ namespace XYZ {
             m_Flags = 0;
             m_Mesh.Submeshes.clear();
             m_Mesh.PreviewVertices.clear();
-            //m_Tree->Clear();
+            m_Tree->Clear();
             m_BoneHierarchy.Clear();
             for (auto bone : m_Bones)
                 m_BonePool.Deallocate<PreviewBone>(bone);
@@ -602,7 +695,7 @@ namespace XYZ {
                 });
 
             m_BoneHierarchy.Remove(bone->ID);
-           // m_Tree->RemoveItem(bone->ID);
+            m_Tree->RemoveItem(bone->ID);
             m_BonePool.Deallocate<PreviewBone>(bone);
         }
         void SkinningEditor::createVertex(const glm::vec2& pos)
@@ -720,13 +813,13 @@ namespace XYZ {
             if (m_SelectedBone)
             {
                 newBone->ID = m_BoneHierarchy.Insert(newBone, m_SelectedBone->ID);
-                //m_Tree->AddItem(newBone->ID, m_SelectedBone->ID, IGTreeItem(newBone->Name));             
+                m_Tree->AddItem(newBone->ID, m_SelectedBone->ID, bUIHierarchyItem(newBone->Name));             
                 newBone->LocalPosition = m_MousePosition - m_SelectedBone->WorldPosition;
             }
             else
             {
                 newBone->ID = m_BoneHierarchy.Insert(newBone);
-                //m_Tree->AddItem(newBone->ID, IGTreeItem(newBone->Name));
+                m_Tree->AddItem(newBone->ID, bUIHierarchyItem(newBone->Name));
                 newBone->LocalPosition = m_MousePosition;
             }
             

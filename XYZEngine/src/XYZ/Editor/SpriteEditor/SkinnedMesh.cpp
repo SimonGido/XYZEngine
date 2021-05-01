@@ -76,7 +76,7 @@ namespace XYZ {
                 {
                     if (glm::distance(pos, glm::vec2(vertex.Position.x, vertex.Position.y)) < PointRadius)
                     {
-                        subMesh.Vertices.erase(subMesh.Vertices.begin() + counter);
+                        subMesh.Vertices.erase(subMesh.Vertices.begin() + counter);         
                         return true;
                     }
                     counter++;
@@ -98,6 +98,7 @@ namespace XYZ {
                     {
                         subMesh.Triangles.erase(subMesh.Triangles.begin() + counter);
                         eraseEmptyPoints(subMesh);
+                        
                         return true;
                     }
                     counter++;

@@ -99,7 +99,7 @@ namespace XYZ {
 			bUIWindow* m_Window;
 			bUIWindow* m_PreviewWindow;
 			bUIImage* m_Image;
-			//bUITree* m_Tree;
+			bUITree* m_Tree;
 			bUILayout m_Layout;
 
 			Tree m_BoneHierarchy;

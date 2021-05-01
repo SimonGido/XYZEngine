@@ -272,11 +272,11 @@ namespace XYZ {
 		
 		element.Hierarchy.Traverse([&](void* parent, void* child)->bool {
 
-			hUIHierarchyItem* childItem = static_cast<hUIHierarchyItem*>(child);
+			bUIHierarchyItem* childItem = static_cast<bUIHierarchyItem*>(child);
 			glm::vec2 childAbsolutePosition = absolutePosition + childItem->GetCoords();
 			if (parent)
 			{
-				hUIHierarchyItem* parentItem = static_cast<hUIHierarchyItem*>(parent);
+				bUIHierarchyItem* parentItem = static_cast<bUIHierarchyItem*>(parent);
 				glm::vec2 parentAbsolutePosition = absolutePosition + parentItem->GetCoords();
 				if (!parentItem->Open)
 					return false;
@@ -324,11 +324,11 @@ namespace XYZ {
 		absolutePosition.y += element.Size.y;
 		element.Hierarchy.Traverse([&](void* parent, void* child)->bool {
 
-			hUIHierarchyItem* childItem = static_cast<hUIHierarchyItem*>(child);
+			bUIHierarchyItem* childItem = static_cast<bUIHierarchyItem*>(child);
 			glm::vec2 childAbsolutePosition = absolutePosition + childItem->GetCoords();
 			if (parent)
 			{
-				hUIHierarchyItem* parentItem = static_cast<hUIHierarchyItem*>(parent);
+				bUIHierarchyItem* parentItem = static_cast<bUIHierarchyItem*>(parent);
 				glm::vec2 parentAbsolutePosition = absolutePosition + parentItem->GetCoords();
 				if (!parentItem->Open)
 					return false;

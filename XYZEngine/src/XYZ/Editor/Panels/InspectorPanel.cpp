@@ -326,7 +326,7 @@ namespace XYZ {
 			window->Visible = false;
 
 			bUIDropdown* dropdown = allocator.GetElement<bUIDropdown>("Add Component");
-			dropdown->AddItem(IComponent::GetComponentID<TransformComponent>(), hUIHierarchyItem("Transform Component"));
+			dropdown->AddItem(IComponent::GetComponentID<TransformComponent>(), bUIHierarchyItem("Transform Component"));
 		}
 	}
 
@@ -421,7 +421,7 @@ namespace XYZ {
 			window->Visible = false;
 
 			bUIDropdown* dropdown = allocator.GetElement<bUIDropdown>("Add Component");
-			dropdown->AddItem(IComponent::GetComponentID<SpriteRenderer>(), hUIHierarchyItem("Sprite Renderer"));
+			dropdown->AddItem(IComponent::GetComponentID<SpriteRenderer>(), bUIHierarchyItem("Sprite Renderer"));
 		}
 	}
 
@@ -634,7 +634,7 @@ namespace XYZ {
 			window->Visible = false;
 			
 			bUIDropdown* dropdown = allocator.GetElement<bUIDropdown>("Add Component");
-			dropdown->AddItem(IComponent::GetComponentID<ScriptComponent>(), hUIHierarchyItem("Script Component"));
+			dropdown->AddItem(IComponent::GetComponentID<ScriptComponent>(), bUIHierarchyItem("Script Component"));
 		}
 	}
 

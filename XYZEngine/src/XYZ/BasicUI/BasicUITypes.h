@@ -230,9 +230,9 @@ namespace XYZ {
 		bool FitParent = true;
 	};
 
-	struct hUIHierarchyItem
+	struct bUIHierarchyItem
 	{
-		hUIHierarchyItem(const std::string& label)
+		bUIHierarchyItem(const std::string& label)
 			: Label(label) {};
 
 		std::string Label;
@@ -256,12 +256,12 @@ namespace XYZ {
 		bUIHierarchyElement();
 		bUIHierarchyElement(bUIHierarchyElement&& other) noexcept;
 
-		void AddItem(uint32_t key, uint32_t parent, const hUIHierarchyItem& item);
-		void AddItem(uint32_t key, const hUIHierarchyItem& item);
+		void AddItem(uint32_t key, uint32_t parent, const bUIHierarchyItem& item);
+		void AddItem(uint32_t key, const bUIHierarchyItem& item);
 		void RemoveItem(uint32_t key);
 		void Clear();
 
-		hUIHierarchyItem& GetItem(uint32_t key);
+		bUIHierarchyItem& GetItem(uint32_t key);
 	protected:
 		void solveTreePosition(const glm::vec2& size);
 

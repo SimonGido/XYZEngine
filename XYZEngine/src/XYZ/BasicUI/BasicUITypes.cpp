@@ -448,7 +448,7 @@ namespace XYZ {
 
 	bUIHierarchyElement::bUIHierarchyElement()
 		:
-		Pool(sc_NumberOfItemsPerBlockInPool * sizeof(hUIHierarchyItem))
+		Pool(sc_NumberOfItemsPerBlockInPool * sizeof(bUIHierarchyItem))
 	{
 	}
 
@@ -460,12 +460,12 @@ namespace XYZ {
 	{
 	}
 
-	void bUIHierarchyElement::AddItem(uint32_t key, uint32_t parent, const hUIHierarchyItem& item)
+	void bUIHierarchyElement::AddItem(uint32_t key, uint32_t parent, const bUIHierarchyItem& item)
 	{
 		auto it = NameIDMap.find(key);
 		if (it == NameIDMap.end())
 		{
-			hUIHierarchyItem* ptr = Pool.Allocate<hUIHierarchyItem>(item.Label);		
+			bUIHierarchyItem* ptr = Pool.Allocate<bUIHierarchyItem>(item.Label);		
 			auto parentIt = NameIDMap.find(parent);
 			if (parentIt != NameIDMap.end())
 			{
@@ -484,12 +484,12 @@ namespace XYZ {
 		}
 	}
 
-	void bUIHierarchyElement::AddItem(uint32_t key, const hUIHierarchyItem& item)
+	void bUIHierarchyElement::AddItem(uint32_t key, const bUIHierarchyItem& item)
 	{
 		auto it = NameIDMap.find(key);
 		if (it == NameIDMap.end())
 		{
-			hUIHierarchyItem* ptr = Pool.Allocate<hUIHierarchyItem>(item.Label);	
+			bUIHierarchyItem* ptr = Pool.Allocate<bUIHierarchyItem>(item.Label);	
 			ptr->ID = Hierarchy.Insert(ptr);
 			ptr->Key = key;
 			NameIDMap[key] = ptr->ID;
@@ -507,14 +507,14 @@ namespace XYZ {
 		{
 			Hierarchy.TraverseNodeChildren(it->second, [&](void* parent, void* child)->bool {
 
-				hUIHierarchyItem* childItem = static_cast<hUIHierarchyItem*>(child);
+				bUIHierarchyItem* childItem = static_cast<bUIHierarchyItem*>(child);
 				NameIDMap.erase(childItem->Key);
 				Hierarchy.Remove(childItem->ID);
 				Pool.Deallocate(childItem);
 				return false;
 				});
 
-			hUIHierarchyItem* item = static_cast<hUIHierarchyItem*>(Hierarchy.GetData(NameIDMap[key]));
+			bUIHierarchyItem* item = static_cast<bUIHierarchyItem*>(Hierarchy.GetData(NameIDMap[key]));
 			Hierarchy.Remove(item->ID);
 			NameIDMap.erase(item->Key);
 			Pool.Deallocate(item);
@@ -529,18 +529,18 @@ namespace XYZ {
 	{
 		NameIDMap.clear();	
 		Hierarchy.Traverse([&](void* parent, void* child) -> bool {
-			Pool.Deallocate<hUIHierarchyItem>(static_cast<hUIHierarchyItem*>(child));
+			Pool.Deallocate<bUIHierarchyItem>(static_cast<bUIHierarchyItem*>(child));
 			return false;
 			});
 		Hierarchy.Clear();
 	}
 
-	hUIHierarchyItem& bUIHierarchyElement::GetItem(uint32_t key)
+	bUIHierarchyItem& bUIHierarchyElement::GetItem(uint32_t key)
 	{
 		auto it = NameIDMap.find(key);
 		XYZ_ASSERT(it != NameIDMap.end(), "");
 
-		return *static_cast<hUIHierarchyItem*>(Hierarchy.GetData(it->second));
+		return *static_cast<bUIHierarchyItem*>(Hierarchy.GetData(it->second));
 	}
 
 	void bUIHierarchyElement::solveTreePosition(const glm::vec2& size)
@@ -550,7 +550,7 @@ namespace XYZ {
 		auto& nodes = Hierarchy.GetFlatNodes();
 		Hierarchy.Traverse([&](void* parent, void* child) ->bool {
 
-			hUIHierarchyItem* childItem = static_cast<hUIHierarchyItem*>(child);
+			bUIHierarchyItem* childItem = static_cast<bUIHierarchyItem*>(child);
 			glm::vec2 textSize = bUIHelper::FindTextSize(childItem->Label.c_str(), bUI::GetConfig().GetFont());
 			glm::vec2 tmpSize = { size.x + textSize.x, std::max(size.y, textSize.y) };
 
@@ -567,7 +567,7 @@ namespace XYZ {
 			bool open = true;
 			if (parent)
 			{
-				hUIHierarchyItem* parentItem = static_cast<hUIHierarchyItem*>(parent);
+				bUIHierarchyItem* parentItem = static_cast<bUIHierarchyItem*>(parent);
 				open = parentItem->Open;
 			}
 			if (open)
@@ -617,10 +617,10 @@ namespace XYZ {
 		Hierarchy.Traverse([&](void* parent, void* child) ->bool {
 			if (parent)
 			{
-				if (!static_cast<hUIHierarchyItem*>(parent)->Open)
+				if (!static_cast<bUIHierarchyItem*>(parent)->Open)
 					return false;
 			}
-			hUIHierarchyItem* childItem = static_cast<hUIHierarchyItem*>(child);
+			bUIHierarchyItem* childItem = static_cast<bUIHierarchyItem*>(child);
 			childItem->Color = Color;
 			glm::vec2 textSize = bUIHelper::FindTextSize(childItem->Label.c_str(), bUI::GetConfig().GetFont());
 			glm::vec2 size = { Size.x + textSize.x, std::max(Size.y, textSize.y) };
@@ -644,10 +644,10 @@ namespace XYZ {
 		Hierarchy.Traverse([&](void* parent, void* child) ->bool {
 			if (parent)
 			{
-				if (!static_cast<hUIHierarchyItem*>(parent)->Open)
+				if (!static_cast<bUIHierarchyItem*>(parent)->Open)
 					return false;
 			}
-			hUIHierarchyItem* childItem = static_cast<hUIHierarchyItem*>(child);
+			bUIHierarchyItem* childItem = static_cast<bUIHierarchyItem*>(child);
 
 			glm::vec2 itemAbsolutePosition = absolutePosition + childItem->GetCoords();
 			glm::vec2 textPosition = itemAbsolutePosition + glm::vec2(Size.x, 0.0f);
@@ -680,10 +680,10 @@ namespace XYZ {
 		Hierarchy.Traverse([&](void* parent, void* child) ->bool {
 			if (parent)
 			{
-				if (!static_cast<hUIHierarchyItem*>(parent)->Open)
+				if (!static_cast<bUIHierarchyItem*>(parent)->Open)
 					return false;
 			}
-			hUIHierarchyItem* childItem = static_cast<hUIHierarchyItem*>(child);
+			bUIHierarchyItem* childItem = static_cast<bUIHierarchyItem*>(child);
 
 			glm::vec2 textSize = bUIHelper::FindTextSize(childItem->Label.c_str(), bUI::GetConfig().GetFont());
 			glm::vec2 size = { Size.x + textSize.x, std::max(Size.y, textSize.y) };
@@ -730,10 +730,10 @@ namespace XYZ {
 		Hierarchy.Traverse([&](void* parent, void* child) ->bool {
 			if (parent)
 			{
-				if (!static_cast<hUIHierarchyItem*>(parent)->Open)
+				if (!static_cast<bUIHierarchyItem*>(parent)->Open)
 					return false;
 			}
-			hUIHierarchyItem* childItem = static_cast<hUIHierarchyItem*>(child);
+			bUIHierarchyItem* childItem = static_cast<bUIHierarchyItem*>(child);
 			childItem->Color = Color;
 			glm::vec2 textSize = bUIHelper::FindTextSize(childItem->Label.c_str(), bUI::GetConfig().GetFont());
 			glm::vec2 size = { Size.x + textSize.x, std::max(Size.y, textSize.y) };
@@ -763,10 +763,10 @@ namespace XYZ {
 		Hierarchy.Traverse([&](void* parent, void* child) ->bool {
 			if (parent)
 			{
-				if (!static_cast<hUIHierarchyItem*>(parent)->Open)
+				if (!static_cast<bUIHierarchyItem*>(parent)->Open)
 					return false;
 			}
-			hUIHierarchyItem* childItem = static_cast<hUIHierarchyItem*>(child);
+			bUIHierarchyItem* childItem = static_cast<bUIHierarchyItem*>(child);
 			glm::vec2 itemAbsolutePosition = absolutePosition + childItem->GetCoords();
 			if (Helper::Collide(itemAbsolutePosition, Size, mousePosition))
 			{

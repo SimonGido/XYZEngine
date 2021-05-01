@@ -92,7 +92,7 @@ namespace XYZ {
 			for (bUIAllocator& allocator : data.m_Allocators)
 			{
 				int32_t root = allocator.GetHierarchy().GetRoot();
-				allocator.GetHierarchy().TraverseNodeSiblings(root, [&](void* parent, void* child) -> bool {			
+				allocator.GetHierarchy().TraverseNodeSiblingsReverse(root, [&](void* parent, void* child) -> bool {			
 					bUIElement* childElement = static_cast<bUIElement*>(child);
 					result = OnLeftMouseButtonPressRecursive(childElement, allocator, mousePosition);
 					return result;
@@ -108,7 +108,7 @@ namespace XYZ {
 				for (bUIAllocator& allocator : data.m_Allocators)
 				{
 					int32_t root = allocator.GetHierarchy().GetRoot();
-					allocator.GetHierarchy().TraverseNodeSiblings(root, [&](void* parent, void* child) -> bool {			
+					allocator.GetHierarchy().TraverseNodeSiblingsReverse(root, [&](void* parent, void* child) -> bool {			
 						bUIElement* childElement = static_cast<bUIElement*>(child);
 						result = OnRightMouseButtonPressRecursive(childElement, allocator, editData, mousePosition);
 						return result;
@@ -151,7 +151,7 @@ namespace XYZ {
 		for (bUIAllocator& allocator : data.m_Allocators)
 		{
 			int32_t root = allocator.GetHierarchy().GetRoot();
-			allocator.GetHierarchy().TraverseNodeSiblings(root, [&](void* parent, void* child) -> bool {			
+			allocator.GetHierarchy().TraverseNodeSiblingsReverse(root, [&](void* parent, void* child) -> bool {			
 				bUIElement* childElement = static_cast<bUIElement*>(child);
 				result = OnMouseMoveRecursive(childElement, allocator, mousePosition);
 				return result;
@@ -168,7 +168,7 @@ namespace XYZ {
 		for (bUIAllocator& allocator : data.m_Allocators)
 		{
 			int32_t root = allocator.GetHierarchy().GetRoot();
-			allocator.GetHierarchy().TraverseNodeSiblings(root, [&](void* parent, void* child) -> bool {			
+			allocator.GetHierarchy().TraverseNodeSiblingsReverse(root, [&](void* parent, void* child) -> bool {			
 				bUIElement* childElement = static_cast<bUIElement*>(child);
 				if (OnMouseScrollRecursive(childElement, allocator, mousePosition, offset))
 					result = true;
