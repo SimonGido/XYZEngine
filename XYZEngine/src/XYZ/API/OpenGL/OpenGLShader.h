@@ -74,7 +74,6 @@ namespace XYZ {
 		
 		UniformList m_VSUniformList;
 		UniformList m_FSUniformList;
-
 		TextureUniformList m_TextureList;
 
 		std::vector<std::function<void()>> m_ShaderReloadCallbacks;

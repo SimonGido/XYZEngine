@@ -497,8 +497,8 @@ namespace XYZ {
             Renderer::Clear();
             
 
-            renderPreviewMesh();
             Renderer2D::BeginScene(m_Camera.ViewProjectionMatrix);
+            renderPreviewMesh();
             PreviewRenderer::RenderSkinnedMesh(m_Mesh, IS_SET(m_Flags, PreviewPose));
             PreviewRenderer::RenderHierarchy(m_BoneHierarchy, IS_SET(m_Flags, PreviewPose));
             Renderer2D::FlushLines();
@@ -543,7 +543,6 @@ namespace XYZ {
         void SkinningEditor::renderPreviewMesh()
         {
             m_Shader->Bind();
-            m_Shader->SetMat4("u_ViewProjection", m_Camera.ViewProjectionMatrix);
             if (IS_SET(m_Flags, WeightBrush))
                 m_Shader->SetInt("u_ColorEnabled", 1);
             else

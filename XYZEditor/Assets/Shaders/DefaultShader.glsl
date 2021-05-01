@@ -16,8 +16,10 @@ out flat float v_TextureID;
 out float v_TilingFactor;
 
 
-
-uniform mat4 u_ViewProjection;
+layout(std140, binding = 0) uniform Camera
+{
+	mat4 u_ViewProjection;
+};
 
 void main()
 {
@@ -44,8 +46,7 @@ in flat float v_TextureID;
 in float v_TilingFactor;
 
 uniform vec4 u_Color;
-uniform sampler2D u_Texture[32];
-
+layout (binding = 0) uniform sampler2D u_Texture[32];
 
 void main()
 {

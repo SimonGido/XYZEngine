@@ -16,7 +16,10 @@ out flat float v_TextureID;
 out flat float v_ScissorIndex;
 
 
-uniform mat4 u_ViewProjection;
+layout(std140, binding = 0) uniform Camera
+{
+	mat4 u_ViewProjection;
+};
 
 void main()
 {
@@ -58,7 +61,7 @@ in flat float v_TextureID;
 in flat float v_ScissorIndex;
 
 uniform vec4 u_Color;
-uniform sampler2D u_Texture[32];
+layout (binding = 0) uniform sampler2D u_Texture[32];
 
 void main()
 {	

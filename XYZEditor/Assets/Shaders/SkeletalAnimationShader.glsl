@@ -15,7 +15,10 @@ uniform mat4 u_Bones[MAX_BONES];
 uniform mat4 u_Transform;
 
 
-uniform mat4 u_ViewProjection;
+layout(std140, binding = 0) uniform Camera
+{
+	mat4 u_ViewProjection;
+};
 
 void main()
 {
@@ -44,7 +47,7 @@ in vec2 v_TexCoord;
 
 
 uniform vec4 u_Color;
-uniform sampler2D u_Texture;
+layout(binding = 0) uniform sampler2D u_Texture;
 
 void main()
 {

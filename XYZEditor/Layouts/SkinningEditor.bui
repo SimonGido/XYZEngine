@@ -33,7 +33,7 @@ bUIElements:
         bUIElements:
           - Coords: [10, 35]
             Size: [400, 189]
-            Color: [0.699999988, 0.699999988, 0.699999988, 0.400000006]
+            Color: [0.699999988, 0.699999988, 0.699999988, 1]
             Label: Bone
             Name: Bone Window
             Locked: true
@@ -69,7 +69,7 @@ bUIElements:
                 Type: Checkbox
           - Coords: [10, 259]
             Size: [400, 236]
-            Color: [0.699999988, 0.699999988, 0.699999988, 0.400000006]
+            Color: [0.699999988, 0.699999988, 0.699999988, 1]
             Label: Vertex
             Name: Vertex Window
             Locked: true
@@ -119,7 +119,7 @@ bUIElements:
                 Type: Button
           - Coords: [10, 530]
             Size: [400, 114]
-            Color: [0.699999988, 0.699999988, 0.699999988, 0.400000006]
+            Color: [0.699999988, 0.699999988, 0.699999988, 1]
             Label: Weights
             Name: Weights Window
             Locked: true

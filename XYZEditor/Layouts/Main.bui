@@ -10,14 +10,14 @@ bUIElements:
     bUIElements:
       - Coords: [0, 25]
         Size: [640, 150]
-        Color: [1, 1, 1, 0.400000006]
+        Color: [1, 1, 1, 1]
         Label: File
         Name: File
         Locked: true
         Type: Window
       - Coords: [640, 25]
         Size: [640, 150]
-        Color: [1, 1, 1, 0.400000006]
+        Color: [1, 1, 1, 1]
         Label: View
         Name: View
         Locked: true
@@ -46,7 +46,7 @@ bUIElements:
             Type: Checkbox
       - Coords: [1280, 25]
         Size: [640, 150]
-        Color: [1, 1, 1, 0.400000006]
+        Color: [1, 1, 1, 1]
         Label: UI
         Name: UI
         Locked: true

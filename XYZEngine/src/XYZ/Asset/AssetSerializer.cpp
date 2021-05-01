@@ -324,40 +324,40 @@ namespace XYZ {
 		{
 			switch (uniform.DataType)
 			{
-			case UniformDataType::FLOAT:
+			case UniformDataType::Float:
 				out << YAML::BeginMap;
 				out << YAML::Key << uniform.Name;
 				out << YAML::Value << *(float*)&buffer[uniform.Offset];
 				out << YAML::EndMap;
 				break;
-			case UniformDataType::VEC2:
+			case UniformDataType::Vec2:
 				out << YAML::BeginMap;
 				out << YAML::Key << uniform.Name;
 				out << YAML::Value;
 				ToVec2(out, *(glm::vec2*)&buffer[uniform.Offset]);
 				out << YAML::EndMap;
 				break;
-			case UniformDataType::VEC3:
+			case UniformDataType::Vec3:
 				out << YAML::BeginMap;
 				out << YAML::Key << uniform.Name;
 				out << YAML::Value;
 				ToVec3(out, *(glm::vec3*)&buffer[uniform.Offset]);
 				out << YAML::EndMap;
 				break;
-			case UniformDataType::VEC4:
+			case UniformDataType::Vec4:
 				out << YAML::BeginMap;
 				out << YAML::Key << uniform.Name;
 				out << YAML::Value;
 				ToVec4(out, *(glm::vec4*)&buffer[uniform.Offset]);
 				out << YAML::EndMap;
 				break;
-			case UniformDataType::INT:
+			case UniformDataType::Int:
 				out << YAML::BeginMap;
 				out << YAML::Key << uniform.Name;
 				out << YAML::Value << *(int*)&buffer[uniform.Offset];
 				out << YAML::EndMap;
 				break;
-			case UniformDataType::MAT4:
+			case UniformDataType::Mat4:
 				break;
 			};
 		}

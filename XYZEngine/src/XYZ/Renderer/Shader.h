@@ -17,13 +17,13 @@ namespace XYZ {
 	*/
 	enum class UniformDataType
 	{
-		NONE,
-		SAMPLER2D,
-		SAMPLERCUBE,
-		BOOL, FLOAT, VEC2, VEC3, VEC4,
-		INT, INT_VEC2, INT_VEC3, INT_VEC4,
-		MAT3, MAT4,
-		STRUCT,
+		None,
+		Sampler2D,
+		SamplerCube,
+		Bool, Float, Vec2, Vec3, Vec4,
+		Int, IntVec2, IntVec3, IntVec4,
+		Mat3, Mat4,
+		Struct,
 	};
 
 	enum class ShaderType
@@ -60,7 +60,7 @@ namespace XYZ {
 	struct TextureUniformList
 	{
 		std::vector<TextureUniform> Textures;
-		uint32_t					Count = 0;
+		uint32_t Count = 0;
 	};
 
 	class Shader : public Asset

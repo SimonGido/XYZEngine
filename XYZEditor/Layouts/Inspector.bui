@@ -18,7 +18,7 @@ bUIElements:
         bUIElements:
           - Coords: [10, 20]
             Size: [452, 70]
-            Color: [0.699999988, 0.699999988, 0.699999988, 0.400000006]
+            Color: [0.699999988, 0.699999988, 0.699999988, 1]
             Label: Scene Tag Component
             Name: Scene Tag Component
             Locked: true
@@ -33,7 +33,7 @@ bUIElements:
                 Type: String
           - Coords: [10, 20]
             Size: [452, 218]
-            Color: [0.699999988, 0.699999988, 0.699999988, 0.400000006]
+            Color: [0.699999988, 0.699999988, 0.699999988, 1]
             Label: Transform Component
             Name: Transform Component
             Locked: true
@@ -104,7 +104,7 @@ bUIElements:
                 Type: Float
           - Coords: [10, 273]
             Size: [452, 173]
-            Color: [0.699999988, 0.699999988, 0.699999988, 0.400000006]
+            Color: [0.699999988, 0.699999988, 0.699999988, 1]
             Label: Sprite Renderer
             Name: Sprite Renderer
             Locked: true
@@ -154,7 +154,7 @@ bUIElements:
                 Type: Checkbox
           - Coords: [10, 481]
             Size: [452, 193]
-            Color: [0.699999988, 0.699999988, 0.699999988, 0.400000006]
+            Color: [0.699999988, 0.699999988, 0.699999988, 1]
             Label: Script Component
             Name: Script Component
             Locked: true

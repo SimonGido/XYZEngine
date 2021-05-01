@@ -9,7 +9,10 @@ layout(location = 2) in float a_Radius;
 out vec4 v_Color;
 out float v_Radius;
 
-uniform mat4 u_ViewProjection;
+layout(std140, binding = 0) uniform Camera
+{
+	mat4 u_ViewProjection;
+};
 void main()
 {
 	v_Color = a_Color;

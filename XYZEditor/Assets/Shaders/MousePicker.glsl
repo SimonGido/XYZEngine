@@ -6,7 +6,10 @@ layout(location = 1) in int a_ObjectID;
 
 out flat int v_ObjectID;
 
-uniform mat4 u_ViewProjection;
+layout(std140, binding = 0) uniform Camera
+{
+	mat4 u_ViewProjection;
+};
 
 void main()
 {

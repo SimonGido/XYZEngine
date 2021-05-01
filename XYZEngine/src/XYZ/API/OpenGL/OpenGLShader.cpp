@@ -12,26 +12,27 @@ namespace XYZ {
 
 	UniformDataType StringToType(const std::string& type)
 	{
-		if (type == "int")      return UniformDataType::INT;
-		if (type == "float")    return UniformDataType::FLOAT;
-		if (type == "vec2")     return UniformDataType::VEC2;
-		if (type == "vec3")     return UniformDataType::VEC3;
-		if (type == "vec4")     return UniformDataType::VEC4;
-		if (type == "mat3")     return UniformDataType::MAT3;
-		if (type == "mat4")     return UniformDataType::MAT4;
-		return UniformDataType::NONE;
+		if (type == "int")			return UniformDataType::Int;
+		if (type == "float")		return UniformDataType::Float;
+		if (type == "vec2")			return UniformDataType::Vec2;
+		if (type == "vec3")			return UniformDataType::Vec3;
+		if (type == "vec4")			return UniformDataType::Vec4;
+		if (type == "mat3")			return UniformDataType::Mat3;
+		if (type == "mat4")			return UniformDataType::Mat4;
+		if (type == "sampler2D")	return UniformDataType::Sampler2D;
+		return UniformDataType::None;
 	}
 	uint32_t SizeOfUniformType(UniformDataType type)
 	{
 		switch (type)
 		{
-		case UniformDataType::INT:        return 4;
-		case UniformDataType::FLOAT:      return 4;
-		case UniformDataType::VEC2:       return 4 * 2;
-		case UniformDataType::VEC3:       return 4 * 3;
-		case UniformDataType::VEC4:       return 4 * 4;
-		case UniformDataType::MAT3:       return 4 * 3 * 3;
-		case UniformDataType::MAT4:       return 4 * 4 * 4;
+		case UniformDataType::Int:        return 4;
+		case UniformDataType::Float:      return 4;
+		case UniformDataType::Vec2:       return 4 * 2;
+		case UniformDataType::Vec3:       return 4 * 3;
+		case UniformDataType::Vec4:       return 4 * 4;
+		case UniformDataType::Mat3:       return 4 * 3 * 3;
+		case UniformDataType::Mat4:       return 4 * 4 * 4;
 		}
 		return 0;
 	}
@@ -235,22 +236,22 @@ namespace XYZ {
 	{
 		switch (uniform->DataType)
 		{
-		case UniformDataType::FLOAT:
+		case UniformDataType::Float:
 			uploadFloat(uniform->Location, *(float*)& data[uniform->Offset]);
 			break;
-		case UniformDataType::VEC2:
+		case UniformDataType::Vec2:
 			uploadFloat2(uniform->Location, *(glm::vec2*) & data[uniform->Offset]);
 			break;
-		case UniformDataType::VEC3:
+		case UniformDataType::Vec3:
 			uploadFloat3(uniform->Location, *(glm::vec3*) & data[uniform->Offset]);
 			break;
-		case UniformDataType::VEC4:
+		case UniformDataType::Vec4:
 			uploadFloat4(uniform->Location, *(glm::vec4*) & data[uniform->Offset]);
 			break;
-		case UniformDataType::INT:
+		case UniformDataType::Int:
 			uploadInt(uniform->Location, *(int*)& data[uniform->Offset]);
 			break;
-		case UniformDataType::MAT4:
+		case UniformDataType::Mat4:
 			uploadMat4(uniform->Location, *(glm::mat4*) & data[uniform->Offset]);
 			break;
 		};
@@ -260,22 +261,22 @@ namespace XYZ {
 	{
 		switch (uniform->DataType)
 		{
-		case UniformDataType::FLOAT:
+		case UniformDataType::Float:
 			uploadFloatArr(uniform->Location, (float*)& data[uniform->Offset], uniform->Count);
 			break;
-		case UniformDataType::VEC2:
+		case UniformDataType::Vec2:
 			uploadFloat2Arr(uniform->Location, *(glm::vec2*) & data[uniform->Offset], uniform->Count);
 			break;
-		case UniformDataType::VEC3:
+		case UniformDataType::Vec3:
 			uploadFloat3Arr(uniform->Location, *(glm::vec3*) & data[uniform->Offset], uniform->Count);
 			break;
-		case UniformDataType::VEC4:
+		case UniformDataType::Vec4:
 			uploadFloat4Arr(uniform->Location, *(glm::vec4*) & data[uniform->Offset], uniform->Count);
 			break;
-		case UniformDataType::INT:
+		case UniformDataType::Int:
 			uploadIntArr(uniform->Location, (int*)& data[uniform->Offset], uniform->Count);
 			break;
-		case UniformDataType::MAT4:
+		case UniformDataType::Mat4:
 			uploadMat4Arr(uniform->Location, *(glm::mat4*) & data[uniform->Offset], uniform->Count);
 			break;
 		};
@@ -468,9 +469,14 @@ namespace XYZ {
 
 		auto dataType = StringToType(typeString);
 		auto size = SizeOfUniformType(dataType);
-		if (dataType != UniformDataType::NONE)
+		if (dataType != UniformDataType::None)
 		{			
-			if (type == ShaderType::Vertex)
+			if (dataType == UniformDataType::Sampler2D)
+			{
+				m_TextureList.Textures.push_back(TextureUniform{ name, m_TextureList.Count, count });
+				m_TextureList.Count += count;
+			}
+			else if (type == ShaderType::Vertex)
 			{
 				Uniform uniform{
 					   name, dataType, type, m_VSUniformList.Size, size, count, 0
@@ -486,11 +492,6 @@ namespace XYZ {
 				m_FSUniformList.Uniforms.push_back(uniform);
 				m_FSUniformList.Size += size * count;
 			}
-		}
-		else
-		{
-			m_TextureList.Textures.push_back(TextureUniform{ name, m_TextureList.Count, count });
-			m_TextureList.Count += count;
 		}
 	}
 	void OpenGLShader::compileAndUpload()
@@ -585,23 +586,23 @@ namespace XYZ {
 		{
 			uni.Location = glGetUniformLocation(m_RendererID, uni.Name.c_str());
 		}
-		for (auto& texture : m_TextureList.Textures)
-		{
-			if (texture.Count > 1)
-			{	
-				int32_t location = glGetUniformLocation(m_RendererID, texture.Name.c_str());
-				int* samplers = new int[texture.Count];
-				for (uint32_t s = 0; s < texture.Count; ++s)
-					samplers[s] = texture.Slot + s;
-				glUniform1iv(location, texture.Count, samplers);
-				delete[] samplers;
-			}
-			else
-			{
-				int32_t location = glGetUniformLocation(m_RendererID, texture.Name.c_str());
-				glUniform1i(location, texture.Slot);
-			}
-		}
+		//for (auto& texture : m_TextureList.Textures)
+		//{
+		//	if (texture.Count > 1)
+		//	{	
+		//		int32_t location = glGetUniformLocation(m_RendererID, texture.Name.c_str());
+		//		int* samplers = new int[texture.Count];
+		//		for (uint32_t s = 0; s < texture.Count; ++s)
+		//			samplers[s] = texture.Slot + s;
+		//		glUniform1iv(location, texture.Count, samplers);
+		//		delete[] samplers;
+		//	}
+		//	else
+		//	{
+		//		int32_t location = glGetUniformLocation(m_RendererID, texture.Name.c_str());
+		//		glUniform1i(location, texture.Slot);
+		//	}
+		//}
 	}
 	const char* FindToken(const char* str, const std::string& token)
 	{

@@ -9,8 +9,12 @@ out vec3 v_Color;
 out vec2 v_TexCoord;
 
 
+layout(std140, binding = 0) uniform Camera
+{
+	mat4 u_ViewProjection;
+};
+
 uniform mat4 u_Transform;
-uniform mat4 u_ViewProjection;
 
 void main()
 {
@@ -31,7 +35,7 @@ in vec3 v_Color;
 in vec2 v_TexCoord;
 
 uniform int u_ColorEnabled;
-uniform sampler2D u_Texture;
+layout(binding = 0) uniform sampler2D u_Texture;
 
 void main()
 {
