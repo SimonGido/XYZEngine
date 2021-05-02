@@ -136,7 +136,7 @@ namespace XYZ {
 
 			float m_WeightBrushRadius;
 			float m_WeightBrushStrength;
-			static constexpr float sc_WeightBrushDivisor = 100.0f;
+			static constexpr float sc_WeightBrushDivisor = 80.0f;
 
 			glm::vec4 m_HighlightColor;
 			glm::vec4 m_UIHighlightColor;

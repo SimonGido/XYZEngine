@@ -219,17 +219,15 @@ namespace XYZ {
             std::vector<XYZ::AnimatedVertex> vertices;
             std::vector<uint32_t> indices;
             std::vector<Bone> bones;
-            Tree boneHierarchy;
+            Tree boneHierarchy(m_BoneHierarchy);
 
             uint32_t counter = 0;
             for (const auto& subMesh :  m_Mesh.Submeshes)
             {
-                for (const auto& vertex : subMesh.GeneratedVertices)
+                for (const auto& vertex : subMesh.VerticesLocalToBones)
                 {
                     auto& previewVertex =  m_Mesh.PreviewVertices[counter];
                     VertexBoneData boneData;
-                    BoneVertex temp = vertex;
-                    SkinnedMesh::GetPositionLocalToBone(temp, m_BoneHierarchy);
                     for (size_t i = 0; i < BoneData::sc_MaxBonesPerVertex; ++i)
                     {
                         if (vertex.Data.IDs[i] != -1)
@@ -238,7 +236,7 @@ namespace XYZ {
                             boneData.Weights[i] = vertex.Data.Weights[i];
                         }
                     }          
-                    vertices.push_back({ glm::vec3(temp.Position, 0.0f), previewVertex.TexCoord, boneData });
+                    vertices.push_back({ glm::vec3(vertex.Position, 0.0f), previewVertex.TexCoord, boneData });
                     counter++;
                 }
             }
@@ -256,35 +254,16 @@ namespace XYZ {
 
             counter = 0;
             bones.resize(m_Bones.size());
-            std::unordered_map<int32_t, uint32_t> boneMap;
-            m_BoneHierarchy.Traverse([&](void* parent, void* child) -> bool {
-
-                PreviewBone* childBone = static_cast<PreviewBone*>(child);
-                bones[counter] = { 
-                    childBone->LocalTransform,
-                };      
-                boneMap[childBone->ID] = counter;
+            for (auto& bone : m_Bones)
+            {
+                bones[counter].Transform = bone->LocalTransform;
+                bones[counter].Name = bone->Name;
+                bones[counter].ID = bone->ID;
+                boneHierarchy.SetData(bones[counter].ID, &bones[counter]);
                 counter++;
-                return false;
-             });
-            m_BoneHierarchy.Traverse([&](void* parent, void* child) -> bool {
+            }
 
-                PreviewBone* childBone = static_cast<PreviewBone*>(child);
-                uint32_t childBoneIndex = boneMap[childBone->ID];
-                if (parent)
-                {
-                    PreviewBone* parentBone = static_cast<PreviewBone*>(parent);
-                    uint32_t parentBoneIndex = boneMap[parentBone->ID];
-                    bones[childBoneIndex].ID = boneHierarchy.Insert(&bones[childBoneIndex], bones[parentBoneIndex].ID);
-                }
-                else
-                {
-                    bones[childBoneIndex].ID = boneHierarchy.Insert(&bones[childBoneIndex]);
-                }
-                bones[childBoneIndex].Name = childBone->Name;
-                return false;
-                });
-            //Ref<SkeletalMesh> mesh = AssetManager::GetAsset<SkeletalMesh>(AssetManager::GetAssetHandle("Assets/Meshes/SkeletalMesh.skm"));
+            s_SkeletalMesh = AssetManager::GetAsset<SkeletalMesh>(AssetManager::GetAssetHandle("Assets/Meshes/SkeletalMesh.skm"));
             
             //AssetManager::CreateAsset<SkeletalMesh>(
             //    "CopySkeletalMesh.skm", 
@@ -297,8 +276,8 @@ namespace XYZ {
             //    mesh->GetMaterial()
             //    );
 
-            //s_SkeletalMesh = mesh;
-            AssetManager::CreateAsset<SkeletalMesh>("SkeletalMesh.skm", AssetType::SkeletalMesh, AssetManager::GetDirectoryHandle("Assets/Meshes"), vertices, indices, bones, boneHierarchy, material);
+
+            //AssetManager::CreateAsset<SkeletalMesh>("SkeletalMesh.skm", AssetType::SkeletalMesh, AssetManager::GetDirectoryHandle("Assets/Meshes"), vertices, indices, bones, boneHierarchy, material);
         }
 
         void SkinningEditor::setupUI()
@@ -1041,7 +1020,7 @@ namespace XYZ {
                     vertex->Data.IDs[index] = -1;
                 }
             };
-            
+
             std::vector<BoneVertex*> vertices = std::move(findVerticesInRadius(m_MousePosition, m_WeightBrushRadius));
             if (m_SelectedBone)
             {

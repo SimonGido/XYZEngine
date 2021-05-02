@@ -649,9 +649,22 @@ namespace XYZ {
 	
 	static void BuildBoneTree(Tree& tree, std::vector<Bone>& bones, std::vector<TreeNode>& nodes)
 	{
-		for (TreeNode& node : nodes)
+		for (const TreeNode& node : nodes)
 		{
-			node.ID = tree.Insert(nullptr);
+			uint32_t newID = tree.Insert(nullptr);
+			for (TreeNode& otherNode : nodes)
+			{
+				if (otherNode.Parent == node.ID)
+					otherNode.Parent = newID;
+				else if (otherNode.FirstChild == node.ID)
+					otherNode.FirstChild = newID;
+				else if (otherNode.NextSibling == node.ID)
+					otherNode.NextSibling = newID;
+				else if (otherNode.PreviousSibling == node.ID)
+					otherNode.PreviousSibling = newID;
+				else if (otherNode.ID == node.ID)
+					otherNode.ID = newID;
+			}
 		}
 		for (const TreeNode& node : nodes)
 		{
