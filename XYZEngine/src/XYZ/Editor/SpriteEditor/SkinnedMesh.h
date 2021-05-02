@@ -59,7 +59,8 @@ namespace XYZ {
 		{
 			// This vector is filled after triangulation to store the original vertices
 			std::vector<BoneVertex> OriginalVertices;
-			std::vector<BoneVertex> Vertices;
+			std::vector<BoneVertex> GeneratedVertices;
+			std::vector<BoneVertex> VerticesLocalToBones;
 			std::vector<Triangle>	Triangles;
 
 			BoneVertex* FindVertex(const glm::vec2& pos, float radius);
@@ -74,7 +75,8 @@ namespace XYZ {
 			bool EraseVertexAtPosition(const glm::vec2& pos);
 			bool EraseTriangleAtPosition(const glm::vec2& pos);
 			void BuildPreviewVertices(const Tree& hierarchy, const glm::vec2& contextSize, bool preview, bool weight);
-			
+			void InitializeVerticesLocalToBone(const Tree& hierarchy);
+
 			std::vector<Submesh> Submeshes;
 			std::vector<PreviewVertex> PreviewVertices;
 
@@ -87,11 +89,12 @@ namespace XYZ {
 
 			glm::vec4 Colors[NumColors];
 			static constexpr float PointRadius = 5.0f;
+			
+			static void GetPositionLocalToBone(BoneVertex& vertex, const Tree& hierarchy);
 		private:
 			static bool trianglesHaveIndex(const Submesh& subMesh, uint32_t index);
 			static void triangulateSubmesh(Submesh& subMesh);
 			static void eraseEmptyPoints(Submesh& subMesh);
-			static void getPositionLocalToBone(BoneVertex& vertex, const Tree& hierarchy);
 			static void getPositionFromBones(BoneVertex& vertex, const Tree& hierarchy);
 			static void getColorFromBoneWeights(BoneVertex& vertex, const Tree& hierarchy);
 		

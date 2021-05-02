@@ -19,7 +19,7 @@ namespace XYZ {
 			SkinningEditor();
 			~SkinningEditor();
 
-			void SetContext(Ref<SubTexture> context);
+			void SetContext(const Ref<SubTexture>& context);
 			void OnUpdate(Timestep ts);
 			void OnEvent(Event& event);
 

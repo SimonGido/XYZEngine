@@ -155,7 +155,7 @@ namespace XYZ {
         {
             bUILoader::Save("SkinningEditor", "Layouts/SkinningEditor.bui");
         }
-        void SkinningEditor::SetContext(Ref<SubTexture> context)
+        void SkinningEditor::SetContext(const Ref<SubTexture>& context)
         {
             m_Context = context;
             m_ContextSize.x = (float)m_Context->GetTexture()->GetWidth();
@@ -222,12 +222,14 @@ namespace XYZ {
             Tree boneHierarchy;
 
             uint32_t counter = 0;
-            for (auto& subMesh :  m_Mesh.Submeshes)
+            for (const auto& subMesh :  m_Mesh.Submeshes)
             {
-                for (auto& vertex : subMesh.Vertices)
+                for (const auto& vertex : subMesh.GeneratedVertices)
                 {
                     auto& previewVertex =  m_Mesh.PreviewVertices[counter];
                     VertexBoneData boneData;
+                    BoneVertex temp = vertex;
+                    SkinnedMesh::GetPositionLocalToBone(temp, m_BoneHierarchy);
                     for (size_t i = 0; i < BoneData::sc_MaxBonesPerVertex; ++i)
                     {
                         if (vertex.Data.IDs[i] != -1)
@@ -236,18 +238,20 @@ namespace XYZ {
                             boneData.Weights[i] = vertex.Data.Weights[i];
                         }
                     }          
-                    vertices.push_back({ previewVertex.Position, previewVertex.TexCoord, boneData });
+                    vertices.push_back({ glm::vec3(temp.Position, 0.0f), previewVertex.TexCoord, boneData });
                     counter++;
                 }
             }
+            counter = 0;
             for (auto& subMesh : m_Mesh.Submeshes)
             {
                 for (auto& triangle : subMesh.Triangles)
                 {
-                    indices.push_back(triangle.First);
-                    indices.push_back(triangle.Second);
-                    indices.push_back(triangle.Third);
+                    indices.push_back(triangle.First + counter);
+                    indices.push_back(triangle.Second + counter);
+                    indices.push_back(triangle.Third + counter);
                 }
+                counter += subMesh.GeneratedVertices.size();
             }
 
             counter = 0;
@@ -262,7 +266,7 @@ namespace XYZ {
                 boneMap[childBone->ID] = counter;
                 counter++;
                 return false;
-                });
+             });
             m_BoneHierarchy.Traverse([&](void* parent, void* child) -> bool {
 
                 PreviewBone* childBone = static_cast<PreviewBone*>(child);
@@ -280,21 +284,21 @@ namespace XYZ {
                 bones[childBoneIndex].Name = childBone->Name;
                 return false;
                 });
-            Ref<SkeletalMesh> mesh = AssetManager::GetAsset<SkeletalMesh>(AssetManager::GetAssetHandle("Assets/Meshes/SkeletalMesh.skm"));
+            //Ref<SkeletalMesh> mesh = AssetManager::GetAsset<SkeletalMesh>(AssetManager::GetAssetHandle("Assets/Meshes/SkeletalMesh.skm"));
             
-            AssetManager::CreateAsset<SkeletalMesh>(
-                "CopySkeletalMesh.skm", 
-                AssetType::SkeletalMesh, 
-                AssetManager::GetDirectoryHandle("Assets/Meshes"), 
-                mesh->GetVertices(), 
-                mesh->GetIndicies(), 
-                mesh->GetBones(), 
-                mesh->GetBoneHierarchy(), 
-                mesh->GetMaterial()
-                );
+            //AssetManager::CreateAsset<SkeletalMesh>(
+            //    "CopySkeletalMesh.skm", 
+            //    AssetType::SkeletalMesh, 
+            //    AssetManager::GetDirectoryHandle("Assets/Meshes"), 
+            //    mesh->GetVertices(), 
+            //    mesh->GetIndicies(), 
+            //    mesh->GetBones(), 
+            //    mesh->GetBoneHierarchy(), 
+            //    mesh->GetMaterial()
+            //    );
 
-            s_SkeletalMesh = mesh;
-            //AssetManager::CreateAsset<SkeletalMesh>("SkeletalMesh.skm", AssetType::SkeletalMesh, AssetManager::GetDirectoryHandle("Assets/Meshes"), vertices, indices, bones, boneHierarchy, material);
+            //s_SkeletalMesh = mesh;
+            AssetManager::CreateAsset<SkeletalMesh>("SkeletalMesh.skm", AssetType::SkeletalMesh, AssetManager::GetDirectoryHandle("Assets/Meshes"), vertices, indices, bones, boneHierarchy, material);
         }
 
         void SkinningEditor::setupUI()
@@ -810,7 +814,7 @@ namespace XYZ {
             {
                 if (m_Mesh.Submeshes.empty()) 
                     m_Mesh.Submeshes.push_back({});
-                m_Mesh.Submeshes.back().Vertices.push_back({ pos });
+                m_Mesh.Submeshes.back().GeneratedVertices.push_back({ pos });
             }
             else
             {
@@ -826,6 +830,8 @@ namespace XYZ {
 
                 return false;
             });
+            updateBoneHierarchy();
+            m_Mesh.InitializeVerticesLocalToBone(m_BoneHierarchy);
         }
         void SkinningEditor::updateBoneHierarchy()
         {
@@ -883,7 +889,7 @@ namespace XYZ {
                     indices.push_back(triangle.Second + offset);
                     indices.push_back(triangle.Third + offset);
                 }
-                offset += subMesh.Vertices.size();
+                offset += subMesh.GeneratedVertices.size();
             }
             if (indices.empty())
             {
@@ -1092,7 +1098,7 @@ namespace XYZ {
             std::vector<BoneVertex*> vertices;
             for (auto& subMesh : m_Mesh.Submeshes)
             {
-                for (auto& vertex : subMesh.Vertices)
+                for (auto& vertex : subMesh.GeneratedVertices)
                 {
                     if (glm::distance(vertex.Position, pos) < radius)
                     {

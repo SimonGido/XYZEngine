@@ -38,7 +38,7 @@ bUIElements:
             Name: Clear
             Locked: true
             Type: Button
-          - Coords: [10, 721]
+          - Coords: [10, 766]
             Size: [60, 35]
             Color: [2, 2, 2, 1]
             Label: Save

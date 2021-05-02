@@ -8,6 +8,7 @@
 
 namespace XYZ {
 
+
 	static glm::vec2 MouseToWorld(const glm::vec2& point, const glm::vec2& windowSize)
 	{
 		glm::vec2 offset = { windowSize.x / 2,windowSize.y / 2 };
@@ -32,8 +33,6 @@ namespace XYZ {
 			return true;
 		return false;
 	}
-
-
 
 	EditorLayer::EditorLayer()
 	{			

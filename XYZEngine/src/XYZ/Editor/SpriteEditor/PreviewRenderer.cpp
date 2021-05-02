@@ -19,7 +19,7 @@ namespace XYZ {
                         const PreviewVertex& third = mesh.PreviewVertices[(size_t)triangle.Third + offset];
                         RenderTriangle(first.Position, second.Position, third.Position, mesh.Colors[SkinnedMesh::TriangleColor]);
                     }
-                    offset += subMesh.Vertices.size();
+                    offset += subMesh.GeneratedVertices.size();
                 }
                 for (auto& vertex : mesh.PreviewVertices)
                     Renderer2D::SubmitCircle(glm::vec3(vertex.Position.x, vertex.Position.y, 0.0f), SkinnedMesh::PointRadius, 20, mesh.Colors[SkinnedMesh::VertexColor]);
@@ -31,16 +31,16 @@ namespace XYZ {
                 {
                     for (auto& triangle : subMesh.Triangles)
                     {
-                        const BoneVertex& first = mesh.Submeshes[counter].Vertices[triangle.First];
-                        const BoneVertex& second = mesh.Submeshes[counter].Vertices[triangle.Second];
-                        const BoneVertex& third = mesh.Submeshes[counter].Vertices[triangle.Third];
+                        const BoneVertex& first = mesh.Submeshes[counter].GeneratedVertices[triangle.First];
+                        const BoneVertex& second = mesh.Submeshes[counter].GeneratedVertices[triangle.Second];
+                        const BoneVertex& third = mesh.Submeshes[counter].GeneratedVertices[triangle.Third];
                         RenderTriangle(first.Position, second.Position, third.Position, mesh.Colors[SkinnedMesh::TriangleColor]);
                     }
                     counter++;               
                 }
                 for (auto& subMesh : mesh.Submeshes)
                 {
-                    for (auto& vertex : subMesh.Vertices)
+                    for (auto& vertex : subMesh.GeneratedVertices)
                         Renderer2D::SubmitCircle(glm::vec3(vertex.Position.x, vertex.Position.y, 0.0f), SkinnedMesh::PointRadius, 20, mesh.Colors[SkinnedMesh::VertexColor]);
                 }
             }
@@ -129,9 +129,9 @@ namespace XYZ {
 
         void PreviewRenderer::RenderTriangle(const Submesh& mesh, const Triangle& triangle, const glm::vec4& color)
         {
-            const BoneVertex& first = mesh.Vertices[triangle.First];
-            const BoneVertex& second = mesh.Vertices[triangle.Second];
-            const BoneVertex& third = mesh.Vertices[triangle.Third];
+            const BoneVertex& first = mesh.GeneratedVertices[triangle.First];
+            const BoneVertex& second = mesh.GeneratedVertices[triangle.Second];
+            const BoneVertex& third = mesh.GeneratedVertices[triangle.Third];
             RenderTriangle(first.Position, second.Position, third.Position, color);
         }
 

@@ -110,6 +110,7 @@ namespace XYZ {
     }
     void SkeletalMesh::setupFinalTransform()
     {
+        m_FinalTransformations.resize(m_BoneHierarchy.GetFlatNodes().Range());
         m_BoneHierarchy.Traverse([&](void* parent, void* child) -> bool {
 
             Bone* childBone = static_cast<Bone*>(child);
@@ -122,7 +123,7 @@ namespace XYZ {
             {
                 childBone->WorldTransform = childBone->Transform;
             }
-            m_FinalTransformations.push_back(childBone->WorldTransform);
+            m_FinalTransformations[childBone->ID] = childBone->WorldTransform;
             return false;
      });
     }
