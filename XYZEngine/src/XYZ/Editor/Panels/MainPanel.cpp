@@ -107,6 +107,7 @@ namespace XYZ {
 					bUI::GetUI<bUIWindow>("SkinningEditor", "Skinning Editor").Visible = casted.Checked;
 					bUI::GetUI<bUIWindow>("SkinningEditor", "Skinning Preview").Visible = casted.Checked;
 					bUI::GetUI<bUIWindow>("SkinningEditor", "Bone Hierarchy").Visible = casted.Checked;
+					bUI::GetUI<bUIWindow>("SkinningEditor", "Mesh").Visible = casted.Checked;
 				}
 			}
 		);

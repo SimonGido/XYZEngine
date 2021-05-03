@@ -16,6 +16,7 @@ namespace XYZ {
     namespace Editor {
 
         static uint32_t s_NextBone = 1;
+        static uint32_t s_NextSubmesh = 1;
         static Ref<SkeletalMesh> s_SkeletalMesh;
 
         namespace Helper {
@@ -86,7 +87,7 @@ namespace XYZ {
                 return HSVtoRGB(h, s, v);
             }
 
-            glm::vec2 CalculateTexCoord(const glm::vec2& pos, const glm::vec2& size)
+            static glm::vec2 CalculateTexCoord(const glm::vec2& pos, const glm::vec2& size)
             {
                 glm::vec2 position = pos + size / 2.0f;
                 return glm::vec2(position.x / size.x, position.y / size.y);
@@ -199,13 +200,11 @@ namespace XYZ {
         void SkinningEditor::OnEvent(Event& event)
         {
             EventDispatcher dispatcher(event);
-            //if (IS_SET(m_Window->Flags, IGWindow::Hoovered))
-            {
-                dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&SkinningEditor::onMouseButtonPress, this));
-                dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&SkinningEditor::onMouseButtonRelease, this));
-                dispatcher.Dispatch<MouseScrollEvent>(Hook(&SkinningEditor::onMouseScroll, this));
-                dispatcher.Dispatch<KeyPressedEvent>(Hook(&SkinningEditor::onKeyPress, this));
-            }
+ 
+            dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&SkinningEditor::onMouseButtonPress, this));
+            dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&SkinningEditor::onMouseButtonRelease, this));
+            dispatcher.Dispatch<MouseScrollEvent>(Hook(&SkinningEditor::onMouseScroll, this));
+            dispatcher.Dispatch<KeyPressedEvent>(Hook(&SkinningEditor::onKeyPress, this));
         }
        
         void SkinningEditor::save()
@@ -289,7 +288,8 @@ namespace XYZ {
             m_Image = allocator.GetElement<bUIImage>("Skinning Editor Image");
             m_Image->BlockEvents = false;
             m_Tree = allocator.GetElement<bUITree>("Bones");
-            
+            m_MeshTree = allocator.GetElement<bUITree>("Submeshes");
+
             m_ViewportSize = m_Image->Size;
             m_Camera.ProjectionMatrix = glm::ortho(
                 -m_Image->Size.x / 2.0f, m_Image->Size.x / 2.0f,
@@ -418,12 +418,12 @@ namespace XYZ {
         {
             bUIAllocator& allocator = bUI::GetAllocator("SkinningEditor");
 
-            bUIButton* createSubmesh = allocator.GetElement<bUIButton>("Create Submesh");
-            createSubmesh->Callbacks.push_back([&](bUICallbackType type, bUIElement& element) {
+            bUIButton* createSubMesh = allocator.GetElement<bUIButton>("Create Submesh");
+            createSubMesh->Callbacks.push_back([&](bUICallbackType type, bUIElement& element) {
                 if (type == bUICallbackType::Active)
                 {
                     if (!m_Triangulated)
-                        m_Mesh.Submeshes.push_back({});
+                        createSubmesh();
                 }
                 
             });
@@ -743,6 +743,7 @@ namespace XYZ {
             m_Mesh.Submeshes.clear();
             m_Mesh.PreviewVertices.clear();
             m_Tree->Clear();
+            m_MeshTree->Clear();
             m_BoneHierarchy.Clear();
             for (auto bone : m_Bones)
                 m_BonePool.Deallocate<PreviewBone>(bone);
@@ -757,6 +758,13 @@ namespace XYZ {
             m_SelectedVertex = nullptr;
             m_Triangulated = false;
             rebuildRenderBuffers();
+        }
+        void SkinningEditor::createSubmesh()
+        {
+            char buffer[20];
+            sprintf(buffer, "submesh_%u", s_NextSubmesh);
+            m_Mesh.Submeshes.emplace_back(glm::vec4(Helper::RandomColor(m_ColorIDs[s_NextSubmesh]), 1.0f));
+            m_MeshTree->AddItem(s_NextSubmesh++, bUIHierarchyItem(buffer), true);
         }
         void SkinningEditor::eraseBone(PreviewBone* bone)
         {
@@ -791,8 +799,9 @@ namespace XYZ {
         {
             if (!m_Triangulated)
             {
-                if (m_Mesh.Submeshes.empty()) 
-                    m_Mesh.Submeshes.push_back({});
+                if (m_Mesh.Submeshes.empty())
+                    createSubmesh();
+                
                 m_Mesh.Submeshes.back().GeneratedVertices.push_back({ pos });
             }
             else

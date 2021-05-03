@@ -42,6 +42,8 @@ namespace XYZ {
 		void        Remove(int32_t index);
 		void        ReverseNodeChildren(int32_t node);
 		void        ReverseNode(int32_t node);
+		void		SwapWithPrevious(int32_t node);
+		void		SwapWithNext(int32_t node);
 		void        Clear();
 
 		void        Traverse(const std::function<bool(void*, void*)>& callback) const;

@@ -256,8 +256,8 @@ namespace XYZ {
 		bUIHierarchyElement();
 		bUIHierarchyElement(bUIHierarchyElement&& other) noexcept;
 
-		void AddItem(uint32_t key, uint32_t parent, const bUIHierarchyItem& item);
-		void AddItem(uint32_t key, const bUIHierarchyItem& item);
+		void AddItem(uint32_t key, uint32_t parent, const bUIHierarchyItem& item, bool atEnd = false);
+		void AddItem(uint32_t key, const bUIHierarchyItem& item, bool atEnd = false);
 		void RemoveItem(uint32_t key);
 		void Clear();
 

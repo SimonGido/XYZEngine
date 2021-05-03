@@ -1,7 +1,7 @@
 Size: [1920, 1017]
 bUIElements:
-  - Coords: [494, 116]
-    Size: [1347, 851]
+  - Coords: [960, 108]
+    Size: [850, 851]
     Color: [1, 1, 1, 1]
     Label: Skinning Preview
     Name: Skinning Preview
@@ -9,13 +9,13 @@ bUIElements:
     Type: Window
     bUIElements:
       - Coords: [0, 0]
-        Size: [1347, 851]
+        Size: [850, 851]
         Color: [1, 1, 1, 1]
         Label: ""
         Name: Skinning Editor Image
         Locked: true
         Type: Image
-  - Coords: [31, 227]
+  - Coords: [30, 71]
     Size: [420, 807]
     Color: [1, 1, 1, 1]
     Label: Skinning Editor
@@ -153,7 +153,7 @@ bUIElements:
                 Name: Brush Strength
                 Locked: true
                 Type: Slider
-  - Coords: [43, 75]
+  - Coords: [637, 251]
     Size: [400, 114]
     Color: [1, 1, 1, 1]
     Label: Bone Hierarchy
@@ -166,5 +166,20 @@ bUIElements:
         Color: [1, 1, 1, 1]
         Label: ""
         Name: Bones
+        Locked: true
+        Type: Tree
+  - Coords: [640, 90]
+    Size: [400, 114]
+    Color: [1, 1, 1, 1]
+    Label: Mesh
+    Name: Mesh
+    Locked: true
+    Type: Window
+    bUIElements:
+      - Coords: [0, 0]
+        Size: [35, 35]
+        Color: [1, 1, 1, 1]
+        Label: ""
+        Name: Submeshes
         Locked: true
         Type: Tree

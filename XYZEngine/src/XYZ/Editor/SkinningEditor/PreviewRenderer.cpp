@@ -41,7 +41,7 @@ namespace XYZ {
                 for (auto& subMesh : mesh.Submeshes)
                 {
                     for (auto& vertex : subMesh.GeneratedVertices)
-                        Renderer2D::SubmitCircle(glm::vec3(vertex.Position.x, vertex.Position.y, 0.0f), SkinnedMesh::PointRadius, 20, mesh.Colors[SkinnedMesh::VertexColor]);
+                        Renderer2D::SubmitCircle(glm::vec3(vertex.Position.x, vertex.Position.y, 0.0f), SkinnedMesh::PointRadius, 20, subMesh.Color);
                 }
             }
         }

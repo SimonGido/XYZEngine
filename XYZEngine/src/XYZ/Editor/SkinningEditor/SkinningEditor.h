@@ -47,6 +47,7 @@ namespace XYZ {
 	
 			// Buffers and mesh data
 			void clear();
+			void createSubmesh();
 			void eraseBone(PreviewBone* bone);
 			void createBone();
 			void createVertex(const glm::vec2& pos);
@@ -102,6 +103,7 @@ namespace XYZ {
 			bUIWindow* m_PreviewWindow;
 			bUIImage* m_Image;
 			bUITree* m_Tree;
+			bUITree* m_MeshTree;
 			bUILayout m_Layout;
 
 			Tree m_BoneHierarchy;

@@ -460,7 +460,7 @@ namespace XYZ {
 	{
 	}
 
-	void bUIHierarchyElement::AddItem(uint32_t key, uint32_t parent, const bUIHierarchyItem& item)
+	void bUIHierarchyElement::AddItem(uint32_t key, uint32_t parent, const bUIHierarchyItem& item, bool atEnd)
 	{
 		auto it = NameIDMap.find(key);
 		if (it == NameIDMap.end())
@@ -469,7 +469,10 @@ namespace XYZ {
 			auto parentIt = NameIDMap.find(parent);
 			if (parentIt != NameIDMap.end())
 			{
-				ptr->ID = Hierarchy.Insert(ptr, parentIt->second);
+				if (atEnd)
+					ptr->ID = Hierarchy.InsertAtEnd(ptr, parentIt->second);
+				else
+					ptr->ID = Hierarchy.Insert(ptr, parentIt->second);
 				ptr->Key = key;
 				NameIDMap[key] = ptr->ID;
 			}
@@ -484,13 +487,16 @@ namespace XYZ {
 		}
 	}
 
-	void bUIHierarchyElement::AddItem(uint32_t key, const bUIHierarchyItem& item)
+	void bUIHierarchyElement::AddItem(uint32_t key, const bUIHierarchyItem& item, bool atEnd)
 	{
 		auto it = NameIDMap.find(key);
 		if (it == NameIDMap.end())
 		{
 			bUIHierarchyItem* ptr = Pool.Allocate<bUIHierarchyItem>(item.Label);	
-			ptr->ID = Hierarchy.Insert(ptr);
+			if (atEnd)
+				ptr->ID = Hierarchy.InsertAtEnd(ptr);
+			else
+				ptr->ID = Hierarchy.Insert(ptr);
 			ptr->Key = key;
 			NameIDMap[key] = ptr->ID;
 		}

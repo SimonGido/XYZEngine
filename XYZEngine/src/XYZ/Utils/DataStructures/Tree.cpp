@@ -300,6 +300,27 @@ namespace XYZ {
         if (node == m_Root)
             m_Root = lastValid;
     }
+    void Tree::SwapWithPrevious(int32_t node)
+    {
+        TreeNode& current = m_Nodes[node];
+        if (current.PreviousSibling != TreeNode::sc_Invalid)
+        {
+            TreeNode& previous = m_Nodes[current.PreviousSibling];
+            if (previous.Parent != TreeNode::sc_Invalid)
+            {
+                TreeNode& parent = m_Nodes[previous.Parent];
+                if (parent.FirstChild == current.PreviousSibling)
+                    parent.FirstChild = node;
+            }
+            current.PreviousSibling = previous.PreviousSibling;
+            previous.PreviousSibling = node;
+            previous.NextSibling = current.NextSibling;
+            current.NextSibling = current.PreviousSibling;      
+        }
+    }
+    void Tree::SwapWithNext(int32_t node)
+    {
+    }
     void Tree::Clear()
     {
         m_Nodes.Clear();
