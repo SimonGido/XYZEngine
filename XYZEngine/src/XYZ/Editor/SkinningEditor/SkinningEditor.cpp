@@ -104,7 +104,7 @@ namespace XYZ {
             :
             m_ContextSize(glm::vec2(0.0f)),
             m_Window(nullptr),
-            m_Tree(nullptr),
+            m_BoneTree(nullptr),
             m_BonePool(15 * sizeof(PreviewBone)),
             m_SelectedSubmesh(nullptr),
             m_SelectedVertex(nullptr),
@@ -189,7 +189,20 @@ namespace XYZ {
                 m_WeightBrushStrength = allocator.GetElement<bUISlider>("Brush Strength")->Value / sc_WeightBrushDivisor;
                 handleWeightsBrush();
             }
-           
+            if (m_SelectedSubmesh)
+            {
+                bUIHierarchyItem& item = m_MeshTree->GetItem(m_SelectedSubmesh->ID);
+                item.Color = glm::vec4(0.2f, 0.7f, 1.0f, 1.0f);     
+                if (item.Open) // Editing
+                    item.Color = glm::vec4(1.0f, 0.5f, 0.5f, 1.0f);                          
+            }
+            else if (m_SelectedBone)
+            {
+                bUIHierarchyItem& item = m_BoneTree->GetItem(m_SelectedBone->ID);
+                item.Color = glm::vec4(0.2f, 0.7f, 1.0f, 1.0f);     
+                if (item.Open) // Editing
+                    item.Color = glm::vec4(1.0f, 0.5f, 0.5f, 1.0f);       
+            }
             updateBoneHierarchy();
             if (IS_SET(m_Flags, PreviewPose))
                 updateRenderBuffers();
@@ -205,6 +218,7 @@ namespace XYZ {
             dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&SkinningEditor::onMouseButtonRelease, this));
             dispatcher.Dispatch<MouseScrollEvent>(Hook(&SkinningEditor::onMouseScroll, this));
             dispatcher.Dispatch<KeyPressedEvent>(Hook(&SkinningEditor::onKeyPress, this));
+            dispatcher.Dispatch<KeyTypedEvent>(Hook(&SkinningEditor::onKeyType, this));
         }
        
         void SkinningEditor::save()
@@ -287,9 +301,19 @@ namespace XYZ {
             m_PreviewWindow->BlockEvents = false;
             m_Image = allocator.GetElement<bUIImage>("Skinning Editor Image");
             m_Image->BlockEvents = false;
-            m_Tree = allocator.GetElement<bUITree>("Bones");
+            m_BoneTree = allocator.GetElement<bUITree>("Bones");
+            m_BoneTree->OnSelect = [&](uint32_t id) {
+                m_SelectedBone = static_cast<PreviewBone*>(m_BoneHierarchy.GetData(id));
+            };
+            
             m_MeshTree = allocator.GetElement<bUITree>("Submeshes");
-
+            m_MeshTree->OnSelect = [&](uint32_t id) {
+                for (Submesh& subMesh : m_Mesh.Submeshes)
+                {
+                    if (subMesh.ID == id)
+                        m_SelectedSubmesh = &subMesh;
+                }
+            };
             m_ViewportSize = m_Image->Size;
             m_Camera.ProjectionMatrix = glm::ortho(
                 -m_Image->Size.x / 2.0f, m_Image->Size.x / 2.0f,
@@ -662,6 +686,49 @@ namespace XYZ {
         }
         bool SkinningEditor::onKeyPress(KeyPressedEvent& event)
         {
+            if (event.IsKeyPressed(KeyCode::KEY_BACKSPACE))
+            {
+                if (m_SelectedSubmesh)
+                {
+                    bUIHierarchyItem& item = m_MeshTree->GetItem(m_SelectedSubmesh->ID);
+                    if (item.Open && !item.Label.empty())
+                    {
+                        item.Label.pop_back();
+                        return true;
+                    }
+                }
+                else if (m_SelectedBone)
+                {
+                    bUIHierarchyItem& item = m_BoneTree->GetItem(m_SelectedBone->ID);
+                    if (item.Open && !item.Label.empty())
+                    {
+                        item.Label.pop_back();
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        bool SkinningEditor::onKeyType(KeyTypedEvent& event)
+        {
+            if (m_SelectedSubmesh)
+            {
+                bUIHierarchyItem& item = m_MeshTree->GetItem(m_SelectedSubmesh->ID);
+                if (item.Open)
+                {
+                    item.Label.push_back(event.GetKey());
+                    return true;
+                }
+            }
+            else if (m_SelectedBone)
+            {
+                bUIHierarchyItem& item = m_BoneTree->GetItem(m_SelectedBone->ID);
+                if (item.Open)
+                {
+                    item.Label.push_back(event.GetKey());
+                    return true;
+                }
+            }
             return false;
         }
         void SkinningEditor::renderAll()
@@ -742,7 +809,7 @@ namespace XYZ {
             m_Flags = 0;
             m_Mesh.Submeshes.clear();
             m_Mesh.PreviewVertices.clear();
-            m_Tree->Clear();
+            m_BoneTree->Clear();
             m_MeshTree->Clear();
             m_BoneHierarchy.Clear();
             for (auto bone : m_Bones)
@@ -763,7 +830,7 @@ namespace XYZ {
         {
             char buffer[20];
             sprintf(buffer, "submesh_%u", s_NextSubmesh);
-            m_Mesh.Submeshes.emplace_back(glm::vec4(Helper::RandomColor(m_ColorIDs[s_NextSubmesh]), 1.0f));
+            m_Mesh.Submeshes.emplace_back(glm::vec4(Helper::RandomColor(m_ColorIDs[s_NextSubmesh]), 1.0f), s_NextSubmesh);
             m_MeshTree->AddItem(s_NextSubmesh++, bUIHierarchyItem(buffer), true);
         }
         void SkinningEditor::eraseBone(PreviewBone* bone)
@@ -792,7 +859,7 @@ namespace XYZ {
                 });
 
             m_BoneHierarchy.Remove(bone->ID);
-            m_Tree->RemoveItem(bone->ID);
+            m_BoneTree->RemoveItem(bone->ID);
             m_BonePool.Deallocate<PreviewBone>(bone);
         }
         void SkinningEditor::createVertex(const glm::vec2& pos)
@@ -800,9 +867,10 @@ namespace XYZ {
             if (!m_Triangulated)
             {
                 if (m_Mesh.Submeshes.empty())
-                    createSubmesh();
-                
-                m_Mesh.Submeshes.back().GeneratedVertices.push_back({ pos });
+                    createSubmesh();            
+                if (!m_SelectedSubmesh)
+                    m_SelectedSubmesh = &m_Mesh.Submeshes.back();
+                m_SelectedSubmesh->GeneratedVertices.push_back({ pos });
             }
             else
             {
@@ -913,13 +981,13 @@ namespace XYZ {
             if (m_SelectedBone)
             {
                 newBone->ID = m_BoneHierarchy.Insert(newBone, m_SelectedBone->ID);
-                m_Tree->AddItem(newBone->ID, m_SelectedBone->ID, bUIHierarchyItem(newBone->Name));             
+                m_BoneTree->AddItem(newBone->ID, m_SelectedBone->ID, bUIHierarchyItem(newBone->Name));             
                 newBone->LocalPosition = m_MousePosition - m_SelectedBone->WorldPosition;
             }
             else
             {
                 newBone->ID = m_BoneHierarchy.Insert(newBone);
-                m_Tree->AddItem(newBone->ID, bUIHierarchyItem(newBone->Name));
+                m_BoneTree->AddItem(newBone->ID, bUIHierarchyItem(newBone->Name));
                 newBone->LocalPosition = m_MousePosition;
             }
             

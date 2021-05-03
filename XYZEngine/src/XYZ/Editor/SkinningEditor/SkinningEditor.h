@@ -39,6 +39,7 @@ namespace XYZ {
 			bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
 			bool onMouseScroll(MouseScrollEvent& event);
 			bool onKeyPress(KeyPressedEvent& event);
+			bool onKeyType(KeyTypedEvent& event);
 
 			// Rendering
 			void renderAll();
@@ -102,7 +103,7 @@ namespace XYZ {
 			bUIWindow* m_Window;
 			bUIWindow* m_PreviewWindow;
 			bUIImage* m_Image;
-			bUITree* m_Tree;
+			bUITree* m_BoneTree;
 			bUITree* m_MeshTree;
 			bUILayout m_Layout;
 

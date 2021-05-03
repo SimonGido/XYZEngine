@@ -57,8 +57,8 @@ namespace XYZ {
 
 		struct Submesh
 		{
-			Submesh(const glm::vec4& color)
-				: Color(color)
+			Submesh(const glm::vec4& color, uint32_t id)
+				: Color(color), ID(id)
 			{}
 			// This vector is filled after triangulation to store the original vertices
 			std::vector<BoneVertex> OriginalVertices;
@@ -67,7 +67,8 @@ namespace XYZ {
 			std::vector<BoneVertex> VerticesLocalToBones;
 			std::vector<Triangle>	Triangles;
 
-			glm::vec4				Color;
+			const glm::vec4			Color;
+			const uint32_t			ID;
 
 			BoneVertex* FindVertex(const glm::vec2& pos, float radius);
 			Triangle* FindTriangle(const glm::vec2& pos, float radius);
