@@ -6,41 +6,22 @@
 
 namespace XYZ {
 	namespace Editor {
-		MainPanel::MainPanel()
+		MainPanel::MainPanel(const std::string& filepath)
+			:
+			EditorUI(filepath)
 		{
-			bUILoader::Load("Layouts/Main.bui");
-			setupUI();
+			SetupUI();
 		}
 		MainPanel::~MainPanel()
 		{
-			bUILoader::Save("Main", "Layouts/Main.bui");
 		}
-		void MainPanel::OnUpdate()
+		void MainPanel::OnReload()
 		{
-			bUIAllocator& allocator = bUI::GetAllocator("Main");
-			bUIWindow* viewWindow = allocator.GetElement<bUIWindow>("View");
-			bUI::SetupLayout(allocator, *viewWindow, m_ViewLayout);
+			SetupUI();
 		}
-		void MainPanel::OnEvent(Event& event)
+		void MainPanel::SetupUI()
 		{
-			if (event.GetEventType() == EventType::WindowResized)
-			{
-				WindowResizeEvent& e = (WindowResizeEvent&)event;
-				bUIScrollbox& scrollbox = bUI::GetUI<bUIScrollbox>("Main", "Scrollbox");
-				scrollbox.Size.x = e.GetWidth();
-
-				float winWidth = findPerWindowWidth();
-				uint32_t counter = 0;
-				bUI::ForEach<bUIWindow>("Main", "Scrollbox", [&](bUIWindow& window) {
-					window.Size.x = winWidth;
-					window.Coords.x = winWidth * counter;
-					counter++;
-				});
-			}
-		}
-		void MainPanel::setupUI()
-		{
-			bUIScrollbox& scrollbox = bUI::GetUI<bUIScrollbox>("Main", "Scrollbox");
+			bUIScrollbox& scrollbox = bUI::GetUI<bUIScrollbox>(GetName(), "Scrollbox");
 			scrollbox.EnableScroll = false;
 			auto [width, height] = Input::GetWindowSize();
 			scrollbox.Size.x = width;
@@ -55,20 +36,15 @@ namespace XYZ {
 			});
 			m_ViewLayout = { 10.0f, 5.0f, 10.0f, 10.0f, 10.0f, {1}, true };
 
-			bUI::SetOnReloadCallback("Main", [&](bUIAllocator& allocator) {
-				setupUI();
-			});
-
 			bUI::GetUI<bUIButton>("Main", "Reload").Callbacks.push_back(
 				[](bUICallbackType type, bUIElement& element) {
 				if (type == bUICallbackType::Active)
 				{
 					bUI::Reload();
 				}
-			}
-			);
+			});
 
-			bUIAllocator& allocator = bUI::GetAllocator("Main");
+			bUIAllocator& allocator = bUI::GetAllocator(GetName());
 			// Inspector
 			bUICheckbox* inspectorVisible = allocator.GetElement<bUICheckbox>("Inspector");
 			inspectorVisible->Checked = true;
@@ -79,8 +55,7 @@ namespace XYZ {
 					bUICheckbox& casted = static_cast<bUICheckbox&>(element);
 					bUI::GetUI<bUIWindow>("Inspector", "Inspector").Visible = casted.Checked;
 				}
-			}
-			);
+			});
 			// Inspector
 
 			// Scene Hierarchy
@@ -93,8 +68,7 @@ namespace XYZ {
 					bUICheckbox& casted = static_cast<bUICheckbox&>(element);
 					bUI::GetUI<bUIWindow>("SceneHierarchy", "Scene Hierarchy").Visible = casted.Checked;
 				}
-			}
-			);
+			});
 			// Scene Hierarchy
 
 			// Skinning Editor
@@ -105,21 +79,43 @@ namespace XYZ {
 				if (type == bUICallbackType::StateChange)
 				{
 					bUICheckbox& casted = static_cast<bUICheckbox&>(element);
+
 					bUI::GetUI<bUIWindow>("SkinningEditor", "Skinning Editor").Visible = casted.Checked;
 					bUI::GetUI<bUIWindow>("SkinningEditor", "Skinning Preview").Visible = casted.Checked;
 					bUI::GetUI<bUIWindow>("SkinningEditor", "Bone Hierarchy").Visible = casted.Checked;
 					bUI::GetUI<bUIWindow>("SkinningEditor", "Mesh").Visible = casted.Checked;
 				}
-			}
-			);
-
-			// Skinning Editor
+			});
 		}
+		void MainPanel::OnUpdate(Timestep ts)
+		{
+			bUIAllocator& allocator = bUI::GetAllocator(GetName());
+			bUIWindow* viewWindow = allocator.GetElement<bUIWindow>("View");
+			bUI::SetupLayout(allocator, *viewWindow, m_ViewLayout);
+		}
+		void MainPanel::OnEvent(Event& event)
+		{
+			if (event.GetEventType() == EventType::WindowResized)
+			{
+				WindowResizeEvent& e = (WindowResizeEvent&)event;
+				bUIScrollbox& scrollbox = bUI::GetUI<bUIScrollbox>(GetName(), "Scrollbox");
+				scrollbox.Size.x = e.GetWidth();
+
+				float winWidth = findPerWindowWidth();
+				uint32_t counter = 0;
+				bUI::ForEach<bUIWindow>(GetName(), "Scrollbox", [&](bUIWindow& window) {
+					window.Size.x = winWidth;
+					window.Coords.x = winWidth * counter;
+					counter++;
+				});
+			}
+		}
+
 		float MainPanel::findPerWindowWidth()
 		{
-			bUIScrollbox& scrollbox = bUI::GetUI<bUIScrollbox>("Main", "Scrollbox");
+			bUIScrollbox& scrollbox = bUI::GetUI<bUIScrollbox>(GetName(), "Scrollbox");
 			uint32_t count = 0;
-			bUI::ForEach<bUIWindow>("Main", "Scrollbox", [&](bUIWindow& window) {
+			bUI::ForEach<bUIWindow>(GetName(), "Scrollbox", [&](bUIWindow& window) {
 				count++;
 			});
 			return scrollbox.Size.x / (float)count;

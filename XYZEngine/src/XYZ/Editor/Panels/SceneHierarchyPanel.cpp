@@ -17,53 +17,17 @@ namespace XYZ {
         }
     }
     namespace Editor {
-        SceneHierarchyPanel::SceneHierarchyPanel()
+        SceneHierarchyPanel::SceneHierarchyPanel(const std::string& filepath)
+            :
+            EditorUI(filepath)
         {
-            bUILoader::Load("Layouts/SceneHierarchy.bui");
-            setupUI();
-
-            bUI::SetOnReloadCallback("SceneHierarchy", [&](bUIAllocator& allocator) {
-                setupUI();
-                if (m_Context.Raw())
-                {
-                    ECSManager& ecs = m_Context->m_ECS;
-                    for (Entity entity : m_Context->GetEntities())
-                    {
-                        SceneTagComponent& sceneTag = ecs.GetComponent<SceneTagComponent>(entity);
-                        m_Tree->AddItem(entity, bUIHierarchyItem(sceneTag.Name));
-                    }
-                }
-            });
+            SetupUI();
         }
         SceneHierarchyPanel::~SceneHierarchyPanel()
         {
             m_Context->m_ECS.RemoveListener<SceneTagComponent>(this);
-            bUILoader::Save("SceneHierarchy", "Layouts/SceneHierarchy.bui");
         }
-        void SceneHierarchyPanel::SetContext(Ref<Scene> context)
-        {
-            if (m_Context.Raw())
-                m_Context->m_ECS.RemoveListener<SceneTagComponent>(this);
-
-            m_Context = context;
-            m_Context->m_ECS.AddListener<SceneTagComponent>([this](uint32_t entity, CallbackType type) {
-
-                ECSManager& ecs = m_Context->m_ECS;
-                if (type == CallbackType::ComponentCreate)
-                {
-                    SceneTagComponent& sceneTag = ecs.GetComponent<SceneTagComponent>(entity);
-                    m_Tree->AddItem(entity, bUIHierarchyItem(sceneTag.Name));
-                }
-                else if (type == CallbackType::ComponentRemove || type == CallbackType::EntityDestroy)
-                {
-                    m_Tree->RemoveItem(entity);
-                }
-
-            }, this);
-
-            rebuildTree();
-        }
-        void SceneHierarchyPanel::OnUpdate()
+        void SceneHierarchyPanel::OnUpdate(Timestep ts)
         {
             if (m_Context.Raw())
             {
@@ -71,13 +35,22 @@ namespace XYZ {
                     m_Tree->GetItem(m_Context->m_SelectedEntity).Color = glm::vec4(0.2f, 0.7f, 1.0f, 1.0f);
             }
         }
-        void SceneHierarchyPanel::OnEvent(Event& event)
+
+        void SceneHierarchyPanel::OnReload()
         {
-            EventDispatcher dispatcher(event);
-            dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&SceneHierarchyPanel::onMouseButtonPress, this));
-            dispatcher.Dispatch<KeyPressedEvent>(Hook(&SceneHierarchyPanel::onKeyPressed, this));
+            SetupUI();
+            if (m_Context.Raw())
+            {
+                ECSManager& ecs = m_Context->m_ECS;
+                for (Entity entity : m_Context->GetEntities())
+                {
+                    SceneTagComponent& sceneTag = ecs.GetComponent<SceneTagComponent>(entity);
+                    m_Tree->AddItem(entity, bUIHierarchyItem(sceneTag.Name));
+                }
+            }
         }
-        void SceneHierarchyPanel::setupUI()
+        
+        void SceneHierarchyPanel::SetupUI()
         {
             m_Window = &bUI::GetUI<bUIWindow>("SceneHierarchy", "Scene Hierarchy");
             m_Tree = &bUI::GetUI<bUITree>("SceneHierarchy", "Hierarchy Tree");
@@ -107,6 +80,38 @@ namespace XYZ {
             Ref<Texture> plusTexture = Texture2D::Create({}, "Assets/Textures/Plus.png");
             m_Image->ImageSubTexture = Ref<SubTexture>::Create(plusTexture, glm::vec2(0.0f));
         }
+
+        void SceneHierarchyPanel::SetContext(Ref<Scene> context)
+        {
+            if (m_Context.Raw())
+                m_Context->m_ECS.RemoveListener<SceneTagComponent>(this);
+
+            m_Context = context;
+            m_Context->m_ECS.AddListener<SceneTagComponent>([this](uint32_t entity, CallbackType type) {
+
+                ECSManager& ecs = m_Context->m_ECS;
+                if (type == CallbackType::ComponentCreate)
+                {
+                    SceneTagComponent& sceneTag = ecs.GetComponent<SceneTagComponent>(entity);
+                    m_Tree->AddItem(entity, bUIHierarchyItem(sceneTag.Name));
+                }
+                else if (type == CallbackType::ComponentRemove || type == CallbackType::EntityDestroy)
+                {
+                    m_Tree->RemoveItem(entity);
+                }
+
+            }, this);
+
+            rebuildTree();
+        }
+
+        void SceneHierarchyPanel::OnEvent(Event& event)
+        {
+            EventDispatcher dispatcher(event);
+            dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&SceneHierarchyPanel::onMouseButtonPress, this));
+            dispatcher.Dispatch<KeyPressedEvent>(Hook(&SceneHierarchyPanel::onKeyPressed, this));
+        }
+
         void SceneHierarchyPanel::rebuildTree()
         {
             m_Tree->Clear();

@@ -1,18 +1,20 @@
 #pragma once
-#include "XYZ/BasicUI/BasicUI.h"
+#include "XYZ/Editor/EditorUI.h"
 
 namespace XYZ {
 	namespace Editor {
-		class MainPanel
+		class MainPanel : public EditorUI
 		{
 		public:
-			MainPanel();
+			MainPanel(const std::string& filepath);
 			~MainPanel();
 
-			void OnUpdate();
+			virtual void OnUpdate(Timestep ts) override;
+			virtual void OnReload() override;
+			virtual void SetupUI() override;
+
 			void OnEvent(Event& event);
 		private:
-			void setupUI();
 			float findPerWindowWidth();
 
 		private:

@@ -1,24 +1,24 @@
 #pragma once
 
 #include "XYZ/Scene/Scene.h"
-#include "XYZ/BasicUI/BasicUI.h"
+#include "XYZ/Editor/EditorUI.h"
 
 namespace XYZ {
 	namespace Editor {
-		class SceneHierarchyPanel
+		class SceneHierarchyPanel : public EditorUI
 		{
 		public:
-			SceneHierarchyPanel();
+			SceneHierarchyPanel(const std::string& filepath);
 			~SceneHierarchyPanel();
 
-			void SetContext(Ref<Scene> context);
+			virtual void OnUpdate(Timestep ts) override;
+			virtual void OnReload() override;
+			virtual void SetupUI() override;
 
-			void OnUpdate();
 			void OnEvent(Event& event);
 
+			void SetContext(Ref<Scene> context);
 		private:
-			void setupUI();
-
 			void rebuildTree();
 			void updateTree();
 

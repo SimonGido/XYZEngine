@@ -36,6 +36,8 @@ namespace XYZ {
 
 	EditorLayer::EditorLayer()
 		:
+		m_SceneHierarchy("Layouts/SceneHierarchy.bui"),
+		m_Main("Layouts/Main.bui"),
 		m_SkinningEditor("Layouts/SkinningEditor.bui")
 	{			
 	}
@@ -93,9 +95,9 @@ namespace XYZ {
 		Renderer::Clear();
 		Renderer::SetClearColor({ 0.1f,0.1f,0.1f,0.1f });
 		
-		m_SceneHierarchy.OnUpdate();
+		m_SceneHierarchy.OnUpdate(ts);
 		m_Inspector.OnUpdate();
-		m_Main.OnUpdate();
+		m_Main.OnUpdate(ts);
 		m_SkinningEditor.OnUpdate(ts);		
 		m_EditorCamera.OnUpdate(ts);
 		m_Inspector.SetContext(m_Scene->GetSelectedEntity());
