@@ -11,12 +11,14 @@ namespace XYZ {
 
 	RenderCommandQueue::~RenderCommandQueue()
 	{
+		std::scoped_lock<std::mutex> lock(m_Mutex);
 		delete[] m_CommandBuffer;
 	}
 
 	void* RenderCommandQueue::Allocate(RenderCommandFn fn, uint32_t size)
 	{
 		// TODO: alignment
+		std::scoped_lock<std::mutex> lock(m_Mutex);
 		*(RenderCommandFn*)m_CommandBufferPtr = fn;
 		m_CommandBufferPtr += sizeof(RenderCommandFn);
 
@@ -32,6 +34,7 @@ namespace XYZ {
 
 	void RenderCommandQueue::Execute()
 	{
+		std::scoped_lock<std::mutex> lock(m_Mutex);
 		uint8_t* buffer = m_CommandBuffer;
 
 		for (uint32_t i = 0; i < m_CommandCount; i++)

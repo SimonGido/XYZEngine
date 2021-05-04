@@ -1,6 +1,6 @@
-Size: [2560, 1377]
+Size: [1920, 1017]
 bUIElements:
-  - Coords: [960, 108]
+  - Coords: [709, 333]
     Size: [850, 851]
     Color: [1, 1, 1, 1]
     Label: Skinning Preview
@@ -168,7 +168,7 @@ bUIElements:
         Name: Bones
         Locked: true
         Type: Tree
-  - Coords: [640, 90]
+  - Coords: [533, 291]
     Size: [400, 114]
     Color: [1, 1, 1, 1]
     Label: Mesh

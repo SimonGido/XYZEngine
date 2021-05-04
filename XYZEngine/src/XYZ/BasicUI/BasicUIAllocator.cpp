@@ -157,6 +157,7 @@ namespace XYZ {
 			break;	
 		case XYZ::bUIElementType::Timeline:
 			move<bUITimeline>(dest, offset);
+			break;
 		default:
 			break;
 		}

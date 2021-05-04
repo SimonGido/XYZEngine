@@ -45,6 +45,19 @@ namespace XYZ {
 	{
 	}
 
+	bUITimeline::bUITimeline(bUITimeline&& other) noexcept
+		:
+		bUIElement(std::move(other)),
+		TimePoints(std::move(other.TimePoints)),
+		Rows(std::move(other.Rows)),
+		Layout(other.Layout),
+		CurrentTime(other.CurrentTime),
+		Length(other.Length),
+		SplitTime(other.SplitTime),
+		Zoom(other.Zoom)
+	{
+	}
+
 	void bUITimeline::PushQuads(bUIRenderer& renderer, uint32_t& scissorID)
 	{
 		ScissorID = scissorID;

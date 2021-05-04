@@ -16,6 +16,8 @@ namespace XYZ {
 			virtual void SetupUI() override;
 
 			void SetContext(const Ref<Animation>& context);
+
+			void OnEvent(Event& event);
 		private:
 			Ref<Animation> m_Context;
 		};

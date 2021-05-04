@@ -40,7 +40,6 @@ namespace XYZ {
 		static void Update();
 		static void Reload();
 		static void Reload(const std::string& name);
-
 		static void OnEvent(Event& event);
 		static void SetupLayout(const std::string& uiName, const std::string& name, const bUILayout& layout);
 		static void SetupLayout(bUIAllocator& allocator, bUIElement& element, const bUILayout& layout);
@@ -83,11 +82,10 @@ namespace XYZ {
 			static_assert(std::is_base_of<bUIElement, T>::value, "Type T must inherit from bUIElement");
 			return *getContext().Data.GetAllocator(uiName).GetElement<T>(name);
 		}
-		
+
 		static bUIConfig& GetConfig();
 		static const bUIContext& GetContext();
 		static bUIAllocator& GetAllocator(const std::string& name);
-
 	private:
 		template <typename T>
 		static void forEach(bUIAllocator& allocator, bUIElement* element, const std::function<void(T&)>& func)

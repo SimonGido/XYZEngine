@@ -195,6 +195,7 @@ namespace XYZ {
 		glm::vec2 ButtonSize = { 25.0f, 25.0f };
 		std::function<void(const glm::vec2&)> OnResize;
 		bool FitParent = false;
+		bool IsHoovered = false;
 	private:
 		enum ResizeFlags
 		{
@@ -229,6 +230,7 @@ namespace XYZ {
 
 		glm::vec2 Offset;
 		float Speed = 5.0f;
+
 		bool EnableScroll = true;
 		bool FitParent = true;
 	};

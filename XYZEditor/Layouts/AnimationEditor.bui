@@ -1,9 +1,25 @@
-Size: [2560, 1377]
+Size: [1920, 1017]
 bUIElements:
-  - Coords: [576, 637]
-    Size: [300, 200]
+  - Coords: [285, 385]
+    Size: [170, 294]
     Color: [1, 1, 1, 1]
-    Label: ""
-    Name: ""
-    Locked: false
-    Type: Timeline
+    Label: Animation Editor
+    Name: Animation Editor
+    Locked: true
+    Type: Window
+    bUIElements:
+      - Coords: [0, 0]
+        Size: [170, 294]
+        Color: [0, 0, 0, 0]
+        Label: ""
+        Name: Scrollbox
+        Locked: true
+        Type: Scrollbox
+        bUIElements:
+          - Coords: [0, 0]
+            Size: [170, 200]
+            Color: [1, 1, 1, 1]
+            Label: ""
+            Name: Timeline
+            Locked: true
+            Type: Timeline

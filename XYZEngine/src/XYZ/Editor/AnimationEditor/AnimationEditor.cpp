@@ -8,6 +8,9 @@ namespace XYZ {
 			EditorUI(filepath)
 		{
 			bUITimeline& timeline = bUI::GetUI<bUITimeline>(GetName(), "Timeline");
+			bUIScrollbox& scrollbox = bUI::GetUI<bUIScrollbox>(GetName(), "Scrollbox");
+			scrollbox.FitParent = true;
+
 			timeline.Rows.push_back({ "First" });
 			timeline.Rows.push_back({ "Second" });
 			timeline.Rows.push_back({ "Third" });
@@ -22,6 +25,10 @@ namespace XYZ {
 		}
 		void AnimationEditor::OnUpdate(Timestep ts)
 		{
+			bUIAllocator& allocator = bUI::GetAllocator(GetName());
+			bUIWindow& window = *allocator.GetElement<bUIWindow>("Animation Editor");
+			bUITimeline& timeline = *allocator.GetElement<bUITimeline>("Timeline");
+			timeline.Size.x = window.Size.x;
 		}
 		void AnimationEditor::OnReload()
 		{
@@ -32,6 +39,9 @@ namespace XYZ {
 		void AnimationEditor::SetContext(const Ref<Animation>& context)
 		{
 			m_Context = context;
+		}
+		void AnimationEditor::OnEvent(Event& event)
+		{
 		}
 	}
 }

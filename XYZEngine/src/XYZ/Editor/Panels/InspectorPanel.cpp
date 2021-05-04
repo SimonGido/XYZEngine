@@ -301,7 +301,7 @@ namespace XYZ {
 					}
 				}
 				);
-				bUIFloat* scaleY = allocator.GetElement<bUIFloat>("scale Y");
+				bUIFloat* scaleY = allocator.GetElement<bUIFloat>("Scale Y");
 				scaleY->SetValue(component.Scale.y);
 				scaleY->Callbacks.push_back(
 					[&](bUICallbackType type, bUIElement& element) {
@@ -313,7 +313,7 @@ namespace XYZ {
 				}
 				);
 
-				bUIFloat* scaleZ = allocator.GetElement<bUIFloat>("scale Z");
+				bUIFloat* scaleZ = allocator.GetElement<bUIFloat>("Scale Z");
 				scaleZ->SetValue(component.Scale.z);
 				scaleZ->Callbacks.push_back(
 					[&](bUICallbackType type, bUIElement& element) {

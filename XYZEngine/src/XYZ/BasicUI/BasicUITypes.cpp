@@ -313,17 +313,23 @@ namespace XYZ {
 		if (!Visible || !HandleVisibility(ScissorID))
 			return false;
 
+		IsHoovered = false;
 		glm::vec2 panelSize = { Size.x, ButtonSize.y };
 		glm::vec2 absolutePosition = GetAbsolutePosition();
 		glm::vec2 absolutePanelPosition = absolutePosition - glm::vec2(0.0f, panelSize.y);
-		if (Helper::Collide(absolutePanelPosition, {Size.x, ButtonSize.y}, mousePosition))
+		
+		if (Helper::Collide(absolutePanelPosition, { Size.x, Size.y + ButtonSize.y }, mousePosition))
 		{
-			ActiveColor = bUI::GetConfig().GetColor(bUIConfig::HighlightColor);
-			for (auto& callback : Callbacks)
-				callback(bUICallbackType::Hoover, *this);
-			return BlockEvents;
+			IsHoovered = true;
+			if (mousePosition.y < absolutePosition.y)
+			{
+				ActiveColor = bUI::GetConfig().GetColor(bUIConfig::HighlightColor);
+				for (auto& callback : Callbacks)
+					callback(bUICallbackType::Hoover, *this);
+				return BlockEvents;
+			}
 		}
-		else if (ResizeFlags)
+		if (ResizeFlags)
 		{
 			if (IS_SET(ResizeFlags, Right))
 			{

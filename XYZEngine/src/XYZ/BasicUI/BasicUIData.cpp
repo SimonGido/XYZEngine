@@ -58,7 +58,7 @@ namespace XYZ {
 				if (childElement->Visible)
 					buildMesh(renderer, allocator, childElement, 0);
 				return false;
-				});
+			});
 		}
 	}
 	void bUIData::SetOnReloadCallback(const std::string& name, const bUIAllocatorReloadCallback& callback)

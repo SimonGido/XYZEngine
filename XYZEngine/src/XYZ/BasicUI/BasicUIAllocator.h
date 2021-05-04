@@ -62,6 +62,7 @@ namespace XYZ {
 		template <typename T>
 		T* GetElement(const std::string& name)
 		{
+			XYZ_ASSERT(m_ElementMap.find(name) != m_ElementMap.end(), "");
 			size_t index = m_ElementMap[name];
 			return &get<T>(m_Elements[index].Offset);
 		}
@@ -69,6 +70,7 @@ namespace XYZ {
 		template <typename T>
 		const T* GetElement(const std::string& name) const
 		{
+			XYZ_ASSERT(m_ElementMap.find(name) != m_ElementMap.end(), "");
 			size_t index = m_ElementMap[name];
 			return &get<T>(m_Elements[index].Offset);
 		}

@@ -102,6 +102,8 @@ namespace XYZ {
 		m_Main.OnUpdate(ts);
 		m_SkinningEditor.OnUpdate(ts);		
 		m_EditorCamera.OnUpdate(ts);
+		m_AnimationEditor.OnUpdate(ts);
+
 		m_Inspector.SetContext(m_Scene->GetSelectedEntity());
 
 		if (m_Scene->GetState() == SceneState::Play)
@@ -128,6 +130,7 @@ namespace XYZ {
 		m_SceneHierarchy.OnEvent(event);
 		m_SkinningEditor.OnEvent(event);
 		m_Main.OnEvent(event);
+		m_AnimationEditor.OnEvent(event);
 		m_EditorCamera.OnEvent(event);
 	}
 	

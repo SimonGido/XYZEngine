@@ -164,6 +164,9 @@ namespace XYZ {
 		auto [mx, my] = Input::GetMousePosition();
 		glm::vec2 mousePosition = { mx, my };
 		glm::vec2 offset = { event.GetOffsetX(), event.GetOffsetY() };
+		if (Input::IsKeyPressed(KeyCode::KEY_LEFT_SHIFT))
+			std::swap(offset.x, offset.y);
+
 		bool result = false;
 		for (bUIAllocator& allocator : data.m_Allocators)
 		{

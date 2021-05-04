@@ -1,5 +1,6 @@
 #pragma once
 #include <tuple>
+#include <mutex>
 
 namespace XYZ {
 
@@ -18,5 +19,7 @@ namespace XYZ {
 		uint8_t* m_CommandBuffer;
 		uint8_t* m_CommandBufferPtr;
 		uint32_t m_CommandCount = 0;
+
+		std::mutex m_Mutex;
 	};
 }

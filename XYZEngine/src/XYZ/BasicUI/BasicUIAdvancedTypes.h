@@ -20,6 +20,7 @@ namespace XYZ {
 			bUIElementType type
 		);
 		bUITimeline(const bUITimeline& other);
+		bUITimeline(bUITimeline&& other) noexcept;
 
 		virtual void PushQuads(bUIRenderer& renderer, uint32_t& scissorID) override;
 

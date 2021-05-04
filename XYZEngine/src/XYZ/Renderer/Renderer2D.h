@@ -9,25 +9,15 @@
 
 
 namespace XYZ {
-	// TODO: Generic to specify layout of renderer?
+	// TODO: Generic way to specify layout of renderer?
 
 	class Renderer2D
 	{
 	public:
-		/**
-		* Initialize Renderer2D instance and register batch system
-		*/
 		static void Init();
-
-		/**
-		* Delete instance of the renderer
-		*/
 		static void Shutdown();
 
-		/**
-		* Initial setup before rendering
-		* @param[in] camera		Reference to the camera 
-		*/
+
 		static void BeginScene(const glm::mat4& viewProjectionMatrix);
 
 		static uint32_t SetTexture(const Ref<Texture>& texture);
