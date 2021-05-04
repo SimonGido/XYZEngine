@@ -1,23 +1,25 @@
 #pragma once
 
 #include "XYZ/Scene/SceneEntity.h"
-#include "XYZ/BasicUI/BasicUI.h"
+#include "XYZ/Editor/EditorUI.h"
 
 namespace XYZ {
 	namespace Editor {
-		class InspectorPanel
+		class InspectorPanel : public EditorUI
 		{
 		public:
-			InspectorPanel();
-			~InspectorPanel();
+			InspectorPanel(const std::string& filepath);
+			virtual ~InspectorPanel() override;
+
+			virtual void OnUpdate(Timestep ts) override;
+			virtual void OnReload() override;
+			virtual void SetupUI() override;
 
 			void SetContext(SceneEntity context, bool forceRebuildUI = false);
 
-			void OnUpdate();
 		private:
 			void updateLayout(bUIAllocator& allocator);
 			void addComponent(uint16_t id);
-			void setContextUI();
 
 			void setSceneTagComponent();
 			void setTransformComponent();

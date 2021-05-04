@@ -35,6 +35,8 @@ namespace XYZ {
 				return sizeof(bUIImage);
 			case XYZ::bUIElementType::Text:
 				return sizeof(bUIText);
+			case XYZ::bUIElementType::Timeline:
+				return sizeof(bUITimeline);
 			default:
 				return 0;
 			}
@@ -65,6 +67,8 @@ namespace XYZ {
 				return bUIElementType::Image;
 			if (str == "Text")
 				return bUIElementType::Text;
+			if (str == "Timeline")
+				return bUIElementType::Timeline;
 			
 			XYZ_ASSERT(false, "Invalid type");
 			return bUIElementType::None;
@@ -97,6 +101,8 @@ namespace XYZ {
 				return "Image";
 			case XYZ::bUIElementType::Text:
 				return "Text";
+			case XYZ::bUIElementType::Timeline:
+				return "Timeline";
 			}
 			XYZ_ASSERT(false, "Type is none");
 			return "None";
@@ -284,6 +290,9 @@ namespace XYZ {
 			break;
 		case XYZ::bUIElementType::Text:
 			element = allocator->CreateElement<bUIText>(parent, coords, size, color, label, name, type);
+			break;
+		case XYZ::bUIElementType::Timeline:
+			element = allocator->CreateElement<bUITimeline>(parent, coords, size, color, label, name, type);
 			break;
 		default:
 			XYZ_ASSERT(false, "");

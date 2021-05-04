@@ -1,0 +1,9 @@
+Size: [2560, 1377]
+bUIElements:
+  - Coords: [576, 637]
+    Size: [300, 200]
+    Color: [1, 1, 1, 1]
+    Label: ""
+    Name: ""
+    Locked: false
+    Type: Timeline

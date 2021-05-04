@@ -35,6 +35,7 @@ namespace XYZ {
 		Editor::InspectorPanel m_Inspector;
 		Editor::MainPanel m_Main;
 		Editor::SkinningEditor m_SkinningEditor;
+		Editor::AnimationEditor m_AnimationEditor;
 	private:	
 		SceneEntity m_SelectedEntity;
 		SceneEntity m_TestEntity;

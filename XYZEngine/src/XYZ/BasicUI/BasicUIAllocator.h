@@ -1,5 +1,6 @@
 #pragma once
 #include "BasicUITypes.h"
+#include "BasicUIAdvancedTypes.h"
 #include "XYZ/Utils/DataStructures/Tree.h"
 
 namespace XYZ {

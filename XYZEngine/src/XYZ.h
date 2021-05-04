@@ -41,6 +41,7 @@
 #include "XYZ/Editor/Panels/InspectorPanel.h"
 #include "XYZ/Editor/Panels/MainPanel.h"
 #include "XYZ/Editor/SkinningEditor/SkinningEditor.h"
+#include "XYZ/Editor/AnimationEditor/AnimationEditor.h"
 
 //------ECS-----//
 #include "XYZ/ECS/ECSManager.h"

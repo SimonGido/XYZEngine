@@ -21,7 +21,10 @@ namespace XYZ {
 		Tree,
 		Image,
 		Text,
-		Dropdown
+		Dropdown,
+
+		// Advanced Types
+		Timeline
 	};
 
 	enum class bUICallbackType

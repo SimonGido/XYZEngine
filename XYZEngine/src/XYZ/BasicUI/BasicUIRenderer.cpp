@@ -2,11 +2,27 @@
 #include "BasicUIRenderer.h"
 
 #include "BasicUITypes.h"
+#include "BasicUIAdvancedTypes.h"
 #include "BasicUI.h"
 #include "BasicUIHelper.h"
 
 namespace XYZ {
 	namespace Helper {
+		static void GenerateCircle(bUIMesh& mesh, const glm::vec2& pos, float radius, uint32_t sides, const glm::vec4& color)
+		{
+			float step = 360 / sides;
+			for (int a = step; a < 360 + step; a += step)
+			{
+				float before = glm::radians((float)(a - step));
+				float heading = glm::radians((float)a);
+
+				mesh.Lines.push_back({
+					color,
+					glm::vec3(pos.x + std::cos(before) * radius,pos.y + std::sin(before) * radius, 0.0f),
+					glm::vec3(pos.x + std::cos(heading) * radius, pos.y + std::sin(heading) * radius, 0.0f)
+				});
+			}
+		}
 		static void GenerateQuad(bUIMesh& mesh, const glm::vec4& color, const glm::vec2& size, const glm::vec2& position, const Ref<SubTexture>& subTexture, uint32_t textureID, uint32_t scissorID)
 		{
 			const glm::vec4& oldTex = subTexture->GetTexCoords();
@@ -370,6 +386,74 @@ namespace XYZ {
 			textPosition.y += std::floor(((element.Size.y - size.y) / 2.0f) + font->GetLineHeight());
 			Helper::GenerateTextMesh(element.Label.c_str(), font, glm::vec4(1.0f), textPosition, m_Mesh, 1, scissorID);
 		}
+	}
+	template <>
+	void bUIRenderer::Submit<bUITimeline>(const bUITimeline& element, uint32_t& scissorID, const Ref<SubTexture>& subTexture)
+	{
+		glm::vec2 absolutePosition = element.GetAbsolutePosition();
+		Ref<Font> font = bUI::GetConfig().m_Font;
+		{
+			//Helper::GenerateQuad(m_Mesh, element.ActiveColor, element.Size, absolutePosition, subTexture, 0, scissorID);
+			glm::vec2 size = bUIHelper::FindTextSize(element.Label.c_str(), font);
+			glm::vec2 textPosition = absolutePosition;
+			textPosition.x += element.Size.x + 2.0f;
+			textPosition.y += std::floor(((element.Size.y - size.y) / 2.0f) + font->GetLineHeight());
+			Helper::GenerateTextMesh(element.Label.c_str(), font, glm::vec4(1.0f), textPosition, m_Mesh, 1, scissorID);
+		}
+
+		float rowYOffset = font->GetLineHeight();
+		float rowXOffset = 0.0f;
+		for (const bUITimeline::Row& row : element.Rows)
+		{
+			glm::vec2 size = bUIHelper::FindTextSize(row.Name.c_str(), font);
+			glm::vec2 textPosition = absolutePosition;
+			textPosition += glm::vec2(element.Layout.XOffset, size.y + rowYOffset + element.Layout.YOffset);
+
+			rowXOffset = std::max(size.x, rowXOffset);
+			rowYOffset += font->GetLineHeight() + element.Layout.YPadding;
+			Helper::GenerateTextMesh(row.Name.c_str(), font, glm::vec4(1.0f), textPosition, m_Mesh, 1, scissorID);
+		}
+
+		rowYOffset = absolutePosition.y + (2.5f * font->GetLineHeight());
+		rowXOffset += absolutePosition.x + element.Layout.XPadding;
+		for (const bUITimeline::Row& row : element.Rows)
+		{
+			glm::vec3 lineStart(rowXOffset, rowYOffset, 0.0f);
+			glm::vec3 lineEnd(absolutePosition.x + element.Size.x, rowYOffset, 0.0f);
+			
+			rowYOffset += font->GetLineHeight() + element.Layout.YPadding;
+			m_Mesh.Lines.push_back({ glm::vec4(0.8f), lineStart, lineEnd });
+		}
+
+		float segmentLength = (element.SplitTime / element.Length) * element.Zoom;
+		float tmpRowXOffset = rowXOffset + segmentLength;
+		float timeAtCol = element.SplitTime;
+		while (tmpRowXOffset < absolutePosition.x + element.Size.x)
+		{
+			glm::vec3 lineStart(tmpRowXOffset, absolutePosition.y + font->GetLineHeight(), 0.0f);
+			glm::vec3 lineEnd(tmpRowXOffset, rowYOffset, 0.0f);
+			tmpRowXOffset += segmentLength;
+			char buffer[20];
+			sprintf(buffer, "%f", timeAtCol);
+
+			uint32_t numChars = bUIHelper::FindNumCharacterToFit(glm::vec2(segmentLength / 2.0f, font->GetLineHeight()), buffer, font);
+			glm::vec2 textSize = bUIHelper::FindTextSize(buffer, font, numChars);
+			glm::vec2 textPosition = lineStart;
+			textPosition.x -= textSize.x / 2.0f;
+			Helper::GenerateTextMesh(buffer, font, glm::vec4(1.0f), textPosition, m_Mesh, 1, scissorID, numChars);
+			
+			m_Mesh.Lines.push_back({ glm::vec4(0.8f), lineStart, lineEnd });
+			timeAtCol += element.SplitTime;
+		}		
+
+		for (const bUITimeline::TimePoint& point : element.TimePoints)
+		{
+			glm::vec2 pointPosition = { rowXOffset, absolutePosition.y };
+			pointPosition.x += (point.Time / element.SplitTime) * segmentLength;
+			pointPosition.y += (2.5f * font->GetLineHeight()) + point.Row * (font->GetLineHeight() + element.Layout.YPadding);
+			Helper::GenerateCircle(m_Mesh, pointPosition, 5.0f, 5, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+		}
+
 	}
 
 	void bUIRenderer::Begin()

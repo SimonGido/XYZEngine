@@ -37,8 +37,10 @@ namespace XYZ {
 	EditorLayer::EditorLayer()
 		:
 		m_SceneHierarchy("Layouts/SceneHierarchy.bui"),
+		m_Inspector("Layouts/Inspector.bui"),
 		m_Main("Layouts/Main.bui"),
-		m_SkinningEditor("Layouts/SkinningEditor.bui")
+		m_SkinningEditor("Layouts/SkinningEditor.bui"),
+		m_AnimationEditor("Layouts/AnimationEditor.bui")
 	{			
 	}
 
@@ -96,7 +98,7 @@ namespace XYZ {
 		Renderer::SetClearColor({ 0.1f,0.1f,0.1f,0.1f });
 		
 		m_SceneHierarchy.OnUpdate(ts);
-		m_Inspector.OnUpdate();
+		m_Inspector.OnUpdate(ts);
 		m_Main.OnUpdate(ts);
 		m_SkinningEditor.OnUpdate(ts);		
 		m_EditorCamera.OnUpdate(ts);

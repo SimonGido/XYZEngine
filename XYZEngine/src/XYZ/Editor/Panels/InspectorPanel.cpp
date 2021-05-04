@@ -36,60 +36,32 @@ namespace XYZ {
 		}
 	}
 	namespace Editor {
-		InspectorPanel::InspectorPanel()
+		InspectorPanel::InspectorPanel(const std::string& filepath)
+			:
+			EditorUI(filepath)
 		{
 			m_TransformLayout = { 10.0f, 10.0f, 10.0f, 10.0f, 10.0f, {3, 3, 3}, true };
 			m_SpriteRendererLayout = { 10.0f, 10.0f, 10.0f, 10.0f, 10.0f, {4, 1, 1}, true };
 			m_ScriptLayout = { 10.0f, 10.0f, 10.0f, 10.0f, 10.0f, {1}, true };
 			m_SceneTagLayout = { 10.0f, 10.0f, 10.0f, 10.0f, 10.0f, {1}, true };
 
-			bUILoader::Load("Layouts/Inspector.bui");
-
-			bUIAllocator& allocator = bUI::GetAllocator("Inspector");
+			
+			bUIAllocator& allocator = bUI::GetAllocator(GetName());
 			bUIScrollbox* scrollbox = allocator.GetElement<bUIScrollbox>("Scrollbox");
 			bUI::ForEach<bUIWindow>(allocator, scrollbox, [&](bUIWindow& win) {
 				win.Visible = false;
-			});
-
-			bUI::SetOnReloadCallback("Inspector", [&](bUIAllocator& allocator) {
-				setContextUI();
 			});
 		}
 		InspectorPanel::~InspectorPanel()
 		{
 			/* Before destroying Inspector just reload
 			it to destroy runtime created script component UI */
-			bUILoader::Load("Layouts/Inspector.bui", false);
-			bUILoader::Save("Inspector", "Layouts/Inspector.bui");
+			bUILoader::Load(GetFilepath(), false);
+			bUILoader::Save(GetName(), GetFilepath().c_str());
 		}
-		void InspectorPanel::SetContext(SceneEntity context, bool forceRebuildUI)
+		void InspectorPanel::OnUpdate(Timestep ts)
 		{
-			if (!context)
-			{
-				bUIAllocator& allocator = bUI::GetAllocator("Inspector");
-				bUIScrollbox* scrollbox = allocator.GetElement<bUIScrollbox>("Scrollbox");
-				bUI::ForEach<bUIWindow>(allocator, scrollbox, [&](bUIWindow& win) {
-					win.Visible = false;
-				});
-				m_Context = context;
-				bUIDropdown* dropdown = allocator.GetElement<bUIDropdown>("Add Component");
-				dropdown->Visible = false;
-				return;
-			}
-			else if (m_Context == context && !forceRebuildUI)
-			{
-				return;
-			}
-			m_Context = context;
-			glm::vec2 oldPanelPosition = bUI::GetUI<bUIWindow>("Inspector", "Inspector").Coords;
-			bUILoader::Load("Layouts/Inspector.bui");
-			bUI::GetUI<bUIWindow>("Inspector", "Inspector").Coords = oldPanelPosition;
-
-			setContextUI();
-		}
-		void InspectorPanel::OnUpdate()
-		{
-			bUIAllocator& allocator = bUI::GetAllocator("Inspector");
+			bUIAllocator& allocator = bUI::GetAllocator(GetName());
 			updateLayout(allocator);
 			if (m_ReloadContext)
 			{
@@ -120,6 +92,62 @@ namespace XYZ {
 				}
 			}
 		}
+		void InspectorPanel::OnReload()
+		{
+			SetupUI();
+		}
+		
+		void InspectorPanel::SetupUI()
+		{
+			if (m_Context && m_Context.IsValid())
+			{
+				setSceneTagComponent();
+				setTransformComponent();
+				setSpriteRenderer();
+
+				buildScriptComponent();
+				setScriptComponent();
+
+				bUIAllocator& allocator = bUI::GetAllocator("Inspector");
+				bUIScrollbox* scrollbox = allocator.GetElement<bUIScrollbox>("Scrollbox");
+				bUI::ForEach<bUIWindow>(allocator, scrollbox, [&](bUIWindow& win) {
+					win.ChildrenVisible = false;
+				});
+				bUIDropdown* dropdown = allocator.GetElement<bUIDropdown>("Add Component");
+				dropdown->ChildrenVisible = false;
+				dropdown->OnSelect = [this](uint32_t key) {
+					addComponent((uint16_t)key);
+					m_ReloadContext = true;
+				};
+			}
+		}
+
+		void InspectorPanel::SetContext(SceneEntity context, bool forceRebuildUI)
+		{
+			if (!context)
+			{
+				bUIAllocator& allocator = bUI::GetAllocator("Inspector");
+				bUIScrollbox* scrollbox = allocator.GetElement<bUIScrollbox>("Scrollbox");
+				bUI::ForEach<bUIWindow>(allocator, scrollbox, [&](bUIWindow& win) {
+					win.Visible = false;
+				});
+				m_Context = context;
+				bUIDropdown* dropdown = allocator.GetElement<bUIDropdown>("Add Component");
+				dropdown->Visible = false;
+				return;
+			}
+			else if (m_Context == context && !forceRebuildUI)
+			{
+				return;
+			}
+			m_Context = context;
+			glm::vec2 oldPanelPosition = bUI::GetUI<bUIWindow>("Inspector", "Inspector").Coords;
+			bUILoader::Load("Layouts/Inspector.bui");
+			bUI::GetUI<bUIWindow>("Inspector", "Inspector").Coords = oldPanelPosition;
+
+			SetupUI();
+		}
+		
 
 		void InspectorPanel::updateLayout(bUIAllocator& allocator)
 		{
@@ -158,30 +186,7 @@ namespace XYZ {
 			}
 		}
 
-		void InspectorPanel::setContextUI()
-		{
-			if (m_Context && m_Context.IsValid())
-			{
-				setSceneTagComponent();
-				setTransformComponent();
-				setSpriteRenderer();
-
-				buildScriptComponent();
-				setScriptComponent();
-
-				bUIAllocator& allocator = bUI::GetAllocator("Inspector");
-				bUIScrollbox* scrollbox = allocator.GetElement<bUIScrollbox>("Scrollbox");
-				bUI::ForEach<bUIWindow>(allocator, scrollbox, [&](bUIWindow& win) {
-					win.ChildrenVisible = false;
-				});
-				bUIDropdown* dropdown = allocator.GetElement<bUIDropdown>("Add Component");
-				dropdown->ChildrenVisible = false;
-				dropdown->OnSelect = [this](uint32_t key) {
-					addComponent((uint16_t)key);
-					m_ReloadContext = true;
-				};
-			}
-		}
+		
 
 		void InspectorPanel::setSceneTagComponent()
 		{

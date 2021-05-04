@@ -1,5 +1,6 @@
 #pragma once
 #include "XYZ/Utils/DataStructures/DynamicPool.h"
+#include "XYZ/Asset/Asset.h"
 
 namespace XYZ {
 
@@ -82,7 +83,7 @@ namespace XYZ {
 	};
 
 
-	class Animation
+	class Animation : public Asset
 	{
 	public:
 		void Update(float dt);
