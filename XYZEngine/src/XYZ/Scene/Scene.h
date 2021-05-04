@@ -18,7 +18,6 @@
 
 namespace XYZ {
 
-
     enum class SceneState
     {
         Play,
@@ -30,6 +29,9 @@ namespace XYZ {
     *	@brief Holds all data relevant to a Scene
     */
     class SceneEntity;
+    namespace Editor {
+        class SceneHierarchyPanel;
+    }
     class Scene : public Asset
     {
     public:
@@ -46,7 +48,7 @@ namespace XYZ {
         void OnStop();
         void OnUpdate(Timestep ts);
         void OnRender();
-        void OnRenderEditor(const EditorCamera& camera);
+        void OnRenderEditor(const Editor::EditorCamera& camera);
 
         SceneEntity GetEntity(uint32_t index);
         SceneEntity GetEntityByName(const std::string& name);
@@ -92,6 +94,6 @@ namespace XYZ {
         friend class ScriptEngine;
         friend class ScenePanel;
         friend class LuaEntity;
-        friend class SceneHierarchyPanel;
+        friend class Editor::SceneHierarchyPanel;
     };
 }

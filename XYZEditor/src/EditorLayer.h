@@ -30,10 +30,10 @@ namespace XYZ {
 
 	private:
 		Ref<Scene> m_Scene;
-		EditorCamera m_EditorCamera;
-		SceneHierarchyPanel m_SceneHierarchy;
-		InspectorPanel m_Inspector;
-		MainPanel m_Main;
+		Editor::EditorCamera m_EditorCamera;
+		Editor::SceneHierarchyPanel m_SceneHierarchy;
+		Editor::InspectorPanel m_Inspector;
+		Editor::MainPanel m_Main;
 		Editor::SkinningEditor m_SkinningEditor;
 	private:	
 		SceneEntity m_SelectedEntity;

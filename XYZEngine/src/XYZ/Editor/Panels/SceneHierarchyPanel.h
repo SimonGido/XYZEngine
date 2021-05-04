@@ -4,31 +4,32 @@
 #include "XYZ/BasicUI/BasicUI.h"
 
 namespace XYZ {
+	namespace Editor {
+		class SceneHierarchyPanel
+		{
+		public:
+			SceneHierarchyPanel();
+			~SceneHierarchyPanel();
 
-	class SceneHierarchyPanel
-	{
-	public:
-		SceneHierarchyPanel();
-		~SceneHierarchyPanel();
+			void SetContext(Ref<Scene> context);
 
-		void SetContext(Ref<Scene> context);
+			void OnUpdate();
+			void OnEvent(Event& event);
 
-		void OnUpdate();
-		void OnEvent(Event& event);
+		private:
+			void setupUI();
 
-	private:
-		void setupUI();
+			void rebuildTree();
+			void updateTree();
 
-		void rebuildTree();
-		void updateTree();
+			bool onMouseButtonPress(MouseButtonPressEvent& event);
+			bool onKeyPressed(KeyPressedEvent& event);
 
-		bool onMouseButtonPress(MouseButtonPressEvent& event);
-		bool onKeyPressed(KeyPressedEvent& event);
-
-	private:
-		Ref<Scene> m_Context;
-		bUIWindow* m_Window;
-		bUITree* m_Tree;
-		bUIImage* m_Image;
-	};
+		private:
+			Ref<Scene> m_Context;
+			bUIWindow* m_Window;
+			bUITree* m_Tree;
+			bUIImage* m_Image;
+		};
+	}
 }

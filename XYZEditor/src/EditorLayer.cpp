@@ -35,6 +35,8 @@ namespace XYZ {
 	}
 
 	EditorLayer::EditorLayer()
+		:
+		m_SkinningEditor("Layouts/SkinningEditor.bui")
 	{			
 	}
 
@@ -61,7 +63,7 @@ namespace XYZ {
 		SceneRenderer::SetViewportSize(windowWidth, windowHeight);
 
 		m_Scene->SetViewportSize(windowWidth, windowHeight);		
-		m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
+		m_EditorCamera = Editor::EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
 		m_EditorCamera.SetViewportSize((float)windowWidth, (float)windowHeight);
 		m_SceneHierarchy.SetContext(m_Scene);
 

@@ -21,7 +21,7 @@ namespace XYZ {
 		ScriptEngine::Init("Assets/Scripts/XYZScriptExample.dll");
 		ScriptEngine::SetSceneContext(m_Scene);
 
-		m_EditorCamera = EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
+		m_EditorCamera = Editor::EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
 		auto& app = Application::Get();
 		m_EditorCamera.SetViewportSize((float)app.GetWindow().GetWidth(), (float)app.GetWindow().GetHeight());
 		SceneRenderer::SetViewportSize(app.GetWindow().GetWidth(), app.GetWindow().GetHeight());

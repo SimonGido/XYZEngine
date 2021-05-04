@@ -23,7 +23,7 @@ namespace XYZ {
 	private:
 		Ref<Scene> m_Scene;
 
-		EditorCamera m_EditorCamera;
+		Editor::EditorCamera m_EditorCamera;
 
 		SceneEntity m_Entity;
 

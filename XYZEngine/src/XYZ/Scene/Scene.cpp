@@ -235,7 +235,7 @@ namespace XYZ {
 		}
 	}
 
-	void Scene::OnRenderEditor(const EditorCamera& camera)
+	void Scene::OnRenderEditor(const Editor::EditorCamera& camera)
 	{
 		SceneRenderer::BeginScene(this, camera.GetViewProjection());
 		

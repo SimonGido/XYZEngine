@@ -3,9 +3,10 @@
 #include "XYZ/Renderer/Framebuffer.h"
 #include "XYZ/Renderer/RenderTexture.h"
 #include "XYZ/Renderer/VertexArray.h"
-#include "XYZ/Core/Timestep.h"
 
 #include "XYZ/Editor/EditorOrthographicCamera.h"
+#include "XYZ/Editor/EditorUI.h"
+
 #include "SkinnedMesh.h"
 #include "PreviewBone.h"
 
@@ -13,21 +14,24 @@
 
 namespace XYZ {
 	namespace Editor {
-		class SkinningEditor
+		class SkinningEditor : public EditorUI
 		{
 		public:		
-			SkinningEditor();
+			SkinningEditor(const std::string& filepath);
 			~SkinningEditor();
 
-			void SetContext(const Ref<SubTexture>& context);
-			void OnUpdate(Timestep ts);
+			virtual void OnUpdate(Timestep ts) override;
+			virtual void OnReload() override;
+			virtual void SetupUI() override;
+
 			void OnEvent(Event& event);
+
+			void SetContext(const Ref<SubTexture>& context);
 
 			static constexpr size_t sc_MaxBones = 60;
 		private:
 			void save();
 
-			void setupUI();
 			void setupBoneUI();
 			void setupVertexUI();
 			void setupWeightsUI();

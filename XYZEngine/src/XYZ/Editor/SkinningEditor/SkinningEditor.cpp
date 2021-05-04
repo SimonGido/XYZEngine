@@ -100,8 +100,9 @@ namespace XYZ {
                 result = 0;
             return result;
         }
-        SkinningEditor::SkinningEditor()
+        SkinningEditor::SkinningEditor(const std::string& filepath)
             :
+            EditorUI(filepath),
             m_ContextSize(glm::vec2(0.0f)),
             m_Window(nullptr),
             m_BoneTree(nullptr),
@@ -138,34 +139,22 @@ namespace XYZ {
             m_RenderTexture = RenderTexture::Create(m_Framebuffer);
             m_RenderSubTexture = Ref<SubTexture>::Create(m_RenderTexture, glm::vec2(0.0f, 0.0f));
 
-
-            bUILoader::Load("Layouts/SkinningEditor.bui");
-            bUI::SetOnReloadCallback("SkinningEditor", [&](bUIAllocator& allocator) {
-                setupUI();
-             });
-            
-            m_Layout = { 10.0f, 10.0f, 10.0f, 10.0f, 10.0f, {1}, true };
-            setupUI();                    
+            m_Layout = { 10.0f, 10.0f, 10.0f, 10.0f, 10.0f, {1}, true };  
+            SetupUI();
             rebuildRenderBuffers();
           
             for (uint32_t i = 0; i < sc_MaxBones; ++i)
                 m_ColorIDs[i] = i;
             std::shuffle(&m_ColorIDs[0], &m_ColorIDs[sc_MaxBones - 1], std::default_random_engine(0));
         }
+
         SkinningEditor::~SkinningEditor()
         {
-            bUILoader::Save("SkinningEditor", "Layouts/SkinningEditor.bui");
         }
-        void SkinningEditor::SetContext(const Ref<SubTexture>& context)
-        {
-            m_Context = context;
-            m_ContextSize.x = (float)m_Context->GetTexture()->GetWidth();
-            m_ContextSize.y = (float)m_Context->GetTexture()->GetHeight();
-            rebuildRenderBuffers();
-        }
+       
         void SkinningEditor::OnUpdate(Timestep ts)
         {
-            bUIAllocator& allocator = bUI::GetAllocator("SkinningEditor");
+            bUIAllocator& allocator = bUI::GetAllocator(GetName());
             updateLayout(allocator);
 
             m_MousePosition = getMouseWindowSpace();
@@ -208,7 +197,78 @@ namespace XYZ {
                 updateRenderBuffers();
             renderAll();
         }
+
+        void SkinningEditor::OnReload()
+        {
+            SetupUI();
+        }
        
+        void SkinningEditor::SetupUI()
+        {
+            bUIAllocator& allocator = bUI::GetAllocator(GetName());
+
+            m_Window = allocator.GetElement<bUIWindow>("Skinning Editor");
+            m_PreviewWindow = allocator.GetElement<bUIWindow>("Skinning Preview");
+            m_PreviewWindow->BlockEvents = false;
+            m_Image = allocator.GetElement<bUIImage>("Skinning Editor Image");
+            m_Image->BlockEvents = false;
+            m_BoneTree = allocator.GetElement<bUITree>("Bones");
+            m_BoneTree->OnSelect = [&](uint32_t id) {
+                m_SelectedBone = static_cast<PreviewBone*>(m_BoneHierarchy.GetData(id));
+            };
+
+            m_MeshTree = allocator.GetElement<bUITree>("Submeshes");
+            m_MeshTree->OnSelect = [&](uint32_t id) {
+                for (Submesh& subMesh : m_Mesh.Submeshes)
+                {
+                    if (subMesh.ID == id)
+                        m_SelectedSubmesh = &subMesh;
+                }
+            };
+            m_ViewportSize = m_Image->Size;
+            m_Camera.ProjectionMatrix = glm::ortho(
+                -m_Image->Size.x / 2.0f, m_Image->Size.x / 2.0f,
+                -m_Image->Size.y / 2.0f, m_Image->Size.y / 2.0f
+            );
+            m_Camera.UpdateViewProjection();
+
+            m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+
+            m_Image->ImageSubTexture = m_RenderSubTexture;
+
+            m_PreviewWindow->OnResize = [&](const glm::vec2& size) {
+                m_Framebuffer->Resize((uint32_t)m_Image->Size.x, (uint32_t)m_Image->Size.y);
+                m_ViewportSize = m_Image->Size;
+                m_Camera.ProjectionMatrix = glm::ortho(
+                    -m_Image->Size.x / 2.0f, m_Image->Size.x / 2.0f,
+                    -m_Image->Size.y / 2.0f, m_Image->Size.y / 2.0f
+                );
+                m_Camera.UpdateViewProjection();
+            };
+
+            bUIButton* clearButton = allocator.GetElement<bUIButton>("Clear");
+            clearButton->Callbacks.push_back([&](bUICallbackType type, bUIElement& element) {
+                if (type == bUICallbackType::Active)
+                    clear();
+            });
+
+            bUIButton* saveButton = allocator.GetElement<bUIButton>("Save");
+            saveButton->Callbacks.push_back([&](bUICallbackType type, bUIElement& element) {
+                if (type == bUICallbackType::Active)
+                    save();
+            });
+            setupBoneUI();
+            setupVertexUI();
+            setupWeightsUI();
+        }
+
+        void SkinningEditor::SetContext(const Ref<SubTexture>& context)
+        {
+            m_Context = context;
+            m_ContextSize.x = (float)m_Context->GetTexture()->GetWidth();
+            m_ContextSize.y = (float)m_Context->GetTexture()->GetHeight();
+            rebuildRenderBuffers();
+        }
    
         void SkinningEditor::OnEvent(Event& event)
         {
@@ -293,66 +353,10 @@ namespace XYZ {
             //AssetManager::CreateAsset<SkeletalMesh>("SkeletalMesh.skm", AssetType::SkeletalMesh, AssetManager::GetDirectoryHandle("Assets/Meshes"), vertices, indices, bones, boneHierarchy, material);
         }
 
-        void SkinningEditor::setupUI()
-        {
-            bUIAllocator& allocator = bUI::GetAllocator("SkinningEditor");
-            m_Window = allocator.GetElement<bUIWindow>("Skinning Editor");
-            m_PreviewWindow = allocator.GetElement<bUIWindow>("Skinning Preview");
-            m_PreviewWindow->BlockEvents = false;
-            m_Image = allocator.GetElement<bUIImage>("Skinning Editor Image");
-            m_Image->BlockEvents = false;
-            m_BoneTree = allocator.GetElement<bUITree>("Bones");
-            m_BoneTree->OnSelect = [&](uint32_t id) {
-                m_SelectedBone = static_cast<PreviewBone*>(m_BoneHierarchy.GetData(id));
-            };
-            
-            m_MeshTree = allocator.GetElement<bUITree>("Submeshes");
-            m_MeshTree->OnSelect = [&](uint32_t id) {
-                for (Submesh& subMesh : m_Mesh.Submeshes)
-                {
-                    if (subMesh.ID == id)
-                        m_SelectedSubmesh = &subMesh;
-                }
-            };
-            m_ViewportSize = m_Image->Size;
-            m_Camera.ProjectionMatrix = glm::ortho(
-                -m_Image->Size.x / 2.0f, m_Image->Size.x / 2.0f,
-                -m_Image->Size.y / 2.0f, m_Image->Size.y / 2.0f
-            );
-            m_Camera.UpdateViewProjection();
-
-            m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-            
-            m_Image->ImageSubTexture = m_RenderSubTexture;
-
-            m_PreviewWindow->OnResize = [&](const glm::vec2& size) {
-                m_Framebuffer->Resize((uint32_t)m_Image->Size.x, (uint32_t)m_Image->Size.y);
-                m_ViewportSize = m_Image->Size;
-                m_Camera.ProjectionMatrix = glm::ortho(
-                    -m_Image->Size.x / 2.0f, m_Image->Size.x / 2.0f,
-                    -m_Image->Size.y / 2.0f, m_Image->Size.y / 2.0f
-                );
-                m_Camera.UpdateViewProjection();
-            };
-       
-            bUIButton* clearButton = allocator.GetElement<bUIButton>("Clear");
-            clearButton->Callbacks.push_back([&](bUICallbackType type, bUIElement& element) {
-                if (type == bUICallbackType::Active)
-                    clear();
-            });
-
-            bUIButton* saveButton = allocator.GetElement<bUIButton>("Save");
-            saveButton->Callbacks.push_back([&](bUICallbackType type, bUIElement& element) {
-                if (type == bUICallbackType::Active)
-                    save();
-             });
-            setupBoneUI();
-            setupVertexUI();
-            setupWeightsUI();
-        }
+ 
         void SkinningEditor::setupBoneUI()
         {
-            bUIAllocator& allocator = bUI::GetAllocator("SkinningEditor");
+            bUIAllocator& allocator = bUI::GetAllocator(GetName());
             
             bUICheckbox* previewPose = allocator.GetElement<bUICheckbox>("Preview Pose");
             previewPose->Callbacks.push_back([&](bUICallbackType type, bUIElement& element) {
@@ -365,7 +369,7 @@ namespace XYZ {
                         initializePose();
                         updateRenderBuffers();
                         int32_t id = casted.GetID();
-                        bUI::ForEach<bUICheckbox>("SkinningEditor", [id](bUICheckbox& checkbox) {
+                        bUI::ForEach<bUICheckbox>(GetName(), [id](bUICheckbox& checkbox) {
                             if (checkbox.GetID() != id)
                                 checkbox.Checked = false;
                             });
@@ -387,7 +391,7 @@ namespace XYZ {
                     {
                         m_Flags = ToggleBit(m_Flags, CreateBone);
                         int32_t id = casted.GetID();
-                        bUI::ForEach<bUICheckbox>("SkinningEditor", [id](bUICheckbox& checkbox) {
+                        bUI::ForEach<bUICheckbox>(GetName(), [id](bUICheckbox& checkbox) {
                             if (checkbox.GetID() != id)
                                 checkbox.Checked = false;
                         });
@@ -426,7 +430,7 @@ namespace XYZ {
                     {
                         m_Flags = ToggleBit(m_Flags, DeleteBone);
                         int32_t id = casted.GetID();
-                        bUI::ForEach<bUICheckbox>("SkinningEditor", [id](bUICheckbox& checkbox) {
+                        bUI::ForEach<bUICheckbox>(GetName(), [id](bUICheckbox& checkbox) {
                             if (checkbox.GetID() != id)
                                 checkbox.Checked = false;
                         });
@@ -440,7 +444,7 @@ namespace XYZ {
         }
         void SkinningEditor::setupVertexUI()
         {
-            bUIAllocator& allocator = bUI::GetAllocator("SkinningEditor");
+            bUIAllocator& allocator = bUI::GetAllocator(GetName());
 
             bUIButton* createSubMesh = allocator.GetElement<bUIButton>("Create Submesh");
             createSubMesh->Callbacks.push_back([&](bUICallbackType type, bUIElement& element) {
@@ -462,7 +466,7 @@ namespace XYZ {
                     {
                         m_Flags = ToggleBit(m_Flags, CreateVertex);
                         int32_t id = casted.GetID();
-                        bUI::ForEach<bUICheckbox>("SkinningEditor", [id](bUICheckbox& checkbox) {
+                        bUI::ForEach<bUICheckbox>(GetName(), [id](bUICheckbox& checkbox) {
                             if (checkbox.GetID() != id)
                                 checkbox.Checked = false;
                             });
@@ -484,7 +488,7 @@ namespace XYZ {
                     {
                         m_Flags = ToggleBit(m_Flags, EditVertex);
                         int32_t id = casted.GetID();
-                        bUI::ForEach<bUICheckbox>("SkinningEditor", [id](bUICheckbox& checkbox) {
+                        bUI::ForEach<bUICheckbox>(GetName(), [id](bUICheckbox& checkbox) {
                             if (checkbox.GetID() != id)
                                 checkbox.Checked = false;
                             });
@@ -505,7 +509,7 @@ namespace XYZ {
                     {
                         m_Flags = ToggleBit(m_Flags, DeleteVertex);
                         int32_t id = casted.GetID();
-                        bUI::ForEach<bUICheckbox>("SkinningEditor", [id](bUICheckbox& checkbox) {
+                        bUI::ForEach<bUICheckbox>(GetName(), [id](bUICheckbox& checkbox) {
                             if (checkbox.GetID() != id)
                                 checkbox.Checked = false;
                             });
@@ -526,7 +530,7 @@ namespace XYZ {
                     {
                         m_Flags = ToggleBit(m_Flags, DeleteTriangle);
                         int32_t id = casted.GetID();
-                        bUI::ForEach<bUICheckbox>("SkinningEditor", [id](bUICheckbox& checkbox) {
+                        bUI::ForEach<bUICheckbox>(GetName(), [id](bUICheckbox& checkbox) {
                             if (checkbox.GetID() != id)
                                 checkbox.Checked = false;
                             });
@@ -557,7 +561,7 @@ namespace XYZ {
         }
         void SkinningEditor::setupWeightsUI()
         {
-            bUIAllocator& allocator = bUI::GetAllocator("SkinningEditor");
+            bUIAllocator& allocator = bUI::GetAllocator(GetName());
             
             bUICheckbox* weigthBrush = allocator.GetElement<bUICheckbox>("Weight Brush");
             weigthBrush->Callbacks.push_back([&](bUICallbackType type, bUIElement& element) {
@@ -568,7 +572,7 @@ namespace XYZ {
                     {
                         m_Flags = ToggleBit(m_Flags, WeightBrush);
                         int32_t id = casted.GetID();
-                        bUI::ForEach<bUICheckbox>("SkinningEditor", [id](bUICheckbox& checkbox) {
+                        bUI::ForEach<bUICheckbox>(GetName(), [id](bUICheckbox& checkbox) {
                             if (checkbox.GetID() != id)
                                 checkbox.Checked = false;
                             });
