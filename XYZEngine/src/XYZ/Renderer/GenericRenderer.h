@@ -6,8 +6,9 @@
 
 namespace XYZ {
 
-	class Pipeline
+	class Pipeline : public RefCount
 	{
+	public:
 		Ref<VertexArray>  QuadVertexArray;
 		Ref<VertexBuffer> QuadVertexBuffer;
 		Ref<Material>	  QuadMaterial;
@@ -36,7 +37,7 @@ namespace XYZ {
 		}
 
 	private:
-		ByteBuffer m_QuadBuffer;
+		
 	};
 
 }
