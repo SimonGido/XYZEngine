@@ -65,8 +65,7 @@ namespace XYZ {
 
 		for (const bUIQuad& quad : s_Context->Renderer.GetMesh().Quads)
 		{
-			std::cout << quad.ScissorID << std::endl;
-			CustomRenderer2D::SubmitQuadNotCentered(quad.Position, quad.Size, quad.TexCoord, quad.Color, quad.TextureID, quad.ScissorID);
+			CustomRenderer2D::SubmitQuadNotCentered(quad.Position, quad.Size, quad.TexCoord, quad.Color, (float)quad.TextureID, (float)quad.ScissorID);
 			//Renderer2D::SubmitQuadNotCentered(quad.Position, quad.Size, quad.TexCoord, quad.TextureID, quad.Color, (float)quad.ScissorID);
 		}
 		for (const bUILine& line : s_Context->Renderer.GetMesh().Lines)

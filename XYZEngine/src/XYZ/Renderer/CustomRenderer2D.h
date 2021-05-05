@@ -123,7 +123,7 @@ namespace XYZ {
 		static void SubmitQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, const glm::vec4& color, Args&& ...args);
 
 		template <typename ...Args>
-		static void SubmitQuadNotCentered(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, const glm::vec4& color, const Args& ...args);
+		static void SubmitQuadNotCentered(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, const glm::vec4& color, const Args& ... args);
 
 		template <typename ...Args>
 		static void SubmitLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color, Args&& ...args);
@@ -207,7 +207,7 @@ namespace XYZ {
 	}
 
 	template<typename ...Args>
-	inline void CustomRenderer2D::SubmitQuadNotCentered(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, const glm::vec4& color, const Args & ...args)
+	inline void CustomRenderer2D::SubmitQuadNotCentered(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, const glm::vec4& color, const Args& ... args)
 	{
 		constexpr size_t quadVertexCount = 4;
 		if (s_Data.QuadIndexCount >= s_Data.MaxQuadIndices)
