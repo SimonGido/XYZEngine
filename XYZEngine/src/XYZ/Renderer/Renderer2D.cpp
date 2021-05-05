@@ -203,6 +203,7 @@ namespace XYZ {
 		TextureSlotIndex = 0;
 		IndexCount = 0;	
 	}
+	
 	void Renderer2DData::ResetLines()
 	{
 		if (!LineBufferBase)
