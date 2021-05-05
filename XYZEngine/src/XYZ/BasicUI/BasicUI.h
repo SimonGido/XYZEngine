@@ -5,6 +5,7 @@
 
 #include "XYZ/Event/InputEvent.h"
 #include "XYZ/Event/ApplicationEvent.h"
+#include "XYZ/Renderer/CustomRenderer2D.h"
 
 namespace XYZ {
 	
@@ -20,7 +21,7 @@ namespace XYZ {
 		bUIData		 Data;
 		bUIRenderer  Renderer;
 		bUIEditData  EditData;
-
+		CustomRenderer2DLayout RendererLayout;
 		glm::vec2    ViewportSize;
 	};
 

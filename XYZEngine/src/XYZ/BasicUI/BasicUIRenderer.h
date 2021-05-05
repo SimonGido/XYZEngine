@@ -21,6 +21,7 @@ namespace XYZ {
 		glm::vec4 Color;
 		glm::vec3 P0;
 		glm::vec3 P1;
+		uint32_t  ScissorID;
 	};
 
 	struct bUIScissor

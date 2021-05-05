@@ -39,18 +39,14 @@ namespace XYZ {
 	{
 		s_Data.ResetQuads();
 		s_Data.ResetLines();
-		s_Data.CameraUniformBuffer = UniformBuffer::Create(sizeof(CustomRenderer2DData::CameraData), 0);
 	}
 	void CustomRenderer2D::Shutdown()
 	{
 		delete[]s_Data.QuadBufferBase;
 		delete[]s_Data.LineBufferBase;
 	}
-	void CustomRenderer2D::BeginScene(const glm::mat4& viewProjectionMatrix, const CustomRenderer2DLayout& layout)
+	void CustomRenderer2D::BeginScene(const CustomRenderer2DLayout& layout)
 	{
-		s_Data.CameraBuffer.ViewProjectionMatrix = viewProjectionMatrix;
-
-		s_Data.CameraUniformBuffer->Update(&s_Data.CameraBuffer, sizeof(CustomRenderer2DData::CameraData), 0);
 		s_Data.MaxQuadIndices = (s_Data.QuadBufferSize / layout.m_QuadLayoutSize) / 4 * 6;
 		s_Data.MaxLineIndices = (s_Data.LineBufferSize / layout.m_LineLayoutSize) / 4 * 6;
 
@@ -104,13 +100,7 @@ namespace XYZ {
 			for (uint32_t i = 0; i < s_Data.TextureSlotIndex; ++i)
 				s_Data.TextureSlots[i]->Bind(i + textureSlotOffset);
 
-			size_t counter = 0;
-			for (size_t i = 0; i < s_Data.QuadIndexCount; i += 6)
-			{
-				TestVertex2D* tmp = (TestVertex2D * )&s_Data.QuadBufferBase[counter += sizeof(TestVertex2D)];
-				std::cout << tmp->TilingFactor << std::endl;
-			}
-
+		
 			s_Data.Layout.m_QuadVertexBuffer->Update(s_Data.QuadBufferBase, dataSize);
 			s_Data.Layout.m_QuadVertexArray->Bind();
 

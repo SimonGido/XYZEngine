@@ -8,7 +8,7 @@
 
 namespace XYZ {
 	namespace Helper {
-		static void GenerateCircle(bUIMesh& mesh, const glm::vec2& pos, float radius, uint32_t sides, const glm::vec4& color)
+		static void GenerateCircle(bUIMesh& mesh, const glm::vec2& pos, float radius, uint32_t sides, const glm::vec4& color, uint32_t scissorID)
 		{
 			float step = 360 / sides;
 			for (int a = step; a < 360 + step; a += step)
@@ -19,7 +19,8 @@ namespace XYZ {
 				mesh.Lines.push_back({
 					color,
 					glm::vec3(pos.x + std::cos(before) * radius,pos.y + std::sin(before) * radius, 0.0f),
-					glm::vec3(pos.x + std::cos(heading) * radius, pos.y + std::sin(heading) * radius, 0.0f)
+					glm::vec3(pos.x + std::cos(heading) * radius, pos.y + std::sin(heading) * radius, 0.0f),
+					scissorID
 				});
 			}
 		}
@@ -301,8 +302,8 @@ namespace XYZ {
 					glm::vec3 lineStart = glm::vec3(parentAbsolutePosition.x + element.Size.x / 2.0f, parentAbsolutePosition.y + element.Size.y, 0.0f);
 					glm::vec3 lineEnd = glm::vec3(childAbsolutePosition.x, childAbsolutePosition.y + element.Size.y / 2.0f, 0.0f);
 					glm::vec3 lineMiddle = glm::vec3(lineStart.x, lineEnd.y, 0.0f);
-					m_Mesh.Lines.push_back({ glm::vec4(1.0f), lineStart, lineMiddle });
-					m_Mesh.Lines.push_back({ glm::vec4(1.0f), lineMiddle, lineEnd });
+					m_Mesh.Lines.push_back({ glm::vec4(1.0f), lineStart, lineMiddle, scissorID });
+					m_Mesh.Lines.push_back({ glm::vec4(1.0f), lineMiddle, lineEnd, scissorID });
 				}
 			}
 
@@ -422,7 +423,7 @@ namespace XYZ {
 			glm::vec3 lineEnd(absolutePosition.x + element.Size.x, rowYOffset, 0.0f);
 			
 			rowYOffset += font->GetLineHeight() + element.Layout.YPadding;
-			m_Mesh.Lines.push_back({ glm::vec4(0.8f), lineStart, lineEnd });
+			m_Mesh.Lines.push_back({ glm::vec4(0.8f), lineStart, lineEnd, scissorID });
 		}
 
 		float segmentLength = (element.SplitTime / element.Length) * element.Zoom;
@@ -442,7 +443,7 @@ namespace XYZ {
 			textPosition.x -= textSize.x / 2.0f;
 			Helper::GenerateTextMesh(buffer, font, glm::vec4(1.0f), textPosition, m_Mesh, 1, scissorID, numChars);
 			
-			m_Mesh.Lines.push_back({ glm::vec4(0.8f), lineStart, lineEnd });
+			m_Mesh.Lines.push_back({ glm::vec4(0.8f), lineStart, lineEnd, scissorID });
 			timeAtCol += element.SplitTime;
 		}		
 
@@ -451,9 +452,8 @@ namespace XYZ {
 			glm::vec2 pointPosition = { rowXOffset, absolutePosition.y };
 			pointPosition.x += (point.Time / element.SplitTime) * segmentLength;
 			pointPosition.y += (2.5f * font->GetLineHeight()) + point.Row * (font->GetLineHeight() + element.Layout.YPadding);
-			Helper::GenerateCircle(m_Mesh, pointPosition, 5.0f, 5, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+			Helper::GenerateCircle(m_Mesh, pointPosition, 5.0f, 5, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), scissorID);
 		}
-
 	}
 
 	void bUIRenderer::Begin()

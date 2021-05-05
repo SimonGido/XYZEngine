@@ -34,18 +34,6 @@ namespace XYZ {
 		friend class CustomRenderer2D;
 	};
 
-
-	struct TestVertex2D
-	{
-		glm::vec4 Color;
-		glm::vec3 Position;
-		glm::vec2 TexCoord;
-		float	  TextureID;
-		float	  TilingFactor;
-	};
-
-
-
 	struct CustomRenderer2DData
 	{
 		static constexpr uint32_t MaxTextures = 32;
@@ -57,7 +45,7 @@ namespace XYZ {
 			Writer& operator << (const T& val)
 			{
 				size_t size = sizeof(T);
-				memcpy(Ptr, &val, size);
+				memcpy((void*)Ptr, (void*)&val, size);
 				Ptr += size;
 				return *this;
 			}
@@ -91,14 +79,8 @@ namespace XYZ {
 			{  0.5f,  0.5f, 0.0f, 1.0f },
 			{ -0.5f,  0.5f, 0.0f, 1.0f }
 		};
-		struct CameraData
-		{
-			glm::mat4 ViewProjectionMatrix;
-		};
-
+	
 		CustomRenderer2DLayout Layout;
-		CameraData CameraBuffer;
-		Ref<UniformBuffer> CameraUniformBuffer;
 	};
 
 	class CustomRenderer2D
@@ -107,7 +89,7 @@ namespace XYZ {
 		static void Init();
 		static void Shutdown();
 
-		static void BeginScene(const glm::mat4& viewProjectionMatrix, const CustomRenderer2DLayout& layout);
+		static void BeginScene(const CustomRenderer2DLayout& layout);
 		
 		static void SetMaterial(const Ref<Material>& material);
 		static void SetLineShader(const Ref<Shader>& lineShader);
@@ -123,7 +105,7 @@ namespace XYZ {
 		static void SubmitQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, const glm::vec4& color, Args&& ...args);
 
 		template <typename ...Args>
-		static void SubmitQuadNotCentered(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, const glm::vec4& color, const Args& ... args);
+		static void SubmitQuadNotCentered(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, const glm::vec4& color, Args&& ... args);
 
 		template <typename ...Args>
 		static void SubmitLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color, Args&& ...args);
@@ -207,7 +189,7 @@ namespace XYZ {
 	}
 
 	template<typename ...Args>
-	inline void CustomRenderer2D::SubmitQuadNotCentered(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, const glm::vec4& color, const Args& ... args)
+	inline void CustomRenderer2D::SubmitQuadNotCentered(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, const glm::vec4& color, Args&& ... args)
 	{
 		constexpr size_t quadVertexCount = 4;
 		if (s_Data.QuadIndexCount >= s_Data.MaxQuadIndices)
@@ -225,14 +207,16 @@ namespace XYZ {
 			{  position.x + size.x ,  position.y + size.y, 0.0f},
 			{  position.x ,			  position.y + size.y , 0.0f}
 		};
+
+		uint32_t dataOffset = s_Data.QuadBufferWriter.Ptr - s_Data.QuadBufferBase;
 		for (size_t i = 0; i < quadVertexCount; ++i)
-		{
+		{			
 			s_Data.QuadBufferWriter << color;
 			s_Data.QuadBufferWriter << vertices[i];
 			s_Data.QuadBufferWriter << texCoords[i];
-			(s_Data.QuadBufferWriter << ... << args);
+			(s_Data.QuadBufferWriter << ... << args);	
 		}
-
+		
 		s_Data.QuadIndexCount += 6;
 	}
 

@@ -5,7 +5,7 @@
 
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/Renderer.h"
-#include "XYZ/Renderer/CustomRenderer2D.h"
+
 
 #include "XYZ/Core/Application.h"
 #include "XYZ/Core/Input.h"
@@ -16,18 +16,7 @@ namespace XYZ {
 
 	static bUIContext* s_Context = nullptr;
 
-	static CustomRenderer2DLayout s_RendererLayout(
-	{
-		{0, ShaderDataComponent::Float4, "a_Color" },
-		{1, ShaderDataComponent::Float3, "a_Position" },
-		{2, ShaderDataComponent::Float2, "a_TexCoord" },
-		{3, ShaderDataComponent::Float,  "a_TextureID" },
-		{4, ShaderDataComponent::Float,  "a_ScissorIndex" }
-	},
-	{	
-		{0, ShaderDataComponent::Float3, "a_Position" },
-		{1, ShaderDataComponent::Float4, "a_Color" },
-	});
+	
 
 	void bUI::Init()
 	{
@@ -35,6 +24,23 @@ namespace XYZ {
 		auto& app = Application::Get();
 		s_Context->ViewportSize = glm::vec2(app.GetWindow().GetWidth(), 
 											app.GetWindow().GetHeight());
+
+		s_Context->RendererLayout.SetQuadBufferLayout(
+			{
+				{0, ShaderDataComponent::Float4, "a_Color" },
+				{1, ShaderDataComponent::Float3, "a_Position" },
+				{2, ShaderDataComponent::Float2, "a_TexCoord" },
+				{3, ShaderDataComponent::Float,  "a_TextureID" },
+				{4, ShaderDataComponent::Float,  "a_ScissorIndex" }
+			}
+		);
+		s_Context->RendererLayout.SetLineBufferLayout(
+			{
+			{0, ShaderDataComponent::Float3, "a_Position" },
+			{1, ShaderDataComponent::Float4, "a_Color" },
+			{2, ShaderDataComponent::Float,  "a_ScissorIndex" }
+			}
+		);
 	}
 	void bUI::Shutdown()
 	{
@@ -50,8 +56,8 @@ namespace XYZ {
 
 		glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f));
 		glm::mat4 viewProjectionMatrix = glm::ortho(0.0f, s_Context->ViewportSize.x, s_Context->ViewportSize.y, 0.0f) * glm::inverse(viewMatrix);
-		//Renderer2D::BeginScene(viewProjectionMatrix);
-		CustomRenderer2D::BeginScene(viewProjectionMatrix, s_RendererLayout);
+		Renderer2D::BeginScene(viewProjectionMatrix);
+		CustomRenderer2D::BeginScene(s_Context->RendererLayout);
 		if (s_Context->Renderer.GetMesh().Scissors.size())
 		{
 			s_Context->Renderer.UpdateScissorBuffer(s_Context->Config.m_ScissorBuffer);
@@ -66,12 +72,10 @@ namespace XYZ {
 		for (const bUIQuad& quad : s_Context->Renderer.GetMesh().Quads)
 		{
 			CustomRenderer2D::SubmitQuadNotCentered(quad.Position, quad.Size, quad.TexCoord, quad.Color, (float)quad.TextureID, (float)quad.ScissorID);
-			//Renderer2D::SubmitQuadNotCentered(quad.Position, quad.Size, quad.TexCoord, quad.TextureID, quad.Color, (float)quad.ScissorID);
 		}
 		for (const bUILine& line : s_Context->Renderer.GetMesh().Lines)
 		{
-			CustomRenderer2D::SubmitLine(line.P0, line.P1, line.Color);
-			//Renderer2D::SubmitLine(line.P0, line.P1, line.Color);
+			CustomRenderer2D::SubmitLine(line.P0, line.P1, line.Color, (float)line.ScissorID);
 		}
 
 		CustomRenderer2D::Flush();

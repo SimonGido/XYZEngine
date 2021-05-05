@@ -12,7 +12,7 @@ namespace XYZ {
 		m_Material = Ref<XYZ::Material>::Create(Shader::Create("Assets/Shaders/BasicUIShader.glsl"));
 		m_Material->Set("u_Color", glm::vec4(1.0f));
 
-		m_LineShader = Shader::Create("Assets/Shaders/LineShader.glsl");
+		m_LineShader = Shader::Create("Assets/Shaders/BasicUILineShader.glsl");
 
 		m_Colors[HighlightColor] = { 1.0f, 1.9f, 2.1, 1.0f };
 		m_Colors[TextHighlightColor] = { 0.5f, 0.7f, 1.0f, 1.0f };
