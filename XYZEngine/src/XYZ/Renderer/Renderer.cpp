@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Renderer.h"
 
+#include "CustomRenderer2D.h"
 #include "Renderer2D.h"
 #include "SceneRenderer.h"
 
@@ -70,6 +71,7 @@ namespace XYZ {
 		Renderer::Submit([=]() {
 			RendererAPI::Init();
 		});
+		CustomRenderer2D::Init();
 		Renderer2D::Init();
 		SceneRenderer::Init();
 		
@@ -78,6 +80,7 @@ namespace XYZ {
 
 	void Renderer::Shutdown()
 	{
+		CustomRenderer2D::Shutdown();
 		Renderer2D::Shutdown();
 	}
 

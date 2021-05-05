@@ -45,6 +45,7 @@ namespace XYZ {
 	private:
 		Ref<ShaderStorageBuffer> m_ScissorBuffer;
 		Ref<Material>			 m_Material;
+		Ref<Shader>			     m_LineShader;
 		Ref<Texture2D>			 m_Texture;
 		Ref<Font>				 m_Font;
 		Ref<SubTexture>			 m_SubTextures[NumSubTextures];
