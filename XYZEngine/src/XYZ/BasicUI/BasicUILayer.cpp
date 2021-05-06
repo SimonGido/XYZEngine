@@ -23,6 +23,7 @@ namespace XYZ {
 		Ref<SubTexture> whiteSubTexture			= Ref<XYZ::SubTexture>::Create(texture, glm::vec2(3, 0), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
 		Ref<SubTexture> rightArrowSubTexture	= Ref<XYZ::SubTexture>::Create(texture, glm::vec2(2, 2), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
 		Ref<SubTexture> downArrowSubTexture		= Ref<XYZ::SubTexture>::Create(texture, glm::vec2(2, 3), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
+		Ref<SubTexture> pauseSubTexture			= Ref<XYZ::SubTexture>::Create(texture, glm::vec2(2, 1), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
 
 		bUI::GetConfig().SetSubTexture(buttonSubTexture, bUIConfig::Button);
 		bUI::GetConfig().SetSubTexture(minimizeSubTexture, bUIConfig::MinimizeButton);
@@ -33,6 +34,7 @@ namespace XYZ {
 		bUI::GetConfig().SetSubTexture(whiteSubTexture, bUIConfig::White);
 		bUI::GetConfig().SetSubTexture(rightArrowSubTexture, bUIConfig::RightArrow);
 		bUI::GetConfig().SetSubTexture(downArrowSubTexture, bUIConfig::DownArrow);
+		bUI::GetConfig().SetSubTexture(pauseSubTexture, bUIConfig::Pause);
 
 	}
 	void bUILayer::OnDetach()

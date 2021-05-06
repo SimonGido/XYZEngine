@@ -83,9 +83,8 @@ namespace XYZ {
 		Ref<SubTexture> robotSubTexture = Ref<SubTexture>::Create(robotTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 		m_SkinningEditor.SetContext(robotSubTexture);
 
-		glm::vec3 tmpVal;
-		Property<glm::vec3> prop(tmpVal);
-		prop.AddKeyFrame(glm::vec3(0.5f), 2.0f);
+		Ref<Animation> animation = Ref<Animation>::Create();
+		m_AnimationEditor.SetContext(animation);
 	}	
 
 	void EditorLayer::OnDetach()

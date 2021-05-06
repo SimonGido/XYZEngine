@@ -107,6 +107,7 @@ namespace XYZ {
 		template <typename ...Args>
 		static void SubmitQuadNotCentered(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, const glm::vec4& color, Args&& ... args);
 
+
 		template <typename ...Args>
 		static void SubmitLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color, Args&& ...args);
 
@@ -131,7 +132,7 @@ namespace XYZ {
 		{
 			s_Data.QuadBufferWriter << color;
 			s_Data.QuadBufferWriter << transform * s_Data.QuadVertexPositions[i];
-			(s_Data.QuadBufferWriter << ... << args);
+			(s_Data.QuadBufferWriter << ... << std::forward<Args>(args));
 		}
 		s_Data.QuadIndexCount += 6;
 	}
@@ -154,7 +155,7 @@ namespace XYZ {
 			s_Data.QuadBufferWriter << color;
 			s_Data.QuadBufferWriter << transform * s_Data.QuadVertexPositions[i];
 			s_Data.QuadBufferWriter << texCoords[i];
-			(s_Data.QuadBufferWriter << ... << args);
+			(s_Data.QuadBufferWriter << ... << std::forward<Args>(args));
 		}
 		s_Data.QuadIndexCount += 6;
 	}
@@ -183,7 +184,7 @@ namespace XYZ {
 			s_Data.QuadBufferWriter << color;
 			s_Data.QuadBufferWriter << vertices[i];
 			s_Data.QuadBufferWriter << texCoords[i];
-			(s_Data.QuadBufferWriter << ... << args);
+			(s_Data.QuadBufferWriter << ... << std::forward<Args>(args));
 		}
 		s_Data.QuadIndexCount += 6;
 	}
@@ -214,7 +215,7 @@ namespace XYZ {
 			s_Data.QuadBufferWriter << color;
 			s_Data.QuadBufferWriter << vertices[i];
 			s_Data.QuadBufferWriter << texCoords[i];
-			(s_Data.QuadBufferWriter << ... << args);	
+			(s_Data.QuadBufferWriter << ... << std::forward<Args>(args));	
 		}
 		
 		s_Data.QuadIndexCount += 6;
@@ -232,7 +233,7 @@ namespace XYZ {
 
 		s_Data.LineBufferWriter << p1;
 		s_Data.LineBufferWriter << color;
-		(s_Data.LineBufferWriter << ... << args);
+		(s_Data.LineBufferWriter << ... << std::forward<Args>(args));
 
 		s_Data.LineIndexCount += 2;
 	}

@@ -454,6 +454,13 @@ namespace XYZ {
 			pointPosition.y += (2.5f * font->GetLineHeight()) + point.Row * (font->GetLineHeight() + element.Layout.YPadding);
 			Helper::GenerateCircle(m_Mesh, pointPosition, 5.0f, 5, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), scissorID);
 		}
+
+		float xCurrentPosition = rowXOffset + ((element.CurrentTime / element.SplitTime) * segmentLength);
+		glm::vec3 lineStart(xCurrentPosition, absolutePosition.y + font->GetLineHeight(), 0.0f);
+		glm::vec3 lineEnd(xCurrentPosition, rowYOffset, 0.0f);
+
+		rowYOffset += font->GetLineHeight() + element.Layout.YPadding;
+		m_Mesh.Lines.push_back({ glm::vec4(1.0f, 0.5f, 0.5f, 1.0f), lineStart, lineEnd, scissorID });
 	}
 
 	void bUIRenderer::Begin()

@@ -19,7 +19,16 @@ namespace XYZ {
 
 			void OnEvent(Event& event);
 		private:
+			void updateLayout();
+
+			bool onMouseScroll(MouseScrollEvent& event);
+
+		private:
 			Ref<Animation> m_Context;
+
+			bool m_Play;
+
+			bUILayout m_Layout;
 		};
 	}
 }

@@ -111,6 +111,8 @@ namespace XYZ {
 			updateLength();
 		}
 
+
+		float GetCurrentTime() const { return m_CurrentTime; }
 		size_t GetNumberOfProperties() const { return m_Properties.Size(); }
 
 	private:

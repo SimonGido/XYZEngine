@@ -122,7 +122,7 @@ namespace XYZ {
             m_Flags(0),
             m_BoneEditFlags(0)
         {
-            m_Shader = Shader::Create("Assets/Shaders/SkinningEditor.glsl");
+            m_Shader = Shader::Create("Assets/Shaders/Editor/SkinningEditor.glsl");
             for (uint32_t i = 0; i < NumCategories; ++i)
                 m_CategoriesOpen[i] = false;
 
