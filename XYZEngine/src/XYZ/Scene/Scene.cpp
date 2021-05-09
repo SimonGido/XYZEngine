@@ -7,6 +7,7 @@
 #include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/SceneRenderer.h"
+#include "XYZ/Renderer/Animation.h"
 #include "SceneEntity.h"
 
 
@@ -205,7 +206,7 @@ namespace XYZ {
 		auto& animatorStorage = m_ECS.GetStorage<AnimatorComponent>();
 		for (auto & anim : animatorStorage)
 		{
-			
+			anim.Animation->Update(ts);
 		}
 		
 		auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponent>();

@@ -90,9 +90,9 @@ namespace XYZ {
 			delete[]m_Data;
 		}
 	}
-	void DynamicPool::reallocate()
+	void DynamicPool::reallocate(size_t minSize)
 	{
-		m_Capacity = (m_Capacity + 1) * sc_CapacityMultiplier;
+		m_Capacity = minSize + (m_Capacity * sc_CapacityMultiplier);
 		uint8_t* tmp = new uint8_t[m_Capacity];
 		if (m_Data)
 		{

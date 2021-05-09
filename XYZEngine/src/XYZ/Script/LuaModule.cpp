@@ -8,6 +8,7 @@
 #include "XYZ/Core/Input.h"
 #include "XYZ/Core/KeyCodes.h"
 #include "XYZ/Core/MouseCodes.h"
+#include "XYZ/Renderer/Animation.h"
 #include "LuaEntity.h"
 
 extern "C"

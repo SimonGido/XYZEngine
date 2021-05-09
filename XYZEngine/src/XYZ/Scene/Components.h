@@ -5,6 +5,7 @@
 #include "XYZ/Core/GUID.h"
 #include "XYZ/Particle/ParticleEffect.h"
 #include "XYZ/Renderer/SubTexture.h"
+
 #include "XYZ/Script/ScriptPublicField.h"
 #include "XYZ/Utils/Math/AABB.h"
 #include "XYZ/Physics/PhysicsBody.h"
@@ -30,7 +31,6 @@ namespace XYZ {
 
 		GUID ID;
 	};
-
 	class TransformComponent : public IComponent
 	{
 	public:
@@ -38,17 +38,16 @@ namespace XYZ {
 		TransformComponent(const glm::vec3& translation)
 			: Translation(translation)
 		{}
-		
+				
 		glm::vec3 Translation = { 0.0f,0.0f,0.0f };
 		glm::vec3 Rotation = { 0.0f,0.0f,0.0f };
 		glm::vec3 Scale = { 1.0f,1.0f,1.0f };
-		
+
 		glm::mat4 GetTransform() const
 		{		
 			glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), Rotation.x, { 1, 0, 0 })
 				* glm::rotate(glm::mat4(1.0f), Rotation.y, { 0, 1, 0 })
 				* glm::rotate(glm::mat4(1.0f), Rotation.z, { 0, 0, 1 });
-
 
 			return glm::translate(glm::mat4(1.0f), Translation)
 					* rotation
@@ -120,10 +119,11 @@ namespace XYZ {
 	};
 
 
+	class Animation;
 	struct AnimatorComponent : public IComponent
 	{
 		AnimatorComponent() = default;
-
+		Ref<Animation> Animation;
 	};
 
 

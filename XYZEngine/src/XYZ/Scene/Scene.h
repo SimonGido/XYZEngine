@@ -53,6 +53,7 @@ namespace XYZ {
         SceneEntity GetEntity(uint32_t index);
         SceneEntity GetEntityByName(const std::string& name);
         SceneEntity GetSelectedEntity();
+        ECSManager& GetECS() {return m_ECS;}
         inline const std::vector<Entity>& GetEntities() const { return m_Entities; }
 
         inline SceneState GetState() const { return m_State; }

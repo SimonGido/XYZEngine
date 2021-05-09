@@ -22,7 +22,7 @@ namespace XYZ {
 		{
 			static_assert(std::is_base_of<Base, T>::value, "BaseType is not base type of type T");
 			if (m_Size + sizeof(T) > m_Capacity)
-				reallocate();
+				reallocate(sizeof(T));
 			new(&m_Data[m_Size])T(elem);
 			m_Handles.push_back(m_Size);
 			m_Size += sizeof(T);
@@ -33,7 +33,7 @@ namespace XYZ {
 		{
 			static_assert(std::is_base_of<Base, T>::value, "BaseType is not base type of type T");
 			if (m_Size + sizeof(T) > m_Capacity)
-				reallocate();
+				reallocate(sizeof(T));
 			new(&m_Data[m_Size])T(std::forward<Args>(args)...);
 			m_Handles.push_back(m_Size);
 			m_Size += sizeof(T);
@@ -41,6 +41,18 @@ namespace XYZ {
 
 		void Erase(size_t index);
 
+		template <typename T>
+		T& Get(size_t index)
+		{
+			static_assert(std::is_base_of<Base, T>::value, "BaseType is not base type of type T");
+			return *reinterpret_cast<T*>(&m_Data[m_Handles[index]]);
+		}
+		template <typename T>
+		const T& Get(size_t index) const
+		{
+			static_assert(std::is_base_of<Base, T>::value, "BaseType is not base type of type T");
+			return *reinterpret_cast<T*>(&m_Data[m_Handles[index]]);
+		}
 		Base& Back();
 		const Base& Back() const;
 		size_t Size() const { return m_Handles.size(); }
@@ -50,7 +62,7 @@ namespace XYZ {
 		
 	private:
 		void destroy();
-		void reallocate();
+		void reallocate(size_t minSize);
 		
 
 	private:

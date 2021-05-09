@@ -83,8 +83,49 @@ namespace XYZ {
 		Ref<SubTexture> robotSubTexture = Ref<SubTexture>::Create(robotTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 		m_SkinningEditor.SetContext(robotSubTexture);
 
-		Ref<Animation> animation = Ref<Animation>::Create();
+		Ref<Animation> animation = Ref<Animation>::Create(m_TestEntity);
 		m_AnimationEditor.SetContext(animation);
+
+
+		animation->CreateTrack<TransformTrack>();
+		auto track = animation->FindTrack<TransformTrack>();
+		if (track)
+		{
+
+			{
+				KeyFrame<glm::vec3> key;
+				key.Value = glm::vec3(0.0f, 0.0f, 0.0f);
+				key.EndTime = 0.0f;
+				track->AddKeyFrame<glm::vec3, TransformTrack::PropertyType::Translation>(key);
+			}
+			{
+				KeyFrame<glm::vec3> key;
+				key.Value = glm::vec3(0.0f, 0.0f, 7.0f);
+				key.EndTime = 2.0f;
+				track->AddKeyFrame<glm::vec3, TransformTrack::PropertyType::Rotation>(key);
+			}
+			{
+				KeyFrame<glm::vec3> key;
+				key.Value = glm::vec3(0.0f, 2.0f, 0.0f);
+				key.EndTime = 4.0f;
+				track->AddKeyFrame<glm::vec3, TransformTrack::PropertyType::Translation>(key);
+			}
+			{
+				KeyFrame<glm::vec3> key;
+				key.Value = glm::vec3(0.0f, 0.0f, 0.0f);
+				key.EndTime = 6.0f;
+				track->AddKeyFrame<glm::vec3, TransformTrack::PropertyType::Translation>(key);
+			}
+			{
+				KeyFrame<glm::vec3> key;
+				key.Value = glm::vec3(0.0f, 0.0f, 0.0f);
+				key.EndTime = 6.0f;
+				track->AddKeyFrame<glm::vec3, TransformTrack::PropertyType::Rotation>(key);
+			}
+		}
+		animation->UpdateLength();
+		AnimatorComponent& animator = m_TestEntity.EmplaceComponent<AnimatorComponent>();
+		animator.Animation = animation;
 	}	
 
 	void EditorLayer::OnDetach()
@@ -104,7 +145,6 @@ namespace XYZ {
 		m_AnimationEditor.OnUpdate(ts);
 
 		m_Inspector.SetContext(m_Scene->GetSelectedEntity());
-
 		if (m_Scene->GetState() == SceneState::Play)
 		{
 			m_Scene->OnUpdate(ts);

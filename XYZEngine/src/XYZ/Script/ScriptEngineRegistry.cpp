@@ -3,6 +3,7 @@
 
 #include "XYZ/Scene/SceneEntity.h"
 #include "XYZ/Scene/Components.h"
+#include "XYZ/Renderer/Animation.h"
 #include "ScriptWrappers.h"
 
 #include <mono/jit/jit.h>
