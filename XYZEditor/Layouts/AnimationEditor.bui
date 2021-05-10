@@ -16,21 +16,21 @@ bUIElements:
         Locked: true
         Type: Scrollbox
         bUIElements:
-          - Coords: [0, 0]
+          - Coords: [10, 10]
             Size: [35, 35]
             Color: [1, 1, 1, 1]
             Label: ""
             Name: Play
             Locked: true
             Type: Image
-          - Coords: [0, 0]
+          - Coords: [55, 10]
             Size: [35, 35]
             Color: [1, 1, 1, 1]
             Label: ""
             Name: Pause
             Locked: true
             Type: Image
-          - Coords: [0, 0]
+          - Coords: [10, 55]
             Size: [170, 200]
             Color: [1, 1, 1, 1]
             Label: ""

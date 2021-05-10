@@ -8,6 +8,9 @@
 #include "XYZ/Core/Application.h"
 #include "XYZ/Timer.h"
 
+
+#include <GL/glew.h>
+
 namespace XYZ {
 	
 	
@@ -198,10 +201,11 @@ namespace XYZ {
 				read[i] = &s_Data.CommandQueue[s_Data.ReadQueueIndex][i];
 
 			Application::GetThreadPool().PushJob<void>([read]() {
-				
+				auto fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, NULL);
 				read[Default]->Execute();
 				read[Overlay]->Execute();
 				s_Data.SwapQueues = true;
+				glClientWaitSync(fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
 			});
 
 			

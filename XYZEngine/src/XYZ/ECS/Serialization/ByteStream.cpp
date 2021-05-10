@@ -39,6 +39,11 @@ namespace XYZ {
 	}
 	ByteStream& ByteStream::operator=(ByteStream&& other) noexcept
 	{
+		if (m_Data)
+		{
+			delete[]m_Data;
+			m_Data = nullptr;
+		}
 		m_Data = other.m_Data;
 		m_Capacity = other.m_Capacity;
 		m_Size = other.m_Size;

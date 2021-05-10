@@ -47,6 +47,7 @@ namespace XYZ {
 		static void DrawIndexed(PrimitiveType type, uint32_t indexCount);
 		static void DrawInstanced(const Ref<VertexArray>& vertexArray, uint32_t count, uint32_t offset = 0);
 		static void DrawInstancedIndirect(void* indirect);
+	
 
 		static RenderAPICapabilities& GetCapabilities()
 		{
