@@ -4,7 +4,6 @@
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Utils/DataStructures/Tree.h"
 #include "XYZ/Utils/DataStructures/MemoryPool.h"
-#include "XYZ/Scene/SceneEntity.h"
 
 
 #include <glm/glm.hpp>
@@ -76,6 +75,6 @@ namespace XYZ {
 
 		std::vector<AnimatedVertex> m_Vertices;
 		std::vector<uint32_t> m_Indices;	
-		std::vector<SceneEntity> m_Bones;
+		//std::vector<SceneEntity> m_Bones;
 	};
 }

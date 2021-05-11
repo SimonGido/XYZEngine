@@ -249,6 +249,7 @@ namespace XYZ {
 
 	void Scene::OnRenderEditor(const Editor::EditorCamera& camera)
 	{
+		updateHierarchy();
 		SceneRenderer::BeginScene(this, camera.GetViewProjection());
 		
 		if ((bool)m_SelectedEntity)

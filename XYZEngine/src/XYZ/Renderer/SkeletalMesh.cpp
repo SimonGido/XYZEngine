@@ -67,13 +67,13 @@ namespace XYZ {
 
         uint32_t counter = 0;
 
-        for (SceneEntity& boneEntity : m_Bones)
-        {
-            const glm::mat4& transform = boneEntity.GetComponent<TransformComponent>().WorldTransform;
-            char name[12];
-            sprintf(name, "u_Bones[%u]", counter++);
-            shader->SetMat4(name, transform);
-        }
+        //for (SceneEntity& boneEntity : m_Bones)
+        //{
+        //    const glm::mat4& transform = boneEntity.GetComponent<TransformComponent>().WorldTransform;
+        //    char name[12];
+        //    sprintf(name, "u_Bones[%u]", counter++);
+        //    shader->SetMat4(name, transform);
+        //}
 
         m_VertexArray->Bind();
         Renderer::DrawIndexed(PrimitiveType::Triangles, m_Indices.size());
