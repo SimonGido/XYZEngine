@@ -35,41 +35,27 @@ namespace XYZ {
     SkeletalMesh::SkeletalMesh(
         const std::vector<AnimatedVertex>& vertices,
         const std::vector<uint32_t>& indices,
-        const std::vector<Bone>& bones,
-        const Tree& hierarchy,
         const Ref<Material>& material
     )
         :
         m_Vertices(vertices),
         m_Indices(indices),
-        m_Bones(bones),
-        m_BoneHierarchy(hierarchy),
         m_Material(material)
     {
-        for (auto& bone : m_Bones)
-        {
-            m_BoneHierarchy.SetData(bone.ID, &bone);
-        }
         RebuildBuffers();
-        setupFinalTransform();
     }
 
     SkeletalMesh::SkeletalMesh(
         std::vector<AnimatedVertex>&& vertices, 
         std::vector<uint32_t>&& indices, 
-        std::vector<Bone>&& bones,
-        Tree&& hierarchy,
         Ref<Material>&& material
     )
         :
         m_Vertices(std::move(vertices)),
         m_Indices(std::move(indices)),
-        m_Bones(std::move(bones)),
-        m_BoneHierarchy(std::move(hierarchy)),
         m_Material(std::move(material))
     {
         RebuildBuffers();
-        setupFinalTransform();
     }
 
     void SkeletalMesh::Render()
@@ -80,11 +66,13 @@ namespace XYZ {
         shader->SetFloat4("u_Color", glm::vec4(1.0f));
 
         uint32_t counter = 0;
-        for (auto& bone : m_FinalTransformations)
+
+        for (SceneEntity& boneEntity : m_Bones)
         {
+            const glm::mat4& transform = boneEntity.GetComponent<TransformComponent>().WorldTransform;
             char name[12];
             sprintf(name, "u_Bones[%u]", counter++);
-            shader->SetMat4(name, bone);
+            shader->SetMat4(name, transform);
         }
 
         m_VertexArray->Bind();
@@ -107,24 +95,5 @@ namespace XYZ {
 
         Ref<IndexBuffer> ibo = IndexBuffer::Create(m_Indices.data(), m_Indices.size());
         m_VertexArray->SetIndexBuffer(ibo);
-    }
-    void SkeletalMesh::setupFinalTransform()
-    {
-        m_FinalTransformations.resize(m_BoneHierarchy.GetFlatNodes().Range());
-        m_BoneHierarchy.Traverse([&](void* parent, void* child) -> bool {
-
-            Bone* childBone = static_cast<Bone*>(child);
-            if (parent)
-            {
-                Bone* parentBone = static_cast<Bone*>(parent);
-                childBone->WorldTransform = parentBone->WorldTransform * childBone->Transform;
-            }
-            else
-            {
-                childBone->WorldTransform = childBone->Transform;
-            }
-            m_FinalTransformations[childBone->ID] = childBone->WorldTransform;
-            return false;
-     });
     }
 }

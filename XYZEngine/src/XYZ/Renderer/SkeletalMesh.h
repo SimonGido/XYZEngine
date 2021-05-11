@@ -4,7 +4,7 @@
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Utils/DataStructures/Tree.h"
 #include "XYZ/Utils/DataStructures/MemoryPool.h"
-#include "XYZ/ECS/Entity.h"
+#include "XYZ/Scene/SceneEntity.h"
 
 
 #include <glm/glm.hpp>
@@ -48,23 +48,17 @@ namespace XYZ {
 		int32_t ID;
 	};
 
-
-
 	class SkeletalMesh : public Asset
 	{
 	public:
 		SkeletalMesh(
 			const std::vector<AnimatedVertex>& vertices, 
 			const std::vector<uint32_t>& indices,
-			const std::vector<Bone>& bones,
-			const Tree& hierarchy,
 			const Ref<Material>& material
 		);
 		SkeletalMesh(
 			std::vector<AnimatedVertex>&& vertices, 
 			std::vector<uint32_t>&& indices,
-			std::vector<Bone>&& bones,
-			Tree&& hierarchy,
 			Ref<Material>&& material
 		);
 
@@ -75,25 +69,13 @@ namespace XYZ {
 		const Ref<Material>& GetMaterial() const { return m_Material; }
 		const std::vector<AnimatedVertex>& GetVertices() const { return m_Vertices; }
 		const std::vector<uint32_t>& GetIndicies() const { return m_Indices; }
-		const std::vector<Bone>& GetBones() const { return m_Bones; }
-		const Tree& GetBoneHierarchy() const { return m_BoneHierarchy; }
-
-
-	private:
-		// TODO: this is going to be handled by animation
-		void setupFinalTransform();
 
 	private:
 		Ref<VertexArray> m_VertexArray;
 		Ref<Material> m_Material;
 
-		std::vector<glm::mat4> m_FinalTransformations;
-
 		std::vector<AnimatedVertex> m_Vertices;
 		std::vector<uint32_t> m_Indices;	
-		std::vector<Bone> m_Bones;
-
-		//std::vector<Entity> m_Bones;
-		Tree m_BoneHierarchy;
+		std::vector<SceneEntity> m_Bones;
 	};
 }

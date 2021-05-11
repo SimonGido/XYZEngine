@@ -493,8 +493,8 @@ namespace XYZ {
 		out << YAML::Key << "MaterialAsset" << YAML::Value << mesh->GetMaterial()->Handle;
 		out << YAML::Key << "AnimatedVertices" << YAML::Value << mesh->GetVertices();
 		out << YAML::Key << "Indices" << YAML::Value << mesh->GetIndicies();
-		out << YAML::Key << "Hierarchy" << YAML::Value << mesh->GetBoneHierarchy();
-		out << YAML::Key << "Bones" << YAML::Value << mesh->GetBones();
+		//out << YAML::Key << "Hierarchy" << YAML::Value << mesh->GetBoneHierarchy();
+		//out << YAML::Key << "Bones" << YAML::Value << mesh->GetBones();
 
 		out << YAML::EndMap; // Skeletal Mesh
 
@@ -690,17 +690,14 @@ namespace XYZ {
 
 		std::vector<AnimatedVertex> vertices = data["AnimatedVertices"].as<std::vector<AnimatedVertex>>();
 		std::vector<uint32_t> indices = data["Indices"].as<std::vector<uint32_t>>();
-		std::vector<TreeNode> hierarchy = data["Hierarchy"].as<std::vector<TreeNode>>();
-		std::vector<Bone> bones = data["Bones"].as<std::vector<Bone>>();
+		//std::vector<TreeNode> hierarchy = data["Hierarchy"].as<std::vector<TreeNode>>();
+		//std::vector<Bone> bones = data["Bones"].as<std::vector<Bone>>();
 
-		Tree boneHierarchy;
-		BuildBoneTree(boneHierarchy, bones, hierarchy);
+		//BuildBoneTree(boneHierarchy, bones, hierarchy);
 	
 		auto ref = Ref<SkeletalMesh>::Create(
 			std::move(vertices), 
 			std::move(indices), 
-			std::move(bones),
-			std::move(boneHierarchy), 
 			material
 		);
 		CopyAsset(ref.As<Asset>(), asset);
