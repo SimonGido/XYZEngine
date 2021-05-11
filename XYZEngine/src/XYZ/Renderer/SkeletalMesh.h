@@ -4,6 +4,7 @@
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Utils/DataStructures/Tree.h"
 #include "XYZ/Utils/DataStructures/MemoryPool.h"
+#include "XYZ/ECS/Entity.h"
 
 
 #include <glm/glm.hpp>
@@ -47,6 +48,8 @@ namespace XYZ {
 		int32_t ID;
 	};
 
+
+
 	class SkeletalMesh : public Asset
 	{
 	public:
@@ -89,6 +92,8 @@ namespace XYZ {
 		std::vector<AnimatedVertex> m_Vertices;
 		std::vector<uint32_t> m_Indices;	
 		std::vector<Bone> m_Bones;
+
+		//std::vector<Entity> m_Bones;
 		Tree m_BoneHierarchy;
 	};
 }

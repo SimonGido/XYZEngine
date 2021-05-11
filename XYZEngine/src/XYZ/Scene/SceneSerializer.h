@@ -8,7 +8,7 @@ namespace XYZ {
 	class SceneSerializer
 	{
 	public:
-		SceneSerializer(Ref<Scene> scene);
+		SceneSerializer(const Ref<Scene>& scene);
 
 		void Serialize();
 		Ref<Scene> Deserialize();

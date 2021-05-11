@@ -96,8 +96,8 @@ namespace XYZ {
 		virtual float Length() override;
 
 
-		template <typename T, PropertyType>
-		void AddKeyFrame(const KeyFrame<T>& key);
+		template <typename T>
+		void AddKeyFrame(const KeyFrame<T>& key, PropertyType type);
 
 
 	private:

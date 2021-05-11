@@ -116,10 +116,25 @@ namespace XYZ {
         {
             m_Tree->Clear();
             ECSManager& ecs = m_Context->m_ECS;
-            for (uint32_t entity : m_Context->m_Entities)
+
+            std::stack<Entity> entities;
+            entities.push(m_Context->m_SceneEntity);
+            while (!entities.empty())
             {
-                SceneTagComponent& sceneTag = ecs.GetComponent<SceneTagComponent>(entity);
-                m_Tree->AddItem(entity, bUIHierarchyItem(sceneTag.Name));
+                Entity tmp = entities.top();
+                entities.pop();
+
+                const Relationship& relation = ecs.GetComponent<Relationship>(tmp);
+                if (relation.NextSibling)
+                    entities.push(relation.NextSibling);
+                if (relation.FirstChild)
+                    entities.push(relation.FirstChild);
+
+                const SceneTagComponent& sceneTag = ecs.GetComponent<SceneTagComponent>(tmp);
+                if (relation.Parent)
+                    m_Tree->AddItem(tmp, relation.Parent, bUIHierarchyItem(sceneTag.Name));
+                else
+                    m_Tree->AddItem(tmp, bUIHierarchyItem(sceneTag.Name));
             }
         }
 

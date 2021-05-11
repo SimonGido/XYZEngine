@@ -32,7 +32,7 @@
 #include "XYZ/Scene/SceneCamera.h"
 #include "XYZ/Scene/SceneEntity.h"
 #include "XYZ/Scene/Scene.h"
-
+#include "XYZ/Scene/EditorComponents.h"
 
 //---------Editor-----------//
 #include "XYZ/Editor/EditorCamera.h"

@@ -1,7 +1,6 @@
 #pragma once
 #include "XYZ/ECS/ECSManager.h"
 #include "XYZ/ECS/Component.h"
-#include "XYZ/ECS/Types.h"
 #include "XYZ/Core/GUID.h"
 #include "XYZ/Particle/ParticleEffect.h"
 #include "XYZ/Renderer/SubTexture.h"
@@ -42,6 +41,8 @@ namespace XYZ {
 		glm::vec3 Translation = { 0.0f,0.0f,0.0f };
 		glm::vec3 Rotation = { 0.0f,0.0f,0.0f };
 		glm::vec3 Scale = { 1.0f,1.0f,1.0f };
+		
+		glm::mat4 WorldTransform = glm::mat4(1.0f);
 
 		glm::mat4 GetTransform() const
 		{		
@@ -110,6 +111,7 @@ namespace XYZ {
 		uint32_t  SortLayer = 0;
 		bool	  IsVisible = true;
 	};
+
 
 
 	struct CameraComponent : public IComponent

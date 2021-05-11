@@ -63,13 +63,14 @@ namespace XYZ {
     private:
         void showSelection(uint32_t entity);
         void showCamera(uint32_t entity);
+        void updateHierarchy();
 
 
     private:
         ECSManager m_ECS;
         GUID m_UUID;
         PhysicsWorld m_PhysicsWorld;
-
+        Entity m_SceneEntity;
         std::vector<Entity> m_Entities;
 
         std::string m_Name;

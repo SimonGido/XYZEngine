@@ -301,18 +301,21 @@ namespace XYZ {
 	}
 
 	template <>
-	void TransformTrack::AddKeyFrame<glm::vec3, TransformTrack::PropertyType::Translation>(const KeyFrame<glm::vec3>& key)
+	void TransformTrack::AddKeyFrame<glm::vec3>(const KeyFrame<glm::vec3>& key, PropertyType type)
 	{
-		m_TranslationProperty.AddKeyFrame(key);
-	}
-	template <>
-	void TransformTrack::AddKeyFrame<glm::vec3, TransformTrack::PropertyType::Rotation>(const KeyFrame<glm::vec3>& key)
-	{
-		m_RotationProperty.AddKeyFrame(key);
-	}
-	template <>
-	void TransformTrack::AddKeyFrame<glm::vec3, TransformTrack::PropertyType::Scale>(const KeyFrame<glm::vec3>& key)
-	{
-		m_ScaleProperty.AddKeyFrame(key);
+		switch (type)
+		{
+		case XYZ::TransformTrack::PropertyType::Translation:
+			m_TranslationProperty.AddKeyFrame(key);
+			break;
+		case XYZ::TransformTrack::PropertyType::Rotation:
+			m_RotationProperty.AddKeyFrame(key);
+			break;
+		case XYZ::TransformTrack::PropertyType::Scale:
+			m_ScaleProperty.AddKeyFrame(key);
+			break;
+		default:
+			break;
+		}		
 	}
 }

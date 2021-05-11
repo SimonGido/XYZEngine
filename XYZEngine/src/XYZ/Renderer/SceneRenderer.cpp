@@ -270,14 +270,14 @@ namespace XYZ {
 
 		for (auto& dc : s_Data.CollisionList)
 		{
-			Renderer2D::SubmitCollisionQuad(dc.Transform->GetTransform(), dc.ID);
+			Renderer2D::SubmitCollisionQuad(dc.Transform->WorldTransform, dc.ID);
 		}
 
 		for (auto& dc : s_Data.SpriteDrawList)
 		{
 			Renderer2D::SetMaterial(dc.Sprite->Material);
 			uint32_t textureID = Renderer2D::SetTexture(dc.Sprite->SubTexture->GetTexture());
-			Renderer2D::SubmitQuad(dc.Transform->GetTransform(), dc.Sprite->SubTexture->GetTexCoords(), textureID, dc.Sprite->Color);
+			Renderer2D::SubmitQuad(dc.Transform->WorldTransform, dc.Sprite->SubTexture->GetTexCoords(), textureID, dc.Sprite->Color);
 		}
 		Renderer2D::Flush();
 		Renderer2D::FlushLines();
@@ -290,9 +290,9 @@ namespace XYZ {
 			auto materialInstace = dc.Particle->RenderMaterial;
 
 			material->Bind();
-			materialInstace->Set("u_Transform", dc.Transform->GetTransform());
+			materialInstace->Set("u_Transform", dc.Transform->WorldTransform);
 			materialInstace->Bind();
-			Renderer2D::SubmitParticles(dc.Transform->GetTransform(), dc.Particle->ParticleEffect);
+			Renderer2D::SubmitParticles(dc.Transform->WorldTransform, dc.Particle->ParticleEffect);
 		}
 
 		

@@ -201,11 +201,14 @@ namespace XYZ {
 				read[i] = &s_Data.CommandQueue[s_Data.ReadQueueIndex][i];
 
 			Application::GetThreadPool().PushJob<void>([read]() {
-				auto fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, NULL);
+				// TOOD: Find out how to use sync objects
+				//auto sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, NULL);
 				read[Default]->Execute();
 				read[Overlay]->Execute();
+				glFinish();
+				//glClientWaitSync(sync, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
+				//glDeleteSync(sync);
 				s_Data.SwapQueues = true;
-				glClientWaitSync(fence, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
 			});
 
 			

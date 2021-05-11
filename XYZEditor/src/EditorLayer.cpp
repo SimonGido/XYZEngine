@@ -50,10 +50,13 @@ namespace XYZ {
 
 	void EditorLayer::OnAttach()
 	{
+		auto boneTexture = AssetManager::GetAsset<Texture2D>(AssetManager::GetAssetHandle("Assets/Textures/bone.png.tex"));
 		auto shader = AssetManager::GetAsset<Shader>(AssetManager::GetAssetHandle("Assets/Shaders/DefaultShader.glsl.shader"));
 		auto texture = AssetManager::GetAsset<Texture2D>(AssetManager::GetAssetHandle("Assets/Textures/player_sprite.png.tex"));
 		auto subTexture = AssetManager::GetAsset<SubTexture>(AssetManager::GetAssetHandle("Assets/SubTextures/player.subtex"));
 		auto material = AssetManager::GetAsset<Material>(AssetManager::GetAssetHandle("Assets/Materials/Material.mat"));
+		material->Set("u_Texture", boneTexture);
+
 		m_Scene = AssetManager::GetAsset<Scene>(AssetManager::GetAssetHandle("Assets/Scenes/scene.xyz"));
 		m_TestEntity = m_Scene->GetEntityByName("TestEntity");
 		
@@ -96,31 +99,31 @@ namespace XYZ {
 				KeyFrame<glm::vec3> key;
 				key.Value = glm::vec3(0.0f, 0.0f, 0.0f);
 				key.EndTime = 0.0f;
-				track->AddKeyFrame<glm::vec3, TransformTrack::PropertyType::Translation>(key);
+				track->AddKeyFrame<glm::vec3>(key, TransformTrack::PropertyType::Translation);
 			}
 			{
 				KeyFrame<glm::vec3> key;
 				key.Value = glm::vec3(0.0f, 0.0f, 7.0f);
 				key.EndTime = 2.0f;
-				track->AddKeyFrame<glm::vec3, TransformTrack::PropertyType::Rotation>(key);
+				track->AddKeyFrame<glm::vec3>(key, TransformTrack::PropertyType::Rotation);
 			}
 			{
 				KeyFrame<glm::vec3> key;
 				key.Value = glm::vec3(0.0f, 2.0f, 0.0f);
 				key.EndTime = 4.0f;
-				track->AddKeyFrame<glm::vec3, TransformTrack::PropertyType::Translation>(key);
+				track->AddKeyFrame<glm::vec3>(key, TransformTrack::PropertyType::Translation);
 			}
 			{
 				KeyFrame<glm::vec3> key;
 				key.Value = glm::vec3(0.0f, 0.0f, 0.0f);
 				key.EndTime = 6.0f;
-				track->AddKeyFrame<glm::vec3, TransformTrack::PropertyType::Translation>(key);
+				track->AddKeyFrame<glm::vec3>(key, TransformTrack::PropertyType::Translation);
 			}
 			{
 				KeyFrame<glm::vec3> key;
 				key.Value = glm::vec3(0.0f, 0.0f, 0.0f);
 				key.EndTime = 6.0f;
-				track->AddKeyFrame<glm::vec3, TransformTrack::PropertyType::Rotation>(key);
+				track->AddKeyFrame<glm::vec3>(key, TransformTrack::PropertyType::Rotation);
 			}
 		}
 		animation->UpdateLength();

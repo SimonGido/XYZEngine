@@ -36,11 +36,18 @@ namespace XYZ {
 		m_CameraRenderer = SpriteRenderer(m_CameraMaterial, m_CameraSubTexture, glm::vec4(1.0f), 0);
 
 		m_ECS.ForceStorage<ScriptComponent>();
+		m_SceneEntity = m_ECS.CreateEntity();
+
+		m_ECS.EmplaceComponent<Relationship>(m_SceneEntity);
+		m_ECS.EmplaceComponent<IDComponent>(m_SceneEntity);
+		m_ECS.EmplaceComponent<TransformComponent>(m_SceneEntity);
+		m_ECS.EmplaceComponent<SceneTagComponent>(m_SceneEntity, name);
+		m_Entities.push_back(m_SceneEntity);
 	}
 
 	Scene::~Scene()
 	{
-	
+		
 	}
 
 	SceneEntity Scene::CreateEntity(const std::string& name, const GUID& guid)
@@ -51,10 +58,11 @@ namespace XYZ {
 		idComp.ID = guid;
 
 		entity.EmplaceComponent<IDComponent>(guid);
-		entity.EmplaceComponent<Relationship>();
 		entity.EmplaceComponent<SceneTagComponent>(name);
 		entity.EmplaceComponent<TransformComponent>(glm::vec3(0.0f, 0.0f, 0.0f));
-
+		entity.EmplaceComponent<Relationship>();
+		auto& sceneRelation = m_ECS.GetComponent<Relationship>(m_SceneEntity);
+		Relationship::SetupRelation(m_SceneEntity, id, m_ECS);
 
 		m_Entities.push_back(id);
 		return entity;
@@ -75,6 +83,7 @@ namespace XYZ {
 				break;
 			}
 		}
+		Relationship::RemoveRelation(entity.m_ID, m_ECS);
 		m_ECS.DestroyEntity(Entity(entity.m_ID));
 	}
 
@@ -162,7 +171,7 @@ namespace XYZ {
 		auto& cameraComponent = cameraEntity.GetComponent<CameraComponent>();
 		auto& cameraTransform = cameraEntity.GetComponent<TransformComponent>();
 		renderCamera.Camera = cameraComponent.Camera;
-		renderCamera.ViewMatrix = glm::inverse(cameraTransform.GetTransform());
+		renderCamera.ViewMatrix = glm::inverse(cameraTransform.WorldTransform);
 		
 		SceneRenderer::GetOptions().ShowGrid = false;
 		SceneRenderer::BeginScene(this, renderCamera);
@@ -185,7 +194,7 @@ namespace XYZ {
 		for (auto entity : lightView)
 		{
 			auto [transform, light] = lightView.Get<TransformComponent, PointLight2D>(entity);
-			SceneRenderer::SubmitLight(&light, transform.GetTransform());
+			SceneRenderer::SubmitLight(&light, transform.WorldTransform);
 		}
 		
 		SceneRenderer::EndScene();
@@ -234,6 +243,8 @@ namespace XYZ {
 			transform.Translation.y = rigidBody.Body->GetPosition().y;
 			//transform.Rotation.z = rigidBody.Body->GetAngle();
 		}
+
+		updateHierarchy();
 	}
 
 	void Scene::OnRenderEditor(const Editor::EditorCamera& camera)
@@ -270,7 +281,7 @@ namespace XYZ {
 		for (auto entity : lightView)
 		{
 			auto [transform, light] = lightView.Get<TransformComponent, PointLight2D>(entity);
-			SceneRenderer::SubmitLight(&light, transform.GetTransform());
+			SceneRenderer::SubmitLight(&light, transform.WorldTransform);
 		}	
 		SceneRenderer::EndScene();
 	}
@@ -334,6 +345,34 @@ namespace XYZ {
 			Renderer2D::SubmitLine(topRight, bottomRight);
 			Renderer2D::SubmitLine(bottomRight, bottomLeft);
 			Renderer2D::SubmitLine(bottomLeft, topLeft);
+		}
+	}
+
+	void Scene::updateHierarchy()
+	{
+		std::stack<Entity> entities;
+		entities.push(m_SceneEntity);
+		while (!entities.empty())
+		{
+			Entity tmp = entities.top();
+			entities.pop();
+
+			const Relationship& relation = m_ECS.GetComponent<Relationship>(tmp);
+			if (relation.NextSibling)
+				entities.push(relation.NextSibling);
+			if (relation.FirstChild)
+				entities.push(relation.FirstChild);
+			
+			TransformComponent& transform = m_ECS.GetComponent<TransformComponent>(tmp);
+			if (relation.Parent)
+			{
+				TransformComponent& parentTransform = m_ECS.GetComponent<TransformComponent>(relation.Parent);
+				transform.WorldTransform = parentTransform.WorldTransform * transform.GetTransform();
+			}
+			else
+			{
+				transform.WorldTransform = transform.GetTransform();
+			}
 		}
 	}
 

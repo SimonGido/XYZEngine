@@ -377,7 +377,7 @@ namespace XYZ {
 	}
 
 
-	SceneSerializer::SceneSerializer(Ref<Scene> scene)
+	SceneSerializer::SceneSerializer(const Ref<Scene>& scene)
 		:
 		m_Scene(scene)
 	{
@@ -411,6 +411,7 @@ namespace XYZ {
 		YAML::Node data = YAML::Load(strStream.str());
 
 		m_Scene->m_Name = data["Scene"].as<std::string>();
+		m_Scene->m_ECS.GetComponent<SceneTagComponent>(m_Scene->m_SceneEntity).Name = m_Scene->m_Name;
 		auto entities = data["Entities"];
 		if (entities)
 		{
