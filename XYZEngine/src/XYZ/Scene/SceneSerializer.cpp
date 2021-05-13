@@ -21,14 +21,14 @@ namespace XYZ {
 		out << YAML::Key << "Relationship";
 		out << YAML::BeginMap;
 
-		if ((bool)val.Parent)
-			out << YAML::Key << "Parent" << YAML::Value << ecs.GetComponent<IDComponent>(val.Parent).ID;
-		if ((bool)val.NextSibling)
-			out << YAML::Key << "NextSibling" << YAML::Value << ecs.GetComponent<IDComponent>(val.NextSibling).ID;
-		if ((bool)val.PreviousSibling)
-			out << YAML::Key << "PreviousSibling" << YAML::Value << ecs.GetComponent<IDComponent>(val.PreviousSibling).ID;
-		if ((bool)val.FirstChild)
-			out << YAML::Key << "FirstChild" << YAML::Value << ecs.GetComponent<IDComponent>(val.FirstChild).ID;
+		if ((bool)val.GetParent())
+			out << YAML::Key << "Parent" << YAML::Value << ecs.GetComponent<IDComponent>(val.GetParent()).ID;
+		if ((bool)val.GetNextSibling())
+			out << YAML::Key << "NextSibling" << YAML::Value << ecs.GetComponent<IDComponent>(val.GetNextSibling()).ID;
+		if ((bool)val.GetPreviousSibling())
+			out << YAML::Key << "PreviousSibling" << YAML::Value << ecs.GetComponent<IDComponent>(val.GetPreviousSibling()).ID;
+		if ((bool)val.GetFirstChild())
+			out << YAML::Key << "FirstChild" << YAML::Value << ecs.GetComponent<IDComponent>(val.GetFirstChild()).ID;
 		out << YAML::EndMap;
 	}
 
@@ -254,31 +254,31 @@ namespace XYZ {
 		return light;
 	}
 
-	static Relationship DeserializeRelationship(const ECSManager& ecs, YAML::Node& data)
-	{
-		Relationship relationship;
-		if (data["Parent"])
-		{
-			std::string parent = data["Parent"].as<std::string>();
-			relationship.Parent = ecs.FindEntity<IDComponent>(IDComponent({ parent }));
-		}
-		if (data["NextSibling"])
-		{
-			std::string nextSibling = data["NextSibling"].as<std::string>();
-			relationship.NextSibling = ecs.FindEntity<IDComponent>(IDComponent({ nextSibling }));
-		}
-		if (data["PreviousSibling"])
-		{
-			std::string previousSibling = data["PreviousSibling"].as<std::string>();
-			relationship.PreviousSibling = ecs.FindEntity<IDComponent>(IDComponent({ previousSibling }));
-		}
-		if (data["FirstChild"])
-		{
-			std::string firstChild = data["FirstChild"].as<std::string>();
-			relationship.FirstChild = ecs.FindEntity<IDComponent>(IDComponent({ firstChild }));
-		}
-		return relationship;
-	}
+	//static Relationship DeserializeRelationship(const ECSManager& ecs, YAML::Node& data)
+	//{
+	//	Relationship relationship;
+	//	if (data["Parent"])
+	//	{
+	//		std::string parent = data["Parent"].as<std::string>();
+	//		relationship.Parent = ecs.FindEntity<IDComponent>(IDComponent({ parent }));
+	//	}
+	//	if (data["NextSibling"])
+	//	{
+	//		std::string nextSibling = data["NextSibling"].as<std::string>();
+	//		relationship.NextSibling = ecs.FindEntity<IDComponent>(IDComponent({ nextSibling }));
+	//	}
+	//	if (data["PreviousSibling"])
+	//	{
+	//		std::string previousSibling = data["PreviousSibling"].as<std::string>();
+	//		relationship.PreviousSibling = ecs.FindEntity<IDComponent>(IDComponent({ previousSibling }));
+	//	}
+	//	if (data["FirstChild"])
+	//	{
+	//		std::string firstChild = data["FirstChild"].as<std::string>();
+	//		relationship.FirstChild = ecs.FindEntity<IDComponent>(IDComponent({ firstChild }));
+	//	}
+	//	return relationship;
+	//}
 
 	template <>
 	RigidBody2DComponent SceneSerializer::deserialize<RigidBody2DComponent>(YAML::Node& data)
@@ -325,14 +325,11 @@ namespace XYZ {
 	template <>
 	SceneEntity SceneSerializer::deserialize<SceneEntity>(YAML::Node& data)
 	{
-		GUID guid;
-		guid = data["Entity"].as<std::string>();
+		GUID guid = data["Entity"].as<std::string>();
 		auto& tagComponent = data["SceneTagComponent"];
 		
 		SceneTagComponent tag = tagComponent["Name"].as<std::string>();
 		SceneEntity entity = m_Scene->CreateEntity(tag, guid);
-
-
 
 		auto transformComponent = data["TransformComponent"];
 		if (transformComponent)
@@ -373,6 +370,7 @@ namespace XYZ {
 		{
 			entity.AddComponent<CircleCollider2DComponent>(deserialize<CircleCollider2DComponent>(circleCollider));
 		}
+
 		return entity;
 	}
 
@@ -411,13 +409,40 @@ namespace XYZ {
 		YAML::Node data = YAML::Load(strStream.str());
 
 		m_Scene->m_Name = data["Scene"].as<std::string>();
-		m_Scene->m_ECS.GetComponent<SceneTagComponent>(m_Scene->m_SceneEntity).Name = m_Scene->m_Name;
+		ECSManager& ecs = m_Scene->m_ECS;
+		ecs.GetComponent<SceneTagComponent>(m_Scene->m_SceneEntity).Name = m_Scene->m_Name;
 		auto entities = data["Entities"];
 		if (entities)
 		{
 			for (auto entity : entities)
 			{
 				SceneSerializer::deserialize<SceneEntity>(entity);
+			}
+			for (auto data : entities)
+			{
+				GUID guid = data["Entity"].as<std::string>();
+				Entity entity = ecs.FindEntity<IDComponent>(IDComponent(guid));
+				Relationship& relationship = ecs.GetComponent<Relationship>(entity);
+				if (data["Parent"])
+				{
+					std::string parent = data["Parent"].as<std::string>();
+					relationship.Parent = ecs.FindEntity<IDComponent>(IDComponent({ parent }));
+				}
+				if (data["NextSibling"])
+				{
+					std::string nextSibling = data["NextSibling"].as<std::string>();
+					relationship.NextSibling = ecs.FindEntity<IDComponent>(IDComponent({ nextSibling }));
+				}
+				if (data["PreviousSibling"])
+				{
+					std::string previousSibling = data["PreviousSibling"].as<std::string>();
+					relationship.PreviousSibling = ecs.FindEntity<IDComponent>(IDComponent({ previousSibling }));
+				}
+				if (data["FirstChild"])
+				{
+					std::string firstChild = data["FirstChild"].as<std::string>();
+					relationship.FirstChild = ecs.FindEntity<IDComponent>(IDComponent({ firstChild }));
+				}
 			}
 		}
 		return m_Scene;

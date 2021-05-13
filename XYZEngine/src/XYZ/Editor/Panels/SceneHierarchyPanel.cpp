@@ -75,25 +75,33 @@ namespace XYZ {
                         m_Context->CreateEntity("New Entity", GUID());
                     casted.Visible = false;
                 }
-            }
-            );
+            });
+
             Ref<Texture> plusTexture = Texture2D::Create({}, "Assets/Textures/Plus.png");
             m_Image->ImageSubTexture = Ref<SubTexture>::Create(plusTexture, glm::vec2(0.0f));
         }
 
-        void SceneHierarchyPanel::SetContext(Ref<Scene> context)
+        void SceneHierarchyPanel::SetContext(const Ref<Scene>& context)
         {
             if (m_Context.Raw())
                 m_Context->m_ECS.RemoveListener<SceneTagComponent>(this);
-
             m_Context = context;
+
+            Relationship::OnParentChanged = [&](Entity entity, ECSManager& ecs) {
+                Entity parent = ecs.GetComponent<Relationship>(entity).GetParent();
+                m_Tree->SetParent(entity, parent);
+            };
             m_Context->m_ECS.AddListener<SceneTagComponent>([this](uint32_t entity, CallbackType type) {
 
                 ECSManager& ecs = m_Context->m_ECS;
                 if (type == CallbackType::ComponentCreate)
                 {
                     SceneTagComponent& sceneTag = ecs.GetComponent<SceneTagComponent>(entity);
-                    m_Tree->AddItem(entity, bUIHierarchyItem(sceneTag.Name));
+                    Relationship& relation = ecs.GetComponent<Relationship>(entity);
+                    if (relation.GetParent())
+                        m_Tree->AddItem(entity, relation.GetParent(), bUIHierarchyItem(sceneTag.Name));
+                    else
+                        m_Tree->AddItem(entity, bUIHierarchyItem(sceneTag.Name));
                 }
                 else if (type == CallbackType::ComponentRemove || type == CallbackType::EntityDestroy)
                 {
@@ -125,14 +133,14 @@ namespace XYZ {
                 entities.pop();
 
                 const Relationship& relation = ecs.GetComponent<Relationship>(tmp);
-                if (relation.NextSibling)
-                    entities.push(relation.NextSibling);
-                if (relation.FirstChild)
-                    entities.push(relation.FirstChild);
+                if (relation.GetNextSibling())
+                    entities.push(relation.GetNextSibling());
+                if (relation.GetFirstChild())
+                    entities.push(relation.GetFirstChild());
 
                 const SceneTagComponent& sceneTag = ecs.GetComponent<SceneTagComponent>(tmp);
-                if (relation.Parent)
-                    m_Tree->AddItem(tmp, relation.Parent, bUIHierarchyItem(sceneTag.Name));
+                if (relation.GetParent())
+                    m_Tree->AddItem(tmp, relation.GetParent(), bUIHierarchyItem(sceneTag.Name));
                 else
                     m_Tree->AddItem(tmp, bUIHierarchyItem(sceneTag.Name));
             }

@@ -183,7 +183,7 @@ namespace XYZ {
     void Tree::SetParent(int32_t child, int32_t parent)
     {
         TreeNode& childNode = m_Nodes[child];
-        TreeNode& newParentNode = m_Nodes[parent];
+        
 
         // Removes child node from linked list
         if (childNode.PreviousSibling != TreeNode::sc_Invalid)
@@ -203,16 +203,22 @@ namespace XYZ {
             next.PreviousSibling = childNode.PreviousSibling;
         }
 
-        // Insert child node in new linked list
-        if (newParentNode.FirstChild != TreeNode::sc_Invalid)
+        uint32_t depth = 0;
+        if (parent != TreeNode::sc_Invalid)
         {
-            int32_t oldFirstChild = newParentNode.FirstChild;         
-            m_Nodes[oldFirstChild].PreviousSibling = child;
-            childNode.NextSibling = oldFirstChild;
+            TreeNode& newParentNode = m_Nodes[parent];
+            // Insert child node in new linked list
+            if (newParentNode.FirstChild != TreeNode::sc_Invalid)
+            {
+                int32_t oldFirstChild = newParentNode.FirstChild;
+                m_Nodes[oldFirstChild].PreviousSibling = child;
+                childNode.NextSibling = oldFirstChild;
+            }
+            newParentNode.FirstChild = child;
+            depth = m_Nodes[parent].Depth + 1;
         }
-        newParentNode.FirstChild = child;
         childNode.Parent = parent;
-        childNode.Depth = m_Nodes[parent].Depth + 1;
+        childNode.Depth = depth;
     }
     void Tree::Remove(int32_t index)
     {

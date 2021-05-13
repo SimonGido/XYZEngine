@@ -6,7 +6,9 @@
 #include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Asset/AssetManager.h"
 #include "PreviewRenderer.h"
-
+#include "XYZ/Scene/Scene.h"
+#include "XYZ/Scene/SceneEntity.h"
+#include "XYZ/Scene/EditorComponents.h"
 
 #include "XYZ/BasicUI/BasicUILoader.h"
 
@@ -283,16 +285,20 @@ namespace XYZ {
        
         void SkinningEditor::save()
         {
+            Ref<Scene> activeScene = AssetManager::FindAssetsByType(AssetType::Scene)[0];
+            Ref<SubTexture> boneSubTexture = AssetManager::GetAsset<SubTexture>(AssetManager::GetAssetHandle("Assets/SubTextures/bone.subtex"));
             Ref<Shader> shader = AssetManager::GetAsset<Shader>(AssetManager::GetAssetHandle("Assets/Shaders/SkeletalShader.glsl.shader"));
             Ref<Material> material = AssetManager::GetAsset<Material>(AssetManager::GetAssetHandle("Assets/Materials/SkeletalMaterial.mat"));
+            Ref<Material> spriteMaterial = AssetManager::GetAsset<Material>(AssetManager::GetAssetHandle("Assets/Materials/Material.mat"));
+            
             Ref<Texture2D> texture = AssetManager::GetAsset<Texture2D>(AssetManager::GetAssetHandle("Assets/Textures/SimpleChar.tex"));
+            
             material->Set("u_Texture", texture);
             material->Set("u_Color", glm::vec4(1.0f));
 
             std::vector<XYZ::AnimatedVertex> vertices;
             std::vector<uint32_t> indices;
-            std::vector<Bone> bones;
-            Tree boneHierarchy(m_BoneHierarchy);
+            std::vector<SceneEntity> boneEntities;
 
             uint32_t counter = 0;
             for (const auto& subMesh :  m_Mesh.Submeshes)
@@ -326,17 +332,40 @@ namespace XYZ {
             }
 
             counter = 0;
-            bones.resize(m_Bones.size());
+            boneEntities.resize(m_Bones.size());
+            std::unordered_map<int32_t, Entity> boneEntityMap;
             for (auto& bone : m_Bones)
             {
-                bones[counter].Transform = bone->LocalTransform;
-                bones[counter].Name = bone->Name;
-                bones[counter].ID = bone->ID;
-                boneHierarchy.SetData(bones[counter].ID, &bones[counter]);
+                boneEntities[counter] = activeScene->CreateEntity(bone->Name, GUID());
+                boneEntityMap[bone->ID] = (uint32_t)boneEntities[counter];
+                boneEntities[counter].EmplaceComponent<EditorSpriteRenderer>(
+                    spriteMaterial,
+                    boneSubTexture,
+                    glm::vec4(1.0f)
+                );
+
+                auto& transform = boneEntities[counter].GetComponent<TransformComponent>();
+                transform.DecomposeTransform(bone->LocalTransform);
                 counter++;
             }
+            for (auto& bone : m_Bones)
+            {
+                if (auto parent = m_BoneHierarchy.GetParentData(bone->ID))
+                {
+                    PreviewBone* parentBone = static_cast<PreviewBone*>(parent);
+                    Relationship::RemoveRelation(
+                        boneEntityMap[bone->ID], 
+                        activeScene->GetECS()
+                    );
+                    Relationship::SetupRelation(
+                        boneEntityMap[parentBone->ID],
+                        boneEntityMap[bone->ID],
+                        activeScene->GetECS()
+                    );
+                }
+            }
 
-            s_SkeletalMesh = AssetManager::GetAsset<SkeletalMesh>(AssetManager::GetAssetHandle("Assets/Meshes/SkeletalMesh.skm"));
+            //s_SkeletalMesh = AssetManager::GetAsset<SkeletalMesh>(AssetManager::GetAssetHandle("Assets/Meshes/SkeletalMesh.skm"));
             
             //AssetManager::CreateAsset<SkeletalMesh>(
             //    "CopySkeletalMesh.skm", 

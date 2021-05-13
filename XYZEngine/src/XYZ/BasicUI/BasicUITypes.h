@@ -244,9 +244,9 @@ namespace XYZ {
 		glm::vec4	Color = glm::vec4(1.0f);
 		bool		Open = false;
 
+		uint32_t		 GetKey() const { return Key; }
+		int32_t			 GetID() const { return ID; }
 		const glm::vec2& GetCoords() const { return Coords;  }
-		uint32_t GetKey() const { return Key; }
-		int32_t GetID() const { return ID; }
 	private:
 		glm::vec2	Coords = glm::vec2(0.0f);
 		uint32_t    Key = 0;
@@ -263,6 +263,8 @@ namespace XYZ {
 
 		void AddItem(uint32_t key, uint32_t parent, const bUIHierarchyItem& item, bool atEnd = false);
 		void AddItem(uint32_t key, const bUIHierarchyItem& item, bool atEnd = false);
+		void SetParent(uint32_t key, uint32_t newParent);
+
 		void RemoveItem(uint32_t key);
 		void Clear();
 
@@ -328,6 +330,12 @@ namespace XYZ {
 		std::function<void(uint32_t)> OnSelect;
 
 		friend class bUIRenderer;
+	};
+
+	struct bUIDynamicHierarchyElement
+	{
+		int32_t NextSibling = -1;
+		int32_t FirstChild = -1;
 	};
 
 	class bUIFloat : public bUIElement,

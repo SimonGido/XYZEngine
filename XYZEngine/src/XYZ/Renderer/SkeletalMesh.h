@@ -39,14 +39,15 @@ namespace XYZ {
 		VertexBoneData BoneData;
 	};
 
-	struct Bone
-	{
-		glm::mat4 Transform;
-		glm::mat4 WorldTransform;
-		std::string Name;
-		int32_t ID;
-	};
+	//struct Bone
+	//{
+	//	glm::mat4 Transform;
+	//	glm::mat4 WorldTransform;
+	//	std::string Name;
+	//	int32_t ID;
+	//};
 
+	class SceneEntity;
 	class SkeletalMesh : public Asset
 	{
 	public:
@@ -75,6 +76,6 @@ namespace XYZ {
 
 		std::vector<AnimatedVertex> m_Vertices;
 		std::vector<uint32_t> m_Indices;	
-		//std::vector<SceneEntity> m_Bones;
+		std::vector<SceneEntity> m_Bones;
 	};
 }

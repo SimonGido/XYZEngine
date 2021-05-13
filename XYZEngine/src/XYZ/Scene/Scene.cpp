@@ -58,9 +58,28 @@ namespace XYZ {
 		idComp.ID = guid;
 
 		entity.EmplaceComponent<IDComponent>(guid);
+		entity.EmplaceComponent<Relationship>(m_SceneEntity);
 		entity.EmplaceComponent<SceneTagComponent>(name);
 		entity.EmplaceComponent<TransformComponent>(glm::vec3(0.0f, 0.0f, 0.0f));
-		entity.EmplaceComponent<Relationship>();
+		auto& sceneRelation = m_ECS.GetComponent<Relationship>(m_SceneEntity);
+		Relationship::SetupRelation(m_SceneEntity, id, m_ECS);
+
+		m_Entities.push_back(id);
+		return entity;
+	}
+
+	SceneEntity Scene::CreateEntity(const std::string& name, SceneEntity parent, const GUID& guid)
+	{
+		XYZ_ASSERT(parent.m_Scene == this, "");
+		Entity id = m_ECS.CreateEntity();
+		SceneEntity entity(id, this);
+		IDComponent idComp;
+		idComp.ID = guid;
+
+		entity.EmplaceComponent<IDComponent>(guid);
+		entity.EmplaceComponent<Relationship>((Entity)entity.m_ID);
+		entity.EmplaceComponent<SceneTagComponent>(name);
+		entity.EmplaceComponent<TransformComponent>(glm::vec3(0.0f, 0.0f, 0.0f));
 		auto& sceneRelation = m_ECS.GetComponent<Relationship>(m_SceneEntity);
 		Relationship::SetupRelation(m_SceneEntity, id, m_ECS);
 
@@ -357,7 +376,7 @@ namespace XYZ {
 		{
 			Entity tmp = entities.top();
 			entities.pop();
-
+		
 			const Relationship& relation = m_ECS.GetComponent<Relationship>(tmp);
 			if (relation.NextSibling)
 				entities.push(relation.NextSibling);

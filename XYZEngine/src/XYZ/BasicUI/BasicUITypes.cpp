@@ -512,6 +512,16 @@ namespace XYZ {
 		}
 	}
 
+	void bUIHierarchyElement::SetParent(uint32_t key, uint32_t newParent)
+	{
+		auto child = NameIDMap.find(key);
+		auto parent = NameIDMap.find(newParent);
+		if (parent == NameIDMap.end())
+			Hierarchy.SetParent(child->second, TreeNode::sc_Invalid);
+		else
+			Hierarchy.SetParent(child->second, parent->second);
+	}
+
 	void bUIHierarchyElement::RemoveItem(uint32_t key)
 	{
 		auto it = NameIDMap.find(key);
@@ -1154,4 +1164,5 @@ namespace XYZ {
 	}
 	
 
+	
 }

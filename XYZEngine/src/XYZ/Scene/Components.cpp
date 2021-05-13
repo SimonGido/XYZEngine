@@ -5,6 +5,8 @@
 
 
 namespace XYZ {
+	std::function<void(Entity entity, ECSManager& ecs)> Relationship::OnParentChanged;
+
 	SpriteRenderer::SpriteRenderer(const XYZ::Ref<XYZ::Material>& material, const Ref<XYZ::SubTexture>& subTexture, const glm::vec4& color, uint32_t sortLayer, bool isVisible)
 		:
 		Material(material),
@@ -45,6 +47,12 @@ namespace XYZ {
 		return *this;
 	}
 
+	Relationship::Relationship(Entity parent)
+		:
+		Parent(parent)
+	{
+	}
+
 	void Relationship::SetupRelation(Entity parent, Entity child, ECSManager& ecs)
 	{
 		auto& parentRel = ecs.GetComponent<Relationship>(parent);
@@ -64,6 +72,8 @@ namespace XYZ {
 		{
 			parentRel.FirstChild = child;
 		}
+		if (OnParentChanged)
+			OnParentChanged(child, ecs);
 	}
 
 	void Relationship::RemoveRelation(Entity child, ECSManager& ecs)
@@ -106,10 +116,13 @@ namespace XYZ {
 						auto& nextRel = ecs.GetComponent<Relationship>(currentRel.NextSibling);
 						nextRel.PreviousSibling = currentRel.PreviousSibling;
 					}
-					return;
+					break;
 				}
 				current = currentRel.NextSibling;
 			}
 		}
+		childRel.Parent = Entity();
+		if (OnParentChanged)
+			OnParentChanged(child, ecs);
 	}
 }

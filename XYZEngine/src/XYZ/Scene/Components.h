@@ -150,13 +150,26 @@ namespace XYZ {
 
 	struct Relationship : public IComponent
 	{
+		Relationship() = default;
+		Relationship(Entity parent);
+
+		Entity GetParent() const { return Parent; }
+		Entity GetFirstChild() const { return FirstChild; }
+		Entity GetPreviousSibling() const { return PreviousSibling; }
+		Entity GetNextSibling() const { return NextSibling; }
+		
+		static void SetupRelation(Entity parent, Entity child, ECSManager& ecs);
+		static void RemoveRelation(Entity child, ECSManager& ecs);
+		
+		static std::function<void(Entity entity, ECSManager& ecs)> OnParentChanged;
+	private:
 		Entity Parent;
 		Entity FirstChild;
 		Entity PreviousSibling;
 		Entity NextSibling;
 
-		static void SetupRelation(Entity parent, Entity child, ECSManager& ecs);
-		static void RemoveRelation(Entity child, ECSManager& ecs);
+		friend class Scene;
+		friend class SceneSerializer;
 	};
 
 	struct EntityScriptClass;

@@ -17,7 +17,7 @@ namespace XYZ {
 
 			void OnEvent(Event& event);
 
-			void SetContext(Ref<Scene> context);
+			void SetContext(const Ref<Scene>& context);
 		private:
 			void rebuildTree();
 			void updateTree();

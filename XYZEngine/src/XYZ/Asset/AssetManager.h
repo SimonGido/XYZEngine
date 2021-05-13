@@ -47,6 +47,7 @@ namespace XYZ {
 		static AssetType GetAssetTypeFromExtension(const std::string& extension);
 		static GUID		 GetAssetHandle(const std::string& filepath);
 		static GUID		 GetDirectoryHandle(const std::string& filepath);
+		static std::vector<Ref<Asset>> FindAssetsByType(AssetType type);
 
 
 		template<typename T, typename... Args>
@@ -84,9 +85,13 @@ namespace XYZ {
 		}
 
 
+		
+
 	private:
 		static void processDirectory(const std::string& path, AssetDirectory& directory);
 		static void importAsset(const std::string& path);
+
+		
 
 	private:
 		static std::unordered_map<GUID, Ref<Asset>> s_LoadedAssets;

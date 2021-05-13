@@ -16,14 +16,14 @@ namespace XYZ
 
 	void AssetManager::Init()
 	{
-		s_AssetTypes["xyz"] = AssetType::Scene;
-		s_AssetTypes["tex"] = AssetType::Texture;
-		s_AssetTypes["font"] = AssetType::Font;
+		s_AssetTypes["xyz"]    = AssetType::Scene;
+		s_AssetTypes["tex"]    = AssetType::Texture;
+		s_AssetTypes["font"]   = AssetType::Font;
 		s_AssetTypes["subtex"] = AssetType::SubTexture;
-		s_AssetTypes["mat"] = AssetType::Material;
+		s_AssetTypes["mat"]    = AssetType::Material;
 		s_AssetTypes["shader"] = AssetType::Shader;
-		s_AssetTypes["cs"] = AssetType::Script;
-		s_AssetTypes["skm"] = AssetType::SkeletalMesh;
+		s_AssetTypes["cs"]     = AssetType::Script;
+		s_AssetTypes["skm"]    = AssetType::SkeletalMesh;
 
 
 		AssetDirectory newDirectory;
@@ -43,9 +43,9 @@ namespace XYZ
 
 	GUID AssetManager::GetAssetHandle(const std::string& filepath)
 	{
-		for (auto& [id, dir] : s_LoadedAssets)
+		for (auto& [id, asset] : s_LoadedAssets)
 		{
-			if (dir->FilePath == filepath)
+			if (asset->FilePath == filepath)
 				return id;
 		}
 
@@ -63,6 +63,17 @@ namespace XYZ
 
 		XYZ_ASSERT(false, "");
 		return GUID();
+	}
+
+	std::vector<Ref<Asset>> AssetManager::FindAssetsByType(AssetType type)
+	{
+		std::vector<Ref<Asset>> assets;
+		for (auto& [id, asset] : s_LoadedAssets)
+		{
+			if (asset->Type == type)
+				assets.push_back(asset);
+		}
+		return assets;
 	}
 
 

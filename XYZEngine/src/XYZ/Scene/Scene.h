@@ -14,8 +14,6 @@
 
 #include "XYZ/Physics/PhysicsWorld.h"
 
-#include "XYZ/Renderer/SkeletalMesh.h"
-
 namespace XYZ {
 
     enum class SceneState
@@ -39,6 +37,7 @@ namespace XYZ {
         ~Scene();
 
         SceneEntity CreateEntity(const std::string& name, const GUID& guid);
+        SceneEntity CreateEntity(const std::string& name, SceneEntity parent, const GUID& guid);
         void DestroyEntity(SceneEntity entity);
         void SetState(SceneState state) { m_State = state; }
         void SetViewportSize(uint32_t width, uint32_t height);
