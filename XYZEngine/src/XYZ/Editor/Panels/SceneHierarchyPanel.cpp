@@ -32,7 +32,12 @@ namespace XYZ {
             if (m_Context.Raw())
             {
                 if (m_Context->m_SelectedEntity)
-                    m_Tree->GetItem(m_Context->m_SelectedEntity).Color = glm::vec4(0.2f, 0.7f, 1.0f, 1.0f);
+                {
+                    SceneEntity entity(m_Context->m_SelectedEntity, m_Context.Raw());
+                    auto& item = m_Tree->GetItem(m_Context->m_SelectedEntity);
+                    item.Color = glm::vec4(0.2f, 0.7f, 1.0f, 1.0f);
+                    item.Label = entity.GetComponent<SceneTagComponent>().Name;
+                }
             }
         }
 

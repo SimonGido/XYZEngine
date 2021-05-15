@@ -50,7 +50,7 @@ namespace XYZ {
 			m_SpriteRendererLayout = { 10.0f, 10.0f, 10.0f, 10.0f, 10.0f, {4, 1, 1}, true };
 			m_ScriptLayout = { 10.0f, 10.0f, 10.0f, 10.0f, 10.0f, {1}, true };
 			m_SceneTagLayout = { 10.0f, 10.0f, 10.0f, 10.0f, 10.0f, {1}, true };
-
+			m_CameraLayout = { 10.0f, 10.0f, 10.0f, 10.0f, 10.0f, {2,3}, true };
 			
 			bUIAllocator& allocator = bUI::GetAllocator(GetName());
 			bUIScrollbox* scrollbox = allocator.GetElement<bUIScrollbox>("Scrollbox");
@@ -95,6 +95,11 @@ namespace XYZ {
 				{
 					bUIWindow* scriptWindow = allocator.GetElement<bUIWindow>("Script Component");
 					bUI::SetupLayout(allocator, *scriptWindow, m_ScriptLayout);
+				}
+				if (m_Context.HasComponent<CameraComponent>())
+				{
+					bUIWindow* cameraWindow = allocator.GetElement<bUIWindow>("Camera Component");
+					bUI::SetupLayout(allocator, *cameraWindow, m_CameraLayout);
 				}
 			}
 		}
@@ -359,7 +364,63 @@ namespace XYZ {
 			if (m_Context.HasComponent<CameraComponent>())
 			{
 				auto& component = m_Context.GetComponent<CameraComponent>();
+
+				bUIFloat* near = allocator.GetElement<bUIFloat>("Near");
+				near->SetValue(component.Camera.);
+				scaleZ->Callbacks.push_back(
+					[&](bUICallbackType type, bUIElement& element) {
+					if (type == bUICallbackType::Active && m_Context)
+					{
+						bUIFloat& casted = static_cast<bUIFloat&>(element);
+						m_Context.GetComponent<TransformComponent>().Scale.z = casted.GetValue();
+					}
+				}
+				);
+
+
 				
+				bUICheckbox* orthoCheckbox = allocator.GetElement<bUICheckbox>("Ortho");
+				orthoCheckbox->Callbacks.push_back([&](bUICallbackType type, bUIElement& element) {
+					if (type == bUICallbackType::StateChange && m_Context)
+					{
+						bUICheckbox& casted = static_cast<bUICheckbox&>(element);
+						bUICheckbox& perspCheckbox = bUI::GetUI<bUICheckbox>("Inspector", "Perspective");
+						auto& cameraComponent = m_Context.GetComponent<CameraComponent>();
+						if (casted.Checked)
+						{
+							cameraComponent.Camera.SetProjectionType(CameraProjectionType::Orthographic);
+							perspCheckbox.Checked = false;
+						}
+						else if (!perspCheckbox.Checked)
+						{
+							casted.Checked = true;
+						}
+					}
+				});
+
+
+				bUICheckbox* perspCheckbox = allocator.GetElement<bUICheckbox>("Perspective");
+				perspCheckbox->Callbacks.push_back([&](bUICallbackType type, bUIElement& element) {
+					if (type == bUICallbackType::StateChange && m_Context)
+					{
+						bUICheckbox& casted = static_cast<bUICheckbox&>(element);
+						bUICheckbox& orthoCheckbox = bUI::GetUI<bUICheckbox>("Inspector", "Ortho");
+						auto& cameraComponent = m_Context.GetComponent<CameraComponent>();
+						if (casted.Checked)
+						{
+							cameraComponent.Camera.SetProjectionType(CameraProjectionType::Perspective);
+							orthoCheckbox.Checked = false;
+						}
+						else if (!orthoCheckbox.Checked)
+						{
+							casted.Checked = true;
+						}
+					}
+				});
+				if (component.Camera.GetProjectionType() == CameraProjectionType::Orthographic)
+					orthoCheckbox->Checked = true;
+				else
+					perspCheckbox->Checked = false;
 			}
 			else
 			{

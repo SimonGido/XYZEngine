@@ -38,6 +38,42 @@ bUIElements:
             Name: Camera Component
             Locked: true
             Type: Window
+            bUIElements:
+              - Coords: [10, 10]
+                Size: [50, 50]
+                Color: [1, 1, 1, 1]
+                Label: Orthographic
+                Name: Ortho
+                Locked: true
+                Type: Checkbox
+              - Coords: [10, 10]
+                Size: [50, 50]
+                Color: [1, 1, 1, 1]
+                Label: Perspective
+                Name: Perspective
+                Locked: true
+                Type: Checkbox
+              - Coords: [10, 10]
+                Size: [50, 50]
+                Color: [1, 1, 1, 1]
+                Label: Size
+                Name: FOV
+                Locked: true
+                Type: Float
+              - Coords: [79, 10]
+                Size: [50, 50]
+                Color: [1, 1, 1, 1]
+                Label: Near
+                Name: Near
+                Locked: true
+                Type: Float
+              - Coords: [148, 10]
+                Size: [50, 50]
+                Color: [1, 1, 1, 1]
+                Label: Far
+                Name: Far
+                Locked: true
+                Type: Float
           - Coords: [10, 20]
             Size: [452, 218]
             Color: [0.699999988, 0.699999988, 0.699999988, 1]

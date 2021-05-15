@@ -23,8 +23,9 @@ namespace XYZ {
 		void recalculate();
 
 	private:
-		uint32_t m_ViewportWidth = 0;
-		uint32_t m_ViewportHeight = 0;
+		// It is set to 1 to prevent crash on recalculate perspective projection
+		uint32_t m_ViewportWidth = 1;
+		uint32_t m_ViewportHeight = 1;
 
 		CameraProjectionType m_ProjectionType = CameraProjectionType::Orthographic;
 

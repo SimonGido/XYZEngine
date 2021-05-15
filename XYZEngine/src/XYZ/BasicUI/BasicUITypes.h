@@ -243,17 +243,17 @@ namespace XYZ {
 		bUIHierarchyItem(const std::string& label)
 			: Label(label) {};
 
-		std::string Label;
-		glm::vec4	Color = glm::vec4(1.0f);
-		bool		Open = false;
+		std::string		 Label;
+		glm::vec4		 Color = glm::vec4(1.0f);
+		bool			 Open = false;
 
 		uint32_t		 GetKey() const { return Key; }
 		int32_t			 GetID() const { return ID; }
 		const glm::vec2& GetCoords() const { return Coords;  }
 	private:
-		glm::vec2	Coords = glm::vec2(0.0f);
-		uint32_t    Key = 0;
-		int32_t		ID = -1;
+		glm::vec2		Coords = glm::vec2(0.0f);
+		uint32_t		Key = 0;
+		int32_t			ID = -1;
 		
 		friend class bUIHierarchyElement;
 	};

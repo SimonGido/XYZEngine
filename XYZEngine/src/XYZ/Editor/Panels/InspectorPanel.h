@@ -33,6 +33,7 @@ namespace XYZ {
 			bUILayout m_TransformLayout;
 			bUILayout m_SpriteRendererLayout;
 			bUILayout m_ScriptLayout;
+			bUILayout m_CameraLayout;
 
 			SceneEntity m_Context;
 			bool		m_ReloadContext = false;
