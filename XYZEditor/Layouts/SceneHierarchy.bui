@@ -23,7 +23,7 @@ bUIElements:
             Name: Hierarchy Tree
             Locked: true
             Type: Tree
-          - Coords: [48, 43]
+          - Coords: [68, 69]
             Size: [30, 30]
             Color: [1, 1, 1, 1]
             Label: Create Entity

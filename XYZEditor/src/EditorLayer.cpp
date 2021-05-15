@@ -50,17 +50,10 @@ namespace XYZ {
 
 	void EditorLayer::OnAttach()
 	{
-		auto boneTexture = AssetManager::GetAsset<Texture2D>(AssetManager::GetAssetHandle("Assets/Textures/bone.png.tex"));
-		auto shader = AssetManager::GetAsset<Shader>(AssetManager::GetAssetHandle("Assets/Shaders/DefaultShader.glsl.shader"));
-		auto texture = AssetManager::GetAsset<Texture2D>(AssetManager::GetAssetHandle("Assets/Textures/player_sprite.png.tex"));
-		auto subTexture = AssetManager::GetAsset<SubTexture>(AssetManager::GetAssetHandle("Assets/SubTextures/player.subtex"));
-		auto material = AssetManager::GetAsset<Material>(AssetManager::GetAssetHandle("Assets/Materials/Material.mat"));
-		material->Set("u_Texture", boneTexture);
-
 		m_Scene = AssetManager::GetAsset<Scene>(AssetManager::GetAssetHandle("Assets/Scenes/scene.xyz"));
+		Scene::ActiveScene = m_Scene;
 		m_TestEntity = m_Scene->GetEntityByName("TestEntity");
 		
-		//m_TestEntity.EmplaceComponent<ScriptComponent>("Example.Script");
 
 		ScriptEngine::Init("Assets/Scripts/XYZScriptExample.dll");
 		ScriptEngine::SetSceneContext(m_Scene);
@@ -73,10 +66,6 @@ namespace XYZ {
 		m_EditorCamera = Editor::EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
 		m_EditorCamera.SetViewportSize((float)windowWidth, (float)windowHeight);
 		m_SceneHierarchy.SetContext(m_Scene);
-
-		//ScriptEngine::InitScriptEntity(m_TestEntity);
-		//ScriptEngine::InstantiateEntityClass(m_TestEntity);
-
 
 		Renderer::WaitAndRender();
 
@@ -94,7 +83,6 @@ namespace XYZ {
 		auto track = animation->FindTrack<TransformTrack>();
 		if (track)
 		{
-
 			{
 				KeyFrame<glm::vec3> key;
 				key.Value = glm::vec3(0.0f, 0.0f, 0.0f);

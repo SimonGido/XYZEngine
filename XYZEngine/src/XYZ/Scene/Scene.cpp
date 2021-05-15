@@ -19,6 +19,7 @@
 
 namespace XYZ {
 
+	Ref<Scene> Scene::ActiveScene;
 	static std::vector<TransformComponent> s_EditTransforms;
 
 	Scene::Scene(const std::string& name)
@@ -42,8 +43,7 @@ namespace XYZ {
 		m_ECS.EmplaceComponent<Relationship>(m_SceneEntity);
 		m_ECS.EmplaceComponent<IDComponent>(m_SceneEntity);
 		m_ECS.EmplaceComponent<TransformComponent>(m_SceneEntity);
-		m_ECS.EmplaceComponent<SceneTagComponent>(m_SceneEntity, name);
-	
+		m_ECS.EmplaceComponent<SceneTagComponent>(m_SceneEntity, name);	
 	}
 
 	Scene::~Scene()
@@ -111,7 +111,7 @@ namespace XYZ {
 	{
 		bool foundCamera = false;
 		s_EditTransforms.clear();
-		s_EditTransforms.resize(m_ECS.GetNumberOfEntities());		
+		s_EditTransforms.resize(m_ECS.GetNumberOfEntities() + 1);		
 		for (auto entity : m_Entities)
 		{
 			SceneEntity ent(entity, this);
@@ -150,6 +150,7 @@ namespace XYZ {
 		if (!foundCamera)
 		{
 			XYZ_LOG_ERR("No camera found in the scene");
+			m_State = SceneState::Edit;
 			return;
 		}
 		auto& scriptStorage = m_ECS.GetStorage<ScriptComponent>();

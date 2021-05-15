@@ -108,6 +108,7 @@ namespace XYZ {
 			if (m_Context && m_Context.IsValid())
 			{
 				setSceneTagComponent();
+				setCameraComponent();
 				setTransformComponent();
 				setSpriteRenderer();
 
@@ -197,10 +198,13 @@ namespace XYZ {
 			{
 				m_Context.EmplaceComponent<ScriptComponent>();
 			}
+			else if (id == IComponent::GetComponentID<CameraComponent>())
+			{
+				m_Context.EmplaceComponent<CameraComponent>();
+			}
 		}
 
 		
-
 		void InspectorPanel::setSceneTagComponent()
 		{
 			bUIAllocator& allocator = bUI::GetAllocator("Inspector");
@@ -348,6 +352,25 @@ namespace XYZ {
 				dropdown->AddItem(IComponent::GetComponentID<TransformComponent>(), bUIHierarchyItem("Transform Component"));
 			}
 		}
+
+		void InspectorPanel::setCameraComponent()
+		{
+			bUIAllocator& allocator = bUI::GetAllocator("Inspector");
+			if (m_Context.HasComponent<CameraComponent>())
+			{
+				auto& component = m_Context.GetComponent<CameraComponent>();
+				
+			}
+			else
+			{
+				bUIWindow* window = allocator.GetElement<bUIWindow>("Camera Component");
+				window->Visible = false;
+
+				bUIDropdown* dropdown = allocator.GetElement<bUIDropdown>("Add Component");
+				dropdown->AddItem(IComponent::GetComponentID<CameraComponent>(), bUIHierarchyItem("Camera Component"));
+			}
+		}
+
 
 		void InspectorPanel::setSpriteRenderer()
 		{

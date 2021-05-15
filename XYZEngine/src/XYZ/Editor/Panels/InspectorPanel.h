@@ -23,6 +23,7 @@ namespace XYZ {
 
 			void setSceneTagComponent();
 			void setTransformComponent();
+			void setCameraComponent();
 			void setSpriteRenderer();
 			void setScriptComponent();
 			void buildScriptComponent();

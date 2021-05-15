@@ -34,6 +34,13 @@ bUIElements:
           - Coords: [10, 20]
             Size: [452, 218]
             Color: [0.699999988, 0.699999988, 0.699999988, 1]
+            Label: Camera Component
+            Name: Camera Component
+            Locked: true
+            Type: Window
+          - Coords: [10, 20]
+            Size: [452, 218]
+            Color: [0.699999988, 0.699999988, 0.699999988, 1]
             Label: Transform Component
             Name: Transform Component
             Locked: true

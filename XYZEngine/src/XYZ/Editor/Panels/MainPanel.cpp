@@ -4,6 +4,7 @@
 #include "XYZ/Core/Input.h"
 #include "XYZ/BasicUI/BasicUILoader.h"
 #include "XYZ/Script/ScriptEngine.h"
+#include "XYZ/Asset/AssetManager.h"
 
 namespace XYZ {
 	namespace Editor {
@@ -54,7 +55,33 @@ namespace XYZ {
 				}
 			});
 
+
 			bUIAllocator& allocator = bUI::GetAllocator(GetName());
+			bUIImage& playImage = *allocator.GetElement<bUIImage>("Play");
+			playImage.FitParent = false;
+			playImage.ImageSubTexture = bUI::GetConfig().GetSubTexture(bUIConfig::RightArrow);
+			playImage.Callbacks.push_back([&](bUICallbackType type, bUIElement& element) {
+				if (type == bUICallbackType::Active)
+				{
+					if (Scene::ActiveScene.Raw())
+					{
+						Scene::ActiveScene->SetState(SceneState::Play);
+						Scene::ActiveScene->OnPlay();
+					}
+				}
+			});
+
+			bUIImage& pauseImage = *allocator.GetElement<bUIImage>("Pause");
+			pauseImage.FitParent = false;
+			pauseImage.ImageSubTexture = bUI::GetConfig().GetSubTexture(bUIConfig::Pause);
+			pauseImage.Callbacks.push_back([&](bUICallbackType type, bUIElement& element) {
+				if (type == bUICallbackType::Active)
+				{
+					if (Scene::ActiveScene.Raw())
+						Scene::ActiveScene->SetState(SceneState::Pause);
+				}
+			});
+
 			// Inspector
 			bUICheckbox* inspectorVisible = allocator.GetElement<bUICheckbox>("Inspector");
 			inspectorVisible->Checked = true;
