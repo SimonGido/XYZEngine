@@ -66,6 +66,21 @@ namespace XYZ {
 		
 		renderer.Submit<bUITimeline>(*this, scissorID, bUI::GetContext().Config.GetSubTexture(bUIConfig::Button));
 	}
+	bool bUITimeline::OnLeftMousePressed(const glm::vec2& mousePosition)
+	{
+		if (!Visible || !HandleVisibility(ScissorID))
+			return false;
+
+		glm::vec2 absolutePosition = GetAbsolutePosition();
+		float sizeY = bUI::GetContext().Config.GetFont()->GetLineHeight();
+		if (Helper::Collide(absolutePosition, { Size.x, sizeY }, mousePosition))
+		{
+			for (auto& callback : Callbacks)
+				callback(bUICallbackType::Active, *this);
+			return BlockEvents;
+		}
+		return false;
+	}
 	glm::vec2 bUITimeline::GetSize() const
 	{
 		Ref<Font> font = bUI::GetContext().Config.GetFont();

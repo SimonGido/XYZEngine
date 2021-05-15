@@ -23,6 +23,7 @@ namespace XYZ {
 		bUITimeline(bUITimeline&& other) noexcept;
 
 		virtual void PushQuads(bUIRenderer& renderer, uint32_t& scissorID) override;
+		virtual bool OnLeftMousePressed(const glm::vec2& mousePosition) override;
 
 		virtual glm::vec2 GetSize() const override;
 

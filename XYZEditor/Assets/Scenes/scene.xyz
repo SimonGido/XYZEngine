@@ -1,14 +1,5 @@
 Scene: Scene
 Entities:
-  - Entity: 506243c8-16fe-4897-abf1-186e4ee9b213
-    SceneTagComponent:
-      Name: Scene
-    TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    Relationship:
-      FirstChild: 9cede06b-a169-4d21-9eb3-be4e56768e90
   - Entity: 9cede06b-a169-4d21-9eb3-be4e56768e90
     SceneTagComponent:
       Name: TestEntity
@@ -23,4 +14,4 @@ Entities:
       SortLayer: 0
       IsVisible: true
     Relationship:
-      Parent: 506243c8-16fe-4897-abf1-186e4ee9b213
+      Parent: 37c09a28-9c5d-4cde-a312-4ccc07cdb19d

@@ -34,6 +34,26 @@ namespace XYZ {
 			bUITimeline& timeline = *allocator.GetElement<bUITimeline>("Timeline");
 			bUI::SetupLayout(allocator, scrollbox, m_Layout);
 
+			timeline.Callbacks.push_back([&](bUICallbackType type, bUIElement& element) {
+				if (type == bUICallbackType::Active)
+				{
+					bUITimeline& casted = static_cast<bUITimeline&>(element);
+					if (m_Context.Raw())
+					{
+						auto [mx, my] = Input::GetMousePosition();
+						bUIAllocator& alloc = bUI::GetAllocator(GetName());
+						bUIWindow& window = *alloc.GetElement<bUIWindow>("Animation Editor");
+						bUIScrollbox& scroll = *alloc.GetElement<bUIScrollbox>("Scrollbox");
+
+						glm::vec2 absolutePosition = casted.GetAbsolutePosition();
+						float offsetX = absolutePosition.x - window.GetAbsolutePosition().x;
+						float segmentLength = (casted.SplitTime / casted.Length) * casted.Zoom;
+						float mouseDiffX = (mx - absolutePosition.x - offsetX + scroll.Offset.x);
+						float currentTime = (mouseDiffX / segmentLength) * casted.SplitTime;
+						m_Context->SetCurrentTime(currentTime);
+					}
+				}
+			});
 
 			timeline.Rows.push_back({ "First" });
 			timeline.Rows.push_back({ "Second" });
@@ -48,7 +68,7 @@ namespace XYZ {
 			timeline.TimePoints.push_back({ 2, 0.33f });
 			
 			scrollbox.FitParent = true;
-			scrollbox.EnableScroll = false;
+			scrollbox.EnableScroll = true;
 
 			bUIImage& playImage = *allocator.GetElement<bUIImage>("Play");
 			playImage.FitParent = false;

@@ -404,16 +404,16 @@ namespace XYZ {
 
 		float rowYOffset = font->GetLineHeight();
 		float rowXOffset = 0.0f;
-		for (const bUITimeline::Row& row : element.Rows)
-		{
-			glm::vec2 size = bUIHelper::FindTextSize(row.Name.c_str(), font);
-			glm::vec2 textPosition = absolutePosition;
-			textPosition += glm::vec2(element.Layout.XOffset, size.y + rowYOffset + element.Layout.YOffset);
-
-			rowXOffset = std::max(size.x, rowXOffset);
-			rowYOffset += font->GetLineHeight() + element.Layout.YPadding;
-			Helper::GenerateTextMesh(row.Name.c_str(), font, glm::vec4(1.0f), textPosition, m_Mesh, 1, scissorID);
-		}
+		//for (const bUITimeline::Row& row : element.Rows)
+		//{
+		//	glm::vec2 size = bUIHelper::FindTextSize(row.Name.c_str(), font);
+		//	glm::vec2 textPosition = absolutePosition;
+		//	textPosition += glm::vec2(element.Layout.XOffset, size.y + rowYOffset + element.Layout.YOffset);
+		//
+		//	rowXOffset = std::max(size.x, rowXOffset);
+		//	rowYOffset += font->GetLineHeight() + element.Layout.YPadding;
+		//	Helper::GenerateTextMesh(row.Name.c_str(), font, glm::vec4(1.0f), textPosition, m_Mesh, 1, scissorID);
+		//}
 
 		rowYOffset = absolutePosition.y + (2.5f * font->GetLineHeight());
 		rowXOffset += absolutePosition.x + element.Layout.XPadding;

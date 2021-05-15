@@ -8,6 +8,7 @@
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/SceneRenderer.h"
 #include "XYZ/Renderer/Animation.h"
+
 #include "SceneEntity.h"
 
 
@@ -42,7 +43,7 @@ namespace XYZ {
 		m_ECS.EmplaceComponent<IDComponent>(m_SceneEntity);
 		m_ECS.EmplaceComponent<TransformComponent>(m_SceneEntity);
 		m_ECS.EmplaceComponent<SceneTagComponent>(m_SceneEntity, name);
-		m_Entities.push_back(m_SceneEntity);
+	
 	}
 
 	Scene::~Scene()
@@ -289,7 +290,13 @@ namespace XYZ {
 			if (renderer.IsVisible && renderer.SubTexture.Raw() && renderer.Material.Raw())
 				SceneRenderer::SubmitSprite(&renderer, &transform);
 		}
-
+		auto editorRenderView = m_ECS.CreateView<TransformComponent, EditorSpriteRenderer>();
+		for (auto entity : editorRenderView)
+		{
+			auto [transform, renderer] = editorRenderView.Get<TransformComponent, EditorSpriteRenderer>(entity);
+			if (renderer.SubTexture.Raw() && renderer.Material.Raw())
+				SceneRenderer::SubmitEditorSprite(&renderer, &transform);
+		}
 		auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponent>();
 		for (auto entity : particleView)
 		{
@@ -329,8 +336,12 @@ namespace XYZ {
 	void Scene::showSelection(uint32_t entity)
 	{
 		auto transformComponent = m_ECS.GetComponent<TransformComponent>(entity);
-		auto& translation = transformComponent.Translation;
-		auto& scale = transformComponent.Scale;
+		glm::vec3 translation;
+		glm::vec3 scale;
+		glm::quat rot;
+		glm::vec3 skew;
+		glm::vec4 perspective;
+		glm::decompose(transformComponent.WorldTransform, scale, rot, translation, skew, perspective);
 
 		glm::vec3 topLeft = { translation.x - scale.x / 2,translation.y + scale.y / 2, translation.z };
 		glm::vec3 topRight = { translation.x + scale.x / 2,translation.y + scale.y / 2, translation.z };

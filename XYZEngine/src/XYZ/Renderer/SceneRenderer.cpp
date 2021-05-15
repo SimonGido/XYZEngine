@@ -33,6 +33,11 @@ namespace XYZ {
 		Ref<ShaderStorageBuffer> LightStorageBuffer;
 		
 
+		struct EditorSpriteDrawCommand
+		{
+			EditorSpriteRenderer* Sprite;
+			TransformComponent* Transform;
+		};
 		struct SpriteDrawCommand
 		{
 			SpriteRenderer* Sprite;
@@ -58,10 +63,11 @@ namespace XYZ {
 		};
 
 
-		std::vector<CollisionDrawCommand> CollisionList;
-		std::vector<SpriteDrawCommand> SpriteDrawList;
-		std::vector<ParticleDrawCommand> ParticleDrawList;
-		std::vector<PointLight> LightsList;
+		std::vector<CollisionDrawCommand>	 CollisionList;
+		std::vector<SpriteDrawCommand>		 SpriteDrawList;
+		std::vector<EditorSpriteDrawCommand> EditorSpriteDrawList;
+		std::vector<ParticleDrawCommand>	 ParticleDrawList;
+		std::vector<PointLight>				 LightsList;
 
 
 		glm::vec2 ViewportSize;
@@ -178,10 +184,13 @@ namespace XYZ {
 	{
 
 	}
-
 	void SceneRenderer::SubmitSprite(SpriteRenderer* sprite, TransformComponent* transform)
 	{
 		s_Data.SpriteDrawList.push_back({ sprite,transform });
+	}
+	void SceneRenderer::SubmitEditorSprite(EditorSpriteRenderer* sprite, TransformComponent* transform)
+	{
+		s_Data.EditorSpriteDrawList.push_back({ sprite,transform });
 	}
 	void SceneRenderer::SubmitCollision(TransformComponent* transform, uint32_t collisionID)
 	{
@@ -251,6 +260,7 @@ namespace XYZ {
 		
 		s_Data.CollisionList.clear();
 		s_Data.SpriteDrawList.clear();
+		s_Data.EditorSpriteDrawList.clear();
 		s_Data.ParticleDrawList.clear();
 		s_Data.LightsList.clear();
 	}
@@ -259,10 +269,7 @@ namespace XYZ {
 	{
 		Renderer::BeginRenderPass(s_Data.GeometryPass, true);
 		Renderer2D::BeginScene(s_Data.ViewProjectionMatrix);
-		//int clearValue = -1;
-		//s_Data.GeometryPass->GetSpecification().TargetFramebuffer->ClearColorAttachment(2, &clearValue);
 
-		
 		if (s_Data.Options.ShowGrid)
 		{
 			Renderer2D::SubmitGrid(s_Data.GridProps.Transform, s_Data.GridProps.Scale, s_Data.GridProps.LineWidth);
@@ -274,6 +281,13 @@ namespace XYZ {
 		}
 
 		for (auto& dc : s_Data.SpriteDrawList)
+		{
+			Renderer2D::SetMaterial(dc.Sprite->Material);
+			uint32_t textureID = Renderer2D::SetTexture(dc.Sprite->SubTexture->GetTexture());
+			Renderer2D::SubmitQuad(dc.Transform->WorldTransform, dc.Sprite->SubTexture->GetTexCoords(), textureID, dc.Sprite->Color);
+		}
+
+		for (auto& dc : s_Data.EditorSpriteDrawList)
 		{
 			Renderer2D::SetMaterial(dc.Sprite->Material);
 			uint32_t textureID = Renderer2D::SetTexture(dc.Sprite->SubTexture->GetTexture());

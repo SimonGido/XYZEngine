@@ -117,6 +117,7 @@ namespace XYZ {
 		void UpdateLength();
 		void SetLength(float length) { m_Length = length; }
 		void SetRepeat(bool repeat) { m_Repeat = repeat; }
+		void SetCurrentTime(float time) { m_CurrentTime = time; }
 
 		template <typename T>
 		void CreateTrack()

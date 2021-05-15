@@ -38,6 +38,7 @@ namespace XYZ {
 
 		static void SubmitSkeletalMesh(SkeletalMesh* mesh);
 		static void SubmitSprite(SpriteRenderer* sprite, TransformComponent* transform);
+		static void SubmitEditorSprite(EditorSpriteRenderer* sprite, TransformComponent* transform);
 		static void SubmitCollision(TransformComponent* transform, uint32_t collisionID);
 		static void SubmitParticles(ParticleComponent* particle, TransformComponent* transform);
 		static void SubmitLight(PointLight2D* light, const glm::mat4& transform);
