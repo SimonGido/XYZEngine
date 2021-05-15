@@ -55,74 +55,52 @@ namespace XYZ {
 
 	void Relationship::SetupRelation(Entity parent, Entity child, ECSManager& ecs)
 	{
+		removeRelation(child, ecs);
 		auto& parentRel = ecs.GetComponent<Relationship>(parent);
 		auto& childRel = ecs.GetComponent<Relationship>(child);
 
-		childRel.Parent = parent;
-		if ((bool)parentRel.FirstChild)
+		if (parentRel.FirstChild)
 		{
-			// Parent has first child
-			auto& parentFirstChildRel = ecs.GetComponent<Relationship>(parentRel.FirstChild);
-			// Set new child of parent as previous sibling of first child
-			parentFirstChildRel.PreviousSibling = child;
+			auto& firstChildRel = ecs.GetComponent<Relationship>(parentRel.FirstChild);
+			firstChildRel.PreviousSibling = child;
 			childRel.NextSibling = parentRel.FirstChild;
-			parentRel.FirstChild = child;
 		}
-		else
-		{
-			parentRel.FirstChild = child;
-		}
+		childRel.Parent = parent;
+		parentRel.FirstChild = child;
+
 		if (OnParentChanged)
 			OnParentChanged(child, ecs);
 	}
 
 	void Relationship::RemoveRelation(Entity child, ECSManager& ecs)
 	{
-		auto& childRel =  ecs.GetComponent<Relationship>(child);
-		auto& parentRel = ecs.GetComponent<Relationship>(childRel.Parent);
-
-		// No siblings ( must be first child of parent )
-		if (!(bool)childRel.NextSibling && !(bool)childRel.PreviousSibling)
-		{
-			childRel.Parent = Entity();
-			parentRel.FirstChild = Entity();
-		}
-
-		Entity current = parentRel.FirstChild;
-		if (child == current) // If child is first child of parent
-		{
-			auto& currentRel = ecs.GetComponent<Relationship>(current);
-			if ((bool)currentRel.NextSibling)
-			{
-				auto& nextRel = ecs.GetComponent<Relationship>(currentRel.NextSibling);
-				nextRel.PreviousSibling = Entity();
-				parentRel.FirstChild = currentRel.NextSibling;
-			}
-		}
-		else // Else find where it is and remove from hierarchy
-		{
-			while ((bool)current)
-			{
-				auto& currentRel = ecs.GetComponent<Relationship>(current);
-				if (current == child)
-				{
-					if ((bool)currentRel.PreviousSibling)
-					{
-						auto& prevRel = ecs.GetComponent<Relationship>(currentRel.PreviousSibling);
-						prevRel.NextSibling = currentRel.NextSibling;
-					}
-					if ((bool)currentRel.NextSibling)
-					{
-						auto& nextRel = ecs.GetComponent<Relationship>(currentRel.NextSibling);
-						nextRel.PreviousSibling = currentRel.PreviousSibling;
-					}
-					break;
-				}
-				current = currentRel.NextSibling;
-			}
-		}
-		childRel.Parent = Entity();
+		removeRelation(child, ecs);
 		if (OnParentChanged)
 			OnParentChanged(child, ecs);
+	}
+	void Relationship::removeRelation(Entity child, ECSManager& ecs)
+	{
+		auto& childRel = ecs.GetComponent<Relationship>(child);
+
+		if (childRel.Parent)
+		{
+			auto& parentRel = ecs.GetComponent<Relationship>(childRel.Parent);
+			if (child == parentRel.FirstChild)
+				parentRel.FirstChild = childRel.NextSibling;
+
+			if (childRel.NextSibling)
+			{
+				auto& nextSiblingRel = ecs.GetComponent<Relationship>(childRel.NextSibling);
+				nextSiblingRel.PreviousSibling = childRel.PreviousSibling;
+			}
+			if (childRel.PreviousSibling)
+			{
+				auto& previousSiblingRel = ecs.GetComponent<Relationship>(childRel.PreviousSibling);
+				previousSiblingRel.NextSibling = childRel.NextSibling;
+			}
+			childRel.NextSibling = Entity();
+			childRel.PreviousSibling = Entity();
+			childRel.Parent = Entity();		
+		}
 	}
 }

@@ -283,7 +283,7 @@ namespace XYZ {
             dispatcher.Dispatch<KeyTypedEvent>(Hook(&SkinningEditor::onKeyType, this));
         }
        
-        void SkinningEditor::save()
+        void SkinningEditor::save() const
         {
             Ref<Scene> activeScene = AssetManager::FindAssetsByType(AssetType::Scene)[0];
             Ref<SubTexture> boneSubTexture = AssetManager::GetAsset<SubTexture>(AssetManager::GetAssetHandle("Assets/SubTextures/bone.subtex"));
@@ -320,9 +320,9 @@ namespace XYZ {
                 }
             }
             counter = 0;
-            for (auto& subMesh : m_Mesh.Submeshes)
+            for (const auto& subMesh : m_Mesh.Submeshes)
             {
-                for (auto& triangle : subMesh.Triangles)
+                for (const auto& triangle : subMesh.Triangles)
                 {
                     indices.push_back(triangle.First + counter);
                     indices.push_back(triangle.Second + counter);
@@ -334,7 +334,7 @@ namespace XYZ {
             counter = 0;
             boneEntities.resize(m_Bones.size());
             std::unordered_map<int32_t, Entity> boneEntityMap;
-            for (auto& bone : m_Bones)
+            for (const auto& bone : m_Bones)
             {
                 boneEntities[counter] = activeScene->CreateEntity(bone->Name, GUID());
                 boneEntityMap[bone->ID] = (uint32_t)boneEntities[counter];
@@ -348,15 +348,11 @@ namespace XYZ {
                 transform.DecomposeTransform(bone->LocalTransform);
                 counter++;
             }
-            for (auto& bone : m_Bones)
+            for (const auto& bone : m_Bones)
             {
-                if (auto parent = m_BoneHierarchy.GetParentData(bone->ID))
+                if (const auto parent = m_BoneHierarchy.GetParentData(bone->ID))
                 {
-                    PreviewBone* parentBone = static_cast<PreviewBone*>(parent);
-                    Relationship::RemoveRelation(
-                        boneEntityMap[bone->ID], 
-                        activeScene->GetECS()
-                    );
+                    const PreviewBone* parentBone = static_cast<const PreviewBone*>(parent);
                     Relationship::SetupRelation(
                         boneEntityMap[parentBone->ID],
                         boneEntityMap[bone->ID],

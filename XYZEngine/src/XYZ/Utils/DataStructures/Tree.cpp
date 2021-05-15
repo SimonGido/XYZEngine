@@ -183,25 +183,25 @@ namespace XYZ {
     void Tree::SetParent(int32_t child, int32_t parent)
     {
         TreeNode& childNode = m_Nodes[child];
-        
-
         // Removes child node from linked list
         if (childNode.PreviousSibling != TreeNode::sc_Invalid)
         {
             TreeNode& previous = m_Nodes[childNode.PreviousSibling];
             previous.NextSibling = childNode.NextSibling;
         }
-        else if (childNode.Parent != TreeNode::sc_Invalid)
-        {
-            TreeNode& parent = m_Nodes[childNode.Parent];
-            parent.FirstChild = childNode.NextSibling;
-        }
-
         if (childNode.NextSibling != TreeNode::sc_Invalid)
         {
             TreeNode& next = m_Nodes[childNode.NextSibling];
             next.PreviousSibling = childNode.PreviousSibling;
         }
+        if (childNode.Parent != TreeNode::sc_Invalid)
+        {
+            TreeNode& parent = m_Nodes[childNode.Parent];
+            if (parent.FirstChild == child)
+                parent.FirstChild = childNode.NextSibling;
+        }
+        childNode.PreviousSibling = TreeNode::sc_Invalid;
+        childNode.NextSibling = TreeNode::sc_Invalid;
 
         uint32_t depth = 0;
         if (parent != TreeNode::sc_Invalid)
@@ -433,6 +433,14 @@ namespace XYZ {
 
     
     void* Tree::GetParentData(int32_t index)
+    {
+        if (m_Nodes[index].Parent != TreeNode::sc_Invalid)
+        {
+            return m_Nodes[m_Nodes[index].Parent].Data;
+        }
+        return nullptr;
+    }
+    const void* Tree::GetParentData(int32_t index) const
     {
         if (m_Nodes[index].Parent != TreeNode::sc_Invalid)
         {

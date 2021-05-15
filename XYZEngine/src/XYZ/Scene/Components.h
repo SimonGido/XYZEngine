@@ -163,6 +163,9 @@ namespace XYZ {
 		
 		static std::function<void(Entity entity, ECSManager& ecs)> OnParentChanged;
 	private:
+		static void removeRelation(Entity child, ECSManager& ecs);
+
+	private:
 		Entity Parent;
 		Entity FirstChild;
 		Entity PreviousSibling;

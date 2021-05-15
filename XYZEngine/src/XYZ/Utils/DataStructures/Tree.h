@@ -57,6 +57,7 @@ namespace XYZ {
 		void*       GetData(int32_t index) { return m_Nodes[index].Data; }
 		const void* GetData(int32_t index) const { return m_Nodes[index].Data; }
 		void*	    GetParentData(int32_t index);
+		const void*	GetParentData(int32_t index) const;
 		int32_t     GetRoot() const { return m_Root; }
 		uint32_t    GetNodeCount() const { return m_NodeCount; }
 		bool		HasChildren(int32_t index) const;

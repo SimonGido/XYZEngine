@@ -17,7 +17,6 @@ namespace XYZ {
 	private:
 		GLFWwindow* m_WindowHandle;
 
-		bool anotherWin = false;
 	};
 
 }
