@@ -15,6 +15,14 @@ bUIElements:
         Name: File
         Locked: true
         Type: Window
+        bUIElements:
+          - Coords: [10, 10]
+            Size: [35, 35]
+            Color: [1.5, 2.29999995, 2.4000001, 1]
+            Label: Reload Scripts
+            Name: Reload Scripts
+            Locked: true
+            Type: Button
       - Coords: [640, 25]
         Size: [640, 150]
         Color: [1, 1, 1, 1]
@@ -42,6 +50,13 @@ bUIElements:
             Color: [1, 1, 1, 1]
             Label: Skinning Editor
             Name: Skinning Editor
+            Locked: true
+            Type: Checkbox
+          - Coords: [10, 100]
+            Size: [25, 25]
+            Color: [1, 1, 1, 1]
+            Label: Animation Editor
+            Name: Animation Editor
             Locked: true
             Type: Checkbox
       - Coords: [1280, 25]

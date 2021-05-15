@@ -27,7 +27,8 @@ namespace XYZ {
 		virtual void SetCustomCursor(void* cursor) override;
 		virtual void* CreateCustomCursor(uint8_t* pixels, uint32_t width, uint32_t height, int32_t xOffset = 0, int32_t yOffset = 0) override;
 
-		inline virtual void* GetNativeWindow() const { return m_Window; }
+		virtual void* GetWindow() const;
+		virtual void* GetNativeWindow() const;
 
 		inline virtual uint32_t GetWidth() const override { return m_Data.Width; }
 		inline virtual uint32_t GetHeight() const override { return m_Data.Height; }

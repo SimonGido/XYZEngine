@@ -1,7 +1,7 @@
 Size: [1920, 1017]
 bUIElements:
-  - Coords: [285, 385]
-    Size: [170, 294]
+  - Coords: [211, 255]
+    Size: [1183, 334]
     Color: [1, 1, 1, 1]
     Label: Animation Editor
     Name: Animation Editor
@@ -9,7 +9,7 @@ bUIElements:
     Type: Window
     bUIElements:
       - Coords: [0, 0]
-        Size: [170, 294]
+        Size: [1183, 334]
         Color: [0, 0, 0, 0]
         Label: ""
         Name: Scrollbox
@@ -31,7 +31,7 @@ bUIElements:
             Locked: true
             Type: Image
           - Coords: [10, 55]
-            Size: [170, 200]
+            Size: [1183, 200]
             Color: [1, 1, 1, 1]
             Label: ""
             Name: Timeline

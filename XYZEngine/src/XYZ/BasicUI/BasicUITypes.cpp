@@ -835,7 +835,7 @@ namespace XYZ {
 		ActiveColor = Color;
 		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
 		{		
-			bUIListener::setListener(this);
+			bUIListener::SetListener(this);
 			Listen = !listen;
 			if (Listen)
 				ActiveColor = bUI::GetConfig().GetColor(bUIConfig::HighlightColor);
@@ -935,7 +935,7 @@ namespace XYZ {
 		ActiveColor = Color;
 		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
 		{		
-			bUIListener::setListener(this);
+			bUIListener::SetListener(this);
 			Listen = !listen;
 			if (Listen)
 				ActiveColor = bUI::GetConfig().GetColor(bUIConfig::HighlightColor);
@@ -1006,7 +1006,7 @@ namespace XYZ {
 		return (float)atof(Buffer);
 	}
 
-	void bUIListener::setListener(bUIListener* listener)
+	void bUIListener::SetListener(bUIListener* listener)
 	{
 		if (s_Selected)
 		{
@@ -1047,13 +1047,13 @@ namespace XYZ {
 		ActiveColor = Color;
 		if (Helper::Collide(GetAbsolutePosition(), Size, mousePosition))
 		{		
-			bUIListener::setListener(this);
+			bUIListener::SetListener(this);
 			Listen = !listen;
 			if (Listen)
-				ActiveColor = bUI::GetConfig().GetColor(bUIConfig::HighlightColor);
+				ActiveColor = bUI::GetConfig().GetColor(bUIConfig::HighlightColor);	
 
 			for (auto& callback : Callbacks)
-				callback(bUICallbackType::Active, *this);
+				callback(bUICallbackType::StateChange, *this);
 			return BlockEvents;
 		}
 		return false;

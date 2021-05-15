@@ -20,7 +20,8 @@
     <OutputPath>..\XYZEditor\Assets\Scripts\</OutputPath>
     <BaseIntermediateOutputPath>..\bin-int\Debug-windows-x86_64\XYZScriptExample\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants></DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -31,14 +32,15 @@
     <OutputPath>..\XYZEditor\Assets\Scripts\</OutputPath>
     <BaseIntermediateOutputPath>..\bin-int\Release-windows-x86_64\XYZScriptExample\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants></DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="src\Script.cs" />
+    <Compile Include="src\Example.Script.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\XYZScriptCore\XYZScriptCore.csproj">

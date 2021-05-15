@@ -47,6 +47,7 @@ namespace XYZ {
 
 		virtual void* CreateCustomCursor(uint8_t* pixels, uint32_t width, uint32_t height, int32_t xOffset = 0, int32_t yOffset = 0) = 0;
 		virtual bool IsClosed() = 0;
+		virtual void* GetWindow() const = 0;
 		virtual void* GetNativeWindow() const = 0;
 
 		static std::unique_ptr<Window> Create(const WindowProperties& props = WindowProperties());

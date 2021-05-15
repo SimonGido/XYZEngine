@@ -3,6 +3,7 @@
 
 #include "XYZ/Core/Input.h"
 #include "XYZ/BasicUI/BasicUILoader.h"
+#include "XYZ/Script/ScriptEngine.h"
 
 namespace XYZ {
 	namespace Editor {
@@ -17,7 +18,8 @@ namespace XYZ {
 		}
 		void MainPanel::OnReload()
 		{
-			SetupUI();
+			// Force to call setup UI, after everything is loaded
+			m_Reloaded = true;
 		}
 		void MainPanel::SetupUI()
 		{
@@ -44,6 +46,14 @@ namespace XYZ {
 				}
 			});
 
+			bUI::GetUI<bUIButton>("Main", "Reload Scripts").Callbacks.push_back(
+				[](bUICallbackType type, bUIElement& element) {
+				if (type == bUICallbackType::Active)
+				{
+					ScriptEngine::ReloadAssembly("");
+				}
+			});
+
 			bUIAllocator& allocator = bUI::GetAllocator(GetName());
 			// Inspector
 			bUICheckbox* inspectorVisible = allocator.GetElement<bUICheckbox>("Inspector");
@@ -53,7 +63,7 @@ namespace XYZ {
 				if (type == bUICallbackType::StateChange)
 				{
 					bUICheckbox& casted = static_cast<bUICheckbox&>(element);
-					bUI::GetUI<bUIWindow>("Inspector", "Inspector").Visible = casted.Checked;
+					inspectorVisibility(casted.Checked);
 				}
 			});
 			// Inspector
@@ -66,24 +76,34 @@ namespace XYZ {
 				if (type == bUICallbackType::StateChange)
 				{
 					bUICheckbox& casted = static_cast<bUICheckbox&>(element);
-					bUI::GetUI<bUIWindow>("SceneHierarchy", "Scene Hierarchy").Visible = casted.Checked;
+					sceneHierarchyVisibility(casted.Checked);
 				}
 			});
 			// Scene Hierarchy
 
 			// Skinning Editor
 			bUICheckbox* skinningVisible = allocator.GetElement<bUICheckbox>("Skinning Editor");
-			skinningVisible->Checked = true;
+			skinningVisible->Checked = false;
+			skinningEditorVisibility(false);
 			skinningVisible->Callbacks.push_back(
 				[&](bUICallbackType type, bUIElement& element) {
 				if (type == bUICallbackType::StateChange)
 				{
 					bUICheckbox& casted = static_cast<bUICheckbox&>(element);
+					skinningEditorVisibility(casted.Checked);
+				}
+			});
 
-					bUI::GetUI<bUIWindow>("SkinningEditor", "Skinning Editor").Visible = casted.Checked;
-					bUI::GetUI<bUIWindow>("SkinningEditor", "Skinning Preview").Visible = casted.Checked;
-					bUI::GetUI<bUIWindow>("SkinningEditor", "Bone Hierarchy").Visible = casted.Checked;
-					bUI::GetUI<bUIWindow>("SkinningEditor", "Mesh").Visible = casted.Checked;
+			// Animation Editor
+			bUICheckbox* animationVisible = allocator.GetElement<bUICheckbox>("Animation Editor");
+			animationVisible->Checked = false;
+			animationEditorVisibility(false);
+			animationVisible->Callbacks.push_back(
+				[&](bUICallbackType type, bUIElement& element) {
+				if (type == bUICallbackType::StateChange)
+				{
+					bUICheckbox& casted = static_cast<bUICheckbox&>(element);
+					animationEditorVisibility(casted.Checked);
 				}
 			});
 		}
@@ -92,6 +112,11 @@ namespace XYZ {
 			bUIAllocator& allocator = bUI::GetAllocator(GetName());
 			bUIWindow* viewWindow = allocator.GetElement<bUIWindow>("View");
 			bUI::SetupLayout(allocator, *viewWindow, m_ViewLayout);
+			if (m_Reloaded)
+			{
+				m_Reloaded = false;
+				SetupUI();
+			}
 		}
 		void MainPanel::OnEvent(Event& event)
 		{
@@ -119,6 +144,25 @@ namespace XYZ {
 				count++;
 			});
 			return scrollbox.Size.x / (float)count;
+		}
+		void MainPanel::animationEditorVisibility(bool visible)
+		{
+			bUI::GetUI<bUIWindow>("AnimationEditor", "Animation Editor").Visible = visible;
+		}
+		void MainPanel::skinningEditorVisibility(bool visible)
+		{
+			bUI::GetUI<bUIWindow>("SkinningEditor", "Skinning Editor").Visible	= visible;
+			bUI::GetUI<bUIWindow>("SkinningEditor", "Skinning Preview").Visible = visible;
+			bUI::GetUI<bUIWindow>("SkinningEditor", "Bone Hierarchy").Visible	= visible;
+			bUI::GetUI<bUIWindow>("SkinningEditor", "Mesh").Visible				= visible;
+		}
+		void MainPanel::sceneHierarchyVisibility(bool visible)
+		{
+			bUI::GetUI<bUIWindow>("SceneHierarchy", "Scene Hierarchy").Visible = visible;
+		}
+		void MainPanel::inspectorVisibility(bool visible)
+		{
+			bUI::GetUI<bUIWindow>("Inspector", "Inspector").Visible = visible;
 		}
 	}
 }

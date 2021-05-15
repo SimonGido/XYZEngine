@@ -60,7 +60,7 @@ namespace XYZ {
 		m_Scene = AssetManager::GetAsset<Scene>(AssetManager::GetAssetHandle("Assets/Scenes/scene.xyz"));
 		m_TestEntity = m_Scene->GetEntityByName("TestEntity");
 		
-		m_TestEntity.EmplaceComponent<ScriptComponent>("Example.Script");
+		//m_TestEntity.EmplaceComponent<ScriptComponent>("Example.Script");
 
 		ScriptEngine::Init("Assets/Scripts/XYZScriptExample.dll");
 		ScriptEngine::SetSceneContext(m_Scene);
@@ -74,8 +74,8 @@ namespace XYZ {
 		m_EditorCamera.SetViewportSize((float)windowWidth, (float)windowHeight);
 		m_SceneHierarchy.SetContext(m_Scene);
 
-		ScriptEngine::InitScriptEntity(m_TestEntity);
-		ScriptEngine::InstantiateEntityClass(m_TestEntity);
+		//ScriptEngine::InitScriptEntity(m_TestEntity);
+		//ScriptEngine::InstantiateEntityClass(m_TestEntity);
 
 
 		Renderer::WaitAndRender();

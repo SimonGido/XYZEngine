@@ -159,9 +159,17 @@ bUIElements:
             Name: Script Component
             Locked: true
             Type: Window
+            bUIElements:
+              - Coords: [10, 10]
+                Size: [200, 30]
+                Color: [1, 1, 1, 1]
+                Label: Script
+                Name: Script
+                Locked: true
+                Type: String
           - Coords: [10, 481]
             Size: [200, 30]
-            Color: [1, 1, 1, 1]
+            Color: [0.5, 0.5, 0.5, 1]
             Label: Add Component
             Name: Add Component
             Locked: true

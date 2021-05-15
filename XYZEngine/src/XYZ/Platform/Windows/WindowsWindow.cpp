@@ -4,6 +4,9 @@
 #include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Core/Application.h"
 
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
+
 namespace XYZ {
 	static bool GLFWInitialized = false;
 
@@ -200,6 +203,16 @@ namespace XYZ {
 		image.width = width;
 		image.height = height;
 		return glfwCreateCursor(&image, xOffset, yOffset);
+	}
+
+	void* WindowsWindow::GetWindow() const
+	{
+		return m_Window;
+	}
+
+	void* WindowsWindow::GetNativeWindow() const
+	{
+		return glfwGetWin32Window(m_Window);
 	}
 
 

@@ -18,6 +18,29 @@ namespace XYZ {
 	}
 
 
+	std::string FileSystem::OpenFile(void* windowHandle, const char* filter)
+	{
+		OPENFILENAMEA ofn;       // common dialog box structure
+		CHAR szFile[MAX_PATH] = { 0 };       // if using TCHAR macros
+
+		// Initialize OPENFILENAME
+		ZeroMemory(&ofn, sizeof(OPENFILENAME));
+		ofn.lStructSize = sizeof(OPENFILENAME);
+		ofn.hwndOwner = (HWND)windowHandle;
+		ofn.lpstrFile = szFile;
+		ofn.nMaxFile = sizeof(szFile);
+		ofn.lpstrFilter = filter;
+		ofn.nFilterIndex = 1;
+		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+
+
+		if (GetOpenFileNameA(&ofn) == TRUE)
+		{
+			return ofn.lpstrFile;
+		}
+		return std::string();
+	}
+
 	bool FileSystem::CreateFolder(const std::string& filepath)
 	{
 		BOOL created = CreateDirectoryA(filepath.c_str(), NULL);

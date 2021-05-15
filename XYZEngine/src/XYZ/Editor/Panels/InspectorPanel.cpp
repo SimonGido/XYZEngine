@@ -1,6 +1,12 @@
 #include "stdafx.h"
 #include "InspectorPanel.h"
 
+#include "XYZ/Core/Application.h"
+#include "XYZ/Utils/FileSystem.h"
+#include "XYZ/Utils/StringUtils.h"
+
+#include "XYZ/Script/ScriptEngine.h"
+
 #include "XYZ/BasicUI/BasicUILoader.h"
 
 
@@ -168,6 +174,13 @@ namespace XYZ {
 			if (last)
 				dropdown->Coords.y = last->Coords.y + last->GetSize().y + 10.0f;
 			dropdown->Coords.x = scrollbox->Coords.x + (scrollbox->Size.x - dropdown->Size.x) / 2.0f;
+
+			if (m_Context && m_Context.HasComponent<ScriptComponent>())
+			{
+				const ScriptComponent& scriptComponent = m_Context.GetComponent<ScriptComponent>();
+				bUIString& str = *allocator.GetElement<bUIString>("Script");
+				str.SetValue(scriptComponent.ModuleName);
+			}
 		}
 
 		void InspectorPanel::addComponent(uint16_t id)
@@ -649,8 +662,39 @@ namespace XYZ {
 			if (m_Context.HasComponent<ScriptComponent>())
 			{
 				bUIAllocator& allocator = bUI::GetAllocator("Inspector");
+				bUIString& str = *allocator.GetElement<bUIString>("Script");
+				str.Callbacks.push_back([&](bUICallbackType type, bUIElement& element) {
+		
+					if (type == bUICallbackType::StateChange)
+					{
+						bUIString& casted = static_cast<bUIString&>(element);
+						if (casted.IsListening())
+						{
+							std::string scriptName = FileSystem::OpenFile(Application::Get().GetWindow().GetNativeWindow(), "*.cs");
+							if (!scriptName.empty())
+							{
+								std::string withoutExtension = Utils::GetFilenameWithoutExtension(scriptName);
+								if (ScriptEngine::ModuleExists(withoutExtension))
+								{						
+									ScriptComponent& scriptComponent = m_Context.GetComponent<ScriptComponent>();
+									scriptComponent.ModuleName = withoutExtension;
+									ScriptEngine::InitScriptEntity(m_Context);
+									ScriptEngine::InstantiateEntityClass(m_Context);
+									bUIListener::SetListener(nullptr);
+									OnReload();
+								}
+								else
+								{
+									XYZ_LOG_ERR("Script does not exist ", scriptName);
+								}
+							}
+						}	
+
+					}
+				});
 				ScriptComponent& scriptComponent = m_Context.GetComponent<ScriptComponent>();
 				m_ScriptLayout.ItemsPerRow.clear();
+				m_ScriptLayout.ItemsPerRow.push_back(1);
 				for (auto& field : scriptComponent.Fields)
 				{
 					switch (field.GetType())

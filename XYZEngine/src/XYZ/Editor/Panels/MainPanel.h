@@ -17,8 +17,14 @@ namespace XYZ {
 		private:
 			float findPerWindowWidth();
 
+
+			void animationEditorVisibility(bool visible);
+			void skinningEditorVisibility(bool visible);
+			void sceneHierarchyVisibility(bool visible);
+			void inspectorVisibility(bool visible);
 		private:
 			bUILayout m_ViewLayout;
+			bool m_Reloaded = false;
 		};
 	}
 }

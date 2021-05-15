@@ -1,6 +1,6 @@
 Size: [1920, 1017]
 bUIElements:
-  - Coords: [709, 333]
+  - Coords: [1007, 269]
     Size: [850, 851]
     Color: [1, 1, 1, 1]
     Label: Skinning Preview
@@ -153,7 +153,7 @@ bUIElements:
                 Name: Brush Strength
                 Locked: true
                 Type: Slider
-  - Coords: [637, 251]
+  - Coords: [479, 108]
     Size: [400, 114]
     Color: [1, 1, 1, 1]
     Label: Bone Hierarchy
@@ -168,7 +168,7 @@ bUIElements:
         Name: Bones
         Locked: true
         Type: Tree
-  - Coords: [533, 291]
+  - Coords: [479, 248]
     Size: [400, 114]
     Color: [1, 1, 1, 1]
     Label: Mesh

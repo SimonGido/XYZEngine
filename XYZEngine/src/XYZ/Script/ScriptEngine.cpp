@@ -217,7 +217,12 @@ namespace XYZ {
 		s_CoreAssembly = LoadAssembly("Assets/Scripts/XYZScriptCore.dll");
 		s_CoreAssemblyImage = GetAssemblyImage(s_CoreAssembly);
 
-		auto appAssembly = LoadAssembly(path);
+		MonoAssembly* appAssembly = nullptr;
+		if (path.empty())
+			appAssembly = LoadAssembly(s_AssemblyPath);
+		else
+			appAssembly = LoadAssembly(path);
+
 		auto appAssemblyImage = GetAssemblyImage(appAssembly);
 		ScriptEngineRegistry::RegisterAll();
 
@@ -310,7 +315,6 @@ namespace XYZ {
 	void ScriptEngine::InitScriptEntity(SceneEntity entity)
 	{
 		Scene* scene = entity.m_Scene;
-		GUID id = entity.GetComponent<IDComponent>().ID;
 		auto& scriptComponent = entity.GetComponent<ScriptComponent>();
 		if (scriptComponent.ModuleName.empty())
 			return;
@@ -344,7 +348,6 @@ namespace XYZ {
 	void ScriptEngine::InstantiateEntityClass(SceneEntity entity)
 	{
 		Scene* scene = entity.m_Scene;
-		GUID id = entity.GetComponent<IDComponent>().ID;
 		ScriptComponent& scriptComponent = entity.GetComponent<ScriptComponent>();
 		
 		XYZ_ASSERT(scriptComponent.ScriptClass, "");

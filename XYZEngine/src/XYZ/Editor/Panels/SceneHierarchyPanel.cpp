@@ -41,12 +41,7 @@ namespace XYZ {
             SetupUI();
             if (m_Context.Raw())
             {
-                ECSManager& ecs = m_Context->m_ECS;
-                for (Entity entity : m_Context->GetEntities())
-                {
-                    SceneTagComponent& sceneTag = ecs.GetComponent<SceneTagComponent>(entity);
-                    m_Tree->AddItem(entity, bUIHierarchyItem(sceneTag.Name));
-                }
+                rebuildTree();
             }
         }
         

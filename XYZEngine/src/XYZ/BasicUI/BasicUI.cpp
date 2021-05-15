@@ -84,6 +84,7 @@ namespace XYZ {
 	}
 	void bUI::Reload()
 	{
+		bUIListener::SetListener(nullptr);
 		s_Context->Data.Reload();
 	}
 

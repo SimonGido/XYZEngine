@@ -105,15 +105,18 @@ namespace XYZ {
 		virtual bool OnKeyPressed(int32_t mode, int32_t key) { return false; }
 		virtual bool OnKeyTyped(char character) { return false; }
 
+		bool IsListening() const { return Listen; }
+
 		static bUIListener* GetListener() { return s_Selected; }
 
 		glm::vec2 Borders = glm::vec2(10.0f);
 		bool FitText = false;
 		bool CutTextOutside = true;
+
+		static void SetListener(bUIListener* listener);
 	protected:
 		bool Listen = false;
 
-		static void setListener(bUIListener* listener);
 
 	private:
 		static bUIListener* s_Selected;
