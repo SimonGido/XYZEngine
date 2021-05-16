@@ -17,11 +17,10 @@
     <PlatformTarget>x64</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\XYZEditor\Assets\Scripts\</OutputPath>
-    <BaseIntermediateOutputPath>..\bin-int\Debug-windows-x86_64\XYZScriptExample\</BaseIntermediateOutputPath>
+    <OutputPath>XYZEditor\Assets\Scripts\</OutputPath>
+    <BaseIntermediateOutputPath>bin-int\Debug-windows-x86_64\XYZScriptExample\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants>
-    </DefineConstants>
+    <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -29,19 +28,16 @@
     <PlatformTarget>x64</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\XYZEditor\Assets\Scripts\</OutputPath>
-    <BaseIntermediateOutputPath>..\bin-int\Release-windows-x86_64\XYZScriptExample\</BaseIntermediateOutputPath>
+    <OutputPath>XYZEditor\Assets\Scripts\</OutputPath>
+    <BaseIntermediateOutputPath>bin-int\Release-windows-x86_64\XYZScriptExample\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants>
-    </DefineConstants>
+    <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="src\Example.Camera.cs" />
-    <Compile Include="src\Example.Script.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\XYZScriptCore\XYZScriptCore.csproj">

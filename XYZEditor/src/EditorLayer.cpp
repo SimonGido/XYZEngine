@@ -2,7 +2,6 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
-#include <stb_image/stb_image.h>
 
 #include <random>
 

@@ -1,8 +1,0 @@
-XYZ::OpenGLAPIContext::Init: OpenGL Info:
-XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
-XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
-XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 460.89
-XYZ::Net::Server<enum XYZ::MessageType>::Start: Server Started
-XYZ::Net::Server<enum XYZ::MessageType>::WaitForClientConnection::<lambda_ae0a4036c93e414cd4b6e6edad55c128>::operator (): Server New Connection: 147.32.121.43:54351
-XYZ::Net::Server<enum XYZ::MessageType>::WaitForClientConnection::<lambda_ae0a4036c93e414cd4b6e6edad55c128>::operator (): [0] Connection Approved
-XYZ::Net::Connection<enum XYZ::MessageType>::readHeader::<lambda_0563e4fa010ad0816a7bd5ec9b77be47>::operator (): [0] Read header failed

@@ -366,8 +366,8 @@ namespace XYZ {
 				auto& component = m_Context.GetComponent<CameraComponent>();
 
 				bUIFloat* near = allocator.GetElement<bUIFloat>("Near");
-				near->SetValue(component.Camera.);
-				scaleZ->Callbacks.push_back(
+				//near->SetValue(component.Camera.);
+				near->Callbacks.push_back(
 					[&](bUICallbackType type, bUIElement& element) {
 					if (type == bUICallbackType::Active && m_Context)
 					{
