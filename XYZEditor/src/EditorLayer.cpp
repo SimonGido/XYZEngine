@@ -34,12 +34,6 @@ namespace XYZ {
 	}
 
 	EditorLayer::EditorLayer()
-		:
-		m_SceneHierarchy("Layouts/SceneHierarchy.bui"),
-		m_Inspector("Layouts/Inspector.bui"),
-		m_Main("Layouts/Main.bui"),
-		m_SkinningEditor("Layouts/SkinningEditor.bui"),
-		m_AnimationEditor("Layouts/AnimationEditor.bui")
 	{			
 	}
 
@@ -64,19 +58,16 @@ namespace XYZ {
 		m_Scene->SetViewportSize(windowWidth, windowHeight);		
 		m_EditorCamera = Editor::EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
 		m_EditorCamera.SetViewportSize((float)windowWidth, (float)windowHeight);
-		m_SceneHierarchy.SetContext(m_Scene);
-
+	
 		Renderer::WaitAndRender();
 
 		Ref<RenderTexture> renderTexture = RenderTexture::Create(SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer);
 		Ref<SubTexture> renderSubTexture = Ref<SubTexture>::Create(renderTexture, glm::vec2(0.0f, 0.0f));
 		Ref<Texture> robotTexture = Texture2D::Create({}, "Assets/Textures/full_simple_char.png");
 		Ref<SubTexture> robotSubTexture = Ref<SubTexture>::Create(robotTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
-		m_SkinningEditor.SetContext(robotSubTexture);
-
+	
 		Ref<Animation> animation = Ref<Animation>::Create(m_TestEntity);
-		m_AnimationEditor.SetContext(animation);
-
+		
 
 		animation->CreateTrack<TransformTrack>();
 		auto track = animation->FindTrack<TransformTrack>();
@@ -127,14 +118,7 @@ namespace XYZ {
 		Renderer::Clear();
 		Renderer::SetClearColor({ 0.1f,0.1f,0.1f,0.1f });
 		
-		m_SceneHierarchy.OnUpdate(ts);
-		m_Inspector.OnUpdate(ts);
-		m_Main.OnUpdate(ts);
-		m_SkinningEditor.OnUpdate(ts);		
-		m_EditorCamera.OnUpdate(ts);
-		m_AnimationEditor.OnUpdate(ts);
-
-		m_Inspector.SetContext(m_Scene->GetSelectedEntity());
+	
 		if (m_Scene->GetState() == SceneState::Play)
 		{
 			m_Scene->OnUpdate(ts);
@@ -155,11 +139,6 @@ namespace XYZ {
 		dispatcher.Dispatch<WindowResizeEvent>(Hook(&EditorLayer::onWindowResize, this));
 		dispatcher.Dispatch<KeyPressedEvent>(Hook(&EditorLayer::onKeyPress, this));
 		
-
-		m_SceneHierarchy.OnEvent(event);
-		m_SkinningEditor.OnEvent(event);
-		m_Main.OnEvent(event);
-		m_AnimationEditor.OnEvent(event);
 		m_EditorCamera.OnEvent(event);
 	}
 	

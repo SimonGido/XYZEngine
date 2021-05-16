@@ -31,11 +31,7 @@ namespace XYZ {
 	private:
 		Ref<Scene> m_Scene;
 		Editor::EditorCamera m_EditorCamera;
-		Editor::SceneHierarchyPanel m_SceneHierarchy;
-		Editor::InspectorPanel m_Inspector;
-		Editor::SkinningEditor m_SkinningEditor;
-		Editor::AnimationEditor m_AnimationEditor;
-		Editor::MainPanel m_Main; // Main panel must be constructed last
+
 	private:	
 		SceneEntity m_SelectedEntity;
 		SceneEntity m_TestEntity;

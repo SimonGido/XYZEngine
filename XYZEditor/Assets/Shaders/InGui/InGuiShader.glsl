@@ -40,10 +40,8 @@ layout(location = 1) out vec4 o_Position;
 
 struct ScissorQuad
 {
-	float X;
-	float Y;
-	float Width;
-	float Height;
+	vec2 Min;
+	vec2 Max;
 };
 
 layout(std430, binding = 0) buffer
@@ -64,10 +62,11 @@ layout (binding = 0) uniform sampler2D u_Texture[32];
 
 void main()
 {	
-	if ((gl_FragCoord.x < Scissors[int(v_ScissorIndex)].X 
-	 ||  gl_FragCoord.x > Scissors[int(v_ScissorIndex)].X + Scissors[int(v_ScissorIndex)].Width)
-	 || (gl_FragCoord.y < Scissors[int(v_ScissorIndex)].Y 
-	 ||  gl_FragCoord.y > Scissors[int(v_ScissorIndex)].Y + Scissors[int(v_ScissorIndex)].Height))
+	ScissorQuad rect = Scissors[int(v_ScissorIndex)];
+	if ((gl_FragCoord.x < rect.Min.x 
+	 ||  gl_FragCoord.x > rect.Max.x)
+	 || (gl_FragCoord.y < rect.Min.y 
+	 ||  gl_FragCoord.y > rect.Max.y))
 	{
 		discard;
 	}

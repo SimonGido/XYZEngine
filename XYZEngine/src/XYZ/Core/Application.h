@@ -4,12 +4,7 @@
 #include "ThreadPool.h"
 
 #include "XYZ/BasicUI/BasicUILayer.h"
-
-/**	@class Application
- *  Singleton class.
- *	Represents main application, stores and updates the Layers and the Window.
- *
- */
+#include "XYZ/InGui/InGuiLayer.h"
 
 namespace XYZ {
 	class Application
@@ -41,7 +36,8 @@ namespace XYZ {
 
 	private:
 		LayerStack m_LayerStack;
-		bUILayer* m_bUILayer;
+		//bUILayer* m_bUILayer;
+		InGuiLayer* m_InGuiLayer;
 
 		std::unique_ptr<Window> m_Window;
 
