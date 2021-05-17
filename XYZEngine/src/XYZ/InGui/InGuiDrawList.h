@@ -38,22 +38,12 @@ namespace XYZ {
 	class InGuiDrawList
 	{
 	public:
-		void SetClipRect(const InGuiRect& rect, uint32_t clipID);
-
-		void PushQuad(const glm::vec4& color, const glm::vec4& texCoord, const glm::vec2& position, const glm::vec2& size, uint32_t textureID);
-		void PushLine(const glm::vec4& color, const glm::vec2& p0, const glm::vec2& p1);
-		void PushText(const char* text, const glm::vec2& position, const glm::vec4& color, uint32_t textureID, const Ref<Font>& font);
-
-		void PushQuadNoClip(const glm::vec4& color, const glm::vec4& texCoord, const glm::vec2& position, const glm::vec2& size, uint32_t textureID);
-		void PushLineNoClip(const glm::vec4& color, const glm::vec2& p0, const glm::vec2& p1);
-		void PushTextNoClip(const char* text, const glm::vec2& position, const glm::vec4& color, uint32_t textureID, const Ref<Font>& font);
-
+		void PushQuad(const glm::vec4& color, const glm::vec4& texCoord, const glm::vec2& position, const glm::vec2& size, uint32_t textureID, uint32_t clipID);
+		void PushLine(const glm::vec4& color, const glm::vec2& p0, const glm::vec2& p1, uint32_t clipID);
+		void PushText(const char* text, const glm::vec2& position, const glm::vec4& color, uint32_t textureID, const Ref<Font>& font, uint32_t clipID);
 
 		void SubmitToRenderer();
 		void Clear();
-	private:
-		InGuiRect m_ClipRectangle;
-		uint32_t  m_ClipID;
 
 		std::vector<InGuiQuad> m_Quads;
 		std::vector<InGuiLine> m_Lines;

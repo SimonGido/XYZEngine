@@ -14,10 +14,13 @@ namespace XYZ {
 	{
 		Ref<Texture2D> texture = Texture2D::Create({ TextureWrap::Clamp, TextureParam::Linear, TextureParam::Nearest }, "Assets/Textures/Gui/TexturePack_Dark.png");
 		Ref<Font> font = Ref<XYZ::Font>::Create(14, "Assets/Fonts/arial.ttf");
-		InGui::GetContext().GetConfig().SetTexture(texture);
-		InGui::GetContext().GetConfig().SetFont(font);
+		InGui::GetContext().m_Config.Texture = texture;
+		InGui::GetContext().m_Config.Material->Set("u_Texture", texture, InGuiConfig::sc_DefaultTexture);
+		InGui::GetContext().m_Config.Font = font;
+		InGui::GetContext().m_Config.Material->Set("u_Texture", font->GetTexture(), InGuiConfig::sc_FontTexture);
 
 		float divisor = 8.0f;
+		Ref<SubTexture> windowSubTexture = Ref<XYZ::SubTexture>::Create(texture, glm::vec2(0, 3), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
 		Ref<SubTexture> buttonSubTexture = Ref<XYZ::SubTexture>::Create(texture, glm::vec2(0, 0), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
 		Ref<SubTexture> minimizeSubTexture = Ref<XYZ::SubTexture>::Create(texture, glm::vec2(1, 3), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
 		Ref<SubTexture> checkedSubTexture = Ref<XYZ::SubTexture>::Create(texture, glm::vec2(1, 1), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
@@ -29,17 +32,17 @@ namespace XYZ {
 		Ref<SubTexture> downArrowSubTexture = Ref<XYZ::SubTexture>::Create(texture, glm::vec2(2, 3), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
 		Ref<SubTexture> pauseSubTexture = Ref<XYZ::SubTexture>::Create(texture, glm::vec2(2, 1), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
 
-		InGui::GetContext().GetConfig().SetSubTexture(buttonSubTexture,		InGuiConfig::Window);
-		InGui::GetContext().GetConfig().SetSubTexture(buttonSubTexture,     InGuiConfig::Button);
-		InGui::GetContext().GetConfig().SetSubTexture(minimizeSubTexture,   InGuiConfig::MinimizeButton);
-		InGui::GetContext().GetConfig().SetSubTexture(checkedSubTexture,    InGuiConfig::CheckboxChecked);
-		InGui::GetContext().GetConfig().SetSubTexture(unCheckedSubTexture,  InGuiConfig::CheckboxUnChecked);
-		InGui::GetContext().GetConfig().SetSubTexture(sliderSubTexture,     InGuiConfig::Slider);
-		InGui::GetContext().GetConfig().SetSubTexture(handleSubTexture,     InGuiConfig::SliderHandle);
-		InGui::GetContext().GetConfig().SetSubTexture(whiteSubTexture,      InGuiConfig::White);
-		InGui::GetContext().GetConfig().SetSubTexture(rightArrowSubTexture, InGuiConfig::RightArrow);
-		InGui::GetContext().GetConfig().SetSubTexture(downArrowSubTexture,  InGuiConfig::DownArrow);
-		InGui::GetContext().GetConfig().SetSubTexture(pauseSubTexture,      InGuiConfig::Pause);
+		InGui::GetContext().m_Config.SubTextures[InGuiConfig::Window]			 = windowSubTexture;
+		InGui::GetContext().m_Config.SubTextures[InGuiConfig::Button]			 = buttonSubTexture;
+		InGui::GetContext().m_Config.SubTextures[InGuiConfig::MinimizeButton]	 = minimizeSubTexture;
+		InGui::GetContext().m_Config.SubTextures[InGuiConfig::CheckboxChecked]	 = checkedSubTexture;
+		InGui::GetContext().m_Config.SubTextures[InGuiConfig::CheckboxUnChecked] = unCheckedSubTexture;
+		InGui::GetContext().m_Config.SubTextures[InGuiConfig::Slider]			 = sliderSubTexture;
+		InGui::GetContext().m_Config.SubTextures[InGuiConfig::SliderHandle]		 = handleSubTexture;
+		InGui::GetContext().m_Config.SubTextures[InGuiConfig::White]			 = whiteSubTexture;
+		InGui::GetContext().m_Config.SubTextures[InGuiConfig::RightArrow]		 = rightArrowSubTexture;
+		InGui::GetContext().m_Config.SubTextures[InGuiConfig::DownArrow]		 = downArrowSubTexture;
+		InGui::GetContext().m_Config.SubTextures[InGuiConfig::Pause]			 = pauseSubTexture;
 	}
 
 	void InGuiLayer::OnDetach()
@@ -65,7 +68,27 @@ namespace XYZ {
 
 		InGui::Begin("Havko");
 
+		static bool checked = false;
+		if (IS_SET(InGui::Checkbox("Hopbiasf", { 25.0f,25.0f }, checked), InGui::Active))
+		{
+			std::cout << "Checked" << std::endl;
+		}
 
+		if (IS_SET(InGui::Button("Opica hah assa", { 75.0f, 25.0f }), InGui::Active))
+		{
+			std::cout << "Pressed" << std::endl;
+		}
+
+		static float value = 5.0f;
+		if (IS_SET(InGui::SliderFloat("Slider example", { 150.0f, 25.0f }, value, 0.0f, 10.0f), InGui::Active))
+		{
+			std::cout << "Value changed "<< value << std::endl;
+		}
+		static float vvalue = 5.0f;
+		if (IS_SET(InGui::VSliderFloat("VSlider example", { 25.0f, 150.0f }, vvalue, 0.0f, 10.0f), InGui::Active))
+		{
+			std::cout << "Value changed " << value << std::endl;
+		}
 		InGui::End();
 	}
 	void InGuiLayer::Begin()

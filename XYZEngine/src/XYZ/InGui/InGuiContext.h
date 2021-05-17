@@ -2,6 +2,7 @@
 #include "InGuiWindow.h"
 #include "InGuiFrame.h"
 #include "InGuiConfig.h"
+#include "InGuiInput.h"
 
 #include "XYZ/Renderer/Buffer.h"
 #include "XYZ/Renderer/CustomRenderer2D.h"
@@ -24,9 +25,8 @@ namespace XYZ {
 
 		InGuiWindow* CreateWindow(const char* name);
 		InGuiWindow* GetWindow(const char* name);
-		InGuiConfig& GetConfig() { return m_Config; }
 
-	private:
+		InGuiInput				  m_Input;
 		InGuiFrame				  m_FrameData;
 		InGuiConfig				  m_Config;
 		uint32_t				  m_ViewportWidth;
@@ -38,6 +38,7 @@ namespace XYZ {
 		MemoryPool				  m_Pool;
 		CustomRenderer2DLayout	  m_RendererLayout;
 
+		InGuiID					  m_LastLeftPressedID;
 
 		std::vector<InGuiRect>    m_ClipRectangles;
 		Ref<ShaderStorageBuffer>  m_ClipBuffer;

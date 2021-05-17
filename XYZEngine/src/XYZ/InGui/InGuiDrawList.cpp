@@ -36,38 +36,18 @@ namespace XYZ {
 			    Max.y > point.y &&
 			    Min.y < point.y);
 	}
-	void InGuiDrawList::SetClipRect(const InGuiRect& rect, uint32_t clipID)
-	{
-		m_ClipID = clipID;
-		m_ClipRectangle = rect;
-	}
 
-	void InGuiDrawList::PushQuad(const glm::vec4& color, const glm::vec4& texCoord, const glm::vec2& position, const glm::vec2& size, uint32_t textureID)
+	void InGuiDrawList::PushQuad(const glm::vec4& color, const glm::vec4& texCoord, const glm::vec2& position, const glm::vec2& size, uint32_t textureID, uint32_t clipID)
 	{
-		glm::vec2 max = { position.x + size.x, position.y + size.y };
-		InGuiRect quadRect(position, max);
-		if (m_ClipRectangle.Overlaps(quadRect))
-			m_Quads.push_back({ color, texCoord, glm::vec3(position,0.0f), size, textureID, m_ClipID });
+		m_Quads.push_back({ color, texCoord, glm::vec3(position,0.0f), size, textureID, clipID });
 	}
-	void InGuiDrawList::PushLine(const glm::vec4& color, const glm::vec2& p0, const glm::vec2& p1)
+	void InGuiDrawList::PushLine(const glm::vec4& color, const glm::vec2& p0, const glm::vec2& p1, uint32_t clipID)
 	{
-		m_Lines.push_back({ color, glm::vec3(p0,0.0f), glm::vec3(p1,0.0f), m_ClipID });
+		m_Lines.push_back({ color, glm::vec3(p0,0.0f), glm::vec3(p1,0.0f), clipID });
 	}
-	void InGuiDrawList::PushText(const char* text, const glm::vec2& position, const glm::vec4& color, uint32_t textureID, const Ref<Font>& font)
+	void InGuiDrawList::PushText(const char* text, const glm::vec2& position, const glm::vec4& color, uint32_t textureID, const Ref<Font>& font, uint32_t clipID)
 	{
-		Util::InGuiGenerateTextMesh(text, font, color, position, m_Quads, textureID, m_ClipID);
-	}
-	void InGuiDrawList::PushQuadNoClip(const glm::vec4& color, const glm::vec4& texCoord, const glm::vec2& position, const glm::vec2& size, uint32_t textureID)
-	{
-		m_Quads.push_back({ color, texCoord, glm::vec3(position,0.0f), size, textureID, 0 });
-	}
-	void InGuiDrawList::PushLineNoClip(const glm::vec4& color, const glm::vec2& p0, const glm::vec2& p1)
-	{
-		m_Lines.push_back({ color, glm::vec3(p0,0.0f), glm::vec3(p1,0.0f), 0 });
-	}
-	void InGuiDrawList::PushTextNoClip(const char* text, const glm::vec2& position, const glm::vec4& color, uint32_t textureID, const Ref<Font>& font)
-	{
-		Util::InGuiGenerateTextMesh(text, font, color, position, m_Quads, textureID, 0);
+		Util::GenerateTextMesh(text, font, color, position, m_Quads, textureID, clipID);
 	}
 	void InGuiDrawList::SubmitToRenderer()
 	{
