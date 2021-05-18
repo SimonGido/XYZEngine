@@ -49,9 +49,12 @@ namespace XYZ {
 			float yCursor = 0.0f;
 
 			uint32_t counter = 0;
-			while (source[counter] != '\0' && xCursor < size.x && yCursor < size.y)
+			while (source[counter] != '\0' && yCursor < size.y)
 			{
 				auto& character = font->GetCharacter(source[counter]);
+				if (xCursor + character.XAdvance >= size.x)
+					break;
+
 				if (source[counter] == '\n')
 				{
 					yCursor += font->GetLineHeight();
@@ -86,9 +89,12 @@ namespace XYZ {
 			float yCursor = 0.0f;
 
 			uint32_t counter = 0;
-			while (source[counter] != '\0' && xCursor < size.x && yCursor < size.y)
+			while (source[counter] != '\0' && yCursor < size.y)
 			{
 				auto& character = font->GetCharacter(source[counter]);
+				if (xCursor + character.XAdvance >= size.x)
+					break;
+
 				if (source[counter] == '\n')
 				{
 					width = std::max(width, xCursor);

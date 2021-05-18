@@ -25,35 +25,52 @@ namespace XYZ {
 		Parameters	  Params;
 		glm::vec2	  CursorPos;
 		glm::vec2	  ScrollMax;
+		bool*		  MenuOpen;
 	};
 
 	enum class AxisPlacement
 	{
 		Vertical, Horizontal
 	};
+
+	namespace InGuiWindowEditFlags {
+		enum Flags
+		{
+			Hoovered = BIT(0),
+			Collapsed = BIT(1),
+			BlockEvents = BIT(2),
+			Moving = BIT(3),
+			ResizeLeft = BIT(4),
+			ResizeRight = BIT(5),
+			ResizeBottom = BIT(6)
+		};
+	}
+	namespace InGuiWindowStyleFlags {
+		enum Flags
+		{
+			ScrollEnabled = BIT(0),
+			PanelEnabled  = BIT(1),
+			MenuEnabled   = BIT(2)
+		};
+	}
+
 	struct InGuiWindow
 	{
 		InGuiWindow();
-
-		enum Flags
-		{
-			Hoovered	 = BIT(0),
-			Collapsed	 = BIT(1),
-			BlockEvents  = BIT(2),
-			Moving		 = BIT(3),
-			ResizeLeft	 = BIT(4),
-			ResizeRight  = BIT(5),
-			ResizeBottom = BIT(6)
-		};
-		enum StyleFlags
-		{
-			ScrollEnabled = BIT(0),
-			PanelEnabled  = BIT(1)
-		};
-		void			 PushItselfToDrawlist(const glm::vec4& color, const InGuiConfig& config);
+		
+		void			 PushItselfToDrawlist(const glm::vec4& color);
 		void			 PushTextClipped(const char* text, const glm::vec4& color, const glm::vec2& posMin, const glm::vec2& posMax, const glm::vec2* textSize = nullptr);
+		void		     PushTextNotClipped(const char* text, const glm::vec4& color, const glm::vec2& posMin, const glm::vec2& posMax, const glm::vec2* textSize = nullptr);
 		void		     PushText(const char* text, const glm::vec4& color, const glm::vec2& posMin, const glm::vec2& posMax, const glm::vec2* textSize = nullptr);
 		void			 PushQuad(const glm::vec4& color, const glm::vec4& texCoord, const glm::vec2& pos, const glm::vec2& size, uint32_t textureID = InGuiConfig::sc_DefaultTexture);
+		void			 PushQuadNotClipped(const glm::vec4& color, const glm::vec4& texCoord, const glm::vec2& pos, const glm::vec2& size, uint32_t textureID = InGuiConfig::sc_DefaultTexture);
+
+		void			 PushTextClippedOverlay(const char* text, const glm::vec4& color, const glm::vec2& posMin, const glm::vec2& posMax, const glm::vec2* textSize = nullptr);
+		void		     PushTextNotClippedOverlay(const char* text, const glm::vec4& color, const glm::vec2& posMin, const glm::vec2& posMax, const glm::vec2* textSize = nullptr);
+		void		     PushTextOverlay(const char* text, const glm::vec4& color, const glm::vec2& posMin, const glm::vec2& posMax, const glm::vec2* textSize = nullptr);
+		void			 PushQuadOverlay(const glm::vec4& color, const glm::vec4& texCoord, const glm::vec2& pos, const glm::vec2& size, uint32_t textureID = InGuiConfig::sc_DefaultTexture);
+		void			 PushQuadNotClippedOverlay(const glm::vec4& color, const glm::vec4& texCoord, const glm::vec2& pos, const glm::vec2& size, uint32_t textureID = InGuiConfig::sc_DefaultTexture);
+
 
 		bool			 NextWidgetClipped(const glm::vec2& size);
 		glm::vec2		 MoveCursorPosition(const glm::vec2& size);
@@ -67,7 +84,7 @@ namespace XYZ {
 		bool			 IsFocused() const;
 
 		InGuiRect		 Rect() const { return InGuiRect(Position, Position + Size); }
-		InGuiRect		 PanelRect() const { return InGuiRect(Position, Position + glm::vec2(Size.x, PanelHeight)); }
+		InGuiRect		 PanelRect() const;
 		InGuiRect		 MinimizeRect() const;
 		InGuiRect		 ClipRect() const;
 		InGuiRect		 ClipRect(uint32_t viewportHeight) const;
@@ -75,7 +92,7 @@ namespace XYZ {
 		std::string			 Name;
 		InGuiClipID			 ClipID;
 		InGuiWindowFlags	 StyleFlags;
-		InGuiWindowFlags	 Flags;
+		InGuiWindowFlags	 EditFlags;
 		InGuiWindowFrameData FrameData;
 		AxisPlacement		 Axis;
 
@@ -83,8 +100,9 @@ namespace XYZ {
 		glm::vec2			 Size;
 		glm::vec2			 Scroll;
 
-		float				 PanelHeight;
-		float				 LabelOffset;
+		//float				 PanelHeight;
+		//float				 MenuBarHeight;
+		//float				 LabelOffset;
 		bool				 IsActive;
 		bool				 ScrollBarX;
 		bool				 ScrollBarY;

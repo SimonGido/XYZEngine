@@ -11,11 +11,18 @@ namespace XYZ {
 		static void BeginFrame();
 		static void EndFrame();
 
-		static bool Begin(const char* name);
+		static bool Begin(const char* name, InGuiWindowFlags flags = 0);
 		static void End();
 		static void Separator();
 
 		enum Result { Hoover = BIT(0), Active = BIT(1) };
+
+		static bool BeginMenuBar();
+		static void EndMenuBar();
+
+		static uint8_t BeginMenu(const char* label, float width, bool* open);
+		static void    EndMenu();
+		static uint8_t MenuItem(const char* label);
 
 		static uint8_t Button(const char* label, const glm::vec2& size);
 		static uint8_t Checkbox(const char* label, const glm::vec2& size, bool& checked);

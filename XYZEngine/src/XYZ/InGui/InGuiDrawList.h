@@ -42,10 +42,18 @@ namespace XYZ {
 		void PushLine(const glm::vec4& color, const glm::vec2& p0, const glm::vec2& p1, uint32_t clipID);
 		void PushText(const char* text, const glm::vec2& position, const glm::vec4& color, uint32_t textureID, const Ref<Font>& font, uint32_t clipID);
 
+		void PushQuadOverlay(const glm::vec4& color, const glm::vec4& texCoord, const glm::vec2& position, const glm::vec2& size, uint32_t textureID, uint32_t clipID);
+		void PushLineOverlay(const glm::vec4& color, const glm::vec2& p0, const glm::vec2& p1, uint32_t clipID);
+		void PushTextOverlay(const char* text, const glm::vec2& position, const glm::vec4& color, uint32_t textureID, const Ref<Font>& font, uint32_t clipID);
+
+
 		void SubmitToRenderer();
 		void Clear();
 
 		std::vector<InGuiQuad> m_Quads;
 		std::vector<InGuiLine> m_Lines;
+
+		std::vector<InGuiQuad> m_QuadsOverlay;
+		std::vector<InGuiLine> m_LinesOverlay;
 	};
 }

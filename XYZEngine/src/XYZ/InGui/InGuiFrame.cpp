@@ -5,7 +5,8 @@
 namespace XYZ {
 	InGuiFrame::InGuiFrame()
 		:
-		CurrentWindow(nullptr)
+		CurrentWindow(nullptr),
+		CurrentMenuWidth(0.0f)
 	{
 	}
 }

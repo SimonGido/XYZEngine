@@ -66,8 +66,47 @@ namespace XYZ {
 		InGui::End();
 
 
-		InGui::Begin("Havko");
+		InGui::Begin("Havko",
+			  InGuiWindowStyleFlags::MenuEnabled
+			| InGuiWindowStyleFlags::PanelEnabled
+			| InGuiWindowStyleFlags::ScrollEnabled
+		);
 
+		static bool open = false;
+		static bool open2 = false;
+		if (InGui::BeginMenuBar())
+		{
+			InGui::BeginMenu("Test label", 70.0f, &open);
+			if (open)
+			{
+				InGui::MenuItem("Testa asgas");
+				InGui::MenuItem("Testa kra kra");
+				InGui::MenuItem("Testa kra aas");
+				InGui::MenuItem("Testa kra ka");
+				InGui::MenuItem("Testa kra kraa");
+				InGui::MenuItem("Testa kra a");
+				InGui::MenuItem("Testa kra as");
+				InGui::MenuItem("Testa kra ka");
+			}
+			InGui::EndMenu();
+
+			InGui::BeginMenu("Haga label", 70.0f, &open2);
+			if (open2)
+			{
+				InGui::MenuItem("T asgas");
+				InGui::MenuItem("T kra kra");
+				InGui::MenuItem("T kra aas");
+				InGui::MenuItem("T kra ka");
+				InGui::MenuItem("T kra kraa");
+				InGui::MenuItem("T kra a");
+				InGui::MenuItem("T kra as");
+				InGui::MenuItem("T kra ka");
+			}
+			InGui::EndMenu();
+
+
+			InGui::EndMenuBar();
+		}
 		static bool checked = false;
 		if (IS_SET(InGui::Checkbox("Hopbiasf", { 25.0f,25.0f }, checked), InGui::Active))
 		{

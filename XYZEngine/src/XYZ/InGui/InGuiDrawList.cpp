@@ -49,6 +49,18 @@ namespace XYZ {
 	{
 		Util::GenerateTextMesh(text, font, color, position, m_Quads, textureID, clipID);
 	}
+	void InGuiDrawList::PushQuadOverlay(const glm::vec4& color, const glm::vec4& texCoord, const glm::vec2& position, const glm::vec2& size, uint32_t textureID, uint32_t clipID)
+	{
+		m_QuadsOverlay.push_back({ color, texCoord, glm::vec3(position,0.0f), size, textureID, clipID });
+	}
+	void InGuiDrawList::PushLineOverlay(const glm::vec4& color, const glm::vec2& p0, const glm::vec2& p1, uint32_t clipID)
+	{
+		m_LinesOverlay.push_back({ color, glm::vec3(p0,0.0f), glm::vec3(p1,0.0f), clipID });
+	}
+	void InGuiDrawList::PushTextOverlay(const char* text, const glm::vec2& position, const glm::vec4& color, uint32_t textureID, const Ref<Font>& font, uint32_t clipID)
+	{
+		Util::GenerateTextMesh(text, font, color, position, m_QuadsOverlay, textureID, clipID);
+	}
 	void InGuiDrawList::SubmitToRenderer()
 	{
 		for (auto& quad : m_Quads)
@@ -56,10 +68,19 @@ namespace XYZ {
 	
 		for (auto& line : m_Lines)
 			CustomRenderer2D::SubmitLine(line.P0, line.P1, line.Color, (float)line.ClipID);
+		
+		for (auto& quad : m_QuadsOverlay)
+			CustomRenderer2D::SubmitQuadNotCentered(quad.Position, quad.Size, quad.TexCoord, quad.Color, (float)quad.TextureID, (float)quad.ClipID);
+
+		for (auto& line : m_LinesOverlay)
+			CustomRenderer2D::SubmitLine(line.P0, line.P1, line.Color, (float)line.ClipID);
+
 	}
 	void InGuiDrawList::Clear()
 	{
 		m_Quads.clear();
 		m_Lines.clear();
+		m_QuadsOverlay.clear();
+		m_LinesOverlay.clear();
 	}
 }

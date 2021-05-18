@@ -107,8 +107,8 @@ namespace XYZ {
 						InGuiBehavior::ButtonBehavior(minimizeRect, id, result);
 						if (IS_SET(result, InGui::Active))
 						{
-							window->Flags ^= InGuiWindow::Collapsed;
-							handled = IS_SET(window->Flags, InGuiWindow::BlockEvents);
+							window->EditFlags ^= InGuiWindowEditFlags::Collapsed;
+							handled = IS_SET(window->EditFlags, InGuiWindowEditFlags::BlockEvents);
 						}
 						else
 						{
@@ -116,13 +116,13 @@ namespace XYZ {
 							InGuiBehavior::ButtonBehavior(panelRect, id, result);
 							if (IS_SET(result, InGui::Active))
 							{
-								window->Flags |= InGuiWindow::Moving;
+								window->EditFlags |= InGuiWindowEditFlags::Moving;
 								m_FrameData.MovedWindowOffset = m_FrameData.MousePosition - window->Position;
-								handled = IS_SET(window->Flags, InGuiWindow::BlockEvents);
+								handled = IS_SET(window->EditFlags, InGuiWindowEditFlags::BlockEvents);
 							}
 							else if (window->ResolveResizeFlags(m_FrameData.MousePosition))
 							{							
-								handled = IS_SET(window->Flags, InGuiWindow::BlockEvents);
+								handled = IS_SET(window->EditFlags, InGuiWindowEditFlags::BlockEvents);
 							}
 						}			
 						// Unset current window before end of the function
@@ -145,11 +145,11 @@ namespace XYZ {
 				m_LastLeftPressedID = 0;
 				if (m_FocusedWindow)
 				{
-					m_FocusedWindow->Flags &= ~(
-						  InGuiWindow::Moving
-						| InGuiWindow::ResizeRight
-						| InGuiWindow::ResizeLeft
-						| InGuiWindow::ResizeBottom
+					m_FocusedWindow->EditFlags &= ~(
+						  InGuiWindowEditFlags::Moving
+						| InGuiWindowEditFlags::ResizeRight
+						| InGuiWindowEditFlags::ResizeLeft
+						| InGuiWindowEditFlags::ResizeBottom
 						);
 				}
 			}
@@ -164,7 +164,18 @@ namespace XYZ {
 
 			if (m_FocusedWindow && m_FocusedWindow->ClipRect().Overlaps(m_FrameData.MousePosition))
 			{
-				m_FocusedWindow->Scroll += glm::vec2(e.GetOffsetX(), -e.GetOffsetY());
+				float newScrollX = m_FocusedWindow->Scroll.x + e.GetOffsetX();
+				float newScrollY = m_FocusedWindow->Scroll.y - e.GetOffsetY();
+				if (newScrollX <= m_FocusedWindow->FrameData.ScrollMax.x
+				&&  newScrollX >= 0.0f)
+				{
+					m_FocusedWindow->Scroll.x = newScrollX;
+				}
+				if (newScrollY <= m_FocusedWindow->FrameData.ScrollMax.y
+				&&  newScrollY >= 0.0f)
+				{
+					m_FocusedWindow->Scroll.y = newScrollY;
+				}
 				return true;
 			}
 			return false;
