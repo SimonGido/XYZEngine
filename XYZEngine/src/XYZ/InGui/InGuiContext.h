@@ -39,6 +39,7 @@ namespace XYZ {
 		CustomRenderer2DLayout	  m_RendererLayout;
 
 		InGuiID					  m_LastLeftPressedID;
+		InGuiID					  m_MenuOpenID;
 		bool					  m_MenuBarActive;
 
 		std::vector<InGuiRect>    m_ClipRectangles;

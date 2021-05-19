@@ -72,12 +72,10 @@ namespace XYZ {
 			| InGuiWindowStyleFlags::ScrollEnabled
 		);
 
-		static bool open = false;
-		static bool open2 = false;
+
 		if (InGui::BeginMenuBar())
 		{
-			InGui::BeginMenu("Test label", 70.0f, &open);
-			if (open)
+			if (IS_SET(InGui::BeginMenu("Test label", 70.0f), InGui::Active))
 			{
 				InGui::MenuItem("Testa asgas");
 				InGui::MenuItem("Testa kra kra");
@@ -90,8 +88,7 @@ namespace XYZ {
 			}
 			InGui::EndMenu();
 
-			InGui::BeginMenu("Haga label", 70.0f, &open2);
-			if (open2)
+			if (IS_SET(InGui::BeginMenu("Haga label", 70.0f), InGui::Active))
 			{
 				InGui::MenuItem("T asgas");
 				InGui::MenuItem("T kra kra");

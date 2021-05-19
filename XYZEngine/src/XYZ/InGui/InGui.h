@@ -20,7 +20,7 @@ namespace XYZ {
 		static bool BeginMenuBar();
 		static void EndMenuBar();
 
-		static uint8_t BeginMenu(const char* label, float width, bool* open);
+		static uint8_t BeginMenu(const char* label, float width);
 		static void    EndMenu();
 		static uint8_t MenuItem(const char* label);
 

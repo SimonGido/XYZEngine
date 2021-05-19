@@ -25,7 +25,6 @@ namespace XYZ {
 		Parameters	  Params;
 		glm::vec2	  CursorPos;
 		glm::vec2	  ScrollMax;
-		bool*		  MenuOpen;
 	};
 
 	enum class AxisPlacement

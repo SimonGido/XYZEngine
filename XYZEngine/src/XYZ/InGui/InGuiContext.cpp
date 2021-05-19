@@ -15,7 +15,9 @@ namespace XYZ {
 		m_ViewportWidth(0),
 		m_ViewportHeight(0),
 		m_FocusedWindow(nullptr),
-		m_Pool(15 * sizeof(InGuiWindow))
+		m_Pool(15 * sizeof(InGuiWindow)),
+		m_MenuBarActive(false),
+		m_MenuOpenID(0)
 	{
 		m_RendererLayout.SetQuadBufferLayout(
 			{

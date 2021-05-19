@@ -106,14 +106,12 @@ namespace XYZ {
 		s_Context.m_MenuBarActive = false;
 	}
 
-	uint8_t  InGui::BeginMenu(const char* label, float width, bool* open)
+	uint8_t  InGui::BeginMenu(const char* label, float width)
 	{		
 		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
 		if (!window->IsActive || IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed))
 			return 0;
-		XYZ_ASSERT(window->FrameData.MenuOpen == nullptr, "Forgot to call menu end?");
-		window->FrameData.MenuOpen = open;
-
+		
 		InGuiFrame& frame = s_Context.m_FrameData;
 		const InGuiInput& input = s_Context.m_Input;
 		const InGuiConfig& config = s_Context.m_Config;
@@ -136,13 +134,15 @@ namespace XYZ {
 		}
 		if (IS_SET(result, InGui::Active))
 		{
-			*open = !*open;
+			s_Context.m_MenuOpenID = (s_Context.m_MenuOpenID != id) ? id : 0;
 		}
+		if (s_Context.m_MenuOpenID == id)
+			result |= InGui::Active;
+
 		window->PushQuadOverlay(
 			color, config.SubTextures[InGuiConfig::Button]->GetTexCoords(),
 			pos, size
 		);
-
 		window->PushTextOverlay(label, color, rect.Min, rect.Max, nullptr);
 		return result;
 	}
@@ -152,8 +152,6 @@ namespace XYZ {
 		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
 		if (!window->IsActive || IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed))
 			return;
-		XYZ_ASSERT(window->FrameData.MenuOpen != nullptr, "Forgot to call begin menu?");
-		window->FrameData.MenuOpen = nullptr;
 		
 		InGuiFrame& frame = s_Context.m_FrameData;
 		const InGuiConfig& config = s_Context.m_Config;
@@ -170,7 +168,6 @@ namespace XYZ {
 		if (!window->IsActive || IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed))
 			return 0;
 
-		XYZ_ASSERT(window->FrameData.MenuOpen != nullptr, "Missing menu begin");
 		uint8_t result = 0;
 		InGuiFrame& frame = s_Context.m_FrameData;
 		const InGuiInput& input = s_Context.m_Input;
@@ -193,7 +190,7 @@ namespace XYZ {
 		}
 		if (IS_SET(result, InGui::Active))
 		{
-			*window->FrameData.MenuOpen = false;
+			s_Context.m_MenuOpenID = 0;
 		}
 		window->PushQuadNotClippedOverlay(
 			color, config.SubTextures[InGuiConfig::Button]->GetTexCoords(),

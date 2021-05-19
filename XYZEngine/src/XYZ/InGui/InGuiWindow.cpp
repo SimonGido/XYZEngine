@@ -429,8 +429,7 @@ namespace XYZ {
 	InGuiWindowFrameData::InGuiWindowFrameData(InGuiWindow* window)
 		:
 		CursorPos(window->Position.x, window->Position.y + InGui::GetContext().m_Config.PanelHeight),
-		ScrollMax(0.0f),
-		MenuOpen(nullptr)
+		ScrollMax(0.0f)
 	{
 		const InGuiConfig& config = InGui::GetContext().m_Config;
 		Params.RowWidth = 0.0f;
