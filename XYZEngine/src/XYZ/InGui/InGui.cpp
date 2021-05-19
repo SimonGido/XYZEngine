@@ -106,7 +106,7 @@ namespace XYZ {
 		s_Context.m_MenuBarActive = false;
 	}
 
-	uint8_t  InGui::BeginMenu(const char* label, float width)
+	uint8_t InGui::BeginMenu(const char* label, float width)
 	{		
 		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
 		if (!window->IsActive || IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed))
