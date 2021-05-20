@@ -31,7 +31,7 @@ namespace XYZ {
 		const Ref<SubTexture>& panelSubTexture = config.SubTextures[InGuiConfig::Button];
 		const Ref<SubTexture>& minimizeSubTexture = config.SubTextures[InGuiConfig::MinimizeButton];
 
-		glm::vec4 defaultColor = config.Colors[InGuiConfig::DefaultColor];
+		glm::vec4 defaultColor = config.Colors[InGuiConfig::WindowDefault];
 		if (!IS_SET(EditFlags, InGuiWindowEditFlags::Collapsed))
 		{
 			DrawList.PushQuad(
@@ -390,6 +390,13 @@ namespace XYZ {
 	bool InGuiWindow::IsFocused() const
 	{
 		return this == InGui::GetContext().m_FocusedWindow;
+	}
+
+	InGuiID InGuiWindow::GetID(const char* name) const
+	{
+		size_t id = 0;
+		HashCombine(id, std::string_view(Name.c_str()), std::string_view(name));
+		return id;
 	}
 
 	InGuiRect InGuiWindow::PanelRect() const

@@ -93,7 +93,7 @@ namespace XYZ {
 				{
 					InGuiWindow* window = (*it);
 					InGuiRect windowRect = window->Rect();
-					if (windowRect.Overlaps(m_FrameData.MousePosition))
+					if (windowRect.Overlaps(m_Input.MousePosition))
 					{					
 						bool handled = false;
 						FocusWindow(window);
@@ -107,7 +107,7 @@ namespace XYZ {
 						std::hash<std::string_view> hasher;
 						InGuiID id = hasher(window->Name.c_str());
 						InGuiBehavior::ButtonBehavior(minimizeRect, id, result);
-						if (IS_SET(result, InGui::Active))
+						if (IS_SET(result, InGui::Pressed))
 						{
 							window->EditFlags ^= InGuiWindowEditFlags::Collapsed;
 							handled = IS_SET(window->EditFlags, InGuiWindowEditFlags::BlockEvents);
@@ -116,13 +116,13 @@ namespace XYZ {
 						{
 							result = 0;
 							InGuiBehavior::ButtonBehavior(panelRect, id, result);
-							if (IS_SET(result, InGui::Active))
+							if (IS_SET(result, InGui::Pressed))
 							{
 								window->EditFlags |= InGuiWindowEditFlags::Moving;
-								m_FrameData.MovedWindowOffset = m_FrameData.MousePosition - window->Position;
+								m_FrameData.MovedWindowOffset = m_Input.MousePosition - window->Position;
 								handled = IS_SET(window->EditFlags, InGuiWindowEditFlags::BlockEvents);
 							}
-							else if (window->ResolveResizeFlags(m_FrameData.MousePosition))
+							else if (window->ResolveResizeFlags(m_Input.MousePosition))
 							{							
 								handled = IS_SET(window->EditFlags, InGuiWindowEditFlags::BlockEvents);
 							}
@@ -164,7 +164,7 @@ namespace XYZ {
 
 		dispatcher.Dispatch<MouseScrollEvent>([&](MouseScrollEvent& e)->bool {
 
-			if (m_FocusedWindow && m_FocusedWindow->ClipRect().Overlaps(m_FrameData.MousePosition))
+			if (m_FocusedWindow && m_FocusedWindow->ClipRect().Overlaps(m_Input.MousePosition))
 			{
 				float newScrollX = m_FocusedWindow->Scroll.x + e.GetOffsetX();
 				float newScrollY = m_FocusedWindow->Scroll.y - e.GetOffsetY();
@@ -181,6 +181,23 @@ namespace XYZ {
 				return true;
 			}
 			return false;
+		});
+
+		dispatcher.Dispatch<MouseMovedEvent>([&](MouseMovedEvent& e)->bool {
+
+			m_LastHooveredID = 0;
+			return false;
+		});
+
+		dispatcher.Dispatch<KeyPressedEvent>([&](KeyPressedEvent& e)->bool {
+
+			m_Input.KeyPressed = e.GetKey();
+			return m_LastInputID;
+		});
+
+		dispatcher.Dispatch<KeyTypedEvent>([&](KeyTypedEvent& e)->bool {
+			m_Input.KeyTyped = e.GetKey();
+			return m_LastInputID;
 		});
 	}
 

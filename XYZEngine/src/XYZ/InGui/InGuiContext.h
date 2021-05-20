@@ -39,13 +39,19 @@ namespace XYZ {
 		CustomRenderer2DLayout	  m_RendererLayout;
 
 		InGuiID					  m_LastLeftPressedID;
+		InGuiID					  m_LastHooveredID;
+		InGuiID					  m_LastInputID;
+
 		InGuiID					  m_MenuOpenID;
 		bool					  m_MenuBarActive;
 
+		std::string				  m_TemporaryTextBuffer;
 		std::vector<InGuiRect>    m_ClipRectangles;
 		Ref<ShaderStorageBuffer>  m_ClipBuffer;
 
 		static constexpr uint32_t sc_MaxNumberOfClipRectangles = 256;
+		static constexpr size_t sc_InputValueBufferSize = 64;
+		static constexpr size_t sc_SliderValueBufferSize = 64;
 		friend class InGui;
 	};
 }

@@ -15,7 +15,7 @@ namespace XYZ {
 		static void End();
 		static void Separator();
 
-		enum Result { Hoover = BIT(0), Active = BIT(1) };
+		enum Result { Hoover = BIT(0), Pressed = BIT(1) };
 
 		static bool BeginMenuBar();
 		static void EndMenuBar();
@@ -28,6 +28,8 @@ namespace XYZ {
 		static uint8_t Checkbox(const char* label, const glm::vec2& size, bool& checked);
 		static uint8_t SliderFloat(const char* label, const glm::vec2& size, float& value, float min, float max, const char* format = "%.3f");
 		static uint8_t VSliderFloat(const char* label, const glm::vec2& size, float& value, float min, float max, const char* format = "%.3f");
+
+		static uint8_t Float(const char* label, const glm::vec2& size, float& value, int decimalPrecision);
 
 		static InGuiContext& GetContext();
 	};

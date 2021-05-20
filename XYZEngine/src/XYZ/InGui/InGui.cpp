@@ -12,7 +12,7 @@ namespace XYZ {
 	void InGui::BeginFrame()
 	{
 		auto [mx, my] = Input::GetMousePosition();
-		s_Context.m_FrameData.MousePosition = { mx, my };	
+		s_Context.m_Input.MousePosition = { mx, my };	
 	}
 
 	void InGui::EndFrame()
@@ -22,6 +22,7 @@ namespace XYZ {
 
 	bool InGui::Begin(const char* name, InGuiWindowFlags flags)
 	{
+		InGuiInput& input = s_Context.m_Input;
 		InGuiFrame& frame = s_Context.m_FrameData;
 		InGuiConfig& config = s_Context.m_Config;
 
@@ -33,11 +34,11 @@ namespace XYZ {
 
 		frame.CurrentWindow = window;
 		window->DrawList.Clear();
-		glm::vec4 color = config.Colors[InGuiConfig::DefaultColor];
-		if (window->HandleHoover(frame.MousePosition))
+		glm::vec4 color = config.Colors[InGuiConfig::WindowDefault];
+		if (window->HandleHoover(input.MousePosition))
 			color = config.Colors[InGuiConfig::WindowHoover];		
-		window->HandleResize(frame.MousePosition);
-		window->HandleMove(frame.MousePosition, frame.MovedWindowOffset);
+		window->HandleResize(input.MousePosition);
+		window->HandleMove(input.MousePosition, frame.MovedWindowOffset);
 	
 		window->PushItselfToDrawlist(color);
 		if (IS_SET(flags, InGuiWindowStyleFlags::ScrollEnabled))
@@ -117,33 +118,33 @@ namespace XYZ {
 		const InGuiConfig& config = s_Context.m_Config;
 		const glm::vec2 labelSize = Util::CalculateTextSize(label, config.Font);
 
-		std::hash<std::string_view> hasher;
-		InGuiID id = hasher(label);
+		;
+		InGuiID id = window->GetID(label);
 		uint8_t result = 0;
 		const glm::vec2 size = { width, config.MenuBarHeight };
 		const glm::vec2 pos = window->FrameData.CursorPos;
 		window->FrameData.CursorPos.y += size.y;
 		frame.CurrentMenuWidth = width;
 
-		glm::vec4 color = config.Colors[InGuiConfig::DefaultColor];
+		glm::vec4 color = config.Colors[InGuiConfig::MenuDefault];
 		InGuiRect rect(pos, pos + size);
 		InGuiBehavior::ButtonBehavior(rect, id, result);
 		if (IS_SET(result, InGui::Hoover))
 		{
 			color = config.Colors[InGuiConfig::MenuHoover];
 		}
-		if (IS_SET(result, InGui::Active))
+		if (IS_SET(result, InGui::Pressed))
 		{
 			s_Context.m_MenuOpenID = (s_Context.m_MenuOpenID != id) ? id : 0;
 		}
 		if (s_Context.m_MenuOpenID == id)
-			result |= InGui::Active;
+			result |= InGui::Pressed;
 
 		window->PushQuadOverlay(
 			color, config.SubTextures[InGuiConfig::Button]->GetTexCoords(),
 			pos, size
 		);
-		window->PushTextOverlay(label, color, rect.Min, rect.Max, nullptr);
+		window->PushTextOverlay(label, config.Colors[InGuiConfig::TextColor], rect.Min, rect.Max, nullptr);
 		return result;
 	}
 
@@ -174,21 +175,20 @@ namespace XYZ {
 		const InGuiConfig& config = s_Context.m_Config;
 		const glm::vec2 labelSize = Util::CalculateTextSize(label, config.Font);
 
-		std::hash<std::string_view> hasher;
-		InGuiID id = hasher(label);
+		InGuiID id = window->GetID(label);
 		frame.MenuItems.push_back(id);
 
 		const glm::vec2 pos = window->FrameData.CursorPos;
 		window->FrameData.CursorPos.y += config.MenuItemSize.y;
 
-		glm::vec4 color = config.Colors[InGuiConfig::DefaultColor];
+		glm::vec4 color = config.Colors[InGuiConfig::MenuDefault];
 		InGuiRect rect(pos, pos + config.MenuItemSize);
 		InGuiBehavior::ButtonBehavior(rect, id, result);
 		if (IS_SET(result, InGui::Hoover))
 		{
 			color = config.Colors[InGuiConfig::ButtonHoover];
 		}
-		if (IS_SET(result, InGui::Active))
+		if (IS_SET(result, InGui::Pressed))
 		{
 			s_Context.m_MenuOpenID = 0;
 		}
@@ -196,7 +196,7 @@ namespace XYZ {
 			color, config.SubTextures[InGuiConfig::Button]->GetTexCoords(),
 			pos, config.MenuItemSize
 		);
-		window->PushTextNotClippedOverlay(label, color, rect.Min, rect.Max, nullptr);
+		window->PushTextNotClippedOverlay(label, config.Colors[InGuiConfig::TextColor], rect.Min, rect.Max, nullptr);
 		return result;
 	}
 
@@ -216,11 +216,10 @@ namespace XYZ {
 			window->MoveCursorPosition(size);
 			return 0;
 		}
-		std::hash<std::string_view> hasher;
-		InGuiID id = hasher(label);
+		InGuiID id = window->GetID(label);
 
 		const glm::vec2 pos = window->MoveCursorPosition(size);
-		glm::vec4 color = config.Colors[InGuiConfig::DefaultColor];
+		glm::vec4 color = config.Colors[InGuiConfig::ButtonDefault];
 		InGuiRect rect(pos, pos + size);
 		InGuiBehavior::ButtonBehavior(rect, id, result);
 		if (IS_SET(result, InGui::Hoover))
@@ -251,38 +250,27 @@ namespace XYZ {
 			window->MoveCursorPosition(fullSize);
 			return 0;
 		}
-		std::hash<std::string_view> hasher;
-		InGuiID id = hasher(label);
+		InGuiID id = window->GetID(label);
 
 		const glm::vec2 pos = window->MoveCursorPosition(fullSize);
-		glm::vec4 color = config.Colors[InGuiConfig::DefaultColor];
+		glm::vec4 color = config.Colors[InGuiConfig::CheckboxDefault];
 		InGuiRect rect(pos, pos + size);
 		InGuiBehavior::ButtonBehavior(rect, id, result);
 		if (IS_SET(result, InGui::Hoover))
 		{
 			color = config.Colors[InGuiConfig::CheckboxHoover];
 		}
-		if (IS_SET(result, InGui::Active))
+		if (IS_SET(result, InGui::Pressed))
 		{
 			checked = !checked;
 		}
-			
-		if (checked)
-		{
-			result |= InGui::Active;
-			window->PushQuad(
-				color, config.SubTextures[InGuiConfig::CheckboxChecked]->GetTexCoords(),
-				pos, size
-			);
-		}
-		else
-		{
-			result &= ~InGui::Active;
-			window->PushQuad(
-				color, config.SubTextures[InGuiConfig::CheckboxUnChecked]->GetTexCoords(),
-				pos, size
-			);
-		}
+		
+		size_t subTextureIndex = checked ? InGuiConfig::CheckboxChecked : InGuiConfig::CheckboxUnChecked;
+		window->PushQuad(
+			color, config.SubTextures[subTextureIndex]->GetTexCoords(),
+			pos, size
+		);
+		
 		window->PushText(
 			label, color, 
 			rect.Min + glm::vec2(size.x, 0.0f), 
@@ -309,8 +297,7 @@ namespace XYZ {
 			window->MoveCursorPosition(fullSize);
 			return 0;
 		}
-		std::hash<std::string_view> hasher;
-		InGuiID id = hasher(label);
+		InGuiID id = window->GetID(label);
 
 		float diff = max - min;
 		float scale = (value / diff);
@@ -318,7 +305,7 @@ namespace XYZ {
 		const glm::vec2 handleSize(size.y, size.y);
 		const glm::vec2 handlePos = pos + glm::vec2((size.x - handleSize.x) * scale, 0.0f);
 
-		glm::vec4 color = config.Colors[InGuiConfig::DefaultColor];
+		glm::vec4 color = config.Colors[InGuiConfig::SliderDefault];
 		InGuiRect rect(pos, pos + size);
 		InGuiRect handleRect(handlePos, handlePos + handleSize);
 		InGuiBehavior::SliderBehavior(rect, handleRect, id, result);
@@ -326,9 +313,9 @@ namespace XYZ {
 		{
 			color = config.Colors[InGuiConfig::SliderHoover];
 		}
-		if (IS_SET(result, InGui::Active))
+		if (IS_SET(result, InGui::Pressed))
 		{
-			float multiplier = (frame.MousePosition.x - pos.x) / size.x;
+			float multiplier = (input.MousePosition.x - pos.x) / size.x;
 			value = std::clamp(diff * multiplier, min, max);
 		}
 
@@ -348,7 +335,7 @@ namespace XYZ {
 		);
 		if (format)
 		{
-			char buffer[12];
+			char buffer[InGuiContext::sc_SliderValueBufferSize];
 			sprintf(buffer, format, value);
 			window->PushText(buffer, color, rect.Min, rect.Max, nullptr);
 		}
@@ -373,8 +360,7 @@ namespace XYZ {
 			return 0;
 		}
 
-		std::hash<std::string_view> hasher;
-		InGuiID id = hasher(label);
+		InGuiID id = window->GetID(label);
 
 		float diff = max - min;
 		float scale = (value / diff);
@@ -382,7 +368,7 @@ namespace XYZ {
 		const glm::vec2 handleSize(size.x, size.x);
 		const glm::vec2 handlePos = pos + glm::vec2(0.0f, (size.y - handleSize.y) * scale);
 
-		glm::vec4 color = config.Colors[InGuiConfig::DefaultColor];
+		glm::vec4 color = config.Colors[InGuiConfig::SliderDefault];
 		InGuiRect rect(pos, pos + size);
 		InGuiRect handleRect(handlePos, handlePos + handleSize);
 		InGuiBehavior::SliderBehavior(rect, handleRect, id, result);
@@ -390,9 +376,9 @@ namespace XYZ {
 		{
 			color = config.Colors[InGuiConfig::SliderHoover];
 		}
-		if (IS_SET(result, InGui::Active))
+		if (IS_SET(result, InGui::Pressed))
 		{
-			float multiplier = (frame.MousePosition.y - pos.y) / size.y;
+			float multiplier = (input.MousePosition.y - pos.y) / size.y;
 			value = std::clamp(diff * multiplier, min, max);
 		}
 
@@ -412,10 +398,61 @@ namespace XYZ {
 		);
 		if (format)
 		{
-			char buffer[12];
+			char buffer[InGuiContext::sc_SliderValueBufferSize];
 			sprintf(buffer, format, value);
 			window->PushText(buffer, color, rect.Min, rect.Max, nullptr);
 		}
+		return result;
+	}
+
+	uint8_t InGui::Float(const char* label, const glm::vec2& size, float& value, int decimalPrecision)
+	{
+		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
+		if (!window->IsActive || IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed))
+			return 0;
+
+		uint8_t result = 0;
+		const InGuiInput& input = s_Context.m_Input;
+		const InGuiFrame& frame = s_Context.m_FrameData;
+		const InGuiConfig& config = s_Context.m_Config;
+		const glm::vec2 labelSize = Util::CalculateTextSize(label, config.Font);
+		if (window->NextWidgetClipped(size))
+		{
+			window->MoveCursorPosition(size);
+			return 0;
+		}
+		InGuiID id = window->GetID(label);
+
+		const glm::vec2 pos = window->MoveCursorPosition(size);
+		glm::vec4 color = config.Colors[InGuiConfig::ButtonDefault];
+		InGuiRect rect(pos, pos + size);
+		InGuiBehavior::InputBehavior(rect, id, result, value, decimalPrecision);
+		if (IS_SET(result, InGui::Hoover | InGui::Pressed) || s_Context.m_LastInputID == id)
+		{
+			color = config.Colors[InGuiConfig::ButtonHoover];
+		}
+
+		window->PushQuad(
+			color, config.SubTextures[InGuiConfig::Button]->GetTexCoords(),
+			pos, size
+		);
+		window->PushText(
+			label, color,
+			rect.Min + glm::vec2(size.x, 0.0f),
+			rect.Max + glm::vec2(labelSize.x, 0.0f),
+			&labelSize
+		);
+			
+		if (s_Context.m_LastInputID == id)
+		{ 
+			window->PushTextClipped(s_Context.m_TemporaryTextBuffer.c_str(), color, rect.Min, rect.Max, nullptr);
+		}
+		else
+		{
+			char buffer[InGuiContext::sc_InputValueBufferSize];
+			Util::FormatFloat(buffer, InGuiContext::sc_InputValueBufferSize, value, decimalPrecision);
+			window->PushTextClipped(buffer, color, rect.Min, rect.Max, nullptr);
+		}		
 		return result;
 	}
 	

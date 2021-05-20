@@ -81,6 +81,7 @@ namespace XYZ {
 		bool			 HandleMove(const glm::vec2& mousePosition, const glm::vec2& offset);
 		void			 HandleScrollbars();
 		bool			 IsFocused() const;
+		InGuiID			 GetID(const char* name) const;
 
 		InGuiRect		 Rect() const { return InGuiRect(Position, Position + Size); }
 		InGuiRect		 PanelRect() const;

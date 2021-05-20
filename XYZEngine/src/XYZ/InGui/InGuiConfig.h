@@ -30,17 +30,23 @@ namespace XYZ {
 		};
 		enum Colors
 		{
-			DefaultColor,
+			ButtonDefault,
 			ButtonHoover,
+			CheckboxDefault,
 			CheckboxHoover,
+			SliderDefault,
 			SliderHoover,
+			WindowDefault,
 			WindowHoover,
+			MenuDefault,
 			MenuHoover,
+			TextColor,
 			NumColors
 		};
 
 		static constexpr uint32_t sc_DefaultTexture = 0;
 		static constexpr uint32_t sc_FontTexture = 1;
+		
 
 		Ref<Material>			   Material;
 		Ref<Shader>				   LineShader;

@@ -75,7 +75,7 @@ namespace XYZ {
 
 		if (InGui::BeginMenuBar())
 		{
-			if (IS_SET(InGui::BeginMenu("Test label", 70.0f), InGui::Active))
+			if (IS_SET(InGui::BeginMenu("Test label", 70.0f), InGui::Pressed))
 			{
 				InGui::MenuItem("Testa asgas");
 				InGui::MenuItem("Testa kra kra");
@@ -88,7 +88,7 @@ namespace XYZ {
 			}
 			InGui::EndMenu();
 
-			if (IS_SET(InGui::BeginMenu("Haga label", 70.0f), InGui::Active))
+			if (IS_SET(InGui::BeginMenu("Haga label", 70.0f), InGui::Pressed))
 			{
 				InGui::MenuItem("T asgas");
 				InGui::MenuItem("T kra kra");
@@ -105,26 +105,29 @@ namespace XYZ {
 			InGui::EndMenuBar();
 		}
 		static bool checked = false;
-		if (IS_SET(InGui::Checkbox("Hopbiasf", { 25.0f,25.0f }, checked), InGui::Active))
+		InGui::Checkbox("Hopbiasf", { 25.0f,25.0f }, checked);
+		if (checked)
 		{
 			std::cout << "Checked" << std::endl;
 		}
 
-		if (IS_SET(InGui::Button("Opica hah assa", { 75.0f, 25.0f }), InGui::Active))
+		if (IS_SET(InGui::Button("Opica hah assa", { 75.0f, 25.0f }), InGui::Pressed))
 		{
 			std::cout << "Pressed" << std::endl;
 		}
 
 		static float value = 5.0f;
-		if (IS_SET(InGui::SliderFloat("Slider example", { 150.0f, 25.0f }, value, 0.0f, 10.0f), InGui::Active))
+		if (IS_SET(InGui::SliderFloat("Slider example", { 150.0f, 25.0f }, value, 0.0f, 10.0f), InGui::Pressed))
 		{
 			std::cout << "Value changed "<< value << std::endl;
 		}
 		static float vvalue = 5.0f;
-		if (IS_SET(InGui::VSliderFloat("VSlider example", { 25.0f, 150.0f }, vvalue, 0.0f, 10.0f), InGui::Active))
+		if (IS_SET(InGui::VSliderFloat("VSlider example", { 25.0f, 150.0f }, vvalue, 0.0f, 10.0f), InGui::Pressed))
 		{
 			std::cout << "Value changed " << value << std::endl;
 		}
+
+		InGui::Float("test", glm::vec2(40.0f, 30.0f), value, 2);
 		InGui::End();
 	}
 	void InGuiLayer::Begin()

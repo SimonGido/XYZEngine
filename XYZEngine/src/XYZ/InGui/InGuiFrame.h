@@ -7,7 +7,6 @@ namespace XYZ {
 		InGuiFrame();
 
 		InGuiWindow*		 CurrentWindow;
-		glm::vec2			 MousePosition;
 		glm::vec2			 MovedWindowOffset;
 		float				 CurrentMenuWidth;
 		std::vector<InGuiID> MenuItems;

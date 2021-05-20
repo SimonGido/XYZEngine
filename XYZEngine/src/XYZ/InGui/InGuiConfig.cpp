@@ -15,10 +15,12 @@ namespace XYZ {
 
 		LineShader = Shader::Create("Assets/Shaders/InGui/InGuiLineShader.glsl");
 
-		Colors[DefaultColor] = glm::vec4{ 1.0f };
-		for (size_t i = 1; i < NumColors; i++)
+		for (size_t i = 0; i < NumColors - 1; i += 2)
 		{
-			Colors[i] = glm::vec4( 1.4f, 1.9f, 2.1, 1.0f );
+			Colors[i] = glm::vec4(1.0f);
+			Colors[i + 1] = glm::vec4( 1.4f, 1.9f, 2.1, 1.0f );
 		}
+		Colors[MenuDefault] = glm::vec4(1.0f, 1.0f, 1.0f, 0.8f);
+		Colors[TextColor] = glm::vec4(1.0f);
 	}
 }

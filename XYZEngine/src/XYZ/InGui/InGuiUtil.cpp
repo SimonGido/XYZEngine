@@ -164,5 +164,24 @@ namespace XYZ {
 				width = xCursor;
 			return { width, yCursor + font->GetLineHeight() };
 		}
+		int FormatString(char* buf, size_t bufSize, const char* fmt, ...)
+		{
+			va_list args;
+			va_start(args, fmt);
+			int w = vsnprintf(buf, bufSize, fmt, args);
+			va_end(args);
+			if (buf == NULL)
+				return w;
+			if (w == -1 || w >= (int)bufSize)
+				w = (int)bufSize - 1;
+			buf[w] = 0;
+			return w;
+		}
+		void FormatFloat(char* buffer, size_t bufSize, float value, int decimalPrecision)
+		{
+			char format[16];
+			Util::FormatString(format, bufSize, "%%.%df", decimalPrecision);	
+			sprintf(buffer, format, value);
+		}
 	}
 }
