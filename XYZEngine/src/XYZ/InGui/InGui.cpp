@@ -107,6 +107,22 @@ namespace XYZ {
 		s_Context.m_MenuBarActive = false;
 	}
 
+	void InGui::Group()
+	{
+		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
+		if (!window->IsActive || IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed))
+			return;
+		window->Grouping = true;
+	}
+
+	void InGui::EndGroup()
+	{
+		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
+		if (!window->IsActive || IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed))
+			return;
+		window->Grouping = false;
+	}
+
 	uint8_t InGui::BeginMenu(const char* label, float width)
 	{		
 		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
@@ -405,7 +421,7 @@ namespace XYZ {
 		return result;
 	}
 
-	uint8_t InGui::Float(const char* label, const glm::vec2& size, float& value, int decimalPrecision)
+	uint8_t InGui::Float(const char* label, const glm::vec2& size, float& value, int32_t decimalPrecision)
 	{
 		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
 		if (!window->IsActive || IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed))
@@ -416,17 +432,18 @@ namespace XYZ {
 		const InGuiFrame& frame = s_Context.m_FrameData;
 		const InGuiConfig& config = s_Context.m_Config;
 		const glm::vec2 labelSize = Util::CalculateTextSize(label, config.Font);
-		if (window->NextWidgetClipped(size))
+		const glm::vec2 fullSize = glm::vec2(size.x + labelSize.x, std::max(size.y, labelSize.y));
+		if (window->NextWidgetClipped(fullSize))
 		{
-			window->MoveCursorPosition(size);
+			window->MoveCursorPosition(fullSize);
 			return 0;
 		}
 		InGuiID id = window->GetID(label);
 
-		const glm::vec2 pos = window->MoveCursorPosition(size);
+		const glm::vec2 pos = window->MoveCursorPosition(fullSize);
 		glm::vec4 color = config.Colors[InGuiConfig::ButtonDefault];
 		InGuiRect rect(pos, pos + size);
-		InGuiBehavior::InputBehavior(rect, id, result, value, decimalPrecision);
+		InGuiBehavior::FloatBehavior(rect, id, result, value, decimalPrecision);		
 		if (IS_SET(result, InGui::Hoover | InGui::Pressed) || s_Context.m_LastInputID == id)
 		{
 			color = config.Colors[InGuiConfig::ButtonHoover];
@@ -454,6 +471,28 @@ namespace XYZ {
 			window->PushTextClipped(buffer, color, rect.Min, rect.Max, nullptr);
 		}		
 		return result;
+	}
+
+	uint8_t InGui::Float2(const char* label1, const char*label2, const glm::vec2& size, float* values, int32_t decimalPrecision)
+	{
+		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
+		uint8_t result = Float(label1, size, values[0], decimalPrecision) | Float(label2, size, values[1], decimalPrecision);
+		return result;
+	}
+
+	uint8_t InGui::Int(const char* label, const glm::vec2& size, int32_t& value)
+	{
+		return uint8_t();
+	}
+
+	uint8_t InGui::UInt(const char* label, const glm::vec2& size, uint32_t& value)
+	{
+		return uint8_t();
+	}
+
+	uint8_t InGui::String(const char* label, const glm::vec2& size, std::string& value)
+	{
+		return uint8_t();
 	}
 	
 	InGuiContext& InGui::GetContext()

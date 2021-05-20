@@ -25,6 +25,7 @@ namespace XYZ {
 		Parameters	  Params;
 		glm::vec2	  CursorPos;
 		glm::vec2	  ScrollMax;
+		glm::vec2	  GroupSize;
 	};
 
 	enum class AxisPlacement
@@ -106,6 +107,7 @@ namespace XYZ {
 		bool				 IsActive;
 		bool				 ScrollBarX;
 		bool				 ScrollBarY;
+		bool				 Grouping;
 		glm::vec2			 ScrollBarSize;
 		InGuiDrawList		 DrawList;
 

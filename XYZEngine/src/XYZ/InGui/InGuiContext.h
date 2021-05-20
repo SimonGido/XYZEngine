@@ -54,4 +54,5 @@ namespace XYZ {
 		static constexpr size_t sc_SliderValueBufferSize = 64;
 		friend class InGui;
 	};
+	
 }

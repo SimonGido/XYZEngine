@@ -18,6 +18,7 @@ namespace XYZ {
 		Axis(AxisPlacement::Vertical),
 		ScrollBarX(false),
 		ScrollBarY(false),
+		Grouping(false),
 		ScrollBarSize(10.0f)
 	{
 		StyleFlags |= InGuiWindowStyleFlags::PanelEnabled;
@@ -250,8 +251,18 @@ namespace XYZ {
 		}
 		else
 		{
-			FrameData.Params.RowWidth = std::max(FrameData.Params.RowWidth, size.x);
-			FrameData.CursorPos.y += size.y + padding.y;
+			if (Grouping)
+			{
+				FrameData.GroupSize.x += size.x;
+				FrameData.GroupSize.y = std::max(size.y, FrameData.GroupSize.y);
+				FrameData.Params.RowWidth = std::max(FrameData.Params.RowWidth, FrameData.GroupSize.x);				
+				FrameData.CursorPos.x += size.x + padding.x;
+			}
+			else
+			{
+				FrameData.Params.RowWidth = std::max(FrameData.Params.RowWidth, size.x);
+				FrameData.CursorPos.y += size.y + padding.y;
+			}
 		}
 		FrameData.ScrollMax.x = std::max(FrameData.ScrollMax.x, xScrollMax);
 		FrameData.ScrollMax.y = std::max(FrameData.ScrollMax.y, yScrollMax);
@@ -436,7 +447,8 @@ namespace XYZ {
 	InGuiWindowFrameData::InGuiWindowFrameData(InGuiWindow* window)
 		:
 		CursorPos(window->Position.x, window->Position.y + InGui::GetContext().m_Config.PanelHeight),
-		ScrollMax(0.0f)
+		ScrollMax(0.0f),
+		GroupSize(0.0f)
 	{
 		const InGuiConfig& config = InGui::GetContext().m_Config;
 		Params.RowWidth = 0.0f;

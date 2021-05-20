@@ -3,6 +3,7 @@
 
 #include "InGui.h"
 #include "InGuiBehavior.h"
+#include "InGuiUtil.h"
 
 #include "XYZ/Renderer/Renderer2D.h"
 

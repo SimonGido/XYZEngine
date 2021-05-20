@@ -127,6 +127,11 @@ namespace XYZ {
 			std::cout << "Value changed " << value << std::endl;
 		}
 
+		static float values[2] = { 2.0f,2.5f };
+		InGui::Group();
+		InGui::Float2("Hava1", "Hava2", glm::vec2(40.0f, 30.0f), values, 2);
+		InGui::EndGroup();
+
 		InGui::Float("test", glm::vec2(40.0f, 30.0f), value, 2);
 		InGui::End();
 	}
