@@ -26,11 +26,19 @@ namespace XYZ {
 		InGuiFrame& frame = s_Context.m_FrameData;
 		InGuiConfig& config = s_Context.m_Config;
 
-		XYZ_ASSERT(!frame.CurrentWindow, "Missing end call");
-		InGuiWindow* window = s_Context.GetWindow(name);
+		InGuiWindow* window = s_Context.GetInGuiWindow(name);
 		if (!window)
-			window = s_Context.CreateWindow(name);
+			window = s_Context.CreateInGuiWindow(name);
 		window->StyleFlags = flags;
+	
+		InGuiClipID clipID = 0;
+		window->SetParent(nullptr);
+		if (!frame.WindowQueue.empty())
+		{
+			InGuiWindow* parent = frame.WindowQueue.back();
+			window->SetParent(parent);
+			clipID = parent->ClipID;		
+		}
 
 		frame.CurrentWindow = window;
 		window->DrawList.Clear();
@@ -40,16 +48,27 @@ namespace XYZ {
 		window->HandleResize(input.MousePosition);
 		window->HandleMove(input.MousePosition, frame.MovedWindowOffset);
 	
-		window->PushItselfToDrawlist(color);
+		window->PushItselfToDrawlist(color, clipID);
 		if (IS_SET(flags, InGuiWindowStyleFlags::ScrollEnabled))
 			window->HandleScrollbars();
 		window->FrameData = InGuiWindowFrameData(window);
+		
+		frame.WindowQueue.push_back(window);
 		return !IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed);
 	}
 	void InGui::End()
 	{
 		XYZ_ASSERT(s_Context.m_FrameData.CurrentWindow, "Missing begin call");
-		s_Context.m_FrameData.CurrentWindow = nullptr;
+		InGuiFrame& frame = s_Context.m_FrameData;
+		frame.WindowQueue.pop_back();
+		if (!frame.WindowQueue.empty())
+		{
+			frame.CurrentWindow = frame.WindowQueue.back();
+		}
+		else
+		{
+			frame.CurrentWindow = nullptr;
+		}
 	}
 
 	void InGui::Separator()
@@ -74,6 +93,17 @@ namespace XYZ {
 		}
 	}
 
+	InGuiID InGui::GetID(const char* name)
+	{
+		std::hash<std::string_view> hasher;
+		return hasher(name);
+	}
+
+	void InGui::FocusWindow(const char* name)
+	{
+		s_Context.FocusWindow(s_Context.GetInGuiWindow(name));
+	}
+
 	bool InGui::BeginMenuBar()
 	{
 		XYZ_ASSERT(!s_Context.m_MenuBarActive, "Menu bar is already active, forgot end menu bar");
@@ -87,7 +117,7 @@ namespace XYZ {
 		s_Context.m_MenuBarActive = true;
 		const InGuiConfig& config = s_Context.m_Config;
 		const glm::vec4 color = config.Colors[InGuiConfig::Button];
-		const glm::vec2 pos = { window->Position.x , window->Position.y + config.PanelHeight };
+		const glm::vec2 pos = { window->Position.x, window->Position.y + config.PanelHeight };
 		const glm::vec2 size = { window->Size.x, config.MenuBarHeight };
 		window->PushQuadNotClipped(
 			color, config.SubTextures[InGuiConfig::Button]->GetTexCoords(),
@@ -107,7 +137,8 @@ namespace XYZ {
 		s_Context.m_MenuBarActive = false;
 	}
 
-	void InGui::Group()
+
+	void InGui::BeginGroup()
 	{
 		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
 		if (!window->IsActive || IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed))
@@ -120,7 +151,7 @@ namespace XYZ {
 		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
 		if (!window->IsActive || IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed))
 			return;
-		window->Grouping = false;
+		window->EndGroup();
 	}
 
 	uint8_t InGui::BeginMenu(const char* label, float width)
@@ -144,6 +175,7 @@ namespace XYZ {
 
 		glm::vec4 color = config.Colors[InGuiConfig::MenuDefault];
 		InGuiRect rect(pos, pos + size);
+
 		InGuiBehavior::ButtonBehavior(rect, id, result);
 		if (IS_SET(result, InGui::Hoover))
 		{
@@ -199,6 +231,9 @@ namespace XYZ {
 
 		glm::vec4 color = config.Colors[InGuiConfig::MenuDefault];
 		InGuiRect rect(pos, pos + config.MenuItemSize);
+		InGuiRect textRect(rect);
+		rect.Union(window->ClipRect());
+
 		InGuiBehavior::ButtonBehavior(rect, id, result);
 		if (IS_SET(result, InGui::Hoover))
 		{
@@ -212,7 +247,7 @@ namespace XYZ {
 			color, config.SubTextures[InGuiConfig::Button]->GetTexCoords(),
 			pos, config.MenuItemSize
 		);
-		window->PushTextNotClippedOverlay(label, config.Colors[InGuiConfig::TextColor], rect.Min, rect.Max, nullptr);
+		window->PushTextNotClippedOverlay(label, config.Colors[InGuiConfig::TextColor], textRect.Min, textRect.Max, nullptr);
 		return result;
 	}
 
@@ -237,6 +272,10 @@ namespace XYZ {
 		const glm::vec2 pos = window->MoveCursorPosition(size);
 		glm::vec4 color = config.Colors[InGuiConfig::ButtonDefault];
 		InGuiRect rect(pos, pos + size);
+		InGuiRect textRect(rect);
+
+		rect.Union(window->ClipRect());
+
 		InGuiBehavior::ButtonBehavior(rect, id, result);
 		if (IS_SET(result, InGui::Hoover))
 		{
@@ -246,7 +285,7 @@ namespace XYZ {
 			color, config.SubTextures[InGuiConfig::Button]->GetTexCoords(),
 			pos, size
 		);
-		window->PushTextClipped(label, color, rect.Min, rect.Max, nullptr);
+		window->PushTextClipped(label, color, textRect.Min, textRect.Max, nullptr);
 		return result;
 	}
 	uint8_t InGui::Checkbox(const char* label, const glm::vec2& size, bool& checked)
@@ -271,6 +310,9 @@ namespace XYZ {
 		const glm::vec2 pos = window->MoveCursorPosition(fullSize);
 		glm::vec4 color = config.Colors[InGuiConfig::CheckboxDefault];
 		InGuiRect rect(pos, pos + size);
+		InGuiRect textRect(rect);
+		rect.Union(window->ClipRect());
+
 		InGuiBehavior::ButtonBehavior(rect, id, result);
 		if (IS_SET(result, InGui::Hoover))
 		{
@@ -289,8 +331,8 @@ namespace XYZ {
 		
 		window->PushText(
 			label, color, 
-			rect.Min + glm::vec2(size.x, 0.0f), 
-			rect.Max + glm::vec2(labelSize.x, 0.0f), 
+			textRect.Min + glm::vec2(size.x, 0.0f), 
+			textRect.Max + glm::vec2(labelSize.x, 0.0f), 
 			&labelSize
 		);
 		return result;
@@ -323,7 +365,12 @@ namespace XYZ {
 
 		glm::vec4 color = config.Colors[InGuiConfig::SliderDefault];
 		InGuiRect rect(pos, pos + size);
+		InGuiRect textRect(rect);
+		rect.Union(window->ClipRect());
+
 		InGuiRect handleRect(handlePos, handlePos + handleSize);
+		rect.Union(window->ClipRect());
+
 		InGuiBehavior::SliderBehavior(rect, handleRect, id, result);
 		if (IS_SET(result, InGui::Hoover))
 		{
@@ -345,15 +392,15 @@ namespace XYZ {
 		);
 		window->PushText(
 			label, color,
-			rect.Min + glm::vec2(size.x, 0.0f),
-			rect.Max + glm::vec2(labelSize.x, 0.0f),
+			textRect.Min + glm::vec2(size.x, 0.0f),
+			textRect.Max + glm::vec2(labelSize.x, 0.0f),
 			&labelSize
 		);
 		if (format)
 		{
 			char buffer[InGuiContext::sc_SliderValueBufferSize];
 			sprintf(buffer, format, value);
-			window->PushText(buffer, color, rect.Min, rect.Max, nullptr);
+			window->PushText(buffer, color, textRect.Min, textRect.Max, nullptr);
 		}
 		return result;
 	}
@@ -386,7 +433,12 @@ namespace XYZ {
 
 		glm::vec4 color = config.Colors[InGuiConfig::SliderDefault];
 		InGuiRect rect(pos, pos + size);
+		InGuiRect textRect(rect);
+		rect.Union(window->ClipRect());
+
 		InGuiRect handleRect(handlePos, handlePos + handleSize);
+		rect.Union(window->ClipRect());
+
 		InGuiBehavior::SliderBehavior(rect, handleRect, id, result);
 		if (IS_SET(result, InGui::Hoover))
 		{
@@ -408,15 +460,15 @@ namespace XYZ {
 		);
 		window->PushText(
 			label, color,
-			rect.Min + glm::vec2(size.x, 0.0f),
-			rect.Max + glm::vec2(labelSize.x, 0.0f),
+			textRect.Min + glm::vec2(size.x, 0.0f),
+			textRect.Max + glm::vec2(labelSize.x, 0.0f),
 			&labelSize
 		);
 		if (format)
 		{
 			char buffer[InGuiContext::sc_SliderValueBufferSize];
 			sprintf(buffer, format, value);
-			window->PushText(buffer, color, rect.Min, rect.Max, nullptr);
+			window->PushText(buffer, color, textRect.Min, textRect.Max, nullptr);
 		}
 		return result;
 	}
@@ -441,12 +493,15 @@ namespace XYZ {
 		InGuiID id = window->GetID(label);
 
 		const glm::vec2 pos = window->MoveCursorPosition(fullSize);
-		glm::vec4 color = config.Colors[InGuiConfig::ButtonDefault];
+		glm::vec4 color = config.Colors[InGuiConfig::InputDefault];
 		InGuiRect rect(pos, pos + size);
+		InGuiRect textRect(rect);
+		rect.Union(window->ClipRect());
+
 		InGuiBehavior::FloatBehavior(rect, id, result, value, decimalPrecision);		
 		if (IS_SET(result, InGui::Hoover | InGui::Pressed) || s_Context.m_LastInputID == id)
 		{
-			color = config.Colors[InGuiConfig::ButtonHoover];
+			color = config.Colors[InGuiConfig::InputHoover];
 		}
 
 		window->PushQuad(
@@ -455,28 +510,58 @@ namespace XYZ {
 		);
 		window->PushText(
 			label, color,
-			rect.Min + glm::vec2(size.x, 0.0f),
-			rect.Max + glm::vec2(labelSize.x, 0.0f),
+			textRect.Min + glm::vec2(size.x, 0.0f),
+			textRect.Max + glm::vec2(labelSize.x, 0.0f),
 			&labelSize
 		);
 			
 		if (s_Context.m_LastInputID == id)
 		{ 
-			window->PushTextClipped(s_Context.m_TemporaryTextBuffer.c_str(), color, rect.Min, rect.Max, nullptr);
+			window->PushTextClipped(s_Context.m_TemporaryTextBuffer.c_str(), color, textRect.Min, textRect.Max, nullptr);
 		}
 		else
 		{
 			char buffer[InGuiContext::sc_InputValueBufferSize];
 			Util::FormatFloat(buffer, InGuiContext::sc_InputValueBufferSize, value, decimalPrecision);
-			window->PushTextClipped(buffer, color, rect.Min, rect.Max, nullptr);
+			window->PushTextClipped(buffer, color, textRect.Min, textRect.Max, nullptr);
 		}		
 		return result;
 	}
 
 	uint8_t InGui::Float2(const char* label1, const char*label2, const glm::vec2& size, float* values, int32_t decimalPrecision)
 	{
+		InGui::BeginGroup();
 		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
-		uint8_t result = Float(label1, size, values[0], decimalPrecision) | Float(label2, size, values[1], decimalPrecision);
+		uint8_t result = 
+			  Float(label1, size, values[0], decimalPrecision) 
+			| Float(label2, size, values[1], decimalPrecision);
+		InGui::EndGroup();
+		return result;
+	}
+
+	uint8_t InGui::Float3(const char* label1, const char* label2, const char* label3, const glm::vec2& size, float* values, int32_t decimalPrecision)
+	{
+		InGui::BeginGroup();
+		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
+		uint8_t result = 
+			  Float(label1, size, values[0], decimalPrecision) 
+			| Float(label2, size, values[1], decimalPrecision)
+			| Float(label3, size, values[2], decimalPrecision);
+
+		InGui::EndGroup();
+		return result;
+	}
+
+	uint8_t InGui::Float4(const char* label1, const char* label2, const char* label3, const char* label4, const glm::vec2& size, float* values, int32_t decimalPrecision)
+	{
+		InGui::BeginGroup();
+		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
+		uint8_t result =
+			  Float(label1, size, values[0], decimalPrecision)
+			| Float(label2, size, values[1], decimalPrecision)
+			| Float(label3, size, values[2], decimalPrecision)
+			| Float(label4, size, values[3], decimalPrecision);
+		InGui::EndGroup();
 		return result;
 	}
 
@@ -494,7 +579,51 @@ namespace XYZ {
 	{
 		return uint8_t();
 	}
-	
+	uint8_t InGui::Image(const char* label, const glm::vec2& size, const Ref<SubTexture>& subTexture)
+	{
+		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
+		if (!window->IsActive || IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed))
+			return 0;
+
+		uint8_t result = 0;
+		InGuiFrame& frame = s_Context.m_FrameData;
+		const InGuiInput& input = s_Context.m_Input;
+		const InGuiConfig& config = s_Context.m_Config;
+		const glm::vec2 labelSize = Util::CalculateTextSize(label, config.Font);
+		const glm::vec2 fullSize = glm::vec2(size.x + labelSize.x, std::max(size.y, labelSize.y));
+		if (window->NextWidgetClipped(fullSize))
+		{
+			window->MoveCursorPosition(fullSize);
+			return 0;
+		}
+		InGuiID id = window->GetID(label);
+
+		const glm::vec2 pos = window->MoveCursorPosition(fullSize);
+		glm::vec4 color = config.Colors[InGuiConfig::ImageDefault];
+		InGuiRect rect(pos, pos + size);
+		InGuiRect textRect(rect);
+		rect.Union(window->ClipRect());
+
+		InGuiBehavior::ButtonBehavior(rect, id, result);
+		if (IS_SET(result, InGui::Hoover))
+		{
+			color = config.Colors[InGuiConfig::ImageHoover];
+		}
+
+		frame.CustomTextures.push_back(subTexture->GetTexture());
+		window->PushQuad(
+			color, subTexture->GetTexCoords(),
+			pos, size, frame.CustomTextureID()
+		);
+		window->PushText(
+			label, color,
+			textRect.Min + glm::vec2(size.x, 0.0f),
+			textRect.Max + glm::vec2(labelSize.x, 0.0f),
+			&labelSize
+		);
+		return result;
+	}
+
 	InGuiContext& InGui::GetContext()
 	{
 		return s_Context;

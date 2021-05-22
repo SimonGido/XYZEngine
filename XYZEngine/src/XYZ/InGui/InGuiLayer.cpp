@@ -29,6 +29,7 @@ namespace XYZ {
 		Ref<SubTexture> handleSubTexture = Ref<XYZ::SubTexture>::Create(texture, glm::vec2(1, 2), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
 		Ref<SubTexture> whiteSubTexture = Ref<XYZ::SubTexture>::Create(texture, glm::vec2(3, 0), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
 		Ref<SubTexture> rightArrowSubTexture = Ref<XYZ::SubTexture>::Create(texture, glm::vec2(2, 2), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
+		Ref<SubTexture> leftArrowSubTexture = Ref<XYZ::SubTexture>::Create(texture, glm::vec2(3, 2), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
 		Ref<SubTexture> downArrowSubTexture = Ref<XYZ::SubTexture>::Create(texture, glm::vec2(2, 3), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
 		Ref<SubTexture> pauseSubTexture = Ref<XYZ::SubTexture>::Create(texture, glm::vec2(2, 1), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
 
@@ -41,6 +42,7 @@ namespace XYZ {
 		InGui::GetContext().m_Config.SubTextures[InGuiConfig::SliderHandle]		 = handleSubTexture;
 		InGui::GetContext().m_Config.SubTextures[InGuiConfig::White]			 = whiteSubTexture;
 		InGui::GetContext().m_Config.SubTextures[InGuiConfig::RightArrow]		 = rightArrowSubTexture;
+		InGui::GetContext().m_Config.SubTextures[InGuiConfig::LeftArrow]		 = leftArrowSubTexture;
 		InGui::GetContext().m_Config.SubTextures[InGuiConfig::DownArrow]		 = downArrowSubTexture;
 		InGui::GetContext().m_Config.SubTextures[InGuiConfig::Pause]			 = pauseSubTexture;
 	}
@@ -104,6 +106,8 @@ namespace XYZ {
 
 			InGui::EndMenuBar();
 		}
+
+
 		static bool checked = false;
 		InGui::Checkbox("Hopbiasf", { 25.0f,25.0f }, checked);
 		if (checked)
@@ -127,11 +131,10 @@ namespace XYZ {
 			std::cout << "Value changed " << value << std::endl;
 		}
 
-		static float values[2] = { 2.0f,2.5f };
-		InGui::Group();
+		static float values[4] = { 2.0f,2.5f, 1.0f, 4.0f };
 		InGui::Float2("Hava1", "Hava2", glm::vec2(40.0f, 30.0f), values, 2);
-		InGui::EndGroup();
-
+		InGui::Float3("##Haafsva1", "Havasfaa2", "Hhoho", glm::vec2(40.0f, 30.0f), values, 2);
+		InGui::Float4("###Haasgva1", "Hagsdgva2","hasfs", "Hasdasasd", glm::vec2(40.0f, 30.0f), values, 2);
 		InGui::Float("test", glm::vec2(40.0f, 30.0f), value, 2);
 		InGui::End();
 	}

@@ -69,7 +69,9 @@ namespace XYZ {
 		const InGuiWindow* currentWindow = frame.CurrentWindow;
 		XYZ_ASSERT(currentWindow, "Current window is nullptr");
 
-		if (rect.Overlaps(input.MousePosition) && currentWindow->IsFocused() && (!context.m_LastHooveredID || context.m_LastHooveredID == id))
+		if (rect.Overlaps(input.MousePosition) 
+		&& (currentWindow->IsFocused() || currentWindow->IsChild())
+		&& (!context.m_LastHooveredID  || context.m_LastHooveredID == id))
 		{
 			result |= InGui::Hoover;
 			context.m_LastHooveredID = id;
@@ -93,7 +95,9 @@ namespace XYZ {
 		{
 			result |= InGui::Pressed;
 		}
-		if (rect.Overlaps(input.MousePosition) && currentWindow->IsFocused() && (!context.m_LastHooveredID || context.m_LastHooveredID == id))
+		if (rect.Overlaps(input.MousePosition) 
+		&& (currentWindow->IsFocused() || currentWindow->IsChild())
+		&& (!context.m_LastHooveredID || context.m_LastHooveredID == id))
 		{
 			result |= InGui::Hoover;
 			context.m_LastHooveredID = id;
@@ -114,7 +118,9 @@ namespace XYZ {
 		const InGuiWindow* currentWindow = frame.CurrentWindow;
 		XYZ_ASSERT(currentWindow, "Current window is nullptr");
 
-		if (rect.Overlaps(input.MousePosition) && currentWindow->IsFocused() && (!context.m_LastHooveredID || context.m_LastHooveredID == id))
+		if (rect.Overlaps(input.MousePosition) 
+		&& (currentWindow->IsFocused() || currentWindow->IsChild())
+		&& (!context.m_LastHooveredID  || context.m_LastHooveredID == id))
 		{
 			result |= InGui::Hoover;
 			context.m_LastHooveredID = id;
@@ -139,7 +145,9 @@ namespace XYZ {
 		const InGuiWindow* currentWindow = frame.CurrentWindow;
 		XYZ_ASSERT(currentWindow, "Current window is nullptr");
 
-		if (rect.Overlaps(input.MousePosition) && currentWindow->IsFocused() && (!context.m_LastHooveredID || context.m_LastHooveredID == id))
+		if (rect.Overlaps(input.MousePosition) 
+		&& (currentWindow->IsFocused() || currentWindow->IsChild())
+		&& (!context.m_LastHooveredID || context.m_LastHooveredID == id))
 		{
 			result |= InGui::Hoover;
 			context.m_LastHooveredID = id;
@@ -164,7 +172,9 @@ namespace XYZ {
 		const InGuiWindow* currentWindow = frame.CurrentWindow;
 		XYZ_ASSERT(currentWindow, "Current window is nullptr");
 
-		if (rect.Overlaps(input.MousePosition) && currentWindow->IsFocused() && (!context.m_LastHooveredID || context.m_LastHooveredID == id))
+		if (rect.Overlaps(input.MousePosition) 
+		&& (currentWindow->IsFocused() || currentWindow->IsChild())
+		&& (!context.m_LastHooveredID  || context.m_LastHooveredID == id))
 		{
 			result |= InGui::Hoover;
 			context.m_LastHooveredID = id;

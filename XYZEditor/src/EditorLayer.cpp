@@ -65,7 +65,8 @@ namespace XYZ {
 		Ref<SubTexture> renderSubTexture = Ref<SubTexture>::Create(renderTexture, glm::vec2(0.0f, 0.0f));
 		Ref<Texture> robotTexture = Texture2D::Create({}, "Assets/Textures/full_simple_char.png");
 		Ref<SubTexture> robotSubTexture = Ref<SubTexture>::Create(robotTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
-	
+		m_Test = robotSubTexture;
+
 		Ref<Animation> animation = Ref<Animation>::Create(m_TestEntity);
 		
 
@@ -140,6 +141,24 @@ namespace XYZ {
 		dispatcher.Dispatch<KeyPressedEvent>(Hook(&EditorLayer::onKeyPress, this));
 		
 		m_EditorCamera.OnEvent(event);
+	}
+
+	void EditorLayer::OnInGuiRender()
+	{
+		if (InGui::Begin("Editor Layer"))
+		{
+			InGuiWindowFlags flags = InGuiWindowStyleFlags::PanelEnabled | InGuiWindowStyleFlags::FrameEnabled;
+			InGui::Begin("Sub window", flags);
+			InGui::Image("Test Image", glm::vec2(300.0f), m_Test);
+			InGui::End();
+
+			InGui::Begin("OtherSub window", flags);
+			InGui::End();
+
+			InGui::Begin("Yes Subwindow", flags);
+			InGui::End();
+		}
+		InGui::End();
 	}
 	
 	bool EditorLayer::onMouseButtonPress(MouseButtonPressEvent& event)

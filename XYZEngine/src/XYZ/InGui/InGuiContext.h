@@ -12,9 +12,10 @@
 namespace XYZ {
 	class InGuiContext
 	{
-		using InGuiWindowMap = std::unordered_map<std::string_view, InGuiWindow*>;
+		using InGuiWindowMap = std::unordered_map<InGuiID, InGuiWindow*>;
 	public:
 		InGuiContext();
+		~InGuiContext();
 
 		void Render();
 		void SetViewportSize(uint32_t width, uint32_t height);
@@ -23,8 +24,8 @@ namespace XYZ {
 
 		void OnEvent(Event& event);
 
-		InGuiWindow* CreateWindow(const char* name);
-		InGuiWindow* GetWindow(const char* name);
+		InGuiWindow* CreateInGuiWindow(const char* name);
+		InGuiWindow* GetInGuiWindow(const char* name);
 
 		InGuiInput				  m_Input;
 		InGuiFrame				  m_FrameData;
@@ -35,7 +36,7 @@ namespace XYZ {
 		std::vector<InGuiWindow*> m_Windows;
 		InGuiWindowMap			  m_WindowMap;
 		InGuiWindow*			  m_FocusedWindow;
-		MemoryPool				  m_Pool;
+		MemoryPool				  m_WindowPool;
 		CustomRenderer2DLayout	  m_RendererLayout;
 
 		InGuiID					  m_LastLeftPressedID;

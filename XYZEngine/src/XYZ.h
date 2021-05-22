@@ -79,3 +79,6 @@
 //------BasicUI-------//
 #include "XYZ/BasicUI/BasicUI.h"
 #include "XYZ/BasicUI/BasicUILoader.h"
+
+//------InGui-------//
+#include "XYZ/InGui/InGui.h"

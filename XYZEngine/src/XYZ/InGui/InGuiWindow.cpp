@@ -19,49 +19,64 @@ namespace XYZ {
 		ScrollBarX(false),
 		ScrollBarY(false),
 		Grouping(false),
-		ScrollBarSize(10.0f)
+		ScrollBarSize(10.0f),
+		DrawListInUse(nullptr),
+		Parent(nullptr)
 	{
 		StyleFlags |= InGuiWindowStyleFlags::PanelEnabled;
 		StyleFlags |= InGuiWindowStyleFlags::ScrollEnabled;
 	}
 
-	void InGuiWindow::PushItselfToDrawlist(const glm::vec4& color)
+	void InGuiWindow::PushItselfToDrawlist(const glm::vec4& color, InGuiClipID clipID)
 	{
 		const InGuiConfig& config = InGui::GetContext().m_Config;
 		const Ref<SubTexture>& winSubTexture = config.SubTextures[InGuiConfig::Window];
 		const Ref<SubTexture>& panelSubTexture = config.SubTextures[InGuiConfig::Button];
-		const Ref<SubTexture>& minimizeSubTexture = config.SubTextures[InGuiConfig::MinimizeButton];
-
+		size_t subTextureIndex = IS_SET(EditFlags, InGuiWindowEditFlags::Collapsed) ? InGuiConfig::LeftArrow : InGuiConfig::DownArrow;
+		const Ref<SubTexture>& minimizeSubTexture = config.SubTextures[subTextureIndex];
+		
 		glm::vec4 defaultColor = config.Colors[InGuiConfig::WindowDefault];
 		if (!IS_SET(EditFlags, InGuiWindowEditFlags::Collapsed))
 		{
-			DrawList.PushQuad(
+			if (IS_SET(StyleFlags, InGuiWindowStyleFlags::FrameEnabled))
+			{
+				InGuiRect rect = Rect();
+				rect += config.WindowFrameThickness;
+				DrawListInUse->PushQuad(
+					config.Colors[InGuiConfig::WindowFrameColor], 
+					winSubTexture->GetTexCoords(),
+					rect.Min, rect.Max - rect.Min, 
+					InGuiConfig::sc_DefaultTexture, clipID
+				);
+			}
+			DrawListInUse->PushQuad(
 				defaultColor, winSubTexture->GetTexCoords(),
-				Position, Size, InGuiConfig::sc_DefaultTexture, 0
+				Position, Size, InGuiConfig::sc_DefaultTexture, clipID
 			);
 		}
 		if (IS_SET(StyleFlags, InGuiWindowStyleFlags::PanelEnabled))
 		{
-			DrawList.PushQuad(
+			DrawListInUse->PushQuad(
 				color, panelSubTexture->GetTexCoords(),
-				Position, { Size.x, config.PanelHeight }, InGuiConfig::sc_DefaultTexture, 0
+				Position, { Size.x, config.PanelHeight }, InGuiConfig::sc_DefaultTexture, clipID
 			);
 
 			glm::vec2 buttonPosition = Position + glm::vec2(Size.x - config.PanelHeight, 0.0f);
-			DrawList.PushQuad(
-				defaultColor, minimizeSubTexture->GetTexCoords(),
-				buttonPosition, { config.PanelHeight, config.PanelHeight }, InGuiConfig::sc_DefaultTexture, 0
+			DrawListInUse->PushQuad(
+				defaultColor, minimizeSubTexture->GetTexCoordsUpside(),
+				buttonPosition, { config.PanelHeight, config.PanelHeight }, InGuiConfig::sc_DefaultTexture, clipID
 			);
 
 			glm::vec2 textPosition = glm::vec2(Position.x + config.LabelOffset, Position.y + config.PanelHeight);
 			textPosition.y -= std::floor((config.PanelHeight - config.Font->GetLineHeight()) / 2.0f);
 			Util::GenerateTextMeshClipped(
 				Name.c_str(), config.Font, defaultColor, 
-				textPosition, DrawList.m_Quads, 
-				InGuiConfig::sc_FontTexture, 0, 
+				textPosition, DrawListInUse->m_Quads,
+				InGuiConfig::sc_FontTexture, clipID,
 				{ Size.x - config.PanelHeight, config.PanelHeight }
 			);
 		}
+		
 	}
 
 	void InGuiWindow::PushTextClipped(const char* text, const glm::vec4& color, const glm::vec2& posMin, const glm::vec2& posMax, const glm::vec2* textSize)
@@ -82,7 +97,7 @@ namespace XYZ {
 		textPosition.y += std::floor((size.y - tmpTextSize.y) / 2.0f) + font->GetLineHeight();
 		Util::GenerateTextMeshClipped(
 			text, font, color, textPosition,
-			DrawList.m_Quads, InGuiConfig::sc_FontTexture,
+			DrawListInUse->m_Quads, InGuiConfig::sc_FontTexture,
 			ClipID, size
 		);	
 	}
@@ -103,7 +118,7 @@ namespace XYZ {
 		textPosition.y += std::floor((size.y - tmpTextSize.y) / 2.0f) + font->GetLineHeight();
 		Util::GenerateTextMesh(
 			text, font, color, textPosition,
-			DrawList.m_Quads, InGuiConfig::sc_FontTexture,
+			DrawListInUse->m_Quads, InGuiConfig::sc_FontTexture,
 			0
 		);
 	}
@@ -124,14 +139,14 @@ namespace XYZ {
 		textPosition.y += std::floor((size.y - tmpTextSize.y) / 2.0f) + font->GetLineHeight();
 		Util::GenerateTextMesh(
 			text, font, color, textPosition,
-			DrawList.m_Quads, InGuiConfig::sc_FontTexture,
+			DrawListInUse->m_Quads, InGuiConfig::sc_FontTexture,
 			ClipID
 		);
 	}
 
 	void InGuiWindow::PushQuad(const glm::vec4& color, const glm::vec4& texCoord, const glm::vec2& pos, const glm::vec2& size, uint32_t textureID)
 	{
-		DrawList.PushQuad(
+		DrawListInUse->PushQuad(
 			color, texCoord,
 			pos, size, 
 			textureID, ClipID
@@ -140,11 +155,16 @@ namespace XYZ {
 
 	void InGuiWindow::PushQuadNotClipped(const glm::vec4& color, const glm::vec4& texCoord, const glm::vec2& pos, const glm::vec2& size, uint32_t textureID)
 	{
-		DrawList.PushQuad(
+		DrawListInUse->PushQuad(
 			color, texCoord,
 			pos, size,
 			textureID, 0
 		);
+	}
+
+	void InGuiWindow::PushLine(const glm::vec2& p0, const glm::vec2& p1, const glm::vec4& color)
+	{
+		DrawListInUse->PushLine(color, p0, p1, ClipID);
 	}
 
 	void InGuiWindow::PushTextClippedOverlay(const char* text, const glm::vec4& color, const glm::vec2& posMin, const glm::vec2& posMax, const glm::vec2* textSize)
@@ -165,7 +185,7 @@ namespace XYZ {
 		textPosition.y += std::floor((size.y - tmpTextSize.y) / 2.0f) + font->GetLineHeight();
 		Util::GenerateTextMeshClipped(
 			text, font, color, textPosition,
-			DrawList.m_QuadsOverlay, InGuiConfig::sc_FontTexture,
+			DrawListInUse->m_QuadsOverlay, InGuiConfig::sc_FontTexture,
 			ClipID, size
 		);
 	}
@@ -186,7 +206,7 @@ namespace XYZ {
 		textPosition.y += std::floor((size.y - tmpTextSize.y) / 2.0f) + font->GetLineHeight();
 		Util::GenerateTextMesh(
 			text, font, color, textPosition,
-			DrawList.m_QuadsOverlay, InGuiConfig::sc_FontTexture,
+			DrawListInUse->m_QuadsOverlay, InGuiConfig::sc_FontTexture,
 			0
 		);
 	}
@@ -207,14 +227,14 @@ namespace XYZ {
 		textPosition.y += std::floor((size.y - tmpTextSize.y) / 2.0f) + font->GetLineHeight();
 		Util::GenerateTextMesh(
 			text, font, color, textPosition,
-			DrawList.m_QuadsOverlay, InGuiConfig::sc_FontTexture,
+			DrawListInUse->m_QuadsOverlay, InGuiConfig::sc_FontTexture,
 			ClipID
 		);
 	}
 
 	void InGuiWindow::PushQuadOverlay(const glm::vec4& color, const glm::vec4& texCoord, const glm::vec2& pos, const glm::vec2& size, uint32_t textureID)
 	{
-		DrawList.PushQuadOverlay(
+		DrawListInUse->PushQuadOverlay(
 			color, texCoord,
 			pos, size,
 			textureID, ClipID
@@ -223,11 +243,25 @@ namespace XYZ {
 
 	void InGuiWindow::PushQuadNotClippedOverlay(const glm::vec4& color, const glm::vec4& texCoord, const glm::vec2& pos, const glm::vec2& size, uint32_t textureID)
 	{
-		DrawList.PushQuadOverlay(
+		DrawListInUse->PushQuadOverlay(
 			color, texCoord,
 			pos, size,
 			textureID, 0
 		);
+	}
+
+	void InGuiWindow::SetParent(InGuiWindow* parent)
+	{
+		if (parent)
+		{
+			DrawListInUse = parent->DrawListInUse;
+			Position = parent->MoveCursorPosition(GetRealSize());
+		}
+		else
+		{
+			DrawListInUse = &DrawList;
+		}
+		Parent = parent;
 	}
 
 	bool InGuiWindow::NextWidgetClipped(const glm::vec2& size)
@@ -246,8 +280,18 @@ namespace XYZ {
 		float yScrollMax = FrameData.CursorPos.y - (Position.y + Size.y) + size.y + padding.y;
 		if (Axis == AxisPlacement::Horizontal)
 		{
-			FrameData.Params.RowHeight = std::max(FrameData.Params.RowHeight, size.y);
-			FrameData.CursorPos.x += size.x + padding.x;
+			if (Grouping)
+			{
+				FrameData.GroupSize.y += size.y;
+				FrameData.GroupSize.x = std::max(size.x, FrameData.GroupSize.x);
+				FrameData.Params.RowHeight = std::max(FrameData.Params.RowHeight, FrameData.GroupSize.y);
+				FrameData.CursorPos.y += size.y + padding.y;
+			}
+			else
+			{
+				FrameData.Params.RowHeight = std::max(FrameData.Params.RowHeight, size.y);
+				FrameData.CursorPos.x += size.x + padding.x;
+			}
 		}
 		else
 		{
@@ -276,11 +320,30 @@ namespace XYZ {
 		FrameData.CursorPos = position;
 	}
 
+	void InGuiWindow::EndGroup()
+	{
+		XYZ_ASSERT(Grouping, "Grouping was not enabled");
+		Grouping = false;
+		const glm::vec2& padding = InGui::GetContext().m_Config.WindowPadding;
+		if (Axis == AxisPlacement::Horizontal)
+		{
+			FrameData.CursorPos.x += FrameData.GroupSize.x + padding.x;
+			FrameData.CursorPos.y = Position.y + padding.y;
+			FrameData.GroupSize = glm::vec2(0.0f);
+		}
+		else
+		{
+			FrameData.CursorPos.y += FrameData.GroupSize.y + padding.y;
+			FrameData.CursorPos.x = Position.x + padding.x;
+			FrameData.GroupSize = glm::vec2(0.0f);
+		}
+	}
+
 	bool InGuiWindow::ResolveResizeFlags(const glm::vec2& mousePosition, bool checkCollision)
 	{
 		if (checkCollision)
 		{
-			InGuiRect rect = Rect();
+			InGuiRect rect = RealRect();
 			if (!rect.Overlaps(mousePosition))
 				return false;
 		}
@@ -331,7 +394,7 @@ namespace XYZ {
 	bool InGuiWindow::HandleHoover(const glm::vec2& mousePosition)
 	{
 		InGuiRect windowRectangle = Rect();
-		if (IsFocused() && windowRectangle.Overlaps(mousePosition))
+		if ((IsFocused() || IsChild()) && windowRectangle.Overlaps(mousePosition))
 		{
 			EditFlags |= InGuiWindowEditFlags::Hoovered;
 			InGuiRect panelRectangle = PanelRect();
@@ -403,6 +466,11 @@ namespace XYZ {
 		return this == InGui::GetContext().m_FocusedWindow;
 	}
 
+	bool InGuiWindow::IsChild() const
+	{
+		return Parent;
+	}
+
 	InGuiID InGuiWindow::GetID(const char* name) const
 	{
 		size_t id = 0;
@@ -410,19 +478,56 @@ namespace XYZ {
 		return id;
 	}
 
+	glm::vec2 InGuiWindow::GetRealSize() const
+	{
+		glm::vec2 result(0.0f);
+		if (IsActive)
+		{
+			result = { Size.x, InGui::GetContext().m_Config.PanelHeight };
+		}
+		if (!IS_SET(EditFlags, InGuiWindowEditFlags::Collapsed))
+		{
+			result.y = Size.y;
+		}
+		return result;
+	}
+
+	InGuiRect InGuiWindow::Rect() const
+	{
+		InGuiRect rect(Position, Position + Size);
+		if (Parent)
+			rect.Union(Parent->Rect());
+		return rect;
+	}
+
+	InGuiRect InGuiWindow::RealRect() const
+	{
+		glm::vec2 realSize = GetRealSize();
+		InGuiRect rect(Position, Position + realSize);
+		if (Parent)
+			rect.Union(Parent->Rect());
+		return rect;
+	}
+
 	InGuiRect InGuiWindow::PanelRect() const
 	{
 		const InGuiConfig& config = InGui::GetContext().m_Config;
-		return InGuiRect(Position, Position + glm::vec2(Size.x, config.PanelHeight));;
+		InGuiRect rect(Position, Position + glm::vec2(Size.x, config.PanelHeight));
+		if (Parent)
+			rect.Union(Parent->Rect());
+		return rect;
 	}
 
 	InGuiRect InGuiWindow::MinimizeRect() const
 	{
 		const InGuiConfig& config = InGui::GetContext().m_Config;
-		return InGuiRect(
+		InGuiRect rect(
 			Position + glm::vec2(Size.x - config.PanelHeight, 0.0f), 
 			Position + glm::vec2(Size.x,  config.PanelHeight)
 		);
+		if (Parent)
+			rect.Union(Parent->Rect());
+		return rect;
 	}
 
 	InGuiRect InGuiWindow::ClipRect() const
@@ -432,6 +537,9 @@ namespace XYZ {
 		InGuiRect rect(min, min + glm::vec2(Size.x, Size.y - config.PanelHeight));
 		if (IS_SET(StyleFlags, InGuiWindowStyleFlags::MenuEnabled))
 			rect.Min.y += config.MenuBarHeight;
+
+		if (Parent)
+			rect.Union(Parent->ClipRect());
 		return rect;
 	}
 
@@ -441,7 +549,8 @@ namespace XYZ {
 		glm::vec2 min = { Position.x, (float)viewportHeight - Position.y - Size.y };
 		glm::vec2 max = min + glm::vec2(Size.x, Size.y - config.PanelHeight);	
 		InGuiRect rect(min, max);
-
+		if (Parent)
+			rect.Union(Parent->ClipRect(viewportHeight));
 		return rect;
 	}	
 	InGuiWindowFrameData::InGuiWindowFrameData(InGuiWindow* window)

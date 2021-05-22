@@ -13,7 +13,8 @@ namespace XYZ {
 			const glm::vec2& pos,
 			std::vector<InGuiQuad>& quads,
 			uint32_t textureID,
-			uint32_t clipID
+			uint32_t clipID,
+			char ignore = '#'
 		);
 
 		void GenerateTextMeshClipped(
@@ -24,24 +25,28 @@ namespace XYZ {
 			std::vector<InGuiQuad>& quads,
 			uint32_t textureID,
 			uint32_t clipID,
-			const glm::vec2 size
+			const glm::vec2 size,
+			char ignore = '#'
 		);
 
 		uint32_t CalculateNumCharacters(
 			const char* source,
 			const Ref<Font>& font,
-			const glm::vec2 size
-		);
-
-		glm::vec2 CalculateTextSize(
-			const char* source,
-			const Ref<Font>& font
+			const glm::vec2 size,
+			char ignore = '#'
 		);
 
 		glm::vec2 CalculateTextSize(
 			const char* source,
 			const Ref<Font>& font,
-			uint32_t maxCharacters
+			char ignore = '#'
+		);
+
+		glm::vec2 CalculateTextSize(
+			const char* source,
+			const Ref<Font>& font,
+			uint32_t maxCharacters,
+			char ignore = '#'
 		);
 
 		int  FormatString(char* buf, size_t bufSize, const char* fmt, ...);	

@@ -37,6 +37,28 @@ namespace XYZ {
 			    Min.y < point.y);
 	}
 
+	void InGuiRect::Union(const InGuiRect& other)
+	{
+		Max.x = std::min(Max.x, other.Max.x);
+		Max.y = std::min(Max.y, other.Max.y);
+		Min.x = std::max(Min.x, other.Min.x);
+		Min.y = std::max(Min.y, other.Min.y);
+	}
+
+	InGuiRect& InGuiRect::operator+=(const glm::vec2& size)
+	{
+		Min -= size / 2.0f;
+		Max += size / 2.0f;
+		return *this;
+	}
+
+	InGuiRect& InGuiRect::operator+=(float size)
+	{
+		Min -= size / 2.0f;
+		Max += size / 2.0f;
+		return *this;
+	}
+
 	void InGuiDrawList::PushQuad(const glm::vec4& color, const glm::vec4& texCoord, const glm::vec2& position, const glm::vec2& size, uint32_t textureID, uint32_t clipID)
 	{
 		m_Quads.push_back({ color, texCoord, glm::vec3(position,0.0f), size, textureID, clipID });

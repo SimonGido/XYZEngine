@@ -16,6 +16,7 @@ namespace XYZ {
 		void SetTexture(const Ref<Texture>& texture) { m_Texture = texture; };
 		
 		const glm::vec4& GetTexCoords() const;
+		glm::vec4 GetTexCoordsUpside() const;
 		const glm::vec2& GetCoords() const { return m_Coords; }
 		const glm::vec2& GetSize() const { return m_Size; }
 

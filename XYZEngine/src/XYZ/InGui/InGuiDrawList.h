@@ -13,6 +13,12 @@ namespace XYZ {
 		bool Overlaps(const InGuiRect& other) const;
 		bool Overlaps(const glm::vec2& point) const;
 
+		void Union(const InGuiRect& other);
+
+		InGuiRect& operator +=(const glm::vec2& size);
+		InGuiRect& operator +=(float size);
+
+
 		glm::vec2 Min;
 		glm::vec2 Max;
 	};

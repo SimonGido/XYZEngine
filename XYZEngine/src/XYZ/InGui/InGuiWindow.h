@@ -48,9 +48,11 @@ namespace XYZ {
 	namespace InGuiWindowStyleFlags {
 		enum Flags
 		{
-			ScrollEnabled = BIT(0),
-			PanelEnabled  = BIT(1),
-			MenuEnabled   = BIT(2)
+			ScrollEnabled	= BIT(0),
+			PanelEnabled	= BIT(1),
+			MenuEnabled		= BIT(2),
+			DockingEnabled  = BIT(3),
+			FrameEnabled	= BIT(4)
 		};
 	}
 
@@ -58,23 +60,25 @@ namespace XYZ {
 	{
 		InGuiWindow();
 		
-		void			 PushItselfToDrawlist(const glm::vec4& color);
+		void			 PushItselfToDrawlist(const glm::vec4& color, InGuiClipID clipID = 0);
 		void			 PushTextClipped(const char* text, const glm::vec4& color, const glm::vec2& posMin, const glm::vec2& posMax, const glm::vec2* textSize = nullptr);
 		void		     PushTextNotClipped(const char* text, const glm::vec4& color, const glm::vec2& posMin, const glm::vec2& posMax, const glm::vec2* textSize = nullptr);
 		void		     PushText(const char* text, const glm::vec4& color, const glm::vec2& posMin, const glm::vec2& posMax, const glm::vec2* textSize = nullptr);
 		void			 PushQuad(const glm::vec4& color, const glm::vec4& texCoord, const glm::vec2& pos, const glm::vec2& size, uint32_t textureID = InGuiConfig::sc_DefaultTexture);
 		void			 PushQuadNotClipped(const glm::vec4& color, const glm::vec4& texCoord, const glm::vec2& pos, const glm::vec2& size, uint32_t textureID = InGuiConfig::sc_DefaultTexture);
+		void			 PushLine(const glm::vec2& p0, const glm::vec2& p1, const glm::vec4& color);
 
 		void			 PushTextClippedOverlay(const char* text, const glm::vec4& color, const glm::vec2& posMin, const glm::vec2& posMax, const glm::vec2* textSize = nullptr);
 		void		     PushTextNotClippedOverlay(const char* text, const glm::vec4& color, const glm::vec2& posMin, const glm::vec2& posMax, const glm::vec2* textSize = nullptr);
 		void		     PushTextOverlay(const char* text, const glm::vec4& color, const glm::vec2& posMin, const glm::vec2& posMax, const glm::vec2* textSize = nullptr);
 		void			 PushQuadOverlay(const glm::vec4& color, const glm::vec4& texCoord, const glm::vec2& pos, const glm::vec2& size, uint32_t textureID = InGuiConfig::sc_DefaultTexture);
 		void			 PushQuadNotClippedOverlay(const glm::vec4& color, const glm::vec4& texCoord, const glm::vec2& pos, const glm::vec2& size, uint32_t textureID = InGuiConfig::sc_DefaultTexture);
-
+		void			 SetParent(InGuiWindow* parent);
 
 		bool			 NextWidgetClipped(const glm::vec2& size);
 		glm::vec2		 MoveCursorPosition(const glm::vec2& size);
 		void			 SetCursorPosition(const glm::vec2& position);
+		void			 EndGroup();
 
 		bool			 ResolveResizeFlags(const glm::vec2& mousePosition, bool checkCollision = false);
 		bool			 HandleResize(const glm::vec2& mousePosition);
@@ -82,9 +86,12 @@ namespace XYZ {
 		bool			 HandleMove(const glm::vec2& mousePosition, const glm::vec2& offset);
 		void			 HandleScrollbars();
 		bool			 IsFocused() const;
+		bool			 IsChild() const;
 		InGuiID			 GetID(const char* name) const;
+		glm::vec2		 GetRealSize() const;
 
-		InGuiRect		 Rect() const { return InGuiRect(Position, Position + Size); }
+		InGuiRect		 Rect() const;
+		InGuiRect        RealRect() const;
 		InGuiRect		 PanelRect() const;
 		InGuiRect		 MinimizeRect() const;
 		InGuiRect		 ClipRect() const;
@@ -101,16 +108,15 @@ namespace XYZ {
 		glm::vec2			 Size;
 		glm::vec2			 Scroll;
 
-		//float				 PanelHeight;
-		//float				 MenuBarHeight;
-		//float				 LabelOffset;
+
 		bool				 IsActive;
 		bool				 ScrollBarX;
 		bool				 ScrollBarY;
 		bool				 Grouping;
 		glm::vec2			 ScrollBarSize;
+		InGuiDrawList*		 DrawListInUse;
 		InGuiDrawList		 DrawList;
-
+		InGuiWindow*		 Parent;
 
 		static constexpr float sc_ResizeThresholdX = 5.0f;
 		static constexpr float sc_ResizeThresholdY = 5.0f;

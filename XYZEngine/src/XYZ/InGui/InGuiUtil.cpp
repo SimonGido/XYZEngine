@@ -4,7 +4,7 @@
 namespace XYZ {
 
 	namespace Util {
-		void GenerateTextMesh(const char* source, const Ref<Font>& font, const glm::vec4& color, const glm::vec2& pos, std::vector<InGuiQuad>& quads, uint32_t textureID, uint32_t clipID)
+		void GenerateTextMesh(const char* source, const Ref<Font>& font, const glm::vec4& color, const glm::vec2& pos, std::vector<InGuiQuad>& quads, uint32_t textureID, uint32_t clipID, char ignore)
 		{
 			if (!source)
 				return;
@@ -15,7 +15,12 @@ namespace XYZ {
 			uint32_t counter = 0;
 			while (source[counter] != '\0')
 			{
-				auto& character = font->GetCharacter(source[counter]);
+				if (source[counter] == ignore)
+				{
+					counter++;
+					continue;
+				}
+				auto& character = font->GetCharacter(source[counter]);				
 				if (source[counter] == '\n')
 				{
 					yCursor += font->GetLineHeight();
@@ -40,7 +45,7 @@ namespace XYZ {
 				counter++;
 			}
 		}
-		void GenerateTextMeshClipped(const char* source, const Ref<Font>& font, const glm::vec4& color, const glm::vec2& pos, std::vector<InGuiQuad>& quads, uint32_t textureID, uint32_t clipID, const glm::vec2 size)
+		void GenerateTextMeshClipped(const char* source, const Ref<Font>& font, const glm::vec4& color, const glm::vec2& pos, std::vector<InGuiQuad>& quads, uint32_t textureID, uint32_t clipID, const glm::vec2 size, char ignore)
 		{
 			if (!source)
 				return;
@@ -51,10 +56,16 @@ namespace XYZ {
 			uint32_t counter = 0;
 			while (source[counter] != '\0' && yCursor < size.y)
 			{
+				if (source[counter] == ignore)
+				{
+					counter++;
+					continue;
+				}
+
 				auto& character = font->GetCharacter(source[counter]);
 				if (xCursor + character.XAdvance >= size.x)
 					break;
-
+						
 				if (source[counter] == '\n')
 				{
 					yCursor += font->GetLineHeight();
@@ -79,7 +90,7 @@ namespace XYZ {
 				counter++;
 			}
 		}
-		uint32_t CalculateNumCharacters(const char* source, const Ref<Font>& font, const glm::vec2 size)
+		uint32_t CalculateNumCharacters(const char* source, const Ref<Font>& font, const glm::vec2 size, char ignore)
 		{
 			if (!source)
 				return 0;
@@ -91,10 +102,16 @@ namespace XYZ {
 			uint32_t counter = 0;
 			while (source[counter] != '\0' && yCursor < size.y)
 			{
+				if (source[counter] == ignore)
+				{
+					counter++;
+					continue;
+				}
+				
 				auto& character = font->GetCharacter(source[counter]);
 				if (xCursor + character.XAdvance >= size.x)
 					break;
-
+					
 				if (source[counter] == '\n')
 				{
 					width = std::max(width, xCursor);
@@ -108,7 +125,7 @@ namespace XYZ {
 			}
 			return counter;
 		}
-		glm::vec2 CalculateTextSize(const char* source, const Ref<Font>& font)
+		glm::vec2 CalculateTextSize(const char* source, const Ref<Font>& font, char ignore)
 		{
 			if (!source)
 				return { 0.0f, 0.0f };
@@ -120,6 +137,12 @@ namespace XYZ {
 			uint32_t counter = 0;
 			while (source[counter] != '\0')
 			{
+				if (source[counter] == ignore)
+				{
+					counter++;
+					continue;
+				}
+
 				auto& character = font->GetCharacter(source[counter]);
 				if (source[counter] == '\n')
 				{
@@ -136,7 +159,7 @@ namespace XYZ {
 				width = xCursor;
 			return { width, yCursor + font->GetLineHeight() };
 		}
-		glm::vec2 CalculateTextSize(const char* source, const Ref<Font>& font, uint32_t maxCharacters)
+		glm::vec2 CalculateTextSize(const char* source, const Ref<Font>& font, uint32_t maxCharacters, char ignore)
 		{
 			if (!source)
 				return { 0.0f, 0.0f };
@@ -148,6 +171,12 @@ namespace XYZ {
 			uint32_t counter = 0;
 			while (source[counter] != '\0' && counter < maxCharacters)
 			{
+				if (source[counter] == ignore)
+				{
+					counter++;
+					continue;
+				}
+
 				auto& character = font->GetCharacter(source[counter]);
 				if (source[counter] == '\n')
 				{

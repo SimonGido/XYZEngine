@@ -16,7 +16,7 @@ namespace XYZ {
 		m_ViewportWidth(0),
 		m_ViewportHeight(0),
 		m_FocusedWindow(nullptr),
-		m_Pool(15 * sizeof(InGuiWindow)),
+		m_WindowPool(15 * sizeof(InGuiWindow)),
 		m_MenuBarActive(false),
 		m_MenuOpenID(0)
 	{
@@ -41,6 +41,12 @@ namespace XYZ {
 		m_ClipRectangles.push_back({});
 	}
 
+	InGuiContext::~InGuiContext()
+	{
+		for (auto window : m_Windows)
+			m_WindowPool.Deallocate<InGuiWindow>(window);
+	}
+
 	void InGuiContext::Render()
 	{
 		for (InGuiWindow* window : m_Windows)
@@ -53,6 +59,8 @@ namespace XYZ {
 		CustomRenderer2D::BeginScene(m_RendererLayout);
 		CustomRenderer2D::SetMaterial(m_Config.Material);
 		CustomRenderer2D::SetLineShader(m_Config.LineShader);
+		for (const auto& texture : m_FrameData.CustomTextures)
+			CustomRenderer2D::SetTexture(texture);
 
 		m_ClipBuffer->Update(m_ClipRectangles.data(), m_ClipRectangles.size() * sizeof(InGuiRect));
 		m_ClipBuffer->BindRange(0, m_ClipRectangles.size() * sizeof(InGuiRect), 0);
@@ -65,6 +73,7 @@ namespace XYZ {
 		CustomRenderer2D::Flush();
 		CustomRenderer2D::FlushLines();
 		CustomRenderer2D::EndScene();
+		m_FrameData.CustomTextures.clear();
 	}
 
 	void InGuiContext::SetViewportSize(uint32_t width, uint32_t height)
@@ -93,10 +102,9 @@ namespace XYZ {
 				for (auto it = m_Windows.rbegin(); it != m_Windows.rend(); ++it)
 				{
 					InGuiWindow* window = (*it);
-					InGuiRect windowRect = window->Rect();
+					InGuiRect windowRect = window->RealRect();
 					if (windowRect.Overlaps(m_Input.MousePosition))
 					{					
-						bool handled = false;
 						FocusWindow(window);
 						// Set current window so ButtonBehavior works correctly
 						m_FrameData.CurrentWindow = window;
@@ -111,7 +119,7 @@ namespace XYZ {
 						if (IS_SET(result, InGui::Pressed))
 						{
 							window->EditFlags ^= InGuiWindowEditFlags::Collapsed;
-							handled = IS_SET(window->EditFlags, InGuiWindowEditFlags::BlockEvents);
+							return IS_SET(window->EditFlags, InGuiWindowEditFlags::BlockEvents);
 						}
 						else
 						{
@@ -121,16 +129,15 @@ namespace XYZ {
 							{
 								window->EditFlags |= InGuiWindowEditFlags::Moving;
 								m_FrameData.MovedWindowOffset = m_Input.MousePosition - window->Position;
-								handled = IS_SET(window->EditFlags, InGuiWindowEditFlags::BlockEvents);
+								return IS_SET(window->EditFlags, InGuiWindowEditFlags::BlockEvents);
 							}
 							else if (window->ResolveResizeFlags(m_Input.MousePosition))
 							{							
-								handled = IS_SET(window->EditFlags, InGuiWindowEditFlags::BlockEvents);
+								return IS_SET(window->EditFlags, InGuiWindowEditFlags::BlockEvents);
 							}
 						}			
 						// Unset current window before end of the function
 						m_FrameData.CurrentWindow = nullptr;
-						return handled;
 					}
 				}
 			}
@@ -202,19 +209,24 @@ namespace XYZ {
 		});
 	}
 
-	InGuiWindow* InGuiContext::CreateWindow(const char* name)
+	InGuiWindow* InGuiContext::CreateInGuiWindow(const char* name)
 	{
-		InGuiWindow* window = m_Pool.Allocate<InGuiWindow>();
+		InGuiWindow* window = m_WindowPool.Allocate<InGuiWindow>();
 		window->Name = name;
 		m_Windows.push_back(window);
 		window->ClipID = m_Windows.size();
-		m_WindowMap[name] = window;
+		
+		std::hash<std::string_view> hasher;
+		InGuiID id = hasher(name);
+		m_WindowMap[id] = window;
 		m_ClipRectangles.push_back({});
 		return window;
 	}
-	InGuiWindow* InGuiContext::GetWindow(const char* name)
+	InGuiWindow* InGuiContext::GetInGuiWindow(const char* name)
 	{
-		auto it = m_WindowMap.find(name);
+		std::hash<std::string_view> hasher;
+		InGuiID id = hasher(name);
+		auto it = m_WindowMap.find(id);
 		if (it == m_WindowMap.end())
 			return nullptr;
 		return it->second;

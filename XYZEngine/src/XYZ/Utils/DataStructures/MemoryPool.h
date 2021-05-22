@@ -42,7 +42,7 @@ namespace XYZ {
 			uint32_t chunkIndex = 0;
 			memcpy(&chunkIndex, tmp + sizeof(uint8_t), m_SizeOfChunkIndex);
 
-			Chunk chunk{ toChunkSize<T>(), chunkIndex, blockIndex };
+			Chunk chunk{ (uint32_t)toChunkSize<T>(), chunkIndex, blockIndex };
 			m_FreeChunks.push_back(chunk);
 			m_Dirty = true;
 		}
