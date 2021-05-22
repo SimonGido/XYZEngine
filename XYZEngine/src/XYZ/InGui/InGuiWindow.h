@@ -52,7 +52,8 @@ namespace XYZ {
 			PanelEnabled	= BIT(1),
 			MenuEnabled		= BIT(2),
 			DockingEnabled  = BIT(3),
-			FrameEnabled	= BIT(4)
+			FrameEnabled	= BIT(4),
+			TabEnabled		= BIT(5)
 		};
 	}
 

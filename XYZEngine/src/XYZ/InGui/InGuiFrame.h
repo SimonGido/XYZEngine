@@ -5,6 +5,7 @@ namespace XYZ {
 	struct InGuiFrame
 	{
 		InGuiFrame();
+		~InGuiFrame();
 
 		uint32_t CustomTextureID() const { return (uint32_t)CustomTextures.size() + InGuiConfig::sc_FontTexture; }
 		

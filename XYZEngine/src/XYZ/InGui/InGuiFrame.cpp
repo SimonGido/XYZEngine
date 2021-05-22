@@ -9,6 +9,10 @@ namespace XYZ {
 		MovedWindowOffset(0.0f),
 		CurrentMenuWidth(0.0f)
 	{
+		
+	}
+	InGuiFrame::~InGuiFrame()
+	{
 		XYZ_ASSERT(WindowQueue.empty(), "Window queue is not empty, forgot end?");
 	}
 }
