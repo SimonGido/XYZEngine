@@ -64,6 +64,7 @@ namespace XYZ {
 		glm::vec4				   Colors[NumColors];
 		glm::vec2				   WindowPadding;
 		glm::vec2				   MenuItemSize;
+		float					   TreeNodeOffset;
 		float					   TabLabelOffset;
 		float					   WindowFrameThickness;
 		float					   PanelHeight;

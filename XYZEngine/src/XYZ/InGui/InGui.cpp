@@ -220,12 +220,6 @@ namespace XYZ {
 		return (window->TabID == id);
 	}
 
-	void InGui::EndTab()
-	{
-		InGuiWindow* window = s_Context->m_FrameData.CurrentWindow;
-		if (!window->IsActive || IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed))
-			return;
-	}
 
 	uint8_t InGui::BeginMenu(const char* label, float width)
 	{		

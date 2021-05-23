@@ -142,7 +142,6 @@ namespace XYZ {
 			InGui::Float4("###Haasgva1", "Hagsdgva2", "hasfs", "Hasdasasd", glm::vec2(40.0f, 30.0f), values, 2);
 			InGui::Float("test", glm::vec2(40.0f, 30.0f), value, 2);
 		}
-		InGui::EndTab();
 		
 		if (InGui::BeginTab("Second Tab"))
 		{
@@ -153,7 +152,7 @@ namespace XYZ {
 				std::cout << "Checked" << std::endl;
 			}
 		}
-		InGui::EndTab();
+
 		InGui::End();
 	}
 	void InGuiLayer::Begin()

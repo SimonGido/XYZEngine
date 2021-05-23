@@ -9,6 +9,7 @@ namespace XYZ {
 		TabLabelOffset(10.0f),
 		WindowFrameThickness(5.0f),
 		PanelHeight(25.0f),
+		TreeNodeOffset(25.0f),
 		TabBarHeight(25.0f),
 		MenuBarHeight(25.0f),
 		LabelOffset(5.0f)

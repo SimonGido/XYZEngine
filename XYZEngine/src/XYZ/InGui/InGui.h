@@ -34,7 +34,11 @@ namespace XYZ {
 		static void EndGroup();
 
 		static bool BeginTab(const char* label);
-		static void	   EndTab();
+
+		// TODO: Implement
+		static bool    BeginTree();
+		static void    EndTree();
+		static uint8_t PushNode(const char* label);
 
 		static uint8_t BeginMenu(const char* label, float width);
 		static void    EndMenu();
