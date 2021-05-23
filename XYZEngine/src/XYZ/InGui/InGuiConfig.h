@@ -42,6 +42,8 @@ namespace XYZ {
 			LineColor,
 			MenuDefault,
 			MenuHoover,
+			TabDefault,
+			TabHoover,
 			InputDefault,
 			InputHoover,
 			ImageDefault,
@@ -62,6 +64,7 @@ namespace XYZ {
 		glm::vec4				   Colors[NumColors];
 		glm::vec2				   WindowPadding;
 		glm::vec2				   MenuItemSize;
+		float					   TabLabelOffset;
 		float					   WindowFrameThickness;
 		float					   PanelHeight;
 		float					   TabBarHeight;

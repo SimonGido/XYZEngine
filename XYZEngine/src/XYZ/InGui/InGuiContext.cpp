@@ -50,8 +50,10 @@ namespace XYZ {
 	void InGuiContext::Render()
 	{
 		for (InGuiWindow* window : m_Windows)
+		{
 			m_ClipRectangles[window->ClipID] = window->ClipRect(m_ViewportHeight);
-
+			m_ClipRectangles[window->PanelClipID] = window->PanelClipRect(m_ViewportHeight);
+		}
 		glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f));
 		glm::mat4 viewProjectionMatrix = glm::ortho(0.0f, (float)m_ViewportWidth, (float)m_ViewportHeight, 0.0f) * glm::inverse(viewMatrix);
 		
@@ -211,14 +213,16 @@ namespace XYZ {
 
 	InGuiWindow* InGuiContext::CreateInGuiWindow(const char* name)
 	{
-		InGuiWindow* window = m_WindowPool.Allocate<InGuiWindow>();
+		InGuiClipID workClipID = m_ClipRectangles.size();
+		InGuiClipID panelClipID = m_ClipRectangles.size() + 1;
+		InGuiWindow* window = m_WindowPool.Allocate<InGuiWindow>(workClipID, panelClipID);
 		window->Name = name;
 		m_Windows.push_back(window);
-		window->ClipID = m_Windows.size();
-		
+
 		std::hash<std::string_view> hasher;
 		InGuiID id = hasher(name);
 		m_WindowMap[id] = window;
+		m_ClipRectangles.push_back({});
 		m_ClipRectangles.push_back({});
 		return window;
 	}

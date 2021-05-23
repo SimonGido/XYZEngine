@@ -5,9 +5,11 @@
 #include "InGui.h"
 
 namespace XYZ {	
-	InGuiWindow::InGuiWindow()
+	InGuiWindow::InGuiWindow(uint32_t workClipId, uint32_t panelClipID)
 		:
-		ClipID(0),
+		ClipID(workClipId),
+		WorkClipID(workClipId),
+		PanelClipID(panelClipID),
 		EditFlags(0),
 		StyleFlags(0),
 		Position(100.0f),
@@ -16,6 +18,7 @@ namespace XYZ {
 		IsActive(true),
 		FrameData(this),
 		Axis(AxisPlacement::Vertical),
+		TabID(InGuiInvalidID),
 		ScrollBarX(false),
 		ScrollBarY(false),
 		Grouping(false),
@@ -66,17 +69,17 @@ namespace XYZ {
 				defaultColor, minimizeSubTexture->GetTexCoordsUpside(),
 				buttonPosition, { config.PanelHeight, config.PanelHeight }, InGuiConfig::sc_DefaultTexture, clipID
 			);
-
-			glm::vec2 textPosition = glm::vec2(Position.x + config.LabelOffset, Position.y + config.PanelHeight);
-			textPosition.y -= std::floor((config.PanelHeight - config.Font->GetLineHeight()) / 2.0f);
-			Util::GenerateTextMeshClipped(
-				Name.c_str(), config.Font, defaultColor, 
-				textPosition, DrawListInUse->m_Quads,
-				InGuiConfig::sc_FontTexture, clipID,
-				{ Size.x - config.PanelHeight, config.PanelHeight }
-			);
+			if (IS_SET(StyleFlags, InGuiWindowStyleFlags::LabelEnabled))
+			{
+				glm::vec2 textPosition = glm::vec2(Position.x + config.LabelOffset, Position.y + config.PanelHeight);
+				textPosition.y -= std::floor((config.PanelHeight - config.Font->GetLineHeight()) / 2.0f);
+				Util::GenerateTextMesh(
+					Name.c_str(), config.Font, defaultColor,
+					textPosition, DrawListInUse->m_Quads,
+					InGuiConfig::sc_FontTexture, PanelClipID
+				);
+			}
 		}
-		
 	}
 
 	void InGuiWindow::PushTextClipped(const char* text, const glm::vec4& color, const glm::vec2& posMin, const glm::vec2& posMax, const glm::vec2* textSize)
@@ -272,6 +275,11 @@ namespace XYZ {
 		return !(rect.Overlaps(ClipRect()));
 	}
 
+	bool InGuiWindow::NextTabClipped()
+	{
+		return (FrameData.TabOffet > Position.x + Size.x);
+	}
+
 	glm::vec2 InGuiWindow::MoveCursorPosition(const glm::vec2& size)
 	{
 		glm::vec2 old = FrameData.CursorPos;
@@ -312,6 +320,13 @@ namespace XYZ {
 		FrameData.ScrollMax.y = std::max(FrameData.ScrollMax.y, yScrollMax);
 		
 		old -= Scroll;
+		return old;
+	}
+
+	float InGuiWindow::MoveTabPosition(float size)
+	{
+		float old = FrameData.TabOffet;
+		FrameData.TabOffet += size;
 		return old;
 	}
 
@@ -518,6 +533,17 @@ namespace XYZ {
 		return rect;
 	}
 
+	InGuiRect InGuiWindow::PanelClipRect(uint32_t viewportHeight) const
+	{
+		const InGuiConfig& config = InGui::GetContext().m_Config;
+		glm::vec2 min = { Position.x, (float)viewportHeight - Position.y - config.PanelHeight };
+		glm::vec2 max = min + glm::vec2(Size.x, config.PanelHeight);
+		InGuiRect rect(min, max);
+		if (Parent)
+			rect.Union(Parent->ClipRect(viewportHeight));
+		return rect;
+	}
+
 	InGuiRect InGuiWindow::MinimizeRect() const
 	{
 		const InGuiConfig& config = InGui::GetContext().m_Config;
@@ -564,5 +590,11 @@ namespace XYZ {
 		CursorPos += config.WindowPadding;
 		if (IS_SET(window->StyleFlags, InGuiWindowStyleFlags::MenuEnabled))
 			CursorPos.y += config.MenuBarHeight;
+
+		TabOffet = window->Position.x;
+		if (IS_SET(window->StyleFlags, InGuiWindowStyleFlags::LabelEnabled))
+		{
+			TabOffet += Util::CalculateTextSize(window->Name.c_str(), InGui::GetContext().m_Config.Font).x + config.LabelOffset;
+		}
 	}
 }

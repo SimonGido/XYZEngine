@@ -72,6 +72,7 @@ namespace XYZ {
 			  InGuiWindowStyleFlags::MenuEnabled
 			| InGuiWindowStyleFlags::PanelEnabled
 			| InGuiWindowStyleFlags::ScrollEnabled
+			| InGuiWindowStyleFlags::LabelEnabled
 		);
 
 
@@ -107,35 +108,49 @@ namespace XYZ {
 			InGui::EndMenuBar();
 		}
 
-
-		static bool checked = false;
-		InGui::Checkbox("Hopbiasf", { 25.0f,25.0f }, checked);
-		if (checked)
+		if (InGui::BeginTab("First Tab"))
 		{
-			std::cout << "Checked" << std::endl;
+			static bool checked = false;
+			InGui::Checkbox("Hopbiasf", { 25.0f,25.0f }, checked);
+			if (checked)
+			{
+				std::cout << "Checked" << std::endl;
+			}
+		
+			if (IS_SET(InGui::Button("Opica hah assa", { 75.0f, 25.0f }), InGui::Pressed))
+			{
+				std::cout << "Pressed" << std::endl;
+			}
+		
+			static float value = 5.0f;
+			if (IS_SET(InGui::SliderFloat("Slider example", { 150.0f, 25.0f }, value, 0.0f, 10.0f), InGui::Pressed))
+			{
+				std::cout << "Value changed " << value << std::endl;
+			}
+			static float vvalue = 5.0f;
+			if (IS_SET(InGui::VSliderFloat("VSlider example", { 25.0f, 150.0f }, vvalue, 0.0f, 10.0f), InGui::Pressed))
+			{
+				std::cout << "Value changed " << value << std::endl;
+			}
+		
+			static float values[4] = { 2.0f,2.5f, 1.0f, 4.0f };
+			InGui::Float2("Hava1", "Hava2", glm::vec2(40.0f, 30.0f), values, 2);
+			InGui::Float3("##Haafsva1", "Havasfaa2", "Hhoho", glm::vec2(40.0f, 30.0f), values, 2);
+			InGui::Float4("###Haasgva1", "Hagsdgva2", "hasfs", "Hasdasasd", glm::vec2(40.0f, 30.0f), values, 2);
+			InGui::Float("test", glm::vec2(40.0f, 30.0f), value, 2);
 		}
-
-		if (IS_SET(InGui::Button("Opica hah assa", { 75.0f, 25.0f }), InGui::Pressed))
+		InGui::EndTab();
+		
+		if (InGui::BeginTab("Second Tab"))
 		{
-			std::cout << "Pressed" << std::endl;
+			static bool checked = false;
+			InGui::Checkbox("Hopbiadsgassf", { 25.0f,25.0f }, checked);
+			if (checked)
+			{
+				std::cout << "Checked" << std::endl;
+			}
 		}
-
-		static float value = 5.0f;
-		if (IS_SET(InGui::SliderFloat("Slider example", { 150.0f, 25.0f }, value, 0.0f, 10.0f), InGui::Pressed))
-		{
-			std::cout << "Value changed "<< value << std::endl;
-		}
-		static float vvalue = 5.0f;
-		if (IS_SET(InGui::VSliderFloat("VSlider example", { 25.0f, 150.0f }, vvalue, 0.0f, 10.0f), InGui::Pressed))
-		{
-			std::cout << "Value changed " << value << std::endl;
-		}
-
-		static float values[4] = { 2.0f,2.5f, 1.0f, 4.0f };
-		InGui::Float2("Hava1", "Hava2", glm::vec2(40.0f, 30.0f), values, 2);
-		InGui::Float3("##Haafsva1", "Havasfaa2", "Hhoho", glm::vec2(40.0f, 30.0f), values, 2);
-		InGui::Float4("###Haasgva1", "Hagsdgva2","hasfs", "Hasdasasd", glm::vec2(40.0f, 30.0f), values, 2);
-		InGui::Float("test", glm::vec2(40.0f, 30.0f), value, 2);
+		InGui::EndTab();
 		InGui::End();
 	}
 	void InGuiLayer::Begin()

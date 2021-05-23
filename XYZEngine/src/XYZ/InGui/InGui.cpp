@@ -30,6 +30,7 @@ namespace XYZ {
 		if (!window)
 			window = s_Context.CreateInGuiWindow(name);
 		window->StyleFlags = flags;
+		window->ClipID = window->WorkClipID;
 	
 		InGuiClipID clipID = 0;
 		window->SetParent(nullptr);
@@ -43,7 +44,7 @@ namespace XYZ {
 		frame.CurrentWindow = window;
 		window->DrawList.Clear();
 		glm::vec4 color = config.Colors[InGuiConfig::WindowDefault];
-		if (window->HandleHoover(input.MousePosition))
+		if (window->HandleHoover(input.MousePosition) || window->IsFocused())
 			color = config.Colors[InGuiConfig::WindowHoover];		
 		window->HandleResize(input.MousePosition);
 		window->HandleMove(input.MousePosition, frame.MovedWindowOffset);
@@ -154,6 +155,58 @@ namespace XYZ {
 		window->EndGroup();
 	}
 
+	bool InGui::BeginTab(const char* label)
+	{
+		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
+		if (!window->IsActive || IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed))
+			return 0;
+
+		uint8_t result = 0;
+		const InGuiInput& input = s_Context.m_Input;
+		const InGuiFrame& frame = s_Context.m_FrameData;
+		const InGuiConfig& config = s_Context.m_Config;
+		const glm::vec2 labelSize = Util::CalculateTextSize(label, config.Font);
+		const glm::vec2 fullSize = glm::vec2(labelSize.x + config.TabLabelOffset, config.PanelHeight);
+		if (window->NextTabClipped())
+		{
+			window->MoveTabPosition(fullSize.x);
+			return 0;
+		}
+		InGuiID id = window->GetID(label);
+
+		const glm::vec2 pos(window->MoveTabPosition(fullSize.x), window->Position.y); 
+		glm::vec4 color = config.Colors[InGuiConfig::TabDefault];
+		InGuiRect rect(pos, pos + fullSize);
+		InGuiRect textRect(rect);
+		rect.Union(window->PanelRect());
+
+		InGuiBehavior::ButtonBehavior(rect, id, result);
+		if (IS_SET(result, InGui::Hoover) || window->TabID == id)
+		{
+			color = config.Colors[InGuiConfig::TabHoover];
+		}
+		if (IS_SET(result, InGui::Pressed))
+		{
+			window->TabID = id;
+		}
+
+		window->ClipID = window->PanelClipID;
+		window->PushQuad(
+			color, config.SubTextures[InGuiConfig::Button]->GetTexCoords(),
+			pos, fullSize
+		);
+		window->PushTextClipped(label, color, textRect.Min, textRect.Max, nullptr);
+		window->ClipID = window->WorkClipID;
+		return (window->TabID == id);
+	}
+
+	void InGui::EndTab()
+	{
+		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
+		if (!window->IsActive || IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed))
+			return;
+	}
+
 	uint8_t InGui::BeginMenu(const char* label, float width)
 	{		
 		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
@@ -165,7 +218,6 @@ namespace XYZ {
 		const InGuiConfig& config = s_Context.m_Config;
 		const glm::vec2 labelSize = Util::CalculateTextSize(label, config.Font);
 
-		;
 		InGuiID id = window->GetID(label);
 		uint8_t result = 0;
 		const glm::vec2 size = { width, config.MenuBarHeight };

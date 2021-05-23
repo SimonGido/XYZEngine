@@ -6,6 +6,7 @@ namespace XYZ {
 		:
 		WindowPadding(5.0f),
 		MenuItemSize(100.0f,25.0f),
+		TabLabelOffset(10.0f),
 		WindowFrameThickness(5.0f),
 		PanelHeight(25.0f),
 		TabBarHeight(25.0f),
@@ -25,6 +26,7 @@ namespace XYZ {
 		Colors[MenuDefault] = glm::vec4(1.0f, 1.0f, 1.0f, 0.8f);
 		Colors[TextColor] = glm::vec4(1.0f);
 		Colors[LineColor] = glm::vec4(1.0f);
+		Colors[TabHoover] = glm::vec4(1.9f, 2.3f, 2.5, 1.0f);
 		Colors[WindowFrameColor] = glm::vec4(0.4f, 0.4f, 0.4f, 1.0f);
 	}
 }

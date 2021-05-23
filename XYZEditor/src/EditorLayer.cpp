@@ -118,6 +118,7 @@ namespace XYZ {
 	{
 		Renderer::Clear();
 		Renderer::SetClearColor({ 0.1f,0.1f,0.1f,0.1f });
+		m_EditorCamera.OnUpdate(ts);
 		
 	
 		if (m_Scene->GetState() == SceneState::Play)
@@ -147,7 +148,7 @@ namespace XYZ {
 	{
 		if (InGui::Begin("Editor Layer"))
 		{
-			InGuiWindowFlags flags = InGuiWindowStyleFlags::PanelEnabled | InGuiWindowStyleFlags::FrameEnabled;
+			InGuiWindowFlags flags = InGuiWindowStyleFlags::PanelEnabled | InGuiWindowStyleFlags::FrameEnabled | InGuiWindowStyleFlags::LabelEnabled;
 			InGui::Begin("Sub window", flags);
 			InGui::Image("Test Image", glm::vec2(300.0f), m_Test);
 			InGui::End();

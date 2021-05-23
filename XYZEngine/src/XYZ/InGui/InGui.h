@@ -14,7 +14,10 @@ namespace XYZ {
 		static InGuiID GetID(const char* name);
 		static void FocusWindow(const char* name);
 
-		static bool Begin(const char* name, InGuiWindowFlags flags = InGuiWindowStyleFlags::PanelEnabled);
+		static bool Begin(const char* name, InGuiWindowFlags flags = (
+			 InGuiWindowStyleFlags::PanelEnabled 
+		   | InGuiWindowStyleFlags::LabelEnabled
+		));
 		static void End();
 		static void Separator();
 		
@@ -26,6 +29,9 @@ namespace XYZ {
 
 		static void BeginGroup();
 		static void EndGroup();
+
+		static bool BeginTab(const char* label);
+		static void	   EndTab();
 
 		static uint8_t BeginMenu(const char* label, float width);
 		static void    EndMenu();
