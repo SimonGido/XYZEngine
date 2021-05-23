@@ -36,9 +36,9 @@ namespace XYZ {
 		static bool BeginTab(const char* label);
 
 		// TODO: Implement
-		static bool    BeginTree();
-		static void    EndTree();
-		static uint8_t PushNode(const char* label);
+		//static bool    BeginTree();
+		//static void    EndTree();
+		//static uint8_t PushNode(const char* label);
 
 		static uint8_t BeginMenu(const char* label, float width);
 		static void    EndMenu();

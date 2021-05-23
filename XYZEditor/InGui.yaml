@@ -1,25 +1,25 @@
 Windows:
-  - Name: Editor Layer
-    Position: [541, 138]
-    Size: [774, 656]
-    Collapsed: 0
-  - Name: Sub window
-    Position: [546, 168]
-    Size: [300, 300]
-    Collapsed: 0
-  - Name: OtherSub window
-    Position: [546, 473]
-    Size: [300, 300]
-    Collapsed: 0
-  - Name: Yes Subwindow
-    Position: [546, 778]
-    Size: [300, 300]
-    Collapsed: 0
-  - Name: Havko
-    Position: [1309, 119]
-    Size: [519, 629]
-    Collapsed: 2
   - Name: Test
     Position: [173, 156]
     Size: [300, 300]
     Collapsed: 0
+  - Name: Sub window
+    Position: [546, 168]
+    Size: [300, 300]
+    Collapsed: false
+  - Name: OtherSub window
+    Position: [546, 198]
+    Size: [300, 300]
+    Collapsed: false
+  - Name: Yes Subwindow
+    Position: [546, 228]
+    Size: [300, 300]
+    Collapsed: false
+  - Name: Editor Layer
+    Position: [541, 138]
+    Size: [774, 656]
+    Collapsed: false
+  - Name: Havko
+    Position: [1393, 193]
+    Size: [519, 629]
+    Collapsed: false

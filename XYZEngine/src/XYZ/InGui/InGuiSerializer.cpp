@@ -16,7 +16,7 @@ namespace XYZ {
 			out << YAML::Key << "Name" << YAML::Value << window->Name;
 			out << YAML::Key << "Position" << YAML::Value << window->Position;
 			out << YAML::Key << "Size" << YAML::Value << window->Size;
-			out << YAML::Key << "Collapsed" << YAML::Value << IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed);
+			out << YAML::Key << "Collapsed" << YAML::Value << (bool)IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed);
 			out << YAML::EndMap;
 		}
 		out << YAML::EndSeq;
