@@ -3,32 +3,52 @@
 
 #include "InGuiUtil.h"
 #include "InGuiBehavior.h"
+#include "InGuiSerializer.h"
 
 #include "XYZ/Core/Input.h"
 
 namespace XYZ {
-	static InGuiContext s_Context;
+	static InGuiContext* s_Context = nullptr;
 	
+	void InGui::Init(const std::string& filepath)
+	{
+		if (!s_Context)
+		{
+			s_Context = new InGuiContext();
+			if (!filepath.empty())
+				InGuiSerializer::Deserialize(*s_Context, filepath);
+		}
+	}
+
+	void InGui::Shutdown()
+	{
+		if (s_Context)
+		{
+			InGuiSerializer::Serialize(*s_Context, "InGui.yaml");
+			delete s_Context;
+		}
+	}
+
 	void InGui::BeginFrame()
 	{
 		auto [mx, my] = Input::GetMousePosition();
-		s_Context.m_Input.MousePosition = { mx, my };	
+		s_Context->m_Input.MousePosition = { mx, my };	
 	}
 
 	void InGui::EndFrame()
 	{
-		s_Context.Render();
+		s_Context->Render();
 	}
 
 	bool InGui::Begin(const char* name, InGuiWindowFlags flags)
 	{
-		InGuiInput& input = s_Context.m_Input;
-		InGuiFrame& frame = s_Context.m_FrameData;
-		InGuiConfig& config = s_Context.m_Config;
+		InGuiInput& input = s_Context->m_Input;
+		InGuiFrame& frame = s_Context->m_FrameData;
+		InGuiConfig& config = s_Context->m_Config;
 
-		InGuiWindow* window = s_Context.GetInGuiWindow(name);
+		InGuiWindow* window = s_Context->GetInGuiWindow(name);
 		if (!window)
-			window = s_Context.CreateInGuiWindow(name);
+			window = s_Context->CreateInGuiWindow(name);
 		window->StyleFlags = flags;
 		window->ClipID = window->WorkClipID;
 	
@@ -59,8 +79,8 @@ namespace XYZ {
 	}
 	void InGui::End()
 	{
-		XYZ_ASSERT(s_Context.m_FrameData.CurrentWindow, "Missing begin call");
-		InGuiFrame& frame = s_Context.m_FrameData;
+		XYZ_ASSERT(s_Context->m_FrameData.CurrentWindow, "Missing begin call");
+		InGuiFrame& frame = s_Context->m_FrameData;
 		frame.WindowQueue.pop_back();
 		if (!frame.WindowQueue.empty())
 		{
@@ -74,11 +94,11 @@ namespace XYZ {
 
 	void InGui::Separator()
 	{
-		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
+		InGuiWindow* window = s_Context->m_FrameData.CurrentWindow;
 		if (!window->IsActive || IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed))
 			return;
 
-		const InGuiConfig& config = s_Context.m_Config;
+		const InGuiConfig& config = s_Context->m_Config;
 		const glm::vec2& padding = config.WindowPadding;
 		if (window->Axis == AxisPlacement::Horizontal)
 		{
@@ -102,21 +122,21 @@ namespace XYZ {
 
 	void InGui::FocusWindow(const char* name)
 	{
-		s_Context.FocusWindow(s_Context.GetInGuiWindow(name));
+		s_Context->FocusWindow(s_Context->GetInGuiWindow(name));
 	}
 
 	bool InGui::BeginMenuBar()
 	{
-		XYZ_ASSERT(!s_Context.m_MenuBarActive, "Menu bar is already active, forgot end menu bar");
-		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
+		XYZ_ASSERT(!s_Context->m_MenuBarActive, "Menu bar is already active, forgot end menu bar");
+		InGuiWindow* window = s_Context->m_FrameData.CurrentWindow;
 		if (!window->IsActive || IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed))
 			return false;
 
 		if (!IS_SET(window->StyleFlags, InGuiWindowStyleFlags::MenuEnabled))
 			return false;
 
-		s_Context.m_MenuBarActive = true;
-		const InGuiConfig& config = s_Context.m_Config;
+		s_Context->m_MenuBarActive = true;
+		const InGuiConfig& config = s_Context->m_Config;
 		const glm::vec4 color = config.Colors[InGuiConfig::Button];
 		const glm::vec2 pos = { window->Position.x, window->Position.y + config.PanelHeight };
 		const glm::vec2 size = { window->Size.x, config.MenuBarHeight };
@@ -130,18 +150,18 @@ namespace XYZ {
 
 	void InGui::EndMenuBar()
 	{
-		XYZ_ASSERT(s_Context.m_MenuBarActive, "Menu bar is not active, forgot begin menu bar");
-		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
+		XYZ_ASSERT(s_Context->m_MenuBarActive, "Menu bar is not active, forgot begin menu bar");
+		InGuiWindow* window = s_Context->m_FrameData.CurrentWindow;
 		if (!window->IsActive || IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed))
 			return;
 		window->FrameData = InGuiWindowFrameData(window);
-		s_Context.m_MenuBarActive = false;
+		s_Context->m_MenuBarActive = false;
 	}
 
 
 	void InGui::BeginGroup()
 	{
-		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
+		InGuiWindow* window = s_Context->m_FrameData.CurrentWindow;
 		if (!window->IsActive || IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed))
 			return;
 		window->Grouping = true;
@@ -149,7 +169,7 @@ namespace XYZ {
 
 	void InGui::EndGroup()
 	{
-		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
+		InGuiWindow* window = s_Context->m_FrameData.CurrentWindow;
 		if (!window->IsActive || IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed))
 			return;
 		window->EndGroup();
@@ -157,14 +177,14 @@ namespace XYZ {
 
 	bool InGui::BeginTab(const char* label)
 	{
-		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
+		InGuiWindow* window = s_Context->m_FrameData.CurrentWindow;
 		if (!window->IsActive || IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed))
 			return 0;
 
 		uint8_t result = 0;
-		const InGuiInput& input = s_Context.m_Input;
-		const InGuiFrame& frame = s_Context.m_FrameData;
-		const InGuiConfig& config = s_Context.m_Config;
+		const InGuiInput& input = s_Context->m_Input;
+		const InGuiFrame& frame = s_Context->m_FrameData;
+		const InGuiConfig& config = s_Context->m_Config;
 		const glm::vec2 labelSize = Util::CalculateTextSize(label, config.Font);
 		const glm::vec2 fullSize = glm::vec2(labelSize.x + config.TabLabelOffset, config.PanelHeight);
 		if (window->NextTabClipped())
@@ -202,20 +222,20 @@ namespace XYZ {
 
 	void InGui::EndTab()
 	{
-		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
+		InGuiWindow* window = s_Context->m_FrameData.CurrentWindow;
 		if (!window->IsActive || IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed))
 			return;
 	}
 
 	uint8_t InGui::BeginMenu(const char* label, float width)
 	{		
-		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
+		InGuiWindow* window = s_Context->m_FrameData.CurrentWindow;
 		if (!window->IsActive || IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed))
 			return 0;
 		
-		InGuiFrame& frame = s_Context.m_FrameData;
-		const InGuiInput& input = s_Context.m_Input;
-		const InGuiConfig& config = s_Context.m_Config;
+		InGuiFrame& frame = s_Context->m_FrameData;
+		const InGuiInput& input = s_Context->m_Input;
+		const InGuiConfig& config = s_Context->m_Config;
 		const glm::vec2 labelSize = Util::CalculateTextSize(label, config.Font);
 
 		InGuiID id = window->GetID(label);
@@ -235,9 +255,9 @@ namespace XYZ {
 		}
 		if (IS_SET(result, InGui::Pressed))
 		{
-			s_Context.m_MenuOpenID = (s_Context.m_MenuOpenID != id) ? id : 0;
+			s_Context->m_MenuOpenID = (s_Context->m_MenuOpenID != id) ? id : 0;
 		}
-		if (s_Context.m_MenuOpenID == id)
+		if (s_Context->m_MenuOpenID == id)
 			result |= InGui::Pressed;
 
 		window->PushQuadOverlay(
@@ -250,12 +270,12 @@ namespace XYZ {
 
 	void InGui::EndMenu()
 	{
-		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
+		InGuiWindow* window = s_Context->m_FrameData.CurrentWindow;
 		if (!window->IsActive || IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed))
 			return;
 		
-		InGuiFrame& frame = s_Context.m_FrameData;
-		const InGuiConfig& config = s_Context.m_Config;
+		InGuiFrame& frame = s_Context->m_FrameData;
+		const InGuiConfig& config = s_Context->m_Config;
 		for (const InGuiID id : frame.MenuItems)
 			window->FrameData.CursorPos.y -= config.MenuItemSize.y;
 		frame.MenuItems.clear();
@@ -265,14 +285,14 @@ namespace XYZ {
 
 	uint8_t InGui::MenuItem(const char* label)
 	{
-		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
+		InGuiWindow* window = s_Context->m_FrameData.CurrentWindow;
 		if (!window->IsActive || IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed))
 			return 0;
 
 		uint8_t result = 0;
-		InGuiFrame& frame = s_Context.m_FrameData;
-		const InGuiInput& input = s_Context.m_Input;
-		const InGuiConfig& config = s_Context.m_Config;
+		InGuiFrame& frame = s_Context->m_FrameData;
+		const InGuiInput& input = s_Context->m_Input;
+		const InGuiConfig& config = s_Context->m_Config;
 		const glm::vec2 labelSize = Util::CalculateTextSize(label, config.Font);
 
 		InGuiID id = window->GetID(label);
@@ -293,7 +313,7 @@ namespace XYZ {
 		}
 		if (IS_SET(result, InGui::Pressed))
 		{
-			s_Context.m_MenuOpenID = 0;
+			s_Context->m_MenuOpenID = 0;
 		}
 		window->PushQuadNotClippedOverlay(
 			color, config.SubTextures[InGuiConfig::Button]->GetTexCoords(),
@@ -305,14 +325,14 @@ namespace XYZ {
 
 	uint8_t InGui::Button(const char* label, const glm::vec2& size)
 	{
-		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
+		InGuiWindow* window = s_Context->m_FrameData.CurrentWindow;
 		if (!window->IsActive || IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed))
 			return 0;
 
 		uint8_t result = 0;
-		const InGuiInput& input = s_Context.m_Input;
-		const InGuiFrame& frame = s_Context.m_FrameData;
-		const InGuiConfig& config = s_Context.m_Config;
+		const InGuiInput& input = s_Context->m_Input;
+		const InGuiFrame& frame = s_Context->m_FrameData;
+		const InGuiConfig& config = s_Context->m_Config;
 		const glm::vec2 labelSize = Util::CalculateTextSize(label, config.Font);
 		if (window->NextWidgetClipped(size))
 		{
@@ -342,14 +362,14 @@ namespace XYZ {
 	}
 	uint8_t InGui::Checkbox(const char* label, const glm::vec2& size, bool& checked)
 	{
-		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
+		InGuiWindow* window = s_Context->m_FrameData.CurrentWindow;
 		if (!window->IsActive || IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed))
 			return 0;
 
 		uint8_t result = 0;
-		const InGuiInput& input = s_Context.m_Input;
-		const InGuiFrame& frame = s_Context.m_FrameData;
-		const InGuiConfig& config = s_Context.m_Config;
+		const InGuiInput& input = s_Context->m_Input;
+		const InGuiFrame& frame = s_Context->m_FrameData;
+		const InGuiConfig& config = s_Context->m_Config;
 		const glm::vec2 labelSize = Util::CalculateTextSize(label, config.Font);
 		const glm::vec2 fullSize = glm::vec2(size.x + labelSize.x, std::max(size.y, labelSize.y));
 		if (window->NextWidgetClipped(fullSize))
@@ -392,14 +412,14 @@ namespace XYZ {
 
 	uint8_t InGui::SliderFloat(const char* label, const glm::vec2& size, float& value, float min, float max, const char* format)
 	{
-		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
+		InGuiWindow* window = s_Context->m_FrameData.CurrentWindow;
 		if (!window->IsActive || IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed))
 			return 0;
 
 		uint8_t result = 0;
-		const InGuiInput& input = s_Context.m_Input;
-		const InGuiFrame& frame = s_Context.m_FrameData;
-		const InGuiConfig& config = s_Context.m_Config;
+		const InGuiInput& input = s_Context->m_Input;
+		const InGuiFrame& frame = s_Context->m_FrameData;
+		const InGuiConfig& config = s_Context->m_Config;
 		const glm::vec2 labelSize = Util::CalculateTextSize(label, config.Font);
 		const glm::vec2 fullSize = glm::vec2(size.x + labelSize.x, std::max(size.y, labelSize.y));
 		if (window->NextWidgetClipped(fullSize))
@@ -459,14 +479,14 @@ namespace XYZ {
 
 	uint8_t InGui::VSliderFloat(const char* label, const glm::vec2& size, float& value, float min, float max, const char* format)
 	{
-		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
+		InGuiWindow* window = s_Context->m_FrameData.CurrentWindow;
 		if (!window->IsActive || IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed))
 			return 0;
 
 		uint8_t result = 0;
-		const InGuiInput& input = s_Context.m_Input;
-		const InGuiFrame& frame = s_Context.m_FrameData;
-		const InGuiConfig& config = s_Context.m_Config;
+		const InGuiInput& input = s_Context->m_Input;
+		const InGuiFrame& frame = s_Context->m_FrameData;
+		const InGuiConfig& config = s_Context->m_Config;
 		const glm::vec2 labelSize = Util::CalculateTextSize(label, config.Font);
 		const glm::vec2 fullSize = glm::vec2(size.x + labelSize.x, std::max(size.y, labelSize.y));
 		if (window->NextWidgetClipped(fullSize))
@@ -527,14 +547,14 @@ namespace XYZ {
 
 	uint8_t InGui::Float(const char* label, const glm::vec2& size, float& value, int32_t decimalPrecision)
 	{
-		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
+		InGuiWindow* window = s_Context->m_FrameData.CurrentWindow;
 		if (!window->IsActive || IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed))
 			return 0;
 
 		uint8_t result = 0;
-		const InGuiInput& input = s_Context.m_Input;
-		const InGuiFrame& frame = s_Context.m_FrameData;
-		const InGuiConfig& config = s_Context.m_Config;
+		const InGuiInput& input = s_Context->m_Input;
+		const InGuiFrame& frame = s_Context->m_FrameData;
+		const InGuiConfig& config = s_Context->m_Config;
 		const glm::vec2 labelSize = Util::CalculateTextSize(label, config.Font);
 		const glm::vec2 fullSize = glm::vec2(size.x + labelSize.x, std::max(size.y, labelSize.y));
 		if (window->NextWidgetClipped(fullSize))
@@ -551,7 +571,7 @@ namespace XYZ {
 		rect.Union(window->ClipRect());
 
 		InGuiBehavior::FloatBehavior(rect, id, result, value, decimalPrecision);		
-		if (IS_SET(result, InGui::Hoover | InGui::Pressed) || s_Context.m_LastInputID == id)
+		if (IS_SET(result, InGui::Hoover | InGui::Pressed) || s_Context->m_LastInputID == id)
 		{
 			color = config.Colors[InGuiConfig::InputHoover];
 		}
@@ -567,9 +587,9 @@ namespace XYZ {
 			&labelSize
 		);
 			
-		if (s_Context.m_LastInputID == id)
+		if (s_Context->m_LastInputID == id)
 		{ 
-			window->PushTextClipped(s_Context.m_TemporaryTextBuffer.c_str(), color, textRect.Min, textRect.Max, nullptr);
+			window->PushTextClipped(s_Context->m_TemporaryTextBuffer.c_str(), color, textRect.Min, textRect.Max, nullptr);
 		}
 		else
 		{
@@ -583,7 +603,7 @@ namespace XYZ {
 	uint8_t InGui::Float2(const char* label1, const char*label2, const glm::vec2& size, float* values, int32_t decimalPrecision)
 	{
 		InGui::BeginGroup();
-		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
+		InGuiWindow* window = s_Context->m_FrameData.CurrentWindow;
 		uint8_t result = 
 			  Float(label1, size, values[0], decimalPrecision) 
 			| Float(label2, size, values[1], decimalPrecision);
@@ -594,7 +614,7 @@ namespace XYZ {
 	uint8_t InGui::Float3(const char* label1, const char* label2, const char* label3, const glm::vec2& size, float* values, int32_t decimalPrecision)
 	{
 		InGui::BeginGroup();
-		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
+		InGuiWindow* window = s_Context->m_FrameData.CurrentWindow;
 		uint8_t result = 
 			  Float(label1, size, values[0], decimalPrecision) 
 			| Float(label2, size, values[1], decimalPrecision)
@@ -607,7 +627,7 @@ namespace XYZ {
 	uint8_t InGui::Float4(const char* label1, const char* label2, const char* label3, const char* label4, const glm::vec2& size, float* values, int32_t decimalPrecision)
 	{
 		InGui::BeginGroup();
-		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
+		InGuiWindow* window = s_Context->m_FrameData.CurrentWindow;
 		uint8_t result =
 			  Float(label1, size, values[0], decimalPrecision)
 			| Float(label2, size, values[1], decimalPrecision)
@@ -633,14 +653,14 @@ namespace XYZ {
 	}
 	uint8_t InGui::Image(const char* label, const glm::vec2& size, const Ref<SubTexture>& subTexture)
 	{
-		InGuiWindow* window = s_Context.m_FrameData.CurrentWindow;
+		InGuiWindow* window = s_Context->m_FrameData.CurrentWindow;
 		if (!window->IsActive || IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed))
 			return 0;
 
 		uint8_t result = 0;
-		InGuiFrame& frame = s_Context.m_FrameData;
-		const InGuiInput& input = s_Context.m_Input;
-		const InGuiConfig& config = s_Context.m_Config;
+		InGuiFrame& frame = s_Context->m_FrameData;
+		const InGuiInput& input = s_Context->m_Input;
+		const InGuiConfig& config = s_Context->m_Config;
 		const glm::vec2 labelSize = Util::CalculateTextSize(label, config.Font);
 		const glm::vec2 fullSize = glm::vec2(size.x + labelSize.x, std::max(size.y, labelSize.y));
 		if (window->NextWidgetClipped(fullSize))
@@ -678,6 +698,6 @@ namespace XYZ {
 
 	InGuiContext& InGui::GetContext()
 	{
-		return s_Context;
+		return *s_Context;
 	}
 }

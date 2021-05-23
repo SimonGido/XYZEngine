@@ -1,0 +1,25 @@
+Windows:
+  - Name: Test
+    Position: [100, 100]
+    Size: [300, 300]
+    Collapsed: false
+  - Name: Sub window
+    Position: [499, 337]
+    Size: [300, 300]
+    Collapsed: false
+  - Name: OtherSub window
+    Position: [499, 642]
+    Size: [300, 300]
+    Collapsed: false
+  - Name: Yes Subwindow
+    Position: [499, 947]
+    Size: [300, 300]
+    Collapsed: false
+  - Name: Editor Layer
+    Position: [494, 307]
+    Size: [774, 656]
+    Collapsed: false
+  - Name: Havko
+    Position: [1246, 121]
+    Size: [519, 629]
+    Collapsed: true

@@ -94,62 +94,6 @@ namespace YAML {
 			return true;
 		}
 	};
-
-	//template<>
-	//struct convert<XYZ::Bone>
-	//{
-	//	static Node encode(const XYZ::Bone& rhs)
-	//	{
-	//		Node node;
-	//		glm::vec3 skew;
-	//		glm::vec4 perspective;
-	//		glm::vec3 translation;
-	//		glm::quat rotation;
-	//		glm::vec3 scale;
-	//		glm::decompose(rhs.Transform, scale, rotation, translation, skew, perspective);
-	//		
-	//		node.push_back(translation.x);
-	//		node.push_back(translation.y);
-	//		node.push_back(translation.z);
-	//		node.push_back(rotation.x);
-	//		node.push_back(rotation.y);
-	//		node.push_back(rotation.z);
-	//		node.push_back(rotation.w);
-	//		node.push_back(scale.x);
-	//		node.push_back(scale.y);
-	//		node.push_back(scale.z);
-	//		node.push_back(rhs.ID);
-	//		node.push_back(rhs.Name);
-	//		return node;
-	//	}
-	//
-	//	static bool decode(const Node& node, XYZ::Bone& rhs)
-	//	{
-	//		if (!node.IsSequence() || node.size() != 12)
-	//			return false;
-	//
-	//		glm::vec3 translation;
-	//		glm::quat rotation;
-	//		glm::vec3 scale;
-	//		translation.x = node[0].as<float>();
-	//		translation.y = node[1].as<float>();
-	//		translation.z = node[2].as<float>();
-	//		rotation.x	  = node[3].as<float>();
-	//		rotation.y	  = node[4].as<float>();
-	//		rotation.z	  = node[5].as<float>();
-	//		rotation.w	  = node[6].as<float>();
-	//		scale.x		  = node[7].as<float>();
-	//		scale.y		  = node[8].as<float>();
-	//		scale.z		  = node[9].as<float>();
-	//		rhs.ID		  = node[10].as<int32_t>();
-	//		rhs.Name	  = node[11].as<std::string>();
-	//
-	//		rhs.Transform = glm::translate(translation) 
-	//			* glm::toMat4(rotation) 
-	//			* glm::scale(glm::mat4(1.0f), scale);
-	//		return true;
-	//	}
-	//};
 }
 
 
@@ -196,26 +140,6 @@ namespace XYZ {
 			<< YAML::EndSeq;
 		return out;
 	}
-
-	//YAML::Emitter& operator<<(YAML::Emitter& out, const Bone& bone)
-	//{		
-	//	glm::vec3 skew;
-	//	glm::vec4 perspective;
-	//	glm::vec3 translation;
-	//	glm::quat rotation;
-	//	glm::vec3 scale;
-	//	glm::decompose(bone.Transform, scale, rotation, translation, skew, perspective);
-	//
-	//	out << YAML::Flow;
-	//	out << YAML::BeginSeq 
-	//		<< translation.x << translation.y << translation.z
-	//		<< rotation.x << rotation.y << rotation.z << rotation.w
-	//		<< scale.x << scale.y << scale.z
-	//		<< bone.ID
-	//		<< bone.Name
-	//		<< YAML::EndSeq;
-	//	return out;
-	//}
 
 	// TODO: Temporary
 	static void CopyAsset(Ref<Asset>& target, const Ref<Asset>& source)

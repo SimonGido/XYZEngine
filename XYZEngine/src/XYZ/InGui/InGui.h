@@ -8,6 +8,9 @@ namespace XYZ {
 	class InGui
 	{
 	public:
+		static void Init(const std::string& filepath = std::string());
+		static void Shutdown();
+
 		static void BeginFrame();
 		static void EndFrame();
 

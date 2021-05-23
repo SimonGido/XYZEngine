@@ -53,7 +53,6 @@ namespace XYZ {
 		static constexpr uint32_t sc_MaxNumberOfClipRectangles = 256;
 		static constexpr size_t sc_InputValueBufferSize = 64;
 		static constexpr size_t sc_SliderValueBufferSize = 64;
-		friend class InGui;
 	};
 	
 }

@@ -26,7 +26,7 @@ namespace XYZ {
 		Colors[MenuDefault] = glm::vec4(1.0f, 1.0f, 1.0f, 0.8f);
 		Colors[TextColor] = glm::vec4(1.0f);
 		Colors[LineColor] = glm::vec4(1.0f);
-		Colors[TabHoover] = glm::vec4(1.9f, 2.3f, 2.5, 1.0f);
+		Colors[TabHoover] = glm::vec4(2.0f, 2.5f, 2.8f, 1.0f);
 		Colors[WindowFrameColor] = glm::vec4(0.4f, 0.4f, 0.4f, 1.0f);
 	}
 }

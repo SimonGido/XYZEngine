@@ -12,6 +12,8 @@
 namespace XYZ {
 	void InGuiLayer::OnAttach()
 	{
+		InGui::Init("InGui.yaml");
+
 		Ref<Texture2D> texture = Texture2D::Create({ TextureWrap::Clamp, TextureParam::Linear, TextureParam::Nearest }, "Assets/Textures/Gui/TexturePack_Dark.png");
 		Ref<Font> font = Ref<XYZ::Font>::Create(14, "Assets/Fonts/arial.ttf");
 		InGui::GetContext().m_Config.Texture = texture;
@@ -49,6 +51,7 @@ namespace XYZ {
 
 	void InGuiLayer::OnDetach()
 	{
+		InGui::Shutdown();
 	}
 
 	void InGuiLayer::OnUpdate(Timestep ts)
