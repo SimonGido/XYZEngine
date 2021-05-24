@@ -48,7 +48,8 @@ namespace XYZ {
 			InputHoover,
 			ImageDefault,
 			ImageHoover,		
-			TextColor,
+			TextDefault,
+			TextHighlight,
 			NumColors
 		};
 

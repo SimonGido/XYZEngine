@@ -12,11 +12,14 @@ namespace XYZ {
 		out << YAML::Value << YAML::BeginSeq;
 		for (auto window : context.m_Windows)
 		{
+			if (!window->IsInitialized)
+				continue;
+			bool collapsed = IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed);
 			out << YAML::BeginMap;
 			out << YAML::Key << "Name" << YAML::Value << window->Name;
 			out << YAML::Key << "Position" << YAML::Value << window->Position;
 			out << YAML::Key << "Size" << YAML::Value << window->Size;
-			out << YAML::Key << "Collapsed" << YAML::Value << (bool)IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed);
+			out << YAML::Key << "Collapsed" << YAML::Value << collapsed;
 			out << YAML::EndMap;
 		}
 		out << YAML::EndSeq;

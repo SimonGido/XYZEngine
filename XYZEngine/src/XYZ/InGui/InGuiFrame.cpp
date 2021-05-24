@@ -8,6 +8,7 @@ namespace XYZ {
 		CurrentWindow(nullptr),
 		MovedWindowOffset(0.0f),
 		CurrentMenuWidth(0.0f),
+		HighlightNext(false),
 		CurrentTreeDepth(0)
 	{
 		

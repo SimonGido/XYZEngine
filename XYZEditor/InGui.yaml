@@ -1,25 +1,17 @@
 Windows:
-  - Name: Test
-    Position: [173, 156]
-    Size: [300, 300]
-    Collapsed: 0
-  - Name: Sub window
-    Position: [546, 168]
-    Size: [300, 300]
-    Collapsed: false
-  - Name: OtherSub window
-    Position: [546, 198]
-    Size: [300, 300]
-    Collapsed: false
-  - Name: Yes Subwindow
-    Position: [546, 228]
-    Size: [300, 300]
-    Collapsed: false
-  - Name: Editor Layer
-    Position: [541, 138]
-    Size: [774, 656]
-    Collapsed: false
   - Name: Havko
-    Position: [1393, 193]
-    Size: [519, 629]
+    Position: [1350, 96]
+    Size: [298, 452]
+    Collapsed: false
+  - Name: Scene Tag Component
+    Position: [1080, 604]
+    Size: [290, 300]
+    Collapsed: true
+  - Name: Scene Hierarchy
+    Position: [137, 113]
+    Size: [300, 300]
+    Collapsed: false
+  - Name: Inspector
+    Position: [1075, 549]
+    Size: [300, 300]
     Collapsed: false

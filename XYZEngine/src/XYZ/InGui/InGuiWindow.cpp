@@ -16,6 +16,7 @@ namespace XYZ {
 		Size(300.0f),
 		Scroll(0.0f),
 		IsActive(true),
+		IsInitialized(false),
 		FrameData(this),
 		Axis(AxisPlacement::Vertical),
 		TabID(InGuiInvalidID),
@@ -259,9 +260,15 @@ namespace XYZ {
 		{
 			DrawListInUse = parent->DrawListInUse;
 			Position = parent->MoveCursorPosition(GetRealSize());
+			parent->ChildWindows.push_back(this);
 		}
 		else
 		{
+			if (Parent)
+			{
+				auto it = std::find(Parent->ChildWindows.begin(), Parent->ChildWindows.end(), this);
+				Parent->ChildWindows.erase(it);
+			}
 			DrawListInUse = &DrawList;
 		}
 		Parent = parent;
@@ -486,6 +493,13 @@ namespace XYZ {
 		return Parent;
 	}
 
+	bool InGuiWindow::IsParentFocused() const
+	{
+		if (Parent)
+			return Parent->IsFocused();
+		return false;
+	}
+
 	InGuiID InGuiWindow::GetID(const char* name) const
 	{
 		size_t id = 0;
@@ -507,6 +521,19 @@ namespace XYZ {
 		return result;
 	}
 
+	glm::vec2 InGuiWindow::TreeNodeOffset() const
+	{
+		const InGuiFrame& frame =   InGui::GetContext().m_FrameData;
+		const InGuiConfig& config = InGui::GetContext().m_Config;
+		glm::vec2 nodeOffset(0.0f);
+		if (Axis == AxisPlacement::Horizontal)
+			nodeOffset.y += frame.CurrentTreeDepth * config.TreeNodeOffset;
+		else
+			nodeOffset.x += frame.CurrentTreeDepth * config.TreeNodeOffset;
+
+		return nodeOffset;
+	}
+
 	InGuiRect InGuiWindow::Rect() const
 	{
 		InGuiRect rect(Position, Position + Size);
@@ -520,7 +547,7 @@ namespace XYZ {
 		glm::vec2 realSize = GetRealSize();
 		InGuiRect rect(Position, Position + realSize);
 		if (Parent)
-			rect.Union(Parent->Rect());
+			rect.Union(Parent->RealRect());
 		return rect;
 	}
 

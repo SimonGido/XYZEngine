@@ -65,12 +65,6 @@ namespace XYZ {
 	}
 	void InGuiLayer::OnInGuiRender()
 	{
-		InGui::Begin("Test");
-
-
-		InGui::End();
-
-
 		InGui::Begin("Havko",
 			  InGuiWindowStyleFlags::MenuEnabled
 			| InGuiWindowStyleFlags::PanelEnabled

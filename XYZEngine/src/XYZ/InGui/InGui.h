@@ -34,11 +34,12 @@ namespace XYZ {
 		static void EndGroup();
 
 		static bool BeginTab(const char* label);
+		static void EnableHighlight();
+		static void DisableHighlight();
 
-		// TODO: Implement
-		//static bool    BeginTree();
-		//static void    EndTree();
-		//static uint8_t PushNode(const char* label);
+		static void    BeginTreeChild();
+		static void    EndTreeChild();
+		static uint8_t TreeNode(const char* label, const glm::vec2& size, bool& open);
 
 		static uint8_t BeginMenu(const char* label, float width);
 		static void    EndMenu();

@@ -78,7 +78,7 @@ namespace XYZ {
 		void			 PushQuadOverlay(const glm::vec4& color, const glm::vec4& texCoord, const glm::vec2& pos, const glm::vec2& size, uint32_t textureID = InGuiConfig::sc_DefaultTexture);
 		void			 PushQuadNotClippedOverlay(const glm::vec4& color, const glm::vec4& texCoord, const glm::vec2& pos, const glm::vec2& size, uint32_t textureID = InGuiConfig::sc_DefaultTexture);
 		void			 SetParent(InGuiWindow* parent);
-
+		
 		bool			 NextWidgetClipped(const glm::vec2& size);
 		bool			 NextTabClipped();
 		glm::vec2		 MoveCursorPosition(const glm::vec2& size);
@@ -93,8 +93,10 @@ namespace XYZ {
 		void			 HandleScrollbars();
 		bool			 IsFocused() const;
 		bool			 IsChild() const;
+		bool			 IsParentFocused() const;
 		InGuiID			 GetID(const char* name) const;
 		glm::vec2		 GetRealSize() const;
+		glm::vec2		 TreeNodeOffset() const;
 
 		InGuiRect		 Rect() const;
 		InGuiRect        RealRect() const;
@@ -104,29 +106,31 @@ namespace XYZ {
 		InGuiRect		 ClipRect() const;
 		InGuiRect		 ClipRect(uint32_t viewportHeight) const;
 
-		std::string			 Name;
-		InGuiClipID			 ClipID;
-		const InGuiClipID	 WorkClipID;
-		const InGuiClipID	 PanelClipID;
-		InGuiWindowFlags	 StyleFlags;
-		InGuiWindowFlags	 EditFlags;
-		InGuiWindowFrameData FrameData;
-		AxisPlacement		 Axis;
-		InGuiID				 TabID;
+		std::string				  Name;
+		InGuiClipID				  ClipID;      // Clip id used in draw list
+		const InGuiClipID		  WorkClipID;  // Clip id of work area
+		const InGuiClipID		  PanelClipID; // Clipd id of panel
+		InGuiWindowFlags		  StyleFlags;
+		InGuiWindowFlags		  EditFlags;
+		InGuiWindowFrameData	  FrameData;
+		AxisPlacement			  Axis;
+		InGuiID					  TabID;
+								  
+		glm::vec2				  Position;
+		glm::vec2				  Size;
+		glm::vec2				  Scroll;
 
-		glm::vec2			 Position;
-		glm::vec2			 Size;
-		glm::vec2			 Scroll;
 
-
-		bool				 IsActive;
-		bool				 ScrollBarX;
-		bool				 ScrollBarY;
-		bool				 Grouping;
-		glm::vec2			 ScrollBarSize;
-		InGuiDrawList*		 DrawListInUse;
-		InGuiDrawList		 DrawList;
-		InGuiWindow*		 Parent;
+		bool					  IsActive;
+		bool					  IsInitialized;
+		bool					  ScrollBarX;
+		bool					  ScrollBarY;
+		bool					  Grouping;
+		glm::vec2				  ScrollBarSize;
+		InGuiDrawList*			  DrawListInUse;
+		InGuiDrawList			  DrawList;
+		InGuiWindow*			  Parent;
+		std::vector<InGuiWindow*> ChildWindows;
 
 		static constexpr float sc_ResizeThresholdX = 5.0f;
 		static constexpr float sc_ResizeThresholdY = 5.0f;

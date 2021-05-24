@@ -179,6 +179,7 @@ namespace XYZ {
 		}
 
 		const uint32_t GetNumberOfEntities() const { return m_EntityManager.GetNumEntities(); }
+		const uint32_t GetHighestID() const { return m_EntityManager.m_Valid.size(); }
 
 		size_t GetNumberOfRegisteredComponentTypes() const { return m_ComponentManager.GetNumberOfRegisteredStorages(); }
 	private:

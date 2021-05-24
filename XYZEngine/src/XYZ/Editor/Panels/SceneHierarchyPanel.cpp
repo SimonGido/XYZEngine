@@ -4,7 +4,7 @@
 #include "XYZ/Core/Input.h"
 #include "XYZ/Scene/SceneEntity.h"
 
-#include "XYZ/BasicUI/BasicUILoader.h"
+#include "XYZ/InGui/InGui.h"
 
 namespace XYZ {
     namespace Helper {
@@ -17,100 +17,87 @@ namespace XYZ {
         }
     }
     namespace Editor {
-        SceneHierarchyPanel::SceneHierarchyPanel(const std::string& filepath)
+        SceneHierarchyPanel::SceneHierarchyPanel()
             :
-            EditorUI(filepath)
+            m_Open(nullptr)
         {
-            SetupUI();
         }
         SceneHierarchyPanel::~SceneHierarchyPanel()
         {
             m_Context->m_ECS.RemoveListener<SceneTagComponent>(this);
+            if (m_Open)
+                delete[]m_Open;
         }
-        void SceneHierarchyPanel::OnUpdate(Timestep ts)
+        void SceneHierarchyPanel::OnUpdate()
         {
-            if (m_Context.Raw())
+            if (InGui::Begin("Scene Hierarchy"), 
+                  InGuiWindowStyleFlags::PanelEnabled
+                | InGuiWindowStyleFlags::ScrollEnabled
+                | InGuiWindowStyleFlags::LabelEnabled)
             {
-                if (m_Context->m_SelectedEntity)
-                {
-                    SceneEntity entity(m_Context->m_SelectedEntity, m_Context.Raw());
-                    auto& item = m_Tree->GetItem(m_Context->m_SelectedEntity);
-                    item.Color = glm::vec4(0.2f, 0.7f, 1.0f, 1.0f);
-                    item.Label = entity.GetComponent<SceneTagComponent>().Name;
-                }
-            }
-        }
-
-        void SceneHierarchyPanel::OnReload()
-        {
-            SetupUI();
-            if (m_Context.Raw())
-            {
-                rebuildTree();
-            }
-        }
-        
-        void SceneHierarchyPanel::SetupUI()
-        {
-            m_Window = &bUI::GetUI<bUIWindow>("SceneHierarchy", "Scene Hierarchy");
-            m_Tree = &bUI::GetUI<bUITree>("SceneHierarchy", "Hierarchy Tree");
-            m_Tree->OnSelect = [&](uint32_t entity) {
                 if (m_Context.Raw())
                 {
-                    if (m_Context->GetSelectedEntity() == entity)
-                        m_Context->SetSelectedEntity(Entity());
-                    else
-                        m_Context->SetSelectedEntity(entity);
-                }
-            };
-            m_Image = &bUI::GetUI<bUIImage>("SceneHierarchy", "Create Entity");
-            m_Image->FitParent = false;
-            m_Image->Visible = false;
-            m_Image->Callbacks.push_back(
-                [&](bUICallbackType type, bUIElement& element) {
-                if (type == bUICallbackType::Active)
-                {
-                    bUIImage& casted = static_cast<bUIImage&>(element);
-                    if (m_Context.Raw())
-                        m_Context->CreateEntity("New Entity", GUID());
-                    casted.Visible = false;
-                }
-            });
+                    uint32_t depth = 0;
+                    ECSManager& ecs = m_Context->m_ECS;
+                    std::stack<Entity> entities;
+                    entities.push(m_Context->m_SceneEntity);
+  
+                    while (!entities.empty())
+                    {
+                        Entity tmp = entities.top();
+                        entities.pop();
 
-            Ref<Texture> plusTexture = Texture2D::Create({}, "Assets/Textures/Plus.png");
-            m_Image->ImageSubTexture = Ref<SubTexture>::Create(plusTexture, glm::vec2(0.0f));
+                        const Relationship& relation = ecs.GetComponent<Relationship>(tmp);
+                        
+
+                        if (relation.GetDetph() > depth)
+                            InGui::BeginTreeChild();
+                        while (relation.GetDetph() < depth)
+                        {
+                            InGui::EndTreeChild();
+                            depth--;
+                        }
+                        depth = relation.GetDetph();
+                        const SceneTagComponent& sceneTag = ecs.GetComponent<SceneTagComponent>(tmp);
+                        
+                        if (m_Context->GetSelectedEntity() == tmp)
+                            InGui::EnableHighlight();
+                        if (IS_SET(InGui::TreeNode(sceneTag.Name.c_str(), glm::vec2(25.0f), m_Open[tmp]), InGui::Pressed))
+                        {
+                            m_Context->SetSelectedEntity(tmp);
+                        }
+                        InGui::DisableHighlight();
+                       
+                        if (relation.GetNextSibling())
+                            entities.push(relation.GetNextSibling());
+                        if (m_Open[tmp])
+                        {
+                            if (relation.GetFirstChild())
+                                entities.push(relation.GetFirstChild());
+                        }
+                    }
+                    while (depth)
+                    {
+                        InGui::EndTreeChild();
+                        depth--;
+                    }
+                }
+            }
+            InGui::End();
         }
+
+       
 
         void SceneHierarchyPanel::SetContext(const Ref<Scene>& context)
         {
             if (m_Context.Raw())
+            {
                 m_Context->m_ECS.RemoveListener<SceneTagComponent>(this);
+                delete[]m_Open;
+            }
             m_Context = context;
-
-            Relationship::OnParentChanged = [&](Entity entity, ECSManager& ecs) {
-                Entity parent = ecs.GetComponent<Relationship>(entity).GetParent();
-                m_Tree->SetParent(entity, parent);
-            };
-            m_Context->m_ECS.AddListener<SceneTagComponent>([this](uint32_t entity, CallbackType type) {
-
-                ECSManager& ecs = m_Context->m_ECS;
-                if (type == CallbackType::ComponentCreate)
-                {
-                    SceneTagComponent& sceneTag = ecs.GetComponent<SceneTagComponent>(entity);
-                    Relationship& relation = ecs.GetComponent<Relationship>(entity);
-                    if (relation.GetParent())
-                        m_Tree->AddItem(entity, relation.GetParent(), bUIHierarchyItem(sceneTag.Name));
-                    else
-                        m_Tree->AddItem(entity, bUIHierarchyItem(sceneTag.Name));
-                }
-                else if (type == CallbackType::ComponentRemove || type == CallbackType::EntityDestroy)
-                {
-                    m_Tree->RemoveItem(entity);
-                }
-
-            }, this);
-
-            rebuildTree();
+            m_Open = new bool[m_Context->m_ECS.GetHighestID()];
+            memset(m_Open, 0, m_Context->m_ECS.GetHighestID());      
         }
 
         void SceneHierarchyPanel::OnEvent(Event& event)
@@ -120,54 +107,11 @@ namespace XYZ {
             dispatcher.Dispatch<KeyPressedEvent>(Hook(&SceneHierarchyPanel::onKeyPressed, this));
         }
 
-        void SceneHierarchyPanel::rebuildTree()
-        {
-            m_Tree->Clear();
-            ECSManager& ecs = m_Context->m_ECS;
-
-            std::stack<Entity> entities;
-            entities.push(m_Context->m_SceneEntity);
-            while (!entities.empty())
-            {
-                Entity tmp = entities.top();
-                entities.pop();
-
-                const Relationship& relation = ecs.GetComponent<Relationship>(tmp);
-                if (relation.GetNextSibling())
-                    entities.push(relation.GetNextSibling());
-                if (relation.GetFirstChild())
-                    entities.push(relation.GetFirstChild());
-
-                const SceneTagComponent& sceneTag = ecs.GetComponent<SceneTagComponent>(tmp);
-                if (relation.GetParent())
-                    m_Tree->AddItem(tmp, relation.GetParent(), bUIHierarchyItem(sceneTag.Name));
-                else
-                    m_Tree->AddItem(tmp, bUIHierarchyItem(sceneTag.Name));
-            }
-        }
-
-        void SceneHierarchyPanel::updateTree()
-        {
-        }
-
         bool SceneHierarchyPanel::onMouseButtonPress(MouseButtonPressEvent& event)
         {
             auto [mx, my] = Input::GetMousePosition();
             glm::vec2 mousePosition(mx, my);
-            if (Helper::Collide(m_Window->Coords, m_Window->Size, mousePosition))
-            {
-                if (event.IsButtonPressed(MouseCode::MOUSE_BUTTON_RIGHT))
-                {
-                    glm::vec2 position = mousePosition - m_Window->Coords - (m_Image->Size / 2.0f);
-                    m_Image->Visible = !m_Image->Visible;
-                    m_Image->Coords = position;
-                }
-                else
-                {
-                    m_Image->Visible = false;
-                }
-                return true;
-            }
+           
             return false;
         }
         bool SceneHierarchyPanel::onKeyPressed(KeyPressedEvent& event)

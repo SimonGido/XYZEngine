@@ -6,6 +6,66 @@
 
 namespace XYZ {
 
+	template <>
+	void InGuiBehavior::readValueFromBuffer(InGuiID id, float& value)
+	{
+		InGuiContext& context = InGui::GetContext();
+		const InGuiInput& input = context.m_Input;
+		if (context.m_LastInputID == id)
+		{
+			// If left mouse button is pressed, but does not overlap and still is capturing input, invalidate
+			if (IS_SET(input.Flags, InGuiInput::LeftMouseButtonPressed))
+			{
+				value = (float)std::atof(context.m_TemporaryTextBuffer.c_str());
+			}
+		}		
+	}
+
+
+	template <>
+	void InGuiBehavior::readValueFromBuffer(InGuiID id, int32_t& value)
+	{
+		InGuiContext& context = InGui::GetContext();
+		const InGuiInput& input = context.m_Input;
+		if (context.m_LastInputID == id)
+		{
+			// If left mouse button is pressed, but does not overlap and still is capturing input, invalidate
+			if (IS_SET(input.Flags, InGuiInput::LeftMouseButtonPressed))
+			{
+				value = std::atoi(context.m_TemporaryTextBuffer.c_str());
+			}
+		}
+	}
+
+	template <>
+	void InGuiBehavior::readValueFromBuffer(InGuiID id, uint32_t& value)
+	{
+		InGuiContext& context = InGui::GetContext();
+		const InGuiInput& input = context.m_Input;
+		if (context.m_LastInputID == id)
+		{
+			// If left mouse button is pressed, but does not overlap and still is capturing input, invalidate
+			if (IS_SET(input.Flags, InGuiInput::LeftMouseButtonPressed))
+			{
+				value = std::atoi(context.m_TemporaryTextBuffer.c_str());
+			}
+		}
+	}
+
+	template <>
+	void InGuiBehavior::readValueFromBuffer(InGuiID id, std::string& value)
+	{
+		InGuiContext& context = InGui::GetContext();
+		const InGuiInput& input = context.m_Input;
+		if (context.m_LastInputID == id)
+		{
+			// If left mouse button is pressed, but does not overlap and still is capturing input, invalidate
+			if (IS_SET(input.Flags, InGuiInput::LeftMouseButtonPressed))
+			{
+				value = context.m_TemporaryTextBuffer;
+			}
+		}
+	}
 
 	template <>
 	void InGuiBehavior::inputSelectionBehavior(InGuiID id, float& value, int32_t decimalPrecision)
@@ -61,6 +121,22 @@ namespace XYZ {
 		}
 	}
 
+	template <>
+	void InGuiBehavior::inputSelectionBehavior(InGuiID id, std::string& value)
+	{
+		InGuiContext& context = InGui::GetContext();
+		if (context.m_LastInputID != id)
+		{
+			context.m_LastInputID = id;
+			context.m_TemporaryTextBuffer = value;
+		}
+		else
+		{
+			value = context.m_TemporaryTextBuffer;
+			context.m_LastInputID = 0;
+		}
+	}
+
 	void InGuiBehavior::ButtonBehavior(const InGuiRect& rect, InGuiID id, uint8_t& result)
 	{
 		InGuiContext& context = InGui::GetContext();
@@ -70,7 +146,7 @@ namespace XYZ {
 		XYZ_ASSERT(currentWindow, "Current window is nullptr");
 
 		if (rect.Overlaps(input.MousePosition) 
-		&& (currentWindow->IsFocused() || currentWindow->IsChild())
+		&& (currentWindow->IsFocused() || currentWindow->IsParentFocused())
 		&& (!context.m_LastHooveredID  || context.m_LastHooveredID == id))
 		{
 			result |= InGui::Hoover;
@@ -96,7 +172,7 @@ namespace XYZ {
 			result |= InGui::Pressed;
 		}
 		if (rect.Overlaps(input.MousePosition) 
-		&& (currentWindow->IsFocused() || currentWindow->IsChild())
+		&& (currentWindow->IsFocused() || currentWindow->IsParentFocused())
 		&& (!context.m_LastHooveredID || context.m_LastHooveredID == id))
 		{
 			result |= InGui::Hoover;
@@ -119,7 +195,7 @@ namespace XYZ {
 		XYZ_ASSERT(currentWindow, "Current window is nullptr");
 
 		if (rect.Overlaps(input.MousePosition) 
-		&& (currentWindow->IsFocused() || currentWindow->IsChild())
+		&& (currentWindow->IsFocused() || currentWindow->IsParentFocused())
 		&& (!context.m_LastHooveredID  || context.m_LastHooveredID == id))
 		{
 			result |= InGui::Hoover;
@@ -132,8 +208,8 @@ namespace XYZ {
 				context.m_LastLeftPressedID = id;
 				inputSelectionBehavior(id, value, decimalPrecision);
 			}
-			return;
 		}
+		readValueFromBuffer(id, value);
 		inputBehavior(id);
 	}
 
@@ -146,7 +222,7 @@ namespace XYZ {
 		XYZ_ASSERT(currentWindow, "Current window is nullptr");
 
 		if (rect.Overlaps(input.MousePosition) 
-		&& (currentWindow->IsFocused() || currentWindow->IsChild())
+		&& (currentWindow->IsFocused() || currentWindow->IsParentFocused())
 		&& (!context.m_LastHooveredID || context.m_LastHooveredID == id))
 		{
 			result |= InGui::Hoover;
@@ -158,9 +234,9 @@ namespace XYZ {
 				result |= InGui::Pressed;
 				context.m_LastLeftPressedID = id;
 				inputSelectionBehavior(id, value);
-				return;
 			}
 		}
+		readValueFromBuffer(id, value);
 		inputBehavior(id);
 	}
 
@@ -173,7 +249,7 @@ namespace XYZ {
 		XYZ_ASSERT(currentWindow, "Current window is nullptr");
 
 		if (rect.Overlaps(input.MousePosition) 
-		&& (currentWindow->IsFocused() || currentWindow->IsChild())
+		&& (currentWindow->IsFocused() || currentWindow->IsParentFocused())
 		&& (!context.m_LastHooveredID  || context.m_LastHooveredID == id))
 		{
 			result |= InGui::Hoover;
@@ -185,9 +261,36 @@ namespace XYZ {
 				result |= InGui::Pressed;
 				context.m_LastLeftPressedID = id;
 				inputSelectionBehavior(id, value);
-				return;
 			}
 		}
+		readValueFromBuffer(id, value);
+		inputBehavior(id);
+	}
+
+	void InGuiBehavior::StringBehavior(const InGuiRect& rect, InGuiID id, uint8_t& result, std::string& value)
+	{
+		InGuiContext& context = InGui::GetContext();
+		InGuiInput& input = context.m_Input;
+		const InGuiFrame& frame = context.m_FrameData;
+		const InGuiWindow* currentWindow = frame.CurrentWindow;
+		XYZ_ASSERT(currentWindow, "Current window is nullptr");
+
+		if (rect.Overlaps(input.MousePosition)
+			&& (currentWindow->IsFocused() || currentWindow->IsParentFocused())
+			&& (!context.m_LastHooveredID || context.m_LastHooveredID == id))
+		{
+			result |= InGui::Hoover;
+			context.m_LastHooveredID = id;
+			if (IS_SET(input.Flags, InGuiInput::LeftMouseButtonPressed)
+				&& !context.m_LastLeftPressedID
+				)
+			{
+				result |= InGui::Pressed;
+				context.m_LastLeftPressedID = id;
+				inputSelectionBehavior(id, value);
+			}
+		}
+		readValueFromBuffer(id, value);
 		inputBehavior(id);
 	}
 
@@ -198,7 +301,8 @@ namespace XYZ {
 		if (context.m_LastInputID == id)
 		{
 			// If left mouse button is pressed, but does not overlap and still is capturing input, invalidate
-			if (IS_SET(input.Flags, InGuiInput::LeftMouseButtonPressed))
+			if (IS_SET(input.Flags, InGuiInput::LeftMouseButtonPressed)
+			 && context.m_LastLeftPressedID != id)
 			{
 				context.m_LastInputID = 0;
 			}

@@ -12,6 +12,7 @@ namespace XYZ {
 		InGuiWindow*			   CurrentWindow;
 		glm::vec2				   MovedWindowOffset;
 		float					   CurrentMenuWidth;
+		bool					   HighlightNext;
 		uint32_t				   CurrentTreeDepth;
 		std::vector<InGuiID>	   MenuItems;
 		std::deque<InGuiWindow*>   WindowQueue;

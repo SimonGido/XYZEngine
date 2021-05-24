@@ -44,6 +44,8 @@ namespace XYZ {
 	void EditorLayer::OnAttach()
 	{
 		m_Scene = AssetManager::GetAsset<Scene>(AssetManager::GetAssetHandle("Assets/Scenes/scene.xyz"));
+		m_SceneHierarchy.SetContext(m_Scene);
+
 		Scene::ActiveScene = m_Scene;
 		m_TestEntity = m_Scene->GetEntityByName("TestEntity");
 		
@@ -120,7 +122,8 @@ namespace XYZ {
 		Renderer::SetClearColor({ 0.1f,0.1f,0.1f,0.1f });
 		m_EditorCamera.OnUpdate(ts);
 		
-	
+		m_Inspector.SetContext(m_Scene->GetSelectedEntity());
+
 		if (m_Scene->GetState() == SceneState::Play)
 		{
 			m_Scene->OnUpdate(ts);
@@ -142,24 +145,13 @@ namespace XYZ {
 		dispatcher.Dispatch<KeyPressedEvent>(Hook(&EditorLayer::onKeyPress, this));
 		
 		m_EditorCamera.OnEvent(event);
+		m_SceneHierarchy.OnEvent(event);
 	}
 
 	void EditorLayer::OnInGuiRender()
 	{
-		if (InGui::Begin("Editor Layer"))
-		{
-			InGuiWindowFlags flags = InGuiWindowStyleFlags::PanelEnabled | InGuiWindowStyleFlags::FrameEnabled | InGuiWindowStyleFlags::LabelEnabled;
-			InGui::Begin("Sub window", flags);
-			InGui::Image("Test Image", glm::vec2(300.0f), m_Test);
-			InGui::End();
-
-			InGui::Begin("OtherSub window", flags);
-			InGui::End();
-
-			InGui::Begin("Yes Subwindow", flags);
-			InGui::End();
-		}
-		InGui::End();
+		m_Inspector.OnUpdate();
+		m_SceneHierarchy.OnUpdate();
 	}
 	
 	bool EditorLayer::onMouseButtonPress(MouseButtonPressEvent& event)

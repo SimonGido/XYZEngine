@@ -100,47 +100,18 @@ namespace XYZ {
 		dispatcher.Dispatch<MouseButtonPressEvent>([&](MouseButtonPressEvent& e)->bool {
 			if (e.IsButtonPressed(MouseCode::MOUSE_BUTTON_LEFT))
 			{
+				m_FocusedWindow = nullptr;
 				m_Input.Flags |= InGuiInput::LeftMouseButtonPressed;
 				for (auto it = m_Windows.rbegin(); it != m_Windows.rend(); ++it)
 				{
 					InGuiWindow* window = (*it);
-					InGuiRect windowRect = window->RealRect();
-					if (windowRect.Overlaps(m_Input.MousePosition))
-					{					
-						FocusWindow(window);
-						// Set current window so ButtonBehavior works correctly
-						m_FrameData.CurrentWindow = window;
-
-						InGuiRect panelRect = window->PanelRect();
-						InGuiRect minimizeRect = window->MinimizeRect();
-
-						uint8_t result = 0;
-						std::hash<std::string_view> hasher;
-						InGuiID id = hasher(window->Name.c_str());
-						InGuiBehavior::ButtonBehavior(minimizeRect, id, result);
-						if (IS_SET(result, InGui::Pressed))
-						{
-							window->EditFlags ^= InGuiWindowEditFlags::Collapsed;
-							return IS_SET(window->EditFlags, InGuiWindowEditFlags::BlockEvents);
-						}
-						else
-						{
-							result = 0;
-							InGuiBehavior::ButtonBehavior(panelRect, id, result);
-							if (IS_SET(result, InGui::Pressed))
-							{
-								window->EditFlags |= InGuiWindowEditFlags::Moving;
-								m_FrameData.MovedWindowOffset = m_Input.MousePosition - window->Position;
-								return IS_SET(window->EditFlags, InGuiWindowEditFlags::BlockEvents);
-							}
-							else if (window->ResolveResizeFlags(m_Input.MousePosition))
-							{							
-								return IS_SET(window->EditFlags, InGuiWindowEditFlags::BlockEvents);
-							}
-						}			
-						// Unset current window before end of the function
-						m_FrameData.CurrentWindow = nullptr;
+					for (auto child : window->ChildWindows)
+					{
+						if (handleWindowLeftButtonPress(child))
+							return IS_SET(child->EditFlags, InGuiWindowEditFlags::BlockEvents);
 					}
+					if (handleWindowLeftButtonPress(window))
+						return IS_SET(window->EditFlags, InGuiWindowEditFlags::BlockEvents);
 				}
 			}
 			else if (e.IsButtonPressed(MouseCode::MOUSE_BUTTON_RIGHT))
@@ -174,21 +145,31 @@ namespace XYZ {
 
 		dispatcher.Dispatch<MouseScrollEvent>([&](MouseScrollEvent& e)->bool {
 
-			if (m_FocusedWindow && m_FocusedWindow->ClipRect().Overlaps(m_Input.MousePosition))
+			if (
+				m_FocusedWindow 
+				&& m_FocusedWindow->ClipRect().Overlaps(m_Input.MousePosition)
+				&& IS_SET(m_FocusedWindow->StyleFlags, InGuiWindowStyleFlags::ScrollEnabled)
+			)
 			{
-				float newScrollX = m_FocusedWindow->Scroll.x + e.GetOffsetX();
-				float newScrollY = m_FocusedWindow->Scroll.y - e.GetOffsetY();
-				if (newScrollX <= m_FocusedWindow->FrameData.ScrollMax.x
-				&&  newScrollX >= 0.0f)
+				if (m_FocusedWindow->ScrollBarX)
 				{
-					m_FocusedWindow->Scroll.x = newScrollX;
+					float newScrollX = m_FocusedWindow->Scroll.x + e.GetOffsetX();
+					if (newScrollX <= m_FocusedWindow->FrameData.ScrollMax.x
+						&& newScrollX >= 0.0f)
+					{
+						m_FocusedWindow->Scroll.x = newScrollX;
+					}
 				}
-				if (newScrollY <= m_FocusedWindow->FrameData.ScrollMax.y
-				&&  newScrollY >= 0.0f)
+				if (m_FocusedWindow->ScrollBarY)
 				{
-					m_FocusedWindow->Scroll.y = newScrollY;
+					float newScrollY = m_FocusedWindow->Scroll.y - e.GetOffsetY();
+					if (newScrollY <= m_FocusedWindow->FrameData.ScrollMax.y
+						&& newScrollY >= 0.0f)
+					{
+						m_FocusedWindow->Scroll.y = newScrollY;
+					}
+					return true;
 				}
-				return true;
 			}
 			return false;
 		});
@@ -233,6 +214,46 @@ namespace XYZ {
 		auto it = m_WindowMap.find(id);
 		if (it == m_WindowMap.end())
 			return nullptr;
+		it->second->IsInitialized = true;
 		return it->second;
+	}
+	bool InGuiContext::handleWindowLeftButtonPress(InGuiWindow* window)
+	{
+		InGuiRect windowRect = window->RealRect();
+		if (window->IsActive && window->IsInitialized && windowRect.Overlaps(m_Input.MousePosition))
+		{
+			FocusWindow(window);
+			// Set current window so ButtonBehavior works correctly
+			m_FrameData.CurrentWindow = window;
+
+			InGuiRect panelRect = window->PanelRect();
+			InGuiRect minimizeRect = window->MinimizeRect();
+
+			uint8_t result = 0;
+			std::hash<std::string_view> hasher;
+			InGuiID id = hasher(window->Name.c_str());
+			InGuiBehavior::ButtonBehavior(minimizeRect, id, result);
+			if (IS_SET(result, InGui::Pressed))
+			{
+				window->EditFlags ^= InGuiWindowEditFlags::Collapsed;
+			}
+			else
+			{
+				result = 0;
+				InGuiBehavior::ButtonBehavior(panelRect, id, result);
+				if (IS_SET(result, InGui::Pressed))
+				{
+					window->EditFlags |= InGuiWindowEditFlags::Moving;
+					m_FrameData.MovedWindowOffset = m_Input.MousePosition - window->Position;
+				}
+				else if (window->ResolveResizeFlags(m_Input.MousePosition))
+				{
+				}
+			}
+			// Unset current window before end of the function
+			m_FrameData.CurrentWindow = nullptr;
+			return true;
+		}
+		return false;
 	}
 }
