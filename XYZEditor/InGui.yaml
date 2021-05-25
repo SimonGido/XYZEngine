@@ -1,25 +1,25 @@
 Windows:
-  - Name: Scene Tag Component
-    Position: [1230, 390]
-    Size: [383, 30]
-    Collapsed: true
-  - Name: Inspector
-    Position: [1225, 360]
-    Size: [413, 512]
-    Collapsed: false
-  - Name: Havko
-    Position: [1120, 147]
-    Size: [298, 216]
-    Collapsed: false
   - Name: Scene Hierarchy
     Position: [140, 270]
     Size: [300, 300]
     Collapsed: false
-  - Name: Transform Component
-    Position: [1230, 420]
-    Size: [383, 30]
-    Collapsed: true
   - Name: Sprite Renderer
-    Position: [1230, 450]
-    Size: [383, 30]
-    Collapsed: true
+    Position: [1370, 263]
+    Size: [444, 150]
+    Collapsed: false
+  - Name: Inspector
+    Position: [1365, 43]
+    Size: [474, 427]
+    Collapsed: false
+  - Name: Transform Component
+    Position: [1370, 138]
+    Size: [444, 120]
+    Collapsed: false
+  - Name: Scene Tag Component
+    Position: [1370, 73]
+    Size: [444, 60]
+    Collapsed: false
+  - Name: Havko
+    Position: [623, 224]
+    Size: [298, 499]
+    Collapsed: false

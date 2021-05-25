@@ -64,19 +64,19 @@ namespace XYZ {
 	{
 		InGuiWindow(uint32_t workClipId, uint32_t panelClipID);
 		
-		void			 PushItselfToDrawlist(const glm::vec4& color, InGuiClipID clipID = 0);
+		void			 PushItselfToDrawlist(bool highlight, InGuiClipID clipID = 0);
 		void			 PushTextClipped(const char* text, const glm::vec4& color, const glm::vec2& posMin, const glm::vec2& posMax, const glm::vec2* textSize = nullptr);
 		void		     PushTextNotClipped(const char* text, const glm::vec4& color, const glm::vec2& posMin, const glm::vec2& posMax, const glm::vec2* textSize = nullptr);
 		void		     PushText(const char* text, const glm::vec4& color, const glm::vec2& posMin, const glm::vec2& posMax, const glm::vec2* textSize = nullptr);
-		void			 PushQuad(const glm::vec4& color, const glm::vec4& texCoord, const glm::vec2& pos, const glm::vec2& size, uint32_t textureID = InGuiConfig::sc_DefaultTexture);
-		void			 PushQuadNotClipped(const glm::vec4& color, const glm::vec4& texCoord, const glm::vec2& pos, const glm::vec2& size, uint32_t textureID = InGuiConfig::sc_DefaultTexture);
+		void			 PushQuad(const glm::vec4& color, const glm::vec4& texCoord, const glm::vec2& pos, const glm::vec2& size, uint32_t textureID = InGuiConfig::DefaultTextureIndex);
+		void			 PushQuadNotClipped(const glm::vec4& color, const glm::vec4& texCoord, const glm::vec2& pos, const glm::vec2& size, uint32_t textureID = InGuiConfig::DefaultTextureIndex);
 		void			 PushLine(const glm::vec2& p0, const glm::vec2& p1, const glm::vec4& color);
 
 		void			 PushTextClippedOverlay(const char* text, const glm::vec4& color, const glm::vec2& posMin, const glm::vec2& posMax, const glm::vec2* textSize = nullptr);
 		void		     PushTextNotClippedOverlay(const char* text, const glm::vec4& color, const glm::vec2& posMin, const glm::vec2& posMax, const glm::vec2* textSize = nullptr);
 		void		     PushTextOverlay(const char* text, const glm::vec4& color, const glm::vec2& posMin, const glm::vec2& posMax, const glm::vec2* textSize = nullptr);
-		void			 PushQuadOverlay(const glm::vec4& color, const glm::vec4& texCoord, const glm::vec2& pos, const glm::vec2& size, uint32_t textureID = InGuiConfig::sc_DefaultTexture);
-		void			 PushQuadNotClippedOverlay(const glm::vec4& color, const glm::vec4& texCoord, const glm::vec2& pos, const glm::vec2& size, uint32_t textureID = InGuiConfig::sc_DefaultTexture);
+		void			 PushQuadOverlay(const glm::vec4& color, const glm::vec4& texCoord, const glm::vec2& pos, const glm::vec2& size, uint32_t textureID = InGuiConfig::DefaultTextureIndex);
+		void			 PushQuadNotClippedOverlay(const glm::vec4& color, const glm::vec4& texCoord, const glm::vec2& pos, const glm::vec2& size, uint32_t textureID = InGuiConfig::DefaultTextureIndex);
 		void			 SetParent(InGuiWindow* parent);
 		
 		bool			 NextWidgetClipped(const glm::vec2& size);

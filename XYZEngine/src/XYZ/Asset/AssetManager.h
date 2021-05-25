@@ -44,10 +44,12 @@ namespace XYZ {
 		static void Init();
 		static void Shutdown();
 
+
 		static AssetType GetAssetTypeFromExtension(const std::string& extension);
 		static GUID		 GetAssetHandle(const std::string& filepath);
 		static GUID		 GetDirectoryHandle(const std::string& filepath);
 		static std::vector<Ref<Asset>> FindAssetsByType(AssetType type);
+		static bool	     IsValidExtension(const std::string& extension);
 
 
 		template<typename T, typename... Args>
@@ -83,9 +85,6 @@ namespace XYZ {
 			}
 			return asset.As<T>();
 		}
-
-
-		
 
 	private:
 		static void processDirectory(const std::string& path, AssetDirectory& directory);

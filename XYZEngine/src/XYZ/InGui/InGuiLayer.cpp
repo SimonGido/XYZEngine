@@ -14,39 +14,30 @@ namespace XYZ {
 	{
 		InGui::Init("InGui.yaml");
 
-		Ref<Texture2D> texture = Texture2D::Create({ TextureWrap::Clamp, TextureParam::Linear, TextureParam::Nearest }, "Assets/Textures/Gui/TexturePack_Dark.png");
+		uint32_t whiteTextureData = 0xffffffff;
+		Ref<Texture2D> whiteTexture = Texture2D::Create(1, 1, 4, { TextureWrap::Clamp, TextureParam::Linear, TextureParam::Nearest });
+		whiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
+		Ref<Texture2D> texture = Texture2D::Create({ TextureWrap::Clamp, TextureParam::Linear, TextureParam::Nearest }, "Assets/Textures/Gui/ingui.png");
 		Ref<Font> font = Ref<XYZ::Font>::Create(14, "Assets/Fonts/arial.ttf");
-		InGui::GetContext().m_Config.Texture = texture;
-		InGui::GetContext().m_Config.Material->Set("u_Texture", texture, InGuiConfig::sc_DefaultTexture);
-		InGui::GetContext().m_Config.Font = font;
-		InGui::GetContext().m_Config.Material->Set("u_Texture", font->GetTexture(), InGuiConfig::sc_FontTexture);
+		
+		InGuiConfig& config = InGui::GetContext().m_Config;
+		config.Texture = texture;
+		config.Material->Set("u_Texture", texture, InGuiConfig::DefaultTextureIndex);
+		config.WhiteTexture = whiteTexture;
+		config.Material->Set("u_Texture", whiteTexture, InGuiConfig::WhiteTextureIndex);	
+		config.Font = font;
+		config.Material->Set("u_Texture", font->GetTexture(), InGuiConfig::FontTextureIndex);
 
-		float divisor = 8.0f;
-		Ref<SubTexture> windowSubTexture = Ref<XYZ::SubTexture>::Create(texture, glm::vec2(0, 3), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
-		Ref<SubTexture> buttonSubTexture = Ref<XYZ::SubTexture>::Create(texture, glm::vec2(0, 0), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
-		Ref<SubTexture> minimizeSubTexture = Ref<XYZ::SubTexture>::Create(texture, glm::vec2(1, 3), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
-		Ref<SubTexture> checkedSubTexture = Ref<XYZ::SubTexture>::Create(texture, glm::vec2(1, 1), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
-		Ref<SubTexture> unCheckedSubTexture = Ref<XYZ::SubTexture>::Create(texture, glm::vec2(0, 1), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
-		Ref<SubTexture> sliderSubTexture = Ref<XYZ::SubTexture>::Create(texture, glm::vec2(0, 0), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
-		Ref<SubTexture> handleSubTexture = Ref<XYZ::SubTexture>::Create(texture, glm::vec2(1, 2), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
-		Ref<SubTexture> whiteSubTexture = Ref<XYZ::SubTexture>::Create(texture, glm::vec2(3, 0), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
-		Ref<SubTexture> rightArrowSubTexture = Ref<XYZ::SubTexture>::Create(texture, glm::vec2(2, 2), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
-		Ref<SubTexture> leftArrowSubTexture = Ref<XYZ::SubTexture>::Create(texture, glm::vec2(3, 2), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
-		Ref<SubTexture> downArrowSubTexture = Ref<XYZ::SubTexture>::Create(texture, glm::vec2(2, 3), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
-		Ref<SubTexture> pauseSubTexture = Ref<XYZ::SubTexture>::Create(texture, glm::vec2(2, 1), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
-
-		InGui::GetContext().m_Config.SubTextures[InGuiConfig::Window]			 = windowSubTexture;
-		InGui::GetContext().m_Config.SubTextures[InGuiConfig::Button]			 = buttonSubTexture;
-		InGui::GetContext().m_Config.SubTextures[InGuiConfig::MinimizeButton]	 = minimizeSubTexture;
-		InGui::GetContext().m_Config.SubTextures[InGuiConfig::CheckboxChecked]	 = checkedSubTexture;
-		InGui::GetContext().m_Config.SubTextures[InGuiConfig::CheckboxUnChecked] = unCheckedSubTexture;
-		InGui::GetContext().m_Config.SubTextures[InGuiConfig::Slider]			 = sliderSubTexture;
-		InGui::GetContext().m_Config.SubTextures[InGuiConfig::SliderHandle]		 = handleSubTexture;
-		InGui::GetContext().m_Config.SubTextures[InGuiConfig::White]			 = whiteSubTexture;
-		InGui::GetContext().m_Config.SubTextures[InGuiConfig::RightArrow]		 = rightArrowSubTexture;
-		InGui::GetContext().m_Config.SubTextures[InGuiConfig::LeftArrow]		 = leftArrowSubTexture;
-		InGui::GetContext().m_Config.SubTextures[InGuiConfig::DownArrow]		 = downArrowSubTexture;
-		InGui::GetContext().m_Config.SubTextures[InGuiConfig::Pause]			 = pauseSubTexture;
+		float divisor = 4.0f;
+		
+		config.SubTextures[InGuiConfig::MinimizeButton]	     = Ref<XYZ::SubTexture>::Create(texture, glm::vec2(2, 2), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
+		config.SubTextures[InGuiConfig::CheckboxChecked]	 = Ref<XYZ::SubTexture>::Create(texture, glm::vec2(1, 2), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
+		config.SubTextures[InGuiConfig::CheckboxUnChecked]   = Ref<XYZ::SubTexture>::Create(texture, glm::vec2(0, 2), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
+		config.SubTextures[InGuiConfig::RightArrow]			 = Ref<XYZ::SubTexture>::Create(texture, glm::vec2(0, 3), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
+		config.SubTextures[InGuiConfig::LeftArrow]			 = Ref<XYZ::SubTexture>::Create(texture, glm::vec2(2, 3), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
+		config.SubTextures[InGuiConfig::DownArrow]			 = Ref<XYZ::SubTexture>::Create(texture, glm::vec2(1, 3), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
+		config.SubTextures[InGuiConfig::Pause]				 = Ref<XYZ::SubTexture>::Create(texture, glm::vec2(3, 3), glm::vec2(texture->GetWidth() / divisor, texture->GetHeight() / divisor));
+		config.WhiteSubTexture								 = Ref<XYZ::SubTexture>::Create(whiteTexture, glm::vec2(0.0f));
 	}
 
 	void InGuiLayer::OnDetach()

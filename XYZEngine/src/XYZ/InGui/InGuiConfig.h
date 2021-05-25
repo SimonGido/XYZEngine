@@ -13,55 +13,60 @@ namespace XYZ {
 
 		enum SubTextures
 		{
-			Button = 0,
 			CheckboxChecked,
 			CheckboxUnChecked,
-			Slider,
-			SliderHandle,
-			Window,
 			MinimizeButton,
-			CloseButton,
 			DownArrow,
 			RightArrow,
 			LeftArrow,
 			Pause,
-			White,
-			NumSubTextures = 32
+			NumSubTextures
 		};
 		enum Colors
 		{
-			ButtonDefault,
-			ButtonHoover,
-			CheckboxDefault,
-			CheckboxHoover,
-			SliderDefault,
-			SliderHoover,
-			WindowDefault,
-			WindowHoover,
+			ButtonColor,
+			ButtonHighlight,
+			CheckboxColor,
+			CheckboxHighlight,
+			SliderColor,
+			SliderHighlight,
+			SliderHandleColor,
+			SliderHandleHighlight,
+			WindowColor,
+			WindowHighlight,
+			WindowPanelColor,
+			WindowPanelHighlight,		
 			WindowFrameColor,
 			LineColor,
-			MenuDefault,
-			MenuHoover,
-			TabDefault,
-			TabHoover,
-			InputDefault,
-			InputHoover,
-			ImageDefault,
-			ImageHoover,		
-			TextDefault,
+			MenuColor,
+			MenuHighlight,
+			TabColor,
+			TabHighlight,
+			InputColor,
+			InputHighlight,
+			ImageColor,
+			ImageHighlight,		
+			TextColor,
 			TextHighlight,
 			NumColors
 		};
 
-		static constexpr uint32_t sc_DefaultTexture = 0;
-		static constexpr uint32_t sc_FontTexture = 1;
+		enum ColorTexture
+		{
+			DefaultTextureIndex,
+			WhiteTextureIndex,
+			FontTextureIndex,
+			NumTextures
+		};
 		
-
 		Ref<Material>			   Material;
 		Ref<Shader>				   LineShader;
 		Ref<Texture2D>			   Texture;
+		Ref<Texture2D>			   WhiteTexture;
 		Ref<Font>				   Font;
 		Ref<SubTexture>			   SubTextures[NumSubTextures];
+		Ref<SubTexture>			   WhiteSubTexture;
+
 		glm::vec4				   Colors[NumColors];
 		glm::vec2				   WindowPadding;
 		glm::vec2				   MenuItemSize;

@@ -76,6 +76,11 @@ namespace XYZ
 		return assets;
 	}
 
+	bool AssetManager::IsValidExtension(const std::string& extension)
+	{
+		return s_AssetTypes.find(extension) != s_AssetTypes.end();
+	}
+
 
 	void AssetManager::processDirectory(const std::string& path, AssetDirectory& directory)
 	{

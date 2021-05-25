@@ -7,7 +7,7 @@ namespace XYZ {
 		InGuiFrame();
 		~InGuiFrame();
 
-		uint32_t CustomTextureID() const { return (uint32_t)CustomTextures.size() + InGuiConfig::sc_FontTexture; }
+		uint32_t CustomTextureID() const { return (uint32_t)CustomTextures.size() + InGuiConfig::FontTextureIndex; }
 		
 		InGuiWindow*			   CurrentWindow;
 		glm::vec2				   MovedWindowOffset;

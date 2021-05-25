@@ -31,15 +31,12 @@ namespace XYZ {
 		StyleFlags |= InGuiWindowStyleFlags::ScrollEnabled;
 	}
 
-	void InGuiWindow::PushItselfToDrawlist(const glm::vec4& color, InGuiClipID clipID)
+	void InGuiWindow::PushItselfToDrawlist(bool highlight, InGuiClipID clipID)
 	{
 		const InGuiConfig& config = InGui::GetContext().m_Config;
-		const Ref<SubTexture>& winSubTexture = config.SubTextures[InGuiConfig::Window];
-		const Ref<SubTexture>& panelSubTexture = config.SubTextures[InGuiConfig::Button];
 		size_t subTextureIndex = IS_SET(EditFlags, InGuiWindowEditFlags::Collapsed) ? InGuiConfig::LeftArrow : InGuiConfig::DownArrow;
 		const Ref<SubTexture>& minimizeSubTexture = config.SubTextures[subTextureIndex];
 		
-		glm::vec4 defaultColor = config.Colors[InGuiConfig::WindowDefault];
 		if (!IS_SET(EditFlags, InGuiWindowEditFlags::Collapsed))
 		{
 			if (IS_SET(StyleFlags, InGuiWindowStyleFlags::FrameEnabled))
@@ -48,36 +45,41 @@ namespace XYZ {
 				rect += config.WindowFrameThickness;
 				DrawListInUse->PushQuad(
 					config.Colors[InGuiConfig::WindowFrameColor], 
-					winSubTexture->GetTexCoords(),
+					config.WhiteSubTexture->GetTexCoords(),
 					rect.Min, rect.Max - rect.Min, 
-					InGuiConfig::sc_DefaultTexture, clipID
+					InGuiConfig::WhiteTextureIndex, clipID
 				);
 			}
 			DrawListInUse->PushQuad(
-				defaultColor, winSubTexture->GetTexCoords(),
-				Position, Size, InGuiConfig::sc_DefaultTexture, clipID
+				config.Colors[InGuiConfig::WindowColor], 
+				config.WhiteSubTexture->GetTexCoords(),
+				Position, Size, InGuiConfig::WhiteTextureIndex, clipID
 			);
 		}
 		if (IS_SET(StyleFlags, InGuiWindowStyleFlags::PanelEnabled))
 		{
+			glm::vec4 panelColor = highlight ? config.Colors[InGuiConfig::WindowPanelHighlight] : config.Colors[InGuiConfig::WindowPanelColor];
 			DrawListInUse->PushQuad(
-				color, panelSubTexture->GetTexCoords(),
-				Position, { Size.x, config.PanelHeight }, InGuiConfig::sc_DefaultTexture, clipID
+				panelColor, config.WhiteSubTexture->GetTexCoords(),
+				Position, { Size.x, config.PanelHeight }, 
+				InGuiConfig::WhiteTextureIndex, clipID
 			);
 
 			glm::vec2 buttonPosition = Position + glm::vec2(Size.x - config.PanelHeight, 0.0f);
 			DrawListInUse->PushQuad(
-				defaultColor, minimizeSubTexture->GetTexCoordsUpside(),
-				buttonPosition, { config.PanelHeight, config.PanelHeight }, InGuiConfig::sc_DefaultTexture, clipID
+				config.Colors[InGuiConfig::ButtonColor], 
+				minimizeSubTexture->GetTexCoordsUpside(),
+				buttonPosition, { config.PanelHeight, config.PanelHeight }, 
+				InGuiConfig::DefaultTextureIndex, clipID
 			);
 			if (IS_SET(StyleFlags, InGuiWindowStyleFlags::LabelEnabled))
 			{
 				glm::vec2 textPosition = glm::vec2(Position.x + config.LabelOffset, Position.y + config.PanelHeight);
 				textPosition.y -= std::floor((config.PanelHeight - config.Font->GetLineHeight()) / 2.0f);
 				Util::GenerateTextMesh(
-					Name.c_str(), config.Font, defaultColor,
+					Name.c_str(), config.Font, config.Colors[InGuiConfig::TextColor],
 					textPosition, DrawListInUse->m_Quads,
-					InGuiConfig::sc_FontTexture, PanelClipID
+					InGuiConfig::FontTextureIndex, PanelClipID
 				);
 			}
 		}
@@ -101,7 +103,7 @@ namespace XYZ {
 		textPosition.y += std::floor((size.y - tmpTextSize.y) / 2.0f) + font->GetLineHeight();
 		Util::GenerateTextMeshClipped(
 			text, font, color, textPosition,
-			DrawListInUse->m_Quads, InGuiConfig::sc_FontTexture,
+			DrawListInUse->m_Quads, InGuiConfig::FontTextureIndex,
 			ClipID, size
 		);	
 	}
@@ -122,7 +124,7 @@ namespace XYZ {
 		textPosition.y += std::floor((size.y - tmpTextSize.y) / 2.0f) + font->GetLineHeight();
 		Util::GenerateTextMesh(
 			text, font, color, textPosition,
-			DrawListInUse->m_Quads, InGuiConfig::sc_FontTexture,
+			DrawListInUse->m_Quads, InGuiConfig::FontTextureIndex,
 			0
 		);
 	}
@@ -143,7 +145,7 @@ namespace XYZ {
 		textPosition.y += std::floor((size.y - tmpTextSize.y) / 2.0f) + font->GetLineHeight();
 		Util::GenerateTextMesh(
 			text, font, color, textPosition,
-			DrawListInUse->m_Quads, InGuiConfig::sc_FontTexture,
+			DrawListInUse->m_Quads, InGuiConfig::FontTextureIndex,
 			ClipID
 		);
 	}
@@ -189,7 +191,7 @@ namespace XYZ {
 		textPosition.y += std::floor((size.y - tmpTextSize.y) / 2.0f) + font->GetLineHeight();
 		Util::GenerateTextMeshClipped(
 			text, font, color, textPosition,
-			DrawListInUse->m_QuadsOverlay, InGuiConfig::sc_FontTexture,
+			DrawListInUse->m_QuadsOverlay, InGuiConfig::FontTextureIndex,
 			ClipID, size
 		);
 	}
@@ -210,7 +212,7 @@ namespace XYZ {
 		textPosition.y += std::floor((size.y - tmpTextSize.y) / 2.0f) + font->GetLineHeight();
 		Util::GenerateTextMesh(
 			text, font, color, textPosition,
-			DrawListInUse->m_QuadsOverlay, InGuiConfig::sc_FontTexture,
+			DrawListInUse->m_QuadsOverlay, InGuiConfig::FontTextureIndex,
 			0
 		);
 	}
@@ -231,7 +233,7 @@ namespace XYZ {
 		textPosition.y += std::floor((size.y - tmpTextSize.y) / 2.0f) + font->GetLineHeight();
 		Util::GenerateTextMesh(
 			text, font, color, textPosition,
-			DrawListInUse->m_QuadsOverlay, InGuiConfig::sc_FontTexture,
+			DrawListInUse->m_QuadsOverlay, InGuiConfig::FontTextureIndex,
 			ClipID
 		);
 	}

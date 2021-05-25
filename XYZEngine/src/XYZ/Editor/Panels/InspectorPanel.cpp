@@ -92,6 +92,7 @@ namespace XYZ {
 						{
 							SpriteRenderer& sprite = m_Context.GetComponent<SpriteRenderer>();
 							InGui::Float4("R", "G", "B", "A Color", glm::vec2(40.0f, 25.0f), glm::value_ptr(sprite.Color), 2);
+							InGui::String("Material", glm::vec2(150.0f, 25.0f), sprite.Material->FileName);
 							InGui::UInt("Sort Layer", glm::vec2(40.0f, 25.0f), sprite.SortLayer);
 							InGui::Checkbox("Visible", glm::vec2(25.0f, 25.0f), sprite.IsVisible);
 						}

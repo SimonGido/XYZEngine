@@ -19,16 +19,24 @@ namespace XYZ {
 
 		LineShader = Shader::Create("Assets/Shaders/InGui/InGuiLineShader.glsl");
 
-		for (size_t i = 0; i < NumColors; i += 2)
+		for (size_t i = 1; i < NumColors; i += 2)
 		{
-			Colors[i] = glm::vec4(1.0f);
-			Colors[i + 1] = glm::vec4( 1.4f, 1.9f, 2.1, 1.0f );
+			Colors[i] = glm::vec4( 0.2f, 0.2f, 0.5, 1.0f );
 		}
-		Colors[MenuDefault] = glm::vec4(1.0f, 1.0f, 1.0f, 0.8f);
-		Colors[TextDefault] = glm::vec4(1.0f);
-		Colors[TextHighlight] = glm::vec4(1.0f, 0.7f, 1.0f, 1.0f);
-		Colors[LineColor] = glm::vec4(1.0f);
-		Colors[TabHoover] = glm::vec4(2.0f, 2.5f, 2.8f, 1.0f);
-		Colors[WindowFrameColor] = glm::vec4(0.4f, 0.4f, 0.4f, 1.0f);
+
+		Colors[ButtonColor]		  = glm::vec4(0.3f, 0.3f, 0.4f, 1.0f);
+		Colors[CheckboxColor]	  = glm::vec4(0.2f, 0.2f, 0.3f, 1.0f);
+		Colors[SliderColor]		  = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
+		Colors[SliderHighlight]   = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
+		Colors[SliderHandleColor] = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
+		Colors[WindowColor]		  = glm::vec4(0.3f, 0.4f, 0.5f, 0.7f);
+		Colors[WindowPanelColor]  = glm::vec4(0.1f, 0.1f, 0.15f, 1.0f);
+		Colors[MenuColor]		  = glm::vec4(0.1f, 0.1f, 0.1f, 0.4f);
+		Colors[TabColor]		  = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
+		Colors[InputColor]		  = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
+		Colors[ImageColor]		  = glm::vec4(1.0f);
+		Colors[TextColor]		  = glm::vec4(1.0f);
+		Colors[TextHighlight]	  = glm::vec4(0.8f, 0.7f, 1.0f, 1.0f);
+		Colors[WindowFrameColor]  = glm::vec4(0.4f, 0.4f, 0.4f, 1.0f);
 	}
 }
