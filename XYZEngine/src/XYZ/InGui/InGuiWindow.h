@@ -60,6 +60,7 @@ namespace XYZ {
 		};
 	}
 
+	struct InGuiDockNode;
 	struct InGuiWindow
 	{
 		InGuiWindow(uint32_t workClipId, uint32_t panelClipID);
@@ -131,6 +132,7 @@ namespace XYZ {
 		InGuiDrawList			  DrawList;
 		InGuiWindow*			  Parent;
 		std::vector<InGuiWindow*> ChildWindows;
+		InGuiDockNode*			  DockNode;
 
 		static constexpr float sc_ResizeThresholdX = 5.0f;
 		static constexpr float sc_ResizeThresholdY = 5.0f;

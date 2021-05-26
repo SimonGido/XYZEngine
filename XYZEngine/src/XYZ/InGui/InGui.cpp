@@ -7,6 +7,8 @@
 
 #include "XYZ/Core/Input.h"
 
+#include <stack>
+
 namespace XYZ {
 	static InGuiContext* s_Context = nullptr;
 	
@@ -126,6 +128,37 @@ namespace XYZ {
 		s_Context->FocusWindow(s_Context->GetInGuiWindow(name));
 	}
 
+	void InGui::DockSpace()
+	{
+		XYZ_ASSERT(!s_Context->m_MenuBarActive, "Menu bar is already active, forgot end menu bar");
+		InGuiWindow* window = s_Context->m_FrameData.CurrentWindow;
+		if (!window->IsActive || IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed))
+			return;
+
+		if (!s_Context->m_DockSpace.IsInitialized())
+			s_Context->m_DockSpace.Init(glm::vec2(0.0f), {s_Context->m_ViewportWidth, s_Context->m_ViewportHeight});
+
+		//const InGuiConfig& config = s_Context->m_Config;
+		//InGuiDockSpace& dockSpace = s_Context->m_DockSpace;
+		//std::stack<InGuiDockNode*> nodes;
+		//nodes.push(dockSpace.m_Root);
+		//while (!nodes.empty())
+		//{
+		//	InGuiDockNode* tmp = nodes.top();
+		//	nodes.pop();
+		//
+		//	if (tmp->Split != SplitType::None)
+		//	{
+		//		nodes.push(tmp->Children[0]);
+		//		nodes.push(tmp->Children[1]);
+		//	}
+		//	const glm::vec4 color = config.Colors[InGuiConfig::DockspaceNodeColor];
+		//	const glm::vec2 absPosition = window->Position + tmp->Position;
+		//	const glm::vec2 center = absPosition - config.DockspaceNodeSize / 2.0f;
+		//	//window->PushQuadNotClippedOverlay(color, config.WhiteSubTexture->GetTexCoords(), center, config.DockspaceNodeSize, config.WhiteTextureIndex);
+		//}
+	}
+
 	bool InGui::BeginMenuBar()
 	{
 		XYZ_ASSERT(!s_Context->m_MenuBarActive, "Menu bar is already active, forgot end menu bar");
@@ -138,7 +171,7 @@ namespace XYZ {
 
 		s_Context->m_MenuBarActive = true;
 		const InGuiConfig& config = s_Context->m_Config;
-		const glm::vec4 color = config.Colors[InGuiConfig::ButtonColor];
+		const glm::vec4 color = config.Colors[InGuiConfig::MenuColor];
 		const glm::vec2 pos = { window->Position.x, window->Position.y + config.PanelHeight };
 		const glm::vec2 size = { window->Size.x, config.MenuBarHeight };
 		window->PushQuadNotClipped(

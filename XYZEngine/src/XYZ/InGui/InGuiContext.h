@@ -3,6 +3,7 @@
 #include "InGuiFrame.h"
 #include "InGuiConfig.h"
 #include "InGuiInput.h"
+#include "InGuiDockSpace.h"
 
 #include "XYZ/Renderer/Buffer.h"
 #include "XYZ/Renderer/CustomRenderer2D.h"
@@ -30,6 +31,7 @@ namespace XYZ {
 		InGuiInput				  m_Input;
 		InGuiFrame				  m_FrameData;
 		InGuiConfig				  m_Config;
+		InGuiDockSpace			  m_DockSpace;
 		uint32_t				  m_ViewportWidth;
 		uint32_t				  m_ViewportHeight;
 

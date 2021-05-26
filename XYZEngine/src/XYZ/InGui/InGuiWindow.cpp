@@ -25,7 +25,8 @@ namespace XYZ {
 		Grouping(false),
 		ScrollBarSize(10.0f),
 		DrawListInUse(nullptr),
-		Parent(nullptr)
+		Parent(nullptr),
+		DockNode(nullptr)
 	{
 		StyleFlags |= InGuiWindowStyleFlags::PanelEnabled;
 		StyleFlags |= InGuiWindowStyleFlags::ScrollEnabled;

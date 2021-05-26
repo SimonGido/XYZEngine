@@ -9,6 +9,8 @@
 
 #include <glm/gtx/transform.hpp>
 
+#include <stack>
+
 namespace XYZ {
 
 	InGuiContext::InGuiContext()
@@ -70,8 +72,48 @@ namespace XYZ {
 		for (InGuiWindow* window : m_Windows)
 			window->DrawList.SubmitToRenderer();
 
-		
+		if (m_DockSpace.IsInitialized())
+		{
+			std::stack<InGuiDockNode*> nodes;
+			nodes.push(m_DockSpace.m_Root);
+			while (!nodes.empty())
+			{
+				InGuiDockNode* tmp = nodes.top();
+				nodes.pop();
 
+				if (tmp->Split != SplitType::None)
+				{
+					nodes.push(tmp->Children[0]);
+					nodes.push(tmp->Children[1]);
+				}
+				const glm::vec4 color = m_Config.Colors[InGuiConfig::DockspaceNodeColor];
+				CustomRenderer2D::SubmitQuadNotCentered(
+					glm::vec3(tmp->MiddleRect().Min, 0.0f), m_Config.DockspaceNodeSize, 
+					m_Config.WhiteSubTexture->GetTexCoords(), color, (float)m_Config.WhiteTextureIndex, 0.0f
+				);
+				CustomRenderer2D::SubmitQuadNotCentered(
+					glm::vec3(tmp->TopRect().Min, 0.0f), m_Config.DockspaceNodeSize,
+					m_Config.WhiteSubTexture->GetTexCoords(), color, (float)m_Config.WhiteTextureIndex, 0.0f
+				);
+				CustomRenderer2D::SubmitQuadNotCentered(
+					glm::vec3(tmp->BottomRect().Min, 0.0f), m_Config.DockspaceNodeSize,
+					m_Config.WhiteSubTexture->GetTexCoords(), color, (float)m_Config.WhiteTextureIndex, 0.0f
+				);
+				CustomRenderer2D::SubmitQuadNotCentered(
+					glm::vec3(tmp->LeftRect().Min, 0.0f), m_Config.DockspaceNodeSize,
+					m_Config.WhiteSubTexture->GetTexCoords(), color, (float)m_Config.WhiteTextureIndex, 0.0f
+				);
+				CustomRenderer2D::SubmitQuadNotCentered(
+					glm::vec3(tmp->RightRect().Min, 0.0f), m_Config.DockspaceNodeSize,
+					m_Config.WhiteSubTexture->GetTexCoords(), color, (float)m_Config.WhiteTextureIndex, 0.0f
+				);
+
+				if (tmp->TopRect().Overlaps(m_Input.MousePosition))
+				{
+					tmp->SplitNode(SplitType::Horizontal);
+				}
+			}
+		}
 		CustomRenderer2D::Flush();
 		CustomRenderer2D::FlushLines();
 		CustomRenderer2D::EndScene();

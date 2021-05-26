@@ -64,6 +64,8 @@ namespace XYZ {
 		);
 
 
+		InGui::DockSpace();
+
 		if (InGui::BeginMenuBar())
 		{
 			if (IS_SET(InGui::BeginMenu("Test label", 70.0f), InGui::Pressed))

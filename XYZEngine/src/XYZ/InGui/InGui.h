@@ -27,6 +27,8 @@ namespace XYZ {
 
 		enum Result { Hoover = BIT(0), Pressed = BIT(1) };
 
+		static void DockSpace();
+
 		static bool BeginMenuBar();
 		static void EndMenuBar();
 

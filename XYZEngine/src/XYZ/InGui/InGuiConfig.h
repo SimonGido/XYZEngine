@@ -48,6 +48,8 @@ namespace XYZ {
 			ImageHighlight,		
 			TextColor,
 			TextHighlight,
+			DockspaceNodeColor,
+			DockspaceNodeHighlight,
 			NumColors
 		};
 
@@ -70,6 +72,8 @@ namespace XYZ {
 		glm::vec4				   Colors[NumColors];
 		glm::vec2				   WindowPadding;
 		glm::vec2				   MenuItemSize;
+		glm::vec2				   DockspaceNodeSize;
+		glm::vec2				   DockspaceNodeOffset;
 		float					   TreeNodeOffset;
 		float					   TabLabelOffset;
 		float					   WindowFrameThickness;
