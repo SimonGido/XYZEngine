@@ -46,11 +46,11 @@ namespace XYZ {
 
 		void InspectorPanel::OnUpdate()
 		{
-			if (InGui::Begin("Inspector",
-				
+			if (InGui::Begin("Inspector",			
 				 InGuiWindowStyleFlags::PanelEnabled
 				| InGuiWindowStyleFlags::ScrollEnabled
 				| InGuiWindowStyleFlags::LabelEnabled
+				| InGuiWindowStyleFlags::DockingEnabled
 			))
 			{
 				InGuiWindow* inspector = InGui::GetContext().GetInGuiWindow("Inspector");
@@ -61,9 +61,11 @@ namespace XYZ {
 
 				if (m_Context && m_Context.IsValid())
 				{
+					InGuiWindowFlags flags = InGuiWindowStyleFlags::PanelEnabled
+										   | InGuiWindowStyleFlags::LabelEnabled;
 					if (m_Context.HasComponent<SceneTagComponent>())
 					{		
-						if (InGui::Begin("Scene Tag Component"))
+						if (InGui::Begin("Scene Tag Component", flags))
 						{
 							InGui::String("Name", glm::vec2(150.0f, 25.0f), m_Context.GetComponent<SceneTagComponent>().Name);
 						}
@@ -74,7 +76,7 @@ namespace XYZ {
 					}
 					if (m_Context.HasComponent<TransformComponent>())
 					{
-						if (InGui::Begin("Transform Component"))
+						if (InGui::Begin("Transform Component", flags))
 						{
 							TransformComponent& transform = m_Context.GetComponent<TransformComponent>();
 							InGui::Float3("X", "Y", "Z Translation", glm::vec2(40.0f, 25.0f), glm::value_ptr(transform.Translation), 2);
@@ -88,7 +90,7 @@ namespace XYZ {
 					}
 					if (m_Context.HasComponent<SpriteRenderer>())
 					{
-						if (InGui::Begin("Sprite Renderer"))
+						if (InGui::Begin("Sprite Renderer", flags))
 						{
 							SpriteRenderer& sprite = m_Context.GetComponent<SpriteRenderer>();
 							InGui::Float4("R", "G", "B", "A Color", glm::vec2(40.0f, 25.0f), glm::value_ptr(sprite.Color), 2);

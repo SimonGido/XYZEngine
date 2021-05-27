@@ -27,8 +27,20 @@ namespace XYZ {
 		if (s_Context)
 		{
 			InGuiSerializer::Serialize(*s_Context, "InGui.yaml");
+			InGui::DestroyDockSpace();
 			delete s_Context;
 		}
+	}
+
+	void InGui::InitDockSpace()
+	{
+		if (!s_Context->m_DockSpace.IsInitialized())
+			s_Context->m_DockSpace.Init(glm::vec2(0.0f), { s_Context->m_ViewportWidth, s_Context->m_ViewportHeight });
+	}
+
+	void InGui::DestroyDockSpace()
+	{
+		s_Context->m_DockSpace.Destroy();
 	}
 
 	void InGui::BeginFrame()
@@ -130,33 +142,41 @@ namespace XYZ {
 
 	void InGui::DockSpace()
 	{
-		XYZ_ASSERT(!s_Context->m_MenuBarActive, "Menu bar is already active, forgot end menu bar");
-		InGuiWindow* window = s_Context->m_FrameData.CurrentWindow;
-		if (!window->IsActive || IS_SET(window->EditFlags, InGuiWindowEditFlags::Collapsed))
+		InGuiDockSpace& dockSpace = s_Context->m_DockSpace;
+		if (!dockSpace.IsInitialized())
 			return;
 
-		if (!s_Context->m_DockSpace.IsInitialized())
-			s_Context->m_DockSpace.Init(glm::vec2(0.0f), {s_Context->m_ViewportWidth, s_Context->m_ViewportHeight});
+		dockSpace.Drawlist.Clear();
+		const InGuiConfig& config = s_Context->m_Config;
+		const InGuiFrame& frame = s_Context->m_FrameData;
+		const InGuiInput& input = s_Context->m_Input;
+		
+		InGuiWindow* focused = s_Context->m_FocusedWindow;
+		if (dockSpace.ResizedNode)
+			dockSpace.ResizedNode->HandleResize(input.MousePosition);
 
-		//const InGuiConfig& config = s_Context->m_Config;
-		//InGuiDockSpace& dockSpace = s_Context->m_DockSpace;
-		//std::stack<InGuiDockNode*> nodes;
-		//nodes.push(dockSpace.m_Root);
-		//while (!nodes.empty())
-		//{
-		//	InGuiDockNode* tmp = nodes.top();
-		//	nodes.pop();
-		//
-		//	if (tmp->Split != SplitType::None)
-		//	{
-		//		nodes.push(tmp->Children[0]);
-		//		nodes.push(tmp->Children[1]);
-		//	}
-		//	const glm::vec4 color = config.Colors[InGuiConfig::DockspaceNodeColor];
-		//	const glm::vec2 absPosition = window->Position + tmp->Position;
-		//	const glm::vec2 center = absPosition - config.DockspaceNodeSize / 2.0f;
-		//	//window->PushQuadNotClippedOverlay(color, config.WhiteSubTexture->GetTexCoords(), center, config.DockspaceNodeSize, config.WhiteTextureIndex);
-		//}
+		std::stack<InGuiDockNode*> nodes;
+		nodes.push(dockSpace.Root);
+		while (!nodes.empty())
+		{
+			InGuiDockNode* tmp = nodes.top();
+			nodes.pop();
+			tmp->Update();
+			if (tmp->Split != SplitType::None)
+			{
+				nodes.push(tmp->Children[0]);
+				nodes.push(tmp->Children[1]);
+			}
+			else if (focused && IS_SET(focused->EditFlags, InGuiWindowEditFlags::Moving)
+							 && IS_SET(focused->StyleFlags, InGuiWindowStyleFlags::DockingEnabled))
+			{
+				dockSpace.PushNodeRectangle(tmp->MiddleRect());
+				dockSpace.PushNodeRectangle(tmp->LeftRect());
+				dockSpace.PushNodeRectangle(tmp->RightRect());
+				dockSpace.PushNodeRectangle(tmp->TopRect());
+				dockSpace.PushNodeRectangle(tmp->BottomRect());
+			}					
+		}	
 	}
 
 	bool InGui::BeginMenuBar()

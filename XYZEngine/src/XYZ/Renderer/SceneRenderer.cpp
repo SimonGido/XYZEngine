@@ -88,7 +88,7 @@ namespace XYZ {
 				FramebufferTextureSpecs(FramebufferTextureFormat::RGBA16F),
 				FramebufferTextureSpecs(FramebufferTextureFormat::DEPTH24STENCIL8)
 			};
-			specs.SwapChainTarget = true;
+			//specs.SwapChainTarget = true;
 			Ref<Framebuffer> fbo = Framebuffer::Create(specs);
 			s_Data.CompositePass = RenderPass::Create({ fbo });
 		}

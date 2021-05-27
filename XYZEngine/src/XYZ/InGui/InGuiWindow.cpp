@@ -14,6 +14,7 @@ namespace XYZ {
 		StyleFlags(0),
 		Position(100.0f),
 		Size(300.0f),
+		OriginalSize(Size),
 		Scroll(0.0f),
 		IsActive(true),
 		IsInitialized(false),
@@ -366,26 +367,30 @@ namespace XYZ {
 
 	bool InGuiWindow::ResolveResizeFlags(const glm::vec2& mousePosition, bool checkCollision)
 	{
+		// Window is docked, can not be resized
+		if (DockNode)
+			return false;
+
+		float threshhold = InGui::GetContext().m_Config.ResizeThreshhold;
 		if (checkCollision)
 		{
-			InGuiRect rect = RealRect();
-			if (!rect.Overlaps(mousePosition))
+			if (!RealRect().Overlaps(mousePosition))
 				return false;
 		}
 
 		bool result = false;
-		if (mousePosition.x < Position.x + sc_ResizeThresholdX)
+		if (mousePosition.x < Position.x + threshhold)
 		{
 			EditFlags |= InGuiWindowEditFlags::ResizeLeft;
 			result = true;
 		}
-		else if (mousePosition.x > Position.x + Size.x - sc_ResizeThresholdX)
+		else if (mousePosition.x > Position.x + Size.x - threshhold)
 		{
 			EditFlags |= InGuiWindowEditFlags::ResizeRight;
 			result = true;
 		}
 
-		if (mousePosition.y > Position.y + Size.y - sc_ResizeThresholdY)
+		if (mousePosition.y > Position.y + Size.y - threshhold)
 		{
 			EditFlags |= InGuiWindowEditFlags::ResizeBottom;
 			result = true;
@@ -450,16 +455,18 @@ namespace XYZ {
 		if (!ScrollBarY) Scroll.y = 0.0f;
 		
 		// Backup cursor
+
+		float threshhold = InGui::GetContext().m_Config.ResizeThreshhold;
 		glm::vec2 oldCursor = FrameData.CursorPos;
 		InGuiRect rect = ClipRect();
 		if (ScrollBarY)
 		{
 			SetCursorPosition(glm::vec2(
-				rect.Max.x - ScrollBarSize.y - InGuiWindow::sc_ResizeThresholdX,
-				rect.Min.y + InGuiWindow::sc_ResizeThresholdY)
+				rect.Max.x - ScrollBarSize.y - threshhold,
+				rect.Min.y + threshhold)
 			);
 			float yScroll = Scroll.y;
-			float ySize = rect.Max.y - rect.Min.y - (2.0f * InGuiWindow::sc_ResizeThresholdY);
+			float ySize = rect.Max.y - rect.Min.y - (2.0f * threshhold);
 			Scroll.y = 0.0f;
 			InGui::VSliderFloat(
 				"", glm::vec2(ScrollBarSize.y, ySize),
@@ -470,11 +477,11 @@ namespace XYZ {
 		else if (ScrollBarX)
 		{
 			SetCursorPosition(glm::vec2(
-				rect.Min.x + InGuiWindow::sc_ResizeThresholdX,
-				rect.Max.y - ScrollBarSize.y - InGuiWindow::sc_ResizeThresholdY)
+				rect.Min.x + threshhold,
+				rect.Max.y - ScrollBarSize.y - threshhold)
 			);
 			float xScroll = Scroll.x;
-			float xSize = rect.Max.x - rect.Min.x - (2.0f * InGuiWindow::sc_ResizeThresholdX);
+			float xSize = rect.Max.x - rect.Min.x - (2.0f * threshhold);
 			Scroll.x = 0.0f;
 			InGui::SliderFloat(
 				"", glm::vec2(xSize, ScrollBarSize.y),
@@ -484,6 +491,17 @@ namespace XYZ {
 		}
 		// Restore cursor
 		SetCursorPosition(oldCursor);
+	}
+
+	bool InGuiWindow::IsResizing() const
+	{
+		const InGuiDockSpace& dockSpace = InGui::GetContext().m_DockSpace;
+		if (DockNode && dockSpace.ResizedNode)
+			return true;
+		return IS_SET(EditFlags,
+			  InGuiWindowEditFlags::ResizeBottom
+			| InGuiWindowEditFlags::ResizeLeft
+			| InGuiWindowEditFlags::ResizeRight);
 	}
 
 	bool InGuiWindow::IsFocused() const

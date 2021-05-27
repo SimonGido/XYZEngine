@@ -4,6 +4,7 @@
 #include "XYZ/Scene/SceneEntity.h"
 #include "XYZ/Event/ApplicationEvent.h"
 #include "XYZ/Event/InputEvent.h"
+#include "XYZ/InGui/InGui.h"
 
 namespace XYZ {
 	namespace Editor {
@@ -29,12 +30,10 @@ namespace XYZ {
 			std::pair<float, float> getMouseViewportSpace() const;
 		private:
 			Ref<Scene> m_Context;
-			glm::vec2 m_ViewportSize = glm::vec2(0.0f);
-
+			Ref<SubTexture> m_SceneSubTexture;
+			glm::vec2 m_ViewportSize;
 			EditorCamera m_EditorCamera;
-
-			size_t m_HandleCount;
-			size_t m_PoolHandle;
+			InGuiWindow* m_Window;
 
 			enum ModifyFlags
 			{

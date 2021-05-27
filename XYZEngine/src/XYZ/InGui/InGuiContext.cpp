@@ -5,6 +5,7 @@
 #include "InGuiBehavior.h"
 #include "InGuiUtil.h"
 
+#include "XYZ/Core/Application.h"
 #include "XYZ/Renderer/Renderer2D.h"
 
 #include <glm/gtx/transform.hpp>
@@ -51,6 +52,7 @@ namespace XYZ {
 
 	void InGuiContext::Render()
 	{
+		handleWindowCursor();
 		for (InGuiWindow* window : m_Windows)
 		{
 			m_ClipRectangles[window->ClipID] = window->ClipRect(m_ViewportHeight);
@@ -73,47 +75,8 @@ namespace XYZ {
 			window->DrawList.SubmitToRenderer();
 
 		if (m_DockSpace.IsInitialized())
-		{
-			std::stack<InGuiDockNode*> nodes;
-			nodes.push(m_DockSpace.m_Root);
-			while (!nodes.empty())
-			{
-				InGuiDockNode* tmp = nodes.top();
-				nodes.pop();
+			m_DockSpace.Drawlist.SubmitToRenderer();
 
-				if (tmp->Split != SplitType::None)
-				{
-					nodes.push(tmp->Children[0]);
-					nodes.push(tmp->Children[1]);
-				}
-				const glm::vec4 color = m_Config.Colors[InGuiConfig::DockspaceNodeColor];
-				CustomRenderer2D::SubmitQuadNotCentered(
-					glm::vec3(tmp->MiddleRect().Min, 0.0f), m_Config.DockspaceNodeSize, 
-					m_Config.WhiteSubTexture->GetTexCoords(), color, (float)m_Config.WhiteTextureIndex, 0.0f
-				);
-				CustomRenderer2D::SubmitQuadNotCentered(
-					glm::vec3(tmp->TopRect().Min, 0.0f), m_Config.DockspaceNodeSize,
-					m_Config.WhiteSubTexture->GetTexCoords(), color, (float)m_Config.WhiteTextureIndex, 0.0f
-				);
-				CustomRenderer2D::SubmitQuadNotCentered(
-					glm::vec3(tmp->BottomRect().Min, 0.0f), m_Config.DockspaceNodeSize,
-					m_Config.WhiteSubTexture->GetTexCoords(), color, (float)m_Config.WhiteTextureIndex, 0.0f
-				);
-				CustomRenderer2D::SubmitQuadNotCentered(
-					glm::vec3(tmp->LeftRect().Min, 0.0f), m_Config.DockspaceNodeSize,
-					m_Config.WhiteSubTexture->GetTexCoords(), color, (float)m_Config.WhiteTextureIndex, 0.0f
-				);
-				CustomRenderer2D::SubmitQuadNotCentered(
-					glm::vec3(tmp->RightRect().Min, 0.0f), m_Config.DockspaceNodeSize,
-					m_Config.WhiteSubTexture->GetTexCoords(), color, (float)m_Config.WhiteTextureIndex, 0.0f
-				);
-
-				if (tmp->TopRect().Overlaps(m_Input.MousePosition))
-				{
-					tmp->SplitNode(SplitType::Horizontal);
-				}
-			}
-		}
 		CustomRenderer2D::Flush();
 		CustomRenderer2D::FlushLines();
 		CustomRenderer2D::EndScene();
@@ -144,6 +107,11 @@ namespace XYZ {
 			{
 				m_FocusedWindow = nullptr;
 				m_Input.Flags |= InGuiInput::LeftMouseButtonPressed;
+				if (m_DockSpace.IsInitialized())
+				{
+					if (m_DockSpace.FindResizedNode(m_Input.MousePosition))
+						return true;
+				}
 				for (auto it = m_Windows.rbegin(); it != m_Windows.rend(); ++it)
 				{
 					InGuiWindow* window = (*it);
@@ -175,7 +143,13 @@ namespace XYZ {
 						| InGuiWindowEditFlags::ResizeRight
 						| InGuiWindowEditFlags::ResizeLeft
 						| InGuiWindowEditFlags::ResizeBottom
-						);
+						);				
+				}
+				if (m_DockSpace.IsInitialized())
+				{
+					m_DockSpace.ResizedNode = nullptr;
+					if (m_FocusedWindow)
+						m_DockSpace.InsertWindow(m_FocusedWindow);
 				}
 			}
 			else if (e.IsButtonReleased(MouseCode::MOUSE_BUTTON_RIGHT))
@@ -286,6 +260,8 @@ namespace XYZ {
 				if (IS_SET(result, InGui::Pressed))
 				{
 					window->EditFlags |= InGuiWindowEditFlags::Moving;
+					if (window->DockNode)
+						window->DockNode->RemoveWindow(window);
 					m_FrameData.MovedWindowOffset = m_Input.MousePosition - window->Position;
 				}
 				else if (window->ResolveResizeFlags(m_Input.MousePosition))
@@ -297,5 +273,59 @@ namespace XYZ {
 			return true;
 		}
 		return false;
+	}
+	void InGuiContext::handleWindowCursor()
+	{
+		auto& window = Application::Get().GetWindow();
+		const glm::vec2 mousePosition = m_Input.MousePosition;
+		float threshhold = m_Config.ResizeThreshhold;
+		for (auto win : m_Windows)
+		{			
+			if (win->RealRect().Overlaps(mousePosition))
+			{
+				if (mousePosition.x < win->Position.x + threshhold)
+				{
+					window.SetStandardCursor(WindowCursors::XYZ_HRESIZE_CURSOR);
+					return;
+				}
+				else if (mousePosition.x > win->Position.x + win->Size.x - threshhold)
+				{
+					window.SetStandardCursor(WindowCursors::XYZ_HRESIZE_CURSOR);
+					return;
+				}
+				else if (mousePosition.y > win->Position.y + win->Size.y - threshhold)
+				{
+					window.SetStandardCursor(WindowCursors::XYZ_VRESIZE_CURSOR);
+					return;
+				}
+			}
+		}
+		if (m_DockSpace.ResizedNode)
+		{
+			if (m_DockSpace.ResizedNode->Split == SplitType::Horizontal)
+			{
+				window.SetStandardCursor(WindowCursors::XYZ_VRESIZE_CURSOR);
+				return;
+			}
+			else
+			{
+				window.SetStandardCursor(WindowCursors::XYZ_HRESIZE_CURSOR);
+				return;
+			}
+		}
+		else if (m_FocusedWindow)
+		{
+			if (IS_SET(m_FocusedWindow->EditFlags, InGuiWindowEditFlags::ResizeLeft | InGuiWindowEditFlags::ResizeRight))
+			{
+				window.SetStandardCursor(WindowCursors::XYZ_HRESIZE_CURSOR);
+				return;
+			}
+			else if (IS_SET(m_FocusedWindow->EditFlags, InGuiWindowEditFlags::ResizeBottom))
+			{
+				window.SetStandardCursor(WindowCursors::XYZ_VRESIZE_CURSOR);
+				return;
+			}
+		}
+		window.SetStandardCursor(WindowCursors::XYZ_ARROW_CURSOR);
 	}
 }

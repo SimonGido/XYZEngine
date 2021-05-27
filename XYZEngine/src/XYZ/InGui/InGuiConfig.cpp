@@ -14,7 +14,8 @@ namespace XYZ {
 		TreeNodeOffset(25.0f),
 		TabBarHeight(25.0f),
 		MenuBarHeight(25.0f),
-		LabelOffset(5.0f)
+		LabelOffset(5.0f),
+		ResizeThreshhold(10.0f)
 	{
 		Material = Ref<XYZ::Material>::Create(Shader::Create("Assets/Shaders/InGui/InGuiShader.glsl"));
 		Material->Set("u_Color", glm::vec4(1.0f));
@@ -40,6 +41,6 @@ namespace XYZ {
 		Colors[TextColor]				= glm::vec4(1.0f);
 		Colors[TextHighlight]			= glm::vec4(0.8f, 0.7f, 1.0f, 1.0f);
 		Colors[WindowFrameColor]		= glm::vec4(0.4f, 0.4f, 0.4f, 1.0f);
-		Colors[DockspaceNodeColor]		= glm::vec4(0.3f, 0.5f, 0.8f, 1.0f);
+		Colors[DockspaceNodeColor]		= glm::vec4(0.1f, 0.3f, 0.5f, 0.5f);
 	}
 }

@@ -13,13 +13,20 @@ namespace XYZ {
 	struct InGuiDockNode
 	{
 		InGuiDockNode(InGuiID id);
+		~InGuiDockNode();
 
-		std::pair<InGuiDockNode*, InGuiDockNode*> SplitNode(SplitType split);
+		std::pair<InGuiDockNode*, InGuiDockNode*> SplitNode(SplitType split, bool moveWindowsToFirst);
 		void									  UnSplit();
+		void									  Update();
+		void									  RemoveWindow(InGuiWindow* window);
+		void									  HandleResize(const glm::vec2& mousePosition);
+		
+
 		glm::vec2								  GetCenter() const;
 		glm::vec2								  GetAbsCenter() const;
 		glm::vec2								  GetAbsPosition() const;
 
+		InGuiRect								  Rect() const;
 		InGuiRect								  LeftRect() const;
 		InGuiRect								  RightRect() const;
 		InGuiRect								  TopRect() const;
@@ -36,6 +43,9 @@ namespace XYZ {
 
 		glm::vec2 Position;
 		glm::vec2 Size;
+
+	private:
+		void fitChildren(const glm::vec2& originalSize);
 	};
 
 	struct InGuiDockSpace
@@ -44,12 +54,24 @@ namespace XYZ {
 
 		void Init(const glm::vec2& position, const glm::vec2& size);
 		void Destroy();
+		bool FindResizedNode(const glm::vec2& mousePosition);
+		bool PushNodeRectangle(const InGuiRect& rect);
+		bool InsertWindow(InGuiWindow* window);
+		bool IsInitialized() const { return Root; }
 
-		bool IsInitialized() const { return m_Root; }
+		InGuiID GetNextID();
 
+		InGuiDockNode*  Root;
+		InGuiDrawList   Drawlist;
+		MemoryPool		Pool;
+
+		InGuiDockNode* ResizedNode;
+
+	private:
+		std::queue<InGuiID> FreeIDs;
+		InGuiID NextID;
 		
-
-		InGuiDockNode* m_Root;
-		MemoryPool m_Pool;
+		friend class InGuiDockNode;
+		friend class InGuiSerializer;
 	};
 }

@@ -45,6 +45,7 @@ namespace XYZ {
 	{
 		m_Scene = AssetManager::GetAsset<Scene>(AssetManager::GetAssetHandle("Assets/Scenes/scene.xyz"));
 		m_SceneHierarchy.SetContext(m_Scene);
+		m_ScenePanel.SetContext(m_Scene);
 
 		Scene::ActiveScene = m_Scene;
 		m_TestEntity = m_Scene->GetEntityByName("TestEntity");
@@ -56,15 +57,16 @@ namespace XYZ {
 		uint32_t windowWidth = Application::Get().GetWindow().GetWidth();
 		uint32_t windowHeight = Application::Get().GetWindow().GetHeight();
 		SceneRenderer::SetViewportSize(windowWidth, windowHeight);
-
 		m_Scene->SetViewportSize(windowWidth, windowHeight);		
-		m_EditorCamera = Editor::EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
-		m_EditorCamera.SetViewportSize((float)windowWidth, (float)windowHeight);
-	
+
 		Renderer::WaitAndRender();
 
 		Ref<RenderTexture> renderTexture = RenderTexture::Create(SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer);
 		Ref<SubTexture> renderSubTexture = Ref<SubTexture>::Create(renderTexture, glm::vec2(0.0f, 0.0f));
+		renderSubTexture->Upside();
+
+		m_ScenePanel.SetSubTexture(renderSubTexture);
+
 		Ref<Texture> robotTexture = Texture2D::Create({}, "Assets/Textures/full_simple_char.png");
 		Ref<SubTexture> robotSubTexture = Ref<SubTexture>::Create(robotTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 		m_Test = robotSubTexture;
@@ -120,7 +122,7 @@ namespace XYZ {
 	{
 		Renderer::Clear();
 		Renderer::SetClearColor({ 0.1f,0.1f,0.1f,0.1f });
-		m_EditorCamera.OnUpdate(ts);
+		m_ScenePanel.GetEditorCamera().OnUpdate(ts);
 		
 		m_Inspector.SetContext(m_Scene->GetSelectedEntity());
 
@@ -131,7 +133,7 @@ namespace XYZ {
 		}
 		else
 		{
-			m_Scene->OnRenderEditor(m_EditorCamera);
+			m_Scene->OnRenderEditor(m_ScenePanel.GetEditorCamera());
 		}
 	}
 
@@ -144,14 +146,16 @@ namespace XYZ {
 		dispatcher.Dispatch<WindowResizeEvent>(Hook(&EditorLayer::onWindowResize, this));
 		dispatcher.Dispatch<KeyPressedEvent>(Hook(&EditorLayer::onKeyPress, this));
 		
-		m_EditorCamera.OnEvent(event);
+		m_ScenePanel.GetEditorCamera().OnEvent(event);
 		m_SceneHierarchy.OnEvent(event);
+		m_ScenePanel.OnEvent(event);
 	}
 
 	void EditorLayer::OnInGuiRender()
 	{
 		m_Inspector.OnUpdate();
 		m_SceneHierarchy.OnUpdate();
+		m_ScenePanel.OnUpdate(0.1f);
 	}
 	
 	bool EditorLayer::onMouseButtonPress(MouseButtonPressEvent& event)
@@ -164,10 +168,6 @@ namespace XYZ {
 	}
 	bool EditorLayer::onWindowResize(WindowResizeEvent& event)
 	{
-		SceneRenderer::SetViewportSize((uint32_t)event.GetWidth(), (uint32_t)event.GetHeight());
-		m_EditorCamera.SetViewportSize((float)event.GetWidth(), (float)event.GetHeight());
-		if (m_Scene.Raw())
-			m_Scene->SetViewportSize((uint32_t)event.GetWidth(), (uint32_t)event.GetHeight());
 		return false;
 	}
 

@@ -26,6 +26,8 @@ namespace XYZ {
 		static ThreadPool& GetThreadPool() { return s_ThreadPool; }
 		const std::string& GetApplicationDir() const { return m_ApplicationDir; }
 
+		InGuiLayer* GetInGuiLayer() { return m_InGuiLayer; }
+
 		inline static Application& Get() { return *s_Application; }
 
 		static Application* CreateApplication();

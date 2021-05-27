@@ -11,6 +11,9 @@ namespace XYZ {
 		static void Init(const std::string& filepath = std::string());
 		static void Shutdown();
 
+		static void InitDockSpace();
+		static void DestroyDockSpace();
+
 		static void BeginFrame();
 		static void EndFrame();
 
@@ -20,6 +23,7 @@ namespace XYZ {
 		static bool Begin(const char* name, InGuiWindowFlags flags = (
 			 InGuiWindowStyleFlags::PanelEnabled 
 		   | InGuiWindowStyleFlags::LabelEnabled
+		   | InGuiWindowStyleFlags::DockingEnabled
 		));
 		static void End();
 		static void Separator();

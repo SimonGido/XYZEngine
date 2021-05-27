@@ -79,7 +79,7 @@ namespace XYZ {
 		void			 PushQuadOverlay(const glm::vec4& color, const glm::vec4& texCoord, const glm::vec2& pos, const glm::vec2& size, uint32_t textureID = InGuiConfig::DefaultTextureIndex);
 		void			 PushQuadNotClippedOverlay(const glm::vec4& color, const glm::vec4& texCoord, const glm::vec2& pos, const glm::vec2& size, uint32_t textureID = InGuiConfig::DefaultTextureIndex);
 		void			 SetParent(InGuiWindow* parent);
-		
+
 		bool			 NextWidgetClipped(const glm::vec2& size);
 		bool			 NextTabClipped();
 		glm::vec2		 MoveCursorPosition(const glm::vec2& size);
@@ -92,6 +92,7 @@ namespace XYZ {
 		bool			 HandleHoover(const glm::vec2& mousePosition);
 		bool			 HandleMove(const glm::vec2& mousePosition, const glm::vec2& offset);
 		void			 HandleScrollbars();
+		bool			 IsResizing() const;
 		bool			 IsFocused() const;
 		bool			 IsChild() const;
 		bool			 IsParentFocused() const;
@@ -119,8 +120,8 @@ namespace XYZ {
 								  
 		glm::vec2				  Position;
 		glm::vec2				  Size;
+		glm::vec2				  OriginalSize; // Size before being docked
 		glm::vec2				  Scroll;
-
 
 		bool					  IsActive;
 		bool					  IsInitialized;
@@ -133,8 +134,5 @@ namespace XYZ {
 		InGuiWindow*			  Parent;
 		std::vector<InGuiWindow*> ChildWindows;
 		InGuiDockNode*			  DockNode;
-
-		static constexpr float sc_ResizeThresholdX = 5.0f;
-		static constexpr float sc_ResizeThresholdY = 5.0f;
 	};
 }

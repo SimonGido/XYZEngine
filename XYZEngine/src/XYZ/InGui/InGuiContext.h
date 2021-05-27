@@ -58,6 +58,7 @@ namespace XYZ {
 
 	private:
 		bool handleWindowLeftButtonPress(InGuiWindow* window);
+		void handleWindowCursor();
 	};
 	
 }

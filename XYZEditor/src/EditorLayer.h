@@ -31,9 +31,9 @@ namespace XYZ {
 
 	private:
 		Ref<Scene> m_Scene;
-		Editor::EditorCamera m_EditorCamera;
 		Editor::SceneHierarchyPanel m_SceneHierarchy;
 		Editor::InspectorPanel m_Inspector;
+		Editor::ScenePanel m_ScenePanel;
 
 		Ref<SubTexture> m_Test;
 	private:	

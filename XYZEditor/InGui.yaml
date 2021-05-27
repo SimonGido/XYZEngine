@@ -1,25 +1,71 @@
 Windows:
-  - Name: Sprite Renderer
-    Position: [1327, 700]
-    Size: [444, 150]
+  - Name: Havko
+    Position: [1648, 258]
+    Size: [207.5, 352]
+    OriginalSize: [207.5, 352]
+    Collapsed: false
+  - Name: Scene
+    Position: [434, 0]
+    Size: [1101, 1017]
+    OriginalSize: [587, 436]
     Collapsed: false
   - Name: Inspector
-    Position: [1322, 480]
-    Size: [474, 427]
-    Collapsed: false
-  - Name: Havko
-    Position: [727, 428]
-    Size: [298, 499]
-    Collapsed: false
-  - Name: Scene Tag Component
-    Position: [1327, 510]
-    Size: [444, 60]
+    Position: [1535, 0]
+    Size: [385, 1017]
+    OriginalSize: [480, 310]
     Collapsed: false
   - Name: Scene Hierarchy
-    Position: [2097, 508]
-    Size: [300, 300]
+    Position: [0, 0]
+    Size: [434, 1017]
+    OriginalSize: [434, 1017]
+    Collapsed: false
+  - Name: Scene Tag Component
+    Position: [1540, 30]
+    Size: [355, 60]
+    OriginalSize: [300, 300]
     Collapsed: false
   - Name: Transform Component
-    Position: [1327, 575]
-    Size: [444, 120]
+    Position: [1540, 95]
+    Size: [355, 120]
+    OriginalSize: [300, 300]
     Collapsed: false
+  - Name: Sprite Renderer
+    Position: [1540, 220]
+    Size: [355, 150]
+    OriginalSize: [300, 300]
+    Collapsed: false
+DockSpace:
+  - ID: 0
+    Position: [0, 0]
+    Size: [1920, 1017]
+    Split: 0
+    Child0: 0
+    Child1: 1
+    Windows:
+      []
+  - ID: 1
+    Position: [434, 0]
+    Size: [1486, 1017]
+    Split: 0
+    Child0: 2
+    Child1: 3
+    Windows:
+      []
+  - ID: 3
+    Position: [1101, 0]
+    Size: [385, 1017]
+    Split: 2
+    Windows:
+      - Inspector
+  - ID: 2
+    Position: [0, 0]
+    Size: [1101, 1017]
+    Split: 2
+    Windows:
+      - Scene
+  - ID: 0
+    Position: [0, 0]
+    Size: [434, 1017]
+    Split: 2
+    Windows:
+      - Scene Hierarchy

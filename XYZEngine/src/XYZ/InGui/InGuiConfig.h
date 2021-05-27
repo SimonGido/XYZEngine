@@ -81,6 +81,7 @@ namespace XYZ {
 		float					   TabBarHeight;
 		float					   MenuBarHeight;
 		float					   LabelOffset;		
+		float					   ResizeThreshhold;
 
 		friend class InGuiContext;
 	};

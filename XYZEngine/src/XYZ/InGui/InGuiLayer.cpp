@@ -13,6 +13,9 @@ namespace XYZ {
 	void InGuiLayer::OnAttach()
 	{
 		InGui::Init("InGui.yaml");
+		auto [w, h] = Input::GetWindowSize();
+		InGui::GetContext().SetViewportSize(w, h);
+		InGui::InitDockSpace();
 
 		uint32_t whiteTextureData = 0xffffffff;
 		Ref<Texture2D> whiteTexture = Texture2D::Create(1, 1, 4, { TextureWrap::Clamp, TextureParam::Linear, TextureParam::Nearest });
@@ -42,6 +45,7 @@ namespace XYZ {
 
 	void InGuiLayer::OnDetach()
 	{
+		
 		InGui::Shutdown();
 	}
 
@@ -53,6 +57,17 @@ namespace XYZ {
 	void InGuiLayer::OnEvent(Event& event)
 	{
 		InGui::GetContext().OnEvent(event);
+		if (m_BlockEvents)
+		{
+			event.Handled =
+				   (event.GetEventType() == EventType::KeyPressed)
+				|| (event.GetEventType() == EventType::KeyReleased)
+				|| (event.GetEventType() == EventType::KeyTyped)
+				|| (event.GetEventType() == EventType::MouseButtonPressed)
+				|| (event.GetEventType() == EventType::MouseButtonReleased)
+				|| (event.GetEventType() == EventType::MouseMoved)
+				|| (event.GetEventType() == EventType::MouseScroll);
+		}
 	}
 	void InGuiLayer::OnInGuiRender()
 	{

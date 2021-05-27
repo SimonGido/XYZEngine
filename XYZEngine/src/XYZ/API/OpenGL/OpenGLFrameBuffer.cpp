@@ -148,6 +148,7 @@ namespace XYZ {
 				glDeleteTextures(1, &instance->m_DepthAttachment);
 				for (auto it : instance->m_ColorAttachments)
 					glDeleteTextures(1, &it);
+
 				instance->m_RendererID = 0;
 			}
 					
@@ -174,7 +175,7 @@ namespace XYZ {
 						Utils::AttachColorTexture(instance->m_ColorAttachments[i], instance->m_Specification.Samples, GL_RGBA32F, instance->m_Specification.Width, instance->m_Specification.Height, i);
 						break;
 					case FramebufferTextureFormat::RG32F:
-						Utils::AttachColorTexture(instance->m_ColorAttachments[i],instance-> m_Specification.Samples, GL_RG32F, instance->m_Specification.Width, instance->m_Specification.Height, i);
+						Utils::AttachColorTexture(instance->m_ColorAttachments[i], instance->m_Specification.Samples, GL_RG32F, instance->m_Specification.Width, instance->m_Specification.Height, i);
 						break;
 					case FramebufferTextureFormat::R32I:
 						Utils::AttachColorTexture(instance->m_ColorAttachments[i], instance->m_Specification.Samples, GL_R32I, instance->m_Specification.Width, instance->m_Specification.Height, i);
@@ -211,9 +212,10 @@ namespace XYZ {
 	}
 	void OpenGLFramebuffer::Bind() const
 	{
-		Renderer::Submit([this]() {
-			glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
-			glViewport(0, 0, m_Specification.Width, m_Specification.Height);
+		Ref<const OpenGLFramebuffer> instance = this;
+		Renderer::Submit([instance]() mutable {
+			glBindFramebuffer(GL_FRAMEBUFFER, instance->m_RendererID);
+			glViewport(0, 0, instance->m_Specification.Width, instance->m_Specification.Height);
 		});
 	}
 	void OpenGLFramebuffer::Unbind() const
@@ -225,8 +227,9 @@ namespace XYZ {
 
 	void OpenGLFramebuffer::BindTexture(uint32_t attachmentIndex, uint32_t slot) const
 	{
-		Renderer::Submit([this, attachmentIndex, slot]() {
-			glBindTextureUnit(slot, m_ColorAttachments[attachmentIndex]);
+		Ref<const OpenGLFramebuffer> instance = this;
+		Renderer::Submit([instance, attachmentIndex, slot]() {
+			glBindTextureUnit(slot, instance->m_ColorAttachments[attachmentIndex]);
 		});
 	}
 
