@@ -19,27 +19,12 @@ Windows:
     Size: [434, 1017]
     OriginalSize: [434, 1017]
     Collapsed: false
-  - Name: Scene Tag Component
-    Position: [1540, 30]
-    Size: [355, 60]
-    OriginalSize: [300, 300]
-    Collapsed: false
-  - Name: Transform Component
-    Position: [1540, 95]
-    Size: [355, 120]
-    OriginalSize: [300, 300]
-    Collapsed: false
-  - Name: Sprite Renderer
-    Position: [1540, 220]
-    Size: [355, 150]
-    OriginalSize: [300, 300]
-    Collapsed: false
 DockSpace:
   - ID: 0
     Position: [0, 0]
     Size: [1920, 1017]
     Split: 0
-    Child0: 0
+    Child0: 4
     Child1: 1
     Windows:
       []
@@ -63,7 +48,7 @@ DockSpace:
     Split: 2
     Windows:
       - Scene
-  - ID: 0
+  - ID: 4
     Position: [0, 0]
     Size: [434, 1017]
     Split: 2
