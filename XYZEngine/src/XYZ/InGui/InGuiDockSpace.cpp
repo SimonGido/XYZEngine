@@ -265,21 +265,24 @@ namespace XYZ {
     }
     void InGuiDockSpace::Resize(const glm::vec2& size)
     {
-        glm::vec2 scale = size / Root->Size;
-        std::stack<InGuiDockNode*> nodes;
-        nodes.push(Root);
-        while (!nodes.empty())
+        if (Root)
         {
-            InGuiDockNode* tmp = nodes.top();
-            nodes.pop();
-
-            if (tmp->Split != SplitType::None)
+            glm::vec2 scale = size / Root->Size;
+            std::stack<InGuiDockNode*> nodes;
+            nodes.push(Root);
+            while (!nodes.empty())
             {
-                nodes.push(tmp->Children[0]);
-                nodes.push(tmp->Children[1]);
+                InGuiDockNode* tmp = nodes.top();
+                nodes.pop();
+
+                if (tmp->Split != SplitType::None)
+                {
+                    nodes.push(tmp->Children[0]);
+                    nodes.push(tmp->Children[1]);
+                }
+                tmp->Position *= scale;
+                tmp->Size *= scale;
             }
-            tmp->Position *= scale;
-            tmp->Size *= scale;
         }
     }
     bool InGuiDockSpace::FindResizedNode(const glm::vec2& mousePosition)

@@ -34,6 +34,7 @@ namespace XYZ {
 		Editor::SceneHierarchyPanel m_SceneHierarchy;
 		Editor::InspectorPanel m_Inspector;
 		Editor::ScenePanel m_ScenePanel;
+		Editor::AssetBrowser m_AssetBrowser;
 
 		Ref<SubTexture> m_Test;
 	private:	

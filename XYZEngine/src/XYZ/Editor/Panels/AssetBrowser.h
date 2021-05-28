@@ -1,6 +1,7 @@
 #pragma once
 #include "XYZ/Renderer/SubTexture.h"
 
+#include "XYZ/InGui/InGui.h"
 
 namespace XYZ {
 	namespace Editor {
@@ -9,6 +10,7 @@ namespace XYZ {
 		public:
 			AssetBrowser();
 
+			void SetPath(const std::string& path) { m_Path = path; };
 			void OnUpdate();
 
 		private:
@@ -32,6 +34,11 @@ namespace XYZ {
 			};
 
 			Ref<XYZ::SubTexture> m_SubTextures[NumTypes];
+			Ref<XYZ::Texture> m_Texture;
+			glm::vec2 m_IconSize;
+			std::string m_Path;
+
+			InGuiWindow* m_Window;
 		};
 	}
 }

@@ -7,8 +7,8 @@ namespace XYZ {
 		InGuiFrame();
 		~InGuiFrame();
 
-		uint32_t CustomTextureID() const { return (uint32_t)CustomTextures.size() + InGuiConfig::FontTextureIndex; }
-		
+		uint32_t AddCustomTexture(const Ref<Texture>& texture);
+
 		InGuiWindow*			   CurrentWindow;
 		glm::vec2				   MovedWindowOffset;
 		float					   CurrentMenuWidth;

@@ -969,10 +969,9 @@ namespace XYZ {
 			color = config.Colors[InGuiConfig::ImageHighlight];
 		}
 
-		frame.CustomTextures.push_back(subTexture->GetTexture());
 		window->PushQuad(
 			color, subTexture->GetTexCoords(),
-			pos, size, frame.CustomTextureID()
+			pos, size, frame.AddCustomTexture(subTexture->GetTexture())
 		);
 		window->PushText(
 			label, config.Colors[InGuiConfig::TextColor],

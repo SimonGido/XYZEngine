@@ -119,7 +119,7 @@ namespace XYZ {
 		AssetSerializer::SerializeAsset(m_Scene);		
 	}
 	void EditorLayer::OnUpdate(Timestep ts)
-	{
+	{	
 		m_ScenePanel.GetEditorCamera().OnUpdate(ts);
 		
 		m_Inspector.SetContext(m_Scene->GetSelectedEntity());
@@ -133,6 +133,8 @@ namespace XYZ {
 		{
 			m_Scene->OnRenderEditor(m_ScenePanel.GetEditorCamera());
 		}
+		Renderer::SetClearColor(glm::vec4(0.1f, 0.1f, 0.1f, 1.0f));
+		Renderer::Clear();
 	}
 
 	void EditorLayer::OnEvent(Event& event)
@@ -154,6 +156,7 @@ namespace XYZ {
 		m_Inspector.OnUpdate();
 		m_SceneHierarchy.OnUpdate();
 		m_ScenePanel.OnUpdate(0.1f);
+		m_AssetBrowser.OnUpdate();
 	}
 	
 	bool EditorLayer::onMouseButtonPress(MouseButtonPressEvent& event)
