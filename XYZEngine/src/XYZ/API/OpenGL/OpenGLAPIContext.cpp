@@ -116,9 +116,6 @@ namespace XYZ {
 
 	void OpenGLAPIContext::SwapBuffers()
 	{
-		//Renderer::Submit([&] {
-		//	glFinish();
-		//});
 		glfwSwapBuffers(m_WindowHandle);
 	}
 

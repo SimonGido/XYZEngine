@@ -252,8 +252,9 @@ namespace XYZ {
 	{
 		// TODO: Make it work with other types than GL_RED_INTEGER
 		int clearVal = *(int*)clearValue;
-		Renderer::Submit([this, colorAttachmentIndex, clearVal]() {
-			glClearTexImage(m_ColorAttachments[colorAttachmentIndex], 0, GL_RED_INTEGER, GL_INT, &clearVal);
+		Ref<const OpenGLFramebuffer> instance = this;
+		Renderer::Submit([instance, colorAttachmentIndex, clearVal]() {
+			glClearTexImage(instance->m_ColorAttachments[colorAttachmentIndex], 0, GL_RED_INTEGER, GL_INT, &clearVal);
 		});
 	}
 }

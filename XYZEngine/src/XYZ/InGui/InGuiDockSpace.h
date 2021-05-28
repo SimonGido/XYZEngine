@@ -54,6 +54,7 @@ namespace XYZ {
 
 		void Init(const glm::vec2& position, const glm::vec2& size);
 		void Destroy();
+		void Resize(const glm::vec2& size);
 		bool FindResizedNode(const glm::vec2& mousePosition);
 		bool PushNodeRectangle(const InGuiRect& rect);
 		bool InsertWindow(InGuiWindow* window);

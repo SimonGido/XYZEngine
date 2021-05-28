@@ -120,8 +120,6 @@ namespace XYZ {
 	}
 	void EditorLayer::OnUpdate(Timestep ts)
 	{
-		Renderer::Clear();
-		Renderer::SetClearColor({ 0.1f,0.1f,0.1f,0.1f });
 		m_ScenePanel.GetEditorCamera().OnUpdate(ts);
 		
 		m_Inspector.SetContext(m_Scene->GetSelectedEntity());

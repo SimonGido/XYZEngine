@@ -173,9 +173,8 @@ namespace XYZ {
 
 		if (clear)
 		{
-			auto& specs = renderPass->GetSpecification().TargetFramebuffer->GetSpecification();
-	
-			const glm::vec4& clearColor = specs.ClearColor;
+			auto& specs = renderPass->GetSpecification().TargetFramebuffer->GetSpecification();	
+			const glm::vec4 clearColor = specs.ClearColor;
 			Renderer::Submit([=]() {
 				RendererAPI::SetClearColor(clearColor);
 				RendererAPI::Clear();
@@ -192,9 +191,9 @@ namespace XYZ {
 
 	void Renderer::WaitAndRender()
 	{		
-		if (s_Data.SwapQueues)
+		if (s_Data.SwapQueues.load())
 		{
-			s_Data.SwapQueues = false;		
+			s_Data.SwapQueues.store(false);		
 			
 			RenderCommandQueue* read[NumTypes];
 			for (size_t i = 0; i < NumTypes; ++i)
@@ -203,8 +202,17 @@ namespace XYZ {
 			Application::GetThreadPool().PushJob<void>([read]() {
 				read[Default]->Execute();
 				read[Overlay]->Execute();
+				GLsync fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+				while (true) 
+				{
+					GLint status = GL_UNSIGNALED;
+					glGetSynciv(fence, GL_SYNC_STATUS, sizeof(GLint), NULL, &status);
+					if (status == GL_SIGNALED) 
+						break; // rendering is complete
+				}		
+				glDeleteSync(fence);
 				glFinish();
-				s_Data.SwapQueues = true;
+				s_Data.SwapQueues.store(true);
 			});
 
 			

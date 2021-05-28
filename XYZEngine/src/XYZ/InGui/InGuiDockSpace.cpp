@@ -263,6 +263,25 @@ namespace XYZ {
         }
         Root = nullptr;
     }
+    void InGuiDockSpace::Resize(const glm::vec2& size)
+    {
+        glm::vec2 scale = size / Root->Size;
+        std::stack<InGuiDockNode*> nodes;
+        nodes.push(Root);
+        while (!nodes.empty())
+        {
+            InGuiDockNode* tmp = nodes.top();
+            nodes.pop();
+
+            if (tmp->Split != SplitType::None)
+            {
+                nodes.push(tmp->Children[0]);
+                nodes.push(tmp->Children[1]);
+            }
+            tmp->Position *= scale;
+            tmp->Size *= scale;
+        }
+    }
     bool InGuiDockSpace::FindResizedNode(const glm::vec2& mousePosition)
     {
         float threshhold = InGui::GetContext().m_Config.ResizeThreshhold;

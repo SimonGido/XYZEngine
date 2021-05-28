@@ -8,6 +8,7 @@
 #include "XYZ/Renderer/Font.h"
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Core/Input.h"
+#include "XYZ/Event/ApplicationEvent.h"
 
 namespace XYZ {
 	void InGuiLayer::OnAttach()
@@ -56,6 +57,12 @@ namespace XYZ {
 
 	void InGuiLayer::OnEvent(Event& event)
 	{
+		EventDispatcher dispatcher(event);
+		dispatcher.Dispatch<WindowResizeEvent>([](WindowResizeEvent& e)->bool {
+			InGui::GetContext().SetViewportSize((uint32_t)e.GetWidth(), (uint32_t)e.GetHeight());
+			return false;
+		});
+
 		InGui::GetContext().OnEvent(event);
 		if (m_BlockEvents)
 		{

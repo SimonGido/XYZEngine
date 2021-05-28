@@ -165,6 +165,8 @@ namespace XYZ {
 		XYZ_ASSERT(!s_Data.ActiveScene, "Missing end scene");
 		s_Data.ActiveScene = scene;
 
+		// Viewport size is changed at the beginning of the frame, so we do not delete texture that is currently use for rendering
+		UpdateViewportSize();
 		s_Data.ViewProjectionMatrix = viewProjectionMatrix;
 	}
 	void SceneRenderer::EndScene()
@@ -268,7 +270,7 @@ namespace XYZ {
 
 		auto [width, height] = Input::GetWindowSize();
 		Renderer::SetViewPort(0, 0, (uint32_t)width, (uint32_t)height);
-		
+
 		s_Data.CollisionList.clear();
 		s_Data.SpriteDrawList.clear();
 		s_Data.EditorSpriteDrawList.clear();

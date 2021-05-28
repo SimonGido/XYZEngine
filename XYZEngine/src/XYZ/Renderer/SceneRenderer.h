@@ -44,6 +44,7 @@ namespace XYZ {
 		static void SubmitLight(PointLight2D* light, const glm::mat4& transform);
 		static void SetGridProperties(const GridProperties& props);
 
+		static void UpdateViewportSize();
 		
 
 		static Ref<RenderPass> GetFinalRenderPass();
@@ -53,7 +54,6 @@ namespace XYZ {
 		static SceneRendererOptions& GetOptions();
 	
 	private:
-		static void UpdateViewportSize();
 		static void FlushDrawList();
 		static void GeometryPass();
 		static void LightPass();

@@ -88,6 +88,7 @@ namespace XYZ {
 		m_ViewportWidth = width;
 		m_ViewportHeight = height;
 		m_ClipRectangles[0] = { glm::vec2(0.0f), glm::vec2((float)width, (float)height) };
+		m_DockSpace.Resize({ m_ViewportWidth, m_ViewportHeight });
 	}
 
 	void InGuiContext::FocusWindow(InGuiWindow* window)
