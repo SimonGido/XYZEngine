@@ -71,12 +71,11 @@ namespace XYZ {
 
 
 		glm::vec2 ViewportSize;
-
+		bool	  ViewportSizeChanged = false;
 		const uint32_t MaxNumberOfLights = 100;
 	};
 
 	static SceneRendererData s_Data;
-
 
 	void SceneRenderer::Init()
 	{
@@ -149,12 +148,7 @@ namespace XYZ {
 	void SceneRenderer::SetViewportSize(uint32_t width, uint32_t height)
 	{
 		s_Data.ViewportSize = glm::vec2(width, height);
-	
-		s_Data.GeometryPass->GetSpecification().TargetFramebuffer->Resize(width, height);	
-		s_Data.LightPass->GetSpecification().TargetFramebuffer->Resize(width, height);
-		s_Data.GaussianBlurPass->GetSpecification().TargetFramebuffer->Resize(width, height);
-		s_Data.BloomPass->GetSpecification().TargetFramebuffer->Resize(width, height);
-		s_Data.CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height);	
+		s_Data.ViewportSizeChanged = true;
 	}
 	void SceneRenderer::BeginScene(const Scene* scene, const SceneRendererCamera& camera)
 	{
@@ -162,7 +156,8 @@ namespace XYZ {
 		s_Data.ActiveScene = scene;
 		s_Data.SceneCamera = camera;
 
-	
+		// Viewport size is changed at the beginning of the frame, so we do not delete texture that is currently use for rendering
+		UpdateViewportSize();
 		s_Data.ViewProjectionMatrix = s_Data.SceneCamera.Camera.GetProjectionMatrix() * s_Data.SceneCamera.ViewMatrix;
 	}
 	void SceneRenderer::BeginScene(const Scene* scene, const glm::mat4 viewProjectionMatrix)
@@ -213,6 +208,22 @@ namespace XYZ {
 	void SceneRenderer::SetGridProperties(const GridProperties& props)
 	{
 		s_Data.GridProps = props;
+	}
+
+	void SceneRenderer::UpdateViewportSize()
+	{
+		if (s_Data.ViewportSizeChanged)
+		{
+			uint32_t width  = (uint32_t)s_Data.ViewportSize.x;
+			uint32_t height = (uint32_t)s_Data.ViewportSize.y;
+			s_Data.GeometryPass->GetSpecification().TargetFramebuffer->Resize(width, height);
+			s_Data.LightPass->GetSpecification().TargetFramebuffer->Resize(width, height);
+			s_Data.GaussianBlurPass->GetSpecification().TargetFramebuffer->Resize(width, height);
+			s_Data.BloomPass->GetSpecification().TargetFramebuffer->Resize(width, height);
+			s_Data.CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height);
+
+			s_Data.ViewportSizeChanged = false;
+		}
 	}
 
 	Ref<RenderPass> SceneRenderer::GetFinalRenderPass()

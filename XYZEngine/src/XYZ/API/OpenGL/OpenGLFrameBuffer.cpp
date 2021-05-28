@@ -136,12 +136,13 @@ namespace XYZ {
 		if (!forceResize && m_Specification.Width == width && m_Specification.Height == height)
 			return;
 
-		m_Specification.Width = width;
-		m_Specification.Height = height;
+	
 
 		Ref<OpenGLFramebuffer> instance = this;
-		Renderer::Submit([instance]() mutable {
+		Renderer::Submit([instance, width, height]() mutable {
 			
+			instance->m_Specification.Width = width;
+			instance->m_Specification.Height = height;
 			if (instance->m_RendererID)
 			{
 				glDeleteFramebuffers(1, &instance->m_RendererID);

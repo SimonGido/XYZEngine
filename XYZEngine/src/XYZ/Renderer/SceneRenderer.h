@@ -44,12 +44,16 @@ namespace XYZ {
 		static void SubmitLight(PointLight2D* light, const glm::mat4& transform);
 		static void SetGridProperties(const GridProperties& props);
 
+		
+
 		static Ref<RenderPass> GetFinalRenderPass();
 		static Ref<RenderPass> GetCollisionRenderPass();
 
 		static uint32_t GetFinalColorBufferRendererID();
 		static SceneRendererOptions& GetOptions();
+	
 	private:
+		static void UpdateViewportSize();
 		static void FlushDrawList();
 		static void GeometryPass();
 		static void LightPass();
