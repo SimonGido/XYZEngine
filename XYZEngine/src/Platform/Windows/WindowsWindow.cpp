@@ -54,11 +54,11 @@ namespace XYZ {
 
 		m_Context = APIContext::Create(m_Window);
 
-		std::future<bool> done = Application::GetThreadPool().PushJob<bool>([&] {
+		//std::future<bool> done = Application::GetThreadPool().PushJob<bool>([&] {
 			m_Context->Init();
-			return true;
-		});
-		done.wait();
+			//return true;
+		//});
+		//done.wait();
 
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 

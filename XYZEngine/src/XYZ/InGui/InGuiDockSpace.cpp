@@ -10,7 +10,6 @@ namespace XYZ {
         :
         ID(id), 
         Parent(nullptr), 
-        Sibling(nullptr), 
         Children{nullptr, nullptr}, 
         Split(SplitType::None),
         Position(0.0f),
@@ -35,8 +34,6 @@ namespace XYZ {
         Children[0] = first;
         Children[1] = second;
         
-        first->Sibling = second;
-        second->Sibling = first;
         first->Parent = this;
         second->Parent = this;
 
@@ -71,7 +68,7 @@ namespace XYZ {
     }
     void InGuiDockNode::UnSplit()
     {
-        Split = SplitType::None;
+        
         InGuiDockSpace& dockSpace = InGui::GetContext().m_DockSpace;
 
         DockedWindows = std::move(Children[0]->DockedWindows);
@@ -81,10 +78,35 @@ namespace XYZ {
         for (auto window : DockedWindows)
             window->DockNode = this;
 
-        dockSpace.Pool.Deallocate<InGuiDockNode>(Children[0]);
-        dockSpace.Pool.Deallocate<InGuiDockNode>(Children[1]);
-        Children[0] = nullptr;
-        Children[1] = nullptr;
+        InGuiDockNode* firstChild = Children[0];
+        InGuiDockNode* secondChild = Children[1];
+        if (Children[0]->Split != SplitType::None)
+        {
+            firstChild->Children[0]->Parent = this;
+            firstChild->Children[1]->Parent = this;
+            
+            Children[0] = firstChild->Children[0];
+            Children[1] = firstChild->Children[1];
+            Split = firstChild->Split;
+        }
+        else if (Children[1]->Split != SplitType::None)
+        {
+            secondChild->Children[0]->Parent = this;
+            secondChild->Children[1]->Parent = this;
+
+            Children[0] = secondChild->Children[0];
+            Children[1] = secondChild->Children[1];
+            Split = secondChild->Split;
+        }
+        else
+        {
+            Children[0] = nullptr;
+            Children[1] = nullptr;
+            Split = SplitType::None;
+        }
+
+        dockSpace.Pool.Deallocate<InGuiDockNode>(firstChild);
+        dockSpace.Pool.Deallocate<InGuiDockNode>(secondChild);   
     }
     void InGuiDockNode::Update()
     {
@@ -402,6 +424,8 @@ namespace XYZ {
             FreeIDs.pop();
             return id;
         }
-        return NextID++;
+        InGuiID id = NextID;
+        NextID++;
+        return id;
     }
 }

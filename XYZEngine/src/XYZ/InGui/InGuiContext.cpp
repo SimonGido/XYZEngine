@@ -149,7 +149,7 @@ namespace XYZ {
 				if (m_DockSpace.IsInitialized())
 				{
 					m_DockSpace.ResizedNode = nullptr;
-					if (m_FocusedWindow)
+					if (m_FocusedWindow && IS_SET(m_FocusedWindow->StyleFlags, InGuiWindowStyleFlags::DockingEnabled))
 						m_DockSpace.InsertWindow(m_FocusedWindow);
 				}
 			}

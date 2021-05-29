@@ -30,10 +30,13 @@ namespace XYZ {
         }
         void SceneHierarchyPanel::OnUpdate()
         {
-            if (InGui::Begin("Scene Hierarchy"), 
+            if (InGui::Begin("Scene Hierarchy", 
                   InGuiWindowStyleFlags::PanelEnabled
                 | InGuiWindowStyleFlags::ScrollEnabled
-                | InGuiWindowStyleFlags::LabelEnabled)
+                | InGuiWindowStyleFlags::LabelEnabled
+                | InGuiWindowStyleFlags::FrameEnabled
+                | InGuiWindowStyleFlags::DockingEnabled
+            ))
             {
                 if (m_Context.Raw())
                 {

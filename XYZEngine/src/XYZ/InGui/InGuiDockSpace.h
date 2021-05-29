@@ -37,7 +37,6 @@ namespace XYZ {
 		std::vector<InGuiWindow*> DockedWindows;
 
 		InGuiDockNode* Parent;
-		InGuiDockNode* Sibling;
 		InGuiDockNode* Children[2];
 		SplitType      Split;
 

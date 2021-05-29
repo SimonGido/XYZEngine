@@ -38,7 +38,10 @@ namespace XYZ
 
 	AssetType AssetManager::GetAssetTypeFromExtension(const std::string& extension)
 	{
-		return s_AssetTypes[extension];
+		auto it = s_AssetTypes.find(extension);
+		if (it != s_AssetTypes.end())
+			return it->second;
+		return AssetType::None;
 	}
 
 	GUID AssetManager::GetAssetHandle(const std::string& filepath)

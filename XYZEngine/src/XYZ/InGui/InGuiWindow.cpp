@@ -43,7 +43,7 @@ namespace XYZ {
 		{
 			if (IS_SET(StyleFlags, InGuiWindowStyleFlags::FrameEnabled))
 			{
-				InGuiRect rect = Rect();
+				InGuiRect rect = RealRect();
 				rect += config.WindowFrameThickness;
 				DrawListInUse->PushQuad(
 					config.Colors[InGuiConfig::WindowFrameColor], 

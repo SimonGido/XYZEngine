@@ -743,9 +743,9 @@ namespace XYZ {
 	{
 		InGui::BeginGroup();
 		InGuiWindow* window = s_Context->m_FrameData.CurrentWindow;
-		uint8_t result = 
-			  Float(label1, size, values[0], decimalPrecision) 
-			| Float(label2, size, values[1], decimalPrecision);
+		uint8_t result = Float(label1, size, values[0], decimalPrecision);
+		result |= Float(label2, size, values[1], decimalPrecision);
+			  
 		InGui::EndGroup();
 		return result;
 	}
@@ -754,10 +754,9 @@ namespace XYZ {
 	{
 		InGui::BeginGroup();
 		InGuiWindow* window = s_Context->m_FrameData.CurrentWindow;
-		uint8_t result = 
-			  Float(label1, size, values[0], decimalPrecision) 
-			| Float(label2, size, values[1], decimalPrecision)
-			| Float(label3, size, values[2], decimalPrecision);
+		uint8_t result = Float(label1, size, values[0], decimalPrecision);
+		result |= Float(label2, size, values[1], decimalPrecision);
+		result |= Float(label3, size, values[2], decimalPrecision);
 
 		InGui::EndGroup();
 		return result;
@@ -767,11 +766,12 @@ namespace XYZ {
 	{
 		InGui::BeginGroup();
 		InGuiWindow* window = s_Context->m_FrameData.CurrentWindow;
-		uint8_t result =
-			  Float(label1, size, values[0], decimalPrecision)
-			| Float(label2, size, values[1], decimalPrecision)
-			| Float(label3, size, values[2], decimalPrecision)
-			| Float(label4, size, values[3], decimalPrecision);
+		uint8_t result = Float(label1, size, values[0], decimalPrecision);
+		result |= Float(label2, size, values[1], decimalPrecision);
+		result |= Float(label3, size, values[2], decimalPrecision);
+		result |= Float(label4, size, values[3], decimalPrecision);
+			 
+			
 		InGui::EndGroup();
 		return result;
 	}

@@ -14,7 +14,7 @@ Entities:
       SortLayer: 0
       IsVisible: true
     Relationship:
-      Parent: edc3698c-c999-43c0-8ddb-e923bb555f51
+      Parent: 952019a2-090a-4c96-b080-cfff0d9dabd4
       PreviousSibling: 35ca1c45-9c54-4c02-8678-b3a8fa247531
   - Entity: 35ca1c45-9c54-4c02-8678-b3a8fa247531
     SceneTagComponent:
@@ -32,5 +32,5 @@ Entities:
       OrthographicNear: -1
       OrthographicFar: 1
     Relationship:
-      Parent: edc3698c-c999-43c0-8ddb-e923bb555f51
+      Parent: 952019a2-090a-4c96-b080-cfff0d9dabd4
       NextSibling: 9cede06b-a169-4d21-9eb3-be4e56768e90

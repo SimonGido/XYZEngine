@@ -15,8 +15,7 @@ namespace XYZ {
 
 		private:
 			void processDirectory(const std::string& path);
-
-
+	
 		private:
 			enum Type
 			{
@@ -39,6 +38,34 @@ namespace XYZ {
 			std::string m_Path;
 
 			InGuiWindow* m_Window;
+
+			struct Config
+			{
+				Config();
+				void Begin(size_t colorID, size_t highlightID);
+				void End();
+
+				enum Color
+				{
+					BackArrow,
+					BackArrowHighlight,
+					Folder,
+					FolderHighlight,
+					Shader,
+					ShaderHighlight,
+					Script,
+					ScriptHighlight,
+					NumColors
+				};
+				glm::vec4 Colors[NumColors];
+
+			private:
+				glm::vec4 OldColor;
+				glm::vec4 OldHighlight;
+				bool IsBegin;
+			};
+
+			Config m_Config;
 		};
 	}
 }

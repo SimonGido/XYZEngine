@@ -129,8 +129,6 @@ namespace XYZ {
 					parent->Children[1] = secondChild;
 					firstChild->Parent = parent;
 					secondChild->Parent = parent;
-					firstChild->Sibling = secondChild;
-					secondChild->Sibling = firstChild;
 				}
 			}
 			context.m_DockSpace.Root = dockNodeMap[0];

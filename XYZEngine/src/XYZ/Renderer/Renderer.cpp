@@ -190,39 +190,45 @@ namespace XYZ {
 	}
 
 	void Renderer::WaitAndRender()
-	{		
-		if (s_Data.SwapQueues.load())
-		{
-			s_Data.SwapQueues.store(false);		
-			
-			RenderCommandQueue* read[NumTypes];
-			for (size_t i = 0; i < NumTypes; ++i)
-				read[i] = &s_Data.CommandQueue[s_Data.ReadQueueIndex][i];
-
-			Application::GetThreadPool().PushJob<void>([read]() {
-				read[Default]->Execute();
-				read[Overlay]->Execute();
-				GLsync fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-				while (true) 
-				{
-					GLint status = GL_UNSIGNALED;
-					glGetSynciv(fence, GL_SYNC_STATUS, sizeof(GLint), NULL, &status);
-					if (status == GL_SIGNALED) 
-						break; // rendering is complete
-				}		
-				glDeleteSync(fence);
-				glFinish();
-				s_Data.SwapQueues.store(true);
-			});
-
-			
-			// Perform "swap" of queues for read and write
-			if (s_Data.ReadQueueIndex == RendererData::Read)
-				s_Data.ReadQueueIndex = RendererData::Write;
-			else
-				s_Data.ReadQueueIndex = RendererData::Read;
-		}
+	{
+		s_Data.CommandQueue[0][Default].Execute();
+		s_Data.CommandQueue[0][Overlay].Execute();
 	}
+
+	//void Renderer::WaitAndRender()
+	//{		
+	//	if (s_Data.SwapQueues.load())
+	//	{
+	//		s_Data.SwapQueues.store(false);		
+	//		
+	//		RenderCommandQueue* read[NumTypes];
+	//		for (size_t i = 0; i < NumTypes; ++i)
+	//			read[i] = &s_Data.CommandQueue[s_Data.ReadQueueIndex][i];
+	//	
+	//		Application::GetThreadPool().PushJob<void>([read]() {
+	//			read[Default]->Execute();
+	//			read[Overlay]->Execute();
+	//			GLsync fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+	//			while (true) 
+	//			{
+	//				GLint status = GL_UNSIGNALED;
+	//				glGetSynciv(fence, GL_SYNC_STATUS, sizeof(GLint), NULL, &status);
+	//				if (status == GL_SIGNALED) 
+	//					break; // rendering is complete
+	//			}		
+	//			glDeleteSync(fence);
+	//			glFinish();
+	//			s_Data.SwapQueues.store(true);
+	//		});
+	//	
+	//		
+	//		// Perform "swap" of queues for read and write
+	//		if (s_Data.ReadQueueIndex == RendererData::Read)
+	//			s_Data.ReadQueueIndex = RendererData::Write;
+	//		else
+	//			s_Data.ReadQueueIndex = RendererData::Read;
+	//	}
+	//}
 
 	RenderCommandQueue& Renderer::GetRenderCommandQueue(uint8_t type)
 	{

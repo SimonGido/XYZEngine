@@ -63,7 +63,12 @@ namespace XYZ {
 			config.WindowPadding = glm::vec2(0.0f);
 			config.Colors[InGuiConfig::ImageHighlight] = glm::vec4(1.0f);
 
-			if (InGui::Begin("Scene"))
+			if (InGui::Begin("Scene",
+				  InGuiWindowStyleFlags::PanelEnabled
+				| InGuiWindowStyleFlags::LabelEnabled
+				| InGuiWindowStyleFlags::FrameEnabled
+				| InGuiWindowStyleFlags::DockingEnabled
+			))
 			{
 				m_Window = InGui::GetContext().GetInGuiWindow("Scene");
 				if (m_Window->Size != m_ViewportSize)

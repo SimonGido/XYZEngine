@@ -32,7 +32,7 @@ namespace XYZ {
 		Colors[SliderColor]				= glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
 		Colors[SliderHighlight]			= glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
 		Colors[SliderHandleColor]		= glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
-		Colors[WindowColor]				= glm::vec4(0.3f, 0.4f, 0.5f, 0.7f);
+		Colors[WindowColor]				= glm::vec4(0.3f, 0.4f, 0.5f, 1.0f);
 		Colors[WindowPanelColor]		= glm::vec4(0.1f, 0.1f, 0.15f, 1.0f);
 		Colors[MenuColor]				= glm::vec4(0.1f, 0.1f, 0.1f, 0.4f);
 		Colors[TabColor]				= glm::vec4(0.1f, 0.1f, 0.15f, 1.0f);
@@ -40,7 +40,7 @@ namespace XYZ {
 		Colors[ImageColor]				= glm::vec4(1.0f);
 		Colors[TextColor]				= glm::vec4(1.0f);
 		Colors[TextHighlight]			= glm::vec4(0.8f, 0.7f, 1.0f, 1.0f);
-		Colors[WindowFrameColor]		= glm::vec4(0.4f, 0.4f, 0.4f, 1.0f);
+		Colors[WindowFrameColor]		= glm::vec4(0.2f, 0.2f, 0.2f, 1.0f);
 		Colors[DockspaceNodeColor]		= glm::vec4(0.1f, 0.3f, 0.5f, 0.5f);
 	}
 }

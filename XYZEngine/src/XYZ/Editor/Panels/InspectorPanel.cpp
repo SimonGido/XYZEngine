@@ -47,10 +47,11 @@ namespace XYZ {
 		void InspectorPanel::OnUpdate()
 		{
 			if (InGui::Begin("Inspector",			
-				 InGuiWindowStyleFlags::PanelEnabled
+				  InGuiWindowStyleFlags::PanelEnabled
 				| InGuiWindowStyleFlags::ScrollEnabled
 				| InGuiWindowStyleFlags::LabelEnabled
 				| InGuiWindowStyleFlags::DockingEnabled
+				| InGuiWindowStyleFlags::FrameEnabled
 			))
 			{
 				InGuiWindow* inspector = InGui::GetContext().GetInGuiWindow("Inspector");
