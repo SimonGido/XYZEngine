@@ -145,6 +145,9 @@ namespace XYZ {
 		const InGuiWindow* currentWindow = frame.CurrentWindow;
 		XYZ_ASSERT(currentWindow, "Current window is nullptr");
 
+		if (!IS_SET(currentWindow->EditFlags, InGuiWindowEditFlags::Hoovered))
+			return;
+
 		if (rect.Overlaps(input.MousePosition) 
 		&& (currentWindow->IsFocused() || currentWindow->IsParentFocused())
 		&& (!context.m_LastHooveredID  || context.m_LastHooveredID == id))
@@ -166,6 +169,8 @@ namespace XYZ {
 		const InGuiFrame& frame = context.m_FrameData;
 		const InGuiWindow* currentWindow = frame.CurrentWindow;
 		XYZ_ASSERT(currentWindow, "Current window is nullptr");
+		if (!IS_SET(currentWindow->EditFlags, InGuiWindowEditFlags::Hoovered))
+			return;
 
 		if (context.m_LastLeftPressedID == id)
 		{
@@ -194,7 +199,8 @@ namespace XYZ {
 		const InGuiWindow* currentWindow = frame.CurrentWindow;
 		XYZ_ASSERT(currentWindow, "Current window is nullptr");
 
-		if (rect.Overlaps(input.MousePosition) 
+		if (IS_SET(currentWindow->EditFlags, InGuiWindowEditFlags::Hoovered)
+		&&	rect.Overlaps(input.MousePosition) 
 		&& (currentWindow->IsFocused() || currentWindow->IsParentFocused())
 		&& (!context.m_LastHooveredID  || context.m_LastHooveredID == id))
 		{
@@ -221,7 +227,8 @@ namespace XYZ {
 		const InGuiWindow* currentWindow = frame.CurrentWindow;
 		XYZ_ASSERT(currentWindow, "Current window is nullptr");
 
-		if (rect.Overlaps(input.MousePosition) 
+		if (IS_SET(currentWindow->EditFlags, InGuiWindowEditFlags::Hoovered)
+		&& rect.Overlaps(input.MousePosition)
 		&& (currentWindow->IsFocused() || currentWindow->IsParentFocused())
 		&& (!context.m_LastHooveredID || context.m_LastHooveredID == id))
 		{
@@ -248,7 +255,8 @@ namespace XYZ {
 		const InGuiWindow* currentWindow = frame.CurrentWindow;
 		XYZ_ASSERT(currentWindow, "Current window is nullptr");
 
-		if (rect.Overlaps(input.MousePosition) 
+		if (IS_SET(currentWindow->EditFlags, InGuiWindowEditFlags::Hoovered)
+		&& rect.Overlaps(input.MousePosition)
 		&& (currentWindow->IsFocused() || currentWindow->IsParentFocused())
 		&& (!context.m_LastHooveredID  || context.m_LastHooveredID == id))
 		{
@@ -275,7 +283,8 @@ namespace XYZ {
 		const InGuiWindow* currentWindow = frame.CurrentWindow;
 		XYZ_ASSERT(currentWindow, "Current window is nullptr");
 
-		if (rect.Overlaps(input.MousePosition)
+		if (IS_SET(currentWindow->EditFlags, InGuiWindowEditFlags::Hoovered)
+			&& rect.Overlaps(input.MousePosition)
 			&& (currentWindow->IsFocused() || currentWindow->IsParentFocused())
 			&& (!context.m_LastHooveredID || context.m_LastHooveredID == id))
 		{

@@ -38,13 +38,14 @@ namespace XYZ {
 	namespace InGuiWindowEditFlags {
 		enum Flags
 		{
-			Hoovered = BIT(0),
-			Collapsed = BIT(1),
-			BlockEvents = BIT(2),
-			Moving = BIT(3),
-			ResizeLeft = BIT(4),
-			ResizeRight = BIT(5),
-			ResizeBottom = BIT(6)
+			Hoovered     = BIT(0),
+			Collapsed    = BIT(1),
+			BlockEvents  = BIT(2),
+			Moving		 = BIT(3),
+			ResizeLeft   = BIT(4),
+			ResizeRight  = BIT(5),
+			ResizeBottom = BIT(6),
+			Modified	 = BIT(7)
 		};
 	}
 	namespace InGuiWindowStyleFlags {

@@ -55,6 +55,8 @@ namespace XYZ {
 					ShaderHighlight,
 					Script,
 					ScriptHighlight,
+					Material,
+					MaterialHighlight,
 					NumColors
 				};
 				glm::vec4 Colors[NumColors];

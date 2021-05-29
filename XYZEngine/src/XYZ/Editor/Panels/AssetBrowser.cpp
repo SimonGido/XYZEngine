@@ -28,6 +28,9 @@ namespace XYZ {
 
 			m_SubTextures[Script] = Ref<XYZ::SubTexture>::Create(m_Texture, glm::vec2(3, 3), size);
 			m_SubTextures[Script]->Upside();
+
+			m_SubTextures[Material] = Ref<XYZ::SubTexture>::Create(m_Texture, glm::vec2(2, 3), size);
+			m_SubTextures[Material]->Upside();
 		}
 		void AssetBrowser::OnUpdate()
 		{
@@ -93,6 +96,8 @@ namespace XYZ {
 					case XYZ::AssetType::SubTexture:
 						break;
 					case XYZ::AssetType::Material:
+						m_Config.Begin(Config::Material, Config::MaterialHighlight);
+						InGui::Image(name.c_str(), m_IconSize, m_SubTextures[Material]);
 						break;
 					case XYZ::AssetType::Shader:
 						m_Config.Begin(Config::Shader, Config::ShaderHighlight);

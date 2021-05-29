@@ -71,7 +71,7 @@ namespace XYZ {
 			))
 			{
 				m_Window = InGui::GetContext().GetInGuiWindow("Scene");
-				if (m_Window->Size != m_ViewportSize)
+				if (m_Window->Size != m_ViewportSize && !m_Window->IsResizing())
 				{
 					m_ViewportSize = m_Window->Size;
 					m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);

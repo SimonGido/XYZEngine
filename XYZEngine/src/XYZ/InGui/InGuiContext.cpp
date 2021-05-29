@@ -98,6 +98,7 @@ namespace XYZ {
 		m_Windows.back() = *it;
 		*it = tmp;
 		m_FocusedWindow = window;
+		m_FocusedWindow->EditFlags |= InGuiWindowEditFlags::Modified;
 	}
 
 	void InGuiContext::OnEvent(Event& event)
