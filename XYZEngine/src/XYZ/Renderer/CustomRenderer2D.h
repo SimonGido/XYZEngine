@@ -89,7 +89,7 @@ namespace XYZ {
 		static void Init();
 		static void Shutdown();
 
-		static void BeginScene(const CustomRenderer2DLayout& layout);
+		static void SetLayout(const CustomRenderer2DLayout& layout);
 		
 		static void SetMaterial(const Ref<Material>& material);
 		static void SetLineShader(const Ref<Shader>& lineShader);
@@ -114,6 +114,7 @@ namespace XYZ {
 
 		static void Flush();
 		static void FlushLines();
+		static void FlushLast();
 		static void EndScene();
 
 	private:

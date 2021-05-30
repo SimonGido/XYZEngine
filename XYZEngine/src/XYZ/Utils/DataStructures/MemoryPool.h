@@ -21,6 +21,9 @@ namespace XYZ {
 		MemoryPool(size_t blockSize);
 		MemoryPool(MemoryPool&& other) noexcept;
 		~MemoryPool();
+		
+		void* AllocateRaw(size_t size);
+		void DeallocateRaw(void* val, size_t size);
 
 		template <typename T, typename ...Args>
 		T* Allocate(Args&&... args)
@@ -33,6 +36,7 @@ namespace XYZ {
 			return new((void*)&m_Blocks[blockIndex].Data[chunkIndex])T(std::forward<Args>(args)...);
 		}
 
+	
 		template <typename T>
 		void Deallocate(T* val)
 		{
@@ -76,7 +80,7 @@ namespace XYZ {
 		void reverseMergeFreeChunks();
 		Block* createBlock();
 
-		std::pair<uint8_t, uint32_t> findAvailableIndex(uint32_t size);
+		std::pair<uint8_t, uint32_t> findAvailableIndex(size_t size);
 
 	private:
 		const size_t m_BlockSize;

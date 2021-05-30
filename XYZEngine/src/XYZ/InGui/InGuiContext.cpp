@@ -39,7 +39,7 @@ namespace XYZ {
 			{2, ShaderDataComponent::Float,  "a_ScissorIndex" }
 			}
 		);
-
+		CustomRenderer2D::SetLayout(m_RendererLayout);
 		m_ClipBuffer = ShaderStorageBuffer::Create(sc_MaxNumberOfClipRectangles * sizeof(InGuiRect));
 		m_ClipRectangles.push_back({});
 	}
@@ -62,7 +62,7 @@ namespace XYZ {
 		glm::mat4 viewProjectionMatrix = glm::ortho(0.0f, (float)m_ViewportWidth, (float)m_ViewportHeight, 0.0f) * glm::inverse(viewMatrix);
 		
 		Renderer2D::BeginScene(viewProjectionMatrix);
-		CustomRenderer2D::BeginScene(m_RendererLayout);
+		
 		CustomRenderer2D::SetMaterial(m_Config.Material);
 		CustomRenderer2D::SetLineShader(m_Config.LineShader);
 		for (const auto& texture : m_FrameData.CustomTextures)

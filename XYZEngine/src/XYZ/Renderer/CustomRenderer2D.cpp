@@ -45,7 +45,7 @@ namespace XYZ {
 		delete[]s_Data.QuadBufferBase;
 		delete[]s_Data.LineBufferBase;
 	}
-	void CustomRenderer2D::BeginScene(const CustomRenderer2DLayout& layout)
+	void CustomRenderer2D::SetLayout(const CustomRenderer2DLayout& layout)
 	{
 		s_Data.MaxQuadIndices = (s_Data.QuadBufferSize / layout.m_QuadLayoutSize) / 4 * 6;
 		s_Data.MaxLineIndices = (s_Data.LineBufferSize / layout.m_LineLayoutSize) / 4 * 6;
@@ -123,6 +123,18 @@ namespace XYZ {
 			s_Data.ResetLines();
 			s_Stats.LineDrawCalls++;
 		}
+	}
+	void CustomRenderer2D::FlushLast()
+	{
+		s_Data.QuadMaterial->Bind();
+		uint32_t textureSlotOffset = s_Data.QuadMaterial->GetTextures().size();
+		for (uint32_t i = 0; i < s_Data.TextureSlotIndex; ++i)
+			s_Data.TextureSlots[i]->Bind(i + textureSlotOffset);
+
+		s_Data.Layout.m_QuadVertexArray->Bind();
+
+		Renderer::DrawIndexed(PrimitiveType::Triangles, s_Data.QuadIndexCount);
+		s_Stats.QuadDrawCalls++;
 	}
 	void CustomRenderer2D::EndScene()
 	{

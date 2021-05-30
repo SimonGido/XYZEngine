@@ -1,5 +1,6 @@
 #pragma once
 #include "XYZ/Core/GUID.h"
+#include "XYZ/Utils/DataStructures/MemoryPool.h"
 #include "XYZ/Utils/StringUtils.h"
 #include "XYZ/Renderer/Shader.h"
 #include "XYZ/Renderer/Texture.h"
@@ -96,5 +97,6 @@ namespace XYZ {
 		static std::unordered_map<GUID, Ref<Asset>> s_LoadedAssets;
 		static std::unordered_map<GUID, AssetDirectory> s_Directories;
 		static std::unordered_map<std::string, AssetType> s_AssetTypes;
+		static MemoryPool s_Pool;
 	};
 }

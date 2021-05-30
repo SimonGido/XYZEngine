@@ -53,7 +53,7 @@ namespace XYZ {
 		virtual uint32_t GetChannels() const = 0;
 
 		virtual uint32_t GetRendererID() const = 0;
-		virtual const std::string& GetFilepath() const { return std::string(); };
+		virtual const std::string GetFilepath() const { return std::string(); };
 		static uint32_t CalculateMipMapCount(uint32_t width, uint32_t height);
 	};
 
@@ -64,12 +64,13 @@ namespace XYZ {
 	class Texture2D : public Texture
 	{
 	public:
-
 		virtual const TextureSpecs& GetSpecification() const = 0;
+
 
 		static Ref<Texture2D> Create(uint32_t width, uint32_t height, uint32_t channels, const TextureSpecs& specs);
 		static Ref<Texture2D> Create(const TextureSpecs& specs, const std::string& path);
 
+		
 		static void BindStatic(uint32_t rendererID, uint32_t slot);
 	};
 }

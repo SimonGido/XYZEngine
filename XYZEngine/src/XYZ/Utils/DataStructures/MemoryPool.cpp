@@ -37,6 +37,28 @@ namespace XYZ {
 		}
 	}
 
+	void* MemoryPool::AllocateRaw(size_t size)
+	{
+		if (!m_Blocks.size())
+			createBlock();
+		if (m_Dirty)
+			cleanUp();
+		auto [blockIndex, chunkIndex] = findAvailableIndex(size);
+		return &m_Blocks[blockIndex].Data[chunkIndex];
+	}
+
+	void MemoryPool::DeallocateRaw(void* val, size_t size)
+	{
+		uint8_t* tmp = (uint8_t*)val + size;
+		uint8_t blockIndex = *tmp;
+		uint32_t chunkIndex = 0;
+		memcpy(&chunkIndex, tmp + sizeof(uint8_t), m_SizeOfChunkIndex);
+
+		Chunk chunk{ size + m_SizeOfChunkIndex + sizeof(uint8_t), chunkIndex, blockIndex };
+		m_FreeChunks.push_back(chunk);
+		m_Dirty = true;
+	}
+
 	void MemoryPool::cleanUp()
 	{
 		sortFreeChunks();
@@ -100,7 +122,7 @@ namespace XYZ {
 		memset(m_Blocks.back().Data, 0, m_BlockSize);
 		return &m_Blocks.back();
 	}
-	std::pair<uint8_t, uint32_t> MemoryPool::findAvailableIndex(uint32_t size)
+	std::pair<uint8_t, uint32_t> MemoryPool::findAvailableIndex(size_t size)
 	{
 		uint32_t counter = 0;
 		size_t spaceRequirement = size + m_SizeOfChunkIndex + sizeof(uint8_t);

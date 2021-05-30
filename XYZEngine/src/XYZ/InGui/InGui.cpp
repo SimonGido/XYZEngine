@@ -78,6 +78,7 @@ namespace XYZ {
 
 		frame.CurrentWindow = window;
 		window->DrawList.Clear();
+
 		bool highlight = false;
 		if (window->HandleHoover(input.MousePosition) || window->IsFocused())
 			highlight = true;

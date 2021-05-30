@@ -22,7 +22,7 @@ namespace XYZ {
 		inline virtual uint32_t GetChannels() const override { return m_Channels; }
 		inline virtual uint32_t GetRendererID() const override { return m_RendererID; }
 		virtual const TextureSpecs& GetSpecification() const override { return m_Specification; };
-		virtual const std::string& GetFilepath() const override { return m_Filepath; }
+		virtual const std::string GetFilepath() const override { return m_Filepath; }
 		static void Bind(uint32_t rendererID, uint32_t slot);
 	private:
 		uint32_t m_RendererID = 0;

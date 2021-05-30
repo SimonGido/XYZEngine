@@ -1,7 +1,7 @@
 Windows:
   - Name: Inspector
-    Position: [1600, 0]
-    Size: [320, 1017]
+    Position: [1611, 0]
+    Size: [309, 1017]
     OriginalSize: [406, 1017]
     Collapsed: false
   - Name: Scene Hierarchy
@@ -9,15 +9,15 @@ Windows:
     Size: [346, 1017]
     OriginalSize: [346, 1017]
     Collapsed: false
-  - Name: Scene
-    Position: [346, 0]
-    Size: [1254, 611]
-    OriginalSize: [1254, 614]
-    Collapsed: false
   - Name: Assets
     Position: [346, 611]
-    Size: [1254, 406]
+    Size: [1265, 406]
     OriginalSize: [1254, 406]
+    Collapsed: false
+  - Name: Scene
+    Position: [346, 0]
+    Size: [1265, 611]
+    OriginalSize: [1265, 611]
     Collapsed: false
 DockSpace:
   - ID: 0
@@ -37,14 +37,14 @@ DockSpace:
     Windows:
       []
   - ID: 4
-    Position: [1254, 0]
-    Size: [320, 1017]
+    Position: [1265, 0]
+    Size: [309, 1017]
     Split: 2
     Windows:
       - Inspector
   - ID: 3
     Position: [0, 0]
-    Size: [1254, 1017]
+    Size: [1265, 1017]
     Split: 1
     Child0: 5
     Child1: 6
@@ -52,13 +52,13 @@ DockSpace:
       []
   - ID: 6
     Position: [0, 611]
-    Size: [1254, 406]
+    Size: [1265, 406]
     Split: 2
     Windows:
       - Assets
   - ID: 5
     Position: [0, 0]
-    Size: [1254, 611]
+    Size: [1265, 611]
     Split: 2
     Windows:
       - Scene

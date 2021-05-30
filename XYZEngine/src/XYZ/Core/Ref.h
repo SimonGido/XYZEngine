@@ -1,6 +1,9 @@
 #pragma once
+
+
 #include <stdint.h>
 #include <atomic>
+
 
 namespace XYZ {
 
@@ -19,8 +22,27 @@ namespace XYZ {
 		uint32_t GetRefCount() const { return m_RefCount; }
 	private:
 		mutable std::atomic<uint32_t> m_RefCount = 0;
+
+		
 	};
 
+	class MemoryPool;
+	class RefAllocator
+	{
+	public:
+		static void  Init(MemoryPool* pool);
+		
+	private:
+		static void* allocate(size_t size);
+		static void  deallocate(void* handle, size_t size);
+
+		static MemoryPool* s_Pool;
+	
+		template <typename T>
+		friend class Ref;
+	};
+
+	
 	template<typename T>
 	class Ref
 	{
@@ -130,6 +152,11 @@ namespace XYZ {
 		template<typename... Args>
 		static Ref<T> Create(Args&&... args)
 		{
+			if (RefAllocator::s_Pool)
+			{
+				void*  handle = RefAllocator::allocate(sizeof(T));
+				return Ref<T>(new (handle)T(std::forward<Args>(args)...));
+			}
 			return Ref<T>(new T(std::forward<Args>(args)...));
 		}
 	private:
@@ -146,7 +173,10 @@ namespace XYZ {
 				m_Instance->DecRefCount();
 				if (m_Instance->GetRefCount() == 0)
 				{
-					delete m_Instance;
+					if (RefAllocator::s_Pool)
+						RefAllocator::deallocate((void*)m_Instance, sizeof(T));
+					else
+						delete m_Instance;
 				}
 			}
 		}
