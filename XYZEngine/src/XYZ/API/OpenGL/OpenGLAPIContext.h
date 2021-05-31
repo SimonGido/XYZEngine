@@ -10,7 +10,7 @@ namespace XYZ {
 	{
 	public:
 		OpenGLAPIContext(GLFWwindow* windowHandle);
-		~OpenGLAPIContext();
+		virtual ~OpenGLAPIContext() override;
 
 		virtual void Init() override;
 		virtual void SwapBuffers() override;
