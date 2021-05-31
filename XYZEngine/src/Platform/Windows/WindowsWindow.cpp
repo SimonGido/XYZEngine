@@ -53,7 +53,7 @@ namespace XYZ {
 		}
 
 		m_Context = APIContext::Create(m_Window);
-
+		
 		std::future<bool> done = Application::GetThreadPool().PushJob<bool>([&] {
 			m_Context->Init();
 			return true;

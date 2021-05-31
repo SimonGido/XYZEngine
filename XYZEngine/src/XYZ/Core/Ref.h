@@ -154,7 +154,7 @@ namespace XYZ {
 		{
 			if (RefAllocator::s_Pool)
 			{
-				void*  handle = RefAllocator::allocate(sizeof(T));
+				void*  handle = RefAllocator::allocate(sizeof(T) * 2.0f);
 				return Ref<T>(new (handle)T(std::forward<Args>(args)...));
 			}
 			return Ref<T>(new T(std::forward<Args>(args)...));
@@ -174,7 +174,7 @@ namespace XYZ {
 				if (m_Instance->GetRefCount() == 0)
 				{
 					if (RefAllocator::s_Pool)
-						RefAllocator::deallocate((void*)m_Instance, sizeof(T));
+						RefAllocator::deallocate((void*)m_Instance, sizeof(T) * 2.0f);
 					else
 						delete m_Instance;
 				}

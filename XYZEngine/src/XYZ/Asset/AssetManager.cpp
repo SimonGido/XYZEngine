@@ -10,10 +10,10 @@
 namespace XYZ
 {
 
+	MemoryPool AssetManager::s_Pool = MemoryPool(1024 * 1024);
 	std::unordered_map<GUID, Ref<Asset>> AssetManager::s_LoadedAssets;
 	std::unordered_map<GUID, AssetDirectory> AssetManager::s_Directories;
 	std::unordered_map<std::string, AssetType> AssetManager::s_AssetTypes;
-	MemoryPool AssetManager::s_Pool = MemoryPool(1024 * 1024);
 
 	void AssetManager::Init()
 	{
