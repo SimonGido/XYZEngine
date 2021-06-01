@@ -61,9 +61,9 @@ namespace XYZ {
 
 		InGuiID GetNextID();
 
-		InGuiDockNode*  Root;
-		InGuiDrawList   Drawlist;
-		MemoryPool		Pool;
+		InGuiDockNode*							Root;
+		InGuiDrawList							Drawlist;
+		MemoryPool<10 * sizeof(InGuiDockNode)>	Pool;
 
 		InGuiDockNode* ResizedNode;
 

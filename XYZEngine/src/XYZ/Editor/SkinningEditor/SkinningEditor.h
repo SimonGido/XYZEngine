@@ -112,7 +112,7 @@ namespace XYZ {
 			bUILayout m_Layout;
 
 			Tree m_BoneHierarchy;
-			MemoryPool m_BonePool;
+			MemoryPool<15 * sizeof(PreviewBone)> m_BonePool;
 			EditorOrthographicCamera m_Camera;
 
 			Submesh* m_SelectedSubmesh;

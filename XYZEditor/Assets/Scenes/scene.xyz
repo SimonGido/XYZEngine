@@ -14,7 +14,7 @@ Entities:
       SortLayer: 0
       IsVisible: true
     Relationship:
-      Parent: b2e525af-0276-4430-b7a7-8470585bf447
+      Parent: 68213cf8-1898-46f4-878a-fb044735c108
       PreviousSibling: 35ca1c45-9c54-4c02-8678-b3a8fa247531
   - Entity: 35ca1c45-9c54-4c02-8678-b3a8fa247531
     SceneTagComponent:
@@ -32,5 +32,5 @@ Entities:
       OrthographicNear: -1
       OrthographicFar: 1
     Relationship:
-      Parent: b2e525af-0276-4430-b7a7-8470585bf447
+      Parent: 68213cf8-1898-46f4-878a-fb044735c108
       NextSibling: 9cede06b-a169-4d21-9eb3-be4e56768e90

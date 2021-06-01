@@ -94,7 +94,7 @@ namespace XYZ {
 		
 
 	private:
-		static MemoryPool s_Pool;
+		static MemoryPool<1024 * 1024, true> s_Pool;
 		static std::unordered_map<GUID, Ref<Asset>> s_LoadedAssets;
 		static std::unordered_map<GUID, AssetDirectory> s_Directories;
 		static std::unordered_map<std::string, AssetType> s_AssetTypes;

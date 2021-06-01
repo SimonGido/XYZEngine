@@ -22,7 +22,6 @@ namespace XYZ {
 
 	PhysicsWorld::PhysicsWorld(const glm::vec2& gravity)
 		:
-		m_Pool(10 * 1024),
 		m_Gravity(gravity)
 	{
 	}

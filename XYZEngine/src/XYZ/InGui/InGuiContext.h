@@ -28,29 +28,29 @@ namespace XYZ {
 		InGuiWindow* CreateInGuiWindow(const char* name);
 		InGuiWindow* GetInGuiWindow(const char* name);
 
-		InGuiInput				  m_Input;
-		InGuiFrame				  m_FrameData;
-		InGuiConfig				  m_Config;
-		InGuiDockSpace			  m_DockSpace;
-		uint32_t				  m_ViewportWidth;
-		uint32_t				  m_ViewportHeight;
+		InGuiInput							 m_Input;
+		InGuiFrame							 m_FrameData;
+		InGuiConfig							 m_Config;
+		InGuiDockSpace						 m_DockSpace;
+		uint32_t							 m_ViewportWidth;
+		uint32_t							 m_ViewportHeight;
 
-		std::vector<InGuiWindow*> m_Windows;
-		InGuiWindowMap			  m_WindowMap;
-		InGuiWindow*			  m_FocusedWindow;
-		MemoryPool				  m_WindowPool;
-		CustomRenderer2DLayout	  m_RendererLayout;
+		std::vector<InGuiWindow*>			 m_Windows;
+		InGuiWindowMap						 m_WindowMap;
+		InGuiWindow*						 m_FocusedWindow;
+		MemoryPool<15 * sizeof(InGuiWindow)> m_WindowPool;
+		CustomRenderer2DLayout				 m_RendererLayout;
 
-		InGuiID					  m_LastLeftPressedID;
-		InGuiID					  m_LastHooveredID;
-		InGuiID					  m_LastInputID;
-
-		InGuiID					  m_MenuOpenID;
-		bool					  m_MenuBarActive;
-
-		std::string				  m_TemporaryTextBuffer;
-		std::vector<InGuiRect>    m_ClipRectangles;
-		Ref<ShaderStorageBuffer>  m_ClipBuffer;
+		InGuiID								 m_LastLeftPressedID;
+		InGuiID								 m_LastHooveredID;
+		InGuiID								 m_LastInputID;
+											 
+		InGuiID								 m_MenuOpenID;
+		bool								 m_MenuBarActive;
+											 
+		std::string							 m_TemporaryTextBuffer;
+		std::vector<InGuiRect>				 m_ClipRectangles;
+		Ref<ShaderStorageBuffer>			 m_ClipBuffer;
 
 		static constexpr uint32_t sc_MaxNumberOfClipRectangles = 256;
 		static constexpr size_t sc_InputValueBufferSize = 64;

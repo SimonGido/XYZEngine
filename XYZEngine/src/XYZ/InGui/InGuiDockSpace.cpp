@@ -251,7 +251,6 @@ namespace XYZ {
     InGuiDockSpace::InGuiDockSpace()
         :
         Root(nullptr),
-        Pool(20 * sizeof(InGuiDockNode)),
         ResizedNode(nullptr),
         NextID(0)
     {

@@ -33,7 +33,7 @@ namespace XYZ {
 		void debugDraw();
 	private:
 		DynamicTree m_Tree;
-		MemoryPool m_Pool;
+		MemoryPool<10 * 1024> m_Pool;
 
 		glm::vec2 m_Gravity;
 
