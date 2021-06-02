@@ -307,6 +307,31 @@ namespace XYZ {
 		delete[] s_Data.LineBufferBase;
 		delete[] s_Data.CollisionBufferBase;
 		delete[] s_Data.PointBufferBase;
+
+		
+
+
+		// Release all the resources used by renderer
+		s_Data.DefaultQuadMaterial.Reset();
+		s_Data.QuadMaterial.Reset();
+		s_Data.GridMaterial.Reset();
+		s_Data.LineShader.Reset();
+		s_Data.CollisionShader.Reset();
+		s_Data.PointShader.Reset();
+		s_Data.GridVertexArray.Reset();
+		s_Data.QuadVertexArray.Reset();
+		s_Data.QuadVertexBuffer.Reset();
+
+		s_Data.LineVertexArray.Reset();
+		s_Data.LineVertexBuffer.Reset();
+
+		s_Data.CollisionVertexArray.Reset();
+		s_Data.CollisionVertexBuffer.Reset();
+
+		s_Data.PointsVertexArray.Reset();
+		s_Data.PointsVertexBuffer.Reset();
+
+		s_Data.CameraUniformBuffer.Reset();
 	}
 
 	void Renderer2D::BeginScene(const glm::mat4& viewProjectionMatrix)

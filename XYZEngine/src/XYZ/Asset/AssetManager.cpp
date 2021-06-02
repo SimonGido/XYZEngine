@@ -35,6 +35,7 @@ namespace XYZ
 	void AssetManager::Shutdown()
 	{
 		s_LoadedAssets.clear();
+		RefAllocator::Shutdown();
 	}
 
 	AssetType AssetManager::GetAssetTypeFromExtension(const std::string& extension)

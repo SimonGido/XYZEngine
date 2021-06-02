@@ -85,6 +85,11 @@ namespace XYZ {
 	{
 		CustomRenderer2D::Shutdown();
 		Renderer2D::Shutdown();
+		SceneRenderer::Shutdown();
+
+		s_Data.FullscreenQuadVertexArray.Reset();
+		s_Data.FullscreenQuadVertexBuffer.Reset();
+		s_Data.FullscreenQuadIndexBuffer.Reset();
 	}
 
 	void Renderer::Clear()

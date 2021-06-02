@@ -47,7 +47,6 @@ namespace XYZ {
 		m_SceneHierarchy.SetContext(m_Scene);
 		m_ScenePanel.SetContext(m_Scene);
 
-		Scene::ActiveScene = m_Scene;
 		m_TestEntity = m_Scene->GetEntityByName("TestEntity");
 		
 
@@ -116,6 +115,7 @@ namespace XYZ {
 
 	void EditorLayer::OnDetach()
 	{
+		ScriptEngine::Shutdown();
 		AssetSerializer::SerializeAsset(m_Scene);		
 	}
 	void EditorLayer::OnUpdate(Timestep ts)

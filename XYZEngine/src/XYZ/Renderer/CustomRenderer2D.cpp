@@ -44,6 +44,13 @@ namespace XYZ {
 	{
 		delete[]s_Data.QuadBufferBase;
 		delete[]s_Data.LineBufferBase;
+
+		s_Data.QuadMaterial.Reset();
+		s_Data.LineShader.Reset();
+		s_Data.Layout.m_QuadVertexArray.Reset();
+		s_Data.Layout.m_QuadVertexBuffer.Reset();
+		s_Data.Layout.m_LineVertexArray.Reset();
+		s_Data.Layout.m_LineVertexBuffer.Reset();
 	}
 	void CustomRenderer2D::SetLayout(const CustomRenderer2DLayout& layout)
 	{

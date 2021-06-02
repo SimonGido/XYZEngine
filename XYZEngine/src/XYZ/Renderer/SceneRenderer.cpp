@@ -70,8 +70,8 @@ namespace XYZ {
 		std::vector<PointLight>				 LightsList;
 
 
-		glm::vec2 ViewportSize;
-		bool	  ViewportSizeChanged = false;
+		glm::vec2      ViewportSize;
+		bool	       ViewportSizeChanged = false;
 		const uint32_t MaxNumberOfLights = 100;
 	};
 
@@ -143,6 +143,23 @@ namespace XYZ {
 		s_Data.CompositeShader	  = Shader::Create("Assets/Shaders/CompositeShader.glsl");
 		s_Data.LightShader		  = Shader::Create("Assets/Shaders/LightShader.glsl");
 		s_Data.LightStorageBuffer = ShaderStorageBuffer::Create(s_Data.MaxNumberOfLights * sizeof(SceneRendererData::PointLight));
+	}
+
+	void SceneRenderer::Shutdown()
+	{
+		s_Data.CompositePass.Reset();
+		s_Data.LightPass.Reset();
+		s_Data.GeometryPass.Reset();
+		s_Data.BloomPass.Reset();
+		s_Data.GaussianBlurPass.Reset();
+
+		s_Data.GaussianBlurShader.Reset();
+		s_Data.BloomShader.Reset();
+		s_Data.CompositeShader.Reset();
+		s_Data.LightShader.Reset();
+
+
+		s_Data.LightStorageBuffer.Reset();
 	}
 
 	void SceneRenderer::SetViewportSize(uint32_t width, uint32_t height)

@@ -1,70 +1,70 @@
 Windows:
   - Name: Inspector
-    Position: [1611, 0]
-    Size: [309, 1017]
+    Position: [2148, 0]
+    Size: [412, 1377]
     OriginalSize: [406, 1017]
     Collapsed: false
   - Name: Scene Hierarchy
     Position: [0, 0]
-    Size: [346, 1017]
+    Size: [461.333344, 1377]
     OriginalSize: [346, 1017]
     Collapsed: false
   - Name: Assets
-    Position: [346, 611]
-    Size: [1265, 406]
+    Position: [461.333344, 827.283203]
+    Size: [1686.66675, 549.716797]
     OriginalSize: [1254, 406]
     Collapsed: false
   - Name: Scene
-    Position: [346, 0]
-    Size: [1265, 611]
+    Position: [461.333344, 0]
+    Size: [1686.66675, 827.283203]
     OriginalSize: [1265, 611]
     Collapsed: false
 DockSpace:
   - ID: 0
     Position: [0, 0]
-    Size: [1920, 1017]
+    Size: [2560, 1377]
     Split: 0
     Child0: 1
     Child1: 2
     Windows:
       []
   - ID: 2
-    Position: [346, 0]
-    Size: [1574, 1017]
+    Position: [461.333344, 0]
+    Size: [2098.66675, 1377]
     Split: 0
     Child0: 3
     Child1: 4
     Windows:
       []
   - ID: 4
-    Position: [1265, 0]
-    Size: [309, 1017]
+    Position: [1686.66675, 0]
+    Size: [412, 1377]
     Split: 2
     Windows:
       - Inspector
   - ID: 3
     Position: [0, 0]
-    Size: [1265, 1017]
+    Size: [1686.66675, 1377]
     Split: 1
     Child0: 5
     Child1: 6
     Windows:
       []
   - ID: 6
-    Position: [0, 611]
-    Size: [1265, 406]
+    Position: [0, 827.283203]
+    Size: [1686.66675, 549.716797]
     Split: 2
     Windows:
       - Assets
   - ID: 5
     Position: [0, 0]
-    Size: [1265, 611]
+    Size: [1686.66675, 827.283203]
     Split: 2
     Windows:
       - Scene
   - ID: 1
     Position: [0, 0]
-    Size: [346, 1017]
+    Size: [461.333344, 1377]
     Split: 2
     Windows:
       - Scene Hierarchy
