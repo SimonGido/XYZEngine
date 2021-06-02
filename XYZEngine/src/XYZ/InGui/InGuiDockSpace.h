@@ -71,7 +71,7 @@ namespace XYZ {
 		std::queue<InGuiID> FreeIDs;
 		InGuiID NextID;
 		
-		friend class InGuiDockNode;
+		friend InGuiDockNode;
 		friend class InGuiSerializer;
 	};
 }

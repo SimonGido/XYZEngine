@@ -45,21 +45,33 @@ namespace XYZ {
 				InGuiConfig& config = InGui::GetContext().m_Config;
 				m_Window = InGui::GetContext().m_FrameData.CurrentWindow;
 				size_t slashPos = m_Path.find_last_of('/');
-				if (slashPos != std::string::npos)
+				
+				m_Window->Axis = AxisPlacement::Horizontal;												
+				m_Config.Begin(Config::BackArrow, Config::BackArrowHighlight);
+				if (IS_SET(InGui::Image("########", glm::vec2(25.0f), config.SubTextures[InGuiConfig::LeftArrow]), InGui::Pressed))
 				{
-					m_Window->Axis = AxisPlacement::Horizontal;								
-					
-					m_Config.Begin(Config::BackArrow, Config::BackArrowHighlight);
-					if (IS_SET(InGui::Image("########", glm::vec2(25.0f), config.SubTextures[InGuiConfig::LeftArrow]), InGui::Pressed))
+					if (slashPos != std::string::npos)
 					{
+						m_DirectoriesVisited.push_front(m_Path.substr(slashPos));
 						m_Path.erase(m_Path.begin() + slashPos, m_Path.end());
-					}			
-					m_Config.End();
+					}
 				}
+				if (IS_SET(InGui::Image("#########", glm::vec2(25.0f), config.SubTextures[InGuiConfig::RightArrow]), InGui::Pressed))
+				{
+					if (!m_DirectoriesVisited.empty())
+					{
+						m_Path += m_DirectoriesVisited.front();
+						m_DirectoriesVisited.pop_front();
+					}
+				}
+				m_Config.End();
 
 				m_Window->Axis = AxisPlacement::Vertical;
 				float stringPathWidth = m_Window->Size.x + m_Window->Position.x - m_Window->FrameData.CursorPos.x - config.WindowPadding.x;
-				InGui::String("##", glm::vec2(stringPathWidth, 25.0f), m_Path);
+				if (IS_SET(InGui::String("##", glm::vec2(stringPathWidth, 25.0f), m_Path), InGui::Pressed))
+				{
+					m_DirectoriesVisited.clear();
+				}
 
 				m_Window->Axis = AxisPlacement::Horizontal;
 				m_Window->FrameData.CursorPos.x = m_Window->Position.x + config.WindowPadding.x;

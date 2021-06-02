@@ -36,6 +36,8 @@ namespace XYZ {
 			Ref<XYZ::Texture> m_Texture;
 			glm::vec2 m_IconSize;
 			std::string m_Path;
+			std::deque<std::string> m_DirectoriesVisited;
+
 
 			InGuiWindow* m_Window;
 

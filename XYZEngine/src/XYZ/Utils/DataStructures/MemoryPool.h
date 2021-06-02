@@ -53,11 +53,10 @@ namespace XYZ {
 		void     reverseMergeFreeChunks();
 		Block*   createBlock();
 
-		void storeMetaData(uint32_t size);
+		void storeMetaData(uint32_t memoryStart, uint8_t blockIndex, uint32_t size);
 		bool findIndicesInFreeChunks(uint32_t sizeRequirement, uint8_t& blockIndex, uint32_t& dataIndex);
 		std::pair<uint8_t, uint32_t> findAvailableIndex(uint32_t size);
 
-		static constexpr uint32_t chunkIndexSize();
 		static constexpr uint32_t metaDataSize();
 	private:
 		std::vector<Block> m_Blocks;
@@ -135,18 +134,21 @@ namespace XYZ {
 	{
 		uint32_t sizeRequirement = toChunkSize(size);
 		uint32_t dataIndex = 0;
-		uint8_t blockIndex = 0;
+		uint8_t  blockIndex = 0;
 		// First check free chunks, if there is any suitable chunk to hold memory
 		if (findIndicesInFreeChunks(sizeRequirement, blockIndex, dataIndex))
+		{
+			storeMetaData(dataIndex, blockIndex, size);
+			dataIndex += metaDataSize();
 			return { blockIndex, dataIndex };
-
+		}
 		// Check if last block of memory can hold required size
 		Block* last = &m_Blocks.back();
 		if (last->NextAvailableIndex + sizeRequirement > BlockSize)
 			last = createBlock(); // Last block can not, create new one
 
 		// Store meta data
-		storeMetaData(size);
+		storeMetaData(last->NextAvailableIndex, (uint8_t)m_Blocks.size() - 1, size);
 
 		// Index for user memory is after meta data
 		dataIndex = last->NextAvailableIndex + metaDataSize();
@@ -236,38 +238,30 @@ namespace XYZ {
 	
 
 	template<uint32_t BlockSize, bool StoreSize>
-	inline void MemoryPool<BlockSize, StoreSize>::storeMetaData(uint32_t size)
+	inline void MemoryPool<BlockSize, StoreSize>::storeMetaData(uint32_t memoryStart, uint8_t blockIndex, uint32_t size)
 	{
-		Block* last = &m_Blocks.back();
-		uint8_t blockIndex = (uint8_t)m_Blocks.size() - 1;
-		uint32_t chunkIndex = last->NextAvailableIndex;
-		size_t blockIndexInMemory = (size_t)last->NextAvailableIndex;
-		size_t chunkIndexInMemory = (size_t)last->NextAvailableIndex + sizeof(uint8_t);
+		Block* block = &m_Blocks[(size_t)blockIndex];
+		uint32_t chunkIndex = memoryStart;
+		size_t blockIndexInMemory = (size_t)memoryStart;
+		size_t chunkIndexInMemory = (size_t)memoryStart + sizeof(uint8_t);
 
-		memcpy(&last->Data[blockIndexInMemory], &blockIndex, sizeof(uint8_t)); // Store block index
-		memcpy(&last->Data[chunkIndexInMemory], &chunkIndex, (size_t)chunkIndexSize()); // Store chunk index
+		memcpy(&block->Data[blockIndexInMemory], &blockIndex, sizeof(uint8_t)); // Store block index
+		memcpy(&block->Data[chunkIndexInMemory], &chunkIndex, sizeof(uint32_t)); // Store chunk index
 
 		if (StoreSize)
 		{
-			size_t sizeIndexInMemory = chunkIndexInMemory + chunkIndexSize();
-			memcpy(&last->Data[sizeIndexInMemory], &size, sizeof(uint32_t)); // Store size
+			size_t sizeIndexInMemory = chunkIndexInMemory + sizeof(uint32_t);
+			memcpy(&block->Data[sizeIndexInMemory], &size, sizeof(uint32_t)); // Store size
 		}
 	}
 
 	
-
-	template<uint32_t BlockSize, bool StoreSize>
-	inline constexpr uint32_t MemoryPool<BlockSize, StoreSize>::chunkIndexSize()
-	{
-		return (uint32_t)ceil((log(BlockSize) / log(2)) / 8.0f) + 1;
-	}
-
 	template<uint32_t BlockSize, bool StoreSize>
 	inline constexpr uint32_t MemoryPool<BlockSize, StoreSize>::metaDataSize()
 	{
 		if (StoreSize)
-			return (uint32_t)sizeof(uint32_t) + (uint32_t)sizeof(uint8_t) + chunkIndexSize();
-		return (uint32_t)sizeof(uint8_t) + chunkIndexSize();
+			return (uint32_t)sizeof(uint32_t) + (uint32_t)sizeof(uint8_t) + sizeof(uint32_t);
+		return (uint32_t)sizeof(uint8_t) + sizeof(uint32_t);
 	}
 
 	template<uint32_t BlockSize, bool StoreSize>
@@ -308,12 +302,12 @@ namespace XYZ {
 		uint8_t* blockPtr = (uint8_t*)ptr - metaDataSize();
 		value[0] = *blockPtr;
 		uint8_t* chunkPtr = blockPtr + sizeof(uint8_t);
-		value[1] = (uint32_t)(*chunkPtr);
+		value[1] = *(uint32_t*)(chunkPtr);
 
 		if (StoreSize)
 		{
 			// size is stored in previous 4 bytes
-			uint8_t* sizePtr = (uint8_t*)chunkPtr + chunkIndexSize();
+			uint8_t* sizePtr = (uint8_t*)chunkPtr + sizeof(uint32_t);
 			value[2] = (uint32_t)(*sizePtr);
 		}
 	}
@@ -331,12 +325,12 @@ namespace XYZ {
 		uint8_t* blockPtr = (uint8_t*)ptr - metaDataSize();
 		values[0] = *blockPtr;
 		uint8_t* chunkPtr = blockPtr + sizeof(uint8_t);
-		values[1] = (uint32_t)(*chunkPtr);
+		values[1] = *(uint32_t*)(chunkPtr);
 
 		if (StoreSize)
 		{
 			// size is stored in previous 4 bytes
-			uint8_t* sizePtr = (uint8_t*)chunkPtr + chunkIndexSize();
+			uint8_t* sizePtr = (uint8_t*)chunkPtr + sizeof(uint32_t);
 			values[2] = (uint32_t)(*sizePtr);
 		}
 	}

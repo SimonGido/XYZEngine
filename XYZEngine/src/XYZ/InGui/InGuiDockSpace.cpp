@@ -31,6 +31,7 @@ namespace XYZ {
         
         InGuiDockNode* first = dockSpace.Pool.Allocate<InGuiDockNode>(dockSpace.GetNextID());
         InGuiDockNode* second = dockSpace.Pool.Allocate<InGuiDockNode>(dockSpace.GetNextID());
+
         Children[0] = first;
         Children[1] = second;
         
@@ -67,8 +68,7 @@ namespace XYZ {
         return std::pair<InGuiDockNode*, InGuiDockNode*>(first, second);
     }
     void InGuiDockNode::UnSplit()
-    {
-        
+    {        
         InGuiDockSpace& dockSpace = InGui::GetContext().m_DockSpace;
 
         DockedWindows = std::move(Children[0]->DockedWindows);

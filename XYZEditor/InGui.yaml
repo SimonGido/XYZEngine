@@ -1,70 +1,70 @@
 Windows:
   - Name: Inspector
-    Position: [2148, 0]
-    Size: [412, 1377]
-    OriginalSize: [406, 1017]
+    Position: [1495.58667, 0]
+    Size: [424.41333, 1017]
+    OriginalSize: [424.41333, 1017]
+    Collapsed: false
+  - Name: Scene
+    Position: [337, 0]
+    Size: [1158.58667, 508.5]
+    OriginalSize: [1158.58667, 611]
     Collapsed: false
   - Name: Scene Hierarchy
     Position: [0, 0]
-    Size: [461.333344, 1377]
-    OriginalSize: [346, 1017]
+    Size: [337, 1017]
+    OriginalSize: [431, 1017]
     Collapsed: false
   - Name: Assets
-    Position: [461.333344, 827.283203]
-    Size: [1686.66675, 549.716797]
-    OriginalSize: [1254, 406]
-    Collapsed: false
-  - Name: Scene
-    Position: [461.333344, 0]
-    Size: [1686.66675, 827.283203]
-    OriginalSize: [1265, 611]
+    Position: [337, 508.5]
+    Size: [1158.58667, 508.5]
+    OriginalSize: [1158.58667, 484]
     Collapsed: false
 DockSpace:
   - ID: 0
     Position: [0, 0]
-    Size: [2560, 1377]
+    Size: [1920, 1017]
     Split: 0
     Child0: 1
     Child1: 2
     Windows:
       []
   - ID: 2
-    Position: [461.333344, 0]
-    Size: [2098.66675, 1377]
+    Position: [337, 0]
+    Size: [1583, 1017]
     Split: 0
     Child0: 3
     Child1: 4
     Windows:
       []
   - ID: 4
-    Position: [1686.66675, 0]
-    Size: [412, 1377]
+    Position: [1158.58667, 0]
+    Size: [424.41333, 1017]
     Split: 2
     Windows:
       - Inspector
   - ID: 3
     Position: [0, 0]
-    Size: [1686.66675, 1377]
+    Size: [1158.58667, 1017]
     Split: 1
-    Child0: 5
+    Child0: 6
     Child1: 6
     Windows:
       []
   - ID: 6
-    Position: [0, 827.283203]
-    Size: [1686.66675, 549.716797]
+    Position: [0, 508.5]
+    Size: [1158.58667, 508.5]
     Split: 2
     Windows:
       - Assets
-  - ID: 5
+  - ID: 6
     Position: [0, 0]
-    Size: [1686.66675, 827.283203]
+    Size: [1158.58667, 508.5]
     Split: 2
     Windows:
       - Scene
   - ID: 1
     Position: [0, 0]
-    Size: [461.333344, 1377]
+    Size: [337, 1017]
     Split: 2
     Windows:
       - Scene Hierarchy
