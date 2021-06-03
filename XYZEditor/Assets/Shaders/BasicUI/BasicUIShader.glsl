@@ -29,7 +29,6 @@ void main()
 	v_TextureID = a_TextureID;
 	v_ScissorIndex = a_ScissorIndex;
 	gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
-
 }
 
 #type fragment

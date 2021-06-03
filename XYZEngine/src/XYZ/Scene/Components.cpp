@@ -47,9 +47,16 @@ namespace XYZ {
 		return *this;
 	}
 
+	Relationship::Relationship()
+		: 
+		Depth(0)
+	{
+	}
+
 	Relationship::Relationship(Entity parent)
 		:
-		Parent(parent)
+		Parent(parent),
+		Depth(0)
 	{
 	}
 
@@ -68,6 +75,7 @@ namespace XYZ {
 		childRel.Parent = parent;
 		parentRel.FirstChild = child;
 
+		childRel.Depth = parentRel.Depth + 1;
 		if (OnParentChanged)
 			OnParentChanged(child, ecs);
 	}
@@ -101,6 +109,7 @@ namespace XYZ {
 			childRel.NextSibling = Entity();
 			childRel.PreviousSibling = Entity();
 			childRel.Parent = Entity();		
+			childRel.Depth = 0;
 		}
 	}
 }

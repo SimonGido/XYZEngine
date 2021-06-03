@@ -1,6 +1,9 @@
 #pragma once
+
+
 #include <stdint.h>
 #include <atomic>
+
 
 namespace XYZ {
 
@@ -19,8 +22,31 @@ namespace XYZ {
 		uint32_t GetRefCount() const { return m_RefCount; }
 	private:
 		mutable std::atomic<uint32_t> m_RefCount = 0;
+
+		
 	};
 
+	template<uint32_t BlockSize, bool StoreSize>
+	class MemoryPool;
+
+	class RefAllocator
+	{
+	public:
+		static void  Init(MemoryPool<1024 * 1024, true>* pool);
+		static void  Shutdown();
+
+	private:
+		static void* allocate(size_t size);
+		static void  deallocate(void* handle);
+
+		static MemoryPool<1024 * 1024, true>* s_Pool;
+		static bool							  s_Initialized;
+	
+		template <typename T>
+		friend class Ref;
+	};
+
+	
 	template<typename T>
 	class Ref
 	{
@@ -130,6 +156,11 @@ namespace XYZ {
 		template<typename... Args>
 		static Ref<T> Create(Args&&... args)
 		{
+			if (RefAllocator::s_Pool)
+			{
+				void*  handle = RefAllocator::allocate(sizeof(T));
+				return Ref<T>(new (handle)T(std::forward<Args>(args)...));
+			}
 			return Ref<T>(new T(std::forward<Args>(args)...));
 		}
 	private:
@@ -146,7 +177,13 @@ namespace XYZ {
 				m_Instance->DecRefCount();
 				if (m_Instance->GetRefCount() == 0)
 				{
-					delete m_Instance;
+					if (RefAllocator::s_Pool)
+					{
+						m_Instance->~T();
+						RefAllocator::deallocate((void*)m_Instance);
+					}
+					else if (!RefAllocator::s_Initialized)
+						delete m_Instance;
 				}
 			}
 		}

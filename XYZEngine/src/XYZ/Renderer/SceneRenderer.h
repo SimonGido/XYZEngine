@@ -29,6 +29,7 @@ namespace XYZ {
 	{
 	public:
 		static void Init();
+		static void Shutdown();
 
 		static void SetViewportSize(uint32_t width, uint32_t height);
 
@@ -44,11 +45,15 @@ namespace XYZ {
 		static void SubmitLight(PointLight2D* light, const glm::mat4& transform);
 		static void SetGridProperties(const GridProperties& props);
 
+		static void UpdateViewportSize();
+		
+
 		static Ref<RenderPass> GetFinalRenderPass();
 		static Ref<RenderPass> GetCollisionRenderPass();
 
 		static uint32_t GetFinalColorBufferRendererID();
 		static SceneRendererOptions& GetOptions();
+	
 	private:
 		static void FlushDrawList();
 		static void GeometryPass();

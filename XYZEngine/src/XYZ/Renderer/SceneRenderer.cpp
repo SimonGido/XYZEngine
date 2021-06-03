@@ -70,13 +70,12 @@ namespace XYZ {
 		std::vector<PointLight>				 LightsList;
 
 
-		glm::vec2 ViewportSize;
-
+		glm::vec2      ViewportSize;
+		bool	       ViewportSizeChanged = false;
 		const uint32_t MaxNumberOfLights = 100;
 	};
 
 	static SceneRendererData s_Data;
-
 
 	void SceneRenderer::Init()
 	{
@@ -88,7 +87,7 @@ namespace XYZ {
 				FramebufferTextureSpecs(FramebufferTextureFormat::RGBA16F),
 				FramebufferTextureSpecs(FramebufferTextureFormat::DEPTH24STENCIL8)
 			};
-			specs.SwapChainTarget = true;
+			//specs.SwapChainTarget = true;
 			Ref<Framebuffer> fbo = Framebuffer::Create(specs);
 			s_Data.CompositePass = RenderPass::Create({ fbo });
 		}
@@ -146,15 +145,27 @@ namespace XYZ {
 		s_Data.LightStorageBuffer = ShaderStorageBuffer::Create(s_Data.MaxNumberOfLights * sizeof(SceneRendererData::PointLight));
 	}
 
+	void SceneRenderer::Shutdown()
+	{
+		s_Data.CompositePass.Reset();
+		s_Data.LightPass.Reset();
+		s_Data.GeometryPass.Reset();
+		s_Data.BloomPass.Reset();
+		s_Data.GaussianBlurPass.Reset();
+
+		s_Data.GaussianBlurShader.Reset();
+		s_Data.BloomShader.Reset();
+		s_Data.CompositeShader.Reset();
+		s_Data.LightShader.Reset();
+
+
+		s_Data.LightStorageBuffer.Reset();
+	}
+
 	void SceneRenderer::SetViewportSize(uint32_t width, uint32_t height)
 	{
 		s_Data.ViewportSize = glm::vec2(width, height);
-	
-		s_Data.GeometryPass->GetSpecification().TargetFramebuffer->Resize(width, height);	
-		s_Data.LightPass->GetSpecification().TargetFramebuffer->Resize(width, height);
-		s_Data.GaussianBlurPass->GetSpecification().TargetFramebuffer->Resize(width, height);
-		s_Data.BloomPass->GetSpecification().TargetFramebuffer->Resize(width, height);
-		s_Data.CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height);	
+		s_Data.ViewportSizeChanged = true;
 	}
 	void SceneRenderer::BeginScene(const Scene* scene, const SceneRendererCamera& camera)
 	{
@@ -162,7 +173,8 @@ namespace XYZ {
 		s_Data.ActiveScene = scene;
 		s_Data.SceneCamera = camera;
 
-	
+		// Viewport size is changed at the beginning of the frame, so we do not delete texture that is currently use for rendering
+		UpdateViewportSize();
 		s_Data.ViewProjectionMatrix = s_Data.SceneCamera.Camera.GetProjectionMatrix() * s_Data.SceneCamera.ViewMatrix;
 	}
 	void SceneRenderer::BeginScene(const Scene* scene, const glm::mat4 viewProjectionMatrix)
@@ -170,6 +182,8 @@ namespace XYZ {
 		XYZ_ASSERT(!s_Data.ActiveScene, "Missing end scene");
 		s_Data.ActiveScene = scene;
 
+		// Viewport size is changed at the beginning of the frame, so we do not delete texture that is currently use for rendering
+		UpdateViewportSize();
 		s_Data.ViewProjectionMatrix = viewProjectionMatrix;
 	}
 	void SceneRenderer::EndScene()
@@ -215,6 +229,22 @@ namespace XYZ {
 		s_Data.GridProps = props;
 	}
 
+	void SceneRenderer::UpdateViewportSize()
+	{
+		if (s_Data.ViewportSizeChanged)
+		{
+			uint32_t width  = (uint32_t)s_Data.ViewportSize.x;
+			uint32_t height = (uint32_t)s_Data.ViewportSize.y;
+			s_Data.GeometryPass->GetSpecification().TargetFramebuffer->Resize(width, height);
+			s_Data.LightPass->GetSpecification().TargetFramebuffer->Resize(width, height);
+			s_Data.GaussianBlurPass->GetSpecification().TargetFramebuffer->Resize(width, height);
+			s_Data.BloomPass->GetSpecification().TargetFramebuffer->Resize(width, height);
+			s_Data.CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height);
+
+			s_Data.ViewportSizeChanged = false;
+		}
+	}
+
 	Ref<RenderPass> SceneRenderer::GetFinalRenderPass()
 	{
 		return s_Data.CompositePass;
@@ -257,7 +287,7 @@ namespace XYZ {
 
 		auto [width, height] = Input::GetWindowSize();
 		Renderer::SetViewPort(0, 0, (uint32_t)width, (uint32_t)height);
-		
+
 		s_Data.CollisionList.clear();
 		s_Data.SpriteDrawList.clear();
 		s_Data.EditorSpriteDrawList.clear();

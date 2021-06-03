@@ -41,9 +41,9 @@ project "XYZEngine"
 		includedirs
 		{
 			"src",
-			"vendor/stb_image",
-			"vendor/yaml-cpp/include",
+			"vendor/stb_image",		
 			"vendor/assimp/include",
+			"%{IncludeDir.yaml}",
 			"%{IncludeDir.GLFW}",
 			"%{IncludeDir.GLEW}",
 			"%{IncludeDir.glm}",

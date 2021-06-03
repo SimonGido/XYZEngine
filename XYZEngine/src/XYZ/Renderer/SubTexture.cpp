@@ -26,9 +26,18 @@ namespace XYZ {
 		m_Coords = coords;
 		m_Size = size;
 	}
+	void SubTexture::Upside()
+	{
+		m_TexCoords = { m_TexCoords.x, m_TexCoords.w, m_TexCoords.z, m_TexCoords.y };
+	}
 	const glm::vec4& SubTexture::GetTexCoords() const
 	{
 		return m_TexCoords;
+	}
+
+	glm::vec4 SubTexture::GetTexCoordsUpside() const
+	{
+		return { m_TexCoords.x, m_TexCoords.w, m_TexCoords.z, m_TexCoords.y };
 	}
 
 	void SubTexture::calculatePixelCorrectedTexCoords()

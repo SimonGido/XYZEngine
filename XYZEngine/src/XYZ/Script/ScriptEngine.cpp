@@ -193,7 +193,7 @@ namespace XYZ {
 
 	void ScriptEngine::Shutdown()
 	{
-		s_SceneContext = nullptr;
+		s_SceneContext.Reset();
 		for (auto it : s_EntityClassMap)
 			delete it.second;
 	}

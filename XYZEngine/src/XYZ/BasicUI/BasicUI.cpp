@@ -57,7 +57,7 @@ namespace XYZ {
 		glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f));
 		glm::mat4 viewProjectionMatrix = glm::ortho(0.0f, s_Context->ViewportSize.x, s_Context->ViewportSize.y, 0.0f) * glm::inverse(viewMatrix);
 		Renderer2D::BeginScene(viewProjectionMatrix);
-		CustomRenderer2D::BeginScene(s_Context->RendererLayout);
+		CustomRenderer2D::SetLayout(s_Context->RendererLayout);
 		if (s_Context->Renderer.GetMesh().Scissors.size())
 		{
 			s_Context->Renderer.UpdateScissorBuffer(s_Context->Config.m_ScissorBuffer);

@@ -108,7 +108,6 @@ namespace XYZ {
             m_ContextSize(glm::vec2(0.0f)),
             m_Window(nullptr),
             m_BoneTree(nullptr),
-            m_BonePool(15 * sizeof(PreviewBone)),
             m_SelectedSubmesh(nullptr),
             m_SelectedVertex(nullptr),
             m_SelectedTriangle(nullptr),

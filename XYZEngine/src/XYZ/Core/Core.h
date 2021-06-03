@@ -26,7 +26,7 @@
 #define BIND_EVENT_FN(x) std::bind(&Application::x, this, std::placeholders::_1)
 
 #define BIT(x) (1 << x)
-#define IS_SET(x, flag) ( x & flag )
+#define IS_SET(x, flag) ( x & (flag) )
 
 
 #ifdef XYZ_ENABLE_ASSERTS
@@ -66,5 +66,13 @@ namespace XYZ {
 	constexpr auto ToUnderlying(E e) noexcept
 	{
 		return static_cast<std::underlying_type_t<E>>(e);
+	}
+
+	template <typename T, typename... Rest>
+	void HashCombine(size_t& seed, const T& v, Rest... rest)
+	{
+		std::hash<T> hasher;
+		seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+		(HashCombine(seed, rest), ...);
 	}
 }

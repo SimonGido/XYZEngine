@@ -10,6 +10,7 @@
 namespace XYZ
 {
 
+	MemoryPool<1024 * 1024, true> AssetManager::s_Pool;
 	std::unordered_map<GUID, Ref<Asset>> AssetManager::s_LoadedAssets;
 	std::unordered_map<GUID, AssetDirectory> AssetManager::s_Directories;
 	std::unordered_map<std::string, AssetType> AssetManager::s_AssetTypes;
@@ -25,7 +26,7 @@ namespace XYZ
 		s_AssetTypes["cs"]     = AssetType::Script;
 		s_AssetTypes["skm"]    = AssetType::SkeletalMesh;
 
-
+		RefAllocator::Init(&s_Pool);
 		AssetDirectory newDirectory;
 		newDirectory.FilePath = "Assets";
 		s_Directories[newDirectory.Handle] = newDirectory;
@@ -34,11 +35,15 @@ namespace XYZ
 	void AssetManager::Shutdown()
 	{
 		s_LoadedAssets.clear();
+		RefAllocator::Shutdown();
 	}
 
 	AssetType AssetManager::GetAssetTypeFromExtension(const std::string& extension)
 	{
-		return s_AssetTypes[extension];
+		auto it = s_AssetTypes.find(extension);
+		if (it != s_AssetTypes.end())
+			return it->second;
+		return AssetType::None;
 	}
 
 	GUID AssetManager::GetAssetHandle(const std::string& filepath)
@@ -74,6 +79,11 @@ namespace XYZ
 				assets.push_back(asset);
 		}
 		return assets;
+	}
+
+	bool AssetManager::IsValidExtension(const std::string& extension)
+	{
+		return s_AssetTypes.find(extension) != s_AssetTypes.end();
 	}
 
 

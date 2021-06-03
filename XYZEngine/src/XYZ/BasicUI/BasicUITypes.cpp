@@ -453,8 +453,6 @@ namespace XYZ {
 
 
 	bUIHierarchyElement::bUIHierarchyElement()
-		:
-		Pool(sc_NumberOfItemsPerBlockInPool * sizeof(bUIHierarchyItem))
 	{
 	}
 

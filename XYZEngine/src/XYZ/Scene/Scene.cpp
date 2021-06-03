@@ -18,7 +18,6 @@
 
 namespace XYZ {
 
-	Ref<Scene> Scene::ActiveScene;
 	static std::vector<TransformComponent> s_EditTransforms;
 
 	Scene::Scene(const std::string& name)

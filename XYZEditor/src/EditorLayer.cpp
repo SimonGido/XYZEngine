@@ -34,12 +34,6 @@ namespace XYZ {
 	}
 
 	EditorLayer::EditorLayer()
-		:
-		m_SceneHierarchy("Layouts/SceneHierarchy.bui"),
-		m_Inspector("Layouts/Inspector.bui"),
-		m_Main("Layouts/Main.bui"),
-		m_SkinningEditor("Layouts/SkinningEditor.bui"),
-		m_AnimationEditor("Layouts/AnimationEditor.bui")
 	{			
 	}
 
@@ -50,7 +44,9 @@ namespace XYZ {
 	void EditorLayer::OnAttach()
 	{
 		m_Scene = AssetManager::GetAsset<Scene>(AssetManager::GetAssetHandle("Assets/Scenes/scene.xyz"));
-		Scene::ActiveScene = m_Scene;
+		m_SceneHierarchy.SetContext(m_Scene);
+		m_ScenePanel.SetContext(m_Scene);
+
 		m_TestEntity = m_Scene->GetEntityByName("TestEntity");
 		
 
@@ -60,23 +56,22 @@ namespace XYZ {
 		uint32_t windowWidth = Application::Get().GetWindow().GetWidth();
 		uint32_t windowHeight = Application::Get().GetWindow().GetHeight();
 		SceneRenderer::SetViewportSize(windowWidth, windowHeight);
-
 		m_Scene->SetViewportSize(windowWidth, windowHeight);		
-		m_EditorCamera = Editor::EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f);
-		m_EditorCamera.SetViewportSize((float)windowWidth, (float)windowHeight);
-		m_SceneHierarchy.SetContext(m_Scene);
 
 		Renderer::WaitAndRender();
 
 		Ref<RenderTexture> renderTexture = RenderTexture::Create(SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer);
 		Ref<SubTexture> renderSubTexture = Ref<SubTexture>::Create(renderTexture, glm::vec2(0.0f, 0.0f));
+		renderSubTexture->Upside();
+
+		m_ScenePanel.SetSubTexture(renderSubTexture);
+
 		Ref<Texture> robotTexture = Texture2D::Create({}, "Assets/Textures/full_simple_char.png");
 		Ref<SubTexture> robotSubTexture = Ref<SubTexture>::Create(robotTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
-		m_SkinningEditor.SetContext(robotSubTexture);
+		m_Test = robotSubTexture;
 
 		Ref<Animation> animation = Ref<Animation>::Create(m_TestEntity);
-		m_AnimationEditor.SetContext(animation);
-
+		
 
 		animation->CreateTrack<TransformTrack>();
 		auto track = animation->FindTrack<TransformTrack>();
@@ -120,21 +115,14 @@ namespace XYZ {
 
 	void EditorLayer::OnDetach()
 	{
+		ScriptEngine::Shutdown();
 		AssetSerializer::SerializeAsset(m_Scene);		
 	}
 	void EditorLayer::OnUpdate(Timestep ts)
-	{
-		Renderer::Clear();
-		Renderer::SetClearColor({ 0.1f,0.1f,0.1f,0.1f });
-		
-		m_SceneHierarchy.OnUpdate(ts);
-		m_Inspector.OnUpdate(ts);
-		m_Main.OnUpdate(ts);
-		m_SkinningEditor.OnUpdate(ts);		
-		m_EditorCamera.OnUpdate(ts);
-		m_AnimationEditor.OnUpdate(ts);
-
+	{		
+		m_ScenePanel.GetEditorCamera().OnUpdate(ts);	
 		m_Inspector.SetContext(m_Scene->GetSelectedEntity());
+
 		if (m_Scene->GetState() == SceneState::Play)
 		{
 			m_Scene->OnUpdate(ts);
@@ -142,8 +130,11 @@ namespace XYZ {
 		}
 		else
 		{
-			m_Scene->OnRenderEditor(m_EditorCamera);
-		}
+			m_Scene->OnRenderEditor(m_ScenePanel.GetEditorCamera());
+		}	
+
+		Renderer::SetClearColor(glm::vec4(0.1f, 0.1f, 0.1f, 1.0f));
+		Renderer::Clear();
 	}
 
 	void EditorLayer::OnEvent(Event& event)
@@ -155,12 +146,17 @@ namespace XYZ {
 		dispatcher.Dispatch<WindowResizeEvent>(Hook(&EditorLayer::onWindowResize, this));
 		dispatcher.Dispatch<KeyPressedEvent>(Hook(&EditorLayer::onKeyPress, this));
 		
-
+		m_ScenePanel.GetEditorCamera().OnEvent(event);
 		m_SceneHierarchy.OnEvent(event);
-		m_SkinningEditor.OnEvent(event);
-		m_Main.OnEvent(event);
-		m_AnimationEditor.OnEvent(event);
-		m_EditorCamera.OnEvent(event);
+		m_ScenePanel.OnEvent(event);
+	}
+
+	void EditorLayer::OnInGuiRender()
+	{
+		m_Inspector.OnUpdate();
+		m_SceneHierarchy.OnUpdate();
+		m_ScenePanel.OnUpdate(0.1f);
+		m_AssetBrowser.OnUpdate();
 	}
 	
 	bool EditorLayer::onMouseButtonPress(MouseButtonPressEvent& event)
@@ -173,10 +169,6 @@ namespace XYZ {
 	}
 	bool EditorLayer::onWindowResize(WindowResizeEvent& event)
 	{
-		SceneRenderer::SetViewportSize((uint32_t)event.GetWidth(), (uint32_t)event.GetHeight());
-		m_EditorCamera.SetViewportSize((float)event.GetWidth(), (float)event.GetHeight());
-		if (m_Scene.Raw())
-			m_Scene->SetViewportSize((uint32_t)event.GetWidth(), (uint32_t)event.GetHeight());
 		return false;
 	}
 

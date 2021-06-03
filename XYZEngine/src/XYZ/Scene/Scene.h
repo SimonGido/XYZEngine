@@ -61,7 +61,6 @@ namespace XYZ {
         inline const std::string& GetName() const { return m_Name; }
 
 
-        static Ref<Scene> ActiveScene;
     private:
         void showSelection(uint32_t entity);
         void showCamera(uint32_t entity);

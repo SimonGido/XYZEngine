@@ -32,8 +32,8 @@ namespace XYZ {
 		std::wstring tmp(&NPath[0]);
 		m_ApplicationDir = std::string(tmp.begin(), tmp.end());
 
-		m_bUILayer = new bUILayer();
-		m_LayerStack.PushOverlay(m_bUILayer);	
+		m_InGuiLayer = new InGuiLayer();
+		m_LayerStack.PushOverlay(m_InGuiLayer);	
 	}
 
 	Application::~Application()
@@ -50,10 +50,15 @@ namespace XYZ {
 			float timestep = time - m_LastFrameTime;
 			m_LastFrameTime = time;
 			{
-				Stopwatch watch;
+				//Stopwatch watch;
 				
 				for (Layer* layer : m_LayerStack)	
 					layer->OnUpdate(timestep);	
+
+				m_InGuiLayer->Begin();
+				for (Layer* layer : m_LayerStack)
+					layer->OnInGuiRender();
+				m_InGuiLayer->End();
 
 				Renderer::WaitAndRender();
 			}

@@ -40,6 +40,8 @@
 #include "XYZ/Editor/Panels/SceneHierarchyPanel.h"
 #include "XYZ/Editor/Panels/InspectorPanel.h"
 #include "XYZ/Editor/Panels/MainPanel.h"
+#include "XYZ/Editor/Panels/AssetBrowser.h"
+
 #include "XYZ/Editor/SkinningEditor/SkinningEditor.h"
 #include "XYZ/Editor/AnimationEditor/AnimationEditor.h"
 
@@ -79,3 +81,6 @@
 //------BasicUI-------//
 #include "XYZ/BasicUI/BasicUI.h"
 #include "XYZ/BasicUI/BasicUILoader.h"
+
+//------InGui-------//
+#include "XYZ/InGui/InGui.h"

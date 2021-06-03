@@ -1,5 +1,6 @@
 #pragma once
 #include "XYZ/Core/GUID.h"
+#include "XYZ/Utils/DataStructures/MemoryPool.h"
 #include "XYZ/Utils/StringUtils.h"
 #include "XYZ/Renderer/Shader.h"
 #include "XYZ/Renderer/Texture.h"
@@ -44,10 +45,12 @@ namespace XYZ {
 		static void Init();
 		static void Shutdown();
 
+
 		static AssetType GetAssetTypeFromExtension(const std::string& extension);
 		static GUID		 GetAssetHandle(const std::string& filepath);
 		static GUID		 GetDirectoryHandle(const std::string& filepath);
 		static std::vector<Ref<Asset>> FindAssetsByType(AssetType type);
+		static bool	     IsValidExtension(const std::string& extension);
 
 
 		template<typename T, typename... Args>
@@ -84,9 +87,6 @@ namespace XYZ {
 			return asset.As<T>();
 		}
 
-
-		
-
 	private:
 		static void processDirectory(const std::string& path, AssetDirectory& directory);
 		static void importAsset(const std::string& path);
@@ -94,6 +94,7 @@ namespace XYZ {
 		
 
 	private:
+		static MemoryPool<1024 * 1024, true> s_Pool;
 		static std::unordered_map<GUID, Ref<Asset>> s_LoadedAssets;
 		static std::unordered_map<GUID, AssetDirectory> s_Directories;
 		static std::unordered_map<std::string, AssetType> s_AssetTypes;

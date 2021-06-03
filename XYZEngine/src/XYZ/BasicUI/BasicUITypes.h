@@ -277,12 +277,12 @@ namespace XYZ {
 
 	protected:
 		Tree Hierarchy;
-		MemoryPool Pool;
 
 		std::unordered_map<uint32_t, int32_t> NameIDMap;
 
 		static constexpr size_t sc_NumberOfItemsPerBlockInPool = 10;
 		static constexpr float sc_NodeOffset = 25.0f;
+		MemoryPool<sc_NumberOfItemsPerBlockInPool * sizeof(bUIHierarchyItem)> Pool;
 	};
 
 	class bUITree : public bUIElement,

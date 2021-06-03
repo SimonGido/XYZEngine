@@ -63,11 +63,7 @@ namespace XYZ {
 			playImage.Callbacks.push_back([&](bUICallbackType type, bUIElement& element) {
 				if (type == bUICallbackType::Active)
 				{
-					if (Scene::ActiveScene.Raw())
-					{
-						Scene::ActiveScene->SetState(SceneState::Play);
-						Scene::ActiveScene->OnPlay();
-					}
+					
 				}
 			});
 
@@ -77,8 +73,7 @@ namespace XYZ {
 			pauseImage.Callbacks.push_back([&](bUICallbackType type, bUIElement& element) {
 				if (type == bUICallbackType::Active)
 				{
-					if (Scene::ActiveScene.Raw())
-						Scene::ActiveScene->SetState(SceneState::Pause);
+					
 				}
 			});
 

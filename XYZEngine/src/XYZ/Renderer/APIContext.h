@@ -15,6 +15,7 @@ namespace XYZ {
 	class APIContext : public RefCount
 	{
 	public:
+		virtual ~APIContext() = default;
 		/**	
 		* Initialize graphics API context
 		* @return void

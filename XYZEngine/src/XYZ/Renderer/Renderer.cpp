@@ -85,6 +85,11 @@ namespace XYZ {
 	{
 		CustomRenderer2D::Shutdown();
 		Renderer2D::Shutdown();
+		SceneRenderer::Shutdown();
+
+		s_Data.FullscreenQuadVertexArray.Reset();
+		s_Data.FullscreenQuadVertexBuffer.Reset();
+		s_Data.FullscreenQuadIndexBuffer.Reset();
 	}
 
 	void Renderer::Clear()
@@ -173,9 +178,8 @@ namespace XYZ {
 
 		if (clear)
 		{
-			auto& specs = renderPass->GetSpecification().TargetFramebuffer->GetSpecification();
-	
-			const glm::vec4& clearColor = specs.ClearColor;
+			auto& specs = renderPass->GetSpecification().TargetFramebuffer->GetSpecification();	
+			const glm::vec4 clearColor = specs.ClearColor;
 			Renderer::Submit([=]() {
 				RendererAPI::SetClearColor(clearColor);
 				RendererAPI::Clear();
@@ -190,27 +194,38 @@ namespace XYZ {
 		s_Data.ActiveRenderPass = nullptr;
 	}
 
+	//void Renderer::WaitAndRender()
+	//{
+	//	s_Data.CommandQueue[0][Default].Execute();
+	//	s_Data.CommandQueue[0][Overlay].Execute();
+	//}
+
 	void Renderer::WaitAndRender()
 	{		
-		if (s_Data.SwapQueues)
+		if (s_Data.SwapQueues.load())
 		{
-			s_Data.SwapQueues = false;		
+			s_Data.SwapQueues.store(false);		
 			
 			RenderCommandQueue* read[NumTypes];
 			for (size_t i = 0; i < NumTypes; ++i)
 				read[i] = &s_Data.CommandQueue[s_Data.ReadQueueIndex][i];
-
+		
 			Application::GetThreadPool().PushJob<void>([read]() {
-				// TOOD: Find out how to use sync objects
-				//auto sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, NULL);
 				read[Default]->Execute();
 				read[Overlay]->Execute();
+				GLsync fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+				while (true) 
+				{
+					GLint status = GL_UNSIGNALED;
+					glGetSynciv(fence, GL_SYNC_STATUS, sizeof(GLint), NULL, &status);
+					if (status == GL_SIGNALED) 
+						break; // rendering is complete
+				}		
+				glDeleteSync(fence);
 				glFinish();
-				//glClientWaitSync(sync, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
-				//glDeleteSync(sync);
-				s_Data.SwapQueues = true;
+				s_Data.SwapQueues.store(true);
 			});
-
+		
 			
 			// Perform "swap" of queues for read and write
 			if (s_Data.ReadQueueIndex == RendererData::Read)

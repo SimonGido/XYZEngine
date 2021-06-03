@@ -14,7 +14,8 @@ namespace XYZ {
 		Font,
 		Audio,
 		Script,
-		SkeletalMesh
+		SkeletalMesh,
+		None
 	};
 
 
