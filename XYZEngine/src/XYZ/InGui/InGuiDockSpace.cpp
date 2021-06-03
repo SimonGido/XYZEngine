@@ -160,8 +160,6 @@ namespace XYZ {
         {
             glm::vec2 firstChildOriginalSize = Children[0]->Size;
             glm::vec2 secondChildOriginalSize = Children[1]->Size;
-            Children[0]->Position.x = Position.x;
-            Children[1]->Position.x = Position.x;
             Children[0]->Size.x = Size.x;
             Children[1]->Size.x = Size.x;
 

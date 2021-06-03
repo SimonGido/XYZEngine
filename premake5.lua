@@ -27,6 +27,7 @@ IncludeDir["Lua"] = "%{wks.location}/XYZEngine/vendor/lua/include"
 IncludeDir["Sol"] = "%{wks.location}/XYZEngine/vendor/sol2/include"
 IncludeDir["mono"] = "%{wks.location}/XYZEngine/vendor/mono/include"
 IncludeDir["TrianglePP"] = "%{wks.location}/XYZEngine/vendor/TrianglePP/source"
+IncludeDir["yaml"] = "%{wks.location}/XYZEngine/vendor/yaml-cpp/include"
 
 LibraryDir = {}
 LibraryDir["mono"] = "vendor/mono/lib/Debug/mono-2.0-sgen.lib"
