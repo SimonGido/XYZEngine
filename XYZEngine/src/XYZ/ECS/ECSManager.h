@@ -65,7 +65,7 @@ namespace XYZ {
 			Signature& signature = m_EntityManager.GetSignature(entity);
 			XYZ_ASSERT(signature[IComponent::GetComponentID<T>()], "Entity does not have component");
 			
-			signature.set(IComponent::GetComponentID<T>(), false);
+			signature.Set(IComponent::GetComponentID<T>(), false);
 			m_CallbackManager.OnComponentRemove<T>(entity);
 			m_ComponentManager.RemoveComponent<T>(entity, signature);
 

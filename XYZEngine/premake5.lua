@@ -17,6 +17,8 @@ project "XYZEngine"
 			"src/stdafx.cpp",
 			"src/XYZ/**.h",
 			"src/XYZ/**.cpp",
+
+
 			"vendor/glm/glm/**.hpp",
 			"vendor/glm/glm/**.inl",
 			"vendor/stb_image/**.h",
@@ -43,6 +45,7 @@ project "XYZEngine"
 			"src",
 			"vendor/stb_image",		
 			"vendor/assimp/include",
+			"%{IncludeDir.ImGui}",
 			"%{IncludeDir.yaml}",
 			"%{IncludeDir.GLFW}",
 			"%{IncludeDir.GLEW}",
@@ -68,6 +71,7 @@ project "XYZEngine"
 			"Lua",
 			"opengl32",
 			"TrianglePP",
+			"imgui",
 			"%{LibraryDir.mono}"
 		}
 		

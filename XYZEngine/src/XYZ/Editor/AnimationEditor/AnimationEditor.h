@@ -1,12 +1,13 @@
 #pragma once
-#include "XYZ/Editor/EditorUI.h"
-
 #include "XYZ/Renderer/Animation.h"
+
+// TODO
+/*
 
 namespace XYZ {
 
 	namespace Editor {
-		class AnimationEditor : public EditorUI
+		class AnimationEditor
 		{
 		public:
 			AnimationEditor(const std::string& filepath);
@@ -32,3 +33,4 @@ namespace XYZ {
 		};
 	}
 }
+*/

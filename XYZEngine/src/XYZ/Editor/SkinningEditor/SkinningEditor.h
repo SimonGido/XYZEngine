@@ -1,20 +1,21 @@
 #pragma once
-#include "XYZ/BasicUI/BasicUI.h"
 #include "XYZ/Renderer/Framebuffer.h"
 #include "XYZ/Renderer/RenderTexture.h"
 #include "XYZ/Renderer/VertexArray.h"
 
 #include "XYZ/Editor/EditorOrthographicCamera.h"
-#include "XYZ/Editor/EditorUI.h"
 
 #include "SkinnedMesh.h"
 #include "PreviewBone.h"
 
 #include <glm/glm.hpp>
 
+// TODO
+/*
+
 namespace XYZ {
 	namespace Editor {
-		class SkinningEditor : public EditorUI
+		class SkinningEditor
 		{
 		public:		
 			SkinningEditor(const std::string& filepath);
@@ -156,3 +157,5 @@ namespace XYZ {
 		};
 	}
 }
+
+*/

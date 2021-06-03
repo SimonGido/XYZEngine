@@ -3,8 +3,7 @@
 #include "LayerStack.h"
 #include "ThreadPool.h"
 
-#include "XYZ/BasicUI/BasicUILayer.h"
-#include "XYZ/InGui/InGuiLayer.h"
+#include "XYZ/ImGui/ImGuiLayer.h"
 
 namespace XYZ {
 	class Application
@@ -26,7 +25,7 @@ namespace XYZ {
 		static ThreadPool& GetThreadPool() { return s_ThreadPool; }
 		const std::string& GetApplicationDir() const { return m_ApplicationDir; }
 
-		InGuiLayer* GetInGuiLayer() { return m_InGuiLayer; }
+		ImGuiLayer* GetImGuiLayer() { return m_ImGuiLayer; }
 
 		inline static Application& Get() { return *s_Application; }
 
@@ -38,8 +37,8 @@ namespace XYZ {
 
 	private:
 		LayerStack m_LayerStack;
-		//bUILayer* m_bUILayer;
-		InGuiLayer* m_InGuiLayer;
+
+		ImGuiLayer* m_ImGuiLayer;
 
 		std::unique_ptr<Window> m_Window;
 

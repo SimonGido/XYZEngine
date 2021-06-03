@@ -60,12 +60,6 @@ namespace XYZ {
 
 		Renderer::WaitAndRender();
 
-		Ref<RenderTexture> renderTexture = RenderTexture::Create(SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer);
-		Ref<SubTexture> renderSubTexture = Ref<SubTexture>::Create(renderTexture, glm::vec2(0.0f, 0.0f));
-		renderSubTexture->Upside();
-
-		m_ScenePanel.SetSubTexture(renderSubTexture);
-
 		Ref<Texture> robotTexture = Texture2D::Create({}, "Assets/Textures/full_simple_char.png");
 		Ref<SubTexture> robotSubTexture = Ref<SubTexture>::Create(robotTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
 		m_Test = robotSubTexture;
@@ -120,8 +114,10 @@ namespace XYZ {
 	}
 	void EditorLayer::OnUpdate(Timestep ts)
 	{		
-		m_ScenePanel.GetEditorCamera().OnUpdate(ts);	
+		Renderer::SetClearColor(glm::vec4(0.1f, 0.1f, 0.1f, 1.0f));
+		Renderer::Clear();
 		m_Inspector.SetContext(m_Scene->GetSelectedEntity());
+		m_ScenePanel.OnUpdate(ts);
 
 		if (m_Scene->GetState() == SceneState::Play)
 		{
@@ -131,10 +127,7 @@ namespace XYZ {
 		else
 		{
 			m_Scene->OnRenderEditor(m_ScenePanel.GetEditorCamera());
-		}	
-
-		Renderer::SetClearColor(glm::vec4(0.1f, 0.1f, 0.1f, 1.0f));
-		Renderer::Clear();
+		}		
 	}
 
 	void EditorLayer::OnEvent(Event& event)
@@ -146,17 +139,18 @@ namespace XYZ {
 		dispatcher.Dispatch<WindowResizeEvent>(Hook(&EditorLayer::onWindowResize, this));
 		dispatcher.Dispatch<KeyPressedEvent>(Hook(&EditorLayer::onKeyPress, this));
 		
-		m_ScenePanel.GetEditorCamera().OnEvent(event);
-		m_SceneHierarchy.OnEvent(event);
-		m_ScenePanel.OnEvent(event);
+		if (!event.Handled)
+		{
+			m_ScenePanel.GetEditorCamera().OnEvent(event);
+		}
 	}
 
-	void EditorLayer::OnInGuiRender()
+	void EditorLayer::OnImGuiRender()
 	{
-		m_Inspector.OnUpdate();
-		m_SceneHierarchy.OnUpdate();
-		m_ScenePanel.OnUpdate(0.1f);
-		m_AssetBrowser.OnUpdate();
+		m_Inspector.OnImGuiRender();
+		m_SceneHierarchy.OnImGuiRender();
+		m_ScenePanel.OnImGuiRender();
+		m_AssetBrowser.OnImGuiRender();
 	}
 	
 	bool EditorLayer::onMouseButtonPress(MouseButtonPressEvent& event)

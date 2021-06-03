@@ -10,17 +10,14 @@ namespace XYZ {
 			SceneHierarchyPanel();
 			~SceneHierarchyPanel();
 
-			void OnUpdate();
-			void OnEvent(Event& event);
-
+			void OnImGuiRender();
 			void SetContext(const Ref<Scene>& context);
+
 		private:
-			bool onMouseButtonPress(MouseButtonPressEvent& event);
-			bool onKeyPressed(KeyPressedEvent& event);
+			void drawEntityNode(SceneEntity entity);
 
 		private:
 			Ref<Scene> m_Context;
-			bool* m_Open;
 		};
 	}
 }

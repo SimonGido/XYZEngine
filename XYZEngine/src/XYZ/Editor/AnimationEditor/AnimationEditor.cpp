@@ -3,8 +3,11 @@
 
 #include "XYZ/Core/Input.h"
 
+/*
+
 namespace XYZ {
 	namespace Editor {
+
 		AnimationEditor::AnimationEditor(const std::string& filepath)
 			:
 			EditorUI(filepath),
@@ -127,3 +130,4 @@ namespace XYZ {
 		}
 	}
 }
+*/

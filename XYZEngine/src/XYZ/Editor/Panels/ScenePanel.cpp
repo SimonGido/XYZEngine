@@ -6,6 +6,7 @@
 #include "XYZ/Scene/SceneEntity.h"
 #include "XYZ/Renderer/SceneRenderer.h"
 
+#include <imgui.h>
 
 namespace XYZ {
 	namespace Editor {
@@ -26,13 +27,13 @@ namespace XYZ {
 		std::pair<float, float> ScenePanel::getMouseViewportSpace() const
 		{
 			auto [mx, my] = Input::GetMousePosition();
-			mx -= m_Window->Position.x;
-			my -= m_Window->Position.y;
+			//mx -= m_Window->Position.x;
+			//my -= m_Window->Position.y;
 
-			auto viewportWidth = m_Window->Size.x;
-			auto viewportHeight = m_Window->Size.y;
-
-			return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f };
+			//auto viewportWidth = m_Window->Size.x;
+			//auto viewportHeight = m_Window->Size.y;
+			//
+			//return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f };
 			return std::pair<float, float>();
 		}
 
@@ -40,7 +41,8 @@ namespace XYZ {
 			:
 			m_ViewportSize(0.0f),
 			m_EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f),
-			m_Window(nullptr)
+			m_ViewportFocused(false),
+			m_ViewportHovered(false)
 		{
 			uint32_t windowWidth = Application::Get().GetWindow().GetWidth();
 			uint32_t windowHeight = Application::Get().GetWindow().GetHeight();
@@ -50,109 +52,40 @@ namespace XYZ {
 		{
 			m_Context = context;
 		}
-		void ScenePanel::SetSubTexture(Ref<SubTexture> subTexture)
-		{
-			m_SceneSubTexture = subTexture;
-		}
 
 		void ScenePanel::OnUpdate(Timestep ts)
 		{
-			InGuiConfig& config = InGui::GetContext().m_Config;
-			glm::vec2 oldPadding = config.WindowPadding;
-			glm::vec4 oldHighlightColor = config.Colors[InGuiConfig::ImageHighlight];
-			config.WindowPadding = glm::vec2(0.0f);
-			config.Colors[InGuiConfig::ImageHighlight] = glm::vec4(1.0f);
-
-			if (InGui::Begin("Scene",
-				  InGuiWindowStyleFlags::PanelEnabled
-				| InGuiWindowStyleFlags::LabelEnabled
-				| InGuiWindowStyleFlags::FrameEnabled
-				| InGuiWindowStyleFlags::DockingEnabled
-			))
+			if (m_ViewportHovered)
 			{
-				m_Window = InGui::GetContext().GetInGuiWindow("Scene");
-				if (m_Window->Size != m_ViewportSize && !m_Window->IsResizing())
+				m_EditorCamera.OnUpdate(ts);
+			}
+		}	
+		void ScenePanel::OnImGuiRender()
+		{
+			if (ImGui::Begin("Scene"))
+			{
+				auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
+				auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
+				auto viewportOffset = ImGui::GetWindowPos();
+				m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
+				m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
+
+				m_ViewportFocused = ImGui::IsWindowFocused();
+				m_ViewportHovered = ImGui::IsWindowHovered();
+				Application::Get().GetImGuiLayer()->BlockEvents(!m_ViewportFocused && !m_ViewportHovered);
+
+				ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+				if (m_ViewportSize.x != viewportPanelSize.x || m_ViewportSize.y != viewportPanelSize.y)
 				{
-					m_ViewportSize = m_Window->Size;
-					m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
+					m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
 					SceneRenderer::SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-				}		
-				InGui::Image("#####", m_Window->Size, m_SceneSubTexture);
-			}
-			InGui::End();
-			config.WindowPadding = oldPadding;
-			config.Colors[InGuiConfig::ImageHighlight] = oldHighlightColor;
-			Application::Get().GetInGuiLayer()->BlockEvents(!IS_SET(m_Window->EditFlags, InGuiWindowEditFlags::Hoovered));
-		}
-
-		void ScenePanel::OnEvent(Event& event)
-		{
-			if (m_Context.Raw())
-			{
-		
-			}
-		}
-		bool ScenePanel::onWindowResize(WindowResizeEvent& event)
-		{
-			return false;
-		}
-		bool ScenePanel::onMouseButtonPress(MouseButtonPressEvent& event)
-		{
-			if (event.IsButtonPressed(MouseCode::MOUSE_BUTTON_LEFT) && !Input::IsKeyPressed(KeyCode::KEY_LEFT_ALT))
-			{
-				
-			}
-			return false;
-		}
-		bool ScenePanel::onKeyPress(KeyPressedEvent& event)
-		{
-			if (m_Context->GetSelectedEntity().IsValid())
-			{
-				if (m_ModifyFlags)
-				{
-					if (event.IsKeyPressed(KeyCode::KEY_X))
-					{
-						m_ModifyFlags |= ModifyFlags::X;
-						m_ModifyFlags &= ~(ModifyFlags::Y | ModifyFlags::Z);
-					}
-					else if (event.IsKeyPressed(KeyCode::KEY_Y))
-					{
-						m_ModifyFlags |= ModifyFlags::Y;
-						m_ModifyFlags &= ~(ModifyFlags::X | ModifyFlags::Z);
-					}
-					else if (event.IsKeyPressed(KeyCode::KEY_Z))
-					{
-						m_ModifyFlags |= ModifyFlags::Z;
-						m_ModifyFlags &= ~(ModifyFlags::Y | ModifyFlags::X);
-					}
-				}
-				else
-				{
-					m_ModifyFlags = 0;
+					m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
+					m_Context->SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 				}
 
-				if (event.IsKeyPressed(KeyCode::KEY_G))
-				{
-					m_ModifyFlags = ModifyFlags::Move;
-				}
-				else if (event.IsKeyPressed(KeyCode::KEY_R))
-				{
-					m_ModifyFlags = ModifyFlags::Rotate;
-				}
-				else if (event.IsKeyPressed(KeyCode::KEY_S))
-				{
-					m_ModifyFlags = ModifyFlags::Scale;
-				}
-
-				if (m_ModifyFlags) m_OldMousePosition = { Input::GetMouseX(), Input::GetMouseY() };
-				return m_ModifyFlags;
+				ImGui::Image(reinterpret_cast<void*>(SceneRenderer::GetFinalColorBufferRendererID()), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 			}
-			m_ModifyFlags = 0;
-			return false;
-		}
-		bool ScenePanel::onKeyRelease(KeyReleasedEvent& event)
-		{
-			return false;
+			ImGui::End();
 		}
 	}
 }

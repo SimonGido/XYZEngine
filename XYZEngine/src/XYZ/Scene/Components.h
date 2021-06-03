@@ -157,12 +157,11 @@ namespace XYZ {
 		Entity GetFirstChild() const { return FirstChild; }
 		Entity GetPreviousSibling() const { return PreviousSibling; }
 		Entity GetNextSibling() const { return NextSibling; }
-		uint32_t GetDetph() const { return Depth; }
+		uint32_t GetDepth() const { return Depth; }
 
 		static void SetupRelation(Entity parent, Entity child, ECSManager& ecs);
 		static void RemoveRelation(Entity child, ECSManager& ecs);
-		
-		static std::function<void(Entity entity, ECSManager& ecs)> OnParentChanged;
+
 	private:
 		static void removeRelation(Entity child, ECSManager& ecs);
 

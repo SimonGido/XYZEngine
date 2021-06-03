@@ -62,10 +62,6 @@ namespace XYZ {
 			XYZ_LOG_API("ID: ", id);
 			XYZ_LOG_API("Severity: ", severityMessage);
 			break;
-		case GL_DEBUG_TYPE_OTHER:
-			XYZ_LOG_API(message);
-			XYZ_LOG_API("ID: ", id);
-			break;
 		}
 	}
 	void GLFWErrorCallback(int code, const char* description)

@@ -85,7 +85,7 @@ namespace XYZ {
 
 		
 		operator uint32_t () const { return m_ID; }
-
+		operator Entity() const { return Entity(m_ID); }
 	private:
 		Scene*   m_Scene;
 		Entity   m_ID;

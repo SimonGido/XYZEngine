@@ -10,10 +10,9 @@
 #include "XYZ/Scene/SceneEntity.h"
 #include "XYZ/Scene/EditorComponents.h"
 
-#include "XYZ/BasicUI/BasicUILoader.h"
-
 #include <glm/gtx/transform.hpp>
 
+/*
 namespace XYZ {
     namespace Editor {
 
@@ -1252,4 +1251,4 @@ namespace XYZ {
 	}
 }
 
-
+*/

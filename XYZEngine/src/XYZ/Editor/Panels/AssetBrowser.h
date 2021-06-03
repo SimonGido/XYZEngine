@@ -1,7 +1,7 @@
 #pragma once
 #include "XYZ/Renderer/SubTexture.h"
 
-#include "XYZ/InGui/InGui.h"
+#include <deque>
 
 namespace XYZ {
 	namespace Editor {
@@ -10,8 +10,8 @@ namespace XYZ {
 		public:
 			AssetBrowser();
 
-			void SetPath(const std::string& path) { m_Path = path; };
-			void OnUpdate();
+			void SetPath(const std::string& path);
+			void OnImGuiRender();
 
 		private:
 			void processDirectory(const std::string& path);
@@ -19,6 +19,7 @@ namespace XYZ {
 		private:
 			enum Type
 			{
+				Arrow,
 				Folder, 
 				Scene,
 				Texture,
@@ -32,44 +33,25 @@ namespace XYZ {
 				NumTypes
 			};
 
-			Ref<XYZ::SubTexture> m_SubTextures[NumTypes];
+			glm::vec4 m_TexCoords[NumTypes];
 			Ref<XYZ::Texture> m_Texture;
+
 			glm::vec2 m_IconSize;
-			std::string m_Path;
+			glm::vec2 m_ArrowSize;
+			char m_Path[_MAX_PATH];
+			size_t m_PathLength;
+
 			std::deque<std::string> m_DirectoriesVisited;
 
 
-			InGuiWindow* m_Window;
-
-			struct Config
+			enum Color
 			{
-				Config();
-				void Begin(size_t colorID, size_t highlightID);
-				void End();
-
-				enum Color
-				{
-					BackArrow,
-					BackArrowHighlight,
-					Folder,
-					FolderHighlight,
-					Shader,
-					ShaderHighlight,
-					Script,
-					ScriptHighlight,
-					Material,
-					MaterialHighlight,
-					NumColors
-				};
-				glm::vec4 Colors[NumColors];
-
-			private:
-				glm::vec4 OldColor;
-				glm::vec4 OldHighlight;
-				bool IsBegin;
+				ArrowColor,
+				ArrowInvalidColor,
+				FolderColor,
+				NumColors
 			};
-
-			Config m_Config;
+			glm::vec4 m_Colors[NumColors];
 		};
 	}
 }

@@ -12,7 +12,6 @@
 //-----Events-----//
 #include "XYZ/Event/ApplicationEvent.h"
 #include "XYZ/Event/InputEvent.h"
-#include "XYZ/Event/GuiEvent.h"
 
 
 //-----Renderer-----//
@@ -39,7 +38,6 @@
 #include "XYZ/Editor/Panels/ScenePanel.h"
 #include "XYZ/Editor/Panels/SceneHierarchyPanel.h"
 #include "XYZ/Editor/Panels/InspectorPanel.h"
-#include "XYZ/Editor/Panels/MainPanel.h"
 #include "XYZ/Editor/Panels/AssetBrowser.h"
 
 #include "XYZ/Editor/SkinningEditor/SkinningEditor.h"
@@ -76,11 +74,3 @@
 
 //------Asset---------//
 #include "XYZ/Asset/AssetManager.h"
-
-
-//------BasicUI-------//
-#include "XYZ/BasicUI/BasicUI.h"
-#include "XYZ/BasicUI/BasicUILoader.h"
-
-//------InGui-------//
-#include "XYZ/InGui/InGui.h"

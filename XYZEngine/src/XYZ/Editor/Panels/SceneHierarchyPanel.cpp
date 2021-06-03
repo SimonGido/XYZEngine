@@ -4,7 +4,7 @@
 #include "XYZ/Core/Input.h"
 #include "XYZ/Scene/SceneEntity.h"
 
-#include "XYZ/InGui/InGui.h"
+#include <imgui.h>
 
 namespace XYZ {
     namespace Helper {
@@ -18,118 +18,75 @@ namespace XYZ {
     }
     namespace Editor {
         SceneHierarchyPanel::SceneHierarchyPanel()
-            :
-            m_Open(nullptr)
         {
         }
         SceneHierarchyPanel::~SceneHierarchyPanel()
         {
-            m_Context->m_ECS.RemoveListener<SceneTagComponent>(this);
-            if (m_Open)
-                delete[]m_Open;
         }
-        void SceneHierarchyPanel::OnUpdate()
+        void SceneHierarchyPanel::OnImGuiRender()
         {
-            if (InGui::Begin("Scene Hierarchy", 
-                  InGuiWindowStyleFlags::PanelEnabled
-                | InGuiWindowStyleFlags::ScrollEnabled
-                | InGuiWindowStyleFlags::LabelEnabled
-                | InGuiWindowStyleFlags::FrameEnabled
-                | InGuiWindowStyleFlags::DockingEnabled
-            ))
+            if (ImGui::Begin("Scene Hierarchy"))
             {
                 if (m_Context.Raw())
                 {
-                    uint32_t depth = 0;
-                    ECSManager& ecs = m_Context->m_ECS;
-                    std::stack<Entity> entities;
-                    entities.push(m_Context->m_SceneEntity);
-  
-                    while (!entities.empty())
-                    {
-                        Entity tmp = entities.top();
-                        entities.pop();
+                    drawEntityNode(SceneEntity(m_Context->m_SceneEntity, m_Context.Raw()));
+                    if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
+                        m_Context->SetSelectedEntity(Entity());
 
-                        const Relationship& relation = ecs.GetComponent<Relationship>(tmp);
-                        
-
-                        if (relation.GetDetph() > depth)
-                            InGui::BeginTreeChild();
-                        while (relation.GetDetph() < depth)
-                        {
-                            InGui::EndTreeChild();
-                            depth--;
-                        }
-                        depth = relation.GetDetph();
-                        const SceneTagComponent& sceneTag = ecs.GetComponent<SceneTagComponent>(tmp);
-                        
-                        if (m_Context->GetSelectedEntity() == tmp)
-                            InGui::EnableHighlight();
-                        if (IS_SET(InGui::TreeNode(sceneTag.Name.c_str(), glm::vec2(25.0f), m_Open[tmp]), InGui::Pressed))
-                        {
-                            m_Context->SetSelectedEntity(tmp);
-                        }
-                        InGui::DisableHighlight();
-                       
-                        if (relation.GetNextSibling())
-                            entities.push(relation.GetNextSibling());
-                        if (m_Open[tmp])
-                        {
-                            if (relation.GetFirstChild())
-                                entities.push(relation.GetFirstChild());
-                        }
-                    }
-                    while (depth)
+                    if (ImGui::BeginPopupContextWindow(0, 1, false))
                     {
-                        InGui::EndTreeChild();
-                        depth--;
+                        if (ImGui::MenuItem("Create Empty Entity"))
+                            m_Context->CreateEntity("Empty Entity", GUID());
+
+                        ImGui::EndPopup();
                     }
+                    
+                    
                 }
             }
-            InGui::End();
+            ImGui::End();
         }
-
-       
-
+     
         void SceneHierarchyPanel::SetContext(const Ref<Scene>& context)
         {
-            if (m_Context.Raw())
-            {
-                m_Context->m_ECS.RemoveListener<SceneTagComponent>(this);
-                delete[]m_Open;
-            }
-            m_Context = context;
-            m_Open = new bool[m_Context->m_ECS.GetHighestID()];
-            memset(m_Open, 0, m_Context->m_ECS.GetHighestID());      
+            m_Context = context;    
         }
 
-        void SceneHierarchyPanel::OnEvent(Event& event)
+        void SceneHierarchyPanel::drawEntityNode(SceneEntity entity)
         {
-            EventDispatcher dispatcher(event);
-            dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&SceneHierarchyPanel::onMouseButtonPress, this));
-            dispatcher.Dispatch<KeyPressedEvent>(Hook(&SceneHierarchyPanel::onKeyPressed, this));
-        }
+            auto& tag = entity.GetComponent<SceneTagComponent>().Name;
+            auto& rel = entity.GetComponent<Relationship>();
 
-        bool SceneHierarchyPanel::onMouseButtonPress(MouseButtonPressEvent& event)
-        {
-            auto [mx, my] = Input::GetMousePosition();
-            glm::vec2 mousePosition(mx, my);
-           
-            return false;
-        }
-        bool SceneHierarchyPanel::onKeyPressed(KeyPressedEvent& event)
-        {
-            if (event.IsKeyPressed(KeyCode::KEY_DELETE))
+            ImGuiTreeNodeFlags flags = ((m_Context->GetSelectedEntity() == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
+            flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
+            bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
+
+            if (ImGui::IsItemClicked())
             {
-                if (m_Context.Raw())
-                {
-                    if (auto entity = m_Context->GetSelectedEntity())
-                    {
-                        m_Context->DestroyEntity(entity);
-                    }
-                }
+                m_Context->SetSelectedEntity(entity);
             }
-            return false;
+            
+            bool entityDeleted = false;
+            if (ImGui::BeginPopupContextItem())
+            {
+                if (ImGui::MenuItem("Delete Entity"))
+                    entityDeleted = true;
+
+                ImGui::EndPopup();
+            }
+            if (opened)
+            {
+                if (rel.GetFirstChild())
+                    drawEntityNode(SceneEntity(rel.GetFirstChild(), m_Context.Raw()));
+                ImGui::TreePop();
+            }
+            if (rel.GetNextSibling())
+                drawEntityNode(SceneEntity(rel.GetNextSibling(), m_Context.Raw()));
+
+            if (entityDeleted)
+            {
+                m_Context->DestroyEntity(entity);
+            }
         }
     }
 }

@@ -52,14 +52,9 @@ namespace XYZ {
 			m_Window = glfwCreateWindow(props.Width, props.Height, props.Title.c_str(), NULL, NULL);
 		}
 
-		m_Context = APIContext::Create(m_Window);
+		m_Context = APIContext::Create(m_Window);	
+		m_Context->Init();
 		
-		std::future<bool> done = Application::GetThreadPool().PushJob<bool>([&] {
-			m_Context->Init();
-			return true;
-		});
-		done.wait();
-
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 
 		

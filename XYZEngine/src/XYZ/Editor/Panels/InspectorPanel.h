@@ -8,10 +8,13 @@ namespace XYZ {
 		public:
 			InspectorPanel();
 
-			void OnUpdate();
+			void OnImGuiRender();
 	
 
 			void SetContext(SceneEntity context);
+
+		private:
+			void drawComponents(SceneEntity entity);
 
 		private:
 			SceneEntity m_Context;

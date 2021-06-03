@@ -5,7 +5,6 @@
 
 
 namespace XYZ {
-	std::function<void(Entity entity, ECSManager& ecs)> Relationship::OnParentChanged;
 
 	SpriteRenderer::SpriteRenderer(const XYZ::Ref<XYZ::Material>& material, const Ref<XYZ::SubTexture>& subTexture, const glm::vec4& color, uint32_t sortLayer, bool isVisible)
 		:
@@ -76,15 +75,11 @@ namespace XYZ {
 		parentRel.FirstChild = child;
 
 		childRel.Depth = parentRel.Depth + 1;
-		if (OnParentChanged)
-			OnParentChanged(child, ecs);
 	}
 
 	void Relationship::RemoveRelation(Entity child, ECSManager& ecs)
 	{
 		removeRelation(child, ecs);
-		if (OnParentChanged)
-			OnParentChanged(child, ecs);
 	}
 	void Relationship::removeRelation(Entity child, ECSManager& ecs)
 	{
