@@ -7,3 +7,6 @@
 [submodule "XYZEngine/vendor/yaml-cpp"]
 	path = XYZEngine/vendor/yaml-cpp
 	url = https://github.com/SimonGido/yaml-cpp.git
+[submodule "XYZEngine/vendor/imgui"]
+	path = XYZEngine/vendor/imgui
+	url = https://github.com/SimonGido/imgui.git
