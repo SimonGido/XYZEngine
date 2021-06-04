@@ -109,7 +109,7 @@ namespace XYZ {
 	{
 		bool foundCamera = false;
 		s_EditTransforms.clear();
-		s_EditTransforms.resize(m_ECS.GetNumberOfEntities() + 1);		
+		s_EditTransforms.resize((size_t)m_ECS.GetHighestID() + 1);		
 		for (auto entity : m_Entities)
 		{
 			SceneEntity ent(entity, this);
@@ -143,6 +143,12 @@ namespace XYZ {
 						boxCollider.Density
 					);
 				}
+			}
+			if (m_ECS.Contains<ScriptComponent>(entity))
+			{
+				ScriptComponent& scriptComponent = m_ECS.GetComponent<ScriptComponent>(entity);
+				for (auto& field : scriptComponent.GetFields())
+					field.CopyStoredValueToRuntime();
 			}
 		}
 		if (!foundCamera)
@@ -286,7 +292,7 @@ namespace XYZ {
 		for (auto entity : renderView)
 		{
 			auto [transform, renderer] = renderView.Get<TransformComponent, SpriteRenderer>(entity);
-			if (renderer.IsVisible && renderer.SubTexture.Raw() && renderer.Material.Raw())
+			if (renderer.Visible && renderer.SubTexture.Raw() && renderer.Material.Raw())
 				SceneRenderer::SubmitSprite(&renderer, &transform);
 		}
 		auto editorRenderView = m_ECS.CreateView<TransformComponent, EditorSpriteRenderer>();
@@ -366,10 +372,10 @@ namespace XYZ {
 			float width = size * aspect;
 			float height = size;
 
-			glm::vec3 topLeft = { translation.x - width / 2.0f,translation.y + height / 2.0f,1.0f };
-			glm::vec3 topRight = { translation.x + width / 2.0f,translation.y + height / 2.0f,1.0f };
-			glm::vec3 bottomLeft = { translation.x - width / 2.0f,translation.y - height / 2.0f,1.0f };
-			glm::vec3 bottomRight = { translation.x + width / 2.0f,translation.y - height / 2.0f,1.0f };
+			glm::vec3 topLeft = { translation.x - width / 2.0f,translation.y + height / 2.0f, translation.z };
+			glm::vec3 topRight = { translation.x + width / 2.0f,translation.y + height / 2.0f, translation.z };
+			glm::vec3 bottomLeft = { translation.x - width / 2.0f,translation.y - height / 2.0f, translation.z };
+			glm::vec3 bottomRight = { translation.x + width / 2.0f,translation.y - height / 2.0f, translation.z };
 
 			Renderer2D::SubmitLine(topLeft, topRight);
 			Renderer2D::SubmitLine(topRight, bottomRight);

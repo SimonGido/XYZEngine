@@ -43,6 +43,7 @@ namespace XYZ {
 
 	void EditorLayer::OnAttach()
 	{
+		ScriptEngine::Init("Assets/Scripts/XYZScriptExample.dll");
 		m_Scene = AssetManager::GetAsset<Scene>(AssetManager::GetAssetHandle("Assets/Scenes/scene.xyz"));
 		m_SceneHierarchy.SetContext(m_Scene);
 		m_ScenePanel.SetContext(m_Scene);
@@ -50,7 +51,7 @@ namespace XYZ {
 		m_TestEntity = m_Scene->GetEntityByName("TestEntity");
 		
 
-		ScriptEngine::Init("Assets/Scripts/XYZScriptExample.dll");
+		
 		ScriptEngine::SetSceneContext(m_Scene);
 
 		uint32_t windowWidth = Application::Get().GetWindow().GetWidth();

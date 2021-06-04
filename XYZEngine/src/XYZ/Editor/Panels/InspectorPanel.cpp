@@ -6,6 +6,7 @@
 #include "XYZ/Utils/FileSystem.h"
 #include "XYZ/Utils/StringUtils.h"
 #include "XYZ/Script/ScriptEngine.h"
+#include "XYZ/Asset/AssetManager.h"
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -43,69 +44,91 @@ namespace XYZ {
 			return xCursor;
 		}
 
+		static void BeginColumns(const char* label, int count = 2, float width = 100.0f)
+		{
+			ImGui::Columns(count);
+			ImGui::PushID(label);
+			ImGui::SetColumnWidth(0, width);
+			ImGui::Text(label);
+			ImGui::NextColumn();
+			
+		}
+		static void EndColumns()
+		{
+			ImGui::PopID();
+			ImGui::Columns(1);
+		}
+
+		static void DrawFloatControl(const char* label, const char* dragLabel, float& value, float resetValue = 0.0f, float columnWidth = 100.0f)
+		{
+			ImGuiIO& io = ImGui::GetIO();
+			auto boldFont = io.Fonts->Fonts[0];
+			float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+			ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
+
+			ImGui::PushFont(boldFont);
+			if (ImGui::Button(label, buttonSize))
+				value = resetValue;
+			ImGui::PopFont();
+
+
+			ImGui::SameLine();
+			ImGui::DragFloat(dragLabel, &value, 0.05f, 0.0f, 0.0f, "%.2f");
+			ImGui::PopItemWidth();
+		}
+
 		static void DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f)
 		{
 			ImGuiIO& io = ImGui::GetIO();
 			auto boldFont = io.Fonts->Fonts[0];
+			BeginColumns(label.c_str());
 
-			ImGui::PushID(label.c_str());
-
-			ImGui::Columns(2);
-			ImGui::SetColumnWidth(0, columnWidth);
-			ImGui::Text(label.c_str());
-			ImGui::NextColumn();
-
-	
 			ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
-			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
-
-			float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-			ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
+			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 5.0f });
 
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.5f, 0.5f, 0.5f, 1.0f });
 			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.6f, 0.6f, 0.6f, 1.0f });
 			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.65f, 0.65f, 0.65f, 1.0f });
-			ImGui::PushFont(boldFont);
-			if (ImGui::Button("X", buttonSize))
-				values.x = resetValue;
-			ImGui::PopFont();
 			
-
+			DrawFloatControl("X", "##X", values.x, resetValue, columnWidth);
 			ImGui::SameLine();
-			ImGui::DragFloat("##X", &values.x, 0.1f, 0.0f, 0.0f, "%.2f");
-			ImGui::PopItemWidth();
+			DrawFloatControl("Y", "##Y", values.y, resetValue, columnWidth);
 			ImGui::SameLine();
-
-			ImGui::PushFont(boldFont);
-			if (ImGui::Button("Y", buttonSize))
-				values.y = resetValue;
-			ImGui::PopFont();
-
-
-			ImGui::SameLine();
-			ImGui::DragFloat("##Y", &values.y, 0.1f, 0.0f, 0.0f, "%.2f");
-			ImGui::PopItemWidth();
-			ImGui::SameLine();
-
-
-			ImGui::PushFont(boldFont);
-			if (ImGui::Button("Z", buttonSize))
-				values.z = resetValue;
-			ImGui::PopFont();
-			
+			DrawFloatControl("Z", "##Z", values.z, resetValue, columnWidth);
 			ImGui::PopStyleColor(3);
-
-			ImGui::SameLine();
-			ImGui::DragFloat("##Z", &values.z, 0.1f, 0.0f, 0.0f, "%.2f");
-			ImGui::PopItemWidth();
 
 			ImGui::PopStyleVar();
 
-			ImGui::Columns(1);
-
-			ImGui::PopID();
+			EndColumns();
 		}
 
+		static void DrawColorControl(const std::string& label, glm::vec4& values, float resetValue = 1.0f, float columnWidth = 100.0f)
+		{
+			ImGuiIO& io = ImGui::GetIO();
+			auto boldFont = io.Fonts->Fonts[0];
+
+			BeginColumns(label.c_str());
+
+			ImGui::PushMultiItemsWidths(4, ImGui::CalcItemWidth());
+			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 5.0f });
+
+			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.5f, 0.5f, 0.5f, 1.0f });
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.6f, 0.6f, 0.6f, 1.0f });
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.65f, 0.65f, 0.65f, 1.0f });
+
+			DrawFloatControl("R", "##R", values.r, resetValue, columnWidth);
+			ImGui::SameLine();
+			DrawFloatControl("G", "##G", values.g, resetValue, columnWidth);
+			ImGui::SameLine();
+			DrawFloatControl("B", "##B", values.b, resetValue, columnWidth);
+			ImGui::SameLine();
+			DrawFloatControl("A", "##A", values.a, resetValue, columnWidth);
+
+
+			ImGui::PopStyleColor(3);
+			ImGui::PopStyleVar();
+			EndColumns();
+		}
 		template<typename T, typename UIFunction>
 		static void DrawComponent(const std::string& name, SceneEntity entity, UIFunction uiFunction)
 		{
@@ -166,7 +189,64 @@ namespace XYZ {
 							tag = std::string(buffer);
 						}
 					});
+					Helper::DrawComponent<CameraComponent>("Camera", m_Context, [&](auto& component) {
+
+						auto& camera = component.Camera;
+						if (ImGui::Button("Projection"))
+							ImGui::OpenPopup("Projection Type");
+
 					
+						if (ImGui::BeginPopup("Projection Type"))
+						{
+							if (ImGui::MenuItem("Perspective"))
+							{
+								camera.SetProjectionType(CameraProjectionType::Perspective);
+								ImGui::CloseCurrentPopup();
+							}
+							if (ImGui::MenuItem("Orthographic"))
+							{
+								camera.SetProjectionType(CameraProjectionType::Orthographic);
+								ImGui::CloseCurrentPopup();
+							}
+							ImGui::EndPopup();
+						}
+
+						ImGui::SameLine();
+						if (camera.GetProjectionType() == CameraProjectionType::Orthographic)
+						{
+							ImGui::Text("Orthographic");
+							CameraOrthographicProperties props = camera.GetOrthographicProperties();
+							Helper::BeginColumns("Size");
+							ImGui::InputFloat("##Size", &props.OrthographicSize);
+							Helper::EndColumns();
+
+							Helper::BeginColumns("Near");
+							ImGui::InputFloat("##Near", &props.OrthographicNear);
+							Helper::EndColumns();
+
+							Helper::BeginColumns("Far");
+							ImGui::InputFloat("##Far", &props.OrthographicFar);
+							Helper::EndColumns();
+							camera.SetOrthographic(props);
+						}
+						else
+						{
+							ImGui::Text("Perspective");
+							CameraPerspectiveProperties props = camera.GetPerspectiveProperties();
+							Helper::BeginColumns("FOV");
+							ImGui::InputFloat("##FOV", &props.PerspectiveFOV);
+							Helper::EndColumns();
+
+							Helper::BeginColumns("Near");
+							ImGui::InputFloat("##Near", &props.PerspectiveNear);
+							Helper::EndColumns();
+
+							Helper::BeginColumns("Far");
+							ImGui::InputFloat("##Far", &props.PerspectiveFar);
+							Helper::EndColumns();
+							camera.SetPerspective(props);
+						}
+					});
 					Helper::DrawComponent<TransformComponent>("Transform", m_Context, [&](auto& component) {
 						
 						Helper::DrawVec3Control("Translation", component.Translation);
@@ -176,29 +256,191 @@ namespace XYZ {
 						Helper::DrawVec3Control("Scale", component.Scale, 1.0f);
 					});
 					
-					//if (m_Context.HasComponent<SpriteRenderer>())
-					//{
-					//	if (InGui::Begin("Sprite Renderer", flags))
-					//	{
-					//		SpriteRenderer& sprite = m_Context.GetComponent<SpriteRenderer>();
-					//		InGui::Float4("R", "G", "B", "A Color", glm::vec2(40.0f, 25.0f), glm::value_ptr(sprite.Color), 2);
-					//		InGui::String("Material", glm::vec2(150.0f, 25.0f), sprite.Material->FileName);
-					//		InGui::UInt("Sort Layer", glm::vec2(40.0f, 25.0f), sprite.SortLayer);
-					//		InGui::Checkbox("Visible", glm::vec2(25.0f, 25.0f), sprite.IsVisible);
-					//	}
-					//	InGui::End();
-					//	InGuiWindow* componentWindow = InGui::GetContext().GetInGuiWindow("Sprite Renderer");
-					//	componentWindow->Size.x = width;
-					//	componentWindow->Size.y = componentWindow->FrameData.CursorPos.y - componentWindow->Position.y;
-					//}
-					//if (m_Context.HasComponent<ScriptComponent>())
-					//{
-					//
-					//}
-					//if (m_Context.HasComponent<CameraComponent>())
-					//{
-					//
-					//}
+					Helper::DrawComponent<SpriteRenderer>("Sprite Renderer", m_Context, [&](auto& component) {
+
+						Helper::DrawColorControl("Color", component.Color);
+						// Material
+						{
+							Helper::BeginColumns("Material");
+
+							ImGui::PushItemWidth(150.0f);
+
+							char materialPath[_MAX_PATH];
+							memcpy(materialPath, component.Material->FileName.c_str(), component.Material->FileName.size());
+							materialPath[component.Material->FileName.size()] = '\0';
+
+							ImGui::InputText("##Material", materialPath, _MAX_PATH);
+							ImGui::PopItemWidth();
+
+							Helper::EndColumns();
+						}
+						/////////////////
+						// SubTexture
+						{
+							Helper::BeginColumns("SubTexture");
+
+							ImGui::PushItemWidth(150.0f);
+
+							char subTexturePath[_MAX_PATH];
+							memcpy(subTexturePath, component.SubTexture->FileName.c_str(), component.SubTexture->FileName.size());
+							subTexturePath[component.SubTexture->FileName.size()] = '\0';
+
+							ImGui::InputText("##SubTexture", subTexturePath, _MAX_PATH);
+							ImGui::PopItemWidth();
+
+							Helper::EndColumns();
+						}
+						/////////////////
+						// Sort Layer
+						{
+							Helper::BeginColumns("Sort Layer");
+
+							ImGui::PushItemWidth(75.0f);
+							ImGui::InputInt("##Sort", (int*)&component.SortLayer);
+							ImGui::PopItemWidth();
+
+							Helper::EndColumns();
+						}
+						/////////////////
+						// Visible
+						{
+							Helper::BeginColumns("Visible");
+							ImGui::Checkbox("##Visible", &component.Visible);
+							Helper::EndColumns();
+						}
+						/////////////////
+						
+					});
+
+					Helper::DrawComponent<ScriptComponent>("Script", m_Context, [&](auto& component) {
+						for (const PublicField& field : component.GetFields())
+						{
+							Helper::BeginColumns(field.GetName().c_str());
+							std::string id = "##" + field.GetName();
+							if (field.GetType() == PublicFieldType::Float)
+							{
+								float value = field.GetStoredValue<float>();
+								if (ImGui::InputFloat(id.c_str(), &value))
+								{
+									field.SetStoredValue<float>(value);
+								}
+							}
+							else if (field.GetType() == PublicFieldType::Int)
+							{
+								int32_t value = field.GetStoredValue<int32_t>();
+								if (ImGui::InputInt(id.c_str(), &value))
+								{
+									field.SetStoredValue<int32_t>(value);
+								}
+							}
+							else if (field.GetType() == PublicFieldType::UnsignedInt)
+							{
+								uint32_t value = field.GetStoredValue<uint32_t>();
+								if (ImGui::InputInt(id.c_str(), (int*)&value))
+								{
+									field.SetStoredValue<uint32_t>(value);
+								}
+							}
+							else if (field.GetType() == PublicFieldType::String)
+							{
+								char* value = field.GetStoredValue<char*>();
+								size_t size = strlen(value);
+								if (ImGui::InputText(id.c_str(), value, size))
+								{
+									field.SetStoredValue<char*>(value);
+								}
+								delete[]value;
+							}
+							else if (field.GetType() == PublicFieldType::Vec2)
+							{
+								glm::vec2 value = field.GetStoredValue<glm::vec2>();
+								if (ImGui::InputFloat2(id.c_str(), glm::value_ptr(value)))
+								{
+									field.SetStoredValue<glm::vec2>(value);
+								}
+							}
+							else if (field.GetType() == PublicFieldType::Vec3)
+							{
+								glm::vec3 value = field.GetStoredValue<glm::vec3>();
+								if (ImGui::InputFloat3(id.c_str(), glm::value_ptr(value)))
+								{
+									field.SetStoredValue<glm::vec3>(value);
+								}
+							}
+							else if (field.GetType() == PublicFieldType::Vec4)
+							{
+								glm::vec4 value = field.GetStoredValue<glm::vec4>();
+								if (ImGui::InputFloat4(id.c_str(), glm::value_ptr(value)))
+								{
+									field.SetStoredValue<glm::vec4>(value);
+								}
+							}
+							Helper::EndColumns();
+						}
+					});
+					float addComponentButtonWidth = 200.0f;
+					ImVec2 pos = ImGui::GetCursorPos();
+					
+					pos.x += (ImGui::GetWindowSize().x - addComponentButtonWidth) / 2.0f;
+					pos.y += 25.0f;
+					ImGui::SetCursorPos(pos);
+					if (ImGui::Button("Add Component", { addComponentButtonWidth, 20.0f }))
+						ImGui::OpenPopup("AddComponent");
+
+					if (ImGui::BeginPopup("AddComponent"))
+					{
+						if (!m_Context.HasComponent<TransformComponent>())
+						{
+							if (ImGui::MenuItem("Transform Component"))
+							{
+								m_Context.EmplaceComponent<TransformComponent>();
+								ImGui::CloseCurrentPopup();
+							}
+						}
+						if (!m_Context.HasComponent<SpriteRenderer>())
+						{
+							if (ImGui::MenuItem("Sprite Renderer"))
+							{
+								m_Context.EmplaceComponent<SpriteRenderer>(
+									m_DefaultMaterial,
+									m_DefaultSubTexture,
+									glm::vec4(1.0f),
+									0,
+									true
+								);
+								ImGui::CloseCurrentPopup();
+							}
+						}
+						if (!m_Context.HasComponent<CameraComponent>())
+						{
+							if (ImGui::MenuItem("Camera Component"))
+							{
+								m_Context.EmplaceComponent<CameraComponent>();
+								ImGui::CloseCurrentPopup();
+							}
+						}
+						if (!m_Context.HasComponent<ScriptComponent>())
+						{			
+							if (ImGui::BeginMenu("Script Component"))
+							{
+								auto scripts = std::move(AssetManager::FindAssetsByType(AssetType::Script));
+								for (auto& script : scripts)
+								{
+									if (ImGui::MenuItem(script->FileName.c_str()))
+									{
+										m_Context.EmplaceComponent<ScriptComponent>(
+											script->FileName	
+										);
+										ScriptEngine::InitScriptEntity(m_Context);
+										ScriptEngine::InstantiateEntityClass(m_Context);
+										ImGui::CloseCurrentPopup();
+									}
+								}
+								ImGui::EndMenu();
+							}
+						}
+						ImGui::EndPopup();
+					}			
 				}
 			}
 			ImGui::End();		
@@ -207,6 +449,8 @@ namespace XYZ {
 
 		InspectorPanel::InspectorPanel()
 		{
+			m_DefaultMaterial   = AssetManager::GetAsset<Material>(AssetManager::GetAssetHandle("Assets/Materials/Material.mat"));
+			m_DefaultSubTexture = AssetManager::GetAsset<SubTexture>(AssetManager::GetAssetHandle("Assets/SubTextures/player.subtex"));
 		}
 
 		void InspectorPanel::SetContext(SceneEntity context)

@@ -36,10 +36,11 @@ namespace XYZ {
 		std::string ClassName;
 		std::string NamespaceName;
 
-		MonoClass* Class = nullptr;
+		MonoClass*  Class = nullptr;
 		MonoMethod* OnCreateMethod = nullptr;
 		MonoMethod* OnDestroyMethod = nullptr;
 		MonoMethod* OnUpdateMethod = nullptr;
+		uint32_t	Handle = 0;
 
 		void InitClassMethods(MonoImage* image)
 		{
@@ -47,7 +48,9 @@ namespace XYZ {
 			OnUpdateMethod = GetMethod(image, FullName + ":OnUpdate(single)");
 		}
 	};
-	static std::unordered_map<std::string, EntityScriptClass*> s_EntityClassMap;
+
+	using EntityClassMap = std::unordered_map<uint32_t, std::unordered_map<std::string, EntityScriptClass*>>;
+	static EntityClassMap s_EntityClassMap;
 
 	static MonoObject* GetInstance(uint32_t handle)
 	{
@@ -195,7 +198,10 @@ namespace XYZ {
 	{
 		s_SceneContext.Reset();
 		for (auto it : s_EntityClassMap)
-			delete it.second;
+		{
+			for (auto it2 : it.second)
+				delete it2.second;
+		}
 	}
 
 
@@ -218,10 +224,7 @@ namespace XYZ {
 		s_CoreAssemblyImage = GetAssemblyImage(s_CoreAssembly);
 
 		MonoAssembly* appAssembly = nullptr;
-		if (path.empty())
-			appAssembly = LoadAssembly(s_AssemblyPath);
-		else
-			appAssembly = LoadAssembly(path);
+		appAssembly = LoadAssembly(path);
 
 		auto appAssemblyImage = GetAssemblyImage(appAssembly);
 		ScriptEngineRegistry::RegisterAll();
@@ -261,7 +264,7 @@ namespace XYZ {
 	{
 		ScriptComponent& scriptComponent = entity.GetComponent<ScriptComponent>();
 		if (scriptComponent.ScriptClass->OnCreateMethod)
-			CallMethod(GetInstance(scriptComponent.Handle), scriptComponent.ScriptClass->OnCreateMethod);
+			CallMethod(GetInstance(scriptComponent.ScriptClass->Handle), scriptComponent.ScriptClass->OnCreateMethod);
 	}
 	void ScriptEngine::OnUpdateEntity(SceneEntity entity, Timestep ts)
 	{
@@ -269,7 +272,7 @@ namespace XYZ {
 		if (scriptComponent.ScriptClass->OnUpdateMethod)
 		{
 			void* args[] = { &ts };
-			CallMethod(GetInstance(scriptComponent.Handle), scriptComponent.ScriptClass->OnUpdateMethod, args);
+			CallMethod(GetInstance(scriptComponent.ScriptClass->Handle), scriptComponent.ScriptClass->OnUpdateMethod, args);
 		}
 	}
 
@@ -325,11 +328,12 @@ namespace XYZ {
 			return;
 		}
 
-		auto it = s_EntityClassMap.find(scriptComponent.ModuleName);
-		if (it == s_EntityClassMap.end())
-			s_EntityClassMap[scriptComponent.ModuleName] = new EntityScriptClass();
+
+		auto it = s_EntityClassMap[entity].find(scriptComponent.ModuleName);
+		if (it == s_EntityClassMap[entity].end())
+			s_EntityClassMap[entity][scriptComponent.ModuleName] = new EntityScriptClass();
 		
-		scriptComponent.ScriptClass = s_EntityClassMap[scriptComponent.ModuleName];
+		scriptComponent.ScriptClass = s_EntityClassMap[entity][scriptComponent.ModuleName];
 		if (scriptComponent.ModuleName.find('.') != std::string::npos)
 		{
 			scriptComponent.ScriptClass->NamespaceName = scriptComponent.ModuleName.substr(0, scriptComponent.ModuleName.find_last_of('.'));
@@ -351,13 +355,13 @@ namespace XYZ {
 		ScriptComponent& scriptComponent = entity.GetComponent<ScriptComponent>();
 		
 		XYZ_ASSERT(scriptComponent.ScriptClass, "");
-		scriptComponent.Handle = Instantiate(*scriptComponent.ScriptClass);
+		scriptComponent.ScriptClass->Handle = Instantiate(*scriptComponent.ScriptClass);
 
 		MonoProperty* entityIDProperty = mono_class_get_property_from_name(scriptComponent.ScriptClass->Class, "ID");
 		mono_property_get_get_method(entityIDProperty);
 		MonoMethod* entityIDSetMethod = mono_property_get_set_method(entityIDProperty);
 		void* param[] = { &entity.m_ID };
-		CallMethod(GetInstance(scriptComponent.Handle), entityIDSetMethod, param);
+		CallMethod(GetInstance(scriptComponent.ScriptClass->Handle), entityIDSetMethod, param);
 		{
 			MonoClassField* iter;
 			void* ptr = 0;
@@ -375,7 +379,7 @@ namespace XYZ {
 				MonoCustomAttrInfo* attr = mono_custom_attrs_from_field(scriptComponent.ScriptClass->Class, iter);
 
 				PublicField field = { name, xyzFieldType };
-				field.m_Handle = scriptComponent.Handle;
+				field.m_Handle = scriptComponent.ScriptClass->Handle;
 				field.m_MonoClassField = iter;
 				field.StoreRuntimeValue();
 				scriptComponent.Fields.emplace_back(std::move(field));

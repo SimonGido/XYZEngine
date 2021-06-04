@@ -91,7 +91,7 @@ namespace XYZ {
 		return *this;
 	}
 
-	void PublicField::CopyStoredValueToRuntime()
+	void PublicField::CopyStoredValueToRuntime() const
 	{
 		mono_field_set_value(GetInstance(m_Handle), m_MonoClassField, m_StoredValueBuffer);
 	}

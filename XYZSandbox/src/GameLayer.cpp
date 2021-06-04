@@ -75,11 +75,6 @@ namespace XYZ {
 		m_EditorCamera.OnEvent(event);
 	}
 
-	void GameLayer::OnInGuiRender()
-	{
-		
-	}
-
 	bool GameLayer::onWindowResize(WindowResizeEvent& event)
 	{
 		m_Scene->SetViewportSize((uint32_t)event.GetWidth(), (uint32_t)event.GetHeight());

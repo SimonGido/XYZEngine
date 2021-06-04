@@ -17,7 +17,7 @@
     <PlatformTarget>x64</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>XYZEditor\Assets\Scripts\</OutputPath>
+    <OutputPath>..\XYZEditor\Assets\Scripts\</OutputPath>
     <BaseIntermediateOutputPath>bin-int\Debug-windows-x86_64\XYZScriptCore\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
     <DefineConstants></DefineConstants>
@@ -28,7 +28,7 @@
     <PlatformTarget>x64</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>XYZEditor\Assets\Scripts\</OutputPath>
+    <OutputPath>..\XYZEditor\Assets\Scripts\</OutputPath>
     <BaseIntermediateOutputPath>bin-int\Release-windows-x86_64\XYZScriptCore\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
     <DefineConstants></DefineConstants>
@@ -38,6 +38,15 @@
   <ItemGroup>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="src\Entity.cs" />
+    <Compile Include="src\Input.cs" />
+    <Compile Include="src\KeyCodes.cs" />
+    <Compile Include="src\Math\Matrix4.cs" />
+    <Compile Include="src\Math\Vector2.cs" />
+    <Compile Include="src\Math\Vector3.cs" />
+    <Compile Include="src\Math\Vector4.cs" />
+    <Compile Include="src\Scene\Component.cs" />
+    <Compile Include="src\Scriptable.cs" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

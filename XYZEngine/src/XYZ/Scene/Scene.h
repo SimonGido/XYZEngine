@@ -24,9 +24,7 @@ namespace XYZ {
         Pause
     };
 
-    /*! @class Scene
-    *	@brief Holds all data relevant to a Scene
-    */
+
     class SceneEntity;
     namespace Editor {
         class SceneHierarchyPanel;

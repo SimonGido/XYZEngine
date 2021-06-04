@@ -3,7 +3,6 @@
 #include "Components.h"
 
 
-
 namespace XYZ {
 
 	SpriteRenderer::SpriteRenderer(const XYZ::Ref<XYZ::Material>& material, const Ref<XYZ::SubTexture>& subTexture, const glm::vec4& color, uint32_t sortLayer, bool isVisible)
@@ -12,7 +11,7 @@ namespace XYZ {
 		SubTexture(subTexture),
 		Color(color),
 		SortLayer(sortLayer),
-		IsVisible(isVisible)
+		Visible(Visible)
 	{}
 
 	SpriteRenderer::SpriteRenderer(const XYZ::SpriteRenderer& other)
@@ -21,7 +20,7 @@ namespace XYZ {
 		SubTexture(other.SubTexture),
 		Color(other.Color),
 		SortLayer(other.SortLayer),
-		IsVisible(other.IsVisible)
+		Visible(other.Visible)
 	{
 	}
 
@@ -31,7 +30,7 @@ namespace XYZ {
 		SubTexture(other.SubTexture),
 		Color(other.Color),
 		SortLayer(other.SortLayer),
-		IsVisible(other.IsVisible)
+		Visible(other.Visible)
 	{
 	}
 
@@ -41,7 +40,7 @@ namespace XYZ {
 		SubTexture = other.SubTexture;
 		Color = other.Color;
 		SortLayer = other.SortLayer;
-		IsVisible = other.IsVisible;
+		Visible = other.Visible;
 
 		return *this;
 	}

@@ -6,42 +6,62 @@ Entities:
     TransformComponent:
       Position: [0, 0, 0]
       Rotation: [0, 0, 0]
-      Scale: [1.14200199, 1, 1]
+      Scale: [1, 1, 1]
     SpriteRenderer:
       MaterialAsset: 6b8ecf40-b3aa-4a26-a497-d7cdda43afba
       SubTextureAsset: 6c09566f-7f5e-40cb-98f4-9fc3167481df
       Color: [1, 1, 1, 1]
-      SortLayer: 0
-      IsVisible: true
+      SortLayer: 1
+      Visible: true
     Relationship:
-      Parent: f5ece403-29bb-45ec-b59a-eaab54fbf31e
+      Parent: 4f087c1d-b0b1-489f-924a-c19c951f58eb
       PreviousSibling: 35ca1c45-9c54-4c02-8678-b3a8fa247531
-  - Entity: 35ca1c45-9c54-4c02-8678-b3a8fa247531
-    SceneTagComponent:
-      Name: Camera Entity
-    TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CameraComponent:
-      ProjectionType: 0
-      PerspectiveFOV: 1
-      PerspectiveNear: 0.00999999978
-      PerspectiveFar: 10000
-      OrthographicSize: 1
-      OrthographicNear: -1
-      OrthographicFar: 1
-    Relationship:
-      Parent: f5ece403-29bb-45ec-b59a-eaab54fbf31e
-      NextSibling: 9cede06b-a169-4d21-9eb3-be4e56768e90
-      PreviousSibling: ac9c45e2-497b-4e4d-b0c1-447b64ce4dfc
-  - Entity: ac9c45e2-497b-4e4d-b0c1-447b64ce4dfc
-    SceneTagComponent:
-      Name: Empty Entity
-    TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    Relationship:
-      Parent: f5ece403-29bb-45ec-b59a-eaab54fbf31e
-      NextSibling: 35ca1c45-9c54-4c02-8678-b3a8fa247531
+    ScriptComponent:
+      ModuleName: Example.Script
+      Test: Pes
+      VerticalSpeed: 5
+      Speed: 2
+      Rotation: 0
+      Velocity: [0, 0, 0]
+    ? Entity: 35ca1c45-9c54-4c02-8678-b3a8fa247531
+      SceneTagComponent:
+        Name: Camera Entity
+      TransformComponent:
+        Position: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      CameraComponent:
+        ProjectionType: 0
+        PerspectiveFOV: 1
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 10000
+        OrthographicSize: 2
+        OrthographicNear: -1
+        OrthographicFar: 1
+      Relationship:
+        Parent: 4f087c1d-b0b1-489f-924a-c19c951f58eb
+        NextSibling: 9cede06b-a169-4d21-9eb3-be4e56768e90
+        PreviousSibling: ac9c45e2-497b-4e4d-b0c1-447b64ce4dfc
+    : Entity: ac9c45e2-497b-4e4d-b0c1-447b64ce4dfc
+      SceneTagComponent:
+        Name: Empty Entity
+      TransformComponent:
+        Position: [0, -1.14999998, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      SpriteRenderer:
+        MaterialAsset: 6b8ecf40-b3aa-4a26-a497-d7cdda43afba
+        SubTextureAsset: 6c09566f-7f5e-40cb-98f4-9fc3167481df
+        Color: [1, 0.649999976, 0.5, 1]
+        SortLayer: 0
+        Visible: true
+      Relationship:
+        Parent: 4f087c1d-b0b1-489f-924a-c19c951f58eb
+        NextSibling: 35ca1c45-9c54-4c02-8678-b3a8fa247531
+      ScriptComponent:
+        ModuleName: Example.Script
+        Test: Pes
+        VerticalSpeed: 5
+        Speed: 2
+        Rotation: 0
+        Velocity: [2, 5, 8]

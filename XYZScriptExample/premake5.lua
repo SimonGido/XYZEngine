@@ -2,12 +2,13 @@ project "XYZScriptExample"
 		kind "SharedLib"
 		language "C#"
 			
-		targetdir ("XYZEditor/Assets/Scripts")
+		targetdir ("%{wks.location}/XYZEditor/Assets/Scripts")
 		objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 			
 		files 
 		{
-			"%{prj.name}/src/**.cs", 
+			"src/**.cs",
+			"%{wks.location}/XYZEditor/Assets/**.cs"
 		}
 
 		links

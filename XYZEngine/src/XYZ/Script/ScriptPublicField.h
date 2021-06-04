@@ -22,7 +22,7 @@ namespace XYZ {
 
 		PublicField& operator = (const PublicField& other);
 		
-		void CopyStoredValueToRuntime();
+		void CopyStoredValueToRuntime() const;
 		void StoreRuntimeValue();
 
 		template<typename T>

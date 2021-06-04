@@ -1,6 +1,9 @@
 #pragma once
 #include "XYZ/Scene/SceneEntity.h"
 
+#include "XYZ/Renderer/Material.h"
+#include "XYZ/Renderer/SubTexture.h"
+
 namespace XYZ {
 	namespace Editor {
 		class InspectorPanel
@@ -18,6 +21,9 @@ namespace XYZ {
 
 		private:
 			SceneEntity m_Context;
+
+			Ref<Material> m_DefaultMaterial;
+			Ref<SubTexture> m_DefaultSubTexture;
 		};
 	}
 }

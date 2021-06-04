@@ -4,7 +4,7 @@
 #include "XYZ/Scene/SceneEntity.h"
 #include "XYZ/Scene/Components.h"
 #include "XYZ/Asset/AssetManager.h"
-
+#include "XYZ/Script/ScriptEngine.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
@@ -86,7 +86,7 @@ namespace XYZ {
 		out << YAML::Key << "SubTextureAsset" << YAML::Value << val.SubTexture->Handle;
 		out << YAML::Key << "Color" << YAML::Value << val.Color;
 		out << YAML::Key << "SortLayer" << YAML::Value << val.SortLayer;
-		out << YAML::Key << "IsVisible" << YAML::Value << val.IsVisible;
+		out << YAML::Key << "Visible" << YAML::Value << val.Visible;
 		out << YAML::EndMap; // SpriteRenderer
 	}
 	template <>
@@ -135,6 +135,46 @@ namespace XYZ {
 		out << YAML::EndMap; // CircleCollider2D;
 	}
 
+	template <>
+	void SceneSerializer::serialize<ScriptComponent>(YAML::Emitter& out, const ScriptComponent& val)
+	{
+		out << YAML::Key << "ScriptComponent";
+		out << YAML::BeginMap;
+
+		out << YAML::Key << "ModuleName" << val.ModuleName;
+		for (auto& field : val.GetFields())
+		{
+			out << YAML::Key << field.GetName();
+			if (field.GetType() == PublicFieldType::Float)
+			{
+				out << YAML::Value << field.GetStoredValue<float>();
+			}
+			else if (field.GetType() == PublicFieldType::Int)
+			{
+				out << YAML::Value << field.GetStoredValue<int32_t>();
+			}
+			else if (field.GetType() == PublicFieldType::UnsignedInt)
+			{
+				out << YAML::Value << field.GetStoredValue<uint32_t>();
+			}
+			else if (field.GetType() == PublicFieldType::String)
+			{
+				out << YAML::Value << std::string(field.GetStoredValue<char*>());
+			}
+			else if (field.GetType() == PublicFieldType::Vec2)
+			{
+				out << YAML::Value << field.GetStoredValue<glm::vec2>();
+			}
+			else if (field.GetType() == PublicFieldType::Vec3)
+			{
+				out << YAML::Value << field.GetStoredValue<glm::vec3>();
+			}
+			else if (field.GetType() == PublicFieldType::Vec4)
+			{
+				out << YAML::Value << field.GetStoredValue<glm::vec4>();
+			}
+		}
+	}
 
 	template<>
 	void SceneSerializer::serialize<SceneEntity>(YAML::Emitter& out, const SceneEntity& val)
@@ -174,17 +214,67 @@ namespace XYZ {
 		{
 			serialize<CircleCollider2DComponent>(out, val.GetComponent<CircleCollider2DComponent>());
 		}
+		if (val.HasComponent<ScriptComponent>())
+		{
+			serialize<ScriptComponent>(out, val.GetComponent<ScriptComponent>());
+		}
 		out << YAML::EndMap; // Entity
 	}
 
 
 	template <>
-	SpriteRenderer SceneSerializer::deserialize<SpriteRenderer>(YAML::Node& data)
+	void SceneSerializer::deserialize<ScriptComponent>(YAML::Node& data, SceneEntity entity)
+	{
+		ScriptComponent scriptComponent;
+		scriptComponent.ModuleName = data["ModuleName"].as<std::string>();
+		entity.AddComponent(scriptComponent);
+		ScriptEngine::InitScriptEntity(entity);
+		ScriptEngine::InstantiateEntityClass(entity);
+
+		auto& component = entity.GetComponent<ScriptComponent>();
+		for (auto& field : component.GetFields())
+		{
+			auto val = data[field.GetName()];
+			if (field.GetType() == PublicFieldType::Float)
+			{
+				field.SetStoredValue<float>(val.as<float>());
+			}
+			else if (field.GetType() == PublicFieldType::Int)
+			{
+				field.SetStoredValue<int32_t>(val.as<int32_t>());
+			}
+			else if (field.GetType() == PublicFieldType::UnsignedInt)
+			{
+				field.SetStoredValue<uint32_t>(val.as<uint32_t>());
+			}
+			else if (field.GetType() == PublicFieldType::String)
+			{
+				std::string str = val.as<std::string>();
+				field.SetStoredValue<const char*>(str.c_str());
+			}
+			else if (field.GetType() == PublicFieldType::Vec2)
+			{
+				field.SetStoredValue <glm::vec2>(val.as<glm::vec2>());
+			}
+			else if (field.GetType() == PublicFieldType::Vec3)
+			{
+				field.SetStoredValue <glm::vec3>(val.as<glm::vec3>());
+			}
+			else if (field.GetType() == PublicFieldType::Vec4)
+			{
+				field.SetStoredValue <glm::vec4>(val.as<glm::vec4>());
+			}
+		}
+	}
+
+	template <>
+	void SceneSerializer::deserialize<SpriteRenderer>(YAML::Node& data, SceneEntity entity)
 	{
 		GUID materialHandle(data["MaterialAsset"].as<std::string>());
 		GUID subTextureHandle(data["SubTextureAsset"].as<std::string>());
-		glm::vec4 color = data["Color"].as<glm::vec4>();
-		uint16_t sortLayer = data["SortLayer"].as<uint16_t>();
+		glm::vec4 color		= data["Color"].as<glm::vec4>();
+		uint16_t sortLayer  = data["SortLayer"].as<uint16_t>();
+		bool visible	    = data["Visible"].as<bool>();
 
 		Ref<Material> material = AssetManager::GetAsset<Material>(materialHandle);
 		Ref<SubTexture> subTexture = AssetManager::GetAsset<SubTexture>(subTextureHandle);
@@ -193,13 +283,14 @@ namespace XYZ {
 			material,
 			subTexture,
 			color,
-			sortLayer
+			sortLayer,
+			visible
 		);
-		return spriteRenderer;
+		entity.AddComponent(spriteRenderer);
 	}
 
 	template <>
-	CameraComponent SceneSerializer::deserialize<CameraComponent>(YAML::Node& data)
+	void SceneSerializer::deserialize<CameraComponent>(YAML::Node& data, SceneEntity entity)
 	{
 		CameraPerspectiveProperties perspectiveProps;
 		CameraOrthographicProperties orthoProps;
@@ -229,11 +320,11 @@ namespace XYZ {
 		camera.Camera.SetProjectionType(projectionType);
 		camera.Camera.SetPerspective(perspectiveProps);
 		camera.Camera.SetOrthographic(orthoProps);
-		return camera;
+		entity.AddComponent(camera);
 	}
 
 	template <>
-	TransformComponent SceneSerializer::deserialize<TransformComponent>(YAML::Node& data)
+	void SceneSerializer::deserialize<TransformComponent>(YAML::Node& data, SceneEntity entity)
 	{
 		TransformComponent transform(data["Position"].as<glm::vec3>());
 
@@ -242,16 +333,16 @@ namespace XYZ {
 
 		transform.Rotation = rotation;
 		transform.Scale = scale;
-		return transform;
+		entity.GetComponent<TransformComponent>() = transform;
 	}
 
 	template <>
-	PointLight2D SceneSerializer::deserialize<PointLight2D>(YAML::Node& data)
+	void SceneSerializer::deserialize<PointLight2D>(YAML::Node& data, SceneEntity entity)
 	{
 		PointLight2D light;
 		light.Color = data["Color"].as<glm::vec3>();
 		light.Intensity = data["Intensity"].as<float>();
-		return light;
+		entity.AddComponent(light);
 	}
 
 	//static Relationship DeserializeRelationship(const ECSManager& ecs, YAML::Node& data)
@@ -281,7 +372,7 @@ namespace XYZ {
 	//}
 
 	template <>
-	RigidBody2DComponent SceneSerializer::deserialize<RigidBody2DComponent>(YAML::Node& data)
+	void SceneSerializer::deserialize<RigidBody2DComponent>(YAML::Node& data, SceneEntity entity)
 	{
 		RigidBody2DComponent body;
 		uint32_t type = data["Type"].as<uint32_t>();
@@ -297,33 +388,33 @@ namespace XYZ {
 			body.Type = RigidBody2DComponent::BodyType::Kinematic;
 			break;
 		}
-		return body;
+		entity.AddComponent(body);
 	}
 
 	template <>
-	BoxCollider2DComponent SceneSerializer::deserialize<BoxCollider2DComponent>(YAML::Node& data)
+	void SceneSerializer::deserialize<BoxCollider2DComponent>(YAML::Node& data, SceneEntity entity)
 	{
 		BoxCollider2DComponent box;
 		box.Offset = data["Offset"].as<glm::vec2>();
 		box.Size = data["Size"].as<glm::vec2>();
 		box.Density = data["Density"].as<float>();
 
-		return box;
+		entity.AddComponent<BoxCollider2DComponent>(box);
 	}
 	template <>
-	CircleCollider2DComponent SceneSerializer::deserialize<CircleCollider2DComponent>(YAML::Node& data)
+	void SceneSerializer::deserialize<CircleCollider2DComponent>(YAML::Node& data, SceneEntity entity)
 	{
 		CircleCollider2DComponent circle;
 		circle.Offset = data["Offset"].as<glm::vec2>();
 		circle.Radius = data["Radius"].as<float>();
 		circle.Density = data["Density"].as<float>();
 
-		return circle;
+		entity.AddComponent(circle);
 	}
 
 
 	template <>
-	SceneEntity SceneSerializer::deserialize<SceneEntity>(YAML::Node& data)
+	void SceneSerializer::deserialize<SceneEntity>(YAML::Node& data, SceneEntity ent)
 	{
 		GUID guid = data["Entity"].as<std::string>();
 		auto& tagComponent = data["SceneTagComponent"];
@@ -334,44 +425,48 @@ namespace XYZ {
 		auto transformComponent = data["TransformComponent"];
 		if (transformComponent)
 		{
-			entity.GetComponent<TransformComponent>() = SceneSerializer::deserialize<TransformComponent>(transformComponent);
+			SceneSerializer::deserialize<TransformComponent>(transformComponent, entity);
 		}
 
 		auto cameraComponent = data["CameraComponent"];
 		if (cameraComponent)
 		{
-			entity.AddComponent<CameraComponent>(deserialize<CameraComponent>(cameraComponent));
+			deserialize<CameraComponent>(cameraComponent, entity);
 		}
 		auto spriteRenderer = data["SpriteRenderer"];
 		if (spriteRenderer)
 		{
-			entity.AddComponent<SpriteRenderer>(deserialize<SpriteRenderer>(spriteRenderer));
+			deserialize<SpriteRenderer>(spriteRenderer, entity);
 		}
 		auto pointLight = data["PointLight2D"];
 		if (pointLight)
 		{
-			entity.AddComponent<PointLight2D>(deserialize<PointLight2D>(pointLight));
+			deserialize<PointLight2D>(pointLight, entity);
 		}
 
 		auto rigidBody = data["RigidBody2D"];
 		if (rigidBody)
 		{
-			entity.AddComponent<RigidBody2DComponent>(deserialize<RigidBody2DComponent>(rigidBody));
+			deserialize<RigidBody2DComponent>(rigidBody, entity);
 		}
 
 		auto boxCollider = data["BoxCollider2D"];
 		if (boxCollider)
 		{
-			entity.AddComponent<BoxCollider2DComponent>(deserialize<BoxCollider2DComponent>(boxCollider));
+			deserialize<BoxCollider2DComponent>(boxCollider, entity);
 		}
 
 		auto circleCollider = data["CircleCollider2D"];
 		if (circleCollider)
 		{
-			entity.AddComponent<CircleCollider2DComponent>(deserialize<CircleCollider2DComponent>(circleCollider));
+			deserialize<CircleCollider2DComponent>(circleCollider, entity);
 		}
 
-		return entity;
+		auto scriptComponent = data["ScriptComponent"];
+		if (scriptComponent)
+		{
+			deserialize<ScriptComponent>(scriptComponent, entity);
+		}
 	}
 
 
@@ -416,7 +511,7 @@ namespace XYZ {
 		{
 			for (auto entity : entities)
 			{
-				SceneSerializer::deserialize<SceneEntity>(entity);
+				SceneSerializer::deserialize<SceneEntity>(entity, SceneEntity());
 			}
 			for (auto data : entities)
 			{

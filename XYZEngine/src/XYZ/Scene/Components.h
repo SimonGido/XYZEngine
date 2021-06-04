@@ -95,7 +95,7 @@ namespace XYZ {
 			const Ref<SubTexture>& subTexture,
 			const glm::vec4& color,
 			uint32_t sortLayer,
-			bool isVisible = true
+			bool visible = true
 		);
 
 		SpriteRenderer(const SpriteRenderer& other);
@@ -109,7 +109,7 @@ namespace XYZ {
 		
 		glm::vec4 Color = glm::vec4(1.0f);
 		uint32_t  SortLayer = 0;
-		bool	  IsVisible = true;
+		bool	  Visible = true;
 	};
 
 
@@ -180,17 +180,17 @@ namespace XYZ {
 	struct ScriptComponent : public IComponent
 	{
 		std::string ModuleName;
-		std::vector<PublicField> Fields;
 
 		ScriptComponent() = default;
 		ScriptComponent(const ScriptComponent & other) = default;
 		ScriptComponent(const std::string & moduleName)
 			: ModuleName(moduleName) {}
 
+		const std::vector<PublicField>& GetFields() const { return Fields; }
+
 	private:
 		EntityScriptClass* ScriptClass = nullptr;
-		
-		uint32_t Handle = 0;
+		std::vector<PublicField> Fields;
 
 		friend class ScriptEngine;
 	};

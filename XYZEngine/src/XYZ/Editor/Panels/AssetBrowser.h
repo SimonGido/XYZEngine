@@ -14,8 +14,10 @@ namespace XYZ {
 			void OnImGuiRender();
 
 		private:
+			
 			void processDirectory(const std::string& path);
-	
+			size_t assetTypeToTexCoordsIndex(AssetType type) const;
+
 		private:
 			enum Type
 			{

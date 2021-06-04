@@ -15,7 +15,6 @@ namespace XYZ {
 		virtual void OnDetach() override;
 		virtual void OnUpdate(Timestep ts) override;
 		virtual void OnEvent(Event& event) override;
-		virtual void OnInGuiRender() override;
 
 	private:
 		bool onWindowResize(WindowResizeEvent& event);
