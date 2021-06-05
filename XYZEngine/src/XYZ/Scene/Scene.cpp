@@ -399,16 +399,28 @@ namespace XYZ {
 				fixture.friction = circleCollider.Friction;
 				circleCollider.RuntimeFixture = body->CreateFixture(&fixture);
 			}
-			else if (entity.HasComponent<MeshCollider2DComponent>())
+			else if (entity.HasComponent<PolygonCollider2DComponent>())
 			{
-				MeshCollider2DComponent& meshCollider = entity.GetComponent<MeshCollider2DComponent>();
+				PolygonCollider2DComponent& meshCollider = entity.GetComponent<PolygonCollider2DComponent>();
 				b2PolygonShape poly;
-				poly.Set(meshCollider.MeshCollider.Vertices.data(), meshCollider.MeshCollider.Vertices.size());
+				poly.Set((const b2Vec2*)meshCollider.Vertices.data(), meshCollider.Vertices.size());
 				b2FixtureDef fixture;
 				fixture.shape = &poly;
 				fixture.density =  meshCollider.Density;
 				fixture.friction = meshCollider.Friction;
 				meshCollider.RuntimeFixture = body->CreateFixture(&fixture);
+			}
+			else if (entity.HasComponent<ChainCollider2DComponent>())
+			{
+				ChainCollider2DComponent& chainCollider = entity.GetComponent<ChainCollider2DComponent>();
+				b2ChainShape chain;
+				chain.CreateChain((const b2Vec2*)chainCollider.Points.data(), chainCollider.Points.size(), {}, {});
+
+				b2FixtureDef fixture;
+				fixture.shape = &chain;
+				fixture.density  = chainCollider.Density;
+				fixture.friction = chainCollider.Friction;
+				chainCollider.RuntimeFixture = body->CreateFixture(&fixture);
 			}
 			counter++;
 		}

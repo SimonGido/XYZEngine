@@ -40,6 +40,22 @@ namespace XYZ {
 		REGISTER_COMPONENT_TYPE(ParticleComponent);
 		REGISTER_COMPONENT_TYPE(Relationship);
 		REGISTER_COMPONENT_TYPE(PointLight2D);
+		REGISTER_COMPONENT_TYPE(RigidBody2DComponent);
+		REGISTER_COMPONENT_TYPE(BoxCollider2DComponent);
+		REGISTER_COMPONENT_TYPE(CircleCollider2DComponent);
+		REGISTER_COMPONENT_TYPE(PolygonCollider2DComponent);
+	}
+
+
+	static bool XYZ_Entity_HasComponent(uint32_t entity, MonoReflectionType* type)
+	{
+		Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
+		XYZ_ASSERT(scene.Raw(), "No active scene!");
+
+		SceneEntity ent(entity, scene.Raw());
+
+		MonoType* mType = mono_reflection_type_get_type(type);
+		return s_HasComponentFuncs[mType](ent);
 	}
 
 	void ScriptEngineRegistry::RegisterAll()
@@ -51,5 +67,9 @@ namespace XYZ {
 		mono_add_internal_call("XYZ.Entity::GetTransform_Native", XYZ::Script::XYZ_Entity_GetTransform);
 		mono_add_internal_call("XYZ.Entity::SetTransform_Native", XYZ::Script::XYZ_Entity_SetTransform);
 
+		mono_add_internal_call("XYZ.Entity::ApplyForce_Native", XYZ::Script::XYZ_Entity_ApplyForce);
+		
+		
+		mono_add_internal_call("XYZ.Entity::HasComponent_Native", XYZ_Entity_HasComponent);
 	}
 }

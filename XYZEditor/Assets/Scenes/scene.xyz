@@ -14,7 +14,7 @@ Entities:
       SortLayer: 1
       Visible: true
     Relationship:
-      Parent: 686bcff3-e4fc-41dc-9922-1d215d5de51e
+      Parent: 8d88fc77-fb1a-45c3-a907-a640453703e3
       PreviousSibling: f2d79dc5-7e83-4bb6-964d-2545e0c1328a
     RigidBody2D:
       Type: 1
@@ -26,7 +26,7 @@ Entities:
       ModuleName: Example.Script
       Test: Pes
       VerticalSpeed: 5
-      Speed: 2
+      Speed: 15
       Rotation: 0
       Velocity: [0, 0, 0]
   - Entity: f2d79dc5-7e83-4bb6-964d-2545e0c1328a
@@ -37,7 +37,7 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
-      Parent: 686bcff3-e4fc-41dc-9922-1d215d5de51e
+      Parent: 8d88fc77-fb1a-45c3-a907-a640453703e3
       NextSibling: 9cede06b-a169-4d21-9eb3-be4e56768e90
       PreviousSibling: c527a98e-60b8-4d61-8efd-e8a7a32eb34e
     RigidBody2D:
@@ -62,5 +62,5 @@ Entities:
       OrthographicNear: -1
       OrthographicFar: 1
     Relationship:
-      Parent: 686bcff3-e4fc-41dc-9922-1d215d5de51e
+      Parent: 8d88fc77-fb1a-45c3-a907-a640453703e3
       NextSibling: f2d79dc5-7e83-4bb6-964d-2545e0c1328a

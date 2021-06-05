@@ -10,6 +10,7 @@ namespace XYZ
     public abstract class Component
     {
         public Entity Entity { get; set; }
+
     }
 
     public class SceneTagComponent : Component
@@ -50,7 +51,7 @@ namespace XYZ
             }
         }
 
-    
+
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         public static extern void GetTransform_Native(ulong entityID, out Matrix4 result);
@@ -90,5 +91,25 @@ namespace XYZ
     public class PointLight2D : Component
     {
         // TODO
+    }
+    public class RigidBody2DComponent : Component
+    {
+        public void ApplyForce(Vector2 impulse, Vector2 point)
+        {
+            ApplyForce_Native(Entity.ID, impulse, point);
+        }
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        public static extern void ApplyForce_Native(ulong entityID, Vector2 impulse, Vector2 point);
+    }
+
+    public class BoxCollider2DComponent : Component
+    {
+    }
+    public class CircleCollider2DComponent : Component
+    {
+    }
+    public class PolygonCollider2DComponent : Component
+    {
     }
 }

@@ -5,8 +5,6 @@
 #include "XYZ/Particle/ParticleEffect.h"
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Script/ScriptPublicField.h"
-#include "XYZ/Physics/PhysicsMesh.h"
-
 #include "SceneCamera.h"
 
 #include <glm/glm.hpp>
@@ -216,9 +214,19 @@ namespace XYZ {
 		void* RuntimeFixture = nullptr;
 	};
 
-	struct MeshCollider2DComponent : public IComponent
+	struct PolygonCollider2DComponent : public IComponent
 	{
-		PhysicsMesh MeshCollider;
+		std::vector<glm::vec2> Vertices;
+
+		float Density = 1.0f;
+		float Friction = 0.0f;
+
+		void* RuntimeFixture = nullptr;
+	};
+
+	struct ChainCollider2DComponent : public IComponent
+	{
+		std::vector<glm::vec2> Points;
 
 		float Density = 1.0f;
 		float Friction = 0.0f;
