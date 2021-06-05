@@ -29,6 +29,7 @@ IncludeDir["mono"] = "%{wks.location}/XYZEngine/vendor/mono/include"
 IncludeDir["TrianglePP"] = "%{wks.location}/XYZEngine/vendor/TrianglePP/source"
 IncludeDir["yaml"] = "%{wks.location}/XYZEngine/vendor/yaml-cpp/include"
 IncludeDir["ImGui"] = "%{wks.location}/XYZEngine/vendor/imgui"
+IncludeDir["box2d"] = "%{wks.location}/XYZEngine/vendor/box2d/include"
 
 LibraryDir = {}
 LibraryDir["mono"] = "vendor/mono/lib/Debug/mono-2.0-sgen.lib"
@@ -41,6 +42,7 @@ group "Dependencies"
 		include "XYZEngine/vendor/lua"
 		include "XYZEngine/vendor/TrianglePP"
 		include "XYZEngine/vendor/imgui"
+		include "XYZEngine/vendor/box2d"
 group ""
 
 include "XYZEngine"

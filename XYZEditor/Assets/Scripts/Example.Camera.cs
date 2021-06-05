@@ -13,6 +13,11 @@ namespace Example
         {
         }
 
+        public void OnDestroy()
+        {
+
+        }
+
         public void OnUpdate(float ts)
         {
             Matrix4 transform = GetTransform();

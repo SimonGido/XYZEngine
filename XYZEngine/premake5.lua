@@ -59,7 +59,8 @@ project "XYZEngine"
 			"%{IncludeDir.Lua}",
 			"%{IncludeDir.Sol}",
 			"%{IncludeDir.mono}",
-			"%{IncludeDir.TrianglePP}"
+			"%{IncludeDir.TrianglePP}",
+			"%{IncludeDir.box2d}"
 		}
 
 		links
@@ -72,6 +73,7 @@ project "XYZEngine"
 			"opengl32",
 			"TrianglePP",
 			"imgui",
+			"box2d",
 			"%{LibraryDir.mono}"
 		}
 		

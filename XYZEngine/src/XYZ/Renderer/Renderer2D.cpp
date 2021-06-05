@@ -492,6 +492,20 @@ namespace XYZ {
 		s_Data.LineIndexCount += 2;
 	}
 
+	void Renderer2D::SubmitLineQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
+	{
+		glm::vec3 p[4] = {
+			position,
+			position + glm::vec3(size.x, 0.0f, 0.0f),
+			position + glm::vec3(size.x, size.y, 0.0f),
+			position + glm::vec3(0.0f,size.y, 0.0f)
+		};
+		Renderer2D::SubmitLine(p[0], p[1], color);
+		Renderer2D::SubmitLine(p[1], p[2], color);
+		Renderer2D::SubmitLine(p[2], p[3], color);
+		Renderer2D::SubmitLine(p[3], p[0], color);
+	}
+
 	void Renderer2D::SubmitParticles(const glm::mat4& transform, const Ref<ParticleEffect>& particleEffect)
 	{
 		particleEffect->GetVertexArray()->Bind();

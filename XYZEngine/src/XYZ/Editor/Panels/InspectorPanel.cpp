@@ -7,6 +7,7 @@
 #include "XYZ/Utils/StringUtils.h"
 #include "XYZ/Script/ScriptEngine.h"
 #include "XYZ/Asset/AssetManager.h"
+#include "XYZ/Renderer/Renderer2D.h"
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -75,6 +76,29 @@ namespace XYZ {
 			ImGui::SameLine();
 			ImGui::DragFloat(dragLabel, &value, 0.05f, 0.0f, 0.0f, "%.2f");
 			ImGui::PopItemWidth();
+		}
+
+		static void DrawVec2Control(const std::string& label, glm::vec2& values, float resetValue = 0.0f, float columnWidth = 100.0f)
+		{
+			ImGuiIO& io = ImGui::GetIO();
+			auto boldFont = io.Fonts->Fonts[0];
+			BeginColumns(label.c_str());
+
+			ImGui::PushMultiItemsWidths(2, ImGui::CalcItemWidth());
+			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 5.0f });
+
+			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.5f, 0.5f, 0.5f, 1.0f });
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.6f, 0.6f, 0.6f, 1.0f });
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.65f, 0.65f, 0.65f, 1.0f });
+
+			DrawFloatControl("X", "##X", values.x, resetValue, columnWidth);
+			ImGui::SameLine();
+			DrawFloatControl("Y", "##Y", values.y, resetValue, columnWidth);
+			ImGui::PopStyleColor(3);
+
+			ImGui::PopStyleVar();
+
+			EndColumns();
 		}
 
 		static void DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f)
@@ -311,7 +335,6 @@ namespace XYZ {
 						/////////////////
 						
 					});
-
 					Helper::DrawComponent<ScriptComponent>("Script", m_Context, [&](auto& component) {
 						for (const PublicField& field : component.GetFields())
 						{
@@ -378,6 +401,64 @@ namespace XYZ {
 							Helper::EndColumns();
 						}
 					});
+					Helper::DrawComponent<RigidBody2DComponent>("Rigid Body2D", m_Context, [&](auto& component) {
+
+						if (ImGui::Button("Type"))
+							ImGui::OpenPopup("Body Type");
+						if (ImGui::BeginPopup("Body Type"))
+						{
+							if (ImGui::MenuItem("Static"))
+							{
+								component.Type = RigidBody2DComponent::BodyType::Static;
+								ImGui::CloseCurrentPopup();
+							}
+							if (ImGui::MenuItem("Dynamic"))
+							{
+								component.Type = RigidBody2DComponent::BodyType::Dynamic;
+								ImGui::CloseCurrentPopup();
+							}
+							if (ImGui::MenuItem("Kinematic"))
+							{
+								component.Type = RigidBody2DComponent::BodyType::Kinematic;
+								ImGui::CloseCurrentPopup();
+							}
+							ImGui::EndPopup();
+						}
+
+						ImGui::SameLine();
+						if (component.Type == RigidBody2DComponent::BodyType::Static)
+							ImGui::Text("Static");
+						else if (component.Type == RigidBody2DComponent::BodyType::Dynamic)
+							ImGui::Text("Dynamic");
+						else if (component.Type == RigidBody2DComponent::BodyType::Kinematic)
+							ImGui::Text("Kinematic");
+					});
+					Helper::DrawComponent<BoxCollider2DComponent>("Box Collider2D", m_Context, [&](auto& component) {
+						
+						auto [translation, rotation, scale] = m_Context.GetComponent<TransformComponent>().GetWorldComponents();
+						Renderer2D::SubmitLineQuad(
+							translation - glm::vec3(component.Size.x / 2.0f, component.Size.y / 2.0f, 0.0f), 
+							component.Size,
+							sc_BoxColliderColor
+						);
+
+						Helper::DrawVec2Control("Size", component.Size);
+						
+						Helper::BeginColumns("Density");
+						ImGui::PushItemWidth(75.0f);
+						ImGui::InputFloat("##Density", &component.Density);
+						ImGui::PopItemWidth();
+						Helper::EndColumns();
+
+
+						Helper::BeginColumns("Friction");
+						ImGui::PushItemWidth(75.0f);
+						ImGui::InputFloat("##Friction", &component.Friction);
+						ImGui::PopItemWidth();
+						Helper::EndColumns();
+					});
+
+
 					float addComponentButtonWidth = 200.0f;
 					ImVec2 pos = ImGui::GetCursorPos();
 					
@@ -437,6 +518,30 @@ namespace XYZ {
 									}
 								}
 								ImGui::EndMenu();
+							}
+						}
+						if (!m_Context.HasComponent<RigidBody2DComponent>())
+						{
+							if (ImGui::MenuItem("Rigid Body2D"))
+							{
+								m_Context.EmplaceComponent<RigidBody2DComponent>();
+								ImGui::CloseCurrentPopup();
+							}
+						}
+						if (!m_Context.HasComponent<BoxCollider2DComponent>())
+						{
+							if (ImGui::MenuItem("Box Collider2D"))
+							{
+								m_Context.EmplaceComponent<BoxCollider2DComponent>();
+								ImGui::CloseCurrentPopup();
+							}
+						}
+						if (!m_Context.HasComponent<CircleCollider2DComponent>())
+						{
+							if (ImGui::MenuItem("Circle Collider2D"))
+							{
+								m_Context.EmplaceComponent<CircleCollider2DComponent>();
+								ImGui::CloseCurrentPopup();
 							}
 						}
 						ImGui::EndPopup();

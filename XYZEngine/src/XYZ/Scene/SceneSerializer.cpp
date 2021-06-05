@@ -116,10 +116,9 @@ namespace XYZ {
 	{
 		out << YAML::Key << "BoxCollider2D";
 		out << YAML::BeginMap;
-
-		out << YAML::Key << "Offset" << val.Offset;
 		out << YAML::Key << "Size" << val.Size;
 		out << YAML::Key << "Density" << val.Density;
+		out << YAML::Key << "Friction" << val.Friction;
 		out << YAML::EndMap; // BoxCollider2D;
 	}
 
@@ -129,9 +128,9 @@ namespace XYZ {
 		out << YAML::Key << "CircleCollider2D";
 		out << YAML::BeginMap;
 
-		out << YAML::Key << "Offset" << val.Offset;
 		out << YAML::Key << "Radius" << val.Radius;
 		out << YAML::Key << "Density" << val.Density;
+		out << YAML::Key << "Friction" << val.Friction;
 		out << YAML::EndMap; // CircleCollider2D;
 	}
 
@@ -346,31 +345,6 @@ namespace XYZ {
 		entity.AddComponent(light);
 	}
 
-	//static Relationship DeserializeRelationship(const ECSManager& ecs, YAML::Node& data)
-	//{
-	//	Relationship relationship;
-	//	if (data["Parent"])
-	//	{
-	//		std::string parent = data["Parent"].as<std::string>();
-	//		relationship.Parent = ecs.FindEntity<IDComponent>(IDComponent({ parent }));
-	//	}
-	//	if (data["NextSibling"])
-	//	{
-	//		std::string nextSibling = data["NextSibling"].as<std::string>();
-	//		relationship.NextSibling = ecs.FindEntity<IDComponent>(IDComponent({ nextSibling }));
-	//	}
-	//	if (data["PreviousSibling"])
-	//	{
-	//		std::string previousSibling = data["PreviousSibling"].as<std::string>();
-	//		relationship.PreviousSibling = ecs.FindEntity<IDComponent>(IDComponent({ previousSibling }));
-	//	}
-	//	if (data["FirstChild"])
-	//	{
-	//		std::string firstChild = data["FirstChild"].as<std::string>();
-	//		relationship.FirstChild = ecs.FindEntity<IDComponent>(IDComponent({ firstChild }));
-	//	}
-	//	return relationship;
-	//}
 
 	template <>
 	void SceneSerializer::deserialize<RigidBody2DComponent>(YAML::Node& data, SceneEntity entity)
@@ -396,9 +370,10 @@ namespace XYZ {
 	void SceneSerializer::deserialize<BoxCollider2DComponent>(YAML::Node& data, SceneEntity entity)
 	{
 		BoxCollider2DComponent box;
-		box.Offset = data["Offset"].as<glm::vec2>();
+
 		box.Size = data["Size"].as<glm::vec2>();
 		box.Density = data["Density"].as<float>();
+		box.Friction = data["Friction"].as<float>();
 
 		entity.AddComponent<BoxCollider2DComponent>(box);
 	}
@@ -406,9 +381,10 @@ namespace XYZ {
 	void SceneSerializer::deserialize<CircleCollider2DComponent>(YAML::Node& data, SceneEntity entity)
 	{
 		CircleCollider2DComponent circle;
-		circle.Offset = data["Offset"].as<glm::vec2>();
+
 		circle.Radius = data["Radius"].as<float>();
 		circle.Density = data["Density"].as<float>();
+		circle.Friction = data["Friction"].as<float>();
 
 		entity.AddComponent(circle);
 	}

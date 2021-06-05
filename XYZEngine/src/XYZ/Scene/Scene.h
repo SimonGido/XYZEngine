@@ -5,6 +5,7 @@
 
 #include "XYZ/Event/Event.h"
 #include "XYZ/Renderer/Camera.h"
+#include "XYZ/Physics/ContactListener.h"
 
 #include "XYZ/Editor/EditorCamera.h"
 #include "SceneCamera.h"
@@ -13,7 +14,7 @@
 
 #include "XYZ/Asset/Asset.h"
 
-#include "XYZ/Physics/PhysicsWorld.h"
+#include <box2d/box2d.h>
 
 namespace XYZ {
 
@@ -60,20 +61,21 @@ namespace XYZ {
 
 
     private:
-        void showSelection(uint32_t entity);
-        void showCamera(uint32_t entity);
         void updateHierarchy();
-
+        void setupPhysics();
 
     private:
-        ECSManager m_ECS;
-        GUID m_UUID;
-        PhysicsWorld m_PhysicsWorld;
-        Entity m_SceneEntity;
+        b2World         m_PhysicsWorld;
+        ContactListener m_ContactListener;
+        SceneEntity*    m_PhysicsEntityBuffer;
+
+        ECSManager  m_ECS;
+        GUID        m_UUID;
+        Entity      m_SceneEntity;
         std::vector<Entity> m_Entities;
 
         std::string m_Name;
-        SceneState m_State = SceneState::Edit;
+        SceneState  m_State;
 
         Entity m_SelectedEntity;
         Entity m_CameraEntity;
@@ -82,18 +84,10 @@ namespace XYZ {
         uint32_t m_ViewportWidth;
         uint32_t m_ViewportHeight;
 
-        Ref<Texture2D> m_CameraTexture;
-        Ref<SubTexture> m_CameraSubTexture;
-        Ref<Material> m_CameraMaterial;
-        SpriteRenderer m_CameraRenderer;
-
-
-        
 
         friend class SceneEntity;
         friend class SceneSerializer;
         friend class ScriptEngine;
-        friend class ScenePanel;
         friend class LuaEntity;
         friend class Editor::SceneHierarchyPanel;
     };

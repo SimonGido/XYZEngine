@@ -4,10 +4,8 @@
 #include "XYZ/Core/GUID.h"
 #include "XYZ/Particle/ParticleEffect.h"
 #include "XYZ/Renderer/SubTexture.h"
-
 #include "XYZ/Script/ScriptPublicField.h"
-#include "XYZ/Utils/Math/AABB.h"
-#include "XYZ/Physics/PhysicsBody.h"
+#include "XYZ/Physics/PhysicsMesh.h"
 
 #include "SceneCamera.h"
 
@@ -44,16 +42,10 @@ namespace XYZ {
 		
 		glm::mat4 WorldTransform = glm::mat4(1.0f);
 
-		glm::mat4 GetTransform() const
-		{		
-			glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), Rotation.x, { 1, 0, 0 })
-				* glm::rotate(glm::mat4(1.0f), Rotation.y, { 0, 1, 0 })
-				* glm::rotate(glm::mat4(1.0f), Rotation.z, { 0, 0, 1 });
+		std::tuple<glm::vec3, glm::vec3, glm::vec3> GetWorldComponents() const;
 
-			return glm::translate(glm::mat4(1.0f), Translation)
-					* rotation
-					* glm::scale(glm::mat4(1.0f), Scale);
-		}
+		glm::mat4 GetTransform() const;
+		
 
 
 		void DecomposeTransform(const glm::mat4& transform)
@@ -202,25 +194,35 @@ namespace XYZ {
 
 		BodyType Type;
 
-		PhysicsBody* Body = nullptr;
+		void* RuntimeBody = nullptr;
 	};
 
 
 	struct BoxCollider2DComponent : public IComponent
 	{
-		PhysicsShape* Shape = nullptr;
-
-		glm::vec2 Offset = glm::vec2(0.0f);
 		glm::vec2 Size = glm::vec2(1.0f);
-		float Density = 1.0f;
+		float Density  = 1.0f;
+		float Friction = 0.0f;
+
+		void* RuntimeFixture = nullptr;
 	};
 
 	struct CircleCollider2DComponent : public IComponent
 	{
-		PhysicsShape* Shape = nullptr;
-
-		glm::vec2 Offset = glm::vec2(0.0f);
 		float Radius = 1.0f;
 		float Density = 1.0f;
+		float Friction = 0.0f;
+
+		void* RuntimeFixture = nullptr;
+	};
+
+	struct MeshCollider2DComponent : public IComponent
+	{
+		PhysicsMesh MeshCollider;
+
+		float Density = 1.0f;
+		float Friction = 0.0f;
+
+		void* RuntimeFixture = nullptr;
 	};
 }

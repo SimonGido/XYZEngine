@@ -19,6 +19,9 @@ namespace XYZ {
 		const CameraOrthographicProperties& GetOrthographicProperties() const { return m_OrthographicProps; }
 		const CameraPerspectiveProperties& GetPerspectiveProperties() const { return m_PerspectiveProps; }
 		CameraProjectionType GetProjectionType() const { return m_ProjectionType; }
+	
+		uint32_t GetViewportWidth() const { return m_ViewportWidth; }
+		uint32_t GetViewportHeight() const { return m_ViewportHeight; }
 	private:
 		void recalculate();
 

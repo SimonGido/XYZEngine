@@ -21,7 +21,8 @@ project "XYZSandbox"
 			"%{IncludeDir.glm}",
 			"%{IncludeDir.Asio}",
 			"%{IncludeDir.Lua}",
-			"%{IncludeDir.Sol}"
+			"%{IncludeDir.Sol}",
+			"%{IncludeDir.box2d}"
 		}
 		
 		links

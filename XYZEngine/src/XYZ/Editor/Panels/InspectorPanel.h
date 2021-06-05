@@ -24,6 +24,9 @@ namespace XYZ {
 
 			Ref<Material> m_DefaultMaterial;
 			Ref<SubTexture> m_DefaultSubTexture;
+
+
+			static constexpr glm::vec4 sc_BoxColliderColor = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
 		};
 	}
 }

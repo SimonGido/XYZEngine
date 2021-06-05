@@ -134,7 +134,7 @@ namespace XYZ {
 		glfwSetCursorPosCallback(m_Window, [](GLFWwindow* window, double xPos, double yPos)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-			MouseMovedEvent e((float)xPos, (float)yPos);
+			MouseMovedEvent e((int)xPos, (int)yPos);
 			data.This->Execute(e);
 		});
 

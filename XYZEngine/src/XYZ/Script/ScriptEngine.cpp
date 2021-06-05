@@ -266,6 +266,12 @@ namespace XYZ {
 		if (scriptComponent.ScriptClass->OnCreateMethod)
 			CallMethod(GetInstance(scriptComponent.ScriptClass->Handle), scriptComponent.ScriptClass->OnCreateMethod);
 	}
+	void ScriptEngine::OnDestroyEntity(SceneEntity entity)
+	{
+		ScriptComponent& scriptComponent = entity.GetComponent<ScriptComponent>();
+		if (scriptComponent.ScriptClass->OnDestroyMethod)
+			CallMethod(GetInstance(scriptComponent.ScriptClass->Handle), scriptComponent.ScriptClass->OnDestroyMethod);
+	}
 	void ScriptEngine::OnUpdateEntity(SceneEntity entity, Timestep ts)
 	{
 		auto& scriptComponent = entity.GetComponent<ScriptComponent>();

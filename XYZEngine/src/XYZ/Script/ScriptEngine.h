@@ -27,8 +27,8 @@ namespace XYZ {
 		static const Ref<Scene>& GetCurrentSceneContext();
 
 		static void OnCreateEntity(SceneEntity entity);
+		static void OnDestroyEntity(SceneEntity entity);
 		static void OnUpdateEntity(SceneEntity entity, Timestep ts);
-
 
 		static bool ModuleExists(const std::string& moduleName);
 		static void InitScriptEntity(SceneEntity entity);

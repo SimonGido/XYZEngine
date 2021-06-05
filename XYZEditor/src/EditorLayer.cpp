@@ -7,32 +7,6 @@
 
 namespace XYZ {
 
-
-	static glm::vec2 MouseToWorld(const glm::vec2& point, const glm::vec2& windowSize)
-	{
-		glm::vec2 offset = { windowSize.x / 2,windowSize.y / 2 };
-		return { point.x - offset.x, offset.y - point.y };
-	}
-
-	static bool Collide(const glm::vec2& pos, const glm::vec2& size, const glm::vec2& point)
-	{
-		return (pos.x + size.x > point.x &&
-			pos.x		   < point.x&&
-			pos.y + size.y >  point.y &&
-			pos.y < point.y);
-	}
-	static bool HasExtension(const std::string& path, const char* extension)
-	{
-		auto lastDot = path.rfind('.');
-		auto count = path.size() - lastDot;
-
-		std::string_view view(path.c_str() + lastDot + 1, count);
-
-		if (!view.compare(0, view.size() - 1, extension))
-			return true;
-		return false;
-	}
-
 	EditorLayer::EditorLayer()
 	{			
 	}
@@ -104,8 +78,8 @@ namespace XYZ {
 			}
 		}
 		animation->UpdateLength();
-		AnimatorComponent& animator = m_TestEntity.EmplaceComponent<AnimatorComponent>();
-		animator.Animation = animation;
+		//AnimatorComponent& animator = m_TestEntity.EmplaceComponent<AnimatorComponent>();
+		//animator.Animation = animation;
 	}	
 
 	void EditorLayer::OnDetach()

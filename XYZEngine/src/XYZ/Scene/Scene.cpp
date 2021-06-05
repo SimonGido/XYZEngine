@@ -8,13 +8,13 @@
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/SceneRenderer.h"
 #include "XYZ/Renderer/Animation.h"
+#include "XYZ/Script/ScriptEngine.h"
 
 #include "SceneEntity.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
-#include "XYZ/Script/ScriptEngine.h"
 
 namespace XYZ {
 
@@ -22,19 +22,13 @@ namespace XYZ {
 
 	Scene::Scene(const std::string& name)
 		:
+		m_PhysicsWorld({0.0f, -9.8f}),
+		m_PhysicsEntityBuffer(nullptr),
 		m_Name(name),
-		m_PhysicsWorld(glm::vec2(0.0f, -9.8f))
+		m_State(SceneState::Edit),
+		m_ViewportWidth(0),
+		m_ViewportHeight(0)
 	{
-		m_ViewportWidth = 0;
-		m_ViewportHeight = 0;
-
-		m_CameraTexture = Texture2D::Create({ TextureWrap::Clamp, TextureParam::Linear, TextureParam::Nearest }, "Assets/Textures/Gui/Camera.png");
-		m_CameraSubTexture = Ref<SubTexture>::Create(m_CameraTexture, glm::vec2(0.0f, 0.0f));
-		m_CameraMaterial = Ref<Material>::Create(Shader::Create("Assets/Shaders/DefaultShader.glsl"));
-		m_CameraMaterial->Set("u_Color", glm::vec4(1.0f));
-		m_CameraMaterial->Set("u_Texture", m_CameraTexture);
-		m_CameraRenderer = SpriteRenderer(m_CameraMaterial, m_CameraSubTexture, glm::vec4(1.0f), 0);
-
 		m_ECS.ForceStorage<ScriptComponent>();
 		m_SceneEntity = m_ECS.CreateEntity();
 
@@ -42,6 +36,9 @@ namespace XYZ {
 		m_ECS.EmplaceComponent<IDComponent>(m_SceneEntity);
 		m_ECS.EmplaceComponent<TransformComponent>(m_SceneEntity);
 		m_ECS.EmplaceComponent<SceneTagComponent>(m_SceneEntity, name);	
+
+
+		m_PhysicsWorld.SetContactListener(&m_ContactListener);
 	}
 
 	Scene::~Scene()
@@ -107,60 +104,40 @@ namespace XYZ {
 
 	void Scene::OnPlay()
 	{
-		bool foundCamera = false;
 		s_EditTransforms.clear();
-		s_EditTransforms.resize((size_t)m_ECS.GetHighestID() + 1);		
-		for (auto entity : m_Entities)
+		s_EditTransforms.resize((size_t)m_ECS.GetHighestID() + 1);
+		
+		// Find Camera
+		m_ECS.ForceStorage<CameraComponent>();
+		auto& storage = m_ECS.GetStorage<CameraComponent>();
+		if (storage.Size())
 		{
-			SceneEntity ent(entity, this);
-			s_EditTransforms[entity] = ent.GetComponent<TransformComponent>();
-			if (ent.HasComponent<CameraComponent>())
-			{
-				ent.GetComponent<CameraComponent>().Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
-				m_CameraEntity = entity;
-				foundCamera = true;
-			}
-			if (m_ECS.Contains<RigidBody2DComponent>(entity))
-			{
-				RigidBody2DComponent& rigidBody = m_ECS.GetComponent<RigidBody2DComponent>(entity);
-				TransformComponent& transform = m_ECS.GetComponent<TransformComponent>(entity);
-				rigidBody.Body = m_PhysicsWorld.CreateBody(glm::vec2(transform.Translation.x, transform.Translation.y), 0.0f);
-
-				if (rigidBody.Type == RigidBody2DComponent::BodyType::Static)
-					rigidBody.Body->SetType(PhysicsBody::Type::Static);
-				else if (rigidBody.Type == RigidBody2DComponent::BodyType::Dynamic)
-					rigidBody.Body->SetType(PhysicsBody::Type::Dynamic);
-				else if (rigidBody.Type == RigidBody2DComponent::BodyType::Kinematic)
-					rigidBody.Body->SetType(PhysicsBody::Type::Kinematic);
-
-				if (m_ECS.Contains<BoxCollider2DComponent>(entity))
-				{
-					BoxCollider2DComponent& boxCollider = m_ECS.GetComponent<BoxCollider2DComponent>(entity);
-					boxCollider.Shape = m_PhysicsWorld.AddBox2DShape(
-						rigidBody.Body,
-						-boxCollider.Size / 2.0f,
-						boxCollider.Size / 2.0f,
-						boxCollider.Density
-					);
-				}
-			}
-			if (m_ECS.Contains<ScriptComponent>(entity))
-			{
-				ScriptComponent& scriptComponent = m_ECS.GetComponent<ScriptComponent>(entity);
-				for (auto& field : scriptComponent.GetFields())
-					field.CopyStoredValueToRuntime();
-			}
+			m_CameraEntity = storage.GetEntityAtIndex(0);
+			storage.GetComponent(m_CameraEntity).Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 		}
-		if (!foundCamera)
+		else
 		{
 			XYZ_LOG_ERR("No camera found in the scene");
 			m_State = SceneState::Edit;
 			return;
 		}
+		// Store original transform components and initialize physics
+		for (auto entityID : m_Entities)
+		{
+			SceneEntity entity(entityID, this);
+			TransformComponent& transform = entity.GetComponent<TransformComponent>();
+			s_EditTransforms[entityID] = transform;
+		}
+
+		setupPhysics();
+	
+		// Copy stored values to runtime
 		auto& scriptStorage = m_ECS.GetStorage<ScriptComponent>();
 		for (size_t i = 0; i < scriptStorage.Size(); ++i)
 		{
 			ScriptComponent& script = scriptStorage.GetComponentAtIndex(i);
+			for (auto& field : script.GetFields())
+				field.CopyStoredValueToRuntime();
 			ScriptEngine::OnCreateEntity({ scriptStorage.GetEntityAtIndex(i), this });
 		}
 	}
@@ -171,19 +148,23 @@ namespace XYZ {
 		{
 			SceneEntity ent(entity, this);
 			ent.GetComponent<TransformComponent>() = s_EditTransforms[(uint32_t)entity];
-			if (m_ECS.Contains<RigidBody2DComponent>(entity))
-			{
-				RigidBody2DComponent& rigidBody = m_ECS.GetComponent<RigidBody2DComponent>(entity);
-				m_PhysicsWorld.DestroyBody(rigidBody.Body);
-				rigidBody.Body = nullptr;
-				if (m_ECS.Contains<BoxCollider2DComponent>(entity))
-				{
-					BoxCollider2DComponent& boxCollider = m_ECS.GetComponent<BoxCollider2DComponent>(entity);
-					m_PhysicsWorld.DestroyShape(boxCollider.Shape);
-					boxCollider.Shape = nullptr;
-				}
-			}
 		}
+
+		auto& rigidStorage = m_ECS.GetStorage<RigidBody2DComponent>();
+		for (auto& body : rigidStorage)
+		{
+			m_PhysicsWorld.DestroyBody(static_cast<b2Body*>(body.RuntimeBody));
+		}
+
+		auto& scriptStorage = m_ECS.GetStorage<ScriptComponent>();
+		for (size_t i = 0; i < scriptStorage.Size(); ++i)
+		{
+			ScriptComponent& script = scriptStorage.GetComponentAtIndex(i);
+			ScriptEngine::OnDestroyEntity({ scriptStorage.GetEntityAtIndex(i), this });
+		}
+
+		delete[]m_PhysicsEntityBuffer;
+		m_PhysicsEntityBuffer = nullptr;
 	}
 
 	void Scene::OnRender()
@@ -227,8 +208,21 @@ namespace XYZ {
 
 	void Scene::OnUpdate(Timestep ts)
 	{
-		m_PhysicsWorld.Update(ts);
-		
+		int32_t velocityIterations = 6;
+		int32_t positionIterations = 2;
+		m_PhysicsWorld.Step(ts, velocityIterations, positionIterations);
+
+		m_ECS.ForceStorage<RigidBody2DComponent>();
+		auto rigidView = m_ECS.CreateView<TransformComponent, RigidBody2DComponent>();
+		for (auto entity : rigidView)
+		{
+			auto [transform, rigidBody] = rigidView.Get<TransformComponent, RigidBody2DComponent>(entity);
+			b2Body* body = static_cast<b2Body*>(rigidBody.RuntimeBody);
+			transform.Translation.x = body->GetPosition().x;
+			transform.Translation.y = body->GetPosition().y;
+			transform.Rotation.z = body->GetAngle();
+		}
+
 		auto& scriptStorage = m_ECS.GetStorage<ScriptComponent>();
 		for (size_t i = 0; i < scriptStorage.Size(); ++i)
 		{
@@ -237,6 +231,7 @@ namespace XYZ {
 				ScriptEngine::OnUpdateEntity({ scriptStorage.GetEntityAtIndex(i),this }, ts);
 		}
 		
+		m_ECS.ForceStorage<AnimatorComponent>();
 		auto& animatorStorage = m_ECS.GetStorage<AnimatorComponent>();
 		for (auto & anim : animatorStorage)
 		{
@@ -264,9 +259,7 @@ namespace XYZ {
  		for (auto entity : rigidBodyView)
 		{
 			auto [transform, rigidBody] = rigidBodyView.Get<TransformComponent, RigidBody2DComponent>(entity);
-			transform.Translation.x = rigidBody.Body->GetPosition().x;
-			transform.Translation.y = rigidBody.Body->GetPosition().y;
-			//transform.Rotation.z = rigidBody.Body->GetAngle();
+			
 		}
 
 		updateHierarchy();
@@ -277,17 +270,6 @@ namespace XYZ {
 		updateHierarchy();
 		SceneRenderer::BeginScene(this, camera.GetViewProjection());
 		
-		if ((bool)m_SelectedEntity)
-		{
-			if (m_ECS.Contains<CameraComponent>(m_SelectedEntity))
-			{
-				SceneRenderer::SubmitSprite(&m_CameraRenderer, &m_ECS.GetComponent<TransformComponent>(m_SelectedEntity));
-				showCamera(m_SelectedEntity);
-			}
-			else
-				showSelection(m_SelectedEntity);
-		}
-
 		auto renderView = m_ECS.CreateView<TransformComponent, SpriteRenderer>();
 		for (auto entity : renderView)
 		{
@@ -338,51 +320,6 @@ namespace XYZ {
 		return { m_SelectedEntity, this };
 	}
 
-	void Scene::showSelection(uint32_t entity)
-	{
-		auto transformComponent = m_ECS.GetComponent<TransformComponent>(entity);
-		glm::vec3 translation;
-		glm::vec3 scale;
-		glm::quat rot;
-		glm::vec3 skew;
-		glm::vec4 perspective;
-		glm::decompose(transformComponent.WorldTransform, scale, rot, translation, skew, perspective);
-
-		glm::vec3 topLeft = { translation.x - scale.x / 2,translation.y + scale.y / 2, translation.z };
-		glm::vec3 topRight = { translation.x + scale.x / 2,translation.y + scale.y / 2, translation.z };
-		glm::vec3 bottomLeft = { translation.x - scale.x / 2,translation.y - scale.y / 2, translation.z };
-		glm::vec3 bottomRight = { translation.x + scale.x / 2,translation.y - scale.y / 2, translation.z };
-	
-		Renderer2D::SubmitLine(topLeft, topRight);
-		Renderer2D::SubmitLine(topRight, bottomRight);
-		Renderer2D::SubmitLine(bottomRight, bottomLeft);
-		Renderer2D::SubmitLine(bottomLeft, topLeft);
-	}
-
-	void Scene::showCamera(uint32_t entity)
-	{
-		auto& camera = m_ECS.GetComponent<CameraComponent>(entity).Camera;
-		auto transformComponent = m_ECS.GetComponent<TransformComponent>(entity);
-
-		auto& translation = transformComponent.Translation;
-		if (camera.GetProjectionType() == CameraProjectionType::Orthographic)
-		{
-			float size = camera.GetOrthographicProperties().OrthographicSize;
-			float aspect = (float)m_ViewportWidth / (float)m_ViewportHeight;
-			float width = size * aspect;
-			float height = size;
-
-			glm::vec3 topLeft = { translation.x - width / 2.0f,translation.y + height / 2.0f, translation.z };
-			glm::vec3 topRight = { translation.x + width / 2.0f,translation.y + height / 2.0f, translation.z };
-			glm::vec3 bottomLeft = { translation.x - width / 2.0f,translation.y - height / 2.0f, translation.z };
-			glm::vec3 bottomRight = { translation.x + width / 2.0f,translation.y - height / 2.0f, translation.z };
-
-			Renderer2D::SubmitLine(topLeft, topRight);
-			Renderer2D::SubmitLine(topRight, bottomRight);
-			Renderer2D::SubmitLine(bottomRight, bottomLeft);
-			Renderer2D::SubmitLine(bottomLeft, topLeft);
-		}
-	}
 
 	void Scene::updateHierarchy()
 	{
@@ -409,6 +346,78 @@ namespace XYZ {
 			{
 				transform.WorldTransform = transform.GetTransform();
 			}
+		}
+	}
+
+	void Scene::setupPhysics()
+	{
+		auto& storage = m_ECS.GetStorage<RigidBody2DComponent>();
+		m_PhysicsEntityBuffer = new SceneEntity[storage.Size()];
+
+		size_t counter = 0;
+		for (auto& rigidBody : storage)
+		{
+			SceneEntity entity(storage.GetEntityAtIndex(counter), this);
+			const TransformComponent& transform = entity.GetComponent<TransformComponent>();
+			auto [translation, rotation, scale] = transform.GetWorldComponents();
+
+			b2BodyDef bodyDef;
+			if (rigidBody.Type == RigidBody2DComponent::BodyType::Dynamic)
+				bodyDef.type = b2_dynamicBody;
+			else if (rigidBody.Type == RigidBody2DComponent::BodyType::Static)
+				bodyDef.type = b2_staticBody;
+			else if (rigidBody.Type == RigidBody2DComponent::BodyType::Kinematic)
+				bodyDef.type = b2_kinematicBody;
+			
+			
+			bodyDef.position.Set(transform.Translation.x, transform.Translation.y);
+			bodyDef.angle = transform.Rotation.z;
+			bodyDef.userData.pointer = reinterpret_cast<uintptr_t>(&m_PhysicsEntityBuffer[counter]);
+			
+			b2Body* body = m_PhysicsWorld.CreateBody(&bodyDef);
+			rigidBody.RuntimeBody = body;
+
+			if (entity.HasComponent<BoxCollider2DComponent>())
+			{
+				BoxCollider2DComponent& boxCollider = entity.GetComponent<BoxCollider2DComponent>();
+				b2PolygonShape poly;
+				poly.SetAsBox(boxCollider.Size.x / 2.0f, boxCollider.Size.y / 2.0f);
+				b2FixtureDef fixture;
+				fixture.shape = &poly;
+				fixture.density = boxCollider.Density;
+				fixture.friction = boxCollider.Friction;
+				boxCollider.RuntimeFixture = body->CreateFixture(&fixture);
+			}
+			else if (entity.HasComponent<CircleCollider2DComponent>())
+			{
+				CircleCollider2DComponent& circleCollider = entity.GetComponent<CircleCollider2DComponent>();
+				b2CircleShape circle;
+				circle.m_radius = circleCollider.Radius;
+				b2FixtureDef fixture;
+				fixture.shape = &circle;
+				fixture.density  = circleCollider.Density;
+				fixture.friction = circleCollider.Friction;
+				circleCollider.RuntimeFixture = body->CreateFixture(&fixture);
+			}
+			else if (entity.HasComponent<MeshCollider2DComponent>())
+			{
+				MeshCollider2DComponent& meshCollider = entity.GetComponent<MeshCollider2DComponent>();
+				b2PolygonShape poly;
+				poly.Set(meshCollider.MeshCollider.Vertices.data(), meshCollider.MeshCollider.Vertices.size());
+				b2FixtureDef fixture;
+				fixture.shape = &poly;
+				fixture.density =  meshCollider.Density;
+				fixture.friction = meshCollider.Friction;
+				meshCollider.RuntimeFixture = body->CreateFixture(&fixture);
+			}
+			counter++;
+		}
+
+		auto& boxStorage = m_ECS.GetStorage<BoxCollider2DComponent>();
+		counter = 0;
+		for (auto& box : boxStorage)
+		{
+			
 		}
 	}
 
