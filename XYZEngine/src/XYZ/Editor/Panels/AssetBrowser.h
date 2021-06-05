@@ -31,7 +31,7 @@ namespace XYZ {
 				Font,
 				Audio,
 				Script,
-				SkeletalMesh,
+				Mesh,
 				NumTypes
 			};
 

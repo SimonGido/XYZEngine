@@ -75,7 +75,9 @@ namespace XYZ {
 			m_TexCoords[Shader]   = CalculateTexCoords(glm::vec2(1, 3), size, { width, height });
 			m_TexCoords[Script]   = CalculateTexCoords(glm::vec2(3, 3), size, { width, height });
 			m_TexCoords[Material] = CalculateTexCoords(glm::vec2(2, 3), size, { width, height });
-			
+			m_TexCoords[Texture]  = CalculateTexCoords(glm::vec2(2, 2), size, { width, height });
+			m_TexCoords[Mesh]	  = CalculateTexCoords(glm::vec2(1, 2), size, { width, height });
+
 			m_Colors[ArrowColor]	    = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
 			m_Colors[ArrowInvalidColor] = glm::vec4(0.3f);
 		}
@@ -158,6 +160,11 @@ namespace XYZ {
 				else
 				{
 					AssetType type = AssetManager::GetAssetTypeFromExtension(Utils::GetExtension(name));
+					if (type == AssetType::None)
+					{
+						ImGui::PopID();
+						continue;
+					}
 					size_t index = assetTypeToTexCoordsIndex(type);
 					if (ImGui::ImageButton((void*)(uint64_t)m_Texture->GetRendererID(), { m_IconSize.x, m_IconSize.y }, { m_TexCoords[index].x, m_TexCoords[index].y }, { m_TexCoords[index].z, m_TexCoords[index].w }))
 					{
@@ -203,7 +210,7 @@ namespace XYZ {
 				return Script;
 				break;
 			case XYZ::AssetType::SkeletalMesh:
-				return SkeletalMesh;
+				return Mesh;
 				break;
 			case XYZ::AssetType::None:
 				return NumTypes;

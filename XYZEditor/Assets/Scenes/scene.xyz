@@ -4,18 +4,18 @@ Entities:
     SceneTagComponent:
       Name: TestEntity
     TransformComponent:
-      Position: [0, 0, 0]
+      Position: [0, 0.150000006, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     SpriteRenderer:
       MaterialAsset: 6b8ecf40-b3aa-4a26-a497-d7cdda43afba
       SubTextureAsset: 6c09566f-7f5e-40cb-98f4-9fc3167481df
-      Color: [1, 1, 1, 1]
+      Color: [1, 0.899999976, -0.449999988, 0.899999976]
       SortLayer: 1
       Visible: true
     Relationship:
-      Parent: 4f087c1d-b0b1-489f-924a-c19c951f58eb
-      PreviousSibling: 35ca1c45-9c54-4c02-8678-b3a8fa247531
+      Parent: 59c0358e-cb2b-41d1-bd50-0f523d0be810
+      PreviousSibling: 586b2eb4-09b9-4542-93b2-b64c0cdadd88
     ScriptComponent:
       ModuleName: Example.Script
       Test: Pes
@@ -23,45 +23,52 @@ Entities:
       Speed: 2
       Rotation: 0
       Velocity: [0, 0, 0]
-    ? Entity: 35ca1c45-9c54-4c02-8678-b3a8fa247531
-      SceneTagComponent:
-        Name: Camera Entity
-      TransformComponent:
-        Position: [0, 0, 0]
-        Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
-      CameraComponent:
-        ProjectionType: 0
-        PerspectiveFOV: 1
-        PerspectiveNear: 0.00999999978
-        PerspectiveFar: 10000
-        OrthographicSize: 2
-        OrthographicNear: -1
-        OrthographicFar: 1
-      Relationship:
-        Parent: 4f087c1d-b0b1-489f-924a-c19c951f58eb
-        NextSibling: 9cede06b-a169-4d21-9eb3-be4e56768e90
-        PreviousSibling: ac9c45e2-497b-4e4d-b0c1-447b64ce4dfc
-    : Entity: ac9c45e2-497b-4e4d-b0c1-447b64ce4dfc
-      SceneTagComponent:
-        Name: Empty Entity
-      TransformComponent:
-        Position: [0, -1.14999998, 0]
-        Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
-      SpriteRenderer:
-        MaterialAsset: 6b8ecf40-b3aa-4a26-a497-d7cdda43afba
-        SubTextureAsset: 6c09566f-7f5e-40cb-98f4-9fc3167481df
-        Color: [1, 0.649999976, 0.5, 1]
-        SortLayer: 0
-        Visible: true
-      Relationship:
-        Parent: 4f087c1d-b0b1-489f-924a-c19c951f58eb
-        NextSibling: 35ca1c45-9c54-4c02-8678-b3a8fa247531
-      ScriptComponent:
-        ModuleName: Example.Script
-        Test: Pes
-        VerticalSpeed: 5
-        Speed: 2
-        Rotation: 0
-        Velocity: [2, 5, 8]
+  - Entity: 586b2eb4-09b9-4542-93b2-b64c0cdadd88
+    SceneTagComponent:
+      Name: Empty Entity
+    TransformComponent:
+      Position: [-1.39999998, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRenderer:
+      MaterialAsset: 6b8ecf40-b3aa-4a26-a497-d7cdda43afba
+      SubTextureAsset: 6c09566f-7f5e-40cb-98f4-9fc3167481df
+      Color: [1, 1, 1, 1]
+      SortLayer: 0
+      Visible: true
+    Relationship:
+      Parent: 59c0358e-cb2b-41d1-bd50-0f523d0be810
+      NextSibling: 9cede06b-a169-4d21-9eb3-be4e56768e90
+      PreviousSibling: 5a7a61a4-0166-4721-9ac8-39e9dd4fafed
+  - Entity: 5a7a61a4-0166-4721-9ac8-39e9dd4fafed
+    SceneTagComponent:
+      Name: Empty Entity
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 59c0358e-cb2b-41d1-bd50-0f523d0be810
+      NextSibling: 586b2eb4-09b9-4542-93b2-b64c0cdadd88
+      PreviousSibling: f2d79dc5-7e83-4bb6-964d-2545e0c1328a
+  - Entity: f2d79dc5-7e83-4bb6-964d-2545e0c1328a
+    SceneTagComponent:
+      Name: Empty Entity
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 59c0358e-cb2b-41d1-bd50-0f523d0be810
+      NextSibling: 5a7a61a4-0166-4721-9ac8-39e9dd4fafed
+      PreviousSibling: c527a98e-60b8-4d61-8efd-e8a7a32eb34e
+  - Entity: c527a98e-60b8-4d61-8efd-e8a7a32eb34e
+    SceneTagComponent:
+      Name: Empty Entity
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 59c0358e-cb2b-41d1-bd50-0f523d0be810
+      NextSibling: f2d79dc5-7e83-4bb6-964d-2545e0c1328a

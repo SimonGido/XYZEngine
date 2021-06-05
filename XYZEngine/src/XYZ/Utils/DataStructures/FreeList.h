@@ -119,6 +119,7 @@ namespace XYZ {
 		{
 			return static_cast<int32_t>(m_Data.size());
 		}
+
 		int32_t Next() const
 		{
 			if (m_FirstFree == -1)

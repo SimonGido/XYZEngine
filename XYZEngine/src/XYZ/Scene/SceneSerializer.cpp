@@ -174,6 +174,7 @@ namespace XYZ {
 				out << YAML::Value << field.GetStoredValue<glm::vec4>();
 			}
 		}
+		out << YAML::EndMap; // Script Component
 	}
 
 	template<>

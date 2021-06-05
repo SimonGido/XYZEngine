@@ -15,13 +15,13 @@ namespace XYZ {
 
 		static constexpr int32_t sc_Invalid = -1;
 
-		void* Data = nullptr;
+		void* Data			    = nullptr;
 		int32_t ID				= sc_Invalid;
 		int32_t Parent			= sc_Invalid;
 		int32_t FirstChild		= sc_Invalid;
 		int32_t NextSibling		= sc_Invalid;
 		int32_t PreviousSibling = sc_Invalid;
-		uint32_t Depth = 0;
+		uint32_t Depth			= 0;
 	};
 
 	class Tree
@@ -49,8 +49,7 @@ namespace XYZ {
 		void        Traverse(const std::function<bool(void*, void*)>& callback) const;
 		void	    TraverseNode(int32_t node, const std::function<bool(void*, void*)>& callback) const;
 		void	    TraverseNodeSiblings(int32_t node, const std::function<bool(void*, void*)>& callback) const;
-		void	    TraverseNodeChildren(int32_t node, const std::function<bool(void*, void*)>& callback) const;
-		
+		void	    TraverseNodeChildren(int32_t node, const std::function<bool(void*, void*)>& callback) const;	
 		void		TraverseNodeSiblingsReverse(int32_t node, const std::function<bool(void*, void*)>& callback) const;
 
 		void	    SetData(int32_t index, void* data) { m_Nodes[index].Data = data; }

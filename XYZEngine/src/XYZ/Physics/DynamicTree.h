@@ -11,7 +11,7 @@ namespace XYZ {
 #define NULL_NODE (-1)
 	struct Node
 	{
-		AABB Box;
+		AABB	 Box;
 		uint32_t DataIndex;
 
 		int32_t ParentIndex = NULL_NODE;
