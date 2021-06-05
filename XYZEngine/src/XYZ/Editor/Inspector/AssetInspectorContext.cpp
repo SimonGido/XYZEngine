@@ -30,10 +30,13 @@ namespace XYZ {
 			if (m_Context.Raw())
 			{
 				Helper::BeginColumns("Name");
-
-				ImGui::Text(m_Context->FileName.c_str());
-				
+				ImGui::Text(m_Context->FileName.c_str());		
 				Helper::EndColumns();
+				Helper::BeginColumns("File Path");
+				ImGui::Text(m_Context->FilePath.c_str());
+				Helper::EndColumns();
+				ImGui::NewLine();
+
 				if (m_Context->Type == AssetType::Material)
 					drawMaterial(m_Context.As<Material>());
 			}
@@ -44,6 +47,7 @@ namespace XYZ {
 		}
 		void AssetInspectorContext::drawMaterial(Ref<Material>& material)
 		{
+			ImGui::Text("Values:");
 			for (auto& uniform : material->GetShader()->GetFSUniformList().Uniforms)
 			{
 				std::string id = "##" + uniform.Name;
@@ -84,6 +88,7 @@ namespace XYZ {
 				ImGui::PopItemWidth();
 				Helper::EndColumns();
 			}
+			
 		}
 	}
 }

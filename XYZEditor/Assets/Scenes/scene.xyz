@@ -14,7 +14,7 @@ Entities:
       SortLayer: 1
       Visible: true
     Relationship:
-      Parent: 24034caf-1fc3-46b6-a017-5fc7f91ce8ec
+      Parent: dcc8d905-33e6-4c62-9522-97536a0cf16e
       PreviousSibling: f2d79dc5-7e83-4bb6-964d-2545e0c1328a
     RigidBody2D:
       Type: 1
@@ -37,7 +37,7 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
-      Parent: 24034caf-1fc3-46b6-a017-5fc7f91ce8ec
+      Parent: dcc8d905-33e6-4c62-9522-97536a0cf16e
       NextSibling: 9cede06b-a169-4d21-9eb3-be4e56768e90
       PreviousSibling: c527a98e-60b8-4d61-8efd-e8a7a32eb34e
     RigidBody2D:
@@ -62,7 +62,7 @@ Entities:
       OrthographicNear: -1
       OrthographicFar: 1
     Relationship:
-      Parent: 24034caf-1fc3-46b6-a017-5fc7f91ce8ec
+      Parent: dcc8d905-33e6-4c62-9522-97536a0cf16e
       NextSibling: f2d79dc5-7e83-4bb6-964d-2545e0c1328a
       PreviousSibling: 64a6bb16-7ca7-4e72-835c-ad2fdd1fcd33
   - Entity: 64a6bb16-7ca7-4e72-835c-ad2fdd1fcd33
@@ -73,7 +73,7 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
-      Parent: 24034caf-1fc3-46b6-a017-5fc7f91ce8ec
+      Parent: dcc8d905-33e6-4c62-9522-97536a0cf16e
       NextSibling: c527a98e-60b8-4d61-8efd-e8a7a32eb34e
     RigidBody2D:
       Type: 0
