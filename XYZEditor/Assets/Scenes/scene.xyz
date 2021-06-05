@@ -4,8 +4,8 @@ Entities:
     SceneTagComponent:
       Name: TestEntity
     TransformComponent:
-      Position: [0, 0.150000006, 0]
-      Rotation: [0, 0, 0]
+      Position: [0, -1.23304093, 0]
+      Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteRenderer:
       MaterialAsset: 6b8ecf40-b3aa-4a26-a497-d7cdda43afba
@@ -14,7 +14,7 @@ Entities:
       SortLayer: 1
       Visible: true
     Relationship:
-      Parent: 8d88fc77-fb1a-45c3-a907-a640453703e3
+      Parent: 24034caf-1fc3-46b6-a017-5fc7f91ce8ec
       PreviousSibling: f2d79dc5-7e83-4bb6-964d-2545e0c1328a
     RigidBody2D:
       Type: 1
@@ -26,7 +26,7 @@ Entities:
       ModuleName: Example.Script
       Test: Pes
       VerticalSpeed: 5
-      Speed: 15
+      ImpulseStrength: 0.5
       Rotation: 0
       Velocity: [0, 0, 0]
   - Entity: f2d79dc5-7e83-4bb6-964d-2545e0c1328a
@@ -37,7 +37,7 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
-      Parent: 8d88fc77-fb1a-45c3-a907-a640453703e3
+      Parent: 24034caf-1fc3-46b6-a017-5fc7f91ce8ec
       NextSibling: 9cede06b-a169-4d21-9eb3-be4e56768e90
       PreviousSibling: c527a98e-60b8-4d61-8efd-e8a7a32eb34e
     RigidBody2D:
@@ -62,5 +62,24 @@ Entities:
       OrthographicNear: -1
       OrthographicFar: 1
     Relationship:
-      Parent: 8d88fc77-fb1a-45c3-a907-a640453703e3
+      Parent: 24034caf-1fc3-46b6-a017-5fc7f91ce8ec
       NextSibling: f2d79dc5-7e83-4bb6-964d-2545e0c1328a
+      PreviousSibling: 64a6bb16-7ca7-4e72-835c-ad2fdd1fcd33
+  - Entity: 64a6bb16-7ca7-4e72-835c-ad2fdd1fcd33
+    SceneTagComponent:
+      Name: Empty Entity
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 24034caf-1fc3-46b6-a017-5fc7f91ce8ec
+      NextSibling: c527a98e-60b8-4d61-8efd-e8a7a32eb34e
+    RigidBody2D:
+      Type: 0
+    ChainCollider2D:
+      Points:
+        - [0.649999976, 0]
+        - [-1.5, 0]
+      Density: 1
+      Friction: 0

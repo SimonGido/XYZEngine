@@ -37,9 +37,11 @@
 #include "XYZ/Editor/EditorCamera.h"
 #include "XYZ/Editor/Panels/ScenePanel.h"
 #include "XYZ/Editor/Panels/SceneHierarchyPanel.h"
-#include "XYZ/Editor/Panels/InspectorPanel.h"
-#include "XYZ/Editor/Panels/AssetBrowser.h"
+#include "XYZ/Editor/Inspector/InspectorPanel.h"
+#include "XYZ/Editor/Inspector/SceneEntityInspectorContext.h"
+#include "XYZ/Editor/Inspector/AssetInspectorContext.h"
 
+#include "XYZ/Editor/Panels/AssetBrowser.h"
 #include "XYZ/Editor/SkinningEditor/SkinningEditor.h"
 #include "XYZ/Editor/AnimationEditor/AnimationEditor.h"
 

@@ -133,6 +133,23 @@ namespace XYZ {
 		out << YAML::Key << "Friction" << val.Friction;
 		out << YAML::EndMap; // CircleCollider2D;
 	}
+	template <>
+	void SceneSerializer::serialize<ChainCollider2DComponent>(YAML::Emitter& out, const ChainCollider2DComponent& val)
+	{
+		out << YAML::Key << "ChainCollider2D";
+		out << YAML::BeginMap;
+		
+
+		out << YAML::Key << "Points" << YAML::Value << YAML::BeginSeq;
+		for (auto& p : val.Points)
+		{
+			out << YAML::Value << p;
+		}
+		out << YAML::EndSeq;
+		out << YAML::Key << "Density" << val.Density;
+		out << YAML::Key << "Friction" << val.Friction;
+		out << YAML::EndMap; // ChainCollider2D;
+	}
 
 	template <>
 	void SceneSerializer::serialize<ScriptComponent>(YAML::Emitter& out, const ScriptComponent& val)
@@ -214,6 +231,10 @@ namespace XYZ {
 		{
 			serialize<CircleCollider2DComponent>(out, val.GetComponent<CircleCollider2DComponent>());
 		}
+		if (val.HasComponent<ChainCollider2DComponent>())
+		{
+			serialize<ChainCollider2DComponent>(out, val.GetComponent<ChainCollider2DComponent>());
+		}
 		if (val.HasComponent<ScriptComponent>())
 		{
 			serialize<ScriptComponent>(out, val.GetComponent<ScriptComponent>());
@@ -235,6 +256,8 @@ namespace XYZ {
 		for (auto& field : component.GetFields())
 		{
 			auto val = data[field.GetName()];
+			if (!val)
+				continue;
 			if (field.GetType() == PublicFieldType::Float)
 			{
 				field.SetStoredValue<float>(val.as<float>());
@@ -388,7 +411,17 @@ namespace XYZ {
 
 		entity.AddComponent(circle);
 	}
+	template <>
+	void SceneSerializer::deserialize<ChainCollider2DComponent>(YAML::Node& data, SceneEntity entity)
+	{
+		ChainCollider2DComponent chain;
 
+		chain.Points = data["Points"].as<std::vector<glm::vec2>>();
+		chain.Density = data["Density"].as<float>();
+		chain.Friction = data["Friction"].as<float>();
+
+		entity.AddComponent(chain);
+	}
 
 	template <>
 	void SceneSerializer::deserialize<SceneEntity>(YAML::Node& data, SceneEntity ent)
@@ -439,11 +472,19 @@ namespace XYZ {
 			deserialize<CircleCollider2DComponent>(circleCollider, entity);
 		}
 
+		auto chainCollider = data["ChainCollider2D"];
+		if (chainCollider)
+		{
+			deserialize<ChainCollider2DComponent>(chainCollider, entity);
+		}
+
 		auto scriptComponent = data["ScriptComponent"];
 		if (scriptComponent)
 		{
 			deserialize<ScriptComponent>(scriptComponent, entity);
 		}
+			
+		
 	}
 
 

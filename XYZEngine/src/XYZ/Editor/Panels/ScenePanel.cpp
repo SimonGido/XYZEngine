@@ -124,13 +124,13 @@ namespace XYZ {
 		}
 
 		void ScenePanel::OnUpdate(Timestep ts)
-		{
-			if (m_ViewportHovered)
-			{
-				m_EditorCamera.OnUpdate(ts);				
-			}
+		{			
 			if (m_Context.Raw())
 			{
+				if (m_ViewportHovered && m_Context->GetState() == SceneState::Edit)
+				{
+					m_EditorCamera.OnUpdate(ts);
+				}
 				SceneEntity selected = m_Context->GetSelectedEntity();
 				if (selected)
 					showSelection(selected);
@@ -173,6 +173,9 @@ namespace XYZ {
 							auto [origin, direction] = castRay(mx, my);
 							Ray ray = { origin,direction };
 							m_Context->SetSelectedEntity(Entity());
+							if (m_Callback)
+								m_Callback(m_Context->GetSelectedEntity());
+
 							for (Entity entityID : m_Context->GetEntities())
 							{
 								SceneEntity entity(entityID, m_Context.Raw());
@@ -186,6 +189,8 @@ namespace XYZ {
 								if (ray.IntersectsAABB(aabb))
 								{
 									m_Context->SetSelectedEntity(entityID);
+									if (m_Callback)
+										m_Callback(m_Context->GetSelectedEntity());
 								}
 							}
 						}

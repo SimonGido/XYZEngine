@@ -9,10 +9,12 @@ namespace XYZ {
 	namespace Editor {
 		class ScenePanel
 		{
+			using SceneEntitySelectedCallback = std::function<void(SceneEntity)>;
 		public:
 			ScenePanel();
 
 			void SetContext(const Ref<Scene>& context);
+			void SetEntitySelectedCallback(const SceneEntitySelectedCallback& callback) { m_Callback = callback; }
 
 			void OnUpdate(Timestep ts);
 			void OnImGuiRender();
@@ -25,6 +27,7 @@ namespace XYZ {
 			void showSelection(SceneEntity entity);
 
 		private:
+			SceneEntitySelectedCallback m_Callback;
 			Ref<Scene> m_Context;
 			glm::vec2 m_ViewportSize;
 			glm::vec2 m_ViewportBounds[2];

@@ -36,12 +36,9 @@ namespace XYZ {
 		Editor::ScenePanel m_ScenePanel;
 		Editor::AssetBrowser m_AssetBrowser;
 
-		Ref<SubTexture> m_Test;
+		Editor::SceneEntityInspectorContext m_SceneEntityInspectorContext;
+		Editor::AssetInspectorContext	    m_AssetInspectorContext;
 	private:	
 		SceneEntity m_SelectedEntity;
-		SceneEntity m_TestEntity;
-
-		glm::vec3 m_Position = { 0,0,0 };
-		glm::vec3 m_Rotation = { 0,0,0 };
 	};
 }

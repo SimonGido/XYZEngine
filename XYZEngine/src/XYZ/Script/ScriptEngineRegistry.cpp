@@ -14,7 +14,6 @@ namespace XYZ {
 	
 	std::unordered_map<MonoType*, std::function<bool(SceneEntity&)>> s_HasComponentFuncs;
 	std::unordered_map<MonoType*, std::function<void(SceneEntity&)>> s_CreateComponentFuncs;
-
 	extern MonoImage* s_CoreAssemblyImage;
 
 #define REGISTER_COMPONENT_TYPE(Type) \
@@ -47,17 +46,29 @@ namespace XYZ {
 	}
 
 
-	static bool XYZ_Entity_HasComponent(uint32_t entity, MonoReflectionType* type)
-	{
-		Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
-		XYZ_ASSERT(scene.Raw(), "No active scene!");
+	namespace Script {
+		static bool XYZ_Entity_HasComponent(uint32_t entity, MonoReflectionType* type)
+		{
+			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
+			XYZ_ASSERT(scene.Raw(), "No active scene!");
 
-		SceneEntity ent(entity, scene.Raw());
+			SceneEntity ent(entity, scene.Raw());
 
-		MonoType* mType = mono_reflection_type_get_type(type);
-		return s_HasComponentFuncs[mType](ent);
+			MonoType* mType = mono_reflection_type_get_type(type);
+			return s_HasComponentFuncs[mType](ent);
+		}
+
+		static void XYZ_Entity_CreateComponent(uint32_t entity, MonoReflectionType* type)
+		{
+			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
+			XYZ_ASSERT(scene.Raw(), "No active scene!");
+
+			SceneEntity ent(entity, scene.Raw());
+
+			MonoType* mType = mono_reflection_type_get_type(type);
+			s_CreateComponentFuncs[mType](ent);
+		}
 	}
-
 	void ScriptEngineRegistry::RegisterAll()
 	{
 		InitComponentTypes();
@@ -66,10 +77,10 @@ namespace XYZ {
 
 		mono_add_internal_call("XYZ.Entity::GetTransform_Native", XYZ::Script::XYZ_Entity_GetTransform);
 		mono_add_internal_call("XYZ.Entity::SetTransform_Native", XYZ::Script::XYZ_Entity_SetTransform);
-
-		mono_add_internal_call("XYZ.Entity::ApplyForce_Native", XYZ::Script::XYZ_Entity_ApplyForce);
 		
+		mono_add_internal_call("XYZ.Entity::HasComponent_Native", XYZ::Script::XYZ_Entity_HasComponent);
+		mono_add_internal_call("XYZ.Entity::CreateComponent_Native", XYZ::Script::XYZ_Entity_CreateComponent);
 		
-		mono_add_internal_call("XYZ.Entity::HasComponent_Native", XYZ_Entity_HasComponent);
+		mono_add_internal_call("XYZ.RigidBody2DComponent::ApplyForce_Native", XYZ::Script::XYZ_RigidBody2D_ApplyForce);
 	}
 }

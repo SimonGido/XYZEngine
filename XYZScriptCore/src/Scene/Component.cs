@@ -54,10 +54,10 @@ namespace XYZ
 
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        public static extern void GetTransform_Native(ulong entityID, out Matrix4 result);
+        public static extern void GetTransform_Native(uint entityID, out Matrix4 result);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        public static extern void SetTransform_Native(ulong entityID, ref Matrix4 result);
+        public static extern void SetTransform_Native(uint entityID, ref Matrix4 result);
 
     }
 
@@ -96,11 +96,11 @@ namespace XYZ
     {
         public void ApplyForce(Vector2 impulse, Vector2 point)
         {
-            ApplyForce_Native(Entity.ID, impulse, point);
+            ApplyForce_Native(Entity.ID, ref impulse, ref point);
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        public static extern void ApplyForce_Native(ulong entityID, Vector2 impulse, Vector2 point);
+        public static extern void ApplyForce_Native(uint entityID, ref Vector2 impulse, ref Vector2 point);
     }
 
     public class BoxCollider2DComponent : Component

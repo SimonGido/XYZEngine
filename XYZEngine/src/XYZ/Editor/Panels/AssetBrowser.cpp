@@ -3,6 +3,8 @@
 
 #include "XYZ/Utils/StringUtils.h"
 #include "XYZ/Asset/AssetManager.h"
+#include "XYZ/Scene/Scene.h"
+#include "XYZ/Renderer/Font.h"
 
 #include <imgui.h>
 #include <filesystem>
@@ -61,7 +63,9 @@ namespace XYZ {
 			m_IconSize(50.0f),
 			m_ArrowSize(25.0f),
 			m_Path("Assets"),
-			m_PathLength(6)
+			m_PathLength(6),
+			m_ViewportHovered(false),
+			m_ViewportFocused(false)
 		{
 			m_Texture = Texture2D::Create({}, "Assets/Textures/Gui/icons.png");
 			float divisor = 4.0f;
@@ -89,6 +93,16 @@ namespace XYZ {
 		{
 			if (ImGui::Begin("Asset Browser"))
 			{
+				m_ViewportFocused = ImGui::IsWindowFocused();
+				m_ViewportHovered = ImGui::IsWindowHovered();
+				if (ImGui::GetIO().MouseDown[ImGuiMouseButton_Left]
+				  && m_ViewportFocused 
+				  && m_ViewportHovered)
+				{
+					m_SelectedFile.clear();
+					if (m_Callback)
+						m_Callback(GetSelectedAsset());
+				}
 				size_t slashPos = FindLastOf(m_Path, '/');
 
 				bool backArrowAvailable = slashPos != std::string::npos;
@@ -129,6 +143,48 @@ namespace XYZ {
 			}
 			ImGui::End();
 		}
+		Ref<Asset> AssetBrowser::GetSelectedAsset() const
+		{
+			if (!m_SelectedFile.empty())
+			{
+				std::string fullFilePath;
+				fullFilePath.append(m_Path);
+				fullFilePath.append("/" + m_SelectedFile);
+				AssetType type = AssetManager::GetAssetTypeFromExtension(Utils::GetExtension(m_SelectedFile));
+				switch (type)
+				{
+				case XYZ::AssetType::Scene:
+					return AssetManager::GetAsset<XYZ::Scene>(AssetManager::GetAssetHandle(fullFilePath));
+					break;
+				case XYZ::AssetType::Texture:
+					return AssetManager::GetAsset<XYZ::Texture>(AssetManager::GetAssetHandle(fullFilePath));
+					break;
+				case XYZ::AssetType::SubTexture:
+					return AssetManager::GetAsset<XYZ::SubTexture>(AssetManager::GetAssetHandle(fullFilePath));
+					break;
+				case XYZ::AssetType::Material:
+					return AssetManager::GetAsset<XYZ::Material>(AssetManager::GetAssetHandle(fullFilePath));
+					break;
+				case XYZ::AssetType::Shader:
+					return AssetManager::GetAsset<XYZ::Shader>(AssetManager::GetAssetHandle(fullFilePath));
+					break;
+				case XYZ::AssetType::Font:
+					return AssetManager::GetAsset<XYZ::Font>(AssetManager::GetAssetHandle(fullFilePath));
+					break;
+				case XYZ::AssetType::Audio:				
+					break;
+				case XYZ::AssetType::Script:		
+					break;
+				case XYZ::AssetType::SkeletalMesh:
+					break;
+				case XYZ::AssetType::None:
+					break;
+				default:
+					break;
+				}
+			}
+			return Ref<Asset>();
+		}
 		void AssetBrowser::processDirectory(const std::string& path)
 		{
 			if (!std::filesystem::is_directory(path))
@@ -168,6 +224,9 @@ namespace XYZ {
 					size_t index = assetTypeToTexCoordsIndex(type);
 					if (ImGui::ImageButton((void*)(uint64_t)m_Texture->GetRendererID(), { m_IconSize.x, m_IconSize.y }, { m_TexCoords[index].x, m_TexCoords[index].y }, { m_TexCoords[index].z, m_TexCoords[index].w }))
 					{
+						m_SelectedFile = name;
+						if (m_Callback)
+							m_Callback(GetSelectedAsset());
 					}
 				}
 

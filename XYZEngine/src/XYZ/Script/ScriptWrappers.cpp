@@ -40,14 +40,14 @@ namespace XYZ {
 			auto& transformComponent = ent.GetComponent<TransformComponent>();
 			transformComponent.DecomposeTransform(transform);
 		}
-		void XYZ_Entity_ApplyForce(uint32_t entity, glm::vec2 impulse, glm::vec2 point)
+		void XYZ_RigidBody2D_ApplyForce(uint32_t entity, glm::vec2* impulse, glm::vec2* point)
 		{
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
 			XYZ_ASSERT(scene.Raw(), "No active scene!");
 
 			SceneEntity ent(entity, scene.Raw());
 			RigidBody2DComponent& rigidBody = ent.GetComponent<RigidBody2DComponent>();
-			static_cast<b2Body*>(rigidBody.RuntimeBody)->ApplyLinearImpulse({ impulse.x, impulse.y }, { point.x, point.y }, true);
+			static_cast<b2Body*>(rigidBody.RuntimeBody)->ApplyLinearImpulse({ impulse->x, impulse->y }, { point->x, point->y }, true);
 		}
 	}
 }

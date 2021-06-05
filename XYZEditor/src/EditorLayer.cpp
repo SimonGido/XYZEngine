@@ -20,12 +20,7 @@ namespace XYZ {
 		ScriptEngine::Init("Assets/Scripts/XYZScript.dll");
 		m_Scene = AssetManager::GetAsset<Scene>(AssetManager::GetAssetHandle("Assets/Scenes/scene.xyz"));
 		m_SceneHierarchy.SetContext(m_Scene);
-		m_ScenePanel.SetContext(m_Scene);
-
-		m_TestEntity = m_Scene->GetEntityByName("TestEntity");
-		
-
-		
+		m_ScenePanel.SetContext(m_Scene);	
 		ScriptEngine::SetSceneContext(m_Scene);
 
 		uint32_t windowWidth = Application::Get().GetWindow().GetWidth();
@@ -35,51 +30,30 @@ namespace XYZ {
 
 		Renderer::WaitAndRender();
 
-		Ref<Texture> robotTexture = Texture2D::Create({}, "Assets/Textures/full_simple_char.png");
-		Ref<SubTexture> robotSubTexture = Ref<SubTexture>::Create(robotTexture, glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
-		m_Test = robotSubTexture;
 
-		Ref<Animation> animation = Ref<Animation>::Create(m_TestEntity);
-		
+		m_AssetBrowser.SetAssetSelectedCallback([&](const Ref<Asset>& asset) {
+			 m_AssetInspectorContext.SetContext(asset);
+			 if (asset.Raw())
+			 {
+				 m_Inspector.SetContext(&m_AssetInspectorContext);
+			 }
+		});
 
-		animation->CreateTrack<TransformTrack>();
-		auto track = animation->FindTrack<TransformTrack>();
-		if (track)
-		{
+		m_ScenePanel.SetEntitySelectedCallback([&](SceneEntity entity) {
+			m_SceneEntityInspectorContext.SetContext(entity);
+			if (entity)
 			{
-				KeyFrame<glm::vec3> key;
-				key.Value = glm::vec3(0.0f, 0.0f, 0.0f);
-				key.EndTime = 0.0f;
-				track->AddKeyFrame<glm::vec3>(key, TransformTrack::PropertyType::Translation);
+				m_Inspector.SetContext(&m_SceneEntityInspectorContext);
 			}
+		});
+
+		m_SceneHierarchy.SetEntitySelectedCallback([&](SceneEntity entity) {
+			m_SceneEntityInspectorContext.SetContext(entity);
+			if (entity)
 			{
-				KeyFrame<glm::vec3> key;
-				key.Value = glm::vec3(0.0f, 0.0f, 7.0f);
-				key.EndTime = 2.0f;
-				track->AddKeyFrame<glm::vec3>(key, TransformTrack::PropertyType::Rotation);
+				m_Inspector.SetContext(&m_SceneEntityInspectorContext);
 			}
-			{
-				KeyFrame<glm::vec3> key;
-				key.Value = glm::vec3(0.0f, 2.0f, 0.0f);
-				key.EndTime = 4.0f;
-				track->AddKeyFrame<glm::vec3>(key, TransformTrack::PropertyType::Translation);
-			}
-			{
-				KeyFrame<glm::vec3> key;
-				key.Value = glm::vec3(0.0f, 0.0f, 0.0f);
-				key.EndTime = 6.0f;
-				track->AddKeyFrame<glm::vec3>(key, TransformTrack::PropertyType::Translation);
-			}
-			{
-				KeyFrame<glm::vec3> key;
-				key.Value = glm::vec3(0.0f, 0.0f, 0.0f);
-				key.EndTime = 6.0f;
-				track->AddKeyFrame<glm::vec3>(key, TransformTrack::PropertyType::Rotation);
-			}
-		}
-		animation->UpdateLength();
-		//AnimatorComponent& animator = m_TestEntity.EmplaceComponent<AnimatorComponent>();
-		//animator.Animation = animation;
+		});
 	}	
 
 	void EditorLayer::OnDetach()
@@ -91,7 +65,7 @@ namespace XYZ {
 	{		
 		Renderer::SetClearColor(glm::vec4(0.1f, 0.1f, 0.1f, 1.0f));
 		Renderer::Clear();
-		m_Inspector.SetContext(m_Scene->GetSelectedEntity());
+
 		m_ScenePanel.OnUpdate(ts);
 
 		if (m_Scene->GetState() == SceneState::Play)

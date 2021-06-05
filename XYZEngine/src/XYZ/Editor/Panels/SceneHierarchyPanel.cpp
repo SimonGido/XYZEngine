@@ -64,6 +64,8 @@ namespace XYZ {
             if (ImGui::IsItemClicked())
             {
                 m_Context->SetSelectedEntity(entity);
+                if (m_Callback)
+                    m_Callback(m_Context->GetSelectedEntity());
             }
             
             bool entityDeleted = false;

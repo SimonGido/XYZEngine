@@ -66,12 +66,12 @@ namespace XYZ {
 		}
 
 		template <typename T>
-		T& Get(const std::string& name)
+		T* Get(const std::string& name)
 		{
 			auto uni = findUniform(name);
 			XYZ_ASSERT(uni, "Material uniform does not exist ", name.c_str());
 			auto& buffer = getUniformBufferTarget(uni->ShaderType);
-			return *(T*)&buffer[uni->Offset];
+			return (T*)&buffer[uni->Offset];
 		}
 
 		bool HasProperty(const std::string& name) const

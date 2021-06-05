@@ -7,18 +7,27 @@ namespace XYZ {
 	namespace Editor {
 		class AssetBrowser
 		{
+			using AssetSelectedCallback = std::function<void(const Ref<Asset>&)>;
 		public:
 			AssetBrowser();
 
 			void SetPath(const std::string& path);
 			void OnImGuiRender();
 
-		private:
+			void SetAssetSelectedCallback(const AssetSelectedCallback& callback) { m_Callback = callback; }
 			
+			Ref<Asset> GetSelectedAsset() const;
+
+		private:
 			void processDirectory(const std::string& path);
 			size_t assetTypeToTexCoordsIndex(AssetType type) const;
 
 		private:
+			AssetSelectedCallback m_Callback;
+
+			bool m_ViewportHovered;
+			bool m_ViewportFocused;
+
 			enum Type
 			{
 				Arrow,
@@ -41,6 +50,7 @@ namespace XYZ {
 			glm::vec2 m_IconSize;
 			glm::vec2 m_ArrowSize;
 			char m_Path[_MAX_PATH];
+			std::string m_SelectedFile;
 			size_t m_PathLength;
 
 			std::deque<std::string> m_DirectoriesVisited;

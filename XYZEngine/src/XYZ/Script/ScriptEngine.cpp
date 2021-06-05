@@ -45,6 +45,7 @@ namespace XYZ {
 		void InitClassMethods(MonoImage* image)
 		{
 			OnCreateMethod = GetMethod(image, FullName + ":OnCreate()");
+			OnDestroyMethod = GetMethod(image, FullName + ":OnDestroy()");
 			OnUpdateMethod = GetMethod(image, FullName + ":OnUpdate(single)");
 		}
 	};
@@ -392,7 +393,7 @@ namespace XYZ {
 			}
 		}
 		// Call OnCreate function (if exists)
-		OnCreateEntity(entity);
+		// OnCreateEntity(entity);
 	}
 
 	MonoDomain* ScriptEngine::GetMonoDomain()
