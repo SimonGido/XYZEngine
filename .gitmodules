@@ -10,3 +10,6 @@
 [submodule "XYZEngine/vendor/imgui"]
 	path = XYZEngine/vendor/imgui
 	url = https://github.com/SimonGido/imgui.git
+[submodule "XYZEngine/vendor/box2d"]
+	path = XYZEngine/vendor/box2d
+	url = https://github.com/SimonGido/box2d.git
