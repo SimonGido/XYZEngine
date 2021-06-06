@@ -51,7 +51,7 @@ namespace XYZ {
 		static GUID		 GetDirectoryHandle(const std::string& filepath);
 		static std::vector<Ref<Asset>> FindAssetsByType(AssetType type);
 		static bool	     IsValidExtension(const std::string& extension);
-
+		static void		 LoadAsset(const GUID& assetHandle);
 
 		template<typename T, typename... Args>
 		static Ref<T> CreateAsset(const std::string& filename, AssetType type, const GUID& directoryHandle, Args&&... args)

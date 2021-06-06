@@ -13,9 +13,15 @@ namespace XYZ {
 
 			void SetContext(SceneEntity context);
 		private:
-			SceneEntity m_Context;
+			void selectSubTextureDialog();
 
-			Ref<Material> m_DefaultMaterial;
+		private:
+			SceneEntity			  m_Context;
+			std::function<void()> m_Dialog;
+			bool				  m_DialogOpen;
+			glm::vec2			  m_IconSize;
+
+			Ref<Material>   m_DefaultMaterial;
 			Ref<SubTexture> m_DefaultSubTexture;
 
 

@@ -21,6 +21,7 @@ namespace XYZ {
 		private:
 			void processDirectory(const std::string& path);
 			size_t assetTypeToTexCoordsIndex(AssetType type) const;
+			std::string fullPath(const std::string& filename) const;
 
 		private:
 			AssetSelectedCallback m_Callback;

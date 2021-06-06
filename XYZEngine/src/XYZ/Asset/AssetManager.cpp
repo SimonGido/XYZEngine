@@ -86,6 +86,16 @@ namespace XYZ
 		return s_AssetTypes.find(extension) != s_AssetTypes.end();
 	}
 
+	void AssetManager::LoadAsset(const GUID& assetHandle)
+	{
+		XYZ_ASSERT(s_LoadedAssets.find(assetHandle) != s_LoadedAssets.end(), "");
+		Ref<Asset> asset = s_LoadedAssets[assetHandle];
+	
+		asset = AssetSerializer::LoadAsset(asset);
+		asset->IsLoaded = true;
+		s_LoadedAssets[assetHandle] = asset;
+	}
+
 
 	void AssetManager::processDirectory(const std::string& path, AssetDirectory& directory)
 	{

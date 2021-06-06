@@ -198,6 +198,8 @@ namespace XYZ {
 
 	namespace Editor {
 		SceneEntityInspectorContext::SceneEntityInspectorContext()
+			:
+			m_IconSize(35.0f)
 		{
 			m_DefaultMaterial = AssetManager::GetAsset<Material>(AssetManager::GetAssetHandle("Assets/Materials/Material.mat"));
 			m_DefaultSubTexture = AssetManager::GetAsset<SubTexture>(AssetManager::GetAssetHandle("Assets/SubTextures/player.subtex"));
@@ -306,7 +308,6 @@ namespace XYZ {
 					// SubTexture
 					{
 						Helper::BeginColumns("SubTexture");
-
 						ImGui::PushItemWidth(150.0f);
 
 						char subTexturePath[_MAX_PATH];
@@ -314,8 +315,13 @@ namespace XYZ {
 						subTexturePath[component.SubTexture->FileName.size()] = '\0';
 
 						ImGui::InputText("##SubTexture", subTexturePath, _MAX_PATH);
-						ImGui::PopItemWidth();
+						if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+						{
+							m_Dialog = Hook(&SceneEntityInspectorContext::selectSubTextureDialog, this);
+							m_DialogOpen = true;
+						}
 
+						ImGui::PopItemWidth();						
 						Helper::EndColumns();
 					}
 					/////////////////
@@ -464,12 +470,16 @@ namespace XYZ {
 
 				Helper::DrawComponent<ChainCollider2DComponent>("Chain Collider2D", m_Context, [&](auto& component) {
 
+					const TransformComponent& transform = m_Context.GetComponent<TransformComponent>();
+					auto [translation, rotation, scale] = transform.GetWorldComponents();
 					glm::vec3 p0(0.0f);
 					glm::vec3 p1(0.0f);
 					for (size_t i = 1; i < component.Points.size(); ++i)
 					{
 						p0 = { component.Points[i - 1].x, component.Points[i - 1].y, 0.0f };
 						p1 = { component.Points[i].x, component.Points[i].y, 0.0f };
+						p0 += translation;
+						p1 += translation;
 						Renderer2D::SubmitLine(p0, p1, sc_ColliderColor);
 						Renderer2D::SubmitCircle(p0, 0.05f, 10, sc_ColliderColor);
 					}
@@ -597,10 +607,35 @@ namespace XYZ {
 					ImGui::EndPopup();
 				}
 			}
+			if (m_DialogOpen && m_Dialog)
+				m_Dialog();
 		}
 		void SceneEntityInspectorContext::SetContext(SceneEntity context)
 		{		
 			m_Context = context;			
+		}
+		void SceneEntityInspectorContext::selectSubTextureDialog()
+		{
+			int flags = ImGuiWindowFlags_NoDocking;
+			if (ImGui::Begin("Select SubTexture"), &m_DialogOpen, flags)
+			{
+				auto subTextures = std::move(AssetManager::FindAssetsByType(AssetType::SubTexture));
+				for (const Ref<SubTexture>& subTexture : subTextures)
+				{
+					if (subTexture->IsLoaded)
+					{
+						const Ref<Texture>& texture = subTexture->GetTexture();
+						const glm::vec4& texCoords = subTexture->GetTexCoords();
+						if (ImGui::ImageButton((void*)(uint64_t)texture->GetRendererID(), { m_IconSize.x, m_IconSize.y }, { texCoords.x, texCoords.w }, { texCoords.z, texCoords.y }))
+						{
+							m_Context.GetComponent<SpriteRenderer>().SubTexture = subTexture;
+							m_DialogOpen = false;
+							break;
+						}
+					}
+				}
+			}
+			ImGui::End();
 		}
 	}
 }

@@ -228,6 +228,19 @@ namespace XYZ {
 						if (m_Callback)
 							m_Callback(GetSelectedAsset());
 					}
+					if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+					{
+						ImGui::OpenPopup("LoadAsset");
+					}
+					if (ImGui::BeginPopup("LoadAsset"))
+					{
+						if (ImGui::MenuItem("Load Asset"))
+						{
+							AssetManager::LoadAsset(AssetManager::GetAssetHandle(fullPath(name)));
+							ImGui::CloseCurrentPopup();
+						}
+						ImGui::EndPopup();
+					}
 				}
 
 				cursorPos.x += m_IconSize.x + xOffset;
@@ -277,6 +290,13 @@ namespace XYZ {
 			default:
 				break;
 			}
+		}
+		std::string AssetBrowser::fullPath(const std::string& filename) const
+		{
+			std::string fullFilePath;
+			fullFilePath.append(m_Path);
+			fullFilePath.append("/" + filename);
+			return fullFilePath;
 		}
 	}
 }

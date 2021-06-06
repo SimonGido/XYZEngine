@@ -413,9 +413,9 @@ namespace XYZ {
 			else if (entity.HasComponent<ChainCollider2DComponent>())
 			{
 				ChainCollider2DComponent& chainCollider = entity.GetComponent<ChainCollider2DComponent>();
+				
 				b2ChainShape chain;
-				chain.CreateChain((const b2Vec2*)chainCollider.Points.data(), chainCollider.Points.size(), {}, {});
-
+				chain.CreateLoop((const b2Vec2*)chainCollider.Points.data(), chainCollider.Points.size());
 				b2FixtureDef fixture;
 				fixture.shape = &chain;
 				fixture.density  = chainCollider.Density;

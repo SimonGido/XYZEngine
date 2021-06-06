@@ -18,7 +18,8 @@ namespace XYZ {
 	void EditorLayer::OnAttach()
 	{
 		ScriptEngine::Init("Assets/Scripts/XYZScript.dll");
-		m_Scene = AssetManager::GetAsset<Scene>(AssetManager::GetAssetHandle("Assets/Scenes/scene.xyz"));
+		m_Scene = AssetManager::GetAsset<Scene>(AssetManager::GetAssetHandle("Assets/Scenes/NewScene.xyz"));
+		///m_Scene = AssetManager::CreateAsset<Scene>("NewScene.xyz", AssetType::Scene, AssetManager::GetDirectoryHandle("Assets/Scenes"), "New Scene");
 		m_SceneHierarchy.SetContext(m_Scene);
 		m_ScenePanel.SetContext(m_Scene);	
 		ScriptEngine::SetSceneContext(m_Scene);
