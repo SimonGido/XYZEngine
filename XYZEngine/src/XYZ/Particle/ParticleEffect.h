@@ -37,7 +37,7 @@ namespace XYZ {
 		float LifeTime				= 0.0f;
 	private:
 		float TimeAlive 			= 0.0f;
-		int IsAlive					= 1;
+		int   IsAlive				= 1;
 	};
 
 
