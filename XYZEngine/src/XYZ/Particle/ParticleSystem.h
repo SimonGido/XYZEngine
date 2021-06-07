@@ -36,6 +36,7 @@ namespace XYZ {
 		void SetParticles(ParticleData* dataBuffer, ParticleSpecification* specsBuffer);
 		void SetParticles(ParticleData* dataBuffer, ParticleSpecification* specsBuffer, uint32_t offsetParticles, uint32_t countParticles);
 
+		const Ref<VertexArray> GetVertexArray() const { return m_VertexArray; }
 		ParticleConfiguration& GetConfiguration() { return m_Config; }
 	private:
 		ParticleConfiguration m_Config;

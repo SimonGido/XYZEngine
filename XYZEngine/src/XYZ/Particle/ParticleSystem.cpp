@@ -25,6 +25,26 @@ namespace XYZ {
         m_EmittedParticles(0.0f),
         m_PlayTime(0.0f)
     {
+        ParticleVertex quad[4] = {
+            ParticleVertex{glm::vec3(-0.5f, -0.5f, 0.0f), glm::vec2(0.0f, 0.0f)},
+            ParticleVertex{glm::vec3( 0.5f, -0.5f, 0.0f), glm::vec2(1.0f, 0.0f)},
+            ParticleVertex{glm::vec3( 0.5f,  0.5f, 0.0f), glm::vec2(1.0f, 1.0f)},
+            ParticleVertex{glm::vec3(-0.5f,  0.5f, 0.0f), glm::vec2(0.0f, 1.0f)}
+        };
+
+        Ref<VertexBuffer> squareVBpar;
+        squareVBpar = XYZ::VertexBuffer::Create(quad, 4 * sizeof(ParticleVertex));
+        squareVBpar->SetLayout({
+            { 0, XYZ::ShaderDataComponent::Float3, "a_Position" },
+            { 1, XYZ::ShaderDataComponent::Float2, "a_TexCoord" }
+        });
+        m_VertexArray->AddVertexBuffer(squareVBpar);
+
+
+        uint32_t squareIndpar[] = { 0, 1, 2, 2, 3, 0 };
+        Ref<XYZ::IndexBuffer> squareIBpar;
+        squareIBpar = XYZ::IndexBuffer::Create(squareIndpar, sizeof(squareIndpar) / sizeof(uint32_t));
+        m_VertexArray->SetIndexBuffer(squareIBpar);
     }
     void ParticleSystem::Reset()
     {
