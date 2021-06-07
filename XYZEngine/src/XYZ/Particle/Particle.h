@@ -19,25 +19,21 @@ namespace XYZ {
 		float	  Rotation		 = 0.0f;
 
 	private:
-		float	  Alignment[2];
+		float	  Alignment[3];
 	};
 
 	struct ParticleSpecification
 	{
-		glm::vec4 StartColor;
-		glm::vec4 EndColor;
-		
+		glm::vec4 StartColor;	
 		glm::vec2 StartSize;
-		glm::vec2 EndSize;
-
 		glm::vec2 StartVelocity;
-		glm::vec2 EndVelocity;
+		glm::vec2 StartPosition;
 
 		float	  LifeTime;
 	private:
 		float	  TimeAlive;
 		int32_t   IsAlive;
 		
-		float	  Allignment[1];
+		float	  Allignment[3];
 	};
 }

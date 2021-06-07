@@ -19,26 +19,23 @@ struct ParticleData
 	vec2  Position;
 	vec2  TexCoord;
 	vec2  Size;
-	
-	float Alignment[2];
+	float Rotation;
+
+	float Alignment[3];
 };
 
 struct ParticleSpecification
 {
-	vec4  StartColor;
-	vec4  EndColor;
-		  
-	vec2  StartSize;
-	vec2  EndSize;
-		  
+	vec4  StartColor;		  
+	vec2  StartSize;		  
 	vec2  StartVelocity;
-	vec2  EndVelocity;
+	vec2  StartPosition;
 
 	float LifeTime;
 	float TimeAlive;
 	int	  IsAlive;
 	
-	float Allignment[1];
+	float Allignment[3];
 };
 
 layout(std430, binding = 0) buffer buffer_Data
@@ -59,30 +56,14 @@ layout(std140, binding = 2) buffer buffer_DrawCommand
 layout(binding = 3, offset = 0) uniform atomic_uint counter_DeadParticles;
 
 
-
-vec4 ChangeColorOverLife(vec4 startColor, vec4 endColor, float timeAlive, float lifeTime)
-{
-	return mix(startColor, endColor, timeAlive / lifeTime);
-}
-
-vec2 ChangeSizeOverLife(vec2 startSize, vec2 endSize, float timeAlive, float lifeTime)
-{
-	return mix(startSize, endSize, timeAlive / lifeTime);
-}
-
-vec2 ChangeVelocityOverLife(vec2 startvelocity, vec2 endVelocity, float timeAlive, float lifeTime)
-{
-	return mix(startvelocity, endVelocity, timeAlive / lifeTime);
-}
-
 vec2 UpdatePosition(vec2 velocity, float speed, float ts)
 {
 	return vec2(velocity.x * speed * ts, velocity.y * speed * ts);
 }
 
-void RestartParticle(int loop, out float timeAlive, out int isAlive)
+bool RestartParticle(int repeat, out float timeAlive, out int isAlive)
 {
-	if (loop != 0)
+	if (repeat != 0)
 	{
 		timeAlive = 0.0f;
 	}
@@ -90,7 +71,8 @@ void RestartParticle(int loop, out float timeAlive, out int isAlive)
 	{
 		atomicCounterIncrement(counter_DeadParticles);
 	}
-	isAlive = loop;
+	isAlive = repeat;
+	return isAlive != 0;
 }
 
 void BuildDrawCommand(int particlesInExistence)
@@ -104,11 +86,16 @@ void BuildDrawCommand(int particlesInExistence)
 }
 
 
-uniform int   u_Loop;
+uniform int   u_Repeat;
 uniform int   u_ParticlesInExistence;
+
 uniform float u_Time;
 uniform float u_Gravity;
 uniform float u_Speed;
+
+uniform vec4 u_ColorRatio;
+uniform vec2 u_SizeRatio;
+uniform vec2 u_VelocityRatio;
 
 layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
 void main(void)
@@ -121,10 +108,16 @@ void main(void)
 	ParticleSpecification specs = Specification[id];
 
 	if (specs.TimeAlive > specs.LifeTime)
-		RestartParticle(u_Loop, specs.TimeAlive, specs.LifeTime);
-	data.Position = UpdatePosition(ChangeVelocityOverLife(specs.StartVelocity, specs.EndVelocity, specs.TimeAlive, specs.LifeTime), u_Speed, u_Time);
-	data.Color	  = ChangeColorOverLife(specs.StartColor, specs.EndColor, specs.TimeAlive, specs.LifeTime);
-	data.Size	  = ChangeSizeOverLife(specs.StartSize, specs.EndSize, specs.TimeAlive, specs.LifeTime);
+	{
+		if (RestartParticle(u_Repeat, specs.TimeAlive, specs.LifeTime))
+			data.Position = specs.StartPosition;
+	}
+	float ratio = specs.TimeAlive / specs.LifeTime;
+	vec2  velocity = mix(specs.StartVelocity, specs.StartVelocity * u_VelocityRatio, ratio);
+	data.Color	   = mix(specs.StartColor, specs.StartColor * u_ColorRatio, ratio);
+	data.Size	   = mix(specs.StartSize, specs.StartSize * u_SizeRatio, ratio);
+	data.Position  = UpdatePosition(velocity, u_Speed, u_Time);
+
 	BuildDrawCommand(u_ParticlesInExistence);
 
 	Data[id]		  = data;
