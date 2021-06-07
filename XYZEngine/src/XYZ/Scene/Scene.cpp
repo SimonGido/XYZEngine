@@ -238,21 +238,22 @@ namespace XYZ {
 			anim.Animation->Update(ts);
 		}
 		
+		
 		auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponent>();
 		for (auto entity : particleView)
 		{
 			auto [transform, particle] = particleView.Get<TransformComponent, ParticleComponent>(entity);
-			auto material = particle.ComputeMaterial->GetParentMaterial();
-			auto materialInstance = particle.ComputeMaterial;
-		
-			materialInstance->Set("u_Time", ts);
-			materialInstance->Set("u_ParticlesInExistence", (int)std::ceil(particle.ParticleEffect->GetEmittedParticles()));
-		
-			material->GetShader()->Bind();
-			materialInstance->Bind();
-		
-			particle.ParticleEffect->Update(ts);
-			material->GetShader()->Compute(32, 32, 1);
+			particle.ComputeShader->Bind();
+			particle.ComputeShader->SetInt("u_Repeat", particle.System->GetConfiguration().Repeat);
+			particle.ComputeShader->SetInt("u_ParticlesInExistence", particle.System->GetEmittedParticles());
+			//particle.ComputeShader->SetFloat("u_Gravity", particle.System->GetConfiguration().Gravity);
+			particle.ComputeShader->SetFloat("u_Time", ts);
+			particle.ComputeShader->SetFloat("u_Speed", particle.System->GetConfiguration().Speed);
+			particle.ComputeShader->SetFloat4("u_ColorRatio", particle.System->GetConfiguration().ColorRatio);
+			particle.ComputeShader->SetFloat2("u_SizeRatio", particle.System->GetConfiguration().SizeRatio);
+			particle.ComputeShader->SetFloat2("u_VelocityRatio", particle.System->GetConfiguration().VelocityRatio);
+			particle.System->Update(ts);
+			particle.ComputeShader->Compute(32, 32, 1);
 		}
 		
 		auto rigidBodyView = m_ECS.CreateView<TransformComponent, RigidBody2DComponent>();

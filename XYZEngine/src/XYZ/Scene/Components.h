@@ -2,7 +2,7 @@
 #include "XYZ/ECS/ECSManager.h"
 #include "XYZ/ECS/Component.h"
 #include "XYZ/Core/GUID.h"
-#include "XYZ/Particle/ParticleEffect.h"
+#include "XYZ/Particle/ParticleSystem.h"
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Script/ScriptPublicField.h"
 #include "SceneCamera.h"
@@ -122,11 +122,10 @@ namespace XYZ {
 	struct ParticleComponent : public IComponent
 	{
 		ParticleComponent() = default;
-		Ref<MaterialInstance> RenderMaterial;
-		Ref<MaterialInstance> ComputeMaterial;
-		Ref<ParticleEffect> ParticleEffect;
-
-		uint32_t TextureID = 0;
+		
+		Ref<Material>		  RenderMaterial;
+		Ref<Shader>			  ComputeShader;
+		Ref<ParticleSystem>	  System;
 	};
 
 	struct PointLight2D : public IComponent

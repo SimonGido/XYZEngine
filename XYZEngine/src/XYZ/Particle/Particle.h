@@ -13,13 +13,13 @@ namespace XYZ {
 	struct ParticleData
 	{
 		glm::vec4 Color			 = glm::vec4(0);
-		glm::vec4 Position		 = glm::vec4(0);
+		glm::vec2 Position		 = glm::vec2(0);
 		glm::vec2 TexCoord		 = glm::vec2(0);
 		glm::vec2 Size			 = glm::vec2(0);
 		float	  Rotation		 = 0.0f;
 
 	private:
-		float	  Alignment[3];
+		float	  Alignment[1];
 	};
 
 	struct ParticleSpecification
@@ -32,7 +32,7 @@ namespace XYZ {
 		float	  LifeTime;
 	private:
 		float	  TimeAlive;
-		int32_t   IsAlive;
+		int32_t   IsAlive = 1;
 		
 		float	  Allignment[3];
 	};

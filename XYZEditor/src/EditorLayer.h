@@ -40,5 +40,6 @@ namespace XYZ {
 		Editor::AssetInspectorContext	    m_AssetInspectorContext;
 	private:	
 		SceneEntity m_SelectedEntity;
+
 	};
 }

@@ -270,7 +270,7 @@ namespace XYZ {
 		* @param[in] size	Size of the buffer in bytes
 		* @return shared_ptr to ShaderStorageBuffer
 		*/
-		static Ref<ShaderStorageBuffer> Create(uint32_t size);
+		static Ref<ShaderStorageBuffer> Create(uint32_t size, uint32_t binding);
 
 		/**
 		* Create ShaderStorageBuffer
@@ -279,7 +279,7 @@ namespace XYZ {
 		* @param[in] usage  Data in the buffer will be static or dynamic , default Dynamic
 		* @return shared_ptr to ShaderStoageBuffer
 		*/
-		static Ref<ShaderStorageBuffer> Create(float* vertices, uint32_t size, BufferUsage usage = BufferUsage::Dynamic);
+		static Ref<ShaderStorageBuffer> Create(float* vertices, uint32_t size, uint32_t binding, BufferUsage usage = BufferUsage::Dynamic);
 	};
 
 
@@ -294,7 +294,7 @@ namespace XYZ {
 		virtual uint32_t* GetCounters() = 0;
 		virtual uint32_t GetNumCounters() = 0;
 
-		static Ref<AtomicCounter> Create(uint32_t size);
+		static Ref<AtomicCounter> Create(uint32_t size, uint32_t binding);
 	};
 
 
@@ -324,7 +324,7 @@ namespace XYZ {
 		virtual void Bind() const = 0;
 		virtual void BindBase(uint32_t index) = 0;
 
-		static Ref<IndirectBuffer> Create(void * drawCommand,uint32_t size);
+		static Ref<IndirectBuffer> Create(void * drawCommand, uint32_t size, uint32_t binding);
 	};
 
 

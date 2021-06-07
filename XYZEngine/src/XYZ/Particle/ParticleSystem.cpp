@@ -8,7 +8,7 @@ namespace XYZ {
         ColorRatio(1.0f),
         SizeRatio(1.0f),
         VelocityRatio(1.0f),
-        MaxParticles(50),
+        MaxParticles(5000),
         Rate(2.0f),
         Gravity(0.0f),
         Speed(1.0f),
@@ -17,11 +17,12 @@ namespace XYZ {
     {
     }
 
-    ParticleSystem::ParticleSystem()
+    ParticleSystem::ParticleSystem(const ParticleConfiguration& config)
         :
+        m_Config(config),
         m_VertexArray(VertexArray::Create()),
-        m_IndirectBuffer(IndirectBuffer::Create(nullptr, sizeof(DrawElementsIndirectCommand))),
-        m_DeadCounter(AtomicCounter::Create(1)),
+        m_IndirectBuffer(IndirectBuffer::Create(nullptr, sizeof(DrawElementsIndirectCommand), 3)),
+        m_DeadCounter(AtomicCounter::Create(1, 4)),
         m_EmittedParticles(0.0f),
         m_PlayTime(0.0f)
     {
@@ -39,7 +40,18 @@ namespace XYZ {
             { 1, XYZ::ShaderDataComponent::Float2, "a_TexCoord" }
         });
         m_VertexArray->AddVertexBuffer(squareVBpar);
-
+        m_DataStorage = ShaderStorageBuffer::Create(m_Config.MaxParticles * sizeof(ParticleData), 1);
+        m_DataStorage->SetLayout({
+                {2, ShaderDataComponent::Float4, "a_IColor",		  1},
+                {3, ShaderDataComponent::Float2, "a_IPosition",		  1},
+                {4, ShaderDataComponent::Float2, "a_ITexCoord",       1},
+                {5, ShaderDataComponent::Float2, "a_ISize",			  1},
+                {6, ShaderDataComponent::Float,  "a_IAngle",		  1},
+                {7, ShaderDataComponent::Float,  "a_IAlignment",	  1}
+         });
+        m_SpecsStorage = ShaderStorageBuffer::Create(m_Config.MaxParticles * sizeof(ParticleSpecification), 2);
+        
+        m_VertexArray->AddShaderStorageBuffer(m_DataStorage);
 
         uint32_t squareIndpar[] = { 0, 1, 2, 2, 3, 0 };
         Ref<XYZ::IndexBuffer> squareIBpar;
@@ -59,8 +71,8 @@ namespace XYZ {
 
         int emitted = (int)std::ceil(m_EmittedParticles);
 
-        m_DataStorage->BindRange(0, emitted * sizeof(ParticleData), 0);
-        m_SpecsStorage->BindRange(0, emitted * sizeof(ParticleSpecification), 1);
+        m_DataStorage->BindRange(0, emitted * sizeof(ParticleData), 1);
+        m_SpecsStorage->BindRange(0, emitted * sizeof(ParticleSpecification), 2);
 
         m_PlayTime += ts;
     }

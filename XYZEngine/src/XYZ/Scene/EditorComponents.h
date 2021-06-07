@@ -2,8 +2,8 @@
 #include "XYZ/ECS/ECSManager.h"
 #include "XYZ/ECS/Component.h"
 #include "XYZ/Core/GUID.h"
-#include "XYZ/Particle/ParticleEffect.h"
 #include "XYZ/Renderer/SubTexture.h"
+#include "XYZ/Renderer/Material.h"
 
 namespace XYZ {
 	struct EditorSpriteRenderer : public IComponent

@@ -45,7 +45,7 @@ namespace XYZ {
 	class OpenGLShaderStorageBuffer : public ShaderStorageBuffer
 	{
 	public:
-		OpenGLShaderStorageBuffer(void* data, uint32_t size, BufferUsage usage);
+		OpenGLShaderStorageBuffer(void* data, uint32_t size, uint32_t binding, BufferUsage usage);
 		virtual ~OpenGLShaderStorageBuffer();
 		virtual void BindBase(uint32_t index) const override;
 		virtual void BindRange(uint32_t offset, uint32_t size, uint32_t index)const override;
@@ -69,7 +69,7 @@ namespace XYZ {
 	class OpenGLAtomicCounter : public AtomicCounter
 	{
 	public:
-		OpenGLAtomicCounter(uint32_t numOfCounters);
+		OpenGLAtomicCounter(uint32_t numOfCounters, uint32_t binding);
 		virtual ~OpenGLAtomicCounter();
 
 		virtual void Reset() override;
@@ -89,7 +89,7 @@ namespace XYZ {
 	class OpenGLIndirectBuffer : public IndirectBuffer
 	{
 	public:
-		OpenGLIndirectBuffer(void* drawCommand, uint32_t size);
+		OpenGLIndirectBuffer(void* drawCommand, uint32_t size, uint32_t binding);
 		virtual ~OpenGLIndirectBuffer();
 
 		virtual void Bind()const override;

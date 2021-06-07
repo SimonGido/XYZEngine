@@ -506,14 +506,6 @@ namespace XYZ {
 		Renderer2D::SubmitLine(p[3], p[0], color);
 	}
 
-	void Renderer2D::SubmitParticles(const glm::mat4& transform, const Ref<ParticleEffect>& particleEffect)
-	{
-		particleEffect->GetVertexArray()->Bind();
-		particleEffect->GetShaderStorage()->BindBase(1);
-		particleEffect->GetIndirectBuffer()->Bind();
-		Renderer::DrawElementsIndirect(nullptr);
-	}
-
 	void Renderer2D::SubmitCollisionQuad(const glm::mat4& transform, uint32_t id)
 	{
 		constexpr size_t quadVertexCount = 4;

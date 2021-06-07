@@ -142,7 +142,7 @@ namespace XYZ {
 		s_Data.BloomShader		  = Shader::Create("Assets/Shaders/BloomShader.glsl");
 		s_Data.CompositeShader	  = Shader::Create("Assets/Shaders/CompositeShader.glsl");
 		s_Data.LightShader		  = Shader::Create("Assets/Shaders/LightShader.glsl");
-		s_Data.LightStorageBuffer = ShaderStorageBuffer::Create(s_Data.MaxNumberOfLights * sizeof(SceneRendererData::PointLight));
+		s_Data.LightStorageBuffer = ShaderStorageBuffer::Create(s_Data.MaxNumberOfLights * sizeof(SceneRendererData::PointLight), 1);
 	}
 
 	void SceneRenderer::Shutdown()
@@ -330,16 +330,15 @@ namespace XYZ {
 
 		for (auto& dc : s_Data.ParticleDrawList)
 		{
-			auto material = dc.Particle->RenderMaterial->GetParentMaterial();
-			auto materialInstace = dc.Particle->RenderMaterial;
+			auto material = dc.Particle->RenderMaterial;
 
 			material->Bind();
-			materialInstace->Set("u_Transform", dc.Transform->WorldTransform);
-			materialInstace->Bind();
-			Renderer2D::SubmitParticles(dc.Transform->WorldTransform, dc.Particle->ParticleEffect);
+			material->Set("u_Transform", dc.Transform->WorldTransform);
+			dc.Particle->System->GetVertexArray()->Bind();
+			dc.Particle->System->GetIndirectBuffer()->Bind();
+			Renderer::DrawElementsIndirect(nullptr);
 		}
-
-		
+	
 		Renderer2D::EndScene();
 		Renderer::EndRenderPass();		
 	}

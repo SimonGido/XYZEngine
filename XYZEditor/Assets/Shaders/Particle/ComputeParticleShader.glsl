@@ -1,4 +1,4 @@
-//#type compute
+#type compute
 #version 460
 
 const int c_MaxParticles = 100000;
@@ -12,7 +12,6 @@ struct DrawCommand
 	uint BaseInstance;  
 };
 
-
 struct ParticleData
 {
 	vec4  Color;
@@ -21,7 +20,7 @@ struct ParticleData
 	vec2  Size;
 	float Rotation;
 
-	float Alignment[3];
+	float Alignment[1];
 };
 
 struct ParticleSpecification
@@ -38,22 +37,22 @@ struct ParticleSpecification
 	float Allignment[3];
 };
 
-layout(std430, binding = 0) buffer buffer_Data
+layout(std430, binding = 1) buffer buffer_Data
 {
 	ParticleData Data[];
 };
 
-layout(std430, binding = 1) buffer buffer_Specification
+layout(std430, binding = 2) buffer buffer_Specification
 {
 	ParticleSpecification Specification[];
 };
 
-layout(std140, binding = 2) buffer buffer_DrawCommand
+layout(std140, binding = 3) buffer buffer_DrawCommand
 {
 	DrawCommand Command;
 };
 
-layout(binding = 3, offset = 0) uniform atomic_uint counter_DeadParticles;
+layout(binding = 4, offset = 0) uniform atomic_uint counter_DeadParticles;
 
 
 vec2 UpdatePosition(vec2 velocity, float speed, float ts)
@@ -106,17 +105,18 @@ void main(void)
 
 	ParticleData data			= Data[id];
 	ParticleSpecification specs = Specification[id];
+	specs.TimeAlive				+= u_Time;
 
 	if (specs.TimeAlive > specs.LifeTime)
 	{
 		if (RestartParticle(u_Repeat, specs.TimeAlive, specs.LifeTime))
 			data.Position = specs.StartPosition;
 	}
-	float ratio = specs.TimeAlive / specs.LifeTime;
+	float ratio    = specs.TimeAlive / specs.LifeTime;
 	vec2  velocity = mix(specs.StartVelocity, specs.StartVelocity * u_VelocityRatio, ratio);
 	data.Color	   = mix(specs.StartColor, specs.StartColor * u_ColorRatio, ratio);
 	data.Size	   = mix(specs.StartSize, specs.StartSize * u_SizeRatio, ratio);
-	data.Position  = UpdatePosition(velocity, u_Speed, u_Time);
+	data.Position  += UpdatePosition(velocity, u_Speed, u_Time);
 
 	BuildDrawCommand(u_ParticlesInExistence);
 

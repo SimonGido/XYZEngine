@@ -55,6 +55,36 @@ namespace XYZ {
 				m_Inspector.SetContext(&m_SceneEntityInspectorContext);
 			}
 		});
+
+		auto entity = m_Scene->GetEntityByName("Scary Entity");
+		auto &particleComponent = entity.EmplaceComponent<ParticleComponent>();
+		particleComponent.ComputeShader = Shader::Create("Assets/Shaders/Particle/ComputeParticleShader.glsl");
+		particleComponent.RenderMaterial = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShader.glsl"));
+		particleComponent.System = Ref<ParticleSystem>::Create();
+		
+		std::vector<ParticleData> particleData;
+		std::vector<ParticleSpecification> particleSpecification;
+		for (size_t i = 0; i < particleComponent.System->GetConfiguration().MaxParticles; ++i)
+		{
+			ParticleData data;
+			data.Color    = glm::vec4(1.0f);
+			data.Position = glm::vec2(0.0f + i, 0.0f);
+			data.TexCoord = glm::vec2(0.0f);
+			data.Size	  = glm::vec2(0.2f);
+			data.Rotation = 0.0f;
+			particleData.push_back(data);
+
+			ParticleSpecification specs;
+			specs.StartColor	= glm::vec4(0.5f);
+			specs.StartPosition = glm::vec2(0.0f + i * 10, 0.0f);
+			specs.StartSize		= glm::vec2(0.2f);
+			specs.StartVelocity = glm::vec2(0.5f);
+			specs.LifeTime		= 10.0f;
+		
+			particleSpecification.push_back(specs);
+		}
+
+		particleComponent.System->SetParticles(particleData.data(), particleSpecification.data());
 	}	
 
 	void EditorLayer::OnDetach()
