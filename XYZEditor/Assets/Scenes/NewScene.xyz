@@ -4,8 +4,8 @@ Entities:
     SceneTagComponent:
       Name: Scary Entity
     TransformComponent:
-      Position: [-1.07792459e-06, -1.16000056, 0]
-      Rotation: [0, 0, 8.53720934e-08]
+      Position: [-1.83987004e-06, -1.16000056, 0]
+      Rotation: [0, 0, 8.41247783e-08]
       Scale: [1, 1, 1]
     SpriteRenderer:
       MaterialAsset: 6b8ecf40-b3aa-4a26-a497-d7cdda43afba
@@ -14,7 +14,7 @@ Entities:
       SortLayer: 0
       Visible: true
     Relationship:
-      Parent: 753e284e-e6f5-4e44-bd6d-b5acf1bae0f2
+      Parent: e0c3f046-1d3b-4758-86fd-cd63be9b8c4f
       PreviousSibling: 7d2ac969-0a31-46d7-98d5-ceb1b25c67af
     RigidBody2D:
       Type: 1
@@ -43,7 +43,7 @@ Entities:
       SortLayer: 0
       Visible: true
     Relationship:
-      Parent: 753e284e-e6f5-4e44-bd6d-b5acf1bae0f2
+      Parent: e0c3f046-1d3b-4758-86fd-cd63be9b8c4f
       NextSibling: 83da08c4-02dd-482b-805d-73607200846c
       PreviousSibling: 028f6e22-ee3b-42cd-95f0-6c8130222131
   - Entity: 028f6e22-ee3b-42cd-95f0-6c8130222131
@@ -62,7 +62,7 @@ Entities:
       OrthographicNear: -1
       OrthographicFar: 1
     Relationship:
-      Parent: 753e284e-e6f5-4e44-bd6d-b5acf1bae0f2
+      Parent: e0c3f046-1d3b-4758-86fd-cd63be9b8c4f
       NextSibling: 7d2ac969-0a31-46d7-98d5-ceb1b25c67af
       PreviousSibling: 88f308fd-785b-4833-b6f3-e89fb0996bb3
   - Entity: 88f308fd-785b-4833-b6f3-e89fb0996bb3
@@ -73,7 +73,7 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
-      Parent: 753e284e-e6f5-4e44-bd6d-b5acf1bae0f2
+      Parent: e0c3f046-1d3b-4758-86fd-cd63be9b8c4f
       NextSibling: 028f6e22-ee3b-42cd-95f0-6c8130222131
     RigidBody2D:
       Type: 0

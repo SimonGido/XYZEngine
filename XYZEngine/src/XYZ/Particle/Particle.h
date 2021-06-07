@@ -31,7 +31,7 @@ namespace XYZ {
 
 		float	  LifeTime;
 	private:
-		float	  TimeAlive;
+		float	  TimeAlive = 0.0f;
 		int32_t   IsAlive = 1;
 		
 		float	  Allignment[3];

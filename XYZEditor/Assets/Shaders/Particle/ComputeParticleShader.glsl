@@ -106,11 +106,11 @@ void main(void)
 	ParticleData data			= Data[id];
 	ParticleSpecification specs = Specification[id];
 	specs.TimeAlive				+= u_Time;
-
 	if (specs.TimeAlive > specs.LifeTime)
 	{
-		if (RestartParticle(u_Repeat, specs.TimeAlive, specs.LifeTime))
-			data.Position = specs.StartPosition;
+		specs.TimeAlive = 0.0;
+		specs.IsAlive   = u_Repeat;
+		data.Position   = specs.StartPosition;
 	}
 	float ratio    = specs.TimeAlive / specs.LifeTime;
 	vec2  velocity = mix(specs.StartVelocity, specs.StartVelocity * u_VelocityRatio, ratio);

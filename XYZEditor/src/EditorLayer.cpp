@@ -68,7 +68,7 @@ namespace XYZ {
 		{
 			ParticleData data;
 			data.Color    = glm::vec4(1.0f);
-			data.Position = glm::vec2(0.0f + i, 0.0f);
+			data.Position = glm::vec2(0.0f, 0.0f);
 			data.TexCoord = glm::vec2(0.0f);
 			data.Size	  = glm::vec2(0.2f);
 			data.Rotation = 0.0f;
@@ -76,10 +76,10 @@ namespace XYZ {
 
 			ParticleSpecification specs;
 			specs.StartColor	= glm::vec4(0.5f);
-			specs.StartPosition = glm::vec2(0.0f + i * 10, 0.0f);
+			specs.StartPosition = glm::vec2(0.0f, 0.0f);
 			specs.StartSize		= glm::vec2(0.2f);
 			specs.StartVelocity = glm::vec2(0.5f);
-			specs.LifeTime		= 10.0f;
+			specs.LifeTime		= 2.0f;
 		
 			particleSpecification.push_back(specs);
 		}

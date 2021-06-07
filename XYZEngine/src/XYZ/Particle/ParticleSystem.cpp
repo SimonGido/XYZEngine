@@ -8,12 +8,12 @@ namespace XYZ {
         ColorRatio(1.0f),
         SizeRatio(1.0f),
         VelocityRatio(1.0f),
-        MaxParticles(5000),
+        MaxParticles(5),
         Rate(2.0f),
         Gravity(0.0f),
         Speed(1.0f),
         Time(1.0f),
-        Repeat(false)
+        Repeat(true)
     {
     }
 

@@ -244,10 +244,10 @@ namespace XYZ {
 		{
 			auto [transform, particle] = particleView.Get<TransformComponent, ParticleComponent>(entity);
 			particle.ComputeShader->Bind();
-			particle.ComputeShader->SetInt("u_Repeat", particle.System->GetConfiguration().Repeat);
+			particle.ComputeShader->SetInt("u_Repeat", (int)particle.System->GetConfiguration().Repeat);
 			particle.ComputeShader->SetInt("u_ParticlesInExistence", particle.System->GetEmittedParticles());
 			//particle.ComputeShader->SetFloat("u_Gravity", particle.System->GetConfiguration().Gravity);
-			particle.ComputeShader->SetFloat("u_Time", ts);
+			particle.ComputeShader->SetFloat("u_Time", ts.GetSeconds());
 			particle.ComputeShader->SetFloat("u_Speed", particle.System->GetConfiguration().Speed);
 			particle.ComputeShader->SetFloat4("u_ColorRatio", particle.System->GetConfiguration().ColorRatio);
 			particle.ComputeShader->SetFloat2("u_SizeRatio", particle.System->GetConfiguration().SizeRatio);
