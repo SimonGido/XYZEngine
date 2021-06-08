@@ -23,7 +23,8 @@ namespace XYZ {
         m_Config(config),
         m_VertexArray(VertexArray::Create()),
         m_IndirectBuffer(IndirectBuffer::Create(nullptr, sizeof(DrawElementsIndirectCommand), 3)),
-        m_DeadCounter(AtomicCounter::Create(1, 4)),
+        m_BoxColliderStorage(ShaderStorageBuffer::Create(15 * sizeof(ParticleBoxCollider), 4)),
+        m_DeadCounter(AtomicCounter::Create(1, 5)),
         m_EmittedParticles(0.0f),
         m_PlayTime(0.0f)
     {
@@ -87,4 +88,5 @@ namespace XYZ {
         m_DataStorage->Update(dataBuffer,  countParticles * sizeof(ParticleData), offsetParticles * sizeof(ParticleData));
         m_SpecsStorage->Update(specsBuffer, countParticles * sizeof(ParticleSpecification), offsetParticles * sizeof(ParticleSpecification));
     }
+
 }

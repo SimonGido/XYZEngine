@@ -27,6 +27,11 @@ namespace XYZ {
 		bool	  Repeat;
 	};
 
+	struct ParticleBoxCollider
+	{
+		glm::vec2 Min, Max;
+	};
+
 	class ParticleSystem : public RefCount
 	{
 	public:
@@ -41,6 +46,7 @@ namespace XYZ {
 
 		const Ref<VertexArray>& GetVertexArray() const { return m_VertexArray; }
 		const Ref<ShaderStorageBuffer>& GetShaderStorage() const { return m_DataStorage; }
+		
 		const Ref<IndirectBuffer>& GetIndirectBuffer() const { return m_IndirectBuffer; }
 		
 		ParticleConfiguration& GetConfiguration() { return m_Config; }
@@ -54,6 +60,7 @@ namespace XYZ {
 		Ref<VertexArray>	m_VertexArray;
 		Ref<IndirectBuffer> m_IndirectBuffer;
 
+		Ref<ShaderStorageBuffer> m_BoxColliderStorage;
 		Ref<ShaderStorageBuffer> m_DataStorage;
 		Ref<ShaderStorageBuffer> m_SpecsStorage;
 		Ref<AtomicCounter>		 m_DeadCounter;

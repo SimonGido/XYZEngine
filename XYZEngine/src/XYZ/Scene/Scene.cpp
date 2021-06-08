@@ -238,12 +238,24 @@ namespace XYZ {
 			anim.Animation->Update(ts);
 		}
 		
+		std::vector<ParticleBoxCollider> boxColliders;
+		auto boxColliderView = m_ECS.CreateView<TransformComponent, BoxCollider2DComponent>();
+		for (auto entity : boxColliderView)
+		{
+			auto [transform, box] = boxColliderView.Get<TransformComponent, BoxCollider2DComponent>(entity);
+			auto [translation, rotation, scale] = transform.GetWorldComponents();
+			boxColliders.push_back({
+				{ translation.x - box.Size.x / 2.0f, translation.y - box.Size.y / 2.0f },
+				{ translation.x + box.Size.x / 2.0f, translation.y + box.Size.y / 2.0f }
+			});
+		}
 		
 		auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponent>();
 		for (auto entity : particleView)
 		{
 			auto [transform, particle] = particleView.Get<TransformComponent, ParticleComponent>(entity);
 			particle.ComputeShader->Bind();
+			
 			// Main module
 			particle.ComputeShader->SetInt("u_Main.Repeat", (int)particle.System->GetConfiguration().Repeat);
 			particle.ComputeShader->SetInt("u_Main.ParticlesEmitted", particle.System->GetEmittedParticles());
@@ -264,12 +276,6 @@ namespace XYZ {
 			particle.ComputeShader->Compute(32, 32, 1);
 		}
 		
-		auto rigidBodyView = m_ECS.CreateView<TransformComponent, RigidBody2DComponent>();
- 		for (auto entity : rigidBodyView)
-		{
-			auto [transform, rigidBody] = rigidBodyView.Get<TransformComponent, RigidBody2DComponent>(entity);
-			
-		}
 
 		updateHierarchy();
 	}

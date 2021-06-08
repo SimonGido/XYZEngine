@@ -34,6 +34,12 @@ struct ParticleSpecification
 	int	  IsAlive;
 };
 
+struct BoxCollider
+{
+	vec2 Min;
+	vec2 Max;
+};
+
 layout(std430, binding = 1) buffer buffer_Data
 {
 	ParticleData Data[];
@@ -49,7 +55,13 @@ layout(std140, binding = 3) buffer buffer_DrawCommand
 	DrawCommand Command;
 };
 
-layout(binding = 4, offset = 0) uniform atomic_uint counter_DeadParticles;
+layout(std140, binding = 4) buffer buffer_BoxCollider
+{
+	BoxCollider BoxColliders[];
+};
+
+
+layout(binding = 5, offset = 0) uniform atomic_uint counter_DeadParticles;
 
 
 
@@ -92,6 +104,21 @@ void UpdateTextureSheetOverLifeTime(out vec2 texCoord, float tilesX, float tiles
 	texCoord = vec2(float(column) / tilesX, float(row) / tilesY);
 }
 
+
+bool CollideBox(vec2 particlePos, vec2 particleSize,  BoxCollider box)
+{
+	BoxCollider particleBox;
+	particleBox.Min = vec2(particlePos.x - particleSize.x / 2.0, particlePos.y - particleSize.y / 2.0);
+	particleBox.Max = vec2(particlePos.x + particleSize.x / 2.0, particlePos.y + particleSize.y / 2.0);
+	
+	return !(
+		   particleBox.Min.x < box.Max.x
+		&& particleBox.Max.x > box.Min.x
+		&& particleBox.Min.y < box.Max.y
+		&& particleBox.Max.y > box.Min.y
+	);
+}
+
 struct Main
 {
 	int   Repeat;
@@ -123,7 +150,7 @@ uniform ColorOverLifeTime	  u_Color;
 uniform SizeOverLifeTime	  u_Size;
 uniform TextureSheetAnimation u_TextureAnimation;
 uniform Main			      u_Main;
-
+uniform int					  u_NumBoxColliders;
 
 layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
 void main(void)
