@@ -29,11 +29,8 @@ namespace XYZ {
 		glm::vec2 StartVelocity;
 		glm::vec2 StartPosition;
 
-		float	  LifeTime;
 	private:
 		float	  TimeAlive = 0.0f;
 		int32_t   IsAlive = 1;
-		
-		float	  Allignment[3];
 	};
 }

@@ -1,4 +1,4 @@
-#type compute
+//#type compute
 #version 460
 
 const int c_MaxParticles = 100000;
@@ -30,11 +30,8 @@ struct ParticleSpecification
 	vec2  StartVelocity;
 	vec2  StartPosition;
 
-	float LifeTime;
 	float TimeAlive;
 	int	  IsAlive;
-	
-	float Allignment[3];
 };
 
 layout(std430, binding = 1) buffer buffer_Data
@@ -60,19 +57,6 @@ vec2 UpdatePosition(vec2 velocity, float speed, float ts)
 	return vec2(velocity.x * speed * ts, velocity.y * speed * ts);
 }
 
-bool RestartParticle(int repeat, out float timeAlive, out int isAlive)
-{
-	if (repeat != 0)
-	{
-		timeAlive = 0.0f;
-	}
-	else
-	{
-		atomicCounterIncrement(counter_DeadParticles);
-	}
-	isAlive = repeat;
-	return isAlive != 0;
-}
 
 void BuildDrawCommand(int particlesInExistence)
 {
@@ -86,11 +70,12 @@ void BuildDrawCommand(int particlesInExistence)
 
 
 uniform int   u_Repeat;
-uniform int   u_ParticlesInExistence;
+uniform int   u_ParticlesEmitted;
 
 uniform float u_Time;
 uniform float u_Gravity;
 uniform float u_Speed;
+uniform float u_LifeTime;
 
 uniform vec4 u_ColorRatio;
 uniform vec2 u_SizeRatio;
@@ -106,19 +91,21 @@ void main(void)
 	ParticleData data			= Data[id];
 	ParticleSpecification specs = Specification[id];
 	specs.TimeAlive				+= u_Time;
-	if (specs.TimeAlive > specs.LifeTime)
+	if (specs.TimeAlive > u_LifeTime)
 	{
 		specs.TimeAlive = 0.0;
 		specs.IsAlive   = u_Repeat;
 		data.Position   = specs.StartPosition;
+		if (u_Repeat == 0)
+			atomicCounterIncrement(counter_DeadParticles);
 	}
-	float ratio    = specs.TimeAlive / specs.LifeTime;
+	float ratio    = specs.TimeAlive / u_LifeTime;
 	vec2  velocity = mix(specs.StartVelocity, specs.StartVelocity * u_VelocityRatio, ratio);
 	data.Color	   = mix(specs.StartColor, specs.StartColor * u_ColorRatio, ratio);
 	data.Size	   = mix(specs.StartSize, specs.StartSize * u_SizeRatio, ratio);
 	data.Position  += UpdatePosition(velocity, u_Speed, u_Time);
 
-	BuildDrawCommand(u_ParticlesInExistence);
+	BuildDrawCommand(u_ParticlesEmitted);
 
 	Data[id]		  = data;
 	Specification[id] = specs;

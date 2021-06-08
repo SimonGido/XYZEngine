@@ -79,7 +79,6 @@ namespace XYZ {
 			specs.StartPosition = glm::vec2(0.0f, 0.0f);
 			specs.StartSize		= glm::vec2(0.2f);
 			specs.StartVelocity = glm::vec2(0.5f);
-			specs.LifeTime		= 2.0f;
 		
 			particleSpecification.push_back(specs);
 		}
