@@ -52,11 +52,60 @@ layout(std140, binding = 3) buffer buffer_DrawCommand
 layout(binding = 4, offset = 0) uniform atomic_uint counter_DeadParticles;
 
 
-vec2 UpdatePosition(vec2 velocity, float speed, float ts)
+
+struct ColorOverLifeTime
 {
-	return vec2(velocity.x * speed * ts, velocity.y * speed * ts);
+	vec4 StartColor;
+	vec4 EndColor;
+};
+
+void UpdateColorOverLifeTime(out vec4 result, vec4 color, ColorOverLifeTime colt, float ratio)
+{
+	result = color * mix(colt.StartColor, colt.EndColor, ratio);
 }
 
+struct SizeOverLifeTime
+{
+	vec2 StartSize;
+	vec2 EndSize;
+};
+
+void UpdateSizeOverLifeTime(out vec2 result, vec2 size, SizeOverLifeTime solt, float ratio)
+{
+	result = size * mix(solt.StartSize, solt.EndSize, ratio);
+}
+
+struct TextureSheetAnimation
+{
+	int TilesX;
+	int TilesY;
+};
+
+void UpdateTextureSheetOverLifeTime(out vec2 texCoord, float tilesX, float tilesY, float ratio)
+{
+	float stageCount = tilesX * tilesY;
+	float stageProgress = ratio * stageCount;
+
+	int index  = int(floor(stageProgress));
+	int column = int(mod(index, tilesX));
+	int row	   = int(index / tilesY);
+	texCoord = vec2(float(column) / tilesX, float(row) / tilesY);
+}
+
+struct Main
+{
+	int   Repeat;
+	int   ParticlesEmitted;
+	float Time;
+	float Gravity;
+	float Speed;
+	float LifeTime;
+};
+
+void UpdatePosition(inout vec2 result, vec2 velocity, float speed, float ts)
+{
+	result += vec2(velocity.x * speed * ts, velocity.y * speed * ts);
+}
 
 void BuildDrawCommand(int particlesInExistence)
 {
@@ -69,17 +118,12 @@ void BuildDrawCommand(int particlesInExistence)
 }
 
 
-uniform int   u_Repeat;
-uniform int   u_ParticlesEmitted;
 
-uniform float u_Time;
-uniform float u_Gravity;
-uniform float u_Speed;
-uniform float u_LifeTime;
+uniform ColorOverLifeTime	  u_Color;
+uniform SizeOverLifeTime	  u_Size;
+uniform TextureSheetAnimation u_TextureAnimation;
+uniform Main			      u_Main;
 
-uniform vec4 u_ColorRatio;
-uniform vec2 u_SizeRatio;
-uniform vec2 u_VelocityRatio;
 
 layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
 void main(void)
@@ -90,23 +134,24 @@ void main(void)
 
 	ParticleData data			= Data[id];
 	ParticleSpecification specs = Specification[id];
-	specs.TimeAlive				+= u_Time;
-	if (specs.TimeAlive > u_LifeTime)
+	specs.TimeAlive				+= u_Main.Time;
+	if (specs.TimeAlive > u_Main.LifeTime)
 	{
 		specs.TimeAlive = 0.0;
-		specs.IsAlive   = u_Repeat;
+		specs.IsAlive   = u_Main.Repeat;
 		data.Position   = specs.StartPosition;
-		if (u_Repeat == 0)
+		if (u_Main.Repeat == 0)
 			atomicCounterIncrement(counter_DeadParticles);
 	}
-	float ratio    = specs.TimeAlive / u_LifeTime;
-	vec2  velocity = mix(specs.StartVelocity, specs.StartVelocity * u_VelocityRatio, ratio);
-	data.Color	   = mix(specs.StartColor, specs.StartColor * u_ColorRatio, ratio);
-	data.Size	   = mix(specs.StartSize, specs.StartSize * u_SizeRatio, ratio);
-	data.Position  += UpdatePosition(velocity, u_Speed, u_Time);
 
-	BuildDrawCommand(u_ParticlesEmitted);
+	float ratio    = specs.TimeAlive / u_Main.LifeTime;
+	UpdateColorOverLifeTime(data.Color, specs.StartColor, u_Color, ratio);
+	UpdateSizeOverLifeTime(data.Size, specs.StartSize, u_Size, ratio);
+	UpdatePosition(data.Position, specs.StartVelocity, u_Main.Speed, u_Main.Time);
+	UpdateTextureSheetOverLifeTime(data.TexCoord, u_TextureAnimation.TilesX, u_TextureAnimation.TilesY, ratio);
 
+	BuildDrawCommand(u_Main.ParticlesEmitted);
+	
 	Data[id]		  = data;
 	Specification[id] = specs;
 }

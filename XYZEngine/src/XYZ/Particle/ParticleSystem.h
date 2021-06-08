@@ -14,9 +14,11 @@ namespace XYZ {
 	{
 		ParticleConfiguration();
 
-		glm::vec4 ColorRatio;
-		glm::vec2 SizeRatio;
-		glm::vec2 VelocityRatio;
+		glm::vec4 StartColor;
+		glm::vec4 EndColor;
+		glm::vec2 StartSize;
+		glm::vec2 EndSize;
+
 		uint32_t  MaxParticles;
 		float     Rate;
 		float	  Gravity;
@@ -36,15 +38,18 @@ namespace XYZ {
 		void SetParticles(ParticleData* dataBuffer, ParticleSpecification* specsBuffer);
 		void SetParticles(ParticleData* dataBuffer, ParticleSpecification* specsBuffer, uint32_t offsetParticles, uint32_t countParticles);
 
+
 		const Ref<VertexArray>& GetVertexArray() const { return m_VertexArray; }
 		const Ref<ShaderStorageBuffer>& GetShaderStorage() const { return m_DataStorage; }
 		const Ref<IndirectBuffer>& GetIndirectBuffer() const { return m_IndirectBuffer; }
+		
 		ParticleConfiguration& GetConfiguration() { return m_Config; }
 		int32_t GetEmittedParticles() const { return (int)std::ceil(m_EmittedParticles); }
 	private:
 		ParticleConfiguration m_Config;
 		float m_EmittedParticles;
 		float m_PlayTime;
+
 
 		Ref<VertexArray>	m_VertexArray;
 		Ref<IndirectBuffer> m_IndirectBuffer;
@@ -53,4 +58,5 @@ namespace XYZ {
 		Ref<ShaderStorageBuffer> m_SpecsStorage;
 		Ref<AtomicCounter>		 m_DeadCounter;
 	};
+
 }

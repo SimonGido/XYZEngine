@@ -30,20 +30,15 @@ float GetRadians(float angleInDegrees)
 }
 mat2 RotationZ(float angle)
 {
-	return mat2(
-		cos(angle),
-		sin(angle),
-		-sin(angle),
-		cos(angle)
-	);
+	return mat2(cos(angle), sin(angle), -sin(angle), cos(angle));
 }
 
 void main()
 {
-	vec2 pos = RotationZ(GetRadians(a_IAngle)) * a_Position.xy * a_ISize;
+	vec2 pos    = RotationZ(GetRadians(a_IAngle)) * a_Position.xy * a_ISize;
 	gl_Position = u_ViewProjection * u_Transform * vec4(pos.x + a_IPosition.x, pos.y + a_IPosition.y, 0.0, 1.0);
-	v_Color = a_IColor;
-	v_TexCoord = a_TexCoord + a_ITexCoord;
+	v_Color		= a_IColor;
+	v_TexCoord  = a_TexCoord + a_ITexCoord;
 }
 
 
@@ -55,8 +50,10 @@ layout(location = 0) out vec4 o_Color;
 in vec4 v_Color;
 in vec2 v_TexCoord;
 
+layout(binding = 0) uniform sampler2D u_Texture;
+
 void main()
 {
-	o_Color = vec4(1.0, 0.0, 0.0, 1.0);
+	o_Color = texture(u_Texture, v_TexCoord) * v_Color;
 }
 

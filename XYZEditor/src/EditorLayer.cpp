@@ -5,6 +5,7 @@
 
 #include <random>
 
+
 namespace XYZ {
 
 	EditorLayer::EditorLayer()
@@ -60,10 +61,15 @@ namespace XYZ {
 		auto &particleComponent = entity.EmplaceComponent<ParticleComponent>();
 		particleComponent.ComputeShader = Shader::Create("Assets/Shaders/Particle/ComputeParticleShader.glsl");
 		particleComponent.RenderMaterial = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShader.glsl"));
+		particleComponent.RenderMaterial->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/flame.png"));
 		particleComponent.System = Ref<ParticleSystem>::Create();
 		
 		std::vector<ParticleData> particleData;
 		std::vector<ParticleSpecification> particleSpecification;
+		
+		std::random_device dev;
+		std::mt19937 rng(dev());
+		std::uniform_real_distribution<double> dist(-1.0, 1.0); // distribution in range [1, 6]
 		for (size_t i = 0; i < particleComponent.System->GetConfiguration().MaxParticles; ++i)
 		{
 			ParticleData data;
@@ -75,10 +81,10 @@ namespace XYZ {
 			particleData.push_back(data);
 
 			ParticleSpecification specs;
-			specs.StartColor	= glm::vec4(0.5f);
+			specs.StartColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 			specs.StartPosition = glm::vec2(0.0f, 0.0f);
 			specs.StartSize		= glm::vec2(0.2f);
-			specs.StartVelocity = glm::vec2(0.5f);
+			specs.StartVelocity = glm::vec2(dist(rng), 1.0f);
 		
 			particleSpecification.push_back(specs);
 		}

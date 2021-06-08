@@ -244,15 +244,22 @@ namespace XYZ {
 		{
 			auto [transform, particle] = particleView.Get<TransformComponent, ParticleComponent>(entity);
 			particle.ComputeShader->Bind();
-			particle.ComputeShader->SetInt("u_Repeat", (int)particle.System->GetConfiguration().Repeat);
-			particle.ComputeShader->SetInt("u_ParticlesEmitted", particle.System->GetEmittedParticles());
-			particle.ComputeShader->SetFloat("u_LifeTime", 3.0f);
-			//particle.ComputeShader->SetFloat("u_Gravity", particle.System->GetConfiguration().Gravity);
-			particle.ComputeShader->SetFloat("u_Time", ts.GetSeconds());
-			particle.ComputeShader->SetFloat("u_Speed", particle.System->GetConfiguration().Speed);
-			particle.ComputeShader->SetFloat4("u_ColorRatio", particle.System->GetConfiguration().ColorRatio);
-			particle.ComputeShader->SetFloat2("u_SizeRatio", particle.System->GetConfiguration().SizeRatio);
-			particle.ComputeShader->SetFloat2("u_VelocityRatio", particle.System->GetConfiguration().VelocityRatio);
+			// Main module
+			particle.ComputeShader->SetInt("u_Main.Repeat", (int)particle.System->GetConfiguration().Repeat);
+			particle.ComputeShader->SetInt("u_Main.ParticlesEmitted", particle.System->GetEmittedParticles());
+			particle.ComputeShader->SetFloat("u_Main.LifeTime", 3.0f);
+			particle.ComputeShader->SetFloat("u_Main.Time", ts);
+			particle.ComputeShader->SetFloat("u_Main.Speed", particle.System->GetConfiguration().Speed);
+			// Color module
+			particle.ComputeShader->SetFloat4("u_Color.StartColor", particle.System->GetConfiguration().StartColor);
+			particle.ComputeShader->SetFloat4("u_Color.EndColor", particle.System->GetConfiguration().EndColor);
+			// Size module
+			particle.ComputeShader->SetFloat2("u_Size.StartSize", particle.System->GetConfiguration().StartSize);
+			particle.ComputeShader->SetFloat2("u_Size.EndSize", particle.System->GetConfiguration().EndSize);
+			// Texture animation module
+			particle.ComputeShader->SetInt("u_TextureAnimation.TilesX", 8);
+			particle.ComputeShader->SetInt("u_TextureAnimation.TilesY", 8);
+
 			particle.System->Update(ts);
 			particle.ComputeShader->Compute(32, 32, 1);
 		}
