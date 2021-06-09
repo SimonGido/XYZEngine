@@ -61,7 +61,7 @@ namespace XYZ {
 		auto &particleComponent = entity.EmplaceComponent<ParticleComponent>();
 		particleComponent.ComputeShader = Shader::Create("Assets/Shaders/Particle/ComputeParticleShader.glsl");
 		particleComponent.RenderMaterial = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShader.glsl"));
-		particleComponent.RenderMaterial->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/flame.png"));
+		particleComponent.RenderMaterial->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
 		particleComponent.System = Ref<ParticleSystem>::Create();
 		
 		std::vector<ParticleData> particleData;
@@ -84,7 +84,7 @@ namespace XYZ {
 			specs.StartColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 			specs.StartPosition = glm::vec2(0.0f, 0.0f);
 			specs.StartSize		= glm::vec2(0.2f);
-			specs.StartVelocity = glm::vec2(dist(rng), 1.0f);
+			specs.StartVelocity = glm::vec2(dist(rng), dist(rng));
 		
 			particleSpecification.push_back(specs);
 		}

@@ -1,7 +1,7 @@
 //#type compute
 #version 460
 
-const int c_MaxParticles = 100000;
+const int c_MaxParticles = 10000000;
 
 struct DrawCommand 
 {

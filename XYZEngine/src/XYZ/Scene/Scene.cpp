@@ -244,10 +244,10 @@ namespace XYZ {
 		{
 			auto [transform, box] = boxColliderView.Get<TransformComponent, BoxCollider2DComponent>(entity);
 			auto [translation, rotation, scale] = transform.GetWorldComponents();
-			boxColliders.push_back({glm::vec4(
-				translation.x - box.Size.x / 2.0f, translation.y - box.Size.y / 2.0f,
-				translation.x + box.Size.x / 2.0f, translation.y + box.Size.y / 2.0f
-			)});
+			//boxColliders.push_back({glm::vec4(
+			//	translation.x - box.Size.x / 2.0f, translation.y - box.Size.y / 2.0f,
+			//	translation.x + box.Size.x / 2.0f, translation.y + box.Size.y / 2.0f
+			//)});
 		}
 		
 		auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponent>();
@@ -263,7 +263,7 @@ namespace XYZ {
 			// Main module
 			particle.ComputeShader->SetInt("u_MainModule.Repeat", (int)particle.System->GetConfiguration().Repeat);
 			particle.ComputeShader->SetInt("u_MainModule.ParticlesEmitted", particle.System->GetEmittedParticles());
-			particle.ComputeShader->SetFloat("u_MainModule.LifeTime", 5.0f);
+			particle.ComputeShader->SetFloat("u_MainModule.LifeTime", 3.0f);
 			particle.ComputeShader->SetFloat("u_MainModule.Time", ts);
 			particle.ComputeShader->SetFloat("u_MainModule.Speed", particle.System->GetConfiguration().Speed);
 			// Color module
@@ -273,8 +273,8 @@ namespace XYZ {
 			particle.ComputeShader->SetFloat2("u_SizeModule.StartSize", particle.System->GetConfiguration().StartSize);
 			particle.ComputeShader->SetFloat2("u_SizeModule.EndSize", particle.System->GetConfiguration().EndSize);
 			// Texture animation module
-			particle.ComputeShader->SetInt("u_TextureModule.TilesX", 8);
-			particle.ComputeShader->SetInt("u_TextureModule.TilesY", 8);
+			particle.ComputeShader->SetInt("u_TextureModule.TilesX", 4);
+			particle.ComputeShader->SetInt("u_TextureModule.TilesY", 4);
 
 			particle.System->Update(ts);
 			particle.ComputeShader->Compute(32, 32, 1);

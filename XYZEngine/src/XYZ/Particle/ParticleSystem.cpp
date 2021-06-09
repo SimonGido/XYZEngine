@@ -5,12 +5,12 @@
 namespace XYZ {
     ParticleConfiguration::ParticleConfiguration()
         :
-        StartColor(1.0f,1.0f,1.0f,1.0f),
-        EndColor(0.0f,0.0f,0.0f,1.0f),
-        StartSize(3.0f),
-        EndSize(5.0f),
-        MaxParticles(10),
-        Rate(2.0f),
+        StartColor(0.0f,0.0f,0.0f,1.0f),
+        EndColor(1.0f,1.0f,1.0f,1.0f),
+        StartSize(1.0f),
+        EndSize(2.0f),
+        MaxParticles(1000000),
+        Rate(10000.0f),
         Gravity(0.0f),
         Speed(1.0f),
         Repeat(true)
@@ -29,9 +29,9 @@ namespace XYZ {
     {
         ParticleVertex quad[4] = {
             ParticleVertex{glm::vec3(-0.5f, -0.5f, 0.0f), glm::vec2(0.0f, 0.0f)},
-            ParticleVertex{glm::vec3( 0.5f, -0.5f, 0.0f), glm::vec2(1.0f / 8.0f, 0.0f)},
-            ParticleVertex{glm::vec3( 0.5f,  0.5f, 0.0f), glm::vec2(1.0f / 8.0f, 1.0f / 8.0f)},
-            ParticleVertex{glm::vec3(-0.5f,  0.5f, 0.0f), glm::vec2(0.0f,        1.0f / 8.0f)}
+            ParticleVertex{glm::vec3( 0.5f, -0.5f, 0.0f), glm::vec2(1.0f / 4.0f, 0.0f)},
+            ParticleVertex{glm::vec3( 0.5f,  0.5f, 0.0f), glm::vec2(1.0f / 4.0f, 1.0f / 4.0f)},
+            ParticleVertex{glm::vec3(-0.5f,  0.5f, 0.0f), glm::vec2(0.0f,        1.0f / 4.0f)}
         };
 
         Ref<VertexBuffer> squareVBpar;
