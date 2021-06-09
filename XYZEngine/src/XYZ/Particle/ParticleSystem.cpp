@@ -13,7 +13,6 @@ namespace XYZ {
         Rate(2.0f),
         Gravity(0.0f),
         Speed(1.0f),
-        Time(1.0f),
         Repeat(true)
     {
     }
@@ -22,8 +21,8 @@ namespace XYZ {
         :
         m_Config(config),
         m_VertexArray(VertexArray::Create()),
-        m_IndirectBuffer(IndirectBuffer::Create(nullptr, sizeof(DrawElementsIndirectCommand), 3)),
-        m_BoxColliderStorage(ShaderStorageBuffer::Create(15 * sizeof(ParticleBoxCollider), 4)),
+        m_BoxColliderStorage(ShaderStorageBuffer::Create(15 * sizeof(glm::vec4), 3)),
+        m_IndirectBuffer(IndirectBuffer::Create(nullptr, sizeof(DrawElementsIndirectCommand), 4)),
         m_DeadCounter(AtomicCounter::Create(1, 5)),
         m_EmittedParticles(0.0f),
         m_PlayTime(0.0f)
@@ -75,7 +74,8 @@ namespace XYZ {
 
         m_DataStorage->BindRange(0, emitted * sizeof(ParticleData), 1);
         m_SpecsStorage->BindRange(0, emitted * sizeof(ParticleSpecification), 2);
-
+        // TODO: Add number of colliders
+        m_BoxColliderStorage->BindRange(0, sizeof(glm::vec4), 3);
         m_PlayTime += ts;
     }
     void ParticleSystem::SetParticles(ParticleData* dataBuffer, ParticleSpecification* specsBuffer)

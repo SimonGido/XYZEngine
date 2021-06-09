@@ -166,9 +166,10 @@ namespace XYZ {
 	void OpenGLShaderStorageBuffer::Update(void* data, uint32_t size, uint32_t offset)
 	{
 		m_LocalData.Write(data, size, offset);
-		Renderer::Submit([this, size, offset] () {
-			glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
-			glBufferSubData(GL_ARRAY_BUFFER, offset, size, m_LocalData);
+		Ref<OpenGLShaderStorageBuffer> instance = this;
+		Renderer::Submit([instance, size, offset] () {
+			glBindBuffer(GL_ARRAY_BUFFER, instance->m_RendererID);
+			glBufferSubData(GL_ARRAY_BUFFER, offset, size, instance->m_LocalData);
 		});
 	}
 

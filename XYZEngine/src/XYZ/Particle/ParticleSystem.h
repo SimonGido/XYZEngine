@@ -23,14 +23,9 @@ namespace XYZ {
 		float     Rate;
 		float	  Gravity;
 		float     Speed;
-		float     Time;
 		bool	  Repeat;
 	};
 
-	struct ParticleBoxCollider
-	{
-		glm::vec2 Min, Max;
-	};
 
 	class ParticleSystem : public RefCount
 	{
@@ -51,6 +46,8 @@ namespace XYZ {
 		
 		ParticleConfiguration& GetConfiguration() { return m_Config; }
 		int32_t GetEmittedParticles() const { return (int)std::ceil(m_EmittedParticles); }
+
+		Ref<ShaderStorageBuffer> m_BoxColliderStorage;
 	private:
 		ParticleConfiguration m_Config;
 		float m_EmittedParticles;
@@ -60,7 +57,7 @@ namespace XYZ {
 		Ref<VertexArray>	m_VertexArray;
 		Ref<IndirectBuffer> m_IndirectBuffer;
 
-		Ref<ShaderStorageBuffer> m_BoxColliderStorage;
+		
 		Ref<ShaderStorageBuffer> m_DataStorage;
 		Ref<ShaderStorageBuffer> m_SpecsStorage;
 		Ref<AtomicCounter>		 m_DeadCounter;

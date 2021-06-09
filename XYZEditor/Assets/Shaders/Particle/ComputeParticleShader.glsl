@@ -34,10 +34,10 @@ struct ParticleSpecification
 	int	  IsAlive;
 };
 
-struct BoxCollider
+
+layout(std140, binding = 0) uniform Camera
 {
-	vec2 Min;
-	vec2 Max;
+	mat4 u_ViewProjection;
 };
 
 layout(std430, binding = 1) buffer buffer_Data
@@ -50,19 +50,18 @@ layout(std430, binding = 2) buffer buffer_Specification
 	ParticleSpecification Specification[];
 };
 
-layout(std140, binding = 3) buffer buffer_DrawCommand
+layout(std430, binding = 3) buffer buffer_BoxCollider
+{
+	vec4 BoxColliders[];
+};
+
+
+layout(std140, binding = 4) buffer buffer_DrawCommand
 {
 	DrawCommand Command;
 };
 
-layout(std140, binding = 4) buffer buffer_BoxCollider
-{
-	BoxCollider BoxColliders[];
-};
-
-
 layout(binding = 5, offset = 0) uniform atomic_uint counter_DeadParticles;
-
 
 
 struct ColorOverLifeTime
@@ -104,18 +103,19 @@ void UpdateTextureSheetOverLifeTime(out vec2 texCoord, float tilesX, float tiles
 	texCoord = vec2(float(column) / tilesX, float(row) / tilesY);
 }
 
+uniform mat4 u_Transform;
 
-bool CollideBox(vec2 particlePos, vec2 particleSize,  BoxCollider box)
+bool CollideBox(vec2 particlePos, vec2 particleSize, vec4 box)
 {
-	BoxCollider particleBox;
-	particleBox.Min = vec2(particlePos.x - particleSize.x / 2.0, particlePos.y - particleSize.y / 2.0);
-	particleBox.Max = vec2(particlePos.x + particleSize.x / 2.0, particlePos.y + particleSize.y / 2.0);
-	
-	return !(
-		   particleBox.Min.x < box.Max.x
-		&& particleBox.Max.x > box.Min.x
-		&& particleBox.Min.y < box.Max.y
-		&& particleBox.Max.y > box.Min.y
+	vec4 realPos = u_Transform * vec4(particlePos.x, particlePos.y, 0.0, 1.0);
+	vec4 particleBox = vec4(realPos.x - particleSize.x / 2.0, realPos.y - particleSize.y / 2.0, 
+							realPos.x + particleSize.x / 2.0, realPos.y + particleSize.y / 2.0);
+
+	return (
+		   particleBox.x <= box.z
+		&& particleBox.z >= box.x
+		&& particleBox.y <= box.w
+		&& particleBox.w >= box.y
 	);
 }
 
@@ -146,11 +146,12 @@ void BuildDrawCommand(int particlesInExistence)
 
 
 
-uniform ColorOverLifeTime	  u_Color;
-uniform SizeOverLifeTime	  u_Size;
-uniform TextureSheetAnimation u_TextureAnimation;
-uniform Main			      u_Main;
+uniform ColorOverLifeTime	  u_ColorModule;
+uniform SizeOverLifeTime	  u_SizeModule;
+uniform TextureSheetAnimation u_TextureModule;
+uniform Main			      u_MainModule;
 uniform int					  u_NumBoxColliders;
+
 
 layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
 void main(void)
@@ -161,23 +162,36 @@ void main(void)
 
 	ParticleData data			= Data[id];
 	ParticleSpecification specs = Specification[id];
-	specs.TimeAlive				+= u_Main.Time;
-	if (specs.TimeAlive > u_Main.LifeTime)
+	specs.TimeAlive				+= u_MainModule.Time;
+	if (specs.TimeAlive > u_MainModule.LifeTime)
 	{
 		specs.TimeAlive = 0.0;
-		specs.IsAlive   = u_Main.Repeat;
+		specs.IsAlive   = u_MainModule.Repeat;
 		data.Position   = specs.StartPosition;
-		if (u_Main.Repeat == 0)
+		if (u_MainModule.Repeat == 0)
 			atomicCounterIncrement(counter_DeadParticles);
 	}
+	for (int i = 0; i < u_NumBoxColliders; ++i)
+	{
+		vec4 collider = BoxColliders[i];
+		if (CollideBox(data.Position, data.Size, collider))
+		{
+			specs.TimeAlive = 0.0;
+			specs.IsAlive   = u_MainModule.Repeat;
+			data.Position   = specs.StartPosition;
+			if (u_MainModule.Repeat == 0)
+				atomicCounterIncrement(counter_DeadParticles);
+			break;
+		}
+	}
 
-	float ratio    = specs.TimeAlive / u_Main.LifeTime;
-	UpdateColorOverLifeTime(data.Color, specs.StartColor, u_Color, ratio);
-	UpdateSizeOverLifeTime(data.Size, specs.StartSize, u_Size, ratio);
-	UpdatePosition(data.Position, specs.StartVelocity, u_Main.Speed, u_Main.Time);
-	UpdateTextureSheetOverLifeTime(data.TexCoord, u_TextureAnimation.TilesX, u_TextureAnimation.TilesY, ratio);
+	float ratio    = specs.TimeAlive / u_MainModule.LifeTime;
+	UpdateColorOverLifeTime(data.Color, specs.StartColor, u_ColorModule, ratio);
+	UpdateSizeOverLifeTime(data.Size, specs.StartSize, u_SizeModule, ratio);
+	UpdatePosition(data.Position, specs.StartVelocity, u_MainModule.Speed, u_MainModule.Time);
+	UpdateTextureSheetOverLifeTime(data.TexCoord, u_TextureModule.TilesX, u_TextureModule.TilesY, ratio);
 
-	BuildDrawCommand(u_Main.ParticlesEmitted);
+	BuildDrawCommand(u_MainModule.ParticlesEmitted);
 	
 	Data[id]		  = data;
 	Specification[id] = specs;

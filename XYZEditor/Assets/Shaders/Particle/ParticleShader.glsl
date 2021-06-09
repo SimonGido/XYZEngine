@@ -1,4 +1,4 @@
-#type vertex
+//#type vertex
 #version 430
 
 
