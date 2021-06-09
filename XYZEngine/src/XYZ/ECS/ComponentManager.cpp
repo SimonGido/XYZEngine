@@ -53,12 +53,18 @@ namespace XYZ {
 	}
 	void ComponentManager::EntityDestroyed(Entity entity, const Signature& signature)
 	{
+		// TODO: Bug
+		uint32_t counter = 0;
 		for (uint32_t i = 0; i < m_StorageCreated.size(); ++i)
 		{
-			if (signature[i] && m_StorageCreated[i])
+			if (m_StorageCreated[i])
 			{
-				auto storage = m_StoragePool.Get<IComponentStorage>(i * sizeof(ComponentStorage<IComponent>));
-				storage->EntityDestroyed(entity);
+				if (signature[counter])
+				{
+					auto storage = m_StoragePool.Get<IComponentStorage>(i * sizeof(ComponentStorage<IComponent>));
+					storage->EntityDestroyed(entity);
+				}
+				counter++;
 			}
 		}
 	}

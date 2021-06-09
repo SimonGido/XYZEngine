@@ -29,7 +29,6 @@ namespace XYZ {
 	private:
 		ComponentView(ComponentManager& componentManager)
 		{
-			(componentManager.ForceStorage<Args>(),...);
 			m_Storages = { &componentManager.GetStorage<Args>()... };
 
 			size_t minimalSize = std::numeric_limits<size_t>::max();

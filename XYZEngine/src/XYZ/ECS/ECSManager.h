@@ -155,6 +155,7 @@ namespace XYZ {
 		template <typename ...Args>
 		ComponentView<Args...> CreateView()
 		{
+			(ForceStorage<Args>(), ...);
 			return ComponentView<Args...>(m_ComponentManager);
 		}
 
