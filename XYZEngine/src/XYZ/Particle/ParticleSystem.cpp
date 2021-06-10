@@ -9,8 +9,8 @@ namespace XYZ {
         EndColor(1.0f,1.0f,1.0f,1.0f),
         StartSize(1.0f),
         EndSize(2.0f),
-        MaxParticles(1000000),
-        Rate(10000.0f),
+        MaxParticles(100),
+        Rate(5.0f),
         Gravity(0.0f),
         Speed(1.0f),
         Repeat(true)

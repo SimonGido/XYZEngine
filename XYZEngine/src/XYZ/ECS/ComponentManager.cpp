@@ -53,7 +53,6 @@ namespace XYZ {
 	}
 	void ComponentManager::EntityDestroyed(Entity entity, const Signature& signature)
 	{
-		// TODO: Bug
 		uint32_t counter = 0;
 		for (uint32_t i = 0; i < m_StorageCreated.size(); ++i)
 		{

@@ -1,7 +1,7 @@
 //#type compute
 #version 460
 
-const int c_MaxParticles = 10000000;
+const int c_MaxParticles = 100;
 
 struct DrawCommand 
 {
@@ -54,7 +54,6 @@ layout(std430, binding = 3) buffer buffer_BoxCollider
 {
 	vec4 BoxColliders[];
 };
-
 
 layout(std140, binding = 4) buffer buffer_DrawCommand
 {
@@ -134,6 +133,7 @@ void UpdatePosition(inout vec2 result, vec2 velocity, float speed, float ts)
 	result += vec2(velocity.x * speed * ts, velocity.y * speed * ts);
 }
 
+
 void BuildDrawCommand(int particlesInExistence)
 {
 	uint deadCount = atomicCounter(counter_DeadParticles);
@@ -145,12 +145,21 @@ void BuildDrawCommand(int particlesInExistence)
 }
 
 
-
 uniform ColorOverLifeTime	  u_ColorModule;
 uniform SizeOverLifeTime	  u_SizeModule;
 uniform TextureSheetAnimation u_TextureModule;
 uniform Main			      u_MainModule;
+uniform vec2				  u_Force;
 uniform int					  u_NumBoxColliders;
+
+void KillParticle(inout float timeAlive, inout int isAlive, inout vec2 position, vec2 startPosition)
+{	
+	timeAlive = 0.0;
+	isAlive = u_MainModule.Repeat;
+	position = startPosition;
+	if (u_MainModule.Repeat == 0)
+		atomicCounterIncrement(counter_DeadParticles);
+}
 
 
 layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
@@ -164,31 +173,22 @@ void main(void)
 	ParticleSpecification specs = Specification[id];
 	specs.TimeAlive				+= u_MainModule.Time;
 	if (specs.TimeAlive > u_MainModule.LifeTime)
-	{
-		specs.TimeAlive = 0.0;
-		specs.IsAlive   = u_MainModule.Repeat;
-		data.Position   = specs.StartPosition;
-		if (u_MainModule.Repeat == 0)
-			atomicCounterIncrement(counter_DeadParticles);
-	}
+		KillParticle(specs.TimeAlive, specs.IsAlive, data.Position, specs.StartPosition);
+	
 	for (int i = 0; i < u_NumBoxColliders; ++i)
 	{
-		vec4 collider = BoxColliders[i];
-		if (CollideBox(data.Position, data.Size, collider))
+		if (CollideBox(data.Position, data.Size, BoxColliders[i]))
 		{
-			specs.TimeAlive = 0.0;
-			specs.IsAlive   = u_MainModule.Repeat;
-			data.Position   = specs.StartPosition;
-			if (u_MainModule.Repeat == 0)
-				atomicCounterIncrement(counter_DeadParticles);
+			KillParticle(specs.TimeAlive, specs.IsAlive, data.Position, specs.StartPosition);
 			break;
 		}
 	}
 
-	float ratio    = specs.TimeAlive / u_MainModule.LifeTime;
+	float ratio   = specs.TimeAlive / u_MainModule.LifeTime;
+	vec2 velocity = specs.StartVelocity + (u_Force * ratio);
 	UpdateColorOverLifeTime(data.Color, specs.StartColor, u_ColorModule, ratio);
 	UpdateSizeOverLifeTime(data.Size, specs.StartSize, u_SizeModule, ratio);
-	UpdatePosition(data.Position, specs.StartVelocity, u_MainModule.Speed, u_MainModule.Time);
+	UpdatePosition(data.Position, velocity, u_MainModule.Speed, u_MainModule.Time);
 	UpdateTextureSheetOverLifeTime(data.TexCoord, u_TextureModule.TilesX, u_TextureModule.TilesY, ratio);
 
 	BuildDrawCommand(u_MainModule.ParticlesEmitted);

@@ -260,6 +260,7 @@ namespace XYZ {
 
 			particle.ComputeShader->SetMat4("u_Transform", transform.WorldTransform);
 			particle.ComputeShader->SetInt("u_NumBoxColliders", boxColliders.size());
+			particle.ComputeShader->SetFloat2("u_Force", glm::vec2(4.0f, 0.0f));
 			// Main module
 			particle.ComputeShader->SetInt("u_MainModule.Repeat", (int)particle.System->GetConfiguration().Repeat);
 			particle.ComputeShader->SetInt("u_MainModule.ParticlesEmitted", particle.System->GetEmittedParticles());

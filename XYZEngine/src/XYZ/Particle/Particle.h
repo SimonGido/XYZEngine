@@ -33,4 +33,12 @@ namespace XYZ {
 		float	  TimeAlive = 0.0f;
 		int32_t   IsAlive = 1;
 	};
+
+
+	enum class ParticleEmissionShape
+	{
+		Sphere,
+		Rectangle,
+		Cone
+	};
 }

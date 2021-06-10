@@ -84,7 +84,7 @@ namespace XYZ {
 			specs.StartColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 			specs.StartPosition = glm::vec2(0.0f, 0.0f);
 			specs.StartSize		= glm::vec2(0.2f);
-			specs.StartVelocity = glm::vec2(dist(rng), dist(rng));
+			specs.StartVelocity = glm::vec2(dist(rng), 1.0f);
 		
 			particleSpecification.push_back(specs);
 		}

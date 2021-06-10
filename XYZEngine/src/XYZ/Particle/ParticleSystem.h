@@ -4,6 +4,7 @@
 #include "XYZ/Core/Ref.h"
 #include "XYZ/Core/Timestep.h"
 
+#include "ParticleModule.h"
 #include "Particle.h"
 
 #include <glm/glm.hpp>
