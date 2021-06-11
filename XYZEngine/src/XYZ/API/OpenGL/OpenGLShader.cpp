@@ -586,23 +586,6 @@ namespace XYZ {
 		{
 			uni.Location = glGetUniformLocation(m_RendererID, uni.Name.c_str());
 		}
-		//for (auto& texture : m_TextureList.Textures)
-		//{
-		//	if (texture.Count > 1)
-		//	{	
-		//		int32_t location = glGetUniformLocation(m_RendererID, texture.Name.c_str());
-		//		int* samplers = new int[texture.Count];
-		//		for (uint32_t s = 0; s < texture.Count; ++s)
-		//			samplers[s] = texture.Slot + s;
-		//		glUniform1iv(location, texture.Count, samplers);
-		//		delete[] samplers;
-		//	}
-		//	else
-		//	{
-		//		int32_t location = glGetUniformLocation(m_RendererID, texture.Name.c_str());
-		//		glUniform1i(location, texture.Slot);
-		//	}
-		//}
 	}
 	const char* FindToken(const char* str, const std::string& token)
 	{

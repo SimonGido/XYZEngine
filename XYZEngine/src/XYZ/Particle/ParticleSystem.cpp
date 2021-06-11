@@ -27,6 +27,7 @@ namespace XYZ {
         m_EmittedParticles(0.0f),
         m_PlayTime(0.0f)
     {
+        m_TestModule.LoadFromFile("Assets/Shaders/Particle/ParticleModule.glsl");
         ParticleVertex quad[4] = {
             ParticleVertex{glm::vec3(-0.5f, -0.5f, 0.0f), glm::vec2(0.0f, 0.0f)},
             ParticleVertex{glm::vec3( 0.5f, -0.5f, 0.0f), glm::vec2(1.0f / 4.0f, 0.0f)},

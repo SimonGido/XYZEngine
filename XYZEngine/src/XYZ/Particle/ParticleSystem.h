@@ -49,6 +49,8 @@ namespace XYZ {
 		int32_t GetEmittedParticles() const { return (int)std::ceil(m_EmittedParticles); }
 
 		Ref<ShaderStorageBuffer> m_BoxColliderStorage;
+
+		ParticleModule<3> m_TestModule;
 	private:
 		ParticleConfiguration m_Config;
 		float m_EmittedParticles;

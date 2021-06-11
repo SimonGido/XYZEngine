@@ -67,4 +67,18 @@ namespace XYZ::Utils {
 		return SplitString(string, std::string(1, delimiter));
 	}
 
+	const char* FindToken(const char* str, const std::string& token)
+	{
+		const char* t = str;
+		while (t = strstr(t, token.c_str()))
+		{
+			bool left = str == t || isspace(t[-1]);
+			bool right = !t[token.size()] || isspace(t[token.size()]);
+			if (left && right)
+				return t;
+			t += token.size();
+		}
+		return nullptr;
+	}
+
 }
