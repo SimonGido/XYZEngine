@@ -214,7 +214,8 @@ namespace XYZ {
 	void OpenGLFramebuffer::Bind() const
 	{
 		Ref<const OpenGLFramebuffer> instance = this;
-		Renderer::Submit([instance]() mutable {
+		size_t colorAttachmentCount = m_ColorAttachmentFormats.size();
+		Renderer::Submit([instance, colorAttachmentCount]() mutable {
 			glBindFramebuffer(GL_FRAMEBUFFER, instance->m_RendererID);
 			glViewport(0, 0, instance->m_Specification.Width, instance->m_Specification.Height);
 		});

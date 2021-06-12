@@ -178,7 +178,9 @@ namespace XYZ {
 		auto& cameraTransform = cameraEntity.GetComponent<TransformComponent>();
 		renderCamera.Camera = cameraComponent.Camera;
 		renderCamera.ViewMatrix = glm::inverse(cameraTransform.WorldTransform);
-		
+		auto [translation, rotation, scale] = cameraTransform.GetWorldComponents();
+		renderCamera.ViewPosition = translation;
+
 		SceneRenderer::GetOptions().ShowGrid = false;
 		SceneRenderer::BeginScene(this, renderCamera);
 
@@ -258,21 +260,22 @@ namespace XYZ {
 
 			particle.ComputeShader->Bind();
 
+			auto& config = particle.System->GetConfiguration();
 			particle.ComputeShader->SetMat4("u_Transform", transform.WorldTransform);
 			particle.ComputeShader->SetInt("u_NumBoxColliders", boxColliders.size());
-			particle.ComputeShader->SetFloat2("u_Force", glm::vec2(4.0f, 0.0f));
+			particle.ComputeShader->SetFloat2("u_Force", config.Force);
 			// Main module
-			particle.ComputeShader->SetInt("u_MainModule.Repeat", (int)particle.System->GetConfiguration().Repeat);
+			particle.ComputeShader->SetInt("u_MainModule.Repeat", (int)config.Repeat);
 			particle.ComputeShader->SetInt("u_MainModule.ParticlesEmitted", particle.System->GetEmittedParticles());
 			particle.ComputeShader->SetFloat("u_MainModule.LifeTime", 3.0f);
 			particle.ComputeShader->SetFloat("u_MainModule.Time", ts);
-			particle.ComputeShader->SetFloat("u_MainModule.Speed", particle.System->GetConfiguration().Speed);
+			particle.ComputeShader->SetFloat("u_MainModule.Speed", config.Speed);
 			// Color module
-			particle.ComputeShader->SetFloat4("u_ColorModule.StartColor", particle.System->GetConfiguration().StartColor);
-			particle.ComputeShader->SetFloat4("u_ColorModule.EndColor", particle.System->GetConfiguration().EndColor);
+			particle.ComputeShader->SetFloat4("u_ColorModule.StartColor",config.StartColor);
+			particle.ComputeShader->SetFloat4("u_ColorModule.EndColor",  config.EndColor);
 			// Size module
-			particle.ComputeShader->SetFloat2("u_SizeModule.StartSize", particle.System->GetConfiguration().StartSize);
-			particle.ComputeShader->SetFloat2("u_SizeModule.EndSize", particle.System->GetConfiguration().EndSize);
+			particle.ComputeShader->SetFloat2("u_SizeModule.StartSize", config.StartSize);
+			particle.ComputeShader->SetFloat2("u_SizeModule.EndSize", config.EndSize);
 			// Texture animation module
 			particle.ComputeShader->SetInt("u_TextureModule.TilesX", 4);
 			particle.ComputeShader->SetInt("u_TextureModule.TilesY", 4);
@@ -288,7 +291,7 @@ namespace XYZ {
 	void Scene::OnRenderEditor(const Editor::EditorCamera& camera)
 	{
 		updateHierarchy();
-		SceneRenderer::BeginScene(this, camera.GetViewProjection());
+		SceneRenderer::BeginScene(this, camera.GetViewProjection(), camera.GetPosition());
 		
 		auto renderView = m_ECS.CreateView<TransformComponent, SpriteRenderer>();
 		for (auto entity : renderView)

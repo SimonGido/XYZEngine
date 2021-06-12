@@ -43,7 +43,9 @@ namespace XYZ {
 	struct ParticleModule
 	{
 		ParticleModule()
-			: Enabled(false) 
+			: 
+			Enabled(false), 
+			m_ID(0)
 		{}
 
 		std::string				Name;
@@ -55,9 +57,13 @@ namespace XYZ {
 		
 		std::string ElementsToStruct() const;
 
+		uint32_t GetID() const { return m_ID; }
 	private:
 		void parse(const std::string& source);
 		void parseStruct(const std::string& structSource);
+
+	private:
+		uint32_t m_ID;
 	};
 
 
@@ -68,7 +74,7 @@ namespace XYZ {
 		if (in)
 		{
 			in.seekg(0, std::ios::end);
-			result.resize(in.tellg());
+			Source.resize(in.tellg());
 			in.seekg(0, std::ios::beg);
 			in.read(&Source[0], Source.size());
 			in.close();
@@ -113,8 +119,17 @@ namespace XYZ {
 	template<size_t ElementCount>
 	inline void ParticleModule<ElementCount>::parse(const std::string& source)
 	{
-		const char* token;
-		token = Utils::FindToken(source.c_str(), "struct");
+		const char* id = Utils::FindToken(source.c_str(), "#id");
+		if (id)
+		{
+			std::vector<std::string> splitSource = Utils::SplitString(id, " \n");
+			m_ID = atoi(splitSource[1].c_str());
+		}
+		else
+		{
+			XYZ_ASSERT(false, "Failed to find id");
+		}
+		const char* token = Utils::FindToken(source.c_str(), "struct");
 		if (token)
 		{ 
 			parseStruct(token);

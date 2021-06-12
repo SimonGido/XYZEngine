@@ -31,7 +31,7 @@ namespace XYZ {
 
 	struct TextureSpecs
 	{
-		TextureWrap Wrap = TextureWrap::Clamp;
+		TextureWrap  Wrap     = TextureWrap::Clamp;
 		TextureParam MinParam = TextureParam::Linear;
 		TextureParam MagParam = TextureParam::Nearest;
 	};
@@ -46,8 +46,7 @@ namespace XYZ {
 		virtual ~Texture() = default;
 	
 		virtual void Bind(uint32_t slot = 0) const = 0;
-		virtual void SetData(void* data, uint32_t size) {};
-		virtual uint8_t* GetData() { return nullptr; };
+		
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
 		virtual uint32_t GetChannels() const = 0;
@@ -65,12 +64,25 @@ namespace XYZ {
 	{
 	public:
 		virtual const TextureSpecs& GetSpecification() const = 0;
-
+		virtual void SetData(void* data, uint32_t size) {};
+		virtual uint8_t* GetData() { return nullptr; };
 
 		static Ref<Texture2D> Create(uint32_t width, uint32_t height, uint32_t channels, const TextureSpecs& specs);
 		static Ref<Texture2D> Create(const TextureSpecs& specs, const std::string& path);
 
 		
 		static void BindStatic(uint32_t rendererID, uint32_t slot);
+	};
+
+
+	class Texture2DArray : public Texture
+	{
+	public:
+		virtual const TextureSpecs& GetSpecification() const = 0;
+		virtual void SetData(void* data, uint32_t layerIndex, uint32_t size) {};
+		virtual uint8_t* GetData() { return nullptr; };
+
+		static Ref<Texture2D> Create(const TextureSpecs& specs, const std::initializer_list<std::string>& paths);
+		static Ref<Texture2DArray> Create(uint32_t layerCount, uint32_t width, uint32_t height, uint32_t channels, const TextureSpecs& specs);
 	};
 }

@@ -11,6 +11,7 @@ out vec4 v_Color;
 layout(std140, binding = 0) uniform Camera
 {
 	mat4 u_ViewProjection;
+	vec4 u_ViewPosition;
 };
 
 void main()

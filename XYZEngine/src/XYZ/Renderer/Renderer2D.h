@@ -16,7 +16,7 @@ namespace XYZ {
 		static void Shutdown();
 
 
-		static void BeginScene(const glm::mat4& viewProjectionMatrix);
+		static void BeginScene(const glm::mat4& viewProjectionMatrix, const glm::vec3& viewPos);
 
 		static uint32_t SetTexture(const Ref<Texture>& texture);
 		static void SetMaterial(const Ref<Material>& material);

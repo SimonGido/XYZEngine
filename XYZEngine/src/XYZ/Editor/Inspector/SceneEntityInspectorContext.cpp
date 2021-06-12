@@ -127,6 +127,31 @@ namespace XYZ {
 			EndColumns();
 		}
 
+		static void DrawVec3ControlRGB(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f)
+		{
+			ImGuiIO& io = ImGui::GetIO();
+			auto boldFont = io.Fonts->Fonts[0];
+			BeginColumns(label.c_str());
+
+			ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
+			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 5.0f });
+
+			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.5f, 0.5f, 0.5f, 1.0f });
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.6f, 0.6f, 0.6f, 1.0f });
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.65f, 0.65f, 0.65f, 1.0f });
+
+			DrawFloatControl("R", "##R", values.x, resetValue, columnWidth);
+			ImGui::SameLine();
+			DrawFloatControl("G", "##G", values.y, resetValue, columnWidth);
+			ImGui::SameLine();
+			DrawFloatControl("B", "##B", values.z, resetValue, columnWidth);
+			ImGui::PopStyleColor(3);
+
+			ImGui::PopStyleVar();
+
+			EndColumns();
+		}
+
 		static void DrawColorControl(const std::string& label, glm::vec4& values, float resetValue = 1.0f, float columnWidth = 100.0f)
 		{
 			ImGuiIO& io = ImGui::GetIO();
@@ -345,6 +370,15 @@ namespace XYZ {
 					/////////////////
 
 				});
+
+				Helper::DrawComponent<PointLight2D>("Point Light2D", m_Context, [&](auto& component) {
+
+					Helper::DrawVec3ControlRGB("Color", component.Color);
+					Helper::BeginColumns("Radius");
+					ImGui::DragFloat("##Radius", &component.Radius, 0.05f, 0.0f, 0.0f, "%.2f");
+					Helper::EndColumns();
+				});
+
 				Helper::DrawComponent<ScriptComponent>("Script", m_Context, [&](auto& component) {
 					for (const PublicField& field : component.GetFields())
 					{
@@ -601,6 +635,14 @@ namespace XYZ {
 						if (ImGui::MenuItem("Chain Collider2D"))
 						{
 							m_Context.EmplaceComponent<ChainCollider2DComponent>();
+							ImGui::CloseCurrentPopup();
+						}
+					}
+					if (!m_Context.HasComponent<PointLight2D>())
+					{
+						if (ImGui::MenuItem("Point Light2D"))
+						{
+							m_Context.EmplaceComponent<PointLight2D>();
 							ImGui::CloseCurrentPopup();
 						}
 					}

@@ -22,9 +22,10 @@ layout(location = 0) out vec4 o_Color;
 
 struct PointLightData
 {
-	vec4  Position;
 	vec3  Color;
-	float Intensity;
+	float Radius;
+
+	vec2  Position;
 };
 
 layout(std430, binding = 0) buffer
@@ -35,30 +36,23 @@ buffer_PointLights
 
 in vec2 v_TexCoords;
 
-uniform sampler2D u_Texture[2];
+layout(binding = 0) uniform sampler2D u_Texture[2];
+
 uniform int u_NumberOfLights;
 
-const float c_Constant = 1.0;
-const float c_Linear = 0.09;
-const float c_Quadratic = 0.032;
 
 void main()
 {
 	vec4 color = texture(u_Texture[0], v_TexCoords);
 	vec3 fragPos = texture(u_Texture[1], v_TexCoords).xyz;
 
+	vec3 result = vec3(0.0, 0.0, 0.0);
 	for (int i = 0; i < u_NumberOfLights; ++i)
 	{
-		vec3 ambient = color.xyz;
-		float distance = length(PointLights[i].Position.xyz - fragPos);
-		float attenuation = 1.0 / (c_Constant + c_Linear * distance + c_Quadratic * (distance * distance));
-		vec3 lightDir = normalize(PointLights[i].Position.xyz - fragPos);
-		vec3 diffuse = color.xyz;
-	
-		ambient *= attenuation;
-		diffuse *= attenuation;
-	
-		color.xyz += (ambient + diffuse) * PointLights[i].Color * PointLights[i].Intensity;
+		float dist = distance(fragPos.xy, PointLights[i].Position.xy);
+		float radius = PointLights[i].Radius;
+		if (dist <= radius)
+			result += color.xyz * PointLights[i].Color * (radius - dist);
 	}
-	o_Color = color;
+	o_Color = vec4(result, 1.0);
 }

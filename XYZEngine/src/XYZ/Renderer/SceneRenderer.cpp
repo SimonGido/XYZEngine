@@ -17,6 +17,7 @@ namespace XYZ {
 		SceneRendererOptions Options;
 		GridProperties GridProps;
 		glm::mat4 ViewProjectionMatrix;
+		glm::vec3 ViewPosition;
 
 		Ref<RenderPass> CompositePass;
 		Ref<RenderPass> LightPass;
@@ -57,9 +58,9 @@ namespace XYZ {
 
 		struct PointLight
 		{	
-			glm::vec4 Position;
 			glm::vec3 Color;
-			float Intensity = 1.0f;
+			float Radius = 1.0f;
+			glm::vec2 Position;
 		};
 
 
@@ -110,7 +111,6 @@ namespace XYZ {
 			specs.Attachments = {
 				FramebufferTextureSpecs(FramebufferTextureFormat::RGBA16F),
 				FramebufferTextureSpecs(FramebufferTextureFormat::RGBA16F),
-				FramebufferTextureSpecs(FramebufferTextureFormat::R32I),
 				FramebufferTextureSpecs(FramebufferTextureFormat::DEPTH24STENCIL8)
 			};
 			Ref<Framebuffer> fbo = Framebuffer::Create(specs);
@@ -176,8 +176,9 @@ namespace XYZ {
 		// Viewport size is changed at the beginning of the frame, so we do not delete texture that is currently use for rendering
 		UpdateViewportSize();
 		s_Data.ViewProjectionMatrix = s_Data.SceneCamera.Camera.GetProjectionMatrix() * s_Data.SceneCamera.ViewMatrix;
+		s_Data.ViewPosition = camera.ViewPosition;
 	}
-	void SceneRenderer::BeginScene(const Scene* scene, const glm::mat4 viewProjectionMatrix)
+	void SceneRenderer::BeginScene(const Scene* scene, const glm::mat4 viewProjectionMatrix, const glm::vec3& viewPosition)
 	{
 		XYZ_ASSERT(!s_Data.ActiveScene, "Missing end scene");
 		s_Data.ActiveScene = scene;
@@ -185,6 +186,7 @@ namespace XYZ {
 		// Viewport size is changed at the beginning of the frame, so we do not delete texture that is currently use for rendering
 		UpdateViewportSize();
 		s_Data.ViewProjectionMatrix = viewProjectionMatrix;
+		s_Data.ViewPosition = viewPosition;
 	}
 	void SceneRenderer::EndScene()
 	{
@@ -218,9 +220,9 @@ namespace XYZ {
 	{
 		XYZ_ASSERT(s_Data.LightsList.size() + 1 < s_Data.MaxNumberOfLights, "Max number of lights per scene is ", s_Data.MaxNumberOfLights);
 		SceneRendererData::PointLight lightData;
-		lightData.Position = glm::vec4(transform[3][0], transform[3][1], transform[3][2], 0.0f);
+		lightData.Position = glm::vec2(transform[3][0], transform[3][1]);
 		lightData.Color = light->Color;
-		lightData.Intensity = light->Intensity;
+		lightData.Radius = light->Radius;
 		s_Data.LightsList.push_back(lightData);
 	}
 
@@ -298,7 +300,7 @@ namespace XYZ {
 	void SceneRenderer::GeometryPass()
 	{
 		Renderer::BeginRenderPass(s_Data.GeometryPass, true);
-		Renderer2D::BeginScene(s_Data.ViewProjectionMatrix);
+		Renderer2D::BeginScene(s_Data.ViewProjectionMatrix, s_Data.ViewPosition);
 
 		if (s_Data.Options.ShowGrid)
 		{
@@ -362,6 +364,8 @@ namespace XYZ {
 		Renderer::SubmitFullsceenQuad();
 		
 		Renderer::EndRenderPass();
+
+		Texture2D::BindStatic(0, 0);
 	}
 
 	void SceneRenderer::BloomPass()

@@ -5,16 +5,16 @@ Entities:
       Name: Scary Entity
     TransformComponent:
       Position: [-2.37743325e-06, -1.16000056, 0]
-      Rotation: [0, 0, 8.52500861e-08]
+      Rotation: [0, 0, 8.52500932e-08]
       Scale: [1, 1, 1]
     SpriteRenderer:
       MaterialAsset: 6b8ecf40-b3aa-4a26-a497-d7cdda43afba
       SubTextureAsset: 3680b0a1-ae15-4e4b-abb3-89892fe9cb37
-      Color: [2.25, 2.75, 0.100000001, 1]
+      Color: [1, 1, 1, 1]
       SortLayer: 0
       Visible: true
     Relationship:
-      Parent: db860f3f-1706-4abc-80e8-f49ad5304d1e
+      Parent: b2922b1e-bdf6-48b6-9874-c9337f2ac051
       PreviousSibling: 7d2ac969-0a31-46d7-98d5-ceb1b25c67af
     RigidBody2D:
       Type: 1
@@ -43,7 +43,7 @@ Entities:
       SortLayer: 0
       Visible: true
     Relationship:
-      Parent: db860f3f-1706-4abc-80e8-f49ad5304d1e
+      Parent: b2922b1e-bdf6-48b6-9874-c9337f2ac051
       NextSibling: 83da08c4-02dd-482b-805d-73607200846c
       PreviousSibling: 028f6e22-ee3b-42cd-95f0-6c8130222131
   - Entity: 028f6e22-ee3b-42cd-95f0-6c8130222131
@@ -62,7 +62,7 @@ Entities:
       OrthographicNear: -1
       OrthographicFar: 1
     Relationship:
-      Parent: db860f3f-1706-4abc-80e8-f49ad5304d1e
+      Parent: b2922b1e-bdf6-48b6-9874-c9337f2ac051
       NextSibling: 7d2ac969-0a31-46d7-98d5-ceb1b25c67af
       PreviousSibling: 88f308fd-785b-4833-b6f3-e89fb0996bb3
   - Entity: 88f308fd-785b-4833-b6f3-e89fb0996bb3
@@ -73,11 +73,22 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
-      Parent: db860f3f-1706-4abc-80e8-f49ad5304d1e
+      Parent: b2922b1e-bdf6-48b6-9874-c9337f2ac051
       NextSibling: 028f6e22-ee3b-42cd-95f0-6c8130222131
+      PreviousSibling: 5b984494-5db4-4ead-892b-9fadc86d4b52
     RigidBody2D:
       Type: 0
     BoxCollider2D:
       Size: [6.55000019, 0.400000006]
       Density: 1
       Friction: 0
+  - Entity: 5b984494-5db4-4ead-892b-9fadc86d4b52
+    SceneTagComponent:
+      Name: Empty Entity
+    TransformComponent:
+      Position: [0.100000001, -0.0500000007, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: b2922b1e-bdf6-48b6-9874-c9337f2ac051
+      NextSibling: 88f308fd-785b-4833-b6f3-e89fb0996bb3

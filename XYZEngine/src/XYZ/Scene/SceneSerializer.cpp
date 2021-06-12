@@ -96,7 +96,7 @@ namespace XYZ {
 		out << YAML::BeginMap; // Point Light
 
 		out << YAML::Key << "Color" << YAML::Value << val.Color;
-		out << YAML::Key << "Intensity" << YAML::Value << val.Intensity;
+		out << YAML::Key << "Radius" << YAML::Value << val.Radius;
 		out << YAML::EndMap; // Point Light
 	}
 	
@@ -364,7 +364,7 @@ namespace XYZ {
 	{
 		PointLight2D light;
 		light.Color = data["Color"].as<glm::vec3>();
-		light.Intensity = data["Intensity"].as<float>();
+		light.Radius = data["Radius"].as<float>();
 		entity.AddComponent(light);
 	}
 

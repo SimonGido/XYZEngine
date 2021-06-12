@@ -37,4 +37,36 @@ namespace XYZ {
 
 		std::string m_Filepath;
 	};	
+
+
+
+	class OpenGLTexture2DArray : public Texture2DArray
+	{
+	public:
+		OpenGLTexture2DArray(const TextureSpecs& specs, const std::initializer_list<std::string>& paths);
+		OpenGLTexture2DArray(uint32_t layerCount, uint32_t width, uint32_t height, uint32_t channels, const TextureSpecs& specs);
+		virtual ~OpenGLTexture2DArray() override;
+
+		virtual void Bind(uint32_t slot = 0) const override;
+
+		inline virtual uint32_t GetWidth() const override { return m_Width; }
+		inline virtual uint32_t GetHeight() const override { return m_Height; }
+		inline virtual uint32_t GetChannels() const override { return m_Channels; }
+		inline virtual uint32_t GetRendererID() const override { return m_RendererID; }
+		virtual const TextureSpecs& GetSpecification() const override { return m_Specification; };
+		
+	private:
+		uint32_t m_RendererID = 0;
+
+		uint32_t m_Width, m_Height;
+		uint32_t m_Channels;
+		uint32_t m_LayerCount;
+
+		TextureSpecs m_Specification;
+
+		GLenum m_DataFormat, m_InternalFormat;
+		ByteBuffer m_LocalData;
+
+		std::vector<std::string> m_Filepaths;
+	};
 }

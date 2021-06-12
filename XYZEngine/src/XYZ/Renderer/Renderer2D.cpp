@@ -117,6 +117,7 @@ namespace XYZ {
 		struct CameraData
 		{
 			glm::mat4 ViewProjectionMatrix;
+			glm::vec4 ViewPosition;
 		};
 
 		CameraData CameraBuffer;
@@ -334,10 +335,11 @@ namespace XYZ {
 		s_Data.CameraUniformBuffer.Reset();
 	}
 
-	void Renderer2D::BeginScene(const glm::mat4& viewProjectionMatrix)
+	void Renderer2D::BeginScene(const glm::mat4& viewProjectionMatrix, const glm::vec3& viewPos)
 	{
 		s_Data.QuadMaterial = s_Data.DefaultQuadMaterial;
 		s_Data.CameraBuffer.ViewProjectionMatrix = viewProjectionMatrix;
+		s_Data.CameraBuffer.ViewPosition = glm::vec4(viewPos, 0.0f);
 		s_Data.CameraUniformBuffer->Update(&s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData), 0);
 	}
 

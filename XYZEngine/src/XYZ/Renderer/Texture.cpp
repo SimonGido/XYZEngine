@@ -50,4 +50,28 @@ namespace XYZ {
 
 	}
 
+	Ref<Texture2D> Texture2DArray::Create(const TextureSpecs& specs, const std::initializer_list<std::string>& paths)
+	{
+		switch (Renderer::GetAPI())
+		{
+		case RendererAPI::API::None: XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
+		case RendererAPI::API::OpenGL: return Ref<OpenGLTexture2DArray>::Create(specs, paths);
+		}
+
+		XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
+		return nullptr;
+	}
+
+	Ref<Texture2DArray> Texture2DArray::Create(uint32_t count, uint32_t width, uint32_t height, uint32_t channels, const TextureSpecs& specs)
+	{
+		switch (Renderer::GetAPI())
+		{
+		case RendererAPI::API::None: XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
+		case RendererAPI::API::OpenGL: return Ref<OpenGLTexture2DArray>::Create(count, width, height, channels, specs);
+		}
+
+		XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
+		return nullptr;
+	}
+
 }

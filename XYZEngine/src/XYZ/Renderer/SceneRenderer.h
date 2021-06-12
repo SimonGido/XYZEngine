@@ -23,6 +23,7 @@ namespace XYZ {
 	{
 		XYZ::Camera Camera;
 		glm::mat4 ViewMatrix;
+		glm::vec3 ViewPosition;
 	};
 
 	class SceneRenderer
@@ -34,7 +35,7 @@ namespace XYZ {
 		static void SetViewportSize(uint32_t width, uint32_t height);
 
 		static void BeginScene(const Scene* scene, const SceneRendererCamera& camera);
-		static void BeginScene(const Scene* scene, const glm::mat4 viewProjectionMatrix);
+		static void BeginScene(const Scene* scene, const glm::mat4 viewProjectionMatrix, const glm::vec3& viewPosition);
 		static void EndScene();
 
 		static void SubmitSkeletalMesh(SkeletalMesh* mesh);

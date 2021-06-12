@@ -10,7 +10,7 @@
 #include <glm/glm.hpp>
 
 namespace XYZ {
-	
+
 	struct ParticleConfiguration
 	{
 		ParticleConfiguration();
@@ -19,6 +19,7 @@ namespace XYZ {
 		glm::vec4 EndColor;
 		glm::vec2 StartSize;
 		glm::vec2 EndSize;
+		glm::vec2 Force;
 
 		uint32_t  MaxParticles;
 		float     Rate;
@@ -42,15 +43,13 @@ namespace XYZ {
 
 		const Ref<VertexArray>& GetVertexArray() const { return m_VertexArray; }
 		const Ref<ShaderStorageBuffer>& GetShaderStorage() const { return m_DataStorage; }
-		
+
 		const Ref<IndirectBuffer>& GetIndirectBuffer() const { return m_IndirectBuffer; }
-		
+
 		ParticleConfiguration& GetConfiguration() { return m_Config; }
 		int32_t GetEmittedParticles() const { return (int)std::ceil(m_EmittedParticles); }
 
 		Ref<ShaderStorageBuffer> m_BoxColliderStorage;
-
-		ParticleModule<3> m_TestModule;
 	private:
 		ParticleConfiguration m_Config;
 		float m_EmittedParticles;
@@ -60,7 +59,7 @@ namespace XYZ {
 		Ref<VertexArray>	m_VertexArray;
 		Ref<IndirectBuffer> m_IndirectBuffer;
 
-		
+
 		Ref<ShaderStorageBuffer> m_DataStorage;
 		Ref<ShaderStorageBuffer> m_SpecsStorage;
 		Ref<AtomicCounter>		 m_DeadCounter;

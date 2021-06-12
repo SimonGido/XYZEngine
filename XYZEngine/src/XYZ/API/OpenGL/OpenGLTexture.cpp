@@ -192,4 +192,165 @@ namespace XYZ {
 			glBindTextureUnit(slot, rendererID); 
 			});
 	}
+	OpenGLTexture2DArray::OpenGLTexture2DArray(const TextureSpecs& specs, const std::initializer_list<std::string>& paths)
+		:
+		m_Specification(specs),
+		m_Filepaths(paths),
+		m_LayerCount(paths.size())
+	{
+		XYZ_ASSERT(paths.size(), "No paths");
+		int width = 0, height = 0, channels = 0;
+		stbi_set_flip_vertically_on_load(1);
+		uint32_t offset = 0;
+		for (auto& path : m_Filepaths)
+		{
+			uint8_t* ptr = (uint8_t*)stbi_load(path.c_str(), &width, &height, &channels, 0);
+			uint32_t size = width * height * channels;
+			m_LocalData.Write(ptr, size, offset);
+			offset += size;
+		}
+		XYZ_ASSERT(m_LocalData, "Failed to load image!");
+		m_Width = width;
+		m_Height = height;
+		m_Channels = channels;
+
+		GLenum internalFormat = 0, dataFormat = 0;
+		if (channels == 4)
+		{
+			internalFormat = GL_RGBA8;
+			dataFormat = GL_RGBA;
+		}
+		else if (channels == 3)
+		{
+			internalFormat = GL_RGB8;
+			dataFormat = GL_RGB;
+		}
+		else if (channels == 1)
+		{
+			internalFormat = GL_R8;
+			dataFormat = GL_RED;
+		}
+
+
+		m_InternalFormat = internalFormat;
+		m_DataFormat = dataFormat;
+
+		XYZ_ASSERT(internalFormat & dataFormat, "Format not supported!");
+		Ref<OpenGLTexture2DArray> instance = this;
+		Renderer::Submit([instance]() mutable {
+			glCreateTextures(GL_TEXTURE_2D_ARRAY, 1, &instance->m_RendererID);
+			int levels = Texture::CalculateMipMapCount(instance->m_Width, instance->m_Height);
+			glTextureStorage3D(instance->m_RendererID, 1, instance->m_InternalFormat, instance->m_Width, instance->m_Height, instance->m_LayerCount);
+			if (instance->m_Specification.MinParam == TextureParam::Linear)
+			{
+				glTextureParameteri(instance->m_RendererID, GL_TEXTURE_MIN_FILTER, levels > 1 ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
+			}
+			else if (instance->m_Specification.MinParam == TextureParam::Nearest)
+			{
+				glTextureParameteri(instance->m_RendererID, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			}
+
+			if (instance->m_Specification.MagParam == TextureParam::Linear)
+			{
+				glTextureParameteri(instance->m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			}
+			else if (instance->m_Specification.MagParam == TextureParam::Nearest)
+			{
+				glTextureParameteri(instance->m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			}
+
+			if (instance->m_Specification.Wrap == TextureWrap::Repeat)
+			{
+				glTextureParameteri(instance->m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
+				glTextureParameteri(instance->m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+			}
+			else if (instance->m_Specification.Wrap == TextureWrap::Clamp)
+			{
+				glTextureParameteri(instance->m_RendererID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTextureParameteri(instance->m_RendererID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			}
+			glTextureSubImage3D(instance->m_RendererID,0, 0, 0, 0, instance->m_Width, instance->m_Height, instance->m_LayerCount, instance->m_DataFormat, GL_UNSIGNED_BYTE, instance->m_LocalData);
+			glGenerateTextureMipmap(instance->m_RendererID);
+
+			stbi_image_free(instance->m_LocalData);
+			instance->m_LocalData = nullptr;
+		});
+	}
+	OpenGLTexture2DArray::OpenGLTexture2DArray(uint32_t layerCount, uint32_t width, uint32_t height, uint32_t channels, const TextureSpecs& specs)
+		: m_LayerCount(layerCount), m_Width(width), m_Height(height), m_Channels(channels), m_Specification(specs)
+	{
+		m_DataFormat = 0;
+		m_InternalFormat = 0;
+
+		if (m_Channels == 4)
+		{
+			m_InternalFormat = GL_RGBA8;
+			m_DataFormat = GL_RGBA;
+		}
+		else if (m_Channels == 3)
+		{
+			m_InternalFormat = GL_RGB8;
+			m_DataFormat = GL_RGB;
+		}
+		else if (m_Channels == 1)
+		{
+			m_InternalFormat = GL_R8;
+			m_DataFormat = GL_RED;
+		}
+		else
+		{
+			XYZ_ASSERT("Channel is not supported ", m_Channels);
+		}
+
+		m_LocalData.Allocate(m_Width * m_Height * m_Channels * m_LayerCount);
+
+		Ref<OpenGLTexture2DArray> instance = this;
+		Renderer::Submit([instance]() mutable {
+
+			if (instance->m_Channels == 1)
+				glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+			glCreateTextures(GL_TEXTURE_2D_ARRAY, 1, &instance->m_RendererID);
+			glTextureStorage3D(instance->m_RendererID, 1, instance->m_InternalFormat, instance->m_Width, instance->m_Height, instance->m_LayerCount);
+
+			if (instance->m_Specification.MinParam == TextureParam::Linear)
+			{
+				glTextureParameteri(instance->m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			}
+			else if (instance->m_Specification.MinParam == TextureParam::Nearest)
+			{
+				glTextureParameteri(instance->m_RendererID, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			}
+			if (instance->m_Specification.MagParam == TextureParam::Linear)
+			{
+				glTextureParameteri(instance->m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			}
+			else if (instance->m_Specification.MagParam == TextureParam::Nearest)
+			{
+				glTextureParameteri(instance->m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			}
+
+			if (instance->m_Specification.Wrap == TextureWrap::Repeat)
+			{
+				glTextureParameteri(instance->m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
+				glTextureParameteri(instance->m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+			}
+			else if (instance->m_Specification.Wrap == TextureWrap::Clamp)
+			{
+				glTextureParameteri(instance->m_RendererID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTextureParameteri(instance->m_RendererID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			}
+		});
+	}
+	OpenGLTexture2DArray::~OpenGLTexture2DArray()
+	{
+		delete[]m_LocalData;
+		Renderer::Submit([=]() {glDeleteTextures(1, &m_RendererID); });
+	}
+	void OpenGLTexture2DArray::Bind(uint32_t slot) const
+	{
+		Ref<const OpenGLTexture2DArray> instance = this;
+		Renderer::Submit([instance, slot]() {
+			glBindTextureUnit(slot, instance->m_RendererID);
+		});
+	}
 }
