@@ -387,7 +387,25 @@ namespace XYZ {
 					ImGui::DragFloat("##Intensity", &component.Intensity, 0.05f, 0.0f, 0.0f, "%.2f");
 					Helper::EndColumns();
 				});
+				Helper::DrawComponent<SpotLight2D>("Spot Light2D", m_Context, [&](auto& component) {
 
+					Helper::DrawVec3ControlRGB("Color", component.Color);
+					Helper::BeginColumns("Radius");
+					ImGui::DragFloat("##Radius", &component.Radius, 0.05f, 0.0f, 0.0f, "%.2f");
+					Helper::EndColumns();
+
+					Helper::BeginColumns("Intensity");
+					ImGui::DragFloat("##Intensity", &component.Intensity, 0.05f, 0.0f, 0.0f, "%.2f");
+					Helper::EndColumns();
+
+					Helper::BeginColumns("Inner Angle");
+					ImGui::DragFloat("##InnerAngle", &component.InnerAngle, 1.0f, 0.0f, 0.0f, "%.2f");
+					Helper::EndColumns();
+
+					Helper::BeginColumns("Outer Angle");
+					ImGui::DragFloat("##OuterAngle", &component.OuterAngle, 1.0f, 0.0f, 0.0f, "%.2f");
+					Helper::EndColumns();
+				});
 				Helper::DrawComponent<ScriptComponent>("Script", m_Context, [&](auto& component) {
 					for (const PublicField& field : component.GetFields())
 					{
@@ -655,6 +673,14 @@ namespace XYZ {
 							ImGui::CloseCurrentPopup();
 						}
 					}
+					if (!m_Context.HasComponent<SpotLight2D>())
+					{
+						if (ImGui::MenuItem("Spot Light2D"))
+						{
+							m_Context.EmplaceComponent<SpotLight2D>();
+							ImGui::CloseCurrentPopup();
+						}
+					}
 					ImGui::EndPopup();
 				}
 			}
@@ -677,7 +703,7 @@ namespace XYZ {
 					{
 						const Ref<Texture>& texture = subTexture->GetTexture();
 						const glm::vec4& texCoords = subTexture->GetTexCoords();
-						if (ImGui::ImageButton((void*)(uint64_t)texture->GetRendererID(), { m_IconSize.x, m_IconSize.y }, { texCoords.x, texCoords.w }, { texCoords.z, texCoords.y }))
+						if (ImGui::ImageButton((void*)(uint64_t)texture->GetRendererID(), { 50.0f, 50.0f }, { texCoords.x, texCoords.w }, { texCoords.z, texCoords.y }))
 						{
 							m_Context.GetComponent<SpriteRenderer>().SubTexture = subTexture;
 							m_DialogOpen = false;

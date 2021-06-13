@@ -44,6 +44,8 @@ namespace XYZ {
 		static void SubmitCollision(TransformComponent* transform, uint32_t collisionID);
 		static void SubmitParticles(ParticleComponent* particle, TransformComponent* transform);
 		static void SubmitLight(PointLight2D* light, const glm::mat4& transform);
+		static void SubmitLight(SpotLight2D* light, const glm::mat4& transform);
+
 		static void SetGridProperties(const GridProperties& props);
 
 		static void UpdateViewportSize();

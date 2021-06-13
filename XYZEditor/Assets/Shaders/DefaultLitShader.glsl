@@ -35,6 +35,7 @@ void main()
 
 #type fragment
 #version 450
+#define PI 3.1415926535897932384626433832795
 
 layout(location = 0) out vec4 o_Color;
 layout(location = 1) out vec4 o_Position;
@@ -46,10 +47,6 @@ in vec2 v_TexCoord;
 in flat float v_TextureID;
 in float v_TilingFactor;
 
-uniform vec4 u_Color;
-
-layout(binding = 0) uniform sampler2D u_Texture[32];
-
 struct PointLightData
 {
 	vec4  Color;
@@ -58,13 +55,73 @@ struct PointLightData
 	float Intensity;
 };
 
-layout(std430, binding = 1) buffer
-buffer_PointLights
+struct SpotLightData
+{
+	vec4  Color;
+	vec2  Position;
+	float Radius;
+	float Intensity;
+	float InnerAngle;
+	float OuterAngle;
+	
+	float Alignment[2];
+};
+
+layout(std430, binding = 1) buffer buffer_PointLights
 {
 	PointLightData PointLights[];
 };
 
-in vec2 v_TexCoords;
+layout(std430, binding = 2) buffer buffer_SpotLights
+{
+	SpotLightData SpotLights[];
+};
+
+
+float Determinant(vec2 a, vec2 b)
+{
+	return a.x * b.y - a.y * b.x;
+}
+
+vec3 CalculatePointLights(vec3 defaultColor)
+{
+	vec3 litColor = vec3(0.0, 0.0, 0.0);
+	for (int i = 0; i < PointLights.length(); ++i)
+	{
+		float dist = distance(v_Position.xy, PointLights[i].Position.xy);
+		float radius = PointLights[i].Radius;
+		if (dist <= radius)
+			litColor += defaultColor.xyz * PointLights[i].Color.xyz * abs(radius - dist) * PointLights[i].Intensity;
+	}
+	return litColor;
+}
+
+vec3 CalculateSpotLights(vec3 defaultColor)
+{
+	vec3 litColor = vec3(0.0, 0.0, 0.0);
+	for (int i = 0; i < SpotLights.length(); ++i)
+	{
+		float dist = distance(v_Position.xy, SpotLights[i].Position.xy);
+		float radius = SpotLights[i].Radius;
+		if (dist <= radius)
+		{
+			vec2 toVertexDir = normalize(v_Position.xy - SpotLights[i].Position.xy);
+			vec2 toCenter = vec2(0.0, 1.0);
+			float dotProduct = dot(toVertexDir, toCenter);
+			float deter = Determinant(toVertexDir, toCenter);
+			float angle = atan(deter, dotProduct) * (180.0 / PI);
+			if (angle > SpotLights[i].InnerAngle && angle < SpotLights[i].OuterAngle)
+				litColor += defaultColor.xyz * SpotLights[i].Color.xyz * abs(radius - dist) * SpotLights[i].Intensity;
+		}
+	}
+	return litColor;
+}
+
+
+
+uniform vec4 u_Color;
+
+layout(binding = 0) uniform sampler2D u_Texture[32];
 
 void main()
 {
@@ -106,15 +163,9 @@ void main()
 	}
 	
 
-	vec3 litColor = vec3(0.0, 0.0, 0.0);
-	for (int i = 0; i < PointLights.length(); ++i)
-	{
-		float dist = distance(v_Position.xy, PointLights[i].Position.xy);
-		float radius = PointLights[i].Radius;
-		if (dist <= radius)
-			litColor += color.xyz * PointLights[i].Color.xyz * abs(radius - dist) * PointLights[i].Intensity;
-	}
-
+	vec3 litColor = CalculatePointLights(color.xyz);
+	litColor += CalculateSpotLights(color.xyz);
+	
 	o_Color = vec4(litColor, color.a);
 	o_Position = vec4(v_Position, 1.0);
 }

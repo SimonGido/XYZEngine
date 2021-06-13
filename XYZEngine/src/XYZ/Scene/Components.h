@@ -133,10 +133,18 @@ namespace XYZ {
 		PointLight2D() = default;
 
 		glm::vec3 Color = glm::vec3(1.0f);
-		float Radius = 1.0f;
+		float Radius	= 1.0f;
 		float Intensity = 1.0f;
 	};
 
+	struct SpotLight2D : public IComponent
+	{
+		glm::vec3 Color  = glm::vec3(1.0f);
+		float Radius	 = 1.0f;
+		float Intensity  = 1.0f;
+		float InnerAngle = -180.0f;
+		float OuterAngle =  180.0f;
+	};
 
 	struct Relationship : public IComponent
 	{

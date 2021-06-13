@@ -33,7 +33,7 @@ namespace XYZ {
 
 
 		Ref<ShaderStorageBuffer> LightStorageBuffer;
-		
+		Ref<ShaderStorageBuffer> SpotLightStorageBuffer;
 
 		struct EditorSpriteDrawCommand
 		{
@@ -56,13 +56,24 @@ namespace XYZ {
 			TransformComponent* Transform;
 			uint32_t ID;
 		};
-
 		struct PointLight
 		{	
 			glm::vec4 Color;
 			glm::vec2 Position;
-			float Radius = 1.0f;
-			float Intensity = 1.0f;
+			float Radius;
+			float Intensity;
+		};
+		struct SpotLight
+		{
+			glm::vec4 Color;
+			glm::vec2 Position;
+			float Radius;
+			float Intensity;
+			float InnerAngle;
+			float OuterAngle;
+
+		private:
+			float Alignment[2];
 		};
 
 		std::vector<CollisionDrawCommand>	 CollisionList;
@@ -70,6 +81,7 @@ namespace XYZ {
 		std::vector<EditorSpriteDrawCommand> EditorSpriteDrawList;
 		std::vector<ParticleDrawCommand>	 ParticleDrawList;
 		std::vector<PointLight>				 LightsList;
+		std::vector<SpotLight>				 SpotLightsList;
 		
 		glm::vec2      ViewportSize;
 		bool	       ViewportSizeChanged = false;
@@ -138,11 +150,12 @@ namespace XYZ {
 			Ref<Framebuffer> fbo = Framebuffer::Create(specs);
 			s_Data.GaussianBlurPass = RenderPass::Create({ fbo });
 		}
-		s_Data.GaussianBlurShader = Shader::Create("Assets/Shaders/GaussianBlurShader.glsl");
-		s_Data.BloomShader		  = Shader::Create("Assets/Shaders/BloomShader.glsl");
-		s_Data.CompositeShader	  = Shader::Create("Assets/Shaders/CompositeShader.glsl");
-		s_Data.LightShader		  = Shader::Create("Assets/Shaders/LightShader.glsl");
-		s_Data.LightStorageBuffer = ShaderStorageBuffer::Create(s_Data.MaxNumberOfLights * sizeof(SceneRendererData::PointLight), 1);
+		s_Data.GaussianBlurShader     = Shader::Create("Assets/Shaders/GaussianBlurShader.glsl");
+		s_Data.BloomShader		      = Shader::Create("Assets/Shaders/BloomShader.glsl");
+		s_Data.CompositeShader	      = Shader::Create("Assets/Shaders/CompositeShader.glsl");
+		s_Data.LightShader		      = Shader::Create("Assets/Shaders/LightShader.glsl");
+		s_Data.LightStorageBuffer     = ShaderStorageBuffer::Create(s_Data.MaxNumberOfLights * sizeof(SceneRendererData::PointLight), 1);
+		s_Data.SpotLightStorageBuffer = ShaderStorageBuffer::Create(s_Data.MaxNumberOfLights * sizeof(SceneRendererData::SpotLight), 2);
 	}
 
 	void SceneRenderer::Shutdown()
@@ -160,6 +173,7 @@ namespace XYZ {
 
 
 		s_Data.LightStorageBuffer.Reset();
+		s_Data.SpotLightStorageBuffer.Reset();
 	}
 
 	void SceneRenderer::SetViewportSize(uint32_t width, uint32_t height)
@@ -226,7 +240,18 @@ namespace XYZ {
 		lightData.Intensity = light->Intensity;
 		s_Data.LightsList.push_back(lightData);
 	}
-
+	void SceneRenderer::SubmitLight(SpotLight2D* light, const glm::mat4& transform)
+	{
+		XYZ_ASSERT(s_Data.LightsList.size() + 1 < s_Data.MaxNumberOfLights, "Max number of lights per scene is ", s_Data.MaxNumberOfLights);
+		SceneRendererData::SpotLight lightData;
+		lightData.Position   = glm::vec2(transform[3][0], transform[3][1]);
+		lightData.Color		 = glm::vec4(light->Color, 0.0f);
+		lightData.Radius	 = light->Radius;
+		lightData.Intensity  = light->Intensity;
+		lightData.InnerAngle = light->InnerAngle;
+		lightData.OuterAngle = light->OuterAngle;
+		s_Data.SpotLightsList.push_back(lightData);
+	}
 	void SceneRenderer::SetGridProperties(const GridProperties& props)
 	{
 		s_Data.GridProps = props;
@@ -296,6 +321,7 @@ namespace XYZ {
 		s_Data.EditorSpriteDrawList.clear();
 		s_Data.ParticleDrawList.clear();
 		s_Data.LightsList.clear();
+		s_Data.SpotLightsList.clear();
 	}
 
 	void SceneRenderer::GeometryPass()
@@ -307,6 +333,12 @@ namespace XYZ {
 		{
 			s_Data.LightStorageBuffer->Update(s_Data.LightsList.data(), s_Data.LightsList.size() * sizeof(SceneRendererData::PointLight));
 			s_Data.LightStorageBuffer->BindRange(0, s_Data.LightsList.size() * sizeof(SceneRendererData::PointLight));
+		}
+
+		if (s_Data.SpotLightsList.size())
+		{
+			s_Data.SpotLightStorageBuffer->Update(s_Data.SpotLightsList.data(), s_Data.SpotLightsList.size() * sizeof(SceneRendererData::SpotLight));
+			s_Data.SpotLightStorageBuffer->BindRange(0, s_Data.SpotLightsList.size() * sizeof(SceneRendererData::SpotLight));
 		}
 
 		if (s_Data.Options.ShowGrid)

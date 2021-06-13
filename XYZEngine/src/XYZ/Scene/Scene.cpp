@@ -320,6 +320,13 @@ namespace XYZ {
 			auto [transform, light] = lightView.Get<TransformComponent, PointLight2D>(entity);
 			SceneRenderer::SubmitLight(&light, transform.WorldTransform);
 		}	
+
+		auto spotLightView = m_ECS.CreateView<TransformComponent, SpotLight2D>();
+		for (auto entity : spotLightView)
+		{
+			auto [transform, light] = spotLightView.Get<TransformComponent, SpotLight2D>(entity);
+			SceneRenderer::SubmitLight(&light, transform.WorldTransform);
+		}
 		SceneRenderer::EndScene();
 	}
 
