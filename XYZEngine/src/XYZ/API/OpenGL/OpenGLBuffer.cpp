@@ -114,7 +114,7 @@ namespace XYZ {
 
 
 	OpenGLShaderStorageBuffer::OpenGLShaderStorageBuffer(void* data, uint32_t size, uint32_t binding, BufferUsage usage)
-		:m_Size(size), m_Usage(usage)
+		:m_Size(size), m_Binding(binding), m_Usage(usage)
 	{
 		if (data)
 			m_LocalData = ByteBuffer::Copy(data, size);
@@ -137,24 +137,27 @@ namespace XYZ {
 	OpenGLShaderStorageBuffer::~OpenGLShaderStorageBuffer()
 	{
 		delete[]m_LocalData;
+		Ref<OpenGLShaderStorageBuffer> instance = this;
 		Renderer::Submit([=]() {
-			glDeleteBuffers(1, &m_RendererID);
+			glDeleteBuffers(1, &instance->m_RendererID);
 			});
 	}
 
-	void OpenGLShaderStorageBuffer::BindBase(uint32_t index)const
+	void OpenGLShaderStorageBuffer::BindBase(uint32_t binding) const
 	{
-		Renderer::Submit([this, index]() {
-			glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_RendererID);
-			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, m_RendererID);
+		Ref<const OpenGLShaderStorageBuffer> instance = this;
+		Renderer::Submit([instance, binding]() {
+			glBindBuffer(GL_SHADER_STORAGE_BUFFER, instance->m_RendererID);
+			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding, instance->m_RendererID);
 		});
 	}
 
 
-	void OpenGLShaderStorageBuffer::BindRange(uint32_t offset, uint32_t size, uint32_t index)const
+	void OpenGLShaderStorageBuffer::BindRange(uint32_t offset, uint32_t size) const
 	{
-		Renderer::Submit([this, offset, size, index]() {
-			glBindBufferRange(GL_SHADER_STORAGE_BUFFER, index, m_RendererID, offset, size);
+		Ref<const OpenGLShaderStorageBuffer> instance = this;
+		Renderer::Submit([instance, offset, size]() {
+			glBindBufferRange(GL_SHADER_STORAGE_BUFFER, instance->m_Binding, instance->m_RendererID, offset, size);
 			});
 	}
 

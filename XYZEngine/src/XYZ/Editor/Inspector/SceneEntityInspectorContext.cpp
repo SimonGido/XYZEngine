@@ -377,6 +377,10 @@ namespace XYZ {
 					Helper::BeginColumns("Radius");
 					ImGui::DragFloat("##Radius", &component.Radius, 0.05f, 0.0f, 0.0f, "%.2f");
 					Helper::EndColumns();
+
+					Helper::BeginColumns("Intensity");
+					ImGui::DragFloat("##Intensity", &component.Intensity, 0.05f, 0.0f, 0.0f, "%.2f");
+					Helper::EndColumns();
 				});
 
 				Helper::DrawComponent<ScriptComponent>("Script", m_Context, [&](auto& component) {

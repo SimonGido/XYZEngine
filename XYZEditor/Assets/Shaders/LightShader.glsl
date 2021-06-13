@@ -22,13 +22,13 @@ layout(location = 0) out vec4 o_Color;
 
 struct PointLightData
 {
-	vec3  Color;
-	float Radius;
-
+	vec4  Color;
 	vec2  Position;
+	float Radius;
+	float Intensity;
 };
 
-layout(std430, binding = 0) buffer
+layout(std430, binding = 1) buffer
 buffer_PointLights
 {
 	PointLightData PointLights[];
@@ -52,7 +52,7 @@ void main()
 		float dist = distance(fragPos.xy, PointLights[i].Position.xy);
 		float radius = PointLights[i].Radius;
 		if (dist <= radius)
-			result += color.xyz * PointLights[i].Color * (radius - dist);
+			result += color.xyz * PointLights[i].Color.xyz * abs(radius - dist) * PointLights[i].Intensity;
 	}
 	o_Color = vec4(result, 1.0);
 }

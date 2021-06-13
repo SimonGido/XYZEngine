@@ -134,6 +134,7 @@ namespace XYZ {
 
 		glm::vec3 Color = glm::vec3(1.0f);
 		float Radius = 1.0f;
+		float Intensity = 1.0f;
 	};
 
 

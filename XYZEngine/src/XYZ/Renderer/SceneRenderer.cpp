@@ -58,9 +58,10 @@ namespace XYZ {
 
 		struct PointLight
 		{	
-			glm::vec3 Color;
-			float Radius = 1.0f;
+			glm::vec4 Color;
 			glm::vec2 Position;
+			float Radius = 1.0f;
+			float Intensity = 1.0f;
 		};
 
 
@@ -221,8 +222,9 @@ namespace XYZ {
 		XYZ_ASSERT(s_Data.LightsList.size() + 1 < s_Data.MaxNumberOfLights, "Max number of lights per scene is ", s_Data.MaxNumberOfLights);
 		SceneRendererData::PointLight lightData;
 		lightData.Position = glm::vec2(transform[3][0], transform[3][1]);
-		lightData.Color = light->Color;
+		lightData.Color = glm::vec4(light->Color, 0.0f);
 		lightData.Radius = light->Radius;
+		lightData.Intensity = light->Intensity;
 		s_Data.LightsList.push_back(lightData);
 	}
 
@@ -355,7 +357,7 @@ namespace XYZ {
 		if (s_Data.LightsList.size())
 		{
 			s_Data.LightStorageBuffer->Update(s_Data.LightsList.data(), s_Data.LightsList.size() * sizeof(SceneRendererData::PointLight));
-			s_Data.LightStorageBuffer->BindRange(0, s_Data.LightsList.size() * sizeof(SceneRendererData::PointLight), 0);
+			s_Data.LightStorageBuffer->BindRange(0, s_Data.LightsList.size() * sizeof(SceneRendererData::PointLight));
 		}
 
 		s_Data.GeometryPass->GetSpecification().TargetFramebuffer->BindTexture(0, 0);

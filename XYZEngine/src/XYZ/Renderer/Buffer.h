@@ -254,8 +254,8 @@ namespace XYZ {
 	{
 	public:
 		virtual ~ShaderStorageBuffer() = default;
-		virtual void BindBase(uint32_t index) const = 0;
-		virtual void BindRange(uint32_t offset, uint32_t size, uint32_t index) const = 0;
+		virtual void BindBase(uint32_t binding) const = 0;
+		virtual void BindRange(uint32_t offset, uint32_t size) const = 0;
 		virtual void Bind() const = 0;
 		
 		virtual void Update(void* vertices, uint32_t size, uint32_t offset = 0) = 0;

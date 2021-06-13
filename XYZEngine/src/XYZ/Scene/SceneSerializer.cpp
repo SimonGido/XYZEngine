@@ -97,6 +97,7 @@ namespace XYZ {
 
 		out << YAML::Key << "Color" << YAML::Value << val.Color;
 		out << YAML::Key << "Radius" << YAML::Value << val.Radius;
+		out << YAML::Key << "Intensity" << YAML::Value << val.Intensity;
 		out << YAML::EndMap; // Point Light
 	}
 	
@@ -363,8 +364,9 @@ namespace XYZ {
 	void SceneSerializer::deserialize<PointLight2D>(YAML::Node& data, SceneEntity entity)
 	{
 		PointLight2D light;
-		light.Color = data["Color"].as<glm::vec3>();
+		light.Color = data["Color"].as<glm::vec4>();
 		light.Radius = data["Radius"].as<float>();
+		light.Intensity = data["Intensity"].as<float>();
 		entity.AddComponent(light);
 	}
 

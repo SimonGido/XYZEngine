@@ -47,8 +47,8 @@ namespace XYZ {
 	public:
 		OpenGLShaderStorageBuffer(void* data, uint32_t size, uint32_t binding, BufferUsage usage);
 		virtual ~OpenGLShaderStorageBuffer();
-		virtual void BindBase(uint32_t index) const override;
-		virtual void BindRange(uint32_t offset, uint32_t size, uint32_t index)const override;
+		virtual void BindBase(uint32_t binding) const override;
+		virtual void BindRange(uint32_t offset, uint32_t size) const override;
 		virtual void Bind()const override;
 		virtual void Update(void* data, uint32_t size, uint32_t offset = 0) override;
 		virtual void Resize(void* data, uint32_t size) override;
@@ -60,6 +60,7 @@ namespace XYZ {
 	private:
 		uint32_t m_RendererID = 0;
 		uint32_t m_Size;
+		uint32_t m_Binding;
 		BufferUsage m_Usage;
 		BufferLayout m_Layout;
 		ByteBuffer m_LocalData;

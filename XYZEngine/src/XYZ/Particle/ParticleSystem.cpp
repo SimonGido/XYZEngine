@@ -73,10 +73,10 @@ namespace XYZ {
 
         int emitted = (int)std::ceil(m_EmittedParticles);
 
-        m_DataStorage->BindRange(0, emitted * sizeof(ParticleData), 1);
-        m_SpecsStorage->BindRange(0, emitted * sizeof(ParticleSpecification), 2);
+        m_DataStorage->BindRange(0, emitted * sizeof(ParticleData));
+        m_SpecsStorage->BindRange(0, emitted * sizeof(ParticleSpecification));
         // TODO: Add number of colliders
-        m_BoxColliderStorage->BindRange(0, sizeof(glm::vec4), 3);
+        m_BoxColliderStorage->BindRange(0, sizeof(glm::vec4));
         m_PlayTime += ts;
     }
     void ParticleSystem::SetParticles(ParticleData* dataBuffer, ParticleSpecification* specsBuffer)
