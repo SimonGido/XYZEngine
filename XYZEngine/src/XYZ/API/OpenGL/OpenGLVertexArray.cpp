@@ -32,20 +32,25 @@ namespace XYZ {
 
 	OpenGLVertexArray::OpenGLVertexArray()
 	{
-		Renderer::Submit([this]() {glCreateVertexArrays(1, &m_RendererID); });
+		Ref<OpenGLVertexArray> instance = this;
+		Renderer::Submit([instance]() mutable {
+			glCreateVertexArrays(1, &instance->m_RendererID); 
+		});
 	}
 
 	OpenGLVertexArray::~OpenGLVertexArray()
 	{
-		Renderer::Submit([=]() {
-			glDeleteVertexArrays(1, &m_RendererID); 
+		Ref<OpenGLVertexArray> instance = this;
+		Renderer::Submit([instance]() {
+			glDeleteVertexArrays(1, &instance->m_RendererID); 
 			});
 	}
 
 	void OpenGLVertexArray::Bind() const
 	{
-		Renderer::Submit([=]() {
-			glBindVertexArray(m_RendererID); 
+		Ref<const OpenGLVertexArray> instance = this;
+		Renderer::Submit([instance]() {
+			glBindVertexArray(instance->m_RendererID); 
 		});
 	}
 
@@ -54,8 +59,9 @@ namespace XYZ {
 		if (vertexBuffer->GetLayout().GetElements().size() == 0)
 			XYZ_ASSERT(false, "vertexBuffer->GetLayout().GetElements().size() = 0");
 
-		Renderer::Submit([this, vertexBuffer]() {
-			glBindVertexArray(m_RendererID);
+		Ref<OpenGLVertexArray> instance = this;
+		Renderer::Submit([instance, vertexBuffer]()mutable {
+			glBindVertexArray(instance->m_RendererID);
 		
 			glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer->GetRendererID());
 			auto& vbl = vertexBuffer->GetLayout();
@@ -86,8 +92,8 @@ namespace XYZ {
 				}
 			}
 
-			m_VertexBuffers.push_back(vertexBuffer);
-			});
+			instance->m_VertexBuffers.push_back(vertexBuffer);
+		});
 	}
 
 	void OpenGLVertexArray::AddShaderStorageBuffer(const Ref<ShaderStorageBuffer>& shaderBuffer)
@@ -95,8 +101,9 @@ namespace XYZ {
 		if (shaderBuffer->GetLayout().GetElements().size() == 0)
 			XYZ_ASSERT(false, "vertexBuffer->GetLayout().GetElements().size() = 0");
 
-		Renderer::Submit([this, shaderBuffer] () {
-			glBindVertexArray(m_RendererID);
+		Ref<OpenGLVertexArray> instance = this;
+		Renderer::Submit([instance, shaderBuffer] ()mutable {
+			glBindVertexArray(instance->m_RendererID);
 			glBindBuffer(GL_ARRAY_BUFFER, shaderBuffer->GetRendererID());
 	
 			auto& vbl = shaderBuffer->GetLayout();
@@ -125,15 +132,16 @@ namespace XYZ {
 				glVertexAttribDivisor(element.Index, element.Divisor);
 			}
 
-			m_ShaderStorageBuffers.push_back(shaderBuffer);
+			instance->m_ShaderStorageBuffers.push_back(shaderBuffer);
 			});
 	}
 
 	void OpenGLVertexArray::SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
 	{
 		m_IndexBuffer = indexBuffer;
-		Renderer::Submit([this, indexBuffer] () {
-			glBindVertexArray(m_RendererID);
+		Ref<OpenGLVertexArray> instance = this;
+		Renderer::Submit([instance, indexBuffer] () mutable {
+			glBindVertexArray(instance->m_RendererID);
 			glBindBuffer(GL_ARRAY_BUFFER, indexBuffer->GetRendererID());
 			});
 	}

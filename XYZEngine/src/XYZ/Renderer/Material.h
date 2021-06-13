@@ -84,7 +84,6 @@ namespace XYZ {
 		void ClearTextures() { m_Textures.clear(); }
 		void SetFlags(RenderFlags renderFlags) { m_Flags |= renderFlags; }
 		uint64_t GetFlags() const { return m_Flags; }
-	
 
 		Ref<Shader>& GetShader() { return m_Shader; }
 		const Ref<Shader>& GetShader() const { return m_Shader; }
@@ -116,7 +115,7 @@ namespace XYZ {
 
 		ByteBuffer m_VSUniformBuffer;
 		ByteBuffer m_FSUniformBuffer;
-		uint64_t m_Flags = 0;
+		uint64_t   m_Flags = 0;
 	};
 
 

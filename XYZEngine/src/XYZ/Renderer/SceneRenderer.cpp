@@ -9,6 +9,7 @@
 #include <glm/gtx/transform.hpp>
 
 namespace XYZ {
+
 	struct SceneRendererData
 	{
 		const Scene* ActiveScene = nullptr;
@@ -64,17 +65,15 @@ namespace XYZ {
 			float Intensity = 1.0f;
 		};
 
-
 		std::vector<CollisionDrawCommand>	 CollisionList;
 		std::vector<SpriteDrawCommand>		 SpriteDrawList;
 		std::vector<EditorSpriteDrawCommand> EditorSpriteDrawList;
 		std::vector<ParticleDrawCommand>	 ParticleDrawList;
 		std::vector<PointLight>				 LightsList;
-
-
+		
 		glm::vec2      ViewportSize;
 		bool	       ViewportSizeChanged = false;
-		const uint32_t MaxNumberOfLights = 100;
+		const uint32_t MaxNumberOfLights   = 1024;
 	};
 
 	static SceneRendererData s_Data;
@@ -221,9 +220,9 @@ namespace XYZ {
 	{
 		XYZ_ASSERT(s_Data.LightsList.size() + 1 < s_Data.MaxNumberOfLights, "Max number of lights per scene is ", s_Data.MaxNumberOfLights);
 		SceneRendererData::PointLight lightData;
-		lightData.Position = glm::vec2(transform[3][0], transform[3][1]);
-		lightData.Color = glm::vec4(light->Color, 0.0f);
-		lightData.Radius = light->Radius;
+		lightData.Position  = glm::vec2(transform[3][0], transform[3][1]);
+		lightData.Color     = glm::vec4(light->Color, 0.0f);
+		lightData.Radius    = light->Radius;
 		lightData.Intensity = light->Intensity;
 		s_Data.LightsList.push_back(lightData);
 	}
@@ -284,8 +283,8 @@ namespace XYZ {
 			});
 
 		GeometryPass();
-		LightPass();
-		BloomPass();
+		//LightPass();
+		//BloomPass();
 		//GaussianBlurPass();
 		CompositePass();
 
@@ -303,6 +302,12 @@ namespace XYZ {
 	{
 		Renderer::BeginRenderPass(s_Data.GeometryPass, true);
 		Renderer2D::BeginScene(s_Data.ViewProjectionMatrix, s_Data.ViewPosition);
+
+		if (s_Data.LightsList.size())
+		{
+			s_Data.LightStorageBuffer->Update(s_Data.LightsList.data(), s_Data.LightsList.size() * sizeof(SceneRendererData::PointLight));
+			s_Data.LightStorageBuffer->BindRange(0, s_Data.LightsList.size() * sizeof(SceneRendererData::PointLight));
+		}
 
 		if (s_Data.Options.ShowGrid)
 		{
@@ -366,8 +371,6 @@ namespace XYZ {
 		Renderer::SubmitFullsceenQuad();
 		
 		Renderer::EndRenderPass();
-
-		Texture2D::BindStatic(0, 0);
 	}
 
 	void SceneRenderer::BloomPass()
@@ -410,8 +413,8 @@ namespace XYZ {
 		Renderer::BeginRenderPass(s_Data.CompositePass, true);
 
 		s_Data.CompositeShader->Bind();
-		s_Data.LightPass->GetSpecification().TargetFramebuffer->BindTexture(0, 0);
-		s_Data.BloomPass->GetSpecification().TargetFramebuffer->BindTexture(0, 1);
+		s_Data.GeometryPass->GetSpecification().TargetFramebuffer->BindTexture(0, 0);
+		//s_Data.BloomPass->GetSpecification().TargetFramebuffer->BindTexture(0, 1);
 
 		Renderer::SubmitFullsceenQuad();	
 		Renderer::EndRenderPass();

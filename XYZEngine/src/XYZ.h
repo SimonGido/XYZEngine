@@ -26,6 +26,7 @@
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Renderer/Animation.h"
 
+#include "XYZ/Particle/ParticleEffect.h"
 #include "XYZ/Particle/ParticleSystem.h"
 
 //-----Scene-----//

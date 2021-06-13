@@ -14,6 +14,7 @@ namespace XYZ {
 			void SetContext(SceneEntity context);
 		private:
 			void selectSubTextureDialog();
+			void selectMaterialDialog();
 
 		private:
 			SceneEntity			  m_Context;

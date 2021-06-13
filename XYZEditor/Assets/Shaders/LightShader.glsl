@@ -54,5 +54,5 @@ void main()
 		if (dist <= radius)
 			result += color.xyz * PointLights[i].Color.xyz * abs(radius - dist) * PointLights[i].Intensity;
 	}
-	o_Color = vec4(result, 1.0);
+	o_Color = vec4(result, color.a);
 }

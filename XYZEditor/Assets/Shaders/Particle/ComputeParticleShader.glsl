@@ -20,7 +20,7 @@ struct ParticleData
 	vec2  Size;
 	float Rotation;
 
-	float Alignment[1];
+	float Alignment;
 };
 
 struct ParticleSpecification
@@ -41,12 +41,12 @@ layout(std140, binding = 0) uniform Camera
 	vec4 u_ViewPosition;
 };
 
-layout(std430, binding = 1) buffer buffer_Data
+layout(std430, binding = 1) buffer buffer_Data // render // particle
 {
 	ParticleData Data[];
 };
 
-layout(std430, binding = 2) buffer buffer_Specification
+layout(std430, binding = 2) buffer buffer_Specification // particle
 {
 	ParticleSpecification Specification[];
 };
@@ -56,7 +56,7 @@ layout(std430, binding = 3) buffer buffer_BoxCollider
 	vec4 BoxColliders[];
 };
 
-layout(std140, binding = 4) buffer buffer_DrawCommand
+layout(std140, binding = 4) buffer buffer_DrawCommand // indirect
 {
 	DrawCommand Command;
 };

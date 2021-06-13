@@ -151,14 +151,16 @@ namespace XYZ {
 	}
 	void OpenGLShader::Bind() const
 	{
-		Renderer::Submit([=]() {
-			glUseProgram(m_RendererID); 
+		Ref<const OpenGLShader> instance = this;
+		Renderer::Submit([instance]() {
+			glUseProgram(instance->m_RendererID); 
 			});
 	}
 	void OpenGLShader::Compute(uint32_t groupX, uint32_t groupY, uint32_t groupZ) const
 	{
 		XYZ_ASSERT(m_IsCompute, "Calling compute on non compute shader");
-		Renderer::Submit([=]() {
+		Ref<const OpenGLShader> instance = this;
+		Renderer::Submit([instance, groupX, groupY, groupZ]() {
 			glDispatchCompute(groupX, groupY, groupZ);
 			glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 		});
@@ -300,55 +302,61 @@ namespace XYZ {
 
 	void OpenGLShader::SetFloat(const std::string& name, float value)
 	{
-		Renderer::Submit([=]() {
-			auto location = glGetUniformLocation(m_RendererID, name.c_str());
+		Ref<OpenGLShader> instance = this;
+		Renderer::Submit([instance, name, value]() {
+			auto location = glGetUniformLocation(instance->m_RendererID, name.c_str());
 			XYZ_ASSERT(location != -1, "Uniform ", name, " does not exist");
-			uploadFloat(location, value);
+			instance->uploadFloat(location, value);
 		});
 	}
 
 	void OpenGLShader::SetFloat2(const std::string& name, const glm::vec2& value)
 	{
-		Renderer::Submit([=]() {
-			auto location = glGetUniformLocation(m_RendererID, name.c_str());
+		Ref<OpenGLShader> instance = this;
+		Renderer::Submit([instance, name, value]() {
+			auto location = glGetUniformLocation(instance->m_RendererID, name.c_str());
 			XYZ_ASSERT(location != -1, "Uniform ", name, " does not exist");
-			uploadFloat2(location, value);
+			instance->uploadFloat2(location, value);
 			});
 	}
 
 	void OpenGLShader::SetFloat3(const std::string& name, const glm::vec3& value)
 	{
-		Renderer::Submit([=]() {
-			auto location = glGetUniformLocation(m_RendererID, name.c_str());
+		Ref<OpenGLShader> instance = this;
+		Renderer::Submit([instance, name, value]() {
+			auto location = glGetUniformLocation(instance->m_RendererID, name.c_str());
 			XYZ_ASSERT(location != -1, "Uniform ", name, " does not exist");
-			uploadFloat3(location, value);
+			instance->uploadFloat3(location, value);
 			});
 	}
 
 	void OpenGLShader::SetFloat4(const std::string& name, const glm::vec4& value)
 	{
-		Renderer::Submit([=]() {
-			auto location = glGetUniformLocation(m_RendererID, name.c_str());
+		Ref<OpenGLShader> instance = this;
+		Renderer::Submit([instance, name, value]() {
+			auto location = glGetUniformLocation(instance->m_RendererID, name.c_str());
 			XYZ_ASSERT(location != -1, "Uniform ", name, " does not exist");
-			uploadFloat4(location, value);
+			instance->uploadFloat4(location, value);
 			});
 	}
 
 	void OpenGLShader::SetInt(const std::string& name, int value)
 	{
-		Renderer::Submit([=]() {
-			auto location = glGetUniformLocation(m_RendererID, name.c_str());
+		Ref<OpenGLShader> instance = this;
+		Renderer::Submit([instance, name, value]() {
+			auto location = glGetUniformLocation(instance->m_RendererID, name.c_str());
 			XYZ_ASSERT(location != -1, "Uniform ", name, " does not exist");
-			uploadInt(location, value);
+			instance->uploadInt(location, value);
 			});
 	}
 
 	void OpenGLShader::SetMat4(const std::string& name, const glm::mat4& value)
 	{
-		Renderer::Submit([=]() {
-			auto location = glGetUniformLocation(m_RendererID, name.c_str());
+		Ref<OpenGLShader> instance = this;
+		Renderer::Submit([instance, name, value]() {
+			auto location = glGetUniformLocation(instance->m_RendererID, name.c_str());
 			XYZ_ASSERT(location != -1, "Uniform ", name, " does not exist");
-			uploadMat4(location, value);
+			instance->uploadMat4(location, value);
 			});
 	}
 

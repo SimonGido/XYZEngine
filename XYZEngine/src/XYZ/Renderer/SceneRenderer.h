@@ -47,7 +47,6 @@ namespace XYZ {
 		static void SetGridProperties(const GridProperties& props);
 
 		static void UpdateViewportSize();
-		
 
 		static Ref<RenderPass> GetFinalRenderPass();
 		static Ref<RenderPass> GetCollisionRenderPass();

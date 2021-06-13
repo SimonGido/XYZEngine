@@ -80,5 +80,4 @@ namespace XYZ::Utils {
 		}
 		return nullptr;
 	}
-
 }

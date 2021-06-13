@@ -55,7 +55,7 @@ namespace XYZ {
 		* @param[in] name		Name of element represented in shader
 		* @param[in] divisior	Specify how is data split between instances, default 0
 		*/
-		BufferElement(unsigned int index, ShaderDataComponent Component, const std::string& name, uint32_t divisor = 0)
+		BufferElement(uint32_t index, ShaderDataComponent Component, const std::string& name, uint32_t divisor = 0)
 			: Index(index), Component(Component), Divisor(divisor), Size(ShaderDataComponentSize(Component)), Offset(0)
 		{}
 
@@ -110,6 +110,12 @@ namespace XYZ {
 		* @param[in] elements initializer_list of BufferElements 
 		*/
 		BufferLayout(const std::initializer_list<BufferElement>& elements)
+			: m_Elements(elements)
+		{
+			CreateMat4();
+			CalculateOffsetsAndStride();
+		}
+		BufferLayout(const std::vector<BufferElement>& elements)
 			: m_Elements(elements)
 		{
 			CreateMat4();

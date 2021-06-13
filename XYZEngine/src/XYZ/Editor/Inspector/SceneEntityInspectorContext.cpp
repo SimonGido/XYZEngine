@@ -325,6 +325,11 @@ namespace XYZ {
 						materialPath[component.Material->FileName.size()] = '\0';
 
 						ImGui::InputText("##Material", materialPath, _MAX_PATH);
+						if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+						{
+							m_Dialog = Hook(&SceneEntityInspectorContext::selectMaterialDialog, this);
+							m_DialogOpen = true;
+						}
 						ImGui::PopItemWidth();
 
 						Helper::EndColumns();
@@ -663,7 +668,7 @@ namespace XYZ {
 		void SceneEntityInspectorContext::selectSubTextureDialog()
 		{
 			int flags = ImGuiWindowFlags_NoDocking;
-			if (ImGui::Begin("Select SubTexture"), &m_DialogOpen, flags)
+			if (ImGui::Begin("Select SubTexture", &m_DialogOpen, flags))
 			{
 				auto subTextures = std::move(AssetManager::FindAssetsByType(AssetType::SubTexture));
 				for (const Ref<SubTexture>& subTexture : subTextures)
@@ -675,6 +680,27 @@ namespace XYZ {
 						if (ImGui::ImageButton((void*)(uint64_t)texture->GetRendererID(), { m_IconSize.x, m_IconSize.y }, { texCoords.x, texCoords.w }, { texCoords.z, texCoords.y }))
 						{
 							m_Context.GetComponent<SpriteRenderer>().SubTexture = subTexture;
+							m_DialogOpen = false;
+							break;
+						}
+					}
+				}
+			}
+			ImGui::End();
+		}
+		void SceneEntityInspectorContext::selectMaterialDialog()
+		{
+			int flags = ImGuiWindowFlags_NoDocking;
+			if (ImGui::Begin("Select Material", &m_DialogOpen, flags))
+			{
+				auto materials = std::move(AssetManager::FindAssetsByType(AssetType::Material));
+				for (const Ref<Material>& material : materials)
+				{
+					if (material->IsLoaded)
+					{
+						if (ImGui::Button(material->FileName.c_str()))
+						{
+							m_Context.GetComponent<SpriteRenderer>().Material = material;
 							m_DialogOpen = false;
 							break;
 						}
