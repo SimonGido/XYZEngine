@@ -31,7 +31,7 @@ namespace XYZ {
 
 		uint16_t Size() const;
 	private:
-		static size_t getIndex(const Signature& signature, uint8_t bitIndex);
+		static size_t getIndex(const Signature& signature, uint16_t bitIndex);
 
 	private:
 		DynamicBitset* m_Bitset;

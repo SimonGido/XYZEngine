@@ -123,7 +123,7 @@ namespace XYZ {
 	{
 		return m_Bitset->m_BitCount;
 	}
-	size_t Signature::getIndex(const Signature& signature, uint8_t bitIndex)
+	size_t Signature::getIndex(const Signature& signature, uint16_t bitIndex)
 	{
 		return (size_t)signature.m_Index * (size_t)signature.m_Bitset->m_BitCount + (size_t)bitIndex;
 	}
