@@ -204,7 +204,13 @@ namespace XYZ {
 			auto [transform, light] = lightView.Get<TransformComponent, PointLight2D>(entity);
 			SceneRenderer::SubmitLight(&light, transform.WorldTransform);
 		}
-		
+		auto spotLightView = m_ECS.CreateView<TransformComponent, SpotLight2D>();
+		for (auto entity : spotLightView)
+		{
+			auto [transform, light] = spotLightView.Get<TransformComponent, SpotLight2D>(entity);
+			SceneRenderer::SubmitLight(&light, transform.WorldTransform);
+		}
+
 		SceneRenderer::EndScene();
 	}
 
@@ -411,7 +417,9 @@ namespace XYZ {
 			{
 				BoxCollider2DComponent& boxCollider = entity.GetComponent<BoxCollider2DComponent>();
 				b2PolygonShape poly;
-				poly.SetAsBox(boxCollider.Size.x / 2.0f, boxCollider.Size.y / 2.0f);
+			
+				poly.SetAsBox( boxCollider.Size.x / 2.0f, boxCollider.Size.y / 2.0f, 
+					   b2Vec2{ boxCollider.Offset.x, boxCollider.Offset.y }, 0.0f);
 				b2FixtureDef fixture;
 				fixture.shape = &poly;
 				fixture.density = boxCollider.Density;
@@ -423,6 +431,8 @@ namespace XYZ {
 				CircleCollider2DComponent& circleCollider = entity.GetComponent<CircleCollider2DComponent>();
 				b2CircleShape circle;
 				circle.m_radius = circleCollider.Radius;
+				circle.m_p = b2Vec2(circleCollider.Offset.x, circleCollider.Offset.y);
+
 				b2FixtureDef fixture;
 				fixture.shape = &circle;
 				fixture.density  = circleCollider.Density;
@@ -445,7 +455,9 @@ namespace XYZ {
 				ChainCollider2DComponent& chainCollider = entity.GetComponent<ChainCollider2DComponent>();
 				
 				b2ChainShape chain;
-				chain.CreateLoop((const b2Vec2*)chainCollider.Points.data(), chainCollider.Points.size());
+				chain.CreateChain((const b2Vec2*)chainCollider.Points.data(), chainCollider.Points.size(),
+					{ chainCollider.Points[0].x, chainCollider.Points[0].y },
+					{ chainCollider.Points.back().x, chainCollider.Points.back().y });
 				b2FixtureDef fixture;
 				fixture.shape = &chain;
 				fixture.density  = chainCollider.Density;

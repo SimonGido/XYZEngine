@@ -118,6 +118,7 @@ namespace XYZ {
 		out << YAML::Key << "BoxCollider2D";
 		out << YAML::BeginMap;
 		out << YAML::Key << "Size" << val.Size;
+		out << YAML::Key << "Offset" << val.Offset;
 		out << YAML::Key << "Density" << val.Density;
 		out << YAML::Key << "Friction" << val.Friction;
 		out << YAML::EndMap; // BoxCollider2D;
@@ -128,7 +129,7 @@ namespace XYZ {
 	{
 		out << YAML::Key << "CircleCollider2D";
 		out << YAML::BeginMap;
-
+		out << YAML::Key << "Offset" << val.Offset;
 		out << YAML::Key << "Radius" << val.Radius;
 		out << YAML::Key << "Density" << val.Density;
 		out << YAML::Key << "Friction" << val.Friction;
@@ -396,6 +397,7 @@ namespace XYZ {
 	{
 		BoxCollider2DComponent box;
 
+		box.Offset = data["Offset"].as<glm::vec2>();
 		box.Size = data["Size"].as<glm::vec2>();
 		box.Density = data["Density"].as<float>();
 		box.Friction = data["Friction"].as<float>();
@@ -407,6 +409,7 @@ namespace XYZ {
 	{
 		CircleCollider2DComponent circle;
 
+		circle.Offset = data["Offset"].as<glm::vec2>();
 		circle.Radius = data["Radius"].as<float>();
 		circle.Density = data["Density"].as<float>();
 		circle.Friction = data["Friction"].as<float>();

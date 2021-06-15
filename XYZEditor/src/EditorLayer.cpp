@@ -5,7 +5,6 @@
 
 #include <random>
 
-
 namespace XYZ {
 
 	EditorLayer::EditorLayer()

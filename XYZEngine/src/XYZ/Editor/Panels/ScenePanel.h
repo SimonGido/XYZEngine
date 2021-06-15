@@ -10,11 +10,13 @@ namespace XYZ {
 		class ScenePanel
 		{
 			using SceneEntitySelectedCallback = std::function<void(SceneEntity)>;
+			using ComponentEditCallback		  = std::function<void(const glm::vec2& mousePosition)>;
 		public:
 			ScenePanel();
 
 			void SetContext(const Ref<Scene>& context);
 			void SetEntitySelectedCallback(const SceneEntitySelectedCallback& callback) { m_Callback = callback; }
+			void SetComponentEditCallback(const ComponentEditCallback& callback) { m_ComponentEditCallback = callback; }
 
 			void OnUpdate(Timestep ts);
 			void OnImGuiRender();
@@ -25,9 +27,10 @@ namespace XYZ {
 			std::pair<float, float> getMouseViewportSpace() const;
 
 			void showSelection(SceneEntity entity);
-
+			void handleSelection(const glm::vec2& mousePosition);
 		private:
 			SceneEntitySelectedCallback m_Callback;
+			ComponentEditCallback       m_ComponentEditCallback;
 			Ref<Scene> m_Context;
 			glm::vec2 m_ViewportSize;
 			glm::vec2 m_ViewportBounds[2];

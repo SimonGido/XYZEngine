@@ -13,6 +13,7 @@
 #include <imgui_internal.h>
 
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/perpendicular.hpp>
 
 namespace XYZ {
 
@@ -507,13 +508,18 @@ namespace XYZ {
 				Helper::DrawComponent<BoxCollider2DComponent>("Box Collider2D", m_Context, [&](auto& component) {
 
 					auto [translation, rotation, scale] = m_Context.GetComponent<TransformComponent>().GetWorldComponents();
+					glm::vec3 boxTranslation =
+						translation
+						- glm::vec3(component.Size.x / 2.0f, component.Size.y / 2.0f, 0.0f)
+						+ glm::vec3(component.Offset.x, component.Offset.y, 0.0f);
 					Renderer2D::SubmitLineQuad(
-						translation - glm::vec3(component.Size.x / 2.0f, component.Size.y / 2.0f, 0.0f),
+						boxTranslation,
 						component.Size,
 						sc_ColliderColor
 					);
 
 					Helper::DrawVec2Control("Size", component.Size);
+					Helper::DrawVec2Control("Offset", component.Offset);
 
 					Helper::BeginColumns("Density");
 					ImGui::PushItemWidth(75.0f);
@@ -541,6 +547,9 @@ namespace XYZ {
 						p1 = { component.Points[i].x, component.Points[i].y, 0.0f };
 						p0 += translation;
 						p1 += translation;
+						glm::vec2 normal = glm::normalize(glm::vec2(p1.y - p0.y, -(p1.x - p0.x)));
+						glm::vec3 center = p0 + (p1 - p0) / 2.0f;
+						Renderer2D::SubmitLine(center, center + glm::vec3(normal.x, normal.y, 0.0f), sc_ColliderColor);
 						Renderer2D::SubmitLine(p0, p1, sc_ColliderColor);
 						Renderer2D::SubmitCircle(p0, 0.05f, 10, sc_ColliderColor);
 					}
@@ -551,6 +560,7 @@ namespace XYZ {
 					int size = component.Points.size();
 					if (ImGui::InputInt("##Size", &size))
 					{
+						if (size < 2) size = 2;
 						if (size >= 0 && (size_t)size != component.Points.size())
 						{
 							component.Points.resize(size);
@@ -560,20 +570,12 @@ namespace XYZ {
 					Helper::EndColumns();
 
 
-					//Helper::BeginColumns("Points");
-					//ImGui::PushItemWidth(100.0f);
 					uint32_t counter = 0;
 					for (auto& point : component.Points)
 					{
 						Helper::DrawVec2Control(std::to_string(counter), point);
-						//ImGui::PushID(counter);
-						//
-						//ImGui::InputFloat2("##Point", glm::value_ptr(point), 2);
-						//ImGui::PopID();
 						counter++;
 					}
-					//ImGui::PopItemWidth();
-					//Helper::EndColumns();
 				});
 
 				float addComponentButtonWidth = 200.0f;

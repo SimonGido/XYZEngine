@@ -93,6 +93,37 @@ namespace XYZ {
 			}
 		}
 
+		void ScenePanel::handleSelection(const glm::vec2& mousePosition)
+		{
+			if (ImGui::GetIO().MouseDown[ImGuiMouseButton_Left]
+				&& !ImGui::GetIO().KeyAlt)
+			{
+				auto [origin, direction] = castRay(mousePosition.x, mousePosition.y);
+				Ray ray = { origin,direction };
+				m_Context->SetSelectedEntity(Entity());
+				if (m_Callback)
+					m_Callback(m_Context->GetSelectedEntity());
+
+				for (Entity entityID : m_Context->GetEntities())
+				{
+					SceneEntity entity(entityID, m_Context.Raw());
+					TransformComponent& transformComponent = entity.GetComponent<TransformComponent>();
+					auto [translation, rotation, scale] = transformComponent.GetWorldComponents();
+					AABB aabb(
+						translation - (scale / 2.0f),
+						translation + (scale / 2.0f)
+					);
+
+					if (ray.IntersectsAABB(aabb))
+					{
+						m_Context->SetSelectedEntity(entityID);
+						if (m_Callback)
+							m_Callback(m_Context->GetSelectedEntity());
+					}
+				}
+			}
+		}
+
 		ScenePanel::ScenePanel()
 			:
 			m_ViewportSize(0.0f),
@@ -164,36 +195,14 @@ namespace XYZ {
 
 					ImGui::Image(reinterpret_cast<void*>((void*)(uint64_t)SceneRenderer::GetFinalColorBufferRendererID()), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
-					if (m_ViewportHovered && m_ViewportFocused)
+					auto [mx, my] = getMouseViewportSpace();
+					if (m_ComponentEditCallback)
 					{
-						if (ImGui::GetIO().MouseDown[ImGuiMouseButton_Left]
-							&& !ImGui::GetIO().KeyAlt)
-						{
-							auto [mx, my] = getMouseViewportSpace();
-							auto [origin, direction] = castRay(mx, my);
-							Ray ray = { origin,direction };
-							m_Context->SetSelectedEntity(Entity());
-							if (m_Callback)
-								m_Callback(m_Context->GetSelectedEntity());
-
-							for (Entity entityID : m_Context->GetEntities())
-							{
-								SceneEntity entity(entityID, m_Context.Raw());
-								TransformComponent& transformComponent = entity.GetComponent<TransformComponent>();
-								auto [translation, rotation, scale] = transformComponent.GetWorldComponents();
-								AABB aabb(
-									translation - (scale / 2.0f),
-									translation + (scale / 2.0f)
-								);
-
-								if (ray.IntersectsAABB(aabb))
-								{
-									m_Context->SetSelectedEntity(entityID);
-									if (m_Callback)
-										m_Callback(m_Context->GetSelectedEntity());
-								}
-							}
-						}
+						m_ComponentEditCallback({ mx,my });
+					}
+					else if (m_ViewportHovered && m_ViewportFocused)
+					{
+						handleSelection({ mx,my });
 					}
 
 					ImGui::SetCursorPos(startCursorPos);

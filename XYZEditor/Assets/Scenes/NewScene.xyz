@@ -14,12 +14,13 @@ Entities:
       SortLayer: 0
       Visible: true
     Relationship:
-      Parent: c431ca61-bd81-4c32-a457-6ff85eaccb82
+      Parent: 87d3a6a1-dc4f-453a-9e5a-6a170b946723
       PreviousSibling: 7d2ac969-0a31-46d7-98d5-ceb1b25c67af
     RigidBody2D:
       Type: 1
     BoxCollider2D:
       Size: [0.949999988, 0.850000024]
+      Offset: [0, 0]
       Density: 1
       Friction: 0
     ScriptComponent:
@@ -43,9 +44,16 @@ Entities:
       SortLayer: 0
       Visible: true
     Relationship:
-      Parent: c431ca61-bd81-4c32-a457-6ff85eaccb82
+      Parent: 87d3a6a1-dc4f-453a-9e5a-6a170b946723
       NextSibling: 83da08c4-02dd-482b-805d-73607200846c
       PreviousSibling: 028f6e22-ee3b-42cd-95f0-6c8130222131
+    ChainCollider2D:
+      Points:
+        - [1.95000005, 0.5]
+        - [-0.5, 0]
+        - [-2.3499999, 0]
+      Density: 1
+      Friction: 0
   - Entity: 028f6e22-ee3b-42cd-95f0-6c8130222131
     SceneTagComponent:
       Name: Camera
@@ -62,7 +70,7 @@ Entities:
       OrthographicNear: -1
       OrthographicFar: 1
     Relationship:
-      Parent: c431ca61-bd81-4c32-a457-6ff85eaccb82
+      Parent: 87d3a6a1-dc4f-453a-9e5a-6a170b946723
       NextSibling: 7d2ac969-0a31-46d7-98d5-ceb1b25c67af
       PreviousSibling: 88f308fd-785b-4833-b6f3-e89fb0996bb3
   - Entity: 88f308fd-785b-4833-b6f3-e89fb0996bb3
@@ -73,13 +81,14 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
-      Parent: c431ca61-bd81-4c32-a457-6ff85eaccb82
+      Parent: 87d3a6a1-dc4f-453a-9e5a-6a170b946723
       NextSibling: 028f6e22-ee3b-42cd-95f0-6c8130222131
       PreviousSibling: 5b984494-5db4-4ead-892b-9fadc86d4b52
     RigidBody2D:
       Type: 0
     BoxCollider2D:
       Size: [6.55000019, 0.400000006]
+      Offset: [0, 0]
       Density: 1
       Friction: 0
   - Entity: 5b984494-5db4-4ead-892b-9fadc86d4b52
@@ -90,7 +99,7 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
-      Parent: c431ca61-bd81-4c32-a457-6ff85eaccb82
+      Parent: 87d3a6a1-dc4f-453a-9e5a-6a170b946723
       NextSibling: 88f308fd-785b-4833-b6f3-e89fb0996bb3
       PreviousSibling: a1345771-51d8-47b2-ba0c-0ab1fa579971
   - Entity: a1345771-51d8-47b2-ba0c-0ab1fa579971
@@ -101,5 +110,5 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
-      Parent: c431ca61-bd81-4c32-a457-6ff85eaccb82
+      Parent: 87d3a6a1-dc4f-453a-9e5a-6a170b946723
       NextSibling: 5b984494-5db4-4ead-892b-9fadc86d4b52

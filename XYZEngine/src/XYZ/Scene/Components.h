@@ -207,6 +207,7 @@ namespace XYZ {
 	struct BoxCollider2DComponent : public IComponent
 	{
 		glm::vec2 Size = glm::vec2(1.0f);
+		glm::vec2 Offset = glm::vec2(0.0f);
 		float Density  = 1.0f;
 		float Friction = 0.0f;
 
@@ -215,6 +216,7 @@ namespace XYZ {
 
 	struct CircleCollider2DComponent : public IComponent
 	{
+		glm::vec2 Offset = glm::vec2(0.0f);
 		float Radius = 1.0f;
 		float Density = 1.0f;
 		float Friction = 0.0f;
@@ -234,6 +236,11 @@ namespace XYZ {
 
 	struct ChainCollider2DComponent : public IComponent
 	{
+		ChainCollider2DComponent()
+		{
+			Points.push_back(glm::vec2(0.0f));
+			Points.push_back(glm::vec2(0.0f));
+		}
 		std::vector<glm::vec2> Points;
 
 		float Density = 1.0f;
