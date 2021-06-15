@@ -10,7 +10,7 @@ namespace XYZ {
 		m_Index(index)
 	{
 		XYZ_ASSERT(m_Bitset, "");
-		for (uint8_t i = 0; i < m_Bitset->m_BitCount; ++i)
+		for (uint16_t i = 0; i < m_Bitset->m_BitCount; ++i)
 			m_Bitset->m_Bitset[getIndex(*this, i)] = false;
 	}
 
@@ -23,7 +23,6 @@ namespace XYZ {
 
 	Signature::~Signature()
 	{
-		Reset();
 	}
 
 	void Signature::Set(uint16_t bitIndex, bool val)
@@ -34,13 +33,13 @@ namespace XYZ {
 
 	void Signature::Reset()
 	{
-		for (uint8_t i = 0; i < m_Bitset->m_BitCount; ++i)
+		for (uint16_t i = 0; i < m_Bitset->m_BitCount; ++i)
 			m_Bitset->m_Bitset[getIndex(*this, i)] = false;
 	}
 
 	bool Signature::operator==(const Signature& other) const
 	{
-		for (uint8_t i = 0; i < m_Bitset->m_BitCount; ++i)
+		for (uint16_t i = 0; i < m_Bitset->m_BitCount; ++i)
 		{
 			if (m_Bitset->m_Bitset[getIndex(*this, i)] != other[i])
 				return false;
@@ -64,7 +63,7 @@ namespace XYZ {
 	}
 	Signature& Signature::operator&=(const Signature& other)
 	{
-		for (uint8_t i = 0; i < m_Bitset->m_BitCount; ++i)
+		for (uint16_t i = 0; i < m_Bitset->m_BitCount; ++i)
 		{
 			size_t index = getIndex(*this, i);
 			m_Bitset->m_Bitset[index] = (m_Bitset->m_Bitset[index] && other[i]);
@@ -73,7 +72,7 @@ namespace XYZ {
 	}
 	Signature& Signature::operator|=(const Signature& other)
 	{
-		for (uint8_t i = 0; i < m_Bitset->m_BitCount; ++i)
+		for (uint16_t i = 0; i < m_Bitset->m_BitCount; ++i)
 		{
 			size_t index = getIndex(*this, i);
 			m_Bitset->m_Bitset[index] = (m_Bitset->m_Bitset[index] || other[i]);
@@ -83,7 +82,7 @@ namespace XYZ {
 	Signature Signature::operator&(const Signature& other) const
 	{
 		Signature result(*this);
-		for (uint8_t i = 0; i < m_Bitset->m_BitCount; ++i)
+		for (uint16_t i = 0; i < m_Bitset->m_BitCount; ++i)
 		{
 			size_t index = getIndex(*this, i);
 			result.Set(i, (m_Bitset->m_Bitset[index] && other[i]));			
@@ -93,7 +92,7 @@ namespace XYZ {
 	Signature Signature::operator|(const Signature& other) const
 	{
 		Signature result(*this);
-		for (uint8_t i = 0; i < m_Bitset->m_BitCount; ++i)
+		for (uint16_t i = 0; i < m_Bitset->m_BitCount; ++i)
 		{
 			size_t index = getIndex(*this, i);
 			result.Set(i, (m_Bitset->m_Bitset[index] || other[i]));			
