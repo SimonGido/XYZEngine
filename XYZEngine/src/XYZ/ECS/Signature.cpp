@@ -48,7 +48,7 @@ namespace XYZ {
 	}
 	bool Signature::operator!=(const Signature& other) const
 	{
-		for (uint8_t i = 0; i < m_Bitset->m_BitCount; ++i)
+		for (uint16_t i = 0; i < m_Bitset->m_BitCount; ++i)
 		{
 			if (m_Bitset->m_Bitset[getIndex(*this, i)] != other[i])
 				return true;
