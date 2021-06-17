@@ -7,17 +7,16 @@
 
 namespace XYZ {
 	namespace Editor {
+
+		using SceneEntitySelectedCallback = std::function<void(SceneEntity)>;
 		class ScenePanel
 		{
-			using SceneEntitySelectedCallback = std::function<void(SceneEntity)>;
-			using ComponentEditCallback		  = std::function<void(const glm::vec2& mousePosition)>;
 		public:
 			ScenePanel();
 
 			void SetContext(const Ref<Scene>& context);
 			void SetEntitySelectedCallback(const SceneEntitySelectedCallback& callback) { m_Callback = callback; }
-			void SetComponentEditCallback(const ComponentEditCallback& callback) { m_ComponentEditCallback = callback; }
-
+	
 			void OnUpdate(Timestep ts);
 			void OnImGuiRender();
 
@@ -30,11 +29,9 @@ namespace XYZ {
 			void handleSelection(const glm::vec2& mousePosition);
 		private:
 			SceneEntitySelectedCallback m_Callback;
-			ComponentEditCallback       m_ComponentEditCallback;
 			Ref<Scene> m_Context;
 			glm::vec2 m_ViewportSize;
 			glm::vec2 m_ViewportBounds[2];
-
 			Ref<Texture> m_Texture;
 
 			enum { PlayButton, StopButton, NumButtons};
@@ -58,9 +55,10 @@ namespace XYZ {
 			};
 
 			
-			uint8_t			m_ModifyFlags;
-			float			m_MoveSpeed;
-			glm::vec2		m_OldMousePosition;
+			std::deque<Entity> m_Selection;
+			uint8_t			   m_ModifyFlags;
+			float			   m_MoveSpeed;
+			glm::vec2		   m_OldMousePosition;
 		};
 	}
 }

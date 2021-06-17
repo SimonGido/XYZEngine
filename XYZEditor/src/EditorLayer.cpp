@@ -56,6 +56,7 @@ namespace XYZ {
 			}
 		});
 
+
 		auto entity = m_Scene->GetEntityByName("Scary Entity");
 		auto &particleComponent = entity.EmplaceComponent<ParticleComponent>();
 		particleComponent.ComputeShader = Shader::Create("Assets/Shaders/Particle/ComputeParticleShader.glsl");

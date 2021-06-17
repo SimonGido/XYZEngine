@@ -398,6 +398,7 @@ namespace XYZ {
 			auto [translation, rotation, scale] = transform.GetWorldComponents();
 
 			b2BodyDef bodyDef;
+		
 			if (rigidBody.Type == RigidBody2DComponent::BodyType::Dynamic)
 				bodyDef.type = b2_dynamicBody;
 			else if (rigidBody.Type == RigidBody2DComponent::BodyType::Static)
@@ -412,7 +413,7 @@ namespace XYZ {
 			
 			b2Body* body = m_PhysicsWorld.CreateBody(&bodyDef);
 			rigidBody.RuntimeBody = body;
-
+			
 			if (entity.HasComponent<BoxCollider2DComponent>())
 			{
 				BoxCollider2DComponent& boxCollider = entity.GetComponent<BoxCollider2DComponent>();

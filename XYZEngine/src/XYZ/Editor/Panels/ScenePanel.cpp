@@ -46,7 +46,6 @@ namespace XYZ {
 			auto viewportHeight = ImGui::GetWindowSize().y;
 			
 			return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f };
-			return std::pair<float, float>();
 		}
 
 		void ScenePanel::showSelection(SceneEntity entity)
@@ -93,9 +92,18 @@ namespace XYZ {
 			}
 		}
 
+		static AABB SceneEntityAABB(SceneEntity entity)
+		{
+			TransformComponent& transformComponent = entity.GetComponent<TransformComponent>();
+			auto [translation, rotation, scale] = transformComponent.GetWorldComponents();
+			return AABB(
+				translation - (scale / 2.0f),
+				translation + (scale / 2.0f)
+			);
+		}
 		void ScenePanel::handleSelection(const glm::vec2& mousePosition)
 		{
-			if (ImGui::GetIO().MouseDown[ImGuiMouseButton_Left]
+			if (ImGui::GetIO().MouseClicked[ImGuiMouseButton_Left]
 				&& !ImGui::GetIO().KeyAlt)
 			{
 				auto [origin, direction] = castRay(mousePosition.x, mousePosition.y);
@@ -103,22 +111,39 @@ namespace XYZ {
 				m_Context->SetSelectedEntity(Entity());
 				if (m_Callback)
 					m_Callback(m_Context->GetSelectedEntity());
+				
+				while (!m_Selection.empty())
+				{
+					Entity first = m_Selection.front();
+					m_Selection.pop_front();
+					SceneEntity entity(first, m_Context.Raw());		
+					if (ray.IntersectsAABB(SceneEntityAABB(entity)))
+					{
+						m_Context->SetSelectedEntity(first);
+						if (m_Callback)
+							m_Callback(m_Context->GetSelectedEntity());
+						return;
+					}
+				}
 
+				m_Selection.clear();
+				bool selected = false;
 				for (Entity entityID : m_Context->GetEntities())
 				{
 					SceneEntity entity(entityID, m_Context.Raw());
-					TransformComponent& transformComponent = entity.GetComponent<TransformComponent>();
-					auto [translation, rotation, scale] = transformComponent.GetWorldComponents();
-					AABB aabb(
-						translation - (scale / 2.0f),
-						translation + (scale / 2.0f)
-					);
-
-					if (ray.IntersectsAABB(aabb))
+					if (ray.IntersectsAABB(SceneEntityAABB(entity)))
 					{
-						m_Context->SetSelectedEntity(entityID);
-						if (m_Callback)
-							m_Callback(m_Context->GetSelectedEntity());
+						if (selected)
+						{
+							m_Selection.push_back(entityID);
+						}
+						else
+						{
+							selected = true;
+							m_Context->SetSelectedEntity(entityID);
+							if (m_Callback)
+								m_Callback(m_Context->GetSelectedEntity());
+						}					
 					}
 				}
 			}
@@ -196,11 +221,7 @@ namespace XYZ {
 					ImGui::Image(reinterpret_cast<void*>((void*)(uint64_t)SceneRenderer::GetFinalColorBufferRendererID()), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 					auto [mx, my] = getMouseViewportSpace();
-					if (m_ComponentEditCallback)
-					{
-						m_ComponentEditCallback({ mx,my });
-					}
-					else if (m_ViewportHovered && m_ViewportFocused)
+					if (m_ViewportHovered && m_ViewportFocused)
 					{
 						handleSelection({ mx,my });
 					}

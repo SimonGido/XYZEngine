@@ -1,6 +1,6 @@
 #pragma once
 #include "InspectorContext.h"
-
+#include "XYZ/Editor/Panels/ScenePanel.h"
 
 namespace XYZ {
 	namespace Editor {
@@ -12,15 +12,16 @@ namespace XYZ {
 			virtual void OnImGuiRender() override;
 
 			void SetContext(SceneEntity context);
+		
 		private:
 			void selectSubTextureDialog();
 			void selectMaterialDialog();
 
 		private:
-			SceneEntity			  m_Context;
-			std::function<void()> m_Dialog;
-			bool				  m_DialogOpen;
-			glm::vec2			  m_IconSize;
+			SceneEntity								   m_Context;
+			std::function<void()>					   m_Dialog;
+			bool									   m_DialogOpen;
+			glm::vec2								   m_IconSize;
 
 			Ref<Material>   m_DefaultMaterial;
 			Ref<SubTexture> m_DefaultSubTexture;
