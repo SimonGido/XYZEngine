@@ -13,3 +13,6 @@
 [submodule "XYZEngine/vendor/box2d"]
 	path = XYZEngine/vendor/box2d
 	url = https://github.com/SimonGido/box2d.git
+[submodule "XYZEngine/vendor/ImGuizmo"]
+	path = XYZEngine/vendor/ImGuizmo
+	url = https://github.com/SimonGido/ImGuizmo.git
