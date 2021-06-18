@@ -29,6 +29,7 @@ IncludeDir["mono"] = "%{wks.location}/XYZEngine/vendor/mono/include"
 IncludeDir["TrianglePP"] = "%{wks.location}/XYZEngine/vendor/TrianglePP/source"
 IncludeDir["yaml"] = "%{wks.location}/XYZEngine/vendor/yaml-cpp/include"
 IncludeDir["ImGui"] = "%{wks.location}/XYZEngine/vendor/imgui"
+IncludeDir["ImGuizmo"] = "%{wks.location}/XYZEngine/vendor/ImGuizmo"
 IncludeDir["box2d"] = "%{wks.location}/XYZEngine/vendor/box2d/include"
 
 LibraryDir = {}

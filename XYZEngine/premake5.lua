@@ -29,7 +29,10 @@ project "XYZEngine"
 			"vendor/yaml-cpp/include/**.h",
 
 			"vendor/asio/include/**.hpp",
-			"vendor/asio/include/**.h"
+			"vendor/asio/include/**.h",
+
+			"vendor/ImGuizmo/ImGuizmo.h",
+			"vendor/ImGuizmo/ImGuizmo.cpp"
 		}
 
 		defines
@@ -46,6 +49,7 @@ project "XYZEngine"
 			"vendor/stb_image",		
 			"vendor/assimp/include",
 			"%{IncludeDir.ImGui}",
+			"%{IncludeDir.ImGuizmo}",
 			"%{IncludeDir.yaml}",
 			"%{IncludeDir.GLFW}",
 			"%{IncludeDir.GLEW}",

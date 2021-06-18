@@ -124,6 +124,7 @@ namespace XYZ {
 		dispatcher.Dispatch<WindowResizeEvent>(Hook(&EditorLayer::onWindowResize, this));
 		dispatcher.Dispatch<KeyPressedEvent>(Hook(&EditorLayer::onKeyPress, this));
 		
+		m_ScenePanel.OnEvent(event);
 		if (!event.Handled)
 		{
 			m_ScenePanel.GetEditorCamera().OnEvent(event);

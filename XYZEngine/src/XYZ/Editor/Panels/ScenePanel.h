@@ -20,13 +20,19 @@ namespace XYZ {
 			void OnUpdate(Timestep ts);
 			void OnImGuiRender();
 
+			void OnEvent(Event& event);
+
 			EditorCamera& GetEditorCamera() { return m_EditorCamera; }
 		private:
+			bool onKeyPressed(KeyPressedEvent& e);
+
 			std::pair<glm::vec3, glm::vec3> castRay(float mx, float my) const;
 			std::pair<float, float> getMouseViewportSpace() const;
 
 			void showSelection(SceneEntity entity);
 			void handleSelection(const glm::vec2& mousePosition);
+			void handleEntityTransform(SceneEntity entity);
+
 		private:
 			SceneEntitySelectedCallback m_Callback;
 			Ref<Scene> m_Context;
@@ -54,11 +60,11 @@ namespace XYZ {
 				Z	   = BIT(5)
 			};
 
-			
 			std::deque<Entity> m_Selection;
 			uint8_t			   m_ModifyFlags;
 			float			   m_MoveSpeed;
 			glm::vec2		   m_OldMousePosition;
+			int				   m_GizmoType;
 		};
 	}
 }

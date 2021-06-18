@@ -9,6 +9,10 @@
 #include "XYZ/Utils/Math/Ray.h"
 
 #include <imgui.h>
+#include <ImGuizmo.h>
+
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace XYZ {
 	namespace Editor {
@@ -101,6 +105,8 @@ namespace XYZ {
 				translation + (scale / 2.0f)
 			);
 		}
+
+		static Ray s_lastRay;
 		void ScenePanel::handleSelection(const glm::vec2& mousePosition)
 		{
 			if (ImGui::GetIO().MouseClicked[ImGuiMouseButton_Left]
@@ -108,10 +114,12 @@ namespace XYZ {
 			{
 				auto [origin, direction] = castRay(mousePosition.x, mousePosition.y);
 				Ray ray = { origin,direction };
+				s_lastRay = ray;
 				m_Context->SetSelectedEntity(Entity());
 				if (m_Callback)
 					m_Callback(m_Context->GetSelectedEntity());
 				
+				// First check old selection
 				while (!m_Selection.empty())
 				{
 					Entity first = m_Selection.front();
@@ -133,6 +141,7 @@ namespace XYZ {
 					SceneEntity entity(entityID, m_Context.Raw());
 					if (ray.IntersectsAABB(SceneEntityAABB(entity)))
 					{
+						// Do not add first selected to the selection deque
 						if (selected)
 						{
 							m_Selection.push_back(entityID);
@@ -149,6 +158,27 @@ namespace XYZ {
 			}
 		}
 
+		void ScenePanel::handleEntityTransform(SceneEntity entity)
+		{
+			ImGuizmo::SetOrthographic(false);
+			ImGuizmo::SetDrawlist();
+
+			ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
+			const glm::mat4& cameraProjection = m_EditorCamera.GetProjectionMatrix();
+			glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
+
+			auto& tc = m_Context->GetSelectedEntity().GetComponent<TransformComponent>();
+			glm::mat4 transform = tc.GetTransform();
+
+			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
+				(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),
+				nullptr, nullptr);
+			if (ImGuizmo::IsUsing())
+			{
+				tc.DecomposeTransform(transform);
+			}
+		}
+
 		ScenePanel::ScenePanel()
 			:
 			m_ViewportSize(0.0f),
@@ -159,7 +189,8 @@ namespace XYZ {
 			m_ViewportHovered(false),
 			m_ModifyFlags(0),
 			m_MoveSpeed(100.0f),
-			m_OldMousePosition(0.0f)
+			m_OldMousePosition(0.0f),
+			m_GizmoType(-1)
 		{
 			m_Texture = Texture2D::Create({}, "Assets/Textures/Gui/icons.png");
 			float divisor = 4.0f;
@@ -191,6 +222,7 @@ namespace XYZ {
 				if (selected)
 					showSelection(selected);
 			}
+			Renderer2D::SubmitLine(s_lastRay.Origin, s_lastRay.Direction * 100.0f);
 		}	
 		void ScenePanel::OnImGuiRender()
 		{
@@ -223,7 +255,15 @@ namespace XYZ {
 					auto [mx, my] = getMouseViewportSpace();
 					if (m_ViewportHovered && m_ViewportFocused)
 					{
-						handleSelection({ mx,my });
+						SceneEntity selectedEntity = m_Context->GetSelectedEntity();
+						if (selectedEntity && m_GizmoType != -1)
+						{
+							handleEntityTransform(m_Context->GetSelectedEntity());
+						}
+						else
+						{
+							handleSelection({ mx,my });
+						}
 					}
 
 					ImGui::SetCursorPos(startCursorPos);
@@ -254,10 +294,47 @@ namespace XYZ {
 							m_Context->OnStop();
 						}
 						ImGui::PopID();
-					}
+					}					
 				}
 			}
 			ImGui::End();
+		}
+		void ScenePanel::OnEvent(Event& event)
+		{
+			EventDispatcher dispatcher(event);
+			dispatcher.Dispatch<KeyPressedEvent>(Hook(&ScenePanel::onKeyPressed, this));
+		}
+
+		bool ScenePanel::onKeyPressed(KeyPressedEvent& e)
+		{
+			if (m_ViewportFocused && m_ViewportHovered)
+			{
+				if (e.IsKeyPressed(KeyCode::KEY_Q))
+				{
+					if (!ImGuizmo::IsUsing())
+						m_GizmoType = -1;
+					return true;
+				}
+				else if (e.IsKeyPressed(KeyCode::KEY_W))
+				{
+					if (!ImGuizmo::IsUsing())
+						m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+					return true;
+				}
+				else if (e.IsKeyPressed(KeyCode::KEY_E))
+				{
+					if (!ImGuizmo::IsUsing())
+						m_GizmoType = ImGuizmo::OPERATION::ROTATE;
+					return true;
+				}
+				else if (e.IsKeyPressed(KeyCode::KEY_R))
+				{
+					if (!ImGuizmo::IsUsing())
+						m_GizmoType = ImGuizmo::OPERATION::SCALE;
+					return true;
+				}
+			}
+			return false;
 		}
 	}
 }
