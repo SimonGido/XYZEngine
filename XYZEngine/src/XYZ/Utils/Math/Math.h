@@ -15,6 +15,7 @@ namespace XYZ {
 
 		float PythagoreanSolve(float a, float b);
 
+		void DecomposeTransform(const glm::mat4& transform, glm::vec3& translation, glm::vec3& rotation, glm::vec3& scale);
 
 		inline glm::vec2 Cross(float a, const glm::vec2& v)
 		{

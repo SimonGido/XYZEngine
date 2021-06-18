@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "Math.h"
 
+#include <glm/gtx/transform.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 
 namespace XYZ {
 	namespace Math {
@@ -24,6 +26,15 @@ namespace XYZ {
 		float PythagoreanSolve(float a, float b)
 		{
 			return sqrt(a * a + b * b);
+		}
+		void DecomposeTransform(const glm::mat4& transform, glm::vec3& translation, glm::vec3& rotation, glm::vec3& scale)
+		{
+			glm::quat rotq;
+			glm::vec3 skew;
+			glm::vec4 perspective;
+
+			glm::decompose(transform, scale, rotq, translation, skew, perspective);
+			rotation = glm::eulerAngles(rotq);
 		}
 	}
 }

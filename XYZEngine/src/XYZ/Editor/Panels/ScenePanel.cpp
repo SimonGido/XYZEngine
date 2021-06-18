@@ -7,6 +7,7 @@
 #include "XYZ/Renderer/SceneRenderer.h"
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Utils/Math/Ray.h"
+#include "XYZ/Utils/Math/Math.h"
 
 #include <imgui.h>
 #include <ImGuizmo.h>
@@ -106,15 +107,13 @@ namespace XYZ {
 			);
 		}
 
-		static Ray s_lastRay;
 		void ScenePanel::handleSelection(const glm::vec2& mousePosition)
 		{
 			if (ImGui::GetIO().MouseClicked[ImGuiMouseButton_Left]
-				&& !ImGui::GetIO().KeyAlt)
+			&& !ImGui::GetIO().KeyCtrl)
 			{
 				auto [origin, direction] = castRay(mousePosition.x, mousePosition.y);
 				Ray ray = { origin,direction };
-				s_lastRay = ray;
 				m_Context->SetSelectedEntity(Entity());
 				if (m_Callback)
 					m_Callback(m_Context->GetSelectedEntity());
@@ -165,7 +164,7 @@ namespace XYZ {
 
 			ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
 			const glm::mat4& cameraProjection = m_EditorCamera.GetProjectionMatrix();
-			glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
+			const glm::mat4& cameraView = m_EditorCamera.GetViewMatrix();
 
 			auto& tc = m_Context->GetSelectedEntity().GetComponent<TransformComponent>();
 			glm::mat4 transform = tc.GetTransform();
@@ -175,7 +174,10 @@ namespace XYZ {
 				nullptr, nullptr);
 			if (ImGuizmo::IsUsing())
 			{
-				tc.DecomposeTransform(transform);
+				glm::vec3 rotation;
+				Math::DecomposeTransform(transform, tc.Translation, rotation, tc.Scale);
+				glm::vec3 deltaRotation = rotation - tc.Rotation;
+				tc.Rotation += deltaRotation;
 			}
 		}
 
@@ -222,7 +224,6 @@ namespace XYZ {
 				if (selected)
 					showSelection(selected);
 			}
-			Renderer2D::SubmitLine(s_lastRay.Origin, s_lastRay.Direction * 100.0f);
 		}	
 		void ScenePanel::OnImGuiRender()
 		{

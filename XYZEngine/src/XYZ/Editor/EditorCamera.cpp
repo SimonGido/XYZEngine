@@ -71,7 +71,7 @@ namespace XYZ {
 
 		void EditorCamera::OnUpdate(Timestep ts)
 		{
-			if (Input::IsKeyPressed(KeyCode::KEY_LEFT_ALT))
+			if (Input::IsKeyPressed(KeyCode::KEY_LEFT_CONTROL))
 			{
 				const glm::vec2& mouse{ Input::GetMouseX(), Input::GetMouseY() };
 				glm::vec2 delta = (mouse - m_InitialMousePosition) * 0.003f;
