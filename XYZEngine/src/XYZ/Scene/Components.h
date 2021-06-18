@@ -44,17 +44,7 @@ namespace XYZ {
 
 		glm::mat4 GetTransform() const;
 		
-
-
-		void DecomposeTransform(const glm::mat4& transform)
-		{
-			glm::quat rotation;
-			glm::vec3 skew;
-			glm::vec4 perspective;
-				
-			glm::decompose(transform, Scale, rotation, Translation, skew, perspective);
-			Rotation = glm::eulerAngles(rotation) * glm::pi<float>() / 180.f;
-		}
+		void DecomposeTransform(const glm::mat4& transform);
 	};
 
 	struct SceneTagComponent : public IComponent

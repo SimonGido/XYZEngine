@@ -2,6 +2,8 @@
 #include "stdafx.h"
 #include "Components.h"
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/quaternion.hpp>
 
 namespace XYZ {
 
@@ -11,7 +13,7 @@ namespace XYZ {
 		SubTexture(subTexture),
 		Color(color),
 		SortLayer(sortLayer),
-		Visible(Visible)
+		Visible(isVisible)
 	{}
 
 	SpriteRenderer::SpriteRenderer(const XYZ::SpriteRenderer& other)
@@ -114,17 +116,23 @@ namespace XYZ {
 		glm::vec3 skew;
 		glm::vec4 perspective;
 		glm::decompose(WorldTransform, scale, rot, translation, skew, perspective);
-		glm::vec3 euler = glm::eulerAngles(rot) * glm::pi<float>() / 180.0f;
+		glm::vec3 euler = glm::eulerAngles(rot);
 		return std::tuple<glm::vec3, glm::vec3, glm::vec3>(translation, euler, scale);
 	}
 	glm::mat4 TransformComponent::GetTransform() const
 	{
-		glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), Rotation.x, { 1, 0, 0 })
-			* glm::rotate(glm::mat4(1.0f), Rotation.y, { 0, 1, 0 })
-			* glm::rotate(glm::mat4(1.0f), Rotation.z, { 0, 0, 1 });
-
+		glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
 		return glm::translate(glm::mat4(1.0f), Translation)
 			* rotation
 			* glm::scale(glm::mat4(1.0f), Scale);
+	}
+	void TransformComponent::DecomposeTransform(const glm::mat4& transform)
+	{
+		glm::quat rotation;
+		glm::vec3 skew;
+		glm::vec4 perspective;
+
+		glm::decompose(transform, Scale, rotation, Translation, skew, perspective);
+		Rotation = glm::eulerAngles(rotation);
 	}
 }

@@ -174,10 +174,7 @@ namespace XYZ {
 				nullptr, nullptr);
 			if (ImGuizmo::IsUsing())
 			{
-				glm::vec3 rotation;
-				Math::DecomposeTransform(transform, tc.Translation, rotation, tc.Scale);
-				glm::vec3 deltaRotation = rotation - tc.Rotation;
-				tc.Rotation += deltaRotation;
+				tc.DecomposeTransform(transform);
 			}
 		}
 

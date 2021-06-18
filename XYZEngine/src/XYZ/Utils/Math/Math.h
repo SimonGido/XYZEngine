@@ -16,35 +16,7 @@ namespace XYZ {
 		float PythagoreanSolve(float a, float b);
 
 		void DecomposeTransform(const glm::mat4& transform, glm::vec3& translation, glm::vec3& rotation, glm::vec3& scale);
-
-		inline glm::vec2 Cross(float a, const glm::vec2& v)
-		{
-			return glm::vec2(-a * v.y, a * v.x);
-		}
-
-		inline float Cross(const glm::vec2& a, const glm::vec2& b)
-		{
-			return a.x * b.y - a.y * b.x;
-		}
-
-
-		inline float Dot(const glm::vec2& a, const glm::vec2& b)
-		{
-			return a.x * b.x + a.y * b.y;
-		}
-
-		inline void Normalize(glm::vec2& a)
-		{
-			float len = std::sqrt(a.x * a.x + a.y * a.y);;
-
-			if (len > FLT_EPSILON)
-			{
-				float invLen = 1.0f / len;
-				a.x *= invLen;
-				a.y *= invLen;
-			}
-		}
-
+	
 		inline float Sign(const glm::vec2& p1, const glm::vec2& p2, const glm::vec2& p3)
 		{
 			return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
@@ -64,6 +36,5 @@ namespace XYZ {
 
 			return !(has_neg && has_pos);
 		}
-
 	}
 }
