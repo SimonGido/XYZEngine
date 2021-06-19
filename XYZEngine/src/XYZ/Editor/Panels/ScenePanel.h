@@ -29,7 +29,6 @@ namespace XYZ {
 			std::pair<glm::vec3, glm::vec3> castRay(float mx, float my) const;
 			std::pair<float, float> getMouseViewportSpace() const;
 
-			void showSelection(SceneEntity entity);
 			void handleSelection(const glm::vec2& mousePosition);
 			void handleEntityTransform(SceneEntity entity);
 

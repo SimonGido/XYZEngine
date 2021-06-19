@@ -91,6 +91,7 @@ void main()
 	case  31: color *= texture(u_Texture[31], v_TexCoord * v_TilingFactor); break;
 	}
 
+	
 	o_Color = color;
 	o_Position = vec4(v_Position, 1.0);
 }

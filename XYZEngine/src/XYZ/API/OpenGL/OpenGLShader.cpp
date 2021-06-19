@@ -387,7 +387,7 @@ namespace XYZ {
 	}
 	void OpenGLShader::uploadMat4(uint32_t loc, const glm::mat4& matrix) const
 	{		
-		glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(matrix));
+		glUniformMatrix4fv(loc, 1, GL_FALSE, (const GLfloat*)glm::value_ptr(matrix));
 	}
 	void OpenGLShader::uploadIntArr(uint32_t loc, int* values, uint32_t count) const
 	{
@@ -615,7 +615,8 @@ namespace XYZ {
 		const char* vstr;
 		const char* fstr;
 
-
+		m_TextureList.Textures.clear();
+		m_TextureList.Count = 0;
 		m_VSUniformList.Uniforms.clear();
 		m_VSUniformList.Size = 0;
 		m_FSUniformList.Uniforms.clear();

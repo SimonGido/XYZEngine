@@ -28,11 +28,6 @@ namespace XYZ {
 
 	struct RenderQueue
 	{
-		struct EditorSpriteDrawCommand
-		{
-			EditorSpriteRenderer* Sprite;
-			TransformComponent* Transform;
-		};
 		struct SpriteDrawCommand
 		{
 			SpriteRenderer* Sprite;
@@ -44,8 +39,7 @@ namespace XYZ {
 			TransformComponent* Transform;
 		};
 
-		std::vector<SpriteDrawCommand>		 SpriteDrawList;
-		std::vector<EditorSpriteDrawCommand> EditorSpriteDrawList;
+		std::vector<SpriteDrawCommand>		 SpriteDrawList;		
 		std::vector<ParticleDrawCommand>	 ParticleDrawList;
 	};
 
@@ -64,8 +58,12 @@ namespace XYZ {
 
 		static void SubmitSkeletalMesh(SkeletalMesh* mesh);
 		static void SubmitSprite(SpriteRenderer* sprite, TransformComponent* transform);
-		static void SubmitEditorSprite(EditorSpriteRenderer* sprite, TransformComponent* transform);
 		
+		// Editor functions
+		static void SubmitEditorSprite(EditorSpriteRenderer* sprite, TransformComponent* transform);
+		static void SubmitEditorAABB(TransformComponent* transform, const glm::vec4& color);
+		static void SubmitEditorAABB(const glm::vec3& min, const glm::vec3& max, const glm::vec4& color);
+
 		static void SubmitParticles(ParticleComponent* particle, TransformComponent* transform);
 		static void SubmitLight(PointLight2D* light, const glm::mat4& transform);
 		static void SubmitLight(SpotLight2D* light, const glm::mat4& transform);
@@ -84,13 +82,11 @@ namespace XYZ {
 		static void flush();
 		static void flushLightQueue();
 		static void flushDefaultQueue();
+		static void flushEditorQueue();
 
-		static void geometryPass(RenderQueue& queue);
+		static void geometryPass(RenderQueue& queue, const Ref<RenderPass>& pass, bool clear);
 		static void lightPass();
-
-
-		static void BloomPass();
-		static void GaussianBlurPass();
-		static void CompositePass();
+		static void bloomPass();
+		static void gaussianBlurPass();
 	};
 }

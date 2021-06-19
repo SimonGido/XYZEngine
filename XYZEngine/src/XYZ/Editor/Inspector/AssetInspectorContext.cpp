@@ -39,6 +39,8 @@ namespace XYZ {
 
 				if (m_Context->Type == AssetType::Material)
 					drawMaterial(m_Context.As<Material>());
+				if (m_Context->Type == AssetType::Shader)
+					drawShader(m_Context.As<Shader>());
 			}
 		}
 		void AssetInspectorContext::SetContext(const Ref<Asset>& context)
@@ -89,6 +91,11 @@ namespace XYZ {
 				Helper::EndColumns();
 			}
 			
+		}
+		void AssetInspectorContext::drawShader(Ref<Shader>& shader)
+		{
+			if (ImGui::Button("Reload"))
+				shader->Reload();
 		}
 	}
 }

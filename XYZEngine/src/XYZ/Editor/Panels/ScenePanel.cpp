@@ -53,50 +53,6 @@ namespace XYZ {
 			return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f };
 		}
 
-		void ScenePanel::showSelection(SceneEntity entity)
-		{
-			if (entity.HasComponent<CameraComponent>())
-			{
-				auto& camera = entity.GetComponent<CameraComponent>().Camera;
-				camera.SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-				auto transformComponent = entity.GetComponent<TransformComponent>();
-
-				auto& translation = transformComponent.Translation;
-				if (camera.GetProjectionType() == CameraProjectionType::Orthographic)
-				{
-					float size = camera.GetOrthographicProperties().OrthographicSize;
-					float aspect = (float)camera.GetViewportWidth()/ (float)camera.GetViewportHeight();
-					float width = size * aspect;
-					float height = size;
-
-					glm::vec3 topLeft = { translation.x - width / 2.0f,translation.y + height / 2.0f, translation.z };
-					glm::vec3 topRight = { translation.x + width / 2.0f,translation.y + height / 2.0f, translation.z };
-					glm::vec3 bottomLeft = { translation.x - width / 2.0f,translation.y - height / 2.0f, translation.z };
-					glm::vec3 bottomRight = { translation.x + width / 2.0f,translation.y - height / 2.0f, translation.z };
-
-					Renderer2D::SubmitLine(topLeft, topRight);
-					Renderer2D::SubmitLine(topRight, bottomRight);
-					Renderer2D::SubmitLine(bottomRight, bottomLeft);
-					Renderer2D::SubmitLine(bottomLeft, topLeft);
-				}
-			}
-			else
-			{
-				auto& transformComponent = entity.GetComponent<TransformComponent>();
-				auto [translation, rotation, scale] = transformComponent.GetWorldComponents();
-
-				glm::vec3 topLeft = { translation.x - scale.x / 2,translation.y + scale.y / 2, translation.z };
-				glm::vec3 topRight = { translation.x + scale.x / 2,translation.y + scale.y / 2, translation.z };
-				glm::vec3 bottomLeft = { translation.x - scale.x / 2,translation.y - scale.y / 2, translation.z };
-				glm::vec3 bottomRight = { translation.x + scale.x / 2,translation.y - scale.y / 2, translation.z };
-
-				Renderer2D::SubmitLine(topLeft, topRight);
-				Renderer2D::SubmitLine(topRight, bottomRight);
-				Renderer2D::SubmitLine(bottomRight, bottomLeft);
-				Renderer2D::SubmitLine(bottomLeft, topLeft);
-			}
-		}
-
 		static AABB SceneEntityAABB(SceneEntity entity)
 		{
 			TransformComponent& transformComponent = entity.GetComponent<TransformComponent>();
@@ -217,9 +173,6 @@ namespace XYZ {
 				{
 					m_EditorCamera.OnUpdate(ts);
 				}
-				SceneEntity selected = m_Context->GetSelectedEntity();
-				if (selected)
-					showSelection(selected);
 			}
 		}	
 		void ScenePanel::OnImGuiRender()

@@ -333,6 +333,34 @@ namespace XYZ {
 			auto [transform, light] = spotLightView.Get<TransformComponent, SpotLight2D>(entity);
 			SceneRenderer::SubmitLight(&light, transform.WorldTransform);
 		}
+
+		if (m_SelectedEntity)
+		{
+			SceneEntity entity(m_SelectedEntity, this);
+			if (entity.HasComponent<CameraComponent>())
+			{
+				auto& camera = entity.GetComponent<CameraComponent>().Camera;
+				camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+
+				auto transformComponent = entity.GetComponent<TransformComponent>();
+				auto [translation, rotation, scale] = transformComponent.GetWorldComponents();
+				if (camera.GetProjectionType() == CameraProjectionType::Orthographic)
+				{
+					float size = camera.GetOrthographicProperties().OrthographicSize;
+					float aspect = (float)camera.GetViewportWidth() / (float)camera.GetViewportHeight();
+					float width = size * aspect;
+					float height = size;
+
+					glm::vec3 bottomLeft = { translation.x - width / 2.0f,translation.y - height / 2.0f, translation.z };
+					glm::vec3 topRight = { translation.x + width / 2.0f,translation.y + height / 2.0f, translation.z };
+					SceneRenderer::SubmitEditorAABB(bottomLeft, topRight, glm::vec4(1.0f));
+				}
+			}
+			else
+			{
+				SceneRenderer::SubmitEditorAABB(&entity.GetComponent<TransformComponent>(), glm::vec4(1.0f));
+			}
+		}
 		SceneRenderer::EndScene();
 	}
 

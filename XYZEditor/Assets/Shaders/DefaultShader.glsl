@@ -10,7 +10,6 @@ layout(location = 4) in float a_TilingFactor;
 
 
 out vec4 v_Color;
-out vec3 v_Position;
 out vec2 v_TexCoord;
 out flat float v_TextureID;
 out float v_TilingFactor;
@@ -25,23 +24,18 @@ layout(std140, binding = 0) uniform Camera
 void main()
 {
 	v_Color = a_Color;
-	v_Position = a_Position;
 	v_TexCoord = a_TexCoord;
 	v_TextureID = a_TextureID;
 	v_TilingFactor = a_TilingFactor;
 	gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
-
 }
 
 #type fragment
 #version 450
 
 layout(location = 0) out vec4 o_Color;
-layout(location = 1) out vec4 o_Position;
-
 
 in vec4 v_Color;
-in vec3 v_Position;
 in vec2 v_TexCoord;
 in flat float v_TextureID;
 in float v_TilingFactor;
@@ -87,6 +81,5 @@ void main()
 	case  30: color *= texture(u_Texture[30], v_TexCoord * v_TilingFactor); break;
 	case  31: color *= texture(u_Texture[31], v_TexCoord * v_TilingFactor); break;
 	}
-	o_Position = vec4(v_Position, 1.0);
 	o_Color = color;
 }

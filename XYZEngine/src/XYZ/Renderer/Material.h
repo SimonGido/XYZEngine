@@ -95,16 +95,9 @@ namespace XYZ {
 		const uint8_t* GetVSUniformBuffer() const { return m_VSUniformBuffer; }
 		const uint8_t* GetFSUniformBuffer() const { return m_FSUniformBuffer; }
 		
-		bool operator ==(const Material& other) const
-		{
-			return m_Shader->GetRendererID() == other.m_Shader->GetRendererID() && m_Flags == other.m_Flags;
-		}
-		bool operator != (const Material& other) const
-		{
-			return m_Shader->GetRendererID() != other.m_Shader->GetRendererID() || m_Flags != other.m_Flags;
-		}
-		//TODO TEMPORARY
-		void ReloadShader() { m_Shader->Reload(); };
+		bool operator ==(const Material& other) const;
+		bool operator != (const Material& other) const;
+		
 	private:
 		void onShaderReload();
 		ByteBuffer& getUniformBufferTarget(ShaderType type);
@@ -118,8 +111,8 @@ namespace XYZ {
 
 		ByteBuffer m_VSUniformBuffer;
 		ByteBuffer m_FSUniformBuffer;
-		uint64_t   m_Flags = 0;
-		uint8_t    m_RenderQueueID = 1;
+		uint64_t   m_Flags;
+		uint8_t    m_RenderQueueID;
 	};
 
 

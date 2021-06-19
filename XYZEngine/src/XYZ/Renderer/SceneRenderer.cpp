@@ -35,8 +35,22 @@ namespace XYZ {
 
 		Ref<ShaderStorageBuffer> LightStorageBuffer;
 		Ref<ShaderStorageBuffer> SpotLightStorageBuffer;
-
 		
+		struct EditorSpriteDrawCommand
+		{
+			EditorSpriteRenderer* Sprite;
+			TransformComponent* Transform;
+		};
+		struct EditorAABBDrawCommand
+		{
+			glm::vec3 Min;
+			glm::vec3 Max;
+			glm::vec4 Color;
+		};
+
+		std::vector<EditorSpriteDrawCommand> EditorSpriteDrawList;
+		std::vector<EditorAABBDrawCommand>   EditorAABBDrawList;
+
 		struct PointLight
 		{	
 			glm::vec4 Color;
@@ -200,7 +214,20 @@ namespace XYZ {
 	}
 	void SceneRenderer::SubmitEditorSprite(EditorSpriteRenderer* sprite, TransformComponent* transform)
 	{
-		s_Data.Queues[sprite->Material->GetRenderQueueID()].EditorSpriteDrawList.push_back({ sprite,transform });
+		s_Data.EditorSpriteDrawList.push_back({ sprite,transform });
+	}
+
+	void SceneRenderer::SubmitEditorAABB(TransformComponent* transform, const glm::vec4& color)
+	{
+		auto [translation, rotation, scale] = transform->GetWorldComponents();
+		glm::vec3 bottomLeft = { translation.x - scale.x / 2,translation.y - scale.y / 2, translation.z };
+		glm::vec3 topRight = { translation.x + scale.x / 2,translation.y + scale.y / 2, translation.z };
+		s_Data.EditorAABBDrawList.push_back({ bottomLeft, topRight , color });
+	}
+
+	void SceneRenderer::SubmitEditorAABB(const glm::vec3& min, const glm::vec3& max, const glm::vec4& color)
+	{
+		s_Data.EditorAABBDrawList.push_back({ min, max , color });
 	}
 
 	void SceneRenderer::SubmitParticles(ParticleComponent* particle, TransformComponent* transform)
@@ -272,12 +299,12 @@ namespace XYZ {
 	{
 		flushLightQueue();
 		flushDefaultQueue();
+		flushEditorQueue();
 
 		Renderer::BeginRenderPass(s_Data.CompositePass, true);
 
 		s_Data.CompositeShader->Bind();
-		s_Data.GeometryPass->GetSpecification().TargetFramebuffer->BindTexture(0, 0);
-		s_Data.LightPass->GetSpecification().TargetFramebuffer->BindTexture(0, 1);
+		s_Data.LightPass->GetSpecification().TargetFramebuffer->BindTexture(0, 0);
 
 		Renderer::SubmitFullsceenQuad();
 		Renderer::EndRenderPass();
@@ -313,11 +340,10 @@ namespace XYZ {
 			s_Data.SpotLightStorageBuffer->Update(s_Data.SpotLightsList.data(), s_Data.SpotLightsList.size() * sizeof(SceneRendererData::SpotLight));
 			s_Data.SpotLightStorageBuffer->BindRange(0, s_Data.SpotLightsList.size() * sizeof(SceneRendererData::SpotLight));
 		}
-		geometryPass(queue);
+		geometryPass(queue, s_Data.GeometryPass, true);
 		lightPass();
 		
 		queue.SpriteDrawList.clear();
-		queue.EditorSpriteDrawList.clear();
 		queue.ParticleDrawList.clear();
 		
 		s_Data.PointLightsList.clear();
@@ -340,15 +366,45 @@ namespace XYZ {
 			return a.Particle->RenderMaterial->GetFlags() < b.Particle->RenderMaterial->GetFlags();
 		});
 
-		geometryPass(queue);
+		geometryPass(queue, s_Data.LightPass, false);
 
 		queue.SpriteDrawList.clear();
-		queue.EditorSpriteDrawList.clear();
 		queue.ParticleDrawList.clear();
 	}
-	void SceneRenderer::geometryPass(RenderQueue& queue)
+	void SceneRenderer::flushEditorQueue()
 	{
-		Renderer::BeginRenderPass(s_Data.GeometryPass, true);
+		Renderer::BeginRenderPass(s_Data.LightPass, false);
+		Renderer2D::BeginScene(s_Data.ViewProjectionMatrix, s_Data.ViewPosition);
+
+		for (auto& dc : s_Data.EditorSpriteDrawList)
+		{
+			Renderer2D::SetMaterial(dc.Sprite->Material);
+			uint32_t textureID = Renderer2D::SetTexture(dc.Sprite->SubTexture->GetTexture());
+			Renderer2D::SubmitQuad(dc.Transform->WorldTransform, dc.Sprite->SubTexture->GetTexCoords(), textureID, dc.Sprite->Color);
+		}
+
+		for (auto& dc : s_Data.EditorAABBDrawList)
+		{			
+			glm::vec3 topLeft = { dc.Min.x, dc.Max.y, dc.Min.z };
+			glm::vec3 topRight = { dc.Max.x, dc.Max.y, dc.Min.z };
+			glm::vec3 bottomLeft = { dc.Min.x, dc.Min.y, dc.Min.z };
+			glm::vec3 bottomRight = { dc.Max.x, dc.Min.y, dc.Min.z };
+
+			Renderer2D::SubmitLine(topLeft, topRight, dc.Color);
+			Renderer2D::SubmitLine(topRight, bottomRight, dc.Color);
+			Renderer2D::SubmitLine(bottomRight, bottomLeft, dc.Color);
+			Renderer2D::SubmitLine(bottomLeft, topLeft, dc.Color);
+		}
+		Renderer2D::Flush();
+		Renderer2D::FlushLines();
+
+		s_Data.EditorSpriteDrawList.clear();
+		s_Data.EditorAABBDrawList.clear();
+	}
+
+	void SceneRenderer::geometryPass(RenderQueue& queue, const Ref<RenderPass>& pass, bool clear)
+	{
+		Renderer::BeginRenderPass(pass, clear);
 		Renderer2D::BeginScene(s_Data.ViewProjectionMatrix, s_Data.ViewPosition);
 
 		if (s_Data.Options.ShowGrid)
@@ -362,22 +418,14 @@ namespace XYZ {
 			uint32_t textureID = Renderer2D::SetTexture(dc.Sprite->SubTexture->GetTexture());
 			Renderer2D::SubmitQuad(dc.Transform->WorldTransform, dc.Sprite->SubTexture->GetTexCoords(), textureID, dc.Sprite->Color);
 		}
-
-		for (auto& dc : queue.EditorSpriteDrawList)
-		{
-			Renderer2D::SetMaterial(dc.Sprite->Material);
-			uint32_t textureID = Renderer2D::SetTexture(dc.Sprite->SubTexture->GetTexture());
-			Renderer2D::SubmitQuad(dc.Transform->WorldTransform, dc.Sprite->SubTexture->GetTexCoords(), textureID, dc.Sprite->Color);
-		}
 		Renderer2D::Flush();
 		Renderer2D::FlushLines();
 
 		for (auto& dc : queue.ParticleDrawList)
 		{
-			auto material = dc.Particle->RenderMaterial;
-
-			material->Bind();
+			auto& material = dc.Particle->RenderMaterial;
 			material->Set("u_Transform", dc.Transform->WorldTransform);
+			material->Bind();
 			dc.Particle->System->GetVertexArray()->Bind();
 			dc.Particle->System->GetIndirectBuffer()->Bind();
 			Renderer::DrawElementsIndirect(nullptr);
@@ -399,7 +447,7 @@ namespace XYZ {
 
 		Renderer::EndRenderPass();
 	}
-	void SceneRenderer::BloomPass()
+	void SceneRenderer::bloomPass()
 	{
 		Renderer::BeginRenderPass(s_Data.BloomPass, true);
 		float exposure = 0.7f;
@@ -412,7 +460,7 @@ namespace XYZ {
 
 		Renderer::EndRenderPass();
 	}
-	void SceneRenderer::GaussianBlurPass()
+	void SceneRenderer::gaussianBlurPass()
 	{
 		Renderer::BeginRenderPass(s_Data.GaussianBlurPass, true);
 		uint32_t amount = 2;
@@ -431,18 +479,6 @@ namespace XYZ {
 			s_Data.BloomPass->GetSpecification().TargetFramebuffer->BindTexture(0, 0);
 			Renderer::SubmitFullsceenQuad();
 		}
-		Renderer::EndRenderPass();
-	}
-
-	void SceneRenderer::CompositePass()
-	{
-		Renderer::BeginRenderPass(s_Data.CompositePass, true);
-
-		s_Data.CompositeShader->Bind();
-		s_Data.GeometryPass->GetSpecification().TargetFramebuffer->BindTexture(0, 0);
-		//s_Data.BloomPass->GetSpecification().TargetFramebuffer->BindTexture(0, 1);
-
-		Renderer::SubmitFullsceenQuad();	
 		Renderer::EndRenderPass();
 	}
 }

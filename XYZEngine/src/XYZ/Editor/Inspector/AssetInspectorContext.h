@@ -16,7 +16,7 @@ namespace XYZ {
 
 		private:
 			static void drawMaterial(Ref<Material>& material);
-
+			static void drawShader(Ref<Shader>& shader);
 		private:
 			Ref<Asset> m_Context;
 

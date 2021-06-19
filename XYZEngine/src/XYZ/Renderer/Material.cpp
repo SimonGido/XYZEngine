@@ -6,6 +6,9 @@
 namespace XYZ {
 	
 	Material::Material(const Ref<Shader>& shader)
+		:
+		m_Flags(0),
+		m_RenderQueueID(0)
 	{
 		m_Shader = shader;
 		m_VSUniformBuffer.Allocate(m_Shader->GetVSUniformList().Size);
@@ -37,11 +40,22 @@ namespace XYZ {
 	}
 
 
+	bool Material::operator==(const Material& other) const
+	{
+		return m_Shader->GetRendererID() == other.m_Shader->GetRendererID()
+			&& m_RenderQueueID == other.m_RenderQueueID
+			&& m_Flags == other.m_Flags;
+	}
+
+	bool Material::operator!=(const Material& other) const
+	{
+		return m_Shader->GetRendererID() == other.m_Shader->GetRendererID()
+			&& m_RenderQueueID == other.m_RenderQueueID
+			&& m_Flags == other.m_Flags;
+	}
+
 	void Material::onShaderReload()
 	{
-		delete[] m_VSUniformBuffer;
-		delete[] m_FSUniformBuffer;
-
 		m_VSUniformBuffer.Allocate(m_Shader->GetVSUniformList().Size);
 		m_FSUniformBuffer.Allocate(m_Shader->GetFSUniformList().Size);
 		m_Flags = m_Shader->GetRendererID();
@@ -118,9 +132,6 @@ namespace XYZ {
 
 	void MaterialInstance::onShaderReload()
 	{
-		delete[] m_VSUniformBuffer;
-		delete[] m_FSUniformBuffer;
-
 		m_VSUniformBuffer.Allocate(m_Material->m_Shader->GetVSUniformList().Size);
 		m_FSUniformBuffer.Allocate(m_Material->m_Shader->GetFSUniformList().Size);
 	}
