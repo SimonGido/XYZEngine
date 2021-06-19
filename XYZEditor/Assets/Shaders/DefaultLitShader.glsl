@@ -47,77 +47,6 @@ in vec2 v_TexCoord;
 in flat float v_TextureID;
 in float v_TilingFactor;
 
-struct PointLightData
-{
-	vec4  Color;
-	vec2  Position;
-	float Radius;
-	float Intensity;
-};
-
-struct SpotLightData
-{
-	vec4  Color;
-	vec2  Position;
-	float Radius;
-	float Intensity;
-	float InnerAngle;
-	float OuterAngle;
-	
-	float Alignment[2];
-};
-
-layout(std430, binding = 1) buffer buffer_PointLights
-{
-	PointLightData PointLights[];
-};
-
-layout(std430, binding = 2) buffer buffer_SpotLights
-{
-	SpotLightData SpotLights[];
-};
-
-
-float Determinant(vec2 a, vec2 b)
-{
-	return a.x * b.y - a.y * b.x;
-}
-
-vec3 CalculatePointLights(vec3 defaultColor)
-{
-	vec3 litColor = vec3(0.0, 0.0, 0.0);
-	for (int i = 0; i < PointLights.length(); ++i)
-	{
-		float dist = distance(v_Position.xy, PointLights[i].Position.xy);
-		float radius = PointLights[i].Radius;
-		if (dist <= radius)
-			litColor += defaultColor.xyz * PointLights[i].Color.xyz * abs(radius - dist) * PointLights[i].Intensity;
-	}
-	return litColor;
-}
-
-vec3 CalculateSpotLights(vec3 defaultColor)
-{
-	vec3 litColor = vec3(0.0, 0.0, 0.0);
-	for (int i = 0; i < SpotLights.length(); ++i)
-	{
-		float dist = distance(v_Position.xy, SpotLights[i].Position.xy);
-		float radius = SpotLights[i].Radius;
-		if (dist <= radius)
-		{
-			vec2 toVertexDir = normalize(v_Position.xy - SpotLights[i].Position.xy);
-			vec2 toCenter = vec2(0.0, 1.0);
-			float dotProduct = dot(toVertexDir, toCenter);
-			float deter = Determinant(toVertexDir, toCenter);
-			float angle = atan(deter, dotProduct) * (180.0 / PI);
-			if (angle > SpotLights[i].InnerAngle && angle < SpotLights[i].OuterAngle)
-				litColor += defaultColor.xyz * SpotLights[i].Color.xyz * abs(radius - dist) * SpotLights[i].Intensity;
-		}
-	}
-	return litColor;
-}
-
-
 
 uniform vec4 u_Color;
 
@@ -161,11 +90,7 @@ void main()
 	case  30: color *= texture(u_Texture[30], v_TexCoord * v_TilingFactor); break;
 	case  31: color *= texture(u_Texture[31], v_TexCoord * v_TilingFactor); break;
 	}
-	
 
-	vec3 litColor = CalculatePointLights(color.xyz);
-	litColor += CalculateSpotLights(color.xyz);
-	
-	o_Color = vec4(litColor, color.a);
+	o_Color = color;
 	o_Position = vec4(v_Position, 1.0);
 }

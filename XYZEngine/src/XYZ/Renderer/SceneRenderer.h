@@ -26,6 +26,30 @@ namespace XYZ {
 		glm::vec3 ViewPosition;
 	};
 
+	struct RenderQueue
+	{
+		struct EditorSpriteDrawCommand
+		{
+			EditorSpriteRenderer* Sprite;
+			TransformComponent* Transform;
+		};
+		struct SpriteDrawCommand
+		{
+			SpriteRenderer* Sprite;
+			TransformComponent* Transform;
+		};
+		struct ParticleDrawCommand
+		{
+			ParticleComponent* Particle;
+			TransformComponent* Transform;
+		};
+
+		std::vector<SpriteDrawCommand>		 SpriteDrawList;
+		std::vector<EditorSpriteDrawCommand> EditorSpriteDrawList;
+		std::vector<ParticleDrawCommand>	 ParticleDrawList;
+	};
+
+
 	class SceneRenderer
 	{
 	public:
@@ -41,7 +65,7 @@ namespace XYZ {
 		static void SubmitSkeletalMesh(SkeletalMesh* mesh);
 		static void SubmitSprite(SpriteRenderer* sprite, TransformComponent* transform);
 		static void SubmitEditorSprite(EditorSpriteRenderer* sprite, TransformComponent* transform);
-		static void SubmitCollision(TransformComponent* transform, uint32_t collisionID);
+		
 		static void SubmitParticles(ParticleComponent* particle, TransformComponent* transform);
 		static void SubmitLight(PointLight2D* light, const glm::mat4& transform);
 		static void SubmitLight(SpotLight2D* light, const glm::mat4& transform);
@@ -57,9 +81,14 @@ namespace XYZ {
 		static SceneRendererOptions& GetOptions();
 	
 	private:
-		static void FlushDrawList();
-		static void GeometryPass();
-		static void LightPass();
+		static void flush();
+		static void flushLightQueue();
+		static void flushDefaultQueue();
+
+		static void geometryPass(RenderQueue& queue);
+		static void lightPass();
+
+
 		static void BloomPass();
 		static void GaussianBlurPass();
 		static void CompositePass();

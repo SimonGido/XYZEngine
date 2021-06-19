@@ -10,6 +10,7 @@
 
 namespace XYZ {
 
+
 	struct SceneRendererData
 	{
 		const Scene* ActiveScene = nullptr;
@@ -35,27 +36,7 @@ namespace XYZ {
 		Ref<ShaderStorageBuffer> LightStorageBuffer;
 		Ref<ShaderStorageBuffer> SpotLightStorageBuffer;
 
-		struct EditorSpriteDrawCommand
-		{
-			EditorSpriteRenderer* Sprite;
-			TransformComponent* Transform;
-		};
-		struct SpriteDrawCommand
-		{
-			SpriteRenderer* Sprite;
-			TransformComponent* Transform;
-		};
-		struct ParticleDrawCommand
-		{
-			ParticleComponent* Particle;
-			TransformComponent* Transform;
-		};
-
-		struct CollisionDrawCommand
-		{
-			TransformComponent* Transform;
-			uint32_t ID;
-		};
+		
 		struct PointLight
 		{	
 			glm::vec4 Color;
@@ -76,12 +57,11 @@ namespace XYZ {
 			float Alignment[2];
 		};
 
-		std::vector<CollisionDrawCommand>	 CollisionList;
-		std::vector<SpriteDrawCommand>		 SpriteDrawList;
-		std::vector<EditorSpriteDrawCommand> EditorSpriteDrawList;
-		std::vector<ParticleDrawCommand>	 ParticleDrawList;
-		std::vector<PointLight>				 LightsList;
-		std::vector<SpotLight>				 SpotLightsList;
+		enum { DefaultQueue, LightQueue, NumQueues };
+		
+		RenderQueue				Queues[NumQueues];
+		std::vector<PointLight>	PointLightsList;
+		std::vector<SpotLight>	SpotLightsList;
 		
 		glm::vec2      ViewportSize;
 		bool	       ViewportSizeChanged = false;
@@ -95,7 +75,7 @@ namespace XYZ {
 		// Composite pass
 		{
 			FramebufferSpecs specs;
-			specs.ClearColor = { 0.1f,0.1f,0.1f,1.0f };
+			specs.ClearColor = { 0.0f,0.0f,0.0f,1.0f };
 			specs.Attachments = {
 				FramebufferTextureSpecs(FramebufferTextureFormat::RGBA16F),
 				FramebufferTextureSpecs(FramebufferTextureFormat::DEPTH24STENCIL8)
@@ -108,7 +88,7 @@ namespace XYZ {
 		// Light pass
 		{
 			FramebufferSpecs specs;
-			specs.ClearColor = { 0.0f,0.0f,0.0f,1.0f };
+			specs.ClearColor = { 0.0f,0.0f,0.0f,0.0f };
 			specs.Attachments = {
 				FramebufferTextureSpecs(FramebufferTextureFormat::RGBA16F),
 				FramebufferTextureSpecs(FramebufferTextureFormat::DEPTH24STENCIL8)
@@ -119,7 +99,7 @@ namespace XYZ {
 		// Geometry pass
 		{
 			FramebufferSpecs specs;
-			specs.ClearColor = { 0.1f,0.1f,0.1f,1.0f };
+			specs.ClearColor = { 0.0f,0.0f,0.0f,0.0f };
 			specs.Attachments = {
 				FramebufferTextureSpecs(FramebufferTextureFormat::RGBA16F),
 				FramebufferTextureSpecs(FramebufferTextureFormat::RGBA16F),
@@ -207,7 +187,7 @@ namespace XYZ {
 		XYZ_ASSERT(s_Data.ActiveScene, "Missing begin scene");
 		s_Data.ActiveScene = nullptr;
 
-		FlushDrawList();
+		flush();
 	}
 
 	void SceneRenderer::SubmitSkeletalMesh(SkeletalMesh* mesh)
@@ -216,33 +196,30 @@ namespace XYZ {
 	}
 	void SceneRenderer::SubmitSprite(SpriteRenderer* sprite, TransformComponent* transform)
 	{
-		s_Data.SpriteDrawList.push_back({ sprite,transform });
+		s_Data.Queues[sprite->Material->GetRenderQueueID()].SpriteDrawList.push_back({ sprite,transform });
 	}
 	void SceneRenderer::SubmitEditorSprite(EditorSpriteRenderer* sprite, TransformComponent* transform)
 	{
-		s_Data.EditorSpriteDrawList.push_back({ sprite,transform });
+		s_Data.Queues[sprite->Material->GetRenderQueueID()].EditorSpriteDrawList.push_back({ sprite,transform });
 	}
-	void SceneRenderer::SubmitCollision(TransformComponent* transform, uint32_t collisionID)
-	{
-		s_Data.CollisionList.push_back({ transform, collisionID });
-	}
+
 	void SceneRenderer::SubmitParticles(ParticleComponent* particle, TransformComponent* transform)
 	{
-		s_Data.ParticleDrawList.push_back({ particle,transform });
+		s_Data.Queues[particle->RenderMaterial->GetRenderQueueID()].ParticleDrawList.push_back({ particle,transform });
 	}
 	void SceneRenderer::SubmitLight(PointLight2D* light, const glm::mat4& transform)
 	{
-		XYZ_ASSERT(s_Data.LightsList.size() + 1 < s_Data.MaxNumberOfLights, "Max number of lights per scene is ", s_Data.MaxNumberOfLights);
+		XYZ_ASSERT(s_Data.PointLightsList.size() + 1 < s_Data.MaxNumberOfLights, "Max number of lights per scene is ", s_Data.MaxNumberOfLights);
 		SceneRendererData::PointLight lightData;
 		lightData.Position  = glm::vec2(transform[3][0], transform[3][1]);
 		lightData.Color     = glm::vec4(light->Color, 0.0f);
 		lightData.Radius    = light->Radius;
 		lightData.Intensity = light->Intensity;
-		s_Data.LightsList.push_back(lightData);
+		s_Data.PointLightsList.push_back(lightData);
 	}
 	void SceneRenderer::SubmitLight(SpotLight2D* light, const glm::mat4& transform)
 	{
-		XYZ_ASSERT(s_Data.LightsList.size() + 1 < s_Data.MaxNumberOfLights, "Max number of lights per scene is ", s_Data.MaxNumberOfLights);
+		XYZ_ASSERT(s_Data.SpotLightsList.size() + 1 < s_Data.MaxNumberOfLights, "Max number of lights per scene is ", s_Data.MaxNumberOfLights);
 		SceneRendererData::SpotLight lightData;
 		lightData.Position   = glm::vec2(transform[3][0], transform[3][1]);
 		lightData.Color		 = glm::vec4(light->Color, 0.0f);
@@ -291,48 +268,44 @@ namespace XYZ {
 	{
 		return s_Data.Options;
 	}
-	void SceneRenderer::FlushDrawList()
+	void SceneRenderer::flush()
 	{
-		std::sort(s_Data.SpriteDrawList.begin(), s_Data.SpriteDrawList.end(),
-			[](const SceneRendererData::SpriteDrawCommand& a, const SceneRendererData::SpriteDrawCommand& b) {
-				return a.Transform->Translation.z < b.Transform->Translation.z;
+		flushLightQueue();
+		flushDefaultQueue();
 
-				if (a.Sprite->SortLayer == b.Sprite->SortLayer)
-					return a.Sprite->Material->GetFlags() < b.Sprite->Material->GetFlags();
-				return a.Sprite->SortLayer < b.Sprite->SortLayer;
-			});
-		
-		std::sort(s_Data.ParticleDrawList.begin(), s_Data.ParticleDrawList.end(),
-			[](const SceneRendererData::ParticleDrawCommand& a, const SceneRendererData::ParticleDrawCommand& b) {
-				return a.Particle->RenderMaterial->GetFlags() < b.Particle->RenderMaterial->GetFlags();
-			});
+		Renderer::BeginRenderPass(s_Data.CompositePass, true);
 
-		GeometryPass();
-		//LightPass();
-		//BloomPass();
-		//GaussianBlurPass();
-		CompositePass();
+		s_Data.CompositeShader->Bind();
+		s_Data.GeometryPass->GetSpecification().TargetFramebuffer->BindTexture(0, 0);
+		s_Data.LightPass->GetSpecification().TargetFramebuffer->BindTexture(0, 1);
+
+		Renderer::SubmitFullsceenQuad();
+		Renderer::EndRenderPass();
 
 		auto [width, height] = Input::GetWindowSize();
 		Renderer::SetViewPort(0, 0, (uint32_t)width, (uint32_t)height);
-
-		s_Data.CollisionList.clear();
-		s_Data.SpriteDrawList.clear();
-		s_Data.EditorSpriteDrawList.clear();
-		s_Data.ParticleDrawList.clear();
-		s_Data.LightsList.clear();
-		s_Data.SpotLightsList.clear();
 	}
-
-	void SceneRenderer::GeometryPass()
+	void SceneRenderer::flushLightQueue()
 	{
-		Renderer::BeginRenderPass(s_Data.GeometryPass, true);
-		Renderer2D::BeginScene(s_Data.ViewProjectionMatrix, s_Data.ViewPosition);
+		RenderQueue& queue = s_Data.Queues[SceneRendererData::LightQueue];
+		std::sort(queue.SpriteDrawList.begin(), queue.SpriteDrawList.end(),
+			[](const RenderQueue::SpriteDrawCommand& a, const RenderQueue::SpriteDrawCommand& b) {
+			return a.Transform->Translation.z < b.Transform->Translation.z;
 
-		if (s_Data.LightsList.size())
+			if (a.Sprite->SortLayer == b.Sprite->SortLayer)
+				return a.Sprite->Material->GetFlags() < b.Sprite->Material->GetFlags();
+			return a.Sprite->SortLayer < b.Sprite->SortLayer;
+		});
+
+		std::sort(queue.ParticleDrawList.begin(), queue.ParticleDrawList.end(),
+			[](const RenderQueue::ParticleDrawCommand& a, const RenderQueue::ParticleDrawCommand& b) {
+			return a.Particle->RenderMaterial->GetFlags() < b.Particle->RenderMaterial->GetFlags();
+		});
+
+		if (s_Data.PointLightsList.size())
 		{
-			s_Data.LightStorageBuffer->Update(s_Data.LightsList.data(), s_Data.LightsList.size() * sizeof(SceneRendererData::PointLight));
-			s_Data.LightStorageBuffer->BindRange(0, s_Data.LightsList.size() * sizeof(SceneRendererData::PointLight));
+			s_Data.LightStorageBuffer->Update(s_Data.PointLightsList.data(), s_Data.PointLightsList.size() * sizeof(SceneRendererData::PointLight));
+			s_Data.LightStorageBuffer->BindRange(0, s_Data.PointLightsList.size() * sizeof(SceneRendererData::PointLight));
 		}
 
 		if (s_Data.SpotLightsList.size())
@@ -340,25 +313,57 @@ namespace XYZ {
 			s_Data.SpotLightStorageBuffer->Update(s_Data.SpotLightsList.data(), s_Data.SpotLightsList.size() * sizeof(SceneRendererData::SpotLight));
 			s_Data.SpotLightStorageBuffer->BindRange(0, s_Data.SpotLightsList.size() * sizeof(SceneRendererData::SpotLight));
 		}
+		geometryPass(queue);
+		lightPass();
+		
+		queue.SpriteDrawList.clear();
+		queue.EditorSpriteDrawList.clear();
+		queue.ParticleDrawList.clear();
+		
+		s_Data.PointLightsList.clear();
+		s_Data.SpotLightsList.clear();
+	}
+	void SceneRenderer::flushDefaultQueue()
+	{
+		RenderQueue& queue = s_Data.Queues[SceneRendererData::DefaultQueue];
+		std::sort(queue.SpriteDrawList.begin(), queue.SpriteDrawList.end(),
+			[](const RenderQueue::SpriteDrawCommand& a, const RenderQueue::SpriteDrawCommand& b) {
+			return a.Transform->Translation.z < b.Transform->Translation.z;
+
+			if (a.Sprite->SortLayer == b.Sprite->SortLayer)
+				return a.Sprite->Material->GetFlags() < b.Sprite->Material->GetFlags();
+			return a.Sprite->SortLayer < b.Sprite->SortLayer;
+		});
+
+		std::sort(queue.ParticleDrawList.begin(), queue.ParticleDrawList.end(),
+			[](const RenderQueue::ParticleDrawCommand& a, const RenderQueue::ParticleDrawCommand& b) {
+			return a.Particle->RenderMaterial->GetFlags() < b.Particle->RenderMaterial->GetFlags();
+		});
+
+		geometryPass(queue);
+
+		queue.SpriteDrawList.clear();
+		queue.EditorSpriteDrawList.clear();
+		queue.ParticleDrawList.clear();
+	}
+	void SceneRenderer::geometryPass(RenderQueue& queue)
+	{
+		Renderer::BeginRenderPass(s_Data.GeometryPass, true);
+		Renderer2D::BeginScene(s_Data.ViewProjectionMatrix, s_Data.ViewPosition);
 
 		if (s_Data.Options.ShowGrid)
 		{
 			Renderer2D::SubmitGrid(s_Data.GridProps.Transform, s_Data.GridProps.Scale, s_Data.GridProps.LineWidth);
 		}
 
-		for (auto& dc : s_Data.CollisionList)
-		{
-			Renderer2D::SubmitCollisionQuad(dc.Transform->WorldTransform, dc.ID);
-		}
-
-		for (auto& dc : s_Data.SpriteDrawList)
+		for (auto& dc : queue.SpriteDrawList)
 		{
 			Renderer2D::SetMaterial(dc.Sprite->Material);
 			uint32_t textureID = Renderer2D::SetTexture(dc.Sprite->SubTexture->GetTexture());
 			Renderer2D::SubmitQuad(dc.Transform->WorldTransform, dc.Sprite->SubTexture->GetTexCoords(), textureID, dc.Sprite->Color);
 		}
 
-		for (auto& dc : s_Data.EditorSpriteDrawList)
+		for (auto& dc : queue.EditorSpriteDrawList)
 		{
 			Renderer2D::SetMaterial(dc.Sprite->Material);
 			uint32_t textureID = Renderer2D::SetTexture(dc.Sprite->SubTexture->GetTexture());
@@ -366,10 +371,8 @@ namespace XYZ {
 		}
 		Renderer2D::Flush();
 		Renderer2D::FlushLines();
-		Renderer2D::FlushCollisions();
-		Renderer2D::FlushPoints();
 
-		for (auto& dc : s_Data.ParticleDrawList)
+		for (auto& dc : queue.ParticleDrawList)
 		{
 			auto material = dc.Particle->RenderMaterial;
 
@@ -379,32 +382,23 @@ namespace XYZ {
 			dc.Particle->System->GetIndirectBuffer()->Bind();
 			Renderer::DrawElementsIndirect(nullptr);
 		}
-	
-		Renderer2D::EndScene();
-		Renderer::EndRenderPass();		
-	}
 
-	void SceneRenderer::LightPass()
+		Renderer2D::EndScene();
+		Renderer::EndRenderPass();
+	}
+	void SceneRenderer::lightPass()
 	{
 		Renderer::BeginRenderPass(s_Data.LightPass, true);
 
 		s_Data.LightShader->Bind();
-		s_Data.LightShader->SetInt("u_NumberOfLights", s_Data.LightsList.size());
-		
-		if (s_Data.LightsList.size())
-		{
-			s_Data.LightStorageBuffer->Update(s_Data.LightsList.data(), s_Data.LightsList.size() * sizeof(SceneRendererData::PointLight));
-			s_Data.LightStorageBuffer->BindRange(0, s_Data.LightsList.size() * sizeof(SceneRendererData::PointLight));
-		}
 
 		s_Data.GeometryPass->GetSpecification().TargetFramebuffer->BindTexture(0, 0);
 		s_Data.GeometryPass->GetSpecification().TargetFramebuffer->BindTexture(1, 1);
-	
+
 		Renderer::SubmitFullsceenQuad();
-		
+
 		Renderer::EndRenderPass();
 	}
-
 	void SceneRenderer::BloomPass()
 	{
 		Renderer::BeginRenderPass(s_Data.BloomPass, true);

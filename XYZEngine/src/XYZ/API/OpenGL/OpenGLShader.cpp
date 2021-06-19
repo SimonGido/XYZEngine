@@ -386,7 +386,7 @@ namespace XYZ {
 		glUniformMatrix3fv(loc, 1, GL_FALSE, glm::value_ptr(matrix));
 	}
 	void OpenGLShader::uploadMat4(uint32_t loc, const glm::mat4& matrix) const
-	{
+	{		
 		glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(matrix));
 	}
 	void OpenGLShader::uploadIntArr(uint32_t loc, int* values, uint32_t count) const

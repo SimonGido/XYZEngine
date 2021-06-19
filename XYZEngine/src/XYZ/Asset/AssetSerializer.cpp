@@ -354,7 +354,7 @@ namespace XYZ {
 		out << YAML::BeginMap;
 		out << YAML::Key << "Material" << YAML::Value << asset->FileName;
 		out << YAML::Key << "ShaderAsset" << YAML::Value << material->GetShader()->Handle;
-
+		out << YAML::Key << "RenderQueueID" << YAML::Value << material->GetRenderQueueID();
 		out << YAML::Key << "Textures";
 		out << YAML::Value << YAML::BeginSeq;
 		uint32_t counter = 0;
@@ -516,7 +516,7 @@ namespace XYZ {
 
 		Ref<Material> material = Ref<Material>::Create(shader);
 		CopyAsset(material.As<Asset>(), asset);
-
+		material->SetRenderQueueID(data["RenderQueueID"].as<uint8_t>());
 		for (auto& seq : data["Textures"])
 		{
 			GUID textureHandle(seq["TextureAsset"].as<std::string>());

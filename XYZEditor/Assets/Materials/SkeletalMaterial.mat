@@ -1,5 +1,6 @@
 Material: SkeletalMaterial
 ShaderAsset: 53508a63-460e-4b60-9fe6-9116a0667641
+RenderQueueID: 0
 Textures:
   []
 Values:

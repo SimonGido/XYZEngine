@@ -22,9 +22,14 @@ layout(location = 0) out vec4 o_Color;
 in vec2 v_TexCoords;
 
 
-uniform sampler2D u_Texture[2];
+layout(binding = 0) uniform sampler2D u_Texture[2];
 
 void main()
 {    
-    o_Color = texture(u_Texture[0], v_TexCoords);
+    vec4 color = texture(u_Texture[0], v_TexCoords);
+    vec4 lightColor = texture(u_Texture[1], v_TexCoords);
+    if (color.a > 0.01f)
+        o_Color = color;
+    else
+        o_Color = lightColor;
 }

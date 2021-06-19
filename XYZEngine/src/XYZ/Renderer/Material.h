@@ -83,7 +83,10 @@ namespace XYZ {
 		void Bind() const;
 		void ClearTextures() { m_Textures.clear(); }
 		void SetFlags(RenderFlags renderFlags) { m_Flags |= renderFlags; }
+		void SetRenderQueueID(uint8_t id) { m_RenderQueueID = id; }
+
 		uint64_t GetFlags() const { return m_Flags; }
+		uint8_t  GetRenderQueueID() const { return m_RenderQueueID; }
 
 		Ref<Shader>& GetShader() { return m_Shader; }
 		const Ref<Shader>& GetShader() const { return m_Shader; }
@@ -116,6 +119,7 @@ namespace XYZ {
 		ByteBuffer m_VSUniformBuffer;
 		ByteBuffer m_FSUniformBuffer;
 		uint64_t   m_Flags = 0;
+		uint8_t    m_RenderQueueID = 1;
 	};
 
 
