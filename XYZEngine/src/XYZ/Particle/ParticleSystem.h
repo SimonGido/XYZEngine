@@ -4,65 +4,22 @@
 #include "XYZ/Core/Ref.h"
 #include "XYZ/Core/Timestep.h"
 
-#include "ParticleModule.h"
+#include "ParticleMaterial.h"
 #include "Particle.h"
 
 #include <glm/glm.hpp>
 
 namespace XYZ {
-
-	struct ParticleConfiguration
-	{
-		ParticleConfiguration();
-
-		glm::vec4 StartColor;
-		glm::vec4 EndColor;
-		glm::vec2 StartSize;
-		glm::vec2 EndSize;
-		glm::vec2 Force;
-
-		uint32_t  MaxParticles;
-		float     Rate;
-		float	  Gravity;
-		float     Speed;
-		bool	  Repeat;
-	};
-
-
 	class ParticleSystem : public RefCount
 	{
 	public:
-		ParticleSystem(const ParticleConfiguration& config = ParticleConfiguration());
+		ParticleSystem(const Ref<ParticleMaterial>& material);
 
-		void Reset();
-		void Update(Timestep ts);
+		
 
-		void SetParticles(ParticleData* dataBuffer, ParticleSpecification* specsBuffer);
-		void SetParticles(ParticleData* dataBuffer, ParticleSpecification* specsBuffer, uint32_t offsetParticles, uint32_t countParticles);
-
-
-		const Ref<VertexArray>& GetVertexArray() const { return m_VertexArray; }
-		const Ref<ShaderStorageBuffer>& GetShaderStorage() const { return m_DataStorage; }
-
-		const Ref<IndirectBuffer>& GetIndirectBuffer() const { return m_IndirectBuffer; }
-
-		ParticleConfiguration& GetConfiguration() { return m_Config; }
-		int32_t GetEmittedParticles() const { return (int)std::ceil(m_EmittedParticles); }
-
-		Ref<ShaderStorageBuffer> m_BoxColliderStorage;
+		const Ref<ParticleMaterial>& GetMaterial() const { return m_Material; }
 	private:
-		ParticleConfiguration m_Config;
-		float m_EmittedParticles;
-		float m_PlayTime;
-
-
-		Ref<VertexArray>	m_VertexArray;
-		Ref<IndirectBuffer> m_IndirectBuffer;
-
-
-		Ref<ShaderStorageBuffer> m_DataStorage;
-		Ref<ShaderStorageBuffer> m_SpecsStorage;
-		Ref<AtomicCounter>		 m_DeadCounter;
+		Ref<ParticleMaterial> m_Material;
 	};
 
 }

@@ -10,10 +10,10 @@
 #include <glm/glm.hpp>
 
 namespace XYZ {
-	class ParticleEffect : public RefCount
+	class ParticleMaterial : public RefCount
 	{
 	public:
-		ParticleEffect(uint32_t maxParticles, const Ref<Shader>& computeShader);
+		ParticleMaterial(uint32_t maxParticles, const Ref<Shader>& computeShader);
 		
 		void Update(Timestep ts);
 		void Compute();
@@ -25,6 +25,9 @@ namespace XYZ {
 		template <typename T>
 		T& Get(const std::string& name);
 
+		void SetSpawnRate(float rate) { m_Rate = rate; }
+		void SetMaxParticles(uint32_t maxParticles);
+		void SetComputeShader(const Ref<Shader>& computeShader);
 		void SetBufferSize(const std::string& name, uint32_t size);
 		void SetBufferData(const std::string& name, void* data, uint32_t count, uint32_t elementSize, uint32_t offset = 0);
 
@@ -34,12 +37,7 @@ namespace XYZ {
 		const Ref<IndirectBuffer>& GetIndirectBuffer() const { return m_DrawCommand; }
 		
 		const uint8_t* GetUniformBuffer() const { return m_UniformBuffer; }
-
-
-		uint32_t m_MaxParticles;
-		float    m_Rate;
-		float    m_EmittedParticles;
-		float    m_PlayTime;
+		uint32_t GetMaxParticles() const { return m_MaxParticles; }
 
 	private:
 		void parse();
@@ -50,6 +48,10 @@ namespace XYZ {
 		Ref<Shader>		 m_ComputeShader;
 		Ref<VertexArray> m_VertexArray;
 		ByteBuffer		 m_UniformBuffer;
+		uint32_t		 m_MaxParticles;
+		float			 m_Rate;
+		float			 m_EmittedParticles;
+		float			 m_PlayTime;
 
 		struct Buffer
 		{
@@ -73,18 +75,18 @@ namespace XYZ {
 	};
 
 	template <typename T>
-	void ParticleEffect::Set(const std::string& name, const T& val)
+	void ParticleMaterial::Set(const std::string& name, const T& val)
 	{
 		auto uni = findUniform(name);
-		XYZ_ASSERT(uni, "Particle effect uniform does not exist ", name.c_str());
+		XYZ_ASSERT(uni, "Particle material uniform does not exist ", name.c_str());
 		m_UniformBuffer.Write((unsigned char*)&val, uni->Size, uni->Offset);
 	}
 
 	template <typename T>
-	T& ParticleEffect::Get(const std::string& name)
+	T& ParticleMaterial::Get(const std::string& name)
 	{
 		auto uni = findUniform(name);
-		XYZ_ASSERT(uni, "Particle effect uniform does not exist ", name.c_str());
+		XYZ_ASSERT(uni, "Particle material uniform does not exist ", name.c_str());
 		return *(T*)&m_UniformBuffer[uni->Offset];
 	}
 }

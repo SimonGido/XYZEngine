@@ -2,7 +2,7 @@
 #include "XYZ/ECS/ECSManager.h"
 #include "XYZ/ECS/Component.h"
 #include "XYZ/Core/GUID.h"
-#include "XYZ/Particle/ParticleEffect.h"
+#include "XYZ/Particle/ParticleMaterial.h"
 
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Script/ScriptPublicField.h"
@@ -114,8 +114,8 @@ namespace XYZ {
 	{
 		ParticleComponent() = default;
 		
-		Ref<Material>		  RenderMaterial;
-		Ref<ParticleEffect>	  Effect;
+		Ref<Material>		   RenderMaterial;
+		Ref<ParticleMaterial>  Effect;
 	};
 
 	struct PointLight2D : public IComponent

@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "ParticleEffect.h"
+#include "ParticleMaterial.h"
 
 
 namespace XYZ {
@@ -208,7 +208,7 @@ namespace XYZ {
 		return BufferLayout(elements);
 	}
 
-	ParticleEffect::ParticleEffect(uint32_t maxParticles, const Ref<Shader>& computeShader)
+	ParticleMaterial::ParticleMaterial(uint32_t maxParticles, const Ref<Shader>& computeShader)
 		:
 		m_ComputeShader(computeShader),
 		m_VertexArray(VertexArray::Create()),
@@ -217,29 +217,9 @@ namespace XYZ {
 		m_EmittedParticles(0.0f),
 		m_PlayTime(0.0f)
 	{
-		ParticleVertex quad[4] = {
-			ParticleVertex{glm::vec3(-0.5f, -0.5f, 0.0f), glm::vec2(0.0f, 0.0f)},
-			ParticleVertex{glm::vec3(0.5f, -0.5f, 0.0f),  glm::vec2(1.0f, 0.0f)},
-			ParticleVertex{glm::vec3(0.5f,  0.5f, 0.0f),  glm::vec2(1.0f, 1.0f)},
-			ParticleVertex{glm::vec3(-0.5f,  0.5f, 0.0f), glm::vec2(0.0f, 1.0f)}
-		};
-		Ref<VertexBuffer> squareVBpar;
-		squareVBpar = XYZ::VertexBuffer::Create(quad, 4 * sizeof(ParticleVertex));
-		squareVBpar->SetLayout({
-			{ 0, XYZ::ShaderDataComponent::Float3, "a_Position" },
-			{ 1, XYZ::ShaderDataComponent::Float2, "a_TexCoord" }
-			});
-		m_VertexArray->AddVertexBuffer(squareVBpar);
-
-		parse();
-		m_UniformBuffer.Allocate(m_ComputeShader->GetVSUniformList().Size);
-
-		uint32_t squareIndpar[] = { 0, 1, 2, 2, 3, 0 };
-		Ref<XYZ::IndexBuffer> squareIBpar;
-		squareIBpar = XYZ::IndexBuffer::Create(squareIndpar, sizeof(squareIndpar) / sizeof(uint32_t));
-		m_VertexArray->SetIndexBuffer(squareIBpar);
+		rebuild();
 	}
-	void ParticleEffect::Update(Timestep ts)
+	void ParticleMaterial::Update(Timestep ts)
 	{
 		float raise = m_Rate * ts;
 		if (m_EmittedParticles + raise <= m_MaxParticles)
@@ -254,7 +234,7 @@ namespace XYZ {
 		m_PlayTime += ts;
 	}
 
-	void ParticleEffect::Compute()
+	void ParticleMaterial::Compute()
 	{
 		for (auto& buffer : m_Buffers)
 		{
@@ -265,7 +245,7 @@ namespace XYZ {
 		m_ComputeShader->Compute(32, 32, 1);
 	}
 
-	void ParticleEffect::Reset()
+	void ParticleMaterial::Reset()
 	{
 		for (auto& counter : m_Counters)
 		{
@@ -275,7 +255,19 @@ namespace XYZ {
 		m_PlayTime = 0.0f;
 	}
 
-	void ParticleEffect::SetBufferSize(const std::string& name, uint32_t size)
+	void ParticleMaterial::SetMaxParticles(uint32_t maxParticles)
+	{
+		m_MaxParticles = maxParticles;
+		rebuild();
+	}
+
+	void ParticleMaterial::SetComputeShader(const Ref<Shader>& computeShader)
+	{
+		m_ComputeShader = computeShader;
+		rebuild();
+	}
+
+	void ParticleMaterial::SetBufferSize(const std::string& name, uint32_t size)
 	{
 		for (auto& buffer : m_Buffers)
 		{
@@ -287,7 +279,7 @@ namespace XYZ {
 		}
 		XYZ_ASSERT(false, "No buffer with the name ", name);
 	}
-	void ParticleEffect::SetBufferData(const std::string& name, void* data, uint32_t count, uint32_t elementSize, uint32_t offset)
+	void ParticleMaterial::SetBufferData(const std::string& name, void* data, uint32_t count, uint32_t elementSize, uint32_t offset)
 	{
 		for (auto& buffer : m_Buffers)
 		{
@@ -301,7 +293,7 @@ namespace XYZ {
 		XYZ_ASSERT(false, "No buffer with the name ", name);
 	}
 
-	void ParticleEffect::parse()
+	void ParticleMaterial::parse()
 	{
 		std::ifstream in(m_ComputeShader->GetPath(), std::ios::in | std::ios::binary);
 		if (in)
@@ -327,7 +319,11 @@ namespace XYZ {
 				{
 					Buffer buf;
 					buf.Name = buffer.Name;
-					buf.Storage = ShaderStorageBuffer::Create(buffer.Size, buffer.Binding);
+					if (buffer.ParticleBuffer)
+						buf.Storage = ShaderStorageBuffer::Create(buffer.Size * m_MaxParticles, buffer.Binding);
+					else
+						buf.Storage = ShaderStorageBuffer::Create(buffer.Size, buffer.Binding);
+
 					buf.ElementSize = buffer.Size;
 					buf.ElementCount = 0;
 					buf.RenderBuffer = buffer.RenderBuffer;
@@ -351,12 +347,36 @@ namespace XYZ {
 		}
 	}
 
-	void ParticleEffect::rebuild()
+	void ParticleMaterial::rebuild()
 	{
+		m_Buffers.clear();
+		m_Counters.clear();
+		m_DrawCommand.Reset();
 
+		ParticleVertex quad[4] = {
+			ParticleVertex{glm::vec3(-0.5f, -0.5f, 0.0f), glm::vec2(0.0f, 0.0f)},
+			ParticleVertex{glm::vec3( 0.5f, -0.5f, 0.0f), glm::vec2(1.0f, 0.0f)},
+			ParticleVertex{glm::vec3( 0.5f,  0.5f, 0.0f), glm::vec2(1.0f, 1.0f)},
+			ParticleVertex{glm::vec3(-0.5f,  0.5f, 0.0f), glm::vec2(0.0f, 1.0f)}
+		};
+		Ref<VertexBuffer> squareVBpar;
+		squareVBpar = XYZ::VertexBuffer::Create(quad, 4 * sizeof(ParticleVertex));
+		squareVBpar->SetLayout({
+			{ 0, XYZ::ShaderDataComponent::Float3, "a_Position" },
+			{ 1, XYZ::ShaderDataComponent::Float2, "a_TexCoord" }
+			});
+		m_VertexArray->AddVertexBuffer(squareVBpar);
+
+		parse();
+		m_UniformBuffer.Allocate(m_ComputeShader->GetVSUniformList().Size);
+
+		uint32_t squareIndpar[] = { 0, 1, 2, 2, 3, 0 };
+		Ref<XYZ::IndexBuffer> squareIBpar;
+		squareIBpar = XYZ::IndexBuffer::Create(squareIndpar, sizeof(squareIndpar) / sizeof(uint32_t));
+		m_VertexArray->SetIndexBuffer(squareIBpar);
 	}
 
-	const Uniform* ParticleEffect::findUniform(const std::string& name) const
+	const Uniform* ParticleMaterial::findUniform(const std::string& name) const
 	{
 		for (auto& uni : m_ComputeShader->GetVSUniformList().Uniforms)
 		{

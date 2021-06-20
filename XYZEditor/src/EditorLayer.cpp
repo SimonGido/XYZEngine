@@ -61,7 +61,7 @@ namespace XYZ {
 		auto &particleComponent = entity.EmplaceComponent<ParticleComponent>();
 		particleComponent.RenderMaterial = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShader.glsl"));
 		particleComponent.RenderMaterial->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
-		particleComponent.Effect = Ref<ParticleEffect>::Create(1000, Shader::Create("Assets/Shaders/Particle/ComputeParticleShader.glsl"));
+		particleComponent.Effect = Ref<ParticleMaterial>::Create(1000, Shader::Create("Assets/Shaders/Particle/ComputeParticleShader.glsl"));
 		
 		std::vector<ParticleData> particleData;
 		std::vector<ParticleSpecification> particleSpecification;
@@ -69,7 +69,7 @@ namespace XYZ {
 		std::random_device dev;
 		std::mt19937 rng(dev());
 		std::uniform_real_distribution<double> dist(-1.0, 1.0); // distribution in range [1, 6]
-		for (size_t i = 0; i < particleComponent.Effect->m_MaxParticles; ++i)
+		for (size_t i = 0; i < particleComponent.Effect->GetMaxParticles(); ++i)
 		{
 			ParticleData data;
 			data.Color    = glm::vec4(1.0f);
@@ -87,11 +87,11 @@ namespace XYZ {
 		
 			particleSpecification.push_back(specs);
 		}
-		particleComponent.Effect->m_Rate = 2.0f;
+		particleComponent.Effect->SetSpawnRate(40.0f);
 		particleComponent.Effect->Set("u_NumBoxColliders", 0);
 		particleComponent.Effect->Set("u_MaxParticles", 1000);
 		
-		particleComponent.Effect->Set("u_Force", glm::vec2(0.0f, 0.0f));
+		particleComponent.Effect->Set("u_Force", glm::vec2(-1.0f, 0.0f));
 		
 		// Main module
 		particleComponent.Effect->Set("u_MainModule.Repeat", 1);
@@ -99,7 +99,6 @@ namespace XYZ {
 		particleComponent.Effect->Set("u_MainModule.Speed", 1.0f);
 		// Color module
 		particleComponent.Effect->Set("u_ColorModule.StartColor", glm::vec4(0.5f));
-		int tmp = particleComponent.Effect->Get<int>("u_MaxParticles");
 		particleComponent.Effect->Set("u_ColorModule.EndColor",   glm::vec4(1.0f));
 		// Size module
 		particleComponent.Effect->Set("u_SizeModule.StartSize", glm::vec2(0.1f));
@@ -108,8 +107,8 @@ namespace XYZ {
 		particleComponent.Effect->Set("u_TextureModule.TilesX", 4);
 		particleComponent.Effect->Set("u_TextureModule.TilesY", 4);
 
-		particleComponent.Effect->SetBufferSize("buffer_Data", particleData.size() * sizeof(ParticleData));
-		particleComponent.Effect->SetBufferSize("buffer_Specification", particleSpecification.size() * sizeof(ParticleSpecification));
+		//particleComponent.Effect->SetBufferSize("buffer_Data", particleData.size() * sizeof(ParticleData));
+		//particleComponent.Effect->SetBufferSize("buffer_Specification", particleSpecification.size() * sizeof(ParticleSpecification));
 		particleComponent.Effect->SetBufferData("buffer_Data", particleData.data(), particleData.size(), sizeof(ParticleData));
 		particleComponent.Effect->SetBufferData("buffer_Specification", particleSpecification.data(), particleSpecification.size(), sizeof(ParticleSpecification));
 	}	
