@@ -1,43 +1,63 @@
 #include "stdafx.h"
 #include "OpenGLShader.h"
 
+#include "XYZ/Renderer/Renderer.h"
+#include "XYZ/Utils/StringUtils.h"
+
+#include <GL/glew.h>
 #include <glm/gtc/type_ptr.hpp>
+
 #include <fstream>
 #include <array>
-#include <GL/glew.h>
-
-#include "XYZ/Renderer/Renderer.h"
 
 namespace XYZ {
+	
+	static std::string GetEndStruct(const char* str, const char** outPosition)
+	{
+		const char* end = strstr(str, "};");
+		if (!end)
+			return str;
 
-	UniformDataType StringToType(const std::string& type)
-	{
-		if (type == "int")			return UniformDataType::Int;
-		if (type == "float")		return UniformDataType::Float;
-		if (type == "vec2")			return UniformDataType::Vec2;
-		if (type == "vec3")			return UniformDataType::Vec3;
-		if (type == "vec4")			return UniformDataType::Vec4;
-		if (type == "mat3")			return UniformDataType::Mat3;
-		if (type == "mat4")			return UniformDataType::Mat4;
-		if (type == "sampler2D")	return UniformDataType::Sampler2D;
-		return UniformDataType::None;
+		if (outPosition)
+			*outPosition = end;
+		size_t length = end - str + 1;
+		return std::string(str, length);
 	}
-	uint32_t SizeOfUniformType(UniformDataType type)
+	
+	static ShaderStruct ParseStruct(const std::string& structSource)
 	{
-		switch (type)
+		ShaderStruct shaderStruct;
+		std::vector<std::string> tokens = std::move(Utils::SplitString(structSource, "\t\n"));
+		std::vector<std::string> structName = std::move(Utils::SplitString(tokens[0], " \r"));
+		shaderStruct.Name = structName[1];
+		for (size_t i = 1; i < tokens.size(); ++i)
 		{
-		case UniformDataType::Int:        return 4;
-		case UniformDataType::Float:      return 4;
-		case UniformDataType::Vec2:       return 4 * 2;
-		case UniformDataType::Vec3:       return 4 * 3;
-		case UniformDataType::Vec4:       return 4 * 4;
-		case UniformDataType::Mat3:       return 4 * 3 * 3;
-		case UniformDataType::Mat4:       return 4 * 4 * 4;
+			std::vector<std::string> variables = std::move(Utils::SplitString(tokens[i], " \r"));
+			if (variables.size() > 1)
+			{
+				UniformDataType type = StringToShaderDataType(variables[0]);
+				variables[1].pop_back(); // pop ;
+				std::string name = variables[1];
+				shaderStruct.Variables.push_back({ name, type });
+			}
 		}
-		return 0;
+		return shaderStruct;
 	}
 
-	std::vector<std::string> SplitString(const std::string& string, const std::string& delimiters)
+	static std::vector<ShaderStruct> ParseStructs(const std::string& source)
+	{
+		std::vector<ShaderStruct> structs;
+		const char* token = nullptr;
+		const char* src = source.c_str();
+		while (token = Utils::FindToken(src, "struct"))
+		{
+			structs.push_back(ParseStruct(GetEndStruct(token, &src)));
+		}
+		return structs;
+	}
+
+
+	static std::vector<std::string> SplitString(const std::string& string, const std::string& delimiters)
 	{
 		size_t start = 0;
 		size_t end = string.find_first_of(delimiters);
@@ -60,22 +80,22 @@ namespace XYZ {
 		return result;
 	}
 
-	std::vector<std::string> SplitString(const std::string& string, const char delimiter)
+	static std::vector<std::string> SplitString(const std::string& string, const char delimiter)
 	{
 		return SplitString(string, std::string(1, delimiter));
 	}
 
-	std::vector<std::string> Tokenize(const std::string& string)
+	static std::vector<std::string> Tokenize(const std::string& string)
 	{
 		return SplitString(string, " \t\n");
 	}
 
-	std::vector<std::string> GetLines(const std::string& string)
+	static std::vector<std::string> GetLines(const std::string& string)
 	{
 		return SplitString(string, "\n");
 	}
 
-	std::string GetStatement(const char* str, const char** outPosition)
+	static std::string GetStatement(const char* str, const char** outPosition)
 	{
 		const char* end = strstr(str, ";");
 		if (!end)
@@ -452,7 +472,7 @@ namespace XYZ {
 		return m_ShaderSources;
 	}
 	
-	void OpenGLShader::parseUniform(const std::string& statement, ShaderType type)
+	void OpenGLShader::parseUniform(const std::string& statement, ShaderType type, const std::vector<ShaderStruct>& structs)
 	{
 		std::vector<std::string> tokens = Tokenize(statement);
 		uint32_t index = 0;
@@ -475,8 +495,15 @@ namespace XYZ {
 			count = atoi(c.c_str());
 		}
 
-		auto dataType = StringToType(typeString);
-		auto size = SizeOfUniformType(dataType);
+		UniformDataType dataType = StringToShaderDataType(typeString);
+		uint32_t size = SizeOfUniformType(dataType);
+		
+		UniformList* targetList = nullptr;
+		if (type == ShaderType::Vertex || type == ShaderType::Compute)
+			targetList = &m_VSUniformList;
+		else
+			targetList = &m_FSUniformList;
+
 		if (dataType != UniformDataType::None)
 		{			
 			if (dataType == UniformDataType::Sampler2D)
@@ -484,22 +511,33 @@ namespace XYZ {
 				m_TextureList.Textures.push_back(TextureUniform{ name, m_TextureList.Count, count });
 				m_TextureList.Count += count;
 			}
-			else if (type == ShaderType::Vertex)
-			{
-				Uniform uniform{
-					   name, dataType, type, m_VSUniformList.Size, size, count, 0
-				};
-				m_VSUniformList.Uniforms.push_back(uniform);
-				m_VSUniformList.Size += size * count;
-			}
 			else
 			{
 				Uniform uniform{
-					   name, dataType, type, m_FSUniformList.Size, size, count, 0
+					   name, dataType, type, targetList->Size, size, count, 0
 				};
-				m_FSUniformList.Uniforms.push_back(uniform);
-				m_FSUniformList.Size += size * count;
+				targetList->Uniforms.push_back(uniform);
+				targetList->Size += size * count;
 			}
+		}
+		else
+		{		
+			for (auto& structType : structs)
+			{
+				if (structType.Name == typeString)
+				{
+					for (auto& var : structType.Variables)
+					{
+						size = SizeOfUniformType(var.Type);
+						Uniform uniform{
+							name + "." + var.Name, var.Type, type, targetList->Size, size, count, 0
+						};
+						targetList->Uniforms.push_back(uniform);
+						targetList->Size += size * count;
+					}
+					break;
+				}
+			}			
 		}
 	}
 	void OpenGLShader::compileAndUpload()
@@ -625,21 +663,25 @@ namespace XYZ {
 		auto& vertexSource = m_ShaderSources[GL_VERTEX_SHADER];
 		auto& fragmentSource = m_ShaderSources[GL_FRAGMENT_SHADER];
 
+		std::vector<ShaderStruct> vertexStructs = std::move(ParseStructs(vertexSource));
+		std::vector<ShaderStruct> fragmentStructs = std::move(ParseStructs(fragmentSource));
+
 		// Vertex Shader
 		vstr = vertexSource.c_str();
 		while (token = FindToken(vstr, "uniform"))
-			parseUniform(GetStatement(token, &vstr), ShaderType::Vertex);
+			parseUniform(GetStatement(token, &vstr), ShaderType::Vertex, vertexStructs);
 
 		// Fragment Shader
 		fstr = fragmentSource.c_str();
 		while (token = FindToken(fstr, "uniform"))
-			parseUniform(GetStatement(token, &fstr), ShaderType::Fragment);
+			parseUniform(GetStatement(token, &fstr), ShaderType::Fragment, fragmentStructs);
 
 		if (m_IsCompute)
 		{
 			const char* cstr = m_ShaderSources[GL_COMPUTE_SHADER].c_str();
+			std::vector<ShaderStruct> computeStructs = std::move(ParseStructs(cstr));
 			while (token = FindToken(cstr, "uniform"))
-				parseUniform(GetStatement(token, &cstr), ShaderType::Vertex);
+				parseUniform(GetStatement(token, &cstr), ShaderType::Vertex, computeStructs);
 		}
 	}
 

@@ -135,4 +135,5 @@ namespace XYZ {
 		glm::decompose(transform, Scale, rotation, Translation, skew, perspective);
 		Rotation = glm::eulerAngles(rotation);
 	}
+	
 }

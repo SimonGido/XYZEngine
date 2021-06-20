@@ -4,6 +4,7 @@
 #include "XYZ/Core/GUID.h"
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Renderer/Material.h"
+#include "XYZ/Editor/EditorCamera.h"
 
 namespace XYZ {
 	struct EditorSpriteRenderer : public IComponent
@@ -24,7 +25,6 @@ namespace XYZ {
 
 		Ref<Material>	Material;
 		Ref<SubTexture> SubTexture;
-		glm::vec4 Color = glm::vec4(1.0f); 
+		glm::vec4	    Color = glm::vec4(1.0f); 
 	};
-
 }

@@ -21,7 +21,7 @@ namespace XYZ {
 		Sampler2D,
 		SamplerCube,
 		Bool, Float, Vec2, Vec3, Vec4,
-		Int, IntVec2, IntVec3, IntVec4,
+		Int, UInt, IntVec2, IntVec3, IntVec4,
 		Mat3, Mat4,
 		Struct,
 	};
@@ -32,6 +32,35 @@ namespace XYZ {
 		Fragment,
 		Compute
 	};
+
+	static UniformDataType StringToShaderDataType(const std::string& type)
+	{
+		if (type == "int")			return UniformDataType::Int;
+		if (type == "uint")			return UniformDataType::UInt;
+		if (type == "float")		return UniformDataType::Float;
+		if (type == "vec2")			return UniformDataType::Vec2;
+		if (type == "vec3")			return UniformDataType::Vec3;
+		if (type == "vec4")			return UniformDataType::Vec4;
+		if (type == "mat3")			return UniformDataType::Mat3;
+		if (type == "mat4")			return UniformDataType::Mat4;
+		if (type == "sampler2D")	return UniformDataType::Sampler2D;
+		return UniformDataType::None;
+	}
+	static uint32_t SizeOfUniformType(UniformDataType type)
+	{
+		switch (type)
+		{
+		case UniformDataType::Int:        return 4;
+		case UniformDataType::UInt:       return 4;
+		case UniformDataType::Float:      return 4;
+		case UniformDataType::Vec2:       return 4 * 2;
+		case UniformDataType::Vec3:       return 4 * 3;
+		case UniformDataType::Vec4:       return 4 * 4;
+		case UniformDataType::Mat3:       return 4 * 3 * 3;
+		case UniformDataType::Mat4:       return 4 * 4 * 4;
+		}
+		return 0;
+	}
 
 	struct Uniform
 	{
@@ -61,6 +90,20 @@ namespace XYZ {
 	{
 		std::vector<TextureUniform> Textures;
 		uint32_t Count = 0;
+	};
+
+	struct ShaderVariable
+	{
+		std::string     Name;
+		UniformDataType	Type;
+		size_t Size() const;
+	};
+
+	struct ShaderStruct
+	{
+		std::string					Name;
+		std::vector<ShaderVariable> Variables;
+		size_t Size() const;
 	};
 
 	class Shader : public Asset

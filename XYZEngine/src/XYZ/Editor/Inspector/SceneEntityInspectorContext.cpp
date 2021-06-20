@@ -8,6 +8,7 @@
 #include "XYZ/Script/ScriptEngine.h"
 #include "XYZ/Asset/AssetManager.h"
 #include "XYZ/Renderer/Renderer2D.h"
+#include "XYZ/Utils/Math/Ray.h"
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -554,6 +555,8 @@ namespace XYZ {
 						Renderer2D::SubmitCircle(p0, 0.05f, 10, sc_ColliderColor);
 					}
 					Renderer2D::SubmitCircle(p1, 0.05f, 10, sc_ColliderColor);
+
+		
 
 					Helper::BeginColumns("Size");
 					ImGui::PushItemWidth(75.0f);

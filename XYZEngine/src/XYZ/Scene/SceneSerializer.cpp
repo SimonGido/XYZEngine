@@ -100,7 +100,19 @@ namespace XYZ {
 		out << YAML::Key << "Intensity" << YAML::Value << val.Intensity;
 		out << YAML::EndMap; // Point Light
 	}
-	
+	template <>
+	void SceneSerializer::serialize<SpotLight2D>(YAML::Emitter& out, const SpotLight2D& val)
+	{
+		out << YAML::Key << "SpotLight2D";
+		out << YAML::BeginMap; // Spot Light
+
+		out << YAML::Key << "Color" << YAML::Value << val.Color;
+		out << YAML::Key << "Radius" << YAML::Value << val.Radius;
+		out << YAML::Key << "Intensity" << YAML::Value << val.Intensity;
+		out << YAML::Key << "OuterAngle" << YAML::Value << val.OuterAngle;
+		out << YAML::Key << "InnerAngle" << YAML::Value << val.InnerAngle;
+		out << YAML::EndMap; // Spot Light
+	}
 
 	template <>
 	void SceneSerializer::serialize<RigidBody2DComponent>(YAML::Emitter& out, const RigidBody2DComponent& val)
@@ -241,6 +253,14 @@ namespace XYZ {
 		{
 			serialize<ScriptComponent>(out, val.GetComponent<ScriptComponent>());
 		}
+		if (val.HasComponent<PointLight2D>())
+		{
+			serialize<PointLight2D>(out, val.GetComponent<PointLight2D>());
+		}
+		if (val.HasComponent<SpotLight2D>())
+		{
+			serialize<SpotLight2D>(out, val.GetComponent<SpotLight2D>());
+		}
 		out << YAML::EndMap; // Entity
 	}
 
@@ -365,12 +385,22 @@ namespace XYZ {
 	void SceneSerializer::deserialize<PointLight2D>(YAML::Node& data, SceneEntity entity)
 	{
 		PointLight2D light;
-		light.Color = data["Color"].as<glm::vec4>();
+		light.Color = data["Color"].as<glm::vec3>();
 		light.Radius = data["Radius"].as<float>();
 		light.Intensity = data["Intensity"].as<float>();
 		entity.AddComponent(light);
 	}
-
+	template <>
+	void SceneSerializer::deserialize<SpotLight2D>(YAML::Node& data, SceneEntity entity)
+	{
+		SpotLight2D light;
+		light.Color = data["Color"].as<glm::vec3>();
+		light.Radius = data["Radius"].as<float>();
+		light.Intensity = data["Intensity"].as<float>();
+		light.OuterAngle = data["OuterAngle"].as<float>();
+		light.InnerAngle = data["InnerAngle"].as<float>();
+		entity.AddComponent(light);
+	}
 
 	template <>
 	void SceneSerializer::deserialize<RigidBody2DComponent>(YAML::Node& data, SceneEntity entity)
@@ -453,11 +483,6 @@ namespace XYZ {
 		{
 			deserialize<SpriteRenderer>(spriteRenderer, entity);
 		}
-		auto pointLight = data["PointLight2D"];
-		if (pointLight)
-		{
-			deserialize<PointLight2D>(pointLight, entity);
-		}
 
 		auto rigidBody = data["RigidBody2D"];
 		if (rigidBody)
@@ -489,7 +514,17 @@ namespace XYZ {
 			deserialize<ScriptComponent>(scriptComponent, entity);
 		}
 			
-		
+		auto pointLightComponent = data["PointLight2D"];
+		if (pointLightComponent)
+		{
+			deserialize<PointLight2D>(pointLightComponent, entity);
+		}
+
+		auto spotLightComponent = data["SpotLight2D"];
+		if (spotLightComponent)
+		{
+			deserialize<SpotLight2D>(spotLightComponent, entity);
+		}
 	}
 
 

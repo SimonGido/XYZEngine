@@ -73,4 +73,15 @@ namespace XYZ {
 	{
 		return m_Shaders.find(name) != m_Shaders.end();
 	}
+	size_t ShaderVariable::Size() const
+	{
+		return SizeOfUniformType(Type);
+	}
+	size_t ShaderStruct::Size() const
+	{
+		size_t result = 0;
+		for (auto& var : Variables)
+			result += var.Size();
+		return result;
+	}
 }

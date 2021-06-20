@@ -179,7 +179,9 @@ namespace XYZ {
 
 	void OpenGLShaderStorageBuffer::Resize(void* data, uint32_t size)
 	{
-		ByteBuffer buffer = ByteBuffer::Copy(data, size);
+		ByteBuffer buffer(nullptr, size);
+		if (data)
+			buffer.Write(data, size, 0);
 
 		Ref<OpenGLShaderStorageBuffer> instance = this;
 		Renderer::Submit([instance, size, buffer]() {

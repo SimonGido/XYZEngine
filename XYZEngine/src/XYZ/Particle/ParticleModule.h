@@ -1,6 +1,7 @@
 #pragma once
 
 #include "XYZ/Utils/StringUtils.h"
+#include "XYZ/Renderer/Shader.h"
 
 #include <glm/glm.hpp>
 
@@ -8,35 +9,10 @@
 
 namespace XYZ {
 	
-	
-	enum class ParticleShaderDataType
-	{
-		None, Int, UInt, Float, Float2, Float3, Float4
-	};
-	
-	inline ParticleShaderDataType StringToShaderDataType(const std::string& str)
-	{
-		if (str == "int")
-			return ParticleShaderDataType::Int;
-		if (str == "uint")
-			return ParticleShaderDataType::UInt;
-		if (str == "float")
-			return ParticleShaderDataType::Float;
-		if (str == "vec2")
-			return ParticleShaderDataType::Float2;
-		if (str == "vec3")
-			return ParticleShaderDataType::Float3;
-		if (str == "vec4")
-			return ParticleShaderDataType::Float4;
-
-		XYZ_ASSERT(false, "Invalid type");
-		return ParticleShaderDataType::None;
-	}
-	
 	struct ParticleModuleElement
 	{
-		std::string			   Name;
-		ParticleShaderDataType Type;
+		std::string		Name;
+		UniformDataType Type;
 	};
 
 	template <size_t ElementCount>

@@ -37,7 +37,7 @@ namespace XYZ {
 	private:
 		void parse();
 		void load(const std::string& source);
-		void parseUniform(const std::string& statement, ShaderType type);
+		void parseUniform(const std::string& statement, ShaderType type, const std::vector<ShaderStruct>& structs);
 		void compileAndUpload();
 		void resolveUniforms();
 

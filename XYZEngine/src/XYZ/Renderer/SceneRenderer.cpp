@@ -426,8 +426,8 @@ namespace XYZ {
 			auto& material = dc.Particle->RenderMaterial;
 			material->Set("u_Transform", dc.Transform->WorldTransform);
 			material->Bind();
-			dc.Particle->System->GetVertexArray()->Bind();
-			dc.Particle->System->GetIndirectBuffer()->Bind();
+			dc.Particle->Effect->GetVertexArray()->Bind();
+			dc.Particle->Effect->GetIndirectBuffer()->Bind();
 			Renderer::DrawElementsIndirect(nullptr);
 		}
 
@@ -439,6 +439,8 @@ namespace XYZ {
 		Renderer::BeginRenderPass(s_Data.LightPass, true);
 
 		s_Data.LightShader->Bind();
+		s_Data.LightShader->SetInt("u_NumberPointLights", s_Data.PointLightsList.size());
+		s_Data.LightShader->SetInt("u_NumberSpotLights", s_Data.SpotLightsList.size());
 
 		s_Data.GeometryPass->GetSpecification().TargetFramebuffer->BindTexture(0, 0);
 		s_Data.GeometryPass->GetSpecification().TargetFramebuffer->BindTexture(1, 1);

@@ -23,6 +23,9 @@ layout(location = 0) out vec4 o_Color;
 
 in vec2 v_TexCoords;
 
+uniform int u_NumberPointLights;
+uniform int u_NumberSpotLights;
+
 struct PointLightData
 {
 	vec4  Color;
@@ -62,7 +65,7 @@ float Determinant(vec2 a, vec2 b)
 vec3 CalculatePointLights(vec3 defaultColor, vec2 fragPos)
 {
 	vec3 litColor = vec3(0.0, 0.0, 0.0);
-	for (int i = 0; i < PointLights.length(); ++i)
+	for (int i = 0; i < u_NumberPointLights; ++i)
 	{
 		float dist = distance(fragPos, PointLights[i].Position.xy);
 		float radius = PointLights[i].Radius;
@@ -75,7 +78,7 @@ vec3 CalculatePointLights(vec3 defaultColor, vec2 fragPos)
 vec3 CalculateSpotLights(vec3 defaultColor, vec2 fragPos)
 {
 	vec3 litColor = vec3(0.0, 0.0, 0.0);
-	for (int i = 0; i < SpotLights.length(); ++i)
+	for (int i = 0; i < u_NumberSpotLights; ++i)
 	{
 		float dist = distance(fragPos, SpotLights[i].Position.xy);
 		float radius = SpotLights[i].Radius;
@@ -92,6 +95,8 @@ vec3 CalculateSpotLights(vec3 defaultColor, vec2 fragPos)
 	}
 	return litColor;
 }
+
+
 
 
 layout(binding = 0) uniform sampler2D u_Texture[2];

@@ -262,35 +262,17 @@ namespace XYZ {
 		for (auto entity : particleView)
 		{
 			auto [transform, particle] = particleView.Get<TransformComponent, ParticleComponent>(entity);
-			particle.System->m_BoxColliderStorage->Update(boxColliders.data(), boxColliders.size() * sizeof(glm::vec4));
-
-			particle.ComputeShader->Bind();
-
-			auto& config = particle.System->GetConfiguration();
-			particle.ComputeShader->SetMat4("u_Transform", transform.WorldTransform);
-			particle.ComputeShader->SetInt("u_NumBoxColliders", boxColliders.size());
-			particle.ComputeShader->SetFloat2("u_Force", config.Force);
-			// Main module
-			particle.ComputeShader->SetInt("u_MainModule.Repeat", (int)config.Repeat);
-			particle.ComputeShader->SetInt("u_MainModule.ParticlesEmitted", particle.System->GetEmittedParticles());
-			particle.ComputeShader->SetFloat("u_MainModule.LifeTime", 3.0f);
-			particle.ComputeShader->SetFloat("u_MainModule.Time", ts);
-			particle.ComputeShader->SetFloat("u_MainModule.Speed", config.Speed);
-			// Color module
-			particle.ComputeShader->SetFloat4("u_ColorModule.StartColor",config.StartColor);
-			particle.ComputeShader->SetFloat4("u_ColorModule.EndColor",  config.EndColor);
-			// Size module
-			particle.ComputeShader->SetFloat2("u_SizeModule.StartSize", config.StartSize);
-			particle.ComputeShader->SetFloat2("u_SizeModule.EndSize", config.EndSize);
-			// Texture animation module
-			particle.ComputeShader->SetInt("u_TextureModule.TilesX", 4);
-			particle.ComputeShader->SetInt("u_TextureModule.TilesY", 4);
-
-			particle.System->Update(ts);
-			particle.ComputeShader->Compute(32, 32, 1);
+			//particle.System->m_BoxColliderStorage->Update(boxColliders.data(), boxColliders.size() * sizeof(glm::vec4));
+			particle.Effect->Set("u_MainModule.Time", ts);
+			particle.Effect->Set("u_Transform", transform.WorldTransform);
+			particle.Effect->Set("u_MainModule.ParticlesEmitted", (int)particle.Effect->m_EmittedParticles);
+			
+			Ref<Shader> computeShader = particle.Effect->GetComputeShader();		
+			computeShader->Bind();
+			particle.Effect->Update(ts);
+			particle.Effect->Compute();
 		}
 		
-
 		updateHierarchy();
 	}
 

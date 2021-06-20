@@ -17,6 +17,7 @@
 
 namespace XYZ {
 	namespace Editor {
+
 		static glm::vec4 CalculateTexCoords(const glm::vec2& coords, const glm::vec2& size, const glm::vec2& textureSize)
 		{
 			return {

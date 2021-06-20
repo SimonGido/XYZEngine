@@ -1,8 +1,6 @@
 //#type compute
 #version 460
 
-const int c_MaxParticles = 100;
-
 struct DrawCommand 
 {
 	uint Count;         
@@ -31,7 +29,7 @@ struct ParticleSpecification
 	vec2  StartPosition;
 
 	float TimeAlive;
-	int	  IsAlive;
+	int IsAlive;
 };
 
 
@@ -152,6 +150,7 @@ uniform TextureSheetAnimation u_TextureModule;
 uniform Main			      u_MainModule;
 uniform vec2				  u_Force;
 uniform int					  u_NumBoxColliders;
+uniform int					  u_MaxParticles;
 
 void KillParticle(inout float timeAlive, inout int isAlive, inout vec2 position, vec2 startPosition)
 {	
@@ -167,7 +166,7 @@ layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
 void main(void)
 {
 	uint id = gl_GlobalInvocationID.x + gl_GlobalInvocationID.y * gl_NumWorkGroups.x * gl_WorkGroupSize.x;
-	if (id > c_MaxParticles || Specification[id].IsAlive == 0)
+	if (id > u_MaxParticles || Specification[id].IsAlive == 0)
 		return;
 
 	ParticleData data			= Data[id];
