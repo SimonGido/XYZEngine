@@ -36,6 +36,7 @@ namespace XYZ {
 		const ParticleEmitter& GetParticleEmitter() const { return m_Emitter; }
 		float GetEmittedParticles() const { return m_EmittedParticles; }
 		float GetSpawnRate() const { return m_Rate; }
+		float PlayTime() const { return m_PlayTime; }
 		bool  Playing() const { return m_Playing; }
 	
 		const Ref<ParticleMaterial>& GetMaterial() const { return m_Material; }

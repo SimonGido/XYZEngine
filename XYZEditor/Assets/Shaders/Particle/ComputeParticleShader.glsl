@@ -63,7 +63,6 @@ layout(std140, binding = 4) buffer buffer_DrawCommand // indirect
 
 layout(binding = 5, offset = 0) uniform atomic_uint counter_DeadParticles;
 
-
 struct ColorOverLifeTime
 {
 	vec4 StartColor;
@@ -157,6 +156,8 @@ uniform Main			      u_MainModule;
 uniform vec2				  u_Force;
 uniform int					  u_NumBoxColliders;
 uniform int					  u_MaxParticles;
+uniform float				  u_Rate;
+uniform float				  u_PlayTime;
 
 void KillParticle(inout float timeAlive, inout int isAlive, inout vec2 position, vec2 startPosition)
 {	
@@ -187,7 +188,7 @@ void main(void)
 		if (CollideBox(data.Position, data.Size, BoxColliders[i]))
 		{
 			KillParticle(specs.TimeAlive, specs.IsAlive, data.Position, specs.StartPosition);
-			return;
+			break;
 		}
 	}
 
