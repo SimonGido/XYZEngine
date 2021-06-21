@@ -263,14 +263,15 @@ namespace XYZ {
 		{
 			auto [transform, particle] = particleView.Get<TransformComponent, ParticleComponent>(entity);
 			//particle.System->m_BoxColliderStorage->Update(boxColliders.data(), boxColliders.size() * sizeof(glm::vec4));
-			particle.Effect->Set("u_MainModule.Time", ts);
-			particle.Effect->Set("u_Transform", transform.WorldTransform);
-			particle.Effect->Set("u_MainModule.ParticlesEmitted", (int)particle.Effect->m_EmittedParticles);
+			auto particleMaterial = particle.System->GetMaterial();
+			particleMaterial->Set("u_MainModule.Time", ts);
+			particleMaterial->Set("u_Transform", transform.WorldTransform);
+			particleMaterial->Set("u_MainModule.ParticlesEmitted", (int)particle.System->GetEmittedParticles());
 			
-			Ref<Shader> computeShader = particle.Effect->GetComputeShader();		
+			Ref<Shader> computeShader = particleMaterial->GetComputeShader();
 			computeShader->Bind();
-			particle.Effect->Update(ts);
-			particle.Effect->Compute();
+			particle.System->Update(ts);
+			particleMaterial->Compute();
 		}
 		
 		updateHierarchy();

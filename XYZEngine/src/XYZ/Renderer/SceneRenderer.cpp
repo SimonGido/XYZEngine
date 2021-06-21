@@ -426,8 +426,8 @@ namespace XYZ {
 			auto& material = dc.Particle->RenderMaterial;
 			material->Set("u_Transform", dc.Transform->WorldTransform);
 			material->Bind();
-			dc.Particle->Effect->GetVertexArray()->Bind();
-			dc.Particle->Effect->GetIndirectBuffer()->Bind();
+			dc.Particle->System->GetMaterial()->GetVertexArray()->Bind();
+			dc.Particle->System->GetMaterial()->GetIndirectBuffer()->Bind();
 			Renderer::DrawElementsIndirect(nullptr);
 		}
 

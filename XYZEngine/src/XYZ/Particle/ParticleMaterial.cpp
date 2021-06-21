@@ -212,28 +212,11 @@ namespace XYZ {
 		:
 		m_ComputeShader(computeShader),
 		m_VertexArray(VertexArray::Create()),
-		m_MaxParticles(maxParticles),
-		m_Rate(0.0f),
-		m_EmittedParticles(0.0f),
-		m_PlayTime(0.0f)
+		m_MaxParticles(maxParticles)
 	{
 		rebuild();
 	}
-	void ParticleMaterial::Update(Timestep ts)
-	{
-		float raise = m_Rate * ts;
-		if (m_EmittedParticles + raise <= m_MaxParticles)
-			m_EmittedParticles += raise;
-
-		uint32_t emitted = (uint32_t)std::ceil(m_EmittedParticles);
-		for (auto& buffer : m_Buffers)
-		{
-			if (buffer.ParticleBuffer)
-				buffer.ElementCount = emitted;
-		}
-		m_PlayTime += ts;
-	}
-
+	
 	void ParticleMaterial::Compute()
 	{
 		for (auto& buffer : m_Buffers)
@@ -245,14 +228,13 @@ namespace XYZ {
 		m_ComputeShader->Compute(32, 32, 1);
 	}
 
-	void ParticleMaterial::Reset()
+	
+	void ParticleMaterial::ResetCounters()
 	{
 		for (auto& counter : m_Counters)
 		{
 			counter.Atomic->Reset();
 		}
-		m_EmittedParticles = 0.0f;
-		m_PlayTime = 0.0f;
 	}
 
 	void ParticleMaterial::SetMaxParticles(uint32_t maxParticles)
@@ -265,6 +247,24 @@ namespace XYZ {
 	{
 		m_ComputeShader = computeShader;
 		rebuild();
+	}
+
+	void ParticleMaterial::SetParticleBuffersElementCount(uint32_t count)
+	{
+		for (auto& buffer : m_Buffers)
+		{
+			if (buffer.ParticleBuffer)
+				buffer.ElementCount = count;
+		}
+	}
+
+	void ParticleMaterial::SetBufferElementCount(const std::string& name, uint32_t count)
+	{
+		for (auto& buffer : m_Buffers)
+		{
+			if (buffer.Name == name)
+				buffer.ElementCount = count;
+		}
 	}
 
 	void ParticleMaterial::SetBufferSize(const std::string& name, uint32_t size)
@@ -287,6 +287,19 @@ namespace XYZ {
 			{
 				XYZ_ASSERT(elementSize == buffer.ElementSize, "Wrong element size");
 				buffer.Storage->Update(data, count * elementSize, offset);
+				return;
+			}
+		}
+		XYZ_ASSERT(false, "No buffer with the name ", name);
+	}
+
+	void ParticleMaterial::GetBufferData(const std::string& name, void** data, uint32_t count, uint32_t offset)
+	{
+		for (auto& buffer : m_Buffers)
+		{
+			if (buffer.Name == name)
+			{
+				buffer.Storage->GetSubData(data, count * buffer.ElementSize, offset);
 				return;
 			}
 		}
@@ -332,7 +345,7 @@ namespace XYZ {
 					m_Buffers.push_back(buf);
 					if (buffer.RenderBuffer)
 					{
-						buf.Storage->SetLayout(BufferLayoutFromVariables(buffer.Variables, 2));
+						buf.Storage->SetLayout(BufferLayoutFromVariables(buffer.Variables, 1));
 						m_VertexArray->AddShaderStorageBuffer(buf.Storage);
 					}
 				}
@@ -344,6 +357,8 @@ namespace XYZ {
 				cou.Atomic = AtomicCounter::Create(1, counter.Binding);
 				m_Counters.push_back(cou);
 			}
+
+			XYZ_ASSERT(m_DrawCommand.Raw(), "Compute shader does not define draw command");
 		}
 	}
 
@@ -353,17 +368,16 @@ namespace XYZ {
 		m_Counters.clear();
 		m_DrawCommand.Reset();
 
-		ParticleVertex quad[4] = {
-			ParticleVertex{glm::vec3(-0.5f, -0.5f, 0.0f), glm::vec2(0.0f, 0.0f)},
-			ParticleVertex{glm::vec3( 0.5f, -0.5f, 0.0f), glm::vec2(1.0f, 0.0f)},
-			ParticleVertex{glm::vec3( 0.5f,  0.5f, 0.0f), glm::vec2(1.0f, 1.0f)},
-			ParticleVertex{glm::vec3(-0.5f,  0.5f, 0.0f), glm::vec2(0.0f, 1.0f)}
+		glm::vec3 quad[4] = {
+			glm::vec3(-0.5f, -0.5f, 0.0f),
+			glm::vec3( 0.5f, -0.5f, 0.0f),
+			glm::vec3( 0.5f,  0.5f, 0.0f),
+			glm::vec3(-0.5f,  0.5f, 0.0f)
 		};
 		Ref<VertexBuffer> squareVBpar;
-		squareVBpar = XYZ::VertexBuffer::Create(quad, 4 * sizeof(ParticleVertex));
+		squareVBpar = XYZ::VertexBuffer::Create(quad, 4 * sizeof(glm::vec3));
 		squareVBpar->SetLayout({
-			{ 0, XYZ::ShaderDataComponent::Float3, "a_Position" },
-			{ 1, XYZ::ShaderDataComponent::Float2, "a_TexCoord" }
+			{ 0, XYZ::ShaderDataComponent::Float3, "a_Position" }
 			});
 		m_VertexArray->AddVertexBuffer(squareVBpar);
 
@@ -374,6 +388,15 @@ namespace XYZ {
 		Ref<XYZ::IndexBuffer> squareIBpar;
 		squareIBpar = XYZ::IndexBuffer::Create(squareIndpar, sizeof(squareIndpar) / sizeof(uint32_t));
 		m_VertexArray->SetIndexBuffer(squareIBpar);
+	}
+
+	void ParticleMaterial::resize()
+	{
+		for (auto& buffer : m_Buffers)
+		{
+			//if (buffer.ParticleBuffer)
+			//	buffer.Storage->Resize()
+		}
 	}
 
 	const Uniform* ParticleMaterial::findUniform(const std::string& name) const

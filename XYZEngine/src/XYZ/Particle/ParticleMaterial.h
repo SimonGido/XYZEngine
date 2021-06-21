@@ -15,9 +15,8 @@ namespace XYZ {
 	public:
 		ParticleMaterial(uint32_t maxParticles, const Ref<Shader>& computeShader);
 		
-		void Update(Timestep ts);
 		void Compute();
-		void Reset();
+		void ResetCounters();
 
 		template<typename T>
 		void Set(const std::string& name, const T& val);
@@ -25,23 +24,26 @@ namespace XYZ {
 		template <typename T>
 		T& Get(const std::string& name);
 
-		void SetSpawnRate(float rate) { m_Rate = rate; }
+
 		void SetMaxParticles(uint32_t maxParticles);
 		void SetComputeShader(const Ref<Shader>& computeShader);
+		void SetParticleBuffersElementCount(uint32_t count);
+		void SetBufferElementCount(const std::string& name, uint32_t count);
 		void SetBufferSize(const std::string& name, uint32_t size);
 		void SetBufferData(const std::string& name, void* data, uint32_t count, uint32_t elementSize, uint32_t offset = 0);
 
-		
+		void GetBufferData(const std::string& name, void** data, uint32_t count, uint32_t offset = 0);
+
 		const Ref<Shader>& GetComputeShader() const { return m_ComputeShader; }
 		const Ref<VertexArray>& GetVertexArray() const { return m_VertexArray; }
 		const Ref<IndirectBuffer>& GetIndirectBuffer() const { return m_DrawCommand; }
 		
 		const uint8_t* GetUniformBuffer() const { return m_UniformBuffer; }
 		uint32_t GetMaxParticles() const { return m_MaxParticles; }
-
 	private:
 		void parse();
 		void rebuild();
+		void resize();
 		
 		const Uniform* findUniform(const std::string& name) const;
 	private:
@@ -49,9 +51,6 @@ namespace XYZ {
 		Ref<VertexArray> m_VertexArray;
 		ByteBuffer		 m_UniformBuffer;
 		uint32_t		 m_MaxParticles;
-		float			 m_Rate;
-		float			 m_EmittedParticles;
-		float			 m_PlayTime;
 
 		struct Buffer
 		{

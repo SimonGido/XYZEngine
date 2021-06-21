@@ -12,14 +12,14 @@ namespace XYZ {
 
 	struct ParticleData
 	{
-		glm::vec4 Color			 = glm::vec4(0);
-		glm::vec2 Position		 = glm::vec2(0);
-		glm::vec2 TexCoord		 = glm::vec2(0);
-		glm::vec2 Size			 = glm::vec2(0);
+		glm::vec4 Color			 = glm::vec4(0.0f);
+		glm::vec4 TexCoord		 = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+		glm::vec2 Position		 = glm::vec2(0.0f);
+		glm::vec2 Size			 = glm::vec2(0.0f);
 		float	  Rotation		 = 0.0f;
 
 	private:
-		float	  Alignment[1];
+		float	  Alignment[3];
 	};
 
 	struct ParticleSpecification

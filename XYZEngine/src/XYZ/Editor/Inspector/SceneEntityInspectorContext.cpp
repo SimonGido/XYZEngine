@@ -408,10 +408,46 @@ namespace XYZ {
 					ImGui::DragFloat("##OuterAngle", &component.OuterAngle, 1.0f, 0.0f, 0.0f, "%.2f");
 					Helper::EndColumns();
 				});
+				Helper::DrawComponent<ParticleComponent>("Particle Component", m_Context, [&](auto& component) {
+
+					auto material = component.System->GetMaterial();
+					auto& shader = material->GetComputeShader();
+					for (auto& uniform : shader->GetVSUniformList().Uniforms)
+					{
+						Helper::BeginColumns(uniform.Name.c_str(), 2, 200.0f);
+						std::string id = "##" + uniform.Name;
+						if (uniform.DataType == UniformDataType::Int)
+						{
+							ImGui::InputInt(id.c_str(), &material->Get<int32_t>(uniform.Name));
+						}
+						else if (uniform.DataType == UniformDataType::UInt)
+						{
+							ImGui::InputInt(id.c_str(), &material->Get<int32_t>(uniform.Name));
+						}
+						else if (uniform.DataType == UniformDataType::Float)
+						{
+							ImGui::InputFloat(id.c_str(), &material->Get<float>(uniform.Name));
+						}
+						else if (uniform.DataType == UniformDataType::Vec2)
+						{
+							ImGui::InputFloat2(id.c_str(), glm::value_ptr(material->Get<glm::vec2>(uniform.Name)));
+						}
+						else if (uniform.DataType == UniformDataType::Vec3)
+						{
+							ImGui::InputFloat3(id.c_str(), glm::value_ptr(material->Get<glm::vec3>(uniform.Name)));
+						}
+						else if (uniform.DataType == UniformDataType::Vec4)
+						{
+							ImGui::InputFloat4(id.c_str(), glm::value_ptr(material->Get<glm::vec4>(uniform.Name)));
+						}
+						Helper::EndColumns();
+					}
+				});
+
 				Helper::DrawComponent<ScriptComponent>("Script", m_Context, [&](auto& component) {
 					for (const PublicField& field : component.GetFields())
 					{
-						Helper::BeginColumns(field.GetName().c_str());
+						Helper::BeginColumns(field.GetName().c_str(), 2, 200.0f);
 						std::string id = "##" + field.GetName();
 						if (field.GetType() == PublicFieldType::Float)
 						{

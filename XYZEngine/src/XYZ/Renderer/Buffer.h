@@ -266,7 +266,7 @@ namespace XYZ {
 		
 		virtual void Update(void* vertices, uint32_t size, uint32_t offset = 0) = 0;
 		virtual void Resize(void* vertices, uint32_t size) = 0;
-		virtual void GetSubData(void* buffer, uint32_t size, uint32_t offset = 0) = 0;
+		virtual void GetSubData(void** buffer, uint32_t size, uint32_t offset = 0) = 0;
 		virtual void SetLayout(const BufferLayout& layout) = 0;
 		virtual const BufferLayout& GetLayout() const = 0;
 		virtual uint32_t GetRendererID() const = 0;

@@ -158,7 +158,8 @@ namespace XYZ {
 		Ref<const OpenGLShaderStorageBuffer> instance = this;
 		Renderer::Submit([instance, offset, size]() {
 			glBindBufferRange(GL_SHADER_STORAGE_BUFFER, instance->m_Binding, instance->m_RendererID, offset, size);
-			});
+
+		});
 	}
 
 	void OpenGLShaderStorageBuffer::Bind()const
@@ -194,10 +195,14 @@ namespace XYZ {
 			delete[]buffer;
 		});
 	}
-	void OpenGLShaderStorageBuffer::GetSubData(void* buffer, uint32_t size, uint32_t offset)
+	void OpenGLShaderStorageBuffer::GetSubData(void** buffer, uint32_t size, uint32_t offset)
 	{
 		XYZ_ASSERT(size + offset <= m_Size, "Accesing data out of range");
-		glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, offset, size, buffer);
+		Ref<OpenGLShaderStorageBuffer> instance = this;
+		Renderer::Submit([instance, buffer, size, offset]() {
+			*buffer = new uint8_t[size];
+			glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, offset, size, buffer);
+		});
 	}
 	OpenGLAtomicCounter::OpenGLAtomicCounter(uint32_t numOfCounters, uint32_t binding)
 		: m_NumberOfCounters(numOfCounters), m_Counters(new uint32_t[numOfCounters])
@@ -223,32 +228,41 @@ namespace XYZ {
 	}
 	void OpenGLAtomicCounter::Reset()
 	{
-		Renderer::Submit([=]() {
-			for (size_t i = 0; i < m_NumberOfCounters; ++i)
-				m_Counters[i] = 0;
-			glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, m_RendererID);
-			glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(uint32_t) * m_NumberOfCounters, m_Counters);
-			});
+		Ref<OpenGLAtomicCounter> instance = this;
+		Renderer::Submit([instance]() mutable {
+			for (size_t i = 0; i < instance->m_NumberOfCounters; ++i)
+				instance->m_Counters[i] = 0;
+			glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, instance->m_RendererID);
+			glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(uint32_t) * instance->m_NumberOfCounters, instance->m_Counters);
+		});
 	}
 	void OpenGLAtomicCounter::BindBase(uint32_t index) const
 	{
-		Renderer::Submit([this,index]() {
-			glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, m_RendererID);
-			glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, index, m_RendererID);
+		Ref<const OpenGLAtomicCounter> instance = this;
+		Renderer::Submit([instance, index]() {
+			glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, instance->m_RendererID);
+			glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, index, instance->m_RendererID);
 			});
 	}
 	void OpenGLAtomicCounter::Update(uint32_t* data, uint32_t count, uint32_t offset)
 	{
-		Renderer::Submit([=]() {
-			glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, m_RendererID);
-			glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, offset * sizeof(uint32_t), sizeof(uint32_t) * m_NumberOfCounters, data);
-			});
+		Ref<OpenGLAtomicCounter> instance = this;
+		ByteBuffer buffer;
+		buffer.Allocate(count * sizeof(uint32_t));
+		buffer.Write(data, count * sizeof(uint32_t));
+		Renderer::Submit([instance, offset, count, buffer]() {
+			glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, instance->m_RendererID);
+			glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, offset * sizeof(uint32_t), sizeof(uint32_t) * instance->m_NumberOfCounters, buffer);
+			delete[]buffer;
+		});
 	}
 	uint32_t* OpenGLAtomicCounter::GetCounters()
 	{
-		glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, m_RendererID);
-		glGetBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(uint32_t) * m_NumberOfCounters, m_Counters);
-
+		Ref<OpenGLAtomicCounter> instance = this;
+		Renderer::Submit([instance] {
+			glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, instance->m_RendererID);
+			glGetBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(uint32_t) * instance->m_NumberOfCounters, instance->m_Counters);
+		});
 		return m_Counters;
 	}
 	OpenGLIndirectBuffer::OpenGLIndirectBuffer(void* drawCommand, uint32_t size, uint32_t binding)
