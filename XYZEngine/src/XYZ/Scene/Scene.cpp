@@ -267,8 +267,7 @@ namespace XYZ {
 			particleMaterial->Set("u_MainModule.Time", ts);
 			particleMaterial->Set("u_Transform", transform.WorldTransform);
 			particleMaterial->Set("u_MainModule.ParticlesEmitted", (int)particle.System->GetEmittedParticles());
-			
-			Ref<Shader> computeShader = particleMaterial->GetComputeShader();
+			auto& computeShader = particleMaterial->GetComputeShader();
 			computeShader->Bind();
 			particle.System->Update(ts);
 			particleMaterial->Compute();

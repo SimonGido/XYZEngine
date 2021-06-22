@@ -29,8 +29,7 @@ namespace XYZ {
 		SceneRenderer::SetViewportSize(windowWidth, windowHeight);
 		m_Scene->SetViewportSize(windowWidth, windowHeight);		
 
-		Renderer::WaitAndRender();
-
+	
 
 		m_AssetBrowser.SetAssetSelectedCallback([&](const Ref<Asset>& asset) {
 			 m_AssetInspectorContext.SetContext(asset);
@@ -61,6 +60,7 @@ namespace XYZ {
 		auto &particleComponent = entity.EmplaceComponent<ParticleComponent>();
 		particleComponent.RenderMaterial = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShader.glsl"));
 		particleComponent.RenderMaterial->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
+		particleComponent.RenderMaterial->SetRenderQueueID(1);
 		auto particleMaterial = Ref<ParticleMaterial>::Create(50, Shader::Create("Assets/Shaders/Particle/ComputeParticleShader.glsl"));
 		particleComponent.System = Ref<ParticleSystem>::Create(particleMaterial);
 		
@@ -109,7 +109,11 @@ namespace XYZ {
 
 		particleMaterial->SetBufferData("buffer_Data", particleData.data(), particleData.size(), sizeof(ParticleData));
 		particleMaterial->SetBufferData("buffer_Specification", particleSpecification.data(), particleSpecification.size(), sizeof(ParticleSpecification));
-	}	
+	
+		
+		Renderer::WaitAndRender();
+	}
+	
 
 	void EditorLayer::OnDetach()
 	{

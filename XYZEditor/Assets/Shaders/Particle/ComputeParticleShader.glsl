@@ -31,9 +31,8 @@ struct ParticleSpecification
 	vec2  StartPosition;
 
 	float TimeAlive;
-	int IsAlive;
+	int   IsAlive;
 };
-
 
 layout(std140, binding = 0) uniform Camera
 {
@@ -200,7 +199,7 @@ void main(void)
 	UpdateTextureSheetOverLifeTime(data.TexCoord, u_TextureModule.TilesX, u_TextureModule.TilesY, ratio);
 	
 	BuildDrawCommand(u_MainModule.ParticlesEmitted);
-	
+
 	Data[id]		  = data;
 	Specification[id] = specs;
 }

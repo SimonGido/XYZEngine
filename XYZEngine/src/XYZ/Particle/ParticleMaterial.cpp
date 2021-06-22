@@ -84,6 +84,10 @@ namespace XYZ {
 		auto nameIt = (++bufferIt);
 		buffer.Name = *nameIt;
 
+		auto externalIt = std::find(nameIt, split.end(), "external");
+		if (externalIt != split.end())
+			return false;
+
 		auto indirectIt = std::find(nameIt, split.end(), "indirect");
 		buffer.Indirect = (indirectIt != split.end());
 
@@ -92,6 +96,8 @@ namespace XYZ {
 
 		auto particleIt = std::find(nameIt, split.end(), "particle");
 		buffer.ParticleBuffer = (particleIt != split.end());
+
+	
 
 		for (auto& str : structs)
 		{
@@ -217,7 +223,7 @@ namespace XYZ {
 		rebuild();
 	}
 	
-	void ParticleMaterial::Compute()
+	void ParticleMaterial::Compute() const
 	{
 		for (auto& buffer : m_Buffers)
 		{
@@ -383,6 +389,7 @@ namespace XYZ {
 
 		parse();
 		m_UniformBuffer.Allocate(m_ComputeShader->GetVSUniformList().Size);
+		m_UniformBuffer.ZeroInitialize();
 
 		uint32_t squareIndpar[] = { 0, 1, 2, 2, 3, 0 };
 		Ref<XYZ::IndexBuffer> squareIBpar;

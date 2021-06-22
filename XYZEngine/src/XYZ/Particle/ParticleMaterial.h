@@ -15,7 +15,7 @@ namespace XYZ {
 	public:
 		ParticleMaterial(uint32_t maxParticles, const Ref<Shader>& computeShader);
 		
-		void Compute();
+		void Compute() const;
 		void ResetCounters();
 
 		template<typename T>

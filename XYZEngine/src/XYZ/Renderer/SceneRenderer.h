@@ -39,8 +39,8 @@ namespace XYZ {
 			TransformComponent* Transform;
 		};
 
-		std::vector<SpriteDrawCommand>		 SpriteDrawList;		
-		std::vector<ParticleDrawCommand>	 ParticleDrawList;
+		std::vector<SpriteDrawCommand>	 SpriteDrawList;		
+		std::vector<ParticleDrawCommand> ParticleDrawList;
 	};
 
 

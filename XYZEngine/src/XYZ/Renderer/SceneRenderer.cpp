@@ -79,7 +79,7 @@ namespace XYZ {
 		
 		glm::vec2      ViewportSize;
 		bool	       ViewportSizeChanged = false;
-		const uint32_t MaxNumberOfLights   = 1024;
+		const uint32_t MaxNumberOfLights   = 10 * 1024;
 	};
 
 	static SceneRendererData s_Data;
@@ -293,8 +293,7 @@ namespace XYZ {
 	void SceneRenderer::flush()
 	{
 		flushLightQueue();
-		flushDefaultQueue();
-	
+		flushDefaultQueue();	
 		flushEditorQueue();
 
 		Renderer::BeginRenderPass(s_Data.CompositePass, true);
@@ -422,9 +421,9 @@ namespace XYZ {
 
 		for (auto& dc : queue.ParticleDrawList)
 		{
-			auto& material = dc.Particle->RenderMaterial;
-			auto& shader = material->GetShader();
-			material->Bind();
+			auto& renderMaterial = dc.Particle->RenderMaterial;
+			auto& shader = renderMaterial->GetShader();
+			renderMaterial->Bind();
 			shader->SetMat4("u_Transform", dc.Transform->WorldTransform);
 			dc.Particle->System->GetMaterial()->GetVertexArray()->Bind();
 			dc.Particle->System->GetMaterial()->GetIndirectBuffer()->Bind();
@@ -439,7 +438,7 @@ namespace XYZ {
 		Renderer::BeginRenderPass(s_Data.LightPass, true);
 
 		s_Data.LightShader->Bind();
-		s_Data.LightShader->SetInt("u_NumberPointLights", s_Data.PointLightsList.size());
+		s_Data.LightShader->SetInt("u_NumberPointLights", s_Data.PointLightsList.size() + 10);
 		s_Data.LightShader->SetInt("u_NumberSpotLights", s_Data.SpotLightsList.size());
 
 		s_Data.GeometryPass->GetSpecification().TargetFramebuffer->BindTexture(0, 0);
