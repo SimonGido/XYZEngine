@@ -73,8 +73,6 @@ namespace XYZ {
 		static void UpdateViewportSize();
 
 		static Ref<RenderPass> GetFinalRenderPass();
-		static Ref<RenderPass> GetCollisionRenderPass();
-
 		static uint32_t GetFinalColorBufferRendererID();
 		static SceneRendererOptions& GetOptions();
 	

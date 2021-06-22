@@ -27,5 +27,6 @@ layout(binding = 0) uniform sampler2D u_Texture[2];
 void main()
 {    
     vec4 color = texture(u_Texture[0], v_TexCoords);
-    o_Color = color;
+    vec4 gaussianColor = texture(u_Texture[1], v_TexCoords);
+    o_Color = color + gaussianColor;
 }

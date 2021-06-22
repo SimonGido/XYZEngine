@@ -125,7 +125,7 @@ namespace XYZ {
 		// Bloom pass
 		{
 			FramebufferSpecs specs;
-			specs.ClearColor = { 0.0f,0.0f,0.0f,1.0f };
+			specs.ClearColor = { 0.0f,0.0f,0.0f, 0.0f };
 			specs.Attachments = {
 				FramebufferTextureSpecs(FramebufferTextureFormat::RGBA16F),
 				FramebufferTextureSpecs(FramebufferTextureFormat::DEPTH24STENCIL8)
@@ -136,7 +136,7 @@ namespace XYZ {
 		// Gausian blur pass
 		{
 			FramebufferSpecs specs;
-			specs.ClearColor = { 0.0f,0.0f,0.0f,1.0f };
+			specs.ClearColor = { 0.0f,0.0f,0.0f,0.0f };
 			specs.Attachments = {
 				FramebufferTextureSpecs(FramebufferTextureFormat::RGBA16F),
 				FramebufferTextureSpecs(FramebufferTextureFormat::DEPTH24STENCIL8)
@@ -282,11 +282,6 @@ namespace XYZ {
 		return s_Data.CompositePass;
 	}
 
-	Ref<RenderPass> SceneRenderer::GetCollisionRenderPass()
-	{
-		return s_Data.GeometryPass;
-	}
-
 	uint32_t SceneRenderer::GetFinalColorBufferRendererID()
 	{
 		return s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetColorAttachmentRendererID(0);
@@ -299,12 +294,14 @@ namespace XYZ {
 	{
 		flushLightQueue();
 		flushDefaultQueue();
+	
 		flushEditorQueue();
 
 		Renderer::BeginRenderPass(s_Data.CompositePass, true);
 
 		s_Data.CompositeShader->Bind();
 		s_Data.LightPass->GetSpecification().TargetFramebuffer->BindTexture(0, 0);
+		s_Data.GaussianBlurPass->GetSpecification().TargetFramebuffer->BindTexture(0, 1);
 
 		Renderer::SubmitFullsceenQuad();
 		Renderer::EndRenderPass();
@@ -342,7 +339,9 @@ namespace XYZ {
 		}
 		geometryPass(queue, s_Data.GeometryPass, true);
 		lightPass();
-		
+		bloomPass();
+		gaussianBlurPass();
+
 		queue.SpriteDrawList.clear();
 		queue.ParticleDrawList.clear();
 		
@@ -424,8 +423,9 @@ namespace XYZ {
 		for (auto& dc : queue.ParticleDrawList)
 		{
 			auto& material = dc.Particle->RenderMaterial;
-			material->Set("u_Transform", dc.Transform->WorldTransform);
+			auto& shader = material->GetShader();
 			material->Bind();
+			shader->SetMat4("u_Transform", dc.Transform->WorldTransform);
 			dc.Particle->System->GetMaterial()->GetVertexArray()->Bind();
 			dc.Particle->System->GetMaterial()->GetIndirectBuffer()->Bind();
 			Renderer::DrawElementsIndirect(nullptr);
@@ -465,18 +465,18 @@ namespace XYZ {
 	void SceneRenderer::gaussianBlurPass()
 	{
 		Renderer::BeginRenderPass(s_Data.GaussianBlurPass, true);
-		uint32_t amount = 2;
+		uint32_t amount = 4;
 
 		s_Data.GaussianBlurShader->Bind();
 		s_Data.GaussianBlurShader->SetInt("u_Horizontal", 0);
-		for (uint32_t i = 1; i <= amount; i++)
+		for (uint32_t i = 0; i < amount; i++)
 		{
 			s_Data.BloomPass->GetSpecification().TargetFramebuffer->BindTexture(0, 0);
 			Renderer::SubmitFullsceenQuad();
 		}
 
-		s_Data.GaussianBlurShader->SetInt("u_Horizontal", 5);
-		for (uint32_t i = 1; i <= amount; i++)
+		s_Data.GaussianBlurShader->SetInt("u_Horizontal", 1);
+		for (uint32_t i = 0; i < amount; i++)
 		{
 			s_Data.BloomPass->GetSpecification().TargetFramebuffer->BindTexture(0, 0);
 			Renderer::SubmitFullsceenQuad();
