@@ -246,23 +246,11 @@ namespace XYZ {
 			anim.Animation->Update(ts);
 		}
 		
-		std::vector<glm::vec4> boxColliders;
-		auto boxColliderView = m_ECS.CreateView<TransformComponent, BoxCollider2DComponent>();
-		for (auto entity : boxColliderView)
-		{
-			auto [transform, box] = boxColliderView.Get<TransformComponent, BoxCollider2DComponent>(entity);
-			auto [translation, rotation, scale] = transform.GetWorldComponents();
-			//boxColliders.push_back({glm::vec4(
-			//	translation.x - box.Size.x / 2.0f, translation.y - box.Size.y / 2.0f,
-			//	translation.x + box.Size.x / 2.0f, translation.y + box.Size.y / 2.0f
-			//)});
-		}
-		
+
 		auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponent>();
 		for (auto entity : particleView)
 		{
 			auto [transform, particle] = particleView.Get<TransformComponent, ParticleComponent>(entity);
-			//particle.System->m_BoxColliderStorage->Update(boxColliders.data(), boxColliders.size() * sizeof(glm::vec4));
 			auto particleMaterial = particle.System->GetMaterial();
 			particleMaterial->Set("u_MainModule.Time", ts);
 			particleMaterial->Set("u_Transform", transform.WorldTransform);

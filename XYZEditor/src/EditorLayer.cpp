@@ -88,9 +88,7 @@ namespace XYZ {
 			particleSpecification.push_back(specs);
 		}
 		particleComponent.System->SetSpawnRate(3.0f);
-		particleMaterial->Set("u_NumBoxColliders", 0);
-		particleMaterial->Set("u_MaxParticles", 50);
-		
+		particleMaterial->Set("u_MaxParticles", 50);	
 		particleMaterial->Set("u_Force", glm::vec2(-1.0f, 0.0f));
 		
 		// Main module

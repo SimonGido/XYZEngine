@@ -50,17 +50,12 @@ layout(std430, binding = 2) buffer buffer_Specification // particle
 	ParticleSpecification Specification[];
 };
 
-layout(std430, binding = 3) buffer buffer_BoxCollider
-{
-	vec4 BoxColliders[];
-};
-
-layout(std140, binding = 4) buffer buffer_DrawCommand // indirect
+layout(std140, binding = 3) buffer buffer_DrawCommand // indirect
 {
 	DrawCommand Command;
 };
 
-layout(binding = 5, offset = 0) uniform atomic_uint counter_DeadParticles;
+layout(binding = 4, offset = 0) uniform atomic_uint counter_DeadParticles;
 
 struct ColorOverLifeTime
 {
@@ -126,7 +121,6 @@ struct Main
 	int   Repeat;
 	int   ParticlesEmitted;
 	float Time;
-	float Gravity;
 	float Speed;
 	float LifeTime;
 };
@@ -153,10 +147,7 @@ uniform SizeOverLifeTime	  u_SizeModule;
 uniform TextureSheetAnimation u_TextureModule;
 uniform Main			      u_MainModule;
 uniform vec2				  u_Force;
-uniform int					  u_NumBoxColliders;
 uniform int					  u_MaxParticles;
-uniform float				  u_Rate;
-uniform float				  u_PlayTime;
 
 void KillParticle(inout float timeAlive, inout int isAlive, inout vec2 position, vec2 startPosition)
 {	
@@ -181,15 +172,6 @@ void main(void)
 	specs.TimeAlive				+= u_MainModule.Time;
 	if (specs.TimeAlive > u_MainModule.LifeTime)
 		KillParticle(specs.TimeAlive, specs.IsAlive, data.Position, specs.StartPosition);
-	
-	for (int i = 0; i < u_NumBoxColliders; ++i)
-	{
-		if (CollideBox(data.Position, data.Size, BoxColliders[i]))
-		{
-			KillParticle(specs.TimeAlive, specs.IsAlive, data.Position, specs.StartPosition);
-			break;
-		}
-	}
 
 	float ratio   = specs.TimeAlive / u_MainModule.LifeTime;
 	vec2 velocity = specs.StartVelocity + (u_Force * ratio);

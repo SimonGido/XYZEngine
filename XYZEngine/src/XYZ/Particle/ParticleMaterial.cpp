@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "ParticleMaterial.h"
 
+#include "XYZ/Utils/StringUtils.h"
 
 namespace XYZ {
 	static std::string GetStatement(const char* str, const char** outPosition)
