@@ -3,7 +3,6 @@
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Core/Ref.h"
 #include "XYZ/Core/Timestep.h"
-#include "ParticleVertexStream.h"
 #include "ParticleCPU.h"
 
 #include <glm/glm.hpp>
