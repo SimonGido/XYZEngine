@@ -100,22 +100,6 @@ void UpdateTextureSheetOverLifeTime(out vec4 texCoord, float tilesX, float tiles
 	texCoord.zw = texCoord.xy + vec2(sizeX, sizeY);
 }
 
-uniform mat4 u_Transform;
-
-bool CollideBox(vec2 particlePos, vec2 particleSize, vec4 box)
-{
-	vec4 realPos = u_Transform * vec4(particlePos.x, particlePos.y, 0.0, 1.0);
-	vec4 particleBox = vec4(realPos.x - particleSize.x / 2.0, realPos.y - particleSize.y / 2.0, 
-							realPos.x + particleSize.x / 2.0, realPos.y + particleSize.y / 2.0);
-
-	return (
-		   particleBox.x <= box.z
-		&& particleBox.z >= box.x
-		&& particleBox.y <= box.w
-		&& particleBox.w >= box.y
-	);
-}
-
 struct Main
 {
 	int   Repeat;

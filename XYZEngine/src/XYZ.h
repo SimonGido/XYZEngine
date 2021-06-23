@@ -26,8 +26,8 @@
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Renderer/Animation.h"
 
-#include "XYZ/Particle/ParticleMaterial.h"
-#include "XYZ/Particle/ParticleSystem.h"
+#include "XYZ/Particle/GPU/ParticleMaterial.h"
+#include "XYZ/Particle/GPU/ParticleSystem.h"
 
 //-----Scene-----//
 #include "XYZ/Scene/SceneCamera.h"

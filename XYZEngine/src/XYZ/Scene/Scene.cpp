@@ -247,13 +247,14 @@ namespace XYZ {
 		}
 		
 
+		// TODO: This will be called only from script i guess
 		auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponent>();
 		for (auto entity : particleView)
 		{
 			auto [transform, particle] = particleView.Get<TransformComponent, ParticleComponent>(entity);
 			auto particleMaterial = particle.System->GetMaterial();
+			particleMaterial->Set("u_MaxParticles", particleMaterial->GetMaxParticles());
 			particleMaterial->Set("u_MainModule.Time", ts);
-			particleMaterial->Set("u_Transform", transform.WorldTransform);
 			particleMaterial->Set("u_MainModule.ParticlesEmitted", (int)particle.System->GetEmittedParticles());
 			auto& computeShader = particleMaterial->GetComputeShader();
 			computeShader->Bind();
