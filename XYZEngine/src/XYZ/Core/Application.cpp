@@ -14,7 +14,7 @@
 namespace XYZ {
 	Application* Application::s_Application = nullptr;
 
-	ThreadPool Application::s_ThreadPool(1);
+	ThreadPool Application::s_ThreadPool(12);
 
 	Application::Application()
 	{
@@ -50,7 +50,7 @@ namespace XYZ {
 			float timestep = time - m_LastFrameTime;
 			m_LastFrameTime = time;
 			{
-				//Stopwatch watch;
+				Stopwatch watch;
 				
 				for (Layer* layer : m_LayerStack)	
 					layer->OnUpdate(timestep);	

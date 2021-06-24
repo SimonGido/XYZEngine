@@ -1,17 +1,44 @@
 #pragma once
-#include "XYZ/Renderer/VertexArray.h"
-#include "XYZ/Renderer/Material.h"
+#include "XYZ/Renderer/RendererCommand.h"
 #include "XYZ/Core/Ref.h"
 #include "XYZ/Core/Timestep.h"
 #include "ParticleCPU.h"
 
 #include <glm/glm.hpp>
 
+
 namespace XYZ {
-	
+	struct ParticleRenderData
+	{
+		glm::vec4 Color;
+		glm::vec4 TexCoord;
+		glm::vec2 Position;
+		glm::vec2 Size;
+		float     Angle;
+	};
+
 	struct Emission
 	{
-		float RateOverTime = 10.0f;
+		float RateOverTime = 500.0f;
+	};
+
+	enum class RenderMode
+	{
+		Billboard,
+		Mesh
+	};
+
+	struct ParticleRendererCPU : public RendererCommand
+	{
+		ParticleRendererCPU(uint32_t maxParticles);
+
+		virtual void Bind() override;
+
+		Ref<VertexArray>			    VAO;
+		Ref<VertexBuffer>			    InstanceVBO;
+		RenderMode					    Mode;	
+		uint32_t					    InstanceCount;
+		std::vector<ParticleRenderData> RenderData;
 	};
 
 	class ParticleSystemCPU : public RefCount
@@ -24,14 +51,16 @@ namespace XYZ {
 
 		void Update(Timestep ts);
 		
-		Emission m_Emission;
+		ParticleRendererCPU m_Renderer;
+		Emission		    m_Emission;
 	private:
 		void emitt(uint32_t count);
 
 	private:
-		std::vector<ParticleCPU> m_ParticlePool;
+		std::vector<ParticleCPU> m_ParticlePool;	
+								 
 		uint32_t				 m_MaxParticles;
 		uint32_t				 m_ParticlesAlive;
-		float				     m_EmittedParticles;
+		float					 m_EmittedParticles;
 	};
 }

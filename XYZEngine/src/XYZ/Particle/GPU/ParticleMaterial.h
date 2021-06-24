@@ -9,6 +9,7 @@
 #include <glm/glm.hpp>
 
 namespace XYZ {
+
 	class ParticleMaterial : public RefCount
 	{
 	public:

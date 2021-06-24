@@ -88,7 +88,6 @@ namespace XYZ {
 		uint64_t GetFlags() const { return m_Flags; }
 		uint8_t  GetRenderQueueID() const { return m_RenderQueueID; }
 
-		Ref<Shader>& GetShader() { return m_Shader; }
 		const Ref<Shader>& GetShader() const { return m_Shader; }
 		const std::vector<Ref<Texture>>& GetTextures() const { return m_Textures; }
 

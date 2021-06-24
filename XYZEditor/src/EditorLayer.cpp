@@ -57,12 +57,13 @@ namespace XYZ {
 
 
 		auto entity = m_Scene->GetEntityByName("Scary Entity");
-		auto &particleComponent = entity.EmplaceComponent<ParticleComponent>();
-		particleComponent.RenderMaterial = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShader.glsl"));
-		particleComponent.RenderMaterial->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
-		particleComponent.RenderMaterial->SetRenderQueueID(1);
+		auto &particleComponent = entity.EmplaceComponent<ParticleComponentGPU>();	
 		auto particleMaterial = Ref<ParticleMaterial>::Create(50, Shader::Create("Assets/Shaders/Particle/ComputeParticleShader.glsl"));
+		
 		particleComponent.System = Ref<ParticleSystem>::Create(particleMaterial);
+		particleComponent.System->m_Renderer.Material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShader.glsl"));
+		particleComponent.System->m_Renderer.Material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
+		particleComponent.System->m_Renderer.Material->SetRenderQueueID(1);
 		
 		std::vector<ParticleData> particleData;
 		std::vector<ParticleSpecification> particleSpecification;
@@ -108,6 +109,13 @@ namespace XYZ {
 		particleMaterial->SetBufferData("buffer_Data", particleData.data(), particleData.size(), sizeof(ParticleData));
 		particleMaterial->SetBufferData("buffer_Specification", particleSpecification.data(), particleSpecification.size(), sizeof(ParticleSpecification));
 	
+		
+
+		auto& particleComponentCPU = entity.EmplaceComponent<ParticleComponentCPU>();
+		particleComponentCPU.System = Ref<ParticleSystemCPU>::Create(1000);
+		particleComponentCPU.System->m_Renderer.Material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShaderCPU.glsl"));
+		particleComponentCPU.System->m_Renderer.Material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
+		particleComponentCPU.System->m_Renderer.Material->SetRenderQueueID(1);
 		
 		Renderer::WaitAndRender();
 	}

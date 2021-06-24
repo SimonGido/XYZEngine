@@ -1,6 +1,5 @@
 #pragma once
-#include "XYZ/Renderer/VertexArray.h"
-#include "XYZ/Renderer/Material.h"
+#include "XYZ/Renderer/RendererCommand.h"
 #include "XYZ/Core/Ref.h"
 #include "XYZ/Core/Timestep.h"
 
@@ -21,6 +20,13 @@ namespace XYZ {
 		float				  Radius;
 	};
 
+	struct ParticleRendererGPU : public RendererCommand
+	{
+		virtual void Bind() override;
+
+		Ref<ParticleMaterial> ParticleMaterial;
+	};
+
 	class ParticleSystem : public RefCount
 	{
 	public:
@@ -39,9 +45,9 @@ namespace XYZ {
 		float PlayTime() const { return m_PlayTime; }
 		bool  Playing() const { return m_Playing; }
 	
-		const Ref<ParticleMaterial>& GetMaterial() const { return m_Material; }
+
+		ParticleRendererGPU	  m_Renderer;
 	private:
-		Ref<ParticleMaterial> m_Material;
 		ParticleEmitter		  m_Emitter;
 		float				  m_EmittedParticles;
 		float				  m_PlayTime;

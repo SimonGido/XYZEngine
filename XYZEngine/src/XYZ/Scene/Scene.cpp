@@ -191,11 +191,18 @@ namespace XYZ {
 			SceneRenderer::SubmitSprite(&renderer, &transform);
 		}
 
-		auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponent>();
+		auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponentGPU>();
 		for (auto entity : particleView)
 		{
-			auto [transform, particle] = particleView.Get<TransformComponent, ParticleComponent>(entity);
-			SceneRenderer::SubmitParticles(&particle, &transform);
+			auto [transform, particle] = particleView.Get<TransformComponent, ParticleComponentGPU>(entity);
+			//SceneRenderer::SubmitRendererCommand(&particle.System->m_Renderer, &transform);
+		}
+
+		auto particleViewCPU = m_ECS.CreateView<TransformComponent, ParticleComponentCPU>();
+		for (auto entity : particleViewCPU)
+		{
+			auto [transform, particle] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU>(entity);
+			SceneRenderer::SubmitRendererCommand(&particle.System->m_Renderer, &transform);
 		}
 		
 		auto lightView = m_ECS.CreateView<TransformComponent, PointLight2D>();
@@ -246,13 +253,19 @@ namespace XYZ {
 			anim.Animation->Update(ts);
 		}
 		
-
+		auto particleViewCPU = m_ECS.CreateView<TransformComponent, ParticleComponentCPU>();
+		for (auto entity : particleViewCPU)
+		{
+			auto [transform, particle] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU>(entity);
+			auto& system = particle.System;
+			system->Update(ts);
+		}
 		// TODO: This will be called only from script i guess
-		auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponent>();
+		auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponentGPU>();
 		for (auto entity : particleView)
 		{
-			auto [transform, particle] = particleView.Get<TransformComponent, ParticleComponent>(entity);
-			auto particleMaterial = particle.System->GetMaterial();
+			auto [transform, particle] = particleView.Get<TransformComponent, ParticleComponentGPU>(entity);
+			auto& particleMaterial = particle.System->m_Renderer.ParticleMaterial;
 			particleMaterial->Set("u_MaxParticles", particleMaterial->GetMaxParticles());
 			particleMaterial->Set("u_MainModule.Time", ts);
 			particleMaterial->Set("u_MainModule.ParticlesEmitted", (int)particle.System->GetEmittedParticles());
@@ -284,11 +297,18 @@ namespace XYZ {
 			if (renderer.SubTexture.Raw() && renderer.Material.Raw())
 				SceneRenderer::SubmitEditorSprite(&renderer, &transform);
 		}
-		auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponent>();
+		auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponentGPU>();
 		for (auto entity : particleView)
 		{
-			auto [transform, particle] = particleView.Get<TransformComponent, ParticleComponent>(entity);
-			SceneRenderer::SubmitParticles(&particle, &transform);
+			auto [transform, particle] = particleView.Get<TransformComponent, ParticleComponentGPU>(entity);
+			SceneRenderer::SubmitRendererCommand(&particle.System->m_Renderer, &transform);
+		}
+
+		auto particleViewCPU = m_ECS.CreateView<TransformComponent, ParticleComponentCPU>();
+		for (auto entity : particleViewCPU)
+		{
+			auto [transform, particle] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU>(entity);
+			SceneRenderer::SubmitRendererCommand(&particle.System->m_Renderer, &transform);
 		}
 		
 		auto lightView = m_ECS.CreateView<TransformComponent, PointLight2D>();

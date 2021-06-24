@@ -408,9 +408,9 @@ namespace XYZ {
 					ImGui::DragFloat("##OuterAngle", &component.OuterAngle, 1.0f, 0.0f, 0.0f, "%.2f");
 					Helper::EndColumns();
 				});
-				Helper::DrawComponent<ParticleComponent>("Particle Component", m_Context, [&](auto& component) {
+				Helper::DrawComponent<ParticleComponentGPU>("Particle Component", m_Context, [&](auto& component) {
 
-					auto material = component.System->GetMaterial();
+					auto& material = component.System->m_Renderer.ParticleMaterial;
 					auto& shader = material->GetComputeShader();
 					for (auto& uniform : shader->GetVSUniformList().Uniforms)
 					{

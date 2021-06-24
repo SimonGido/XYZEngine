@@ -230,9 +230,10 @@ namespace XYZ {
 		s_Data.EditorAABBDrawList.push_back({ min, max , color });
 	}
 
-	void SceneRenderer::SubmitParticles(ParticleComponent* particle, TransformComponent* transform)
+
+	void SceneRenderer::SubmitRendererCommand(RendererCommand* command, TransformComponent* transform)
 	{
-		s_Data.Queues[particle->RenderMaterial->GetRenderQueueID()].ParticleDrawList.push_back({ particle,transform });
+		s_Data.Queues[command->Material->GetRenderQueueID()].DrawCommandList.push_back({ command, transform });
 	}
 	void SceneRenderer::SubmitLight(PointLight2D* light, const glm::mat4& transform)
 	{
@@ -320,10 +321,6 @@ namespace XYZ {
 			return a.Sprite->SortLayer < b.Sprite->SortLayer;
 		});
 
-		std::sort(queue.ParticleDrawList.begin(), queue.ParticleDrawList.end(),
-			[](const RenderQueue::ParticleDrawCommand& a, const RenderQueue::ParticleDrawCommand& b) {
-			return a.Particle->RenderMaterial->GetFlags() < b.Particle->RenderMaterial->GetFlags();
-		});
 
 		if (s_Data.PointLightsList.size())
 		{
@@ -342,7 +339,7 @@ namespace XYZ {
 		gaussianBlurPass();
 
 		queue.SpriteDrawList.clear();
-		queue.ParticleDrawList.clear();
+		queue.DrawCommandList.clear();
 		
 		s_Data.PointLightsList.clear();
 		s_Data.SpotLightsList.clear();
@@ -359,15 +356,10 @@ namespace XYZ {
 			return a.Sprite->SortLayer < b.Sprite->SortLayer;
 		});
 
-		std::sort(queue.ParticleDrawList.begin(), queue.ParticleDrawList.end(),
-			[](const RenderQueue::ParticleDrawCommand& a, const RenderQueue::ParticleDrawCommand& b) {
-			return a.Particle->RenderMaterial->GetFlags() < b.Particle->RenderMaterial->GetFlags();
-		});
-
 		geometryPass(queue, s_Data.LightPass, false);
 
 		queue.SpriteDrawList.clear();
-		queue.ParticleDrawList.clear();
+		queue.DrawCommandList.clear();
 	}
 	void SceneRenderer::flushEditorQueue()
 	{
@@ -419,15 +411,12 @@ namespace XYZ {
 		Renderer2D::Flush();
 		Renderer2D::FlushLines();
 
-		for (auto& dc : queue.ParticleDrawList)
-		{
-			auto& renderMaterial = dc.Particle->RenderMaterial;
-			auto& shader = renderMaterial->GetShader();
-			renderMaterial->Bind();
+		for (auto& dc : queue.DrawCommandList)
+		{		
+			auto shader = dc.Command->Material->GetShader();
+			dc.Command->Material->Bind();
 			shader->SetMat4("u_Transform", dc.Transform->WorldTransform);
-			dc.Particle->System->GetMaterial()->GetVertexArray()->Bind();
-			dc.Particle->System->GetMaterial()->GetIndirectBuffer()->Bind();
-			Renderer::DrawElementsIndirect(nullptr);
+			dc.Command->Bind();
 		}
 
 		Renderer2D::EndScene();

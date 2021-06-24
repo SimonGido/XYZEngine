@@ -4,6 +4,7 @@
 #include "XYZ/Core/GUID.h"
 #include "XYZ/Particle/GPU/ParticleMaterial.h"
 #include "XYZ/Particle/GPU/ParticleSystem.h"
+#include "XYZ//Particle/CPU/ParticleSystemCPU.h"
 
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Script/ScriptPublicField.h"
@@ -111,12 +112,18 @@ namespace XYZ {
 	};
 
 
-	struct ParticleComponent : public IComponent
+	struct ParticleComponentGPU : public IComponent
 	{
-		ParticleComponent() = default;
+		ParticleComponentGPU() = default;
 		
-		Ref<Material>		   RenderMaterial;
 		Ref<ParticleSystem>    System;
+	};
+
+	struct ParticleComponentCPU : public IComponent
+	{
+		ParticleComponentCPU() = default;
+
+		Ref<ParticleSystemCPU> System;
 	};
 
 	struct PointLight2D : public IComponent

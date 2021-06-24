@@ -80,7 +80,7 @@ namespace XYZ
     {
         // TODO
     }
-    public class ParticleComponent : Component
+    public class ParticleComponentGPU : Component
     {
         // TODO
     }

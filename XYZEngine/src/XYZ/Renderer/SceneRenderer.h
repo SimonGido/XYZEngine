@@ -33,14 +33,14 @@ namespace XYZ {
 			SpriteRenderer* Sprite;
 			TransformComponent* Transform;
 		};
-		struct ParticleDrawCommand
+		struct DrawCommand
 		{
-			ParticleComponent* Particle;
+			RendererCommand*	Command;
 			TransformComponent* Transform;
 		};
 
 		std::vector<SpriteDrawCommand>	 SpriteDrawList;		
-		std::vector<ParticleDrawCommand> ParticleDrawList;
+		std::vector<DrawCommand>         DrawCommandList;
 	};
 
 
@@ -64,7 +64,7 @@ namespace XYZ {
 		static void SubmitEditorAABB(TransformComponent* transform, const glm::vec4& color);
 		static void SubmitEditorAABB(const glm::vec3& min, const glm::vec3& max, const glm::vec4& color);
 
-		static void SubmitParticles(ParticleComponent* particle, TransformComponent* transform);
+		static void SubmitRendererCommand(RendererCommand* command, TransformComponent* transform);
 		static void SubmitLight(PointLight2D* light, const glm::mat4& transform);
 		static void SubmitLight(SpotLight2D* light, const glm::mat4& transform);
 

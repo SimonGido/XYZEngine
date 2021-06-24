@@ -184,6 +184,7 @@ namespace XYZ {
 	
 	static BufferLayout BufferLayoutFromVariables(const std::vector<ShaderVariable>& variables, uint32_t offset)
 	{
+		const uint32_t divisior = 1;
 		uint32_t counter = offset;
 		std::vector<BufferElement> elements;
 		for (auto& variable : variables)
@@ -193,22 +194,22 @@ namespace XYZ {
 			case XYZ::UniformDataType::None:
 				break;
 			case XYZ::UniformDataType::Int:
-				elements.emplace_back(counter++, ShaderDataComponent::Int, variable.Name, 1);
+				elements.emplace_back(counter++, ShaderDataComponent::Int, variable.Name, divisior);
 				break;
 			case XYZ::UniformDataType::UInt:
-				elements.emplace_back(counter++, ShaderDataComponent::Int, variable.Name, 1);
+				elements.emplace_back(counter++, ShaderDataComponent::Int, variable.Name, divisior);
 				break;
 			case XYZ::UniformDataType::Float:
-				elements.emplace_back(counter++, ShaderDataComponent::Float, variable.Name, 1);
+				elements.emplace_back(counter++, ShaderDataComponent::Float, variable.Name, divisior);
 				break;
 			case XYZ::UniformDataType::Vec2:
-				elements.emplace_back(counter++, ShaderDataComponent::Float2, variable.Name, 1);
+				elements.emplace_back(counter++, ShaderDataComponent::Float2, variable.Name, divisior);
 				break;
 			case XYZ::UniformDataType::Vec3:
-				elements.emplace_back(counter++, ShaderDataComponent::Float3, variable.Name, 1);
+				elements.emplace_back(counter++, ShaderDataComponent::Float3, variable.Name, divisior);
 				break;
 			case XYZ::UniformDataType::Vec4:
-				elements.emplace_back(counter++, ShaderDataComponent::Float4, variable.Name, 1);
+				elements.emplace_back(counter++, ShaderDataComponent::Float4, variable.Name, divisior);
 				break;
 			}
 		}
