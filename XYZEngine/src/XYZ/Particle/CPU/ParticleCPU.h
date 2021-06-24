@@ -4,8 +4,11 @@
 
 namespace XYZ {
 
+	class ParticleThreadPass;
 	struct ParticleCPU
 	{
+		void Process(ParticleThreadPass& pass, float timeStep);
+
 		glm::vec4 Color;
 		glm::vec4 TexCoord;
 		glm::vec3 Position;

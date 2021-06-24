@@ -15,8 +15,6 @@ namespace XYZ {
 		RenderData.resize(maxParticles);
 		ParticlePool.resize(maxParticles);
 	}
-
-
 	EmissionModule::EmissionModule()
 		:
 		RateOverTime(2.0f),
@@ -33,7 +31,7 @@ namespace XYZ {
 
 	VelocityOverLifeModule::VelocityOverLifeModule()
 		:
-		Velocity(1.0f),
+		VelocityModifier(0.0f),
 		Enabled(true)
 	{
 	}
@@ -42,7 +40,22 @@ namespace XYZ {
 	{
 		if (Enabled)
 		{
-			particle.Velocity += Velocity * timeStep;
+			particle.Velocity += VelocityModifier * timeStep;
+		}
+	}
+
+	SizeOverLifeModule::SizeOverLifeModule()
+		:
+		SizeModifier(1.0f),
+		Enabled(false)
+	{
+	}
+
+	void SizeOverLifeModule::Process(ParticleCPU& particle, float timeStep)
+	{
+		if (Enabled)
+		{
+			particle.Size += SizeModifier * timeStep;
 		}
 	}
 

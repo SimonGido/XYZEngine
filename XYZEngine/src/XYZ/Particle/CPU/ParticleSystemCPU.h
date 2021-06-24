@@ -30,6 +30,7 @@ namespace XYZ {
 		uint32_t						InstanceCount;	
 
 		friend class ParticleSystemCPU;
+		friend class ParticleSystemCPUTest;
 	};
 
 	class ParticleSystemCPU : public RefCount
@@ -61,6 +62,7 @@ namespace XYZ {
 
 		EmissionModule			m_EmissionModule;
 		VelocityOverLifeModule  m_VelocityModule;
+		SizeOverLifeModule      m_SizeModule;
 		uint32_t			    m_MaxParticles;
 		
 		float					m_Timestep;

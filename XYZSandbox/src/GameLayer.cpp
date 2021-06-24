@@ -64,7 +64,7 @@ namespace XYZ {
 
 		m_EditorCamera.OnUpdate(ts);
 		m_Scene->OnUpdate(ts);
-		m_Scene->OnRenderEditor(m_EditorCamera);
+		m_Scene->OnRenderEditor(m_EditorCamera, ts);
 		s_LuaModule->OnUpdate(ts);
 	}
 

@@ -47,14 +47,9 @@ namespace XYZ {
 				Application::GetThreadPool().PushJob<void>([this, pass, transform, timeStep]() {
 
 					std::scoped_lock<std::mutex> lock(pass->Mutex);
-					m_EmissionModule.Process(*pass, timeStep);
-					
-
-					if (pass->EmittedParticles > 1.0f)
-					{
-						emitt(*pass);
-						pass->EmittedParticles = 0.0f;
-					}
+					m_EmissionModule.Process(*pass, timeStep);			
+					emitt(*pass);
+	
 					uint32_t counter = 0;
 					for (size_t i = 0; i < pass->ParticlePool.size(); ++i)
 					{
@@ -62,19 +57,9 @@ namespace XYZ {
 						if (!particle.Alive)
 							break;
 
-						if (particle.LifeRemaining <= 0.0f)
-						{
-							// Copy last alive at the place of dead particle
-							particle = pass->ParticlePool[pass->ParticlesAlive - 1];
-							pass->ParticlePool[pass->ParticlesAlive - 1].Alive = false;
-							pass->ParticlesAlive--;
-							continue;
-						}
-
+						particle.Process(*pass, timeStep);
 						m_VelocityModule.Process(particle, timeStep);
-						particle.LifeRemaining -= timeStep;
-						particle.Position += particle.Velocity * timeStep;
-						particle.Rotation += particle.AngularVelocity * timeStep;
+						m_SizeModule.Process(particle, timeStep);
 
 						pass->RenderData[counter++] = ParticleRenderData{
 							particle.Color,
@@ -110,22 +95,26 @@ namespace XYZ {
 	void ParticleSystemCPU::emitt(ParticleThreadPass& pass)
 	{
 		uint32_t count = (uint32_t)pass.EmittedParticles;
-		for (uint32_t i = 0; i < count && pass.ParticlesAlive < pass.ParticlePool.size(); ++i)
+		if (count)
 		{
-			std::random_device dev;
-			std::mt19937 rng(dev());
-			std::uniform_real_distribution<double> dist(-1.0, 1.0); // distribution in range [1, 6]
-			ParticleCPU& particle = pass.ParticlePool[pass.ParticlesAlive];
-			particle.Alive = true;
-			particle.Size = glm::vec2(0.3f);
-			particle.Position = glm::vec3(0.0f);
-			particle.Color = glm::vec4(1.0f);
-			particle.TexCoord = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
-			particle.Velocity = glm::vec3(dist(rng), dist(rng), 0.0f);
-			particle.AngularVelocity = 25.0f;
+			for (uint32_t i = 0; i < count && pass.ParticlesAlive < pass.ParticlePool.size(); ++i)
+			{
+				std::random_device dev;
+				std::mt19937 rng(dev());
+				std::uniform_real_distribution<double> dist(-1.0, 1.0); // distribution in range [1, 6]
+				ParticleCPU& particle = pass.ParticlePool[pass.ParticlesAlive];
+				particle.Alive = true;
+				particle.Size = glm::vec2(0.3f);
+				particle.Position = glm::vec3(0.0f);
+				particle.Color = glm::vec4(1.0f);
+				particle.TexCoord = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+				particle.Velocity = glm::vec3(dist(rng), dist(rng), 0.0f);
+				particle.AngularVelocity = 25.0f;
 
-			particle.LifeRemaining = 3.0f;
-			pass.ParticlesAlive++;
+				particle.LifeRemaining = 3.0f;
+				pass.ParticlesAlive++;
+			}
+			pass.EmittedParticles = 0.0f;
 		}
 	}
 

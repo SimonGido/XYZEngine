@@ -7,6 +7,7 @@
 
 #include <random>
 
+
 namespace XYZ {
 	
 	static std::vector<glm::vec2> RandomPointsInCircle(const glm::vec2& center, float radius, uint32_t count)
@@ -113,4 +114,5 @@ namespace XYZ {
 		Renderer::DrawElementsIndirect(nullptr);
 	}
 
+	
 }

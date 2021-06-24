@@ -46,7 +46,17 @@ namespace XYZ {
 
 		void Process(ParticleCPU& particle, float timeStep);
 
-		glm::vec3 Velocity;
+		glm::vec3 VelocityModifier;
+		bool      Enabled;
+	};
+
+	struct SizeOverLifeModule
+	{
+		SizeOverLifeModule();
+
+		void Process(ParticleCPU& particle, float timeStep);
+
+		glm::vec2 SizeModifier;
 		bool      Enabled;
 	};
 
