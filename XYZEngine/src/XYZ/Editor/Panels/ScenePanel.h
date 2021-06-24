@@ -13,6 +13,7 @@ namespace XYZ {
 		{
 		public:
 			ScenePanel();
+			~ScenePanel();
 
 			void SetContext(const Ref<Scene>& context);
 			void SetEntitySelectedCallback(const SceneEntitySelectedCallback& callback) { m_Callback = callback; }

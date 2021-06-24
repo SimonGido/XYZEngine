@@ -106,7 +106,7 @@ namespace XYZ {
 		GenerateParticleData();
 	}
 	
-	void ParticleRendererGPU::Bind()
+	void ParticleRendererGPU::Bind() const
 	{
 		ParticleMaterial->GetVertexArray()->Bind();
 		ParticleMaterial->GetIndirectBuffer()->Bind();

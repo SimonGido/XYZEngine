@@ -43,7 +43,6 @@ namespace XYZ {
 
 	Scene::~Scene()
 	{
-		
 	}
 
 	SceneEntity Scene::CreateEntity(const std::string& name, const GUID& guid)
@@ -202,7 +201,7 @@ namespace XYZ {
 		for (auto entity : particleViewCPU)
 		{
 			auto [transform, particle] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU>(entity);
-			SceneRenderer::SubmitRendererCommand(&particle.System->m_Renderer, &transform);
+			SceneRenderer::SubmitRendererCommand(&particle.System->GetRenderer(), &transform);
 		}
 		
 		auto lightView = m_ECS.CreateView<TransformComponent, PointLight2D>();
@@ -258,7 +257,7 @@ namespace XYZ {
 		{
 			auto [transform, particle] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU>(entity);
 			auto& system = particle.System;
-			system->Update(ts);
+			system->Update(ts, transform.WorldTransform);
 		}
 		// TODO: This will be called only from script i guess
 		auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponentGPU>();
@@ -278,7 +277,7 @@ namespace XYZ {
 		updateHierarchy();
 	}
 
-	void Scene::OnRenderEditor(const Editor::EditorCamera& camera)
+	void Scene::OnRenderEditor(const Editor::EditorCamera& camera, Timestep ts)
 	{
 		updateHierarchy();
 		SceneRenderer::BeginScene(this, camera.GetViewProjection(), camera.GetPosition());
@@ -308,7 +307,8 @@ namespace XYZ {
 		for (auto entity : particleViewCPU)
 		{
 			auto [transform, particle] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU>(entity);
-			SceneRenderer::SubmitRendererCommand(&particle.System->m_Renderer, &transform);
+			particle.System->Update(ts, transform.WorldTransform);
+			SceneRenderer::SubmitRendererCommand(&particle.System->GetRenderer(), &transform);
 		}
 		
 		auto lightView = m_ECS.CreateView<TransformComponent, PointLight2D>();

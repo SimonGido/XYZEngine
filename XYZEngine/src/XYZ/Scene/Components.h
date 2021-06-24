@@ -122,7 +122,7 @@ namespace XYZ {
 	struct ParticleComponentCPU : public IComponent
 	{
 		ParticleComponentCPU() = default;
-
+		
 		Ref<ParticleSystemCPU> System;
 	};
 

@@ -231,7 +231,7 @@ namespace XYZ {
 	}
 
 
-	void SceneRenderer::SubmitRendererCommand(RendererCommand* command, TransformComponent* transform)
+	void SceneRenderer::SubmitRendererCommand(const RendererCommand* command, TransformComponent* transform)
 	{
 		s_Data.Queues[command->Material->GetRenderQueueID()].DrawCommandList.push_back({ command, transform });
 	}

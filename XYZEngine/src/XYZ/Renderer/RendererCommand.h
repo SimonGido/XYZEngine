@@ -10,7 +10,7 @@ namespace XYZ {
 	public:
 		virtual ~RendererCommand() = default;
 
-		virtual void Bind() = 0;
+		virtual void Bind() const = 0;
 
 		Ref<Material>    Material;
 		uint32_t		 SortLayer;

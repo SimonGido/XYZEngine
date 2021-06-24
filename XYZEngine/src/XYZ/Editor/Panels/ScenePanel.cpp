@@ -161,6 +161,9 @@ namespace XYZ {
 			uint32_t windowHeight = Application::Get().GetWindow().GetHeight();
 			m_EditorCamera.SetViewportSize((float)windowWidth, (float)windowHeight);
 		}
+		ScenePanel::~ScenePanel()
+		{
+		}
 		void ScenePanel::SetContext(const Ref<Scene>& context)
 		{
 			m_Context = context;

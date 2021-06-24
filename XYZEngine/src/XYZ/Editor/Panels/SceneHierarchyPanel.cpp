@@ -39,9 +39,7 @@ namespace XYZ {
                             m_Context->CreateEntity("Empty Entity", GUID());
 
                         ImGui::EndPopup();
-                    }
-                    
-                    
+                    }                   
                 }
             }
             ImGui::End();

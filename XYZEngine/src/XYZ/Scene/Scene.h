@@ -47,7 +47,7 @@ namespace XYZ {
         void OnStop();
         void OnUpdate(Timestep ts);
         void OnRender();
-        void OnRenderEditor(const Editor::EditorCamera& camera);
+        void OnRenderEditor(const Editor::EditorCamera& camera, Timestep ts);
 
         SceneEntity GetEntity(uint32_t index);
         SceneEntity GetEntityByName(const std::string& name);

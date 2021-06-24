@@ -27,8 +27,9 @@ namespace XYZ {
 		m_Condition.notify_all(); // wake up all threads.
 
 		for (std::thread& thread : m_Threads)
-			thread.join();
-		
+		{
+			thread.detach();
+		}
 		m_Threads.clear();
 	}
 	void ThreadPool::waitForJob()

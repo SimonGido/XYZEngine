@@ -112,11 +112,13 @@ namespace XYZ {
 		
 
 		auto& particleComponentCPU = entity.EmplaceComponent<ParticleComponentCPU>();
-		particleComponentCPU.System = Ref<ParticleSystemCPU>::Create(1000);
-		particleComponentCPU.System->m_Renderer.Material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShaderCPU.glsl"));
-		particleComponentCPU.System->m_Renderer.Material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
-		particleComponentCPU.System->m_Renderer.Material->SetRenderQueueID(1);
-		
+		particleComponentCPU.System = Ref<ParticleSystemCPU>::Create(100);
+
+		particleComponentCPU.System->GetRenderer().Material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShaderCPU.glsl"));
+		particleComponentCPU.System->GetRenderer().Material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
+		particleComponentCPU.System->GetRenderer().Material->SetRenderQueueID(1);
+		particleComponentCPU.System->Play();
+
 		Renderer::WaitAndRender();
 	}
 	
@@ -140,7 +142,7 @@ namespace XYZ {
 		}
 		else
 		{
-			m_Scene->OnRenderEditor(m_ScenePanel.GetEditorCamera());
+			m_Scene->OnRenderEditor(m_ScenePanel.GetEditorCamera(), ts);
 		}		
 	}
 

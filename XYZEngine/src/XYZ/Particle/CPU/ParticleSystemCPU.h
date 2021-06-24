@@ -2,25 +2,14 @@
 #include "XYZ/Renderer/RendererCommand.h"
 #include "XYZ/Core/Ref.h"
 #include "XYZ/Core/Timestep.h"
+#include "ParticleModule.h"
 #include "ParticleCPU.h"
 
 #include <glm/glm.hpp>
 
+#include <mutex>
 
 namespace XYZ {
-	struct ParticleRenderData
-	{
-		glm::vec4 Color;
-		glm::vec4 TexCoord;
-		glm::vec2 Position;
-		glm::vec2 Size;
-		float     Angle;
-	};
-
-	struct Emission
-	{
-		float RateOverTime = 500.0f;
-	};
 
 	enum class RenderMode
 	{
@@ -32,13 +21,15 @@ namespace XYZ {
 	{
 		ParticleRendererCPU(uint32_t maxParticles);
 
-		virtual void Bind() override;
+		virtual void Bind() const override;
 
+		RenderMode					    Mode;
+	private:
 		Ref<VertexArray>			    VAO;
-		Ref<VertexBuffer>			    InstanceVBO;
-		RenderMode					    Mode;	
-		uint32_t					    InstanceCount;
-		std::vector<ParticleRenderData> RenderData;
+		Ref<VertexBuffer>			    InstanceVBO;			
+		uint32_t						InstanceCount;	
+
+		friend class ParticleSystemCPU;
 	};
 
 	class ParticleSystemCPU : public RefCount
@@ -48,19 +39,33 @@ namespace XYZ {
 		~ParticleSystemCPU();
 
 		void SetMaxParticles(uint32_t maxParticles);
+		void Play();
 
-		void Update(Timestep ts);
+		void Update(Timestep ts, const glm::mat4& transform);
+
+		uint32_t GetMaxParticles() const { return m_MaxParticles; }
+
+		void SetEmissionModule(const EmissionModule& module);
+		const EmissionModule& GetEmissionModule() const { return m_EmissionModule; }
+
+		ParticleRendererCPU& GetRenderer() { return m_Renderer; }
+	private:
+		static void emitt(ParticleThreadPass& pass);
 		
-		ParticleRendererCPU m_Renderer;
-		Emission		    m_Emission;
-	private:
-		void emitt(uint32_t count);
+		void attemptSync();
 
-	private:
-		std::vector<ParticleCPU> m_ParticlePool;	
-								 
-		uint32_t				 m_MaxParticles;
-		uint32_t				 m_ParticlesAlive;
-		float					 m_EmittedParticles;
+
+	private:	
+		ParticleThreadPass		m_ThreadPass;
+		ParticleRendererCPU		m_Renderer;
+
+		EmissionModule			m_EmissionModule;
+		VelocityOverLifeModule  m_VelocityModule;
+		uint32_t			    m_MaxParticles;
+		
+		float					m_Timestep;
+		bool					m_Playing;
+		bool					m_ProcessByThread;
+		
 	};
 }

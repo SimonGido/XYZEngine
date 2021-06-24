@@ -22,7 +22,7 @@ namespace XYZ {
 
 	struct ParticleRendererGPU : public RendererCommand
 	{
-		virtual void Bind() override;
+		virtual void Bind() const override;
 
 		Ref<ParticleMaterial> ParticleMaterial;
 	};

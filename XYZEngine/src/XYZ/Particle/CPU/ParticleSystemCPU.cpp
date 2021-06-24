@@ -11,11 +11,12 @@ namespace XYZ {
 	ParticleSystemCPU::ParticleSystemCPU(uint32_t maxParticles)
 		:
 		m_MaxParticles(maxParticles),
-		m_ParticlesAlive(0),
-		m_EmittedParticles(0.0f),
-		m_Renderer(maxParticles)
+		m_Renderer(maxParticles),
+		m_ThreadPass(maxParticles),
+		m_Timestep(0.0f),
+		m_Playing(false),
+		m_ProcessByThread(false)
 	{
-		m_ParticlePool.resize(maxParticles);
 	}
 	ParticleSystemCPU::~ParticleSystemCPU()
 	{
@@ -23,59 +24,98 @@ namespace XYZ {
 	void ParticleSystemCPU::SetMaxParticles(uint32_t maxParticles)
 	{
 		m_MaxParticles = maxParticles;
-		m_ParticlePool.resize(maxParticles);
-		m_Renderer.RenderData.resize(maxParticles);
+		{
+			std::scoped_lock<std::mutex> lock(m_ThreadPass.Mutex);
+			m_ThreadPass.ParticlePool.resize(maxParticles);
+			m_ThreadPass.RenderData.resize(maxParticles);
+		}
 	}
-	void ParticleSystemCPU::Update(Timestep ts)
+	void ParticleSystemCPU::Play()
 	{
-		Application::GetThreadPool().PushJob<void>([this, ts]() {
-
-			m_EmittedParticles += m_Emission.RateOverTime * ts.GetSeconds();
-			if (m_EmittedParticles > 1.0f)
-			{
-				emitt((uint32_t)m_EmittedParticles);
-				m_EmittedParticles = 0.0f;
-			}
-			uint32_t counter = 0;
-			for (size_t i = 0; i < m_ParticlePool.size(); ++i)
-			{
-				auto& particle = m_ParticlePool[i];
-				if (!particle.Alive)
-					break;
-
-				if (particle.LifeRemaining <= 0.0f)
-				{
-					// Copy last alive at the place of dead particle
-					particle = m_ParticlePool[m_ParticlesAlive - 1];
-					m_ParticlePool[m_ParticlesAlive - 1].Alive = false;
-					m_ParticlesAlive--;
-					continue;
-				}
-
-				particle.LifeRemaining -= ts.GetSeconds();
-				particle.Position += particle.Velocity * ts.GetSeconds();
-				particle.Rotation += particle.AngularVelocity * ts.GetSeconds();
-
-				m_Renderer.RenderData[counter++] = ParticleRenderData{
-					particle.Color,
-					particle.TexCoord,
-					glm::vec2(particle.Position.x, particle.Position.y),
-					particle.Size,
-					particle.Rotation
-				};
-			}
-
-			m_Renderer.InstanceCount = m_ParticlesAlive;
-		});
+		m_Playing = true;
 	}
-	void ParticleSystemCPU::emitt(uint32_t count)
+	void ParticleSystemCPU::Update(Timestep ts, const glm::mat4& transform)
 	{
-		for (uint32_t i = 0; i < count && m_ParticlesAlive < m_MaxParticles; ++i)
+		if (m_Playing)
+		{
+			m_Timestep += ts;
+			if (m_ProcessByThread)
+			{
+				m_ProcessByThread = false;
+				float timeStep = m_Timestep;
+				ParticleThreadPass* pass = &m_ThreadPass;
+				Application::GetThreadPool().PushJob<void>([this, pass, transform, timeStep]() {
+
+					std::scoped_lock<std::mutex> lock(pass->Mutex);
+					m_EmissionModule.Process(*pass, timeStep);
+					
+
+					if (pass->EmittedParticles > 1.0f)
+					{
+						emitt(*pass);
+						pass->EmittedParticles = 0.0f;
+					}
+					uint32_t counter = 0;
+					for (size_t i = 0; i < pass->ParticlePool.size(); ++i)
+					{
+						auto& particle = pass->ParticlePool[i];
+						if (!particle.Alive)
+							break;
+
+						if (particle.LifeRemaining <= 0.0f)
+						{
+							// Copy last alive at the place of dead particle
+							particle = pass->ParticlePool[pass->ParticlesAlive - 1];
+							pass->ParticlePool[pass->ParticlesAlive - 1].Alive = false;
+							pass->ParticlesAlive--;
+							continue;
+						}
+
+						m_VelocityModule.Process(particle, timeStep);
+						particle.LifeRemaining -= timeStep;
+						particle.Position += particle.Velocity * timeStep;
+						particle.Rotation += particle.AngularVelocity * timeStep;
+
+						pass->RenderData[counter++] = ParticleRenderData{
+							particle.Color,
+							particle.TexCoord,
+							glm::vec2(particle.Position.x, particle.Position.y),
+							particle.Size,
+							particle.Rotation
+						};
+					}
+					pass->InstanceCount = pass->ParticlesAlive;
+				});
+				m_Timestep = 0.0f;
+			}
+			attemptSync();
+		}
+	}
+	void ParticleSystemCPU::SetEmissionModule(const EmissionModule& module)
+	{
+		std::scoped_lock<std::mutex> lock(m_ThreadPass.Mutex);
+		m_EmissionModule = module;
+	}
+	void ParticleSystemCPU::attemptSync()
+	{
+		if (!m_ProcessByThread && m_ThreadPass.Mutex.try_lock())
+		{
+			m_Renderer.InstanceCount = m_ThreadPass.InstanceCount;
+			m_Renderer.InstanceVBO->Update(m_ThreadPass.RenderData.data(), m_Renderer.InstanceCount * sizeof(ParticleRenderData));
+			m_ProcessByThread = true;
+			m_ThreadPass.Mutex.unlock();
+		}
+	}
+
+	void ParticleSystemCPU::emitt(ParticleThreadPass& pass)
+	{
+		uint32_t count = (uint32_t)pass.EmittedParticles;
+		for (uint32_t i = 0; i < count && pass.ParticlesAlive < pass.ParticlePool.size(); ++i)
 		{
 			std::random_device dev;
 			std::mt19937 rng(dev());
 			std::uniform_real_distribution<double> dist(-1.0, 1.0); // distribution in range [1, 6]
-			ParticleCPU& particle = m_ParticlePool[m_ParticlesAlive];
+			ParticleCPU& particle = pass.ParticlePool[pass.ParticlesAlive];
 			particle.Alive = true;
 			particle.Size = glm::vec2(0.3f);
 			particle.Position = glm::vec3(0.0f);
@@ -85,7 +125,7 @@ namespace XYZ {
 			particle.AngularVelocity = 25.0f;
 
 			particle.LifeRemaining = 3.0f;
-			m_ParticlesAlive++;		
+			pass.ParticlesAlive++;
 		}
 	}
 
@@ -123,18 +163,12 @@ namespace XYZ {
 		Ref<XYZ::IndexBuffer> squareIBpar;
 		squareIBpar = XYZ::IndexBuffer::Create(squareIndpar, sizeof(squareIndpar) / sizeof(uint32_t));
 		VAO->SetIndexBuffer(squareIBpar);
-		
-		RenderData.resize(maxParticles);
 	}
 
-
-	void ParticleRendererCPU::Bind()
+	void ParticleRendererCPU::Bind() const
 	{
-		if (InstanceCount)
-		{			
-			InstanceVBO->Update(RenderData.data(), InstanceCount * sizeof(ParticleRenderData));
-			VAO->Bind();
-			Renderer::DrawInstanced(VAO, InstanceCount);
-		}
+		VAO->Bind();
+		Renderer::DrawInstanced(VAO, InstanceCount);
 	}
+
 }
