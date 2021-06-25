@@ -112,15 +112,17 @@ namespace XYZ {
 		
 
 		auto& particleComponentCPU = entity.EmplaceComponent<ParticleComponentCPU>();
-		particleComponentCPU.System = Ref<ParticleSystemCPU>::Create(100000);
+		particleComponentCPU.System = Ref<ParticleSystemCPU>::Create(10000);
 
 		particleComponentCPU.System->GetRenderer().Material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShaderCPU.glsl"));
 		particleComponentCPU.System->GetRenderer().Material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
 		particleComponentCPU.System->GetRenderer().Material->SetRenderQueueID(1);
-		//particleComponentCPU.System->Play();
+		particleComponentCPU.System->Play();
 
 		particleComponentCPU.System->AddGenerator(new ParticleBoxGenerator());
 		particleComponentCPU.System->AddParticleUpdate(new BasicTimerUpdater());
+		particleComponentCPU.System->AddParticleUpdate(new PositionUpdater());
+		particleComponentCPU.System->AddParticleUpdate(new LightUpdater());
 		Renderer::WaitAndRender();
 	}
 	

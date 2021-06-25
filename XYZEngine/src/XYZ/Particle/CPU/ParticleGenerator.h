@@ -6,13 +6,15 @@ namespace XYZ {
 	class ParticleGenerator
 	{
 	public:
+		ParticleGenerator();
+
 		virtual ~ParticleGenerator() = default;
 		virtual void Generate(ParticleDataBuffer* data, uint32_t startId, float timeStep) = 0;
 
 
-		float EmittedParticles = 0.0f;
-		float EmitRate = 50000.0f;
-		float LifeTime = 2.0f;
+		float EmittedParticles;
+		float EmitRate;
+		float LifeTime;
 	};
 
 	class ParticleBoxGenerator : public ParticleGenerator

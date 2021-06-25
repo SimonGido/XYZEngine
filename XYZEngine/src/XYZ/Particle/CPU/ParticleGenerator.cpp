@@ -7,6 +7,13 @@
 
 namespace XYZ {
 
+	ParticleGenerator::ParticleGenerator()
+		:
+		EmittedParticles(0.0f),
+		EmitRate(2.0f),
+		LifeTime(10.0f)
+	{
+	}
 
 	ParticleBoxGenerator::ParticleBoxGenerator()
 		:
@@ -18,8 +25,8 @@ namespace XYZ {
 	void ParticleBoxGenerator::Generate(ParticleDataBuffer* data, uint32_t startId, float timeStep)
 	{
 		EmittedParticles += timeStep * EmitRate;
-		uint32_t endId = startId + (uint32_t)std::ceil(EmittedParticles);
-		if (endId)
+		uint32_t endId = startId + (uint32_t)std::floor(EmittedParticles);
+		if (endId > startId)
 		{
 			EmittedParticles = 0.0f;
 			std::random_device dev;
@@ -30,10 +37,14 @@ namespace XYZ {
 			for (size_t i = startId; i < endId; i++)
 			{
 				data->Wake(i);
+				data->m_Particle[i].Color = glm::vec4(glm::linearRand(0.0f, 1.0f));
 				data->m_Particle[i].Position = glm::vec4(glm::linearRand(BoxMin, BoxMax));
 				data->m_Particle[i].Velocity = glm::vec3(dist(rng), dist(rng), 0.0f);
 				data->m_Particle[i].LifeRemaining = LifeTime;
+				data->m_TexCoord[i] = glm::vec4(0.5f, 0.5f, 0.75f, 0.75f);
+				data->m_Size[i] = glm::vec2(0.5f);
 			}
 		}
 	}
+	
 }

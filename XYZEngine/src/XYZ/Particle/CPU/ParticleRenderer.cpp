@@ -11,8 +11,8 @@ namespace XYZ {
 	{
 		glm::vec3 quad[4] = {
 			glm::vec3(-0.5f, -0.5f, 0.0f),
-			glm::vec3(0.5f, -0.5f, 0.0f),
-			glm::vec3(0.5f,  0.5f, 0.0f),
+			glm::vec3( 0.5f, -0.5f, 0.0f),
+			glm::vec3( 0.5f,  0.5f, 0.0f),
 			glm::vec3(-0.5f,  0.5f, 0.0f)
 		};
 

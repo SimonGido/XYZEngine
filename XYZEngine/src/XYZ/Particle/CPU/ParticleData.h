@@ -10,6 +10,7 @@ namespace XYZ {
         ParticleDataBuffer(uint32_t maxParticles);
         ~ParticleDataBuffer();
 
+        void SetMaxParticles(uint32_t maxParticles);
         void Wake(uint32_t id);
         void Kill(uint32_t id);
 
@@ -39,7 +40,9 @@ namespace XYZ {
         uint32_t GetAliveParticles() const { return m_AliveParticles; }
     private:
         void generateParticles(uint32_t particleCount);
+        void deleteParticles();
         void swapData(uint32_t a, uint32_t b);
+
 
     private:
         uint32_t m_MaxParticles;

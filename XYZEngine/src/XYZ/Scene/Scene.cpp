@@ -194,7 +194,7 @@ namespace XYZ {
 		for (auto entity : particleView)
 		{
 			auto [transform, particle] = particleView.Get<TransformComponent, ParticleComponentGPU>(entity);
-			//SceneRenderer::SubmitRendererCommand(&particle.System->m_Renderer, &transform);
+			SceneRenderer::SubmitRendererCommand(&particle.System->m_Renderer, &transform);
 		}
 
 		auto particleViewCPU = m_ECS.CreateView<TransformComponent, ParticleComponentCPU>();
@@ -257,7 +257,7 @@ namespace XYZ {
 		{
 			auto [transform, particle] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU>(entity);
 			auto& system = particle.System;
-			system->Update(ts);
+			system->Update(ts, transform.WorldTransform);
 		}
 		// TODO: This will be called only from script i guess
 		auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponentGPU>();
@@ -307,7 +307,7 @@ namespace XYZ {
 		for (auto entity : particleViewCPU)
 		{
 			auto [transform, particle] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU>(entity);
-			particle.System->Update(ts);
+			particle.System->Update(ts, transform.WorldTransform);
 			SceneRenderer::SubmitRendererCommand(&particle.System->GetRenderer(), &transform);
 		}
 		
