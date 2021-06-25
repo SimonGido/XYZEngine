@@ -112,7 +112,7 @@ namespace XYZ {
 		
 
 		auto& particleComponentCPU = entity.EmplaceComponent<ParticleComponentCPU>();
-		particleComponentCPU.System = Ref<ParticleSystemCPUTest>::Create(100000);
+		particleComponentCPU.System = Ref<ParticleSystemCPU>::Create(100000);
 
 		particleComponentCPU.System->GetRenderer().Material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShaderCPU.glsl"));
 		particleComponentCPU.System->GetRenderer().Material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));

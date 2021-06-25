@@ -8,8 +8,8 @@ namespace XYZ {
 		uint32_t aliveParticles = data->GetAliveParticles();
 		for (uint32_t i = 0; i < aliveParticles; ++i)
 		{
-			data->m_LifeRemaining[i] -= timeStep;
-			if (data->m_LifeRemaining[i] <= 0.0f)
+			data->m_Particle[i].LifeRemaining -= timeStep;
+			if (data->m_Particle[i].LifeRemaining <= 0.0f)
 			{
 				data->Kill(i);
 				aliveParticles--;

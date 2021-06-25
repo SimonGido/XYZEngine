@@ -1,163 +1,43 @@
 #include "stdafx.h"
 #include "ParticleSystemCPU.h"
 
-#include "XYZ/Renderer/Renderer.h"
-#include "XYZ/Core/Application.h"
-
-#include <random>
 
 namespace XYZ {
 
 	ParticleSystemCPU::ParticleSystemCPU(uint32_t maxParticles)
 		:
-		m_MaxParticles(maxParticles),
-		m_Renderer(maxParticles),
-		m_ThreadPass(maxParticles),
-		m_Timestep(0.0f),
-		m_Playing(false),
-		m_ProcessByThread(false)
+		m_Particles(maxParticles),
+		m_Renderer(maxParticles)
 	{
+		m_RenderData.resize(maxParticles);
 	}
-	ParticleSystemCPU::~ParticleSystemCPU()
-	{
-	}
-	void ParticleSystemCPU::SetMaxParticles(uint32_t maxParticles)
-	{
-		m_MaxParticles = maxParticles;
-		{
-			std::scoped_lock<std::mutex> lock(m_ThreadPass.Mutex);
-			m_ThreadPass.ParticlePool.resize(maxParticles);
-			m_ThreadPass.RenderData.resize(maxParticles);
-		}
-	}
-	void ParticleSystemCPU::Play()
-	{
-		m_Playing = true;
-	}
-	void ParticleSystemCPU::Update(Timestep ts, const glm::mat4& transform)
-	{
-		if (m_Playing)
-		{
-			m_Timestep += ts;
-			if (m_ProcessByThread)
-			{
-				m_ProcessByThread = false;
-				float timeStep = m_Timestep;
-				ParticleThreadPass* pass = &m_ThreadPass;
-				Application::GetThreadPool().PushJob<void>([this, pass, transform, timeStep]() {
 
-					std::scoped_lock<std::mutex> lock(pass->Mutex);
-					m_EmissionModule.Process(*pass, timeStep);			
-					emitt(*pass);
+	void ParticleSystemCPU::Update(Timestep ts)
+	{
+		for (auto generator : m_Generators)
+		{
+			uint32_t startId = m_Particles.GetAliveParticles();
+			generator->Generate(&m_Particles, startId, ts.GetSeconds());
+		}
+		for (auto updater : m_Updaters)
+		{
+			updater->Update(ts.GetSeconds(), &m_Particles);
+		}
+		uint32_t endId = m_Particles.GetAliveParticles();
 	
-					uint32_t counter = 0;
-					for (size_t i = 0; i < pass->ParticlePool.size(); ++i)
-					{
-						auto& particle = pass->ParticlePool[i];
-						if (!particle.Alive)
-							break;
-
-						particle.Process(*pass, timeStep);
-						m_VelocityModule.Process(particle, timeStep);
-						m_SizeModule.Process(particle, timeStep);
-
-						pass->RenderData[counter++] = ParticleRenderData{
-							particle.Color,
-							particle.TexCoord,
-							glm::vec2(particle.Position.x, particle.Position.y),
-							particle.Size,
-							particle.Rotation
-						};
-					}
-					pass->InstanceCount = pass->ParticlesAlive;
-				});
-				m_Timestep = 0.0f;
-			}
-			attemptSync();
-		}
-	}
-	void ParticleSystemCPU::SetEmissionModule(const EmissionModule& module)
-	{
-		std::scoped_lock<std::mutex> lock(m_ThreadPass.Mutex);
-		m_EmissionModule = module;
-	}
-	void ParticleSystemCPU::attemptSync()
-	{
-		if (!m_ProcessByThread && m_ThreadPass.Mutex.try_lock())
+		for (uint32_t i = 0; i < endId; ++i)
 		{
-			m_Renderer.InstanceCount = m_ThreadPass.InstanceCount;
-			m_Renderer.InstanceVBO->Update(m_ThreadPass.RenderData.data(), m_Renderer.InstanceCount * sizeof(ParticleRenderData));
-			m_ProcessByThread = true;
-			m_ThreadPass.Mutex.unlock();
+			m_Particles.m_Particle[i].Position += m_Particles.m_Particle[i].Velocity * ts.GetSeconds();
+			m_RenderData[i] = ParticleRenderData{
+				glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
+				glm::vec4(0.0f, 0.0f, 1.0f, 1.0f),
+				glm::vec2(m_Particles.m_Particle[i].Position.x, m_Particles.m_Particle[i].Position.y),
+				glm::vec2(0.5f, 0.5f),
+				m_Particles.m_Rotation[i]
+			};
 		}
-	}
-
-	void ParticleSystemCPU::emitt(ParticleThreadPass& pass)
-	{
-		uint32_t count = (uint32_t)pass.EmittedParticles;
-		if (count)
-		{
-			for (uint32_t i = 0; i < count && pass.ParticlesAlive < pass.ParticlePool.size(); ++i)
-			{
-				std::random_device dev;
-				std::mt19937 rng(dev());
-				std::uniform_real_distribution<double> dist(-1.0, 1.0); // distribution in range [1, 6]
-				ParticleCPU& particle = pass.ParticlePool[pass.ParticlesAlive];
-				particle.Alive = true;
-				particle.Size = glm::vec2(0.3f);
-				particle.Position = glm::vec3(0.0f);
-				particle.Color = glm::vec4(1.0f);
-				particle.TexCoord = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
-				particle.Velocity = glm::vec3(dist(rng), dist(rng), 0.0f);
-				particle.AngularVelocity = 25.0f;
-
-				particle.LifeRemaining = 3.0f;
-				pass.ParticlesAlive++;
-			}
-			pass.EmittedParticles = 0.0f;
-		}
-	}
-
-	ParticleRendererCPU::ParticleRendererCPU(uint32_t maxParticles)
-		:
-		VAO(VertexArray::Create()),
-		Mode(RenderMode::Billboard),
-		InstanceCount(0)
-	{
-		glm::vec3 quad[4] = {
-			glm::vec3(-0.5f, -0.5f, 0.0f),
-			glm::vec3( 0.5f, -0.5f, 0.0f),
-			glm::vec3( 0.5f,  0.5f, 0.0f),
-			glm::vec3(-0.5f,  0.5f, 0.0f)
-		};
-
-		Ref<VertexBuffer> squareVBpar;
-		squareVBpar = XYZ::VertexBuffer::Create(quad, 4 * sizeof(glm::vec3));
-		squareVBpar->SetLayout({
-			{ 0, XYZ::ShaderDataComponent::Float3, "a_Position" }
-		});
-		VAO->AddVertexBuffer(squareVBpar);
-
-		InstanceVBO = VertexBuffer::Create(maxParticles * sizeof(ParticleRenderData));
-		InstanceVBO->SetLayout({
-			{ 1, XYZ::ShaderDataComponent::Float4, "a_IColor",    1 },
-			{ 2, XYZ::ShaderDataComponent::Float4, "a_ITexCoord", 1 },
-			{ 3, XYZ::ShaderDataComponent::Float2, "a_IPosition", 1 },
-			{ 4, XYZ::ShaderDataComponent::Float2, "a_ISize",     1 },
-			{ 5, XYZ::ShaderDataComponent::Float,  "a_IAngle",    1 }
-		});
-		VAO->AddVertexBuffer(InstanceVBO);
-
-		uint32_t squareIndpar[] = { 0, 1, 2, 2, 3, 0 };
-		Ref<XYZ::IndexBuffer> squareIBpar;
-		squareIBpar = XYZ::IndexBuffer::Create(squareIndpar, sizeof(squareIndpar) / sizeof(uint32_t));
-		VAO->SetIndexBuffer(squareIBpar);
-	}
-
-	void ParticleRendererCPU::Bind() const
-	{
-		VAO->Bind();
-		Renderer::DrawInstanced(VAO, InstanceCount);
+		m_Renderer.InstanceCount = endId;
+		m_Renderer.InstanceVBO->Update(m_RenderData.data(), endId * sizeof(ParticleRenderData));
 	}
 
 }

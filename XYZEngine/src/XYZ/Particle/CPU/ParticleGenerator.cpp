@@ -30,11 +30,10 @@ namespace XYZ {
 			for (size_t i = startId; i < endId; i++)
 			{
 				data->Wake(i);
-				data->m_Position[i] = glm::vec4(glm::linearRand(BoxMin, BoxMax));
-				data->m_Velocity[i] = glm::vec3(dist(rng), dist(rng), 0.0f);
-				data->m_LifeRemaining[i] = LifeTime;
+				data->m_Particle[i].Position = glm::vec4(glm::linearRand(BoxMin, BoxMax));
+				data->m_Particle[i].Velocity = glm::vec3(dist(rng), dist(rng), 0.0f);
+				data->m_Particle[i].LifeRemaining = LifeTime;
 			}
 		}
 	}
-
 }

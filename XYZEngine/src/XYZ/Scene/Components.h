@@ -5,7 +5,6 @@
 #include "XYZ/Particle/GPU/ParticleMaterial.h"
 #include "XYZ/Particle/GPU/ParticleSystem.h"
 #include "XYZ/Particle/CPU/ParticleSystemCPU.h"
-#include "XYZ/Particle/CPU/ParticleSystemCPUTest.h"
 
 
 #include "XYZ/Renderer/SubTexture.h"
@@ -125,7 +124,7 @@ namespace XYZ {
 	{
 		ParticleComponentCPU() = default;
 		
-		Ref<ParticleSystemCPUTest> System;
+		Ref<ParticleSystemCPU> System;
 	};
 
 	struct PointLight2D : public IComponent

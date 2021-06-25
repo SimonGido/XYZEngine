@@ -13,15 +13,27 @@ namespace XYZ {
         void Wake(uint32_t id);
         void Kill(uint32_t id);
 
-        glm::vec3*  m_Position;
-        glm::vec4*  m_Color;
+        // Default particle data
+        struct Particle
+        {
+            glm::vec4 Color;
+            glm::vec3 Position;
+            glm::vec3 Velocity;
+           
+            float     LifeRemaining;
+            bool      Alive;
+        };
+
+        Particle*   m_Particle;
+
+        // Additional particle properties;
+        glm::vec4*  m_TexCoord;
         glm::vec4*  m_StartColor;
         glm::vec4*  m_EndColor;
-        glm::vec3*  m_Velocity;
+        glm::vec2*  m_Size;
         float*      m_Rotation;
         float*      m_AngularVelocity;
-        float*      m_LifeRemaining;
-        bool*       m_Alive;
+       
 
         uint32_t GetMaxParticles() const { return m_MaxParticles; }
         uint32_t GetAliveParticles() const { return m_AliveParticles; }
