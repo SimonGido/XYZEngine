@@ -4,6 +4,7 @@
 #include "Renderer.h"
 #include "Renderer2D.h"
 #include "XYZ/Scene/SceneEntity.h"
+#include "XYZ/Scene/Components.h"
 
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/matrix_decompose.hpp>

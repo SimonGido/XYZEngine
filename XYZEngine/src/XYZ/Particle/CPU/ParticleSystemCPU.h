@@ -19,7 +19,7 @@ namespace XYZ {
 		ParticleSystemCPU(uint32_t maxParticles);
 		~ParticleSystemCPU();
 
-		void Update(Timestep ts, const glm::mat4& transform);
+		void Update(Timestep ts);
 		void Play();
 		void Stop();
 

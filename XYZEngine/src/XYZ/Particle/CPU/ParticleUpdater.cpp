@@ -23,14 +23,13 @@ namespace XYZ {
 		uint32_t aliveParticles = data->GetAliveParticles();
 		for (uint32_t i = 0; i < aliveParticles; ++i)
 		{
-			data->m_Particle[i].Position += data->m_Particle[i].Velocity * timeStep;
+			data->m_Particle[i].Position += data->m_Particle[i].Velocity * (float)timeStep;
 		}
 	}
 	LightUpdater::LightUpdater()
 		:
 		MaxLights(10)
 	{
-		Light = new PointLight2D();
 		{
 			LightBuffer.Read().Get().LightPositions.resize(10);
 		}
@@ -55,10 +54,16 @@ namespace XYZ {
 	}
 	void LightUpdater::Update()
 	{
-		auto lightRef = LightBuffer.Read();
-		for (uint32_t i = 0; i < lightRef.Get().LightCount; ++i)
+		if (LightEntity && LightEntity.HasComponent<PointLight2D>())
 		{
-			SceneRenderer::SubmitLight(Light,  glm::translate(lightRef.Get().LightPositions[i]));
+			PointLight2D* light = &LightEntity.GetComponent<PointLight2D>();
+			TransformComponent& transform = LightEntity.GetComponent<TransformComponent>();
+
+			auto lightRef = LightBuffer.Read();
+			for (uint32_t i = 0; i < lightRef.Get().LightCount; ++i)
+			{
+				SceneRenderer::SubmitLight(light, transform.WorldTransform * glm::translate(lightRef.Get().LightPositions[i]));
+			}
 		}
 	}
 	void LightUpdater::SetMaxLights(uint32_t maxLights)

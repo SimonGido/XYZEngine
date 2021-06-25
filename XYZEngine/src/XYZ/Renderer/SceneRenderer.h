@@ -2,6 +2,8 @@
 #include "Camera.h"
 #include "RenderPass.h"
 #include "XYZ/Scene/Scene.h"
+#include "XYZ/Scene/Components.h"
+#include "XYZ/Scene/EditorComponents.h"
 #include "XYZ/Renderer/SkeletalMesh.h"
 
 namespace XYZ {

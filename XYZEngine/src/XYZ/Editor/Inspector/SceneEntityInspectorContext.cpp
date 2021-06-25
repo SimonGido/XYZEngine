@@ -9,6 +9,7 @@
 #include "XYZ/Asset/AssetManager.h"
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Utils/Math/Ray.h"
+#include "XYZ/Scene/Components.h"
 
 #include <imgui.h>
 #include <imgui_internal.h>

@@ -4,6 +4,7 @@
 #include "XYZ/Scene/SceneEntity.h"
 #include "XYZ/Event/ApplicationEvent.h"
 #include "XYZ/Event/InputEvent.h"
+#include "XYZ/Renderer/Texture.h"
 
 namespace XYZ {
 	namespace Editor {

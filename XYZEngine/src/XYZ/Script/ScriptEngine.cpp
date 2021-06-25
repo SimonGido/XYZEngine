@@ -14,6 +14,8 @@
 #include <winioctl.h>
 
 #include "XYZ/Scene/SceneEntity.h"
+#include "XYZ/Scene/Components.h"
+
 #include "ScriptEngineRegistry.h"
 #include "ScriptPublicField.h"
 

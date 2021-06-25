@@ -1,5 +1,6 @@
 #pragma once
 #include "XYZ/Utils/DataStructures/ThreadPass.h"
+#include "XYZ/Scene/SceneEntity.h"
 #include "ParticleData.h"
 
 #include <glm/glm.hpp>
@@ -37,7 +38,8 @@ namespace XYZ {
 		virtual void Update() override;
 
 		void SetMaxLights(uint32_t maxLights);	
-		
+		void SetLightEntity(SceneEntity entity) { LightEntity = entity; }
+
 		struct LigthtPassData
 		{
 			std::vector <glm::vec3> LightPositions;
@@ -45,7 +47,7 @@ namespace XYZ {
 		};
 
 		ThreadPass<LigthtPassData>  LightBuffer;
-		PointLight2D*			    Light;
+		SceneEntity					LightEntity;
 	private:
 		uint32_t					MaxLights;
 	};

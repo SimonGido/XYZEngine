@@ -10,8 +10,8 @@ namespace XYZ {
 	ParticleGenerator::ParticleGenerator()
 		:
 		EmittedParticles(0.0f),
-		EmitRate(2.0f),
-		LifeTime(10.0f)
+		EmitRate(3.0f),
+		LifeTime(2.0f)
 	{
 	}
 
@@ -31,7 +31,7 @@ namespace XYZ {
 			EmittedParticles = 0.0f;
 			std::random_device dev;
 			std::mt19937 rng(dev());
-			std::uniform_real_distribution<double> dist(-1.0, 1.0); // distribution in range [1, 6]
+			std::uniform_real_distribution<double> dist(-2.0, 2.0); // distribution in range [1, 6]
 
 			endId = std::min(endId, data->GetMaxParticles());
 			for (size_t i = startId; i < endId; i++)

@@ -112,7 +112,7 @@ namespace XYZ {
 		
 
 		auto& particleComponentCPU = entity.EmplaceComponent<ParticleComponentCPU>();
-		particleComponentCPU.System = Ref<ParticleSystemCPU>::Create(10000);
+		particleComponentCPU.System = Ref<ParticleSystemCPU>::Create(100);
 
 		particleComponentCPU.System->GetRenderer().Material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShaderCPU.glsl"));
 		particleComponentCPU.System->GetRenderer().Material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
@@ -122,7 +122,16 @@ namespace XYZ {
 		particleComponentCPU.System->AddGenerator(new ParticleBoxGenerator());
 		particleComponentCPU.System->AddParticleUpdate(new BasicTimerUpdater());
 		particleComponentCPU.System->AddParticleUpdate(new PositionUpdater());
-		particleComponentCPU.System->AddParticleUpdate(new LightUpdater());
+
+
+		LightUpdater* lightUpdater = new LightUpdater();
+		auto& lightStorage = m_Scene->GetECS().GetStorage<PointLight2D>();
+		if (lightStorage.Size())
+		{
+			lightUpdater->SetLightEntity(SceneEntity(lightStorage.GetEntityAtIndex(0), m_Scene.Raw()));
+		}
+		particleComponentCPU.System->AddParticleUpdate(lightUpdater);	
+
 		Renderer::WaitAndRender();
 	}
 	

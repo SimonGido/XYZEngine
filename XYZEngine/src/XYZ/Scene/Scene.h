@@ -9,8 +9,7 @@
 
 #include "XYZ/Editor/EditorCamera.h"
 #include "SceneCamera.h"
-#include "Components.h"
-#include "EditorComponents.h"
+
 
 #include "XYZ/Asset/Asset.h"
 

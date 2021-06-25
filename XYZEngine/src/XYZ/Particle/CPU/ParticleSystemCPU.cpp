@@ -5,6 +5,39 @@
 
 namespace XYZ {
 
+	struct FrameCap
+	{
+		FrameCap()
+			:
+			m_Start(std::chrono::system_clock::now()),
+			m_End(std::chrono::system_clock::now())
+		{
+		}
+
+		float Begin(float ms)
+		{
+			m_Start = std::chrono::system_clock::now();
+			std::chrono::duration<float, std::milli> workTime = m_Start - m_End;
+			if (workTime.count() < ms)
+			{
+				std::chrono::duration<float, std::milli> deltaMs(ms - workTime.count());
+				auto delta_ms_duration = std::chrono::duration_cast<std::chrono::milliseconds>(deltaMs);
+				std::this_thread::sleep_for(std::chrono::milliseconds(delta_ms_duration.count()));
+				return ms;
+			}
+			return workTime.count() * 0.001f;
+		}
+		void End()
+		{
+			m_End = std::chrono::system_clock::now();;
+		}
+
+	private:
+		std::chrono::system_clock::time_point m_Start;
+		std::chrono::system_clock::time_point m_End;
+	};
+
+
 	ParticleSystemCPU::ParticleSystemCPU(uint32_t maxParticles)
 		:
 		m_Renderer(maxParticles)
@@ -26,7 +59,7 @@ namespace XYZ {
 		m_SingleThreadPass->Play = false;
 	}
 
-	void ParticleSystemCPU::Update(Timestep ts, const glm::mat4& transform)
+	void ParticleSystemCPU::Update(Timestep ts)
 	{	
 		{
 			ScopedLockReference<DoubleThreadPass> val = m_ThreadPass->Read();
@@ -42,24 +75,6 @@ namespace XYZ {
 		}
 	}
 
-	struct TimeMeasure
-	{
-		TimeMeasure()
-		{
-			m_Start = std::chrono::high_resolution_clock::now();
-		}
-
-		float Seconds()
-		{
-			auto end = std::chrono::high_resolution_clock::now();
-			auto temp = std::chrono::duration_cast<std::chrono::microseconds>(end - m_Start).count();
-			return (float)temp * 0.000001f;
-		}
-
-	private:
-		std::chrono::time_point<std::chrono::high_resolution_clock> m_Start;
-	};
-
 	void ParticleSystemCPU::Play()
 	{
 		if (!m_SingleThreadPass->Play)
@@ -68,11 +83,11 @@ namespace XYZ {
 			auto singleThreadPass = m_SingleThreadPass;
 			auto threadPass = m_ThreadPass;
 			Application::Get().GetThreadPool().PushJob<void>([singleThreadPass, threadPass]() {
-
-				float timestep = 0.0f;			
+				
+				FrameCap timer;
 				while (singleThreadPass->Play)
 				{
-					TimeMeasure timer;
+					float timestep = timer.Begin(FLT_MIN);
 					{
 						std::scoped_lock lock(singleThreadPass->Mutex);
 						ScopedLockReference<DoubleThreadPass> val = threadPass->Write();
@@ -99,7 +114,7 @@ namespace XYZ {
 						}
 						val.Get().InstanceCount = endId;
 					}
-					timestep = timer.Seconds();
+					timer.End();
 					threadPass->AttemptSwap();		
 				}
 			});

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Animation.h"
 #include "SubTexture.h"
+#include "XYZ/Scene/Components.h"
 
 #include <glm/gtx/matrix_interpolation.hpp>
 

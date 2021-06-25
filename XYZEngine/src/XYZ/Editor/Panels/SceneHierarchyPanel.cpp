@@ -3,6 +3,7 @@
 
 #include "XYZ/Core/Input.h"
 #include "XYZ/Scene/SceneEntity.h"
+#include "XYZ/Scene/Components.h"
 
 #include <imgui.h>
 

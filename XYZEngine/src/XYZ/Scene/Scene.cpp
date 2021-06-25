@@ -9,6 +9,8 @@
 #include "XYZ/Renderer/SceneRenderer.h"
 #include "XYZ/Renderer/Animation.h"
 #include "XYZ/Script/ScriptEngine.h"
+#include "Components.h"
+#include "EditorComponents.h"
 
 #include "SceneEntity.h"
 
@@ -257,7 +259,7 @@ namespace XYZ {
 		{
 			auto [transform, particle] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU>(entity);
 			auto& system = particle.System;
-			system->Update(ts, transform.WorldTransform);
+			system->Update(ts);
 		}
 		// TODO: This will be called only from script i guess
 		auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponentGPU>();
@@ -307,7 +309,7 @@ namespace XYZ {
 		for (auto entity : particleViewCPU)
 		{
 			auto [transform, particle] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU>(entity);
-			particle.System->Update(ts, transform.WorldTransform);
+			particle.System->Update(ts);
 			SceneRenderer::SubmitRendererCommand(&particle.System->GetRenderer(), &transform);
 		}
 		
