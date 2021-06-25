@@ -36,7 +36,32 @@ namespace XYZ {
 		std::chrono::system_clock::time_point m_Start;
 		std::chrono::system_clock::time_point m_End;
 	};
+	
 
+	struct TimeMeasure
+	{
+		TimeMeasure()
+			:
+			m_Start(std::chrono::system_clock::now()),
+			m_End(std::chrono::system_clock::now())
+		{
+		}
+
+		double Begin()
+		{
+			m_Start = std::chrono::system_clock::now();
+			std::chrono::duration<double, std::milli> workTime = m_Start - m_End;
+			return workTime.count();
+		}
+		void End()
+		{
+			m_End = std::chrono::system_clock::now();;
+		}
+
+	private:
+		std::chrono::system_clock::time_point m_Start;
+		std::chrono::system_clock::time_point m_End;
+	};
 
 	ParticleSystemCPU::ParticleSystemCPU(uint32_t maxParticles)
 		:
@@ -84,38 +109,46 @@ namespace XYZ {
 			auto threadPass = m_ThreadPass;
 			Application::Get().GetThreadPool().PushJob<void>([singleThreadPass, threadPass]() {
 				
-				FrameCap timer;
+				TimeMeasure timer;
+				double timestep = 0.0f;
 				while (singleThreadPass->Play)
 				{
-					float timestep = timer.Begin(FLT_MIN);
+					timestep += timer.Begin();
+					// If timestep after conversion to seconds is not zero perform step
+					if (timestep > 1000.0 * FLT_MIN)
 					{
-						std::scoped_lock lock(singleThreadPass->Mutex);
-						ScopedLockReference<DoubleThreadPass> val = threadPass->Write();
-						for (auto generator : singleThreadPass->Generators)
+						timestep *= 0.001f;
 						{
-							uint32_t startId = singleThreadPass->Particles.GetAliveParticles();
-							generator->Generate(&singleThreadPass->Particles, startId, timestep);
+							std::scoped_lock lock(singleThreadPass->Mutex);
+							ScopedLockReference<DoubleThreadPass> val = threadPass->Write();
+							for (auto generator : singleThreadPass->Generators)
+							{
+								uint32_t startId = singleThreadPass->Particles.GetAliveParticles();
+								generator->Generate(&singleThreadPass->Particles, startId, timestep);
+							}
+							for (auto updater : singleThreadPass->Updaters)
+							{
+								updater->UpdateParticles(timestep, &singleThreadPass->Particles);
+							}
+							uint32_t endId = singleThreadPass->Particles.GetAliveParticles();
+							for (uint32_t i = 0; i < endId; ++i)
+							{
+								auto& particle = singleThreadPass->Particles.m_Particle[i];
+								val.Get().RenderData[i] = ParticleRenderData{
+									particle.Color,
+									singleThreadPass->Particles.m_TexCoord[i],
+									glm::vec2(particle.Position.x, particle.Position.y),
+									singleThreadPass->Particles.m_Size[i],
+									singleThreadPass->Particles.m_Rotation[i]
+								};
+							}
+							val.Get().InstanceCount = endId;
 						}
-						for (auto updater : singleThreadPass->Updaters)
-						{
-							updater->UpdateParticles(timestep, &singleThreadPass->Particles);
-						}
-						uint32_t endId = singleThreadPass->Particles.GetAliveParticles();
-						for (uint32_t i = 0; i < endId; ++i)
-						{
-							auto& particle = singleThreadPass->Particles.m_Particle[i];
-							val.Get().RenderData[i] = ParticleRenderData{
-								particle.Color,
-								singleThreadPass->Particles.m_TexCoord[i],
-								glm::vec2(particle.Position.x, particle.Position.y),
-								singleThreadPass->Particles.m_Size[i],
-								singleThreadPass->Particles.m_Rotation[i]
-							};
-						}
-						val.Get().InstanceCount = endId;
+						threadPass->AttemptSwap();
+						timestep = 0.0;
 					}
+			
 					timer.End();
-					threadPass->AttemptSwap();		
 				}
 			});
 		}
