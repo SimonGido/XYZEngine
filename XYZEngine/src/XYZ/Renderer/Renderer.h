@@ -1,6 +1,9 @@
 #pragma once
 #include <memory>
 
+#include "XYZ/Core/ThreadPool.h"
+#include "XYZ/Utils/DataStructures/ThreadPass.h"
+
 #include "Shader.h"
 #include "Camera.h"
 #include "VertexArray.h"
@@ -53,25 +56,20 @@ namespace XYZ {
 
 				pFunc->~FuncT(); // Call destructor
 			};
-			auto storageBuffer = GetRenderCommandQueue(type).Allocate(renderCmd, sizeof(func));
+			auto queue = GetRenderCommandQueue(type);
+			auto storageBuffer = queue.Get().Allocate(renderCmd, sizeof(func));
 			new (storageBuffer) FuncT(std::forward<FuncT>(func));
 		}
 
 		static void BeginRenderPass(const Ref<RenderPass>& renderPass, bool clear);
 		static void EndRenderPass();
 
-		/**
-		* @return RendererAPI
-		*/
+		static ThreadPool& GetPool();
 		static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
-
-		/**
-		* Execute the command queue
-		*/
 		static void WaitAndRender();
 
 	private:
-		static RenderCommandQueue& GetRenderCommandQueue(uint8_t type);
+		static ScopedLockReference<RenderCommandQueue> GetRenderCommandQueue(uint8_t type);
 
 	};
 

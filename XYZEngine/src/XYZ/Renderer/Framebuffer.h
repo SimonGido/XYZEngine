@@ -75,6 +75,7 @@ namespace XYZ {
 
 		virtual const uint32_t GetColorAttachmentRendererID(uint32_t index) const = 0;
 		virtual const uint32_t GetDetphAttachmentRendererID() const = 0;
+		virtual const uint32_t GetNumColorAttachments() const = 0;
 
 		virtual const FramebufferSpecs& GetSpecification() const = 0;
 		

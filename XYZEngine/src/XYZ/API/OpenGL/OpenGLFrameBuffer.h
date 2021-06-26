@@ -21,7 +21,7 @@ namespace XYZ {
 
 		virtual const uint32_t GetColorAttachmentRendererID(uint32_t index) const override { return m_ColorAttachments[index]; }
 		virtual const uint32_t GetDetphAttachmentRendererID() const override { return m_DepthAttachment; }
-
+		virtual const uint32_t GetNumColorAttachments() const override { return m_ColorAttachments.size(); }
 	
 		virtual const FramebufferSpecs& GetSpecification() const override { return m_Specification; }
 		virtual void ReadPixel(int32_t& pixel, uint32_t mx, uint32_t my, uint32_t attachmentIndex) const override;

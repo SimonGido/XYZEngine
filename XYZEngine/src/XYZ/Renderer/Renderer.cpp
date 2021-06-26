@@ -14,16 +14,15 @@ namespace XYZ {
 	
 	struct RendererData
 	{
-		enum { Read, Write, Num };
-		RenderCommandQueue	CommandQueue[Num][NumTypes];
-
-		Ref<RenderPass>		ActiveRenderPass;
-		Ref<VertexArray>	FullscreenQuadVertexArray;
-		Ref<VertexBuffer>	FullscreenQuadVertexBuffer;
-		Ref<IndexBuffer>	FullscreenQuadIndexBuffer;
-
-		std::atomic<bool>	SwapQueues = true;
-		uint32_t			ReadQueueIndex = Read;
+		RendererData()
+			: Pool(1)
+		{}
+		std::shared_ptr<ThreadPass<RenderCommandQueue>> CommandQueue;
+		ThreadPool										Pool;
+		Ref<RenderPass>									ActiveRenderPass;
+		Ref<VertexArray>								FullscreenQuadVertexArray;
+		Ref<VertexBuffer>								FullscreenQuadVertexBuffer;
+		Ref<IndexBuffer>								FullscreenQuadIndexBuffer;
 	};
 
 	static RendererData s_Data;
@@ -69,6 +68,7 @@ namespace XYZ {
 
 	void Renderer::Init()
 	{
+		s_Data.CommandQueue = std::make_shared<ThreadPass<RenderCommandQueue>>();
 		Renderer::Submit([=]() {
 			RendererAPI::Init();
 		});
@@ -192,49 +192,24 @@ namespace XYZ {
 		s_Data.ActiveRenderPass = nullptr;
 	}
 
-	void Renderer::WaitAndRender()
+	ThreadPool& Renderer::GetPool()
 	{
-		s_Data.CommandQueue[0][Default].Execute();
-		s_Data.CommandQueue[0][Overlay].Execute();
+		return s_Data.Pool;
 	}
 
-	//void Renderer::WaitAndRender()
-	//{		
-	//	if (s_Data.SwapQueues.load())
-	//	{
-	//		s_Data.SwapQueues.store(false);		
-	//		
-	//		RenderCommandQueue* read[NumTypes];
-	//		for (size_t i = 0; i < NumTypes; ++i)
-	//			read[i] = &s_Data.CommandQueue[s_Data.ReadQueueIndex][i];
-	//	
-	//		Application::GetThreadPool().PushJob<void>([read]() {
-	//			read[Default]->Execute();
-	//			read[Overlay]->Execute();
-	//			GLsync fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-	//			while (true) 
-	//			{
-	//				GLint status = GL_UNSIGNALED;
-	//				glGetSynciv(fence, GL_SYNC_STATUS, sizeof(GLint), NULL, &status);
-	//				if (status == GL_SIGNALED) 
-	//					break; // rendering is complete
-	//			}		
-	//			glDeleteSync(fence);
-	//			glFinish();
-	//			s_Data.SwapQueues.store(true);
-	//		});
-	//	
-	//		
-	//		// Perform "swap" of queues for read and write
-	//		if (s_Data.ReadQueueIndex == RendererData::Read)
-	//			s_Data.ReadQueueIndex = RendererData::Write;
-	//		else
-	//			s_Data.ReadQueueIndex = RendererData::Read;
-	//	}
-	//}
-
-	RenderCommandQueue& Renderer::GetRenderCommandQueue(uint8_t type)
+	void Renderer::WaitAndRender()
 	{
-		return s_Data.CommandQueue[s_Data.ReadQueueIndex][type];
+		auto queue = s_Data.CommandQueue;
+		queue->Swap();
+		s_Data.Pool.PushJob<void>([queue]() {
+			auto val = queue->Read();
+			val.Get().Execute();
+		});
+	}
+
+
+	ScopedLockReference<RenderCommandQueue> Renderer::GetRenderCommandQueue(uint8_t type)
+	{
+		return s_Data.CommandQueue->Write();
 	}
 }

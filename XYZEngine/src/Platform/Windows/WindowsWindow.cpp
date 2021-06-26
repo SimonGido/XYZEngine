@@ -53,8 +53,13 @@ namespace XYZ {
 		}
 
 		m_Context = APIContext::Create(m_Window);	
-		m_Context->Init();
-		
+
+		auto result = Renderer::GetPool().PushJob<bool>([this]() ->bool {
+			m_Context->Init();
+			return true;
+		});
+		result.wait();
+
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 
 		

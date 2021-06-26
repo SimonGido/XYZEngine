@@ -8,7 +8,33 @@
 
 #include <GLFW/glfw3.h>
 
+#include "XYZ/Renderer/Renderer.h"
+
 namespace XYZ {
+
+	static void deactivateContext()
+	{
+		auto result = Renderer::GetPool().PushJob<bool>([]()->bool {
+			glfwMakeContextCurrent(nullptr);
+			return true;
+		});
+		result.wait();
+		Application& app = Application::Get();
+		GLFWwindow* window = static_cast<GLFWwindow*>(app.GetWindow().GetWindow());
+		glfwMakeContextCurrent(window);
+	}
+	static void activateContext()
+	{
+		Application& app = Application::Get();
+		GLFWwindow* window = static_cast<GLFWwindow*>(app.GetWindow().GetWindow());
+		glfwMakeContextCurrent(nullptr);
+		auto result = Renderer::GetPool().PushJob<bool>([window]() ->bool {
+			glfwMakeContextCurrent(window);
+			return true;
+		});
+		result.wait();
+	}
+
 	ImGuiLayer::ImGuiLayer()
 	{
 	}
@@ -41,10 +67,16 @@ namespace XYZ {
 
 		Application& app = Application::Get();
 		GLFWwindow* window = static_cast<GLFWwindow*>(app.GetWindow().GetWindow());
+		
 
 		// Setup Platform/Renderer bindings
-		ImGui_ImplGlfw_InitForOpenGL(window, true);
-		ImGui_ImplOpenGL3_Init("#version 410");
+
+		auto result = Renderer::GetPool().PushJob<bool>([window]()->bool {
+			ImGui_ImplGlfw_InitForOpenGL(window, true);	
+			ImGui_ImplOpenGL3_Init("#version 410");
+			return true;
+		});
+		result.wait();
 	}
 
 	void ImGuiLayer::OnDetach()
@@ -73,29 +105,37 @@ namespace XYZ {
 
 	void ImGuiLayer::Begin()
 	{
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
+		auto result = Renderer::GetPool().PushJob<bool>([this]()->bool {
+			ImGui_ImplOpenGL3_NewFrame();
+			return true;
+		});
+		result.wait();
+
+		ImGui_ImplGlfw_NewFrame();	
 		ImGui::NewFrame();
-		dockspace();
+		dockspace();		
 	}
 
 	void ImGuiLayer::End()
 	{
-		ImGuiIO& io = ImGui::GetIO();
-		Application& app = Application::Get();
-		io.DisplaySize = ImVec2((float)app.GetWindow().GetWidth(), (float)app.GetWindow().GetHeight());
+		auto result = Renderer::GetPool().PushJob<bool>([this]()->bool {
+			ImGuiIO& io = ImGui::GetIO();
+			Application& app = Application::Get();
+			io.DisplaySize = ImVec2((float)app.GetWindow().GetWidth(), (float)app.GetWindow().GetHeight());
+			
+			ImGui::Render();
+			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-		// Rendering
-		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-		{
-			GLFWwindow* backup_current_context = glfwGetCurrentContext();
-			ImGui::UpdatePlatformWindows();
-			ImGui::RenderPlatformWindowsDefault();
-			glfwMakeContextCurrent(backup_current_context);
-		}
+			if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+			{
+				GLFWwindow* backup_current_context = glfwGetCurrentContext();
+				ImGui::UpdatePlatformWindows();
+				ImGui::RenderPlatformWindowsDefault();
+				glfwMakeContextCurrent(backup_current_context);
+			}
+			return true;
+		});
+		result.wait();
 	}
 
 	void ImGuiLayer::SetDarkThemeColors()
