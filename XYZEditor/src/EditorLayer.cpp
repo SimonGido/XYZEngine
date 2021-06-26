@@ -112,7 +112,7 @@ namespace XYZ {
 		
 
 		auto& particleComponentCPU = entity.EmplaceComponent<ParticleComponentCPU>();
-		particleComponentCPU.System = Ref<ParticleSystemCPU>::Create(1);
+		particleComponentCPU.System = Ref<ParticleSystemCPU>::Create(100);
 		
 		particleComponentCPU.System->GetRenderer().Material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShaderCPU.glsl"));
 		particleComponentCPU.System->GetRenderer().Material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
@@ -132,11 +132,21 @@ namespace XYZ {
 			SceneEntity lightEntity(lightStorage.GetEntityAtIndex(0), m_Scene.Raw());
 			lightUpdater->SetLightEntity(lightEntity);
 			auto& another = lightEntity.EmplaceComponent<ParticleComponentCPU>();
-			another.System = Ref<ParticleSystemCPU>::Create(1);
+			another.System = Ref<ParticleSystemCPU>::Create(100);
 			another.System->GetRenderer().Material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShaderCPU.glsl"));
 			another.System->GetRenderer().Material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
 			another.System->GetRenderer().Material->SetRenderQueueID(1);
 			another.System->Play();
+
+			another.System->AddGenerator(new ParticleBoxGenerator());
+			another.System->AddParticleUpdate(new BasicTimerUpdater());
+			another.System->AddParticleUpdate(new PositionUpdater());
+			
+
+			LightUpdater* anotherLightUpdater = new LightUpdater();
+			anotherLightUpdater->SetLightEntity(lightEntity);
+			anotherLightUpdater->SetTransformEntity(lightEntity);
+			another.System->AddParticleUpdate(anotherLightUpdater);
 		}
 		lightUpdater->SetTransformEntity(entity);
 		

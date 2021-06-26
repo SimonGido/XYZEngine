@@ -238,6 +238,7 @@ namespace XYZ {
 	void SceneRenderer::SubmitLight(PointLight2D* light, const glm::mat4& transform)
 	{
 		XYZ_ASSERT(s_Data.PointLightsList.size() + 1 < s_Data.MaxNumberOfLights, "Max number of lights per scene is ", s_Data.MaxNumberOfLights);
+
 		SceneRendererData::PointLight lightData;
 		lightData.Position  = glm::vec2(transform[3][0], transform[3][1]);
 		lightData.Color     = glm::vec4(light->Color, 0.0f);
@@ -248,6 +249,7 @@ namespace XYZ {
 	void SceneRenderer::SubmitLight(SpotLight2D* light, const glm::mat4& transform)
 	{
 		XYZ_ASSERT(s_Data.SpotLightsList.size() + 1 < s_Data.MaxNumberOfLights, "Max number of lights per scene is ", s_Data.MaxNumberOfLights);
+
 		SceneRendererData::SpotLight lightData;
 		lightData.Position   = glm::vec2(transform[3][0], transform[3][1]);
 		lightData.Color		 = glm::vec4(light->Color, 0.0f);

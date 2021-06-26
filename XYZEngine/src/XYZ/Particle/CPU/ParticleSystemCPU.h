@@ -28,6 +28,9 @@ namespace XYZ {
 
 		ParticleRendererCPU& GetRenderer() { return m_Renderer; }
 	private:
+		void particleThreadUpdate(float timestep);
+
+	private:
 		struct DoubleThreadPass
 		{
 			DoubleThreadPass();				
@@ -45,15 +48,14 @@ namespace XYZ {
 
 			ParticleDataBuffer			    Particles;
 			std::vector<ParticleUpdater*>	Updaters;
-			std::vector<ParticleGenerator*>	Generators;
-
-			std::atomic<bool>			    Play;
+			std::vector<ParticleGenerator*>	Generators;			
 			std::mutex						Mutex;
 		};
 
 		ParticleRendererCPU							  m_Renderer;	
 		std::shared_ptr<SingleThreadPass>			  m_SingleThreadPass;
 		std::shared_ptr<ThreadPass<DoubleThreadPass>> m_ThreadPass;
+		bool										  m_Play;
 	};
 
 }

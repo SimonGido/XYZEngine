@@ -37,7 +37,6 @@ namespace XYZ {
 
 	private:
 		LayerStack m_LayerStack;
-
 		ImGuiLayer* m_ImGuiLayer;
 
 		std::unique_ptr<Window> m_Window;

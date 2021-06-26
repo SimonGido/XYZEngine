@@ -10,7 +10,7 @@ namespace XYZ {
 	ParticleGenerator::ParticleGenerator()
 		:
 		EmittedParticles(0.0f),
-		EmitRate(5.0f),
+		EmitRate(10.0f),
 		LifeTime(8.0f)
 	{
 	}

@@ -14,7 +14,7 @@
 namespace XYZ {
 	Application* Application::s_Application = nullptr;
 
-	ThreadPool Application::s_ThreadPool(1);
+	ThreadPool Application::s_ThreadPool(12);
 
 	Application::Application()
 	{

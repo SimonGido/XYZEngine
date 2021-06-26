@@ -5,66 +5,6 @@
 
 namespace XYZ {
 
-	struct FrameCap
-	{
-		FrameCap()
-			:
-			m_Start(std::chrono::high_resolution_clock::now()),
-			m_End(std::chrono::high_resolution_clock::now())
-		{
-		}
-
-		double Begin(double ms)
-		{
-			m_Start = std::chrono::high_resolution_clock::now();
-			std::chrono::duration<double, std::milli> workTime = m_Start - m_End;
-			if (workTime.count() < ms)
-			{
-				std::chrono::duration<double, std::milli> deltaMs(ms - workTime.count());
-				auto delta_ms_duration = std::chrono::duration_cast<std::chrono::milliseconds>(deltaMs);
-				std::this_thread::sleep_for(std::chrono::milliseconds(delta_ms_duration.count()));
-				return ms;
-			}
-			return workTime.count();
-		}
-		void End()
-		{
-			m_End = std::chrono::high_resolution_clock::now();;
-		}
-
-	private:
-		std::chrono::high_resolution_clock::time_point m_Start;
-		std::chrono::high_resolution_clock::time_point m_End;
-	};
-	
-
-	struct TimeMeasure
-	{
-		TimeMeasure()
-			:
-			m_Start(std::chrono::high_resolution_clock::now()),
-			m_End(std::chrono::high_resolution_clock::now())
-		{
-		}
-
-		double Begin()
-		{
-			m_Start = std::chrono::high_resolution_clock::now();
-			std::chrono::duration<double, std::milli> workTime = m_Start - m_End;
-			std::cout.precision(17);
-			std::cout << workTime.count() * 0.001 << std::endl;
-			return workTime.count() * 0.001;
-		}
-		void End()
-		{
-			m_End = std::chrono::high_resolution_clock::now();;
-		}
-
-	private:
-		std::chrono::high_resolution_clock::time_point m_Start;
-		std::chrono::high_resolution_clock::time_point m_End;
-	};
-
 	ParticleSystemCPU::ParticleSystemCPU(uint32_t maxParticles)
 		:
 		m_Renderer(maxParticles)
@@ -83,73 +23,35 @@ namespace XYZ {
 
 	ParticleSystemCPU::~ParticleSystemCPU()
 	{
-		m_SingleThreadPass->Play = false;
 	}
 
 	void ParticleSystemCPU::Update(Timestep ts)
 	{	
+		if (m_Play)
 		{
-			ScopedLockReference<DoubleThreadPass> val = m_ThreadPass->Read();
-			m_Renderer.InstanceCount = val.Get().InstanceCount;
-			m_Renderer.InstanceVBO->Update(val.Get().RenderData.data(), m_Renderer.InstanceCount * sizeof(ParticleRenderData));
-		}
-		{
-			std::scoped_lock lock(m_SingleThreadPass->Mutex);
-			for (auto updater : m_SingleThreadPass->Updaters)
+			particleThreadUpdate(ts.GetSeconds());
 			{
-				updater->Update();
+				ScopedLockReference<DoubleThreadPass> val = m_ThreadPass->Read();
+				m_Renderer.InstanceCount = val.Get().InstanceCount;
+				m_Renderer.InstanceVBO->Update(val.Get().RenderData.data(), m_Renderer.InstanceCount * sizeof(ParticleRenderData));
+			}
+			{
+				std::scoped_lock lock(m_SingleThreadPass->Mutex);
+				for (auto updater : m_SingleThreadPass->Updaters)
+				{
+					updater->Update();
+				}
 			}
 		}
 	}
 
 	void ParticleSystemCPU::Play()
 	{
-		if (!m_SingleThreadPass->Play)
-		{
-			m_SingleThreadPass->Play = true;
-			auto singleThreadPass = m_SingleThreadPass;
-			auto threadPass = m_ThreadPass;
-			Application::Get().GetThreadPool().PushJob<void>([singleThreadPass, threadPass]() {
-				
-				FrameCap cap;
-				while (singleThreadPass->Play)
-				{					
-					double timestep = cap.Begin(10.0) * 0.001; // Timestep is capped at 10 ms
-					{
-						std::scoped_lock lock(singleThreadPass->Mutex);
-						ScopedLockReference<DoubleThreadPass> val = threadPass->Write();
-						for (auto generator : singleThreadPass->Generators)
-						{
-							uint32_t startId = singleThreadPass->Particles.GetAliveParticles();
-							generator->Generate(&singleThreadPass->Particles, startId, timestep);
-						}
-						for (auto updater : singleThreadPass->Updaters)
-						{
-							updater->UpdateParticles(timestep, &singleThreadPass->Particles);
-						}
-						uint32_t endId = singleThreadPass->Particles.GetAliveParticles();
-						for (uint32_t i = 0; i < endId; ++i)
-						{
-							auto& particle = singleThreadPass->Particles.m_Particle[i];
-							val.Get().RenderData[i] = ParticleRenderData{
-								particle.Color,
-								singleThreadPass->Particles.m_TexCoord[i],
-								glm::vec2(particle.Position.x, particle.Position.y),
-								singleThreadPass->Particles.m_Size[i],
-								singleThreadPass->Particles.m_Rotation[i]
-							};
-						}
-						val.Get().InstanceCount = endId;
-					}
-					threadPass->AttemptSwap();				
-					cap.End();
-				}
-			});
-		}
+		m_Play = true;
 	}
 	void ParticleSystemCPU::Stop()
 	{
-		m_SingleThreadPass->Play.store(false);
+		m_Play = false;
 	}
 	void ParticleSystemCPU::AddParticleUpdate(ParticleUpdater* updater)
 	{
@@ -160,6 +62,40 @@ namespace XYZ {
 	{
 		std::scoped_lock lock(m_SingleThreadPass->Mutex);
 		m_SingleThreadPass->Generators.push_back(generator);
+	}
+	void ParticleSystemCPU::particleThreadUpdate(float timestep)
+	{
+		auto singleThreadPass = m_SingleThreadPass;
+		auto threadPass = m_ThreadPass;
+		Application::Get().GetThreadPool().PushJob<void>([singleThreadPass, threadPass, timestep]() {			
+			{
+				std::scoped_lock lock(singleThreadPass->Mutex);
+				ScopedLockReference<DoubleThreadPass> val = threadPass->Write();
+				for (auto generator : singleThreadPass->Generators)
+				{
+					uint32_t startId = singleThreadPass->Particles.GetAliveParticles();
+					generator->Generate(&singleThreadPass->Particles, startId, timestep);
+				}
+				for (auto updater : singleThreadPass->Updaters)
+				{
+					updater->UpdateParticles(timestep, &singleThreadPass->Particles);
+				}
+				uint32_t endId = singleThreadPass->Particles.GetAliveParticles();
+				for (uint32_t i = 0; i < endId; ++i)
+				{
+					auto& particle = singleThreadPass->Particles.m_Particle[i];
+					val.Get().RenderData[i] = ParticleRenderData{
+						particle.Color,
+						singleThreadPass->Particles.m_TexCoord[i],
+						glm::vec2(particle.Position.x, particle.Position.y),
+						singleThreadPass->Particles.m_Size[i],
+						singleThreadPass->Particles.m_Rotation[i]
+					};
+				}
+				val.Get().InstanceCount = endId;
+			}
+			threadPass->AttemptSwap();
+		});
 	}
 	ParticleSystemCPU::DoubleThreadPass::DoubleThreadPass()
 		:
@@ -174,8 +110,7 @@ namespace XYZ {
 	}
 	ParticleSystemCPU::SingleThreadPass::SingleThreadPass(uint32_t maxParticles)
 		:
-		Particles(maxParticles),
-		Play(false)
+		Particles(maxParticles)
 	{
 	}
 	ParticleSystemCPU::SingleThreadPass::~SingleThreadPass()
