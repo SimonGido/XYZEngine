@@ -543,7 +543,6 @@ namespace XYZ {
 	void OpenGLShader::compileAndUpload()
 	{
 		GLuint program = glCreateProgram();
-	
 		XYZ_ASSERT(m_ShaderSources.size() <= 3, "We only support 3 shaders for now");
 		std::array<GLenum, 3> glShaderIDs;
 

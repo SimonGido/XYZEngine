@@ -55,7 +55,7 @@ namespace XYZ {
 		m_AngularVelocity = new float[particleCount];
 		m_Rotation		  = new float[particleCount];
 
-		for (uint32_t i = 0; i < particleCount; ++i)
+		for (size_t i = 0; i < particleCount; ++i)
 			m_Particle[i].Alive = false;
 	}
 	void ParticleDataBuffer::swapData(uint32_t a, uint32_t b)

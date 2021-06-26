@@ -23,18 +23,18 @@ namespace XYZ {
 		uint32_t aliveParticles = data->GetAliveParticles();
 		for (uint32_t i = 0; i < aliveParticles; ++i)
 		{
-			data->m_Particle[i].Position += data->m_Particle[i].Velocity * (float)timeStep;
+			data->m_Particle[i].Position += data->m_Particle[i].Velocity * timeStep;
 		}
 	}
 	LightUpdater::LightUpdater()
 		:
-		MaxLights(10)
+		MaxLights(50)
 	{
 		{
-			LightBuffer.Read().Get().LightPositions.resize(10);
+			LightBuffer.Read().Get().LightPositions.resize(50);
 		}
 		{
-			LightBuffer.Write().Get().LightPositions.resize(10);
+			LightBuffer.Write().Get().LightPositions.resize(50);
 		}
 	}
 	void LightUpdater::UpdateParticles(float timeStep, ParticleDataBuffer* data)
@@ -54,10 +54,10 @@ namespace XYZ {
 	}
 	void LightUpdater::Update()
 	{
-		if (LightEntity && LightEntity.HasComponent<PointLight2D>())
+		if (LightEntity && LightEntity.HasComponent<PointLight2D>() && TransformEntity)
 		{
 			PointLight2D* light = &LightEntity.GetComponent<PointLight2D>();
-			TransformComponent& transform = LightEntity.GetComponent<TransformComponent>();
+			TransformComponent& transform = TransformEntity.GetComponent<TransformComponent>();
 
 			auto lightRef = LightBuffer.Read();
 			for (uint32_t i = 0; i < lightRef.Get().LightCount; ++i)

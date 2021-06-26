@@ -9,7 +9,7 @@
 
 namespace XYZ {
 
-#ifdef XYZ_DEBUG
+//#ifdef XYZ_DEBUG
 	void OpenglCallbackFunction(
 		GLenum source,
 		GLenum Component,
@@ -68,7 +68,7 @@ namespace XYZ {
 	{
 		XYZ_LOG_ERR(code, " ", description);
 	}
-#endif
+//#endif
 
 	OpenGLAPIContext::OpenGLAPIContext(GLFWwindow* windowHandle)
 		: m_WindowHandle(windowHandle)
@@ -96,7 +96,7 @@ namespace XYZ {
 		glLoadIdentity();
 
 
-#ifdef XYZ_DEBUG
+//#ifdef XYZ_DEBUG
 		if (glDebugMessageCallback)
 		{
 			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
@@ -107,7 +107,7 @@ namespace XYZ {
 			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, &unusedIds, true);
 		}
 		glfwSetErrorCallback(GLFWErrorCallback);
-#endif
+//#endif
 	}
 
 	void OpenGLAPIContext::SwapBuffers()

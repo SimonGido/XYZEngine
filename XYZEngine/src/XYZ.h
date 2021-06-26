@@ -6,7 +6,7 @@
 #include "XYZ/Core/MouseCodes.h" 
 #include "XYZ/Core/WindowCodes.h"
 #include "XYZ/Core/Ref.h"
-#include "XYZ/Timer.h"
+#include "XYZ/Debug/Timer.h"
 
 
 //-----Events-----//

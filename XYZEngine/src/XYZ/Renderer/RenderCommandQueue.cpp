@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "RenderCommandQueue.h"
 
+#include <assert.h>
+
 namespace XYZ {
 	RenderCommandQueue::RenderCommandQueue()
 	{
@@ -32,11 +34,11 @@ namespace XYZ {
 		return memory;
 	}
 
+
 	void RenderCommandQueue::Execute()
 	{
 		//std::scoped_lock<std::mutex> lock(m_Mutex);
 		uint8_t* buffer = m_CommandBuffer;
-
 		for (uint32_t i = 0; i < m_CommandCount; i++)
 		{
 			RenderCommandFn function = *(RenderCommandFn*)buffer;

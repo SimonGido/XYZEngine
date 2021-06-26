@@ -39,7 +39,7 @@ namespace XYZ {
 
 		void SetMaxLights(uint32_t maxLights);	
 		void SetLightEntity(SceneEntity entity) { LightEntity = entity; }
-
+		void SetTransformEntity(SceneEntity entity) { TransformEntity = entity; }
 		struct LigthtPassData
 		{
 			std::vector <glm::vec3> LightPositions;
@@ -48,6 +48,7 @@ namespace XYZ {
 
 		ThreadPass<LigthtPassData>  LightBuffer;
 		SceneEntity					LightEntity;
+		SceneEntity					TransformEntity;
 	private:
 		uint32_t					MaxLights;
 	};

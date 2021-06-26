@@ -8,6 +8,7 @@
 #include "RenderCommandQueue.h"
 #include "RenderPass.h"
 
+
 namespace XYZ {
 
 	enum RenderQueueType
@@ -46,6 +47,7 @@ namespace XYZ {
 		static void Submit(FuncT&& func, uint32_t type = Default)
 		{
 			auto renderCmd = [](void* ptr) {
+				
 				auto pFunc = (FuncT*)ptr;
 				(*pFunc)();
 

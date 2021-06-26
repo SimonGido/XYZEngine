@@ -4,8 +4,8 @@ Entities:
     SceneTagComponent:
       Name: Scary Entity
     TransformComponent:
-      Position: [1.3999629, -1.16000056, 0]
-      Rotation: [0, -0, 8.51124184e-08]
+      Position: [-0.00499591231, -1.16000056, 0]
+      Rotation: [0, -0, 8.51125037e-08]
       Scale: [1, 1, 1]
     SpriteRenderer:
       MaterialAsset: 8e302fbb-0049-47c6-97a6-4ca49ee28da0
@@ -14,7 +14,7 @@ Entities:
       SortLayer: 0
       Visible: true
     Relationship:
-      Parent: 07b79a89-32e4-4a15-b15b-b4fcfda545f0
+      Parent: 3e359c9a-15ed-4791-b3dd-52429b558313
       PreviousSibling: 7d2ac969-0a31-46d7-98d5-ceb1b25c67af
     RigidBody2D:
       Type: 1
@@ -35,8 +35,8 @@ Entities:
       Name: Background
     TransformComponent:
       Position: [0, 0, -0.0500000007]
-      Rotation: [0, 0, 0]
-      Scale: [6.0999999, 4, 1]
+      Rotation: [0, -0, 0]
+      Scale: [11.9966965, 9.05235577, 1]
     SpriteRenderer:
       MaterialAsset: 8e302fbb-0049-47c6-97a6-4ca49ee28da0
       SubTextureAsset: b68d1017-b960-44d1-b7db-ca65a2db6aee
@@ -44,7 +44,7 @@ Entities:
       SortLayer: 0
       Visible: true
     Relationship:
-      Parent: 07b79a89-32e4-4a15-b15b-b4fcfda545f0
+      Parent: 3e359c9a-15ed-4791-b3dd-52429b558313
       NextSibling: 83da08c4-02dd-482b-805d-73607200846c
       PreviousSibling: 028f6e22-ee3b-42cd-95f0-6c8130222131
     ChainCollider2D:
@@ -70,7 +70,7 @@ Entities:
       OrthographicNear: -1
       OrthographicFar: 1
     Relationship:
-      Parent: 07b79a89-32e4-4a15-b15b-b4fcfda545f0
+      Parent: 3e359c9a-15ed-4791-b3dd-52429b558313
       NextSibling: 7d2ac969-0a31-46d7-98d5-ceb1b25c67af
       PreviousSibling: 88f308fd-785b-4833-b6f3-e89fb0996bb3
   - Entity: 88f308fd-785b-4833-b6f3-e89fb0996bb3
@@ -81,7 +81,7 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
-      Parent: 07b79a89-32e4-4a15-b15b-b4fcfda545f0
+      Parent: 3e359c9a-15ed-4791-b3dd-52429b558313
       NextSibling: 028f6e22-ee3b-42cd-95f0-6c8130222131
       PreviousSibling: 5b984494-5db4-4ead-892b-9fadc86d4b52
     RigidBody2D:
@@ -99,12 +99,12 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
-      Parent: 07b79a89-32e4-4a15-b15b-b4fcfda545f0
+      Parent: 3e359c9a-15ed-4791-b3dd-52429b558313
       NextSibling: 88f308fd-785b-4833-b6f3-e89fb0996bb3
       PreviousSibling: a1345771-51d8-47b2-ba0c-0ab1fa579971
     SpotLight2D:
       Color: [1, 1, 1]
-      Radius: 2.20000005
+      Radius: -0.349999994
       Intensity: 1
       OuterAngle: 83
       InnerAngle: -48
@@ -112,13 +112,13 @@ Entities:
     SceneTagComponent:
       Name: Light1
     TransformComponent:
-      Position: [1.35000002, -1.14999998, 0]
+      Position: [-9.35000038, -0.25, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
-      Parent: 07b79a89-32e4-4a15-b15b-b4fcfda545f0
+      Parent: 3e359c9a-15ed-4791-b3dd-52429b558313
       NextSibling: 5b984494-5db4-4ead-892b-9fadc86d4b52
     PointLight2D:
-      Color: [5.8499999, 1, 1]
-      Radius: 0.949999988
-      Intensity: 1
+      Color: [1.25, 0.100000001, 3.75]
+      Radius: 0.800000012
+      Intensity: 3.75

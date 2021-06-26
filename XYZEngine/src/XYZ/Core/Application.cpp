@@ -2,7 +2,7 @@
 #include "Application.h"
 
 
-#include "XYZ/Timer.h"
+#include "XYZ/Debug/Timer.h"
 #include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Asset/AssetManager.h"
 
@@ -14,7 +14,7 @@
 namespace XYZ {
 	Application* Application::s_Application = nullptr;
 
-	ThreadPool Application::s_ThreadPool(12);
+	ThreadPool Application::s_ThreadPool(1);
 
 	Application::Application()
 	{
@@ -26,7 +26,7 @@ namespace XYZ {
 
 		m_Window = Window::Create();
 		m_Window->RegisterCallback(Hook(&Application::OnEvent, this));	
-
+		 
 		TCHAR NPath[MAX_PATH];
 		GetCurrentDirectory(MAX_PATH, NPath);
 		std::wstring tmp(&NPath[0]);
@@ -50,7 +50,7 @@ namespace XYZ {
 			float timestep = time - m_LastFrameTime;
 			m_LastFrameTime = time;
 			{
-				//Stopwatch watch;
+				Stopwatch watch;
 				
 				for (Layer* layer : m_LayerStack)	
 					layer->OnUpdate(timestep);	

@@ -9,32 +9,32 @@ namespace XYZ {
 	{
 		FrameCap()
 			:
-			m_Start(std::chrono::system_clock::now()),
-			m_End(std::chrono::system_clock::now())
+			m_Start(std::chrono::high_resolution_clock::now()),
+			m_End(std::chrono::high_resolution_clock::now())
 		{
 		}
 
-		float Begin(float ms)
+		double Begin(double ms)
 		{
-			m_Start = std::chrono::system_clock::now();
-			std::chrono::duration<float, std::milli> workTime = m_Start - m_End;
+			m_Start = std::chrono::high_resolution_clock::now();
+			std::chrono::duration<double, std::milli> workTime = m_Start - m_End;
 			if (workTime.count() < ms)
 			{
-				std::chrono::duration<float, std::milli> deltaMs(ms - workTime.count());
+				std::chrono::duration<double, std::milli> deltaMs(ms - workTime.count());
 				auto delta_ms_duration = std::chrono::duration_cast<std::chrono::milliseconds>(deltaMs);
 				std::this_thread::sleep_for(std::chrono::milliseconds(delta_ms_duration.count()));
 				return ms;
 			}
-			return workTime.count() * 0.001f;
+			return workTime.count();
 		}
 		void End()
 		{
-			m_End = std::chrono::system_clock::now();;
+			m_End = std::chrono::high_resolution_clock::now();;
 		}
 
 	private:
-		std::chrono::system_clock::time_point m_Start;
-		std::chrono::system_clock::time_point m_End;
+		std::chrono::high_resolution_clock::time_point m_Start;
+		std::chrono::high_resolution_clock::time_point m_End;
 	};
 	
 
@@ -42,25 +42,27 @@ namespace XYZ {
 	{
 		TimeMeasure()
 			:
-			m_Start(std::chrono::system_clock::now()),
-			m_End(std::chrono::system_clock::now())
+			m_Start(std::chrono::high_resolution_clock::now()),
+			m_End(std::chrono::high_resolution_clock::now())
 		{
 		}
 
 		double Begin()
 		{
-			m_Start = std::chrono::system_clock::now();
+			m_Start = std::chrono::high_resolution_clock::now();
 			std::chrono::duration<double, std::milli> workTime = m_Start - m_End;
-			return workTime.count();
+			std::cout.precision(17);
+			std::cout << workTime.count() * 0.001 << std::endl;
+			return workTime.count() * 0.001;
 		}
 		void End()
 		{
-			m_End = std::chrono::system_clock::now();;
+			m_End = std::chrono::high_resolution_clock::now();;
 		}
 
 	private:
-		std::chrono::system_clock::time_point m_Start;
-		std::chrono::system_clock::time_point m_End;
+		std::chrono::high_resolution_clock::time_point m_Start;
+		std::chrono::high_resolution_clock::time_point m_End;
 	};
 
 	ParticleSystemCPU::ParticleSystemCPU(uint32_t maxParticles)
@@ -109,46 +111,38 @@ namespace XYZ {
 			auto threadPass = m_ThreadPass;
 			Application::Get().GetThreadPool().PushJob<void>([singleThreadPass, threadPass]() {
 				
-				TimeMeasure timer;
-				double timestep = 0.0f;
+				FrameCap cap;
 				while (singleThreadPass->Play)
-				{
-					timestep += timer.Begin();
-					// If timestep after conversion to seconds is not zero perform step
-					if (timestep > 1000.0 * FLT_MIN)
+				{					
+					double timestep = cap.Begin(10.0) * 0.001; // Timestep is capped at 10 ms
 					{
-						timestep *= 0.001f;
+						std::scoped_lock lock(singleThreadPass->Mutex);
+						ScopedLockReference<DoubleThreadPass> val = threadPass->Write();
+						for (auto generator : singleThreadPass->Generators)
 						{
-							std::scoped_lock lock(singleThreadPass->Mutex);
-							ScopedLockReference<DoubleThreadPass> val = threadPass->Write();
-							for (auto generator : singleThreadPass->Generators)
-							{
-								uint32_t startId = singleThreadPass->Particles.GetAliveParticles();
-								generator->Generate(&singleThreadPass->Particles, startId, timestep);
-							}
-							for (auto updater : singleThreadPass->Updaters)
-							{
-								updater->UpdateParticles(timestep, &singleThreadPass->Particles);
-							}
-							uint32_t endId = singleThreadPass->Particles.GetAliveParticles();
-							for (uint32_t i = 0; i < endId; ++i)
-							{
-								auto& particle = singleThreadPass->Particles.m_Particle[i];
-								val.Get().RenderData[i] = ParticleRenderData{
-									particle.Color,
-									singleThreadPass->Particles.m_TexCoord[i],
-									glm::vec2(particle.Position.x, particle.Position.y),
-									singleThreadPass->Particles.m_Size[i],
-									singleThreadPass->Particles.m_Rotation[i]
-								};
-							}
-							val.Get().InstanceCount = endId;
+							uint32_t startId = singleThreadPass->Particles.GetAliveParticles();
+							generator->Generate(&singleThreadPass->Particles, startId, timestep);
 						}
-						threadPass->AttemptSwap();
-						timestep = 0.0;
+						for (auto updater : singleThreadPass->Updaters)
+						{
+							updater->UpdateParticles(timestep, &singleThreadPass->Particles);
+						}
+						uint32_t endId = singleThreadPass->Particles.GetAliveParticles();
+						for (uint32_t i = 0; i < endId; ++i)
+						{
+							auto& particle = singleThreadPass->Particles.m_Particle[i];
+							val.Get().RenderData[i] = ParticleRenderData{
+								particle.Color,
+								singleThreadPass->Particles.m_TexCoord[i],
+								glm::vec2(particle.Position.x, particle.Position.y),
+								singleThreadPass->Particles.m_Size[i],
+								singleThreadPass->Particles.m_Rotation[i]
+							};
+						}
+						val.Get().InstanceCount = endId;
 					}
-			
-					timer.End();
+					threadPass->AttemptSwap();				
+					cap.End();
 				}
 			});
 		}

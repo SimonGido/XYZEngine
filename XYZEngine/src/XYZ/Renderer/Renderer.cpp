@@ -6,8 +6,6 @@
 #include "SceneRenderer.h"
 
 #include "XYZ/Core/Application.h"
-#include "XYZ/Timer.h"
-
 
 #include <GL/glew.h>
 
