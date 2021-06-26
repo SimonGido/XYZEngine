@@ -126,12 +126,12 @@ namespace XYZ {
 
 		particleComponentCPU.System->AddEmitter(emitter);
 
-		particleComponentCPU.System->AddParticleUpdater(Ref<BasicTimerUpdater>::Create());
-		particleComponentCPU.System->AddParticleUpdater(Ref<PositionUpdater>::Create());
+		particleComponentCPU.System->AddUpdater(Ref<BasicTimerUpdater>::Create());
+		particleComponentCPU.System->AddUpdater(Ref<PositionUpdater>::Create());
 		
 		
 		Ref<LightUpdater> lightUpdater = Ref<LightUpdater>::Create();
-		particleComponentCPU.System->AddParticleUpdater(lightUpdater);
+		particleComponentCPU.System->AddUpdater(lightUpdater);
 		auto& lightStorage = m_Scene->GetECS().GetStorage<PointLight2D>();
 		if (lightStorage.Size())
 		{
@@ -145,14 +145,14 @@ namespace XYZ {
 			another.System->Play();
 
 			another.System->AddEmitter(emitter);
-			another.System->AddParticleUpdater(Ref<BasicTimerUpdater>::Create());
-			another.System->AddParticleUpdater(Ref<PositionUpdater>::Create());
+			another.System->AddUpdater(Ref<BasicTimerUpdater>::Create());
+			another.System->AddUpdater(Ref<PositionUpdater>::Create());
 			
 
 			Ref<LightUpdater> anotherLightUpdater = Ref<LightUpdater>::Create();
 			anotherLightUpdater->SetLightEntity(lightEntity);
 			anotherLightUpdater->SetTransformEntity(lightEntity);
-			another.System->AddParticleUpdater(anotherLightUpdater);
+			another.System->AddUpdater(anotherLightUpdater);
 		}
 		lightUpdater->SetTransformEntity(entity);
 		

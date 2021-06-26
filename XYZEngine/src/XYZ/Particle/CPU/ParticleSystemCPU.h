@@ -25,10 +25,10 @@ namespace XYZ {
 		void Stop();
 
 		void AddEmitter(const Ref<ParticleEmitterCPU>& emitter);
-		void AddParticleUpdater(const Ref<ParticleUpdater>& updater);
+		void AddUpdater(const Ref<ParticleUpdater>& updater);
 
 		void RemoveEmitter(const Ref<ParticleEmitterCPU>& emitter);
-		void RemoveParticleUpdater(const Ref<ParticleUpdater>& updater);
+		void RemoveUpdater(const Ref<ParticleUpdater>& updater);
 
 		std::vector<Ref<ParticleUpdater>> GetUpdaters() const;
 		std::vector<Ref<ParticleEmitterCPU>> GetEmitters() const;

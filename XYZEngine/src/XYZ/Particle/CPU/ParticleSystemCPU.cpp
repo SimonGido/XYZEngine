@@ -58,7 +58,8 @@ namespace XYZ {
 		std::scoped_lock lock(m_SingleThreadPass->Mutex);
 		m_SingleThreadPass->Emitters.push_back(emitter);
 	}
-	void ParticleSystemCPU::AddParticleUpdater(const Ref<ParticleUpdater>& updater)
+
+	void ParticleSystemCPU::AddUpdater(const Ref<ParticleUpdater>& updater)
 	{
 		std::scoped_lock lock(m_SingleThreadPass->Mutex);
 		m_SingleThreadPass->Updaters.push_back(updater);
@@ -76,7 +77,7 @@ namespace XYZ {
 			}
 		}
 	}
-	void ParticleSystemCPU::RemoveParticleUpdater(const Ref<ParticleUpdater>& updater)
+	void ParticleSystemCPU::RemoveUpdater(const Ref<ParticleUpdater>& updater)
 	{
 		std::scoped_lock lock(m_SingleThreadPass->Mutex);
 		auto& updaters = m_SingleThreadPass->Updaters;

@@ -10,12 +10,14 @@ namespace XYZ {
 	class ParticleUpdater : public RefCount
 	{
 	public:
+		ParticleUpdater();
+
 		virtual ~ParticleUpdater() = default;
 		virtual void UpdateParticles(float timeStep, ParticleDataBuffer* data) = 0;
 		virtual void Update() {};
 
 	protected:
-		std::mutex m_Mutex;
+		mutable std::mutex m_Mutex;
 	}; 
 
 
@@ -23,12 +25,14 @@ namespace XYZ {
 	{
 	public:
 		virtual void UpdateParticles(float timeStep, ParticleDataBuffer* data) override;
+	
 	};
 
 	class PositionUpdater : public ParticleUpdater
 	{
 	public:
 		virtual void UpdateParticles(float timeStep, ParticleDataBuffer* data) override;
+
 	};
 
 	struct PointLight2D;
@@ -44,6 +48,9 @@ namespace XYZ {
 		void SetLightEntity(SceneEntity entity);
 		void SetTransformEntity(SceneEntity entity);
 		
+		uint32_t GetMaxLights() const;
+		SceneEntity GetLightEntity() const;
+		SceneEntity GetTransformEntity() const;
 
 	private:
 

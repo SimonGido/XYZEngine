@@ -5,6 +5,10 @@
 #include "XYZ/Renderer/SceneRenderer.h"
 
 namespace XYZ {
+	ParticleUpdater::ParticleUpdater()
+	{
+	}
+
 	void BasicTimerUpdater::UpdateParticles(float timeStep, ParticleDataBuffer* data)
 	{
 		std::scoped_lock lock(m_Mutex);
@@ -20,6 +24,7 @@ namespace XYZ {
 			}
 		}
 	}
+
 	void PositionUpdater::UpdateParticles(float timeStep, ParticleDataBuffer* data)
 	{
 		std::scoped_lock lock(m_Mutex);
@@ -76,10 +81,14 @@ namespace XYZ {
 		std::scoped_lock lock(m_Mutex);
 		m_MaxLights = maxLights;
 		{
-			m_LightBuffer.Read().Get().LightPositions.resize(m_MaxLights);
+			auto val = m_LightBuffer.Read();
+			val.Get().LightPositions.resize(m_MaxLights);
+			val.Get().LightCount = std::min((uint32_t)val.Get().LightPositions.size(), val.Get().LightCount);
 		}
 		{
-			m_LightBuffer.Write().Get().LightPositions.resize(m_MaxLights);
+			auto val = m_LightBuffer.Write();
+			val.Get().LightPositions.resize(m_MaxLights);
+			val.Get().LightCount = std::min((uint32_t)val.Get().LightPositions.size(), val.Get().LightCount);
 		}
 	}
 	void LightUpdater::SetLightEntity(SceneEntity entity)
@@ -92,4 +101,23 @@ namespace XYZ {
 		std::scoped_lock lock(m_Mutex);
 		m_TransformEntity = entity;
 	}
+
+	uint32_t LightUpdater::GetMaxLights() const
+	{
+		std::scoped_lock lock(m_Mutex);
+		return m_MaxLights;
+	}
+
+	SceneEntity LightUpdater::GetLightEntity() const
+	{
+		std::scoped_lock lock(m_Mutex);
+		return m_LightEntity;
+	}
+
+	SceneEntity LightUpdater::GetTransformEntity() const
+	{
+		std::scoped_lock lock(m_Mutex);
+		return m_TransformEntity;
+	}
+
 }

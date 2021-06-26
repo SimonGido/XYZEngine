@@ -184,6 +184,43 @@ namespace XYZ {
 			ImGui::PopStyleVar();
 			EndColumns();
 		}
+
+
+		template<typename T, typename UIFunction>
+		static bool DrawNodeControl(const std::string& name, T& val, UIFunction uiFunction)
+		{
+			const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
+			
+			ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
+
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 4, 4 });
+			float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+			ImGui::Separator();
+			bool open = ImGui::TreeNodeEx((void*)typeid(T).hash_code(), treeNodeFlags, name.c_str());
+			ImGui::PopStyleVar();
+			
+			ImGui::SameLine(contentRegionAvailable.x + lineHeight * 0.5f);
+			if (ImGui::Button("+", ImVec2{ lineHeight, lineHeight }))
+			{
+				ImGui::OpenPopup("Settings");
+			}
+
+			bool remove = false;
+			if (ImGui::BeginPopup("Settings"))
+			{
+				if (ImGui::MenuItem("Remove"))
+					remove = true;
+
+				ImGui::EndPopup();
+			}
+			if (open)
+			{
+				uiFunction(val);
+				ImGui::TreePop();
+			}			
+			return remove;
+		}
+
 		template<typename T, typename UIFunction>
 		static void DrawComponent(const std::string& name, SceneEntity entity, UIFunction uiFunction)
 		{
@@ -197,8 +234,8 @@ namespace XYZ {
 				float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 				ImGui::Separator();
 				bool open = ImGui::TreeNodeEx((void*)typeid(T).hash_code(), treeNodeFlags, name.c_str());
-				ImGui::PopStyleVar(
-				);
+				ImGui::PopStyleVar();
+
 				ImGui::SameLine(contentRegionAvailable.x - lineHeight * 0.5f);
 				if (ImGui::Button("+", ImVec2{ lineHeight, lineHeight }))
 				{
@@ -224,6 +261,7 @@ namespace XYZ {
 					entity.RemoveComponent<T>();
 			}
 		}
+
 	}
 
 	namespace Editor {
@@ -627,24 +665,41 @@ namespace XYZ {
 					{
 						if (auto casted = dynamic_cast<BasicTimerUpdater*>(updater.Raw()))
 						{
-							Helper::BeginColumns("BasicTimerUpdater", 2, 150.0f);						
+							if (Helper::DrawNodeControl("BasicTimerUpdater", *casted, [&](auto& val) {
+
+							}))
+							{
+								component.System->RemoveUpdater(updater);
+							}
 						}
 						else if (auto casted = dynamic_cast<PositionUpdater*>(updater.Raw()))
 						{
-							Helper::BeginColumns("PositionUpdater", 2, 150.0f);
+							if (Helper::DrawNodeControl("PositionUpdater", *casted, [&](auto& val) {
+
+
+							}))
+							{
+								component.System->RemoveUpdater(updater);
+							}
 						}
-						else
+						else if (auto casted = dynamic_cast<LightUpdater*>(updater.Raw()))
 						{
-							// Do not call last thing bellow this line if any updater was not found
-							continue;
+							if (Helper::DrawNodeControl("LightUpdater", *casted, [&](auto& val) {
+								
+								Helper::BeginColumns("Max Lights");
+								ImGui::PushItemWidth(75.0f);
+								int maxLights = (int)val.GetMaxLights();
+								if (ImGui::InputInt("##MaxLights", &maxLights))
+								{
+									val.SetMaxLights((uint32_t)maxLights);
+								}
+								ImGui::PopItemWidth();
+								Helper::EndColumns();
+							}))
+							{
+								component.System->RemoveUpdater(updater);
+							}
 						}
-						ImGui::PushItemWidth(100.0f);
-						if (ImGui::Button("Delete"))
-						{
-							component.System->RemoveParticleUpdater(updater);
-						}
-						ImGui::PopItemWidth();
-						Helper::EndColumns();
 					}
 				});
 
