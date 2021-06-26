@@ -17,6 +17,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/perpendicular.hpp>
 
+#include <typeinfo>
+
 namespace XYZ {
 
 	namespace Helper {
@@ -617,6 +619,35 @@ namespace XYZ {
 						counter++;
 					}
 				});
+				Helper::DrawComponent<ParticleComponentCPU>("Particle ComponentCPU", m_Context, [&](auto& component) {
+
+					auto updaters = std::move(component.System->GetUpdaters());
+					auto emitters = std::move(component.System->GetEmitters());
+					for (auto& updater : updaters)
+					{
+						if (auto casted = dynamic_cast<BasicTimerUpdater*>(updater.Raw()))
+						{
+							Helper::BeginColumns("BasicTimerUpdater", 2, 150.0f);						
+						}
+						else if (auto casted = dynamic_cast<PositionUpdater*>(updater.Raw()))
+						{
+							Helper::BeginColumns("PositionUpdater", 2, 150.0f);
+						}
+						else
+						{
+							// Do not call last thing bellow this line if any updater was not found
+							continue;
+						}
+						ImGui::PushItemWidth(100.0f);
+						if (ImGui::Button("Delete"))
+						{
+							component.System->RemoveParticleUpdater(updater);
+						}
+						ImGui::PopItemWidth();
+						Helper::EndColumns();
+					}
+				});
+
 
 				float addComponentButtonWidth = 200.0f;
 				ImVec2 pos = ImGui::GetCursorPos();

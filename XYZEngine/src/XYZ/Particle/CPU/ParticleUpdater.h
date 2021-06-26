@@ -7,12 +7,15 @@
 
 namespace XYZ {
 
-	class ParticleUpdater
+	class ParticleUpdater : public RefCount
 	{
 	public:
 		virtual ~ParticleUpdater() = default;
 		virtual void UpdateParticles(float timeStep, ParticleDataBuffer* data) = 0;
 		virtual void Update() {};
+
+	protected:
+		std::mutex m_Mutex;
 	}; 
 
 
@@ -38,18 +41,21 @@ namespace XYZ {
 		virtual void Update() override;
 
 		void SetMaxLights(uint32_t maxLights);	
-		void SetLightEntity(SceneEntity entity) { LightEntity = entity; }
-		void SetTransformEntity(SceneEntity entity) { TransformEntity = entity; }
+		void SetLightEntity(SceneEntity entity);
+		void SetTransformEntity(SceneEntity entity);
+		
+
+	private:
+
 		struct LigthtPassData
 		{
 			std::vector <glm::vec3> LightPositions;
 			uint32_t				LightCount = 0;
 		};
 
-		ThreadPass<LigthtPassData>  LightBuffer;
-		SceneEntity					LightEntity;
-		SceneEntity					TransformEntity;
-	private:
-		uint32_t					MaxLights;
+		ThreadPass<LigthtPassData>  m_LightBuffer;
+		SceneEntity					m_LightEntity;
+		SceneEntity					m_TransformEntity;
+		uint32_t					m_MaxLights;
 	};
 }

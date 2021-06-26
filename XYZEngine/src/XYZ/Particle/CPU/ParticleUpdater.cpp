@@ -7,6 +7,8 @@
 namespace XYZ {
 	void BasicTimerUpdater::UpdateParticles(float timeStep, ParticleDataBuffer* data)
 	{
+		std::scoped_lock lock(m_Mutex);
+
 		uint32_t aliveParticles = data->GetAliveParticles();
 		for (uint32_t i = 0; i < aliveParticles; ++i)
 		{
@@ -20,6 +22,7 @@ namespace XYZ {
 	}
 	void PositionUpdater::UpdateParticles(float timeStep, ParticleDataBuffer* data)
 	{
+		std::scoped_lock lock(m_Mutex);
 		uint32_t aliveParticles = data->GetAliveParticles();
 		for (uint32_t i = 0; i < aliveParticles; ++i)
 		{
@@ -28,38 +31,40 @@ namespace XYZ {
 	}
 	LightUpdater::LightUpdater()
 		:
-		MaxLights(50)
+		m_MaxLights(50)
 	{
 		{
-			LightBuffer.Read().Get().LightPositions.resize(50);
+			m_LightBuffer.Read().Get().LightPositions.resize(50);
 		}
 		{
-			LightBuffer.Write().Get().LightPositions.resize(50);
+			m_LightBuffer.Write().Get().LightPositions.resize(50);
 		}
 	}
 	void LightUpdater::UpdateParticles(float timeStep, ParticleDataBuffer* data)
 	{
 		{
+			std::scoped_lock lock(m_Mutex);
 			uint32_t aliveParticles = data->GetAliveParticles();
 
-			auto val = LightBuffer.Write();
+			auto val = m_LightBuffer.Write();
 			val.Get().LightCount = 0;
-			for (uint32_t i = 0; i < aliveParticles && i < MaxLights; ++i)
+			for (uint32_t i = 0; i < aliveParticles && i < m_MaxLights; ++i)
 			{
 				val.Get().LightPositions[i] = data->m_Particle[i].Position;
 				val.Get().LightCount++;
 			}
 		}
-		LightBuffer.AttemptSwap();
+		m_LightBuffer.AttemptSwap();
 	}
 	void LightUpdater::Update()
 	{
-		if (LightEntity && LightEntity.HasComponent<PointLight2D>() && TransformEntity)
+		std::scoped_lock lock(m_Mutex);
+		if (m_LightEntity && m_LightEntity.HasComponent<PointLight2D>() && m_TransformEntity)
 		{
-			PointLight2D* light = &LightEntity.GetComponent<PointLight2D>();
-			TransformComponent& transform = TransformEntity.GetComponent<TransformComponent>();
+			PointLight2D* light = &m_LightEntity.GetComponent<PointLight2D>();
+			TransformComponent& transform = m_TransformEntity.GetComponent<TransformComponent>();
 
-			auto lightRef = LightBuffer.Read();
+			auto lightRef = m_LightBuffer.Read();
 			for (uint32_t i = 0; i < lightRef.Get().LightCount; ++i)
 			{
 				SceneRenderer::SubmitLight(light, transform.WorldTransform * glm::translate(lightRef.Get().LightPositions[i]));
@@ -68,12 +73,23 @@ namespace XYZ {
 	}
 	void LightUpdater::SetMaxLights(uint32_t maxLights)
 	{
-		MaxLights = maxLights;
+		std::scoped_lock lock(m_Mutex);
+		m_MaxLights = maxLights;
 		{
-			LightBuffer.Read().Get().LightPositions.resize(MaxLights);
+			m_LightBuffer.Read().Get().LightPositions.resize(m_MaxLights);
 		}
 		{
-			LightBuffer.Write().Get().LightPositions.resize(MaxLights);
+			m_LightBuffer.Write().Get().LightPositions.resize(m_MaxLights);
 		}
+	}
+	void LightUpdater::SetLightEntity(SceneEntity entity)
+	{
+		std::scoped_lock lock(m_Mutex);
+		m_LightEntity = entity;
+	}
+	void LightUpdater::SetTransformEntity(SceneEntity entity)
+	{
+		std::scoped_lock lock(m_Mutex);
+		m_TransformEntity = entity;
 	}
 }

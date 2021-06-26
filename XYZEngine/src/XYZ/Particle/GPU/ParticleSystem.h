@@ -10,9 +10,9 @@
 
 namespace XYZ {
 
-	struct ParticleEmitter
+	struct ParticleEmitterGPU
 	{
-		ParticleEmitter();
+		ParticleEmitterGPU();
 		ParticleEmissionShape Shape;
 		glm::vec2			  RectangleMin;
 		glm::vec2			  RectangleMax;
@@ -36,10 +36,10 @@ namespace XYZ {
 		void Reset();
 
 		void GenerateParticleData();
-		void SetParticleEmitter(const ParticleEmitter& emitter);
+		void SetParticleEmitter(const ParticleEmitterGPU& emitter);
 		void SetSpawnRate(float rate) { m_Rate = rate; }
 	
-		const ParticleEmitter& GetParticleEmitter() const { return m_Emitter; }
+		const ParticleEmitterGPU& GetParticleEmitter() const { return m_Emitter; }
 		float GetEmittedParticles() const { return m_EmittedParticles; }
 		float GetSpawnRate() const { return m_Rate; }
 		float PlayTime() const { return m_PlayTime; }
@@ -48,7 +48,7 @@ namespace XYZ {
 
 		ParticleRendererGPU	  m_Renderer;
 	private:
-		ParticleEmitter		  m_Emitter;
+		ParticleEmitterGPU	  m_Emitter;
 		float				  m_EmittedParticles;
 		float				  m_PlayTime;
 		float				  m_Rate;

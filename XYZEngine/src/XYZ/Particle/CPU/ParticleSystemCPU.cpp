@@ -53,15 +53,51 @@ namespace XYZ {
 	{
 		m_Play = false;
 	}
-	void ParticleSystemCPU::AddParticleUpdate(ParticleUpdater* updater)
+	void ParticleSystemCPU::AddEmitter(const Ref<ParticleEmitterCPU>& emitter)
+	{
+		std::scoped_lock lock(m_SingleThreadPass->Mutex);
+		m_SingleThreadPass->Emitters.push_back(emitter);
+	}
+	void ParticleSystemCPU::AddParticleUpdater(const Ref<ParticleUpdater>& updater)
 	{
 		std::scoped_lock lock(m_SingleThreadPass->Mutex);
 		m_SingleThreadPass->Updaters.push_back(updater);
 	}
-	void ParticleSystemCPU::AddGenerator(ParticleGenerator* generator)
+	void ParticleSystemCPU::RemoveEmitter(const Ref<ParticleEmitterCPU>& emitter)
 	{
 		std::scoped_lock lock(m_SingleThreadPass->Mutex);
-		m_SingleThreadPass->Generators.push_back(generator);
+		auto& emitters = m_SingleThreadPass->Emitters;
+		for (size_t i = 0; i < emitters.size(); ++i)
+		{
+			if (emitters[i].Raw() == emitter.Raw())
+			{
+				emitters.erase(emitters.begin() + i);
+				return;
+			}
+		}
+	}
+	void ParticleSystemCPU::RemoveParticleUpdater(const Ref<ParticleUpdater>& updater)
+	{
+		std::scoped_lock lock(m_SingleThreadPass->Mutex);
+		auto& updaters = m_SingleThreadPass->Updaters;
+		for (size_t i = 0; i < updaters.size(); ++i)
+		{
+			if (updaters[i].Raw() == updater.Raw())
+			{
+				updaters.erase(updaters.begin() + i);
+				return;
+			}
+		}
+	}
+	std::vector<Ref<ParticleUpdater>> ParticleSystemCPU::GetUpdaters() const
+	{
+		std::scoped_lock lock(m_SingleThreadPass->Mutex);
+		return m_SingleThreadPass->Updaters;
+	}
+	std::vector<Ref<ParticleEmitterCPU>> ParticleSystemCPU::GetEmitters() const
+	{
+		std::scoped_lock lock(m_SingleThreadPass->Mutex);
+		return m_SingleThreadPass->Emitters;
 	}
 	void ParticleSystemCPU::particleThreadUpdate(float timestep)
 	{
@@ -71,15 +107,13 @@ namespace XYZ {
 			{
 				std::scoped_lock lock(singleThreadPass->Mutex);
 				ScopedLockReference<DoubleThreadPass> val = threadPass->Write();
-				for (auto generator : singleThreadPass->Generators)
-				{
-					uint32_t startId = singleThreadPass->Particles.GetAliveParticles();
-					generator->Generate(&singleThreadPass->Particles, startId, timestep);
-				}
-				for (auto updater : singleThreadPass->Updaters)
-				{
+
+				for (auto& emitter : singleThreadPass->Emitters)
+					emitter->Emit(timestep, &singleThreadPass->Particles);
+
+				for (auto& updater : singleThreadPass->Updaters)
 					updater->UpdateParticles(timestep, &singleThreadPass->Particles);
-				}
+
 				uint32_t endId = singleThreadPass->Particles.GetAliveParticles();
 				for (uint32_t i = 0; i < endId; ++i)
 				{
@@ -112,13 +146,5 @@ namespace XYZ {
 		:
 		Particles(maxParticles)
 	{
-	}
-	ParticleSystemCPU::SingleThreadPass::~SingleThreadPass()
-	{
-		for (auto updater : Updaters)
-			delete updater;
-
-		for (auto generator : Generators)
-			delete generator;
 	}
 }

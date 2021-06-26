@@ -119,13 +119,19 @@ namespace XYZ {
 		particleComponentCPU.System->GetRenderer().Material->SetRenderQueueID(1);
 		particleComponentCPU.System->Play();
 		
-		particleComponentCPU.System->AddGenerator(new ParticleBoxGenerator());
-		particleComponentCPU.System->AddParticleUpdate(new BasicTimerUpdater());
-		particleComponentCPU.System->AddParticleUpdate(new PositionUpdater());
+		Ref<ParticleEmitterCPU> emitter = Ref<ParticleEmitterCPU>::Create();
+		emitter->AddGenerator(Ref<ParticleLifeGenerator>::Create());
+		emitter->AddGenerator(Ref<ParticleCircleGenerator>::Create());
+		emitter->AddGenerator(Ref<ParticleRandomVelocityGenerator>::Create());
+
+		particleComponentCPU.System->AddEmitter(emitter);
+
+		particleComponentCPU.System->AddParticleUpdater(Ref<BasicTimerUpdater>::Create());
+		particleComponentCPU.System->AddParticleUpdater(Ref<PositionUpdater>::Create());
 		
 		
-		LightUpdater* lightUpdater = new LightUpdater();
-		particleComponentCPU.System->AddParticleUpdate(lightUpdater);
+		Ref<LightUpdater> lightUpdater = Ref<LightUpdater>::Create();
+		particleComponentCPU.System->AddParticleUpdater(lightUpdater);
 		auto& lightStorage = m_Scene->GetECS().GetStorage<PointLight2D>();
 		if (lightStorage.Size())
 		{
@@ -138,15 +144,15 @@ namespace XYZ {
 			another.System->GetRenderer().Material->SetRenderQueueID(1);
 			another.System->Play();
 
-			another.System->AddGenerator(new ParticleBoxGenerator());
-			another.System->AddParticleUpdate(new BasicTimerUpdater());
-			another.System->AddParticleUpdate(new PositionUpdater());
+			another.System->AddEmitter(emitter);
+			another.System->AddParticleUpdater(Ref<BasicTimerUpdater>::Create());
+			another.System->AddParticleUpdater(Ref<PositionUpdater>::Create());
 			
 
-			LightUpdater* anotherLightUpdater = new LightUpdater();
+			Ref<LightUpdater> anotherLightUpdater = Ref<LightUpdater>::Create();
 			anotherLightUpdater->SetLightEntity(lightEntity);
 			anotherLightUpdater->SetTransformEntity(lightEntity);
-			another.System->AddParticleUpdate(anotherLightUpdater);
+			another.System->AddParticleUpdater(anotherLightUpdater);
 		}
 		lightUpdater->SetTransformEntity(entity);
 		

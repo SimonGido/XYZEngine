@@ -47,7 +47,7 @@ namespace XYZ {
 		return points;
 	}
 
-	ParticleEmitter::ParticleEmitter()
+	ParticleEmitterGPU::ParticleEmitterGPU()
 		:
 		Shape(ParticleEmissionShape::Sphere),
 		RectangleMin(0.0f),
@@ -101,7 +101,7 @@ namespace XYZ {
 		}
 	}
 
-	void ParticleSystem::SetParticleEmitter(const ParticleEmitter& emitter)
+	void ParticleSystem::SetParticleEmitter(const ParticleEmitterGPU& emitter)
 	{
 		m_Emitter = emitter;
 		GenerateParticleData();

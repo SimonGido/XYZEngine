@@ -314,14 +314,7 @@ namespace XYZ {
 	void SceneRenderer::flushLightQueue()
 	{
 		RenderQueue& queue = s_Data.Queues[SceneRendererData::LightQueue];
-		std::sort(queue.SpriteDrawList.begin(), queue.SpriteDrawList.end(),
-			[](const RenderQueue::SpriteDrawCommand& a, const RenderQueue::SpriteDrawCommand& b) {
-			return a.Transform->Translation.z < b.Transform->Translation.z;
-
-			if (a.Sprite->SortLayer == b.Sprite->SortLayer)
-				return a.Sprite->Material->GetFlags() < b.Sprite->Material->GetFlags();
-			return a.Sprite->SortLayer < b.Sprite->SortLayer;
-		});
+		sortQueue(queue);
 
 
 		if (s_Data.PointLightsList.size())
@@ -349,14 +342,7 @@ namespace XYZ {
 	void SceneRenderer::flushDefaultQueue()
 	{
 		RenderQueue& queue = s_Data.Queues[SceneRendererData::DefaultQueue];
-		std::sort(queue.SpriteDrawList.begin(), queue.SpriteDrawList.end(),
-			[](const RenderQueue::SpriteDrawCommand& a, const RenderQueue::SpriteDrawCommand& b) {
-			return a.Transform->Translation.z < b.Transform->Translation.z;
-
-			if (a.Sprite->SortLayer == b.Sprite->SortLayer)
-				return a.Sprite->Material->GetFlags() < b.Sprite->Material->GetFlags();
-			return a.Sprite->SortLayer < b.Sprite->SortLayer;
-		});
+		sortQueue(queue);
 
 		geometryPass(queue, s_Data.LightPass, false);
 
@@ -392,6 +378,16 @@ namespace XYZ {
 
 		s_Data.EditorSpriteDrawList.clear();
 		s_Data.EditorAABBDrawList.clear();
+	}
+
+	void SceneRenderer::sortQueue(RenderQueue& queue)
+	{
+		std::sort(queue.SpriteDrawList.begin(), queue.SpriteDrawList.end(),
+			[](const RenderQueue::SpriteDrawCommand& a, const RenderQueue::SpriteDrawCommand& b) {
+			if (a.Sprite->SortLayer == b.Sprite->SortLayer)
+				return a.Sprite->Material->GetFlags() < b.Sprite->Material->GetFlags();
+			return a.Sprite->SortLayer < b.Sprite->SortLayer;
+		});
 	}
 
 	void SceneRenderer::geometryPass(RenderQueue& queue, const Ref<RenderPass>& pass, bool clear)

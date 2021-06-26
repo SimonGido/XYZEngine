@@ -1,11 +1,12 @@
 #pragma once
+#include "XYZ/Utils/DataStructures/ThreadPass.h"
 #include "XYZ/Core/Timestep.h"
 #include "XYZ/Core/Ref.h"
 #include "ParticleData.h"
 #include "ParticleUpdater.h"
 #include "ParticleGenerator.h"
 #include "ParticleRenderer.h"
-#include "XYZ/Utils/DataStructures/ThreadPass.h"
+#include "ParticleEmitter.h"
 
 #include <glm/glm.hpp>
 
@@ -23,8 +24,14 @@ namespace XYZ {
 		void Play();
 		void Stop();
 
-		void AddParticleUpdate(ParticleUpdater* updater);
-		void AddGenerator(ParticleGenerator* generator);
+		void AddEmitter(const Ref<ParticleEmitterCPU>& emitter);
+		void AddParticleUpdater(const Ref<ParticleUpdater>& updater);
+
+		void RemoveEmitter(const Ref<ParticleEmitterCPU>& emitter);
+		void RemoveParticleUpdater(const Ref<ParticleUpdater>& updater);
+
+		std::vector<Ref<ParticleUpdater>> GetUpdaters() const;
+		std::vector<Ref<ParticleEmitterCPU>> GetEmitters() const;
 
 		ParticleRendererCPU& GetRenderer() { return m_Renderer; }
 	private:
@@ -44,17 +51,17 @@ namespace XYZ {
 		struct SingleThreadPass
 		{
 			SingleThreadPass(uint32_t maxParticles);
-			~SingleThreadPass();
 
-			ParticleDataBuffer			    Particles;
-			std::vector<ParticleUpdater*>	Updaters;
-			std::vector<ParticleGenerator*>	Generators;			
-			std::mutex						Mutex;
+			ParticleDataBuffer					 Particles;
+			std::vector<Ref<ParticleUpdater>>	 Updaters;	
+			std::vector<Ref<ParticleEmitterCPU>> Emitters;
+			mutable std::mutex					 Mutex;
 		};
 
 		ParticleRendererCPU							  m_Renderer;	
 		std::shared_ptr<SingleThreadPass>			  m_SingleThreadPass;
 		std::shared_ptr<ThreadPass<DoubleThreadPass>> m_ThreadPass;
+		
 		bool										  m_Play;
 	};
 

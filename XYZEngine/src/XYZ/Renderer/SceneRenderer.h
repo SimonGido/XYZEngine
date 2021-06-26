@@ -83,6 +83,7 @@ namespace XYZ {
 		static void flushLightQueue();
 		static void flushDefaultQueue();
 		static void flushEditorQueue();
+		static void sortQueue(RenderQueue& queue);
 
 		static void geometryPass(RenderQueue& queue, const Ref<RenderPass>& pass, bool clear);
 		static void lightPass();

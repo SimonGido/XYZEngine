@@ -127,6 +127,7 @@ namespace XYZ {
 		Ref<ParticleSystemCPU> System;
 	};
 
+
 	struct PointLight2D : public IComponent
 	{
 		PointLight2D() = default;
