@@ -51,11 +51,7 @@ namespace XYZ {
 		}
 		else
 		{
-			auto result = Renderer::GetPool().PushJob<bool>([this, props]() ->bool {
-				m_Window = glfwCreateWindow(props.Width, props.Height, props.Title.c_str(), NULL, NULL);
-				return true;
-			});
-			result.wait();
+			m_Window = glfwCreateWindow(props.Width, props.Height, props.Title.c_str(), NULL, NULL);
 		}
 
 		m_Context = APIContext::Create(m_Window);	

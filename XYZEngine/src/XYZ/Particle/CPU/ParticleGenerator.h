@@ -9,14 +9,22 @@ namespace XYZ {
 	class ParticleGenerator : public RefCount
 	{
 	public:
+		ParticleGenerator();
+
 		virtual ~ParticleGenerator() = default;
 		virtual void Generate(ParticleDataBuffer* data, uint32_t startId, uint32_t endId) const = 0;
 
+
+		void SetEnabled(bool enabled);
+		bool IsEnabled() const;
+
 	protected:
 		mutable std::mutex m_Mutex;
+
+		bool		 m_Enabled;
 	};
 
-	enum class EmittShape
+	enum class EmitShape
 	{
 		Box,
 		Circle
@@ -26,12 +34,17 @@ namespace XYZ {
 	{
 	public:
 		ParticleShapeGenerator();
+		ParticleShapeGenerator(const ParticleShapeGenerator& other);
+		ParticleShapeGenerator& operator=(const ParticleShapeGenerator& other);
+
 		virtual void Generate(ParticleDataBuffer* data, uint32_t startId, uint32_t endId) const override;
 
+		void SetEmitShape(EmitShape shape);
 		void SetBoxMin(const glm::vec3& boxMin);
 		void SetBoxMax(const glm::vec3& boxMax);
 		void SetRadius(float radius);
 
+		EmitShape GetEmitShape() const;
 		glm::vec3 GetBoxMin() const;
 		glm::vec3 GetBoxMax() const;
 		float	  GetRadius() const;
@@ -40,47 +53,18 @@ namespace XYZ {
 		void generateCircle(ParticleDataBuffer* data, uint32_t startId, uint32_t endId) const;
 
 	private:
-		EmittShape	 m_Shape;
+		EmitShape	 m_Shape;
 		glm::vec3	 m_BoxMin;
 		glm::vec3	 m_BoxMax;
-		float		 m_Radius;
-	};
-
-	class ParticleBoxGenerator : public ParticleGenerator
-	{
-	public:
-		ParticleBoxGenerator();
-
-		virtual void Generate(ParticleDataBuffer* data, uint32_t startId, uint32_t endId) const override;
-		
-		void SetBoxMin(const glm::vec3& boxMin);
-		void SetBoxMax(const glm::vec3& boxMax);
-
-		glm::vec3 GetBoxMin() const;
-		glm::vec3 GetBoxMax() const;
-	private:
-		glm::vec3 m_BoxMin;
-		glm::vec3 m_BoxMax;
-	};
-
-
-	class ParticleCircleGenerator : public ParticleGenerator
-	{
-	public:
-		ParticleCircleGenerator();
-
-		virtual void Generate(ParticleDataBuffer* data, uint32_t startId, uint32_t endId) const override;
-		
-		void  SetRadius(float radius);
-		float GetRadius() const;
-	private:
-		float m_Radius;
+		float		 m_Radius;	
 	};
 
 	class ParticleLifeGenerator : public ParticleGenerator
 	{
 	public:
 		ParticleLifeGenerator();
+		ParticleLifeGenerator(const ParticleLifeGenerator& other);
+		ParticleLifeGenerator& operator =(const ParticleLifeGenerator& other);
 
 		virtual void Generate(ParticleDataBuffer* data, uint32_t startId, uint32_t endId) const override;
 
@@ -95,7 +79,9 @@ namespace XYZ {
 	{
 	public:
 		ParticleRandomVelocityGenerator();
-		
+		ParticleRandomVelocityGenerator(const ParticleRandomVelocityGenerator& other);
+		ParticleRandomVelocityGenerator& operator=(const ParticleRandomVelocityGenerator& other);
+
 		virtual void Generate(ParticleDataBuffer* data, uint32_t startId, uint32_t endId) const override;
 
 		void SetMinVelocity(const glm::vec3& minVelocity);

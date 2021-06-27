@@ -663,9 +663,50 @@ namespace XYZ {
 					auto emitters = std::move(component.System->GetEmitters());
 					
 					ImGui::Text("Emitters");
-					for (auto& generator : emitters)
+					for (auto& emitter : emitters)
 					{
-
+						auto shapeGenerator = emitter->GetShapeGenerator();
+						if (Helper::DrawNodeControl("Shape Generator", shapeGenerator, [&](auto& val) {
+							
+							if (ImGui::Button("Shape"))
+								ImGui::OpenPopup("Shape Type");
+							if (ImGui::BeginPopup("Shape Type"))
+							{
+								if (ImGui::MenuItem("Box"))
+								{
+									shapeGenerator.SetEmitShape(EmitShape::Box);
+									ImGui::CloseCurrentPopup();
+								}
+								if (ImGui::MenuItem("Circle"))
+								{
+									shapeGenerator.SetEmitShape(EmitShape::Circle);
+									ImGui::CloseCurrentPopup();
+								}
+								ImGui::EndPopup();
+							}
+							ImGui::SameLine();
+							EmitShape emitShape = shapeGenerator.GetEmitShape();
+							if (emitShape == EmitShape::Box)
+							{
+								ImGui::Text("Box");								
+							}
+							else if (emitShape == EmitShape::Circle)
+							{
+								ImGui::Text("Circle");
+								Helper::BeginColumns("Radius");
+								float radius = shapeGenerator.GetRadius();
+								if (ImGui::DragFloat("##Radius", &radius, 0.05f, 0.0f, 0.0f, "%.2f"))
+								{
+									shapeGenerator.SetRadius(radius);
+								}
+								Helper::EndColumns();
+							}
+						
+						}))
+						{
+							shapeGenerator.SetEnabled(false);
+						}
+						emitter->SetShapeGenerator(shapeGenerator);
 					}
 
 					ImGui::Text("Updaters");
