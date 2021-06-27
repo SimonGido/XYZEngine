@@ -34,6 +34,9 @@ namespace XYZ {
 			ScriptComponentInspector	  m_ScriptComponentInspector;
 			TransformInspector			  m_TransformInspector;
 			SpriteRendererInspector		  m_SpriteRendererInspector;
+			RigidBody2DInspector		  m_RigidBodyInspector;
+			BoxCollider2DInspector		  m_BoxCollider2DInspector;
+			ChainCollider2DInspector	  m_ChainCollider2DInspector;
 		};
 	}
 }

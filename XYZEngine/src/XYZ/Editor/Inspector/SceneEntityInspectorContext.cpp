@@ -328,6 +328,21 @@ namespace XYZ {
 				m_InspectorEditables.push_back(&m_SpriteRendererInspector);
 				m_SpriteRendererInspector.m_Context = context;
 			}
+			if (m_Context.HasComponent<RigidBody2DComponent>())
+			{
+				m_InspectorEditables.push_back(&m_RigidBodyInspector);
+				m_RigidBodyInspector.m_Context = context;
+			}
+			if (m_Context.HasComponent<BoxCollider2DComponent>())
+			{
+				m_InspectorEditables.push_back(&m_BoxCollider2DInspector);
+				m_BoxCollider2DInspector.m_Context = context;
+			}
+			if (m_Context.HasComponent<ChainCollider2DComponent>())
+			{
+				m_InspectorEditables.push_back(&m_ChainCollider2DInspector);
+				m_ChainCollider2DInspector.m_Context = context;
+			}
 		}
 	}
 }

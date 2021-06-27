@@ -7,7 +7,7 @@
 #include "XYZ/Renderer/Renderer2D.h"
 
 namespace XYZ {
-	bool Physics2DInspector::OnEditorRender()
+	bool RigidBody2DInspector::OnEditorRender()
 	{
 		return EditorHelper::DrawComponent<RigidBody2DComponent>("Rigid Body2D", m_Context, [&](auto& component) {
 
@@ -41,7 +41,10 @@ namespace XYZ {
 			else if (component.Type == RigidBody2DComponent::BodyType::Kinematic)
 				ImGui::Text("Kinematic");
 		});
-		EditorHelper::DrawComponent<BoxCollider2DComponent>("Box Collider2D", m_Context, [&](auto& component) {
+	}
+	bool BoxCollider2DInspector::OnEditorRender()
+	{
+		return EditorHelper::DrawComponent<BoxCollider2DComponent>("Box Collider2D", m_Context, [&](auto& component) {
 
 			auto [translation, rotation, scale] = m_Context.GetComponent<TransformComponent>().GetWorldComponents();
 			glm::vec3 boxTranslation =
@@ -70,8 +73,10 @@ namespace XYZ {
 			ImGui::PopItemWidth();
 			EditorHelper::EndColumns();
 		});
-
-		EditorHelper::DrawComponent<ChainCollider2DComponent>("Chain Collider2D", m_Context, [&](auto& component) {
+	}
+	bool ChainCollider2DInspector::OnEditorRender()
+	{
+		return EditorHelper::DrawComponent<ChainCollider2DComponent>("Chain Collider2D", m_Context, [&](auto& component) {
 
 			const TransformComponent& transform = m_Context.GetComponent<TransformComponent>();
 			auto [translation, rotation, scale] = transform.GetWorldComponents();
@@ -116,4 +121,5 @@ namespace XYZ {
 			}
 		});
 	}
+	
 }
