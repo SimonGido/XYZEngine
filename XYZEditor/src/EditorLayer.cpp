@@ -157,6 +157,7 @@ namespace XYZ {
 		lightUpdater->SetTransformEntity(entity);
 		
 		Renderer::WaitAndRender();
+		Renderer::BlockRenderThread();
 	}
 	
 

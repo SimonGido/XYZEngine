@@ -395,10 +395,10 @@ namespace XYZ {
 		Renderer::BeginRenderPass(pass, clear);
 		Renderer2D::BeginScene(s_Data.ViewProjectionMatrix, s_Data.ViewPosition);
 
-		if (s_Data.Options.ShowGrid)
-		{
-			Renderer2D::SubmitGrid(s_Data.GridProps.Transform, s_Data.GridProps.Scale, s_Data.GridProps.LineWidth);
-		}
+		//if (s_Data.Options.ShowGrid)
+		//{
+		//	Renderer2D::SubmitGrid(s_Data.GridProps.Transform, s_Data.GridProps.Scale, s_Data.GridProps.LineWidth);
+		//}
 
 		for (auto& dc : queue.SpriteDrawList)
 		{

@@ -1,6 +1,7 @@
 #pragma once
-#include "XYZ/Renderer/FrameBuffer.h"
+#include "XYZ/Renderer/Framebuffer.h"
 
+#include <mutex>
 
 namespace XYZ {
 
@@ -35,5 +36,7 @@ namespace XYZ {
 
 		std::vector<FramebufferTextureFormat> m_ColorAttachmentFormats;
 		FramebufferTextureFormat m_DepthAttachmentFormat = FramebufferTextureFormat::None;
+
+		mutable std::mutex m_Mutex;
 	};
 }

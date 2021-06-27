@@ -28,7 +28,7 @@ namespace XYZ {
 
 		for (std::thread& thread : m_Threads)
 		{
-			thread.detach();
+			thread.join();
 		}
 		m_Threads.clear();
 	}

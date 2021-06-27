@@ -23,6 +23,8 @@ namespace XYZ {
 		Ref<VertexArray>								FullscreenQuadVertexArray;
 		Ref<VertexBuffer>								FullscreenQuadVertexBuffer;
 		Ref<IndexBuffer>								FullscreenQuadIndexBuffer;
+
+		std::future<bool>							    RenderThreadFinished;
 	};
 
 	static RendererData s_Data;
@@ -201,12 +203,18 @@ namespace XYZ {
 	{
 		auto queue = s_Data.CommandQueue;
 		queue->Swap();
-		s_Data.Pool.PushJob<void>([queue]() {
+		s_Data.RenderThreadFinished = s_Data.Pool.PushJob<bool>([queue]() -> bool{
 			auto val = queue->Read();
 			val.Get().Execute();
+			return true;
 		});
 	}
 
+
+	void Renderer::BlockRenderThread()
+	{
+		s_Data.RenderThreadFinished.wait();
+	}
 
 	ScopedLockReference<RenderCommandQueue> Renderer::GetRenderCommandQueue(uint8_t type)
 	{

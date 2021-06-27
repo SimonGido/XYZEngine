@@ -68,6 +68,8 @@ namespace XYZ {
 		static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
 		static void WaitAndRender();
 
+		// We need this function for now to make sure shaders are created before using them
+		static void BlockRenderThread();
 	private:
 		static ScopedLockReference<RenderCommandQueue> GetRenderCommandQueue(uint8_t type);
 
