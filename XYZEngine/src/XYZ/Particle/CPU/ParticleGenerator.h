@@ -11,9 +11,39 @@ namespace XYZ {
 	public:
 		virtual ~ParticleGenerator() = default;
 		virtual void Generate(ParticleDataBuffer* data, uint32_t startId, uint32_t endId) const = 0;
-	
+
 	protected:
 		mutable std::mutex m_Mutex;
+	};
+
+	enum class EmittShape
+	{
+		Box,
+		Circle
+	};
+
+	class ParticleShapeGenerator : public ParticleGenerator
+	{
+	public:
+		ParticleShapeGenerator();
+		virtual void Generate(ParticleDataBuffer* data, uint32_t startId, uint32_t endId) const override;
+
+		void SetBoxMin(const glm::vec3& boxMin);
+		void SetBoxMax(const glm::vec3& boxMax);
+		void SetRadius(float radius);
+
+		glm::vec3 GetBoxMin() const;
+		glm::vec3 GetBoxMax() const;
+		float	  GetRadius() const;
+	private:
+		void generateBox(ParticleDataBuffer* data, uint32_t startId, uint32_t endId) const;
+		void generateCircle(ParticleDataBuffer* data, uint32_t startId, uint32_t endId) const;
+
+	private:
+		EmittShape	 m_Shape;
+		glm::vec3	 m_BoxMin;
+		glm::vec3	 m_BoxMax;
+		float		 m_Radius;
 	};
 
 	class ParticleBoxGenerator : public ParticleGenerator

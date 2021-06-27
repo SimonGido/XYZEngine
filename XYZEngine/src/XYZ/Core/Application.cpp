@@ -26,7 +26,7 @@ namespace XYZ {
 
 		m_Window = Window::Create();
 		m_Window->RegisterCallback(Hook(&Application::OnEvent, this));	
-		 
+
 		TCHAR NPath[MAX_PATH];
 		GetCurrentDirectory(MAX_PATH, NPath);
 		std::wstring tmp(&NPath[0]);
@@ -50,8 +50,8 @@ namespace XYZ {
 			float timestep = time - m_LastFrameTime;
 			m_LastFrameTime = time;
 			{
-				Stopwatch watch;
-				
+				//Stopwatch watch;				
+			
 				for (Layer* layer : m_LayerStack)	
 					layer->OnUpdate(timestep);	
 				Renderer::WaitAndRender();
@@ -60,7 +60,6 @@ namespace XYZ {
 				for (Layer* layer : m_LayerStack)
 					layer->OnImGuiRender();
 				m_ImGuiLayer->End();
-
 			}
 			m_Window->Update();
 		}

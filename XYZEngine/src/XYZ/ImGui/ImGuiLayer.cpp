@@ -12,29 +12,6 @@
 
 namespace XYZ {
 
-	static void deactivateContext()
-	{
-		auto result = Renderer::GetPool().PushJob<bool>([]()->bool {
-			glfwMakeContextCurrent(nullptr);
-			return true;
-		});
-		result.wait();
-		Application& app = Application::Get();
-		GLFWwindow* window = static_cast<GLFWwindow*>(app.GetWindow().GetWindow());
-		glfwMakeContextCurrent(window);
-	}
-	static void activateContext()
-	{
-		Application& app = Application::Get();
-		GLFWwindow* window = static_cast<GLFWwindow*>(app.GetWindow().GetWindow());
-		glfwMakeContextCurrent(nullptr);
-		auto result = Renderer::GetPool().PushJob<bool>([window]() ->bool {
-			glfwMakeContextCurrent(window);
-			return true;
-		});
-		result.wait();
-	}
-
 	ImGuiLayer::ImGuiLayer()
 	{
 	}
@@ -105,11 +82,11 @@ namespace XYZ {
 
 	void ImGuiLayer::Begin()
 	{
-		auto result = Renderer::GetPool().PushJob<bool>([this]()->bool {
+		//auto result = Renderer::GetPool().PushJob<bool>([this]()->bool {
 			ImGui_ImplOpenGL3_NewFrame();
-			return true;
-		});
-		result.wait();
+		//	return true;
+		//});
+		//result.wait();
 
 		ImGui_ImplGlfw_NewFrame();	
 		ImGui::NewFrame();
@@ -118,7 +95,7 @@ namespace XYZ {
 
 	void ImGuiLayer::End()
 	{
-		auto result = Renderer::GetPool().PushJob<bool>([this]()->bool {
+		//auto result = Renderer::GetPool().PushJob<bool>([this]()->bool {
 			ImGuiIO& io = ImGui::GetIO();
 			Application& app = Application::Get();
 			io.DisplaySize = ImVec2((float)app.GetWindow().GetWidth(), (float)app.GetWindow().GetHeight());
@@ -133,9 +110,9 @@ namespace XYZ {
 				ImGui::RenderPlatformWindowsDefault();
 				glfwMakeContextCurrent(backup_current_context);
 			}
-			return true;
-		});
-		result.wait();
+		//	return true;
+		//});
+		//result.wait();
 	}
 
 	void ImGuiLayer::SetDarkThemeColors()

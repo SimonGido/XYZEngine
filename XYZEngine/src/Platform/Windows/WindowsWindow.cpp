@@ -4,6 +4,8 @@
 #include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Core/Application.h"
 
+#include <GL/glew.h>
+
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 
@@ -49,16 +51,20 @@ namespace XYZ {
 		}
 		else
 		{
-			m_Window = glfwCreateWindow(props.Width, props.Height, props.Title.c_str(), NULL, NULL);
+			auto result = Renderer::GetPool().PushJob<bool>([this, props]() ->bool {
+				m_Window = glfwCreateWindow(props.Width, props.Height, props.Title.c_str(), NULL, NULL);
+				return true;
+			});
+			result.wait();
 		}
 
 		m_Context = APIContext::Create(m_Window);	
 
-		auto result = Renderer::GetPool().PushJob<bool>([this]() ->bool {
+		//auto result = Renderer::GetPool().PushJob<bool>([this]() ->bool {
 			m_Context->Init();
-			return true;
-		});
-		result.wait();
+		//	return true;
+		//});
+		//result.wait();
 
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 
@@ -165,13 +171,16 @@ namespace XYZ {
 
 	void WindowsWindow::Update()
 	{
-		glfwPollEvents();
+		//Renderer::BlockRenderThread();
+		glfwPollEvents();				
 		m_Context->SwapBuffers();
 	}
 
 	void WindowsWindow::SetVSync(int32_t frames)
 	{
-		glfwSwapInterval(frames);
+		//Renderer::GetPool().PushJob<void>([frames]() {
+			glfwSwapInterval(frames);
+		//});
 	}
 
 	bool WindowsWindow::IsClosed()
