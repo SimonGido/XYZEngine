@@ -178,12 +178,7 @@ namespace XYZ {
 
 		if (clear)
 		{
-			auto& specs = renderPass->GetSpecification().TargetFramebuffer->GetSpecification();	
-			const glm::vec4 clearColor = specs.ClearColor;
-			Renderer::Submit([=]() {
-				RendererAPI::SetClearColor(clearColor);
-				RendererAPI::Clear();
-			});
+			renderPass->GetSpecification().TargetFramebuffer->Clear();
 		}
 	}
 

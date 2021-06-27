@@ -120,7 +120,7 @@ namespace XYZ {
 	{		
 		Ref<OpenGLFramebuffer> instance = this;
 		Renderer::Submit([instance]() {
-			std::scoped_lock lock(instance->m_Mutex);
+
 			glDeleteFramebuffers(1, &instance->m_RendererID);
 			glDeleteTextures(1, &instance->m_DepthAttachment);
 			for (auto it : instance->m_ColorAttachments)
@@ -137,12 +137,9 @@ namespace XYZ {
 		if (!forceResize && m_Specification.Width == width && m_Specification.Height == height)
 			return;
 
-	
-
 		Ref<OpenGLFramebuffer> instance = this;
 		Renderer::Submit([instance, width, height]() mutable {
 			
-			std::scoped_lock lock(instance->m_Mutex);
 			instance->m_Specification.Width = width;
 			instance->m_Specification.Height = height;
 			if (instance->m_RendererID)
@@ -218,7 +215,6 @@ namespace XYZ {
 		Ref<const OpenGLFramebuffer> instance = this;
 		size_t colorAttachmentCount = m_ColorAttachmentFormats.size();
 		Renderer::Submit([instance, colorAttachmentCount]() mutable {
-			std::scoped_lock lock(instance->m_Mutex);
 			glBindFramebuffer(GL_FRAMEBUFFER, instance->m_RendererID);
 			glViewport(0, 0, instance->m_Specification.Width, instance->m_Specification.Height);
 		});
@@ -230,26 +226,35 @@ namespace XYZ {
 		});
 	}
 
+	void OpenGLFramebuffer::Clear() const
+	{
+		Ref<const OpenGLFramebuffer> instance = this;
+		Renderer::Submit([instance]() {
+			RendererAPI::SetClearColor(instance->GetSpecification().ClearColor);
+			RendererAPI::Clear();
+		});
+	}
+
 	void OpenGLFramebuffer::BindTexture(uint32_t attachmentIndex, uint32_t slot) const
 	{
 		Ref<const OpenGLFramebuffer> instance = this;
 		Renderer::Submit([instance, attachmentIndex, slot]() {
-			std::scoped_lock lock(instance->m_Mutex);
 			glBindTextureUnit(slot, instance->m_ColorAttachments[attachmentIndex]);
 		});
 	}
 
 	void OpenGLFramebuffer::SetSpecification(const FramebufferSpecs& specs)
 	{
-		std::scoped_lock lock(m_Mutex);
-		m_Specification = specs;
+		Ref<OpenGLFramebuffer> instance = this;
+		Renderer::Submit([instance, specs]() mutable {
+			instance->m_Specification = specs;
+		});
 	}
 	void OpenGLFramebuffer::ReadPixel(int32_t& pixel, uint32_t mx, uint32_t my, uint32_t attachmentIndex) const
 	{
 		Ref<const OpenGLFramebuffer> instance = this;
 		Renderer::Submit([instance, mx, my, attachmentIndex, &pixel]() {
 
-			std::scoped_lock lock(instance->m_Mutex);
 			glBindFramebuffer(GL_FRAMEBUFFER, instance->m_RendererID);
 			glReadBuffer(GL_COLOR_ATTACHMENT0 + attachmentIndex);
 			glReadPixels(mx, my, 1, 1, GL_RED_INTEGER, GL_INT, &pixel);
@@ -262,7 +267,6 @@ namespace XYZ {
 		int clearVal = *(int*)clearValue;
 		Ref<const OpenGLFramebuffer> instance = this;
 		Renderer::Submit([instance, colorAttachmentIndex, clearVal]() {
-			std::scoped_lock lock(instance->m_Mutex);
 			glClearTexImage(instance->m_ColorAttachments[colorAttachmentIndex], 0, GL_RED_INTEGER, GL_INT, &clearVal);
 		});
 	}

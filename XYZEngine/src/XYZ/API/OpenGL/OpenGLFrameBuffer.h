@@ -1,8 +1,6 @@
 #pragma once
 #include "XYZ/Renderer/Framebuffer.h"
 
-#include <mutex>
-
 namespace XYZ {
 
 	class OpenGLFramebuffer : public Framebuffer
@@ -15,6 +13,8 @@ namespace XYZ {
 
 		virtual void Bind() const override;
 		virtual void Unbind() const override;
+		virtual void Clear() const override;
+
 		virtual void BindTexture(uint32_t attachmentIndex, uint32_t slot) const override;
 
 		virtual void SetSpecification(const FramebufferSpecs& specs) override;
@@ -36,7 +36,5 @@ namespace XYZ {
 
 		std::vector<FramebufferTextureFormat> m_ColorAttachmentFormats;
 		FramebufferTextureFormat m_DepthAttachmentFormat = FramebufferTextureFormat::None;
-
-		mutable std::mutex m_Mutex;
 	};
 }

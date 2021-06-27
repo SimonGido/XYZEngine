@@ -661,6 +661,14 @@ namespace XYZ {
 
 					auto updaters = std::move(component.System->GetUpdaters());
 					auto emitters = std::move(component.System->GetEmitters());
+					
+					ImGui::Text("Emitters");
+					for (auto& generator : emitters)
+					{
+
+					}
+
+					ImGui::Text("Updaters");
 					for (auto& updater : updaters)
 					{
 						if (auto casted = dynamic_cast<BasicTimerUpdater*>(updater.Raw()))

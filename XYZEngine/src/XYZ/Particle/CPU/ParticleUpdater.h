@@ -35,7 +35,7 @@ namespace XYZ {
 
 	};
 
-	struct PointLight2D;
+
 	class LightUpdater : public ParticleUpdater
 	{
 	public:

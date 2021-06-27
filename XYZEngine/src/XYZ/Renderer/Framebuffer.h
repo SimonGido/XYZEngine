@@ -69,7 +69,8 @@ namespace XYZ {
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
-		
+		virtual void Clear() const = 0;
+
 		virtual void BindTexture(uint32_t attachmentIndex, uint32_t slot) const = 0;
 		virtual void SetSpecification(const FramebufferSpecs& specs) = 0;
 
