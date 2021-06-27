@@ -1,6 +1,8 @@
 #pragma once
 #include "InspectorContext.h"
+#include "InspectorEditable.h"
 #include "XYZ/Editor/Panels/ScenePanel.h"
+#include "Components/ComponentInspectors.h"
 
 namespace XYZ {
 	namespace Editor {
@@ -14,20 +16,24 @@ namespace XYZ {
 			void SetContext(SceneEntity context);
 		
 		private:
-			void selectSubTextureDialog();
-			void selectMaterialDialog();
+			std::vector<InspectorEditable*> m_InspectorEditables;
+
+			SceneEntity						m_Context;
+			glm::vec2						m_IconSize;
+
+			Ref<Material>					m_DefaultMaterial;
+			Ref<SubTexture>					m_DefaultSubTexture;
+
 
 		private:
-			SceneEntity								   m_Context;
-			std::function<void()>					   m_Dialog;
-			bool									   m_DialogOpen;
-			glm::vec2								   m_IconSize;
-
-			Ref<Material>   m_DefaultMaterial;
-			Ref<SubTexture> m_DefaultSubTexture;
-
-
-			static constexpr glm::vec4 sc_ColliderColor = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+			CameraInspector		          m_CameraInspector;
+			PointLight2DInspector         m_PointLight2DInspector;
+			SpotLight2DInspector          m_SpotLight2DInspector;
+			ParticleComponentGPUInspector m_ParticleGPUInspector;
+			SceneTagInspector			  m_SceneTagInspector;
+			ScriptComponentInspector	  m_ScriptComponentInspector;
+			TransformInspector			  m_TransformInspector;
+			SpriteRendererInspector		  m_SpriteRendererInspector;
 		};
 	}
 }
