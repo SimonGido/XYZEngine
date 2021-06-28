@@ -14,14 +14,8 @@ namespace XYZ {
 		virtual ~ParticleGenerator() = default;
 		virtual void Generate(ParticleDataBuffer* data, uint32_t startId, uint32_t endId) const = 0;
 
-
-		void SetEnabled(bool enabled);
-		bool IsEnabled() const;
-
 	protected:
 		mutable std::mutex m_Mutex;
-
-		bool		 m_Enabled;
 	};
 
 	enum class EmitShape

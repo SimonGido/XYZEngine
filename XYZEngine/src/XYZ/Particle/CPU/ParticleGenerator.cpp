@@ -8,22 +8,10 @@
 
 namespace XYZ {
 	ParticleGenerator::ParticleGenerator()
-		:
-		m_Enabled(true)
 	{
 	}
 
-	void ParticleGenerator::SetEnabled(bool enabled)
-	{
-		std::scoped_lock lock(m_Mutex);
-		m_Enabled = enabled;
-	}
 
-	bool ParticleGenerator::IsEnabled() const
-	{
-		std::scoped_lock lock(m_Mutex);
-		return m_Enabled;
-	}
 
 	ParticleShapeGenerator::ParticleShapeGenerator()
 		:
@@ -41,7 +29,6 @@ namespace XYZ {
 		m_BoxMin  = other.m_BoxMin;
 		m_Shape   = other.m_Shape;
 		m_Radius  = other.m_Radius;
-		m_Enabled = other.m_Enabled;
 	}
 
 	ParticleShapeGenerator& ParticleShapeGenerator::operator=(const ParticleShapeGenerator& other)
@@ -51,7 +38,6 @@ namespace XYZ {
 		m_BoxMin = other.m_BoxMin;
 		m_Shape = other.m_Shape;
 		m_Radius = other.m_Radius;
-		m_Enabled = other.m_Enabled;
 		return *this;
 	}
 
@@ -161,13 +147,11 @@ namespace XYZ {
 	{
 		std::scoped_lock lock(other.m_Mutex);
 		m_LifeTime = other.m_LifeTime;
-		m_Enabled = other.m_Enabled;
 	}
 	ParticleLifeGenerator& ParticleLifeGenerator::operator=(const ParticleLifeGenerator& other)
 	{
 		std::scoped_lock lock(other.m_Mutex, m_Mutex);
 		m_LifeTime = other.m_LifeTime;
-		m_Enabled = other.m_Enabled;
 		return *this;
 	}
 	void ParticleLifeGenerator::Generate(ParticleDataBuffer* data, uint32_t startId, uint32_t endId) const
@@ -202,7 +186,6 @@ namespace XYZ {
 		std::scoped_lock lock(other.m_Mutex);
 		m_MaxVelocity = other.m_MaxVelocity;
 		m_MinVelocity = other.m_MinVelocity;
-		m_Enabled = other.m_Enabled;
 	}
 
 	ParticleRandomVelocityGenerator& ParticleRandomVelocityGenerator::operator=(const ParticleRandomVelocityGenerator& other)
@@ -210,7 +193,6 @@ namespace XYZ {
 		std::scoped_lock lock(other.m_Mutex, m_Mutex);
 		m_MaxVelocity = other.m_MaxVelocity;
 		m_MinVelocity = other.m_MinVelocity;
-		m_Enabled = other.m_Enabled;
 		return *this;
 	}
 	void ParticleRandomVelocityGenerator::Generate(ParticleDataBuffer* data, uint32_t startId, uint32_t endId) const
