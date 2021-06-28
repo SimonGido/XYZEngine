@@ -11,6 +11,10 @@ namespace XYZ {
 		virtual					  ~IComponentStorage() = default;
 		virtual void			   Clear() = 0;
 		virtual void			   Move(uint8_t* buffer) = 0;
+		virtual IComponentStorage* Move() = 0;
+		virtual IComponentStorage* Copy(uint8_t* buffer) const = 0;
+		virtual IComponentStorage* Copy() const = 0;
+
 		virtual void			   AddRawComponent(Entity entity, const ByteStream& in) = 0;
 		virtual void			   CopyComponentData(Entity entity, ByteStream& out) const = 0;
 		virtual void			   UpdateComponentData(Entity entity, const ByteStream& in) = 0;
@@ -20,7 +24,7 @@ namespace XYZ {
 	
 		virtual size_t			   Size() const = 0;
 		virtual uint16_t		   ID() const = 0;
-		virtual IComponentStorage* Copy(uint8_t* buffer) const = 0;
+	
 
 		virtual const std::vector<Entity>& GetDataEntityMap() const = 0;
 	};
@@ -53,6 +57,20 @@ namespace XYZ {
 		{
 			new (buffer)ComponentStorage<T>(std::move(*this));
 		}
+		virtual IComponentStorage* Move() override
+		{
+			return new ComponentStorage<T>(std::move(*this));
+		}
+
+		virtual IComponentStorage* Copy(uint8_t* buffer) const override
+		{
+			return new ((void*)buffer)ComponentStorage<T>(*this);
+		}
+		virtual IComponentStorage* Copy() const override
+		{
+			return new ComponentStorage<T>(*this);
+		}
+
 		virtual void AddRawComponent(Entity entity, const ByteStream& in) override
 		{
 			T component;
@@ -85,12 +103,9 @@ namespace XYZ {
 		}
 		virtual uint16_t ID() const override
 		{
-			return IComponent::GetComponentID<T>();
+			return Component<T>::ID();
 		}
-		virtual IComponentStorage* Copy(uint8_t* buffer) const override
-		{
-			return new ((void*)buffer)ComponentStorage<T>(*this);
-		}
+		
 		virtual const std::vector<Entity>& GetDataEntityMap() const override
 		{ 
 			return m_DataEntityMap; 

@@ -6,12 +6,10 @@ namespace XYZ {
     void ECSSerializer::Serialize(const ECSManager& ecs, ByteStream& out, bool tight )
     {
         serializeECSHeaderAndData(ecs, out, tight);
-        size_t offset = 0;
-        for (bool created : ecs.m_ComponentManager.m_StorageCreated)
+        for (auto storage : ecs.m_ComponentManager.m_Storages)
         {
-            if (created)
+            if (storage)
             {
-                const IComponentStorage* storage = ecs.m_ComponentManager.GetIStorage(offset);
                 out << storage->ID();
                 out << storage->Size();
                 for (size_t i = 0; i < storage->Size(); ++i)
@@ -21,7 +19,6 @@ namespace XYZ {
                     storage->CopyComponentData(entity, out);
                 }
             }
-            offset += sizeof(ComponentStorage<IComponent>);
         }
     }
     void ECSSerializer::Deserialize(ECSManager& ecs, const ByteStream& in)

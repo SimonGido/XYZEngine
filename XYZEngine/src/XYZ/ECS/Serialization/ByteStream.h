@@ -84,17 +84,6 @@ namespace XYZ {
 		static constexpr size_t sc_CapacityMultiplier = 2;
 	};
 
-
-	inline ByteStream& operator << (ByteStream& out, const IComponent& component)
-	{
-		return out;
-	}
-
-	inline const ByteStream& operator >> (const ByteStream& out, IComponent& component)
-	{
-		return out;
-	}
-
 	inline ByteStream& operator << (ByteStream & out, Entity entity)
 	{
 		out << (uint32_t)entity;

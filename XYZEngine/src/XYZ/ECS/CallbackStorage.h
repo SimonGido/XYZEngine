@@ -22,10 +22,12 @@ namespace XYZ {
 	public:
 		virtual ~ICallbackStorage() = default;
 
-		virtual void Clear() = 0;
-		virtual void Move(uint8_t* buffer) = 0;
-		virtual void Execute(uint32_t entity, CallbackType type) = 0;
+		virtual void			  Clear() = 0;
+		virtual void			  Move(uint8_t* buffer) = 0;
+		virtual ICallbackStorage* Move() = 0;
 		virtual ICallbackStorage* Copy(uint8_t* buffer) const = 0;
+		virtual ICallbackStorage* Copy() const = 0;
+		virtual void			  Execute(uint32_t entity, CallbackType type) = 0;
 	};
 
 	template <typename T>
@@ -51,6 +53,19 @@ namespace XYZ {
 		{
 			new (buffer)CallbackStorage<T>(std::move(*this));
 		}
+		virtual ICallbackStorage* Move() override
+		{
+			return new CallbackStorage<T>(std::move(*this));
+		}
+		virtual ICallbackStorage* Copy(uint8_t* buffer) const override
+		{
+			return new (buffer)CallbackStorage<T>(*this);
+		}
+		virtual ICallbackStorage* Copy() const override
+		{
+			return new CallbackStorage<T>(*this);
+		}
+
 		virtual void Execute(uint32_t entity, CallbackType type) override
 		{
 			for (auto& listener : m_Listeners)
@@ -84,10 +99,7 @@ namespace XYZ {
 			}
 		}
 		
-		virtual ICallbackStorage* Copy(uint8_t* buffer) const override
-		{
-			return new (buffer)CallbackStorage<T>(*this);
-		}
+	
 
 	private:
 		std::vector<Listener> m_Listeners;

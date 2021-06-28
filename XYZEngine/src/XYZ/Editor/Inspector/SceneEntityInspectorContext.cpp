@@ -306,7 +306,7 @@ namespace XYZ {
 			if (m_Context.HasComponent<PointLight2D>())
 			{
 				m_InspectorEditables.push_back(&m_PointLight2DInspector);
-				m_ParticleGPUInspector.m_Context = context;
+				m_PointLight2DInspector.m_Context = context;
 			}
 			if (m_Context.HasComponent<SpotLight2D>())
 			{

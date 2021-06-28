@@ -17,7 +17,7 @@
 
 namespace XYZ {
 
-	struct IDComponent : public IComponent
+	struct IDComponent 
 	{
 		IDComponent() = default;
 		IDComponent(const GUID& id) 
@@ -30,7 +30,7 @@ namespace XYZ {
 
 		GUID ID;
 	};
-	class TransformComponent : public IComponent
+	class TransformComponent 
 	{
 	public:
 		TransformComponent() = default;
@@ -51,7 +51,7 @@ namespace XYZ {
 		void DecomposeTransform(const glm::mat4& transform);
 	};
 
-	struct SceneTagComponent : public IComponent
+	struct SceneTagComponent 
 	{
 		std::string Name;
 		SceneTagComponent() = default;
@@ -71,7 +71,7 @@ namespace XYZ {
 		operator const  std::string& () const { return Name; }
 	};
 
-	struct SpriteRenderer : public IComponent
+	struct SpriteRenderer 
 	{
 		SpriteRenderer() = default;
 		SpriteRenderer(
@@ -98,7 +98,7 @@ namespace XYZ {
 
 
 
-	struct CameraComponent : public IComponent
+	struct CameraComponent 
 	{
 		SceneCamera Camera;
 		CameraComponent() = default;
@@ -106,21 +106,21 @@ namespace XYZ {
 
 
 	class Animation;
-	struct AnimatorComponent : public IComponent
+	struct AnimatorComponent 
 	{
 		AnimatorComponent() = default;
 		Ref<Animation> Animation;
 	};
 
 
-	struct ParticleComponentGPU : public IComponent
+	struct ParticleComponentGPU 
 	{
 		ParticleComponentGPU() = default;
 		
 		Ref<ParticleSystem>    System;
 	};
 
-	struct ParticleComponentCPU : public IComponent
+	struct ParticleComponentCPU 
 	{
 		ParticleComponentCPU() = default;
 		
@@ -128,7 +128,7 @@ namespace XYZ {
 	};
 
 
-	struct PointLight2D : public IComponent
+	struct PointLight2D 
 	{
 		PointLight2D() = default;
 
@@ -137,7 +137,7 @@ namespace XYZ {
 		float Intensity = 1.0f;
 	};
 
-	struct SpotLight2D : public IComponent
+	struct SpotLight2D 
 	{
 		glm::vec3 Color  = glm::vec3(1.0f);
 		float Radius	 = 1.0f;
@@ -146,7 +146,7 @@ namespace XYZ {
 		float OuterAngle =  180.0f;
 	};
 
-	struct Relationship : public IComponent
+	struct Relationship 
 	{
 		Relationship();
 		Relationship(Entity parent);
@@ -175,7 +175,7 @@ namespace XYZ {
 	};
 
 	struct EntityScriptClass;
-	struct ScriptComponent : public IComponent
+	struct ScriptComponent 
 	{
 		std::string ModuleName;
 
@@ -194,7 +194,7 @@ namespace XYZ {
 	};
 
 
-	struct RigidBody2DComponent : public IComponent
+	struct RigidBody2DComponent 
 	{
 		enum class BodyType { Static, Dynamic, Kinematic };
 
@@ -204,7 +204,7 @@ namespace XYZ {
 	};
 
 
-	struct BoxCollider2DComponent : public IComponent
+	struct BoxCollider2DComponent 
 	{
 		glm::vec2 Size = glm::vec2(1.0f);
 		glm::vec2 Offset = glm::vec2(0.0f);
@@ -214,7 +214,7 @@ namespace XYZ {
 		void* RuntimeFixture = nullptr;
 	};
 
-	struct CircleCollider2DComponent : public IComponent
+	struct CircleCollider2DComponent 
 	{
 		glm::vec2 Offset = glm::vec2(0.0f);
 		float Radius = 1.0f;
@@ -224,7 +224,7 @@ namespace XYZ {
 		void* RuntimeFixture = nullptr;
 	};
 
-	struct PolygonCollider2DComponent : public IComponent
+	struct PolygonCollider2DComponent 
 	{
 		std::vector<glm::vec2> Vertices;
 
@@ -234,7 +234,7 @@ namespace XYZ {
 		void* RuntimeFixture = nullptr;
 	};
 
-	struct ChainCollider2DComponent : public IComponent
+	struct ChainCollider2DComponent 
 	{
 		ChainCollider2DComponent()
 		{

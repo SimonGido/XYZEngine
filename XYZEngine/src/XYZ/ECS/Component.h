@@ -2,47 +2,34 @@
 
 #include <bitset>
 #include <type_traits>
+#include <limits>
 
 namespace XYZ {
 
-	class Counter
+	template <typename T>
+	class Component
 	{
 	public:
-		template <typename T>
-		static uint16_t GetID()
-		{
-			static uint16_t compType = getNextID();
-			return compType;
-		}
-	
+		static uint16_t ID();
+		static bool     Registered();
 	private:
-		static uint16_t getNextID();
-		
+		static uint16_t s_ID;
+
+		friend class ComponentManager;
 	};
-
-
-	template <typename Derived, typename DeriveFrom = Counter>
-	class Type : public Counter
+	template <typename T>
+	uint16_t Component<T>::s_ID = std::numeric_limits<uint16_t>::max();
+	
+	
+	template<typename T>
+	inline uint16_t Component<T>::ID()
 	{
-	public:
-		// return unique static id
-		static uint16_t GetComponentID()
-		{
-			return Counter::GetID<Derived>();
-		}
-	};
-
-
-	class IComponent
+		XYZ_ASSERT(s_ID != std::numeric_limits<uint16_t>::max(), "Component type was not registered");
+		return s_ID;
+	}
+	template<typename T>
+	inline bool Component<T>::Registered()
 	{
-	public:
-		virtual ~IComponent() {}
-
-		template <typename T>
-		static uint16_t GetComponentID()
-		{
-			static_assert(std::is_base_of<IComponent, T>::value, "Type T does not inherit from IComponent");
-			return Type<T>::GetComponentID();
-		}
-	};
+		return s_ID != std::numeric_limits<uint16_t>::max();
+	}
 }

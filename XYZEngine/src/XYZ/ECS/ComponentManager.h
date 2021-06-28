@@ -3,7 +3,6 @@
 #include "Component.h"
 #include "Types.h"
 #include "Entity.h"
-#include "Pool.h"
 #include "Signature.h"
 
 namespace XYZ {
@@ -36,95 +35,96 @@ namespace XYZ {
 		}
 
 		template <typename T>
-		void ForceStorage()
+		void CreateStorage()
 		{
-			getOrCreateStorage<T>();
+			registerComponentType<T>();
+			createStorage<T>();
 		}	
 
 		template <typename T>
 		void RemoveComponent(Entity entity, const Signature& signature)
 		{
-			size_t offset = IComponent::GetComponentID<T>() * sizeof(ComponentStorage<T>);
-			uint32_t updatedEntity = m_StoragePool.Get<ComponentStorage<T>>(offset)->RemoveComponent(entity);
+			ComponentStorage<T>& storage = GetStorage<T>();
+			storage.RemoveComponent(entity);
 		}
 
 		template <typename T>
 		T& GetComponent(Entity entity)
 		{
-			size_t offset = IComponent::GetComponentID<T>() * sizeof(ComponentStorage<T>);
-			ComponentStorage<T>* storage = static_cast<ComponentStorage<T>*>(m_StoragePool.Get<IComponentStorage>(offset));
-			return storage->GetComponent(entity);
+			ComponentStorage<T>& storage = GetStorage<T>();
+			return storage.GetComponent(entity);
 		}
 
 		template <typename T>
 		const T& GetComponent(Entity entity) const
 		{
-			size_t offset = IComponent::GetComponentID<T>() * sizeof(ComponentStorage<T>);
-			const ComponentStorage<T>* storage = static_cast<const ComponentStorage<T>*>(m_StoragePool.Get<IComponentStorage>(offset));
-			return storage->GetComponent(entity);
+			const ComponentStorage<T>& storage = GetStorage<T>();
+			return storage.GetComponent(entity);
 		}
 
 		template <typename T>
 		ComponentStorage<T>& GetStorage()
 		{
-			size_t offset = IComponent::GetComponentID<T>() * sizeof(ComponentStorage<T>);
-			return *m_StoragePool.Get<ComponentStorage<T>>(offset);
+			XYZ_ASSERT(m_Storages[(size_t)Component<T>::ID()], "Storage is not initialized");
+			return *static_cast<ComponentStorage<T>*>(m_Storages[(size_t)Component<T>::ID()]);
 		}
 
 		template <typename T>
 		const ComponentStorage<T>& GetStorage() const
 		{
-			size_t offset = IComponent::GetComponentID<T>() * sizeof(ComponentStorage<T>);
-			return *m_StoragePool.Get<ComponentStorage<T>>(offset);
+			XYZ_ASSERT(m_Storages[(size_t)Component<T>::ID()], "Storage is not initialized");
+			return *static_cast<ComponentStorage<T>*>(m_Storages[(size_t)Component<T>::ID()]);
 		}
 
-		IComponentStorage* GetIStorage(size_t offset)
+		IComponentStorage* GetIStorage(uint16_t index)
 		{
-			return m_StoragePool.Get<IComponentStorage>(offset);
+			return m_Storages[(size_t)index];
 		}
-		const IComponentStorage* GetIStorage(size_t offset) const
+		const IComponentStorage* GetIStorage(int16_t index) const
 		{
-			return m_StoragePool.Get<IComponentStorage>(offset);
+			return m_Storages[(size_t)index];
 		}
 
 		template <typename T>
 		uint32_t GetComponentIndex(Entity entity) const
 		{
-			size_t offset = IComponent::GetComponentID<T>() * sizeof(ComponentStorage<T>);
-			const ComponentStorage<T>& storage = *m_StoragePool.Get<ComponentStorage<T>>(offset);
+			const ComponentStorage<T>& storage = GetStorage<T>();
 			return storage.GetComponentIndex(entity);
 		}
 
-		size_t GetNumberOfRegisteredStorages() const { return m_NumberOfStorages; }
+		uint16_t GetNumberOfCreatedStorages() const { return m_StoragesCreated; }
 
 	private:
 		template <typename T>
-		ComponentStorage<T>* getOrCreateStorage()
+		void createStorage()
 		{
-			size_t id = (size_t)IComponent::GetComponentID<T>();
-			size_t offset = id * sizeof(ComponentStorage<T>);
-			
-			if (id >= m_Count)
-				resizeStorages(id + 1 + sc_StorageCapacityInc);		
-			if (!m_StorageCreated[id])
-			{
-				m_StoragePool.Allocate<ComponentStorage<T>>(offset);
-				m_StorageCreated[id] = true;
-				m_NumberOfStorages++;
-			}
-			return m_StoragePool.Get<ComponentStorage<T>>(offset);
+			size_t oldSize = m_Storages.size();
+			size_t id = (size_t)Component<T>::ID();
+			if (oldSize <= id)
+				m_Storages.resize(id + 1);		
+			for (size_t i = oldSize; i < m_Storages.size(); ++i)
+				m_Storages[i] = nullptr;		
+			if (m_Storages[id]) // Storage already exists
+				return;
+
+			m_Storages[id] = new ComponentStorage<T>();
+			m_StoragesCreated++;
 		}
-		void resizeStorages(size_t count);
-		void deallocateStorages();
+
+		template <typename T>
+		static void registerComponentType()
+		{
+			if (!Component<T>::Registered())
+				Component<T>::s_ID = s_NextComponentTypeID++;
+		}
+
+		void destroyStorages();
+
 	private:
-		Pool m_StoragePool;
-		std::vector<bool> m_StorageCreated;
-		size_t m_Count;
-		size_t m_NumberOfStorages;
+		std::vector<IComponentStorage*> m_Storages;
+		uint16_t						m_StoragesCreated;
 
-
-		static constexpr size_t sc_StorageCapacityInc = 5;
-		static constexpr size_t sc_InitialStorageCapacity = 10;
+		static uint16_t				    s_NextComponentTypeID;
 
 		friend class ECSSerializer;
 		friend class ECSManager;

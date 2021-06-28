@@ -7,7 +7,7 @@
 #include "XYZ/Editor/EditorCamera.h"
 
 namespace XYZ {
-	struct EditorSpriteRenderer : public IComponent
+	struct EditorSpriteRenderer
 	{
 		EditorSpriteRenderer() = default;
 		EditorSpriteRenderer(

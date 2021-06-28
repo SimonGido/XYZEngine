@@ -35,12 +35,16 @@ namespace XYZ {
 		T& EmplaceComponent(Entity entity, Args&&... args)
 		{
 			XYZ_ASSERT(IsValid(entity), "Entity is invalid");
-			m_ComponentManager.ForceStorage<T>();
-			m_EntityManager.SetNumberOfComponents(m_ComponentManager.m_Count);
+			// Make sure storage for component exists
+			m_ComponentManager.CreateStorage<T>();
+			// Update bitsets
+			m_EntityManager.SetNumberOfComponents(ComponentManager::s_NextComponentTypeID);
+			// Update signature
 			Signature& signature = m_EntityManager.GetSignature(entity);
-			XYZ_ASSERT(!signature[IComponent::GetComponentID<T>()], "Entity already contains component");
-			signature.Set(IComponent::GetComponentID<T>(), true);
+			XYZ_ASSERT(!signature[Component<T>::ID()], "Entity already contains component");
+			signature.Set(Component<T>::ID(), true);
 			auto& result = m_ComponentManager.EmplaceComponent<T>(entity, std::forward<Args>(args)...);
+			// Handle callbacks
 			m_CallbackManager.OnComponentCreate<T>(entity);
 			return result;
 		}
@@ -48,12 +52,16 @@ namespace XYZ {
 		T& AddComponent(Entity entity, const T& component)
 		{
 			XYZ_ASSERT(IsValid(entity), "Entity is invalid");
-			m_ComponentManager.ForceStorage<T>();
-			m_EntityManager.SetNumberOfComponents(m_ComponentManager.m_Count);
+			// Make sure storage for component exists
+			m_ComponentManager.CreateStorage<T>();
+			// Update bitsets
+			m_EntityManager.SetNumberOfComponents(ComponentManager::s_NextComponentTypeID);
+			// Update signature
 			Signature& signature = m_EntityManager.GetSignature(entity);
-			XYZ_ASSERT(!signature[IComponent::GetComponentID<T>()], "Entity already contains component");
-			signature.Set(IComponent::GetComponentID<T>(), true);
+			XYZ_ASSERT(!signature[Component<T>::ID()], "Entity already contains component");
+			signature.Set(Component<T>::ID(), true);
 			auto& result = m_ComponentManager.AddComponent<T>(entity, component);
+			// Handle callbacks
 			m_CallbackManager.OnComponentCreate<T>(entity);
 			return result;
 		}
@@ -63,12 +71,11 @@ namespace XYZ {
 		{
 			XYZ_ASSERT(IsValid(entity), "Entity is invalid");
 			Signature& signature = m_EntityManager.GetSignature(entity);
-			XYZ_ASSERT(signature[IComponent::GetComponentID<T>()], "Entity does not have component");
+			XYZ_ASSERT(signature[Component<T>::ID()], "Entity does not have component");
 			
-			signature.Set(IComponent::GetComponentID<T>(), false);
+			signature.Set(Component<T>::ID(), false);
 			m_CallbackManager.OnComponentRemove<T>(entity);
 			m_ComponentManager.RemoveComponent<T>(entity, signature);
-
 			return true;
 		}
 
@@ -77,7 +84,7 @@ namespace XYZ {
 		{
 			XYZ_ASSERT(IsValid(entity), "Entity is invalid");
 			Signature& signature = m_EntityManager.GetSignature(entity);
-			XYZ_ASSERT(signature[IComponent::GetComponentID<T>()], "Entity does not have component");
+			XYZ_ASSERT(signature[Component<T>::ID()], "Entity does not have component");
 			return m_ComponentManager.GetComponent<T>(entity);
 		}
 
@@ -86,7 +93,7 @@ namespace XYZ {
 		{
 			XYZ_ASSERT(IsValid(entity), "Entity is invalid");
 			const Signature& signature = m_EntityManager.GetSignature(entity);
-			XYZ_ASSERT(signature[IComponent::GetComponentID<T>()], "Entity does not have component");
+			XYZ_ASSERT(signature[Component<T>::ID()], "Entity does not have component");
 			return m_ComponentManager.GetComponent<T>(entity);
 		}
 
@@ -101,10 +108,12 @@ namespace XYZ {
 		bool Contains(Entity entity) const
 		{
 			XYZ_ASSERT(IsValid(entity), "Entity is invalid");
-			auto& signature = m_EntityManager.GetSignature(entity);
-			if (signature.Size() <= IComponent::GetComponentID<T>())
+			if (!Component<T>::Registered())
 				return false;
-			return signature[IComponent::GetComponentID<T>()];
+			auto& signature = m_EntityManager.GetSignature(entity);
+			if (signature.Size() <= Component<T>::ID())
+				return false;
+			return signature[Component<T>::ID()];
 		}
 	
 		bool Contains(Entity entity, uint16_t componentID) const
@@ -122,10 +131,10 @@ namespace XYZ {
 		}
 
 		template <typename ...Args>
-		void ForceStorage()
+		void CreateStorage()
 		{
-			(m_ComponentManager.ForceStorage<Args>(), ...);
-			m_EntityManager.SetNumberOfComponents(m_ComponentManager.m_Count);
+			(m_ComponentManager.CreateStorage<Args>(), ...);
+			m_EntityManager.SetNumberOfComponents(ComponentManager::s_NextComponentTypeID);
 		}
 
 		template <typename T>
@@ -142,20 +151,18 @@ namespace XYZ {
 
 		IComponentStorage& GetIStorage(uint16_t index)
 		{
-			size_t offset = (size_t)index * sizeof(ComponentStorage<IComponent>);
-			return *m_ComponentManager.GetIStorage(offset);
+			return *m_ComponentManager.GetIStorage(index);
 		}
 
 		const IComponentStorage& GetIStorage(uint16_t index) const
 		{
-			size_t offset = (size_t)index * sizeof(ComponentStorage<IComponent>);
-			return *m_ComponentManager.GetIStorage(offset);
+			return *m_ComponentManager.GetIStorage(index);
 		}
 
 		template <typename ...Args>
 		ComponentView<Args...> CreateView()
 		{
-			(ForceStorage<Args>(), ...);
+			(CreateStorage<Args>(), ...);
 			return ComponentView<Args...>(m_ComponentManager);
 		}
 
@@ -170,7 +177,7 @@ namespace XYZ {
 		{
 			for (int32_t i = 0; i < m_EntityManager.m_Bitset.GetNumberOfSignatures(); ++i)
 			{
-				if (m_EntityManager.m_Bitset[i][IComponent::GetComponentID<T>()])
+				if (m_EntityManager.m_Bitset[i][Component<T>::ID()])
 				{
 					if (component == m_ComponentManager.GetComponent<T>(i))
 						return i;
@@ -182,7 +189,8 @@ namespace XYZ {
 		uint32_t GetNumberOfEntities() const { return m_EntityManager.GetNumEntities(); }
 		uint32_t GetHighestID() const { return (uint32_t)m_EntityManager.m_Valid.size(); }
 
-		size_t GetNumberOfRegisteredComponentTypes() const { return m_ComponentManager.GetNumberOfRegisteredStorages(); }
+		uint16_t GetNumberOfCreatedStorages() const { return m_ComponentManager.GetNumberOfCreatedStorages(); }
+		static uint16_t GetNumberOfRegisteredComponents() { return ComponentManager::s_NextComponentTypeID; }
 	private:
 		ComponentManager m_ComponentManager;
 		CallbackManager m_CallbackManager;

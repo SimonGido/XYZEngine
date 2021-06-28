@@ -31,7 +31,7 @@ namespace XYZ {
 		m_ViewportWidth(0),
 		m_ViewportHeight(0)
 	{
-		m_ECS.ForceStorage<ScriptComponent>();
+		m_ECS.CreateStorage<ScriptComponent>();
 		m_SceneEntity = m_ECS.CreateEntity();
 
 		m_ECS.EmplaceComponent<Relationship>(m_SceneEntity);
@@ -109,7 +109,7 @@ namespace XYZ {
 		s_EditTransforms.resize((size_t)m_ECS.GetHighestID() + 1);
 		
 		// Find Camera
-		m_ECS.ForceStorage<CameraComponent>();
+		m_ECS.CreateStorage<CameraComponent>();
 		auto& storage = m_ECS.GetStorage<CameraComponent>();
 		if (storage.Size())
 		{
@@ -228,7 +228,7 @@ namespace XYZ {
 		int32_t positionIterations = 2;
 		m_PhysicsWorld.Step(ts, velocityIterations, positionIterations);
 
-		m_ECS.ForceStorage<RigidBody2DComponent>();
+		m_ECS.CreateStorage<RigidBody2DComponent>();
 		auto rigidView = m_ECS.CreateView<TransformComponent, RigidBody2DComponent>();
 		for (auto entity : rigidView)
 		{
@@ -247,7 +247,7 @@ namespace XYZ {
 				ScriptEngine::OnUpdateEntity({ scriptStorage.GetEntityAtIndex(i),this }, ts);
 		}
 		
-		m_ECS.ForceStorage<AnimatorComponent>();
+		m_ECS.CreateStorage<AnimatorComponent>();
 		auto& animatorStorage = m_ECS.GetStorage<AnimatorComponent>();
 		for (auto & anim : animatorStorage)
 		{
