@@ -30,12 +30,15 @@ namespace XYZ {
             size_t size = 0;
             in >> componentID;
             in >> size;
-            IComponentStorage& storage = ecs.GetIStorage(componentID);
-            for (size_t i = 0; i < size; ++i)
+            IComponentStorage* storage = ecs.GetIStorage(componentID);
+            if (storage)
             {
-                Entity entity;
-                in >> entity;
-                storage.AddRawComponent(entity, in);
+                for (size_t i = 0; i < size; ++i)
+                {
+                    Entity entity;
+                    in >> entity;
+                    storage->AddRawComponent(entity, in);
+                }
             }
         }
     }
@@ -47,9 +50,9 @@ namespace XYZ {
             out << componentID;
             out << (size_t)1;
         }
-        const IComponentStorage& storage = ecs.GetIStorage(componentID);
+        const IComponentStorage* storage = ecs.GetIStorage(componentID);
         out << entity;
-        storage.CopyComponentData(entity, out);
+        storage->CopyComponentData(entity, out);
     }
 
     void ECSSerializer::serializeECSHeaderAndData(const ECSManager& ecs, ByteStream& out, bool tight)

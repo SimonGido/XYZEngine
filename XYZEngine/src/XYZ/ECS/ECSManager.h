@@ -14,7 +14,8 @@ namespace XYZ {
 		ECSManager(ECSManager&& other) noexcept;
 
 		ECSManager& operator=(ECSManager&& other) noexcept;
-
+		
+		Entity CopyEntity(Entity entity);
 		Entity CreateEntity();
 		void DestroyEntity(Entity entity);
 		void Clear();
@@ -149,14 +150,14 @@ namespace XYZ {
 			return m_ComponentManager.GetStorage<T>();
 		}
 
-		IComponentStorage& GetIStorage(uint16_t index)
+		IComponentStorage* GetIStorage(uint16_t index)
 		{
-			return *m_ComponentManager.GetIStorage(index);
+			return m_ComponentManager.GetIStorage(index);
 		}
 
-		const IComponentStorage& GetIStorage(uint16_t index) const
+		const IComponentStorage* GetIStorage(uint16_t index) const
 		{
-			return *m_ComponentManager.GetIStorage(index);
+			return m_ComponentManager.GetIStorage(index);
 		}
 
 		template <typename ...Args>

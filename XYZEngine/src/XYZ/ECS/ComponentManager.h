@@ -78,10 +78,14 @@ namespace XYZ {
 
 		IComponentStorage* GetIStorage(uint16_t index)
 		{
+			if ((size_t)index >= m_Storages.size())
+				return nullptr;
 			return m_Storages[(size_t)index];
 		}
 		const IComponentStorage* GetIStorage(int16_t index) const
 		{
+			if ((size_t)index >= m_Storages.size())
+				return nullptr;
 			return m_Storages[(size_t)index];
 		}
 

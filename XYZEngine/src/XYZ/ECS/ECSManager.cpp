@@ -24,6 +24,18 @@ namespace XYZ {
 		m_EntityManager = std::move(other.m_EntityManager);
 		return *this;
 	}
+	Entity ECSManager::CopyEntity(Entity entity)
+	{
+		XYZ_ASSERT(IsValid(entity), "Accesing invalid entity");
+		Entity result = m_EntityManager.CreateEntity();
+		for (auto storage : m_ComponentManager.m_Storages)
+		{
+			ByteStream out;
+			storage->CopyComponentData(entity, out);
+			storage->AddRawComponent(result, out);
+		}
+		return result;
+	}
 	Entity ECSManager::CreateEntity()
 	{ 
 		return m_EntityManager.CreateEntity(); 

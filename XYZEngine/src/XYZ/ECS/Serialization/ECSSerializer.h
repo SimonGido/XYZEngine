@@ -63,7 +63,7 @@ namespace XYZ {
 			static_assert(std::is_base_of<IComponent, T>::value, "");
 			if (writeInfo)
 			{
-				out << IComponent::GetComponentID<T>();
+				out << Component<T>::ID();
 				out << (size_t)1;
 			}
 			out << (uint32_t)entity;
@@ -82,7 +82,7 @@ namespace XYZ {
 		static void SerializeStorage(const ECSManager& ecs, ByteStream& out)
 		{
 			const ComponentStorage<T>& storage = ecs.GetStorage<T>();
-			out << IComponent::GetComponentID<T>();
+			out << Component<T>::ID();
 			out << storage.Size();
 			uint32_t counter = 0;
 			for (const T& component : storage)
