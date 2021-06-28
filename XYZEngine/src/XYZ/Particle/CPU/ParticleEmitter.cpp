@@ -7,9 +7,6 @@ namespace XYZ {
 		m_EmitRate(10.0f),
 		m_EmittedParticles(0.0f)
 	{
-		m_Generators.push_back(&m_ShapeGenerator);
-		m_Generators.push_back(&m_LifeGenerator);
-		m_Generators.push_back(&m_RandomVelocityGenerator);
 	}
 	void ParticleEmitterCPU::Emit(float timeStep, ParticleDataBuffer * data)
 	{
@@ -29,14 +26,13 @@ namespace XYZ {
 			data->Wake(i);
 	}
 
-	void ParticleEmitterCPU::AddCustomGenerator(ParticleGenerator* generator)
+	void ParticleEmitterCPU::AddGenerator(const Ref<ParticleGenerator>& generator)
 	{
-		std::scoped_lock lock(m_Mutex);
-		if (generator->IsEnabled())
-			m_Generators.push_back(generator);
+		std::scoped_lock lock(m_Mutex);	
+		m_Generators.push_back(generator);
 	}
 
-	void ParticleEmitterCPU::RemoveCustomGenerator(const ParticleGenerator* generator)
+	void ParticleEmitterCPU::RemoveGenerator(const Ref<ParticleGenerator>& generator)
 	{
 		std::scoped_lock lock(m_Mutex);
 		removeGenerator(generator);
@@ -52,53 +48,12 @@ namespace XYZ {
 		std::scoped_lock lock(m_Mutex);
 		return m_EmitRate;
 	}
-	void ParticleEmitterCPU::SetShapeGenerator(const ParticleShapeGenerator& generator)
-	{
-		std::scoped_lock lock(m_Mutex);
-		m_ShapeGenerator = generator;
-		removeGenerator(&m_ShapeGenerator);
-		if (m_ShapeGenerator.IsEnabled())
-			m_Generators.push_back(&m_ShapeGenerator);
-	}
-	void ParticleEmitterCPU::SetLifeGenerator(const ParticleLifeGenerator& generator)
-	{
-		std::scoped_lock lock(m_Mutex);
-		m_LifeGenerator = generator;
-		if (m_LifeGenerator.IsEnabled())
-			m_Generators.push_back(&m_LifeGenerator);
-		else
-			removeGenerator(&m_LifeGenerator);
-	}
-	void ParticleEmitterCPU::SetRandomVelocityGenerator(const ParticleRandomVelocityGenerator& generator)
-	{
-		std::scoped_lock lock(m_Mutex);
-		m_RandomVelocityGenerator = generator;
-		if (m_RandomVelocityGenerator.IsEnabled())
-			m_Generators.push_back(&m_RandomVelocityGenerator);
-		else
-			removeGenerator(&m_RandomVelocityGenerator);
-	}
-	ParticleShapeGenerator ParticleEmitterCPU::GetShapeGenerator() const
-	{
-		std::scoped_lock lock(m_Mutex);
-		return m_ShapeGenerator;
-	}
-	ParticleLifeGenerator ParticleEmitterCPU::GetLifeGenerator() const
-	{
-		std::scoped_lock lock(m_Mutex);
-		return m_LifeGenerator;
-	}
-	ParticleRandomVelocityGenerator ParticleEmitterCPU::GetRandomVelocityGenerator() const
-	{
-		std::scoped_lock lock(m_Mutex);
-		return m_RandomVelocityGenerator;
-	}
-	void ParticleEmitterCPU::removeGenerator(const ParticleGenerator* generator)
+	void ParticleEmitterCPU::removeGenerator(const Ref<ParticleGenerator>& generator)
 	{
 		size_t counter = 0;
 		for (auto gen : m_Generators)
 		{
-			if (gen == generator)
+			if (gen.Raw() == generator.Raw())
 			{
 				m_Generators.erase(m_Generators.begin() + counter);
 				return;

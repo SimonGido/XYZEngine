@@ -120,6 +120,9 @@ namespace XYZ {
 		particleComponentCPU.System->Play();
 		
 		Ref<ParticleEmitterCPU> emitter = Ref<ParticleEmitterCPU>::Create();
+		emitter->AddGenerator(Ref<ParticleShapeGenerator>::Create());
+		emitter->AddGenerator(Ref<ParticleLifeGenerator>::Create());
+		emitter->AddGenerator(Ref<ParticleRandomVelocityGenerator>::Create());
 		particleComponentCPU.System->AddEmitter(emitter);
 		particleComponentCPU.System->AddUpdater(Ref<BasicTimerUpdater>::Create());
 		particleComponentCPU.System->AddUpdater(Ref<PositionUpdater>::Create());

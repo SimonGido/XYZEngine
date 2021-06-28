@@ -13,23 +13,14 @@ namespace XYZ {
 		virtual ~ParticleEmitterCPU() = default;
 
 		virtual void Emit(float timeStep, ParticleDataBuffer* data);
-		void		 AddCustomGenerator(ParticleGenerator* generator);
-		void		 RemoveCustomGenerator(const ParticleGenerator* generator);
+		void		 AddGenerator(const Ref<ParticleGenerator>& generator);
+		void		 RemoveGenerator(const Ref<ParticleGenerator>& generator);
 
 		void         SetEmitRate(float emitRate);
 		float        GetEmitRate() const;
 
-
-		void SetShapeGenerator(const ParticleShapeGenerator& generator);
-		void SetLifeGenerator(const ParticleLifeGenerator& generator);
-		void SetRandomVelocityGenerator(const ParticleRandomVelocityGenerator& generator);
-
-		ParticleShapeGenerator			GetShapeGenerator() const;
-		ParticleLifeGenerator			GetLifeGenerator() const;
-		ParticleRandomVelocityGenerator GetRandomVelocityGenerator() const;
-
 	private:
-		void removeGenerator(const ParticleGenerator* generator);
+		void removeGenerator(const Ref<ParticleGenerator>& generator);
 
 
 	protected:
@@ -38,12 +29,7 @@ namespace XYZ {
 	
 
 	private:
-		std::vector<ParticleGenerator*> m_Generators;
-
-
-		ParticleShapeGenerator			m_ShapeGenerator;
-		ParticleLifeGenerator			m_LifeGenerator;
-		ParticleRandomVelocityGenerator m_RandomVelocityGenerator;
+		std::vector<Ref<ParticleGenerator>> m_Generators;
 
 		float m_EmitRate;
 	};
