@@ -32,7 +32,7 @@ namespace XYZ {
 	private:
 		void gpuParticleExample(SceneEntity entity);
 		void cpuParticleExample(SceneEntity entity);
-
+		void animationExample(SceneEntity entity);
 
 	private:
 		Ref<Scene> m_Scene;
@@ -40,6 +40,7 @@ namespace XYZ {
 		Editor::InspectorPanel m_Inspector;
 		Editor::ScenePanel m_ScenePanel;
 		Editor::AssetBrowser m_AssetBrowser;
+		Editor::SkinningEditor m_SkinningEditor;
 
 		Editor::SceneEntityInspectorContext m_SceneEntityInspectorContext;
 		Editor::AssetInspectorContext	    m_AssetInspectorContext;

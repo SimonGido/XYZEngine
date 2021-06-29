@@ -1,10 +1,12 @@
 #pragma once
-#include "XYZ/Renderer/Framebuffer.h"
+#include "XYZ/Editor/EditorOrthographicCamera.h"
+
+#include "XYZ/Renderer/RenderPass.h"
 #include "XYZ/Renderer/RenderTexture.h"
 #include "XYZ/Renderer/VertexArray.h"
 #include "XYZ/Renderer/SubTexture.h"
+#include "XYZ/Renderer/Shader.h"
 
-#include "XYZ/Editor/EditorOrthographicCamera.h"
 
 #include "SkinnedMesh.h"
 #include "PreviewBone.h"
@@ -17,14 +19,19 @@ namespace XYZ {
 		class SkinningEditor
 		{
 		public:		
-			SkinningEditor(const std::string& filepath);
+			SkinningEditor();
 			~SkinningEditor();
 
 			void OnImGuiRender();
 
 			void SetContext(const Ref<SubTexture>& context);
 		private:
+			Ref<Shader> m_Shader;
+			Ref<RenderPass> m_Pass;
+			Ref<VertexArray> m_VertexArray;
+			Ref<VertexBuffer> m_VertexBuffer;
 
+			Ref<SubTexture> m_Context;
 		};
 	}
 }

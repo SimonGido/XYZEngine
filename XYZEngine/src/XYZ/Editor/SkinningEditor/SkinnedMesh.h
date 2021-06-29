@@ -1,5 +1,8 @@
 #pragma once
 #include "XYZ/Utils/DataStructures/Tree.h"
+#include "XYZ/Renderer/Shader.h"
+#include "XYZ/Renderer/VertexArray.h"
+#include "XYZ/Renderer/Buffer.h"
 
 #include <glm/glm.hpp>
 
@@ -63,6 +66,7 @@ namespace XYZ {
 			// This vector is filled after triangulation to store the original vertices
 			std::vector<BoneVertex> OriginalVertices;
 			std::vector<BoneVertex> GeneratedVertices;
+
 			// This vector is filled after initialize vertices local to bone
 			std::vector<BoneVertex> VerticesLocalToBones;
 			std::vector<Triangle>	Triangles;
@@ -78,15 +82,15 @@ namespace XYZ {
 		{
 		public:
 			SkinnedMesh();
+			void Render(Ref<Shader> shader, bool displayWeights);
+
 			void Triangulate();
+			void SetContextSize(const glm::vec2& size);
+			void BuildPreviewVertices(const Tree& hierarchy, bool preview, bool weight);
+
 			bool EraseVertexAtPosition(const glm::vec2& pos);
 			bool EraseTriangleAtPosition(const glm::vec2& pos);
-			void BuildPreviewVertices(const Tree& hierarchy, const glm::vec2& contextSize, bool preview, bool weight);
-			void InitializeVerticesLocalToBone(const Tree& hierarchy);
-
-			std::vector<Submesh> Submeshes;
-			std::vector<PreviewVertex> PreviewVertices;
-
+			
 			enum Colors
 			{
 				TriangleColor,
@@ -94,7 +98,10 @@ namespace XYZ {
 				NumColors
 			};
 
-			glm::vec4 Colors[NumColors];
+			glm::vec4				   m_Colors[NumColors];
+			std::vector<Submesh>	   m_Submeshes;
+			std::vector<PreviewVertex> m_PreviewVertices;
+
 			static constexpr float PointRadius = 5.0f;
 			
 			static void GetPositionLocalToBone(BoneVertex& vertex, const Tree& hierarchy);
@@ -103,9 +110,17 @@ namespace XYZ {
 			static void triangulateSubmesh(Submesh& subMesh);
 			static void eraseEmptyPoints(Submesh& subMesh);
 			static void getPositionFromBones(BoneVertex& vertex, const Tree& hierarchy);
-			static void getColorFromBoneWeights(BoneVertex& vertex, const Tree& hierarchy);
-		
+			static void getColorFromBoneWeights(BoneVertex& vertex, const Tree& hierarchy);		
 			
+
+			void updateBuffers();
+			void rebuildBuffers();
+
+		private:
+			Ref<VertexArray> m_VertexArray;
+			Ref<VertexBuffer> m_VertexBuffer;
+
+			glm::vec2 m_ContextSize;
 		};
 	}
 }

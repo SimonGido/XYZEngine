@@ -11,6 +11,29 @@
 namespace XYZ {
 	namespace Editor {
         namespace Helper {
+            void GenerateQuad(std::vector<PreviewVertex>& vertices, const glm::vec2& size)
+            {
+                vertices.push_back({
+                    glm::vec3(0.0f),
+                    glm::vec3(-size.x / 2.0f, -size.y / 2.0f, 0.0f),
+                    glm::vec2(0.0f)
+                    });
+                vertices.push_back({
+                    glm::vec3(0.0f),
+                    glm::vec3(size.x / 2.0f, -size.y / 2.0f, 0.0f),
+                    glm::vec2(1.0f,0.0f)
+                    });
+                vertices.push_back({
+                    glm::vec3(0.0f),
+                    glm::vec3(size.x / 2.0f,  size.y / 2.0f, 0.0f),
+                    glm::vec2(1.0f)
+                    });
+                vertices.push_back({
+                    glm::vec3(0.0f),
+                    glm::vec3(-size.x / 2.0f, size.y / 2.0f, 0.0f),
+                    glm::vec2(0.0f, 1.0f)
+                    });
+            }
             static void GetTriangulationPt(const std::vector<tpp::Delaunay::Point>& points, int keyPointIdx, const tpp::Delaunay::Point& sPoint, double& x, double& y)
             {
                 if (keyPointIdx >= points.size())
@@ -56,20 +79,36 @@ namespace XYZ {
         }
         
         SkinnedMesh::SkinnedMesh()
+            :
+            m_ContextSize(0.0f)
         {
-            Colors[TriangleColor] = glm::vec4(0.8f, 0.8f, 0.8f, 1.0f);
-            Colors[VertexColor] = glm::vec4(0.7f, 0.4f, 1.0f, 1.0f);
+            m_Colors[TriangleColor] = glm::vec4(0.8f, 0.8f, 0.8f, 1.0f);
+            m_Colors[VertexColor] = glm::vec4(0.7f, 0.4f, 1.0f, 1.0f);
         }
 
-       
+        void SkinnedMesh::Render(Ref<Shader> shader, bool displayWeights)
+        {
+            shader->Bind();
+            if (displayWeights)
+                shader->SetInt("u_ColorEnabled", 1);
+            else
+                shader->SetInt("u_ColorEnabled", 0);
+
+            shader->SetMat4("u_Transform", glm::mat4(1.0f));
+        }
+
         void SkinnedMesh::Triangulate()
 		{
-            for (Submesh& subMesh : Submeshes)
+            for (Submesh& subMesh : m_Submeshes)
                 triangulateSubmesh(subMesh);
 		}
+        void SkinnedMesh::SetContextSize(const glm::vec2& size)
+        {
+            m_ContextSize = size;
+        }
 		bool SkinnedMesh::EraseVertexAtPosition(const glm::vec2& pos)
 		{
-            for (auto& subMesh : Submeshes)
+            for (auto& subMesh : m_Submeshes)
             {
                 uint32_t counter = 0;
                 for (auto& vertex : subMesh.GeneratedVertices)
@@ -77,6 +116,7 @@ namespace XYZ {
                     if (glm::distance(pos, glm::vec2(vertex.Position.x, vertex.Position.y)) < PointRadius)
                     {
                         subMesh.GeneratedVertices.erase(subMesh.GeneratedVertices.begin() + counter);         
+                        
                         return true;
                     }
                     counter++;
@@ -86,7 +126,7 @@ namespace XYZ {
 		}
 		bool SkinnedMesh::EraseTriangleAtPosition(const glm::vec2& pos)
 		{
-            for (auto& subMesh : Submeshes)
+            for (auto& subMesh : m_Submeshes)
             {
                 uint32_t counter = 0;
                 for (auto& triangle : subMesh.Triangles)
@@ -98,7 +138,7 @@ namespace XYZ {
                     {
                         subMesh.Triangles.erase(subMesh.Triangles.begin() + counter);
                         eraseEmptyPoints(subMesh);
-                        
+                        rebuildBuffers();
                         return true;
                     }
                     counter++;
@@ -107,11 +147,12 @@ namespace XYZ {
             return false;
 		}
 
-        void SkinnedMesh::BuildPreviewVertices(const Tree& hierarchy, const glm::vec2& contextSize, bool preview, bool weight)
+        void SkinnedMesh::BuildPreviewVertices(const Tree& hierarchy, bool preview, bool weight)
         {
+            m_PreviewVertices.clear();
             if (preview)
             {
-                for (auto& subMesh : Submeshes)
+                for (auto& subMesh : m_Submeshes)
                 {
                     uint32_t counter = 0;
                     for (auto& vertex : subMesh.VerticesLocalToBones)
@@ -123,17 +164,17 @@ namespace XYZ {
                             getColorFromBoneWeights(vertexLocalToBone, hierarchy);
                         }
                         BoneVertex& genVertex = subMesh.GeneratedVertices[counter++];
-                        PreviewVertices.push_back({
+                        m_PreviewVertices.push_back({
                             vertexLocalToBone.Color,
                             glm::vec3(vertexLocalToBone.Position, 1.0f),
-                            Helper::CalculateTexCoord(genVertex.Position, contextSize)
+                            Helper::CalculateTexCoord(genVertex.Position, m_ContextSize)
                            });
                     }            
                 }
             }
             else
             {
-                for (auto& subMesh : Submeshes)
+                for (auto& subMesh : m_Submeshes)
                 {
                     for (auto& vertex : subMesh.GeneratedVertices)
                     {
@@ -142,30 +183,18 @@ namespace XYZ {
                         {
                             getColorFromBoneWeights(vertexLocalToBone, hierarchy);
                         }
-                        PreviewVertices.push_back({
+                        m_PreviewVertices.push_back({
                             vertexLocalToBone.Color,
                             glm::vec3(vertexLocalToBone.Position, 1.0f),
-                            Helper::CalculateTexCoord(vertex.Position, contextSize)
+                            Helper::CalculateTexCoord(vertex.Position, m_ContextSize)
                         });
                     }
                 }
             }
+            updateBuffers();
         }
 
-        void SkinnedMesh::InitializeVerticesLocalToBone(const Tree& hierarchy)
-        {
-            for (auto& subMesh : Submeshes)
-            {
-                subMesh.VerticesLocalToBones.clear();
-                for (auto& vertex : subMesh.GeneratedVertices)
-                {
-                    BoneVertex vertexLocalToBone = vertex;
-                    GetPositionLocalToBone(vertexLocalToBone, hierarchy);
-                    subMesh.VerticesLocalToBones.push_back(vertexLocalToBone);
-                }
-            }
-        }
- 
+
        
 		bool SkinnedMesh::trianglesHaveIndex(const Submesh& subMesh, uint32_t index)
 		{
@@ -309,6 +338,44 @@ namespace XYZ {
                 }
             }
             vertex.Color = color;
+        }
+        void SkinnedMesh::updateBuffers()
+        {
+            if (m_VertexArray.Raw())
+                m_VertexBuffer->Update(m_PreviewVertices.data(), m_PreviewVertices.size() * sizeof(PreviewVertex));
+            else
+                rebuildBuffers();
+        }
+        void SkinnedMesh::rebuildBuffers()
+        {
+            std::vector<uint32_t> indices;
+            uint32_t offset = 0;
+            for (auto& subMesh : m_Submeshes)
+            {
+                for (auto& triangle : subMesh.Triangles)
+                {
+                    indices.push_back(triangle.First + offset);
+                    indices.push_back(triangle.Second + offset);
+                    indices.push_back(triangle.Third + offset);
+                }
+                offset += subMesh.GeneratedVertices.size();
+            }
+            if (indices.empty())
+            {
+                Helper::GenerateQuad(m_PreviewVertices, m_ContextSize);
+                indices = { 0,1,2,2,3,0 };
+            }
+         
+            m_VertexArray = VertexArray::Create();
+            m_VertexBuffer = VertexBuffer::Create(m_PreviewVertices.data(), m_PreviewVertices.size() * sizeof(PreviewVertex), BufferUsage::Dynamic);
+            m_VertexBuffer->SetLayout({
+                {0, ShaderDataComponent::Float3, "a_Color"},
+                {1, ShaderDataComponent::Float3, "a_Position"},
+                {2, ShaderDataComponent::Float2, "a_TexCoord"}
+                });
+            m_VertexArray->AddVertexBuffer(m_VertexBuffer);
+            Ref<IndexBuffer> ibo = IndexBuffer::Create(indices.data(), indices.size());
+            m_VertexArray->SetIndexBuffer(ibo);
         }
         BoneVertex::BoneVertex()
             :

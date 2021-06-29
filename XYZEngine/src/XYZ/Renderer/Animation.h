@@ -11,6 +11,8 @@ namespace XYZ {
 	template <typename T>
 	static T Interpolate(const T& start, const T& end, float startTime, float endTime, float time);
 
+	template <typename T>
+	static void Interpolate(T& out, const T& start, const T& end, float startTime, float endTime, float time);
 
 	template <typename T>
 	struct KeyFrame
@@ -34,44 +36,49 @@ namespace XYZ {
 	{
 	public:
 		Property() = default;
-		Property(const Property<T>& other);
-		Property(Property<T>&& other) noexcept;
 
 		bool  Update(T& val, float time);
 		void  Reset() { m_CurrentFrame = 0; }
 		void  AddKeyFrame(const KeyFrame<T>& key) { m_Keys.push_back(key); }
-		float Length() const
-		{
-			if (m_Keys.empty())
-				return 0.0f;
-			return m_Keys.back().EndTime;
-		}
+		float Length() const;
+		
 
 	private:
 		std::vector<KeyFrame<T>> m_Keys;
 		size_t m_CurrentFrame = 0;
 	};
 
-	template <typename T>
-	Property<T>::Property(const Property<T>& other)
-		:
-		m_Keys(other.m_Keys),
-		m_CurrentFrame(other.m_CurrentFrame)
-	{}
-	template <typename T>
-	Property<T>::Property(Property<T>&& other) noexcept
-		:
-		m_Keys(std::move(other.m_Keys)),
-		m_CurrentFrame(other.m_CurrentFrame)
-	{}
+	template<typename T>
+	inline bool Property<T>::Update(T& val, float time)
+	{
+		size_t& current = m_CurrentFrame;
+		if (current + 1 < m_Keys.size())
+		{
+			const KeyFrame<T>& key = m_Keys[current];
+			const KeyFrame<T>& next = m_Keys[current + 1];
+			Interpolate<T>(val, key.Value, next.Value, key.EndTime, next.EndTime, time);
+			if (time >= next.EndTime)
+				current++;
+			return false;
+		}
+		return true;
+	}
 
-	class Track : public DynamicPool::Base
+	template<typename T>
+	inline float Property<T>::Length() const
+	{
+		if (m_Keys.empty())
+			return 0.0f;
+		return m_Keys.back().EndTime;
+	}
+
+	class ITrack : public RefCount
 	{
 	public:
-		Track(SceneEntity entity);
-		Track(const Track& other);
+		ITrack(SceneEntity entity);
+		ITrack(const ITrack& other);
 
-		virtual ~Track() = default;
+		virtual ~ITrack() = default;
 		virtual bool  Update(float time) = 0;
 		virtual void  Reset() = 0;
 		virtual float Length() = 0;
@@ -80,33 +87,44 @@ namespace XYZ {
 		SceneEntity m_Entity;
 	};
 
-	class TransformTrack : public Track
+	template <typename T>
+	class Track : public ITrack
 	{
 	public:
-		enum class PropertyType { Translation, Rotation, Scale };
+		Track(SceneEntity entity);
 
-		TransformTrack(SceneEntity entity);
-		TransformTrack(const TransformTrack& other);
-		TransformTrack(TransformTrack&& other) noexcept;
-
-
-		virtual void  OnCopy(uint8_t* buffer) override;
 		virtual bool  Update(float time) override;
 		virtual void  Reset() override;
 		virtual float Length() override;
 
-
-		template <typename T>
-		void AddKeyFrame(const KeyFrame<T>& key, PropertyType type);
-
-
 	private:
-		Property<glm::vec3> m_TranslationProperty;
-		Property<glm::vec3> m_RotationProperty;
-		Property<glm::vec3> m_ScaleProperty;
+		Property<T> m_Property;
 	};
 
+	template<typename T>
+	inline Track<T>::Track(SceneEntity entity)
+		:
+		ITrack(entity)
+	{
+	}
 
+	template<typename T>
+	inline bool Track<T>::Update(float time)
+	{
+		return m_Property.Update(m_Entity.GetComponent<T>());
+	}
+
+	template<typename T>
+	inline void Track<T>::Reset()
+	{
+		m_Property.Reset();
+	}
+
+	template<typename T>
+	inline float Track<T>::Length()
+	{
+		return m_Property.Length();
+	}
 
 	class Animation : public Asset
 	{
@@ -120,36 +138,39 @@ namespace XYZ {
 		void SetCurrentTime(float time) { m_CurrentTime = time; }
 
 		template <typename T>
-		void CreateTrack()
-		{
-			static_assert(std::is_base_of<Track, T>::value, "");
-			m_Tracks.Emplace<T>(m_Entity);
-		}
-
+		void CreateTrack();
+		
 		template <typename T>
-		T* FindTrack()
-		{
-			static_assert(std::is_base_of<Track, T>::value, "");
-			for (size_t i = 0; i < m_Tracks.Size(); ++i)
-			{
-				if (auto casted = dynamic_cast<T*>(&m_Tracks[i]))
-					return casted;
-			}
-			return nullptr;
-		}
-
+		const Ref<T>& FindTrack() const;
+		
 		inline float GetCurrentTime() const { return m_CurrentTime; }
 
 	private:
 		SceneEntity m_Entity;
-
-		DynamicPool m_Tracks;
+		std::vector<Ref<ITrack>> m_Tracks;
 
 		float m_Length;
 		float m_CurrentTime;
 		bool  m_Repeat;
 	};
 	
+	
+	template<typename T>
+	inline void Animation::CreateTrack()
+	{
+		static_assert(std::is_base_of<ITrack, T>::value, "Type T must be derived from Track base");
+		m_Tracks.push_back(Ref<T>::Create(m_Entity));
+	}
 
-
+	template<typename T>
+	inline const Ref<T>& Animation::FindTrack() const
+	{
+		static_assert(std::is_base_of<ITrack, T>::value, "Type T must be derived from Track base");
+		for (auto& track : m_Tracks)
+		{
+			if (dynamic_cast<T*>(track.Raw()))
+				return track.As<T>();
+		}
+		return Ref<T>();
+	}
 }

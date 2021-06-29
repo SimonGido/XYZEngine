@@ -10,35 +10,35 @@ namespace XYZ {
             if (preview)
             {
                 uint32_t offset = 0;
-                for (auto& subMesh : mesh.Submeshes)
+                for (auto& subMesh : mesh.m_Submeshes)
                 {
                     for (auto& triangle : subMesh.Triangles)
                     {
-                        const PreviewVertex& first = mesh.PreviewVertices[(size_t)triangle.First + offset];
-                        const PreviewVertex& second = mesh.PreviewVertices[(size_t)triangle.Second + offset];
-                        const PreviewVertex& third = mesh.PreviewVertices[(size_t)triangle.Third + offset];
-                        RenderTriangle(first.Position, second.Position, third.Position, mesh.Colors[SkinnedMesh::TriangleColor]);
+                        const PreviewVertex& first = mesh.m_PreviewVertices[(size_t)triangle.First + offset];
+                        const PreviewVertex& second = mesh.m_PreviewVertices[(size_t)triangle.Second + offset];
+                        const PreviewVertex& third = mesh.m_PreviewVertices[(size_t)triangle.Third + offset];
+                        RenderTriangle(first.Position, second.Position, third.Position, mesh.m_Colors[SkinnedMesh::TriangleColor]);
                     }
                     offset += subMesh.GeneratedVertices.size();
                 }
-                for (auto& vertex : mesh.PreviewVertices)
-                    EditorRenderer::SubmitEditorCircle(glm::vec3(vertex.Position.x, vertex.Position.y, 0.0f), SkinnedMesh::PointRadius, 20, mesh.Colors[SkinnedMesh::VertexColor]);
+                for (auto& vertex : mesh.m_PreviewVertices)
+                    EditorRenderer::SubmitEditorCircle(glm::vec3(vertex.Position.x, vertex.Position.y, 0.0f), SkinnedMesh::PointRadius, 20, mesh.m_Colors[SkinnedMesh::VertexColor]);
             }
             else
             {
                 uint32_t counter = 0;
-                for (auto& subMesh : mesh.Submeshes)
+                for (auto& subMesh : mesh.m_Submeshes)
                 {
                     for (auto& triangle : subMesh.Triangles)
                     {
-                        const BoneVertex& first = mesh.Submeshes[counter].GeneratedVertices[triangle.First];
-                        const BoneVertex& second = mesh.Submeshes[counter].GeneratedVertices[triangle.Second];
-                        const BoneVertex& third = mesh.Submeshes[counter].GeneratedVertices[triangle.Third];
-                        RenderTriangle(first.Position, second.Position, third.Position, mesh.Colors[SkinnedMesh::TriangleColor]);
+                        const BoneVertex& first = mesh.m_Submeshes[counter].GeneratedVertices[triangle.First];
+                        const BoneVertex& second = mesh.m_Submeshes[counter].GeneratedVertices[triangle.Second];
+                        const BoneVertex& third = mesh.m_Submeshes[counter].GeneratedVertices[triangle.Third];
+                        RenderTriangle(first.Position, second.Position, third.Position, mesh.m_Colors[SkinnedMesh::TriangleColor]);
                     }
                     counter++;               
                 }
-                for (auto& subMesh : mesh.Submeshes)
+                for (auto& subMesh : mesh.m_Submeshes)
                 {
                     for (auto& vertex : subMesh.GeneratedVertices)
                         EditorRenderer::SubmitEditorCircle(glm::vec3(vertex.Position.x, vertex.Position.y, 0.0f), SkinnedMesh::PointRadius, 20, subMesh.Color);

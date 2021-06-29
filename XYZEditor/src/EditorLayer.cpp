@@ -111,6 +111,7 @@ namespace XYZ {
 		m_SceneHierarchy.OnImGuiRender();
 		m_ScenePanel.OnImGuiRender();
 		m_AssetBrowser.OnImGuiRender();
+		//m_SkinningEditor.OnImGuiRender();
 	}
 	
 	bool EditorLayer::onMouseButtonPress(MouseButtonPressEvent& event)
@@ -237,6 +238,10 @@ namespace XYZ {
 			another.System->AddUpdater(anotherLightUpdater);
 		}
 		lightUpdater->SetTransformEntity(entity);
+	}
+
+	void EditorLayer::animationExample(SceneEntity entity)
+	{
 	}
 
 }
