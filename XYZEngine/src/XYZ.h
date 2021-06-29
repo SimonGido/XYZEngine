@@ -25,7 +25,9 @@
 #include "XYZ/Renderer/Font.h"
 #include "XYZ/Renderer/Framebuffer.h"
 #include "XYZ/Renderer/SubTexture.h"
-#include "XYZ/Renderer/Animation.h"
+
+//-----Animation-----//
+#include "XYZ/Animation/Animation.h"
 
 #include "XYZ/Particle/GPU/ParticleMaterial.h"
 #include "XYZ/Particle/GPU/ParticleSystem.h"

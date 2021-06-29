@@ -1,5 +1,5 @@
 #pragma once
-#include "XYZ/Renderer/Animation.h"
+#include "XYZ/Animation/Animation.h"
 
 // TODO
 /*
