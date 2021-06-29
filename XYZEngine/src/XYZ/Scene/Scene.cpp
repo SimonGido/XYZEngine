@@ -8,12 +8,13 @@
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/SceneRenderer.h"
 #include "XYZ/Renderer/Animation.h"
+#include "XYZ/Renderer/EditorRenderer.h"
+
 #include "XYZ/Script/ScriptEngine.h"
 #include "Components.h"
 #include "EditorComponents.h"
 
 #include "SceneEntity.h"
-
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
@@ -296,7 +297,7 @@ namespace XYZ {
 		{
 			auto [transform, renderer] = editorRenderView.Get<TransformComponent, EditorSpriteRenderer>(entity);
 			if (renderer.SubTexture.Raw() && renderer.Material.Raw())
-				SceneRenderer::SubmitEditorSprite(&renderer, &transform);
+				EditorRenderer::SubmitEditorSprite(&renderer, &transform);
 		}
 		auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponentGPU>();
 		for (auto entity : particleView)
@@ -346,12 +347,12 @@ namespace XYZ {
 
 					glm::vec3 bottomLeft = { translation.x - width / 2.0f,translation.y - height / 2.0f, translation.z };
 					glm::vec3 topRight = { translation.x + width / 2.0f,translation.y + height / 2.0f, translation.z };
-					SceneRenderer::SubmitEditorAABB(bottomLeft, topRight, glm::vec4(1.0f));
+					EditorRenderer::SubmitEditorAABB(bottomLeft, topRight, glm::vec4(1.0f));
 				}
 			}
 			else
 			{
-				SceneRenderer::SubmitEditorAABB(&entity.GetComponent<TransformComponent>(), glm::vec4(1.0f));
+				EditorRenderer::SubmitEditorAABB(&entity.GetComponent<TransformComponent>(), glm::vec4(1.0f));
 			}
 		}
 		SceneRenderer::EndScene();

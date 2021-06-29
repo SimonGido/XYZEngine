@@ -30,6 +30,11 @@ namespace XYZ {
 		bool onKeyRelease(KeyReleasedEvent& event);
 
 	private:
+		void gpuParticleExample(SceneEntity entity);
+		void cpuParticleExample(SceneEntity entity);
+
+
+	private:
 		Ref<Scene> m_Scene;
 		Editor::SceneHierarchyPanel m_SceneHierarchy;
 		Editor::InspectorPanel m_Inspector;

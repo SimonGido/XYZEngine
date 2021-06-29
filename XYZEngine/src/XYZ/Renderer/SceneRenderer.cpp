@@ -5,7 +5,6 @@
 #include "Renderer.h"
 
 #include "XYZ/Core/Input.h"
-
 #include <glm/gtx/transform.hpp>
 
 namespace XYZ {
@@ -36,21 +35,6 @@ namespace XYZ {
 		Ref<ShaderStorageBuffer> LightStorageBuffer;
 		Ref<ShaderStorageBuffer> SpotLightStorageBuffer;
 		
-		struct EditorSpriteDrawCommand
-		{
-			EditorSpriteRenderer* Sprite;
-			TransformComponent* Transform;
-		};
-		struct EditorAABBDrawCommand
-		{
-			glm::vec3 Min;
-			glm::vec3 Max;
-			glm::vec4 Color;
-		};
-
-		std::vector<EditorSpriteDrawCommand> EditorSpriteDrawList;
-		std::vector<EditorAABBDrawCommand>   EditorAABBDrawList;
-
 		struct PointLight
 		{	
 			glm::vec4 Color;
@@ -204,33 +188,11 @@ namespace XYZ {
 		flush();
 	}
 
-	void SceneRenderer::SubmitSkeletalMesh(SkeletalMesh* mesh)
-	{
-
-	}
 	void SceneRenderer::SubmitSprite(SpriteRenderer* sprite, TransformComponent* transform)
 	{
 		s_Data.Queues[sprite->Material->GetRenderQueueID()].SpriteDrawList.push_back({ sprite,transform });
 	}
-	void SceneRenderer::SubmitEditorSprite(EditorSpriteRenderer* sprite, TransformComponent* transform)
-	{
-		s_Data.EditorSpriteDrawList.push_back({ sprite,transform });
-	}
-
-	void SceneRenderer::SubmitEditorAABB(TransformComponent* transform, const glm::vec4& color)
-	{
-		auto [translation, rotation, scale] = transform->GetWorldComponents();
-		glm::vec3 bottomLeft = { translation.x - scale.x / 2,translation.y - scale.y / 2, translation.z };
-		glm::vec3 topRight = { translation.x + scale.x / 2,translation.y + scale.y / 2, translation.z };
-		s_Data.EditorAABBDrawList.push_back({ bottomLeft, topRight , color });
-	}
-
-	void SceneRenderer::SubmitEditorAABB(const glm::vec3& min, const glm::vec3& max, const glm::vec4& color)
-	{
-		s_Data.EditorAABBDrawList.push_back({ min, max , color });
-	}
-
-
+	
 	void SceneRenderer::SubmitRendererCommand(const RendererCommand* command, TransformComponent* transform)
 	{
 		s_Data.Queues[command->Material->GetRenderQueueID()].DrawCommandList.push_back({ command, transform });
@@ -297,8 +259,6 @@ namespace XYZ {
 	{
 		flushLightQueue();
 		flushDefaultQueue();	
-		flushEditorQueue();
-
 		Renderer::BeginRenderPass(s_Data.CompositePass, true);
 
 		s_Data.CompositeShader->Bind();
@@ -349,37 +309,7 @@ namespace XYZ {
 		queue.SpriteDrawList.clear();
 		queue.DrawCommandList.clear();
 	}
-	void SceneRenderer::flushEditorQueue()
-	{
-		Renderer::BeginRenderPass(s_Data.LightPass, false);
-		Renderer2D::BeginScene(s_Data.ViewProjectionMatrix, s_Data.ViewPosition);
-
-		for (auto& dc : s_Data.EditorSpriteDrawList)
-		{
-			Renderer2D::SetMaterial(dc.Sprite->Material);
-			uint32_t textureID = Renderer2D::SetTexture(dc.Sprite->SubTexture->GetTexture());
-			Renderer2D::SubmitQuad(dc.Transform->WorldTransform, dc.Sprite->SubTexture->GetTexCoords(), textureID, dc.Sprite->Color);
-		}
-
-		for (auto& dc : s_Data.EditorAABBDrawList)
-		{			
-			glm::vec3 topLeft = { dc.Min.x, dc.Max.y, dc.Min.z };
-			glm::vec3 topRight = { dc.Max.x, dc.Max.y, dc.Min.z };
-			glm::vec3 bottomLeft = { dc.Min.x, dc.Min.y, dc.Min.z };
-			glm::vec3 bottomRight = { dc.Max.x, dc.Min.y, dc.Min.z };
-
-			Renderer2D::SubmitLine(topLeft, topRight, dc.Color);
-			Renderer2D::SubmitLine(topRight, bottomRight, dc.Color);
-			Renderer2D::SubmitLine(bottomRight, bottomLeft, dc.Color);
-			Renderer2D::SubmitLine(bottomLeft, topLeft, dc.Color);
-		}
-		Renderer2D::Flush();
-		Renderer2D::FlushLines();
-
-		s_Data.EditorSpriteDrawList.clear();
-		s_Data.EditorAABBDrawList.clear();
-	}
-
+	
 	void SceneRenderer::sortQueue(RenderQueue& queue)
 	{
 		std::sort(queue.SpriteDrawList.begin(), queue.SpriteDrawList.end(),

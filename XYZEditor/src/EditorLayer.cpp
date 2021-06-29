@@ -19,7 +19,6 @@ namespace XYZ {
 	{
 		ScriptEngine::Init("Assets/Scripts/XYZScript.dll");
 		m_Scene = AssetManager::GetAsset<Scene>(AssetManager::GetAssetHandle("Assets/Scenes/NewScene.xyz"));
-		// m_Scene = AssetManager::CreateAsset<Scene>("NewScene.xyz", AssetType::Scene, AssetManager::GetDirectoryHandle("Assets/Scenes"), "New Scene");
 		m_SceneHierarchy.SetContext(m_Scene);
 		m_ScenePanel.SetContext(m_Scene);	
 		ScriptEngine::SetSceneContext(m_Scene);
@@ -57,103 +56,9 @@ namespace XYZ {
 
 
 		auto entity = m_Scene->GetEntityByName("Scary Entity");
-		//auto &particleComponent = entity.EmplaceComponent<ParticleComponentGPU>();	
-		//auto particleMaterial = Ref<ParticleMaterial>::Create(50, Shader::Create("Assets/Shaders/Particle/ComputeParticleShader.glsl"));
-		//
-		//particleComponent.System = Ref<ParticleSystem>::Create(particleMaterial);
-		//particleComponent.System->m_Renderer.Material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShader.glsl"));
-		//particleComponent.System->m_Renderer.Material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
-		//particleComponent.System->m_Renderer.Material->SetRenderQueueID(1);
-		//
-		//std::vector<ParticleData> particleData;
-		//std::vector<ParticleSpecification> particleSpecification;
-		//
-		//std::random_device dev;
-		//std::mt19937 rng(dev());
-		//std::uniform_real_distribution<double> dist(-1.0, 1.0); // distribution in range [1, 6]
-		//for (size_t i = 0; i < particleMaterial->GetMaxParticles(); ++i)
-		//{
-		//	ParticleData data;
-		//	data.Color    = glm::vec4(1.0f);
-		//	data.Position = glm::vec2(0.0f, 0.0f);
-		//	data.Size	  = glm::vec2(0.2f);
-		//	data.Rotation = 0.0f;
-		//	particleData.push_back(data);
-		//
-		//	ParticleSpecification specs;
-		//	specs.StartColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-		//	specs.StartPosition = glm::vec2(0.0f, 0.0f);
-		//	specs.StartSize		= glm::vec2(0.2f);
-		//	specs.StartVelocity = glm::vec2(dist(rng), 1.0f);
-		//
-		//	particleSpecification.push_back(specs);
-		//}
-		//particleComponent.System->SetSpawnRate(3.0f);
-		//
-		//particleMaterial->Set("u_Force", glm::vec2(-1.0f, 0.0f));
-		//
-		//// Main module
-		//particleMaterial->Set("u_MainModule.Repeat", 1);
-		//particleMaterial->Set("u_MainModule.LifeTime", 3.0f);
-		//particleMaterial->Set("u_MainModule.Speed", 1.0f);
-		//// Color module
-		//particleMaterial->Set("u_ColorModule.StartColor", glm::vec4(0.5f));
-		//particleMaterial->Set("u_ColorModule.EndColor",   glm::vec4(1.0f));
-		//// Size module
-		//particleMaterial->Set("u_SizeModule.StartSize", glm::vec2(0.1f));
-		//particleMaterial->Set("u_SizeModule.EndSize", glm::vec2(3.0f));
-		//// Texture animation module
-		//particleMaterial->Set("u_TextureModule.TilesX", 1);
-		//particleMaterial->Set("u_TextureModule.TilesY", 1);
-		//
-		//particleMaterial->SetBufferData("buffer_Data", particleData.data(), particleData.size(), sizeof(ParticleData));
-		//particleMaterial->SetBufferData("buffer_Specification", particleSpecification.data(), particleSpecification.size(), sizeof(ParticleSpecification));
+		//gpuParticleExample(entity);
+		cpuParticleExample(entity);
 	
-		
-
-		auto& particleComponentCPU = entity.EmplaceComponent<ParticleComponentCPU>();
-		particleComponentCPU.System = Ref<ParticleSystemCPU>::Create(100);
-		
-		particleComponentCPU.System->GetRenderer().Material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShaderCPU.glsl"));
-		particleComponentCPU.System->GetRenderer().Material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
-		particleComponentCPU.System->GetRenderer().Material->SetRenderQueueID(1);
-		particleComponentCPU.System->Play();
-		
-		Ref<ParticleEmitterCPU> emitter = Ref<ParticleEmitterCPU>::Create();
-		emitter->AddGenerator(Ref<ParticleShapeGenerator>::Create());
-		emitter->AddGenerator(Ref<ParticleLifeGenerator>::Create());
-		emitter->AddGenerator(Ref<ParticleRandomVelocityGenerator>::Create());
-		particleComponentCPU.System->AddEmitter(emitter);
-		particleComponentCPU.System->AddUpdater(Ref<BasicTimerUpdater>::Create());
-		particleComponentCPU.System->AddUpdater(Ref<PositionUpdater>::Create());
-		
-		
-		Ref<LightUpdater> lightUpdater = Ref<LightUpdater>::Create();
-		particleComponentCPU.System->AddUpdater(lightUpdater);
-		auto& lightStorage = m_Scene->GetECS().GetStorage<PointLight2D>();
-		if (lightStorage.Size())
-		{
-			SceneEntity lightEntity(lightStorage.GetEntityAtIndex(0), m_Scene.Raw());
-			lightUpdater->SetLightEntity(lightEntity);
-			auto& another = lightEntity.EmplaceComponent<ParticleComponentCPU>();
-			another.System = Ref<ParticleSystemCPU>::Create(100);
-			another.System->GetRenderer().Material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShaderCPU.glsl"));
-			another.System->GetRenderer().Material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
-			another.System->GetRenderer().Material->SetRenderQueueID(1);
-			another.System->Play();
-
-			another.System->AddEmitter(emitter);
-			another.System->AddUpdater(Ref<BasicTimerUpdater>::Create());
-			another.System->AddUpdater(Ref<PositionUpdater>::Create());
-			
-
-			Ref<LightUpdater> anotherLightUpdater = Ref<LightUpdater>::Create();
-			anotherLightUpdater->SetLightEntity(lightEntity);
-			anotherLightUpdater->SetTransformEntity(lightEntity);
-			another.System->AddUpdater(anotherLightUpdater);
-		}
-		lightUpdater->SetTransformEntity(entity);
-		
 		Renderer::WaitAndRender();
 		Renderer::BlockRenderThread();
 	}
@@ -170,7 +75,6 @@ namespace XYZ {
 		Renderer::Clear();
 
 		m_ScenePanel.OnUpdate(ts);
-
 		if (m_Scene->GetState() == SceneState::Play)
 		{
 			m_Scene->OnUpdate(ts);
@@ -178,7 +82,10 @@ namespace XYZ {
 		}
 		else
 		{
-			m_Scene->OnRenderEditor(m_ScenePanel.GetEditorCamera(), ts);
+			auto& editorCamera = m_ScenePanel.GetEditorCamera();
+			m_Scene->OnRenderEditor(editorCamera, ts);
+			EditorRenderer::BeginPass(SceneRenderer::GetFinalRenderPass(), editorCamera.GetViewProjection(), editorCamera.GetPosition());
+			EditorRenderer::EndPass();
 		}		
 	}
 
@@ -227,6 +134,109 @@ namespace XYZ {
 	bool EditorLayer::onKeyRelease(KeyReleasedEvent& event)
 	{
 		return false;
+	}
+
+	void EditorLayer::gpuParticleExample(SceneEntity entity)
+	{
+		auto &particleComponent = entity.EmplaceComponent<ParticleComponentGPU>();	
+		auto particleMaterial = Ref<ParticleMaterial>::Create(50, Shader::Create("Assets/Shaders/Particle/ComputeParticleShader.glsl"));
+		
+		particleComponent.System = Ref<ParticleSystem>::Create(particleMaterial);
+		particleComponent.System->m_Renderer.Material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShader.glsl"));
+		particleComponent.System->m_Renderer.Material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
+		particleComponent.System->m_Renderer.Material->SetRenderQueueID(1);
+		
+		std::vector<ParticleData> particleData;
+		std::vector<ParticleSpecification> particleSpecification;
+		
+		std::random_device dev;
+		std::mt19937 rng(dev());
+		std::uniform_real_distribution<double> dist(-1.0, 1.0); // distribution in range [1, 6]
+		for (size_t i = 0; i < particleMaterial->GetMaxParticles(); ++i)
+		{
+			ParticleData data;
+			data.Color    = glm::vec4(1.0f);
+			data.Position = glm::vec2(0.0f, 0.0f);
+			data.Size	  = glm::vec2(0.2f);
+			data.Rotation = 0.0f;
+			particleData.push_back(data);
+		
+			ParticleSpecification specs;
+			specs.StartColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+			specs.StartPosition = glm::vec2(0.0f, 0.0f);
+			specs.StartSize		= glm::vec2(0.2f);
+			specs.StartVelocity = glm::vec2(dist(rng), 1.0f);
+		
+			particleSpecification.push_back(specs);
+		}
+		particleComponent.System->SetSpawnRate(3.0f);
+		
+		particleMaterial->Set("u_Force", glm::vec2(-1.0f, 0.0f));
+		
+		// Main module
+		particleMaterial->Set("u_MainModule.Repeat", 1);
+		particleMaterial->Set("u_MainModule.LifeTime", 3.0f);
+		particleMaterial->Set("u_MainModule.Speed", 1.0f);
+		// Color module
+		particleMaterial->Set("u_ColorModule.StartColor", glm::vec4(0.5f));
+		particleMaterial->Set("u_ColorModule.EndColor",   glm::vec4(1.0f));
+		// Size module
+		particleMaterial->Set("u_SizeModule.StartSize", glm::vec2(0.1f));
+		particleMaterial->Set("u_SizeModule.EndSize", glm::vec2(3.0f));
+		// Texture animation module
+		particleMaterial->Set("u_TextureModule.TilesX", 1);
+		particleMaterial->Set("u_TextureModule.TilesY", 1);
+		
+		particleMaterial->SetBufferData("buffer_Data", particleData.data(), particleData.size(), sizeof(ParticleData));
+		particleMaterial->SetBufferData("buffer_Specification", particleSpecification.data(), particleSpecification.size(), sizeof(ParticleSpecification));
+
+
+	}
+
+	void EditorLayer::cpuParticleExample(SceneEntity entity)
+	{
+		auto& particleComponentCPU = entity.EmplaceComponent<ParticleComponentCPU>();
+		particleComponentCPU.System = Ref<ParticleSystemCPU>::Create(100);
+
+		particleComponentCPU.System->GetRenderer().Material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShaderCPU.glsl"));
+		particleComponentCPU.System->GetRenderer().Material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
+		particleComponentCPU.System->GetRenderer().Material->SetRenderQueueID(1);
+		particleComponentCPU.System->Play();
+
+		Ref<ParticleEmitterCPU> emitter = Ref<ParticleEmitterCPU>::Create();
+		emitter->AddGenerator(Ref<ParticleShapeGenerator>::Create());
+		emitter->AddGenerator(Ref<ParticleLifeGenerator>::Create());
+		emitter->AddGenerator(Ref<ParticleRandomVelocityGenerator>::Create());
+		particleComponentCPU.System->AddEmitter(emitter);
+		particleComponentCPU.System->AddUpdater(Ref<BasicTimerUpdater>::Create());
+		particleComponentCPU.System->AddUpdater(Ref<PositionUpdater>::Create());
+
+
+		Ref<LightUpdater> lightUpdater = Ref<LightUpdater>::Create();
+		particleComponentCPU.System->AddUpdater(lightUpdater);
+		auto& lightStorage = m_Scene->GetECS().GetStorage<PointLight2D>();
+		if (lightStorage.Size())
+		{
+			SceneEntity lightEntity(lightStorage.GetEntityAtIndex(0), m_Scene.Raw());
+			lightUpdater->SetLightEntity(lightEntity);
+			auto& another = lightEntity.EmplaceComponent<ParticleComponentCPU>();
+			another.System = Ref<ParticleSystemCPU>::Create(100);
+			another.System->GetRenderer().Material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShaderCPU.glsl"));
+			another.System->GetRenderer().Material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
+			another.System->GetRenderer().Material->SetRenderQueueID(1);
+			another.System->Play();
+
+			another.System->AddEmitter(emitter);
+			another.System->AddUpdater(Ref<BasicTimerUpdater>::Create());
+			another.System->AddUpdater(Ref<PositionUpdater>::Create());
+
+
+			Ref<LightUpdater> anotherLightUpdater = Ref<LightUpdater>::Create();
+			anotherLightUpdater->SetLightEntity(lightEntity);
+			anotherLightUpdater->SetTransformEntity(lightEntity);
+			another.System->AddUpdater(anotherLightUpdater);
+		}
+		lightUpdater->SetTransformEntity(entity);
 	}
 
 }

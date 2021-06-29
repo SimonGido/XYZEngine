@@ -4,7 +4,7 @@
 #include "XYZ/Editor/EditorHelper.h"
 #include "XYZ/Scene/Components.h"
 
-#include "XYZ/Renderer/Renderer2D.h"
+#include "XYZ/Renderer/EditorRenderer.h"
 
 namespace XYZ {
 	bool RigidBody2DInspector::OnEditorRender()
@@ -48,12 +48,10 @@ namespace XYZ {
 
 			auto [translation, rotation, scale] = m_Context.GetComponent<TransformComponent>().GetWorldComponents();
 			glm::vec3 boxTranslation =
-				translation
-				- glm::vec3(component.Size.x / 2.0f, component.Size.y / 2.0f, 0.0f)
-				+ glm::vec3(component.Offset.x, component.Offset.y, 0.0f);
-			Renderer2D::SubmitLineQuad(
-				boxTranslation,
-				component.Size,
+				translation + glm::vec3(component.Offset.x, component.Offset.y, 0.0f);
+			EditorRenderer::SubmitEditorAABB(
+				boxTranslation - glm::vec3(component.Size / 2.0f, 0.0f),
+				boxTranslation + glm::vec3(component.Size / 2.0f, 0.0f), 
 				sc_ColliderColor
 			);
 
@@ -90,13 +88,10 @@ namespace XYZ {
 				p1 += translation;
 				glm::vec2 normal = glm::normalize(glm::vec2(p1.y - p0.y, -(p1.x - p0.x)));
 				glm::vec3 center = p0 + (p1 - p0) / 2.0f;
-				Renderer2D::SubmitLine(center, center + glm::vec3(normal.x, normal.y, 0.0f), sc_ColliderColor);
-				Renderer2D::SubmitLine(p0, p1, sc_ColliderColor);
-				Renderer2D::SubmitCircle(p0, 0.05f, 10, sc_ColliderColor);
+
+				EditorRenderer::SubmitEditorLine(center, center + glm::vec3(normal.x, normal.y, 0.0f), sc_ColliderColor);
+				EditorRenderer::SubmitEditorLine(p0, p1, sc_ColliderColor);
 			}
-			Renderer2D::SubmitCircle(p1, 0.05f, 10, sc_ColliderColor);
-
-
 
 			EditorHelper::BeginColumns("Size");
 			ImGui::PushItemWidth(75.0f);

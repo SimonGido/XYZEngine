@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "PreviewRenderer.h"
 
-#include "XYZ/Renderer/Renderer2D.h"
+#include "XYZ/Renderer/EditorRenderer.h"
 
 namespace XYZ {
 	namespace Editor {
@@ -22,7 +22,7 @@ namespace XYZ {
                     offset += subMesh.GeneratedVertices.size();
                 }
                 for (auto& vertex : mesh.PreviewVertices)
-                    Renderer2D::SubmitCircle(glm::vec3(vertex.Position.x, vertex.Position.y, 0.0f), SkinnedMesh::PointRadius, 20, mesh.Colors[SkinnedMesh::VertexColor]);
+                    EditorRenderer::SubmitEditorCircle(glm::vec3(vertex.Position.x, vertex.Position.y, 0.0f), SkinnedMesh::PointRadius, 20, mesh.Colors[SkinnedMesh::VertexColor]);
             }
             else
             {
@@ -41,7 +41,7 @@ namespace XYZ {
                 for (auto& subMesh : mesh.Submeshes)
                 {
                     for (auto& vertex : subMesh.GeneratedVertices)
-                        Renderer2D::SubmitCircle(glm::vec3(vertex.Position.x, vertex.Position.y, 0.0f), SkinnedMesh::PointRadius, 20, subMesh.Color);
+                        EditorRenderer::SubmitEditorCircle(glm::vec3(vertex.Position.x, vertex.Position.y, 0.0f), SkinnedMesh::PointRadius, 20, subMesh.Color);
                 }
             }
         }
@@ -96,10 +96,10 @@ namespace XYZ {
 
         void PreviewRenderer::RenderBone(const glm::vec2& start, const glm::vec2& end, const glm::vec2& normal, const glm::vec4& color, float radius)
         {
-            Renderer2D::SubmitCircle(glm::vec3(start, 0.0f), radius, 20, color);
-            Renderer2D::SubmitCircle(glm::vec3(end, 0.0f), radius, 20, color);
-            Renderer2D::SubmitLine(glm::vec3(start + (normal * radius),0.0f), glm::vec3(end, 0.0f), color);
-            Renderer2D::SubmitLine(glm::vec3(start - (normal * radius),0.0f), glm::vec3(end, 0.0f), color);
+            EditorRenderer::SubmitEditorCircle(glm::vec3(start, 0.0f), radius, 20, color);
+            EditorRenderer::SubmitEditorCircle(glm::vec3(end, 0.0f), radius, 20, color);
+            EditorRenderer::SubmitEditorLine(glm::vec3(start + (normal * radius),0.0f), glm::vec3(end, 0.0f), color);
+            EditorRenderer::SubmitEditorLine(glm::vec3(start - (normal * radius),0.0f), glm::vec3(end, 0.0f), color);
         }
 
         void PreviewRenderer::RenderBone(const PreviewBone& child, const glm::vec4& color, float radius, bool preview)
@@ -122,9 +122,9 @@ namespace XYZ {
 
         void PreviewRenderer::RenderTriangle(const glm::vec2& firstPosition, const glm::vec2& secondPosition, const glm::vec2& thirdPosition, const glm::vec4& color)
         {
-            Renderer2D::SubmitLine(glm::vec3(firstPosition.x, firstPosition.y, 0.0f), glm::vec3(secondPosition.x, secondPosition.y, 0.0f), color);
-            Renderer2D::SubmitLine(glm::vec3(secondPosition.x, secondPosition.y, 0.0f), glm::vec3(thirdPosition.x, thirdPosition.y, 0.0f), color);
-            Renderer2D::SubmitLine(glm::vec3(thirdPosition.x, thirdPosition.y, 0.0f), glm::vec3(firstPosition.x, firstPosition.y, 0.0f), color);
+            EditorRenderer::SubmitEditorLine(glm::vec3(firstPosition.x, firstPosition.y, 0.0f), glm::vec3(secondPosition.x, secondPosition.y, 0.0f), color);
+            EditorRenderer::SubmitEditorLine(glm::vec3(secondPosition.x, secondPosition.y, 0.0f), glm::vec3(thirdPosition.x, thirdPosition.y, 0.0f), color);
+            EditorRenderer::SubmitEditorLine(glm::vec3(thirdPosition.x, thirdPosition.y, 0.0f), glm::vec3(firstPosition.x, firstPosition.y, 0.0f), color);
         }
 
         void PreviewRenderer::RenderTriangle(const Submesh& mesh, const Triangle& triangle, const glm::vec4& color)

@@ -4,7 +4,6 @@
 #include "XYZ/Scene/Scene.h"
 #include "XYZ/Scene/Components.h"
 #include "XYZ/Scene/EditorComponents.h"
-#include "XYZ/Renderer/SkeletalMesh.h"
 
 namespace XYZ {
 	
@@ -57,14 +56,8 @@ namespace XYZ {
 		static void BeginScene(const Scene* scene, const SceneRendererCamera& camera);
 		static void BeginScene(const Scene* scene, const glm::mat4 viewProjectionMatrix, const glm::vec3& viewPosition);
 		static void EndScene();
-
-		static void SubmitSkeletalMesh(SkeletalMesh* mesh);
 		static void SubmitSprite(SpriteRenderer* sprite, TransformComponent* transform);
 		
-		// Editor functions
-		static void SubmitEditorSprite(EditorSpriteRenderer* sprite, TransformComponent* transform);
-		static void SubmitEditorAABB(TransformComponent* transform, const glm::vec4& color);
-		static void SubmitEditorAABB(const glm::vec3& min, const glm::vec3& max, const glm::vec4& color);
 
 		static void SubmitRendererCommand(const RendererCommand* command, TransformComponent* transform);
 		static void SubmitLight(PointLight2D* light, const glm::mat4& transform);
@@ -82,7 +75,6 @@ namespace XYZ {
 		static void flush();
 		static void flushLightQueue();
 		static void flushDefaultQueue();
-		static void flushEditorQueue();
 		static void sortQueue(RenderQueue& queue);
 
 		static void geometryPass(RenderQueue& queue, const Ref<RenderPass>& pass, bool clear);
