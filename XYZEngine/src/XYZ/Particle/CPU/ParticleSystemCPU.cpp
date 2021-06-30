@@ -130,6 +130,7 @@ namespace XYZ {
 				val.Get().InstanceCount = endId;
 			}
 			threadPass->AttemptSwap();
+			
 		});
 	}
 	ParticleSystemCPU::DoubleThreadPass::DoubleThreadPass()

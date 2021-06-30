@@ -7,8 +7,9 @@
 #include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/SceneRenderer.h"
-#include "XYZ/Renderer/Animation.h"
 #include "XYZ/Renderer/EditorRenderer.h"
+
+#include "XYZ/Animation/Animation.h"
 
 #include "XYZ/Script/ScriptEngine.h"
 #include "Components.h"
