@@ -79,11 +79,11 @@ namespace XYZ {
 		}
 		virtual void CopyComponentData(Entity entity, ByteStream& out) const override
 		{
-			out << m_Data[m_EntityDataMap[(uint32_t)entity]];
+			out << m_Data[m_EntityDataMap[(size_t)entity]];
 		}
 		virtual void UpdateComponentData(Entity entity, const ByteStream& in) override
 		{
-			in >> m_Data[m_EntityDataMap[(uint32_t)entity]];
+			in >> m_Data[m_EntityDataMap[(size_t)entity]];
 		}
 		virtual Entity EntityDestroyed(Entity entity) override
 		{
@@ -91,7 +91,7 @@ namespace XYZ {
 		}
 		virtual uint32_t GetComponentIndex(Entity entity) const override
 		{
-			return m_EntityDataMap[(uint32_t)entity];
+			return m_EntityDataMap[(size_t)entity];
 		}
 		virtual Entity GetEntityAtIndex(size_t index) const override
 		{
@@ -118,7 +118,7 @@ namespace XYZ {
 				m_EntityDataMap.resize((uint32_t)entity + 1);
 			
 			m_DataEntityMap.push_back(entity);
-			m_EntityDataMap[(uint32_t)entity] = m_Data.size();
+			m_EntityDataMap[(size_t)entity] = (uint32_t)m_Data.size();
 			m_Data.emplace_back(std::forward<Args>(args)...);
 			return m_Data.back();
 		}
@@ -129,19 +129,19 @@ namespace XYZ {
 				m_EntityDataMap.resize((uint32_t)entity + 1);
 
 			m_DataEntityMap.push_back(entity);
-			m_EntityDataMap[(uint32_t)entity] = m_Data.size();
+			m_EntityDataMap[(size_t)entity] = (uint32_t)m_Data.size();
 			m_Data.push_back(component);
 			return m_Data.back();
 		}
 
 		T& GetComponent(Entity entity)
 		{
-			return m_Data[m_EntityDataMap[(uint32_t)entity]];
+			return m_Data[m_EntityDataMap[(size_t)entity]];
 		}
 
 		const T& GetComponent(Entity entity) const
 		{
-			return m_Data[m_EntityDataMap[(uint32_t)entity]];
+			return m_Data[m_EntityDataMap[(size_t)entity]];
 		}
 		uint32_t RemoveComponent(Entity entity)
 		{
@@ -151,13 +151,13 @@ namespace XYZ {
 				// Entity of last element in data pack
 				Entity lastEntity = m_DataEntityMap.back();
 				// Index that is entity pointing to
-				uint32_t index = m_EntityDataMap[(uint32_t)entity];
+				uint32_t index = m_EntityDataMap[(size_t)entity];
 				// Move last element in data pack at the place of removed component
 				m_Data[index] = std::move(m_Data.back());
 				// Point data entity map at index to last entity
 				m_DataEntityMap[index] = lastEntity;
 				// Point last entity to data new index;
-				m_EntityDataMap[(uint32_t)lastEntity] = index;
+				m_EntityDataMap[(size_t)lastEntity] = index;
 				// Pop back last element
 				updatedEntity = lastEntity;
 			}

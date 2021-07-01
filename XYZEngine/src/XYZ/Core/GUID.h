@@ -47,7 +47,7 @@ namespace XYZ {
 		}
 
 	private:
-		uint64_t m_Data1;
+		uint32_t m_Data1;
 		uint16_t m_Data2;
 		uint16_t m_Data3;
 		uint8_t  m_Data4[8];

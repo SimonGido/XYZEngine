@@ -467,7 +467,7 @@ namespace XYZ {
 			{
 				PolygonCollider2DComponent& meshCollider = entity.GetComponent<PolygonCollider2DComponent>();
 				b2PolygonShape poly;
-				poly.Set((const b2Vec2*)meshCollider.Vertices.data(), meshCollider.Vertices.size());
+				poly.Set((const b2Vec2*)meshCollider.Vertices.data(), (int32_t)meshCollider.Vertices.size());
 				b2FixtureDef fixture;
 				fixture.shape = &poly;
 				fixture.density =  meshCollider.Density;
@@ -479,7 +479,7 @@ namespace XYZ {
 				ChainCollider2DComponent& chainCollider = entity.GetComponent<ChainCollider2DComponent>();
 				
 				b2ChainShape chain;
-				chain.CreateChain((const b2Vec2*)chainCollider.Points.data(), chainCollider.Points.size(),
+				chain.CreateChain((const b2Vec2*)chainCollider.Points.data(), (int32_t)chainCollider.Points.size(),
 					{ chainCollider.Points[0].x, chainCollider.Points[0].y },
 					{ chainCollider.Points.back().x, chainCollider.Points.back().y });
 				b2FixtureDef fixture;

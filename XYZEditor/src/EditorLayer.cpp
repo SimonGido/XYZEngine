@@ -189,8 +189,8 @@ namespace XYZ {
 		particleMaterial->Set("u_TextureModule.TilesX", 1);
 		particleMaterial->Set("u_TextureModule.TilesY", 1);
 		
-		particleMaterial->SetBufferData("buffer_Data", particleData.data(), particleData.size(), sizeof(ParticleData));
-		particleMaterial->SetBufferData("buffer_Specification", particleSpecification.data(), particleSpecification.size(), sizeof(ParticleSpecification));
+		particleMaterial->SetBufferData("buffer_Data", particleData.data(), (uint32_t)particleData.size(), (uint32_t)sizeof(ParticleData));
+		particleMaterial->SetBufferData("buffer_Specification", particleSpecification.data(), (uint32_t)particleSpecification.size(), (uint32_t)sizeof(ParticleSpecification));
 
 
 	}

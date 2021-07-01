@@ -86,14 +86,14 @@ namespace XYZ {
 		for (uint32_t i = 0; i < s_Data.TextureSlotIndex; ++i)
 		{
 			if (s_Data.TextureSlots[i]->GetRendererID() == texture->GetRendererID())
-				return i + s_Data.QuadMaterial->GetTextures().size();
+				return i + (uint32_t)s_Data.QuadMaterial->GetTextures().size();
 		}
 
 		if (s_Data.QuadMaterial->GetTextures().size() + s_Data.TextureSlotIndex >= s_Data.MaxTextures + 1)
 			Flush();
 
 		s_Data.TextureSlots[s_Data.TextureSlotIndex++] = texture;
-		return s_Data.TextureSlotIndex + s_Data.QuadMaterial->GetTextures().size() - 1;
+		return s_Data.TextureSlotIndex + (uint32_t)s_Data.QuadMaterial->GetTextures().size() - 1;
 	}
 	void CustomRenderer2D::Flush()
 	{
@@ -103,7 +103,7 @@ namespace XYZ {
 			XYZ_ASSERT(s_Data.QuadMaterial.Raw(), "No material set");
 			
 			s_Data.QuadMaterial->Bind();
-			uint32_t textureSlotOffset = s_Data.QuadMaterial->GetTextures().size();
+			uint32_t textureSlotOffset = (uint32_t)s_Data.QuadMaterial->GetTextures().size();
 			for (uint32_t i = 0; i < s_Data.TextureSlotIndex; ++i)
 				s_Data.TextureSlots[i]->Bind(i + textureSlotOffset);
 
@@ -134,7 +134,7 @@ namespace XYZ {
 	void CustomRenderer2D::FlushLast()
 	{
 		s_Data.QuadMaterial->Bind();
-		uint32_t textureSlotOffset = s_Data.QuadMaterial->GetTextures().size();
+		uint32_t textureSlotOffset = (uint32_t)s_Data.QuadMaterial->GetTextures().size();
 		for (uint32_t i = 0; i < s_Data.TextureSlotIndex; ++i)
 			s_Data.TextureSlots[i]->Bind(i + textureSlotOffset);
 

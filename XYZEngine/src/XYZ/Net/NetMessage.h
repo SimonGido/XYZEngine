@@ -40,7 +40,7 @@ namespace XYZ {
 
 				std::memcpy(msg.Body.data() + oldSize, &data, sizeof(DataType));
 				
-				msg.Header.Size = msg.Size();
+				msg.Header.Size = (uint32_t)msg.Size();
 
 				return msg;
 			}

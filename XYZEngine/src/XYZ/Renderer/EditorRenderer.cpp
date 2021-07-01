@@ -108,7 +108,7 @@ namespace XYZ {
 
 	void EditorRenderer::SubmitEditorCircle(const glm::vec3& pos, float radius, uint32_t sides, const glm::vec4& color)
 	{
-		float step = 360 / sides;
+		int step = 360 / sides;
 		for (int a = step; a < 360 + step; a += step)
 		{
 			float before = glm::radians((float)(a - step));

@@ -95,7 +95,7 @@ namespace XYZ {
 
 			EditorHelper::BeginColumns("Size");
 			ImGui::PushItemWidth(75.0f);
-			int size = component.Points.size();
+			int size = (int)component.Points.size();
 			if (ImGui::InputInt("##Size", &size))
 			{
 				if (size < 2) size = 2;

@@ -159,7 +159,7 @@ namespace XYZ {
 			if (instance->m_ColorAttachmentFormats.size())
 			{
 				instance->m_ColorAttachments.resize(instance->m_ColorAttachmentFormats.size());
-				Utils::CreateTextures(multisample, instance->m_ColorAttachments.data(), instance->m_ColorAttachments.size());
+				Utils::CreateTextures(multisample, instance->m_ColorAttachments.data(), (uint32_t)instance->m_ColorAttachments.size());
 				for (int i = 0; i < instance->m_ColorAttachments.size(); i++)
 				{
 					Utils::BindTexture(multisample, instance->m_ColorAttachments[i]);
@@ -200,7 +200,7 @@ namespace XYZ {
 			if (instance->m_ColorAttachmentFormats.size())
 			{
 				GLenum buffers[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
-				glDrawBuffers(instance->m_ColorAttachmentFormats.size(), buffers);
+				glDrawBuffers((GLsizei)instance->m_ColorAttachmentFormats.size(), buffers);
 			}
 			else
 			{

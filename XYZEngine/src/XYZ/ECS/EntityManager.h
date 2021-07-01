@@ -22,7 +22,7 @@ namespace XYZ {
 		const Signature& GetSignature(Entity entity)const;
 
 		void DestroyEntity(Entity entity);
-		void SetNumberOfComponents(size_t number);
+		void SetNumberOfComponents(uint16_t number);
 		void SetSignature(Entity entity, Signature signature);
 		void Clear();
 

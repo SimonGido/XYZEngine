@@ -36,7 +36,7 @@ namespace XYZ {
 				return "Kinematic";
 			}
 		}
-		static uint32_t FindTextLength(const char* source, Ref<Font> font)
+		static float FindTextLength(const char* source, Ref<Font> font)
 		{
 			if (!source)
 				return 0;

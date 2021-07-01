@@ -77,7 +77,7 @@ namespace XYZ {
 						element.GetComponentCount(),
 						ShaderDataComponentToOpenGLBaseComponent(element.Component),
 						vbl.GetStride(),
-						(const void*)element.Offset);
+						(const void*)(uint64_t)element.Offset);
 				}
 				else
 				{				
@@ -87,7 +87,7 @@ namespace XYZ {
 						//element.m_Normalized ? GL_TRUE : GL_FALSE,
 						GL_FALSE,
 						vbl.GetStride(),
-						(const void*)element.Offset);
+						(const void*)(uint64_t)element.Offset);
 					glVertexAttribDivisor(element.Index, element.Divisor);
 				}
 			}
@@ -117,7 +117,7 @@ namespace XYZ {
 						ShaderDataComponentToOpenGLBaseComponent(element.Component),
 						//element.m_Normalized ? GL_TRUE : GL_FALSE,
 						vbl.GetStride(),
-						(const void*)element.Offset);
+						(const void*)(uint64_t)element.Offset);
 				}
 				else
 				{
@@ -127,7 +127,7 @@ namespace XYZ {
 						//element.m_Normalized ? GL_TRUE : GL_FALSE,
 						GL_FALSE,
 						vbl.GetStride(),
-						(const void*)element.Offset);
+						(const void*)(uint64_t)element.Offset);
 				}
 				glVertexAttribDivisor(element.Index, element.Divisor);
 			}

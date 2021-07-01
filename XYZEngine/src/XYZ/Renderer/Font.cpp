@@ -48,15 +48,15 @@ namespace XYZ {
 				return;
 			}
 			FT_Bitmap* bmp = &face->glyph->bitmap;
-			if (penX + bmp->width >= texWidth)
+			if (penX + bmp->width >= (uint32_t)texWidth)
 			{
 				penX = 0;
 				penY += ((face->size->metrics.height >> 6) + 1);
 			}
 
-			for (int32_t row = 0; row < bmp->rows; ++row)
+			for (int32_t row = 0; row < (int32_t)bmp->rows; ++row)
 			{
-				for (int32_t col = 0; col < bmp->width; ++col)
+				for (int32_t col = 0; col < (int32_t)bmp->width; ++col)
 				{
 					int32_t x = penX + col;
 					int32_t y = penY + row;

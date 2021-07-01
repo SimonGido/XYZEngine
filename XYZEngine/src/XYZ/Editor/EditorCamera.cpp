@@ -96,7 +96,7 @@ namespace XYZ {
 
 		bool EditorCamera::onMouseScroll(MouseScrollEvent& e)
 		{
-			float delta = e.GetOffsetY() * 0.1f;
+			float delta = (float)e.GetOffsetY() * 0.1f;
 			mouseZoom(delta);
 			updateView();
 			return false;

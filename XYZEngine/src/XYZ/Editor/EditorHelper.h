@@ -71,6 +71,7 @@ namespace XYZ {
 			}
 			return false;
 		}
+		return false;
 	}
 	template<typename T, typename UIFunction>
 	inline bool EditorHelper::DrawNodeControl(const std::string& name, T& val, UIFunction uiFunction)

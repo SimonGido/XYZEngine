@@ -136,7 +136,7 @@ namespace XYZ {
 		if (m_Size < size)
 		{
 			delete[]m_StoredValueBuffer;
-			m_StoredValueBuffer = allocateBuffer(size);
+			m_StoredValueBuffer = allocateBuffer((uint32_t)size);
 		}
 		memcpy(m_StoredValueBuffer, value, size);
 	}

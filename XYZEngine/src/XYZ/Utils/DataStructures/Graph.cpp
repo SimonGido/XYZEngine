@@ -11,7 +11,7 @@ namespace XYZ {
 	int32_t Graph::AddVertex(uint32_t index)
 	{
 		m_Vertices.push_back({ index });
-		return m_Vertices.size() - 1;
+		return (int32_t)m_Vertices.size() - 1;
 	}
 	void Graph::AddEdge(int32_t start, int32_t end)
 	{

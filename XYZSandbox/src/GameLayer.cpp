@@ -28,9 +28,7 @@ namespace XYZ {
 
 		Ref<Material> material = Ref<Material>::Create(Shader::Create("Assets/Shaders/DefaultShader.glsl"));
 		Ref<Texture2D> texture = Texture2D::Create({ TextureWrap::Clamp, TextureParam::Nearest, TextureParam::Nearest }, "Assets/Textures/player_sprite.png");
-		Ref<SubTexture> subTexture = Ref<SubTexture>::Create(texture, glm::vec2(0, 0), glm::vec2(texture->GetWidth() / 8, texture->GetHeight() / 3));
-
-
+	
 		
 		material->Set("u_Color", glm::vec4(1.0f));
 		m_Entity = m_Scene->CreateEntity("Test Entity", GUID());
@@ -39,10 +37,7 @@ namespace XYZ {
 		ScriptEngine::InitScriptEntity(m_Entity);
 		ScriptEngine::InstantiateEntityClass(m_Entity);
 
-		SpriteRenderer& spriteRenderer = m_Entity.AddComponent<SpriteRenderer>(SpriteRenderer(
-			material, subTexture, glm::vec4(1.0f), 0
-		));
-
+		
 		auto specs = SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer->GetSpecification();
 		specs.SwapChainTarget = true;
 		SceneRenderer::GetFinalRenderPass()->GetSpecification().TargetFramebuffer->SetSpecification(specs);

@@ -36,7 +36,7 @@ namespace XYZ {
 		static void  Shutdown();
 
 	private:
-		static void* allocate(size_t size);
+		static void* allocate(uint32_t size);
 		static void  deallocate(void* handle);
 
 		static MemoryPool<1024 * 1024, true>* s_Pool;
@@ -164,7 +164,7 @@ namespace XYZ {
 		{
 			if (RefAllocator::s_Pool)
 			{
-				void*  handle = RefAllocator::allocate(sizeof(T));
+				void*  handle = RefAllocator::allocate((uint32_t)sizeof(T));
 				return Ref<T>(new (handle)T(std::forward<Args>(args)...));
 			}
 			return Ref<T>(new T(std::forward<Args>(args)...));

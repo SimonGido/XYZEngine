@@ -76,14 +76,14 @@ namespace XYZ {
         }
 
         m_VertexArray->Bind();
-        Renderer::DrawIndexed(PrimitiveType::Triangles, m_Indices.size());
+        Renderer::DrawIndexed(PrimitiveType::Triangles, (uint32_t)m_Indices.size());
     }
 
     void SkeletalMesh::RebuildBuffers()
     {
         m_VertexArray = VertexArray::Create();
 
-        Ref<VertexBuffer> vbo = VertexBuffer::Create(m_Vertices.data(), m_Vertices.size() * sizeof(AnimatedVertex));
+        Ref<VertexBuffer> vbo = VertexBuffer::Create(m_Vertices.data(), (uint32_t)m_Vertices.size() * (uint32_t)sizeof(AnimatedVertex));
         vbo->SetLayout({
             {0, XYZ::ShaderDataComponent::Float3, "a_Position" },
             {1, XYZ::ShaderDataComponent::Float2, "a_TexCoord" },
@@ -93,7 +93,7 @@ namespace XYZ {
 
         m_VertexArray->AddVertexBuffer(vbo);
 
-        Ref<IndexBuffer> ibo = IndexBuffer::Create(m_Indices.data(), m_Indices.size());
+        Ref<IndexBuffer> ibo = IndexBuffer::Create(m_Indices.data(), (uint32_t)m_Indices.size());
         m_VertexArray->SetIndexBuffer(ibo);
     }
 }

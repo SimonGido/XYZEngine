@@ -25,7 +25,7 @@ namespace XYZ {
 				m_Data.resize(size);
 				m_FirstFree = 0;
 				for (size_t i = 0; i < m_Data.size() - 1; ++i)
-					m_Data[i].Next = i + 1;
+					m_Data[i].Next = (int32_t)i + 1;
 			}	
 		}
 

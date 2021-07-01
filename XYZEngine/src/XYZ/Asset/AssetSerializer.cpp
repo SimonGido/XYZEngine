@@ -715,6 +715,8 @@ namespace XYZ {
 		case AssetType::SkeletalMesh:
 			return deserialize<SkeletalMesh>(asset);
 		}	
+		XYZ_ASSERT(false, "");
+		return Ref<Asset>();
 	}
 	void AssetSerializer::loadMetaFile(Ref<Asset>& asset)
 	{

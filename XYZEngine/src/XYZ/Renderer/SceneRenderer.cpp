@@ -279,14 +279,14 @@ namespace XYZ {
 
 		if (s_Data.PointLightsList.size())
 		{
-			s_Data.LightStorageBuffer->Update(s_Data.PointLightsList.data(), s_Data.PointLightsList.size() * sizeof(SceneRendererData::PointLight));
-			s_Data.LightStorageBuffer->BindRange(0, s_Data.PointLightsList.size() * sizeof(SceneRendererData::PointLight));
+			s_Data.LightStorageBuffer->Update(s_Data.PointLightsList.data(), (uint32_t)s_Data.PointLightsList.size() * (uint32_t)sizeof(SceneRendererData::PointLight));
+			s_Data.LightStorageBuffer->BindRange(0, (uint32_t)s_Data.PointLightsList.size() * (uint32_t)sizeof(SceneRendererData::PointLight));
 		}
 
 		if (s_Data.SpotLightsList.size())
 		{
-			s_Data.SpotLightStorageBuffer->Update(s_Data.SpotLightsList.data(), s_Data.SpotLightsList.size() * sizeof(SceneRendererData::SpotLight));
-			s_Data.SpotLightStorageBuffer->BindRange(0, s_Data.SpotLightsList.size() * sizeof(SceneRendererData::SpotLight));
+			s_Data.SpotLightStorageBuffer->Update(s_Data.SpotLightsList.data(), (uint32_t)s_Data.SpotLightsList.size() * (uint32_t)sizeof(SceneRendererData::SpotLight));
+			s_Data.SpotLightStorageBuffer->BindRange(0, (uint32_t)s_Data.SpotLightsList.size() * (uint32_t)sizeof(SceneRendererData::SpotLight));
 		}
 		geometryPass(queue, s_Data.GeometryPass, true);
 		lightPass();
@@ -355,8 +355,8 @@ namespace XYZ {
 		Renderer::BeginRenderPass(s_Data.LightPass, true);
 
 		s_Data.LightShader->Bind();
-		s_Data.LightShader->SetInt("u_NumberPointLights", s_Data.PointLightsList.size() + 10);
-		s_Data.LightShader->SetInt("u_NumberSpotLights", s_Data.SpotLightsList.size());
+		s_Data.LightShader->SetInt("u_NumberPointLights", (int)s_Data.PointLightsList.size() + 10);
+		s_Data.LightShader->SetInt("u_NumberSpotLights", (int)s_Data.SpotLightsList.size());
 
 		s_Data.GeometryPass->GetSpecification().TargetFramebuffer->BindTexture(0, 0);
 		s_Data.GeometryPass->GetSpecification().TargetFramebuffer->BindTexture(1, 1);

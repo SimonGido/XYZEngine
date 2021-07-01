@@ -290,6 +290,7 @@ namespace XYZ {
 			default:
 				break;
 			}
+			return NumTypes;
 		}
 		std::string AssetBrowser::fullPath(const std::string& filename) const
 		{

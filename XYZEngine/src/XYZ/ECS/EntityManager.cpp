@@ -61,7 +61,7 @@ namespace XYZ {
 		m_Bitset.DestroySignature(entity);
 		m_EntitiesInUse--;
 	}
-	void EntityManager::SetNumberOfComponents(size_t number)
+	void EntityManager::SetNumberOfComponents(uint16_t number)
 	{
 		m_Bitset.SetNumberBits(number);
 	}

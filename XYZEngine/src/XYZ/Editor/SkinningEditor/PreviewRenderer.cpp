@@ -19,7 +19,7 @@ namespace XYZ {
                         const PreviewVertex& third = mesh.m_PreviewVertices[(size_t)triangle.Third + offset];
                         RenderTriangle(first.Position, second.Position, third.Position, mesh.m_Colors[SkinnedMesh::TriangleColor]);
                     }
-                    offset += subMesh.GeneratedVertices.size();
+                    offset += (uint32_t)subMesh.GeneratedVertices.size();
                 }
                 for (auto& vertex : mesh.m_PreviewVertices)
                     EditorRenderer::SubmitEditorCircle(glm::vec3(vertex.Position.x, vertex.Position.y, 0.0f), SkinnedMesh::PointRadius, 20, mesh.m_Colors[SkinnedMesh::VertexColor]);

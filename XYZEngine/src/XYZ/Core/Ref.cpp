@@ -18,7 +18,7 @@ namespace XYZ {
 		s_Pool = nullptr;
 		// We do not set s_Initialized to false because once it was initialized memory allocations happened
 	}
-	void* RefAllocator::allocate(size_t size)
+	void* RefAllocator::allocate(uint32_t size)
 	{
 		return s_Pool->AllocateRaw(size);
 	}

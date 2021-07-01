@@ -270,7 +270,7 @@ namespace XYZ {
                 if (!trianglesHaveIndex(subMesh, i))
                     erasedPoints.push_back(i);
             }
-            for (int32_t i = erasedPoints.size() - 1; i >= 0; --i)
+            for (int32_t i = (int32_t)erasedPoints.size() - 1; i >= 0; --i)
             {
                 subMesh.GeneratedVertices.erase(subMesh.GeneratedVertices.begin() + erasedPoints[i]);
                 for (auto& triange : subMesh.Triangles)
@@ -342,7 +342,7 @@ namespace XYZ {
         void SkinnedMesh::updateBuffers()
         {
             if (m_VertexArray.Raw())
-                m_VertexBuffer->Update(m_PreviewVertices.data(), m_PreviewVertices.size() * sizeof(PreviewVertex));
+                m_VertexBuffer->Update(m_PreviewVertices.data(), (uint32_t)m_PreviewVertices.size() * (uint32_t)sizeof(PreviewVertex));
             else
                 rebuildBuffers();
         }
@@ -358,7 +358,7 @@ namespace XYZ {
                     indices.push_back(triangle.Second + offset);
                     indices.push_back(triangle.Third + offset);
                 }
-                offset += subMesh.GeneratedVertices.size();
+                offset += (uint32_t)subMesh.GeneratedVertices.size();
             }
             if (indices.empty())
             {
@@ -367,14 +367,14 @@ namespace XYZ {
             }
          
             m_VertexArray = VertexArray::Create();
-            m_VertexBuffer = VertexBuffer::Create(m_PreviewVertices.data(), m_PreviewVertices.size() * sizeof(PreviewVertex), BufferUsage::Dynamic);
+            m_VertexBuffer = VertexBuffer::Create(m_PreviewVertices.data(), (uint32_t)m_PreviewVertices.size() * (uint32_t)sizeof(PreviewVertex), BufferUsage::Dynamic);
             m_VertexBuffer->SetLayout({
                 {0, ShaderDataComponent::Float3, "a_Color"},
                 {1, ShaderDataComponent::Float3, "a_Position"},
                 {2, ShaderDataComponent::Float2, "a_TexCoord"}
                 });
             m_VertexArray->AddVertexBuffer(m_VertexBuffer);
-            Ref<IndexBuffer> ibo = IndexBuffer::Create(indices.data(), indices.size());
+            Ref<IndexBuffer> ibo = IndexBuffer::Create(indices.data(), (uint32_t)indices.size());
             m_VertexArray->SetIndexBuffer(ibo);
         }
         BoneVertex::BoneVertex()

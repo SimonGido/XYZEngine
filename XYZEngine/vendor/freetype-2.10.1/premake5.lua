@@ -70,6 +70,7 @@ project "FreeType"
     
 
 	filter "configurations:Debug"
+            warnings "off"
 			defines 
         	{
             		"FT_DEBUG_LEVEL_ERROR",
@@ -79,12 +80,9 @@ project "FreeType"
 
 
 	filter "configurations:Release"
+            warnings "off"
 		    defines
             {
                 "NDEBUG"
             }
-        
-     
-        
-
-     	        
+ 

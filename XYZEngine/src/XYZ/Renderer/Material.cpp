@@ -27,7 +27,7 @@ namespace XYZ {
 	void Material::Bind() const
 	{
 		m_Shader->Bind();
-		for (size_t i = 0; i < m_Textures.size(); i++)
+		for (uint32_t i = 0; i < (uint32_t)m_Textures.size(); i++)
 		{
 			if (m_Textures[i].Raw())
 				m_Textures[i]->Bind(i);

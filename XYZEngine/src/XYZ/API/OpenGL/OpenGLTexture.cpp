@@ -199,7 +199,7 @@ namespace XYZ {
 		:
 		m_Specification(specs),
 		m_Filepaths(paths),
-		m_LayerCount(paths.size())
+		m_LayerCount((uint32_t)paths.size())
 	{
 		XYZ_ASSERT(paths.size(), "No paths");
 		int width = 0, height = 0, channels = 0;
