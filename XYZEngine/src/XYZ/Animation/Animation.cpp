@@ -23,6 +23,8 @@ namespace XYZ {
 			if (!m_Repeat)
 				return;
 			m_CurrentTime = 0.0f;
+			for (auto& track : m_Tracks)
+				track->Reset();
 		}
 		for (auto& track : m_Tracks)
 			track->Update(m_CurrentTime);

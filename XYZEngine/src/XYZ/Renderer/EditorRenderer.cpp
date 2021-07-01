@@ -45,9 +45,9 @@ namespace XYZ {
 		s_Data.ViewPosition = viewPos;
 	}
 
-	void EditorRenderer::EndPass()
+	void EditorRenderer::EndPass(bool clear)
 	{
-		Renderer::BeginRenderPass(s_Data.Pass, false);
+		Renderer::BeginRenderPass(s_Data.Pass, clear);
 		Renderer2D::BeginScene(s_Data.ViewProjectionMatrix, s_Data.ViewPosition);
 
 		for (auto& dc : s_Data.EditorSpriteDrawList)
@@ -120,5 +120,18 @@ namespace XYZ {
 				color
 				});
 		}
+	}
+	void EditorRenderer::SubmitEditorLineQuad(const glm::vec3& pos, const glm::vec2& size, const glm::vec4& color)
+	{
+		glm::vec3 p[4] = {
+			pos,
+			pos + glm::vec3(size.x, 0.0f, 0.0f),
+			pos + glm::vec3(size.x, size.y, 0.0f),
+			pos + glm::vec3(0.0f,size.y, 0.0f)
+		};
+		s_Data.EditorLineDrawList.push_back({ p[0], p[1], color });
+		s_Data.EditorLineDrawList.push_back({ p[1], p[2], color });
+		s_Data.EditorLineDrawList.push_back({ p[2], p[3], color });
+		s_Data.EditorLineDrawList.push_back({ p[3], p[0], color });
 	}
 }

@@ -64,8 +64,8 @@ namespace XYZ {
 	{
 	public:
 		virtual const TextureSpecs& GetSpecification() const = 0;
-		virtual void SetData(void* data, uint32_t size) {};
-		virtual uint8_t* GetData() { return nullptr; };
+		virtual void SetData(void* data, uint32_t size) = 0;
+		virtual void GetData(uint8_t** buffer) const = 0;
 
 		static Ref<Texture2D> Create(uint32_t width, uint32_t height, uint32_t channels, const TextureSpecs& specs);
 		static Ref<Texture2D> Create(const TextureSpecs& specs, const std::string& path);
@@ -79,9 +79,7 @@ namespace XYZ {
 	{
 	public:
 		virtual const TextureSpecs& GetSpecification() const = 0;
-		virtual void SetData(void* data, uint32_t layerIndex, uint32_t size) {};
-		virtual uint8_t* GetData() { return nullptr; };
-
+		
 		static Ref<Texture2D> Create(const TextureSpecs& specs, const std::initializer_list<std::string>& paths);
 		static Ref<Texture2DArray> Create(uint32_t layerCount, uint32_t width, uint32_t height, uint32_t channels, const TextureSpecs& specs);
 	};

@@ -64,6 +64,17 @@ namespace XYZ {
 			);
 		}
 
+		void ScenePanel::handlePanelResize(const glm::vec2& newSize)
+		{
+			if (m_ViewportSize.x != newSize.x || m_ViewportSize.y != newSize.y)
+			{
+				m_ViewportSize = newSize;
+				SceneRenderer::SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+				m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
+				m_Context->SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			}
+		}
+
 		void ScenePanel::handleSelection(const glm::vec2& mousePosition)
 		{
 			if (ImGui::GetIO().MouseClicked[ImGuiMouseButton_Left]
@@ -194,16 +205,15 @@ namespace XYZ {
 
 					m_ViewportFocused = ImGui::IsWindowFocused();
 					m_ViewportHovered = ImGui::IsWindowHovered();
-					Application::Get().GetImGuiLayer()->BlockEvents(!m_ViewportFocused && !m_ViewportHovered);
+					
+					ImGuiLayer* imguiLayer = Application::Get().GetImGuiLayer();
+					bool blocked = imguiLayer->GetBlockedEvents();
+					if (blocked)
+						imguiLayer->BlockEvents(!m_ViewportFocused && !m_ViewportHovered);
 
+					
 					ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-					if (m_ViewportSize.x != viewportPanelSize.x || m_ViewportSize.y != viewportPanelSize.y)
-					{
-						m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
-						SceneRenderer::SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-						m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
-						m_Context->SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-					}
+					handlePanelResize({ viewportPanelSize.x, viewportPanelSize.y });
 
 					ImGui::Image(reinterpret_cast<void*>((void*)(uint64_t)SceneRenderer::GetFinalColorBufferRendererID()), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
@@ -258,6 +268,8 @@ namespace XYZ {
 		{
 			EventDispatcher dispatcher(event);
 			dispatcher.Dispatch<KeyPressedEvent>(Hook(&ScenePanel::onKeyPressed, this));
+			if (m_ViewportHovered && m_ViewportFocused)
+				m_EditorCamera.OnEvent(event);
 		}
 
 		bool ScenePanel::onKeyPressed(KeyPressedEvent& e)

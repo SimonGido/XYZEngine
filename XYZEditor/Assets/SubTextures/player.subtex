@@ -1,4 +1,3 @@
 SubTexture: player
 TextureAsset: 7eb6dd70-ebbf-4e33-8898-9bb61a8043f6
-Coords: [0, 0]
-Size: [80, 80]
+TexCoords: [0.0, 0.0, 0.33, 0.3]

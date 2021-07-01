@@ -37,8 +37,8 @@ namespace XYZ {
 		return length;
 	}
 
-	template <>
-	void TransformTrack::AddKeyFrame<glm::vec3>(const KeyFrame<glm::vec3>& key, PropertyType type)
+
+	void TransformTrack::AddKeyFrame(const KeyFrame<glm::vec3>& key, PropertyType type)
 	{
 		switch (type)
 		{

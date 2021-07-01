@@ -8,6 +8,8 @@
 namespace XYZ {
 
 	EditorLayer::EditorLayer()
+		:
+		m_EditorOpen{true}
 	{			
 	}
 
@@ -53,12 +55,13 @@ namespace XYZ {
 				m_Inspector.SetContext(&m_SceneEntityInspectorContext);
 			}
 		});
-
+		m_SpriteEditor.SetContext(Texture2D::Create({}, "Assets/Textures/player_sprite.png"));
 
 		auto entity = m_Scene->GetEntityByName("Scary Entity");
 		//gpuParticleExample(entity);
-		cpuParticleExample(entity);
-	
+		//cpuParticleExample(entity);
+		animationExample(entity);
+
 		Renderer::WaitAndRender();
 		Renderer::BlockRenderThread();
 	}
@@ -75,6 +78,8 @@ namespace XYZ {
 		Renderer::Clear();
 
 		m_ScenePanel.OnUpdate(ts);
+		m_SpriteEditor.OnUpdate(ts);
+
 		if (m_Scene->GetState() == SceneState::Play)
 		{
 			m_Scene->OnUpdate(ts);
@@ -92,17 +97,13 @@ namespace XYZ {
 	void EditorLayer::OnEvent(Event& event)
 	{			
 		EventDispatcher dispatcher(event);
-
 		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&EditorLayer::onMouseButtonPress, this));
 		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorLayer::onMouseButtonRelease, this));	
 		dispatcher.Dispatch<WindowResizeEvent>(Hook(&EditorLayer::onWindowResize, this));
 		dispatcher.Dispatch<KeyPressedEvent>(Hook(&EditorLayer::onKeyPress, this));
 		
 		m_ScenePanel.OnEvent(event);
-		if (!event.Handled)
-		{
-			m_ScenePanel.GetEditorCamera().OnEvent(event);
-		}
+		m_SpriteEditor.OnEvent(event);
 	}
 
 	void EditorLayer::OnImGuiRender()
@@ -110,8 +111,8 @@ namespace XYZ {
 		m_Inspector.OnImGuiRender();
 		m_SceneHierarchy.OnImGuiRender();
 		m_ScenePanel.OnImGuiRender();
+		m_SpriteEditor.OnImGuiRender(m_EditorOpen[SpriteEditor]);
 		m_AssetBrowser.OnImGuiRender();
-		//m_SkinningEditor.OnImGuiRender();
 	}
 	
 	bool EditorLayer::onMouseButtonPress(MouseButtonPressEvent& event)
@@ -242,6 +243,16 @@ namespace XYZ {
 
 	void EditorLayer::animationExample(SceneEntity entity)
 	{
-	}
+		auto& animator = entity.EmplaceComponent<AnimatorComponent>();
+		animator.Animation = Ref<Animation>::Create(entity);
 
+		animator.Animation->CreateTrack<TransformTrack>();
+		animator.Animation->CreateTrack<SpriteRendererTrack>();
+
+		auto transformTrack = animator.Animation->FindTrack<TransformTrack>();
+		transformTrack->AddKeyFrame({ glm::vec3(0.0f), 0.0f }, TransformTrack::PropertyType::Translation);
+		transformTrack->AddKeyFrame({ glm::vec3(2.0f, 2.0f, 0.0f), 2.5f }, TransformTrack::PropertyType::Translation);
+		transformTrack->AddKeyFrame({ glm::vec3(0.0f), 5.0f }, TransformTrack::PropertyType::Translation);
+		animator.Animation->UpdateLength();
+	}
 }

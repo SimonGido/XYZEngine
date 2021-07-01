@@ -35,12 +35,19 @@ namespace XYZ {
 		void animationExample(SceneEntity entity);
 
 	private:
+		enum Editors
+		{
+			SpriteEditor, NumEditors
+		};
+		bool m_EditorOpen[NumEditors];
+		
 		Ref<Scene> m_Scene;
 		Editor::SceneHierarchyPanel m_SceneHierarchy;
 		Editor::InspectorPanel m_Inspector;
 		Editor::ScenePanel m_ScenePanel;
 		Editor::AssetBrowser m_AssetBrowser;
 		Editor::SkinningEditor m_SkinningEditor;
+		Editor::SpriteEditor   m_SpriteEditor;
 
 		Editor::SceneEntityInspectorContext m_SceneEntityInspectorContext;
 		Editor::AssetInspectorContext	    m_AssetInspectorContext;

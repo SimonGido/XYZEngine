@@ -323,8 +323,7 @@ namespace XYZ {
 		out << YAML::BeginMap;
 		out << YAML::Key << "SubTexture" << YAML::Value << subTexture->FileName;
 		out << YAML::Key << "TextureAsset" << YAML::Value << subTexture->GetTexture()->Handle;
-		out << YAML::Key << "Coords" << YAML::Value << subTexture->GetCoords();
-		out << YAML::Key << "Size" << YAML::Value << subTexture->GetSize();	
+		out << YAML::Key << "TexCoords" << YAML::Value << subTexture->GetTexCoords();
 		out << YAML::EndMap;
 		
 		std::ofstream fout(subTexture->FilePath);
@@ -482,9 +481,8 @@ namespace XYZ {
 		GUID textureHandle(data["TextureAsset"].as<std::string>());
 
 		auto texture = AssetManager::GetAsset<Texture2D>(textureHandle);
-		glm::vec2 coords = data["Coords"].as<glm::vec2>();
-		glm::vec2 size = data["Size"].as<glm::vec2>();
-		auto ref = Ref<SubTexture>::Create(texture, coords, size);
+		glm::vec4 texCoords = data["TexCoords"].as<glm::vec4>();
+		auto ref = Ref<SubTexture>::Create(texture, texCoords);
 		CopyAsset(ref.As<Asset>(), asset);
 		
 		return ref.As<Asset>();

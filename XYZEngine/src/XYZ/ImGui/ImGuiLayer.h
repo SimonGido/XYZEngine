@@ -22,7 +22,7 @@ namespace XYZ {
 		void End();
 
 		void BlockEvents(bool block) { m_BlockEvents = block; }
-
+		bool GetBlockedEvents() const { return m_BlockEvents; }
 		void SetDarkThemeColors();
 	private:
 		void dockspace();

@@ -169,13 +169,16 @@ namespace XYZ {
 		});
 	}
 
-	uint8_t* OpenGLTexture2D::GetData()
+	void OpenGLTexture2D::GetData(uint8_t** buffer) const
 	{
-		m_LocalData.Allocate(m_Width * m_Height * m_Channels);
-		glBindTexture(GL_TEXTURE_2D, m_RendererID);
-		glGetTexImage(GL_TEXTURE_2D, 0, m_DataFormat, GL_UNSIGNED_BYTE, m_LocalData);
+		Ref<const OpenGLTexture2D> instance = this;
+		Renderer::Submit([instance, buffer]() mutable {
+			size_t size = (size_t)instance->m_Width * (size_t)instance->m_Height * (size_t)instance->m_Channels;
+			*buffer = new uint8_t[size];
 
-		return m_LocalData;
+			glBindTexture(GL_TEXTURE_2D, instance->m_RendererID);
+			glGetTexImage(GL_TEXTURE_2D, 0, instance->m_DataFormat, GL_UNSIGNED_BYTE, *buffer);
+		});
 	}
 
 	void OpenGLTexture2D::Bind(uint32_t slot) const

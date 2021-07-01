@@ -141,7 +141,7 @@ namespace XYZ {
 			enrolments.default_constructor = false;
 			sol::usertype<SubTexture> type = m_L.new_usertype<SubTexture>("SubTexture", enrolments);
 			type["SetTexture"] = &SubTexture::SetTexture;
-			type["SetCoords"] = &SubTexture::SetCoords;
+			type["SetTexCoords"] = &SubTexture::SetTexCoords;
 			type["GetTexCoords"] = &SubTexture::GetTexCoords;
 			type["GetTexture"] = &SubTexture::GetTexture;
 		}
@@ -149,7 +149,7 @@ namespace XYZ {
 		{
 			sol::usertype<Ref<SubTexture>> type = m_L.new_usertype<Ref<SubTexture>>("RefSubTexture",
 				sol::call_constructor, sol::factories(
-					[](const Ref<Texture>& texture, const glm::vec2& coords, const glm::vec2& size) { return Ref<SubTexture>::Create(texture, coords, size); }
+					[](const Ref<Texture>& texture, const glm::vec4& texCoords) { return Ref<SubTexture>::Create(texture, texCoords); }
 			));
 			type["Get"] = &Ref<SubTexture>::Get;
 		}

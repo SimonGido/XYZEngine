@@ -11,12 +11,13 @@ namespace XYZ {
 	{
 	public:
 		static void BeginPass(const Ref<RenderPass>& pass, const glm::mat4& viewProjection, const glm::vec3& viewPos);
-		static void EndPass();
+		static void EndPass(bool clear = false);
 
 		static void SubmitEditorSprite(EditorSpriteRenderer* sprite, TransformComponent* transform);
 		static void SubmitEditorAABB(TransformComponent* transform, const glm::vec4& color);
 		static void SubmitEditorAABB(const glm::vec3& min, const glm::vec3& max, const glm::vec4& color);
 		static void SubmitEditorLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color);
 		static void SubmitEditorCircle(const glm::vec3& pos, float radius, uint32_t sides, const glm::vec4& color);
+		static void SubmitEditorLineQuad(const glm::vec3& pos, const glm::vec2& size, const glm::vec4& color);
 	};
 }

@@ -8,6 +8,9 @@
 #include <glm/gtx/compatibility.hpp>
 
 namespace XYZ {
+	Track::Track(SceneEntity entity)
+		: m_Entity(entity)
+	{}
 
 	template <>
 	bool Property<float>::Update(float& val, float time)

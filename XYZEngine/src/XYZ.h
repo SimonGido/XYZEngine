@@ -28,6 +28,8 @@
 
 //-----Animation-----//
 #include "XYZ/Animation/Animation.h"
+#include "XYZ/Animation/TransformTrack.h"
+#include "XYZ/Animation/SpriteRendererTrack.h"
 
 #include "XYZ/Particle/GPU/ParticleMaterial.h"
 #include "XYZ/Particle/GPU/ParticleSystem.h"
@@ -49,6 +51,7 @@
 #include "XYZ/Editor/Panels/AssetBrowser.h"
 #include "XYZ/Editor/SkinningEditor/SkinningEditor.h"
 #include "XYZ/Editor/AnimationEditor/AnimationEditor.h"
+#include "XYZ/Editor/SpriteEditor/SpriteEditor.h"
 
 //------ECS-----//
 #include "XYZ/ECS/ECSManager.h"

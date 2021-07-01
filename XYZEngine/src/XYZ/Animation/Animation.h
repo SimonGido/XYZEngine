@@ -21,6 +21,9 @@ namespace XYZ {
 
 		template <typename T>
 		void CreateTrack();
+
+		template <typename T>
+		void RemoveTrack();
 		
 		template <typename T>
 		const Ref<T>& FindTrack() const;
@@ -45,12 +48,26 @@ namespace XYZ {
 	}
 
 	template<typename T>
+	inline void Animation::RemoveTrack()
+	{
+		static_assert(std::is_base_of<Track, T>::value, "Type T must be derived from Track base");
+		for (auto it = m_Tracks.begin(); it != m_Tracks.end(); ++it)
+		{
+			if (dynamic_cast<T*>(it->Raw()))
+			{
+				m_Tracks.erase(it);
+				return;
+			}
+		}
+	}
+
+	template<typename T>
 	inline const Ref<T>& Animation::FindTrack() const
 	{
 		static_assert(std::is_base_of<Track, T>::value, "Type T must be derived from Track base");
 		for (auto& track : m_Tracks)
 		{
-			if (dynamic_cast<T*>(track.Raw()))
+			if (dynamic_cast<const T*>(track.Raw()))
 				return track.As<T>();
 		}
 		return Ref<T>();

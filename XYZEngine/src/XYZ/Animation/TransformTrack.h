@@ -13,9 +13,7 @@ namespace XYZ {
 		virtual void  Reset() override;
 		virtual float Length() override;
 
-
-		template <typename T>
-		void AddKeyFrame(const KeyFrame<T>& key, PropertyType type);
+		void AddKeyFrame(const KeyFrame<glm::vec3>& key, PropertyType type);
 
 	private:
 		Property<glm::vec3> m_TranslationProperty;

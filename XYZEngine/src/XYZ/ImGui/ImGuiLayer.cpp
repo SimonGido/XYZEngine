@@ -155,7 +155,7 @@ namespace XYZ {
 		bool opt_fullscreen = opt_fullscreen_persistant;
 
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-		//if (opt_fullscreen)
+		if (opt_fullscreen)
 		{
 			ImGuiViewport* viewport = ImGui::GetMainViewport();
 			ImGui::SetNextWindowPos(viewport->Pos);

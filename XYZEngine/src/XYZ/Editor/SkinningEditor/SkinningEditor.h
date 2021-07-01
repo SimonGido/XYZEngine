@@ -1,6 +1,4 @@
 #pragma once
-#include "XYZ/Editor/EditorOrthographicCamera.h"
-
 #include "XYZ/Renderer/RenderPass.h"
 #include "XYZ/Renderer/RenderTexture.h"
 #include "XYZ/Renderer/VertexArray.h"
