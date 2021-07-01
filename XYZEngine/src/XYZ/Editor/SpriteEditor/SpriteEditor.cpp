@@ -6,6 +6,7 @@
 #include "XYZ/Core/Application.h"
 #include "XYZ/Editor/EditorHelper.h"
 #include "XYZ/Utils/StringUtils.h"
+#include "XYZ/Utils/FileSystem.h"
 
 #include <imgui.h>
 
@@ -162,14 +163,36 @@ namespace XYZ {
 					SetBorder(value, border);
 
 					EditorHelper::BeginColumns("Name", 2, 65.0f);
+					ImGui::PushItemWidth(ImGui::CalcItemWidth());
 					ImGui::InputText("##Name", m_OutputPath, _MAX_PATH);
+					ImGui::PopItemWidth();
 					EditorHelper::EndColumns();
 
 					if (ImGui::Button("Save"))
 					{
 						std::string name = Utils::GetFilenameWithoutExtension(m_OutputPath);
-						std::string path = Utils::GetDirectoryPath(m_OutputPath);
-						AssetManager::CreateAsset<SubTexture>(name + ".subtex", AssetType::SubTexture, AssetManager::GetDirectoryHandle(path), m_Context, m_Output->GetTexCoords());
+						if (!name.empty())
+						{
+							Application& app = Application::Get();
+							std::string path = FileSystem::OpenFolder(
+								app.GetWindow().GetNativeWindow(),
+								app.GetApplicationDir()
+							);
+							std::replace(path.begin(), path.end(), '\\', '/');
+							path = path.substr(app.GetApplicationDir().size() + 1, path.size() - app.GetApplicationDir().size());
+							if (!FileSystem::Exists(path + "/" + name + ".subtex"))
+							{
+								AssetManager::CreateAsset<SubTexture>(name + ".subtex", AssetType::SubTexture, AssetManager::GetDirectoryHandle(path), m_Context, m_Output->GetTexCoords());
+							}
+							else
+							{
+								XYZ_LOG_WARN("Asset with the same name already exists in the directory");
+							}
+						}
+						else
+						{
+							XYZ_LOG_WARN("Asset can not have an empty name");
+						}
 					}
 				});
 			}

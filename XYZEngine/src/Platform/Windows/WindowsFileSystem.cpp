@@ -5,6 +5,7 @@
 
 #ifdef XYZ_PLATFORM_WINDOWS
 #include <Windows.h>
+#include <shlobj.h>
 
 namespace XYZ {
 
@@ -39,6 +40,50 @@ namespace XYZ {
 			return ofn.lpstrFile;
 		}
 		return std::string();
+	}
+
+	static int CALLBACK BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
+	{
+		if (uMsg == BFFM_INITIALIZED)
+		{
+			std::string tmp = (const char*)lpData;
+			SendMessage(hwnd, BFFM_SETSELECTION, TRUE, lpData);
+		}
+		return 0;
+	}
+
+	std::string FileSystem::OpenFolder(void* windowHandle, const std::string& path)
+	{
+		TCHAR tmpPath[MAX_PATH];
+		std::wstring wsaved_path(path.begin(), path.end());
+		const wchar_t* pathParam = wsaved_path.c_str();
+
+		BROWSEINFO bi = { 0 };
+		bi.lpszTitle = L"Browse for folder...";
+		bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
+		bi.lpfn = BrowseCallbackProc;
+		bi.lParam = (LPARAM)pathParam;
+
+		LPITEMIDLIST pidl = SHBrowseForFolder(&bi);
+
+		if (pidl != 0)
+		{
+			//get the name of the folder and put it in path
+			SHGetPathFromIDList(pidl, tmpPath);
+
+			//free memory used
+			IMalloc* imalloc = 0;
+			if (SUCCEEDED(SHGetMalloc(&imalloc)))
+			{
+				imalloc->Free(pidl);
+				imalloc->Release();
+			}
+
+			std::wstring tmp(tmpPath);
+			std::string result(tmp.begin(), tmp.end());
+			return result;
+		}
+		return "";
 	}
 
 	bool FileSystem::CreateFolder(const std::string& filepath)
