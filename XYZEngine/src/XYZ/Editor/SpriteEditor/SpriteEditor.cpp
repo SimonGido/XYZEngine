@@ -5,6 +5,7 @@
 #include "XYZ/Renderer/EditorRenderer.h"
 #include "XYZ/Core/Application.h"
 #include "XYZ/Editor/EditorHelper.h"
+#include "XYZ/Utils/StringUtils.h"
 
 #include <imgui.h>
 
@@ -63,8 +64,11 @@ namespace XYZ {
 				}
 				glm::vec4 border = m_Output->GetTexCoords();
 				glm::vec2 textureSize = { (float)m_Context->GetWidth(), (float)m_Context->GetHeight() };
-				glm::vec3 min = glm::vec3(glm::vec2(border.x, border.y) - 0.5f, 0.0f);
-				glm::vec3 max = glm::vec3(glm::vec2(border.z, border.w) - 0.5f, 0.0f);
+			
+				float aspect = textureSize.x / textureSize.y;
+
+				glm::vec3 min = glm::vec3(glm::vec2((border.x - 0.5f) * aspect, border.y - 0.5f), 0.0f);
+				glm::vec3 max = glm::vec3(glm::vec2((border.z - 0.5f) * aspect, border.w - 0.5f), 0.0f);
 				EditorRenderer::SubmitEditorAABB(min, max, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
 				
 				EditorRenderer::SubmitEditorSprite(&m_SpriteRenderer, &m_Transform);
@@ -72,6 +76,7 @@ namespace XYZ {
 				EditorRenderer::EndPass(true);
 			}
 		}
+
 		void SpriteEditor::OnImGuiRender(bool& open)
 		{
 			if (open)
@@ -106,13 +111,18 @@ namespace XYZ {
 			m_Context->GetData(&m_PixelBuffer);
 			m_SpriteRenderer.SubTexture = Ref<SubTexture>::Create(m_Context);
 			m_Output = Ref<SubTexture>::Create(m_Context);
+
+			float aspect = (float)m_Context->GetWidth() / (float)m_Context->GetHeight();
+			m_Transform.Scale.x = 1.0f * aspect;
+			m_Transform.WorldTransform = m_Transform.GetTransform();
+			memset(m_OutputPath, 0, _MAX_PATH);
 		}
 		void SpriteEditor::handlePanelResize(const glm::vec2& newSize)
 		{
 			if (m_ViewportSize.x != newSize.x || m_ViewportSize.y != newSize.y)
 			{
 				m_ViewportSize = newSize;
-				m_RenderPass->GetSpecification().TargetFramebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+				m_RenderPass->GetSpecification().TargetFramebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y, true);
 				m_Camera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
 			}
 		}
@@ -133,7 +143,7 @@ namespace XYZ {
 				{
 					handlePanelResize({ viewerPanelSize.x, viewerPanelSize.y });
 					uint32_t renderID = m_RenderPass->GetSpecification().TargetFramebuffer->GetColorAttachmentRendererID(0);
-					ImGui::Image(reinterpret_cast<void*>((void*)(uint64_t)renderID), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+					ImGui::Image(reinterpret_cast<void*>((void*)(uint64_t)renderID), viewerPanelSize, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 				}
 			}
 			ImGui::EndChild();
@@ -142,14 +152,25 @@ namespace XYZ {
 		{
 			if (ImGui::BeginChild("##Sprite", ImVec2(m_ToolSectionWidth, 0)))
 			{
-				EditorHelper::DrawNodeControl("Sprite", m_Output, [](auto& value) {
+				EditorHelper::DrawNodeControl("Sprite", m_Output, [&](auto& value) {
 
 					glm::vec4 border = CalcBorders(value);
 					const char* names[4] = {
 						 "L", "B", "R", "T"
 					};
-					EditorHelper::DrawVec4Control("Border", names, border, 0.0f, 65.0f);
+					EditorHelper::DrawVec4Control2x2("Border", names, border, 0.0f, 65.0f);
 					SetBorder(value, border);
+
+					EditorHelper::BeginColumns("Name", 2, 65.0f);
+					ImGui::InputText("##Name", m_OutputPath, _MAX_PATH);
+					EditorHelper::EndColumns();
+
+					if (ImGui::Button("Save"))
+					{
+						std::string name = Utils::GetFilenameWithoutExtension(m_OutputPath);
+						std::string path = Utils::GetDirectoryPath(m_OutputPath);
+						AssetManager::CreateAsset<SubTexture>(name + ".subtex", AssetType::SubTexture, AssetManager::GetDirectoryHandle(path), m_Context, m_Output->GetTexCoords());
+					}
 				});
 			}
 			ImGui::EndChild();

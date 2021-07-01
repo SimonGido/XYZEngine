@@ -19,6 +19,12 @@ namespace XYZ::Utils {
 		return filepath.substr(offset, count);
 	}
 
+	std::string GetDirectoryPath(const std::string& filepath)
+	{
+		size_t offset = filepath.find_last_of("/\\");
+		return filepath.substr(0, offset);
+	}
+
 	std::string GetExtension(const std::string& filename)
 	{
 		std::vector<std::string> parts = SplitString(filename, '.');

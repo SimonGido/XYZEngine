@@ -25,6 +25,7 @@ namespace XYZ {
 		static void DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f);
 		static void DrawVec3ControlRGB(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f);
 		static void DrawVec4Control(const std::string& label, const char* names[4], glm::vec4& values, float resetValue = 0.0f, float columnWidth = 100.0f);
+		static void DrawVec4Control2x2(const std::string& label, const char* names[4], glm::vec4& values, float resetValue = 0.0f, float columnWidth = 100.0f);
 		static void DrawColorControl(const std::string& label, glm::vec4& values, float resetValue = 1.0f, float columnWidth = 100.0f);
 		static void DrawSplitter(bool splitHorizontally, float thickness, float* size0, float* size1, float minSize0, float minSize1);
 	};

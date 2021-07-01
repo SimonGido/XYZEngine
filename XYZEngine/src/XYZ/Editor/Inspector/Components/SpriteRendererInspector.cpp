@@ -13,7 +13,7 @@ namespace XYZ {
 	}
 	bool SpriteRendererInspector::OnEditorRender()
 	{
-		return EditorHelper::DrawComponent<SpriteRenderer>("Sprite Renderer", m_Context, [&](auto& component) {
+		bool result = EditorHelper::DrawComponent<SpriteRenderer>("Sprite Renderer", m_Context, [&](auto& component) {
 
 			EditorHelper::DrawColorControl("Color", component.Color);
 			// Material
@@ -79,6 +79,8 @@ namespace XYZ {
 
 		if (m_Dialog && m_DialogOpen)
 			m_Dialog();
+
+		return result;
 	}
 
 	void SpriteRendererInspector::selectSubTextureDialog()

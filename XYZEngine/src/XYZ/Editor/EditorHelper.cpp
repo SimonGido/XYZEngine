@@ -32,7 +32,6 @@ namespace XYZ {
 
 		ImGui::SameLine();
 		ImGui::DragFloat(dragLabel, &value, 0.05f, 0.0f, 0.0f, "%.2f");
-		ImGui::PopItemWidth();
 	}
 
 	void EditorHelper::DrawVec2Control(const std::string& label, glm::vec2& values, float resetValue, float columnWidth)
@@ -122,10 +121,47 @@ namespace XYZ {
 		DrawFloatControl(names[0], "##R", values.r, resetValue);
 		ImGui::SameLine();
 		DrawFloatControl(names[1], "##G", values.g, resetValue);
+		
 		ImGui::SameLine();
 		DrawFloatControl(names[2], "##B", values.b, resetValue);
 		ImGui::SameLine();
 		DrawFloatControl(names[3], "##A", values.a, resetValue);
+		
+		ImGui::PopItemWidth();
+		ImGui::PopItemWidth();
+		ImGui::PopItemWidth();
+		ImGui::PopItemWidth();
+
+
+		ImGui::PopStyleColor(3);
+		ImGui::PopStyleVar();
+		EndColumns();
+	}
+	void EditorHelper::DrawVec4Control2x2(const std::string& label, const char* names[4], glm::vec4& values, float resetValue, float columnWidth)
+	{
+		ImGuiIO& io = ImGui::GetIO();
+		auto boldFont = io.Fonts->Fonts[0];
+
+		BeginColumns(label.c_str(), 2, columnWidth);
+
+		ImGui::PushMultiItemsWidths(2, ImGui::CalcItemWidth());
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 5.0f });
+
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{ 0.5f, 0.5f, 0.5f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{ 0.6f, 0.6f, 0.6f, 1.0f });
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{ 0.65f, 0.65f, 0.65f, 1.0f });
+
+		DrawFloatControl(names[0], "##R", values.r, resetValue);
+		ImGui::SameLine();
+		DrawFloatControl(names[1], "##G", values.g, resetValue);
+
+		DrawFloatControl(names[2], "##B", values.b, resetValue);
+		ImGui::SameLine();
+		DrawFloatControl(names[3], "##A", values.a, resetValue);
+
+		ImGui::PopItemWidth();
+		ImGui::PopItemWidth();
+
 
 
 		ImGui::PopStyleColor(3);

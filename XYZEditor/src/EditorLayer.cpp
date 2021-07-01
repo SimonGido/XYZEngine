@@ -55,7 +55,9 @@ namespace XYZ {
 				m_Inspector.SetContext(&m_SceneEntityInspectorContext);
 			}
 		});
-		m_SpriteEditor.SetContext(Texture2D::Create({}, "Assets/Textures/player_sprite.png"));
+
+
+		m_SpriteEditor.SetContext(AssetManager::GetAsset<Texture2D>(AssetManager::GetAssetHandle("Assets/Textures/player_sprite.png.tex")));
 
 		auto entity = m_Scene->GetEntityByName("Scary Entity");
 		//gpuParticleExample(entity);
@@ -77,8 +79,7 @@ namespace XYZ {
 		Renderer::SetClearColor(glm::vec4(0.1f, 0.1f, 0.1f, 1.0f));
 		Renderer::Clear();
 
-		m_ScenePanel.OnUpdate(ts);
-		m_SpriteEditor.OnUpdate(ts);
+		
 
 		if (m_Scene->GetState() == SceneState::Play)
 		{
@@ -91,7 +92,10 @@ namespace XYZ {
 			m_Scene->OnRenderEditor(editorCamera, ts);
 			EditorRenderer::BeginPass(SceneRenderer::GetFinalRenderPass(), editorCamera.GetViewProjection(), editorCamera.GetPosition());
 			EditorRenderer::EndPass();
-		}		
+		}
+
+		m_ScenePanel.OnUpdate(ts);
+		m_SpriteEditor.OnUpdate(ts);
 	}
 
 	void EditorLayer::OnEvent(Event& event)

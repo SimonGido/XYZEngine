@@ -33,6 +33,7 @@ namespace XYZ {
 			Ref<SubTexture>		 m_Output;
 			EditorSpriteRenderer m_SpriteRenderer;
 			TransformComponent   m_Transform;
+			char				 m_OutputPath[_MAX_PATH];
 
 			Ref<RenderPass> m_RenderPass;
 			EditorCamera    m_Camera;
