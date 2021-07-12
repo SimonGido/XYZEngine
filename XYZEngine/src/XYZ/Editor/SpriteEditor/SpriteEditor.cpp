@@ -10,6 +10,9 @@
 
 #include <imgui.h>
 
+
+#include <filesystem>
+
 namespace XYZ {
 	namespace Editor {
 
@@ -163,7 +166,9 @@ namespace XYZ {
 					SetBorder(value, border);
 
 					EditorHelper::BeginColumns("Name", 2, 65.0f);
-					ImGui::PushItemWidth(ImGui::CalcItemWidth());
+					float spacing = 5.0f;
+					float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+					ImGui::PushItemWidth(ImGui::CalcItemWidth() + lineHeight * 2.0f - spacing);
 					ImGui::InputText("##Name", m_OutputPath, _MAX_PATH);
 					ImGui::PopItemWidth();
 					EditorHelper::EndColumns();
@@ -174,19 +179,23 @@ namespace XYZ {
 						if (!name.empty())
 						{
 							Application& app = Application::Get();
-							std::string path = FileSystem::OpenFolder(
+							std::string folderPath = FileSystem::OpenFolder(
 								app.GetWindow().GetNativeWindow(),
 								app.GetApplicationDir()
 							);
-							std::replace(path.begin(), path.end(), '\\', '/');
-							path = path.substr(app.GetApplicationDir().size() + 1, path.size() - app.GetApplicationDir().size());
-							if (!FileSystem::Exists(path + "/" + name + ".subtex"))
+							if (std::filesystem::is_directory(folderPath))
 							{
-								AssetManager::CreateAsset<SubTexture>(name + ".subtex", AssetType::SubTexture, AssetManager::GetDirectoryHandle(path), m_Context, m_Output->GetTexCoords());
-							}
-							else
-							{
-								XYZ_LOG_WARN("Asset with the same name already exists in the directory");
+								std::replace(folderPath.begin(), folderPath.end(), '\\', '/');
+								folderPath = folderPath.substr(app.GetApplicationDir().size() + 1, folderPath.size() - app.GetApplicationDir().size());
+
+								if (!FileSystem::Exists(folderPath + "/" + name + ".subtex"))
+								{
+									AssetManager::CreateAsset<SubTexture>(name + ".subtex", AssetType::SubTexture, AssetManager::GetDirectoryHandle(path), m_Context, m_Output->GetTexCoords());
+								}
+								else
+								{
+									XYZ_LOG_WARN("Asset with the same name already exists in the directory");
+								}
 							}
 						}
 						else

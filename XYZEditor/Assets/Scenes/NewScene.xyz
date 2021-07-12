@@ -14,7 +14,7 @@ Entities:
       SortLayer: 1
       Visible: true
     Relationship:
-      Parent: b0dcafc2-335d-4fb3-b5ff-6f31c0c54564
+      Parent: 29bd53da-2e0d-4df5-955e-e946a0d372d2
       PreviousSibling: 7d2ac969-0a31-46d7-98d5-ceb1b25c67af
     RigidBody2D:
       Type: 1
@@ -44,7 +44,7 @@ Entities:
       SortLayer: 0
       Visible: true
     Relationship:
-      Parent: b0dcafc2-335d-4fb3-b5ff-6f31c0c54564
+      Parent: 29bd53da-2e0d-4df5-955e-e946a0d372d2
       NextSibling: 83da08c4-02dd-482b-805d-73607200846c
       PreviousSibling: 028f6e22-ee3b-42cd-95f0-6c8130222131
     ChainCollider2D:
@@ -70,7 +70,7 @@ Entities:
       OrthographicNear: -1
       OrthographicFar: 1
     Relationship:
-      Parent: b0dcafc2-335d-4fb3-b5ff-6f31c0c54564
+      Parent: 29bd53da-2e0d-4df5-955e-e946a0d372d2
       NextSibling: 7d2ac969-0a31-46d7-98d5-ceb1b25c67af
       PreviousSibling: 88f308fd-785b-4833-b6f3-e89fb0996bb3
   - Entity: 88f308fd-785b-4833-b6f3-e89fb0996bb3
@@ -81,7 +81,7 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
-      Parent: b0dcafc2-335d-4fb3-b5ff-6f31c0c54564
+      Parent: 29bd53da-2e0d-4df5-955e-e946a0d372d2
       NextSibling: 028f6e22-ee3b-42cd-95f0-6c8130222131
       PreviousSibling: 5b984494-5db4-4ead-892b-9fadc86d4b52
     RigidBody2D:
@@ -99,7 +99,7 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
-      Parent: b0dcafc2-335d-4fb3-b5ff-6f31c0c54564
+      Parent: 29bd53da-2e0d-4df5-955e-e946a0d372d2
       NextSibling: 88f308fd-785b-4833-b6f3-e89fb0996bb3
       PreviousSibling: a1345771-51d8-47b2-ba0c-0ab1fa579971
     SpotLight2D:
@@ -116,7 +116,7 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
-      Parent: b0dcafc2-335d-4fb3-b5ff-6f31c0c54564
+      Parent: 29bd53da-2e0d-4df5-955e-e946a0d372d2
       NextSibling: 5b984494-5db4-4ead-892b-9fadc86d4b52
     PointLight2D:
       Color: [1.25, 0.100000001, 3.75]

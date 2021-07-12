@@ -22,7 +22,7 @@ namespace XYZ {
 		ImGuiIO& io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-		ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
+		ImVec2 buttonSize = { lineHeight , lineHeight };
 
 		ImGui::PushFont(boldFont);
 		if (ImGui::Button(label, buttonSize))
