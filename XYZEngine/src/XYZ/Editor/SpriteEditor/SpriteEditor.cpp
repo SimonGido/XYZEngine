@@ -190,7 +190,7 @@ namespace XYZ {
 
 								if (!FileSystem::Exists(folderPath + "/" + name + ".subtex"))
 								{
-									AssetManager::CreateAsset<SubTexture>(name + ".subtex", AssetType::SubTexture, AssetManager::GetDirectoryHandle(path), m_Context, m_Output->GetTexCoords());
+									AssetManager::CreateAsset<SubTexture>(name + ".subtex", AssetType::SubTexture, AssetManager::GetDirectoryHandle(folderPath), m_Context, m_Output->GetTexCoords());
 								}
 								else
 								{
