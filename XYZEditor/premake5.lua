@@ -17,6 +17,8 @@ project "XYZEditor"
 		{
 			"%{wks.location}/XYZEngine/vendor",
 			"%{wks.location}/XYZEngine/src",
+			"%{IncludeDir.ImGui}",
+			"%{IncludeDir.ImGuizmo}",
 			"%{IncludeDir.yaml}",
 			"%{IncludeDir.glm}",
 			"%{IncludeDir.Asio}",

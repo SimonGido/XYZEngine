@@ -2,10 +2,12 @@
 
 #include <XYZ.h>
 
+#include "Util/OrthographicCameraController.h"
+#include "Automata/Grid.h"
 
 namespace XYZ {
 
-	class GameLayer : public XYZ::Layer
+	class GameLayer : public Layer
 	{
 	public:
 		GameLayer();
@@ -15,25 +17,18 @@ namespace XYZ {
 		virtual void OnDetach() override;
 		virtual void OnUpdate(Timestep ts) override;
 		virtual void OnEvent(Event& event) override;
+		virtual void OnImGuiRender() override;
 
 	private:
 		bool onWindowResize(WindowResizeEvent& event);
 
 	private:
-		Ref<Scene> m_Scene;
+		OrthographicCameraController m_CameraController;
 
-		Editor::EditorCamera m_EditorCamera;
-
-		SceneEntity m_Entity;
-
-		bool m_CheckboxVal = false;
-		float m_Value = 0.1f;
-		float m_Test = 2.8f;
-		float m_Haha = 3.4f;
-
-		bool m_BranchOpen = true;
-		bool m_ChildrenOpen = true;
-		bool m_AnotherChildrenOpen = false;
+		Renderer2DStats m_RendererStats;
+		float			m_Timestep;
+		glm::vec2		m_MousePosition;
+		Project::Grid	m_Grid;
 	};
 
 }

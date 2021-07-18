@@ -10,12 +10,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace XYZ {	
-	struct Renderer2DStats
-	{
-		uint32_t DrawCalls = 0;
-		uint32_t LineDrawCalls = 0;
-		uint32_t CollisionDrawCalls = 0;
-	};
+
 
 	struct Vertex2D
 	{
@@ -70,9 +65,9 @@ namespace XYZ {
 		Ref<Shader>   CollisionShader;
 		Ref<Shader>   PointShader;
 		
-
-		Ref<Texture> TextureSlots[MaxTextures];
-		uint32_t	 TextureSlotIndex = 0;
+		Ref<Texture2D> WhiteTexture;
+		Ref<Texture>   TextureSlots[MaxTextures];
+		uint32_t	   TextureSlotIndex = 0;
 	
 		Ref<VertexArray>  GridVertexArray;
 		Ref<VertexArray>  QuadVertexArray;
@@ -130,7 +125,15 @@ namespace XYZ {
 	{
 		if (!BufferBase)
 		{
+			// Setup material and default white texture
 			DefaultQuadMaterial = Ref<Material>::Create(Shader::Create("Assets/Shaders/DefaultShader.glsl"));
+			WhiteTexture = Texture2D::Create(1, 1, 4, {});
+			uint32_t whiteTextureData = 0xffffffff;
+			WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
+			DefaultQuadMaterial->Set("u_Texture", WhiteTexture);
+			DefaultQuadMaterial->Set("u_Color", glm::vec4(1.0f));
+		
+			// Setup buffers
 			BufferBase = new Vertex2D[MaxVertices];
 			QuadVertexArray = VertexArray::Create();
 			QuadVertexBuffer = VertexBuffer::Create(MaxVertices * sizeof(Vertex2D));
@@ -314,6 +317,7 @@ namespace XYZ {
 
 		// Release all the resources used by renderer
 		s_Data.DefaultQuadMaterial.Reset();
+		s_Data.WhiteTexture.Reset();
 		s_Data.QuadMaterial.Reset();
 		s_Data.GridMaterial.Reset();
 		s_Data.LineShader.Reset();
@@ -472,6 +476,30 @@ namespace XYZ {
 			s_Data.BufferPtr->Color = color;
 			s_Data.BufferPtr->TexCoord = texCoords[i];
 			s_Data.BufferPtr->TextureID = (float)textureID;
+			s_Data.BufferPtr->TilingFactor = tilingFactor;
+			s_Data.BufferPtr++;
+		}
+		s_Data.IndexCount += 6;
+	}
+
+	void Renderer2D::SubmitQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color, float tilingFactor)
+	{
+		constexpr size_t quadVertexCount = 4;
+		if (s_Data.IndexCount >= s_Data.MaxIndices)
+			Flush();
+
+		glm::vec3 vertices[quadVertexCount] = {
+			{  position.x - size.x / 2.0f,  position.y - size.y / 2.0f, 0.0f},
+			{  position.x + size.x / 2.0f,  position.y - size.y / 2.0f, 0.0f},
+			{  position.x + size.x / 2.0f,  position.y + size.y / 2.0f, 0.0f},
+			{  position.x - size.x / 2.0f,  position.y + size.y / 2.0f, 0.0f}
+		};
+		for (size_t i = 0; i < quadVertexCount; ++i)
+		{
+			s_Data.BufferPtr->Position = vertices[i];
+			s_Data.BufferPtr->Color = color;
+			s_Data.BufferPtr->TexCoord = glm::vec2(0);
+			s_Data.BufferPtr->TextureID = 0.0f;
 			s_Data.BufferPtr->TilingFactor = tilingFactor;
 			s_Data.BufferPtr++;
 		}
@@ -638,5 +666,9 @@ namespace XYZ {
 		s_Data.Stats.DrawCalls = 0;
 		s_Data.Stats.LineDrawCalls = 0;
 		s_Data.Stats.CollisionDrawCalls = 0;
+	}
+	const Renderer2DStats& Renderer2D::GetStats()
+	{
+		return s_Data.Stats;
 	}
 }

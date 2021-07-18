@@ -1,83 +1,85 @@
-Scene: Test Scene
+Scene: Scene
 Entities:
-  - Entity: "{93EF9084-8E06-4BBC-BBB9-0EFBD6BBEC9A}"
+  - Entity: 9cede06b-a169-4d21-9eb3-be4e56768e90
     SceneTagComponent:
-      Name: Main Camera
+      Name: ScaryEntity
     TransformComponent:
-      Position: [-7.56528664, -15.2381783, 0]
+      Position: [-1.80374277, -1.48500061, 0]
+      Rotation: [0, -0, 3.55987879e-08]
+      Scale: [1, 1, 1]
+    SpriteRenderer:
+      MaterialAsset: 6b8ecf40-b3aa-4a26-a497-d7cdda43afba
+      SubTextureAsset: 3680b0a1-ae15-4e4b-abb3-89892fe9cb37
+      Color: [1, 1, 1, 0.899999976]
+      SortLayer: 2
+      Visible: true
+    Relationship:
+      Parent: 5b6e1732-3da4-4b7f-a80c-b1cb2b00ad34
+      PreviousSibling: f2d79dc5-7e83-4bb6-964d-2545e0c1328a
+    RigidBody2D:
+      Type: 1
+    BoxCollider2D:
+      Size: [1, 1]
+      Density: 1
+      Friction: 0
+    ScriptComponent:
+      ModuleName: Example.Script
+      Test: Pes
+      VerticalSpeed: 5
+      ImpulseStrength: 0.5
+      Rotation: 0
+      Velocity: [0, 0, 0]
+  - Entity: f2d79dc5-7e83-4bb6-964d-2545e0c1328a
+    SceneTagComponent:
+      Name: Background
+    TransformComponent:
+      Position: [-0.25, 1.14999998, -0.0500000007]
+      Rotation: [0, 0, 0]
+      Scale: [8.94999981, 7.5, 1]
+    SpriteRenderer:
+      MaterialAsset: 6b8ecf40-b3aa-4a26-a497-d7cdda43afba
+      SubTextureAsset: b68d1017-b960-44d1-b7db-ca65a2db6aee
+      Color: [1, 1, 1, 1]
+      SortLayer: 0
+      Visible: true
+    Relationship:
+      Parent: 5b6e1732-3da4-4b7f-a80c-b1cb2b00ad34
+      NextSibling: 9cede06b-a169-4d21-9eb3-be4e56768e90
+      PreviousSibling: c527a98e-60b8-4d61-8efd-e8a7a32eb34e
+    RigidBody2D:
+      Type: 0
+  - Entity: c527a98e-60b8-4d61-8efd-e8a7a32eb34e
+    SceneTagComponent:
+      Name: Camera
+    TransformComponent:
+      Position: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     CameraComponent:
       ProjectionType: 0
-      PerspectiveFOV: 61
+      PerspectiveFOV: 1
       PerspectiveNear: 0.00999999978
       PerspectiveFar: 10000
-      OrthographicSize: 36
+      OrthographicSize: 5
       OrthographicNear: -1
       OrthographicFar: 1
-  - Entity: "{20B7B59C-CA1A-419C-9C30-B59C85BF69EA}"
+    Relationship:
+      Parent: 5b6e1732-3da4-4b7f-a80c-b1cb2b00ad34
+      NextSibling: f2d79dc5-7e83-4bb6-964d-2545e0c1328a
+      PreviousSibling: f5e3d397-5baa-49bb-83ac-218dedbc456a
+  - Entity: f5e3d397-5baa-49bb-83ac-218dedbc456a
     SceneTagComponent:
-      Name: Test Entity
+      Name: Ground
     TransformComponent:
-      Position: [11.5751724, -13.1587791, 0.5]
-      Rotation: [0, 0, 0]
-      Scale: [7.75337791, 9.20939827, 1]
-    SpriteRenderer:
-      MaterialAssetPath: Assets/Materials/New_Material.mat
-      SubTextureAssetPath: Assets/SubTextures/New_SubTexture.subtex
-      Color: [0.992172241, 0.996078432, 0.996078432, 1]
-      SortLayer: 5
-      IsVisible: true
-  - Entity: "{CE0C06EC-2EA2-44AE-9D4D-238AF5A4E8E6}"
-    SceneTagComponent:
-      Name: Test
-    TransformComponent:
-      Position: [21.0612316, -19.1210003, 0.5]
-      Rotation: [0, 0, 0]
-      Scale: [10.1579437, 12.8600006, 1]
-    SpriteRenderer:
-      MaterialAssetPath: Assets/Materials/New_Material.mat
-      SubTextureAssetPath: Assets/SubTextures/New_SubTexture.subtex
-      Color: [1, 1, 1, 1]
-      SortLayer: 1
-      IsVisible: true
-  - Entity: "{26B86D3F-BCBB-4FDC-B50B-97621629D76A}"
-    SceneTagComponent:
-      Name: Background
-    TransformComponent:
-      Position: [-6.71537018, -12.3699999, -10]
-      Rotation: [0, 0, 0]
-      Scale: [76, 46.4879799, 1]
-    SpriteRenderer:
-      MaterialAssetPath: Assets/Materials/New_Material.mat
-      SubTextureAssetPath: Assets/SubTextures/Backgroundfield.subtex
-      Color: [1, 1, 1, 1]
-      SortLayer: 0
-      IsVisible: true
-  - Entity: "{26B86D3F-BCBB-4FDC-B50B-97621629D76A}"
-    SceneTagComponent:
-      Name: Background
-    TransformComponent:
-      Position: [-6.71537018, -12.3699999, -20]
-      Rotation: [0, 0, 0]
-      Scale: [76, 46.4879799, 1]
-    SpriteRenderer:
-      MaterialAssetPath: Assets/Materials/New_Material.mat
-      SubTextureAssetPath: Assets/SubTextures/Backgroundfield.subtex
-      Color: [1, 1, 1, 1]
-      SortLayer: 0
-      IsVisible: true
-  - Entity: "{886D172D-0D18-426A-9EE5-E71866508A71}"
-    SceneTagComponent:
-      Name: Light
-    TransformComponent:
-      Position: [-19.4020004, -4.81110001, 5]
+      Position: [-0.200000003, -2.5, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-  - Entity: "{B8A7616A-93DF-4A45-A64D-F8F3645E3AE0}"
-    SceneTagComponent:
-      Name: Light2
-    TransformComponent:
-      Position: [25.459465, 7.94594574, 2]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 5b6e1732-3da4-4b7f-a80c-b1cb2b00ad34
+      NextSibling: c527a98e-60b8-4d61-8efd-e8a7a32eb34e
+    RigidBody2D:
+      Type: 0
+    BoxCollider2D:
+      Size: [10.0500002, 1]
+      Density: 1
+      Friction: 0

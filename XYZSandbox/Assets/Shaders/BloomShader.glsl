@@ -23,7 +23,7 @@ in vec2 v_TexCoords;
 
 
 uniform float u_Exposure;
-uniform sampler2D u_Texture;
+layout (binding = 0) uniform sampler2D u_Texture;
 
 const vec3 c_Luminance = vec3(0.2126, 0.7152, 0.0722);
 
@@ -33,8 +33,8 @@ void main()
 
     float brightness = dot(color.rgb, c_Luminance);
 	if (brightness > 1.0)
-		o_Color = color * u_Exposure;
+		o_Color = vec4(color * u_Exposure);
 	else
-		o_Color = vec4(0.0,0.0,0.0,0.0);
+		o_Color = vec4(0.0, 0.0, 0.0, 0.0);
 
 }

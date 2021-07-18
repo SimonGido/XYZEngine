@@ -32,7 +32,13 @@ project "XYZEngine"
 			"vendor/asio/include/**.h",
 
 			"vendor/ImGuizmo/ImGuizmo.h",
-			"vendor/ImGuizmo/ImGuizmo.cpp"
+			"vendor/ImGuizmo/ImGuizmo.cpp",
+
+			"vendor/ImGuizmo/ImCurveEdit.h",
+			"vendor/ImGuizmo/ImCurveEdit.cpp",
+
+			"vendor/ImGuizmo/ImSequencer.h",
+			"vendor/ImGuizmo/ImSequencer.cpp"
 		}
 
 		defines

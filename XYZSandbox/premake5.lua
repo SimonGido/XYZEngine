@@ -18,6 +18,8 @@ project "XYZSandbox"
 			"%{wks.location}/XYZEngine/vendor/yaml-cpp/include",
 			"%{wks.location}/XYZEngine/vendor",
 			"%{wks.location}/XYZEngine/src",
+			"%{IncludeDir.ImGui}",
+			"%{IncludeDir.ImGuizmo}",
 			"%{IncludeDir.glm}",
 			"%{IncludeDir.Asio}",
 			"%{IncludeDir.Lua}",

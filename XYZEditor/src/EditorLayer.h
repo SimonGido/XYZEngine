@@ -37,22 +37,22 @@ namespace XYZ {
 	private:
 		enum Editors
 		{
-			SpriteEditor, NumEditors
+			SpriteEditor, AnimationEditor, NumEditors
 		};
 		bool m_EditorOpen[NumEditors];
 		
 		Ref<Scene> m_Scene;
 		Editor::SceneHierarchyPanel m_SceneHierarchy;
-		Editor::InspectorPanel m_Inspector;
-		Editor::ScenePanel m_ScenePanel;
-		Editor::AssetBrowser m_AssetBrowser;
-		Editor::SkinningEditor m_SkinningEditor;
-		Editor::SpriteEditor   m_SpriteEditor;
+		Editor::InspectorPanel	    m_Inspector;
+		Editor::ScenePanel		    m_ScenePanel;
+		Editor::AssetBrowser	    m_AssetBrowser;
+		Editor::SkinningEditor	    m_SkinningEditor;
+		Editor::SpriteEditor	    m_SpriteEditor;
+		Editor::AnimationEditor	    m_AnimationEditor;
 
 		Editor::SceneEntityInspectorContext m_SceneEntityInspectorContext;
 		Editor::AssetInspectorContext	    m_AssetInspectorContext;
 	private:	
 		SceneEntity m_SelectedEntity;
-
 	};
 }

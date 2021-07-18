@@ -1,0 +1,364 @@
+XYZ::readShaderFromFile: Assertion Failed: Could not load shader!
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenglCallbackFunction: Error GL_INVALID_OPERATION error generated. No active program.
+XYZ::OpenglCallbackFunction: ID: 1282
+XYZ::OpenglCallbackFunction: Severity: HIGH
+XYZ::OpenglCallbackFunction: Error GL_INVALID_OPERATION error generated. Target buffer must be bound and not overlapped with mapping range.
+XYZ::OpenglCallbackFunction: ID: 1282
+XYZ::OpenglCallbackFunction: Severity: HIGH
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenglCallbackFunction: Error GL_INVALID_OPERATION error generated. No active program.
+XYZ::OpenglCallbackFunction: ID: 1282
+XYZ::OpenglCallbackFunction: Severity: HIGH
+XYZ::OpenglCallbackFunction: Error GL_INVALID_OPERATION error generated. Target buffer must be bound and not overlapped with mapping range.
+XYZ::OpenglCallbackFunction: ID: 1282
+XYZ::OpenglCallbackFunction: Severity: HIGH
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenglCallbackFunction: Error GL_INVALID_OPERATION error generated. No active program.
+XYZ::OpenglCallbackFunction: ID: 1282
+XYZ::OpenglCallbackFunction: Severity: HIGH
+XYZ::OpenglCallbackFunction: Error GL_INVALID_OPERATION error generated. Target buffer must be bound and not overlapped with mapping range.
+XYZ::OpenglCallbackFunction: ID: 1282
+XYZ::OpenglCallbackFunction: Severity: HIGH
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::ByteBuffer::Write: Assertion Failed: Buffer overflow!
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::WindowResizeEvent::WindowResizeEvent: Window: Resized window width: 1920 height: 1061
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::WindowResizeEvent::WindowResizeEvent: Window: Resized window width: 1920 height: 1061
+XYZ::WindowResizeEvent::WindowResizeEvent: Window: Resized window width: 1920 height: 1017
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed

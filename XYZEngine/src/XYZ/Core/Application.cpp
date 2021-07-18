@@ -50,7 +50,7 @@ namespace XYZ {
 			float timestep = time - m_LastFrameTime;
 			m_LastFrameTime = time;
 			{
-				//Stopwatch watch;				
+				//Scopewatch watch;				
 			
 				for (Layer* layer : m_LayerStack)	
 					layer->OnUpdate(timestep);	

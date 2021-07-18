@@ -6,12 +6,16 @@ layout(location = 1) in int a_ObjectID;
 
 out flat int v_ObjectID;
 
-uniform mat4 u_ViewProjectionMatrix;
+layout(std140, binding = 0) uniform Camera
+{
+	mat4 u_ViewProjection;
+	vec4 u_ViewPosition;
+};
 
 void main()
 {
 	v_ObjectID = a_ObjectID;
-	gl_Position = u_ViewProjectionMatrix * vec4(a_Position, 1.0);
+	gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
 }
 
 
@@ -20,9 +24,9 @@ void main()
 
 layout(location = 2) out int o_IDBuffer;
 
-in flat int a_ObjectID;
+in flat int v_ObjectID;
 
 void main()
 {
-	o_IDBuffer = a_ObjectID;
+	o_IDBuffer = v_ObjectID;
 }
