@@ -17,6 +17,10 @@ namespace XYZ {
 			Ref<Animation> m_Context;
 
 			AnimationSequencer m_Sequencer;
+			int				   m_SelectedEntry;
+			int				   m_FirstFrame;
+			int				   m_CurrentFrame;
+			bool			   m_Expanded;
 		};
 	}
 }

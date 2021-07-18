@@ -9,7 +9,7 @@ namespace XYZ {
 			:
 			m_FrameMin(0), 
 			m_FrameMax(0),
-			m_Height(300)
+			m_Height(200)
 		{
 		}
 		const char* AnimationSequencer::GetItemLabel(int index) const
@@ -47,54 +47,49 @@ namespace XYZ {
 		void AnimationSequencer::CustomDraw(int index, ImDrawList* draw_list, const ImRect& rc, const ImRect& legendRect, const ImRect& clippingRect, const ImRect& legendClippingRect)
 		{
 			draw_list->PushClipRect(legendClippingRect.Min, legendClippingRect.Max, true);
-			for (auto& item : m_Items)
+			
+			auto& item = m_Items[index];		
+			item.LineEdit.m_Max = ImVec2(float(m_FrameMax), 1.f);
+			item.LineEdit.m_Min = ImVec2(float(m_FrameMin), 0.f);
+			int i = 0;
+			for (auto& line : item.LineEdit.GetLines())
 			{
-				item.LineEdit.m_Max = ImVec2(float(m_FrameMax), 1.f);
-				item.LineEdit.m_Min = ImVec2(float(m_FrameMin), 0.f);
-				int i = 0;
-				for (auto& line : item.LineEdit.GetLines())
-				{
-					ImVec2 pta(legendRect.Min.x + 30, legendRect.Min.y + i * 14.f);
-					ImVec2 ptb(legendRect.Max.x, legendRect.Min.y + (i + 1) * 14.f);
-					draw_list->AddText(pta, line.Selected ? 0xFFFFFFFF : 0x80FFFFFF, line.Name.c_str());
-					if (ImRect(pta, ptb).Contains(ImGui::GetMousePos()) && ImGui::IsMouseClicked(0))
-						item.LineEdit.SetSelected(i);
-					i++;
-				}
+				ImVec2 pta(legendRect.Min.x + 30, legendRect.Min.y + i * 14.f);
+				ImVec2 ptb(legendRect.Max.x, legendRect.Min.y + (i + 1) * 14.f);
+				draw_list->AddText(pta, line.Selected ? 0xFFFFFFFF : 0x80FFFFFF, line.Name.c_str());
+				if (ImRect(pta, ptb).Contains(ImGui::GetMousePos()) && ImGui::IsMouseClicked(0))
+					item.LineEdit.SetSelected(i);
+				i++;
 			}
+		
 
 			draw_list->PopClipRect();
 		
 			ImGui::SetCursorScreenPos(rc.Min);
 			ImVec2 size(rc.Max.x - rc.Min.x, rc.Max.y - rc.Min.y);
-			for (auto& item : m_Items)
-			{
-				ImCurveEdit::Edit(item.LineEdit, size, 137 + index, &clippingRect);
-			}
+
+			ImCurveEdit::Edit(item.LineEdit, size, 137 + index, &clippingRect);
 		}
 		void AnimationSequencer::CustomDrawCompact(int index, ImDrawList* draw_list, const ImRect& rc, const ImRect& clippingRect)
 		{
 			draw_list->PushClipRect(clippingRect.Min, clippingRect.Max, true);
-		
-			for (auto& item : m_Items)
+			auto& item = m_Items[index];
+			
+			item.LineEdit.m_Max = ImVec2(float(m_FrameMax), 1.f);
+			item.LineEdit.m_Min = ImVec2(float(m_FrameMin), 0.f);
+			for (auto& line : item.LineEdit.GetLines())
 			{
-				item.LineEdit.m_Max = ImVec2(float(m_FrameMax), 1.f);
-				item.LineEdit.m_Min = ImVec2(float(m_FrameMin), 0.f);
-				for (auto& line : item.LineEdit.GetLines())
+				for (auto& point : line.Points)
 				{
-					for (auto& point : line.Points)
-					{
-						float p = point.x;
-						if (p < m_Items[index].FrameStart || p > m_Items[index].FrameEnd)
-							continue;
-						float r = (p - m_FrameMin) / float(m_FrameMax - m_FrameMin);
-						float x = ImLerp(rc.Min.x, rc.Max.x, r);
-						draw_list->AddLine(ImVec2(x, rc.Min.y + 6), ImVec2(x, rc.Max.y - 4), 0xAA000000, 4.f);
-					}
+					float p = point.x;
+					if (p < m_Items[index].FrameStart || p > m_Items[index].FrameEnd)
+						continue;
+					float r = (p - m_FrameMin) / float(m_FrameMax - m_FrameMin);
+					float x = ImLerp(rc.Min.x, rc.Max.x, r);
+					draw_list->AddLine(ImVec2(x, rc.Min.y + 6), ImVec2(x, rc.Max.y - 4), 0xAA000000, 4.f);
 				}
 			}
 			draw_list->PopClipRect();
 		}
-
 	}
 }

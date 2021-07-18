@@ -48,6 +48,29 @@ namespace XYZ {
             for (size_t i = 0; i < m_Lines.size(); ++i)
                 m_Lines[i].Selected = false;
         }
+        const SequenceLineEdit::Line* SequenceLineEdit::GetSelectedLine() const
+        {
+            for (auto& line : m_Lines)
+            {
+                if (line.Selected)
+                    return &line;
+            }
+            return nullptr;
+        }
+        bool SequenceLineEdit::GetSelectedIndex(size_t& index) const
+        {
+            size_t counter = 0;
+            for (auto& line : m_Lines)
+            {
+                if (line.Selected)
+                {
+                    index = counter;
+                    return true;
+                }
+                counter++;
+            }
+            return false;
+        }
         void SequenceLineEdit::sortValues(size_t curveIndex)
         {
             std::sort(m_Lines[curveIndex].Points.begin(), m_Lines[curveIndex].Points.end(),

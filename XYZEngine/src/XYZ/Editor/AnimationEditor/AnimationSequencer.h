@@ -32,7 +32,7 @@ namespace XYZ {
             virtual int GetFrameMax() const override { return m_FrameMax; }
             virtual int GetItemCount() const  override { return (int)m_Items.size(); }
 
-            virtual int GetItemTypeCount() const override { return (int)m_SequencerItemTypes.size(); }
+            virtual int         GetItemTypeCount() const override { return (int)m_SequencerItemTypes.size(); }
             virtual const char* GetItemTypeName(int typeIndex) const override { return m_SequencerItemTypes[typeIndex].Name.c_str(); }
             virtual const char* GetItemLabel(int index) const override;
            

@@ -39,7 +39,9 @@ namespace XYZ {
             void Deselect();
       
             const std::vector<Line>& GetLines() const { return m_Lines; }
-            
+            const Line*              GetSelectedLine() const;
+            bool                     GetSelectedIndex(size_t& index) const;
+
 
             ImVec2 m_Min;
             ImVec2 m_Max;
