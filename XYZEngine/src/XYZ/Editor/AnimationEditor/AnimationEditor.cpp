@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include "AnimationEditor.h"
 
+#include "XYZ/Animation/TransformTrack.h"
+#include "XYZ/Scene/Components.h"
+
 #include <imgui.h>
 #include <ImSequencer.h>
 
@@ -15,28 +18,16 @@ namespace XYZ {
 		{
 			m_Sequencer.m_FrameMin = 0;
 			m_Sequencer.m_FrameMax = 100;
-			
-			m_Sequencer.AddItemType("Transform");
-			m_Sequencer.AddItemType("Sprite");
-
-			m_Sequencer.m_Items.push_back(AnimationSequencer::SequenceItem{ 0, 10, 30, false,{} });
-			m_Sequencer.m_Items.push_back(AnimationSequencer::SequenceItem{ 1, 20, 30, false,{} });			
-		
-			m_Sequencer.m_Items[0].LineEdit.AddLine("Translation");
-			m_Sequencer.m_Items[0].LineEdit.AddLine("Rotation");
-			m_Sequencer.m_Items[0].LineEdit.AddLine("Scale");
-
-
-			m_Sequencer.m_Items[1].LineEdit.AddLine("Sprite");
-
-
-			m_Sequencer.m_Items[0].LineEdit.AddPoint(0, ImVec2{ 0.0f, 0.0f });
-			m_Sequencer.m_Items[0].LineEdit.AddPoint(1, ImVec2{ 0.0f, 0.0f });
-			m_Sequencer.m_Items[0].LineEdit.AddPoint(2, ImVec2{ 0.0f, 0.0f });
 		}
 		void AnimationEditor::SetContext(const Ref<Animation>& context)
 		{
-			m_Context = context;			
+			m_Context = context;		
+			auto transformTrack = m_Context->FindTrack<TransformTrack>();
+			if (transformTrack.Raw())
+			{
+				m_Sequencer.AddSequencerItemType("Transform", { "Translation", "Rotation", "Scale" });
+				m_Sequencer.Add(0);
+			}
 		}
 		void AnimationEditor::OnImGuiRender(bool& open)
 		{
@@ -66,6 +57,22 @@ namespace XYZ {
 					if (selected && addKey)
 					{
 						item.LineEdit.AddPoint(index, ImVec2{ (float)m_CurrentFrame, 0.0f });
+						auto transformTrack = m_Context->FindTrack<TransformTrack>();	
+						auto& transform = transformTrack->GetSceneEntity().GetComponent<TransformComponent>();
+					
+						if (index == 0)
+						{
+							transformTrack->AddKeyFrame({ transform.Translation, m_CurrentFrame / 10.0f}, TransformTrack::PropertyType::Translation);
+						}
+						else if (index == 1)
+						{
+							transformTrack->AddKeyFrame({ transform.Rotation, m_CurrentFrame / 10.0f }, TransformTrack::PropertyType::Rotation);
+						}
+						else if (index == 2)
+						{
+							transformTrack->AddKeyFrame({ transform.Scale, m_CurrentFrame / 10.0f }, TransformTrack::PropertyType::Scale);
+						}
+						m_Context->UpdateLength();
 					}
 				}
 			}

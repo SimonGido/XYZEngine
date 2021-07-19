@@ -13,6 +13,7 @@ namespace XYZ {
 		virtual void  Reset() = 0;
 		virtual float Length() = 0;
 
+		SceneEntity GetSceneEntity() const { return m_Entity; }
 	protected:
 		SceneEntity m_Entity;
 	};

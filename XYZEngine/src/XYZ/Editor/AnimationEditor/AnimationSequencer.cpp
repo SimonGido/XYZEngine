@@ -8,8 +8,7 @@ namespace XYZ {
 		AnimationSequencer::AnimationSequencer()
 			:
 			m_FrameMin(0), 
-			m_FrameMax(0),
-			m_Height(200)
+			m_FrameMax(0)
 		{
 		}
 		const char* AnimationSequencer::GetItemLabel(int index) const
@@ -31,6 +30,21 @@ namespace XYZ {
 				*type = item.Type;
 		}
 
+		void AnimationSequencer::Add(int type)
+		{
+			m_Items.push_back(SequenceItem{ type, 0, 1, false, {} });
+			auto& item = m_Items.back();
+			size_t numLines = m_SequencerItemTypes[type].SubTypes.size();
+			for (size_t i = 0; i < numLines; ++i)
+				item.LineEdit.AddLine(i);
+		};
+
+		size_t AnimationSequencer::GetCustomHeight(int index)
+		{
+			auto& item = m_Items[index];
+			return item.Expanded ? m_SequencerItemTypes[item.Type].Height : 0;
+		}
+
 		void AnimationSequencer::DoubleClick(int index)
 		{
 			if (m_Items[index].Expanded)
@@ -49,14 +63,14 @@ namespace XYZ {
 			draw_list->PushClipRect(legendClippingRect.Min, legendClippingRect.Max, true);
 			
 			auto& item = m_Items[index];		
-			item.LineEdit.m_Max = ImVec2(float(m_FrameMax), 1.f);
-			item.LineEdit.m_Min = ImVec2(float(m_FrameMin), 0.f);
+			item.LineEdit.GetMax() = ImVec2(float(m_FrameMax), 1.f);
+			item.LineEdit.GetMin() = ImVec2(float(m_FrameMin), 0.f);
 			int i = 0;
 			for (auto& line : item.LineEdit.GetLines())
 			{
 				ImVec2 pta(legendRect.Min.x + 30, legendRect.Min.y + i * 14.f);
 				ImVec2 ptb(legendRect.Max.x, legendRect.Min.y + (i + 1) * 14.f);
-				draw_list->AddText(pta, line.Selected ? 0xFFFFFFFF : 0x80FFFFFF, line.Name.c_str());
+				draw_list->AddText(pta, line.Selected ? 0xFFFFFFFF : 0x80FFFFFF, m_SequencerItemTypes[item.Type].SubTypes[line.Type].c_str());
 				if (ImRect(pta, ptb).Contains(ImGui::GetMousePos()) && ImGui::IsMouseClicked(0))
 					item.LineEdit.SetSelected(i);
 				i++;
@@ -75,8 +89,8 @@ namespace XYZ {
 			draw_list->PushClipRect(clippingRect.Min, clippingRect.Max, true);
 			auto& item = m_Items[index];
 			
-			item.LineEdit.m_Max = ImVec2(float(m_FrameMax), 1.f);
-			item.LineEdit.m_Min = ImVec2(float(m_FrameMin), 0.f);
+			item.LineEdit.GetMax() = ImVec2(float(m_FrameMax), 1.f);
+			item.LineEdit.GetMin() = ImVec2(float(m_FrameMin), 0.f);
 			for (auto& line : item.LineEdit.GetLines())
 			{
 				for (auto& point : line.Points)
@@ -90,6 +104,10 @@ namespace XYZ {
 				}
 			}
 			draw_list->PopClipRect();
+		}
+		void AnimationSequencer::AddSequencerItemType(const std::string& name, const std::initializer_list<std::string>& subTypes)
+		{
+			m_SequencerItemTypes.push_back({ name, subTypes });
 		}
 	}
 }

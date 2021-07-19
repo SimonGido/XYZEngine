@@ -1662,3 +1662,158 @@ XYZ::OpenglCallbackFunction: Performance: Program/shader state performance warni
 XYZ::OpenglCallbackFunction: ID: 131218
 XYZ::OpenglCallbackFunction: Severity: MEDIUM
 XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScriptCore.dll
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScript.dll
+XYZ::OpenglCallbackFunction: Performance: Program/shader state performance warning: Vertex shader in program 12 is being recompiled based on GL state.
+XYZ::OpenglCallbackFunction: ID: 131218
+XYZ::OpenglCallbackFunction: Severity: MEDIUM
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScriptCore.dll
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScript.dll
+XYZ::OpenglCallbackFunction: Performance: Program/shader state performance warning: Vertex shader in program 12 is being recompiled based on GL state.
+XYZ::OpenglCallbackFunction: ID: 131218
+XYZ::OpenglCallbackFunction: Severity: MEDIUM
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScriptCore.dll
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScript.dll
+XYZ::OpenglCallbackFunction: Performance: Program/shader state performance warning: Vertex shader in program 12 is being recompiled based on GL state.
+XYZ::OpenglCallbackFunction: ID: 131218
+XYZ::OpenglCallbackFunction: Severity: MEDIUM
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScriptCore.dll
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScript.dll
+XYZ::OpenglCallbackFunction: Performance: Program/shader state performance warning: Vertex shader in program 12 is being recompiled based on GL state.
+XYZ::OpenglCallbackFunction: ID: 131218
+XYZ::OpenglCallbackFunction: Severity: MEDIUM
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScriptCore.dll
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScript.dll
+XYZ::OpenglCallbackFunction: Performance: Program/shader state performance warning: Vertex shader in program 12 is being recompiled based on GL state.
+XYZ::OpenglCallbackFunction: ID: 131218
+XYZ::OpenglCallbackFunction: Severity: MEDIUM
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScriptCore.dll
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScript.dll
+XYZ::OpenglCallbackFunction: Performance: Program/shader state performance warning: Vertex shader in program 12 is being recompiled based on GL state.
+XYZ::OpenglCallbackFunction: ID: 131218
+XYZ::OpenglCallbackFunction: Severity: MEDIUM
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScriptCore.dll
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScript.dll
+XYZ::OpenglCallbackFunction: Performance: Program/shader state performance warning: Vertex shader in program 12 is being recompiled based on GL state.
+XYZ::OpenglCallbackFunction: ID: 131218
+XYZ::OpenglCallbackFunction: Severity: MEDIUM
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScriptCore.dll
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScript.dll
+XYZ::OpenglCallbackFunction: Performance: Program/shader state performance warning: Vertex shader in program 12 is being recompiled based on GL state.
+XYZ::OpenglCallbackFunction: ID: 131218
+XYZ::OpenglCallbackFunction: Severity: MEDIUM
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScriptCore.dll
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScript.dll
+XYZ::OpenglCallbackFunction: Performance: Program/shader state performance warning: Vertex shader in program 12 is being recompiled based on GL state.
+XYZ::OpenglCallbackFunction: ID: 131218
+XYZ::OpenglCallbackFunction: Severity: MEDIUM
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScriptCore.dll
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScript.dll
+XYZ::OpenglCallbackFunction: Performance: Program/shader state performance warning: Vertex shader in program 12 is being recompiled based on GL state.
+XYZ::OpenglCallbackFunction: ID: 131218
+XYZ::OpenglCallbackFunction: Severity: MEDIUM
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScriptCore.dll
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScript.dll
+XYZ::OpenglCallbackFunction: Performance: Program/shader state performance warning: Vertex shader in program 12 is being recompiled based on GL state.
+XYZ::OpenglCallbackFunction: ID: 131218
+XYZ::OpenglCallbackFunction: Severity: MEDIUM
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScriptCore.dll
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScript.dll
+XYZ::OpenglCallbackFunction: Performance: Program/shader state performance warning: Vertex shader in program 12 is being recompiled based on GL state.
+XYZ::OpenglCallbackFunction: ID: 131218
+XYZ::OpenglCallbackFunction: Severity: MEDIUM
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScriptCore.dll
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScript.dll
+XYZ::OpenglCallbackFunction: Performance: Program/shader state performance warning: Vertex shader in program 12 is being recompiled based on GL state.
+XYZ::OpenglCallbackFunction: ID: 131218
+XYZ::OpenglCallbackFunction: Severity: MEDIUM
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScriptCore.dll
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScript.dll
+XYZ::OpenglCallbackFunction: Performance: Program/shader state performance warning: Vertex shader in program 12 is being recompiled based on GL state.
+XYZ::OpenglCallbackFunction: ID: 131218
+XYZ::OpenglCallbackFunction: Severity: MEDIUM
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScriptCore.dll
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScript.dll
+XYZ::OpenglCallbackFunction: Performance: Program/shader state performance warning: Vertex shader in program 12 is being recompiled based on GL state.
+XYZ::OpenglCallbackFunction: ID: 131218
+XYZ::OpenglCallbackFunction: Severity: MEDIUM
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScriptCore.dll
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScript.dll
+XYZ::OpenglCallbackFunction: Performance: Program/shader state performance warning: Vertex shader in program 12 is being recompiled based on GL state.
+XYZ::OpenglCallbackFunction: ID: 131218
+XYZ::OpenglCallbackFunction: Severity: MEDIUM
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed

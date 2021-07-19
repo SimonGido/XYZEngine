@@ -21,45 +21,42 @@ namespace XYZ {
                 SequenceLineEdit  LineEdit;
             };
 
-            struct SequenceItemType
+            struct SequencerItemType
             {       
-                std::string       Name;
+                std::string              Name;
+                std::vector<std::string> SubTypes;
+                size_t                   Height = 100;
             };
 
 
             AnimationSequencer();
-            virtual int GetFrameMin() const override { return m_FrameMin; }
-            virtual int GetFrameMax() const override { return m_FrameMax; }
-            virtual int GetItemCount() const  override { return (int)m_Items.size(); }
-
+            virtual int         GetFrameMin() const override { return m_FrameMin; }
+            virtual int         GetFrameMax() const override { return m_FrameMax; }
+            virtual int         GetItemCount() const  override { return (int)m_Items.size(); }
             virtual int         GetItemTypeCount() const override { return (int)m_SequencerItemTypes.size(); }
             virtual const char* GetItemTypeName(int typeIndex) const override { return m_SequencerItemTypes[typeIndex].Name.c_str(); }
             virtual const char* GetItemLabel(int index) const override;
-           
+            virtual void        Get(int index, int** start, int** end, int* type, unsigned int* color) override;        
+            virtual void        Add(int type) override;
+            virtual void        Del(int index) override { m_Items.erase(m_Items.begin() + index); }
+            virtual void        Duplicate(int index) override { m_Items.push_back(m_Items[index]); }
 
-            virtual void Get(int index, int** start, int** end, int* type, unsigned int* color) override;
-            
-            virtual void Add(int type) override { m_Items.push_back(SequenceItem{ type, 0, 10, false, {} }); };
-            virtual void Del(int index) override { m_Items.erase(m_Items.begin() + index); }
-            virtual void Duplicate(int index) override { m_Items.push_back(m_Items[index]); }
-
-            virtual size_t GetCustomHeight(int index) override { return m_Items[index].Expanded ? m_Height : 0; }
-            virtual void   DoubleClick(int index) override;
-            virtual void   CustomDraw(int index, ImDrawList* draw_list, const ImRect& rc, const ImRect& legendRect, const ImRect& clippingRect, const ImRect& legendClippingRect) override;
-            virtual void   CustomDrawCompact(int index, ImDrawList* draw_list, const ImRect& rc, const ImRect& clippingRect) override;            
+            virtual size_t      GetCustomHeight(int index) override;
+            virtual void        DoubleClick(int index) override;
+            virtual void        CustomDraw(int index, ImDrawList* draw_list, const ImRect& rc, const ImRect& legendRect, const ImRect& clippingRect, const ImRect& legendClippingRect) override;
+            virtual void        CustomDrawCompact(int index, ImDrawList* draw_list, const ImRect& rc, const ImRect& clippingRect) override;            
         
             
-            void AddItemType(const std::string& item) { m_SequencerItemTypes.push_back({ item }); };
-            const SequenceItemType& GetSequenceItemType(size_t index) const { return m_SequencerItemTypes[index]; }
+            void                AddSequencerItemType(const std::string& name, const std::initializer_list<std::string>& subTypes);
 
-           
+ 
             std::vector<SequenceItem>     m_Items;
             int                           m_FrameMin;
             int                           m_FrameMax;
-            size_t                        m_Height;
+            
         
         private:
-            std::vector<SequenceItemType> m_SequencerItemTypes;
+            std::vector<SequencerItemType> m_SequencerItemTypes;
         };
 	}
 }

@@ -251,13 +251,9 @@ namespace XYZ {
 		animator.Animation = Ref<Animation>::Create(entity);
 
 		animator.Animation->CreateTrack<TransformTrack>();
-		animator.Animation->CreateTrack<SpriteRendererTrack>();
 
-		auto transformTrack = animator.Animation->FindTrack<TransformTrack>();
-		transformTrack->AddKeyFrame({ glm::vec3(0.0f), 0.0f }, TransformTrack::PropertyType::Translation);
-		transformTrack->AddKeyFrame({ glm::vec3(2.0f, 2.0f, 0.0f), 2.5f }, TransformTrack::PropertyType::Translation);
-		transformTrack->AddKeyFrame({ glm::vec3(0.0f), 5.0f }, TransformTrack::PropertyType::Translation);
-		animator.Animation->UpdateLength();
+
+		m_AnimationEditor.SetContext(animator.Animation);
 	}
 
 }
