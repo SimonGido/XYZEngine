@@ -12,6 +12,8 @@ namespace XYZ {
 
         struct AnimationSequencer : public ImSequencer::SequenceInterface
         {
+            using AddKeyCallback = std::function<void()>;
+
             struct SequenceItem
             {
                 int               Type;
@@ -25,6 +27,7 @@ namespace XYZ {
             {       
                 std::string              Name;
                 std::vector<std::string> SubTypes;
+                AddKeyCallback           Callback;
                 size_t                   Height = 100;
             };
 
@@ -47,16 +50,13 @@ namespace XYZ {
             virtual void        CustomDrawCompact(int index, ImDrawList* draw_list, const ImRect& rc, const ImRect& clippingRect) override;            
         
             
-            void                AddSequencerItemType(const std::string& name, const std::initializer_list<std::string>& subTypes);
+            void                AddSequencerItemType(const std::string& name, const std::initializer_list<std::string>& subTypes, AddKeyCallback callback);
 
  
-            std::vector<SequenceItem>     m_Items;
-            int                           m_FrameMin;
-            int                           m_FrameMax;
-            
-        
-        private:
             std::vector<SequencerItemType> m_SequencerItemTypes;
+            std::vector<SequenceItem>      m_Items;
+            int                            m_FrameMin;
+            int                            m_FrameMax;
         };
 	}
 }

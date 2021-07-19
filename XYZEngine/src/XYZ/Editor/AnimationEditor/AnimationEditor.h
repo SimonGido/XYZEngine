@@ -12,9 +12,13 @@ namespace XYZ {
 
 			void SetContext(const Ref<Animation>& context);
 			void OnImGuiRender(bool& open);
+		
+		private:
+			void handleSelected(bool addKey);
+			void addTransformTrack();
 
 		private:
-			Ref<Animation> m_Context;
+			Ref<Animation>			m_Context;
 
 			AnimationSequencer m_Sequencer;
 			int				   m_SelectedEntry;

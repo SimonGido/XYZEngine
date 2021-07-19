@@ -70,7 +70,6 @@ namespace XYZ {
 			if (dynamic_cast<const T*>(track.Raw()))
 				return track.As<T>();
 		}
-		XYZ_ASSERT(false, "");
 		return Ref<T>();
 	}
 }

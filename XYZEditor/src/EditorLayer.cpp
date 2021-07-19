@@ -249,10 +249,6 @@ namespace XYZ {
 	{
 		auto& animator = entity.EmplaceComponent<AnimatorComponent>();
 		animator.Animation = Ref<Animation>::Create(entity);
-
-		animator.Animation->CreateTrack<TransformTrack>();
-
-
 		m_AnimationEditor.SetContext(animator.Animation);
 	}
 

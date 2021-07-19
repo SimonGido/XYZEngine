@@ -105,9 +105,9 @@ namespace XYZ {
 			}
 			draw_list->PopClipRect();
 		}
-		void AnimationSequencer::AddSequencerItemType(const std::string& name, const std::initializer_list<std::string>& subTypes)
+		void AnimationSequencer::AddSequencerItemType(const std::string& name, const std::initializer_list<std::string>& subTypes, AddKeyCallback callback)
 		{
-			m_SequencerItemTypes.push_back({ name, subTypes });
+			m_SequencerItemTypes.push_back({ name, subTypes, callback });
 		}
 	}
 }
