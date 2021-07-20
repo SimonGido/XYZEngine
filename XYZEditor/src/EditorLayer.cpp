@@ -61,7 +61,7 @@ namespace XYZ {
 
 		auto entity = m_Scene->GetEntityByName("Scary Entity");
 		//gpuParticleExample(entity);
-		//cpuParticleExample(entity);
+		cpuParticleExample(entity);
 		animationExample(entity);
 
 		Renderer::WaitAndRender();
@@ -76,11 +76,7 @@ namespace XYZ {
 	}
 	void EditorLayer::OnUpdate(Timestep ts)
 	{		
-		Renderer::SetClearColor(glm::vec4(0.1f, 0.1f, 0.1f, 1.0f));
-		Renderer::Clear();
-
 		
-
 		if (m_Scene->GetState() == SceneState::Play)
 		{
 			m_Scene->OnUpdate(ts);
@@ -106,7 +102,7 @@ namespace XYZ {
 		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorLayer::onMouseButtonRelease, this));	
 		dispatcher.Dispatch<WindowResizeEvent>(Hook(&EditorLayer::onWindowResize, this));
 		dispatcher.Dispatch<KeyPressedEvent>(Hook(&EditorLayer::onKeyPress, this));
-		
+
 		m_ScenePanel.OnEvent(event);
 		m_SpriteEditor.OnEvent(event);
 	}
@@ -202,7 +198,7 @@ namespace XYZ {
 	void EditorLayer::cpuParticleExample(SceneEntity entity)
 	{
 		auto& particleComponentCPU = entity.EmplaceComponent<ParticleComponentCPU>();
-		particleComponentCPU.System = Ref<ParticleSystemCPU>::Create(100);
+		particleComponentCPU.System = Ref<ParticleSystemCPU>::Create(50000);
 
 		particleComponentCPU.System->GetRenderer().Material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShaderCPU.glsl"));
 		particleComponentCPU.System->GetRenderer().Material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));

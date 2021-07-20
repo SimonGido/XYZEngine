@@ -50,11 +50,11 @@ namespace XYZ {
 			float timestep = time - m_LastFrameTime;
 			m_LastFrameTime = time;
 			{
-				//Scopewatch watch;				
-			
+				Scopewatch watch;				
+				Renderer::WaitAndRender();
+
 				for (Layer* layer : m_LayerStack)	
 					layer->OnUpdate(timestep);	
-				Renderer::WaitAndRender();
 
 				m_ImGuiLayer->Begin();
 				for (Layer* layer : m_LayerStack)

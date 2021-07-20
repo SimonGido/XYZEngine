@@ -52,8 +52,20 @@ namespace XYZ {
 		Renderer::Submit([]() {glBindBuffer(GL_ARRAY_BUFFER, 0); });
 	}
 
+	void OpenGLVertexBuffer::UpdateNoCopy(void* vertices, uint32_t size, uint32_t offset) const
+	{
+		ByteBuffer buffer((uint8_t*)vertices, size);
+		Ref<const OpenGLVertexBuffer> instance = this;
+		Renderer::Submit([instance, offset, size, buffer]() {
+			XYZ_ASSERT(instance->m_Usage == BufferUsage::Dynamic, "Buffer does not have dynamic usage");
+			glBindBuffer(GL_ARRAY_BUFFER, instance->m_RendererID);
+			glBufferSubData(GL_ARRAY_BUFFER, offset, size, buffer);
+		});
+	}
+
 	void OpenGLVertexBuffer::Update(void* vertices, uint32_t size, uint32_t offset)
 	{
+		// TODO: use multiple buffers instead of copying
 		ByteBuffer buffer = ByteBuffer::Copy(vertices, size);
 		Ref<OpenGLVertexBuffer> instance = this;
 		Renderer::Submit([instance, offset, size, buffer]() {

@@ -12,6 +12,7 @@ namespace XYZ {
 
 		virtual void Bind() const override;
 		virtual void UnBind() const override;
+		virtual void UpdateNoCopy(void* vertices, uint32_t size, uint32_t offset = 0) const override;
 		virtual void Update(void* vertices, uint32_t size, uint32_t offset = 0) override;
 		virtual void Resize(float* vertices, uint32_t size) override;
 

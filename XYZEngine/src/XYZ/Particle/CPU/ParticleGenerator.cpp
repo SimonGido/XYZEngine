@@ -16,8 +16,8 @@ namespace XYZ {
 	ParticleShapeGenerator::ParticleShapeGenerator()
 		:
 		m_Shape(EmitShape::Box),
-		m_BoxMin(-1.0f),
-		m_BoxMax(1.0f),
+		m_BoxMin(-30.0f),
+		m_BoxMax(30.0f),
 		m_Radius(1.0f)
 	{
 	}

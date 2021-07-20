@@ -204,6 +204,7 @@ namespace XYZ {
 		virtual ~VertexBuffer() = default;
 		virtual void Bind() const = 0;
 		virtual void UnBind() const = 0;
+		virtual void UpdateNoCopy(void* vertices, uint32_t size, uint32_t offset = 0) const = 0;
 		virtual void Update(void* vertices, uint32_t size, uint32_t offset = 0) = 0;
 		virtual void Resize(float* vertices, uint32_t size) = 0;
 		virtual void SetLayout(const BufferLayout& layout) = 0;

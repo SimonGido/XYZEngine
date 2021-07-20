@@ -3,6 +3,7 @@
 
 #include "XYZ/Core/Application.h"
 
+
 namespace XYZ {
 
 	ParticleSystemCPU::ParticleSystemCPU(uint32_t maxParticles)
@@ -33,7 +34,7 @@ namespace XYZ {
 			{
 				ScopedLockReference<DoubleThreadPass> val = m_ThreadPass->Read();
 				m_Renderer.InstanceCount = val.Get().InstanceCount;
-				m_Renderer.InstanceVBO->Update(val.Get().RenderData.data(), m_Renderer.InstanceCount * sizeof(ParticleRenderData));
+				m_Renderer.InstanceVBO->UpdateNoCopy(val.Get().RenderData.data(), m_Renderer.InstanceCount * sizeof(ParticleRenderData));
 			}
 			{
 				std::scoped_lock lock(m_SingleThreadPass->Mutex);

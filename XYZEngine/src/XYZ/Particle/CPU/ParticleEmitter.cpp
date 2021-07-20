@@ -4,7 +4,7 @@
 namespace XYZ {
 	ParticleEmitterCPU::ParticleEmitterCPU()
 		:
-		m_EmitRate(10.0f),
+		m_EmitRate(100000.0f),
 		m_EmittedParticles(0.0f)
 	{
 	}

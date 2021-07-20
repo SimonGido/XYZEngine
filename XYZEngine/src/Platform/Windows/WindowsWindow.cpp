@@ -56,11 +56,11 @@ namespace XYZ {
 
 		m_Context = APIContext::Create(m_Window);	
 
-		//auto result = Renderer::GetPool().PushJob<bool>([this]() ->bool {
+		auto result = Renderer::GetPool().PushJob<bool>([this]() ->bool {
 			m_Context->Init();
-		//	return true;
-		//});
-		//result.wait();
+			return true;
+		});
+		result.wait();
 
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 
@@ -167,16 +167,16 @@ namespace XYZ {
 
 	void WindowsWindow::Update()
 	{
-		//Renderer::BlockRenderThread();
+		Renderer::BlockRenderThread();
 		glfwPollEvents();				
 		m_Context->SwapBuffers();
 	}
 
 	void WindowsWindow::SetVSync(int32_t frames)
 	{
-		//Renderer::GetPool().PushJob<void>([frames]() {
+		Renderer::GetPool().PushJob<void>([frames]() {
 			glfwSwapInterval(frames);
-		//});
+		});
 	}
 
 	bool WindowsWindow::IsClosed()
