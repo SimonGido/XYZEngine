@@ -90,7 +90,8 @@ namespace XYZ {
 
 		ImGui_ImplGlfw_NewFrame();	
 		ImGui::NewFrame();
-		dockspace();		
+		if (m_EnableDockspace)
+			dockspace();		
 	}
 
 	void ImGuiLayer::End()

@@ -2,174 +2,154 @@
 
 #include <algorithm>
 #include <utility>
-
-/* Copied from
-https://stackoverflow.com/questions/41946007/efficient-and-well-explained-implementation-of-a-quadtree-for-2d-collision-det
-*/
+#include <variant>
 
 namespace XYZ {
 
-	// Provides an indexed free list with constant-time removals from anywhere
-	// in the list without invalidating indices. T must be trivially constructible 
-	// and destructible.
 	template <typename T>
 	class FreeList
 	{
 	public:
-		// Creates a new free list.
-		FreeList(size_t size = 0)		
-		{
-			m_FirstFree = -1;
-			if (size > 0)
-			{
-				m_Data.resize(size);
-				m_FirstFree = 0;
-				for (size_t i = 0; i < m_Data.size() - 1; ++i)
-					m_Data[i].Next = (int32_t)i + 1;
-			}	
-		}
-
-		FreeList(const FreeList<T>& other)
-			:
-			m_Data(other.m_Data),
-			m_FirstFree(other.m_FirstFree)
-		{
-		}
+		FreeList(int32_t size = 0);
+		FreeList(const FreeList<T>& other);
+		FreeList(FreeList<T>&& other) noexcept;
+			
+		FreeList<T>& operator=(const FreeList<T>& other);
+		FreeList<T>& operator =(FreeList<T>&& other) noexcept;
 		
-		FreeList(FreeList<T>&& other) noexcept
-			:
-			m_Data(std::move(other.m_Data)),
-			m_FirstFree(other.m_FirstFree)
-		{
-		}
-
-		FreeList<T>& operator=(const FreeList<T>& other)
-		{
-			m_FirstFree = other.m_FirstFree;
-			m_Data = other.m_Data;
-			return *this;
-		}
-
-		FreeList<T>& operator = (FreeList<T>&& other) noexcept
-		{
-			m_FirstFree = other.m_FirstFree;
-			m_Data = std::move(other.m_Data);
-			return *this;
-		}
 		
-		// Inserts an element to the free list and returns an index to it.
-		int32_t Insert(const T& elem)
-		{
-			if (m_FirstFree != -1)
-			{
-				int32_t index = m_FirstFree;
-				m_FirstFree = m_Data[m_FirstFree].Next;
-				m_Data[index].Element = elem;
-				return index;
-			}
-			else
-			{
-				m_Data.push_back(elem);
-				return static_cast<int32_t>(m_Data.size() - 1);
-			}
-		}
+		int32_t Insert(const T& elem);
 
 		template <typename... Args>
-		int32_t Emplace(Args&&... args)
-		{
-			if (m_FirstFree != -1)
-			{
-				int32_t index = m_FirstFree;
-				m_FirstFree = m_Data[m_FirstFree].Next;
-				m_Data[index].Element = T(std::forward<Args>(args)...);
-				return index;
-			}
-			else
-			{
-				m_Data.emplace_back(T(std::forward<Args>(args)...));
-				return static_cast<int>(m_Data.size() - 1);
-			}
-		}
-
-		// Erases the nth element
-		void Erase(int32_t index)
-		{
-			m_Data[index].Next = m_FirstFree;
-			m_FirstFree = index;
-		}
-		
-		// Shrinks the list to the given size
-		void Shrink(int32_t size)
-		{
-			if (size <= m_FirstFree)
-				m_FirstFree = -1;
+		int32_t Emplace(Args&&... args);
 			
-			m_Data.resize(static_cast<size_t>(size));
-		}
+		void    Erase(int32_t index);
+		void    Clear();
 
-		// Removes all elements from the free list.
-		void Clear()
-		{
-			m_Data.clear();
-			m_FirstFree = -1;
-		}
-
-		// Returns the range of valid indices.
-		int32_t Range() const
-		{
-			return static_cast<int32_t>(m_Data.size());
-		}
-
-		int32_t Next() const
-		{
-			if (m_FirstFree == -1)
-				return (int32_t)m_Data.size();
-			return m_FirstFree;
-		}
-		// Returns the nth element.
-		T& operator[](int32_t index)
-		{
-			return m_Data[index].Element;
-		}
-		// Returns the nth element.
-		const T& operator[](int32_t index) const
-		{
-			return m_Data[index].Element;
-		}
+		bool    Valid(int32_t index) const;
+		int32_t Range() const;
+		int32_t Next() const;
+		
+		T&	     operator[](int32_t index);
+		const T& operator[](int32_t index) const;
 	private:
-		union FreeElement
-		{
-			FreeElement()
-			{
-				memset(this, 0, sizeof(FreeElement));
-			}
-			FreeElement(const T& el)
-				: Element(el)
-			{}
-			FreeElement(const FreeElement& other)
-				: Element(other.Element)
-			{}
-			FreeElement(FreeElement&& other) noexcept
-				: Element(std::move(other.Element))
-			{}
-
-			~FreeElement()
-			{}
-
-			FreeElement& operator =(const FreeElement& other)
-			{
-				Element = other.Element;
-				return *this;
-			}
-			operator T& () { return Element; }
-			operator const T& () const { return Element; }
-
-			T Element;
-			int32_t Next;
-		};
-
-
-		std::vector<FreeElement> m_Data;
+		std::vector<std::variant<int32_t, T>> m_Data;
 		int32_t m_FirstFree;
 	};
+	template<typename T>
+	inline FreeList<T>::FreeList(int32_t size)
+	{
+		static_assert(!std::is_same<T, int32_t>::value, "FreeList can not store int32_t");
+		if (size > 0)
+		{
+			m_Data.resize(size);
+			m_FirstFree = 0;
+			for (int32_t i = 0; i < size - 1; ++i)
+				m_Data[i] = i + 1;
+		}
+		else
+			m_FirstFree = -1;
+	}
+	template<typename T>
+	inline FreeList<T>::FreeList(const FreeList<T>& other)
+		:
+		m_FirstFree(other.m_FirstFree),
+		m_Data(other.m_Data)
+	{
+	}
+	template<typename T>
+	inline FreeList<T>::FreeList(FreeList<T>&& other) noexcept
+		:
+		m_Data(std::move(other.m_Data)),
+		m_FirstFree(other.m_FirstFree)
+	{}
+	template<typename T>
+	inline FreeList<T>& FreeList<T>::operator=(const FreeList<T>& other)
+	{
+		m_FirstFree = other.m_FirstFree;
+		m_Data = other.m_Data;
+		return *this;
+	}
+	template<typename T>
+	inline FreeList<T>& FreeList<T>::operator=(FreeList<T>&& other) noexcept
+	{
+		m_FirstFree = other.m_FirstFree;
+		m_Data = std::move(other.m_Data);
+		return *this;
+	}
+	template<typename T>
+	inline int32_t FreeList<T>::Insert(const T& elem)
+	{
+		if (m_FirstFree != -1)
+		{
+			int32_t index = m_FirstFree;
+			m_FirstFree = std::get<int32_t>(m_Data[m_FirstFree]);
+			m_Data[index] = elem;
+			return index;
+		}
+		else
+		{
+			m_Data.push_back(elem);
+			return static_cast<int32_t>(m_Data.size() - 1);
+		}
+	}
+	template<typename T>
+	template<typename ...Args>
+	inline int32_t FreeList<T>::Emplace(Args && ...args)
+	{
+		if (m_FirstFree != -1)
+		{
+			int32_t index = m_FirstFree;
+			m_FirstFree = std::get<int32_t>(m_Data[m_FirstFree]);
+			m_Data[index] = T(std::forward<Args>(args)...);
+			return index;
+		}
+		else
+		{
+			m_Data.emplace_back(T(std::forward<Args>(args)...));
+			return static_cast<int>(m_Data.size() - 1);
+		}
+	}
+
+	template<typename T>
+	inline void FreeList<T>::Erase(int32_t index)
+	{
+		m_Data[index] = m_FirstFree;
+		m_FirstFree = index;
+	}
+
+	template<typename T>
+	inline void FreeList<T>::Clear()
+	{
+		m_Data.clear();
+		m_FirstFree = -1;
+	}
+	template<typename T>
+	inline bool FreeList<T>::Valid(int32_t index) const
+	{
+		return !std::holds_alternative<int32_t>(m_Data[index]);
+	}
+	template<typename T>
+	inline int32_t FreeList<T>::Range() const
+	{
+		return static_cast<int32_t>(m_Data.size());
+	}
+	template<typename T>
+	inline int32_t FreeList<T>::Next() const
+	{
+		if (m_FirstFree == -1)
+			return (int32_t)m_Data.size();
+		return m_FirstFree;
+	}
+	template<typename T>
+	inline T& FreeList<T>::operator[](int32_t index)
+	{
+		return std::get<T>(m_Data[index]);
+	}
+	template<typename T>
+	inline const T& FreeList<T>::operator[](int32_t index) const
+	{
+		return std::get<T>(m_Data[index]);
+	}
+	
 }

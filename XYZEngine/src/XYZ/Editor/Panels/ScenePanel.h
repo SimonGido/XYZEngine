@@ -5,6 +5,8 @@
 #include "XYZ/Event/ApplicationEvent.h"
 #include "XYZ/Event/InputEvent.h"
 #include "XYZ/Renderer/Texture.h"
+#include "XYZ/Utils/Math/Ray.h"
+#include "XYZ/Scene/SceneEntity.h"
 
 namespace XYZ {
 	namespace Editor {
@@ -30,6 +32,7 @@ namespace XYZ {
 
 			std::pair<glm::vec3, glm::vec3> castRay(float mx, float my) const;
 			std::pair<float, float> getMouseViewportSpace() const;
+			std::deque<SceneEntity> getSelection(const Ray& ray);
 
 			void handlePanelResize(const glm::vec2& newSize);
 			void handleSelection(const glm::vec2& mousePosition);
@@ -61,11 +64,12 @@ namespace XYZ {
 				Z	   = BIT(5)
 			};
 
-			std::deque<Entity> m_Selection;
-			uint8_t			   m_ModifyFlags;
-			float			   m_MoveSpeed;
-			glm::vec2		   m_OldMousePosition;
-			int				   m_GizmoType;
+			std::deque<SceneEntity> m_Selection;
+			uint32_t				m_SelectionIndex;
+			uint8_t					m_ModifyFlags;
+			float					m_MoveSpeed;
+			glm::vec2				m_OldMousePosition;
+			int						m_GizmoType;
 		};
 	}
 }

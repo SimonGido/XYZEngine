@@ -1,36 +1,30 @@
 #pragma once
 #include "XYZ/Animation/Animation.h"
-
-// TODO
-/*
+#include "AnimationSequencer.h"
 
 namespace XYZ {
-
 	namespace Editor {
+
 		class AnimationEditor
 		{
 		public:
-			AnimationEditor(const std::string& filepath);
-
-			virtual void OnUpdate(Timestep ts) override;
-			virtual void OnReload() override;
-			virtual void SetupUI() override;
+			AnimationEditor();
 
 			void SetContext(const Ref<Animation>& context);
-
-			void OnEvent(Event& event);
+			void OnImGuiRender(bool& open);
+		
 		private:
-			void updateLayout();
-
-			bool onMouseScroll(MouseScrollEvent& event);
+			void handleSelected(bool addKey);
+			void addTransformTrack();
 
 		private:
-			Ref<Animation> m_Context;
+			Ref<Animation>			m_Context;
 
-			bool m_Play;
-
-			bUILayout m_Layout;
+			AnimationSequencer m_Sequencer;
+			int				   m_SelectedEntry;
+			int				   m_FirstFrame;
+			int				   m_CurrentFrame;
+			bool			   m_Expanded;
 		};
 	}
 }
-*/

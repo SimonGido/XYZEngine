@@ -1,9 +1,0 @@
-Material: New_Material
-ShaderAssetPath: Assets/Shaders/DefaultShader.glsl
-Textures:
-  - TextureAssetPath: Assets/Textures/Backgroundfield.png
-    TextureIndex: 0
-  - TextureAssetPath: Assets/Textures/player_sprite.png
-    TextureIndex: 1
-Values:
-  - u_Color: [1, 1, 1, 1]

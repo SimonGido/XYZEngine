@@ -11,7 +11,10 @@ namespace XYZ {
         m_BitCount(other.m_BitCount)
     {
         for (int32_t i = 0; i < m_Signatures.Range(); ++i)
-            m_Signatures[i].m_Bitset = this;
+        {
+            if (m_Signatures.Valid(i))
+                m_Signatures[i].m_Bitset = this;
+        }
     }
     DynamicBitset::DynamicBitset(DynamicBitset&& other) noexcept
         :
@@ -19,11 +22,21 @@ namespace XYZ {
         m_Bitset(std::move(other.m_Bitset)),
         m_BitCount(other.m_BitCount)
     {
+        for (int32_t i = 0; i < m_Signatures.Range(); ++i)
+        {
+            if (m_Signatures.Valid(i))
+                m_Signatures[i].m_Bitset = this;
+        }
     }
     DynamicBitset& DynamicBitset::operator=(DynamicBitset&& other) noexcept
     {
         m_Signatures = std::move(other.m_Signatures);
         m_Bitset = std::move(other.m_Bitset);
+        for (int32_t i = 0; i < m_Signatures.Range(); ++i)
+        {
+            if (m_Signatures.Valid(i))
+                m_Signatures[i].m_Bitset = this;
+        }
         return *this;
     }
     int32_t DynamicBitset::CreateSignature()

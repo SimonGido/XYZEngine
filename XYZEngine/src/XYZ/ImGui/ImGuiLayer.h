@@ -22,6 +22,7 @@ namespace XYZ {
 		void End();
 
 		void BlockEvents(bool block) { m_BlockEvents = block; }
+		void EnableDockspace(bool enable) { m_EnableDockspace = enable; }
 		bool GetBlockedEvents() const { return m_BlockEvents; }
 		void SetDarkThemeColors();
 	private:
@@ -29,6 +30,7 @@ namespace XYZ {
 
 	private:
 		bool m_BlockEvents = true;
+		bool m_EnableDockspace = true;
 		float m_Time = 0.0f;
 	};
 

@@ -3,10 +3,9 @@
 
 #include "XYZ/Core/Input.h"
 #include "XYZ/Core/Application.h"
-#include "XYZ/Scene/SceneEntity.h"
+
 #include "XYZ/Renderer/SceneRenderer.h"
 #include "XYZ/Renderer/Renderer2D.h"
-#include "XYZ/Utils/Math/Ray.h"
 #include "XYZ/Utils/Math/Math.h"
 
 #include <imgui.h>
@@ -18,6 +17,19 @@
 namespace XYZ {
 	namespace Editor {
 
+		template <typename T>
+		static bool CompareDeques(const std::deque<T>& a, const std::deque<T>& b)
+		{
+			if (a.size() != b.size())
+				return false;
+			for (size_t i = 0; i < a.size(); ++i)
+			{
+				if (a[i] != b[i])
+					return false;
+			}
+			return true;
+		}
+
 		static glm::vec4 CalculateTexCoords(const glm::vec2& coords, const glm::vec2& size, const glm::vec2& textureSize)
 		{
 			return {
@@ -27,6 +39,17 @@ namespace XYZ {
 				(coords.y * size.y) / textureSize.y,
 			};
 		}
+
+		static AABB SceneEntityAABB(SceneEntity entity)
+		{
+			TransformComponent& transformComponent = entity.GetComponent<TransformComponent>();
+			auto [translation, rotation, scale] = transformComponent.GetWorldComponents();
+			return AABB(
+				translation - (scale / 2.0f),
+				translation + (scale / 2.0f)
+			);
+		}
+
 
 		std::pair<glm::vec3, glm::vec3> ScenePanel::castRay(float mx, float my) const
 		{
@@ -54,16 +77,29 @@ namespace XYZ {
 			return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f };
 		}
 
-		static AABB SceneEntityAABB(SceneEntity entity)
+		std::deque<SceneEntity> ScenePanel::getSelection(const Ray& ray)
 		{
-			TransformComponent& transformComponent = entity.GetComponent<TransformComponent>();
-			auto [translation, rotation, scale] = transformComponent.GetWorldComponents();
-			return AABB(
-				translation - (scale / 2.0f),
-				translation + (scale / 2.0f)
-			);
+			std::deque<SceneEntity> result;
+			for (Entity entityID : m_Context->GetEntities())
+			{
+				SceneEntity entity(entityID, m_Context.Raw());
+				if (ray.IntersectsAABB(SceneEntityAABB(entity)))
+				{
+					result.push_back(entity);
+				}
+			}
+			std::sort(result.begin(), result.end(), [&](const SceneEntity& a, const SceneEntity& b) {
+				auto& cameraPos = m_EditorCamera.GetPosition();
+				const TransformComponent& transformA = a.GetComponent<TransformComponent>();
+				const TransformComponent& transformB = b.GetComponent<TransformComponent>();
+				auto [worldPosA, worldRotA, worldScaleA] = transformA.GetWorldComponents();
+				auto [worldPosB, worldRotB, worldScaleB] = transformB.GetWorldComponents();
+				return glm::distance(worldPosA, cameraPos) < glm::distance(worldPosB, cameraPos);
+			});
+			return result;
 		}
 
+		
 		void ScenePanel::handlePanelResize(const glm::vec2& newSize)
 		{
 			if (m_ViewportSize.x != newSize.x || m_ViewportSize.y != newSize.y)
@@ -86,41 +122,26 @@ namespace XYZ {
 				if (m_Callback)
 					m_Callback(m_Context->GetSelectedEntity());
 				
-				// First check old selection
-				while (!m_Selection.empty())
+				std::deque<SceneEntity> newSelection = std::move(getSelection(ray));
+				if (!CompareDeques(m_Selection, newSelection))
 				{
-					Entity first = m_Selection.front();
-					m_Selection.pop_front();
-					SceneEntity entity(first, m_Context.Raw());		
-					if (ray.IntersectsAABB(SceneEntityAABB(entity)))
-					{
-						m_Context->SetSelectedEntity(first);
-						if (m_Callback)
-							m_Callback(m_Context->GetSelectedEntity());
-						return;
-					}
+					m_Selection = std::move(newSelection);
+					m_SelectionIndex = 0;
+				}
+				else if (m_SelectionIndex + 1 == m_Selection.size())
+				{
+					m_SelectionIndex = 0;
+				}
+				else
+				{
+					m_SelectionIndex++;
 				}
 
-				m_Selection.clear();
-				bool selected = false;
-				for (Entity entityID : m_Context->GetEntities())
+				if (!m_Selection.empty())
 				{
-					SceneEntity entity(entityID, m_Context.Raw());
-					if (ray.IntersectsAABB(SceneEntityAABB(entity)))
-					{
-						// Do not add first selected to the selection deque
-						if (selected)
-						{
-							m_Selection.push_back(entityID);
-						}
-						else
-						{
-							selected = true;
-							m_Context->SetSelectedEntity(entityID);
-							if (m_Callback)
-								m_Callback(m_Context->GetSelectedEntity());
-						}					
-					}
+					m_Context->SetSelectedEntity(m_Selection[m_SelectionIndex]);
+					if (m_Callback)
+						m_Callback(m_Context->GetSelectedEntity());
 				}
 			}
 		}
@@ -154,6 +175,7 @@ namespace XYZ {
 			m_EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f),
 			m_ViewportFocused(false),
 			m_ViewportHovered(false),
+			m_SelectionIndex(0),
 			m_ModifyFlags(0),
 			m_MoveSpeed(100.0f),
 			m_OldMousePosition(0.0f),

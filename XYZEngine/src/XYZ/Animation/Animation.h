@@ -26,7 +26,7 @@ namespace XYZ {
 		void RemoveTrack();
 		
 		template <typename T>
-		const Ref<T>& FindTrack() const;
+		Ref<T> FindTrack() const;
 		
 		inline float GetCurrentTime() const { return m_CurrentTime; }
 
@@ -62,7 +62,7 @@ namespace XYZ {
 	}
 
 	template<typename T>
-	inline const Ref<T>& Animation::FindTrack() const
+	inline Ref<T> Animation::FindTrack() const
 	{
 		static_assert(std::is_base_of<Track, T>::value, "Type T must be derived from Track base");
 		for (auto& track : m_Tracks)
@@ -70,7 +70,6 @@ namespace XYZ {
 			if (dynamic_cast<const T*>(track.Raw()))
 				return track.As<T>();
 		}
-		XYZ_ASSERT(false, "");
 		return Ref<T>();
 	}
 }

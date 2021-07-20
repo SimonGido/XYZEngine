@@ -9,7 +9,7 @@ namespace XYZ {
 
 	EditorLayer::EditorLayer()
 		:
-		m_EditorOpen{false}
+		m_EditorOpen{ false, true }
 	{			
 	}
 
@@ -90,6 +90,7 @@ namespace XYZ {
 		{
 			auto& editorCamera = m_ScenePanel.GetEditorCamera();
 			m_Scene->OnRenderEditor(editorCamera, ts);
+
 			EditorRenderer::BeginPass(SceneRenderer::GetFinalRenderPass(), editorCamera.GetViewProjection(), editorCamera.GetPosition());
 			EditorRenderer::EndPass();
 		}
@@ -116,6 +117,7 @@ namespace XYZ {
 		m_SceneHierarchy.OnImGuiRender();
 		m_ScenePanel.OnImGuiRender();
 		m_SpriteEditor.OnImGuiRender(m_EditorOpen[SpriteEditor]);
+		m_AnimationEditor.OnImGuiRender(m_EditorOpen[AnimationEditor]);
 		m_AssetBrowser.OnImGuiRender();
 	}
 	
@@ -195,8 +197,6 @@ namespace XYZ {
 		
 		particleMaterial->SetBufferData("buffer_Data", particleData.data(), (uint32_t)particleData.size(), (uint32_t)sizeof(ParticleData));
 		particleMaterial->SetBufferData("buffer_Specification", particleSpecification.data(), (uint32_t)particleSpecification.size(), (uint32_t)sizeof(ParticleSpecification));
-
-
 	}
 
 	void EditorLayer::cpuParticleExample(SceneEntity entity)
@@ -249,14 +249,7 @@ namespace XYZ {
 	{
 		auto& animator = entity.EmplaceComponent<AnimatorComponent>();
 		animator.Animation = Ref<Animation>::Create(entity);
-
-		animator.Animation->CreateTrack<TransformTrack>();
-		animator.Animation->CreateTrack<SpriteRendererTrack>();
-
-		auto transformTrack = animator.Animation->FindTrack<TransformTrack>();
-		transformTrack->AddKeyFrame({ glm::vec3(0.0f), 0.0f }, TransformTrack::PropertyType::Translation);
-		transformTrack->AddKeyFrame({ glm::vec3(2.0f, 2.0f, 0.0f), 2.5f }, TransformTrack::PropertyType::Translation);
-		transformTrack->AddKeyFrame({ glm::vec3(0.0f), 5.0f }, TransformTrack::PropertyType::Translation);
-		animator.Animation->UpdateLength();
+		m_AnimationEditor.SetContext(animator.Animation);
 	}
+
 }

@@ -9,15 +9,14 @@
 
 namespace XYZ {
 
-	class Stopwatch
+	class Scopewatch
 	{
 	public:
-		Stopwatch()
+		Scopewatch()
 		{
 			m_Start = std::chrono::high_resolution_clock::now();
 		}
-
-		~Stopwatch()
+		~Scopewatch()
 		{
 			m_End = std::chrono::high_resolution_clock::now();
 
@@ -26,11 +25,31 @@ namespace XYZ {
 			float ms = (end - start) * 0.001f;
 			std::cout << "Time: " << ms << "ms" << " FPS: " << 1000.0f / ms << std::endl;
 		}
-
 	private:
 		using TimePoint = std::chrono::time_point<std::chrono::high_resolution_clock>;
 
 		TimePoint m_Start, m_End;
 	};
 
+	class Stopwatch
+	{
+	public:
+		Stopwatch()
+		{
+			m_Start = std::chrono::high_resolution_clock::now();
+		}
+		float Stop()
+		{
+			m_End = std::chrono::high_resolution_clock::now();
+
+			auto start = std::chrono::time_point_cast<std::chrono::microseconds>(m_Start).time_since_epoch().count();
+			auto end = std::chrono::time_point_cast<std::chrono::microseconds>(m_End).time_since_epoch().count();
+			float ms = (end - start) * 0.001f;
+			return ms;
+		}
+	private:
+		using TimePoint = std::chrono::time_point<std::chrono::high_resolution_clock>;
+
+		TimePoint m_Start, m_End;
+	};
 }
