@@ -60,7 +60,6 @@ namespace XYZ {
 		
 		Ref<Material> DefaultQuadMaterial;
 		Ref<Material> QuadMaterial;
-		Ref<Material> GridMaterial;
 		Ref<Shader>   LineShader;
 		Ref<Shader>   CollisionShader;
 		Ref<Shader>   PointShader;
@@ -69,7 +68,6 @@ namespace XYZ {
 		Ref<Texture>   TextureSlots[MaxTextures];
 		uint32_t	   TextureSlotIndex = 0;
 	
-		Ref<VertexArray>  GridVertexArray;
 		Ref<VertexArray>  QuadVertexArray;
 		Ref<VertexBuffer> QuadVertexBuffer;
 
@@ -163,44 +161,6 @@ namespace XYZ {
 			Ref<IndexBuffer> quadIB = IndexBuffer::Create(quadIndices, MaxIndices);
 			QuadVertexArray->SetIndexBuffer(quadIB);
 			delete[] quadIndices;
-
-			// Grid setup
-			GridMaterial = Ref<Material>::Create(Shader::Create("Assets/Shaders/Grid.glsl"));
-			GridMaterial->Set("u_Scale", glm::vec2{ 16.025f,16.025f });
-			GridMaterial->Set("u_LineWidth", 0.025f);
-			struct QuadVertex
-			{
-				glm::vec3 Position;
-				glm::vec2 TexCoord;
-			};
-			float x = -1;
-			float y = -1;
-			float width = 2, height = 2;
-
-			QuadVertex data[4];
-			data[0].Position = glm::vec3(x, y, 0.0f);
-			data[0].TexCoord = glm::vec2(0, 0);
-			
-			data[1].Position = glm::vec3(x + width, y, 0.0f);
-			data[1].TexCoord = glm::vec2(1, 0);
-
-			data[2].Position = glm::vec3(x + width, y + height, 0.0f);
-			data[2].TexCoord = glm::vec2(1, 1);
-
-			data[3].Position = glm::vec3(x, y + height, 0.0f);
-			data[3].TexCoord = glm::vec2(0, 1);
-
-			GridVertexArray = VertexArray::Create();
-			auto gridVB = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
-			gridVB->SetLayout({
-				{0, ShaderDataComponent::Float3, "a_Position" },
-				{1, ShaderDataComponent::Float2, "a_TexCoord" }
-			});
-			GridVertexArray->AddVertexBuffer(gridVB);
-
-			uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
-			auto gridIB = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
-			GridVertexArray->SetIndexBuffer(gridIB);
 		}
 		BufferPtr = BufferBase;
 		QuadMaterial = DefaultQuadMaterial;
@@ -319,11 +279,11 @@ namespace XYZ {
 		s_Data.DefaultQuadMaterial.Reset();
 		s_Data.WhiteTexture.Reset();
 		s_Data.QuadMaterial.Reset();
-		s_Data.GridMaterial.Reset();
+
 		s_Data.LineShader.Reset();
 		s_Data.CollisionShader.Reset();
 		s_Data.PointShader.Reset();
-		s_Data.GridVertexArray.Reset();
+
 		s_Data.QuadVertexArray.Reset();
 		s_Data.QuadVertexBuffer.Reset();
 
@@ -584,17 +544,6 @@ namespace XYZ {
 		s_Data.IndexCount += 6;
 	}
 
-	void Renderer2D::SubmitGrid(const glm::mat4& transform, const glm::vec2& scale, float lineWidth)
-	{
-		auto shader = s_Data.GridMaterial->GetShader();
-		s_Data.GridMaterial->Bind();
-		shader->SetMat4("u_Transform", transform);
-		shader->SetFloat2("u_Scale", scale);
-		shader->SetFloat(("u_LineWidth"), lineWidth);
-
-		s_Data.GridVertexArray->Bind();
-		Renderer::DrawIndexed(PrimitiveType::Triangles, 6);
-	}
 
 	void Renderer2D::Flush()
 	{	
