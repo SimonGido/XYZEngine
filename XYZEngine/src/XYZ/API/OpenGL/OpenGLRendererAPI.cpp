@@ -116,8 +116,6 @@ namespace XYZ {
 	void RendererAPI::DrawInstancedIndirect(void* indirect)
 	{
 		glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
-		glDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, indirect);
-
-		
+		glDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, indirect);		
 	}
 }

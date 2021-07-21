@@ -265,7 +265,7 @@ namespace XYZ {
 		s_Data.LightPass->GetSpecification().TargetFramebuffer->BindTexture(0, 0);
 		s_Data.GaussianBlurPass->GetSpecification().TargetFramebuffer->BindTexture(0, 1);
 
-		Renderer::SubmitFullsceenQuad();
+		Renderer::SubmitFullscreenQuad();
 		Renderer::EndRenderPass();
 
 		auto [width, height] = Input::GetWindowSize();
@@ -361,7 +361,7 @@ namespace XYZ {
 		s_Data.GeometryPass->GetSpecification().TargetFramebuffer->BindTexture(0, 0);
 		s_Data.GeometryPass->GetSpecification().TargetFramebuffer->BindTexture(1, 1);
 
-		Renderer::SubmitFullsceenQuad();
+		Renderer::SubmitFullscreenQuad();
 
 		Renderer::EndRenderPass();
 	}
@@ -374,7 +374,7 @@ namespace XYZ {
 		s_Data.BloomShader->SetFloat("u_Exposure", exposure);
 		s_Data.LightPass->GetSpecification().TargetFramebuffer->BindTexture(0, 0);
 
-		Renderer::SubmitFullsceenQuad();
+		Renderer::SubmitFullscreenQuad();
 
 		Renderer::EndRenderPass();
 	}
@@ -388,14 +388,14 @@ namespace XYZ {
 		for (uint32_t i = 0; i < amount; i++)
 		{
 			s_Data.BloomPass->GetSpecification().TargetFramebuffer->BindTexture(0, 0);
-			Renderer::SubmitFullsceenQuad();
+			Renderer::SubmitFullscreenQuad();
 		}
 
 		s_Data.GaussianBlurShader->SetInt("u_Horizontal", 1);
 		for (uint32_t i = 0; i < amount; i++)
 		{
 			s_Data.BloomPass->GetSpecification().TargetFramebuffer->BindTexture(0, 0);
-			Renderer::SubmitFullsceenQuad();
+			Renderer::SubmitFullscreenQuad();
 		}
 		Renderer::EndRenderPass();
 	}

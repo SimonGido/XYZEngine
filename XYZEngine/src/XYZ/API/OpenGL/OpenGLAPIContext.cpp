@@ -78,6 +78,7 @@ namespace XYZ {
 
 	OpenGLAPIContext::~OpenGLAPIContext()
 	{
+		
 	}
 
 	void OpenGLAPIContext::Init()

@@ -162,7 +162,7 @@ namespace XYZ {
 		});
 	}
 
-	void Renderer::SubmitFullsceenQuad()
+	void Renderer::SubmitFullscreenQuad()
 	{
 		s_Data.FullscreenQuadVertexArray->Bind();
 		Renderer::DrawIndexed(PrimitiveType::Triangles, 6);
