@@ -82,6 +82,7 @@ namespace XYZ {
 
 	void ImGuiLayer::Begin()
 	{
+		// TODO: ImplOenGL3_NewFrame is probably called only once, maybe it does not have to be called here
 		auto result = Renderer::GetPool().PushJob<bool>([this]()->bool {
 			ImGui_ImplOpenGL3_NewFrame();
 			return true;
