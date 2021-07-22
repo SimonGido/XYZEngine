@@ -48,12 +48,19 @@ namespace XYZ {
 
 		// Setup Platform/Renderer bindings
 
+		#ifdef RENDER_THREAD_ENABLED
 		auto result = Renderer::GetPool().PushJob<bool>([window]()->bool {
 			ImGui_ImplGlfw_InitForOpenGL(window, true);	
 			ImGui_ImplOpenGL3_Init("#version 410");
+			ImGui_ImplOpenGL3_NewFrame();
 			return true;
 		});
 		result.wait();
+		#else
+		ImGui_ImplGlfw_InitForOpenGL(window, true);
+		ImGui_ImplOpenGL3_Init("#version 410");
+		
+		#endif
 	}
 
 	void ImGuiLayer::OnDetach()
@@ -82,13 +89,14 @@ namespace XYZ {
 
 	void ImGuiLayer::Begin()
 	{
-		// TODO: ImplOenGL3_NewFrame is probably called only once, maybe it does not have to be called here
-		auto result = Renderer::GetPool().PushJob<bool>([this]()->bool {
+		#ifdef RENDER_THREAD_ENABLED
+		auto result = Renderer::GetPool().PushJob<bool>([window]()->bool {
 			ImGui_ImplOpenGL3_NewFrame();
-			return true;
 		});
 		result.wait();
-
+		#else
+		ImGui_ImplOpenGL3_NewFrame();
+		#endif
 		ImGui_ImplGlfw_NewFrame();	
 		ImGui::NewFrame();
 		if (m_EnableDockspace)
@@ -96,18 +104,17 @@ namespace XYZ {
 	}
 
 	void ImGuiLayer::End()
-	{
+	{	
+		#ifdef RENDER_THREAD_ENABLED
 		auto result = Renderer::GetPool().PushJob<bool>([this]()->bool {
 			ImGuiIO& io = ImGui::GetIO();
 			Application& app = Application::Get();
 			io.DisplaySize = ImVec2((float)app.GetWindow().GetWidth(), (float)app.GetWindow().GetHeight());
-			
 			ImGui::Render();
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
 			if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 			{
-				GLFWwindow* backup_current_context = glfwGetCurrentContext();
+				GLFWwindow* backup_current_context = glfwGetCurrentContext();		
 				ImGui::UpdatePlatformWindows();
 				ImGui::RenderPlatformWindowsDefault();
 				glfwMakeContextCurrent(backup_current_context);
@@ -115,6 +122,21 @@ namespace XYZ {
 			return true;
 		});
 		result.wait();
+		#else
+		ImGuiIO& io = ImGui::GetIO();
+		Application& app = Application::Get();
+		io.DisplaySize = ImVec2((float)app.GetWindow().GetWidth(), (float)app.GetWindow().GetHeight());
+		
+		ImGui::Render();	
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			GLFWwindow* backup_current_context = glfwGetCurrentContext();
+			ImGui::UpdatePlatformWindows();
+			ImGui::RenderPlatformWindowsDefault();
+			glfwMakeContextCurrent(backup_current_context);
+		}
+		#endif
 	}
 
 	void ImGuiLayer::SetDarkThemeColors()

@@ -55,13 +55,15 @@ namespace XYZ {
 		}
 
 		m_Context = APIContext::Create(m_Window);	
-
+		#ifdef RENDER_THREAD_ENABLED
 		auto result = Renderer::GetPool().PushJob<bool>([this]() ->bool {
 			m_Context->Init();
 			return true;
 		});
 		result.wait();
-
+		#else
+		m_Context->Init();
+		#endif
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 
 		
@@ -174,9 +176,13 @@ namespace XYZ {
 
 	void WindowsWindow::SetVSync(int32_t frames)
 	{
+		#ifdef RENDER_THREAD_ENABLED
 		Renderer::GetPool().PushJob<void>([frames]() {
 			glfwSwapInterval(frames);
 		});
+		#else
+		glfwSwapInterval(frames);
+		#endif
 	}
 
 	bool WindowsWindow::IsClosed()

@@ -51,8 +51,6 @@
 
 
 
-
-
 namespace XYZ {
 
 	template<typename R, typename T, typename U, typename... Args>

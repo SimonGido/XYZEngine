@@ -198,6 +198,7 @@ namespace XYZ {
 	{
 		auto queue = s_Data.CommandQueue;
 		queue->Swap();
+		#ifdef RENDER_THREAD_ENABLED
 		s_Data.RenderThreadFinished = s_Data.Pool.PushJob<bool>([queue]() -> bool{
 			{
 				auto val = queue->Read();
@@ -206,12 +207,21 @@ namespace XYZ {
 			
 			return true;
 		});
+		#else
+		{
+			auto val = queue->Read();
+			val.Get().Execute();
+		}
+		#endif
+
 	}
 
 
 	void Renderer::BlockRenderThread()
 	{
+		#ifdef RENDER_THREAD_ENABLED
 		s_Data.RenderThreadFinished.wait();
+		#endif
 	}
 
 	ScopedLockReference<RenderCommandQueue> Renderer::GetRenderCommandQueue(uint8_t type)
