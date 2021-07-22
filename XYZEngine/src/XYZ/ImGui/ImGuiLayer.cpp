@@ -59,7 +59,7 @@ namespace XYZ {
 		#else
 		ImGui_ImplGlfw_InitForOpenGL(window, true);
 		ImGui_ImplOpenGL3_Init("#version 410");
-		
+		ImGui_ImplOpenGL3_NewFrame();
 		#endif
 	}
 
@@ -89,14 +89,6 @@ namespace XYZ {
 
 	void ImGuiLayer::Begin()
 	{
-		#ifdef RENDER_THREAD_ENABLED
-		auto result = Renderer::GetPool().PushJob<bool>([window]()->bool {
-			ImGui_ImplOpenGL3_NewFrame();
-		});
-		result.wait();
-		#else
-		ImGui_ImplOpenGL3_NewFrame();
-		#endif
 		ImGui_ImplGlfw_NewFrame();	
 		ImGui::NewFrame();
 		if (m_EnableDockspace)

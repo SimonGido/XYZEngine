@@ -3,6 +3,7 @@
 #include <functional>
 
 
+#define RENDER_THREAD_ENABLED
 
 #define _AMD64_
 
