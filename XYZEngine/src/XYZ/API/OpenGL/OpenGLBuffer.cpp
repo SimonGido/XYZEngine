@@ -9,14 +9,17 @@ namespace XYZ {
 	OpenGLVertexBuffer::OpenGLVertexBuffer(void* vertices, uint32_t size, BufferUsage usage)
 		: m_Size(size), m_Usage(usage)
 	{
-		m_LocalData = ByteBuffer::Copy(vertices, size);
+		ByteBuffer buffer;
+		buffer.Allocate(size);
+		if (vertices)
+			buffer.Write(vertices, size, 0);
 		Renderer::Submit([=]() {
 			glCreateBuffers(1, &m_RendererID);
 			glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
 			switch (usage)
 			{
-			case BufferUsage::Static:    glBufferData(GL_ARRAY_BUFFER, size, m_LocalData, GL_STATIC_DRAW); break;
-			case BufferUsage::Dynamic:   glBufferData(GL_ARRAY_BUFFER, size, m_LocalData, GL_DYNAMIC_DRAW); break;
+			case BufferUsage::Static:    glBufferData(GL_ARRAY_BUFFER, size, buffer, GL_STATIC_DRAW); break;
+			case BufferUsage::Dynamic:   glBufferData(GL_ARRAY_BUFFER, size, buffer, GL_DYNAMIC_DRAW); break;
 			}
 		});
 	}
@@ -24,27 +27,35 @@ namespace XYZ {
 	OpenGLVertexBuffer::OpenGLVertexBuffer(uint32_t size)
 		: m_Size(size), m_Usage(BufferUsage::Dynamic)
 	{
-		m_LocalData.Allocate(size);
-		Renderer::Submit([this]() {
+		ByteBuffer buffer;
+		buffer.Allocate(size);
+		Renderer::Submit([this, buffer]() mutable {
 			glCreateBuffers(1, &m_RendererID);
 			glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
 			glBufferData(GL_ARRAY_BUFFER, m_Size, nullptr, GL_DYNAMIC_DRAW);
-			});
+			m_Buffers.EmplaceBack(std::move(buffer));
+		});
 	}
 
 	OpenGLVertexBuffer::~OpenGLVertexBuffer()
 	{
-		delete[]m_LocalData;
-		Renderer::Submit([this]() {
-			glDeleteBuffers(1, &m_RendererID);
+		while (!m_Buffers.Empty())
+		{
+			ByteBuffer buffer = m_Buffers.PopBack();
+			delete[]buffer;
+		}
+		Ref<OpenGLVertexBuffer> instance = this;
+		Renderer::Submit([instance]() {
+			glDeleteBuffers(1, &instance->m_RendererID);
 		});
 	}
 
 	void OpenGLVertexBuffer::Bind() const
 	{
-		Renderer::Submit([this]() {
-			glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
-			});
+		Ref<const OpenGLVertexBuffer> instance = this;
+		Renderer::Submit([instance]() {
+			glBindBuffer(GL_ARRAY_BUFFER, instance->m_RendererID);
+		});
 	}
 
 	void OpenGLVertexBuffer::UnBind() const
@@ -52,41 +63,47 @@ namespace XYZ {
 		Renderer::Submit([]() {glBindBuffer(GL_ARRAY_BUFFER, 0); });
 	}
 
-	void OpenGLVertexBuffer::UpdateNoCopy(void* vertices, uint32_t size, uint32_t offset) const
-	{
-		ByteBuffer buffer((uint8_t*)vertices, size);
-		Ref<const OpenGLVertexBuffer> instance = this;
-		Renderer::Submit([instance, offset, size, buffer]() {
-			XYZ_ASSERT(instance->m_Usage == BufferUsage::Dynamic, "Buffer does not have dynamic usage");
-			glBindBuffer(GL_ARRAY_BUFFER, instance->m_RendererID);
-			glBufferSubData(GL_ARRAY_BUFFER, offset, size, buffer);
-		});
-	}
 
 	void OpenGLVertexBuffer::Update(void* vertices, uint32_t size, uint32_t offset)
 	{
-		// TODO: use multiple buffers instead of copying
-		ByteBuffer buffer = ByteBuffer::Copy(vertices, size);
+		ByteBuffer buffer;
+		if (m_Buffers.Empty())
+			buffer.Allocate(m_Size);
+		else
+			buffer = m_Buffers.PopBack();
+
+		buffer.Write(vertices, size, offset);
+
 		Ref<OpenGLVertexBuffer> instance = this;
-		Renderer::Submit([instance, offset, size, buffer]() {
+		Renderer::Submit([instance, offset, size, buffer]() mutable {
 			XYZ_ASSERT(instance->m_Usage == BufferUsage::Dynamic, "Buffer does not have dynamic usage");
 			glBindBuffer(GL_ARRAY_BUFFER, instance->m_RendererID);
 			glBufferSubData(GL_ARRAY_BUFFER, offset, size, buffer);
-			delete[] buffer;
+			instance->m_Buffers.EmplaceBack(std::move(buffer));
 		});
 	}
 
 	void OpenGLVertexBuffer::Resize(float* vertices, uint32_t size)
 	{
-		Renderer::Submit([=]() {
-			m_Size = size;
-			glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
-			switch (m_Usage)
+		while (!m_Buffers.Empty())
+		{
+			ByteBuffer buffer = m_Buffers.PopBack();
+			delete[]buffer;
+		}
+		ByteBuffer buffer;
+		buffer = ByteBuffer::Copy(vertices, size);
+
+		Ref<OpenGLVertexBuffer> instance = this;
+		Renderer::Submit([instance, size, buffer]() mutable {
+			instance->m_Size = size;
+			glBindBuffer(GL_ARRAY_BUFFER, instance->m_RendererID);
+			switch (instance->m_Usage)
 			{
-			case BufferUsage::Static:    glBufferData(GL_ARRAY_BUFFER, size, m_LocalData, GL_STATIC_DRAW); break;
-			case BufferUsage::Dynamic:   glBufferData(GL_ARRAY_BUFFER, size, m_LocalData, GL_DYNAMIC_DRAW); break;
+			case BufferUsage::Static:    glBufferData(GL_ARRAY_BUFFER, size, buffer, GL_STATIC_DRAW); break;
+			case BufferUsage::Dynamic:   glBufferData(GL_ARRAY_BUFFER, size, buffer, GL_DYNAMIC_DRAW); break;
 			}
-			});
+			instance->m_Buffers.PushBack(buffer);
+		});
 	}
 
 	OpenGLIndexBuffer::OpenGLIndexBuffer(uint32_t* indices, uint32_t count)
@@ -104,23 +121,25 @@ namespace XYZ {
 	OpenGLIndexBuffer::~OpenGLIndexBuffer()
 	{
 		delete[]m_LocalData;
-		Renderer::Submit([this]() {
-			glDeleteBuffers(1, &m_RendererID);
-			});
+		Ref<OpenGLIndexBuffer> instance = this;
+		Renderer::Submit([instance]() {
+			glDeleteBuffers(1, &instance->m_RendererID);
+		});
 	}
 
 	void OpenGLIndexBuffer::Bind() const
 	{
+		Ref<const OpenGLIndexBuffer> instance = this;
 		Renderer::Submit([=]() {
-			glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
-			});
+			glBindBuffer(GL_ARRAY_BUFFER, instance->m_RendererID);
+		});
 	}
 
 	void OpenGLIndexBuffer::UnBind() const
 	{
 		Renderer::Submit([=]() {
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
-			});
+		});
 	}
 
 
@@ -128,19 +147,19 @@ namespace XYZ {
 	OpenGLShaderStorageBuffer::OpenGLShaderStorageBuffer(void* data, uint32_t size, uint32_t binding, BufferUsage usage)
 		:m_Size(size), m_Binding(binding), m_Usage(usage)
 	{
+		ByteBuffer buffer;
+		buffer.Allocate(size);
 		if (data)
-			m_LocalData = ByteBuffer::Copy(data, size);
-		else
-			m_LocalData.Allocate(size);
+			buffer.Write(data, size, 0);
 
 		Ref<OpenGLShaderStorageBuffer> instance = this;
-		Renderer::Submit([instance, size, binding]() mutable {
+		Renderer::Submit([instance, size, binding, buffer]() mutable {
 			glGenBuffers(1, &instance->m_RendererID);
 			glBindBuffer(GL_SHADER_STORAGE_BUFFER, instance->m_RendererID);
 			switch (instance->m_Usage)
 			{
-			case BufferUsage::Static:    glBufferData(GL_SHADER_STORAGE_BUFFER, size, instance->m_LocalData, GL_STATIC_DRAW); break;
-			case BufferUsage::Dynamic:   glBufferData(GL_SHADER_STORAGE_BUFFER, size, instance->m_LocalData, GL_DYNAMIC_DRAW); break;
+			case BufferUsage::Static:    glBufferData(GL_SHADER_STORAGE_BUFFER, size, buffer, GL_STATIC_DRAW); break;
+			case BufferUsage::Dynamic:   glBufferData(GL_SHADER_STORAGE_BUFFER, size, buffer, GL_DYNAMIC_DRAW); break;
 			}
 			glBindBufferBase(GL_UNIFORM_BUFFER, binding, instance->m_RendererID);
 		});
@@ -148,8 +167,11 @@ namespace XYZ {
 
 	OpenGLShaderStorageBuffer::~OpenGLShaderStorageBuffer()
 	{
-		if (m_LocalData)
-			delete[]m_LocalData;
+		while (!m_Buffers.Empty())
+		{
+			ByteBuffer buffer = m_Buffers.PopBack();
+			delete[]buffer;
+		}
 		Renderer::Submit([=]() {
 			glDeleteBuffers(1, &m_RendererID);
 		});
@@ -181,30 +203,41 @@ namespace XYZ {
 
 	void OpenGLShaderStorageBuffer::Update(void* data, uint32_t size, uint32_t offset)
 	{
-		ByteBuffer buffer = ByteBuffer::Copy(data, size);
+		ByteBuffer buffer;
+		if (m_Buffers.Empty())
+			buffer.Allocate(m_Size);
+		else
+			buffer = m_Buffers.PopBack();
+
+		buffer.Write(data, size, offset);
+
 		Ref<OpenGLShaderStorageBuffer> instance = this;
-		Renderer::Submit([instance, size, offset, buffer] () {
+		Renderer::Submit([instance, size, offset, buffer]() mutable {
 			glBindBuffer(GL_ARRAY_BUFFER, instance->m_RendererID);
 			glBufferSubData(GL_ARRAY_BUFFER, offset, size, buffer);
-			delete[] buffer;
+			instance->m_Buffers.PushBack(buffer);
 		});
 	}
 
 	void OpenGLShaderStorageBuffer::Resize(void* data, uint32_t size)
 	{
-		ByteBuffer buffer(nullptr, size);
-		if (data)
-			buffer.Write(data, size, 0);
+		while (!m_Buffers.Empty())
+		{
+			ByteBuffer buffer = m_Buffers.PopBack();
+			delete[]buffer;
+		}
+		ByteBuffer buffer;
+		buffer = ByteBuffer::Copy(data, size);
 
 		Ref<OpenGLShaderStorageBuffer> instance = this;
-		Renderer::Submit([instance, size, buffer]() {
+		Renderer::Submit([instance, size, buffer]() mutable {
 			glBindBuffer(GL_ARRAY_BUFFER, instance->m_RendererID);
 			switch (instance->m_Usage)
 			{
 			case BufferUsage::Static:    glBufferData(GL_ARRAY_BUFFER, size, buffer, GL_STATIC_DRAW); break;
 			case BufferUsage::Dynamic:   glBufferData(GL_ARRAY_BUFFER, size, buffer, GL_DYNAMIC_DRAW); break;
 			}
-			delete[]buffer;
+			instance->m_Buffers.PushBack(buffer);
 		});
 	}
 	void OpenGLShaderStorageBuffer::GetSubData(void** buffer, uint32_t size, uint32_t offset)
@@ -236,7 +269,7 @@ namespace XYZ {
 		Renderer::Submit([=]() {
 			glDeleteBuffers(1, &m_RendererID);
 			delete[]m_Counters;
-			});
+		});
 	}
 	void OpenGLAtomicCounter::Reset()
 	{
@@ -254,7 +287,7 @@ namespace XYZ {
 		Renderer::Submit([instance, index]() {
 			glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, instance->m_RendererID);
 			glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, index, instance->m_RendererID);
-			});
+		});
 	}
 	void OpenGLAtomicCounter::Update(uint32_t* data, uint32_t count, uint32_t offset)
 	{

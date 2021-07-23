@@ -2,10 +2,12 @@
 
 #include "XYZ/Renderer/Texture.h"
 #include "XYZ/Utils/DataStructures/ByteBuffer.h"
+#include "XYZ/Utils/DataStructures/Queue.h"
 
 #include <GL/glew.h>
 
 namespace XYZ {
+
 	class OpenGLTexture2D : public Texture2D
 	{
 	public:
@@ -13,7 +15,7 @@ namespace XYZ {
 		OpenGLTexture2D(uint32_t width, uint32_t height, uint32_t channels, const TextureSpecs& specs);
 		virtual ~OpenGLTexture2D();
 
-	
+
 		virtual void Bind(uint32_t slot = 0) const override;
 		virtual void SetData(void* data, uint32_t size) override;
 		virtual void GetData(uint8_t** buffer) const override;
@@ -32,12 +34,12 @@ namespace XYZ {
 		uint32_t m_Channels;
 
 		TextureSpecs m_Specification;
-		
+
 		GLenum m_DataFormat, m_InternalFormat;
-		ByteBuffer m_LocalData;
+		Queue<ByteBuffer> m_Buffers;
 
 		std::string m_Filepath;
-	};	
+	};
 
 
 
@@ -55,7 +57,7 @@ namespace XYZ {
 		inline virtual uint32_t GetChannels() const override { return m_Channels; }
 		inline virtual uint32_t GetRendererID() const override { return m_RendererID; }
 		virtual const TextureSpecs& GetSpecification() const override { return m_Specification; };
-		
+
 	private:
 		uint32_t m_RendererID = 0;
 
@@ -66,7 +68,7 @@ namespace XYZ {
 		TextureSpecs m_Specification;
 
 		GLenum m_DataFormat, m_InternalFormat;
-		ByteBuffer m_LocalData;
+		Queue<ByteBuffer> m_Buffers;
 
 		std::vector<std::string> m_Filepaths;
 	};

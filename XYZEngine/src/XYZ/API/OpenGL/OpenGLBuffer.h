@@ -2,6 +2,8 @@
 #include "XYZ/Renderer/Buffer.h"
 #include "XYZ/Utils/DataStructures/ByteBuffer.h"
 
+#include "XYZ/Utils/DataStructures/Queue.h"
+
 namespace XYZ {
 	class OpenGLVertexBuffer : public VertexBuffer
 	{
@@ -12,7 +14,6 @@ namespace XYZ {
 
 		virtual void Bind() const override;
 		virtual void UnBind() const override;
-		virtual void UpdateNoCopy(void* vertices, uint32_t size, uint32_t offset = 0) const override;
 		virtual void Update(void* vertices, uint32_t size, uint32_t offset = 0) override;
 		virtual void Resize(float* vertices, uint32_t size) override;
 
@@ -24,7 +25,7 @@ namespace XYZ {
 		uint32_t m_Size;
 		BufferUsage m_Usage;
 		BufferLayout m_Layout;
-		ByteBuffer m_LocalData;
+		Queue<ByteBuffer> m_Buffers;
 	};
 
 	class OpenGLIndexBuffer : public IndexBuffer
@@ -64,7 +65,7 @@ namespace XYZ {
 		uint32_t m_Binding;
 		BufferUsage m_Usage;
 		BufferLayout m_Layout;
-		ByteBuffer m_LocalData;
+		Queue<ByteBuffer> m_Buffers;
 	};
 
 

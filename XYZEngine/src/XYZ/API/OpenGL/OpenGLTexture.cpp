@@ -8,20 +8,21 @@
 
 namespace XYZ {
 	OpenGLTexture2D::OpenGLTexture2D(const TextureSpecs& specs, const std::string& path)
-		: 
+		:
 		m_Specification(specs),
 		m_Filepath(path)
 	{
 		int width, height, channels;
-		stbi_set_flip_vertically_on_load(1);	
-		m_LocalData = (uint8_t*)stbi_load(path.c_str(), &width, &height, &channels, 0);
+		stbi_set_flip_vertically_on_load(1);
+		ByteBuffer buffer;
+		buffer = (uint8_t*)stbi_load(path.c_str(), &width, &height, &channels, 0);
 
-		
-		XYZ_ASSERT(m_LocalData, "Failed to load image!");
+
+		XYZ_ASSERT(buffer, "Failed to load image!");
 		m_Width = width;
 		m_Height = height;
 		m_Channels = channels;
-	
+
 		GLenum internalFormat = 0, dataFormat = 0;
 		if (channels == 4)
 		{
@@ -45,7 +46,7 @@ namespace XYZ {
 
 		XYZ_ASSERT(internalFormat & dataFormat, "Format not supported!");
 		Ref<OpenGLTexture2D> instance = this;
-		Renderer::Submit([instance]() mutable {
+		Renderer::Submit([instance, buffer]() mutable {
 			glCreateTextures(GL_TEXTURE_2D, 1, &instance->m_RendererID);
 			int levels = Texture::CalculateMipMapCount(instance->m_Width, instance->m_Height);
 			glTextureStorage2D(instance->m_RendererID, 1, instance->m_InternalFormat, instance->m_Width, instance->m_Height);
@@ -77,17 +78,16 @@ namespace XYZ {
 				glTextureParameteri(instance->m_RendererID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 				glTextureParameteri(instance->m_RendererID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 			}
-			glTextureSubImage2D(instance->m_RendererID, 0, 0, 0, instance->m_Width,instance->m_Height, instance->m_DataFormat, GL_UNSIGNED_BYTE, instance->m_LocalData);
+			glTextureSubImage2D(instance->m_RendererID, 0, 0, 0, instance->m_Width, instance->m_Height, instance->m_DataFormat, GL_UNSIGNED_BYTE, buffer);
 			glGenerateTextureMipmap(instance->m_RendererID);
 
-			stbi_image_free(instance->m_LocalData);
-			instance->m_LocalData = nullptr;
+			stbi_image_free(buffer);
 		});
 	}
 
 	OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, uint32_t channels, const TextureSpecs& specs)
 		: m_Width(width), m_Height(height), m_Channels(channels), m_Specification(specs)
-	{	
+	{
 		m_DataFormat = 0;
 		m_InternalFormat = 0;
 
@@ -110,8 +110,9 @@ namespace XYZ {
 		{
 			XYZ_ASSERT("Channel is not supported ", m_Channels);
 		}
-		
-		m_LocalData.Allocate(m_Width * m_Height * m_Channels);
+
+		ByteBuffer buffer;
+		buffer.Allocate(m_Width * m_Height * m_Channels);
 
 		Ref<OpenGLTexture2D> instance = this;
 		Renderer::Submit([instance]() mutable {
@@ -153,19 +154,30 @@ namespace XYZ {
 
 	OpenGLTexture2D::~OpenGLTexture2D()
 	{
-		delete[]m_LocalData;
+		while (!m_Buffers.Empty())
+		{
+			ByteBuffer buffer = m_Buffers.PopBack();
+			delete[] buffer;
+		}
 		Renderer::Submit([=]() {glDeleteTextures(1, &m_RendererID); });
 	}
 
 	void OpenGLTexture2D::SetData(void* data, uint32_t size)
 	{
-		m_LocalData.ZeroInitialize();
-		m_LocalData.Write(data, size, 0);
+		ByteBuffer buffer;
+		if (m_Buffers.Empty())
+			buffer.Allocate(m_Width * m_Height * m_Channels);
+		else
+			buffer = m_Buffers.PopBack();
+
+		buffer.ZeroInitialize();
+		buffer.Write(data, size);
 		Ref<OpenGLTexture2D> instance = this;
-		Renderer::Submit([instance,size]() {
+		Renderer::Submit([instance, size, buffer]() mutable {
 			XYZ_ASSERT(size == instance->m_Width * instance->m_Height * instance->m_Channels, "Data must be entire texture!");
 			XYZ_ASSERT(instance->m_DataFormat && instance->m_InternalFormat, "Texture has no format or was created from frame buffer");
-			glTextureSubImage2D(instance->m_RendererID, 0, 0, 0, instance->m_Width, instance->m_Height, instance->m_DataFormat, GL_UNSIGNED_BYTE, instance->m_LocalData);
+			glTextureSubImage2D(instance->m_RendererID, 0, 0, 0, instance->m_Width, instance->m_Height, instance->m_DataFormat, GL_UNSIGNED_BYTE, buffer);
+			instance->m_Buffers.EmplaceBack(std::move(buffer));
 		});
 	}
 
@@ -184,16 +196,16 @@ namespace XYZ {
 	void OpenGLTexture2D::Bind(uint32_t slot) const
 	{
 		Ref<const OpenGLTexture2D> instance = this;
-		Renderer::Submit([instance,slot ]() {
-			glBindTextureUnit(slot, instance->m_RendererID); 
+		Renderer::Submit([instance, slot]() {
+			glBindTextureUnit(slot, instance->m_RendererID);
 		});
 	}
 
-	void OpenGLTexture2D::Bind(uint32_t rendererID,uint32_t slot)
+	void OpenGLTexture2D::Bind(uint32_t rendererID, uint32_t slot)
 	{
 		Renderer::Submit([=]() {
-			glBindTextureUnit(slot, rendererID); 
-			});
+			glBindTextureUnit(slot, rendererID);
+		});
 	}
 	OpenGLTexture2DArray::OpenGLTexture2DArray(const TextureSpecs& specs, const std::initializer_list<std::string>& paths)
 		:
@@ -205,14 +217,18 @@ namespace XYZ {
 		int width = 0, height = 0, channels = 0;
 		stbi_set_flip_vertically_on_load(1);
 		uint32_t offset = 0;
+
+		ByteBuffer buffer;
+		buffer.Allocate(width * height * channels * paths.size());
 		for (auto& path : m_Filepaths)
 		{
 			uint8_t* ptr = (uint8_t*)stbi_load(path.c_str(), &width, &height, &channels, 0);
 			uint32_t size = width * height * channels;
-			m_LocalData.Write(ptr, size, offset);
+
+			buffer.Write(ptr, size, offset);
 			offset += size;
 		}
-		XYZ_ASSERT(m_LocalData, "Failed to load image!");
+		XYZ_ASSERT(buffer, "Failed to load image!");
 		m_Width = width;
 		m_Height = height;
 		m_Channels = channels;
@@ -240,7 +256,7 @@ namespace XYZ {
 
 		XYZ_ASSERT(internalFormat & dataFormat, "Format not supported!");
 		Ref<OpenGLTexture2DArray> instance = this;
-		Renderer::Submit([instance]() mutable {
+		Renderer::Submit([instance, buffer]() mutable {
 			glCreateTextures(GL_TEXTURE_2D_ARRAY, 1, &instance->m_RendererID);
 			int levels = Texture::CalculateMipMapCount(instance->m_Width, instance->m_Height);
 			glTextureStorage3D(instance->m_RendererID, 1, instance->m_InternalFormat, instance->m_Width, instance->m_Height, instance->m_LayerCount);
@@ -272,11 +288,10 @@ namespace XYZ {
 				glTextureParameteri(instance->m_RendererID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 				glTextureParameteri(instance->m_RendererID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 			}
-			glTextureSubImage3D(instance->m_RendererID,0, 0, 0, 0, instance->m_Width, instance->m_Height, instance->m_LayerCount, instance->m_DataFormat, GL_UNSIGNED_BYTE, instance->m_LocalData);
+			glTextureSubImage3D(instance->m_RendererID, 0, 0, 0, 0, instance->m_Width, instance->m_Height, instance->m_LayerCount, instance->m_DataFormat, GL_UNSIGNED_BYTE, buffer);
 			glGenerateTextureMipmap(instance->m_RendererID);
 
-			stbi_image_free(instance->m_LocalData);
-			instance->m_LocalData = nullptr;
+			stbi_image_free(buffer);
 		});
 	}
 	OpenGLTexture2DArray::OpenGLTexture2DArray(uint32_t layerCount, uint32_t width, uint32_t height, uint32_t channels, const TextureSpecs& specs)
@@ -305,7 +320,8 @@ namespace XYZ {
 			XYZ_ASSERT("Channel is not supported ", m_Channels);
 		}
 
-		m_LocalData.Allocate(m_Width * m_Height * m_Channels * m_LayerCount);
+		ByteBuffer buffer;
+		buffer.Allocate(m_Width * m_Height * m_Channels * m_LayerCount);
 
 		Ref<OpenGLTexture2DArray> instance = this;
 		Renderer::Submit([instance]() mutable {
@@ -346,7 +362,11 @@ namespace XYZ {
 	}
 	OpenGLTexture2DArray::~OpenGLTexture2DArray()
 	{
-		delete[]m_LocalData;
+		while (!m_Buffers.Empty())
+		{
+			ByteBuffer buffer = m_Buffers.PopBack();
+			delete[] buffer;
+		}
 		Renderer::Submit([=]() {glDeleteTextures(1, &m_RendererID); });
 	}
 	void OpenGLTexture2DArray::Bind(uint32_t slot) const
