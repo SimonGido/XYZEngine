@@ -273,7 +273,8 @@ namespace XYZ {
 		delete[] s_Data.PointBufferBase;
 
 		
-
+		for (uint32_t i = 0; i < s_Data.MaxTextures; ++i)
+			s_Data.TextureSlots[i].Reset();
 
 		// Release all the resources used by renderer
 		s_Data.DefaultQuadMaterial.Reset();
