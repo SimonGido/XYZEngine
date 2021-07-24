@@ -19,10 +19,10 @@ namespace XYZ {
 			Ref<Asset> GetSelectedAsset() const;
 
 		private:
+			void createAsset();
 			void processDirectory(const std::string& path);
 			size_t assetTypeToTexCoordsIndex(AssetType type) const;
 			std::string fullPath(const std::string& filename) const;
-
 		private:
 			AssetSelectedCallback m_Callback;
 
@@ -51,9 +51,9 @@ namespace XYZ {
 			glm::vec2 m_IconSize;
 			glm::vec2 m_ArrowSize;
 
-			char m_Path[_MAX_PATH];
+			char		m_Path[_MAX_PATH];
 			std::string m_SelectedFile;
-			size_t m_PathLength;
+			size_t		m_PathLength;
 
 			std::deque<std::string> m_DirectoriesVisited;
 

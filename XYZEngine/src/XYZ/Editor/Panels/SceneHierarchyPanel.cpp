@@ -31,7 +31,7 @@ namespace XYZ {
                 if (m_Context.Raw())
                 {
                     drawEntityNode(SceneEntity(m_Context->m_SceneEntity, m_Context.Raw()));
-                    if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
+                    if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && ImGui::IsWindowHovered())
                         m_Context->SetSelectedEntity(Entity());
 
                     if (ImGui::BeginPopupContextWindow(0, 1, false))

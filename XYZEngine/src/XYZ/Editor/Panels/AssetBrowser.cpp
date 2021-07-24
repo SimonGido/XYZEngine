@@ -4,6 +4,7 @@
 #include "XYZ/Utils/StringUtils.h"
 #include "XYZ/Asset/AssetManager.h"
 #include "XYZ/Scene/Scene.h"
+#include "XYZ/Scene/SceneSerializer.h"
 #include "XYZ/Renderer/Font.h"
 
 #include <imgui.h>
@@ -138,6 +139,7 @@ namespace XYZ {
 					m_PathLength = strlen(m_Path);
 				}
 
+				createAsset();
 				processDirectory(m_Path);
 				ImGui::PopStyleColor();
 			}
@@ -184,6 +186,40 @@ namespace XYZ {
 				}
 			}
 			return Ref<Asset>();
+		}
+		void AssetBrowser::createAsset()
+		{
+			if (ImGui::IsMouseDown(ImGuiMouseButton_Right) && ImGui::IsWindowHovered())
+			{
+				ImGui::OpenPopup("CreateAsset");
+			}
+			if (ImGui::BeginPopup("CreateAsset"))
+			{
+				if (ImGui::MenuItem("Create Scene"))
+				{
+					char fileName[60];
+					sprintf(fileName, "New Scene.xyz");
+					std::string fullpath = fullPath(fileName);
+					if (std::filesystem::exists(fullpath))
+					{
+						uint32_t index = 0;
+						sprintf(fileName, "New Scene%d.xyz", index);
+						fullpath = fullPath(fileName);
+						while (std::filesystem::exists(fullpath))
+						{
+							sprintf(fileName, "New Scene%d.xyz", ++index);
+							fullpath = fullPath(fileName);
+						}
+					}
+					Ref<XYZ::Scene> scene = Ref<XYZ::Scene>::Create(fileName);
+					scene->FilePath = fullpath;
+					SceneSerializer serializer(scene);
+					serializer.Serialize();
+
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::EndPopup();
+			}
 		}
 		void AssetBrowser::processDirectory(const std::string& path)
 		{
