@@ -10,6 +10,7 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 
+#include <imgui.h>
 
 namespace XYZ {
 	Application* Application::s_Application = nullptr;
@@ -44,13 +45,14 @@ namespace XYZ {
 
 	void Application::Run()
 	{
+		float performance = 0.0f;
 		while (m_Running)
-		{
+		{		
 			float time = (float)glfwGetTime();
 			float timestep = time - m_LastFrameTime;
 			m_LastFrameTime = time;
 			{
-				Scopewatch watch;				
+				Stopwatch watch;				
 				Renderer::WaitAndRender();
 
 				for (Layer* layer : m_LayerStack)	
@@ -58,9 +60,18 @@ namespace XYZ {
 
 				
 				m_ImGuiLayer->Begin();
+				if (ImGui::Begin("Stats"))
+				{
+					ImGui::Text("Performance: %f ms", performance);
+				}
+				ImGui::End();
+
 				for (Layer* layer : m_LayerStack)
 					layer->OnImGuiRender();
+		
 				m_ImGuiLayer->End();
+
+				performance = watch.Stop();
 			}
 			m_Window->Update();
 		}

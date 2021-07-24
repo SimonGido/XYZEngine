@@ -76,7 +76,6 @@ namespace XYZ {
 	}
 	void EditorLayer::OnUpdate(Timestep ts)
 	{				
-		m_Timestep = ts;
 		if (m_Scene->GetState() == SceneState::Play)
 		{
 			m_Scene->OnUpdate(ts);
@@ -146,8 +145,6 @@ namespace XYZ {
 		if (ImGui::Begin("Stats"))
 		{
 			const auto& stats = Renderer::GetStats();
-			ImGui::Text("Timestep: %f ms", m_Timestep.GetMilliseconds());
-			ImGui::Text("FPS: %f", 1.0f / m_Timestep.GetSeconds());
 			ImGui::Text("Draw Arrays: %d", stats.DrawArraysCount);
 			ImGui::Text("Draw Indexed: %d", stats.DrawIndexedCount);
 			ImGui::Text("Draw Instanced: %d", stats.DrawInstancedCount);

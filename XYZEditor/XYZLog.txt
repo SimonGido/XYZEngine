@@ -2435,3 +2435,31 @@ XYZ::WindowResizeEvent::WindowResizeEvent: Window: Resized window width: 1920 he
 XYZ::WindowResizeEvent::WindowResizeEvent: Window: Resized window width: 1920 height: 1061
 XYZ::WindowResizeEvent::WindowResizeEvent: Window: Resized window width: 1920 height: 1017
 XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScriptCore.dll
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScript.dll
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScriptCore.dll
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScript.dll
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScriptCore.dll
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScript.dll
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 2070/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.33
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScriptCore.dll
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScript.dll
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
