@@ -25,6 +25,7 @@ namespace XYZ {
 		Ref<IndexBuffer>								FullscreenQuadIndexBuffer;
 
 		std::future<bool>							    RenderThreadFinished;
+		RendererStats									Stats;
 	};
 
 	static RendererData s_Data;
@@ -136,6 +137,7 @@ namespace XYZ {
 
 	void Renderer::DrawArrays(PrimitiveType type, uint32_t count)
 	{
+		s_Data.Stats.DrawArraysCount++;
 		Renderer::Submit([=]() {
 			RendererAPI::DrawArrays(type, count);
 			});
@@ -143,6 +145,7 @@ namespace XYZ {
 
 	void Renderer::DrawIndexed(PrimitiveType type, uint32_t indexCount, uint32_t queueType)
 	{
+		s_Data.Stats.DrawIndexedCount++;
 		Renderer::Submit([=]() {
 			RendererAPI::DrawIndexed(type, indexCount);
 		}, queueType);
@@ -150,6 +153,7 @@ namespace XYZ {
 
 	void Renderer::DrawInstanced(const Ref<VertexArray>& vertexArray, uint32_t count, uint32_t offset)
 	{
+		s_Data.Stats.DrawInstancedCount++;
 		Renderer::Submit([=]() {
 			RendererAPI::DrawInstanced(vertexArray, count, offset);
 		});
@@ -157,6 +161,7 @@ namespace XYZ {
 
 	void Renderer::DrawElementsIndirect(void* indirect)
 	{
+		s_Data.Stats.DrawIndirectCount++;
 		Renderer::Submit([=]() {
 			RendererAPI::DrawInstancedIndirect(indirect);
 		});
@@ -164,6 +169,7 @@ namespace XYZ {
 
 	void Renderer::SubmitFullscreenQuad()
 	{
+		s_Data.Stats.DrawFullscreenCount++;
 		s_Data.FullscreenQuadVertexArray->Bind();
 		Renderer::DrawIndexed(PrimitiveType::Triangles, 6);
 	}
@@ -194,8 +200,15 @@ namespace XYZ {
 		return s_Data.Pool;
 	}
 
+	const RendererStats& Renderer::GetStats()
+	{
+		return s_Data.Stats;
+	}
+
 	void Renderer::WaitAndRender()
 	{
+		s_Data.Stats.Reset();
+
 		auto queue = s_Data.CommandQueue;
 		queue->Swap();
 		#ifdef RENDER_THREAD_ENABLED
@@ -224,8 +237,26 @@ namespace XYZ {
 		#endif
 	}
 
-	ScopedLockReference<RenderCommandQueue> Renderer::GetRenderCommandQueue(uint8_t type)
+	ScopedLockReference<RenderCommandQueue> Renderer::getRenderCommandQueue(uint8_t type)
 	{
 		return s_Data.CommandQueue->Write();
+	}
+	RendererStats& Renderer::getStats()
+	{
+		return s_Data.Stats;
+	}
+	RendererStats::RendererStats()
+		:
+		DrawArraysCount(0), DrawIndexedCount(0), DrawInstancedCount(0), DrawFullscreenCount(0), DrawIndirectCount(0), CommandsCount(0)
+	{
+	}
+	void RendererStats::Reset()
+	{
+		DrawArraysCount = 0;
+		DrawIndexedCount = 0;
+		DrawInstancedCount = 0;
+		DrawFullscreenCount = 0;
+		DrawIndirectCount = 0;
+		CommandsCount = 0;
 	}
 }

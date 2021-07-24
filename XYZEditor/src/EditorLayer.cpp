@@ -75,8 +75,8 @@ namespace XYZ {
 		AssetSerializer::SerializeAsset(m_Scene);		
 	}
 	void EditorLayer::OnUpdate(Timestep ts)
-	{		
-		
+	{				
+		m_Timestep = ts;
 		if (m_Scene->GetState() == SceneState::Play)
 		{
 			m_Scene->OnUpdate(ts);
@@ -115,6 +115,7 @@ namespace XYZ {
 		m_SpriteEditor.OnImGuiRender(m_EditorOpen[SpriteEditor]);
 		m_AnimationEditor.OnImGuiRender(m_EditorOpen[AnimationEditor]);
 		m_AssetBrowser.OnImGuiRender();
+		displayStats();
 	}
 	
 	bool EditorLayer::onMouseButtonPress(MouseButtonPressEvent& event)
@@ -138,6 +139,23 @@ namespace XYZ {
 	bool EditorLayer::onKeyRelease(KeyReleasedEvent& event)
 	{
 		return false;
+	}
+
+	void EditorLayer::displayStats()
+	{
+		if (ImGui::Begin("Stats"))
+		{
+			const auto& stats = Renderer::GetStats();
+			ImGui::Text("Timestep: %f ms", m_Timestep.GetMilliseconds());
+			ImGui::Text("FPS: %f", 1.0f / m_Timestep.GetSeconds());
+			ImGui::Text("Draw Arrays: %d", stats.DrawArraysCount);
+			ImGui::Text("Draw Indexed: %d", stats.DrawIndexedCount);
+			ImGui::Text("Draw Instanced: %d", stats.DrawInstancedCount);
+			ImGui::Text("Draw Fullscreen: %d", stats.DrawFullscreenCount);
+			ImGui::Text("Draw Indirect: %d", stats.DrawIndirectCount);
+			ImGui::Text("Commands Count: %d", stats.CommandsCount);
+		}
+		ImGui::End();
 	}
 
 	void EditorLayer::gpuParticleExample(SceneEntity entity)

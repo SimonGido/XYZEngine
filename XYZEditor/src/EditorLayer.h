@@ -30,6 +30,7 @@ namespace XYZ {
 		bool onKeyRelease(KeyReleasedEvent& event);
 
 	private:
+		void displayStats();
 		void gpuParticleExample(SceneEntity entity);
 		void cpuParticleExample(SceneEntity entity);
 		void animationExample(SceneEntity entity);
@@ -54,5 +55,6 @@ namespace XYZ {
 		Editor::AssetInspectorContext	    m_AssetInspectorContext;
 	private:	
 		SceneEntity m_SelectedEntity;
+		Timestep	m_Timestep;
 	};
 }

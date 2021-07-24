@@ -50,6 +50,7 @@ namespace XYZ {
 
 			glm::vec2 m_IconSize;
 			glm::vec2 m_ArrowSize;
+
 			char m_Path[_MAX_PATH];
 			std::string m_SelectedFile;
 			size_t m_PathLength;

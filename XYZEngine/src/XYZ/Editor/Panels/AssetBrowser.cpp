@@ -190,19 +190,20 @@ namespace XYZ {
 			if (!std::filesystem::is_directory(path))
 				return;
 
-			float xOffset = 15.0f;
-			ImVec2 cursorPos = ImGui::GetCursorPos();
-			for (auto it : std::filesystem::directory_iterator(path))
+			static float padding = 32.0f;
+			float cellSize = m_IconSize.x + padding;
+
+			float panelWidth = ImGui::GetContentRegionAvail().x;
+			int columnCount = (int)(panelWidth / cellSize);
+			if (columnCount < 1)
+				columnCount = 1;
+
+			ImGui::Columns(columnCount, 0, false);
+			for (auto& it : std::filesystem::directory_iterator(path))
 			{
 				std::string name = Utils::GetFilename(it.path().string());
 				ImGui::PushID(name.c_str());
-				if (cursorPos.x + m_IconSize.x + xOffset + ImGui::CalcTextSize(name.c_str()).x > ImGui::GetContentRegionAvail().x)
-				{
-					cursorPos.y += m_IconSize.y;
-					cursorPos.x = ImGui::GetStyle().ItemSpacing.x;
-				}
-				ImGui::SetCursorPos(cursorPos);
-
+				
 				if (it.is_directory())
 				{
 					if (ImGui::ImageButton((void*)(uint64_t)m_Texture->GetRendererID(), { m_IconSize.x, m_IconSize.y }, { m_TexCoords[Folder].x, m_TexCoords[Folder].y }, { m_TexCoords[Folder].z, m_TexCoords[Folder].w }))
@@ -243,15 +244,11 @@ namespace XYZ {
 					}
 				}
 
-				cursorPos.x += m_IconSize.x + xOffset;
-				cursorPos.y += m_IconSize.y / 2.0f;
-				ImGui::SetCursorPos(cursorPos);
-				ImGui::Text(name.c_str());
-				cursorPos.x = ImGui::GetItemRectMax().x - ImGui::GetWindowPos().x;
-				cursorPos.y -= m_IconSize.y / 2.0f;
-
+				ImGui::TextWrapped(name.c_str());
+				ImGui::NextColumn();
 				ImGui::PopID();
 			}
+			ImGui::Columns(1);
 		}
 		size_t AssetBrowser::assetTypeToTexCoordsIndex(AssetType type) const
 		{

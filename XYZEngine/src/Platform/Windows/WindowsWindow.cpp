@@ -65,7 +65,7 @@ namespace XYZ {
 		m_Context->Init();
 		#endif
 		glfwSetWindowUserPointer(m_Window, &m_Data);
-
+		
 		
 		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
 		{

@@ -14,6 +14,20 @@
 
 namespace XYZ {
 
+	struct RendererStats
+	{
+		RendererStats();
+		void Reset();
+
+		uint32_t DrawArraysCount;
+		uint32_t DrawIndexedCount;
+		uint32_t DrawInstancedCount;
+		uint32_t DrawFullscreenCount;
+		uint32_t DrawIndirectCount;
+
+		uint32_t CommandsCount;
+	};
+
 	enum RenderQueueType
 	{
 		Default,
@@ -48,7 +62,7 @@ namespace XYZ {
 
 		template<typename FuncT>
 		static void Submit(FuncT&& func, uint32_t type = Default)
-		{
+		{		
 			auto renderCmd = [](void* ptr) {
 				
 				auto pFunc = (FuncT*)ptr;
@@ -56,23 +70,26 @@ namespace XYZ {
 
 				pFunc->~FuncT(); // Call destructor
 			};
-			auto queue = GetRenderCommandQueue(type);
+			auto queue = getRenderCommandQueue(type);
 			auto storageBuffer = queue.Get().Allocate(renderCmd, sizeof(func));
 			new (storageBuffer) FuncT(std::forward<FuncT>(func));
+			getStats().CommandsCount++;
 		}
 
 		static void BeginRenderPass(const Ref<RenderPass>& renderPass, bool clear);
 		static void EndRenderPass();
 
-		static ThreadPool& GetPool();
-		static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
+		static ThreadPool&			GetPool();
+		static RendererAPI::API		GetAPI() { return RendererAPI::GetAPI(); }
+		static const RendererStats& GetStats();
+
 		static void WaitAndRender();
 
 		// We need this function for now to make sure shaders are created before using them
 		static void BlockRenderThread();
 	private:
-		static ScopedLockReference<RenderCommandQueue> GetRenderCommandQueue(uint8_t type);
-
+		static ScopedLockReference<RenderCommandQueue> getRenderCommandQueue(uint8_t type);
+		static RendererStats&						   getStats();
 	};
 
 }
