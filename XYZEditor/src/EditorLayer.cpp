@@ -61,7 +61,7 @@ namespace XYZ {
 
 		auto entity = m_Scene->GetEntityByName("Scary Entity");
 		//gpuParticleExample(entity);
-		cpuParticleExample(entity);
+		//cpuParticleExample(entity);
 		animationExample(entity);
 
 		Renderer::WaitAndRender();

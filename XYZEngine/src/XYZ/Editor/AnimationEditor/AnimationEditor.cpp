@@ -3,6 +3,7 @@
 
 #include "XYZ/Animation/TransformTrack.h"
 #include "XYZ/Scene/Components.h"
+#include "XYZ/Core/Input.h"
 
 #include <imgui.h>
 #include <ImSequencer.h>
@@ -71,8 +72,12 @@ namespace XYZ {
 						}
 						ImGui::EndPopup();
 					}
-					ImSequencer::Sequencer(&m_Sequencer, &m_CurrentFrame, &m_Expanded, &m_SelectedEntry, &m_FirstFrame, ImSequencer::SEQUENCER_EDIT_STARTEND | ImSequencer::SEQUENCER_ADD | ImSequencer::SEQUENCER_DEL | ImSequencer::SEQUENCER_COPYPASTE | ImSequencer::SEQUENCER_CHANGE_FRAME);
-					
+
+					ImSequencer::Sequencer(&m_Sequencer, &m_CurrentFrame, &m_Expanded, &m_SelectedEntry, &m_FirstFrame, ImSequencer::SEQUENCER_EDIT_STARTEND | ImSequencer::SEQUENCER_CHANGE_FRAME);
+					if (Input::IsKeyPressed(KeyCode::KEY_DELETE))
+					{
+						m_Sequencer.DeleteSelectedPoints();
+					}
 					handleSelected(addKey);
 				}
 			}

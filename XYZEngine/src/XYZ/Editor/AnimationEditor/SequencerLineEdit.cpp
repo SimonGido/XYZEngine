@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "SequencerLineEdit.h"
 
+#include "XYZ/Core/Input.h"
+
 namespace XYZ {
 	namespace Editor {
 		SequenceLineEdit::SequenceLineEdit()
@@ -14,12 +16,13 @@ namespace XYZ {
         }
         int SequenceLineEdit::EditPoint(size_t curveIndex, int pointIndex, ImVec2 value)
         {
+            auto& line = m_Lines[curveIndex];
             value.y = getLineY(curveIndex);          
-            m_Lines[curveIndex].Points[pointIndex] = value;
+            line.Points[pointIndex] = value;
             sortValues(curveIndex);
             for (size_t i = 0; i < GetPointCount(curveIndex); i++)
             {
-                if (m_Lines[curveIndex].Points[i].x == value.x)
+                if (line.Points[i].x == value.x)
                     return (int)i;
             }
             return pointIndex;
@@ -42,6 +45,12 @@ namespace XYZ {
         {
             for (size_t i = 0; i < m_Lines.size(); ++i)
                 m_Lines[i].Selected = false;
+        }
+        void SequenceLineEdit::DeletePoint(size_t curveIndex, int pointIndex)
+        {
+            auto& line = m_Lines[curveIndex];
+            if (line.Points.size() > (size_t)pointIndex)
+                line.Points.erase(line.Points.begin() + (size_t)pointIndex);
         }
         const SequenceLineEdit::Line* SequenceLineEdit::GetSelectedLine() const
         {

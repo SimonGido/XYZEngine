@@ -36,7 +36,8 @@ namespace XYZ {
             void                           AddLine(int type, uint32_t color = 0xFF0000FF);
             void                           SetSelected(size_t curveIndex);
             void                           Deselect();
-                                           
+            void                           DeletePoint(size_t curveIndex, int pointIndex);
+
             const std::vector<Line>&       GetLines() const { return m_Lines; }
             const Line*                    GetSelectedLine() const;
             bool                           GetSelectedIndex(size_t& index) const;

@@ -81,8 +81,8 @@ namespace XYZ {
 		
 			ImGui::SetCursorScreenPos(rc.Min);
 			ImVec2 size(rc.Max.x - rc.Min.x, rc.Max.y - rc.Min.y);
-
-			ImCurveEdit::Edit(item.LineEdit, size, 137 + index, &clippingRect);
+			m_Selection.ItemIndex = index;
+			ImCurveEdit::Edit(item.LineEdit, size, 137 + index, &clippingRect, &m_Selection.Points);
 		}
 		void AnimationSequencer::CustomDrawCompact(int index, ImDrawList* draw_list, const ImRect& rc, const ImRect& clippingRect)
 		{
@@ -108,6 +108,20 @@ namespace XYZ {
 		void AnimationSequencer::AddSequencerItemType(const std::string& name, const std::initializer_list<std::string>& subTypes, AddKeyCallback callback)
 		{
 			m_SequencerItemTypes.push_back({ name, subTypes, callback });
+		}
+		void AnimationSequencer::DeleteSelectedPoints()
+		{
+			for (auto& selected : m_Selection.Points)
+			{
+				// Indices of points with higher index were invalidated ( subtract one )
+				for (auto& selectedAfterDelete : m_Selection.Points)
+				{
+					if (selectedAfterDelete.pointIndex > selected.pointIndex)
+						selectedAfterDelete.pointIndex--;
+				}
+				m_Items[m_Selection.ItemIndex].LineEdit.DeletePoint(selected.curveIndex, selected.pointIndex);			
+			}
+			m_Selection.Points.clear();
 		}
 	}
 }

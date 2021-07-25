@@ -48,15 +48,24 @@ namespace XYZ {
             virtual void        DoubleClick(int index) override;
             virtual void        CustomDraw(int index, ImDrawList* draw_list, const ImRect& rc, const ImRect& legendRect, const ImRect& clippingRect, const ImRect& legendClippingRect) override;
             virtual void        CustomDrawCompact(int index, ImDrawList* draw_list, const ImRect& rc, const ImRect& clippingRect) override;            
-        
             
             void                AddSequencerItemType(const std::string& name, const std::initializer_list<std::string>& subTypes, AddKeyCallback callback);
+            void                DeleteSelectedPoints();
 
  
             std::vector<SequencerItemType> m_SequencerItemTypes;
             std::vector<SequenceItem>      m_Items;
             int                            m_FrameMin;
             int                            m_FrameMax;
+
+        private:
+            struct Selection
+            {
+                ImVector<ImCurveEdit::EditPoint> Points;
+                int                              ItemIndex;
+            };
+
+            Selection m_Selection;
         };
 	}
 }
