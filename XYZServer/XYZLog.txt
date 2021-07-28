@@ -1,0 +1,33 @@
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 3060 Ti/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.40
+XYZ::Net::Server<enum XYZ::MessageType>::Start: Server Started
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 3060 Ti/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.40
+XYZ::Net::Server<enum XYZ::MessageType>::Start: Server Started
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Net::Server<enum XYZ::MessageType>::Stop: Server Stopped
+XYZ::Net::Server<enum XYZ::MessageType>::Stop: Server Stopped
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 3060 Ti/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.40
+XYZ::Net::Server<enum XYZ::MessageType>::Start: Server Started
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 3060 Ti/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.40
+XYZ::Net::Server<enum XYZ::MessageType>::Start: Server Started
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::Net::Server<enum XYZ::MessageType>::Stop: Server Stopped
+XYZ::Net::Server<enum XYZ::MessageType>::Stop: Server Stopped
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 3060 Ti/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.40
+XYZ::Net::Server<enum XYZ::MessageType>::Start: Server Started
+XYZ::Net::Server<enum XYZ::MessageType>::WaitForClientConnection::<lambda_ae0a4036c93e414cd4b6e6edad55c128>::operator (): Server New Connection: 192.168.7.179:50944
+XYZ::Net::Server<enum XYZ::MessageType>::WaitForClientConnection::<lambda_ae0a4036c93e414cd4b6e6edad55c128>::operator (): [0] Connection Approved

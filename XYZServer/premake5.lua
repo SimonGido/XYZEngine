@@ -15,9 +15,11 @@ project "XYZServer"
 		
 		includedirs
 		{
-			"%{wks.location}/XYZEngine/vendor/yaml-cpp/include",
 			"%{wks.location}/XYZEngine/vendor",
 			"%{wks.location}/XYZEngine/src",
+			"%{IncludeDir.ImGui}",
+			"%{IncludeDir.ImGuizmo}",
+			"%{IncludeDir.yaml}",
 			"%{IncludeDir.glm}",
 			"%{IncludeDir.Asio}",
 			"%{IncludeDir.Lua}",
@@ -38,8 +40,17 @@ project "XYZServer"
 				runtime "Debug"
 				symbols "on"
 		
+		postbuildcommands 
+		{
+			'{COPY} "../XYZEngine/vendor/mono/bin/Debug/mono-2.0-sgen.dll" "%{cfg.targetdir}"'
+		}
 		
 		filter "configurations:Release"
 				defines "XYZ_RELEASE"
 				runtime "Release"
 				optimize "on"
+		
+		postbuildcommands 
+		{
+			'{COPY} "../XYZEngine/vendor/mono/bin/Release/mono-2.0-sgen.dll" "%{cfg.targetdir}"'
+		}

@@ -4,7 +4,7 @@ namespace XYZ {
 
 	void ClientLayer::OnAttach()
 	{
-		m_Client.Connect("147.32.121.43", 60000);
+		m_Client.Connect("192.168.7.179", 60000);
 	}
 	void ClientLayer::OnDetach()
 	{
