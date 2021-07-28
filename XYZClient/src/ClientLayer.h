@@ -23,6 +23,7 @@ namespace XYZ {
 
 			std::chrono::system_clock::time_point timeNow = std::chrono::system_clock::now();
 			msg << timeNow;
+			Send(msg);
 		}
 	};
 

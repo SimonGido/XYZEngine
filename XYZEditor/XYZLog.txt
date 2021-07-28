@@ -2689,3 +2689,25 @@ XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScript.dll
 XYZ::OpenglCallbackFunction: Performance: Program/shader state performance warning: Vertex shader in program 14 is being recompiled based on GL state.
 XYZ::OpenglCallbackFunction: ID: 131218
 XYZ::OpenglCallbackFunction: Severity: MEDIUM
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 3060 Ti/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.40
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScriptCore.dll
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScript.dll
+XYZ::OpenglCallbackFunction: Performance: Program/shader state performance warning: Vertex shader in program 14 is being recompiled based on GL state.
+XYZ::OpenglCallbackFunction: ID: 131218
+XYZ::OpenglCallbackFunction: Severity: MEDIUM
+XYZ::WindowResizeEvent::WindowResizeEvent: Window: Resized window width: 2560 height: 1421
+XYZ::WindowResizeEvent::WindowResizeEvent: Window: Resized window width: 2560 height: 1377
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed
+XYZ::OpenGLAPIContext::Init: OpenGL Info:
+XYZ::OpenGLAPIContext::Init: Vendor: NVIDIA Corporation
+XYZ::OpenGLAPIContext::Init: Renderer: GeForce RTX 3060 Ti/PCIe/SSE2
+XYZ::OpenGLAPIContext::Init: Version: 4.6.0 NVIDIA 461.40
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScriptCore.dll
+XYZ::LoadAssembly: Successfully loaded assembly: Assets/Scripts/XYZScript.dll
+XYZ::OpenglCallbackFunction: Performance: Program/shader state performance warning: Vertex shader in program 14 is being recompiled based on GL state.
+XYZ::OpenglCallbackFunction: ID: 131218
+XYZ::OpenglCallbackFunction: Severity: MEDIUM
+XYZ::WindowCloseEvent::WindowCloseEvent: Window: Window closed

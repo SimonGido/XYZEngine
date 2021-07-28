@@ -22,7 +22,7 @@ namespace XYZ {
 
 	protected:
 		virtual bool onClientConnect(std::shared_ptr<Net::Connection<MessageType>> client) override;
-	
+		virtual void onMessage(std::shared_ptr<Net::Connection<MessageType>> client, Net::Message<MessageType>& msg) override;
 	};
 
 	class ServerLayer : public Layer

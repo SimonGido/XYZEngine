@@ -82,11 +82,13 @@ namespace XYZ {
 				return m_ID;
 			}
 		private:
+	
 			void readHeader()
-			{
+			{			
 				asio::async_read(m_Socket, asio::buffer(&m_TemporaryMessage.Header, sizeof(MessageHeader<T>)),
 					[this](std::error_code ec, std::size_t length) {
-						if (!ec)
+					std::cout << "Reading header " << m_TemporaryMessage.Header.Size << std::endl;
+ 						if (!ec)
 						{
 							if (m_TemporaryMessage.Header.Size > 0)
 							{
@@ -106,12 +108,13 @@ namespace XYZ {
 					});
 			}
 			void readBody()
-			{
-				asio::async_read(m_Socket, asio::buffer(m_TemporaryMessage.Body.data(), m_TemporaryMessage.Body.size()),
+			{			
+				asio::async_read(m_Socket, asio::buffer(m_TemporaryMessage.Body.data(), m_TemporaryMessage.Header.Size),
 					[this](std::error_code ec, std::size_t length) {
+					std::cout << "Reading body " << m_TemporaryMessage.Body.size() << std::endl;
 						if (!ec)
 						{
-							addToIncomingMessageQueue();
+							addToIncomingMessageQueue(); 						
 						}
 						else
 						{
@@ -167,10 +170,11 @@ namespace XYZ {
 
 			void addToIncomingMessageQueue()
 			{
+				std::cout << "Add incoming" << std::endl;
 				if (m_Owner == Owner::Server)
 					m_MessagesIn.PushBack({ this->shared_from_this(), m_TemporaryMessage });
 				else
-					m_MessagesIn.PushBack({ nullptr, m_TemporaryMessage });
+					m_MessagesIn.PushBack({ nullptr, m_TemporaryMessage });	
 
 				readHeader();
 			}

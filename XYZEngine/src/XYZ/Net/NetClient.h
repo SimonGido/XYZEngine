@@ -53,6 +53,12 @@ namespace XYZ {
 					m_ContextThread.join();
 			}
 
+			void Send(const Message<T>& msg)
+			{
+				if (IsConnected())
+					m_Connection->Send(msg);
+			}
+
 			bool IsConnected() const
 			{
 				if (m_Connection)

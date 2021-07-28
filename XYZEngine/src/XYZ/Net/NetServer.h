@@ -138,7 +138,8 @@ namespace XYZ {
 				size_t messageCount = 0;
 				while (messageCount < maxMessages && !m_MessagesIn.Empty())
 				{
-					auto msg = m_MessagesIn.PopFront();
+					m_MessagesIn.Wait();
+					auto msg = std::move(m_MessagesIn.PopFront());
 					onMessage(msg.Remote, msg.Message);
 					messageCount++;
 				}
@@ -153,12 +154,10 @@ namespace XYZ {
 
 			virtual void onClientDisconnect(std::shared_ptr<Connection<T>> client)
 			{
-
 			}
 
 			virtual void onMessage(std::shared_ptr<Connection<T>> client, Message<T>& msg)
 			{
-
 			}
 
 		protected:
