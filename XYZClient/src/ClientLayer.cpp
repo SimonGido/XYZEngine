@@ -4,7 +4,7 @@ namespace XYZ {
 
 	void ClientLayer::OnAttach()
 	{
-		m_Client.Connect("192.168.7.179", 60000);
+		m_Client.Connect("192.168.0.227", 60000);
 		Application::Get().GetImGuiLayer()->BlockEvents(false);
 	}
 	void ClientLayer::OnDetach()

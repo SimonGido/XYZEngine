@@ -149,7 +149,7 @@ namespace XYZ {
 
 			virtual bool onClientConnect(std::shared_ptr<Connection<T>> client)
 			{
-				return true;
+				return false;
 			}
 
 			virtual void onClientDisconnect(std::shared_ptr<Connection<T>> client)

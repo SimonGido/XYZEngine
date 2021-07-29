@@ -7,7 +7,7 @@ namespace XYZ {
 		template <typename T>
 		struct MessageHeader
 		{
-			T		 ID;
+			T		 ID{};
 			uint32_t Size = 0;
 		};
 
@@ -20,7 +20,7 @@ namespace XYZ {
 
 			size_t Size() const
 			{
-				return sizeof(MessageHeader<T>) + Body.size();
+				return Body.size();
 			}
 
 			friend std::ostream& operator << (std::ostream& os, const Message<T>& msg)
