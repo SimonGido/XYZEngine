@@ -2,6 +2,7 @@
 
 #include <XYZ.h>
 
+#include "Player.h"
 
 namespace XYZ {
 
@@ -11,7 +12,8 @@ namespace XYZ {
 		ServerDeny,
 		ServerPing,
 		MessageAll,
-		ServerMessage
+		ServerMessage,
+		PlayerUpdate
 	};
 
 	class CustomServer : public Net::Server<MessageType>
@@ -21,8 +23,12 @@ namespace XYZ {
 			
 
 	protected:
-		virtual bool onClientConnect(std::shared_ptr<Net::Connection<MessageType>> client) override;
+		virtual void onClientConnect(std::shared_ptr<Net::Connection<MessageType>> client) override;
+		virtual void onClientDisconnect(std::shared_ptr<Net::Connection<MessageType>> client);
 		virtual void onMessage(std::shared_ptr<Net::Connection<MessageType>> client, Net::Message<MessageType>& msg) override;
+	
+	private:
+		std::vector<Player> m_Players;
 	};
 
 	class ServerLayer : public Layer
@@ -33,9 +39,7 @@ namespace XYZ {
 		virtual void OnUpdate(Timestep ts) override;
 		virtual void OnEvent(Event& event) override;
 
-
-
 	private:
-		CustomServer* m_Server;
+		CustomServer* m_Server;		
 	};
 }
