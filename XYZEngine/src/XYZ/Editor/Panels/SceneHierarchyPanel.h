@@ -17,7 +17,7 @@ namespace XYZ {
 
 		private:
 			void drawEntityNode(SceneEntity entity);
-
+			void dragAndDrop(SceneEntity entity);
 		private:
 			SceneEntitySelectedCallback m_Callback;
 			Ref<Scene> m_Context;

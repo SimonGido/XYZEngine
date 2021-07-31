@@ -59,7 +59,7 @@ namespace XYZ {
             ImGuiTreeNodeFlags flags = ((m_Context->GetSelectedEntity() == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
             flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
             bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
-
+            dragAndDrop(entity);
             if (ImGui::IsItemClicked())
             {
                 m_Context->SetSelectedEntity(entity);
@@ -87,6 +87,25 @@ namespace XYZ {
             if (entityDeleted)
             {
                 m_Context->DestroyEntity(entity);
+            }
+        }
+        void SceneHierarchyPanel::dragAndDrop(SceneEntity entity)
+        {
+            if (ImGui::BeginDragDropSource())
+            {
+                Entity id = (Entity)entity;
+                ImGui::SetDragDropPayload("ENTITY_DRAG", (void*)&id, sizeof(Entity), ImGuiCond_Always);
+                ImGui::EndDragDropSource();
+            }
+            if (ImGui::BeginDragDropTarget())
+            {
+                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_DRAG", 0))
+                {
+                    Entity child = *(Entity*)payload->Data;
+                    if (child != (Entity)entity)
+                        Relationship::SetupRelation(entity, child, m_Context->m_ECS);
+                }
+                ImGui::EndDragDropTarget();
             }
         }
     }
