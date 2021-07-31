@@ -228,6 +228,8 @@ namespace XYZ {
 						if (m_Callback)
 							m_Callback(GetSelectedAsset());
 					}
+
+					dragAndDrop(std::filesystem::relative(it, s_AssetPath));
 					if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
 					{
 						ImGui::OpenPopup("LoadAsset");
@@ -287,6 +289,16 @@ namespace XYZ {
 				break;
 			}
 			return NumTypes;
+		}
+		void AssetBrowser::dragAndDrop(const std::filesystem::path& path)
+		{
+			if (ImGui::BeginDragDropSource())
+			{
+				std::string str = path.string();
+				const char* itemPath = str.c_str();
+				ImGui::SetDragDropPayload("ASSET_BROWSER_ITEM", itemPath, str.size(), ImGuiCond_Once);
+				ImGui::EndDragDropSource();
+			}
 		}
 	}
 }

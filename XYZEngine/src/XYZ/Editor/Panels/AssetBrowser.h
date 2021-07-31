@@ -24,6 +24,7 @@ namespace XYZ {
 			void processDirectory();
 			size_t assetTypeToTexCoordsIndex(AssetType type) const;
 
+			void dragAndDrop(const std::filesystem::path& path);
 		private:
 			AssetSelectedCallback m_Callback;
 
