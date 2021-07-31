@@ -2,6 +2,7 @@
 #include "XYZ/Renderer/SubTexture.h"
 
 #include <deque>
+#include <filesystem>
 
 namespace XYZ {
 	namespace Editor {
@@ -20,9 +21,9 @@ namespace XYZ {
 
 		private:
 			void createAsset();
-			void processDirectory(const std::string& path);
+			void processDirectory();
 			size_t assetTypeToTexCoordsIndex(AssetType type) const;
-			std::string fullPath(const std::string& filename) const;
+
 		private:
 			AssetSelectedCallback m_Callback;
 
@@ -51,12 +52,11 @@ namespace XYZ {
 			glm::vec2 m_IconSize;
 			glm::vec2 m_ArrowSize;
 
-			char		m_Path[_MAX_PATH];
-			std::string m_SelectedFile;
-			size_t		m_PathLength;
+			std::filesystem::path m_SelectedFile;
+			std::filesystem::path m_CurrentDirectory;
+			std::deque<std::filesystem::path> m_DirectoriesVisited;
 
-			std::deque<std::string> m_DirectoriesVisited;
-
+			
 
 			enum Color
 			{

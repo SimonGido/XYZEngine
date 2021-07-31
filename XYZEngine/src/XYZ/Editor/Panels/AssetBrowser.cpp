@@ -8,46 +8,10 @@
 #include "XYZ/Renderer/Font.h"
 
 #include <imgui.h>
-#include <filesystem>
+
 
 namespace XYZ {
 	namespace Editor {
-
-		static size_t FindLastOf(char* buffer, char c)
-		{
-			size_t length = strlen(buffer);
-			size_t counter = length;
-			while (counter != 0)
-			{
-				if (buffer[counter] == c)
-					return counter;
-				counter--;
-			}
-			return std::string::npos;
-		}
-
-		static char* SubString(const char* buffer, size_t start, size_t end)
-		{
-			size_t size = end - start;
-			char* result = new char[size + 1];
-			memcpy(result, &buffer[start], size);
-			result[size] = '\0';
-			return result;
-		}
-
-		static void Copy(char* buffer, const char* source)
-		{
-			size_t length = strlen(source);
-			memcpy(buffer, source, length);
-			buffer[length + 1] = '\0';
-		}
-
-		static void Add(char* buffer, size_t length, const char* source)
-		{
-			size_t newLength = strlen(source);
-			memcpy(&buffer[length], source, newLength);
-			buffer[length + newLength] = '\0';
-		}
 
 		static glm::vec4 CalculateTexCoords(const glm::vec2& coords, const glm::vec2& size, const glm::vec2& textureSize)
 		{
@@ -58,13 +22,13 @@ namespace XYZ {
 				(coords.y * size.y) / textureSize.y,
 			};
 		}
+		static std::filesystem::path s_AssetPath = "Assets";
 
 		AssetBrowser::AssetBrowser()
 			:
 			m_IconSize(50.0f),
 			m_ArrowSize(25.0f),
-			m_Path("Assets"),
-			m_PathLength(6),
+			m_CurrentDirectory(s_AssetPath),
 			m_ViewportHovered(false),
 			m_ViewportFocused(false)
 		{
@@ -88,7 +52,7 @@ namespace XYZ {
 		}
 		void AssetBrowser::SetPath(const std::string& path)
 		{
-			Copy(m_Path, path.c_str());
+			m_CurrentDirectory = path;
 		}
 		void AssetBrowser::OnImGuiRender()
 		{
@@ -104,9 +68,8 @@ namespace XYZ {
 					if (m_Callback)
 						m_Callback(GetSelectedAsset());
 				}
-				size_t slashPos = FindLastOf(m_Path, '/');
 
-				bool backArrowAvailable = slashPos != std::string::npos;
+				bool backArrowAvailable = m_CurrentDirectory != std::filesystem::path(s_AssetPath);
 				bool frontArrowAvailable = !m_DirectoriesVisited.empty();
 
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
@@ -115,9 +78,8 @@ namespace XYZ {
 				if (ImGui::ImageButton((void*)(uint64_t)m_Texture->GetRendererID(), { m_ArrowSize.x, m_ArrowSize.y }, { m_TexCoords[Arrow].z, m_TexCoords[Arrow].y }, { m_TexCoords[Arrow].x, m_TexCoords[Arrow].w }, -1, {}, { arrowColor.r, arrowColor.g, arrowColor.b, arrowColor.a })
 				 && backArrowAvailable)
 				{
-					m_DirectoriesVisited.push_front(SubString(m_Path, slashPos, strlen(m_Path)));
-					m_Path[slashPos] = '\0';
-					m_PathLength = slashPos;
+					m_DirectoriesVisited.push_front(m_CurrentDirectory);
+					m_CurrentDirectory = m_CurrentDirectory.parent_path();
 				}
 				ImGui::PopID();
 				ImGui::SameLine();
@@ -127,20 +89,25 @@ namespace XYZ {
 				if (ImGui::ImageButton((void*)(uint64_t)m_Texture->GetRendererID(), { m_ArrowSize.x, m_ArrowSize.y }, { m_TexCoords[Arrow].x, m_TexCoords[Arrow].y }, { m_TexCoords[Arrow].z, m_TexCoords[Arrow].w }, -1, {}, { arrowColor.r, arrowColor.g, arrowColor.b, arrowColor.a })
 				&& frontArrowAvailable)
 				{
-					Add(m_Path, m_PathLength, m_DirectoriesVisited.front().c_str());
-					m_PathLength += m_DirectoriesVisited.front().size();
+					m_CurrentDirectory = m_DirectoriesVisited.front();
 					m_DirectoriesVisited.pop_front();
 				}
 				ImGui::PopID();
 				ImGui::SameLine();
 			
-				if (ImGui::InputText("###", m_Path, _MAX_PATH))
+				char tempPathBuffer[_MAX_PATH];
+				size_t length = m_CurrentDirectory.string().size();
+				memcpy(tempPathBuffer, m_CurrentDirectory.string().c_str(), length);
+				tempPathBuffer[length] = '\0';
+
+				if (ImGui::InputText("###", tempPathBuffer, _MAX_PATH))
 				{
-					m_PathLength = strlen(m_Path);
+					m_CurrentDirectory = tempPathBuffer;
+					m_DirectoriesVisited.clear();
 				}
 
 				createAsset();
-				processDirectory(m_Path);
+				processDirectory();
 				ImGui::PopStyleColor();
 			}
 			ImGui::End();
@@ -149,10 +116,8 @@ namespace XYZ {
 		{
 			if (!m_SelectedFile.empty())
 			{
-				std::string fullFilePath;
-				fullFilePath.append(m_Path);
-				fullFilePath.append("/" + m_SelectedFile);
-				AssetType type = AssetManager::GetAssetTypeFromExtension(Utils::GetExtension(m_SelectedFile));
+				std::string fullFilePath = m_CurrentDirectory.string() + "/" + m_SelectedFile.string();
+				AssetType type = AssetManager::GetAssetTypeFromExtension(Utils::GetExtension(m_SelectedFile.string()));
 				switch (type)
 				{
 				case XYZ::AssetType::Scene:
@@ -199,16 +164,16 @@ namespace XYZ {
 				{
 					char fileName[60];
 					sprintf(fileName, "New Scene.xyz");
-					std::string fullpath = fullPath(fileName);
+					std::string fullpath = m_CurrentDirectory.string() + "/" + fileName;
 					if (std::filesystem::exists(fullpath))
 					{
 						uint32_t index = 0;
 						sprintf(fileName, "New Scene%d.xyz", index);
-						fullpath = fullPath(fileName);
+						fullpath = m_CurrentDirectory.string() + "/" + fileName;
 						while (std::filesystem::exists(fullpath))
 						{
 							sprintf(fileName, "New Scene%d.xyz", ++index);
-							fullpath = fullPath(fileName);
+							fullpath = m_CurrentDirectory.string() + "/" + fileName;
 						}
 					}
 					Ref<XYZ::Scene> scene = Ref<XYZ::Scene>::Create(fileName);
@@ -221,9 +186,9 @@ namespace XYZ {
 				ImGui::EndPopup();
 			}
 		}
-		void AssetBrowser::processDirectory(const std::string& path)
+		void AssetBrowser::processDirectory()
 		{
-			if (!std::filesystem::is_directory(path))
+			if (!std::filesystem::is_directory(m_CurrentDirectory))
 				return;
 
 			static float padding = 32.0f;
@@ -235,18 +200,16 @@ namespace XYZ {
 				columnCount = 1;
 
 			ImGui::Columns(columnCount, 0, false);
-			for (auto& it : std::filesystem::directory_iterator(path))
-			{
-				std::string name = Utils::GetFilename(it.path().string());
+			for (auto& it : std::filesystem::directory_iterator(m_CurrentDirectory))
+			{				
+				std::string name = it.path().filename().string();
 				ImGui::PushID(name.c_str());
 				
 				if (it.is_directory())
 				{
 					if (ImGui::ImageButton((void*)(uint64_t)m_Texture->GetRendererID(), { m_IconSize.x, m_IconSize.y }, { m_TexCoords[Folder].x, m_TexCoords[Folder].y }, { m_TexCoords[Folder].z, m_TexCoords[Folder].w }))
 					{
-						std::string subPath = "/" + name;
-						Add(m_Path, m_PathLength, subPath.c_str());
-						m_PathLength += subPath.size();
+						m_CurrentDirectory /= it.path().filename();
 						m_DirectoriesVisited.clear();
 					}
 				}
@@ -273,7 +236,7 @@ namespace XYZ {
 					{
 						if (ImGui::MenuItem("Load Asset"))
 						{
-							AssetManager::LoadAsset(AssetManager::GetAssetHandle(fullPath(name)));
+							AssetManager::LoadAsset(AssetManager::GetAssetHandle(it.path().string()));
 							ImGui::CloseCurrentPopup();
 						}
 						ImGui::EndPopup();
@@ -324,13 +287,6 @@ namespace XYZ {
 				break;
 			}
 			return NumTypes;
-		}
-		std::string AssetBrowser::fullPath(const std::string& filename) const
-		{
-			std::string fullFilePath;
-			fullFilePath.append(m_Path);
-			fullFilePath.append("/" + filename);
-			return fullFilePath;
 		}
 	}
 }
