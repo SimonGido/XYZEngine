@@ -28,15 +28,22 @@ namespace XYZ {
 	{
 		m_Players.push_back({});
 		m_Players.back().ID = client->GetID();
+		{
+			Net::Message<MessageType> message;
+			message.Header.ID = MessageType::ServerAccept;
+			message << client->GetID();
 
+			MessageClient(client, message);
+		}
+		{
+			Net::Message<MessageType> message;
+			message.Header.ID = MessageType::PlayerUpdate;
 
-		Net::Message<MessageType> message;
-		message.Header.ID = MessageType::PlayerUpdate;
-
-		for (auto& player : m_Players)
-			SerializePlayer(message, player);
-		message << m_Players.size();
-		MessageAllClients(message);
+			for (auto& player : m_Players)
+				SerializePlayer(message, player);
+			message << m_Players.size();
+			MessageAllClients(message);
+		}
 	}
 
 	void CustomServer::onClientDisconnect(std::shared_ptr<Net::Connection<MessageType>> client)
@@ -70,22 +77,15 @@ namespace XYZ {
 		if (msg.Header.ID == MessageType::PlayerUpdate)
 		{
 			Player player = DeserializePlayer(msg);
-			for (auto& pl : m_Players)
-			{
-				if (pl.ID == player.ID)
-				{
-					pl = player;
-					break;
-				}
-			}
+			m_Players[player.ID] = player;
 
 			Net::Message<MessageType> message;
 			message.Header.ID = MessageType::PlayerUpdate;
-			for (auto& player : m_Players)
-				SerializePlayer(message, player);
-			message << m_Players.size();
+			
+			SerializePlayer(message, player);
+			message << (size_t)1;
 
-			MessageAllClients(message);
+			MessageAllClients(message, client);
 		}
 	}
 

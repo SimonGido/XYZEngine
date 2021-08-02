@@ -21,7 +21,7 @@ namespace XYZ {
 
 	void ClientLayer::OnAttach()
 	{
-		m_Client.Connect("192.168.0.227", 60000);
+		m_Client.Connect("192.168.7.179", 60000);
 		Application::Get().GetImGuiLayer()->BlockEvents(false);
 		Application::Get().GetImGuiLayer()->EnableDockspace(false);
 	}
@@ -38,16 +38,25 @@ namespace XYZ {
 				auto msg = std::move(m_Client.GetIncomingMessages().PopFront().Message);
 				switch (msg.Header.ID)
 				{
+				case MessageType::ServerAccept:
+				{
+					uint32_t id;
+					msg >> id;
+					m_Client.SetID(id);
+					break;
+				}
 				case MessageType::ServerPing:
 				{
 					std::chrono::system_clock::time_point timeNow = std::chrono::system_clock::now();
 					std::chrono::system_clock::time_point timeThen;
 					msg >> timeThen;
 					std::cout << "Ping: " << std::chrono::duration<double>(timeNow - timeThen).count() << std::endl;
+					break;
 				}
 				case MessageType::PlayerUpdate:
 				{
 					m_Client.UpdatePlayers(msg);
+					break;
 				}
 				}
 			}
@@ -68,31 +77,34 @@ namespace XYZ {
 		Net::Message<MessageType> message;
 		message.Header.ID = MessageType::PlayerUpdate;
 
-		if (Input::IsKeyPressed(KeyCode::KEY_LEFT))
+		if (m_Players.size() > m_ID)
 		{
-			m_Player.Position.x -= sc_Speed * ts;
-			SerializePlayer(message, m_Player);
-			Send(message);
+			auto& player = m_Players[m_ID];
+			if (Input::IsKeyPressed(KeyCode::KEY_LEFT))
+			{
+				player.Position.x -= sc_Speed * ts;
+				SerializePlayer(message, player);
+				Send(message);
+			}
+			else if (Input::IsKeyPressed(KeyCode::KEY_RIGHT))
+			{
+				player.Position.x += sc_Speed * ts;
+				SerializePlayer(message, player);
+				Send(message);
+			}
+			else if (Input::IsKeyPressed(KeyCode::KEY_UP))
+			{
+				player.Position.y += sc_Speed * ts;
+				SerializePlayer(message, player);
+				Send(message);
+			}
+			else if (Input::IsKeyPressed(KeyCode::KEY_DOWN))
+			{
+				player.Position.y -= sc_Speed * ts;
+				SerializePlayer(message, player);
+				Send(message);
+			}
 		}
-		else if (Input::IsKeyPressed(KeyCode::KEY_RIGHT))
-		{
-			m_Player.Position.x += sc_Speed * ts;
-			SerializePlayer(message, m_Player);
-			Send(message);
-		}
-		else if (Input::IsKeyPressed(KeyCode::KEY_UP))
-		{
-			m_Player.Position.y += sc_Speed * ts;
-			SerializePlayer(message, m_Player);
-			Send(message);
-		}
-		else if (Input::IsKeyPressed(KeyCode::KEY_DOWN))
-		{
-			m_Player.Position.y -= sc_Speed * ts;
-			SerializePlayer(message, m_Player);
-			Send(message);
-		}
-
 
 		m_CameraController.OnUpdate(ts);
 
@@ -104,7 +116,6 @@ namespace XYZ {
 		{
 			Renderer2D::SubmitQuad(glm::vec3(player.Position.x, player.Position.y, 0.0f), player.Size, player.Color);
 		}
-		Renderer2D::SubmitQuad(glm::vec3(m_Player.Position.x, m_Player.Position.y, 0.0f), m_Player.Size, m_Player.Color);
 
 		Renderer2D::Flush();
 		Renderer2D::FlushLines();
@@ -112,20 +123,14 @@ namespace XYZ {
 	}
 	void CustomClient::UpdatePlayers(Net::Message<MessageType>& message)
 	{
-		m_Players.clear();
 		size_t size;
 		message >> size;
 		for (size_t i = 0; i < size; ++i)
 		{
-			Player player = DeserializePlayer(message);
-			if (player.ID == m_Player.ID)
-			{
-				m_Player = player;
-			}
-			else
-			{
-				m_Players.push_back(player);
-			}
+			Player player = DeserializePlayer(message);	
+			if (player.ID >= m_Players.size())
+				m_Players.resize(player.ID + 1);
+			m_Players[player.ID] = player;
 		}
 	}
 	void CustomClient::OnEvent(Event& event)

@@ -34,10 +34,11 @@ namespace XYZ {
 		void Update(Timestep ts);
 		void UpdatePlayers(Net::Message<MessageType>& message);
 		void OnEvent(Event& event);
+		void SetID(uint32_t id) { m_ID = id; }
 	private:
 		OrthographicCameraController m_CameraController;
 		std::vector<Player>			 m_Players;
-		Player						 m_Player;
+		uint32_t					 m_ID;
 		static constexpr float		 sc_Speed = 5.0f;
 	};
 
