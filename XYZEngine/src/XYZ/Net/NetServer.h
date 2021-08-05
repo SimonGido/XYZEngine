@@ -54,33 +54,22 @@ namespace XYZ {
 						std::shared_ptr<Connection<T>> newConn =
 							std::make_shared<Connection<T>>(Connection<T>::Owner::Server,
 								m_AsioContext, std::move(socket), m_MessagesIn);
-				
-						if (onClientConnect(newConn))
-						{
-							m_Connections.push_back(std::move(newConn));
-							uint32_t id = 0;
-							if (!m_FreeClientIDs.empty())
-							{
-								id = m_FreeClientIDs.back();
-								m_FreeClientIDs.pop_back();
-							}
-							else
-							{
-								id = m_NextClientID++;
-							}
 
-							m_Connections.back()->ConnectToClient(id);
-							XYZ_LOG_INFO("[", m_Connections.back()->GetID(), "] Connection Approved");
-							
+						m_Connections.push_back(std::move(newConn));
+						uint32_t id = 0;
+						if (!m_FreeClientIDs.empty())
+						{
+							id = m_FreeClientIDs.back();
+							m_FreeClientIDs.pop_back();
 						}
 						else
 						{
-							XYZ_LOG_WARN("Server Connection Denied");
+							id = m_NextClientID++;
 						}
-					}
-					else
-					{
-						XYZ_LOG_ERR("Server New Connection Error: ", ec.message());
+
+						m_Connections.back()->ConnectToClient(id);
+						XYZ_LOG_INFO("[", m_Connections.back()->GetID(), "] Connection Approved");
+						onClientConnect(m_Connections.back());
 					}
 					WaitForClientConnection();
 				});
@@ -147,9 +136,8 @@ namespace XYZ {
 
 		protected:
 
-			virtual bool onClientConnect(std::shared_ptr<Connection<T>> client)
+			virtual void onClientConnect(std::shared_ptr<Connection<T>> client)
 			{
-				return false;
 			}
 
 			virtual void onClientDisconnect(std::shared_ptr<Connection<T>> client)

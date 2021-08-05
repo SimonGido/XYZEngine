@@ -2,6 +2,8 @@
 
 #include <XYZ.h>
 
+#include "Player.h"
+
 
 namespace XYZ {
 	enum class MessageType : uint32_t
@@ -10,12 +12,15 @@ namespace XYZ {
 		ServerDeny,
 		ServerPing,
 		MessageAll,
-		ServerMessage
+		ServerMessage,
+		PlayerUpdate
 	};
 
 	class CustomClient : public Net::Client<MessageType>
 	{
 	public:
+		CustomClient();
+
 		void PingServer()
 		{
 			Net::Message<MessageType> msg;
@@ -25,6 +30,16 @@ namespace XYZ {
 			msg << timeNow;
 			Send(msg);
 		}
+
+		void Update(Timestep ts);
+		void UpdatePlayers(Net::Message<MessageType>& message);
+		void OnEvent(Event& event);
+		void SetID(uint32_t id) { m_ID = id; }
+	private:
+		OrthographicCameraController m_CameraController;
+		std::vector<Player>			 m_Players;
+		uint32_t					 m_ID;
+		static constexpr float		 sc_Speed = 5.0f;
 	};
 
 	class ClientLayer : public Layer
@@ -37,5 +52,6 @@ namespace XYZ {
 
 	private:
 		CustomClient m_Client;
+		
 	};
 }
