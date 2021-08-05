@@ -7,6 +7,11 @@
 #include "XYZ/Renderer/Font.h"
 #include "XYZ/Renderer/SkeletalMesh.h"
 #include "XYZ/Scene/Scene.h"
+#include "XYZ/Scene/Components.h"
+#include "XYZ/Animation/Animation.h"
+#include "XYZ/Animation/TransformTrack.h"
+#include "XYZ/Animation/SpriteRendererTrack.h"
+
 
 #include "XYZ/Scene/SceneSerializer.h"
 #include "XYZ/Utils/FileSystem.h"
@@ -436,6 +441,36 @@ namespace XYZ {
 	}
 
 	template <>
+	void AssetSerializer::serialize<Animation>(const Ref<Asset>& asset)
+	{
+		XYZ_ASSERT(!asset->FilePath.empty(), "Filepath is empty");
+		Ref<Animation> anim = Ref<Animation>((Animation*)asset.Raw());
+		YAML::Emitter out;
+		out << YAML::BeginMap; // Animation
+		if (anim->GetEntity().IsValid())
+			out << YAML::Key << "Entity" << YAML::Value << anim->GetEntity().GetComponent<IDComponent>().ID;
+		
+		out << YAML::Key << "Length" << YAML::Value << anim->GetLength();
+		out << YAML::Key << "Repeat" << YAML::Value << anim->GetRepeat();
+		
+		out << YAML::Key << "Tracks";
+		out << YAML::Value << YAML::BeginSeq;
+		auto transformTrack = anim->FindTrack<TransformTrack>();
+		if (transformTrack.Raw())
+		{
+			out << YAML::BeginMap;
+			//out << YAML::Key << "Transform Track" << YAML::Value << transformTrack;
+			out << YAML::EndMap;
+		}
+		out << YAML::EndSeq;
+
+		out << YAML::EndMap; // Animation
+
+		std::ofstream fout(asset->FilePath);
+		fout << out.c_str();	
+	}
+
+	template <>
 	Ref<Asset> AssetSerializer::deserialize<Texture2D>(const Ref<Asset>& asset)
 	{
 		std::ifstream stream(asset->FilePath);
@@ -569,36 +604,6 @@ namespace XYZ {
 	}
 
 	
-	//static void BuildBoneTree(Tree& tree, std::vector<Bone>& bones, std::vector<TreeNode>& nodes)
-	//{
-	//	for (const TreeNode& node : nodes)
-	//	{
-	//		uint32_t newID = tree.Insert(nullptr);
-	//		for (TreeNode& otherNode : nodes)
-	//		{
-	//			if (otherNode.Parent == node.ID)
-	//				otherNode.Parent = newID;
-	//			else if (otherNode.FirstChild == node.ID)
-	//				otherNode.FirstChild = newID;
-	//			else if (otherNode.NextSibling == node.ID)
-	//				otherNode.NextSibling = newID;
-	//			else if (otherNode.PreviousSibling == node.ID)
-	//				otherNode.PreviousSibling = newID;
-	//			else if (otherNode.ID == node.ID)
-	//				otherNode.ID = newID;
-	//		}
-	//	}
-	//	for (const TreeNode& node : nodes)
-	//	{
-	//		if (node.Parent != TreeNode::sc_Invalid)
-	//		{
-	//			int32_t parentID = node.Parent;
-	//			int32_t id = node.ID;
-	//			tree.SetParent(id, parentID);
-	//		}
-	//	}
-	//}
-
 	template <>
 	Ref<Asset> AssetSerializer::deserialize<SkeletalMesh>(const Ref<Asset>& asset)
 	{
@@ -612,11 +617,7 @@ namespace XYZ {
 
 		std::vector<AnimatedVertex> vertices = data["AnimatedVertices"].as<std::vector<AnimatedVertex>>();
 		std::vector<uint32_t> indices = data["Indices"].as<std::vector<uint32_t>>();
-		//std::vector<TreeNode> hierarchy = data["Hierarchy"].as<std::vector<TreeNode>>();
-		//std::vector<Bone> bones = data["Bones"].as<std::vector<Bone>>();
 
-		//BuildBoneTree(boneHierarchy, bones, hierarchy);
-	
 		auto ref = Ref<SkeletalMesh>::Create(
 			std::move(vertices), 
 			std::move(indices), 
@@ -636,6 +637,18 @@ namespace XYZ {
 		sceneSerializer.Deserialize();
 
 		return result;
+	}
+
+	template <>
+	Ref<Asset> AssetSerializer::deserialize<Animation>(const Ref<Asset>& asset)
+	{
+		std::ifstream stream(asset->FilePath);
+		std::stringstream strStream;
+		strStream << stream.rdbuf();
+		YAML::Node data = YAML::Load(strStream.str());
+
+
+		return Ref<Asset>();
 	}
 
 	Ref<Asset> AssetSerializer::LoadAssetMeta(const std::string& filepath, const GUID& directoryHandle, AssetType type)
@@ -693,6 +706,9 @@ namespace XYZ {
 		case AssetType::SkeletalMesh:
 			serialize<SkeletalMesh>(asset);
 			break;
+		case AssetType::Animation:
+			serialize<Animation>(asset);
+			break;
 		}
 		createMetaFile(asset);
 	}
@@ -714,6 +730,8 @@ namespace XYZ {
 			return deserialize<Font>(asset);
 		case AssetType::SkeletalMesh:
 			return deserialize<SkeletalMesh>(asset);
+		case AssetType::Animation:
+			return deserialize<AssetType>(asset);
 		}	
 		XYZ_ASSERT(false, "");
 		return Ref<Asset>();

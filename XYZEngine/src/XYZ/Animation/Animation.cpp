@@ -18,6 +18,9 @@ namespace XYZ {
 
 	void Animation::Update(Timestep ts)
 	{
+		if (!m_Entity)
+			return;
+
 		if (m_CurrentTime >= m_Length)
 		{
 			if (!m_Repeat)

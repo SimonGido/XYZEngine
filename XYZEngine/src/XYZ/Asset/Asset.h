@@ -15,6 +15,7 @@ namespace XYZ {
 		Audio,
 		Script,
 		SkeletalMesh,
+		Animation,
 		None
 	};
 

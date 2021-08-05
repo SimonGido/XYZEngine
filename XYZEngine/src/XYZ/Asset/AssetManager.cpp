@@ -25,6 +25,7 @@ namespace XYZ
 		s_AssetTypes["shader"] = AssetType::Shader;
 		s_AssetTypes["cs"]     = AssetType::Script;
 		s_AssetTypes["skm"]    = AssetType::SkeletalMesh;
+		s_AssetTypes["anim"]   = AssetType::Animation;
 
 		RefAllocator::Init(&s_Pool);
 		AssetDirectory newDirectory;

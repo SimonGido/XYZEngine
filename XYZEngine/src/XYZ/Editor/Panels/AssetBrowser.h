@@ -25,6 +25,7 @@ namespace XYZ {
 			size_t assetTypeToTexCoordsIndex(AssetType type) const;
 
 			void dragAndDrop(const std::filesystem::path& path);
+			std::string getUniqueAssetName(const char* fileName, const char* extension) const;
 		private:
 			AssetSelectedCallback m_Callback;
 
@@ -44,6 +45,7 @@ namespace XYZ {
 				Audio,
 				Script,
 				Mesh,
+				Animation,
 				NumTypes
 			};
 

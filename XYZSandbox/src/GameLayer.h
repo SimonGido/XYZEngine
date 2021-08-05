@@ -2,7 +2,6 @@
 
 #include <XYZ.h>
 
-#include "Util/OrthographicCameraController.h"
 #include "Automata/Grid.h"
 
 namespace XYZ {

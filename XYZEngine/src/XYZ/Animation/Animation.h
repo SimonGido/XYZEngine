@@ -28,8 +28,11 @@ namespace XYZ {
 		template <typename T>
 		Ref<T> FindTrack() const;
 		
-		inline float GetCurrentTime() const { return m_CurrentTime; }
 
+		inline SceneEntity GetEntity() const { return m_Entity; }
+		inline float	   GetLength() const { return m_Length; }
+		inline float	   GetCurrentTime() const { return m_CurrentTime; }
+		inline bool		   GetRepeat() const { return m_Repeat; }
 	private:
 		SceneEntity m_Entity;
 		std::vector<Ref<Track>> m_Tracks;

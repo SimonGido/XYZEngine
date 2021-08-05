@@ -6,6 +6,7 @@
 #include "XYZ/Scene/Scene.h"
 #include "XYZ/Scene/SceneSerializer.h"
 #include "XYZ/Renderer/Font.h"
+#include "XYZ/Animation/Animation.h"
 
 #include <imgui.h>
 
@@ -39,14 +40,15 @@ namespace XYZ {
 			glm::vec2 size = glm::vec2(width / divisor, height / divisor);
 
 
-			m_TexCoords[Arrow]    = CalculateTexCoords(glm::vec2(0, 2), size, { width, height });
-			m_TexCoords[Folder]   = CalculateTexCoords(glm::vec2(0, 3), size, { width, height });
-			m_TexCoords[Shader]   = CalculateTexCoords(glm::vec2(1, 3), size, { width, height });
-			m_TexCoords[Script]   = CalculateTexCoords(glm::vec2(3, 3), size, { width, height });
-			m_TexCoords[Material] = CalculateTexCoords(glm::vec2(2, 3), size, { width, height });
-			m_TexCoords[Texture]  = CalculateTexCoords(glm::vec2(2, 2), size, { width, height });
-			m_TexCoords[Mesh]	  = CalculateTexCoords(glm::vec2(1, 2), size, { width, height });
-
+			m_TexCoords[Arrow]     = CalculateTexCoords(glm::vec2(0, 2), size, { width, height });
+			m_TexCoords[Folder]    = CalculateTexCoords(glm::vec2(0, 3), size, { width, height });
+			m_TexCoords[Shader]    = CalculateTexCoords(glm::vec2(1, 3), size, { width, height });
+			m_TexCoords[Script]    = CalculateTexCoords(glm::vec2(3, 3), size, { width, height });
+			m_TexCoords[Material]  = CalculateTexCoords(glm::vec2(2, 3), size, { width, height });
+			m_TexCoords[Texture]   = CalculateTexCoords(glm::vec2(2, 2), size, { width, height });
+			m_TexCoords[Mesh]	   = CalculateTexCoords(glm::vec2(1, 2), size, { width, height });
+			m_TexCoords[Scene]	   = CalculateTexCoords(glm::vec2(1, 1), size, { width, height });
+			m_TexCoords[Animation] = CalculateTexCoords(glm::vec2(0, 1), size, { width, height });
 			m_Colors[ArrowColor]	    = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
 			m_Colors[ArrowInvalidColor] = glm::vec4(0.3f);
 		}
@@ -117,26 +119,29 @@ namespace XYZ {
 			if (!m_SelectedFile.empty())
 			{
 				std::string fullFilePath = m_CurrentDirectory.string() + "/" + m_SelectedFile.string();
+				std::replace(fullFilePath.begin(), fullFilePath.end(), '\\', '/');
 				AssetType type = AssetManager::GetAssetTypeFromExtension(Utils::GetExtension(m_SelectedFile.string()));
+				auto assetHandle = AssetManager::GetAssetHandle(fullFilePath);
+				AssetManager::LoadAsset(assetHandle);
 				switch (type)
 				{
 				case XYZ::AssetType::Scene:
-					return AssetManager::GetAsset<XYZ::Scene>(AssetManager::GetAssetHandle(fullFilePath));
+					return AssetManager::GetAsset<XYZ::Scene>(assetHandle);
 					break;
 				case XYZ::AssetType::Texture:
-					return AssetManager::GetAsset<XYZ::Texture>(AssetManager::GetAssetHandle(fullFilePath));
+					return AssetManager::GetAsset<XYZ::Texture>(assetHandle);
 					break;
 				case XYZ::AssetType::SubTexture:
-					return AssetManager::GetAsset<XYZ::SubTexture>(AssetManager::GetAssetHandle(fullFilePath));
+					return AssetManager::GetAsset<XYZ::SubTexture>(assetHandle);
 					break;
 				case XYZ::AssetType::Material:
-					return AssetManager::GetAsset<XYZ::Material>(AssetManager::GetAssetHandle(fullFilePath));
+					return AssetManager::GetAsset<XYZ::Material>(assetHandle);
 					break;
 				case XYZ::AssetType::Shader:
-					return AssetManager::GetAsset<XYZ::Shader>(AssetManager::GetAssetHandle(fullFilePath));
+					return AssetManager::GetAsset<XYZ::Shader>(assetHandle);
 					break;
 				case XYZ::AssetType::Font:
-					return AssetManager::GetAsset<XYZ::Font>(AssetManager::GetAssetHandle(fullFilePath));
+					return AssetManager::GetAsset<XYZ::Font>(assetHandle);
 					break;
 				case XYZ::AssetType::Audio:				
 					break;
@@ -162,25 +167,20 @@ namespace XYZ {
 			{
 				if (ImGui::MenuItem("Create Scene"))
 				{
-					char fileName[60];
-					sprintf(fileName, "New Scene.xyz");
-					std::string fullpath = m_CurrentDirectory.string() + "/" + fileName;
-					if (std::filesystem::exists(fullpath))
-					{
-						uint32_t index = 0;
-						sprintf(fileName, "New Scene%d.xyz", index);
-						fullpath = m_CurrentDirectory.string() + "/" + fileName;
-						while (std::filesystem::exists(fullpath))
-						{
-							sprintf(fileName, "New Scene%d.xyz", ++index);
-							fullpath = m_CurrentDirectory.string() + "/" + fileName;
-						}
-					}
-					Ref<XYZ::Scene> scene = Ref<XYZ::Scene>::Create(fileName);
+					std::string fullpath = getUniqueAssetName("New Scene", ".xyz");
+					Ref<XYZ::Scene> scene = Ref<XYZ::Scene>::Create("");
 					scene->FilePath = fullpath;
-					SceneSerializer serializer(scene);
-					serializer.Serialize();
-
+					scene->Type = AssetType::Scene;
+					AssetSerializer::SerializeAsset(scene);
+					ImGui::CloseCurrentPopup();
+				}
+				else if (ImGui::MenuItem("Create Animation"))
+				{
+					std::string fullpath = getUniqueAssetName("New Animation", ".anim");
+					Ref<XYZ::Animation> animation = Ref<XYZ::Animation>::Create(SceneEntity());
+					animation->FilePath = fullpath;
+					animation->Type = AssetType::Animation;
+					AssetSerializer::SerializeAsset(animation);
 					ImGui::CloseCurrentPopup();
 				}
 				ImGui::EndPopup();
@@ -282,6 +282,9 @@ namespace XYZ {
 			case XYZ::AssetType::SkeletalMesh:
 				return Mesh;
 				break;
+			case XYZ::AssetType::Animation:
+				return Animation;
+				break;
 			case XYZ::AssetType::None:
 				return NumTypes;
 				break;
@@ -299,6 +302,23 @@ namespace XYZ {
 				ImGui::SetDragDropPayload("ASSET_BROWSER_ITEM", itemPath, str.size(), ImGuiCond_Once);
 				ImGui::EndDragDropSource();
 			}
+		}
+		std::string AssetBrowser::getUniqueAssetName(const char* fileName, const char* extension) const
+		{
+			char fileNameTmp[60];
+			std::string fullpath = m_CurrentDirectory.string() + "/" + fileName + extension;
+			if (std::filesystem::exists(fullpath))
+			{
+				uint32_t index = 0;
+				sprintf(fileNameTmp, "%s%d%s", fileName, index, extension);
+				fullpath = m_CurrentDirectory.string() + "/" + fileNameTmp;
+				while (std::filesystem::exists(fullpath))
+				{
+					sprintf(fileNameTmp, "%s%d%s", fileName, ++index, extension);
+					fullpath = m_CurrentDirectory.string() + "/" + fileNameTmp;
+				}
+			}
+			return fullpath;
 		}
 	}
 }
