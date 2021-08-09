@@ -39,10 +39,10 @@ namespace XYZ {
 		m_MaxLights(50)
 	{
 		{
-			m_LightBuffer.Read().Get().LightPositions.resize(50);
+			m_LightBuffer.Read()->LightPositions.resize(50);
 		}
 		{
-			m_LightBuffer.Write().Get().LightPositions.resize(50);
+			m_LightBuffer.Write()->LightPositions.resize(50);
 		}
 	}
 	void LightUpdater::UpdateParticles(float timeStep, ParticleDataBuffer* data)
@@ -52,11 +52,11 @@ namespace XYZ {
 			uint32_t aliveParticles = data->GetAliveParticles();
 
 			auto val = m_LightBuffer.Write();
-			val.Get().LightCount = 0;
+			val->LightCount = 0;
 			for (uint32_t i = 0; i < aliveParticles && i < m_MaxLights; ++i)
 			{
-				val.Get().LightPositions[i] = data->m_Particle[i].Position;
-				val.Get().LightCount++;
+				val->LightPositions[i] = data->m_Particle[i].Position;
+				val->LightCount++;
 			}
 		}
 		m_LightBuffer.AttemptSwap();
@@ -70,9 +70,9 @@ namespace XYZ {
 			TransformComponent& transform = m_TransformEntity.GetComponent<TransformComponent>();
 
 			auto lightRef = m_LightBuffer.Read();
-			for (uint32_t i = 0; i < lightRef.Get().LightCount; ++i)
+			for (uint32_t i = 0; i < lightRef->LightCount; ++i)
 			{
-				SceneRenderer::SubmitLight(light, transform.WorldTransform * glm::translate(lightRef.Get().LightPositions[i]));
+				SceneRenderer::SubmitLight(light, transform.WorldTransform * glm::translate(lightRef->LightPositions[i]));
 			}
 		}
 	}
@@ -82,13 +82,13 @@ namespace XYZ {
 		m_MaxLights = maxLights;
 		{
 			auto val = m_LightBuffer.Read();
-			val.Get().LightPositions.resize(m_MaxLights);
-			val.Get().LightCount = std::min((uint32_t)val.Get().LightPositions.size(), val.Get().LightCount);
+			val->LightPositions.resize(m_MaxLights);
+			val->LightCount = std::min((uint32_t)val->LightPositions.size(), val->LightCount);
 		}
 		{
 			auto val = m_LightBuffer.Write();
-			val.Get().LightPositions.resize(m_MaxLights);
-			val.Get().LightCount = std::min((uint32_t)val.Get().LightPositions.size(), val.Get().LightCount);
+			val->LightPositions.resize(m_MaxLights);
+			val->LightCount = std::min((uint32_t)val->LightPositions.size(), val->LightCount);
 		}
 	}
 	void LightUpdater::SetLightEntity(SceneEntity entity)

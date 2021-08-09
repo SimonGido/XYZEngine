@@ -63,8 +63,15 @@ namespace XYZ {
 	public:
 		ScopedLockReference(std::mutex* mut, T& ref);
 		~ScopedLockReference();
+		ScopedLockReference(const ScopedLockReference<T>& other) = delete;
+		ScopedLockReference(ScopedLockReference<T>&& other) noexcept;
 
-		T& Get() { return m_Ref; }
+		ScopedLockReference<T>& operator=(const ScopedLockReference<T>& other) = delete;
+		ScopedLockReference<T>& operator=(ScopedLockReference<T>&& other) noexcept;
+
+		T* operator->() { return &m_Ref; }
+		T& As() { return m_Ref; }
+		const T& As() const { return m_Ref; }
 
 	private:
 		std::mutex* m_Mutex;
@@ -83,7 +90,26 @@ namespace XYZ {
 	template<typename T>
 	inline ScopedLockReference<T>::~ScopedLockReference()
 	{
-		m_Mutex->unlock();
+		if (m_Mutex)
+			m_Mutex->unlock();
+	}
+
+	template<typename T>
+	inline ScopedLockReference<T>::ScopedLockReference(ScopedLockReference<T>&& other) noexcept
+		:
+		m_Mutex(other.m_Mutex),
+		m_Ref(other.m_Ref)
+	{
+		other.m_Mutex = nullptr
+	}
+
+	template<typename T>
+	inline ScopedLockReference<T>& ScopedLockReference<T>::operator=(ScopedLockReference<T>&& other) noexcept
+	{
+		m_Mutex = other.m_Mutex;
+		m_Ref   = other.m_Ref;
+		other.m_Mutex = nullptr;
+		return *this;
 	}
 
 	template <typename T>

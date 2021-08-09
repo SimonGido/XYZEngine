@@ -14,11 +14,11 @@ namespace XYZ {
 		m_ThreadPass = std::make_shared<ThreadPass<DoubleThreadPass>>();
 		{
 			ScopedLockReference<DoubleThreadPass> write = m_ThreadPass->Write();
-			write.Get().RenderData.resize(maxParticles);
+			write->RenderData.resize(maxParticles);
 		}
 		{
 			ScopedLockReference<DoubleThreadPass> read = m_ThreadPass->Read();
-			read.Get().RenderData.resize(maxParticles);
+			read->RenderData.resize(maxParticles);
 		}
 	}
 
@@ -33,8 +33,8 @@ namespace XYZ {
 			particleThreadUpdate(ts.GetSeconds());
 			{
 				ScopedLockReference<DoubleThreadPass> val = m_ThreadPass->Read();
-				m_Renderer.InstanceCount = val.Get().InstanceCount;
-				m_Renderer.InstanceVBO->Update(val.Get().RenderData.data(), m_Renderer.InstanceCount * sizeof(ParticleRenderData));
+				m_Renderer.InstanceCount = val->InstanceCount;
+				m_Renderer.InstanceVBO->Update(val->RenderData.data(), m_Renderer.InstanceCount * sizeof(ParticleRenderData));
 			}
 			{
 				std::scoped_lock lock(m_SingleThreadPass->Mutex);
@@ -120,7 +120,7 @@ namespace XYZ {
 				for (uint32_t i = 0; i < endId; ++i)
 				{
 					auto& particle = singleThreadPass->Particles.m_Particle[i];
-					val.Get().RenderData[i] = ParticleRenderData{
+					val->RenderData[i] = ParticleRenderData{
 						particle.Color,
 						singleThreadPass->Particles.m_TexCoord[i],
 						glm::vec2(particle.Position.x, particle.Position.y),
@@ -128,7 +128,7 @@ namespace XYZ {
 						singleThreadPass->Particles.m_Rotation[i]
 					};
 				}
-				val.Get().InstanceCount = endId;
+				val->InstanceCount = endId;
 			}
 			threadPass->AttemptSwap();
 			

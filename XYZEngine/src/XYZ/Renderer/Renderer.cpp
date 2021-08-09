@@ -223,7 +223,7 @@ namespace XYZ {
 		#else
 		{
 			auto val = queue->Read();
-			val.Get().Execute();
+			val->Execute();
 		}
 		#endif
 

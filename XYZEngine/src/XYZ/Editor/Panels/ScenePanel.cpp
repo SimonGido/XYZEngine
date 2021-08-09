@@ -128,7 +128,7 @@ namespace XYZ {
 					m_Selection = std::move(newSelection);
 					m_SelectionIndex = 0;
 				}
-				else if ((size_t)m_SelectionIndex + 1 == m_Selection.size())
+				else if (m_SelectionIndex + 1 == m_Selection.size())
 				{
 					m_SelectionIndex = 0;
 				}
@@ -158,15 +158,12 @@ namespace XYZ {
 			auto& tc = m_Context->GetSelectedEntity().GetComponent<TransformComponent>();
 			glm::mat4 transform = tc.GetTransform();
 
-			if (m_Context->GetState() == SceneState::Edit)
+			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
+				(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),
+				nullptr, nullptr);
+			if (ImGuizmo::IsUsing())
 			{
-				ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
-					(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),
-					nullptr, nullptr);
-				if (ImGuizmo::IsUsing())
-				{
-					tc.DecomposeTransform(transform);
-				}
+				tc.DecomposeTransform(transform);
 			}
 		}
 

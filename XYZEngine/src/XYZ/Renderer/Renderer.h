@@ -71,7 +71,7 @@ namespace XYZ {
 				pFunc->~FuncT(); // Call destructor
 			};
 			auto queue = getRenderCommandQueue(type);
-			auto storageBuffer = queue.Get().Allocate(renderCmd, sizeof(func));
+			auto storageBuffer = queue->Allocate(renderCmd, sizeof(func));
 			new (storageBuffer) FuncT(std::forward<FuncT>(func));
 			getStats().CommandsCount++;
 		}

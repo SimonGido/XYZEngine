@@ -731,7 +731,7 @@ namespace XYZ {
 		case AssetType::SkeletalMesh:
 			return deserialize<SkeletalMesh>(asset);
 		case AssetType::Animation:
-			return deserialize<AssetType>(asset);
+			return deserialize<Animation>(asset);
 		}	
 		XYZ_ASSERT(false, "");
 		return Ref<Asset>();
