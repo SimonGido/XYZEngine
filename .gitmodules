@@ -16,3 +16,6 @@
 [submodule "XYZEngine/vendor/ImGuizmo"]
 	path = XYZEngine/vendor/ImGuizmo
 	url = https://github.com/SimonGido/ImGuizmo.git
+[submodule "XYZEngine/vendor/spdlog"]
+	path = XYZEngine/vendor/spdlog
+	url = https://github.com/SimonGido/spdlog.git
