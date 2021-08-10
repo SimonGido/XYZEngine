@@ -36,7 +36,7 @@ namespace XYZ {
 				catch (std::exception& e)
 				{
 					// TODO: Logging
-					XYZ_LOG_ERR("Client Exception: ", e.what());
+					XYZ_CORE_ERROR("Client Exception: ", e.what());
 					return false;
 				}
 				return true;

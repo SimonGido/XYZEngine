@@ -19,7 +19,6 @@ namespace XYZ {
 
 	Application::Application()
 	{
-		Logger::Get().SetLogLevel(LogLevel::INFO | LogLevel::WARNING | LogLevel::ERR | LogLevel::API);
 		AssetManager::Init();
 		Renderer::Init();
 		s_Application = this;

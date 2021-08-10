@@ -48,12 +48,12 @@ namespace XYZ {
             XYZ_ASSERT(false, "Could not set a context!");
         }
        
-        XYZ_LOG_WARN("Audio Device Info:");
-        XYZ_LOG_WARN("Name: ", s_AudioDevice->DeviceName);
-        XYZ_LOG_WARN("Sample Rate: ", s_AudioDevice->Frequency);
-        XYZ_LOG_WARN("Max Sources: " , s_AudioDevice->SourcesMax);
-        XYZ_LOG_WARN("Mono: " ,s_AudioDevice->NumMonoSources);
-        XYZ_LOG_WARN("Stereo: ", s_AudioDevice->NumStereoSources);
+        XYZ_CORE_WARN("Audio Device Info:");
+        XYZ_CORE_WARN("Name: ", s_AudioDevice->DeviceName);
+        XYZ_CORE_WARN("Sample Rate: ", s_AudioDevice->Frequency);
+        XYZ_CORE_WARN("Max Sources: " , s_AudioDevice->SourcesMax);
+        XYZ_CORE_WARN("Mono: " ,s_AudioDevice->NumMonoSources);
+        XYZ_CORE_WARN("Stereo: ", s_AudioDevice->NumStereoSources);
         
         mp3dec_init(&s_Mp3d);
 

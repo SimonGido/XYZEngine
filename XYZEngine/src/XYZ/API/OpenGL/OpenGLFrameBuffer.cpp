@@ -131,7 +131,7 @@ namespace XYZ {
 	{
 		if (width == 0 || height == 0)
 		{
-			XYZ_LOG_WARN("Width and height can not be zero");
+			XYZ_CORE_WARN("Width and height can not be zero");
 			return;
 		}
 		if (!forceResize && m_Specification.Width == width && m_Specification.Height == height)

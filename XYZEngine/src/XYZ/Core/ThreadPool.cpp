@@ -9,7 +9,7 @@ namespace XYZ {
 		m_Terminate(false)
 	{
 		if (numThreads > std::thread::hardware_concurrency())
-			XYZ_LOG_WARN("Creating more threads than the maximum number of threads");
+			XYZ_CORE_WARN("Creating more threads than the maximum number of threads");
 		for (uint32_t i = 0; i < numThreads; ++i)
 			m_Threads.push_back(std::thread(&ThreadPool::waitForJob, this));
 	}

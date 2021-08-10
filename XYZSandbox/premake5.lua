@@ -15,6 +15,7 @@ project "XYZSandbox"
 		
 		includedirs
 		{
+			"%{wks.location}/XYZEngine/vendor/spdlog/include",
 			"%{wks.location}/XYZEngine/vendor/yaml-cpp/include",
 			"%{wks.location}/XYZEngine/vendor",
 			"%{wks.location}/XYZEngine/src",

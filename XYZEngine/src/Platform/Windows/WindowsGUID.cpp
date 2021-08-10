@@ -5,6 +5,8 @@
 
 #ifdef XYZ_PLATFORM_WINDOWS
 #include <Rpc.h>
+#include <combaseapi.h>
+
 #pragma comment(lib, "rpcrt4.lib")
 
 namespace XYZ {

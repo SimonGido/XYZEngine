@@ -37,36 +37,26 @@ namespace XYZ {
 		switch (Component)
 		{
 		case GL_DEBUG_TYPE_ERROR:
-			XYZ_LOG_API("Error ", message);
-			XYZ_LOG_API("ID: ", id);
-			XYZ_LOG_API("Severity: ", severityMessage);
+			XYZ_CORE_ERROR("Error: {0} {1} {2}", message, id, severityMessage);
 			XYZ_ASSERT("", false);
 			break;
 		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
-			XYZ_LOG_API("Deprecated Behaviour: ", message);
-			XYZ_LOG_API("ID: ", id);
-			XYZ_LOG_API("Severity: ", severityMessage);
+			XYZ_CORE_WARN("Deprecated Behaviour: {0} {1} {2}", message, id, severityMessage);
 			break;
 		case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
-			XYZ_LOG_API("Undefined Behaviour: ", message);
-			XYZ_LOG_API("ID: ", id);
-			XYZ_LOG_API("Severity: ", severityMessage);
+			XYZ_CORE_ERROR("Undefined Behaviour: {0} {1} {2}", message, id, severityMessage);
 			break;
 		case GL_DEBUG_TYPE_PORTABILITY:
-			XYZ_LOG_API("Portability: ", message);
-			XYZ_LOG_API("ID: ", id);
-			XYZ_LOG_API("Severity: ", severityMessage);
+			XYZ_CORE_WARN("Portability: {0} {1} {2}", message, id, severityMessage);
 			break;
 		case GL_DEBUG_TYPE_PERFORMANCE:
-			XYZ_LOG_API("Performance: ", message);
-			XYZ_LOG_API("ID: ", id);
-			XYZ_LOG_API("Severity: ", severityMessage);
+			XYZ_CORE_WARN("Performance: {0} {1} {2}", message, id, severityMessage);
 			break;
 		}
 	}
 	void GLFWErrorCallback(int code, const char* description)
 	{
-		XYZ_LOG_ERR(code, " ", description);
+		XYZ_CORE_ERROR("Code: {0} Description: {1} ", code, description);
 	}
 #endif
 
@@ -85,14 +75,14 @@ namespace XYZ {
 	{		
 		glfwMakeContextCurrent(m_WindowHandle);
 		
-		XYZ_LOG_WARN("OpenGL Info:");
-		XYZ_LOG_WARN("Vendor: ", (char*)glGetString(GL_VENDOR));
-		XYZ_LOG_WARN("Renderer: ", (char*)glGetString(GL_RENDERER));
-		XYZ_LOG_WARN("Version: ", (char*)glGetString(GL_VERSION));
+		XYZ_CORE_INFO("OpenGL Info:");
+		XYZ_CORE_INFO("Vendor: {0}", glGetString(GL_VENDOR));
+		XYZ_CORE_INFO("Renderer: {0}", glGetString(GL_RENDERER));
+		XYZ_CORE_INFO("Version: {0}", glGetString(GL_VERSION));
 
 		if (glewInit() != GLEW_OK)
 		{
-			XYZ_LOG_ERR("OpenGLContext: Could not initialize glew");
+			XYZ_CORE_ERROR("OpenGLContext: Could not initialize glew");
 		};
 		glLoadIdentity();
 

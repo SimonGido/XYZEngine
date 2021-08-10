@@ -208,7 +208,7 @@ namespace XYZ {
 		if (!res.valid())
 		{
 			sol::error err = res;
-			XYZ_LOG_ERR("Exception OnUpdate: ", err.what());
+			XYZ_CORE_ERROR("Exception OnUpdate: ", err.what());
 		}
 	}
 	void LuaModule::OnFileChange(const std::wstring& filepath)
@@ -235,7 +235,7 @@ namespace XYZ {
 		{
 			fclose(it);
 			m_L.script_file(fullPath);
-			XYZ_LOG_INFO("Lua Script successfully reloaded ", m_FileName);
+			XYZ_CORE_INFO("Lua Script successfully reloaded ", m_FileName);
 			return true;
 		}
 		return false;

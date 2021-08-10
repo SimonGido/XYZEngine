@@ -6,6 +6,8 @@
 #ifdef XYZ_PLATFORM_WINDOWS
 #include <Windows.h>
 #include <shlobj.h>
+#include <commdlg.h>
+#include <shellapi.h>
 
 namespace XYZ {
 
@@ -94,10 +96,10 @@ namespace XYZ {
 			DWORD error = GetLastError();
 
 			if (error == ERROR_ALREADY_EXISTS)
-				XYZ_LOG_ERR(filepath, " already exists!");
+				XYZ_CORE_ERROR(filepath, " already exists!");
 
 			if (error == ERROR_PATH_NOT_FOUND)
-				XYZ_LOG_ERR("One or more directories don't exist. ", filepath);
+				XYZ_CORE_ERROR("One or more directories don't exist. ", filepath);
 
 			return false;
 		}

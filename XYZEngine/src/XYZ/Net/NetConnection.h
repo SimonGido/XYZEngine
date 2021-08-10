@@ -102,7 +102,7 @@ namespace XYZ {
 						}
 						else
 						{
-							XYZ_LOG_ERR("[", m_ID, "]", " Read header failed");
+							XYZ_CORE_ERROR("[", m_ID, "]", " Read header failed");
 							m_Socket.close();
 						}
 					});
@@ -118,7 +118,7 @@ namespace XYZ {
 						}
 						else
 						{
-							XYZ_LOG_ERR("[", m_ID, "]", " Read body failed");
+							XYZ_CORE_ERROR("[", m_ID, "]", " Read body failed");
 							m_Socket.close();
 						}
 					
@@ -144,7 +144,7 @@ namespace XYZ {
 						}
 						else
 						{
-							XYZ_LOG_ERR("[", m_ID, "]", " Write header failed");
+							XYZ_CORE_ERROR("[", m_ID, "]", " Write header failed");
 							m_Socket.close();
 						}
 					});
@@ -162,7 +162,7 @@ namespace XYZ {
 						}
 						else
 						{
-							XYZ_LOG_ERR("[", m_ID, "]", " Write body failed");
+							XYZ_CORE_ERROR("[", m_ID, "]", " Write body failed");
 							m_Socket.close();
 						}
 					});

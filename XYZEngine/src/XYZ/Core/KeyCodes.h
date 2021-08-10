@@ -129,8 +129,8 @@ namespace XYZ {
 
 	enum class KeyMode
 	{
-		MOD_NONE = 0,
-		MOD_SHIFT = 0x0001,
-		MOD_CAPS_LOCK = 0x0010
+		MODE_NONE = 0,
+		MODE_SHIFT = 0x0001,
+		MODE_CAPS_LOCK = 0x0010
 	};
 }

@@ -27,7 +27,7 @@ namespace XYZ {
 			}
 			else
 			{
-				XYZ_LOG_WARN("Value must be trivially copyable, data was not deserialized");
+				XYZ_CORE_WARN("Value must be trivially copyable, data was not deserialized");
 			}
 			return *this;
 		}
@@ -43,7 +43,7 @@ namespace XYZ {
 			}
 			else
 			{
-				XYZ_LOG_WARN("Value must be trivially copyable, data was not serialized");
+				XYZ_CORE_WARN("Value must be trivially copyable, data was not serialized");
 			}
 			return *this;
 		}

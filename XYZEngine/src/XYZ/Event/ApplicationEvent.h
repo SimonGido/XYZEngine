@@ -12,7 +12,7 @@ namespace XYZ {
 		WindowResizeEvent(int width, int height)
 			:m_Width(width), m_Height(height),m_Type(EventType::WindowResized)
 		{
-			XYZ_LOG_INFO("Window: Resized window width: ", width, " height: ", height);
+			XYZ_CORE_INFO("Window: Resized window width: {0}  height: {1}", width, height);
 		}
 
 
@@ -41,7 +41,7 @@ namespace XYZ {
 		WindowCloseEvent()
 			: m_Type(EventType::WindowClosed)
 		{
-			XYZ_LOG_INFO("Window: Window closed");
+			XYZ_CORE_INFO("Window: Window closed");
 		}
 
 		virtual EventType GetEventType() const override { return m_Type; }

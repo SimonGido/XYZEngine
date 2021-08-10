@@ -194,13 +194,13 @@ namespace XYZ {
 								}
 								else
 								{
-									XYZ_LOG_WARN("Asset with the same name already exists in the directory");
+									XYZ_CORE_WARN("Asset with the same name already exists in the directory");
 								}
 							}
 						}
 						else
 						{
-							XYZ_LOG_WARN("Asset can not have an empty name");
+							XYZ_CORE_WARN("Asset can not have an empty name");
 						}
 					}
 				});

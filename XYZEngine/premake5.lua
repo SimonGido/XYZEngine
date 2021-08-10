@@ -54,6 +54,7 @@ project "XYZEngine"
 			"src",
 			"vendor/stb_image",		
 			"vendor/assimp/include",
+			"vendor/spdlog/include",
 			"%{IncludeDir.ImGui}",
 			"%{IncludeDir.ImGuizmo}",
 			"%{IncludeDir.yaml}",

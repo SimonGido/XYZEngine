@@ -44,7 +44,7 @@ namespace XYZ {
 		{
 			if (FT_Load_Char(face, c, FT_LOAD_RENDER))
 			{
-				XYZ_LOG_ERR("Failed to load char ", c);
+				XYZ_CORE_ERROR("Failed to load char ", c);
 				return;
 			}
 			FT_Bitmap* bmp = &face->glyph->bitmap;

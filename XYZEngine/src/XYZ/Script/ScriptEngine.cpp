@@ -118,9 +118,9 @@ namespace XYZ {
 		MonoAssembly* assembly = LoadAssemblyFromFile(path.c_str());
 
 		if (!assembly)
-			XYZ_LOG_ERR("Could not load assembly: ", path);
+			XYZ_CORE_ERROR("Could not load assembly: ", path);
 		else
-			XYZ_LOG_INFO("Successfully loaded assembly: ", path);
+			XYZ_CORE_INFO("Successfully loaded assembly: ", path);
 
 		return assembly;
 	}
@@ -143,7 +143,7 @@ namespace XYZ {
 	{
 		MonoImage* image = mono_assembly_get_image(assembly);
 		if (!image)
-			XYZ_LOG_ERR("mono_assembly_get_image failed");
+			XYZ_CORE_ERROR("mono_assembly_get_image failed");
 
 		return image;
 	}
@@ -152,7 +152,7 @@ namespace XYZ {
 	{
 		MonoClass* monoClass = mono_class_from_name(image, scriptClass.NamespaceName.c_str(), scriptClass.ClassName.c_str());
 		if (!monoClass)
-			XYZ_LOG_ERR("mono_class_from_name failed");
+			XYZ_CORE_ERROR("mono_class_from_name failed");
 
 		return monoClass;
 	}
@@ -161,7 +161,7 @@ namespace XYZ {
 	{
 		MonoObject* instance = mono_object_new(s_MonoDomain, scriptClass.Class);
 		if (!instance)
-			XYZ_LOG_ERR("mono_object_new failed");
+			XYZ_CORE_ERROR("mono_object_new failed");
 
 		mono_runtime_object_init(instance);
 		uint32_t handle = mono_gchandle_new(instance, false);
@@ -172,11 +172,11 @@ namespace XYZ {
 	{
 		MonoMethodDesc* desc = mono_method_desc_new(methodDesc.c_str(), NULL);
 		if (!desc)
-			XYZ_LOG_ERR("mono_method_desc_new failed");
+			XYZ_CORE_ERROR("mono_method_desc_new failed");
 
 		MonoMethod* method = mono_method_desc_search_in_image(desc, image);
 		if (!method)
-			XYZ_LOG_ERR("mono_method_desc_search_in_image failed");
+			XYZ_CORE_ERROR("mono_method_desc_search_in_image failed");
 
 		return method;
 	}
@@ -333,7 +333,7 @@ namespace XYZ {
 
 		if (!ModuleExists(scriptComponent.ModuleName))
 		{
-			XYZ_LOG_ERR("Entity references non-existent script module ", scriptComponent.ModuleName);
+			XYZ_CORE_ERROR("Entity references non-existent script module ", scriptComponent.ModuleName);
 			return;
 		}
 

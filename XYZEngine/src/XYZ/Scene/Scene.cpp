@@ -120,7 +120,7 @@ namespace XYZ {
 		}
 		else
 		{
-			XYZ_LOG_ERR("No camera found in the scene");
+			XYZ_CORE_ERROR("No camera found in the scene");
 			m_State = SceneState::Edit;
 			return;
 		}

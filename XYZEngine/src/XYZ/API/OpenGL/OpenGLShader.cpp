@@ -575,7 +575,7 @@ namespace XYZ {
 
 				glDeleteShader(shader);
 
-				XYZ_LOG_ERR(infoLog.data());
+				XYZ_CORE_ERROR(infoLog.data());
 				XYZ_ASSERT(false, "Shader compilation failure!");
 				break;
 			}
@@ -609,7 +609,7 @@ namespace XYZ {
 				glDeleteShader(glShaderIDs[i]);
 
 
-			XYZ_LOG_ERR(infoLog.data());
+			XYZ_CORE_ERROR(infoLog.data());
 			XYZ_ASSERT(false, "Shader link failure!");
 			return;
 		}

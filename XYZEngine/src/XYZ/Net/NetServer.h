@@ -28,10 +28,10 @@ namespace XYZ {
 				}
 				catch (std::exception& e)
 				{
-					XYZ_LOG_ERR("Server Exception: ", e.what());
+					XYZ_CORE_ERROR("Server Exception: ", e.what());
 					return false;
 				}
-				XYZ_LOG_INFO("Server Started");
+				XYZ_CORE_INFO("Server Started");
 				return true;
 			}
 
@@ -42,7 +42,7 @@ namespace XYZ {
 				if (m_ContextThread.joinable())
 					m_ContextThread.join();
 
-				XYZ_LOG_INFO("Server Stopped");
+				XYZ_CORE_INFO("Server Stopped");
 			}
 
 			void WaitForClientConnection()
@@ -50,7 +50,7 @@ namespace XYZ {
 				m_AsioAcceptor.async_accept([this](std::error_code ec, asio::ip::tcp::socket socket) {
 					if (!ec)
 					{
-						XYZ_LOG_INFO("Server New Connection: ", socket.remote_endpoint());
+						XYZ_CORE_INFO("Server New Connection: ", socket.remote_endpoint());
 						std::shared_ptr<Connection<T>> newConn =
 							std::make_shared<Connection<T>>(Connection<T>::Owner::Server,
 								m_AsioContext, std::move(socket), m_MessagesIn);
@@ -68,7 +68,7 @@ namespace XYZ {
 						}
 
 						m_Connections.back()->ConnectToClient(id);
-						XYZ_LOG_INFO("[", m_Connections.back()->GetID(), "] Connection Approved");
+						XYZ_CORE_INFO("[", m_Connections.back()->GetID(), "] Connection Approved");
 						onClientConnect(m_Connections.back());
 					}
 					WaitForClientConnection();
