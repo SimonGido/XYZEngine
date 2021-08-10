@@ -118,9 +118,9 @@ namespace XYZ {
 		MonoAssembly* assembly = LoadAssemblyFromFile(path.c_str());
 
 		if (!assembly)
-			XYZ_CORE_ERROR("Could not load assembly: ", path);
+			XYZ_CORE_ERROR("Could not load assembly: {0}", path);
 		else
-			XYZ_CORE_INFO("Successfully loaded assembly: ", path);
+			XYZ_CORE_INFO("Successfully loaded assembly: {0}", path);
 
 		return assembly;
 	}
@@ -333,7 +333,7 @@ namespace XYZ {
 
 		if (!ModuleExists(scriptComponent.ModuleName))
 		{
-			XYZ_CORE_ERROR("Entity references non-existent script module ", scriptComponent.ModuleName);
+			XYZ_CORE_ERROR("Entity references non-existent script module {0}", scriptComponent.ModuleName);
 			return;
 		}
 
