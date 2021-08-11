@@ -11,8 +11,6 @@
 namespace XYZ {
 	namespace Editor {
 
-
-
 		AnimationEditor::AnimationEditor()
 			:
 			m_SelectedEntry(-1),

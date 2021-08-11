@@ -79,25 +79,15 @@ namespace XYZ {
 		}
 		return *this;
 	}
-	Signature Signature::operator&(const Signature& other) const
+	bool Signature::And(const Signature& other) const
 	{
-		Signature result(*this);
 		for (uint16_t i = 0; i < m_Bitset->m_BitCount; ++i)
 		{
 			size_t index = getIndex(*this, i);
-			result.Set(i, (m_Bitset->m_Bitset[index] && other[i]));			
+			if (!(m_Bitset->m_Bitset[index] & other[i]))
+				return false;
 		}
-		return result;
-	}
-	Signature Signature::operator|(const Signature& other) const
-	{
-		Signature result(*this);
-		for (uint16_t i = 0; i < m_Bitset->m_BitCount; ++i)
-		{
-			size_t index = getIndex(*this, i);
-			result.Set(i, (m_Bitset->m_Bitset[index] || other[i]));			
-		}
-		return result;
+		return true;
 	}
 	bool Signature::operator[](uint16_t bitIndex) const
 	{

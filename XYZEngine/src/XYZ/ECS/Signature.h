@@ -12,6 +12,7 @@ namespace XYZ {
 
 		void Set(uint16_t bitIndex, bool val = true);
 		void Reset();
+		bool And(const Signature& other) const;
 
 		Signature& operator =(const Signature& other);
 		Signature& operator &=(const Signature& other);
@@ -19,8 +20,6 @@ namespace XYZ {
 
 		bool operator ==(const Signature& other) const;
 		bool operator !=(const Signature& other) const;
-		Signature operator &(const Signature& other) const;
-		Signature operator |(const Signature& other) const;
 
 		bool operator[](uint16_t bitIndex) const;
 
