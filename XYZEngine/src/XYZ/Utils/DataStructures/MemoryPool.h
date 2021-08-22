@@ -21,10 +21,13 @@ namespace XYZ {
 	class MemoryPool
 	{
 	public:
-		MemoryPool() = default;
+		MemoryPool();
+		MemoryPool(const MemoryPool& other) = delete;
 		MemoryPool(MemoryPool&& other) noexcept;
 		~MemoryPool();
 
+		MemoryPool& operator=(const MemoryPool& other) = delete;
+		MemoryPool& operator=(MemoryPool&& other) noexcept;
 
 		void* AllocateRaw(uint32_t size);
 		void  DeallocateRaw(void* val);
@@ -39,9 +42,9 @@ namespace XYZ {
 		T* Get(uint32_t chunkIndex, uint8_t blockIndex);
 
 		template <typename T>
-		void ExtractMetaData(T* ptr, uint32_t* values) const;
+		void ExtractMetaData(T* ptr, std::array<uint32_t, 3>& values) const;
 
-		void ExtractMetaData(void* ptr, uint32_t* values) const;
+		void ExtractMetaData(void* ptr, std::array<uint32_t, 3>& values) const;
 	private:
 		template <typename T>
 		uint32_t toChunkSize() const;
@@ -53,24 +56,35 @@ namespace XYZ {
 		void     reverseMergeFreeChunks();
 		Block*   createBlock();
 
-		void storeMetaData(uint32_t memoryStart, uint8_t blockIndex, uint32_t size);
-		bool findIndicesInFreeChunks(uint32_t sizeRequirement, uint8_t& blockIndex, uint32_t& dataIndex);
+		void	 storeMetaData(uint32_t memoryStart, uint8_t blockIndex, uint32_t size);
+		bool	 findIndicesInFreeChunks(uint32_t sizeRequirement, uint8_t& blockIndex, uint32_t& dataIndex);
 		std::pair<uint8_t, uint32_t> findAvailableIndex(uint32_t size);
 
 		static constexpr uint32_t metaDataSize();
 	private:
 		std::vector<Block> m_Blocks;
 		std::vector<Chunk> m_FreeChunks;
+		uint32_t		   m_ElementCounter;
 
 		bool m_Dirty = false;
 		static constexpr size_t sc_MaxNumberOfBlocks = 255;
+
+		template <uint32_t, bool> friend class MemoryPoolDebug;
 	};
+
+	template<uint32_t BlockSize, bool StoreSize>
+	inline MemoryPool<BlockSize, StoreSize>::MemoryPool()
+		:
+		m_ElementCounter(0)
+	{
+	}
 
 	template<uint32_t BlockSize, bool StoreSize>
 	inline MemoryPool<BlockSize, StoreSize>::MemoryPool(MemoryPool&& other) noexcept
 		:
 		m_Blocks(std::move(other.m_Blocks)),
 		m_FreeChunks(std::move(other.m_FreeChunks)),
+		m_ElementCounter(other.m_ElementCounter)
 		m_Dirty(other.m_Dirty)
 	{
 	}
@@ -82,6 +96,16 @@ namespace XYZ {
 			if (block.Data)
 				delete[]block.Data;
 		}
+	}
+
+	template<uint32_t BlockSize, bool StoreSize>
+	inline MemoryPool<BlockSize, StoreSize>& MemoryPool<BlockSize, StoreSize>::operator=(MemoryPool&& other) noexcept
+	{
+		m_Blocks = std::move(other.m_Blocks);
+		m_FreeChunks = std::move(other.m_FreeChunks);
+		m_ElementCounter = other.m_ElementCounter
+		m_Dirty = other.m_Dirty;
+		return *this;
 	}
 
 	template<uint32_t BlockSize, bool StoreSize>
@@ -161,23 +185,29 @@ namespace XYZ {
 		return { blockIndex, dataIndex };
 	}
 
+	
+
 	template<uint32_t BlockSize, bool StoreSize>
 	inline void* MemoryPool<BlockSize, StoreSize>::AllocateRaw(uint32_t size)
 	{
 		XYZ_ASSERT(StoreSize, "Store size must be enabled");
+		m_ElementCounter++;
+		
 		if (!m_Blocks.size())
 			createBlock();
 		if (m_Dirty)
 			cleanUp();
-		auto [blockIndex, chunkIndex] = findAvailableIndex(size);
-		return &m_Blocks[blockIndex].Data[chunkIndex];
+	
+		auto [blockIndex, dataIndex] = findAvailableIndex(size);
+		return &m_Blocks[blockIndex].Data[dataIndex];
 	}
+
 	template<uint32_t BlockSize, bool StoreSize>
 	inline void MemoryPool<BlockSize, StoreSize>::DeallocateRaw(void* val)
 	{
 		XYZ_ASSERT(StoreSize, "Store size must be enabled");
-		// TODO: StoreSize must be enabled
-		uint32_t indices[3];
+		m_ElementCounter--;
+		std::array<uint32_t, 3> indices;
 		ExtractMetaData(val, indices);
 		m_FreeChunks.emplace_back(toChunkSize(indices[2]), indices[1], (uint8_t)indices[0]);
 		m_Dirty = true;
@@ -268,6 +298,7 @@ namespace XYZ {
 	template<typename T, typename ...Args>
 	inline T* MemoryPool<BlockSize, StoreSize>::Allocate(Args && ...args)
 	{
+		m_ElementCounter++;
 		if (!m_Blocks.size())
 			createBlock();
 		if (m_Dirty)
@@ -280,6 +311,7 @@ namespace XYZ {
 	template<typename T>
 	inline void MemoryPool<BlockSize, StoreSize>::Deallocate(T* val)
 	{
+		m_ElementCounter--;
 		val->~T();
 		uint32_t indices[3];
 		ExtractMetaData(val, indices);
@@ -297,18 +329,18 @@ namespace XYZ {
 
 	template<uint32_t BlockSize, bool StoreSize>
 	template<typename T>
-	inline void MemoryPool<BlockSize, StoreSize>::ExtractMetaData(T* ptr, uint32_t* value) const
+	inline void MemoryPool<BlockSize, StoreSize>::ExtractMetaData(T* ptr, std::array<uint32_t, 3>& values) const
 	{
 		uint8_t* blockPtr = (uint8_t*)ptr - metaDataSize();
-		value[0] = *blockPtr;
+		values[0] = *blockPtr;
 		uint8_t* chunkPtr = blockPtr + sizeof(uint8_t);
-		value[1] = *(uint32_t*)(chunkPtr);
+		values[1] = *(uint32_t*)(chunkPtr);
 
 		if (StoreSize)
 		{
 			// size is stored in previous 4 bytes
 			uint8_t* sizePtr = (uint8_t*)chunkPtr + sizeof(uint32_t);
-			value[2] = (uint32_t)(*sizePtr);
+			values[2] = *(uint32_t*)sizePtr;
 		}
 	}
 
@@ -320,7 +352,7 @@ namespace XYZ {
 	}
 
 	template<uint32_t BlockSize, bool StoreSize>
-	inline void MemoryPool<BlockSize, StoreSize>::ExtractMetaData(void* ptr, uint32_t* values) const
+	inline void MemoryPool<BlockSize, StoreSize>::ExtractMetaData(void* ptr, std::array<uint32_t, 3>& values) const
 	{
 		uint8_t* blockPtr = (uint8_t*)ptr - metaDataSize();
 		values[0] = *blockPtr;
@@ -331,7 +363,7 @@ namespace XYZ {
 		{
 			// size is stored in previous 4 bytes
 			uint8_t* sizePtr = (uint8_t*)chunkPtr + sizeof(uint32_t);
-			values[2] = (uint32_t)(*sizePtr);
+			values[2] = *(uint32_t*)sizePtr;
 		}
 	}
 

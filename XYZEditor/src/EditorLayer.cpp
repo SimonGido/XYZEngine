@@ -85,13 +85,14 @@ namespace XYZ {
 		{
 			auto& editorCamera = m_ScenePanel.GetEditorCamera();
 			m_Scene->OnRenderEditor(editorCamera, ts);
-
+		
 			EditorRenderer::BeginPass(SceneRenderer::GetFinalRenderPass(), editorCamera.GetViewProjection(), editorCamera.GetPosition());
 			EditorRenderer::EndPass();
 		}
 
 		m_ScenePanel.OnUpdate(ts);
 		m_SpriteEditor.OnUpdate(ts);
+		m_AnimationEditor.OnUpdate(ts);
 	}
 
 	void EditorLayer::OnEvent(Event& event)
@@ -108,6 +109,27 @@ namespace XYZ {
 
 	void EditorLayer::OnImGuiRender()
 	{
+		if (ImGui::BeginMenuBar())
+		{
+			if (ImGui::BeginMenu("File"))
+			{
+				if (ImGui::MenuItem("Open...", "Ctrl+O"))
+				{
+				}
+
+				if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S"))
+				{
+				}
+
+				if (ImGui::MenuItem("Exit"))
+				{
+					Application::Get().Stop();
+				}
+				ImGui::EndMenu();
+			}
+
+			ImGui::EndMenuBar();
+		}
 		m_Inspector.OnImGuiRender();
 		m_SceneHierarchy.OnImGuiRender();
 		m_ScenePanel.OnImGuiRender();
@@ -115,6 +137,7 @@ namespace XYZ {
 		m_AnimationEditor.OnImGuiRender(m_EditorOpen[AnimationEditor]);
 		m_AssetBrowser.OnImGuiRender();
 		displayStats();
+		AssetManager::DisplayMemory();
 	}
 	
 	bool EditorLayer::onMouseButtonPress(MouseButtonPressEvent& event)

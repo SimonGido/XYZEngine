@@ -1,8 +1,8 @@
-[13:03:48] [info] XYZ: OpenGL Info:
-[13:03:48] [info] XYZ: Vendor: NVIDIA Corporation
-[13:03:48] [info] XYZ: Renderer: GeForce RTX 3060 Ti/PCIe/SSE2
-[13:03:48] [info] XYZ: Version: 4.6.0 NVIDIA 461.40
-[13:03:49] [info] XYZ: Successfully loaded assembly: 
-[13:03:49] [info] XYZ: Successfully loaded assembly: 
-[13:03:50] [warning] XYZ: Performance: Program/shader state performance warning: Vertex shader in program 14 is being recompiled based on GL state. 131218 MEDIUM
-[13:04:04] [info] XYZ: Window: Window closed
+[15:28:19] [info] XYZ: OpenGL Info:
+[15:28:19] [info] XYZ: Vendor:   NVIDIA Corporation
+[15:28:19] [info] XYZ: Renderer: GeForce RTX 2070/PCIe/SSE2
+[15:28:19] [info] XYZ: Version:  4.6.0 NVIDIA 461.33
+[15:28:19] [info] XYZ: Successfully loaded assembly: Assets/Scripts/XYZScriptCore.dll
+[15:28:19] [info] XYZ: Successfully loaded assembly: Assets/Scripts/XYZScript.dll
+[15:28:20] [warning] XYZ: Performance: Program/shader state performance warning: Vertex shader in program 14 is being recompiled based on GL state. 131218 MEDIUM
+[15:38:08] [info] XYZ: Window: Window closed

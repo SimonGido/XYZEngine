@@ -10,7 +10,7 @@ namespace XYZ {
 	public:
 		OpenGLVertexBuffer(void* vertices, uint32_t size, BufferUsage usage);
 		OpenGLVertexBuffer(uint32_t size);
-		virtual ~OpenGLVertexBuffer();
+		virtual ~OpenGLVertexBuffer() override;
 
 		virtual void Bind() const override;
 		virtual void UnBind() const override;
@@ -32,7 +32,7 @@ namespace XYZ {
 	{
 	public:
 		OpenGLIndexBuffer(uint32_t* indices, uint32_t count);
-		virtual ~OpenGLIndexBuffer();
+		virtual ~OpenGLIndexBuffer() override;
 
 		virtual void Bind() const override;
 		virtual void UnBind() const override;
@@ -48,7 +48,7 @@ namespace XYZ {
 	{
 	public:
 		OpenGLShaderStorageBuffer(void* data, uint32_t size, uint32_t binding, BufferUsage usage);
-		virtual ~OpenGLShaderStorageBuffer();
+		virtual ~OpenGLShaderStorageBuffer() override;
 		virtual void BindBase(uint32_t binding) const override;
 		virtual void BindRange(uint32_t offset, uint32_t size) const override;
 		virtual void Bind()const override;
@@ -73,7 +73,7 @@ namespace XYZ {
 	{
 	public:
 		OpenGLAtomicCounter(uint32_t numOfCounters, uint32_t binding);
-		virtual ~OpenGLAtomicCounter();
+		virtual ~OpenGLAtomicCounter() override;
 
 		virtual void Reset() override;
 		virtual void BindBase(uint32_t index)const override;
@@ -93,7 +93,7 @@ namespace XYZ {
 	{
 	public:
 		OpenGLIndirectBuffer(void* drawCommand, uint32_t size, uint32_t binding);
-		virtual ~OpenGLIndirectBuffer();
+		virtual ~OpenGLIndirectBuffer() override;
 
 		virtual void Bind()const override;
 		virtual void BindBase(uint32_t index) override;
@@ -107,7 +107,7 @@ namespace XYZ {
 	{
 	public:
 		OpenGLUniformBuffer(uint32_t size, uint32_t binding);
-		virtual ~OpenGLUniformBuffer();
+		virtual ~OpenGLUniformBuffer() override;
 
 		virtual void Update(const void* data, uint32_t size, uint32_t offset = 0) override;
 	private:

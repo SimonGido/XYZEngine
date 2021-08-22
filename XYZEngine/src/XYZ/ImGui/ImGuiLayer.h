@@ -26,7 +26,8 @@ namespace XYZ {
 		bool GetBlockedEvents() const { return m_BlockEvents; }
 		void SetDarkThemeColors();
 	private:
-		void dockspace();
+		void beginDockspace();
+		void endDockspace();
 
 	private:
 		bool m_BlockEvents = true;

@@ -16,8 +16,7 @@ namespace XYZ {
 		friend class MaterialInstance;
 	public:
 		Material(const Ref<Shader>& shader);
-		~Material();
-
+		virtual ~Material() override;
 
 		template<typename T>
 		void Set(const std::string& name, const T& val)

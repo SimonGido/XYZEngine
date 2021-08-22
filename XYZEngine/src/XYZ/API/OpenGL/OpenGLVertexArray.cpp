@@ -40,9 +40,8 @@ namespace XYZ {
 
 	OpenGLVertexArray::~OpenGLVertexArray()
 	{
-		Ref<OpenGLVertexArray> instance = this;
-		Renderer::Submit([instance]() {
-			glDeleteVertexArrays(1, &instance->m_RendererID); 
+		Renderer::Submit([=]() {
+			glDeleteVertexArrays(1, &m_RendererID); 
 			});
 	}
 

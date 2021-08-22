@@ -16,7 +16,8 @@ namespace XYZ {
 			m_SelectedEntry(-1),
 			m_FirstFrame(0),
 			m_CurrentFrame(0),
-			m_Expanded(true)
+			m_Expanded(true),
+			m_Playing(false)
 		{
 			m_Sequencer.m_FrameMin = 0;
 			m_Sequencer.m_FrameMax = 100;
@@ -31,6 +32,13 @@ namespace XYZ {
 				m_Sequencer.Add(m_Sequencer.GetItemTypeCount() - 1);
 			}
 		}
+		void AnimationEditor::OnUpdate(Timestep ts)
+		{
+			if (m_Playing && m_Context.Raw())
+			{
+				m_Context->Update(ts);
+			}
+		}
 		void AnimationEditor::OnImGuiRender(bool& open)
 		{
 			if (ImGui::Begin("Animation Editor", &open))
@@ -38,6 +46,12 @@ namespace XYZ {
 				if (m_Context.Raw())
 				{
 					ImGui::PushItemWidth(130);
+					if (ImGui::Button("Play"))
+					{
+						m_Playing = !m_Playing;
+					}
+					ImGui::SameLine();
+
 					ImGui::InputInt("Frame Min", &m_Sequencer.m_FrameMin);
 					ImGui::SameLine();
 					ImGui::InputInt("Frame Max", &m_Sequencer.m_FrameMax);

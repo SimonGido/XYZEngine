@@ -7,6 +7,7 @@
 #include "XYZ/Scene/SceneSerializer.h"
 #include "XYZ/Renderer/Font.h"
 #include "XYZ/Animation/Animation.h"
+#include "XYZ/Utils/FileSystem.h"
 
 #include <imgui.h>
 
@@ -63,8 +64,8 @@ namespace XYZ {
 				m_ViewportFocused = ImGui::IsWindowFocused();
 				m_ViewportHovered = ImGui::IsWindowHovered();
 				if (ImGui::GetIO().MouseDown[ImGuiMouseButton_Left]
-				  && m_ViewportFocused 
-				  && m_ViewportHovered)
+					&& m_ViewportFocused
+					&& m_ViewportHovered)
 				{
 					m_SelectedFile.clear();
 					if (m_Callback)
@@ -122,7 +123,6 @@ namespace XYZ {
 				std::replace(fullFilePath.begin(), fullFilePath.end(), '\\', '/');
 				AssetType type = AssetManager::GetAssetTypeFromExtension(Utils::GetExtension(m_SelectedFile.string()));
 				auto assetHandle = AssetManager::GetAssetHandle(fullFilePath);
-				AssetManager::LoadAsset(assetHandle);
 				switch (type)
 				{
 				case XYZ::AssetType::Scene:
@@ -165,6 +165,12 @@ namespace XYZ {
 			}
 			if (ImGui::BeginPopup("CreateAsset"))
 			{
+				if (ImGui::MenuItem("Create Folder"))
+				{
+					std::string fullpath = getUniqueAssetName("New Folder", nullptr);
+					FileSystem::CreateFolder(fullpath);
+					AssetManager::CreateDirectory(fullpath);
+				}
 				if (ImGui::MenuItem("Create Scene"))
 				{
 					std::string fullpath = getUniqueAssetName("New Scene", ".xyz");
@@ -230,19 +236,7 @@ namespace XYZ {
 					}
 
 					dragAndDrop(std::filesystem::relative(it, s_AssetPath));
-					if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
-					{
-						ImGui::OpenPopup("LoadAsset");
-					}
-					if (ImGui::BeginPopup("LoadAsset"))
-					{
-						if (ImGui::MenuItem("Load Asset"))
-						{
-							AssetManager::LoadAsset(AssetManager::GetAssetHandle(it.path().string()));
-							ImGui::CloseCurrentPopup();
-						}
-						ImGui::EndPopup();
-					}
+
 				}
 
 				ImGui::TextWrapped(name.c_str());
@@ -306,15 +300,25 @@ namespace XYZ {
 		std::string AssetBrowser::getUniqueAssetName(const char* fileName, const char* extension) const
 		{
 			char fileNameTmp[60];
-			std::string fullpath = m_CurrentDirectory.string() + "/" + fileName + extension;
+			std::string fullpath = m_CurrentDirectory.string() + "/" + fileName;
+			if (extension)
+				fullpath += extension;
+	
 			if (std::filesystem::exists(fullpath))
 			{
 				uint32_t index = 0;
-				sprintf(fileNameTmp, "%s%d%s", fileName, index, extension);
+				if (extension)
+					sprintf(fileNameTmp, "%s%d%s", fileName, index, extension);
+				else
+					sprintf(fileNameTmp, "%s%d", fileName, index);
+
 				fullpath = m_CurrentDirectory.string() + "/" + fileNameTmp;
 				while (std::filesystem::exists(fullpath))
 				{
-					sprintf(fileNameTmp, "%s%d%s", fileName, ++index, extension);
+					if (extension)
+						sprintf(fileNameTmp, "%s%d%s", fileName, index, extension);
+					else
+						sprintf(fileNameTmp, "%s%d", fileName, index);
 					fullpath = m_CurrentDirectory.string() + "/" + fileNameTmp;
 				}
 			}

@@ -37,7 +37,7 @@ namespace XYZ {
 
 	void Animation::UpdateLength()
 	{
-		for (auto& track : m_Tracks)
+		for (const auto& track : m_Tracks)
 			m_Length = std::max(m_Length, track->Length());
 	}
 

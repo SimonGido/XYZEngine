@@ -11,8 +11,8 @@ namespace XYZ {
 			AnimationEditor();
 
 			void SetContext(const Ref<Animation>& context);
+			void OnUpdate(Timestep ts);
 			void OnImGuiRender(bool& open);
-		
 		private:
 			void handleSelected(bool addKey);
 			void addTransformTrack();
@@ -25,6 +25,7 @@ namespace XYZ {
 			int				   m_FirstFrame;
 			int				   m_CurrentFrame;
 			bool			   m_Expanded;
+			bool			   m_Playing;
 		};
 	}
 }

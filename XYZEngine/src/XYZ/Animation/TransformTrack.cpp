@@ -29,7 +29,7 @@ namespace XYZ {
 		m_ScaleProperty.Reset();
 	}
 
-	float TransformTrack::Length()
+	float TransformTrack::Length() const
 	{
 		float length = m_TranslationProperty.Length();
 		length = std::max(length, m_RotationProperty.Length());

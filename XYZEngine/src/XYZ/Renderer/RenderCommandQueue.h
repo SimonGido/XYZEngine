@@ -9,7 +9,7 @@ namespace XYZ {
 	public:
 		typedef void(*RenderCommandFn)(void*);
 
-		RenderCommandQueue();
+		RenderCommandQueue(uint32_t size = 10 * 1024 * 1024);
 		~RenderCommandQueue();
 
 		void* Allocate(RenderCommandFn func, uint32_t size);
@@ -19,7 +19,6 @@ namespace XYZ {
 		uint8_t* m_CommandBuffer;
 		uint8_t* m_CommandBufferPtr;
 		uint32_t m_CommandCount = 0;
-
-		std::mutex m_Mutex;
+		uint32_t m_Size;
 	};
 }

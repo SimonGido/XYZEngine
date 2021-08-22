@@ -11,7 +11,7 @@ namespace XYZ {
 
 		virtual bool  Update(float time) = 0;
 		virtual void  Reset() = 0;
-		virtual float Length() = 0;
+		virtual float Length() const = 0;
 
 		SceneEntity GetSceneEntity() const { return m_Entity; }
 	protected:

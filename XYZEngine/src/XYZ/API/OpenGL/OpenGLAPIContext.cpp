@@ -76,9 +76,9 @@ namespace XYZ {
 		glfwMakeContextCurrent(m_WindowHandle);
 		
 		XYZ_CORE_INFO("OpenGL Info:");
-		XYZ_CORE_INFO("Vendor: {0}", glGetString(GL_VENDOR));
+		XYZ_CORE_INFO("Vendor:   {0}", glGetString(GL_VENDOR));
 		XYZ_CORE_INFO("Renderer: {0}", glGetString(GL_RENDERER));
-		XYZ_CORE_INFO("Version: {0}", glGetString(GL_VERSION));
+		XYZ_CORE_INFO("Version:  {0}", glGetString(GL_VERSION));
 
 		if (glewInit() != GLEW_OK)
 		{

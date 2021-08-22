@@ -44,9 +44,9 @@ namespace XYZ {
 			ByteBuffer buffer = m_Buffers.PopBack();
 			delete[]buffer;
 		}
-		Ref<OpenGLVertexBuffer> instance = this;
-		Renderer::Submit([instance]() {
-			glDeleteBuffers(1, &instance->m_RendererID);
+
+		Renderer::Submit([=]() {
+			glDeleteBuffers(1, &m_RendererID);
 		});
 	}
 
@@ -110,27 +110,27 @@ namespace XYZ {
 		: m_Count(count)
 	{
 		m_LocalData = ByteBuffer::Copy(indices, count * sizeof(uint32_t));
-
-		Renderer::Submit([this]() {
-			glCreateBuffers(1, &m_RendererID);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_Count * sizeof(unsigned int), m_LocalData, GL_STATIC_DRAW);
+		
+		Ref<OpenGLIndexBuffer> instance = this;
+		Renderer::Submit([instance]() mutable {
+			glCreateBuffers(1, &instance->m_RendererID);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, instance->m_RendererID);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, instance->m_Count * sizeof(unsigned int), instance->m_LocalData, GL_STATIC_DRAW);
 		});
 	}
 
 	OpenGLIndexBuffer::~OpenGLIndexBuffer()
 	{
 		delete[]m_LocalData;
-		Ref<OpenGLIndexBuffer> instance = this;
-		Renderer::Submit([instance]() {
-			glDeleteBuffers(1, &instance->m_RendererID);
+		Renderer::Submit([=]() {
+			glDeleteBuffers(1, &m_RendererID);
 		});
 	}
 
 	void OpenGLIndexBuffer::Bind() const
 	{
 		Ref<const OpenGLIndexBuffer> instance = this;
-		Renderer::Submit([=]() {
+		Renderer::Submit([instance]() {
 			glBindBuffer(GL_ARRAY_BUFFER, instance->m_RendererID);
 		});
 	}

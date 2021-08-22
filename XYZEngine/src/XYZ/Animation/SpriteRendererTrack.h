@@ -11,7 +11,7 @@ namespace XYZ {
 
 		virtual bool  Update(float time) override;
 		virtual void  Reset() override;
-		virtual float Length() override;
+		virtual float Length() const override;
 
 	
 		void AddKeyFrame(const KeyFrame<Ref<SubTexture>>& spriteKey);

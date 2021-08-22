@@ -1,9 +1,11 @@
 #include "stdafx.h"
 #include "AssetManager.h"
+#include "XYZ/Debug/MemoryPoolDebug.h"
 
 #include <filesystem>
 
 #include <yaml-cpp/yaml.h>
+
 
 
 
@@ -37,6 +39,13 @@ namespace XYZ
 	{
 		s_LoadedAssets.clear();
 		RefAllocator::Shutdown();
+	}
+
+	void AssetManager::DisplayMemory()
+	{
+		MemoryPoolDebug<1024 * 1024, true> memoryDebug;
+		memoryDebug.SetContext(&s_Pool);
+		memoryDebug.OnImGuiRender();
 	}
 
 	AssetType AssetManager::GetAssetTypeFromExtension(const std::string& extension)
@@ -87,16 +96,16 @@ namespace XYZ
 		return s_AssetTypes.find(extension) != s_AssetTypes.end();
 	}
 
-	void AssetManager::LoadAsset(const GUID& assetHandle)
-	{
-		XYZ_ASSERT(s_LoadedAssets.find(assetHandle) != s_LoadedAssets.end(), "");
-		Ref<Asset> asset = s_LoadedAssets[assetHandle];
-	
-		asset = AssetSerializer::LoadAsset(asset);
-		asset->IsLoaded = true;
-		s_LoadedAssets[assetHandle] = asset;
-	}
 
+	void AssetManager::CreateDirectory(const std::string& dirName)
+	{
+		AssetDirectory directory;
+		directory.FilePath = dirName;
+		std::replace(directory.FilePath.begin(), directory.FilePath.end(), '\\', '/');
+		directory.ParentHandle = directory.ParentHandle;
+		directory.SubDirectoryHandles.push_back(directory.Handle);
+		s_Directories[directory.Handle] = directory;
+	}
 
 	void AssetManager::processDirectory(const std::string& path, AssetDirectory& directory)
 	{

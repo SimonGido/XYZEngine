@@ -4,23 +4,23 @@
 #include <assert.h>
 
 namespace XYZ {
-	RenderCommandQueue::RenderCommandQueue()
+	RenderCommandQueue::RenderCommandQueue(uint32_t size)
+		:
+		m_Size(size)
 	{
-		m_CommandBuffer = new uint8_t[10 * 1024 * 1024]; // 10mb buffer
+		m_CommandBuffer = new uint8_t[size];
 		m_CommandBufferPtr = m_CommandBuffer;
-		memset(m_CommandBuffer, 0, 10 * 1024 * 1024);
+		memset(m_CommandBuffer, 0, size);
 	}
 
 	RenderCommandQueue::~RenderCommandQueue()
 	{
-		//std::scoped_lock<std::mutex> lock(m_Mutex);
 		delete[] m_CommandBuffer;
 	}
 
 	void* RenderCommandQueue::Allocate(RenderCommandFn fn, uint32_t size)
 	{
-		// TODO: alignment
-		//std::scoped_lock<std::mutex> lock(m_Mutex);
+		XYZ_ASSERT(m_CommandBufferPtr - m_CommandBuffer < m_Size - size, "Command queue out of range");
 		*(RenderCommandFn*)m_CommandBufferPtr = fn;
 		m_CommandBufferPtr += sizeof(RenderCommandFn);
 
@@ -53,7 +53,4 @@ namespace XYZ {
 		m_CommandBufferPtr = m_CommandBuffer;
 		m_CommandCount = 0;
 	}
-
-
-
 }

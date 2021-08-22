@@ -21,7 +21,7 @@ namespace XYZ {
 		m_SpriteProperty.Reset();
 		m_ColorProperty.Reset();
 	}
-	float SpriteRendererTrack::Length()
+	float SpriteRendererTrack::Length() const
 	{
 		float length = m_SpriteProperty.Length();
 		length = std::max(length, m_ColorProperty.Length());

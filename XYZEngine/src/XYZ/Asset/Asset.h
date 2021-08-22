@@ -23,7 +23,7 @@ namespace XYZ {
 	class Asset : public RefCount
 	{
 	public:
-		virtual ~Asset() {};
+		virtual ~Asset() = default;
 	
 		GUID		Handle;
 		AssetType   Type;

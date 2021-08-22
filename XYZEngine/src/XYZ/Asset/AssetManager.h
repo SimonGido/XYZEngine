@@ -1,6 +1,7 @@
 #pragma once
 #include "XYZ/Core/GUID.h"
 #include "XYZ/Utils/DataStructures/MemoryPool.h"
+
 #include "XYZ/Utils/StringUtils.h"
 #include "XYZ/Renderer/Shader.h"
 #include "XYZ/Renderer/Texture.h"
@@ -46,13 +47,13 @@ namespace XYZ {
 		static void Shutdown();
 
 
+		static void		 DisplayMemory();
 		static AssetType GetAssetTypeFromExtension(const std::string& extension);
 		static GUID		 GetAssetHandle(const std::string& filepath);
 		static GUID		 GetDirectoryHandle(const std::string& filepath);
 		static std::vector<Ref<Asset>> FindAssetsByType(AssetType type);
 		static bool	     IsValidExtension(const std::string& extension);
-		static void		 LoadAsset(const GUID& assetHandle);
-
+		static void      CreateDirectory(const std::string& dirName);
 		template<typename T, typename... Args>
 		static Ref<T> CreateAsset(const std::string& filename, AssetType type, const GUID& directoryHandle, Args&&... args)
 		{
@@ -94,9 +95,9 @@ namespace XYZ {
 		
 
 	private:
-		static MemoryPool<1024 * 1024, true> s_Pool;
-		static std::unordered_map<GUID, Ref<Asset>> s_LoadedAssets;
-		static std::unordered_map<GUID, AssetDirectory> s_Directories;
+		static MemoryPool<1024 * 1024, true>			  s_Pool;
+		static std::unordered_map<GUID, Ref<Asset>>       s_LoadedAssets;
+		static std::unordered_map<GUID, AssetDirectory>   s_Directories;
 		static std::unordered_map<std::string, AssetType> s_AssetTypes;
 	};
 }

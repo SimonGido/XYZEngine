@@ -92,11 +92,14 @@ namespace XYZ {
 		ImGui_ImplGlfw_NewFrame();	
 		ImGui::NewFrame();
 		if (m_EnableDockspace)
-			dockspace();		
+			beginDockspace();		
 	}
 
 	void ImGuiLayer::End()
 	{	
+		if (m_EnableDockspace)
+			endDockspace();
+
 		#ifdef RENDER_THREAD_ENABLED
 		{
 			auto result = Renderer::GetPool().PushJob<bool>([this]()->bool {
@@ -165,7 +168,8 @@ namespace XYZ {
 		colors[ImGuiCol_TitleBgActive] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
 		colors[ImGuiCol_TitleBgCollapsed] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
 	}
-	void ImGuiLayer::dockspace()
+
+	void ImGuiLayer::beginDockspace()
 	{
 		static bool dockspaceOpen = true;
 		static bool opt_fullscreen_persistant = true;
@@ -196,8 +200,11 @@ namespace XYZ {
 		{
 			ImGuiID dockspace_id = ImGui::GetID("DockSpace");
 			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
-		}
+		}	
+	}
 
+	void ImGuiLayer::endDockspace()
+	{
 		ImGui::End();
 	}
 }
