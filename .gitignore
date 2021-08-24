@@ -5,6 +5,9 @@
 bin-int/
 obj/
 
+# Log files
+**.log
+
 # Visual Studio files and folder
 .vs/
 **.sln
