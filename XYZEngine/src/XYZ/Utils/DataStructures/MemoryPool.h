@@ -54,7 +54,6 @@ namespace XYZ {
 		void     cleanUp();
 		void     sortFreeChunks();
 		void     mergeFreeChunks();
-		void     reverseMergeFreeChunks();
 		Block*   createBlock();
 
 		void	 storeMetaData(uint32_t memoryStart, uint8_t blockIndex, uint32_t size);
@@ -123,7 +122,6 @@ namespace XYZ {
 	{
 		sortFreeChunks();
 		mergeFreeChunks();
-		reverseMergeFreeChunks();
 		m_Dirty = false;
 	}
 
@@ -223,37 +221,9 @@ namespace XYZ {
 			return a.BlockIndex < b.BlockIndex;
 		});
 	}
+
 	template<uint32_t BlockSize, bool StoreSize>
 	inline void MemoryPool<BlockSize, StoreSize>::mergeFreeChunks()
-	{
-		uint32_t sizeOffset = 0;
-		for (auto it = m_FreeChunks.begin(); it != m_FreeChunks.end(); ++it)
-		{
-			for (auto it2 = it + 1; it2 != m_FreeChunks.end();)
-			{
-				// Not from the same block
-				if (it->BlockIndex != it2->BlockIndex)
-					break;
-				// Chunks are connected so merge them
-
-				if (it->ChunkIndex + it->Size == it2->ChunkIndex || it2->ChunkIndex + it2->Size == it->ChunkIndex)
-				{
-					it->ChunkIndex = std::min(it2->ChunkIndex, it->ChunkIndex);
-					it->Size = it->Size + it2->Size;
-					it2 = m_FreeChunks.erase(it2);
-					continue;
-				}
-				else
-				{
-					// Chunks are not connected after their indices where sort so continue to check other chunks
-					break;
-				}
-				it2++;
-			}
-		}
-	}
-	template<uint32_t BlockSize, bool StoreSize>
-	inline void MemoryPool<BlockSize, StoreSize>::reverseMergeFreeChunks()
 	{
 		for (int64_t i = m_FreeChunks.size() - 1; i >= 0; --i)
 		{
@@ -263,6 +233,22 @@ namespace XYZ {
 			if (chunkSpace != block.NextAvailableIndex)
 				break;
 			block.NextAvailableIndex -= chunk.Size;
+			m_FreeChunks.erase(m_FreeChunks.begin() + i);
+		}
+		for (int64_t i = m_FreeChunks.size() - 1; i >= 1; --i)
+		{
+			Chunk&   lastChunk = m_FreeChunks[i];
+			Chunk&   prevChunk = m_FreeChunks[i - 1];
+			// Not from the same block
+			if (lastChunk.BlockIndex != prevChunk.BlockIndex)
+				continue;
+			
+			// Chunks are not connected
+			uint32_t prevChunkEnd = prevChunk.ChunkIndex + prevChunk.Size;
+			if (prevChunkEnd != lastChunk.ChunkIndex)
+				continue;
+
+			prevChunk.Size += lastChunk.Size;
 			m_FreeChunks.erase(m_FreeChunks.begin() + i);
 		}
 	}
