@@ -41,11 +41,12 @@ namespace XYZ {
 		template <typename T>
 		T* Get(uint32_t chunkIndex, uint8_t blockIndex);
 
-		template <typename T>
-		void ExtractMetaData(T* ptr, std::array<uint32_t, 3>& values) const;
-
-		void ExtractMetaData(void* ptr, std::array<uint32_t, 3>& values) const;
+		
 	private:
+		template <typename T>
+		void	 extractMetaData(T* ptr, std::array<uint32_t, 3>& values) const;
+		void	 extractMetaData(void* ptr, std::array<uint32_t, 3>& values) const;
+
 		template <typename T>
 		uint32_t toChunkSize() const;
 		uint32_t toChunkSize(uint32_t size) const;
@@ -208,7 +209,7 @@ namespace XYZ {
 		XYZ_ASSERT(StoreSize, "Store size must be enabled");
 		m_ElementCounter--;
 		std::array<uint32_t, 3> indices;
-		ExtractMetaData(val, indices);
+		extractMetaData(val, indices);
 		m_FreeChunks.emplace_back(toChunkSize(indices[2]), indices[1], (uint8_t)indices[0]);
 		m_Dirty = true;
 	}
@@ -314,7 +315,7 @@ namespace XYZ {
 		m_ElementCounter--;
 		val->~T();
 		uint32_t indices[3];
-		ExtractMetaData(val, indices);
+		extractMetaData(val, indices);
 		Chunk chunk(toChunkSize<T>(), indices[1], (uint8_t)indices[0]);
 		m_FreeChunks.push_back(chunk);
 		m_Dirty = true;
@@ -329,7 +330,7 @@ namespace XYZ {
 
 	template<uint32_t BlockSize, bool StoreSize>
 	template<typename T>
-	inline void MemoryPool<BlockSize, StoreSize>::ExtractMetaData(T* ptr, std::array<uint32_t, 3>& values) const
+	inline void MemoryPool<BlockSize, StoreSize>::extractMetaData(T* ptr, std::array<uint32_t, 3>& values) const
 	{
 		uint8_t* blockPtr = (uint8_t*)ptr - metaDataSize();
 		values[0] = *blockPtr;
@@ -352,7 +353,7 @@ namespace XYZ {
 	}
 
 	template<uint32_t BlockSize, bool StoreSize>
-	inline void MemoryPool<BlockSize, StoreSize>::ExtractMetaData(void* ptr, std::array<uint32_t, 3>& values) const
+	inline void MemoryPool<BlockSize, StoreSize>::extractMetaData(void* ptr, std::array<uint32_t, 3>& values) const
 	{
 		uint8_t* blockPtr = (uint8_t*)ptr - metaDataSize();
 		values[0] = *blockPtr;

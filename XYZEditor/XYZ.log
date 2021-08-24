@@ -1,8 +1,0 @@
-[15:28:19] [info] XYZ: OpenGL Info:
-[15:28:19] [info] XYZ: Vendor:   NVIDIA Corporation
-[15:28:19] [info] XYZ: Renderer: GeForce RTX 2070/PCIe/SSE2
-[15:28:19] [info] XYZ: Version:  4.6.0 NVIDIA 461.33
-[15:28:19] [info] XYZ: Successfully loaded assembly: Assets/Scripts/XYZScriptCore.dll
-[15:28:19] [info] XYZ: Successfully loaded assembly: Assets/Scripts/XYZScript.dll
-[15:28:20] [warning] XYZ: Performance: Program/shader state performance warning: Vertex shader in program 14 is being recompiled based on GL state. 131218 MEDIUM
-[15:38:08] [info] XYZ: Window: Window closed
