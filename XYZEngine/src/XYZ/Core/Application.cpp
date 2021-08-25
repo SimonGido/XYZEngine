@@ -26,6 +26,7 @@ namespace XYZ {
 
 		m_Window = Window::Create();
 		m_Window->RegisterCallback(Hook(&Application::OnEvent, this));	
+		m_Window->SetVSync(0);
 
 		TCHAR NPath[MAX_PATH];
 		GetCurrentDirectory(MAX_PATH, NPath);
