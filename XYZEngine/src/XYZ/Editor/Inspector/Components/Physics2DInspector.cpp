@@ -117,4 +117,37 @@ namespace XYZ {
 		});
 	}
 	
+	bool CircleCollider2DInspector::OnEditorRender()
+	{
+		
+		return EditorHelper::DrawComponent<CircleCollider2DComponent>("Circle Collider2D", m_Context, [&](auto& component) {
+
+			auto [translation, rotation, scale] = m_Context.GetComponent<TransformComponent>().GetWorldComponents();
+			glm::vec3 circleTranslation =
+				translation + glm::vec3(component.Offset.x, component.Offset.y, 0.0f);
+			
+			EditorRenderer::SubmitEditorCircle(circleTranslation, component.Radius, 20, sc_ColliderColor);		
+			EditorHelper::DrawVec2Control("Offset", component.Offset);
+
+			EditorHelper::BeginColumns("Radius");
+			ImGui::PushItemWidth(75.0f);
+			ImGui::InputFloat("##Radius", &component.Radius);
+			ImGui::PopItemWidth();
+			EditorHelper::EndColumns();
+
+			EditorHelper::BeginColumns("Density");
+			ImGui::PushItemWidth(75.0f);
+			ImGui::InputFloat("##Density", &component.Density);
+			ImGui::PopItemWidth();
+			EditorHelper::EndColumns();
+
+
+			EditorHelper::BeginColumns("Friction");
+			ImGui::PushItemWidth(75.0f);
+			ImGui::InputFloat("##Friction", &component.Friction);
+			ImGui::PopItemWidth();
+			EditorHelper::EndColumns();
+		});
+	}
+
 }

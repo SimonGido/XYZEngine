@@ -217,11 +217,11 @@ namespace XYZ {
 	struct CircleCollider2DComponent 
 	{
 		glm::vec2 Offset = glm::vec2(0.0f);
-		float Radius = 1.0f;
-		float Density = 1.0f;
-		float Friction = 0.0f;
-
-		void* RuntimeFixture = nullptr;
+		float	  Radius = 1.0f;
+		float	  Density = 1.0f;
+		float	  Friction = 0.0f;
+				  
+		void*	  RuntimeFixture = nullptr;
 	};
 
 	struct PolygonCollider2DComponent 

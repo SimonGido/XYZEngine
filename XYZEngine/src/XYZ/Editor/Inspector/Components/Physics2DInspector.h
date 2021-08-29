@@ -25,6 +25,17 @@ namespace XYZ {
 	private:
 		static constexpr glm::vec4 sc_ColliderColor = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
 	};
+	
+	class CircleCollider2DInspector : public InspectorEditable
+	{
+	public:
+		virtual bool OnEditorRender() override;
+
+		SceneEntity m_Context;
+
+	private:
+		static constexpr glm::vec4 sc_ColliderColor = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+	};
 
 	class ChainCollider2DInspector : public InspectorEditable
 	{

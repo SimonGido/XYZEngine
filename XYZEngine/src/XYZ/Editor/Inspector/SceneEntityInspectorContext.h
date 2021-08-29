@@ -36,6 +36,7 @@ namespace XYZ {
 			SpriteRendererInspector		  m_SpriteRendererInspector;
 			RigidBody2DInspector		  m_RigidBodyInspector;
 			BoxCollider2DInspector		  m_BoxCollider2DInspector;
+			CircleCollider2DInspector	  m_CircleCollider2DInspector;
 			ChainCollider2DInspector	  m_ChainCollider2DInspector;
 		};
 	}

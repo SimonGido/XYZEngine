@@ -584,6 +584,7 @@ namespace XYZ {
 					Entity parentEntity = ecs.FindEntity<IDComponent>(IDComponent({ parent }));
 					if (ecs.IsValid(parentEntity))
 					{
+						// Remove relation with scene entity
 						Relationship::RemoveRelation(entity, ecs);
 						relationship.Parent = parentEntity;					
 					}

@@ -188,6 +188,8 @@ namespace XYZ {
 						if (ImGui::MenuItem("Transform Component"))
 						{
 							m_Context.EmplaceComponent<TransformComponent>();
+							m_InspectorEditables.push_back(&m_TransformInspector);
+							m_TransformInspector.m_Context = m_Context;
 							ImGui::CloseCurrentPopup();
 						}
 					}
@@ -202,6 +204,8 @@ namespace XYZ {
 								0,
 								true
 								);
+							m_InspectorEditables.push_back(&m_SpriteRendererInspector);
+							m_SpriteRendererInspector.m_Context = m_Context;
 							ImGui::CloseCurrentPopup();
 						}
 					}
@@ -210,6 +214,8 @@ namespace XYZ {
 						if (ImGui::MenuItem("Camera Component"))
 						{
 							m_Context.EmplaceComponent<CameraComponent>();
+							m_InspectorEditables.push_back(&m_CameraInspector);
+							m_CameraInspector.m_Context = m_Context;
 							ImGui::CloseCurrentPopup();
 						}
 					}
@@ -225,6 +231,9 @@ namespace XYZ {
 									m_Context.EmplaceComponent<ScriptComponent>(
 										script->FileName
 										);
+
+									m_InspectorEditables.push_back(&m_ScriptComponentInspector);
+									m_ScriptComponentInspector.m_Context = m_Context;
 									ScriptEngine::InitScriptEntity(m_Context);
 									ScriptEngine::InstantiateEntityClass(m_Context);
 									ImGui::CloseCurrentPopup();
@@ -238,6 +247,8 @@ namespace XYZ {
 						if (ImGui::MenuItem("Rigid Body2D"))
 						{
 							m_Context.EmplaceComponent<RigidBody2DComponent>();
+							m_InspectorEditables.push_back(&m_RigidBodyInspector);
+							m_RigidBodyInspector.m_Context = m_Context;
 							ImGui::CloseCurrentPopup();
 						}
 					}
@@ -248,16 +259,22 @@ namespace XYZ {
 						if (ImGui::MenuItem("Box Collider2D"))
 						{
 							m_Context.EmplaceComponent<BoxCollider2DComponent>();
+							m_InspectorEditables.push_back(&m_BoxCollider2DInspector);
+							m_BoxCollider2DInspector.m_Context = m_Context;
 							ImGui::CloseCurrentPopup();
 						}
 						if (ImGui::MenuItem("Circle Collider2D"))
 						{
 							m_Context.EmplaceComponent<CircleCollider2DComponent>();
+							m_InspectorEditables.push_back(&m_CircleCollider2DInspector);
+							m_CircleCollider2DInspector.m_Context = m_Context;
 							ImGui::CloseCurrentPopup();
 						}
 						if (ImGui::MenuItem("Chain Collider2D"))
 						{
 							m_Context.EmplaceComponent<ChainCollider2DComponent>();
+							m_InspectorEditables.push_back(&m_ChainCollider2DInspector);
+							m_ChainCollider2DInspector.m_Context = m_Context;
 							ImGui::CloseCurrentPopup();
 						}
 					}
@@ -266,6 +283,8 @@ namespace XYZ {
 						if (ImGui::MenuItem("Point Light2D"))
 						{
 							m_Context.EmplaceComponent<PointLight2D>();
+							m_InspectorEditables.push_back(&m_PointLight2DInspector);
+							m_PointLight2DInspector.m_Context = m_Context;
 							ImGui::CloseCurrentPopup();
 						}
 					}
@@ -274,6 +293,8 @@ namespace XYZ {
 						if (ImGui::MenuItem("Spot Light2D"))
 						{
 							m_Context.EmplaceComponent<SpotLight2D>();
+							m_InspectorEditables.push_back(&m_SpotLight2DInspector);
+							m_SpotLight2DInspector.m_Context = m_Context;
 							ImGui::CloseCurrentPopup();
 						}
 					}
@@ -337,6 +358,11 @@ namespace XYZ {
 			{
 				m_InspectorEditables.push_back(&m_BoxCollider2DInspector);
 				m_BoxCollider2DInspector.m_Context = context;
+			}
+			if (m_Context.HasComponent<CircleCollider2DComponent>())
+			{
+				m_InspectorEditables.push_back(&m_CircleCollider2DInspector);
+				m_CircleCollider2DInspector.m_Context = context;
 			}
 			if (m_Context.HasComponent<ChainCollider2DComponent>())
 			{
