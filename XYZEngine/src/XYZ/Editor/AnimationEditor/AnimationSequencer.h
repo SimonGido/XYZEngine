@@ -1,5 +1,6 @@
 #pragma once
 #include "SequencerLineEdit.h"
+#include "XYZ/Scene/SceneEntity.h"
 
 #include <ImSequencer.h>
 #include <ImCurveEdit.h>
@@ -12,7 +13,7 @@ namespace XYZ {
 
         struct AnimationSequencer : public ImSequencer::SequenceInterface
         {
-            using AddKeyCallback = std::function<void()>;
+            using AddKeyCallback = std::function<void(const SceneEntity&)>;
 
             struct SequenceItem
             {
@@ -26,6 +27,7 @@ namespace XYZ {
             struct SequencerItemType
             {       
                 std::string              Name;
+                SceneEntity              Entity;
                 std::vector<std::string> SubTypes;
                 AddKeyCallback           Callback;
                 size_t                   Height = 100;
@@ -49,7 +51,7 @@ namespace XYZ {
             virtual void        CustomDraw(int index, ImDrawList* draw_list, const ImRect& rc, const ImRect& legendRect, const ImRect& clippingRect, const ImRect& legendClippingRect) override;
             virtual void        CustomDrawCompact(int index, ImDrawList* draw_list, const ImRect& rc, const ImRect& clippingRect) override;            
             
-            void                AddSequencerItemType(const std::string& name, const std::initializer_list<std::string>& subTypes, AddKeyCallback callback);
+            void                AddSequencerItemType(const std::string& name, const SceneEntity& entity, const std::initializer_list<std::string>& subTypes, AddKeyCallback callback);
             void                DeleteSelectedPoints();
 
  

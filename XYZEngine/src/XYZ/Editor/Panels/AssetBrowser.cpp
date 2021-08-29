@@ -183,7 +183,7 @@ namespace XYZ {
 				else if (ImGui::MenuItem("Create Animation"))
 				{
 					std::string fullpath = getUniqueAssetName("New Animation", ".anim");
-					Ref<XYZ::Animation> animation = Ref<XYZ::Animation>::Create(SceneEntity());
+					Ref<XYZ::Animation> animation = Ref<XYZ::Animation>::Create();
 					animation->FilePath = fullpath;
 					animation->Type = AssetType::Animation;
 					AssetSerializer::SerializeAsset(animation);

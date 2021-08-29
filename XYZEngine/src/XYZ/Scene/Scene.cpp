@@ -379,7 +379,6 @@ namespace XYZ {
 		return { m_SelectedEntity, this };
 	}
 
-
 	void Scene::updateHierarchy()
 	{
 		std::stack<Entity> entities;

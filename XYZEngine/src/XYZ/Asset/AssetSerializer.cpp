@@ -447,20 +447,26 @@ namespace XYZ {
 		Ref<Animation> anim = Ref<Animation>((Animation*)asset.Raw());
 		YAML::Emitter out;
 		out << YAML::BeginMap; // Animation
-		if (anim->GetEntity().IsValid())
-			out << YAML::Key << "Entity" << YAML::Value << anim->GetEntity().GetComponent<IDComponent>().ID;
 		
 		out << YAML::Key << "Length" << YAML::Value << anim->GetLength();
 		out << YAML::Key << "Repeat" << YAML::Value << anim->GetRepeat();
 		
 		out << YAML::Key << "Tracks";
 		out << YAML::Value << YAML::BeginSeq;
-		auto transformTrack = anim->FindTrack<TransformTrack>();
-		if (transformTrack.Raw())
+		const auto& tracks = anim->GetTracks();
+		for (const auto& track : tracks)
 		{
-			out << YAML::BeginMap;
-			//out << YAML::Key << "Transform Track" << YAML::Value << transformTrack;
-			out << YAML::EndMap;
+			switch (track->GetType())
+			{
+			case TrackType::Transform:
+				break;
+
+			case TrackType::SpriteRenderer:
+				break;
+
+			default:
+				break;
+			}
 		}
 		out << YAML::EndSeq;
 

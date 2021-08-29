@@ -150,7 +150,7 @@ namespace XYZ {
 		{
 			ImGuizmo::SetOrthographic(false);
 			ImGuizmo::SetDrawlist();
-
+			
 			ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
 			const glm::mat4& cameraProjection = m_EditorCamera.GetProjectionMatrix();
 			const glm::mat4& cameraView = m_EditorCamera.GetViewMatrix();
@@ -240,7 +240,7 @@ namespace XYZ {
 					ImGui::Image(reinterpret_cast<void*>((void*)(uint64_t)SceneRenderer::GetFinalColorBufferRendererID()), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 					auto [mx, my] = getMouseViewportSpace();
-					if (m_ViewportHovered && m_ViewportFocused)
+					if (m_ViewportHovered && m_ViewportFocused && m_Context->GetState() == SceneState::Edit)
 					{
 						SceneEntity selectedEntity = m_Context->GetSelectedEntity();
 						if (selectedEntity && m_GizmoType != -1)

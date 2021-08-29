@@ -8,6 +8,7 @@ namespace XYZ {
 		:
 		Track(entity)
 	{
+		m_Type = TrackType::SpriteRenderer;
 	}
 	bool SpriteRendererTrack::Update(float time)
 	{

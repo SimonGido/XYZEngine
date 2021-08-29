@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "AnimationSequencer.h"
 
+#include "XYZ/Scene/Components.h"
 
 namespace XYZ {
 	namespace Editor {
@@ -14,7 +15,16 @@ namespace XYZ {
 		const char* AnimationSequencer::GetItemLabel(int index) const
 		{
 			static char tmps[512];
-			snprintf(tmps, 512, "[%02d] %s", index, m_SequencerItemTypes[m_Items[index].Type].Name.c_str());
+			auto& seqItemType = m_SequencerItemTypes[m_Items[index].Type];
+			if (seqItemType.Entity.IsValid())
+			{
+				auto& sceneTag = seqItemType.Entity.GetComponent<SceneTagComponent>();
+				snprintf(tmps, 512, "%s: %s", sceneTag.Name.c_str(), seqItemType.Name.c_str());
+			}
+			else
+			{
+				snprintf(tmps, 512, "Missing Entity: %s", seqItemType.Name.c_str());
+			}
 			return tmps;
 		}
 		void AnimationSequencer::Get(int index, int** start, int** end, int* type, unsigned int* color)
@@ -105,9 +115,9 @@ namespace XYZ {
 			}
 			draw_list->PopClipRect();
 		}
-		void AnimationSequencer::AddSequencerItemType(const std::string& name, const std::initializer_list<std::string>& subTypes, AddKeyCallback callback)
+		void AnimationSequencer::AddSequencerItemType(const std::string& name, const SceneEntity& entity, const std::initializer_list<std::string>& subTypes, AddKeyCallback callback)
 		{
-			m_SequencerItemTypes.push_back({ name, subTypes, callback });
+			m_SequencerItemTypes.push_back({ name, entity, subTypes, callback });
 		}
 		void AnimationSequencer::DeleteSelectedPoints()
 		{

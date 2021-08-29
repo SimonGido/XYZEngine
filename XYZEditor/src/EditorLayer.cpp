@@ -59,6 +59,7 @@ namespace XYZ {
 
 		m_SpriteEditor.SetContext(AssetManager::GetAsset<Texture2D>(AssetManager::GetAssetHandle("Assets/Textures/player_sprite.png.tex")));
 
+
 		auto entity = m_Scene->GetEntityByName("Scary Entity");
 		//gpuParticleExample(entity);
 		//cpuParticleExample(entity);
@@ -282,8 +283,9 @@ namespace XYZ {
 	void EditorLayer::animationExample(SceneEntity entity)
 	{
 		auto& animator = entity.EmplaceComponent<AnimatorComponent>();
-		animator.Animation = Ref<Animation>::Create(entity);
+		animator.Animation = Ref<Animation>::Create();
 		m_AnimationEditor.SetContext(animator.Animation);
+		m_AnimationEditor.SetScene(m_Scene);
 	}
 
 }

@@ -7,9 +7,8 @@
 
 namespace XYZ {
 
-	Animation::Animation(SceneEntity entity)
+	Animation::Animation()
 		:
-		m_Entity(entity),
 		m_Length(0.0f),
 		m_CurrentTime(0.0f),
 		m_Repeat(true)
@@ -18,9 +17,6 @@ namespace XYZ {
 
 	void Animation::Update(Timestep ts)
 	{
-		if (!m_Entity)
-			return;
-
 		if (m_CurrentTime >= m_Length)
 		{
 			if (!m_Repeat)

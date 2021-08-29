@@ -29,6 +29,7 @@ namespace XYZ {
 			out << YAML::Key << "PreviousSibling" << YAML::Value << ecs.GetComponent<IDComponent>(val.GetPreviousSibling()).ID;
 		if ((bool)val.GetFirstChild())
 			out << YAML::Key << "FirstChild" << YAML::Value << ecs.GetComponent<IDComponent>(val.GetFirstChild()).ID;
+		out << YAML::Key << "Depth" << YAML::Value << val.GetDepth();
 		out << YAML::EndMap;
 	}
 
@@ -576,26 +577,33 @@ namespace XYZ {
 				GUID guid = data["Entity"].as<std::string>();
 				Entity entity = ecs.FindEntity<IDComponent>(IDComponent(guid));
 				Relationship& relationship = ecs.GetComponent<Relationship>(entity);
-				if (data["Parent"])
+				auto relComponent = data["Relationship"];
+				if (relComponent["Parent"])
 				{
-					std::string parent = data["Parent"].as<std::string>();
-					relationship.Parent = ecs.FindEntity<IDComponent>(IDComponent({ parent }));
+					std::string parent = relComponent["Parent"].as<std::string>();
+					Entity parentEntity = ecs.FindEntity<IDComponent>(IDComponent({ parent }));
+					if (ecs.IsValid(parentEntity))
+					{
+						Relationship::RemoveRelation(entity, ecs);
+						relationship.Parent = parentEntity;					
+					}
 				}
-				if (data["NextSibling"])
+				if (relComponent["NextSibling"])
 				{
-					std::string nextSibling = data["NextSibling"].as<std::string>();
+					std::string nextSibling = relComponent["NextSibling"].as<std::string>();
 					relationship.NextSibling = ecs.FindEntity<IDComponent>(IDComponent({ nextSibling }));
 				}
-				if (data["PreviousSibling"])
+				if (relComponent["PreviousSibling"])
 				{
-					std::string previousSibling = data["PreviousSibling"].as<std::string>();
+					std::string previousSibling = relComponent["PreviousSibling"].as<std::string>();
 					relationship.PreviousSibling = ecs.FindEntity<IDComponent>(IDComponent({ previousSibling }));
 				}
-				if (data["FirstChild"])
+				if (relComponent["FirstChild"])
 				{
-					std::string firstChild = data["FirstChild"].as<std::string>();
+					std::string firstChild = relComponent["FirstChild"].as<std::string>();
 					relationship.FirstChild = ecs.FindEntity<IDComponent>(IDComponent({ firstChild }));
 				}
+				relationship.Depth = relComponent["Depth"].as<uint32_t>();
 			}
 		}
 		return m_Scene;

@@ -14,8 +14,9 @@ Entities:
       SortLayer: 1
       Visible: true
     Relationship:
-      Parent: a8d29403-b14a-46ed-9510-c18226930446
+      Parent: 8d522d79-7db9-48e1-a66e-e34829e4d304
       PreviousSibling: 7d2ac969-0a31-46d7-98d5-ceb1b25c67af
+      Depth: 1
     RigidBody2D:
       Type: 1
     BoxCollider2D:
@@ -44,9 +45,10 @@ Entities:
       SortLayer: 0
       Visible: true
     Relationship:
-      Parent: a8d29403-b14a-46ed-9510-c18226930446
+      Parent: 8d522d79-7db9-48e1-a66e-e34829e4d304
       NextSibling: 83da08c4-02dd-482b-805d-73607200846c
       PreviousSibling: 028f6e22-ee3b-42cd-95f0-6c8130222131
+      Depth: 1
     ChainCollider2D:
       Points:
         - [1.95000005, 0.5]
@@ -70,9 +72,10 @@ Entities:
       OrthographicNear: -1
       OrthographicFar: 1
     Relationship:
-      Parent: a8d29403-b14a-46ed-9510-c18226930446
+      Parent: 8d522d79-7db9-48e1-a66e-e34829e4d304
       NextSibling: 7d2ac969-0a31-46d7-98d5-ceb1b25c67af
       PreviousSibling: 88f308fd-785b-4833-b6f3-e89fb0996bb3
+      Depth: 1
   - Entity: 88f308fd-785b-4833-b6f3-e89fb0996bb3
     SceneTagComponent:
       Name: Ground
@@ -81,9 +84,10 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
-      Parent: a8d29403-b14a-46ed-9510-c18226930446
+      Parent: 8d522d79-7db9-48e1-a66e-e34829e4d304
       NextSibling: 028f6e22-ee3b-42cd-95f0-6c8130222131
       PreviousSibling: 5b984494-5db4-4ead-892b-9fadc86d4b52
+      Depth: 1
     RigidBody2D:
       Type: 0
     BoxCollider2D:
@@ -99,9 +103,10 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
-      Parent: a8d29403-b14a-46ed-9510-c18226930446
+      Parent: 8d522d79-7db9-48e1-a66e-e34829e4d304
       NextSibling: 88f308fd-785b-4833-b6f3-e89fb0996bb3
       PreviousSibling: a1345771-51d8-47b2-ba0c-0ab1fa579971
+      Depth: 1
     SpotLight2D:
       Color: [1, 1, 1]
       Radius: 6.6500001
@@ -116,9 +121,10 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
-      Parent: a8d29403-b14a-46ed-9510-c18226930446
+      Parent: 8d522d79-7db9-48e1-a66e-e34829e4d304
       NextSibling: 5b984494-5db4-4ead-892b-9fadc86d4b52
       PreviousSibling: e7d90360-31d6-4302-8c60-edb5035bb481
+      Depth: 1
     PointLight2D:
       Color: [1.25, 0.100000001, 3.75]
       Radius: 0.800000012
@@ -137,5 +143,52 @@ Entities:
       SortLayer: 0
       Visible: true
     Relationship:
-      Parent: a8d29403-b14a-46ed-9510-c18226930446
+      Parent: 8d522d79-7db9-48e1-a66e-e34829e4d304
       NextSibling: a1345771-51d8-47b2-ba0c-0ab1fa579971
+      PreviousSibling: 1b0083d1-d8e7-4461-aec3-cbd94044f788
+      Depth: 1
+  - Entity: 1b0083d1-d8e7-4461-aec3-cbd94044f788
+    SceneTagComponent:
+      Name: Orc
+    TransformComponent:
+      Position: [-2.17373943, -0.337154627, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 8d522d79-7db9-48e1-a66e-e34829e4d304
+      NextSibling: e7d90360-31d6-4302-8c60-edb5035bb481
+      FirstChild: 0bb26acc-b3dd-4a41-b134-b58ff6b2cdc5
+      Depth: 1
+  - Entity: 0bb26acc-b3dd-4a41-b134-b58ff6b2cdc5
+    SceneTagComponent:
+      Name: Body
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRenderer:
+      MaterialAsset: 6b8ecf40-b3aa-4a26-a497-d7cdda43afba
+      SubTextureAsset: 3719d3ce-464a-406c-94e8-fb4b8ede5a85
+      Color: [1, 1, 1, 1]
+      SortLayer: 0
+      Visible: true
+    Relationship:
+      Parent: 1b0083d1-d8e7-4461-aec3-cbd94044f788
+      FirstChild: 6d3dccb2-e9e2-4646-9636-6a29420471e6
+      Depth: 2
+  - Entity: 6d3dccb2-e9e2-4646-9636-6a29420471e6
+    SceneTagComponent:
+      Name: Head
+    TransformComponent:
+      Position: [-0.0354901254, 0.842881083, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    SpriteRenderer:
+      MaterialAsset: 6b8ecf40-b3aa-4a26-a497-d7cdda43afba
+      SubTextureAsset: 605904bf-a075-4251-bf47-f4cb1582ea91
+      Color: [1, 1, 1, 1]
+      SortLayer: 0
+      Visible: true
+    Relationship:
+      Parent: 0bb26acc-b3dd-4a41-b134-b58ff6b2cdc5
+      Depth: 3

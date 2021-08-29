@@ -3,6 +3,12 @@
 #include "XYZ/Scene/SceneEntity.h"
 
 namespace XYZ {
+
+	enum class TrackType
+	{
+		Transform, SpriteRenderer, None
+	};
+
 	class Track : public RefCount
 	{
 	public:
@@ -14,8 +20,10 @@ namespace XYZ {
 		virtual float Length() const = 0;
 
 		SceneEntity GetSceneEntity() const { return m_Entity; }
+		TrackType	GetType() const { return m_Type; }
 	protected:
 		SceneEntity m_Entity;
+		TrackType   m_Type = TrackType::None;
 	};
 
 	template <typename T>

@@ -51,6 +51,7 @@ namespace XYZ {
         SceneEntity GetEntity(uint32_t index);
         SceneEntity GetEntityByName(const std::string& name);
         SceneEntity GetSelectedEntity();
+
         ECSManager& GetECS() {return m_ECS;}
         inline const std::vector<Entity>& GetEntities() const { return m_Entities; }
 
@@ -68,9 +69,9 @@ namespace XYZ {
         ContactListener m_ContactListener;
         SceneEntity*    m_PhysicsEntityBuffer;
 
-        ECSManager  m_ECS;
-        GUID        m_UUID;
-        Entity      m_SceneEntity;
+        ECSManager          m_ECS;
+        GUID                m_UUID;
+        Entity              m_SceneEntity;
         std::vector<Entity> m_Entities;
 
         std::string m_Name;

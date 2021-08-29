@@ -10,7 +10,7 @@ namespace XYZ {
 	TransformTrack::TransformTrack(SceneEntity entity)
 		: Track(entity)
 	{
-		
+		m_Type = TrackType::Transform;
 	}
 
 	bool TransformTrack::Update(float time)
