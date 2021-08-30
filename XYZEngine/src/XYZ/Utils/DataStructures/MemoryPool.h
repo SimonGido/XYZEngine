@@ -65,6 +65,7 @@ namespace XYZ {
 		std::vector<Block> m_Blocks;
 		std::vector<Chunk> m_FreeChunks;
 		uint32_t		   m_ElementCounter;
+		uint32_t		   m_MemoryUsed;
 
 		bool m_Dirty = false;
 		static constexpr size_t sc_MaxNumberOfBlocks = 255;
@@ -75,7 +76,8 @@ namespace XYZ {
 	template<uint32_t BlockSize, bool StoreSize>
 	inline MemoryPool<BlockSize, StoreSize>::MemoryPool()
 		:
-		m_ElementCounter(0)
+		m_ElementCounter(0),
+		m_MemoryUsed(0)
 	{
 	}
 
@@ -84,7 +86,8 @@ namespace XYZ {
 		:
 		m_Blocks(std::move(other.m_Blocks)),
 		m_FreeChunks(std::move(other.m_FreeChunks)),
-		m_ElementCounter(other.m_ElementCounter)
+		m_ElementCounter(other.m_ElementCounter),
+		m_MemoryUsed(other.m_MemoryUsed)
 		m_Dirty(other.m_Dirty)
 	{
 	}
@@ -103,7 +106,8 @@ namespace XYZ {
 	{
 		m_Blocks = std::move(other.m_Blocks);
 		m_FreeChunks = std::move(other.m_FreeChunks);
-		m_ElementCounter = other.m_ElementCounter
+		m_ElementCounter = other.m_ElementCounter;
+		m_MemoryUsed = other.m_MemoryUsed;
 		m_Dirty = other.m_Dirty;
 		return *this;
 	}
@@ -191,7 +195,8 @@ namespace XYZ {
 	{
 		XYZ_ASSERT(StoreSize, "Store size must be enabled");
 		m_ElementCounter++;
-		
+		m_MemoryUsed += size;
+
 		if (!m_Blocks.size())
 			createBlock();
 		if (m_Dirty)
@@ -205,9 +210,11 @@ namespace XYZ {
 	inline void MemoryPool<BlockSize, StoreSize>::DeallocateRaw(void* val)
 	{
 		XYZ_ASSERT(StoreSize, "Store size must be enabled");
-		m_ElementCounter--;
 		std::array<uint32_t, 3> indices;
 		extractMetaData(val, indices);
+
+		m_ElementCounter--;
+		m_MemoryUsed -= indices[2];
 		m_FreeChunks.emplace_back(toChunkSize(indices[2]), indices[1], (uint8_t)indices[0]);
 		m_Dirty = true;
 	}
@@ -286,6 +293,7 @@ namespace XYZ {
 	inline T* MemoryPool<BlockSize, StoreSize>::Allocate(Args && ...args)
 	{
 		m_ElementCounter++;
+		m_MemoryUsed += sizeof(T);
 		if (!m_Blocks.size())
 			createBlock();
 		if (m_Dirty)
@@ -299,6 +307,8 @@ namespace XYZ {
 	inline void MemoryPool<BlockSize, StoreSize>::Deallocate(T* val)
 	{
 		m_ElementCounter--;
+		m_MemoryUsed -= sizeof(T);
+
 		val->~T();
 		uint32_t indices[3];
 		extractMetaData(val, indices);

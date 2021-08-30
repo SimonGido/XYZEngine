@@ -153,14 +153,24 @@ namespace XYZ {
 			
 			ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
 			const glm::mat4& cameraProjection = m_EditorCamera.GetProjectionMatrix();
-			const glm::mat4& cameraView = m_EditorCamera.GetViewMatrix();
+			glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
 
-			auto& tc = m_Context->GetSelectedEntity().GetComponent<TransformComponent>();
+			const ECSManager& ecs = m_Context->GetECS();
+			
+			SceneEntity selectedEntity = m_Context->GetSelectedEntity();
+			TransformComponent& tc = selectedEntity.GetComponent<TransformComponent>();	
+			const Relationship& rel = selectedEntity.GetComponent<Relationship>();
+
 			glm::mat4 transform = tc.GetTransform();
-
+			// This is hack to translate the gizmo to the proper position based on hierarchy transformation
+			if (rel.GetParent())
+			{
+				cameraView *= ecs.GetComponent<TransformComponent>(rel.GetParent()).WorldTransform;
+			}
 			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
 				(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),
 				nullptr, nullptr);
+
 			if (ImGuizmo::IsUsing())
 			{
 				tc.DecomposeTransform(transform);

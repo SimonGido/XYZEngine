@@ -49,6 +49,8 @@ namespace XYZ {
 		glm::mat4 GetTransform() const;
 		
 		void DecomposeTransform(const glm::mat4& transform);
+
+		static std::tuple<glm::vec3, glm::vec3, glm::vec3> DecomposeTransformToComponents(const glm::mat4& transform);
 	};
 
 	struct SceneTagComponent 

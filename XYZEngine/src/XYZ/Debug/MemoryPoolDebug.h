@@ -37,13 +37,12 @@ namespace XYZ {
 			if (m_MemoryPool)
 			{
 				ImGui::Text("Element Count: %u", m_MemoryPool->m_ElementCounter);
-
+				ImGui::Text("Memory Used: %u kb", m_MemoryPool->m_MemoryUsed);
 				ImGui::Text("Free Chunks:");
 				for (const auto& freeChunk : m_MemoryPool->m_FreeChunks)
 				{
 					ImGui::Text("Size: %u  Chunk Index: %u  Block Index: %u", freeChunk.Size, freeChunk.ChunkIndex, freeChunk.BlockIndex);
 				}
-
 			}
 		}
 		ImGui::End();
