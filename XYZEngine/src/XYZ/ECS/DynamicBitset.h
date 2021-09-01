@@ -25,6 +25,7 @@ namespace XYZ {
 		Signature& operator[](int32_t index);		
 		const Signature& operator[](int32_t index) const;
 		
+		bool   IsValid(int32_t index) const;
 		size_t GetNumberOfSignatures() const { return m_Signatures.Range(); }
 	private:
 		FreeList<Signature> m_Signatures;

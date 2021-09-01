@@ -12,21 +12,21 @@ namespace XYZ {
 	EntityManager::EntityManager(const EntityManager& other)
 		:
 		m_Bitset(other.m_Bitset),
-		m_Valid(other.m_Valid),
+		m_Versions(other.m_Versions),
 		m_EntitiesInUse(other.m_EntitiesInUse)
 	{
 	}
 	EntityManager::EntityManager(EntityManager&& other) noexcept
 		:
 		m_Bitset(std::move(other.m_Bitset)),
-		m_Valid(std::move(other.m_Valid)),
+		m_Versions(std::move(other.m_Versions)),
 		m_EntitiesInUse(other.m_EntitiesInUse)
 	{
 	}
 	EntityManager& EntityManager::operator=(EntityManager&& other) noexcept
 	{
 		m_Bitset = std::move(other.m_Bitset);
-		m_Valid = std::move(other.m_Valid);
+		m_Versions = std::move(other.m_Versions);
 		m_EntitiesInUse = other.m_EntitiesInUse;
 		return *this;
 	}
@@ -35,10 +35,15 @@ namespace XYZ {
 		m_EntitiesInUse++;
 		XYZ_ASSERT(m_EntitiesInUse < sc_MaxEntity, "Too many entities in existence.");
 		uint32_t entity = (uint32_t)m_Bitset.CreateSignature();
-
-		if (m_Valid.size() <= entity)
-			m_Valid.resize((size_t)entity + 1);
-		m_Valid[entity] = true;
+		if (m_Versions.size() <= entity)
+		{
+			m_Versions.resize(entity + 1);
+			m_Versions[entity] = 0;
+		}
+		else
+		{
+			m_Versions[entity]++;
+		}
 		return entity;		
 	}
 	Signature& EntityManager::GetSignature(Entity entity)
@@ -55,9 +60,6 @@ namespace XYZ {
 	{
 		XYZ_ASSERT(entity, "Invalid entity.");
 
-		// Put the destroyed ID at the back of the queue
-		//Restart bitset to zero;
-		m_Valid[entity] = false;
 		m_Bitset.DestroySignature(entity);
 		m_EntitiesInUse--;
 	}
@@ -73,6 +75,11 @@ namespace XYZ {
 	void EntityManager::Clear()
 	{
 		m_Bitset.Clear();
+		m_Versions.clear();
 		m_EntitiesInUse = 0;
+	}
+	bool EntityManager::IsValid(Entity entity) const
+	{
+		return m_Bitset.IsValid(static_cast<int32_t>(entity));
 	}
 }

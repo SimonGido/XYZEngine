@@ -26,12 +26,14 @@ namespace XYZ {
 		void SetSignature(Entity entity, Signature signature);
 		void Clear();
 
+		bool	 IsValid(Entity entity) const;
 		uint32_t GetNumEntities() const { return m_EntitiesInUse; }
+
 	private:
 		uint32_t m_EntitiesInUse;
 
-		DynamicBitset m_Bitset;
-		std::vector<bool> m_Valid;
+		DynamicBitset		  m_Bitset;
+		std::vector<uint32_t> m_Versions;
 
 		static constexpr uint32_t sc_MaxEntity = UINT32_MAX - 1;
 		friend class ECSManager;

@@ -104,4 +104,8 @@ namespace XYZ {
     {
         return m_Signatures[index];
     }
+    bool DynamicBitset::IsValid(int32_t index) const
+    {
+        return m_Signatures.Valid(index);
+    }
 }

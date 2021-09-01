@@ -128,7 +128,7 @@ namespace XYZ {
 
 		bool IsValid(Entity entity) const
 		{
-			return m_EntityManager.m_Valid.size() > (uint32_t)entity && m_EntityManager.m_Valid[(uint32_t)entity];
+			return m_EntityManager.IsValid(entity);
 		}
 
 		template <typename ...Args>
@@ -188,7 +188,7 @@ namespace XYZ {
 		}
 
 		uint32_t GetNumberOfEntities() const { return m_EntityManager.GetNumEntities(); }
-		uint32_t GetHighestID() const { return (uint32_t)m_EntityManager.m_Valid.size(); }
+		uint32_t GetHighestID() const { return (uint32_t)m_EntityManager.m_Versions.size(); }
 
 		uint16_t GetNumberOfCreatedStorages() const { return m_ComponentManager.GetNumberOfCreatedStorages(); }
 		static uint16_t GetNumberOfRegisteredComponents() { return ComponentManager::s_NextComponentTypeID; }
