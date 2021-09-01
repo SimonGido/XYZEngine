@@ -1,7 +1,6 @@
 #pragma once
 #include "ComponentManager.h"
 #include "EntityManager.h"
-#include "CallbackManager.h"
 #include "ComponentView.h"
 
 namespace XYZ {
@@ -17,20 +16,8 @@ namespace XYZ {
 		
 		Entity CopyEntity(Entity entity);
 		Entity CreateEntity();
-		void DestroyEntity(Entity entity);
-		void Clear();
-
-		template <typename T>
-		void AddListener(const std::function<void(uint32_t, CallbackType)>& callback, void* instance)
-		{
-			m_CallbackManager.AddListener<T>(callback, instance);
-		}
-
-		template <typename T>
-		void RemoveListener(void* instance)
-		{
-			m_CallbackManager.RemoveListener<T>(instance);
-		}
+		void   DestroyEntity(Entity entity);
+		void   Clear();
 
 		template <typename T, typename ...Args>
 		T& EmplaceComponent(Entity entity, Args&&... args)
@@ -45,8 +32,6 @@ namespace XYZ {
 			XYZ_ASSERT(!signature[Component<T>::ID()], "Entity already contains component");
 			signature.Set(Component<T>::ID(), true);
 			auto& result = m_ComponentManager.EmplaceComponent<T>(entity, std::forward<Args>(args)...);
-			// Handle callbacks
-			m_CallbackManager.OnComponentCreate<T>(entity);
 			return result;
 		}
 		template <typename T>
@@ -62,8 +47,6 @@ namespace XYZ {
 			XYZ_ASSERT(!signature[Component<T>::ID()], "Entity already contains component");
 			signature.Set(Component<T>::ID(), true);
 			auto& result = m_ComponentManager.AddComponent<T>(entity, component);
-			// Handle callbacks
-			m_CallbackManager.OnComponentCreate<T>(entity);
 			return result;
 		}
 		
@@ -75,7 +58,6 @@ namespace XYZ {
 			XYZ_ASSERT(signature[Component<T>::ID()], "Entity does not have component");
 			
 			signature.Set(Component<T>::ID(), false);
-			m_CallbackManager.OnComponentRemove<T>(entity);
 			m_ComponentManager.RemoveComponent<T>(entity, signature);
 			return true;
 		}
@@ -195,8 +177,7 @@ namespace XYZ {
 		static uint16_t GetNumberOfRegisteredComponents() { return ComponentManager::s_NextComponentTypeID; }
 	private:
 		ComponentManager m_ComponentManager;
-		CallbackManager m_CallbackManager;
-		EntityManager m_EntityManager;
+		EntityManager	 m_EntityManager;
 	
 		friend class ECSSerializer;
 	};
