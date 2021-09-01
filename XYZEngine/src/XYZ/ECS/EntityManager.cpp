@@ -46,6 +46,10 @@ namespace XYZ {
 		}
 		return entity;		
 	}
+	uint32_t EntityManager::GetVersion(Entity entity) const
+	{
+		return m_Versions[entity];
+	}
 	Signature& EntityManager::GetSignature(Entity entity)
 	{
 		XYZ_ASSERT(entity, "Invalid entity");

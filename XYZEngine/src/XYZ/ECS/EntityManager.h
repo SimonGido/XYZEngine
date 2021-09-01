@@ -18,6 +18,7 @@ namespace XYZ {
 
 		Entity CreateEntity();
 
+		uint32_t GetVersion(Entity entity) const;
 		Signature& GetSignature(Entity entity);
 		const Signature& GetSignature(Entity entity)const;
 

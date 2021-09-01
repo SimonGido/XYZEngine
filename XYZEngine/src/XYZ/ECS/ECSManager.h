@@ -187,6 +187,7 @@ namespace XYZ {
 			return Entity();
 		}
 
+		uint32_t GetEntityVersion(Entity entity) const { return m_EntityManager.GetVersion(entity); }
 		uint32_t GetNumberOfEntities() const { return m_EntityManager.GetNumEntities(); }
 		uint32_t GetHighestID() const { return (uint32_t)m_EntityManager.m_Versions.size(); }
 
