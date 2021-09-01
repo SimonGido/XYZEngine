@@ -80,6 +80,8 @@ namespace XYZ {
 	}
 	bool EntityManager::IsValid(Entity entity) const
 	{
+		if (entity >= m_Versions.size())
+			return false;
 		return m_Bitset.IsValid(static_cast<int32_t>(entity));
 	}
 }
