@@ -374,6 +374,11 @@ namespace XYZ {
 		return { m_ECS.FindEntity<SceneTagComponent>(name), this };
 	}
 
+	SceneEntity Scene::GetSceneEntity()
+	{
+		return SceneEntity(m_SceneEntity, this);
+	}
+
 	SceneEntity Scene::GetSelectedEntity()
 	{
 		return { m_SelectedEntity, this };

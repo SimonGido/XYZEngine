@@ -213,7 +213,7 @@ namespace XYZ {
 	{
 		out << YAML::BeginMap;
 		out << YAML::Key << "Entity" << YAML::Value << val.GetComponent<IDComponent>().ID;
-
+		
 		if (val.HasComponent<SceneTagComponent>())
 		{
 			serialize<SceneTagComponent>(out, val.GetComponent<SceneTagComponent>());
@@ -545,6 +545,9 @@ namespace XYZ {
 		for (auto ent : m_Scene->m_Entities)
 		{
 			SceneEntity entity(ent, m_Scene.Raw());
+			auto& rel = entity.GetComponent<Relationship>();
+			if (rel.Parent == m_Scene->GetSceneEntity())
+				rel.Parent = Entity();
 			serialize<SceneEntity>(out, entity);
 		}
 		out << YAML::EndSeq;

@@ -50,6 +50,7 @@ namespace XYZ {
 
         SceneEntity GetEntity(uint32_t index);
         SceneEntity GetEntityByName(const std::string& name);
+        SceneEntity GetSceneEntity();
         SceneEntity GetSelectedEntity();
 
         ECSManager& GetECS() {return m_ECS;}
