@@ -54,6 +54,7 @@ namespace XYZ {
 		static std::vector<Ref<Asset>> FindAssetsByType(AssetType type);
 		static bool	     IsValidExtension(const std::string& extension);
 		static void      CreateDirectory(const std::string& dirName);
+		
 		template<typename T, typename... Args>
 		static Ref<T> CreateAsset(const std::string& filename, AssetType type, const GUID& directoryHandle, Args&&... args)
 		{

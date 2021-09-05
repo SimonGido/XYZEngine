@@ -20,15 +20,19 @@ namespace XYZ {
 			Ref<Asset> GetSelectedAsset() const;
 
 		private:
-			void createAsset();
-			void processDirectory();
-			size_t assetTypeToTexCoordsIndex(AssetType type) const;
+			void		registerFileTypeExtensions();
+			void		createAsset() const;
+			void		processDirectory();
+			void		rightClickMenu() const;
+			void		dragAndDrop(const std::filesystem::path& path) const;
 
-			void dragAndDrop(const std::filesystem::path& path);
+			size_t		assetTypeToTexCoordsIndex(AssetType type) const;
+			size_t      extensionToTexCoordsIndex(const std::string& extension) const;
 			std::string getUniqueAssetName(const char* fileName, const char* extension) const;
+		
 		private:
 			AssetSelectedCallback m_Callback;
-
+			
 			bool m_ViewportHovered;
 			bool m_ViewportFocused;
 
@@ -46,17 +50,20 @@ namespace XYZ {
 				Script,
 				Mesh,
 				Animation,
+				Png,
+				Jpg,
 				NumTypes
 			};
 
-			glm::vec4 m_TexCoords[NumTypes];
+			glm::vec4		  m_TexCoords[NumTypes];
 			Ref<XYZ::Texture> m_Texture;
 
 			glm::vec2 m_IconSize;
 			glm::vec2 m_ArrowSize;
 
-			std::filesystem::path m_SelectedFile;
-			std::filesystem::path m_CurrentDirectory;
+			std::filesystem::path			  m_SelectedFile;
+			std::filesystem::path			  m_RightClickedFile;
+			std::filesystem::path			  m_CurrentDirectory;
 			std::deque<std::filesystem::path> m_DirectoriesVisited;
 
 			
@@ -69,6 +76,8 @@ namespace XYZ {
 				NumColors
 			};
 			glm::vec4 m_Colors[NumColors];
+
+			std::unordered_map<std::string, size_t> m_FileTypeExtensions;
 		};
 	}
 }

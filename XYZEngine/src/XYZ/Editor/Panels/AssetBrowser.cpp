@@ -34,6 +34,7 @@ namespace XYZ {
 			m_ViewportHovered(false),
 			m_ViewportFocused(false)
 		{
+			registerFileTypeExtensions();
 			m_Texture = Texture2D::Create({}, "Assets/Textures/Gui/icons.png");
 			float divisor = 4.0f;
 			float width  = (float)m_Texture->GetWidth();
@@ -63,14 +64,6 @@ namespace XYZ {
 			{
 				m_ViewportFocused = ImGui::IsWindowFocused();
 				m_ViewportHovered = ImGui::IsWindowHovered();
-				if (ImGui::GetIO().MouseDown[ImGuiMouseButton_Left]
-					&& m_ViewportFocused
-					&& m_ViewportHovered)
-				{
-					m_SelectedFile.clear();
-					if (m_Callback)
-						m_Callback(GetSelectedAsset());
-				}
 
 				bool backArrowAvailable = m_CurrentDirectory != std::filesystem::path(s_AssetPath);
 				bool frontArrowAvailable = !m_DirectoriesVisited.empty();
@@ -109,9 +102,19 @@ namespace XYZ {
 					m_DirectoriesVisited.clear();
 				}
 
-				createAsset();
 				processDirectory();
 				ImGui::PopStyleColor();
+
+
+				if (ImGui::GetIO().MouseReleased[ImGuiMouseButton_Left]
+					&& m_ViewportFocused
+					&& m_ViewportHovered)
+				{
+					m_RightClickedFile.clear();
+					m_SelectedFile.clear();
+					if (m_Callback)
+						m_Callback(GetSelectedAsset());
+				}
 			}
 			ImGui::End();
 		}
@@ -122,7 +125,10 @@ namespace XYZ {
 				std::string fullFilePath = m_CurrentDirectory.string() + "/" + m_SelectedFile.string();
 				std::replace(fullFilePath.begin(), fullFilePath.end(), '\\', '/');
 				AssetType type = AssetManager::GetAssetTypeFromExtension(Utils::GetExtension(m_SelectedFile.string()));
-				auto assetHandle = AssetManager::GetAssetHandle(fullFilePath);
+				if (type == AssetType::None)
+					return Ref<Asset>();
+
+				auto assetHandle = AssetManager::GetAssetHandle(fullFilePath);			
 				switch (type)
 				{
 				case XYZ::AssetType::Scene:
@@ -157,39 +163,44 @@ namespace XYZ {
 			}
 			return Ref<Asset>();
 		}
-		void AssetBrowser::createAsset()
+		void AssetBrowser::registerFileTypeExtensions()
 		{
-			if (ImGui::IsMouseDown(ImGuiMouseButton_Right) && ImGui::IsWindowHovered())
+			m_FileTypeExtensions["xyz"]    = Type::Scene;
+			m_FileTypeExtensions["tex"]    = Type::Texture;
+			m_FileTypeExtensions["subtex"] = Type::SubTexture;
+			m_FileTypeExtensions["mat"]    = Type::Material;
+			m_FileTypeExtensions["shader"] = Type::Shader;
+			m_FileTypeExtensions["cs"]	   = Type::Script;
+			m_FileTypeExtensions["anim"]   = Type::Animation;
+			m_FileTypeExtensions["png"]    = Type::Png;
+			m_FileTypeExtensions["jpg"]    = Type::Jpg;
+		}
+		void AssetBrowser::createAsset() const
+		{
+			if (ImGui::MenuItem("Create Folder"))
 			{
-				ImGui::OpenPopup("CreateAsset");
+				std::string fullpath = getUniqueAssetName("New Folder", nullptr);
+				FileSystem::CreateFolder(fullpath);
+				AssetManager::CreateDirectory(fullpath);
+				ImGui::CloseCurrentPopup();
 			}
-			if (ImGui::BeginPopup("CreateAsset"))
+			if (ImGui::MenuItem("Create Scene"))
 			{
-				if (ImGui::MenuItem("Create Folder"))
-				{
-					std::string fullpath = getUniqueAssetName("New Folder", nullptr);
-					FileSystem::CreateFolder(fullpath);
-					AssetManager::CreateDirectory(fullpath);
-				}
-				if (ImGui::MenuItem("Create Scene"))
-				{
-					std::string fullpath = getUniqueAssetName("New Scene", ".xyz");
-					Ref<XYZ::Scene> scene = Ref<XYZ::Scene>::Create("");
-					scene->FilePath = fullpath;
-					scene->Type = AssetType::Scene;
-					AssetSerializer::SerializeAsset(scene);
-					ImGui::CloseCurrentPopup();
-				}
-				else if (ImGui::MenuItem("Create Animation"))
-				{
-					std::string fullpath = getUniqueAssetName("New Animation", ".anim");
-					Ref<XYZ::Animation> animation = Ref<XYZ::Animation>::Create();
-					animation->FilePath = fullpath;
-					animation->Type = AssetType::Animation;
-					AssetSerializer::SerializeAsset(animation);
-					ImGui::CloseCurrentPopup();
-				}
-				ImGui::EndPopup();
+				std::string fullpath = getUniqueAssetName("New Scene", ".xyz");
+				Ref<XYZ::Scene> scene = Ref<XYZ::Scene>::Create("");
+				scene->FilePath = fullpath;
+				scene->Type = AssetType::Scene;
+				AssetSerializer::SerializeAsset(scene);
+				ImGui::CloseCurrentPopup();
+			}
+			else if (ImGui::MenuItem("Create Animation"))
+			{
+				std::string fullpath = getUniqueAssetName("New Animation", ".anim");
+				Ref<XYZ::Animation> animation = Ref<XYZ::Animation>::Create();
+				animation->FilePath = fullpath;
+				animation->Type = AssetType::Animation;
+				AssetSerializer::SerializeAsset(animation);
+				ImGui::CloseCurrentPopup();
 			}
 		}
 		void AssetBrowser::processDirectory()
@@ -221,29 +232,60 @@ namespace XYZ {
 				}
 				else
 				{
-					AssetType type = AssetManager::GetAssetTypeFromExtension(Utils::GetExtension(name));
-					if (type == AssetType::None)
+					size_t index = extensionToTexCoordsIndex(Utils::GetExtension(name));
+					if (index == Type::NumTypes)
 					{
 						ImGui::PopID();
 						continue;
 					}
-					size_t index = assetTypeToTexCoordsIndex(type);
 					if (ImGui::ImageButton((void*)(uint64_t)m_Texture->GetRendererID(), { m_IconSize.x, m_IconSize.y }, { m_TexCoords[index].x, m_TexCoords[index].y }, { m_TexCoords[index].z, m_TexCoords[index].w }))
 					{
 						m_SelectedFile = name;
 						if (m_Callback)
 							m_Callback(GetSelectedAsset());
 					}
-
+					if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+					{
+						m_RightClickedFile = name;
+					}
 					dragAndDrop(std::filesystem::relative(it, s_AssetPath));
-
 				}
+				rightClickMenu();
 
+				char newName[64];
+				//ImGui::InputText("##Renamed", newName, 64);
 				ImGui::TextWrapped(name.c_str());
 				ImGui::NextColumn();
 				ImGui::PopID();
 			}
 			ImGui::Columns(1);
+		}
+		void AssetBrowser::rightClickMenu() const
+		{		
+			if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && m_ViewportHovered)
+			{
+				ImGui::OpenPopup("RightClickMenu");
+			}
+			if (ImGui::BeginPopup("RightClickMenu"))
+			{
+				if (!m_RightClickedFile.empty())
+				{
+					if (ImGui::MenuItem("Rename"))
+					{
+						ImGui::CloseCurrentPopup();
+					}
+					if (ImGui::MenuItem("Delete"))
+					{
+						std::string fileName  = m_RightClickedFile.string();
+						std::string parentDir = m_CurrentDirectory.string();
+						std::string fullPath  = parentDir+ "\\" + fileName;
+						//FileSystem::DeleteFileAtPath(fullPath);
+						ImGui::CloseCurrentPopup();
+					}
+				}
+				createAsset();			
+				ImGui::EndPopup();
+			}
 		}
 		size_t AssetBrowser::assetTypeToTexCoordsIndex(AssetType type) const
 		{
@@ -287,7 +329,13 @@ namespace XYZ {
 			}
 			return NumTypes;
 		}
-		void AssetBrowser::dragAndDrop(const std::filesystem::path& path)
+		size_t AssetBrowser::extensionToTexCoordsIndex(const std::string& extension) const
+		{		
+			auto it = m_FileTypeExtensions.find(extension);
+			if (it != m_FileTypeExtensions.end())
+				return it->second;
+		}
+		void AssetBrowser::dragAndDrop(const std::filesystem::path& path) const
 		{
 			if (ImGui::BeginDragDropSource())
 			{

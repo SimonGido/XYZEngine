@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "AssetInspectorContext.h"
 
+#include "XYZ/Utils/StringUtils.h"
+
 #include <imgui.h>
 #include <imgui_internal.h>
 
@@ -37,10 +39,37 @@ namespace XYZ {
 				Helper::EndColumns();
 				ImGui::NewLine();
 
-				if (m_Context->Type == AssetType::Material)
+				switch (m_Context->Type)
+				{
+				case XYZ::AssetType::Scene:
+					
+					break;
+				case XYZ::AssetType::Texture:
+					drawTexture2D(m_Context.As<Texture2D>());
+					break;
+				case XYZ::AssetType::SubTexture:
+					
+					break;
+				case XYZ::AssetType::Material:
 					drawMaterial(m_Context.As<Material>());
-				if (m_Context->Type == AssetType::Shader)
+					break;
+				case XYZ::AssetType::Shader:
 					drawShader(m_Context.As<Shader>());
+					break;
+				case XYZ::AssetType::Font:
+					
+					break;
+				case XYZ::AssetType::Audio:
+					break;
+				case XYZ::AssetType::Script:
+					break;
+				case XYZ::AssetType::SkeletalMesh:
+					break;
+				case XYZ::AssetType::None:
+					break;
+				default:
+					break;
+				}
 			}
 		}
 		void AssetInspectorContext::SetContext(const Ref<Asset>& context)
@@ -96,6 +125,20 @@ namespace XYZ {
 		{
 			if (ImGui::Button("Reload"))
 				shader->Reload();
+		}
+		void AssetInspectorContext::drawTexture2D(Ref<Texture2D>& texture)
+		{		
+			Helper::BeginColumns("Image path:");
+			ImGui::PushItemWidth(ImGui::CalcItemWidth());
+
+			ImGui::Text("%s", texture->GetFilepath().c_str());
+
+			ImGui::PopItemWidth();
+			Helper::EndColumns();
+
+			float panelWidth = ImGui::GetContentRegionAvail().x;
+			float aspect = (float)texture->GetHeight() / (float)texture->GetWidth();
+			ImGui::Image((void*)(uint64_t)texture->GetRendererID(), { panelWidth, panelWidth * aspect }, { 0, 1 }, { 1, 0 });
 		}
 	}
 }

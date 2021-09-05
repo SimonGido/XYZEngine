@@ -52,7 +52,7 @@ namespace XYZ {
 		virtual uint32_t GetChannels() const = 0;
 
 		virtual uint32_t GetRendererID() const = 0;
-		virtual const std::string GetFilepath() const { return std::string(); };
+		
 		static uint32_t CalculateMipMapCount(uint32_t width, uint32_t height);
 	};
 
@@ -66,6 +66,7 @@ namespace XYZ {
 		virtual const TextureSpecs& GetSpecification() const = 0;
 		virtual void SetData(void* data, uint32_t size) = 0;
 		virtual void GetData(uint8_t** buffer) const = 0;
+		virtual const std::string& GetFilepath() const = 0;
 
 		static Ref<Texture2D> Create(uint32_t width, uint32_t height, uint32_t channels, const TextureSpecs& specs);
 		static Ref<Texture2D> Create(const TextureSpecs& specs, const std::string& path);
