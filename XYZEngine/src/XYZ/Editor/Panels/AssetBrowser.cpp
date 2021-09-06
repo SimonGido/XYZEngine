@@ -270,17 +270,30 @@ namespace XYZ {
 			{
 				if (!m_RightClickedFile.empty())
 				{
+					std::string fileName = m_RightClickedFile.string();
 					if (ImGui::MenuItem("Rename"))
 					{
 						ImGui::CloseCurrentPopup();
 					}
 					if (ImGui::MenuItem("Delete"))
-					{
-						std::string fileName  = m_RightClickedFile.string();
+					{				
 						std::string parentDir = m_CurrentDirectory.string();
-						std::string fullPath  = parentDir+ "\\" + fileName;
+						std::string fullPath  = parentDir + "\\" + fileName;
 						//FileSystem::DeleteFileAtPath(fullPath);
 						ImGui::CloseCurrentPopup();
+					}
+					if (Utils::GetExtension(fileName) == "png")
+					{
+						if (ImGui::MenuItem("Create Texture"))
+						{
+							std::string parentDir = m_CurrentDirectory.string();
+							std::replace(parentDir.begin(), parentDir.end(), '\\', '/');
+
+							std::string fullpath = getUniqueAssetName("New Texture", ".tex");
+							std::string fullImagePath = parentDir + "/" + fileName;
+							AssetManager::CreateAsset<Texture2D>(Utils::GetFilename(fullpath), AssetType::Texture, AssetManager::GetDirectoryHandle(parentDir), TextureSpecs{}, fullImagePath);
+							ImGui::CloseCurrentPopup();
+						}
 					}
 				}
 				createAsset();			
@@ -349,6 +362,7 @@ namespace XYZ {
 		{
 			char fileNameTmp[60];
 			std::string fullpath = m_CurrentDirectory.string() + "/" + fileName;
+			std::replace(fullpath.begin(), fullpath.end(), '\\', '/');
 			if (extension)
 				fullpath += extension;
 	
@@ -361,6 +375,7 @@ namespace XYZ {
 					sprintf(fileNameTmp, "%s%d", fileName, index);
 
 				fullpath = m_CurrentDirectory.string() + "/" + fileNameTmp;
+				std::replace(fullpath.begin(), fullpath.end(), '\\', '/');
 				while (std::filesystem::exists(fullpath))
 				{
 					if (extension)
@@ -368,6 +383,7 @@ namespace XYZ {
 					else
 						sprintf(fileNameTmp, "%s%d", fileName, index);
 					fullpath = m_CurrentDirectory.string() + "/" + fileNameTmp;
+					std::replace(fullpath.begin(), fullpath.end(), '\\', '/');
 				}
 			}
 			return fullpath;
