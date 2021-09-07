@@ -9,7 +9,7 @@ namespace XYZ {
 
 	EditorLayer::EditorLayer()
 		:
-		m_EditorOpen{ false, true }
+		m_EditorOpen{ true, true }
 	{			
 	}
 

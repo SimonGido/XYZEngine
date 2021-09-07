@@ -347,14 +347,16 @@ namespace XYZ {
 			auto it = m_FileTypeExtensions.find(extension);
 			if (it != m_FileTypeExtensions.end())
 				return it->second;
+			return Type::NumTypes;
 		}
 		void AssetBrowser::dragAndDrop(const std::filesystem::path& path) const
 		{
 			if (ImGui::BeginDragDropSource())
 			{
-				std::string str = path.string();
-				const char* itemPath = str.c_str();
-				ImGui::SetDragDropPayload("ASSET_BROWSER_ITEM", itemPath, str.size(), ImGuiCond_Once);
+				std::string fullPath = s_AssetPath.string() + "/" + path.string();
+				std::replace(fullPath.begin(), fullPath.end(), '\\', '/');
+				const char* itemPath = fullPath.c_str();
+				ImGui::SetDragDropPayload("ASSET_BROWSER_ITEM", itemPath, fullPath.size() + 1, ImGuiCond_Once);
 				ImGui::EndDragDropSource();
 			}
 		}
@@ -384,6 +386,7 @@ namespace XYZ {
 						sprintf(fileNameTmp, "%s%d", fileName, index);
 					fullpath = m_CurrentDirectory.string() + "/" + fileNameTmp;
 					std::replace(fullpath.begin(), fullpath.end(), '\\', '/');
+					index++;
 				}
 			}
 			return fullpath;

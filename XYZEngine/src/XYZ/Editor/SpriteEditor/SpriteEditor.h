@@ -24,7 +24,7 @@ namespace XYZ {
 			void SetContext(const Ref<Texture2D>& context);
 		private:
 			void handlePanelResize(const glm::vec2& newSize);
-			
+			void handleDragAndDrop();
 
 			void viewer();
 			void tools();

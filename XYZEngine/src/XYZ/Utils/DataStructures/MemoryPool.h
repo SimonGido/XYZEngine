@@ -234,29 +234,34 @@ namespace XYZ {
 	{
 		for (int64_t i = m_FreeChunks.size() - 1; i >= 0; --i)
 		{
-			Chunk& chunk = m_FreeChunks[i];
-			Block& block = m_Blocks[chunk.BlockIndex];
-			uint32_t chunkSpace = chunk.ChunkIndex + chunk.Size;
-			if (chunkSpace != block.NextAvailableIndex)
-				break;
-			block.NextAvailableIndex -= chunk.Size;
-			m_FreeChunks.erase(m_FreeChunks.begin() + i);
-		}
-		for (int64_t i = m_FreeChunks.size() - 1; i >= 1; --i)
-		{
-			Chunk&   lastChunk = m_FreeChunks[i];
-			Chunk&   prevChunk = m_FreeChunks[i - 1];
-			// Not from the same block
-			if (lastChunk.BlockIndex != prevChunk.BlockIndex)
-				continue;
-			
-			// Chunks are not connected
-			uint32_t prevChunkEnd = prevChunk.ChunkIndex + prevChunk.Size;
-			if (prevChunkEnd != lastChunk.ChunkIndex)
-				continue;
+			Chunk& lastChunk	  = m_FreeChunks[i];		
+			Block& block	      = m_Blocks[lastChunk.BlockIndex];
+			uint32_t lastChunkEnd = lastChunk.ChunkIndex + lastChunk.Size;
+	
+			if (lastChunkEnd != block.NextAvailableIndex)
+			{
+				if (i > 0)
+				{
+					Chunk& prevChunk = m_FreeChunks[i - 1];
+					// last chunk and prev chunk do not share same block index
+					if (lastChunk.BlockIndex != prevChunk.BlockIndex)
+						continue;
 
-			prevChunk.Size += lastChunk.Size;
-			m_FreeChunks.erase(m_FreeChunks.begin() + i);
+					uint32_t prevChunkEnd = prevChunk.ChunkIndex + prevChunk.Size;
+					// previous chunk is not connected to last chunk
+					if (prevChunkEnd != lastChunk.ChunkIndex)
+						continue;
+
+					// merge chunks
+					prevChunk.Size += lastChunk.Size;
+					m_FreeChunks.erase(m_FreeChunks.begin() + i);
+				}
+			}
+			else
+			{
+				block.NextAvailableIndex -= lastChunk.Size;
+				m_FreeChunks.erase(m_FreeChunks.begin() + i);
+			}		
 		}
 	}
 	

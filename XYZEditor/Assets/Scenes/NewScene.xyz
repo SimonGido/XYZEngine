@@ -144,8 +144,8 @@ Entities:
     SceneTagComponent:
       Name: Orc
     TransformComponent:
-      Position: [-2.17373943, -0.337154627, 0]
-      Rotation: [0, -0, 0]
+      Position: [-0.901456177, -0.337154627, -6.40418989e-08]
+      Rotation: [0, -0.00575234089, 0]
       Scale: [1, 1, 1]
     Relationship:
       NextSibling: e7d90360-31d6-4302-8c60-edb5035bb481
@@ -162,11 +162,11 @@ Entities:
       MaterialAsset: 6b8ecf40-b3aa-4a26-a497-d7cdda43afba
       SubTextureAsset: 3719d3ce-464a-406c-94e8-fb4b8ede5a85
       Color: [1, 1, 1, 1]
-      SortLayer: 0
+      SortLayer: 1
       Visible: true
     Relationship:
       Parent: 1b0083d1-d8e7-4461-aec3-cbd94044f788
-      FirstChild: 6d3dccb2-e9e2-4646-9636-6a29420471e6
+      FirstChild: e1ae3667-f0b3-49e1-93c1-23201d9e5cec
       Depth: 2
   - Entity: 6d3dccb2-e9e2-4646-9636-6a29420471e6
     SceneTagComponent:
@@ -179,8 +179,80 @@ Entities:
       MaterialAsset: 6b8ecf40-b3aa-4a26-a497-d7cdda43afba
       SubTextureAsset: 605904bf-a075-4251-bf47-f4cb1582ea91
       Color: [1, 1, 1, 1]
+      SortLayer: 1
+      Visible: true
+    Relationship:
+      Parent: 0bb26acc-b3dd-4a41-b134-b58ff6b2cdc5
+      PreviousSibling: 336d34ee-6f8e-4185-81bf-7bc5693834a3
+      Depth: 3
+  - Entity: 336d34ee-6f8e-4185-81bf-7bc5693834a3
+    SceneTagComponent:
+      Name: Left Leg
+    TransformComponent:
+      Position: [0.282921612, -0.681860626, 0]
+      Rotation: [0, 0, 0.4867073]
+      Scale: [0.524971068, 0.799062848, 1]
+    SpriteRenderer:
+      MaterialAsset: 6b8ecf40-b3aa-4a26-a497-d7cdda43afba
+      SubTextureAsset: 79e3c24e-5ae9-4670-8f09-b337c0357019
+      Color: [1, 1, 1, 1]
       SortLayer: 0
       Visible: true
     Relationship:
       Parent: 0bb26acc-b3dd-4a41-b134-b58ff6b2cdc5
+      NextSibling: 6d3dccb2-e9e2-4646-9636-6a29420471e6
+      PreviousSibling: 020d1e52-008e-400c-bbbc-be5fb648abf0
+      Depth: 3
+  - Entity: 020d1e52-008e-400c-bbbc-be5fb648abf0
+    SceneTagComponent:
+      Name: Right Leg
+    TransformComponent:
+      Position: [-0.11295414, -0.681602955, 0]
+      Rotation: [0, 0, -0.147750378]
+      Scale: [0.537798107, 0.8223809, 1]
+    SpriteRenderer:
+      MaterialAsset: 6b8ecf40-b3aa-4a26-a497-d7cdda43afba
+      SubTextureAsset: ff72032e-034c-41f8-9898-2d2ecc59a864
+      Color: [1, 1, 1, 1]
+      SortLayer: 0
+      Visible: true
+    Relationship:
+      Parent: 0bb26acc-b3dd-4a41-b134-b58ff6b2cdc5
+      NextSibling: 336d34ee-6f8e-4185-81bf-7bc5693834a3
+      PreviousSibling: a045adda-9432-4d4c-ad57-bf129ef65f0c
+      Depth: 3
+  - Entity: a045adda-9432-4d4c-ad57-bf129ef65f0c
+    SceneTagComponent:
+      Name: Left Arm
+    TransformComponent:
+      Position: [0.475980669, -0.0591729432, 0.0219726507]
+      Rotation: [0, -0, 0.187078267]
+      Scale: [0.49566412, 0.920000196, 1]
+    SpriteRenderer:
+      MaterialAsset: 6b8ecf40-b3aa-4a26-a497-d7cdda43afba
+      SubTextureAsset: 94249fd6-085c-4d76-85c2-f368604b212a
+      Color: [1, 1, 1, 1]
+      SortLayer: 0
+      Visible: true
+    Relationship:
+      Parent: 0bb26acc-b3dd-4a41-b134-b58ff6b2cdc5
+      NextSibling: 020d1e52-008e-400c-bbbc-be5fb648abf0
+      PreviousSibling: e1ae3667-f0b3-49e1-93c1-23201d9e5cec
+      Depth: 3
+  - Entity: e1ae3667-f0b3-49e1-93c1-23201d9e5cec
+    SceneTagComponent:
+      Name: Right Arm
+    TransformComponent:
+      Position: [-0.67711401, -0.00145116623, -0.034786623]
+      Rotation: [-0.0462674461, 0, -0.669726908]
+      Scale: [0.541578472, 1.00000548, 1.00000715]
+    SpriteRenderer:
+      MaterialAsset: 6b8ecf40-b3aa-4a26-a497-d7cdda43afba
+      SubTextureAsset: 0232c16a-0f89-4ce3-956f-a7716a2afe0b
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      Visible: true
+    Relationship:
+      Parent: 0bb26acc-b3dd-4a41-b134-b58ff6b2cdc5
+      NextSibling: a045adda-9432-4d4c-ad57-bf129ef65f0c
       Depth: 3

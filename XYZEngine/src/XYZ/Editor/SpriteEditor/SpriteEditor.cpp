@@ -92,6 +92,7 @@ namespace XYZ {
 
 					EditorHelper::DrawSplitter(false, 5.0f, &m_ToolSectionWidth, &m_ViewSectionWidth, 50.0f, 50.0f);
 					
+					
 					tools();
 					ImGui::SameLine();
 					viewer();
@@ -130,10 +131,27 @@ namespace XYZ {
 				m_Camera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
 			}
 		}
+		void SpriteEditor::handleDragAndDrop()
+		{
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_BROWSER_ITEM", 0))
+				{
+					char* assetPath = (char*)payload->Data;
+					std::string strPath(assetPath);
+					
+					if (AssetManager::GetAssetTypeFromExtension(Utils::GetExtension(strPath)) == AssetType::Texture)
+					{
+						SetContext(AssetManager::GetAsset<Texture2D>(AssetManager::GetAssetHandle(strPath)));
+					}
+				}
+				ImGui::EndDragDropTarget();
+			}
+		}
 		void SpriteEditor::viewer()
 		{
 			if (ImGui::BeginChild("##Viewer", ImVec2(m_ViewSectionWidth, 0)))
-			{
+			{			
 				ImVec2 viewerPanelSize = ImGui::GetContentRegionAvail();
 				m_ViewportFocused = ImGui::IsWindowFocused();
 				m_ViewportHovered = ImGui::IsWindowHovered();
@@ -151,6 +169,7 @@ namespace XYZ {
 				}
 			}
 			ImGui::EndChild();
+			handleDragAndDrop();
 		}
 		void SpriteEditor::tools()
 		{

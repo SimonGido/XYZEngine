@@ -17,6 +17,7 @@ namespace XYZ {
 
 	private:
 		MemoryPool<BlockSize, StoreSize>* m_MemoryPool;
+		float							  m_AverageAllocationTime;
 	};
 	template<uint32_t BlockSize, bool StoreSize>
 	inline MemoryPoolDebug<BlockSize, StoreSize>::MemoryPoolDebug()
