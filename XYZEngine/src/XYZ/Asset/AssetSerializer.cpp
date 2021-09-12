@@ -448,9 +448,10 @@ namespace XYZ {
 		YAML::Emitter out;
 		out << YAML::BeginMap; // Animation
 		
-		out << YAML::Key << "Length" << YAML::Value << anim->GetLength();
+		out << YAML::Key << "NumFrames" << YAML::Value << anim->GetNumFrames();
+		out << YAML::Key << "FrameLength" << YAML::Value << anim->GetFrameLength();
 		out << YAML::Key << "Repeat" << YAML::Value << anim->GetRepeat();
-		
+
 		out << YAML::Key << "Tracks";
 		out << YAML::Value << YAML::BeginSeq;
 		const auto& tracks = anim->GetTracks();

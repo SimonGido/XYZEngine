@@ -15,9 +15,9 @@ namespace XYZ {
 
 		void Update(Timestep ts);
 		void UpdateLength();
-		void SetLength(float length) { m_Length = length; }
+		void SetCurrentFrame(uint32_t frame);
+		void SetNumFrames(uint32_t numFrames) { m_NumFrames = numFrames; }
 		void SetRepeat(bool repeat) { m_Repeat = repeat; }
-		void SetCurrentTime(float time) { m_CurrentTime = time; }
 
 		template <typename T>
 		void CreateTrack(SceneEntity entity);
@@ -28,16 +28,19 @@ namespace XYZ {
 		template <typename T>
 		Ref<T> FindTrack(SceneEntity entity) const;
 		
-		inline const std::vector<Ref<Track>>& GetTracks() const { return m_Tracks; }
-		inline float						  GetLength() const { return m_Length; }
-		inline float						  GetTime()   const { return m_CurrentTime; }
-		inline bool							  GetRepeat() const { return m_Repeat; }
+		inline const std::vector<Ref<Track>>& GetTracks()	   const { return m_Tracks; }
+		inline uint32_t						  GetNumFrames()   const { return m_NumFrames; }
+		inline uint32_t						  GetTime()        const { return m_CurrentFrame; }
+		inline float						  GetFrameLength() const { return m_FrameLength; }
+		inline bool							  GetRepeat()	   const { return m_Repeat; }
 	private:
 		std::vector<Ref<Track>> m_Tracks;
 
-		float m_Length;
-		float m_CurrentTime;
-		bool  m_Repeat;
+		uint32_t m_NumFrames;
+		uint32_t m_CurrentFrame;
+		float	 m_CurrentTime;
+		float    m_FrameLength;
+		bool     m_Repeat;
 	};
 	
 	

@@ -13,7 +13,7 @@ namespace XYZ {
 
         struct AnimationSequencer : public ImSequencer::SequenceInterface
         {
-            using AddKeyCallback = std::function<void(const SceneEntity&)>;
+            using AddKeyCallback = std::function<void(const SceneEntity&, uint32_t frame, uint32_t itemIndex)>;
 
             struct SequenceItem
             {
@@ -32,7 +32,11 @@ namespace XYZ {
                 AddKeyCallback           Callback;
                 size_t                   Height = 100;
             };
-
+            struct Selection
+            {
+                ImVector<ImCurveEdit::EditPoint> Points;
+                int                              ItemIndex;
+            };
 
             AnimationSequencer();
             virtual int         GetFrameMin() const override { return m_FrameMin; }
@@ -45,6 +49,7 @@ namespace XYZ {
             virtual void        Add(int type) override;
             virtual void        Del(int index) override { m_Items.erase(m_Items.begin() + index); }
             virtual void        Duplicate(int index) override { m_Items.push_back(m_Items[index]); }
+            virtual void        Copy() override;
 
             virtual size_t      GetCustomHeight(int index) override;
             virtual void        DoubleClick(int index) override;
@@ -53,7 +58,9 @@ namespace XYZ {
             
             void                AddSequencerItemType(const std::string& name, const SceneEntity& entity, const std::initializer_list<std::string>& subTypes, AddKeyCallback callback);
             void                DeleteSelectedPoints();
-
+            void                ClearSelection() { m_Selection.Points.clear(); }
+            const Selection&    GetSelection() const { return m_Selection; }
+            const Selection&    GetCopy() const { return m_Copy; }
  
             std::vector<SequencerItemType> m_SequencerItemTypes;
             std::vector<SequenceItem>      m_Items;
@@ -61,13 +68,10 @@ namespace XYZ {
             int                            m_FrameMax;
 
         private:
-            struct Selection
-            {
-                ImVector<ImCurveEdit::EditPoint> Points;
-                int                              ItemIndex;
-            };
+           
 
             Selection m_Selection;
+            Selection m_Copy;
         };
 	}
 }

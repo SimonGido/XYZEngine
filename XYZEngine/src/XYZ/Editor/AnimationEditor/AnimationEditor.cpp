@@ -11,6 +11,16 @@
 namespace XYZ {
 	namespace Editor {
 
+		namespace Helper {
+			template <typename ...Args>
+			static bool IntControl(const char* text, const char* id, int32_t& value, Args&& ...args)
+			{
+				ImGui::Text(text, std::forward<Args>(args)...);
+				ImGui::SameLine();
+				return ImGui::InputInt(id, &value);
+			}
+		}
+
 		AnimationEditor::AnimationEditor()
 			:
 			m_SelectedEntry(-1),
@@ -24,7 +34,7 @@ namespace XYZ {
 		}
 		void AnimationEditor::SetContext(const Ref<Animation>& context)
 		{
-			m_Context = context;		
+			m_Context = context;
 			//auto transformTrack = m_Context->FindTrack<TransformTrack>();
 			//if (transformTrack.Raw())
 			//{
@@ -58,18 +68,39 @@ namespace XYZ {
 							m_Playing = !m_Playing;
 						}
 						ImGui::SameLine();
+						Helper::IntControl("Frame Min", "##Frame Min", m_Sequencer.m_FrameMin);
 
-						ImGui::InputInt("Frame Min", &m_Sequencer.m_FrameMin);
 						ImGui::SameLine();
-						ImGui::InputInt("Frame Max", &m_Sequencer.m_FrameMax);
+						if (Helper::IntControl("Frame Max", "##Frame Max", m_Sequencer.m_FrameMax))
+						{
+							m_Context->SetNumFrames(static_cast<uint32_t>(m_Sequencer.m_FrameMax));
+						}
 						ImGui::SameLine();
-						ImGui::InputInt("Frame ", &m_CurrentFrame);
+						if (Helper::IntControl("Frame", "##Frame", m_CurrentFrame))
+						{
+							m_Context->SetCurrentFrame(static_cast<uint32_t>(m_CurrentFrame));
+						}
 						ImGui::SameLine();
 
-						bool addKey = false;
 						if (ImGui::Button("Add Key"))
 						{
-							addKey = true;
+							handleSelected();
+						}
+						ImGui::SameLine();
+						if (ImGui::Button("Copy"))
+						{
+							m_Sequencer.Copy();
+						}
+						ImGui::SameLine();
+						if (ImGui::Button("Paste"))
+						{
+							const auto& copy = m_Sequencer.GetCopy();
+							AnimationSequencer::SequenceItem& item = m_Sequencer.m_Items[copy.ItemIndex];
+							auto& seqItemType = m_Sequencer.m_SequencerItemTypes[item.Type];
+							for (auto& it : copy.Points)
+							{
+								seqItemType.Callback(seqItemType.Entity, m_CurrentFrame + it.pointIndex, static_cast<uint32_t>(copy.ItemIndex));
+							}
 						}
 						ImGui::PopItemWidth();
 
@@ -96,42 +127,73 @@ namespace XYZ {
 
 						if (Input::IsKeyPressed(KeyCode::KEY_DELETE))
 						{
+							const auto& selection = m_Sequencer.GetSelection();
+							AnimationSequencer::SequenceItem& item = m_Sequencer.m_Items[selection.ItemIndex];
+							auto& seqItemType = m_Sequencer.m_SequencerItemTypes[item.Type];
+							size_t index = 0;
+							bool selected = item.LineEdit.GetSelectedIndex(index);
+							if (selected
+								&& seqItemType.Name == "Transform"
+								&& seqItemType.Entity == selectedEntity)
+							{
+								const TransformTrack::PropertyType type = static_cast<TransformTrack::PropertyType>(index);
+								Ref<TransformTrack> track = m_Context->FindTrack<TransformTrack>(selectedEntity);
+
+								for (auto& point : selection.Points)
+								{
+									const auto& line = item.LineEdit.GetLines()[point.curveIndex];
+									uint32_t frame = static_cast<uint32_t>(line.Points[point.pointIndex].x);
+									track->RemoveKeyFrame(frame, type);
+								}
+							}
 							m_Sequencer.DeleteSelectedPoints();
 						}
-						handleSelected(addKey);
+						
 					}
 				}
 			}
 			ImGui::End();
 		}
-		void AnimationEditor::handleSelected(bool addKey)
+		void AnimationEditor::handleSelected()
 		{
-			if (m_SelectedEntry != -1 && addKey)
+			if (m_SelectedEntry != -1)
 			{
 				AnimationSequencer::SequenceItem& item = m_Sequencer.m_Items[m_SelectedEntry];
 				auto& seqItemType = m_Sequencer.m_SequencerItemTypes[item.Type];
-				seqItemType.Callback(seqItemType.Entity);
+				seqItemType.Callback(seqItemType.Entity, m_CurrentFrame, static_cast<uint32_t>(m_SelectedEntry));
+				m_Sequencer.ClearSelection();
 			}
 		}
 		void AnimationEditor::addTransformTrack(const SceneEntity& entity)
 		{
-			m_Sequencer.AddSequencerItemType("Transform", entity, { "Translation", "Rotation", "Scale" }, [&](const SceneEntity& targetEntity) {
-				AnimationSequencer::SequenceItem& item = m_Sequencer.m_Items[m_SelectedEntry];
+			m_Sequencer.AddSequencerItemType("Transform", entity, { "Translation", "Rotation", "Scale" }, [&](const SceneEntity& targetEntity, uint32_t frame, uint32_t itemIndex) {
+				AnimationSequencer::SequenceItem& item = m_Sequencer.m_Items[itemIndex];
 				size_t index = 0;
 				bool selected = item.LineEdit.GetSelectedIndex(index);
+				
 				if (targetEntity.IsValid())
 				{
 					if (selected)
 					{
-						item.LineEdit.AddPoint(index, ImVec2{ (float)m_CurrentFrame, 0.0f });
+						item.LineEdit.AddPoint(index, ImVec2{ (float)frame, 0.0f });
 						auto transformTrack = m_Context->FindTrack<TransformTrack>(targetEntity);
 						auto& transform = transformTrack->GetSceneEntity().GetComponent<TransformComponent>();
-						if (index == 0)
-							transformTrack->AddKeyFrame({ transform.Translation, m_CurrentFrame / 10.0f }, TransformTrack::PropertyType::Translation);
-						else if (index == 1)
-							transformTrack->AddKeyFrame({ transform.Rotation, m_CurrentFrame / 10.0f }, TransformTrack::PropertyType::Rotation);
-						else if (index == 2)
-							transformTrack->AddKeyFrame({ transform.Scale, m_CurrentFrame / 10.0f }, TransformTrack::PropertyType::Scale);
+						uint32_t currentFrame = static_cast<uint32_t>(frame);
+						const TransformTrack::PropertyType type = static_cast<TransformTrack::PropertyType>(index);
+						switch (type)
+						{
+						case XYZ::TransformTrack::PropertyType::Translation:
+							transformTrack->AddKeyFrame({ transform.Translation, currentFrame }, type);
+							break;
+						case XYZ::TransformTrack::PropertyType::Rotation:
+							transformTrack->AddKeyFrame({ transform.Rotation, currentFrame }, type);
+							break;
+						case XYZ::TransformTrack::PropertyType::Scale:
+							transformTrack->AddKeyFrame({ transform.Scale, currentFrame }, type);
+							break;
+						default:
+							break;
+						}
 						m_Context->UpdateLength();
 					}
 				}

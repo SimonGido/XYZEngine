@@ -16,7 +16,7 @@ namespace XYZ {
 			void OnUpdate(Timestep ts);
 			void OnImGuiRender(bool& open);
 		private:
-			void handleSelected(bool addKey);
+			void handleSelected();
 			void addTransformTrack(const SceneEntity& entity);
 
 		private:

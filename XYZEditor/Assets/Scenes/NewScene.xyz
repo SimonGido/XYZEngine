@@ -144,8 +144,8 @@ Entities:
     SceneTagComponent:
       Name: Orc
     TransformComponent:
-      Position: [-0.901456177, -0.337154627, -6.40418989e-08]
-      Rotation: [0, -0.00575234089, 0]
+      Position: [-0.901456177, -0.337154627, 0]
+      Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
       NextSibling: e7d90360-31d6-4302-8c60-edb5035bb481
@@ -155,8 +155,8 @@ Entities:
     SceneTagComponent:
       Name: Body
     TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
+      Position: [0.372654915, 0, 0]
+      Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteRenderer:
       MaterialAsset: 6b8ecf40-b3aa-4a26-a497-d7cdda43afba
@@ -225,7 +225,7 @@ Entities:
     SceneTagComponent:
       Name: Left Arm
     TransformComponent:
-      Position: [0.475980669, -0.0591729432, 0.0219726507]
+      Position: [0.475980669, -0.0591729432, 0]
       Rotation: [0, -0, 0.187078267]
       Scale: [0.49566412, 0.920000196, 1]
     SpriteRenderer:
@@ -243,8 +243,8 @@ Entities:
     SceneTagComponent:
       Name: Right Arm
     TransformComponent:
-      Position: [-0.67711401, -0.00145116623, -0.034786623]
-      Rotation: [-0.0462674461, 0, -0.669726908]
+      Position: [-0.67711401, -0.00145116623, 0]
+      Rotation: [0, 0, -0.669726908]
       Scale: [0.541578472, 1.00000548, 1.00000715]
     SpriteRenderer:
       MaterialAsset: 6b8ecf40-b3aa-4a26-a497-d7cdda43afba

@@ -13,12 +13,12 @@ namespace XYZ {
 		m_Type = TrackType::Transform;
 	}
 
-	bool TransformTrack::Update(float time)
+	bool TransformTrack::Update(uint32_t frame)
 	{
 		TransformComponent& transform = m_Entity.GetComponent<TransformComponent>();
-		bool finished = m_TranslationProperty.Update(transform.Translation, time);
-		finished	 &= m_RotationProperty.Update(transform.Rotation, time);
-		finished	 &= m_ScaleProperty.Update(transform.Scale, time);
+		bool finished = m_TranslationProperty.Update(transform.Translation, frame);
+		finished	 &= m_RotationProperty.Update(transform.Rotation, frame);
+		finished	 &= m_ScaleProperty.Update(transform.Scale, frame);
 		return finished;
 	}
 
@@ -29,9 +29,9 @@ namespace XYZ {
 		m_ScaleProperty.Reset();
 	}
 
-	float TransformTrack::Length() const
+	uint32_t TransformTrack::Length() const
 	{
-		float length = m_TranslationProperty.Length();
+		uint32_t length = m_TranslationProperty.Length();
 		length = std::max(length, m_RotationProperty.Length());
 		length = std::max(length, m_ScaleProperty.Length());
 		return length;
@@ -54,5 +54,28 @@ namespace XYZ {
 		default:
 			break;
 		}
+	}
+	void TransformTrack::RemoveKeyFrame(uint32_t frame, PropertyType type)
+	{
+		switch (type)
+		{
+		case XYZ::TransformTrack::PropertyType::Translation:
+			m_TranslationProperty.RemoveKeyFrame(frame);
+			break;
+		case XYZ::TransformTrack::PropertyType::Rotation:
+			m_RotationProperty.RemoveKeyFrame(frame);
+			break;
+		case XYZ::TransformTrack::PropertyType::Scale:
+			m_ScaleProperty.RemoveKeyFrame(frame);
+			break;
+		default:
+			break;
+		}
+	}
+	void TransformTrack::updatePropertyCurrentKey(uint32_t frame)
+	{
+		m_TranslationProperty.UpdateCurrentKey(frame);
+		m_RotationProperty.UpdateCurrentKey(frame);
+		m_ScaleProperty.UpdateCurrentKey(frame);
 	}
 }

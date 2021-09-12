@@ -15,15 +15,20 @@ namespace XYZ {
 		Track(SceneEntity entity);
 		virtual ~Track() = default;
 
-		virtual bool  Update(float time) = 0;
+		virtual bool  Update(uint32_t frame) = 0;
 		virtual void  Reset() = 0;
-		virtual float Length() const = 0;
+		virtual uint32_t Length() const = 0;
 
 		SceneEntity GetSceneEntity() const { return m_Entity; }
 		TrackType	GetType() const { return m_Type; }
+	private:
+		virtual void  updatePropertyCurrentKey(uint32_t frame) = 0;
+	
 	protected:
 		SceneEntity m_Entity;
 		TrackType   m_Type = TrackType::None;
+
+		friend class Animation;
 	};
 
 	template <typename T>
@@ -31,15 +36,15 @@ namespace XYZ {
 	{
 		bool operator <(const KeyFrame<T>& other) const
 		{
-			return EndTime < other.EndTime;
+			return EndFrame < other.EndFrame;
 		}
 		bool operator >(const KeyFrame<T>& other) const
 		{
-			return EndTime > other.EndTime;
+			return EndFrame > other.EndFrame;
 		}
 
-		T Value;
-		float EndTime = 0.0f;
+		T		 Value;
+		uint32_t EndFrame = 0;
 	};
 
 
@@ -49,22 +54,72 @@ namespace XYZ {
 	public:
 		Property() = default;
 
-		bool  Update(T& val, float time);
-		void  Reset() { m_CurrentFrame = 0; }
-		void  AddKeyFrame(const KeyFrame<T>& key) { m_Keys.push_back(key); }
-		float Length() const;
+		bool     Update(T& val, uint32_t frame);
+		void     UpdateCurrentKey(uint32_t frame);
+		void     Reset() { m_CurrentKey = 0; }
+		void     AddKeyFrame(const KeyFrame<T>& key);
+		void     RemoveKeyFrame(uint32_t frame);
+		uint32_t Length() const;
 
 	private:
+		bool isKeyInRange() const { return m_CurrentKey + 1 < m_Keys.size(); }
+	
+	private:
 		std::vector<KeyFrame<T>> m_Keys;
-		size_t m_CurrentFrame = 0;
+		size_t					 m_CurrentKey = 0;
 	};
 
 	
 	template<typename T>
-	inline float Property<T>::Length() const
+	inline void Property<T>::UpdateCurrentKey(uint32_t frame)
 	{
 		if (m_Keys.empty())
-			return 0.0f;
-		return m_Keys.back().EndTime;
+		{
+			m_CurrentKey = 0;
+			return;
+		}
+	
+		for (size_t i = 0; i < m_Keys.size() - 1; ++i)
+		{
+			const auto& key = m_Keys[i];
+			const auto& nextKey = m_Keys[i + 1];
+			if (frame > key.EndFrame && frame <= nextKey.EndFrame)
+			{
+				m_CurrentKey = i;
+				return;
+			}
+		}
+	}
+
+	template<typename T>
+	inline void Property<T>::AddKeyFrame(const KeyFrame<T>& key)
+	{
+		m_Keys.push_back(key);
+		std::sort(m_Keys.begin(), m_Keys.end());
+	}
+
+	template<typename T>
+	inline void Property<T>::RemoveKeyFrame(uint32_t frame)
+	{
+		for (auto it = m_Keys.begin(); it != m_Keys.end();)
+		{
+			if (it->EndFrame == frame)
+			{
+				it = m_Keys.erase(it);
+				return;
+			}
+			else
+			{
+				it++;
+			}
+		}
+	}
+
+	template<typename T>
+	inline uint32_t Property<T>::Length() const
+	{
+		if (m_Keys.empty())
+			return 0;
+		return m_Keys.back().EndFrame;
 	}
 }

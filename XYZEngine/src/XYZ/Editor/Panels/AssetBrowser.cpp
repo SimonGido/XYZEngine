@@ -252,7 +252,7 @@ namespace XYZ {
 				}
 				rightClickMenu();
 
-				char newName[64];
+				//char newName[64];
 				//ImGui::InputText("##Renamed", newName, 64);
 				ImGui::TextWrapped(name.c_str());
 				ImGui::NextColumn();

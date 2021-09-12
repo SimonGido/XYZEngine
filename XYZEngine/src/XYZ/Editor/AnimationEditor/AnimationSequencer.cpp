@@ -47,7 +47,11 @@ namespace XYZ {
 			size_t numLines = m_SequencerItemTypes[type].SubTypes.size();
 			for (size_t i = 0; i < numLines; ++i)
 				item.LineEdit.AddLine(i);
-		};
+		}
+		void AnimationSequencer::Copy()
+		{
+			m_Copy = m_Selection;
+		}
 
 		size_t AnimationSequencer::GetCustomHeight(int index)
 		{
@@ -121,15 +125,14 @@ namespace XYZ {
 		}
 		void AnimationSequencer::DeleteSelectedPoints()
 		{
-			for (auto& selected : m_Selection.Points)
+			std::sort(m_Selection.Points.begin(), m_Selection.Points.end(), [](const ImCurveEdit::EditPoint& a, const ImCurveEdit::EditPoint& b) {
+				return a.pointIndex < b.pointIndex;
+			});
+			for (int i = m_Selection.Points.size() - 1; i >= 0; --i)
 			{
-				// Indices of points with higher index were invalidated ( subtract one )
-				for (auto& selectedAfterDelete : m_Selection.Points)
-				{
-					if (selectedAfterDelete.pointIndex > selected.pointIndex)
-						selectedAfterDelete.pointIndex--;
-				}
-				m_Items[m_Selection.ItemIndex].LineEdit.DeletePoint(selected.curveIndex, selected.pointIndex);			
+				auto& itemLine    = m_Items[m_Selection.ItemIndex].LineEdit;
+				const auto& point = m_Selection.Points[i];
+				itemLine.DeletePoint(point.curveIndex, point.pointIndex);
 			}
 			m_Selection.Points.clear();
 		}
