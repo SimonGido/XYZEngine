@@ -70,9 +70,14 @@ namespace XYZ {
             bool entityDeleted = false;
             if (ImGui::BeginPopupContextItem())
             {
+                if (ImGui::MenuItem("Create Empty Entity"))
+                {
+                    m_Context->CreateEntity("Empty Entity", entity, GUID());
+                }
                 if (ImGui::MenuItem("Delete Entity"))
+                {
                     entityDeleted = true;
-
+                }
                 ImGui::EndPopup();
             }
             if (opened)

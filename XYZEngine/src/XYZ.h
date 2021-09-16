@@ -28,8 +28,7 @@
 
 //-----Animation-----//
 #include "XYZ/Animation/Animation.h"
-#include "XYZ/Animation/TransformTrack.h"
-#include "XYZ/Animation/SpriteRendererTrack.h"
+
 
 #include "XYZ/Particle/GPU/ParticleMaterial.h"
 #include "XYZ/Particle/GPU/ParticleSystem.h"

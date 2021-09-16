@@ -1,87 +1,72 @@
 #pragma once
 #include "XYZ/Asset/Asset.h"
 #include "XYZ/Scene/SceneEntity.h"
-#include "Track.h"
+#include "Property.h"
+#include "Animatable.h"
+#include "Property.h"
 
 #include <glm/glm.hpp>
 
-namespace XYZ {
+#include <any>
 
+namespace XYZ {
 
 	class Animation : public Asset
 	{
 	public:
 		Animation();
 
+		template <typename T>
+		void AddAnimatable(const SceneEntity& entity);
+
+		template <typename T>
+		void AddProperty(const SceneEntity entity, const SetPropertyRefFn& callback);
+
 		void Update(Timestep ts);
 		void UpdateLength();
 		void SetCurrentFrame(uint32_t frame);
 		void SetNumFrames(uint32_t numFrames) { m_NumFrames = numFrames; }
-		void SetRepeat(bool repeat) { m_Repeat = repeat; }
+		void SetRepeat(bool repeat)			  { m_Repeat = repeat; }
 
-		template <typename T>
-		void CreateTrack(SceneEntity entity);
-
-		template <typename T>
-		void RemoveTrack(SceneEntity entity);
-		
-		template <typename T>
-		Ref<T> FindTrack(SceneEntity entity) const;
-		
-		inline const std::vector<Ref<Track>>& GetTracks()	   const { return m_Tracks; }
 		inline uint32_t						  GetNumFrames()   const { return m_NumFrames; }
 		inline uint32_t						  GetTime()        const { return m_CurrentFrame; }
 		inline float						  GetFrameLength() const { return m_FrameLength; }
 		inline bool							  GetRepeat()	   const { return m_Repeat; }
+	
 	private:
-		std::vector<Ref<Track>> m_Tracks;
+		std::vector<Animatable>			 m_Animatables;
+		std::vector<Property<glm::vec3>> m_Vec3Properties;
+		std::vector<Property<std::any>>	 m_PointerProperties;
+		std::vector<Property<float>>     m_FloatProperties;
 
+
+		
 		uint32_t m_NumFrames;
 		uint32_t m_CurrentFrame;
 		float	 m_CurrentTime;
 		float    m_FrameLength;
 		bool     m_Repeat;
 	};
-	
-	
 	template<typename T>
-	inline void Animation::CreateTrack(SceneEntity entity)
+	inline void Animation::AddAnimatable(const SceneEntity& entity)
 	{
-		static_assert(std::is_base_of<Track, T>::value, "Type T must be derived from Track base");
-		m_Tracks.push_back(Ref<T>::Create(entity));
-	}
-
-	template<typename T>
-	inline void Animation::RemoveTrack(SceneEntity entity)
-	{
-		static_assert(std::is_base_of<Track, T>::value, "Type T must be derived from Track base");
-		for (auto it = m_Tracks.begin(); it != m_Tracks.end(); ++it)
+		bool canAdd = m_Animatables.empty();
+		for (const auto& it : m_Animatables)
 		{
-			if (dynamic_cast<T*>(it->Raw()))
+			if (!it.IsType<T>() || it.GetEntity() != entity)
 			{
-				if ((*it)->GetSceneEntity() == entity)
-				{
-					m_Tracks.erase(it);
-					return;
-				}
+				canAdd = true;
+				break;
 			}
 		}
+		XYZ_ASSERT(canAdd, "Animation already has animatable type for entity");
+		m_Animatables.emplace_back(entity, [](std::any& ref, SceneEntity ent) {
+			ref = &ent.GetComponent<T>();
+			
+		});
 	}
-
 	template<typename T>
-	inline Ref<T> Animation::FindTrack(SceneEntity entity) const
+	inline void Animation::AddProperty(const SceneEntity entity, const SetPropertyRefFn& callback)
 	{
-		static_assert(std::is_base_of<Track, T>::value, "Type T must be derived from Track base");
-		for (auto& track : m_Tracks)
-		{
-			if (dynamic_cast<const T*>(track.Raw()))
-			{
-				if (track->GetSceneEntity() == entity)
-				{
-					return track.As<T>();
-				}
-			}
-		}
-		return Ref<T>();
 	}
 }

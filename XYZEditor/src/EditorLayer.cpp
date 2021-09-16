@@ -133,8 +133,8 @@ namespace XYZ {
 		}
 		m_Inspector.OnImGuiRender();
 		m_SceneHierarchy.OnImGuiRender();
-		m_ScenePanel.OnImGuiRender();
 		m_SpriteEditor.OnImGuiRender(m_EditorOpen[SpriteEditor]);
+		m_ScenePanel.OnImGuiRender();
 		m_AnimationEditor.OnImGuiRender(m_EditorOpen[AnimationEditor]);
 		m_AssetBrowser.OnImGuiRender();
 		displayStats();
@@ -286,6 +286,9 @@ namespace XYZ {
 		animator.Animation = Ref<Animation>::Create();
 		m_AnimationEditor.SetContext(animator.Animation);
 		m_AnimationEditor.SetScene(m_Scene);
+
+		animator.Animation->AddAnimatable<TransformComponent>(entity);
+		animator.Animation->AddAnimatable<SpriteRenderer>(entity);
 	}
 
 }

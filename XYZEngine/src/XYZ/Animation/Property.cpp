@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Track.h"
+#include "Property.h"
 
 #include "XYZ/Renderer/SubTexture.h"
 
@@ -8,12 +8,9 @@
 #include <glm/gtx/compatibility.hpp>
 
 namespace XYZ {
-	Track::Track(SceneEntity entity)
-		: m_Entity(entity)
-	{}
 
 	template <>
-	bool Property<float>::Update(float& val, uint32_t frame)
+	bool Property<float>::Update(uint32_t frame)
 	{
 		if (isKeyInRange() && frame <= Length())
 		{
@@ -23,15 +20,16 @@ namespace XYZ {
 			uint32_t length = next.EndFrame - curr.EndFrame;
 			uint32_t passed = frame - curr.EndFrame;
 
-			val = glm::lerp(curr.Value, next.Value, (float)passed / (float)length);
+			*m_Value = glm::lerp(curr.Value, next.Value, (float)passed / (float)length);
 			if (frame >= next.EndFrame)
 				current++;
 			return false;
 		}
 		return true;
 	}
+
 	template <>
-	bool Property<glm::vec2>::Update(glm::vec2& val, uint32_t frame)
+	bool Property<glm::vec2>::Update(uint32_t frame)
 	{
 		if (isKeyInRange() && frame <= Length())
 		{
@@ -41,7 +39,7 @@ namespace XYZ {
 			uint32_t length = next.EndFrame - curr.EndFrame;
 			uint32_t passed = frame - curr.EndFrame;
 
-			val = glm::lerp(curr.Value, next.Value, (float)passed / (float)length);
+			*m_Value = glm::lerp(curr.Value, next.Value, (float)passed / (float)length);
 			if (frame >= next.EndFrame)
 				current++;
 			return false;
@@ -49,7 +47,7 @@ namespace XYZ {
 		return true;
 	}
 
-	bool Property<glm::vec3>::Update(glm::vec3& val, uint32_t frame)
+	bool Property<glm::vec3>::Update(uint32_t frame)
 	{	
 		if (isKeyInRange() && frame <= Length())
 		{
@@ -60,7 +58,7 @@ namespace XYZ {
 			uint32_t length = next.EndFrame - curr.EndFrame;
 			uint32_t passed = frame - curr.EndFrame;
 
-			val = glm::lerp(curr.Value, next.Value, (float)passed / (float)length);
+			*m_Value = glm::lerp(curr.Value, next.Value, (float)passed / (float)length);
 			if (frame >= next.EndFrame)
 				current++;
 			return false;
@@ -68,7 +66,7 @@ namespace XYZ {
 		return true;
 	}
 
-	bool Property<glm::vec4>::Update(glm::vec4& val, uint32_t frame)
+	bool Property<glm::vec4>::Update(uint32_t frame)
 	{
 		if (isKeyInRange() && frame <= Length())
 		{
@@ -78,7 +76,7 @@ namespace XYZ {
 			uint32_t length = next.EndFrame - curr.EndFrame;
 			uint32_t passed = frame - curr.EndFrame;
 
-			val = glm::lerp(curr.Value, next.Value, (float)passed / (float)length);
+			*m_Value = glm::lerp(curr.Value, next.Value, (float)passed / (float)length);
 			if (frame >= next.EndFrame)
 				current++;
 			return false;
@@ -86,7 +84,7 @@ namespace XYZ {
 		return true;
 	}
 
-	bool Property<Ref<SubTexture>>::Update(Ref<SubTexture>& val, uint32_t frame)
+	bool Property<Ref<SubTexture>>::Update(uint32_t frame)
 	{
 		if (isKeyInRange() && frame <= Length())
 		{
@@ -94,7 +92,7 @@ namespace XYZ {
 			const KeyFrame<Ref<SubTexture>>& curr = m_Keys[current];
 			if (frame >= curr.EndFrame)
 			{
-				val = m_Keys[current + 1].Value;
+				*m_Value = m_Keys[current + 1].Value;
 				current++;
 			}
 			return false;

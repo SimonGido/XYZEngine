@@ -9,8 +9,6 @@
 #include "XYZ/Scene/Scene.h"
 #include "XYZ/Scene/Components.h"
 #include "XYZ/Animation/Animation.h"
-#include "XYZ/Animation/TransformTrack.h"
-#include "XYZ/Animation/SpriteRendererTrack.h"
 
 
 #include "XYZ/Scene/SceneSerializer.h"
@@ -454,21 +452,7 @@ namespace XYZ {
 
 		out << YAML::Key << "Tracks";
 		out << YAML::Value << YAML::BeginSeq;
-		const auto& tracks = anim->GetTracks();
-		for (const auto& track : tracks)
-		{
-			switch (track->GetType())
-			{
-			case TrackType::Transform:
-				break;
-
-			case TrackType::SpriteRenderer:
-				break;
-
-			default:
-				break;
-			}
-		}
+		
 		out << YAML::EndSeq;
 
 		out << YAML::EndMap; // Animation

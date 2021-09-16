@@ -20,7 +20,7 @@ namespace XYZ {
 			void dragAndDrop(SceneEntity entity);
 		private:
 			SceneEntitySelectedCallback m_Callback;
-			Ref<Scene> m_Context;
+			Ref<Scene>				    m_Context;
 		};
 	}
 }

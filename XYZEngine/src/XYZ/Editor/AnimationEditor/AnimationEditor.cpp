@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "AnimationEditor.h"
 
-#include "XYZ/Animation/TransformTrack.h"
 #include "XYZ/Scene/Components.h"
 #include "XYZ/Core/Input.h"
 
@@ -50,7 +49,7 @@ namespace XYZ {
 		{
 			if (m_Playing && m_Context.Raw())
 			{
-				m_Context->Update(ts);
+				//m_Context->Update(ts);
 			}
 		}
 		void AnimationEditor::OnImGuiRender(bool& open)
@@ -110,16 +109,16 @@ namespace XYZ {
 
 						if (ImGui::BeginPopup("AddProperty"))
 						{
-							if (!m_Context->FindTrack<TransformTrack>(selectedEntity).Raw())
-							{
-								if (ImGui::MenuItem("Transform"))
-								{
-									m_Context->CreateTrack<TransformTrack>(selectedEntity);
-									addTransformTrack(selectedEntity);
-									m_Sequencer.Add(m_Sequencer.GetItemTypeCount() - 1);
-									ImGui::CloseCurrentPopup();
-								}
-							}
+							//if (!m_Context->FindTrack<TransformTrack>(selectedEntity).Raw())
+							//{
+							//	if (ImGui::MenuItem("Transform"))
+							//	{
+							//		m_Context->CreateTrack<TransformTrack>(selectedEntity);
+							//		addTransformTrack(selectedEntity);
+							//		m_Sequencer.Add(m_Sequencer.GetItemTypeCount() - 1);
+							//		ImGui::CloseCurrentPopup();
+							//	}
+							//}
 							ImGui::EndPopup();
 						}
 
@@ -132,21 +131,21 @@ namespace XYZ {
 							auto& seqItemType = m_Sequencer.m_SequencerItemTypes[item.Type];
 							size_t index = 0;
 							bool selected = item.LineEdit.GetSelectedIndex(index);
-							if (selected
-								&& seqItemType.Name == "Transform"
-								&& seqItemType.Entity == selectedEntity)
-							{
-								const TransformTrack::PropertyType type = static_cast<TransformTrack::PropertyType>(index);
-								Ref<TransformTrack> track = m_Context->FindTrack<TransformTrack>(selectedEntity);
-
-								for (auto& point : selection.Points)
-								{
-									const auto& line = item.LineEdit.GetLines()[point.curveIndex];
-									uint32_t frame = static_cast<uint32_t>(line.Points[point.pointIndex].x);
-									track->RemoveKeyFrame(frame, type);
-								}
-							}
-							m_Sequencer.DeleteSelectedPoints();
+							//if (selected
+							//	&& seqItemType.Name == "Transform"
+							//	&& seqItemType.Entity == selectedEntity)
+							//{
+							//	const TransformTrack::PropertyType type = static_cast<TransformTrack::PropertyType>(index);
+							//	Ref<TransformTrack> track = m_Context->FindTrack<TransformTrack>(selectedEntity);
+							//
+							//	for (auto& point : selection.Points)
+							//	{
+							//		const auto& line = item.LineEdit.GetLines()[point.curveIndex];
+							//		uint32_t frame = static_cast<uint32_t>(line.Points[point.pointIndex].x);
+							//		track->RemoveKeyFrame(frame, type);
+							//	}
+							//}
+							//m_Sequencer.DeleteSelectedPoints();
 						}
 						
 					}
@@ -175,26 +174,26 @@ namespace XYZ {
 				{
 					if (selected)
 					{
-						item.LineEdit.AddPoint(index, ImVec2{ (float)frame, 0.0f });
-						auto transformTrack = m_Context->FindTrack<TransformTrack>(targetEntity);
-						auto& transform = transformTrack->GetSceneEntity().GetComponent<TransformComponent>();
-						uint32_t currentFrame = static_cast<uint32_t>(frame);
-						const TransformTrack::PropertyType type = static_cast<TransformTrack::PropertyType>(index);
-						switch (type)
-						{
-						case XYZ::TransformTrack::PropertyType::Translation:
-							transformTrack->AddKeyFrame({ transform.Translation, currentFrame }, type);
-							break;
-						case XYZ::TransformTrack::PropertyType::Rotation:
-							transformTrack->AddKeyFrame({ transform.Rotation, currentFrame }, type);
-							break;
-						case XYZ::TransformTrack::PropertyType::Scale:
-							transformTrack->AddKeyFrame({ transform.Scale, currentFrame }, type);
-							break;
-						default:
-							break;
-						}
-						m_Context->UpdateLength();
+						//item.LineEdit.AddPoint(index, ImVec2{ (float)frame, 0.0f });
+						//auto transformTrack = m_Context->FindTrack<TransformTrack>(targetEntity);
+						//auto& transform = transformTrack->GetSceneEntity().GetComponent<TransformComponent>();
+						//uint32_t currentFrame = static_cast<uint32_t>(frame);
+						//const TransformTrack::PropertyType type = static_cast<TransformTrack::PropertyType>(index);
+						//switch (type)
+						//{
+						//case XYZ::TransformTrack::PropertyType::Translation:
+						//	transformTrack->AddKeyFrame({ transform.Translation, currentFrame }, type);
+						//	break;
+						//case XYZ::TransformTrack::PropertyType::Rotation:
+						//	transformTrack->AddKeyFrame({ transform.Rotation, currentFrame }, type);
+						//	break;
+						//case XYZ::TransformTrack::PropertyType::Scale:
+						//	transformTrack->AddKeyFrame({ transform.Scale, currentFrame }, type);
+						//	break;
+						//default:
+						//	break;
+						//}
+						//m_Context->UpdateLength();
 					}
 				}
 			});

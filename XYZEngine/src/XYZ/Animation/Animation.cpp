@@ -19,6 +19,10 @@ namespace XYZ {
 
 	void Animation::Update(Timestep ts)
 	{
+		for (auto& animatable : m_Animatables)
+			animatable.SetReference();
+		for (auto& vec3Prop : m_Vec3Properties)
+			vec3.
 		if (m_CurrentFrame >= m_NumFrames)
 		{
 			if (!m_Repeat)
@@ -26,32 +30,22 @@ namespace XYZ {
 
 			m_CurrentTime = 0.0f;
 			m_CurrentFrame = 0;
-			for (auto& track : m_Tracks)
-				track->Reset();
 		}
-		for (auto& track : m_Tracks)
-			track->Update(m_CurrentFrame);
 
 		m_CurrentTime += ts;
-		m_CurrentFrame = m_CurrentTime / m_FrameLength;
+		m_CurrentFrame = static_cast<uint32_t>(std::floor(m_CurrentTime / m_FrameLength));
 	}
 
 	void Animation::UpdateLength()
 	{
-		for (const auto& track : m_Tracks)
-			m_NumFrames = std::max(m_NumFrames, track->Length());
-		SetCurrentFrame(std::min(m_CurrentFrame, m_NumFrames));
+		
 	}
 
 	void Animation::SetCurrentFrame(uint32_t frame)
 	{
 		m_CurrentFrame = std::min(m_NumFrames, frame);
 		m_CurrentTime = m_CurrentFrame * m_FrameLength;
-		for (auto& track : m_Tracks)
-		{
-			track->updatePropertyCurrentKey(m_CurrentFrame);
-			track->Update(m_CurrentFrame);
-		}
+		
 	}
 
 }

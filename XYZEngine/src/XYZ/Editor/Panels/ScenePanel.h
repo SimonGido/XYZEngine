@@ -31,18 +31,18 @@ namespace XYZ {
 			bool onKeyPressed(KeyPressedEvent& e);
 
 			std::pair<glm::vec3, glm::vec3> castRay(float mx, float my) const;
-			std::pair<float, float> getMouseViewportSpace() const;
-			std::deque<SceneEntity> getSelection(const Ray& ray);
+			std::pair<float, float>		    getMouseViewportSpace() const;
+			std::deque<SceneEntity>		    getSelection(const Ray& ray);
 
 			void handlePanelResize(const glm::vec2& newSize);
 			void handleSelection(const glm::vec2& mousePosition);
 			void handleEntityTransform(SceneEntity entity);
 		private:
 			SceneEntitySelectedCallback m_Callback;
-			Ref<Scene> m_Context;
-			glm::vec2 m_ViewportSize;
-			glm::vec2 m_ViewportBounds[2];
-			Ref<Texture> m_Texture;
+			Ref<Scene>					m_Context;
+			glm::vec2				    m_ViewportSize;
+			glm::vec2				    m_ViewportBounds[2];
+			Ref<Texture>				m_Texture;
 
 			enum { PlayButton, StopButton, NumButtons};
 			glm::vec4 m_ButtonTexCoords[NumButtons];

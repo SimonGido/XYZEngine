@@ -122,13 +122,13 @@ namespace XYZ {
 				if (m_Callback)
 					m_Callback(m_Context->GetSelectedEntity());
 				
-				std::deque<SceneEntity> newSelection = std::move(getSelection(ray));
+				std::deque<SceneEntity> newSelection = getSelection(ray);
 				if (!CompareDeques(m_Selection, newSelection))
 				{
 					m_Selection = std::move(newSelection);
 					m_SelectionIndex = 0;
 				}
-				else if (m_SelectionIndex + 1 == m_Selection.size())
+				else if (static_cast<size_t>(m_SelectionIndex) + 1 == m_Selection.size())
 				{
 					m_SelectionIndex = 0;
 				}

@@ -2,34 +2,10 @@
 #include "XYZ/Core/Ref.h"
 #include "XYZ/Scene/SceneEntity.h"
 
+#include "Animatable.h"
+
 namespace XYZ {
 
-	enum class TrackType
-	{
-		Transform, SpriteRenderer, None
-	};
-
-	class Track : public RefCount
-	{
-	public:
-		Track(SceneEntity entity);
-		virtual ~Track() = default;
-
-		virtual bool  Update(uint32_t frame) = 0;
-		virtual void  Reset() = 0;
-		virtual uint32_t Length() const = 0;
-
-		SceneEntity GetSceneEntity() const { return m_Entity; }
-		TrackType	GetType() const { return m_Type; }
-	private:
-		virtual void  updatePropertyCurrentKey(uint32_t frame) = 0;
-	
-	protected:
-		SceneEntity m_Entity;
-		TrackType   m_Type = TrackType::None;
-
-		friend class Animation;
-	};
 
 	template <typename T>
 	struct KeyFrame
@@ -48,30 +24,51 @@ namespace XYZ {
 	};
 
 
+
+	using SetPropertyRefFn = std::function<void(Animatable& animatable, void* ref)>;
+	
 	template <typename T>
 	class Property
 	{
-	public:
-		Property() = default;
+	public:	
+		Property(Animatable* animatable, const SetPropertyRefFn& callback, const SceneEntity& entity);
 
-		bool     Update(T& val, uint32_t frame);
-		void     UpdateCurrentKey(uint32_t frame);
-		void     Reset() { m_CurrentKey = 0; }
-		void     AddKeyFrame(const KeyFrame<T>& key);
-		void     RemoveKeyFrame(uint32_t frame);
-		uint32_t Length() const;
+		bool		 Update(uint32_t frame);
+		void		 SetReference();
+		void		 SetCurrentKey(uint32_t frame);
+		void		 Reset() { m_CurrentKey = 0; }
 
+		void		 AddKeyFrame(const KeyFrame<T>& key);
+		void		 RemoveKeyFrame(uint32_t frame);
+		uint32_t	 Length() const;
 	private:
 		bool isKeyInRange() const { return m_CurrentKey + 1 < m_Keys.size(); }
 	
 	private:
+		T*						 m_Value;
+		Animatable*				 m_Animatable;
+		SceneEntity				 m_Entity;
+		SetPropertyRefFn		 m_SetPropertyCallback;
 		std::vector<KeyFrame<T>> m_Keys;
 		size_t					 m_CurrentKey = 0;
 	};
 
 	
 	template<typename T>
-	inline void Property<T>::UpdateCurrentKey(uint32_t frame)
+	inline Property<T>::Property(Animatable* animatable, const SetPropertyRefFn& callback, const SceneEntity& entity)
+		:
+		m_Animatable(animatable),
+		m_Entity(entity),
+		m_SetPropertyCallback(callback)
+	{
+	}
+	template<typename T>
+	inline void Property<T>::SetReference()
+	{
+		m_SetPropertyCallback(*m_Animatable, *m_Value);
+	}
+	template<typename T>
+	inline void Property<T>::SetCurrentKey(uint32_t frame)
 	{
 		if (m_Keys.empty())
 		{

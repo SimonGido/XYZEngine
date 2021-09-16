@@ -80,7 +80,7 @@ namespace XYZ {
 		entity.EmplaceComponent<SceneTagComponent>(name);
 		entity.EmplaceComponent<TransformComponent>(glm::vec3(0.0f, 0.0f, 0.0f));
 		auto& sceneRelation = m_ECS.GetComponent<Relationship>(m_SceneEntity);
-		Relationship::SetupRelation(m_SceneEntity, id, m_ECS);
+		Relationship::SetupRelation(parent, id, m_ECS);
 
 		m_Entities.push_back(id);
 		return entity;
