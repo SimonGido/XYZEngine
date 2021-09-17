@@ -68,8 +68,6 @@ namespace XYZ {
 		m_Client.OnEvent(event);
 	}
 	CustomClient::CustomClient()
-		:
-		m_CameraController(16.0f / 9.0f)
 	{
 	}
 	void CustomClient::Update(Timestep ts)
@@ -106,12 +104,10 @@ namespace XYZ {
 			}
 		}
 
-		m_CameraController.OnUpdate(ts);
 
 		Renderer::Clear();
 		Renderer::SetClearColor({ 0.1f,0.1f,0.1f,1.0f });
-		Renderer2D::BeginScene(m_CameraController.GetCamera().GetViewProjectionMatrix(), m_CameraController.GetCamera().GetPosition());
-
+	
 		for (auto& player : m_Players)
 		{
 			Renderer2D::SubmitQuad(glm::vec3(player.Position.x, player.Position.y, 0.0f), player.Size, player.Color);
@@ -135,6 +131,6 @@ namespace XYZ {
 	}
 	void CustomClient::OnEvent(Event& event)
 	{
-		m_CameraController.OnEvent(event);
+		
 	}
 }

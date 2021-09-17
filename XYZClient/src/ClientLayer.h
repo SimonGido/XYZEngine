@@ -36,7 +36,7 @@ namespace XYZ {
 		void OnEvent(Event& event);
 		void SetID(uint32_t id) { m_ID = id; }
 	private:
-		OrthographicCameraController m_CameraController;
+
 		std::vector<Player>			 m_Players;
 		uint32_t					 m_ID;
 		static constexpr float		 sc_Speed = 5.0f;

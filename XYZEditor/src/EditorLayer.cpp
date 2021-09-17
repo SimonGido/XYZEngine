@@ -16,7 +16,10 @@ namespace XYZ {
 	EditorLayer::~EditorLayer()
 	{
 	}
-
+	static void tmpPrintHaha(const Test& test)
+	{
+		std::cout << test.m_X << std::endl;
+	}
 	void EditorLayer::OnAttach()
 	{
 		ScriptEngine::Init("Assets/Scripts/XYZScript.dll");
@@ -29,8 +32,6 @@ namespace XYZ {
 		uint32_t windowHeight = Application::Get().GetWindow().GetHeight();
 		SceneRenderer::SetViewportSize(windowWidth, windowHeight);
 		m_Scene->SetViewportSize(windowWidth, windowHeight);		
-
-	
 
 		m_AssetBrowser.SetAssetSelectedCallback([&](const Ref<Asset>& asset) {
 			 m_AssetInspectorContext.SetContext(asset);

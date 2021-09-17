@@ -10,6 +10,58 @@
 
 
 namespace XYZ {
+	struct Test
+	{
+		Test() = default;
+		Test(int x)
+		{
+			m_X = new int();
+			*m_X = x;
+		}
+		~Test()
+		{
+			delete m_X;
+			m_X = nullptr;
+			std::cout << "Destructor" << std::endl;
+		}
+		Test(const Test& other)
+		{
+			m_X = new int();
+			*m_X = *other.m_X;
+			std::cout << "Copy constructor" << std::endl;
+		}
+		Test(Test&& other) noexcept
+		{
+			m_X = other.m_X;
+			other.m_X = nullptr;
+			std::cout << "Move constructor" << std::endl;
+		}
+		Test& operator=(const Test& other)
+		{
+			delete m_X;
+			m_X = new int();
+			*m_X = *other.m_X;
+			std::cout << "Copy assignment" << std::endl;
+			return *this;
+		}
+
+		Test& operator=(Test&& other) noexcept
+		{
+			delete m_X;
+			m_X = other.m_X;
+			other.m_X = nullptr;
+			std::cout << "Move assignment" << std::endl;
+			return *this;
+		}
+
+		void MemberCall()
+		{
+			std::cout << "Member Call" << std::endl;
+		}
+
+		int* m_X = nullptr;
+	};
+
 	class EditorLayer : public Layer
 	{
 	public:
@@ -35,6 +87,7 @@ namespace XYZ {
 		void cpuParticleExample(SceneEntity entity);
 		void animationExample(SceneEntity entity);
 
+		void printHaha() { std::cout << 5 << std::endl; }
 	private:
 		enum Editors
 		{

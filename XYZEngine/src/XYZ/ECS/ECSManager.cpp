@@ -49,4 +49,29 @@ namespace XYZ {
 		m_ComponentManager.Clear();
 		m_EntityManager.Clear();
 	}
+	const Signature& ECSManager::GetEntitySignature(Entity entity) const
+	{
+		XYZ_ASSERT(IsValid(entity), "Entity is invalid");
+		return m_EntityManager.GetSignature(entity);
+	}
+	bool ECSManager::Contains(Entity entity, uint16_t componentID) const
+	{
+		XYZ_ASSERT(IsValid(entity), "Entity is invalid");
+		auto& signature = m_EntityManager.GetSignature(entity);
+		if (signature.Size() <= componentID)
+			return false;
+		return signature[componentID];
+	}
+	bool ECSManager::IsValid(Entity entity) const
+	{
+		return m_EntityManager.IsValid(entity);
+	}
+	IComponentStorage* ECSManager::GetIStorage(uint16_t index)
+	{
+		return m_ComponentManager.GetIStorage(index);
+	}
+	const IComponentStorage* ECSManager::GetIStorage(uint16_t index) const
+	{
+		return m_ComponentManager.GetIStorage(index);
+	}
 }

@@ -21,8 +21,7 @@ namespace XYZ {
 	{
 		for (auto& animatable : m_Animatables)
 			animatable.SetReference();
-		for (auto& vec3Prop : m_Vec3Properties)
-			vec3.
+		
 		if (m_CurrentFrame >= m_NumFrames)
 		{
 			if (!m_Repeat)

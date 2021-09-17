@@ -22,7 +22,6 @@ namespace XYZ {
 		bool onWindowResize(WindowResizeEvent& event);
 
 	private:
-		OrthographicCameraController m_CameraController;
 
 		Renderer2DStats m_RendererStats;
 		float			m_Timestep;

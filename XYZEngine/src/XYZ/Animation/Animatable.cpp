@@ -3,16 +3,15 @@
 
 namespace XYZ {
 
-	Animatable::Animatable(SceneEntity entity, const SetRefCallbackFn& setReferenceCallback)
+	Animatable::Animatable(SceneEntity entity)
 		:
-		m_SceneEntity(entity),
-		m_SetRefCallback(setReferenceCallback)
+		m_SceneEntity(entity)
 	{
 		SetReference();
 	}
 	void Animatable::SetReference()
 	{
 		XYZ_ASSERT(m_SceneEntity.IsValid(), "Invalid entity");
-		m_SetRefCallback(m_ComponentReference, m_SceneEntity);
+		
 	}
 }

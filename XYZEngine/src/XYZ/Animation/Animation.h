@@ -60,10 +60,7 @@ namespace XYZ {
 			}
 		}
 		XYZ_ASSERT(canAdd, "Animation already has animatable type for entity");
-		m_Animatables.emplace_back(entity, [](std::any& ref, SceneEntity ent) {
-			ref = &ent.GetComponent<T>();
-			
-		});
+		m_Animatables.emplace_back(entity);
 	}
 	template<typename T>
 	inline void Animation::AddProperty(const SceneEntity entity, const SetPropertyRefFn& callback)
