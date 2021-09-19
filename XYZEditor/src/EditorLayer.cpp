@@ -16,10 +16,7 @@ namespace XYZ {
 	EditorLayer::~EditorLayer()
 	{
 	}
-	static void tmpPrintHaha(const Test& test)
-	{
-		std::cout << test.m_X << std::endl;
-	}
+
 	void EditorLayer::OnAttach()
 	{
 		ScriptEngine::Init("Assets/Scripts/XYZScript.dll");
@@ -288,8 +285,10 @@ namespace XYZ {
 		m_AnimationEditor.SetContext(animator.Animation);
 		m_AnimationEditor.SetScene(m_Scene);
 
-		animator.Animation->AddAnimatable<TransformComponent>(entity);
-		animator.Animation->AddAnimatable<SpriteRenderer>(entity);
+		animator.Animation->SetActiveScene(m_Scene);
+		animator.Animation->AddProperty<TransformComponent, glm::vec3>(entity, "Translation");
+		animator.Animation->RemoveProperty<TransformComponent, glm::vec3> (entity, "Translation");
+		animator.Animation->Update(Timestep());
 	}
 
 }

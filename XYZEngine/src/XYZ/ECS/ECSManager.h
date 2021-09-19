@@ -65,34 +65,63 @@ namespace XYZ {
 		template <typename T>
 		uint32_t GetComponentIndex(Entity entity) const;
 		
-
 		template <typename T>
 		Entity FindEntity(const T& component) const;
 		
-		template <typename T, typename FuncT, typename ...Args>
-		void	 AddOnConstruction(FuncT&& func, Args&& ...args);
 		
-		template <typename T, typename Type>
+		
+		template <typename FuncT, typename ...Args>
+		void	 AddOnConstruction(FuncT&& func, Args&& ...args);
+
+		template <typename Type>
 		void	 AddOnConstruction(void(Type::* func)(), Type* instance);
-	
-		template <typename T, typename FuncT>
+
+		template <typename FuncT>
 		void	 RemoveOnConstruction(FuncT&& func);
 
-		template <typename T, typename Type>
+		template <typename Type>
 		void	 RemoveOnConstruction(void(Type::* func)(), Type* instance);
 
 
-		template <typename T, typename FuncT, typename ...Args>
+		template <typename FuncT, typename ...Args>
 		void	 AddOnDestruction(FuncT&& func, Args&& ...args);
 
-		template <typename T, typename Type>
+		template <typename Type>
 		void	 AddOnDestruction(void(Type::* func)(), Type* instance);
 
-		template <typename T, typename FuncT>
+		template <typename FuncT>
 		void	 RemoveOnDestruction(FuncT&& func);
 
-		template <typename T, typename Type>
+		template <typename Type>
 		void	 RemoveOnDestruction(void(Type::* func)(), Type* instance);
+
+
+
+
+		template <typename T, typename FuncT, typename ...Args>
+		void	 AddOnComponentConstruction(FuncT&& func, Args&& ...args);
+		
+		template <typename T, typename Type>
+		void	 AddOnComponentConstruction(void(Type::* func)(), Type* instance);
+	
+		template <typename T, typename FuncT>
+		void	 RemoveOnComponentConstruction(FuncT&& func);
+
+		template <typename T, typename Type>
+		void	 RemoveOnComponentConstruction(void(Type::* func)(), Type* instance);
+
+
+		template <typename T, typename FuncT, typename ...Args>
+		void	 AddOnComponentDestruction(FuncT&& func, Args&& ...args);
+
+		template <typename T, typename Type>
+		void	 AddOnComponentDestruction(void(Type::* func)(), Type* instance);
+
+		template <typename T, typename FuncT>
+		void	 RemoveOnComponentDestruction(FuncT&& func);
+
+		template <typename T, typename Type>
+		void	 RemoveOnComponentDestruction(void(Type::* func)(), Type* instance);
 
 
 
@@ -102,10 +131,32 @@ namespace XYZ {
 
 		uint16_t		GetNumberOfCreatedStorages() const { return m_ComponentManager.GetNumberOfCreatedStorages(); }
 		static uint16_t GetNumberOfRegisteredComponents() { return ComponentManager::s_NextComponentTypeID; }
+	
+	private:
+		void executeOnConstruction();
+		void executeOnDestruction();
 	private:
 		ComponentManager m_ComponentManager;
 		EntityManager	 m_EntityManager;
-	
+		
+		struct Callback
+		{
+			Callback() = default;
+			Callback(const std::function<void()>& callable, void* funcPtr, void* instance)
+				:
+				Callable(callable),
+				FunctionPointer(funcPtr),
+				Instance(instance)
+			{
+			}
+			std::function<void()> Callable;
+			void* FunctionPointer = nullptr;
+			void* Instance = nullptr;
+		};
+
+		std::vector<Callback> m_OnConstruction;
+		std::vector<Callback> m_OnDestruction;
+
 		friend class ECSSerializer;
 	};
 	
@@ -122,6 +173,7 @@ namespace XYZ {
 		XYZ_ASSERT(!signature[Component<T>::ID()], "Entity already contains component");
 		signature.Set(Component<T>::ID(), true);
 		auto& result = m_ComponentManager.EmplaceComponent<T>(entity, std::forward<Args>(args)...);
+		executeOnConstruction();
 		return result;
 	}
 
@@ -138,6 +190,7 @@ namespace XYZ {
 		XYZ_ASSERT(!signature[Component<T>::ID()], "Entity already contains component");
 		signature.Set(Component<T>::ID(), true);
 		auto& result = m_ComponentManager.AddComponent<T>(entity, component);
+		executeOnConstruction();
 		return result;
 	}
 
@@ -150,6 +203,7 @@ namespace XYZ {
 
 		signature.Set(Component<T>::ID(), false);
 		m_ComponentManager.RemoveComponent<T>(entity, signature);
+		executeOnDestruction();
 		return true;
 	}
 	template<typename T>
@@ -221,50 +275,134 @@ namespace XYZ {
 		return Entity();
 	}
 
-	template<typename T, typename FuncT, typename ...Args>
+	template<typename FuncT, typename ...Args>
 	inline void ECSManager::AddOnConstruction(FuncT&& func, Args && ...args)
+	{
+		m_OnConstruction.emplace_back([=]() {
+			func((args)...);
+		}, func, nullptr);
+	}
+
+	template<typename Type>
+	inline void ECSManager::AddOnConstruction(void(Type::* func)(), Type* instance)
+	{
+		m_OnConstruction.emplace_back([=]() {
+			(instance->*func)();
+		}, &func, instance);
+	}
+
+	template<typename FuncT>
+	inline void ECSManager::RemoveOnConstruction(FuncT&& func)
+	{
+		for (size_t i = 0; i < m_OnConstruction.size(); ++i)
+		{
+			if (m_OnConstruction[i].FunctionPointer == func)
+			{
+				m_OnConstruction.erase(m_OnConstruction.begin() + i);
+				return;
+			}
+		}
+	}
+
+	template<typename Type>
+	inline void ECSManager::RemoveOnConstruction(void(Type::* func)(), Type* instance)
+	{
+		for (size_t i = 0; i < m_OnConstruction.size(); ++i)
+		{
+			if (m_OnConstruction[i].FunctionPointer == &func && m_OnConstruction[i].Instance == instance)
+			{
+				m_OnConstruction.erase(m_OnConstruction.begin() + i);
+				return;
+			}
+		}
+	}
+
+	template<typename FuncT, typename ...Args>
+	inline void ECSManager::AddOnDestruction(FuncT&& func, Args && ...args)
+	{
+		m_OnDestruction.emplace_back([=]() {
+			func((args)...);
+		}, func, nullptr);
+	}
+
+	template<typename Type>
+	inline void ECSManager::AddOnDestruction(void(Type::* func)(), Type* instance)
+	{
+		m_OnDestruction.emplace_back([=]() {
+			(instance->*func)();
+		}, &func, instance);
+	}
+
+	template<typename FuncT>
+	inline void ECSManager::RemoveOnDestruction(FuncT&& func)
+	{
+		for (size_t i = 0; i < m_OnDestruction.size(); ++i)
+		{
+			if (m_OnDestruction[i].FunctionPointer == func)
+			{
+				m_OnDestruction.erase(m_OnDestruction.begin() + i);
+				return;
+			}
+		}
+	}
+
+	template<typename Type>
+	inline void ECSManager::RemoveOnDestruction(void(Type::* func)(), Type* instance)
+	{
+		for (size_t i = 0; i < m_OnDestruction.size(); ++i)
+		{
+			if (m_OnDestruction[i].FunctionPointer == &func && m_OnDestruction[i].Instance == instance)
+			{
+				m_OnDestruction.erase(m_OnDestruction.begin() + i);
+				return;
+			}
+		}
+	}
+
+	template<typename T, typename FuncT, typename ...Args>
+	inline void ECSManager::AddOnComponentConstruction(FuncT&& func, Args && ...args)
 	{
 		GetStorage<T>().AddOnConstruction(func, std::forward<Args>(args)...);
 	}
 
 	template<typename T, typename Type>
-	inline void ECSManager::AddOnConstruction(void(Type::* func)(), Type* instance)
+	inline void ECSManager::AddOnComponentConstruction(void(Type::* func)(), Type* instance)
 	{
 		GetStorage<T>().AddOnConstruction(func, instance);
 	}
 
 	template<typename T, typename FuncT>
-	inline void ECSManager::RemoveOnConstruction(FuncT&& func)
+	inline void ECSManager::RemoveOnComponentConstruction(FuncT&& func)
 	{
 		GetStorage<T>().RemoveOnConstruction(func);
 	}
 
 	template<typename T, typename Type>
-	inline void ECSManager::RemoveOnConstruction(void(Type::* func)(), Type* instance)
+	inline void ECSManager::RemoveOnComponentConstruction(void(Type::* func)(), Type* instance)
 	{
 		GetStorage<T>().RemoveOnConstruction(func, instance);
 	}
 
 	template<typename T, typename FuncT, typename ...Args>
-	inline void ECSManager::AddOnDestruction(FuncT&& func, Args && ...args)
+	inline void ECSManager::AddOnComponentDestruction(FuncT&& func, Args && ...args)
 	{
 		GetStorage<T>().AddOnDestruction(func, std::forward<Args>(args)...);
 	}
 
 	template<typename T, typename Type>
-	inline void ECSManager::AddOnDestruction(void(Type::* func)(), Type* instance)
+	inline void ECSManager::AddOnComponentDestruction(void(Type::* func)(), Type* instance)
 	{
 		GetStorage<T>().AddOnDestruction(func, instance);
 	}
 
 	template<typename T, typename FuncT>
-	inline void ECSManager::RemoveOnDestruction(FuncT&& func)
+	inline void ECSManager::RemoveOnComponentDestruction(FuncT&& func)
 	{
 		GetStorage<T>().RemoveOnDestruction(func);
 	}
 
 	template<typename T, typename Type>
-	inline void ECSManager::RemoveOnDestruction(void(Type::* func)(), Type* instance)
+	inline void ECSManager::RemoveOnComponentDestruction(void(Type::* func)(), Type* instance)
 	{
 		GetStorage<T>().RemoveOnDestruction(func, instance);
 	}

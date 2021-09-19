@@ -3,11 +3,6 @@
 
 namespace XYZ {
 
-	struct Variable
-	{
-		std::string Name;
-		std::function<void(void*)> GetReferenceFunc;
-	};
 
 	class Animatable
 	{

@@ -24,48 +24,97 @@ namespace XYZ {
 	};
 
 
-
-	using SetPropertyRefFn = std::function<void(Animatable& animatable, void* ref)>;
+	template <typename T>
+	using SetPropertyRefFn = std::function<void(SceneEntity entity, T* ref, const std::string& varName)>;
 	
 	template <typename T>
 	class Property
 	{
 	public:	
-		Property(Animatable* animatable, const SetPropertyRefFn& callback, const SceneEntity& entity);
+		Property(const SetPropertyRefFn<T>& callback, const SceneEntity& entity, const std::string& valueName, const std::string& componentName);
+		Property(const Property<T>& other);
+		Property(Property<T>&& other) noexcept;
+		Property<T>& operator=(const Property<T>& other);
+		Property<T>& operator=(Property<T>&& other) noexcept;
 
-		bool		 Update(uint32_t frame);
-		void		 SetReference();
-		void		 SetCurrentKey(uint32_t frame);
-		void		 Reset() { m_CurrentKey = 0; }
 
-		void		 AddKeyFrame(const KeyFrame<T>& key);
-		void		 RemoveKeyFrame(uint32_t frame);
-		uint32_t	 Length() const;
+		bool		       Update(uint32_t frame);
+		void		       SetReference();
+		void		       SetCurrentKey(uint32_t frame);
+		void		       Reset() { m_CurrentKey = 0; }
+					       
+		void		       AddKeyFrame(const KeyFrame<T>& key);
+		void		       RemoveKeyFrame(uint32_t frame);
+		
+		uint32_t		   Length()			  const;
+	    SceneEntity		   GetSceneEntity()   const { return m_Entity; }
+		const std::string& GetValueName()     const { return m_ValueName; }
+		const std::string& GetComponentName() const { return m_ComponentName; }
+
 	private:
 		bool isKeyInRange() const { return m_CurrentKey + 1 < m_Keys.size(); }
 	
 	private:
 		T*						 m_Value;
-		Animatable*				 m_Animatable;
 		SceneEntity				 m_Entity;
-		SetPropertyRefFn		 m_SetPropertyCallback;
+		std::string				 m_ValueName;
+		std::string				 m_ComponentName;
+		SetPropertyRefFn<T>		 m_SetPropertyCallback;
+
 		std::vector<KeyFrame<T>> m_Keys;
 		size_t					 m_CurrentKey = 0;
 	};
 
 	
 	template<typename T>
-	inline Property<T>::Property(Animatable* animatable, const SetPropertyRefFn& callback, const SceneEntity& entity)
+	inline Property<T>::Property(const SetPropertyRefFn<T>& callback, const SceneEntity& entity, const std::string& valueName, const std::string& componentName)
 		:
-		m_Animatable(animatable),
 		m_Entity(entity),
-		m_SetPropertyCallback(callback)
+		m_SetPropertyCallback(callback),
+		m_ValueName(valueName),
+		m_ComponentName(componentName)
 	{
+	}
+	template<typename T>
+	inline Property<T>::Property(const Property<T>& other)
+		:
+		m_Entity(other.m_Entity),
+		m_SetPropertyCallback(other.m_SetPropertyCallback),
+		m_ValueName(other.m_ValueName),
+		m_ComponentName(other.m_ComponentName)
+	{
+	}
+	template<typename T>
+	inline Property<T>::Property(Property<T>&& other) noexcept
+		:
+		m_Entity(std::move(other.m_Entity)),
+		m_SetPropertyCallback(std::move(other.m_SetPropertyCallback)),
+		m_ValueName(std::move(other.m_ValueName)),
+		m_ComponentName(std::move(other.m_ComponentName))
+	{
+	}
+	template<typename T>
+	inline Property<T>& Property<T>::operator=(const Property<T>& other)
+	{
+		m_Entity = other.m_Entity;
+		m_SetPropertyCallback = other.m_SetPropertyCallback;
+		m_ValueName = other.m_ValueName;
+		m_ComponentName = other.m_ComponentName;
+		return *this;
+	}
+	template<typename T>
+	inline Property<T>& Property<T>::operator=(Property<T>&& other) noexcept
+	{
+		m_Entity = std::move(other.m_Entity);
+		m_SetPropertyCallback = std::move(other.m_SetPropertyCallback);
+		m_ValueName = std::move(other.m_ValueName);
+		m_ComponentName = std::move(other.m_ComponentName);
+		return *this;
 	}
 	template<typename T>
 	inline void Property<T>::SetReference()
 	{
-		m_SetPropertyCallback(*m_Animatable, *m_Value);
+		m_SetPropertyCallback(m_Entity, m_Value, m_ValueName);
 	}
 	template<typename T>
 	inline void Property<T>::SetCurrentKey(uint32_t frame)

@@ -39,7 +39,7 @@
 #define DEBUG_BREAK raise(0); 
 //#endif
 
-#define XYZ_ASSERT(x, ...) { if(!(x)) { XYZ_CORE_ERROR("Assertion Failed: ", __VA_ARGS__ ); DEBUG_BREAK; } }
+#define XYZ_ASSERT(x, ...) { if(!(x)) { XYZ_CORE_ERROR("Assertion Failed: {0}", __VA_ARGS__ ); DEBUG_BREAK; } }
 #else
 #define XYZ_ASSERT(x, ...) 
 #endif

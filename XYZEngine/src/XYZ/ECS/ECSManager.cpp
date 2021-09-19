@@ -6,19 +6,25 @@ namespace XYZ {
 	ECSManager::ECSManager(const ECSManager& other)
 		:
 		m_ComponentManager(other.m_ComponentManager),
-		m_EntityManager(other.m_EntityManager)
+		m_EntityManager(other.m_EntityManager),
+		m_OnConstruction(other.m_OnConstruction),
+		m_OnDestruction(other.m_OnDestruction)
 	{
 	}
 	ECSManager::ECSManager(ECSManager&& other) noexcept
 		:
 		m_ComponentManager(std::move(other.m_ComponentManager)),
-		m_EntityManager(std::move(other.m_EntityManager))
+		m_EntityManager(std::move(other.m_EntityManager)),
+		m_OnConstruction(std::move(other.m_OnConstruction)),
+		m_OnDestruction(std::move(other.m_OnDestruction))
 	{
 	}
 	ECSManager& ECSManager::operator=(ECSManager&& other) noexcept
 	{
 		m_ComponentManager = std::move(other.m_ComponentManager);
 		m_EntityManager = std::move(other.m_EntityManager);
+		m_OnConstruction = std::move(other.m_OnConstruction);
+		m_OnDestruction = std::move(other.m_OnDestruction);
 		return *this;
 	}
 	Entity ECSManager::CopyEntity(Entity entity)
@@ -31,6 +37,7 @@ namespace XYZ {
 			storage->CopyComponentData(entity, out);
 			storage->AddRawComponent(result, out);
 		}
+		executeOnConstruction();
 		return result;
 	}
 	Entity ECSManager::CreateEntity()
@@ -43,11 +50,14 @@ namespace XYZ {
 		auto& signature = m_EntityManager.GetSignature(entity);
 		m_ComponentManager.EntityDestroyed(entity, signature);
 		m_EntityManager.DestroyEntity(entity); 
+		executeOnDestruction();
 	}
 	void ECSManager::Clear()
 	{
 		m_ComponentManager.Clear();
 		m_EntityManager.Clear();
+		m_OnConstruction.clear();
+		m_OnDestruction.clear();
 	}
 	const Signature& ECSManager::GetEntitySignature(Entity entity) const
 	{
@@ -73,5 +83,15 @@ namespace XYZ {
 	const IComponentStorage* ECSManager::GetIStorage(uint16_t index) const
 	{
 		return m_ComponentManager.GetIStorage(index);
+	}
+	void ECSManager::executeOnConstruction()
+	{
+		for (auto& callback : m_OnConstruction)
+			callback.Callable();
+	}
+	void ECSManager::executeOnDestruction()
+	{
+		for (auto& callback : m_OnDestruction)
+			callback.Callable();
 	}
 }

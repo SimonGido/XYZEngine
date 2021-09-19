@@ -17,6 +17,16 @@ namespace XYZ {
 
 	private:
 		uint32_t m_ID;
-
+	};
+}
+namespace std {
+	template<>
+	struct hash<XYZ::Entity>
+	{
+		std::size_t operator()(XYZ::Entity entity) const noexcept
+		{
+			const std::hash<uint32_t> hasher;
+			return hasher(static_cast<uint32_t>(entity));
+		}
 	};
 }

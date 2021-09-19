@@ -6,6 +6,7 @@
 #include "XYZ/Particle/GPU/ParticleSystem.h"
 #include "XYZ/Particle/CPU/ParticleSystemCPU.h"
 
+#include "XYZ/Reflection/Reflection.h"
 
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Script/ScriptPublicField.h"
@@ -52,6 +53,7 @@ namespace XYZ {
 
 		static std::tuple<glm::vec3, glm::vec3, glm::vec3> DecomposeTransformToComponents(const glm::mat4& transform);
 	};
+	REFLECTABLE(TransformComponent, Translation, Rotation, Scale, WorldTransform);
 
 	struct SceneTagComponent 
 	{
