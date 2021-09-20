@@ -48,7 +48,7 @@ namespace XYZ {
 		void CreateStorage();
 		
 		template <typename T>
-		ComponentStorage<T>& GetStorage();
+		ComponentStorage<T>&	  GetStorage();
 		
 		template <typename T>
 		const ComponentStorage<T>& GetStorage() const;
@@ -96,8 +96,6 @@ namespace XYZ {
 		void	 RemoveOnDestruction(void(Type::* func)(), Type* instance);
 
 
-
-
 		template <typename T, typename FuncT, typename ...Args>
 		void	 AddOnComponentConstruction(FuncT&& func, Args&& ...args);
 		
@@ -110,6 +108,8 @@ namespace XYZ {
 		template <typename T, typename Type>
 		void	 RemoveOnComponentConstruction(void(Type::* func)(), Type* instance);
 
+		template <typename T, typename Type>
+		void	 RemoveOnComponentConstructionOfInstance(Type * instance);
 
 		template <typename T, typename FuncT, typename ...Args>
 		void	 AddOnComponentDestruction(FuncT&& func, Args&& ...args);
@@ -123,7 +123,8 @@ namespace XYZ {
 		template <typename T, typename Type>
 		void	 RemoveOnComponentDestruction(void(Type::* func)(), Type* instance);
 
-
+		template <typename T, typename Type>
+		void	 RemoveOnComponentDestructionOfInstance(Type* instance);
 
 		uint32_t GetEntityVersion(Entity entity) const { return m_EntityManager.GetVersion(entity); }
 		uint32_t GetNumberOfEntities() const		   { return m_EntityManager.GetNumEntities(); }
@@ -383,6 +384,12 @@ namespace XYZ {
 		GetStorage<T>().RemoveOnConstruction(func, instance);
 	}
 
+	template<typename T, typename Type>
+	inline void ECSManager::RemoveOnComponentConstructionOfInstance(Type* instance)
+	{
+		GetStorage<T>().RemoveOnDestructionOfInstance(func, instance);
+	}
+
 	template<typename T, typename FuncT, typename ...Args>
 	inline void ECSManager::AddOnComponentDestruction(FuncT&& func, Args && ...args)
 	{
@@ -405,6 +412,12 @@ namespace XYZ {
 	inline void ECSManager::RemoveOnComponentDestruction(void(Type::* func)(), Type* instance)
 	{
 		GetStorage<T>().RemoveOnDestruction(func, instance);
+	}
+
+	template<typename T, typename Type>
+	inline void ECSManager::RemoveOnComponentDestructionOfInstance(Type* instance)
+	{
+		GetStorage<T>().RemoveOnDestructionOfInstance(func, instance);
 	}
 
 }

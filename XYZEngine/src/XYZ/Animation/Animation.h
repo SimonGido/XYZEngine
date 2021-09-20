@@ -38,18 +38,22 @@ namespace XYZ {
 	
 	private:
 		template <typename ValueType>
-		void addPropertySpecialized(const Property<ValueType>& prop);
+		Property<ValueType>& addPropertySpecialized(const Property<ValueType>& prop);
 		
 		template <typename ValueType>
-		void removePropertySpecialized(const SceneEntity& entity, const std::string& valueName, const std::string& componentName);
+		void				 removePropertySpecialized(const SceneEntity& entity, const std::string& valueName, const std::string& componentName);
 		
 		template <typename T>
-		static void removeFromContainer(std::vector<T>& container, const SceneEntity& entity, const std::string& valueName, const std::string& componentName);
+		static void			 removeFromContainer(std::vector<T>& container, const SceneEntity& entity, const std::string& valueName, const std::string& componentName);
 
 		void updatePropertyReferences();
 		void clearProperties();
 	private:
 		Ref<Scene>						 m_ActiveScene;
+
+		// TODO: Registration of components counter, add callback by component ID instead of Type
+		std::vector<uint32_t>			 m_RegisteredComponents;
+
 		std::vector<Property<glm::vec4>> m_Vec4Properties;
 		std::vector<Property<glm::vec3>> m_Vec3Properties;
 		std::vector<Property<glm::vec2>> m_Vec2Properties;

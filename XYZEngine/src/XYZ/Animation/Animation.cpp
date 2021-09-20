@@ -92,24 +92,28 @@ namespace XYZ {
 	}
 
 	template<>
-	void Animation::addPropertySpecialized(const Property<glm::vec4>& prop)
+	Property<glm::vec4>& Animation::addPropertySpecialized(const Property<glm::vec4>& prop)
 	{
 		m_Vec4Properties.push_back(prop);
+		return m_Vec4Properties.back();
 	}
 	template<>
-	void Animation::addPropertySpecialized(const Property<glm::vec3>& prop)
+	Property<glm::vec3>& Animation::addPropertySpecialized(const Property<glm::vec3>& prop)
 	{
 		m_Vec3Properties.push_back(prop);
+		return m_Vec3Properties.back();
 	}
 	template<>
-	void Animation::addPropertySpecialized(const Property<glm::vec2>& prop)
+	Property<glm::vec2>& Animation::addPropertySpecialized(const Property<glm::vec2>& prop)
 	{
 		m_Vec2Properties.push_back(prop);
+		return m_Vec2Properties.back();
 	}
 	template<>
-	void Animation::addPropertySpecialized(const Property<float>& prop)
+	Property<float>& Animation::addPropertySpecialized(const Property<float>& prop)
 	{
 		m_FloatProperties.push_back(prop);
+		return m_FloatProperties.back();
 	}
 
 	template <>

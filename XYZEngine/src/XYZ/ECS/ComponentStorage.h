@@ -8,6 +8,10 @@ namespace XYZ {
 	class IComponentStorage
 	{
 	public:
+		IComponentStorage() = default;
+		IComponentStorage(const IComponentStorage& other);
+		IComponentStorage(IComponentStorage&& other) noexcept;
+
 		virtual					  ~IComponentStorage() = default;
 		virtual void			   Clear() = 0;
 		virtual IComponentStorage* Move(uint8_t* buffer) = 0;
@@ -27,6 +31,51 @@ namespace XYZ {
 		virtual uint16_t		   ID() const = 0;
 
 		virtual const std::vector<Entity>& GetDataEntityMap() const = 0;
+
+		template <typename FuncT, typename ...Args>
+		void	 AddOnConstruction(FuncT&& func, Args&& ...args);
+
+		template <typename Type>
+		void	 AddOnConstruction(void(Type::* func)(), Type* instance);
+
+		template <typename FuncT>
+		void	 RemoveOnConstruction(FuncT&& func);
+
+		template <typename Type>
+		void	 RemoveOnConstruction(void(Type::* func)(), Type* instance);
+
+		template <typename Type>
+		void	 RemoveOnConstructionOfInstance(Type* instance);
+
+
+		template <typename FuncT, typename ...Args>
+		void	 AddOnDestruction(FuncT&& func, Args&& ...args);
+
+		template <typename Type>
+		void	 AddOnDestruction(void(Type::* func)(), Type* instance);
+
+		template <typename FuncT>
+		void	 RemoveOnDestruction(FuncT&& func);
+
+		template <typename Type>
+		void	 RemoveOnDestruction(void(Type::* func)(), Type* instance);
+
+		template <typename Type>
+		void	 RemoveOnDestructionOfInstance(Type* instance);
+
+	protected:
+		struct Callback
+		{
+			Callback() = default;
+			Callback(const std::function<void()>& callable, void* funcPtr, void* instance);
+
+			std::function<void()> Callable;
+			void* FunctionPointer = nullptr;
+			void* Instance = nullptr;
+		};
+
+		std::vector<Callback> m_OnConstruction;
+		std::vector<Callback> m_OnDestruction;
 	};
 
 	template <typename T>
@@ -71,32 +120,6 @@ namespace XYZ {
 		const T& operator[](size_t index) const;
 		
 
-		template <typename FuncT, typename ...Args>
-		void	 AddOnConstruction(FuncT&& func, Args&& ...args);
-
-		template <typename Type>
-		void	 AddOnConstruction(void(Type::* func)(), Type* instance);
-
-		template <typename FuncT>
-		void	 RemoveOnConstruction(FuncT&& func);
-
-		template <typename Type>
-		void	 RemoveOnConstruction(void(Type::* func)(), Type* instance);
-
-
-		template <typename FuncT, typename ...Args>
-		void	 AddOnDestruction(FuncT&& func, Args&& ...args);
-
-		template <typename Type>
-		void	 AddOnDestruction(void(Type::* func)(), Type* instance);
-
-		template <typename FuncT>
-		void	 RemoveOnDestruction(FuncT&& func);
-
-		template <typename Type>
-		void	 RemoveOnDestruction(void(Type::* func)(), Type* instance);
-
-
 		typename std::vector<T>::iterator begin() { return m_Data.begin(); }
 		typename std::vector<T>::iterator end() { return m_Data.end(); }
 		typename std::vector<T>::const_iterator begin() const { return m_Data.begin(); }
@@ -107,38 +130,155 @@ namespace XYZ {
 		std::vector<Entity>   m_DataEntityMap;
 		std::vector<uint32_t> m_EntityDataMap;
 
-		struct Callback
-		{
-			Callback() = default;
-			Callback(const std::function<void()>& callable, void* funcPtr, void* instance);
-			
-			std::function<void()> Callable;
-			void*				  FunctionPointer = nullptr;
-			void*				  Instance		  = nullptr;
-		};
-
-		std::vector<Callback> m_OnConstruction;
-		std::vector<Callback> m_OnDestruction;
-
+	
 		friend class ECSSerializer;
 	};
+
+	template<typename FuncT, typename ...Args>
+	inline void IComponentStorage::AddOnConstruction(FuncT&& func, Args && ...args)
+	{
+		m_OnConstruction.emplace_back([=]() {
+			func((args)...);
+		}, func, nullptr);
+	}
+
+
+	template<typename Type>
+	inline void IComponentStorage::AddOnConstruction(void(Type::* func)(), Type* instance)
+	{
+		m_OnConstruction.emplace_back([=]() {
+			(instance->*func)();
+		}, &func, instance);
+	}
+
+	template<typename FuncT>
+	inline void IComponentStorage::RemoveOnConstruction(FuncT&& func)
+	{
+		for (size_t i = 0; i < m_OnConstruction.size(); ++i)
+		{
+			if (m_OnConstruction[i].FunctionPointer == func)
+			{
+				m_OnConstruction.erase(m_OnConstruction.begin() + i);
+				return;
+			}
+		}
+	}
+
+	template<typename Type>
+	inline void IComponentStorage::RemoveOnConstruction(void(Type::* func)(), Type* instance)
+	{
+		for (size_t i = 0; i < m_OnConstruction.size(); ++i)
+		{
+			if (m_OnConstruction[i].FunctionPointer == &func && m_OnConstruction[i].Instance == instance)
+			{
+				m_OnConstruction.erase(m_OnConstruction.begin() + i);
+				return;
+			}
+		}
+	}
+
+	template<typename Type>
+	inline void IComponentStorage::RemoveOnConstructionOfInstance(Type* instance)
+	{
+		for (auto it = m_OnConstruction.begin(); it != m_OnConstruction.end();)
+		{
+			if (it->Instance == instance)
+			{
+				it = m_OnCon
+					struction.erase(it);
+			}
+			else
+			{
+				it++;
+			}
+		}
+	}
+
+	template<typename FuncT, typename ...Args>
+	inline void IComponentStorage::AddOnDestruction(FuncT&& func, Args && ...args)
+	{
+		m_OnDestruction.emplace_back([=]() {
+			func((args)...);
+		}, func, nullptr);
+	}
+
+	template<typename Type>
+	inline void IComponentStorage::AddOnDestruction(void(Type::* func)(), Type* instance)
+	{
+		m_OnDestruction.emplace_back([=]() {
+			(instance->*func)();
+		}, &func, instance);
+	}
+
+
+	template<typename FuncT>
+	inline void IComponentStorage::RemoveOnDestruction(FuncT&& func)
+	{
+		for (size_t i = 0; i < m_OnDestruction.size(); ++i)
+		{
+			if (m_OnDestruction[i].FunctionPointer == func)
+			{
+				m_OnDestruction.erase(m_OnDestruction.begin() + i);
+				return;
+			}
+		}
+	}
+
+	template<typename Type>
+	inline void IComponentStorage::RemoveOnDestruction(void(Type::* func)(), Type* instance)
+	{
+		for (size_t i = 0; i < m_OnDestruction.size(); ++i)
+		{
+			if (m_OnDestruction[i].FunctionPointer == &func && m_OnDestruction[i].Instance == instance)
+			{
+				m_OnDestruction.erase(m_OnDestruction.begin() + i);
+				return;
+			}
+		}
+	}
+
+	template<typename Type>
+	inline void IComponentStorage::RemoveOnDestructionOfInstance(Type* instance)
+	{
+		for (auto it = m_OnDestruction.begin(); it != m_OnDestruction.end();)
+		{
+			if (it->Instance == instance)
+			{
+				it = m_OnDestruction.erase(it);
+			}
+			else
+			{
+				it++;
+			}
+		}
+	}
+
+
+	inline IComponentStorage::Callback::Callback(const std::function<void()>& callable, void* funcPtr, void* instance)
+		:
+		Callable(callable),
+		FunctionPointer(funcPtr),
+		Instance(instance)
+	{
+	}
+
+
+
 	template<typename T>
 	inline ComponentStorage<T>::ComponentStorage(const ComponentStorage<T>& other)
 		:
+		IComponentStorage(other),
 		m_Data(other.m_Data),
 		m_DataEntityMap(other.m_DataEntityMap),
-		m_EntityDataMap(other.m_EntityDataMap),
-		m_OnConstruction(other.m_OnConstruction),
-		m_OnDestruction(other.m_OnDestruction)
+		m_EntityDataMap(other.m_EntityDataMap)
 	{}
 	template<typename T>
 	inline ComponentStorage<T>::ComponentStorage(ComponentStorage<T> && other) noexcept
 		:
+		IComponentStorage(std::move(other)),
 		m_Data(std::move(other.m_Data)),
 		m_DataEntityMap(std::move(other.m_DataEntityMap)),
-		m_EntityDataMap(std::move(other.m_EntityDataMap)),
-		m_OnConstruction(std::move(other.m_OnConstruction)),
-		m_OnDestruction(std::move(other.m_OnDestruction))
+		m_EntityDataMap(std::move(other.m_EntityDataMap))
 	{}
 	template<typename T>
 	inline void ComponentStorage<T>::Clear()
@@ -309,103 +449,6 @@ namespace XYZ {
 	}
 	
 
-	template<typename T>
-	template<typename FuncT, typename ...Args>
-	inline void ComponentStorage<T>::AddOnConstruction(FuncT&& func, Args && ...args)
-	{
-		m_OnConstruction.emplace_back([=]() {
-			func((args)...);
-		}, func, nullptr);
-	}
 
-	template<typename T>
-	template<typename Type>
-	inline void ComponentStorage<T>::AddOnConstruction(void(Type::* func)(), Type* instance)
-	{
-		m_OnConstruction.emplace_back([=]() {
-			(instance->*func)();
-		}, &func, instance);
-	}
-
-	template<typename T>
-	template<typename FuncT>
-	inline void ComponentStorage<T>::RemoveOnConstruction(FuncT&& func)
-	{
-		for (size_t i = 0; i < m_OnConstruction.size(); ++i)
-		{
-			if (m_OnConstruction[i].FunctionPointer == func)
-			{
-				m_OnConstruction.erase(m_OnConstruction.begin() + i);
-				return;
-			}
-		}
-	}
-	template<typename T>
-	template<typename Type>
-	inline void ComponentStorage<T>::RemoveOnConstruction(void(Type::* func)(), Type* instance)
-	{
-		for (size_t i = 0; i < m_OnConstruction.size(); ++i)
-		{
-			if (m_OnConstruction[i].FunctionPointer == &func && m_OnConstruction[i].Instance == instance)
-			{
-				m_OnConstruction.erase(m_OnConstruction.begin() + i);
-				return;
-			}
-		}
-	}
-
-	template<typename T>
-	template<typename FuncT, typename ...Args>
-	inline void ComponentStorage<T>::AddOnDestruction(FuncT&& func, Args && ...args)
-	{
-		m_OnDestruction.emplace_back([=]() {
-			func((args)...);
-		}, func, nullptr);
-	}
-
-	template<typename T>
-	template<typename Type>
-	inline void ComponentStorage<T>::AddOnDestruction(void(Type::* func)(), Type* instance)
-	{
-		m_OnDestruction.emplace_back([=]() {
-			(instance->*func)();
-		}, &func, instance);
-	}
-
-	template<typename T>
-	template<typename FuncT>
-	inline void ComponentStorage<T>::RemoveOnDestruction(FuncT&& func)
-	{
-		for (size_t i = 0; i < m_OnDestruction.size(); ++i)
-		{
-			if (m_OnDestruction[i].FunctionPointer == func)
-			{
-				m_OnDestruction.erase(m_OnDestruction.begin() + i);
-				return;
-			}
-		}
-	}
-	template<typename T>
-	template<typename Type>
-	inline void ComponentStorage<T>::RemoveOnDestruction(void(Type::* func)(), Type* instance)
-	{
-		for (size_t i = 0; i < m_OnDestruction.size(); ++i)
-		{
-			if (m_OnDestruction[i].FunctionPointer == &func && m_OnDestruction[i].Instance == instance)
-			{
-				m_OnDestruction.erase(m_OnDestruction.begin() + i);
-				return;
-			}
-		}
-	}
-
-	template<typename T>
-	inline ComponentStorage<T>::Callback::Callback(const std::function<void()>& callable, void* funcPtr, void* instance)
-		:
-		Callable(callable),
-		FunctionPointer(funcPtr),
-		Instance(instance)
-	{
-	}
 
 }

@@ -286,8 +286,12 @@ namespace XYZ {
 		m_AnimationEditor.SetScene(m_Scene);
 
 		animator.Animation->SetActiveScene(m_Scene);
-		animator.Animation->AddProperty<TransformComponent, glm::vec3>(entity, "Translation");
-		animator.Animation->RemoveProperty<TransformComponent, glm::vec3> (entity, "Translation");
+		for (size_t i = 0; i < 10; ++i)
+			animator.Animation->AddProperty<TransformComponent, glm::vec3>(entity, "Translation");
+		
+		Stopwatch timer;
+		entity.EmplaceComponent<CircleCollider2DComponent>();
+		std::cout << timer.Stop() << std::endl;
 		animator.Animation->Update(Timestep());
 	}
 

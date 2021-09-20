@@ -1,5 +1,6 @@
 #pragma once
 #include "XYZ/Scene/SceneEntity.h"
+#include "XYZ/ECS/ComponentWrapper.h"
 
 namespace XYZ {
 

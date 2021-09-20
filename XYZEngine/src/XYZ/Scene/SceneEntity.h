@@ -72,7 +72,11 @@ namespace XYZ {
 		template <typename T, typename Type>
 		void	 RemoveOnComponentConstruction(void(Type::* func)(), Type* instance);
 
+		template <typename T, typename Type>
+		void	 RemoveOnComponentConstructionOfInstance(Type* instance);
 
+
+		
 		template <typename T, typename FuncT, typename ...Args>
 		void	 AddOnComponentDestruction(FuncT&& func, Args&& ...args);
 
@@ -84,6 +88,10 @@ namespace XYZ {
 
 		template <typename T, typename Type>
 		void	 RemoveOnComponentDestruction(void(Type::* func)(), Type* instance);
+
+		template <typename T, typename Type>
+		void	 RemoveOnComponentDestructionOfInstance(Type* instance);
+
 
 		Entity		 ID() const { return m_ID; }
 
@@ -194,6 +202,11 @@ namespace XYZ {
 	{
 		m_Scene->m_ECS.RemoveOnComponentConstruction<T, Type>(func, instance);
 	}
+	template<typename T, typename Type>
+	inline void SceneEntity::RemoveOnComponentConstructionOfInstance(Type* instance)
+	{
+		m_Scene->m_ECS.RemoveOnComponentConstructionOfInstance<T, Type>(instance);
+	}
 	template<typename T, typename FuncT, typename ...Args>
 	inline void SceneEntity::AddOnComponentDestruction(FuncT&& func, Args && ...args)
 	{
@@ -213,6 +226,11 @@ namespace XYZ {
 	inline void SceneEntity::RemoveOnComponentDestruction(void(Type::* func)(), Type* instance)
 	{
 		m_Scene->m_ECS.RemoveOnComponentDestruction<T, Type>(func, instance);
+	}
+	template<typename T, typename Type>
+	inline void SceneEntity::RemoveOnComponentDestructionOfInstance(Type* instance)
+	{
+		m_Scene->m_ECS.RemoveOnComponentDestructionOfInstance<T, Type>(instance);
 	}
 }
 
