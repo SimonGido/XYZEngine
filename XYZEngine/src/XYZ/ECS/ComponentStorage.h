@@ -184,8 +184,7 @@ namespace XYZ {
 		{
 			if (it->Instance == instance)
 			{
-				it = m_OnCon
-					struction.erase(it);
+				it = m_OnConstruction.erase(it);
 			}
 			else
 			{
@@ -368,6 +367,8 @@ namespace XYZ {
 		m_DataEntityMap.push_back(entity);
 		m_EntityDataMap[(size_t)entity] = (uint32_t)m_Data.size();
 		m_Data.emplace_back(std::forward<Args>(args)...);
+		for (auto& callback : m_OnConstruction)
+			callback.Callable();
 		return m_Data.back();
 	}
 

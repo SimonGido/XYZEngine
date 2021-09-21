@@ -14,33 +14,13 @@ namespace XYZ {
 		m_CurrentTime(0.0f),
 		m_FrameLength(0.05f),
 		m_Repeat(true)
-	{
+	{ 
 	}
 
 	Animation::~Animation()
 	{
-		if (m_ActiveScene.Raw())
-		{
-			m_ActiveScene->GetECS().RemoveOnConstruction<Animation>(&Animation::updatePropertyReferences, this);
-			m_ActiveScene->GetECS().RemoveOnDestruction<Animation>(&Animation::updatePropertyReferences, this);
-		}
 	}
 
-	void Animation::SetActiveScene(const Ref<Scene>& scene)
-	{
-		if (m_ActiveScene.Raw() != scene.Raw())
-		{
-			if (m_ActiveScene.Raw())
-			{
-				clearProperties();
-				m_ActiveScene->GetECS().RemoveOnConstruction<Animation>(&Animation::updatePropertyReferences, this);
-				m_ActiveScene->GetECS().RemoveOnDestruction<Animation>(&Animation::updatePropertyReferences, this);
-			}
-			m_ActiveScene = scene;
-			m_ActiveScene->GetECS().AddOnConstruction<Animation>(&Animation::updatePropertyReferences, this);
-			m_ActiveScene->GetECS().AddOnDestruction<Animation>(&Animation::updatePropertyReferences, this);
-		}
-	}
 
 	void Animation::Update(Timestep ts)
 	{
@@ -68,19 +48,6 @@ namespace XYZ {
 		m_CurrentTime = m_CurrentFrame * m_FrameLength;
 	}
 
-	void Animation::updatePropertyReferences()
-	{
-		for (auto& prop : m_Vec4Properties)
-			prop.SetReference();
-		for (auto& prop : m_Vec3Properties)
-			prop.SetReference();
-		for (auto& prop : m_Vec2Properties)
-			prop.SetReference();
-		for (auto& prop : m_FloatProperties)
-			prop.SetReference();
-		for (auto& prop : m_PointerProperties)
-			prop.SetReference();
-	}
 
 	void Animation::clearProperties()
 	{
@@ -92,28 +59,24 @@ namespace XYZ {
 	}
 
 	template<>
-	Property<glm::vec4>& Animation::addPropertySpecialized(const Property<glm::vec4>& prop)
+	void Animation::addPropertySpecialized(const Property<glm::vec4>& prop)
 	{
 		m_Vec4Properties.push_back(prop);
-		return m_Vec4Properties.back();
 	}
 	template<>
-	Property<glm::vec3>& Animation::addPropertySpecialized(const Property<glm::vec3>& prop)
+	void Animation::addPropertySpecialized(const Property<glm::vec3>& prop)
 	{
 		m_Vec3Properties.push_back(prop);
-		return m_Vec3Properties.back();
 	}
 	template<>
-	Property<glm::vec2>& Animation::addPropertySpecialized(const Property<glm::vec2>& prop)
+	void Animation::addPropertySpecialized(const Property<glm::vec2>& prop)
 	{
 		m_Vec2Properties.push_back(prop);
-		return m_Vec2Properties.back();
 	}
 	template<>
-	Property<float>& Animation::addPropertySpecialized(const Property<float>& prop)
+	void Animation::addPropertySpecialized(const Property<float>& prop)
 	{
 		m_FloatProperties.push_back(prop);
-		return m_FloatProperties.back();
 	}
 
 	template <>

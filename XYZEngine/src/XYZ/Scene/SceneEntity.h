@@ -93,6 +93,40 @@ namespace XYZ {
 		void	 RemoveOnComponentDestructionOfInstance(Type* instance);
 
 
+
+		template <typename FuncT, typename ...Args>
+		void	 AddOnComponentConstruction(uint16_t componentID, FuncT&& func, Args&& ...args);
+
+		template <typename Type>
+		void	 AddOnComponentConstruction(uint16_t componentID, void(Type::* func)(), Type* instance);
+
+		template <typename FuncT>
+		void	 RemoveOnComponentConstruction(uint16_t componentID, FuncT&& func);
+
+		template <typename Type>
+		void	 RemoveOnComponentConstruction(uint16_t componentID, void(Type::* func)(), Type* instance);
+
+		template <typename Type>
+		void	 RemoveOnComponentConstructionOfInstance(uint16_t componentID, Type* instance);
+
+
+
+		template <typename FuncT, typename ...Args>
+		void	 AddOnComponentDestruction(uint16_t componentID, FuncT&& func, Args&& ...args);
+
+		template <typename Type>
+		void	 AddOnComponentDestruction(uint16_t componentID, void(Type::* func)(), Type* instance);
+
+		template <typename FuncT>
+		void	 RemoveOnComponentDestruction(uint16_t componentID, FuncT&& func);
+
+		template <typename Type>
+		void	 RemoveOnComponentDestruction(uint16_t componentID, void(Type::* func)(), Type* instance);
+
+		template <typename Type>
+		void	 RemoveOnComponentDestructionOfInstance(uint16_t componentID, Type* instance);
+
+
 		Entity		 ID() const { return m_ID; }
 
 		const Scene* GetScene() const { return m_Scene; }
@@ -185,7 +219,7 @@ namespace XYZ {
 	template<typename T, typename FuncT, typename ...Args>
 	inline void SceneEntity::AddOnComponentConstruction(FuncT&& func, Args && ...args)
 	{
-		m_Scene->m_ECS.AddOnConstruction(std::forward<FuncT>(func), std::forward<Args>(args)...);
+		m_Scene->m_ECS.AddOnComponentConstruction<T, FuncT, Args>(std::forward<FuncT>(func), std::forward<Args>(args)...);
 	}
 	template<typename T, typename Type>
 	inline void SceneEntity::AddOnComponentConstruction(void(Type::* func)(), Type* instance)
@@ -231,6 +265,56 @@ namespace XYZ {
 	inline void SceneEntity::RemoveOnComponentDestructionOfInstance(Type* instance)
 	{
 		m_Scene->m_ECS.RemoveOnComponentDestructionOfInstance<T, Type>(instance);
+	}
+	template<typename FuncT, typename ...Args>
+	inline void SceneEntity::AddOnComponentConstruction(uint16_t componentID, FuncT&& func, Args && ...args)
+	{
+		m_Scene->m_ECS.AddOnComponentConstruction(componentID, std::forward<FuncT>(func), std::forward<Args>(args)...);
+	}
+	template<typename Type>
+	inline void SceneEntity::AddOnComponentConstruction(uint16_t componentID, void(Type::* func)(), Type* instance)
+	{
+		m_Scene->m_ECS.AddOnComponentConstruction(componentID, func, instance);
+	}
+	template<typename FuncT>
+	inline void SceneEntity::RemoveOnComponentConstruction(uint16_t componentID, FuncT&& func)
+	{
+		m_Scene->m_ECS.RemoveOnComponentConstruction(componentID, func);
+	}
+	template<typename Type>
+	inline void SceneEntity::RemoveOnComponentConstruction(uint16_t componentID, void(Type::* func)(), Type* instance)
+	{
+		m_Scene->m_ECS.RemoveOnComponentConstruction(componentID, func, instance);
+	}
+	template<typename Type>
+	inline void SceneEntity::RemoveOnComponentConstructionOfInstance(uint16_t componentID, Type* instance)
+	{
+		m_Scene->m_ECS.RemoveOnComponentConstructionOfInstance(componentID, instance);
+	}
+	template<typename FuncT, typename ...Args>
+	inline void SceneEntity::AddOnComponentDestruction(uint16_t componentID, FuncT&& func, Args && ...args)
+	{
+		m_Scene->m_ECS.AddOnComponentDestruction(componentID, std::forward<FuncT>(func), std::forward<Args>(args)...);
+	}
+	template<typename Type>
+	inline void SceneEntity::AddOnComponentDestruction(uint16_t componentID, void(Type::* func)(), Type* instance)
+	{
+		m_Scene->m_ECS.AddOnComponentDestruction(componentID, func, instance);
+	}
+	template<typename FuncT>
+	inline void SceneEntity::RemoveOnComponentDestruction(uint16_t componentID, FuncT&& func)
+	{
+		m_Scene->m_ECS.RemoveOnComponentDestruction(componentID, std::forward<FuncT>(func));
+	}
+	template<typename Type>
+	inline void SceneEntity::RemoveOnComponentDestruction(uint16_t componentID, void(Type::* func)(), Type* instance)
+	{
+		m_Scene->m_ECS.RemoveOnComponentDestruction(componentID, func, instance);
+	}
+	template<typename Type>
+	inline void SceneEntity::RemoveOnComponentDestructionOfInstance(uint16_t componentID, Type* instance)
+	{
+		m_Scene->m_ECS.RemoveOnComponentDestructionOfInstance(componentID, instance);
 	}
 }
 

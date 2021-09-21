@@ -23,8 +23,6 @@ namespace XYZ {
 		template <typename ComponentType, typename ValueType>
 		void RemoveProperty(const SceneEntity& entity, const std::string& valueName);
 
-		void SetActiveScene(const Ref<Scene>& scene);
-
 		void Update(Timestep ts);
 		void UpdateLength();
 		void SetCurrentFrame(uint32_t frame);
@@ -38,22 +36,16 @@ namespace XYZ {
 	
 	private:
 		template <typename ValueType>
-		Property<ValueType>& addPropertySpecialized(const Property<ValueType>& prop);
+		void	    addPropertySpecialized(const Property<ValueType>& prop);
 		
 		template <typename ValueType>
-		void				 removePropertySpecialized(const SceneEntity& entity, const std::string& valueName, const std::string& componentName);
+		void	    removePropertySpecialized(const SceneEntity& entity, const std::string& valueName, const std::string& componentName);
 		
 		template <typename T>
-		static void			 removeFromContainer(std::vector<T>& container, const SceneEntity& entity, const std::string& valueName, const std::string& componentName);
+		static void	removeFromContainer(std::vector<T>& container, const SceneEntity& entity, const std::string& valueName, const std::string& componentName);
 
-		void updatePropertyReferences();
 		void clearProperties();
 	private:
-		Ref<Scene>						 m_ActiveScene;
-
-		// TODO: Registration of components counter, add callback by component ID instead of Type
-		std::vector<uint32_t>			 m_RegisteredComponents;
-
 		std::vector<Property<glm::vec4>> m_Vec4Properties;
 		std::vector<Property<glm::vec3>> m_Vec3Properties;
 		std::vector<Property<glm::vec2>> m_Vec2Properties;
@@ -71,19 +63,15 @@ namespace XYZ {
 	template<typename ComponentType, typename ValueType>
 	inline void Animation::AddProperty(SceneEntity entity, const std::string& valueName)
 	{
-		XYZ_ASSERT(m_ActiveScene.Raw(), "No active scene");
-		XYZ_ASSERT(entity.GetScene() == m_ActiveScene.Raw(), "Entity does not belong to the active scene");
 		SetPropertyRefFn<ValueType> callback = [](SceneEntity ent, ValueType* ref, const std::string& varName) {
 			ref = &Reflection<ComponentType>::GetByName<ValueType>(varName.c_str(), ent.GetComponent<ComponentType>());
 		};
-		addPropertySpecialized<ValueType>(Property<ValueType>(callback, entity, valueName, Reflection<ComponentType>::GetClassName()));
+		addPropertySpecialized<ValueType>(Property<ValueType>(callback, entity, valueName, Reflection<ComponentType>::GetClassName(), Component<ComponentType>::ID()));		
 	}
 
 	template<typename ComponentType, typename ValueType>
 	inline void Animation::RemoveProperty(const SceneEntity& entity, const std::string& valueName)
 	{
-		XYZ_ASSERT(m_ActiveScene.Raw(), "No active scene");
-		XYZ_ASSERT(entity.GetScene() == m_ActiveScene.Raw(), "Entity does not belong to the active scene");
 		removePropertySpecialized<ValueType>(entity, valueName, Reflection<ComponentType>::GetClassName());
 	}
 
