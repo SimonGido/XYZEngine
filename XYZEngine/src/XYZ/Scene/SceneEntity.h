@@ -1,8 +1,10 @@
 #pragma once
 
 #include "Scene.h"
+#include "XYZ/Reflection/Reflection.h"
 
 namespace XYZ {
+
 	class SceneEntity
 	{
 	public:
@@ -12,10 +14,16 @@ namespace XYZ {
 				
 		template<typename T>
 		T& GetComponent();
-		
+
 		template <typename T>
 		const T& GetComponent() const;
 		
+		template<typename T>
+		T& GetComponentFromReflection(Reflection<T> refl);
+
+		template<typename T>
+		const T& GetComponentFromReflection(Reflection<T> refl) const;
+
 		template <typename T, typename ...Args>
 		T& EmplaceComponent(Args&&... args);
 		
@@ -127,6 +135,7 @@ namespace XYZ {
 		void	 RemoveOnComponentDestructionOfInstance(uint16_t componentID, Type* instance);
 
 
+
 		Entity		 ID() const { return m_ID; }
 
 		const Scene* GetScene() const { return m_Scene; }
@@ -153,6 +162,16 @@ namespace XYZ {
 	}
 	template<typename T>
 	inline const T& SceneEntity::GetComponent() const
+	{
+		return m_Scene->m_ECS.GetComponent<T>(m_ID);
+	}
+	template<typename T>
+	inline T& SceneEntity::GetComponentFromReflection(Reflection<T> refl)
+	{
+		return m_Scene->m_ECS.GetComponent<T>(m_ID);
+	}
+	template<typename T>
+	inline const T& SceneEntity::GetComponentFromReflection(Reflection<T> refl) const
 	{
 		return m_Scene->m_ECS.GetComponent<T>(m_ID);
 	}

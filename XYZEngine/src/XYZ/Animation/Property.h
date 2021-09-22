@@ -2,7 +2,6 @@
 #include "XYZ/Core/Ref.h"
 #include "XYZ/Scene/SceneEntity.h"
 
-#include "Animatable.h"
 
 namespace XYZ {
 

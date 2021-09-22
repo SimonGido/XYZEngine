@@ -99,8 +99,7 @@ namespace XYZ {
 		uint32_t  SortLayer = 0;
 		bool	  Visible = true;
 	};
-
-
+	REFLECTABLE(SpriteRenderer, Material, SubTexture, Color, SortLayer, Visible);
 
 	struct CameraComponent 
 	{
@@ -137,9 +136,11 @@ namespace XYZ {
 		PointLight2D() = default;
 
 		glm::vec3 Color = glm::vec3(1.0f);
-		float Radius	= 1.0f;
-		float Intensity = 1.0f;
+		float	  Radius	= 1.0f;
+		float	  Intensity = 1.0f;
 	};
+	REFLECTABLE(PointLight2D, Color, Radius, Intensity);
+
 
 	struct SpotLight2D 
 	{
@@ -149,6 +150,8 @@ namespace XYZ {
 		float InnerAngle = -180.0f;
 		float OuterAngle =  180.0f;
 	};
+	REFLECTABLE(SpotLight2D, Color, Radius, Intensity, InnerAngle, OuterAngle);
+
 
 	struct Relationship 
 	{
@@ -252,4 +255,6 @@ namespace XYZ {
 
 		void* RuntimeFixture = nullptr;
 	};
+
+	REGISTER_REFLECTABLES(TransformComponent, SpriteRenderer, PointLight2D, SpotLight2D);
 }

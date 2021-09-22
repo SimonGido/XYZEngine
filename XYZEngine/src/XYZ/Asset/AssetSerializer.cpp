@@ -500,6 +500,8 @@ namespace XYZ {
 	{
 		std::ifstream stream(asset->FilePath);
 		std::stringstream strStream;
+		if (!stream)
+			XYZ_ERROR("Could not load asset {0}", strerror(errno));
 		strStream << stream.rdbuf();
 		YAML::Node data = YAML::Load(strStream.str());
 

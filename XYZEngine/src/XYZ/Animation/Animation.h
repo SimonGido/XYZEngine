@@ -2,12 +2,8 @@
 #include "XYZ/Asset/Asset.h"
 #include "XYZ/Scene/SceneEntity.h"
 #include "Property.h"
-#include "Animatable.h"
-#include "Property.h"
 
 #include <glm/glm.hpp>
-
-#include <unordered_set>
 
 namespace XYZ {
 
@@ -18,7 +14,7 @@ namespace XYZ {
 		virtual ~Animation() override;
 
 		template <typename ComponentType, typename ValueType>
-		void AddProperty(SceneEntity entity, const std::string& valueName);
+		void AddProperty(const SceneEntity& entity, const std::string& valueName);
 
 		template <typename ComponentType, typename ValueType>
 		void RemoveProperty(const SceneEntity& entity, const std::string& valueName);
@@ -29,10 +25,12 @@ namespace XYZ {
 		void SetNumFrames(uint32_t numFrames) { m_NumFrames = numFrames; }
 		void SetRepeat(bool repeat)			  { m_Repeat = repeat; }
 
-		inline uint32_t						  GetNumFrames()   const { return m_NumFrames; }
-		inline uint32_t						  GetTime()        const { return m_CurrentFrame; }
-		inline float						  GetFrameLength() const { return m_FrameLength; }
-		inline bool							  GetRepeat()	   const { return m_Repeat; }
+		bool PropertyHasVariable(const char* componentName, const char* varName) const;
+
+		inline uint32_t	GetNumFrames()   const { return m_NumFrames; }
+		inline uint32_t	GetTime()        const { return m_CurrentFrame; }
+		inline float	GetFrameLength() const { return m_FrameLength; }
+		inline bool		GetRepeat()	     const { return m_Repeat; }
 	
 	private:
 		template <typename ValueType>
@@ -44,7 +42,11 @@ namespace XYZ {
 		template <typename T>
 		static void	removeFromContainer(std::vector<T>& container, const SceneEntity& entity, const std::string& valueName, const std::string& componentName);
 
-		void clearProperties();
+		template <typename T>
+		static bool propertyHasVariable(const std::vector<Property<T>>& container, const char* className, const char* varName);
+
+
+		void		clearProperties();
 	private:
 		std::vector<Property<glm::vec4>> m_Vec4Properties;
 		std::vector<Property<glm::vec3>> m_Vec3Properties;
@@ -61,12 +63,12 @@ namespace XYZ {
 	
 
 	template<typename ComponentType, typename ValueType>
-	inline void Animation::AddProperty(SceneEntity entity, const std::string& valueName)
+	inline void Animation::AddProperty(const SceneEntity& entity, const std::string& valueName)
 	{
 		SetPropertyRefFn<ValueType> callback = [](SceneEntity ent, ValueType* ref, const std::string& varName) {
 			ref = &Reflection<ComponentType>::GetByName<ValueType>(varName.c_str(), ent.GetComponent<ComponentType>());
 		};
-		addPropertySpecialized<ValueType>(Property<ValueType>(callback, entity, valueName, Reflection<ComponentType>::GetClassName(), Component<ComponentType>::ID()));		
+		addPropertySpecialized<ValueType>(Property<ValueType>(callback, entity, valueName, Reflection<ComponentType>::sc_ClassName, Component<ComponentType>::ID()));		
 	}
 
 	template<typename ComponentType, typename ValueType>
@@ -87,5 +89,16 @@ namespace XYZ {
 				return;
 			}
 		}
+	}
+
+	template <typename T>
+	bool Animation::propertyHasVariable(const std::vector<Property<T>>& container, const char* className, const char* varName)
+	{
+		for (const auto& it : container)
+		{
+			if (it.GetComponentName() == className && it.GetValueName() == varName)
+				return true;
+		}
+		return false;
 	}
 }

@@ -48,6 +48,21 @@ namespace XYZ {
 		m_CurrentTime = m_CurrentFrame * m_FrameLength;
 	}
 
+	bool Animation::PropertyHasVariable(const char* componentName, const char* varName) const
+	{
+		if (propertyHasVariable(m_Vec4Properties, componentName, varName))
+			return true;
+		if (propertyHasVariable(m_Vec3Properties, componentName, varName))
+			return true;
+		if (propertyHasVariable(m_Vec2Properties, componentName, varName))
+			return true;
+		if (propertyHasVariable(m_FloatProperties, componentName, varName))
+			return true;
+		if (propertyHasVariable(m_PointerProperties, componentName, varName))
+			return true;
+		return false;
+	}
+
 
 	void Animation::clearProperties()
 	{
@@ -78,7 +93,31 @@ namespace XYZ {
 	{
 		m_FloatProperties.push_back(prop);
 	}
-
+	template<>
+	void Animation::addPropertySpecialized(const Property<glm::mat4>& prop)
+	{
+		// TODO: not supported yet
+	}
+	template<>
+	void Animation::addPropertySpecialized(const Property<Ref<Material>>& prop)
+	{
+		// TODO: not supported yet
+	}
+	template<>
+	void Animation::addPropertySpecialized(const Property<Ref<SubTexture>>& prop)
+	{
+		// TODO: not supported yet
+	}
+	template<>
+	void Animation::addPropertySpecialized(const Property<uint32_t>& prop)
+	{
+		// TODO: not supported yet
+	}
+	template<>
+	void Animation::addPropertySpecialized(const Property<bool>& prop)
+	{
+		// TODO: not supported yet
+	}
 	template <>
 	void Animation::removePropertySpecialized<glm::vec4>(const SceneEntity& entity, const std::string& valueName, const std::string& componentName)
 	{

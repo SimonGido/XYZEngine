@@ -282,13 +282,13 @@ namespace XYZ {
 	{
 		auto& animator = entity.EmplaceComponent<AnimatorComponent>();
 		animator.Animation = Ref<Animation>::Create();
-		m_AnimationEditor.SetContext(animator.Animation);
 		m_AnimationEditor.SetScene(m_Scene);
+		m_AnimationEditor.SetContext(animator.Animation);
 
-		for (size_t i = 0; i < 10; ++i)
-			animator.Animation->AddProperty<TransformComponent, glm::vec3>(entity, "Translation");
-		
-		animator.Animation->Update(Timestep());
+		//for (size_t i = 0; i < 10; ++i)
+		//	animator.Animation->AddProperty<TransformComponent, glm::vec3>(entity, "Translation");
+		//
+		//animator.Animation->Update(Timestep());
 	}
 
 }

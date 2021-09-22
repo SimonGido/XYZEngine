@@ -8,6 +8,13 @@ namespace XYZ {
 		class AnimationEditor
 		{
 		public:
+			struct ClassData
+			{
+				std::vector<std::string> VariableNames;
+			};
+			using ClassMap = std::unordered_map<std::string, ClassData>;
+
+
 			AnimationEditor();
 
 			void SetContext(const Ref<Animation>& context);
@@ -17,13 +24,18 @@ namespace XYZ {
 			void OnImGuiRender(bool& open);
 		private:
 			void handleSelected();
-			void addTransformTrack(const SceneEntity& entity);
+			void buildClassMap(const SceneEntity& entity);
 
+			std::pair<int32_t, int32_t> getClassAndVariable();
+	
 		private:
 			Ref<Animation>	   m_Context;
 			Ref<Scene>		   m_Scene;
+			SceneEntity		   m_SelectedEntity;
 
+			
 			AnimationSequencer m_Sequencer;
+			ClassMap		   m_ClassMap;
 			int				   m_SelectedEntry;
 			int				   m_FirstFrame;
 			int				   m_CurrentFrame;

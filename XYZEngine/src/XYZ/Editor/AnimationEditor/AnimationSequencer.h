@@ -41,8 +41,8 @@ namespace XYZ {
             AnimationSequencer();
             virtual int         GetFrameMin() const override { return m_FrameMin; }
             virtual int         GetFrameMax() const override { return m_FrameMax; }
-            virtual int         GetItemCount() const  override { return (int)m_Items.size(); }
-            virtual int         GetItemTypeCount() const override { return (int)m_SequencerItemTypes.size(); }
+            virtual int         GetItemCount() const  override { return static_cast<int>(m_Items.size()); }
+            virtual int         GetItemTypeCount() const override { return static_cast<int>(m_SequencerItemTypes.size()); }
             virtual const char* GetItemTypeName(int typeIndex) const override { return m_SequencerItemTypes[typeIndex].Name.c_str(); }
             virtual const char* GetItemLabel(int index) const override;
             virtual void        Get(int index, int** start, int** end, int* type, unsigned int* color) override;        
@@ -59,8 +59,8 @@ namespace XYZ {
             void                AddSequencerItemType(const std::string& name, const SceneEntity& entity, const std::initializer_list<std::string>& subTypes, AddKeyCallback callback);
             void                DeleteSelectedPoints();
             void                ClearSelection() { m_Selection.Points.clear(); }
-            const Selection&    GetSelection() const { return m_Selection; }
-            const Selection&    GetCopy() const { return m_Copy; }
+            const Selection&    GetSelection()  const { return m_Selection; }
+            const Selection&    GetCopy()       const { return m_Copy; }
  
             std::vector<SequencerItemType> m_SequencerItemTypes;
             std::vector<SequenceItem>      m_Items;
@@ -68,8 +68,6 @@ namespace XYZ {
             int                            m_FrameMax;
 
         private:
-           
-
             Selection m_Selection;
             Selection m_Copy;
         };

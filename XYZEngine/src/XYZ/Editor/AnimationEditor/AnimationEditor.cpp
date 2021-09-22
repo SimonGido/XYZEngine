@@ -17,7 +17,30 @@ namespace XYZ {
 				ImGui::Text(text, std::forward<Args>(args)...);
 				ImGui::SameLine();
 				return ImGui::InputInt(id, &value);
+			}		
+		}
+
+		template <typename T>
+		static void AddToClassMap(const SceneEntity& entity, const Ref<Animation>& anim, AnimationEditor::ClassMap& classMap)
+		{
+			if (entity.HasComponent<T>())
+			{
+				std::vector<std::string> tmpVariables;
+				const char* className = Reflection<T>::sc_ClassName;
+				for (const auto& variable : Reflection<T>::GetVariables())
+				{
+					if (!anim->PropertyHasVariable(className, variable.c_str()))
+						tmpVariables.push_back(variable);
+				}
+				if (!tmpVariables.empty())
+					classMap[Reflection<T>::sc_ClassName].VariableNames = std::move(tmpVariables);
 			}
+		}
+
+		template <typename ComponentType, typename T>
+		void AddReflectedProperty(Reflection<ComponentType> refl, Ref<Animation> anim, const SceneEntity& entity, const T& val, const std::string& valName)
+		{
+			anim->AddProperty<ComponentType, T>(entity, valName);
 		}
 
 		AnimationEditor::AnimationEditor()
@@ -34,12 +57,6 @@ namespace XYZ {
 		void AnimationEditor::SetContext(const Ref<Animation>& context)
 		{
 			m_Context = context;
-			//auto transformTrack = m_Context->FindTrack<TransformTrack>();
-			//if (transformTrack.Raw())
-			//{
-			//	addTransformTrack();
-			//	m_Sequencer.Add(m_Sequencer.GetItemTypeCount() - 1);
-			//}
 		}
 		void AnimationEditor::SetScene(const Ref<Scene>& scene)
 		{
@@ -49,9 +66,10 @@ namespace XYZ {
 		{
 			if (m_Playing && m_Context.Raw())
 			{
-				//m_Context->Update(ts);
+				m_Context->Update(ts);
 			}
 		}
+
 		void AnimationEditor::OnImGuiRender(bool& open)
 		{
 			if (ImGui::Begin("Animation Editor", &open))
@@ -59,6 +77,11 @@ namespace XYZ {
 				if (m_Context.Raw() && m_Scene.Raw())
 				{
 					SceneEntity selectedEntity = m_Scene->GetSelectedEntity();
+					if (m_SelectedEntity != selectedEntity)
+					{
+						m_SelectedEntity = selectedEntity;
+						buildClassMap(m_SelectedEntity);
+					}
 					if (selectedEntity.IsValid())
 					{
 						ImGui::PushItemWidth(130);
@@ -109,16 +132,23 @@ namespace XYZ {
 
 						if (ImGui::BeginPopup("AddProperty"))
 						{
-							//if (!m_Context->FindTrack<TransformTrack>(selectedEntity).Raw())
-							//{
-							//	if (ImGui::MenuItem("Transform"))
-							//	{
-							//		m_Context->CreateTrack<TransformTrack>(selectedEntity);
-							//		addTransformTrack(selectedEntity);
-							//		m_Sequencer.Add(m_Sequencer.GetItemTypeCount() - 1);
-							//		ImGui::CloseCurrentPopup();
-							//	}
-							//}
+							auto [classIndex, variableIndex] = getClassAndVariable();
+							Reflect::For([&](auto j) {
+								if (j.value == classIndex)
+								{
+									auto reflClass = ReflectedClasses::Get<j.value>();
+									Reflect::For([&](auto i) {
+										if (variableIndex == i.value)
+										{
+											auto& val = reflClass.Get<i.value>(selectedEntity.GetComponentFromReflection(reflClass));
+											AddReflectedProperty(reflClass, m_Context, selectedEntity, val,
+												reflClass.GetVariables()[i.value]
+											);
+										}
+									}, std::make_index_sequence<reflClass.sc_NumVariables>());
+								}
+							}, std::make_index_sequence<ReflectedClasses::sc_NumClasses>());
+
 							ImGui::EndPopup();
 						}
 
@@ -163,40 +193,42 @@ namespace XYZ {
 				m_Sequencer.ClearSelection();
 			}
 		}
-		void AnimationEditor::addTransformTrack(const SceneEntity& entity)
+
+		void AnimationEditor::buildClassMap(const SceneEntity& entity)
 		{
-			m_Sequencer.AddSequencerItemType("Transform", entity, { "Translation", "Rotation", "Scale" }, [&](const SceneEntity& targetEntity, uint32_t frame, uint32_t itemIndex) {
-				AnimationSequencer::SequenceItem& item = m_Sequencer.m_Items[itemIndex];
-				size_t index = 0;
-				bool selected = item.LineEdit.GetSelectedIndex(index);
-				
-				if (targetEntity.IsValid())
+			m_ClassMap.clear();
+			if (entity)
+			{
+				AddToClassMap<TransformComponent>(entity, m_Context, m_ClassMap);
+			}
+		}
+		std::pair<int32_t, int32_t> AnimationEditor::getClassAndVariable()
+		{
+			for (auto& [className, classData] : m_ClassMap)
+			{
+				if (ImGui::BeginMenu(className.c_str()))
 				{
-					if (selected)
+					int32_t variableCounter = 0;
+					auto& variables = classData.VariableNames;
+					for (auto it = variables.begin(); it != variables.end(); ++it)
 					{
-						//item.LineEdit.AddPoint(index, ImVec2{ (float)frame, 0.0f });
-						//auto transformTrack = m_Context->FindTrack<TransformTrack>(targetEntity);
-						//auto& transform = transformTrack->GetSceneEntity().GetComponent<TransformComponent>();
-						//uint32_t currentFrame = static_cast<uint32_t>(frame);
-						//const TransformTrack::PropertyType type = static_cast<TransformTrack::PropertyType>(index);
-						//switch (type)
-						//{
-						//case XYZ::TransformTrack::PropertyType::Translation:
-						//	transformTrack->AddKeyFrame({ transform.Translation, currentFrame }, type);
-						//	break;
-						//case XYZ::TransformTrack::PropertyType::Rotation:
-						//	transformTrack->AddKeyFrame({ transform.Rotation, currentFrame }, type);
-						//	break;
-						//case XYZ::TransformTrack::PropertyType::Scale:
-						//	transformTrack->AddKeyFrame({ transform.Scale, currentFrame }, type);
-						//	break;
-						//default:
-						//	break;
-						//}
-						//m_Context->UpdateLength();
+						if (ImGui::MenuItem(it->c_str()))
+						{
+							variables.erase(it);
+							int32_t classIndex = -1;
+							for (const auto& it : ReflectedClasses::GetClasses())
+							{
+								if (it == className)
+									return { classIndex, variableCounter };
+								classIndex++;
+							}				
+						}
+						variableCounter++;
 					}
+					ImGui::EndMenu();
 				}
-			});
+			}
+			return std::pair<int32_t, int32_t>(-1, -1);
 		}
 	}
 }
