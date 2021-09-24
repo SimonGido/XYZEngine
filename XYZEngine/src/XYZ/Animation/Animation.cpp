@@ -118,6 +118,11 @@ namespace XYZ {
 	{
 		// TODO: not supported yet
 	}
+	template<>
+	void Animation::addPropertySpecialized(const Property<void*>& prop)
+	{
+		// TODO: not supported yet
+	}
 	template <>
 	void Animation::removePropertySpecialized<glm::vec4>(const SceneEntity& entity, const std::string& valueName, const std::string& componentName)
 	{

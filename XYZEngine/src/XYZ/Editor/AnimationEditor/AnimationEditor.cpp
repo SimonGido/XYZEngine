@@ -18,31 +18,31 @@ namespace XYZ {
 				ImGui::SameLine();
 				return ImGui::InputInt(id, &value);
 			}		
-		}
+	
 
-		template <typename T>
-		static void AddToClassMap(const SceneEntity& entity, const Ref<Animation>& anim, AnimationEditor::ClassMap& classMap)
-		{
-			if (entity.HasComponent<T>())
+			template <typename T>
+			static void AddToClassMap(Reflection<T> refl, const SceneEntity& entity, const Ref<Animation>& anim, AnimationEditor::ClassMap& classMap)
 			{
-				std::vector<std::string> tmpVariables;
-				const char* className = Reflection<T>::sc_ClassName;
-				for (const auto& variable : Reflection<T>::GetVariables())
+				if (entity.HasComponent<T>())
 				{
-					if (!anim->PropertyHasVariable(className, variable.c_str()))
-						tmpVariables.push_back(variable);
+					std::vector<std::string> tmpVariables;
+					const char* className = refl.sc_ClassName;
+					for (const auto& variable : refl.GetVariables())
+					{
+						if (!anim->PropertyHasVariable(className, variable.c_str()))
+							tmpVariables.push_back(variable);
+					}
+					if (!tmpVariables.empty())
+						classMap[refl.sc_ClassName].VariableNames = std::move(tmpVariables);
 				}
-				if (!tmpVariables.empty())
-					classMap[Reflection<T>::sc_ClassName].VariableNames = std::move(tmpVariables);
+			}
+
+			template <typename ComponentType, typename T>
+			void AddReflectedProperty(Reflection<ComponentType> refl, Ref<Animation> anim, const SceneEntity& entity, const T& val, const std::string& valName)
+			{
+				anim->AddProperty<ComponentType, T>(entity, valName);
 			}
 		}
-
-		template <typename ComponentType, typename T>
-		void AddReflectedProperty(Reflection<ComponentType> refl, Ref<Animation> anim, const SceneEntity& entity, const T& val, const std::string& valName)
-		{
-			anim->AddProperty<ComponentType, T>(entity, valName);
-		}
-
 		AnimationEditor::AnimationEditor()
 			:
 			m_SelectedEntry(-1),
@@ -138,10 +138,10 @@ namespace XYZ {
 								{
 									auto reflClass = ReflectedClasses::Get<j.value>();
 									Reflect::For([&](auto i) {
-										if (variableIndex == i.value)
+										if (i.value == variableIndex)
 										{
 											auto& val = reflClass.Get<i.value>(selectedEntity.GetComponentFromReflection(reflClass));
-											AddReflectedProperty(reflClass, m_Context, selectedEntity, val,
+											Helper::AddReflectedProperty(reflClass, m_Context, selectedEntity, val,
 												reflClass.GetVariables()[i.value]
 											);
 										}
@@ -199,7 +199,11 @@ namespace XYZ {
 			m_ClassMap.clear();
 			if (entity)
 			{
-				AddToClassMap<TransformComponent>(entity, m_Context, m_ClassMap);
+				Reflect::For([&](auto j) {
+					auto reflClass = ReflectedClasses::Get<j.value>();
+					Helper::AddToClassMap(reflClass, entity, m_Context, m_ClassMap);
+
+				}, std::make_index_sequence<ReflectedClasses::sc_NumClasses>());
 			}
 		}
 		std::pair<int32_t, int32_t> AnimationEditor::getClassAndVariable()

@@ -220,6 +220,8 @@ namespace XYZ {
 
 		void* RuntimeFixture = nullptr;
 	};
+	REFLECTABLE(BoxCollider2DComponent, Size, Offset, Density, Friction, RuntimeFixture);
+
 
 	struct CircleCollider2DComponent 
 	{
@@ -230,6 +232,7 @@ namespace XYZ {
 				  
 		void*	  RuntimeFixture = nullptr;
 	};
+	REFLECTABLE(CircleCollider2DComponent, Offset, Radius, Density, Friction, RuntimeFixture);
 
 	struct PolygonCollider2DComponent 
 	{
@@ -240,7 +243,7 @@ namespace XYZ {
 
 		void* RuntimeFixture = nullptr;
 	};
-
+	
 	struct ChainCollider2DComponent 
 	{
 		ChainCollider2DComponent()
@@ -256,5 +259,5 @@ namespace XYZ {
 		void* RuntimeFixture = nullptr;
 	};
 
-	REGISTER_REFLECTABLES(TransformComponent, SpriteRenderer, PointLight2D, SpotLight2D);
+	REGISTER_REFLECTABLES(TransformComponent, SpriteRenderer, PointLight2D, SpotLight2D, BoxCollider2DComponent, CircleCollider2DComponent);
 }
