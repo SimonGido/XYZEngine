@@ -422,7 +422,7 @@ namespace XYZ {
 	template<typename T, typename Type>
 	inline void ECSManager::RemoveOnComponentConstructionOfInstance(Type* instance)
 	{
-		GetStorage<T>().RemoveOnDestructionOfInstance(func, instance);
+		GetStorage<T>().RemoveOnDestructionOfInstance(instance);
 	}
 
 	template<typename T, typename FuncT, typename ...Args>
@@ -452,7 +452,7 @@ namespace XYZ {
 	template<typename T, typename Type>
 	inline void ECSManager::RemoveOnComponentDestructionOfInstance(Type* instance)
 	{
-		GetStorage<T>().RemoveOnDestructionOfInstance(func, instance);
+		GetStorage<T>().RemoveOnDestructionOfInstance(instance);
 	}
 
 	template<typename FuncT, typename ...Args>
