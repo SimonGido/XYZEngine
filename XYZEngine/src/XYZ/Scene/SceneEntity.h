@@ -25,6 +25,12 @@ namespace XYZ {
 		const T& GetComponentFromReflection(Reflection<T> refl) const;
 
 		template <typename T, typename ...Args>
+		std::tuple<Args...> GetComponentTupleFromReflection(Reflection<T> refl);
+
+		template <typename T, typename ...Args>
+		const std::tuple<Args...> GetComponentTupleFromReflection(Reflection<T> refl) const;
+
+		template <typename T, typename ...Args>
 		T& EmplaceComponent(Args&&... args);
 		
 		template <typename T>
@@ -174,6 +180,16 @@ namespace XYZ {
 	inline const T& SceneEntity::GetComponentFromReflection(Reflection<T> refl) const
 	{
 		return m_Scene->m_ECS.GetComponent<T>(m_ID);
+	}
+	template<typename T, typename ...Args>
+	inline std::tuple<Args...> SceneEntity::GetComponentTupleFromReflection(Reflection<T> refl)
+	{
+		return Reflection<T>::ToReferenceTuple(m_Scene->m_ECS.GetComponent<T>(m_ID));
+	}
+	template<typename T, typename ...Args>
+	inline const std::tuple<Args...> SceneEntity::GetComponentTupleFromReflection(Reflection<T> refl) const
+	{
+		return Reflection<T>::ToReferenceTuple(m_Scene->m_ECS.GetComponent<T>(m_ID));
 	}
 	template<typename T, typename ...Args>
 	inline T& SceneEntity::EmplaceComponent(Args && ...args)

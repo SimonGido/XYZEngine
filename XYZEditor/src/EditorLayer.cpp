@@ -85,7 +85,7 @@ namespace XYZ {
 			auto& editorCamera = m_ScenePanel.GetEditorCamera();
 			m_Scene->OnRenderEditor(editorCamera, ts);
 		
-			EditorRenderer::BeginPass(SceneRenderer::GetFinalRenderPass(), editorCamera.GetViewProjection(), editorCamera.GetPosition());
+			EditorRenderer::BeginPass(SceneRenderer::GetFinalRenderPass(), editorCamera.GetViewProjection(), editorCamera.GetPosition());		
 			EditorRenderer::EndPass();
 		}
 

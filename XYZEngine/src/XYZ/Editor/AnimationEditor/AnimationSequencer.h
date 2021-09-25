@@ -13,25 +13,6 @@ namespace XYZ {
 
         struct AnimationSequencer : public ImSequencer::SequenceInterface
         {
-            using AddKeyCallback = std::function<void(const SceneEntity&, uint32_t frame, uint32_t itemIndex)>;
-
-            struct SequenceItem
-            {
-                int               Type;
-                int               FrameStart;
-                int               FrameEnd;
-                bool              Expanded;
-                SequenceLineEdit  LineEdit;
-            };
-
-            struct SequencerItemType
-            {       
-                std::string              Name;
-                SceneEntity              Entity;
-                std::vector<std::string> SubTypes;
-                AddKeyCallback           Callback;
-                size_t                   Height = 100;
-            };
             struct Selection
             {
                 ImVector<ImCurveEdit::EditPoint> Points;
@@ -42,11 +23,10 @@ namespace XYZ {
             virtual int         GetFrameMin() const override { return m_FrameMin; }
             virtual int         GetFrameMax() const override { return m_FrameMax; }
             virtual int         GetItemCount() const  override { return static_cast<int>(m_Items.size()); }
-            virtual int         GetItemTypeCount() const override { return static_cast<int>(m_SequencerItemTypes.size()); }
-            virtual const char* GetItemTypeName(int typeIndex) const override { return m_SequencerItemTypes[typeIndex].Name.c_str(); }
+            virtual int         GetItemTypeCount() const override;
+            virtual const char* GetItemTypeName(int typeIndex) const override;
             virtual const char* GetItemLabel(int index) const override;
             virtual void        Get(int index, int** start, int** end, int* type, unsigned int* color) override;        
-            virtual void        Add(int type) override;
             virtual void        Del(int index) override { m_Items.erase(m_Items.begin() + index); }
             virtual void        Duplicate(int index) override { m_Items.push_back(m_Items[index]); }
             virtual void        Copy() override;
@@ -56,18 +36,41 @@ namespace XYZ {
             virtual void        CustomDraw(int index, ImDrawList* draw_list, const ImRect& rc, const ImRect& legendRect, const ImRect& clippingRect, const ImRect& legendClippingRect) override;
             virtual void        CustomDrawCompact(int index, ImDrawList* draw_list, const ImRect& rc, const ImRect& clippingRect) override;            
             
-            void                AddSequencerItemType(const std::string& name, const SceneEntity& entity, const std::initializer_list<std::string>& subTypes, AddKeyCallback callback);
+            void                AddItemType(const std::string& name);                  
+            void                AddItem(int type, const SceneEntity& entity);
+            void                AddLine(int type, const SceneEntity& entity, const std::string& lineName, uint32_t color = 0xFF0000FF);
+            void                AddKey(int itemIndex, int key);
             void                DeleteSelectedPoints();
             void                ClearSelection() { m_Selection.Points.clear(); }
             const Selection&    GetSelection()  const { return m_Selection; }
             const Selection&    GetCopy()       const { return m_Copy; }
- 
-            std::vector<SequencerItemType> m_SequencerItemTypes;
-            std::vector<SequenceItem>      m_Items;
-            int                            m_FrameMin;
-            int                            m_FrameMax;
+            
+            bool                ItemTypeExists(std::string_view name) const;
+            bool                ItemExists(int type, const SceneEntity& entity) const;
+
+            int                 GetItemTypeIndex(std::string_view name) const;
+            int                 GetItemIndex(int type, const SceneEntity& entity) const;
+            int                 GetItemItemType(int itemIndex) const;
+        public:           
+            int m_FrameMin;
+            int m_FrameMax;
 
         private:
+            struct SequenceItem
+            {
+                int               Type;
+                int               FrameStart;
+                int               FrameEnd;
+                bool              Expanded;
+                SceneEntity       Entity;
+                size_t            Height;
+                SequenceLineEdit  LineEdit;
+            };
+
+            std::vector<std::string>  m_SequencerItemTypes;
+            std::vector<SequenceItem> m_Items;
+
+
             Selection m_Selection;
             Selection m_Copy;
         };

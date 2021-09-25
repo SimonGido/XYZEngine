@@ -26,7 +26,13 @@ namespace XYZ {
 			void handleSelected();
 			void buildClassMap(const SceneEntity& entity);
 
-			std::pair<int32_t, int32_t> getClassAndVariable();
+			template <typename ComponentType, typename T>
+			void addReflectedProperty(Reflection<ComponentType> refl, const SceneEntity& entity, const T& val, const std::string& valName);
+
+			template <typename ComponentType, typename T>
+			void addKeyToProperty(Reflection<ComponentType> refl, SceneEntity entity, int frame, const T& val, const std::string& valName);
+
+			bool getClassAndVariable(size_t& classIndex, size_t& variableIndex);
 	
 		private:
 			Ref<Animation>	   m_Context;
@@ -42,5 +48,28 @@ namespace XYZ {
 			bool			   m_Expanded;
 			bool			   m_Playing;
 		};
+
+		template<typename ComponentType, typename T>
+		inline void AnimationEditor::addReflectedProperty(Reflection<ComponentType> refl, const SceneEntity& entity, const T& val, const std::string& valName)
+		{
+			m_Context->AddProperty<ComponentType, T>(entity, valName);
+			if (!m_Sequencer.ItemTypeExists(refl.sc_ClassName))
+				m_Sequencer.AddItemType(refl.sc_ClassName);	
+
+			int itemTypeIndex = m_Sequencer.GetItemTypeIndex(refl.sc_ClassName);
+			if (!m_Sequencer.ItemExists(itemTypeIndex, entity))
+				m_Sequencer.AddItem(itemTypeIndex, entity);
+
+			m_Sequencer.AddLine(itemTypeIndex, entity, valName);
+		}
+		template<typename ComponentType, typename T>
+		inline void AnimationEditor::addKeyToProperty(Reflection<ComponentType> refl, SceneEntity entity, int frame, const T& val, const std::string& valName)
+		{
+			auto prop = m_Context->GetProperty<ComponentType, T>(entity, valName);
+			if (prop)
+			{
+				prop->AddKeyFrame({ val, static_cast<uint32_t>(frame) });
+			}
+		}
 	}
 }

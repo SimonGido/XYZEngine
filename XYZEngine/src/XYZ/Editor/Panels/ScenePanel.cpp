@@ -6,6 +6,7 @@
 
 #include "XYZ/Renderer/SceneRenderer.h"
 #include "XYZ/Renderer/Renderer2D.h"
+#include "XYZ/Renderer/EditorRenderer.h"
 #include "XYZ/Utils/Math/Math.h"
 
 #include <imgui.h>
@@ -67,10 +68,13 @@ namespace XYZ {
 
 		std::pair<float, float> ScenePanel::getMouseViewportSpace() const
 		{
-			auto [mx, my] = Input::GetMousePosition();
+			auto [mx, my]			= Input::GetMousePosition();
+			auto [winPosX, winPosY] = Input::GetWindowPosition();
 			mx -= ImGui::GetWindowPos().x;
 			my -= ImGui::GetWindowPos().y;
-		
+			mx += winPosX;
+			my += winPosY;
+
 			auto viewportWidth  = ImGui::GetWindowSize().x;
 			auto viewportHeight = ImGui::GetWindowSize().y;
 			
@@ -218,7 +222,7 @@ namespace XYZ {
 			{
 				if (m_ViewportHovered && m_Context->GetState() == SceneState::Edit)
 				{
-					m_EditorCamera.OnUpdate(ts);
+					m_EditorCamera.OnUpdate(ts);	
 				}
 			}
 		}	

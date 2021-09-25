@@ -29,18 +29,12 @@ namespace XYZ {
 					const char* className = refl.sc_ClassName;
 					for (const auto& variable : refl.GetVariables())
 					{
-						if (!anim->PropertyHasVariable(className, variable.c_str()))
+						if (!anim->PropertyHasVariable(className, variable.c_str(), entity))
 							tmpVariables.push_back(variable);
 					}
 					if (!tmpVariables.empty())
 						classMap[refl.sc_ClassName].VariableNames = std::move(tmpVariables);
 				}
-			}
-
-			template <typename ComponentType, typename T>
-			void AddReflectedProperty(Reflection<ComponentType> refl, Ref<Animation> anim, const SceneEntity& entity, const T& val, const std::string& valName)
-			{
-				anim->AddProperty<ComponentType, T>(entity, valName);
 			}
 		}
 		AnimationEditor::AnimationEditor()
@@ -108,22 +102,7 @@ namespace XYZ {
 						{
 							handleSelected();
 						}
-						ImGui::SameLine();
-						if (ImGui::Button("Copy"))
-						{
-							m_Sequencer.Copy();
-						}
-						ImGui::SameLine();
-						if (ImGui::Button("Paste"))
-						{
-							const auto& copy = m_Sequencer.GetCopy();
-							AnimationSequencer::SequenceItem& item = m_Sequencer.m_Items[copy.ItemIndex];
-							auto& seqItemType = m_Sequencer.m_SequencerItemTypes[item.Type];
-							for (auto& it : copy.Points)
-							{
-								seqItemType.Callback(seqItemType.Entity, m_CurrentFrame + it.pointIndex, static_cast<uint32_t>(copy.ItemIndex));
-							}
-						}
+
 						ImGui::PopItemWidth();
 
 						ImGui::SameLine();
@@ -132,23 +111,25 @@ namespace XYZ {
 
 						if (ImGui::BeginPopup("AddProperty"))
 						{
-							auto [classIndex, variableIndex] = getClassAndVariable();
-							Reflect::For([&](auto j) {
-								if (j.value == classIndex)
-								{
-									auto reflClass = ReflectedClasses::Get<j.value>();
-									Reflect::For([&](auto i) {
-										if (i.value == variableIndex)
-										{
-											auto& val = reflClass.Get<i.value>(selectedEntity.GetComponentFromReflection(reflClass));
-											Helper::AddReflectedProperty(reflClass, m_Context, selectedEntity, val,
-												reflClass.GetVariables()[i.value]
-											);
-										}
-									}, std::make_index_sequence<reflClass.sc_NumVariables>());
-								}
-							}, std::make_index_sequence<ReflectedClasses::sc_NumClasses>());
-
+							size_t classIndex, variableIndex;
+							if (getClassAndVariable(classIndex, variableIndex))
+							{
+								Reflect::For([&](auto j) {
+									if (j.value == classIndex)
+									{
+										auto reflClass = ReflectedClasses::Get<j.value>();
+										Reflect::For([&](auto i) {
+											if (i.value == variableIndex)
+											{
+												auto& val = reflClass.Get<i.value>(selectedEntity.GetComponentFromReflection(reflClass));
+												addReflectedProperty(reflClass, selectedEntity, val,
+													reflClass.GetVariables()[i.value]
+												);
+											}
+										}, std::make_index_sequence<reflClass.sc_NumVariables>());
+									}
+								}, std::make_index_sequence<ReflectedClasses::sc_NumClasses>());
+							}
 							ImGui::EndPopup();
 						}
 
@@ -156,26 +137,7 @@ namespace XYZ {
 
 						if (Input::IsKeyPressed(KeyCode::KEY_DELETE))
 						{
-							const auto& selection = m_Sequencer.GetSelection();
-							AnimationSequencer::SequenceItem& item = m_Sequencer.m_Items[selection.ItemIndex];
-							auto& seqItemType = m_Sequencer.m_SequencerItemTypes[item.Type];
-							size_t index = 0;
-							bool selected = item.LineEdit.GetSelectedIndex(index);
-							//if (selected
-							//	&& seqItemType.Name == "Transform"
-							//	&& seqItemType.Entity == selectedEntity)
-							//{
-							//	const TransformTrack::PropertyType type = static_cast<TransformTrack::PropertyType>(index);
-							//	Ref<TransformTrack> track = m_Context->FindTrack<TransformTrack>(selectedEntity);
-							//
-							//	for (auto& point : selection.Points)
-							//	{
-							//		const auto& line = item.LineEdit.GetLines()[point.curveIndex];
-							//		uint32_t frame = static_cast<uint32_t>(line.Points[point.pointIndex].x);
-							//		track->RemoveKeyFrame(frame, type);
-							//	}
-							//}
-							//m_Sequencer.DeleteSelectedPoints();
+						
 						}
 						
 					}
@@ -187,9 +149,26 @@ namespace XYZ {
 		{
 			if (m_SelectedEntry != -1)
 			{
-				AnimationSequencer::SequenceItem& item = m_Sequencer.m_Items[m_SelectedEntry];
-				auto& seqItemType = m_Sequencer.m_SequencerItemTypes[item.Type];
-				seqItemType.Callback(seqItemType.Entity, m_CurrentFrame, static_cast<uint32_t>(m_SelectedEntry));
+				m_Sequencer.AddKey(m_SelectedEntry, m_CurrentFrame);
+				int itemType = m_Sequencer.GetItemItemType(m_SelectedEntry);
+				const char* itemTypeName = m_Sequencer.GetItemTypeName(itemType);
+				size_t classIndex, variableIndex;
+				if (getClassAndVariable(classIndex, variableIndex))
+				{
+					Reflect::For([&](auto j) {
+						if (j.value == classIndex)
+						{
+							auto reflClass = ReflectedClasses::Get<j.value>();
+							Reflect::For([&](auto i) {
+								if (i.value == variableIndex)
+								{
+									auto& val = reflClass.Get<i.value>(m_SelectedEntity.GetComponentFromReflection(reflClass));
+									addKeyToProperty(reflClass, m_SelectedEntity, m_CurrentFrame, val, reflClass.GetVariables()[i.value]);
+								}
+							}, std::make_index_sequence<reflClass.sc_NumVariables>());
+						}
+					}, std::make_index_sequence<ReflectedClasses::sc_NumClasses>());
+				}
 				m_Sequencer.ClearSelection();
 			}
 		}
@@ -206,33 +185,50 @@ namespace XYZ {
 				}, std::make_index_sequence<ReflectedClasses::sc_NumClasses>());
 			}
 		}
-		std::pair<int32_t, int32_t> AnimationEditor::getClassAndVariable()
+
+		template <typename T>
+		static size_t FindIndex(const T& container, const std::string& name)
 		{
+			size_t result = 0;
+			for (const auto& it : container)
+			{
+				if (it == name)
+					break;
+				result++;
+			}
+			return result;
+		}
+
+		bool AnimationEditor::getClassAndVariable(size_t& classIndex, size_t& variableIndex)
+		{		
 			for (auto& [className, classData] : m_ClassMap)
 			{
 				if (ImGui::BeginMenu(className.c_str()))
-				{
-					int32_t variableCounter = 0;
+				{				
 					auto& variables = classData.VariableNames;
 					for (auto it = variables.begin(); it != variables.end(); ++it)
 					{
 						if (ImGui::MenuItem(it->c_str()))
 						{
+							classIndex = FindIndex(ReflectedClasses::GetClasses(), className);
+							Reflect::For([&](auto j) {
+								if (j.value == classIndex)
+								{
+									auto reflClass = ReflectedClasses::Get<j.value>();
+									variableIndex = FindIndex(reflClass.GetVariables(), *it);
+								}
+							}, std::make_index_sequence<ReflectedClasses::sc_NumClasses>());		
+							
+
 							variables.erase(it);
-							int32_t classIndex = -1;
-							for (const auto& it : ReflectedClasses::GetClasses())
-							{
-								if (it == className)
-									return { classIndex, variableCounter };
-								classIndex++;
-							}				
+							ImGui::EndMenu();
+							return true;
 						}
-						variableCounter++;
 					}
 					ImGui::EndMenu();
 				}
 			}
-			return std::pair<int32_t, int32_t>(-1, -1);
+			return false;
 		}
 	}
 }

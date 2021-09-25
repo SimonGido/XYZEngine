@@ -50,6 +50,13 @@ namespace XYZ {
 		glfwGetWindowSize(window, &width, &height);
 		return std::pair<int, int>(width, height);
 	}
+	std::pair<int, int> Input::GetWindowPosition()
+	{
+		int positionX, positionY;
+		GLFWwindow* window = (GLFWwindow*)Application::Get().GetWindow().GetWindow();
+		glfwGetWindowPos(window, &positionX, &positionY);
+		return std::pair<int, int>(positionX, positionY);
+	}
 }
 
 #endif

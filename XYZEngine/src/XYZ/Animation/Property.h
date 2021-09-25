@@ -48,7 +48,7 @@ namespace XYZ {
 		void		       RemoveKeyFrame(uint32_t frame);
 		
 		uint32_t		   Length()			  const;
-	    SceneEntity		   GetSceneEntity()   const { return m_Entity; }
+	    const SceneEntity& GetSceneEntity()   const { return m_Entity; }
 		const std::string& GetValueName()     const { return m_ValueName; }
 		const std::string& GetComponentName() const { return m_ComponentName; }
 

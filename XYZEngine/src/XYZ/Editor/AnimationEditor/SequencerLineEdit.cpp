@@ -27,13 +27,20 @@ namespace XYZ {
             }
             return pointIndex;
         }
-        void SequenceLineEdit::AddLine(int type, uint32_t color)
+        void SequenceLineEdit::AddLine(const std::string& name, uint32_t color)
         {
             size_t index = m_Lines.size();
             m_Lines.push_back({});
             auto& line = m_Lines.back();
-            line.Type = type;
+            line.Name  = name;
             line.Color = color;
+            size_t curveIndex = 0;
+            for (auto& line : m_Lines)
+            {
+                for (auto& p : line.Points)
+                    p.y = getLineY(curveIndex);
+                curveIndex++;
+            }
         }
    
         void SequenceLineEdit::SetSelected(size_t curveIndex)

@@ -25,6 +25,7 @@ namespace XYZ {
 		static float GetMouseX();
 		static float GetMouseY();
 		static std::pair<int, int> GetWindowSize();
+		static std::pair<int, int> GetWindowPosition();
 	};
 }
  

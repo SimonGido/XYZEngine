@@ -12,18 +12,26 @@ namespace XYZ {
 			m_FrameMax(0)
 		{
 		}
+		int AnimationSequencer::GetItemTypeCount() const
+		{
+			return static_cast<int>(m_SequencerItemTypes.size());
+		}
+		const char* AnimationSequencer::GetItemTypeName(int typeIndex) const
+		{
+			return m_SequencerItemTypes[typeIndex].c_str();
+		}
 		const char* AnimationSequencer::GetItemLabel(int index) const
 		{
 			static char tmps[512];
-			auto& seqItemType = m_SequencerItemTypes[m_Items[index].Type];
-			if (seqItemType.Entity.IsValid())
+			auto& item = m_Items[index];
+			auto& seqItemType = m_SequencerItemTypes[item.Type];
+			if (item.Entity.IsValid())
 			{
-				auto& sceneTag = seqItemType.Entity.GetComponent<SceneTagComponent>();
-				snprintf(tmps, 512, "%s: %s", sceneTag.Name.c_str(), seqItemType.Name.c_str());
+				snprintf(tmps, 512, "%s:%s", item.Entity.GetComponent<SceneTagComponent>().Name.c_str(), seqItemType.c_str());
 			}
 			else
 			{
-				snprintf(tmps, 512, "Missing Entity: %s", seqItemType.Name.c_str());
+				snprintf(tmps, 512, "%s", seqItemType.c_str());
 			}
 			return tmps;
 		}
@@ -40,14 +48,6 @@ namespace XYZ {
 				*type = item.Type;
 		}
 
-		void AnimationSequencer::Add(int type)
-		{
-			m_Items.push_back(SequenceItem{ type, 0, 1, false, {} });
-			auto& item = m_Items.back();
-			size_t numLines = m_SequencerItemTypes[type].SubTypes.size();
-			for (size_t i = 0; i < numLines; ++i)
-				item.LineEdit.AddLine(i);
-		}
 		void AnimationSequencer::Copy()
 		{
 			m_Copy = m_Selection;
@@ -56,7 +56,7 @@ namespace XYZ {
 		size_t AnimationSequencer::GetCustomHeight(int index)
 		{
 			auto& item = m_Items[index];
-			return item.Expanded ? m_SequencerItemTypes[item.Type].Height : 0;
+			return item.Expanded ? item.Height : 0;
 		}
 
 		void AnimationSequencer::DoubleClick(int index)
@@ -84,7 +84,7 @@ namespace XYZ {
 			{
 				ImVec2 pta(legendRect.Min.x + 30, legendRect.Min.y + i * 14.f);
 				ImVec2 ptb(legendRect.Max.x, legendRect.Min.y + (i + 1) * 14.f);
-				draw_list->AddText(pta, line.Selected ? 0xFFFFFFFF : 0x80FFFFFF, m_SequencerItemTypes[item.Type].SubTypes[line.Type].c_str());
+				draw_list->AddText(pta, line.Selected ? 0xFFFFFFFF : 0x80FFFFFF, line.Name.c_str());
 				if (ImRect(pta, ptb).Contains(ImGui::GetMousePos()) && ImGui::IsMouseClicked(0))
 					item.LineEdit.SetSelected(i);
 				i++;
@@ -119,9 +119,34 @@ namespace XYZ {
 			}
 			draw_list->PopClipRect();
 		}
-		void AnimationSequencer::AddSequencerItemType(const std::string& name, const SceneEntity& entity, const std::initializer_list<std::string>& subTypes, AddKeyCallback callback)
+		void AnimationSequencer::AddItemType(const std::string& name)
 		{
-			m_SequencerItemTypes.push_back({ name, entity, subTypes, callback });
+			m_SequencerItemTypes.push_back(name);
+		}
+		void AnimationSequencer::AddItem(int type, const SceneEntity& entity)
+		{
+			m_Items.push_back(SequenceItem{ type, 0, 1, false, entity, 100, {} });
+		}
+		void AnimationSequencer::AddLine(int type, const SceneEntity& entity, const std::string& lineName, uint32_t color)
+		{
+			for (auto& item : m_Items)
+			{
+				if (item.Type == type && item.Entity == entity)
+				{
+					item.LineEdit.AddLine(lineName, color);
+					return;
+				}
+			}
+		}
+		void AnimationSequencer::AddKey(int itemIndex, int key)
+		{
+			auto& lineEdit = m_Items[itemIndex].LineEdit;
+			size_t curveIndex = 0;
+			
+			if (lineEdit.GetSelectedIndex(curveIndex))
+			{
+				lineEdit.AddPoint(curveIndex, { static_cast<float>(key), 0.0f });
+			}
 		}
 		void AnimationSequencer::DeleteSelectedPoints()
 		{
@@ -135,6 +160,50 @@ namespace XYZ {
 				itemLine.DeletePoint(point.curveIndex, point.pointIndex);
 			}
 			m_Selection.Points.clear();
+		}
+		bool AnimationSequencer::ItemTypeExists(std::string_view name) const
+		{
+			for (const auto& itemType : m_SequencerItemTypes)
+			{
+				if (itemType == name)
+					return true;
+			}
+			return false;
+		}
+		bool AnimationSequencer::ItemExists(int type, const SceneEntity& entity) const
+		{
+			for (const auto& item : m_Items)
+			{
+				if (item.Type == type && item.Entity == entity)
+					return true;
+			}
+			return false;
+		}
+		int AnimationSequencer::GetItemTypeIndex(std::string_view name) const
+		{
+			int counter = 0;
+			for (const auto& itemType : m_SequencerItemTypes)
+			{
+				if (itemType == name)
+					return counter;
+				counter++;
+			}
+			return -1;
+		}
+		int AnimationSequencer::GetItemIndex(int type, const SceneEntity& entity) const
+		{
+			int counter = 0;
+			for (const auto& item : m_Items)
+			{
+				if (item.Type == type && item.Entity == entity)
+					return counter;
+				counter++;
+			}
+			return -1;
+		}
+		int AnimationSequencer::GetItemItemType(int itemIndex) const
+		{
+			return m_Items[itemIndex].Type;
 		}
 	}
 }

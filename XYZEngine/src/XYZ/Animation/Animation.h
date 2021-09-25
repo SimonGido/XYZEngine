@@ -19,13 +19,16 @@ namespace XYZ {
 		template <typename ComponentType, typename ValueType>
 		void RemoveProperty(const SceneEntity& entity, const std::string& valueName);
 
+		template <typename ComponentType, typename ValueType>
+		Property<ValueType>* GetProperty(const SceneEntity& entity, const std::string& valueName);
+
 		void Update(Timestep ts);
 		void UpdateLength();
 		void SetCurrentFrame(uint32_t frame);
 		void SetNumFrames(uint32_t numFrames) { m_NumFrames = numFrames; }
 		void SetRepeat(bool repeat)			  { m_Repeat = repeat; }
 
-		bool PropertyHasVariable(const char* componentName, const char* varName) const;
+		bool PropertyHasVariable(const char* componentName, const char* varName, const SceneEntity& entity) const;
 
 		inline uint32_t	GetNumFrames()   const { return m_NumFrames; }
 		inline uint32_t	GetTime()        const { return m_CurrentFrame; }
@@ -40,12 +43,17 @@ namespace XYZ {
 		void	    removePropertySpecialized(const SceneEntity& entity, const std::string& valueName, const std::string& componentName);
 		
 		template <typename T>
+		Property<T>* getPropertySpecialized(const SceneEntity& entity, const std::string& valueName, const std::string& componentName);
+		
+		template <typename T>
 		static void	removeFromContainer(std::vector<T>& container, const SceneEntity& entity, const std::string& valueName, const std::string& componentName);
 
 		template <typename T>
-		static bool propertyHasVariable(const std::vector<Property<T>>& container, const char* className, const char* varName);
+		static T*   findInContainer(std::vector<T>& container, const SceneEntity& entity, const std::string& valueName, const std::string& componentName);
 
-
+		template <typename T>
+		static bool propertyHasVariable(const std::vector<Property<T>>& container, const char* className, const char* varName, const SceneEntity& entity);
+			
 		void		clearProperties();
 	private:
 		std::vector<Property<glm::vec4>> m_Vec4Properties;
@@ -74,7 +82,13 @@ namespace XYZ {
 	template<typename ComponentType, typename ValueType>
 	inline void Animation::RemoveProperty(const SceneEntity& entity, const std::string& valueName)
 	{
-		removePropertySpecialized<ValueType>(entity, valueName, Reflection<ComponentType>::GetClassName());
+		removePropertySpecialized<ValueType>(entity, valueName, Reflection<ComponentType>::sc_ClassName);
+	}
+
+	template <typename ComponentType, typename ValueType>
+	inline Property<ValueType>* Animation::GetProperty(const SceneEntity& entity, const std::string& valueName)
+	{
+		return getPropertySpecialized<ValueType>(entity, valueName, Reflection<ComponentType>::sc_ClassName);
 	}
 
 	template<typename T>
@@ -90,13 +104,26 @@ namespace XYZ {
 			}
 		}
 	}
-
+	template<typename T>
+	T* Animation::findInContainer(std::vector<T>& container, const SceneEntity& entity, const std::string& valueName, const std::string& componentName)
+	{
+		for (size_t i = 0; i < container.size(); ++i)
+		{
+			auto& prop = container[i];
+			if (prop.GetSceneEntity() == entity && prop.GetValueName() == valueName && prop.GetComponentName() == componentName)
+			{
+				return &prop;
+			}
+		}
+		XYZ_ASSERT(false, "Not found in container");
+		return nullptr;
+	}
 	template <typename T>
-	bool Animation::propertyHasVariable(const std::vector<Property<T>>& container, const char* className, const char* varName)
+	bool Animation::propertyHasVariable(const std::vector<Property<T>>& container, const char* className, const char* varName, const SceneEntity& entity)
 	{
 		for (const auto& it : container)
 		{
-			if (it.GetComponentName() == className && it.GetValueName() == varName)
+			if (it.GetComponentName() == className && it.GetValueName() == varName && it.GetSceneEntity() == entity)
 				return true;
 		}
 		return false;

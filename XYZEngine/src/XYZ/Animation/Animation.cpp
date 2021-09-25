@@ -48,17 +48,17 @@ namespace XYZ {
 		m_CurrentTime = m_CurrentFrame * m_FrameLength;
 	}
 
-	bool Animation::PropertyHasVariable(const char* componentName, const char* varName) const
+	bool Animation::PropertyHasVariable(const char* componentName, const char* varName, const SceneEntity& entity) const
 	{
-		if (propertyHasVariable(m_Vec4Properties, componentName, varName))
+		if (propertyHasVariable(m_Vec4Properties, componentName, varName, entity))
 			return true;
-		if (propertyHasVariable(m_Vec3Properties, componentName, varName))
+		if (propertyHasVariable(m_Vec3Properties, componentName, varName, entity))
 			return true;
-		if (propertyHasVariable(m_Vec2Properties, componentName, varName))
+		if (propertyHasVariable(m_Vec2Properties, componentName, varName, entity))
 			return true;
-		if (propertyHasVariable(m_FloatProperties, componentName, varName))
+		if (propertyHasVariable(m_FloatProperties, componentName, varName, entity))
 			return true;
-		if (propertyHasVariable(m_PointerProperties, componentName, varName))
+		if (propertyHasVariable(m_PointerProperties, componentName, varName, entity))
 			return true;
 		return false;
 	}
@@ -147,5 +147,57 @@ namespace XYZ {
 	void Animation::removePropertySpecialized<void*>(const SceneEntity& entity, const std::string& valueName, const std::string& componentName)
 	{
 		removeFromContainer(m_PointerProperties, entity, valueName, componentName);
+	}
+
+	template <>
+	Property<glm::vec4>* Animation::getPropertySpecialized<glm::vec4>(const SceneEntity& entity, const std::string& valueName, const std::string& componentName)
+	{
+		return findInContainer(m_Vec4Properties, entity, valueName, componentName);
+	}
+	template <>
+	Property<glm::vec3>* Animation::getPropertySpecialized<glm::vec3>(const SceneEntity& entity, const std::string& valueName, const std::string& componentName)
+	{
+		return findInContainer(m_Vec3Properties, entity, valueName, componentName);
+	}
+	template <>
+	Property<glm::vec2>* Animation::getPropertySpecialized<glm::vec2>(const SceneEntity& entity, const std::string& valueName, const std::string& componentName)
+	{
+		return findInContainer(m_Vec2Properties, entity, valueName, componentName);
+	}
+	template <>
+	Property<float>* Animation::getPropertySpecialized<float>(const SceneEntity& entity, const std::string& valueName, const std::string& componentName)
+	{
+		return findInContainer(m_FloatProperties, entity, valueName, componentName);
+	}
+	template <>
+	Property<void*>* Animation::getPropertySpecialized<void*>(const SceneEntity& entity, const std::string& valueName, const std::string& componentName)
+	{
+		return findInContainer(m_PointerProperties, entity, valueName, componentName);
+	}
+
+	template <>
+	Property<glm::mat4>* Animation::getPropertySpecialized<glm::mat4>(const SceneEntity& entity, const std::string& valueName, const std::string& componentName)
+	{
+		return nullptr;
+	}
+	template <>
+	Property<Ref<Material>>* Animation::getPropertySpecialized<Ref<Material>>(const SceneEntity& entity, const std::string& valueName, const std::string& componentName)
+	{
+		return nullptr;
+	}
+	template <>
+	Property<Ref<SubTexture>>* Animation::getPropertySpecialized<Ref<SubTexture>>(const SceneEntity& entity, const std::string& valueName, const std::string& componentName)
+	{
+		return nullptr;
+	}
+	template <>
+	Property<uint32_t>* Animation::getPropertySpecialized<uint32_t>(const SceneEntity& entity, const std::string& valueName, const std::string& componentName)
+	{
+		return nullptr;
+	}
+	template <>
+	Property<bool>* Animation::getPropertySpecialized<bool>(const SceneEntity& entity, const std::string& valueName, const std::string& componentName)
+	{
+		return nullptr;
 	}
 }
