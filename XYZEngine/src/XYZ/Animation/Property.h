@@ -39,19 +39,21 @@ namespace XYZ {
 		Property<T>& operator=(Property<T>&& other) noexcept;
 
 
-		bool		       Update(uint32_t frame);
-		void		       SetReference();
-		void		       SetCurrentKey(uint32_t frame);
-		void		       Reset() { m_CurrentKey = 0; }
-					       
-		void		       AddKeyFrame(const KeyFrame<T>& key);
-		void		       RemoveKeyFrame(uint32_t frame);
-		
-		uint32_t		   Length()			  const;
-	    const SceneEntity& GetSceneEntity()   const { return m_Entity; }
-		const std::string& GetValueName()     const { return m_ValueName; }
-		const std::string& GetComponentName() const { return m_ComponentName; }
+		bool Update(uint32_t frame);
+		void SetReference();
+		void SetCurrentKey(uint32_t frame);
+		void Reset() { m_CurrentKey = 0; }
+			 
+		void AddKeyFrame(const KeyFrame<T>& key);
+		void RemoveKeyFrame(uint32_t frame);
+		void SetKeyEndFrame(uint32_t endFrame, size_t index);
+		void SetKeyValue(const T& value, size_t index);
 
+		uint32_t						Length()			  const;
+	    const SceneEntity&				GetSceneEntity()   const { return m_Entity; }
+		const std::string&				GetValueName()     const { return m_ValueName; }
+		const std::string&				GetComponentName() const { return m_ComponentName; }	
+		const std::vector<KeyFrame<T>>& GetKeyFrames() const { return m_Keys; }
 	private:
 		bool isKeyInRange() const { return m_CurrentKey + 1 < m_Keys.size(); }
 	
@@ -187,6 +189,19 @@ namespace XYZ {
 				it++;
 			}
 		}
+	}
+
+	template<typename T>
+	inline void Property<T>::SetKeyEndFrame(uint32_t endFrame, size_t index)
+	{
+		m_Keys[index].EndFrame = endFrame;
+		std::sort(m_Keys.begin(), m_Keys.end());
+	}
+
+	template<typename T>
+	inline void Property<T>::SetKeyValue(const T& value, size_t index)
+	{
+		m_Keys[index].Value = value;
 	}
 
 	template<typename T>

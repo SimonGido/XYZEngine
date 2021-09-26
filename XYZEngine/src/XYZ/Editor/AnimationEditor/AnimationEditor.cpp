@@ -46,7 +46,7 @@ namespace XYZ {
 			m_Playing(false)
 		{
 			m_Sequencer.m_FrameMin = 0;
-			m_Sequencer.m_FrameMax = 100;
+			m_Sequencer.m_FrameMax = 60;
 		}
 		void AnimationEditor::SetContext(const Ref<Animation>& context)
 		{
@@ -86,7 +86,7 @@ namespace XYZ {
 						ImGui::SameLine();
 						if (ImGui::Button("Add Key"))
 						{
-							handleSelected();
+							handleAddKey();
 						}
 						ImGui::SameLine();
 
@@ -141,19 +141,18 @@ namespace XYZ {
 
 
 						ImGui::PopItemWidth();
-						ImSequencer::Sequencer(&m_Sequencer, &m_CurrentFrame, &m_Expanded, &m_SelectedEntry, &m_FirstFrame, ImSequencer::SEQUENCER_EDIT_STARTEND | ImSequencer::SEQUENCER_CHANGE_FRAME);
+						int sequenceOptions = ImSequencer::SEQUENCER_CHANGE_FRAME;
+						ImSequencer::Sequencer(&m_Sequencer, &m_CurrentFrame, &m_Expanded, &m_SelectedEntry, &m_FirstFrame, sequenceOptions);
 
 						if (Input::IsKeyPressed(KeyCode::KEY_DELETE))
 						{
-						
-						}
-						
+						}					
 					}
 				}
 			}
 			ImGui::End();
 		}
-		void AnimationEditor::handleSelected()
+		void AnimationEditor::handleAddKey()
 		{
 			if (m_SelectedEntry != -1)
 			{		

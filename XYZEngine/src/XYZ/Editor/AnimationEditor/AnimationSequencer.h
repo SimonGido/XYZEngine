@@ -60,8 +60,6 @@ namespace XYZ {
             struct SequenceItem
             {
                 int               Type;
-                int               FrameStart;
-                int               FrameEnd;
                 bool              Expanded;
                 SceneEntity       Entity;
                 size_t            Height;

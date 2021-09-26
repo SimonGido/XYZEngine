@@ -41,9 +41,9 @@ namespace XYZ {
 			if (color)
 				*color = 0xFFAA8080; // same color for everyone, return color based on type
 			if (start)
-				*start = &item.FrameStart;
+				*start = &m_FrameMin; // This should be item.m_FrameStart, but we do not need it
 			if (end)
-				*end = &item.FrameEnd;
+				*end = &m_FrameMax; // This should be item.m_FrameEnd, but we do not need it
 			if (type)
 				*type = item.Type;
 		}
@@ -80,10 +80,12 @@ namespace XYZ {
 			item.LineEdit.GetMax() = ImVec2(float(m_FrameMax), 1.f);
 			item.LineEdit.GetMin() = ImVec2(float(m_FrameMin), 0.f);
 			int i = 0;
+	
 			for (auto& line : item.LineEdit.GetLines())
 			{
 				ImVec2 pta(legendRect.Min.x + 30, legendRect.Min.y + i * 14.f);
 				ImVec2 ptb(legendRect.Max.x, legendRect.Min.y + (i + 1) * 14.f);
+				
 				draw_list->AddText(pta, line.Selected ? 0xFFFFFFFF : 0x80FFFFFF, line.Name.c_str());
 				if (ImRect(pta, ptb).Contains(ImGui::GetMousePos()) && ImGui::IsMouseClicked(0))
 					item.LineEdit.SetSelected(i);
@@ -109,10 +111,7 @@ namespace XYZ {
 			{
 				for (auto& point : line.Points)
 				{
-					float p = point.x;
-					if (p < m_Items[index].FrameStart || p > m_Items[index].FrameEnd)
-						continue;
-					float r = (p - m_FrameMin) / float(m_FrameMax - m_FrameMin);
+					float r = (point.x - m_FrameMin) / float(m_FrameMax - m_FrameMin);
 					float x = ImLerp(rc.Min.x, rc.Max.x, r);
 					draw_list->AddLine(ImVec2(x, rc.Min.y + 6), ImVec2(x, rc.Max.y - 4), 0xAA000000, 4.f);
 				}
@@ -125,7 +124,7 @@ namespace XYZ {
 		}
 		void AnimationSequencer::AddItem(int type, const SceneEntity& entity)
 		{
-			m_Items.push_back(SequenceItem{ type, 0, 1, false, entity, 100, {} });
+			m_Items.push_back(SequenceItem{ type, false, entity, 100, {} });
 		}
 		void AnimationSequencer::AddLine(int type, const SceneEntity& entity, const std::string& lineName, uint32_t color)
 		{

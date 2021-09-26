@@ -23,7 +23,7 @@ namespace XYZ {
 			void OnUpdate(Timestep ts);
 			void OnImGuiRender(bool& open);
 		private:
-			void handleSelected();
+			void handleAddKey();
 			void buildClassMap(const SceneEntity& entity);
 
 			template <typename ComponentType, typename T>
