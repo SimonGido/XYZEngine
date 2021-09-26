@@ -205,5 +205,18 @@ namespace XYZ {
 		{
 			return m_Items[itemIndex].Type;
 		}
+		const SequenceLineEdit::Line* AnimationSequencer::GetSelectedLine(int itemIndex) const
+		{
+			if (itemIndex != -1)
+			{
+				return m_Items[itemIndex].LineEdit.GetSelectedLine();
+			}
+			for (const auto& item : m_Items)
+			{
+				if (auto line = item.LineEdit.GetSelectedLine())
+					return line;
+			}
+			return nullptr;
+		}
 	}
 }

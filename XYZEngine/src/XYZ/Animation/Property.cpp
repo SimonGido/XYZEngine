@@ -9,6 +9,42 @@
 
 namespace XYZ {
 
+
+	template <>
+	bool Property<void*>::Update(uint32_t frame)
+	{
+		if (isKeyInRange() && frame <= Length())
+		{
+			size_t& current = m_CurrentKey;
+			const KeyFrame<void*>& curr = m_Keys[current];
+			const KeyFrame<void*>& next = m_Keys[current + 1];
+
+			*m_Value = curr.Value;
+			if (frame >= next.EndFrame)
+				current++;
+			return false;
+		}
+		return true;
+	}
+
+	template <>
+	bool Property<uint32_t>::Update(uint32_t frame)
+	{
+		if (isKeyInRange() && frame <= Length())
+		{
+			size_t& current = m_CurrentKey;
+			const KeyFrame<uint32_t>& curr = m_Keys[current];
+			const KeyFrame<uint32_t>& next = m_Keys[current + 1];
+			uint32_t length = next.EndFrame - curr.EndFrame;
+			uint32_t passed = frame - curr.EndFrame;
+
+			*m_Value = curr.Value + (next.Value - curr.Value) * (float)passed / (float)length;
+			if (frame >= next.EndFrame)
+				current++;
+			return false;
+		}
+		return true;
+	}
 	template <>
 	bool Property<float>::Update(uint32_t frame)
 	{

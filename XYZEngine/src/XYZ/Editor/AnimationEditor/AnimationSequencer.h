@@ -48,9 +48,10 @@ namespace XYZ {
             bool                ItemTypeExists(std::string_view name) const;
             bool                ItemExists(int type, const SceneEntity& entity) const;
 
-            int                 GetItemTypeIndex(std::string_view name) const;
-            int                 GetItemIndex(int type, const SceneEntity& entity) const;
-            int                 GetItemItemType(int itemIndex) const;
+            int                           GetItemTypeIndex(std::string_view name) const;
+            int                           GetItemIndex(int type, const SceneEntity& entity) const;
+            int                           GetItemItemType(int itemIndex) const;
+            const SequenceLineEdit::Line* GetSelectedLine(int itemIndex = -1) const;
         public:           
             int m_FrameMin;
             int m_FrameMax;

@@ -12,15 +12,14 @@ namespace XYZ {
 		m_NumFrames(0),
 		m_CurrentFrame(0),
 		m_CurrentTime(0.0f),
-		m_FrameLength(0.05f),
 		m_Repeat(true)
-	{ 
+	{
+		SetFrequency(60);
 	}
 
 	Animation::~Animation()
 	{
 	}
-
 
 	void Animation::Update(Timestep ts)
 	{
@@ -28,11 +27,12 @@ namespace XYZ {
 		{
 			if (!m_Repeat)
 				return;
-
+			resetProperties();
 			m_CurrentTime = 0.0f;
 			m_CurrentFrame = 0;
 		}
-
+		
+		updateProperties(m_CurrentFrame);
 		m_CurrentTime += ts;
 		m_CurrentFrame = static_cast<uint32_t>(std::floor(m_CurrentTime / m_FrameLength));
 	}
@@ -42,10 +42,17 @@ namespace XYZ {
 
 	}
 
+	void Animation::SetFrequency(uint32_t framesPerSecond)
+	{
+		m_Frequency = framesPerSecond;
+		m_FrameLength = 1.0f / m_Frequency;
+	}
+
 	void Animation::SetCurrentFrame(uint32_t frame)
 	{
 		m_CurrentFrame = std::min(m_NumFrames, frame);
 		m_CurrentTime = m_CurrentFrame * m_FrameLength;
+		setPropertiesKey(m_CurrentFrame);
 	}
 
 	bool Animation::PropertyHasVariable(const char* componentName, const char* varName, const SceneEntity& entity) const
@@ -61,6 +68,63 @@ namespace XYZ {
 		if (propertyHasVariable(m_PointerProperties, componentName, varName, entity))
 			return true;
 		return false;
+	}
+
+	void Animation::updateProperties(uint32_t frame)
+	{
+		for (auto& prop : m_Vec4Properties)
+			prop.Update(frame);
+		for (auto& prop : m_Vec3Properties)
+			prop.Update(frame);
+		for (auto& prop : m_Vec2Properties)
+			prop.Update(frame);
+		for (auto& prop : m_FloatProperties)
+			prop.Update(frame);
+		for (auto& prop : m_PointerProperties)
+			prop.Update(frame);
+	}
+
+	void Animation::setPropertiesKey(uint32_t frame)
+	{
+		for (auto& prop : m_Vec4Properties)
+		{
+			prop.SetCurrentKey(frame);
+			prop.Update(frame);
+		}
+		for (auto& prop : m_Vec3Properties)
+		{
+			prop.SetCurrentKey(frame);
+			prop.Update(frame);
+		}
+		for (auto& prop : m_Vec2Properties)
+		{
+			prop.SetCurrentKey(frame);
+			prop.Update(frame);
+		}
+		for (auto& prop : m_FloatProperties)
+		{
+			prop.SetCurrentKey(frame);
+			prop.Update(frame);
+		}
+		for (auto& prop : m_PointerProperties)
+		{
+			prop.SetCurrentKey(frame);
+			prop.Update(frame);
+		}
+	}
+
+	void Animation::resetProperties()
+	{
+		for (auto& prop : m_Vec4Properties)
+			prop.Reset();
+		for (auto& prop : m_Vec3Properties)
+			prop.Reset();
+		for (auto& prop : m_Vec2Properties)
+			prop.Reset();
+		for (auto& prop : m_FloatProperties)
+			prop.Reset();
+		for (auto& prop : m_PointerProperties)
+			prop.Reset();
 	}
 
 

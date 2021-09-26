@@ -24,18 +24,24 @@ namespace XYZ {
 
 		void Update(Timestep ts);
 		void UpdateLength();
+		void SetFrequency(uint32_t framesPerSecond);
 		void SetCurrentFrame(uint32_t frame);
 		void SetNumFrames(uint32_t numFrames) { m_NumFrames = numFrames; }
 		void SetRepeat(bool repeat)			  { m_Repeat = repeat; }
 
 		bool PropertyHasVariable(const char* componentName, const char* varName, const SceneEntity& entity) const;
 
-		inline uint32_t	GetNumFrames()   const { return m_NumFrames; }
-		inline uint32_t	GetTime()        const { return m_CurrentFrame; }
-		inline float	GetFrameLength() const { return m_FrameLength; }
-		inline bool		GetRepeat()	     const { return m_Repeat; }
+		inline uint32_t	GetNumFrames()    const { return m_NumFrames; }
+		inline uint32_t	GetCurrentFrame() const { return m_CurrentFrame; }
+		inline uint32_t GetFrequency()    const { return m_Frequency; }
+		inline float	GetFrameLength()  const { return m_FrameLength; }
+		inline bool		GetRepeat()	      const { return m_Repeat; }
 	
 	private:
+		void updateProperties(uint32_t frame);
+		void setPropertiesKey(uint32_t frame);
+		void resetProperties();
+
 		template <typename ValueType>
 		void	    addPropertySpecialized(const Property<ValueType>& prop);
 		
@@ -64,6 +70,7 @@ namespace XYZ {
 		
 		uint32_t m_NumFrames;
 		uint32_t m_CurrentFrame;
+		uint32_t m_Frequency;
 		float	 m_CurrentTime;
 		float    m_FrameLength;
 		bool     m_Repeat;
@@ -73,8 +80,8 @@ namespace XYZ {
 	template<typename ComponentType, typename ValueType>
 	inline void Animation::AddProperty(const SceneEntity& entity, const std::string& valueName)
 	{
-		SetPropertyRefFn<ValueType> callback = [](SceneEntity ent, ValueType* ref, const std::string& varName) {
-			ref = &Reflection<ComponentType>::GetByName<ValueType>(varName.c_str(), ent.GetComponent<ComponentType>());
+		SetPropertyRefFn<ValueType> callback = [](SceneEntity ent, ValueType** ref, const std::string& varName) {
+			*ref = &Reflection<ComponentType>::GetByName<ValueType>(varName.c_str(), ent.GetComponent<ComponentType>());
 		};
 		addPropertySpecialized<ValueType>(Property<ValueType>(callback, entity, valueName, Reflection<ComponentType>::sc_ClassName, Component<ComponentType>::ID()));		
 	}

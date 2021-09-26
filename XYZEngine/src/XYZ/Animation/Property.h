@@ -24,7 +24,7 @@ namespace XYZ {
 
 
 	template <typename T>
-	using SetPropertyRefFn = std::function<void(SceneEntity entity, T* ref, const std::string& varName)>;
+	using SetPropertyRefFn = std::function<void(SceneEntity entity, T** ref, const std::string& varName)>;
 	
 	template <typename T>
 	class Property
@@ -77,7 +77,7 @@ namespace XYZ {
 		m_ComponentID(componentID),
 		m_SetPropertyCallback(callback)
 	{
-		m_SetPropertyCallback(entity, m_Value, m_ValueName);
+		SetReference();
 		m_Entity.AddOnComponentConstruction(componentID, &Property<T>::SetReference, this);
 		m_Entity.AddOnComponentDestruction(componentID, &Property<T>::SetReference, this);
 	}
@@ -97,6 +97,7 @@ namespace XYZ {
 		m_ComponentID(other.m_ComponentID),
 		m_SetPropertyCallback(other.m_SetPropertyCallback)
 	{
+		SetReference();
 		m_Entity.AddOnComponentConstruction(m_ComponentID, &Property<T>::SetReference, this);
 		m_Entity.AddOnComponentDestruction(m_ComponentID, &Property<T>::SetReference, this);
 	}
@@ -110,6 +111,7 @@ namespace XYZ {
 		m_ComponentID(other.m_ComponentID),
 		m_SetPropertyCallback(std::move(other.m_SetPropertyCallback))
 	{
+		SetReference();
 		m_Entity.AddOnComponentConstruction(m_ComponentID, &Property<T>::SetReference, this);
 		m_Entity.AddOnComponentDestruction(m_ComponentID, &Property<T>::SetReference, this);
 	}
@@ -122,6 +124,7 @@ namespace XYZ {
 		m_ComponentName = other.m_ComponentName;
 		m_ComponentID = other.m_ComponentID;
 		m_SetPropertyCallback = other.m_SetPropertyCallback;
+		SetReference();
 		return *this;
 	}
 	template<typename T>
@@ -133,12 +136,13 @@ namespace XYZ {
 		m_ComponentName = std::move(other.m_ComponentName);
 		m_ComponentID = other.m_ComponentID;
 		m_SetPropertyCallback = std::move(other.m_SetPropertyCallback);
+		SetReference();
 		return *this;
 	}
 	template<typename T>
 	inline void Property<T>::SetReference()
 	{
-		m_SetPropertyCallback(m_Entity, m_Value, m_ValueName);
+		m_SetPropertyCallback(m_Entity, &m_Value, m_ValueName);
 	}
 	template<typename T>
 	inline void Property<T>::SetCurrentKey(uint32_t frame)

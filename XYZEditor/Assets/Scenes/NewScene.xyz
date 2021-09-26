@@ -155,13 +155,13 @@ Entities:
     SceneTagComponent:
       Name: Body
     TransformComponent:
-      Position: [0.372654915, 0, 0]
+      Position: [4.05469275, 0, 0]
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteRenderer:
       MaterialAsset: 6b8ecf40-b3aa-4a26-a497-d7cdda43afba
       SubTextureAsset: 3719d3ce-464a-406c-94e8-fb4b8ede5a85
-      Color: [1, 1, 1, 1]
+      Color: [0.350000024, 0.369999975, 1, 1]
       SortLayer: 1
       Visible: true
     Relationship:

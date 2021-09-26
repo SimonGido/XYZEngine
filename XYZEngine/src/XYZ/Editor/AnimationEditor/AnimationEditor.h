@@ -33,7 +33,8 @@ namespace XYZ {
 			void addKeyToProperty(Reflection<ComponentType> refl, SceneEntity entity, int frame, const T& val, const std::string& valName);
 
 			bool getClassAndVariable(size_t& classIndex, size_t& variableIndex);
-	
+			
+			static bool getClassAndVariableFromNames(std::string_view className, std::string_view variableName, size_t& classIndex, size_t& variableIndex);
 		private:
 			Ref<Animation>	   m_Context;
 			Ref<Scene>		   m_Scene;
