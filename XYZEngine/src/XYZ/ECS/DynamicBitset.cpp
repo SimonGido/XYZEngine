@@ -32,6 +32,7 @@ namespace XYZ {
     {
         m_Signatures = std::move(other.m_Signatures);
         m_Bitset = std::move(other.m_Bitset);
+        m_BitCount = other.m_BitCount;
         for (int32_t i = 0; i < m_Signatures.Range(); ++i)
         {
             if (m_Signatures.Valid(i))
