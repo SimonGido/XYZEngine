@@ -23,6 +23,10 @@ namespace XYZ {
 			void OnUpdate(Timestep ts);
 			void OnImGuiRender(bool& open);
 		private:
+			void propertySection();
+			void timelineSection();
+			
+			void handleEditKeys();
 			void handleAddKey();
 			void buildClassMap(const SceneEntity& entity);
 
@@ -31,6 +35,9 @@ namespace XYZ {
 
 			template <typename ComponentType, typename T>
 			void addKeyToProperty(Reflection<ComponentType> refl, SceneEntity entity, int frame, const T& val, const std::string& valName);
+
+			template <typename ComponentType, typename T>
+			Property<T>* getProperty(Reflection<ComponentType> refl, const T& val, const SceneEntity& entity, const std::string& valName);
 
 			bool getClassAndVariable(size_t& classIndex, size_t& variableIndex);
 			
@@ -48,6 +55,9 @@ namespace XYZ {
 			int				   m_CurrentFrame;
 			bool			   m_Expanded;
 			bool			   m_Playing;
+
+			float			m_PropertySectionWidth;
+			float			m_TimelineSectionWidth;
 		};
 
 		template<typename ComponentType, typename T>
@@ -71,6 +81,11 @@ namespace XYZ {
 			{
 				prop->AddKeyFrame({ val, static_cast<uint32_t>(frame) });
 			}
+		}
+		template<typename ComponentType, typename T>
+		inline Property<T>* AnimationEditor::getProperty(Reflection<ComponentType> refl, const T& val, const SceneEntity& entity, const std::string& valName)
+		{
+			return m_Context->GetProperty<ComponentType, T>(entity, valName);
 		}
 	}
 }

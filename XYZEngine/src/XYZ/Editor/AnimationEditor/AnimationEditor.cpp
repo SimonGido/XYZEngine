@@ -3,6 +3,7 @@
 
 #include "XYZ/Scene/Components.h"
 #include "XYZ/Core/Input.h"
+#include "XYZ/Editor/EditorHelper.h"
 
 #include <imgui.h>
 #include <ImSequencer.h>
@@ -17,8 +18,8 @@ namespace XYZ {
 				ImGui::Text(text, std::forward<Args>(args)...);
 				ImGui::SameLine();
 				return ImGui::InputInt(id, &value);
-			}		
-	
+			}
+
 
 			template <typename T>
 			static void AddToClassMap(Reflection<T> refl, const SceneEntity& entity, const Ref<Animation>& anim, AnimationEditor::ClassMap& classMap)
@@ -43,7 +44,9 @@ namespace XYZ {
 			m_FirstFrame(0),
 			m_CurrentFrame(0),
 			m_Expanded(true),
-			m_Playing(false)
+			m_Playing(false),
+			m_PropertySectionWidth(300.0f),
+			m_TimelineSectionWidth(300.0f)
 		{
 			m_Sequencer.m_FrameMin = 0;
 			m_Sequencer.m_FrameMax = 60;
@@ -79,83 +82,135 @@ namespace XYZ {
 					}
 					if (selectedEntity.IsValid())
 					{
-						if (ImGui::Button("Play"))
-						{
-							m_Playing = !m_Playing;
-						}
+						ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+						m_TimelineSectionWidth = viewportPanelSize.x - m_PropertySectionWidth - 5.0f;
+
+						EditorHelper::DrawSplitter(false, 5.0f, &m_PropertySectionWidth, &m_TimelineSectionWidth, 50.0f, 50.0f);
+						propertySection();
 						ImGui::SameLine();
-						if (ImGui::Button("Add Key"))
-						{
-							handleAddKey();
-						}
-						ImGui::SameLine();
-
-
-						if (ImGui::Button("Add Property"))
-							ImGui::OpenPopup("AddProperty");
-
-						if (ImGui::BeginPopup("AddProperty"))
-						{
-							size_t classIndex, variableIndex;
-							if (getClassAndVariable(classIndex, variableIndex))
-							{
-								Reflect::For([&](auto j) {
-									if (j.value == classIndex)
-									{
-										auto reflClass = ReflectedClasses::Get<j.value>();
-										Reflect::For([&](auto i) {
-											if (i.value == variableIndex)
-											{
-												auto& val = reflClass.Get<i.value>(selectedEntity.GetComponentFromReflection(reflClass));
-												addReflectedProperty(reflClass, selectedEntity, val,
-													reflClass.GetVariables()[i.value]
-												);
-											}
-										}, std::make_index_sequence<reflClass.sc_NumVariables>());
-									}
-								}, std::make_index_sequence<ReflectedClasses::sc_NumClasses>());
-							}
-							ImGui::EndPopup();
-						}
-
-
-						ImGui::PushItemWidth(130);
-						Helper::IntControl("Frame Min", "##Frame Min", m_Sequencer.m_FrameMin);
-
-						ImGui::SameLine();
-						if (Helper::IntControl("Frame Max", "##Frame Max", m_Sequencer.m_FrameMax))
-						{
-							m_Context->SetNumFrames(static_cast<uint32_t>(m_Sequencer.m_FrameMax));
-						}
-						ImGui::SameLine();
-						if (Helper::IntControl("Frame", "##Frame", m_CurrentFrame))
-						{
-							m_Context->SetCurrentFrame(static_cast<uint32_t>(m_CurrentFrame));
-						}
-						ImGui::SameLine();
-						int fps = static_cast<int>(m_Context->GetFrequency());
-						if (Helper::IntControl("FPS", "##FPS", fps))
-						{
-							m_Context->SetFrequency(static_cast<uint32_t>(fps));
-						}
-
-
-						ImGui::PopItemWidth();
-						int sequenceOptions = ImSequencer::SEQUENCER_CHANGE_FRAME;
-						ImSequencer::Sequencer(&m_Sequencer, &m_CurrentFrame, &m_Expanded, &m_SelectedEntry, &m_FirstFrame, sequenceOptions);
-
+						timelineSection();
+						handleEditKeys();
 						if (Input::IsKeyPressed(KeyCode::KEY_DELETE))
 						{
-						}					
+						}
 					}
 				}
 			}
 			ImGui::End();
 		}
+		void AnimationEditor::propertySection()
+		{
+			if (ImGui::BeginChild("##PropertySection", ImVec2(m_PropertySectionWidth, 0)))
+			{
+				if (ImGui::Button("Play"))
+				{
+					m_Playing = !m_Playing;
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Add Key"))
+				{
+					handleAddKey();
+				}
+				ImGui::SameLine();
+
+
+				if (ImGui::Button("Add Property"))
+					ImGui::OpenPopup("AddProperty");
+
+				if (ImGui::BeginPopup("AddProperty"))
+				{
+					size_t classIndex, variableIndex;
+					if (getClassAndVariable(classIndex, variableIndex))
+					{
+						Reflect::For([&](auto j) {
+							if (j.value == classIndex)
+							{
+								auto reflClass = ReflectedClasses::Get<j.value>();
+								Reflect::For([&](auto i) {
+									if (i.value == variableIndex)
+									{
+										auto& val = reflClass.Get<i.value>(m_SelectedEntity.GetComponentFromReflection(reflClass));
+										addReflectedProperty(reflClass, m_SelectedEntity, val,
+											reflClass.GetVariables()[i.value]
+										);
+									}
+								}, std::make_index_sequence<reflClass.sc_NumVariables>());
+							}
+						}, std::make_index_sequence<ReflectedClasses::sc_NumClasses>());
+					}
+					ImGui::EndPopup();
+				}
+			}
+			ImGui::EndChild();
+		}
+		void AnimationEditor::timelineSection()
+		{
+			if (ImGui::BeginChild("##TimelineSection", ImVec2(m_TimelineSectionWidth, 0)))
+			{
+				ImGui::PushItemWidth(130);
+				Helper::IntControl("Frame Min", "##Frame Min", m_Sequencer.m_FrameMin);
+
+				ImGui::SameLine();
+				if (Helper::IntControl("Frame Max", "##Frame Max", m_Sequencer.m_FrameMax))
+				{
+					m_Context->SetNumFrames(static_cast<uint32_t>(m_Sequencer.m_FrameMax));
+				}
+				ImGui::SameLine();
+				if (Helper::IntControl("Frame", "##Frame", m_CurrentFrame))
+				{
+					m_Context->SetCurrentFrame(static_cast<uint32_t>(m_CurrentFrame));
+				}
+				ImGui::SameLine();
+				int fps = static_cast<int>(m_Context->GetFrequency());
+				if (Helper::IntControl("FPS", "##FPS", fps))
+				{
+					m_Context->SetFrequency(static_cast<uint32_t>(fps));
+				}
+
+
+				ImGui::PopItemWidth();
+				int sequenceOptions = ImSequencer::SEQUENCER_EDIT_STARTEND;
+				ImSequencer::Sequencer(&m_Sequencer, &m_CurrentFrame, &m_Expanded, &m_SelectedEntry, &m_FirstFrame, sequenceOptions);
+			}
+			ImGui::EndChild();
+		}
+		void AnimationEditor::handleEditKeys()
+		{
+			auto& selection = m_Sequencer.GetSelection();
+			if (selection.ItemIndex != -1)
+			{
+				const auto& item = m_Sequencer.GetItem(selection.ItemIndex);
+				const char* itemTypeName = m_Sequencer.GetItemTypeName(item.Type);
+				for (const auto& p : selection.Points)
+				{
+					const auto& line = m_Sequencer.GetLine(selection.ItemIndex, p.curveIndex);
+					uint32_t endFrame = static_cast<uint32_t>(line.Points[p.pointIndex].x);
+					size_t classIndex, variableIndex;
+					if (getClassAndVariableFromNames(itemTypeName, line.Name.c_str(), classIndex, variableIndex))
+					{
+						Reflect::For([&](auto j) {
+							if (j.value == classIndex)
+							{
+								auto reflClass = ReflectedClasses::Get<j.value>();
+								Reflect::For([&](auto i) {
+									if (i.value == variableIndex)
+									{
+										auto& val = reflClass.Get<i.value>(item.Entity.GetComponentFromReflection(reflClass));
+										auto prop = getProperty(reflClass, val, item.Entity, reflClass.GetVariables()[i.value]);
+										if (prop)
+											prop->SetKeyEndFrame(endFrame, p.pointIndex);
+									}
+								}, std::make_index_sequence<reflClass.sc_NumVariables>());
+							}
+						}, std::make_index_sequence<ReflectedClasses::sc_NumClasses>());
+					}
+				}
+			}
+		}
 		void AnimationEditor::handleAddKey()
 		{
 			if (m_SelectedEntry != -1)
-			{		
+			{
 				int itemType = m_Sequencer.GetItemItemType(m_SelectedEntry);
 				const char* itemTypeName = m_Sequencer.GetItemTypeName(itemType);
 				if (auto line = m_Sequencer.GetSelectedLine(m_SelectedEntry))
@@ -210,11 +265,11 @@ namespace XYZ {
 		}
 
 		bool AnimationEditor::getClassAndVariable(size_t& classIndex, size_t& variableIndex)
-		{		
+		{
 			for (auto& [className, classData] : m_ClassMap)
 			{
 				if (ImGui::BeginMenu(className.c_str()))
-				{				
+				{
 					auto& variables = classData.VariableNames;
 					for (auto it = variables.begin(); it != variables.end(); ++it)
 					{
@@ -227,8 +282,8 @@ namespace XYZ {
 									auto reflClass = ReflectedClasses::Get<j.value>();
 									variableIndex = FindIndex(reflClass.GetVariables(), *it);
 								}
-							}, std::make_index_sequence<ReflectedClasses::sc_NumClasses>());		
-							
+							}, std::make_index_sequence<ReflectedClasses::sc_NumClasses>());
+
 
 							variables.erase(it);
 							ImGui::EndMenu();
@@ -251,7 +306,7 @@ namespace XYZ {
 					tmpVariableIndex = FindIndex(reflClass.GetVariables(), variableName);
 				}
 			}, std::make_index_sequence<ReflectedClasses::sc_NumClasses>());
-			
+
 			if (tmpClassIndex != -1 && tmpVariableIndex != -1)
 			{
 				classIndex = tmpClassIndex;

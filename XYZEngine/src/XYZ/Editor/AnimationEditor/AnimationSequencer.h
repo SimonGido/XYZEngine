@@ -16,9 +16,16 @@ namespace XYZ {
             struct Selection
             {
                 ImVector<ImCurveEdit::EditPoint> Points;
-                int                              ItemIndex;
+                int                              ItemIndex = -1;
             };
-
+            struct SequenceItem
+            {
+                int               Type;
+                bool              Expanded;
+                SceneEntity       Entity;
+                size_t            Height;
+                SequenceLineEdit  LineEdit;
+            };
             AnimationSequencer();
             virtual int         GetFrameMin() const override { return m_FrameMin; }
             virtual int         GetFrameMax() const override { return m_FrameMax; }
@@ -52,20 +59,14 @@ namespace XYZ {
             int                           GetItemIndex(int type, const SceneEntity& entity) const;
             int                           GetItemItemType(int itemIndex) const;
             const SequenceLineEdit::Line* GetSelectedLine(int itemIndex = -1) const;
+            const SequenceLineEdit::Line& GetLine(int itemIndex, size_t curveIndex) const;
+            const SequenceItem&           GetItem(int itemIndex) const { return m_Items[itemIndex]; }
+        
         public:           
             int m_FrameMin;
             int m_FrameMax;
 
         private:
-            struct SequenceItem
-            {
-                int               Type;
-                bool              Expanded;
-                SceneEntity       Entity;
-                size_t            Height;
-                SequenceLineEdit  LineEdit;
-            };
-
             std::vector<std::string>  m_SequencerItemTypes;
             std::vector<SequenceItem> m_Items;
 

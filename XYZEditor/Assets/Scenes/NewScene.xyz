@@ -144,7 +144,7 @@ Entities:
     SceneTagComponent:
       Name: Orc
     TransformComponent:
-      Position: [-0.901456177, -0.337154627, 0]
+      Position: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:

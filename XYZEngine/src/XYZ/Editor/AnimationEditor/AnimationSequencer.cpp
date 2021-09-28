@@ -217,5 +217,9 @@ namespace XYZ {
 			}
 			return nullptr;
 		}
+		const SequenceLineEdit::Line& AnimationSequencer::GetLine(int itemIndex, size_t curveIndex) const
+		{
+			return m_Items[itemIndex].LineEdit.GetLines()[curveIndex];
+		}
 	}
 }

@@ -89,8 +89,19 @@ namespace XYZ {
 			auto &[__VA_ARGS__] = s; \
 			return std::forward_as_tuple(__VA_ARGS__);\
 		}\
+		static const auto ToReferenceTuple(const Type& s) \
+		{\
+			auto &[__VA_ARGS__] = s; \
+			return std::forward_as_tuple(__VA_ARGS__);\
+		}\
 		template <size_t Index>\
 		static auto& Get(Type& s)\
+		{\
+			auto tmp = ToReferenceTuple(s);\
+			return std::get<Index>(tmp);\
+		}\
+		template <size_t Index>\
+		static const auto& Get(const Type& s)\
 		{\
 			auto tmp = ToReferenceTuple(s);\
 			return std::get<Index>(tmp);\

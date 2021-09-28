@@ -44,7 +44,7 @@ namespace XYZ {
 		void SetCurrentKey(uint32_t frame);
 		void Reset() { m_CurrentKey = 0; }
 			 
-		void AddKeyFrame(const KeyFrame<T>& key);
+		bool AddKeyFrame(const KeyFrame<T>& key);
 		void RemoveKeyFrame(uint32_t frame);
 		void SetKeyEndFrame(uint32_t endFrame, size_t index);
 		void SetKeyValue(const T& value, size_t index);
@@ -97,7 +97,9 @@ namespace XYZ {
 		m_ValueName(other.m_ValueName),
 		m_ComponentName(other.m_ComponentName),
 		m_ComponentID(other.m_ComponentID),
-		m_SetPropertyCallback(other.m_SetPropertyCallback)
+		m_SetPropertyCallback(other.m_SetPropertyCallback),
+		m_Keys(other.m_Keys),
+		m_CurrentKey(other.m_CurrentKey)
 	{
 		SetReference();
 		m_Entity.AddOnComponentConstruction(m_ComponentID, &Property<T>::SetReference, this);
@@ -111,7 +113,9 @@ namespace XYZ {
 		m_ValueName(std::move(other.m_ValueName)),
 		m_ComponentName(std::move(other.m_ComponentName)),
 		m_ComponentID(other.m_ComponentID),
-		m_SetPropertyCallback(std::move(other.m_SetPropertyCallback))
+		m_SetPropertyCallback(std::move(other.m_SetPropertyCallback)),
+		m_Keys(std::move(other.m_Keys)),
+		m_CurrentKey(other.m_CurrentKey)
 	{
 		SetReference();
 		m_Entity.AddOnComponentConstruction(m_ComponentID, &Property<T>::SetReference, this);
@@ -126,6 +130,8 @@ namespace XYZ {
 		m_ComponentName = other.m_ComponentName;
 		m_ComponentID = other.m_ComponentID;
 		m_SetPropertyCallback = other.m_SetPropertyCallback;
+		m_Keys = other.m_Keys;
+		m_CurrentKey = other.m_CurrentKey;
 		SetReference();
 		return *this;
 	}
@@ -138,6 +144,8 @@ namespace XYZ {
 		m_ComponentName = std::move(other.m_ComponentName);
 		m_ComponentID = other.m_ComponentID;
 		m_SetPropertyCallback = std::move(other.m_SetPropertyCallback);
+		m_Keys = std::move(other.m_Keys);
+		m_CurrentKey = other.m_CurrentKey;
 		SetReference();
 		return *this;
 	}
@@ -168,10 +176,16 @@ namespace XYZ {
 	}
 
 	template<typename T>
-	inline void Property<T>::AddKeyFrame(const KeyFrame<T>& key)
+	inline bool Property<T>::AddKeyFrame(const KeyFrame<T>& key)
 	{
+		for (const auto& k : m_Keys)
+		{
+			if (k.EndFrame == key.EndFrame)
+				return false;
+		}
 		m_Keys.push_back(key);
 		std::sort(m_Keys.begin(), m_Keys.end());
+		return true;
 	}
 
 	template<typename T>
