@@ -11,15 +11,15 @@ namespace XYZ {
 	{
 		bool operator <(const KeyFrame<T>& other) const
 		{
-			return EndFrame < other.EndFrame;
+			return Frame < other.Frame;
 		}
 		bool operator >(const KeyFrame<T>& other) const
 		{
-			return EndFrame > other.EndFrame;
+			return Frame > other.Frame;
 		}
 
 		T		 Value;
-		uint32_t EndFrame = 0;
+		uint32_t Frame = 0;
 	};
 
 
@@ -46,17 +46,21 @@ namespace XYZ {
 			 
 		bool AddKeyFrame(const KeyFrame<T>& key);
 		void RemoveKeyFrame(uint32_t frame);
-		void SetKeyEndFrame(uint32_t endFrame, size_t index);
+		void SetKeyFrame(uint32_t Frame, size_t index);
 		void SetKeyValue(const T& value, size_t index);
-
-		uint32_t						Length()			  const;
+		T    GetValue(uint32_t frame) const;
+		
+		bool							Empty()						  const;
+		bool							HasKeyAtFrame(uint32_t frame) const;
+		uint32_t						Length()					  const;
+		size_t							FindKey(uint32_t frame)		  const;
 	    const SceneEntity&				GetSceneEntity()   const { return m_Entity; }
 		const std::string&				GetValueName()     const { return m_ValueName; }
 		const std::string&				GetComponentName() const { return m_ComponentName; }	
 		const std::vector<KeyFrame<T>>& GetKeyFrames() const { return m_Keys; }
 	private:
-		bool isKeyInRange() const { return m_CurrentKey + 1 < m_Keys.size(); }
-	
+		bool   isKeyInRange() const { return m_CurrentKey + 1 < m_Keys.size(); }
+		
 	private:
 		T*						 m_Value;
 		SceneEntity				 m_Entity;
@@ -162,17 +166,7 @@ namespace XYZ {
 			m_CurrentKey = 0;
 			return;
 		}
-	
-		for (size_t i = 0; i < m_Keys.size() - 1; ++i)
-		{
-			const auto& key = m_Keys[i];
-			const auto& nextKey = m_Keys[i + 1];
-			if (frame > key.EndFrame && frame <= nextKey.EndFrame)
-			{
-				m_CurrentKey = i;
-				return;
-			}
-		}
+		m_CurrentKey = FindKey(frame);
 	}
 
 	template<typename T>
@@ -180,7 +174,7 @@ namespace XYZ {
 	{
 		for (const auto& k : m_Keys)
 		{
-			if (k.EndFrame == key.EndFrame)
+			if (k.Frame == key.Frame)
 				return false;
 		}
 		m_Keys.push_back(key);
@@ -193,7 +187,7 @@ namespace XYZ {
 	{
 		for (auto it = m_Keys.begin(); it != m_Keys.end();)
 		{
-			if (it->EndFrame == frame)
+			if (it->Frame == frame)
 			{
 				it = m_Keys.erase(it);
 				return;
@@ -206,9 +200,9 @@ namespace XYZ {
 	}
 
 	template<typename T>
-	inline void Property<T>::SetKeyEndFrame(uint32_t endFrame, size_t index)
+	inline void Property<T>::SetKeyFrame(uint32_t Frame, size_t index)
 	{
-		m_Keys[index].EndFrame = endFrame;
+		m_Keys[index].Frame = Frame;
 		std::sort(m_Keys.begin(), m_Keys.end());
 	}
 
@@ -219,10 +213,45 @@ namespace XYZ {
 	}
 
 	template<typename T>
+	inline bool Property<T>::Empty() const
+	{
+		return m_Keys.empty();
+	}
+
+	template<typename T>
+	inline bool Property<T>::HasKeyAtFrame(uint32_t frame) const
+	{
+		for (const auto& key : m_Keys)
+		{
+			if (key.Frame == frame)
+				return true;
+		}
+		return false;
+	}
+
+	template<typename T>
 	inline uint32_t Property<T>::Length() const
 	{
 		if (m_Keys.empty())
 			return 0;
-		return m_Keys.back().EndFrame;
+		return m_Keys.back().Frame;
+	}
+	template<typename T>
+	inline size_t Property<T>::FindKey(uint32_t frame) const
+	{
+		for (size_t i = 0; i < m_Keys.size() - 1; ++i)
+		{
+			const auto& key  = m_Keys[i];
+			const auto& next = m_Keys[i + 1];
+			if (frame >= key.Frame && frame <= next.Frame)
+			{
+				if (frame == next.Frame)
+					return i + 1;
+				return i;
+			}
+		}
+		if (!m_Keys.empty())
+			return m_Keys.size() - 1;
+		return 0;
 	}
 }

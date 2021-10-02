@@ -122,7 +122,6 @@ namespace XYZ {
 				return &prop;
 			}
 		}
-		XYZ_ASSERT(false, "Not found in container");
 		return nullptr;
 	}
 	template <typename T>

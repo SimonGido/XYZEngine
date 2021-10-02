@@ -144,8 +144,8 @@ Entities:
     SceneTagComponent:
       Name: Orc
     TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
+      Position: [2.8514812, 1.0666666, 0]
+      Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
     Relationship:
       NextSibling: e7d90360-31d6-4302-8c60-edb5035bb481

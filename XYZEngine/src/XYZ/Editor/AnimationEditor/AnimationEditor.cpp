@@ -54,6 +54,7 @@ namespace XYZ {
 		void AnimationEditor::SetContext(const Ref<Animation>& context)
 		{
 			m_Context = context;
+			m_Context->SetNumFrames(static_cast<uint32_t>(m_Sequencer.m_FrameMax));
 		}
 		void AnimationEditor::SetScene(const Ref<Scene>& scene)
 		{
@@ -89,7 +90,7 @@ namespace XYZ {
 						propertySection();
 						ImGui::SameLine();
 						timelineSection();
-						handleEditKeys();
+						
 						if (Input::IsKeyPressed(KeyCode::KEY_DELETE))
 						{
 						}
@@ -140,6 +141,7 @@ namespace XYZ {
 					}
 					ImGui::EndPopup();
 				}
+				handleEditKeyValues();
 			}
 			ImGui::EndChild();
 		}
@@ -147,6 +149,8 @@ namespace XYZ {
 		{
 			if (ImGui::BeginChild("##TimelineSection", ImVec2(m_TimelineSectionWidth, 0)))
 			{
+				int currentFrame = m_CurrentFrame;
+
 				ImGui::PushItemWidth(130);
 				Helper::IntControl("Frame Min", "##Frame Min", m_Sequencer.m_FrameMin);
 
@@ -156,9 +160,10 @@ namespace XYZ {
 					m_Context->SetNumFrames(static_cast<uint32_t>(m_Sequencer.m_FrameMax));
 				}
 				ImGui::SameLine();
-				if (Helper::IntControl("Frame", "##Frame", m_CurrentFrame))
+				if (Helper::IntControl("Frame", "##Frame", currentFrame))
 				{
-					m_Context->SetCurrentFrame(static_cast<uint32_t>(m_CurrentFrame));
+					m_CurrentFrame = std::max(currentFrame, 0);
+					m_Context->SetCurrentFrame(m_CurrentFrame);
 				}
 				ImGui::SameLine();
 				int fps = static_cast<int>(m_Context->GetFrequency());
@@ -170,11 +175,13 @@ namespace XYZ {
 
 				ImGui::PopItemWidth();
 				int sequenceOptions = ImSequencer::SEQUENCER_EDIT_STARTEND;
-				ImSequencer::Sequencer(&m_Sequencer, &m_CurrentFrame, &m_Expanded, &m_SelectedEntry, &m_FirstFrame, sequenceOptions);
+				
+				ImSequencer::Sequencer(&m_Sequencer, &currentFrame, &m_Expanded, &m_SelectedEntry, &m_FirstFrame, sequenceOptions);
+				m_CurrentFrame = std::max(currentFrame, 0);
 			}
 			ImGui::EndChild();
 		}
-		void AnimationEditor::handleEditKeys()
+		void AnimationEditor::handleEditKeyEndFrames()
 		{
 			auto& selection = m_Sequencer.GetSelection();
 			if (selection.ItemIndex != -1)
@@ -198,7 +205,36 @@ namespace XYZ {
 										auto& val = reflClass.Get<i.value>(item.Entity.GetComponentFromReflection(reflClass));
 										auto prop = getProperty(reflClass, val, item.Entity, reflClass.GetVariables()[i.value]);
 										if (prop)
-											prop->SetKeyEndFrame(endFrame, p.pointIndex);
+											prop->SetKeyFrame(endFrame, p.pointIndex);
+									}
+								}, std::make_index_sequence<reflClass.sc_NumVariables>());
+							}
+						}, std::make_index_sequence<ReflectedClasses::sc_NumClasses>());
+					}
+				}
+			}
+		}
+	
+		void AnimationEditor::handleEditKeyValues()
+		{
+			if (m_SelectedEntry != -1)
+			{
+				int itemType = m_Sequencer.GetItemItemType(m_SelectedEntry);
+				const char* itemTypeName = m_Sequencer.GetItemTypeName(itemType);
+				if (auto line = m_Sequencer.GetSelectedLine(m_SelectedEntry))
+				{
+					size_t classIndex, variableIndex;
+					if (getClassAndVariableFromNames(itemTypeName, line->Name.c_str(), classIndex, variableIndex))
+					{
+						Reflect::For([&](auto j) {
+							if (j.value == classIndex)
+							{
+								auto reflClass = ReflectedClasses::Get<j.value>();
+								Reflect::For([&](auto i) {
+									if (i.value == variableIndex)
+									{
+										auto& val = reflClass.Get<i.value>(m_SelectedEntity.GetComponentFromReflection(reflClass));
+										editKeyValue(reflClass, m_SelectedEntity, m_CurrentFrame, val, reflClass.GetVariables()[i.value]);
 									}
 								}, std::make_index_sequence<reflClass.sc_NumVariables>());
 							}
@@ -313,6 +349,73 @@ namespace XYZ {
 				variableIndex = tmpVariableIndex;
 				return true;
 			}
+			return false;
+		}
+
+		template <>
+		bool AnimationEditor::editKeyValueSpecialized<glm::mat4>(uint32_t frame, glm::mat4& value, const std::string& valName)
+		{
+
+			return false;
+		}
+		template <>
+		bool AnimationEditor::editKeyValueSpecialized<glm::vec4>(uint32_t frame, glm::vec4& value, const std::string& valName)
+		{
+			return false;
+		}
+		template <>
+		bool AnimationEditor::editKeyValueSpecialized<glm::vec3>(uint32_t frame, glm::vec3& value, const std::string& valName)
+		{
+			bool result = false;
+			ImGui::Text(valName.c_str());
+			if (ImGui::InputFloat("X", &value.x))
+				result = true;
+			if (ImGui::InputFloat("Y", &value.y))
+				result = true;
+			if (ImGui::InputFloat("Z", &value.z))
+				result = true;
+
+			return result;
+		}
+		template <>
+		bool AnimationEditor::editKeyValueSpecialized<glm::vec2>(uint32_t frame, glm::vec2& value, const std::string& valName)
+		{
+			return false;
+		}
+		template <>
+		bool AnimationEditor::editKeyValueSpecialized<float>(uint32_t frame, float& value, const std::string& valName)
+		{
+
+			return false;
+		}
+		template <>
+		bool AnimationEditor::editKeyValueSpecialized<uint32_t>(uint32_t frame, uint32_t& value, const std::string& valName)
+		{
+
+			return false;
+		}
+		template <>
+		bool AnimationEditor::editKeyValueSpecialized<bool>(uint32_t frame, bool& value, const std::string& valName)
+		{
+
+			return false;
+		}
+		template <>
+		bool AnimationEditor::editKeyValueSpecialized<void*>(uint32_t frame, void*& value, const std::string& valName)
+		{
+
+			return false;
+		}
+		template <>
+		bool AnimationEditor::editKeyValueSpecialized<Ref<Material>>(uint32_t frame, Ref<Material>& value, const std::string& valName)
+		{
+
+			return false;
+		}
+		template <>
+		bool AnimationEditor::editKeyValueSpecialized<Ref<SubTexture>>(uint32_t frame, Ref<SubTexture>& value, const std::string& valName)
+		{
+
 			return false;
 		}
 	}

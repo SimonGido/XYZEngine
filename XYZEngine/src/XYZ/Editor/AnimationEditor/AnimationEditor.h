@@ -7,14 +7,13 @@ namespace XYZ {
 
 		class AnimationEditor
 		{
-		public:
 			struct ClassData
 			{
 				std::vector<std::string> VariableNames;
 			};
 			using ClassMap = std::unordered_map<std::string, ClassData>;
 
-
+		public:
 			AnimationEditor();
 
 			void SetContext(const Ref<Animation>& context);
@@ -26,15 +25,22 @@ namespace XYZ {
 			void propertySection();
 			void timelineSection();
 			
-			void handleEditKeys();
+			void handleEditKeyEndFrames();
+			void handleEditKeyValues();
 			void handleAddKey();
 			void buildClassMap(const SceneEntity& entity);
+
+			template <typename ComponentType, typename T>
+			void editKeyValue(Reflection<ComponentType> refl, const SceneEntity& entity, uint32_t frame, const T& val, const std::string& valName);
+
+			template <typename T>
+			bool editKeyValueSpecialized(uint32_t frame, T& value, const std::string& valName);
 
 			template <typename ComponentType, typename T>
 			void addReflectedProperty(Reflection<ComponentType> refl, const SceneEntity& entity, const T& val, const std::string& valName);
 
 			template <typename ComponentType, typename T>
-			void addKeyToProperty(Reflection<ComponentType> refl, SceneEntity entity, int frame, const T& val, const std::string& valName);
+			void addKeyToProperty(Reflection<ComponentType> refl, SceneEntity entity, uint32_t frame, const T& val, const std::string& valName);
 
 			template <typename ComponentType, typename T>
 			Property<T>* getProperty(Reflection<ComponentType> refl, const T& val, const SceneEntity& entity, const std::string& valName);
@@ -52,13 +58,36 @@ namespace XYZ {
 			ClassMap		   m_ClassMap;
 			int				   m_SelectedEntry;
 			int				   m_FirstFrame;
-			int				   m_CurrentFrame;
+			uint32_t		   m_CurrentFrame;
 			bool			   m_Expanded;
 			bool			   m_Playing;
 
 			float			m_PropertySectionWidth;
 			float			m_TimelineSectionWidth;
 		};
+
+		template<typename ComponentType, typename T>
+		inline void AnimationEditor::editKeyValue(Reflection<ComponentType> refl, const SceneEntity& entity, uint32_t frame, const T& val, const std::string& valName)
+		{
+			auto prop = m_Context->GetProperty<ComponentType, T>(entity, valName);
+			if (prop && !prop->Empty())
+			{
+				T value = prop->GetValue(frame);
+				if (editKeyValueSpecialized(frame, value, valName))
+				{
+					if (prop->HasKeyAtFrame(frame))
+					{
+						size_t key = prop->FindKey(frame);
+						prop->SetKeyValue(value, key);
+					}
+					else
+					{
+						prop->AddKeyFrame({ value, frame });
+						m_Sequencer.AddKey(m_SelectedEntry, frame);
+					}
+				}
+			}
+		}
 
 		template<typename ComponentType, typename T>
 		inline void AnimationEditor::addReflectedProperty(Reflection<ComponentType> refl, const SceneEntity& entity, const T& val, const std::string& valName)
@@ -74,12 +103,12 @@ namespace XYZ {
 			m_Sequencer.AddLine(itemTypeIndex, entity, valName);
 		}
 		template<typename ComponentType, typename T>
-		inline void AnimationEditor::addKeyToProperty(Reflection<ComponentType> refl, SceneEntity entity, int frame, const T& val, const std::string& valName)
+		inline void AnimationEditor::addKeyToProperty(Reflection<ComponentType> refl, SceneEntity entity, uint32_t frame, const T& val, const std::string& valName)
 		{
 			auto prop = m_Context->GetProperty<ComponentType, T>(entity, valName);
 			if (prop)
 			{
-				prop->AddKeyFrame({ val, static_cast<uint32_t>(frame) });
+				prop->AddKeyFrame({ val, frame });
 			}
 		}
 		template<typename ComponentType, typename T>
