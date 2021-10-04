@@ -28,6 +28,7 @@ namespace XYZ {
 			void handleEditKeyEndFrames();
 			void handleEditKeyValues();
 			void handleAddKey();
+			void keySelectionActions();
 			void buildClassMap(const SceneEntity& entity);
 
 			template <typename ComponentType, typename T>
@@ -61,9 +62,9 @@ namespace XYZ {
 			uint32_t		   m_CurrentFrame;
 			bool			   m_Expanded;
 			bool			   m_Playing;
-
-			float			m_PropertySectionWidth;
-			float			m_TimelineSectionWidth;
+			bool			   m_OpenSelectionActions;
+			float			   m_PropertySectionWidth;
+			float			   m_TimelineSectionWidth;
 		};
 
 		template<typename ComponentType, typename T>

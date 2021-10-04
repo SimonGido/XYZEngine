@@ -16,7 +16,7 @@ namespace XYZ {
 			void SetEntitySelectedCallback(const SceneEntitySelectedCallback& callback) { m_Callback = callback; }
 
 		private:
-			void drawEntityNode(SceneEntity entity);
+			void drawEntityNode(const SceneEntity& entity);
 			void dragAndDrop(SceneEntity entity);
 		private:
 			SceneEntitySelectedCallback m_Callback;

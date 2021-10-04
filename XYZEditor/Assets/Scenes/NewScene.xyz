@@ -144,7 +144,7 @@ Entities:
     SceneTagComponent:
       Name: Orc
     TransformComponent:
-      Position: [2.8514812, 1.0666666, 0]
+      Position: [-2.59741759, -0.41151908, -6.10354327e-05]
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
     Relationship:
@@ -155,7 +155,7 @@ Entities:
     SceneTagComponent:
       Name: Body
     TransformComponent:
-      Position: [0, 0, 0]
+      Position: [-0.0650024414, -0.0582590103, 0]
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteRenderer:
@@ -189,9 +189,9 @@ Entities:
     SceneTagComponent:
       Name: Left Leg
     TransformComponent:
-      Position: [0.282921612, -0.681860626, 0]
-      Rotation: [0, 0, 0.4867073]
-      Scale: [0.524971068, 0.799062848, 1]
+      Position: [0.188710794, -0.693939507, 0]
+      Rotation: [0, 0, 0.17234537]
+      Scale: [0.524970889, 0.799061775, 1]
     SpriteRenderer:
       MaterialAsset: 6b8ecf40-b3aa-4a26-a497-d7cdda43afba
       SubTextureAsset: 79e3c24e-5ae9-4670-8f09-b337c0357019
@@ -207,9 +207,9 @@ Entities:
     SceneTagComponent:
       Name: Right Leg
     TransformComponent:
-      Position: [-0.11295414, -0.681602955, 0]
-      Rotation: [0, 0, -0.147750378]
-      Scale: [0.537798107, 0.8223809, 1]
+      Position: [-0.0429010391, -0.679185987, 0]
+      Rotation: [0, 0, 0.120370343]
+      Scale: [0.537798047, 0.822381258, 1]
     SpriteRenderer:
       MaterialAsset: 6b8ecf40-b3aa-4a26-a497-d7cdda43afba
       SubTextureAsset: ff72032e-034c-41f8-9898-2d2ecc59a864
@@ -243,9 +243,9 @@ Entities:
     SceneTagComponent:
       Name: Right Arm
     TransformComponent:
-      Position: [-0.67711401, -0.00145116623, 0]
-      Rotation: [0, 0, -0.669726908]
-      Scale: [0.541578472, 1.00000548, 1.00000715]
+      Position: [-0.52010107, -0.0558029711, 0]
+      Rotation: [0, 0, -0.127488852]
+      Scale: [0.600000381, 0.999998212, 1]
     SpriteRenderer:
       MaterialAsset: 6b8ecf40-b3aa-4a26-a497-d7cdda43afba
       SubTextureAsset: 0232c16a-0f89-4ce3-956f-a7716a2afe0b

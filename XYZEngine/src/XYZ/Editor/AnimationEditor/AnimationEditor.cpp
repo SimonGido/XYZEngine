@@ -45,6 +45,7 @@ namespace XYZ {
 			m_CurrentFrame(0),
 			m_Expanded(true),
 			m_Playing(false),
+			m_OpenSelectionActions(false),
 			m_PropertySectionWidth(300.0f),
 			m_TimelineSectionWidth(300.0f)
 		{
@@ -87,12 +88,13 @@ namespace XYZ {
 						m_TimelineSectionWidth = viewportPanelSize.x - m_PropertySectionWidth - 5.0f;
 
 						EditorHelper::DrawSplitter(false, 5.0f, &m_PropertySectionWidth, &m_TimelineSectionWidth, 50.0f, 50.0f);
+						keySelectionActions();
 						propertySection();
 						ImGui::SameLine();
 						timelineSection();
-						
-						if (Input::IsKeyPressed(KeyCode::KEY_DELETE))
+						if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
 						{
+							m_OpenSelectionActions = true;
 						}
 					}
 				}
@@ -155,10 +157,10 @@ namespace XYZ {
 				Helper::IntControl("Frame Min", "##Frame Min", m_Sequencer.m_FrameMin);
 
 				ImGui::SameLine();
-				if (Helper::IntControl("Frame Max", "##Frame Max", m_Sequencer.m_FrameMax))
-				{
-					m_Context->SetNumFrames(static_cast<uint32_t>(m_Sequencer.m_FrameMax));
-				}
+				Helper::IntControl("Frame Max", "##Frame Max", m_Sequencer.m_FrameMax);
+			
+				m_Context->SetNumFrames(static_cast<uint32_t>(m_Sequencer.m_FrameMax));
+
 				ImGui::SameLine();
 				if (Helper::IntControl("Frame", "##Frame", currentFrame))
 				{
@@ -271,6 +273,50 @@ namespace XYZ {
 					}
 					m_Sequencer.ClearSelection();
 				}
+			}
+		}
+
+		void AnimationEditor::keySelectionActions()
+		{
+			if (m_OpenSelectionActions)
+			{
+				ImGui::OpenPopup("KeyActions");
+				if (ImGui::BeginPopup("KeyActions"))
+				{
+					if (ImGui::MenuItem("Copy Keys"))
+					{
+						m_Sequencer.Copy();
+						ImGui::CloseCurrentPopup();
+						m_OpenSelectionActions = false;
+					}
+
+					bool copied = !m_Sequencer.GetCopy().Points.empty();
+					if (!copied)
+					{
+						ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+						ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+					}
+					if (ImGui::MenuItem("Paste Keys"))
+					{
+						ImGui::CloseCurrentPopup();
+						m_OpenSelectionActions = false;
+					}
+
+					if (!copied)
+					{
+						ImGui::PopItemFlag();
+						ImGui::PopStyleVar();
+					}
+
+					if (ImGui::MenuItem("Delete Keys"))
+					{
+						m_Sequencer.DeleteSelectedPoints();
+						ImGui::CloseCurrentPopup();
+						m_OpenSelectionActions = false;
+					}
+					ImGui::EndPopup();					
+				}
+				
 			}
 		}
 

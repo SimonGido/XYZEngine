@@ -51,10 +51,10 @@ namespace XYZ {
             m_Context = context;    
         }
 
-        void SceneHierarchyPanel::drawEntityNode(SceneEntity entity)
+        void SceneHierarchyPanel::drawEntityNode(const SceneEntity& entity)
         {
-            auto& tag = entity.GetComponent<SceneTagComponent>().Name;
-            auto& rel = entity.GetComponent<Relationship>();
+            const auto& tag = entity.GetComponent<SceneTagComponent>().Name;
+            const auto& rel = entity.GetComponent<Relationship>();
 
             ImGuiTreeNodeFlags flags = ((m_Context->GetSelectedEntity() == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
             flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
