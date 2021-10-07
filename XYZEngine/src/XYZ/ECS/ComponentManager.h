@@ -130,7 +130,6 @@ namespace XYZ {
 
 		static uint16_t				    s_NextComponentTypeID;
 
-		friend class ECSSerializer;
 		friend class ECSManager;
 	};
 	

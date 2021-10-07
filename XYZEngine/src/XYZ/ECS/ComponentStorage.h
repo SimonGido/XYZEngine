@@ -1,7 +1,6 @@
 #pragma once
 #include "Types.h"
 #include "Entity.h"
-#include "Serialization/ByteStream.h"
 
 namespace XYZ {
 
@@ -19,10 +18,6 @@ namespace XYZ {
 		virtual IComponentStorage* Copy(uint8_t* buffer) const = 0;
 		virtual IComponentStorage* Copy() const = 0;
 
-		virtual void			   AddRawComponent(Entity entity, const ByteStream& in) = 0;
-		virtual void			   CopyComponentData(Entity entity, ByteStream& out) const = 0;
-		virtual void			   UpdateComponentData(Entity entity, const ByteStream& in) = 0;
-		
 		virtual Entity			   EntityDestroyed(Entity entity) = 0;
 		virtual uint32_t		   GetComponentIndex(Entity entity) const = 0;
 		virtual Entity			   GetEntityAtIndex(size_t index) const = 0;
@@ -92,11 +87,7 @@ namespace XYZ {
 		virtual IComponentStorage* Move() override;
 		virtual IComponentStorage* Copy(uint8_t* buffer) const override;		
 		virtual IComponentStorage* Copy() const override;
-		
-		virtual void	 AddRawComponent(Entity entity, const ByteStream& in) override;	
-		virtual void	 CopyComponentData(Entity entity, ByteStream& out) const override;	
-		virtual void	 UpdateComponentData(Entity entity, const ByteStream& in) override;
-		
+
 		virtual Entity   EntityDestroyed(Entity entity) override;	
 		virtual uint32_t GetComponentIndex(Entity entity) const override;	
 		virtual Entity   GetEntityAtIndex(size_t index) const override;
@@ -308,23 +299,7 @@ namespace XYZ {
 	{
 		return new ComponentStorage<T>(*this);
 	}
-	template<typename T>
-	inline void ComponentStorage<T>::AddRawComponent(Entity entity, const ByteStream& in)
-	{
-		T component;
-		in >> component;
-		AddComponent(entity, component);
-	}
-	template<typename T>
-	inline void ComponentStorage<T>::CopyComponentData(Entity entity, ByteStream& out) const
-	{
-		out << m_Data[m_EntityDataMap[(size_t)entity]];
-	}
-	template<typename T>
-	inline void ComponentStorage<T>::UpdateComponentData(Entity entity, const ByteStream& in)
-	{
-		in >> m_Data[m_EntityDataMap[(size_t)entity]];
-	}
+
 	template<typename T>
 	inline Entity ComponentStorage<T>::EntityDestroyed(Entity entity)
 	{

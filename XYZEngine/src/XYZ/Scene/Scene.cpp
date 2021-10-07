@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "Scene.h"
-#include "XYZ/ECS/Serialization/ECSSerializer.h"
 
 #include "XYZ/Core/Input.h"
 #include "XYZ/Core/Application.h"

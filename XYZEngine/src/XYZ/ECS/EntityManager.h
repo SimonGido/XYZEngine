@@ -37,7 +37,7 @@ namespace XYZ {
 		std::vector<uint32_t> m_Versions;
 
 		static constexpr uint32_t sc_MaxEntity = UINT32_MAX - 1;
+		
 		friend class ECSManager;
-		friend class ECSSerializer;
 	};
 }
