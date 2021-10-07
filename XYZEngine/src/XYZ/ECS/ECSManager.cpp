@@ -31,13 +31,19 @@ namespace XYZ {
 	{
 		XYZ_ASSERT(IsValid(entity), "Accesing invalid entity");
 		Entity result = m_EntityManager.CreateEntity();
-		//for (auto storage : m_ComponentManager.m_Storages)
-		//{
-		//	ByteStream out;
-		//	storage->CopyComponentData(entity, out);
-		//	storage->AddRawComponent(result, out);
-		//}
-		//executeOnConstruction();
+		Signature& signature = m_EntityManager.GetSignature(result);
+		for (auto storage : m_ComponentManager.m_Storages)
+		{
+			if (storage)
+			{
+				if (Contains(entity, storage->ID()))
+				{
+					storage->CopyEntity(entity, result);
+					signature.Set(storage->ID(), true);
+				}
+			}
+		}
+		executeOnConstruction();
 		return result;
 	}
 	Entity ECSManager::CreateEntity()

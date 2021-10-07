@@ -12,6 +12,7 @@ namespace XYZ {
 		IComponentStorage(IComponentStorage&& other) noexcept;
 
 		virtual					  ~IComponentStorage() = default;
+		virtual void			   CopyEntity(Entity source, Entity target) = 0;
 		virtual void			   Clear() = 0;
 		virtual IComponentStorage* Move(uint8_t* buffer) = 0;
 		virtual IComponentStorage* Move() = 0;
@@ -81,7 +82,7 @@ namespace XYZ {
 		ComponentStorage(const ComponentStorage<T>& other);		
 		ComponentStorage(ComponentStorage<T>&& other) noexcept;
 			
-
+		virtual void			   CopyEntity(Entity source, Entity target) override;
 		virtual void			   Clear() override;	
 		virtual IComponentStorage* Move(uint8_t* buffer) override;
 		virtual IComponentStorage* Move() override;
@@ -270,6 +271,11 @@ namespace XYZ {
 		m_DataEntityMap(std::move(other.m_DataEntityMap)),
 		m_EntityDataMap(std::move(other.m_EntityDataMap))
 	{}
+	template<typename T>
+	inline void ComponentStorage<T>::CopyEntity(Entity source, Entity target)
+	{
+		AddComponent(target, GetComponent(source));
+	}
 	template<typename T>
 	inline void ComponentStorage<T>::Clear()
 	{
