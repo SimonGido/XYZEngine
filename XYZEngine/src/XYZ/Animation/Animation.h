@@ -36,7 +36,12 @@ namespace XYZ {
 		inline uint32_t GetFrequency()    const { return m_Frequency; }
 		inline float	GetFrameLength()  const { return m_FrameLength; }
 		inline bool		GetRepeat()	      const { return m_Repeat; }
-	
+
+		const std::vector<Property<glm::vec4>>& GetVec4Properties()    const { return m_Vec4Properties;};
+		const std::vector<Property<glm::vec3>>& GetVec3Properties()    const { return m_Vec3Properties;};
+		const std::vector<Property<glm::vec2>>& GetVec2Properties()    const { return m_Vec2Properties;};
+		const std::vector<Property<float>>    & GetFloatProperties()   const { return m_FloatProperties;};
+		const std::vector<Property<void*>>	  & GetPointerProperties() const { return m_PointerProperties;};
 	private:
 		void updateProperties(uint32_t frame);
 		void setPropertiesKey(uint32_t frame);
@@ -81,7 +86,10 @@ namespace XYZ {
 	inline void Animation::AddProperty(const SceneEntity& entity, const std::string& valueName)
 	{
 		SetPropertyRefFn<ValueType> callback = [](SceneEntity ent, ValueType** ref, const std::string& varName) {
-			*ref = &Reflection<ComponentType>::GetByName<ValueType>(varName.c_str(), ent.GetComponent<ComponentType>());
+			if (ent.HasComponent<ComponentType>())
+				*ref = &Reflection<ComponentType>::GetByName<ValueType>(varName.c_str(), ent.GetComponent<ComponentType>());
+			else
+				*ref = nullptr;
 		};
 		addPropertySpecialized<ValueType>(Property<ValueType>(callback, entity, valueName, Reflection<ComponentType>::sc_ClassName, Component<ComponentType>::ID()));		
 	}

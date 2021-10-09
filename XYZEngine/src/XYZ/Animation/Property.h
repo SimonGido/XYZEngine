@@ -42,6 +42,7 @@ namespace XYZ {
 		bool Update(uint32_t frame);
 		void SetReference();
 		void SetCurrentKey(uint32_t frame);
+		void SetSceneEntity(const SceneEntity& entity);
 		void Reset() { m_CurrentKey = 0; }
 			 
 		bool AddKeyFrame(const KeyFrame<T>& key);
@@ -167,6 +168,13 @@ namespace XYZ {
 			return;
 		}
 		m_CurrentKey = FindKey(frame);
+	}
+
+	template<typename T>
+	inline void Property<T>::SetSceneEntity(const SceneEntity& entity)
+	{
+		m_Entity = entity;
+		SetReference();
 	}
 
 	template<typename T>

@@ -8,6 +8,8 @@
 #include <imgui.h>
 #include <ImSequencer.h>
 
+#include "XYZ/Asset/AssetSerializer.h"
+
 namespace XYZ {
 	namespace Editor {
 
@@ -76,6 +78,10 @@ namespace XYZ {
 			{
 				if (m_Context.Raw() && m_Scene.Raw())
 				{
+					if (ImGui::Button("SAVE ME"))
+					{
+						AssetSerializer::SerializeAsset(m_Context);
+					}
 					SceneEntity selectedEntity = m_Scene->GetSelectedEntity();
 					if (m_SelectedEntity != selectedEntity)
 					{

@@ -7,13 +7,14 @@ namespace XYZ {
 
 		class AnimationEditor
 		{
+		public:
 			struct ClassData
 			{
 				std::vector<std::string> VariableNames;
 			};
 			using ClassMap = std::unordered_map<std::string, ClassData>;
 
-		public:
+		
 			AnimationEditor();
 
 			void SetContext(const Ref<Animation>& context);

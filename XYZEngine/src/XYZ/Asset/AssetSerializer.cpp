@@ -21,8 +21,6 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtx/quaternion.hpp>
-#include <glm/gtx/transform.hpp>
-#include <glm/gtx/matrix_decompose.hpp>
 
 
 namespace YAML {
@@ -145,7 +143,7 @@ namespace XYZ {
 	}
 
 	// TODO: Temporary
-	static void CopyAsset(Ref<Asset>& target, const Ref<Asset>& source)
+	static void CopyAsset(Ref<Asset> target, const Ref<Asset>& source)
 	{
 		target->DirectoryHandle = source->DirectoryHandle;
 		target->FileExtension = source->FileExtension;
@@ -192,16 +190,7 @@ namespace XYZ {
 		Int,
 		None
 	};
-	static bool HasExtension(const std::string& path, const char* extension)
-	{
-		auto lastDot = path.rfind('.');
-		auto count = path.size() - lastDot;
 
-		std::string_view view(path.c_str() + lastDot + 1, count);
-		if (!view.compare(0, view.size() - 1, extension))
-			return true;
-		return false;
-	}
 	static FieldType FindType(const std::string& str)
 	{
 		char tokenComma = ',';
@@ -438,6 +427,32 @@ namespace XYZ {
 		sceneSerializer.Serialize();
 	}
 
+	template <typename T>
+	static void SerializePropertyContainer(const std::vector<T>& properties, YAML::Emitter& out)
+	{
+		out << YAML::Value << YAML::BeginSeq;
+		for (const auto& it : properties)
+		{
+			out << YAML::BeginMap; // Property
+			out << YAML::Key << "ComponentName" << YAML::Value << it.GetComponentName();
+			out << YAML::Key << "ValueName" << YAML::Value << it.GetValueName();
+			out << YAML::Key << "Entity" << YAML::Value << it.GetSceneEntity().GetComponent<IDComponent>().ID;
+			out << YAML::Key << "KeyFrames";
+			out << YAML::BeginSeq;
+			for (const auto& key : it.GetKeyFrames())
+			{
+				out << YAML::BeginMap; // KeyFrame
+				out << YAML::Key << "Value" << YAML::Value << key.Value;
+				out << YAML::Key << "Frame" << YAML::Value << key.Frame;			
+				out << YAML::EndMap;   // KeyFrame
+			}
+			out << YAML::EndSeq;
+			out << YAML::EndMap; // Property
+		}
+		out << YAML::EndSeq;
+	}
+	
+
 	template <>
 	void AssetSerializer::serialize<Animation>(const Ref<Asset>& asset)
 	{
@@ -447,14 +462,20 @@ namespace XYZ {
 		out << YAML::BeginMap; // Animation
 		
 		out << YAML::Key << "NumFrames" << YAML::Value << anim->GetNumFrames();
-		out << YAML::Key << "FrameLength" << YAML::Value << anim->GetFrameLength();
+		out << YAML::Key << "Frequency" << YAML::Value << anim->GetFrequency();
 		out << YAML::Key << "Repeat" << YAML::Value << anim->GetRepeat();
 
-		out << YAML::Key << "Tracks";
-		out << YAML::Value << YAML::BeginSeq;
-		
-		out << YAML::EndSeq;
-
+		out << YAML::Key << "Vec4Properties";
+		SerializePropertyContainer(anim->GetVec4Properties(), out);
+		out << YAML::Key << "Vec3Properties";
+		SerializePropertyContainer(anim->GetVec3Properties(), out);
+		out << YAML::Key << "Vec2Properties";
+		SerializePropertyContainer(anim->GetVec2Properties(), out);
+		out << YAML::Key << "FloatProperties";
+		SerializePropertyContainer(anim->GetFloatProperties(), out);
+		out << YAML::Key << "PointerProperties";
+		SerializePropertyContainer(anim->GetPointerProperties(), out);
+	
 		out << YAML::EndMap; // Animation
 
 		std::ofstream fout(asset->FilePath);
@@ -632,6 +653,32 @@ namespace XYZ {
 		return result;
 	}
 
+	/*
+			out << YAML::BeginMap; // Property
+			out << YAML::Key << "ComponentName" << YAML::Value << it.GetComponentName();
+			out << YAML::Key << "ValueName" << YAML::Value << it.GetValueName();
+			out << YAML::Key << "KeyFrames";
+			out << YAML::BeginSeq;
+			for (const auto& key : it.GetKeyFrames())
+			{
+				out << YAML::BeginMap; // KeyFrame
+				out << YAML::Key << "Value" << YAML::Value << key.Value;
+				out << YAML::Key << "Frame" << YAML::Value << key.Frame;			
+				out << YAML::EndMap;   // KeyFrame
+			}
+			out << YAML::EndSeq;
+			out << YAML::EndMap; // Property
+	*/
+
+	template <typename T>
+	static void DeserializeProperties(Ref<Animation>& anim, YAML::Node& data)
+	{
+		for (auto& it : data)
+		{
+			anim->AddProperty()
+		}
+	}
+
 	template <>
 	Ref<Asset> AssetSerializer::deserialize<Animation>(const Ref<Asset>& asset)
 	{
@@ -640,6 +687,18 @@ namespace XYZ {
 		strStream << stream.rdbuf();
 		YAML::Node data = YAML::Load(strStream.str());
 
+		Ref<Animation> result = Ref<Animation>::Create();
+		CopyAsset(result.As<Asset>(), asset);
+
+		result->SetNumFrames(data["NumFrames"].as<uint32_t>());
+		result->SetFrequency(data["Frequency"].as<uint32_t>());
+		result->SetRepeat(data["Repeat"].as<bool>());
+
+		auto& vec4Props    = data["Vec4Properties"];
+		auto& vec3Props    = data["Vec3Properties"];
+		auto& vec2Props    = data["Vec2Properties"];
+		auto& floatProps   = data["FloatProperties"];
+		auto& pointerProps = data["PointerProperties"];
 
 		return Ref<Asset>();
 	}

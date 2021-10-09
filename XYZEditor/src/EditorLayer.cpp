@@ -281,10 +281,11 @@ namespace XYZ {
 	void EditorLayer::animationExample(SceneEntity entity)
 	{
 		auto& animator = entity.EmplaceComponent<AnimatorComponent>();
-		animator.Animation = Ref<Animation>::Create();
+		//animator.Animation = AssetManager::GetAsset<Animation>(AssetManager::GetAssetHandle("Assets/Animations/havko.anim"));
+		animator.Animation = AssetManager::CreateAsset<Animation>("havko.anim", AssetType::Animation, AssetManager::GetDirectoryHandle("Assets/Animations"));
 		m_AnimationEditor.SetScene(m_Scene);
 		m_AnimationEditor.SetContext(animator.Animation);
-
+		
 		//for (size_t i = 0; i < 10; ++i)
 		//	animator.Animation->AddProperty<TransformComponent, glm::vec3>(entity, "Translation");
 		//

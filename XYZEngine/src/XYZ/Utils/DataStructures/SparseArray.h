@@ -44,21 +44,26 @@ namespace XYZ {
 		T& Back()			  { return m_Data.back(); }
 		const T& Back() const { return m_Data.back(); };
 
+		T& GetData(uint32_t entity) { return m_Data[m_EntityDataMap[entity]];}
+		const T& GetData(uint32_t entity) const { return m_Data[m_EntityDataMap[entity]];}
+		
 		uint32_t GetDataIndex(uint32_t entity)  const { return m_EntityDataMap[entity]; }
-		uint32_t GetEntityIndex(uint32_t index) const { return m_DataEntityMap[index]; }
+		uint32_t GetEntityAtIndex(uint32_t index) const { return m_DataEntityMap[index]; }
 		size_t   Size()							const { return m_Data.size(); }
-
+		
 		T& operator[](size_t index) { return m_Data[index]; }
 		const T& operator[](size_t index) const { return m_Data[index]; }
 
+		const std::vector<uint32_t>& GetDataEntityMap() const { return m_DataEntityMap;}
+		
 		typename std::vector<T>::iterator begin() { return m_Data.begin(); }
-		typename std::vector<T>::iterator end() { return m_Data.end(); }
+		typename std::vector<T>::iterator end()   { return m_Data.end(); }
 		typename std::vector<T>::const_iterator begin() const { return m_Data.begin(); }
 		typename std::vector<T>::const_iterator end()   const { return m_Data.end(); }
 	private:
 		std::vector<T>			   m_Data;
 		std::vector<OptionalIndex> m_EntityDataMap;
-		std::vector<OptionalIndex> m_DataEntityMap;
+		std::vector<uint32_t>	   m_DataEntityMap;
 	};
 
 	template<typename T>
@@ -107,7 +112,7 @@ namespace XYZ {
 		else
 		{
 			m_DataEntityMap.push_back(entity);
-			m_EntityDataMap[entity] = m_Data.size();
+			m_EntityDataMap[entity] = static_cast<uint32_t>(m_Data.size());
 			m_Data.push_back(value);
 		}
 	}
@@ -127,7 +132,7 @@ namespace XYZ {
 			// Point last entity to data new index;
 			m_EntityDataMap[lastEntity] = index;
 		}
-		m_EntityDataMap[entity] = Index();
+		m_EntityDataMap[entity] = OptionalIndex();
 		m_Data.pop_back();
 		m_DataEntityMap.pop_back();
 	}
@@ -155,8 +160,8 @@ namespace XYZ {
 	template<typename ...Args>
 	inline void SparseArray<T>::Emplace(uint32_t entity, Args && ...args)
 	{
-		if (m_EntityDataMap.size() <= static_cast<uint32_t>(entity))
-			m_EntityDataMap.resize(static_cast<uint32_t>(entity) + 1);
+		if (m_EntityDataMap.size() <= entity)
+			m_EntityDataMap.resize(entity + 1);
 
 
 		if (m_EntityDataMap[entity].IsValid())

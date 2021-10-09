@@ -23,8 +23,8 @@ namespace XYZ {
 			return std::tuple<Args2&...>{ get<Args2>(entity)... };
 		}
 
-		std::vector<Entity>::const_iterator begin() const { return m_Entities->begin(); }
-		std::vector<Entity>::const_iterator end()   const { return m_Entities->end(); }
+		std::vector<uint32_t>::const_iterator begin() const { return m_Entities->begin(); }
+		std::vector<uint32_t>::const_iterator end()   const { return m_Entities->end(); }
 
 	private:
 		ComponentView(ComponentManager& componentManager)
@@ -47,7 +47,7 @@ namespace XYZ {
 		}
 
 	private:
-		const std::vector<Entity>* m_Entities;
+		const std::vector<uint32_t>* m_Entities;
 		std::tuple<ComponentStorage<Args>*...> m_Storages;
 
 		friend class ECSManager;

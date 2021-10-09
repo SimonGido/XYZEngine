@@ -135,7 +135,7 @@ namespace XYZ {
 	template <>
 	bool Property<void*>::Update(uint32_t frame)
 	{
-		if (isKeyInRange() && frame <= Length())
+		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{
 			size_t& current = m_CurrentKey;
 			const KeyFrame<void*>& curr = m_Keys[current];
@@ -152,7 +152,7 @@ namespace XYZ {
 	template <>
 	bool Property<uint32_t>::Update(uint32_t frame)
 	{
-		if (isKeyInRange() && frame <= Length())
+		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{
 			size_t& current = m_CurrentKey;
 			const KeyFrame<uint32_t>& curr = m_Keys[current];
@@ -170,7 +170,7 @@ namespace XYZ {
 	template <>
 	bool Property<float>::Update(uint32_t frame)
 	{
-		if (isKeyInRange() && frame <= Length())
+		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{
 			size_t& current = m_CurrentKey;
 			const KeyFrame<float>& curr = m_Keys[current];
@@ -189,7 +189,7 @@ namespace XYZ {
 	template <>
 	bool Property<glm::vec2>::Update(uint32_t frame)
 	{
-		if (isKeyInRange() && frame <= Length())
+		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{
 			size_t& current = m_CurrentKey;
 			const KeyFrame<glm::vec2>& curr = m_Keys[current];
@@ -207,7 +207,7 @@ namespace XYZ {
 
 	bool Property<glm::vec3>::Update(uint32_t frame)
 	{	
-		if (isKeyInRange() && frame <= Length())
+		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{
 			size_t& current = m_CurrentKey;
 			const KeyFrame<glm::vec3>& curr = m_Keys[current];
@@ -226,7 +226,7 @@ namespace XYZ {
 
 	bool Property<glm::vec4>::Update(uint32_t frame)
 	{
-		if (isKeyInRange() && frame <= Length())
+		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{
 			size_t& current = m_CurrentKey;
 			const KeyFrame<glm::vec4>& curr = m_Keys[current];
@@ -244,7 +244,7 @@ namespace XYZ {
 
 	bool Property<Ref<SubTexture>>::Update(uint32_t frame)
 	{
-		if (isKeyInRange() && frame <= Length())
+		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{
 			size_t& current = m_CurrentKey;
 			const KeyFrame<Ref<SubTexture>>& curr = m_Keys[current];
