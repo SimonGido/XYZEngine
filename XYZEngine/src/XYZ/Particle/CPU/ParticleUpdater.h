@@ -38,7 +38,6 @@ namespace XYZ {
 		LightUpdater();
 
 		void UpdateParticles(float timeStep, ParticleDataBuffer* data) const;
-		void Update(Ref<SceneRenderer> renderer) const;
 		void SetEnable(bool enable);
 
 		void SetMaxLights(uint32_t maxLights);	

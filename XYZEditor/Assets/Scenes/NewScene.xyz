@@ -104,7 +104,7 @@ Entities:
       Depth: 1
     SpotLight2D:
       Color: [1, 1, 1]
-      Radius: 1.54999995
+      Radius: 3.95000005
       Intensity: 1.29999995
       OuterAngle: 214
       InnerAngle: -189
@@ -120,9 +120,9 @@ Entities:
       PreviousSibling: e7d90360-31d6-4302-8c60-edb5035bb481
       Depth: 1
     PointLight2D:
-      Color: [1.25, 0.100000001, 3.75]
-      Radius: 6.5
-      Intensity: 0.550000012
+      Color: [1.25, 0.100000001, 4]
+      Radius: 0.300000012
+      Intensity: 13.3999996
   - Entity: e7d90360-31d6-4302-8c60-edb5035bb481
     SceneTagComponent:
       Name: Test Child

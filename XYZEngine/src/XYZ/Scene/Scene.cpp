@@ -270,8 +270,7 @@ namespace XYZ {
 		for (auto entity : particleViewCPU)
 		{
 			auto [transform, particle] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU>(entity);
-			auto updateData = particle.System->GetUpdateDataRead();
-			
+			particle.System->SubmitLights(sceneRenderer);
 			sceneRenderer->SubmitRendererCommand(particle.System->m_Renderer, transform.WorldTransform);
 		}
 		
@@ -327,9 +326,8 @@ namespace XYZ {
 		for (auto entity : particleViewCPU)
 		{
 			auto [transform, particle] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU>(entity);
+			particle.System->SubmitLights(sceneRenderer);
 			particle.System->Update(ts);
-			// TODO: deadlock
-			//particle.System->SubmitLights(sceneRenderer);
 			sceneRenderer->SubmitRendererCommand(particle.System->m_Renderer, transform.WorldTransform);
 		}
 		

@@ -5,6 +5,7 @@
 #include "XYZ/Scene/Components.h"
 #include "XYZ/Core/Application.h"
 
+#include "XYZ/Debug/Profiler.h"
 
 namespace XYZ {
 
@@ -29,8 +30,9 @@ namespace XYZ {
 
 	void ParticleSystemCPU::Update(Timestep ts)
 	{	
+		XYZ_PROFILE_FUNC("ParticleSystemCPU::Update");
 		if (m_Play)
-		{
+		{		
 			particleThreadUpdate(ts.GetSeconds());
 			{
 				ScopedLock<RenderData> val = m_RenderThreadPass.Read();
@@ -43,7 +45,8 @@ namespace XYZ {
 
 	void ParticleSystemCPU::SubmitLights(Ref<SceneRenderer> renderer)
 	{
-		auto updateData = GetUpdateData();
+		XYZ_PROFILE_FUNC("ParticleSystemCPU::SubmitLights");
+		auto updateData = m_UpdateThreadPass.GetRead<UpdateData>();
 		const auto& lightUpdater = updateData->LightUpdater;
 		const SceneEntity& lightEntity = lightUpdater.GetLightEntity();
 		const SceneEntity& transformEntity = lightUpdater.GetTransformEntity();
@@ -51,11 +54,11 @@ namespace XYZ {
 		 && lightEntity.IsValid()
 		 && lightEntity.HasComponent<PointLight2D>())
 		{
-			auto particleData = GetParticleDataRead();
+			auto particleData = m_ParticleData.GetRead<ParticleDataBuffer>();
 			if (lightUpdater.IsEnabled())
 			{
-				const PointLight2D& light = lightUpdater.GetLightEntity().GetComponent<PointLight2D>();
-				const TransformComponent& transform = lightUpdater.GetLightEntity().GetComponent<TransformComponent>();
+				const PointLight2D& light = lightEntity.GetComponent<PointLight2D>();
+				const TransformComponent& transform = transformEntity.GetComponent<TransformComponent>();
 				uint32_t count = std::min(lightUpdater.GetMaxLights(), particleData->GetAliveParticles());
 				for (uint32_t i = 0; i < count; ++i)
 					renderer->SubmitLight(light, transform.WorldTransform * glm::translate(particleData->m_Lights[i]));
@@ -105,7 +108,8 @@ namespace XYZ {
 
 	void ParticleSystemCPU::particleThreadUpdate(float timestep)
 	{
-		Application::Get().GetThreadPool().PushJob<void>([this, timestep]() {			
+		Application::Get().GetThreadPool().PushJob<void>([this, timestep]() {
+			XYZ_PROFILE_FUNC("ParticleSystemCPU::particleThreadUpdate Job");
 			{
 				ScopedLock<ParticleDataBuffer> particleData = m_ParticleData.Get<ParticleDataBuffer>();
 				update(timestep, particleData.As());
@@ -117,6 +121,7 @@ namespace XYZ {
 	}
 	void ParticleSystemCPU::update(Timestep timestep, ParticleDataBuffer& particles)
 	{
+		XYZ_PROFILE_FUNC("ParticleSystemCPU::update");
 		ScopedLockRead<UpdateData> data = m_UpdateThreadPass.GetRead<UpdateData>();
 		if (data->TimeUpdater.IsEnabled())
 			data->TimeUpdater.UpdateParticles(timestep, &particles);
@@ -127,6 +132,7 @@ namespace XYZ {
 	}
 	void ParticleSystemCPU::emit(Timestep timestep, ParticleDataBuffer& particles)
 	{
+		XYZ_PROFILE_FUNC("ParticleSystemCPU::emit");
 		ScopedLock<EmitData> data = m_EmitThreadPass.Get<EmitData>();
 		data->EmittedParticles += timestep * data->EmitRate;
 
@@ -148,6 +154,7 @@ namespace XYZ {
 	}
 	void ParticleSystemCPU::buildRenderData(ParticleDataBuffer& particles)
 	{
+		XYZ_PROFILE_FUNC("ParticleSystemCPU::buildRenderData");
 		ScopedLock<RenderData> val = m_RenderThreadPass.Write();
 		uint32_t endId = particles.GetAliveParticles();
 		for (uint32_t i = 0; i < endId; ++i)

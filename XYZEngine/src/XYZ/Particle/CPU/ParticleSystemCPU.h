@@ -30,7 +30,7 @@ namespace XYZ {
 			ParticleLifeGenerator		    LifeGenerator;
 			ParticleRandomVelocityGenerator RandomVelGenerator;
 			float							EmittedParticles;
-			float							EmitRate = 10.0f;
+			float							EmitRate = 1000.0f;
 		};
 	public:
 		ParticleSystemCPU(uint32_t maxParticles);
@@ -57,6 +57,7 @@ namespace XYZ {
 		void update(Timestep timestep, ParticleDataBuffer& particles);
 		void emit(Timestep timestep, ParticleDataBuffer& particles);
 		void buildRenderData(ParticleDataBuffer& particles);
+		
 	private:
 		struct RenderData
 		{
@@ -71,6 +72,7 @@ namespace XYZ {
 		SingleThreadPass<UpdateData>		 m_UpdateThreadPass;	
 		SingleThreadPass<EmitData>			 m_EmitThreadPass;
 		ThreadPass<RenderData>				 m_RenderThreadPass;
+		ThreadPass<std::vector<glm::vec3>>   m_LightPass;
 		bool								 m_Play;
 	};
 

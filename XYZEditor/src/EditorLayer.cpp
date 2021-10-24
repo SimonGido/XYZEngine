@@ -240,7 +240,7 @@ namespace XYZ {
 	void EditorLayer::cpuParticleExample(SceneEntity entity)
 	{
 		auto& particleComponentCPU = entity.EmplaceComponent<ParticleComponentCPU>();
-		particleComponentCPU.System = Ref<ParticleSystemCPU>::Create(100);
+		particleComponentCPU.System = Ref<ParticleSystemCPU>::Create(100000);
 
 		particleComponentCPU.System->m_Renderer->Material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShaderCPU.glsl"));
 		particleComponentCPU.System->m_Renderer->Material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));

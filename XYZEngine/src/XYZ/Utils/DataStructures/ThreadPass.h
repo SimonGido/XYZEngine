@@ -147,7 +147,7 @@ namespace XYZ {
 	public:
 		SingleThreadPass() = default;
 		SingleThreadPass(Args&& ...args);
-
+	
 		template <typename T>
 		ScopedLock<T> Get();
 

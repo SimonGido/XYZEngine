@@ -61,7 +61,7 @@ namespace XYZ {
 
 	LightUpdater::LightUpdater()
 		:
-		m_MaxLights(50),
+		m_MaxLights(500),
 		m_Enabled(true)
 	{
 		
@@ -70,25 +70,17 @@ namespace XYZ {
 	{
 		uint32_t aliveParticles = data->GetAliveParticles();
 
-		for (uint32_t i = 0; i < aliveParticles && i < m_MaxLights; ++i)
+		if (m_TransformEntity.IsValid()
+		 && m_LightEntity.IsValid()
+		 && m_LightEntity.HasComponent<PointLight2D>())
 		{
-			data->m_Lights[i] = data->m_Particle[i].Position;
+			for (uint32_t i = 0; i < aliveParticles && i < m_MaxLights; ++i)
+			{
+				data->m_Lights[i] = data->m_Particle[i].Position;
+			}
 		}
 	}
-	void LightUpdater::Update(Ref<SceneRenderer> renderer) const
-	{
-		if (m_LightEntity && m_LightEntity.HasComponent<PointLight2D>() && m_TransformEntity)
-		{
-			const PointLight2D& light = m_LightEntity.GetComponent<PointLight2D>();
-			const TransformComponent& transform = m_TransformEntity.GetComponent<TransformComponent>();
-
-			//auto lightRef = m_LightBuffer.ReadRead();
-			//for (uint32_t i = 0; i < lightRef->LightCount; ++i)
-			//{
-			//	renderer->SubmitLight(light, transform.WorldTransform * glm::translate(lightRef->LightPositions[i]));
-			//}
-		}
-	}
+	
 	void LightUpdater::SetEnable(bool enable)
 	{
 		m_Enabled = enable;
