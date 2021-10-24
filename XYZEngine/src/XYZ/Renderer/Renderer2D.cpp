@@ -65,7 +65,6 @@ namespace XYZ {
 		m_LineShader		  = Shader::Create("Assets/Shaders/LineShader.glsl");
 		m_CollisionShader	  = Shader::Create("Assets/Shaders/MousePicker.glsl");
 		m_WhiteTexture		  = Texture2D::Create(ImageFormat::RGBA8, 1, 1, {});
-		m_CameraUniformBuffer = UniformBuffer::Create(sizeof(CameraData), 0);
 
 		uint32_t whiteTextureData = 0xffffffff;
 		m_WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
@@ -103,12 +102,9 @@ namespace XYZ {
 	}
 
 
-	void Renderer2D::BeginScene(const glm::mat4& viewProjectionMatrix, const glm::vec3& viewPos)
+	void Renderer2D::BeginScene()
 	{
 		m_QuadMaterial = m_DefaultQuadMaterial;
-		m_CameraBuffer.ViewProjectionMatrix = viewProjectionMatrix;
-		m_CameraBuffer.ViewPosition = glm::vec4(viewPos, 0.0f);
-		m_CameraUniformBuffer->Update(&m_CameraBuffer, sizeof(CameraData), 0);
 	}
 
 	uint32_t Renderer2D::SetTexture(const Ref<Texture>& texture)

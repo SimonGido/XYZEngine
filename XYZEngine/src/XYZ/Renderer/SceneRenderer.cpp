@@ -85,6 +85,7 @@ namespace XYZ {
 
 		m_LightStorageBuffer     = ShaderStorageBuffer::Create(sc_MaxNumberOfLights * sizeof(SceneRenderer::PointLight), 1);
 		m_SpotLightStorageBuffer = ShaderStorageBuffer::Create(sc_MaxNumberOfLights * sizeof(SceneRenderer::SpotLight), 2);
+		m_CameraUniformBuffer    = UniformBuffer::Create(sizeof(CameraData), 0);
 	}
 
 	SceneRenderer::~SceneRenderer()
@@ -117,8 +118,9 @@ namespace XYZ {
 
 		// Viewport size is changed at the beginning of the frame, so we do not delete texture that is currently use for rendering
 		UpdateViewportSize();
-		m_ViewProjectionMatrix = m_SceneCamera.Camera.GetProjectionMatrix() * m_SceneCamera.ViewMatrix;
-		m_ViewPosition = camera.ViewPosition;
+		m_CameraBuffer.ViewProjectionMatrix = m_SceneCamera.Camera.GetProjectionMatrix() * m_SceneCamera.ViewMatrix;
+		m_CameraBuffer.ViewPosition = glm::vec4(camera.ViewPosition, 0.0f);
+		m_CameraUniformBuffer->Update(&m_CameraBuffer, sizeof(CameraData), 0);
 	}
 	void SceneRenderer::BeginScene(const Scene* scene, const glm::mat4 viewProjectionMatrix, const glm::vec3& viewPosition)
 	{
@@ -127,8 +129,11 @@ namespace XYZ {
 
 		// Viewport size is changed at the beginning of the frame, so we do not delete texture that is currently use for rendering
 		UpdateViewportSize();
-		m_ViewProjectionMatrix = viewProjectionMatrix;
-		m_ViewPosition = viewPosition;
+
+		m_CameraBuffer.ViewProjectionMatrix = viewProjectionMatrix;
+		m_CameraBuffer.ViewPosition = glm::vec4(viewPosition, 0.0f);
+
+		m_CameraUniformBuffer->Update(&m_CameraBuffer, sizeof(CameraData), 0);
 	}
 	void SceneRenderer::EndScene()
 	{
@@ -153,26 +158,12 @@ namespace XYZ {
 	void SceneRenderer::SubmitLight(const PointLight2D& light, const glm::mat4& transform)
 	{
 		XYZ_ASSERT(m_PointLightsList.size() + 1 < sc_MaxNumberOfLights, "Max number of lights per scene is ", sc_MaxNumberOfLights);
-
-		PointLight lightData;
-		lightData.Position = glm::vec2(transform[3][0], transform[3][1]);
-		lightData.Color = glm::vec4(light.Color, 0.0f);
-		lightData.Radius = light.Radius;
-		lightData.Intensity = light.Intensity;
-		m_PointLightsList.push_back(lightData);
+		SubmitLight(light, glm::vec3(transform[3][0], transform[3][1], 0.0f));
 	}
 	void SceneRenderer::SubmitLight(const SpotLight2D& light, const glm::mat4& transform)
 	{
 		XYZ_ASSERT(m_SpotLightsList.size() + 1 < sc_MaxNumberOfLights, "Max number of lights per scene is ", sc_MaxNumberOfLights);
-
-		SpotLight lightData;
-		lightData.Position = glm::vec2(transform[3][0], transform[3][1]);
-		lightData.Color = glm::vec4(light.Color, 0.0f);
-		lightData.Radius = light.Radius;
-		lightData.Intensity = light.Intensity;
-		lightData.InnerAngle = light.InnerAngle;
-		lightData.OuterAngle = light.OuterAngle;
-		m_SpotLightsList.push_back(lightData);
+		SubmitLight(light, glm::vec3(transform[3][0], transform[3][1], 0.0f));
 	}
 	void SceneRenderer::SubmitLight(const PointLight2D& light, const glm::vec3& position)
 	{
@@ -304,8 +295,7 @@ namespace XYZ {
 	void SceneRenderer::geometryPass(RenderQueue& queue, const Ref<RenderPass>& pass, bool clear)
 	{
 		Renderer::BeginRenderPass(pass, clear);
-		m_Renderer2D->BeginScene(m_ViewProjectionMatrix, m_ViewPosition);
-
+		m_Renderer2D->BeginScene();
 
 		for (auto& dc : queue.SpriteDrawList)
 		{

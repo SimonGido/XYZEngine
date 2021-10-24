@@ -36,7 +36,7 @@ namespace XYZ {
 		Renderer2D();
 		~Renderer2D();
 
-		void BeginScene(const glm::mat4& viewProjectionMatrix, const glm::vec3& viewPos);
+		void BeginScene();
 
 		uint32_t SetTexture(const Ref<Texture>& texture);
 		void	 SetMaterial(const Ref<Material>& material);
@@ -92,11 +92,6 @@ namespace XYZ {
 			int		  CollisionID;
 		};
 
-		struct CameraData
-		{
-			glm::mat4 ViewProjectionMatrix;
-			glm::vec4 ViewPosition;
-		};
 
 		static constexpr uint32_t sc_MaxTextures = 32;
 		static constexpr uint32_t sc_MaxQuads = 10000;
@@ -129,9 +124,6 @@ namespace XYZ {
 		Renderer2DBuffer<LineVertex>	  m_LineBuffer;
 		Renderer2DBuffer<CollisionVertex> m_CollisionBuffer;
 		
-
-		Ref<UniformBuffer> m_CameraUniformBuffer;
-		CameraData		   m_CameraBuffer;
 		Renderer2DStats    m_Stats;	
 	};
 

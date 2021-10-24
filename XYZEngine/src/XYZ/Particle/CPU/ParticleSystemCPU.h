@@ -30,7 +30,7 @@ namespace XYZ {
 			ParticleLifeGenerator		    LifeGenerator;
 			ParticleRandomVelocityGenerator RandomVelGenerator;
 			float							EmittedParticles;
-			float							EmitRate = 1000.0f;
+			float							EmitRate = 100.0f;
 		};
 	public:
 		ParticleSystemCPU(uint32_t maxParticles);

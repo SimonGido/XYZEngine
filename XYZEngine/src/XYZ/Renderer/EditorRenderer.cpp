@@ -18,7 +18,7 @@ namespace XYZ {
 	void EditorRenderer::EndPass(Ref<Renderer2D> renderer2D, bool clear)
 	{
 		Renderer::BeginRenderPass(m_Pass, clear);
-		renderer2D->BeginScene(m_ViewProjectionMatrix, m_ViewPosition);
+		renderer2D->BeginScene();
 
 		for (auto& dc : m_EditorSpriteDrawList)
 		{

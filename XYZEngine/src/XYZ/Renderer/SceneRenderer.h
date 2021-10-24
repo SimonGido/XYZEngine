@@ -48,6 +48,7 @@ namespace XYZ {
 		std::vector<DrawCommand>         DrawCommandList;
 	};
 
+	
 
 	class SceneRenderer : public RefCount
 	{
@@ -107,16 +108,17 @@ namespace XYZ {
 		private:
 			float Alignment[2];
 		};
-
+		struct CameraData
+		{
+			glm::mat4 ViewProjectionMatrix;
+			glm::vec4 ViewPosition;
+		};
 
 		const Scene*		 m_ActiveScene;
 		Ref<Renderer2D>		 m_Renderer2D;
 		SceneRendererCamera  m_SceneCamera;
 		SceneRendererOptions m_Options;
 		GridProperties		 m_GridProps;
-
-		glm::mat4			 m_ViewProjectionMatrix;
-		glm::vec3			 m_ViewPosition;
 		glm::ivec2			 m_ViewportSize;
 
 		// Passes
@@ -124,7 +126,7 @@ namespace XYZ {
 		Ref<RenderPass>		m_LightPass;
 		Ref<RenderPass>		m_GeometryPass;
 		Ref<RenderPass>		m_BloomPass;
-
+		Ref<UniformBuffer>  m_CameraUniformBuffer;
 
 		Ref<Shader>			m_CompositeShader;
 		Ref<Shader>			m_LightShader;
@@ -138,14 +140,13 @@ namespace XYZ {
 
 		enum { DefaultQueue, LightQueue, NumQueues };
 
+		CameraData				m_CameraBuffer;
 		RenderQueue				m_Queues[NumQueues];
 		std::vector<PointLight>	m_PointLightsList;
 		std::vector<SpotLight>	m_SpotLightsList;
-
 		
 		bool				    m_ViewportSizeChanged = false;
 		int32_t					m_ThreadIndex;
-
 
 		static constexpr uint32_t sc_MaxNumberOfLights = 10 * 1024;
 	};
