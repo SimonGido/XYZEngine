@@ -6,12 +6,12 @@
 
 
 namespace XYZ {
-	Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height, uint32_t channels, const TextureSpecs& specs)
+	Ref<Texture2D> Texture2D::Create(ImageFormat format, uint32_t width, uint32_t height, const TextureSpecs& specs)
 	{
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::API::None: XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
-		case RendererAPI::API::OpenGL: return Ref<OpenGLTexture2D>::Create(width, height, channels, specs);
+		case RendererAPI::API::OpenGL: return Ref<OpenGLTexture2D>::Create(format, width, height, specs);
 		}
 
 		XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");

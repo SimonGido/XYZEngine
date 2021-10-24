@@ -1,6 +1,7 @@
 #pragma once
 #include "Camera.h"
 #include "RenderPass.h"
+#include "Renderer2D.h"
 #include "XYZ/Scene/Scene.h"
 #include "XYZ/Scene/Components.h"
 #include "XYZ/Scene/EditorComponents.h"
@@ -31,13 +32,16 @@ namespace XYZ {
 	{
 		struct SpriteDrawCommand
 		{
-			SpriteRenderer* Sprite;
-			TransformComponent* Transform;
+			Ref<Material>   Material;
+			Ref<SubTexture> SubTexture;
+			uint32_t		SortLayer;
+			glm::vec4		Color;
+			glm::mat4		Transform;
 		};
 		struct DrawCommand
 		{
-			const RendererCommand*	Command;
-			TransformComponent*		Transform;
+			Ref<RendererCommand> Command;
+			glm::mat4			 Transform;
 		};
 
 		std::vector<SpriteDrawCommand>	 SpriteDrawList;		
@@ -45,41 +49,103 @@ namespace XYZ {
 	};
 
 
-	class SceneRenderer
+	class SceneRenderer : public RefCount
 	{
 	public:
-		static void Init();
-		static void Shutdown();
+		SceneRenderer();
+		~SceneRenderer();
 
-		static void SetViewportSize(uint32_t width, uint32_t height);
+		virtual void Release() const override;
 
-		static void BeginScene(const Scene* scene, const SceneRendererCamera& camera);
-		static void BeginScene(const Scene* scene, const glm::mat4 viewProjectionMatrix, const glm::vec3& viewPosition);
-		static void EndScene();
-		static void SubmitSprite(SpriteRenderer* sprite, TransformComponent* transform);
-		
+		void SetRenderer2D(const Ref<Renderer2D>& renderer2D);
+		void SetViewportSize(uint32_t width, uint32_t height);
+		void BeginScene(const Scene* scene, const SceneRendererCamera& camera);
+		void BeginScene(const Scene* scene, const glm::mat4 viewProjectionMatrix, const glm::vec3& viewPosition);
+		void EndScene();
+		void SubmitSprite(Ref<Material> material, Ref<SubTexture> subTexture, uint32_t sortLayer, const glm::vec4& color, const glm::mat4& transform);
 
-		static void SubmitRendererCommand(const RendererCommand* command, TransformComponent* transform);
-		static void SubmitLight(PointLight2D* light, const glm::mat4& transform);
-		static void SubmitLight(SpotLight2D* light, const glm::mat4& transform);
+		void SubmitRendererCommand(Ref<RendererCommand> command, const glm::mat4& transform);
+		void SubmitLight(const PointLight2D& light, const glm::mat4& transform);
+		void SubmitLight(const SpotLight2D& light, const glm::mat4& transform);
 
-		static void SetGridProperties(const GridProperties& props);
+		void SetGridProperties(const GridProperties& props);
 
-		static void UpdateViewportSize();
+		void UpdateViewportSize();
 
-		static Ref<RenderPass> GetFinalRenderPass();
-		static uint32_t GetFinalColorBufferRendererID();
-		static SceneRendererOptions& GetOptions();
+		Ref<RenderPass>		  GetFinalRenderPass();
+		uint32_t			  GetFinalColorBufferRendererID();
+		SceneRendererOptions& GetOptions();
 	
 	private:
-		static void flush();
-		static void flushLightQueue();
-		static void flushDefaultQueue();
-		static void sortQueue(RenderQueue& queue);
+		void flush();
+		void flushLightQueue();
+		void flushDefaultQueue();
+		void sortQueue(RenderQueue& queue);
 
-		static void geometryPass(RenderQueue& queue, const Ref<RenderPass>& pass, bool clear);
-		static void lightPass();
-		static void bloomPass();
-		static void gaussianBlurPass();
+		void geometryPass(RenderQueue& queue, const Ref<RenderPass>& pass, bool clear);
+		void lightPass();
+		void bloomPass();
+
+	private:
+		struct PointLight
+		{
+			glm::vec4 Color;
+			glm::vec2 Position;
+			float	  Radius;
+			float	  Intensity;
+		};
+		struct SpotLight
+		{
+			glm::vec4 Color;
+			glm::vec2 Position;
+			float	  Radius;
+			float	  Intensity;
+			float	  InnerAngle;
+			float	  OuterAngle;
+
+		private:
+			float Alignment[2];
+		};
+
+
+		const Scene*		 m_ActiveScene;
+		Ref<Renderer2D>		 m_Renderer2D;
+		SceneRendererCamera  m_SceneCamera;
+		SceneRendererOptions m_Options;
+		GridProperties		 m_GridProps;
+
+		glm::mat4			 m_ViewProjectionMatrix;
+		glm::vec3			 m_ViewPosition;
+		glm::ivec2			 m_ViewportSize;
+
+		// Passes
+		Ref<RenderPass>		m_CompositePass;
+		Ref<RenderPass>		m_LightPass;
+		Ref<RenderPass>		m_GeometryPass;
+		Ref<RenderPass>		m_BloomPass;
+
+
+		Ref<Shader>			m_CompositeShader;
+		Ref<Shader>			m_LightShader;
+		Ref<Shader>			m_BloomShader;
+		Ref<Texture2D>		m_BloomTexture[3];
+
+		Ref<ShaderStorageBuffer> m_LightStorageBuffer;
+		Ref<ShaderStorageBuffer> m_SpotLightStorageBuffer;
+
+		
+
+		enum { DefaultQueue, LightQueue, NumQueues };
+
+		RenderQueue				m_Queues[NumQueues];
+		std::vector<PointLight>	m_PointLightsList;
+		std::vector<SpotLight>	m_SpotLightsList;
+
+		
+		bool				    m_ViewportSizeChanged = false;
+		int32_t					m_ThreadIndex;
+
+
+		static constexpr uint32_t sc_MaxNumberOfLights = 10 * 1024;
 	};
 }

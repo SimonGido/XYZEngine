@@ -1,11 +1,18 @@
 #include "OpenGLRenderPass.h"
 
-XYZ::OpenGLRenderPass::OpenGLRenderPass(const RenderPassSpecification& spec)
-	:
-	m_Specification(spec)
-{
-}
 
-XYZ::OpenGLRenderPass::~OpenGLRenderPass()
-{
+namespace XYZ {
+	OpenGLRenderPass::OpenGLRenderPass(const RenderPassSpecification& spec)
+		:
+		m_Specification(spec)
+	{
+	}
+
+	OpenGLRenderPass::~OpenGLRenderPass()
+	{
+	}
+
+	void OpenGLRenderPass::Release() const
+	{
+	}
 }

@@ -8,7 +8,7 @@ namespace XYZ {
 	public:
 		SpriteRendererInspector();
 
-		virtual bool OnEditorRender() override;
+		virtual bool OnEditorRender(Ref<EditorRenderer> renderer) override;
 
 
 		SceneEntity m_Context;

@@ -257,4 +257,37 @@ namespace XYZ {
 		}
 		return true;
 	}
+
+	bool Property<Ref<Material>>::Update(uint32_t frame)
+	{
+		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
+		{
+			size_t& current = m_CurrentKey;
+			const KeyFrame<Ref<Material>>& curr = m_Keys[current];
+			if (frame >= curr.Frame)
+			{
+				*m_Value = m_Keys[current + 1].Value;
+				current++;
+			}
+			return false;
+		}
+		return true;
+	}
+
+	bool Property<glm::mat4>::Update(uint32_t frame)
+	{
+		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
+		{
+			return false;
+		}
+		return true;
+	}
+	bool Property<bool>::Update(uint32_t frame)
+	{
+		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
+		{
+			return false;
+		}
+		return true;
+	}
 }

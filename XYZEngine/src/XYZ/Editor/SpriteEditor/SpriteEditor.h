@@ -3,6 +3,8 @@
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Renderer/RenderPass.h"
+#include "XYZ/Renderer/Renderer2D.h"
+
 #include "XYZ/Editor/EditorCamera.h"
 #include "XYZ/Core/Timestep.h"
 #include "XYZ/Scene/EditorComponents.h"
@@ -16,7 +18,7 @@ namespace XYZ {
 		public:
 			SpriteEditor();
 
-			void OnUpdate(Timestep ts);
+			void OnUpdate(Ref<Renderer2D> renderer2D, Ref<EditorRenderer> renderer, Timestep ts);
 			void OnImGuiRender(bool &open);
 
 			void OnEvent(Event& event);

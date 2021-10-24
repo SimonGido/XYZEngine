@@ -10,7 +10,7 @@ Entities:
     SpriteRenderer:
       MaterialAsset: 8e302fbb-0049-47c6-97a6-4ca49ee28da0
       SubTextureAsset: 3680b0a1-ae15-4e4b-abb3-89892fe9cb37
-      Color: [1, 1, 1, 1]
+      Color: [83.0500031, 3.1500001, 3.95000005, 1]
       SortLayer: 1
       Visible: true
     Relationship:
@@ -104,8 +104,8 @@ Entities:
       Depth: 1
     SpotLight2D:
       Color: [1, 1, 1]
-      Radius: 6.6500001
-      Intensity: 0.150000006
+      Radius: 1.54999995
+      Intensity: 1.29999995
       OuterAngle: 214
       InnerAngle: -189
   - Entity: a1345771-51d8-47b2-ba0c-0ab1fa579971
@@ -121,8 +121,8 @@ Entities:
       Depth: 1
     PointLight2D:
       Color: [1.25, 0.100000001, 3.75]
-      Radius: 0.800000012
-      Intensity: 3.75
+      Radius: 6.5
+      Intensity: 0.550000012
   - Entity: e7d90360-31d6-4302-8c60-edb5035bb481
     SceneTagComponent:
       Name: Test Child

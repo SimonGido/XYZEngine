@@ -6,104 +6,66 @@
 
 
 namespace XYZ {
-	struct EditorRendererData
-	{
-		struct EditorSpriteDrawCommand
-		{
-			EditorSpriteRenderer* Sprite;
-			TransformComponent* Transform;
-		};
-		struct EditorAABBDrawCommand
-		{
-			glm::vec3 Min;
-			glm::vec3 Max;
-			glm::vec4 Color;
-		};
-		struct EditorLineDrawCommand
-		{
-			glm::vec3 P0;
-			glm::vec3 P1;
-			glm::vec4 Color;
-		};
-
-		std::vector<EditorSpriteDrawCommand> EditorSpriteDrawList;
-		std::vector<EditorAABBDrawCommand>   EditorAABBDrawList;
-		std::vector<EditorLineDrawCommand>   EditorLineDrawList;
-
-		Ref<RenderPass> Pass;
-		glm::mat4 ViewProjectionMatrix;
-		glm::vec3 ViewPosition;
-	};
-
-	static EditorRendererData s_Data;
 
 	void EditorRenderer::BeginPass(const Ref<RenderPass>& pass, const glm::mat4& viewProjection, const glm::vec3& viewPos)
 	{
-		XYZ_ASSERT(!s_Data.Pass.Raw(), "Forgot to call end pass");
-		s_Data.Pass = pass;
-		s_Data.ViewProjectionMatrix = viewProjection;
-		s_Data.ViewPosition = viewPos;
+		XYZ_ASSERT(!m_Pass.Raw(), "Forgot to call end pass");
+		m_Pass = pass;
+		m_ViewProjectionMatrix = viewProjection;
+		m_ViewPosition = viewPos;
 	}
 
-	void EditorRenderer::EndPass(bool clear)
+	void EditorRenderer::EndPass(Ref<Renderer2D> renderer2D, bool clear)
 	{
-		Renderer::BeginRenderPass(s_Data.Pass, clear);
-		Renderer2D::BeginScene(s_Data.ViewProjectionMatrix, s_Data.ViewPosition);
+		Renderer::BeginRenderPass(m_Pass, clear);
+		renderer2D->BeginScene(m_ViewProjectionMatrix, m_ViewPosition);
 
-		for (auto& dc : s_Data.EditorSpriteDrawList)
+		for (auto& dc : m_EditorSpriteDrawList)
 		{
-			Renderer2D::SetMaterial(dc.Sprite->Material);
-			uint32_t textureID = Renderer2D::SetTexture(dc.Sprite->SubTexture->GetTexture());
-			Renderer2D::SubmitQuad(dc.Transform->WorldTransform, dc.Sprite->SubTexture->GetTexCoords(), textureID, dc.Sprite->Color);
+			renderer2D->SetMaterial(dc.Material);
+			uint32_t textureID = renderer2D->SetTexture(dc.SubTexture->GetTexture());
+			renderer2D->SubmitQuad(dc.Transform, dc.SubTexture->GetTexCoords(), textureID, dc.Color);
 		}
-		for (auto& dc : s_Data.EditorAABBDrawList)
+		for (auto& dc : m_EditorAABBDrawList)
 		{
 			glm::vec3 topLeft = { dc.Min.x, dc.Max.y, dc.Min.z };
 			glm::vec3 topRight = { dc.Max.x, dc.Max.y, dc.Min.z };
 			glm::vec3 bottomLeft = { dc.Min.x, dc.Min.y, dc.Min.z };
 			glm::vec3 bottomRight = { dc.Max.x, dc.Min.y, dc.Min.z };
 
-			Renderer2D::SubmitLine(topLeft, topRight, dc.Color);
-			Renderer2D::SubmitLine(topRight, bottomRight, dc.Color);
-			Renderer2D::SubmitLine(bottomRight, bottomLeft, dc.Color);
-			Renderer2D::SubmitLine(bottomLeft, topLeft, dc.Color);
+			renderer2D->SubmitLine(topLeft, topRight, dc.Color);
+			renderer2D->SubmitLine(topRight, bottomRight, dc.Color);
+			renderer2D->SubmitLine(bottomRight, bottomLeft, dc.Color);
+			renderer2D->SubmitLine(bottomLeft, topLeft, dc.Color);
 		}
-		for (auto& dc : s_Data.EditorLineDrawList)
+		for (auto& dc : m_EditorLineDrawList)
 		{
-			Renderer2D::SubmitLine(dc.P0, dc.P1, dc.Color);
+			renderer2D->SubmitLine(dc.P0, dc.P1, dc.Color);
 		}
-		Renderer2D::Flush();
-		Renderer2D::FlushLines();
+		renderer2D->Flush();
+		renderer2D->FlushLines();
 
-		s_Data.EditorSpriteDrawList.clear();
-		s_Data.EditorAABBDrawList.clear();
-		s_Data.EditorLineDrawList.clear();
+		m_EditorSpriteDrawList.clear();
+		m_EditorAABBDrawList.clear();
+		m_EditorLineDrawList.clear();
 
 		Renderer::EndRenderPass();
-		s_Data.Pass.Reset();
+		m_Pass.Reset();
 	}
 
-	void EditorRenderer::SubmitEditorSprite(EditorSpriteRenderer* sprite, TransformComponent* transform)
+	void EditorRenderer::SubmitEditorSprite(const Ref<Material>& material, const Ref<SubTexture>& subTexture, const glm::vec4& color, const glm::mat4& transform)
 	{
-		s_Data.EditorSpriteDrawList.push_back({ sprite,transform });
-	}
-
-	void EditorRenderer::SubmitEditorAABB(TransformComponent* transform, const glm::vec4& color)
-	{
-		auto [translation, rotation, scale] = transform->GetWorldComponents();
-		glm::vec3 bottomLeft = { translation.x - scale.x / 2,translation.y - scale.y / 2, translation.z };
-		glm::vec3 topRight = { translation.x + scale.x / 2,translation.y + scale.y / 2, translation.z };
-		s_Data.EditorAABBDrawList.push_back({ bottomLeft, topRight , color });
+		m_EditorSpriteDrawList.push_back({ material, subTexture, color,transform });
 	}
 
 	void EditorRenderer::SubmitEditorAABB(const glm::vec3& min, const glm::vec3& max, const glm::vec4& color)
 	{
-		s_Data.EditorAABBDrawList.push_back({ min, max , color });
+		m_EditorAABBDrawList.push_back({ min, max , color });
 	}
 
 	void EditorRenderer::SubmitEditorLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color)
 	{
-		s_Data.EditorLineDrawList.push_back({ p0, p1, color });
+		m_EditorLineDrawList.push_back({ p0, p1, color });
 	}
 
 	void EditorRenderer::SubmitEditorCircle(const glm::vec3& pos, float radius, uint32_t sides, const glm::vec4& color)
@@ -114,7 +76,7 @@ namespace XYZ {
 			float before = glm::radians((float)(a - step));
 			float heading = glm::radians((float)a);
 
-			s_Data.EditorLineDrawList.push_back({
+			m_EditorLineDrawList.push_back({
 				glm::vec3(pos.x + std::cos(before) * radius, pos.y + std::sin(before) * radius, pos.z),
 				glm::vec3(pos.x + std::cos(heading) * radius, pos.y + std::sin(heading) * radius, pos.z),
 				color
@@ -129,9 +91,9 @@ namespace XYZ {
 			pos + glm::vec3(size.x, size.y, 0.0f),
 			pos + glm::vec3(0.0f,size.y, 0.0f)
 		};
-		s_Data.EditorLineDrawList.push_back({ p[0], p[1], color });
-		s_Data.EditorLineDrawList.push_back({ p[1], p[2], color });
-		s_Data.EditorLineDrawList.push_back({ p[2], p[3], color });
-		s_Data.EditorLineDrawList.push_back({ p[3], p[0], color });
+		m_EditorLineDrawList.push_back({ p[0], p[1], color });
+		m_EditorLineDrawList.push_back({ p[1], p[2], color });
+		m_EditorLineDrawList.push_back({ p[2], p[3], color });
+		m_EditorLineDrawList.push_back({ p[3], p[0], color });
 	}
 }

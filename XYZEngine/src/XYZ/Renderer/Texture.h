@@ -1,6 +1,7 @@
 #pragma once
 
 #include "XYZ/Asset/Asset.h"
+#include "XYZ/Renderer/Image.h"
 
 #include <string>
 #include <memory>
@@ -36,6 +37,12 @@ namespace XYZ {
 		TextureParam MagParam = TextureParam::Nearest;
 	};
 
+	enum class BindImageType
+	{
+		Read,
+		Write,
+		ReadWrite
+	};
 	/**
 	* @interface Texture
 	* pure virtual (interface) class.
@@ -46,13 +53,15 @@ namespace XYZ {
 		virtual ~Texture() = default;
 	
 		virtual void Bind(uint32_t slot = 0) const = 0;
-		
+		virtual void BindImage(uint32_t slot, uint32_t miplevel, BindImageType type) const = 0;
+
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
-		virtual uint32_t GetChannels() const = 0;
+		virtual uint32_t GetChannelSize() const = 0;
 
 		virtual uint32_t GetRendererID() const = 0;
-		
+		virtual uint32_t GetMipLevelCount() const = 0;
+		virtual std::pair<uint32_t, uint32_t> GetMipSize(uint32_t index) const = 0;
 		static uint32_t CalculateMipMapCount(uint32_t width, uint32_t height);
 	};
 
@@ -68,7 +77,7 @@ namespace XYZ {
 		virtual void GetData(uint8_t** buffer) const = 0;
 		virtual const std::string& GetFilepath() const = 0;
 
-		static Ref<Texture2D> Create(uint32_t width, uint32_t height, uint32_t channels, const TextureSpecs& specs);
+		static Ref<Texture2D> Create(ImageFormat format, uint32_t width, uint32_t height, const TextureSpecs& specs);
 		static Ref<Texture2D> Create(const TextureSpecs& specs, const std::string& path);
 
 		

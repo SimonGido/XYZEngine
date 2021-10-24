@@ -39,8 +39,7 @@ namespace XYZ {
 
 	Application::~Application()
 	{
-		Renderer::Shutdown();
-		AssetManager::Shutdown();
+		
 	}
 
 	void Application::Run()
@@ -50,27 +49,35 @@ namespace XYZ {
 		{		
 			float time = (float)glfwGetTime();
 			float timestep = time - m_LastFrameTime;
+			
 			m_LastFrameTime = time;
 			{
-				Stopwatch watch;				
+				Stopwatch watch;	
+
 				Renderer::WaitAndRender();
+				RefCollector::DeleteInstances();
 
 				for (Layer* layer : m_LayerStack)	
 					layer->OnUpdate(timestep);	
 
-				
-				m_ImGuiLayer->Begin();
-				if (ImGui::Begin("Stats"))
+							
+				#ifdef IMGUI_BUILD
 				{
-					ImGui::Text("Performance: %f ms", performance);
+					m_ImGuiLayer->Begin();
+					if (ImGui::Begin("Stats"))
+					{
+						ImGui::Text("Performance: %f ms", performance);
+					}
+					ImGui::End();
+					
+					for (Layer* layer : m_LayerStack)
+						layer->OnImGuiRender();
+					
+					m_ImGuiLayer->End();
 				}
-				ImGui::End();
-
-				for (Layer* layer : m_LayerStack)
-					layer->OnImGuiRender();
-		
-				m_ImGuiLayer->End();
-
+				#else
+					std::cout << performance << std::endl;
+				#endif
 				performance = watch.Stop();
 			}
 			m_Window->Update();

@@ -8,7 +8,7 @@ namespace XYZ {
 		public:
 			InspectorPanel();
 			
-			void OnImGuiRender();
+			void OnImGuiRender(Ref<EditorRenderer> renderer);
 	
 			void SetContext(InspectorContext* context);
 

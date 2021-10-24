@@ -106,6 +106,12 @@ namespace XYZ {
 		size_t Size() const;
 	};
 
+	enum class ComputeBarrierType
+	{
+		ShaderStorageBarrier,
+		ShaderImageAccessBarrier
+	};
+
 	class Shader : public Asset
 	{
 	public:
@@ -113,7 +119,7 @@ namespace XYZ {
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
-		virtual void Compute(uint32_t groupX, uint32_t groupY = 1, uint32_t groupZ = 1) const = 0;
+		virtual void Compute(uint32_t groupX, uint32_t groupY = 1, uint32_t groupZ = 1, ComputeBarrierType barrierType = ComputeBarrierType::ShaderStorageBarrier) const = 0;
 		virtual void SetVSUniforms(ByteBuffer buffer) const = 0;
 		virtual void SetFSUniforms(ByteBuffer buffer) const = 0;
 

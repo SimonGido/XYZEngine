@@ -6,10 +6,9 @@
 
 namespace XYZ {
 
-	ParticleSystemCPU::ParticleSystemCPU(uint32_t maxParticles)
-		:
-		m_Renderer(maxParticles)
+	ParticleSystemCPU::ParticleSystemCPU(uint32_t maxParticles)		
 	{
+		m_Renderer = Ref<ParticleRendererCPU>::Create(maxParticles);
 		m_SingleThreadPass = std::make_shared<SingleThreadPass>(maxParticles);
 		m_ThreadPass = std::make_shared<ThreadPass<DoubleThreadPass>>();
 		{
@@ -33,8 +32,8 @@ namespace XYZ {
 			particleThreadUpdate(ts.GetSeconds());
 			{
 				ScopedLockReference<DoubleThreadPass> val = m_ThreadPass->Read();
-				m_Renderer.InstanceCount = val->InstanceCount;
-				m_Renderer.InstanceVBO->Update(val->RenderData.data(), m_Renderer.InstanceCount * sizeof(ParticleRenderData));
+				m_Renderer->InstanceCount = val->InstanceCount;
+				m_Renderer->InstanceVBO->Update(val->RenderData.data(), m_Renderer->InstanceCount * sizeof(ParticleRenderData));
 			}
 			{
 				std::scoped_lock lock(m_SingleThreadPass->Mutex);

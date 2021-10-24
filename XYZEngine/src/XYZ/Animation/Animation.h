@@ -2,6 +2,7 @@
 #include "XYZ/Asset/Asset.h"
 #include "XYZ/Scene/SceneEntity.h"
 #include "Property.h"
+#include "XYZ/Scene/Components.h"
 
 #include <glm/glm.hpp>
 
@@ -14,22 +15,23 @@ namespace XYZ {
 		virtual ~Animation() override;
 
 		template <typename ComponentType, typename ValueType>
-		void AddProperty(const SceneEntity& entity, const std::string& valueName);
+		void AddProperty(const std::string& path, const std::string& valueName);
 
 		template <typename ComponentType, typename ValueType>
-		void RemoveProperty(const SceneEntity& entity, const std::string& valueName);
+		void RemoveProperty(const std::string& path, const std::string& valueName);
 
 		template <typename ComponentType, typename ValueType>
-		Property<ValueType>* GetProperty(const SceneEntity& entity, const std::string& valueName);
+		Property<ValueType>* GetProperty(const std::string& path, const std::string& valueName);
 
 		void Update(Timestep ts);
 		void UpdateLength();
+		
 		void SetFrequency(uint32_t framesPerSecond);
 		void SetCurrentFrame(uint32_t frame);
 		void SetNumFrames(uint32_t numFrames) { m_NumFrames = numFrames; }
 		void SetRepeat(bool repeat)			  { m_Repeat = repeat; }
 
-		bool PropertyHasVariable(const char* componentName, const char* varName, const SceneEntity& entity) const;
+		bool PropertyHasVariable(const char* componentName, const char* varName, const std::string& path) const;
 
 		inline uint32_t	GetNumFrames()    const { return m_NumFrames; }
 		inline uint32_t	GetCurrentFrame() const { return m_CurrentFrame; }
@@ -43,6 +45,7 @@ namespace XYZ {
 		const std::vector<Property<float>>    & GetFloatProperties()   const { return m_FloatProperties;};
 		const std::vector<Property<void*>>	  & GetPointerProperties() const { return m_PointerProperties;};
 	private:
+		void setSceneEntity(const SceneEntity& entity);
 		void updateProperties(uint32_t frame);
 		void setPropertiesKey(uint32_t frame);
 		void resetProperties();
@@ -51,22 +54,28 @@ namespace XYZ {
 		void	    addPropertySpecialized(const Property<ValueType>& prop);
 		
 		template <typename ValueType>
-		void	    removePropertySpecialized(const SceneEntity& entity, const std::string& valueName, const std::string& componentName);
+		void	    removePropertySpecialized(const std::string& path, const std::string& valueName, const std::string& componentName);
 		
 		template <typename T>
-		Property<T>* getPropertySpecialized(const SceneEntity& entity, const std::string& valueName, const std::string& componentName);
+		void		setPropertySceneEntity(std::vector<Property<T>>& container);
+
+		template <typename T>
+		Property<T>* getPropertySpecialized(const std::string& path, const std::string& valueName, const std::string& componentName);
 		
 		template <typename T>
-		static void	removeFromContainer(std::vector<T>& container, const SceneEntity& entity, const std::string& valueName, const std::string& componentName);
+		static void	removeFromContainer(std::vector<T>& container, const std::string& path, const std::string& valueName, const std::string& componentName);
 
 		template <typename T>
-		static T*   findInContainer(std::vector<T>& container, const SceneEntity& entity, const std::string& valueName, const std::string& componentName);
+		static T*   findInContainer(std::vector<T>& container, const std::string& path, const std::string& valueName, const std::string& componentName);
 
 		template <typename T>
-		static bool propertyHasVariable(const std::vector<Property<T>>& container, const char* className, const char* varName, const SceneEntity& entity);
+		static bool propertyHasVariable(const std::vector<Property<T>>& container, const char* className, const char* varName, const std::string& path);
 			
 		void		clearProperties();
 	private:
+		SceneEntity m_Entity;
+
+
 		std::vector<Property<glm::vec4>> m_Vec4Properties;
 		std::vector<Property<glm::vec3>> m_Vec3Properties;
 		std::vector<Property<glm::vec2>> m_Vec2Properties;
@@ -79,40 +88,59 @@ namespace XYZ {
 		float	 m_CurrentTime;
 		float    m_FrameLength;
 		bool     m_Repeat;
+
+		friend class Animator;
 	};
 	
 
 	template<typename ComponentType, typename ValueType>
-	inline void Animation::AddProperty(const SceneEntity& entity, const std::string& valueName)
+	inline void Animation::AddProperty(const std::string& path, const std::string& valueName)
 	{
 		SetPropertyRefFn<ValueType> callback = [](SceneEntity ent, ValueType** ref, const std::string& varName) {
-			if (ent.HasComponent<ComponentType>())
+			if (ent.IsValid() && ent.HasComponent<ComponentType>())
 				*ref = &Reflection<ComponentType>::GetByName<ValueType>(varName.c_str(), ent.GetComponent<ComponentType>());
 			else
 				*ref = nullptr;
 		};
-		addPropertySpecialized<ValueType>(Property<ValueType>(callback, entity, valueName, Reflection<ComponentType>::sc_ClassName, Component<ComponentType>::ID()));		
+		addPropertySpecialized<ValueType>(Property<ValueType>(callback, path, valueName, Reflection<ComponentType>::sc_ClassName, Component<ComponentType>::ID()));		
 	}
 
 	template<typename ComponentType, typename ValueType>
-	inline void Animation::RemoveProperty(const SceneEntity& entity, const std::string& valueName)
+	inline void Animation::RemoveProperty(const std::string& path, const std::string& valueName)
 	{
-		removePropertySpecialized<ValueType>(entity, valueName, Reflection<ComponentType>::sc_ClassName);
+		removePropertySpecialized<ValueType>(path, valueName, Reflection<ComponentType>::sc_ClassName);
 	}
 
 	template <typename ComponentType, typename ValueType>
-	inline Property<ValueType>* Animation::GetProperty(const SceneEntity& entity, const std::string& valueName)
+	inline Property<ValueType>* Animation::GetProperty(const std::string& path, const std::string& valueName)
 	{
-		return getPropertySpecialized<ValueType>(entity, valueName, Reflection<ComponentType>::sc_ClassName);
+		return getPropertySpecialized<ValueType>(path, valueName, Reflection<ComponentType>::sc_ClassName);
 	}
 
 	template<typename T>
-	void Animation::removeFromContainer(std::vector<T>& container, const SceneEntity& entity, const std::string& valueName, const std::string& componentName)
+	inline void Animation::setPropertySceneEntity(std::vector<Property<T>>& container)
+	{
+		auto& relationship = m_Entity.GetComponent<Relationship>();
+		for (auto& prop : container)
+		{
+			auto ecs		 = m_Entity.GetECS();
+			const auto& path = prop.GetPath();
+			if (!path.empty())
+			{
+				Entity result = relationship.FindByName(*ecs, path);
+				prop.SetSceneEntity({ result, m_Entity.GetScene() });
+			}
+			prop.SetReference();
+		}
+	}
+
+	template<typename T>
+	void Animation::removeFromContainer(std::vector<T>& container, const std::string& path, const std::string& valueName, const std::string& componentName)
 	{
 		for (size_t i = 0; i < container.size(); ++i)
 		{
 			auto& prop = container[i];
-			if (prop.GetSceneEntity() == entity && prop.GetValueName() == valueName && prop.GetComponentName() == componentName)
+			if (prop.GetPath() == path && prop.GetValueName() == valueName && prop.GetComponentName() == componentName)
 			{
 				container.erase(container.begin() + i);
 				return;
@@ -120,12 +148,12 @@ namespace XYZ {
 		}
 	}
 	template<typename T>
-	T* Animation::findInContainer(std::vector<T>& container, const SceneEntity& entity, const std::string& valueName, const std::string& componentName)
+	T* Animation::findInContainer(std::vector<T>& container, const std::string& path, const std::string& valueName, const std::string& componentName)
 	{
 		for (size_t i = 0; i < container.size(); ++i)
 		{
 			auto& prop = container[i];
-			if (prop.GetSceneEntity() == entity && prop.GetValueName() == valueName && prop.GetComponentName() == componentName)
+			if (prop.GetPath() == path && prop.GetValueName() == valueName && prop.GetComponentName() == componentName)
 			{
 				return &prop;
 			}
@@ -133,11 +161,11 @@ namespace XYZ {
 		return nullptr;
 	}
 	template <typename T>
-	bool Animation::propertyHasVariable(const std::vector<Property<T>>& container, const char* className, const char* varName, const SceneEntity& entity)
+	bool Animation::propertyHasVariable(const std::vector<Property<T>>& container, const char* className, const char* varName, const std::string& path)
 	{
 		for (const auto& it : container)
 		{
-			if (it.GetComponentName() == className && it.GetValueName() == varName && it.GetSceneEntity() == entity)
+			if (it.GetComponentName() == className && it.GetValueName() == varName && it.GetPath() == path)
 				return true;
 		}
 		return false;

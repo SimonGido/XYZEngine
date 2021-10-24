@@ -3,39 +3,21 @@
 #include <vector>
 
 #include "XYZ/Core/Ref.h"
-
+#include "XYZ/Renderer/Texture.h"
+#include "XYZ/Renderer/Image.h"
 
 #include <glm/glm.hpp>
 
 namespace XYZ {
-	/*! @class FramebufferFormat
-	*	@brief Describes the color format of the Framebuffer
-	*/
-	enum class FramebufferTextureFormat
-	{
-		None = 0,
-
-		// Color
-		RGBA8 = 1,
-		RGBA16F = 2,
-		RGBA32F = 3,
-		RG32F = 4,
-		R32I = 5,
-
-		// Depth/stencil
-		DEPTH32F = 6,
-		DEPTH24STENCIL8 = 7,
-
-		// Defaults
-		Depth = DEPTH24STENCIL8
-	};
 
 	struct FramebufferTextureSpecs
 	{
 		FramebufferTextureSpecs() = default;
-		FramebufferTextureSpecs(FramebufferTextureFormat format) : TextureFormat(format) {}
+		FramebufferTextureSpecs(ImageFormat format, bool generateMips = false) 
+			: TextureFormat(format), GenerateMips(generateMips){}
 
-		FramebufferTextureFormat TextureFormat;
+		ImageFormat TextureFormat;
+		bool		GenerateMips;
 	};
 
 	struct FramebufferAttachmentSpecs
@@ -72,6 +54,7 @@ namespace XYZ {
 		virtual void Clear() const = 0;
 
 		virtual void BindTexture(uint32_t attachmentIndex, uint32_t slot) const = 0;
+		virtual void BindImage(uint32_t attachmentIndex, uint32_t slot, uint32_t miplevel, BindImageType type) const = 0;
 		virtual void SetSpecification(const FramebufferSpecs& specs) = 0;
 
 		virtual const uint32_t GetColorAttachmentRendererID(uint32_t index) const = 0;

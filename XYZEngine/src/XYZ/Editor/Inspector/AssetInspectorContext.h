@@ -9,7 +9,7 @@ namespace XYZ {
 		class AssetInspectorContext : public InspectorContext
 		{
 		public:		
-			virtual void OnImGuiRender() override;
+			virtual void OnImGuiRender(Ref<EditorRenderer> renderer) override;
 
 			void SetContext(const Ref<Asset>& context);
 

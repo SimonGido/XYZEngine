@@ -26,6 +26,7 @@ namespace XYZ {
 
 		std::future<bool>							    RenderThreadFinished;
 		RendererStats									Stats;
+		std::mutex										QueueLock;
 	};
 
 	static RendererData s_Data;
@@ -75,22 +76,27 @@ namespace XYZ {
 		Renderer::Submit([=]() {
 			RendererAPI::Init();
 		});
-		CustomRenderer2D::Init();
-		Renderer2D::Init();
-		SceneRenderer::Init();
 		
 		SetupFullscreenQuad();
 	}
 
 	void Renderer::Shutdown()
 	{
-		CustomRenderer2D::Shutdown();
-		Renderer2D::Shutdown();
-		SceneRenderer::Shutdown();
-
 		s_Data.FullscreenQuadVertexArray.Reset();
 		s_Data.FullscreenQuadVertexBuffer.Reset();
 		s_Data.FullscreenQuadIndexBuffer.Reset();
+		auto queue = s_Data.CommandQueue;
+		queue->Swap();
+	}
+
+	void Renderer::Lock()
+	{
+		s_Data.QueueLock.lock();
+	}
+
+	void Renderer::Unlock()
+	{
+		s_Data.QueueLock.unlock();
 	}
 
 	void Renderer::Clear()
@@ -179,7 +185,8 @@ namespace XYZ {
 	{
 		XYZ_ASSERT(renderPass.Raw(), "Render pass can not be null");
 		s_Data.ActiveRenderPass = renderPass;
-		if (!s_Data.ActiveRenderPass->GetSpecification().TargetFramebuffer->GetSpecification().SwapChainTarget)
+		const Ref<Framebuffer>& frameBuffer = s_Data.ActiveRenderPass->GetSpecification().TargetFramebuffer;
+		if (!frameBuffer->GetSpecification().SwapChainTarget)
 			s_Data.ActiveRenderPass->GetSpecification().TargetFramebuffer->Bind();
 
 		if (clear)
@@ -215,9 +222,11 @@ namespace XYZ {
 		s_Data.RenderThreadFinished = s_Data.Pool.PushJob<bool>([queue]() -> bool{
 			{
 				auto val = queue->Read();
-				val.Get().Execute();
+				val->Execute();
 			}
-			
+			GLsync fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+			auto value = glClientWaitSync(fence, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
+			glDeleteSync(fence);
 			return true;
 		});
 		#else
@@ -233,6 +242,7 @@ namespace XYZ {
 	void Renderer::BlockRenderThread()
 	{
 		#ifdef RENDER_THREAD_ENABLED
+		// This is not needed, we know it ended once it is possible to swap queues
 		s_Data.RenderThreadFinished.wait();
 		#endif
 	}

@@ -7,7 +7,7 @@ namespace XYZ {
 	class RigidBody2DInspector : public InspectorEditable
 	{
 	public:
-		virtual bool OnEditorRender() override;
+		virtual bool OnEditorRender(Ref<EditorRenderer> renderer) override;
 
 
 		SceneEntity m_Context;
@@ -17,7 +17,7 @@ namespace XYZ {
 	class BoxCollider2DInspector : public InspectorEditable
 	{
 	public:
-		virtual bool OnEditorRender() override;
+		virtual bool OnEditorRender(Ref<EditorRenderer> renderer) override;
 
 
 		SceneEntity m_Context;
@@ -29,7 +29,7 @@ namespace XYZ {
 	class CircleCollider2DInspector : public InspectorEditable
 	{
 	public:
-		virtual bool OnEditorRender() override;
+		virtual bool OnEditorRender(Ref<EditorRenderer> renderer) override;
 
 		SceneEntity m_Context;
 
@@ -40,7 +40,7 @@ namespace XYZ {
 	class ChainCollider2DInspector : public InspectorEditable
 	{
 	public:
-		virtual bool OnEditorRender() override;
+		virtual bool OnEditorRender(Ref<EditorRenderer> renderer) override;
 
 
 		SceneEntity m_Context;

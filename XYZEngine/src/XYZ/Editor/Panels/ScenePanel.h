@@ -22,7 +22,7 @@ namespace XYZ {
 			void SetEntitySelectedCallback(const SceneEntitySelectedCallback& callback) { m_Callback = callback; }
 	
 			void OnUpdate(Timestep ts);
-			void OnImGuiRender();
+			void OnImGuiRender(uint32_t renderBufferID);
 
 			void OnEvent(Event& event);
 

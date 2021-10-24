@@ -65,7 +65,9 @@ namespace XYZ {
 		SceneTagComponent(const SceneTagComponent& other)
 			: Name(other.Name)
 		{}
-
+		SceneTagComponent(std::string&& name)
+			: Name(std::move(name))
+		{}
 		bool operator==(const SceneTagComponent& other) const
 		{
 			return Name == other.Name;
@@ -108,11 +110,11 @@ namespace XYZ {
 	};
 
 
-	class Animation;
+	class Animator;
 	struct AnimatorComponent 
 	{
 		AnimatorComponent() = default;
-		Ref<Animation> Animation;
+		Ref<Animator> Animator;
 	};
 
 
@@ -157,6 +159,13 @@ namespace XYZ {
 	{
 		Relationship();
 		Relationship(Entity parent);
+		
+		template <typename T>
+		Entity Find(const ECSManager& ecs, const T& component) const;
+
+		Entity FindByName(const ECSManager& ecs, std::string_view name) const;
+
+		std::vector<Entity> GetTree(const ECSManager& ecs) const;
 
 		Entity GetParent() const { return Parent; }
 		Entity GetFirstChild() const { return FirstChild; }
@@ -180,6 +189,29 @@ namespace XYZ {
 		friend class Scene;
 		friend class SceneSerializer;
 	};
+
+	template<typename T>
+	inline Entity Relationship::Find(const ECSManager& ecs, const T& component) const
+	{
+		std::stack<Entity> temp;
+		temp.push(FirstChild);
+		while (!temp.empty())
+		{
+			Entity entity = temp.top();
+			temp.pop();
+			if (ecs.Contains<T>(entity))
+			{
+				if (ecs.GetComponent<T>(entity) == component)
+					return entity;
+			}
+			const auto& relationship = ecs.GetComponent<Relationship>(entity);
+			if (relationship.NextSibling)
+				temp.push(relationship.NextSibling);
+			if (relationship.FirstChild)
+				temp.push(relationship.FirstChild);
+		}
+		return Entity();
+	}
 
 	struct EntityScriptClass;
 	struct ScriptComponent 
@@ -260,4 +292,6 @@ namespace XYZ {
 	};
 
 	REGISTER_REFLECTABLES(TransformComponent, SpriteRenderer, PointLight2D, SpotLight2D, BoxCollider2DComponent, CircleCollider2DComponent);
+	
+
 }

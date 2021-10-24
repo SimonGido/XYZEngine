@@ -14,5 +14,8 @@ int main(int argc, char** argv)
 	auto app = CreateApplication();
 	app->Run();
 	delete app;
+	XYZ::Renderer::Shutdown();
+	XYZ::AssetManager::Shutdown();
+	XYZ::RefCollector::DeleteAll();
 	XYZ::Audio::ShutDown();
 }

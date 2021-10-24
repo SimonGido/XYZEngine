@@ -165,9 +165,14 @@ namespace XYZ {
 	}
 	OpenGLShader::~OpenGLShader()
 	{
-		Renderer::Submit([=]() {
-			glDeleteProgram(m_RendererID); 
-			});
+		
+	}
+	void OpenGLShader::Release() const
+	{
+		uint32_t rendererID = m_RendererID;
+		Renderer::Submit([rendererID]() {
+			glDeleteProgram(rendererID);
+		});
 	}
 	void OpenGLShader::Bind() const
 	{
@@ -176,13 +181,24 @@ namespace XYZ {
 			glUseProgram(instance->m_RendererID); 
 			});
 	}
-	void OpenGLShader::Compute(uint32_t groupX, uint32_t groupY, uint32_t groupZ) const
+	void OpenGLShader::Compute(uint32_t groupX, uint32_t groupY, uint32_t groupZ, ComputeBarrierType barrierType) const
 	{
 		XYZ_ASSERT(m_IsCompute, "Calling compute on non compute shader");
 		Ref<const OpenGLShader> instance = this;
-		Renderer::Submit([instance, groupX, groupY, groupZ]() {
+		Renderer::Submit([instance, groupX, groupY, groupZ, barrierType]() {
 			glDispatchCompute(groupX, groupY, groupZ);
-			glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+			switch (barrierType)
+			{
+			case XYZ::ComputeBarrierType::ShaderStorageBarrier:
+				glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+				break;
+			case XYZ::ComputeBarrierType::ShaderImageAccessBarrier:
+				glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+				break;
+			default:
+				break;
+			}
+			
 		});
 	}
 	void OpenGLShader::Unbind() const

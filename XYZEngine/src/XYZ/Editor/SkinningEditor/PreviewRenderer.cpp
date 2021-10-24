@@ -21,8 +21,8 @@ namespace XYZ {
                     }
                     offset += (uint32_t)subMesh.GeneratedVertices.size();
                 }
-                for (auto& vertex : mesh.m_PreviewVertices)
-                    EditorRenderer::SubmitEditorCircle(glm::vec3(vertex.Position.x, vertex.Position.y, 0.0f), SkinnedMesh::PointRadius, 20, mesh.m_Colors[SkinnedMesh::VertexColor]);
+                //for (auto& vertex : mesh.m_PreviewVertices)
+                //    EditorRenderer::SubmitEditorCircle(glm::vec3(vertex.Position.x, vertex.Position.y, 0.0f), SkinnedMesh::PointRadius, 20, mesh.m_Colors[SkinnedMesh::VertexColor]);
             }
             else
             {
@@ -40,8 +40,8 @@ namespace XYZ {
                 }
                 for (auto& subMesh : mesh.m_Submeshes)
                 {
-                    for (auto& vertex : subMesh.GeneratedVertices)
-                        EditorRenderer::SubmitEditorCircle(glm::vec3(vertex.Position.x, vertex.Position.y, 0.0f), SkinnedMesh::PointRadius, 20, subMesh.Color);
+                    //for (auto& vertex : subMesh.GeneratedVertices)
+                    //    EditorRenderer::SubmitEditorCircle(glm::vec3(vertex.Position.x, vertex.Position.y, 0.0f), SkinnedMesh::PointRadius, 20, subMesh.Color);
                 }
             }
         }
@@ -96,10 +96,10 @@ namespace XYZ {
 
         void PreviewRenderer::RenderBone(const glm::vec2& start, const glm::vec2& end, const glm::vec2& normal, const glm::vec4& color, float radius)
         {
-            EditorRenderer::SubmitEditorCircle(glm::vec3(start, 0.0f), radius, 20, color);
-            EditorRenderer::SubmitEditorCircle(glm::vec3(end, 0.0f), radius, 20, color);
-            EditorRenderer::SubmitEditorLine(glm::vec3(start + (normal * radius),0.0f), glm::vec3(end, 0.0f), color);
-            EditorRenderer::SubmitEditorLine(glm::vec3(start - (normal * radius),0.0f), glm::vec3(end, 0.0f), color);
+            //EditorRenderer::SubmitEditorCircle(glm::vec3(start, 0.0f), radius, 20, color);
+            //EditorRenderer::SubmitEditorCircle(glm::vec3(end, 0.0f), radius, 20, color);
+            //EditorRenderer::SubmitEditorLine(glm::vec3(start + (normal * radius),0.0f), glm::vec3(end, 0.0f), color);
+            //EditorRenderer::SubmitEditorLine(glm::vec3(start - (normal * radius),0.0f), glm::vec3(end, 0.0f), color);
         }
 
         void PreviewRenderer::RenderBone(const PreviewBone& child, const glm::vec4& color, float radius, bool preview)
@@ -122,9 +122,9 @@ namespace XYZ {
 
         void PreviewRenderer::RenderTriangle(const glm::vec2& firstPosition, const glm::vec2& secondPosition, const glm::vec2& thirdPosition, const glm::vec4& color)
         {
-            EditorRenderer::SubmitEditorLine(glm::vec3(firstPosition.x, firstPosition.y, 0.0f), glm::vec3(secondPosition.x, secondPosition.y, 0.0f), color);
-            EditorRenderer::SubmitEditorLine(glm::vec3(secondPosition.x, secondPosition.y, 0.0f), glm::vec3(thirdPosition.x, thirdPosition.y, 0.0f), color);
-            EditorRenderer::SubmitEditorLine(glm::vec3(thirdPosition.x, thirdPosition.y, 0.0f), glm::vec3(firstPosition.x, firstPosition.y, 0.0f), color);
+            //EditorRenderer::SubmitEditorLine(glm::vec3(firstPosition.x, firstPosition.y, 0.0f), glm::vec3(secondPosition.x, secondPosition.y, 0.0f), color);
+            //EditorRenderer::SubmitEditorLine(glm::vec3(secondPosition.x, secondPosition.y, 0.0f), glm::vec3(thirdPosition.x, thirdPosition.y, 0.0f), color);
+            //EditorRenderer::SubmitEditorLine(glm::vec3(thirdPosition.x, thirdPosition.y, 0.0f), glm::vec3(firstPosition.x, firstPosition.y, 0.0f), color);
         }
 
         void PreviewRenderer::RenderTriangle(const Submesh& mesh, const Triangle& triangle, const glm::vec4& color)

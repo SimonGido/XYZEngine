@@ -3,8 +3,8 @@
 #include "XYZ/Core/Application.h"
 
 #include <imgui.h>
-#include <examples/imgui_impl_glfw.h>
-#include <examples/imgui_impl_opengl3.h>
+#include <backends/imgui_impl_glfw.h>
+#include <backends/imgui_impl_opengl3.h>
 
 #include <GLFW/glfw3.h>
 
@@ -27,7 +27,7 @@ namespace XYZ {
 		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
 		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
 
-		
+
 		// Setup Dear ImGui style
 		ImGui::StyleColorsDark();
 		//ImGui::StyleColorsClassic();
@@ -44,15 +44,17 @@ namespace XYZ {
 
 		Application& app = Application::Get();
 		GLFWwindow* window = static_cast<GLFWwindow*>(app.GetWindow().GetWindow());
-		
+
 
 		// Setup Platform/Renderer bindings
 
 		#ifdef RENDER_THREAD_ENABLED
+		io.ConfigFlags &= ~ImGuiConfigFlags_ViewportsEnable;
 		auto result = Renderer::GetPool().PushJob<bool>([window]()->bool {
-			ImGui_ImplGlfw_InitForOpenGL(window, true);	
+			ImGui_ImplGlfw_InitForOpenGL(window, true);
 			ImGui_ImplOpenGL3_Init("#version 410");
 			ImGui_ImplOpenGL3_NewFrame();
+
 			return true;
 		});
 		result.wait();
@@ -65,9 +67,23 @@ namespace XYZ {
 
 	void ImGuiLayer::OnDetach()
 	{
-		ImGui_ImplOpenGL3_Shutdown();
-		ImGui_ImplGlfw_Shutdown();
-		ImGui::DestroyContext();
+		#ifdef RENDER_THREAD_ENABLED
+		{
+			auto result = Renderer::GetPool().PushJob<bool>([this]()->bool {
+				ImGui_ImplOpenGL3_Shutdown();
+				ImGui_ImplGlfw_Shutdown();
+				ImGui::DestroyContext();
+				return true;
+			});
+			result.wait();
+		}
+		#else
+		{
+			ImGui_ImplOpenGL3_Shutdown();
+			ImGui_ImplGlfw_Shutdown();
+			ImGui::DestroyContext();
+		}
+		#endif
 	}
 
 	void ImGuiLayer::OnEvent(Event& e)
@@ -76,55 +92,67 @@ namespace XYZ {
 		{
 			ImGuiIO& io = ImGui::GetIO();
 			e.Handled = (
-				   e.GetEventType() == EventType::KeyPressed
+				e.GetEventType() == EventType::KeyPressed
 				|| e.GetEventType() == EventType::KeyReleased
 				|| e.GetEventType() == EventType::KeyTyped
 				|| e.GetEventType() == EventType::MouseButtonPressed
 				|| e.GetEventType() == EventType::MouseButtonReleased
 				|| e.GetEventType() == EventType::MouseScroll
 				|| e.GetEventType() == EventType::MouseMoved
-			);
+				);
 		}
 	}
 
 	void ImGuiLayer::Begin()
 	{
-		ImGui_ImplGlfw_NewFrame();	
+		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 		if (m_EnableDockspace)
-			beginDockspace();		
+			beginDockspace();
+	}
+
+	static void CopyImDrawData(ImDrawData& copy, const ImDrawData* drawData)
+	{
+		copy = *drawData;
+		copy.CmdLists = new ImDrawList * [drawData->CmdListsCount];
+		for (int i = 0; i < drawData->CmdListsCount; ++i)
+			copy.CmdLists[i] = drawData->CmdLists[i]->CloneOutput();
 	}
 
 	void ImGuiLayer::End()
 	{	
 		if (m_EnableDockspace)
 			endDockspace();
-
+	
+		ImGui::Render();	
 		#ifdef RENDER_THREAD_ENABLED
 		{
-			auto result = Renderer::GetPool().PushJob<bool>([this]()->bool {
-				ImGuiIO& io = ImGui::GetIO();
-				Application& app = Application::Get();
-				io.DisplaySize = ImVec2((float)app.GetWindow().GetWidth(), (float)app.GetWindow().GetHeight());
-				ImGui::Render();
-				ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-				if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-				{
-					GLFWwindow* backup_current_context = glfwGetCurrentContext();				
-					ImGui::UpdatePlatformWindows();
-					ImGui::RenderPlatformWindowsDefault();
-					glfwMakeContextCurrent(backup_current_context);
-				}
-				return true;
+			ImDrawData copy;
+			CopyImDrawData(copy, ImGui::GetDrawData());
+			
+			Renderer::Submit([copy]() mutable {		
+				ImGui_ImplOpenGL3_RenderDrawData(&copy);
+				for (int i = 0; i < copy.CmdListsCount; ++i)
+					IM_DELETE(copy.CmdLists[i]);
+				delete[]copy.CmdLists;
+				copy.Clear();
 			});
-			result.wait();
+
+			ImGuiIO& io = ImGui::GetIO();
+			Application& app = Application::Get();
+			io.DisplaySize = ImVec2((float)app.GetWindow().GetWidth(), (float)app.GetWindow().GetHeight());
+			
+			if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+			{	
+				ImGui::UpdatePlatformWindows();
+				ImGui::RenderPlatformWindowsDefault();
+			}
 		}
 		#else
 		ImGuiIO& io = ImGui::GetIO();
 		Application& app = Application::Get();
 		io.DisplaySize = ImVec2((float)app.GetWindow().GetWidth(), (float)app.GetWindow().GetHeight());
 		
-		ImGui::Render();	
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
@@ -180,6 +208,7 @@ namespace XYZ {
 		if (opt_fullscreen)
 		{
 			ImGuiViewport* viewport = ImGui::GetMainViewport();
+		
 			ImGui::SetNextWindowPos(viewport->Pos);
 			ImGui::SetNextWindowSize(viewport->Size);
 			ImGui::SetNextWindowViewport(viewport->ID);

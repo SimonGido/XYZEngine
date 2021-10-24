@@ -15,8 +15,8 @@ namespace XYZ {
 			FramebufferSpecs specs;
 			specs.ClearColor = { 0.0f,0.0f,0.0f,0.0f };
 			specs.Attachments = {
-				FramebufferTextureSpecs(FramebufferTextureFormat::RGBA16F),
-				FramebufferTextureSpecs(FramebufferTextureFormat::DEPTH24STENCIL8)
+				FramebufferTextureSpecs(ImageFormat::RGBA16F),
+				FramebufferTextureSpecs(ImageFormat::DEPTH24STENCIL8)
 			};
 			m_Pass = RenderPass::Create({ Framebuffer::Create(specs) });
 		}

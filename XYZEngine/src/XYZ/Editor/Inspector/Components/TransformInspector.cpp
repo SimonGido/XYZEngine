@@ -5,7 +5,7 @@
 #include "XYZ/Scene/Components.h"
 
 namespace XYZ {
-	bool TransformInspector::OnEditorRender()
+	bool TransformInspector::OnEditorRender(Ref<EditorRenderer> renderer)
 	{
 		return EditorHelper::DrawComponent<TransformComponent>("Transform", m_Context, [&](auto& component) {
 

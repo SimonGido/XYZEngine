@@ -7,7 +7,7 @@
 
 
 namespace XYZ {
-	bool SceneTagInspector::OnEditorRender()
+	bool SceneTagInspector::OnEditorRender(Ref<EditorRenderer> renderer)
 	{
 		return EditorHelper::DrawComponent<SceneTagComponent>("Scene Tag", m_Context, [&](auto& component) {
 

@@ -27,6 +27,18 @@ namespace XYZ {
 	{
 		return m_Scene && m_ID && m_Scene->m_ECS.IsValid(m_ID);
 	}
+	const ECSManager* SceneEntity::GetECS() const
+	{
+		if (m_Scene)
+			return &m_Scene->m_ECS;
+		return nullptr;
+	}
+	ECSManager* SceneEntity::GetECS()
+	{
+		if (m_Scene)
+			return &m_Scene->m_ECS;
+		return nullptr;
+	}
 	SceneEntity& SceneEntity::operator=(const SceneEntity& other)
 	{
 		m_Scene = other.m_Scene;

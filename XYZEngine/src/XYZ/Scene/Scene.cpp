@@ -8,7 +8,7 @@
 #include "XYZ/Renderer/SceneRenderer.h"
 #include "XYZ/Renderer/EditorRenderer.h"
 
-#include "XYZ/Animation/Animation.h"
+#include "XYZ/Animation/Animator.h"
 
 #include "XYZ/Script/ScriptEngine.h"
 #include "Components.h"
@@ -169,60 +169,6 @@ namespace XYZ {
 		m_PhysicsEntityBuffer = nullptr;
 	}
 
-	void Scene::OnRender()
-	{
-		// 3D part here
-
-		///////////////
-		SceneEntity cameraEntity(m_CameraEntity, this);
-		SceneRendererCamera renderCamera;
-		auto& cameraComponent = cameraEntity.GetComponent<CameraComponent>();
-		auto& cameraTransform = cameraEntity.GetComponent<TransformComponent>();
-		renderCamera.Camera = cameraComponent.Camera;
-		renderCamera.ViewMatrix = glm::inverse(cameraTransform.WorldTransform);
-		auto [translation, rotation, scale] = cameraTransform.GetWorldComponents();
-		renderCamera.ViewPosition = translation;
-
-		SceneRenderer::GetOptions().ShowGrid = false;
-		SceneRenderer::BeginScene(this, renderCamera);
-
-		auto renderView = m_ECS.CreateView<TransformComponent, SpriteRenderer>();
-		for (auto entity : renderView)
-		{
-			auto [transform, renderer] = renderView.Get<TransformComponent, SpriteRenderer>(entity);
-			SceneRenderer::SubmitSprite(&renderer, &transform);
-		}
-
-		auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponentGPU>();
-		for (auto entity : particleView)
-		{
-			auto [transform, particle] = particleView.Get<TransformComponent, ParticleComponentGPU>(entity);
-			SceneRenderer::SubmitRendererCommand(&particle.System->m_Renderer, &transform);
-		}
-
-		auto particleViewCPU = m_ECS.CreateView<TransformComponent, ParticleComponentCPU>();
-		for (auto entity : particleViewCPU)
-		{
-			auto [transform, particle] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU>(entity);
-			SceneRenderer::SubmitRendererCommand(&particle.System->GetRenderer(), &transform);
-		}
-		
-		auto lightView = m_ECS.CreateView<TransformComponent, PointLight2D>();
-		for (auto entity : lightView)
-		{
-			auto [transform, light] = lightView.Get<TransformComponent, PointLight2D>(entity);
-			SceneRenderer::SubmitLight(&light, transform.WorldTransform);
-		}
-		auto spotLightView = m_ECS.CreateView<TransformComponent, SpotLight2D>();
-		for (auto entity : spotLightView)
-		{
-			auto [transform, light] = spotLightView.Get<TransformComponent, SpotLight2D>(entity);
-			SceneRenderer::SubmitLight(&light, transform.WorldTransform);
-		}
-
-		SceneRenderer::EndScene();
-	}
-
 	void Scene::OnUpdate(Timestep ts)
 	{
 		int32_t velocityIterations = 6;
@@ -247,14 +193,14 @@ namespace XYZ {
 			if (!scriptComponent.ModuleName.empty())
 				ScriptEngine::OnUpdateEntity({ scriptStorage.GetEntityAtIndex(i),this }, ts);
 		}
-		
+
 		m_ECS.CreateStorage<AnimatorComponent>();
 		auto& animatorStorage = m_ECS.GetStorage<AnimatorComponent>();
-		for (auto & anim : animatorStorage)
+		for (auto& anim : animatorStorage)
 		{
-			anim.Animation->Update(ts);
+			anim.Animator->Update(ts);
 		}
-		
+
 		auto particleViewCPU = m_ECS.CreateView<TransformComponent, ParticleComponentCPU>();
 		for (auto entity : particleViewCPU)
 		{
@@ -267,7 +213,7 @@ namespace XYZ {
 		for (auto entity : particleView)
 		{
 			auto [transform, particle] = particleView.Get<TransformComponent, ParticleComponentGPU>(entity);
-			auto& particleMaterial = particle.System->m_Renderer.ParticleMaterial;
+			auto& particleMaterial = particle.System->m_Renderer->ParticleMaterial;
 			particleMaterial->Set("u_MaxParticles", particleMaterial->GetMaxParticles());
 			particleMaterial->Set("u_MainModule.Time", ts);
 			particleMaterial->Set("u_MainModule.ParticlesEmitted", (int)particle.System->GetEmittedParticles());
@@ -276,34 +222,97 @@ namespace XYZ {
 			particle.System->Update(ts);
 			particleMaterial->Compute();
 		}
-		
+
 		updateHierarchy();
 	}
 
-	void Scene::OnRenderEditor(const Editor::EditorCamera& camera, Timestep ts)
+	void Scene::OnRender(Ref<SceneRenderer> sceneRenderer)
 	{
-		updateHierarchy();
-		SceneRenderer::BeginScene(this, camera.GetViewProjection(), camera.GetPosition());
-		
+		// 3D part here
+
+		///////////////
+		SceneEntity cameraEntity(m_CameraEntity, this);
+		SceneRendererCamera renderCamera;
+		auto& cameraComponent = cameraEntity.GetComponent<CameraComponent>();
+		auto& cameraTransform = cameraEntity.GetComponent<TransformComponent>();
+		renderCamera.Camera = cameraComponent.Camera;
+		renderCamera.ViewMatrix = glm::inverse(cameraTransform.WorldTransform);
+		auto [translation, rotation, scale] = cameraTransform.GetWorldComponents();
+		renderCamera.ViewPosition = translation;
+
+		sceneRenderer->GetOptions().ShowGrid = false;
+		sceneRenderer->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+		sceneRenderer->BeginScene(this, renderCamera);
+
 		auto renderView = m_ECS.CreateView<TransformComponent, SpriteRenderer>();
 		for (auto entity : renderView)
 		{
 			auto [transform, renderer] = renderView.Get<TransformComponent, SpriteRenderer>(entity);
 			if (renderer.Visible && renderer.SubTexture.Raw() && renderer.Material.Raw())
-				SceneRenderer::SubmitSprite(&renderer, &transform);
+				sceneRenderer->SubmitSprite(
+				renderer.Material, renderer.SubTexture, renderer.SortLayer, renderer.Color, transform.WorldTransform
+			);
+		}
+
+		auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponentGPU>();
+		for (auto entity : particleView)
+		{
+			auto [transform, particle] = particleView.Get<TransformComponent, ParticleComponentGPU>(entity);
+			sceneRenderer->SubmitRendererCommand(particle.System->m_Renderer, transform.WorldTransform);
+		}
+
+		auto particleViewCPU = m_ECS.CreateView<TransformComponent, ParticleComponentCPU>();
+		for (auto entity : particleViewCPU)
+		{
+			auto [transform, particle] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU>(entity);
+			sceneRenderer->SubmitRendererCommand(particle.System->m_Renderer, transform.WorldTransform);
+		}
+		
+		auto lightView = m_ECS.CreateView<TransformComponent, PointLight2D>();
+		for (auto entity : lightView)
+		{
+			auto [transform, light] = lightView.Get<TransformComponent, PointLight2D>(entity);
+			sceneRenderer->SubmitLight(light, transform.WorldTransform);
+		}
+		auto spotLightView = m_ECS.CreateView<TransformComponent, SpotLight2D>();
+		for (auto entity : spotLightView)
+		{
+			auto [transform, light] = spotLightView.Get<TransformComponent, SpotLight2D>(entity);
+			sceneRenderer->SubmitLight(light, transform.WorldTransform);
+		}
+
+		sceneRenderer->EndScene();
+	}
+
+	
+
+	void Scene::OnRenderEditor(Ref<SceneRenderer> sceneRenderer, Ref<EditorRenderer> editorRenderer, const Editor::EditorCamera& camera, Timestep ts)
+	{
+		updateHierarchy();
+		sceneRenderer->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+		sceneRenderer->BeginScene(this, camera.GetViewProjection(), camera.GetPosition());
+
+		auto renderView = m_ECS.CreateView<TransformComponent, SpriteRenderer>();
+		for (auto entity : renderView)
+		{
+			auto [transform, renderer] = renderView.Get<TransformComponent, SpriteRenderer>(entity);
+			if (renderer.Visible && renderer.SubTexture.Raw() && renderer.Material.Raw())
+				sceneRenderer->SubmitSprite(
+					renderer.Material, renderer.SubTexture, renderer.SortLayer, renderer.Color, transform.WorldTransform
+				);
 		}
 		auto editorRenderView = m_ECS.CreateView<TransformComponent, EditorSpriteRenderer>();
 		for (auto entity : editorRenderView)
 		{
 			auto [transform, renderer] = editorRenderView.Get<TransformComponent, EditorSpriteRenderer>(entity);
 			if (renderer.SubTexture.Raw() && renderer.Material.Raw())
-				EditorRenderer::SubmitEditorSprite(&renderer, &transform);
+				editorRenderer->SubmitEditorSprite(renderer.Material, renderer.SubTexture, renderer.Color, transform.WorldTransform);
 		}
 		auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponentGPU>();
 		for (auto entity : particleView)
 		{
 			auto [transform, particle] = particleView.Get<TransformComponent, ParticleComponentGPU>(entity);
-			SceneRenderer::SubmitRendererCommand(&particle.System->m_Renderer, &transform);
+			sceneRenderer->SubmitRendererCommand(particle.System->m_Renderer, transform.WorldTransform);
 		}
 
 		auto particleViewCPU = m_ECS.CreateView<TransformComponent, ParticleComponentCPU>();
@@ -311,33 +320,34 @@ namespace XYZ {
 		{
 			auto [transform, particle] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU>(entity);
 			particle.System->Update(ts);
-			SceneRenderer::SubmitRendererCommand(&particle.System->GetRenderer(), &transform);
+			sceneRenderer->SubmitRendererCommand(particle.System->m_Renderer, transform.WorldTransform);
 		}
 		
 		auto lightView = m_ECS.CreateView<TransformComponent, PointLight2D>();
 		for (auto entity : lightView)
 		{
 			auto [transform, light] = lightView.Get<TransformComponent, PointLight2D>(entity);
-			SceneRenderer::SubmitLight(&light, transform.WorldTransform);
+			sceneRenderer->SubmitLight(light, transform.WorldTransform);
 		}	
 
 		auto spotLightView = m_ECS.CreateView<TransformComponent, SpotLight2D>();
 		for (auto entity : spotLightView)
 		{
 			auto [transform, light] = spotLightView.Get<TransformComponent, SpotLight2D>(entity);
-			SceneRenderer::SubmitLight(&light, transform.WorldTransform);
+			sceneRenderer->SubmitLight(light, transform.WorldTransform);
 		}
 
 		if (m_SelectedEntity)
 		{
 			SceneEntity entity(m_SelectedEntity, this);
+			const auto& transformComponent = entity.GetComponent<TransformComponent>();
+			auto [translation, rotation, scale] = transformComponent.GetWorldComponents();
 			if (entity.HasComponent<CameraComponent>())
 			{
 				auto& camera = entity.GetComponent<CameraComponent>().Camera;
 				camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
-
-				auto transformComponent = entity.GetComponent<TransformComponent>();
-				auto [translation, rotation, scale] = transformComponent.GetWorldComponents();
+			
+				
 				if (camera.GetProjectionType() == CameraProjectionType::Orthographic)
 				{
 					float size = camera.GetOrthographicProperties().OrthographicSize;
@@ -347,15 +357,17 @@ namespace XYZ {
 
 					glm::vec3 bottomLeft = { translation.x - width / 2.0f,translation.y - height / 2.0f, translation.z };
 					glm::vec3 topRight = { translation.x + width / 2.0f,translation.y + height / 2.0f, translation.z };
-					EditorRenderer::SubmitEditorAABB(bottomLeft, topRight, glm::vec4(1.0f));
+					editorRenderer->SubmitEditorAABB(bottomLeft, topRight, glm::vec4(1.0f));
 				}
 			}
 			else
 			{
-				EditorRenderer::SubmitEditorAABB(&entity.GetComponent<TransformComponent>(), glm::vec4(1.0f));
+				glm::vec3 bottomLeft = { translation.x - scale.x / 2.0f,translation.y - scale.y / 2.0f, translation.z };
+				glm::vec3 topRight = { translation.x + scale.x / 2.0f,translation.y + scale.y / 2.0f, translation.z };
+				editorRenderer->SubmitEditorAABB(bottomLeft, topRight, glm::vec4(1.0f));
 			}
 		}
-		SceneRenderer::EndScene();
+		sceneRenderer->EndScene();
 	}
 
 	void Scene::SetViewportSize(uint32_t width, uint32_t height)

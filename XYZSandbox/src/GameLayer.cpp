@@ -14,14 +14,12 @@ namespace XYZ {
 			float offset = cellSize.x * i;
 			glm::vec3 p0 = glm::vec3(leftBottom.x + offset, leftBottom.y, 0.0f);
 			glm::vec3 p1 = glm::vec3(p0.x, p0.y + lineHeight, 0.0f);
-			Renderer2D::SubmitLine(p0, p1, color);
 		}
 		for (uint32_t i = 0; i < height + 1; ++i)
 		{
 			float offset = cellSize.y * i;
 			glm::vec3 p0 = glm::vec3(leftBottom.x, leftBottom.y + offset, 0.0f);
 			glm::vec3 p1 = glm::vec3(p0.x + lineWidth, p0.y, 0.0f);
-			Renderer2D::SubmitLine(p0, p1, color);
 		}
 	}
 

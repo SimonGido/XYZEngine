@@ -33,7 +33,7 @@ namespace XYZ {
 		std::vector<Ref<ParticleUpdater>> GetUpdaters() const;
 		std::vector<Ref<ParticleEmitterCPU>> GetEmitters() const;
 
-		ParticleRendererCPU& GetRenderer() { return m_Renderer; }
+		Ref<ParticleRendererCPU> m_Renderer;
 	private:
 		void particleThreadUpdate(float timestep);
 
@@ -58,7 +58,7 @@ namespace XYZ {
 			mutable std::mutex					 Mutex;
 		};
 
-		ParticleRendererCPU							  m_Renderer;	
+			
 		std::shared_ptr<SingleThreadPass>			  m_SingleThreadPass;
 		std::shared_ptr<ThreadPass<DoubleThreadPass>> m_ThreadPass;
 		

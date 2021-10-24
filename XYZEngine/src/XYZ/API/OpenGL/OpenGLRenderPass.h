@@ -7,7 +7,8 @@ namespace XYZ {
 	{
 	public:
 		OpenGLRenderPass(const RenderPassSpecification& spec);
-		virtual ~OpenGLRenderPass();
+		virtual ~OpenGLRenderPass() override;
+		virtual void Release() const override;
 
 		virtual RenderPassSpecification& GetSpecification() override { return m_Specification; }
 		virtual const RenderPassSpecification& GetSpecification() const override { return m_Specification; }

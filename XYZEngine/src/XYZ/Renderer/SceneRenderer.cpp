@@ -5,82 +5,38 @@
 #include "Renderer.h"
 
 #include "XYZ/Core/Input.h"
+
 #include <glm/gtx/transform.hpp>
 
 namespace XYZ {
 
+	static ThreadPool s_ThreadPool;
 
-	struct SceneRendererData
+	SceneRenderer::SceneRenderer()
+		:
+		m_ActiveScene(nullptr)
 	{
-		const Scene* ActiveScene = nullptr;
-
-		SceneRendererCamera SceneCamera;
-		SceneRendererOptions Options;
-		GridProperties GridProps;
-		glm::mat4 ViewProjectionMatrix;
-		glm::vec3 ViewPosition;
-
-		Ref<RenderPass> CompositePass;
-		Ref<RenderPass> LightPass;
-		Ref<RenderPass> GeometryPass;
-		Ref<RenderPass> BloomPass;
-		Ref<RenderPass> GaussianBlurPass;
-
-		Ref<Shader> GaussianBlurShader;
-		Ref<Shader> BloomShader;
-		Ref<Shader> CompositeShader;
-		Ref<Shader> LightShader;
-
-
-		Ref<ShaderStorageBuffer> LightStorageBuffer;
-		Ref<ShaderStorageBuffer> SpotLightStorageBuffer;
-		
-		struct PointLight
-		{	
-			glm::vec4 Color;
-			glm::vec2 Position;
-			float Radius;
-			float Intensity;
-		};
-		struct SpotLight
-		{
-			glm::vec4 Color;
-			glm::vec2 Position;
-			float Radius;
-			float Intensity;
-			float InnerAngle;
-			float OuterAngle;
-
-		private:
-			float Alignment[2];
-		};
-
-		enum { DefaultQueue, LightQueue, NumQueues };
-		
-		RenderQueue				Queues[NumQueues];
-		std::vector<PointLight>	PointLightsList;
-		std::vector<SpotLight>	SpotLightsList;
-		
-		glm::vec2      ViewportSize;
-		bool	       ViewportSizeChanged = false;
-		const uint32_t MaxNumberOfLights   = 10 * 1024;
-	};
-
-	static SceneRendererData s_Data;
-
-	void SceneRenderer::Init()
-	{
+		m_ThreadIndex = s_ThreadPool.PushThread();
 		// Composite pass
 		{
 			FramebufferSpecs specs;
 			specs.ClearColor = { 0.0f,0.0f,0.0f,1.0f };
 			specs.Attachments = {
-				FramebufferTextureSpecs(FramebufferTextureFormat::RGBA16F),
-				FramebufferTextureSpecs(FramebufferTextureFormat::DEPTH24STENCIL8)
+				FramebufferTextureSpecs(ImageFormat::RGBA16F),
+				FramebufferTextureSpecs(ImageFormat::DEPTH24STENCIL8)
 			};
-			//specs.SwapChainTarget = true;
+
+			#ifdef IMGUI_BUILD
+			{
+				specs.SwapChainTarget = false;
+			}
+			#else
+			{
+				specs.SwapChainTarget = true;
+			}
+			#endif
 			Ref<Framebuffer> fbo = Framebuffer::Create(specs);
-			s_Data.CompositePass = RenderPass::Create({ fbo });
+			m_CompositePass = RenderPass::Create({ fbo });
 		}
 
 		// Light pass
@@ -88,182 +44,179 @@ namespace XYZ {
 			FramebufferSpecs specs;
 			specs.ClearColor = { 0.0f,0.0f,0.0f,0.0f };
 			specs.Attachments = {
-				FramebufferTextureSpecs(FramebufferTextureFormat::RGBA16F),
-				FramebufferTextureSpecs(FramebufferTextureFormat::DEPTH24STENCIL8)
+				FramebufferTextureSpecs(ImageFormat::RGBA16F, true),
+				FramebufferTextureSpecs(ImageFormat::DEPTH24STENCIL8)
 			};
 			Ref<Framebuffer> fbo = Framebuffer::Create(specs);
-			s_Data.LightPass = RenderPass::Create({ fbo });
+			m_LightPass = RenderPass::Create({ fbo });
 		}
 		// Geometry pass
 		{
 			FramebufferSpecs specs;
 			specs.ClearColor = { 0.0f,0.0f,0.0f,0.0f };
 			specs.Attachments = {
-				FramebufferTextureSpecs(FramebufferTextureFormat::RGBA16F),
-				FramebufferTextureSpecs(FramebufferTextureFormat::RGBA16F),
-				FramebufferTextureSpecs(FramebufferTextureFormat::DEPTH24STENCIL8)
+				FramebufferTextureSpecs(ImageFormat::RGBA16F),
+				FramebufferTextureSpecs(ImageFormat::RGBA16F),
+				FramebufferTextureSpecs(ImageFormat::DEPTH24STENCIL8)
 			};
 			Ref<Framebuffer> fbo = Framebuffer::Create(specs);
-			s_Data.GeometryPass = RenderPass::Create({ fbo });
+			m_GeometryPass = RenderPass::Create({ fbo });
 		}
 		// Bloom pass
 		{
 			FramebufferSpecs specs;
 			specs.ClearColor = { 0.0f,0.0f,0.0f, 0.0f };
 			specs.Attachments = {
-				FramebufferTextureSpecs(FramebufferTextureFormat::RGBA16F),
-				FramebufferTextureSpecs(FramebufferTextureFormat::DEPTH24STENCIL8)
+				FramebufferTextureSpecs(ImageFormat::RGBA16F),
+				FramebufferTextureSpecs(ImageFormat::DEPTH24STENCIL8)
 			};
 			Ref<Framebuffer> fbo = Framebuffer::Create(specs);
-			s_Data.BloomPass = RenderPass::Create({ fbo });
+			m_BloomPass = RenderPass::Create({ fbo });
 		}
-		// Gausian blur pass
-		{
-			FramebufferSpecs specs;
-			specs.ClearColor = { 0.0f,0.0f,0.0f,0.0f };
-			specs.Attachments = {
-				FramebufferTextureSpecs(FramebufferTextureFormat::RGBA16F),
-				FramebufferTextureSpecs(FramebufferTextureFormat::DEPTH24STENCIL8)
-			};
-			Ref<Framebuffer> fbo = Framebuffer::Create(specs);
-			s_Data.GaussianBlurPass = RenderPass::Create({ fbo });
-		}
-		s_Data.GaussianBlurShader     = Shader::Create("Assets/Shaders/GaussianBlurShader.glsl");
-		s_Data.BloomShader		      = Shader::Create("Assets/Shaders/BloomShader.glsl");
-		s_Data.CompositeShader	      = Shader::Create("Assets/Shaders/CompositeShader.glsl");
-		s_Data.LightShader		      = Shader::Create("Assets/Shaders/LightShader.glsl");
-		s_Data.LightStorageBuffer     = ShaderStorageBuffer::Create(s_Data.MaxNumberOfLights * sizeof(SceneRendererData::PointLight), 1);
-		s_Data.SpotLightStorageBuffer = ShaderStorageBuffer::Create(s_Data.MaxNumberOfLights * sizeof(SceneRendererData::SpotLight), 2);
+
+		m_CompositeShader = Shader::Create("Assets/Shaders/RendererCore/CompositeShader.glsl");
+		m_LightShader = Shader::Create("Assets/Shaders/RendererCore/LightShader.glsl");
+		m_BloomShader = Shader::Create("Assets/Shaders/RendererCore/Bloom.glsl");
+
+		m_BloomTexture[0] = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, {});
+		m_BloomTexture[1] = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, {});
+		m_BloomTexture[2] = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, {});
+
+		m_LightStorageBuffer     = ShaderStorageBuffer::Create(sc_MaxNumberOfLights * sizeof(SceneRenderer::PointLight), 1);
+		m_SpotLightStorageBuffer = ShaderStorageBuffer::Create(sc_MaxNumberOfLights * sizeof(SceneRenderer::SpotLight), 2);
 	}
 
-	void SceneRenderer::Shutdown()
+	SceneRenderer::~SceneRenderer()
 	{
-		s_Data.CompositePass.Reset();
-		s_Data.LightPass.Reset();
-		s_Data.GeometryPass.Reset();
-		s_Data.BloomPass.Reset();
-		s_Data.GaussianBlurPass.Reset();
+		s_ThreadPool.EraseThread(m_ThreadIndex);
+	}
 
-		s_Data.GaussianBlurShader.Reset();
-		s_Data.BloomShader.Reset();
-		s_Data.CompositeShader.Reset();
-		s_Data.LightShader.Reset();
+	void SceneRenderer::Release() const
+	{
+	}
 
-
-		s_Data.LightStorageBuffer.Reset();
-		s_Data.SpotLightStorageBuffer.Reset();
+	void SceneRenderer::SetRenderer2D(const Ref<Renderer2D>& renderer2D)
+	{
+		m_Renderer2D = renderer2D;
 	}
 
 	void SceneRenderer::SetViewportSize(uint32_t width, uint32_t height)
 	{
-		s_Data.ViewportSize = glm::vec2(width, height);
-		s_Data.ViewportSizeChanged = true;
+		if (m_ViewportSize.x != width || m_ViewportSize.y != height)
+		{
+			m_ViewportSize = glm::ivec2(width, height);
+			m_ViewportSizeChanged = true;
+		}
 	}
 	void SceneRenderer::BeginScene(const Scene* scene, const SceneRendererCamera& camera)
 	{
-		XYZ_ASSERT(!s_Data.ActiveScene, "Missing end scene");
-		s_Data.ActiveScene = scene;
-		s_Data.SceneCamera = camera;
+		XYZ_ASSERT(!m_ActiveScene, "Missing end scene");
+		m_ActiveScene = scene;
+		m_SceneCamera = camera;
 
 		// Viewport size is changed at the beginning of the frame, so we do not delete texture that is currently use for rendering
 		UpdateViewportSize();
-		s_Data.ViewProjectionMatrix = s_Data.SceneCamera.Camera.GetProjectionMatrix() * s_Data.SceneCamera.ViewMatrix;
-		s_Data.ViewPosition = camera.ViewPosition;
+		m_ViewProjectionMatrix = m_SceneCamera.Camera.GetProjectionMatrix() * m_SceneCamera.ViewMatrix;
+		m_ViewPosition = camera.ViewPosition;
 	}
 	void SceneRenderer::BeginScene(const Scene* scene, const glm::mat4 viewProjectionMatrix, const glm::vec3& viewPosition)
 	{
-		XYZ_ASSERT(!s_Data.ActiveScene, "Missing end scene");
-		s_Data.ActiveScene = scene;
+		XYZ_ASSERT(!m_ActiveScene, "Missing end scene");
+		m_ActiveScene = scene;
 
 		// Viewport size is changed at the beginning of the frame, so we do not delete texture that is currently use for rendering
 		UpdateViewportSize();
-		s_Data.ViewProjectionMatrix = viewProjectionMatrix;
-		s_Data.ViewPosition = viewPosition;
+		m_ViewProjectionMatrix = viewProjectionMatrix;
+		m_ViewPosition = viewPosition;
 	}
 	void SceneRenderer::EndScene()
 	{
-		XYZ_ASSERT(s_Data.ActiveScene, "Missing begin scene");
-		s_Data.ActiveScene = nullptr;
+		XYZ_ASSERT(m_ActiveScene, "Missing begin scene");
+		m_ActiveScene = nullptr;
 
 		flush();
 	}
 
-	void SceneRenderer::SubmitSprite(SpriteRenderer* sprite, TransformComponent* transform)
+	void SceneRenderer::SubmitSprite(Ref<Material> material, Ref<SubTexture> subTexture, uint32_t sortLayer, const glm::vec4& color, const glm::mat4& transform)
 	{
-		s_Data.Queues[sprite->Material->GetRenderQueueID()].SpriteDrawList.push_back({ sprite,transform });
+		m_Queues[material->GetRenderQueueID()].SpriteDrawList.push_back({
+			   material, subTexture, sortLayer, color, transform
+			});
 	}
-	
-	void SceneRenderer::SubmitRendererCommand(const RendererCommand* command, TransformComponent* transform)
-	{
-		s_Data.Queues[command->Material->GetRenderQueueID()].DrawCommandList.push_back({ command, transform });
-	}
-	void SceneRenderer::SubmitLight(PointLight2D* light, const glm::mat4& transform)
-	{
-		XYZ_ASSERT(s_Data.PointLightsList.size() + 1 < s_Data.MaxNumberOfLights, "Max number of lights per scene is ", s_Data.MaxNumberOfLights);
 
-		SceneRendererData::PointLight lightData;
-		lightData.Position  = glm::vec2(transform[3][0], transform[3][1]);
-		lightData.Color     = glm::vec4(light->Color, 0.0f);
-		lightData.Radius    = light->Radius;
-		lightData.Intensity = light->Intensity;
-		s_Data.PointLightsList.push_back(lightData);
-	}
-	void SceneRenderer::SubmitLight(SpotLight2D* light, const glm::mat4& transform)
-	{
-		XYZ_ASSERT(s_Data.SpotLightsList.size() + 1 < s_Data.MaxNumberOfLights, "Max number of lights per scene is ", s_Data.MaxNumberOfLights);
 
-		SceneRendererData::SpotLight lightData;
-		lightData.Position   = glm::vec2(transform[3][0], transform[3][1]);
-		lightData.Color		 = glm::vec4(light->Color, 0.0f);
-		lightData.Radius	 = light->Radius;
-		lightData.Intensity  = light->Intensity;
-		lightData.InnerAngle = light->InnerAngle;
-		lightData.OuterAngle = light->OuterAngle;
-		s_Data.SpotLightsList.push_back(lightData);
+	void SceneRenderer::SubmitRendererCommand(Ref<RendererCommand> command, const glm::mat4& transform)
+	{
+		m_Queues[command->Material->GetRenderQueueID()].DrawCommandList.push_back({ command, transform });
+	}
+	void SceneRenderer::SubmitLight(const PointLight2D& light, const glm::mat4& transform)
+	{
+		XYZ_ASSERT(m_PointLightsList.size() + 1 < sc_MaxNumberOfLights, "Max number of lights per scene is ", sc_MaxNumberOfLights);
+
+		PointLight lightData;
+		lightData.Position = glm::vec2(transform[3][0], transform[3][1]);
+		lightData.Color = glm::vec4(light.Color, 0.0f);
+		lightData.Radius = light.Radius;
+		lightData.Intensity = light.Intensity;
+		m_PointLightsList.push_back(lightData);
+	}
+	void SceneRenderer::SubmitLight(const SpotLight2D& light, const glm::mat4& transform)
+	{
+		XYZ_ASSERT(m_SpotLightsList.size() + 1 < sc_MaxNumberOfLights, "Max number of lights per scene is ", sc_MaxNumberOfLights);
+
+		SpotLight lightData;
+		lightData.Position = glm::vec2(transform[3][0], transform[3][1]);
+		lightData.Color = glm::vec4(light.Color, 0.0f);
+		lightData.Radius = light.Radius;
+		lightData.Intensity = light.Intensity;
+		lightData.InnerAngle = light.InnerAngle;
+		lightData.OuterAngle = light.OuterAngle;
+		m_SpotLightsList.push_back(lightData);
 	}
 	void SceneRenderer::SetGridProperties(const GridProperties& props)
 	{
-		s_Data.GridProps = props;
+		m_GridProps = props;
 	}
 
 	void SceneRenderer::UpdateViewportSize()
 	{
-		if (s_Data.ViewportSizeChanged)
+		if (m_ViewportSizeChanged)
 		{
-			uint32_t width  = (uint32_t)s_Data.ViewportSize.x;
-			uint32_t height = (uint32_t)s_Data.ViewportSize.y;
-			s_Data.GeometryPass->GetSpecification().TargetFramebuffer->Resize(width, height);
-			s_Data.LightPass->GetSpecification().TargetFramebuffer->Resize(width, height);
-			s_Data.GaussianBlurPass->GetSpecification().TargetFramebuffer->Resize(width, height);
-			s_Data.BloomPass->GetSpecification().TargetFramebuffer->Resize(width, height);
-			s_Data.CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height);
-
-			s_Data.ViewportSizeChanged = false;
+			uint32_t width = (uint32_t)m_ViewportSize.x;
+			uint32_t height = (uint32_t)m_ViewportSize.y;
+			m_GeometryPass->GetSpecification().TargetFramebuffer->Resize(width, height);
+			m_LightPass->GetSpecification().TargetFramebuffer->Resize(width, height);
+			m_BloomPass->GetSpecification().TargetFramebuffer->Resize(width, height);
+			m_CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height);
+			m_BloomTexture[0] = Texture2D::Create(ImageFormat::RGBA32F, width, height, {});
+			m_BloomTexture[1] = Texture2D::Create(ImageFormat::RGBA32F, width, height, {});
+			m_BloomTexture[2] = Texture2D::Create(ImageFormat::RGBA32F, width, height, {});
+			m_ViewportSizeChanged = false;
 		}
 	}
 
 	Ref<RenderPass> SceneRenderer::GetFinalRenderPass()
 	{
-		return s_Data.CompositePass;
+		return m_CompositePass;
 	}
 
 	uint32_t SceneRenderer::GetFinalColorBufferRendererID()
 	{
-		return s_Data.CompositePass->GetSpecification().TargetFramebuffer->GetColorAttachmentRendererID(0);
+		return m_CompositePass->GetSpecification().TargetFramebuffer->GetColorAttachmentRendererID(0);
 	}
 	SceneRendererOptions& SceneRenderer::GetOptions()
 	{
-		return s_Data.Options;
+		return m_Options;
 	}
 	void SceneRenderer::flush()
 	{
 		flushLightQueue();
-		flushDefaultQueue();	
-		Renderer::BeginRenderPass(s_Data.CompositePass, true);
+		flushDefaultQueue();
+		Renderer::BeginRenderPass(m_CompositePass, true);
 
-		s_Data.CompositeShader->Bind();
-		s_Data.LightPass->GetSpecification().TargetFramebuffer->BindTexture(0, 0);
-		s_Data.GaussianBlurPass->GetSpecification().TargetFramebuffer->BindTexture(0, 1);
+		m_CompositeShader->Bind();
+		m_LightPass->GetSpecification().TargetFramebuffer->BindTexture(0, 0);
+		m_BloomTexture[2]->Bind(1);
 
 		Renderer::SubmitFullscreenQuad();
 		Renderer::EndRenderPass();
@@ -273,93 +226,88 @@ namespace XYZ {
 	}
 	void SceneRenderer::flushLightQueue()
 	{
-		RenderQueue& queue = s_Data.Queues[SceneRendererData::LightQueue];
+		RenderQueue& queue = m_Queues[LightQueue];
 		sortQueue(queue);
 
 
-		if (s_Data.PointLightsList.size())
+		if (m_PointLightsList.size())
 		{
-			s_Data.LightStorageBuffer->Update(s_Data.PointLightsList.data(), (uint32_t)s_Data.PointLightsList.size() * (uint32_t)sizeof(SceneRendererData::PointLight));
-			s_Data.LightStorageBuffer->BindRange(0, (uint32_t)s_Data.PointLightsList.size() * (uint32_t)sizeof(SceneRendererData::PointLight));
+			m_LightStorageBuffer->Update(m_PointLightsList.data(), (uint32_t)m_PointLightsList.size() * (uint32_t)sizeof(PointLight));
+			m_LightStorageBuffer->BindRange(0, (uint32_t)m_PointLightsList.size() * (uint32_t)sizeof(PointLight));
 		}
 
-		if (s_Data.SpotLightsList.size())
+		if (m_SpotLightsList.size())
 		{
-			s_Data.SpotLightStorageBuffer->Update(s_Data.SpotLightsList.data(), (uint32_t)s_Data.SpotLightsList.size() * (uint32_t)sizeof(SceneRendererData::SpotLight));
-			s_Data.SpotLightStorageBuffer->BindRange(0, (uint32_t)s_Data.SpotLightsList.size() * (uint32_t)sizeof(SceneRendererData::SpotLight));
+			m_SpotLightStorageBuffer->Update(m_SpotLightsList.data(), (uint32_t)m_SpotLightsList.size() * (uint32_t)sizeof(SpotLight));
+			m_SpotLightStorageBuffer->BindRange(0, (uint32_t)m_SpotLightsList.size() * (uint32_t)sizeof(SpotLight));
 		}
-		geometryPass(queue, s_Data.GeometryPass, true);
+		geometryPass(queue, m_GeometryPass, true);
 		lightPass();
 		bloomPass();
-		gaussianBlurPass();
 
 		queue.SpriteDrawList.clear();
 		queue.DrawCommandList.clear();
-		
-		s_Data.PointLightsList.clear();
-		s_Data.SpotLightsList.clear();
+
+		m_PointLightsList.clear();
+		m_SpotLightsList.clear();
 	}
 	void SceneRenderer::flushDefaultQueue()
 	{
-		RenderQueue& queue = s_Data.Queues[SceneRendererData::DefaultQueue];
+		RenderQueue& queue = m_Queues[DefaultQueue];
 		sortQueue(queue);
 
-		geometryPass(queue, s_Data.LightPass, false);
+		geometryPass(queue, m_LightPass, false);
 
 		queue.SpriteDrawList.clear();
 		queue.DrawCommandList.clear();
 	}
-	
+
 	void SceneRenderer::sortQueue(RenderQueue& queue)
 	{
 		std::sort(queue.SpriteDrawList.begin(), queue.SpriteDrawList.end(),
 			[](const RenderQueue::SpriteDrawCommand& a, const RenderQueue::SpriteDrawCommand& b) {
-			if (a.Sprite->SortLayer == b.Sprite->SortLayer)
-				return a.Sprite->Material->GetFlags() < b.Sprite->Material->GetFlags();
-			return a.Sprite->SortLayer < b.Sprite->SortLayer;
+			if (a.SortLayer == b.SortLayer)
+				return a.Material->GetFlags() < b.Material->GetFlags();
+			return a.SortLayer < b.SortLayer;
 		});
 	}
 
 	void SceneRenderer::geometryPass(RenderQueue& queue, const Ref<RenderPass>& pass, bool clear)
 	{
 		Renderer::BeginRenderPass(pass, clear);
-		Renderer2D::BeginScene(s_Data.ViewProjectionMatrix, s_Data.ViewPosition);
+		m_Renderer2D->BeginScene(m_ViewProjectionMatrix, m_ViewPosition);
 
-		//if (s_Data.Options.ShowGrid)
-		//{
-		//	Renderer2D::SubmitGrid(s_Data.GridProps.Transform, s_Data.GridProps.Scale, s_Data.GridProps.LineWidth);
-		//}
 
 		for (auto& dc : queue.SpriteDrawList)
 		{
-			Renderer2D::SetMaterial(dc.Sprite->Material);
-			uint32_t textureID = Renderer2D::SetTexture(dc.Sprite->SubTexture->GetTexture());
-			Renderer2D::SubmitQuad(dc.Transform->WorldTransform, dc.Sprite->SubTexture->GetTexCoords(), textureID, dc.Sprite->Color);
+			m_Renderer2D->SetMaterial(dc.Material);
+			uint32_t textureID = m_Renderer2D->SetTexture(dc.SubTexture->GetTexture());
+			m_Renderer2D->SubmitQuad(dc.Transform, dc.SubTexture->GetTexCoords(), textureID, dc.Color);
 		}
-		Renderer2D::Flush();
-		Renderer2D::FlushLines();
+		m_Renderer2D->Flush();
+		m_Renderer2D->FlushLines();
 
 		for (auto& dc : queue.DrawCommandList)
-		{		
+		{
 			auto shader = dc.Command->Material->GetShader();
 			dc.Command->Material->Bind();
-			shader->SetMat4("u_Transform", dc.Transform->WorldTransform);
+			shader->SetMat4("u_Transform", dc.Transform);
 			dc.Command->Bind();
 		}
 
-		Renderer2D::EndScene();
+		m_Renderer2D->EndScene();
 		Renderer::EndRenderPass();
 	}
 	void SceneRenderer::lightPass()
 	{
-		Renderer::BeginRenderPass(s_Data.LightPass, true);
+		Renderer::BeginRenderPass(m_LightPass, true);
 
-		s_Data.LightShader->Bind();
-		s_Data.LightShader->SetInt("u_NumberPointLights", (int)s_Data.PointLightsList.size() + 10);
-		s_Data.LightShader->SetInt("u_NumberSpotLights", (int)s_Data.SpotLightsList.size());
+		m_LightShader->Bind();
+		m_LightShader->SetInt("u_NumberPointLights", (int)m_PointLightsList.size());
+		m_LightShader->SetInt("u_NumberSpotLights", (int)m_SpotLightsList.size());
 
-		s_Data.GeometryPass->GetSpecification().TargetFramebuffer->BindTexture(0, 0);
-		s_Data.GeometryPass->GetSpecification().TargetFramebuffer->BindTexture(1, 1);
+		m_GeometryPass->GetSpecification().TargetFramebuffer->BindTexture(0, 0);
+		m_GeometryPass->GetSpecification().TargetFramebuffer->BindTexture(1, 1);
 
 		Renderer::SubmitFullscreenQuad();
 
@@ -367,36 +315,72 @@ namespace XYZ {
 	}
 	void SceneRenderer::bloomPass()
 	{
-		Renderer::BeginRenderPass(s_Data.BloomPass, true);
-		float exposure = 0.7f;
+		m_BloomShader->Bind();
+		m_BloomShader->SetFloat("u_FilterTreshold", 1.0f);
+		m_BloomShader->SetFloat("u_FilterKnee", 0.1f);
+		
+		uint32_t workGroupSize = 4;
+		uint32_t workGroupsX = (uint32_t)glm::ceil(m_ViewportSize.x / workGroupSize);
+		uint32_t workGroupsY = (uint32_t)glm::ceil(m_ViewportSize.y / workGroupSize);
+	
+		// Filter stage
+		m_BloomShader->SetInt("u_Mode", 0);
 
-		s_Data.BloomShader->Bind();
-		s_Data.BloomShader->SetFloat("u_Exposure", exposure);
-		s_Data.LightPass->GetSpecification().TargetFramebuffer->BindTexture(0, 0);
-
-		Renderer::SubmitFullscreenQuad();
-
-		Renderer::EndRenderPass();
-	}
-	void SceneRenderer::gaussianBlurPass()
-	{
-		Renderer::BeginRenderPass(s_Data.GaussianBlurPass, true);
-		uint32_t amount = 4;
-
-		s_Data.GaussianBlurShader->Bind();
-		s_Data.GaussianBlurShader->SetInt("u_Horizontal", 0);
-		for (uint32_t i = 0; i < amount; i++)
+		m_BloomTexture[0]->BindImage(0, 0, BindImageType::Write); // o_Image
+		m_LightPass->GetSpecification().TargetFramebuffer->BindTexture(0, 1); // u_Texture
+		m_BloomShader->Compute(workGroupsX, workGroupsY, 1, ComputeBarrierType::ShaderImageAccessBarrier);
+		
+		// Downsample stage
+		m_BloomShader->SetInt("u_Mode", 1);
+		uint32_t mips = m_BloomTexture[0]->GetMipLevelCount() - 2;
+		for (uint32_t i = 1; i < mips; ++i)
 		{
-			s_Data.BloomPass->GetSpecification().TargetFramebuffer->BindTexture(0, 0);
-			Renderer::SubmitFullscreenQuad();
+			auto [mipWidth, mipHeight] = m_BloomTexture[0]->GetMipSize(i);
+			
+			m_BloomTexture[1]->BindImage(0, i, BindImageType::Write); // o_Image
+			m_BloomTexture[0]->Bind(1);							   // u_Texture
+	
+			workGroupsX = (uint32_t)glm::ceil((float)mipWidth /  (float)workGroupSize);
+			workGroupsY = (uint32_t)glm::ceil((float)mipHeight / (float)workGroupSize);
+	
+			m_BloomShader->SetFloat("u_LOD", i - 1.0f);
+			m_BloomShader->Compute(workGroupsX, workGroupsY, 1, ComputeBarrierType::ShaderImageAccessBarrier);
+		
+	
+			m_BloomTexture[0]->BindImage(0, i, BindImageType::Write); // o_Image
+			m_BloomTexture[1]->Bind(1);							   // u_Texture
+
+			m_BloomShader->SetFloat("u_LOD", i);
+			m_BloomShader->Compute(workGroupsX, workGroupsY, 1, ComputeBarrierType::ShaderImageAccessBarrier);
 		}
 
-		s_Data.GaussianBlurShader->SetInt("u_Horizontal", 1);
-		for (uint32_t i = 0; i < amount; i++)
+		// Upsample first
+		m_BloomShader->SetInt("u_Mode", 2);
+
+		m_BloomShader->SetFloat("u_LOD", mips - 2.0f);
+		m_BloomTexture[2]->BindImage(0, mips - 2, BindImageType::Write); // o_Image
+		m_BloomTexture[0]->Bind(1);									  // u_Texture 
+
+	
+		auto [mipWidth, mipHeight] = m_BloomTexture[2]->GetMipSize(mips - 2);
+		workGroupsX = (uint32_t)glm::ceil((float)mipWidth / (float)workGroupSize);
+		workGroupsY = (uint32_t)glm::ceil((float)mipHeight / (float)workGroupSize);
+		m_BloomShader->Compute(workGroupsX, workGroupsY, 1, ComputeBarrierType::ShaderImageAccessBarrier);
+		
+		// Upsample stage
+		m_BloomShader->SetInt("u_Mode", 3);
+		for (int32_t mip = mips - 3; mip >= 0; mip--)
 		{
-			s_Data.BloomPass->GetSpecification().TargetFramebuffer->BindTexture(0, 0);
-			Renderer::SubmitFullscreenQuad();
+			auto [mipWidth, mipHeight] = m_BloomTexture[2]->GetMipSize(mip);
+			workGroupsX = (uint32_t)glm::ceil((float)mipWidth / (float)workGroupSize);
+			workGroupsY = (uint32_t)glm::ceil((float)mipHeight / (float)workGroupSize);
+			
+			m_BloomTexture[2]->BindImage(0, mip, BindImageType::Write); // o_Image
+			m_BloomTexture[0]->Bind(1);							     // u_Texture 
+			m_BloomTexture[2]->Bind(2);								 // u_BloomTexture
+	
+			m_BloomShader->SetFloat("u_LOD", mip);
+			m_BloomShader->Compute(workGroupsX, workGroupsY, 1, ComputeBarrierType::ShaderImageAccessBarrier);
 		}
-		Renderer::EndRenderPass();
 	}
 }

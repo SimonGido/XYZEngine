@@ -5,11 +5,11 @@
 #include "XYZ/Scene/Components.h"
 
 namespace XYZ {
-	bool ParticleComponentGPUInspector::OnEditorRender()
+	bool ParticleComponentGPUInspector::OnEditorRender(Ref<EditorRenderer> renderer)
 	{
 		return EditorHelper::DrawComponent<ParticleComponentGPU>("Particle Component", m_Context, [&](auto& component) {
 
-			auto& material = component.System->m_Renderer.ParticleMaterial;
+			auto& material = component.System->m_Renderer->ParticleMaterial;
 			auto& shader = material->GetComputeShader();
 			for (auto& uniform : shader->GetVSUniformList().Uniforms)
 			{

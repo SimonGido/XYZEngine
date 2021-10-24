@@ -3,13 +3,17 @@
 
 #include <stdint.h>
 #include <atomic>
-
+#include <vector>
 
 namespace XYZ {
 
 	class RefCount
 	{
 	public:
+		virtual ~RefCount() = default;
+
+		virtual void Release() const {};
+
 		void IncRefCount() const
 		{
 			m_RefCount++;
@@ -22,7 +26,6 @@ namespace XYZ {
 		uint32_t GetRefCount() const { return m_RefCount; }
 	private:
 		mutable std::atomic<uint32_t> m_RefCount = 0;
-
 		
 	};
 
@@ -33,19 +36,36 @@ namespace XYZ {
 	{
 	public:
 		static void  Init(MemoryPool<1024 * 1024, true>* pool);
-		static void  Shutdown();
 
+		static bool  Initialized() { return s_Initialized; }
 	private:
 		static void* allocate(uint32_t size);
-		static void  deallocate(void* handle);
+		static void  deallocate(const void* handle);
 
 		static MemoryPool<1024 * 1024, true>* s_Pool;
 		static bool							  s_Initialized;
 	
 		template <typename T>
 		friend class Ref;
+
+		friend class RefCollector;
 	};
 
+	class RefCollector
+	{
+	public:
+		using Container = std::vector<const RefCount*>;
+
+
+		static void AddInstance(const RefCount* ref);
+		static void DeleteInstances();
+		static void DeleteAll();
+
+	private:
+		static Container  s_ReleasedInstances[2];
+		static Container* s_Collecting;
+		static Container* s_Releasing;
+	};
 	
 	template<typename T>
 	class Ref
@@ -183,13 +203,8 @@ namespace XYZ {
 				m_Instance->DecRefCount();
 				if (m_Instance->GetRefCount() == 0)
 				{
-					if (RefAllocator::s_Pool)
-					{
-						m_Instance->~T();
-						RefAllocator::deallocate((void*)m_Instance);
-					}
-					else if (!RefAllocator::s_Initialized)
-						delete m_Instance;
+					m_Instance->Release();
+					RefCollector::AddInstance(m_Instance);
 				}
 			}
 		}

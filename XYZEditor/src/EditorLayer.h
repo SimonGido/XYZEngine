@@ -15,7 +15,7 @@ namespace XYZ {
 	{
 	public:
 		EditorLayer();
-		virtual ~EditorLayer();
+		virtual ~EditorLayer() override;
 
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
@@ -43,7 +43,11 @@ namespace XYZ {
 		};
 		bool m_EditorOpen[NumEditors];
 		
-		Ref<Scene> m_Scene;
+		Ref<Scene>					m_Scene;
+		Ref<SceneRenderer>			m_SceneRenderer;
+		Ref<Renderer2D>				m_SceneRenderer2D;
+		Ref<EditorRenderer>			m_EditorRenderer;
+
 		Editor::SceneHierarchyPanel m_SceneHierarchy;
 		Editor::InspectorPanel	    m_Inspector;
 		Editor::ScenePanel		    m_ScenePanel;

@@ -11,7 +11,7 @@ namespace XYZ {
 		public:
 			SceneEntityInspectorContext();
 
-			virtual void OnImGuiRender() override;
+			virtual void OnImGuiRender(Ref<EditorRenderer> renderer) override;
 
 			void SetContext(SceneEntity context);
 		

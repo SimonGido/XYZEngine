@@ -52,13 +52,13 @@ namespace XYZ {
 			FramebufferSpecs specs;
 			specs.ClearColor = { 0.1f,0.1f,0.1f,1.0f };
 			specs.Attachments = {
-				FramebufferTextureSpecs(FramebufferTextureFormat::RGBA16F),
-				FramebufferTextureSpecs(FramebufferTextureFormat::DEPTH24STENCIL8)
+				FramebufferTextureSpecs(ImageFormat::RGBA16F),
+				FramebufferTextureSpecs(ImageFormat::DEPTH24STENCIL8)
 			};
 			m_RenderPass = RenderPass::Create({ Framebuffer::Create(specs) });
 			m_Camera.LockOrtho(true);
 		}
-		void SpriteEditor::OnUpdate(Timestep ts)
+		void SpriteEditor::OnUpdate(Ref<Renderer2D> renderer2D, Ref<EditorRenderer> renderer, Timestep ts)
 		{
 			if (m_Context.Raw())
 			{
@@ -73,11 +73,11 @@ namespace XYZ {
 
 				glm::vec3 min = glm::vec3(glm::vec2((border.x - 0.5f) * aspect, border.y - 0.5f), 0.0f);
 				glm::vec3 max = glm::vec3(glm::vec2((border.z - 0.5f) * aspect, border.w - 0.5f), 0.0f);
-				EditorRenderer::SubmitEditorAABB(min, max, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+				renderer->SubmitEditorAABB(min, max, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
 				
-				EditorRenderer::SubmitEditorSprite(&m_SpriteRenderer, &m_Transform);
-				EditorRenderer::BeginPass(m_RenderPass, m_Camera.GetViewProjection(), m_Camera.GetPosition());
-				EditorRenderer::EndPass(true);
+				renderer->SubmitEditorSprite(m_SpriteRenderer.Material, m_SpriteRenderer.SubTexture, m_SpriteRenderer.Color, m_Transform.WorldTransform);
+				renderer->BeginPass(m_RenderPass, m_Camera.GetViewProjection(), m_Camera.GetPosition());
+				renderer->EndPass(renderer2D, true);
 			}
 		}
 

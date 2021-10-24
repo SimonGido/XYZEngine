@@ -201,12 +201,12 @@ namespace XYZ {
 			m_Context(nullptr)
 		{
 		}
-		void InspectorPanel::OnImGuiRender()
+		void InspectorPanel::OnImGuiRender(Ref<EditorRenderer> renderer)
 		{
 			if (ImGui::Begin("Inspector"))
 			{
 				if (m_Context)
-					m_Context->OnImGuiRender();
+					m_Context->OnImGuiRender(renderer);
 			}
 			ImGui::End();		
 		}

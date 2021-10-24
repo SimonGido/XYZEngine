@@ -60,6 +60,52 @@ namespace XYZ {
 	{
 	}
 
+	Entity Relationship::FindByName(const ECSManager& ecs, std::string_view name) const
+	{
+		std::stack<Entity> temp;
+		temp.push(FirstChild);
+		while (!temp.empty())
+		{
+			Entity entity = temp.top();
+			temp.pop();
+
+			if (ecs.GetComponent<SceneTagComponent>(entity).Name == name)
+					return entity;
+
+			const auto& relationship = ecs.GetComponent<Relationship>(entity);
+			if (relationship.NextSibling)
+				temp.push(relationship.NextSibling);
+			if (relationship.FirstChild)
+				temp.push(relationship.FirstChild);
+		}
+		return Entity();
+	}
+
+	std::vector<Entity> Relationship::GetTree(const ECSManager& ecs) const
+	{
+		std::vector<Entity> result;
+		std::stack<Entity> temp;
+		temp.push(FirstChild);
+		while (!temp.empty())
+		{
+			Entity entity = temp.top();
+			temp.pop();
+			
+			const auto& relationship = ecs.GetComponent<Relationship>(entity);
+			if (relationship.NextSibling)
+			{
+				temp.push(relationship.NextSibling);
+				result.push_back(relationship.NextSibling);
+			}
+			if (relationship.FirstChild)
+			{
+				temp.push(relationship.FirstChild);
+				result.push_back(relationship.FirstChild);
+			}
+		}
+		return result;
+	}
+
 	void Relationship::SetupRelation(Entity parent, Entity child, ECSManager& ecs)
 	{
 		removeRelation(child, ecs);

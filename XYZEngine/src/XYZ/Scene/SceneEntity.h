@@ -144,8 +144,15 @@ namespace XYZ {
 
 		Entity		 ID() const { return m_ID; }
 
+		Scene* GetScene() { return m_Scene; }
+
 		const Scene* GetScene() const { return m_Scene; }
 
+		ECSManager* GetECS();
+
+		const ECSManager* GetECS() const;
+
+	
 		SceneEntity& operator =(const SceneEntity& other);
 		
 		bool operator ==(const SceneEntity& other) const;

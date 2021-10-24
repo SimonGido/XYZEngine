@@ -12,17 +12,23 @@ namespace XYZ {
 	{
 	public:
 		OpenGLTexture2D(const TextureSpecs& specs, const std::string& path);
-		OpenGLTexture2D(uint32_t width, uint32_t height, uint32_t channels, const TextureSpecs& specs);
-		virtual ~OpenGLTexture2D();
-
+		OpenGLTexture2D(ImageFormat format, uint32_t width, uint32_t height, const TextureSpecs& specs);
+		virtual ~OpenGLTexture2D() override;
+		virtual void Release() const override;
 
 		virtual void Bind(uint32_t slot = 0) const override;
+		virtual void BindImage(uint32_t slot, uint32_t miplevel, BindImageType type) const override;
+
+
 		virtual void SetData(void* data, uint32_t size) override;
 		virtual void GetData(uint8_t** buffer) const override;
 
 		inline virtual uint32_t GetWidth() const override { return m_Width; }
 		inline virtual uint32_t GetHeight() const override { return m_Height; }
-		inline virtual uint32_t GetChannels() const override { return m_Channels; }
+		inline virtual uint32_t GetChannelSize() const override { return m_ChannelSize; }
+		virtual uint32_t		GetMipLevelCount() const override;
+		virtual std::pair<uint32_t, uint32_t> GetMipSize(uint32_t index) const override;
+
 		inline virtual uint32_t GetRendererID() const override { return m_RendererID; }
 		virtual const TextureSpecs& GetSpecification() const override { return m_Specification; };
 		virtual const std::string& GetFilepath() const override { return m_Filepath; }
@@ -31,10 +37,10 @@ namespace XYZ {
 		uint32_t m_RendererID = 0;
 
 		uint32_t m_Width, m_Height;
-		uint32_t m_Channels;
+		uint32_t m_ChannelSize;
 
 		TextureSpecs m_Specification;
-
+		ImageFormat	 m_ImageFormat;
 		GLenum m_DataFormat, m_InternalFormat;
 		Queue<ByteBuffer> m_Buffers;
 
@@ -51,10 +57,13 @@ namespace XYZ {
 		virtual ~OpenGLTexture2DArray() override;
 
 		virtual void Bind(uint32_t slot = 0) const override;
+		virtual void BindImage(uint32_t slot, uint32_t miplevel, BindImageType type) const override;
 
 		inline virtual uint32_t GetWidth() const override { return m_Width; }
 		inline virtual uint32_t GetHeight() const override { return m_Height; }
-		inline virtual uint32_t GetChannels() const override { return m_Channels; }
+		inline virtual uint32_t GetChannelSize() const override { return m_Channels; }
+		virtual uint32_t		GetMipLevelCount() const override;
+		virtual std::pair<uint32_t, uint32_t> GetMipSize(uint32_t index) const override;
 		inline virtual uint32_t GetRendererID() const override { return m_RendererID; }
 		virtual const TextureSpecs& GetSpecification() const override { return m_Specification; };
 

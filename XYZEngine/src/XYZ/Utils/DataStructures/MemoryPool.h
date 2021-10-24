@@ -30,13 +30,13 @@ namespace XYZ {
 		MemoryPool& operator=(MemoryPool&& other) noexcept;
 
 		void* AllocateRaw(uint32_t size);
-		void  DeallocateRaw(void* val);
+		void  DeallocateRaw(const void* val);
 
 		template <typename T, typename ...Args>
 		T* Allocate(Args&&... args);
 
 		template <typename T>
-		void Deallocate(T* val);
+		void Deallocate(const T* val);
 
 		template <typename T>
 		T* Get(uint32_t chunkIndex, uint8_t blockIndex);
@@ -207,7 +207,7 @@ namespace XYZ {
 	}
 
 	template<uint32_t BlockSize, bool StoreSize>
-	inline void MemoryPool<BlockSize, StoreSize>::DeallocateRaw(void* val)
+	inline void MemoryPool<BlockSize, StoreSize>::DeallocateRaw(const void* val)
 	{
 		XYZ_ASSERT(StoreSize, "Store size must be enabled");
 		std::array<uint32_t, 3> indices;
@@ -309,7 +309,7 @@ namespace XYZ {
 
 	template<uint32_t BlockSize, bool StoreSize>
 	template<typename T>
-	inline void MemoryPool<BlockSize, StoreSize>::Deallocate(T* val)
+	inline void MemoryPool<BlockSize, StoreSize>::Deallocate(const T* val)
 	{
 		m_ElementCounter--;
 		m_MemoryUsed -= sizeof(T);

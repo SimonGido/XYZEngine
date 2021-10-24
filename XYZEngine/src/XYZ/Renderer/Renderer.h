@@ -47,6 +47,9 @@ namespace XYZ {
 		static void Init();
 		static void Shutdown();
 
+		static void Lock();
+		static void Unlock();
+
 		static void Clear();
 		static void SetClearColor(const glm::vec4& color);
 		static void SetViewPort(uint32_t x, uint32_t y, uint32_t width, uint32_t height);

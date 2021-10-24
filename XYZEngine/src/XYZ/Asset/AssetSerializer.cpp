@@ -295,7 +295,7 @@ namespace XYZ {
 		out << YAML::Key << "TextureFilePath" << YAML::Value << texture->GetFilepath();
 		out << YAML::Key << "Width" << YAML::Value << texture->GetWidth();
 		out << YAML::Key << "Height" << YAML::Value << texture->GetHeight();
-		out << YAML::Key << "Channels" << YAML::Value << texture->GetChannels();
+		out << YAML::Key << "Channels" << YAML::Value << texture->GetChannelSize();
 		out << YAML::Key << "Wrap" << YAML::Value << ToUnderlying(texture->GetSpecification().Wrap);
 		out << YAML::Key << "Param Min" << YAML::Value << ToUnderlying(texture->GetSpecification().MinParam);
 		out << YAML::Key << "Param Max" << YAML::Value << ToUnderlying(texture->GetSpecification().MagParam);
@@ -508,10 +508,7 @@ namespace XYZ {
 		{
 			texture = Texture2D::Create(specs, textureFilePath);			
 		}
-		else
-		{
-			texture = Texture2D::Create(width, height, channels, specs);
-		}
+
 		CopyAsset(texture.As<Asset>(), asset);
 		return texture.As<Asset>();
 	}

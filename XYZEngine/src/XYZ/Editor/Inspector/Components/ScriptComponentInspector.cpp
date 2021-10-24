@@ -5,7 +5,7 @@
 #include "XYZ/Scene/Components.h"
 
 namespace XYZ {
-	bool ScriptComponentInspector::OnEditorRender()
+	bool ScriptComponentInspector::OnEditorRender(Ref<EditorRenderer> renderer)
 	{
 		return EditorHelper::DrawComponent<ScriptComponent>("Script", m_Context, [&](auto& component) {
 			for (const PublicField& field : component.GetFields())

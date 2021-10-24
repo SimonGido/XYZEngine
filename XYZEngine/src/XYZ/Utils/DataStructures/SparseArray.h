@@ -155,6 +155,7 @@ namespace XYZ {
 	{
 		m_Data.reserve(size);
 		m_DataEntityMap.reserve(size);
+		m_EntityDataMap.reserve(size);
 	}
 	template<typename T>
 	template<typename ...Args>

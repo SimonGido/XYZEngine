@@ -9,6 +9,7 @@
 #include "XYZ/Core/KeyCodes.h"
 #include "XYZ/Core/MouseCodes.h"
 #include "XYZ/Animation/Animation.h"
+#include "XYZ/Animation/Animator.h"
 #include "LuaEntity.h"
 
 extern "C"
@@ -107,7 +108,7 @@ namespace XYZ {
 			sol::usertype<Texture> type = m_L.new_usertype<Texture>("Texture",
 				"GetWidth", &Texture::GetWidth,
 				"GetHeight", &Texture::GetHeight,
-				"GetChannels", &Texture::GetChannels
+				"GetChannelSize", &Texture::GetChannelSize
 				);
 		}
 

@@ -5,7 +5,7 @@
 
 namespace XYZ {
 
-	class RendererCommand
+	class RendererCommand : public RefCount
 	{
 	public:
 		virtual ~RendererCommand() = default;

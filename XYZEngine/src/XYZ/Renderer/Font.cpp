@@ -86,8 +86,8 @@ namespace XYZ {
 			pngData[i * 4 + 3] = pixelData[i];
 		}
 
-		m_Texture = Texture2D::Create(
-			(uint32_t)texWidth,(uint32_t)texHeight,4,
+		m_Texture = Texture2D::Create( 
+			ImageFormat::RGBA8,(uint32_t)texWidth,(uint32_t)texHeight,
 			TextureSpecs{
 				TextureWrap::Clamp,
 				TextureParam::Linear,

@@ -11,7 +11,7 @@ namespace XYZ {
 		m_DialogOpen(false)
 	{
 	}
-	bool SpriteRendererInspector::OnEditorRender()
+	bool SpriteRendererInspector::OnEditorRender(Ref<EditorRenderer> renderer)
 	{
 		bool result = EditorHelper::DrawComponent<SpriteRenderer>("Sprite Renderer", m_Context, [&](auto& component) {
 

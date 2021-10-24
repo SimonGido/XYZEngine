@@ -3,7 +3,8 @@
 #include <functional>
 
 
-//#define RENDER_THREAD_ENABLED
+#define RENDER_THREAD_ENABLED
+#define IMGUI_BUILD
 
 #define _AMD64_
 

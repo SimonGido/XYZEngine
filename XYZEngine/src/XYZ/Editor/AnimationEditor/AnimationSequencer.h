@@ -1,6 +1,5 @@
 #pragma once
 #include "SequencerLineEdit.h"
-#include "XYZ/Scene/SceneEntity.h"
 
 #include <ImSequencer.h>
 #include <ImCurveEdit.h>
@@ -22,7 +21,7 @@ namespace XYZ {
             {
                 int               Type;
                 bool              Expanded;
-                SceneEntity       Entity;
+                std::string       Path;
                 size_t            Height;
                 SequenceLineEdit  LineEdit;
             };
@@ -44,8 +43,8 @@ namespace XYZ {
             virtual void        CustomDrawCompact(int index, ImDrawList* draw_list, const ImRect& rc, const ImRect& clippingRect) override;            
             
             void                AddItemType(const std::string& name);                  
-            void                AddItem(int type, const SceneEntity& entity);
-            void                AddLine(int type, const SceneEntity& entity, const std::string& lineName, uint32_t color = 0xFF0000FF);
+            void                AddItem(int type, const std::string& path);
+            void                AddLine(int type, const std::string& path, const std::string& lineName, uint32_t color = 0xFF0000FF);
             void                AddKey(int itemIndex, int key);
             void                DeleteSelectedPoints();
             void                ClearSelection() { m_Selection.Points.clear(); }
@@ -53,10 +52,10 @@ namespace XYZ {
             const Selection&    GetCopy()       const { return m_Copy; }
             
             bool                ItemTypeExists(std::string_view name) const;
-            bool                ItemExists(int type, const SceneEntity& entity) const;
+            bool                ItemExists(int type, const std::string& path) const;
 
             int                           GetItemTypeIndex(std::string_view name) const;
-            int                           GetItemIndex(int type, const SceneEntity& entity) const;
+            int                           GetItemIndex(int type, const std::string& path) const;
             int                           GetItemItemType(int itemIndex) const;
             const SequenceLineEdit::Line* GetSelectedLine(int itemIndex = -1) const;
             const SequenceLineEdit::Line& GetLine(int itemIndex, size_t curveIndex) const;

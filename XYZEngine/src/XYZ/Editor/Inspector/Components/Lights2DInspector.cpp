@@ -7,7 +7,7 @@
 
 namespace XYZ {
 
-	bool PointLight2DInspector::OnEditorRender()
+	bool PointLight2DInspector::OnEditorRender(Ref<EditorRenderer> renderer)
 	{
 		return EditorHelper::DrawComponent<PointLight2D>("Point Light2D", m_Context, [&](auto& component) {
 
@@ -21,7 +21,7 @@ namespace XYZ {
 			EditorHelper::EndColumns();
 		});
 	}
-	bool SpotLight2DInspector::OnEditorRender()
+	bool SpotLight2DInspector::OnEditorRender(Ref<EditorRenderer> renderer)
 	{
 		return EditorHelper::DrawComponent<SpotLight2D>("Spot Light2D", m_Context, [&](auto& component) {
 

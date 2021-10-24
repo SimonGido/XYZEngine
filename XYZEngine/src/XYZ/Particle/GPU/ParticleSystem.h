@@ -46,7 +46,7 @@ namespace XYZ {
 		bool  Playing() const { return m_Playing; }
 	
 
-		ParticleRendererGPU	  m_Renderer;
+		Ref<ParticleRendererGPU> m_Renderer;
 	private:
 		ParticleEmitterGPU	  m_Emitter;
 		float				  m_EmittedParticles;

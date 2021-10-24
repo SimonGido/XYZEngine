@@ -3,6 +3,8 @@
 #include "XYZ/Utils/Math/Ray.h"
 #include "XYZ/Utils/DataStructures/FreeList.h"
 
+#include "XYZ/Renderer/Renderer2D.h"
+
 #include <stack>
 
 namespace XYZ {
@@ -36,7 +38,7 @@ namespace XYZ {
 		uint32_t GetDataIndex(int32_t index) const { return m_Nodes[index].DataIndex; }
 		const AABB& GetAABB(int32_t index) const { return m_Nodes[index].Box; }
 		// Debug
-		void SubmitToRenderer();
+		void SubmitToRenderer(Ref<Renderer2D> renderer2D);
 
 		void CleanMovedNodes();
 		const std::vector<bool>& GetMovedNodes() const { return m_MovedNodes; }

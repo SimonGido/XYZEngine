@@ -25,9 +25,9 @@ namespace XYZ {
 			static char tmps[512];
 			auto& item = m_Items[index];
 			auto& seqItemType = m_SequencerItemTypes[item.Type];
-			if (item.Entity.IsValid())
+			if (!item.Path.empty())
 			{
-				snprintf(tmps, 512, "%s:%s", item.Entity.GetComponent<SceneTagComponent>().Name.c_str(), seqItemType.c_str());
+				snprintf(tmps, 512, "%s:%s", item.Path.c_str(), seqItemType.c_str());
 			}
 			else
 			{
@@ -122,15 +122,15 @@ namespace XYZ {
 		{
 			m_SequencerItemTypes.push_back(name);
 		}
-		void AnimationSequencer::AddItem(int type, const SceneEntity& entity)
+		void AnimationSequencer::AddItem(int type, const std::string& path)
 		{
-			m_Items.push_back(SequenceItem{ type, false, entity, 100, {} });
+			m_Items.push_back(SequenceItem{ type, false, path, 100, {} });
 		}
-		void AnimationSequencer::AddLine(int type, const SceneEntity& entity, const std::string& lineName, uint32_t color)
+		void AnimationSequencer::AddLine(int type, const std::string& path, const std::string& lineName, uint32_t color)
 		{
 			for (auto& item : m_Items)
 			{
-				if (item.Type == type && item.Entity == entity)
+				if (item.Type == type && item.Path == path)
 				{
 					item.LineEdit.AddLine(lineName, color);
 					return;
@@ -169,11 +169,11 @@ namespace XYZ {
 			}
 			return false;
 		}
-		bool AnimationSequencer::ItemExists(int type, const SceneEntity& entity) const
+		bool AnimationSequencer::ItemExists(int type, const std::string& path) const
 		{
 			for (const auto& item : m_Items)
 			{
-				if (item.Type == type && item.Entity == entity)
+				if (item.Type == type && item.Path == path)
 					return true;
 			}
 			return false;
@@ -189,12 +189,12 @@ namespace XYZ {
 			}
 			return -1;
 		}
-		int AnimationSequencer::GetItemIndex(int type, const SceneEntity& entity) const
+		int AnimationSequencer::GetItemIndex(int type, const std::string& path) const
 		{
 			int counter = 0;
 			for (const auto& item : m_Items)
 			{
-				if (item.Type == type && item.Entity == entity)
+				if (item.Type == type && item.Path == path)
 					return counter;
 				counter++;
 			}

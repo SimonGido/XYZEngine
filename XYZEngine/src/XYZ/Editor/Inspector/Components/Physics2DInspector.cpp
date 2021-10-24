@@ -7,7 +7,7 @@
 #include "XYZ/Renderer/EditorRenderer.h"
 
 namespace XYZ {
-	bool RigidBody2DInspector::OnEditorRender()
+	bool RigidBody2DInspector::OnEditorRender(Ref<EditorRenderer> renderer)
 	{
 		return EditorHelper::DrawComponent<RigidBody2DComponent>("Rigid Body2D", m_Context, [&](auto& component) {
 
@@ -42,14 +42,14 @@ namespace XYZ {
 				ImGui::Text("Kinematic");
 		});
 	}
-	bool BoxCollider2DInspector::OnEditorRender()
+	bool BoxCollider2DInspector::OnEditorRender(Ref<EditorRenderer> renderer)
 	{
 		return EditorHelper::DrawComponent<BoxCollider2DComponent>("Box Collider2D", m_Context, [&](auto& component) {
 
 			auto [translation, rotation, scale] = m_Context.GetComponent<TransformComponent>().GetWorldComponents();
 			glm::vec3 boxTranslation =
 				translation + glm::vec3(component.Offset.x, component.Offset.y, 0.0f);
-			EditorRenderer::SubmitEditorAABB(
+			renderer->SubmitEditorAABB(
 				boxTranslation - glm::vec3(component.Size / 2.0f, 0.0f),
 				boxTranslation + glm::vec3(component.Size / 2.0f, 0.0f), 
 				sc_ColliderColor
@@ -72,7 +72,7 @@ namespace XYZ {
 			EditorHelper::EndColumns();
 		});
 	}
-	bool ChainCollider2DInspector::OnEditorRender()
+	bool ChainCollider2DInspector::OnEditorRender(Ref<EditorRenderer> renderer)
 	{
 		return EditorHelper::DrawComponent<ChainCollider2DComponent>("Chain Collider2D", m_Context, [&](auto& component) {
 
@@ -89,8 +89,8 @@ namespace XYZ {
 				glm::vec2 normal = glm::normalize(glm::vec2(p1.y - p0.y, -(p1.x - p0.x)));
 				glm::vec3 center = p0 + (p1 - p0) / 2.0f;
 
-				EditorRenderer::SubmitEditorLine(center, center + glm::vec3(normal.x, normal.y, 0.0f), sc_ColliderColor);
-				EditorRenderer::SubmitEditorLine(p0, p1, sc_ColliderColor);
+				renderer->SubmitEditorLine(center, center + glm::vec3(normal.x, normal.y, 0.0f), sc_ColliderColor);
+				renderer->SubmitEditorLine(p0, p1, sc_ColliderColor);
 			}
 
 			EditorHelper::BeginColumns("Size");
@@ -117,7 +117,7 @@ namespace XYZ {
 		});
 	}
 	
-	bool CircleCollider2DInspector::OnEditorRender()
+	bool CircleCollider2DInspector::OnEditorRender(Ref<EditorRenderer> renderer)
 	{
 		
 		return EditorHelper::DrawComponent<CircleCollider2DComponent>("Circle Collider2D", m_Context, [&](auto& component) {
@@ -126,7 +126,7 @@ namespace XYZ {
 			glm::vec3 circleTranslation =
 				translation + glm::vec3(component.Offset.x, component.Offset.y, 0.0f);
 			
-			EditorRenderer::SubmitEditorCircle(circleTranslation, component.Radius, 20, sc_ColliderColor);		
+			renderer->SubmitEditorCircle(circleTranslation, component.Radius, 20, sc_ColliderColor);
 			EditorHelper::DrawVec2Control("Offset", component.Offset);
 
 			EditorHelper::BeginColumns("Radius");

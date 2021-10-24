@@ -5,6 +5,7 @@
 
 #include "XYZ/Event/Event.h"
 #include "XYZ/Renderer/Camera.h"
+
 #include "XYZ/Physics/ContactListener.h"
 
 #include "XYZ/Editor/EditorCamera.h"
@@ -25,7 +26,10 @@ namespace XYZ {
     };
 
 
+    class EditorRenderer;
+    class SceneRenderer;
     class SceneEntity;
+
     namespace Editor {
         class SceneHierarchyPanel;
     }
@@ -45,8 +49,8 @@ namespace XYZ {
         void OnPlay();
         void OnStop();
         void OnUpdate(Timestep ts);
-        void OnRender();
-        void OnRenderEditor(const Editor::EditorCamera& camera, Timestep ts);
+        void OnRender(Ref<SceneRenderer> sceneRenderer);
+        void OnRenderEditor(Ref<SceneRenderer> sceneRenderer, Ref<EditorRenderer> editorRenderer, const Editor::EditorCamera& camera, Timestep ts);
 
         SceneEntity GetEntity(uint32_t index);
         SceneEntity GetEntityByName(const std::string& name);

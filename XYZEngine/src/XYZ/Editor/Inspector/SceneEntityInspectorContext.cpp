@@ -61,13 +61,13 @@ namespace XYZ {
 			m_DefaultMaterial = AssetManager::GetAsset<Material>(AssetManager::GetAssetHandle("Assets/Materials/Material.mat"));
 			m_DefaultSubTexture = AssetManager::GetAsset<SubTexture>(AssetManager::GetAssetHandle("Assets/SubTextures/player.subtex"));
 		}
-		void SceneEntityInspectorContext::OnImGuiRender()
+		void SceneEntityInspectorContext::OnImGuiRender(Ref<EditorRenderer> renderer)
 		{
 			if (m_Context && m_Context.IsValid())
 			{		
 				for (auto it = m_InspectorEditables.begin(); it != m_InspectorEditables.end(); )
 				{
-					if ((*it)->OnEditorRender())
+					if ((*it)->OnEditorRender(renderer))
 					{
 						it = m_InspectorEditables.erase(it);
 					}
@@ -76,101 +76,7 @@ namespace XYZ {
 						++it;
 					}
 				}
-				//EditorHelper::DrawComponent<ParticleComponentCPU>("Particle ComponentCPU", m_Context, [&](auto& component) {
-				//
-				//	auto updaters = std::move(component.System->GetUpdaters());
-				//	auto emitters = std::move(component.System->GetEmitters());
-				//	
-				//	ImGui::Text("Emitters");
-				//	for (auto& emitter : emitters)
-				//	{
-				//		auto shapeGenerator = emitter->GetShapeGenerator();
-				//		if (Helper::DrawNodeControl("Shape Generator", shapeGenerator, [&](auto& val) {
-				//			
-				//			if (ImGui::Button("Shape"))
-				//				ImGui::OpenPopup("Shape Type");
-				//			if (ImGui::BeginPopup("Shape Type"))
-				//			{
-				//				if (ImGui::MenuItem("Box"))
-				//				{
-				//					shapeGenerator.SetEmitShape(EmitShape::Box);
-				//					ImGui::CloseCurrentPopup();
-				//				}
-				//				if (ImGui::MenuItem("Circle"))
-				//				{
-				//					shapeGenerator.SetEmitShape(EmitShape::Circle);
-				//					ImGui::CloseCurrentPopup();
-				//				}
-				//				ImGui::EndPopup();
-				//			}
-				//			ImGui::SameLine();
-				//			EmitShape emitShape = shapeGenerator.GetEmitShape();
-				//			if (emitShape == EmitShape::Box)
-				//			{
-				//				ImGui::Text("Box");								
-				//			}
-				//			else if (emitShape == EmitShape::Circle)
-				//			{
-				//				ImGui::Text("Circle");
-				//				Helper::BeginColumns("Radius");
-				//				float radius = shapeGenerator.GetRadius();
-				//				if (ImGui::DragFloat("##Radius", &radius, 0.05f, 0.0f, 0.0f, "%.2f"))
-				//				{
-				//					shapeGenerator.SetRadius(radius);
-				//				}
-				//				Helper::EndColumns();
-				//			}
-				//		
-				//		}))
-				//		{
-				//			shapeGenerator.SetEnabled(false);
-				//		}
-				//		emitter->SetShapeGenerator(shapeGenerator);
-				//	}
-				//
-				//	ImGui::Text("Updaters");
-				//	for (auto& updater : updaters)
-				//	{
-				//		if (auto casted = dynamic_cast<BasicTimerUpdater*>(updater.Raw()))
-				//		{
-				//			if (Helper::DrawNodeControl("BasicTimerUpdater", *casted, [&](auto& val) {
-				//
-				//			}))
-				//			{
-				//				component.System->RemoveUpdater(updater);
-				//			}
-				//		}
-				//		else if (auto casted = dynamic_cast<PositionUpdater*>(updater.Raw()))
-				//		{
-				//			if (Helper::DrawNodeControl("PositionUpdater", *casted, [&](auto& val) {
-				//
-				//
-				//			}))
-				//			{
-				//				component.System->RemoveUpdater(updater);
-				//			}
-				//		}
-				//		else if (auto casted = dynamic_cast<LightUpdater*>(updater.Raw()))
-				//		{
-				//			if (Helper::DrawNodeControl("LightUpdater", *casted, [&](auto& val) {
-				//				
-				//				Helper::BeginColumns("Max Lights");
-				//				ImGui::PushItemWidth(75.0f);
-				//				int maxLights = (int)val.GetMaxLights();
-				//				if (ImGui::InputInt("##MaxLights", &maxLights))
-				//				{
-				//					val.SetMaxLights((uint32_t)maxLights);
-				//				}
-				//				ImGui::PopItemWidth();
-				//				Helper::EndColumns();
-				//			}))
-				//			{
-				//				component.System->RemoveUpdater(updater);
-				//			}
-				//		}
-				//	}
-				//});
-
+			
 
 				float addComponentButtonWidth = 200.0f;
 				ImVec2 pos = ImGui::GetCursorPos();

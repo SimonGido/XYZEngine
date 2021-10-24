@@ -72,7 +72,8 @@ namespace XYZ {
 			auto lightRef = m_LightBuffer.Read();
 			for (uint32_t i = 0; i < lightRef->LightCount; ++i)
 			{
-				SceneRenderer::SubmitLight(light, transform.WorldTransform * glm::translate(lightRef->LightPositions[i]));
+				XYZ_WARN("Particle light updater is currently not working");
+				//SceneRenderer::SubmitLight(*light, transform.WorldTransform * glm::translate(lightRef->LightPositions[i]));
 			}
 		}
 	}

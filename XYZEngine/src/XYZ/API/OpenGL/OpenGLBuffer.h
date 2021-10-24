@@ -11,7 +11,7 @@ namespace XYZ {
 		OpenGLVertexBuffer(void* vertices, uint32_t size, BufferUsage usage);
 		OpenGLVertexBuffer(uint32_t size);
 		virtual ~OpenGLVertexBuffer() override;
-
+		virtual void Release() const override;
 		virtual void Bind() const override;
 		virtual void UnBind() const override;
 		virtual void Update(void* vertices, uint32_t size, uint32_t offset = 0) override;
@@ -33,7 +33,7 @@ namespace XYZ {
 	public:
 		OpenGLIndexBuffer(uint32_t* indices, uint32_t count);
 		virtual ~OpenGLIndexBuffer() override;
-
+		virtual void Release() const override;
 		virtual void Bind() const override;
 		virtual void UnBind() const override;
 		virtual uint32_t GetRendererID() const override { return m_RendererID; }
@@ -49,6 +49,7 @@ namespace XYZ {
 	public:
 		OpenGLShaderStorageBuffer(void* data, uint32_t size, uint32_t binding, BufferUsage usage);
 		virtual ~OpenGLShaderStorageBuffer() override;
+		virtual void Release() const override;
 		virtual void BindBase(uint32_t binding) const override;
 		virtual void BindRange(uint32_t offset, uint32_t size) const override;
 		virtual void Bind()const override;
@@ -74,7 +75,7 @@ namespace XYZ {
 	public:
 		OpenGLAtomicCounter(uint32_t numOfCounters, uint32_t binding);
 		virtual ~OpenGLAtomicCounter() override;
-
+		virtual void Release() const override;
 		virtual void Reset() override;
 		virtual void BindBase(uint32_t index)const override;
 		virtual void Update(uint32_t* data, uint32_t count, uint32_t offset) override;
@@ -94,7 +95,7 @@ namespace XYZ {
 	public:
 		OpenGLIndirectBuffer(void* drawCommand, uint32_t size, uint32_t binding);
 		virtual ~OpenGLIndirectBuffer() override;
-
+		virtual void Release() const override;
 		virtual void Bind()const override;
 		virtual void BindBase(uint32_t index) override;
 	private:
@@ -108,7 +109,7 @@ namespace XYZ {
 	public:
 		OpenGLUniformBuffer(uint32_t size, uint32_t binding);
 		virtual ~OpenGLUniformBuffer() override;
-
+		virtual void Release() const override;
 		virtual void Update(const void* data, uint32_t size, uint32_t offset = 0) override;
 	private:
 		uint32_t m_RendererID = 0;

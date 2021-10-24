@@ -43,10 +43,14 @@ namespace XYZ {
 		{
 			ByteBuffer buffer = m_Buffers.PopBack();
 			delete[]buffer;
-		}
+		}		
+	}
 
-		Renderer::Submit([=]() {
-			glDeleteBuffers(1, &m_RendererID);
+	void OpenGLVertexBuffer::Release() const
+	{
+		uint32_t rendererID = m_RendererID;
+		Renderer::Submit([rendererID]() {
+			glDeleteBuffers(1, &rendererID);
 		});
 	}
 
@@ -122,8 +126,14 @@ namespace XYZ {
 	OpenGLIndexBuffer::~OpenGLIndexBuffer()
 	{
 		delete[]m_LocalData;
-		Renderer::Submit([=]() {
-			glDeleteBuffers(1, &m_RendererID);
+		
+	}
+
+	void OpenGLIndexBuffer::Release() const
+	{
+		uint32_t rendererID = m_RendererID;
+		Renderer::Submit([rendererID]() {
+			glDeleteBuffers(1, &rendererID);
 		});
 	}
 
@@ -172,8 +182,13 @@ namespace XYZ {
 			ByteBuffer buffer = m_Buffers.PopBack();
 			delete[]buffer;
 		}
-		Renderer::Submit([=]() {
-			glDeleteBuffers(1, &m_RendererID);
+	}
+
+	void OpenGLShaderStorageBuffer::Release() const
+	{
+		uint32_t rendererID = m_RendererID;
+		Renderer::Submit([rendererID]() {
+			glDeleteBuffers(1, &rendererID);
 		});
 	}
 
@@ -266,9 +281,15 @@ namespace XYZ {
 	}
 	OpenGLAtomicCounter::~OpenGLAtomicCounter()
 	{
-		Renderer::Submit([=]() {
-			glDeleteBuffers(1, &m_RendererID);
-			delete[]m_Counters;
+		
+	}
+	void OpenGLAtomicCounter::Release() const
+	{
+		uint32_t rendererID = m_RendererID;
+		uint32_t* counters  = m_Counters;
+		Renderer::Submit([rendererID, counters]() {
+			glDeleteBuffers(1, &rendererID);
+			delete[]counters;
 		});
 	}
 	void OpenGLAtomicCounter::Reset()
@@ -324,7 +345,13 @@ namespace XYZ {
 	}
 	OpenGLIndirectBuffer::~OpenGLIndirectBuffer()
 	{
-		Renderer::Submit([=]() {glDeleteBuffers(1, &m_RendererID); });
+	}
+	void OpenGLIndirectBuffer::Release() const
+	{
+		uint32_t rendererID = m_RendererID;
+		Renderer::Submit([rendererID]() {
+			glDeleteBuffers(1, &rendererID); 
+		});
 	}
 	void OpenGLIndirectBuffer::Bind()const
 	{
@@ -351,9 +378,13 @@ namespace XYZ {
 
 	OpenGLUniformBuffer::~OpenGLUniformBuffer()
 	{
-		Ref<OpenGLUniformBuffer> instance = this;
-		Renderer::Submit([instance]() mutable {
-			glDeleteBuffers(1, &instance->m_RendererID);
+	}
+
+	void OpenGLUniformBuffer::Release() const
+	{
+		uint32_t rendererID = m_RendererID;
+		Renderer::Submit([rendererID]() {
+			glDeleteBuffers(1, &rendererID);
 		});
 	}
 

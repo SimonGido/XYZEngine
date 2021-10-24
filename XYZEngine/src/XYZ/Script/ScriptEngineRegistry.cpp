@@ -4,6 +4,7 @@
 #include "XYZ/Scene/SceneEntity.h"
 #include "XYZ/Scene/Components.h"
 #include "XYZ/Animation/Animation.h"
+#include "XYZ/Animation/Animator.h"
 #include "ScriptWrappers.h"
 
 #include <mono/jit/jit.h>

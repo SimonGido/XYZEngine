@@ -21,13 +21,18 @@ namespace XYZ {
 	{
 		ScriptEngine::Init("Assets/Scripts/XYZScript.dll");
 		m_Scene = AssetManager::GetAsset<Scene>(AssetManager::GetAssetHandle("Assets/Scenes/NewScene.xyz"));
+		m_SceneRenderer    = Ref<SceneRenderer>::Create();
+		m_SceneRenderer2D  = Ref<Renderer2D>::Create();
+		m_EditorRenderer = Ref<EditorRenderer>::Create();
+		m_SceneRenderer->SetRenderer2D(m_SceneRenderer2D);
+
 		m_SceneHierarchy.SetContext(m_Scene);
 		m_ScenePanel.SetContext(m_Scene);	
 		ScriptEngine::SetSceneContext(m_Scene);
 
 		uint32_t windowWidth = Application::Get().GetWindow().GetWidth();
 		uint32_t windowHeight = Application::Get().GetWindow().GetHeight();
-		SceneRenderer::SetViewportSize(windowWidth, windowHeight);
+		m_SceneRenderer->SetViewportSize(windowWidth, windowHeight);
 		m_Scene->SetViewportSize(windowWidth, windowHeight);		
 
 		m_AssetBrowser.SetAssetSelectedCallback([&](const Ref<Asset>& asset) {
@@ -58,7 +63,7 @@ namespace XYZ {
 		m_SpriteEditor.SetContext(AssetManager::GetAsset<Texture2D>(AssetManager::GetAssetHandle("Assets/Textures/player_sprite.png.tex")));
 
 
-		auto entity = m_Scene->GetEntityByName("Scary Entity");
+		auto entity = m_Scene->GetEntityByName("Body");
 		//gpuParticleExample(entity);
 		//cpuParticleExample(entity);
 		animationExample(entity);
@@ -78,19 +83,19 @@ namespace XYZ {
 		if (m_Scene->GetState() == SceneState::Play)
 		{
 			m_Scene->OnUpdate(ts);
-			m_Scene->OnRender();
+			m_Scene->OnRender(m_SceneRenderer);
 		}
 		else
 		{
 			auto& editorCamera = m_ScenePanel.GetEditorCamera();
-			m_Scene->OnRenderEditor(editorCamera, ts);
+			m_Scene->OnRenderEditor(m_SceneRenderer, m_EditorRenderer, editorCamera, ts);
 		
-			EditorRenderer::BeginPass(SceneRenderer::GetFinalRenderPass(), editorCamera.GetViewProjection(), editorCamera.GetPosition());		
-			EditorRenderer::EndPass();
+			m_EditorRenderer->BeginPass(m_SceneRenderer->GetFinalRenderPass(), editorCamera.GetViewProjection(), editorCamera.GetPosition());		
+			m_EditorRenderer->EndPass(m_SceneRenderer2D);
 		}
 
 		m_ScenePanel.OnUpdate(ts);
-		m_SpriteEditor.OnUpdate(ts);
+		m_SpriteEditor.OnUpdate(m_SceneRenderer2D, m_EditorRenderer, ts);
 		m_AnimationEditor.OnUpdate(ts);
 	}
 
@@ -129,10 +134,10 @@ namespace XYZ {
 
 			ImGui::EndMenuBar();
 		}
-		m_Inspector.OnImGuiRender();
+		m_Inspector.OnImGuiRender(m_EditorRenderer);
 		m_SceneHierarchy.OnImGuiRender();
 		m_SpriteEditor.OnImGuiRender(m_EditorOpen[SpriteEditor]);
-		m_ScenePanel.OnImGuiRender();
+		m_ScenePanel.OnImGuiRender(m_SceneRenderer->GetFinalColorBufferRendererID());
 		m_AnimationEditor.OnImGuiRender(m_EditorOpen[AnimationEditor]);
 		m_AssetBrowser.OnImGuiRender();
 		displayStats();
@@ -183,9 +188,9 @@ namespace XYZ {
 		auto particleMaterial = Ref<ParticleMaterial>::Create(50, Shader::Create("Assets/Shaders/Particle/ComputeParticleShader.glsl"));
 		
 		particleComponent.System = Ref<ParticleSystem>::Create(particleMaterial);
-		particleComponent.System->m_Renderer.Material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShader.glsl"));
-		particleComponent.System->m_Renderer.Material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
-		particleComponent.System->m_Renderer.Material->SetRenderQueueID(1);
+		particleComponent.System->m_Renderer->Material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShader.glsl"));
+		particleComponent.System->m_Renderer->Material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
+		particleComponent.System->m_Renderer->Material->SetRenderQueueID(1);
 		
 		std::vector<ParticleData> particleData;
 		std::vector<ParticleSpecification> particleSpecification;
@@ -237,9 +242,9 @@ namespace XYZ {
 		auto& particleComponentCPU = entity.EmplaceComponent<ParticleComponentCPU>();
 		particleComponentCPU.System = Ref<ParticleSystemCPU>::Create(100);
 
-		particleComponentCPU.System->GetRenderer().Material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShaderCPU.glsl"));
-		particleComponentCPU.System->GetRenderer().Material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
-		particleComponentCPU.System->GetRenderer().Material->SetRenderQueueID(1);
+		particleComponentCPU.System->m_Renderer->Material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShaderCPU.glsl"));
+		particleComponentCPU.System->m_Renderer->Material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
+		particleComponentCPU.System->m_Renderer->Material->SetRenderQueueID(1);
 		particleComponentCPU.System->Play();
 
 		Ref<ParticleEmitterCPU> emitter = Ref<ParticleEmitterCPU>::Create();
@@ -260,9 +265,9 @@ namespace XYZ {
 			lightUpdater->SetLightEntity(lightEntity);
 			auto& another = lightEntity.EmplaceComponent<ParticleComponentCPU>();
 			another.System = Ref<ParticleSystemCPU>::Create(100);
-			another.System->GetRenderer().Material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShaderCPU.glsl"));
-			another.System->GetRenderer().Material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
-			another.System->GetRenderer().Material->SetRenderQueueID(1);
+			another.System->m_Renderer->Material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShaderCPU.glsl"));
+			another.System->m_Renderer->Material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
+			another.System->m_Renderer->Material->SetRenderQueueID(1);
 			another.System->Play();
 
 			another.System->AddEmitter(emitter);
@@ -282,9 +287,13 @@ namespace XYZ {
 	{
 		auto& animator = entity.EmplaceComponent<AnimatorComponent>();
 		//animator.Animation = AssetManager::GetAsset<Animation>(AssetManager::GetAssetHandle("Assets/Animations/havko.anim"));
-		animator.Animation = AssetManager::CreateAsset<Animation>("havko.anim", AssetType::Animation, AssetManager::GetDirectoryHandle("Assets/Animations"));
+		Ref<Animation> animation = AssetManager::CreateAsset<Animation>("havko.anim", AssetType::Animation, AssetManager::GetDirectoryHandle("Assets/Animations"));
+		animator.Animator = Ref<Animator>::Create();
+		animator.Animator->SetAnimation(animation);
+		animator.Animator->SetSceneEntity(entity);
+
 		m_AnimationEditor.SetScene(m_Scene);
-		m_AnimationEditor.SetContext(animator.Animation);
+		m_AnimationEditor.SetContext(animator.Animator);
 		
 		//for (size_t i = 0; i < 10; ++i)
 		//	animator.Animation->AddProperty<TransformComponent, glm::vec3>(entity, "Translation");

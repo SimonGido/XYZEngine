@@ -7,7 +7,7 @@ namespace XYZ {
 	class PointLight2DInspector : public InspectorEditable
 	{
 	public:
-		virtual bool OnEditorRender() override;
+		virtual bool OnEditorRender(Ref<EditorRenderer> renderer) override;
 
 
 		SceneEntity m_Context;
@@ -16,7 +16,7 @@ namespace XYZ {
 	class SpotLight2DInspector : public InspectorEditable
 	{
 	public:
-		virtual bool OnEditorRender() override;
+		virtual bool OnEditorRender(Ref<EditorRenderer> renderer) override;
 
 
 		SceneEntity m_Context;

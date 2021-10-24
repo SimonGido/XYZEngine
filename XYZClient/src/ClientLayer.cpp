@@ -108,14 +108,6 @@ namespace XYZ {
 		Renderer::Clear();
 		Renderer::SetClearColor({ 0.1f,0.1f,0.1f,1.0f });
 	
-		for (auto& player : m_Players)
-		{
-			Renderer2D::SubmitQuad(glm::vec3(player.Position.x, player.Position.y, 0.0f), player.Size, player.Color);
-		}
-
-		Renderer2D::Flush();
-		Renderer2D::FlushLines();
-		Renderer2D::EndScene();
 	}
 	void CustomClient::UpdatePlayers(Net::Message<MessageType>& message)
 	{
