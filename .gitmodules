@@ -19,3 +19,6 @@
 [submodule "XYZEngine/vendor/spdlog"]
 	path = XYZEngine/vendor/spdlog
 	url = https://github.com/SimonGido/spdlog.git
+[submodule "XYZEngine/vendor/optick"]
+	path = XYZEngine/vendor/optick
+	url = https://github.com/SimonGido/optick.git
