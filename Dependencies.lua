@@ -14,6 +14,7 @@ IncludeDir["yaml"] = "%{wks.location}/XYZEngine/vendor/yaml-cpp/include"
 IncludeDir["ImGui"] = "%{wks.location}/XYZEngine/vendor/imgui"
 IncludeDir["ImGuizmo"] = "%{wks.location}/XYZEngine/vendor/ImGuizmo"
 IncludeDir["box2d"] = "%{wks.location}/XYZEngine/vendor/box2d/include"
+IncludeDir["optick"] = "%{wks.location}/XYZEngine/vendor/optick/src"
 
 LibraryDir = {}
 LibraryDir["mono"] = "vendor/mono/lib/Debug/mono-2.0-sgen.lib"

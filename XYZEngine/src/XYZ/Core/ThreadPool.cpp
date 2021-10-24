@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "ThreadPool.h"
 
+#include "XYZ/Debug/Profiler.h"
 
 
 namespace XYZ {
@@ -68,8 +69,12 @@ namespace XYZ {
 	void ThreadPool::waitForJob(int32_t id)
 	{
 		Job job;
+		size_t threadID = std::hash<std::thread::id>{}(std::this_thread::get_id());
+		XYZ_PROFILE_THREAD("WorkerThread");
+
 		while (true)
-		{		
+		{
+			XYZ_PROFILE_FRAME("WorkerThread");
 			{
 				std::unique_lock<std::mutex> lock(m_Mutex);
 				m_Condition.wait(lock, [&] {

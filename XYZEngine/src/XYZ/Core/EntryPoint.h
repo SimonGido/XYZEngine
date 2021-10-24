@@ -3,8 +3,6 @@
 #include "Application.h"
 
 
-
-
 extern XYZ::Application* CreateApplication();
 
 /** Application entry point */

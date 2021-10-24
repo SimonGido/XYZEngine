@@ -6,6 +6,7 @@
 #include "SceneRenderer.h"
 
 #include "XYZ/Core/Application.h"
+#include "XYZ/Debug/Profiler.h"
 
 #include <GL/glew.h>
 
@@ -14,11 +15,8 @@ namespace XYZ {
 	
 	struct RendererData
 	{
-		RendererData()
-			: Pool(1)
-		{}
 		std::shared_ptr<ThreadPass<RenderCommandQueue>> CommandQueue;
-		ThreadPool										Pool;
+		ThreadPool									    Pool;
 		Ref<RenderPass>									ActiveRenderPass;
 		Ref<VertexArray>								FullscreenQuadVertexArray;
 		Ref<VertexBuffer>								FullscreenQuadVertexBuffer;
@@ -72,6 +70,7 @@ namespace XYZ {
 
 	void Renderer::Init()
 	{
+		s_Data.Pool.PushThread();
 		s_Data.CommandQueue = std::make_shared<ThreadPass<RenderCommandQueue>>();
 		Renderer::Submit([=]() {
 			RendererAPI::Init();
@@ -220,6 +219,7 @@ namespace XYZ {
 		queue->Swap();
 		#ifdef RENDER_THREAD_ENABLED
 		s_Data.RenderThreadFinished = s_Data.Pool.PushJob<bool>([queue]() -> bool{
+			XYZ_PROFILE_FUNC("Renderer::WaitAndRender Job");
 			{
 				auto val = queue->Read();
 				val->Execute();

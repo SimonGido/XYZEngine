@@ -71,7 +71,8 @@ project "XYZEngine"
 			"%{IncludeDir.Sol}",
 			"%{IncludeDir.mono}",
 			"%{IncludeDir.TrianglePP}",
-			"%{IncludeDir.box2d}"
+			"%{IncludeDir.box2d}",
+			"%{IncludeDir.optick}"
 		}
 
 		links
@@ -85,6 +86,7 @@ project "XYZEngine"
 			"TrianglePP",
 			"imgui",
 			"box2d",
+			"optick",
 			"%{LibraryDir.mono}"
 		}
 		

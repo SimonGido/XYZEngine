@@ -68,16 +68,16 @@ namespace XYZ {
 
 		std::pair<float, float> ScenePanel::getMouseViewportSpace() const
 		{
-			auto [mx, my]			= Input::GetMousePosition();
+			auto [mx, my] = Input::GetMousePosition();
 			auto [winPosX, winPosY] = Input::GetWindowPosition();
 			mx -= ImGui::GetWindowPos().x;
 			my -= ImGui::GetWindowPos().y;
 			mx += winPosX;
 			my += winPosY;
 
-			auto viewportWidth  = ImGui::GetWindowSize().x;
+			auto viewportWidth = ImGui::GetWindowSize().x;
 			auto viewportHeight = ImGui::GetWindowSize().y;
-			
+
 			return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f };
 		}
 
@@ -103,13 +103,12 @@ namespace XYZ {
 			return result;
 		}
 
-		
+
 		void ScenePanel::handlePanelResize(const glm::vec2& newSize)
 		{
 			if (m_ViewportSize.x != newSize.x || m_ViewportSize.y != newSize.y)
 			{
 				m_ViewportSize = newSize;
-				SceneRenderer::SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 				m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
 				m_Context->SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 			}
@@ -118,14 +117,14 @@ namespace XYZ {
 		void ScenePanel::handleSelection(const glm::vec2& mousePosition)
 		{
 			if (ImGui::GetIO().MouseClicked[ImGuiMouseButton_Left]
-			&& !ImGui::GetIO().KeyCtrl)
+				&& !ImGui::GetIO().KeyCtrl)
 			{
 				auto [origin, direction] = castRay(mousePosition.x, mousePosition.y);
 				Ray ray = { origin,direction };
 				m_Context->SetSelectedEntity(Entity());
 				if (m_Callback)
 					m_Callback(m_Context->GetSelectedEntity());
-				
+
 				std::deque<SceneEntity> newSelection = getSelection(ray);
 				if (!CompareDeques(m_Selection, newSelection))
 				{
@@ -154,15 +153,15 @@ namespace XYZ {
 		{
 			ImGuizmo::SetOrthographic(false);
 			ImGuizmo::SetDrawlist();
-			
+
 			ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
 			const glm::mat4& cameraProjection = m_EditorCamera.GetProjectionMatrix();
 			glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
 
 			const ECSManager& ecs = m_Context->GetECS();
-			
+
 			SceneEntity selectedEntity = m_Context->GetSelectedEntity();
-			TransformComponent& tc = selectedEntity.GetComponent<TransformComponent>();	
+			TransformComponent& tc = selectedEntity.GetComponent<TransformComponent>();
 			const Relationship& rel = selectedEntity.GetComponent<Relationship>();
 
 			glm::mat4 transform = tc.GetTransform();
@@ -217,21 +216,21 @@ namespace XYZ {
 		}
 
 		void ScenePanel::OnUpdate(Timestep ts)
-		{			
+		{
 			if (m_Context.Raw())
 			{
 				if (m_ViewportHovered && m_Context->GetState() == SceneState::Edit)
 				{
-					m_EditorCamera.OnUpdate(ts);	
+					m_EditorCamera.OnUpdate(ts);
 				}
 			}
-		}	
-		void ScenePanel::OnImGuiRender()
+		}
+		void ScenePanel::OnImGuiRender(uint32_t renderBufferID)
 		{
 			if (ImGui::Begin("Scene"))
 			{
 				if (m_Context.Raw())
-				{				
+				{
 					ImVec2 startCursorPos = ImGui::GetCursorPos();
 					auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
 					auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
@@ -241,17 +240,17 @@ namespace XYZ {
 
 					m_ViewportFocused = ImGui::IsWindowFocused();
 					m_ViewportHovered = ImGui::IsWindowHovered();
-					
+
 					ImGuiLayer* imguiLayer = Application::Get().GetImGuiLayer();
 					bool blocked = imguiLayer->GetBlockedEvents();
 					if (blocked)
 						imguiLayer->BlockEvents(!m_ViewportFocused && !m_ViewportHovered);
 
-					
+
 					ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 					handlePanelResize({ viewportPanelSize.x, viewportPanelSize.y });
 
-					ImGui::Image(reinterpret_cast<void*>((void*)(uint64_t)SceneRenderer::GetFinalColorBufferRendererID()), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+					ImGui::Image(reinterpret_cast<void*>((void*)(uint64_t)renderBufferID), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
 					auto [mx, my] = getMouseViewportSpace();
 					if (m_ViewportHovered && m_ViewportFocused && m_Context->GetState() == SceneState::Edit)
@@ -295,7 +294,7 @@ namespace XYZ {
 							m_Context->OnStop();
 						}
 						ImGui::PopID();
-					}					
+					}
 				}
 			}
 			ImGui::End();

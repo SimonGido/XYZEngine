@@ -5,6 +5,7 @@
 #include "Renderer.h"
 
 #include "XYZ/Core/Input.h"
+#include "XYZ/Debug/Profiler.h"
 
 #include <glm/gtx/transform.hpp>
 
@@ -210,6 +211,7 @@ namespace XYZ {
 	}
 	void SceneRenderer::flush()
 	{
+		XYZ_PROFILE_FUNC("SceneRenderer::flush");
 		flushLightQueue();
 		flushDefaultQueue();
 		Renderer::BeginRenderPass(m_CompositePass, true);
@@ -226,6 +228,7 @@ namespace XYZ {
 	}
 	void SceneRenderer::flushLightQueue()
 	{
+		XYZ_PROFILE_FUNC("SceneRenderer::flushLightQueue");
 		RenderQueue& queue = m_Queues[LightQueue];
 		sortQueue(queue);
 
@@ -253,6 +256,7 @@ namespace XYZ {
 	}
 	void SceneRenderer::flushDefaultQueue()
 	{
+		XYZ_PROFILE_FUNC("SceneRenderer::flushDefaultQueue");
 		RenderQueue& queue = m_Queues[DefaultQueue];
 		sortQueue(queue);
 
@@ -264,6 +268,7 @@ namespace XYZ {
 
 	void SceneRenderer::sortQueue(RenderQueue& queue)
 	{
+		XYZ_PROFILE_FUNC("SceneRenderer::sortQueue");
 		std::sort(queue.SpriteDrawList.begin(), queue.SpriteDrawList.end(),
 			[](const RenderQueue::SpriteDrawCommand& a, const RenderQueue::SpriteDrawCommand& b) {
 			if (a.SortLayer == b.SortLayer)

@@ -24,6 +24,7 @@ namespace XYZ {
 		void Play();
 		void Stop();
 
+
 		void AddEmitter(const Ref<ParticleEmitterCPU>& emitter);
 		void AddUpdater(const Ref<ParticleUpdater>& updater);
 

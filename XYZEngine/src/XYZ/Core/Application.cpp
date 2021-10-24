@@ -3,8 +3,12 @@
 
 
 #include "XYZ/Debug/Timer.h"
+#include "XYZ/Debug/Profiler.h"
+
 #include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Asset/AssetManager.h"
+
+
 
 #include <GLFW/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -15,9 +19,11 @@
 namespace XYZ {
 	Application* Application::s_Application = nullptr;
 
-	ThreadPool Application::s_ThreadPool(12);
-
 	Application::Application()
+		:
+		m_LastFrameTime(0.0f),
+		m_Timestep(0.0f),
+		m_ThreadPool(12)
 	{
 		AssetManager::Init();
 		Renderer::Init();
@@ -46,42 +52,27 @@ namespace XYZ {
 	{
 		float performance = 0.0f;
 		while (m_Running)
-		{		
-			float time = (float)glfwGetTime();
-			float timestep = time - m_LastFrameTime;
-			
-			m_LastFrameTime = time;
+		{				
+			updateTimestep();
+
+			XYZ_PROFILE_FRAME("MainThread");
+			Renderer::WaitAndRender();
+			RefCollector::DeleteInstances();
+
 			{
-				Stopwatch watch;	
-
-				Renderer::WaitAndRender();
-				RefCollector::DeleteInstances();
-
-				for (Layer* layer : m_LayerStack)	
-					layer->OnUpdate(timestep);	
-
-							
-				#ifdef IMGUI_BUILD
-				{
-					m_ImGuiLayer->Begin();
-					if (ImGui::Begin("Stats"))
-					{
-						ImGui::Text("Performance: %f ms", performance);
-					}
-					ImGui::End();
-					
-					for (Layer* layer : m_LayerStack)
-						layer->OnImGuiRender();
-					
-					m_ImGuiLayer->End();
-				}
-				#else
-					std::cout << performance << std::endl;
-				#endif
-				performance = watch.Stop();
+				
+				for (Layer* layer : m_LayerStack)
+					layer->OnUpdate(m_Timestep);
 			}
+						
+			#ifdef IMGUI_BUILD
+			{
+				onImGuiRender();
+			}
+			#endif
 			m_Window->Update();
 		}
+		XYZ_PROFILER_SHUTDOWN;
 	}
 
 	void Application::PushLayer(Layer* layer)
@@ -114,6 +105,29 @@ namespace XYZ {
 	{
 		m_Running = false;
 		return false;
+	}
+
+	void Application::updateTimestep()
+	{
+		float time = (float)glfwGetTime();
+		m_Timestep = time - m_LastFrameTime;
+		m_LastFrameTime = time;
+	}
+
+	void Application::onImGuiRender()
+	{
+		m_ImGuiLayer->Begin();
+		if (ImGui::Begin("Stats"))
+		{
+			ImGui::Text("Performance: %.2f ms", m_Timestep.GetMilliseconds());
+		}
+		ImGui::End();
+
+		for (Layer* layer : m_LayerStack)
+			layer->OnImGuiRender();
+
+		m_ImGuiLayer->End();
+
 	}
 
 

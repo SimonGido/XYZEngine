@@ -21,11 +21,10 @@ namespace XYZ {
 
 		bool OnEvent(Event& event);
 
-		Window& GetWindow() { return *m_Window; }
-		static ThreadPool& GetThreadPool() { return s_ThreadPool; }
+		Window&			   GetWindow()				 { return *m_Window; }
+		ThreadPool&		   GetThreadPool()			 { return m_ThreadPool; }
+		ImGuiLayer*		   GetImGuiLayer()			 { return m_ImGuiLayer; }
 		const std::string& GetApplicationDir() const { return m_ApplicationDir; }
-
-		ImGuiLayer* GetImGuiLayer() { return m_ImGuiLayer; }
 
 		inline static Application& Get() { return *s_Application; }
 
@@ -34,6 +33,8 @@ namespace XYZ {
 	private:
 		bool onWindowResized(WindowResizeEvent& event);
 		bool onWindowClosed(WindowCloseEvent& event);
+		void updateTimestep();
+		void onImGuiRender();
 
 	private:
 		LayerStack m_LayerStack;
@@ -41,12 +42,13 @@ namespace XYZ {
 
 		std::unique_ptr<Window> m_Window;
 
-		bool m_Running;
-		float m_LastFrameTime = 0.0f;
+		bool       m_Running;
+		float      m_LastFrameTime;
+		Timestep   m_Timestep;
+		ThreadPool m_ThreadPool;
 
 		std::string m_ApplicationDir;
 
-		static ThreadPool s_ThreadPool;
 		static Application* s_Application;
 	};
 

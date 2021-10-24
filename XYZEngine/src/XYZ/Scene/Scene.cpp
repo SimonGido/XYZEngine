@@ -3,6 +3,7 @@
 
 #include "XYZ/Core/Input.h"
 #include "XYZ/Core/Application.h"
+
 #include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/SceneRenderer.h"
@@ -11,10 +12,12 @@
 #include "XYZ/Animation/Animator.h"
 
 #include "XYZ/Script/ScriptEngine.h"
-#include "Components.h"
 #include "EditorComponents.h"
-
+#include "Components.h"
 #include "SceneEntity.h"
+
+#include "XYZ/Debug/Profiler.h"
+
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
@@ -171,6 +174,7 @@ namespace XYZ {
 
 	void Scene::OnUpdate(Timestep ts)
 	{
+		XYZ_PROFILE_FUNC("Scene::OnUpdate");
 		int32_t velocityIterations = 6;
 		int32_t positionIterations = 2;
 		m_PhysicsWorld.Step(ts, velocityIterations, positionIterations);
@@ -228,6 +232,7 @@ namespace XYZ {
 
 	void Scene::OnRender(Ref<SceneRenderer> sceneRenderer)
 	{
+		XYZ_PROFILE_FUNC("Scene::OnRender");
 		// 3D part here
 
 		///////////////
@@ -288,6 +293,7 @@ namespace XYZ {
 
 	void Scene::OnRenderEditor(Ref<SceneRenderer> sceneRenderer, Ref<EditorRenderer> editorRenderer, const Editor::EditorCamera& camera, Timestep ts)
 	{
+		XYZ_PROFILE_FUNC("Scene::OnRenderEditor");
 		updateHierarchy();
 		sceneRenderer->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 		sceneRenderer->BeginScene(this, camera.GetViewProjection(), camera.GetPosition());
@@ -397,6 +403,7 @@ namespace XYZ {
 
 	void Scene::updateHierarchy()
 	{
+		XYZ_PROFILE_FUNC("Scene::updateHierarchy");
 		std::stack<Entity> entities;
 		entities.push(m_SceneEntity);
 		while (!entities.empty())

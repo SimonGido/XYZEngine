@@ -7,6 +7,7 @@ group "Dependencies"
 		include "XYZEngine/vendor/TrianglePP"
 		include "XYZEngine/vendor/imgui"
 		include "XYZEngine/vendor/box2d"
+		include "XYZEngine/vendor/optick"
 group ""
 
 include "XYZEngine"
