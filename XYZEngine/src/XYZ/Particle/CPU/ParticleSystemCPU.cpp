@@ -1,23 +1,25 @@
 #include "stdafx.h"
 #include "ParticleSystemCPU.h"
+#include "XYZ/Renderer/SceneRenderer.h"
 
+#include "XYZ/Scene/Components.h"
 #include "XYZ/Core/Application.h"
 
 
 namespace XYZ {
 
-	ParticleSystemCPU::ParticleSystemCPU(uint32_t maxParticles)		
+	ParticleSystemCPU::ParticleSystemCPU(uint32_t maxParticles)
+		:
+		m_ParticleData(maxParticles)
 	{
 		m_Renderer = Ref<ParticleRendererCPU>::Create(maxParticles);
-		m_SingleThreadPass = std::make_shared<SingleThreadPass>(maxParticles);
-		m_ThreadPass = std::make_shared<ThreadPass<DoubleThreadPass>>();
 		{
-			ScopedLockReference<DoubleThreadPass> write = m_ThreadPass->Write();
-			write->RenderData.resize(maxParticles);
+			ScopedLock<RenderData> write = m_RenderThreadPass.Write();
+			write->RenderParticleData.resize(maxParticles);
 		}
 		{
-			ScopedLockReference<DoubleThreadPass> read = m_ThreadPass->Read();
-			read->RenderData.resize(maxParticles);
+			ScopedLock<RenderData> read = m_RenderThreadPass.Read();
+			read->RenderParticleData.resize(maxParticles);
 		}
 	}
 
@@ -31,16 +33,32 @@ namespace XYZ {
 		{
 			particleThreadUpdate(ts.GetSeconds());
 			{
-				ScopedLockReference<DoubleThreadPass> val = m_ThreadPass->Read();
+				ScopedLock<RenderData> val = m_RenderThreadPass.Read();
+				
 				m_Renderer->InstanceCount = val->InstanceCount;
-				m_Renderer->InstanceVBO->Update(val->RenderData.data(), m_Renderer->InstanceCount * sizeof(ParticleRenderData));
+				m_Renderer->InstanceVBO->Update(val->RenderParticleData.data(), m_Renderer->InstanceCount * sizeof(ParticleRenderData));
 			}
+		}
+	}
+
+	void ParticleSystemCPU::SubmitLights(Ref<SceneRenderer> renderer)
+	{
+		auto updateData = GetUpdateData();
+		const auto& lightUpdater = updateData->LightUpdater;
+		const SceneEntity& lightEntity = lightUpdater.GetLightEntity();
+		const SceneEntity& transformEntity = lightUpdater.GetTransformEntity();
+		if (transformEntity.IsValid() 
+		 && lightEntity.IsValid()
+		 && lightEntity.HasComponent<PointLight2D>())
+		{
+			auto particleData = GetParticleDataRead();
+			if (lightUpdater.IsEnabled())
 			{
-				std::scoped_lock lock(m_SingleThreadPass->Mutex);
-				for (auto updater : m_SingleThreadPass->Updaters)
-				{
-					updater->Update();
-				}
+				const PointLight2D& light = lightUpdater.GetLightEntity().GetComponent<PointLight2D>();
+				const TransformComponent& transform = lightUpdater.GetLightEntity().GetComponent<TransformComponent>();
+				uint32_t count = std::min(lightUpdater.GetMaxLights(), particleData->GetAliveParticles());
+				for (uint32_t i = 0; i < count; ++i)
+					renderer->SubmitLight(light, transform.WorldTransform * glm::translate(particleData->m_Lights[i]));
 			}
 		}
 	}
@@ -53,100 +71,107 @@ namespace XYZ {
 	{
 		m_Play = false;
 	}
-	void ParticleSystemCPU::AddEmitter(const Ref<ParticleEmitterCPU>& emitter)
+
+	ScopedLock<ParticleDataBuffer> ParticleSystemCPU::GetParticleData()
 	{
-		std::scoped_lock lock(m_SingleThreadPass->Mutex);
-		m_SingleThreadPass->Emitters.push_back(emitter);
+		return m_ParticleData.Get<ParticleDataBuffer>();
 	}
 
-	void ParticleSystemCPU::AddUpdater(const Ref<ParticleUpdater>& updater)
+	ScopedLockRead<ParticleDataBuffer> ParticleSystemCPU::GetParticleDataRead() const
 	{
-		std::scoped_lock lock(m_SingleThreadPass->Mutex);
-		m_SingleThreadPass->Updaters.push_back(updater);
+		return m_ParticleData.GetRead<ParticleDataBuffer>();
 	}
-	void ParticleSystemCPU::RemoveEmitter(const Ref<ParticleEmitterCPU>& emitter)
+
+
+	ScopedLock<ParticleSystemCPU::UpdateData> ParticleSystemCPU::GetUpdateData()
 	{
-		std::scoped_lock lock(m_SingleThreadPass->Mutex);
-		auto& emitters = m_SingleThreadPass->Emitters;
-		for (size_t i = 0; i < emitters.size(); ++i)
-		{
-			if (emitters[i].Raw() == emitter.Raw())
-			{
-				emitters.erase(emitters.begin() + i);
-				return;
-			}
-		}
+		return m_UpdateThreadPass.Get<UpdateData>();
 	}
-	void ParticleSystemCPU::RemoveUpdater(const Ref<ParticleUpdater>& updater)
+
+	ScopedLockRead<ParticleSystemCPU::UpdateData> ParticleSystemCPU::GetUpdateDataRead() const
 	{
-		std::scoped_lock lock(m_SingleThreadPass->Mutex);
-		auto& updaters = m_SingleThreadPass->Updaters;
-		for (size_t i = 0; i < updaters.size(); ++i)
-		{
-			if (updaters[i].Raw() == updater.Raw())
-			{
-				updaters.erase(updaters.begin() + i);
-				return;
-			}
-		}
+		return m_UpdateThreadPass.GetRead<UpdateData>();
 	}
-	std::vector<Ref<ParticleUpdater>> ParticleSystemCPU::GetUpdaters() const
+
+	ScopedLock<ParticleSystemCPU::EmitData> ParticleSystemCPU::GetEmitData()
 	{
-		std::scoped_lock lock(m_SingleThreadPass->Mutex);
-		return m_SingleThreadPass->Updaters;
+		return m_EmitThreadPass.Get<EmitData>();
 	}
-	std::vector<Ref<ParticleEmitterCPU>> ParticleSystemCPU::GetEmitters() const
+
+	ScopedLockRead<ParticleSystemCPU::EmitData> ParticleSystemCPU::GetEmitDataRead() const
 	{
-		std::scoped_lock lock(m_SingleThreadPass->Mutex);
-		return m_SingleThreadPass->Emitters;
+		return m_EmitThreadPass.GetRead<EmitData>();
 	}
+
 	void ParticleSystemCPU::particleThreadUpdate(float timestep)
 	{
-		auto singleThreadPass = m_SingleThreadPass;
-		auto threadPass = m_ThreadPass;
-		Application::Get().GetThreadPool().PushJob<void>([singleThreadPass, threadPass, timestep]() {			
+		Application::Get().GetThreadPool().PushJob<void>([this, timestep]() {			
 			{
-				std::scoped_lock lock(singleThreadPass->Mutex);
-				ScopedLockReference<DoubleThreadPass> val = threadPass->Write();
-
-				for (auto& emitter : singleThreadPass->Emitters)
-					emitter->Emit(timestep, &singleThreadPass->Particles);
-
-				for (auto& updater : singleThreadPass->Updaters)
-					updater->UpdateParticles(timestep, &singleThreadPass->Particles);
-
-				uint32_t endId = singleThreadPass->Particles.GetAliveParticles();
-				for (uint32_t i = 0; i < endId; ++i)
-				{
-					auto& particle = singleThreadPass->Particles.m_Particle[i];
-					val->RenderData[i] = ParticleRenderData{
-						particle.Color,
-						singleThreadPass->Particles.m_TexCoord[i],
-						glm::vec2(particle.Position.x, particle.Position.y),
-						singleThreadPass->Particles.m_Size[i],
-						singleThreadPass->Particles.m_Rotation[i]
-					};
-				}
-				val->InstanceCount = endId;
+				ScopedLock<ParticleDataBuffer> particleData = m_ParticleData.Get<ParticleDataBuffer>();
+				update(timestep, particleData.As());
+				emit(timestep, particleData.As());
+				buildRenderData(particleData.As());
 			}
-			threadPass->AttemptSwap();
-			
+			m_RenderThreadPass.AttemptSwap();		
 		});
 	}
-	ParticleSystemCPU::DoubleThreadPass::DoubleThreadPass()
+	void ParticleSystemCPU::update(Timestep timestep, ParticleDataBuffer& particles)
+	{
+		ScopedLockRead<UpdateData> data = m_UpdateThreadPass.GetRead<UpdateData>();
+		if (data->TimeUpdater.IsEnabled())
+			data->TimeUpdater.UpdateParticles(timestep, &particles);
+		if (data->PositionUpdater.IsEnabled())
+			data->PositionUpdater.UpdateParticles(timestep, &particles);
+		if (data->LightUpdater.IsEnabled())
+			data->LightUpdater.UpdateParticles(timestep, &particles);
+	}
+	void ParticleSystemCPU::emit(Timestep timestep, ParticleDataBuffer& particles)
+	{
+		ScopedLock<EmitData> data = m_EmitThreadPass.Get<EmitData>();
+		data->EmittedParticles += timestep * data->EmitRate;
+
+		const uint32_t newParticles = (uint32_t)data->EmittedParticles;
+		const uint32_t startId =particles.GetAliveParticles();
+		const uint32_t endId = std::min(startId + newParticles, particles.GetMaxParticles() - 1);
+		if (newParticles)
+			data->EmittedParticles = 0.0f;
+
+		if (data->ShapeGenerator.IsEnabled())
+			data->ShapeGenerator.Generate(&particles, startId, endId);
+		if (data->LifeGenerator.IsEnabled())
+			data->LifeGenerator.Generate(&particles, startId, endId);
+		if (data->RandomVelGenerator.IsEnabled())
+			data->RandomVelGenerator.Generate(&particles, startId, endId);
+		
+		for (uint32_t i = startId; i < endId; ++i)
+			particles.Wake(i);
+	}
+	void ParticleSystemCPU::buildRenderData(ParticleDataBuffer& particles)
+	{
+		ScopedLock<RenderData> val = m_RenderThreadPass.Write();
+		uint32_t endId = particles.GetAliveParticles();
+		for (uint32_t i = 0; i < endId; ++i)
+		{
+			auto& particle = particles.m_Particle[i];
+			val->RenderParticleData[i] = ParticleRenderData{
+				particle.Color,
+				particles.m_TexCoord[i],
+				glm::vec2(particle.Position.x, particle.Position.y),
+				particles.m_Size[i],
+				particles.m_Rotation[i]
+			};
+		}
+		val->InstanceCount = endId;
+	}
+	ParticleSystemCPU::RenderData::RenderData()
 		:
 		InstanceCount(0)
 	{
 	}
-	ParticleSystemCPU::DoubleThreadPass::DoubleThreadPass(uint32_t maxParticles)
+	ParticleSystemCPU::RenderData::RenderData(uint32_t maxParticles)
 		:
 		InstanceCount(0)
 	{
-		RenderData.resize(maxParticles);
-	}
-	ParticleSystemCPU::SingleThreadPass::SingleThreadPass(uint32_t maxParticles)
-		:
-		Particles(maxParticles)
-	{
+		RenderParticleData.resize(maxParticles);
 	}
 }

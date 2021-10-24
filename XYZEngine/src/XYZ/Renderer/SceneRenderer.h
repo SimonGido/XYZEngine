@@ -67,7 +67,8 @@ namespace XYZ {
 		void SubmitRendererCommand(Ref<RendererCommand> command, const glm::mat4& transform);
 		void SubmitLight(const PointLight2D& light, const glm::mat4& transform);
 		void SubmitLight(const SpotLight2D& light, const glm::mat4& transform);
-
+		void SubmitLight(const PointLight2D& light, const glm::vec3& position);
+		void SubmitLight(const SpotLight2D& light, const glm::vec3& position);
 		void SetGridProperties(const GridProperties& props);
 
 		void UpdateViewportSize();

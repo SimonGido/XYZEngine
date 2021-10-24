@@ -91,7 +91,7 @@ namespace XYZ {
 		// We need this function for now to make sure shaders are created before using them
 		static void BlockRenderThread();
 	private:
-		static ScopedLockReference<RenderCommandQueue> getRenderCommandQueue(uint8_t type);
+		static ScopedLock<RenderCommandQueue> getRenderCommandQueue(uint8_t type);
 		static RendererStats&						   getStats();
 	};
 

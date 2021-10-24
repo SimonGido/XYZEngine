@@ -5,14 +5,13 @@
 #include "XYZ/Renderer/SceneRenderer.h"
 
 namespace XYZ {
-	ParticleUpdater::ParticleUpdater()
+	TimeUpdater::TimeUpdater()
+		:
+		m_Enabled(true)
 	{
 	}
-
-	void BasicTimerUpdater::UpdateParticles(float timeStep, ParticleDataBuffer* data)
+	void TimeUpdater::UpdateParticles(float timeStep, ParticleDataBuffer* data) const
 	{
-		std::scoped_lock lock(m_Mutex);
-
 		uint32_t aliveParticles = data->GetAliveParticles();
 		for (uint32_t i = 0; i < aliveParticles; ++i)
 		{
@@ -25,100 +24,106 @@ namespace XYZ {
 		}
 	}
 
-	void PositionUpdater::UpdateParticles(float timeStep, ParticleDataBuffer* data)
+	void TimeUpdater::SetEnable(bool enable)
 	{
-		std::scoped_lock lock(m_Mutex);
+		m_Enabled = enable;
+	}
+
+	bool TimeUpdater::IsEnabled() const
+	{
+		return m_Enabled;
+	}
+
+	PositionUpdater::PositionUpdater()
+		:
+		m_Enabled(true)
+	{
+	}
+
+	void PositionUpdater::UpdateParticles(float timeStep, ParticleDataBuffer* data) const
+	{
 		uint32_t aliveParticles = data->GetAliveParticles();
 		for (uint32_t i = 0; i < aliveParticles; ++i)
 		{
 			data->m_Particle[i].Position += data->m_Particle[i].Velocity * timeStep;
 		}
 	}
+
+	void PositionUpdater::SetEnable(bool enable)
+	{
+		m_Enabled = enable;
+	}
+
+	bool PositionUpdater::IsEnabled() const
+	{
+		return m_Enabled;
+	}
+
 	LightUpdater::LightUpdater()
 		:
-		m_MaxLights(50)
+		m_MaxLights(50),
+		m_Enabled(true)
 	{
-		{
-			m_LightBuffer.Read()->LightPositions.resize(50);
-		}
-		{
-			m_LightBuffer.Write()->LightPositions.resize(50);
-		}
+		
 	}
-	void LightUpdater::UpdateParticles(float timeStep, ParticleDataBuffer* data)
+	void LightUpdater::UpdateParticles(float timeStep, ParticleDataBuffer* data) const
 	{
-		{
-			std::scoped_lock lock(m_Mutex);
-			uint32_t aliveParticles = data->GetAliveParticles();
+		uint32_t aliveParticles = data->GetAliveParticles();
 
-			auto val = m_LightBuffer.Write();
-			val->LightCount = 0;
-			for (uint32_t i = 0; i < aliveParticles && i < m_MaxLights; ++i)
-			{
-				val->LightPositions[i] = data->m_Particle[i].Position;
-				val->LightCount++;
-			}
+		for (uint32_t i = 0; i < aliveParticles && i < m_MaxLights; ++i)
+		{
+			data->m_Lights[i] = data->m_Particle[i].Position;
 		}
-		m_LightBuffer.AttemptSwap();
 	}
-	void LightUpdater::Update()
+	void LightUpdater::Update(Ref<SceneRenderer> renderer) const
 	{
-		std::scoped_lock lock(m_Mutex);
 		if (m_LightEntity && m_LightEntity.HasComponent<PointLight2D>() && m_TransformEntity)
 		{
-			PointLight2D* light = &m_LightEntity.GetComponent<PointLight2D>();
-			TransformComponent& transform = m_TransformEntity.GetComponent<TransformComponent>();
+			const PointLight2D& light = m_LightEntity.GetComponent<PointLight2D>();
+			const TransformComponent& transform = m_TransformEntity.GetComponent<TransformComponent>();
 
-			auto lightRef = m_LightBuffer.Read();
-			for (uint32_t i = 0; i < lightRef->LightCount; ++i)
-			{
-				XYZ_WARN("Particle light updater is currently not working");
-				//SceneRenderer::SubmitLight(*light, transform.WorldTransform * glm::translate(lightRef->LightPositions[i]));
-			}
+			//auto lightRef = m_LightBuffer.ReadRead();
+			//for (uint32_t i = 0; i < lightRef->LightCount; ++i)
+			//{
+			//	renderer->SubmitLight(light, transform.WorldTransform * glm::translate(lightRef->LightPositions[i]));
+			//}
 		}
+	}
+	void LightUpdater::SetEnable(bool enable)
+	{
+		m_Enabled = enable;
 	}
 	void LightUpdater::SetMaxLights(uint32_t maxLights)
 	{
-		std::scoped_lock lock(m_Mutex);
 		m_MaxLights = maxLights;
-		{
-			auto val = m_LightBuffer.Read();
-			val->LightPositions.resize(m_MaxLights);
-			val->LightCount = std::min((uint32_t)val->LightPositions.size(), val->LightCount);
-		}
-		{
-			auto val = m_LightBuffer.Write();
-			val->LightPositions.resize(m_MaxLights);
-			val->LightCount = std::min((uint32_t)val->LightPositions.size(), val->LightCount);
-		}
 	}
-	void LightUpdater::SetLightEntity(SceneEntity entity)
+	void LightUpdater::SetLightEntity(const SceneEntity& entity)
 	{
-		std::scoped_lock lock(m_Mutex);
 		m_LightEntity = entity;
 	}
-	void LightUpdater::SetTransformEntity(SceneEntity entity)
+	void LightUpdater::SetTransformEntity(const SceneEntity& entity)
 	{
-		std::scoped_lock lock(m_Mutex);
 		m_TransformEntity = entity;
 	}
 
 	uint32_t LightUpdater::GetMaxLights() const
 	{
-		std::scoped_lock lock(m_Mutex);
 		return m_MaxLights;
 	}
 
 	SceneEntity LightUpdater::GetLightEntity() const
 	{
-		std::scoped_lock lock(m_Mutex);
 		return m_LightEntity;
 	}
 
 	SceneEntity LightUpdater::GetTransformEntity() const
 	{
-		std::scoped_lock lock(m_Mutex);
 		return m_TransformEntity;
+	}
+
+	bool LightUpdater::IsEnabled() const
+	{
+		return m_Enabled;
 	}
 
 }

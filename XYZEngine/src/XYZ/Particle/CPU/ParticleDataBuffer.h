@@ -8,7 +8,10 @@ namespace XYZ {
 	{
 	public:
         ParticleDataBuffer(uint32_t maxParticles);
+        ParticleDataBuffer(ParticleDataBuffer&& other) noexcept;
         ~ParticleDataBuffer();
+
+        ParticleDataBuffer& operator =(ParticleDataBuffer&& other) noexcept;
 
         void SetMaxParticles(uint32_t maxParticles);
         void Wake(uint32_t id);
@@ -32,6 +35,8 @@ namespace XYZ {
         glm::vec4*  m_StartColor;
         glm::vec4*  m_EndColor;
         glm::vec2*  m_Size;
+        glm::vec3*  m_Lights;
+
         float*      m_Rotation;
         float*      m_AngularVelocity;
        

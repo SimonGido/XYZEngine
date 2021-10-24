@@ -247,40 +247,18 @@ namespace XYZ {
 		particleComponentCPU.System->m_Renderer->Material->SetRenderQueueID(1);
 		particleComponentCPU.System->Play();
 
-		Ref<ParticleEmitterCPU> emitter = Ref<ParticleEmitterCPU>::Create();
-		emitter->AddGenerator(Ref<ParticleShapeGenerator>::Create());
-		emitter->AddGenerator(Ref<ParticleLifeGenerator>::Create());
-		emitter->AddGenerator(Ref<ParticleRandomVelocityGenerator>::Create());
-		particleComponentCPU.System->AddEmitter(emitter);
-		particleComponentCPU.System->AddUpdater(Ref<BasicTimerUpdater>::Create());
-		particleComponentCPU.System->AddUpdater(Ref<PositionUpdater>::Create());
-
-
-		Ref<LightUpdater> lightUpdater = Ref<LightUpdater>::Create();
-		particleComponentCPU.System->AddUpdater(lightUpdater);
 		auto& lightStorage = m_Scene->GetECS().GetStorage<PointLight2D>();
 		if (lightStorage.Size())
 		{
 			SceneEntity lightEntity(lightStorage.GetEntityAtIndex(0), m_Scene.Raw());
-			lightUpdater->SetLightEntity(lightEntity);
-			auto& another = lightEntity.EmplaceComponent<ParticleComponentCPU>();
-			another.System = Ref<ParticleSystemCPU>::Create(100);
-			another.System->m_Renderer->Material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShaderCPU.glsl"));
-			another.System->m_Renderer->Material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
-			another.System->m_Renderer->Material->SetRenderQueueID(1);
-			another.System->Play();
-
-			another.System->AddEmitter(emitter);
-			another.System->AddUpdater(Ref<BasicTimerUpdater>::Create());
-			another.System->AddUpdater(Ref<PositionUpdater>::Create());
-
-
-			Ref<LightUpdater> anotherLightUpdater = Ref<LightUpdater>::Create();
-			anotherLightUpdater->SetLightEntity(lightEntity);
-			anotherLightUpdater->SetTransformEntity(lightEntity);
-			another.System->AddUpdater(anotherLightUpdater);
+			particleComponentCPU.System->m_Renderer->Material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShaderCPU.glsl"));
+			particleComponentCPU.System->m_Renderer->Material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
+			particleComponentCPU.System->m_Renderer->Material->SetRenderQueueID(1);
+			auto updateData = particleComponentCPU.System->GetUpdateData();
+			updateData->LightUpdater.SetLightEntity(lightEntity);
+			updateData->LightUpdater.SetTransformEntity(entity);
 		}
-		lightUpdater->SetTransformEntity(entity);
+		particleComponentCPU.System->Play();
 	}
 
 	void EditorLayer::animationExample(SceneEntity entity)

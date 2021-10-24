@@ -1,6 +1,8 @@
 #pragma once
-#include <mutex>
+#include "ScopedLock.h"
 
+#include <mutex>
+#include <shared_mutex>
 
 namespace XYZ {
 
@@ -57,60 +59,6 @@ namespace XYZ {
 	}
 
 
-	template <typename T>
-	class ScopedLockReference
-	{
-	public:
-		ScopedLockReference(std::mutex* mut, T& ref);
-		~ScopedLockReference();
-		ScopedLockReference(const ScopedLockReference<T>& other) = delete;
-		ScopedLockReference(ScopedLockReference<T>&& other) noexcept;
-
-		ScopedLockReference<T>& operator=(const ScopedLockReference<T>& other) = delete;
-		ScopedLockReference<T>& operator=(ScopedLockReference<T>&& other) noexcept;
-
-		T* operator->() { return &m_Ref; }
-		T& As() { return m_Ref; }
-		const T& As() const { return m_Ref; }
-
-	private:
-		std::mutex* m_Mutex;
-		T& m_Ref;
-	};
-
-
-	template<typename T>
-	inline ScopedLockReference<T>::ScopedLockReference(std::mutex* mut, T& ref)
-		:
-		m_Mutex(mut),
-		m_Ref(ref)
-	{
-		m_Mutex->lock();
-	}
-	template<typename T>
-	inline ScopedLockReference<T>::~ScopedLockReference()
-	{
-		if (m_Mutex)
-			m_Mutex->unlock();
-	}
-
-	template<typename T>
-	inline ScopedLockReference<T>::ScopedLockReference(ScopedLockReference<T>&& other) noexcept
-		:
-		m_Mutex(other.m_Mutex),
-		m_Ref(other.m_Ref)
-	{
-		other.m_Mutex = nullptr
-	}
-
-	template<typename T>
-	inline ScopedLockReference<T>& ScopedLockReference<T>::operator=(ScopedLockReference<T>&& other) noexcept
-	{
-		m_Mutex = other.m_Mutex;
-		m_Ref   = other.m_Ref;
-		other.m_Mutex = nullptr;
-		return *this;
-	}
 
 	template <typename T>
 	class ThreadPass
@@ -118,8 +66,11 @@ namespace XYZ {
 	public:
 		ThreadPass();
 
-		ScopedLockReference<T> Write();
-		ScopedLockReference<T> Read();
+		ScopedLock<T> Write();
+		ScopedLock<T> Read();
+
+		ScopedLockRead<T> WriteRead() const;
+		ScopedLockRead<T> ReadRead() const;
 
 		void Swap();
 		bool AttemptSwap();
@@ -130,8 +81,8 @@ namespace XYZ {
 		T* m_Read;
 		T* m_Write;
 
-		mutable std::mutex m_ReadMutex;
-		std::mutex		   m_WriteMutex;
+		mutable std::shared_mutex m_ReadMutex;
+		std::shared_mutex		  m_WriteMutex;
 	};
 
 
@@ -143,15 +94,27 @@ namespace XYZ {
 	}
 
 	template<typename T>
-	inline ScopedLockReference<T> ThreadPass<T>::Write()
+	inline ScopedLock<T> ThreadPass<T>::Write()
 	{
-		return ScopedLockReference<T>(&m_WriteMutex, *m_Write);
+		return ScopedLock<T>(&m_WriteMutex, *m_Write);
 	}
 
 	template<typename T>
-	inline ScopedLockReference<T> ThreadPass<T>::Read()
+	inline ScopedLock<T> ThreadPass<T>::Read()
 	{
-		return ScopedLockReference<T>(&m_ReadMutex, *m_Read);
+		return ScopedLock<T>(&m_ReadMutex, *m_Read);
+	}
+
+	template<typename T>
+	inline ScopedLockRead<T> ThreadPass<T>::WriteRead() const
+	{
+		return ScopedLockRead<T>(&m_WriteMutex, *m_Write);
+	}
+
+	template<typename T>
+	inline ScopedLockRead<T> ThreadPass<T>::ReadRead() const
+	{
+		return ScopedLockRead<T>(&m_ReadMutex, *m_Read);
 	}
 
 	template<typename T>
@@ -175,5 +138,54 @@ namespace XYZ {
 			m_ReadMutex.unlock();
 		}
 		return swapped;
+	}
+
+
+	template <typename ...Args>
+	class SingleThreadPass
+	{
+	public:
+		SingleThreadPass() = default;
+		SingleThreadPass(Args&& ...args);
+
+		template <typename T>
+		ScopedLock<T> Get();
+
+		template <typename T, size_t Index>
+		ScopedLock<T> Get();
+
+		template <typename T>
+		const ScopedLockRead<T> GetRead() const;
+
+
+	private:
+		std::tuple<Args...>		   m_Data;
+		mutable std::shared_mutex  m_Mutex;
+	};
+	template<typename ...Args>
+	inline SingleThreadPass<Args...>::SingleThreadPass(Args && ...args)
+		:
+		m_Data(std::forward<Args>(args)...)
+	{
+	}
+	template<typename ...Args>
+	template<typename T>
+	inline ScopedLock<T> SingleThreadPass<Args...>::Get()
+	{
+		return ScopedLock<T>(&m_Mutex, std::get<T>(m_Data));
+	}
+	
+	template<typename ...Args>
+	template<typename T>
+	inline const ScopedLockRead<T> SingleThreadPass<Args...>::GetRead() const
+	{
+		return ScopedLockRead<T>(&m_Mutex, std::get<T>(m_Data));
+	}
+
+	template<typename ...Args>
+	template<typename T, size_t Index>
+	inline ScopedLock<T> SingleThreadPass<Args...>::Get()
+	{
+		return ScopedLock<T>(&m_Mutex, std::get<Index>(m_Data));
 	}
 }

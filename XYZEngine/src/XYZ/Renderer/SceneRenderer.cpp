@@ -174,6 +174,30 @@ namespace XYZ {
 		lightData.OuterAngle = light.OuterAngle;
 		m_SpotLightsList.push_back(lightData);
 	}
+	void SceneRenderer::SubmitLight(const PointLight2D& light, const glm::vec3& position)
+	{
+		XYZ_ASSERT(m_PointLightsList.size() + 1 < sc_MaxNumberOfLights, "Max number of lights per scene is ", sc_MaxNumberOfLights);
+
+		PointLight lightData;
+		lightData.Position = glm::vec2(position.x, position.y);
+		lightData.Color = glm::vec4(light.Color, 0.0f);
+		lightData.Radius = light.Radius;
+		lightData.Intensity = light.Intensity;
+		m_PointLightsList.push_back(lightData);
+	}
+	void SceneRenderer::SubmitLight(const SpotLight2D& light, const glm::vec3& position)
+	{
+		XYZ_ASSERT(m_SpotLightsList.size() + 1 < sc_MaxNumberOfLights, "Max number of lights per scene is ", sc_MaxNumberOfLights);
+
+		SpotLight lightData;
+		lightData.Position = glm::vec2(position.x, position.y);
+		lightData.Color = glm::vec4(light.Color, 0.0f);
+		lightData.Radius = light.Radius;
+		lightData.Intensity = light.Intensity;
+		lightData.InnerAngle = light.InnerAngle;
+		lightData.OuterAngle = light.OuterAngle;
+		m_SpotLightsList.push_back(lightData);
+	}
 	void SceneRenderer::SetGridProperties(const GridProperties& props)
 	{
 		m_GridProps = props;

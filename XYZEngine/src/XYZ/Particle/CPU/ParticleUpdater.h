@@ -1,68 +1,60 @@
 #pragma once
 #include "XYZ/Utils/DataStructures/ThreadPass.h"
 #include "XYZ/Scene/SceneEntity.h"
-#include "ParticleData.h"
+#include "ParticleDataBuffer.h"
 
 #include <glm/glm.hpp>
 
 namespace XYZ {
 
-	class ParticleUpdater : public RefCount
+
+	class TimeUpdater
 	{
 	public:
-		ParticleUpdater();
+		TimeUpdater();
+		void UpdateParticles(float timeStep, ParticleDataBuffer* data) const;
+		void SetEnable(bool enable);
 
-		virtual ~ParticleUpdater() = default;
-		virtual void UpdateParticles(float timeStep, ParticleDataBuffer* data) = 0;
-		virtual void Update() {};
-
-	protected:
-		mutable std::mutex m_Mutex;
-	}; 
-
-
-	class BasicTimerUpdater : public ParticleUpdater
-	{
-	public:
-		virtual void UpdateParticles(float timeStep, ParticleDataBuffer* data) override;
-	
+		bool IsEnabled() const;
+	private:
+		bool m_Enabled;
 	};
 
-	class PositionUpdater : public ParticleUpdater
+	class PositionUpdater
 	{
 	public:
-		virtual void UpdateParticles(float timeStep, ParticleDataBuffer* data) override;
-
+		PositionUpdater();
+		void UpdateParticles(float timeStep, ParticleDataBuffer* data) const;
+		void SetEnable(bool enable);
+		bool IsEnabled() const;
+	private:
+		bool m_Enabled;
 	};
 
 
-	class LightUpdater : public ParticleUpdater
+	class LightUpdater
 	{
 	public:
 		LightUpdater();
 
-		virtual void UpdateParticles(float timeStep, ParticleDataBuffer* data) override;
-		virtual void Update() override;
+		void UpdateParticles(float timeStep, ParticleDataBuffer* data) const;
+		void Update(Ref<SceneRenderer> renderer) const;
+		void SetEnable(bool enable);
 
 		void SetMaxLights(uint32_t maxLights);	
-		void SetLightEntity(SceneEntity entity);
-		void SetTransformEntity(SceneEntity entity);
+		void SetLightEntity(const SceneEntity& entity);
+		void SetTransformEntity(const SceneEntity& entity);
 		
-		uint32_t GetMaxLights() const;
+		uint32_t    GetMaxLights() const;
 		SceneEntity GetLightEntity() const;
 		SceneEntity GetTransformEntity() const;
+		bool		IsEnabled() const;
 
 	private:
-
-		struct LigthtPassData
-		{
-			std::vector <glm::vec3> LightPositions;
-			uint32_t				LightCount = 0;
-		};
-
-		ThreadPass<LigthtPassData>  m_LightBuffer;
 		SceneEntity					m_LightEntity;
 		SceneEntity					m_TransformEntity;
 		uint32_t					m_MaxLights;
+
+		bool						m_Enabled;
 	};
 }

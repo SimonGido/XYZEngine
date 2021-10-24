@@ -247,7 +247,7 @@ namespace XYZ {
 		#endif
 	}
 
-	ScopedLockReference<RenderCommandQueue> Renderer::getRenderCommandQueue(uint8_t type)
+	ScopedLock<RenderCommandQueue> Renderer::getRenderCommandQueue(uint8_t type)
 	{
 		return s_Data.CommandQueue->Write();
 	}

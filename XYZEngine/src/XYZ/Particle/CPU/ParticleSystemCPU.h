@@ -1,12 +1,12 @@
 #pragma once
 #include "XYZ/Utils/DataStructures/ThreadPass.h"
+
 #include "XYZ/Core/Timestep.h"
 #include "XYZ/Core/Ref.h"
-#include "ParticleData.h"
+#include "ParticleDataBuffer.h"
 #include "ParticleUpdater.h"
 #include "ParticleGenerator.h"
 #include "ParticleRenderer.h"
-#include "ParticleEmitter.h"
 
 #include <glm/glm.hpp>
 
@@ -14,56 +14,64 @@
 
 namespace XYZ {
 
+	class SceneRenderer;
 	class ParticleSystemCPU : public RefCount
 	{
+	public:
+		struct UpdateData
+		{
+			TimeUpdater		   TimeUpdater;
+			PositionUpdater	   PositionUpdater;
+			LightUpdater	   LightUpdater;
+		};
+		struct EmitData
+		{
+			ParticleShapeGenerator		    ShapeGenerator;
+			ParticleLifeGenerator		    LifeGenerator;
+			ParticleRandomVelocityGenerator RandomVelGenerator;
+			float							EmittedParticles;
+			float							EmitRate = 10.0f;
+		};
 	public:
 		ParticleSystemCPU(uint32_t maxParticles);
 		~ParticleSystemCPU();
 
 		void Update(Timestep ts);
+		void SubmitLights(Ref<SceneRenderer> renderer);
 		void Play();
 		void Stop();
 
+		
+		ScopedLock<ParticleDataBuffer>	   GetParticleData();
+		ScopedLockRead<ParticleDataBuffer> GetParticleDataRead() const;
 
-		void AddEmitter(const Ref<ParticleEmitterCPU>& emitter);
-		void AddUpdater(const Ref<ParticleUpdater>& updater);
+		ScopedLock<UpdateData>	   GetUpdateData();
+		ScopedLockRead<UpdateData> GetUpdateDataRead() const;
 
-		void RemoveEmitter(const Ref<ParticleEmitterCPU>& emitter);
-		void RemoveUpdater(const Ref<ParticleUpdater>& updater);
-
-		std::vector<Ref<ParticleUpdater>> GetUpdaters() const;
-		std::vector<Ref<ParticleEmitterCPU>> GetEmitters() const;
+		ScopedLock<EmitData>	   GetEmitData();
+		ScopedLockRead<EmitData>   GetEmitDataRead() const;
 
 		Ref<ParticleRendererCPU> m_Renderer;
 	private:
 		void particleThreadUpdate(float timestep);
-
+		void update(Timestep timestep, ParticleDataBuffer& particles);
+		void emit(Timestep timestep, ParticleDataBuffer& particles);
+		void buildRenderData(ParticleDataBuffer& particles);
 	private:
-		struct DoubleThreadPass
+		struct RenderData
 		{
-			DoubleThreadPass();				
-			DoubleThreadPass(uint32_t maxParticles);
-				
-			
-			std::vector<ParticleRenderData> RenderData;
+			RenderData();				
+			RenderData(uint32_t maxParticles);
+						
+			std::vector<ParticleRenderData> RenderParticleData;
 			uint32_t						InstanceCount;
 		};
-
-		struct SingleThreadPass
-		{
-			SingleThreadPass(uint32_t maxParticles);
-
-			ParticleDataBuffer					 Particles;
-			std::vector<Ref<ParticleUpdater>>	 Updaters;	
-			std::vector<Ref<ParticleEmitterCPU>> Emitters;
-			mutable std::mutex					 Mutex;
-		};
-
-			
-		std::shared_ptr<SingleThreadPass>			  m_SingleThreadPass;
-		std::shared_ptr<ThreadPass<DoubleThreadPass>> m_ThreadPass;
-		
-		bool										  m_Play;
+	
+		SingleThreadPass<ParticleDataBuffer> m_ParticleData;
+		SingleThreadPass<UpdateData>		 m_UpdateThreadPass;	
+		SingleThreadPass<EmitData>			 m_EmitThreadPass;
+		ThreadPass<RenderData>				 m_RenderThreadPass;
+		bool								 m_Play;
 	};
 
 }
