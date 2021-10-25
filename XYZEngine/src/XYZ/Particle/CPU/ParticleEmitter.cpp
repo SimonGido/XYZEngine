@@ -5,7 +5,7 @@
 namespace XYZ {
 	ParticleEmitterCPU::ParticleEmitterCPU()
 		:
-		m_EmitRate(5.0f),
+		m_EmitRate(0.0f),
 		m_EmittedParticles(0.0f)
 	{
 	}
@@ -29,7 +29,7 @@ namespace XYZ {
 
 	BurstEmitter::BurstEmitter()
 		:
-		m_Interval(3.0f),
+		m_Interval(5.0f),
 		m_PassedTime(0.0f)
 	{
 	}
@@ -42,6 +42,7 @@ namespace XYZ {
 			{
 				count += burst.m_Count;
 				burst.m_Called = true;
+				break;
 			}
 		}
 		m_PassedTime += ts.GetSeconds();

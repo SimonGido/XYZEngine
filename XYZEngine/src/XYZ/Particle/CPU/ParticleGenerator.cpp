@@ -13,7 +13,7 @@ namespace XYZ {
 		m_Shape(EmitShape::Circle),
 		m_BoxMin(-1.0f),
 		m_BoxMax(1.0f),
-		m_Radius(10.0f),
+		m_Radius(7.0f),
 		m_Enabled(true)
 	{
 	}
@@ -118,8 +118,8 @@ namespace XYZ {
 
 	ParticleRandomVelocityGenerator::ParticleRandomVelocityGenerator()
 		:
-		m_MinVelocity(-1.0f, -1.0f, 0.0f),
-		m_MaxVelocity(1.0f, 1.0f, 0.0f),
+		m_MinVelocity(-7.0f, -7.0f, 0.0f),
+		m_MaxVelocity(7.0f, 7.0f, 0.0f),
 		m_Enabled(true)
 	{
 	}

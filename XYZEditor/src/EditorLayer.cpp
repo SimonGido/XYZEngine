@@ -246,7 +246,8 @@ namespace XYZ {
 		particleComponentCPU.System->m_Renderer->Material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
 		particleComponentCPU.System->m_Renderer->Material->SetRenderQueueID(1);
 		particleComponentCPU.System->Play();
-		particleComponentCPU.System->GetEmitData()->m_BurstEmitter.m_Bursts.emplace_back(100, 2.0f);
+		particleComponentCPU.System->GetEmitData()->m_BurstEmitter.m_Bursts.emplace_back(1000, 1.0f);
+		particleComponentCPU.System->GetEmitData()->m_BurstEmitter.m_Bursts.emplace_back(1000, 4.0f);
 
 		auto& lightStorage = m_Scene->GetECS().GetStorage<PointLight2D>();
 		if (lightStorage.Size())
