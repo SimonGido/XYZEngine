@@ -49,7 +49,7 @@ namespace XYZ {
 
 	LightUpdater::LightUpdater()
 		:
-		m_MaxLights(500),
+		m_MaxLights(1000),
 		m_Enabled(true)
 	{
 		
