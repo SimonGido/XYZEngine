@@ -38,7 +38,7 @@ namespace XYZ {
 		uint32_t count = 0;
 		for (auto& burst : m_Bursts)
 		{
-			if (!burst.m_Called && burst.m_Time >= m_PassedTime)
+			if (!burst.m_Called && m_PassedTime >= burst.m_Time)
 			{
 				count += burst.m_Count;
 				burst.m_Called = true;
