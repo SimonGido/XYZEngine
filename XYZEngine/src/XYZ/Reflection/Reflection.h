@@ -107,6 +107,28 @@ namespace XYZ {
 			return std::get<Index>(tmp);\
 		}\
 		template <typename T>\
+		static T& GetByIndex(uint16_t index, Type& s)\
+		{\
+			auto tmp = ToReferenceTuple(s);\
+			void* result = nullptr;\
+			Reflect::For([&](auto i) {\
+				if (i.value == index)\
+					result = &std::get<i.value>(tmp);\
+			}, std::make_index_sequence<sc_NumVariables>());\
+			return *static_cast<T*>(result);\
+		}\
+		template <typename T>\
+		static const T& GetByIndex(uint16_t index, const Type& s)\
+		{\
+			auto tmp = ToReferenceTuple(s); \
+			const void* result = nullptr;\
+			Reflect::For([&](auto i) {\
+				if (i.value == index)\
+					result = &std::get<i.value>(tmp); \
+			}, std::make_index_sequence<sc_NumVariables>()); \
+			return *static_cast<const T*>(result);\
+		}\
+		template <typename T>\
 		static T& GetByName(const char* name, Type& s)\
 		{\
 			auto tmp = ToReferenceTuple(s);\

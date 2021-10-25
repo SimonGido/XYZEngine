@@ -41,7 +41,7 @@ namespace XYZ {
 			bool editKeyValueSpecialized(uint32_t frame, T& value, const std::string& valName);
 
 			template <typename ComponentType, typename T>
-			void addReflectedProperty(Reflection<ComponentType> refl, const std::string & path, const T& val, const std::string& valName);
+			void addReflectedProperty(Reflection<ComponentType> refl, const std::string & path, const T& val, const std::string& valName, uint16_t valIndex);
 
 			template <typename ComponentType, typename T>
 			void addKeyToProperty(Reflection<ComponentType> refl, const std::string& path, uint32_t frame, const T& val, const std::string& valName);
@@ -95,9 +95,9 @@ namespace XYZ {
 		}
 
 		template<typename ComponentType, typename T>
-		inline void AnimationEditor::addReflectedProperty(Reflection<ComponentType> refl, const std::string& path, const T& val, const std::string& valName)
+		inline void AnimationEditor::addReflectedProperty(Reflection<ComponentType> refl, const std::string& path, const T& val, const std::string& valName, uint16_t valIndex)
 		{
-			m_Animation->AddProperty<ComponentType, T>(path, valName);
+			m_Animation->AddProperty<ComponentType, T>(path, valName, valIndex);
 			if (!m_Sequencer.ItemTypeExists(refl.sc_ClassName))
 				m_Sequencer.AddItemType(refl.sc_ClassName);	
 

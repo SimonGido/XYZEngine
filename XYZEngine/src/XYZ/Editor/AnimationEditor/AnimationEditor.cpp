@@ -145,7 +145,7 @@ namespace XYZ {
 									{
 										auto& val = reflClass.Get<i.value>(m_SelectedEntity.GetComponentFromReflection(reflClass));
 										addReflectedProperty(reflClass, path, val,
-											reflClass.GetVariables()[i.value]
+											reflClass.GetVariables()[i.value], i.value
 										);
 										m_Context->UpdateAnimationEntities();
 									}

@@ -1,10 +1,12 @@
 #include "stdafx.h"
 #include "Animator.h"
 
+#include "XYZ/Debug/Profiler.h"
 
 namespace XYZ {
 	void Animator::Update(Timestep ts)
 	{
+		XYZ_PROFILE_FUNC("Animator::Update");
 		for (auto [entity, prop] : m_Properties)
 		{
 			prop->SetSceneEntity(entity);

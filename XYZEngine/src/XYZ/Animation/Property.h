@@ -35,13 +35,19 @@ namespace XYZ {
 
 
 	template <typename T>
-	using SetPropertyRefFn = std::function<void(SceneEntity entity, T** ref, const std::string& varName)>;
+	using SetPropertyRefFn = void(*)(SceneEntity entity, T** ref, const uint16_t varIndex);
 	
 	template <typename T>
 	class Property : public IProperty
 	{
 	public:	
-		Property(const SetPropertyRefFn<T>& callback, const std::string& path, const std::string& valueName, const std::string& componentName, uint16_t componentID);
+		Property(const SetPropertyRefFn<T>& callback, 
+			const std::string& path, 
+			const std::string& valueName, 
+			const std::string& componentName, 
+			const uint16_t valueIndex,
+			uint16_t componentID
+		);
 		virtual ~Property() override;
 
 		Property(const Property<T>& other);
@@ -80,21 +86,30 @@ namespace XYZ {
 		std::string				 m_Path;
 		std::string				 m_ValueName;
 		std::string				 m_ComponentName;
+		uint16_t				 m_ValueIndex;
 		uint16_t				 m_ComponentID;
 		SetPropertyRefFn<T>		 m_SetPropertyCallback;
-
+		
 		std::vector<KeyFrame<T>> m_Keys;
 		size_t					 m_CurrentKey = 0;
 	};
 
 	
 	template<typename T>
-	inline Property<T>::Property(const SetPropertyRefFn<T>& callback, const std::string& path, const std::string& valueName, const std::string& componentName, uint16_t componentID)
+	inline Property<T>::Property(
+		const SetPropertyRefFn<T>& callback, 
+		const std::string& path, 
+		const std::string& valueName, 
+		const std::string& componentName,
+		const uint16_t valueIndex,
+		uint16_t componentID
+	)
 		:
 		m_Value(nullptr),
 		m_Path(path),
 		m_ValueName(valueName),
 		m_ComponentName(componentName),
+		m_ValueIndex(valueIndex),
 		m_ComponentID(componentID),
 		m_SetPropertyCallback(callback)
 	{
@@ -117,6 +132,7 @@ namespace XYZ {
 		m_Path(other.m_Path),
 		m_ValueName(other.m_ValueName),
 		m_ComponentName(other.m_ComponentName),
+		m_ValueIndex(other.m_ValueIndex),
 		m_ComponentID(other.m_ComponentID),
 		m_SetPropertyCallback(other.m_SetPropertyCallback),
 		m_Keys(other.m_Keys),
@@ -137,6 +153,7 @@ namespace XYZ {
 		m_Path(std::move(other.m_Path)),
 		m_ValueName(std::move(other.m_ValueName)),
 		m_ComponentName(std::move(other.m_ComponentName)),
+		m_ValueIndex(other.m_ValueIndex),
 		m_ComponentID(other.m_ComponentID),
 		m_SetPropertyCallback(std::move(other.m_SetPropertyCallback)),
 		m_Keys(std::move(other.m_Keys)),
@@ -157,6 +174,7 @@ namespace XYZ {
 		m_Path				  = other.m_Path;
 		m_ValueName			  = other.m_ValueName;
 		m_ComponentName		  = other.m_ComponentName;
+		m_ValueIndex		  = other.m_ValueIndex;
 		m_ComponentID		  = other.m_ComponentID;
 		m_SetPropertyCallback = other.m_SetPropertyCallback;
 		m_Keys				  = other.m_Keys;
@@ -172,6 +190,7 @@ namespace XYZ {
 		m_Path				  = std::move(other.m_Path);
 		m_ValueName			  = std::move(other.m_ValueName);
 		m_ComponentName		  = std::move(other.m_ComponentName);
+		m_ValueIndex		  = other.m_ValueIndex;
 		m_ComponentID		  = other.m_ComponentID;
 		m_SetPropertyCallback = std::move(other.m_SetPropertyCallback);
 		m_Keys				  = std::move(other.m_Keys);
@@ -182,7 +201,7 @@ namespace XYZ {
 	template<typename T>
 	inline void Property<T>::SetReference()
 	{
-		m_SetPropertyCallback(m_Entity, &m_Value, m_ValueName);
+		m_SetPropertyCallback(m_Entity, &m_Value, m_ValueIndex);
 	}
 	template<typename T>
 	inline void Property<T>::SetCurrentKey(uint32_t frame)
@@ -200,14 +219,7 @@ namespace XYZ {
 	{
 		if (m_Entity != entity)
 		{
-			if (m_Entity.IsValid())
-			{
-				m_Entity.RemoveOnComponentConstructionOfInstance(m_ComponentID, this);
-				m_Entity.RemoveOnComponentDestructionOfInstance(m_ComponentID, this);
-			}
 			m_Entity = entity;
-			m_Entity.AddOnComponentConstruction(m_ComponentID, &Property<T>::SetReference, this);
-			m_Entity.AddOnComponentDestruction(m_ComponentID, &Property<T>::SetReference, this);
 			SetReference();
 		}
 	}
