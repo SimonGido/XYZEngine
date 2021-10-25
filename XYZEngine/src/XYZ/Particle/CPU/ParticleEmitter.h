@@ -21,7 +21,7 @@ namespace XYZ {
 		private:
 			bool     m_Called;
 
-			friend class BurstEmitter;
+			friend struct BurstEmitter;
 		};
 
 		BurstEmitter();
