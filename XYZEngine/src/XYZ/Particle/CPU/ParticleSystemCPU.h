@@ -7,6 +7,7 @@
 #include "ParticleUpdater.h"
 #include "ParticleGenerator.h"
 #include "ParticleRenderer.h"
+#include "ParticleEmitter.h"
 
 #include <glm/glm.hpp>
 
@@ -20,18 +21,13 @@ namespace XYZ {
 	public:
 		struct UpdateData
 		{
-			TimeUpdater		   TimeUpdater;
-			PositionUpdater	   PositionUpdater;
-			LightUpdater	   LightUpdater;
+			TimeUpdater		   m_TimeUpdater;
+			PositionUpdater	   m_PositionUpdater;
+			LightUpdater	   m_LightUpdater;
+
+			// TODO: might be better to have std::vector<Updater*> and push/erase enabled/disabled updaters
 		};
-		struct EmitData
-		{
-			ParticleShapeGenerator		    ShapeGenerator;
-			ParticleLifeGenerator		    LifeGenerator;
-			ParticleRandomVelocityGenerator RandomVelGenerator;
-			float							EmittedParticles;
-			float							EmitRate = 100.0f;
-		};
+		
 	public:
 		ParticleSystemCPU(uint32_t maxParticles);
 		~ParticleSystemCPU();
@@ -48,8 +44,8 @@ namespace XYZ {
 		ScopedLock<UpdateData>	   GetUpdateData();
 		ScopedLockRead<UpdateData> GetUpdateDataRead() const;
 
-		ScopedLock<EmitData>	   GetEmitData();
-		ScopedLockRead<EmitData>   GetEmitDataRead() const;
+		ScopedLock<ParticleEmitterCPU>	   GetEmitData();
+		ScopedLockRead<ParticleEmitterCPU>   GetEmitDataRead() const;
 
 		Ref<ParticleRendererCPU> m_Renderer;
 	private:
@@ -64,13 +60,13 @@ namespace XYZ {
 			RenderData();				
 			RenderData(uint32_t maxParticles);
 						
-			std::vector<ParticleRenderData> RenderParticleData;
-			uint32_t						InstanceCount;
+			std::vector<ParticleRenderData> m_RenderParticleData;
+			uint32_t						m_InstanceCount;
 		};
 	
 		SingleThreadPass<ParticleDataBuffer> m_ParticleData;
 		SingleThreadPass<UpdateData>		 m_UpdateThreadPass;	
-		SingleThreadPass<EmitData>			 m_EmitThreadPass;
+		SingleThreadPass<ParticleEmitterCPU> m_EmitThreadPass;
 		ThreadPass<RenderData>				 m_RenderThreadPass;
 		ThreadPass<std::vector<glm::vec3>>   m_LightPass;
 		bool								 m_Play;

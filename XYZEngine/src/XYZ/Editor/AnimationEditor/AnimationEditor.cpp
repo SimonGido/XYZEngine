@@ -136,11 +136,11 @@ namespace XYZ {
 					size_t classIndex, variableIndex;
 					if (getClassVariableAndPath(path, classIndex, variableIndex))
 					{
-						Reflect::For([&](auto j) {
+						Reflect::For<ReflectedClasses::sc_NumClasses>([&](auto j) {
 							if (j.value == classIndex)
 							{
 								auto reflClass = ReflectedClasses::Get<j.value>();
-								Reflect::For([&](auto i) {
+								Reflect::For<reflClass.sc_NumVariables>([&](auto i) {
 									if (i.value == variableIndex)
 									{
 										auto& val = reflClass.Get<i.value>(m_SelectedEntity.GetComponentFromReflection(reflClass));
@@ -149,9 +149,9 @@ namespace XYZ {
 										);
 										m_Context->UpdateAnimationEntities();
 									}
-								}, std::make_index_sequence<reflClass.sc_NumVariables>());
+								});
 							}
-						}, std::make_index_sequence<ReflectedClasses::sc_NumClasses>());
+						});
 					}
 					ImGui::EndPopup();
 				}

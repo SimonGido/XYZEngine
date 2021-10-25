@@ -4,6 +4,44 @@
 
 namespace XYZ {
 
+    class ParticleCustomData
+    {
+    public:
+        ParticleCustomData();
+        ParticleCustomData(size_t elementSize, size_t size);
+        ~ParticleCustomData();
+       
+        void Resize(size_t size);
+        void SetElementSize(size_t size);
+        void Clear();
+      
+        template <typename T>
+        T* As();
+
+        template <typename T>
+        const T* As() const;
+
+        size_t Size() const { return m_Size; }
+    private:
+        std::byte* m_Data;
+        size_t     m_ElementSize;
+        size_t	   m_Size;
+    };
+
+    template <typename T>
+    T* ParticleCustomData::As()
+    {
+        XYZ_ASSERT(m_ElementSize == sizeof(T), "Different element size");
+        return reinterpret_cast<T*>(m_Data);
+    }
+
+    template <typename T>
+    const T* ParticleCustomData::As() const
+    {
+        XYZ_ASSERT(m_ElementSize == sizeof(T), "Different element size");
+        return reinterpret_cast<T*>(m_Data);
+    }
+
 	class ParticleDataBuffer
 	{
 	public:
@@ -40,6 +78,7 @@ namespace XYZ {
         float*      m_Rotation;
         float*      m_AngularVelocity;
        
+        ParticleCustomData m_CustomData[3];
 
         uint32_t GetMaxParticles() const { return m_MaxParticles; }
         uint32_t GetAliveParticles() const { return m_AliveParticles; }

@@ -21,10 +21,16 @@ namespace XYZ {
 
 		virtual void Bind() const override;
 
+		void SetCustomVBOLayout(const BufferLayout& layout);
 	private:
-		Ref<VertexArray>			    VAO;
-		Ref<VertexBuffer>			    InstanceVBO;
-		uint32_t						InstanceCount;
+		void createBuffers();
+
+	private:
+		Ref<VertexArray>			    m_VAO;
+		Ref<VertexBuffer>			    m_InstanceVBO;
+		Ref<VertexBuffer>				m_CustomVBO;
+		uint32_t						m_InstanceCount;
+		uint32_t						m_MaxParticles;
 
 		friend class ParticleSystemCPU;
 	};

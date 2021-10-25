@@ -38,6 +38,13 @@ namespace XYZ {
 		{
 			(func(Num<Is>{}), ...);
 		}
+
+		template <std::size_t I, class F>
+		void For(F func)
+		{
+			For(func, std::make_index_sequence<I>());
+		}
+
 	}
 	#define NUMARGS(...) (Reflect::CountOccurances(#__VA_ARGS__, ',') + 1)
 

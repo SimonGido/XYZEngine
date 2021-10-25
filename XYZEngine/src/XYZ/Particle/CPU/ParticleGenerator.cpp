@@ -29,59 +29,25 @@ namespace XYZ {
 
 	ParticleShapeGenerator& ParticleShapeGenerator::operator=(const ParticleShapeGenerator& other)
 	{
-		m_BoxMax = other.m_BoxMax;
-		m_BoxMin = other.m_BoxMin;
-		m_Shape = other.m_Shape;
-		m_Radius = other.m_Radius;
+		m_BoxMax  = other.m_BoxMax;
+		m_BoxMin  = other.m_BoxMin;
+		m_Shape   = other.m_Shape;
+		m_Radius  = other.m_Radius;
 		m_Enabled = other.m_Enabled;
 		return *this;
 	}
 
 	void ParticleShapeGenerator::Generate(ParticleDataBuffer* data, uint32_t startId, uint32_t endId) const
 	{
-		if (m_Shape == EmitShape::Box)
-			generateBox(data, startId, endId);
-		else if (m_Shape == EmitShape::Circle)
-			generateCircle(data, startId, endId);
+		if (m_Enabled)
+		{
+			if (m_Shape == EmitShape::Box)
+				generateBox(data, startId, endId);
+			else if (m_Shape == EmitShape::Circle)
+				generateCircle(data, startId, endId);
+		}
 	}
-	void ParticleShapeGenerator::SetEmitShape(EmitShape shape)
-	{
-		m_Shape = shape;
-	}
-	void ParticleShapeGenerator::SetBoxMin(const glm::vec3& boxMin)
-	{
-		m_BoxMin = boxMin;
-	}
-
-	void ParticleShapeGenerator::SetBoxMax(const glm::vec3& boxMax)
-	{
-		m_BoxMax = boxMax;
-	}
-
-	void ParticleShapeGenerator::SetRadius(float radius)
-	{
-		m_Radius = radius;
-	}
-
-	EmitShape ParticleShapeGenerator::GetEmitShape() const
-	{
-		return m_Shape;
-	}
-
-	glm::vec3 ParticleShapeGenerator::GetBoxMin() const
-	{
-		return m_BoxMin;
-	}
-
-	glm::vec3 ParticleShapeGenerator::GetBoxMax() const
-	{
-		return m_BoxMax;
-	}
-
-	float ParticleShapeGenerator::GetRadius() const
-	{
-		return m_Radius;
-	}
+	
 
 	void ParticleShapeGenerator::generateBox(ParticleDataBuffer* data, uint32_t startId, uint32_t endId) const
 	{
@@ -131,30 +97,23 @@ namespace XYZ {
 	ParticleLifeGenerator::ParticleLifeGenerator(const ParticleLifeGenerator& other)
 	{
 		m_LifeTime = other.m_LifeTime;
-		m_Enabled = other.m_Enabled;
+		m_Enabled  = other.m_Enabled;
 	}
 	ParticleLifeGenerator& ParticleLifeGenerator::operator=(const ParticleLifeGenerator& other)
 	{
 		m_LifeTime = other.m_LifeTime;
-		m_Enabled = other.m_Enabled;
+		m_Enabled  = other.m_Enabled;
 		return *this;
 	}
 	void ParticleLifeGenerator::Generate(ParticleDataBuffer* data, uint32_t startId, uint32_t endId) const
 	{
-		for (uint32_t i = startId; i < endId; i++)
+		if (m_Enabled)
 		{
-			data->m_Particle[i].LifeRemaining = m_LifeTime;
+			for (uint32_t i = startId; i < endId; i++)
+			{
+				data->m_Particle[i].LifeRemaining = m_LifeTime;
+			}
 		}
-	}
-
-	void ParticleLifeGenerator::SetLifeTime(float life)
-	{
-		m_LifeTime = life;
-	}
-
-	float ParticleLifeGenerator::GetLifeTime() const
-	{
-		return m_LifeTime;
 	}
 
 	ParticleRandomVelocityGenerator::ParticleRandomVelocityGenerator()
@@ -184,25 +143,5 @@ namespace XYZ {
 		{
 			data->m_Particle[i].Velocity = glm::linearRand(m_MinVelocity, m_MaxVelocity);
 		}
-	}
-
-	void ParticleRandomVelocityGenerator::SetMinVelocity(const glm::vec3& minVelocity)
-	{
-		m_MinVelocity = minVelocity;
-	}
-
-	void ParticleRandomVelocityGenerator::SetMaxVelocity(const glm::vec3& maxVelocity)
-	{
-		m_MaxVelocity = maxVelocity;
-	}
-
-	glm::vec3 ParticleRandomVelocityGenerator::GetMinVelocity() const
-	{
-		return m_MinVelocity;
-	}
-
-	glm::vec3 ParticleRandomVelocityGenerator::GetMaxVelocity() const
-	{
-		return m_MaxVelocity;
 	}
 }

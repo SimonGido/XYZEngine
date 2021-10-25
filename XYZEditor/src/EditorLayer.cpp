@@ -255,8 +255,8 @@ namespace XYZ {
 			particleComponentCPU.System->m_Renderer->Material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
 			particleComponentCPU.System->m_Renderer->Material->SetRenderQueueID(1);
 			auto updateData = particleComponentCPU.System->GetUpdateData();
-			updateData->LightUpdater.SetLightEntity(lightEntity);
-			updateData->LightUpdater.SetTransformEntity(entity);
+			updateData->m_LightUpdater.m_LightEntity = lightEntity;
+			updateData->m_LightUpdater.m_TransformEntity = entity;
 		}
 		particleComponentCPU.System->Play();
 	}
