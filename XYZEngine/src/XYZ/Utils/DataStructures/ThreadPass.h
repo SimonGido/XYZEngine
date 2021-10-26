@@ -65,6 +65,11 @@ namespace XYZ {
 	{
 	public:
 		ThreadPass();
+		ThreadPass(const ThreadPass<T>& other);
+		ThreadPass(ThreadPass<T>&& other) noexcept;
+
+		ThreadPass& operator=(const ThreadPass<T>& other);
+		ThreadPass& operator=(ThreadPass<T>&& other) noexcept;
 
 		ScopedLock<T> Write();
 		ScopedLock<T> Read();
@@ -82,7 +87,7 @@ namespace XYZ {
 		T* m_Write;
 
 		mutable std::shared_mutex m_ReadMutex;
-		std::shared_mutex		  m_WriteMutex;
+		mutable std::shared_mutex m_WriteMutex;
 	};
 
 
@@ -90,7 +95,59 @@ namespace XYZ {
 	inline ThreadPass<T>::ThreadPass()
 	{
 		m_Write = &m_Data0;
+		m_Read  = &m_Data1;
+	}
+
+	template<typename T>
+	inline ThreadPass<T>::ThreadPass(const ThreadPass<T>& other)
+	{
+		std::shared_lock otherReadLock(other.m_ReadMutex);
+		std::shared_lock otherWriteLock(other.m_WriteMutex);
+
+		m_Data0 = other.m_Data0;
+		m_Data1 = other.m_Data1;
+	}
+
+	template<typename T>
+	inline ThreadPass<T>::ThreadPass(ThreadPass<T>&& other) noexcept
+	{
+		std::unique_lock otherReadLock(other.m_ReadMutex);
+		std::unique_lock otherWriteLock(other.m_WriteMutex);
+
+		m_Data0 = std::move(other.m_Data0);
+		m_Data1 = std::move(other.m_Data1);
+
+		m_Write = &m_Data0;
 		m_Read = &m_Data1;
+	}
+
+	template<typename T>
+	inline ThreadPass<T>& ThreadPass<T>::operator=(const ThreadPass<T>& other)
+	{
+		std::shared_lock otherReadLock(other.m_ReadMutex);
+		std::shared_lock otherWriteLock(other.m_WriteMutex);
+		
+		m_Data0 = other.m_Data0;
+		m_Data1 = other.m_Data1;
+
+		m_Write = &m_Data0;
+		m_Read = &m_Data1;
+
+		return *this;
+	}
+
+	template<typename T>
+	inline ThreadPass<T>& ThreadPass<T>::operator=(ThreadPass<T>&& other) noexcept
+	{
+		std::unique_lock otherReadLock(other.m_ReadMutex);
+		std::unique_lock otherWriteLock(other.m_WriteMutex);
+		std::unique_lock readLock(m_ReadMutex);
+		std::unique_lock writeLock(m_WriteMutex);
+
+		m_Data0 = std::move(other.m_Data0);
+		m_Data1 = std::move(other.m_Data1);
+
+		return *this;
 	}
 
 	template<typename T>
@@ -147,7 +204,13 @@ namespace XYZ {
 	public:
 		SingleThreadPass() = default;
 		SingleThreadPass(Args&& ...args);
-	
+		SingleThreadPass(const SingleThreadPass<Args...>& other);
+		SingleThreadPass(SingleThreadPass<Args...>&& other) noexcept;
+
+		SingleThreadPass& operator=(const SingleThreadPass<Args...>& other);
+		SingleThreadPass& operator=(SingleThreadPass<Args...>&& other) noexcept;
+
+
 		template <typename T>
 		ScopedLock<T> Get();
 
@@ -167,6 +230,38 @@ namespace XYZ {
 		:
 		m_Data(std::forward<Args>(args)...)
 	{
+	}
+	template<typename ...Args>
+	inline SingleThreadPass<Args...>::SingleThreadPass(const SingleThreadPass<Args...>& other)
+		:
+		m_Data(other.GetRead<Args...>().As())
+	{
+		//std::shared_lock lock(other.m_Mutex);
+		//m_Data = other.m_Data;
+	}
+	template<typename ...Args>
+	inline SingleThreadPass<Args...>::SingleThreadPass(SingleThreadPass<Args...>&& other) noexcept
+		:
+		m_Data(std::move(other.Get<Args...>().As()))
+	{
+		//std::unique_lock lock(other.m_Mutex);
+		//m_Data = std::move(other.m_Data);
+	}
+	template<typename ...Args>
+	inline SingleThreadPass<Args...>& SingleThreadPass<Args...>::operator=(const SingleThreadPass<Args...>& other)
+	{
+		std::shared_lock otherLock(other.m_Mutex);
+		std::unique_lock lock(m_Mutex);
+		m_Data = other.m_Data;
+		return *this;
+	}
+	template<typename ...Args>
+	inline SingleThreadPass<Args...>& SingleThreadPass<Args...>::operator=(SingleThreadPass<Args...>&& other) noexcept
+	{
+		std::unique_lock otherLock(other.m_Mutex);
+		std::unique_lock lock(m_Mutex);
+		m_Data = std::move(other.m_Data);
+		return *this;
 	}
 	template<typename ...Args>
 	template<typename T>

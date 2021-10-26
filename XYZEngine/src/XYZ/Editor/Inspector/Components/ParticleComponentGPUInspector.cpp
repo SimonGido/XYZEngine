@@ -9,7 +9,7 @@ namespace XYZ {
 	{
 		return EditorHelper::DrawComponent<ParticleComponentGPU>("Particle Component", m_Context, [&](auto& component) {
 
-			auto& material = component.System->m_Renderer->ParticleMaterial;
+			auto& material = component.System->m_Renderer->m_ParticleMaterial;
 			auto& shader = material->GetComputeShader();
 			for (auto& uniform : shader->GetVSUniformList().Uniforms)
 			{

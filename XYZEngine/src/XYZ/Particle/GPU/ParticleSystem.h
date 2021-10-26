@@ -24,7 +24,7 @@ namespace XYZ {
 	{
 		virtual void Bind() const override;
 
-		Ref<ParticleMaterial> ParticleMaterial;
+		Ref<ParticleMaterial> m_ParticleMaterial;
 	};
 
 	class ParticleSystem : public RefCount

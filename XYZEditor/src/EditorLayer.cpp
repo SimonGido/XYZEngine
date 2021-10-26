@@ -188,9 +188,9 @@ namespace XYZ {
 		auto particleMaterial = Ref<ParticleMaterial>::Create(50, Shader::Create("Assets/Shaders/Particle/ComputeParticleShader.glsl"));
 		
 		particleComponent.System = Ref<ParticleSystem>::Create(particleMaterial);
-		particleComponent.System->m_Renderer->Material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShader.glsl"));
-		particleComponent.System->m_Renderer->Material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
-		particleComponent.System->m_Renderer->Material->SetRenderQueueID(1);
+		particleComponent.System->m_Renderer->m_Material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShader.glsl"));
+		particleComponent.System->m_Renderer->m_Material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
+		particleComponent.System->m_Renderer->m_Material->SetRenderQueueID(1);
 		
 		std::vector<ParticleData> particleData;
 		std::vector<ParticleSpecification> particleSpecification;
@@ -240,27 +240,27 @@ namespace XYZ {
 	void EditorLayer::cpuParticleExample(SceneEntity entity)
 	{	
 		auto& particleComponentCPU = entity.EmplaceComponent<ParticleComponentCPU>();
-		particleComponentCPU.System = Ref<ParticleSystemCPU>::Create(1000);
+		particleComponentCPU.System.SetMaxParticles(1000);
 
-		particleComponentCPU.System->m_Renderer->Material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShaderCPU.glsl"));
-		particleComponentCPU.System->m_Renderer->Material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
-		particleComponentCPU.System->m_Renderer->Material->SetRenderQueueID(1);
-		particleComponentCPU.System->Play();
-		particleComponentCPU.System->GetEmitData()->m_BurstEmitter.m_Bursts.emplace_back(250, 1.0f);
-		particleComponentCPU.System->GetEmitData()->m_BurstEmitter.m_Bursts.emplace_back(250, 4.0f);
+		particleComponentCPU.System.m_Renderer->m_Material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShaderCPU.glsl"));
+		particleComponentCPU.System.m_Renderer->m_Material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
+		particleComponentCPU.System.m_Renderer->m_Material->SetRenderQueueID(1);
+		particleComponentCPU.System.Play();
+		particleComponentCPU.System.GetEmitter()->m_BurstEmitter.m_Bursts.emplace_back(250, 1.0f);
+		particleComponentCPU.System.GetEmitter()->m_BurstEmitter.m_Bursts.emplace_back(250, 4.0f);
 
 		auto& lightStorage = m_Scene->GetECS().GetStorage<PointLight2D>();
 		if (lightStorage.Size())
 		{
 			SceneEntity lightEntity(lightStorage.GetEntityAtIndex(0), m_Scene.Raw());
-			particleComponentCPU.System->m_Renderer->Material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShaderCPU.glsl"));
-			particleComponentCPU.System->m_Renderer->Material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
-			particleComponentCPU.System->m_Renderer->Material->SetRenderQueueID(1);
-			auto updateData = particleComponentCPU.System->GetUpdateData();
+			particleComponentCPU.System.m_Renderer->m_Material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShaderCPU.glsl"));
+			particleComponentCPU.System.m_Renderer->m_Material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
+			particleComponentCPU.System.m_Renderer->m_Material->SetRenderQueueID(1);
+			auto updateData = particleComponentCPU.System.GetUpdateData();
 			updateData->m_LightUpdater.m_LightEntity = lightEntity;
 			updateData->m_LightUpdater.m_TransformEntity = entity;
 		}
-		particleComponentCPU.System->Play();
+		particleComponentCPU.System.Play();
 	}
 
 	void EditorLayer::animationExample(SceneEntity entity)

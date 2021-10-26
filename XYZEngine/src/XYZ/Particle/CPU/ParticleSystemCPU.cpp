@@ -8,7 +8,14 @@
 #include "XYZ/Debug/Profiler.h"
 
 namespace XYZ {
-
+	ParticleSystemCPU::ParticleSystemCPU()
+		:
+		m_ParticleData(0),
+		m_MaxParticles(0),
+		m_Play(false)
+	{
+		m_Renderer = Ref<ParticleRendererCPU>::Create(0);
+	}
 	ParticleSystemCPU::ParticleSystemCPU(uint32_t maxParticles)
 		:
 		m_ParticleData(maxParticles)
@@ -26,6 +33,58 @@ namespace XYZ {
 
 	ParticleSystemCPU::~ParticleSystemCPU()
 	{
+	}
+
+	ParticleSystemCPU::ParticleSystemCPU(const ParticleSystemCPU& other)
+		:
+		m_Renderer(other.m_Renderer),
+		m_ParticleData(other.m_ParticleData),
+		m_UpdateThreadPass(other.m_UpdateThreadPass),
+		m_EmitThreadPass(other.m_EmitThreadPass),
+		m_RenderThreadPass(other.m_RenderThreadPass),
+		m_LightPass(other.m_LightPass),
+		m_MaxParticles(other.m_MaxParticles),
+		m_Play(other.m_Play)
+	{
+	}
+
+	ParticleSystemCPU::ParticleSystemCPU(ParticleSystemCPU&& other) noexcept
+		:
+		m_Renderer(std::move(other.m_Renderer)),
+		m_ParticleData(std::move(other.m_ParticleData)),
+		m_UpdateThreadPass(std::move(other.m_UpdateThreadPass)),
+		m_EmitThreadPass(std::move(other.m_EmitThreadPass)),
+		m_RenderThreadPass(std::move(other.m_RenderThreadPass)),
+		m_LightPass(std::move(other.m_LightPass)),
+		m_MaxParticles(other.m_MaxParticles),
+		m_Play(other.m_Play)
+	{
+	}
+
+	ParticleSystemCPU& ParticleSystemCPU::operator=(const ParticleSystemCPU& other)
+	{
+		m_Renderer = other.m_Renderer;
+		m_ParticleData = other.m_ParticleData;
+		m_UpdateThreadPass = other.m_UpdateThreadPass;
+		m_EmitThreadPass = other.m_EmitThreadPass;
+		m_RenderThreadPass = other.m_RenderThreadPass;
+		m_LightPass = other.m_LightPass;
+		m_MaxParticles = other.m_MaxParticles;
+		m_Play = other.m_Play;
+		return *this;
+	}
+
+	ParticleSystemCPU& ParticleSystemCPU::operator=(ParticleSystemCPU&& other) noexcept
+	{
+		m_Renderer = std::move(other.m_Renderer);
+		m_ParticleData = std::move(other.m_ParticleData);
+		m_UpdateThreadPass = std::move(other.m_UpdateThreadPass);
+		m_EmitThreadPass = std::move(other.m_EmitThreadPass);
+		m_RenderThreadPass = std::move(other.m_RenderThreadPass);
+		m_LightPass = std::move(other.m_LightPass);
+		m_MaxParticles = other.m_MaxParticles;
+		m_Play = other.m_Play;
+		return *this;
 	}
 
 	void ParticleSystemCPU::Update(Timestep ts)
@@ -73,6 +132,25 @@ namespace XYZ {
 		m_Play = false;
 	}
 
+	void ParticleSystemCPU::SetMaxParticles(uint32_t maxParticles)
+	{
+		m_Renderer->setMaxParticles(maxParticles);
+		m_ParticleData.Get<ParticleDataBuffer>()->SetMaxParticles(maxParticles);
+		{
+			m_RenderThreadPass.Read()->m_RenderParticleData.resize(maxParticles);
+		}
+		m_RenderThreadPass.Swap();
+		{
+			m_RenderThreadPass.Read()->m_RenderParticleData.resize(maxParticles);
+		}
+	}
+
+	uint32_t ParticleSystemCPU::GetMaxParticles() const
+	{
+		return m_MaxParticles;
+	}
+
+
 	ScopedLock<ParticleDataBuffer> ParticleSystemCPU::GetParticleData()
 	{
 		return m_ParticleData.Get<ParticleDataBuffer>();
@@ -94,12 +172,12 @@ namespace XYZ {
 		return m_UpdateThreadPass.GetRead<UpdateData>();
 	}
 
-	ScopedLock<ParticleEmitterCPU> ParticleSystemCPU::GetEmitData()
+	ScopedLock<ParticleEmitterCPU> ParticleSystemCPU::GetEmitter()
 	{
 		return m_EmitThreadPass.Get<ParticleEmitterCPU>();
 	}
 
-	ScopedLockRead<ParticleEmitterCPU> ParticleSystemCPU::GetEmitDataRead() const
+	ScopedLockRead<ParticleEmitterCPU> ParticleSystemCPU::GetEmitterRead() const
 	{
 		return m_EmitThreadPass.GetRead<ParticleEmitterCPU>();
 	}

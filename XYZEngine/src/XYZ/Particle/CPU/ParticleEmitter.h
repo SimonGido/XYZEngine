@@ -36,6 +36,7 @@ namespace XYZ {
 		float			   m_PassedTime;
 	};
 
+
 	class ParticleEmitterCPU
 	{
 	public:

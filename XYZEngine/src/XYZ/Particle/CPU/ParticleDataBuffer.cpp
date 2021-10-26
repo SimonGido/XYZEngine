@@ -3,6 +3,8 @@
 
 
 namespace XYZ {
+
+
 	ParticleDataBuffer::ParticleDataBuffer(uint32_t maxParticles)
 		:
 		m_MaxParticles(maxParticles),
@@ -52,8 +54,58 @@ namespace XYZ {
 	{
 		deleteParticles();
 	}
+
+	ParticleDataBuffer::ParticleDataBuffer(const ParticleDataBuffer& other)
+		:
+		m_MaxParticles(other.m_MaxParticles),
+		m_AliveParticles(other.m_AliveParticles)
+	{
+		if (m_MaxParticles)
+		{
+			generateParticles(m_MaxParticles);
+			copyData(other);
+		}
+		else
+		{
+			m_Particle = nullptr;
+			m_TexCoord = nullptr;
+			m_StartColor = nullptr;
+			m_EndColor = nullptr;
+			m_Size = nullptr;
+			m_Lights = nullptr;
+			m_AngularVelocity = nullptr;
+			m_Rotation = nullptr;
+		}
+	}
+	
+	ParticleDataBuffer& ParticleDataBuffer::operator=(const ParticleDataBuffer& other)
+	{
+		m_MaxParticles = other.m_MaxParticles;
+		m_AliveParticles = other.m_AliveParticles;
+		
+		deleteParticles();
+		if (m_MaxParticles)
+		{
+			generateParticles(m_MaxParticles);
+			copyData(other);
+		}
+		else
+		{
+			m_Particle = nullptr;
+			m_TexCoord = nullptr;
+			m_StartColor = nullptr;
+			m_EndColor = nullptr;
+			m_Size = nullptr;
+			m_Lights = nullptr;
+			m_AngularVelocity = nullptr;
+			m_Rotation = nullptr;
+		}	
+		return *this;
+	}
+
 	ParticleDataBuffer& ParticleDataBuffer::operator=(ParticleDataBuffer&& other) noexcept
 	{
+		deleteParticles();
 		m_Particle = other.m_Particle;
 		m_TexCoord = other.m_TexCoord;
 		m_StartColor = other.m_StartColor;
@@ -119,6 +171,18 @@ namespace XYZ {
 		m_Lights[a]			 = m_Lights[b];
 		m_Rotation[a]		 = m_Rotation[b];
 		m_AngularVelocity[a] = m_AngularVelocity[b];
+	}
+
+	void ParticleDataBuffer::copyData(const ParticleDataBuffer& source)
+	{
+		memcpy(m_Particle,		  source.m_Particle,		m_MaxParticles * sizeof(Particle));
+		memcpy(m_TexCoord,		  source.m_TexCoord,		m_MaxParticles * sizeof(glm::vec4));
+		memcpy(m_StartColor,      source.m_StartColor,		m_MaxParticles * sizeof(glm::vec4));
+		memcpy(m_EndColor,	      source.m_EndColor,		m_MaxParticles * sizeof(glm::vec4));
+		memcpy(m_Size,			  source.m_Size,			m_MaxParticles * sizeof(glm::vec2));
+		memcpy(m_Lights,		  source.m_Lights,			m_MaxParticles * sizeof(glm::vec3));
+		memcpy(m_Rotation,		  source.m_Rotation,		m_MaxParticles * sizeof(float));
+		memcpy(m_AngularVelocity, source.m_AngularVelocity, m_MaxParticles * sizeof(float));
 	}
 
 	void ParticleDataBuffer::deleteParticles()

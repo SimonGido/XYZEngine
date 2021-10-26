@@ -46,9 +46,11 @@ namespace XYZ {
 	{
 	public:
         ParticleDataBuffer(uint32_t maxParticles);
+        ParticleDataBuffer(const ParticleDataBuffer& other);
         ParticleDataBuffer(ParticleDataBuffer&& other) noexcept;
         ~ParticleDataBuffer();
 
+        ParticleDataBuffer& operator =(const ParticleDataBuffer& other);
         ParticleDataBuffer& operator =(ParticleDataBuffer&& other) noexcept;
 
         void SetMaxParticles(uint32_t maxParticles);
@@ -86,7 +88,7 @@ namespace XYZ {
         void generateParticles(uint32_t particleCount);
         void deleteParticles();
         void swapData(uint32_t a, uint32_t b);
-
+        void copyData(const ParticleDataBuffer& source);
 
     private:
         uint32_t m_MaxParticles;

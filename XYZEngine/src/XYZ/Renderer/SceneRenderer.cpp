@@ -153,7 +153,7 @@ namespace XYZ {
 
 	void SceneRenderer::SubmitRendererCommand(Ref<RendererCommand> command, const glm::mat4& transform)
 	{
-		m_Queues[command->Material->GetRenderQueueID()].DrawCommandList.push_back({ command, transform });
+		m_Queues[command->m_Material->GetRenderQueueID()].DrawCommandList.push_back({ command, transform });
 	}
 	void SceneRenderer::SubmitLight(const PointLight2D& light, const glm::mat4& transform)
 	{
@@ -308,8 +308,8 @@ namespace XYZ {
 
 		for (auto& dc : queue.DrawCommandList)
 		{
-			auto shader = dc.Command->Material->GetShader();
-			dc.Command->Material->Bind();
+			auto shader = dc.Command->m_Material->GetShader();
+			dc.Command->m_Material->Bind();
 			shader->SetMat4("u_Transform", dc.Transform);
 			dc.Command->Bind();
 		}

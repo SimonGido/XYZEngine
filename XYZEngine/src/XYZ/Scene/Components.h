@@ -129,7 +129,7 @@ namespace XYZ {
 	{
 		ParticleComponentCPU() = default;
 		
-		Ref<ParticleSystemCPU> System;
+		ParticleSystemCPU System;
 	};
 
 

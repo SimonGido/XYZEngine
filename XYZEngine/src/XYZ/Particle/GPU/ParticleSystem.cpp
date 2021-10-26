@@ -65,7 +65,7 @@ namespace XYZ {
 		m_Playing(true)
 	{
 		m_Renderer = Ref<ParticleRendererGPU>::Create();
-		m_Renderer->ParticleMaterial = material;
+		m_Renderer->m_ParticleMaterial = material;
 	}
 	void ParticleSystem::Update(Timestep ts)
 	{
@@ -73,19 +73,19 @@ namespace XYZ {
 		{		
 			float raise = m_Rate * ts;
 			
-			if (m_EmittedParticles + raise <= m_Renderer->ParticleMaterial->GetMaxParticles())
+			if (m_EmittedParticles + raise <= m_Renderer->m_ParticleMaterial->GetMaxParticles())
 				m_EmittedParticles += raise;
 			else
-				m_EmittedParticles = (float)m_Renderer->ParticleMaterial->GetMaxParticles();
+				m_EmittedParticles = (float)m_Renderer->m_ParticleMaterial->GetMaxParticles();
 				
 			uint32_t emitted = (uint32_t)std::ceil(m_EmittedParticles);
-			m_Renderer->ParticleMaterial->SetParticleBuffersElementCount(emitted);
+			m_Renderer->m_ParticleMaterial->SetParticleBuffersElementCount(emitted);
 			m_PlayTime += ts;
 		}
 	}
 	void ParticleSystem::Reset()
 	{
-		m_Renderer->ParticleMaterial->ResetCounters();
+		m_Renderer->m_ParticleMaterial->ResetCounters();
 		m_PlayTime = 0.0f;
 		m_EmittedParticles = 0.0f;
 	}
@@ -94,11 +94,11 @@ namespace XYZ {
 		std::vector<glm::vec2> points;
 		if (m_Emitter.Shape == ParticleEmissionShape::Sphere)
 		{
-			points = std::move(RandomPointsInCircle(m_Emitter.Center, m_Emitter.Radius, m_Renderer->ParticleMaterial->GetMaxParticles()));
+			points = std::move(RandomPointsInCircle(m_Emitter.Center, m_Emitter.Radius, m_Renderer->m_ParticleMaterial->GetMaxParticles()));
 		}
 		else if (m_Emitter.Shape == ParticleEmissionShape::Rectangle)
 		{
-			points = std::move(RandomPointsInRectangle(m_Emitter.RectangleMin, m_Emitter.RectangleMax, m_Renderer->ParticleMaterial->GetMaxParticles()));
+			points = std::move(RandomPointsInRectangle(m_Emitter.RectangleMin, m_Emitter.RectangleMax, m_Renderer->m_ParticleMaterial->GetMaxParticles()));
 		}
 	}
 
@@ -110,8 +110,8 @@ namespace XYZ {
 	
 	void ParticleRendererGPU::Bind() const
 	{
-		ParticleMaterial->GetVertexArray()->Bind();
-		ParticleMaterial->GetIndirectBuffer()->Bind();
+		m_ParticleMaterial->GetVertexArray()->Bind();
+		m_ParticleMaterial->GetIndirectBuffer()->Bind();
 		Renderer::DrawElementsIndirect(nullptr);
 	}
 

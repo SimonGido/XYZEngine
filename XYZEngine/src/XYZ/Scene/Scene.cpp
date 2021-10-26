@@ -210,14 +210,14 @@ namespace XYZ {
 		{
 			auto [transform, particle] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU>(entity);
 			auto& system = particle.System;
-			system->Update(ts);
+			system.Update(ts);
 		}
 		// TODO: This will be called only from script i guess
 		auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponentGPU>();
 		for (auto entity : particleView)
 		{
 			auto [transform, particle] = particleView.Get<TransformComponent, ParticleComponentGPU>(entity);
-			auto& particleMaterial = particle.System->m_Renderer->ParticleMaterial;
+			auto& particleMaterial = particle.System->m_Renderer->m_ParticleMaterial;
 			particleMaterial->Set("u_MaxParticles", particleMaterial->GetMaxParticles());
 			particleMaterial->Set("u_MainModule.Time", ts);
 			particleMaterial->Set("u_MainModule.ParticlesEmitted", (int)particle.System->GetEmittedParticles());
@@ -270,8 +270,8 @@ namespace XYZ {
 		for (auto entity : particleViewCPU)
 		{
 			auto [transform, particle] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU>(entity);
-			particle.System->SubmitLights(sceneRenderer);
-			sceneRenderer->SubmitRendererCommand(particle.System->m_Renderer, transform.WorldTransform);
+			particle.System.SubmitLights(sceneRenderer);
+			sceneRenderer->SubmitRendererCommand(particle.System.m_Renderer, transform.WorldTransform);
 		}
 		
 		auto lightView = m_ECS.CreateView<TransformComponent, PointLight2D>();
@@ -326,9 +326,9 @@ namespace XYZ {
 		for (auto entity : particleViewCPU)
 		{
 			auto [transform, particle] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU>(entity);
-			particle.System->SubmitLights(sceneRenderer);
-			particle.System->Update(ts);
-			sceneRenderer->SubmitRendererCommand(particle.System->m_Renderer, transform.WorldTransform);
+			particle.System.SubmitLights(sceneRenderer);
+			particle.System.Update(ts);
+			sceneRenderer->SubmitRendererCommand(particle.System.m_Renderer, transform.WorldTransform);
 		}
 		
 		auto lightView = m_ECS.CreateView<TransformComponent, PointLight2D>();

@@ -12,8 +12,8 @@ namespace XYZ {
 
 		virtual void Bind() const = 0;
 
-		Ref<Material>    Material;
-		uint32_t		 SortLayer;
+		Ref<Material> m_Material;
+		uint32_t	  m_SortLayer;
 	};
 
 }

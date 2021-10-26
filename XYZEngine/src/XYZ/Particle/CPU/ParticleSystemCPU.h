@@ -16,7 +16,7 @@
 namespace XYZ {
 
 	class SceneRenderer;
-	class ParticleSystemCPU : public RefCount
+	class ParticleSystemCPU
 	{
 	public:
 		struct UpdateData
@@ -24,28 +24,33 @@ namespace XYZ {
 			TimeUpdater		   m_TimeUpdater;
 			PositionUpdater	   m_PositionUpdater;
 			LightUpdater	   m_LightUpdater;
-
-			// TODO: might be better to have std::vector<Updater*> and push/erase enabled/disabled updaters
 		};
 		
 	public:
-		ParticleSystemCPU(uint32_t maxParticles);
+		ParticleSystemCPU();
+		ParticleSystemCPU(uint32_t maxParticles);	
+		ParticleSystemCPU(const ParticleSystemCPU& other);
+		ParticleSystemCPU(ParticleSystemCPU&& other) noexcept;
 		~ParticleSystemCPU();
+
+		ParticleSystemCPU& operator=(const ParticleSystemCPU& other);
+		ParticleSystemCPU& operator=(ParticleSystemCPU&& other) noexcept;
 
 		void Update(Timestep ts);
 		void SubmitLights(Ref<SceneRenderer> renderer);
 		void Play();
 		void Stop();
+		void SetMaxParticles(uint32_t maxParticles);
+		uint32_t GetMaxParticles() const;
 
-		
 		ScopedLock<ParticleDataBuffer>	   GetParticleData();
 		ScopedLockRead<ParticleDataBuffer> GetParticleDataRead() const;
 
-		ScopedLock<UpdateData>	   GetUpdateData();
-		ScopedLockRead<UpdateData> GetUpdateDataRead() const;
+		ScopedLock<UpdateData>			   GetUpdateData();
+		ScopedLockRead<UpdateData>		   GetUpdateDataRead() const;
 
-		ScopedLock<ParticleEmitterCPU>	   GetEmitData();
-		ScopedLockRead<ParticleEmitterCPU>   GetEmitDataRead() const;
+		ScopedLock<ParticleEmitterCPU>	   GetEmitter();
+		ScopedLockRead<ParticleEmitterCPU> GetEmitterRead() const;
 
 		Ref<ParticleRendererCPU> m_Renderer;
 	private:
@@ -69,6 +74,7 @@ namespace XYZ {
 		SingleThreadPass<ParticleEmitterCPU> m_EmitThreadPass;
 		ThreadPass<RenderData>				 m_RenderThreadPass;
 		ThreadPass<std::vector<glm::vec3>>   m_LightPass;
+		uint32_t							 m_MaxParticles;
 		bool								 m_Play;
 	};
 

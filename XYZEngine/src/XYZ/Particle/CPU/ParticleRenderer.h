@@ -24,6 +24,7 @@ namespace XYZ {
 		void SetCustomVBOLayout(const BufferLayout& layout);
 	private:
 		void createBuffers();
+		void setMaxParticles(uint32_t maxParticles);
 
 	private:
 		Ref<VertexArray>			    m_VAO;

@@ -56,4 +56,14 @@ namespace XYZ {
 		squareIBpar = XYZ::IndexBuffer::Create(squareIndpar, sizeof(squareIndpar) / sizeof(uint32_t));
 		m_VAO->SetIndexBuffer(squareIBpar);
 	}
+	void ParticleRendererCPU::setMaxParticles(uint32_t maxParticles)
+	{
+		m_MaxParticles = maxParticles;
+		createBuffers();
+		if (m_CustomVBO.Raw())
+		{
+			BufferLayout layout = m_CustomVBO->GetLayout();
+			SetCustomVBOLayout(layout);
+		}
+	}
 }
