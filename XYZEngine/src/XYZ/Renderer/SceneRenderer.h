@@ -44,8 +44,9 @@ namespace XYZ {
 			glm::mat4			 Transform;
 		};
 
-		std::vector<SpriteDrawCommand>	 SpriteDrawList;		
-		std::vector<DrawCommand>         DrawCommandList;
+		std::vector<SpriteDrawCommand>	 m_SpriteDrawList;		
+		std::vector<DrawCommand>         m_DrawCommandList;
+		std::vector<Mesh>				 m_MeshCommandList;
 	};
 
 	
@@ -66,6 +67,8 @@ namespace XYZ {
 		void SubmitSprite(Ref<Material> material, Ref<SubTexture> subTexture, uint32_t sortLayer, const glm::vec4& color, const glm::mat4& transform);
 
 		void SubmitRendererCommand(Ref<RendererCommand> command, const glm::mat4& transform);
+		void SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform);
+		void SubmitMeshInstanced(Ref<Mesh)
 		void SubmitLight(const PointLight2D& light, const glm::mat4& transform);
 		void SubmitLight(const SpotLight2D& light, const glm::mat4& transform);
 		void SubmitLight(const PointLight2D& light, const glm::vec3& position);

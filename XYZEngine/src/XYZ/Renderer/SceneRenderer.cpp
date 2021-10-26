@@ -145,7 +145,7 @@ namespace XYZ {
 
 	void SceneRenderer::SubmitSprite(Ref<Material> material, Ref<SubTexture> subTexture, uint32_t sortLayer, const glm::vec4& color, const glm::mat4& transform)
 	{
-		m_Queues[material->GetRenderQueueID()].SpriteDrawList.push_back({
+		m_Queues[material->GetRenderQueueID()].m_SpriteDrawList.push_back({
 			   material, subTexture, sortLayer, color, transform
 			});
 	}
@@ -153,7 +153,7 @@ namespace XYZ {
 
 	void SceneRenderer::SubmitRendererCommand(Ref<RendererCommand> command, const glm::mat4& transform)
 	{
-		m_Queues[command->m_Material->GetRenderQueueID()].DrawCommandList.push_back({ command, transform });
+		m_Queues[command->m_Material->GetRenderQueueID()].m_DrawCommandList.push_back({ command, transform });
 	}
 	void SceneRenderer::SubmitLight(const PointLight2D& light, const glm::mat4& transform)
 	{
@@ -263,8 +263,8 @@ namespace XYZ {
 		lightPass();
 		bloomPass();
 
-		queue.SpriteDrawList.clear();
-		queue.DrawCommandList.clear();
+		queue.m_SpriteDrawList.clear();
+		queue.m_DrawCommandList.clear();
 
 		m_PointLightsList.clear();
 		m_SpotLightsList.clear();
@@ -277,14 +277,14 @@ namespace XYZ {
 
 		geometryPass(queue, m_LightPass, false);
 
-		queue.SpriteDrawList.clear();
-		queue.DrawCommandList.clear();
+		queue.m_SpriteDrawList.clear();
+		queue.m_DrawCommandList.clear();
 	}
 
 	void SceneRenderer::sortQueue(RenderQueue& queue)
 	{
 		XYZ_PROFILE_FUNC("SceneRenderer::sortQueue");
-		std::sort(queue.SpriteDrawList.begin(), queue.SpriteDrawList.end(),
+		std::sort(queue.m_SpriteDrawList.begin(), queue.m_SpriteDrawList.end(),
 			[](const RenderQueue::SpriteDrawCommand& a, const RenderQueue::SpriteDrawCommand& b) {
 			if (a.SortLayer == b.SortLayer)
 				return a.Material->GetFlags() < b.Material->GetFlags();
@@ -297,7 +297,7 @@ namespace XYZ {
 		Renderer::BeginRenderPass(pass, clear);
 		m_Renderer2D->BeginScene();
 
-		for (auto& dc : queue.SpriteDrawList)
+		for (auto& dc : queue.m_SpriteDrawList)
 		{
 			m_Renderer2D->SetMaterial(dc.Material);
 			uint32_t textureID = m_Renderer2D->SetTexture(dc.SubTexture->GetTexture());
@@ -306,7 +306,7 @@ namespace XYZ {
 		m_Renderer2D->Flush();
 		m_Renderer2D->FlushLines();
 
-		for (auto& dc : queue.DrawCommandList)
+		for (auto& dc : queue.m_DrawCommandList)
 		{
 			auto shader = dc.Command->m_Material->GetShader();
 			dc.Command->m_Material->Bind();
