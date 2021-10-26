@@ -4,6 +4,7 @@
 #include "Renderer2D.h"
 #include "XYZ/Scene/Scene.h"
 #include "XYZ/Scene/Components.h"
+#include "XYZ/Renderer/Mesh.h"
 #include "XYZ/Scene/EditorComponents.h"
 
 namespace XYZ {
@@ -38,15 +39,21 @@ namespace XYZ {
 			glm::vec4		Color;
 			glm::mat4		Transform;
 		};
-		struct DrawCommand
+		struct DrawMeshCommand
 		{
-			Ref<RendererCommand> Command;
-			glm::mat4			 Transform;
+			Ref<Mesh> Mesh;
+			glm::mat4 Transform;
+		};
+		struct InstancedDrawMeshCommand
+		{
+			Ref<Mesh> Mesh;
+			glm::mat4 Transform;
+			uint32_t  Count;
 		};
 
-		std::vector<SpriteDrawCommand>	 m_SpriteDrawList;		
-		std::vector<DrawCommand>         m_DrawCommandList;
-		std::vector<Mesh>				 m_MeshCommandList;
+		std::vector<SpriteDrawCommand>	      m_SpriteDrawList;		
+		std::vector<DrawMeshCommand>	      m_MeshCommandList;
+		std::vector<InstancedDrawMeshCommand> m_InstancedMeshCommandList;
 	};
 
 	
@@ -66,9 +73,8 @@ namespace XYZ {
 		void EndScene();
 		void SubmitSprite(Ref<Material> material, Ref<SubTexture> subTexture, uint32_t sortLayer, const glm::vec4& color, const glm::mat4& transform);
 
-		void SubmitRendererCommand(Ref<RendererCommand> command, const glm::mat4& transform);
 		void SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform);
-		void SubmitMeshInstanced(Ref<Mesh)
+		void SubmitMeshInstanced(Ref<Mesh> mesh, const glm::mat4& transform, uint32_t count);
 		void SubmitLight(const PointLight2D& light, const glm::mat4& transform);
 		void SubmitLight(const SpotLight2D& light, const glm::mat4& transform);
 		void SubmitLight(const PointLight2D& light, const glm::vec3& position);

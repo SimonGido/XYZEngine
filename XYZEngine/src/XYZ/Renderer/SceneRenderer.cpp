@@ -150,10 +150,13 @@ namespace XYZ {
 			});
 	}
 
-
-	void SceneRenderer::SubmitRendererCommand(Ref<RendererCommand> command, const glm::mat4& transform)
+	void SceneRenderer::SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform)
 	{
-		m_Queues[command->m_Material->GetRenderQueueID()].m_DrawCommandList.push_back({ command, transform });
+		m_Queues[mesh->GetMaterial()->GetRenderQueueID()].m_MeshCommandList.push_back({ mesh, transform });
+	}
+	void SceneRenderer::SubmitMeshInstanced(Ref<Mesh> mesh, const glm::mat4& transform, uint32_t count)
+	{
+		m_Queues[mesh->GetMaterial()->GetRenderQueueID()].m_InstancedMeshCommandList.push_back({ mesh, transform, count });
 	}
 	void SceneRenderer::SubmitLight(const PointLight2D& light, const glm::mat4& transform)
 	{
@@ -264,8 +267,8 @@ namespace XYZ {
 		bloomPass();
 
 		queue.m_SpriteDrawList.clear();
-		queue.m_DrawCommandList.clear();
-
+		queue.m_MeshCommandList.clear();
+		queue.m_InstancedMeshCommandList.clear();
 		m_PointLightsList.clear();
 		m_SpotLightsList.clear();
 	}
@@ -278,7 +281,8 @@ namespace XYZ {
 		geometryPass(queue, m_LightPass, false);
 
 		queue.m_SpriteDrawList.clear();
-		queue.m_DrawCommandList.clear();
+		queue.m_MeshCommandList.clear();
+		queue.m_InstancedMeshCommandList.clear();
 	}
 
 	void SceneRenderer::sortQueue(RenderQueue& queue)
@@ -306,12 +310,13 @@ namespace XYZ {
 		m_Renderer2D->Flush();
 		m_Renderer2D->FlushLines();
 
-		for (auto& dc : queue.m_DrawCommandList)
+		for (auto& dc : queue.m_MeshCommandList)
 		{
-			auto shader = dc.Command->m_Material->GetShader();
-			dc.Command->m_Material->Bind();
+			auto material = dc.Mesh->GetMaterial();
+			auto shader = material->GetShader();
+			material->Bind();
 			shader->SetMat4("u_Transform", dc.Transform);
-			dc.Command->Bind();
+			//Renderer::DrawIndexed(PrimitiveType::Triangles, )
 		}
 
 		m_Renderer2D->EndScene();
