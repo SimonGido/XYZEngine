@@ -299,8 +299,25 @@ namespace XYZ {
 	void SceneRenderer::geometryPass(RenderQueue& queue, const Ref<RenderPass>& pass, bool clear)
 	{
 		Renderer::BeginRenderPass(pass, clear);
-		m_Renderer2D->BeginScene();
+		
+		for (auto& dc : queue.m_MeshCommandList)
+		{
+			auto material = dc.Mesh->GetMaterial();
+			auto shader = material->GetShader();
+			material->Bind();
+			shader->SetMat4("u_Transform", dc.Transform);
+			Renderer::DrawIndexed(PrimitiveType::Triangles, dc.Mesh->GetIndexCount(), 0);
+		}
+		for (auto& dc : queue.m_InstancedMeshCommandList)
+		{
+			auto material = dc.Mesh->GetMaterial();
+			auto shader = material->GetShader();
+			material->Bind();
+			shader->SetMat4("u_Transform", dc.Transform);
+			Renderer::DrawInstanced(dc.Mesh->GetVertexArray(), dc.Count, 0);
+		}
 
+		m_Renderer2D->BeginScene();
 		for (auto& dc : queue.m_SpriteDrawList)
 		{
 			m_Renderer2D->SetMaterial(dc.Material);
@@ -308,17 +325,7 @@ namespace XYZ {
 			m_Renderer2D->SubmitQuad(dc.Transform, dc.SubTexture->GetTexCoords(), textureID, dc.Color);
 		}
 		m_Renderer2D->Flush();
-		m_Renderer2D->FlushLines();
-
-		for (auto& dc : queue.m_MeshCommandList)
-		{
-			auto material = dc.Mesh->GetMaterial();
-			auto shader = material->GetShader();
-			material->Bind();
-			shader->SetMat4("u_Transform", dc.Transform);
-			//Renderer::DrawIndexed(PrimitiveType::Triangles, )
-		}
-
+		m_Renderer2D->FlushLines();	
 		m_Renderer2D->EndScene();
 		Renderer::EndRenderPass();
 	}

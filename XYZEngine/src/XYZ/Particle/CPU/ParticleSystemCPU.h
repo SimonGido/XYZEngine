@@ -25,7 +25,15 @@ namespace XYZ {
 			PositionUpdater	   m_PositionUpdater;
 			LightUpdater	   m_LightUpdater;
 		};
-		
+		struct RenderData
+		{
+			RenderData();
+			RenderData(uint32_t maxParticles);
+
+			std::vector<ParticleRenderData> m_RenderParticleData;
+			uint32_t						m_InstanceCount;
+		};
+
 	public:
 		ParticleSystemCPU();
 		ParticleSystemCPU(uint32_t maxParticles);	
@@ -52,7 +60,9 @@ namespace XYZ {
 		ScopedLock<ParticleEmitterCPU>	   GetEmitter();
 		ScopedLockRead<ParticleEmitterCPU> GetEmitterRead() const;
 
-		Ref<ParticleRendererCPU> m_Renderer;
+		ScopedLock<RenderData>			   GetRenderData();
+		ScopedLockRead<RenderData>		   GetRenderDataRead() const;
+
 	private:
 		void particleThreadUpdate(float timestep);
 		void update(Timestep timestep, ParticleDataBuffer& particles);
@@ -60,15 +70,7 @@ namespace XYZ {
 		void buildRenderData(ParticleDataBuffer& particles);
 		
 	private:
-		struct RenderData
-		{
-			RenderData();				
-			RenderData(uint32_t maxParticles);
-						
-			std::vector<ParticleRenderData> m_RenderParticleData;
-			uint32_t						m_InstanceCount;
-		};
-	
+		
 		SingleThreadPass<ParticleDataBuffer> m_ParticleData;
 		SingleThreadPass<UpdateData>		 m_UpdateThreadPass;	
 		SingleThreadPass<ParticleEmitterCPU> m_EmitThreadPass;

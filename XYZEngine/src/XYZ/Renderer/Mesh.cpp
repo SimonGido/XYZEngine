@@ -28,8 +28,8 @@ namespace XYZ {
         Ref<VertexBuffer> buffer = VertexBuffer::Create(vertices, size, usage);
         buffer->SetLayout(layout);
         m_VertexBuffers.push_back(buffer);
-        
-        updateVertexArray();
+        if (m_IndexBuffer.Raw())
+            updateVertexArray();
     }
     
     void Mesh::ClearVertexBuffers()
@@ -42,6 +42,7 @@ namespace XYZ {
         m_VertexArray = VertexArray::Create();
         for (const auto& vbo : m_VertexBuffers)
             m_VertexArray->AddVertexBuffer(vbo);
+
 
         m_VertexArray->SetIndexBuffer(m_IndexBuffer);
     }

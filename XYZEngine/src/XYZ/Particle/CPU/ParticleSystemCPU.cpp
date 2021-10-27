@@ -14,13 +14,11 @@ namespace XYZ {
 		m_MaxParticles(0),
 		m_Play(false)
 	{
-		m_Renderer = Ref<ParticleRendererCPU>::Create(0);
 	}
 	ParticleSystemCPU::ParticleSystemCPU(uint32_t maxParticles)
 		:
 		m_ParticleData(maxParticles)
 	{
-		m_Renderer = Ref<ParticleRendererCPU>::Create(maxParticles);
 		{
 			ScopedLock<RenderData> write = m_RenderThreadPass.Write();
 			write->m_RenderParticleData.resize(maxParticles);
@@ -37,7 +35,6 @@ namespace XYZ {
 
 	ParticleSystemCPU::ParticleSystemCPU(const ParticleSystemCPU& other)
 		:
-		m_Renderer(other.m_Renderer),
 		m_ParticleData(other.m_ParticleData),
 		m_UpdateThreadPass(other.m_UpdateThreadPass),
 		m_EmitThreadPass(other.m_EmitThreadPass),
@@ -50,7 +47,6 @@ namespace XYZ {
 
 	ParticleSystemCPU::ParticleSystemCPU(ParticleSystemCPU&& other) noexcept
 		:
-		m_Renderer(std::move(other.m_Renderer)),
 		m_ParticleData(std::move(other.m_ParticleData)),
 		m_UpdateThreadPass(std::move(other.m_UpdateThreadPass)),
 		m_EmitThreadPass(std::move(other.m_EmitThreadPass)),
@@ -63,7 +59,6 @@ namespace XYZ {
 
 	ParticleSystemCPU& ParticleSystemCPU::operator=(const ParticleSystemCPU& other)
 	{
-		m_Renderer = other.m_Renderer;
 		m_ParticleData = other.m_ParticleData;
 		m_UpdateThreadPass = other.m_UpdateThreadPass;
 		m_EmitThreadPass = other.m_EmitThreadPass;
@@ -76,7 +71,6 @@ namespace XYZ {
 
 	ParticleSystemCPU& ParticleSystemCPU::operator=(ParticleSystemCPU&& other) noexcept
 	{
-		m_Renderer = std::move(other.m_Renderer);
 		m_ParticleData = std::move(other.m_ParticleData);
 		m_UpdateThreadPass = std::move(other.m_UpdateThreadPass);
 		m_EmitThreadPass = std::move(other.m_EmitThreadPass);
@@ -93,12 +87,6 @@ namespace XYZ {
 		if (m_Play)
 		{		
 			particleThreadUpdate(ts.GetSeconds());
-			{
-				ScopedLock<RenderData> val = m_RenderThreadPass.Read();
-				
-				m_Renderer->m_InstanceCount = val->m_InstanceCount;
-				m_Renderer->m_InstanceVBO->Update(val->m_RenderParticleData.data(), m_Renderer->m_InstanceCount * sizeof(ParticleRenderData));
-			}
 		}
 	}
 
@@ -134,7 +122,6 @@ namespace XYZ {
 
 	void ParticleSystemCPU::SetMaxParticles(uint32_t maxParticles)
 	{
-		m_Renderer->setMaxParticles(maxParticles);
 		m_ParticleData.Get<ParticleDataBuffer>()->SetMaxParticles(maxParticles);
 		{
 			m_RenderThreadPass.Read()->m_RenderParticleData.resize(maxParticles);
@@ -180,6 +167,16 @@ namespace XYZ {
 	ScopedLockRead<ParticleEmitterCPU> ParticleSystemCPU::GetEmitterRead() const
 	{
 		return m_EmitThreadPass.GetRead<ParticleEmitterCPU>();
+	}
+
+	ScopedLock<ParticleSystemCPU::RenderData> ParticleSystemCPU::GetRenderData()
+	{
+		return m_RenderThreadPass.Read();
+	}
+
+	ScopedLockRead<ParticleSystemCPU::RenderData> ParticleSystemCPU::GetRenderDataRead() const
+	{
+		return m_RenderThreadPass.ReadRead();
 	}
 
 	void ParticleSystemCPU::particleThreadUpdate(float timestep)

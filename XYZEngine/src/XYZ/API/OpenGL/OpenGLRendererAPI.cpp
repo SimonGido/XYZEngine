@@ -111,7 +111,7 @@ namespace XYZ {
 
 	void RendererAPI::DrawInstanced(const Ref<VertexArray>& vertexArray, uint32_t count, uint32_t offset)
 	{
-		glDrawElementsInstancedBaseInstance(GL_TRIANGLES, vertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, 0, count,offset);
+		glDrawElementsInstancedBaseInstance(GL_TRIANGLES, vertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, 0, count, offset);
 	}
 	void RendererAPI::DrawInstancedIndirect(void* indirect)
 	{

@@ -3,12 +3,13 @@
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Renderer/VertexArray.h"
 #include "XYZ/Renderer/Buffer.h"
+
 #include <glm/glm.hpp>
 
 namespace XYZ {
 
 
-	class Mesh
+	class Mesh : public RefCount
 	{
 	public:
 		Mesh() = default;
@@ -21,7 +22,8 @@ namespace XYZ {
 		void ClearVertexBuffers();
 
 		const Ref<VertexArray>& GetVertexArray() const { return m_VertexArray; }
-		const Ref<Material>&    GetMaterial() const { return m_Material; }
+		const Ref<Material>&    GetMaterial()    const { return m_Material; }
+		uint32_t				GetIndexCount()  const { return m_IndexBuffer->GetCount(); }
 	private:
 		void updateVertexArray();
 

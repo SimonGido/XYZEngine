@@ -259,20 +259,20 @@ namespace XYZ {
 			);
 		}
 
-		auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponentGPU>();
-		for (auto entity : particleView)
-		{
-			auto [transform, particle] = particleView.Get<TransformComponent, ParticleComponentGPU>(entity);
-			sceneRenderer->SubmitRendererCommand(particle.System->m_Renderer, transform.WorldTransform);
-		}
-
-		auto particleViewCPU = m_ECS.CreateView<TransformComponent, ParticleComponentCPU>();
-		for (auto entity : particleViewCPU)
-		{
-			auto [transform, particle] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU>(entity);
-			particle.System.SubmitLights(sceneRenderer);
-			sceneRenderer->SubmitRendererCommand(particle.System.m_Renderer, transform.WorldTransform);
-		}
+		//auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponentGPU>();
+		//for (auto entity : particleView)
+		//{
+		//	auto [transform, particle] = particleView.Get<TransformComponent, ParticleComponentGPU>(entity);
+		//	sceneRenderer->SubmitRendererCommand(particle.System->m_Renderer, transform.WorldTransform);
+		//}
+		//
+		//auto particleViewCPU = m_ECS.CreateView<TransformComponent, ParticleComponentCPU>();
+		//for (auto entity : particleViewCPU)
+		//{
+		//	auto [transform, particle] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU>(entity);
+		//	particle.System.SubmitLights(sceneRenderer);
+		//	sceneRenderer->SubmitRendererCommand(particle.System.m_Renderer, transform.WorldTransform);
+		//}
 		
 		auto lightView = m_ECS.CreateView<TransformComponent, PointLight2D>();
 		for (auto entity : lightView)
@@ -315,20 +315,22 @@ namespace XYZ {
 			if (renderer.SubTexture.Raw() && renderer.Material.Raw())
 				editorRenderer->SubmitEditorSprite(renderer.Material, renderer.SubTexture, renderer.Color, transform.WorldTransform);
 		}
-		auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponentGPU>();
-		for (auto entity : particleView)
-		{
-			auto [transform, particle] = particleView.Get<TransformComponent, ParticleComponentGPU>(entity);
-			sceneRenderer->SubmitRendererCommand(particle.System->m_Renderer, transform.WorldTransform);
-		}
+		//auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponentGPU>();
+		//for (auto entity : particleView)
+		//{
+		//	auto [transform, particle] = particleView.Get<TransformComponent, ParticleComponentGPU>(entity);
+		//	sceneRenderer->SubmitRendererCommand(particle.System->m_Renderer, transform.WorldTransform);
+		//}
 
-		auto particleViewCPU = m_ECS.CreateView<TransformComponent, ParticleComponentCPU>();
+		auto particleViewCPU = m_ECS.CreateView<TransformComponent, ParticleComponentCPU, MeshComponent>();
 		for (auto entity : particleViewCPU)
 		{
-			auto [transform, particle] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU>(entity);
+			auto [transform, particle, mesh] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU, MeshComponent>(entity);
 			particle.System.SubmitLights(sceneRenderer);
 			particle.System.Update(ts);
-			sceneRenderer->SubmitRendererCommand(particle.System.m_Renderer, transform.WorldTransform);
+			auto renderData = particle.System.GetRenderData();
+			mesh.Mesh->SetVertexBufferData(1, renderData->m_RenderParticleData.data(), renderData->m_RenderParticleData.size() * sizeof(ParticleRenderData));
+			sceneRenderer->SubmitMeshInstanced(mesh.Mesh, transform.WorldTransform, renderData->m_InstanceCount);
 		}
 		
 		auto lightView = m_ECS.CreateView<TransformComponent, PointLight2D>();

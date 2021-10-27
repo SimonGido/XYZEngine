@@ -11,9 +11,9 @@ namespace XYZ {
 		virtual void Release() const override;
 		virtual void Bind() const override;
 
-		virtual void AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer) override;
-		virtual void AddShaderStorageBuffer(const Ref<ShaderStorageBuffer>& shaderBuffer)override;
-		virtual void SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer) override;
+		virtual void AddVertexBuffer(Ref<VertexBuffer> vertexBuffer) override;
+		virtual void AddShaderStorageBuffer(Ref<ShaderStorageBuffer> shaderBuffer)override;
+		virtual void SetIndexBuffer(Ref<IndexBuffer> indexBuffer) override;
 
 		virtual inline const Ref<IndexBuffer>& GetIndexBuffer() const override { return m_IndexBuffer; };
 		virtual inline const std::vector<Ref<VertexBuffer>>& GetVertexBuffer() const override { return m_VertexBuffers; };

@@ -59,7 +59,7 @@ namespace XYZ {
 		});
 	}
 
-	void OpenGLVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
+	void OpenGLVertexArray::AddVertexBuffer(Ref<VertexBuffer> vertexBuffer)
 	{
 		if (vertexBuffer->GetLayout().GetElements().size() == 0)
 			XYZ_ASSERT(false, "vertexBuffer->GetLayout().GetElements().size() = 0");
@@ -101,7 +101,7 @@ namespace XYZ {
 		});
 	}
 
-	void OpenGLVertexArray::AddShaderStorageBuffer(const Ref<ShaderStorageBuffer>& shaderBuffer)
+	void OpenGLVertexArray::AddShaderStorageBuffer(Ref<ShaderStorageBuffer> shaderBuffer)
 	{
 		if (shaderBuffer->GetLayout().GetElements().size() == 0)
 			XYZ_ASSERT(false, "vertexBuffer->GetLayout().GetElements().size() = 0");
@@ -141,13 +141,13 @@ namespace XYZ {
 			});
 	}
 
-	void OpenGLVertexArray::SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
-	{
-		m_IndexBuffer = indexBuffer;
+	void OpenGLVertexArray::SetIndexBuffer(Ref<IndexBuffer> indexBuffer)
+	{	
 		Ref<OpenGLVertexArray> instance = this;
 		Renderer::Submit([instance, indexBuffer] () mutable {
+			instance->m_IndexBuffer = indexBuffer;
 			glBindVertexArray(instance->m_RendererID);
-			glBindBuffer(GL_ARRAY_BUFFER, indexBuffer->GetRendererID());
+			glBindBuffer(GL_ARRAY_BUFFER, instance->m_IndexBuffer->GetRendererID());
 			});
 	}
 

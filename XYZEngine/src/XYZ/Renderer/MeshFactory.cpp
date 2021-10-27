@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "MeshFactory.h"
 
 namespace XYZ {

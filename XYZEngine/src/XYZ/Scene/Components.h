@@ -103,6 +103,13 @@ namespace XYZ {
 	};
 	REFLECTABLE(SpriteRenderer, Material, SubTexture, Color, SortLayer, Visible);
 
+
+	class Mesh;
+	struct MeshComponent
+	{
+		Ref<Mesh> Mesh;
+	};
+
 	struct CameraComponent 
 	{
 		SceneCamera Camera;

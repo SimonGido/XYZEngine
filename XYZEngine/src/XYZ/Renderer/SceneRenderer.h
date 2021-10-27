@@ -75,6 +75,7 @@ namespace XYZ {
 
 		void SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform);
 		void SubmitMeshInstanced(Ref<Mesh> mesh, const glm::mat4& transform, uint32_t count);
+		void SubmitMeshInstanced(Ref<Mesh> mesh, const std::vector<glm::mat4>& transforms, uint32_t count);
 		void SubmitLight(const PointLight2D& light, const glm::mat4& transform);
 		void SubmitLight(const SpotLight2D& light, const glm::mat4& transform);
 		void SubmitLight(const PointLight2D& light, const glm::vec3& position);

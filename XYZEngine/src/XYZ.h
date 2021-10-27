@@ -25,6 +25,7 @@
 #include "XYZ/Renderer/Font.h"
 #include "XYZ/Renderer/Framebuffer.h"
 #include "XYZ/Renderer/SubTexture.h"
+#include "XYZ/Renderer/MeshFactory.h"
 
 //-----Animation-----//
 #include "XYZ/Animation/Animation.h"
