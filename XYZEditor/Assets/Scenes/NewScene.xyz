@@ -104,8 +104,8 @@ Entities:
       Depth: 1
     SpotLight2D:
       Color: [1, 1, 1]
-      Radius: 2.20000005
-      Intensity: 0.550000012
+      Radius: 18.5499992
+      Intensity: 0.100000001
       OuterAngle: 214
       InnerAngle: -189
   - Entity: a1345771-51d8-47b2-ba0c-0ab1fa579971

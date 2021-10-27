@@ -204,8 +204,8 @@ namespace XYZ {
 		virtual ~VertexBuffer() = default;
 		virtual void Bind() const = 0;
 		virtual void UnBind() const = 0;
-		virtual void Update(void* vertices, uint32_t size, uint32_t offset = 0) = 0;
-		virtual void Resize(float* vertices, uint32_t size) = 0;
+		virtual void Update(const void* vertices, uint32_t size, uint32_t offset = 0) = 0;
+		virtual void Resize(const void* vertices, uint32_t size) = 0;
 		virtual void SetLayout(const BufferLayout& layout) = 0;
 		virtual const BufferLayout& GetLayout() const = 0;
 		virtual uint32_t GetRendererID() const = 0;
@@ -223,7 +223,7 @@ namespace XYZ {
 		* @param[in] usage  Data in the buffer will be static or dynamic , default Static
 		* @return shared_ptr to VertexBuffer
 		*/
-		static Ref<VertexBuffer> Create(void* vertices, uint32_t size, BufferUsage usage = BufferUsage::Static);
+		static Ref<VertexBuffer> Create(const void* vertices, uint32_t size, BufferUsage usage = BufferUsage::Static);
 	};
 
 	/**
@@ -247,7 +247,7 @@ namespace XYZ {
 		* @param[in] count		Count of the indices
 		* @return shared_ptr to IndexBuffer
 		*/
-		static Ref<IndexBuffer> Create(uint32_t* indices, uint32_t count);
+		static Ref<IndexBuffer> Create(const uint32_t* indices, uint32_t count);
 	};
 
 
@@ -285,7 +285,7 @@ namespace XYZ {
 		* @param[in] usage  Data in the buffer will be static or dynamic , default Dynamic
 		* @return shared_ptr to ShaderStoageBuffer
 		*/
-		static Ref<ShaderStorageBuffer> Create(float* vertices, uint32_t size, uint32_t binding, BufferUsage usage = BufferUsage::Dynamic);
+		static Ref<ShaderStorageBuffer> Create(const float* vertices, uint32_t size, uint32_t binding, BufferUsage usage = BufferUsage::Dynamic);
 	};
 
 

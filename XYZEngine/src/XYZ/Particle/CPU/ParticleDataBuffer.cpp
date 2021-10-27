@@ -197,47 +197,5 @@ namespace XYZ {
 		delete[]m_AngularVelocity;
 	}
 
-	ParticleCustomData::ParticleCustomData()
-		:
-		m_Data(nullptr),
-		m_ElementSize(0),
-		m_Size(0)
-	{
-	}
-	ParticleCustomData::ParticleCustomData(size_t elementSize, size_t size)
-		:
-		m_ElementSize(elementSize),
-		m_Size(size)
-	{
-		Resize(size);
-	}
-	ParticleCustomData::~ParticleCustomData()
-	{
-		Clear();
-	}
-	void ParticleCustomData::Resize(size_t size)
-	{
-		XYZ_ASSERT(m_ElementSize != 0, "Element size is 0");
-		size_t newSize = size * m_ElementSize;
-		std::byte* temp = new std::byte[newSize];
-		if (m_Data)
-		{
-			size_t copySize = std::min(m_Size, newSize);
-			memcpy(temp, m_Data, copySize);
-			delete[]m_Data;
-		}
-		m_Data = temp;
-	}
-	void ParticleCustomData::SetElementSize(size_t size)
-	{
-		m_ElementSize = size;
-	}
-	void ParticleCustomData::Clear()
-	{
-		if (m_Data)
-		{
-			delete[]m_Data;
-			m_Data = nullptr;
-		}
-	}
+	
 }

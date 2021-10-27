@@ -8,14 +8,14 @@ namespace XYZ {
 	class OpenGLVertexBuffer : public VertexBuffer
 	{
 	public:
-		OpenGLVertexBuffer(void* vertices, uint32_t size, BufferUsage usage);
+		OpenGLVertexBuffer(const void* vertices, uint32_t size, BufferUsage usage);
 		OpenGLVertexBuffer(uint32_t size);
 		virtual ~OpenGLVertexBuffer() override;
 		virtual void Release() const override;
 		virtual void Bind() const override;
 		virtual void UnBind() const override;
-		virtual void Update(void* vertices, uint32_t size, uint32_t offset = 0) override;
-		virtual void Resize(float* vertices, uint32_t size) override;
+		virtual void Update(const void* vertices, uint32_t size, uint32_t offset = 0) override;
+		virtual void Resize(const void* vertices, uint32_t size) override;
 
 		virtual void SetLayout(const BufferLayout& layout) override { m_Layout = layout; };
 		virtual uint32_t GetRendererID() const override { return m_RendererID; }
@@ -31,7 +31,7 @@ namespace XYZ {
 	class OpenGLIndexBuffer : public IndexBuffer
 	{
 	public:
-		OpenGLIndexBuffer(uint32_t* indices, uint32_t count);
+		OpenGLIndexBuffer(const uint32_t* indices, uint32_t count);
 		virtual ~OpenGLIndexBuffer() override;
 		virtual void Release() const override;
 		virtual void Bind() const override;
@@ -47,7 +47,7 @@ namespace XYZ {
 	class OpenGLShaderStorageBuffer : public ShaderStorageBuffer
 	{
 	public:
-		OpenGLShaderStorageBuffer(void* data, uint32_t size, uint32_t binding, BufferUsage usage);
+		OpenGLShaderStorageBuffer(const void* data, uint32_t size, uint32_t binding, BufferUsage usage);
 		virtual ~OpenGLShaderStorageBuffer() override;
 		virtual void Release() const override;
 		virtual void BindBase(uint32_t binding) const override;

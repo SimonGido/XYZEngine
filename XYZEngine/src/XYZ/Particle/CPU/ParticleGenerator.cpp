@@ -10,7 +10,7 @@ namespace XYZ {
 
 	ParticleShapeGenerator::ParticleShapeGenerator()
 		:
-		m_Shape(EmitShape::Circle),
+		m_Shape(EmitShape::Box),
 		m_BoxMin(-1.0f),
 		m_BoxMax(1.0f),
 		m_Radius(7.0f),

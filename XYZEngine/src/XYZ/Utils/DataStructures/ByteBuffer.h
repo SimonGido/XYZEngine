@@ -30,7 +30,7 @@ namespace XYZ {
 				memset(m_Data, 0, m_Size);
 		}
 
-		void Write(void* data, uint32_t size, uint32_t offset = 0)
+		void Write(const void* data, uint32_t size, uint32_t offset = 0)
 		{
 			XYZ_ASSERT(offset + size <= m_Size, "Buffer overflow!");
 			memcpy(m_Data + offset, data, size);
@@ -78,7 +78,7 @@ namespace XYZ {
 		inline uint32_t GetSize() const { return m_Size; }
 
 
-		static ByteBuffer Copy(void* data, uint32_t size)
+		static ByteBuffer Copy(const void* data, uint32_t size)
 		{
 			ByteBuffer buffer;
 			buffer.Allocate(size);

@@ -158,6 +158,9 @@ namespace XYZ {
 	{
 		m_Queues[mesh->GetMaterial()->GetRenderQueueID()].m_InstancedMeshCommandList.push_back({ mesh, transform, count });
 	}
+	void SceneRenderer::SubmitMeshInstanced(Ref<Mesh> mesh, const std::vector<glm::mat4>& transforms, uint32_t count)
+	{
+	}
 	void SceneRenderer::SubmitLight(const PointLight2D& light, const glm::mat4& transform)
 	{
 		XYZ_ASSERT(m_PointLightsList.size() + 1 < sc_MaxNumberOfLights, "Max number of lights per scene is ", sc_MaxNumberOfLights);
@@ -306,16 +309,10 @@ namespace XYZ {
 			auto shader = material->GetShader();
 			material->Bind();
 			shader->SetMat4("u_Transform", dc.Transform);
+			dc.Mesh->GetVertexArray()->Bind();
 			Renderer::DrawIndexed(PrimitiveType::Triangles, dc.Mesh->GetIndexCount(), 0);
 		}
-		for (auto& dc : queue.m_InstancedMeshCommandList)
-		{
-			auto material = dc.Mesh->GetMaterial();
-			auto shader = material->GetShader();
-			material->Bind();
-			shader->SetMat4("u_Transform", dc.Transform);
-			Renderer::DrawInstanced(dc.Mesh->GetVertexArray(), dc.Count, 0);
-		}
+		
 
 		m_Renderer2D->BeginScene();
 		for (auto& dc : queue.m_SpriteDrawList)
@@ -326,6 +323,17 @@ namespace XYZ {
 		}
 		m_Renderer2D->Flush();
 		m_Renderer2D->FlushLines();	
+
+		// TODO: last should be renderer2D
+		for (auto& dc : queue.m_InstancedMeshCommandList)
+		{
+			auto material = dc.Mesh->GetMaterial();
+			auto shader = material->GetShader();
+			material->Bind();
+			shader->SetMat4("u_Transform", dc.Transform);
+			dc.Mesh->GetVertexArray()->Bind();
+			Renderer::DrawInstanced(PrimitiveType::Triangles, dc.Mesh->GetIndexCount(), dc.Count, 0);
+		}
 		m_Renderer2D->EndScene();
 		Renderer::EndRenderPass();
 	}

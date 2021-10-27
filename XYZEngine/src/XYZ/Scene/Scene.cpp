@@ -266,13 +266,16 @@ namespace XYZ {
 		//	sceneRenderer->SubmitRendererCommand(particle.System->m_Renderer, transform.WorldTransform);
 		//}
 		//
-		//auto particleViewCPU = m_ECS.CreateView<TransformComponent, ParticleComponentCPU>();
-		//for (auto entity : particleViewCPU)
-		//{
-		//	auto [transform, particle] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU>(entity);
-		//	particle.System.SubmitLights(sceneRenderer);
-		//	sceneRenderer->SubmitRendererCommand(particle.System.m_Renderer, transform.WorldTransform);
-		//}
+
+		auto particleViewCPU = m_ECS.CreateView<TransformComponent, ParticleComponentCPU, MeshComponent>();
+		for (auto entity : particleViewCPU)
+		{
+			auto [transform, particle, mesh] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU, MeshComponent>(entity);
+			particle.System.SubmitLights(sceneRenderer);
+			auto renderData = particle.System.GetRenderDataRead();
+			mesh.Mesh->SetVertexBufferData(1, renderData->m_RenderParticleData, renderData->m_RenderParticleData.SizeInBytes());
+			sceneRenderer->SubmitMeshInstanced(mesh.Mesh, transform.WorldTransform, renderData->m_InstanceCount);
+		}
 		
 		auto lightView = m_ECS.CreateView<TransformComponent, PointLight2D>();
 		for (auto entity : lightView)
@@ -328,8 +331,9 @@ namespace XYZ {
 			auto [transform, particle, mesh] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU, MeshComponent>(entity);
 			particle.System.SubmitLights(sceneRenderer);
 			particle.System.Update(ts);
-			auto renderData = particle.System.GetRenderData();
-			mesh.Mesh->SetVertexBufferData(1, renderData->m_RenderParticleData.data(), renderData->m_RenderParticleData.size() * sizeof(ParticleRenderData));
+			auto renderData = particle.System.GetRenderDataRead();
+			auto data = renderData->m_RenderParticleData.As<ParticleRenderData>();
+			mesh.Mesh->SetVertexBufferData(1, data, renderData->m_InstanceCount * renderData->m_RenderParticleData.ElementSize());
 			sceneRenderer->SubmitMeshInstanced(mesh.Mesh, transform.WorldTransform, renderData->m_InstanceCount);
 		}
 		

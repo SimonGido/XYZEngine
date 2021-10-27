@@ -104,14 +104,27 @@ namespace XYZ {
 			break;
 		case XYZ::PrimitiveType::Points:
 			glDrawElements(GL_POINTS, indexCount, GL_UNSIGNED_INT, nullptr);
+			break;
 		}
-		
-		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
-	void RendererAPI::DrawInstanced(const Ref<VertexArray>& vertexArray, uint32_t count, uint32_t offset)
+	void RendererAPI::DrawInstanced(PrimitiveType type, uint32_t indexCount, uint32_t instanceCount, uint32_t offset)
 	{
-		glDrawElementsInstancedBaseInstance(GL_TRIANGLES, vertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, 0, count, offset);
+		switch (type)
+		{
+		case XYZ::PrimitiveType::None:
+			XYZ_ASSERT(false, "Primitive type is none");
+			break;
+		case XYZ::PrimitiveType::Triangles:
+			glDrawElementsInstancedBaseInstance(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0, instanceCount, offset);
+			break;
+		case XYZ::PrimitiveType::Lines:
+			glDrawElementsInstancedBaseInstance(GL_LINES, indexCount, GL_UNSIGNED_INT, 0, instanceCount, offset);
+			break;
+		case XYZ::PrimitiveType::Points:
+			glDrawElementsInstancedBaseInstance(GL_POINTS, indexCount, GL_UNSIGNED_INT, 0, instanceCount, offset);
+			break;
+		}
 	}
 	void RendererAPI::DrawInstancedIndirect(void* indirect)
 	{

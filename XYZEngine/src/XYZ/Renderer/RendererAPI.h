@@ -45,7 +45,7 @@ namespace XYZ {
 
 		static void DrawArrays(PrimitiveType type, uint32_t count);
 		static void DrawIndexed(PrimitiveType type, uint32_t indexCount);
-		static void DrawInstanced(const Ref<VertexArray>& vertexArray, uint32_t count, uint32_t offset = 0);
+		static void DrawInstanced(PrimitiveType type, uint32_t indexCount, uint32_t instanceCount, uint32_t offset = 0);
 		static void DrawInstancedIndirect(void* indirect);
 		static void DrawPixels(uint32_t width, uint32_t height, const void* data);
 

@@ -156,12 +156,13 @@ namespace XYZ {
 		}, queueType);
 	}
 
-	void Renderer::DrawInstanced(const Ref<VertexArray>& vertexArray, uint32_t count, uint32_t offset)
+	void Renderer::DrawInstanced(PrimitiveType type, uint32_t indexCount, uint32_t instanceCount, uint32_t offset, uint32_t queueType)
 	{
 		s_Data.Stats.DrawInstancedCount++;
+		
 		Renderer::Submit([=]() {
-			RendererAPI::DrawInstanced(vertexArray, count, offset);
-		});
+			RendererAPI::DrawInstanced(type, indexCount, instanceCount, offset);
+		}, queueType);
 	}
 
 	void Renderer::DrawElementsIndirect(void* indirect)

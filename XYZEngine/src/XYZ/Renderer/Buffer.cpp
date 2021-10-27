@@ -16,7 +16,7 @@ namespace XYZ {
 		XYZ_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
 	}
-	Ref<VertexBuffer> VertexBuffer::Create(void* vertices, uint32_t size, BufferUsage usage)
+	Ref<VertexBuffer> VertexBuffer::Create(const void* vertices, uint32_t size, BufferUsage usage)
 	{
 		switch (Renderer::GetAPI())
 		{
@@ -28,7 +28,7 @@ namespace XYZ {
 		return nullptr;
 	}
 
-	Ref<IndexBuffer> IndexBuffer::Create(uint32_t* indices, uint32_t count)
+	Ref<IndexBuffer> IndexBuffer::Create(const uint32_t* indices, uint32_t count)
 	{
 		switch (Renderer::GetAPI())
 		{
@@ -52,7 +52,7 @@ namespace XYZ {
 		return nullptr;
 	}
 
-	Ref<ShaderStorageBuffer> ShaderStorageBuffer::Create(float* vertices, uint32_t size, uint32_t binding, BufferUsage usage)
+	Ref<ShaderStorageBuffer> ShaderStorageBuffer::Create(const float* vertices, uint32_t size, uint32_t binding, BufferUsage usage)
 	{
 		switch (Renderer::GetAPI())
 		{

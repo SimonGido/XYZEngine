@@ -14,18 +14,30 @@ namespace XYZ {
 		m_MaxParticles(0),
 		m_Play(false)
 	{
-	}
-	ParticleSystemCPU::ParticleSystemCPU(uint32_t maxParticles)
-		:
-		m_ParticleData(maxParticles)
-	{
 		{
 			ScopedLock<RenderData> write = m_RenderThreadPass.Write();
-			write->m_RenderParticleData.resize(maxParticles);
+			write->m_RenderParticleData.SetElementSize(sizeof(ParticleRenderData));
 		}
 		{
 			ScopedLock<RenderData> read = m_RenderThreadPass.Read();
-			read->m_RenderParticleData.resize(maxParticles);
+			read->m_RenderParticleData.SetElementSize(sizeof(ParticleRenderData));
+		}
+	}
+	ParticleSystemCPU::ParticleSystemCPU(uint32_t maxParticles)
+		:
+		m_ParticleData(maxParticles),
+		m_MaxParticles(maxParticles),
+		m_Play(false)
+	{
+		{
+			ScopedLock<RenderData> write = m_RenderThreadPass.Write();
+			write->m_RenderParticleData.SetElementSize(sizeof(ParticleRenderData));
+			write->m_RenderParticleData.Resize(maxParticles);
+		}
+		{
+			ScopedLock<RenderData> read = m_RenderThreadPass.Read();
+			read->m_RenderParticleData.SetElementSize(sizeof(ParticleRenderData));
+			read->m_RenderParticleData.Resize(maxParticles);
 		}
 	}
 
@@ -124,11 +136,11 @@ namespace XYZ {
 	{
 		m_ParticleData.Get<ParticleDataBuffer>()->SetMaxParticles(maxParticles);
 		{
-			m_RenderThreadPass.Read()->m_RenderParticleData.resize(maxParticles);
+			m_RenderThreadPass.Read()->m_RenderParticleData.Resize(maxParticles);
 		}
 		m_RenderThreadPass.Swap();
 		{
-			m_RenderThreadPass.Read()->m_RenderParticleData.resize(maxParticles);
+			m_RenderThreadPass.Read()->m_RenderParticleData.Resize(maxParticles);
 		}
 	}
 
@@ -210,11 +222,12 @@ namespace XYZ {
 	{
 		XYZ_PROFILE_FUNC("ParticleSystemCPU::buildRenderData");
 		ScopedLock<RenderData> val = m_RenderThreadPass.Write();
+		ParticleRenderData* buffer = val->m_RenderParticleData.As<ParticleRenderData>();
 		uint32_t endId = particles.GetAliveParticles();
 		for (uint32_t i = 0; i < endId; ++i)
 		{
 			auto& particle = particles.m_Particle[i];
-			val->m_RenderParticleData[i] = ParticleRenderData{
+			buffer[i] = ParticleRenderData{
 				particle.Color,
 				particles.m_TexCoord[i],
 				glm::vec2(particle.Position.x, particle.Position.y),
@@ -233,6 +246,6 @@ namespace XYZ {
 		:
 		m_InstanceCount(0)
 	{
-		m_RenderParticleData.resize(maxParticles);
+		m_RenderParticleData.Resize(maxParticles);
 	}
 }

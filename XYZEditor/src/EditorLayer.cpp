@@ -242,7 +242,7 @@ namespace XYZ {
 		uint32_t numParticles = 1000;
 		auto& meshComponent = entity.EmplaceComponent<MeshComponent>();
 		meshComponent.Mesh = MeshFactory::CreateInstancedQuad(
-			glm::vec2(1.0f), 
+			glm::vec3(0.5f), 
 			{ { 0, XYZ::ShaderDataComponent::Float3, "a_Position" } },
 			{
 				{ 1, XYZ::ShaderDataComponent::Float4, "a_IColor",    1 },
@@ -261,8 +261,8 @@ namespace XYZ {
 		meshComponent.Mesh->SetMaterial(material);
 
 		particleComponentCPU.System.Play();
-		particleComponentCPU.System.GetEmitter()->m_BurstEmitter.m_Bursts.emplace_back(250, 1.0f);
-		particleComponentCPU.System.GetEmitter()->m_BurstEmitter.m_Bursts.emplace_back(250, 4.0f);
+		particleComponentCPU.System.GetEmitter()->m_BurstEmitter.m_Bursts.emplace_back(50, 1.0f);
+		particleComponentCPU.System.GetEmitter()->m_BurstEmitter.m_Bursts.emplace_back(50, 4.0f);
 
 		auto& lightStorage = m_Scene->GetECS().GetStorage<PointLight2D>();
 		if (lightStorage.Size())

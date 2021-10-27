@@ -6,7 +6,7 @@ namespace XYZ {
 	ParticleEmitterCPU::ParticleEmitterCPU()
 		:
 		m_EmitRate(0.0f),
-		m_EmittedParticles(0.0f)
+		m_EmittedParticles(10.0f)
 	{
 	}
 	void ParticleEmitterCPU::Emit(Timestep ts, ParticleDataBuffer& particles)

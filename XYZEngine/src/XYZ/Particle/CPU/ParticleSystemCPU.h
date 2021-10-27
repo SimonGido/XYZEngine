@@ -6,7 +6,6 @@
 #include "ParticleDataBuffer.h"
 #include "ParticleUpdater.h"
 #include "ParticleGenerator.h"
-#include "ParticleRenderer.h"
 #include "ParticleEmitter.h"
 
 #include <glm/glm.hpp>
@@ -14,6 +13,16 @@
 #include <mutex>
 
 namespace XYZ {
+
+	//TODO: handle 3d particles
+	struct ParticleRenderData
+	{
+		glm::vec4 Color;
+		glm::vec4 TexCoord;
+		glm::vec2 Position;
+		glm::vec2 Size;
+		float	  Rotation;
+	};
 
 	class SceneRenderer;
 	class ParticleSystemCPU
@@ -30,8 +39,8 @@ namespace XYZ {
 			RenderData();
 			RenderData(uint32_t maxParticles);
 
-			std::vector<ParticleRenderData> m_RenderParticleData;
-			uint32_t						m_InstanceCount;
+			CustomBuffer m_RenderParticleData;
+			uint32_t	 m_InstanceCount;
 		};
 
 	public:

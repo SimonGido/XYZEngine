@@ -109,7 +109,7 @@ namespace XYZ {
 		Ref<OpenGLVertexArray> instance = this;
 		Renderer::Submit([instance, shaderBuffer] ()mutable {
 			glBindVertexArray(instance->m_RendererID);
-			glBindBuffer(GL_ARRAY_BUFFER, shaderBuffer->GetRendererID());
+			glBindBuffer(GL_SHADER_STORAGE_BUFFER, shaderBuffer->GetRendererID());
 	
 			auto& vbl = shaderBuffer->GetLayout();
 			for (const auto& element : vbl)
@@ -147,7 +147,7 @@ namespace XYZ {
 		Renderer::Submit([instance, indexBuffer] () mutable {
 			instance->m_IndexBuffer = indexBuffer;
 			glBindVertexArray(instance->m_RendererID);
-			glBindBuffer(GL_ARRAY_BUFFER, instance->m_IndexBuffer->GetRendererID());
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, instance->m_IndexBuffer->GetRendererID());
 			});
 	}
 
