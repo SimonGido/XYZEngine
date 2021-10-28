@@ -12,7 +12,8 @@ namespace XYZ {
 		:
 		m_ParticleData(0),
 		m_MaxParticles(0),
-		m_Play(false)
+		m_Play(false),
+		m_Speed(1.0f)
 	{
 		{
 			ScopedLock<RenderData> write = m_RenderThreadPass.Write();
@@ -27,7 +28,8 @@ namespace XYZ {
 		:
 		m_ParticleData(maxParticles),
 		m_MaxParticles(maxParticles),
-		m_Play(false)
+		m_Play(false),
+		m_Speed(1.0f)
 	{
 		{
 			ScopedLock<RenderData> write = m_RenderThreadPass.Write();
@@ -53,7 +55,8 @@ namespace XYZ {
 		m_RenderThreadPass(other.m_RenderThreadPass),
 		m_LightPass(other.m_LightPass),
 		m_MaxParticles(other.m_MaxParticles),
-		m_Play(other.m_Play)
+		m_Play(other.m_Play),
+		m_Speed(other.m_Speed)
 	{
 	}
 
@@ -65,7 +68,8 @@ namespace XYZ {
 		m_RenderThreadPass(std::move(other.m_RenderThreadPass)),
 		m_LightPass(std::move(other.m_LightPass)),
 		m_MaxParticles(other.m_MaxParticles),
-		m_Play(other.m_Play)
+		m_Play(other.m_Play),
+		m_Speed(other.m_Speed)
 	{
 	}
 
@@ -78,6 +82,7 @@ namespace XYZ {
 		m_LightPass = other.m_LightPass;
 		m_MaxParticles = other.m_MaxParticles;
 		m_Play = other.m_Play;
+		m_Speed = other.m_Speed;
 		return *this;
 	}
 
@@ -90,6 +95,7 @@ namespace XYZ {
 		m_LightPass = std::move(other.m_LightPass);
 		m_MaxParticles = other.m_MaxParticles;
 		m_Play = other.m_Play;
+		m_Speed = other.m_Speed;
 		return *this;
 	}
 
@@ -98,7 +104,7 @@ namespace XYZ {
 		XYZ_PROFILE_FUNC("ParticleSystemCPU::Update");
 		if (m_Play)
 		{		
-			particleThreadUpdate(ts.GetSeconds());
+			particleThreadUpdate(ts.GetSeconds() * m_Speed);
 		}
 	}
 
@@ -134,6 +140,7 @@ namespace XYZ {
 
 	void ParticleSystemCPU::SetMaxParticles(uint32_t maxParticles)
 	{
+		m_MaxParticles = maxParticles;
 		m_ParticleData.Get<ParticleDataBuffer>()->SetMaxParticles(maxParticles);
 		{
 			m_RenderThreadPass.Read()->m_RenderParticleData.Resize(maxParticles);
@@ -144,9 +151,24 @@ namespace XYZ {
 		}
 	}
 
+	void ParticleSystemCPU::SetSpeed(float speed)
+	{
+		m_Speed = speed;
+	}
+
 	uint32_t ParticleSystemCPU::GetMaxParticles() const
 	{
 		return m_MaxParticles;
+	}
+
+	uint32_t ParticleSystemCPU::GetAliveParticles() const
+	{
+		return GetParticleDataRead()->GetAliveParticles();
+	}
+
+	float ParticleSystemCPU::GetSpeed() const
+	{
+		return m_Speed;
 	}
 
 
@@ -208,8 +230,7 @@ namespace XYZ {
 	{
 		XYZ_PROFILE_FUNC("ParticleSystemCPU::update");
 		ScopedLockRead<UpdateData> data = m_UpdateThreadPass.GetRead<UpdateData>();
-		data->m_TimeUpdater.UpdateParticles(timestep, &particles);
-		data->m_PositionUpdater.UpdateParticles(timestep, &particles);
+		data->m_MainUpdater.UpdateParticles(timestep, &particles);
 		data->m_LightUpdater.UpdateParticles(timestep, &particles);
 	}
 	void ParticleSystemCPU::emit(Timestep timestep, ParticleDataBuffer& particles)
@@ -247,5 +268,8 @@ namespace XYZ {
 		m_InstanceCount(0)
 	{
 		m_RenderParticleData.Resize(maxParticles);
+	}
+	ParticleSystemCPU::UpdateData::UpdateData()
+	{
 	}
 }

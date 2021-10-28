@@ -5,18 +5,20 @@
 #include "XYZ/Renderer/SceneRenderer.h"
 
 namespace XYZ {
-	TimeUpdater::TimeUpdater()
+	MainUpdater::MainUpdater()
 		:
 		m_Enabled(true)
 	{
 	}
-	void TimeUpdater::UpdateParticles(float timeStep, ParticleDataBuffer* data) const
+
+	void MainUpdater::UpdateParticles(float timeStep, ParticleDataBuffer* data) const
 	{
 		if (m_Enabled)
 		{
 			uint32_t aliveParticles = data->GetAliveParticles();
 			for (uint32_t i = 0; i < aliveParticles; ++i)
 			{
+				data->m_Particle[i].Position += data->m_Particle[i].Velocity * timeStep;
 				data->m_Particle[i].LifeRemaining -= timeStep;
 				if (data->m_Particle[i].LifeRemaining <= 0.0f)
 				{
@@ -26,26 +28,6 @@ namespace XYZ {
 			}
 		}
 	}
-
-
-	PositionUpdater::PositionUpdater()
-		:
-		m_Enabled(true)
-	{
-	}
-
-	void PositionUpdater::UpdateParticles(float timeStep, ParticleDataBuffer* data) const
-	{
-		if (m_Enabled)
-		{
-			uint32_t aliveParticles = data->GetAliveParticles();
-			for (uint32_t i = 0; i < aliveParticles; ++i)
-			{
-				data->m_Particle[i].Position += data->m_Particle[i].Velocity * timeStep;
-			}
-		}
-	}
-
 
 	LightUpdater::LightUpdater()
 		:
@@ -71,5 +53,4 @@ namespace XYZ {
 			}
 		}
 	}
-
 }

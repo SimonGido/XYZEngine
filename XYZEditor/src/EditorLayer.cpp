@@ -241,7 +241,7 @@ namespace XYZ {
 	{	
 		uint32_t numParticles = 1000;
 		auto& meshComponent = entity.EmplaceComponent<MeshComponent>();
-		meshComponent.Mesh = MeshFactory::CreateInstancedBox(
+		meshComponent.Mesh = MeshFactory::CreateInstancedQuad(
 			glm::vec3(2.5f), 
 			{ { 0, XYZ::ShaderDataComponent::Float3, "a_Position" } },
 			{

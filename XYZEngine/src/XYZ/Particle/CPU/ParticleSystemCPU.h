@@ -30,9 +30,10 @@ namespace XYZ {
 	public:
 		struct UpdateData
 		{
-			TimeUpdater		   m_TimeUpdater;
-			PositionUpdater	   m_PositionUpdater;
-			LightUpdater	   m_LightUpdater;
+			UpdateData();
+
+			MainUpdater		   m_MainUpdater;
+			LightUpdater	   m_LightUpdater;	
 		};
 		struct RenderData
 		{
@@ -58,7 +59,10 @@ namespace XYZ {
 		void Play();
 		void Stop();
 		void SetMaxParticles(uint32_t maxParticles);
+		void SetSpeed(float speed);
 		uint32_t GetMaxParticles() const;
+		uint32_t GetAliveParticles() const;
+		float    GetSpeed() const;
 
 		ScopedLock<ParticleDataBuffer>	   GetParticleData();
 		ScopedLockRead<ParticleDataBuffer> GetParticleDataRead() const;
@@ -87,6 +91,7 @@ namespace XYZ {
 		ThreadPass<std::vector<glm::vec3>>   m_LightPass;
 		uint32_t							 m_MaxParticles;
 		bool								 m_Play;
+		float								 m_Speed;
 	};
 
 }

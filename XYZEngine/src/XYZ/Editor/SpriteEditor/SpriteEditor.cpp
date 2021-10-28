@@ -175,6 +175,7 @@ namespace XYZ {
 		{
 			if (ImGui::BeginChild("##Sprite", ImVec2(m_ToolSectionWidth, 0)))
 			{
+				bool enabled = true;
 				EditorHelper::DrawNodeControl("Sprite", m_Output, [&](auto& value) {
 
 					glm::vec4 border = CalcBorders(value);
@@ -222,7 +223,7 @@ namespace XYZ {
 							XYZ_CORE_WARN("Asset can not have an empty name");
 						}
 					}
-				});
+				}, enabled);
 			}
 			ImGui::EndChild();
 		}

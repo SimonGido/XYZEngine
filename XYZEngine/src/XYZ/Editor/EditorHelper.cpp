@@ -12,10 +12,10 @@ namespace XYZ {
 		ImGui::NextColumn();
 
 	}
-	void EditorHelper::EndColumns()
+	void EditorHelper::EndColumns(int count)
 	{
 		ImGui::PopID();
-		ImGui::Columns(1);
+		ImGui::Columns(count);
 	}
 	void EditorHelper::DrawFloatControl(const char* label, const char* dragLabel, float& value, float resetValue)
 	{
@@ -226,5 +226,19 @@ namespace XYZ {
 			*size1 -= mouse_delta;
 		}
 		ImGui::SetCursorPos(backup_pos);
+	}
+	void EditorHelper::PushDisabled()
+	{
+		ImGuiContext& g = *GImGui;
+		if ((g.CurrentItemFlags & ImGuiItemFlags_Disabled) == 0)
+			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, g.Style.Alpha * 0.6f);
+		ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+	}
+	void EditorHelper::PopDisabled()
+	{
+		ImGuiContext& g = *GImGui;
+		ImGui::PopItemFlag();
+		if ((g.CurrentItemFlags & ImGuiItemFlags_Disabled) == 0)
+			ImGui::PopStyleVar();
 	}
 }

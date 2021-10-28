@@ -7,25 +7,14 @@
 
 namespace XYZ {
 
-
-	class TimeUpdater
+	class MainUpdater
 	{
 	public:
-		TimeUpdater();
+		MainUpdater();
 		void UpdateParticles(float timeStep, ParticleDataBuffer* data) const;
 
 		bool m_Enabled;
 	};
-
-	class PositionUpdater
-	{
-	public:
-		PositionUpdater();
-		void UpdateParticles(float timeStep, ParticleDataBuffer* data) const;
-
-		bool m_Enabled;
-	};
-
 
 	class LightUpdater
 	{

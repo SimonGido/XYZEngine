@@ -240,11 +240,6 @@ namespace XYZ {
 				m_InspectorEditables.push_back(&m_SpotLight2DInspector);
 				m_SpotLight2DInspector.m_Context = context;
 			}
-			if (m_Context.HasComponent<ParticleComponentGPU>())
-			{
-				m_InspectorEditables.push_back(&m_ParticleGPUInspector);
-				m_ParticleGPUInspector.m_Context = context;
-			}
 			if (m_Context.HasComponent<ScriptComponent>())
 			{
 				m_InspectorEditables.push_back(&m_ScriptComponentInspector);
@@ -274,6 +269,16 @@ namespace XYZ {
 			{
 				m_InspectorEditables.push_back(&m_ChainCollider2DInspector);
 				m_ChainCollider2DInspector.m_Context = context;
+			}
+			if (m_Context.HasComponent<ParticleComponentGPU>())
+			{
+				m_InspectorEditables.push_back(&m_ParticleGPUInspector);
+				m_ParticleGPUInspector.m_Context = context;
+			}
+			if (m_Context.HasComponent<ParticleComponentCPU>())
+			{
+				m_InspectorEditables.push_back(&m_ParticleCPUInspector);
+				m_ParticleCPUInspector.m_Context = context;
 			}
 		}
 	}

@@ -12,8 +12,11 @@ namespace XYZ {
 	{
 		if (numThreads > std::thread::hardware_concurrency())
 			XYZ_CORE_WARN("Creating more threads than the maximum number of threads");
-		for (uint32_t i = 0; i < numThreads; ++i)
-			m_Threads.Emplace(std::thread(&ThreadPool::waitForJob, this, i));
+		{
+			std::unique_lock<std::mutex> lock(m_Mutex);
+			for (uint32_t i = 0; i < numThreads; ++i)
+				m_Threads.Emplace(std::thread(&ThreadPool::waitForJob, this, i));
+		}
 	}
 	ThreadPool::~ThreadPool()
 	{

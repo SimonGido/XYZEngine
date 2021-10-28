@@ -15,11 +15,12 @@ namespace XYZ {
 		template<typename T, typename UIFunction>
 		static bool DrawComponent(const std::string& name, SceneEntity entity, UIFunction uiFunction);
 		template<typename T, typename UIFunction>
-		static bool DrawNodeControl(const std::string& name, T& val, UIFunction uiFunction);
-
+		static bool DrawNodeControl(const std::string& name, T& val, UIFunction uiFunction, bool& enabled);
+		template<typename T, typename UIFunction, typename ConstructFunc>
+		static void DrawContainerControl(const std::string& name, T& container, UIFunction uiFunction, ConstructFunc constructFunc);
 
 		static void BeginColumns(const char* label, int count = 2, float width = 100.0f);	
-		static void EndColumns();
+		static void EndColumns(int count = 1);
 		static void DrawFloatControl(const char* label, const char* dragLabel, float& value, float resetValue = 0.0f);
 		static void DrawVec2Control(const std::string& label, glm::vec2& values, float resetValue = 0.0f, float columnWidth = 100.0f);	
 		static void DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f);
@@ -28,6 +29,10 @@ namespace XYZ {
 		static void DrawVec4Control2x2(const std::string& label, const char* names[4], glm::vec4& values, float resetValue = 0.0f, float columnWidth = 100.0f);
 		static void DrawColorControl(const std::string& label, glm::vec4& values, float resetValue = 1.0f, float columnWidth = 100.0f);
 		static void DrawSplitter(bool splitHorizontally, float thickness, float* size0, float* size1, float minSize0, float minSize1);
+	
+
+		static void PushDisabled();
+		static void PopDisabled();
 	};
 	template<typename T, typename UIFunction>
 	inline bool EditorHelper::DrawComponent(const std::string& name, SceneEntity entity, UIFunction uiFunction)
@@ -40,7 +45,6 @@ namespace XYZ {
 
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 4, 4 });
 			float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-			ImGui::Separator();
 			bool open = ImGui::TreeNodeEx((void*)typeid(T).hash_code(), treeNodeFlags, name.c_str());
 			ImGui::PopStyleVar();
 
@@ -75,37 +79,70 @@ namespace XYZ {
 		return false;
 	}
 	template<typename T, typename UIFunction>
-	inline bool EditorHelper::DrawNodeControl(const std::string& name, T& val, UIFunction uiFunction)
+	inline bool EditorHelper::DrawNodeControl(const std::string& name, T& val, UIFunction uiFunction, bool& enabled)
 	{
-		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
+		const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 
 		ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
 
+		if (!enabled)
+			PushDisabled();
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 4, 4 });
 		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-		ImGui::Separator();
+
 		bool open = ImGui::TreeNodeEx((void*)typeid(T).hash_code(), treeNodeFlags, name.c_str());
 		ImGui::PopStyleVar();
+		if (!enabled)
+			PopDisabled();
 
 		ImGui::SameLine(contentRegionAvailable.x + lineHeight * 0.5f);
-		if (ImGui::Button("+", ImVec2{ lineHeight, lineHeight }))
-		{
-			ImGui::OpenPopup("Settings");
-		}
+		
+		ImGui::PushID(name.c_str());
+		ImGui::Checkbox("##Enabled", &enabled);
+		ImGui::PopID();
 
-		bool remove = false;
-		if (ImGui::BeginPopup("Settings"))
-		{
-			if (ImGui::MenuItem("Remove"))
-				remove = true;
-
-			ImGui::EndPopup();
-		}
+		if (!enabled)
+			PushDisabled();
 		if (open)
 		{
 			uiFunction(val);
 			ImGui::TreePop();
 		}
-		return remove;
+		if (!enabled)
+			PopDisabled();
+
+		return enabled;
+	}
+	template<typename T, typename UIFunction, typename ConstructFunc>
+	inline void EditorHelper::DrawContainerControl(const std::string& name, T& container, UIFunction uiFunction, ConstructFunc constructFunc)
+	{
+		if (ImGui::TreeNodeEx(name.c_str(), 0, name.c_str()))
+		{
+			size_t counter = 0;
+			for (auto it = container.begin(); it != container.end();)
+			{
+				ImGui::Text("%d", counter);
+				ImGui::SameLine();
+				uiFunction(*it, counter);
+
+				ImGui::SameLine();
+				std::string id = name + std::to_string(counter++);
+				ImGui::PushID(id.c_str());
+				if (ImGui::Button("-"))
+				{
+					it = container.erase(it);
+				}
+				else
+				{
+					++it;
+				}
+				ImGui::PopID();
+			}
+
+			if (ImGui::Button("+", ImVec2(40.0f, 25.0f)))
+				container.push_back(constructFunc());
+
+			ImGui::TreePop();
+		}
 	}
 }
