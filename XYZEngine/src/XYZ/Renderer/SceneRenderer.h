@@ -69,7 +69,7 @@ namespace XYZ {
 		void SetRenderer2D(const Ref<Renderer2D>& renderer2D);
 		void SetViewportSize(uint32_t width, uint32_t height);
 		void BeginScene(const Scene* scene, const SceneRendererCamera& camera);
-		void BeginScene(const Scene* scene, const glm::mat4 viewProjectionMatrix, const glm::vec3& viewPosition);
+		void BeginScene(const Scene* scene, const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix, const glm::vec3& viewPosition);
 		void EndScene();
 		void SubmitSprite(Ref<Material> material, Ref<SubTexture> subTexture, uint32_t sortLayer, const glm::vec4& color, const glm::mat4& transform);
 
@@ -121,6 +121,7 @@ namespace XYZ {
 		struct CameraData
 		{
 			glm::mat4 ViewProjectionMatrix;
+			glm::mat4 ViewMatrix;
 			glm::vec4 ViewPosition;
 		};
 

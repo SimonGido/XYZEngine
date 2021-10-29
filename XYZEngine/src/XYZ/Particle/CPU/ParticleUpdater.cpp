@@ -20,6 +20,7 @@ namespace XYZ {
 			{
 				data->m_Particle[i].Position += data->m_Particle[i].Velocity * timeStep;
 				data->m_Particle[i].LifeRemaining -= timeStep;
+				data->m_Rotation[i].w += 0.1f;
 				if (data->m_Particle[i].LifeRemaining <= 0.0f)
 				{
 					data->Kill(i);

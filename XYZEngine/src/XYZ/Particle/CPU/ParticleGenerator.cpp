@@ -58,10 +58,11 @@ namespace XYZ {
 		endId = std::min(endId, data->GetMaxParticles());
 		for (uint32_t i = startId; i < endId; i++)
 		{
-			data->m_Particle[i].Color = glm::linearRand(glm::vec4(0.0f), glm::vec4(1.0f));
+			data->m_Particle[i].Color	 = glm::linearRand(glm::vec4(0.0f), glm::vec4(1.0f));
 			data->m_Particle[i].Position = glm::linearRand(m_BoxMin, m_BoxMax);
-			data->m_TexCoord[i] = glm::vec4(0.5f, 0.5f, 0.75f, 0.75f);
-			data->m_Size[i] = glm::vec2(0.5f);
+			data->m_TexCoord[i]			 = glm::vec4(0.5f, 0.5f, 0.75f, 0.75f);
+			data->m_Size[i]				 = glm::vec3(0.5f);
+			data->m_Rotation[i]			 = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
 		}
 	}
 
@@ -80,9 +81,10 @@ namespace XYZ {
 				m_Radius * sin(theta)
 			);
 			data->m_Particle[i].Position = glm::vec3(point.x, point.y, 0.0f);
-			data->m_Particle[i].Color = glm::vec4(glm::linearRand(0.0f, 1.0f));
-			data->m_TexCoord[i] = glm::vec4(0.5f, 0.5f, 0.75f, 0.75f);
-			data->m_Size[i] = glm::vec2(0.5f);
+			data->m_Particle[i].Color	 = glm::vec4(glm::linearRand(0.0f, 1.0f));
+			data->m_TexCoord[i]			 = glm::vec4(0.5f, 0.5f, 0.75f, 0.75f);
+			data->m_Size[i]				 = glm::vec3(0.5f);
+			data->m_Rotation[i]			 = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
 		}
 	}
 
@@ -118,8 +120,8 @@ namespace XYZ {
 
 	ParticleRandomVelocityGenerator::ParticleRandomVelocityGenerator()
 		:
-		m_MinVelocity(-7.0f, -7.0f, 0.0f),
-		m_MaxVelocity(7.0f, 7.0f, 0.0f),
+		m_MinVelocity(-7.0f, -7.0f, -7.0f),
+		m_MaxVelocity(7.0f, 7.0f, 7.0f),
 		m_Enabled(true)
 	{
 	}

@@ -300,7 +300,11 @@ namespace XYZ {
 		XYZ_PROFILE_FUNC("Scene::OnRenderEditor");
 		updateHierarchy();
 		sceneRenderer->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
-		sceneRenderer->BeginScene(this, camera.GetViewProjection(), camera.GetPosition());
+		sceneRenderer->BeginScene(this, 
+			camera.GetViewProjection(), 
+			camera.GetViewMatrix(),
+			camera.GetPosition()
+		);
 
 		auto renderView = m_ECS.CreateView<TransformComponent, SpriteRenderer>();
 		for (auto entity : renderView)

@@ -2,12 +2,12 @@
 #version 450
 
 
-layout(location = 0) in vec3  a_Position;
-layout(location = 1) in vec4  a_IColor;
-layout(location = 2) in vec4  a_ITexCoord;
-layout(location = 3) in vec2  a_IPosition;
-layout(location = 4) in vec2  a_ISize;
-layout(location = 5) in float a_IAngle;
+layout(location = 0) in vec3 a_Position;
+layout(location = 1) in vec4 a_IColor;
+layout(location = 2) in vec4 a_ITexCoord;
+layout(location = 3) in vec3 a_IPosition;
+layout(location = 4) in vec3 a_ISize;
+layout(location = 5) in vec4 a_IAxis;
 
 out vec4 v_Color;
 out vec2 v_TexCoord;
@@ -15,6 +15,7 @@ out vec2 v_TexCoord;
 layout(std140, binding = 0) uniform Camera
 {
 	mat4 u_ViewProjection;
+	mat4 u_ViewMatrix;
 	vec4 u_ViewPosition;
 };
 
@@ -25,10 +26,26 @@ float GetRadians(float angleInDegrees)
 	return angleInDegrees * 3.14 / 180.0;
 }
 
-mat2 RotationZ(float angle)
+
+vec4 QuatFromAxisAngle(vec3 axis, float angle)
 {
-	return mat2(cos(angle), sin(angle), -sin(angle), cos(angle));
+	vec4 qr;
+	float half_angle = (angle * 0.5) * 3.14159 / 180.0;
+	qr.x = axis.x * sin(half_angle);
+	qr.y = axis.y * sin(half_angle);
+	qr.z = axis.z * sin(half_angle);
+	qr.w = cos(half_angle);
+	return qr;
 }
+
+vec3 RotateVertexPosition(vec3 position, vec3 axis, float angle)
+{
+	vec4 q = QuatFromAxisAngle(axis, angle);
+	vec3 v = position.xyz;
+	return v + 2.0 * cross(q.xyz, cross(q.xyz, v) + q.w * v);
+}
+
+
 vec2 GetTexCoord()
 {
 	vec2 texCoords[4] = {
@@ -37,14 +54,15 @@ vec2 GetTexCoord()
 		vec2(a_ITexCoord.z, a_ITexCoord.w),
 		vec2(a_ITexCoord.x, a_ITexCoord.w)
 	};
-
 	return texCoords[gl_VertexID];
 }
 
 void main()
 {
-	vec2 pos = RotationZ(GetRadians(a_IAngle)) * a_Position.xy * a_ISize;
-	gl_Position = u_ViewProjection * u_Transform * vec4(pos.x + a_IPosition.x, pos.y + a_IPosition.y, a_Position.z, 1.0);
+	vec3 worldPos = RotateVertexPosition(a_Position * a_ISize, a_IAxis.xyz, a_IAxis.w);
+	worldPos += a_IPosition;
+
+	gl_Position = u_ViewProjection * u_Transform * vec4(worldPos, 1.0);
 	v_Color = a_IColor;
 	v_TexCoord = GetTexCoord();
 }

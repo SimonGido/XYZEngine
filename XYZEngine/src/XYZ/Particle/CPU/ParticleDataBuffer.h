@@ -2,6 +2,7 @@
 #include "XYZ/Utils/DataStructures/CustomBuffer.h"
 
 #include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 namespace XYZ {
 
@@ -38,11 +39,10 @@ namespace XYZ {
         glm::vec4*  m_TexCoord;
         glm::vec4*  m_StartColor;
         glm::vec4*  m_EndColor;
-        glm::vec2*  m_Size;
+        glm::vec3*  m_Size;
         glm::vec3*  m_Lights;
 
-        float*      m_Rotation;
-        float*      m_AngularVelocity;
+        glm::quat*  m_Rotation;
        
         CustomBuffer m_CustomData[3];
 

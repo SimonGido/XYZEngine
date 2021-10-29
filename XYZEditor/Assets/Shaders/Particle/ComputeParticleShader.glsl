@@ -37,6 +37,7 @@ struct ParticleSpecification
 layout(std140, binding = 0) uniform Camera
 {
 	mat4 u_ViewProjection;
+	mat4 u_ViewMatrix;
 	vec4 u_ViewPosition;
 };
 

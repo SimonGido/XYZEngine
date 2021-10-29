@@ -10,7 +10,7 @@ Entities:
     SpriteRenderer:
       MaterialAsset: 8e302fbb-0049-47c6-97a6-4ca49ee28da0
       SubTextureAsset: 3680b0a1-ae15-4e4b-abb3-89892fe9cb37
-      Color: [83.0500031, 3.1500001, 3.95000005, 1]
+      Color: [3.54999995, 0.600000024, 1, 1]
       SortLayer: 1
       Visible: true
     Relationship:

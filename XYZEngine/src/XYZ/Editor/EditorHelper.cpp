@@ -10,7 +10,6 @@ namespace XYZ {
 		ImGui::SetColumnWidth(0, width);
 		ImGui::Text(label);
 		ImGui::NextColumn();
-
 	}
 	void EditorHelper::EndColumns(int count)
 	{

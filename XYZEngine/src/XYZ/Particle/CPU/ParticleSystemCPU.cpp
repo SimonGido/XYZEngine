@@ -53,7 +53,6 @@ namespace XYZ {
 		m_UpdateThreadPass(other.m_UpdateThreadPass),
 		m_EmitThreadPass(other.m_EmitThreadPass),
 		m_RenderThreadPass(other.m_RenderThreadPass),
-		m_LightPass(other.m_LightPass),
 		m_MaxParticles(other.m_MaxParticles),
 		m_Play(other.m_Play),
 		m_Speed(other.m_Speed)
@@ -66,7 +65,6 @@ namespace XYZ {
 		m_UpdateThreadPass(std::move(other.m_UpdateThreadPass)),
 		m_EmitThreadPass(std::move(other.m_EmitThreadPass)),
 		m_RenderThreadPass(std::move(other.m_RenderThreadPass)),
-		m_LightPass(std::move(other.m_LightPass)),
 		m_MaxParticles(other.m_MaxParticles),
 		m_Play(other.m_Play),
 		m_Speed(other.m_Speed)
@@ -79,7 +77,6 @@ namespace XYZ {
 		m_UpdateThreadPass = other.m_UpdateThreadPass;
 		m_EmitThreadPass = other.m_EmitThreadPass;
 		m_RenderThreadPass = other.m_RenderThreadPass;
-		m_LightPass = other.m_LightPass;
 		m_MaxParticles = other.m_MaxParticles;
 		m_Play = other.m_Play;
 		m_Speed = other.m_Speed;
@@ -92,7 +89,6 @@ namespace XYZ {
 		m_UpdateThreadPass = std::move(other.m_UpdateThreadPass);
 		m_EmitThreadPass = std::move(other.m_EmitThreadPass);
 		m_RenderThreadPass = std::move(other.m_RenderThreadPass);
-		m_LightPass = std::move(other.m_LightPass);
 		m_MaxParticles = other.m_MaxParticles;
 		m_Play = other.m_Play;
 		m_Speed = other.m_Speed;
@@ -251,7 +247,7 @@ namespace XYZ {
 			buffer[i] = ParticleRenderData{
 				particle.Color,
 				particles.m_TexCoord[i],
-				glm::vec2(particle.Position.x, particle.Position.y),
+				particle.Position,
 				particles.m_Size[i],
 				particles.m_Rotation[i]
 			};

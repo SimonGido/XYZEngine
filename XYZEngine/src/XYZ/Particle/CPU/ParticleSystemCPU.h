@@ -19,9 +19,9 @@ namespace XYZ {
 	{
 		glm::vec4 Color;
 		glm::vec4 TexCoord;
-		glm::vec2 Position;
-		glm::vec2 Size;
-		float	  Rotation;
+		glm::vec3 Position;
+		glm::vec3 Size;
+		glm::quat Axis;
 	};
 
 	class SceneRenderer;
@@ -88,7 +88,6 @@ namespace XYZ {
 		SingleThreadPass<UpdateData>		 m_UpdateThreadPass;	
 		SingleThreadPass<ParticleEmitterCPU> m_EmitThreadPass;
 		ThreadPass<RenderData>				 m_RenderThreadPass;
-		ThreadPass<std::vector<glm::vec3>>   m_LightPass;
 		uint32_t							 m_MaxParticles;
 		bool								 m_Play;
 		float								 m_Speed;

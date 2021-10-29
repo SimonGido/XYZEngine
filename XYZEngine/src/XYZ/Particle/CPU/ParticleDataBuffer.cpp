@@ -22,7 +22,6 @@ namespace XYZ {
 			m_EndColor		  = nullptr;
 			m_Size			  = nullptr;
 			m_Lights		  = nullptr;
-			m_AngularVelocity = nullptr;
 			m_Rotation        = nullptr;
 		}
 	}
@@ -34,7 +33,6 @@ namespace XYZ {
 		m_EndColor = other.m_EndColor;
 		m_Size = other.m_Size;
 		m_Lights = other.m_Lights;
-		m_AngularVelocity = other.m_AngularVelocity;
 		m_Rotation = other.m_Rotation;
 		m_MaxParticles = other.m_MaxParticles;
 		m_AliveParticles = other.m_AliveParticles;
@@ -45,7 +43,6 @@ namespace XYZ {
 		other.m_EndColor = nullptr;
 		other.m_Size = nullptr;
 		other.m_Lights = nullptr;
-		other.m_AngularVelocity = nullptr;
 		other.m_Rotation = nullptr;
 		other.m_MaxParticles = 0;
 		other.m_AliveParticles = 0;
@@ -73,7 +70,6 @@ namespace XYZ {
 			m_EndColor = nullptr;
 			m_Size = nullptr;
 			m_Lights = nullptr;
-			m_AngularVelocity = nullptr;
 			m_Rotation = nullptr;
 		}
 	}
@@ -97,7 +93,6 @@ namespace XYZ {
 			m_EndColor = nullptr;
 			m_Size = nullptr;
 			m_Lights = nullptr;
-			m_AngularVelocity = nullptr;
 			m_Rotation = nullptr;
 		}	
 		return *this;
@@ -112,7 +107,6 @@ namespace XYZ {
 		m_EndColor = other.m_EndColor;
 		m_Size = other.m_Size;
 		m_Lights = other.m_Lights;
-		m_AngularVelocity = other.m_AngularVelocity;
 		m_Rotation = other.m_Rotation;
 		m_MaxParticles = other.m_MaxParticles;
 		m_AliveParticles = other.m_AliveParticles;
@@ -123,7 +117,6 @@ namespace XYZ {
 		other.m_EndColor = nullptr;
 		other.m_Size = nullptr;
 		other.m_Lights = nullptr;
-		other.m_AngularVelocity = nullptr;
 		other.m_Rotation = nullptr;
 		other.m_MaxParticles = 0;
 		other.m_AliveParticles = 0;
@@ -153,10 +146,9 @@ namespace XYZ {
 		m_TexCoord		  = new glm::vec4[particleCount];
 		m_StartColor      = new glm::vec4[particleCount];
 		m_EndColor        = new glm::vec4[particleCount];
-		m_Size			  = new glm::vec2[particleCount];
+		m_Size			  = new glm::vec3[particleCount];
 		m_Lights		  = new glm::vec3[particleCount];
-		m_AngularVelocity = new float[particleCount];
-		m_Rotation		  = new float[particleCount];
+		m_Rotation		  = new glm::quat[particleCount];
 
 		for (size_t i = 0; i < particleCount; ++i)
 			m_Particle[i].Alive = false;
@@ -170,7 +162,6 @@ namespace XYZ {
 		m_Size[a]			 = m_Size[b];
 		m_Lights[a]			 = m_Lights[b];
 		m_Rotation[a]		 = m_Rotation[b];
-		m_AngularVelocity[a] = m_AngularVelocity[b];
 	}
 
 	void ParticleDataBuffer::copyData(const ParticleDataBuffer& source)
@@ -179,10 +170,9 @@ namespace XYZ {
 		memcpy(m_TexCoord,		  source.m_TexCoord,		m_MaxParticles * sizeof(glm::vec4));
 		memcpy(m_StartColor,      source.m_StartColor,		m_MaxParticles * sizeof(glm::vec4));
 		memcpy(m_EndColor,	      source.m_EndColor,		m_MaxParticles * sizeof(glm::vec4));
-		memcpy(m_Size,			  source.m_Size,			m_MaxParticles * sizeof(glm::vec2));
+		memcpy(m_Size,			  source.m_Size,			m_MaxParticles * sizeof(glm::vec3));
 		memcpy(m_Lights,		  source.m_Lights,			m_MaxParticles * sizeof(glm::vec3));
-		memcpy(m_Rotation,		  source.m_Rotation,		m_MaxParticles * sizeof(float));
-		memcpy(m_AngularVelocity, source.m_AngularVelocity, m_MaxParticles * sizeof(float));
+		memcpy(m_Rotation,		  source.m_Rotation,		m_MaxParticles * sizeof(glm::quat));
 	}
 
 	void ParticleDataBuffer::deleteParticles()
@@ -194,7 +184,6 @@ namespace XYZ {
 		delete[]m_Size;
 		delete[]m_Lights;
 		delete[]m_Rotation;
-		delete[]m_AngularVelocity;
 	}
 
 	

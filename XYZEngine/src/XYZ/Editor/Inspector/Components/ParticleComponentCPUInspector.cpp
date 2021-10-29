@@ -8,6 +8,7 @@
 namespace XYZ {
 	ParticleComponentCPUInspector::ParticleComponentCPUInspector()
 	{
+		
 	}
 	bool ParticleComponentCPUInspector::OnEditorRender(Ref<EditorRenderer> renderer)
 	{
@@ -62,7 +63,6 @@ namespace XYZ {
 					std::string indexStr = std::to_string(index);
 					std::string burstCountID = "##BurstCount" + indexStr;
 					std::string timeID = "##Time" + indexStr;
-
 					ImGui::Text("Count:");
 					ImGui::SameLine();			
 					int count = burst.m_Count;
