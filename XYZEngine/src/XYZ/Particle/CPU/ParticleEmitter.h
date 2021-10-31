@@ -48,7 +48,7 @@ namespace XYZ {
 		ParticleShapeGenerator		    m_ShapeGenerator;
 		ParticleLifeGenerator		    m_LifeGenerator;
 		ParticleRandomVelocityGenerator m_RandomVelGenerator;
-
+		ParticleCollisionGenerator		m_CollisionGenerator;
 		BurstEmitter					m_BurstEmitter;
 		float							m_EmitRate;
 

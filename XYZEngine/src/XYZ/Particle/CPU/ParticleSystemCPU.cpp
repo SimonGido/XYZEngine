@@ -95,11 +95,26 @@ namespace XYZ {
 		return *this;
 	}
 
+	void ParticleSystemCPU::SetPhysicsWorld(b2World* world)
+	{
+		GetEmitter()->m_CollisionGenerator.m_PhysicsWorld = world;
+	}
+
 	void ParticleSystemCPU::Update(Timestep ts)
 	{	
 		XYZ_PROFILE_FUNC("ParticleSystemCPU::Update");
 		if (m_Play)
 		{		
+			{
+				ScopedLock<ParticleDataBuffer> particleData = m_ParticleData.Get<ParticleDataBuffer>();
+				ScopedLock<ParticleEmitterCPU> emitter = GetEmitter();
+				auto& bodies = emitter->m_CollisionGenerator.m_Bodies;
+				for (uint32_t i = 0; i < particleData->GetAliveParticles(); ++i)
+				{
+					particleData->m_Particle[i].Position.x = bodies[i]->GetPosition().x;
+					particleData->m_Particle[i].Position.y = bodies[i]->GetPosition().y;
+				}
+			}
 			particleThreadUpdate(ts.GetSeconds() * m_Speed);
 		}
 	}
@@ -113,18 +128,16 @@ namespace XYZ {
 		 && lightUpdater.m_LightEntity.IsValid()
 		 && lightUpdater.m_LightEntity.HasComponent<PointLight2D>())
 		{
-			auto particleData = m_ParticleData.GetRead<ParticleDataBuffer>();
-			if (lightUpdater.m_Enabled)
+			if (lightUpdater.IsEnabled())
 			{
-				const PointLight2D& light = lightUpdater.m_LightEntity.GetComponent<PointLight2D>();
-				const TransformComponent& transform = lightUpdater.m_TransformEntity.GetComponent<TransformComponent>();
-				uint32_t count = std::min(lightUpdater.m_MaxLights, particleData->GetAliveParticles());
-				for (uint32_t i = 0; i < count; ++i)
-					renderer->SubmitLight(light, transform.WorldTransform * glm::translate(particleData->m_Lights[i]));
+				const std::vector<glm::vec3>& lights	= lightUpdater.GetLights();
+				const PointLight2D&			  light		= lightUpdater.m_LightEntity.GetComponent<PointLight2D>();
+				const TransformComponent&     transform = lightUpdater.m_TransformEntity.GetComponent<TransformComponent>();
+				for (const glm::vec3& l : lights)
+					renderer->SubmitLight(light, transform.WorldTransform * glm::translate(l));
 			}
 		}
 	}
-
 	void ParticleSystemCPU::Play()
 	{
 		m_Play = true;
@@ -225,11 +238,11 @@ namespace XYZ {
 	void ParticleSystemCPU::update(Timestep timestep, ParticleDataBuffer& particles)
 	{
 		XYZ_PROFILE_FUNC("ParticleSystemCPU::update");
-		ScopedLockRead<UpdateData> data = m_UpdateThreadPass.GetRead<UpdateData>();
-		data->m_MainUpdater.UpdateParticles(timestep, &particles);
-		data->m_LightUpdater.UpdateParticles(timestep, &particles);
-		data->m_TextureAnimUpdater.UpdateParticles(timestep, &particles);
-		data->m_RotationOverLife.UpdateParticles(timestep, &particles);
+		ScopedLock<UpdateData> data = m_UpdateThreadPass.Get<UpdateData>();
+		data->m_MainUpdater.UpdateParticles(timestep, particles);
+		data->m_LightUpdater.UpdateParticles(timestep, particles);
+		data->m_TextureAnimUpdater.UpdateParticles(timestep, particles);
+		data->m_RotationOverLife.UpdateParticles(timestep, particles);
 	}
 	void ParticleSystemCPU::emit(Timestep timestep, ParticleDataBuffer& particles)
 	{

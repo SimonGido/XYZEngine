@@ -19,7 +19,7 @@ namespace XYZ {
 		ParticleShapeGenerator(const ParticleShapeGenerator& other);
 		ParticleShapeGenerator& operator=(const ParticleShapeGenerator& other);
 
-		void Generate(ParticleDataBuffer* data, uint32_t startId, uint32_t endId) const;
+		void Generate(ParticleDataBuffer& data, uint32_t startId, uint32_t endId) const;
 
 
 		EmitShape	m_Shape;
@@ -29,8 +29,8 @@ namespace XYZ {
 		bool	    m_Enabled;
 
 	private:
-		void generateBox(ParticleDataBuffer* data, uint32_t startId, uint32_t endId) const;
-		void generateCircle(ParticleDataBuffer* data, uint32_t startId, uint32_t endId) const;
+		void generateBox(ParticleDataBuffer& data, uint32_t startId, uint32_t endId) const;
+		void generateCircle(ParticleDataBuffer& data, uint32_t startId, uint32_t endId) const;
 
 	};
 
@@ -41,7 +41,7 @@ namespace XYZ {
 		ParticleLifeGenerator(const ParticleLifeGenerator& other);
 		ParticleLifeGenerator& operator =(const ParticleLifeGenerator& other);
 
-		void  Generate(ParticleDataBuffer* data, uint32_t startId, uint32_t endId) const;
+		void  Generate(ParticleDataBuffer& data, uint32_t startId, uint32_t endId) const;
 
 		float m_LifeTime;
 		bool  m_Enabled;
@@ -55,10 +55,26 @@ namespace XYZ {
 		ParticleRandomVelocityGenerator(const ParticleRandomVelocityGenerator& other);
 		ParticleRandomVelocityGenerator& operator=(const ParticleRandomVelocityGenerator& other);
 
-		void Generate(ParticleDataBuffer* data, uint32_t startId, uint32_t endId) const;
+		void Generate(ParticleDataBuffer& data, uint32_t startId, uint32_t endId) const;
 
 		glm::vec3 m_MinVelocity;
 		glm::vec3 m_MaxVelocity;
 		bool	  m_Enabled;
+	};
+
+	class ParticleCollisionGenerator
+	{
+	public:
+		ParticleCollisionGenerator();
+
+		void Generate(ParticleDataBuffer& data, uint32_t startId, uint32_t endId);
+
+		bool m_Enabled;
+
+		b2World* m_PhysicsWorld;
+		std::vector<b2Body*> m_Bodies;
+
+	private:
+		void resizeToFit(size_t count);
 	};
 }

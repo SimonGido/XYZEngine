@@ -298,6 +298,11 @@ namespace XYZ {
 	void Scene::OnRenderEditor(Ref<SceneRenderer> sceneRenderer, Ref<EditorRenderer> editorRenderer, const Editor::EditorCamera& camera, Timestep ts)
 	{
 		XYZ_PROFILE_FUNC("Scene::OnRenderEditor");
+		int32_t velocityIterations = 6;
+		int32_t positionIterations = 2;
+		m_PhysicsWorld.Step(ts, velocityIterations, positionIterations);
+
+		
 		updateHierarchy();
 		sceneRenderer->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 		sceneRenderer->BeginScene(this, 
@@ -305,7 +310,6 @@ namespace XYZ {
 			camera.GetViewMatrix(),
 			camera.GetPosition()
 		);
-
 		auto renderView = m_ECS.CreateView<TransformComponent, SpriteRenderer>();
 		for (auto entity : renderView)
 		{
@@ -332,14 +336,23 @@ namespace XYZ {
 		auto particleViewCPU = m_ECS.CreateView<TransformComponent, ParticleComponentCPU, MeshComponent>();
 		for (auto entity : particleViewCPU)
 		{
+			// Render previous frame data
 			auto [transform, particle, mesh] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU, MeshComponent>(entity);
 			particle.System.SetupForRender(sceneRenderer);
-			particle.System.Update(ts);
 			auto renderData = particle.System.GetRenderDataRead();
 			auto data = renderData->m_RenderParticleData.As<ParticleRenderData>();
 			mesh.Mesh->SetVertexBufferData(1, data, renderData->m_InstanceCount * renderData->m_RenderParticleData.ElementSize());
 			sceneRenderer->SubmitMeshInstanced(mesh.Mesh, transform.WorldTransform, renderData->m_InstanceCount);
 		}
+
+		for (auto entity : particleViewCPU)
+		{
+			// Update ( submit jobs worker threads )
+			auto [transform, particle, mesh] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU, MeshComponent>(entity);
+			particle.System.SetPhysicsWorld(&m_PhysicsWorld);
+			particle.System.Update(ts);
+		}
+	
 		
 		auto lightView = m_ECS.CreateView<TransformComponent, PointLight2D>();
 		for (auto entity : lightView)
@@ -475,7 +488,7 @@ namespace XYZ {
 			{
 				BoxCollider2DComponent& boxCollider = entity.GetComponent<BoxCollider2DComponent>();
 				b2PolygonShape poly;
-			
+				
 				poly.SetAsBox( boxCollider.Size.x / 2.0f, boxCollider.Size.y / 2.0f, 
 					   b2Vec2{ boxCollider.Offset.x, boxCollider.Offset.y }, 0.0f);
 				b2FixtureDef fixture;
@@ -489,6 +502,7 @@ namespace XYZ {
 			{
 				CircleCollider2DComponent& circleCollider = entity.GetComponent<CircleCollider2DComponent>();
 				b2CircleShape circle;
+
 				circle.m_radius = circleCollider.Radius;
 				circle.m_p = b2Vec2(circleCollider.Offset.x, circleCollider.Offset.y);
 

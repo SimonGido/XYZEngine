@@ -55,12 +55,15 @@ namespace XYZ {
 		ParticleSystemCPU& operator=(const ParticleSystemCPU& other);
 		ParticleSystemCPU& operator=(ParticleSystemCPU&& other) noexcept;
 
-		void Update(Timestep ts);
+		void SetPhysicsWorld(b2World* world);
+		void Update(Timestep ts);	
 		void SetupForRender(Ref<SceneRenderer> renderer);
+
 		void Play();
 		void Stop();
 		void SetMaxParticles(uint32_t maxParticles);
 		void SetSpeed(float speed);
+
 		uint32_t GetMaxParticles() const;
 		uint32_t GetAliveParticles() const;
 		float    GetSpeed() const;
@@ -84,7 +87,6 @@ namespace XYZ {
 		void buildRenderData(ParticleDataBuffer& particles);
 		
 	private:
-		
 		SingleThreadPass<ParticleDataBuffer> m_ParticleData;
 		SingleThreadPass<UpdateData>		 m_UpdateThreadPass;	
 		SingleThreadPass<ParticleEmitterCPU> m_EmitThreadPass;

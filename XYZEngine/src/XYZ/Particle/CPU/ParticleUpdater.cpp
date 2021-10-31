@@ -17,22 +17,27 @@ namespace XYZ {
 	{
 	}
 
-	void MainUpdater::UpdateParticles(float ts, ParticleDataBuffer* data) const
+	void MainUpdater::UpdateParticles(float ts, ParticleDataBuffer& data) const
 	{
 		if (m_Enabled)
 		{
-			uint32_t aliveParticles = data->GetAliveParticles();
+			uint32_t aliveParticles = data.GetAliveParticles();
 			for (uint32_t i = 0; i < aliveParticles; ++i)
 			{
-				data->m_Particle[i].Position += data->m_Particle[i].Velocity * ts;
-				data->m_Particle[i].LifeRemaining -= ts;
-				if (data->m_Particle[i].LifeRemaining <= 0.0f)
+				//data.m_Particle[i].Position += data.m_Particle[i].Velocity * ts;
+				data.m_Particle[i].LifeRemaining -= ts;
+				if (data.m_Particle[i].LifeRemaining <= 0.0f)
 				{
-					data->Kill(i);
+					data.Kill(i);
 					aliveParticles--;
 				}
 			}
 		}
+	}
+
+	void MainUpdater::SetEnabled(bool enabled)
+	{
+		m_Enabled = enabled;
 	}
 
 	LightUpdater::LightUpdater()
@@ -42,23 +47,31 @@ namespace XYZ {
 	{
 		
 	}
-	void LightUpdater::UpdateParticles(float ts, ParticleDataBuffer* data) const
+	void LightUpdater::UpdateParticles(float ts, ParticleDataBuffer& data)
 	{
 		if (m_Enabled)
 		{
-			uint32_t aliveParticles = data->GetAliveParticles();
-
+			m_Lights.clear();
+			uint32_t aliveParticles = data.GetAliveParticles();
 			if (m_TransformEntity.IsValid()
 				&& m_LightEntity.IsValid()
 				&& m_LightEntity.HasComponent<PointLight2D>())
 			{
 				for (uint32_t i = 0; i < aliveParticles && i < m_MaxLights; ++i)
 				{
-					data->m_Lights[i] = data->m_Particle[i].Position;
+					m_Lights.push_back(data.m_Particle[i].Position);
 				}
 			}
 		}
 	}
+
+	void LightUpdater::SetEnabled(bool enabled)
+	{
+		m_Enabled = enabled;
+		if (!m_Enabled)
+			m_Lights = std::vector<glm::vec3>(); // Release memory
+	}
+
 	TextureAnimationUpdater::TextureAnimationUpdater()
 		:
 		m_Tiles(1, 1),
@@ -67,7 +80,7 @@ namespace XYZ {
 		m_Enabled(true)
 	{
 	}
-	void TextureAnimationUpdater::UpdateParticles(float ts, ParticleDataBuffer* data) const
+	void TextureAnimationUpdater::UpdateParticles(float ts, ParticleDataBuffer& data) const
 	{
 		if (m_Enabled)
 		{
@@ -75,19 +88,23 @@ namespace XYZ {
 			float columnSize	= 1.0f / m_Tiles.x;
 			float rowSize		= 1.0f / m_Tiles.y;
 			
-			uint32_t aliveParticles = data->GetAliveParticles();
+			uint32_t aliveParticles = data.GetAliveParticles();
 			for (uint32_t i = 0; i < aliveParticles; ++i)
 			{
-				float ratio			= CalcRatio(m_CycleLength, data->m_Particle[i].LifeRemaining);
+				float ratio			= CalcRatio(m_CycleLength, data.m_Particle[i].LifeRemaining);
 				float stageProgress = ratio * stageCount;
 				
 				uint32_t index  = (uint32_t)floor(stageProgress);
 				float column	= index % m_Tiles.x;
 				float row		= index / m_Tiles.y;
 				
-				data->m_TexOffset[i] = glm::vec2(column / m_Tiles.x, row / m_Tiles.y);
+				data.m_TexOffset[i] = glm::vec2(column / m_Tiles.x, row / m_Tiles.y);
 			}
 		}
+	}
+	void TextureAnimationUpdater::SetEnabled(bool enabled)
+	{
+		m_Enabled = enabled;
 	}
 	RotationOverLife::RotationOverLife()
 		:
@@ -96,17 +113,21 @@ namespace XYZ {
 		m_Enabled(true)
 	{
 	}
-	void RotationOverLife::UpdateParticles(float ts, ParticleDataBuffer* data) const
+	void RotationOverLife::UpdateParticles(float ts, ParticleDataBuffer& data) const
 	{
 		if (m_Enabled)
 		{
-			uint32_t aliveParticles = data->GetAliveParticles();
+			uint32_t aliveParticles = data.GetAliveParticles();
 			glm::vec3 radians = glm::radians(m_EulerAngles);
 			for (uint32_t i = 0; i < aliveParticles; ++i)
 			{
-				float ratio = CalcRatio(m_CycleLength, data->m_Particle[i].LifeRemaining);
-				data->m_Rotation[i] = glm::quat(radians * ratio);
+				float ratio = CalcRatio(m_CycleLength, data.m_Particle[i].LifeRemaining);
+				data.m_Rotation[i] = glm::quat(radians * ratio);
 			}
 		}
+	}
+	void RotationOverLife::SetEnabled(bool enabled)
+	{
+		m_Enabled = enabled;
 	}
 }

@@ -11,8 +11,8 @@ namespace XYZ {
 	ParticleShapeGenerator::ParticleShapeGenerator()
 		:
 		m_Shape(EmitShape::Box),
-		m_BoxMin(-1.0f),
-		m_BoxMax(1.0f),
+		m_BoxMin(-1.0f, -1.0, 0.0f),
+		m_BoxMax(1.0f, 1.0f, 0.0f),
 		m_Radius(7.0f),
 		m_Enabled(true)
 	{
@@ -37,7 +37,7 @@ namespace XYZ {
 		return *this;
 	}
 
-	void ParticleShapeGenerator::Generate(ParticleDataBuffer* data, uint32_t startId, uint32_t endId) const
+	void ParticleShapeGenerator::Generate(ParticleDataBuffer& data, uint32_t startId, uint32_t endId) const
 	{
 		if (m_Enabled)
 		{
@@ -49,24 +49,24 @@ namespace XYZ {
 	}
 	
 
-	void ParticleShapeGenerator::generateBox(ParticleDataBuffer* data, uint32_t startId, uint32_t endId) const
+	void ParticleShapeGenerator::generateBox(ParticleDataBuffer& data, uint32_t startId, uint32_t endId) const
 	{
 		std::random_device dev;
 		std::mt19937 rng(dev());
 		std::uniform_real_distribution<double> dist(-1.0, 1.0); // distribution in range [1, 6]
 
-		endId = std::min(endId, data->GetMaxParticles());
+		endId = std::min(endId, data.GetMaxParticles());
 		for (uint32_t i = startId; i < endId; i++)
 		{
-			data->m_Particle[i].Color	 = glm::linearRand(glm::vec4(0.0f), glm::vec4(1.0f));
-			data->m_Particle[i].Position = glm::linearRand(m_BoxMin, m_BoxMax);
-			data->m_TexOffset[i]		 = glm::vec2(0.0f, 0.0f);
-			data->m_Size[i]				 = glm::vec3(0.5f);
-			data->m_Rotation[i]			 = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+			data.m_Particle[i].Color	 = glm::linearRand(glm::vec4(0.0f), glm::vec4(1.0f));
+			data.m_Particle[i].Position  = glm::linearRand(m_BoxMin, m_BoxMax);
+			data.m_TexOffset[i]			 = glm::vec2(0.0f, 0.0f);
+			data.m_Size[i]				 = glm::vec3(0.5f);
+			data.m_Rotation[i]			 = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
 		}
 	}
 
-	void ParticleShapeGenerator::generateCircle(ParticleDataBuffer* data, uint32_t startId, uint32_t endId) const
+	void ParticleShapeGenerator::generateCircle(ParticleDataBuffer& data, uint32_t startId, uint32_t endId) const
 	{
 		std::random_device dev;
 		std::mt19937 rng(dev());
@@ -80,11 +80,11 @@ namespace XYZ {
 				m_Radius * cos(theta),
 				m_Radius * sin(theta)
 			);
-			data->m_Particle[i].Position = glm::vec3(point.x, point.y, 0.0f);
-			data->m_Particle[i].Color	 = glm::vec4(glm::linearRand(0.0f, 1.0f));
-			data->m_TexOffset[i]		 = glm::vec2(0.0f, 0.0f);
-			data->m_Size[i]				 = glm::vec3(0.5f);
-			data->m_Rotation[i]			 = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+			data.m_Particle[i].Position  = glm::vec3(point.x, point.y, 0.0f);
+			data.m_Particle[i].Color	 = glm::vec4(glm::linearRand(0.0f, 1.0f));
+			data.m_TexOffset[i]			 = glm::vec2(0.0f, 0.0f);
+			data.m_Size[i]				 = glm::vec3(0.5f);
+			data.m_Rotation[i]			 = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
 		}
 	}
 
@@ -107,21 +107,21 @@ namespace XYZ {
 		m_Enabled  = other.m_Enabled;
 		return *this;
 	}
-	void ParticleLifeGenerator::Generate(ParticleDataBuffer* data, uint32_t startId, uint32_t endId) const
+	void ParticleLifeGenerator::Generate(ParticleDataBuffer& data, uint32_t startId, uint32_t endId) const
 	{
 		if (m_Enabled)
 		{
 			for (uint32_t i = startId; i < endId; i++)
 			{
-				data->m_Particle[i].LifeRemaining = m_LifeTime;
+				data.m_Particle[i].LifeRemaining = m_LifeTime;
 			}
 		}
 	}
 
 	ParticleRandomVelocityGenerator::ParticleRandomVelocityGenerator()
 		:
-		m_MinVelocity(-7.0f, -7.0f, -7.0f),
-		m_MaxVelocity(7.0f, 7.0f, 7.0f),
+		m_MinVelocity(-1.0f, -1.0f, 0.0f),
+		m_MaxVelocity(1.0f, 1.0f, 0.0f),
 		m_Enabled(true)
 	{
 	}
@@ -139,11 +139,65 @@ namespace XYZ {
 		m_Enabled = other.m_Enabled;
 		return *this;
 	}
-	void ParticleRandomVelocityGenerator::Generate(ParticleDataBuffer* data, uint32_t startId, uint32_t endId) const
+	void ParticleRandomVelocityGenerator::Generate(ParticleDataBuffer& data, uint32_t startId, uint32_t endId) const
 	{
-		for (uint32_t i = startId; i < endId; i++)
+		if (m_Enabled)
 		{
-			data->m_Particle[i].Velocity = glm::linearRand(m_MinVelocity, m_MaxVelocity);
+			for (uint32_t i = startId; i < endId; i++)
+			{
+				data.m_Particle[i].Velocity = glm::linearRand(m_MinVelocity, m_MaxVelocity);
+			}
+		}
+	}
+	ParticleCollisionGenerator::ParticleCollisionGenerator()
+		:
+		m_Enabled(true),
+		m_PhysicsWorld(nullptr)
+	{
+	}
+	void ParticleCollisionGenerator::Generate(ParticleDataBuffer& data, uint32_t startId, uint32_t endId)
+	{
+		if (m_Enabled)
+		{
+			resizeToFit(endId);
+			for (uint32_t i = startId; i < endId; i++)
+			{
+				b2Vec2 position = {
+					data.m_Particle[i].Position.x,
+					data.m_Particle[i].Position.y
+				};
+				b2Vec2 vel = {
+					   data.m_Particle[i].Velocity.x,
+					   data.m_Particle[i].Velocity.y,
+				};
+				m_Bodies[i]->SetTransform(position, 0.0f);
+				m_Bodies[i]->SetLinearVelocity(vel);
+			}
+		}
+	}
+	void ParticleCollisionGenerator::resizeToFit(size_t count)
+	{
+		if (m_Bodies.size() <= count)
+		{
+			size_t oldSize = m_Bodies.size();
+			m_Bodies.resize(count + 1);
+			for (uint32_t i = oldSize; i < m_Bodies.size(); ++i)
+			{
+				b2BodyDef bd;
+				bd.type = b2_kinematicBody;
+				m_Bodies[i] = m_PhysicsWorld->CreateBody(&bd);
+
+				b2PolygonShape shape;
+				shape.SetAsBox(1.0f / 2.0f, 1.0f / 2.0f);
+
+				//b2CircleShape shape;
+				//shape.m_radius = 0.5f;
+				b2FixtureDef fd;
+				fd.density = 1;
+				fd.shape = &shape;
+				m_Bodies[i]->CreateFixture(&fd);
+				m_Bodies[i]->SetGravityScale(0.0f);
+			}
 		}
 	}
 }

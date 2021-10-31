@@ -4,6 +4,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+#include <box2d/box2d.h>
+
 namespace XYZ {
 
     
@@ -40,8 +42,8 @@ namespace XYZ {
         glm::vec4*  m_StartColor;
         glm::vec4*  m_EndColor;
         glm::vec3*  m_Size;
-        glm::vec3*  m_Lights;
         glm::quat*  m_Rotation;
+
 
         CustomBuffer m_CustomData[3];
 

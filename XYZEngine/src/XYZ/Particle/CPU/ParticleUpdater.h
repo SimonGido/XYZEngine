@@ -11,8 +11,12 @@ namespace XYZ {
 	{
 	public:
 		MainUpdater();
-		void UpdateParticles(float ts, ParticleDataBuffer* data) const;
+		void UpdateParticles(float ts, ParticleDataBuffer& data) const;
 
+		void SetEnabled(bool enabled);
+		bool IsEnabled() const { return m_Enabled; }
+
+	private:
 		bool m_Enabled;
 	};
 
@@ -21,12 +25,20 @@ namespace XYZ {
 	public:
 		LightUpdater();
 
-		void UpdateParticles(float ts, ParticleDataBuffer* data) const;
+		void UpdateParticles(float ts, ParticleDataBuffer& data);
+
+		void SetEnabled(bool enabled);
+		bool IsEnabled() const { return m_Enabled; }
+		const std::vector<glm::vec3>& GetLights() const { return m_Lights; }
 
 		SceneEntity	m_LightEntity;
 		SceneEntity	m_TransformEntity;
+		
 		uint32_t	m_MaxLights;
-		bool		m_Enabled;
+		
+	private:
+		std::vector<glm::vec3> m_Lights;
+		bool				   m_Enabled;
 	};
 
 	class TextureAnimationUpdater
@@ -34,13 +46,17 @@ namespace XYZ {
 	public:
 		TextureAnimationUpdater();
 
-		void UpdateParticles(float ts, ParticleDataBuffer* data) const;
+		void UpdateParticles(float ts, ParticleDataBuffer& data) const;
+
+		void SetEnabled(bool enabled);
+		bool IsEnabled() const { return m_Enabled; }
 
 		glm::ivec2 m_Tiles;
 		uint32_t   m_StartFrame;
 		float      m_CycleLength;
-		bool	   m_Enabled;
-
+		
+	private:
+		bool m_Enabled;
 	};
 
 	class RotationOverLife
@@ -48,11 +64,15 @@ namespace XYZ {
 	public:
 		RotationOverLife();
 
-		void UpdateParticles(float ts, ParticleDataBuffer* data) const;
+		void UpdateParticles(float ts, ParticleDataBuffer& data) const;
 
+		void SetEnabled(bool enabled);
+		bool IsEnabled() const { return m_Enabled; }
 
 		glm::vec3 m_EulerAngles;
 		float	  m_CycleLength;
-		bool	  m_Enabled;
+		
+	private:
+		bool m_Enabled;
 	};
 }

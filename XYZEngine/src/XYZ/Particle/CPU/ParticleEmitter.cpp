@@ -6,7 +6,7 @@ namespace XYZ {
 	ParticleEmitterCPU::ParticleEmitterCPU()
 		:
 		m_EmitRate(0.0f),
-		m_EmittedParticles(10.0f)
+		m_EmittedParticles(0.0f)
 	{
 	}
 	void ParticleEmitterCPU::Emit(Timestep ts, ParticleDataBuffer& particles)
@@ -19,10 +19,10 @@ namespace XYZ {
 		if (newParticles)
 			m_EmittedParticles = 0.0f;
 
-		m_ShapeGenerator.Generate(&particles, startId, endId);
-		m_LifeGenerator.Generate(&particles, startId, endId);
-		m_RandomVelGenerator.Generate(&particles, startId, endId);
-
+		m_ShapeGenerator.Generate(particles, startId, endId);
+		m_LifeGenerator.Generate(particles, startId, endId);
+		m_RandomVelGenerator.Generate(particles, startId, endId);
+		m_CollisionGenerator.Generate(particles, startId, endId);
 		for (uint32_t i = startId; i < endId; ++i)
 			particles.Wake(i);
 	}

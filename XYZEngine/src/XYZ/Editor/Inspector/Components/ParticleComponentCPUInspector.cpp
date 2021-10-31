@@ -37,10 +37,14 @@ namespace XYZ {
 
 			ScopedLock<ParticleSystemCPU::UpdateData> updateData = system.GetUpdateData();
 
+			bool mainUpdaterEnabled = updateData->m_MainUpdater.IsEnabled();
 			EditorHelper::DrawNodeControl("Main Updater", updateData->m_MainUpdater, [](auto& val) {
 
-			}, updateData->m_MainUpdater.m_Enabled);
+			}, mainUpdaterEnabled);
+			updateData->m_MainUpdater.SetEnabled(mainUpdaterEnabled);
 
+
+			bool lightUpdaterEnabled = updateData->m_LightUpdater.IsEnabled();
 			EditorHelper::DrawNodeControl("Light Updater", updateData->m_LightUpdater, [](auto& val) {
 				
 				int maxLights = val.m_MaxLights;
@@ -49,9 +53,11 @@ namespace XYZ {
 					val.m_MaxLights = maxLights;
 				EditorHelper::EndColumns();
 
-			}, updateData->m_LightUpdater.m_Enabled);
+			}, lightUpdaterEnabled);
+			updateData->m_LightUpdater.SetEnabled(lightUpdaterEnabled);
 
 
+			bool textureAnimatorEnabled = updateData->m_TextureAnimUpdater.IsEnabled();
 			EditorHelper::DrawNodeControl("Texture Animation", updateData->m_TextureAnimUpdater, [](auto& val) {
 
 				EditorHelper::BeginColumns("Tiles");
@@ -66,9 +72,11 @@ namespace XYZ {
 				ImGui::InputFloat("##CycleLength", &val.m_CycleLength);
 				EditorHelper::EndColumns();
 
-			}, updateData->m_TextureAnimUpdater.m_Enabled);
+			}, textureAnimatorEnabled);
+			updateData->m_TextureAnimUpdater.SetEnabled(textureAnimatorEnabled);
 
 
+			bool rotationOverLifeEnabled = updateData->m_RotationOverLife.IsEnabled();
 			EditorHelper::DrawNodeControl("Rotation Over Life", updateData->m_RotationOverLife, [](auto& val) {
 
 				EditorHelper::BeginColumns("Euler Angles");
@@ -79,8 +87,8 @@ namespace XYZ {
 				ImGui::InputFloat("##CycleLength", &val.m_CycleLength);
 				EditorHelper::EndColumns();
 
-			}, updateData->m_RotationOverLife.m_Enabled);
-
+			}, rotationOverLifeEnabled);
+			updateData->m_RotationOverLife.SetEnabled(rotationOverLifeEnabled);
 
 			bool enabledEmitter = true;
 			ScopedLock<ParticleEmitterCPU> emitter = system.GetEmitter();
