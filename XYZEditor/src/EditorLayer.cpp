@@ -189,7 +189,7 @@ namespace XYZ {
 		
 		particleComponent.System = Ref<ParticleSystem>::Create(particleMaterial);
 		particleComponent.System->m_Renderer->m_Material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShader.glsl"));
-		particleComponent.System->m_Renderer->m_Material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
+		particleComponent.System->m_Renderer->m_Material->SetTexture("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
 		particleComponent.System->m_Renderer->m_Material->SetRenderQueueID(1);
 		
 		std::vector<ParticleData> particleData;
@@ -241,22 +241,26 @@ namespace XYZ {
 	{	
 		uint32_t numParticles = 1000;
 		auto& meshComponent = entity.EmplaceComponent<MeshComponent>();
-		meshComponent.Mesh = MeshFactory::CreateInstancedBox(
+		meshComponent.Mesh = MeshFactory::CreateInstancedCube(
 			glm::vec3(3.5f), 
-			{ { 0, XYZ::ShaderDataComponent::Float3, "a_Position" } },
+			{ 
+				{ 0, XYZ::ShaderDataComponent::Float3, "a_Position" },
+				{ 1, XYZ::ShaderDataComponent::Float2, "a_TexCoord" }
+			},
 			{
-				{ 1, XYZ::ShaderDataComponent::Float4, "a_IColor",    1 },
-				{ 2, XYZ::ShaderDataComponent::Float4, "a_ITexCoord", 1 },
-				{ 3, XYZ::ShaderDataComponent::Float3, "a_IPosition", 1 },
-				{ 4, XYZ::ShaderDataComponent::Float3, "a_ISize",     1 },
-				{ 5, XYZ::ShaderDataComponent::Float4, "a_IAxis",    1 }
+				{ 2, XYZ::ShaderDataComponent::Float4, "a_IColor",     1 },
+				{ 3, XYZ::ShaderDataComponent::Float3, "a_IPosition",  1 },
+				{ 4, XYZ::ShaderDataComponent::Float3, "a_ISize",      1 },
+				{ 5, XYZ::ShaderDataComponent::Float4, "a_IAxis",      1 },
+				{ 6, XYZ::ShaderDataComponent::Float2, "a_ITexOffset", 1 }
 			}, numParticles);
 
 		auto& particleComponentCPU = entity.EmplaceComponent<ParticleComponentCPU>();
 		particleComponentCPU.System.SetMaxParticles(numParticles);
 
 		Ref<Material> material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShaderCPU.glsl"));
-		material->Set("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
+		material->SetTexture("u_Texture", Texture2D::Create({}, "Assets/Textures/checkerboard.png"));
+		material->Set("u_Tiles", glm::vec2(1.0f, 1.0f));
 		material->SetRenderQueueID(1);
 		meshComponent.Mesh->SetMaterial(material);
 

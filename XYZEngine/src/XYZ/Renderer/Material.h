@@ -18,71 +18,24 @@ namespace XYZ {
 		Material(const Ref<Shader>& shader);
 		virtual ~Material() override;
 
+		virtual void Bind() const;
+
 		template<typename T>
-		void Set(const std::string& name, const T& val)
-		{
-			auto uni = findUniform(name);
-			XYZ_ASSERT(uni, "Material uniform does not exist ", name.c_str());
-			
-			auto& buffer = getUniformBufferTarget(uni->ShaderType);
-			buffer.Write((unsigned char*)&val, uni->Size, uni->Offset);
-
-			for (auto& it : m_MaterialInstances)
-				it->updateMaterialValue(uni);
-		}
+		void Set(const std::string& name, const T& val);
+		
 		template<typename T>
-		void Set(const std::string& name, const T& val, uint32_t size, uint32_t offset)
-		{
-			auto uni = findUniform(name);
-			XYZ_ASSERT(uni, "Material uniform does not exist ", name.c_str());
-			
-			auto& buffer = getUniformBufferTarget(uni->ShaderType);
-			buffer.Write((unsigned char*)&val, size, uni->Offset + offset);
-			
-			for (auto& it : m_MaterialInstances)
-				it->updateMaterialValue(uni);
-		}
-
-		void Set(const std::string& name, const Ref<Texture2D>& texture, uint32_t index = 0)
-		{
-			auto tex = findTexture(name);
-			XYZ_ASSERT(tex, "Material texture does not exist ", name.c_str());
-			
-			if ((uint32_t)m_Textures.size() <= tex->Slot + index)
-				m_Textures.resize((size_t)tex->Slot + 1 + index);
-				
-			m_Textures[size_t(tex->Slot) + size_t(index)] = texture;
-		}
-		void Set(const std::string& name, const Ref<Texture>& texture, uint32_t index = 0)
-		{
-			auto tex = findTexture(name);
-			XYZ_ASSERT(tex, "Material texture does not exist ", name.c_str());
-
-			if ((uint32_t)m_Textures.size() <= tex->Slot + index)
-				m_Textures.resize((size_t)tex->Slot + 1 + index);
-
-			m_Textures[size_t(tex->Slot) + size_t(index)] = texture;
-		}
+		void Set(const std::string& name, const T& val, uint32_t size, uint32_t offset);
+		
+		void SetTexture(const std::string& name, const Ref<Texture>& texture, uint32_t index = 0);
 
 		template <typename T>
-		T* Get(const std::string& name)
-		{
-			auto uni = findUniform(name);
-			XYZ_ASSERT(uni, "Material uniform does not exist ", name.c_str());
-			auto& buffer = getUniformBufferTarget(uni->ShaderType);
-			return (T*)&buffer[uni->Offset];
-		}
-
-		bool HasProperty(const std::string& name) const
-		{
-			auto uni = findUniform(name);
-			return uni;
-		}
-
-		void Bind() const;
-		void ClearTextures() { m_Textures.clear(); }
+		T&	 Get(const std::string& name);
+		
+		bool HasProperty(const std::string& name) const;
+		
+		void ClearTextures()				   { m_Textures.clear(); }
 		void SetFlags(RenderFlags renderFlags) { m_Flags |= renderFlags; }
-		void SetRenderQueueID(uint8_t id) { m_RenderQueueID = id; }
+		void SetRenderQueueID(uint8_t id)	   { m_RenderQueueID = id; }
 
 		uint64_t GetFlags() const { return m_Flags; }
 		uint8_t  GetRenderQueueID() const { return m_RenderQueueID; }
@@ -97,15 +50,14 @@ namespace XYZ {
 		bool operator != (const Material& other) const;
 		
 	private:
-		void onShaderReload();
-		ByteBuffer& getUniformBufferTarget(ShaderType type);
-		const Uniform* findUniform(const std::string& name) const;
+		void				  onShaderReload();
+		ByteBuffer&			  getUniformBufferTarget(ShaderType type);
+		const Uniform*		  findUniform(const std::string& name) const;
 		const TextureUniform* findTexture(const std::string& name) const;
 
 	private:
-		Ref<Shader> m_Shader;
+		Ref<Shader>				  m_Shader;
 		std::vector<Ref<Texture>> m_Textures;
-		std::unordered_set<MaterialInstance*> m_MaterialInstances;
 
 		ByteBuffer m_VSUniformBuffer;
 		ByteBuffer m_FSUniformBuffer;
@@ -114,65 +66,53 @@ namespace XYZ {
 	};
 
 
-	class MaterialInstance : public RefCount
+	template<typename T>
+	inline void Material::Set(const std::string& name, const T& val)
+	{
+		static_assert((!std::is_same<T, Ref<Texture>>::value) && (!std::is_same<T, Ref<Texture2D>>::value), "Use SetTexture");
+		auto uni = findUniform(name);
+		XYZ_ASSERT(uni, "Material uniform does not exist ", name.c_str());
+
+		auto& buffer = getUniformBufferTarget(uni->ShaderType);
+		buffer.Write((unsigned char*)&val, uni->Size, uni->Offset);
+	}
+
+	template<typename T>
+	inline void Material::Set(const std::string& name, const T& val, uint32_t size, uint32_t offset)
+	{
+		static_assert((!std::is_same<T, Ref<Texture>>::value) && (!std::is_same<T, Ref<Texture2D>>::value), "Use SetTexture");
+		auto uni = findUniform(name);
+		XYZ_ASSERT(uni, "Material uniform does not exist ", name.c_str());
+
+		auto& buffer = getUniformBufferTarget(uni->ShaderType);
+		buffer.Write((unsigned char*)&val, size, uni->Offset + offset);
+	}
+
+	template<typename T>
+	inline T& Material::Get(const std::string& name)
+	{
+		auto uni = findUniform(name);
+		XYZ_ASSERT(uni, "Material uniform does not exist ", name.c_str());
+		auto& buffer = getUniformBufferTarget(uni->ShaderType);
+		return *(T*)&buffer[uni->Offset];
+	}
+
+
+
+	class MaterialInstance : public Material
 	{
 		friend class Material;
 	public:
-	
 		MaterialInstance(const Ref<Material>& material);
-		~MaterialInstance();
+		virtual ~MaterialInstance() override;
 
-		template<typename T>
-		void Set(const std::string& name, const T& val)
-		{
-			auto uni = m_Material->findUniform(name);
-			XYZ_ASSERT(uni, "Material uniform does not exist ", name.c_str());
-			
-			auto& buffer = getUniformBufferTarget(uni->ShaderType);
-			buffer.Write((unsigned char*)&val, uni->Size, uni->Offset);
-			m_UpdatedValues.insert(name);
-		}
+		virtual void Bind() const override;
 
-		template<typename T>
-		void Set(const std::string& name, const T& val, uint32_t size, uint32_t offset)
-		{
-			auto uni = m_Material->findUniform(name);
-			XYZ_ASSERT(uni, "Material uniform does not exist ", name.c_str());	
-			XYZ_ASSERT(size + Offset < uni->Size, "Material uniform out of range");
-			
-			auto& buffer = getUniformBufferTarget(uni->ShaderType);
-			buffer.Write((unsigned char*)&val, uni->Size, uni->Offset);
-			m_UpdatedValues.insert(name);
-		}
-
-		template <typename T>
-		T& Get(const std::string& name)
-		{
-			auto uni = m_Material->findUniform(name);
-			XYZ_ASSERT(uni, "Material uniform does not exist ", name.c_str());
-			auto& buffer =getUniformBufferTarget(uni->ShaderType);
-			return *(T*)&buffer[uni->Offset];
-		}
-
-		void Bind() const;
-
-		uint64_t GetFlags() const { return m_Material->m_Flags; }	
-		const uint8_t* GetVSUniformBuffer() const { return m_VSUniformBuffer; }
-		const uint8_t* GetFSUniformBuffer() const { return m_FSUniformBuffer; }
-		Ref<Material> GetParentMaterial() const { return m_Material; }
+		Ref<Material>  GetParentMaterial() const { return m_Material; }
 
 		static Ref<MaterialInstance> Create(const Ref<Material>& material);
-	private:
 
-		void onShaderReload();
-		void updateMaterialValue(const Uniform* uni);
-		ByteBuffer& getUniformBufferTarget(ShaderType type);
 	private:
 		Ref<Material> m_Material;
-
-		ByteBuffer m_VSUniformBuffer;
-		ByteBuffer m_FSUniformBuffer;
-		std::unordered_set<std::string> m_UpdatedValues;
 	};
-
 }

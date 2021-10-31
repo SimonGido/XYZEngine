@@ -86,35 +86,35 @@ namespace XYZ {
 				ImGui::PushItemWidth(ImGui::CalcItemWidth());
 				if (uniform.DataType == UniformDataType::Int)
 				{
-					ImGui::InputInt(id.c_str(), material->Get<int>(uniform.Name));					
+					ImGui::InputInt(id.c_str(), &material->Get<int>(uniform.Name));					
 				}
 				else if (uniform.DataType == UniformDataType::IntVec2)
 				{			
-					ImGui::InputInt2(id.c_str(), glm::value_ptr(*material->Get<glm::ivec2>(uniform.Name)));
+					ImGui::InputInt2(id.c_str(), glm::value_ptr(material->Get<glm::ivec2>(uniform.Name)));
 				}
 				else if (uniform.DataType == UniformDataType::IntVec3)
 				{
-					ImGui::InputInt3(id.c_str(), glm::value_ptr(*material->Get<glm::ivec3>(uniform.Name)));
+					ImGui::InputInt3(id.c_str(), glm::value_ptr(material->Get<glm::ivec3>(uniform.Name)));
 				}
 				else if (uniform.DataType == UniformDataType::IntVec4)
 				{
-					ImGui::InputInt4(id.c_str(), glm::value_ptr(*material->Get<glm::ivec4>(uniform.Name)));
+					ImGui::InputInt4(id.c_str(), glm::value_ptr(material->Get<glm::ivec4>(uniform.Name)));
 				}
 				else if (uniform.DataType == UniformDataType::Float)
 				{
-					ImGui::InputFloat(id.c_str(), material->Get<float>(uniform.Name));
+					ImGui::InputFloat(id.c_str(), &material->Get<float>(uniform.Name));
 				}
 				else if (uniform.DataType == UniformDataType::Vec2)
 				{
-					ImGui::InputFloat2(id.c_str(), glm::value_ptr(*material->Get<glm::vec2>(uniform.Name)));
+					ImGui::InputFloat2(id.c_str(), glm::value_ptr(material->Get<glm::vec2>(uniform.Name)));
 				}
 				else if (uniform.DataType == UniformDataType::Vec3)
 				{				
-					ImGui::InputFloat3(id.c_str(), glm::value_ptr(*material->Get<glm::vec3>(uniform.Name)));
+					ImGui::InputFloat3(id.c_str(), glm::value_ptr(material->Get<glm::vec3>(uniform.Name)));
 				}
 				else if (uniform.DataType == UniformDataType::Vec4)
 				{	
-					ImGui::InputFloat4(id.c_str(), glm::value_ptr(*material->Get<glm::vec4>(uniform.Name)));		
+					ImGui::InputFloat4(id.c_str(), glm::value_ptr(material->Get<glm::vec4>(uniform.Name)));		
 				}
 				ImGui::PopItemWidth();
 				Helper::EndColumns();

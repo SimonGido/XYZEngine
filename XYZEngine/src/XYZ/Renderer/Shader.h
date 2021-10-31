@@ -142,6 +142,7 @@ namespace XYZ {
 		virtual const std::string& GetName() const = 0;
 		
 		virtual uint32_t GetRendererID() const = 0;
+		size_t			 GetHash() const;
 
 		static Ref<Shader> Create(const std::string& path);
 		static Ref<Shader> Create(const std::string& name, const std::string& path);

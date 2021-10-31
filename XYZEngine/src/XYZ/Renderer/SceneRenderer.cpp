@@ -75,9 +75,10 @@ namespace XYZ {
 			m_BloomPass = RenderPass::Create({ fbo });
 		}
 
-		m_CompositeShader = Shader::Create("Assets/Shaders/RendererCore/CompositeShader.glsl");
-		m_LightShader = Shader::Create("Assets/Shaders/RendererCore/LightShader.glsl");
-		m_BloomShader = Shader::Create("Assets/Shaders/RendererCore/Bloom.glsl");
+		m_CompositeShader	 = Shader::Create("Assets/Shaders/RendererCore/CompositeShader.glsl");
+		m_LightShader		 = Shader::Create("Assets/Shaders/RendererCore/LightShader.glsl");
+		m_BloomComputeShader = Shader::Create("Assets/Shaders/RendererCore/Bloom.glsl");
+
 
 		m_BloomTexture[0] = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, {});
 		m_BloomTexture[1] = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, {});
@@ -316,7 +317,6 @@ namespace XYZ {
 			Renderer::DrawIndexed(PrimitiveType::Triangles, dc.Mesh->GetIndexCount(), 0);
 		}
 		
-
 		m_Renderer2D->BeginScene();
 		for (auto& dc : queue.m_SpriteDrawList)
 		{
@@ -330,7 +330,7 @@ namespace XYZ {
 		// TODO: last should be renderer2D
 		for (auto& dc : queue.m_InstancedMeshCommandList)
 		{
-			auto material = dc.Mesh->GetMaterial();
+			auto& material = dc.Mesh->GetMaterial();
 			auto shader = material->GetShader();
 			material->Bind();
 			shader->SetMat4("u_Transform", dc.Transform);
@@ -343,37 +343,38 @@ namespace XYZ {
 	void SceneRenderer::lightPass()
 	{
 		Renderer::BeginRenderPass(m_LightPass, true);
-
+	
 		m_LightShader->Bind();
 		m_LightShader->SetInt("u_NumberPointLights", (int)m_PointLightsList.size());
 		m_LightShader->SetInt("u_NumberSpotLights", (int)m_SpotLightsList.size());
-
+	
 		m_GeometryPass->GetSpecification().TargetFramebuffer->BindTexture(0, 0);
 		m_GeometryPass->GetSpecification().TargetFramebuffer->BindTexture(1, 1);
-
+	
 		Renderer::SubmitFullscreenQuad();
-
+	
 		Renderer::EndRenderPass();
 	}
+
 	void SceneRenderer::bloomPass()
 	{
-		m_BloomShader->Bind();
-		m_BloomShader->SetFloat("u_FilterTreshold", 1.0f);
-		m_BloomShader->SetFloat("u_FilterKnee", 0.1f);
+		m_BloomComputeShader->Bind();
+		m_BloomComputeShader->SetFloat("u_FilterTreshold", 1.0f);
+		m_BloomComputeShader->SetFloat("u_FilterKnee", 0.1f);
 		
 		uint32_t workGroupSize = 4;
 		uint32_t workGroupsX = (uint32_t)glm::ceil(m_ViewportSize.x / workGroupSize);
 		uint32_t workGroupsY = (uint32_t)glm::ceil(m_ViewportSize.y / workGroupSize);
 	
 		// Filter stage
-		m_BloomShader->SetInt("u_Mode", 0);
+		m_BloomComputeShader->SetInt("u_Mode", 0);
 
 		m_BloomTexture[0]->BindImage(0, 0, BindImageType::Write); // o_Image
 		m_LightPass->GetSpecification().TargetFramebuffer->BindTexture(0, 1); // u_Texture
-		m_BloomShader->Compute(workGroupsX, workGroupsY, 1, ComputeBarrierType::ShaderImageAccessBarrier);
+		m_BloomComputeShader->Compute(workGroupsX, workGroupsY, 1, ComputeBarrierType::ShaderImageAccessBarrier);
 		
 		// Downsample stage
-		m_BloomShader->SetInt("u_Mode", 1);
+		m_BloomComputeShader->SetInt("u_Mode", 1);
 		uint32_t mips = m_BloomTexture[0]->GetMipLevelCount() - 2;
 		for (uint32_t i = 1; i < mips; ++i)
 		{
@@ -385,21 +386,21 @@ namespace XYZ {
 			workGroupsX = (uint32_t)glm::ceil((float)mipWidth /  (float)workGroupSize);
 			workGroupsY = (uint32_t)glm::ceil((float)mipHeight / (float)workGroupSize);
 	
-			m_BloomShader->SetFloat("u_LOD", i - 1.0f);
-			m_BloomShader->Compute(workGroupsX, workGroupsY, 1, ComputeBarrierType::ShaderImageAccessBarrier);
+			m_BloomComputeShader->SetFloat("u_LOD", i - 1.0f);
+			m_BloomComputeShader->Compute(workGroupsX, workGroupsY, 1, ComputeBarrierType::ShaderImageAccessBarrier);
 		
 	
 			m_BloomTexture[0]->BindImage(0, i, BindImageType::Write); // o_Image
 			m_BloomTexture[1]->Bind(1);							   // u_Texture
 
-			m_BloomShader->SetFloat("u_LOD", i);
-			m_BloomShader->Compute(workGroupsX, workGroupsY, 1, ComputeBarrierType::ShaderImageAccessBarrier);
+			m_BloomComputeShader->SetFloat("u_LOD", i);
+			m_BloomComputeShader->Compute(workGroupsX, workGroupsY, 1, ComputeBarrierType::ShaderImageAccessBarrier);
 		}
 
 		// Upsample first
-		m_BloomShader->SetInt("u_Mode", 2);
+		m_BloomComputeShader->SetInt("u_Mode", 2);
 
-		m_BloomShader->SetFloat("u_LOD", mips - 2.0f);
+		m_BloomComputeShader->SetFloat("u_LOD", mips - 2.0f);
 		m_BloomTexture[2]->BindImage(0, mips - 2, BindImageType::Write); // o_Image
 		m_BloomTexture[0]->Bind(1);									  // u_Texture 
 
@@ -407,10 +408,10 @@ namespace XYZ {
 		auto [mipWidth, mipHeight] = m_BloomTexture[2]->GetMipSize(mips - 2);
 		workGroupsX = (uint32_t)glm::ceil((float)mipWidth / (float)workGroupSize);
 		workGroupsY = (uint32_t)glm::ceil((float)mipHeight / (float)workGroupSize);
-		m_BloomShader->Compute(workGroupsX, workGroupsY, 1, ComputeBarrierType::ShaderImageAccessBarrier);
+		m_BloomComputeShader->Compute(workGroupsX, workGroupsY, 1, ComputeBarrierType::ShaderImageAccessBarrier);
 		
 		// Upsample stage
-		m_BloomShader->SetInt("u_Mode", 3);
+		m_BloomComputeShader->SetInt("u_Mode", 3);
 		for (int32_t mip = mips - 3; mip >= 0; mip--)
 		{
 			auto [mipWidth, mipHeight] = m_BloomTexture[2]->GetMipSize(mip);
@@ -421,8 +422,8 @@ namespace XYZ {
 			m_BloomTexture[0]->Bind(1);							     // u_Texture 
 			m_BloomTexture[2]->Bind(2);								 // u_BloomTexture
 	
-			m_BloomShader->SetFloat("u_LOD", mip);
-			m_BloomShader->Compute(workGroupsX, workGroupsY, 1, ComputeBarrierType::ShaderImageAccessBarrier);
+			m_BloomComputeShader->SetFloat("u_LOD", mip);
+			m_BloomComputeShader->Compute(workGroupsX, workGroupsY, 1, ComputeBarrierType::ShaderImageAccessBarrier);
 		}
 	}
 }

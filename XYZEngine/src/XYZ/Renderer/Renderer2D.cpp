@@ -68,7 +68,7 @@ namespace XYZ {
 
 		uint32_t whiteTextureData = 0xffffffff;
 		m_WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
-		m_DefaultQuadMaterial->Set("u_Texture", m_WhiteTexture);
+		m_DefaultQuadMaterial->SetTexture("u_Texture", m_WhiteTexture);
 		m_DefaultQuadMaterial->Set("u_Color", glm::vec4(1.0f));
 
 

@@ -36,14 +36,13 @@ namespace XYZ {
         Particle*   m_Particle;
 
         // Additional particle properties;
-        glm::vec4*  m_TexCoord;
+        glm::vec2*  m_TexOffset;
         glm::vec4*  m_StartColor;
         glm::vec4*  m_EndColor;
         glm::vec3*  m_Size;
         glm::vec3*  m_Lights;
-
         glm::quat*  m_Rotation;
-       
+
         CustomBuffer m_CustomData[3];
 
         uint32_t GetMaxParticles() const { return m_MaxParticles; }

@@ -6,6 +6,10 @@
 
 
 namespace XYZ {
+	size_t Shader::GetHash() const
+	{
+		return std::hash<std::string>{}(FilePath);
+	}
 	Ref<Shader> Shader::Create(const std::string& path)
 	{
 		switch (Renderer::GetAPI())

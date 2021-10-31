@@ -14,14 +14,13 @@
 
 namespace XYZ {
 
-	//TODO: handle 3d particles
 	struct ParticleRenderData
 	{
 		glm::vec4 Color;
-		glm::vec4 TexCoord;
 		glm::vec3 Position;
 		glm::vec3 Size;
 		glm::quat Axis;
+		glm::vec2 TexOffset;
 	};
 
 	class SceneRenderer;
@@ -32,8 +31,10 @@ namespace XYZ {
 		{
 			UpdateData();
 
-			MainUpdater		   m_MainUpdater;
-			LightUpdater	   m_LightUpdater;	
+			MainUpdater				m_MainUpdater;
+			LightUpdater			m_LightUpdater;	
+			TextureAnimationUpdater m_TextureAnimUpdater;
+			RotationOverLife		m_RotationOverLife;
 		};
 		struct RenderData
 		{
@@ -55,7 +56,7 @@ namespace XYZ {
 		ParticleSystemCPU& operator=(ParticleSystemCPU&& other) noexcept;
 
 		void Update(Timestep ts);
-		void SubmitLights(Ref<SceneRenderer> renderer);
+		void SetupForRender(Ref<SceneRenderer> renderer);
 		void Play();
 		void Stop();
 		void SetMaxParticles(uint32_t maxParticles);

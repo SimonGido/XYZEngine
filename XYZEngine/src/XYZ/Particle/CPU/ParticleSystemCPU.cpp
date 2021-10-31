@@ -104,7 +104,7 @@ namespace XYZ {
 		}
 	}
 
-	void ParticleSystemCPU::SubmitLights(Ref<SceneRenderer> renderer)
+	void ParticleSystemCPU::SetupForRender(Ref<SceneRenderer> renderer)
 	{
 		XYZ_PROFILE_FUNC("ParticleSystemCPU::SubmitLights");
 		auto updateData = m_UpdateThreadPass.GetRead<UpdateData>();
@@ -228,6 +228,8 @@ namespace XYZ {
 		ScopedLockRead<UpdateData> data = m_UpdateThreadPass.GetRead<UpdateData>();
 		data->m_MainUpdater.UpdateParticles(timestep, &particles);
 		data->m_LightUpdater.UpdateParticles(timestep, &particles);
+		data->m_TextureAnimUpdater.UpdateParticles(timestep, &particles);
+		data->m_RotationOverLife.UpdateParticles(timestep, &particles);
 	}
 	void ParticleSystemCPU::emit(Timestep timestep, ParticleDataBuffer& particles)
 	{
@@ -246,10 +248,10 @@ namespace XYZ {
 			auto& particle = particles.m_Particle[i];
 			buffer[i] = ParticleRenderData{
 				particle.Color,
-				particles.m_TexCoord[i],
 				particle.Position,
 				particles.m_Size[i],
-				particles.m_Rotation[i]
+				particles.m_Rotation[i],
+				particles.m_TexOffset[i]
 			};
 		}
 		val->m_InstanceCount = endId;

@@ -2,6 +2,20 @@
 #include "Mesh.h"
 
 namespace XYZ {
+
+	struct Vertex
+	{
+		glm::vec3 Position;
+		glm::vec2 TexCoord;
+	};
+
+	struct Triangle
+	{
+		uint32_t First;
+		uint32_t Second;
+		uint32_t Third;
+	};
+
 	class MeshFactory
 	{
 	public:
@@ -11,5 +25,8 @@ namespace XYZ {
 		static Ref<Mesh> CreateBox(const glm::vec3& size, const BufferLayout& layout);
 		static Ref<Mesh> CreateInstancedBox(const glm::vec3& size, const BufferLayout& layout, const BufferLayout& instanceLayout, uint32_t count);
 
+		// Cube is just a box with 24 vertices, required for texturing
+		static Ref<Mesh> CreateCube(const glm::vec3& size, const BufferLayout& layout);
+		static Ref<Mesh> CreateInstancedCube(const glm::vec3& size, const BufferLayout& layout, const BufferLayout& instanceLayout, uint32_t count);
 	};
 }

@@ -566,7 +566,7 @@ namespace XYZ {
 			GUID textureHandle(seq["TextureAsset"].as<std::string>());
 			uint32_t index = seq["TextureIndex"].as<uint32_t>();
 			Ref<Texture2D> texture = AssetManager::GetAsset<Texture2D>(textureHandle);
-			material->Set("u_Texture", texture, index);
+			material->SetTexture("u_Texture", texture, index);
 		}
 
 		for (auto& seq : data["Values"])

@@ -17,7 +17,7 @@ namespace XYZ {
 		else
 		{
 			m_Particle		  = nullptr;
-			m_TexCoord		  = nullptr;
+			m_TexOffset		  = nullptr;
 			m_StartColor	  = nullptr;
 			m_EndColor		  = nullptr;
 			m_Size			  = nullptr;
@@ -28,7 +28,7 @@ namespace XYZ {
 	ParticleDataBuffer::ParticleDataBuffer(ParticleDataBuffer&& other) noexcept
 	{
 		m_Particle = other.m_Particle;
-		m_TexCoord = other.m_TexCoord;
+		m_TexOffset = other.m_TexOffset;
 		m_StartColor = other.m_StartColor;
 		m_EndColor = other.m_EndColor;
 		m_Size = other.m_Size;
@@ -38,7 +38,7 @@ namespace XYZ {
 		m_AliveParticles = other.m_AliveParticles;
 
 		other.m_Particle = nullptr;
-		other.m_TexCoord = nullptr;
+		other.m_TexOffset = nullptr;
 		other.m_StartColor = nullptr;
 		other.m_EndColor = nullptr;
 		other.m_Size = nullptr;
@@ -65,7 +65,7 @@ namespace XYZ {
 		else
 		{
 			m_Particle = nullptr;
-			m_TexCoord = nullptr;
+			m_TexOffset = nullptr;
 			m_StartColor = nullptr;
 			m_EndColor = nullptr;
 			m_Size = nullptr;
@@ -88,7 +88,7 @@ namespace XYZ {
 		else
 		{
 			m_Particle = nullptr;
-			m_TexCoord = nullptr;
+			m_TexOffset = nullptr;
 			m_StartColor = nullptr;
 			m_EndColor = nullptr;
 			m_Size = nullptr;
@@ -102,7 +102,7 @@ namespace XYZ {
 	{
 		deleteParticles();
 		m_Particle = other.m_Particle;
-		m_TexCoord = other.m_TexCoord;
+		m_TexOffset = other.m_TexOffset;
 		m_StartColor = other.m_StartColor;
 		m_EndColor = other.m_EndColor;
 		m_Size = other.m_Size;
@@ -112,7 +112,7 @@ namespace XYZ {
 		m_AliveParticles = other.m_AliveParticles;
 
 		other.m_Particle = nullptr;
-		other.m_TexCoord = nullptr;
+		other.m_TexOffset = nullptr;
 		other.m_StartColor = nullptr;
 		other.m_EndColor = nullptr;
 		other.m_Size = nullptr;
@@ -143,7 +143,7 @@ namespace XYZ {
 	void ParticleDataBuffer::generateParticles(uint32_t particleCount)
 	{
 		m_Particle		  = new Particle[particleCount];
-		m_TexCoord		  = new glm::vec4[particleCount];
+		m_TexOffset		  = new glm::vec2[particleCount];
 		m_StartColor      = new glm::vec4[particleCount];
 		m_EndColor        = new glm::vec4[particleCount];
 		m_Size			  = new glm::vec3[particleCount];
@@ -156,7 +156,7 @@ namespace XYZ {
 	void ParticleDataBuffer::swapData(uint32_t a, uint32_t b)
 	{
 		m_Particle[a]		 = m_Particle[b];
-		m_TexCoord[a]		 = m_TexCoord[b];
+		m_TexOffset[a]		 = m_TexOffset[b];
 		m_StartColor[a]		 = m_StartColor[b];
 		m_EndColor[a]		 = m_EndColor[b];
 		m_Size[a]			 = m_Size[b];
@@ -164,27 +164,31 @@ namespace XYZ {
 		m_Rotation[a]		 = m_Rotation[b];
 	}
 
+	template <typename T>
+	static void copy(T* dest, T* source, uint32_t count)
+	{
+		memcpy(dest, source, count * sizeof(T));
+	}
+
 	void ParticleDataBuffer::copyData(const ParticleDataBuffer& source)
 	{
-		memcpy(m_Particle,		  source.m_Particle,		m_MaxParticles * sizeof(Particle));
-		memcpy(m_TexCoord,		  source.m_TexCoord,		m_MaxParticles * sizeof(glm::vec4));
-		memcpy(m_StartColor,      source.m_StartColor,		m_MaxParticles * sizeof(glm::vec4));
-		memcpy(m_EndColor,	      source.m_EndColor,		m_MaxParticles * sizeof(glm::vec4));
-		memcpy(m_Size,			  source.m_Size,			m_MaxParticles * sizeof(glm::vec3));
-		memcpy(m_Lights,		  source.m_Lights,			m_MaxParticles * sizeof(glm::vec3));
-		memcpy(m_Rotation,		  source.m_Rotation,		m_MaxParticles * sizeof(glm::quat));
+		copy(m_Particle,   source.m_Particle,	m_MaxParticles);
+		copy(m_TexOffset,   source.m_TexOffset,	m_MaxParticles);
+		copy(m_StartColor, source.m_StartColor,	m_MaxParticles);
+		copy(m_EndColor,   source.m_EndColor,	m_MaxParticles);
+		copy(m_Size,	   source.m_Size,		m_MaxParticles);
+		copy(m_Lights,	   source.m_Lights,		m_MaxParticles);
+		copy(m_Rotation,   source.m_Rotation,	m_MaxParticles);
 	}
 
 	void ParticleDataBuffer::deleteParticles()
 	{
 		delete[]m_Particle;
-		delete[]m_TexCoord;
+		delete[]m_TexOffset;
 		delete[]m_StartColor;
 		delete[]m_EndColor;
 		delete[]m_Size;
 		delete[]m_Lights;
 		delete[]m_Rotation;
 	}
-
-	
 }

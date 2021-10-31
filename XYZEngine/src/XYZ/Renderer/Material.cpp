@@ -22,7 +22,24 @@ namespace XYZ {
 	{
 		delete[] m_VSUniformBuffer;
 		delete[] m_FSUniformBuffer;
-	}			
+	}
+
+	void Material::SetTexture(const std::string& name, const Ref<Texture>& texture, uint32_t index)
+	{
+		auto tex = findTexture(name);
+		XYZ_ASSERT(tex, "Material texture does not exist ", name.c_str());
+
+		if ((uint32_t)m_Textures.size() <= tex->Slot + index)
+			m_Textures.resize((size_t)tex->Slot + 1 + index);
+
+		m_Textures[size_t(tex->Slot) + size_t(index)] = texture;
+	}
+
+	bool Material::HasProperty(const std::string& name) const
+	{
+		auto uni = findUniform(name);
+		return uni;
+	}
 
 	void Material::Bind() const
 	{
@@ -59,9 +76,6 @@ namespace XYZ {
 		m_VSUniformBuffer.Allocate(m_Shader->GetVSUniformList().Size);
 		m_FSUniformBuffer.Allocate(m_Shader->GetFSUniformList().Size);
 		m_Flags = m_Shader->GetRendererID();
-
-		for (auto& it : m_MaterialInstances)
-			it->onShaderReload();
 	}
 
 	ByteBuffer& Material::getUniformBufferTarget(ShaderType type)
@@ -102,20 +116,15 @@ namespace XYZ {
 	}
 
 	MaterialInstance::MaterialInstance(const Ref<Material>& material)
-		: m_Material(material)
+		: 
+		Material(material->GetShader()),
+		m_Material(material)
 	{
-		m_Material->m_MaterialInstances.insert(this);
-		m_VSUniformBuffer = ByteBuffer::Copy(m_Material->m_VSUniformBuffer, m_Material->m_VSUniformBuffer.GetSize());
-		m_FSUniformBuffer = ByteBuffer::Copy(m_Material->m_FSUniformBuffer, m_Material->m_FSUniformBuffer.GetSize());
 	}
 
 	MaterialInstance::~MaterialInstance()
 	{
-		m_Material->m_MaterialInstances.erase(this);
-		delete[] m_VSUniformBuffer;
-		delete[] m_FSUniformBuffer;
 	}
-
 
 	void MaterialInstance::Bind() const
 	{
@@ -129,35 +138,4 @@ namespace XYZ {
 	{
 		return Ref<MaterialInstance>::Create(material);
 	}
-
-	void MaterialInstance::onShaderReload()
-	{
-		m_VSUniformBuffer.Allocate(m_Material->m_Shader->GetVSUniformList().Size);
-		m_FSUniformBuffer.Allocate(m_Material->m_Shader->GetFSUniformList().Size);
-	}
-
-	void MaterialInstance::updateMaterialValue(const Uniform* uni)
-	{
-		if (m_UpdatedValues.find(uni->Name) == m_UpdatedValues.end())
-		{
-			if (uni->ShaderType == ShaderType::Vertex)
-			{
-				auto data = (uint8_t*)m_Material->m_VSUniformBuffer + uni->Offset;
-				m_VSUniformBuffer.Write(data, uni->Size, uni->Offset);
-			}
-			else
-			{
-				auto data = (uint8_t*)m_Material->m_FSUniformBuffer + uni->Offset;
-				m_FSUniformBuffer.Write(data, uni->Size, uni->Offset);
-			}
-		}
-	}
-
-	ByteBuffer& MaterialInstance::getUniformBufferTarget(ShaderType type)
-	{
-		if (type == ShaderType::Vertex)
-			return m_VSUniformBuffer;
-		return m_FSUniformBuffer;
-	}
-
 }

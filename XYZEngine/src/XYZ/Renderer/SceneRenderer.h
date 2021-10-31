@@ -141,7 +141,7 @@ namespace XYZ {
 
 		Ref<Shader>			m_CompositeShader;
 		Ref<Shader>			m_LightShader;
-		Ref<Shader>			m_BloomShader;
+		Ref<Shader>			m_BloomComputeShader;
 		Ref<Texture2D>		m_BloomTexture[3];
 
 		Ref<ShaderStorageBuffer> m_LightStorageBuffer;

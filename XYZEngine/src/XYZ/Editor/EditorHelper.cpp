@@ -11,6 +11,7 @@ namespace XYZ {
 		ImGui::Text(label);
 		ImGui::NextColumn();
 	}
+
 	void EditorHelper::EndColumns(int count)
 	{
 		ImGui::PopID();

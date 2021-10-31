@@ -51,6 +51,37 @@ namespace XYZ {
 
 			}, updateData->m_LightUpdater.m_Enabled);
 
+
+			EditorHelper::DrawNodeControl("Texture Animation", updateData->m_TextureAnimUpdater, [](auto& val) {
+
+				EditorHelper::BeginColumns("Tiles");
+				ImGui::InputInt2("##Tiles", (int*)&val.m_Tiles);
+				EditorHelper::EndColumns();
+
+				EditorHelper::BeginColumns("Start Frame");
+				ImGui::InputInt("##StartFrame", (int*)&val.m_StartFrame);
+				EditorHelper::EndColumns();
+
+				EditorHelper::BeginColumns("Cycle Length");
+				ImGui::InputFloat("##CycleLength", &val.m_CycleLength);
+				EditorHelper::EndColumns();
+
+			}, updateData->m_TextureAnimUpdater.m_Enabled);
+
+
+			EditorHelper::DrawNodeControl("Rotation Over Life", updateData->m_RotationOverLife, [](auto& val) {
+
+				EditorHelper::BeginColumns("Euler Angles");
+				ImGui::DragFloat3("##EulerAngles", glm::value_ptr(val.m_EulerAngles));
+				EditorHelper::EndColumns();
+
+				EditorHelper::BeginColumns("Cycle Length");
+				ImGui::InputFloat("##CycleLength", &val.m_CycleLength);
+				EditorHelper::EndColumns();
+
+			}, updateData->m_RotationOverLife.m_Enabled);
+
+
 			bool enabledEmitter = true;
 			ScopedLock<ParticleEmitterCPU> emitter = system.GetEmitter();
 			EditorHelper::DrawNodeControl("Emitter", emitter.As(), [=](auto& val) {

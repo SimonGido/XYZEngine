@@ -271,7 +271,7 @@ namespace XYZ {
 		for (auto entity : particleViewCPU)
 		{
 			auto [transform, particle, mesh] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU, MeshComponent>(entity);
-			particle.System.SubmitLights(sceneRenderer);
+			particle.System.SetupForRender(sceneRenderer);
 			auto renderData = particle.System.GetRenderDataRead();
 			mesh.Mesh->SetVertexBufferData(1, renderData->m_RenderParticleData, renderData->m_RenderParticleData.SizeInBytes());
 			sceneRenderer->SubmitMeshInstanced(mesh.Mesh, transform.WorldTransform, renderData->m_InstanceCount);
@@ -333,7 +333,7 @@ namespace XYZ {
 		for (auto entity : particleViewCPU)
 		{
 			auto [transform, particle, mesh] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU, MeshComponent>(entity);
-			particle.System.SubmitLights(sceneRenderer);
+			particle.System.SetupForRender(sceneRenderer);
 			particle.System.Update(ts);
 			auto renderData = particle.System.GetRenderDataRead();
 			auto data = renderData->m_RenderParticleData.As<ParticleRenderData>();
@@ -482,6 +482,7 @@ namespace XYZ {
 				fixture.shape = &poly;
 				fixture.density = boxCollider.Density;
 				fixture.friction = boxCollider.Friction;
+				
 				boxCollider.RuntimeFixture = body->CreateFixture(&fixture);
 			}
 			else if (entity.HasComponent<CircleCollider2DComponent>())
