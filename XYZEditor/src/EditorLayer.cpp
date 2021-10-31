@@ -273,9 +273,9 @@ namespace XYZ {
 		if (lightStorage.Size())
 		{
 			SceneEntity lightEntity(lightStorage.GetEntityAtIndex(0), m_Scene.Raw());
-			auto updateData = particleComponentCPU.System.GetUpdateData();
-			updateData->m_LightUpdater.m_LightEntity = lightEntity;
-			updateData->m_LightUpdater.m_TransformEntity = entity;
+			auto moduleData = particleComponentCPU.System.GetModuleData();
+			moduleData->m_LightModule.m_LightEntity = lightEntity;
+			moduleData->m_LightModule.m_TransformEntity = entity;
 		}
 		particleComponentCPU.System.Play();
 	}

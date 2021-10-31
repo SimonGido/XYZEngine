@@ -4,7 +4,7 @@
 #include "XYZ/Core/Timestep.h"
 #include "XYZ/Core/Ref.h"
 #include "ParticleDataBuffer.h"
-#include "ParticleUpdater.h"
+#include "ParticleModule.h"
 #include "ParticleGenerator.h"
 #include "ParticleEmitter.h"
 
@@ -27,14 +27,15 @@ namespace XYZ {
 	class ParticleSystemCPU
 	{
 	public:
-		struct UpdateData
+		struct ModuleData
 		{
-			UpdateData();
+			ModuleData();
 
-			MainUpdater				m_MainUpdater;
-			LightUpdater			m_LightUpdater;	
-			TextureAnimationUpdater m_TextureAnimUpdater;
+			MainModule				m_MainModule;
+			LightModule				m_LightModule;
+			TextureAnimationModule  m_TextureAnimModule;
 			RotationOverLife		m_RotationOverLife;
+			CollisionModule			m_CollisionModule;
 		};
 		struct RenderData
 		{
@@ -71,8 +72,8 @@ namespace XYZ {
 		ScopedLock<ParticleDataBuffer>	   GetParticleData();
 		ScopedLockRead<ParticleDataBuffer> GetParticleDataRead() const;
 
-		ScopedLock<UpdateData>			   GetUpdateData();
-		ScopedLockRead<UpdateData>		   GetUpdateDataRead() const;
+		ScopedLock<ModuleData>			   GetModuleData();
+		ScopedLockRead<ModuleData>		   GetModuleDataRead() const;
 
 		ScopedLock<ParticleEmitterCPU>	   GetEmitter();
 		ScopedLockRead<ParticleEmitterCPU> GetEmitterRead() const;
@@ -85,10 +86,11 @@ namespace XYZ {
 		void update(Timestep timestep, ParticleDataBuffer& particles);
 		void emit(Timestep timestep, ParticleDataBuffer& particles);
 		void buildRenderData(ParticleDataBuffer& particles);
+		void updatePhysics();
 		
 	private:
 		SingleThreadPass<ParticleDataBuffer> m_ParticleData;
-		SingleThreadPass<UpdateData>		 m_UpdateThreadPass;	
+		SingleThreadPass<ModuleData>		 m_ModuleThreadPass;
 		SingleThreadPass<ParticleEmitterCPU> m_EmitThreadPass;
 		ThreadPass<RenderData>				 m_RenderThreadPass;
 		uint32_t							 m_MaxParticles;

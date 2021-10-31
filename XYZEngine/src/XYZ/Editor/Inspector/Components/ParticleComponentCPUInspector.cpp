@@ -35,17 +35,17 @@ namespace XYZ {
 			EditorHelper::EndColumns();
 
 
-			ScopedLock<ParticleSystemCPU::UpdateData> updateData = system.GetUpdateData();
+			ScopedLock<ParticleSystemCPU::ModuleData> moduleData = system.GetModuleData();
 
-			bool mainUpdaterEnabled = updateData->m_MainUpdater.IsEnabled();
-			EditorHelper::DrawNodeControl("Main Updater", updateData->m_MainUpdater, [](auto& val) {
+			bool mainModuleEnabled = moduleData->m_MainModule.IsEnabled();
+			EditorHelper::DrawNodeControl("Main Module", moduleData->m_MainModule, [](auto& val) {
 
-			}, mainUpdaterEnabled);
-			updateData->m_MainUpdater.SetEnabled(mainUpdaterEnabled);
+			}, mainModuleEnabled);
+			moduleData->m_MainModule.SetEnabled(mainModuleEnabled);
 
 
-			bool lightUpdaterEnabled = updateData->m_LightUpdater.IsEnabled();
-			EditorHelper::DrawNodeControl("Light Updater", updateData->m_LightUpdater, [](auto& val) {
+			bool lightModuleEnabled = moduleData->m_LightModule.IsEnabled();
+			EditorHelper::DrawNodeControl("Light Module", moduleData->m_LightModule, [](auto& val) {
 				
 				int maxLights = val.m_MaxLights;
 				EditorHelper::BeginColumns("Max Lights");
@@ -53,12 +53,12 @@ namespace XYZ {
 					val.m_MaxLights = maxLights;
 				EditorHelper::EndColumns();
 
-			}, lightUpdaterEnabled);
-			updateData->m_LightUpdater.SetEnabled(lightUpdaterEnabled);
+			}, lightModuleEnabled);
+			moduleData->m_LightModule.SetEnabled(lightModuleEnabled);
 
 
-			bool textureAnimatorEnabled = updateData->m_TextureAnimUpdater.IsEnabled();
-			EditorHelper::DrawNodeControl("Texture Animation", updateData->m_TextureAnimUpdater, [](auto& val) {
+			bool textureAnimatorEnabled = moduleData->m_TextureAnimModule.IsEnabled();
+			EditorHelper::DrawNodeControl("Texture Animation", moduleData->m_TextureAnimModule, [](auto& val) {
 
 				EditorHelper::BeginColumns("Tiles");
 				ImGui::InputInt2("##Tiles", (int*)&val.m_Tiles);
@@ -73,11 +73,11 @@ namespace XYZ {
 				EditorHelper::EndColumns();
 
 			}, textureAnimatorEnabled);
-			updateData->m_TextureAnimUpdater.SetEnabled(textureAnimatorEnabled);
+			moduleData->m_TextureAnimModule.SetEnabled(textureAnimatorEnabled);
 
 
-			bool rotationOverLifeEnabled = updateData->m_RotationOverLife.IsEnabled();
-			EditorHelper::DrawNodeControl("Rotation Over Life", updateData->m_RotationOverLife, [](auto& val) {
+			bool rotationOverLifeEnabled = moduleData->m_RotationOverLife.IsEnabled();
+			EditorHelper::DrawNodeControl("Rotation Over Life", moduleData->m_RotationOverLife, [](auto& val) {
 
 				EditorHelper::BeginColumns("Euler Angles");
 				ImGui::DragFloat3("##EulerAngles", glm::value_ptr(val.m_EulerAngles));
@@ -88,7 +88,15 @@ namespace XYZ {
 				EditorHelper::EndColumns();
 
 			}, rotationOverLifeEnabled);
-			updateData->m_RotationOverLife.SetEnabled(rotationOverLifeEnabled);
+			moduleData->m_RotationOverLife.SetEnabled(rotationOverLifeEnabled);
+
+			bool collisionEnabled = moduleData->m_CollisionModule.IsEnabled();
+			EditorHelper::DrawNodeControl("Collision Module", moduleData->m_CollisionModule, [](auto& val) {
+
+			
+			}, collisionEnabled);
+			moduleData->m_CollisionModule.SetEnabled(collisionEnabled);
+
 
 			bool enabledEmitter = true;
 			ScopedLock<ParticleEmitterCPU> emitter = system.GetEmitter();

@@ -48,11 +48,10 @@ namespace XYZ {
 		ParticleShapeGenerator		    m_ShapeGenerator;
 		ParticleLifeGenerator		    m_LifeGenerator;
 		ParticleRandomVelocityGenerator m_RandomVelGenerator;
-		ParticleCollisionGenerator		m_CollisionGenerator;
 		BurstEmitter					m_BurstEmitter;
 		float							m_EmitRate;
 
-
+		std::pair<uint32_t, uint32_t>	m_EmittedIDs;
 	private:
 		float							m_EmittedParticles;
 	};

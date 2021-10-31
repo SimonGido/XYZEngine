@@ -7,10 +7,10 @@
 
 namespace XYZ {
 
-	class MainUpdater
+	class MainModule
 	{
 	public:
-		MainUpdater();
+		MainModule();
 		void UpdateParticles(float ts, ParticleDataBuffer& data) const;
 
 		void SetEnabled(bool enabled);
@@ -20,10 +20,10 @@ namespace XYZ {
 		bool m_Enabled;
 	};
 
-	class LightUpdater
+	class LightModule
 	{
 	public:
-		LightUpdater();
+		LightModule();
 
 		void UpdateParticles(float ts, ParticleDataBuffer& data);
 
@@ -41,10 +41,10 @@ namespace XYZ {
 		bool				   m_Enabled;
 	};
 
-	class TextureAnimationUpdater
+	class TextureAnimationModule
 	{
 	public:
-		TextureAnimationUpdater();
+		TextureAnimationModule();
 
 		void UpdateParticles(float ts, ParticleDataBuffer& data) const;
 
@@ -74,5 +74,27 @@ namespace XYZ {
 		
 	private:
 		bool m_Enabled;
+	};
+
+	class CollisionModule
+	{
+	public:
+		CollisionModule();
+
+		void Generate(ParticleDataBuffer& data, uint32_t startId, uint32_t endId);
+		void UpdateParticles(ParticleDataBuffer& data) const;
+		void SetPhysicsWorld(b2World* world);
+		void SetMaxParticles(uint32_t count);
+
+		void SetEnabled(bool enabled);
+		bool IsEnabled() const { return m_Enabled; }
+	private:
+		void generateBodies();
+		void destroyBodies();
+	private:
+		std::vector<b2Body*> m_Bodies;
+		b2World*			 m_PhysicsWorld;
+		uint32_t			 m_MaxParticles;
+		bool				 m_Enabled;
 	};
 }

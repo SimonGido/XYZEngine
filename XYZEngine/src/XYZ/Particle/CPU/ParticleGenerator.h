@@ -61,20 +61,4 @@ namespace XYZ {
 		glm::vec3 m_MaxVelocity;
 		bool	  m_Enabled;
 	};
-
-	class ParticleCollisionGenerator
-	{
-	public:
-		ParticleCollisionGenerator();
-
-		void Generate(ParticleDataBuffer& data, uint32_t startId, uint32_t endId);
-
-		bool m_Enabled;
-
-		b2World* m_PhysicsWorld;
-		std::vector<b2Body*> m_Bodies;
-
-	private:
-		void resizeToFit(size_t count);
-	};
 }

@@ -28,7 +28,7 @@ namespace XYZ {
 
 	Scene::Scene(const std::string& name)
 		:
-		m_PhysicsWorld({0.0f, -9.8f}),
+		m_PhysicsWorld({ 0.0f, -9.8f }),
 		m_PhysicsEntityBuffer(nullptr),
 		m_Name(name),
 		m_State(SceneState::Edit),
@@ -175,9 +175,7 @@ namespace XYZ {
 	void Scene::OnUpdate(Timestep ts)
 	{
 		XYZ_PROFILE_FUNC("Scene::OnUpdate");
-		int32_t velocityIterations = 6;
-		int32_t positionIterations = 2;
-		m_PhysicsWorld.Step(ts, velocityIterations, positionIterations);
+		stepPhysics(ts);
 
 		m_ECS.CreateStorage<RigidBody2DComponent>();
 		auto rigidView = m_ECS.CreateView<TransformComponent, RigidBody2DComponent>();
@@ -298,10 +296,6 @@ namespace XYZ {
 	void Scene::OnRenderEditor(Ref<SceneRenderer> sceneRenderer, Ref<EditorRenderer> editorRenderer, const Editor::EditorCamera& camera, Timestep ts)
 	{
 		XYZ_PROFILE_FUNC("Scene::OnRenderEditor");
-		int32_t velocityIterations = 6;
-		int32_t positionIterations = 2;
-		m_PhysicsWorld.Step(ts, velocityIterations, positionIterations);
-
 		
 		updateHierarchy();
 		sceneRenderer->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
@@ -399,6 +393,7 @@ namespace XYZ {
 			}
 		}
 		sceneRenderer->EndScene();
+		stepPhysics(ts);
 	}
 
 	void Scene::SetViewportSize(uint32_t width, uint32_t height)
@@ -539,13 +534,13 @@ namespace XYZ {
 			}
 			counter++;
 		}
-
-		auto& boxStorage = m_ECS.GetStorage<BoxCollider2DComponent>();
-		counter = 0;
-		for (auto& box : boxStorage)
-		{
-			
-		}
 	}
 
+	void Scene::stepPhysics(Timestep ts)
+	{		
+		XYZ_PROFILE_FUNC("Scene::stepPhysics");
+		int32_t velocityIterations = 6;
+		int32_t positionIterations = 2;
+		m_PhysicsWorld.Step(ts.GetSeconds(), velocityIterations, positionIterations);
+	}
 }

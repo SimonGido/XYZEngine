@@ -19,10 +19,10 @@ namespace XYZ {
 		if (newParticles)
 			m_EmittedParticles = 0.0f;
 
+		m_EmittedIDs = { startId, endId };
 		m_ShapeGenerator.Generate(particles, startId, endId);
 		m_LifeGenerator.Generate(particles, startId, endId);
 		m_RandomVelGenerator.Generate(particles, startId, endId);
-		m_CollisionGenerator.Generate(particles, startId, endId);
 		for (uint32_t i = startId; i < endId; ++i)
 			particles.Wake(i);
 	}

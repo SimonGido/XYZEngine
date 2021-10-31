@@ -50,7 +50,7 @@ namespace XYZ {
 	ParticleSystemCPU::ParticleSystemCPU(const ParticleSystemCPU& other)
 		:
 		m_ParticleData(other.m_ParticleData),
-		m_UpdateThreadPass(other.m_UpdateThreadPass),
+		m_ModuleThreadPass(other.m_ModuleThreadPass),
 		m_EmitThreadPass(other.m_EmitThreadPass),
 		m_RenderThreadPass(other.m_RenderThreadPass),
 		m_MaxParticles(other.m_MaxParticles),
@@ -62,7 +62,7 @@ namespace XYZ {
 	ParticleSystemCPU::ParticleSystemCPU(ParticleSystemCPU&& other) noexcept
 		:
 		m_ParticleData(std::move(other.m_ParticleData)),
-		m_UpdateThreadPass(std::move(other.m_UpdateThreadPass)),
+		m_ModuleThreadPass(std::move(other.m_ModuleThreadPass)),
 		m_EmitThreadPass(std::move(other.m_EmitThreadPass)),
 		m_RenderThreadPass(std::move(other.m_RenderThreadPass)),
 		m_MaxParticles(other.m_MaxParticles),
@@ -74,7 +74,7 @@ namespace XYZ {
 	ParticleSystemCPU& ParticleSystemCPU::operator=(const ParticleSystemCPU& other)
 	{
 		m_ParticleData = other.m_ParticleData;
-		m_UpdateThreadPass = other.m_UpdateThreadPass;
+		m_ModuleThreadPass = other.m_ModuleThreadPass;
 		m_EmitThreadPass = other.m_EmitThreadPass;
 		m_RenderThreadPass = other.m_RenderThreadPass;
 		m_MaxParticles = other.m_MaxParticles;
@@ -86,7 +86,7 @@ namespace XYZ {
 	ParticleSystemCPU& ParticleSystemCPU::operator=(ParticleSystemCPU&& other) noexcept
 	{
 		m_ParticleData = std::move(other.m_ParticleData);
-		m_UpdateThreadPass = std::move(other.m_UpdateThreadPass);
+		m_ModuleThreadPass = std::move(other.m_ModuleThreadPass);
 		m_EmitThreadPass = std::move(other.m_EmitThreadPass);
 		m_RenderThreadPass = std::move(other.m_RenderThreadPass);
 		m_MaxParticles = other.m_MaxParticles;
@@ -97,7 +97,7 @@ namespace XYZ {
 
 	void ParticleSystemCPU::SetPhysicsWorld(b2World* world)
 	{
-		GetEmitter()->m_CollisionGenerator.m_PhysicsWorld = world;
+		GetModuleData()->m_CollisionModule.SetPhysicsWorld(world);
 	}
 
 	void ParticleSystemCPU::Update(Timestep ts)
@@ -105,16 +105,7 @@ namespace XYZ {
 		XYZ_PROFILE_FUNC("ParticleSystemCPU::Update");
 		if (m_Play)
 		{		
-			{
-				ScopedLock<ParticleDataBuffer> particleData = m_ParticleData.Get<ParticleDataBuffer>();
-				ScopedLock<ParticleEmitterCPU> emitter = GetEmitter();
-				auto& bodies = emitter->m_CollisionGenerator.m_Bodies;
-				for (uint32_t i = 0; i < particleData->GetAliveParticles(); ++i)
-				{
-					particleData->m_Particle[i].Position.x = bodies[i]->GetPosition().x;
-					particleData->m_Particle[i].Position.y = bodies[i]->GetPosition().y;
-				}
-			}
+			updatePhysics();
 			particleThreadUpdate(ts.GetSeconds() * m_Speed);
 		}
 	}
@@ -122,17 +113,17 @@ namespace XYZ {
 	void ParticleSystemCPU::SetupForRender(Ref<SceneRenderer> renderer)
 	{
 		XYZ_PROFILE_FUNC("ParticleSystemCPU::SubmitLights");
-		auto updateData = m_UpdateThreadPass.GetRead<UpdateData>();
-		const auto& lightUpdater = updateData->m_LightUpdater;
-		if (lightUpdater.m_TransformEntity.IsValid() 
-		 && lightUpdater.m_LightEntity.IsValid()
-		 && lightUpdater.m_LightEntity.HasComponent<PointLight2D>())
+		auto moduleData = m_ModuleThreadPass.GetRead<ModuleData>();
+		const auto& lightModule = moduleData->m_LightModule;
+		if (lightModule.m_TransformEntity.IsValid() 
+		 && lightModule.m_LightEntity.IsValid()
+		 && lightModule.m_LightEntity.HasComponent<PointLight2D>())
 		{
-			if (lightUpdater.IsEnabled())
+			if (lightModule.IsEnabled())
 			{
-				const std::vector<glm::vec3>& lights	= lightUpdater.GetLights();
-				const PointLight2D&			  light		= lightUpdater.m_LightEntity.GetComponent<PointLight2D>();
-				const TransformComponent&     transform = lightUpdater.m_TransformEntity.GetComponent<TransformComponent>();
+				const std::vector<glm::vec3>& lights	= lightModule.GetLights();
+				const PointLight2D&			  light		= lightModule.m_LightEntity.GetComponent<PointLight2D>();
+				const TransformComponent&     transform = lightModule.m_TransformEntity.GetComponent<TransformComponent>();
 				for (const glm::vec3& l : lights)
 					renderer->SubmitLight(light, transform.WorldTransform * glm::translate(l));
 			}
@@ -150,6 +141,7 @@ namespace XYZ {
 	void ParticleSystemCPU::SetMaxParticles(uint32_t maxParticles)
 	{
 		m_MaxParticles = maxParticles;
+		m_ModuleThreadPass.Get<ModuleData>()->m_CollisionModule.SetMaxParticles(maxParticles);
 		m_ParticleData.Get<ParticleDataBuffer>()->SetMaxParticles(maxParticles);
 		{
 			m_RenderThreadPass.Read()->m_RenderParticleData.Resize(maxParticles);
@@ -192,14 +184,14 @@ namespace XYZ {
 	}
 
 
-	ScopedLock<ParticleSystemCPU::UpdateData> ParticleSystemCPU::GetUpdateData()
+	ScopedLock<ParticleSystemCPU::ModuleData> ParticleSystemCPU::GetModuleData()
 	{
-		return m_UpdateThreadPass.Get<UpdateData>();
+		return m_ModuleThreadPass.Get<ModuleData>();
 	}
 
-	ScopedLockRead<ParticleSystemCPU::UpdateData> ParticleSystemCPU::GetUpdateDataRead() const
+	ScopedLockRead<ParticleSystemCPU::ModuleData> ParticleSystemCPU::GetModuleDataRead() const
 	{
-		return m_UpdateThreadPass.GetRead<UpdateData>();
+		return m_ModuleThreadPass.GetRead<ModuleData>();
 	}
 
 	ScopedLock<ParticleEmitterCPU> ParticleSystemCPU::GetEmitter()
@@ -238,10 +230,10 @@ namespace XYZ {
 	void ParticleSystemCPU::update(Timestep timestep, ParticleDataBuffer& particles)
 	{
 		XYZ_PROFILE_FUNC("ParticleSystemCPU::update");
-		ScopedLock<UpdateData> data = m_UpdateThreadPass.Get<UpdateData>();
-		data->m_MainUpdater.UpdateParticles(timestep, particles);
-		data->m_LightUpdater.UpdateParticles(timestep, particles);
-		data->m_TextureAnimUpdater.UpdateParticles(timestep, particles);
+		ScopedLock<ModuleData> data = m_ModuleThreadPass.Get<ModuleData>();
+		data->m_MainModule.UpdateParticles(timestep, particles);
+		data->m_LightModule.UpdateParticles(timestep, particles);
+		data->m_TextureAnimModule.UpdateParticles(timestep, particles);
 		data->m_RotationOverLife.UpdateParticles(timestep, particles);
 	}
 	void ParticleSystemCPU::emit(Timestep timestep, ParticleDataBuffer& particles)
@@ -249,6 +241,8 @@ namespace XYZ {
 		XYZ_PROFILE_FUNC("ParticleSystemCPU::emit");
 		ScopedLock<ParticleEmitterCPU> data = m_EmitThreadPass.Get<ParticleEmitterCPU>();
 		data->Emit(timestep, particles);
+		
+		
 	}
 	void ParticleSystemCPU::buildRenderData(ParticleDataBuffer& particles)
 	{
@@ -269,6 +263,19 @@ namespace XYZ {
 		}
 		val->m_InstanceCount = endId;
 	}
+	void ParticleSystemCPU::updatePhysics()
+	{
+		// TODO: once physics world is thread safe, it can be in update function
+		XYZ_PROFILE_FUNC("ParticleSystemCPU::updatePhysics");
+		auto moduleData = GetModuleData();
+		if (moduleData->m_CollisionModule.IsEnabled())
+		{
+			auto [startId, endId] = GetEmitter()->m_EmittedIDs;
+			auto particleData	  = GetParticleData();
+			moduleData->m_CollisionModule.Generate(particleData.As(), startId, endId);
+			moduleData->m_CollisionModule.UpdateParticles(particleData.As());
+		}
+	}
 	ParticleSystemCPU::RenderData::RenderData()
 		:
 		m_InstanceCount(0)
@@ -280,7 +287,7 @@ namespace XYZ {
 	{
 		m_RenderParticleData.Resize(maxParticles);
 	}
-	ParticleSystemCPU::UpdateData::UpdateData()
+	ParticleSystemCPU::ModuleData::ModuleData()
 	{
 	}
 }

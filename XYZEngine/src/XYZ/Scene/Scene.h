@@ -11,7 +11,7 @@
 #include "XYZ/Editor/EditorCamera.h"
 #include "SceneCamera.h"
 
-
+#include "XYZ/Utils/DataStructures/ThreadPass.h"
 #include "XYZ/Asset/Asset.h"
 
 #include <box2d/box2d.h>
@@ -68,11 +68,12 @@ namespace XYZ {
     private:
         void updateHierarchy();
         void setupPhysics();
+        void stepPhysics(Timestep ts);
 
     private:
-        b2World         m_PhysicsWorld;
-        ContactListener m_ContactListener;
-        SceneEntity*    m_PhysicsEntityBuffer;
+        b2World             m_PhysicsWorld;
+        ContactListener     m_ContactListener;
+        SceneEntity*        m_PhysicsEntityBuffer;
 
         ECSManager          m_ECS;
         GUID                m_UUID;
@@ -88,7 +89,6 @@ namespace XYZ {
 
         uint32_t m_ViewportWidth;
         uint32_t m_ViewportHeight;
-
 
         friend class SceneEntity;
         friend class SceneSerializer;
