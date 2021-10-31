@@ -10,7 +10,7 @@
 namespace XYZ {
 	ParticleSystemCPU::ParticleSystemCPU()
 		:
-		m_ParticleData(0),
+		m_ModuleThreadPass(0),
 		m_MaxParticles(0),
 		m_Play(false),
 		m_Speed(1.0f)
@@ -26,7 +26,7 @@ namespace XYZ {
 	}
 	ParticleSystemCPU::ParticleSystemCPU(uint32_t maxParticles)
 		:
-		m_ParticleData(maxParticles),
+		m_ModuleThreadPass(maxParticles),
 		m_MaxParticles(maxParticles),
 		m_Play(false),
 		m_Speed(1.0f)
@@ -49,9 +49,7 @@ namespace XYZ {
 
 	ParticleSystemCPU::ParticleSystemCPU(const ParticleSystemCPU& other)
 		:
-		m_ParticleData(other.m_ParticleData),
 		m_ModuleThreadPass(other.m_ModuleThreadPass),
-		m_EmitThreadPass(other.m_EmitThreadPass),
 		m_RenderThreadPass(other.m_RenderThreadPass),
 		m_MaxParticles(other.m_MaxParticles),
 		m_Play(other.m_Play),
@@ -61,9 +59,7 @@ namespace XYZ {
 
 	ParticleSystemCPU::ParticleSystemCPU(ParticleSystemCPU&& other) noexcept
 		:
-		m_ParticleData(std::move(other.m_ParticleData)),
 		m_ModuleThreadPass(std::move(other.m_ModuleThreadPass)),
-		m_EmitThreadPass(std::move(other.m_EmitThreadPass)),
 		m_RenderThreadPass(std::move(other.m_RenderThreadPass)),
 		m_MaxParticles(other.m_MaxParticles),
 		m_Play(other.m_Play),
@@ -73,9 +69,7 @@ namespace XYZ {
 
 	ParticleSystemCPU& ParticleSystemCPU::operator=(const ParticleSystemCPU& other)
 	{
-		m_ParticleData = other.m_ParticleData;
 		m_ModuleThreadPass = other.m_ModuleThreadPass;
-		m_EmitThreadPass = other.m_EmitThreadPass;
 		m_RenderThreadPass = other.m_RenderThreadPass;
 		m_MaxParticles = other.m_MaxParticles;
 		m_Play = other.m_Play;
@@ -85,9 +79,7 @@ namespace XYZ {
 
 	ParticleSystemCPU& ParticleSystemCPU::operator=(ParticleSystemCPU&& other) noexcept
 	{
-		m_ParticleData = std::move(other.m_ParticleData);
 		m_ModuleThreadPass = std::move(other.m_ModuleThreadPass);
-		m_EmitThreadPass = std::move(other.m_EmitThreadPass);
 		m_RenderThreadPass = std::move(other.m_RenderThreadPass);
 		m_MaxParticles = other.m_MaxParticles;
 		m_Play = other.m_Play;
@@ -95,9 +87,9 @@ namespace XYZ {
 		return *this;
 	}
 
-	void ParticleSystemCPU::SetPhysicsWorld(b2World* world)
+	void ParticleSystemCPU::SetPhysicsWorld(PhysicsWorld2D* world)
 	{
-		GetModuleData()->m_CollisionModule.SetPhysicsWorld(world);
+		GetModuleData()->m_PhysicsModule.SetPhysicsWorld(world);
 	}
 
 	void ParticleSystemCPU::Update(Timestep ts)
@@ -105,7 +97,7 @@ namespace XYZ {
 		XYZ_PROFILE_FUNC("ParticleSystemCPU::Update");
 		if (m_Play)
 		{		
-			updatePhysics();
+			//updatePhysics();
 			particleThreadUpdate(ts.GetSeconds() * m_Speed);
 		}
 	}
@@ -141,8 +133,9 @@ namespace XYZ {
 	void ParticleSystemCPU::SetMaxParticles(uint32_t maxParticles)
 	{
 		m_MaxParticles = maxParticles;
-		m_ModuleThreadPass.Get<ModuleData>()->m_CollisionModule.SetMaxParticles(maxParticles);
-		m_ParticleData.Get<ParticleDataBuffer>()->SetMaxParticles(maxParticles);
+		auto moduleData = GetModuleData();
+		moduleData->m_PhysicsModule.SetMaxParticles(maxParticles);
+		moduleData->m_Particles.SetMaxParticles(maxParticles);
 		{
 			m_RenderThreadPass.Read()->m_RenderParticleData.Resize(maxParticles);
 		}
@@ -164,7 +157,7 @@ namespace XYZ {
 
 	uint32_t ParticleSystemCPU::GetAliveParticles() const
 	{
-		return GetParticleDataRead()->GetAliveParticles();
+		return GetModuleDataRead()->m_Particles.GetAliveParticles();
 	}
 
 	float ParticleSystemCPU::GetSpeed() const
@@ -173,16 +166,7 @@ namespace XYZ {
 	}
 
 
-	ScopedLock<ParticleDataBuffer> ParticleSystemCPU::GetParticleData()
-	{
-		return m_ParticleData.Get<ParticleDataBuffer>();
-	}
-
-	ScopedLockRead<ParticleDataBuffer> ParticleSystemCPU::GetParticleDataRead() const
-	{
-		return m_ParticleData.GetRead<ParticleDataBuffer>();
-	}
-
+	
 
 	ScopedLock<ParticleSystemCPU::ModuleData> ParticleSystemCPU::GetModuleData()
 	{
@@ -192,16 +176,6 @@ namespace XYZ {
 	ScopedLockRead<ParticleSystemCPU::ModuleData> ParticleSystemCPU::GetModuleDataRead() const
 	{
 		return m_ModuleThreadPass.GetRead<ModuleData>();
-	}
-
-	ScopedLock<ParticleEmitterCPU> ParticleSystemCPU::GetEmitter()
-	{
-		return m_EmitThreadPass.Get<ParticleEmitterCPU>();
-	}
-
-	ScopedLockRead<ParticleEmitterCPU> ParticleSystemCPU::GetEmitterRead() const
-	{
-		return m_EmitThreadPass.GetRead<ParticleEmitterCPU>();
 	}
 
 	ScopedLock<ParticleSystemCPU::RenderData> ParticleSystemCPU::GetRenderData()
@@ -218,47 +192,44 @@ namespace XYZ {
 	{
 		Application::Get().GetThreadPool().PushJob<void>([this, timestep]() {
 			XYZ_PROFILE_FUNC("ParticleSystemCPU::particleThreadUpdate Job");
-			{
-				ScopedLock<ParticleDataBuffer> particleData = m_ParticleData.Get<ParticleDataBuffer>();
-				update(timestep, particleData.As());
-				emit(timestep, particleData.As());
-				buildRenderData(particleData.As());
+			{			
+				//updatePhysics();
+				ScopedLock<ModuleData> moduleData = m_ModuleThreadPass.Get<ModuleData>();
+				update(timestep, moduleData.As());
+				emit(timestep, moduleData.As());
+				buildRenderData(moduleData.As());
 			}
 			m_RenderThreadPass.AttemptSwap();		
 		});
 	}
-	void ParticleSystemCPU::update(Timestep timestep, ParticleDataBuffer& particles)
+	void ParticleSystemCPU::update(Timestep timestep, ModuleData& data)
 	{
 		XYZ_PROFILE_FUNC("ParticleSystemCPU::update");
-		ScopedLock<ModuleData> data = m_ModuleThreadPass.Get<ModuleData>();
-		data->m_MainModule.UpdateParticles(timestep, particles);
-		data->m_LightModule.UpdateParticles(timestep, particles);
-		data->m_TextureAnimModule.UpdateParticles(timestep, particles);
-		data->m_RotationOverLife.UpdateParticles(timestep, particles);
+		data.m_MainModule.UpdateParticles(timestep, data.m_Particles);
+		data.m_LightModule.UpdateParticles(timestep, data.m_Particles);
+		data.m_TextureAnimModule.UpdateParticles(timestep, data.m_Particles);
+		data.m_RotationOverLife.UpdateParticles(timestep, data.m_Particles);
 	}
-	void ParticleSystemCPU::emit(Timestep timestep, ParticleDataBuffer& particles)
+	void ParticleSystemCPU::emit(Timestep timestep, ModuleData& data)
 	{
 		XYZ_PROFILE_FUNC("ParticleSystemCPU::emit");
-		ScopedLock<ParticleEmitterCPU> data = m_EmitThreadPass.Get<ParticleEmitterCPU>();
-		data->Emit(timestep, particles);
-		
-		
+		data.m_Emitter.Emit(timestep, data.m_Particles);		
 	}
-	void ParticleSystemCPU::buildRenderData(ParticleDataBuffer& particles)
+	void ParticleSystemCPU::buildRenderData(ModuleData& data)
 	{
 		XYZ_PROFILE_FUNC("ParticleSystemCPU::buildRenderData");
 		ScopedLock<RenderData> val = m_RenderThreadPass.Write();
 		ParticleRenderData* buffer = val->m_RenderParticleData.As<ParticleRenderData>();
-		uint32_t endId = particles.GetAliveParticles();
+		uint32_t endId = data.m_Particles.GetAliveParticles();
 		for (uint32_t i = 0; i < endId; ++i)
 		{
-			auto& particle = particles.m_Particle[i];
+			auto& particle = data.m_Particles.m_Particle[i];
 			buffer[i] = ParticleRenderData{
 				particle.Color,
 				particle.Position,
-				particles.m_Size[i],
-				particles.m_Rotation[i],
-				particles.m_TexOffset[i]
+				data.m_Particles.m_Size[i],
+				data.m_Particles.m_Rotation[i],
+				data.m_Particles.m_TexOffset[i]
 			};
 		}
 		val->m_InstanceCount = endId;
@@ -268,12 +239,11 @@ namespace XYZ {
 		// TODO: once physics world is thread safe, it can be in update function
 		XYZ_PROFILE_FUNC("ParticleSystemCPU::updatePhysics");
 		auto moduleData = GetModuleData();
-		if (moduleData->m_CollisionModule.IsEnabled())
+		if (moduleData->m_PhysicsModule.IsEnabled())
 		{
-			auto [startId, endId] = GetEmitter()->m_EmittedIDs;
-			auto particleData	  = GetParticleData();
-			moduleData->m_CollisionModule.Generate(particleData.As(), startId, endId);
-			moduleData->m_CollisionModule.UpdateParticles(particleData.As());
+			auto [startId, endId] = moduleData->m_Emitter.m_EmittedIDs;
+			moduleData->m_PhysicsModule.Generate(moduleData->m_Particles, startId, endId);
+			moduleData->m_PhysicsModule.UpdateParticles(moduleData->m_Particles);
 		}
 	}
 	ParticleSystemCPU::RenderData::RenderData()
@@ -287,7 +257,9 @@ namespace XYZ {
 	{
 		m_RenderParticleData.Resize(maxParticles);
 	}
-	ParticleSystemCPU::ModuleData::ModuleData()
+	ParticleSystemCPU::ModuleData::ModuleData(uint32_t maxParticles)
+		:
+		m_Particles(maxParticles)
 	{
 	}
 }

@@ -24,7 +24,7 @@ namespace XYZ {
 			uint32_t aliveParticles = data.GetAliveParticles();
 			for (uint32_t i = 0; i < aliveParticles; ++i)
 			{
-				//data.m_Particle[i].Position += data.m_Particle[i].Velocity * ts;
+				data.m_Particle[i].Position += data.m_Particle[i].Velocity * ts;
 				data.m_Particle[i].LifeRemaining -= ts;
 				if (data.m_Particle[i].LifeRemaining <= 0.0f)
 				{
@@ -130,14 +130,14 @@ namespace XYZ {
 	{
 		m_Enabled = enabled;
 	}
-	CollisionModule::CollisionModule()
+	PhysicsModule::PhysicsModule()
 		:
 		m_PhysicsWorld(nullptr),
 		m_MaxParticles(0),
 		m_Enabled(true)
 	{
 	}
-	void CollisionModule::Generate(ParticleDataBuffer& data, uint32_t startId, uint32_t endId)
+	void PhysicsModule::Generate(ParticleDataBuffer& data, uint32_t startId, uint32_t endId)
 	{
 		if (m_Bodies.size() >= endId)
 		{
@@ -157,7 +157,7 @@ namespace XYZ {
 			}
 		}
 	}
-	void CollisionModule::UpdateParticles(ParticleDataBuffer& data) const
+	void PhysicsModule::UpdateParticles(ParticleDataBuffer& data) const
 	{
 		if (m_Enabled)
 		{
@@ -172,37 +172,45 @@ namespace XYZ {
 			}
 		}
 	}
-	void CollisionModule::SetPhysicsWorld(b2World* world)
+	void PhysicsModule::SetPhysicsWorld(PhysicsWorld2D* world)
 	{
 		if (m_PhysicsWorld != world)
 		{
 			m_PhysicsWorld = world;
 			if (m_PhysicsWorld)
 			{
-				generateBodies();
+				ScopedLock<b2World> physicsWorld = m_PhysicsWorld->GetWorld();
+				generateBodies(&physicsWorld.As());
 			}
 		}
 	}
-	void CollisionModule::SetMaxParticles(uint32_t count)
+	void PhysicsModule::SetMaxParticles(uint32_t count)
 	{
 		m_MaxParticles = count;
 		if (m_Enabled && m_PhysicsWorld)
-			generateBodies();
+		{
+			ScopedLock<b2World> physicsWorld = m_PhysicsWorld->GetWorld();
+			generateBodies(&physicsWorld.As());
+		}
 	}
-	void CollisionModule::SetEnabled(bool enabled)
+	void PhysicsModule::SetEnabled(bool enabled)
 	{
 		if (m_Enabled == enabled)
 			return;
-
-		if (!enabled && m_PhysicsWorld)
-			destroyBodies();
+		
+		if (m_PhysicsWorld)
+		{
+			ScopedLock<b2World> physicsWorld = m_PhysicsWorld->GetWorld();
+			if (!enabled)
+				destroyBodies(&physicsWorld.As());
+			else
+				generateBodies(&physicsWorld.As());
+		}
 		m_Enabled = enabled;
-		if (m_Enabled && m_PhysicsWorld)
-			generateBodies();
 	}
-	void CollisionModule::generateBodies()
+	void PhysicsModule::generateBodies(b2World* world)
 	{
-		destroyBodies();
+		destroyBodies(world);
 		if (m_Bodies.size() != m_MaxParticles)
 			m_Bodies.resize(m_MaxParticles);
 
@@ -211,7 +219,7 @@ namespace XYZ {
 			b2BodyDef bd;
 			bd.type = b2_dynamicBody;
 			bd.enabled = false;
-			body = m_PhysicsWorld->CreateBody(&bd);
+			body = world->CreateBody(&bd);
 
 			b2PolygonShape shape;
 			shape.SetAsBox(1.0f / 2.0f, 1.0f / 2.0f);
@@ -225,10 +233,10 @@ namespace XYZ {
 			body->SetGravityScale(0.0f);
 		}
 	}
-	void CollisionModule::destroyBodies()
+	void PhysicsModule::destroyBodies(b2World* world)
 	{
 		for (auto body : m_Bodies)
-			m_PhysicsWorld->DestroyBody(body);
+			world->DestroyBody(body);
 		m_Bodies.clear();
 	}
 }

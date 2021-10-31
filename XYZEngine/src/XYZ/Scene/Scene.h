@@ -7,13 +7,13 @@
 #include "XYZ/Renderer/Camera.h"
 
 #include "XYZ/Physics/ContactListener.h"
+#include "XYZ/Physics/PhysicsWorld2D.h"
 
 #include "XYZ/Editor/EditorCamera.h"
 #include "SceneCamera.h"
 
 #include "XYZ/Utils/DataStructures/ThreadPass.h"
 #include "XYZ/Asset/Asset.h"
-
 #include <box2d/box2d.h>
 
 namespace XYZ {
@@ -68,10 +68,10 @@ namespace XYZ {
     private:
         void updateHierarchy();
         void setupPhysics();
-        void stepPhysics(Timestep ts);
+
 
     private:
-        b2World             m_PhysicsWorld;
+        //PhysicsWorld2D      m_PhysicsWorld;
         ContactListener     m_ContactListener;
         SceneEntity*        m_PhysicsEntityBuffer;
 

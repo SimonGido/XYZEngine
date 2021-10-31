@@ -28,7 +28,7 @@ namespace XYZ {
 
 	Scene::Scene(const std::string& name)
 		:
-		m_PhysicsWorld({ 0.0f, -9.8f }),
+		//m_PhysicsWorld({ 0.0f, -9.8f }),
 		m_PhysicsEntityBuffer(nullptr),
 		m_Name(name),
 		m_State(SceneState::Edit),
@@ -43,8 +43,8 @@ namespace XYZ {
 		m_ECS.EmplaceComponent<TransformComponent>(m_SceneEntity);
 		m_ECS.EmplaceComponent<SceneTagComponent>(m_SceneEntity, name);	
 
-
-		m_PhysicsWorld.SetContactListener(&m_ContactListener);
+		//ScopedLock<b2World> physicsWorld = m_PhysicsWorld.GetWorld();
+		//physicsWorld->SetContactListener(&m_ContactListener);
 	}
 
 	Scene::~Scene()
@@ -154,12 +154,12 @@ namespace XYZ {
 			SceneEntity ent(entity, this);
 			ent.GetComponent<TransformComponent>() = s_EditTransforms[(uint32_t)entity];
 		}
-
-		auto& rigidStorage = m_ECS.GetStorage<RigidBody2DComponent>();
-		for (auto& body : rigidStorage)
-		{
-			m_PhysicsWorld.DestroyBody(static_cast<b2Body*>(body.RuntimeBody));
-		}
+		//ScopedLock<b2World> physicsWorld = m_PhysicsWorld.GetWorld();
+		//auto& rigidStorage = m_ECS.GetStorage<RigidBody2DComponent>();
+		//for (auto& body : rigidStorage)
+		//{
+		//	physicsWorld->DestroyBody(static_cast<b2Body*>(body.RuntimeBody));
+		//}
 
 		auto& scriptStorage = m_ECS.GetStorage<ScriptComponent>();
 		for (size_t i = 0; i < scriptStorage.Size(); ++i)
@@ -175,7 +175,7 @@ namespace XYZ {
 	void Scene::OnUpdate(Timestep ts)
 	{
 		XYZ_PROFILE_FUNC("Scene::OnUpdate");
-		stepPhysics(ts);
+		//m_PhysicsWorld.Step(ts);
 
 		m_ECS.CreateStorage<RigidBody2DComponent>();
 		auto rigidView = m_ECS.CreateView<TransformComponent, RigidBody2DComponent>();
@@ -343,7 +343,7 @@ namespace XYZ {
 		{
 			// Update ( submit jobs worker threads )
 			auto [transform, particle, mesh] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU, MeshComponent>(entity);
-			particle.System.SetPhysicsWorld(&m_PhysicsWorld);
+			//particle.System.SetPhysicsWorld(&m_PhysicsWorld);
 			particle.System.Update(ts);
 		}
 	
@@ -393,7 +393,6 @@ namespace XYZ {
 			}
 		}
 		sceneRenderer->EndScene();
-		stepPhysics(ts);
 	}
 
 	void Scene::SetViewportSize(uint32_t width, uint32_t height)
@@ -452,95 +451,87 @@ namespace XYZ {
 
 	void Scene::setupPhysics()
 	{
-		auto& storage = m_ECS.GetStorage<RigidBody2DComponent>();
-		m_PhysicsEntityBuffer = new SceneEntity[storage.Size()];
-
-		size_t counter = 0;
-		for (auto& rigidBody : storage)
-		{
-			SceneEntity entity(storage.GetEntityAtIndex(counter), this);
-			const TransformComponent& transform = entity.GetComponent<TransformComponent>();
-			auto [translation, rotation, scale] = transform.GetWorldComponents();
-
-			b2BodyDef bodyDef;
-		
-			if (rigidBody.Type == RigidBody2DComponent::BodyType::Dynamic)
-				bodyDef.type = b2_dynamicBody;
-			else if (rigidBody.Type == RigidBody2DComponent::BodyType::Static)
-				bodyDef.type = b2_staticBody;
-			else if (rigidBody.Type == RigidBody2DComponent::BodyType::Kinematic)
-				bodyDef.type = b2_kinematicBody;
-			
-			
-			bodyDef.position.Set(transform.Translation.x, transform.Translation.y);
-			bodyDef.angle = transform.Rotation.z;
-			bodyDef.userData.pointer = reinterpret_cast<uintptr_t>(&m_PhysicsEntityBuffer[counter]);
-			
-			b2Body* body = m_PhysicsWorld.CreateBody(&bodyDef);
-			rigidBody.RuntimeBody = body;
-			
-			if (entity.HasComponent<BoxCollider2DComponent>())
-			{
-				BoxCollider2DComponent& boxCollider = entity.GetComponent<BoxCollider2DComponent>();
-				b2PolygonShape poly;
-				
-				poly.SetAsBox( boxCollider.Size.x / 2.0f, boxCollider.Size.y / 2.0f, 
-					   b2Vec2{ boxCollider.Offset.x, boxCollider.Offset.y }, 0.0f);
-				b2FixtureDef fixture;
-				fixture.shape = &poly;
-				fixture.density = boxCollider.Density;
-				fixture.friction = boxCollider.Friction;
-				
-				boxCollider.RuntimeFixture = body->CreateFixture(&fixture);
-			}
-			else if (entity.HasComponent<CircleCollider2DComponent>())
-			{
-				CircleCollider2DComponent& circleCollider = entity.GetComponent<CircleCollider2DComponent>();
-				b2CircleShape circle;
-
-				circle.m_radius = circleCollider.Radius;
-				circle.m_p = b2Vec2(circleCollider.Offset.x, circleCollider.Offset.y);
-
-				b2FixtureDef fixture;
-				fixture.shape = &circle;
-				fixture.density  = circleCollider.Density;
-				fixture.friction = circleCollider.Friction;
-				circleCollider.RuntimeFixture = body->CreateFixture(&fixture);
-			}
-			else if (entity.HasComponent<PolygonCollider2DComponent>())
-			{
-				PolygonCollider2DComponent& meshCollider = entity.GetComponent<PolygonCollider2DComponent>();
-				b2PolygonShape poly;
-				poly.Set((const b2Vec2*)meshCollider.Vertices.data(), (int32_t)meshCollider.Vertices.size());
-				b2FixtureDef fixture;
-				fixture.shape = &poly;
-				fixture.density =  meshCollider.Density;
-				fixture.friction = meshCollider.Friction;
-				meshCollider.RuntimeFixture = body->CreateFixture(&fixture);
-			}
-			else if (entity.HasComponent<ChainCollider2DComponent>())
-			{
-				ChainCollider2DComponent& chainCollider = entity.GetComponent<ChainCollider2DComponent>();
-				
-				b2ChainShape chain;
-				chain.CreateChain((const b2Vec2*)chainCollider.Points.data(), (int32_t)chainCollider.Points.size(),
-					{ chainCollider.Points[0].x, chainCollider.Points[0].y },
-					{ chainCollider.Points.back().x, chainCollider.Points.back().y });
-				b2FixtureDef fixture;
-				fixture.shape = &chain;
-				fixture.density  = chainCollider.Density;
-				fixture.friction = chainCollider.Friction;
-				chainCollider.RuntimeFixture = body->CreateFixture(&fixture);
-			}
-			counter++;
-		}
-	}
-
-	void Scene::stepPhysics(Timestep ts)
-	{		
-		XYZ_PROFILE_FUNC("Scene::stepPhysics");
-		int32_t velocityIterations = 6;
-		int32_t positionIterations = 2;
-		m_PhysicsWorld.Step(ts.GetSeconds(), velocityIterations, positionIterations);
+		//auto& storage = m_ECS.GetStorage<RigidBody2DComponent>();
+		//m_PhysicsEntityBuffer = new SceneEntity[storage.Size()];
+		//ScopedLock<b2World> physicsWorld = m_PhysicsWorld.GetWorld();
+		//size_t counter = 0;
+		//for (auto& rigidBody : storage)
+		//{
+		//	SceneEntity entity(storage.GetEntityAtIndex(counter), this);
+		//	const TransformComponent& transform = entity.GetComponent<TransformComponent>();
+		//	auto [translation, rotation, scale] = transform.GetWorldComponents();
+		//
+		//	b2BodyDef bodyDef;
+		//
+		//	if (rigidBody.Type == RigidBody2DComponent::BodyType::Dynamic)
+		//		bodyDef.type = b2_dynamicBody;
+		//	else if (rigidBody.Type == RigidBody2DComponent::BodyType::Static)
+		//		bodyDef.type = b2_staticBody;
+		//	else if (rigidBody.Type == RigidBody2DComponent::BodyType::Kinematic)
+		//		bodyDef.type = b2_kinematicBody;
+		//	
+		//	
+		//	bodyDef.position.Set(transform.Translation.x, transform.Translation.y);
+		//	bodyDef.angle = transform.Rotation.z;
+		//	bodyDef.userData.pointer = reinterpret_cast<uintptr_t>(&m_PhysicsEntityBuffer[counter]);
+		//	
+		//	b2Body* body = physicsWorld->CreateBody(&bodyDef);
+		//	rigidBody.RuntimeBody = body;
+		//	
+		//	if (entity.HasComponent<BoxCollider2DComponent>())
+		//	{
+		//		BoxCollider2DComponent& boxCollider = entity.GetComponent<BoxCollider2DComponent>();
+		//		b2PolygonShape poly;
+		//		
+		//		poly.SetAsBox( boxCollider.Size.x / 2.0f, boxCollider.Size.y / 2.0f, 
+		//			   b2Vec2{ boxCollider.Offset.x, boxCollider.Offset.y }, 0.0f);
+		//		b2FixtureDef fixture;
+		//		fixture.shape = &poly;
+		//		fixture.density = boxCollider.Density;
+		//		fixture.friction = boxCollider.Friction;
+		//		
+		//		boxCollider.RuntimeFixture = body->CreateFixture(&fixture);
+		//	}
+		//	else if (entity.HasComponent<CircleCollider2DComponent>())
+		//	{
+		//		CircleCollider2DComponent& circleCollider = entity.GetComponent<CircleCollider2DComponent>();
+		//		b2CircleShape circle;
+		//
+		//		circle.m_radius = circleCollider.Radius;
+		//		circle.m_p = b2Vec2(circleCollider.Offset.x, circleCollider.Offset.y);
+		//
+		//		b2FixtureDef fixture;
+		//		fixture.shape = &circle;
+		//		fixture.density  = circleCollider.Density;
+		//		fixture.friction = circleCollider.Friction;
+		//		circleCollider.RuntimeFixture = body->CreateFixture(&fixture);
+		//	}
+		//	else if (entity.HasComponent<PolygonCollider2DComponent>())
+		//	{
+		//		PolygonCollider2DComponent& meshCollider = entity.GetComponent<PolygonCollider2DComponent>();
+		//		b2PolygonShape poly;
+		//		poly.Set((const b2Vec2*)meshCollider.Vertices.data(), (int32_t)meshCollider.Vertices.size());
+		//		b2FixtureDef fixture;
+		//		fixture.shape = &poly;
+		//		fixture.density =  meshCollider.Density;
+		//		fixture.friction = meshCollider.Friction;
+		//		meshCollider.RuntimeFixture = body->CreateFixture(&fixture);
+		//	}
+		//	else if (entity.HasComponent<ChainCollider2DComponent>())
+		//	{
+		//		ChainCollider2DComponent& chainCollider = entity.GetComponent<ChainCollider2DComponent>();
+		//		
+		//		b2ChainShape chain;
+		//		chain.CreateChain((const b2Vec2*)chainCollider.Points.data(), (int32_t)chainCollider.Points.size(),
+		//			{ chainCollider.Points[0].x, chainCollider.Points[0].y },
+		//			{ chainCollider.Points.back().x, chainCollider.Points.back().y });
+		//		b2FixtureDef fixture;
+		//		fixture.shape = &chain;
+		//		fixture.density  = chainCollider.Density;
+		//		fixture.friction = chainCollider.Friction;
+		//		chainCollider.RuntimeFixture = body->CreateFixture(&fixture);
+		//	}
+		//	counter++;
+		//}
 	}
 }

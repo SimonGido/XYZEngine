@@ -76,24 +76,24 @@ namespace XYZ {
 		bool m_Enabled;
 	};
 
-	class CollisionModule
+	class PhysicsModule
 	{
 	public:
-		CollisionModule();
+		PhysicsModule();
 
 		void Generate(ParticleDataBuffer& data, uint32_t startId, uint32_t endId);
 		void UpdateParticles(ParticleDataBuffer& data) const;
-		void SetPhysicsWorld(b2World* world);
+		void SetPhysicsWorld(PhysicsWorld2D* world);
 		void SetMaxParticles(uint32_t count);
 
 		void SetEnabled(bool enabled);
 		bool IsEnabled() const { return m_Enabled; }
 	private:
-		void generateBodies();
-		void destroyBodies();
+		void generateBodies(b2World* world);
+		void destroyBodies(b2World* world);
 	private:
 		std::vector<b2Body*> m_Bodies;
-		b2World*			 m_PhysicsWorld;
+		PhysicsWorld2D*		 m_PhysicsWorld;
 		uint32_t			 m_MaxParticles;
 		bool				 m_Enabled;
 	};

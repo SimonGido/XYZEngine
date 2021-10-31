@@ -66,7 +66,7 @@ namespace XYZ {
 		auto entity = m_Scene->GetEntityByName("Body");
 		//gpuParticleExample(entity);
 		cpuParticleExample(entity);
-		animationExample(entity);
+		//animationExample(entity);
 
 		Renderer::WaitAndRender();
 		Renderer::BlockRenderThread();

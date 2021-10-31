@@ -90,17 +90,16 @@ namespace XYZ {
 			}, rotationOverLifeEnabled);
 			moduleData->m_RotationOverLife.SetEnabled(rotationOverLifeEnabled);
 
-			bool collisionEnabled = moduleData->m_CollisionModule.IsEnabled();
-			EditorHelper::DrawNodeControl("Collision Module", moduleData->m_CollisionModule, [](auto& val) {
+			bool physicsEnabled = moduleData->m_PhysicsModule.IsEnabled();
+			EditorHelper::DrawNodeControl("Physics Module", moduleData->m_PhysicsModule, [](auto& val) {
 
 			
-			}, collisionEnabled);
-			moduleData->m_CollisionModule.SetEnabled(collisionEnabled);
+			}, physicsEnabled);
+			moduleData->m_PhysicsModule.SetEnabled(physicsEnabled);
 
 
 			bool enabledEmitter = true;
-			ScopedLock<ParticleEmitterCPU> emitter = system.GetEmitter();
-			EditorHelper::DrawNodeControl("Emitter", emitter.As(), [=](auto& val) {
+			EditorHelper::DrawNodeControl("Emitter", moduleData->m_Emitter, [=](auto& val) {
 				
 				EditorHelper::BeginColumns("Emit rate", 2, 100.0f);
 				ImGui::DragFloat("##EmitRate", &val.m_EmitRate, 1.0f);

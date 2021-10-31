@@ -29,13 +29,16 @@ namespace XYZ {
 	public:
 		struct ModuleData
 		{
-			ModuleData();
+			ModuleData(uint32_t maxParticles);
 
 			MainModule				m_MainModule;
 			LightModule				m_LightModule;
 			TextureAnimationModule  m_TextureAnimModule;
 			RotationOverLife		m_RotationOverLife;
-			CollisionModule			m_CollisionModule;
+			PhysicsModule			m_PhysicsModule;
+
+			ParticleEmitterCPU		m_Emitter;
+			ParticleDataBuffer		m_Particles;
 		};
 		struct RenderData
 		{
@@ -56,7 +59,7 @@ namespace XYZ {
 		ParticleSystemCPU& operator=(const ParticleSystemCPU& other);
 		ParticleSystemCPU& operator=(ParticleSystemCPU&& other) noexcept;
 
-		void SetPhysicsWorld(b2World* world);
+		void SetPhysicsWorld(PhysicsWorld2D* world);
 		void Update(Timestep ts);	
 		void SetupForRender(Ref<SceneRenderer> renderer);
 
@@ -69,29 +72,21 @@ namespace XYZ {
 		uint32_t GetAliveParticles() const;
 		float    GetSpeed() const;
 
-		ScopedLock<ParticleDataBuffer>	   GetParticleData();
-		ScopedLockRead<ParticleDataBuffer> GetParticleDataRead() const;
+		ScopedLock<ModuleData>		GetModuleData();
+		ScopedLockRead<ModuleData>	GetModuleDataRead() const;
 
-		ScopedLock<ModuleData>			   GetModuleData();
-		ScopedLockRead<ModuleData>		   GetModuleDataRead() const;
-
-		ScopedLock<ParticleEmitterCPU>	   GetEmitter();
-		ScopedLockRead<ParticleEmitterCPU> GetEmitterRead() const;
-
-		ScopedLock<RenderData>			   GetRenderData();
-		ScopedLockRead<RenderData>		   GetRenderDataRead() const;
+		ScopedLock<RenderData>		GetRenderData();
+		ScopedLockRead<RenderData>	GetRenderDataRead() const;
 
 	private:
 		void particleThreadUpdate(float timestep);
-		void update(Timestep timestep, ParticleDataBuffer& particles);
-		void emit(Timestep timestep, ParticleDataBuffer& particles);
-		void buildRenderData(ParticleDataBuffer& particles);
+		void update(Timestep timestep, ModuleData& data);
+		void emit(Timestep timestep, ModuleData& data);
+		void buildRenderData(ModuleData& data);
 		void updatePhysics();
 		
 	private:
-		SingleThreadPass<ParticleDataBuffer> m_ParticleData;
 		SingleThreadPass<ModuleData>		 m_ModuleThreadPass;
-		SingleThreadPass<ParticleEmitterCPU> m_EmitThreadPass;
 		ThreadPass<RenderData>				 m_RenderThreadPass;
 		uint32_t							 m_MaxParticles;
 		bool								 m_Play;
