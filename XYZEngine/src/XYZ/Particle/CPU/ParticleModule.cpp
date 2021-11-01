@@ -141,6 +141,7 @@ namespace XYZ {
 	{
 		if (m_Bodies.size() >= endId)
 		{
+			ScopedLock<b2World> world = m_PhysicsWorld->GetWorld(); // Lock is required
 			for (uint32_t i = startId; i < endId; ++i)
 			{
 				b2Vec2 position = {

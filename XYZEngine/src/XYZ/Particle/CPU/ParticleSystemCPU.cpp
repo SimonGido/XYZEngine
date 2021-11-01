@@ -193,8 +193,8 @@ namespace XYZ {
 		Application::Get().GetThreadPool().PushJob<void>([this, timestep]() {
 			XYZ_PROFILE_FUNC("ParticleSystemCPU::particleThreadUpdate Job");
 			{			
-				//updatePhysics();
 				ScopedLock<ModuleData> moduleData = m_ModuleThreadPass.Get<ModuleData>();
+				updatePhysics(moduleData.As());
 				update(timestep, moduleData.As());
 				emit(timestep, moduleData.As());
 				buildRenderData(moduleData.As());
@@ -234,16 +234,15 @@ namespace XYZ {
 		}
 		val->m_InstanceCount = endId;
 	}
-	void ParticleSystemCPU::updatePhysics()
+	void ParticleSystemCPU::updatePhysics(ModuleData& data)
 	{
 		// TODO: once physics world is thread safe, it can be in update function
 		XYZ_PROFILE_FUNC("ParticleSystemCPU::updatePhysics");
-		auto moduleData = GetModuleData();
-		if (moduleData->m_PhysicsModule.IsEnabled())
+		if (data.m_PhysicsModule.IsEnabled())
 		{
-			auto [startId, endId] = moduleData->m_Emitter.m_EmittedIDs;
-			moduleData->m_PhysicsModule.Generate(moduleData->m_Particles, startId, endId);
-			moduleData->m_PhysicsModule.UpdateParticles(moduleData->m_Particles);
+			auto [startId, endId] = data.m_Emitter.m_EmittedIDs;
+			data.m_PhysicsModule.Generate(data.m_Particles, startId, endId);
+			data.m_PhysicsModule.UpdateParticles(data.m_Particles);
 		}
 	}
 	ParticleSystemCPU::RenderData::RenderData()

@@ -12,6 +12,8 @@ namespace XYZ {
 	}
 	void PhysicsWorld2D::Step(Timestep ts)
 	{
+		XYZ_PROFILE_FUNC("PhysicsWorld2D::Step");
+		synchronize();
 		Application::Get().GetThreadPool().PushJob<void>([this, ts]() {
 			XYZ_PROFILE_FUNC("PhysicsWorld2D::Step Job");
 			std::scoped_lock lock(m_Mutex);
@@ -27,5 +29,10 @@ namespace XYZ {
 	ScopedLockRead<b2World> PhysicsWorld2D::GetWorldRead() const
 	{
 		return ScopedLockRead<b2World>(&m_Mutex, m_World);
+	}
+	void PhysicsWorld2D::synchronize()
+	{
+		XYZ_PROFILE_FUNC("PhysicsWorld2D::synchronize");
+		std::scoped_lock lock(m_Mutex);
 	}
 }

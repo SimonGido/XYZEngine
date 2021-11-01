@@ -19,6 +19,9 @@ namespace XYZ {
 		ScopedLockRead<b2World>	GetWorldRead() const;
 
 	private:
+		void synchronize();
+
+	private:
 		b2World					  m_World;
 		mutable std::shared_mutex m_Mutex;
 	};

@@ -83,7 +83,7 @@ namespace XYZ {
 		void update(Timestep timestep, ModuleData& data);
 		void emit(Timestep timestep, ModuleData& data);
 		void buildRenderData(ModuleData& data);
-		void updatePhysics();
+		void updatePhysics(ModuleData& data);
 		
 	private:
 		SingleThreadPass<ModuleData>		 m_ModuleThreadPass;

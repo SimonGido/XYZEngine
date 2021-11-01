@@ -71,7 +71,7 @@ namespace XYZ {
 
 
     private:
-        //PhysicsWorld2D      m_PhysicsWorld;
+        PhysicsWorld2D      m_PhysicsWorld;
         ContactListener     m_ContactListener;
         SceneEntity*        m_PhysicsEntityBuffer;
 
