@@ -164,9 +164,6 @@ namespace XYZ {
 		return m_Speed;
 	}
 
-
-	
-
 	ScopedLock<ParticleSystemCPU::ModuleData> ParticleSystemCPU::GetModuleData()
 	{
 		return m_ModuleThreadPass.Get<ModuleData>();

@@ -266,18 +266,27 @@ namespace XYZ {
 		meshComponent.Mesh->SetMaterial(material);
 
 		particleComponentCPU.System.Play();
-		//particleComponentCPU.System.GetEmitter()->m_BurstEmitter.m_Bursts.emplace_back(50, 1.0f);
-		//particleComponentCPU.System.GetEmitter()->m_BurstEmitter.m_Bursts.emplace_back(50, 4.0f);
 
 		auto& lightStorage = m_Scene->GetECS().GetStorage<PointLight2D>();
 		if (lightStorage.Size())
 		{
 			SceneEntity lightEntity(lightStorage.GetEntityAtIndex(0), m_Scene.Raw());
-			auto moduleData = particleComponentCPU.System.GetModuleData();
-			moduleData->m_LightModule.m_LightEntity = lightEntity;
-			moduleData->m_LightModule.m_TransformEntity = entity;
+			{
+				auto moduleData = particleComponentCPU.System.GetModuleData();
+				moduleData->m_LightModule.m_LightEntity = lightEntity;
+				moduleData->m_LightModule.m_TransformEntity = entity;
+			}
+			//auto &newMeshComponent = lightEntity.EmplaceComponent<MeshComponent>();
+			//newMeshComponent.Mesh = entity.GetComponent<MeshComponent>().Mesh;
+			//auto &particleComponent = lightEntity.EmplaceComponent<ParticleComponentCPU>();
+			//particleComponent.System.SetMaxParticles(numParticles);
+			//particleComponent.System.Play();
+			//{
+			//	auto moduleData = particleComponent.System.GetModuleData();
+			//	moduleData->m_LightModule.m_LightEntity = lightEntity;
+			//	moduleData->m_LightModule.m_TransformEntity = entity;
+			//}
 		}
-		particleComponentCPU.System.Play();
 	}
 
 	void EditorLayer::animationExample(SceneEntity entity)
