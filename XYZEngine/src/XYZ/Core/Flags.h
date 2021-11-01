@@ -4,6 +4,9 @@
 
 namespace XYZ {
 
+	template <class T>
+	using is_enum_class = std::integral_constant<bool, !std::is_convertible<T, int>{} && std::is_enum<T>{} > ;
+
 	template<typename Enum, bool IsEnum = std::is_enum<Enum>::value>
 	class Flags;
 
@@ -42,17 +45,17 @@ namespace XYZ {
 	};
 
 	template<typename Enum>
-	constexpr typename std::enable_if<std::is_enum<Enum>::value, Flags<Enum>>::type operator|(Enum left, Enum right)
+	constexpr typename std::enable_if<is_enum_class<Enum>::value, Flags<Enum>>::type operator|(Enum left, Enum right)
 	{
 		return Flags<Enum>(left) | right;
 	}
 	template<typename Enum>
-	constexpr typename std::enable_if<std::is_enum<Enum>::value, Flags<Enum>>::type operator&(Enum left, Enum right)
+	constexpr typename std::enable_if<is_enum_class<Enum>::value, Flags<Enum>>::type operator&(Enum left, Enum right)
 	{
 		return Flags<Enum>(left) & right;
 	}
 	template<typename Enum>
-	constexpr typename std::enable_if_t<std::is_enum<Enum>::value, Flags<Enum>>::type operator^(Enum left, Enum right)
+	constexpr typename std::enable_if_t<is_enum_class<Enum>::value, Flags<Enum>>::type operator^(Enum left, Enum right)
 	{
 		return Flags<Enum>(left) ^ right;
 	}
