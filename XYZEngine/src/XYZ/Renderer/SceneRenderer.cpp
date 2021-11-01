@@ -298,7 +298,7 @@ namespace XYZ {
 		std::sort(queue.m_SpriteDrawList.begin(), queue.m_SpriteDrawList.end(),
 			[](const RenderQueue::SpriteDrawCommand& a, const RenderQueue::SpriteDrawCommand& b) {
 			if (a.SortLayer == b.SortLayer)
-				return a.Material->GetFlags() < b.Material->GetFlags();
+				return a.Material->GetShader()->GetRendererID() < b.Material->GetShader()->GetRendererID();
 			return a.SortLayer < b.SortLayer;
 		});
 	}

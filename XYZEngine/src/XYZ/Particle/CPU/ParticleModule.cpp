@@ -231,6 +231,7 @@ namespace XYZ {
 			//b2CircleShape shape;
 			//shape.m_radius = 0.5f;
 			b2FixtureDef fd;
+			fd.filter.groupIndex = -1;
 			fd.density = 1;
 			fd.shape = &shape;
 			body->CreateFixture(&fd);

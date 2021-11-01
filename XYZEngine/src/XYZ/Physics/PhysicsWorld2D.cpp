@@ -22,6 +22,10 @@ namespace XYZ {
 			m_World.Step(ts.GetSeconds(), velocityIterations, positionIterations);
 		});	
 	}
+	void PhysicsWorld2D::AddLayer(const std::string& name, uint8_t id)
+	{
+		m_Layers[id] = { name, id };
+	}
 	ScopedLock<b2World> PhysicsWorld2D::GetWorld()
 	{
 		return ScopedLock<b2World>(&m_Mutex, m_World);

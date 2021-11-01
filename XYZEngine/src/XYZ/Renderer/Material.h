@@ -1,7 +1,7 @@
 #pragma once
 #include "Shader.h"
 #include "Texture.h"
-#include "RenderFlags.h"
+#include "XYZ/Core/Flags.h"
 #include "XYZ/Asset/Asset.h"
 #include "XYZ/Utils/DataStructures/ByteBuffer.h"
 
@@ -10,6 +10,13 @@
 #include <unordered_set>
 
 namespace XYZ {
+
+	enum class RenderFlags : uint64_t
+	{
+		MaterialFlag	= 1ULL << 0,
+		TransparentFlag = 1ULL << 16,
+		InstancedFlag	= 1ULL << 17
+	};
 
 	class Material : public Asset
 	{
@@ -37,7 +44,7 @@ namespace XYZ {
 		void SetFlags(RenderFlags renderFlags) { m_Flags |= renderFlags; }
 		void SetRenderQueueID(uint8_t id)	   { m_RenderQueueID = id; }
 
-		uint64_t GetFlags() const { return m_Flags; }
+		uint64_t GetFlags() const { return m_Flags.ToUlong(); }
 		uint8_t  GetRenderQueueID() const { return m_RenderQueueID; }
 
 		const Ref<Shader>& GetShader() const { return m_Shader; }
@@ -58,10 +65,10 @@ namespace XYZ {
 	private:
 		Ref<Shader>				  m_Shader;
 		std::vector<Ref<Texture>> m_Textures;
+		Flags<RenderFlags>		  m_Flags;
 
 		ByteBuffer m_VSUniformBuffer;
 		ByteBuffer m_FSUniformBuffer;
-		uint64_t   m_Flags;
 		uint8_t    m_RenderQueueID;
 	};
 

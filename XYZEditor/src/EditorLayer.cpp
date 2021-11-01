@@ -21,9 +21,9 @@ namespace XYZ {
 	{
 		ScriptEngine::Init("Assets/Scripts/XYZScript.dll");
 		m_Scene = AssetManager::GetAsset<Scene>(AssetManager::GetAssetHandle("Assets/Scenes/NewScene.xyz"));
-		m_SceneRenderer    = Ref<SceneRenderer>::Create();
-		m_SceneRenderer2D  = Ref<Renderer2D>::Create();
-		m_EditorRenderer = Ref<EditorRenderer>::Create();
+		m_SceneRenderer   = Ref<SceneRenderer>::Create();
+		m_SceneRenderer2D = Ref<Renderer2D>::Create();
+		m_EditorRenderer  = Ref<EditorRenderer>::Create();
 		m_SceneRenderer->SetRenderer2D(m_SceneRenderer2D);
 
 		m_SceneHierarchy.SetContext(m_Scene);
@@ -66,7 +66,7 @@ namespace XYZ {
 		auto entity = m_Scene->GetEntityByName("Body");
 		//gpuParticleExample(entity);
 		cpuParticleExample(entity);
-		//animationExample(entity);
+		animationExample(entity);
 
 		Renderer::WaitAndRender();
 		Renderer::BlockRenderThread();

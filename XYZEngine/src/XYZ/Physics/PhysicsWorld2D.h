@@ -15,6 +15,9 @@ namespace XYZ {
 
 		void Step(Timestep ts);
 
+		void AddLayer(const std::string& name, uint8_t id);
+
+
 		ScopedLock<b2World>		GetWorld();
 		ScopedLockRead<b2World>	GetWorldRead() const;
 
@@ -24,5 +27,12 @@ namespace XYZ {
 	private:
 		b2World					  m_World;
 		mutable std::shared_mutex m_Mutex;
+
+		struct Layer
+		{
+			std::string Name;
+			uint8_t		ID;
+		};
+		std::array<Layer, 16> m_Layers;
 	};
 }
