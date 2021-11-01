@@ -97,7 +97,6 @@ namespace XYZ {
 		XYZ_PROFILE_FUNC("ParticleSystemCPU::Update");
 		if (m_Play)
 		{		
-			//updatePhysics();
 			particleThreadUpdate(ts.GetSeconds() * m_Speed);
 		}
 	}

@@ -141,20 +141,23 @@ namespace XYZ {
 	{
 		if (m_Bodies.size() >= endId)
 		{
-			ScopedLock<b2World> world = m_PhysicsWorld->GetWorld(); // Lock is required
-			for (uint32_t i = startId; i < endId; ++i)
+			if (endId > startId)
 			{
-				b2Vec2 position = {
-					   data.m_Particle[i].Position.x,
-					   data.m_Particle[i].Position.y
-				};
-				b2Vec2 vel = {
-					   data.m_Particle[i].Velocity.x,
-					   data.m_Particle[i].Velocity.y,
-				};
-				m_Bodies[i]->SetEnabled(true);
-				m_Bodies[i]->SetTransform(position, 0.0f);
-				m_Bodies[i]->SetLinearVelocity(vel);
+				ScopedLock<b2World> world = m_PhysicsWorld->GetWorld(); // Lock is required
+				for (uint32_t i = startId; i < endId; ++i)
+				{
+					b2Vec2 position = {
+						   data.m_Particle[i].Position.x,
+						   data.m_Particle[i].Position.y
+					};
+					b2Vec2 vel = {
+						   data.m_Particle[i].Velocity.x,
+						   data.m_Particle[i].Velocity.y,
+					};
+					m_Bodies[i]->SetEnabled(true);
+					m_Bodies[i]->SetTransform(position, 0.0f);
+					m_Bodies[i]->SetLinearVelocity(vel);
+				}
 			}
 		}
 	}
