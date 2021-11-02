@@ -12,5 +12,7 @@ namespace XYZ {
 
 
 		SceneEntity m_Context;
+	private:
+		void renderColliders(Ref<EditorRenderer>& renderer, const ParticleSystemCPU::ModuleData& moduleData);
 	};
 }

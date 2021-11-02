@@ -61,9 +61,11 @@ namespace XYZ {
 
 	Renderer2D::Renderer2D()
 	{
-		m_DefaultQuadMaterial = Ref<Material>::Create(Shader::Create("Assets/Shaders/DefaultShader.glsl"));
-		m_LineShader		  = Shader::Create("Assets/Shaders/LineShader.glsl");
-		m_CollisionShader	  = Shader::Create("Assets/Shaders/MousePicker.glsl");
+		auto shaderLibrary	= Renderer::GetShaderLibrary();
+		m_DefaultQuadMaterial = Ref<Material>::Create(shaderLibrary->Get("DefaultShader"));
+		m_LineShader		  = shaderLibrary->Get("LineShader");
+		m_CollisionShader	  = shaderLibrary->Get("MousePicker");
+		m_CircleShader		  = shaderLibrary->Get("Circle");
 		m_WhiteTexture		  = Texture2D::Create(ImageFormat::RGBA8, 1, 1, {});
 
 		uint32_t whiteTextureData = 0xffffffff;
@@ -90,6 +92,13 @@ namespace XYZ {
 		m_CollisionBuffer.Init(sc_MaxCollisionVertices, quadIndices, sc_MaxIndices, BufferLayout{
 				{0, XYZ::ShaderDataComponent::Float3, "a_Position" },
 				{1, XYZ::ShaderDataComponent::Int,    "a_ObjectID" },
+			});
+
+		m_CircleBuffer.Init(sc_MaxVertices, quadIndices, sc_MaxIndices, BufferLayout{
+				{0, XYZ::ShaderDataComponent::Float3, "a_WorldPosition" },
+				{1, XYZ::ShaderDataComponent::Float,  "a_Thickness" },
+				{2, XYZ::ShaderDataComponent::Float2, "a_LocalPosition" },
+				{3, XYZ::ShaderDataComponent::Float4, "a_Color" }
 			});
 
 		delete[]quadIndices;
@@ -154,6 +163,25 @@ namespace XYZ {
 			m_LineBuffer.BufferPtr++;
 			m_LineBuffer.IndexCount += 2;
 		}
+	}
+
+	void Renderer2D::SubmitFilledCircle(const glm::vec3& pos, float radius, float thickness, const glm::vec4& color)
+	{
+		if (m_CircleBuffer.IndexCount >= sc_MaxIndices)
+			FlushFilledCircles();
+
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos)
+			* glm::scale(glm::mat4(1.0f), { radius * 2.0f, radius * 2.0f, 1.0f });
+
+		for (int i = 0; i < 4; i++)
+		{
+			m_CircleBuffer.BufferPtr->WorldPosition = transform * sc_QuadVertexPositions[i];
+			m_CircleBuffer.BufferPtr->Thickness = thickness;
+			m_CircleBuffer.BufferPtr->LocalPosition = sc_QuadVertexPositions[i] * 2.0f;
+			m_CircleBuffer.BufferPtr->Color = color;
+			m_CircleBuffer.BufferPtr++;		
+		}
+		m_CircleBuffer.IndexCount += 6;
 	}
 
 
@@ -332,6 +360,14 @@ namespace XYZ {
 	}
 
 
+	void Renderer2D::FlushAll()
+	{
+		Flush();
+		FlushLines();
+		FlushCollisions();
+		FlushFilledCircles();
+	}
+
 	void Renderer2D::Flush()
 	{	
 		uint32_t dataSize = (uint8_t*)m_QuadBuffer.BufferPtr - (uint8_t*)m_QuadBuffer.BufferBase;
@@ -381,12 +417,28 @@ namespace XYZ {
 		}
 	}
 
+	void Renderer2D::FlushFilledCircles()
+	{
+		uint32_t dataSize = (uint8_t*)m_CircleBuffer.BufferPtr - (uint8_t*)m_CircleBuffer.BufferBase;
+		if (dataSize)
+		{
+			m_CircleShader->Bind();
+			m_CircleBuffer.VertexBuffer->Update(m_CircleBuffer.BufferBase, dataSize);
+			m_CircleBuffer.VertexArray->Bind();
+			Renderer::DrawIndexed(PrimitiveType::Triangles, m_CircleBuffer.IndexCount);
+
+			m_Stats.FilledCircleDrawCalls++;
+			m_CircleBuffer.Reset();
+		}
+	}
+
 
 	void Renderer2D::EndScene()
 	{
 		m_Stats.DrawCalls = 0;
 		m_Stats.LineDrawCalls = 0;
 		m_Stats.CollisionDrawCalls = 0;
+		m_Stats.FilledCircleDrawCalls = 0;
 	}
 	const Renderer2DStats& Renderer2D::GetStats()
 	{

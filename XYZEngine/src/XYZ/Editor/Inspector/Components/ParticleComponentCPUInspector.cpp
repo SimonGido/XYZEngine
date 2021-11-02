@@ -34,6 +34,8 @@ namespace XYZ {
 			ImGui::Text("%d", system.GetAliveParticles());
 			EditorHelper::EndColumns();
 
+			if (ImGui::Button("Reset"))
+				system.Reset();
 
 			ScopedLock<ParticleSystemCPU::ModuleData> moduleData = system.GetModuleData();
 
@@ -91,12 +93,54 @@ namespace XYZ {
 			moduleData->m_RotationOverLife.SetEnabled(rotationOverLifeEnabled);
 
 			bool physicsEnabled = moduleData->m_PhysicsModule.IsEnabled();
-			EditorHelper::DrawNodeControl("Physics Module", moduleData->m_PhysicsModule, [](auto& val) {
+			EditorHelper::DrawNodeControl("Physics Module", moduleData->m_PhysicsModule, [&](auto& val) {
+				bool reset = false;
+				if (ImGui::Button("Shape"))
+					ImGui::OpenPopup("Shape Type");
+				if (ImGui::BeginPopup("Shape Type"))
+				{
+					if (ImGui::MenuItem("Circle"))
+					{
+						reset = true;
+						val.m_Shape = PhysicsModule::Shape::Circle;
+						ImGui::CloseCurrentPopup();
+					}
+					if (ImGui::MenuItem("Box"))
+					{
+						reset = true;
+						val.m_Shape = PhysicsModule::Shape::Box;
+						ImGui::CloseCurrentPopup();
+					}
+					ImGui::EndPopup();
+				}
+				EditorHelper::BeginColumns("Box Size");
+				reset |= ImGui::DragFloat2("##BoxSize", glm::value_ptr(val.m_BoxSize));
+				EditorHelper::EndColumns();
 
-			
+				EditorHelper::BeginColumns("Radius");
+				reset |= ImGui::DragFloat("##Radius", &val.m_Radius, 0.05f);
+				EditorHelper::EndColumns();
+
+				EditorHelper::BeginColumns("Density");
+				reset |= ImGui::DragFloat("##Density", &val.m_Density, 0.05f);
+				EditorHelper::EndColumns();
+
+				EditorHelper::BeginColumns("Friction");
+				reset |= ImGui::DragFloat("##Friction", &val.m_Friction, 0.05f);
+				EditorHelper::EndColumns();
+
+				EditorHelper::BeginColumns("Restitution");
+				reset |= ImGui::DragFloat("##Restitution", &val.m_Restitution, 0.05f);
+				EditorHelper::EndColumns();
+
+				if (reset)
+					val.Reset();
+
 			}, physicsEnabled);
 			moduleData->m_PhysicsModule.SetEnabled(physicsEnabled);
-
+			if (physicsEnabled)
+				renderColliders(renderer, moduleData.As());
+			
 
 			bool enabledEmitter = true;
 			EditorHelper::DrawNodeControl("Emitter", moduleData->m_Emitter, [=](auto& val) {
@@ -124,4 +168,24 @@ namespace XYZ {
 			}, enabledEmitter);
 		});
 	}
+	void ParticleComponentCPUInspector::renderColliders(Ref<EditorRenderer>& renderer, const ParticleSystemCPU::ModuleData& moduleData)
+	{
+		auto [translation, rotation, scale] = m_Context.GetComponent<TransformComponent>().GetWorldComponents();
+		const auto& particles = moduleData.m_Particles;
+		const auto& physicsModule = moduleData.m_PhysicsModule;
+		if (physicsModule.m_Shape == PhysicsModule::Shape::Circle)
+		{
+			for (uint32_t i = 0; i < particles.GetAliveParticles(); ++i)
+				renderer->SubmitEditorCircle(translation + particles.m_Particle[i].Position, physicsModule.m_Radius, 20, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+		}
+		else
+		{
+			for (uint32_t i = 0; i < particles.GetAliveParticles(); ++i)
+			{
+				glm::vec3 boxPos = translation + particles.m_Particle[i].Position - glm::vec3(physicsModule.m_BoxSize, 0.0f);
+				renderer->SubmitEditorLineQuad(boxPos, 2.0f * physicsModule.m_BoxSize, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+			}
+		}
+	}
+
 }

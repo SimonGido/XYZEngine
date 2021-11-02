@@ -154,7 +154,10 @@ namespace XYZ {
 
 
 	OpenGLShader::OpenGLShader(const std::string& path)
-		: m_NumTakenTexSlots(0), m_AssetPath(path)
+		: 
+		m_Name(Utils::GetFilenameWithoutExtension(path)),
+		m_NumTakenTexSlots(0), 
+		m_AssetPath(path)
 	{
 		Reload();
 	}

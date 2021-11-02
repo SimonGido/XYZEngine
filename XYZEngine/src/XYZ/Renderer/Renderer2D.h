@@ -12,6 +12,7 @@ namespace XYZ {
 		uint32_t DrawCalls = 0;
 		uint32_t LineDrawCalls = 0;
 		uint32_t CollisionDrawCalls = 0;
+		uint32_t FilledCircleDrawCalls = 0;
 	};
 
 	template <typename VertexType>
@@ -42,6 +43,7 @@ namespace XYZ {
 		void	 SetMaterial(const Ref<Material>& material);
 
 		void SubmitCircle(const glm::vec3& pos, float radius, uint32_t sides, const glm::vec4& color = glm::vec4(1.0f));
+		void SubmitFilledCircle(const glm::vec3& pos, float radius, float thickness, const glm::vec4& color = glm::vec4(1.0f));
 		void SubmitQuad(const glm::mat4& transform, const glm::vec4& color, float tilingFactor = 1.0f);
 		void SubmitQuad(const glm::mat4& transform, const glm::vec4& texCoord, uint32_t textureID, const glm::vec4& color = glm::vec4(1), float tilingFactor = 1.0f);
 		void SubmitQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, uint32_t textureID, const glm::vec4& color = glm::vec4(1), float tilingFactor = 1.0f);
@@ -55,10 +57,11 @@ namespace XYZ {
 
 		void SubmitQuadNotCentered(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, uint32_t textureID, const glm::vec4& color = glm::vec4(1), float tilingFactor = 1.0f);
 	
+		void FlushAll();
 		void Flush();
 		void FlushLines();
 		void FlushCollisions();
-
+		void FlushFilledCircles();
 		/**
 		* Clean up after rendering
 		*/
@@ -92,6 +95,14 @@ namespace XYZ {
 			int		  CollisionID;
 		};
 
+		struct CircleVertex
+		{
+			glm::vec3 WorldPosition;
+			float	  Thickness;
+			glm::vec2 LocalPosition;
+			glm::vec4 Color;
+		};
+
 
 		static constexpr uint32_t sc_MaxTextures = 32;
 		static constexpr uint32_t sc_MaxQuads = 10000;
@@ -114,6 +125,7 @@ namespace XYZ {
 		Ref<Shader>    m_LineShader;
 		Ref<Shader>    m_CollisionShader;
 		Ref<Shader>    m_PointShader;
+		Ref<Shader>	   m_CircleShader;
 
 		Ref<Texture2D> m_WhiteTexture;
 		Ref<Texture>   m_TextureSlots[sc_MaxTextures];
@@ -123,7 +135,8 @@ namespace XYZ {
 		Renderer2DBuffer<Vertex2D>		  m_QuadBuffer;
 		Renderer2DBuffer<LineVertex>	  m_LineBuffer;
 		Renderer2DBuffer<CollisionVertex> m_CollisionBuffer;
-		
+		Renderer2DBuffer<CircleVertex>	  m_CircleBuffer;
+
 		Renderer2DStats    m_Stats;	
 	};
 

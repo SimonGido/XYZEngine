@@ -26,6 +26,7 @@ namespace XYZ {
 		LightModule();
 
 		void UpdateParticles(float ts, ParticleDataBuffer& data);
+		void Reset();
 
 		void SetEnabled(bool enabled);
 		bool IsEnabled() const { return m_Enabled; }
@@ -79,22 +80,41 @@ namespace XYZ {
 	class PhysicsModule
 	{
 	public:
+		enum class Shape { Circle, Box };
+
 		PhysicsModule();
 
-		void Generate(ParticleDataBuffer& data, uint32_t startId, uint32_t endId);
-		void UpdateParticles(ParticleDataBuffer& data) const;
+		void Generate( ParticleDataBuffer& data, uint32_t startId, uint32_t endId, const glm::mat4& transform);
+		void UpdateParticles(ParticleDataBuffer& data, const glm::mat4& transform) const;
 		void SetPhysicsWorld(PhysicsWorld2D* world);
 		void SetMaxParticles(uint32_t count);
+		void Reset();
 
 		void SetEnabled(bool enabled);
 		bool IsEnabled() const { return m_Enabled; }
+
+
+		Shape		m_Shape;
+		glm::vec2	m_BoxSize;
+		float		m_Radius;
+		float		m_Density;
+		float		m_Friction;
+		float		m_Restitution;
+
 	private:
 		void generateBodies(b2World* world);
 		void destroyBodies(b2World* world);
+		const b2Shape* prepareShape();
+
 	private:
-		std::vector<b2Body*> m_Bodies;
-		PhysicsWorld2D*		 m_PhysicsWorld;
+		std::vector<b2Body*>  m_Bodies;
+		PhysicsWorld2D*		  m_PhysicsWorld;
+		
 		uint32_t			 m_MaxParticles;
 		bool				 m_Enabled;
+
+
+		b2PolygonShape m_BoxShape;
+		b2CircleShape  m_CircleShape;
 	};
 }

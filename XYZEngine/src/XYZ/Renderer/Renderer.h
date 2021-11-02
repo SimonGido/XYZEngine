@@ -63,6 +63,8 @@ namespace XYZ {
 		static void DrawElementsIndirect(void* indirect);
 		static void SubmitFullscreenQuad();
 
+		static Ref<ShaderLibrary> GetShaderLibrary();
+
 		template<typename FuncT>
 		static void Submit(FuncT&& func, uint32_t type = Default)
 		{		
@@ -88,11 +90,9 @@ namespace XYZ {
 
 		static void WaitAndRender();
 
-		// We need this function for now to make sure shaders are created before using them
-		static void BlockRenderThread();
 	private:
 		static ScopedLock<RenderCommandQueue> getRenderCommandQueue(uint8_t type);
-		static RendererStats&						   getStats();
+		static RendererStats&				  getStats();
 	};
 
 }

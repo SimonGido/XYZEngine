@@ -6,6 +6,7 @@
 
 #include "XYZ/Core/Input.h"
 #include "XYZ/Debug/Profiler.h"
+#include "XYZ/Renderer/Renderer.h"
 
 #include <glm/gtx/transform.hpp>
 
@@ -75,9 +76,10 @@ namespace XYZ {
 			m_BloomPass = RenderPass::Create({ fbo });
 		}
 
-		m_CompositeShader	 = Shader::Create("Assets/Shaders/RendererCore/CompositeShader.glsl");
-		m_LightShader		 = Shader::Create("Assets/Shaders/RendererCore/LightShader.glsl");
-		m_BloomComputeShader = Shader::Create("Assets/Shaders/RendererCore/Bloom.glsl");
+		auto shaderLibrary   = Renderer::GetShaderLibrary();
+		m_CompositeShader	 = shaderLibrary->Get("CompositeShader");
+		m_LightShader		 = shaderLibrary->Get("LightShader");
+		m_BloomComputeShader = shaderLibrary->Get("Bloom");
 
 
 		m_BloomTexture[0] = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, {});
@@ -322,10 +324,11 @@ namespace XYZ {
 		{
 			m_Renderer2D->SetMaterial(dc.Material);
 			uint32_t textureID = m_Renderer2D->SetTexture(dc.SubTexture->GetTexture());
-			m_Renderer2D->SubmitQuad(dc.Transform, dc.SubTexture->GetTexCoords(), textureID, dc.Color);
+			m_Renderer2D->SubmitQuad(dc.Transform, dc.SubTexture->GetTexCoords(), textureID, dc.Color);		
 		}
-		m_Renderer2D->Flush();
-		m_Renderer2D->FlushLines();	
+
+		m_Renderer2D->FlushAll();
+		m_Renderer2D->EndScene();
 
 		// TODO: last should be renderer2D
 		for (auto& dc : queue.m_InstancedMeshCommandList)
@@ -337,7 +340,7 @@ namespace XYZ {
 			dc.Mesh->GetVertexArray()->Bind();
 			Renderer::DrawInstanced(PrimitiveType::Triangles, dc.Mesh->GetIndexCount(), dc.Count, 0);
 		}
-		m_Renderer2D->EndScene();
+		
 		Renderer::EndRenderPass();
 	}
 	void SceneRenderer::lightPass()

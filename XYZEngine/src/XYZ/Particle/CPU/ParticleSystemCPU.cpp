@@ -87,6 +87,11 @@ namespace XYZ {
 		return *this;
 	}
 
+	void ParticleSystemCPU::SetSceneEntity(const SceneEntity& entity)
+	{
+		m_Entity = entity;
+	}
+
 	void ParticleSystemCPU::SetPhysicsWorld(PhysicsWorld2D* world)
 	{
 		GetModuleData()->m_PhysicsModule.SetPhysicsWorld(world);
@@ -127,6 +132,16 @@ namespace XYZ {
 	void ParticleSystemCPU::Stop()
 	{
 		m_Play = false;
+	}
+
+	void ParticleSystemCPU::Reset()
+	{
+		auto moduleData = GetModuleData();
+		for (uint32_t i = 0; i < moduleData->m_Particles.GetAliveParticles(); ++i)
+			moduleData->m_Particles.Kill(i);
+		
+		moduleData->m_LightModule.Reset();
+		moduleData->m_PhysicsModule.Reset();
 	}
 
 	void ParticleSystemCPU::SetMaxParticles(uint32_t maxParticles)
@@ -186,11 +201,12 @@ namespace XYZ {
 
 	void ParticleSystemCPU::particleThreadUpdate(float timestep)
 	{
-		Application::Get().GetThreadPool().PushJob<void>([this, timestep]() {
+		glm::mat4 transform = m_Entity.GetComponent<TransformComponent>().WorldTransform;
+		Application::Get().GetThreadPool().PushJob<void>([this, timestep, transform]() {
 			XYZ_PROFILE_FUNC("ParticleSystemCPU::particleThreadUpdate Job");
 			{			
 				ScopedLock<ModuleData> moduleData = m_ModuleThreadPass.Get<ModuleData>();
-				updatePhysics(moduleData.As());
+				updatePhysics(moduleData.As(), transform);
 				update(timestep, moduleData.As());
 				emit(timestep, moduleData.As());
 				buildRenderData(moduleData.As());
@@ -230,15 +246,15 @@ namespace XYZ {
 		}
 		val->m_InstanceCount = endId;
 	}
-	void ParticleSystemCPU::updatePhysics(ModuleData& data)
+	void ParticleSystemCPU::updatePhysics(ModuleData& data, const glm::mat4& transform)
 	{
 		// TODO: once physics world is thread safe, it can be in update function
 		XYZ_PROFILE_FUNC("ParticleSystemCPU::updatePhysics");
 		if (data.m_PhysicsModule.IsEnabled())
-		{
+		{		
 			auto [startId, endId] = data.m_Emitter.m_EmittedIDs;
-			data.m_PhysicsModule.Generate(data.m_Particles, startId, endId);
-			data.m_PhysicsModule.UpdateParticles(data.m_Particles);
+			data.m_PhysicsModule.Generate(data.m_Particles, startId, endId, transform);
+			data.m_PhysicsModule.UpdateParticles(data.m_Particles, transform);
 		}
 	}
 	ParticleSystemCPU::RenderData::RenderData()

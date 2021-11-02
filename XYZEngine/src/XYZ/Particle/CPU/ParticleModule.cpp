@@ -4,6 +4,8 @@
 #include "XYZ/Scene/Components.h"
 #include "XYZ/Renderer/SceneRenderer.h"
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/quaternion.hpp>
 namespace XYZ {
 
 	static float CalcRatio(float length, float value)
@@ -62,6 +64,15 @@ namespace XYZ {
 					m_Lights.push_back(data.m_Particle[i].Position);
 				}
 			}
+		}
+	}
+
+	void LightModule::Reset()
+	{
+		if (m_Enabled)
+		{
+			SetEnabled(false);
+			SetEnabled(true);
 		}
 	}
 
@@ -132,23 +143,32 @@ namespace XYZ {
 	}
 	PhysicsModule::PhysicsModule()
 		:
+		m_Shape(PhysicsModule::Shape::Circle),
+		m_BoxSize(0.5f),
+		m_Radius(0.5f),
+		m_Density(1.0f),
+		m_Friction(0.0f),
+		m_Restitution(0.0f),
 		m_PhysicsWorld(nullptr),
 		m_MaxParticles(0),
 		m_Enabled(true)
 	{
 	}
-	void PhysicsModule::Generate(ParticleDataBuffer& data, uint32_t startId, uint32_t endId)
+	void PhysicsModule::Generate(ParticleDataBuffer& data, uint32_t startId, uint32_t endId, const glm::mat4& transform)
 	{
 		if (m_Bodies.size() >= endId)
 		{
 			if (endId > startId)
-			{
+			{	
 				ScopedLock<b2World> world = m_PhysicsWorld->GetWorld(); // Lock is required
 				for (uint32_t i = startId; i < endId; ++i)
 				{
+					glm::vec4 translation = transform * glm::vec4(data.m_Particle[i].Position, 1.0f);
+					glm::mat4 particleTransform = transform * glm::translate(data.m_Particle[i].Position);
+					auto [trans, rot, scale] = TransformComponent::DecomposeTransformToComponents(particleTransform);
 					b2Vec2 position = {
-						   data.m_Particle[i].Position.x,
-						   data.m_Particle[i].Position.y
+						   translation.x,
+						   translation.y
 					};
 					b2Vec2 vel = {
 						   data.m_Particle[i].Velocity.x,
@@ -161,17 +181,19 @@ namespace XYZ {
 			}
 		}
 	}
-	void PhysicsModule::UpdateParticles(ParticleDataBuffer& data) const
+	void PhysicsModule::UpdateParticles(ParticleDataBuffer& data, const glm::mat4& transform) const
 	{
 		if (m_Enabled)
 		{
 			uint32_t aliveParticles = data.GetAliveParticles();
 			if (m_Bodies.size() >= aliveParticles)
 			{
+				auto [trans, rot, scale] = TransformComponent::DecomposeTransformToComponents(transform);
 				for (uint32_t i = 0; i < aliveParticles; ++i)
-				{
-					data.m_Particle[i].Position.x = m_Bodies[i]->GetPosition().x;
-					data.m_Particle[i].Position.y = m_Bodies[i]->GetPosition().y;
+				{		
+					auto point = m_Bodies[i]->GetLocalPoint({ trans.x, trans.y });
+					data.m_Particle[i].Position.x = point.x;
+					data.m_Particle[i].Position.y = point.y;
 				}
 			}
 		}
@@ -197,6 +219,14 @@ namespace XYZ {
 			generateBodies(&physicsWorld.As());
 		}
 	}
+	void PhysicsModule::Reset()
+	{
+		if (m_Enabled)
+		{
+			SetEnabled(false); // Destroys bodies
+			SetEnabled(true);  // Generate new bodies
+		}
+	}
 	void PhysicsModule::SetEnabled(bool enabled)
 	{
 		if (m_Enabled == enabled)
@@ -212,28 +242,32 @@ namespace XYZ {
 		}
 		m_Enabled = enabled;
 	}
+
 	void PhysicsModule::generateBodies(b2World* world)
 	{
 		destroyBodies(world);
 		if (m_Bodies.size() != m_MaxParticles)
 			m_Bodies.resize(m_MaxParticles);
+		
+		const PhysicsWorld2D::Layer particleLayer = m_PhysicsWorld->GetLayer(PhysicsWorld2D::ParticleLayer);
 
+		b2FixtureDef fd;
+		fd.filter.categoryBits = particleLayer.m_CollisionMask.to_ulong();
+		fd.filter.maskBits	   = BIT(particleLayer.m_ID);
+		fd.density			   = m_Density;
+		fd.friction			   = m_Friction;
+		fd.restitution		   = m_Restitution;
+
+
+		b2BodyDef bd;
+		bd.type = b2_dynamicBody;
+		bd.enabled = false;
+		
+		const b2Shape* shape = prepareShape();
 		for (auto& body : m_Bodies)
-		{
-			b2BodyDef bd;
-			bd.type = b2_dynamicBody;
-			bd.enabled = false;
-			body = world->CreateBody(&bd);
-
-			b2PolygonShape shape;
-			shape.SetAsBox(1.0f / 2.0f, 1.0f / 2.0f);
-
-			//b2CircleShape shape;
-			//shape.m_radius = 0.5f;
-			b2FixtureDef fd;
-			fd.filter.groupIndex = -1;
-			fd.density = 1;
-			fd.shape = &shape;
+		{		
+			body = world->CreateBody(&bd);	
+			fd.shape = shape;
 			body->CreateFixture(&fd);
 			body->SetGravityScale(0.0f);
 		}
@@ -243,5 +277,23 @@ namespace XYZ {
 		for (auto body : m_Bodies)
 			world->DestroyBody(body);
 		m_Bodies.clear();
+	}
+	const b2Shape* PhysicsModule::prepareShape()
+	{
+		b2Shape* shape = nullptr;
+		switch (m_Shape)
+		{
+		case XYZ::PhysicsModule::Shape::Circle:
+			m_CircleShape.m_radius = m_Radius;
+			shape = &m_CircleShape;
+			break;
+		case XYZ::PhysicsModule::Shape::Box:
+			m_BoxShape.SetAsBox(m_BoxSize.x, m_BoxSize.y);
+			shape = &m_BoxShape;
+			break;
+		default:
+			break;
+		}
+		return shape;
 	}
 }

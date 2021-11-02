@@ -148,7 +148,9 @@ namespace XYZ {
 			instance->m_IndexBuffer = indexBuffer;
 			glBindVertexArray(instance->m_RendererID);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, instance->m_IndexBuffer->GetRendererID());
-			});
+			glBindVertexArray(0);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		});
 	}
 
 }

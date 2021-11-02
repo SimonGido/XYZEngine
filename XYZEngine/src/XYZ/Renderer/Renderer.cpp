@@ -15,23 +15,24 @@ namespace XYZ {
 	
 	struct RendererData
 	{
-		std::shared_ptr<ThreadPass<RenderCommandQueue>> CommandQueue;
-		ThreadPool									    Pool;
-		Ref<RenderPass>									ActiveRenderPass;
-		Ref<VertexArray>								FullscreenQuadVertexArray;
-		Ref<VertexBuffer>								FullscreenQuadVertexBuffer;
-		Ref<IndexBuffer>								FullscreenQuadIndexBuffer;
-
-		std::future<bool>							    RenderThreadFinished;
-		RendererStats									Stats;
-		std::mutex										QueueLock;
+		std::shared_ptr<ThreadPass<RenderCommandQueue>> m_CommandQueue;
+		ThreadPool									    m_Pool;
+		Ref<ShaderLibrary>								m_ShaderLibrary;
+		Ref<RenderPass>									m_ActiveRenderPass;
+		Ref<VertexArray>								m_FullscreenQuadVertexArray;
+		Ref<VertexBuffer>								m_FullscreenQuadVertexBuffer;
+		Ref<IndexBuffer>								m_FullscreenQuadIndexBuffer;
+														
+		std::future<bool>							    m_RenderThreadFinished;
+		RendererStats									m_Stats;
+		std::mutex										m_QueueLock;
 	};
 
 	static RendererData s_Data;
 
 	static void SetupFullscreenQuad()
 	{
-		s_Data.FullscreenQuadVertexArray = VertexArray::Create();
+		s_Data.m_FullscreenQuadVertexArray = VertexArray::Create();
 		float x = -1;
 		float y = -1;
 		float width = 2, height = 2;
@@ -59,43 +60,58 @@ namespace XYZ {
 			{ 0, ShaderDataComponent::Float3, "a_Position" },
 			{ 1, ShaderDataComponent::Float2, "a_TexCoord" }
 		};
-		s_Data.FullscreenQuadVertexBuffer = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
-		s_Data.FullscreenQuadVertexBuffer->SetLayout(layout);
-		s_Data.FullscreenQuadVertexArray->AddVertexBuffer(s_Data.FullscreenQuadVertexBuffer);
+		s_Data.m_FullscreenQuadVertexBuffer = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
+		s_Data.m_FullscreenQuadVertexBuffer->SetLayout(layout);
+		s_Data.m_FullscreenQuadVertexArray->AddVertexBuffer(s_Data.m_FullscreenQuadVertexBuffer);
 
 		uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
-		s_Data.FullscreenQuadIndexBuffer = IndexBuffer::Create(indices, 6);
-		s_Data.FullscreenQuadVertexArray->SetIndexBuffer(s_Data.FullscreenQuadIndexBuffer);
+		s_Data.m_FullscreenQuadIndexBuffer = IndexBuffer::Create(indices, 6);
+		s_Data.m_FullscreenQuadVertexArray->SetIndexBuffer(s_Data.m_FullscreenQuadIndexBuffer);
 	}
 
 	void Renderer::Init()
 	{
-		s_Data.Pool.PushThread();
-		s_Data.CommandQueue = std::make_shared<ThreadPass<RenderCommandQueue>>();
+		s_Data.m_Pool.PushThread();
+		s_Data.m_CommandQueue = std::make_shared<ThreadPass<RenderCommandQueue>>();
 		Renderer::Submit([=]() {
 			RendererAPI::Init();
 		});
 		
+
 		SetupFullscreenQuad();
+
+		s_Data.m_ShaderLibrary = Ref<ShaderLibrary>::Create();
+		s_Data.m_ShaderLibrary->Load("Assets/Shaders/RendererCore/CompositeShader.glsl");
+		s_Data.m_ShaderLibrary->Load("Assets/Shaders/RendererCore/LightShader.glsl");
+		s_Data.m_ShaderLibrary->Load("Assets/Shaders/RendererCore/Bloom.glsl");
+		s_Data.m_ShaderLibrary->Load("Assets/Shaders/RendererCore/Circle.glsl");
+
+		s_Data.m_ShaderLibrary->Load("Assets/Shaders/DefaultLitShader.glsl");
+		s_Data.m_ShaderLibrary->Load("Assets/Shaders/DefaultShader.glsl");
+		s_Data.m_ShaderLibrary->Load("Assets/Shaders/LineShader.glsl");
+		s_Data.m_ShaderLibrary->Load("Assets/Shaders/MousePicker.glsl");
+
+		s_Data.m_ShaderLibrary->Load("Assets/Shaders/Particle/ParticleShaderCPU.glsl");
 	}
 
 	void Renderer::Shutdown()
 	{
-		s_Data.FullscreenQuadVertexArray.Reset();
-		s_Data.FullscreenQuadVertexBuffer.Reset();
-		s_Data.FullscreenQuadIndexBuffer.Reset();
-		auto queue = s_Data.CommandQueue;
+		s_Data.m_FullscreenQuadVertexArray.Reset();
+		s_Data.m_FullscreenQuadVertexBuffer.Reset();
+		s_Data.m_FullscreenQuadIndexBuffer.Reset();
+		s_Data.m_ShaderLibrary.Reset();
+		auto queue = s_Data.m_CommandQueue;
 		queue->Swap();
 	}
 
 	void Renderer::Lock()
 	{
-		s_Data.QueueLock.lock();
+		s_Data.m_QueueLock.lock();
 	}
 
 	void Renderer::Unlock()
 	{
-		s_Data.QueueLock.unlock();
+		s_Data.m_QueueLock.unlock();
 	}
 
 	void Renderer::Clear()
@@ -142,7 +158,7 @@ namespace XYZ {
 
 	void Renderer::DrawArrays(PrimitiveType type, uint32_t count)
 	{
-		s_Data.Stats.DrawArraysCount++;
+		s_Data.m_Stats.DrawArraysCount++;
 		Renderer::Submit([=]() {
 			RendererAPI::DrawArrays(type, count);
 			});
@@ -150,7 +166,7 @@ namespace XYZ {
 
 	void Renderer::DrawIndexed(PrimitiveType type, uint32_t indexCount, uint32_t queueType)
 	{
-		s_Data.Stats.DrawIndexedCount++;
+		s_Data.m_Stats.DrawIndexedCount++;
 		Renderer::Submit([=]() {
 			RendererAPI::DrawIndexed(type, indexCount);
 		}, queueType);
@@ -158,7 +174,7 @@ namespace XYZ {
 
 	void Renderer::DrawInstanced(PrimitiveType type, uint32_t indexCount, uint32_t instanceCount, uint32_t offset, uint32_t queueType)
 	{
-		s_Data.Stats.DrawInstancedCount++;
+		s_Data.m_Stats.DrawInstancedCount++;
 		
 		Renderer::Submit([=]() {
 			RendererAPI::DrawInstanced(type, indexCount, instanceCount, offset);
@@ -167,7 +183,7 @@ namespace XYZ {
 
 	void Renderer::DrawElementsIndirect(void* indirect)
 	{
-		s_Data.Stats.DrawIndirectCount++;
+		s_Data.m_Stats.DrawIndirectCount++;
 		Renderer::Submit([=]() {
 			RendererAPI::DrawInstancedIndirect(indirect);
 		});
@@ -175,8 +191,8 @@ namespace XYZ {
 
 	void Renderer::SubmitFullscreenQuad()
 	{
-		s_Data.Stats.DrawFullscreenCount++;
-		s_Data.FullscreenQuadVertexArray->Bind();
+		s_Data.m_Stats.DrawFullscreenCount++;
+		s_Data.m_FullscreenQuadVertexArray->Bind();
 		Renderer::DrawIndexed(PrimitiveType::Triangles, 6);
 	}
 
@@ -184,10 +200,10 @@ namespace XYZ {
 	void Renderer::BeginRenderPass(const Ref<RenderPass>& renderPass, bool clear)
 	{
 		XYZ_ASSERT(renderPass.Raw(), "Render pass can not be null");
-		s_Data.ActiveRenderPass = renderPass;
-		const Ref<Framebuffer>& frameBuffer = s_Data.ActiveRenderPass->GetSpecification().TargetFramebuffer;
+		s_Data.m_ActiveRenderPass = renderPass;
+		const Ref<Framebuffer>& frameBuffer = s_Data.m_ActiveRenderPass->GetSpecification().TargetFramebuffer;
 		if (!frameBuffer->GetSpecification().SwapChainTarget)
-			s_Data.ActiveRenderPass->GetSpecification().TargetFramebuffer->Bind();
+			s_Data.m_ActiveRenderPass->GetSpecification().TargetFramebuffer->Bind();
 
 		if (clear)
 		{
@@ -197,29 +213,29 @@ namespace XYZ {
 
 	void Renderer::EndRenderPass()
 	{
-		XYZ_ASSERT(s_Data.ActiveRenderPass.Raw(), "No active render pass! Have you called Renderer::EndRenderPass twice?");
-		s_Data.ActiveRenderPass->GetSpecification().TargetFramebuffer->Unbind();
-		s_Data.ActiveRenderPass = nullptr;
+		XYZ_ASSERT(s_Data.m_ActiveRenderPass.Raw(), "No active render pass! Have you called Renderer::EndRenderPass twice?");
+		s_Data.m_ActiveRenderPass->GetSpecification().TargetFramebuffer->Unbind();
+		s_Data.m_ActiveRenderPass = nullptr;
 	}
 
 	ThreadPool& Renderer::GetPool()
 	{
-		return s_Data.Pool;
+		return s_Data.m_Pool;
 	}
 
 	const RendererStats& Renderer::GetStats()
 	{
-		return s_Data.Stats;
+		return s_Data.m_Stats;
 	}
 
 	void Renderer::WaitAndRender()
 	{
-		s_Data.Stats.Reset();
+		s_Data.m_Stats.Reset();
 
-		auto queue = s_Data.CommandQueue;
+		auto queue = s_Data.m_CommandQueue;
 		queue->Swap();
 		#ifdef RENDER_THREAD_ENABLED
-		s_Data.RenderThreadFinished = s_Data.Pool.PushJob<bool>([queue]() -> bool{
+		s_Data.m_Pool.PushJob([queue]() {
 			XYZ_PROFILE_FUNC("Renderer::WaitAndRender Job");
 			{
 				auto val = queue->Read();
@@ -228,7 +244,6 @@ namespace XYZ {
 			GLsync fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 			auto value = glClientWaitSync(fence, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
 			glDeleteSync(fence);
-			return true;
 		});
 		#else
 		{
@@ -236,25 +251,18 @@ namespace XYZ {
 			val->Execute();
 		}
 		#endif
-
 	}
-
-
-	void Renderer::BlockRenderThread()
+	Ref<ShaderLibrary> Renderer::GetShaderLibrary()
 	{
-		#ifdef RENDER_THREAD_ENABLED
-		// This is not needed, we know it ended once it is possible to swap queues
-		s_Data.RenderThreadFinished.wait();
-		#endif
+		return s_Data.m_ShaderLibrary;
 	}
-
 	ScopedLock<RenderCommandQueue> Renderer::getRenderCommandQueue(uint8_t type)
 	{
-		return s_Data.CommandQueue->Write();
+		return s_Data.m_CommandQueue->Write();
 	}
 	RendererStats& Renderer::getStats()
 	{
-		return s_Data.Stats;
+		return s_Data.m_Stats;
 	}
 	RendererStats::RendererStats()
 		:

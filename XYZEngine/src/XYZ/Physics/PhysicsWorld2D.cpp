@@ -9,6 +9,14 @@ namespace XYZ {
 		:
 		m_World({ gravity.x, gravity.y })
 	{
+		m_Layers[DefaultLayer] = { "Default", DefaultLayer, {} };
+		m_Layers[ParticleLayer] = { "Particle", ParticleLayer, {} };
+
+		m_Layers[DefaultLayer].m_CollisionMask.set(DefaultLayer, true);
+		m_Layers[DefaultLayer].m_CollisionMask.set(ParticleLayer, true);
+
+		m_Layers[ParticleLayer].m_CollisionMask.set(DefaultLayer, true);
+		m_Layers[ParticleLayer].m_CollisionMask.set(ParticleLayer, false);
 	}
 	void PhysicsWorld2D::Step(Timestep ts)
 	{
@@ -22,10 +30,26 @@ namespace XYZ {
 			m_World.Step(ts.GetSeconds(), velocityIterations, positionIterations);
 		});	
 	}
-	void PhysicsWorld2D::AddLayer(const std::string& name, uint8_t id)
+	void PhysicsWorld2D::SetLayer(const std::string& name, uint32_t index, const CollisionMask& mask)
 	{
-		m_Layers[id] = { name, id };
+		XYZ_ASSERT(index >= sc_NumDefaultLayers, "Attempting to change default collision layer");
+		m_Layers.at(index) = { name, index, mask };
 	}
+	const PhysicsWorld2D::Layer& PhysicsWorld2D::GetLayer(std::string_view name) const
+	{
+		for (const auto& layer : m_Layers)
+		{
+			if (layer.m_Name == name)
+				return layer;
+		}
+		XYZ_ASSERT(false, "No layer with name {0}", name);
+		return m_Layers.at(0);
+	}
+	const PhysicsWorld2D::Layer& PhysicsWorld2D::GetLayer(uint32_t index) const
+	{
+		return m_Layers.at(index);
+	}
+	
 	ScopedLock<b2World> PhysicsWorld2D::GetWorld()
 	{
 		return ScopedLock<b2World>(&m_Mutex, m_World);

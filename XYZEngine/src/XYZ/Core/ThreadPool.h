@@ -18,13 +18,17 @@ namespace XYZ {
 		ThreadPool(const ThreadPool& other) = delete;
 		~ThreadPool();
 
+
+		void PushJob(Job&& f);
+		void PushJob(Job&& f) const;
+
 		template <typename R, typename F>
 		std::future<R> PushJob(F&& f) const;
 		
 		template <typename R, typename F>
 		std::future<R> PushJob(F&& f);
+	
 		
-
 		int32_t PushThread();
 		void    EraseThread(int32_t index);
 

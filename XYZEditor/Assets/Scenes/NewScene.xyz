@@ -66,7 +66,7 @@ Entities:
       PerspectiveFOV: 1
       PerspectiveNear: 0.00999999978
       PerspectiveFar: 10000
-      OrthographicSize: 4
+      OrthographicSize: 30
       OrthographicNear: -1
       OrthographicFar: 1
     Relationship:
@@ -144,7 +144,7 @@ Entities:
     SceneTagComponent:
       Name: Orc
     TransformComponent:
-      Position: [-2.59741759, -0.41151908, -6.10354327e-05]
+      Position: [-0.018859623, -3.75357747, -0.000122070865]
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
     Relationship:
@@ -155,7 +155,7 @@ Entities:
     SceneTagComponent:
       Name: Body
     TransformComponent:
-      Position: [-0.0650024414, -0.0582590103, 0]
+      Position: [-0.130878448, 0.0678118393, -6.10353818e-05]
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteRenderer:

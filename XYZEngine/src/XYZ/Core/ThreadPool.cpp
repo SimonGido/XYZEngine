@@ -22,6 +22,24 @@ namespace XYZ {
 	{
 		stop();
 	}
+
+	void ThreadPool::PushJob(Job&& f)
+	{
+		{
+			std::scoped_lock<std::mutex> lock(m_Mutex);
+			m_JobQueue.emplace(std::forward<Job>(f));
+		}
+		m_Condition.notify_one();
+	}
+
+	void ThreadPool::PushJob(Job&& f) const
+	{
+		{
+			std::scoped_lock<std::mutex> lock(m_Mutex);
+			m_JobQueue.emplace(std::forward<Job>(f));
+		}
+		m_Condition.notify_one();
+	}
 	
 	int32_t ThreadPool::PushThread()
 	{
@@ -77,7 +95,6 @@ namespace XYZ {
 
 		while (true)
 		{
-			XYZ_PROFILE_FRAME("WorkerThread");
 			{
 				std::unique_lock<std::mutex> lock(m_Mutex);
 				m_Condition.wait(lock, [&] {

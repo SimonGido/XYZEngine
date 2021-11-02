@@ -144,14 +144,14 @@ namespace XYZ {
 	{
 		Ref<const OpenGLIndexBuffer> instance = this;
 		Renderer::Submit([instance]() {
-			glBindBuffer(GL_ARRAY_BUFFER, instance->m_RendererID);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, instance->m_RendererID);
 		});
 	}
 
 	void OpenGLIndexBuffer::UnBind() const
 	{
 		Renderer::Submit([=]() {
-			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		});
 	}
 

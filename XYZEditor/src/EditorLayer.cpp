@@ -69,7 +69,6 @@ namespace XYZ {
 		animationExample(entity);
 
 		Renderer::WaitAndRender();
-		Renderer::BlockRenderThread();
 	}
 	
 
@@ -259,14 +258,15 @@ namespace XYZ {
 		auto& particleComponentCPU = entity.EmplaceComponent<ParticleComponentCPU>();
 		particleComponentCPU.System.SetMaxParticles(numParticles);
 
-		Ref<Material> material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShaderCPU.glsl"));
+		auto shaderLibrary = Renderer::GetShaderLibrary();
+		Ref<Material> material = Ref<Material>::Create(shaderLibrary->Get("ParticleShaderCPU"));
 		material->SetTexture("u_Texture", Texture2D::Create({}, "Assets/Textures/checkerboard.png"));
 		material->Set("u_Tiles", glm::vec2(1.0f, 1.0f));
 		material->SetRenderQueueID(1);
 		meshComponent.Mesh->SetMaterial(material);
 
+		particleComponentCPU.System.SetSceneEntity(entity);
 		particleComponentCPU.System.Play();
-
 		auto& lightStorage = m_Scene->GetECS().GetStorage<PointLight2D>();
 		if (lightStorage.Size())
 		{

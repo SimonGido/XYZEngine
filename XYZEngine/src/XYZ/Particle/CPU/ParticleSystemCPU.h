@@ -59,12 +59,13 @@ namespace XYZ {
 		ParticleSystemCPU& operator=(const ParticleSystemCPU& other);
 		ParticleSystemCPU& operator=(ParticleSystemCPU&& other) noexcept;
 
+		void SetSceneEntity(const SceneEntity& entity);
 		void SetPhysicsWorld(PhysicsWorld2D* world);
 		void Update(Timestep ts);	
 		void SetupForRender(Ref<SceneRenderer> renderer);
-
 		void Play();
 		void Stop();
+		void Reset();
 		void SetMaxParticles(uint32_t maxParticles);
 		void SetSpeed(float speed);
 
@@ -83,7 +84,7 @@ namespace XYZ {
 		void update(Timestep timestep, ModuleData& data);
 		void emit(Timestep timestep, ModuleData& data);
 		void buildRenderData(ModuleData& data);
-		void updatePhysics(ModuleData& data);
+		void updatePhysics(ModuleData& data, const glm::mat4& transform);
 		
 	private:
 		SingleThreadPass<ModuleData>		 m_ModuleThreadPass;
@@ -91,6 +92,7 @@ namespace XYZ {
 		uint32_t							 m_MaxParticles;
 		bool								 m_Play;
 		float								 m_Speed;
+		SceneEntity							 m_Entity;
 	};
 
 }

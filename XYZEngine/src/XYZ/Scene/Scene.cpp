@@ -145,6 +145,12 @@ namespace XYZ {
 				field.CopyStoredValueToRuntime();
 			ScriptEngine::OnCreateEntity({ scriptStorage.GetEntityAtIndex(i), this });
 		}
+
+		auto& storageParticleCPU = m_ECS.GetStorage<ParticleComponentCPU>();
+		for (auto &it : storageParticleCPU)
+		{
+			it.System.Reset();
+		}
 	}
 
 	void Scene::OnStop()
@@ -154,18 +160,25 @@ namespace XYZ {
 			SceneEntity ent(entity, this);
 			ent.GetComponent<TransformComponent>() = s_EditTransforms[(uint32_t)entity];
 		}
-		//ScopedLock<b2World> physicsWorld = m_PhysicsWorld.GetWorld();
-		//auto& rigidStorage = m_ECS.GetStorage<RigidBody2DComponent>();
-		//for (auto& body : rigidStorage)
-		//{
-		//	physicsWorld->DestroyBody(static_cast<b2Body*>(body.RuntimeBody));
-		//}
-
+		{
+			ScopedLock<b2World> physicsWorld = m_PhysicsWorld.GetWorld();
+			auto& rigidStorage = m_ECS.GetStorage<RigidBody2DComponent>();
+			for (auto& body : rigidStorage)
+			{
+				physicsWorld->DestroyBody(static_cast<b2Body*>(body.RuntimeBody));
+			}
+		}
 		auto& scriptStorage = m_ECS.GetStorage<ScriptComponent>();
 		for (size_t i = 0; i < scriptStorage.Size(); ++i)
 		{
 			ScriptComponent& script = scriptStorage.GetComponentAtIndex(i);
 			ScriptEngine::OnDestroyEntity({ scriptStorage.GetEntityAtIndex(i), this });
+		}
+
+		auto& storageParticleCPU = m_ECS.GetStorage<ParticleComponentCPU>();
+		for (auto& it : storageParticleCPU)
+		{
+			it.System.Reset();
 		}
 
 		delete[]m_PhysicsEntityBuffer;
@@ -456,6 +469,11 @@ namespace XYZ {
 		auto& storage = m_ECS.GetStorage<RigidBody2DComponent>();
 		m_PhysicsEntityBuffer = new SceneEntity[storage.Size()];
 		ScopedLock<b2World> physicsWorld = m_PhysicsWorld.GetWorld();
+		const PhysicsWorld2D::Layer defaultLayer = m_PhysicsWorld.GetLayer(PhysicsWorld2D::DefaultLayer);
+		b2FixtureDef fixture;
+		fixture.filter.categoryBits = defaultLayer.m_CollisionMask.to_ulong();
+		fixture.filter.maskBits = BIT(defaultLayer.m_ID);
+
 		size_t counter = 0;
 		for (auto& rigidBody : storage)
 		{
@@ -487,7 +505,7 @@ namespace XYZ {
 				
 				poly.SetAsBox( boxCollider.Size.x / 2.0f, boxCollider.Size.y / 2.0f, 
 					   b2Vec2{ boxCollider.Offset.x, boxCollider.Offset.y }, 0.0f);
-				b2FixtureDef fixture;
+				
 				fixture.shape = &poly;
 				fixture.density = boxCollider.Density;
 				fixture.friction = boxCollider.Friction;
@@ -502,7 +520,6 @@ namespace XYZ {
 				circle.m_radius = circleCollider.Radius;
 				circle.m_p = b2Vec2(circleCollider.Offset.x, circleCollider.Offset.y);
 		
-				b2FixtureDef fixture;
 				fixture.shape = &circle;
 				fixture.density  = circleCollider.Density;
 				fixture.friction = circleCollider.Friction;
@@ -513,7 +530,7 @@ namespace XYZ {
 				PolygonCollider2DComponent& meshCollider = entity.GetComponent<PolygonCollider2DComponent>();
 				b2PolygonShape poly;
 				poly.Set((const b2Vec2*)meshCollider.Vertices.data(), (int32_t)meshCollider.Vertices.size());
-				b2FixtureDef fixture;
+
 				fixture.shape = &poly;
 				fixture.density =  meshCollider.Density;
 				fixture.friction = meshCollider.Friction;
@@ -527,7 +544,7 @@ namespace XYZ {
 				chain.CreateChain((const b2Vec2*)chainCollider.Points.data(), (int32_t)chainCollider.Points.size(),
 					{ chainCollider.Points[0].x, chainCollider.Points[0].y },
 					{ chainCollider.Points.back().x, chainCollider.Points.back().y });
-				b2FixtureDef fixture;
+	
 				fixture.shape = &chain;
 				fixture.density  = chainCollider.Density;
 				fixture.friction = chainCollider.Friction;
