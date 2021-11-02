@@ -83,6 +83,7 @@ namespace XYZ {
 
 		static void BeginRenderPass(const Ref<RenderPass>& renderPass, bool clear);
 		static void EndRenderPass();
+		static void BlockRenderThread();
 
 		static ThreadPool&			GetPool();
 		static RendererAPI::API		GetAPI() { return RendererAPI::GetAPI(); }

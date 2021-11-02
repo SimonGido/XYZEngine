@@ -149,14 +149,14 @@ Entities:
       Scale: [1, 1, 1]
     Relationship:
       NextSibling: e7d90360-31d6-4302-8c60-edb5035bb481
-      FirstChild: 0bb26acc-b3dd-4a41-b134-b58ff6b2cdc5
+      PreviousSibling: 0bb26acc-b3dd-4a41-b134-b58ff6b2cdc5
       Depth: 1
   - Entity: 0bb26acc-b3dd-4a41-b134-b58ff6b2cdc5
     SceneTagComponent:
       Name: Body
     TransformComponent:
-      Position: [-0.130878448, 0.0678118393, -6.10353818e-05]
-      Rotation: [0, -0, 0]
+      Position: [-2.57334137, -5.15187979, -6.10353818e-05]
+      Rotation: [0, 0, -1.35838223]
       Scale: [1, 1, 1]
     SpriteRenderer:
       MaterialAsset: 6b8ecf40-b3aa-4a26-a497-d7cdda43afba
@@ -165,9 +165,9 @@ Entities:
       SortLayer: 1
       Visible: true
     Relationship:
-      Parent: 1b0083d1-d8e7-4461-aec3-cbd94044f788
+      NextSibling: 1b0083d1-d8e7-4461-aec3-cbd94044f788
       FirstChild: e1ae3667-f0b3-49e1-93c1-23201d9e5cec
-      Depth: 2
+      Depth: 1
   - Entity: 6d3dccb2-e9e2-4646-9636-6a29420471e6
     SceneTagComponent:
       Name: Head

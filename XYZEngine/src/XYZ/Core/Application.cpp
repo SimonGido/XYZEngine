@@ -56,6 +56,7 @@ namespace XYZ {
 			updateTimestep();
 
 			XYZ_PROFILE_FRAME("MainThread");
+			m_Window->Update();
 			Renderer::WaitAndRender();
 			RefCollector::DeleteInstances();
 
@@ -70,7 +71,7 @@ namespace XYZ {
 				onImGuiRender();
 			}
 			#endif
-			m_Window->Update();
+			
 		}
 		XYZ_PROFILER_SHUTDOWN;
 	}

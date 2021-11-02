@@ -218,6 +218,11 @@ namespace XYZ {
 		s_Data.m_ActiveRenderPass = nullptr;
 	}
 
+	void Renderer::BlockRenderThread()
+	{
+		s_Data.m_RenderThreadFinished.wait();
+	}
+
 	ThreadPool& Renderer::GetPool()
 	{
 		return s_Data.m_Pool;
@@ -235,15 +240,15 @@ namespace XYZ {
 		auto queue = s_Data.m_CommandQueue;
 		queue->Swap();
 		#ifdef RENDER_THREAD_ENABLED
-		s_Data.m_Pool.PushJob([queue]() {
+		s_Data.m_RenderThreadFinished = s_Data.m_Pool.PushJob<bool>([queue]() {
 			XYZ_PROFILE_FUNC("Renderer::WaitAndRender Job");
-			{
-				auto val = queue->Read();
-				val->Execute();
-			}
+			auto val = queue->Read();
+			val->Execute();
+		
 			GLsync fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 			auto value = glClientWaitSync(fence, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
 			glDeleteSync(fence);
+			return true;
 		});
 		#else
 		{

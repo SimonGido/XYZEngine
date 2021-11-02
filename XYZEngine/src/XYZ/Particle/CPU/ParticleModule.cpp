@@ -163,19 +163,18 @@ namespace XYZ {
 				ScopedLock<b2World> world = m_PhysicsWorld->GetWorld(); // Lock is required
 				for (uint32_t i = startId; i < endId; ++i)
 				{
-					glm::vec4 translation = transform * glm::vec4(data.m_Particle[i].Position, 1.0f);
 					glm::mat4 particleTransform = transform * glm::translate(data.m_Particle[i].Position);
 					auto [trans, rot, scale] = TransformComponent::DecomposeTransformToComponents(particleTransform);
 					b2Vec2 position = {
-						   translation.x,
-						   translation.y
+						   trans.x,
+						   trans.y
 					};
 					b2Vec2 vel = {
 						   data.m_Particle[i].Velocity.x,
 						   data.m_Particle[i].Velocity.y,
 					};
 					m_Bodies[i]->SetEnabled(true);
-					m_Bodies[i]->SetTransform(position, 0.0f);
+					m_Bodies[i]->SetTransform(position, rot.z);
 					m_Bodies[i]->SetLinearVelocity(vel);
 				}
 			}
@@ -188,12 +187,15 @@ namespace XYZ {
 			uint32_t aliveParticles = data.GetAliveParticles();
 			if (m_Bodies.size() >= aliveParticles)
 			{
-				auto [trans, rot, scale] = TransformComponent::DecomposeTransformToComponents(transform);
 				for (uint32_t i = 0; i < aliveParticles; ++i)
-				{		
-					auto point = m_Bodies[i]->GetLocalPoint({ trans.x, trans.y });
-					data.m_Particle[i].Position.x = point.x;
-					data.m_Particle[i].Position.y = point.y;
+				{
+					glm::mat4 bodyLocalTransform = glm::translate(glm::vec3{
+						m_Bodies[i]->GetPosition().x, m_Bodies[i]->GetPosition().y, 0.0f
+						}) * glm::inverse(transform);
+
+					auto [translation, rotation, scale] = TransformComponent::DecomposeTransformToComponents(bodyLocalTransform);
+					data.m_Particle[i].Position.x = translation.x;
+					data.m_Particle[i].Position.y = translation.y;
 				}
 			}
 		}

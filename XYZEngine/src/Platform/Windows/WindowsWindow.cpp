@@ -169,6 +169,7 @@ namespace XYZ {
 
 	void WindowsWindow::Update()
 	{
+		Renderer::BlockRenderThread();
 		glfwPollEvents();				
 		m_Context->SwapBuffers();
 	}

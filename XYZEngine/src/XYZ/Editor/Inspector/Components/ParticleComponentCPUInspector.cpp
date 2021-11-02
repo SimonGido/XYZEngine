@@ -170,13 +170,17 @@ namespace XYZ {
 	}
 	void ParticleComponentCPUInspector::renderColliders(Ref<EditorRenderer>& renderer, const ParticleSystemCPU::ModuleData& moduleData)
 	{
+		const auto& transform = m_Context.GetComponent<TransformComponent>().WorldTransform;
 		auto [translation, rotation, scale] = m_Context.GetComponent<TransformComponent>().GetWorldComponents();
 		const auto& particles = moduleData.m_Particles;
 		const auto& physicsModule = moduleData.m_PhysicsModule;
 		if (physicsModule.m_Shape == PhysicsModule::Shape::Circle)
 		{
 			for (uint32_t i = 0; i < particles.GetAliveParticles(); ++i)
-				renderer->SubmitEditorCircle(translation + particles.m_Particle[i].Position, physicsModule.m_Radius, 20, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+			{
+				glm::vec4 position = transform * glm::vec4(particles.m_Particle[i].Position, 1.0f);
+				renderer->SubmitEditorCircle(position, physicsModule.m_Radius, 20, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+			}
 		}
 		else
 		{
