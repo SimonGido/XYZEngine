@@ -160,7 +160,7 @@ namespace XYZ {
 		m_Enabled(true)
 	{
 	}
-	void PhysicsModule::Generate(ParticleDataBuffer& data, uint32_t startId, uint32_t endId, const glm::mat4& parentTransform)
+	void PhysicsModule::Generate(ParticleDataBuffer& data, uint32_t startId, uint32_t endId, const glm::mat4& parentTransform, float speed)
 	{
 		if (m_Enabled)
 		{
@@ -180,8 +180,8 @@ namespace XYZ {
 						   translation.y
 					};
 					b2Vec2 velocity = {
-						  velocityRotated.x,
-						  velocityRotated.y,
+						  velocityRotated.x * speed,
+						  velocityRotated.y * speed,
 					};
 
 					m_Bodies[i]->SetEnabled(true);

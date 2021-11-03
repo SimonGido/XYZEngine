@@ -201,12 +201,13 @@ namespace XYZ {
 
 	void ParticleSystemCPU::particleThreadUpdate(float timestep)
 	{
+		float speed = m_Speed;
 		glm::mat4 transform = m_Entity.GetComponent<TransformComponent>().WorldTransform;
-		Application::Get().GetThreadPool().PushJob<void>([this, timestep, transform]() {
+		Application::Get().GetThreadPool().PushJob<void>([this, timestep, transform, speed]() {
 			XYZ_PROFILE_FUNC("ParticleSystemCPU::particleThreadUpdate Job");
 			{			
 				ScopedLock<ModuleData> moduleData = m_ModuleThreadPass.Get<ModuleData>();
-				emit(timestep, moduleData.As(), transform);
+				emit(timestep, moduleData.As(), transform, speed);
 				update(timestep, moduleData.As(), transform);
 				buildRenderData(moduleData.As());
 			}
@@ -227,13 +228,13 @@ namespace XYZ {
 		for (const uint32_t i : killed)
 			data.m_Particles.Kill(i);
 	}
-	void ParticleSystemCPU::emit(Timestep timestep, ModuleData& data, const glm::mat4& transform)
+	void ParticleSystemCPU::emit(Timestep timestep, ModuleData& data, const glm::mat4& transform, float speed)
 	{
 		XYZ_PROFILE_FUNC("ParticleSystemCPU::emit");
 		data.m_Emitter.Emit(timestep, data.m_Particles);	
 
 		auto [startId, endId] = data.m_Emitter.m_EmittedIDs;
-		data.m_PhysicsModule.Generate(data.m_Particles, startId, endId, transform);
+		data.m_PhysicsModule.Generate(data.m_Particles, startId, endId, transform, speed);
 	}
 	void ParticleSystemCPU::buildRenderData(ModuleData& data)
 	{

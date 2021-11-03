@@ -82,7 +82,7 @@ namespace XYZ {
 	private:
 		void particleThreadUpdate(float timestep);
 		void update(Timestep timestep, ModuleData& data, const glm::mat4& transform);
-		void emit(Timestep timestep, ModuleData& data, const glm::mat4& transform);
+		void emit(Timestep timestep, ModuleData& data, const glm::mat4& transform, float speed);
 		void buildRenderData(ModuleData& data);
 
 	private:
