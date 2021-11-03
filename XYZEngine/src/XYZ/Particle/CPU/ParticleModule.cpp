@@ -6,6 +6,9 @@
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
+
+#include <glm/gtx/rotate_vector.hpp>
+
 namespace XYZ {
 
 	static float CalcRatio(float length, float value)
@@ -164,18 +167,21 @@ namespace XYZ {
 				for (uint32_t i = startId; i < endId; ++i)
 				{
 					glm::mat4 particleTransform = parentTransform * glm::translate(data.m_Particle[i].Position);
-					auto [trans, rot, scale] = TransformComponent::DecomposeTransformToComponents(particleTransform);
+					auto [translation, rotation, scale] = TransformComponent::DecomposeTransformToComponents(particleTransform);
+					glm::vec2 velocityRotated = glm::rotate(glm::vec2{ data.m_Particle[i].Velocity.x, data.m_Particle[i].Velocity.y }, rotation.z);
+					
 					b2Vec2 position = {
-						   trans.x,
-						   trans.y
+						   translation.x,
+						   translation.y
 					};
-					b2Vec2 vel = {
-						   data.m_Particle[i].Velocity.x,
-						   data.m_Particle[i].Velocity.y,
+					b2Vec2 velocity = {
+						  velocityRotated.x,
+						  velocityRotated.y,
 					};
+	
 					m_Bodies[i]->SetEnabled(true);
-					m_Bodies[i]->SetTransform(position, rot.z);
-					m_Bodies[i]->SetLinearVelocity(vel);
+					m_Bodies[i]->SetTransform(position, glm::radians(rotation.z));
+					m_Bodies[i]->SetLinearVelocity(velocity);
 				}
 			}
 		}
@@ -196,7 +202,7 @@ namespace XYZ {
 						});
 
 					glm::mat4 bodyLocalTransform = glm::inverse(parentTransform) * bodyWorldTransform;
-					bodyLocalTransform = rotation * glm::scale(glm::mat4(1.0f), scale) * bodyLocalTransform;
+					bodyLocalTransform = glm::scale(glm::mat4(1.0f), scale) * bodyLocalTransform;
 
 					auto [translation, rotation, scale] = TransformComponent::DecomposeTransformToComponents(bodyLocalTransform);
 					data.m_Particle[i].Position.x = translation.x;
