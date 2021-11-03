@@ -154,7 +154,7 @@ namespace XYZ {
 		m_Enabled(true)
 	{
 	}
-	void PhysicsModule::Generate(ParticleDataBuffer& data, uint32_t startId, uint32_t endId, const glm::mat4& transform)
+	void PhysicsModule::Generate(ParticleDataBuffer& data, uint32_t startId, uint32_t endId, const glm::mat4& parentTransform)
 	{
 		if (m_Bodies.size() >= endId)
 		{
@@ -163,7 +163,7 @@ namespace XYZ {
 				ScopedLock<b2World> world = m_PhysicsWorld->GetWorld(); // Lock is required
 				for (uint32_t i = startId; i < endId; ++i)
 				{
-					glm::mat4 particleTransform = transform * glm::translate(data.m_Particle[i].Position);
+					glm::mat4 particleTransform = parentTransform * glm::translate(data.m_Particle[i].Position);
 					auto [trans, rot, scale] = TransformComponent::DecomposeTransformToComponents(particleTransform);
 					b2Vec2 position = {
 						   trans.x,
@@ -180,18 +180,23 @@ namespace XYZ {
 			}
 		}
 	}
-	void PhysicsModule::UpdateParticles(ParticleDataBuffer& data, const glm::mat4& transform) const
+	void PhysicsModule::UpdateParticles(ParticleDataBuffer& data, const glm::mat4& parentTransform) const
 	{
 		if (m_Enabled)
 		{
 			uint32_t aliveParticles = data.GetAliveParticles();
 			if (m_Bodies.size() >= aliveParticles)
 			{
+				auto [trans, rot, scale] = TransformComponent::DecomposeTransformToComponents(parentTransform);
+				glm::mat4 rotation = glm::toMat4(glm::quat(rot));
 				for (uint32_t i = 0; i < aliveParticles; ++i)
 				{
-					glm::mat4 bodyLocalTransform = glm::translate(glm::vec3{
+					glm::mat4 bodyWorldTransform = glm::translate(glm::vec3{
 						m_Bodies[i]->GetPosition().x, m_Bodies[i]->GetPosition().y, 0.0f
-						}) * glm::inverse(transform);
+						});
+
+					glm::mat4 bodyLocalTransform = glm::inverse(parentTransform) * bodyWorldTransform;
+					bodyLocalTransform = rotation * glm::scale(glm::mat4(1.0f), scale) * bodyLocalTransform;
 
 					auto [translation, rotation, scale] = TransformComponent::DecomposeTransformToComponents(bodyLocalTransform);
 					data.m_Particle[i].Position.x = translation.x;

@@ -155,9 +155,9 @@ Entities:
     SceneTagComponent:
       Name: Body
     TransformComponent:
-      Position: [-2.57334137, -5.15187979, -6.10353818e-05]
-      Rotation: [0, 0, -1.35838223]
-      Scale: [1, 1, 1]
+      Position: [-0.0446789749, -6.60494947, -6.10353818e-05]
+      Rotation: [0, -0, 0.00689743739]
+      Scale: [0.999998689, 0.999998689, 1]
     SpriteRenderer:
       MaterialAsset: 6b8ecf40-b3aa-4a26-a497-d7cdda43afba
       SubTextureAsset: 3719d3ce-464a-406c-94e8-fb4b8ede5a85

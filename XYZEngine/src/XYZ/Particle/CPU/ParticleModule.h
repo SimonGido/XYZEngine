@@ -84,8 +84,8 @@ namespace XYZ {
 
 		PhysicsModule();
 
-		void Generate( ParticleDataBuffer& data, uint32_t startId, uint32_t endId, const glm::mat4& transform);
-		void UpdateParticles(ParticleDataBuffer& data, const glm::mat4& transform) const;
+		void Generate( ParticleDataBuffer& data, uint32_t startId, uint32_t endId, const glm::mat4& parentTransform);
+		void UpdateParticles(ParticleDataBuffer& data, const glm::mat4& parentTransform) const;
 		void SetPhysicsWorld(PhysicsWorld2D* world);
 		void SetMaxParticles(uint32_t count);
 		void Reset();
