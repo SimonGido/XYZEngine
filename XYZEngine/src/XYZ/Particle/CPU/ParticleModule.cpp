@@ -24,19 +24,20 @@ namespace XYZ {
 	{
 	}
 
-	void MainModule::UpdateParticles(float ts, ParticleDataBuffer& data) const
+	void MainModule::UpdateParticles(float ts, ParticleDataBuffer& data)
 	{
 		if (m_Enabled)
 		{
+			m_Killed.clear();
 			uint32_t aliveParticles = data.GetAliveParticles();
 			for (uint32_t i = 0; i < aliveParticles; ++i)
 			{
 				data.m_Particle[i].Position += data.m_Particle[i].Velocity * ts;
 				data.m_Particle[i].LifeRemaining -= ts;
 				if (data.m_Particle[i].LifeRemaining <= 0.0f)
-				{
-					data.Kill(i);
+				{		
 					aliveParticles--;
+					m_Killed.push_back(i);
 				}
 			}
 		}
@@ -161,17 +162,19 @@ namespace XYZ {
 	}
 	void PhysicsModule::Generate(ParticleDataBuffer& data, uint32_t startId, uint32_t endId, const glm::mat4& parentTransform)
 	{
-		if (m_Bodies.size() >= endId)
+		if (m_Enabled)
 		{
 			if (endId > startId)
-			{	
+			{
 				ScopedLock<b2World> world = m_PhysicsWorld->GetWorld(); // Lock is required
 				for (uint32_t i = startId; i < endId; ++i)
 				{
-					glm::mat4 particleTransform = parentTransform * glm::translate(data.m_Particle[i].Position);
+					const glm::vec3& particlePosition = data.m_Particle[i].Position;
+					const glm::vec3& particleVelocity = data.m_Particle[i].Velocity;
+					const glm::mat4 particleTransform = parentTransform * glm::translate(particlePosition);
 					auto [translation, rotation, scale] = Math::DecomposeTransform(particleTransform);
-					glm::vec2 velocityRotated = glm::rotate(glm::vec2{ data.m_Particle[i].Velocity.x, data.m_Particle[i].Velocity.y }, rotation.z);
-					
+					const glm::vec2 velocityRotated = glm::rotate(glm::vec2{ particleVelocity.x, particleVelocity.y }, rotation.z);
+
 					b2Vec2 position = {
 						   translation.x,
 						   translation.y
@@ -180,7 +183,7 @@ namespace XYZ {
 						  velocityRotated.x,
 						  velocityRotated.y,
 					};
-	
+
 					m_Bodies[i]->SetEnabled(true);
 					m_Bodies[i]->SetTransform(position, glm::radians(rotation.z));
 					m_Bodies[i]->SetLinearVelocity(velocity);
@@ -188,13 +191,18 @@ namespace XYZ {
 			}
 		}
 	}
-	void PhysicsModule::UpdateParticles(ParticleDataBuffer& data, const glm::mat4& parentTransform) const
+	void PhysicsModule::UpdateParticles(ParticleDataBuffer& data, const glm::mat4& parentTransform, const std::vector<uint32_t>& killedParticles)
 	{
 		if (m_Enabled)
 		{
 			uint32_t aliveParticles = data.GetAliveParticles();
 			if (m_Bodies.size() >= aliveParticles)
 			{
+				for (const uint32_t i : killedParticles)
+				{
+					std::swap(m_Bodies[i], m_Bodies[aliveParticles - 1]);
+					aliveParticles--;
+				}
 				auto [trans, rot, scale] = Math::DecomposeTransform(parentTransform);
 				glm::mat4 rotation = glm::toMat4(glm::quat(rot));
 				for (uint32_t i = 0; i < aliveParticles; ++i)

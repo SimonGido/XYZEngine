@@ -121,8 +121,8 @@ Entities:
       Depth: 1
     PointLight2D:
       Color: [1.25, 0.100000001, 4]
-      Radius: 0.349999994
-      Intensity: 15.5500002
+      Radius: 0.949999988
+      Intensity: 1.04999995
   - Entity: e7d90360-31d6-4302-8c60-edb5035bb481
     SceneTagComponent:
       Name: Test Child
@@ -155,7 +155,7 @@ Entities:
     SceneTagComponent:
       Name: Body
     TransformComponent:
-      Position: [-0.0446789749, -6.60494947, -6.10353818e-05]
+      Position: [-0.111406997, -3.30187941, -6.10353818e-05]
       Rotation: [0, -0, 0.00689743739]
       Scale: [0.999998689, 0.999998689, 1]
     SpriteRenderer:

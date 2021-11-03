@@ -146,7 +146,6 @@ namespace XYZ {
 			for (uint32_t i = startId; i < endId; i++)
 			{
 				data.m_Particle[i].Velocity = glm::linearRand(m_MinVelocity, m_MaxVelocity);
-				data.m_Particle[i].Velocity = { 0.0, 1.0, 0.0f };
 			}
 		}
 	}

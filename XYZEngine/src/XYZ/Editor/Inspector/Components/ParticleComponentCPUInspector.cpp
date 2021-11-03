@@ -146,7 +146,7 @@ namespace XYZ {
 			EditorHelper::DrawNodeControl("Emitter", moduleData->m_Emitter, [=](auto& val) {
 				
 				EditorHelper::BeginColumns("Emit rate", 2, 100.0f);
-				ImGui::DragFloat("##EmitRate", &val.m_EmitRate, 1.0f);
+				ImGui::DragFloat("##EmitRate", &val.m_EmitRate, 0.1f);
 				EditorHelper::EndColumns();
 				BurstEmitter& burstEmitter = val.m_BurstEmitter;
 				EditorHelper::DrawContainerControl("Bursts", burstEmitter.m_Bursts, [](BurstEmitter::Burst& burst, size_t index) {

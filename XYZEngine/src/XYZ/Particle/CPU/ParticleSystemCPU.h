@@ -81,11 +81,10 @@ namespace XYZ {
 
 	private:
 		void particleThreadUpdate(float timestep);
-		void update(Timestep timestep, ModuleData& data);
-		void emit(Timestep timestep, ModuleData& data);
+		void update(Timestep timestep, ModuleData& data, const glm::mat4& transform);
+		void emit(Timestep timestep, ModuleData& data, const glm::mat4& transform);
 		void buildRenderData(ModuleData& data);
-		void updatePhysics(ModuleData& data, const glm::mat4& transform);
-		
+
 	private:
 		SingleThreadPass<ModuleData>		 m_ModuleThreadPass;
 		ThreadPass<RenderData>				 m_RenderThreadPass;

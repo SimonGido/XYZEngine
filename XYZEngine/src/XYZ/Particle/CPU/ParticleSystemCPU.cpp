@@ -206,26 +206,34 @@ namespace XYZ {
 			XYZ_PROFILE_FUNC("ParticleSystemCPU::particleThreadUpdate Job");
 			{			
 				ScopedLock<ModuleData> moduleData = m_ModuleThreadPass.Get<ModuleData>();
-				updatePhysics(moduleData.As(), transform);
-				update(timestep, moduleData.As());
-				emit(timestep, moduleData.As());
+				emit(timestep, moduleData.As(), transform);
+				update(timestep, moduleData.As(), transform);
 				buildRenderData(moduleData.As());
 			}
 			m_RenderThreadPass.AttemptSwap();		
 		});
 	}
-	void ParticleSystemCPU::update(Timestep timestep, ModuleData& data)
+	void ParticleSystemCPU::update(Timestep timestep, ModuleData& data, const glm::mat4& transform)
 	{
 		XYZ_PROFILE_FUNC("ParticleSystemCPU::update");
 		data.m_MainModule.UpdateParticles(timestep, data.m_Particles);
+		const std::vector<uint32_t>& killed = data.m_MainModule.Killed();
+
+		data.m_PhysicsModule.UpdateParticles(data.m_Particles, transform, killed);
 		data.m_LightModule.UpdateParticles(timestep, data.m_Particles);
 		data.m_TextureAnimModule.UpdateParticles(timestep, data.m_Particles);
 		data.m_RotationOverLife.UpdateParticles(timestep, data.m_Particles);
+
+		for (const uint32_t i : killed)
+			data.m_Particles.Kill(i);
 	}
-	void ParticleSystemCPU::emit(Timestep timestep, ModuleData& data)
+	void ParticleSystemCPU::emit(Timestep timestep, ModuleData& data, const glm::mat4& transform)
 	{
 		XYZ_PROFILE_FUNC("ParticleSystemCPU::emit");
-		data.m_Emitter.Emit(timestep, data.m_Particles);		
+		data.m_Emitter.Emit(timestep, data.m_Particles);	
+
+		auto [startId, endId] = data.m_Emitter.m_EmittedIDs;
+		data.m_PhysicsModule.Generate(data.m_Particles, startId, endId, transform);
 	}
 	void ParticleSystemCPU::buildRenderData(ModuleData& data)
 	{
@@ -245,17 +253,6 @@ namespace XYZ {
 			};
 		}
 		val->m_InstanceCount = endId;
-	}
-	void ParticleSystemCPU::updatePhysics(ModuleData& data, const glm::mat4& transform)
-	{
-		// TODO: once physics world is thread safe, it can be in update function
-		XYZ_PROFILE_FUNC("ParticleSystemCPU::updatePhysics");
-		if (data.m_PhysicsModule.IsEnabled())
-		{		
-			auto [startId, endId] = data.m_Emitter.m_EmittedIDs;
-			data.m_PhysicsModule.Generate(data.m_Particles, startId, endId, transform);
-			data.m_PhysicsModule.UpdateParticles(data.m_Particles, transform);
-		}
 	}
 	ParticleSystemCPU::RenderData::RenderData()
 		:

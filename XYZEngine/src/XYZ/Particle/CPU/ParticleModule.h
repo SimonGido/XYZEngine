@@ -11,13 +11,15 @@ namespace XYZ {
 	{
 	public:
 		MainModule();
-		void UpdateParticles(float ts, ParticleDataBuffer& data) const;
+		void UpdateParticles(float ts, ParticleDataBuffer& data);
 
 		void SetEnabled(bool enabled);
 		bool IsEnabled() const { return m_Enabled; }
 
+		const std::vector<uint32_t>& Killed() const { return m_Killed; }
 	private:
-		bool m_Enabled;
+		std::vector<uint32_t> m_Killed;
+		bool				  m_Enabled;
 	};
 
 	class LightModule
@@ -84,8 +86,8 @@ namespace XYZ {
 
 		PhysicsModule();
 
-		void Generate( ParticleDataBuffer& data, uint32_t startId, uint32_t endId, const glm::mat4& parentTransform);
-		void UpdateParticles(ParticleDataBuffer& data, const glm::mat4& parentTransform) const;
+		void Generate(ParticleDataBuffer& data, uint32_t startId, uint32_t endId, const glm::mat4& parentTransform);
+		void UpdateParticles(ParticleDataBuffer& data, const glm::mat4& parentTransform, const std::vector<uint32_t>& killedParticles);
 		void SetPhysicsWorld(PhysicsWorld2D* world);
 		void SetMaxParticles(uint32_t count);
 		void Reset();
