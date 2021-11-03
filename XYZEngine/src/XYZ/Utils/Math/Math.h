@@ -36,5 +36,7 @@ namespace XYZ {
 
 			return !(has_neg && has_pos);
 		}
+
+		std::tuple<glm::vec3, glm::vec3, glm::vec3> DecomposeTransform(const glm::mat4& transform);
 	}
 }

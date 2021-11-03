@@ -4,6 +4,8 @@
 #include "XYZ/Scene/Components.h"
 #include "XYZ/Renderer/SceneRenderer.h"
 
+#include "XYZ/Utils/Math/Math.h"
+
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 
@@ -167,7 +169,7 @@ namespace XYZ {
 				for (uint32_t i = startId; i < endId; ++i)
 				{
 					glm::mat4 particleTransform = parentTransform * glm::translate(data.m_Particle[i].Position);
-					auto [translation, rotation, scale] = TransformComponent::DecomposeTransformToComponents(particleTransform);
+					auto [translation, rotation, scale] = Math::DecomposeTransform(particleTransform);
 					glm::vec2 velocityRotated = glm::rotate(glm::vec2{ data.m_Particle[i].Velocity.x, data.m_Particle[i].Velocity.y }, rotation.z);
 					
 					b2Vec2 position = {
@@ -193,7 +195,7 @@ namespace XYZ {
 			uint32_t aliveParticles = data.GetAliveParticles();
 			if (m_Bodies.size() >= aliveParticles)
 			{
-				auto [trans, rot, scale] = TransformComponent::DecomposeTransformToComponents(parentTransform);
+				auto [trans, rot, scale] = Math::DecomposeTransform(parentTransform);
 				glm::mat4 rotation = glm::toMat4(glm::quat(rot));
 				for (uint32_t i = 0; i < aliveParticles; ++i)
 				{
@@ -203,7 +205,7 @@ namespace XYZ {
 
 					glm::mat4 bodyLocalTransform = glm::inverse(parentTransform) * bodyWorldTransform;
 					
-					auto [translation, rotation, scale] = TransformComponent::DecomposeTransformToComponents(bodyLocalTransform);
+					auto [translation, rotation, scale] = Math::DecomposeTransform(bodyLocalTransform);
 					data.m_Particle[i].Position.x = translation.x;
 					data.m_Particle[i].Position.y = translation.y;
 				}
