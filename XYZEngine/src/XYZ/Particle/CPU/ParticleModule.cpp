@@ -202,8 +202,7 @@ namespace XYZ {
 						});
 
 					glm::mat4 bodyLocalTransform = glm::inverse(parentTransform) * bodyWorldTransform;
-					bodyLocalTransform = glm::scale(glm::mat4(1.0f), scale) * bodyLocalTransform;
-
+					
 					auto [translation, rotation, scale] = TransformComponent::DecomposeTransformToComponents(bodyLocalTransform);
 					data.m_Particle[i].Position.x = translation.x;
 					data.m_Particle[i].Position.y = translation.y;
