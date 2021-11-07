@@ -61,8 +61,9 @@ namespace XYZ {
 
 		void SetSceneEntity(const SceneEntity& entity);
 		void SetPhysicsWorld(PhysicsWorld2D* world);
-		void Update(Timestep ts);	
 		void SetupForRender(Ref<SceneRenderer> renderer);
+
+		void Update(Timestep ts);	
 		void Play();
 		void Stop();
 		void Reset();

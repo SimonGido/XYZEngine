@@ -97,6 +97,26 @@ namespace XYZ {
 		GetModuleData()->m_PhysicsModule.SetPhysicsWorld(world);
 	}
 
+	void ParticleSystemCPU::SetupForRender(Ref<SceneRenderer> renderer)
+	{
+		XYZ_PROFILE_FUNC("ParticleSystemCPU::SubmitLights");
+		auto moduleData = m_ModuleThreadPass.GetRead<ModuleData>();
+		const auto& lightModule = moduleData->m_LightModule;
+		if (lightModule.m_TransformEntity.IsValid()
+			&& lightModule.m_LightEntity.IsValid()
+			&& lightModule.m_LightEntity.HasComponent<PointLight2D>())
+		{
+			if (lightModule.IsEnabled())
+			{
+				const std::vector<glm::vec3>& lights = lightModule.GetLights();
+				const PointLight2D& light = lightModule.m_LightEntity.GetComponent<PointLight2D>();
+				const TransformComponent& transform = lightModule.m_TransformEntity.GetComponent<TransformComponent>();
+				for (const glm::vec3& l : lights)
+					renderer->SubmitLight(light, transform.WorldTransform * glm::translate(l));
+			}
+		}
+	}
+
 	void ParticleSystemCPU::Update(Timestep ts)
 	{	
 		XYZ_PROFILE_FUNC("ParticleSystemCPU::Update");
@@ -106,25 +126,7 @@ namespace XYZ {
 		}
 	}
 
-	void ParticleSystemCPU::SetupForRender(Ref<SceneRenderer> renderer)
-	{
-		XYZ_PROFILE_FUNC("ParticleSystemCPU::SubmitLights");
-		auto moduleData = m_ModuleThreadPass.GetRead<ModuleData>();
-		const auto& lightModule = moduleData->m_LightModule;
-		if (lightModule.m_TransformEntity.IsValid() 
-		 && lightModule.m_LightEntity.IsValid()
-		 && lightModule.m_LightEntity.HasComponent<PointLight2D>())
-		{
-			if (lightModule.IsEnabled())
-			{
-				const std::vector<glm::vec3>& lights	= lightModule.GetLights();
-				const PointLight2D&			  light		= lightModule.m_LightEntity.GetComponent<PointLight2D>();
-				const TransformComponent&     transform = lightModule.m_TransformEntity.GetComponent<TransformComponent>();
-				for (const glm::vec3& l : lights)
-					renderer->SubmitLight(light, transform.WorldTransform * glm::translate(l));
-			}
-		}
-	}
+	
 	void ParticleSystemCPU::Play()
 	{
 		m_Play = true;

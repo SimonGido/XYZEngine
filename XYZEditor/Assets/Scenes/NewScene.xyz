@@ -166,7 +166,7 @@ Entities:
       Visible: true
     Relationship:
       NextSibling: 1b0083d1-d8e7-4461-aec3-cbd94044f788
-      FirstChild: e1ae3667-f0b3-49e1-93c1-23201d9e5cec
+      FirstChild: 6d3dccb2-e9e2-4646-9636-6a29420471e6
       Depth: 1
   - Entity: 6d3dccb2-e9e2-4646-9636-6a29420471e6
     SceneTagComponent:
@@ -183,8 +183,8 @@ Entities:
       Visible: true
     Relationship:
       Parent: 0bb26acc-b3dd-4a41-b134-b58ff6b2cdc5
-      PreviousSibling: 336d34ee-6f8e-4185-81bf-7bc5693834a3
-      Depth: 3
+      NextSibling: e1ae3667-f0b3-49e1-93c1-23201d9e5cec
+      Depth: 2
   - Entity: 336d34ee-6f8e-4185-81bf-7bc5693834a3
     SceneTagComponent:
       Name: Left Leg
@@ -200,7 +200,6 @@ Entities:
       Visible: true
     Relationship:
       Parent: 0bb26acc-b3dd-4a41-b134-b58ff6b2cdc5
-      NextSibling: 6d3dccb2-e9e2-4646-9636-6a29420471e6
       PreviousSibling: 020d1e52-008e-400c-bbbc-be5fb648abf0
       Depth: 3
   - Entity: 020d1e52-008e-400c-bbbc-be5fb648abf0
@@ -255,4 +254,5 @@ Entities:
     Relationship:
       Parent: 0bb26acc-b3dd-4a41-b134-b58ff6b2cdc5
       NextSibling: a045adda-9432-4d4c-ad57-bf129ef65f0c
+      PreviousSibling: 6d3dccb2-e9e2-4646-9636-6a29420471e6
       Depth: 3

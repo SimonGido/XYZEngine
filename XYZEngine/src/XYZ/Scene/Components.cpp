@@ -148,6 +148,7 @@ namespace XYZ {
 				auto& previousSiblingRel = ecs.GetComponent<Relationship>(childRel.PreviousSibling);
 				previousSiblingRel.NextSibling = childRel.NextSibling;
 			}
+			
 			childRel.NextSibling = Entity();
 			childRel.PreviousSibling = Entity();
 			childRel.Parent = Entity();		

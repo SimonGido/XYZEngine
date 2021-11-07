@@ -108,7 +108,14 @@ namespace XYZ {
                 {
                     Entity child = *(Entity*)payload->Data;
                     if (child != (Entity)entity)
+                    {
+                        auto& parentTransform = m_Context->m_ECS.GetComponent<TransformComponent>(entity);
+                        auto& transform = m_Context->m_ECS.GetComponent<TransformComponent>(child);
+                      
+                        transform.DecomposeTransform(transform.WorldTransform);      
                         Relationship::SetupRelation(entity, child, m_Context->m_ECS);
+                        transform.DecomposeTransform(glm::inverse(parentTransform.WorldTransform) * transform.GetTransform());
+                    }
                 }
                 ImGui::EndDragDropTarget();
             }
