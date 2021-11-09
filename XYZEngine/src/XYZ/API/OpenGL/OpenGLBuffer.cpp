@@ -45,11 +45,7 @@ namespace XYZ {
 		{
 			ByteBuffer buffer = m_Buffers.PopBack();
 			delete[]buffer;
-		}		
-	}
-
-	void OpenGLVertexBuffer::Release() const
-	{
+		}	
 		uint32_t rendererID = m_RendererID;
 		Renderer::Submit([rendererID]() {
 			glDeleteBuffers(1, &rendererID);
@@ -129,16 +125,12 @@ namespace XYZ {
 	OpenGLIndexBuffer::~OpenGLIndexBuffer()
 	{
 		delete[]m_LocalData;
-		
-	}
-
-	void OpenGLIndexBuffer::Release() const
-	{
 		uint32_t rendererID = m_RendererID;
 		Renderer::Submit([rendererID]() {
 			glDeleteBuffers(1, &rendererID);
 		});
 	}
+
 
 	void OpenGLIndexBuffer::Bind() const
 	{
@@ -186,10 +178,6 @@ namespace XYZ {
 			ByteBuffer buffer = m_Buffers.PopBack();
 			delete[]buffer;
 		}
-	}
-
-	void OpenGLShaderStorageBuffer::Release() const
-	{
 		uint32_t rendererID = m_RendererID;
 		Renderer::Submit([rendererID]() {
 			glDeleteBuffers(1, &rendererID);
@@ -286,17 +274,14 @@ namespace XYZ {
 	}
 	OpenGLAtomicCounter::~OpenGLAtomicCounter()
 	{
-		
-	}
-	void OpenGLAtomicCounter::Release() const
-	{
 		uint32_t rendererID = m_RendererID;
-		uint32_t* counters  = m_Counters;
+		uint32_t* counters = m_Counters;
 		Renderer::Submit([rendererID, counters]() {
 			glDeleteBuffers(1, &rendererID);
 			delete[]counters;
 		});
 	}
+
 	void OpenGLAtomicCounter::Reset()
 	{
 		Ref<OpenGLAtomicCounter> instance = this;
@@ -351,14 +336,12 @@ namespace XYZ {
 	}
 	OpenGLIndirectBuffer::~OpenGLIndirectBuffer()
 	{
-	}
-	void OpenGLIndirectBuffer::Release() const
-	{
 		uint32_t rendererID = m_RendererID;
 		Renderer::Submit([rendererID]() {
-			glDeleteBuffers(1, &rendererID); 
+			glDeleteBuffers(1, &rendererID);
 		});
 	}
+
 	void OpenGLIndirectBuffer::Bind()const
 	{
 		Renderer::Submit([this]() {glBindBuffer(GL_DRAW_INDIRECT_BUFFER, m_RendererID); });
@@ -383,10 +366,6 @@ namespace XYZ {
 	}
 
 	OpenGLUniformBuffer::~OpenGLUniformBuffer()
-	{
-	}
-
-	void OpenGLUniformBuffer::Release() const
 	{
 		uint32_t rendererID = m_RendererID;
 		Renderer::Submit([rendererID]() {

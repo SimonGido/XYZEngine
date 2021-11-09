@@ -10,7 +10,7 @@ namespace XYZ {
 	public:
 		OpenGLFramebuffer(const FramebufferSpecs& specs);
 		virtual ~OpenGLFramebuffer();
-		virtual void Release() const override;
+		
 		virtual void Resize(uint32_t width, uint32_t height, bool forceResize = false) override;
 
 		virtual void Bind() const override;

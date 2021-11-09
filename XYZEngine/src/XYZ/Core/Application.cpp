@@ -58,8 +58,6 @@ namespace XYZ {
 			XYZ_PROFILE_FRAME("MainThread");
 			m_Window->Update();
 			Renderer::WaitAndRender();
-			RefCollector::DeleteInstances();
-
 			{
 				
 				for (Layer* layer : m_LayerStack)

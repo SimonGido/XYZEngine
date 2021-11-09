@@ -1,4 +1,4 @@
 #!/bin/sh
 pushd ../
-./vendor/premake/premake5 gmake
+./vendor/premake/bin/premake5 gmake
 popd

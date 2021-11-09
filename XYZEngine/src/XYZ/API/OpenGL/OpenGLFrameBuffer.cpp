@@ -123,13 +123,10 @@ namespace XYZ {
 	}
 
 	OpenGLFramebuffer::~OpenGLFramebuffer()
-	{		
-	}
-	void OpenGLFramebuffer::Release() const
 	{
-		uint32_t rendererID		 = m_RendererID;
+		uint32_t rendererID = m_RendererID;
 		uint32_t depthAttachment = m_DepthAttachment;
-		auto colorAttachments	 = m_ColorAttachments;
+		auto colorAttachments = m_ColorAttachments;
 		Renderer::Submit([rendererID, depthAttachment, colorAttachments]() {
 
 			glDeleteFramebuffers(1, &rendererID);
@@ -138,6 +135,7 @@ namespace XYZ {
 				glDeleteTextures(1, &it.ID);
 		});
 	}
+
 	void OpenGLFramebuffer::Resize(uint32_t width, uint32_t height, bool forceResize)
 	{
 		if (width == 0 || height == 0)

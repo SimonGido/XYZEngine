@@ -15,5 +15,5 @@ workspace "XYZEngine"
 		
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
-include "Dependencies"
-include "Projects"
+
+include "Projects.lua"

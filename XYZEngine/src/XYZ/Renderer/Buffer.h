@@ -1,5 +1,6 @@
 #pragma once
 #include "XYZ/Core/Ref.h"
+#include "XYZ/Core/Assert.h"
 
 #include <memory>
 

@@ -7,11 +7,87 @@
 #include <GL/glew.h>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <shaderc/shaderc.hpp>
+#include <spirv_cross/spirv_cross.hpp>
+#include <spirv_cross/spirv_glsl.hpp>
+
 #include <fstream>
 #include <array>
+#include <filesystem>
 
 namespace XYZ {
 	
+	namespace Utils {
+
+		static GLenum ShaderTypeFromString(const std::string& type)
+		{
+			if (type == "vertex")
+				return GL_VERTEX_SHADER;
+			if (type == "fragment" || type == "pixel")
+				return GL_FRAGMENT_SHADER;
+
+			XYZ_ASSERT(false, "Unknown shader type!");
+			return 0;
+		}
+
+		static shaderc_shader_kind GLShaderStageToShaderC(GLenum stage)
+		{
+			switch (stage)
+			{
+			case GL_VERTEX_SHADER:   return shaderc_glsl_vertex_shader;
+			case GL_FRAGMENT_SHADER: return shaderc_glsl_fragment_shader;
+			}
+			XYZ_ASSERT(false, "");
+			return (shaderc_shader_kind)0;
+		}
+
+		static const char* GLShaderStageToString(GLenum stage)
+		{
+			switch (stage)
+			{
+			case GL_VERTEX_SHADER:   return "GL_VERTEX_SHADER";
+			case GL_FRAGMENT_SHADER: return "GL_FRAGMENT_SHADER";
+			}
+			XYZ_ASSERT(false, "");
+			return nullptr;
+		}
+
+		static const char* GetCacheDirectory()
+		{
+			// TODO: make sure the assets directory is valid
+			return "assets/cache/shader/opengl";
+		}
+
+		static void CreateCacheDirectoryIfNeeded()
+		{
+			std::string cacheDirectory = GetCacheDirectory();
+			if (!std::filesystem::exists(cacheDirectory))
+				std::filesystem::create_directories(cacheDirectory);
+		}
+
+		static const char* GLShaderStageCachedOpenGLFileExtension(uint32_t stage)
+		{
+			switch (stage)
+			{
+			case GL_VERTEX_SHADER:    return ".cached_opengl.vert";
+			case GL_FRAGMENT_SHADER:  return ".cached_opengl.frag";
+			}
+			XYZ_ASSERT(false, "");
+			return "";
+		}
+
+		static const char* GLShaderStageCachedVulkanFileExtension(uint32_t stage)
+		{
+			switch (stage)
+			{
+			case GL_VERTEX_SHADER:    return ".cached_vulkan.vert";
+			case GL_FRAGMENT_SHADER:  return ".cached_vulkan.frag";
+			}
+			XYZ_ASSERT(false, "");
+			return "";
+		}
+	}
+
 	static std::string GetEndStruct(const char* str, const char** outPosition)
 	{
 		const char* end = strstr(str, "};");
@@ -168,15 +244,12 @@ namespace XYZ {
 	}
 	OpenGLShader::~OpenGLShader()
 	{
-		
-	}
-	void OpenGLShader::Release() const
-	{
 		uint32_t rendererID = m_RendererID;
 		Renderer::Submit([rendererID]() {
 			glDeleteProgram(rendererID);
 		});
 	}
+
 	void OpenGLShader::Bind() const
 	{
 		Ref<const OpenGLShader> instance = this;
@@ -326,6 +399,25 @@ namespace XYZ {
 
 	void OpenGLShader::Reload()
 	{
+		Utils::CreateCacheDirectoryIfNeeded();
+
+		std::string source = ReadFile(filepath);
+		auto shaderSources = PreProcess(source);
+
+		{
+			Timer timer;
+			CompileOrGetVulkanBinaries(shaderSources);
+			CompileOrGetOpenGLBinaries();
+			CreateProgram();
+			HZ_CORE_WARN("Shader creation took {0} ms", timer.ElapsedMillis());
+		}
+
+		// Extract name from filepath
+		auto lastSlash = filepath.find_last_of("/\\");
+		lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
+		auto lastDot = filepath.rfind('.');
+		auto count = lastDot == std::string::npos ? filepath.size() - lastSlash : lastDot - lastSlash;
+		m_Name = filepath.substr(lastSlash, count);
 		std::string source = readShaderFromFile(m_AssetPath);
 		load(source);
 

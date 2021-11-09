@@ -8,7 +8,7 @@ namespace XYZ {
 	public:
 		OpenGLVertexArray();
 		virtual ~OpenGLVertexArray();
-		virtual void Release() const override;
+		
 		virtual void Bind() const override;
 
 		virtual void AddVertexBuffer(Ref<VertexBuffer> vertexBuffer) override;

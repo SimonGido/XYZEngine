@@ -64,7 +64,7 @@ namespace XYZ {
 		SceneRenderer();
 		~SceneRenderer();
 
-		virtual void Release() const override;
+		
 
 		void SetRenderer2D(const Ref<Renderer2D>& renderer2D);
 		void SetViewportSize(uint32_t width, uint32_t height);

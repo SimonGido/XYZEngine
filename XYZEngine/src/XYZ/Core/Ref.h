@@ -12,8 +12,6 @@ namespace XYZ {
 	public:
 		virtual ~RefCount() = default;
 
-		virtual void Release() const {};
-
 		void IncRefCount() const
 		{
 			m_RefCount++;
@@ -32,12 +30,22 @@ namespace XYZ {
 	template<uint32_t BlockSize, bool StoreSize>
 	class MemoryPool;
 
+	template <typename T>
+	class Ref;
+
 	class RefAllocator
 	{
 	public:
 		static void  Init(MemoryPool<1024 * 1024, true>* pool);
 
 		static bool  Initialized() { return s_Initialized; }
+		template <typename T>
+		static void Deallocate(const T* instance)
+		{
+			instance->~T();
+			deallocate(instance);
+		}
+
 	private:
 		static void* allocate(uint32_t size);
 		static void  deallocate(const void* handle);
@@ -51,22 +59,6 @@ namespace XYZ {
 		friend class RefCollector;
 	};
 
-	class RefCollector
-	{
-	public:
-		using Container = std::vector<const RefCount*>;
-
-
-		static void AddInstance(const RefCount* ref);
-		static void DeleteInstances();
-		static void DeleteAll();
-
-	private:
-		static Container  s_ReleasedInstances[2];
-		static Container* s_Collecting;
-		static Container* s_Releasing;
-	};
-	
 	template<typename T>
 	class Ref
 	{
@@ -203,8 +195,10 @@ namespace XYZ {
 				m_Instance->DecRefCount();
 				if (m_Instance->GetRefCount() == 0)
 				{
-					m_Instance->Release();
-					RefCollector::AddInstance(m_Instance);
+					if (RefAllocator::Initialized())
+						RefAllocator::Deallocate(m_Instance);
+					else
+						delete m_Instance;
 				}
 			}
 		}

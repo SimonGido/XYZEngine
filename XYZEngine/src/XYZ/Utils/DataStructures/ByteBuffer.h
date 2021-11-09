@@ -1,5 +1,6 @@
 #pragma once
 #include "XYZ/Core/Core.h"
+#include "XYZ/Core/Assert.h"
 
 namespace XYZ {
 

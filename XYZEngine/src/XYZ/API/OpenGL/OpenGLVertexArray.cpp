@@ -40,11 +40,6 @@ namespace XYZ {
 
 	OpenGLVertexArray::~OpenGLVertexArray()
 	{
-		
-	}
-
-	void OpenGLVertexArray::Release() const
-	{
 		uint32_t rendererID = m_RendererID;
 		Renderer::Submit([rendererID]() {
 			glDeleteVertexArrays(1, &rendererID);

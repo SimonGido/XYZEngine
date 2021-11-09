@@ -8,7 +8,7 @@ namespace XYZ {
 	public:
 		OpenGLRenderTexture(const Ref<Framebuffer>& renderTarget);
 		virtual ~OpenGLRenderTexture();
-		virtual void Release() const override;
+		
 
 		virtual void Bind(uint32_t slot) const override;
 		virtual void BindImage(uint32_t slot, uint32_t miplevel, BindImageType type) const override;

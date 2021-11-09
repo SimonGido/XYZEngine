@@ -96,9 +96,7 @@ namespace XYZ {
 		s_ThreadPool.EraseThread(m_ThreadIndex);
 	}
 
-	void SceneRenderer::Release() const
-	{
-	}
+
 
 	void SceneRenderer::SetRenderer2D(const Ref<Renderer2D>& renderer2D)
 	{

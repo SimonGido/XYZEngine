@@ -14,10 +14,6 @@ namespace XYZ {
 	{
 	}
 
-	void OpenGLRenderTexture::Release() const
-	{
-		
-	}
 
 	void OpenGLRenderTexture::Bind(uint32_t slot) const
 	{		

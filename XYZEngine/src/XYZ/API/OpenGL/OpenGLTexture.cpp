@@ -251,10 +251,6 @@ namespace XYZ {
 			ByteBuffer buffer = m_Buffers.PopBack();
 			delete[] buffer;
 		}	
-	}
-
-	void OpenGLTexture2D::Release() const
-	{
 		uint32_t rendererID = m_RendererID;
 		Renderer::Submit([rendererID]() {
 			glDeleteTextures(1, &rendererID);

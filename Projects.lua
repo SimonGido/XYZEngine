@@ -1,3 +1,5 @@
+include "Dependencies.lua"
+
 group "Dependencies"
 		include "XYZEngine/vendor/glfw"
 		include "XYZEngine/vendor/GLEW"

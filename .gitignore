@@ -19,3 +19,6 @@ obj/
 
 # Makefiles
 **/Makefile
+
+XYZEngine/vendor/VulkanSDK
+scripts/__pycache__

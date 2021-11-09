@@ -18,7 +18,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>..\XYZEditor\Assets\Scripts\</OutputPath>
-    <BaseIntermediateOutputPath>bin-int\Debug-windows-x86_64\XYZScriptCore\</BaseIntermediateOutputPath>
+    <BaseIntermediateOutputPath>..\bin-int\Debug-windows-x86_64\XYZScriptCore\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
     <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
@@ -29,7 +29,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>..\XYZEditor\Assets\Scripts\</OutputPath>
-    <BaseIntermediateOutputPath>bin-int\Release-windows-x86_64\XYZScriptCore\</BaseIntermediateOutputPath>
+    <BaseIntermediateOutputPath>..\bin-int\Release-windows-x86_64\XYZScriptCore\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
     <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>

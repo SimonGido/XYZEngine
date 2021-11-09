@@ -14,7 +14,7 @@ namespace XYZ {
 		OpenGLTexture2D(const TextureSpecs& specs, const std::string& path);
 		OpenGLTexture2D(ImageFormat format, uint32_t width, uint32_t height, const TextureSpecs& specs);
 		virtual ~OpenGLTexture2D() override;
-		virtual void Release() const override;
+		
 
 		virtual void Bind(uint32_t slot = 0) const override;
 		virtual void BindImage(uint32_t slot, uint32_t miplevel, BindImageType type) const override;

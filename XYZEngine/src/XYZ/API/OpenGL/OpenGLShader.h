@@ -8,7 +8,7 @@ namespace XYZ {
 		OpenGLShader(const std::string& path);
 		OpenGLShader(const std::string& name, const std::string& path);
 		virtual ~OpenGLShader();
-		virtual void Release() const override;
+		
 		virtual void Bind() const override;
 		virtual void Unbind() const override;
 		virtual void Compute(uint32_t groupX, uint32_t groupY = 1, uint32_t groupZ = 1, ComputeBarrierType barrierType = ComputeBarrierType::ShaderStorageBarrier) const override;

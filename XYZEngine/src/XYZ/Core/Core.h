@@ -22,6 +22,12 @@
 
 #ifdef XYZ_DEBUG
 	#define XYZ_ENABLE_ASSERTS
+	#ifdef _MSC_VER
+		#define DEBUG_BREAK __debugbreak()
+	#elif __GNUC__
+		#include <signal.h>
+		#define DEBUG_BREAK raise(0); 
+	#endif
 #endif
 
 
@@ -30,26 +36,6 @@
 #define BIT(x) (1 << x)
 #define IS_SET(x, flag) ( x & (flag) )
 
-
-#ifdef XYZ_ENABLE_ASSERTS
-
-//#ifdef _MSC_VER
-//#define DEBUG_BREAK __debugbreak()
-//#elif __GNUC__
-#include <signal.h>
-#define DEBUG_BREAK raise(0); 
-//#endif
-
-#define XYZ_ASSERT(x, ...) { if(!(x)) { XYZ_CORE_ERROR("Assertion Failed: {0}", __VA_ARGS__ ); DEBUG_BREAK; } }
-#else
-#define XYZ_ASSERT(x, ...) 
-#endif
-
-
-
-#ifndef __FUNCTION__
-#define __FUNCTION__ "Function:"
-#endif
 
 
 
