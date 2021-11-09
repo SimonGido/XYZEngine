@@ -16,6 +16,8 @@ obj/
 **.vcxproj.user
 **.csproj
 
+#Idea
+.idea/
 
 # Makefiles
 **/Makefile

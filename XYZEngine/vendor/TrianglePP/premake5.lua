@@ -2,7 +2,7 @@ project "TrianglePP"
 	kind "StaticLib"
 	language "C++"
 	cppdialect "C++11"
-	staticruntime "on"
+	staticruntime "off"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")

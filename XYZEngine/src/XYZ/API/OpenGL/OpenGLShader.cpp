@@ -235,11 +235,13 @@ namespace XYZ {
 		m_NumTakenTexSlots(0), 
 		m_AssetPath(path)
 	{
+		Utils::CreateCacheDirectoryIfNeeded();
 		Reload();
 	}
 	OpenGLShader::OpenGLShader(const std::string& name, const std::string& path)
 		: m_Name(name), m_AssetPath(path)
 	{
+		Utils::CreateCacheDirectoryIfNeeded();
 		Reload();
 	}
 	OpenGLShader::~OpenGLShader()
@@ -398,28 +400,13 @@ namespace XYZ {
 
 
 	void OpenGLShader::Reload()
-	{
-		Utils::CreateCacheDirectoryIfNeeded();
+	{	
+		std::string source = readFile(m_AssetPath);
+		auto shaderSources = preProcess(source);
 
-		std::string source = ReadFile(filepath);
-		auto shaderSources = PreProcess(source);
-
-		{
-			Timer timer;
-			CompileOrGetVulkanBinaries(shaderSources);
-			CompileOrGetOpenGLBinaries();
-			CreateProgram();
-			HZ_CORE_WARN("Shader creation took {0} ms", timer.ElapsedMillis());
-		}
-
-		// Extract name from filepath
-		auto lastSlash = filepath.find_last_of("/\\");
-		lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
-		auto lastDot = filepath.rfind('.');
-		auto count = lastDot == std::string::npos ? filepath.size() - lastSlash : lastDot - lastSlash;
-		m_Name = filepath.substr(lastSlash, count);
-		std::string source = readShaderFromFile(m_AssetPath);
-		load(source);
+		compileOrGetVulkanBinaries(shaderSources);
+		compileOrGetOpenGLBinaries();
+		createProgram();
 
 		for (size_t i = 0; i < m_ShaderReloadCallbacks.size(); ++i)
 			m_ShaderReloadCallbacks[i]();
@@ -427,7 +414,7 @@ namespace XYZ {
 
 	void OpenGLShader::AddReloadCallback(std::function<void()> callback)
 	{
-		m_ShaderReloadCallbacks.push_back(callback);
+		m_ShaderReloadCallbacks.emplace_back(std::move(callback));
 	}
 
 
@@ -880,7 +867,7 @@ namespace XYZ {
 		}
 	}
 
-	void OpenGLShader::compileOrGetVulkanBinaries(const std::unordered_map<GLenum, std::string>& shaderSources)
+	void OpenGLShader::compileOrGetVulkanBinaries(const std::unordered_map<uint32_t, std::string>& shaderSources)
 	{
 		GLuint program = glCreateProgram();
 
@@ -935,6 +922,33 @@ namespace XYZ {
 
 		for (auto&& [stage, data] : shaderData)
 			reflect(stage, data);
+	}
+
+	std::string OpenGLShader::readFile(const std::string& filepath) const
+	{
+		std::string result;
+		std::ifstream in(filepath, std::ios::in | std::ios::binary); // ifstream closes itself due to RAII
+		if (in)
+		{
+			in.seekg(0, std::ios::end);
+			size_t size = in.tellg();
+			if (size != -1)
+			{
+				result.resize(size);
+				in.seekg(0, std::ios::beg);
+				in.read(&result[0], size);
+			}
+			else
+			{
+				XYZ_ERROR("Could not read from file '{0}'", filepath);
+			}
+		}
+		else
+		{
+			XYZ_ERROR("Could not open file '{0}'", filepath);
+		}
+
+		return result;
 	}
 
 	void OpenGLShader::parse()

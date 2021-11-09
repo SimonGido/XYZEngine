@@ -38,7 +38,8 @@ namespace XYZ {
 		void reflect(unsigned int stage, const std::vector<uint32_t>& shaderData);
 		void createProgram();
 		void compileOrGetOpenGLBinaries();
-		void compileOrGetVulkanBinaries(const std::unordered_map<GLenum, std::string>& shaderSources);
+		void compileOrGetVulkanBinaries(const std::unordered_map<uint32_t, std::string>& shaderSources);
+		std::string readFile(const std::string& filepath) const;
 		std::unordered_map<uint32_t, std::string> preProcess(const std::string& source);
 	
 		void parse();
@@ -83,10 +84,10 @@ namespace XYZ {
 
 		std::vector<std::function<void()>>				  m_ShaderReloadCallbacks;
 
-		std::unordered_map<GLenum, std::vector<uint32_t>> m_VulkanSPIRV;
-		std::unordered_map<GLenum, std::vector<uint32_t>> m_OpenGLSPIRV;
-		std::unordered_map<GLenum, std::string>			  m_OpenGLSourceCode;
-		std::unordered_map<uint32_t, std::string>		  m_ShaderSources;
+		std::unordered_map<uint32_t, std::vector<uint32_t>> m_VulkanSPIRV;
+		std::unordered_map<uint32_t, std::vector<uint32_t>> m_OpenGLSPIRV;
+		std::unordered_map<uint32_t, std::string>			m_OpenGLSourceCode;
+		std::unordered_map<uint32_t, std::string>		    m_ShaderSources;
 
 		// Temporary, in future we will get that information from the GPU
 		static constexpr uint32_t sc_MaxTextureSlots = 32;
