@@ -81,6 +81,14 @@ namespace XYZ {
 			getStats().CommandsCount++;
 		}
 
+		template<typename FuncT>
+		static void SubmitAndWait(FuncT&& func, uint32_t type = Default)
+		{
+			Submit(std::forward<FuncT>(func), type);
+			WaitAndRender();
+			BlockRenderThread();
+		}
+
 		static void BeginRenderPass(const Ref<RenderPass>& renderPass, bool clear);
 		static void EndRenderPass();
 		static void BlockRenderThread();

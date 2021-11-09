@@ -5,11 +5,16 @@ layout(location = 0) in vec3  a_Position;
 layout(location = 1) in vec2  a_TexCoord;
 
 
-out vec2 v_TexCoords;
+struct VertexOutput
+{
+	vec2 TexCoord;
+};
+
+layout(location = 0) out VertexOutput v_Output;
 
 void main()
 {
-    v_TexCoords = a_TexCoord;
+    v_Output.TexCoord = a_TexCoord;
     gl_Position = vec4(a_Position, 1.0);
 }
 
@@ -19,7 +24,12 @@ void main()
 
 layout(location = 0) out vec4 o_Color;
 
-in vec2 v_TexCoords;
+struct VertexOutput
+{
+	vec2 TexCoord;
+};
+
+layout(location = 0) in VertexOutput v_Input;
 
 layout(binding = 0) uniform sampler2D u_Texture[2];
 
@@ -51,8 +61,8 @@ vec3 GammaCorrect(vec3 color, float gamma)
 
 void main()
 {    
-    vec3 color = texture(u_Texture[0], v_TexCoords).rgb;
-	vec3 bloomColor = texture(u_Texture[1], v_TexCoords).rgb;
+    vec3 color = texture(u_Texture[0], v_Input.TexCoord).rgb;
+	vec3 bloomColor = texture(u_Texture[1], v_Input.TexCoord).rgb;
 	bloomColor = ACESTonemap(bloomColor);
 	bloomColor = GammaCorrect(bloomColor, c_Gamma);
 	o_Color = vec4(color + bloomColor, 1.0);

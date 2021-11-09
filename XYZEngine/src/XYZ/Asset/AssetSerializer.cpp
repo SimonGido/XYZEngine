@@ -9,7 +9,7 @@
 #include "XYZ/Scene/Scene.h"
 #include "XYZ/Scene/Components.h"
 #include "XYZ/Animation/Animation.h"
-
+#include "XYZ/Renderer/Renderer.h"
 
 #include "XYZ/Scene/SceneSerializer.h"
 #include "XYZ/Utils/FileSystem.h"
@@ -557,7 +557,6 @@ namespace XYZ {
 
 		GUID shaderHandle(data["ShaderAsset"].as<std::string>());
 		auto shader = AssetManager::GetAsset<Shader>(shaderHandle);
-
 		Ref<Material> material = Ref<Material>::Create(shader);
 		CopyAsset(material.As<Asset>(), asset);
 		material->SetRenderQueueID(data["RenderQueueID"].as<uint8_t>());

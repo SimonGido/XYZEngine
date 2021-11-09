@@ -404,10 +404,14 @@ namespace XYZ {
 		std::string source = readFile(m_AssetPath);
 		auto shaderSources = preProcess(source);
 
-		compileOrGetVulkanBinaries(shaderSources);
-		compileOrGetOpenGLBinaries();
-		createProgram();
-
+		Ref<OpenGLShader> instance = this;
+		Renderer::SubmitAndWait([instance, shaderSources]() mutable {
+			instance->compileOrGetVulkanBinaries(shaderSources);
+			instance->compileOrGetOpenGLBinaries();
+			instance->createProgram();
+		});
+		
+		m_ShaderSources = std::move(shaderSources);
 		for (size_t i = 0; i < m_ShaderReloadCallbacks.size(); ++i)
 			m_ShaderReloadCallbacks[i]();
 	}
@@ -754,6 +758,7 @@ namespace XYZ {
 		XYZ_TRACE("		{0} resources", resources.sampled_images.size());
 
 		XYZ_TRACE("Uniform buffers:");
+
 		for (const auto& resource : resources.uniform_buffers)
 		{
 			const auto& bufferType = compiler.get_type(resource.base_type_id);
@@ -765,6 +770,10 @@ namespace XYZ {
 			XYZ_TRACE("    Size = {0}", bufferSize);
 			XYZ_TRACE("    Binding = {0}", binding);
 			XYZ_TRACE("    Members = {0}", memberCount);
+		}
+		for (const auto& resource : resources.sampled_images)
+		{
+			XYZ_TRACE("  {0}", resource.name);
 		}
 	}
 
