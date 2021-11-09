@@ -26,8 +26,8 @@ namespace XYZ {
 		virtual void SetFloat4(const std::string& name, const glm::vec4& value) override;
 		virtual void SetMat4(const std::string& name, const glm::mat4& value) override;
 
-		virtual const UniformList& GetVSUniformList() const override { return m_VSUniformList; }
-		virtual const UniformList& GetFSUniformList() const override { return m_FSUniformList; }
+		virtual const UniformList&		  GetVSUniformList() const override { return m_VSUniformList; }
+		virtual const UniformList&		  GetFSUniformList() const override { return m_FSUniformList; }
 		virtual const TextureUniformList& GetTextureList() const override { return m_TextureList; }
 
 		inline virtual const std::string& GetPath() const override { return m_AssetPath; };
@@ -35,13 +35,18 @@ namespace XYZ {
 
 		virtual uint32_t GetRendererID() const override { return m_RendererID; }
 	private:
+		void reflect(unsigned int stage, const std::vector<uint32_t>& shaderData);
+		void createProgram();
+		void compileOrGetOpenGLBinaries();
+		void compileOrGetVulkanBinaries(const std::unordered_map<GLenum, std::string>& shaderSources);
+		std::unordered_map<uint32_t, std::string> preProcess(const std::string& source);
+	
 		void parse();
 		void load(const std::string& source);
 		void parseUniform(const std::string& statement, ShaderType type, const std::vector<ShaderStruct>& structs);
 		void compileAndUpload();
 		void resolveUniforms();
 
-		std::unordered_map<uint32_t, std::string> preProcess(const std::string& source);
 
 		void parseSource(uint32_t component,const std::string& source);
 
@@ -72,12 +77,16 @@ namespace XYZ {
 
 		uint32_t m_NumTakenTexSlots;
 		
-		UniformList m_VSUniformList;
-		UniformList m_FSUniformList;
+		UniformList		   m_VSUniformList;
+		UniformList		   m_FSUniformList;
 		TextureUniformList m_TextureList;
 
-		std::vector<std::function<void()>> m_ShaderReloadCallbacks;
-		std::unordered_map<uint32_t, std::string> m_ShaderSources;
+		std::vector<std::function<void()>>				  m_ShaderReloadCallbacks;
+
+		std::unordered_map<GLenum, std::vector<uint32_t>> m_VulkanSPIRV;
+		std::unordered_map<GLenum, std::vector<uint32_t>> m_OpenGLSPIRV;
+		std::unordered_map<GLenum, std::string>			  m_OpenGLSourceCode;
+		std::unordered_map<uint32_t, std::string>		  m_ShaderSources;
 
 		// Temporary, in future we will get that information from the GPU
 		static constexpr uint32_t sc_MaxTextureSlots = 32;
