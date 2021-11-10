@@ -63,6 +63,8 @@ namespace XYZ {
 		virtual uint32_t GetMipLevelCount() const = 0;
 		virtual std::pair<uint32_t, uint32_t> GetMipSize(uint32_t index) const = 0;
 		static uint32_t CalculateMipMapCount(uint32_t width, uint32_t height);
+
+		static AssetType GetStaticType() { return AssetType::Texture; }
 	};
 
 	/**

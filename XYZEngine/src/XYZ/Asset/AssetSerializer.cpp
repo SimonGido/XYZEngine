@@ -671,7 +671,7 @@ namespace XYZ {
 	{
 		for (auto& it : data)
 		{
-			anim->AddProperty()
+			//anim->AddProperty()
 		}
 	}
 

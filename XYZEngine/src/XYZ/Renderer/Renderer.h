@@ -45,6 +45,7 @@ namespace XYZ {
 		* Initialize RenderCommand and Renderer2D
 		*/
 		static void Init();
+		static void InitResources();
 		static void Shutdown();
 
 		static void Lock();

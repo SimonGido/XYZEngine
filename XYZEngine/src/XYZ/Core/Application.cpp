@@ -25,14 +25,16 @@ namespace XYZ {
 		m_Timestep(0.0f),
 		m_ThreadPool(12)
 	{
-		AssetManager::Init();
-		Renderer::Init();
+		
 		s_Application = this;
 		m_Running = true;
 
+		Renderer::Init();
 		m_Window = Window::Create();
 		m_Window->RegisterCallback(Hook(&Application::OnEvent, this));	
 		m_Window->SetVSync(0);
+		Renderer::InitResources();
+		AssetManager::Init();
 
 		TCHAR NPath[MAX_PATH];
 		GetCurrentDirectory(MAX_PATH, NPath);

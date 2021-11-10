@@ -293,7 +293,7 @@ namespace XYZ {
 	{
 		auto& animator = entity.EmplaceComponent<AnimatorComponent>();
 		//animator.Animation = AssetManager::GetAsset<Animation>(AssetManager::GetAssetHandle("Assets/Animations/havko.anim"));
-		Ref<Animation> animation = AssetManager::CreateAsset<Animation>("havko.anim", AssetType::Animation, AssetManager::GetDirectoryHandle("Assets/Animations"));
+		Ref<Animation> animation = AssetManager::CreateAsset<Animation>("havko.anim", "Assets/Animations");
 		animator.Animator = Ref<Animator>::Create();
 		animator.Animator->SetAnimation(animation);
 		animator.Animator->SetSceneEntity(entity);

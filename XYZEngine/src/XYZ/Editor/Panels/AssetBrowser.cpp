@@ -291,7 +291,7 @@ namespace XYZ {
 
 							std::string fullpath = getUniqueAssetName("New Texture", ".tex");
 							std::string fullImagePath = parentDir + "/" + fileName;
-							AssetManager::CreateAsset<Texture2D>(Utils::GetFilename(fullpath), AssetType::Texture, AssetManager::GetDirectoryHandle(parentDir), TextureSpecs{}, fullImagePath);
+							AssetManager::CreateAsset<Texture2D>(Utils::GetFilename(fullpath), parentDir, TextureSpecs{}, fullImagePath);
 							ImGui::CloseCurrentPopup();
 						}
 					}

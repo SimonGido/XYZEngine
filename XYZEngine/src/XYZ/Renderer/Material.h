@@ -55,7 +55,8 @@ namespace XYZ {
 		
 		bool operator ==(const Material& other) const;
 		bool operator != (const Material& other) const;
-		
+
+		static AssetType GetStaticType() { return AssetType::Material; }
 	private:
 		void				  onShaderReload();
 		ByteBuffer&			  getUniformBufferTarget(ShaderType type);

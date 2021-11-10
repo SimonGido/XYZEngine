@@ -146,6 +146,8 @@ namespace XYZ {
 
 		static Ref<Shader> Create(const std::string& path);
 		static Ref<Shader> Create(const std::string& name, const std::string& path);
+		
+		static AssetType GetStaticType() { return AssetType::Shader; }
 	};
 
 	class ShaderLibrary : public RefCount

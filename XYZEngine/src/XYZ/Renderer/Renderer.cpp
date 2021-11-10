@@ -72,12 +72,14 @@ namespace XYZ {
 	void Renderer::Init()
 	{
 		s_Data.m_Pool.PushThread();
-		s_Data.m_CommandQueue = std::make_shared<ThreadPass<RenderCommandQueue>>();
+		s_Data.m_CommandQueue = std::make_shared<ThreadPass<RenderCommandQueue>>();	
+	}
+
+	void Renderer::InitResources()
+	{		
 		Renderer::Submit([=]() {
 			RendererAPI::Init();
 		});
-		
-
 		SetupFullscreenQuad();
 
 		s_Data.m_ShaderLibrary = Ref<ShaderLibrary>::Create();
@@ -92,10 +94,13 @@ namespace XYZ {
 		s_Data.m_ShaderLibrary->Load("Assets/Shaders/MousePicker.glsl");
 
 		s_Data.m_ShaderLibrary->Load("Assets/Shaders/Particle/ParticleShaderCPU.glsl");
+		WaitAndRender();
+		BlockRenderThread();
 	}
 
 	void Renderer::Shutdown()
 	{
+		s_Data.m_Pool.EraseThread(0);
 		s_Data.m_FullscreenQuadVertexArray.Reset();
 		s_Data.m_FullscreenQuadVertexBuffer.Reset();
 		s_Data.m_FullscreenQuadIndexBuffer.Reset();

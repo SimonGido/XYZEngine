@@ -21,6 +21,7 @@ namespace XYZ {
 
 		const Ref<Texture>& GetTexture() const { return m_Texture; }
 
+		static AssetType GetStaticType() { return AssetType::SubTexture; }
 	private:
 		Ref<Texture> m_Texture;
 		glm::vec4 m_TexCoords;

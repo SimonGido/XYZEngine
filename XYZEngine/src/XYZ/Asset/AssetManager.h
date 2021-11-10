@@ -56,43 +56,14 @@ namespace XYZ {
 		static void      CreateDirectory(const std::string& dirName);
 		
 		template<typename T, typename... Args>
-		static Ref<T> CreateAsset(const std::string& filename, AssetType type, const GUID& directoryHandle, Args&&... args)
-		{
-			static_assert(std::is_base_of<Asset, T>::value, "CreateAsset only works for types derived from Asset");
-
-			auto& directory = s_Directories[directoryHandle];
-			Ref<T> asset = Helper::CreateRef<T>(std::forward<Args>(args)...);
-			asset->Type = type;
-			asset->FilePath = directory.FilePath + "/" + filename;
-			asset->FileName = Utils::RemoveExtension(Utils::GetFilename(asset->FilePath));
-			asset->FileExtension = Utils::GetFilename(filename);
-			asset->DirectoryHandle = directoryHandle;
-			asset->Handle = GUID();
-			asset->IsLoaded = true;
-			s_LoadedAssets[asset->Handle] = asset;
-			AssetSerializer::SerializeAsset(asset);
-			return asset;
-		}
-		
+		static Ref<T> CreateAsset(const std::string& filename, const std::string& directoryPath, Args&&... args);
+			
 		template<typename T>
-		static Ref<T> GetAsset(const GUID& assetHandle, bool loadData = true)
-		{
-			XYZ_ASSERT(s_LoadedAssets.find(assetHandle) != s_LoadedAssets.end(),"");
-			Ref<Asset> asset = s_LoadedAssets[assetHandle];
+		static Ref<T> GetAsset(const GUID& assetHandle, bool loadData = true);
 		
-			if (!asset->IsLoaded && loadData)
-			{
-				asset = AssetSerializer::LoadAsset(asset);
-				asset->IsLoaded = true;
-				s_LoadedAssets[assetHandle] = asset;
-			}
-			return asset.As<T>();
-		}
-
 	private:
 		static void processDirectory(const std::string& path, AssetDirectory& directory);
 		static void importAsset(const std::string& path);
-
 		
 
 	private:
@@ -101,4 +72,41 @@ namespace XYZ {
 		static std::unordered_map<GUID, AssetDirectory>   s_Directories;
 		static std::unordered_map<std::string, AssetType> s_AssetTypes;
 	};
+	
+	
+	template<typename T, typename ...Args>
+	inline Ref<T> AssetManager::CreateAsset(const std::string& filename, const std::string& directoryPath, Args && ...args)
+	{
+		static_assert(std::is_base_of<Asset, T>::value, "CreateAsset only works for types derived from Asset");
+
+		const GUID directoryHandle = GetDirectoryHandle(directoryPath);
+		auto& directory = s_Directories[directoryHandle];
+		Ref<T> asset = Helper::CreateRef<T>(std::forward<Args>(args)...);
+		asset->Type = T::GetStaticType();
+		asset->FilePath = directory.FilePath + "/" + filename;
+		asset->FileName = Utils::RemoveExtension(Utils::GetFilename(asset->FilePath));
+		asset->FileExtension = Utils::GetFilename(filename);
+		asset->DirectoryHandle = directoryHandle;
+		asset->Handle = GUID();
+		asset->IsLoaded = true;
+		s_LoadedAssets[asset->Handle] = asset;
+		AssetSerializer::SerializeAsset(asset);
+		return asset;
+	}
+
+
+	template<typename T>
+	inline Ref<T> AssetManager::GetAsset(const GUID& assetHandle, bool loadData)
+	{
+		XYZ_ASSERT(s_LoadedAssets.find(assetHandle) != s_LoadedAssets.end(), "");
+		Ref<Asset> asset = s_LoadedAssets[assetHandle];
+
+		if (!asset->IsLoaded && loadData)
+		{
+			asset = AssetSerializer::LoadAsset(asset);
+			asset->IsLoaded = true;
+			s_LoadedAssets[assetHandle] = asset;
+		}
+		return asset.As<T>();
+	}
 }

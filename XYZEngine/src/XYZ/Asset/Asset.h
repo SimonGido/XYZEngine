@@ -16,6 +16,7 @@ namespace XYZ {
 		Script,
 		SkeletalMesh,
 		Animation,
+		Animator,
 		None
 	};
 
@@ -32,6 +33,8 @@ namespace XYZ {
 		std::string FileExtension;
 		GUID		DirectoryHandle;
 		bool		IsLoaded = false;
+
+		static AssetType GetStaticType() { return AssetType::None; }
 	};
 	
 	class AssetDirectory

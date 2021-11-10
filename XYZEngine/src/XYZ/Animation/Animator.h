@@ -17,6 +17,7 @@ namespace XYZ {
 		const SceneEntity&	  GetSceneEntity() const { return m_Entity; }
 		const Ref<Animation>& GetAnimation() const { return m_Animation;}
 
+		static AssetType GetStaticType() { return AssetType::Animator; }
 	private:
 		void buildEntityPropertyPairs();
 

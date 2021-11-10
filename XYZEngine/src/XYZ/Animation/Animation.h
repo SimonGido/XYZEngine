@@ -44,6 +44,9 @@ namespace XYZ {
 		const std::vector<Property<glm::vec2>>& GetVec2Properties()    const { return m_Vec2Properties;};
 		const std::vector<Property<float>>    & GetFloatProperties()   const { return m_FloatProperties;};
 		const std::vector<Property<void*>>	  & GetPointerProperties() const { return m_PointerProperties;};
+
+		static AssetType GetStaticType() { return AssetType::Animation; }
+
 	private:
 		void setSceneEntity(const SceneEntity& entity);
 		void updateProperties(uint32_t frame);

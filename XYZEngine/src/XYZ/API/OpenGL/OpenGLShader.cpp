@@ -405,12 +405,12 @@ namespace XYZ {
 		auto shaderSources = preProcess(source);
 
 		Ref<OpenGLShader> instance = this;
-		Renderer::SubmitAndWait([instance, shaderSources]() mutable {
+		Renderer::Submit([instance, shaderSources]() mutable {
 			instance->compileOrGetVulkanBinaries(shaderSources);
 			instance->compileOrGetOpenGLBinaries();
 			instance->createProgram();
 		});
-		
+
 		m_ShaderSources = std::move(shaderSources);
 		for (size_t i = 0; i < m_ShaderReloadCallbacks.size(); ++i)
 			m_ShaderReloadCallbacks[i]();
@@ -780,7 +780,6 @@ namespace XYZ {
 			uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
 			uint32_t dimension = baseType.image.dim;
 			uint32_t arraySize = type.array[0];
-
 		}
 	}
 

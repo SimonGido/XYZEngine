@@ -70,6 +70,7 @@ namespace XYZ {
 		const std::vector<AnimatedVertex>& GetVertices() const { return m_Vertices; }
 		const std::vector<uint32_t>& GetIndicies() const { return m_Indices; }
 
+		static AssetType GetStaticType() { return AssetType::SkeletalMesh; }
 	private:
 		Ref<VertexArray> m_VertexArray;
 		Ref<Material> m_Material;

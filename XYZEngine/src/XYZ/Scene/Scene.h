@@ -64,7 +64,7 @@ namespace XYZ {
         inline const GUID& GetUUID() const { return m_UUID; }
         inline const std::string& GetName() const { return m_Name; }
 
-
+        static AssetType GetStaticType() { return AssetType::Scene; }
     private:
         void updateHierarchy();
         void setupPhysics();
