@@ -38,7 +38,7 @@ namespace XYZ {
 		void reflect(unsigned int stage, const std::vector<uint32_t>& shaderData);
 		void createProgram();
 		void compileOrGetOpenGLBinaries();
-		void compileOrGetVulkanBinaries(const std::unordered_map<uint32_t, std::string>& shaderSources);
+		void compileOrGetVulkanBinaries();
 		std::string readFile(const std::string& filepath) const;
 		std::unordered_map<uint32_t, std::string> preProcess(const std::string& source);
 	

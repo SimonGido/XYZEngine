@@ -402,16 +402,16 @@ namespace XYZ {
 	void OpenGLShader::Reload()
 	{	
 		std::string source = readFile(m_AssetPath);
-		auto shaderSources = preProcess(source);
+		m_ShaderSources = preProcess(source);
+
+		compileOrGetVulkanBinaries();
+		compileOrGetOpenGLBinaries();
 
 		Ref<OpenGLShader> instance = this;
-		Renderer::Submit([instance, shaderSources]() mutable {
-			instance->compileOrGetVulkanBinaries(shaderSources);
-			instance->compileOrGetOpenGLBinaries();
+		Renderer::Submit([instance]() mutable {		
 			instance->createProgram();
 		});
 
-		m_ShaderSources = std::move(shaderSources);
 		for (size_t i = 0; i < m_ShaderReloadCallbacks.size(); ++i)
 			m_ShaderReloadCallbacks[i]();
 	}
@@ -882,10 +882,8 @@ namespace XYZ {
 		}
 	}
 
-	void OpenGLShader::compileOrGetVulkanBinaries(const std::unordered_map<uint32_t, std::string>& shaderSources)
+	void OpenGLShader::compileOrGetVulkanBinaries()
 	{
-		GLuint program = glCreateProgram();
-
 		shaderc::Compiler compiler;
 		shaderc::CompileOptions options;
 		options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
@@ -897,7 +895,7 @@ namespace XYZ {
 
 		auto& shaderData = m_VulkanSPIRV;
 		shaderData.clear();
-		for (auto&& [stage, source] : shaderSources)
+		for (auto&& [stage, source] : m_ShaderSources)
 		{
 			std::filesystem::path shaderFilePath = m_AssetPath;
 			std::filesystem::path cachedPath = cacheDirectory / (shaderFilePath.filename().string() + Utils::GLShaderStageCachedVulkanFileExtension(stage));
