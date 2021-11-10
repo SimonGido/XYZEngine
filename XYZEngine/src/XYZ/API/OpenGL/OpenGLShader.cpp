@@ -381,12 +381,12 @@ namespace XYZ {
 	{	
 		std::string source = readFile(m_AssetPath);
 		preProcess(source);
-
+		
 		compileOrGetVulkanBinaries();
 		compileOrGetOpenGLBinaries();
-
 		Ref<OpenGLShader> instance = this;
-		Renderer::Submit([instance]() mutable {		
+		Renderer::SubmitAndWait([instance]() mutable {	
+	
 			instance->createProgram();
 		});
 
@@ -697,14 +697,13 @@ namespace XYZ {
 				spirv_cross::CompilerGLSL glslCompiler(spirv);
 				m_OpenGLSourceCode[stage] = glslCompiler.compile();
 				auto& source = m_OpenGLSourceCode[stage];
-
+	
 				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, Utils::GLShaderStageToShaderC(stage), m_AssetPath.c_str());
 				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
 					XYZ_ERROR(module.GetErrorMessage());
 					XYZ_ASSERT(false, "");
 				}
-
 				shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
 
 				std::ofstream out(cachedPath, std::ios::out | std::ios::binary);

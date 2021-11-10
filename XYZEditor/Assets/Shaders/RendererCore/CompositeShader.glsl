@@ -1,5 +1,5 @@
 #type vertex
-#version 430 core
+#version 450 core
 
 layout(location = 0) in vec3  a_Position;
 layout(location = 1) in vec2  a_TexCoord;
@@ -20,7 +20,7 @@ void main()
 
 
 #type fragment
-#version 430
+#version 450
 
 layout(location = 0) out vec4 o_Color;
 
@@ -59,10 +59,6 @@ vec3 GammaCorrect(vec3 color, float gamma)
 	return pow(color, vec3(1.0f / gamma));
 }
 
-layout (push_constant) uniform Test
-{
-	float Test;
-} u_Test;
 
 void main()
 {    
@@ -70,5 +66,5 @@ void main()
 	vec3 bloomColor = texture(u_Texture[1], v_Input.TexCoord).rgb;
 	bloomColor = ACESTonemap(bloomColor);
 	bloomColor = GammaCorrect(bloomColor, c_Gamma);
-	o_Color = vec4(color + bloomColor, 1.0 * u_Test.Test);
+	o_Color = vec4(color + bloomColor, 1.0);
 }
