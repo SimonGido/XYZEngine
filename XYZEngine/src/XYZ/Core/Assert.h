@@ -1,5 +1,6 @@
 #pragma once
 #include "Core.h"
+#include "Logger.h"
 
 #ifdef XYZ_ENABLE_ASSERTS
 

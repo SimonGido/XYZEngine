@@ -30,7 +30,7 @@ namespace XYZ {
 	public:
 		enum class API
 		{
-			None = 0, OpenGL = 1
+			None = 0, OpenGL = 1, Vulkan = 2
 		};
 	public:
 		static void Init();
@@ -47,8 +47,7 @@ namespace XYZ {
 		static void DrawIndexed(PrimitiveType type, uint32_t indexCount);
 		static void DrawInstanced(PrimitiveType type, uint32_t indexCount, uint32_t instanceCount, uint32_t offset = 0);
 		static void DrawInstancedIndirect(void* indirect);
-		static void DrawPixels(uint32_t width, uint32_t height, const void* data);
-
+	
 		static RenderAPICapabilities& GetCapabilities()
 		{
 			static RenderAPICapabilities caps;

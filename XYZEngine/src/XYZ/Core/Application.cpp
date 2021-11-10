@@ -34,15 +34,15 @@ namespace XYZ {
 		m_Window->RegisterCallback(Hook(&Application::OnEvent, this));	
 		m_Window->SetVSync(0);
 		Renderer::InitResources();
-		AssetManager::Init();
+		//AssetManager::Init();
 
 		TCHAR NPath[MAX_PATH];
 		GetCurrentDirectory(MAX_PATH, NPath);
 		std::wstring tmp(&NPath[0]);
 		m_ApplicationDir = std::string(tmp.begin(), tmp.end());
 
-		m_ImGuiLayer = new ImGuiLayer();
-		m_LayerStack.PushOverlay(m_ImGuiLayer);	
+		//m_ImGuiLayer = new ImGuiLayer();
+		//m_LayerStack.PushOverlay(m_ImGuiLayer);	
 	}
 
 	Application::~Application()

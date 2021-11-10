@@ -2,9 +2,8 @@
 #include "XYZ/Renderer/APIContext.h"
 
 
-	struct GLFWwindow;
+struct GLFWwindow;
 namespace XYZ {
-
 
 	class OpenGLAPIContext : public APIContext
 	{

@@ -88,7 +88,10 @@ project "XYZEngine"
 			"ImGui",
 			"box2d",
 			"optick",
-			"%{LibraryDir.mono}"
+			"%{LibraryDir.mono}",
+			"%{Library.Vulkan}",
+			"%{Library.VulkanUtils}"
+
 		}
 		
 		flags { "NoPCH" }

@@ -4,7 +4,7 @@
 #include <GL/glew.h>
 
 namespace XYZ {
-	RendererAPI::API RendererAPI::s_API = RendererAPI::API::OpenGL;
+	RendererAPI::API RendererAPI::s_API = RendererAPI::API::Vulkan;
 
 
 	void RendererAPI::Init()
