@@ -4,6 +4,15 @@
 !XYZEngine/vendor/mono/bin
 bin-int/
 obj/
+**/cache/**
+XYZEngine/vendor/VulkanSDK
+XYZEditor/Assets/Scripts/XYZScript.dll
+XYZEditor/Assets/Scripts/XYZScript.pdb
+XYZEditor/Assets/Scripts/XYZScriptCore.dll
+XYZEditor/Assets/Scripts/XYZScriptCore.pdb
+__pycache__
+Intermediates/
+
 
 # Log files
 **.log
@@ -15,6 +24,10 @@ obj/
 **.vcxproj.filters
 **.vcxproj.user
 **.csproj
+**.nsight-gfxproj
+**.DotSettings
+**.user
+
 
 #Idea
 .idea/
@@ -22,5 +35,4 @@ obj/
 # Makefiles
 **/Makefile
 
-XYZEngine/vendor/VulkanSDK
-scripts/__pycache__
+
