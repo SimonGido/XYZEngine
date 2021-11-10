@@ -59,11 +59,16 @@ vec3 GammaCorrect(vec3 color, float gamma)
 	return pow(color, vec3(1.0f / gamma));
 }
 
+layout (push_constant) uniform Test
+{
+	float Test;
+} u_Test;
+
 void main()
 {    
     vec3 color = texture(u_Texture[0], v_Input.TexCoord).rgb;
 	vec3 bloomColor = texture(u_Texture[1], v_Input.TexCoord).rgb;
 	bloomColor = ACESTonemap(bloomColor);
 	bloomColor = GammaCorrect(bloomColor, c_Gamma);
-	o_Color = vec4(color + bloomColor, 1.0);
+	o_Color = vec4(color + bloomColor, 1.0 * u_Test.Test);
 }

@@ -88,4 +88,14 @@ namespace XYZ {
 			result += var.Size();
 		return result;
 	}
+	ShaderUniform::ShaderUniform(std::string name, ShaderUniformDataType dataType, uint32_t size, uint32_t offset, uint32_t count, uint32_t loc)
+		:
+		m_Name(std::move(name)),
+		m_DataType(dataType),
+		m_Size(size),
+		m_Offset(offset),
+		m_Count(count),
+		m_Location(loc)
+	{
+	}
 }

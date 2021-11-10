@@ -39,7 +39,7 @@ namespace XYZ {
 			std::vector<std::string> variables = std::move(Utils::SplitString(tokens[i], " \r"));
 			if (variables.size() > 1)
 			{
-				UniformDataType type = StringToShaderDataType(variables[0]);
+				ShaderUniformDataType type = StringToShaderDataType(variables[0]);
 				variables[1].pop_back(); // pop ;
 				std::string name = variables[1];
 				shaderStruct.Variables.push_back({name, type});
@@ -191,24 +191,24 @@ namespace XYZ {
 		{
 			switch (variable.Type)
 			{
-			case XYZ::UniformDataType::None:
+			case XYZ::ShaderUniformDataType::None:
 				break;
-			case XYZ::UniformDataType::Int:
+			case XYZ::ShaderUniformDataType::Int:
 				elements.emplace_back(counter++, ShaderDataComponent::Int, variable.Name, divisior);
 				break;
-			case XYZ::UniformDataType::UInt:
+			case XYZ::ShaderUniformDataType::UInt:
 				elements.emplace_back(counter++, ShaderDataComponent::Int, variable.Name, divisior);
 				break;
-			case XYZ::UniformDataType::Float:
+			case XYZ::ShaderUniformDataType::Float:
 				elements.emplace_back(counter++, ShaderDataComponent::Float, variable.Name, divisior);
 				break;
-			case XYZ::UniformDataType::Vec2:
+			case XYZ::ShaderUniformDataType::Vec2:
 				elements.emplace_back(counter++, ShaderDataComponent::Float2, variable.Name, divisior);
 				break;
-			case XYZ::UniformDataType::Vec3:
+			case XYZ::ShaderUniformDataType::Vec3:
 				elements.emplace_back(counter++, ShaderDataComponent::Float3, variable.Name, divisior);
 				break;
-			case XYZ::UniformDataType::Vec4:
+			case XYZ::ShaderUniformDataType::Vec4:
 				elements.emplace_back(counter++, ShaderDataComponent::Float4, variable.Name, divisior);
 				break;
 			}
@@ -408,11 +408,11 @@ namespace XYZ {
 		}
 	}
 
-	const Uniform* ParticleMaterial::findUniform(const std::string& name) const
+	const ShaderUniform* ParticleMaterial::findUniform(const std::string& name) const
 	{
 		for (auto& uni : m_ComputeShader->GetVSUniformList().Uniforms)
 		{
-			if (uni.Name == name)
+			if (uni.GetName() == name)
 				return &uni;
 		}
 		return nullptr;

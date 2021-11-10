@@ -36,8 +36,8 @@ namespace XYZ {
 
 	bool Material::HasProperty(const std::string& name) const
 	{
-		auto uni = findUniform(name);
-		return uni;
+		auto [uni, type] = findUniform(name);
+		return type != ShaderType::None;
 	}
 
 	void Material::Bind() const
@@ -83,19 +83,19 @@ namespace XYZ {
 		return m_FSUniformBuffer;
 	}
 
-	const Uniform* Material::findUniform(const std::string& name) const
+	std::pair<const ShaderUniform*, ShaderType> Material::findUniform(const std::string& name) const
 	{
 		for (auto& uni : m_Shader->GetVSUniformList().Uniforms)
 		{
-			if (uni.Name == name)
-				return &uni;
+			if (uni.GetName() == name)
+				return { &uni, ShaderType::Vertex };
 		}
 		for (auto& uni : m_Shader->GetFSUniformList().Uniforms)
 		{
-			if (uni.Name == name)
-				return &uni;
+			if (uni.GetName() == name)
+				return { &uni, ShaderType::Fragment };
 		}
-		return nullptr;
+		return { nullptr, ShaderType::None };
 	}
 
 	const TextureUniform* Material::findTexture(const std::string& name) const

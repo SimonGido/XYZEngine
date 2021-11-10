@@ -60,8 +60,8 @@ namespace XYZ {
 	private:
 		void				  onShaderReload();
 		ByteBuffer&			  getUniformBufferTarget(ShaderType type);
-		const Uniform*		  findUniform(const std::string& name) const;
 		const TextureUniform* findTexture(const std::string& name) const;
+		std::pair<const ShaderUniform*, ShaderType> findUniform(const std::string& name) const;
 
 	private:
 		Ref<Shader>				  m_Shader;
@@ -78,31 +78,31 @@ namespace XYZ {
 	inline void Material::Set(const std::string& name, const T& val)
 	{
 		static_assert((!std::is_same<T, Ref<Texture>>::value) && (!std::is_same<T, Ref<Texture2D>>::value), "Use SetTexture");
-		auto uni = findUniform(name);
+		auto [uni, type] = findUniform(name);
 		XYZ_ASSERT(uni, "Material uniform does not exist ", name.c_str());
 
-		auto& buffer = getUniformBufferTarget(uni->ShaderType);
-		buffer.Write((unsigned char*)&val, uni->Size, uni->Offset);
+		auto& buffer = getUniformBufferTarget(type);
+		buffer.Write((unsigned char*)&val, uni->GetSize(), uni->GetOffset());
 	}
 
 	template<typename T>
 	inline void Material::Set(const std::string& name, const T& val, uint32_t size, uint32_t offset)
 	{
 		static_assert((!std::is_same<T, Ref<Texture>>::value) && (!std::is_same<T, Ref<Texture2D>>::value), "Use SetTexture");
-		auto uni = findUniform(name);
+		auto [uni, type] = findUniform(name);
 		XYZ_ASSERT(uni, "Material uniform does not exist ", name.c_str());
 
-		auto& buffer = getUniformBufferTarget(uni->ShaderType);
-		buffer.Write((unsigned char*)&val, size, uni->Offset + offset);
+		auto& buffer = getUniformBufferTarget(type);
+		buffer.Write((unsigned char*)&val, size, uni->GetOffset() + offset);
 	}
 
 	template<typename T>
 	inline T& Material::Get(const std::string& name)
 	{
-		auto uni = findUniform(name);
+		auto [uni, type] = findUniform(name);
 		XYZ_ASSERT(uni, "Material uniform does not exist ", name.c_str());
-		auto& buffer = getUniformBufferTarget(uni->ShaderType);
-		return *(T*)&buffer[uni->Offset];
+		auto& buffer = getUniformBufferTarget(type);
+		return *(T*)&buffer[uni->GetOffset()];
 	}
 
 

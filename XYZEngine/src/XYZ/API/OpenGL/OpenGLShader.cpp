@@ -47,6 +47,7 @@ namespace XYZ {
 			{
 			case GL_VERTEX_SHADER:   return "GL_VERTEX_SHADER";
 			case GL_FRAGMENT_SHADER: return "GL_FRAGMENT_SHADER";
+			case GL_COMPUTE_SHADER: return "GL_COMPUTE_SHADER";
 			}
 			XYZ_ASSERT(false, "");
 			return nullptr;
@@ -55,7 +56,7 @@ namespace XYZ {
 		static const char* GetCacheDirectory()
 		{
 			// TODO: make sure the assets directory is valid
-			return "assets/cache/shader/opengl";
+			return "Assets/cache/shader/opengl";
 		}
 
 		static void CreateCacheDirectoryIfNeeded()
@@ -111,7 +112,7 @@ namespace XYZ {
 			std::vector<std::string> variables = std::move(Utils::SplitString(tokens[i], " \r"));
 			if (variables.size() > 1)
 			{
-				UniformDataType type = StringToShaderDataType(variables[0]);
+				ShaderUniformDataType type = StringToShaderDataType(variables[0]);
 				variables[1].pop_back(); // pop ;
 				std::string name = variables[1];
 				shaderStruct.Variables.push_back({ name, type });
@@ -290,7 +291,7 @@ namespace XYZ {
 	{
 		for (auto& uniform : m_VSUniformList.Uniforms)
 		{
-			if (uniform.Count > 1)
+			if (uniform.GetCount() > 1)
 			{
 				Renderer::Submit([=]() {
 					setUniformArr(&uniform, buffer);
@@ -309,7 +310,7 @@ namespace XYZ {
 	{
 		for (auto& uniform : m_FSUniformList.Uniforms)
 		{
-			if (uniform.Count > 1)
+			if (uniform.GetCount() > 1)
 			{
 				Renderer::Submit([=]() {
 					setUniformArr(&uniform, buffer);
@@ -324,76 +325,53 @@ namespace XYZ {
 		}
 	}
 
-	
-	void OpenGLShader::parseSource(uint32_t component,const std::string& source)
-	{		
-		const char* versionToken = "#version";
-		size_t versionTokenLength = strlen(versionToken);
-		size_t verPos = m_ShaderSources[component].find(versionToken, 0);
-		size_t sourcePos = verPos + versionTokenLength + 1;
-		size_t sourceEol = source.find_first_of("\r\n", sourcePos);
 
-		const char* ComponentToken = "#type";
-		size_t ComponentTokenLength = strlen(ComponentToken);
-		size_t pos = source.find(ComponentToken, 0);
-		while (pos != std::string::npos)
-		{
-			size_t eol = source.find_first_of("\r\n", pos);
-			XYZ_ASSERT(eol != std::string::npos, "Syntax error");
-			size_t begin = pos + ComponentTokenLength + 1;
-
-			size_t nextLinePos = source.find_first_not_of("\r\n", eol);
-			pos = source.find(ComponentToken, nextLinePos);
-			m_ShaderSources[component].insert(sourceEol + 2 ,source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos)));
-		}
-	}
-
-	void OpenGLShader::setUniform(const Uniform* uniform, ByteBuffer data) const
+	void OpenGLShader::setUniform(const ShaderUniform* uniform, ByteBuffer data) const
 	{
-		switch (uniform->DataType)
+		switch (uniform->GetDataType())
 		{
-		case UniformDataType::Float:
-			uploadFloat(uniform->Location, *(float*)& data[uniform->Offset]);
+		case ShaderUniformDataType::Float:
+			uploadFloat(uniform->GetLocation(), *(float*)& data[uniform->GetOffset()]);
 			break;
-		case UniformDataType::Vec2:
-			uploadFloat2(uniform->Location, *(glm::vec2*) & data[uniform->Offset]);
+		case ShaderUniformDataType::Vec2:
+			uploadFloat2(uniform->GetLocation(), *(glm::vec2*) & data[uniform->GetOffset()]);
 			break;
-		case UniformDataType::Vec3:
-			uploadFloat3(uniform->Location, *(glm::vec3*) & data[uniform->Offset]);
+		case ShaderUniformDataType::Vec3:
+			uploadFloat3(uniform->GetLocation(), *(glm::vec3*) & data[uniform->GetOffset()]);
 			break;
-		case UniformDataType::Vec4:
-			uploadFloat4(uniform->Location, *(glm::vec4*) & data[uniform->Offset]);
+		case ShaderUniformDataType::Vec4:
+			uploadFloat4(uniform->GetLocation(), *(glm::vec4*) & data[uniform->GetOffset()]);
 			break;
-		case UniformDataType::Int:
-			uploadInt(uniform->Location, *(int*)& data[uniform->Offset]);
+		case ShaderUniformDataType::Int:
+			uploadInt(uniform->GetLocation(), *(int*)& data[uniform->GetOffset()]);
 			break;
-		case UniformDataType::Mat4:
-			uploadMat4(uniform->Location, *(glm::mat4*) & data[uniform->Offset]);
+		case ShaderUniformDataType::Mat4:
+			uploadMat4(uniform->GetLocation(), *(glm::mat4*) & data[uniform->GetOffset()]);
 			break;
 		};
 	}
 
-	void OpenGLShader::setUniformArr(const Uniform* uniform, ByteBuffer data) const
+	void OpenGLShader::setUniformArr(const ShaderUniform* uniform, ByteBuffer data) const
 	{
-		switch (uniform->DataType)
+		switch (uniform->GetDataType())
 		{
-		case UniformDataType::Float:
-			uploadFloatArr(uniform->Location, (float*)& data[uniform->Offset], uniform->Count);
+		case ShaderUniformDataType::Float:
+			uploadFloatArr(uniform->GetLocation(), (float*)& data[uniform->GetOffset()], uniform->GetCount());
 			break;
-		case UniformDataType::Vec2:
-			uploadFloat2Arr(uniform->Location, *(glm::vec2*) & data[uniform->Offset], uniform->Count);
+		case ShaderUniformDataType::Vec2:
+			uploadFloat2Arr(uniform->GetLocation(), *(glm::vec2*) & data[uniform->GetOffset()], uniform->GetCount());
 			break;
-		case UniformDataType::Vec3:
-			uploadFloat3Arr(uniform->Location, *(glm::vec3*) & data[uniform->Offset], uniform->Count);
+		case ShaderUniformDataType::Vec3:
+			uploadFloat3Arr(uniform->GetLocation(), *(glm::vec3*) & data[uniform->GetOffset()], uniform->GetCount());
 			break;
-		case UniformDataType::Vec4:
-			uploadFloat4Arr(uniform->Location, *(glm::vec4*) & data[uniform->Offset], uniform->Count);
+		case ShaderUniformDataType::Vec4:
+			uploadFloat4Arr(uniform->GetLocation(), *(glm::vec4*) & data[uniform->GetOffset()], uniform->GetCount());
 			break;
-		case UniformDataType::Int:
-			uploadIntArr(uniform->Location, (int*)& data[uniform->Offset], uniform->Count);
+		case ShaderUniformDataType::Int:
+			uploadIntArr(uniform->GetLocation(), (int*)& data[uniform->GetOffset()], uniform->GetCount());
 			break;
-		case UniformDataType::Mat4:
-			uploadMat4Arr(uniform->Location, *(glm::mat4*) & data[uniform->Offset], uniform->Count);
+		case ShaderUniformDataType::Mat4:
+			uploadMat4Arr(uniform->GetLocation(), *(glm::mat4*) & data[uniform->GetOffset()], uniform->GetCount());
 			break;
 		};
 	}
@@ -402,7 +380,7 @@ namespace XYZ {
 	void OpenGLShader::Reload()
 	{	
 		std::string source = readFile(m_AssetPath);
-		m_ShaderSources = preProcess(source);
+		preProcess(source);
 
 		compileOrGetVulkanBinaries();
 		compileOrGetOpenGLBinaries();
@@ -540,19 +518,9 @@ namespace XYZ {
 		glUniformMatrix4fv(loc, count, GL_FALSE, glm::value_ptr(matrix));
 	}
 	
-	void OpenGLShader::load(const std::string& source)
-	{
-		m_ShaderSources = preProcess(source);
-		parse();
 
-		Ref<OpenGLShader> instance = this;
-		Renderer::Submit([instance]() mutable {
-			instance->compileAndUpload();
-			instance->resolveUniforms();
-		});
-	}
 
-	std::unordered_map<uint32_t, std::string> OpenGLShader::preProcess(const std::string& source)
+	void OpenGLShader::preProcess(const std::string& source)
 	{
 		const char* TypeToken = "#type";
 		size_t TypeTokenLength = strlen(TypeToken);
@@ -571,187 +539,29 @@ namespace XYZ {
 			if (Type == "compute")
 				m_IsCompute = true;
 		}
-		return m_ShaderSources;
 	}
 	
-	void OpenGLShader::parseUniform(const std::string& statement, ShaderType type, const std::vector<ShaderStruct>& structs)
-	{
-		std::vector<std::string> tokens = Tokenize(statement);
-		uint32_t index = 0;
-
-		index++; // "uniform"
-		std::string typeString = tokens[index++];
-		std::string name = tokens[index++];
-		// Strip ; from name if present
-		if (const char* s = strstr(name.c_str(), ";"))
-			name = std::string(name.c_str(), s - name.c_str());
-
-		std::string n(name);
-		uint32_t count = 1;
-		const char* namestr = n.c_str();
-		if (const char* s = strstr(namestr, "["))
-		{
-			name = std::string(namestr, s - namestr);
-			const char* end = strstr(namestr, "]");
-			std::string c(s + 1, end - s);
-			count = atoi(c.c_str());
-		}
-
-		UniformDataType dataType = StringToShaderDataType(typeString);
-		uint32_t size = SizeOfUniformType(dataType);
-		
-		UniformList* targetList = nullptr;
-		if (type == ShaderType::Vertex || type == ShaderType::Compute)
-			targetList = &m_VSUniformList;
-		else
-			targetList = &m_FSUniformList;
-
-		if (dataType != UniformDataType::None)
-		{			
-			if (dataType == UniformDataType::Sampler2D)
-			{
-				m_TextureList.Textures.push_back(TextureUniform{ name, m_TextureList.Count, count });
-				m_TextureList.Count += count;
-			}
-			else
-			{
-				Uniform uniform{
-					   name, dataType, type, targetList->Size, size, count, 0
-				};
-				targetList->Uniforms.push_back(uniform);
-				targetList->Size += size * count;
-			}
-		}
-		else
-		{		
-			for (auto& structType : structs)
-			{
-				if (structType.Name == typeString)
-				{
-					for (auto& var : structType.Variables)
-					{
-						size = SizeOfUniformType(var.Type);
-						Uniform uniform{
-							name + "." + var.Name, var.Type, type, targetList->Size, size, count, 0
-						};
-						targetList->Uniforms.push_back(uniform);
-						targetList->Size += size * count;
-					}
-					break;
-				}
-			}			
-		}
-	}
-	void OpenGLShader::compileAndUpload()
-	{
-		GLuint program = glCreateProgram();
-		XYZ_ASSERT(m_ShaderSources.size() <= 3, "We only support 3 shaders for now");
-		std::array<GLenum, 3> glShaderIDs;
-
-		int glShaderIDIndex = 0;
-		for (auto& kv : m_ShaderSources)
-		{
-			if (kv.second.empty())
-				continue;
-
-			GLenum Component = kv.first;
-			const std::string& source = kv.second;
-
-			GLuint shader = glCreateShader(Component);
-
-			const GLchar* sourceCStr = source.c_str();
-			glShaderSource(shader, 1, &sourceCStr, 0);
-
-			glCompileShader(shader);
-
-			GLint isCompiled = 0;
-			glGetShaderiv(shader, GL_COMPILE_STATUS, &isCompiled);
-
-			if (isCompiled == GL_FALSE)
-			{
-				GLint maxLength = 0;
-				glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &maxLength);
-
-				std::vector<GLchar> infoLog(maxLength);
-				glGetShaderInfoLog(shader, maxLength, &maxLength, &infoLog[0]);
-
-				glDeleteShader(shader);
-
-				XYZ_CORE_ERROR(infoLog.data());
-				XYZ_ASSERT(false, "Shader compilation failure!");
-				break;
-			}
-
-			glAttachShader(program, shader);
-			glShaderIDs[glShaderIDIndex++] = shader;
-		}
-		if (m_RendererID)
-			glDeleteProgram(m_RendererID);
-
-		// Link our program
-		m_RendererID = program;
-		glLinkProgram(m_RendererID);
-
-		GLint isLinked = 0;
-		glGetProgramiv(m_RendererID, GL_LINK_STATUS, (int*)&isLinked);
-
-		if (isLinked == GL_FALSE)
-		{
-			GLint maxLength = 0;
-			glGetProgramiv(m_RendererID, GL_INFO_LOG_LENGTH, &maxLength);
-
-			// The maxLength includes the NULL character
-			std::vector<GLchar> infoLog(maxLength);
-			glGetProgramInfoLog(m_RendererID, maxLength, &maxLength, &infoLog[0]);
-
-			// We don't need the program anymore.
-			glDeleteProgram(m_RendererID);
-
-			for (size_t i = 0; i < glShaderIDIndex; ++i)
-				glDeleteShader(glShaderIDs[i]);
-
-
-			XYZ_CORE_ERROR(infoLog.data());
-			XYZ_ASSERT(false, "Shader link failure!");
-			return;
-		}
-
-		for (size_t i = 0; i < glShaderIDIndex; ++i)
-		{
-			glDetachShader(m_RendererID, glShaderIDs[i]);
-			glDeleteShader(glShaderIDs[i]);
-		}
-	}
 	void OpenGLShader::resolveUniforms()
 	{
 		glUseProgram(m_RendererID);
 		for (auto& uni : m_VSUniformList.Uniforms)
 		{
-			uni.Location = glGetUniformLocation(m_RendererID, uni.Name.c_str());
+			uni.SetLocation(glGetUniformLocation(m_RendererID, uni.GetName().c_str()));
 		}
 		for (auto& uni : m_FSUniformList.Uniforms)
 		{
-			uni.Location = glGetUniformLocation(m_RendererID, uni.Name.c_str());
+			uni.SetLocation(glGetUniformLocation(m_RendererID, uni.GetName().c_str()));
 		}
-	}
-	const char* FindToken(const char* str, const std::string& token)
-	{
-		const char* t = str;
-		while (t = strstr(t, token.c_str()))
-		{
-			bool left = str == t || isspace(t[-1]);
-			bool right = !t[token.size()] || isspace(t[token.size()]);
-			if (left && right)
-				return t;
-			t += token.size();
-		}
-		return nullptr;
 	}
 	
 	void OpenGLShader::reflect(unsigned int stage, const std::vector<uint32_t>& shaderData)
 	{
 		spirv_cross::Compiler compiler(shaderData);
 		spirv_cross::ShaderResources resources = compiler.get_shader_resources();
+
+		UniformList* uniforms = &m_VSUniformList;
+		if (Utils::GLShaderStageToString(stage) == "GL_SHADER_STAGE")
+			uniforms = &m_FSUniformList;
 
 		XYZ_TRACE("OpenGLShader::Reflect - {0} {1}", Utils::GLShaderStageToString(stage), m_AssetPath);
 		XYZ_TRACE("		{0} uniform buffers", resources.uniform_buffers.size());
@@ -771,6 +581,24 @@ namespace XYZ {
 			XYZ_TRACE("    Binding = {0}", binding);
 			XYZ_TRACE("    Members = {0}", memberCount);
 		}
+
+		for (const auto& resource : resources.push_constant_buffers)
+		{
+			const auto& bufferName = resource.name;
+			// Skip empty push constant buffers - these are for the renderer only
+			if (bufferName.empty() || bufferName == "u_Renderer")
+				continue;
+			
+			auto& bufferType = compiler.get_type(resource.base_type_id);
+			auto bufferSize = (uint32_t)compiler.get_declared_struct_size(bufferType);
+			uint32_t memberCount = uint32_t(bufferType.member_types.size());
+			uint32_t bufferOffset = 0;
+			if (uniforms->Uniforms.size())
+				bufferOffset = uniforms->Uniforms.back().GetOffset() + uniforms->Uniforms.back().GetSize();
+			uniforms->Uniforms.emplace_back(bufferName, ShaderUniformDataType::Float, bufferSize - bufferOffset, bufferOffset, memberCount, 0);
+			uniforms->Size += bufferSize - bufferOffset;
+		}
+
 		for (const auto& resource : resources.sampled_images)
 		{
 			XYZ_TRACE("  {0}", resource.name);
@@ -780,6 +608,15 @@ namespace XYZ {
 			uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
 			uint32_t dimension = baseType.image.dim;
 			uint32_t arraySize = type.array[0];
+		}
+
+		for (const auto& resource : resources.storage_images)
+		{
+			const auto& name = resource.name;
+			auto& type = compiler.get_type(resource.base_type_id);
+			uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+			uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+			uint32_t dimension = type.image.dim;
 		}
 	}
 
@@ -963,43 +800,4 @@ namespace XYZ {
 
 		return result;
 	}
-
-	void OpenGLShader::parse()
-	{
-		const char* token;
-		const char* vstr;
-		const char* fstr;
-
-		m_TextureList.Textures.clear();
-		m_TextureList.Count = 0;
-		m_VSUniformList.Uniforms.clear();
-		m_VSUniformList.Size = 0;
-		m_FSUniformList.Uniforms.clear();
-		m_VSUniformList.Size = 0;
-
-		auto& vertexSource = m_ShaderSources[GL_VERTEX_SHADER];
-		auto& fragmentSource = m_ShaderSources[GL_FRAGMENT_SHADER];
-
-		std::vector<ShaderStruct> vertexStructs = std::move(ParseStructs(vertexSource));
-		std::vector<ShaderStruct> fragmentStructs = std::move(ParseStructs(fragmentSource));
-
-		// Vertex Shader
-		vstr = vertexSource.c_str();
-		while (token = FindToken(vstr, "uniform"))
-			parseUniform(GetStatement(token, &vstr), ShaderType::Vertex, vertexStructs);
-
-		// Fragment Shader
-		fstr = fragmentSource.c_str();
-		while (token = FindToken(fstr, "uniform"))
-			parseUniform(GetStatement(token, &fstr), ShaderType::Fragment, fragmentStructs);
-
-		if (m_IsCompute)
-		{
-			const char* cstr = m_ShaderSources[GL_COMPUTE_SHADER].c_str();
-			std::vector<ShaderStruct> computeStructs = std::move(ParseStructs(cstr));
-			while (token = FindToken(cstr, "uniform"))
-				parseUniform(GetStatement(token, &cstr), ShaderType::Vertex, computeStructs);
-		}
-	}
-
 }

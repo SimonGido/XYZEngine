@@ -235,46 +235,46 @@ namespace XYZ {
 
 		return TextureParam::None;
 	}
-	static void SerializeUniformList(YAML::Emitter& out, const uint8_t* buffer, const std::vector<Uniform>& uniformList)
+	static void SerializeUniformList(YAML::Emitter& out, const uint8_t* buffer, const std::vector<ShaderUniform>& uniformList)
 	{
 		for (auto& uniform : uniformList)
 		{
-			switch (uniform.DataType)
+			switch (uniform.GetDataType())
 			{
-			case UniformDataType::Float:
+			case ShaderUniformDataType::Float:
 				out << YAML::BeginMap;
-				out << YAML::Key << uniform.Name;
-				out << YAML::Value << *(float*)&buffer[uniform.Offset];
+				out << YAML::Key << uniform.GetName();
+				out << YAML::Value << *(float*)&buffer[uniform.GetOffset()];
 				out << YAML::EndMap;
 				break;
-			case UniformDataType::Vec2:
+			case ShaderUniformDataType::Vec2:
 				out << YAML::BeginMap;
-				out << YAML::Key << uniform.Name;
+				out << YAML::Key << uniform.GetName();
 				out << YAML::Value;
-				ToVec2(out, *(glm::vec2*)&buffer[uniform.Offset]);
+				ToVec2(out, *(glm::vec2*)&buffer[uniform.GetOffset()]);
 				out << YAML::EndMap;
 				break;
-			case UniformDataType::Vec3:
+			case ShaderUniformDataType::Vec3:
 				out << YAML::BeginMap;
-				out << YAML::Key << uniform.Name;
+				out << YAML::Key << uniform.GetName();
 				out << YAML::Value;
-				ToVec3(out, *(glm::vec3*)&buffer[uniform.Offset]);
+				ToVec3(out, *(glm::vec3*)&buffer[uniform.GetOffset()]);
 				out << YAML::EndMap;
 				break;
-			case UniformDataType::Vec4:
+			case ShaderUniformDataType::Vec4:
 				out << YAML::BeginMap;
-				out << YAML::Key << uniform.Name;
+				out << YAML::Key << uniform.GetName();
 				out << YAML::Value;
-				ToVec4(out, *(glm::vec4*)&buffer[uniform.Offset]);
+				ToVec4(out, *(glm::vec4*)&buffer[uniform.GetOffset()]);
 				out << YAML::EndMap;
 				break;
-			case UniformDataType::Int:
+			case ShaderUniformDataType::Int:
 				out << YAML::BeginMap;
-				out << YAML::Key << uniform.Name;
-				out << YAML::Value << *(int*)&buffer[uniform.Offset];
+				out << YAML::Key << uniform.GetName();
+				out << YAML::Value << *(int*)&buffer[uniform.GetOffset()];
 				out << YAML::EndMap;
 				break;
-			case UniformDataType::Mat4:
+			case ShaderUniformDataType::Mat4:
 				break;
 			};
 		}

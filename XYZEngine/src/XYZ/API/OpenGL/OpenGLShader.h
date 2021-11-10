@@ -37,22 +37,15 @@ namespace XYZ {
 	private:
 		void reflect(unsigned int stage, const std::vector<uint32_t>& shaderData);
 		void createProgram();
+		void resolveUniforms();
 		void compileOrGetOpenGLBinaries();
 		void compileOrGetVulkanBinaries();
+		void preProcess(const std::string& source);
 		std::string readFile(const std::string& filepath) const;
-		std::unordered_map<uint32_t, std::string> preProcess(const std::string& source);
 	
-		void parse();
-		void load(const std::string& source);
-		void parseUniform(const std::string& statement, ShaderType type, const std::vector<ShaderStruct>& structs);
-		void compileAndUpload();
-		void resolveUniforms();
 
-
-		void parseSource(uint32_t component,const std::string& source);
-
-		void setUniform(const Uniform* uniform, ByteBuffer data) const;
-		void setUniformArr(const Uniform* uniform, ByteBuffer data) const;
+		void setUniform(const ShaderUniform* uniform, ByteBuffer data) const;
+		void setUniformArr(const ShaderUniform* uniform, ByteBuffer data) const;
 
 		void uploadInt (uint32_t loc, int value) const;
 		void uploadFloat(uint32_t loc, float value) const;

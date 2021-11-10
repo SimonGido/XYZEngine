@@ -81,40 +81,40 @@ namespace XYZ {
 			ImGui::Text("Values:");
 			for (auto& uniform : material->GetShader()->GetFSUniformList().Uniforms)
 			{
-				std::string id = "##" + uniform.Name;
-				Helper::BeginColumns(uniform.Name.c_str());
+				std::string id = "##" + uniform.GetName();
+				Helper::BeginColumns(uniform.GetName().c_str());
 				ImGui::PushItemWidth(ImGui::CalcItemWidth());
-				if (uniform.DataType == UniformDataType::Int)
+				if (uniform.GetDataType() == ShaderUniformDataType::Int)
 				{
-					ImGui::InputInt(id.c_str(), &material->Get<int>(uniform.Name));					
+					ImGui::InputInt(id.c_str(), &material->Get<int>(uniform.GetName()));					
 				}
-				else if (uniform.DataType == UniformDataType::IntVec2)
+				else if (uniform.GetDataType() == ShaderUniformDataType::IntVec2)
 				{			
-					ImGui::InputInt2(id.c_str(), glm::value_ptr(material->Get<glm::ivec2>(uniform.Name)));
+					ImGui::InputInt2(id.c_str(), glm::value_ptr(material->Get<glm::ivec2>(uniform.GetName())));
 				}
-				else if (uniform.DataType == UniformDataType::IntVec3)
+				else if (uniform.GetDataType() == ShaderUniformDataType::IntVec3)
 				{
-					ImGui::InputInt3(id.c_str(), glm::value_ptr(material->Get<glm::ivec3>(uniform.Name)));
+					ImGui::InputInt3(id.c_str(), glm::value_ptr(material->Get<glm::ivec3>(uniform.GetName())));
 				}
-				else if (uniform.DataType == UniformDataType::IntVec4)
+				else if (uniform.GetDataType() == ShaderUniformDataType::IntVec4)
 				{
-					ImGui::InputInt4(id.c_str(), glm::value_ptr(material->Get<glm::ivec4>(uniform.Name)));
+					ImGui::InputInt4(id.c_str(), glm::value_ptr(material->Get<glm::ivec4>(uniform.GetName())));
 				}
-				else if (uniform.DataType == UniformDataType::Float)
+				else if (uniform.GetDataType() == ShaderUniformDataType::Float)
 				{
-					ImGui::InputFloat(id.c_str(), &material->Get<float>(uniform.Name));
+					ImGui::InputFloat(id.c_str(), &material->Get<float>(uniform.GetName()));
 				}
-				else if (uniform.DataType == UniformDataType::Vec2)
+				else if (uniform.GetDataType() == ShaderUniformDataType::Vec2)
 				{
-					ImGui::InputFloat2(id.c_str(), glm::value_ptr(material->Get<glm::vec2>(uniform.Name)));
+					ImGui::InputFloat2(id.c_str(), glm::value_ptr(material->Get<glm::vec2>(uniform.GetName())));
 				}
-				else if (uniform.DataType == UniformDataType::Vec3)
+				else if (uniform.GetDataType() == ShaderUniformDataType::Vec3)
 				{				
-					ImGui::InputFloat3(id.c_str(), glm::value_ptr(material->Get<glm::vec3>(uniform.Name)));
+					ImGui::InputFloat3(id.c_str(), glm::value_ptr(material->Get<glm::vec3>(uniform.GetName())));
 				}
-				else if (uniform.DataType == UniformDataType::Vec4)
+				else if (uniform.GetDataType() == ShaderUniformDataType::Vec4)
 				{	
-					ImGui::InputFloat4(id.c_str(), glm::value_ptr(material->Get<glm::vec4>(uniform.Name)));		
+					ImGui::InputFloat4(id.c_str(), glm::value_ptr(material->Get<glm::vec4>(uniform.GetName())));		
 				}
 				ImGui::PopItemWidth();
 				Helper::EndColumns();

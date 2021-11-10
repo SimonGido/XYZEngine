@@ -45,7 +45,7 @@ namespace XYZ {
 		void rebuild();
 		void resize();
 		
-		const Uniform* findUniform(const std::string& name) const;
+		const ShaderUniform* findUniform(const std::string& name) const;
 	private:
 		Ref<Shader>		 m_ComputeShader;
 		Ref<VertexArray> m_VertexArray;
@@ -78,7 +78,7 @@ namespace XYZ {
 	{
 		auto uni = findUniform(name);
 		XYZ_ASSERT(uni, "Particle material uniform does not exist ", name.c_str());
-		m_UniformBuffer.Write((unsigned char*)&val, uni->Size, uni->Offset);
+		m_UniformBuffer.Write((unsigned char*)&val, uni->GetSize(), uni->GetOffset());
 	}
 
 	template <typename T>
@@ -86,6 +86,6 @@ namespace XYZ {
 	{
 		auto uni = findUniform(name);
 		XYZ_ASSERT(uni, "Particle material uniform does not exist ", name.c_str());
-		return *(T*)&m_UniformBuffer[uni->Offset];
+		return *(T*)&m_UniformBuffer[uni->GetOffset()];
 	}
 }

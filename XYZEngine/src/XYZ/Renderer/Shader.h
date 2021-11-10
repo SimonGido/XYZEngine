@@ -15,7 +15,7 @@ namespace XYZ {
 	/**
 	* enum class represents uniform data Components
 	*/
-	enum class UniformDataType
+	enum class ShaderUniformDataType
 	{
 		None,
 		Sampler2D,
@@ -28,62 +28,74 @@ namespace XYZ {
 
 	enum class ShaderType
 	{
+		None,
 		Vertex,
 		Fragment,
 		Compute
 	};
 
-	static UniformDataType StringToShaderDataType(const std::string& type)
+	static ShaderUniformDataType StringToShaderDataType(const std::string& type)
 	{
-		if (type == "int")			return UniformDataType::Int;
-		if (type == "uint")			return UniformDataType::UInt;
-		if (type == "float")		return UniformDataType::Float;
-		if (type == "vec2")			return UniformDataType::Vec2;
-		if (type == "vec3")			return UniformDataType::Vec3;
-		if (type == "vec4")			return UniformDataType::Vec4;
-		if (type == "mat3")			return UniformDataType::Mat3;
-		if (type == "mat4")			return UniformDataType::Mat4;
-		if (type == "sampler2D")	return UniformDataType::Sampler2D;
-		return UniformDataType::None;
+		if (type == "int")			return ShaderUniformDataType::Int;
+		if (type == "uint")			return ShaderUniformDataType::UInt;
+		if (type == "float")		return ShaderUniformDataType::Float;
+		if (type == "vec2")			return ShaderUniformDataType::Vec2;
+		if (type == "vec3")			return ShaderUniformDataType::Vec3;
+		if (type == "vec4")			return ShaderUniformDataType::Vec4;
+		if (type == "mat3")			return ShaderUniformDataType::Mat3;
+		if (type == "mat4")			return ShaderUniformDataType::Mat4;
+		if (type == "sampler2D")	return ShaderUniformDataType::Sampler2D;
+		return ShaderUniformDataType::None;
 	}
-	static uint32_t SizeOfUniformType(UniformDataType type)
+	static uint32_t SizeOfUniformType(ShaderUniformDataType type)
 	{
 		switch (type)
 		{
-		case UniformDataType::Int:        return 4;
-		case UniformDataType::UInt:       return 4;
-		case UniformDataType::Float:      return 4;
-		case UniformDataType::Vec2:       return 4 * 2;
-		case UniformDataType::Vec3:       return 4 * 3;
-		case UniformDataType::Vec4:       return 4 * 4;
-		case UniformDataType::Mat3:       return 4 * 3 * 3;
-		case UniformDataType::Mat4:       return 4 * 4 * 4;
+		case ShaderUniformDataType::Int:        return 4;
+		case ShaderUniformDataType::UInt:       return 4;
+		case ShaderUniformDataType::Float:      return 4;
+		case ShaderUniformDataType::Vec2:       return 4 * 2;
+		case ShaderUniformDataType::Vec3:       return 4 * 3;
+		case ShaderUniformDataType::Vec4:       return 4 * 4;
+		case ShaderUniformDataType::Mat3:       return 4 * 3 * 3;
+		case ShaderUniformDataType::Mat4:       return 4 * 4 * 4;
 		}
 		return 0;
 	}
 
-	struct Uniform
+	class ShaderUniform
 	{
-		std::string		Name;
-		UniformDataType DataType;
-		ShaderType		ShaderType;
-		uint32_t		Offset;
-		uint32_t		Size;
-		uint32_t		Count;
-		uint32_t		Location;
+	public:
+		ShaderUniform() = default;
+		ShaderUniform(std::string name, ShaderUniformDataType dataType, uint32_t size, uint32_t offset, uint32_t count, uint32_t loc);
+		void SetLocation(uint32_t loc) { m_Location = loc; }
+
+		const std::string&	  GetName()		const { return m_Name; }
+		ShaderUniformDataType GetDataType()	const { return m_DataType; }
+		uint32_t			  GetSize()		const { return m_Size; }
+		uint32_t			  GetOffset()   const { return m_Offset; }
+		uint32_t			  GetCount()    const { return m_Count; }
+		uint32_t			  GetLocation() const { return m_Location; }
+	private:
+		std::string			  m_Name;
+		ShaderUniformDataType m_DataType;
+		uint32_t			  m_Size;
+		uint32_t			  m_Offset;
+		uint32_t			  m_Count;
+		uint32_t			  m_Location;
 	};
 
 	struct UniformList
 	{
-		std::vector<Uniform> Uniforms;
-		uint32_t			 Size = 0;
+		std::vector<ShaderUniform> Uniforms;
+		uint32_t				   Size = 0;
 	};
 
 	struct TextureUniform
 	{
 		std::string Name;
-		uint32_t Slot;
-		uint32_t Count;
+		uint32_t	Slot;
+		uint32_t	Count;
 	};
 
 	struct TextureUniformList
@@ -94,8 +106,8 @@ namespace XYZ {
 
 	struct ShaderVariable
 	{
-		std::string     Name;
-		UniformDataType	Type;
+		std::string				Name;
+		ShaderUniformDataType	Type;
 		size_t Size() const;
 	};
 
