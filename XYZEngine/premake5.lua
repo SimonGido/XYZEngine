@@ -38,7 +38,11 @@ project "XYZEngine"
 			"vendor/ImGuizmo/ImCurveEdit.cpp",
 
 			"vendor/ImGuizmo/ImSequencer.h",
-			"vendor/ImGuizmo/ImSequencer.cpp"
+			"vendor/ImGuizmo/ImSequencer.cpp",
+
+			"vendor/VulkanMemoryAllocator/**.h",
+			"vendor/VulkanMemoryAllocator/**.cpp"
+
 		}
 
 		defines
@@ -52,6 +56,7 @@ project "XYZEngine"
 		includedirs
 		{
 			"src",
+			"vendor",
 			"vendor/stb_image",		
 			"vendor/assimp/include",
 			"vendor/spdlog/include",

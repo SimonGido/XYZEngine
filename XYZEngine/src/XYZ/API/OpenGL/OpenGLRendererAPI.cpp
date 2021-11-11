@@ -1,13 +1,11 @@
 #include "stdafx.h"
-#include "XYZ/Renderer/RendererAPI.h"
+#include "OpenGLRendererAPI.h"
 #include "XYZ/Renderer/Framebuffer.h"
 #include <GL/glew.h>
 
 namespace XYZ {
-	RendererAPI::API RendererAPI::s_API = RendererAPI::API::Vulkan;
-
-
-	void RendererAPI::Init()
+	
+	void OpenGLRendererAPI::Init()
 	{
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -24,7 +22,7 @@ namespace XYZ {
 		glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &caps.MaxTextureUnits);
 		glEnable(GL_PROGRAM_POINT_SIZE);
 	}
-	void RendererAPI::SetDepth(bool enabled)
+	void OpenGLRendererAPI::SetDepth(bool enabled)
 	{
 		if (enabled)
 			glEnable(GL_DEPTH_TEST);
@@ -32,7 +30,7 @@ namespace XYZ {
 			glDisable(GL_DEPTH_TEST);
 	}
 
-	void RendererAPI::SetScissor(bool enabled)
+	void OpenGLRendererAPI::SetScissor(bool enabled)
 	{
 		if (enabled)
 			glEnable(GL_SCISSOR_TEST);
@@ -40,37 +38,37 @@ namespace XYZ {
 			glDisable(GL_SCISSOR_TEST);
 	}
 
-	void RendererAPI::SetLineThickness(float thickness)
+	void OpenGLRendererAPI::SetLineThickness(float thickness)
 	{
 		glLineWidth(thickness);
 	}
 
-	void RendererAPI::SetPointSize(float size)
+	void OpenGLRendererAPI::SetPointSize(float size)
 	{
 		glPointSize(size);
 	}
 
-	void RendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
+	void OpenGLRendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 	{
 		glViewport(x, y, width, height);
 	}
 
-	void RendererAPI::SetClearColor(const glm::vec4& color)
+	void OpenGLRendererAPI::SetClearColor(const glm::vec4& color)
 	{
 		glClearColor(color.r, color.g, color.b, color.a);
 	}
 
-	void RendererAPI::Clear()
+	void OpenGLRendererAPI::Clear()
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
-	void RendererAPI::ReadPixels(uint32_t xCoord, uint32_t yCoord, uint32_t width, uint32_t height, uint8_t* data)
+	void OpenGLRendererAPI::ReadPixels(uint32_t xCoord, uint32_t yCoord, uint32_t width, uint32_t height, uint8_t* data)
 	{
 		glReadPixels(xCoord, yCoord, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	}
 
-	void RendererAPI::DrawArrays(PrimitiveType type, uint32_t count)
+	void OpenGLRendererAPI::DrawArrays(PrimitiveType type, uint32_t count)
 	{
 		switch (type)
 		{
@@ -89,7 +87,7 @@ namespace XYZ {
 
 	}
 
-	void RendererAPI::DrawIndexed(PrimitiveType type, uint32_t indexCount)
+	void OpenGLRendererAPI::DrawIndexed(PrimitiveType type, uint32_t indexCount)
 	{
 		switch (type)
 		{
@@ -108,7 +106,7 @@ namespace XYZ {
 		}
 	}
 
-	void RendererAPI::DrawInstanced(PrimitiveType type, uint32_t indexCount, uint32_t instanceCount, uint32_t offset)
+	void OpenGLRendererAPI::DrawInstanced(PrimitiveType type, uint32_t indexCount, uint32_t instanceCount, uint32_t offset)
 	{
 		switch (type)
 		{
@@ -126,7 +124,7 @@ namespace XYZ {
 			break;
 		}
 	}
-	void RendererAPI::DrawInstancedIndirect(void* indirect)
+	void OpenGLRendererAPI::DrawInstancedIndirect(void* indirect)
 	{
 		glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
 		glDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, indirect);		

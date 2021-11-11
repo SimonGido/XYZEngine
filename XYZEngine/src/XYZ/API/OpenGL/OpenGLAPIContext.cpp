@@ -73,32 +73,34 @@ namespace XYZ {
 
 	void OpenGLAPIContext::Init()
 	{		
-		glfwMakeContextCurrent(m_WindowHandle);
-		
-		XYZ_CORE_INFO("OpenGL Info:");
-		XYZ_CORE_INFO("Vendor:   {0}", glGetString(GL_VENDOR));
-		XYZ_CORE_INFO("Renderer: {0}", glGetString(GL_RENDERER));
-		XYZ_CORE_INFO("Version:  {0}", glGetString(GL_VERSION));
+		Renderer::SubmitAndWait([this]() {
+			glfwMakeContextCurrent(m_WindowHandle);
 
-		if (glewInit() != GLEW_OK)
-		{
-			XYZ_CORE_ERROR("OpenGLContext: Could not initialize glew");
-		};
-		glLoadIdentity();
+			XYZ_CORE_INFO("OpenGL Info:");
+			XYZ_CORE_INFO("Vendor:   {0}", glGetString(GL_VENDOR));
+			XYZ_CORE_INFO("Renderer: {0}", glGetString(GL_RENDERER));
+			XYZ_CORE_INFO("Version:  {0}", glGetString(GL_VERSION));
+
+			if (glewInit() != GLEW_OK)
+			{
+				XYZ_CORE_ERROR("OpenGLContext: Could not initialize glew");
+			};
+			glLoadIdentity();
 
 
-#ifdef XYZ_DEBUG
-		if (glDebugMessageCallback)
-		{
-			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-			glEnable(GL_DEBUG_OUTPUT);
+			#ifdef XYZ_DEBUG
+			if (glDebugMessageCallback)
+			{
+				glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+				glEnable(GL_DEBUG_OUTPUT);
 
-			glDebugMessageCallback(OpenglCallbackFunction, nullptr);
-			GLuint unusedIds = 0;
-			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, &unusedIds, true);
-		}
-		glfwSetErrorCallback(GLFWErrorCallback);
-#endif
+				glDebugMessageCallback(OpenglCallbackFunction, nullptr);
+				GLuint unusedIds = 0;
+				glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, &unusedIds, true);
+			}
+			glfwSetErrorCallback(GLFWErrorCallback);
+			#endif
+		});
 	}
 
 	void OpenGLAPIContext::SwapBuffers()

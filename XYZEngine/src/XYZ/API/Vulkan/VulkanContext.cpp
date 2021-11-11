@@ -1,6 +1,11 @@
 #include "stdafx.h"
 #include "VulkanContext.h"
 
+#include "VulkanValidation.h"
+#include "VulkanAllocator.h"
+
+#include "XYZ/Core/Application.h"
+
 namespace XYZ {
 	#ifdef XYZ_DEBUG
 	static bool s_Validation = true;
@@ -8,30 +13,41 @@ namespace XYZ {
 	static bool s_Validation = false; // Let's leave this on for now...
 	#endif
 
-	namespace Utils {
-		static std::vector<VkExtensionProperties> GetSupportedExtensions()
-		{
-			uint32_t extensionCount = 0;
-			vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
-			std::vector<VkExtensionProperties> extensions(extensionCount);
-			vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
-			return extensions;
-		}
+	static VKAPI_ATTR VkBool32 VKAPI_CALL VulkanDebugReportCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char* pLayerPrefix, const char* pMessage, void* pUserData)
+	{
+		(void)flags; (void)object; (void)location; (void)messageCode; (void)pUserData; (void)pLayerPrefix; // Unused arguments
+		XYZ_WARN("VulkanDebugCallback:\n  Object Type: {0}\n  Message: {1}", objectType, pMessage);
+
+		if (strstr(pMessage, "CoreValidation-DrawState-InvalidImageLayout"))
+			XYZ_ASSERT(false, "");
+
+		return VK_FALSE;
 	}
 
 
 	VulkanContext::VulkanContext(GLFWwindow* window)
 		:
+		m_DebugReportCallback(VK_NULL_HANDLE),
+		m_PipelineCache(VK_NULL_HANDLE),
 		m_WindowHandle(window)
 	{
 	}
 	VulkanContext::~VulkanContext()
 	{
+		m_SwapChain.Destroy();
+		m_Device->Destroy();
+		if (s_Validation)
+		{
+			auto vkDestroyDebugReportCallbackEXT = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(s_VulkanInstance, "vkDestroyDebugReportCallbackEXT");
+			vkDestroyDebugReportCallbackEXT(s_VulkanInstance, m_DebugReportCallback, nullptr);
+		}		
 		vkDestroyInstance(s_VulkanInstance, nullptr);
 		s_VulkanInstance = nullptr;
+		VulkanAllocator::Shutdown();
 	}
 	void VulkanContext::Init()
 	{
+		// Application info
 		VkApplicationInfo appInfo{};
 		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 		appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
@@ -40,14 +56,18 @@ namespace XYZ {
 		appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
 		appInfo.apiVersion = VK_API_VERSION_1_2;
 	
+
+		// Extensions and validation layers
 		#define VK_KHR_WIN32_SURFACE_EXTENSION_NAME "VK_KHR_win32_surface"
 
-		std::vector<const char*> instanceExtensions = { VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WIN32_SURFACE_EXTENSION_NAME };
+		std::vector<const char*> instanceExtensions;
+		VulkanValidation::AddExtension(VK_KHR_SURFACE_EXTENSION_NAME, instanceExtensions);
+		VulkanValidation::AddExtension(VK_KHR_WIN32_SURFACE_EXTENSION_NAME, instanceExtensions);
 		if (s_Validation)
 		{
-			instanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-			instanceExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-			instanceExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+			VulkanValidation::AddExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, instanceExtensions);
+			VulkanValidation::AddExtension(VK_EXT_DEBUG_REPORT_EXTENSION_NAME, instanceExtensions);
+			VulkanValidation::AddExtension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, instanceExtensions);
 		}
 
 		VkValidationFeatureEnableEXT enables[] = { VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT };
@@ -60,12 +80,61 @@ namespace XYZ {
 		instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 		instanceCreateInfo.pNext = nullptr;// &features;
 		instanceCreateInfo.pApplicationInfo = &appInfo;
-		instanceCreateInfo.enabledExtensionCount = (uint32_t)instanceExtensions.size();
+		instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(instanceExtensions.size());
 		instanceCreateInfo.ppEnabledExtensionNames = instanceExtensions.data();
 		
+		std::vector<const char*> validationLayers;
+		if (s_Validation)
+		{
+			if (VulkanValidation::AddValidationLayer("VK_LAYER_KHRONOS_validation", validationLayers))
+			{
+				instanceCreateInfo.ppEnabledLayerNames = validationLayers.data();
+				instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+			}
+			else
+			{
+				XYZ_ERROR("Validation layer VK_LAYER_KHRONOS_validation not present, validation is disabled");
+			}
+		}
+
+		// Instance creation
 		VK_CHECK_RESULT(vkCreateInstance(&instanceCreateInfo, nullptr, &s_VulkanInstance));
+		setupDebugCallback();
+		setupDevices();
+		VulkanAllocator::Init(m_Device);
+		m_SwapChain.Init(s_VulkanInstance, m_Device);
+		m_SwapChain.InitSurface(m_WindowHandle);
 	}
 	void VulkanContext::SwapBuffers()
 	{
+	}
+	Ref<VulkanContext> VulkanContext::Get()
+	{
+		return Ref<VulkanContext>(Application::Get().GetWindow().GetContext());
+	}
+	void VulkanContext::setupDebugCallback()
+	{
+		if (s_Validation)
+		{
+			auto vkCreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(s_VulkanInstance, "vkCreateDebugReportCallbackEXT");
+			XYZ_ASSERT(vkCreateDebugReportCallbackEXT != NULL, "");
+			VkDebugReportCallbackCreateInfoEXT debug_report_ci = {};
+			debug_report_ci.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
+			debug_report_ci.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
+			debug_report_ci.pfnCallback = VulkanDebugReportCallback;
+			debug_report_ci.pUserData = NULL;
+			VK_CHECK_RESULT(vkCreateDebugReportCallbackEXT(s_VulkanInstance, &debug_report_ci, nullptr, &m_DebugReportCallback));
+		}
+	}
+	void VulkanContext::setupDevices()
+	{
+		m_PhysicalDevice = Ref<VulkanPhysicalDevice>::Create();
+		VkPhysicalDeviceFeatures enabledFeatures;
+		memset(&enabledFeatures, 0, sizeof(VkPhysicalDeviceFeatures));
+		enabledFeatures.samplerAnisotropy = true;
+		enabledFeatures.wideLines = true;
+		enabledFeatures.fillModeNonSolid = true;
+		enabledFeatures.pipelineStatisticsQuery = true;
+		m_Device = Ref<VulkanDevice>::Create(m_PhysicalDevice, enabledFeatures);
 	}
 }

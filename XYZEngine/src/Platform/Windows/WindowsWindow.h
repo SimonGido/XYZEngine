@@ -1,5 +1,4 @@
 #pragma once
-#include "XYZ/Renderer/APIContext.h"
 #include "XYZ/Core/Window.h"
 #include "XYZ/Event/EventHandler.h"
 #include "XYZ/Event/Event.h"
@@ -32,7 +31,7 @@ namespace XYZ {
 
 		inline virtual uint32_t GetWidth() const override { return m_Data.Width; }
 		inline virtual uint32_t GetHeight() const override { return m_Data.Height; }
-
+		virtual Ref<APIContext> GetContext() override { return m_Context; }
 	private:
 		void Destroy();
 

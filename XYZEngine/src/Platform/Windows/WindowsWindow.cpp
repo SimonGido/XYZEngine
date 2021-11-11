@@ -28,6 +28,10 @@ namespace XYZ {
 			GLFWInitialized = true;
 		}
 
+		if (RendererAPI::GetAPI() == RendererAPI::API::Vulkan)
+			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+
+
 		m_Data.This = this;
 		GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
 		const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
@@ -55,15 +59,8 @@ namespace XYZ {
 		}
 
 		m_Context = APIContext::Create(m_Window);	
-		#ifdef RENDER_THREAD_ENABLED
-		auto result = Renderer::GetPool().PushJob<bool>([this]() ->bool {
-			m_Context->Init();
-			return true;
-		});
-		result.wait();
-		#else
 		m_Context->Init();
-		#endif
+
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 		
 		

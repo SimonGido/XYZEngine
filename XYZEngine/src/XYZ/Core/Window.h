@@ -3,6 +3,7 @@
 #include "XYZ/Event/InputEvent.h"
 #include "XYZ/Event/ApplicationEvent.h"
 #include "XYZ/Event/EventSystem.h"
+#include "XYZ/Renderer/APIContext.h"
 #include "WindowCodes.h"
 
 #include <functional>
@@ -50,6 +51,7 @@ namespace XYZ {
 		virtual void* GetWindow() const = 0;
 		virtual void* GetNativeWindow() const = 0;
 
+		virtual Ref<APIContext> GetContext() = 0;
 		static std::unique_ptr<Window> Create(const WindowProperties& props = WindowProperties());
 
 	};

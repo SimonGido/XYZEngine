@@ -1,4 +1,5 @@
 #pragma once
+#include "XYZ/Renderer/Renderer.h"
 
 #include <vulkan/vulkan.h>
 
@@ -64,7 +65,7 @@ namespace XYZ {
 					using namespace std::chrono_literals;
 					std::this_thread::sleep_for(3s);
 					//::XYZ::Utils::RetrieveDiagnosticCheckpoints();
-					//DumpGPUInfo();
+					Utils::DumpGPUInfo();
 				}
 				XYZ_ASSERT(result == VK_SUCCESS, "");
 			}

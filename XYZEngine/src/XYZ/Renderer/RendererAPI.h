@@ -19,9 +19,9 @@ namespace XYZ {
 		std::string Renderer;
 		std::string Version;
 
-		int MaxSamples = 0;
+		int   MaxSamples = 0;
 		float MaxAnisotropy = 0.0f;
-		int MaxTextureUnits = 0;
+		int   MaxTextureUnits = 0;
 	};
 
 
@@ -33,20 +33,21 @@ namespace XYZ {
 			None = 0, OpenGL = 1, Vulkan = 2
 		};
 	public:
-		static void Init();
-		static void SetDepth(bool enabled);
-		static void SetScissor(bool enabled);
-		static void SetLineThickness(float thickness);
-		static void SetPointSize(float size);
-		static void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
-		static void SetClearColor(const glm::vec4& color);
-		static void Clear();
-		static void ReadPixels(uint32_t xCoord, uint32_t yCoord, uint32_t width, uint32_t height, uint8_t* data);
+		virtual ~RendererAPI() = default;
+		virtual void Init() = 0;
+		virtual void SetDepth(bool enabled) {};
+		virtual void SetScissor(bool enabled) {};
+		virtual void SetLineThickness(float thickness) {};
+		virtual void SetPointSize(float size) {};
+		virtual void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) {};
+		virtual void SetClearColor(const glm::vec4& color) {};
+		virtual void Clear() {};
+		virtual void ReadPixels(uint32_t xCoord, uint32_t yCoord, uint32_t width, uint32_t height, uint8_t* data) {};
 
-		static void DrawArrays(PrimitiveType type, uint32_t count);
-		static void DrawIndexed(PrimitiveType type, uint32_t indexCount);
-		static void DrawInstanced(PrimitiveType type, uint32_t indexCount, uint32_t instanceCount, uint32_t offset = 0);
-		static void DrawInstancedIndirect(void* indirect);
+		virtual void DrawArrays(PrimitiveType type, uint32_t count) {};
+		virtual void DrawIndexed(PrimitiveType type, uint32_t indexCount) {};
+		virtual void DrawInstanced(PrimitiveType type, uint32_t indexCount, uint32_t instanceCount, uint32_t offset = 0) {};
+		virtual void DrawInstancedIndirect(void* indirect) {};
 	
 		static RenderAPICapabilities& GetCapabilities()
 		{

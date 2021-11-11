@@ -48,16 +48,16 @@ namespace XYZ {
 		Ref<Renderer2D>				m_SceneRenderer2D;
 		Ref<EditorRenderer>			m_EditorRenderer;
 
-		Editor::SceneHierarchyPanel m_SceneHierarchy;
-		Editor::InspectorPanel	    m_Inspector;
-		Editor::ScenePanel		    m_ScenePanel;
-		Editor::AssetBrowser	    m_AssetBrowser;
-		Editor::SkinningEditor	    m_SkinningEditor;
-		Editor::SpriteEditor	    m_SpriteEditor;
-		Editor::AnimationEditor	    m_AnimationEditor;
-
-		Editor::SceneEntityInspectorContext m_SceneEntityInspectorContext;
-		Editor::AssetInspectorContext	    m_AssetInspectorContext;
+		//Editor::SceneHierarchyPanel m_SceneHierarchy;
+		//Editor::InspectorPanel	    m_Inspector;
+		//Editor::ScenePanel		    m_ScenePanel;
+		//Editor::AssetBrowser	    m_AssetBrowser;
+		//Editor::SkinningEditor	    m_SkinningEditor;
+		//Editor::SpriteEditor	    m_SpriteEditor;
+		//Editor::AnimationEditor	    m_AnimationEditor;
+		//
+		//Editor::SceneEntityInspectorContext m_SceneEntityInspectorContext;
+		//Editor::AssetInspectorContext	    m_AssetInspectorContext;
 	private:	
 		SceneEntity m_SelectedEntity;
 	};

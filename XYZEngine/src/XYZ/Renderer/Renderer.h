@@ -65,6 +65,7 @@ namespace XYZ {
 		static void SubmitFullscreenQuad();
 
 		static Ref<ShaderLibrary> GetShaderLibrary();
+		static const RenderAPICapabilities& GetCapabilities();
 
 		template<typename FuncT>
 		static void Submit(FuncT&& func, uint32_t type = Default)
@@ -96,6 +97,7 @@ namespace XYZ {
 
 		static ThreadPool&			GetPool();
 		static RendererAPI::API		GetAPI() { return RendererAPI::GetAPI(); }
+		static RendererAPI*			GetRendererAPI();
 		static const RendererStats& GetStats();
 
 		static void WaitAndRender();
@@ -104,5 +106,16 @@ namespace XYZ {
 		static ScopedLock<RenderCommandQueue> getRenderCommandQueue(uint8_t type);
 		static RendererStats&				  getStats();
 	};
+	namespace Utils {
+
+		inline void DumpGPUInfo()
+		{
+			auto& caps = Renderer::GetCapabilities();
+			XYZ_TRACE("GPU Info:");
+			XYZ_TRACE("  Vendor: {0}", caps.Vendor);
+			XYZ_TRACE("  Device: {0}", caps.Renderer);
+			XYZ_TRACE("  Version: {0}", caps.Version);
+		}
+	}
 
 }

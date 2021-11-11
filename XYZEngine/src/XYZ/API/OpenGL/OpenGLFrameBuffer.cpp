@@ -222,8 +222,8 @@ namespace XYZ {
 	{
 		Ref<const OpenGLFramebuffer> instance = this;
 		Renderer::Submit([instance]() {
-			RendererAPI::SetClearColor(instance->GetSpecification().ClearColor);
-			RendererAPI::Clear();
+			Renderer::GetRendererAPI()->SetClearColor(instance->GetSpecification().ClearColor);
+			Renderer::GetRendererAPI()->Clear();
 		});
 	}
 

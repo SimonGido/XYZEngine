@@ -19,7 +19,9 @@ namespace XYZ {
 
 	void EditorLayer::OnAttach()
 	{
+		/*
 		ScriptEngine::Init("Assets/Scripts/XYZScript.dll");
+		
 		m_Scene = AssetManager::GetAsset<Scene>(AssetManager::GetAssetHandle("Assets/Scenes/NewScene.xyz"));
 		m_SceneRenderer   = Ref<SceneRenderer>::Create();
 		m_SceneRenderer2D = Ref<Renderer2D>::Create();
@@ -69,16 +71,20 @@ namespace XYZ {
 		animationExample(entity);
 
 		Renderer::WaitAndRender();
+		*/
 	}
 	
 
 	void EditorLayer::OnDetach()
 	{
+		/*
 		ScriptEngine::Shutdown();
-		AssetSerializer::SerializeAsset(m_Scene);		
+		AssetSerializer::SerializeAsset(m_Scene);
+		*/
 	}
 	void EditorLayer::OnUpdate(Timestep ts)
-	{				
+	{			
+		/*
 		if (m_Scene->GetState() == SceneState::Play)
 		{
 			// We want render before updating, because render waits for threads 
@@ -97,10 +103,12 @@ namespace XYZ {
 		m_ScenePanel.OnUpdate(ts);
 		m_SpriteEditor.OnUpdate(m_SceneRenderer2D, m_EditorRenderer, ts);
 		m_AnimationEditor.OnUpdate(ts);
+		*/
 	}
 
 	void EditorLayer::OnEvent(Event& event)
 	{			
+		/*
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&EditorLayer::onMouseButtonPress, this));
 		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorLayer::onMouseButtonRelease, this));	
@@ -109,10 +117,12 @@ namespace XYZ {
 
 		m_ScenePanel.OnEvent(event);
 		m_SpriteEditor.OnEvent(event);
+		*/
 	}
 
 	void EditorLayer::OnImGuiRender()
 	{
+		/*
 		if (ImGui::BeginMenuBar())
 		{
 			if (ImGui::BeginMenu("File"))
@@ -142,6 +152,7 @@ namespace XYZ {
 		m_AssetBrowser.OnImGuiRender();
 		displayStats();
 		AssetManager::DisplayMemory();
+		*/
 	}
 	
 	bool EditorLayer::onMouseButtonPress(MouseButtonPressEvent& event)
@@ -291,6 +302,7 @@ namespace XYZ {
 
 	void EditorLayer::animationExample(SceneEntity entity)
 	{
+		/*
 		auto& animator = entity.EmplaceComponent<AnimatorComponent>();
 		//animator.Animation = AssetManager::GetAsset<Animation>(AssetManager::GetAssetHandle("Assets/Animations/havko.anim"));
 		Ref<Animation> animation = AssetManager::CreateAsset<Animation>("havko.anim", "Assets/Animations");
@@ -300,5 +312,6 @@ namespace XYZ {
 
 		m_AnimationEditor.SetScene(m_Scene);
 		m_AnimationEditor.SetContext(animator.Animator);
+		*/
 	}
 }

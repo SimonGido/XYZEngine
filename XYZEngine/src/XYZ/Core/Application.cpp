@@ -19,6 +19,7 @@
 namespace XYZ {
 	Application* Application::s_Application = nullptr;
 
+
 	Application::Application()
 		:
 		m_LastFrameTime(0.0f),
@@ -41,6 +42,7 @@ namespace XYZ {
 		std::wstring tmp(&NPath[0]);
 		m_ApplicationDir = std::string(tmp.begin(), tmp.end());
 
+		m_ImGuiLayer = nullptr;
 		//m_ImGuiLayer = new ImGuiLayer();
 		//m_LayerStack.PushOverlay(m_ImGuiLayer);	
 	}
@@ -117,18 +119,20 @@ namespace XYZ {
 
 	void Application::onImGuiRender()
 	{
-		m_ImGuiLayer->Begin();
-		if (ImGui::Begin("Stats"))
+		if (m_ImGuiLayer)
 		{
-			ImGui::Text("Performance: %.2f ms", m_Timestep.GetMilliseconds());
+			m_ImGuiLayer->Begin();
+			if (ImGui::Begin("Stats"))
+			{
+				ImGui::Text("Performance: %.2f ms", m_Timestep.GetMilliseconds());
+			}
+			ImGui::End();
+
+			for (Layer* layer : m_LayerStack)
+				layer->OnImGuiRender();
+
+			m_ImGuiLayer->End();
 		}
-		ImGui::End();
-
-		for (Layer* layer : m_LayerStack)
-			layer->OnImGuiRender();
-
-		m_ImGuiLayer->End();
-
 	}
 
 
