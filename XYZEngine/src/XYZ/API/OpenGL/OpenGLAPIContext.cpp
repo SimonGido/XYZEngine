@@ -73,8 +73,9 @@ namespace XYZ {
 
 	void OpenGLAPIContext::Init()
 	{		
-		Renderer::SubmitAndWait([this]() {
-			glfwMakeContextCurrent(m_WindowHandle);
+		Ref<OpenGLAPIContext> instance = this;
+		Renderer::SubmitAndWait([instance]() {
+			glfwMakeContextCurrent(instance->m_WindowHandle);
 
 			XYZ_CORE_INFO("OpenGL Info:");
 			XYZ_CORE_INFO("Vendor:   {0}", glGetString(GL_VENDOR));
