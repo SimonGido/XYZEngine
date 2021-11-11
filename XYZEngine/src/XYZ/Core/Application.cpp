@@ -76,6 +76,7 @@ namespace XYZ {
 			
 		}
 		XYZ_PROFILER_SHUTDOWN;
+		Renderer::BlockRenderThread();
 	}
 
 	void Application::PushLayer(Layer* layer)

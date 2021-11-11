@@ -246,7 +246,9 @@ namespace XYZ {
 
 	void Renderer::BlockRenderThread()
 	{
+		#ifdef RENDER_THREAD_ENABLED
 		s_Data.m_RenderThreadFinished.wait();
+		#endif
 	}
 
 	ThreadPool& Renderer::GetPool()
