@@ -4,6 +4,7 @@
 #include "Vulkan.h"
 
 #include <unordered_set>
+#include <set>
 
 namespace XYZ {
 	// Physical device
@@ -12,15 +13,18 @@ namespace XYZ {
 	public:
 		struct QueueFamilyIndices
 		{
-			static constexpr int32_t Invalid = -1;
-			int32_t Graphics = Invalid;
-			int32_t Compute  = Invalid;
-			int32_t Transfer = Invalid;
+			static constexpr uint32_t Invalid = UINT32_MAX;
+			uint32_t Graphics	   = Invalid;
+			uint32_t Compute	   = Invalid;
+			uint32_t Transfer	   = Invalid;
+			uint32_t Presentation  = Invalid;
 		};
 
 	public:
 		VulkanPhysicalDevice();
 		~VulkanPhysicalDevice();
+
+		void Init(VkSurfaceKHR surface);
 
 		bool							  IsExtensionSupported(const std::string& extensionName) const;
 		VkPhysicalDevice				  GetVulkanPhysicalDevice() const { return m_PhysicalDevice; }
@@ -30,7 +34,8 @@ namespace XYZ {
 		const VkPhysicalDeviceFeatures&   GetFeatures()				const { return m_Features; }
 	private:
 		void setupQueueFamilyIndices(int flags);
-		void createQueuesInfo(int flags);
+		void findPresentationQueue(VkSurfaceKHR surface);
+		void createQueuesInfo(const std::set<uint32_t>& familyIndices);
 
 	private:
 		VkPhysicalDevice					 m_PhysicalDevice;
@@ -52,6 +57,8 @@ namespace XYZ {
 		VulkanDevice(const Ref<VulkanPhysicalDevice>& physicalDevice, VkPhysicalDeviceFeatures enabledFeatures);
 		~VulkanDevice();
 
+		void Init(VkSurfaceKHR surface);
+
 		void Destroy();
 		void FlushCommandBuffer(VkCommandBuffer commandBuffer);
 		void FlushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue);
@@ -59,6 +66,8 @@ namespace XYZ {
 
 		VkQueue GetGraphicsQueue() { return m_GraphicsQueue; }
 		VkQueue GetComputeQueue()  { return m_ComputeQueue; }
+		VkQueue GetPresentationQueue() { return m_PresentationQueue; }
+
 		VkCommandBuffer GetCommandBuffer(bool begin, bool compute = false);
 		VkCommandBuffer CreateSecondaryCommandBuffer();
 		VkDevice		GetVulkanDevice() const { return m_LogicalDevice; }
@@ -76,6 +85,8 @@ namespace XYZ {
 
 		VkQueue					  m_GraphicsQueue;
 		VkQueue					  m_ComputeQueue;
+		VkQueue					  m_PresentationQueue;
+
 		VkCommandPool			  m_CommandPool;
 		VkCommandPool			  m_ComputeCommandPool;	
 		bool					  m_EnableDebugMarkers;

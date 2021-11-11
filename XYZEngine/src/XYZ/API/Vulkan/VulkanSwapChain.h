@@ -18,7 +18,6 @@ namespace XYZ {
 		void InitSurface(GLFWwindow* windowHandle);
 
 	private:
-		uint32_t findGraphicsQueueNodeIndex(VkPhysicalDevice physicalDevice) const;
 		void	 findImageAndColorSpace() {};
 
 	private:
@@ -29,8 +28,5 @@ namespace XYZ {
 		VkSwapchainKHR	  m_SwapChain;
 		VkColorSpaceKHR   m_ColorSpace;
 		VkFormat		  m_ColorFormat;
-
-
-		uint32_t		  m_GraphicsQueueNodeIndex;
 	};
 }

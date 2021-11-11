@@ -101,9 +101,9 @@ namespace XYZ {
 		VK_CHECK_RESULT(vkCreateInstance(&instanceCreateInfo, nullptr, &s_VulkanInstance));
 		setupDebugCallback();
 		setupDevices();
-		VulkanAllocator::Init(m_Device);
 		m_SwapChain.Init(s_VulkanInstance, m_Device);
 		m_SwapChain.InitSurface(m_WindowHandle);
+		VulkanAllocator::Init(m_Device);
 	}
 	void VulkanContext::SwapBuffers()
 	{

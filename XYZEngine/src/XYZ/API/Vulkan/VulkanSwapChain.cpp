@@ -20,7 +20,6 @@ namespace XYZ {
 	}
 
 
-	static PFN_vkGetPhysicalDeviceSurfaceSupportKHR			fpGetPhysicalDeviceSurfaceSupportKHR;
 	static PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR    fpGetPhysicalDeviceSurfaceCapabilitiesKHR;
 	static PFN_vkGetPhysicalDeviceSurfaceFormatsKHR			fpGetPhysicalDeviceSurfaceFormatsKHR;
 	static PFN_vkGetPhysicalDeviceSurfacePresentModesKHR	fpGetPhysicalDeviceSurfacePresentModesKHR;
@@ -46,8 +45,7 @@ namespace XYZ {
 		:
 		m_Instance(VK_NULL_HANDLE),
 		m_Surface(VK_NULL_HANDLE),
-		m_SwapChain(VK_NULL_HANDLE),
-		m_GraphicsQueueNodeIndex(UINT32_MAX)
+		m_SwapChain(VK_NULL_HANDLE)
 	{
 	}
 
@@ -72,7 +70,15 @@ namespace XYZ {
 	void VulkanSwapChain::Init(VkInstance instance, const Ref<VulkanDevice>& device)
 	{
 		m_Instance = instance;
-		m_Device = device;
+		m_Device   = device;	
+	}
+	void VulkanSwapChain::InitSurface(GLFWwindow* windowHandle)
+	{
+		VK_CHECK_RESULT(glfwCreateWindowSurface(m_Instance, windowHandle, nullptr, &m_Surface));
+
+		m_Device->Init(m_Surface);
+		VkPhysicalDevice physicalDevice = m_Device->GetPhysicalDevice()->GetVulkanPhysicalDevice();
+
 		VkDevice vulkanDevice = m_Device->GetVulkanDevice();
 		GET_DEVICE_PROC_ADDR(vulkanDevice, CreateSwapchainKHR);
 		GET_DEVICE_PROC_ADDR(vulkanDevice, DestroySwapchainKHR);
@@ -80,69 +86,8 @@ namespace XYZ {
 		GET_DEVICE_PROC_ADDR(vulkanDevice, AcquireNextImageKHR);
 		GET_DEVICE_PROC_ADDR(vulkanDevice, QueuePresentKHR);
 
-		GET_INSTANCE_PROC_ADDR(instance, GetPhysicalDeviceSurfaceSupportKHR);
-		GET_INSTANCE_PROC_ADDR(instance, GetPhysicalDeviceSurfaceCapabilitiesKHR);
-		GET_INSTANCE_PROC_ADDR(instance, GetPhysicalDeviceSurfaceFormatsKHR);
-		GET_INSTANCE_PROC_ADDR(instance, GetPhysicalDeviceSurfacePresentModesKHR);
-	}
-	void VulkanSwapChain::InitSurface(GLFWwindow* windowHandle)
-	{
-		VkPhysicalDevice physicalDevice = m_Device->GetPhysicalDevice()->GetVulkanPhysicalDevice();
-		
-		VK_CHECK_RESULT(glfwCreateWindowSurface(m_Instance, windowHandle, nullptr, &m_Surface));
-
-	
-		m_GraphicsQueueNodeIndex = findGraphicsQueueNodeIndex(physicalDevice);
-	}
-	uint32_t VulkanSwapChain::findGraphicsQueueNodeIndex(VkPhysicalDevice physicalDevice) const
-	{
-		// Get available queue family properties
-		std::vector<VkQueueFamilyProperties> queueProps = GetQueueFamilyProperties(physicalDevice);
-		// Iterate over each queue to learn whether it supports presenting:
-		// Find a queue with present support
-		// Will be used to present the swap chain images to the windowing system
-		std::vector<VkBool32> supportsPresent(queueProps.size());
-		for (uint32_t i = 0; i < queueProps.size(); i++)
-		{
-			fpGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, m_Surface, &supportsPresent[i]);
-		}
-		// Search for a graphics and a present queue in the array of queue
-		// families, try to find one that supports both
-		uint32_t graphicsQueueNodeIndex = UINT32_MAX;
-		uint32_t presentQueueNodeIndex = UINT32_MAX;
-		for (uint32_t i = 0; i < queueProps.size(); i++)
-		{
-			if ((queueProps[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0)
-			{
-				if (graphicsQueueNodeIndex == UINT32_MAX)
-				{
-					graphicsQueueNodeIndex = i;
-				}
-
-				if (supportsPresent[i] == VK_TRUE)
-				{
-					graphicsQueueNodeIndex = i;
-					presentQueueNodeIndex = i;
-					break;
-				}
-			}
-		}
-		if (presentQueueNodeIndex == UINT32_MAX)
-		{
-			// If there's no queue that supports both present and graphics
-			// try to find a separate present queue
-			for (uint32_t i = 0; i < queueProps.size(); ++i)
-			{
-				if (supportsPresent[i] == VK_TRUE)
-				{
-					presentQueueNodeIndex = i;
-					break;
-				}
-			}
-		}
-
-		XYZ_ASSERT(graphicsQueueNodeIndex != UINT32_MAX, "");
-		XYZ_ASSERT(presentQueueNodeIndex != UINT32_MAX, "");
-		return graphicsQueueNodeIndex;
+		GET_INSTANCE_PROC_ADDR(m_Instance, GetPhysicalDeviceSurfaceCapabilitiesKHR);
+		GET_INSTANCE_PROC_ADDR(m_Instance, GetPhysicalDeviceSurfaceFormatsKHR);
+		GET_INSTANCE_PROC_ADDR(m_Instance, GetPhysicalDeviceSurfacePresentModesKHR);
 	}
 }

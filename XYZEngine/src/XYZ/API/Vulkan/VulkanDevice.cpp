@@ -4,6 +4,26 @@
 #include "VulkanContext.h"
 
 namespace XYZ {
+
+	// Macro to get a procedure address based on a vulkan instance
+	#define GET_INSTANCE_PROC_ADDR(inst, entrypoint)                        \
+	{                                                                       \
+		fp##entrypoint = reinterpret_cast<PFN_vk##entrypoint>(vkGetInstanceProcAddr(inst, "vk"#entrypoint)); \
+		XYZ_ASSERT(fp##entrypoint, "");                                     \
+	}
+
+	// Macro to get a procedure address based on a vulkan device
+	#define GET_DEVICE_PROC_ADDR(dev, entrypoint)                           \
+	{                                                                       \
+		fp##entrypoint = reinterpret_cast<PFN_vk##entrypoint>(vkGetDeviceProcAddr(dev, "vk"#entrypoint));   \
+		XYZ_ASSERT(fp##entrypoint, "");                                     \
+	}
+
+
+
+	static PFN_vkGetPhysicalDeviceSurfaceSupportKHR	fpGetPhysicalDeviceSurfaceSupportKHR;
+	
+
 	static std::vector<VkPhysicalDevice> GetPhysicalDevices(VkInstance instance)
 	{
 		std::vector<VkPhysicalDevice> devices;
@@ -94,25 +114,35 @@ namespace XYZ {
 
 	VulkanPhysicalDevice::VulkanPhysicalDevice()
 	{
-		m_PhysicalDevice						= VK_NULL_HANDLE;
-		auto vkInstance							= VulkanContext::GetInstance();
-		std::vector<VkPhysicalDevice> devices   = GetPhysicalDevices(vkInstance);
-		m_PhysicalDevice						= FindSuitableGPU(devices);
+		auto vkInstance = VulkanContext::GetInstance();
+
+		std::vector<VkPhysicalDevice> devices = GetPhysicalDevices(vkInstance);
+		m_PhysicalDevice = FindSuitableGPU(devices);
 		XYZ_ASSERT(m_PhysicalDevice != VK_NULL_HANDLE, "failed to find GPUs with Vulkan support!");
-		
+		GET_INSTANCE_PROC_ADDR(vkInstance, GetPhysicalDeviceSurfaceSupportKHR);
+
 		vkGetPhysicalDeviceProperties(m_PhysicalDevice, &m_Properties);
 		vkGetPhysicalDeviceFeatures(m_PhysicalDevice, &m_Features);
 		vkGetPhysicalDeviceMemoryProperties(m_PhysicalDevice, &m_MemoryProperties);
 
 		m_QueueFamilyProperties = GetQueueFamilyProperties(m_PhysicalDevice);
-		m_SupportedExtensions   = GetSupportedExtensions(m_PhysicalDevice);
-		const int requestedQueueTypes = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
-		setupQueueFamilyIndices(requestedQueueTypes);
-		createQueuesInfo(requestedQueueTypes);
+		m_SupportedExtensions = GetSupportedExtensions(m_PhysicalDevice);
 	}
 	VulkanPhysicalDevice::~VulkanPhysicalDevice()
-	{
-		
+	{	
+	}
+	void VulkanPhysicalDevice::Init(VkSurfaceKHR surface)
+	{	
+		const int requestedQueueTypes = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
+		setupQueueFamilyIndices(requestedQueueTypes);
+		findPresentationQueue(surface);
+		std::set<uint32_t> familyIndices{
+			m_QueueFamilyIndices.Compute,
+			m_QueueFamilyIndices.Graphics,
+			m_QueueFamilyIndices.Transfer,
+			m_QueueFamilyIndices.Presentation
+		};
+		createQueuesInfo(familyIndices);
 	}
 	bool VulkanPhysicalDevice::IsExtensionSupported(const std::string& extensionName) const
 	{
@@ -176,59 +206,75 @@ namespace XYZ {
 					m_QueueFamilyIndices.Graphics = i;
 			}
 		}
+		
 	}
-	void VulkanPhysicalDevice::createQueuesInfo(int flags)
+	void VulkanPhysicalDevice::findPresentationQueue(VkSurfaceKHR surface)
+	{
+		std::vector<VkBool32> supportsPresent(m_QueueFamilyProperties.size());
+		for (uint32_t i = 0; i < m_QueueFamilyProperties.size(); i++)
+		{
+			fpGetPhysicalDeviceSurfaceSupportKHR(m_PhysicalDevice, i, surface, &supportsPresent[i]);
+		}
+		// Find queue family that supports both presentation and graphics ( better performance )
+		for (uint32_t i = 0; i < m_QueueFamilyProperties.size(); i++)
+		{
+			if ((m_QueueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0)
+			{
+				if (m_QueueFamilyIndices.Graphics == QueueFamilyIndices::Invalid 
+					&& supportsPresent[i] == VK_TRUE)
+				{
+					m_QueueFamilyIndices.Graphics = i;
+					m_QueueFamilyIndices.Presentation = i;
+					return;
+				}
+			}
+		}
+		
+		// If there's no queue that supports both present and graphics
+		// try to find a separate present queue
+		for (uint32_t i = 0; i < m_QueueFamilyProperties.size(); ++i)
+		{
+			if (supportsPresent[i] == VK_TRUE)
+			{
+				m_QueueFamilyIndices.Presentation = i;
+				return;
+			}
+		}
+	}
+	void VulkanPhysicalDevice::createQueuesInfo(const std::set<uint32_t>& familyIndices)
 	{
 		const float defaultQueuePriority(0.0f);
-		// Graphics queue
-		if (flags & VK_QUEUE_GRAPHICS_BIT)
+		for (auto index : familyIndices)
 		{
 			VkDeviceQueueCreateInfo queueInfo{};
 			queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-			queueInfo.queueFamilyIndex = m_QueueFamilyIndices.Graphics;
+			queueInfo.queueFamilyIndex = index;
 			queueInfo.queueCount = 1;
 			queueInfo.pQueuePriorities = &defaultQueuePriority;
 			m_QueueCreateInfos.push_back(queueInfo);
 		}
-
-		// Dedicated compute queue
-		if (flags & VK_QUEUE_COMPUTE_BIT)
-		{
-			if (m_QueueFamilyIndices.Compute != m_QueueFamilyIndices.Graphics)
-			{
-				// If compute family index differs, we need an additional queue create info for the compute queue
-				VkDeviceQueueCreateInfo queueInfo{};
-				queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-				queueInfo.queueFamilyIndex = m_QueueFamilyIndices.Compute;
-				queueInfo.queueCount = 1;
-				queueInfo.pQueuePriorities = &defaultQueuePriority;
-				m_QueueCreateInfos.push_back(queueInfo);
-			}
-		}
-
-		// Dedicated transfer queue
-		if (flags & VK_QUEUE_TRANSFER_BIT)
-		{
-			if ((m_QueueFamilyIndices.Transfer != m_QueueFamilyIndices.Graphics) 
-			 && (m_QueueFamilyIndices.Transfer != m_QueueFamilyIndices.Compute))
-			{
-				// If compute family index differs, we need an additional queue create info for the compute queue
-				VkDeviceQueueCreateInfo queueInfo{};
-				queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-				queueInfo.queueFamilyIndex = m_QueueFamilyIndices.Transfer;
-				queueInfo.queueCount = 1;
-				queueInfo.pQueuePriorities = &defaultQueuePriority;
-				m_QueueCreateInfos.push_back(queueInfo);
-			}
-		}
 	}
+	
 	VulkanDevice::VulkanDevice(const Ref<VulkanPhysicalDevice>& physicalDevice, VkPhysicalDeviceFeatures enabledFeatures)
 		:
 		m_LogicalDevice(VK_NULL_HANDLE),
 		m_EnabledFeatures(enabledFeatures),
 		m_PhysicalDevice(physicalDevice),
+		m_GraphicsQueue(VK_NULL_HANDLE),
+		m_ComputeQueue(VK_NULL_HANDLE),
+		m_PresentationQueue(VK_NULL_HANDLE),
+		m_CommandPool(VK_NULL_HANDLE),
+		m_ComputeCommandPool(VK_NULL_HANDLE),
 		m_EnableDebugMarkers(false)
 	{
+		
+	}
+	VulkanDevice::~VulkanDevice()
+	{
+	}
+	void VulkanDevice::Init(VkSurfaceKHR surface)
+	{
+		m_PhysicalDevice->Init(surface);
 		std::vector<const char*> deviceExtensions;
 		// If the device will be used for presenting to a display via a swapchain we need to request the swapchain extension
 		XYZ_ASSERT(m_PhysicalDevice->IsExtensionSupported(VK_KHR_SWAPCHAIN_EXTENSION_NAME), "");
@@ -242,9 +288,9 @@ namespace XYZ {
 		VkDeviceCreateInfo deviceCreateInfo = {};
 		deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 
-		deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(physicalDevice->m_QueueCreateInfos.size());;
-		deviceCreateInfo.pQueueCreateInfos = physicalDevice->m_QueueCreateInfos.data();
-		deviceCreateInfo.pEnabledFeatures = &enabledFeatures;
+		deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(m_PhysicalDevice->m_QueueCreateInfos.size());;
+		deviceCreateInfo.pQueueCreateInfos = m_PhysicalDevice->m_QueueCreateInfos.data();
+		deviceCreateInfo.pEnabledFeatures = &m_EnabledFeatures;
 
 		// Enable the debug marker extension if it is present (likely meaning a debugging tool is present)
 		if (m_PhysicalDevice->IsExtensionSupported(VK_EXT_DEBUG_MARKER_EXTENSION_NAME))
@@ -261,9 +307,6 @@ namespace XYZ {
 		XYZ_ASSERT(vkCreateDevice(m_PhysicalDevice->GetVulkanPhysicalDevice(), &deviceCreateInfo, nullptr, &m_LogicalDevice) == VK_SUCCESS, "");
 		createCommandPools();
 		getQueues();
-	}
-	VulkanDevice::~VulkanDevice()
-	{
 	}
 	void VulkanDevice::Destroy()
 	{
@@ -346,6 +389,7 @@ namespace XYZ {
 	{
 		vkGetDeviceQueue(m_LogicalDevice, m_PhysicalDevice->m_QueueFamilyIndices.Graphics, 0, &m_GraphicsQueue);
 		vkGetDeviceQueue(m_LogicalDevice, m_PhysicalDevice->m_QueueFamilyIndices.Compute, 0, &m_ComputeQueue);
+		vkGetDeviceQueue(m_LogicalDevice, m_PhysicalDevice->m_QueueFamilyIndices.Presentation, 0, &m_PresentationQueue);
 	}
 	void VulkanDevice::createCommandPools()
 	{
