@@ -100,7 +100,7 @@ namespace XYZ {
 		// Instance creation
 		VK_CHECK_RESULT(vkCreateInstance(&instanceCreateInfo, nullptr, &s_VulkanInstance));
 		setupDebugCallback();
-		setupDevices();
+		setupDevice();
 		m_SwapChain.Init(s_VulkanInstance, m_Device);
 		m_SwapChain.InitSurface(m_WindowHandle);
 		VulkanAllocator::Init(m_Device);
@@ -126,15 +126,14 @@ namespace XYZ {
 			VK_CHECK_RESULT(vkCreateDebugReportCallbackEXT(s_VulkanInstance, &debug_report_ci, nullptr, &m_DebugReportCallback));
 		}
 	}
-	void VulkanContext::setupDevices()
+	void VulkanContext::setupDevice()
 	{
-		m_PhysicalDevice = Ref<VulkanPhysicalDevice>::Create();
 		VkPhysicalDeviceFeatures enabledFeatures;
 		memset(&enabledFeatures, 0, sizeof(VkPhysicalDeviceFeatures));
 		enabledFeatures.samplerAnisotropy = true;
 		enabledFeatures.wideLines = true;
 		enabledFeatures.fillModeNonSolid = true;
 		enabledFeatures.pipelineStatisticsQuery = true;
-		m_Device = Ref<VulkanDevice>::Create(m_PhysicalDevice, enabledFeatures);
+		m_Device = Ref<VulkanDevice>::Create(enabledFeatures);
 	}
 }

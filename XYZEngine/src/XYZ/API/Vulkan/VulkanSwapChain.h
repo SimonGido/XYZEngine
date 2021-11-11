@@ -10,6 +10,8 @@ namespace XYZ {
 	class VulkanSwapChain
 	{
 	public:
+		
+	public:
 		VulkanSwapChain();
 		
 		void Destroy();
@@ -18,15 +20,13 @@ namespace XYZ {
 		void InitSurface(GLFWwindow* windowHandle);
 
 	private:
-		void	 findImageAndColorSpace() {};
+		void findImageAndColorSpace();
 
 	private:
-		VkInstance		  m_Instance;
-		Ref<VulkanDevice> m_Device;
+		VkInstance				m_Instance;
+		Ref<VulkanDevice>		m_Device;
 		
-		VkSurfaceKHR      m_Surface;
-		VkSwapchainKHR	  m_SwapChain;
-		VkColorSpaceKHR   m_ColorSpace;
-		VkFormat		  m_ColorFormat;
+		VkSurfaceKHR			m_Surface;
+		VkSwapchainKHR			m_SwapChain;
 	};
 }

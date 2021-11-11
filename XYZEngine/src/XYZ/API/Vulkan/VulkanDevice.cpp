@@ -5,24 +5,29 @@
 
 namespace XYZ {
 
-	// Macro to get a procedure address based on a vulkan instance
-	#define GET_INSTANCE_PROC_ADDR(inst, entrypoint)                        \
-	{                                                                       \
-		fp##entrypoint = reinterpret_cast<PFN_vk##entrypoint>(vkGetInstanceProcAddr(inst, "vk"#entrypoint)); \
-		XYZ_ASSERT(fp##entrypoint, "");                                     \
+	static VulkanPhysicalDevice::SwapChainSupportDetails QuerySwapChainSupport(VkSurfaceKHR surface, VkPhysicalDevice physicalDevice)
+	{
+		VulkanPhysicalDevice::SwapChainSupportDetails details;
+
+		uint32_t formatCount;
+		vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, nullptr);
+		if (formatCount != 0)
+		{
+			details.Formats.resize(formatCount);
+			vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, details.Formats.data());
+		}
+
+		uint32_t presentModeCount;
+		vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, nullptr);
+
+		if (presentModeCount != 0)
+		{
+			details.PresentModes.resize(presentModeCount);
+			vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, details.PresentModes.data());
+		}
+
+		return details;
 	}
-
-	// Macro to get a procedure address based on a vulkan device
-	#define GET_DEVICE_PROC_ADDR(dev, entrypoint)                           \
-	{                                                                       \
-		fp##entrypoint = reinterpret_cast<PFN_vk##entrypoint>(vkGetDeviceProcAddr(dev, "vk"#entrypoint));   \
-		XYZ_ASSERT(fp##entrypoint, "");                                     \
-	}
-
-
-
-	static PFN_vkGetPhysicalDeviceSurfaceSupportKHR	fpGetPhysicalDeviceSurfaceSupportKHR;
-	
 
 	static std::vector<VkPhysicalDevice> GetPhysicalDevices(VkInstance instance)
 	{
@@ -82,7 +87,7 @@ namespace XYZ {
 		XYZ_WARN("Could not find any discrete GPU");
 		return devices.back();
 	}
-	static VkPhysicalDevice FindSuitableGPU(const std::vector<VkPhysicalDevice>& devices)
+	static VkPhysicalDevice FindSuitableGPU(VkSurfaceKHR surface, const std::vector<VkPhysicalDevice>& devices)
 	{
 		const uint32_t discreteGPUScore = 1000;
 
@@ -90,19 +95,23 @@ namespace XYZ {
 			return VK_NULL_HANDLE;
 
 		VkPhysicalDevice result = VK_NULL_HANDLE;
+		
 		uint32_t maxScore = 0;
 		uint32_t score = 0;
 		for (const auto& device : devices)
 		{
 			VkPhysicalDeviceProperties deviceProperties;
 			vkGetPhysicalDeviceProperties(device, &deviceProperties);
+			VulkanPhysicalDevice::SwapChainSupportDetails swapChainDetails = QuerySwapChainSupport(surface, device);
 
 			if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
 				score += discreteGPUScore;
 
 			score += deviceProperties.limits.maxImageDimension2D;
 
-			if (score > maxScore)
+			if (score > maxScore 
+			&& !swapChainDetails.Formats.empty()
+			&& !swapChainDetails.PresentModes.empty())
 			{
 				maxScore = score;
 				result = device;
@@ -112,27 +121,22 @@ namespace XYZ {
 		return result;
 	}
 
-	VulkanPhysicalDevice::VulkanPhysicalDevice()
+	VulkanPhysicalDevice::VulkanPhysicalDevice(VkSurfaceKHR surface)
 	{
 		auto vkInstance = VulkanContext::GetInstance();
 
 		std::vector<VkPhysicalDevice> devices = GetPhysicalDevices(vkInstance);
-		m_PhysicalDevice = FindSuitableGPU(devices);
+		m_PhysicalDevice = FindSuitableGPU(surface, devices);
 		XYZ_ASSERT(m_PhysicalDevice != VK_NULL_HANDLE, "failed to find GPUs with Vulkan support!");
-		GET_INSTANCE_PROC_ADDR(vkInstance, GetPhysicalDeviceSurfaceSupportKHR);
 
 		vkGetPhysicalDeviceProperties(m_PhysicalDevice, &m_Properties);
 		vkGetPhysicalDeviceFeatures(m_PhysicalDevice, &m_Features);
 		vkGetPhysicalDeviceMemoryProperties(m_PhysicalDevice, &m_MemoryProperties);
 
+		m_SwapChainSupportDetails = QuerySwapChainSupport(surface, m_PhysicalDevice);
 		m_QueueFamilyProperties = GetQueueFamilyProperties(m_PhysicalDevice);
 		m_SupportedExtensions = GetSupportedExtensions(m_PhysicalDevice);
-	}
-	VulkanPhysicalDevice::~VulkanPhysicalDevice()
-	{	
-	}
-	void VulkanPhysicalDevice::Init(VkSurfaceKHR surface)
-	{	
+
 		const int requestedQueueTypes = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
 		setupQueueFamilyIndices(requestedQueueTypes);
 		findPresentationQueue(surface);
@@ -144,6 +148,10 @@ namespace XYZ {
 		};
 		createQueuesInfo(familyIndices);
 	}
+	VulkanPhysicalDevice::~VulkanPhysicalDevice()
+	{	
+	}
+
 	bool VulkanPhysicalDevice::IsExtensionSupported(const std::string& extensionName) const
 	{
 		return m_SupportedExtensions.find(extensionName) != m_SupportedExtensions.end();
@@ -213,7 +221,8 @@ namespace XYZ {
 		std::vector<VkBool32> supportsPresent(m_QueueFamilyProperties.size());
 		for (uint32_t i = 0; i < m_QueueFamilyProperties.size(); i++)
 		{
-			fpGetPhysicalDeviceSurfaceSupportKHR(m_PhysicalDevice, i, surface, &supportsPresent[i]);
+			vkGetPhysicalDeviceSurfaceSupportKHR(m_PhysicalDevice, i, surface, &supportsPresent[i]);
+			//fpGetPhysicalDeviceSurfaceSupportKHR(m_PhysicalDevice, i, surface, &supportsPresent[i]);
 		}
 		// Find queue family that supports both presentation and graphics ( better performance )
 		for (uint32_t i = 0; i < m_QueueFamilyProperties.size(); i++)
@@ -254,12 +263,11 @@ namespace XYZ {
 			m_QueueCreateInfos.push_back(queueInfo);
 		}
 	}
-	
-	VulkanDevice::VulkanDevice(const Ref<VulkanPhysicalDevice>& physicalDevice, VkPhysicalDeviceFeatures enabledFeatures)
+
+	VulkanDevice::VulkanDevice(VkPhysicalDeviceFeatures enabledFeatures)
 		:
 		m_LogicalDevice(VK_NULL_HANDLE),
 		m_EnabledFeatures(enabledFeatures),
-		m_PhysicalDevice(physicalDevice),
 		m_GraphicsQueue(VK_NULL_HANDLE),
 		m_ComputeQueue(VK_NULL_HANDLE),
 		m_PresentationQueue(VK_NULL_HANDLE),
@@ -274,7 +282,7 @@ namespace XYZ {
 	}
 	void VulkanDevice::Init(VkSurfaceKHR surface)
 	{
-		m_PhysicalDevice->Init(surface);
+		m_PhysicalDevice = Ref<VulkanPhysicalDevice>::Create(surface);
 		std::vector<const char*> deviceExtensions;
 		// If the device will be used for presenting to a display via a swapchain we need to request the swapchain extension
 		XYZ_ASSERT(m_PhysicalDevice->IsExtensionSupported(VK_KHR_SWAPCHAIN_EXTENSION_NAME), "");

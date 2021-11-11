@@ -21,10 +21,9 @@ namespace XYZ {
 
 	private:
 		void setupDebugCallback();
-		void setupDevices();
+		void setupDevice();
 	private:
 		// Devices
-		Ref<VulkanPhysicalDevice> m_PhysicalDevice;
 		Ref<VulkanDevice>		  m_Device;
 
 		GLFWwindow*				  m_WindowHandle;
