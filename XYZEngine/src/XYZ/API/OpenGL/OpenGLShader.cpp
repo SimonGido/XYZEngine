@@ -56,7 +56,7 @@ namespace XYZ {
 		static const char* GetCacheDirectory()
 		{
 			// TODO: make sure the assets directory is valid
-			return "Assets/cache/shader/opengl";
+			return "Assets/Cache/Shader/Opengl";
 		}
 
 		static void CreateCacheDirectoryIfNeeded()
@@ -377,7 +377,7 @@ namespace XYZ {
 	}
 
 
-	void OpenGLShader::Reload()
+	void OpenGLShader::Reload(bool forceCompile)
 	{	
 		std::string source = readFile(m_AssetPath);
 		preProcess(source);

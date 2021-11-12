@@ -127,6 +127,8 @@ namespace XYZ {
 	class Shader : public Asset
 	{
 	public:
+		using ReloadCallback = std::function<void()>;
+
 		virtual ~Shader() = default;
 
 		virtual void Bind() const = 0;
@@ -135,7 +137,7 @@ namespace XYZ {
 		virtual void SetVSUniforms(ByteBuffer buffer) const = 0;
 		virtual void SetFSUniforms(ByteBuffer buffer) const = 0;
 
-		virtual void Reload() = 0;
+		virtual void Reload(bool forceCompile = false) = 0;
 		virtual void AddReloadCallback(std::function<void()> callback) = 0;
 
 

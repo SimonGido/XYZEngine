@@ -103,7 +103,14 @@ namespace XYZ {
 		setupDevice();
 		m_SwapChain.Init(s_VulkanInstance, m_Device);
 		m_SwapChain.InitSurface(m_WindowHandle);
+
+		
+
 		VulkanAllocator::Init(m_Device);
+	}
+	void VulkanContext::CreateSwapChain(uint32_t* width, uint32_t* height, bool vSync)
+	{
+		m_SwapChain.Create(width, height, vSync);
 	}
 	void VulkanContext::SwapBuffers()
 	{

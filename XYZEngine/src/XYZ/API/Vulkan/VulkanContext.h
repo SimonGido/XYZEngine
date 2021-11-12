@@ -11,6 +11,7 @@ namespace XYZ {
 		virtual ~VulkanContext() override;
 
 		virtual void Init() override;
+		virtual void CreateSwapChain(uint32_t* width, uint32_t* height, bool vSync) override;
 		virtual void SwapBuffers() override;
 
 		Ref<VulkanDevice> GetDevice() { return m_Device; }

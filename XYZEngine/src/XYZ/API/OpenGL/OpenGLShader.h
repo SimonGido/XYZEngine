@@ -16,7 +16,7 @@ namespace XYZ {
 		virtual void SetFSUniforms(ByteBuffer buffer) const override;
 
 
-		virtual void Reload() override;
+		virtual void Reload(bool forceCompile = false) override;
 		virtual void AddReloadCallback(std::function<void()> callback) override;
 
 		virtual void SetInt(const std::string& name, int value) override;
@@ -75,7 +75,7 @@ namespace XYZ {
 		UniformList		   m_FSUniformList;
 		TextureUniformList m_TextureList;
 
-		std::vector<std::function<void()>>				  m_ShaderReloadCallbacks;
+		std::vector<Shader::ReloadCallback>	m_ShaderReloadCallbacks;
 
 		std::unordered_map<uint32_t, std::vector<uint32_t>> m_VulkanSPIRV;
 		std::unordered_map<uint32_t, std::vector<uint32_t>> m_OpenGLSPIRV;

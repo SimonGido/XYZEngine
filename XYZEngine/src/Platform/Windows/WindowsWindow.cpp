@@ -60,6 +60,7 @@ namespace XYZ {
 
 		m_Context = APIContext::Create(m_Window);	
 		m_Context->Init();
+		m_Context->CreateSwapChain(&m_Data.Width, &m_Data.Height, m_Data.VSync);
 
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 		
