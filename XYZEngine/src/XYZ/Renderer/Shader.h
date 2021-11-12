@@ -67,22 +67,28 @@ namespace XYZ {
 	{
 	public:
 		ShaderUniform() = default;
-		ShaderUniform(std::string name, ShaderUniformDataType dataType, uint32_t size, uint32_t offset, uint32_t count, uint32_t loc);
-		void SetLocation(uint32_t loc) { m_Location = loc; }
+		ShaderUniform(std::string name, ShaderUniformDataType dataType, uint32_t size, uint32_t offset, uint32_t count = 1);
 
 		const std::string&	  GetName()		const { return m_Name; }
 		ShaderUniformDataType GetDataType()	const { return m_DataType; }
 		uint32_t			  GetSize()		const { return m_Size; }
 		uint32_t			  GetOffset()   const { return m_Offset; }
 		uint32_t			  GetCount()    const { return m_Count; }
-		uint32_t			  GetLocation() const { return m_Location; }
+	
 	private:
 		std::string			  m_Name;
 		ShaderUniformDataType m_DataType;
 		uint32_t			  m_Size;
 		uint32_t			  m_Offset;
 		uint32_t			  m_Count;
-		uint32_t			  m_Location;
+	};
+
+
+	struct ShaderBuffer
+	{
+		std::string Name;
+		uint32_t    Size;
+		std::unordered_map<std::string, ShaderUniform> Uniforms;
 	};
 
 	struct UniformList
@@ -131,31 +137,31 @@ namespace XYZ {
 
 		virtual ~Shader() = default;
 
-		virtual void Bind() const = 0;
-		virtual void Unbind() const = 0;
-		virtual void Compute(uint32_t groupX, uint32_t groupY = 1, uint32_t groupZ = 1, ComputeBarrierType barrierType = ComputeBarrierType::ShaderStorageBarrier) const = 0;
-		virtual void SetVSUniforms(ByteBuffer buffer) const = 0;
-		virtual void SetFSUniforms(ByteBuffer buffer) const = 0;
+		virtual void Bind() const {};
+		virtual void Unbind() const {};
+		virtual void Compute(uint32_t groupX, uint32_t groupY = 1, uint32_t groupZ = 1, ComputeBarrierType barrierType = ComputeBarrierType::ShaderStorageBarrier) const {};
+		virtual void SetVSUniforms(ByteBuffer buffer) const {};
+		virtual void SetFSUniforms(ByteBuffer buffer) const {};
 
 		virtual void Reload(bool forceCompile = false) = 0;
-		virtual void AddReloadCallback(std::function<void()> callback) = 0;
+		virtual void AddReloadCallback(Shader::ReloadCallback callback) = 0;
 
 
-		virtual void SetInt(const std::string& name, int value) = 0;
-		virtual void SetFloat(const std::string& name, float value) = 0;
-		virtual void SetFloat2(const std::string& name,const glm::vec2& value) = 0;
-		virtual void SetFloat3(const std::string& name, const glm::vec3& value) = 0;
-		virtual void SetFloat4(const std::string& name, const glm::vec4& value) = 0;
-		virtual void SetMat4(const std::string& name, const glm::mat4& value) = 0;
+		virtual void SetInt(const std::string& name, int value) {};
+		virtual void SetFloat(const std::string& name, float value) {};
+		virtual void SetFloat2(const std::string& name,const glm::vec2& value) {};
+		virtual void SetFloat3(const std::string& name, const glm::vec3& value) {};
+		virtual void SetFloat4(const std::string& name, const glm::vec4& value) {};
+		virtual void SetMat4(const std::string& name, const glm::mat4& value) {};
 
-		virtual const UniformList& GetVSUniformList() const = 0;
-		virtual const UniformList& GetFSUniformList() const = 0;
-		virtual const TextureUniformList& GetTextureList() const = 0;
+		virtual const UniformList& GetVSUniformList() const { return UniformList(); };
+		virtual const UniformList& GetFSUniformList() const { return UniformList(); };
+		virtual const TextureUniformList& GetTextureList() const { return TextureUniformList(); };
 
 		virtual const std::string& GetPath() const = 0;
 		virtual const std::string& GetName() const = 0;
 		
-		virtual uint32_t GetRendererID() const = 0;
+		virtual uint32_t GetRendererID() const { return 0; }
 		size_t			 GetHash() const;
 
 		static Ref<Shader> Create(const std::string& path);

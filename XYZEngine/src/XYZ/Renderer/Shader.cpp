@@ -3,7 +3,7 @@
 
 #include "Renderer.h"
 #include "XYZ/API/OpenGL/OpenGLShader.h"
-
+#include "XYZ/API/Vulkan/VulkanShader.h"
 
 namespace XYZ {
 	size_t Shader::GetHash() const
@@ -19,10 +19,8 @@ namespace XYZ {
 			XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
 			return nullptr;
 		}
-		case RendererAPI::API::OpenGL:
-		{
-			return  Ref<OpenGLShader>::Create(path);
-		}
+		case RendererAPI::API::OpenGL: return  Ref<OpenGLShader>::Create(path);
+		case RendererAPI::API::Vulkan: return Ref<VulkanShader>::Create(path);		
 		}
 
 		XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
@@ -37,10 +35,8 @@ namespace XYZ {
 			XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
 			return nullptr;
 		}
-		case RendererAPI::API::OpenGL:
-		{
-			return Ref<OpenGLShader>::Create(name, path);
-		}
+		case RendererAPI::API::OpenGL: return Ref<OpenGLShader>::Create(name, path);
+		case RendererAPI::API::Vulkan: return Ref<VulkanShader>::Create(name, path);
 		}
 
 		XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
@@ -88,14 +84,13 @@ namespace XYZ {
 			result += var.Size();
 		return result;
 	}
-	ShaderUniform::ShaderUniform(std::string name, ShaderUniformDataType dataType, uint32_t size, uint32_t offset, uint32_t count, uint32_t loc)
+	ShaderUniform::ShaderUniform(std::string name, ShaderUniformDataType dataType, uint32_t size, uint32_t offset, uint32_t count)
 		:
 		m_Name(std::move(name)),
 		m_DataType(dataType),
 		m_Size(size),
 		m_Offset(offset),
-		m_Count(count),
-		m_Location(loc)
+		m_Count(count)
 	{
 	}
 }

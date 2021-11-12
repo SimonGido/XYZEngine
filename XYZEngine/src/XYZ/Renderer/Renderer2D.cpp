@@ -76,29 +76,29 @@ namespace XYZ {
 
 		uint32_t* quadIndices = GenerateQuadIndices(sc_MaxIndices);
 		m_QuadBuffer.Init(sc_MaxVertices, quadIndices, sc_MaxIndices, BufferLayout{
-				{0, XYZ::ShaderDataComponent::Float4, "a_Color" },
-				{1, XYZ::ShaderDataComponent::Float3, "a_Position" },
-				{2, XYZ::ShaderDataComponent::Float2, "a_TexCoord" },
-				{3, XYZ::ShaderDataComponent::Float,  "a_TextureID" },
-				{4, XYZ::ShaderDataComponent::Float,  "a_TilingFactor" }
+				{0, XYZ::ShaderDataType::Float4, "a_Color" },
+				{1, XYZ::ShaderDataType::Float3, "a_Position" },
+				{2, XYZ::ShaderDataType::Float2, "a_TexCoord" },
+				{3, XYZ::ShaderDataType::Float,  "a_TextureID" },
+				{4, XYZ::ShaderDataType::Float,  "a_TilingFactor" }
 		});
 
 		uint32_t* lineIndices = GenerateLineIndices(sc_MaxLineIndices);
 		m_LineBuffer.Init(sc_MaxLineVertices, lineIndices, sc_MaxLineIndices, BufferLayout{
-				{0, XYZ::ShaderDataComponent::Float3, "a_Position" },
-				{1, XYZ::ShaderDataComponent::Float4, "a_Color" },
+				{0, XYZ::ShaderDataType::Float3, "a_Position" },
+				{1, XYZ::ShaderDataType::Float4, "a_Color" },
 		});
 
 		m_CollisionBuffer.Init(sc_MaxCollisionVertices, quadIndices, sc_MaxIndices, BufferLayout{
-				{0, XYZ::ShaderDataComponent::Float3, "a_Position" },
-				{1, XYZ::ShaderDataComponent::Int,    "a_ObjectID" },
+				{0, XYZ::ShaderDataType::Float3, "a_Position" },
+				{1, XYZ::ShaderDataType::Int,    "a_ObjectID" },
 			});
 
 		m_CircleBuffer.Init(sc_MaxVertices, quadIndices, sc_MaxIndices, BufferLayout{
-				{0, XYZ::ShaderDataComponent::Float3, "a_WorldPosition" },
-				{1, XYZ::ShaderDataComponent::Float,  "a_Thickness" },
-				{2, XYZ::ShaderDataComponent::Float2, "a_LocalPosition" },
-				{3, XYZ::ShaderDataComponent::Float4, "a_Color" }
+				{0, XYZ::ShaderDataType::Float3, "a_WorldPosition" },
+				{1, XYZ::ShaderDataType::Float,  "a_Thickness" },
+				{2, XYZ::ShaderDataType::Float2, "a_LocalPosition" },
+				{3, XYZ::ShaderDataType::Float4, "a_Color" }
 			});
 
 		delete[]quadIndices;

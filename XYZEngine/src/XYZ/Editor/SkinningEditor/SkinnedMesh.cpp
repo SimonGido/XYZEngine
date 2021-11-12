@@ -369,9 +369,9 @@ namespace XYZ {
             m_VertexArray = VertexArray::Create();
             m_VertexBuffer = VertexBuffer::Create(m_PreviewVertices.data(), (uint32_t)m_PreviewVertices.size() * (uint32_t)sizeof(PreviewVertex), BufferUsage::Dynamic);
             m_VertexBuffer->SetLayout({
-                {0, ShaderDataComponent::Float3, "a_Color"},
-                {1, ShaderDataComponent::Float3, "a_Position"},
-                {2, ShaderDataComponent::Float2, "a_TexCoord"}
+                {0, ShaderDataType::Float3, "a_Color"},
+                {1, ShaderDataType::Float3, "a_Position"},
+                {2, ShaderDataType::Float2, "a_TexCoord"}
                 });
             m_VertexArray->AddVertexBuffer(m_VertexBuffer);
             Ref<IndexBuffer> ibo = IndexBuffer::Create(indices.data(), (uint32_t)indices.size());

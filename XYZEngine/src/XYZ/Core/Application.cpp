@@ -37,6 +37,8 @@ namespace XYZ {
 		Renderer::InitResources();
 		//AssetManager::Init();
 
+		Ref<Shader> shader = Shader::Create("Assets/Shaders/DefaultLitShader.glsl");
+
 		TCHAR NPath[MAX_PATH];
 		GetCurrentDirectory(MAX_PATH, NPath);
 		std::wstring tmp(&NPath[0]);

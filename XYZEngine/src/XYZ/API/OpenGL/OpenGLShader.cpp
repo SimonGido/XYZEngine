@@ -289,89 +289,93 @@ namespace XYZ {
 
 	void OpenGLShader::SetVSUniforms(ByteBuffer buffer) const
 	{
+		uint32_t counter = 0;
 		for (auto& uniform : m_VSUniformList.Uniforms)
 		{
 			if (uniform.GetCount() > 1)
 			{
 				Renderer::Submit([=]() {
-					setUniformArr(&uniform, buffer);
+					setUniformArr(&uniform, m_VSUniformLocations[counter], buffer);
 					});
 			}
 			else
 			{
 				Renderer::Submit([=]() {
-					setUniform(&uniform, buffer);
+					setUniform(&uniform, m_VSUniformLocations[counter], buffer);
 					});
 			}
+			counter++;
 		}
 	}
 
 	void OpenGLShader::SetFSUniforms(ByteBuffer buffer)const
 	{
+		uint32_t counter = 0;
 		for (auto& uniform : m_FSUniformList.Uniforms)
 		{
 			if (uniform.GetCount() > 1)
 			{
 				Renderer::Submit([=]() {
-					setUniformArr(&uniform, buffer);
+					setUniformArr(&uniform, m_FSUniformLocations[counter], buffer);
 					});
 			}
 			else
 			{
 				Renderer::Submit([=]() {
-					setUniform(&uniform, buffer);
+					setUniform(&uniform, m_FSUniformLocations[counter], buffer);
 					});
 			}
+			counter++;
 		}
 	}
 
 
-	void OpenGLShader::setUniform(const ShaderUniform* uniform, ByteBuffer data) const
+	void OpenGLShader::setUniform(const ShaderUniform* uniform, uint32_t location, ByteBuffer data) const
 	{
 		switch (uniform->GetDataType())
 		{
 		case ShaderUniformDataType::Float:
-			uploadFloat(uniform->GetLocation(), *(float*)& data[uniform->GetOffset()]);
+			uploadFloat(location, *(float*)& data[uniform->GetOffset()]);
 			break;
 		case ShaderUniformDataType::Vec2:
-			uploadFloat2(uniform->GetLocation(), *(glm::vec2*) & data[uniform->GetOffset()]);
+			uploadFloat2(location, *(glm::vec2*) & data[uniform->GetOffset()]);
 			break;
 		case ShaderUniformDataType::Vec3:
-			uploadFloat3(uniform->GetLocation(), *(glm::vec3*) & data[uniform->GetOffset()]);
+			uploadFloat3(location, *(glm::vec3*) & data[uniform->GetOffset()]);
 			break;
 		case ShaderUniformDataType::Vec4:
-			uploadFloat4(uniform->GetLocation(), *(glm::vec4*) & data[uniform->GetOffset()]);
+			uploadFloat4(location, *(glm::vec4*) & data[uniform->GetOffset()]);
 			break;
 		case ShaderUniformDataType::Int:
-			uploadInt(uniform->GetLocation(), *(int*)& data[uniform->GetOffset()]);
+			uploadInt(location, *(int*)& data[uniform->GetOffset()]);
 			break;
 		case ShaderUniformDataType::Mat4:
-			uploadMat4(uniform->GetLocation(), *(glm::mat4*) & data[uniform->GetOffset()]);
+			uploadMat4(location, *(glm::mat4*) & data[uniform->GetOffset()]);
 			break;
 		};
 	}
 
-	void OpenGLShader::setUniformArr(const ShaderUniform* uniform, ByteBuffer data) const
+	void OpenGLShader::setUniformArr(const ShaderUniform* uniform, uint32_t location, ByteBuffer data) const
 	{
 		switch (uniform->GetDataType())
 		{
 		case ShaderUniformDataType::Float:
-			uploadFloatArr(uniform->GetLocation(), (float*)& data[uniform->GetOffset()], uniform->GetCount());
+			uploadFloatArr(location, (float*)& data[uniform->GetOffset()], uniform->GetCount());
 			break;
 		case ShaderUniformDataType::Vec2:
-			uploadFloat2Arr(uniform->GetLocation(), *(glm::vec2*) & data[uniform->GetOffset()], uniform->GetCount());
+			uploadFloat2Arr(location, *(glm::vec2*) & data[uniform->GetOffset()], uniform->GetCount());
 			break;
 		case ShaderUniformDataType::Vec3:
-			uploadFloat3Arr(uniform->GetLocation(), *(glm::vec3*) & data[uniform->GetOffset()], uniform->GetCount());
+			uploadFloat3Arr(location, *(glm::vec3*) & data[uniform->GetOffset()], uniform->GetCount());
 			break;
 		case ShaderUniformDataType::Vec4:
-			uploadFloat4Arr(uniform->GetLocation(), *(glm::vec4*) & data[uniform->GetOffset()], uniform->GetCount());
+			uploadFloat4Arr(location, *(glm::vec4*) & data[uniform->GetOffset()], uniform->GetCount());
 			break;
 		case ShaderUniformDataType::Int:
-			uploadIntArr(uniform->GetLocation(), (int*)& data[uniform->GetOffset()], uniform->GetCount());
+			uploadIntArr(location, (int*)& data[uniform->GetOffset()], uniform->GetCount());
 			break;
 		case ShaderUniformDataType::Mat4:
-			uploadMat4Arr(uniform->GetLocation(), *(glm::mat4*) & data[uniform->GetOffset()], uniform->GetCount());
+			uploadMat4Arr(location, *(glm::mat4*) & data[uniform->GetOffset()], uniform->GetCount());
 			break;
 		};
 	}
@@ -394,7 +398,7 @@ namespace XYZ {
 			m_ShaderReloadCallbacks[i]();
 	}
 
-	void OpenGLShader::AddReloadCallback(std::function<void()> callback)
+	void OpenGLShader::AddReloadCallback(Shader::ReloadCallback callback)
 	{
 		m_ShaderReloadCallbacks.emplace_back(std::move(callback));
 	}
@@ -544,13 +548,17 @@ namespace XYZ {
 	void OpenGLShader::resolveUniforms()
 	{
 		glUseProgram(m_RendererID);
+		m_VSUniformLocations.resize(m_VSUniformList.Uniforms.size());
+		m_FSUniformLocations.resize(m_FSUniformList.Uniforms.size());
+		uint32_t counter = 0;
 		for (auto& uni : m_VSUniformList.Uniforms)
 		{
-			uni.SetLocation(glGetUniformLocation(m_RendererID, uni.GetName().c_str()));
+			m_VSUniformLocations[counter++] = glGetUniformLocation(m_RendererID, uni.GetName().c_str());
 		}
+		counter = 0;
 		for (auto& uni : m_FSUniformList.Uniforms)
 		{
-			uni.SetLocation(glGetUniformLocation(m_RendererID, uni.GetName().c_str()));
+			m_FSUniformLocations[counter++] = glGetUniformLocation(m_RendererID, uni.GetName().c_str());
 		}
 	}
 	
@@ -595,7 +603,7 @@ namespace XYZ {
 			uint32_t bufferOffset = 0;
 			if (uniforms->Uniforms.size())
 				bufferOffset = uniforms->Uniforms.back().GetOffset() + uniforms->Uniforms.back().GetSize();
-			uniforms->Uniforms.emplace_back(bufferName, ShaderUniformDataType::Float, bufferSize - bufferOffset, bufferOffset, memberCount, 0);
+			uniforms->Uniforms.emplace_back(bufferName, ShaderUniformDataType::Float, bufferSize - bufferOffset, bufferOffset, memberCount);
 			uniforms->Size += bufferSize - bufferOffset;
 		}
 

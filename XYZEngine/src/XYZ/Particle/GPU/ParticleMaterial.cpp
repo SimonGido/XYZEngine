@@ -60,7 +60,7 @@ namespace XYZ {
 		return structs;
 	}
 
-	struct ShaderBuffer
+	struct ParShaderBuffer
 	{
 		std::string					Name;
 		uint32_t					Size;
@@ -71,7 +71,7 @@ namespace XYZ {
 		std::vector<ShaderVariable> Variables; // This is used only if RenderBuffer is true
 	};
 
-	static bool ParseShaderBuffer(ShaderBuffer& buffer, const std::string& bufferSource, const std::vector<ShaderStruct>& structs)
+	static bool ParseShaderBuffer(ParShaderBuffer& buffer, const std::string& bufferSource, const std::vector<ShaderStruct>& structs)
 	{
 		std::vector<std::string> split = Utils::SplitString(bufferSource, " ,=}{\n\r\t");
 		auto bindingIt = std::find(split.begin(), split.end(), "binding");
@@ -114,9 +114,9 @@ namespace XYZ {
 		return true;
 	}
 
-	static std::vector<ShaderBuffer> ParseShaderBuffers(const std::string& source, const std::vector<ShaderStruct>& structs)
+	static std::vector<ParShaderBuffer> ParseShaderBuffers(const std::string& source, const std::vector<ShaderStruct>& structs)
 	{
-		std::vector<ShaderBuffer> buffers;
+		std::vector<ParShaderBuffer> buffers;
 		size_t bufferStart = 0;
 		size_t bufferEnd = 0;
 		bufferStart = source.find("layout", bufferStart);
@@ -125,7 +125,7 @@ namespace XYZ {
 		while (bufferStart != std::string::npos)
 		{
 			std::string bufferStr = source.substr(bufferStart, bufferEnd - bufferStart);
-			ShaderBuffer buffer;
+			ParShaderBuffer buffer;
 			if (ParseShaderBuffer(buffer, bufferStr, structs))
 				buffers.push_back(buffer);
 			bufferStart = source.find("layout", bufferStart + 1);
@@ -194,22 +194,22 @@ namespace XYZ {
 			case XYZ::ShaderUniformDataType::None:
 				break;
 			case XYZ::ShaderUniformDataType::Int:
-				elements.emplace_back(counter++, ShaderDataComponent::Int, variable.Name, divisior);
+				elements.emplace_back(counter++, ShaderDataType::Int, variable.Name, divisior);
 				break;
 			case XYZ::ShaderUniformDataType::UInt:
-				elements.emplace_back(counter++, ShaderDataComponent::Int, variable.Name, divisior);
+				elements.emplace_back(counter++, ShaderDataType::Int, variable.Name, divisior);
 				break;
 			case XYZ::ShaderUniformDataType::Float:
-				elements.emplace_back(counter++, ShaderDataComponent::Float, variable.Name, divisior);
+				elements.emplace_back(counter++, ShaderDataType::Float, variable.Name, divisior);
 				break;
 			case XYZ::ShaderUniformDataType::Vec2:
-				elements.emplace_back(counter++, ShaderDataComponent::Float2, variable.Name, divisior);
+				elements.emplace_back(counter++, ShaderDataType::Float2, variable.Name, divisior);
 				break;
 			case XYZ::ShaderUniformDataType::Vec3:
-				elements.emplace_back(counter++, ShaderDataComponent::Float3, variable.Name, divisior);
+				elements.emplace_back(counter++, ShaderDataType::Float3, variable.Name, divisior);
 				break;
 			case XYZ::ShaderUniformDataType::Vec4:
-				elements.emplace_back(counter++, ShaderDataComponent::Float4, variable.Name, divisior);
+				elements.emplace_back(counter++, ShaderDataType::Float4, variable.Name, divisior);
 				break;
 			}
 		}
@@ -326,7 +326,7 @@ namespace XYZ {
 			in.read(&source[0], source.size());
 			in.close();
 			std::vector<ShaderStruct>  structs = std::move(ParseStructs(source));
-			std::vector<ShaderBuffer>  buffers = std::move(ParseShaderBuffers(source, structs));
+			std::vector<ParShaderBuffer>  buffers = std::move(ParseShaderBuffers(source, structs));
 			std::vector<ShaderCounter> counters = std::move(ParseShaderCounters(source));
 
 			for (auto& buffer : buffers)
@@ -385,7 +385,7 @@ namespace XYZ {
 		Ref<VertexBuffer> squareVBpar;
 		squareVBpar = XYZ::VertexBuffer::Create(quad, 4 * sizeof(glm::vec3));
 		squareVBpar->SetLayout({
-			{ 0, XYZ::ShaderDataComponent::Float3, "a_Position" }
+			{ 0, XYZ::ShaderDataType::Float3, "a_Position" }
 			});
 		m_VertexArray->AddVertexBuffer(squareVBpar);
 

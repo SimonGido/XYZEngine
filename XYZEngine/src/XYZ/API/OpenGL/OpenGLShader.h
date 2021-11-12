@@ -17,7 +17,7 @@ namespace XYZ {
 
 
 		virtual void Reload(bool forceCompile = false) override;
-		virtual void AddReloadCallback(std::function<void()> callback) override;
+		virtual void AddReloadCallback(Shader::ReloadCallback callback) override;
 
 		virtual void SetInt(const std::string& name, int value) override;
 		virtual void SetFloat(const std::string& name, float value) override;
@@ -44,8 +44,8 @@ namespace XYZ {
 		std::string readFile(const std::string& filepath) const;
 	
 
-		void setUniform(const ShaderUniform* uniform, ByteBuffer data) const;
-		void setUniformArr(const ShaderUniform* uniform, ByteBuffer data) const;
+		void setUniform(const ShaderUniform* uniform, uint32_t location, ByteBuffer data) const;
+		void setUniformArr(const ShaderUniform* uniform, uint32_t location, ByteBuffer data) const;
 
 		void uploadInt (uint32_t loc, int value) const;
 		void uploadFloat(uint32_t loc, float value) const;
@@ -71,6 +71,8 @@ namespace XYZ {
 
 		uint32_t m_NumTakenTexSlots;
 		
+		std::vector<uint32_t> m_VSUniformLocations;
+		std::vector<uint32_t> m_FSUniformLocations;
 		UniformList		   m_VSUniformList;
 		UniformList		   m_FSUniformList;
 		TextureUniformList m_TextureList;

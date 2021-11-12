@@ -75,8 +75,8 @@ namespace XYZ {
 		data[3].TexCoord = glm::vec2(0, 1);
 
 		BufferLayout layout = {
-			{ 0, ShaderDataComponent::Float3, "a_Position" },
-			{ 1, ShaderDataComponent::Float2, "a_TexCoord" }
+			{ 0, ShaderDataType::Float3, "a_Position" },
+			{ 1, ShaderDataType::Float2, "a_TexCoord" }
 		};
 		s_Data.m_FullscreenQuadVertexBuffer = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
 		s_Data.m_FullscreenQuadVertexBuffer->SetLayout(layout);

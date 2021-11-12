@@ -3,6 +3,7 @@
 
 #include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Utils/StringUtils.h"
+#include "VulkanContext.h"
 #include "Vulkan.h"
 
 #include <glm/gtc/type_ptr.hpp>
@@ -101,11 +102,16 @@ namespace XYZ {
 		m_Name(Utils::GetFilenameWithoutExtension(path)),
 		m_AssetPath(path)
 	{
+		Reload(true);
 	}
 	VulkanShader::VulkanShader(const std::string& name, const std::string& path)
 		:
 		m_Name(name),
 		m_AssetPath(path)
+	{
+		Reload(true);
+	}
+	VulkanShader::~VulkanShader()
 	{
 	}
 	void VulkanShader::Reload(bool forceCompile)
@@ -118,15 +124,59 @@ namespace XYZ {
 			reflect(stage, data);
 
 		Ref<VulkanShader> instance = this;
-		Renderer::SubmitAndWait([instance]() mutable {
-			instance->createProgram();
+		Renderer::SubmitAndWait([instance, shaderData]() mutable {
+			instance->createProgram(shaderData);
 		});
 
 		for (size_t i = 0; i < m_ShaderReloadCallbacks.size(); ++i)
 			m_ShaderReloadCallbacks[i]();
 	}
+	void VulkanShader::AddReloadCallback(Shader::ReloadCallback callback)
+	{
+		m_ShaderReloadCallbacks.emplace_back(std::move(callback));
+	}
 	void VulkanShader::reflect(VkShaderStageFlagBits stage, const std::vector<uint32_t>& shaderData)
 	{
+		spirv_cross::Compiler compiler(shaderData);
+		spirv_cross::ShaderResources resources = compiler.get_shader_resources();
+		for (const auto& resource : resources.push_constant_buffers)
+		{
+			const auto& bufferName = resource.name;
+			auto& bufferType = compiler.get_type(resource.base_type_id);
+			auto bufferSize = (uint32_t)compiler.get_declared_struct_size(bufferType);
+			uint32_t memberCount = uint32_t(bufferType.member_types.size());
+			uint32_t bufferOffset = 0;
+			if (m_PushConstantRanges.size())
+				bufferOffset = m_PushConstantRanges.back().Offset + m_PushConstantRanges.back().Size;
+
+			auto& pushConstantRange = m_PushConstantRanges.emplace_back();
+			pushConstantRange.ShaderStage = stage;
+			pushConstantRange.Size = bufferSize - bufferOffset;
+			pushConstantRange.Offset = bufferOffset;
+
+			// Skip empty push constant buffers - these are for the renderer only
+			if (bufferName.empty() || bufferName == "u_Renderer")
+				continue;
+
+			ShaderBuffer& buffer = m_Buffers[bufferName];
+			buffer.Name = bufferName;
+			buffer.Size = bufferSize - bufferOffset;
+
+			XYZ_TRACE("  Name: {0}", bufferName);
+			XYZ_TRACE("  Member Count: {0}", memberCount);
+			XYZ_TRACE("  Size: {0}", bufferSize);
+
+			for (uint32_t i = 0; i < memberCount; i++)
+			{
+				auto type = compiler.get_type(bufferType.member_types[i]);
+				const auto& memberName = compiler.get_member_name(bufferType.self, i);
+				auto size = (uint32_t)compiler.get_declared_struct_member_size(bufferType, i);
+				auto offset = compiler.type_struct_member_offset(bufferType, i) - bufferOffset;
+
+				std::string uniformName = fmt::format("{}.{}", bufferName, memberName);
+				buffer.Uniforms[uniformName] = ShaderUniform(uniformName, Utils::SPIRTypeToShaderUniformType(type), size, offset);
+			}
+		}
 	}
 	void VulkanShader::compileOrGetVulkanBinaries(std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& outputBinary, bool forceCompile)
 	{
