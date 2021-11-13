@@ -47,24 +47,24 @@ namespace XYZ {
 	public:
 		virtual ~Framebuffer() = default;
 
-		virtual void Resize(uint32_t width, uint32_t height, bool forceResize = false) = 0;
+		virtual void Resize(uint32_t width, uint32_t height, bool forceResize = false) {};
 
-		virtual void Bind() const = 0;
-		virtual void Unbind() const = 0;
-		virtual void Clear() const = 0;
+		virtual void Bind() const {};
+		virtual void Unbind() const {};
+		virtual void Clear() const {};
 
-		virtual void BindTexture(uint32_t attachmentIndex, uint32_t slot) const = 0;
-		virtual void BindImage(uint32_t attachmentIndex, uint32_t slot, uint32_t miplevel, BindImageType type) const = 0;
-		virtual void SetSpecification(const FramebufferSpecs& specs) = 0;
+		virtual void BindTexture(uint32_t attachmentIndex, uint32_t slot) const {};
+		virtual void BindImage(uint32_t attachmentIndex, uint32_t slot, uint32_t miplevel, BindImageType type) const {};
+		virtual void SetSpecification(const FramebufferSpecs& specs) {};
 
-		virtual const uint32_t GetColorAttachmentRendererID(uint32_t index) const = 0;
-		virtual const uint32_t GetDetphAttachmentRendererID() const = 0;
-		virtual const uint32_t GetNumColorAttachments() const = 0;
+		virtual const uint32_t GetColorAttachmentRendererID(uint32_t index) const { return 0; };
+		virtual const uint32_t GetDetphAttachmentRendererID() const { return 0; };
+		virtual const uint32_t GetNumColorAttachments() const { return 0; };
 
 		virtual const FramebufferSpecs& GetSpecification() const = 0;
 		
-		virtual void ReadPixel(int32_t& pixel, uint32_t mx, uint32_t my, uint32_t attachmentIndex) const = 0;
-		virtual void ClearColorAttachment(uint32_t colorAttachmentIndex, void* clearValue) const = 0;
+		virtual void ReadPixel(int32_t& pixel, uint32_t mx, uint32_t my, uint32_t attachmentIndex) const {};
+		virtual void ClearColorAttachment(uint32_t colorAttachmentIndex, void* clearValue) const {};
 
 		static Ref<Framebuffer> Create(const FramebufferSpecs& specs);
 	};

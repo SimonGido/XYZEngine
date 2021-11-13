@@ -163,6 +163,7 @@ namespace XYZ {
 
 	WindowsWindow::~WindowsWindow()
 	{
+		destroy();
 	}
 
 	void WindowsWindow::Update()
@@ -225,7 +226,7 @@ namespace XYZ {
 	}
 
 
-	void WindowsWindow::Destroy()
+	void WindowsWindow::destroy()
 	{
 		glfwDestroyWindow(m_Window);
 		glfwTerminate();

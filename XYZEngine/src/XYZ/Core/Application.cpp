@@ -7,8 +7,7 @@
 
 #include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Asset/AssetManager.h"
-
-
+#include "XYZ/Audio/Audio.h"
 
 #include <GLFW/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -37,8 +36,6 @@ namespace XYZ {
 		Renderer::InitResources();
 		//AssetManager::Init();
 
-		Ref<Shader> shader = Shader::Create("Assets/Shaders/DefaultLitShader.glsl");
-
 		TCHAR NPath[MAX_PATH];
 		GetCurrentDirectory(MAX_PATH, NPath);
 		std::wstring tmp(&NPath[0]);
@@ -51,7 +48,18 @@ namespace XYZ {
 
 	Application::~Application()
 	{
-		
+		for (auto layer : m_LayerStack) // Make sure that layers are deleted before window
+		{
+			layer->OnDetach();
+			delete layer;
+		}
+		m_LayerStack.Clear();
+
+		AssetManager::Shutdown();
+		Audio::ShutDown();
+		// Finish commands
+		Renderer::WaitAndRender();
+		Renderer::Shutdown();
 	}
 
 	void Application::Run()

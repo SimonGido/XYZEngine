@@ -32,23 +32,24 @@ namespace XYZ {
 		bool							  IsExtensionSupported(const std::string& extensionName) const;
 		VkPhysicalDevice				  GetVulkanPhysicalDevice() const { return m_PhysicalDevice; }
 		VkPhysicalDeviceMemoryProperties  GetMemoryProperties()		const { return m_MemoryProperties; }
+		VkFormat						  GetDepthFormat()			const { return m_DepthFormat; }
 		
 		const SwapChainSupportDetails&    GetSwapChainSupportDetails() const { return m_SwapChainSupportDetails; }
 		const QueueFamilyIndices&		  GetQueueFamilyIndices()      const { return m_QueueFamilyIndices; }
 		const VkPhysicalDeviceProperties& GetProperties()		       const { return m_Properties; }
 		const VkPhysicalDeviceFeatures&   GetFeatures()				   const { return m_Features; }
-	
 	private:
 		void setupQueueFamilyIndices(int flags);
 		void findPresentationQueue(VkSurfaceKHR surface);
 		void createQueuesInfo(const std::set<uint32_t>& familyIndices);
-		
+		void findDepthFormat();
+
 	private:
 		VkPhysicalDevice					 m_PhysicalDevice;
 		VkPhysicalDeviceProperties			 m_Properties;
 		VkPhysicalDeviceFeatures			 m_Features;
 		VkPhysicalDeviceMemoryProperties	 m_MemoryProperties;
-
+		VkFormat							 m_DepthFormat;
 		QueueFamilyIndices					 m_QueueFamilyIndices;
 		SwapChainSupportDetails				 m_SwapChainSupportDetails;
 

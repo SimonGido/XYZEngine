@@ -10,7 +10,7 @@
 #include "RendererAPI.h"
 #include "RenderCommandQueue.h"
 #include "RenderPass.h"
-
+#include "Pipeline.h"
 
 namespace XYZ {
 

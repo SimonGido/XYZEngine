@@ -17,7 +17,7 @@ namespace XYZ {
 	{
 	public:
 		WindowsWindow(const WindowProperties& props);
-		virtual ~WindowsWindow();
+		virtual ~WindowsWindow() override;
 
 		virtual void Update() override;
 		virtual void SetVSync(int32_t frames) override;
@@ -33,7 +33,7 @@ namespace XYZ {
 		inline virtual uint32_t GetHeight() const override { return m_Data.Height; }
 		virtual Ref<APIContext> GetContext() override { return m_Context; }
 	private:
-		void Destroy();
+		void destroy();
 
 		GLFWwindow* m_Window;
 
@@ -41,7 +41,7 @@ namespace XYZ {
 		GLFWcursor* m_Cursors[NUM_CURSORS];
 
 		Ref<APIContext> m_Context;
-
+		
 		struct WindowData
 		{
 			std::string Title;

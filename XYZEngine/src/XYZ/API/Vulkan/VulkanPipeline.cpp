@@ -2,6 +2,7 @@
 #include "VulkanPipeline.h"
 
 #include "VulkanContext.h"
+#include "VulkanFramebuffer.h"
 
 namespace XYZ {
 	namespace Utils
@@ -47,8 +48,13 @@ namespace XYZ {
 	}
 	VulkanPipeline::~VulkanPipeline()
 	{
-		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-		vkDestroyPipelineLayout(device, m_PipelineLayout, nullptr);
+		VkPipelineLayout pipelineLayout = m_PipelineLayout;
+		VkPipeline		 vulkanPipeline = m_VulkanPipeline;
+		Renderer::Submit([pipelineLayout, vulkanPipeline]() {
+			VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+			vkDestroyPipeline(device, vulkanPipeline, nullptr);
+		});	
 	}
 	void VulkanPipeline::Invalidate()
 	{
@@ -65,7 +71,31 @@ namespace XYZ {
 			VkPipelineVertexInputStateCreateInfo   vertexInputInfo	 = instance->createVertexInputInfo();
 			VkPipelineMultisampleStateCreateInfo   multisampleInfo	 = instance->createMultisampleInfo();
 			VkPipelineDepthStencilStateCreateInfo  depthStencilInfo  = instance->createDepthStencilInfo();
-			VkPipelineColorBlendStateCreateInfo    colotBlendInfo	 = instance->createColorBlendInfo();		
+			VkPipelineColorBlendStateCreateInfo    colorBlendInfo	 = instance->createColorBlendInfo();		
+			VkPipelineDynamicStateCreateInfo	   dynamicStateInfo  = instance->createDynamicStateInfo();
+			
+			Ref<VulkanFramebuffer> framebuffer = instance->m_Specification.RenderPass->GetSpecification().TargetFramebuffer;
+			VkGraphicsPipelineCreateInfo pipelineCreateInfo = {};
+			pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+			pipelineCreateInfo.layout = instance->m_PipelineLayout;
+			pipelineCreateInfo.renderPass = framebuffer->GetRenderPass();
+			
+			pipelineCreateInfo.pVertexInputState = &vertexInputInfo;
+			pipelineCreateInfo.pInputAssemblyState = &inputAssemblyState;
+			pipelineCreateInfo.pViewportState = &viewportStateInfo;
+			pipelineCreateInfo.pRasterizationState = &rasterizationInfo;
+			pipelineCreateInfo.pMultisampleState = &multisampleInfo;
+			pipelineCreateInfo.pDepthStencilState = &depthStencilInfo;
+			pipelineCreateInfo.pColorBlendState = &colorBlendInfo;
+			pipelineCreateInfo.pDynamicState = &dynamicStateInfo;
+
+			// It is possible to derive from existing pipeline ( better performance )
+			// pipelineCreateInfo.flags = VK_PIPELINE_CREATE_DERIVATIVE_BIT;
+			pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
+			pipelineCreateInfo.basePipelineIndex = -1; // Optional
+
+			VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &instance->m_VulkanPipeline));
 		});
 	}
 	void VulkanPipeline::SetUniformBuffer(Ref<UniformBuffer> uniformBuffer, uint32_t binding, uint32_t set)
@@ -100,22 +130,7 @@ namespace XYZ {
 		viewportState.viewportCount = 1;
 		viewportState.scissorCount = 1;
 
-		// Enable dynamic states
-		// Most states are baked into the pipeline, but there are still a few dynamic states that can be changed within a command buffer
-		// To be able to change these we need do specify which dynamic states will be changed using this pipeline. Their actual states are set later on in the command buffer.
-		// For this example we will set the viewport and scissor using dynamic states
-		std::vector<VkDynamicState> dynamicStateEnables;
-		dynamicStateEnables.push_back(VK_DYNAMIC_STATE_VIEWPORT);
-		dynamicStateEnables.push_back(VK_DYNAMIC_STATE_SCISSOR);
-		if (m_Specification.Topology == PrimitiveTopology::Lines 
-		 || m_Specification.Topology == PrimitiveTopology::LineStrip 
-		 || m_Specification.Wireframe)
-			dynamicStateEnables.push_back(VK_DYNAMIC_STATE_LINE_WIDTH);
-
-		VkPipelineDynamicStateCreateInfo dynamicState = {};
-		dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-		dynamicState.pDynamicStates = dynamicStateEnables.data();
-		dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStateEnables.size());
+		
 
 		return viewportState;
 	}
@@ -145,6 +160,7 @@ namespace XYZ {
 		vertexInputInfo.pVertexBindingDescriptions = &vertexInputBinding;
 		vertexInputInfo.vertexAttributeDescriptionCount = (uint32_t)vertexInputAttributs.size();
 		vertexInputInfo.pVertexAttributeDescriptions = vertexInputAttributs.data();
+		return vertexInputInfo;
 	}
 	VkPipelineDepthStencilStateCreateInfo VulkanPipeline::createDepthStencilInfo() const
 	{
@@ -161,6 +177,7 @@ namespace XYZ {
 		depthStencilState.back.compareOp = VK_COMPARE_OP_ALWAYS;
 		depthStencilState.stencilTestEnable = VK_FALSE;
 		depthStencilState.front = depthStencilState.back;
+		return depthStencilState;
 	}
 	std::vector<VkPipelineColorBlendAttachmentState> VulkanPipeline::createColorBlendAttachments() const
 	{
@@ -239,6 +256,26 @@ namespace XYZ {
 		//colorBlending.blendConstants[2] = 0.0f; // Optional
 		//colorBlending.blendConstants[3] = 0.0f; // Optional
 		return colorBlending;
+	}
+	VkPipelineDynamicStateCreateInfo VulkanPipeline::createDynamicStateInfo() const
+	{
+		// Enable dynamic states
+		// Most states are baked into the pipeline, but there are still a few dynamic states that can be changed within a command buffer
+		// To be able to change these we need do specify which dynamic states will be changed using this pipeline. Their actual states are set later on in the command buffer.
+		// For this example we will set the viewport and scissor using dynamic states
+		std::vector<VkDynamicState> dynamicStateEnables;
+		dynamicStateEnables.push_back(VK_DYNAMIC_STATE_VIEWPORT);
+		dynamicStateEnables.push_back(VK_DYNAMIC_STATE_SCISSOR);
+		if (m_Specification.Topology == PrimitiveTopology::Lines
+			|| m_Specification.Topology == PrimitiveTopology::LineStrip
+			|| m_Specification.Wireframe)
+			dynamicStateEnables.push_back(VK_DYNAMIC_STATE_LINE_WIDTH);
+
+		VkPipelineDynamicStateCreateInfo dynamicState = {};
+		dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+		dynamicState.pDynamicStates = dynamicStateEnables.data();
+		dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStateEnables.size());
+		return dynamicState;
 	}
 	void VulkanPipeline::createPipelineLayoutInfo()
 	{

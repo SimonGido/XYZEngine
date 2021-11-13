@@ -113,6 +113,12 @@ namespace XYZ {
 	}
 	VulkanShader::~VulkanShader()
 	{
+		auto stageInfos = m_PipelineShaderStageCreateInfos;
+		Renderer::Submit([stageInfos]() {
+			VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			for (const auto& info : stageInfos)
+				vkDestroyShaderModule(device, info.module, nullptr);
+		});
 	}
 	void VulkanShader::Reload(bool forceCompile)
 	{
@@ -124,7 +130,7 @@ namespace XYZ {
 			reflect(stage, data);
 
 		Ref<VulkanShader> instance = this;
-		Renderer::SubmitAndWait([instance, shaderData]() mutable {
+		Renderer::Submit([instance, shaderData]() mutable {
 			instance->createProgram(shaderData);
 		});
 
@@ -258,6 +264,7 @@ namespace XYZ {
 			shaderStage.stage = stage;
 			shaderStage.module = shaderModule;
 			shaderStage.pName = "main";
+
 		}
 	}
 

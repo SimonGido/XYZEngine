@@ -19,105 +19,31 @@ namespace XYZ {
 
 	void EditorLayer::OnAttach()
 	{
-		/*
-		ScriptEngine::Init("Assets/Scripts/XYZScript.dll");
-		
-		m_Scene = AssetManager::GetAsset<Scene>(AssetManager::GetAssetHandle("Assets/Scenes/NewScene.xyz"));
-		m_SceneRenderer   = Ref<SceneRenderer>::Create();
-		m_SceneRenderer2D = Ref<Renderer2D>::Create();
-		m_EditorRenderer  = Ref<EditorRenderer>::Create();
-		m_SceneRenderer->SetRenderer2D(m_SceneRenderer2D);
-
-		m_SceneHierarchy.SetContext(m_Scene);
-		m_ScenePanel.SetContext(m_Scene);	
-		ScriptEngine::SetSceneContext(m_Scene);
-
-		uint32_t windowWidth = Application::Get().GetWindow().GetWidth();
-		uint32_t windowHeight = Application::Get().GetWindow().GetHeight();
-		m_SceneRenderer->SetViewportSize(windowWidth, windowHeight);
-		m_Scene->SetViewportSize(windowWidth, windowHeight);		
-
-		m_AssetBrowser.SetAssetSelectedCallback([&](const Ref<Asset>& asset) {
-			 m_AssetInspectorContext.SetContext(asset);
-			 if (asset.Raw())
-			 {
-				 m_Inspector.SetContext(&m_AssetInspectorContext);
-			 }
-		});
-
-		m_ScenePanel.SetEntitySelectedCallback([&](SceneEntity entity) {
-			m_SceneEntityInspectorContext.SetContext(entity);
-			if (entity)
-			{
-				m_Inspector.SetContext(&m_SceneEntityInspectorContext);
-			}
-		});
-
-		m_SceneHierarchy.SetEntitySelectedCallback([&](SceneEntity entity) {
-			m_SceneEntityInspectorContext.SetContext(entity);
-			if (entity)
-			{
-				m_Inspector.SetContext(&m_SceneEntityInspectorContext);
-			}
-		});
-
-
-		m_SpriteEditor.SetContext(AssetManager::GetAsset<Texture2D>(AssetManager::GetAssetHandle("Assets/Textures/player_sprite.png.tex")));
-
-
-		auto entity = m_Scene->GetEntityByName("Body");
-		//gpuParticleExample(entity);
-		cpuParticleExample(entity);
-		animationExample(entity);
-
-		Renderer::WaitAndRender();
-		*/
+		m_Shader = Shader::Create("Assets/Shaders/DefaultLitShader.glsl");
+		//m_Framebuffer = Framebuffer::Create({ 0,0 });
+		//m_RenderPass = RenderPass::Create({});
+		//BufferLayout layout = {
+		//	{0, XYZ::ShaderDataType::Float4, "a_Color" },
+		//	{1, XYZ::ShaderDataType::Float3, "a_Position" },
+		//	{2, XYZ::ShaderDataType::Float2, "a_TexCoord" },
+		//	{3, XYZ::ShaderDataType::Float,  "a_TextureID" },
+		//	{4, XYZ::ShaderDataType::Float,  "a_TilingFactor" }
+		//};
+		//m_Pipeline = Pipeline::Create({ m_Shader, layout, });
 	}
 	
-
 	void EditorLayer::OnDetach()
 	{
-		/*
-		ScriptEngine::Shutdown();
-		AssetSerializer::SerializeAsset(m_Scene);
-		*/
+		
 	}
 	void EditorLayer::OnUpdate(Timestep ts)
 	{			
-		/*
-		if (m_Scene->GetState() == SceneState::Play)
-		{
-			// We want render before updating, because render waits for threads 
-			m_Scene->OnRender(m_SceneRenderer);
-			m_Scene->OnUpdate(ts);
-		}
-		else
-		{
-			auto& editorCamera = m_ScenePanel.GetEditorCamera();
-			m_Scene->OnRenderEditor(m_SceneRenderer, m_EditorRenderer, editorCamera, ts);
-		
-			m_EditorRenderer->BeginPass(m_SceneRenderer->GetFinalRenderPass(), editorCamera.GetViewProjection(), editorCamera.GetPosition());		
-			m_EditorRenderer->EndPass(m_SceneRenderer2D);
-		}
-
-		m_ScenePanel.OnUpdate(ts);
-		m_SpriteEditor.OnUpdate(m_SceneRenderer2D, m_EditorRenderer, ts);
-		m_AnimationEditor.OnUpdate(ts);
-		*/
+	
 	}
 
 	void EditorLayer::OnEvent(Event& event)
 	{			
-		/*
-		EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&EditorLayer::onMouseButtonPress, this));
-		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorLayer::onMouseButtonRelease, this));	
-		dispatcher.Dispatch<WindowResizeEvent>(Hook(&EditorLayer::onWindowResize, this));
-		dispatcher.Dispatch<KeyPressedEvent>(Hook(&EditorLayer::onKeyPress, this));
-
-		m_ScenePanel.OnEvent(event);
-		m_SpriteEditor.OnEvent(event);
-		*/
+		
 	}
 
 	void EditorLayer::OnImGuiRender()
@@ -255,15 +181,15 @@ namespace XYZ {
 		meshComponent.Mesh = MeshFactory::CreateInstancedQuad(
 			glm::vec3(1.0f), 
 			{ 
-				{ 0, XYZ::ShaderDataComponent::Float3, "a_Position" },
-				{ 1, XYZ::ShaderDataComponent::Float2, "a_TexCoord" }
+				{ 0, XYZ::ShaderDataType::Float3, "a_Position" },
+				{ 1, XYZ::ShaderDataType::Float2, "a_TexCoord" }
 			},
 			{
-				{ 2, XYZ::ShaderDataComponent::Float4, "a_IColor",     1 },
-				{ 3, XYZ::ShaderDataComponent::Float3, "a_IPosition",  1 },
-				{ 4, XYZ::ShaderDataComponent::Float3, "a_ISize",      1 },
-				{ 5, XYZ::ShaderDataComponent::Float4, "a_IAxis",      1 },
-				{ 6, XYZ::ShaderDataComponent::Float2, "a_ITexOffset", 1 }
+				{ 2, XYZ::ShaderDataType::Float4, "a_IColor",     1 },
+				{ 3, XYZ::ShaderDataType::Float3, "a_IPosition",  1 },
+				{ 4, XYZ::ShaderDataType::Float3, "a_ISize",      1 },
+				{ 5, XYZ::ShaderDataType::Float4, "a_IAxis",      1 },
+				{ 6, XYZ::ShaderDataType::Float2, "a_ITexOffset", 1 }
 			}, numParticles);
 
 		auto& particleComponentCPU = entity.EmplaceComponent<ParticleComponentCPU>();

@@ -105,8 +105,8 @@ project "XYZEngine"
 				systemversion "latest"
 		files
 		{
-			"src/Platform/Windows/**.h",
-			"src/Platform/Windows/**.cpp",
+			"src/XYZ/Platform/Windows/**.h",
+			"src/XYZ/Platform/Windows/**.cpp",
 		}
 
 		filter "configurations:Debug"
