@@ -31,5 +31,7 @@ namespace XYZ {
 		VulkanSwapChain*			 m_SwapChain;
 		std::vector<VkCommandBuffer> m_CommandBuffers;
 		bool						 m_OwnedBySwapchain;
+
+		friend class VulkanSwapChain;
 	};
 }

@@ -12,13 +12,13 @@
 namespace XYZ {
 	static bool GLFWInitialized = false;
 
-	std::unique_ptr<Window> Window::Create(const WindowProperties& props)
+	std::unique_ptr<Window> Window::Create(const Ref<APIContext>& context, const WindowProperties& props)
 	{
-		return std::make_unique<WindowsWindow>(props);
+		return std::make_unique<WindowsWindow>(props, context);
 	}
 	
 
-	WindowsWindow::WindowsWindow(const WindowProperties& props)
+	WindowsWindow::WindowsWindow(const WindowProperties& props, const Ref<APIContext>& context)
 	{
 		if (!GLFWInitialized)
 		{
@@ -57,11 +57,9 @@ namespace XYZ {
 		{
 			m_Window = glfwCreateWindow(props.Width, props.Height, props.Title.c_str(), NULL, NULL);
 		}
-
-		m_Context = APIContext::Create(m_Window);	
-		m_Context->Init();
+		m_Context = context;
+		m_Context->Init(m_Window);
 		m_Context->CreateSwapChain(&m_Data.Width, &m_Data.Height, m_Data.VSync);
-
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 		
 		

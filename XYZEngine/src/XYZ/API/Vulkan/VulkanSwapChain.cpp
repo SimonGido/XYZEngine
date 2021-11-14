@@ -7,6 +7,30 @@ namespace XYZ {
 
 	#define FRAMES_IN_FLIGHT 3
 
+	static VulkanSwapChain::SwapChainSupportDetails QuerySwapChainSupport(VkSurfaceKHR surface, VkPhysicalDevice physicalDevice)
+	{
+		VulkanSwapChain::SwapChainSupportDetails details;
+		VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &details.Capabilities));
+
+		uint32_t formatCount;
+		VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, nullptr));
+		if (formatCount != 0)
+		{
+			details.Formats.resize(formatCount);
+			VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, details.Formats.data()));
+		}
+
+		uint32_t presentModeCount;
+		VK_CHECK_RESULT(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, nullptr));
+
+		if (presentModeCount != 0)
+		{
+			details.PresentModes.resize(presentModeCount);
+			VK_CHECK_RESULT(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, details.PresentModes.data()));
+		}
+
+		return details;
+	}
 	static std::vector<VkQueueFamilyProperties> GetQueueFamilyProperties(VkPhysicalDevice physicalDevice)
 	{
 		uint32_t queueCount;
@@ -22,14 +46,15 @@ namespace XYZ {
 		:
 		m_WindowHandle(nullptr),
 		m_Instance(VK_NULL_HANDLE),
-		m_RenderPass(VK_NULL_HANDLE),
+		m_VulkanRenderPass(VK_NULL_HANDLE),
 		m_Surface(VK_NULL_HANDLE),
 		m_SwapChain(VK_NULL_HANDLE),
 		m_ImageCount(0),
 		m_CurrentImageIndex(0),
 		m_CurrentBufferIndex(0),
 		m_CommandPool(VK_NULL_HANDLE),
-		m_VSync(false)
+		m_VSync(false),
+		m_RenderPassCreated(false)
 	{
 		m_Format.format = VK_FORMAT_MAX_ENUM;
 		m_Format.colorSpace = VK_COLOR_SPACE_MAX_ENUM_KHR;
@@ -60,6 +85,8 @@ namespace XYZ {
 	void VulkanSwapChain::OnResize(uint32_t width, uint32_t height)
 	{
 		auto device = m_Device->GetVulkanDevice();
+		auto physicaldevice = m_Device->GetPhysicalDevice()->GetVulkanPhysicalDevice();
+		VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicaldevice, m_Surface, &m_SwapChainDetails.Capabilities));
 
 		vkDeviceWaitIdle(device);
 		Create(&width, &height, m_VSync);
@@ -116,17 +143,19 @@ namespace XYZ {
 		m_WindowHandle = windowHandle;
 
 		m_Device->Init(m_Surface);
+		m_SwapChainDetails = QuerySwapChainSupport(m_Surface, m_Device->GetPhysicalDevice()->GetVulkanPhysicalDevice());
+
 		createSyncObjects();
+		findSurfaceFormat();
+		findImageCount();	
 	}
 
 	void VulkanSwapChain::Create(uint32_t* width, uint32_t* height, bool vSync)
 	{
-		findSurfaceFormat();
-		findImageCount();
+		VkDevice device = m_Device->GetVulkanDevice();
+		const auto& capabilities = m_SwapChainDetails.Capabilities;
 		findSwapExtent(width, height);
 
-		VkDevice device = m_Device->GetVulkanDevice();
-		const auto& capabilities = m_Device->GetPhysicalDevice()->GetSwapChainSupportDetails().Capabilities;
 		VkSurfaceTransformFlagsKHR preTransform;
 		if (capabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR)
 		{
@@ -159,9 +188,10 @@ namespace XYZ {
 		destroySwapChain(oldSwapChain);
 		getImages();
 		createSwapChainBuffers();
-		createRenderPass();
+		createVulkanRenderPass();
 		createFramebuffers();
-		createCommandPool();	
+		createCommandPool();
+		createRenderPass();
 	}
 	Ref<RenderCommandBuffer> VulkanSwapChain::GetRenderCommandBuffer()
 	{
@@ -185,9 +215,7 @@ namespace XYZ {
 
 	void VulkanSwapChain::findSurfaceFormat()
 	{
-		const auto& swapChainCapabilities = m_Device->GetPhysicalDevice()->GetSwapChainSupportDetails();
-
-		for (const auto& availableFormat : swapChainCapabilities.Formats)
+		for (const auto& availableFormat : m_SwapChainDetails.Formats)
 		{
 			if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB
 				&& availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
@@ -197,16 +225,14 @@ namespace XYZ {
 			}
 		}
 		// preferred combination is not available use first
-		m_Format = swapChainCapabilities.Formats[0];
+		m_Format = m_SwapChainDetails.Formats[0];
 	}
 
 	VkPresentModeKHR VulkanSwapChain::findPresentMode(bool vSync)
 	{
-		const auto& swapChainCapabilities = m_Device->GetPhysicalDevice()->GetSwapChainSupportDetails();
-
 		if (vSync == false)
 		{
-			for (const auto& availablePresentMode : swapChainCapabilities.PresentModes)
+			for (const auto& availablePresentMode : m_SwapChainDetails.PresentModes)
 			{
 				if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
 				{
@@ -220,17 +246,17 @@ namespace XYZ {
 
 	void VulkanSwapChain::findSwapExtent(uint32_t* width, uint32_t* height)
 	{
-		const auto& capabilities = m_Device->GetPhysicalDevice()->GetSwapChainSupportDetails().Capabilities;
+		const auto& capabilities = m_SwapChainDetails.Capabilities;
 		if (capabilities.currentExtent.width != UINT32_MAX)
 		{
 			m_Extent = capabilities.currentExtent;
 		}
 		else
 		{
-			VkExtent2D actualExtent = {
+			VkExtent2D actualExtent{
 				*width, *height
 			};
-			actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
+			actualExtent.width  = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
 			actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
 			m_Extent = actualExtent;
 		}
@@ -240,7 +266,7 @@ namespace XYZ {
 
 	void VulkanSwapChain::findImageCount()
 	{
-		const auto& capabilities = m_Device->GetPhysicalDevice()->GetSwapChainSupportDetails().Capabilities;
+		const auto& capabilities = m_SwapChainDetails.Capabilities;
 		m_ImageCount = capabilities.minImageCount + 1; // Sometimes we would have to wait on the driver to complete internal operations, so we want min + 1
 
 		// 0 means there is no maximum, we can not exceed it.
@@ -315,7 +341,7 @@ namespace XYZ {
 
 			vkFreeCommandBuffers(device, m_CommandPool, static_cast<uint32_t>(m_CommandBuffers.size()), m_CommandBuffers.data());
 			vkDestroyCommandPool(device, m_CommandPool, nullptr);
-			vkDestroyRenderPass(device, m_RenderPass, nullptr);
+			vkDestroyRenderPass(device, m_VulkanRenderPass, nullptr);
 			for (uint32_t i = 0; i < m_Buffers.size(); i++)
 			{
 				vkDestroyImageView(device, m_Buffers[i].View, nullptr);
@@ -324,7 +350,7 @@ namespace XYZ {
 		}
 	}
 
-	void VulkanSwapChain::createRenderPass()
+	void VulkanSwapChain::createVulkanRenderPass()
 	{
 		VkDevice device = m_Device->GetVulkanDevice();
 		VkFormat depthFormat = m_Device->GetPhysicalDevice()->GetDepthFormat();
@@ -386,7 +412,7 @@ namespace XYZ {
 		renderPassInfo.dependencyCount = 1;
 		renderPassInfo.pDependencies = &dependency;
 
-		VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_RenderPass));
+		VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_VulkanRenderPass));
 	}
 	void VulkanSwapChain::createFramebuffers()
 	{
@@ -394,7 +420,7 @@ namespace XYZ {
 		VkFramebufferCreateInfo framebufferCreateInfo{};
 		framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		framebufferCreateInfo.pNext = NULL;
-		framebufferCreateInfo.renderPass = m_RenderPass;
+		framebufferCreateInfo.renderPass = m_VulkanRenderPass;
 		framebufferCreateInfo.attachmentCount = 1;
 		framebufferCreateInfo.width = m_Extent.width;
 		framebufferCreateInfo.height = m_Extent.height;
@@ -424,10 +450,32 @@ namespace XYZ {
 		commandBufferAllocateInfo.commandBufferCount = count;
 		m_CommandBuffers.resize(count);
 		VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, m_CommandBuffers.data()));
-	
-		
-		m_RenderCommandBuffer = Ref<VulkanRenderCommandBuffer>::Create("SwapChainCommandBuffer", *this);
 	}
+
+	void VulkanSwapChain::createRenderPass()
+	{
+		if (!m_RenderPassCreated)
+		{
+			m_RenderCommandBuffer = Ref<VulkanRenderCommandBuffer>::Create("SwapChainCommandBuffer", *this);
+			FramebufferSpecs specs;
+			specs.Attachments = { ImageFormat::RGBA8 };
+			specs.SwapChainTarget = true;
+			specs.Width = m_Extent.width;
+			specs.Height = m_Extent.height;
+
+			m_Framebuffer = Ref<VulkanFramebuffer>::Create(specs);
+			RenderPassSpecification renderPassSpecs;
+			renderPassSpecs.TargetFramebuffer = m_Framebuffer;
+			m_RenderPass = Ref<VulkanRenderPass>::Create(renderPassSpecs);
+			m_RenderPassCreated = true;
+		}
+		else
+		{
+			m_RenderCommandBuffer->m_CommandBuffers = m_CommandBuffers;
+			m_Framebuffer->m_RenderPass = m_VulkanRenderPass;
+		}
+	}
+
 	VkResult VulkanSwapChain::queuePresent(VkQueue queue, uint32_t imageIndex, VkSemaphore waitSemaphore)
 	{
 		VkPresentInfoKHR presentInfo = {};
@@ -447,7 +495,7 @@ namespace XYZ {
 	}
 	VkCompositeAlphaFlagBitsKHR VulkanSwapChain::selectCompositeAlpha() const
 	{
-		const auto& capabilities = m_Device->GetPhysicalDevice()->GetSwapChainSupportDetails().Capabilities;
+		const auto& capabilities = m_SwapChainDetails.Capabilities;
 		// Simply select the first composite alpha format available
 		std::vector<VkCompositeAlphaFlagBitsKHR> compositeAlphaFlags = {
 			VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,

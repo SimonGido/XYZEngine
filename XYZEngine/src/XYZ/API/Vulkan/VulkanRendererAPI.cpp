@@ -20,7 +20,7 @@ namespace XYZ {
 		
 		Renderer::Submit([vulkanCommandBuffer, vulkanPipeline, renderPass, framebuffer]() mutable {
 			
-			Ref<VulkanContext> vulkanContext = Application::Get().GetWindow().GetContext();
+			Ref<VulkanContext> vulkanContext = Renderer::GetAPIContext();
 			uint32_t frameIndex = vulkanContext->GetSwapChain().GetCurrentBufferIndex();
 			uint32_t width = framebuffer->GetSpecification().Width;
 			uint32_t height = framebuffer->GetSpecification().Height;

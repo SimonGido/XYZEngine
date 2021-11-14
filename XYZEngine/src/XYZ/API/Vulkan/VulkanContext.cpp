@@ -25,11 +25,10 @@ namespace XYZ {
 	}
 
 
-	VulkanContext::VulkanContext(GLFWwindow* window)
+	VulkanContext::VulkanContext()
 		:
 		m_DebugReportCallback(VK_NULL_HANDLE),
-		m_PipelineCache(VK_NULL_HANDLE),
-		m_WindowHandle(window)
+		m_PipelineCache(VK_NULL_HANDLE)
 	{
 	}
 	VulkanContext::~VulkanContext()
@@ -45,8 +44,9 @@ namespace XYZ {
 		s_VulkanInstance = nullptr;
 		VulkanAllocator::Shutdown();
 	}
-	void VulkanContext::Init()
+	void VulkanContext::Init(GLFWwindow* window)
 	{
+		m_WindowHandle = window;
 		// Application info
 		VkApplicationInfo appInfo{};
 		appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -128,9 +128,13 @@ namespace XYZ {
 	{
 		return m_SwapChain.GetRenderCommandBuffer();
 	}
+	Ref<RenderPass> VulkanContext::GetRenderPass()
+	{
+		return m_SwapChain.GetRenderPass();
+	}
 	Ref<VulkanContext> VulkanContext::Get()
 	{
-		return Ref<VulkanContext>(Application::Get().GetWindow().GetContext());
+		return Ref<VulkanContext>(Renderer::GetAPIContext());
 	}
 	void VulkanContext::setupDebugCallback()
 	{

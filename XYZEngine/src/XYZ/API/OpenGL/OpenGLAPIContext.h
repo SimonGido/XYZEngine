@@ -8,10 +8,10 @@ namespace XYZ {
 	class OpenGLAPIContext : public APIContext
 	{
 	public:
-		OpenGLAPIContext(GLFWwindow* windowHandle);
+		OpenGLAPIContext();
 		virtual ~OpenGLAPIContext() override;
 
-		virtual void Init() override;
+		virtual void Init(GLFWwindow* window) override;
 		virtual void SwapBuffers() override;
 		virtual Ref<RenderCommandBuffer> GetRenderCommandBuffer() override;
 	private:

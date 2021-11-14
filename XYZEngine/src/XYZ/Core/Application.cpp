@@ -31,7 +31,7 @@ namespace XYZ {
 		m_Running = true;
 
 		Renderer::Init();
-		m_Window = Window::Create();
+		m_Window = Window::Create(Renderer::GetAPIContext());
 		m_Window->RegisterCallback(Hook(&Application::OnEvent, this));	
 		m_Window->SetVSync(0);
 		Renderer::InitResources();
@@ -113,7 +113,7 @@ namespace XYZ {
 	bool Application::onWindowResized(WindowResizeEvent& event)
 	{
 		Renderer::SetViewPort(0, 0, event.GetWidth(), event.GetHeight());
-		m_Window->GetContext()->OnResize(event.GetWidth(), event.GetHeight());
+		Renderer::GetAPIContext()->OnResize(event.GetWidth(), event.GetHeight());
 		return false;
 	}
 

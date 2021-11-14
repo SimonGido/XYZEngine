@@ -16,5 +16,7 @@ namespace XYZ {
 	private:
 		FramebufferSpecs m_Specification;
 		VkRenderPass	 m_RenderPass;
+
+		friend class VulkanSwapChain;
 	};
 }

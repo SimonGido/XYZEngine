@@ -4,32 +4,36 @@
 #include "VulkanContext.h"
 
 namespace XYZ {
-
-	static VulkanPhysicalDevice::SwapChainSupportDetails QuerySwapChainSupport(VkSurfaceKHR surface, VkPhysicalDevice physicalDevice)
+	struct SwapChainSupportDetails
 	{
-		VulkanPhysicalDevice::SwapChainSupportDetails details;
-		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &details.Capabilities);
+		VkSurfaceCapabilitiesKHR		Capabilities;
+		std::vector<VkSurfaceFormatKHR> Formats;
+		std::vector<VkPresentModeKHR>   PresentModes;
+	};
+	static SwapChainSupportDetails QuerySwapChainSupport(VkSurfaceKHR surface, VkPhysicalDevice physicalDevice)
+	{
+		SwapChainSupportDetails details;
+		VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &details.Capabilities));
 
 		uint32_t formatCount;
-		vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, nullptr);
+		VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, nullptr));
 		if (formatCount != 0)
 		{
 			details.Formats.resize(formatCount);
-			vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, details.Formats.data());
+			VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &formatCount, details.Formats.data()));
 		}
 
 		uint32_t presentModeCount;
-		vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, nullptr);
+		VK_CHECK_RESULT(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, nullptr));
 
 		if (presentModeCount != 0)
 		{
 			details.PresentModes.resize(presentModeCount);
-			vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, details.PresentModes.data());
+			VK_CHECK_RESULT(vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, &presentModeCount, details.PresentModes.data()));
 		}
 
 		return details;
 	}
-
 	static std::vector<VkPhysicalDevice> GetPhysicalDevices(VkInstance instance)
 	{
 		std::vector<VkPhysicalDevice> devices;
@@ -103,7 +107,7 @@ namespace XYZ {
 		{
 			VkPhysicalDeviceProperties deviceProperties;
 			vkGetPhysicalDeviceProperties(device, &deviceProperties);
-			VulkanPhysicalDevice::SwapChainSupportDetails swapChainDetails = QuerySwapChainSupport(surface, device);
+			SwapChainSupportDetails swapChainDetails = QuerySwapChainSupport(surface, device);
 
 			if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
 				score += discreteGPUScore;
@@ -136,7 +140,6 @@ namespace XYZ {
 		vkGetPhysicalDeviceFeatures(m_PhysicalDevice, &m_Features);
 		vkGetPhysicalDeviceMemoryProperties(m_PhysicalDevice, &m_MemoryProperties);
 
-		m_SwapChainSupportDetails = QuerySwapChainSupport(surface, m_PhysicalDevice);
 		m_QueueFamilyProperties = GetQueueFamilyProperties(m_PhysicalDevice);
 		m_SupportedExtensions = GetSupportedExtensions(m_PhysicalDevice);
 
@@ -159,6 +162,7 @@ namespace XYZ {
 	{
 		return m_SupportedExtensions.find(extensionName) != m_SupportedExtensions.end();
 	}
+	
 	void VulkanPhysicalDevice::setupQueueFamilyIndices(int flags)
 	{
 		// Dedicated queue for compute

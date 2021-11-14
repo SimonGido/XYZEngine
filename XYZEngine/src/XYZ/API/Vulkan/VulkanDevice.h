@@ -19,25 +19,21 @@ namespace XYZ {
 			uint32_t Transfer	   = Invalid;
 			uint32_t Presentation  = Invalid;
 		};
-		struct SwapChainSupportDetails
-		{
-			VkSurfaceCapabilitiesKHR		Capabilities;
-			std::vector<VkSurfaceFormatKHR> Formats;
-			std::vector<VkPresentModeKHR>   PresentModes;
-		};
+
 	public:
 		VulkanPhysicalDevice(VkSurfaceKHR surface);
 		~VulkanPhysicalDevice();
 
+		
 		bool							  IsExtensionSupported(const std::string& extensionName) const;
 		VkPhysicalDevice				  GetVulkanPhysicalDevice() const { return m_PhysicalDevice; }
 		VkPhysicalDeviceMemoryProperties  GetMemoryProperties()		const { return m_MemoryProperties; }
 		VkFormat						  GetDepthFormat()			const { return m_DepthFormat; }
 		
-		const SwapChainSupportDetails&    GetSwapChainSupportDetails() const { return m_SwapChainSupportDetails; }
-		const QueueFamilyIndices&		  GetQueueFamilyIndices()      const { return m_QueueFamilyIndices; }
-		const VkPhysicalDeviceProperties& GetProperties()		       const { return m_Properties; }
-		const VkPhysicalDeviceFeatures&   GetFeatures()				   const { return m_Features; }
+	
+		const QueueFamilyIndices&		  GetQueueFamilyIndices()								 const { return m_QueueFamilyIndices; }
+		const VkPhysicalDeviceProperties& GetProperties()										 const { return m_Properties; }
+		const VkPhysicalDeviceFeatures&   GetFeatures()											 const { return m_Features; }
 	private:
 		void setupQueueFamilyIndices(int flags);
 		void findPresentationQueue(VkSurfaceKHR surface);
@@ -51,7 +47,6 @@ namespace XYZ {
 		VkPhysicalDeviceMemoryProperties	 m_MemoryProperties;
 		VkFormat							 m_DepthFormat;
 		QueueFamilyIndices					 m_QueueFamilyIndices;
-		SwapChainSupportDetails				 m_SwapChainSupportDetails;
 
 		std::unordered_set<std::string>		 m_SupportedExtensions;
 		std::vector<VkQueueFamilyProperties> m_QueueFamilyProperties;

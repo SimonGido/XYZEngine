@@ -2,6 +2,8 @@
 #include "Vulkan.h"
 #include "VulkanDevice.h"
 #include "VulkanRenderCommandBuffer.h"
+#include "VulkanFramebuffer.h"
+#include "VulkanRenderPass.h"
 
 #include <vector>
 
@@ -10,6 +12,13 @@ namespace XYZ {
 
 	class VulkanSwapChain
 	{
+	public:
+		struct SwapChainSupportDetails
+		{
+			VkSurfaceCapabilitiesKHR		Capabilities;
+			std::vector<VkSurfaceFormatKHR> Formats;
+			std::vector<VkPresentModeKHR>   PresentModes;
+		};
 	public:
 		VulkanSwapChain();
 		
@@ -23,8 +32,9 @@ namespace XYZ {
 		void Create(uint32_t* width, uint32_t* height, bool vSync);
 
 		Ref<RenderCommandBuffer> GetRenderCommandBuffer();
+		Ref<RenderPass>			 GetRenderPass() { return m_RenderPass; }
 		Ref<VulkanDevice>		 GetDevice() { return m_Device; }
-		VkRenderPass			 GetRenderPass() const { return m_RenderPass; }
+		VkRenderPass			 GetVulkanRenderPass() const { return m_VulkanRenderPass; }
 		
 		VkFramebuffer			 GetFramebuffer(uint32_t index) const;
 		VkFramebuffer			 GetCurrentFramebuffer() const;
@@ -38,6 +48,7 @@ namespace XYZ {
 		uint32_t				 GetCurrentBufferIndex() const { return m_CurrentBufferIndex; }
 		uint32_t				 GetWidth() const { return m_Extent.width; }
 		uint32_t				 GetHeight() const { return m_Extent.height; }
+	
 	private:
 		void getImages();
 		void createSyncObjects();
@@ -45,9 +56,10 @@ namespace XYZ {
 		void findImageCount();
 		void findSwapExtent(uint32_t* width, uint32_t* height);	
 		void createSwapChainBuffers();
-		void createRenderPass();
+		void createVulkanRenderPass();
 		void createFramebuffers();
 		void createCommandPool();
+		void createRenderPass();
 
 		void destroySwapChain(VkSwapchainKHR swapChain);
 		VkResult queuePresent(VkQueue queue, uint32_t imageIndex, VkSemaphore waitSemaphore = VK_NULL_HANDLE);
@@ -59,19 +71,22 @@ namespace XYZ {
 		VkInstance					   m_Instance;
 		Ref<VulkanDevice>			   m_Device;
 		Ref<VulkanRenderCommandBuffer> m_RenderCommandBuffer;
-		VkRenderPass				   m_RenderPass;
-									 
-		VkSurfaceKHR				 m_Surface;
-		VkSwapchainKHR				 m_SwapChain;
-		VkSurfaceFormatKHR			 m_Format;
-		VkExtent2D					 m_Extent;
-		uint32_t					 m_ImageCount;
-		uint32_t					 m_CurrentImageIndex;
-		uint32_t					 m_CurrentBufferIndex;
-		std::vector<VkImage>		 m_Images;
-		std::vector<VkFramebuffer>	 m_Framebuffers;
-		std::vector<VkCommandBuffer> m_CommandBuffers;  
-		VkCommandPool				 m_CommandPool;
+		Ref<VulkanFramebuffer>		   m_Framebuffer;
+		Ref<VulkanRenderPass>		   m_RenderPass;
+		VkRenderPass				   m_VulkanRenderPass;
+											
+		VkSurfaceKHR				   m_Surface;
+		VkSwapchainKHR				   m_SwapChain;
+		VkSurfaceFormatKHR			   m_Format;
+		VkExtent2D					   m_Extent;
+		uint32_t					   m_ImageCount;
+		uint32_t					   m_CurrentImageIndex;
+		uint32_t					   m_CurrentBufferIndex;
+		std::vector<VkImage>		   m_Images;
+		std::vector<VkFramebuffer>	   m_Framebuffers;
+		std::vector<VkCommandBuffer>   m_CommandBuffers;  
+		VkCommandPool				   m_CommandPool;
+		SwapChainSupportDetails		   m_SwapChainDetails;
 
 		struct Semaphores
 		{
@@ -91,5 +106,6 @@ namespace XYZ {
 		};
 		std::vector<SwapChainBuffer> m_Buffers;
 		bool						 m_VSync;
+		bool						 m_RenderPassCreated;
 	};
 }

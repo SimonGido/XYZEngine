@@ -20,21 +20,11 @@ namespace XYZ {
 	void EditorLayer::OnAttach()
 	{
 		m_Shader = Shader::Create("Assets/Shaders/VulkanTestShader.glsl");
-
-		uint32_t width = Application::Get().GetWindow().GetWidth();
-		uint32_t height = Application::Get().GetWindow().GetHeight();
-
-		FramebufferSpecs specs;
-		specs.Attachments = { ImageFormat::RGBA8 };
-		specs.SwapChainTarget = true;
-		specs.Width = width;
-		specs.Height = height;
-
-		m_Framebuffer = Framebuffer::Create(specs);
-		m_RenderPass = RenderPass::Create({ m_Framebuffer });
+		Ref<APIContext> context = Renderer::GetAPIContext();
+		m_RenderPass = context->GetRenderPass();
 		BufferLayout layout {};
 		m_Pipeline = Pipeline::Create({ m_Shader, layout, m_RenderPass });
-		m_RenderCommandBuffer = Application::Get().GetWindow().GetContext()->GetRenderCommandBuffer();
+		m_RenderCommandBuffer = context->GetRenderCommandBuffer();
 	}
 	
 	void EditorLayer::OnDetach()

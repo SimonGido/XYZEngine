@@ -21,6 +21,7 @@ namespace XYZ {
 	{
 		std::shared_ptr<ThreadPass<RenderCommandQueue>> m_CommandQueue;
 		ThreadPool									    m_Pool;
+		Ref<APIContext>									m_APIContext;
 		Ref<ShaderLibrary>								m_ShaderLibrary;
 		Ref<RenderPass>									m_ActiveRenderPass;
 		Ref<VertexArray>								m_FullscreenQuadVertexArray;
@@ -91,6 +92,7 @@ namespace XYZ {
 	{
 		s_Data.m_Pool.PushThread();
 		s_Data.m_CommandQueue = std::make_shared<ThreadPass<RenderCommandQueue>>();	
+		s_Data.m_APIContext = APIContext::Create();
 		s_RendererAPI = InitRendererAPI();
 	}
 
@@ -124,6 +126,7 @@ namespace XYZ {
 		s_Data.m_FullscreenQuadVertexBuffer.Reset();
 		s_Data.m_FullscreenQuadIndexBuffer.Reset();
 		s_Data.m_ShaderLibrary.Reset();
+		s_Data.m_APIContext.Reset();
 		delete s_RendererAPI;
 		s_RendererAPI = nullptr;
 		auto queue = s_Data.m_CommandQueue;
@@ -296,6 +299,10 @@ namespace XYZ {
 	Ref<ShaderLibrary> Renderer::GetShaderLibrary()
 	{
 		return s_Data.m_ShaderLibrary;
+	}
+	Ref<APIContext> Renderer::GetAPIContext()
+	{
+		return s_Data.m_APIContext;
 	}
 	const RenderAPICapabilities& Renderer::GetCapabilities()
 	{

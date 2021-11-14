@@ -31,9 +31,9 @@ namespace XYZ {
 		}
 		else
 		{
-			Ref<VulkanContext> context = Application::Get().GetWindow().GetContext();
+			Ref<VulkanContext> context = Renderer::GetAPIContext();
 			VulkanSwapChain& swapChain = context->GetSwapChain();
-			m_RenderPass = swapChain.GetRenderPass();
+			m_RenderPass = swapChain.GetVulkanRenderPass();
 
 			//m_ClearValues.clear();
 			//m_ClearValues.emplace_back().color = { 0.0f, 0.0f, 0.0f, 1.0f };

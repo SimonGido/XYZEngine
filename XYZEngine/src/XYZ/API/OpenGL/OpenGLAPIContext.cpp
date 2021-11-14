@@ -61,10 +61,10 @@ namespace XYZ {
 	}
 #endif
 
-	OpenGLAPIContext::OpenGLAPIContext(GLFWwindow* windowHandle)
-		: m_WindowHandle(windowHandle)
+	OpenGLAPIContext::OpenGLAPIContext()
+		: m_WindowHandle(nullptr)
 	{
-		XYZ_ASSERT(windowHandle, "Window handle is null!");
+		
 	}
 
 	OpenGLAPIContext::~OpenGLAPIContext()
@@ -72,8 +72,10 @@ namespace XYZ {
 		
 	}
 
-	void OpenGLAPIContext::Init()
-	{		
+	void OpenGLAPIContext::Init(GLFWwindow* window)
+	{
+		XYZ_ASSERT(window, "Window handle is null!");
+		m_WindowHandle = window;
 		Ref<OpenGLAPIContext> instance = this;
 		Renderer::SubmitAndWait([instance]() {
 			glfwMakeContextCurrent(instance->m_WindowHandle);

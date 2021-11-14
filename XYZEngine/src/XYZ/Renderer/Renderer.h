@@ -65,6 +65,7 @@ namespace XYZ {
 		static void SubmitFullscreenQuad();
 
 		static Ref<ShaderLibrary> GetShaderLibrary();
+		static Ref<APIContext>    GetAPIContext();
 		static const RenderAPICapabilities& GetCapabilities();
 
 		template<typename FuncT>
