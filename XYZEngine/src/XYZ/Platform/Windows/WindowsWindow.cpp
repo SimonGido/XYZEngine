@@ -166,10 +166,15 @@ namespace XYZ {
 		destroy();
 	}
 
-	void WindowsWindow::Update()
+	void WindowsWindow::BeginFrame()
 	{
-		Renderer::BlockRenderThread();
-		glfwPollEvents();				
+		glfwPollEvents();
+		m_Context->BeginFrame();
+	}
+
+	void WindowsWindow::SwapBuffers()
+	{
+		Renderer::BlockRenderThread();	
 		m_Context->SwapBuffers();
 	}
 

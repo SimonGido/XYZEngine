@@ -114,8 +114,15 @@ namespace XYZ {
 	}
 	void VulkanContext::SwapBuffers()
 	{
-		//m_SwapChain.Present();
-		//m_SwapChain.BeginFrame();
+		m_SwapChain.Present();		
+	}
+	void VulkanContext::BeginFrame()
+	{
+		m_SwapChain.BeginFrame();
+	}
+	void VulkanContext::OnResize(uint32_t width, uint32_t height)
+	{
+		m_SwapChain.OnResize(width, height);
 	}
 	Ref<RenderCommandBuffer> VulkanContext::GetRenderCommandBuffer()
 	{

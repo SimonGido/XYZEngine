@@ -19,7 +19,8 @@ namespace XYZ {
 		WindowsWindow(const WindowProperties& props);
 		virtual ~WindowsWindow() override;
 
-		virtual void Update() override;
+		virtual void BeginFrame() override;
+		virtual void SwapBuffers() override;
 		virtual void SetVSync(int32_t frames) override;
 		virtual bool IsClosed() override;
 		virtual void SetStandardCursor(uint8_t cursor) override;

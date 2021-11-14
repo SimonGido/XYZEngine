@@ -62,7 +62,6 @@ namespace XYZ {
 		auto device = m_Device->GetVulkanDevice();
 
 		vkDeviceWaitIdle(device);
-		destroySwapChain(m_SwapChain);
 		Create(&width, &height, m_VSync);
 	}
 	void VulkanSwapChain::BeginFrame()
@@ -89,8 +88,20 @@ namespace XYZ {
 		
 		VK_CHECK_RESULT(vkResetFences(m_Device->GetVulkanDevice(), 1, &m_WaitFences[m_CurrentBufferIndex]));
 		VK_CHECK_RESULT(vkQueueSubmit(m_Device->GetGraphicsQueue(), 1, &submitInfo, m_WaitFences[m_CurrentBufferIndex]));
-		VK_CHECK_RESULT(queuePresent(m_Device->GetGraphicsQueue(), m_CurrentImageIndex, m_Semaphores[m_CurrentBufferIndex].RenderComplete));
-		
+		VkResult result = queuePresent(m_Device->GetGraphicsQueue(), m_CurrentImageIndex, m_Semaphores[m_CurrentBufferIndex].RenderComplete);
+		if (result != VK_SUCCESS || result == VK_SUBOPTIMAL_KHR)
+		{
+			if (result == VK_ERROR_OUT_OF_DATE_KHR)
+			{
+				// Swap chain is no longer compatible with the surface and needs to be recreated
+				OnResize(m_Extent.width, m_Extent.height);
+				return;
+			}
+			else
+			{
+				VK_CHECK_RESULT(result);
+			}
+		}
 		m_CurrentBufferIndex = (m_CurrentBufferIndex + 1) % FRAMES_IN_FLIGHT;
 		
 	}
@@ -302,6 +313,7 @@ namespace XYZ {
 			for (auto framebuffer : m_Framebuffers)
 				vkDestroyFramebuffer(device, framebuffer, nullptr);
 
+			vkFreeCommandBuffers(device, m_CommandPool, static_cast<uint32_t>(m_CommandBuffers.size()), m_CommandBuffers.data());
 			vkDestroyCommandPool(device, m_CommandPool, nullptr);
 			vkDestroyRenderPass(device, m_RenderPass, nullptr);
 			for (uint32_t i = 0; i < m_Buffers.size(); i++)

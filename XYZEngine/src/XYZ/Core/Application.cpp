@@ -70,26 +70,20 @@ namespace XYZ {
 		while (m_Running)
 		{				
 			updateTimestep();
-
 			XYZ_PROFILE_FRAME("MainThread");
-			m_Window->Update();
-			
-			
-
-			{
-				
-				for (Layer* layer : m_LayerStack)
-					layer->OnUpdate(m_Timestep);
-			}
-			VulkanContext::GetSwapChain().BeginFrame();
-			Renderer::WaitAndRender();
-			VulkanContext::GetSwapChain().Present();
+						
+			for (Layer* layer : m_LayerStack)
+				layer->OnUpdate(m_Timestep);
+		
 			#ifdef IMGUI_BUILD
 			{
 				onImGuiRender();
 			}
-			#endif
-			
+			#endif		
+
+			m_Window->BeginFrame();
+			Renderer::WaitAndRender();
+			m_Window->SwapBuffers();
 		}
 		XYZ_PROFILER_SHUTDOWN;
 		Renderer::WaitAndRender();
@@ -119,6 +113,7 @@ namespace XYZ {
 	bool Application::onWindowResized(WindowResizeEvent& event)
 	{
 		Renderer::SetViewPort(0, 0, event.GetWidth(), event.GetHeight());
+		m_Window->GetContext()->OnResize(event.GetWidth(), event.GetHeight());
 		return false;
 	}
 

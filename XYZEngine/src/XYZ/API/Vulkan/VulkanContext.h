@@ -13,6 +13,8 @@ namespace XYZ {
 		virtual void Init() override;
 		virtual void CreateSwapChain(uint32_t* width, uint32_t* height, bool vSync) override;
 		virtual void SwapBuffers() override;
+		virtual void BeginFrame() override;
+		virtual void OnResize(uint32_t width, uint32_t height) override;
 
 		virtual Ref<RenderCommandBuffer> GetRenderCommandBuffer() override;
 		Ref<VulkanDevice>				 GetDevice() { return m_Device; }
