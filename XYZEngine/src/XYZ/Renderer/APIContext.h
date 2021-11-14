@@ -1,4 +1,5 @@
 #pragma once
+#include "RenderCommandBuffer.h"
 
 #include <glm/glm.hpp>
 
@@ -13,6 +14,7 @@ namespace XYZ {
 		virtual void Init() = 0;
 		virtual void CreateSwapChain(uint32_t* width, uint32_t* height, bool vSync) {};
 		virtual void SwapBuffers() = 0;
+		virtual Ref<RenderCommandBuffer> GetRenderCommandBuffer() = 0;
 
 		static Ref<APIContext> Create(void* window);
 	};

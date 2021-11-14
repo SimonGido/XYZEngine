@@ -42,8 +42,7 @@ namespace XYZ {
 		:
 		m_Specification(specs)
 	{
-		XYZ_ASSERT(specs.Shader.Raw(), "");
-		XYZ_ASSERT(specs.RenderPass.Raw(), "");
+		XYZ_ASSERT(specs.Shader.Raw() && specs.RenderPass.Raw(), "");
 		Invalidate();
 	}
 	VulkanPipeline::~VulkanPipeline()
@@ -60,7 +59,7 @@ namespace XYZ {
 	{
 		Ref<VulkanPipeline> instance = this;
 		Renderer::Submit([instance]() mutable {
-
+		
 			VkPipelineInputAssemblyStateCreateInfo inputAssemblyState = {};
 			inputAssemblyState.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 			inputAssemblyState.topology = Utils::GetVulkanTopology(instance->m_Specification.Topology);
@@ -68,13 +67,18 @@ namespace XYZ {
 			instance->createPipelineLayoutInfo();
 			VkPipelineRasterizationStateCreateInfo rasterizationInfo = instance->createRasterizationInfo();
 			VkPipelineViewportStateCreateInfo      viewportStateInfo = instance->createViewportStateInfo();
-			VkPipelineVertexInputStateCreateInfo   vertexInputInfo	 = instance->createVertexInputInfo();
+			VkVertexInputBindingDescription vertexInputBinding;
+			std::vector<VkVertexInputAttributeDescription> vertexInputAttributs;
+			VkPipelineVertexInputStateCreateInfo   vertexInputInfo	 = instance->createVertexInputInfo(vertexInputBinding, vertexInputAttributs);
 			VkPipelineMultisampleStateCreateInfo   multisampleInfo	 = instance->createMultisampleInfo();
 			VkPipelineDepthStencilStateCreateInfo  depthStencilInfo  = instance->createDepthStencilInfo();
-			VkPipelineColorBlendStateCreateInfo    colorBlendInfo	 = instance->createColorBlendInfo();		
-			VkPipelineDynamicStateCreateInfo	   dynamicStateInfo  = instance->createDynamicStateInfo();
+			std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments;
+			VkPipelineColorBlendStateCreateInfo    colorBlendInfo	 = instance->createColorBlendInfo(colorBlendAttachments);		
+			std::vector<VkDynamicState> dynamicStateEnables;
+			VkPipelineDynamicStateCreateInfo	   dynamicStateInfo  = instance->createDynamicStateInfo(dynamicStateEnables);
 			
 			Ref<VulkanFramebuffer> framebuffer = instance->m_Specification.RenderPass->GetSpecification().TargetFramebuffer;
+	
 			VkGraphicsPipelineCreateInfo pipelineCreateInfo = {};
 			pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 			pipelineCreateInfo.layout = instance->m_PipelineLayout;
@@ -89,6 +93,11 @@ namespace XYZ {
 			pipelineCreateInfo.pColorBlendState = &colorBlendInfo;
 			pipelineCreateInfo.pDynamicState = &dynamicStateInfo;
 
+			Ref<VulkanShader> vulkanShader = Ref<VulkanShader>(instance->m_Specification.Shader);
+			const auto& shaderStages = vulkanShader->GetPipelineShaderStageCreateInfos();
+
+			pipelineCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
+			pipelineCreateInfo.pStages = shaderStages.data();
 			// It is possible to derive from existing pipeline ( better performance )
 			// pipelineCreateInfo.flags = VK_PIPELINE_CREATE_DERIVATIVE_BIT;
 			pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
@@ -134,18 +143,17 @@ namespace XYZ {
 
 		return viewportState;
 	}
-	VkPipelineVertexInputStateCreateInfo VulkanPipeline::createVertexInputInfo() const
+	VkPipelineVertexInputStateCreateInfo VulkanPipeline::createVertexInputInfo(VkVertexInputBindingDescription& vertexInputBinding, std::vector<VkVertexInputAttributeDescription>& vertexInputAttributs) const
 	{
 		const BufferLayout& layout = m_Specification.Layout;
-		VkVertexInputBindingDescription vertexInputBinding = {};
 		vertexInputBinding.binding = 0;
 		vertexInputBinding.stride = layout.GetStride();
 		vertexInputBinding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-		// Inpute attribute bindings describe shader attribute locations and memory layouts
-		std::vector<VkVertexInputAttributeDescription> vertexInputAttributs(layout.GetElements().size());
+		
+		// Input attribute bindings describe shader attribute locations and memory layouts
+		vertexInputAttributs.resize(layout.GetElements().size());
 		uint32_t location = 0;
-		for (auto element : layout)
+		for (const auto &element : layout)
 		{
 			vertexInputAttributs[location].binding = 0;
 			vertexInputAttributs[location].location = location;
@@ -156,10 +164,21 @@ namespace XYZ {
 
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-		vertexInputInfo.vertexBindingDescriptionCount = 1;
-		vertexInputInfo.pVertexBindingDescriptions = &vertexInputBinding;
 		vertexInputInfo.vertexAttributeDescriptionCount = (uint32_t)vertexInputAttributs.size();
-		vertexInputInfo.pVertexAttributeDescriptions = vertexInputAttributs.data();
+		
+		
+		if (layout.GetElements().empty())
+		{
+			vertexInputInfo.pVertexAttributeDescriptions = VK_NULL_HANDLE;
+			vertexInputInfo.vertexBindingDescriptionCount = 0;
+			vertexInputInfo.pVertexBindingDescriptions = VK_NULL_HANDLE;
+		}
+		else
+		{
+			vertexInputInfo.pVertexAttributeDescriptions = vertexInputAttributs.data();
+			vertexInputInfo.vertexBindingDescriptionCount = 1;
+			vertexInputInfo.pVertexBindingDescriptions = &vertexInputBinding;
+		}
 		return vertexInputInfo;
 	}
 	VkPipelineDepthStencilStateCreateInfo VulkanPipeline::createDepthStencilInfo() const
@@ -243,9 +262,9 @@ namespace XYZ {
 		}
 		return blendAttachmentStates;
 	}
-	VkPipelineColorBlendStateCreateInfo VulkanPipeline::createColorBlendInfo() const
+	VkPipelineColorBlendStateCreateInfo VulkanPipeline::createColorBlendInfo(std::vector<VkPipelineColorBlendAttachmentState>& colorBlendAttachments) const
 	{
-		std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments = createColorBlendAttachments();
+		colorBlendAttachments = createColorBlendAttachments();
 		VkPipelineColorBlendStateCreateInfo colorBlending{};
 		colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 		colorBlending.logicOpEnable = VK_FALSE;
@@ -257,13 +276,12 @@ namespace XYZ {
 		//colorBlending.blendConstants[3] = 0.0f; // Optional
 		return colorBlending;
 	}
-	VkPipelineDynamicStateCreateInfo VulkanPipeline::createDynamicStateInfo() const
+	VkPipelineDynamicStateCreateInfo VulkanPipeline::createDynamicStateInfo(std::vector<VkDynamicState>& dynamicStateEnables) const
 	{
 		// Enable dynamic states
 		// Most states are baked into the pipeline, but there are still a few dynamic states that can be changed within a command buffer
 		// To be able to change these we need do specify which dynamic states will be changed using this pipeline. Their actual states are set later on in the command buffer.
 		// For this example we will set the viewport and scissor using dynamic states
-		std::vector<VkDynamicState> dynamicStateEnables;
 		dynamicStateEnables.push_back(VK_DYNAMIC_STATE_VIEWPORT);
 		dynamicStateEnables.push_back(VK_DYNAMIC_STATE_SCISSOR);
 		if (m_Specification.Topology == PrimitiveTopology::Lines

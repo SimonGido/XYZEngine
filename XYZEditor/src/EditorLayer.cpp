@@ -19,17 +19,22 @@ namespace XYZ {
 
 	void EditorLayer::OnAttach()
 	{
-		m_Shader = Shader::Create("Assets/Shaders/DefaultLitShader.glsl");
-		//m_Framebuffer = Framebuffer::Create({ 0,0 });
-		//m_RenderPass = RenderPass::Create({});
-		//BufferLayout layout = {
-		//	{0, XYZ::ShaderDataType::Float4, "a_Color" },
-		//	{1, XYZ::ShaderDataType::Float3, "a_Position" },
-		//	{2, XYZ::ShaderDataType::Float2, "a_TexCoord" },
-		//	{3, XYZ::ShaderDataType::Float,  "a_TextureID" },
-		//	{4, XYZ::ShaderDataType::Float,  "a_TilingFactor" }
-		//};
-		//m_Pipeline = Pipeline::Create({ m_Shader, layout, });
+		m_Shader = Shader::Create("Assets/Shaders/VulkanTestShader.glsl");
+
+		uint32_t width = Application::Get().GetWindow().GetWidth();
+		uint32_t height = Application::Get().GetWindow().GetHeight();
+
+		FramebufferSpecs specs;
+		specs.Attachments = { ImageFormat::RGBA8 };
+		specs.SwapChainTarget = true;
+		specs.Width = width;
+		specs.Height = height;
+
+		m_Framebuffer = Framebuffer::Create(specs);
+		m_RenderPass = RenderPass::Create({ m_Framebuffer });
+		BufferLayout layout {};
+		m_Pipeline = Pipeline::Create({ m_Shader, layout, m_RenderPass });
+		m_RenderCommandBuffer = Application::Get().GetWindow().GetContext()->GetRenderCommandBuffer();
 	}
 	
 	void EditorLayer::OnDetach()
@@ -38,7 +43,9 @@ namespace XYZ {
 	}
 	void EditorLayer::OnUpdate(Timestep ts)
 	{			
-	
+		m_RenderCommandBuffer->Begin();
+		Renderer::GetRendererAPI()->TestDraw(m_RenderPass, m_RenderCommandBuffer, m_Pipeline);
+		m_RenderCommandBuffer->End();
 	}
 
 	void EditorLayer::OnEvent(Event& event)

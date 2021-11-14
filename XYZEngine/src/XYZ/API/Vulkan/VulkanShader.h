@@ -29,6 +29,7 @@ namespace XYZ {
 
 		const std::vector<VkDescriptorSetLayout>& GetDescriptorSetLayouts() const { return m_DescriptorSetLayouts; }
 		const std::vector<PushConstantRange>&	  GetPushConstantRanges() const { return m_PushConstantRanges; }
+		const std::vector<VkPipelineShaderStageCreateInfo> GetPipelineShaderStageCreateInfos() const { return m_PipelineShaderStageCreateInfos; }
 	private:
 		void reflect(VkShaderStageFlagBits stage, const std::vector<uint32_t>& shaderData);
 		void compileOrGetVulkanBinaries(std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& outputBinary, bool forceCompile);

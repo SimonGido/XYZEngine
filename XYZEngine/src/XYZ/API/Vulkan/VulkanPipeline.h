@@ -17,17 +17,18 @@ namespace XYZ {
 		virtual PipelineSpecification& GetSpecification() override { return m_Specification; }
 		virtual const PipelineSpecification& GetSpecification() const override { return m_Specification; }
 
+		VkPipeline GetVulkanPipeline() { return m_VulkanPipeline; }
 	private:
 		void createPipelineLayoutInfo();
 		
 		VkPipelineMultisampleStateCreateInfo			    createMultisampleInfo() const;
 		VkPipelineRasterizationStateCreateInfo			    createRasterizationInfo() const;
 		VkPipelineViewportStateCreateInfo				    createViewportStateInfo() const;
-		VkPipelineVertexInputStateCreateInfo			    createVertexInputInfo() const;
+		VkPipelineVertexInputStateCreateInfo			    createVertexInputInfo(VkVertexInputBindingDescription& vertexInputBinding, std::vector<VkVertexInputAttributeDescription>& vertexInputAttributs) const;
 		VkPipelineDepthStencilStateCreateInfo			    createDepthStencilInfo() const;
 		std::vector<VkPipelineColorBlendAttachmentState>    createColorBlendAttachments() const;
-		VkPipelineColorBlendStateCreateInfo					createColorBlendInfo() const;
-		VkPipelineDynamicStateCreateInfo					createDynamicStateInfo() const;
+		VkPipelineColorBlendStateCreateInfo					createColorBlendInfo(std::vector<VkPipelineColorBlendAttachmentState>& colorBlendAttachments) const;
+		VkPipelineDynamicStateCreateInfo					createDynamicStateInfo(std::vector<VkDynamicState>& dynamicStateEnables) const;
 	private:
 		PipelineSpecification m_Specification;
 		VkPipelineLayout	  m_PipelineLayout;

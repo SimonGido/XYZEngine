@@ -13,9 +13,9 @@ namespace XYZ {
 
 		virtual void Init() override;
 		virtual void SwapBuffers() override;
+		virtual Ref<RenderCommandBuffer> GetRenderCommandBuffer() override;
 	private:
 		GLFWwindow* m_WindowHandle;
-
 	};
 
 }

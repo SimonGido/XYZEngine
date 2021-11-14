@@ -8,6 +8,7 @@
 #include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Asset/AssetManager.h"
 #include "XYZ/Audio/Audio.h"
+#include "XYZ/API/Vulkan/VulkanContext.h"
 
 #include <GLFW/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -57,6 +58,7 @@ namespace XYZ {
 
 		AssetManager::Shutdown();
 		Audio::ShutDown();
+
 		// Finish commands
 		Renderer::WaitAndRender();
 		Renderer::Shutdown();
@@ -71,13 +73,17 @@ namespace XYZ {
 
 			XYZ_PROFILE_FRAME("MainThread");
 			m_Window->Update();
-			Renderer::WaitAndRender();
+			
+			
+
 			{
 				
 				for (Layer* layer : m_LayerStack)
 					layer->OnUpdate(m_Timestep);
 			}
-						
+			VulkanContext::GetSwapChain().BeginFrame();
+			Renderer::WaitAndRender();
+			VulkanContext::GetSwapChain().Present();
 			#ifdef IMGUI_BUILD
 			{
 				onImGuiRender();
@@ -86,6 +92,7 @@ namespace XYZ {
 			
 		}
 		XYZ_PROFILER_SHUTDOWN;
+		Renderer::WaitAndRender();
 		Renderer::BlockRenderThread();
 	}
 

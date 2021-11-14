@@ -2,6 +2,8 @@
 #include "APIContext.h"
 #include "XYZ/Core/Ref.h"
 #include "XYZ/Renderer/VertexArray.h"
+#include "XYZ/Renderer/Pipeline.h"
+#include "XYZ/Renderer/RenderCommandBuffer.h"
 
 namespace XYZ {
 
@@ -49,6 +51,9 @@ namespace XYZ {
 		virtual void DrawInstanced(PrimitiveType type, uint32_t indexCount, uint32_t instanceCount, uint32_t offset = 0) {};
 		virtual void DrawInstancedIndirect(void* indirect) {};
 	
+
+		virtual void TestDraw(const Ref<RenderPass>& renderPass, const Ref<RenderCommandBuffer>& commandBuffer, const Ref<Pipeline>& pipeline) {};
+
 		static RenderAPICapabilities& GetCapabilities()
 		{
 			static RenderAPICapabilities caps;

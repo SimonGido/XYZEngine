@@ -5,6 +5,8 @@
 
 namespace XYZ {
 
+	#define FRAMES_IN_FLIGHT 3
+
 	static std::vector<VkQueueFamilyProperties> GetQueueFamilyProperties(VkPhysicalDevice physicalDevice)
 	{
 		uint32_t queueCount;
@@ -24,6 +26,8 @@ namespace XYZ {
 		m_Surface(VK_NULL_HANDLE),
 		m_SwapChain(VK_NULL_HANDLE),
 		m_ImageCount(0),
+		m_CurrentImageIndex(0),
+		m_CurrentBufferIndex(0),
 		m_CommandPool(VK_NULL_HANDLE),
 		m_VSync(false)
 	{
@@ -41,6 +45,15 @@ namespace XYZ {
 		if (m_Surface)
 			vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
 
+		for (auto fence : m_WaitFences)
+			vkDestroyFence(device, fence, nullptr);
+
+		for (auto& sempahore : m_Semaphores)
+		{
+			vkDestroySemaphore(device, sempahore.PresentComplete, nullptr);
+			vkDestroySemaphore(device, sempahore.RenderComplete, nullptr);
+		}
+
 		m_Surface = VK_NULL_HANDLE;
 		m_SwapChain = VK_NULL_HANDLE;
 	}
@@ -52,7 +65,35 @@ namespace XYZ {
 		destroySwapChain(m_SwapChain);
 		Create(&width, &height, m_VSync);
 	}
+	void VulkanSwapChain::BeginFrame()
+	{
+		auto device = m_Device->GetVulkanDevice();
+		VK_CHECK_RESULT(vkWaitForFences(m_Device->GetVulkanDevice(), 1, &m_WaitFences[m_CurrentBufferIndex], VK_TRUE, UINT64_MAX));
+		VK_CHECK_RESULT(vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_Semaphores[m_CurrentBufferIndex].PresentComplete, VK_NULL_HANDLE, &m_CurrentImageIndex));
+	}
+	void VulkanSwapChain::Present()
+	{
+		VkSubmitInfo submitInfo{};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
+		VkPipelineStageFlags waitStages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		submitInfo.waitSemaphoreCount = 1;
+		submitInfo.pWaitSemaphores = &m_Semaphores[m_CurrentBufferIndex].PresentComplete;
+		submitInfo.pWaitDstStageMask = &waitStages;
+
+		submitInfo.pSignalSemaphores = &m_Semaphores[m_CurrentBufferIndex].RenderComplete;
+		submitInfo.signalSemaphoreCount = 1;
+		submitInfo.pCommandBuffers = &m_CommandBuffers[m_CurrentBufferIndex];
+		submitInfo.commandBufferCount = 1;
+
+		
+		VK_CHECK_RESULT(vkResetFences(m_Device->GetVulkanDevice(), 1, &m_WaitFences[m_CurrentBufferIndex]));
+		VK_CHECK_RESULT(vkQueueSubmit(m_Device->GetGraphicsQueue(), 1, &submitInfo, m_WaitFences[m_CurrentBufferIndex]));
+		VK_CHECK_RESULT(queuePresent(m_Device->GetGraphicsQueue(), m_CurrentImageIndex, m_Semaphores[m_CurrentBufferIndex].RenderComplete));
+		
+		m_CurrentBufferIndex = (m_CurrentBufferIndex + 1) % FRAMES_IN_FLIGHT;
+		
+	}
 	void VulkanSwapChain::Init(VkInstance instance, const Ref<VulkanDevice>& device)
 	{
 		m_Instance = instance;
@@ -64,7 +105,7 @@ namespace XYZ {
 		m_WindowHandle = windowHandle;
 
 		m_Device->Init(m_Surface);
-
+		createSyncObjects();
 	}
 
 	void VulkanSwapChain::Create(uint32_t* width, uint32_t* height, bool vSync)
@@ -109,7 +150,26 @@ namespace XYZ {
 		createSwapChainBuffers();
 		createRenderPass();
 		createFramebuffers();
-		createCommandPool();
+		createCommandPool();	
+	}
+	Ref<RenderCommandBuffer> VulkanSwapChain::GetRenderCommandBuffer()
+	{
+		return m_RenderCommandBuffer;
+	}
+
+	VkFramebuffer VulkanSwapChain::GetFramebuffer(uint32_t index) const
+	{
+		return m_Framebuffers[index];
+	}
+	VkFramebuffer VulkanSwapChain::GetCurrentFramebuffer() const
+	{
+		return m_Framebuffers[m_CurrentImageIndex];
+	}
+
+	VkCommandBuffer VulkanSwapChain::GetCommandBuffer(uint32_t frameIndex) const
+	{
+		XYZ_ASSERT(frameIndex < m_CommandBuffers.size(), "");
+		return m_CommandBuffers[frameIndex];
 	}
 
 	void VulkanSwapChain::findSurfaceFormat()
@@ -183,7 +243,27 @@ namespace XYZ {
 		m_Images.resize(m_ImageCount);
 		vkGetSwapchainImagesKHR(device, m_SwapChain, &m_ImageCount, m_Images.data());
 	}
+	void VulkanSwapChain::createSyncObjects()
+	{
+		m_Semaphores.resize(FRAMES_IN_FLIGHT);
+		m_WaitFences.resize(FRAMES_IN_FLIGHT);
 
+		VkDevice device = m_Device->GetVulkanDevice();
+		VkSemaphoreCreateInfo semaphoreInfo{};
+		semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+		
+		VkFenceCreateInfo fenceCreateInfo{};
+		fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+		
+		
+		for (uint32_t i = 0; i < FRAMES_IN_FLIGHT; ++i)
+		{
+			VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_Semaphores[i].PresentComplete));
+			VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_Semaphores[i].RenderComplete));
+			VK_CHECK_RESULT(vkCreateFence(device, &fenceCreateInfo,   nullptr, &m_WaitFences[i]));
+		}	
+	}
 	void VulkanSwapChain::createSwapChainBuffers()
 	{
 		VkDevice device = m_Device->GetVulkanDevice();
@@ -206,6 +286,7 @@ namespace XYZ {
 			createInfo.subresourceRange.levelCount = 1;
 			createInfo.subresourceRange.baseArrayLayer = 0;
 			createInfo.subresourceRange.layerCount = 1;
+			
 			m_Buffers[i].Image = m_Images[i];
 			VK_CHECK_RESULT(vkCreateImageView(device, &createInfo, nullptr, &m_Buffers[i].View));
 		}
@@ -300,6 +381,7 @@ namespace XYZ {
 		m_Framebuffers.resize(m_ImageCount);	
 		VkFramebufferCreateInfo framebufferCreateInfo{};
 		framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		framebufferCreateInfo.pNext = NULL;
 		framebufferCreateInfo.renderPass = m_RenderPass;
 		framebufferCreateInfo.attachmentCount = 1;
 		framebufferCreateInfo.width = m_Extent.width;
@@ -330,8 +412,27 @@ namespace XYZ {
 		commandBufferAllocateInfo.commandBufferCount = count;
 		m_CommandBuffers.resize(count);
 		VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, m_CommandBuffers.data()));
+	
+		
+		m_RenderCommandBuffer = Ref<VulkanRenderCommandBuffer>::Create("SwapChainCommandBuffer", *this);
 	}
+	VkResult VulkanSwapChain::queuePresent(VkQueue queue, uint32_t imageIndex, VkSemaphore waitSemaphore)
+	{
+		VkPresentInfoKHR presentInfo = {};
+		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+		presentInfo.pNext = NULL;
+		presentInfo.swapchainCount = 1;
+		presentInfo.pSwapchains = &m_SwapChain;
+		presentInfo.pImageIndices = &imageIndex;
+		// Check if a wait semaphore has been specified to wait for before presenting the image
+		if (waitSemaphore != VK_NULL_HANDLE)
+		{
+			presentInfo.pWaitSemaphores = &waitSemaphore;
+			presentInfo.waitSemaphoreCount = 1;
+		}
 
+		return vkQueuePresentKHR(queue, &presentInfo);
+	}
 	VkCompositeAlphaFlagBitsKHR VulkanSwapChain::selectCompositeAlpha() const
 	{
 		const auto& capabilities = m_Device->GetPhysicalDevice()->GetSwapChainSupportDetails().Capabilities;

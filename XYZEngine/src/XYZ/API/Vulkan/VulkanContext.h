@@ -14,12 +14,12 @@ namespace XYZ {
 		virtual void CreateSwapChain(uint32_t* width, uint32_t* height, bool vSync) override;
 		virtual void SwapBuffers() override;
 
-		Ref<VulkanDevice> GetDevice() { return m_Device; }
-		
-		static VkInstance		  GetInstance() { return s_VulkanInstance; }
-		static Ref<VulkanContext> Get();
-		static Ref<VulkanDevice>  GetCurrentDevice() { return Get()->GetDevice(); }
-
+		virtual Ref<RenderCommandBuffer> GetRenderCommandBuffer() override;
+		Ref<VulkanDevice>				 GetDevice() { return m_Device; }
+		static VkInstance				 GetInstance() { return s_VulkanInstance; }
+		static Ref<VulkanContext>		 Get();
+		static Ref<VulkanDevice>		 GetCurrentDevice() { return Get()->GetDevice(); }
+		static VulkanSwapChain&			 GetSwapChain() { return Get()->m_SwapChain; }
 	private:
 		void setupDebugCallback();
 		void setupDevice();
