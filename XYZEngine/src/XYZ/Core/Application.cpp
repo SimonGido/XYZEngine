@@ -34,17 +34,18 @@ namespace XYZ {
 		m_Window = Window::Create(Renderer::GetAPIContext());
 		m_Window->RegisterCallback(Hook(&Application::OnEvent, this));	
 		m_Window->SetVSync(0);
+		
+		m_ImGuiLayer = nullptr;
+		//m_ImGuiLayer = ImGuiLayer::Create();
+		//m_LayerStack.PushOverlay(m_ImGuiLayer);
+
 		Renderer::InitResources();
 		//AssetManager::Init();
 
 		TCHAR NPath[MAX_PATH];
 		GetCurrentDirectory(MAX_PATH, NPath);
 		std::wstring tmp(&NPath[0]);
-		m_ApplicationDir = std::string(tmp.begin(), tmp.end());
-
-		m_ImGuiLayer = nullptr;
-		//m_ImGuiLayer = ImGuiLayer::Create();
-		//m_LayerStack.PushOverlay(m_ImGuiLayer);	
+		m_ApplicationDir = std::string(tmp.begin(), tmp.end());	
 	}
 
 	Application::~Application()
@@ -74,16 +75,13 @@ namespace XYZ {
 				for (Layer* layer : m_LayerStack)
 					layer->OnUpdate(m_Timestep);
 		
-				#ifdef IMGUI_BUILD
-				{
-					Renderer::Submit([this]()mutable{
-						onImGuiRender();
-					});		
-				}
-				#endif		
-
 				m_Window->BeginFrame();
 				Renderer::WaitAndRender();	
+				#ifdef IMGUI_BUILD
+				{
+					onImGuiRender();
+				}
+				#endif		
 				m_Window->SwapBuffers();
 			}
 		}

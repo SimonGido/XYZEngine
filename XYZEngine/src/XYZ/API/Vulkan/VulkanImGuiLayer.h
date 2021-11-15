@@ -20,6 +20,7 @@ namespace  XYZ
 
     private:
         VkDescriptorPool m_DescriptorPool;
+        std::vector<VkCommandBuffer> m_ImGuiCommandBuffers;
     };
 }
 

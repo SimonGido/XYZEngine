@@ -16,9 +16,6 @@
 
 namespace XYZ
 {
-	static std::vector<VkCommandBuffer> s_ImGuiCommandBuffers;
-
-	
     VulkanImGuiLayer::VulkanImGuiLayer()
 	    :
 		m_DescriptorPool(VK_NULL_HANDLE)
@@ -110,9 +107,9 @@ namespace XYZ
 			}
 
 			const uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;
-			s_ImGuiCommandBuffers.resize(framesInFlight);
+			m_ImGuiCommandBuffers.resize(framesInFlight);
 			for (uint32_t i = 0; i < framesInFlight; i++)
-				s_ImGuiCommandBuffers[i] = VulkanContext::GetCurrentDevice()->CreateSecondaryCommandBuffer();
+				m_ImGuiCommandBuffers[i] = VulkanContext::GetCurrentDevice()->CreateSecondaryCommandBuffer();
 		});
 
     }
@@ -146,12 +143,13 @@ namespace XYZ
     {
     	if (m_EnableDockspace)
     		endDockspace();
+
     	ImGui::Render();
 
 		VulkanSwapChain& swapChain = VulkanContext::GetSwapChain();
 
 		VkClearValue clearValues[2];
-		clearValues[0].color = { {0.1f, 0.1f,0.1f, 1.0f} };
+		clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
 		clearValues[1].depthStencil = { 1.0f, 0 };
 
 		uint32_t width = swapChain.GetWidth();
@@ -191,7 +189,7 @@ namespace XYZ
 		cmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
 		cmdBufInfo.pInheritanceInfo = &inheritanceInfo;
 
-		VK_CHECK_RESULT(vkBeginCommandBuffer(s_ImGuiCommandBuffers[commandBufferIndex], &cmdBufInfo));
+		VK_CHECK_RESULT(vkBeginCommandBuffer(m_ImGuiCommandBuffers[commandBufferIndex], &cmdBufInfo));
 
 		VkViewport viewport = {};
 		viewport.x = 0.0f;
@@ -200,22 +198,22 @@ namespace XYZ
 		viewport.width = (float)width;
 		viewport.minDepth = 0.0f;
 		viewport.maxDepth = 1.0f;
-		vkCmdSetViewport(s_ImGuiCommandBuffers[commandBufferIndex], 0, 1, &viewport);
+		vkCmdSetViewport(m_ImGuiCommandBuffers[commandBufferIndex], 0, 1, &viewport);
 
 		VkRect2D scissor = {};
 		scissor.extent.width = width;
 		scissor.extent.height = height;
 		scissor.offset.x = 0;
 		scissor.offset.y = 0;
-		vkCmdSetScissor(s_ImGuiCommandBuffers[commandBufferIndex], 0, 1, &scissor);
+		vkCmdSetScissor(m_ImGuiCommandBuffers[commandBufferIndex], 0, 1, &scissor);
 
 		ImDrawData* main_draw_data = ImGui::GetDrawData();
-		ImGui_ImplVulkan_RenderDrawData(main_draw_data, s_ImGuiCommandBuffers[commandBufferIndex]);
+		ImGui_ImplVulkan_RenderDrawData(main_draw_data, m_ImGuiCommandBuffers[commandBufferIndex]);
 
-		VK_CHECK_RESULT(vkEndCommandBuffer(s_ImGuiCommandBuffers[commandBufferIndex]));
+		VK_CHECK_RESULT(vkEndCommandBuffer(m_ImGuiCommandBuffers[commandBufferIndex]));
 
 		std::vector<VkCommandBuffer> commandBuffers;
-		commandBuffers.push_back(s_ImGuiCommandBuffers[commandBufferIndex]);
+		commandBuffers.push_back(m_ImGuiCommandBuffers[commandBufferIndex]);
 
 		vkCmdExecuteCommands(drawCommandBuffer, uint32_t(commandBuffers.size()), commandBuffers.data());
 
