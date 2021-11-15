@@ -2,6 +2,9 @@
 #include "Buffer.h"
 #include "APIContext.h"
 #include "XYZ/API/OpenGL/OpenGLBuffer.h"
+#include "XYZ/API/Vulkan/VulkanVertexBuffer.h"
+#include "XYZ/API/Vulkan/VulkanIndexBuffer.h"
+
 #include "Renderer.h"
 
 namespace XYZ {
@@ -11,6 +14,7 @@ namespace XYZ {
 		{
 		case RendererAPI::API::None:    XYZ_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
 		case RendererAPI::API::OpenGL:  return Ref<OpenGLVertexBuffer>::Create(size);
+		case RendererAPI::API::Vulkan:  return Ref<VulkanVertexBuffer>::Create(size);
 		}
 
 		XYZ_ASSERT(false, "Unknown RendererAPI!");
@@ -22,18 +26,20 @@ namespace XYZ {
 		{
 		case RendererAPI::API::None:    XYZ_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
 		case RendererAPI::API::OpenGL:  return Ref<OpenGLVertexBuffer>::Create(vertices, size, usage);
+		case RendererAPI::API::Vulkan:  return Ref<VulkanVertexBuffer>::Create(vertices, size, usage);
 		}
 
 		XYZ_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
 	}
 
-	Ref<IndexBuffer> IndexBuffer::Create(const uint32_t* indices, uint32_t count)
+	Ref<IndexBuffer> IndexBuffer::Create(const void* indices, uint32_t count, IndexType type)
 	{
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::API::None:    XYZ_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-		case RendererAPI::API::OpenGL:  return Ref<OpenGLIndexBuffer>::Create(indices, count);
+		case RendererAPI::API::OpenGL:  return Ref<OpenGLIndexBuffer>::Create(indices, count, type);
+		case RendererAPI::API::Vulkan:  return Ref<VulkanIndexBuffer>::Create(indices, count, type);
 		}
 
 		XYZ_ASSERT(false, "Unknown RendererAPI!");

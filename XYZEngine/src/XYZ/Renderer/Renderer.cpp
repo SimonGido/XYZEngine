@@ -143,9 +143,11 @@ namespace XYZ {
 		
 		delete []s_Data.m_ResourceFreeQueues;
 		s_Data.m_ResourceFreeQueues = nullptr;
-		
+
 		delete s_RendererAPI;
 		s_RendererAPI = nullptr;
+
+		s_Data.m_APIContext.Reset(); // Free context to make sure it is destroyed sooner than Logger;
 	}
 
 	void Renderer::Clear()

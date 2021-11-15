@@ -13,15 +13,18 @@ namespace XYZ {
 		buffer.Allocate(size);
 		if (vertices)
 			buffer.Write(vertices, size, 0);
-		Renderer::Submit([=]() {
-			glCreateBuffers(1, &m_RendererID);
-			glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
+
+		Ref<OpenGLVertexBuffer> instance = this;
+		Renderer::Submit([instance, buffer, size, usage]() mutable {
+			glCreateBuffers(1, &instance->m_RendererID);
+			glBindBuffer(GL_ARRAY_BUFFER, instance->m_RendererID);
 			switch (usage)
 			{
 			case BufferUsage::Static:    glBufferData(GL_ARRAY_BUFFER, size, buffer, GL_STATIC_DRAW); break;
 			case BufferUsage::Dynamic:   glBufferData(GL_ARRAY_BUFFER, size, buffer, GL_DYNAMIC_DRAW); break;
 			}
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			instance->m_Buffers.EmplaceBack(std::move(buffer));
 		});
 	}
 
@@ -30,12 +33,13 @@ namespace XYZ {
 	{
 		ByteBuffer buffer;
 		buffer.Allocate(size);
-		Renderer::Submit([this, buffer]() mutable {
-			glCreateBuffers(1, &m_RendererID);
-			glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
-			glBufferData(GL_ARRAY_BUFFER, m_Size, nullptr, GL_DYNAMIC_DRAW);
+		Ref<OpenGLVertexBuffer> instance = this;
+		Renderer::Submit([instance, buffer]() mutable {
+			glCreateBuffers(1, &instance->m_RendererID);
+			glBindBuffer(GL_ARRAY_BUFFER, instance->m_RendererID);
+			glBufferData(GL_ARRAY_BUFFER, instance->m_Size, nullptr, GL_DYNAMIC_DRAW);
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
-			m_Buffers.EmplaceBack(std::move(buffer));
+			instance->m_Buffers.EmplaceBack(std::move(buffer));
 		});
 	}
 
@@ -108,16 +112,32 @@ namespace XYZ {
 		});
 	}
 
-	OpenGLIndexBuffer::OpenGLIndexBuffer(const uint32_t* indices, uint32_t count)
-		: m_Count(count)
+	static uint32_t IndexTypeToSize(IndexType type)
 	{
-		m_LocalData = ByteBuffer::Copy(indices, count * sizeof(uint32_t));
+		switch (type)
+		{
+		case XYZ::IndexType::Uint8:
+			return sizeof(uint8_t);
+		case XYZ::IndexType::Uint16:
+			return sizeof(uint16_t);
+		case XYZ::IndexType::Uint32:
+			return sizeof(uint32_t);
+		}
+		return 0;
+	}
+
+	OpenGLIndexBuffer::OpenGLIndexBuffer(const void* indices, uint32_t count, IndexType type)
+		: 
+		m_Size(count * IndexTypeToSize(type)),
+		m_Count(count)
+	{
+		m_LocalData = ByteBuffer::Copy(indices, m_Size);
 		
 		Ref<OpenGLIndexBuffer> instance = this;
 		Renderer::Submit([instance]() mutable {
 			glCreateBuffers(1, &instance->m_RendererID);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, instance->m_RendererID);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, instance->m_Count * sizeof(unsigned int), instance->m_LocalData, GL_STATIC_DRAW);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, instance->m_Size, instance->m_LocalData, GL_STATIC_DRAW);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		});
 	}

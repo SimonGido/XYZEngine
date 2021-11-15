@@ -35,6 +35,7 @@ namespace XYZ {
 	VulkanContext::~VulkanContext()
 	{
 		VK_CHECK_RESULT(vkDeviceWaitIdle(m_Device->GetVulkanDevice()));
+		VulkanAllocator::Shutdown();
 		m_SwapChain.Destroy();
 		m_Device->Destroy();
 		if (s_Validation)
@@ -43,8 +44,7 @@ namespace XYZ {
 			vkDestroyDebugReportCallbackEXT(s_VulkanInstance, m_DebugReportCallback, nullptr);
 		}		
 		vkDestroyInstance(s_VulkanInstance, nullptr);
-		s_VulkanInstance = nullptr;
-		VulkanAllocator::Shutdown();
+		s_VulkanInstance = nullptr;	
 	}
 	void VulkanContext::Init(GLFWwindow* window)
 	{

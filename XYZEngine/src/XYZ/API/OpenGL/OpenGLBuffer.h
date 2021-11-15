@@ -31,7 +31,7 @@ namespace XYZ {
 	class OpenGLIndexBuffer : public IndexBuffer
 	{
 	public:
-		OpenGLIndexBuffer(const uint32_t* indices, uint32_t count);
+		OpenGLIndexBuffer(const void* indices, uint32_t count, IndexType type);
 		virtual ~OpenGLIndexBuffer() override;
 		
 		virtual void Bind() const override;
@@ -41,6 +41,7 @@ namespace XYZ {
 	private:
 		uint32_t m_RendererID = 0;
 		uint32_t m_Count;
+		uint32_t m_Size;
 		ByteBuffer m_LocalData;
 	};
 

@@ -7,6 +7,6 @@ namespace XYZ {
 	{
 	public:
 		virtual void Init() override;
-		virtual void TestDraw(const Ref<RenderPass>& renderPass, const Ref<RenderCommandBuffer>& commandBuffer, const Ref<Pipeline>& pipeline) override;
+		virtual void TestDraw(const Ref<RenderPass>& renderPass, const Ref<RenderCommandBuffer>& commandBuffer, const Ref<Pipeline>& pipeline, const Ref<VertexBuffer>& vbo, const Ref<IndexBuffer>& ibo) override;
 	};
 }

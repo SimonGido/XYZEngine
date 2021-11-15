@@ -155,6 +155,11 @@ namespace XYZ {
 	};
 
 
+	enum class IndexType
+	{
+		Uint8, Uint16, Uint32
+	};
+
 	class IndexBuffer : public RefCount
 	{
 	public:
@@ -165,7 +170,7 @@ namespace XYZ {
 		virtual uint32_t GetCount() const = 0;
 		virtual uint32_t GetRendererID() const = 0;
 
-		static Ref<IndexBuffer> Create(const uint32_t* indices, uint32_t count);
+		static Ref<IndexBuffer> Create(const void* indices, uint32_t count, IndexType type = IndexType::Uint32);
 	};
 
 

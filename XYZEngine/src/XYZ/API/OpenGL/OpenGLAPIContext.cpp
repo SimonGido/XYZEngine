@@ -64,7 +64,6 @@ namespace XYZ {
 	OpenGLAPIContext::OpenGLAPIContext()
 		: m_WindowHandle(nullptr)
 	{
-		
 	}
 
 	OpenGLAPIContext::~OpenGLAPIContext()
@@ -105,6 +104,7 @@ namespace XYZ {
 			glfwSetErrorCallback(GLFWErrorCallback);
 			#endif
 		});
+		m_RenderCommandBuffer = Ref<OpenGLRenderCommandBuffer>::Create(0, "SwapChainCommandBuffer");
 	}
 
 	void OpenGLAPIContext::SwapBuffers()
@@ -114,7 +114,7 @@ namespace XYZ {
 
 	Ref<RenderCommandBuffer> OpenGLAPIContext::GetRenderCommandBuffer()
 	{
-		return Ref<OpenGLRenderCommandBuffer>();
+		return m_RenderCommandBuffer;
 	}
 
 }

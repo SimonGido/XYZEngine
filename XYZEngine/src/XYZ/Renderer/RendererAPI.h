@@ -52,7 +52,7 @@ namespace XYZ {
 		virtual void DrawInstancedIndirect(void* indirect) {};
 	
 
-		virtual void TestDraw(const Ref<RenderPass>& renderPass, const Ref<RenderCommandBuffer>& commandBuffer, const Ref<Pipeline>& pipeline) {};
+		virtual void TestDraw(const Ref<RenderPass>& renderPass, const Ref<RenderCommandBuffer>& commandBuffer, const Ref<Pipeline>& pipeline, const Ref<VertexBuffer>& vbo, const Ref<IndexBuffer>& ibo) {};
 
 		static RenderAPICapabilities& GetCapabilities()
 		{

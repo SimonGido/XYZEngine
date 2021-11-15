@@ -57,6 +57,8 @@ namespace XYZ {
 		Ref<RenderPass>  m_RenderPass;
 		Ref<Pipeline>	 m_Pipeline;
 		Ref<Framebuffer> m_Framebuffer;
+		Ref<VertexBuffer> m_VertexBuffer;
+		Ref<IndexBuffer>  m_IndexBuffer;
 		Ref<RenderCommandBuffer> m_RenderCommandBuffer;
 	};
 }

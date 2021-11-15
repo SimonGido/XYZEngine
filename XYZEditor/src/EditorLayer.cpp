@@ -7,6 +7,12 @@
 
 namespace XYZ {
 
+	struct TestVertex
+	{
+		glm::vec2 Position;
+		glm::vec3 Color;
+	};
+	
 	EditorLayer::EditorLayer()
 		:
 		m_EditorOpen{ true, true }
@@ -26,7 +32,19 @@ namespace XYZ {
 			{0, ShaderDataType::Float2, "inPosition"},
 			{1, ShaderDataType::Float3, "inColor"}
 		};
-		m_Pipeline = Pipeline::Create({ m_Shader, layout, m_RenderPass });
+		const std::vector<TestVertex> vertices = {
+			{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+			{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+			{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+			{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+		};
+		const std::vector<uint16_t> indices = {
+			0, 1, 2, 2, 3, 0
+		};
+
+		m_VertexBuffer  = VertexBuffer::Create(vertices.data(), vertices.size() * sizeof(TestVertex));
+		m_IndexBuffer   = IndexBuffer::Create(indices.data(), indices.size(), IndexType::Uint16);
+		m_Pipeline		= Pipeline::Create({ m_Shader, layout, m_RenderPass });
 		m_RenderCommandBuffer = context->GetRenderCommandBuffer();
 	}
 	
@@ -37,7 +55,7 @@ namespace XYZ {
 	void EditorLayer::OnUpdate(Timestep ts)
 	{			
 		m_RenderCommandBuffer->Begin();
-		Renderer::GetRendererAPI()->TestDraw(m_RenderPass, m_RenderCommandBuffer, m_Pipeline);
+		Renderer::GetRendererAPI()->TestDraw(m_RenderPass, m_RenderCommandBuffer, m_Pipeline, m_VertexBuffer, m_IndexBuffer);
 		m_RenderCommandBuffer->End();
 	}
 

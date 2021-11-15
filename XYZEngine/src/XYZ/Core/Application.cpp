@@ -26,8 +26,7 @@ namespace XYZ {
 		m_Timestep(0.0f),
 		m_ThreadPool(12),
 		m_Minimized(false)
-	{
-		
+	{	
 		s_Application = this;
 		m_Running = true;
 
@@ -43,6 +42,7 @@ namespace XYZ {
 		std::wstring tmp(&NPath[0]);
 		m_ApplicationDir = std::string(tmp.begin(), tmp.end());
 
+		m_ImGuiLayer = nullptr;
 		//m_ImGuiLayer = ImGuiLayer::Create();
 		//m_LayerStack.PushOverlay(m_ImGuiLayer);	
 	}

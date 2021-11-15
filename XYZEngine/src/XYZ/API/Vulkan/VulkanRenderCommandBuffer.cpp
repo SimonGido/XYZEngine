@@ -10,19 +10,18 @@ namespace XYZ {
 		m_Name(std::move(debugName)),
 		m_CommandBuffers(VK_NULL_HANDLE),
 		m_CommandPool(VK_NULL_HANDLE),
-		m_SwapChain(nullptr),
 		m_OwnedBySwapchain(false)
 	{
 		//TODO
 	}
 
-	VulkanRenderCommandBuffer::VulkanRenderCommandBuffer(std::string debugName, VulkanSwapChain& swapChain)
+	VulkanRenderCommandBuffer::VulkanRenderCommandBuffer(std::string debugName)
 		:
 		m_Name(std::move(debugName)),
 		m_CommandPool(VK_NULL_HANDLE),
-		m_SwapChain(&swapChain),
 		m_OwnedBySwapchain(true)
 	{
+		VulkanSwapChain& swapChain = VulkanContext::GetSwapChain();
 		auto device = swapChain.GetDevice();
 		m_CommandBuffers.resize(swapChain.GetNumCommandsBuffers());
 
@@ -47,7 +46,7 @@ namespace XYZ {
 		Ref<VulkanRenderCommandBuffer> instance = this;
 		Renderer::Submit([instance]() mutable {
 
-			uint32_t frameIndex = instance->m_SwapChain->GetCurrentBufferIndex();
+			uint32_t frameIndex = VulkanContext::Get()->GetCurrentFrame();
 			VkCommandBufferBeginInfo beginInfo{};
 			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 			beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;; // Optional
@@ -70,7 +69,7 @@ namespace XYZ {
 		Ref<VulkanRenderCommandBuffer> instance = this;
 		Renderer::Submit([instance]()
 		{
-			uint32_t frameIndex = instance->m_SwapChain->GetCurrentBufferIndex();
+			uint32_t frameIndex = VulkanContext::Get()->GetCurrentFrame();
 			//uint32_t frameIndex = Renderer::GetCurrentFrameIndex();
 			VkCommandBuffer commandBuffer = instance->m_CommandBuffers[frameIndex];
 			//vkCmdWriteTimestamp(commandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, instance->m_TimestampQueryPools[frameIndex], 1);

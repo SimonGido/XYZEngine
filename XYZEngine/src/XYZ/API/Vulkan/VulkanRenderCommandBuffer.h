@@ -9,7 +9,7 @@ namespace XYZ {
 	{
 	public:
 		VulkanRenderCommandBuffer(uint32_t count = 0, std::string debugName = "");
-		VulkanRenderCommandBuffer(std::string debugName, VulkanSwapChain& swapChain);
+		VulkanRenderCommandBuffer(std::string debugName);
 
 		~VulkanRenderCommandBuffer() override;
 
@@ -28,7 +28,6 @@ namespace XYZ {
 	private:
 		std::string					 m_Name;
 		VkCommandPool				 m_CommandPool;
-		VulkanSwapChain*			 m_SwapChain;
 		std::vector<VkCommandBuffer> m_CommandBuffers;
 		bool						 m_OwnedBySwapchain;
 

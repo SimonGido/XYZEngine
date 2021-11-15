@@ -6,19 +6,24 @@
 #include "VulkanRenderPass.h"
 #include "VulkanFramebuffer.h"
 #include "VulkanContext.h"
+#include "VulkanVertexBuffer.h"
+#include "VulkanIndexBuffer.h"
+
 #include "XYZ/Core/Application.h"
 
 namespace XYZ {
 	void VulkanRendererAPI::Init()
 	{
 	}
-	void VulkanRendererAPI::TestDraw(const Ref<RenderPass>& renderPass, const Ref<RenderCommandBuffer>& commandBuffer, const Ref<Pipeline>& pipeline)
+	void VulkanRendererAPI::TestDraw(const Ref<RenderPass>& renderPass, const Ref<RenderCommandBuffer>& commandBuffer, const Ref<Pipeline>& pipeline, const Ref<VertexBuffer>& vbo, const Ref<IndexBuffer>& ibo)
 	{
 		Ref<VulkanRenderCommandBuffer> vulkanCommandBuffer = commandBuffer;
 		Ref<VulkanPipeline> vulkanPipeline = pipeline;
 		Ref<VulkanFramebuffer> framebuffer = renderPass->GetSpecification().TargetFramebuffer;
-		
-		Renderer::Submit([vulkanCommandBuffer, vulkanPipeline, renderPass, framebuffer]() mutable {
+		Ref<VulkanVertexBuffer> vulkanBuffer = vbo;
+		Ref<VulkanIndexBuffer> indexBuffer = ibo;
+
+		Renderer::Submit([vulkanCommandBuffer, vulkanPipeline, renderPass, framebuffer, vulkanBuffer, indexBuffer]() mutable {
 			
 			Ref<VulkanContext> vulkanContext = Renderer::GetAPIContext();
 			uint32_t frameIndex = vulkanContext->GetSwapChain().GetCurrentBufferIndex();
@@ -70,7 +75,12 @@ namespace XYZ {
 			vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
 			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->GetVulkanPipeline());
-			vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+			
+			VkBuffer vertexBuffers[] = { vulkanBuffer->GetVulkanBuffer() };
+			VkDeviceSize offsets[] = { 0 };
+			vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+			vkCmdBindIndexBuffer(commandBuffer, indexBuffer->GetVulkanBuffer(), 0, indexBuffer->GetVulkanIndexType());
+			vkCmdDrawIndexed(commandBuffer, indexBuffer->GetCount(), 1, 0, 0, 0);
 			vkCmdEndRenderPass(commandBuffer);
 		});
 	}

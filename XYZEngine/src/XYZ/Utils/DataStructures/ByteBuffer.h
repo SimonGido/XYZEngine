@@ -25,6 +25,11 @@ namespace XYZ {
 			m_Data = new uint8_t[size];
 			m_Size = size;
 		}
+		void Destroy()
+		{
+			Allocate(0);
+		}
+
 		void ZeroInitialize()
 		{
 			if (m_Data)
