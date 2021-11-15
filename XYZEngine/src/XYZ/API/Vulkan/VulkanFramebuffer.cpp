@@ -6,10 +6,19 @@
 #include "VulkanContext.h"
 
 namespace XYZ {
+	namespace Utils
+	{
+		VkClearColorValue GlmColorToVkColor(const glm::vec4& color)
+		{
+			return {color.r, color.g , color.b, color.a};
+		}
+	}
+	
 	VulkanFramebuffer::VulkanFramebuffer(const FramebufferSpecs& specs)
 		:
 		m_Specification(specs),
-		m_RenderPass(VK_NULL_HANDLE)
+		m_RenderPass(VK_NULL_HANDLE),
+		m_Framebuffer(VK_NULL_HANDLE)
 	{
 		if (specs.Width == 0 || specs.Height == 0)
 		{
@@ -20,14 +29,12 @@ namespace XYZ {
 	}
 	void VulkanFramebuffer::Resize(uint32_t width, uint32_t height, bool forceRecreate)
 	{
-		//if (!forceRecreate && (m_Width == width && m_Height == height))
-		//	return;
+		if (!forceRecreate && (m_Specification.Width == width && m_Specification.Height == height))
+			return;
 
-		//m_Width = width * m_Specification.Scale;
-		//m_Height = height * m_Specification.Scale;
 		if (!m_Specification.SwapChainTarget)
 		{
-			//Invalidate();
+			Invalidate();
 		}
 		else
 		{
@@ -35,8 +42,29 @@ namespace XYZ {
 			VulkanSwapChain& swapChain = context->GetSwapChain();
 			m_RenderPass = swapChain.GetVulkanRenderPass();
 
-			//m_ClearValues.clear();
-			//m_ClearValues.emplace_back().color = { 0.0f, 0.0f, 0.0f, 1.0f };
+			m_ClearValues.clear();
+			m_ClearValues.emplace_back().color = Utils::GlmColorToVkColor(m_Specification.ClearColor);
+		}
+	}
+
+	void VulkanFramebuffer::Invalidate()
+	{
+		Ref< VulkanFramebuffer> instance = this;
+		Renderer::Submit([instance]() mutable{
+				instance->RT_Invalidate();
+		});
+	}
+
+	void VulkanFramebuffer::RT_Invalidate()
+	{
+		auto device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+		if (m_Framebuffer)
+		{
+			VkFramebuffer framebuffer = m_Framebuffer;
+			Renderer::SubmitResourceFree([framebuffer](){
+					const auto device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+					vkDestroyFramebuffer(device, framebuffer, nullptr);
+			});
 		}
 	}
 }

@@ -32,8 +32,8 @@ namespace XYZ {
 		void Create(uint32_t* width, uint32_t* height, bool vSync);
 
 		Ref<RenderCommandBuffer> GetRenderCommandBuffer();
-		Ref<RenderPass>			 GetRenderPass() { return m_RenderPass; }
-		Ref<VulkanDevice>		 GetDevice() { return m_Device; }
+		Ref<RenderPass>			 GetRenderPass() const { return m_RenderPass; }
+		Ref<VulkanDevice>		 GetDevice() const { return m_Device; }
 		VkRenderPass			 GetVulkanRenderPass() const { return m_VulkanRenderPass; }
 		
 		VkFramebuffer			 GetFramebuffer(uint32_t index) const;
@@ -48,7 +48,7 @@ namespace XYZ {
 		uint32_t				 GetCurrentBufferIndex() const { return m_CurrentBufferIndex; }
 		uint32_t				 GetWidth() const { return m_Extent.width; }
 		uint32_t				 GetHeight() const { return m_Extent.height; }
-	
+		uint32_t				 GetImageCount() const { return m_ImageCount;}
 	private:
 		void getImages();
 		void createSyncObjects();
@@ -62,7 +62,7 @@ namespace XYZ {
 		void createRenderPass();
 
 		void destroySwapChain(VkSwapchainKHR swapChain);
-		VkResult queuePresent(VkQueue queue, uint32_t imageIndex, VkSemaphore waitSemaphore = VK_NULL_HANDLE);
+		VkResult queuePresent(VkQueue queue, uint32_t imageIndex, VkSemaphore waitSemaphore = VK_NULL_HANDLE) const;
 
 		VkPresentModeKHR			findPresentMode(bool vSync);
 		VkCompositeAlphaFlagBitsKHR selectCompositeAlpha() const;
@@ -70,11 +70,14 @@ namespace XYZ {
 		GLFWwindow*					   m_WindowHandle;
 		VkInstance					   m_Instance;
 		Ref<VulkanDevice>			   m_Device;
+
+		// Default swap chain render pass
 		Ref<VulkanRenderCommandBuffer> m_RenderCommandBuffer;
 		Ref<VulkanFramebuffer>		   m_Framebuffer;
 		Ref<VulkanRenderPass>		   m_RenderPass;
-		VkRenderPass				   m_VulkanRenderPass;
 											
+
+		VkRenderPass				   m_VulkanRenderPass;
 		VkSurfaceKHR				   m_Surface;
 		VkSwapchainKHR				   m_SwapChain;
 		VkSurfaceFormatKHR			   m_Format;

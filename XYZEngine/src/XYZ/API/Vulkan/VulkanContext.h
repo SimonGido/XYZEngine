@@ -15,11 +15,12 @@ namespace XYZ {
 		virtual void SwapBuffers() override;
 		virtual void BeginFrame() override;
 		virtual void OnResize(uint32_t width, uint32_t height) override;
+		virtual uint32_t GetCurrentFrame() const override { return m_SwapChain.GetCurrentBufferIndex();}
 
 		virtual Ref<RenderCommandBuffer> GetRenderCommandBuffer() override;
 		virtual Ref<RenderPass>			 GetRenderPass() override;
 
-		Ref<VulkanDevice>				 GetDevice() { return m_Device; }
+		Ref<VulkanDevice>				 GetDevice() const { return m_Device; }
 		static VkInstance				 GetInstance() { return s_VulkanInstance; }
 		static Ref<VulkanContext>		 Get();
 		static Ref<VulkanDevice>		 GetCurrentDevice() { return Get()->GetDevice(); }

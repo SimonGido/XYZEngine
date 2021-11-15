@@ -32,10 +32,10 @@ namespace XYZ {
 
 	struct FramebufferSpecs
 	{
-		uint32_t Width = 1280;
-		uint32_t Height = 720;
+		uint32_t Width = 0;
+		uint32_t Height = 0;
 		uint32_t Samples = 1; // multisampling
-		glm::vec4 ClearColor;
+		glm::vec4 ClearColor  = { 0.0f, 0.0f, 0.0f, 1.0f };
 		FramebufferAttachmentSpecs Attachments;
 
 		bool SwapChainTarget = false;

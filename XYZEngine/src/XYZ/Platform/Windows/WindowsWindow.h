@@ -21,20 +21,22 @@ namespace XYZ {
 
 		virtual void BeginFrame() override;
 		virtual void SwapBuffers() override;
+		virtual void ProcessEvents() override;
+		
 		virtual void SetVSync(int32_t frames) override;
 		virtual bool IsClosed() override;
 		virtual void SetStandardCursor(uint8_t cursor) override;
 		virtual void SetCustomCursor(void* cursor) override;
 		virtual void* CreateCustomCursor(uint8_t* pixels, uint32_t width, uint32_t height, int32_t xOffset = 0, int32_t yOffset = 0) override;
 
-		virtual void* GetWindow() const;
-		virtual void* GetNativeWindow() const;
+		virtual void* GetWindow() const override;
+		virtual void* GetNativeWindow() const override;
 
 		inline virtual uint32_t GetWidth() const override { return m_Data.Width; }
 		inline virtual uint32_t GetHeight() const override { return m_Data.Height; }
 	
 	private:
-		void destroy();
+		void destroy() const;
 
 		GLFWwindow* m_Window;
 

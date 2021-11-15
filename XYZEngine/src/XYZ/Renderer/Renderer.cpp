@@ -20,6 +20,7 @@ namespace XYZ {
 	struct RendererData
 	{
 		std::shared_ptr<ThreadPass<RenderCommandQueue>> m_CommandQueue;
+		RenderCommandQueue*								m_ResourceFreeQueues;
 		ThreadPool									    m_Pool;
 		Ref<APIContext>									m_APIContext;
 		Ref<ShaderLibrary>								m_ShaderLibrary;
@@ -30,7 +31,7 @@ namespace XYZ {
 														
 		std::future<bool>							    m_RenderThreadFinished;
 		RendererStats									m_Stats;
-		std::mutex										m_QueueLock;
+		RendererConfiguration							m_Configuration;
 	};
 	RendererAPI::API RendererAPI::s_API = RendererAPI::API::Vulkan;
 
@@ -88,12 +89,14 @@ namespace XYZ {
 		s_Data.m_FullscreenQuadVertexArray->SetIndexBuffer(s_Data.m_FullscreenQuadIndexBuffer);
 	}
 
-	void Renderer::Init()
+	void Renderer::Init(const RendererConfiguration& config)
 	{
+		s_Data.m_Configuration = config;
 		s_Data.m_Pool.PushThread();
-		s_Data.m_CommandQueue = std::make_shared<ThreadPass<RenderCommandQueue>>();	
+		s_Data.m_CommandQueue = std::make_shared<ThreadPass<RenderCommandQueue>>();
+		s_Data.m_ResourceFreeQueues = new RenderCommandQueue[config.FramesInFlight];
 		s_Data.m_APIContext = APIContext::Create();
-		s_RendererAPI = InitRendererAPI();
+		s_RendererAPI = InitRendererAPI();		
 	}
 
 	void Renderer::InitResources()
@@ -126,21 +129,23 @@ namespace XYZ {
 		s_Data.m_FullscreenQuadVertexBuffer.Reset();
 		s_Data.m_FullscreenQuadIndexBuffer.Reset();
 		s_Data.m_ShaderLibrary.Reset();
-		s_Data.m_APIContext.Reset();
-		delete s_RendererAPI;
-		s_RendererAPI = nullptr;
+		WaitAndRender();
 		auto queue = s_Data.m_CommandQueue;
 		queue->Swap();
-	}
+		WaitAndRender();
+		BlockRenderThread();
 
-	void Renderer::Lock()
-	{
-		s_Data.m_QueueLock.lock();
-	}
-
-	void Renderer::Unlock()
-	{
-		s_Data.m_QueueLock.unlock();
+		for (uint32_t i = 0; i < s_Data.m_Configuration.FramesInFlight; i++)
+		{
+			auto& releaseQueue = Renderer::GetRenderResourceReleaseQueue(i);
+			releaseQueue.Execute();
+		}
+		
+		delete []s_Data.m_ResourceFreeQueues;
+		s_Data.m_ResourceFreeQueues = nullptr;
+		
+		delete s_RendererAPI;
+		s_RendererAPI = nullptr;
 	}
 
 	void Renderer::Clear()
@@ -308,10 +313,22 @@ namespace XYZ {
 	{
 		return s_RendererAPI->GetCapabilities();
 	}
+
+	const RendererConfiguration& Renderer::GetConfiguration()
+	{
+		return s_Data.m_Configuration;
+	}
+	RenderCommandQueue& Renderer::GetRenderResourceReleaseQueue(uint32_t index)
+	{
+		return s_Data.m_ResourceFreeQueues[index];
+	}
 	ScopedLock<RenderCommandQueue> Renderer::getRenderCommandQueue(uint8_t type)
 	{
 		return s_Data.m_CommandQueue->Write();
 	}
+
+	
+
 	RendererStats& Renderer::getStats()
 	{
 		return s_Data.m_Stats;

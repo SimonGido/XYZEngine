@@ -36,7 +36,7 @@ namespace XYZ {
 			return;
 
 		VkCommandPool commandPool = m_CommandPool;
-		Renderer::Submit([commandPool]()
+		Renderer::SubmitResourceFree([commandPool]()
 		{
 			auto device = VulkanContext::GetCurrentDevice();
 			vkDestroyCommandPool(device->GetVulkanDevice(), commandPool, nullptr);

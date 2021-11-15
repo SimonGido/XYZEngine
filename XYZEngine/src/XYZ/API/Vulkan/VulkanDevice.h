@@ -60,21 +60,21 @@ namespace XYZ {
 	{
 	public:
 		VulkanDevice(VkPhysicalDeviceFeatures enabledFeatures);
-		~VulkanDevice();
+		virtual ~VulkanDevice() override;
 
 		void Init(VkSurfaceKHR surface);
 
-		void Destroy();
-		void FlushCommandBuffer(VkCommandBuffer commandBuffer);
-		void FlushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue);
+		void Destroy() const;
+		void FlushCommandBuffer(VkCommandBuffer commandBuffer) const;
+		void FlushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue) const;
 
 
-		VkQueue GetGraphicsQueue() { return m_GraphicsQueue; }
-		VkQueue GetComputeQueue()  { return m_ComputeQueue; }
-		VkQueue GetPresentationQueue() { return m_PresentationQueue; }
+		VkQueue GetGraphicsQueue() const { return m_GraphicsQueue; }
+		VkQueue GetComputeQueue() const { return m_ComputeQueue; }
+		VkQueue GetPresentationQueue() const { return m_PresentationQueue; }
 
 		VkCommandBuffer GetCommandBuffer(bool begin, bool compute = false);
-		VkCommandBuffer CreateSecondaryCommandBuffer();
+		VkCommandBuffer CreateSecondaryCommandBuffer() const;
 		VkDevice		GetVulkanDevice() const { return m_LogicalDevice; }
 
 		const Ref<VulkanPhysicalDevice>& GetPhysicalDevice() const { return m_PhysicalDevice; }

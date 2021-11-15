@@ -40,7 +40,9 @@ namespace XYZ {
 
 	VulkanPipeline::VulkanPipeline(const PipelineSpecification& specs)
 		:
-		m_Specification(specs)
+		m_Specification(specs),
+		m_PipelineLayout(VK_NULL_HANDLE),
+		m_VulkanPipeline(VK_NULL_HANDLE)
 	{
 		XYZ_ASSERT(specs.Shader.Raw() && specs.RenderPass.Raw(), "");
 		Invalidate();
@@ -49,17 +51,16 @@ namespace XYZ {
 	{
 		VkPipelineLayout pipelineLayout = m_PipelineLayout;
 		VkPipeline		 vulkanPipeline = m_VulkanPipeline;
-		Renderer::Submit([pipelineLayout, vulkanPipeline]() {
-			VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-			vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
-			vkDestroyPipeline(device, vulkanPipeline, nullptr);
+		Renderer::Submit([pipelineLayout, vulkanPipeline]() {		
+			destroy(pipelineLayout, vulkanPipeline);
 		});	
 	}
 	void VulkanPipeline::Invalidate()
 	{
 		Ref<VulkanPipeline> instance = this;
 		Renderer::Submit([instance]() mutable {
-		
+
+			instance->destroy(instance->m_PipelineLayout, instance->m_VulkanPipeline);
 			VkPipelineInputAssemblyStateCreateInfo inputAssemblyState = {};
 			inputAssemblyState.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 			inputAssemblyState.topology = Utils::GetVulkanTopology(instance->m_Specification.Topology);
@@ -104,6 +105,7 @@ namespace XYZ {
 			pipelineCreateInfo.basePipelineIndex = -1; // Optional
 
 			VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			
 			VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &instance->m_VulkanPipeline));
 		});
 	}
@@ -139,7 +141,6 @@ namespace XYZ {
 		viewportState.viewportCount = 1;
 		viewportState.scissorCount = 1;
 
-		
 
 		return viewportState;
 	}
@@ -295,6 +296,18 @@ namespace XYZ {
 		dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStateEnables.size());
 		return dynamicState;
 	}
+
+	void VulkanPipeline::destroy(VkPipelineLayout pipelineLayout, VkPipeline vulkanPipeline)
+	{
+		if (pipelineLayout != VK_NULL_HANDLE && vulkanPipeline != VK_NULL_HANDLE)
+		{
+			VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			VK_CHECK_RESULT(vkDeviceWaitIdle(device));
+			vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+			vkDestroyPipeline(device, vulkanPipeline, nullptr);
+		}
+	}
+
 	void VulkanPipeline::createPipelineLayoutInfo()
 	{
 		Ref<VulkanShader> vulkanShader(m_Specification.Shader);

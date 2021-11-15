@@ -165,8 +165,7 @@ namespace XYZ {
 	}
 
 	void WindowsWindow::BeginFrame()
-	{
-		glfwPollEvents();
+	{		
 		m_Context->BeginFrame();
 	}
 
@@ -174,6 +173,11 @@ namespace XYZ {
 	{
 		Renderer::BlockRenderThread();	
 		m_Context->SwapBuffers();
+	}
+
+	void WindowsWindow::ProcessEvents()
+	{
+		glfwPollEvents();
 	}
 
 	void WindowsWindow::SetVSync(int32_t frames)
@@ -229,7 +233,7 @@ namespace XYZ {
 	}
 
 
-	void WindowsWindow::destroy()
+	void WindowsWindow::destroy() const
 	{
 		glfwDestroyWindow(m_Window);
 		glfwTerminate();

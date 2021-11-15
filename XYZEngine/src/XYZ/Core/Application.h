@@ -43,6 +43,7 @@ namespace XYZ {
 
 
 		bool       m_Running;
+		bool	   m_Minimized;
 		float      m_LastFrameTime;
 		Timestep   m_Timestep;
 		ThreadPool m_ThreadPool;

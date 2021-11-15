@@ -19,10 +19,13 @@ namespace XYZ {
 
 	void EditorLayer::OnAttach()
 	{
-		m_Shader = Shader::Create("Assets/Shaders/VulkanTestShader.glsl");
+		m_Shader = Shader::Create("Assets/Shaders/VulkanTestVertexShader.glsl");
 		Ref<APIContext> context = Renderer::GetAPIContext();
 		m_RenderPass = context->GetRenderPass();
-		BufferLayout layout {};
+		BufferLayout layout {
+			{0, ShaderDataType::Float2, "inPosition"},
+			{1, ShaderDataType::Float3, "inColor"}
+		};
 		m_Pipeline = Pipeline::Create({ m_Shader, layout, m_RenderPass });
 		m_RenderCommandBuffer = context->GetRenderCommandBuffer();
 	}

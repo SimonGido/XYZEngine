@@ -28,11 +28,13 @@ namespace XYZ {
 	VulkanContext::VulkanContext()
 		:
 		m_DebugReportCallback(VK_NULL_HANDLE),
-		m_PipelineCache(VK_NULL_HANDLE)
+		m_PipelineCache(VK_NULL_HANDLE),
+		m_WindowHandle(nullptr)
 	{
 	}
 	VulkanContext::~VulkanContext()
 	{
+		VK_CHECK_RESULT(vkDeviceWaitIdle(m_Device->GetVulkanDevice()));
 		m_SwapChain.Destroy();
 		m_Device->Destroy();
 		if (s_Validation)
@@ -103,9 +105,6 @@ namespace XYZ {
 		setupDevice();
 		m_SwapChain.Init(s_VulkanInstance, m_Device);
 		m_SwapChain.InitSurface(m_WindowHandle);
-
-		
-
 		VulkanAllocator::Init(m_Device);
 	}
 	void VulkanContext::CreateSwapChain(uint32_t* width, uint32_t* height, bool vSync)

@@ -350,7 +350,7 @@ namespace XYZ {
 		createCommandPools();
 		getQueues();
 	}
-	void VulkanDevice::Destroy()
+	void VulkanDevice::Destroy() const
 	{
 		vkDestroyCommandPool(m_LogicalDevice, m_CommandPool, nullptr);
 		vkDestroyCommandPool(m_LogicalDevice, m_ComputeCommandPool, nullptr);
@@ -358,11 +358,11 @@ namespace XYZ {
 		vkDeviceWaitIdle(m_LogicalDevice); // Waiting for queues to finish
 		vkDestroyDevice(m_LogicalDevice, nullptr);
 	}
-	void VulkanDevice::FlushCommandBuffer(VkCommandBuffer commandBuffer)
+	void VulkanDevice::FlushCommandBuffer(VkCommandBuffer commandBuffer) const
 	{
 		FlushCommandBuffer(commandBuffer, m_GraphicsQueue);
 	}
-	void VulkanDevice::FlushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue)
+	void VulkanDevice::FlushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue) const
 	{
 		const uint64_t DEFAULT_FENCE_TIMEOUT = 100000000000;
 
@@ -413,7 +413,7 @@ namespace XYZ {
 		return cmdBuffer;
 
 	}
-	VkCommandBuffer VulkanDevice::CreateSecondaryCommandBuffer()
+	VkCommandBuffer VulkanDevice::CreateSecondaryCommandBuffer() const
 	{
 		VkCommandBuffer cmdBuffer;
 

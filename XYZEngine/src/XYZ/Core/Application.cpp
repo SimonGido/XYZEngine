@@ -24,7 +24,8 @@ namespace XYZ {
 		:
 		m_LastFrameTime(0.0f),
 		m_Timestep(0.0f),
-		m_ThreadPool(12)
+		m_ThreadPool(12),
+		m_Minimized(false)
 	{
 		
 		s_Application = this;
@@ -42,8 +43,7 @@ namespace XYZ {
 		std::wstring tmp(&NPath[0]);
 		m_ApplicationDir = std::string(tmp.begin(), tmp.end());
 
-		m_ImGuiLayer = nullptr;
-		//m_ImGuiLayer = new ImGuiLayer();
+		//m_ImGuiLayer = ImGuiLayer::Create();
 		//m_LayerStack.PushOverlay(m_ImGuiLayer);	
 	}
 
@@ -58,36 +58,36 @@ namespace XYZ {
 
 		AssetManager::Shutdown();
 		Audio::ShutDown();
-
-		// Finish commands
-		Renderer::WaitAndRender();
 		Renderer::Shutdown();
 	}
 
 	void Application::Run()
 	{
-		float performance = 0.0f;
 		while (m_Running)
 		{				
 			updateTimestep();
 			XYZ_PROFILE_FRAME("MainThread");
-						
-			for (Layer* layer : m_LayerStack)
-				layer->OnUpdate(m_Timestep);
-		
-			#ifdef IMGUI_BUILD
+			
+			m_Window->ProcessEvents();
+			if (!m_Minimized)
 			{
-				onImGuiRender();
-			}
-			#endif		
+				for (Layer* layer : m_LayerStack)
+					layer->OnUpdate(m_Timestep);
+		
+				#ifdef IMGUI_BUILD
+				{
+					Renderer::Submit([this]()mutable{
+						onImGuiRender();
+					});		
+				}
+				#endif		
 
-			m_Window->BeginFrame();
-			Renderer::WaitAndRender();
-			m_Window->SwapBuffers();
+				m_Window->BeginFrame();
+				Renderer::WaitAndRender();	
+				m_Window->SwapBuffers();
+			}
 		}
 		XYZ_PROFILER_SHUTDOWN;
-		Renderer::WaitAndRender();
-		Renderer::BlockRenderThread();
 	}
 
 	void Application::PushLayer(Layer* layer)
@@ -112,8 +112,15 @@ namespace XYZ {
 
 	bool Application::onWindowResized(WindowResizeEvent& event)
 	{
+		const uint32_t width = event.GetWidth(), height = event.GetHeight();	
+		if (width == 0 || height == 0)
+		{
+			m_Minimized = true;
+			return false;
+		}
+		m_Minimized = false;
 		Renderer::SetViewPort(0, 0, event.GetWidth(), event.GetHeight());
-		Renderer::GetAPIContext()->OnResize(event.GetWidth(), event.GetHeight());
+		Renderer::GetAPIContext()->OnResize(event.GetWidth(), event.GetHeight());	
 		return false;
 	}
 
@@ -125,7 +132,7 @@ namespace XYZ {
 
 	void Application::updateTimestep()
 	{
-		float time = (float)glfwGetTime();
+		float time = static_cast<float>(glfwGetTime());
 		m_Timestep = time - m_LastFrameTime;
 		m_LastFrameTime = time;
 	}

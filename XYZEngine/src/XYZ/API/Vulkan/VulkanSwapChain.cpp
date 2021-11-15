@@ -5,8 +5,6 @@
 
 namespace XYZ {
 
-	#define FRAMES_IN_FLIGHT 3
-
 	static VulkanSwapChain::SwapChainSupportDetails QuerySwapChainSupport(VkSurfaceKHR surface, VkPhysicalDevice physicalDevice)
 	{
 		VulkanSwapChain::SwapChainSupportDetails details;
@@ -90,9 +88,14 @@ namespace XYZ {
 
 		vkDeviceWaitIdle(device);
 		Create(&width, &height, m_VSync);
+		m_CurrentBufferIndex = 0;
+		m_CurrentImageIndex = 0;
 	}
 	void VulkanSwapChain::BeginFrame()
 	{
+		auto& queue = Renderer::GetRenderResourceReleaseQueue(m_CurrentBufferIndex);
+		queue.Execute();
+		
 		auto device = m_Device->GetVulkanDevice();
 		VK_CHECK_RESULT(vkWaitForFences(m_Device->GetVulkanDevice(), 1, &m_WaitFences[m_CurrentBufferIndex], VK_TRUE, UINT64_MAX));
 		VK_CHECK_RESULT(vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_Semaphores[m_CurrentBufferIndex].PresentComplete, VK_NULL_HANDLE, &m_CurrentImageIndex));
@@ -124,12 +127,9 @@ namespace XYZ {
 				OnResize(m_Extent.width, m_Extent.height);
 				return;
 			}
-			else
-			{
-				VK_CHECK_RESULT(result);
-			}
+			VK_CHECK_RESULT(result);
 		}
-		m_CurrentBufferIndex = (m_CurrentBufferIndex + 1) % FRAMES_IN_FLIGHT;
+		m_CurrentBufferIndex = (m_CurrentBufferIndex + 1) %  Renderer::GetConfiguration().FramesInFlight;;
 		
 	}
 	void VulkanSwapChain::Init(VkInstance instance, const Ref<VulkanDevice>& device)
@@ -253,12 +253,8 @@ namespace XYZ {
 		}
 		else
 		{
-			VkExtent2D actualExtent{
-				*width, *height
-			};
-			actualExtent.width  = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
-			actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
-			m_Extent = actualExtent;
+			m_Extent.width  = std::clamp(*width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
+			m_Extent.height = std::clamp(*height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
 		}
 		*width = m_Extent.width;
 		*height = m_Extent.height;
@@ -282,8 +278,8 @@ namespace XYZ {
 	}
 	void VulkanSwapChain::createSyncObjects()
 	{
-		m_Semaphores.resize(FRAMES_IN_FLIGHT);
-		m_WaitFences.resize(FRAMES_IN_FLIGHT);
+		m_Semaphores.resize( Renderer::GetConfiguration().FramesInFlight);
+		m_WaitFences.resize( Renderer::GetConfiguration().FramesInFlight);
 
 		VkDevice device = m_Device->GetVulkanDevice();
 		VkSemaphoreCreateInfo semaphoreInfo{};
@@ -294,7 +290,7 @@ namespace XYZ {
 		fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 		
 		
-		for (uint32_t i = 0; i < FRAMES_IN_FLIGHT; ++i)
+		for (uint32_t i = 0; i <  Renderer::GetConfiguration().FramesInFlight; ++i)
 		{
 			VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_Semaphores[i].PresentComplete));
 			VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreInfo, nullptr, &m_Semaphores[i].RenderComplete));
@@ -476,7 +472,7 @@ namespace XYZ {
 		}
 	}
 
-	VkResult VulkanSwapChain::queuePresent(VkQueue queue, uint32_t imageIndex, VkSemaphore waitSemaphore)
+	VkResult VulkanSwapChain::queuePresent(VkQueue queue, uint32_t imageIndex, VkSemaphore waitSemaphore) const
 	{
 		VkPresentInfoKHR presentInfo = {};
 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
