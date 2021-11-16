@@ -232,6 +232,16 @@ namespace XYZ {
 		Renderer::DrawIndexed(PrimitiveType::Triangles, 6);
 	}
 
+	void Renderer::BeginFrame()
+	{
+		s_RendererAPI->BeginFrame();
+	}
+
+	void Renderer::EndFrame()
+	{
+		s_RendererAPI->EndFrame();
+	}
+
 
 	void Renderer::BeginRenderPass(const Ref<RenderPass>& renderPass, bool clear)
 	{
@@ -328,9 +338,6 @@ namespace XYZ {
 	{
 		return s_Data.m_CommandQueue->Write();
 	}
-
-	
-
 	RendererStats& Renderer::getStats()
 	{
 		return s_Data.m_Stats;

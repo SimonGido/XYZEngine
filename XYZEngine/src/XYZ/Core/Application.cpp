@@ -20,12 +20,13 @@ namespace XYZ {
 	Application* Application::s_Application = nullptr;
 
 
-	Application::Application()
+	Application::Application(const ApplicationSpecification& specification)
 		:
 		m_LastFrameTime(0.0f),
 		m_Timestep(0.0f),
 		m_ThreadPool(12),
-		m_Minimized(false)
+		m_Minimized(false),
+		m_Specification(specification)
 	{	
 		s_Application = this;
 		m_Running = true;
@@ -35,7 +36,7 @@ namespace XYZ {
 		m_Window->RegisterCallback(Hook(&Application::OnEvent, this));	
 		m_Window->SetVSync(0);
 		
-		//m_ImGuiLayer = nullptr;
+		m_ImGuiLayer = nullptr;
 		m_ImGuiLayer = ImGuiLayer::Create();
 		m_LayerStack.PushOverlay(m_ImGuiLayer);
 
@@ -71,17 +72,15 @@ namespace XYZ {
 			
 			m_Window->ProcessEvents();
 			if (!m_Minimized)
-			{
+			{							
 				for (Layer* layer : m_LayerStack)
 					layer->OnUpdate(m_Timestep);
-		
-				m_Window->BeginFrame();
-				Renderer::WaitAndRender();	
-				#ifdef IMGUI_BUILD
-				{
+						
+				if (m_Specification.EnableImGui)
 					onImGuiRender();
-				}
-				#endif		
+
+				m_Window->BeginFrame();
+				Renderer::WaitAndRender();
 				m_Window->SwapBuffers();
 			}
 		}

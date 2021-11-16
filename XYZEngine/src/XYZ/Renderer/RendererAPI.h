@@ -51,7 +51,11 @@ namespace XYZ {
 		virtual void DrawInstanced(PrimitiveType type, uint32_t indexCount, uint32_t instanceCount, uint32_t offset = 0) {};
 		virtual void DrawInstancedIndirect(void* indirect) {};
 	
-
+		// New API
+		virtual void BeginFrame() {}
+		virtual void EndFrame() {}
+	
+		
 		virtual void TestDraw(const Ref<RenderPass>& renderPass, const Ref<RenderCommandBuffer>& commandBuffer, const Ref<Pipeline>& pipeline, const Ref<VertexBuffer>& vbo, const Ref<IndexBuffer>& ibo) {};
 
 		static RenderAPICapabilities& GetCapabilities()

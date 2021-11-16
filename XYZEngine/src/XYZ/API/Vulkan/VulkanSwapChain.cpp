@@ -193,7 +193,7 @@ namespace XYZ {
 		createCommandPool();
 		createRenderPass();
 	}
-	Ref<RenderCommandBuffer> VulkanSwapChain::GetRenderCommandBuffer()
+	Ref<RenderCommandBuffer> VulkanSwapChain::GetRenderCommandBuffer() const
 	{
 		return m_RenderCommandBuffer;
 	}

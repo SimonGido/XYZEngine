@@ -6,10 +6,16 @@
 #include "XYZ/ImGui/ImGuiLayer.h"
 
 namespace XYZ {
+
+	struct ApplicationSpecification
+	{
+		bool EnableImGui = false;
+	};
+	
 	class Application
 	{
 	public:
-		Application();
+		Application(const ApplicationSpecification& specification);
 		virtual ~Application();
 
 		void Run();
@@ -21,11 +27,11 @@ namespace XYZ {
 
 		bool OnEvent(Event& event);
 
-		Window&			   GetWindow()				 { return *m_Window; }
+		Window&			   GetWindow() const		 { return *m_Window; }
 		ThreadPool&		   GetThreadPool()			 { return m_ThreadPool; }
-		ImGuiLayer*		   GetImGuiLayer()			 { return m_ImGuiLayer; }
+		ImGuiLayer*		   GetImGuiLayer()	const	 { return m_ImGuiLayer; }
 		const std::string& GetApplicationDir() const { return m_ApplicationDir; }
-
+		const ApplicationSpecification& GetSpecification() const { return m_Specification;}
 		inline static Application& Get() { return *s_Application; }
 
 		static Application* CreateApplication();
@@ -42,13 +48,13 @@ namespace XYZ {
 		std::unique_ptr<Window> m_Window;
 
 
-		bool       m_Running;
-		bool	   m_Minimized;
-		float      m_LastFrameTime;
-		Timestep   m_Timestep;
-		ThreadPool m_ThreadPool;
-
-		std::string m_ApplicationDir;
+		bool       				 m_Running;
+		bool	   				 m_Minimized;
+		float      				 m_LastFrameTime;
+		Timestep   				 m_Timestep;
+		ThreadPool 				 m_ThreadPool;
+		ApplicationSpecification m_Specification;
+		std::string				 m_ApplicationDir;
 
 		static Application* s_Application;
 	};

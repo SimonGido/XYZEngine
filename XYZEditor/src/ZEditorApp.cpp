@@ -8,6 +8,7 @@ class Editor : public XYZ::Application
 {
 public:
 	Editor()
+		:XYZ::Application({})
 	{
 		PushLayer(new XYZ::EditorLayer());
 	}

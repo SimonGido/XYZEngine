@@ -15,6 +15,27 @@ namespace XYZ {
 	void VulkanRendererAPI::Init()
 	{
 	}
+
+	void VulkanRendererAPI::BeginFrame()
+	{
+		Ref<VulkanContext> context = Renderer::GetAPIContext();
+		VulkanSwapChain& swapChain = context->GetSwapChain();
+		const VkCommandBuffer commandBuffer = swapChain.GetCurrentCommandBuffer();
+		VkCommandBufferBeginInfo cmdBufInfo = {};
+		cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		cmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+		cmdBufInfo.pNext = nullptr;
+		VK_CHECK_RESULT(vkBeginCommandBuffer(commandBuffer, &cmdBufInfo));
+	}
+
+	void VulkanRendererAPI::EndFrame()
+	{
+		Ref<VulkanContext> context = Renderer::GetAPIContext();
+		VulkanSwapChain& swapChain = context->GetSwapChain();
+		const VkCommandBuffer commandBuffer = swapChain.GetCurrentCommandBuffer();
+		VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
+	}
+
 	void VulkanRendererAPI::TestDraw(const Ref<RenderPass>& renderPass, const Ref<RenderCommandBuffer>& commandBuffer, const Ref<Pipeline>& pipeline, const Ref<VertexBuffer>& vbo, const Ref<IndexBuffer>& ibo)
 	{
 		Ref<VulkanRenderCommandBuffer> vulkanCommandBuffer = commandBuffer;

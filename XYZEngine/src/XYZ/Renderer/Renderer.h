@@ -61,6 +61,9 @@ namespace XYZ {
 		static void DrawElementsIndirect(void* indirect);
 		static void SubmitFullscreenQuad();
 
+		static void BeginFrame();
+		static void EndFrame();
+		
 		static Ref<ShaderLibrary>			GetShaderLibrary();
 		static Ref<APIContext>				GetAPIContext();
 		static const RenderAPICapabilities& GetCapabilities();
@@ -78,6 +81,7 @@ namespace XYZ {
 		static void BeginRenderPass(const Ref<RenderPass>& renderPass, bool clear);
 		static void EndRenderPass();
 		static void BlockRenderThread();
+
 
 		static ThreadPool&			GetPool();
 		static RendererAPI::API		GetAPI() { return RendererAPI::GetAPI(); }

@@ -16,7 +16,9 @@ namespace XYZ {
 		virtual void Begin() override;
 		virtual void End() override;
 		virtual void Submit() override;
-
+		virtual void RT_Begin() override;
+		virtual void RT_End() override;
+		
 		virtual float GetExecutionGPUTime(uint32_t frameIndex, uint32_t queryIndex = 0) const override;
 
 		virtual uint64_t BeginTimestampQuery() override;

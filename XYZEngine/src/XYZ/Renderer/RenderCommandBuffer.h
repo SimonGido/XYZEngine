@@ -11,6 +11,9 @@ namespace XYZ {
 		virtual void End() = 0;
 		virtual void Submit() = 0;
 
+		virtual void RT_Begin(){};
+		virtual void RT_End() {}
+		
 		virtual float GetExecutionGPUTime(uint32_t frameIndex, uint32_t queryIndex = 0) const = 0;
 
 		virtual uint64_t BeginTimestampQuery() = 0;
