@@ -43,7 +43,7 @@ namespace XYZ {
     {
         TreeNode newNode;
         newNode.Data = data;
-        int32_t newInserted = m_Nodes.Insert(newNode);
+        const int32_t newInserted = m_Nodes.Insert(newNode);
         m_Nodes[newInserted].ID = newInserted;
 
         if (m_NodeValid.size() <= newInserted)
@@ -56,8 +56,8 @@ namespace XYZ {
             m_NodeCount++;
             return newInserted;
         }
-        
-        int32_t tmpNext = m_Nodes[m_Root].NextSibling;
+
+        const int32_t tmpNext = m_Nodes[m_Root].NextSibling;
         if (tmpNext == TreeNode::sc_Invalid)
         {
             m_Nodes[m_Root].NextSibling = newInserted;
@@ -77,7 +77,7 @@ namespace XYZ {
     {
         TreeNode newNode;
         newNode.Data = data;
-        int32_t newInserted = m_Nodes.Insert(newNode);
+        const int32_t newInserted = m_Nodes.Insert(newNode);
         m_Nodes[newInserted].ID = newInserted;
 
         if (m_NodeValid.size() <= newInserted)
@@ -93,7 +93,7 @@ namespace XYZ {
         TreeNode& parentNode = m_Nodes[parent];
         if (parentNode.FirstChild != TreeNode::sc_Invalid)
         {
-            int32_t tmp = parentNode.FirstChild;
+            const int32_t tmp = parentNode.FirstChild;
             m_Nodes[newInserted].NextSibling = tmp;
             m_Nodes[tmp].PreviousSibling = newInserted;
         }
@@ -109,7 +109,7 @@ namespace XYZ {
     {
         TreeNode newNode;
         newNode.Data = data;
-        int32_t newInserted = m_Nodes.Insert(newNode);
+        const int32_t newInserted = m_Nodes.Insert(newNode);
         m_Nodes[newInserted].ID = newInserted;
 
         if (m_NodeValid.size() <= newInserted)
@@ -147,7 +147,7 @@ namespace XYZ {
     {
         TreeNode newNode;
         newNode.Data = data;
-        int32_t newInserted = m_Nodes.Insert(newNode);
+        const int32_t newInserted = m_Nodes.Insert(newNode);
         m_Nodes[newInserted].ID = newInserted;
 
         if (m_NodeValid.size() <= newInserted)
@@ -210,7 +210,7 @@ namespace XYZ {
             // Insert child node in new linked list
             if (newParentNode.FirstChild != TreeNode::sc_Invalid)
             {
-                int32_t oldFirstChild = newParentNode.FirstChild;
+                const int32_t oldFirstChild = newParentNode.FirstChild;
                 m_Nodes[oldFirstChild].PreviousSibling = child;
                 childNode.NextSibling = oldFirstChild;
             }
@@ -222,17 +222,17 @@ namespace XYZ {
     }
     void Tree::Remove(int32_t index)
     {
-        TreeNode& removed = m_Nodes[index];
+        const TreeNode& removed = m_Nodes[index];
         if (removed.FirstChild != TreeNode::sc_Invalid)
         {
             std::stack<int32_t> stack;
             stack.push(removed.FirstChild);
             while (!stack.empty())
             {
-                int32_t tmp = stack.top();
+                const int32_t tmp = stack.top();
                 stack.pop();
 
-                int32_t sibling = m_Nodes[tmp].NextSibling;
+                const int32_t sibling = m_Nodes[tmp].NextSibling;
                 while (sibling != TreeNode::sc_Invalid)
                 {
                     TreeNode& siblingNode = m_Nodes[sibling];
@@ -300,7 +300,7 @@ namespace XYZ {
             lastValid = current;
             current = m_Nodes[current].PreviousSibling;
         }
-        int32_t parent = m_Nodes[lastValid].Parent;
+        const int32_t parent = m_Nodes[lastValid].Parent;
         if (parent != TreeNode::sc_Invalid)
             m_Nodes[parent].FirstChild = lastValid;
         if (node == m_Root)
@@ -346,7 +346,7 @@ namespace XYZ {
         stack.push(node);
         while (!stack.empty())
         {
-            int32_t tmp = stack.top();
+            const int32_t tmp = stack.top();
             stack.pop();
 
             const TreeNode& node = m_Nodes[tmp];        
@@ -369,7 +369,7 @@ namespace XYZ {
         stack.push(node);
         while (!stack.empty())
         {
-            int32_t tmp = stack.top();
+            const int32_t tmp = stack.top();
             stack.pop();
 
             const TreeNode& node = m_Nodes[tmp];        
@@ -415,7 +415,7 @@ namespace XYZ {
         stack.push(last);
         while (!stack.empty())
         {
-            int32_t tmp = stack.top();
+            const int32_t tmp = stack.top();
             stack.pop();
 
             const TreeNode& node = m_Nodes[tmp];        

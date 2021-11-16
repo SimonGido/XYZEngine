@@ -150,9 +150,9 @@ namespace XYZ {
 				EditorHelper::EndColumns();
 				BurstEmitter& burstEmitter = val.m_BurstEmitter;
 				EditorHelper::DrawContainerControl("Bursts", burstEmitter.m_Bursts, [](BurstEmitter::Burst& burst, size_t index) {
-					std::string indexStr = std::to_string(index);
-					std::string burstCountID = "##BurstCount" + indexStr;
-					std::string timeID = "##Time" + indexStr;
+					                                   const std::string indexStr = std::to_string(index);
+					                                   const std::string burstCountID = "##BurstCount" + indexStr;
+					                                   const std::string timeID = "##Time" + indexStr;
 					ImGui::Text("Count:");
 					ImGui::SameLine();			
 					int count = burst.m_Count;

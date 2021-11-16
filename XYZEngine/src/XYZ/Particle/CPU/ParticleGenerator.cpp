@@ -70,13 +70,13 @@ namespace XYZ {
 	{
 		std::random_device dev;
 		std::mt19937 rng(dev());
-		std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+		const std::uniform_real_distribution<float> dist(0.0f, 1.0f);
 
 		for (uint32_t i = startId; i < endId; i++)
 		{
 			float r = m_Radius * (float)sqrt(dist(rng));
-			float theta = dist(rng) * 2.0f * glm::pi<float>();
-			glm::vec2 point(
+			const float theta = dist(rng) * 2.0f * glm::pi<float>();
+			const glm::vec2 point(
 				m_Radius * cos(theta),
 				m_Radius * sin(theta)
 			);

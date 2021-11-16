@@ -109,7 +109,7 @@ namespace XYZ {
 
 	void PublicField::SetStoredValueRaw(void* src)
 	{
-		uint32_t size = GetFieldSize(m_Type);
+		const uint32_t size = GetFieldSize(m_Type);
 		memcpy(m_StoredValueBuffer, src, size);
 
 	}
@@ -122,17 +122,17 @@ namespace XYZ {
 	}
 	void PublicField::setStoredValue_Internal(void* value) const
 	{
-		uint32_t size = GetFieldSize(m_Type);
+		const uint32_t size = GetFieldSize(m_Type);
 		memcpy(m_StoredValueBuffer, value, size);
 	}
 	void PublicField::getStoredValue_Internal(void* outValue) const
 	{
-		uint32_t size = GetFieldSize(m_Type);
+		const uint32_t size = GetFieldSize(m_Type);
 		memcpy(outValue, m_StoredValueBuffer, size);
 	}
 	void PublicField::setStoredString_Internal(const char* value) const
 	{
-		size_t size = strlen(value) + 1;
+		const size_t size = strlen(value) + 1;
 		if (m_Size < size)
 		{
 			delete[]m_StoredValueBuffer;
@@ -142,34 +142,34 @@ namespace XYZ {
 	}
 	void PublicField::getStoredString_Internal(char** outValue) const
 	{
-		size_t size = strlen((char*)m_StoredValueBuffer) + 1;
+		const size_t size = strlen((char*)m_StoredValueBuffer) + 1;
 		*outValue = new char[size];
 		memcpy(*outValue, m_StoredValueBuffer, size);
 	}
 
 	void PublicField::setRuntimeValue_Internal(void* value) const
 	{
-		auto instance = GetInstance(m_Handle);
+		const auto instance = GetInstance(m_Handle);
 		XYZ_ASSERT(instance, "");
 		mono_field_set_value(instance, m_MonoClassField, value);
 
 	}
 	void PublicField::getRuntimeValue_Internal(void* outValue) const
 	{
-		auto instance = GetInstance(m_Handle);
+		const auto instance = GetInstance(m_Handle);
 		XYZ_ASSERT(instance, "");
 		mono_field_get_value(instance, m_MonoClassField, outValue);
 	}
 	void PublicField::setRuntimeString_Internal(const char* value) const
 	{
 		MonoString* string = mono_string_new(ScriptEngine::GetMonoDomain(), value);
-		auto instance = GetInstance(m_Handle);
+		const auto instance = GetInstance(m_Handle);
 		XYZ_ASSERT(instance, "");
 		mono_field_set_value(instance, m_MonoClassField, string);
 	}
 	void PublicField::getRuntimeString_Internal(char** outValue) const
 	{
-		auto instance = GetInstance(m_Handle);
+		const auto instance = GetInstance(m_Handle);
 		XYZ_ASSERT(instance, "");
 		MonoString* string = nullptr;
 		mono_field_get_value(instance, m_MonoClassField, &string);

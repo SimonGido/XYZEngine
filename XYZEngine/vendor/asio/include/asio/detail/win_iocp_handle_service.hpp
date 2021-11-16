@@ -133,7 +133,7 @@ public:
   size_t write_some_at(implementation_type& impl, uint64_t offset,
       const ConstBufferSequence& buffers, asio::error_code& ec)
   {
-    asio::const_buffer buffer =
+      const asio::const_buffer buffer =
       buffer_sequence_adapter<asio::const_buffer,
         ConstBufferSequence>::first(buffers);
 
@@ -199,7 +199,7 @@ public:
   size_t read_some_at(implementation_type& impl, uint64_t offset,
       const MutableBufferSequence& buffers, asio::error_code& ec)
   {
-    asio::mutable_buffer buffer =
+      const asio::mutable_buffer buffer =
       buffer_sequence_adapter<asio::mutable_buffer,
         MutableBufferSequence>::first(buffers);
 

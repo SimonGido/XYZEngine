@@ -17,13 +17,13 @@ namespace XYZ {
 
     static glm::vec3 Interpolate(const glm::vec3& start, const glm::vec3& end, float delta)
     {
-        glm::vec3 diff = end - start;
+        const glm::vec3 diff = end - start;
         return diff * delta;
     }
 
     static glm::mat4 CalculateTransform(const glm::vec3& translation, const glm::vec3& rotation, const glm::vec3& scale)
     {
-        glm::mat4 rot = glm::rotate(glm::mat4(1.0f), rotation.x, { 1, 0, 0 })
+        const glm::mat4 rot = glm::rotate(glm::mat4(1.0f), rotation.x, { 1, 0, 0 })
             * glm::rotate(glm::mat4(1.0f), rotation.y, { 0, 1, 0 })
             * glm::rotate(glm::mat4(1.0f), rotation.z, { 0, 0, 1 });
 
@@ -93,7 +93,7 @@ namespace XYZ {
 
         m_VertexArray->AddVertexBuffer(vbo);
 
-        Ref<IndexBuffer> ibo = IndexBuffer::Create(m_Indices.data(), (uint32_t)m_Indices.size());
+        const Ref<IndexBuffer> ibo = IndexBuffer::Create(m_Indices.data(), (uint32_t)m_Indices.size());
         m_VertexArray->SetIndexBuffer(ibo);
     }
 }

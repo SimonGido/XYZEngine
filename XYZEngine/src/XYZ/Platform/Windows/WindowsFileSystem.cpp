@@ -57,7 +57,7 @@ namespace XYZ {
 	std::string FileSystem::OpenFolder(void* windowHandle, const std::string& path)
 	{
 		TCHAR tmpPath[MAX_PATH];
-		std::wstring wsaved_path(path.begin(), path.end());
+		const std::wstring wsaved_path(path.begin(), path.end());
 		const wchar_t* pathParam = wsaved_path.c_str();
 
 		BROWSEINFO bi = { 0 };
@@ -66,7 +66,7 @@ namespace XYZ {
 		bi.lpfn = BrowseCallbackProc;
 		bi.lParam = (LPARAM)pathParam;
 
-		LPITEMIDLIST pidl = SHBrowseForFolder(&bi);
+		const LPITEMIDLIST pidl = SHBrowseForFolder(&bi);
 
 		if (pidl != 0)
 		{
@@ -90,10 +90,10 @@ namespace XYZ {
 
 	bool FileSystem::CreateFolder(const std::string& filepath)
 	{
-		BOOL created = CreateDirectoryA(filepath.c_str(), NULL);
+		const BOOL created = CreateDirectoryA(filepath.c_str(), NULL);
 		if (!created)
 		{
-			DWORD error = GetLastError();
+			const DWORD error = GetLastError();
 
 			if (error == ERROR_ALREADY_EXISTS)
 				XYZ_CORE_ERROR(filepath, " already exists!");
@@ -109,7 +109,7 @@ namespace XYZ {
 
 	bool FileSystem::Exists(const std::string& filepath)
 	{
-		DWORD attribs = GetFileAttributesA(filepath.c_str());
+		const DWORD attribs = GetFileAttributesA(filepath.c_str());
 
 		if (attribs == INVALID_FILE_ATTRIBUTES)
 			return false;
@@ -120,7 +120,7 @@ namespace XYZ {
 	std::string FileSystem::Rename(const std::string& filepath, const std::string& newName)
 	{
 		s_IgnoreNextChange = true;
-		std::filesystem::path p = filepath;
+		const std::filesystem::path p = filepath;
 		std::string newFilePath = p.parent_path().string() + "/" + newName + p.extension().string();
 		MoveFileA(filepath.c_str(), newFilePath.c_str());
 		s_IgnoreNextChange = false;
@@ -130,9 +130,9 @@ namespace XYZ {
 	bool FileSystem::MoveFileToPath(const std::string& filepath, const std::string& dest)
 	{
 		s_IgnoreNextChange = true;
-		std::filesystem::path p = filepath;
-		std::string destFilePath = dest + "/" + p.filename().string();
-		BOOL result = MoveFileA(filepath.c_str(), destFilePath.c_str());
+		const std::filesystem::path p = filepath;
+		const std::string destFilePath = dest + "/" + p.filename().string();
+		const BOOL result = MoveFileA(filepath.c_str(), destFilePath.c_str());
 		s_IgnoreNextChange = false;
 		return result != 0;
 	}
@@ -151,7 +151,7 @@ namespace XYZ {
 		file_op.fAnyOperationsAborted = false;
 		file_op.hNameMappings = 0;
 		file_op.lpszProgressTitle = "";
-		int result = SHFileOperationA(&file_op);
+		const int result = SHFileOperationA(&file_op);
 		s_IgnoreNextChange = false;
 		return result == 0;
 	}

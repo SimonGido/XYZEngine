@@ -10,21 +10,21 @@
 namespace XYZ {
 	bool Input::IsKeyPressed(KeyCode button)
 	{
-		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetWindow());
-		auto state = glfwGetKey(window, static_cast<int32_t>(button));
+		const auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetWindow());
+		const auto state = glfwGetKey(window, static_cast<int32_t>(button));
 		return state == GLFW_PRESS || state == GLFW_REPEAT;
 	}
 
 	bool Input::IsMouseButtonPressed(MouseCode button)
 	{
-		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetWindow());
-		auto state = glfwGetMouseButton(window, static_cast<int32_t>(button));
+		const auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetWindow());
+		const auto state = glfwGetMouseButton(window, static_cast<int32_t>(button));
 		return state == GLFW_PRESS;
 	}
 
 	std::pair<float, float> Input::GetMousePosition()
 	{
-		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetWindow());
+		const auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetWindow());
 		double xpos, ypos;
 		glfwGetCursorPos(window, &xpos, &ypos);
 

@@ -56,7 +56,7 @@ inline ASIO_SYNC_OP_VOID connect_pair(
     basic_socket<Protocol, Executor2>& socket2, asio::error_code& ec)
 {
   // Check that this function is only being used with a UNIX domain socket.
-  asio::local::basic_endpoint<Protocol>* tmp
+  const asio::local::basic_endpoint<Protocol>* tmp
     = static_cast<typename Protocol::endpoint*>(0);
   (void)tmp;
 

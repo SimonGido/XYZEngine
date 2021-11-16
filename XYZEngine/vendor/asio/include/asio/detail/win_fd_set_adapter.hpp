@@ -71,7 +71,7 @@ public:
     reactor_op_queue<socket_type>::iterator i = operations.begin();
     while (i != operations.end())
     {
-      reactor_op_queue<socket_type>::iterator op_iter = i++;
+      const reactor_op_queue<socket_type>::iterator op_iter = i++;
       reserve(fd_set_->fd_count + 1);
       fd_set_->fd_array[fd_set_->fd_count++] = op_iter->first;
     }

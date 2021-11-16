@@ -25,7 +25,7 @@ Service& service_registry::use_service()
 {
   execution_context::service::key key;
   init_key<Service>(key, 0);
-  factory_type factory = &service_registry::create<Service, execution_context>;
+  const factory_type factory = &service_registry::create<Service, execution_context>;
   return *static_cast<Service*>(do_use_service(key, factory, &owner_));
 }
 
@@ -34,7 +34,7 @@ Service& service_registry::use_service(io_context& owner)
 {
   execution_context::service::key key;
   init_key<Service>(key, 0);
-  factory_type factory = &service_registry::create<Service, io_context>;
+  const factory_type factory = &service_registry::create<Service, io_context>;
   return *static_cast<Service*>(do_use_service(key, factory, &owner));
 }
 

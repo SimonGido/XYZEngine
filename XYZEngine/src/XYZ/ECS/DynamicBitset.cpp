@@ -69,7 +69,7 @@ namespace XYZ {
     {
         if (m_BitCount == count)
             return;
-        uint16_t oldCount = m_BitCount;
+        const uint16_t oldCount = m_BitCount;
         uint16_t diff = count - oldCount;
         m_BitCount = count;
 
@@ -86,7 +86,7 @@ namespace XYZ {
                 counter = 0;
                 multiplier++;
             }
-            uint32_t index = (multiplier * count) + counter;
+            const uint32_t index = (multiplier * count) + counter;
             newBitset[index] = m_Bitset[i];
             counter++;
         }

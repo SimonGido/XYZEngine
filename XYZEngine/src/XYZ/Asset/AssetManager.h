@@ -80,7 +80,7 @@ namespace XYZ {
 		static_assert(std::is_base_of<Asset, T>::value, "CreateAsset only works for types derived from Asset");
 
 		const GUID directoryHandle = GetDirectoryHandle(directoryPath);
-		auto& directory = s_Directories[directoryHandle];
+		const auto& directory = s_Directories[directoryHandle];
 		Ref<T> asset = Helper::CreateRef<T>(std::forward<Args>(args)...);
 		asset->Type = T::GetStaticType();
 		asset->FilePath = directory.FilePath + "/" + filename;

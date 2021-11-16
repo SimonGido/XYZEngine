@@ -17,7 +17,7 @@ namespace XYZ {
 	{
 		size_t counter = 0;
 		m_Storages.resize(other.m_Storages.size());
-		for (auto storage : other.m_Storages)
+		for (const auto storage : other.m_Storages)
 		{
 			if (storage)
 			{
@@ -32,7 +32,7 @@ namespace XYZ {
 	{
 		size_t counter = 0;
 		m_Storages.resize(other.m_Storages.size());
-		for (auto storage : other.m_Storages)
+		for (const auto storage : other.m_Storages)
 		{
 			if (storage)
 			{
@@ -51,7 +51,7 @@ namespace XYZ {
 		destroyStorages();
 		size_t counter = 0;
 		m_Storages.resize(other.m_Storages.size());
-		for (auto storage : other.m_Storages)
+		for (const auto storage : other.m_Storages)
 		{
 			if (storage)
 			{
@@ -65,7 +65,7 @@ namespace XYZ {
 	void ComponentManager::EntityDestroyed(Entity entity, const Signature& signature)
 	{
 		uint32_t counter = 0;
-		for (auto storage : m_Storages)
+		for (const auto storage : m_Storages)
 		{
 			if (storage && signature[counter])
 			{
@@ -82,7 +82,7 @@ namespace XYZ {
 
 	void ComponentManager::destroyStorages()
 	{
-		for (auto storage : m_Storages)
+		for (const auto storage : m_Storages)
 		{
 			if (storage)
 				delete storage;

@@ -202,7 +202,7 @@ namespace XYZ {
 	std::vector<VkPipelineColorBlendAttachmentState> VulkanPipeline::createColorBlendAttachments() const
 	{
 		Ref<Framebuffer> framebuffer = m_Specification.RenderPass->GetSpecification().TargetFramebuffer;
-		size_t colorAttachmentCount = framebuffer->GetSpecification().SwapChainTarget ? 1 : framebuffer->GetNumColorAttachments();
+		const size_t colorAttachmentCount = framebuffer->GetSpecification().SwapChainTarget ? 1 : framebuffer->GetNumColorAttachments();
 		std::vector<VkPipelineColorBlendAttachmentState> blendAttachmentStates(colorAttachmentCount);
 		if (framebuffer->GetSpecification().SwapChainTarget)
 		{
@@ -301,7 +301,7 @@ namespace XYZ {
 	{
 		if (pipelineLayout != VK_NULL_HANDLE && vulkanPipeline != VK_NULL_HANDLE)
 		{
-			VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			const VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 			VK_CHECK_RESULT(vkDeviceWaitIdle(device));
 			vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 			vkDestroyPipeline(device, vulkanPipeline, nullptr);
@@ -311,7 +311,7 @@ namespace XYZ {
 	void VulkanPipeline::createPipelineLayoutInfo()
 	{
 		Ref<VulkanShader> vulkanShader(m_Specification.Shader);
-		auto descriptorSetLayouts = vulkanShader->GetDescriptorSetLayouts();
+		const auto descriptorSetLayouts = vulkanShader->GetDescriptorSetLayouts();
 		const auto& pushConstantRanges = vulkanShader->GetPushConstantRanges();
 
 		// TODO: should come from shader
@@ -327,7 +327,7 @@ namespace XYZ {
 		}
 
 
-		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+		const VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 		VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = {};
 		pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutCreateInfo.pNext = nullptr;

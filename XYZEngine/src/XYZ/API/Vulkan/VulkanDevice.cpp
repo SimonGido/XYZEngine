@@ -130,9 +130,9 @@ namespace XYZ {
 		:
 		m_DepthFormat(VK_FORMAT_UNDEFINED)
 	{
-		auto vkInstance = VulkanContext::GetInstance();
+		const auto vkInstance = VulkanContext::GetInstance();
 
-		std::vector<VkPhysicalDevice> devices = GetPhysicalDevices(vkInstance);
+		const std::vector<VkPhysicalDevice> devices = GetPhysicalDevices(vkInstance);
 		m_PhysicalDevice = FindSuitableGPU(surface, devices);
 		XYZ_ASSERT(m_PhysicalDevice != VK_NULL_HANDLE, "failed to find GPUs with Vulkan support!");
 
@@ -146,7 +146,7 @@ namespace XYZ {
 		const int requestedQueueTypes = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
 		setupQueueFamilyIndices(requestedQueueTypes);
 		findPresentationQueue(surface);
-		std::set<uint32_t> familyIndices{
+		const std::set<uint32_t> familyIndices{
 			m_QueueFamilyIndices.Compute,
 			m_QueueFamilyIndices.Graphics,
 			m_QueueFamilyIndices.Transfer,
@@ -260,7 +260,7 @@ namespace XYZ {
 	void VulkanPhysicalDevice::createQueuesInfo(const std::set<uint32_t>& familyIndices)
 	{
 		const float defaultQueuePriority(0.0f);
-		for (auto index : familyIndices)
+		for (const auto index : familyIndices)
 		{
 			VkDeviceQueueCreateInfo queueInfo{};
 			queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -275,7 +275,7 @@ namespace XYZ {
 	{
 		// Since all depth formats may be optional, we need to find a suitable depth format to use
 		// Start with the highest precision packed format
-		std::vector<VkFormat> depthFormats = {
+		const std::vector<VkFormat> depthFormats = {
 			VK_FORMAT_D32_SFLOAT_S8_UINT,
 			VK_FORMAT_D32_SFLOAT,
 			VK_FORMAT_D24_UNORM_S8_UINT,
@@ -284,7 +284,7 @@ namespace XYZ {
 		};
 
 		// TODO: Move to VulkanPhysicalDevice
-		for (auto& format : depthFormats)
+		for (const auto& format : depthFormats)
 		{
 			VkFormatProperties formatProps;
 			vkGetPhysicalDeviceFormatProperties(m_PhysicalDevice, format, &formatProps);

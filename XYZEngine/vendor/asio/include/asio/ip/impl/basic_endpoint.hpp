@@ -29,7 +29,7 @@ std::basic_ostream<Elem, Traits>& operator<<(
     std::basic_ostream<Elem, Traits>& os,
     const basic_endpoint<InternetProtocol>& endpoint)
 {
-  asio::ip::detail::endpoint tmp_ep(endpoint.address(), endpoint.port());
+    const asio::ip::detail::endpoint tmp_ep(endpoint.address(), endpoint.port());
   return os << tmp_ep.to_string().c_str();
 }
 

@@ -24,8 +24,8 @@ namespace XYZ {
 			XYZ_ASSERT(scene.Raw(), "No active scene!");
 			
 			SceneEntity ent(entity, scene.Raw());
-		
-			auto& transformComponent = ent.GetComponent<TransformComponent>();
+
+			const auto& transformComponent = ent.GetComponent<TransformComponent>();
 			memcpy(outTransform, glm::value_ptr(transformComponent.GetTransform()), sizeof(glm::mat4));
 		}
 
@@ -47,7 +47,7 @@ namespace XYZ {
 			XYZ_ASSERT(scene.Raw(), "No active scene!");
 
 			SceneEntity ent(entity, scene.Raw());
-			RigidBody2DComponent& rigidBody = ent.GetComponent<RigidBody2DComponent>();
+			const RigidBody2DComponent& rigidBody = ent.GetComponent<RigidBody2DComponent>();
 			static_cast<b2Body*>(rigidBody.RuntimeBody)->ApplyLinearImpulse({ impulse->x, impulse->y }, { point->x, point->y }, true);
 		}
 	}

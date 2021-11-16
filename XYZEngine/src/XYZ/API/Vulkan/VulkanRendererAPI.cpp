@@ -26,7 +26,7 @@ namespace XYZ {
 		Renderer::Submit([vulkanCommandBuffer, vulkanPipeline, renderPass, framebuffer, vulkanBuffer, indexBuffer]() mutable {
 			
 			Ref<VulkanContext> vulkanContext = Renderer::GetAPIContext();
-			uint32_t frameIndex = vulkanContext->GetSwapChain().GetCurrentBufferIndex();
+			const uint32_t frameIndex = vulkanContext->GetSwapChain().GetCurrentBufferIndex();
 			uint32_t width = framebuffer->GetSpecification().Width;
 			uint32_t height = framebuffer->GetSpecification().Height;
 
@@ -46,8 +46,8 @@ namespace XYZ {
 			renderPassBeginInfo.renderArea.extent.width = width;
 			renderPassBeginInfo.renderArea.extent.height = height;
 			if (framebuffer->GetSpecification().SwapChainTarget)
-			{			
-				VulkanSwapChain& swapChain = vulkanContext->GetSwapChain();
+			{
+				const VulkanSwapChain& swapChain = vulkanContext->GetSwapChain();
 				width = swapChain.GetWidth();
 				height = swapChain.GetHeight();
 				renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -63,10 +63,10 @@ namespace XYZ {
 
 				scissor.extent = swapChain.GetExtent();
 			}
-			VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
+			const VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
 			renderPassBeginInfo.clearValueCount = 1;
 			renderPassBeginInfo.pClearValues = &clearColor;
-			VkCommandBuffer commandBuffer = vulkanCommandBuffer->GetVulkanCommandBuffer(frameIndex);
+			const VkCommandBuffer commandBuffer = vulkanCommandBuffer->GetVulkanCommandBuffer(frameIndex);
 			vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 			// Update dynamic viewport state
 			vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
@@ -75,9 +75,9 @@ namespace XYZ {
 			vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
 			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->GetVulkanPipeline());
-			
-			VkBuffer vertexBuffers[] = { vulkanBuffer->GetVulkanBuffer() };
-			VkDeviceSize offsets[] = { 0 };
+
+			const VkBuffer vertexBuffers[] = { vulkanBuffer->GetVulkanBuffer() };
+			const VkDeviceSize offsets[] = { 0 };
 			vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 			vkCmdBindIndexBuffer(commandBuffer, indexBuffer->GetVulkanBuffer(), 0, indexBuffer->GetVulkanIndexType());
 			vkCmdDrawIndexed(commandBuffer, indexBuffer->GetCount(), 1, 0, 0, 0);

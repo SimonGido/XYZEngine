@@ -47,7 +47,7 @@ namespace XYZ {
 		return EditorHelper::DrawComponent<BoxCollider2DComponent>("Box Collider2D", m_Context, [&](auto& component) {
 
 			auto [translation, rotation, scale] = m_Context.GetComponent<TransformComponent>().GetWorldComponents();
-			glm::vec3 boxTranslation =
+			const glm::vec3 boxTranslation =
 				translation + glm::vec3(component.Offset.x, component.Offset.y, 0.0f);
 			renderer->SubmitEditorAABB(
 				boxTranslation - glm::vec3(component.Size / 2.0f, 0.0f),
@@ -123,7 +123,7 @@ namespace XYZ {
 		return EditorHelper::DrawComponent<CircleCollider2DComponent>("Circle Collider2D", m_Context, [&](auto& component) {
 
 			auto [translation, rotation, scale] = m_Context.GetComponent<TransformComponent>().GetWorldComponents();
-			glm::vec3 circleTranslation =
+			const glm::vec3 circleTranslation =
 				translation + glm::vec3(component.Offset.x, component.Offset.y, 0.0f);
 			
 			renderer->SubmitEditorCircle(circleTranslation, component.Radius, 20, sc_ColliderColor);

@@ -193,10 +193,10 @@ namespace XYZ {
 
 	static FieldType FindType(const std::string& str)
 	{
-		char tokenComma = ',';
-		size_t numCommas = std::count(str.begin(), str.end(), tokenComma);
-		char tokenDot = '.';
-		size_t numDots = std::count(str.begin(), str.end(), tokenDot);
+		const char tokenComma = ',';
+		const size_t numCommas = std::count(str.begin(), str.end(), tokenComma);
+		const char tokenDot = '.';
+		const size_t numDots = std::count(str.begin(), str.end(), tokenDot);
 
 		switch (numCommas)
 		{
@@ -421,7 +421,7 @@ namespace XYZ {
 	void AssetSerializer::serialize<Scene>(const Ref<Asset>& asset)
 	{
 		XYZ_ASSERT(!asset->FilePath.empty(), "Filepath is empty");
-		Ref<Scene> scene = Ref<Scene>((Scene*)asset.Raw());
+		const Ref<Scene> scene = Ref<Scene>((Scene*)asset.Raw());
 		
 		SceneSerializer sceneSerializer(scene);
 		sceneSerializer.Serialize();
@@ -537,7 +537,7 @@ namespace XYZ {
 	template <>
 	Ref<Asset> AssetSerializer::deserialize<Shader>(const Ref<Asset>& asset)
 	{
-		std::ifstream stream(asset->FilePath);
+		const std::ifstream stream(asset->FilePath);
 		std::stringstream strStream;
 		strStream << stream.rdbuf();
 		YAML::Node data = YAML::Load(strStream.str());
@@ -678,7 +678,7 @@ namespace XYZ {
 	template <>
 	Ref<Asset> AssetSerializer::deserialize<Animation>(const Ref<Asset>& asset)
 	{
-		std::ifstream stream(asset->FilePath);
+		const std::ifstream stream(asset->FilePath);
 		std::stringstream strStream;
 		strStream << stream.rdbuf();
 		YAML::Node data = YAML::Load(strStream.str());
@@ -703,11 +703,11 @@ namespace XYZ {
 	{
 		Ref<Asset> asset = Ref<Asset>::Create();
 
-		std::string extension = Utils::GetExtension(filepath);
+		const std::string extension = Utils::GetExtension(filepath);
 		asset->FilePath = filepath;
 		std::replace(asset->FilePath.begin(), asset->FilePath.end(), '\\', '/');
 
-		bool hasMeta = FileSystem::Exists(asset->FilePath + ".meta");
+		const bool hasMeta = FileSystem::Exists(asset->FilePath + ".meta");
 		if (hasMeta)
 		{
 			AssetSerializer::loadMetaFile(asset);
@@ -786,7 +786,7 @@ namespace XYZ {
 	}
 	void AssetSerializer::loadMetaFile(Ref<Asset>& asset)
 	{
-		std::ifstream stream(asset->FilePath + ".meta");
+		const std::ifstream stream(asset->FilePath + ".meta");
 		std::stringstream strStream;
 		strStream << stream.rdbuf();
 

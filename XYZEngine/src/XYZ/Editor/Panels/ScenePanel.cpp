@@ -43,7 +43,7 @@ namespace XYZ {
 
 		static AABB SceneEntityAABB(SceneEntity entity)
 		{
-			TransformComponent& transformComponent = entity.GetComponent<TransformComponent>();
+			const TransformComponent& transformComponent = entity.GetComponent<TransformComponent>();
 			auto [translation, rotation, scale] = transformComponent.GetWorldComponents();
 			return AABB(
 				translation - (scale / 2.0f),
@@ -54,12 +54,12 @@ namespace XYZ {
 
 		std::pair<glm::vec3, glm::vec3> ScenePanel::castRay(float mx, float my) const
 		{
-			glm::vec4 mouseClipPos = { mx, my, -1.0f, 1.0f };
+			const glm::vec4 mouseClipPos = { mx, my, -1.0f, 1.0f };
 
-			auto inverseProj = glm::inverse(m_EditorCamera.GetProjectionMatrix());
-			auto inverseView = glm::inverse(glm::mat3(m_EditorCamera.GetViewMatrix()));
+			const auto inverseProj = glm::inverse(m_EditorCamera.GetProjectionMatrix());
+			const auto inverseView = glm::inverse(glm::mat3(m_EditorCamera.GetViewMatrix()));
 
-			glm::vec4 ray = inverseProj * mouseClipPos;
+			const glm::vec4 ray = inverseProj * mouseClipPos;
 			glm::vec3 rayPos = m_EditorCamera.GetPosition();
 			glm::vec3 rayDir = inverseView * glm::vec3(ray);
 
@@ -75,8 +75,8 @@ namespace XYZ {
 			mx += winPosX;
 			my += winPosY;
 
-			auto viewportWidth = ImGui::GetWindowSize().x;
-			auto viewportHeight = ImGui::GetWindowSize().y;
+			const auto viewportWidth = ImGui::GetWindowSize().x;
+			const auto viewportHeight = ImGui::GetWindowSize().y;
 
 			return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f };
 		}
@@ -84,7 +84,7 @@ namespace XYZ {
 		std::deque<SceneEntity> ScenePanel::getSelection(const Ray& ray)
 		{
 			std::deque<SceneEntity> result;
-			for (Entity entityID : m_Context->GetEntities())
+			for (const Entity entityID : m_Context->GetEntities())
 			{
 				SceneEntity entity(entityID, m_Context.Raw());
 				if (ray.IntersectsAABB(SceneEntityAABB(entity)))
@@ -120,7 +120,7 @@ namespace XYZ {
 				&& !ImGui::GetIO().KeyCtrl)
 			{
 				auto [origin, direction] = castRay(mousePosition.x, mousePosition.y);
-				Ray ray = { origin,direction };
+				const Ray ray = { origin,direction };
 				m_Context->SetSelectedEntity(Entity());
 				if (m_Callback)
 					m_Callback(m_Context->GetSelectedEntity());
@@ -195,16 +195,16 @@ namespace XYZ {
 			m_GizmoType(-1)
 		{
 			m_Texture = Texture2D::Create({}, "Assets/Textures/Gui/icons.png");
-			float divisor = 4.0f;
+			const float divisor = 4.0f;
 			float width = (float)m_Texture->GetWidth();
 			float height = (float)m_Texture->GetHeight();
-			glm::vec2 size = glm::vec2(width / divisor, height / divisor);
+			const glm::vec2 size = glm::vec2(width / divisor, height / divisor);
 
 			m_ButtonTexCoords[PlayButton] = CalculateTexCoords(glm::vec2(0, 2), size, { width, height });
 			m_ButtonTexCoords[StopButton] = CalculateTexCoords(glm::vec2(3, 2), size, { width, height });
 
-			uint32_t windowWidth = Application::Get().GetWindow().GetWidth();
-			uint32_t windowHeight = Application::Get().GetWindow().GetHeight();
+			const uint32_t windowWidth = Application::Get().GetWindow().GetWidth();
+			const uint32_t windowHeight = Application::Get().GetWindow().GetHeight();
 			m_EditorCamera.SetViewportSize((float)windowWidth, (float)windowHeight);
 		}
 		ScenePanel::~ScenePanel()
@@ -231,10 +231,10 @@ namespace XYZ {
 			{
 				if (m_Context.Raw())
 				{
-					ImVec2 startCursorPos = ImGui::GetCursorPos();
-					auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
-					auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
-					auto viewportOffset = ImGui::GetWindowPos();
+					const ImVec2 startCursorPos = ImGui::GetCursorPos();
+					const auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
+					const auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
+					const auto viewportOffset = ImGui::GetWindowPos();
 					m_ViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
 					m_ViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
 
@@ -242,7 +242,7 @@ namespace XYZ {
 					m_ViewportHovered = ImGui::IsWindowHovered();
 
 					ImGuiLayer* imguiLayer = Application::Get().GetImGuiLayer();
-					bool blocked = imguiLayer->GetBlockedEvents();
+					const bool blocked = imguiLayer->GetBlockedEvents();
 					if (blocked)
 						imguiLayer->BlockEvents(!m_ViewportFocused && !m_ViewportHovered);
 
@@ -255,7 +255,7 @@ namespace XYZ {
 					auto [mx, my] = getMouseViewportSpace();
 					if (m_ViewportHovered && m_ViewportFocused && m_Context->GetState() == SceneState::Edit)
 					{
-						SceneEntity selectedEntity = m_Context->GetSelectedEntity();
+						const SceneEntity selectedEntity = m_Context->GetSelectedEntity();
 						if (selectedEntity && m_GizmoType != -1)
 						{
 							handleEntityTransform(m_Context->GetSelectedEntity());

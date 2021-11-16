@@ -149,11 +149,11 @@ namespace XYZ {
 	{
 		if (m_LineBuffer.IndexCount + (sides * 3) >= sc_MaxLineIndices)
 			FlushLines();
-		int step = 360 / sides;
+		const int step = 360 / sides;
 		for (int a = step; a < 360 + step; a += step)
 		{
-			float before = glm::radians((float)(a - step));
-			float heading = glm::radians((float)a);
+			const float before = glm::radians((float)(a - step));
+			const float heading = glm::radians((float)a);
 			
 			m_LineBuffer.BufferPtr->Position = glm::vec3(pos.x + std::cos(before) * radius, pos.y + std::sin(before) * radius, pos.z);
 			m_LineBuffer.BufferPtr->Color = color;
@@ -170,7 +170,7 @@ namespace XYZ {
 		if (m_CircleBuffer.IndexCount >= sc_MaxIndices)
 			FlushFilledCircles();
 
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos)
+		const glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos)
 			* glm::scale(glm::mat4(1.0f), { radius * 2.0f, radius * 2.0f, 1.0f });
 
 		for (int i = 0; i < 4; i++)
@@ -209,7 +209,7 @@ namespace XYZ {
 		if (m_QuadBuffer.IndexCount + 6 >= sc_MaxIndices)
 			Flush();
 
-		glm::vec2 texCoords[quadVertexCount] = {
+		const glm::vec2 texCoords[quadVertexCount] = {
 			{texCoord.x,texCoord.y},
 			{texCoord.z,texCoord.y},
 			{texCoord.z,texCoord.w},
@@ -234,13 +234,13 @@ namespace XYZ {
 		if (m_QuadBuffer.IndexCount + 6 >= sc_MaxIndices)
 			Flush();
 
-		glm::vec2 texCoords[quadVertexCount] = {
+		const glm::vec2 texCoords[quadVertexCount] = {
 			{texCoord.x, texCoord.y},
 			{texCoord.z, texCoord.y},
 			{texCoord.z, texCoord.w},
 			{texCoord.x, texCoord.w}
 		};
-		glm::vec3 vertices[quadVertexCount] = {
+		const glm::vec3 vertices[quadVertexCount] = {
 			{  position.x - size.x / 2.0f,  position.y - size.y / 2.0f, 0.0f},
 			{  position.x + size.x / 2.0f,  position.y - size.y / 2.0f, 0.0f},
 			{  position.x + size.x / 2.0f,  position.y + size.y / 2.0f, 0.0f},
@@ -264,7 +264,7 @@ namespace XYZ {
 		if (m_QuadBuffer.IndexCount >= sc_MaxIndices)
 			Flush();
 
-		glm::vec3 vertices[quadVertexCount] = {
+		const glm::vec3 vertices[quadVertexCount] = {
 			{  position.x - size.x / 2.0f,  position.y - size.y / 2.0f, 0.0f},
 			{  position.x + size.x / 2.0f,  position.y - size.y / 2.0f, 0.0f},
 			{  position.x + size.x / 2.0f,  position.y + size.y / 2.0f, 0.0f},
@@ -299,7 +299,7 @@ namespace XYZ {
 
 	void Renderer2D::SubmitLineQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
 	{
-		glm::vec3 p[4] = {
+		const glm::vec3 p[4] = {
 			position,
 			position + glm::vec3(size.x, 0.0f, 0.0f),
 			position + glm::vec3(size.x, size.y, 0.0f),
@@ -334,14 +334,14 @@ namespace XYZ {
 		if (m_QuadBuffer.IndexCount + 6 >= sc_MaxIndices)
 			Flush();
 
-		glm::vec2 texCoords[quadVertexCount] = {
+		const glm::vec2 texCoords[quadVertexCount] = {
 			{texCoord.x, texCoord.y},
 			{texCoord.z, texCoord.y},
 			{texCoord.z, texCoord.w},
 			{texCoord.x, texCoord.w}
 		};
 
-		glm::vec3 vertices[quadVertexCount] = {
+		const glm::vec3 vertices[quadVertexCount] = {
 			{  position.x ,			 position.y, 0.0f},
 			{  position.x + size.x,  position.y, 0.0f},
 			{  position.x + size.x,  position.y + size.y, 0.0f},
@@ -369,14 +369,14 @@ namespace XYZ {
 	}
 
 	void Renderer2D::Flush()
-	{	
-		uint32_t dataSize = (uint8_t*)m_QuadBuffer.BufferPtr - (uint8_t*)m_QuadBuffer.BufferBase;
+	{
+		const uint32_t dataSize = (uint8_t*)m_QuadBuffer.BufferPtr - (uint8_t*)m_QuadBuffer.BufferBase;
 		if (dataSize)
 		{
 			XYZ_ASSERT(m_QuadMaterial.Raw(), "No material set");
 				
 			m_QuadMaterial->Bind();
-			uint32_t textureSlotOffset = (uint32_t)m_QuadMaterial->GetTextures().size();
+			const uint32_t textureSlotOffset = (uint32_t)m_QuadMaterial->GetTextures().size();
 			for (uint32_t i = 0; i < m_TextureSlotIndex; ++i)
 				m_TextureSlots[i]->Bind(i + textureSlotOffset);
 			
@@ -388,8 +388,8 @@ namespace XYZ {
 		}	
 	}
 	void Renderer2D::FlushLines()
-	{	
-		uint32_t dataSize = (uint8_t*)m_LineBuffer.BufferPtr - (uint8_t*)m_LineBuffer.BufferBase;
+	{
+		const uint32_t dataSize = (uint8_t*)m_LineBuffer.BufferPtr - (uint8_t*)m_LineBuffer.BufferBase;
 		if (dataSize)
 		{
 			m_LineShader->Bind();
@@ -404,7 +404,7 @@ namespace XYZ {
 
 	void Renderer2D::FlushCollisions()
 	{
-		uint32_t dataSize = (uint8_t*)m_CollisionBuffer.BufferPtr - (uint8_t*)m_CollisionBuffer.BufferBase;
+		const uint32_t dataSize = (uint8_t*)m_CollisionBuffer.BufferPtr - (uint8_t*)m_CollisionBuffer.BufferBase;
 		if (dataSize)
 		{
 			m_CollisionShader->Bind();
@@ -419,7 +419,7 @@ namespace XYZ {
 
 	void Renderer2D::FlushFilledCircles()
 	{
-		uint32_t dataSize = (uint8_t*)m_CircleBuffer.BufferPtr - (uint8_t*)m_CircleBuffer.BufferBase;
+		const uint32_t dataSize = (uint8_t*)m_CircleBuffer.BufferPtr - (uint8_t*)m_CircleBuffer.BufferBase;
 		if (dataSize)
 		{
 			m_CircleShader->Bind();

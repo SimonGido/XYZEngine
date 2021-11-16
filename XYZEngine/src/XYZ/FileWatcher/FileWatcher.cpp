@@ -14,22 +14,22 @@ namespace XYZ {
 	}
 	void FileWatcher::OnFileChange(const std::wstring& fileName)
 	{
-		for (auto listener : m_Listeners)
+		for (const auto listener : m_Listeners)
 			listener->OnFileChange(fileName);
 	}
 	void FileWatcher::OnFileAdded(const std::wstring& fileName)
 	{
-		for (auto listener : m_Listeners)
+		for (const auto listener : m_Listeners)
 			listener->OnFileAdded(fileName);
 	}
 	void FileWatcher::OnFileRemoved(const std::wstring& fileName)
 	{
-		for (auto listener : m_Listeners)
+		for (const auto listener : m_Listeners)
 			listener->OnFileRemoved(fileName);
 	}
 	void FileWatcher::OnFileRenamed(const std::wstring& fileName)
 	{
-		for (auto listener : m_Listeners)
+		for (const auto listener : m_Listeners)
 			listener->OnFileRenamed(fileName);
 	}
 	

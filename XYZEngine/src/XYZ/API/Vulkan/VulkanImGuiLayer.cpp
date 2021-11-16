@@ -54,10 +54,10 @@ namespace XYZ
 			GLFWwindow* window = static_cast<GLFWwindow*>(app.GetWindow().GetWindow());
 
 			auto vulkanContext = VulkanContext::Get();
-			auto device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			const auto device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
 			// Create Descriptor Pool
-			VkDescriptorPoolSize pool_sizes[] =
+			const VkDescriptorPoolSize pool_sizes[] =
 			{
 				{ VK_DESCRIPTOR_TYPE_SAMPLER, 100 },
 				{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 100 },
@@ -91,14 +91,14 @@ namespace XYZ
 			init_info.DescriptorPool = m_DescriptorPool;
 			init_info.Allocator = nullptr;
 			init_info.MinImageCount = 2;
-			VulkanSwapChain& swapChain = vulkanContext->GetSwapChain();
+			const VulkanSwapChain& swapChain = vulkanContext->GetSwapChain();
 			init_info.ImageCount = swapChain.GetImageCount();
 			init_info.CheckVkResultFn = Utils::VulkanCheckResult;
 			ImGui_ImplVulkan_Init(&init_info, swapChain.GetVulkanRenderPass());
 
 			// Upload Fonts
 			{
-				VkCommandBuffer commandBuffer = vulkanContext->GetCurrentDevice()->GetCommandBuffer(true);
+				const VkCommandBuffer commandBuffer = vulkanContext->GetCurrentDevice()->GetCommandBuffer(true);
 				ImGui_ImplVulkan_CreateFontsTexture(commandBuffer);
 				vulkanContext->GetCurrentDevice()->FlushCommandBuffer(commandBuffer);
 				
@@ -119,7 +119,7 @@ namespace XYZ
     	VkDescriptorPool descriptorPool = m_DescriptorPool;
     	Renderer::Submit([descriptorPool]()
 		{
-			auto device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			const auto device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
 			VK_CHECK_RESULT(vkDeviceWaitIdle(device));
 			ImGui_ImplVulkan_Shutdown();
@@ -146,23 +146,23 @@ namespace XYZ
 
     	ImGui::Render();
 
-		VulkanSwapChain& swapChain = VulkanContext::GetSwapChain();
+        const VulkanSwapChain& swapChain = VulkanContext::GetSwapChain();
 
 		VkClearValue clearValues[2];
 		clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
 		clearValues[1].depthStencil = { 1.0f, 0 };
 
-		uint32_t width = swapChain.GetWidth();
-		uint32_t height = swapChain.GetHeight();
+        const uint32_t width = swapChain.GetWidth();
+        const uint32_t height = swapChain.GetHeight();
 
-		uint32_t commandBufferIndex = swapChain.GetCurrentBufferIndex();
+        const uint32_t commandBufferIndex = swapChain.GetCurrentBufferIndex();
 
 		VkCommandBufferBeginInfo drawCmdBufInfo = {};
 		drawCmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		drawCmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 		drawCmdBufInfo.pNext = nullptr;
 
-		VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentCommandBuffer();
+        const VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentCommandBuffer();
 		VK_CHECK_RESULT(vkBeginCommandBuffer(drawCommandBuffer, &drawCmdBufInfo));
 
 		VkRenderPassBeginInfo renderPassBeginInfo = {};

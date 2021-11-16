@@ -314,7 +314,7 @@ private:
   {
     if (d.ticks() <= 0)
       return 0;
-    int64_t msec = d.total_milliseconds();
+    const int64_t msec = d.total_milliseconds();
     if (msec == 0)
       return 1;
     if (msec > max_duration)
@@ -328,7 +328,7 @@ private:
   {
     if (d.ticks() <= 0)
       return 0;
-    int64_t usec = d.total_microseconds();
+    const int64_t usec = d.total_microseconds();
     if (usec == 0)
       return 1;
     if (usec > max_duration)

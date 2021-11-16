@@ -37,7 +37,7 @@ namespace XYZ {
 		}
 		void AnimationSequencer::Get(int index, int** start, int** end, int* type, unsigned int* color)
 		{
-			SequenceItem& item = m_Items[index];
+			const SequenceItem& item = m_Items[index];
 			if (color)
 				*color = 0xFFAA8080; // same color for everyone, return color based on type
 			if (start)
@@ -55,7 +55,7 @@ namespace XYZ {
 
 		size_t AnimationSequencer::GetCustomHeight(int index)
 		{
-			auto& item = m_Items[index];
+			const auto& item = m_Items[index];
 			return item.Expanded ? item.Height : 0;
 		}
 
@@ -96,7 +96,7 @@ namespace XYZ {
 			draw_list->PopClipRect();
 		
 			ImGui::SetCursorScreenPos(rc.Min);
-			ImVec2 size(rc.Max.x - rc.Min.x, rc.Max.y - rc.Min.y);
+			const ImVec2 size(rc.Max.x - rc.Min.x, rc.Max.y - rc.Min.y);
 			m_Selection.ItemIndex = index;
 			ImCurveEdit::Edit(item.LineEdit, size, 137 + index, &clippingRect, &m_Selection.Points);
 		}
@@ -111,8 +111,8 @@ namespace XYZ {
 			{
 				for (auto& point : line.Points)
 				{
-					float r = (point.x - m_FrameMin) / float(m_FrameMax - m_FrameMin);
-					float x = ImLerp(rc.Min.x, rc.Max.x, r);
+					const float r = (point.x - m_FrameMin) / float(m_FrameMax - m_FrameMin);
+					const float x = ImLerp(rc.Min.x, rc.Max.x, r);
 					draw_list->AddLine(ImVec2(x, rc.Min.y + 6), ImVec2(x, rc.Max.y - 4), 0xAA000000, 4.f);
 				}
 			}
@@ -212,7 +212,7 @@ namespace XYZ {
 			}
 			for (const auto& item : m_Items)
 			{
-				if (auto line = item.LineEdit.GetSelectedLine())
+				if (const auto line = item.LineEdit.GetSelectedLine())
 					return line;
 			}
 			return nullptr;

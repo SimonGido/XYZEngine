@@ -275,7 +275,7 @@ namespace XYZ {
 		ScriptEngine::InitScriptEntity(entity);
 		ScriptEngine::InstantiateEntityClass(entity);
 
-		auto& component = entity.GetComponent<ScriptComponent>();
+		const auto& component = entity.GetComponent<ScriptComponent>();
 		for (auto& field : component.GetFields())
 		{
 			auto val = data[field.GetName()];
@@ -316,16 +316,16 @@ namespace XYZ {
 	template <>
 	void SceneSerializer::deserialize<SpriteRenderer>(YAML::Node& data, SceneEntity entity)
 	{
-		GUID materialHandle(data["MaterialAsset"].as<std::string>());
-		GUID subTextureHandle(data["SubTextureAsset"].as<std::string>());
-		glm::vec4 color		= data["Color"].as<glm::vec4>();
-		uint16_t sortLayer  = data["SortLayer"].as<uint16_t>();
-		bool visible	    = data["Visible"].as<bool>();
+		const GUID materialHandle(data["MaterialAsset"].as<std::string>());
+		const GUID subTextureHandle(data["SubTextureAsset"].as<std::string>());
+		const glm::vec4 color		= data["Color"].as<glm::vec4>();
+		const uint16_t sortLayer  = data["SortLayer"].as<uint16_t>();
+		const bool visible	    = data["Visible"].as<bool>();
 
-		Ref<Material> material = AssetManager::GetAsset<Material>(materialHandle);
-		Ref<SubTexture> subTexture = AssetManager::GetAsset<SubTexture>(subTextureHandle);
+		const Ref<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+		const Ref<SubTexture> subTexture = AssetManager::GetAsset<SubTexture>(subTextureHandle);
 
-		SpriteRenderer spriteRenderer(
+		const SpriteRenderer spriteRenderer(
 			material,
 			subTexture,
 			color,
@@ -342,7 +342,7 @@ namespace XYZ {
 		CameraOrthographicProperties orthoProps;
 		CameraProjectionType projectionType;
 
-		uint32_t type = data["ProjectionType"].as<uint32_t>();
+		const uint32_t type = data["ProjectionType"].as<uint32_t>();
 		switch (type)
 		{
 		case ToUnderlying(CameraProjectionType::Orthographic):
@@ -374,8 +374,8 @@ namespace XYZ {
 	{
 		TransformComponent transform(data["Position"].as<glm::vec3>());
 
-		glm::vec3 rotation = data["Rotation"].as<glm::vec3>();
-		glm::vec3 scale = data["Scale"].as<glm::vec3>();
+		const glm::vec3 rotation = data["Rotation"].as<glm::vec3>();
+		const glm::vec3 scale = data["Scale"].as<glm::vec3>();
 
 		transform.Rotation = rotation;
 		transform.Scale = scale;
@@ -407,7 +407,7 @@ namespace XYZ {
 	void SceneSerializer::deserialize<RigidBody2DComponent>(YAML::Node& data, SceneEntity entity)
 	{
 		RigidBody2DComponent body;
-		uint32_t type = data["Type"].as<uint32_t>();
+		const uint32_t type = data["Type"].as<uint32_t>();
 		switch (type)
 		{
 		case ToUnderlying(RigidBody2DComponent::BodyType::Static):
@@ -542,7 +542,7 @@ namespace XYZ {
 		out << YAML::Key << "Scene" << m_Scene->m_Name;
 		out << YAML::Key << "Entities";
 		out << YAML::Value << YAML::BeginSeq;
-		for (auto ent : m_Scene->m_Entities)
+		for (const auto ent : m_Scene->m_Entities)
 		{
 			SceneEntity entity(ent, m_Scene.Raw());
 			auto& rel = entity.GetComponent<Relationship>();

@@ -71,7 +71,7 @@ private:
 
     for (;;)
     {
-      engine::want want = eng.handshake(type_, ec);
+      const engine::want want = eng.handshake(type_, ec);
       if (want != engine::want_input_and_retry
           || bytes_transferred == total_buffer_size_)
         return want;

@@ -94,7 +94,7 @@ namespace XYZ {
 	template<uint32_t BlockSize, bool StoreSize>
 	inline MemoryPool<BlockSize, StoreSize>::~MemoryPool()
 	{
-		for (auto& block : m_Blocks)
+		for (const auto& block : m_Blocks)
 		{
 			if (block.Data)
 				delete[]block.Data;
@@ -159,7 +159,7 @@ namespace XYZ {
 	template<uint32_t BlockSize, bool StoreSize>
 	inline std::pair<uint8_t, uint32_t> MemoryPool<BlockSize, StoreSize>::findAvailableIndex(uint32_t size)
 	{
-		uint32_t sizeRequirement = toChunkSize(size);
+		const uint32_t sizeRequirement = toChunkSize(size);
 		uint32_t dataIndex = 0;
 		uint8_t  blockIndex = 0;
 		// First check free chunks, if there is any suitable chunk to hold memory
@@ -234,9 +234,9 @@ namespace XYZ {
 	{
 		for (int64_t i = m_FreeChunks.size() - 1; i >= 0; --i)
 		{
-			Chunk& lastChunk	  = m_FreeChunks[i];		
+			const Chunk& lastChunk	  = m_FreeChunks[i];		
 			Block& block	      = m_Blocks[lastChunk.BlockIndex];
-			uint32_t lastChunkEnd = lastChunk.ChunkIndex + lastChunk.Size;
+			const uint32_t lastChunkEnd = lastChunk.ChunkIndex + lastChunk.Size;
 	
 			if (lastChunkEnd != block.NextAvailableIndex)
 			{
@@ -247,7 +247,7 @@ namespace XYZ {
 					if (lastChunk.BlockIndex != prevChunk.BlockIndex)
 						continue;
 
-					uint32_t prevChunkEnd = prevChunk.ChunkIndex + prevChunk.Size;
+					const uint32_t prevChunkEnd = prevChunk.ChunkIndex + prevChunk.Size;
 					// previous chunk is not connected to last chunk
 					if (prevChunkEnd != lastChunk.ChunkIndex)
 						continue;
@@ -269,17 +269,17 @@ namespace XYZ {
 	template<uint32_t BlockSize, bool StoreSize>
 	inline void MemoryPool<BlockSize, StoreSize>::storeMetaData(uint32_t memoryStart, uint8_t blockIndex, uint32_t size)
 	{
-		Block* block = &m_Blocks[(size_t)blockIndex];
-		uint32_t chunkIndex = memoryStart;
-		size_t blockIndexInMemory = (size_t)memoryStart;
-		size_t chunkIndexInMemory = (size_t)memoryStart + sizeof(uint8_t);
+		const Block* block = &m_Blocks[(size_t)blockIndex];
+		const uint32_t chunkIndex = memoryStart;
+		const size_t blockIndexInMemory = (size_t)memoryStart;
+		const size_t chunkIndexInMemory = (size_t)memoryStart + sizeof(uint8_t);
 
 		memcpy(&block->Data[blockIndexInMemory], &blockIndex, sizeof(uint8_t)); // Store block index
 		memcpy(&block->Data[chunkIndexInMemory], &chunkIndex, sizeof(uint32_t)); // Store chunk index
 
 		if (StoreSize)
 		{
-			size_t sizeIndexInMemory = chunkIndexInMemory + sizeof(uint32_t);
+			const size_t sizeIndexInMemory = chunkIndexInMemory + sizeof(uint32_t);
 			memcpy(&block->Data[sizeIndexInMemory], &size, sizeof(uint32_t)); // Store size
 		}
 	}
@@ -317,7 +317,7 @@ namespace XYZ {
 		val->~T();
 		uint32_t indices[3];
 		extractMetaData(val, indices);
-		Chunk chunk(toChunkSize<T>(), indices[1], (uint8_t)indices[0]);
+		const Chunk chunk(toChunkSize<T>(), indices[1], (uint8_t)indices[0]);
 		m_FreeChunks.push_back(chunk);
 		m_Dirty = true;
 	}

@@ -353,7 +353,7 @@ public:
   std::size_t send(const ConstBufferSequence& buffers)
   {
     asio::error_code ec;
-    std::size_t s = this->impl_.get_service().send(
+    const std::size_t s = this->impl_.get_service().send(
         this->impl_.get_implementation(), buffers, 0, ec);
     asio::detail::throw_error(ec, "send");
     return s;
@@ -381,7 +381,7 @@ public:
       socket_base::message_flags flags)
   {
     asio::error_code ec;
-    std::size_t s = this->impl_.get_service().send(
+    const std::size_t s = this->impl_.get_service().send(
         this->impl_.get_implementation(), buffers, flags, ec);
     asio::detail::throw_error(ec, "send");
     return s;
@@ -537,7 +537,7 @@ public:
       const endpoint_type& destination)
   {
     asio::error_code ec;
-    std::size_t s = this->impl_.get_service().send_to(
+    const std::size_t s = this->impl_.get_service().send_to(
         this->impl_.get_implementation(), buffers, destination, 0, ec);
     asio::detail::throw_error(ec, "send_to");
     return s;
@@ -564,7 +564,7 @@ public:
       const endpoint_type& destination, socket_base::message_flags flags)
   {
     asio::error_code ec;
-    std::size_t s = this->impl_.get_service().send_to(
+    const std::size_t s = this->impl_.get_service().send_to(
         this->impl_.get_implementation(), buffers, destination, flags, ec);
     asio::detail::throw_error(ec, "send_to");
     return s;
@@ -720,7 +720,7 @@ public:
   std::size_t receive(const MutableBufferSequence& buffers)
   {
     asio::error_code ec;
-    std::size_t s = this->impl_.get_service().receive(
+    const std::size_t s = this->impl_.get_service().receive(
         this->impl_.get_implementation(), buffers, 0, ec);
     asio::detail::throw_error(ec, "receive");
     return s;
@@ -749,7 +749,7 @@ public:
       socket_base::message_flags flags)
   {
     asio::error_code ec;
-    std::size_t s = this->impl_.get_service().receive(
+    const std::size_t s = this->impl_.get_service().receive(
         this->impl_.get_implementation(), buffers, flags, ec);
     asio::detail::throw_error(ec, "receive");
     return s;
@@ -908,7 +908,7 @@ public:
       endpoint_type& sender_endpoint)
   {
     asio::error_code ec;
-    std::size_t s = this->impl_.get_service().receive_from(
+    const std::size_t s = this->impl_.get_service().receive_from(
         this->impl_.get_implementation(), buffers, sender_endpoint, 0, ec);
     asio::detail::throw_error(ec, "receive_from");
     return s;
@@ -935,7 +935,7 @@ public:
       endpoint_type& sender_endpoint, socket_base::message_flags flags)
   {
     asio::error_code ec;
-    std::size_t s = this->impl_.get_service().receive_from(
+    const std::size_t s = this->impl_.get_service().receive_from(
         this->impl_.get_implementation(), buffers, sender_endpoint, flags, ec);
     asio::detail::throw_error(ec, "receive_from");
     return s;

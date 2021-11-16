@@ -208,8 +208,8 @@ namespace XYZ {
 	{
 		if (m_ViewportSizeChanged)
 		{
-			uint32_t width = (uint32_t)m_ViewportSize.x;
-			uint32_t height = (uint32_t)m_ViewportSize.y;
+			const uint32_t width = (uint32_t)m_ViewportSize.x;
+			const uint32_t height = (uint32_t)m_ViewportSize.y;
 			m_GeometryPass->GetSpecification().TargetFramebuffer->Resize(width, height);
 			m_LightPass->GetSpecification().TargetFramebuffer->Resize(width, height);
 			m_BloomPass->GetSpecification().TargetFramebuffer->Resize(width, height);
@@ -321,7 +321,7 @@ namespace XYZ {
 		for (auto& dc : queue.m_SpriteDrawList)
 		{
 			m_Renderer2D->SetMaterial(dc.Material);
-			uint32_t textureID = m_Renderer2D->SetTexture(dc.SubTexture->GetTexture());
+			const uint32_t textureID = m_Renderer2D->SetTexture(dc.SubTexture->GetTexture());
 			m_Renderer2D->SubmitQuad(dc.Transform, dc.SubTexture->GetTexCoords(), textureID, dc.Color);		
 		}
 
@@ -362,8 +362,8 @@ namespace XYZ {
 		m_BloomComputeShader->Bind();
 		m_BloomComputeShader->SetFloat("u_FilterTreshold", 1.0f);
 		m_BloomComputeShader->SetFloat("u_FilterKnee", 0.1f);
-		
-		uint32_t workGroupSize = 4;
+
+		const uint32_t workGroupSize = 4;
 		uint32_t workGroupsX = (uint32_t)glm::ceil(m_ViewportSize.x / workGroupSize);
 		uint32_t workGroupsY = (uint32_t)glm::ceil(m_ViewportSize.y / workGroupSize);
 	
@@ -376,7 +376,7 @@ namespace XYZ {
 		
 		// Downsample stage
 		m_BloomComputeShader->SetInt("u_Mode", 1);
-		uint32_t mips = m_BloomTexture[0]->GetMipLevelCount() - 2;
+		const uint32_t mips = m_BloomTexture[0]->GetMipLevelCount() - 2;
 		for (uint32_t i = 1; i < mips; ++i)
 		{
 			auto [mipWidth, mipHeight] = m_BloomTexture[0]->GetMipSize(i);

@@ -67,7 +67,7 @@ public:
   {
     ASIO_ASSERT(lock.locked());
     state_ |= 1;
-    bool have_waiters = (state_ > 1);
+    const bool have_waiters = (state_ > 1);
     lock.unlock();
     if (have_waiters)
       cond_.notify_one();
@@ -79,7 +79,7 @@ public:
   {
     ASIO_ASSERT(lock.locked());
     state_ |= 1;
-    bool have_waiters = (state_ > 1);
+    const bool have_waiters = (state_ > 1);
     if (have_waiters)
       cond_.notify_one();
     lock.unlock();

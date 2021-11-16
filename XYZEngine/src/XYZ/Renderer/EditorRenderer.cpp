@@ -23,7 +23,7 @@ namespace XYZ {
 		for (auto& dc : m_EditorSpriteDrawList)
 		{
 			renderer2D->SetMaterial(dc.Material);
-			uint32_t textureID = renderer2D->SetTexture(dc.SubTexture->GetTexture());
+			const uint32_t textureID = renderer2D->SetTexture(dc.SubTexture->GetTexture());
 			renderer2D->SubmitQuad(dc.Transform, dc.SubTexture->GetTexCoords(), textureID, dc.Color);
 		}
 		for (auto& dc : m_EditorAABBDrawList)
@@ -70,11 +70,11 @@ namespace XYZ {
 
 	void EditorRenderer::SubmitEditorCircle(const glm::vec3& pos, float radius, uint32_t sides, const glm::vec4& color)
 	{
-		int step = 360 / sides;
+		const int step = 360 / sides;
 		for (int a = step; a < 360 + step; a += step)
 		{
-			float before = glm::radians((float)(a - step));
-			float heading = glm::radians((float)a);
+			const float before = glm::radians((float)(a - step));
+			const float heading = glm::radians((float)a);
 
 			m_EditorLineDrawList.push_back({
 				glm::vec3(pos.x + std::cos(before) * radius, pos.y + std::sin(before) * radius, pos.z),
@@ -85,7 +85,7 @@ namespace XYZ {
 	}
 	void EditorRenderer::SubmitEditorLineQuad(const glm::vec3& pos, const glm::vec2& size, const glm::vec4& color)
 	{
-		glm::vec3 p[4] = {
+		const glm::vec3 p[4] = {
 			pos,
 			pos + glm::vec3(size.x, 0.0f, 0.0f),
 			pos + glm::vec3(size.x, size.y, 0.0f),

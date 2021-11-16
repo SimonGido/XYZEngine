@@ -213,7 +213,7 @@ public:
   void async_wait(base_implementation_type& impl,
       socket_base::wait_type w, Handler& handler, const IoExecutor& io_ex)
   {
-    bool is_continuation =
+      const bool is_continuation =
       asio_handler_cont_helpers::is_continuation(handler);
 
     // Allocate and construct an operation to wrap the handler.

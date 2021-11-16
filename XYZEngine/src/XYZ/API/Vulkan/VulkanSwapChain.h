@@ -15,7 +15,7 @@ namespace XYZ {
 	public:
 		struct SwapChainSupportDetails
 		{
-			VkSurfaceCapabilitiesKHR		Capabilities;
+			VkSurfaceCapabilitiesKHR		Capabilities{};
 			std::vector<VkSurfaceFormatKHR> Formats;
 			std::vector<VkPresentModeKHR>   PresentModes;
 		};
@@ -32,23 +32,23 @@ namespace XYZ {
 		void Create(uint32_t* width, uint32_t* height, bool vSync);
 
 		Ref<RenderCommandBuffer> GetRenderCommandBuffer();
-		Ref<RenderPass>			 GetRenderPass() const { return m_RenderPass; }
-		Ref<VulkanDevice>		 GetDevice() const { return m_Device; }
+		Ref<RenderPass>			 GetRenderPass()	   const { return m_RenderPass; }
+		Ref<VulkanDevice>		 GetDevice()		   const { return m_Device; }
 		VkRenderPass			 GetVulkanRenderPass() const { return m_VulkanRenderPass; }
 		
 		VkFramebuffer			 GetFramebuffer(uint32_t index) const;
-		VkFramebuffer			 GetCurrentFramebuffer() const;
+		VkFramebuffer			 GetCurrentFramebuffer()		const;
 		
 		VkCommandBuffer			 GetCommandBuffer(uint32_t frameIndex) const;
-		VkCommandBuffer			 GetCurrentCommandBuffer() const { return GetCommandBuffer(m_CurrentImageIndex); }
-		VkSemaphore				 GetRenderCompleteSemaphore() { return m_Semaphores[m_CurrentBufferIndex].RenderComplete; }
-		VkExtent2D				 GetExtent() const { return m_Extent; }
-		size_t					 GetNumCommandsBuffers() const { return m_CommandBuffers.size(); }
-		uint32_t				 GetCurrentImageIndex() const { return m_CurrentImageIndex; }
-		uint32_t				 GetCurrentBufferIndex() const { return m_CurrentBufferIndex; }
-		uint32_t				 GetWidth() const { return m_Extent.width; }
-		uint32_t				 GetHeight() const { return m_Extent.height; }
-		uint32_t				 GetImageCount() const { return m_ImageCount;}
+		VkCommandBuffer			 GetCurrentCommandBuffer()			   const { return GetCommandBuffer(m_CurrentImageIndex); }
+		VkSemaphore				 GetRenderCompleteSemaphore()		   const { return m_Semaphores[m_CurrentBufferIndex].RenderComplete; }
+		VkExtent2D				 GetExtent()						   const { return m_Extent; }
+		size_t					 GetNumCommandsBuffers()			   const { return m_CommandBuffers.size(); }
+		uint32_t				 GetCurrentImageIndex()				   const { return m_CurrentImageIndex; }
+		uint32_t				 GetCurrentBufferIndex()			   const { return m_CurrentBufferIndex; }
+		uint32_t				 GetWidth()							   const { return m_Extent.width; }
+		uint32_t				 GetHeight()						   const { return m_Extent.height; }
+		uint32_t				 GetImageCount()					   const { return m_ImageCount;}
 	private:
 		void getImages();
 		void createSyncObjects();

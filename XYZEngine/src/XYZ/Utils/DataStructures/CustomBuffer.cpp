@@ -57,11 +57,11 @@ namespace XYZ {
 	void CustomBuffer::Resize(size_t count)
 	{
 		XYZ_ASSERT(m_ElementSize != 0, "Element size is 0");
-		size_t newSize = count * m_ElementSize;
+		const size_t newSize = count * m_ElementSize;
 		std::byte* temp = new std::byte[newSize];
 		if (m_Data)
 		{
-			size_t copySize = std::min(m_Count, newSize);
+			const size_t copySize = std::min(m_Count, newSize);
 			memcpy(temp, m_Data, copySize);
 			delete[]m_Data;
 		}

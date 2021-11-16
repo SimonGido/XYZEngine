@@ -10,13 +10,13 @@ namespace XYZ {
 
 	static void FileWatcherThread(std::shared_ptr<FileWatcher> watcherObj)
 	{
-		HANDLE hDir = CreateFile(watcherObj->GetDirectory().c_str(),  // pointer to the file name
-			FILE_LIST_DIRECTORY,									 // access (read/write) mode
-			FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,  // share mode
-			NULL,													 // security descriptor
-			OPEN_EXISTING,											 // how to create
-			FILE_FLAG_BACKUP_SEMANTICS,								 // file attributes
-			NULL													 // file with attributes to copy
+		const HANDLE hDir = CreateFile(watcherObj->GetDirectory().c_str(),  // pointer to the file name
+		                               FILE_LIST_DIRECTORY,									 // access (read/write) mode
+		                               FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,  // share mode
+		                               NULL,													 // security descriptor
+		                               OPEN_EXISTING,											 // how to create
+		                               FILE_FLAG_BACKUP_SEMANTICS,								 // file attributes
+		                               NULL													 // file with attributes to copy
 		);
 
 		wchar_t filename[MAX_PATH];
@@ -41,7 +41,7 @@ namespace XYZ {
 			NULL									 // completion routine
 		) && watcherObj->IsRunning())
 		{
-			int offset = 0;
+			const int offset = 0;
 			FILE_NOTIFY_INFORMATION* pNotify;
 			pNotify = (FILE_NOTIFY_INFORMATION*)((char*)Buffer + offset);
 			wcscpy(filename, L"");

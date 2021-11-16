@@ -141,7 +141,7 @@ namespace XYZ {
 		Ref<OpenGLTexture2D> instance = this;
 		Renderer::Submit([instance, buffer]() mutable {
 			glCreateTextures(GL_TEXTURE_2D, 1, &instance->m_RendererID);
-			int levels = Texture::CalculateMipMapCount(instance->m_Width, instance->m_Height);
+			const int levels = Texture::CalculateMipMapCount(instance->m_Width, instance->m_Height);
 
 			glTextureStorage2D(instance->m_RendererID, levels, instance->m_InternalFormat, instance->m_Width, instance->m_Height);
 			if (instance->m_Specification.MinParam == TextureParam::Linear)
@@ -208,7 +208,7 @@ namespace XYZ {
 			if (instance->m_ChannelSize == 1)
 				glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 			glCreateTextures(GL_TEXTURE_2D, 1, &instance->m_RendererID);
-			int levels = Texture::CalculateMipMapCount(instance->m_Width, instance->m_Height);
+			const int levels = Texture::CalculateMipMapCount(instance->m_Width, instance->m_Height);
 
 			
 			if (instance->m_Specification.MinParam == TextureParam::Linear)
@@ -280,7 +280,7 @@ namespace XYZ {
 	{
 		Ref<const OpenGLTexture2D> instance = this;
 		Renderer::Submit([instance, buffer]() mutable {
-			size_t size = (size_t)instance->m_Width * (size_t)instance->m_Height * (size_t)instance->m_ChannelSize;
+			const size_t size = (size_t)instance->m_Width * (size_t)instance->m_Height * (size_t)instance->m_ChannelSize;
 			*buffer = new uint8_t[size];
 
 			glBindTexture(GL_TEXTURE_2D, instance->m_RendererID);
@@ -359,8 +359,8 @@ namespace XYZ {
 		buffer.Allocate(width * height * channels * paths.size());
 		for (auto& path : m_Filepaths)
 		{
-			uint8_t* ptr = (uint8_t*)stbi_load(path.c_str(), &width, &height, &channels, 0);
-			uint32_t size = width * height * channels;
+			const uint8_t* ptr = (uint8_t*)stbi_load(path.c_str(), &width, &height, &channels, 0);
+			const uint32_t size = width * height * channels;
 
 			buffer.Write(ptr, size, offset);
 			offset += size;
@@ -395,7 +395,7 @@ namespace XYZ {
 		Ref<OpenGLTexture2DArray> instance = this;
 		Renderer::Submit([instance, buffer]() mutable {
 			glCreateTextures(GL_TEXTURE_2D_ARRAY, 1, &instance->m_RendererID);
-			int levels = Texture::CalculateMipMapCount(instance->m_Width, instance->m_Height);
+			const int levels = Texture::CalculateMipMapCount(instance->m_Width, instance->m_Height);
 			glTextureStorage3D(instance->m_RendererID, 1, instance->m_InternalFormat, instance->m_Width, instance->m_Height, instance->m_LayerCount);
 			if (instance->m_Specification.MinParam == TextureParam::Linear)
 			{

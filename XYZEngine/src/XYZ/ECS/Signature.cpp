@@ -27,7 +27,7 @@ namespace XYZ {
 
 	void Signature::Set(uint16_t bitIndex, bool val)
 	{
-		size_t index = getIndex(*this, bitIndex);
+		const size_t index = getIndex(*this, bitIndex);
 		m_Bitset->m_Bitset[index] = val;
 	}
 
@@ -65,7 +65,7 @@ namespace XYZ {
 	{
 		for (uint16_t i = 0; i < m_Bitset->m_BitCount; ++i)
 		{
-			size_t index = getIndex(*this, i);
+			const size_t index = getIndex(*this, i);
 			m_Bitset->m_Bitset[index] = (m_Bitset->m_Bitset[index] && other[i]);
 		}
 		return *this;
@@ -74,7 +74,7 @@ namespace XYZ {
 	{
 		for (uint16_t i = 0; i < m_Bitset->m_BitCount; ++i)
 		{
-			size_t index = getIndex(*this, i);
+			const size_t index = getIndex(*this, i);
 			m_Bitset->m_Bitset[index] = (m_Bitset->m_Bitset[index] || other[i]);
 		}
 		return *this;
@@ -83,7 +83,7 @@ namespace XYZ {
 	{
 		for (uint16_t i = 0; i < m_Bitset->m_BitCount; ++i)
 		{
-			size_t index = getIndex(*this, i);
+			const size_t index = getIndex(*this, i);
 			if (!(m_Bitset->m_Bitset[index] & other[i]))
 				return false;
 		}

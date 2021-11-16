@@ -222,7 +222,7 @@ private:
   template <typename MutableBufferSequence>
   std::size_t copy(const MutableBufferSequence& buffers)
   {
-    std::size_t bytes_copied = asio::buffer_copy(
+    const std::size_t bytes_copied = asio::buffer_copy(
         buffers, storage_.data(), storage_.size());
     storage_.consume(bytes_copied);
     return bytes_copied;

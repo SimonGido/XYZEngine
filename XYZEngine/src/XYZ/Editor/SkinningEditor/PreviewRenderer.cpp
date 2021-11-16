@@ -51,20 +51,19 @@ namespace XYZ {
             if (transform)
             {
                 hierarchy.Traverse([&](void* parent, void* child) -> bool {
-
-                    PreviewBone* childBone = static_cast<PreviewBone*>(child);
+                    const PreviewBone* childBone = static_cast<PreviewBone*>(child);
                     float rot;
                     glm::vec2 start, end, normal;
                     childBone->Decompose(start, end, rot, normal);
                     if (parent)
                     {
-                        PreviewBone* parentBone = static_cast<PreviewBone*>(parent);
+                        const PreviewBone* parentBone = static_cast<PreviewBone*>(parent);
                         float parentRot;
                         glm::vec2 parentStart, parentEnd, parentNormal;
                         parentBone->Decompose(parentStart, parentEnd, parentRot, parentNormal);
-                        
-                        glm::vec2 dir = glm::normalize(start - parentStart);
-                        glm::vec2 relNormal = { -dir.y, dir.x };
+
+                        const glm::vec2 dir = glm::normalize(start - parentStart);
+                        const glm::vec2 relNormal = { -dir.y, dir.x };
                         RenderBone(parentStart, start, relNormal, glm::vec4(childBone->Color, 0.2f), PreviewBone::PointRadius);
                     }              
                     RenderBone(start, end, normal, glm::vec4(childBone->Color, 1.0f), PreviewBone::PointRadius);
@@ -74,20 +73,19 @@ namespace XYZ {
             else
             {
                 hierarchy.Traverse([&](void* parent, void* child) -> bool {
-
-                    PreviewBone* childBone = static_cast<PreviewBone*>(child);
+                    const PreviewBone* childBone = static_cast<PreviewBone*>(child);
                     glm::vec2 end = childBone->LocalPosition + (childBone->Direction * childBone->Length);
                     if (parent)
                     {
-                        PreviewBone* parentBone = static_cast<PreviewBone*>(parent);
+                        const PreviewBone* parentBone = static_cast<PreviewBone*>(parent);
                         end += parentBone->WorldPosition;
-   
-                        glm::vec2 dir = glm::normalize(end - parentBone->WorldPosition);
-                        glm::vec2 relNormal = { -dir.y, dir.x };
+
+                        const glm::vec2 dir = glm::normalize(end - parentBone->WorldPosition);
+                        const glm::vec2 relNormal = { -dir.y, dir.x };
                         RenderBone(parentBone->WorldPosition, childBone->WorldPosition, relNormal, glm::vec4(childBone->Color, 0.2f), PreviewBone::PointRadius);
-                    }      
-                    glm::vec2 dir = glm::normalize(end - childBone->WorldPosition);
-                    glm::vec2 normal = { -dir.y, dir.x };
+                    }
+                    const glm::vec2 dir = glm::normalize(end - childBone->WorldPosition);
+                    const glm::vec2 normal = { -dir.y, dir.x };
                     RenderBone(childBone->WorldPosition, end, normal, glm::vec4(childBone->Color, 1.0f), PreviewBone::PointRadius);
                     return false;
                 }); 
@@ -113,9 +111,9 @@ namespace XYZ {
             }
             else
             {
-                glm::vec2 end = child.WorldPosition + (child.Direction * child.Length);
-                glm::vec2 dir = glm::normalize(end - child.WorldPosition);
-                glm::vec2 normal = { -dir.y, dir.x };
+                const glm::vec2 end = child.WorldPosition + (child.Direction * child.Length);
+                const glm::vec2 dir = glm::normalize(end - child.WorldPosition);
+                const glm::vec2 normal = { -dir.y, dir.x };
                 RenderBone(child.WorldPosition, end, normal, color, radius);
             }
         }

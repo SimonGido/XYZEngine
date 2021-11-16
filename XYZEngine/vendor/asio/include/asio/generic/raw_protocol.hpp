@@ -67,7 +67,7 @@ public:
   {
     if (source_protocol.type() != type())
     {
-      std::bad_cast ex;
+      const std::bad_cast ex;
       asio::detail::throw_exception(ex);
     }
   }

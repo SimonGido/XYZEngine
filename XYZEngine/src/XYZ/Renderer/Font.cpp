@@ -29,11 +29,11 @@ namespace XYZ {
 		
 		m_Characters.resize(sc_NumGlyphs);
 		// quick and dirty max texture size estimate
-		int32_t maxDim = (1 + (face->size->metrics.height >> 6)) * (int32_t)ceilf(sqrtf(sc_NumGlyphs));
+		const int32_t maxDim = (1 + (face->size->metrics.height >> 6)) * (int32_t)ceilf(sqrtf(sc_NumGlyphs));
 		int32_t texWidth = 1;
 		while (texWidth < maxDim)
 			texWidth <<= 1;
-		int32_t texHeight = texWidth;
+		const int32_t texHeight = texWidth;
 
 		ByteBuffer pixelData;
 		pixelData.Allocate(texWidth * texHeight * 1);
@@ -58,8 +58,8 @@ namespace XYZ {
 			{
 				for (int32_t col = 0; col < (int32_t)bmp->width; ++col)
 				{
-					int32_t x = penX + col;
-					int32_t y = penY + row;
+					const int32_t x = penX + col;
+					const int32_t y = penY + row;
 					pixelData[y * texWidth + x] = bmp->buffer[row * bmp->pitch + col];
 				}
 			}

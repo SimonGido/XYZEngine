@@ -4619,9 +4619,9 @@ static inline bool VmaBlocksOnSamePage(
 {
     VMA_ASSERT(resourceAOffset + resourceASize <= resourceBOffset && resourceASize > 0 && pageSize > 0);
     VkDeviceSize resourceAEnd = resourceAOffset + resourceASize - 1;
-    VkDeviceSize resourceAEndPage = resourceAEnd & ~(pageSize - 1);
+    const VkDeviceSize resourceAEndPage = resourceAEnd & ~(pageSize - 1);
     VkDeviceSize resourceBStart = resourceBOffset;
-    VkDeviceSize resourceBStartPage = resourceBStart & ~(pageSize - 1);
+    const VkDeviceSize resourceBStartPage = resourceBStart & ~(pageSize - 1);
     return resourceAEndPage == resourceBStartPage;
 }
 
@@ -8699,7 +8699,7 @@ void VmaJsonWriter::ContinueString(const char* pStr)
     const size_t strLen = strlen(pStr);
     for(size_t i = 0; i < strLen; ++i)
     {
-        char ch = pStr[i];
+      const char ch = pStr[i];
         if(ch == '\\')
         {
             m_SB.Add("\\\\");
@@ -9096,7 +9096,7 @@ VkResult VmaAllocation_T::DedicatedAllocMap(VmaAllocator hAllocator, void** ppDa
     }
     else
     {
-        VkResult result = (*hAllocator->GetVulkanFunctions().vkMapMemory)(
+      const VkResult result = (*hAllocator->GetVulkanFunctions().vkMapMemory)(
             hAllocator->m_hDevice,
             m_DedicatedAllocation.m_hMemory,
             0, // offset
@@ -9375,7 +9375,7 @@ bool VmaBlockMetadata_Generic::Validate() const
     VkDeviceSize lastSize = 0;
     for(size_t i = 0; i < m_FreeSuballocationsBySize.size(); ++i)
     {
-        VmaSuballocationList::iterator suballocItem = m_FreeSuballocationsBySize[i];
+      const VmaSuballocationList::iterator suballocItem = m_FreeSuballocationsBySize[i];
 
         // Only free suballocations can be registered in m_FreeSuballocationsBySize.
         VMA_VALIDATE(suballocItem->type == VMA_SUBALLOCATION_TYPE_FREE);
@@ -9794,7 +9794,7 @@ void VmaBlockMetadata_Generic::Free(const VmaAllocation allocation)
         suballocItem != m_Suballocations.end();
         ++suballocItem)
     {
-        VmaSuballocation& suballoc = *suballocItem;
+      const VmaSuballocation& suballoc = *suballocItem;
         if(suballoc.hAllocation == allocation)
         {
             FreeSuballocation(suballocItem);
@@ -9811,7 +9811,7 @@ void VmaBlockMetadata_Generic::FreeAtOffset(VkDeviceSize offset)
         suballocItem != m_Suballocations.end();
         ++suballocItem)
     {
-        VmaSuballocation& suballoc = *suballocItem;
+      const VmaSuballocation& suballoc = *suballocItem;
         if(suballoc.offset == offset)
         {
             FreeSuballocation(suballocItem);
@@ -11833,7 +11833,7 @@ void VmaBlockMetadata_Linear::FreeAtOffset(VkDeviceSize offset)
     if(m_2ndVectorMode == SECOND_VECTOR_RING_BUFFER ||
         m_2ndVectorMode == SECOND_VECTOR_DOUBLE_STACK)
     {
-        VmaSuballocation& lastSuballoc = suballocations2nd.back();
+      const VmaSuballocation& lastSuballoc = suballocations2nd.back();
         if(lastSuballoc.offset == offset)
         {
             m_SumFreeSize += lastSuballoc.size;
@@ -11845,7 +11845,7 @@ void VmaBlockMetadata_Linear::FreeAtOffset(VkDeviceSize offset)
     // Last allocation in 1st vector.
     else if(m_2ndVectorMode == SECOND_VECTOR_EMPTY)
     {
-        VmaSuballocation& lastSuballoc = suballocations1st.back();
+      const VmaSuballocation& lastSuballoc = suballocations1st.back();
         if(lastSuballoc.offset == offset)
         {
             m_SumFreeSize += lastSuballoc.size;
@@ -11860,7 +11860,7 @@ void VmaBlockMetadata_Linear::FreeAtOffset(VkDeviceSize offset)
         VmaSuballocation refSuballoc;
         refSuballoc.offset = offset;
         // Rest of members stays uninitialized intentionally for better performance.
-        SuballocationVectorType::iterator it = VmaBinaryFindSorted(
+        const SuballocationVectorType::iterator it = VmaBinaryFindSorted(
             suballocations1st.begin() + m_1stNullItemsBeginCount,
             suballocations1st.end(),
             refSuballoc,
@@ -11882,9 +11882,9 @@ void VmaBlockMetadata_Linear::FreeAtOffset(VkDeviceSize offset)
         VmaSuballocation refSuballoc;
         refSuballoc.offset = offset;
         // Rest of members stays uninitialized intentionally for better performance.
-        SuballocationVectorType::iterator it = m_2ndVectorMode == SECOND_VECTOR_RING_BUFFER ?
-            VmaBinaryFindSorted(suballocations2nd.begin(), suballocations2nd.end(), refSuballoc, VmaSuballocationOffsetLess()) :
-            VmaBinaryFindSorted(suballocations2nd.begin(), suballocations2nd.end(), refSuballoc, VmaSuballocationOffsetGreater());
+        const SuballocationVectorType::iterator it = m_2ndVectorMode == SECOND_VECTOR_RING_BUFFER ?
+                                                       VmaBinaryFindSorted(suballocations2nd.begin(), suballocations2nd.end(), refSuballoc, VmaSuballocationOffsetLess()) :
+                                                       VmaBinaryFindSorted(suballocations2nd.begin(), suballocations2nd.end(), refSuballoc, VmaSuballocationOffsetGreater());
         if(it != suballocations2nd.end())
         {
             it->type = VMA_SUBALLOCATION_TYPE_FREE;
@@ -12683,7 +12683,7 @@ VkResult VmaDeviceMemoryBlock::Map(VmaAllocator hAllocator, uint32_t count, void
     }
     else
     {
-        VkResult result = (*hAllocator->GetVulkanFunctions().vkMapMemory)(
+      const VkResult result = (*hAllocator->GetVulkanFunctions().vkMapMemory)(
             hAllocator->m_hDevice,
             m_hMemory,
             0, // offset
@@ -12731,7 +12731,7 @@ VkResult VmaDeviceMemoryBlock::WriteMagicValueAroundAllocation(VmaAllocator hAll
     VMA_ASSERT(allocOffset >= VMA_DEBUG_MARGIN);
 
     void* pData;
-    VkResult res = Map(hAllocator, 1, &pData);
+    const VkResult res = Map(hAllocator, 1, &pData);
     if(res != VK_SUCCESS)
     {
         return res;
@@ -12751,7 +12751,7 @@ VkResult VmaDeviceMemoryBlock::ValidateMagicValueAroundAllocation(VmaAllocator h
     VMA_ASSERT(allocOffset >= VMA_DEBUG_MARGIN);
 
     void* pData;
-    VkResult res = Map(hAllocator, 1, &pData);
+    const VkResult res = Map(hAllocator, 1, &pData);
     if(res != VK_SUCCESS)
     {
         return res;
@@ -12921,7 +12921,7 @@ VkResult VmaBlockVector::CreateMinBlocks()
 {
     for(size_t i = 0; i < m_MinBlockCount; ++i)
     {
-        VkResult res = CreateBlock(m_PreferredBlockSize, VMA_NULL);
+      const VkResult res = CreateBlock(m_PreferredBlockSize, VMA_NULL);
         if(res != VK_SUCCESS)
         {
             return res;
@@ -13421,7 +13421,7 @@ void VmaBlockVector::Free(
 
         if(IsCorruptionDetectionEnabled())
         {
-            VkResult res = pBlock->ValidateMagicValueAroundAllocation(m_hAllocator, hAllocation->GetOffset(), hAllocation->GetSize());
+          const VkResult res = pBlock->ValidateMagicValueAroundAllocation(m_hAllocator, hAllocation->GetOffset(), hAllocation->GetSize());
             VMA_ASSERT(res == VK_SUCCESS && "Couldn't map block memory to validate magic value.");
         }
 
@@ -13550,7 +13550,7 @@ VkResult VmaBlockVector::AllocateFromBlock(
 
         if(mapped)
         {
-            VkResult res = pBlock->Map(m_hAllocator, 1, VMA_NULL);
+          const VkResult res = pBlock->Map(m_hAllocator, 1, VMA_NULL);
             if(res != VK_SUCCESS)
             {
                 return res;
@@ -13578,7 +13578,7 @@ VkResult VmaBlockVector::AllocateFromBlock(
         }
         if(IsCorruptionDetectionEnabled())
         {
-            VkResult res = pBlock->WriteMagicValueAroundAllocation(m_hAllocator, currRequest.offset, size);
+          const VkResult res = pBlock->WriteMagicValueAroundAllocation(m_hAllocator, currRequest.offset, size);
             VMA_ASSERT(res == VK_SUCCESS && "Couldn't map block memory to write magic value.");
         }
         return VK_SUCCESS;
@@ -13612,7 +13612,7 @@ VkResult VmaBlockVector::CreateBlock(VkDeviceSize blockSize, size_t* pNewBlockIn
 #endif // #if VMA_MEMORY_PRIORITY
 
     VkDeviceMemory mem = VK_NULL_HANDLE;
-    VkResult res = m_hAllocator->AllocateVulkanMemory(&allocInfo, &mem);
+    const VkResult res = m_hAllocator->AllocateVulkanMemory(&allocInfo, &mem);
     if(res < 0)
     {
         return res;
@@ -13711,7 +13711,7 @@ void VmaBlockVector::ApplyDefragmentationMovesCpu(
             // Invalidate source.
             if(isNonCoherent)
             {
-                VmaDeviceMemoryBlock* const pSrcBlock = m_Blocks[move.srcBlockIndex];
+              const VmaDeviceMemoryBlock* const pSrcBlock = m_Blocks[move.srcBlockIndex];
                 memRange.memory = pSrcBlock->GetDeviceMemory();
                 memRange.offset = VmaAlignDown(move.srcOffset, nonCoherentAtomSize);
                 memRange.size = VMA_MIN(
@@ -13735,7 +13735,7 @@ void VmaBlockVector::ApplyDefragmentationMovesCpu(
             // Flush destination.
             if(isNonCoherent)
             {
-                VmaDeviceMemoryBlock* const pDstBlock = m_Blocks[move.dstBlockIndex];
+              const VmaDeviceMemoryBlock* const pDstBlock = m_Blocks[move.dstBlockIndex];
                 memRange.memory = pDstBlock->GetDeviceMemory();
                 memRange.offset = VmaAlignDown(move.dstOffset, nonCoherentAtomSize);
                 memRange.size = VMA_MIN(
@@ -13793,7 +13793,7 @@ void VmaBlockVector::ApplyDefragmentationMovesGpu(
         for(size_t blockIndex = 0; pDefragCtx->res == VK_SUCCESS && blockIndex < blockCount; ++blockIndex)
         {
             VmaBlockDefragmentationContext& currBlockCtx = pDefragCtx->blockContexts[blockIndex];
-            VmaDeviceMemoryBlock* pBlock = m_Blocks[blockIndex];
+            const VmaDeviceMemoryBlock* pBlock = m_Blocks[blockIndex];
             if((currBlockCtx.flags & VmaBlockDefragmentationContext::BLOCK_FLAG_USED) != 0)
             {
                 bufCreateInfo.size = pBlock->m_pMetadata->GetSize();
@@ -13869,7 +13869,7 @@ void VmaBlockVector::UpdateHasEmptyBlock()
     m_HasEmptyBlock = false;
     for(size_t index = 0, count = m_Blocks.size(); index < count; ++index)
     {
-        VmaDeviceMemoryBlock* const pBlock = m_Blocks[index];
+      const VmaDeviceMemoryBlock* const pBlock = m_Blocks[index];
         if(pBlock->m_pMetadata->IsEmpty())
         {
             m_HasEmptyBlock = true;
@@ -13987,7 +13987,7 @@ void VmaBlockVector::Defragment(
                 m_hAllocator->IsIntegratedGpu();
         }
 
-        bool overlappingMoveSupported = !defragmentOnGpu;
+        const bool overlappingMoveSupported = !defragmentOnGpu;
 
         if(m_hAllocator->m_UseMutex)
         {
@@ -14081,7 +14081,7 @@ void VmaBlockVector::DefragmentationEnd(
         // Destroy buffers.
         for(size_t blockIndex = pCtx->blockContexts.size(); blockIndex--;)
         {
-            VmaBlockDefragmentationContext &blockCtx = pCtx->blockContexts[blockIndex];
+          const VmaBlockDefragmentationContext &blockCtx = pCtx->blockContexts[blockIndex];
             if(blockCtx.hBuffer)
             {
                 (*m_hAllocator->GetVulkanFunctions().vkDestroyBuffer)(m_hAllocator->m_hDevice, blockCtx.hBuffer, m_hAllocator->GetAllocationCallbacks());
@@ -14111,7 +14111,7 @@ uint32_t VmaBlockVector::ProcessDefragmentations(
 
     for(uint32_t i = 0; i < moveCount; ++ i)
     {
-        VmaDefragmentationMove& move = pCtx->defragmentationMoves[pCtx->defragmentationMovesProcessed + i];
+      const VmaDefragmentationMove& move = pCtx->defragmentationMoves[pCtx->defragmentationMovesProcessed + i];
 
         pMove->allocation = move.hAllocation;
         pMove->memory = move.pDstBlock->GetDeviceMemory();
@@ -14162,9 +14162,9 @@ bool VmaBlockVector::IsBufferImageGranularityConflictPossible() const
     VmaSuballocationType lastSuballocType = VMA_SUBALLOCATION_TYPE_FREE;
     for(size_t i = 0, count = m_Blocks.size(); i < count; ++i)
     {
-        VmaDeviceMemoryBlock* const pBlock = m_Blocks[i];
+      const VmaDeviceMemoryBlock* const pBlock = m_Blocks[i];
         VMA_ASSERT(m_Algorithm == 0);
-        VmaBlockMetadata_Generic* const pMetadata = (VmaBlockMetadata_Generic*)pBlock->m_pMetadata;
+      const VmaBlockMetadata_Generic* const pMetadata = (VmaBlockMetadata_Generic*)pBlock->m_pMetadata;
         if(pMetadata->IsBufferImageGranularityConflictPossible(m_BufferImageGranularity, lastSuballocType))
         {
             return true;
@@ -14203,7 +14203,7 @@ VkResult VmaBlockVector::CheckCorruption()
     {
         VmaDeviceMemoryBlock* const pBlock = m_Blocks[blockIndex];
         VMA_ASSERT(pBlock);
-        VkResult res = pBlock->CheckCorruption(m_hAllocator);
+        const VkResult res = pBlock->CheckCorruption(m_hAllocator);
         if(res != VK_SUCCESS)
         {
             return res;
@@ -14275,10 +14275,10 @@ void VmaDefragmentationAlgorithm_Generic::AddAllocation(VmaAllocation hAlloc, Vk
     if(hAlloc->GetLastUseFrameIndex() != VMA_FRAME_INDEX_LOST)
     {
         VmaDeviceMemoryBlock* pBlock = hAlloc->GetBlock();
-        BlockInfoVector::iterator it = VmaBinaryFindFirstNotLess(m_Blocks.begin(), m_Blocks.end(), pBlock, BlockPointerLess());
+        const BlockInfoVector::iterator it = VmaBinaryFindFirstNotLess(m_Blocks.begin(), m_Blocks.end(), pBlock, BlockPointerLess());
         if(it != m_Blocks.end() && (*it)->m_pBlock == pBlock)
         {
-            AllocationInfo allocInfo = AllocationInfo(hAlloc, pChanged);
+          const AllocationInfo allocInfo = AllocationInfo(hAlloc, pChanged);
             (*it)->m_Allocations.push_back(allocInfo);
         }
         else
@@ -14303,13 +14303,13 @@ VkResult VmaDefragmentationAlgorithm_Generic::DefragmentRound(
 
     // This is a choice based on research.
     // Option 1:
-    uint32_t strategy = VMA_ALLOCATION_CREATE_STRATEGY_MIN_TIME_BIT;
+    const uint32_t strategy = VMA_ALLOCATION_CREATE_STRATEGY_MIN_TIME_BIT;
     // Option 2:
     //uint32_t strategy = VMA_ALLOCATION_CREATE_STRATEGY_MIN_MEMORY_BIT;
     // Option 3:
     //uint32_t strategy = VMA_ALLOCATION_CREATE_STRATEGY_MIN_FRAGMENTATION_BIT;
 
-    size_t srcBlockMinIndex = 0;
+    const size_t srcBlockMinIndex = 0;
     // When FAST_ALGORITHM, move allocations from only last out of blocks that contain non-movable allocations.
     /*
     if(m_AlgorithmFlags & VMA_DEFRAGMENTATION_FAST_ALGORITHM_BIT)
@@ -14351,7 +14351,7 @@ VkResult VmaDefragmentationAlgorithm_Generic::DefragmentRound(
         }
 
         BlockInfo* pSrcBlockInfo = m_Blocks[srcBlockIndex];
-        AllocationInfo& allocInfo = pSrcBlockInfo->m_Allocations[srcAllocIndex];
+        const AllocationInfo& allocInfo = pSrcBlockInfo->m_Allocations[srcAllocIndex];
 
         const VkDeviceSize size = allocInfo.m_hAllocation->GetSize();
         const VkDeviceSize srcOffset = allocInfo.m_hAllocation->GetOffset();
@@ -14361,7 +14361,7 @@ VkResult VmaDefragmentationAlgorithm_Generic::DefragmentRound(
         // 2. Try to find new place for this allocation in preceding or current block.
         for(size_t dstBlockIndex = 0; dstBlockIndex <= srcBlockIndex; ++dstBlockIndex)
         {
-            BlockInfo* pDstBlockInfo = m_Blocks[dstBlockIndex];
+          const BlockInfo* pDstBlockInfo = m_Blocks[dstBlockIndex];
             VmaAllocationRequest dstAllocRequest;
             if(pDstBlockInfo->m_pBlock->m_pMetadata->CreateAllocationRequest(
                 m_CurrentFrameIndex,
@@ -14944,7 +14944,7 @@ VmaBlockVectorDefragmentationContext::~VmaBlockVectorDefragmentationContext()
 
 void VmaBlockVectorDefragmentationContext::AddAllocation(VmaAllocation hAlloc, VkBool32* pChanged)
 {
-    AllocInfo info = { hAlloc, pChanged };
+  const AllocInfo info = { hAlloc, pChanged };
     m_Allocations.push_back(info);
 }
 
@@ -15031,7 +15031,7 @@ void VmaDefragmentationContext_T::AddPools(uint32_t poolCount, const VmaPool* pP
 {
     for(uint32_t poolIndex = 0; poolIndex < poolCount; ++poolIndex)
     {
-        VmaPool pool = pPools[poolIndex];
+      const VmaPool pool = pPools[poolIndex];
         VMA_ASSERT(pool);
         // Pools with algorithm other than default are not defragmented.
         if(pool->m_BlockVector.GetAlgorithm() == 0)
@@ -16116,7 +16116,7 @@ VmaAllocator_T::VmaAllocator_T(const VmaAllocatorCreateInfo* pCreateInfo) :
 
 VkResult VmaAllocator_T::Init(const VmaAllocatorCreateInfo* pCreateInfo)
 {
-    VkResult res = VK_SUCCESS;
+  const VkResult res = VK_SUCCESS;
 
     if(pCreateInfo->pRecordSettings != VMA_NULL &&
         !VmaStrIsEmpty(pCreateInfo->pRecordSettings->pFilePath))
@@ -16431,7 +16431,7 @@ VkResult VmaAllocator_T::AllocateMemoryOfType(
     VMA_ASSERT(blockVector);
 
     const VkDeviceSize preferredBlockSize = blockVector->GetPreferredBlockSize();
-    bool preferDedicatedMemory =
+    const bool preferDedicatedMemory =
         VMA_DEBUG_ALWAYS_DEDICATED_MEMORY ||
         dedicatedAllocation ||
         // Heuristics: Allocate dedicated memory if requested size if greater than half of preferred block size.
@@ -16645,8 +16645,8 @@ VkResult VmaAllocator_T::AllocateDedicatedMemory(
         // Free all already created allocations.
         while(allocIndex--)
         {
-            VmaAllocation currAlloc = pAllocations[allocIndex];
-            VkDeviceMemory hMemory = currAlloc->GetMemory();
+          const VmaAllocation currAlloc = pAllocations[allocIndex];
+          const VkDeviceMemory hMemory = currAlloc->GetMemory();
 
             /*
             There is no need to call this, because Vulkan spec allows to skip vkUnmapMemory
@@ -16943,7 +16943,7 @@ void VmaAllocator_T::FreeMemory(
 
     for(size_t allocIndex = allocationCount; allocIndex--; )
     {
-        VmaAllocation allocation = pAllocations[allocIndex];
+      const VmaAllocation allocation = pAllocations[allocIndex];
 
         if(allocation != VK_NULL_HANDLE)
         {
@@ -16959,7 +16959,7 @@ void VmaAllocator_T::FreeMemory(
                 case VmaAllocation_T::ALLOCATION_TYPE_BLOCK:
                     {
                         VmaBlockVector* pBlockVector = VMA_NULL;
-                        VmaPool hPool = allocation->GetBlock()->GetParentPool();
+                        const VmaPool hPool = allocation->GetBlock()->GetParentPool();
                         if(hPool != VK_NULL_HANDLE)
                         {
                             pBlockVector = &hPool->m_BlockVector;
@@ -17110,7 +17110,7 @@ VkResult VmaAllocator_T::DefragmentationBegin(
     (*pContext)->AddAllocations(
         info.allocationCount, info.pAllocations, info.pAllocationsChanged);
 
-    VkResult res = (*pContext)->Defragment(
+    const VkResult res = (*pContext)->Defragment(
         info.maxCpuBytesToMove, info.maxCpuAllocationsToMove,
         info.maxGpuBytesToMove, info.maxGpuAllocationsToMove,
         info.commandBuffer, pStats, info.flags);
@@ -17188,7 +17188,7 @@ void VmaAllocator_T::GetAllocationInfo(VmaAllocation hAllocation, VmaAllocationI
     else
     {
 #if VMA_STATS_STRING_ENABLED
-        uint32_t localCurrFrameIndex = m_CurrentFrameIndex.load();
+      const uint32_t localCurrFrameIndex = m_CurrentFrameIndex.load();
         uint32_t localLastUseFrameIndex = hAllocation->GetLastUseFrameIndex();
         for(;;)
         {
@@ -17221,7 +17221,7 @@ bool VmaAllocator_T::TouchAllocation(VmaAllocation hAllocation)
     // This is a stripped-down version of VmaAllocator_T::GetAllocationInfo.
     if(hAllocation->CanBecomeLost())
     {
-        uint32_t localCurrFrameIndex = m_CurrentFrameIndex.load();
+      const uint32_t localCurrFrameIndex = m_CurrentFrameIndex.load();
         uint32_t localLastUseFrameIndex = hAllocation->GetLastUseFrameIndex();
         for(;;)
         {
@@ -17245,7 +17245,7 @@ bool VmaAllocator_T::TouchAllocation(VmaAllocation hAllocation)
     else
     {
 #if VMA_STATS_STRING_ENABLED
-        uint32_t localCurrFrameIndex = m_CurrentFrameIndex.load();
+      const uint32_t localCurrFrameIndex = m_CurrentFrameIndex.load();
         uint32_t localLastUseFrameIndex = hAllocation->GetLastUseFrameIndex();
         for(;;)
         {
@@ -17293,7 +17293,7 @@ VkResult VmaAllocator_T::CreatePool(const VmaPoolCreateInfo* pCreateInfo, VmaPoo
 
     *pPool = vma_new(this, VmaPool_T)(this, newCreateInfo, preferredBlockSize);
 
-    VkResult res = (*pPool)->m_BlockVector.CreateMinBlocks();
+    const VkResult res = (*pPool)->m_BlockVector.CreateMinBlocks();
     if(res != VK_SUCCESS)
     {
         vma_delete(this, *pPool);
@@ -17364,7 +17364,7 @@ VkResult VmaAllocator_T::CheckCorruption(uint32_t memoryTypeBits)
         {
             VmaBlockVector* const pBlockVector = m_pBlockVectors[memTypeIndex];
             VMA_ASSERT(pBlockVector);
-            VkResult localRes = pBlockVector->CheckCorruption();
+            const VkResult localRes = pBlockVector->CheckCorruption();
             switch(localRes)
             {
             case VK_ERROR_FEATURE_NOT_PRESENT:
@@ -17385,7 +17385,7 @@ VkResult VmaAllocator_T::CheckCorruption(uint32_t memoryTypeBits)
         {
             if(((1u << pool->m_BlockVector.GetMemoryTypeIndex()) & memoryTypeBits) != 0)
             {
-                VkResult localRes = pool->m_BlockVector.CheckCorruption();
+              const VkResult localRes = pool->m_BlockVector.CheckCorruption();
                 switch(localRes)
                 {
                 case VK_ERROR_FEATURE_NOT_PRESENT:
@@ -17471,7 +17471,7 @@ VkResult VmaAllocator_T::AllocateVulkanMemory(const VkMemoryAllocateInfo* pAlloc
     }
 
     // VULKAN CALL vkAllocateMemory.
-    VkResult res = (*m_VulkanFunctions.vkAllocateMemory)(m_hDevice, pAllocateInfo, GetAllocationCallbacks(), pMemory);
+    const VkResult res = (*m_VulkanFunctions.vkAllocateMemory)(m_hDevice, pAllocateInfo, GetAllocationCallbacks(), pMemory);
 
     if(res == VK_SUCCESS)
     {
@@ -17586,7 +17586,7 @@ VkResult VmaAllocator_T::Map(VmaAllocation hAllocation, void** ppData)
         {
             VmaDeviceMemoryBlock* const pBlock = hAllocation->GetBlock();
             char *pBytes = VMA_NULL;
-            VkResult res = pBlock->Map(this, 1, (void**)&pBytes);
+            const VkResult res = pBlock->Map(this, 1, (void**)&pBytes);
             if(res == VK_SUCCESS)
             {
                 *ppData = pBytes + (ptrdiff_t)hAllocation->GetOffset();
@@ -17749,7 +17749,7 @@ void VmaAllocator_T::FreeDedicatedMemory(const VmaAllocation allocation)
         dedicatedAllocations.Remove(allocation);
     }
 
-    VkDeviceMemory hMemory = allocation->GetMemory();
+    const VkDeviceMemory hMemory = allocation->GetMemory();
 
     /*
     There is no need to call this, because Vulkan spec allows to skip vkUnmapMemory
@@ -17775,7 +17775,7 @@ uint32_t VmaAllocator_T::CalculateGpuDefragmentationMemoryTypeBits() const
 
     // Create buffer.
     VkBuffer buf = VK_NULL_HANDLE;
-    VkResult res = (*GetVulkanFunctions().vkCreateBuffer)(
+    const VkResult res = (*GetVulkanFunctions().vkCreateBuffer)(
         m_hDevice, &dummyBufCreateInfo, GetAllocationCallbacks(), &buf);
     if(res == VK_SUCCESS)
     {
@@ -18059,7 +18059,7 @@ VMA_CALL_PRE void VMA_CALL_POST vmaDestroyAllocator(
     if(allocator != VK_NULL_HANDLE)
     {
         VMA_DEBUG_LOG("vmaDestroyAllocator");
-        VkAllocationCallbacks allocationCallbacks = allocator->m_AllocationCallbacks;
+        const VkAllocationCallbacks allocationCallbacks = allocator->m_AllocationCallbacks;
         vma_delete(&allocationCallbacks, allocator);
     }
 }
@@ -18278,7 +18278,7 @@ VMA_CALL_PRE void VMA_CALL_POST vmaFreeStatsString(
     if(pStatsString != VMA_NULL)
     {
         VMA_ASSERT(allocator);
-        size_t len = strlen(pStatsString);
+        const size_t len = strlen(pStatsString);
         vma_delete_array(allocator, pStatsString, len + 1);
     }
 }
@@ -18367,7 +18367,7 @@ VMA_CALL_PRE VkResult VMA_CALL_POST vmaFindMemoryTypeIndex(
             if((requiredFlags & ~currFlags) == 0)
             {
                 // Calculate cost as number of bits from preferredFlags not present in this memory type.
-                uint32_t currCost = VmaCountBitsSet(preferredFlags & ~currFlags) +
+                const uint32_t currCost = VmaCountBitsSet(preferredFlags & ~currFlags) +
                     VmaCountBitsSet(currFlags & notPreferredFlags);
                 // Remember memory type with lowest cost.
                 if(currCost < minCost)
@@ -18462,7 +18462,7 @@ VMA_CALL_PRE VkResult VMA_CALL_POST vmaCreatePool(
 
     VMA_DEBUG_GLOBAL_MUTEX_LOCK
 
-    VkResult res = allocator->CreatePool(pCreateInfo, pPool);
+    const VkResult res = allocator->CreatePool(pCreateInfo, pPool);
 
 #if VMA_RECORDING_ENABLED
     if(allocator->GetRecorder() != VMA_NULL)
@@ -18589,7 +18589,7 @@ VMA_CALL_PRE VkResult VMA_CALL_POST vmaAllocateMemory(
 
     VMA_DEBUG_GLOBAL_MUTEX_LOCK
 
-    VkResult result = allocator->AllocateMemory(
+    const VkResult result = allocator->AllocateMemory(
         *pVkMemoryRequirements,
         false, // requiresDedicatedAllocation
         false, // prefersDedicatedAllocation
@@ -18639,7 +18639,7 @@ VMA_CALL_PRE VkResult VMA_CALL_POST vmaAllocateMemoryPages(
 
     VMA_DEBUG_GLOBAL_MUTEX_LOCK
 
-    VkResult result = allocator->AllocateMemory(
+    const VkResult result = allocator->AllocateMemory(
         *pVkMemoryRequirements,
         false, // requiresDedicatedAllocation
         false, // prefersDedicatedAllocation
@@ -18694,7 +18694,7 @@ VMA_CALL_PRE VkResult VMA_CALL_POST vmaAllocateMemoryForBuffer(
         requiresDedicatedAllocation,
         prefersDedicatedAllocation);
 
-    VkResult result = allocator->AllocateMemory(
+    const VkResult result = allocator->AllocateMemory(
         vkMemReq,
         requiresDedicatedAllocation,
         prefersDedicatedAllocation,
@@ -18746,7 +18746,7 @@ VMA_CALL_PRE VkResult VMA_CALL_POST vmaAllocateMemoryForImage(
     allocator->GetImageMemoryRequirements(image, vkMemReq,
         requiresDedicatedAllocation, prefersDedicatedAllocation);
 
-    VkResult result = allocator->AllocateMemory(
+    const VkResult result = allocator->AllocateMemory(
         vkMemReq,
         requiresDedicatedAllocation,
         prefersDedicatedAllocation,
@@ -18929,7 +18929,7 @@ VMA_CALL_PRE VkResult VMA_CALL_POST vmaMapMemory(
 
     VMA_DEBUG_GLOBAL_MUTEX_LOCK
 
-    VkResult res = allocator->Map(allocation, ppData);
+    const VkResult res = allocator->Map(allocation, ppData);
 
 #if VMA_RECORDING_ENABLED
     if(allocator->GetRecorder() != VMA_NULL)
@@ -19140,7 +19140,7 @@ VMA_CALL_PRE VkResult VMA_CALL_POST vmaDefragmentationBegin(
 
     VMA_DEBUG_GLOBAL_MUTEX_LOCK
 
-    VkResult res = allocator->DefragmentationBegin(*pInfo, pStats, pContext);
+    const VkResult res = allocator->DefragmentationBegin(*pInfo, pStats, pContext);
 
 #if VMA_RECORDING_ENABLED
     if(allocator->GetRecorder() != VMA_NULL)
@@ -19451,9 +19451,9 @@ VMA_CALL_PRE VkResult VMA_CALL_POST vmaCreateImage(
         pImage);
     if(res >= 0)
     {
-        VmaSuballocationType suballocType = pImageCreateInfo->tiling == VK_IMAGE_TILING_OPTIMAL ?
-            VMA_SUBALLOCATION_TYPE_IMAGE_OPTIMAL :
-            VMA_SUBALLOCATION_TYPE_IMAGE_LINEAR;
+      const VmaSuballocationType suballocType = pImageCreateInfo->tiling == VK_IMAGE_TILING_OPTIMAL ?
+                                                  VMA_SUBALLOCATION_TYPE_IMAGE_OPTIMAL :
+                                                  VMA_SUBALLOCATION_TYPE_IMAGE_LINEAR;
 
         // 2. Allocate memory using allocator.
         VkMemoryRequirements vkMemReq = {};

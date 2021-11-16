@@ -74,7 +74,7 @@ namespace XYZ {
 
 		static void AttachDepthTexture(uint32_t id, int samples, GLenum format, GLenum attachmentType, uint32_t width, uint32_t height)
 		{
-			bool multisampled = samples > 1;
+			const bool multisampled = samples > 1;
 			if (multisampled)
 			{
 				glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, format, width, height, GL_FALSE);
@@ -160,7 +160,7 @@ namespace XYZ {
 			glGenFramebuffers(1, &instance->m_RendererID);
 			glBindFramebuffer(GL_FRAMEBUFFER, instance->m_RendererID);
 
-			bool multisample = instance->m_Specification.Samples > 1;
+			const bool multisample = instance->m_Specification.Samples > 1;
 			if (!instance->m_ColorAttachmentFormats.empty())
 			{
 				for (auto& attachment : instance->m_ColorAttachments)
@@ -190,7 +190,7 @@ namespace XYZ {
 
 			if (instance->m_ColorAttachmentFormats.size())
 			{
-				GLenum buffers[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+				const GLenum buffers[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 				glDrawBuffers((GLsizei)instance->m_ColorAttachmentFormats.size(), buffers);
 			}
 			else
@@ -296,7 +296,7 @@ namespace XYZ {
 	}
 	void OpenGLFramebuffer::attachColorTexture(ColorAttachment& attachment, int samples, GLenum format, uint32_t width, uint32_t height, int index)
 	{
-		bool multisampled = samples > 1;
+		const bool multisampled = samples > 1;
 		if (multisampled)
 		{
 			glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, format, width, height, GL_FALSE);

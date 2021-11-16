@@ -34,7 +34,7 @@ namespace XYZ {
 	{
 		m_EntitiesInUse++;
 		XYZ_ASSERT(m_EntitiesInUse < sc_MaxEntity, "Too many entities in existence.");
-		uint32_t entity = (uint32_t)m_Bitset.CreateSignature();
+		const uint32_t entity = (uint32_t)m_Bitset.CreateSignature();
 		if (m_Versions.size() <= entity)
 		{
 			m_Versions.resize(entity + 1);

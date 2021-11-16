@@ -25,7 +25,7 @@ namespace XYZ {
 		{
 			uint32_t counter = 0;
 			auto& connections = m_Vertices[source].Connections;
-			for (auto it : connections)
+			for (const auto it : connections)
 			{
 				if (it == destination)
 				{
@@ -39,7 +39,7 @@ namespace XYZ {
 		{
 			uint32_t counter = 0;
 			auto& connections = m_Vertices[destination].Connections;
-			for (auto it : connections)
+			for (const auto it : connections)
 			{
 				if (it == source)
 				{

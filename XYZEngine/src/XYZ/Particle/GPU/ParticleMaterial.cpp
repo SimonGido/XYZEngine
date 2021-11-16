@@ -12,7 +12,7 @@ namespace XYZ {
 
 		if (outPosition)
 			*outPosition = end;
-		size_t length = end - str + 1;
+		const size_t length = end - str + 1;
 		return std::string(str, length);
 	}
 
@@ -24,24 +24,24 @@ namespace XYZ {
 
 		if (outPosition)
 			*outPosition = end;
-		size_t length = end - str + 1;
+		const size_t length = end - str + 1;
 		return std::string(str, length);
 	}
 
 	static ShaderStruct ParseStruct(const std::string& structSource)
 	{
 		ShaderStruct shaderStruct;
-		std::vector<std::string> tokens = std::move(Utils::SplitString(structSource, "\t\n"));
-		std::vector<std::string> structName = std::move(Utils::SplitString(tokens[0], " \r"));
+		const std::vector<std::string> tokens = std::move(Utils::SplitString(structSource, "\t\n"));
+		const std::vector<std::string> structName = std::move(Utils::SplitString(tokens[0], " \r"));
 		shaderStruct.Name = structName[1];
 		for (size_t i = 1; i < tokens.size(); ++i)
 		{
 			std::vector<std::string> variables = std::move(Utils::SplitString(tokens[i], " \r"));
 			if (variables.size() > 1)
 			{
-				ShaderUniformDataType type = StringToShaderDataType(variables[0]);
+				const ShaderUniformDataType type = StringToShaderDataType(variables[0]);
 				variables[1].pop_back(); // pop ;
-				std::string name = variables[1];
+				const std::string name = variables[1];
 				shaderStruct.Variables.push_back({name, type});
 			}
 		}
@@ -85,17 +85,17 @@ namespace XYZ {
 		auto nameIt = (++bufferIt);
 		buffer.Name = *nameIt;
 
-		auto externalIt = std::find(nameIt, split.end(), "external");
+		const auto externalIt = std::find(nameIt, split.end(), "external");
 		if (externalIt != split.end())
 			return false;
 
-		auto indirectIt = std::find(nameIt, split.end(), "indirect");
+		const auto indirectIt = std::find(nameIt, split.end(), "indirect");
 		buffer.Indirect = (indirectIt != split.end());
 
-		auto renderIt = std::find(nameIt, split.end(), "render");
+		const auto renderIt = std::find(nameIt, split.end(), "render");
 		buffer.RenderBuffer = (renderIt != split.end());
 
-		auto particleIt = std::find(nameIt, split.end(), "particle");
+		const auto particleIt = std::find(nameIt, split.end(), "particle");
 		buffer.ParticleBuffer = (particleIt != split.end());
 
 	
@@ -148,7 +148,7 @@ namespace XYZ {
 		if (bindingIt != split.end())
 			counter.Binding = atoi((++bindingIt)->c_str());
 
-		auto offsetIt = std::find(bindingIt, split.end(), "offset");
+		const auto offsetIt = std::find(bindingIt, split.end(), "offset");
 		if (offsetIt != split.end())
 			counter.Offset = atoi(offsetIt->c_str());
 
@@ -376,7 +376,7 @@ namespace XYZ {
 		m_Counters.clear();
 		m_DrawCommand.Reset();
 
-		glm::vec3 quad[4] = {
+		const glm::vec3 quad[4] = {
 			glm::vec3(-0.5f, -0.5f, 0.0f),
 			glm::vec3( 0.5f, -0.5f, 0.0f),
 			glm::vec3( 0.5f,  0.5f, 0.0f),
@@ -393,7 +393,7 @@ namespace XYZ {
 		m_UniformBuffer.Allocate(m_ComputeShader->GetVSUniformList().Size);
 		m_UniformBuffer.ZeroInitialize();
 
-		uint32_t squareIndpar[] = { 0, 1, 2, 2, 3, 0 };
+		const uint32_t squareIndpar[] = { 0, 1, 2, 2, 3, 0 };
 		Ref<XYZ::IndexBuffer> squareIBpar;
 		squareIBpar = XYZ::IndexBuffer::Create(squareIndpar, sizeof(squareIndpar) / sizeof(uint32_t));
 		m_VertexArray->SetIndexBuffer(squareIBpar);

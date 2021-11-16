@@ -36,7 +36,7 @@ namespace XYZ {
 		inline size_t Hash() const
 		{
 			size_t seed = 0;
-			std::hash<size_t> hasher;
+			const std::hash<size_t> hasher;
 			seed ^= hasher(m_Data1) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 			seed ^= hasher(m_Data2) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 			seed ^= hasher(m_Data3) + 0x9e3779b9 + (seed << 6) + (seed >> 2);

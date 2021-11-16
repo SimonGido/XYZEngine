@@ -68,13 +68,13 @@ namespace XYZ {
 			return NULL;
 		}
 
-		HANDLE file = CreateFileA(filepath, FILE_READ_ACCESS, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+		const HANDLE file = CreateFileA(filepath, FILE_READ_ACCESS, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 		if (file == INVALID_HANDLE_VALUE)
 		{
 			return NULL;
 		}
 
-		DWORD file_size = GetFileSize(file, NULL);
+		const DWORD file_size = GetFileSize(file, NULL);
 		if (file_size == INVALID_FILE_SIZE)
 		{
 			CloseHandle(file);
@@ -104,7 +104,7 @@ namespace XYZ {
 		{
 			return NULL;
 		}
-		auto assemb = mono_assembly_load_from_full(image, filepath, &status, 0);
+		const auto assemb = mono_assembly_load_from_full(image, filepath, &status, 0);
 		free(file_data);
 		CloseHandle(file);
 		mono_image_close(image);
@@ -164,7 +164,7 @@ namespace XYZ {
 			XYZ_CORE_ERROR("mono_object_new failed");
 
 		mono_runtime_object_init(instance);
-		uint32_t handle = mono_gchandle_new(instance, false);
+		const uint32_t handle = mono_gchandle_new(instance, false);
 		return handle;
 	}
 
@@ -202,7 +202,7 @@ namespace XYZ {
 		s_SceneContext.Reset();
 		for (auto it : s_EntityClassMap)
 		{
-			for (auto it2 : it.second)
+			for (const auto it2 : it.second)
 				delete it2.second;
 		}
 	}
@@ -229,7 +229,7 @@ namespace XYZ {
 		MonoAssembly* appAssembly = nullptr;
 		appAssembly = LoadAssembly(path);
 
-		auto appAssemblyImage = GetAssemblyImage(appAssembly);
+		const auto appAssemblyImage = GetAssemblyImage(appAssembly);
 		ScriptEngineRegistry::RegisterAll();
 
 		if (cleanup)
@@ -248,7 +248,7 @@ namespace XYZ {
 		Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
 		XYZ_ASSERT(scene.Raw(), "No active scene!");
 
-		ComponentStorage<ScriptComponent>& scriptStorage = scene->m_ECS.GetStorage<ScriptComponent>();
+		const ComponentStorage<ScriptComponent>& scriptStorage = scene->m_ECS.GetStorage<ScriptComponent>();
 		for (size_t i = 0; i < scriptStorage.Size(); ++i)
 		{
 			InitScriptEntity(SceneEntity{ scriptStorage.GetEntityAtIndex(i), scene.Raw() });
@@ -265,19 +265,19 @@ namespace XYZ {
 	}
 	void ScriptEngine::OnCreateEntity(SceneEntity entity)
 	{
-		ScriptComponent& scriptComponent = entity.GetComponent<ScriptComponent>();
+		const ScriptComponent& scriptComponent = entity.GetComponent<ScriptComponent>();
 		if (scriptComponent.ScriptClass->OnCreateMethod)
 			CallMethod(GetInstance(scriptComponent.ScriptClass->Handle), scriptComponent.ScriptClass->OnCreateMethod);
 	}
 	void ScriptEngine::OnDestroyEntity(SceneEntity entity)
 	{
-		ScriptComponent& scriptComponent = entity.GetComponent<ScriptComponent>();
+		const ScriptComponent& scriptComponent = entity.GetComponent<ScriptComponent>();
 		if (scriptComponent.ScriptClass->OnDestroyMethod)
 			CallMethod(GetInstance(scriptComponent.ScriptClass->Handle), scriptComponent.ScriptClass->OnDestroyMethod);
 	}
 	void ScriptEngine::OnUpdateEntity(SceneEntity entity, Timestep ts)
 	{
-		auto& scriptComponent = entity.GetComponent<ScriptComponent>();
+		const auto& scriptComponent = entity.GetComponent<ScriptComponent>();
 		if (scriptComponent.ScriptClass->OnUpdateMethod)
 		{
 			void* args[] = { &ts };
@@ -304,7 +304,7 @@ namespace XYZ {
 
 	static PublicFieldType GetXYZFieldType(MonoType* monoType)
 	{
-		int type = mono_type_get_type(monoType);
+		const int type = mono_type_get_type(monoType);
 		switch (type)
 		{
 		case MONO_TYPE_R4: return PublicFieldType::Float;
@@ -313,7 +313,7 @@ namespace XYZ {
 		case MONO_TYPE_STRING: return PublicFieldType::String;
 		case MONO_TYPE_VALUETYPE:
 		{
-			char* name = mono_type_get_name(monoType);
+			const char* name = mono_type_get_name(monoType);
 			if (strcmp(name, "XYZ.Vector2") == 0) return PublicFieldType::Vec2;
 			if (strcmp(name, "XYZ.Vector3") == 0) return PublicFieldType::Vec3;
 			if (strcmp(name, "XYZ.Vector4") == 0) return PublicFieldType::Vec4;
@@ -382,7 +382,7 @@ namespace XYZ {
 					continue;
 
 				MonoType* fieldType = mono_field_get_type(iter);
-				PublicFieldType xyzFieldType = GetXYZFieldType(fieldType);
+				const PublicFieldType xyzFieldType = GetXYZFieldType(fieldType);
 
 				// TODO: Attributes
 				MonoCustomAttrInfo* attr = mono_custom_attrs_from_field(scriptComponent.ScriptClass->Class, iter);

@@ -32,7 +32,7 @@ namespace XYZ {
 				asio::post(m_AsioContext, [this, msg] {
 
 					// If queue is not empty it is not writing message , it has no task so start new task ( writeHeader )
-					bool writingMessage = !m_MessagesOut.Empty();
+					const bool writingMessage = !m_MessagesOut.Empty();
 					m_MessagesOut.PushBack(msg);
 					if (!writingMessage)
 						writeHeader();

@@ -53,9 +53,9 @@ namespace XYZ {
 	static void SetupFullscreenQuad()
 	{
 		s_Data.m_FullscreenQuadVertexArray = VertexArray::Create();
-		float x = -1;
-		float y = -1;
-		float width = 2, height = 2;
+		const float x = -1;
+		const float y = -1;
+		const float width = 2, height = 2;
 		struct QuadVertex
 		{
 			glm::vec3 Position;
@@ -76,7 +76,7 @@ namespace XYZ {
 		data[3].Position = glm::vec3(x, y + height, 0.0f);
 		data[3].TexCoord = glm::vec2(0, 1);
 
-		BufferLayout layout = {
+		const BufferLayout layout = {
 			{ 0, ShaderDataType::Float3, "a_Position" },
 			{ 1, ShaderDataType::Float2, "a_TexCoord" }
 		};
@@ -84,7 +84,7 @@ namespace XYZ {
 		s_Data.m_FullscreenQuadVertexBuffer->SetLayout(layout);
 		s_Data.m_FullscreenQuadVertexArray->AddVertexBuffer(s_Data.m_FullscreenQuadVertexBuffer);
 
-		uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
+		const uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
 		s_Data.m_FullscreenQuadIndexBuffer = IndexBuffer::Create(indices, 6);
 		s_Data.m_FullscreenQuadVertexArray->SetIndexBuffer(s_Data.m_FullscreenQuadIndexBuffer);
 	}
@@ -130,7 +130,7 @@ namespace XYZ {
 		s_Data.m_FullscreenQuadIndexBuffer.Reset();
 		s_Data.m_ShaderLibrary.Reset();
 		WaitAndRender();
-		auto queue = s_Data.m_CommandQueue;
+		const auto queue = s_Data.m_CommandQueue;
 		queue->Swap();
 		WaitAndRender();
 		BlockRenderThread();
@@ -280,7 +280,7 @@ namespace XYZ {
 	{
 		s_Data.m_Stats.Reset();
 
-		auto queue = s_Data.m_CommandQueue;
+		const auto queue = s_Data.m_CommandQueue;
 		queue->Swap();
 		#ifdef RENDER_THREAD_ENABLED
 		s_Data.m_RenderThreadFinished = s_Data.m_Pool.PushJob<bool>([queue]() {

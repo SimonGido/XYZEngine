@@ -39,7 +39,7 @@ namespace XYZ {
 		else
 		{
 			Ref<VulkanContext> context = Renderer::GetAPIContext();
-			VulkanSwapChain& swapChain = context->GetSwapChain();
+			const VulkanSwapChain& swapChain = context->GetSwapChain();
 			m_RenderPass = swapChain.GetVulkanRenderPass();
 
 			m_ClearValues.clear();

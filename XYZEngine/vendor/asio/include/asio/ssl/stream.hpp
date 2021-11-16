@@ -570,7 +570,7 @@ public:
   std::size_t write_some(const ConstBufferSequence& buffers)
   {
     asio::error_code ec;
-    std::size_t n = write_some(buffers, ec);
+    const std::size_t n = write_some(buffers, ec);
     asio::detail::throw_error(ec, "write_some");
     return n;
   }
@@ -657,7 +657,7 @@ public:
   std::size_t read_some(const MutableBufferSequence& buffers)
   {
     asio::error_code ec;
-    std::size_t n = read_some(buffers, ec);
+    const std::size_t n = read_some(buffers, ec);
     asio::detail::throw_error(ec, "read_some");
     return n;
   }

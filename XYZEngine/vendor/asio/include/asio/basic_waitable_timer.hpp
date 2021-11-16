@@ -408,7 +408,7 @@ public:
   std::size_t cancel()
   {
     asio::error_code ec;
-    std::size_t s = impl_.get_service().cancel(impl_.get_implementation(), ec);
+    const std::size_t s = impl_.get_service().cancel(impl_.get_implementation(), ec);
     asio::detail::throw_error(ec, "cancel");
     return s;
   }
@@ -470,7 +470,7 @@ public:
   std::size_t cancel_one()
   {
     asio::error_code ec;
-    std::size_t s = impl_.get_service().cancel_one(
+    const std::size_t s = impl_.get_service().cancel_one(
         impl_.get_implementation(), ec);
     asio::detail::throw_error(ec, "cancel_one");
     return s;
@@ -554,7 +554,7 @@ public:
   std::size_t expires_at(const time_point& expiry_time)
   {
     asio::error_code ec;
-    std::size_t s = impl_.get_service().expires_at(
+    const std::size_t s = impl_.get_service().expires_at(
         impl_.get_implementation(), expiry_time, ec);
     asio::detail::throw_error(ec, "expires_at");
     return s;
@@ -617,7 +617,7 @@ public:
   std::size_t expires_after(const duration& expiry_time)
   {
     asio::error_code ec;
-    std::size_t s = impl_.get_service().expires_after(
+    const std::size_t s = impl_.get_service().expires_after(
         impl_.get_implementation(), expiry_time, ec);
     asio::detail::throw_error(ec, "expires_after");
     return s;
@@ -660,7 +660,7 @@ public:
   std::size_t expires_from_now(const duration& expiry_time)
   {
     asio::error_code ec;
-    std::size_t s = impl_.get_service().expires_from_now(
+    const std::size_t s = impl_.get_service().expires_from_now(
         impl_.get_implementation(), expiry_time, ec);
     asio::detail::throw_error(ec, "expires_from_now");
     return s;

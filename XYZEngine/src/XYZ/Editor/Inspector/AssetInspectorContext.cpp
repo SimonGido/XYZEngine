@@ -137,7 +137,7 @@ namespace XYZ {
 			Helper::EndColumns();
 
 			float panelWidth = ImGui::GetContentRegionAvail().x;
-			float aspect = (float)texture->GetHeight() / (float)texture->GetWidth();
+			const float aspect = (float)texture->GetHeight() / (float)texture->GetWidth();
 			ImGui::Image((void*)(uint64_t)texture->GetRendererID(), { panelWidth, panelWidth * aspect }, { 0, 1 }, { 1, 0 });
 		}
 	}

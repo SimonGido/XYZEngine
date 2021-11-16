@@ -293,7 +293,7 @@ public:
   {
     boost::array<Buffer, 2> result = {{
       Buffer(buffers_[0]), Buffer(buffers_[1]) }};
-    std::size_t buffer0_size = result[0].size();
+    const std::size_t buffer0_size = result[0].size();
     result[0] = asio::buffer(result[0] + total_consumed_, max_size);
     result[1] = asio::buffer(
         result[1] + (total_consumed_ < buffer0_size
@@ -345,7 +345,7 @@ public:
   {
     std::array<Buffer, 2> result = {{
       Buffer(buffers_[0]), Buffer(buffers_[1]) }};
-    std::size_t buffer0_size = result[0].size();
+    const std::size_t buffer0_size = result[0].size();
     result[0] = asio::buffer(result[0] + total_consumed_, max_size);
     result[1] = asio::buffer(
         result[1] + (total_consumed_ < buffer0_size

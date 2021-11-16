@@ -55,7 +55,7 @@ namespace XYZ {
 
 		static void CreateCacheDirectoryIfNeeded()
 		{
-			std::string cacheDirectory = GetCacheDirectory();
+			const std::string cacheDirectory = GetCacheDirectory();
 			if (!std::filesystem::exists(cacheDirectory))
 				std::filesystem::create_directories(cacheDirectory);
 		}
@@ -115,14 +115,14 @@ namespace XYZ {
 	{
 		auto stageInfos = m_PipelineShaderStageCreateInfos;
 		Renderer::Submit([stageInfos]() {
-			VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			const VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 			for (const auto& info : stageInfos)
 				vkDestroyShaderModule(device, info.module, nullptr);
 		});
 	}
 	void VulkanShader::Reload(bool forceCompile)
 	{
-		std::string source = readFile(m_AssetPath);
+		const std::string source = readFile(m_AssetPath);
 		preProcess(source);
 		std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>> shaderData;
 		compileOrGetVulkanBinaries(shaderData, forceCompile);
@@ -143,7 +143,7 @@ namespace XYZ {
 	}
 	void VulkanShader::reflect(VkShaderStageFlagBits stage, const std::vector<uint32_t>& shaderData)
 	{
-		spirv_cross::Compiler compiler(shaderData);
+		const spirv_cross::Compiler compiler(shaderData);
 		spirv_cross::ShaderResources resources = compiler.get_shader_resources();
 		for (const auto& resource : resources.push_constant_buffers)
 		{
@@ -174,10 +174,10 @@ namespace XYZ {
 
 			for (uint32_t i = 0; i < memberCount; i++)
 			{
-				auto type = compiler.get_type(bufferType.member_types[i]);
+				const auto type = compiler.get_type(bufferType.member_types[i]);
 				const auto& memberName = compiler.get_member_name(bufferType.self, i);
-				auto size = (uint32_t)compiler.get_declared_struct_member_size(bufferType, i);
-				auto offset = compiler.type_struct_member_offset(bufferType, i) - bufferOffset;
+				const auto size = (uint32_t)compiler.get_declared_struct_member_size(bufferType, i);
+				const auto offset = compiler.type_struct_member_offset(bufferType, i) - bufferOffset;
 
 				std::string uniformName = fmt::format("{}.{}", bufferName, memberName);
 				buffer.Uniforms[uniformName] = ShaderUniform(uniformName, Utils::SPIRTypeToShaderUniformType(type), size, offset);
@@ -245,7 +245,7 @@ namespace XYZ {
 	}
 	void VulkanShader::createProgram(const std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& shaderData)
 	{
-		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+		const VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 		m_PipelineShaderStageCreateInfos.clear();
 		for (auto [stage, data] : shaderData)
 		{
@@ -271,18 +271,18 @@ namespace XYZ {
 	void VulkanShader::preProcess(const std::string& source)
 	{
 		const char* TypeToken = "#type";
-		size_t TypeTokenLength = strlen(TypeToken);
+		const size_t TypeTokenLength = strlen(TypeToken);
 		size_t pos = source.find(TypeToken, 0);
 		while (pos != std::string::npos)
 		{
-			size_t eol = source.find_first_of("\r\n", pos);
+			const size_t eol = source.find_first_of("\r\n", pos);
 			XYZ_ASSERT(eol != std::string::npos, "Syntax error");
-			size_t begin = pos + TypeTokenLength + 1;
+			const size_t begin = pos + TypeTokenLength + 1;
 			std::string Type = source.substr(begin, eol - begin);
 			VkShaderStageFlagBits stageType = Utils::ShaderComponentFromString(Type);
 			XYZ_ASSERT(stageType, "Invalid shader Component specified");
 
-			size_t nextLinePos = source.find_first_not_of("\r\n", eol);
+			const size_t nextLinePos = source.find_first_not_of("\r\n", eol);
 			pos = source.find(TypeToken, nextLinePos);
 			m_ShaderSources[stageType] = source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos));
 		}
@@ -294,7 +294,7 @@ namespace XYZ {
 		if (in)
 		{
 			in.seekg(0, std::ios::end);
-			size_t size = in.tellg();
+			const size_t size = in.tellg();
 			if (size != -1)
 			{
 				result.resize(size);

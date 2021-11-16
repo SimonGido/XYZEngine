@@ -89,7 +89,7 @@ public:
   static void* allocate(Purpose, thread_info_base* this_thread,
       std::size_t size)
   {
-    std::size_t chunks = (size + chunk_size - 1) / chunk_size;
+    const std::size_t chunks = (size + chunk_size - 1) / chunk_size;
 
     if (this_thread && this_thread->reusable_memory_[Purpose::mem_index])
     {
@@ -160,7 +160,7 @@ public:
     if (has_pending_exception_ > 0)
     {
       has_pending_exception_ = 0;
-      std::exception_ptr ex(
+      const std::exception_ptr ex(
           ASIO_MOVE_CAST(std::exception_ptr)(
             pending_exception_));
       std::rethrow_exception(ex);

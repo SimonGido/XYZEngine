@@ -39,7 +39,7 @@ namespace XYZ {
 				else if (field.GetType() == PublicFieldType::String)
 				{
 					char* value = field.GetStoredValue<char*>();
-					size_t size = strlen(value);
+					const size_t size = strlen(value);
 					if (ImGui::InputText(id.c_str(), value, size))
 					{
 						field.SetStoredValue<char*>(value);

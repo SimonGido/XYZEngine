@@ -14,14 +14,14 @@ namespace XYZ::Utils {
 
 	std::string GetFilenameWithoutExtension(const std::string& filepath)
 	{
-		size_t offset = filepath.find_last_of("/\\") + 1;
-		size_t count = filepath.find_last_of('.') - offset;
+		const size_t offset = filepath.find_last_of("/\\") + 1;
+		const size_t count = filepath.find_last_of('.') - offset;
 		return filepath.substr(offset, count);
 	}
 
 	std::string GetDirectoryPath(const std::string& filepath)
 	{
-		size_t offset = filepath.find_last_of("/\\");
+		const size_t offset = filepath.find_last_of("/\\");
 		return filepath.substr(0, offset);
 	}
 
@@ -78,8 +78,8 @@ namespace XYZ::Utils {
 		const char* t = str;
 		while (t = strstr(t, token.c_str()))
 		{
-			bool left = str == t || isspace(t[-1]);
-			bool right = !t[token.size()] || isspace(t[token.size()]);
+			const bool left = str == t || isspace(t[-1]);
+			const bool right = !t[token.size()] || isspace(t[token.size()]);
 			if (left && right)
 				return t;
 			t += token.size();

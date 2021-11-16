@@ -98,7 +98,7 @@ namespace XYZ {
 				glEnable(GL_DEBUG_OUTPUT);
 
 				glDebugMessageCallback(OpenglCallbackFunction, nullptr);
-				GLuint unusedIds = 0;
+				const GLuint unusedIds = 0;
 				glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, &unusedIds, true);
 			}
 			glfwSetErrorCallback(GLFWErrorCallback);

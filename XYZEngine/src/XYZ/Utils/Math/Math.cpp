@@ -8,11 +8,11 @@ namespace XYZ {
 	namespace Math {
 		std::pair<glm::vec2, glm::vec2> CalculateVelocitiesAfterContact(const glm::vec2& firstVelocity, const glm::vec2& secondVelocity, float firstMass, float secondMass)
 		{
-			glm::vec2 firstMomentum = firstMass * firstVelocity;
-			glm::vec2 secondMomentum = secondMass * secondVelocity;
+			const glm::vec2 firstMomentum = firstMass * firstVelocity;
+			const glm::vec2 secondMomentum = secondMass * secondVelocity;
 
 			glm::vec2 momentum = firstMomentum + secondMomentum;
-			glm::vec2 totalVelocity = firstVelocity + secondVelocity;
+			const glm::vec2 totalVelocity = firstVelocity + secondVelocity;
 
 			glm::vec2 secondFinal = (firstMass * totalVelocity) / (firstMass + secondMass);
 			glm::vec2 firstFinal = secondFinal - totalVelocity;

@@ -36,7 +36,7 @@ namespace XYZ {
 		m_Properties.clear();
 		const ECSManager& ecs    = *m_Entity.GetECS();
 		const Relationship& rel  = m_Entity.GetComponent<Relationship>();
-		std::vector<Entity> tree = rel.GetTree(ecs);
+		const std::vector<Entity> tree = rel.GetTree(ecs);
 
 		for (const Entity node : tree)
 		{

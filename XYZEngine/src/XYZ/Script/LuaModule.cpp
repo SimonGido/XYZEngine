@@ -205,10 +205,10 @@ namespace XYZ {
 			if (m_Reload)
 				m_Reload = !tryReload();
 		}
-		auto res = m_L["OnUpdate"](ts.GetSeconds());
+		const auto res = m_L["OnUpdate"](ts.GetSeconds());
 		if (!res.valid())
 		{
-			sol::error err = res;
+			const sol::error err = res;
 			XYZ_CORE_ERROR("Exception OnUpdate: ", err.what());
 		}
 	}
@@ -230,8 +230,8 @@ namespace XYZ {
 
 	bool LuaModule::tryReload()
 	{
-		std::string fullPath = m_Directory + "/" + m_FileName;
-		auto it = fopen(fullPath.c_str(), "r");
+		const std::string fullPath = m_Directory + "/" + m_FileName;
+		const auto it = fopen(fullPath.c_str(), "r");
 		if (it)
 		{
 			fclose(it);

@@ -99,9 +99,9 @@ namespace XYZ {
 		{
 			m_Animation->AddProperty<ComponentType, T>(path, valName, valIndex);
 			if (!m_Sequencer.ItemTypeExists(refl.sc_ClassName))
-				m_Sequencer.AddItemType(refl.sc_ClassName);	
+				m_Sequencer.AddItemType(refl.sc_ClassName);
 
-			int itemTypeIndex = m_Sequencer.GetItemTypeIndex(refl.sc_ClassName);
+			const int itemTypeIndex = m_Sequencer.GetItemTypeIndex(refl.sc_ClassName);
 			if (!m_Sequencer.ItemExists(itemTypeIndex, path))
 				m_Sequencer.AddItem(itemTypeIndex, path);
 

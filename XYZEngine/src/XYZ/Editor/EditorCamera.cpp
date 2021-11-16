@@ -39,17 +39,17 @@ namespace XYZ {
 				m_Yaw = m_Pitch = 0.0f; // Lock the camera's rotation
 
 			m_Position = calculatePosition();
-			glm::quat orientation = GetOrientation();
+			const glm::quat orientation = GetOrientation();
 			m_ViewMatrix = glm::translate(glm::mat4(1.0f), m_Position) * glm::toMat4(orientation);
 			m_ViewMatrix = glm::inverse(m_ViewMatrix);
 		}
 
 		std::pair<float, float> EditorCamera::panSpeed() const
 		{
-			float x = std::min(m_ViewportWidth / 1000.0f, 2.4f); // max = 2.4f
+			const float x = std::min(m_ViewportWidth / 1000.0f, 2.4f); // max = 2.4f
 			float xFactor = 0.0366f * (x * x) - 0.1778f * x + 0.3021f;
 
-			float y = std::min(m_ViewportHeight / 1000.0f, 2.4f); // max = 2.4f
+			const float y = std::min(m_ViewportHeight / 1000.0f, 2.4f); // max = 2.4f
 			float yFactor = 0.0366f * (y * y) - 0.1778f * y + 0.3021f;
 
 			return { xFactor, yFactor };
@@ -74,7 +74,7 @@ namespace XYZ {
 			if (Input::IsKeyPressed(KeyCode::KEY_LEFT_CONTROL))
 			{
 				const glm::vec2& mouse{ Input::GetMouseX(), Input::GetMouseY() };
-				glm::vec2 delta = (mouse - m_InitialMousePosition) * 0.003f;
+				const glm::vec2 delta = (mouse - m_InitialMousePosition) * 0.003f;
 				m_InitialMousePosition = mouse;
 
 				if (Input::IsMouseButtonPressed(MouseCode::MOUSE_BUTTON_MIDDLE))
@@ -96,7 +96,7 @@ namespace XYZ {
 
 		bool EditorCamera::onMouseScroll(MouseScrollEvent& e)
 		{
-			float delta = (float)e.GetOffsetY() * 0.1f;
+			const float delta = (float)e.GetOffsetY() * 0.1f;
 			mouseZoom(delta);
 			updateView();
 			return false;
@@ -111,7 +111,7 @@ namespace XYZ {
 
 		void EditorCamera::mouseRotate(const glm::vec2& delta)
 		{
-			float yawSign = GetUpDirection().y < 0 ? -1.0f : 1.0f;
+			const float yawSign = GetUpDirection().y < 0 ? -1.0f : 1.0f;
 			m_Yaw += yawSign * delta.x * rotationSpeed();
 			m_Pitch += delta.y * rotationSpeed();
 		}

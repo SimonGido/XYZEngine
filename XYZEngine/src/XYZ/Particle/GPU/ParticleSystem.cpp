@@ -14,14 +14,14 @@ namespace XYZ {
 	{
 		std::random_device dev;
 		std::mt19937 rng(dev());
-		std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+		const std::uniform_real_distribution<float> dist(0.0f, 1.0f);
 
 		std::vector<glm::vec2> points;
 		points.reserve(count);
 		for (uint32_t i = 0; i < count; ++i)
 		{
 			float r = radius * (float)sqrt(dist(rng));
-			float theta = dist(rng) * 2.0f * glm::pi<float>();
+			const float theta = dist(rng) * 2.0f * glm::pi<float>();
 			glm::vec2 point(
 				center.x + radius * cos(theta),
 				center.y + radius * sin(theta)
@@ -35,8 +35,8 @@ namespace XYZ {
 	{
 		std::random_device dev;
 		std::mt19937 rng(dev());
-		std::uniform_real_distribution<double> distX(min.x, max.x);
-		std::uniform_real_distribution<double> distY(min.y, max.y);
+		const std::uniform_real_distribution<double> distX(min.x, max.x);
+		const std::uniform_real_distribution<double> distY(min.y, max.y);
 		
 		std::vector<glm::vec2> points;
 		points.reserve(count);
@@ -70,15 +70,15 @@ namespace XYZ {
 	void ParticleSystem::Update(Timestep ts)
 	{
 		if (m_Playing)
-		{		
-			float raise = m_Rate * ts;
+		{
+			const float raise = m_Rate * ts;
 			
 			if (m_EmittedParticles + raise <= m_Renderer->m_ParticleMaterial->GetMaxParticles())
 				m_EmittedParticles += raise;
 			else
 				m_EmittedParticles = (float)m_Renderer->m_ParticleMaterial->GetMaxParticles();
-				
-			uint32_t emitted = (uint32_t)std::ceil(m_EmittedParticles);
+
+			const uint32_t emitted = (uint32_t)std::ceil(m_EmittedParticles);
 			m_Renderer->m_ParticleMaterial->SetParticleBuffersElementCount(emitted);
 			m_PlayTime += ts;
 		}

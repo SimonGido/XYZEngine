@@ -20,9 +20,9 @@ namespace XYZ {
 		{
 			m_End = std::chrono::high_resolution_clock::now();
 
-			auto start = std::chrono::time_point_cast<std::chrono::microseconds>(m_Start).time_since_epoch().count();
-			auto end = std::chrono::time_point_cast<std::chrono::microseconds>(m_End).time_since_epoch().count();
-			float ms = (end - start) * 0.001f;
+			const auto start = std::chrono::time_point_cast<std::chrono::microseconds>(m_Start).time_since_epoch().count();
+			const auto end = std::chrono::time_point_cast<std::chrono::microseconds>(m_End).time_since_epoch().count();
+			const float ms = (end - start) * 0.001f;
 			std::cout << "Time: " << ms << "ms" << " FPS: " << 1000.0f / ms << std::endl;
 		}
 	private:
@@ -42,9 +42,9 @@ namespace XYZ {
 		{
 			m_End = std::chrono::high_resolution_clock::now();
 
-			auto start = std::chrono::time_point_cast<std::chrono::microseconds>(m_Start).time_since_epoch().count();
-			auto end = std::chrono::time_point_cast<std::chrono::microseconds>(m_End).time_since_epoch().count();
-			float ms = (end - start) * 0.001f;
+			const auto start = std::chrono::time_point_cast<std::chrono::microseconds>(m_Start).time_since_epoch().count();
+			const auto end = std::chrono::time_point_cast<std::chrono::microseconds>(m_End).time_since_epoch().count();
+			const float ms = (end - start) * 0.001f;
 			return ms;
 		}
 	private:

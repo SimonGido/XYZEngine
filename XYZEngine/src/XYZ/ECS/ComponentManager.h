@@ -102,8 +102,8 @@ namespace XYZ {
 		template <typename T>
 		void createStorage()
 		{
-			size_t oldSize = m_Storages.size();
-			size_t id = (size_t)Component<T>::ID();
+			const size_t oldSize = m_Storages.size();
+			const size_t id = (size_t)Component<T>::ID();
 			if (oldSize <= id)
 				m_Storages.resize(id + 1);		
 			for (size_t i = oldSize; i < m_Storages.size(); ++i)

@@ -120,7 +120,7 @@ public:
       break;
     default:
       {
-        std::length_error ex("boolean socket option resize");
+        const std::length_error ex("boolean socket option resize");
         asio::detail::throw_exception(ex);
       }
     }
@@ -201,7 +201,7 @@ public:
   {
     if (s != sizeof(value_))
     {
-      std::length_error ex("integer socket option resize");
+      const std::length_error ex("integer socket option resize");
       asio::detail::throw_exception(ex);
     }
   }
@@ -298,7 +298,7 @@ public:
   {
     if (s != sizeof(value_))
     {
-      std::length_error ex("linger socket option resize");
+      const std::length_error ex("linger socket option resize");
       asio::detail::throw_exception(ex);
     }
   }

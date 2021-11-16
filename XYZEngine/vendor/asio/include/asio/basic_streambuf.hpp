@@ -286,7 +286,7 @@ protected:
     {
       if (pptr() == epptr())
       {
-        std::size_t buffer_size = pptr() - gptr();
+        const std::size_t buffer_size = pptr() - gptr();
         if (buffer_size < max_size_ && max_size_ - buffer_size < buffer_delta)
         {
           reserve(max_size_ - buffer_size);
@@ -335,7 +335,7 @@ protected:
       }
       else
       {
-        std::length_error ex("asio::streambuf too long");
+        const std::length_error ex("asio::streambuf too long");
         asio::detail::throw_exception(ex);
       }
     }

@@ -79,7 +79,7 @@ inline std::size_t write_at(SyncRandomAccessWriteDevice& d,
     uint64_t offset, const ConstBufferSequence& buffers)
 {
   asio::error_code ec;
-  std::size_t bytes_transferred = write_at(
+  const std::size_t bytes_transferred = write_at(
       d, offset, buffers, transfer_all(), ec);
   asio::detail::throw_error(ec, "write_at");
   return bytes_transferred;
@@ -100,8 +100,8 @@ inline std::size_t write_at(SyncRandomAccessWriteDevice& d,
     CompletionCondition completion_condition)
 {
   asio::error_code ec;
-  std::size_t bytes_transferred = write_at(d, offset, buffers,
-      ASIO_MOVE_CAST(CompletionCondition)(completion_condition), ec);
+  const std::size_t bytes_transferred = write_at(d, offset, buffers,
+                                                 ASIO_MOVE_CAST(CompletionCondition)(completion_condition), ec);
   asio::detail::throw_error(ec, "write_at");
   return bytes_transferred;
 }
@@ -126,7 +126,7 @@ inline std::size_t write_at(SyncRandomAccessWriteDevice& d,
     uint64_t offset, asio::basic_streambuf<Allocator>& b)
 {
   asio::error_code ec;
-  std::size_t bytes_transferred = write_at(d, offset, b, transfer_all(), ec);
+  const std::size_t bytes_transferred = write_at(d, offset, b, transfer_all(), ec);
   asio::detail::throw_error(ec, "write_at");
   return bytes_transferred;
 }
@@ -146,8 +146,8 @@ inline std::size_t write_at(SyncRandomAccessWriteDevice& d,
     CompletionCondition completion_condition)
 {
   asio::error_code ec;
-  std::size_t bytes_transferred = write_at(d, offset, b,
-      ASIO_MOVE_CAST(CompletionCondition)(completion_condition), ec);
+  const std::size_t bytes_transferred = write_at(d, offset, b,
+                                                 ASIO_MOVE_CAST(CompletionCondition)(completion_condition), ec);
   asio::detail::throw_error(ec, "write_at");
   return bytes_transferred;
 }

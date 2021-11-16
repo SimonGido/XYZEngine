@@ -13,7 +13,7 @@ namespace XYZ {
 	}
 	bool SpriteRendererInspector::OnEditorRender(Ref<EditorRenderer> renderer)
 	{
-		bool result = EditorHelper::DrawComponent<SpriteRenderer>("Sprite Renderer", m_Context, [&](auto& component) {
+		const bool result = EditorHelper::DrawComponent<SpriteRenderer>("Sprite Renderer", m_Context, [&](auto& component) {
 
 			EditorHelper::DrawColorControl("Color", component.Color);
 			// Material
@@ -85,10 +85,10 @@ namespace XYZ {
 
 	void SpriteRendererInspector::selectSubTextureDialog()
 	{
-		int flags = ImGuiWindowFlags_NoDocking;
+		const int flags = ImGuiWindowFlags_NoDocking;
 		if (ImGui::Begin("Select SubTexture", &m_DialogOpen, flags))
 		{
-			auto subTextures = std::move(AssetManager::FindAssetsByType(AssetType::SubTexture));
+			const auto subTextures = std::move(AssetManager::FindAssetsByType(AssetType::SubTexture));
 			for (const Ref<SubTexture>& subTexture : subTextures)
 			{
 				if (subTexture->IsLoaded)
@@ -111,10 +111,10 @@ namespace XYZ {
 	}
 	void SpriteRendererInspector::selectMaterialDialog()
 	{
-		int flags = ImGuiWindowFlags_NoDocking;
+		const int flags = ImGuiWindowFlags_NoDocking;
 		if (ImGui::Begin("Select Material", &m_DialogOpen, flags))
 		{
-			auto materials = std::move(AssetManager::FindAssetsByType(AssetType::Material));
+			const auto materials = std::move(AssetManager::FindAssetsByType(AssetType::Material));
 			for (const Ref<Material>& material : materials)
 			{
 				if (material->IsLoaded)

@@ -135,7 +135,7 @@ namespace XYZ
 		if (s_AssetTypes.find(extension) == s_AssetTypes.end())
 			return;
 
-		AssetType type = s_AssetTypes[extension];
+		const AssetType type = s_AssetTypes[extension];
 		Ref<Asset> asset = AssetSerializer::LoadAssetMeta(path, GUID(), type);
 		if (s_LoadedAssets.find(asset->Handle) != s_LoadedAssets.end())
 		{

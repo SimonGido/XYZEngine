@@ -118,7 +118,7 @@ namespace XYZ {
 					element.Component = ShaderDataType::Float4;
 					element.Size = 4 * 4;
 
-					BufferElement tmpElement = element;
+					const BufferElement tmpElement = element;
 					m_Elements.push_back(BufferElement(tmpElement.Index + 1, tmpElement.Component, "", tmpElement.Divisor));
 					m_Elements.push_back(BufferElement(tmpElement.Index + 2, tmpElement.Component, "", tmpElement.Divisor));
 					m_Elements.push_back(BufferElement(tmpElement.Index + 3, tmpElement.Component, "", tmpElement.Divisor));

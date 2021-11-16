@@ -59,8 +59,8 @@ namespace XYZ {
 			}
 			if (IS_SET(collisionFlags, Body))
 			{
-				glm::vec2 v1 = start + (normal * PointRadius);
-				glm::vec2 v2 = start - (normal * PointRadius);
+				const glm::vec2 v1 = start + (normal * PointRadius);
+				const glm::vec2 v2 = start - (normal * PointRadius);
 				if (Math::PointInTriangle(position, v1, v2, end))
 					return true;
 			}
@@ -71,11 +71,11 @@ namespace XYZ {
 			float rot;
 			glm::vec2 start, end, normal;
 			Decompose(start, end, rot, normal);
-			glm::vec2 origDir = glm::normalize(end - start);
-			glm::vec2 dir = glm::normalize(position - start);
+			const glm::vec2 origDir = glm::normalize(end - start);
+			const glm::vec2 dir = glm::normalize(position - start);
 			if (glm::distance(origDir, dir) > FLT_MIN)
 			{
-				float angle = glm::atan(dir.y, dir.x) - glm::atan(origDir.y, origDir.x);
+				const float angle = glm::atan(dir.y, dir.x) - glm::atan(origDir.y, origDir.x);
 				LocalTransform = glm::rotate(LocalTransform, angle, glm::vec3(0.0f, 0.0f, 1.0f));
 			}
 		}
@@ -84,8 +84,8 @@ namespace XYZ {
 			float rot;
 			glm::vec2 start, end, normal;
 			Decompose(start, end, rot, normal);
-			glm::mat4 translation = glm::inverse(parentSpace) * glm::translate(glm::vec3(position, 0.0f));
-			glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), rot, glm::vec3(0.0f, 0.0f, 1.0f));
+			const glm::mat4 translation = glm::inverse(parentSpace) * glm::translate(glm::vec3(position, 0.0f));
+			const glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), rot, glm::vec3(0.0f, 0.0f, 1.0f));
 			LocalTransform = translation * rotation;
 		}
 	}

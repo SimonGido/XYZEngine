@@ -88,7 +88,7 @@ namespace XYZ {
 		temp.push(FirstChild);
 		while (!temp.empty())
 		{
-			Entity entity = temp.top();
+			const Entity entity = temp.top();
 			temp.pop();
 			
 			const auto& relationship = ecs.GetComponent<Relationship>(entity);
@@ -168,7 +168,7 @@ namespace XYZ {
 	}
 	glm::mat4 TransformComponent::GetTransform() const
 	{
-		glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
+		const glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
 		return glm::translate(glm::mat4(1.0f), Translation)
 			* rotation
 			* glm::scale(glm::mat4(1.0f), Scale);

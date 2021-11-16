@@ -32,7 +32,7 @@ namespace XYZ {
 		XYZ_ASSERT(IsValid(entity), "Accesing invalid entity");
 		Entity result = m_EntityManager.CreateEntity();
 		Signature& signature = m_EntityManager.GetSignature(result);
-		for (auto storage : m_ComponentManager.m_Storages)
+		for (const auto storage : m_ComponentManager.m_Storages)
 		{
 			if (storage)
 			{
@@ -53,7 +53,7 @@ namespace XYZ {
 	void ECSManager::DestroyEntity(Entity entity)
 	{ 
 		XYZ_ASSERT(IsValid(entity), "Entity is invalid");
-		auto& signature = m_EntityManager.GetSignature(entity);
+		const auto& signature = m_EntityManager.GetSignature(entity);
 		m_ComponentManager.EntityDestroyed(entity, signature);
 		m_EntityManager.DestroyEntity(entity); 
 		executeOnDestruction();

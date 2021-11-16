@@ -358,7 +358,7 @@ public:
   std::size_t send(const ConstBufferSequence& buffers)
   {
     asio::error_code ec;
-    std::size_t s = this->impl_.get_service().send(
+    const std::size_t s = this->impl_.get_service().send(
         this->impl_.get_implementation(), buffers, 0, ec);
     asio::detail::throw_error(ec, "send");
     return s;
@@ -396,7 +396,7 @@ public:
       socket_base::message_flags flags)
   {
     asio::error_code ec;
-    std::size_t s = this->impl_.get_service().send(
+    const std::size_t s = this->impl_.get_service().send(
         this->impl_.get_implementation(), buffers, flags, ec);
     asio::detail::throw_error(ec, "send");
     return s;
@@ -564,7 +564,7 @@ public:
   std::size_t receive(const MutableBufferSequence& buffers)
   {
     asio::error_code ec;
-    std::size_t s = this->impl_.get_service().receive(
+    const std::size_t s = this->impl_.get_service().receive(
         this->impl_.get_implementation(), buffers, 0, ec);
     asio::detail::throw_error(ec, "receive");
     return s;
@@ -605,7 +605,7 @@ public:
       socket_base::message_flags flags)
   {
     asio::error_code ec;
-    std::size_t s = this->impl_.get_service().receive(
+    const std::size_t s = this->impl_.get_service().receive(
         this->impl_.get_implementation(), buffers, flags, ec);
     asio::detail::throw_error(ec, "receive");
     return s;
@@ -776,7 +776,7 @@ public:
   std::size_t write_some(const ConstBufferSequence& buffers)
   {
     asio::error_code ec;
-    std::size_t s = this->impl_.get_service().send(
+    const std::size_t s = this->impl_.get_service().send(
         this->impl_.get_implementation(), buffers, 0, ec);
     asio::detail::throw_error(ec, "write_some");
     return s;
@@ -889,7 +889,7 @@ public:
   std::size_t read_some(const MutableBufferSequence& buffers)
   {
     asio::error_code ec;
-    std::size_t s = this->impl_.get_service().receive(
+    const std::size_t s = this->impl_.get_service().receive(
         this->impl_.get_implementation(), buffers, 0, ec);
     asio::detail::throw_error(ec, "read_some");
     return s;

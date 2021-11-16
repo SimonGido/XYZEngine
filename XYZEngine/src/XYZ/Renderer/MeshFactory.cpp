@@ -6,7 +6,7 @@ namespace XYZ {
 
     Ref<Mesh> MeshFactory::CreateQuad(const glm::vec2& size, const BufferLayout& layout)
     {
-		Vertex quad[4] = {
+	    const Vertex quad[4] = {
 			Vertex{glm::vec3(-0.5f, -0.5f, 0.0f), glm::vec2(0.0f, 0.0f)},
 			Vertex{glm::vec3( 0.5f, -0.5f, 0.0f), glm::vec2(1.0f, 0.0f)},
 			Vertex{glm::vec3( 0.5f,  0.5f, 0.0f), glm::vec2(1.0f, 1.0f)},
@@ -27,7 +27,7 @@ namespace XYZ {
 	}
 	Ref<Mesh> MeshFactory::CreateBox(const glm::vec3& size, const BufferLayout& layout)
 	{
-		Vertex vertices[8] = {
+		const Vertex vertices[8] = {
 			Vertex{{ -size.x / 2.0f, -size.y / 2.0f,  size.z / 2.0f }, {}},  // Front Down Left
 			Vertex{{  size.x / 2.0f, -size.y / 2.0f,  size.z / 2.0f }, {}},  // Front Down Right 
 			Vertex{{  size.x / 2.0f,  size.y / 2.0f,  size.z / 2.0f }, {}},  // Front Up   Right
@@ -39,7 +39,7 @@ namespace XYZ {
 			Vertex{{ -size.x / 2.0f,  size.y / 2.0f, -size.z / 2.0f }, {}}	// Back  Up	  Left
 		};
 
-		Triangle triangles[12] = {
+		const Triangle triangles[12] = {
 			Triangle{0, 1, 2},
 			Triangle{2, 3, 0},
 			
@@ -71,7 +71,7 @@ namespace XYZ {
 	}
 	Ref<Mesh> MeshFactory::CreateCube(const glm::vec3& size, const BufferLayout& layout)
 	{
-		Vertex vertices[24] = {
+		const Vertex vertices[24] = {
 			// Front face
 			Vertex{{ -size.x / 2.0f, -size.y / 2.0f,  size.z / 2.0f }, glm::vec2(0.0f, 0.0f)},
 			Vertex{{  size.x / 2.0f, -size.y / 2.0f,  size.z / 2.0f }, glm::vec2(1.0f, 0.0f)},

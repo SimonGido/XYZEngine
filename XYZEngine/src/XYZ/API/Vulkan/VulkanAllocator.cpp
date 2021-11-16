@@ -109,7 +109,7 @@ namespace XYZ {
 		uint64_t usage = 0;
 		uint64_t budget = 0;
 
-		for (VmaBudget& b : budgets)
+		for (const VmaBudget& b : budgets)
 		{
 			usage += b.usage;
 			budget += b.budget;

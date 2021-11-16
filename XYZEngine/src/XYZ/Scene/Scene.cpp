@@ -53,7 +53,7 @@ namespace XYZ {
 
 	SceneEntity Scene::CreateEntity(const std::string& name, const GUID& guid)
 	{
-		Entity id = m_ECS.CreateEntity();
+		const Entity id = m_ECS.CreateEntity();
 		SceneEntity entity(id, this);
 		IDComponent idComp;
 		idComp.ID = guid;
@@ -72,7 +72,7 @@ namespace XYZ {
 	SceneEntity Scene::CreateEntity(const std::string& name, SceneEntity parent, const GUID& guid)
 	{
 		XYZ_ASSERT(parent.m_Scene == this, "");
-		Entity id = m_ECS.CreateEntity();
+		const Entity id = m_ECS.CreateEntity();
 		SceneEntity entity(id, this);
 		IDComponent idComp;
 		idComp.ID = guid;
@@ -130,7 +130,7 @@ namespace XYZ {
 		for (auto entityID : m_Entities)
 		{
 			SceneEntity entity(entityID, this);
-			TransformComponent& transform = entity.GetComponent<TransformComponent>();
+			const TransformComponent& transform = entity.GetComponent<TransformComponent>();
 			s_EditTransforms[entityID] = transform;
 		}
 
@@ -163,7 +163,7 @@ namespace XYZ {
 		{
 			ScopedLock<b2World> physicsWorld = m_PhysicsWorld.GetWorld();
 			auto& rigidStorage = m_ECS.GetStorage<RigidBody2DComponent>();
-			for (auto& body : rigidStorage)
+			for (const auto& body : rigidStorage)
 			{
 				physicsWorld->DestroyBody(static_cast<b2Body*>(body.RuntimeBody));
 			}
@@ -192,10 +192,10 @@ namespace XYZ {
 
 		m_ECS.CreateStorage<RigidBody2DComponent>();
 		auto rigidView = m_ECS.CreateView<TransformComponent, RigidBody2DComponent>();
-		for (auto entity : rigidView)
+		for (const auto entity : rigidView)
 		{
 			auto [transform, rigidBody] = rigidView.Get<TransformComponent, RigidBody2DComponent>(entity);
-			b2Body* body = static_cast<b2Body*>(rigidBody.RuntimeBody);
+			const b2Body* body = static_cast<b2Body*>(rigidBody.RuntimeBody);
 			transform.Translation.x = body->GetPosition().x;
 			transform.Translation.y = body->GetPosition().y;
 			transform.Rotation.z = body->GetAngle();
@@ -217,7 +217,7 @@ namespace XYZ {
 		}
 
 		auto particleViewCPU = m_ECS.CreateView<TransformComponent, ParticleComponentCPU>();
-		for (auto entity : particleViewCPU)
+		for (const auto entity : particleViewCPU)
 		{
 			auto [transform, particle] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU>(entity);
 			auto& system = particle.System;
@@ -225,7 +225,7 @@ namespace XYZ {
 		}
 		// TODO: This will be called only from script i guess
 		auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponentGPU>();
-		for (auto entity : particleView)
+		for (const auto entity : particleView)
 		{
 			auto [transform, particle] = particleView.Get<TransformComponent, ParticleComponentGPU>(entity);
 			auto& particleMaterial = particle.System->m_Renderer->m_ParticleMaterial;
@@ -442,7 +442,7 @@ namespace XYZ {
 		entities.push(m_SceneEntity);
 		while (!entities.empty())
 		{
-			Entity tmp = entities.top();
+			const Entity tmp = entities.top();
 			entities.pop();
 		
 			const Relationship& relation = m_ECS.GetComponent<Relationship>(tmp);

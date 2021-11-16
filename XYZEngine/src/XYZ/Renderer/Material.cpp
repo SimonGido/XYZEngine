@@ -25,7 +25,7 @@ namespace XYZ {
 
 	void Material::SetTexture(const std::string& name, const Ref<Texture>& texture, uint32_t index)
 	{
-		auto tex = findTexture(name);
+		const auto tex = findTexture(name);
 		XYZ_ASSERT(tex, "Material texture does not exist ", name.c_str());
 
 		if ((uint32_t)m_Textures.size() <= tex->Slot + index)

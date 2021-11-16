@@ -380,7 +380,7 @@ public:
         MutableBufferSequence> bufs(buffers);
 
     std::size_t addr_len = sender_endpoint.capacity();
-    std::size_t bytes_recvd = socket_ops::sync_recvfrom(
+    const std::size_t bytes_recvd = socket_ops::sync_recvfrom(
         impl.socket_, impl.state_, bufs.buffers(), bufs.count(),
         flags, sender_endpoint.data(), &addr_len, ec);
 

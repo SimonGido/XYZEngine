@@ -60,7 +60,7 @@ namespace XYZ {
 		if (m_Enabled)
 		{
 			m_Lights.clear();
-			uint32_t aliveParticles = data.GetAliveParticles();
+			const uint32_t aliveParticles = data.GetAliveParticles();
 			if (m_TransformEntity.IsValid()
 				&& m_LightEntity.IsValid()
 				&& m_LightEntity.HasComponent<PointLight2D>())
@@ -101,19 +101,19 @@ namespace XYZ {
 	{
 		if (m_Enabled)
 		{
-			uint32_t stageCount = m_Tiles.x * m_Tiles.y;
+			const uint32_t stageCount = m_Tiles.x * m_Tiles.y;
 			float columnSize	= 1.0f / m_Tiles.x;
 			float rowSize		= 1.0f / m_Tiles.y;
-			
-			uint32_t aliveParticles = data.GetAliveParticles();
+
+			const uint32_t aliveParticles = data.GetAliveParticles();
 			for (uint32_t i = 0; i < aliveParticles; ++i)
 			{
-				float ratio			= CalcRatio(m_CycleLength, data.m_Particle[i].LifeRemaining);
-				float stageProgress = ratio * stageCount;
-				
-				uint32_t index  = (uint32_t)floor(stageProgress);
-				float column	= index % m_Tiles.x;
-				float row		= index / m_Tiles.y;
+				const float ratio			= CalcRatio(m_CycleLength, data.m_Particle[i].LifeRemaining);
+				const float stageProgress = ratio * stageCount;
+
+				const uint32_t index  = (uint32_t)floor(stageProgress);
+				const float column	= index % m_Tiles.x;
+				const float row		= index / m_Tiles.y;
 				
 				data.m_TexOffset[i] = glm::vec2(column / m_Tiles.x, row / m_Tiles.y);
 			}
@@ -134,11 +134,11 @@ namespace XYZ {
 	{
 		if (m_Enabled)
 		{
-			uint32_t aliveParticles = data.GetAliveParticles();
-			glm::vec3 radians = glm::radians(m_EulerAngles);
+			const uint32_t aliveParticles = data.GetAliveParticles();
+			const glm::vec3 radians = glm::radians(m_EulerAngles);
 			for (uint32_t i = 0; i < aliveParticles; ++i)
 			{
-				float ratio = CalcRatio(m_CycleLength, data.m_Particle[i].LifeRemaining);
+				const float ratio = CalcRatio(m_CycleLength, data.m_Particle[i].LifeRemaining);
 				data.m_Rotation[i] = glm::quat(radians * ratio);
 			}
 		}
@@ -296,13 +296,13 @@ namespace XYZ {
 	}
 	void PhysicsModule::destroyBodies(b2World* world)
 	{
-		for (auto body : m_Bodies)
+		for (const auto body : m_Bodies)
 			world->DestroyBody(body);
 		m_Bodies.clear();
 	}
 	const b2Shape* PhysicsModule::prepareShape()
 	{
-		b2Shape* shape = nullptr;
+		const b2Shape* shape = nullptr;
 		switch (m_Shape)
 		{
 		case XYZ::PhysicsModule::Shape::Circle:

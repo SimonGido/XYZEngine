@@ -29,7 +29,7 @@ namespace XYZ {
 		uuid[36] = '\0';
 
 		UUID uid;
-		auto status = UuidFromStringA(uuid, &uid);
+		const auto status = UuidFromStringA(uuid, &uid);
 		XYZ_ASSERT(!status, "");
 
 		m_Data1 = uid.Data1;
@@ -57,7 +57,7 @@ namespace XYZ {
 		uuid[36] = '\0';
 
 		UUID uid;
-		auto status = UuidFromStringA(uuid, &uid);
+		const auto status = UuidFromStringA(uuid, &uid);
 		XYZ_ASSERT(!status, "");
 
 		m_Data1 = uid.Data1;

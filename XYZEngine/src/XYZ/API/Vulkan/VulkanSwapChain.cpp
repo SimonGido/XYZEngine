@@ -44,9 +44,9 @@ namespace XYZ {
 		:
 		m_WindowHandle(nullptr),
 		m_Instance(VK_NULL_HANDLE),
+		m_SwapChain(VK_NULL_HANDLE),
 		m_VulkanRenderPass(VK_NULL_HANDLE),
 		m_Surface(VK_NULL_HANDLE),
-		m_SwapChain(VK_NULL_HANDLE),
 		m_ImageCount(0),
 		m_CurrentImageIndex(0),
 		m_CurrentBufferIndex(0),
@@ -63,15 +63,15 @@ namespace XYZ {
 
 	void VulkanSwapChain::Destroy()
 	{
-		VkDevice device = m_Device->GetVulkanDevice();
+		const VkDevice device = m_Device->GetVulkanDevice();
 		destroySwapChain(m_SwapChain);
 		if (m_Surface)
 			vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
 
-		for (auto fence : m_WaitFences)
+		for (const auto fence : m_WaitFences)
 			vkDestroyFence(device, fence, nullptr);
 
-		for (auto& sempahore : m_Semaphores)
+		for (const auto& sempahore : m_Semaphores)
 		{
 			vkDestroySemaphore(device, sempahore.PresentComplete, nullptr);
 			vkDestroySemaphore(device, sempahore.RenderComplete, nullptr);
@@ -82,8 +82,8 @@ namespace XYZ {
 	}
 	void VulkanSwapChain::OnResize(uint32_t width, uint32_t height)
 	{
-		auto device = m_Device->GetVulkanDevice();
-		auto physicaldevice = m_Device->GetPhysicalDevice()->GetVulkanPhysicalDevice();
+		const auto device = m_Device->GetVulkanDevice();
+		const auto physicaldevice = m_Device->GetPhysicalDevice()->GetVulkanPhysicalDevice();
 		VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicaldevice, m_Surface, &m_SwapChainDetails.Capabilities));
 
 		vkDeviceWaitIdle(device);
@@ -95,8 +95,8 @@ namespace XYZ {
 	{
 		auto& queue = Renderer::GetRenderResourceReleaseQueue(m_CurrentBufferIndex);
 		queue.Execute();
-		
-		auto device = m_Device->GetVulkanDevice();
+
+		const auto device = m_Device->GetVulkanDevice();
 		VK_CHECK_RESULT(vkWaitForFences(m_Device->GetVulkanDevice(), 1, &m_WaitFences[m_CurrentBufferIndex], VK_TRUE, UINT64_MAX));
 		VK_CHECK_RESULT(vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_Semaphores[m_CurrentBufferIndex].PresentComplete, VK_NULL_HANDLE, &m_CurrentImageIndex));
 	}
@@ -105,7 +105,7 @@ namespace XYZ {
 		VkSubmitInfo submitInfo{};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-		VkPipelineStageFlags waitStages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		const VkPipelineStageFlags waitStages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 		submitInfo.waitSemaphoreCount = 1;
 		submitInfo.pWaitSemaphores = &m_Semaphores[m_CurrentBufferIndex].PresentComplete;
 		submitInfo.pWaitDstStageMask = &waitStages;
@@ -118,7 +118,7 @@ namespace XYZ {
 		
 		VK_CHECK_RESULT(vkResetFences(m_Device->GetVulkanDevice(), 1, &m_WaitFences[m_CurrentBufferIndex]));
 		VK_CHECK_RESULT(vkQueueSubmit(m_Device->GetGraphicsQueue(), 1, &submitInfo, m_WaitFences[m_CurrentBufferIndex]));
-		VkResult result = queuePresent(m_Device->GetGraphicsQueue(), m_CurrentImageIndex, m_Semaphores[m_CurrentBufferIndex].RenderComplete);
+		const VkResult result = queuePresent(m_Device->GetGraphicsQueue(), m_CurrentImageIndex, m_Semaphores[m_CurrentBufferIndex].RenderComplete);
 		if (result != VK_SUCCESS || result == VK_SUBOPTIMAL_KHR)
 		{
 			if (result == VK_ERROR_OUT_OF_DATE_KHR)
@@ -152,7 +152,7 @@ namespace XYZ {
 
 	void VulkanSwapChain::Create(uint32_t* width, uint32_t* height, bool vSync)
 	{
-		VkDevice device = m_Device->GetVulkanDevice();
+		const VkDevice device = m_Device->GetVulkanDevice();
 		const auto& capabilities = m_SwapChainDetails.Capabilities;
 		findSwapExtent(width, height);
 
@@ -167,7 +167,7 @@ namespace XYZ {
 			preTransform = capabilities.currentTransform;
 		}
 
-		VkSwapchainKHR oldSwapChain = m_SwapChain;
+		const VkSwapchainKHR oldSwapChain = m_SwapChain;
 
 		VkSwapchainCreateInfoKHR createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -271,7 +271,7 @@ namespace XYZ {
 
 	void VulkanSwapChain::getImages()
 	{
-		VkDevice device = m_Device->GetVulkanDevice();
+		const VkDevice device = m_Device->GetVulkanDevice();
 		vkGetSwapchainImagesKHR(device, m_SwapChain, &m_ImageCount, nullptr);
 		m_Images.resize(m_ImageCount);
 		vkGetSwapchainImagesKHR(device, m_SwapChain, &m_ImageCount, m_Images.data());
@@ -281,7 +281,7 @@ namespace XYZ {
 		m_Semaphores.resize( Renderer::GetConfiguration().FramesInFlight);
 		m_WaitFences.resize( Renderer::GetConfiguration().FramesInFlight);
 
-		VkDevice device = m_Device->GetVulkanDevice();
+		const VkDevice device = m_Device->GetVulkanDevice();
 		VkSemaphoreCreateInfo semaphoreInfo{};
 		semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 		
@@ -299,7 +299,7 @@ namespace XYZ {
 	}
 	void VulkanSwapChain::createSwapChainBuffers()
 	{
-		VkDevice device = m_Device->GetVulkanDevice();
+		const VkDevice device = m_Device->GetVulkanDevice();
 		m_Buffers.resize(m_Images.size());
 		for (size_t i = 0; i < m_Buffers.size(); ++i)
 		{
@@ -329,10 +329,10 @@ namespace XYZ {
 
 	void VulkanSwapChain::destroySwapChain(VkSwapchainKHR swapChain)
 	{
-		VkDevice device = m_Device->GetVulkanDevice();
+		const VkDevice device = m_Device->GetVulkanDevice();
 		if (swapChain != VK_NULL_HANDLE)
 		{
-			for (auto framebuffer : m_Framebuffers)
+			for (const auto framebuffer : m_Framebuffers)
 				vkDestroyFramebuffer(device, framebuffer, nullptr);
 
 			vkFreeCommandBuffers(device, m_CommandPool, static_cast<uint32_t>(m_CommandBuffers.size()), m_CommandBuffers.data());
@@ -348,8 +348,8 @@ namespace XYZ {
 
 	void VulkanSwapChain::createVulkanRenderPass()
 	{
-		VkDevice device = m_Device->GetVulkanDevice();
-		VkFormat depthFormat = m_Device->GetPhysicalDevice()->GetDepthFormat();
+		const VkDevice device = m_Device->GetVulkanDevice();
+		const VkFormat depthFormat = m_Device->GetPhysicalDevice()->GetDepthFormat();
 		// Render Pass
 		std::array<VkAttachmentDescription, 2> attachments = {};
 		// Color attachment
@@ -431,7 +431,7 @@ namespace XYZ {
 
 	void VulkanSwapChain::createCommandPool()
 	{
-		VkDevice device = m_Device->GetVulkanDevice();	
+		const VkDevice device = m_Device->GetVulkanDevice();	
 		VkCommandPoolCreateInfo cmdPoolInfo = {};
 		cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 		cmdPoolInfo.queueFamilyIndex = m_Device->GetPhysicalDevice()->GetQueueFamilyIndices().Graphics;
@@ -442,7 +442,7 @@ namespace XYZ {
 		commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		commandBufferAllocateInfo.commandPool = m_CommandPool;
 		commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		uint32_t count = m_ImageCount;
+		const uint32_t count = m_ImageCount;
 		commandBufferAllocateInfo.commandBufferCount = count;
 		m_CommandBuffers.resize(count);
 		VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, m_CommandBuffers.data()));
@@ -493,13 +493,13 @@ namespace XYZ {
 	{
 		const auto& capabilities = m_SwapChainDetails.Capabilities;
 		// Simply select the first composite alpha format available
-		std::vector<VkCompositeAlphaFlagBitsKHR> compositeAlphaFlags = {
+		const std::vector<VkCompositeAlphaFlagBitsKHR> compositeAlphaFlags = {
 			VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
 			VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR,
 			VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR,
 			VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR,
 		};
-		for (auto& compositeAlphaFlag : compositeAlphaFlags)
+		for (const auto& compositeAlphaFlag : compositeAlphaFlags)
 		{
 			if (capabilities.supportedCompositeAlpha & compositeAlphaFlag)
 			{

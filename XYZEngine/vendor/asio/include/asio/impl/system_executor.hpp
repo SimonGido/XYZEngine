@@ -94,7 +94,7 @@ template <typename Function>
 void basic_system_executor<Blocking, Relationship, Allocator>::do_execute(
     ASIO_MOVE_ARG(Function) f, execution::blocking_t::never_t) const
 {
-  system_context& ctx = detail::global<system_context>();
+    const system_context& ctx = detail::global<system_context>();
 
   // Allocate and construct an operation to wrap the function.
   typedef typename decay<Function>::type function_type;
@@ -143,7 +143,7 @@ void basic_system_executor<Blocking, Relationship, Allocator>::post(
 {
   typedef typename decay<Function>::type function_type;
 
-  system_context& ctx = detail::global<system_context>();
+  const system_context& ctx = detail::global<system_context>();
 
   // Allocate and construct an operation to wrap the function.
   typedef detail::executor_op<function_type, OtherAllocator> op;
@@ -164,7 +164,7 @@ void basic_system_executor<Blocking, Relationship, Allocator>::defer(
 {
   typedef typename decay<Function>::type function_type;
 
-  system_context& ctx = detail::global<system_context>();
+  const system_context& ctx = detail::global<system_context>();
 
   // Allocate and construct an operation to wrap the function.
   typedef detail::executor_op<function_type, OtherAllocator> op;

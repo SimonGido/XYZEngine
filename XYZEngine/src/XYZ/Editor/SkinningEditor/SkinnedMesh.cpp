@@ -50,7 +50,7 @@ namespace XYZ {
             }
             static glm::vec2 CalculateTexCoord(const glm::vec2& pos, const glm::vec2& size)
             {
-                glm::vec2 position = pos + size / 2.0f;
+                const glm::vec2 position = pos + size / 2.0f;
                 return glm::vec2(position.x / size.x, position.y / size.y);
             }
 
@@ -111,7 +111,7 @@ namespace XYZ {
             for (auto& subMesh : m_Submeshes)
             {
                 uint32_t counter = 0;
-                for (auto& vertex : subMesh.GeneratedVertices)
+                for (const auto& vertex : subMesh.GeneratedVertices)
                 {
                     if (glm::distance(pos, glm::vec2(vertex.Position.x, vertex.Position.y)) < PointRadius)
                     {
@@ -129,11 +129,11 @@ namespace XYZ {
             for (auto& subMesh : m_Submeshes)
             {
                 uint32_t counter = 0;
-                for (auto& triangle : subMesh.Triangles)
+                for (const auto& triangle : subMesh.Triangles)
                 {
-                    BoneVertex& first =  subMesh.GeneratedVertices[triangle.First];
-                    BoneVertex& second = subMesh.GeneratedVertices[triangle.Second];
-                    BoneVertex& third =  subMesh.GeneratedVertices[triangle.Third];
+                    const BoneVertex& first =  subMesh.GeneratedVertices[triangle.First];
+                    const BoneVertex& second = subMesh.GeneratedVertices[triangle.Second];
+                    const BoneVertex& third =  subMesh.GeneratedVertices[triangle.Third];
                     if (Math::PointInTriangle(pos, glm::vec2(first.Position.x, first.Position.y), glm::vec2(second.Position.x, second.Position.y), glm::vec2(third.Position.x, third.Position.y)))
                     {
                         subMesh.Triangles.erase(subMesh.Triangles.begin() + counter);
@@ -155,7 +155,7 @@ namespace XYZ {
                 for (auto& subMesh : m_Submeshes)
                 {
                     uint32_t counter = 0;
-                    for (auto& vertex : subMesh.VerticesLocalToBones)
+                    for (const auto& vertex : subMesh.VerticesLocalToBones)
                     {
                         BoneVertex vertexLocalToBone = vertex;
                         getPositionFromBones(vertexLocalToBone, hierarchy);
@@ -229,9 +229,9 @@ namespace XYZ {
                 tpp::Delaunay::Point sp2;
                 tpp::Delaunay::Point sp3;
 
-                int keypointIdx1 = generator.Org(fit, &sp1);
-                int keypointIdx2 = generator.Dest(fit, &sp2);
-                int keypointIdx3 = generator.Apex(fit, &sp3);
+                const int keypointIdx1 = generator.Org(fit, &sp1);
+                const int keypointIdx2 = generator.Dest(fit, &sp2);
+                const int keypointIdx3 = generator.Apex(fit, &sp3);
 
                 double x = 0.0f, y = 0.0f;
                 if (!trianglesHaveIndex(subMesh, (uint32_t)keypointIdx1))
@@ -301,7 +301,7 @@ namespace XYZ {
             }
             if (hasBone)
             {
-                glm::vec4 localToBone = glm::inverse(boneTransform) * glm::vec4(vertex.Position, 0.0f, 1.0f);
+                const glm::vec4 localToBone = glm::inverse(boneTransform) * glm::vec4(vertex.Position, 0.0f, 1.0f);
                 vertex.Position.x = localToBone.x;
                 vertex.Position.y = localToBone.y;
             }
@@ -321,7 +321,7 @@ namespace XYZ {
             }
             if (hasBone)
             {
-                glm::vec4 positionFromBone = boneTransform * glm::vec4(vertex.Position, 0.0f, 1.0f);
+                const glm::vec4 positionFromBone = boneTransform * glm::vec4(vertex.Position, 0.0f, 1.0f);
                 vertex.Position.x = positionFromBone.x;
                 vertex.Position.y = positionFromBone.y;
             }
@@ -352,7 +352,7 @@ namespace XYZ {
             uint32_t offset = 0;
             for (auto& subMesh : m_Submeshes)
             {
-                for (auto& triangle : subMesh.Triangles)
+                for (const auto& triangle : subMesh.Triangles)
                 {
                     indices.push_back(triangle.First + offset);
                     indices.push_back(triangle.Second + offset);
@@ -374,7 +374,7 @@ namespace XYZ {
                 {2, ShaderDataType::Float2, "a_TexCoord"}
                 });
             m_VertexArray->AddVertexBuffer(m_VertexBuffer);
-            Ref<IndexBuffer> ibo = IndexBuffer::Create(indices.data(), (uint32_t)indices.size());
+            const Ref<IndexBuffer> ibo = IndexBuffer::Create(indices.data(), (uint32_t)indices.size());
             m_VertexArray->SetIndexBuffer(ibo);
         }
         BoneVertex::BoneVertex()

@@ -59,9 +59,9 @@ namespace XYZ {
 
 
         // Init listener
-        ALfloat listenerPos[] = { 0.0,0.0,0.0 };
-        ALfloat listenerVel[] = { 0.0,0.0,0.0 };
-        ALfloat listenerOri[] = { 0.0,0.0,-1.0, 0.0,1.0,0.0 };
+        const ALfloat listenerPos[] = { 0.0,0.0,0.0 };
+        const ALfloat listenerVel[] = { 0.0,0.0,0.0 };
+        const ALfloat listenerOri[] = { 0.0,0.0,-1.0, 0.0,1.0,0.0 };
         alListenerfv(AL_POSITION, listenerPos);
         alListenerfv(AL_VELOCITY, listenerVel);
         alListenerfv(AL_ORIENTATION, listenerOri);
@@ -100,7 +100,7 @@ namespace XYZ {
 
 	AudioSource::AudioSource(void* data, uint32_t size, float length, int sampleRate, int channels)
 	{
-		auto alFormat = GetOpenALFormat(channels);
+		const auto alFormat = GetOpenALFormat(channels);
 		alGenBuffers(1, &m_BufferHandle);
 		alBufferData(m_BufferHandle, alFormat, data, size, sampleRate);
 

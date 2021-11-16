@@ -58,7 +58,7 @@ namespace XYZ {
 
             ImGuiTreeNodeFlags flags = ((m_Context->GetSelectedEntity() == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
             flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
-            bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
+            const bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
             dragAndDrop(entity);
             if (ImGui::IsItemClicked())
             {
@@ -106,10 +106,10 @@ namespace XYZ {
             {
                 if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_DRAG", 0))
                 {
-                    Entity child = *(Entity*)payload->Data;
+                    const Entity child = *(Entity*)payload->Data;
                     if (child != (Entity)entity)
                     {
-                        auto& parentTransform = m_Context->m_ECS.GetComponent<TransformComponent>(entity);
+                        const auto& parentTransform = m_Context->m_ECS.GetComponent<TransformComponent>(entity);
                         auto& transform = m_Context->m_ECS.GetComponent<TransformComponent>(child);
                       
                         transform.DecomposeTransform(transform.WorldTransform);      

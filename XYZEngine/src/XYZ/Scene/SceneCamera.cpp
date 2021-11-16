@@ -44,9 +44,9 @@ namespace XYZ {
 			m_ProjectionMatrix = glm::perspectiveFov(m_PerspectiveProps.PerspectiveFOV, (float)m_ViewportWidth, (float)m_ViewportHeight, m_PerspectiveProps.PerspectiveNear, m_PerspectiveProps.PerspectiveFar);
 			break;
 		case CameraProjectionType::Orthographic:
-			float aspect = (float)m_ViewportWidth / (float)m_ViewportHeight;
-			float w = m_OrthographicProps.OrthographicSize * aspect;
-			float h = m_OrthographicProps.OrthographicSize;
+			const float aspect = (float)m_ViewportWidth / (float)m_ViewportHeight;
+			const float w = m_OrthographicProps.OrthographicSize * aspect;
+			const float h = m_OrthographicProps.OrthographicSize;
 			m_ProjectionMatrix = glm::ortho(-w * 0.5f, w * 0.5f, -h * 0.5f, h * 0.5f);
 			break;
 		}

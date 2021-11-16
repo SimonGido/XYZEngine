@@ -22,7 +22,7 @@ namespace XYZ {
 	{
 		if (!GLFWInitialized)
 		{
-			int success = glfwInit();
+			const int success = glfwInit();
 
 			XYZ_ASSERT(success, "Could not initialize GLFW!");
 			GLFWInitialized = true;
@@ -74,21 +74,21 @@ namespace XYZ {
 
 		glfwSetWindowCloseCallback(m_Window, [](GLFWwindow* window)
 		{
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			const WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			WindowCloseEvent e;
 			data.This->Execute(e);
 		});
 
 		glfwSetCharCallback(m_Window, [](GLFWwindow* window, unsigned int key)
 		{
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			const WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			KeyTypedEvent e(key);
 			data.This->Execute(e);
 		});
 
 		glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int scancode, int action, int mods)
 		{
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			const WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
 			switch (action)
 			{
@@ -110,7 +110,7 @@ namespace XYZ {
 
 		glfwSetMouseButtonCallback(m_Window, [](GLFWwindow* window, int button, int action, int mods)
 		{
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			const WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			switch (action)
 			{
 			case GLFW_PRESS:
@@ -131,14 +131,14 @@ namespace XYZ {
 
 		glfwSetScrollCallback(m_Window, [](GLFWwindow* window, double xOffset, double yOffset)
 		{
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			const WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			MouseScrollEvent e((float)xOffset, (float)yOffset);
 			data.This->Execute(e);
 		});
 
 		glfwSetCursorPosCallback(m_Window, [](GLFWwindow* window, double xPos, double yPos)
 		{
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			const WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			MouseMovedEvent e((int)xPos, (int)yPos);
 			data.This->Execute(e);
 		});

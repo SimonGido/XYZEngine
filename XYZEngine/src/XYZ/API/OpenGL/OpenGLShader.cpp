@@ -61,7 +61,7 @@ namespace XYZ {
 
 		static void CreateCacheDirectoryIfNeeded()
 		{
-			std::string cacheDirectory = GetCacheDirectory();
+			const std::string cacheDirectory = GetCacheDirectory();
 			if (!std::filesystem::exists(cacheDirectory))
 				std::filesystem::create_directories(cacheDirectory);
 		}
@@ -97,24 +97,24 @@ namespace XYZ {
 
 		if (outPosition)
 			*outPosition = end;
-		size_t length = end - str + 1;
+		const size_t length = end - str + 1;
 		return std::string(str, length);
 	}
 	
 	static ShaderStruct ParseStruct(const std::string& structSource)
 	{
 		ShaderStruct shaderStruct;
-		std::vector<std::string> tokens = std::move(Utils::SplitString(structSource, "\t\n"));
-		std::vector<std::string> structName = std::move(Utils::SplitString(tokens[0], " \r"));
+		const std::vector<std::string> tokens = std::move(Utils::SplitString(structSource, "\t\n"));
+		const std::vector<std::string> structName = std::move(Utils::SplitString(tokens[0], " \r"));
 		shaderStruct.Name = structName[1];
 		for (size_t i = 1; i < tokens.size(); ++i)
 		{
 			std::vector<std::string> variables = std::move(Utils::SplitString(tokens[i], " \r"));
 			if (variables.size() > 1)
 			{
-				ShaderUniformDataType type = StringToShaderDataType(variables[0]);
+				const ShaderUniformDataType type = StringToShaderDataType(variables[0]);
 				variables[1].pop_back(); // pop ;
-				std::string name = variables[1];
+				const std::string name = variables[1];
 				shaderStruct.Variables.push_back({ name, type });
 			}
 		}
@@ -180,7 +180,7 @@ namespace XYZ {
 
 		if (outPosition)
 			*outPosition = end;
-		uint32_t length = end - str + 1;
+		const uint32_t length = end - str + 1;
 		return std::string(str, length);
 	}
 
@@ -382,8 +382,8 @@ namespace XYZ {
 
 
 	void OpenGLShader::Reload(bool forceCompile)
-	{	
-		std::string source = readFile(m_AssetPath);
+	{
+		const std::string source = readFile(m_AssetPath);
 		preProcess(source);
 		
 		compileOrGetVulkanBinaries();
@@ -408,7 +408,7 @@ namespace XYZ {
 	{
 		Ref<OpenGLShader> instance = this;
 		Renderer::Submit([instance, name, value]() {
-			auto location = glGetUniformLocation(instance->m_RendererID, name.c_str());
+			const auto location = glGetUniformLocation(instance->m_RendererID, name.c_str());
 			XYZ_ASSERT(location != -1, "Uniform ", name, " does not exist");
 			instance->uploadFloat(location, value);
 		});
@@ -418,7 +418,7 @@ namespace XYZ {
 	{
 		Ref<OpenGLShader> instance = this;
 		Renderer::Submit([instance, name, value]() {
-			auto location = glGetUniformLocation(instance->m_RendererID, name.c_str());
+			const auto location = glGetUniformLocation(instance->m_RendererID, name.c_str());
 			XYZ_ASSERT(location != -1, "Uniform ", name, " does not exist");
 			instance->uploadFloat2(location, value);
 			});
@@ -428,7 +428,7 @@ namespace XYZ {
 	{
 		Ref<OpenGLShader> instance = this;
 		Renderer::Submit([instance, name, value]() {
-			auto location = glGetUniformLocation(instance->m_RendererID, name.c_str());
+			const auto location = glGetUniformLocation(instance->m_RendererID, name.c_str());
 			XYZ_ASSERT(location != -1, "Uniform ", name, " does not exist");
 			instance->uploadFloat3(location, value);
 			});
@@ -438,7 +438,7 @@ namespace XYZ {
 	{
 		Ref<OpenGLShader> instance = this;
 		Renderer::Submit([instance, name, value]() {
-			auto location = glGetUniformLocation(instance->m_RendererID, name.c_str());
+			const auto location = glGetUniformLocation(instance->m_RendererID, name.c_str());
 			XYZ_ASSERT(location != -1, "Uniform ", name, " does not exist");
 			instance->uploadFloat4(location, value);
 			});
@@ -448,7 +448,7 @@ namespace XYZ {
 	{
 		Ref<OpenGLShader> instance = this;
 		Renderer::Submit([instance, name, value]() {
-			auto location = glGetUniformLocation(instance->m_RendererID, name.c_str());
+			const auto location = glGetUniformLocation(instance->m_RendererID, name.c_str());
 			XYZ_ASSERT(location != -1, "Uniform ", name, " does not exist");
 			instance->uploadInt(location, value);
 			});
@@ -458,7 +458,7 @@ namespace XYZ {
 	{
 		Ref<OpenGLShader> instance = this;
 		Renderer::Submit([instance, name, value]() {
-			auto location = glGetUniformLocation(instance->m_RendererID, name.c_str());
+			const auto location = glGetUniformLocation(instance->m_RendererID, name.c_str());
 			XYZ_ASSERT(location != -1, "Uniform ", name, " does not exist");
 			instance->uploadMat4(location, value);
 			});
@@ -527,17 +527,17 @@ namespace XYZ {
 	void OpenGLShader::preProcess(const std::string& source)
 	{
 		const char* TypeToken = "#type";
-		size_t TypeTokenLength = strlen(TypeToken);
+		const size_t TypeTokenLength = strlen(TypeToken);
 		size_t pos = source.find(TypeToken, 0);
 		while (pos != std::string::npos)
 		{
-			size_t eol = source.find_first_of("\r\n", pos);
+			const size_t eol = source.find_first_of("\r\n", pos);
 			XYZ_ASSERT(eol != std::string::npos, "Syntax error");
-			size_t begin = pos + TypeTokenLength + 1;
+			const size_t begin = pos + TypeTokenLength + 1;
 			std::string Type = source.substr(begin, eol - begin);
 			XYZ_ASSERT(ShaderComponentFromString(Type), "Invalid shader Component specified");
 
-			size_t nextLinePos = source.find_first_not_of("\r\n", eol);
+			const size_t nextLinePos = source.find_first_not_of("\r\n", eol);
 			pos = source.find(TypeToken, nextLinePos);
 			m_ShaderSources[ShaderComponentFromString(Type)] = source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos));
 			if (Type == "compute")
@@ -564,7 +564,7 @@ namespace XYZ {
 	
 	void OpenGLShader::reflect(unsigned int stage, const std::vector<uint32_t>& shaderData)
 	{
-		spirv_cross::Compiler compiler(shaderData);
+		const spirv_cross::Compiler compiler(shaderData);
 		spirv_cross::ShaderResources resources = compiler.get_shader_resources();
 
 		UniformList* uniforms = &m_VSUniformList;
@@ -598,7 +598,7 @@ namespace XYZ {
 				continue;
 			
 			auto& bufferType = compiler.get_type(resource.base_type_id);
-			auto bufferSize = (uint32_t)compiler.get_declared_struct_size(bufferType);
+			const auto bufferSize = (uint32_t)compiler.get_declared_struct_size(bufferType);
 			uint32_t memberCount = uint32_t(bufferType.member_types.size());
 			uint32_t bufferOffset = 0;
 			if (uniforms->Uniforms.size())
@@ -630,7 +630,7 @@ namespace XYZ {
 
 	void OpenGLShader::createProgram()
 	{
-		GLuint program = glCreateProgram();
+		const GLuint program = glCreateProgram();
 
 		std::vector<GLuint> shaderIDs;
 		for (auto&& [stage, spirv] : m_OpenGLSPIRV)
@@ -656,11 +656,11 @@ namespace XYZ {
 
 			glDeleteProgram(program);
 
-			for (auto id : shaderIDs)
+			for (const auto id : shaderIDs)
 				glDeleteShader(id);
 		}
 
-		for (auto id : shaderIDs)
+		for (const auto id : shaderIDs)
 		{
 			glDetachShader(program, id);
 			glDeleteShader(id);
@@ -788,7 +788,7 @@ namespace XYZ {
 		if (in)
 		{
 			in.seekg(0, std::ios::end);
-			size_t size = in.tellg();
+			const size_t size = in.tellg();
 			if (size != -1)
 			{
 				result.resize(size);

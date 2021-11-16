@@ -25,8 +25,8 @@ namespace XYZ {
 		Application::Get().GetThreadPool().PushJob<void>([this, ts]() {
 			XYZ_PROFILE_FUNC("PhysicsWorld2D::Step Job");
 			std::scoped_lock lock(m_Mutex);
-			int32_t velocityIterations = 6;
-			int32_t positionIterations = 2;
+			const int32_t velocityIterations = 6;
+			const int32_t positionIterations = 2;
 			m_World.Step(ts.GetSeconds(), velocityIterations, positionIterations);
 		});	
 	}

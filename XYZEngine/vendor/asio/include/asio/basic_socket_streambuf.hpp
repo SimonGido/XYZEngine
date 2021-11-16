@@ -501,7 +501,7 @@ protected:
         socket().native_non_blocking(true, ec_);
       detail::buffer_sequence_adapter<
         const_buffer, const_buffer> bufs(output_buffer);
-      detail::signed_size_type bytes = detail::socket_ops::send(
+      const detail::signed_size_type bytes = detail::socket_ops::send(
           socket().native_handle(), bufs.buffers(), bufs.count(), 0, ec_);
 
       // Check if operation succeeded.

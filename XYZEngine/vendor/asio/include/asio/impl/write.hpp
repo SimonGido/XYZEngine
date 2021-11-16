@@ -79,7 +79,7 @@ inline std::size_t write(SyncWriteStream& s, const ConstBufferSequence& buffers,
     >::type*)
 {
   asio::error_code ec;
-  std::size_t bytes_transferred = write(s, buffers, transfer_all(), ec);
+  const std::size_t bytes_transferred = write(s, buffers, transfer_all(), ec);
   asio::detail::throw_error(ec, "write");
   return bytes_transferred;
 }
@@ -103,8 +103,8 @@ inline std::size_t write(SyncWriteStream& s, const ConstBufferSequence& buffers,
     >::type*)
 {
   asio::error_code ec;
-  std::size_t bytes_transferred = write(s, buffers,
-      ASIO_MOVE_CAST(CompletionCondition)(completion_condition), ec);
+  const std::size_t bytes_transferred = write(s, buffers,
+                                              ASIO_MOVE_CAST(CompletionCondition)(completion_condition), ec);
   asio::detail::throw_error(ec, "write");
   return bytes_transferred;
 }
@@ -139,9 +139,9 @@ inline std::size_t write(SyncWriteStream& s,
     >::type*)
 {
   asio::error_code ec;
-  std::size_t bytes_transferred = write(s,
-      ASIO_MOVE_CAST(DynamicBuffer_v1)(buffers),
-      transfer_all(), ec);
+  const std::size_t bytes_transferred = write(s,
+                                              ASIO_MOVE_CAST(DynamicBuffer_v1)(buffers),
+                                              transfer_all(), ec);
   asio::detail::throw_error(ec, "write");
   return bytes_transferred;
 }
@@ -170,9 +170,9 @@ inline std::size_t write(SyncWriteStream& s,
     >::type*)
 {
   asio::error_code ec;
-  std::size_t bytes_transferred = write(s,
-      ASIO_MOVE_CAST(DynamicBuffer_v1)(buffers),
-      ASIO_MOVE_CAST(CompletionCondition)(completion_condition), ec);
+  const std::size_t bytes_transferred = write(s,
+                                              ASIO_MOVE_CAST(DynamicBuffer_v1)(buffers),
+                                              ASIO_MOVE_CAST(CompletionCondition)(completion_condition), ec);
   asio::detail::throw_error(ec, "write");
   return bytes_transferred;
 }
@@ -240,9 +240,9 @@ inline std::size_t write(SyncWriteStream& s, DynamicBuffer_v2 buffers,
     >::type*)
 {
   asio::error_code ec;
-  std::size_t bytes_transferred = write(s,
-      ASIO_MOVE_CAST(DynamicBuffer_v2)(buffers),
-      transfer_all(), ec);
+  const std::size_t bytes_transferred = write(s,
+                                              ASIO_MOVE_CAST(DynamicBuffer_v2)(buffers),
+                                              transfer_all(), ec);
   asio::detail::throw_error(ec, "write");
   return bytes_transferred;
 }
@@ -267,9 +267,9 @@ inline std::size_t write(SyncWriteStream& s, DynamicBuffer_v2 buffers,
     >::type*)
 {
   asio::error_code ec;
-  std::size_t bytes_transferred = write(s,
-      ASIO_MOVE_CAST(DynamicBuffer_v2)(buffers),
-      ASIO_MOVE_CAST(CompletionCondition)(completion_condition), ec);
+  const std::size_t bytes_transferred = write(s,
+                                              ASIO_MOVE_CAST(DynamicBuffer_v2)(buffers),
+                                              ASIO_MOVE_CAST(CompletionCondition)(completion_condition), ec);
   asio::detail::throw_error(ec, "write");
   return bytes_transferred;
 }

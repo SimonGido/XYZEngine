@@ -19,10 +19,10 @@ namespace XYZ {
 	}
 	void EditorHelper::DrawFloatControl(const char* label, const char* dragLabel, float& value, float resetValue)
 	{
-		ImGuiIO& io = ImGui::GetIO();
-		auto boldFont = io.Fonts->Fonts[0];
-		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-		ImVec2 buttonSize = { lineHeight , lineHeight };
+		const ImGuiIO& io = ImGui::GetIO();
+		const auto boldFont = io.Fonts->Fonts[0];
+		const float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+		const ImVec2 buttonSize = { lineHeight , lineHeight };
 
 		ImGui::PushFont(boldFont);
 		if (ImGui::Button(label, buttonSize))
@@ -36,7 +36,7 @@ namespace XYZ {
 
 	void EditorHelper::DrawVec2Control(const std::string& label, glm::vec2& values, float resetValue, float columnWidth)
 	{
-		ImGuiIO& io = ImGui::GetIO();
+		const ImGuiIO& io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 		BeginColumns(label.c_str());
 
@@ -58,7 +58,7 @@ namespace XYZ {
 	}
 	void EditorHelper::DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue, float columnWidth)
 	{
-		ImGuiIO& io = ImGui::GetIO();
+		const ImGuiIO& io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 		BeginColumns(label.c_str());
 
@@ -82,7 +82,7 @@ namespace XYZ {
 	}
 	void EditorHelper::DrawVec3ControlRGB(const std::string& label, glm::vec3& values, float resetValue, float columnWidth)
 	{
-		ImGuiIO& io = ImGui::GetIO();
+		const ImGuiIO& io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 		BeginColumns(label.c_str());
 
@@ -106,7 +106,7 @@ namespace XYZ {
 	}
 	void EditorHelper::DrawVec4Control(const std::string& label, const char* names[4], glm::vec4& values, float resetValue, float columnWidth)
 	{
-		ImGuiIO& io = ImGui::GetIO();
+		const ImGuiIO& io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 
 		BeginColumns(label.c_str(), 2, columnWidth);
@@ -139,7 +139,7 @@ namespace XYZ {
 	}
 	void EditorHelper::DrawVec4Control2x2(const std::string& label, const char* names[4], glm::vec4& values, float resetValue, float columnWidth)
 	{
-		ImGuiIO& io = ImGui::GetIO();
+		const ImGuiIO& io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 
 		BeginColumns(label.c_str(), 2, columnWidth);
@@ -170,7 +170,7 @@ namespace XYZ {
 	}
 	void EditorHelper::DrawColorControl(const std::string& label, glm::vec4& values, float resetValue, float columnWidth)
 	{
-		ImGuiIO& io = ImGui::GetIO();
+		const ImGuiIO& io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
 
 		BeginColumns(label.c_str());
@@ -197,7 +197,7 @@ namespace XYZ {
 	}
 	void EditorHelper::DrawSplitter(bool splitHorizontally, float thickness, float* size0, float* size1, float minSize0, float minSize1)
 	{
-		ImVec2 backup_pos = ImGui::GetCursorPos();
+		const ImVec2 backup_pos = ImGui::GetCursorPos();
 		if (splitHorizontally)
 			ImGui::SetCursorPosY(backup_pos.y + *size0);
 		else

@@ -94,7 +94,7 @@ namespace XYZ {
 					}
 					if (m_SelectedEntity.IsValid())
 					{
-						ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+						const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 						m_TimelineSectionWidth = viewportPanelSize.x - m_PropertySectionWidth - 5.0f;
 
 						EditorHelper::DrawSplitter(false, 5.0f, &m_PropertySectionWidth, &m_TimelineSectionWidth, 50.0f, 50.0f);
@@ -188,7 +188,7 @@ namespace XYZ {
 
 
 				ImGui::PopItemWidth();
-				int sequenceOptions = ImSequencer::SEQUENCER_EDIT_STARTEND;
+				const int sequenceOptions = ImSequencer::SEQUENCER_EDIT_STARTEND;
 				
 				ImSequencer::Sequencer(&m_Sequencer, &currentFrame, &m_Expanded, &m_SelectedEntry, &m_FirstFrame, sequenceOptions);
 				m_CurrentFrame = std::max(currentFrame, 0);
@@ -238,9 +238,9 @@ namespace XYZ {
 		{
 			if (m_SelectedEntry != -1)
 			{
-				int itemType = m_Sequencer.GetItemItemType(m_SelectedEntry);
+				const int itemType = m_Sequencer.GetItemItemType(m_SelectedEntry);
 				const char* itemTypeName = m_Sequencer.GetItemTypeName(itemType);
-				if (auto line = m_Sequencer.GetSelectedLine(m_SelectedEntry))
+				if (const auto line = m_Sequencer.GetSelectedLine(m_SelectedEntry))
 				{
 					size_t classIndex, variableIndex;
 					if (getClassAndVariableFromNames(itemTypeName, line->Name.c_str(), classIndex, variableIndex))
@@ -266,9 +266,9 @@ namespace XYZ {
 		{
 			if (m_SelectedEntry != -1)
 			{
-				int itemType = m_Sequencer.GetItemItemType(m_SelectedEntry);
+				const int itemType = m_Sequencer.GetItemItemType(m_SelectedEntry);
 				const char* itemTypeName = m_Sequencer.GetItemTypeName(itemType);
-				if (auto line = m_Sequencer.GetSelectedLine(m_SelectedEntry))
+				if (const auto line = m_Sequencer.GetSelectedLine(m_SelectedEntry))
 				{
 					m_Sequencer.AddKey(m_SelectedEntry, m_CurrentFrame);
 					size_t classIndex, variableIndex;
@@ -307,7 +307,7 @@ namespace XYZ {
 						m_OpenSelectionActions = false;
 					}
 
-					bool copied = !m_Sequencer.GetCopy().Points.empty();
+					const bool copied = !m_Sequencer.GetCopy().Points.empty();
 					if (!copied)
 					{
 						ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
@@ -342,7 +342,7 @@ namespace XYZ {
 			m_ClassMap.clear();
 			if (entity)
 			{
-				std::vector<Entity> tree = entity.GetComponent<Relationship>().GetTree(*entity.GetECS());
+				const std::vector<Entity> tree = entity.GetComponent<Relationship>().GetTree(*entity.GetECS());
 				Reflect::For([&](auto j) {
 					auto reflClass = ReflectedClasses::Get<j.value>();
 					Helper::AddToClassMap(reflClass, entity, m_Animation, m_ClassMap);

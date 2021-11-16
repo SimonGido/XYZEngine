@@ -35,9 +35,9 @@ namespace XYZ {
 		m_Window->RegisterCallback(Hook(&Application::OnEvent, this));	
 		m_Window->SetVSync(0);
 		
-		m_ImGuiLayer = nullptr;
-		//m_ImGuiLayer = ImGuiLayer::Create();
-		//m_LayerStack.PushOverlay(m_ImGuiLayer);
+		//m_ImGuiLayer = nullptr;
+		m_ImGuiLayer = ImGuiLayer::Create();
+		m_LayerStack.PushOverlay(m_ImGuiLayer);
 
 		Renderer::InitResources();
 		//AssetManager::Init();
@@ -50,7 +50,7 @@ namespace XYZ {
 
 	Application::~Application()
 	{
-		for (auto layer : m_LayerStack) // Make sure that layers are deleted before window
+		for (const auto layer : m_LayerStack) // Make sure that layers are deleted before window
 		{
 			layer->OnDetach();
 			delete layer;
@@ -130,7 +130,7 @@ namespace XYZ {
 
 	void Application::updateTimestep()
 	{
-		float time = static_cast<float>(glfwGetTime());
+		const float time = static_cast<float>(glfwGetTime());
 		m_Timestep = time - m_LastFrameTime;
 		m_LastFrameTime = time;
 	}

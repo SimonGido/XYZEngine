@@ -89,8 +89,8 @@ namespace XYZ {
         }
         float SequenceLineEdit::getLineY(size_t curveIndex)
         {
-            float spacing = 1.0f / (float)m_Lines.size();
-            float y = spacing * curveIndex;
+            const float spacing = 1.0f / (float)m_Lines.size();
+            const float y = spacing * curveIndex;
             return 1.0f - (spacing / 2.0f) - y;
         }
 	}

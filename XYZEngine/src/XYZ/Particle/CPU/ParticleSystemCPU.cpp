@@ -243,10 +243,10 @@ namespace XYZ {
 		XYZ_PROFILE_FUNC("ParticleSystemCPU::buildRenderData");
 		ScopedLock<RenderData> val = m_RenderThreadPass.Write();
 		ParticleRenderData* buffer = val->m_RenderParticleData.As<ParticleRenderData>();
-		uint32_t endId = data.m_Particles.GetAliveParticles();
+		const uint32_t endId = data.m_Particles.GetAliveParticles();
 		for (uint32_t i = 0; i < endId; ++i)
 		{
-			auto& particle = data.m_Particles.m_Particle[i];
+			const auto& particle = data.m_Particles.m_Particle[i];
 			buffer[i] = ParticleRenderData{
 				particle.Color,
 				particle.Position,

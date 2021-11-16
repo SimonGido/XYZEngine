@@ -42,7 +42,7 @@ struct strand_service::on_dispatch_exit
   {
     impl_->mutex_.lock();
     impl_->ready_queue_.push(impl_->waiting_queue_);
-    bool more_handlers = impl_->locked_ = !impl_->ready_queue_.empty();
+    const bool more_handlers = impl_->locked_ = !impl_->ready_queue_.empty();
     impl_->mutex_.unlock();
 
     if (more_handlers)
@@ -71,7 +71,7 @@ void strand_service::dispatch(strand_service::implementation_type& impl,
   ASIO_HANDLER_CREATION((this->context(),
         *p.p, "strand", impl, 0, "dispatch"));
 
-  bool dispatch_immediately = do_dispatch(impl, p.p);
+  const bool dispatch_immediately = do_dispatch(impl, p.p);
   operation* o = p.p;
   p.v = p.p = 0;
 
@@ -81,7 +81,7 @@ void strand_service::dispatch(strand_service::implementation_type& impl,
     call_stack<strand_impl>::context ctx(impl);
 
     // Ensure the next handler, if any, is scheduled on block exit.
-    on_dispatch_exit on_exit = { &io_context_impl_, impl };
+    const on_dispatch_exit on_exit = { &io_context_impl_, impl };
     (void)on_exit;
 
     op::do_complete(&io_context_impl_, o, asio::error_code(), 0);
@@ -93,7 +93,7 @@ template <typename Handler>
 void strand_service::post(strand_service::implementation_type& impl,
     Handler& handler)
 {
-  bool is_continuation =
+  const bool is_continuation =
     asio_handler_cont_helpers::is_continuation(handler);
 
   // Allocate and construct an operation to wrap the handler.

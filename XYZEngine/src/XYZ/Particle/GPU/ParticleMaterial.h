@@ -76,7 +76,7 @@ namespace XYZ {
 	template <typename T>
 	void ParticleMaterial::Set(const std::string& name, const T& val)
 	{
-		auto uni = findUniform(name);
+		const auto uni = findUniform(name);
 		XYZ_ASSERT(uni, "Particle material uniform does not exist ", name.c_str());
 		m_UniformBuffer.Write((unsigned char*)&val, uni->GetSize(), uni->GetOffset());
 	}
@@ -84,7 +84,7 @@ namespace XYZ {
 	template <typename T>
 	T& ParticleMaterial::Get(const std::string& name)
 	{
-		auto uni = findUniform(name);
+		const auto uni = findUniform(name);
 		XYZ_ASSERT(uni, "Particle material uniform does not exist ", name.c_str());
 		return *(T*)&m_UniformBuffer[uni->GetOffset()];
 	}

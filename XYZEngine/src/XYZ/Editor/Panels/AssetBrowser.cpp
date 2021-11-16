@@ -36,10 +36,10 @@ namespace XYZ {
 		{
 			registerFileTypeExtensions();
 			m_Texture = Texture2D::Create({}, "Assets/Textures/Gui/icons.png");
-			float divisor = 4.0f;
+			const float divisor = 4.0f;
 			float width  = (float)m_Texture->GetWidth();
 			float height = (float)m_Texture->GetHeight();
-			glm::vec2 size = glm::vec2(width / divisor, height / divisor);
+			const glm::vec2 size = glm::vec2(width / divisor, height / divisor);
 
 
 			m_TexCoords[Arrow]     = CalculateTexCoords(glm::vec2(0, 2), size, { width, height });
@@ -65,8 +65,8 @@ namespace XYZ {
 				m_ViewportFocused = ImGui::IsWindowFocused();
 				m_ViewportHovered = ImGui::IsWindowHovered();
 
-				bool backArrowAvailable = m_CurrentDirectory != std::filesystem::path(s_AssetPath);
-				bool frontArrowAvailable = !m_DirectoriesVisited.empty();
+				const bool backArrowAvailable = m_CurrentDirectory != std::filesystem::path(s_AssetPath);
+				const bool frontArrowAvailable = !m_DirectoriesVisited.empty();
 
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 				glm::vec4 arrowColor = backArrowAvailable ? m_Colors[ArrowColor] : m_Colors[ArrowInvalidColor];
@@ -92,7 +92,7 @@ namespace XYZ {
 				ImGui::SameLine();
 			
 				char tempPathBuffer[_MAX_PATH];
-				size_t length = m_CurrentDirectory.string().size();
+				const size_t length = m_CurrentDirectory.string().size();
 				memcpy(tempPathBuffer, m_CurrentDirectory.string().c_str(), length);
 				tempPathBuffer[length] = '\0';
 
@@ -124,11 +124,11 @@ namespace XYZ {
 			{
 				std::string fullFilePath = m_CurrentDirectory.string() + "/" + m_SelectedFile.string();
 				std::replace(fullFilePath.begin(), fullFilePath.end(), '\\', '/');
-				AssetType type = AssetManager::GetAssetTypeFromExtension(Utils::GetExtension(m_SelectedFile.string()));
+				const AssetType type = AssetManager::GetAssetTypeFromExtension(Utils::GetExtension(m_SelectedFile.string()));
 				if (type == AssetType::None)
 					return Ref<Asset>();
 
-				auto assetHandle = AssetManager::GetAssetHandle(fullFilePath);			
+				const auto assetHandle = AssetManager::GetAssetHandle(fullFilePath);			
 				switch (type)
 				{
 				case XYZ::AssetType::Scene:
@@ -179,14 +179,14 @@ namespace XYZ {
 		{
 			if (ImGui::MenuItem("Create Folder"))
 			{
-				std::string fullpath = getUniqueAssetName("New Folder", nullptr);
+				const std::string fullpath = getUniqueAssetName("New Folder", nullptr);
 				FileSystem::CreateFolder(fullpath);
 				AssetManager::CreateDirectory(fullpath);
 				ImGui::CloseCurrentPopup();
 			}
 			if (ImGui::MenuItem("Create Scene"))
 			{
-				std::string fullpath = getUniqueAssetName("New Scene", ".xyz");
+				const std::string fullpath = getUniqueAssetName("New Scene", ".xyz");
 				Ref<XYZ::Scene> scene = Ref<XYZ::Scene>::Create("");
 				scene->FilePath = fullpath;
 				scene->Type = AssetType::Scene;
@@ -195,7 +195,7 @@ namespace XYZ {
 			}
 			else if (ImGui::MenuItem("Create Animation"))
 			{
-				std::string fullpath = getUniqueAssetName("New Animation", ".anim");
+				const std::string fullpath = getUniqueAssetName("New Animation", ".anim");
 				Ref<XYZ::Animation> animation = Ref<XYZ::Animation>::Create();
 				animation->FilePath = fullpath;
 				animation->Type = AssetType::Animation;
@@ -209,9 +209,9 @@ namespace XYZ {
 				return;
 
 			static float padding = 32.0f;
-			float cellSize = m_IconSize.x + padding;
+			const float cellSize = m_IconSize.x + padding;
 
-			float panelWidth = ImGui::GetContentRegionAvail().x;
+			const float panelWidth = ImGui::GetContentRegionAvail().x;
 			int columnCount = (int)(panelWidth / cellSize);
 			if (columnCount < 1)
 				columnCount = 1;
@@ -232,7 +232,7 @@ namespace XYZ {
 				}
 				else
 				{
-					size_t index = extensionToTexCoordsIndex(Utils::GetExtension(name));
+					const size_t index = extensionToTexCoordsIndex(Utils::GetExtension(name));
 					if (index == Type::NumTypes)
 					{
 						ImGui::PopID();
@@ -270,14 +270,14 @@ namespace XYZ {
 			{
 				if (!m_RightClickedFile.empty())
 				{
-					std::string fileName = m_RightClickedFile.string();
+					const std::string fileName = m_RightClickedFile.string();
 					if (ImGui::MenuItem("Rename"))
 					{
 						ImGui::CloseCurrentPopup();
 					}
 					if (ImGui::MenuItem("Delete"))
-					{				
-						std::string parentDir = m_CurrentDirectory.string();
+					{
+						const std::string parentDir = m_CurrentDirectory.string();
 						std::string fullPath  = parentDir + "\\" + fileName;
 						//FileSystem::DeleteFileAtPath(fullPath);
 						ImGui::CloseCurrentPopup();
@@ -289,7 +289,7 @@ namespace XYZ {
 							std::string parentDir = m_CurrentDirectory.string();
 							std::replace(parentDir.begin(), parentDir.end(), '\\', '/');
 
-							std::string fullpath = getUniqueAssetName("New Texture", ".tex");
+							const std::string fullpath = getUniqueAssetName("New Texture", ".tex");
 							std::string fullImagePath = parentDir + "/" + fileName;
 							AssetManager::CreateAsset<Texture2D>(Utils::GetFilename(fullpath), parentDir, TextureSpecs{}, fullImagePath);
 							ImGui::CloseCurrentPopup();
