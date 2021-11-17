@@ -4,6 +4,29 @@
 #include "XYZ/Utils/StringUtils.h"
 
 namespace XYZ {
+	struct ShaderVariable
+	{
+		std::string				Name;
+		ShaderUniformDataType	Type;
+		size_t Size() const
+		{
+			return SizeOfUniformType(Type);
+		}
+	};
+
+	struct ShaderStruct
+	{
+		std::string					Name;
+		std::vector<ShaderVariable> Variables;
+		size_t Size() const
+		{
+			size_t result = 0;
+			for (auto& var : Variables)
+				result += var.Size();
+			return result;
+		}
+	};
+
 	static std::string GetStatement(const char* str, const char** outPosition)
 	{
 		const char* end = strstr(str, ";");

@@ -13,9 +13,17 @@ namespace XYZ {
 		glm::vec3 Color;
 	};
 	
+	struct TestCamera
+	{
+		glm::mat4 ViewProjection;
+		glm::mat4 View;
+		glm::vec4 Position;
+	};
+
 	EditorLayer::EditorLayer()
 		:
-		m_EditorOpen{ true, true }
+		m_EditorOpen{ true, true },
+		m_Camera(30.0f, 1.778f, 0.1f, 1000.0f)
 	{			
 	}
 
@@ -46,16 +54,31 @@ namespace XYZ {
 		m_IndexBuffer   = IndexBuffer::Create(indices.data(), indices.size(), IndexType::Uint16);
 		m_Pipeline		= Pipeline::Create({ m_Shader, layout, m_RenderPass });
 		m_RenderCommandBuffer = context->GetRenderCommandBuffer();
+		m_UniformBufferSet = Ref<UniformBufferSet>::Create(Renderer::GetConfiguration().FramesInFlight);
+		m_UniformBufferSet->Create(sizeof(TestCamera), 0, 0);
+	
+		const uint32_t windowWidth = Application::Get().GetWindow().GetWidth();
+		const uint32_t windowHeight = Application::Get().GetWindow().GetHeight();
+		m_Camera.SetViewportSize((float)windowWidth, (float)windowHeight);
 	}
 	
 	void EditorLayer::OnDetach()
 	{
-		
 	}
 	void EditorLayer::OnUpdate(Timestep ts)
 	{			
+		TestCamera camera;
+		camera.ViewProjection = m_Camera.GetViewProjection();
+		camera.View = m_Camera.GetViewMatrix();
+		camera.Position = glm::vec4(m_Camera.GetPosition(), 1.0f);
+
+		uint32_t currentFrame = Renderer::GetAPIContext()->GetCurrentFrame();
+		m_Camera.OnUpdate(ts);
 		m_RenderCommandBuffer->Begin();
-		Renderer::GetRendererAPI()->TestDraw(m_RenderPass, m_RenderCommandBuffer, m_Pipeline, m_VertexBuffer, m_IndexBuffer);
+		m_UniformBufferSet->Get(0, 0, currentFrame)->Update(&camera, sizeof(TestCamera), 0);
+		Renderer::BeginRenderPass(m_RenderCommandBuffer, m_RenderPass, false);
+		Renderer::RenderGeometry(m_RenderCommandBuffer, m_Pipeline, m_UniformBufferSet, m_VertexBuffer, m_IndexBuffer);
+		Renderer::EndRenderPass(m_RenderCommandBuffer);
 		m_RenderCommandBuffer->End();
 	}
 

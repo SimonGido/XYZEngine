@@ -53,12 +53,15 @@ namespace XYZ {
 
 
 	private:
-		Ref<Shader>		 m_Shader;
-		Ref<RenderPass>  m_RenderPass;
-		Ref<Pipeline>	 m_Pipeline;
-		Ref<Framebuffer> m_Framebuffer;
-		Ref<VertexBuffer> m_VertexBuffer;
-		Ref<IndexBuffer>  m_IndexBuffer;
+		Ref<Shader>				 m_Shader;
+		Ref<RenderPass>			 m_RenderPass;
+		Ref<Pipeline>			 m_Pipeline;
+		Ref<Framebuffer>		 m_Framebuffer;
+		Ref<VertexBuffer>		 m_VertexBuffer;
+		Ref<IndexBuffer>		 m_IndexBuffer;
 		Ref<RenderCommandBuffer> m_RenderCommandBuffer;
+		Ref<UniformBufferSet>    m_UniformBufferSet;
+
+		Editor::EditorCamera	 m_Camera;
 	};
 }

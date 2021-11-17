@@ -4,6 +4,7 @@
 #include "XYZ/Renderer/VertexArray.h"
 #include "XYZ/Renderer/Pipeline.h"
 #include "XYZ/Renderer/RenderCommandBuffer.h"
+#include "XYZ/Renderer/UniformBufferSet.h"
 
 namespace XYZ {
 
@@ -37,6 +38,7 @@ namespace XYZ {
 	public:
 		virtual ~RendererAPI() = default;
 		virtual void Init() = 0;
+		virtual void Shutdown() {}
 		virtual void SetDepth(bool enabled) {};
 		virtual void SetScissor(bool enabled) {};
 		virtual void SetLineThickness(float thickness) {};
@@ -50,23 +52,23 @@ namespace XYZ {
 		virtual void DrawIndexed(PrimitiveType type, uint32_t indexCount) {};
 		virtual void DrawInstanced(PrimitiveType type, uint32_t indexCount, uint32_t instanceCount, uint32_t offset = 0) {};
 		virtual void DrawInstancedIndirect(void* indirect) {};
-	
+
 		// New API
 		virtual void BeginFrame() {}
 		virtual void EndFrame() {}
-	
-		
-		virtual void TestDraw(const Ref<RenderPass>& renderPass, const Ref<RenderCommandBuffer>& commandBuffer, const Ref<Pipeline>& pipeline, const Ref<VertexBuffer>& vbo, const Ref<IndexBuffer>& ibo) {};
+		virtual void BeginRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer, const Ref<RenderPass>& renderPass, bool explicitClear = false) {};
+		virtual void EndRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer) {};
+		virtual void RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint32_t indexCount = 0) {};
 
 		static RenderAPICapabilities& GetCapabilities()
 		{
 			static RenderAPICapabilities caps;
 			return caps;
 		}
-		
+
 		static API GetAPI() { return s_API; }
 		/**
-		* @return unique_ptr to RendererAPI 
+		* @return unique_ptr to RendererAPI
 		*/
 	private:
 		static API s_API;

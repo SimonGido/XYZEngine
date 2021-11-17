@@ -76,11 +76,11 @@ namespace XYZ {
 		uint32_t			  GetCount()    const { return m_Count; }
 	
 	private:
-		std::string			  m_Name;
-		ShaderUniformDataType m_DataType;
-		uint32_t			  m_Size;
-		uint32_t			  m_Offset;
-		uint32_t			  m_Count;
+		std::string			  m_Name{};
+		ShaderUniformDataType m_DataType{};
+		uint32_t			  m_Size{};
+		uint32_t			  m_Offset{};
+		uint32_t			  m_Count{};
 	};
 
 
@@ -110,20 +110,6 @@ namespace XYZ {
 		uint32_t Count = 0;
 	};
 
-	struct ShaderVariable
-	{
-		std::string				Name;
-		ShaderUniformDataType	Type;
-		size_t Size() const;
-	};
-
-	struct ShaderStruct
-	{
-		std::string					Name;
-		std::vector<ShaderVariable> Variables;
-		size_t Size() const;
-	};
-
 	enum class ComputeBarrierType
 	{
 		ShaderStorageBarrier,
@@ -145,7 +131,6 @@ namespace XYZ {
 
 		virtual void Reload(bool forceCompile = false) = 0;
 		virtual void AddReloadCallback(Shader::ReloadCallback callback) = 0;
-
 
 		virtual void SetInt(const std::string& name, int value) {};
 		virtual void SetFloat(const std::string& name, float value) {};

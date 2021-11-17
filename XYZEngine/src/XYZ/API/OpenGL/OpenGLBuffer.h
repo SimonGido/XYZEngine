@@ -112,8 +112,10 @@ namespace XYZ {
 		virtual ~OpenGLUniformBuffer() override;
 		
 		virtual void Update(const void* data, uint32_t size, uint32_t offset = 0) override;
+		virtual uint32_t GetBinding() const { return m_Binding; }
 	private:
 		uint32_t m_RendererID = 0;
+		uint32_t m_Binding;
 	};
 
 }

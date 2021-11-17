@@ -6,6 +6,8 @@
 #include "XYZ/Scene/Components.h"
 #include "XYZ/Renderer/Mesh.h"
 #include "XYZ/Scene/EditorComponents.h"
+#include "XYZ/Renderer/RenderCommandBuffer.h"
+
 
 namespace XYZ {
 	
@@ -56,23 +58,28 @@ namespace XYZ {
 		std::vector<InstancedDrawMeshCommand> m_InstancedMeshCommandList;
 	};
 
-	
+	struct SceneRendererSpecification
+	{
+		bool SwapChainTarget = false;
+	};
 
 	class SceneRenderer : public RefCount
 	{
 	public:
-		SceneRenderer();
+		SceneRenderer(Ref<Scene> scene, SceneRendererSpecification specification = {});
 		~SceneRenderer();
 
-		
-
+		void Init();
+		void SetScene(Ref<Scene> scene);
 		void SetRenderer2D(const Ref<Renderer2D>& renderer2D);
 		void SetViewportSize(uint32_t width, uint32_t height);
-		void BeginScene(const Scene* scene, const SceneRendererCamera& camera);
-		void BeginScene(const Scene* scene, const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix, const glm::vec3& viewPosition);
+		void SetGridProperties(const GridProperties& props);
+		
+		void BeginScene(const SceneRendererCamera& camera);
+		void BeginScene(const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix, const glm::vec3& viewPosition);
 		void EndScene();
+		
 		void SubmitSprite(Ref<Material> material, Ref<SubTexture> subTexture, uint32_t sortLayer, const glm::vec4& color, const glm::mat4& transform);
-
 		void SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform);
 		void SubmitMeshInstanced(Ref<Mesh> mesh, const glm::mat4& transform, uint32_t count);
 		void SubmitMeshInstanced(Ref<Mesh> mesh, const std::vector<glm::mat4>& transforms, uint32_t count);
@@ -80,7 +87,6 @@ namespace XYZ {
 		void SubmitLight(const SpotLight2D& light, const glm::mat4& transform);
 		void SubmitLight(const PointLight2D& light, const glm::vec3& position);
 		void SubmitLight(const SpotLight2D& light, const glm::vec3& position);
-		void SetGridProperties(const GridProperties& props);
 
 		void UpdateViewportSize();
 
@@ -125,24 +131,27 @@ namespace XYZ {
 			glm::vec4 ViewPosition;
 		};
 
-		const Scene*		 m_ActiveScene;
-		Ref<Renderer2D>		 m_Renderer2D;
-		SceneRendererCamera  m_SceneCamera;
-		SceneRendererOptions m_Options;
-		GridProperties		 m_GridProps;
-		glm::ivec2			 m_ViewportSize;
+		SceneRendererSpecification m_Specification;
+		Ref<Scene>				   m_ActiveScene;
+		Ref<Renderer2D>			   m_Renderer2D;
+								   
+		SceneRendererCamera		   m_SceneCamera;
+		SceneRendererOptions	   m_Options;
+		GridProperties			   m_GridProps;
+		glm::ivec2				   m_ViewportSize;
 
+		Ref<RenderCommandBuffer>   m_CommandBuffer;
 		// Passes
-		Ref<RenderPass>		m_CompositePass;
-		Ref<RenderPass>		m_LightPass;
-		Ref<RenderPass>		m_GeometryPass;
-		Ref<RenderPass>		m_BloomPass;
-		Ref<UniformBuffer>  m_CameraUniformBuffer;
-
-		Ref<Shader>			m_CompositeShader;
-		Ref<Shader>			m_LightShader;
-		Ref<Shader>			m_BloomComputeShader;
-		Ref<Texture2D>		m_BloomTexture[3];
+		Ref<RenderPass>			   m_CompositePass;
+		Ref<RenderPass>			   m_LightPass;
+		Ref<RenderPass>			   m_GeometryPass;
+		Ref<RenderPass>			   m_BloomPass;
+		Ref<UniformBuffer>		   m_CameraUniformBuffer;
+								   
+		Ref<Shader>				   m_CompositeShader;
+		Ref<Shader>				   m_LightShader;
+		Ref<Shader>				   m_BloomComputeShader;
+		Ref<Texture2D>			   m_BloomTexture[3];
 
 		Ref<ShaderStorageBuffer> m_LightStorageBuffer;
 		Ref<ShaderStorageBuffer> m_SpotLightStorageBuffer;

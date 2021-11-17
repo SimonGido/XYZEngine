@@ -15,12 +15,12 @@
 #include <GL/glew.h>
 
 namespace XYZ {
-	
-	
+
+
 	struct RendererData
 	{
 		std::shared_ptr<ThreadPass<RenderCommandQueue>> m_CommandQueue;
-		RenderCommandQueue*								m_ResourceFreeQueues;
+		RenderCommandQueue* m_ResourceFreeQueues;
 		ThreadPool									    m_Pool;
 		Ref<APIContext>									m_APIContext;
 		Ref<ShaderLibrary>								m_ShaderLibrary;
@@ -28,7 +28,7 @@ namespace XYZ {
 		Ref<VertexArray>								m_FullscreenQuadVertexArray;
 		Ref<VertexBuffer>								m_FullscreenQuadVertexBuffer;
 		Ref<IndexBuffer>								m_FullscreenQuadIndexBuffer;
-														
+
 		std::future<bool>							    m_RenderThreadFinished;
 		RendererStats									m_Stats;
 		RendererConfiguration							m_Configuration;
@@ -96,28 +96,29 @@ namespace XYZ {
 		s_Data.m_CommandQueue = std::make_shared<ThreadPass<RenderCommandQueue>>();
 		s_Data.m_ResourceFreeQueues = new RenderCommandQueue[config.FramesInFlight];
 		s_Data.m_APIContext = APIContext::Create();
-		s_RendererAPI = InitRendererAPI();		
+		s_RendererAPI = InitRendererAPI();
+		s_RendererAPI->Init();
 	}
 
 	void Renderer::InitResources()
-	{		
+	{
 		Renderer::Submit([=]() {
 			s_RendererAPI->Init();
 		});
 		//SetupFullscreenQuad();
 
-		//s_Data.m_ShaderLibrary = Ref<ShaderLibrary>::Create();
-		//s_Data.m_ShaderLibrary->Load("Assets/Shaders/RendererCore/CompositeShader.glsl");
-		//s_Data.m_ShaderLibrary->Load("Assets/Shaders/RendererCore/LightShader.glsl");
-		//s_Data.m_ShaderLibrary->Load("Assets/Shaders/RendererCore/Bloom.glsl");
-		//s_Data.m_ShaderLibrary->Load("Assets/Shaders/RendererCore/Circle.glsl");
-		//
-		//s_Data.m_ShaderLibrary->Load("Assets/Shaders/DefaultLitShader.glsl");
-		//s_Data.m_ShaderLibrary->Load("Assets/Shaders/DefaultShader.glsl");
-		//s_Data.m_ShaderLibrary->Load("Assets/Shaders/LineShader.glsl");
-		//s_Data.m_ShaderLibrary->Load("Assets/Shaders/MousePicker.glsl");
-		//
-		//s_Data.m_ShaderLibrary->Load("Assets/Shaders/Particle/ParticleShaderCPU.glsl");
+		s_Data.m_ShaderLibrary = Ref<ShaderLibrary>::Create();
+		s_Data.m_ShaderLibrary->Load("Assets/Shaders/RendererCore/CompositeShader.glsl");
+		s_Data.m_ShaderLibrary->Load("Assets/Shaders/RendererCore/LightShader.glsl");
+		s_Data.m_ShaderLibrary->Load("Assets/Shaders/RendererCore/Bloom.glsl");
+		s_Data.m_ShaderLibrary->Load("Assets/Shaders/RendererCore/Circle.glsl");
+		
+		s_Data.m_ShaderLibrary->Load("Assets/Shaders/DefaultLitShader.glsl");
+		s_Data.m_ShaderLibrary->Load("Assets/Shaders/DefaultShader.glsl");
+		s_Data.m_ShaderLibrary->Load("Assets/Shaders/LineShader.glsl");
+		s_Data.m_ShaderLibrary->Load("Assets/Shaders/MousePicker.glsl");
+		
+		s_Data.m_ShaderLibrary->Load("Assets/Shaders/Particle/ParticleShaderCPU.glsl");
 		WaitAndRender();
 		BlockRenderThread();
 	}
@@ -129,21 +130,23 @@ namespace XYZ {
 		s_Data.m_FullscreenQuadVertexBuffer.Reset();
 		s_Data.m_FullscreenQuadIndexBuffer.Reset();
 		s_Data.m_ShaderLibrary.Reset();
+		s_RendererAPI->Shutdown();
+
 		WaitAndRender();
 		const auto queue = s_Data.m_CommandQueue;
 		queue->Swap();
 		WaitAndRender();
 		BlockRenderThread();
-
+		
 		for (uint32_t i = 0; i < s_Data.m_Configuration.FramesInFlight; i++)
 		{
 			auto& releaseQueue = Renderer::GetRenderResourceReleaseQueue(i);
 			releaseQueue.Execute();
 		}
-		
-		delete []s_Data.m_ResourceFreeQueues;
+		delete[]s_Data.m_ResourceFreeQueues;
 		s_Data.m_ResourceFreeQueues = nullptr;
 
+		
 		delete s_RendererAPI;
 		s_RendererAPI = nullptr;
 
@@ -175,21 +178,21 @@ namespace XYZ {
 	{
 		Renderer::Submit([=]() {
 			s_RendererAPI->SetLineThickness(thickness);
-			});
+		});
 	}
 
 	void Renderer::SetPointSize(float size)
 	{
 		Renderer::Submit([=]() {
 			s_RendererAPI->SetPointSize(size);
-			});
+		});
 	}
 
 	void Renderer::SetDepthTest(bool val)
 	{
 		Renderer::Submit([=]() {
 			s_RendererAPI->SetDepth(val);
-			});
+		});
 	}
 
 	void Renderer::DrawArrays(PrimitiveType type, uint32_t count)
@@ -197,7 +200,7 @@ namespace XYZ {
 		s_Data.m_Stats.DrawArraysCount++;
 		Renderer::Submit([=]() {
 			s_RendererAPI->DrawArrays(type, count);
-			});
+		});
 	}
 
 	void Renderer::DrawIndexed(PrimitiveType type, uint32_t indexCount, uint32_t queueType)
@@ -211,7 +214,7 @@ namespace XYZ {
 	void Renderer::DrawInstanced(PrimitiveType type, uint32_t indexCount, uint32_t instanceCount, uint32_t offset, uint32_t queueType)
 	{
 		s_Data.m_Stats.DrawInstancedCount++;
-		
+
 		Renderer::Submit([=]() {
 			s_RendererAPI->DrawInstanced(type, indexCount, instanceCount, offset);
 		}, queueType);
@@ -242,26 +245,23 @@ namespace XYZ {
 		s_RendererAPI->EndFrame();
 	}
 
-
-	void Renderer::BeginRenderPass(const Ref<RenderPass>& renderPass, bool clear)
+	void Renderer::BeginRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer, const Ref<RenderPass>& renderPass,
+		bool clear)
 	{
 		XYZ_ASSERT(renderPass.Raw(), "Render pass can not be null");
 		s_Data.m_ActiveRenderPass = renderPass;
-		const Ref<Framebuffer>& frameBuffer = s_Data.m_ActiveRenderPass->GetSpecification().TargetFramebuffer;
-		if (!frameBuffer->GetSpecification().SwapChainTarget)
-			s_Data.m_ActiveRenderPass->GetSpecification().TargetFramebuffer->Bind();
-
-		if (clear)
-		{
-			renderPass->GetSpecification().TargetFramebuffer->Clear();
-		}
+		s_RendererAPI->BeginRenderPass(renderCommandBuffer, renderPass, clear);
 	}
 
-	void Renderer::EndRenderPass()
+	void Renderer::EndRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer)
 	{
-		XYZ_ASSERT(s_Data.m_ActiveRenderPass.Raw(), "No active render pass! Have you called Renderer::EndRenderPass twice?");
-		s_Data.m_ActiveRenderPass->GetSpecification().TargetFramebuffer->Unbind();
-		s_Data.m_ActiveRenderPass = nullptr;
+		s_RendererAPI->EndRenderPass(renderCommandBuffer);
+	}
+
+	void Renderer::RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet,
+		Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint32_t indexCount)
+	{
+		s_RendererAPI->RenderGeometry(renderCommandBuffer, pipeline, uniformBufferSet, vertexBuffer, indexBuffer, indexCount);
 	}
 
 	void Renderer::BlockRenderThread()
@@ -297,7 +297,7 @@ namespace XYZ {
 			XYZ_PROFILE_FUNC("Renderer::WaitAndRender Job");
 			auto val = queue->Read();
 			val->Execute();
-		
+
 			if (RendererAPI::GetAPI() == RendererAPI::API::OpenGL)
 			{
 				GLsync fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);

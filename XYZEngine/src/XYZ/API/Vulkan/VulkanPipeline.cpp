@@ -45,68 +45,27 @@ namespace XYZ {
 		m_VulkanPipeline(VK_NULL_HANDLE)
 	{
 		XYZ_ASSERT(specs.Shader.Raw() && specs.RenderPass.Raw(), "");
+		Ref<VulkanPipeline> instance = this;
+		m_Specification.Shader->AddReloadCallback([instance]() mutable {
+			instance->RT_invalidate();
+		});
 		Invalidate();
 	}
 	VulkanPipeline::~VulkanPipeline()
 	{
 		VkPipelineLayout pipelineLayout = m_PipelineLayout;
 		VkPipeline		 vulkanPipeline = m_VulkanPipeline;
-		Renderer::Submit([pipelineLayout, vulkanPipeline]() {		
+		Renderer::SubmitResourceFree([pipelineLayout, vulkanPipeline]() {		
 			destroy(pipelineLayout, vulkanPipeline);
 		});	
 	}
 	void VulkanPipeline::Invalidate()
 	{
 		Ref<VulkanPipeline> instance = this;
-		Renderer::Submit([instance]() mutable {
-
-			instance->destroy(instance->m_PipelineLayout, instance->m_VulkanPipeline);
-			VkPipelineInputAssemblyStateCreateInfo inputAssemblyState = {};
-			inputAssemblyState.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-			inputAssemblyState.topology = Utils::GetVulkanTopology(instance->m_Specification.Topology);
-			
-			instance->createPipelineLayoutInfo();
-			VkPipelineRasterizationStateCreateInfo rasterizationInfo = instance->createRasterizationInfo();
-			VkPipelineViewportStateCreateInfo      viewportStateInfo = instance->createViewportStateInfo();
-			VkVertexInputBindingDescription vertexInputBinding;
-			std::vector<VkVertexInputAttributeDescription> vertexInputAttributs;
-			VkPipelineVertexInputStateCreateInfo   vertexInputInfo	 = instance->createVertexInputInfo(vertexInputBinding, vertexInputAttributs);
-			VkPipelineMultisampleStateCreateInfo   multisampleInfo	 = instance->createMultisampleInfo();
-			VkPipelineDepthStencilStateCreateInfo  depthStencilInfo  = instance->createDepthStencilInfo();
-			std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments;
-			VkPipelineColorBlendStateCreateInfo    colorBlendInfo	 = instance->createColorBlendInfo(colorBlendAttachments);		
-			std::vector<VkDynamicState> dynamicStateEnables;
-			VkPipelineDynamicStateCreateInfo	   dynamicStateInfo  = instance->createDynamicStateInfo(dynamicStateEnables);
-			
-			Ref<VulkanFramebuffer> framebuffer = instance->m_Specification.RenderPass->GetSpecification().TargetFramebuffer;
 	
-			VkGraphicsPipelineCreateInfo pipelineCreateInfo = {};
-			pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-			pipelineCreateInfo.layout = instance->m_PipelineLayout;
-			pipelineCreateInfo.renderPass = framebuffer->GetRenderPass();
-			
-			pipelineCreateInfo.pVertexInputState = &vertexInputInfo;
-			pipelineCreateInfo.pInputAssemblyState = &inputAssemblyState;
-			pipelineCreateInfo.pViewportState = &viewportStateInfo;
-			pipelineCreateInfo.pRasterizationState = &rasterizationInfo;
-			pipelineCreateInfo.pMultisampleState = &multisampleInfo;
-			pipelineCreateInfo.pDepthStencilState = &depthStencilInfo;
-			pipelineCreateInfo.pColorBlendState = &colorBlendInfo;
-			pipelineCreateInfo.pDynamicState = &dynamicStateInfo;
-
-			Ref<VulkanShader> vulkanShader = Ref<VulkanShader>(instance->m_Specification.Shader);
-			const auto& shaderStages = vulkanShader->GetPipelineShaderStageCreateInfos();
-
-			pipelineCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
-			pipelineCreateInfo.pStages = shaderStages.data();
-			// It is possible to derive from existing pipeline ( better performance )
-			// pipelineCreateInfo.flags = VK_PIPELINE_CREATE_DERIVATIVE_BIT;
-			pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
-			pipelineCreateInfo.basePipelineIndex = -1; // Optional
-
-			VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-			
-			VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &instance->m_VulkanPipeline));
+		Renderer::Submit([instance]() mutable {
+		
+			instance->RT_invalidate();
 		});
 	}
 	void VulkanPipeline::SetUniformBuffer(Ref<UniformBuffer> uniformBuffer, uint32_t binding, uint32_t set)
@@ -297,6 +256,57 @@ namespace XYZ {
 		return dynamicState;
 	}
 
+	void VulkanPipeline::RT_invalidate()
+	{
+		destroy(m_PipelineLayout, m_VulkanPipeline);
+		VkPipelineInputAssemblyStateCreateInfo inputAssemblyState = {};
+		inputAssemblyState.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+		inputAssemblyState.topology = Utils::GetVulkanTopology(m_Specification.Topology);
+
+		createPipelineLayoutInfo();
+		VkPipelineRasterizationStateCreateInfo rasterizationInfo = createRasterizationInfo();
+		VkPipelineViewportStateCreateInfo      viewportStateInfo = createViewportStateInfo();
+		VkVertexInputBindingDescription vertexInputBinding;
+		std::vector<VkVertexInputAttributeDescription> vertexInputAttributs;
+		VkPipelineVertexInputStateCreateInfo   vertexInputInfo = createVertexInputInfo(vertexInputBinding, vertexInputAttributs);
+		VkPipelineMultisampleStateCreateInfo   multisampleInfo = createMultisampleInfo();
+		VkPipelineDepthStencilStateCreateInfo  depthStencilInfo = createDepthStencilInfo();
+		std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments;
+		VkPipelineColorBlendStateCreateInfo    colorBlendInfo = createColorBlendInfo(colorBlendAttachments);
+		std::vector<VkDynamicState> dynamicStateEnables;
+		VkPipelineDynamicStateCreateInfo	   dynamicStateInfo = createDynamicStateInfo(dynamicStateEnables);
+
+		Ref<VulkanFramebuffer> framebuffer = m_Specification.RenderPass->GetSpecification().TargetFramebuffer;
+
+		VkGraphicsPipelineCreateInfo pipelineCreateInfo = {};
+		pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+		pipelineCreateInfo.layout = m_PipelineLayout;
+		pipelineCreateInfo.renderPass = framebuffer->GetRenderPass();
+
+		pipelineCreateInfo.pVertexInputState = &vertexInputInfo;
+		pipelineCreateInfo.pInputAssemblyState = &inputAssemblyState;
+		pipelineCreateInfo.pViewportState = &viewportStateInfo;
+		pipelineCreateInfo.pRasterizationState = &rasterizationInfo;
+		pipelineCreateInfo.pMultisampleState = &multisampleInfo;
+		pipelineCreateInfo.pDepthStencilState = &depthStencilInfo;
+		pipelineCreateInfo.pColorBlendState = &colorBlendInfo;
+		pipelineCreateInfo.pDynamicState = &dynamicStateInfo;
+
+		Ref<VulkanShader> vulkanShader = Ref<VulkanShader>(m_Specification.Shader);
+		const auto& shaderStages = vulkanShader->GetPipelineShaderStageCreateInfos();
+
+		pipelineCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
+		pipelineCreateInfo.pStages = shaderStages.data();
+		// It is possible to derive from existing pipeline ( better performance )
+		// pipelineCreateInfo.flags = VK_PIPELINE_CREATE_DERIVATIVE_BIT;
+		pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
+		pipelineCreateInfo.basePipelineIndex = -1; // Optional
+
+		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+
+		VK_CHECK_RESULT(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &m_VulkanPipeline));
+	}
+
 	void VulkanPipeline::destroy(VkPipelineLayout pipelineLayout, VkPipeline vulkanPipeline)
 	{
 		if (pipelineLayout != VK_NULL_HANDLE && vulkanPipeline != VK_NULL_HANDLE)
@@ -311,7 +321,7 @@ namespace XYZ {
 	void VulkanPipeline::createPipelineLayoutInfo()
 	{
 		Ref<VulkanShader> vulkanShader(m_Specification.Shader);
-		const auto descriptorSetLayouts = vulkanShader->GetDescriptorSetLayouts();
+		const auto descriptorSetLayouts = vulkanShader->GetAllDescriptorSetLayouts();
 		const auto& pushConstantRanges = vulkanShader->GetPushConstantRanges();
 
 		// TODO: should come from shader

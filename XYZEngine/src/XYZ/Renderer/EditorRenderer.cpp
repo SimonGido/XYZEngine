@@ -17,7 +17,7 @@ namespace XYZ {
 
 	void EditorRenderer::EndPass(Ref<Renderer2D> renderer2D, bool clear)
 	{
-		Renderer::BeginRenderPass(m_Pass, clear);
+		//Renderer::BeginRenderPass(m_Pass, clear);
 		renderer2D->BeginScene();
 
 		for (auto& dc : m_EditorSpriteDrawList)
@@ -49,7 +49,7 @@ namespace XYZ {
 		m_EditorAABBDrawList.clear();
 		m_EditorLineDrawList.clear();
 
-		Renderer::EndRenderPass();
+		//Renderer::EndRenderPass();
 		m_Pass.Reset();
 	}
 

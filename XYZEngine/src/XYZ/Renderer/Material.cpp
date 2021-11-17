@@ -14,7 +14,10 @@ namespace XYZ {
 		m_VSUniformBuffer.Allocate(m_Shader->GetVSUniformList().Size);
 		m_FSUniformBuffer.Allocate(m_Shader->GetFSUniformList().Size);
 
-		m_Shader->AddReloadCallback(std::bind(&Material::onShaderReload, this));
+		Ref<Material> instance = this;
+		m_Shader->AddReloadCallback([instance]() mutable {
+			instance->Invalidate();
+		});
 	}
 
 	Material::~Material()
@@ -55,6 +58,12 @@ namespace XYZ {
 			m_Shader->SetFSUniforms(m_FSUniformBuffer);
 	}
 
+	void Material::Invalidate()
+	{
+		m_VSUniformBuffer.Allocate(m_Shader->GetVSUniformList().Size);
+		m_FSUniformBuffer.Allocate(m_Shader->GetFSUniformList().Size);
+	}
+
 
 	bool Material::operator==(const Material& other) const
 	{
@@ -68,12 +77,6 @@ namespace XYZ {
 		return m_Shader->GetRendererID() == other.m_Shader->GetRendererID()
 			&& m_RenderQueueID == other.m_RenderQueueID
 			&& m_Flags == other.m_Flags;
-	}
-
-	void Material::onShaderReload()
-	{
-		m_VSUniformBuffer.Allocate(m_Shader->GetVSUniformList().Size);
-		m_FSUniformBuffer.Allocate(m_Shader->GetFSUniformList().Size);
 	}
 
 	ByteBuffer& Material::getUniformBufferTarget(ShaderType type)

@@ -11,8 +11,8 @@ layout(location = 4) in vec3  a_ISize;
 layout(location = 5) in vec4  a_IAxis;
 layout(location = 6) in vec2  a_ITexOffset;
 
-out vec4 v_Color;
-out vec2 v_TexCoord;
+layout(location = 0) out vec4 v_Color;
+layout(location = 1) out vec2 v_TexCoord;
 
 layout(std140, binding = 0) uniform Camera
 {
@@ -21,8 +21,13 @@ layout(std140, binding = 0) uniform Camera
 	vec4 u_ViewPosition;
 };
 
-uniform mat4 u_Transform;
-uniform vec2 u_Tiles;
+layout(push_constant) uniform Uniforms
+{
+	uniform mat4 Transform;
+	uniform vec2 Tiles;
+
+} u_Uniforms;
+
 
 float GetRadians(float angleInDegrees)
 {
@@ -58,9 +63,9 @@ void main()
 	vec3 worldPos = RotateVertex(a_Position * a_ISize, a_IAxis);
 	worldPos += a_IPosition;
 
-	gl_Position = u_ViewProjection * u_Transform * vec4(worldPos, 1.0);
+	gl_Position = u_ViewProjection * u_Uniforms.Transform * vec4(worldPos, 1.0);
 	v_Color		= a_IColor;
-	v_TexCoord  = a_ITexOffset + (a_TexCoord / u_Tiles);
+	v_TexCoord  = a_ITexOffset + (a_TexCoord / u_Uniforms.Tiles);
 }
 
 
@@ -69,10 +74,10 @@ void main()
 
 layout(location = 0) out vec4 o_Color;
 
-in vec4 v_Color;
-in vec2 v_TexCoord;
+layout(location = 0) in vec4 v_Color;
+layout(location = 1) in vec2 v_TexCoord;
 
-layout(binding = 0) uniform sampler2D u_Texture;
+layout(binding = 1) uniform sampler2D u_Texture;
 
 void main()
 {

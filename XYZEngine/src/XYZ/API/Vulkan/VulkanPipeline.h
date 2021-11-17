@@ -17,8 +17,10 @@ namespace XYZ {
 		virtual PipelineSpecification& GetSpecification() override { return m_Specification; }
 		virtual const PipelineSpecification& GetSpecification() const override { return m_Specification; }
 
-		VkPipeline GetVulkanPipeline() const { return m_VulkanPipeline; }
+		VkPipelineLayout GetVulkanPipelineLayout() const { return m_PipelineLayout; }
+		VkPipeline GetVulkanPipeline()			   const { return m_VulkanPipeline; }
 	private:
+		void RT_invalidate();
 		static void destroy(VkPipelineLayout pipelineLayout, VkPipeline vulkanPipeline);
 		void createPipelineLayoutInfo();
 		

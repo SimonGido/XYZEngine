@@ -248,8 +248,9 @@ namespace XYZ {
 		virtual ~UniformBuffer() = default;
 
 		virtual void Update(const void* data, uint32_t size, uint32_t offset) = 0;
+		virtual void RT_Update(const void* data, uint32_t size, uint32_t offset) {};
 
-
+		virtual uint32_t GetBinding() const = 0;
 		static Ref<UniformBuffer> Create(uint32_t size, uint32_t binding);
 	};
 }

@@ -73,17 +73,7 @@ namespace XYZ {
 	{
 		return m_Shaders.find(name) != m_Shaders.end();
 	}
-	size_t ShaderVariable::Size() const
-	{
-		return SizeOfUniformType(Type);
-	}
-	size_t ShaderStruct::Size() const
-	{
-		size_t result = 0;
-		for (auto& var : Variables)
-			result += var.Size();
-		return result;
-	}
+
 	ShaderUniform::ShaderUniform(std::string name, ShaderUniformDataType dataType, uint32_t size, uint32_t offset, uint32_t count)
 		:
 		m_Name(std::move(name)),

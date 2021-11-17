@@ -12,10 +12,17 @@ layout(binding = 0, rgba32f) uniform image2D   o_Image;
 layout(binding = 1)			 uniform sampler2D u_Texture;
 layout(binding = 2)			 uniform sampler2D u_BloomTexture;
 
-uniform float u_FilterTreshold;
-uniform float u_FilterKnee;
-uniform float u_LOD;
-uniform int   u_Mode;
+
+layout(push_constant) uniform Uniforms
+{
+   float FilterTreshold;
+   float FilterKnee;
+   float LOD;
+   int   Mode;
+
+} u_Uniforms;
+
+
 
 const vec3 c_Luminance = vec3(0.2126, 0.7152, 0.0722);
 const float c_Epsilon = 1.0e-4;
@@ -102,9 +109,9 @@ vec4 QuadraticThreshold(vec4 color, float threshold, vec3 curve)
 vec4 Prefilter(vec4 color, vec2 uv)
 {
     float clampValue = 20.0f;
-    vec3 curve = vec3(u_FilterTreshold - u_FilterKnee, u_FilterKnee * 2.0, 0.25 / u_FilterKnee);
+    vec3 curve = vec3(u_Uniforms.FilterTreshold - u_Uniforms.FilterKnee, u_Uniforms.FilterKnee * 2.0, 0.25 / u_Uniforms.FilterKnee);
     color = min(vec4(clampValue), color);
-    color = QuadraticThreshold(color, u_FilterTreshold, curve);
+    color = QuadraticThreshold(color, u_Uniforms.FilterTreshold, curve);
     return color;
 }
 
@@ -118,35 +125,35 @@ void main()
     vec2 texCoords = vec2(float(invocID.x) / imgSize.x, float(invocID.y) / imgSize.y);
     texCoords += (1.0f / imgSize) * 0.5f;
 
-    vec2 texSize = vec2(textureSize(u_Texture, int(u_LOD)));
+    vec2 texSize = vec2(textureSize(u_Texture, int(u_Uniforms.LOD)));
     vec4 color = vec4(1, 0, 1, 1);
-    if (u_Mode == MODE_PREFILTER)
+    if (u_Uniforms.Mode == MODE_PREFILTER)
     {
         color.rgb = DownsampleBox13(u_Texture, 0, texCoords, 1.0f / texSize);
         color = Prefilter(color, texCoords);
         color.a = 1.0f;
     }
-    else if (u_Mode == MODE_DOWNSAMPLE)
+    else if (u_Uniforms.Mode == MODE_DOWNSAMPLE)
     {
         // Downsample
-        color.rgb = DownsampleBox13(u_Texture, u_LOD, texCoords, 1.0f / texSize);
+        color.rgb = DownsampleBox13(u_Texture, u_Uniforms.LOD, texCoords, 1.0f / texSize);
     }
-    else if (u_Mode == MODE_UPSAMPLE_FIRST)
+    else if (u_Uniforms.Mode == MODE_UPSAMPLE_FIRST)
     {
-        vec2 bloomTexSize = vec2(textureSize(u_Texture, int(u_LOD + 1.0f)));
+        vec2 bloomTexSize = vec2(textureSize(u_Texture, int(u_Uniforms.LOD + 1.0f)));
         float sampleScale = 1.0f;
-        vec3 upsampledTexture = UpsampleTent9(u_Texture, u_LOD + 1.0f, texCoords, 1.0f / bloomTexSize, sampleScale);
+        vec3 upsampledTexture = UpsampleTent9(u_Texture, u_Uniforms.LOD + 1.0f, texCoords, 1.0f / bloomTexSize, sampleScale);
 
-        vec3 existing = textureLod(u_Texture, texCoords, u_LOD).rgb;
+        vec3 existing = textureLod(u_Texture, texCoords, u_Uniforms.LOD).rgb;
         color.rgb = existing + upsampledTexture;
     }
-    else if (u_Mode == MODE_UPSAMPLE)
+    else if (u_Uniforms.Mode == MODE_UPSAMPLE)
     {
-        vec2 bloomTexSize = vec2(textureSize(u_BloomTexture, int(u_LOD + 1.0f)));
+        vec2 bloomTexSize = vec2(textureSize(u_BloomTexture, int(u_Uniforms.LOD + 1.0f)));
         float sampleScale = 1.0f;
-        vec3 upsampledTexture = UpsampleTent9(u_BloomTexture, u_LOD + 1.0f, texCoords, 1.0f / bloomTexSize, sampleScale);
+        vec3 upsampledTexture = UpsampleTent9(u_BloomTexture, u_Uniforms.LOD + 1.0f, texCoords, 1.0f / bloomTexSize, sampleScale);
 
-        vec3 existing = textureLod(u_Texture, texCoords, u_LOD).rgb;
+        vec3 existing = textureLod(u_Texture, texCoords, u_Uniforms.LOD).rgb;
         color.rgb = existing + upsampledTexture;
     }
     

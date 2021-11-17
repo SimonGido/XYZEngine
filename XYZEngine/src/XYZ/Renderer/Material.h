@@ -27,6 +27,8 @@ namespace XYZ {
 
 		virtual void Bind() const;
 
+		void Invalidate();
+
 		template<typename T>
 		void Set(const std::string& name, const T& val);
 		
@@ -58,7 +60,6 @@ namespace XYZ {
 
 		static AssetType GetStaticType() { return AssetType::Material; }
 	private:
-		void				  onShaderReload();
 		ByteBuffer&			  getUniformBufferTarget(ShaderType type);
 		const TextureUniform* findTexture(const std::string& name) const;
 		std::pair<const ShaderUniform*, ShaderType> findUniform(const std::string& name) const;

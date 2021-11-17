@@ -4,6 +4,7 @@
 #include "XYZ/API/OpenGL/OpenGLBuffer.h"
 #include "XYZ/API/Vulkan/VulkanVertexBuffer.h"
 #include "XYZ/API/Vulkan/VulkanIndexBuffer.h"
+#include "XYZ/API/Vulkan/VulkanUniformBuffer.h"
 
 #include "Renderer.h"
 
@@ -97,6 +98,7 @@ namespace XYZ {
 		{
 		case RendererAPI::API::None:    XYZ_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
 		case RendererAPI::API::OpenGL:  return Ref<OpenGLUniformBuffer>::Create(size, binding);
+		case RendererAPI::API::Vulkan:  return Ref<VulkanUniformBuffer>::Create(size, binding);
 		}
 
 		XYZ_ASSERT(false, "Unknown RendererAPI!");

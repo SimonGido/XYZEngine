@@ -14,11 +14,30 @@ namespace XYZ {
 
 	static ThreadPool s_ThreadPool;
 
-	SceneRenderer::SceneRenderer()
+	SceneRenderer::SceneRenderer(Ref<Scene> scene, SceneRendererSpecification specification)
 		:
-		m_ActiveScene(nullptr)
+		m_Specification(specification),
+		m_ActiveScene(scene)
 	{
+		Init();
+	}
+
+	SceneRenderer::~SceneRenderer()
+	{
+		s_ThreadPool.EraseThread(m_ThreadIndex);
+	}
+
+
+
+	void SceneRenderer::Init()
+	{
+		XYZ_PROFILE_FUNC("SceneRenderer::Init");
 		m_ThreadIndex = s_ThreadPool.PushThread();
+		if (m_Specification.SwapChainTarget)
+			m_CommandBuffer = Renderer::GetAPIContext()->GetRenderCommandBuffer();
+		else
+			m_CommandBuffer = RenderCommandBuffer::Create(0, "SceneRenderer");
+
 		// Composite pass
 		{
 			FramebufferSpecs specs;
@@ -28,15 +47,7 @@ namespace XYZ {
 				FramebufferTextureSpecs(ImageFormat::DEPTH24STENCIL8)
 			};
 
-			#ifdef IMGUI_BUILD
-			{
-				specs.SwapChainTarget = false;
-			}
-			#else
-			{
-				specs.SwapChainTarget = true;
-			}
-			#endif
+			specs.SwapChainTarget = m_Specification.SwapChainTarget;
 			Ref<Framebuffer> fbo = Framebuffer::Create(specs);
 			m_CompositePass = RenderPass::Create({ fbo });
 		}
@@ -76,9 +87,9 @@ namespace XYZ {
 			m_BloomPass = RenderPass::Create({ fbo });
 		}
 
-		auto shaderLibrary   = Renderer::GetShaderLibrary();
-		m_CompositeShader	 = shaderLibrary->Get("CompositeShader");
-		m_LightShader		 = shaderLibrary->Get("LightShader");
+		auto shaderLibrary = Renderer::GetShaderLibrary();
+		m_CompositeShader = shaderLibrary->Get("CompositeShader");
+		m_LightShader = shaderLibrary->Get("LightShader");
 		m_BloomComputeShader = shaderLibrary->Get("Bloom");
 
 
@@ -86,17 +97,15 @@ namespace XYZ {
 		m_BloomTexture[1] = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, {});
 		m_BloomTexture[2] = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, {});
 
-		m_LightStorageBuffer     = ShaderStorageBuffer::Create(sc_MaxNumberOfLights * sizeof(SceneRenderer::PointLight), 1);
+		m_LightStorageBuffer = ShaderStorageBuffer::Create(sc_MaxNumberOfLights * sizeof(SceneRenderer::PointLight), 1);
 		m_SpotLightStorageBuffer = ShaderStorageBuffer::Create(sc_MaxNumberOfLights * sizeof(SceneRenderer::SpotLight), 2);
-		m_CameraUniformBuffer    = UniformBuffer::Create(sizeof(CameraData), 0);
+		m_CameraUniformBuffer = UniformBuffer::Create(sizeof(CameraData), 0);
 	}
 
-	SceneRenderer::~SceneRenderer()
+	void SceneRenderer::SetScene(Ref<Scene> scene)
 	{
-		s_ThreadPool.EraseThread(m_ThreadIndex);
+		m_ActiveScene = scene;
 	}
-
-
 
 	void SceneRenderer::SetRenderer2D(const Ref<Renderer2D>& renderer2D)
 	{
@@ -111,10 +120,9 @@ namespace XYZ {
 			m_ViewportSizeChanged = true;
 		}
 	}
-	void SceneRenderer::BeginScene(const Scene* scene, const SceneRendererCamera& camera)
+	void SceneRenderer::BeginScene(const SceneRendererCamera& camera)
 	{
-		XYZ_ASSERT(!m_ActiveScene, "Missing end scene");
-		m_ActiveScene = scene;
+		XYZ_ASSERT(!m_ActiveScene.Raw(), "No Scene set");
 		m_SceneCamera = camera;
 
 		// Viewport size is changed at the beginning of the frame, so we do not delete texture that is currently use for rendering
@@ -125,10 +133,9 @@ namespace XYZ {
 		
 		m_CameraUniformBuffer->Update(&m_CameraBuffer, sizeof(CameraData), 0);
 	}
-	void SceneRenderer::BeginScene(const Scene* scene, const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix, const glm::vec3& viewPosition)
+	void SceneRenderer::BeginScene(const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix, const glm::vec3& viewPosition)
 	{
-		XYZ_ASSERT(!m_ActiveScene, "Missing end scene");
-		m_ActiveScene = scene;
+		XYZ_ASSERT(!m_ActiveScene.Raw(), "No Scene set");
 
 		// Viewport size is changed at the beginning of the frame, so we do not delete texture that is currently use for rendering
 		UpdateViewportSize();
@@ -141,9 +148,6 @@ namespace XYZ {
 	}
 	void SceneRenderer::EndScene()
 	{
-		XYZ_ASSERT(m_ActiveScene, "Missing begin scene");
-		m_ActiveScene = nullptr;
-
 		flush();
 	}
 
@@ -239,14 +243,14 @@ namespace XYZ {
 		XYZ_PROFILE_FUNC("SceneRenderer::flush");
 		flushLightQueue();
 		flushDefaultQueue();
-		Renderer::BeginRenderPass(m_CompositePass, true);
+		Renderer::BeginRenderPass(m_CommandBuffer, m_CompositePass, true);
 
 		m_CompositeShader->Bind();
 		m_LightPass->GetSpecification().TargetFramebuffer->BindTexture(0, 0);
 		m_BloomTexture[2]->Bind(1);
 
 		Renderer::SubmitFullscreenQuad();
-		Renderer::EndRenderPass();
+		Renderer::EndRenderPass(m_CommandBuffer);
 
 		auto [width, height] = Input::GetWindowSize();
 		Renderer::SetViewPort(0, 0, (uint32_t)width, (uint32_t)height);
@@ -305,7 +309,7 @@ namespace XYZ {
 
 	void SceneRenderer::geometryPass(RenderQueue& queue, const Ref<RenderPass>& pass, bool clear)
 	{
-		Renderer::BeginRenderPass(pass, clear);
+		Renderer::BeginRenderPass(m_CommandBuffer, pass, clear);
 		
 		for (auto& dc : queue.m_MeshCommandList)
 		{
@@ -339,11 +343,11 @@ namespace XYZ {
 			Renderer::DrawInstanced(PrimitiveType::Triangles, dc.Mesh->GetIndexCount(), dc.Count, 0);
 		}
 		
-		Renderer::EndRenderPass();
+		Renderer::EndRenderPass(m_CommandBuffer);
 	}
 	void SceneRenderer::lightPass()
 	{
-		Renderer::BeginRenderPass(m_LightPass, true);
+		Renderer::BeginRenderPass(m_CommandBuffer, m_LightPass, true);
 	
 		m_LightShader->Bind();
 		m_LightShader->SetInt("u_NumberPointLights", (int)m_PointLightsList.size());
@@ -354,7 +358,7 @@ namespace XYZ {
 	
 		Renderer::SubmitFullscreenQuad();
 	
-		Renderer::EndRenderPass();
+		Renderer::EndRenderPass(m_CommandBuffer);
 	}
 
 	void SceneRenderer::bloomPass()

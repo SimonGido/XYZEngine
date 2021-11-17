@@ -33,7 +33,7 @@ namespace XYZ {
 		uint32_t FramesInFlight = 3;
 	};
 
-	
+
 	enum RenderQueueType
 	{
 		Default,
@@ -61,47 +61,51 @@ namespace XYZ {
 		static void DrawElementsIndirect(void* indirect);
 		static void SubmitFullscreenQuad();
 
+		// New API //
 		static void BeginFrame();
 		static void EndFrame();
-		
+
+		static void BeginRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer, const Ref<RenderPass>& renderPass, bool clear);
+		static void EndRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer);
+		static void RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint32_t indexCount = 0);
+		//////////////
+
 		static Ref<ShaderLibrary>			GetShaderLibrary();
 		static Ref<APIContext>				GetAPIContext();
 		static const RenderAPICapabilities& GetCapabilities();
 		static const RendererConfiguration& GetConfiguration();
-		
+
 		template<typename FuncT>
 		static void Submit(FuncT&& func, uint32_t type = Default);
-	
+
 		template<typename FuncT>
 		static void SubmitAndWait(FuncT&& func, uint32_t type = Default);
 
 		template<typename FuncT>
 		static void SubmitResourceFree(FuncT&& func);
 
-		static void BeginRenderPass(const Ref<RenderPass>& renderPass, bool clear);
-		static void EndRenderPass();
 		static void BlockRenderThread();
-
-
-		static ThreadPool&			GetPool();
-		static RendererAPI::API		GetAPI() { return RendererAPI::GetAPI(); }
-		static RendererAPI*			GetRendererAPI();
-		static const RendererStats& GetStats();
-		static RenderCommandQueue&	GetRenderResourceReleaseQueue(uint32_t index);
 		static void WaitAndRender();
+
+
+		static ThreadPool& GetPool();
+		static RendererAPI::API		GetAPI() { return RendererAPI::GetAPI(); }
+		static RendererAPI* GetRendererAPI();
+		static const RendererStats& GetStats();
+		static RenderCommandQueue& GetRenderResourceReleaseQueue(uint32_t index);
 
 	private:
 		static ScopedLock<RenderCommandQueue> getRenderCommandQueue(uint8_t type);
-		
-		static RendererStats&				  getStats();
+
+		static RendererStats& getStats();
 	};
 
 	template <typename FuncT>
 	void Renderer::Submit(FuncT&& func, uint32_t type)
-	{		
+	{
 		auto renderCmd = [](void* ptr) {
-				
-			auto pFunc = (FuncT*)ptr;
+
+			auto pFunc = static_cast<FuncT*>(ptr);
 			(*pFunc)();
 			pFunc->~FuncT(); // Call destructor
 		};
@@ -123,7 +127,7 @@ namespace XYZ {
 	void Renderer::SubmitResourceFree(FuncT&& func)
 	{
 		auto renderCmd = [](void* ptr) {
-			auto pFunc = (FuncT*)ptr;
+			auto pFunc = static_cast<FuncT*>(ptr);
 			(*pFunc)();
 			pFunc->~FuncT();
 		};

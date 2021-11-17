@@ -10,10 +10,10 @@ namespace XYZ {
 	{
 		VkClearColorValue GlmColorToVkColor(const glm::vec4& color)
 		{
-			return {color.r, color.g , color.b, color.a};
+			return { color.r, color.g , color.b, color.a };
 		}
 	}
-	
+
 	VulkanFramebuffer::VulkanFramebuffer(const FramebufferSpecs& specs)
 		:
 		m_Specification(specs),
@@ -22,8 +22,8 @@ namespace XYZ {
 	{
 		if (specs.Width == 0 || specs.Height == 0)
 		{
-			m_Specification.Width   = Application::Get().GetWindow().GetWidth();
-			m_Specification.Height  = Application::Get().GetWindow().GetHeight();
+			m_Specification.Width = Application::Get().GetWindow().GetWidth();
+			m_Specification.Height = Application::Get().GetWindow().GetHeight();
 		}
 		Resize(m_Specification.Width, m_Specification.Height, true);
 	}
@@ -50,20 +50,20 @@ namespace XYZ {
 	void VulkanFramebuffer::Invalidate()
 	{
 		Ref< VulkanFramebuffer> instance = this;
-		Renderer::Submit([instance]() mutable{
-				instance->RT_Invalidate();
+		Renderer::Submit([instance]() mutable {
+			instance->RT_Invalidate();
 		});
 	}
 
-	void VulkanFramebuffer::RT_Invalidate()
+	void VulkanFramebuffer::RT_Invalidate() const
 	{
 		auto device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 		if (m_Framebuffer)
 		{
 			VkFramebuffer framebuffer = m_Framebuffer;
-			Renderer::SubmitResourceFree([framebuffer](){
-					const auto device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-					vkDestroyFramebuffer(device, framebuffer, nullptr);
+			Renderer::SubmitResourceFree([framebuffer]() {
+				const auto device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+				vkDestroyFramebuffer(device, framebuffer, nullptr);
 			});
 		}
 	}

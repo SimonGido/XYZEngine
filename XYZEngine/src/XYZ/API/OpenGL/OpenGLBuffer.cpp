@@ -376,6 +376,8 @@ namespace XYZ {
 
 
 	OpenGLUniformBuffer::OpenGLUniformBuffer(uint32_t size, uint32_t binding)
+		:
+		m_Binding(binding)
 	{
 		Ref<OpenGLUniformBuffer> instance = this;
 		Renderer::Submit([instance, size, binding]() mutable {

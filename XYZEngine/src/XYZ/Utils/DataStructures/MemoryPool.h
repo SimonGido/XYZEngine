@@ -44,12 +44,12 @@ namespace XYZ {
 		
 	private:
 		template <typename T>
-		void	 extractMetaData(T* ptr, std::array<uint32_t, 3>& values) const;
-		void	 extractMetaData(void* ptr, std::array<uint32_t, 3>& values) const;
+		static void	 extractMetaData(T* ptr, std::array<uint32_t, 3>& values);
+		static void	 extractMetaData(void* ptr, std::array<uint32_t, 3>& values);
 
 		template <typename T>
-		uint32_t toChunkSize() const;
-		uint32_t toChunkSize(uint32_t size) const;
+		static uint32_t toChunkSize();
+		static uint32_t toChunkSize(uint32_t size);
 
 		void     cleanUp();
 		void     sortFreeChunks();
@@ -331,7 +331,7 @@ namespace XYZ {
 
 	template<uint32_t BlockSize, bool StoreSize>
 	template<typename T>
-	inline void MemoryPool<BlockSize, StoreSize>::extractMetaData(T* ptr, std::array<uint32_t, 3>& values) const
+	inline void MemoryPool<BlockSize, StoreSize>::extractMetaData(T* ptr, std::array<uint32_t, 3>& values)
 	{
 		uint8_t* blockPtr = (uint8_t*)ptr - metaDataSize();
 		values[0] = *blockPtr;
@@ -348,13 +348,13 @@ namespace XYZ {
 
 	template<uint32_t BlockSize, bool StoreSize>
 	template<typename T>
-	inline uint32_t MemoryPool<BlockSize, StoreSize>::toChunkSize() const
+	inline uint32_t MemoryPool<BlockSize, StoreSize>::toChunkSize()
 	{
 		return metaDataSize() + (uint32_t)sizeof(T);
 	}
 
 	template<uint32_t BlockSize, bool StoreSize>
-	inline void MemoryPool<BlockSize, StoreSize>::extractMetaData(void* ptr, std::array<uint32_t, 3>& values) const
+	inline void MemoryPool<BlockSize, StoreSize>::extractMetaData(void* ptr, std::array<uint32_t, 3>& values)
 	{
 		uint8_t* blockPtr = (uint8_t*)ptr - metaDataSize();
 		values[0] = *blockPtr;
@@ -370,7 +370,7 @@ namespace XYZ {
 	}
 
 	template<uint32_t BlockSize, bool StoreSize>
-	uint32_t MemoryPool<BlockSize, StoreSize>::toChunkSize(uint32_t size) const
+	uint32_t MemoryPool<BlockSize, StoreSize>::toChunkSize(uint32_t size)
 	{
 		return metaDataSize() + size;
 	}

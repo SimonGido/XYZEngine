@@ -61,7 +61,7 @@ layout (push_constant) uniform Color
 	vec4 Color;
 } u_Uniforms;
 
-layout(binding = 0) uniform sampler2D u_Texture[32];
+layout(binding = 1) uniform sampler2D u_Texture[32];
 
 void main()
 {

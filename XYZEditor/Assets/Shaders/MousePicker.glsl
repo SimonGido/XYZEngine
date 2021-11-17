@@ -4,7 +4,7 @@
 layout(location = 0) in vec3 a_Position;
 layout(location = 1) in int a_ObjectID;
 
-out flat int v_ObjectID;
+layout (location = 0) out flat int v_ObjectID;
 
 layout(std140, binding = 0) uniform Camera
 {
@@ -25,7 +25,7 @@ void main()
 
 layout(location = 2) out int o_IDBuffer;
 
-in flat int v_ObjectID;
+layout(location = 0) in flat int v_ObjectID;
 
 void main()
 {

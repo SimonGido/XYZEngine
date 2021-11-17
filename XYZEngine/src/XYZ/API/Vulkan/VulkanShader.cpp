@@ -2,8 +2,11 @@
 #include "VulkanShader.h"
 
 #include "XYZ/Renderer/Renderer.h"
+#include "XYZ/Renderer/Material.h"
+#include "XYZ/Renderer/Pipeline.h"
 #include "XYZ/Utils/StringUtils.h"
 #include "VulkanContext.h"
+#include "VulkanRendererAPI.h"
 #include "Vulkan.h"
 
 #include <glm/gtc/type_ptr.hpp>
@@ -20,6 +23,32 @@
 namespace XYZ {
 
 	namespace Utils {
+		static std::string ReadFile(const std::string& filepath)
+		{
+			std::string result;
+			std::ifstream in(filepath, std::ios::in | std::ios::binary); // ifstream closes itself due to RAII
+			if (in)
+			{
+				in.seekg(0, std::ios::end);
+				const size_t size = in.tellg();
+				if (size != -1)
+				{
+					result.resize(size);
+					in.seekg(0, std::ios::beg);
+					in.read(&result[0], size);
+				}
+				else
+				{
+					XYZ_ERROR("Could not read from file '{0}'", filepath);
+				}
+			}
+			else
+			{
+				XYZ_ERROR("Could not open file '{0}'", filepath);
+			}
+			return result;
+		}
+
 		static ShaderUniformDataType SPIRTypeToShaderUniformType(spirv_cross::SPIRType type)
 		{
 			switch (type.basetype)
@@ -97,6 +126,11 @@ namespace XYZ {
 			return VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
 		}
 	}
+
+	static std::unordered_map<uint32_t, std::unordered_map<uint32_t, VulkanShader::UniformBuffer*>> s_UniformBuffers; // set -> binding point -> buffer
+	static std::unordered_map<uint32_t, std::unordered_map<uint32_t, VulkanShader::StorageBuffer*>> s_StorageBuffers; // set -> binding point -> buffer
+	
+
 	VulkanShader::VulkanShader(const std::string& path)
 		:
 		m_Name(Utils::GetFilenameWithoutExtension(path)),
@@ -113,39 +147,85 @@ namespace XYZ {
 	}
 	VulkanShader::~VulkanShader()
 	{
-		auto stageInfos = m_PipelineShaderStageCreateInfos;
-		Renderer::Submit([stageInfos]() {
-			const VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-			for (const auto& info : stageInfos)
-				vkDestroyShaderModule(device, info.module, nullptr);
-		});
+		destroy();
+		m_ShaderReloadCallbacks.clear();
 	}
 	void VulkanShader::Reload(bool forceCompile)
 	{
-		const std::string source = readFile(m_AssetPath);
-		preProcess(source);
-		std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>> shaderData;
-		compileOrGetVulkanBinaries(shaderData, forceCompile);
-		for (auto&& [stage, data] : shaderData)
-			reflect(stage, data);
-
+		destroy();
 		Ref<VulkanShader> instance = this;
-		Renderer::Submit([instance, shaderData]() mutable {
-			instance->createProgram(shaderData);
-		});
+		Renderer::Submit([instance, forceCompile]() mutable {
+			
+			instance->m_PipelineShaderStageCreateInfos.clear();
+			instance->m_DescriptorSets.clear();
+			instance->m_PushConstantRanges.clear();
+			instance->m_Buffers.clear();
 
-		for (size_t i = 0; i < m_ShaderReloadCallbacks.size(); ++i)
-			m_ShaderReloadCallbacks[i]();
+			instance->preProcess(Utils::ReadFile(instance->m_AssetPath));
+			std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>> shaderData;
+			instance->compileOrGetVulkanBinaries(shaderData, forceCompile);
+			instance->reflectAllStages(shaderData);
+			instance->createProgram(shaderData);
+			instance->createDescriptorSetLayout();
+			instance->createDescriptorPools();
+			instance->createUniformBufferWriteDescriptions();
+			instance->onReload();
+		});		
 	}
 	void VulkanShader::AddReloadCallback(Shader::ReloadCallback callback)
 	{
 		m_ShaderReloadCallbacks.emplace_back(std::move(callback));
 	}
-	void VulkanShader::reflect(VkShaderStageFlagBits stage, const std::vector<uint32_t>& shaderData)
+
+	VulkanShader::ShaderMaterialDescriptorSet VulkanShader::AllocateDescriptorSet(uint32_t set)
+	{
+		XYZ_ASSERT(set < m_DescriptorSets.size(), "");
+		ShaderMaterialDescriptorSet result;
+
+		if (m_DescriptorSets.empty())
+			return result;
+
+		VkDescriptorSetAllocateInfo allocInfo = {};
+		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		allocInfo.descriptorSetCount = 1;
+		allocInfo.pSetLayouts = &m_DescriptorSets[set].DescriptorSetLayout;
+		VkDescriptorSet descriptorSet = VulkanRendererAPI::RT_AllocateDescriptorSet(allocInfo);
+		XYZ_ASSERT(descriptorSet, "");
+		result.DescriptorSets.push_back(descriptorSet);
+		return result;
+	}
+
+
+
+
+	void VulkanShader::reflectAllStages(const std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& shaderData)
+	{
+		XYZ_TRACE("===========================");
+		XYZ_TRACE(" Vulkan Shader Reflection");
+		XYZ_TRACE(" {0}", m_AssetPath);
+		XYZ_TRACE("===========================");
+		m_Resources.clear();
+		for (auto [stage, data] : shaderData)
+		{
+			reflectStage(stage, data);
+		}
+	}
+
+	void VulkanShader::reflectStage(VkShaderStageFlagBits stage, const std::vector<uint32_t>& shaderData)
 	{
 		const spirv_cross::Compiler compiler(shaderData);
 		spirv_cross::ShaderResources resources = compiler.get_shader_resources();
-		for (const auto& resource : resources.push_constant_buffers)
+			
+		reflectConstantBuffers(compiler, stage, resources.push_constant_buffers);
+		reflectStorageBuffers(compiler, stage, resources.storage_buffers);
+		reflectUniformBuffers(compiler, stage, resources.uniform_buffers);
+		reflectSampledImages(compiler, stage, resources.sampled_images);
+		reflectStorageImages(compiler, stage, resources.storage_images);
+	}
+	void VulkanShader::reflectConstantBuffers(const spirv_cross::Compiler& compiler, VkShaderStageFlagBits stage, spirv_cross::SmallVector<spirv_cross::Resource>& buffers)
+	{
+		XYZ_TRACE("Push Constant Buffers:");
+		for (const auto& resource : buffers)
 		{
 			const auto& bufferName = resource.name;
 			auto& bufferType = compiler.get_type(resource.base_type_id);
@@ -184,8 +264,156 @@ namespace XYZ {
 			}
 		}
 	}
+	void VulkanShader::reflectStorageBuffers(const spirv_cross::Compiler& compiler, VkShaderStageFlagBits stage, spirv_cross::SmallVector<spirv_cross::Resource>& buffers)
+	{
+		XYZ_TRACE("Storage Buffers:");
+		for (const auto& resource : buffers)
+		{
+			const auto& name = resource.name;
+			auto& bufferType = compiler.get_type(resource.base_type_id);
+			uint32_t memberCount = (uint32_t)bufferType.member_types.size();
+			uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+			uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+			uint32_t size = (uint32_t)compiler.get_declared_struct_size(bufferType);
+
+			if (descriptorSet >= m_DescriptorSets.size())
+				m_DescriptorSets.resize(static_cast<size_t>(descriptorSet) + 1);
+			ShaderDescriptorSet& shaderDescriptorSet = m_DescriptorSets[descriptorSet].ShaderDescriptorSet;
+			
+			if (s_StorageBuffers[descriptorSet].find(binding) == s_StorageBuffers[descriptorSet].end())
+			{
+				StorageBuffer* storageBuffer = new StorageBuffer();
+				storageBuffer->BindingPoint = binding;
+				storageBuffer->Size = size;
+				storageBuffer->Name = name;
+				storageBuffer->ShaderStage = VK_SHADER_STAGE_ALL;
+				s_StorageBuffers.at(descriptorSet)[binding] = storageBuffer;
+			}
+			else
+			{
+				StorageBuffer* storageBuffer = s_StorageBuffers.at(descriptorSet).at(binding);
+				if (size > storageBuffer->Size)
+					storageBuffer->Size = size;
+			}
+
+			shaderDescriptorSet.StorageBuffers[binding] = s_StorageBuffers.at(descriptorSet).at(binding);
+
+			XYZ_TRACE("  {0} ({1}, {2})", name, descriptorSet, binding);
+			XYZ_TRACE("  Member Count: {0}", memberCount);
+			XYZ_TRACE("  Size: {0}", size);
+			XYZ_TRACE("-------------------");
+		}
+	}
+	void VulkanShader::reflectUniformBuffers(const spirv_cross::Compiler& compiler, VkShaderStageFlagBits stage, spirv_cross::SmallVector<spirv_cross::Resource>& buffers)
+	{
+		XYZ_TRACE("Uniform Buffers:");
+		for (const auto& resource : buffers)
+		{
+			const auto& name = resource.name;
+			auto& bufferType = compiler.get_type(resource.base_type_id);
+			int memberCount = (uint32_t)bufferType.member_types.size();
+			uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+			uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+			uint32_t size = (uint32_t)compiler.get_declared_struct_size(bufferType);
+
+			if (descriptorSet >= m_DescriptorSets.size())
+				m_DescriptorSets.resize(static_cast<size_t>(descriptorSet) + 1);
+			ShaderDescriptorSet& shaderDescriptorSet = m_DescriptorSets[descriptorSet].ShaderDescriptorSet;
+
+			if (s_UniformBuffers[descriptorSet].find(binding) == s_UniformBuffers[descriptorSet].end())
+			{
+				UniformBuffer* uniformBuffer = new UniformBuffer();
+				uniformBuffer->BindingPoint = binding;
+				uniformBuffer->Size = size;
+				uniformBuffer->Name = name;
+				uniformBuffer->ShaderStage = VK_SHADER_STAGE_ALL;
+				s_UniformBuffers.at(descriptorSet)[binding] = uniformBuffer;
+			}
+			else
+			{
+				UniformBuffer* uniformBuffer = s_UniformBuffers.at(descriptorSet).at(binding);
+				if (size > uniformBuffer->Size)
+					uniformBuffer->Size = size;
+
+			}
+
+			shaderDescriptorSet.UniformBuffers[binding] = s_UniformBuffers.at(descriptorSet).at(binding);
+
+			XYZ_TRACE("  {0} ({1}, {2})", name, descriptorSet, binding);
+			XYZ_TRACE("  Member Count: {0}", memberCount);
+			XYZ_TRACE("  Size: {0}", size);
+			XYZ_TRACE("-------------------");
+		}
+	}
+	void VulkanShader::reflectSampledImages(const spirv_cross::Compiler& compiler, VkShaderStageFlagBits stage, spirv_cross::SmallVector<spirv_cross::Resource>& sampledImages)
+	{
+		XYZ_TRACE("Sampled Images:");
+		for (const auto& resource : sampledImages)
+		{
+			const auto& name = resource.name;
+			auto& baseType = compiler.get_type(resource.base_type_id);
+			auto& type = compiler.get_type(resource.type_id);
+			uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+			uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+			uint32_t dimension = baseType.image.dim;
+			uint32_t arraySize = type.array[0];
+			if (arraySize == 0)
+				arraySize = 1;
+			
+			if (descriptorSet >= m_DescriptorSets.size())
+				m_DescriptorSets.resize(static_cast<size_t>(descriptorSet) + 1);
+			ShaderDescriptorSet& shaderDescriptorSet = m_DescriptorSets[descriptorSet].ShaderDescriptorSet;
+			
+			auto& imageSampler = shaderDescriptorSet.ImageSamplers[binding];
+			imageSampler.BindingPoint = binding;
+			imageSampler.DescriptorSet = descriptorSet;
+			imageSampler.Name = name;
+			imageSampler.ShaderStage = stage;
+			imageSampler.ArraySize = arraySize;
+
+			m_Resources[name] = ShaderResourceDeclaration(name, binding, 1);
+
+			XYZ_TRACE("  {0} ({1}, {2})", name, descriptorSet, binding);
+		}
+	}
+	void VulkanShader::reflectStorageImages(const spirv_cross::Compiler& compiler, VkShaderStageFlagBits stage, spirv_cross::SmallVector<spirv_cross::Resource>& storageImages)
+	{
+		XYZ_TRACE("Storage Images:");
+		for (const auto& resource : storageImages)
+		{
+			const auto& name = resource.name;
+			auto& type = compiler.get_type(resource.base_type_id);
+			uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+			uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+			uint32_t dimension = type.image.dim;
+
+			if (descriptorSet >= m_DescriptorSets.size())
+				m_DescriptorSets.resize(static_cast<size_t>(descriptorSet) + 1);
+			ShaderDescriptorSet& shaderDescriptorSet = m_DescriptorSets[descriptorSet].ShaderDescriptorSet;
+			
+			auto& imageSampler = shaderDescriptorSet.StorageImages[binding];
+			imageSampler.BindingPoint = binding;
+			imageSampler.DescriptorSet = descriptorSet;
+			imageSampler.Name = name;
+			imageSampler.ShaderStage = stage;
+
+			m_Resources[name] = ShaderResourceDeclaration(name, binding, 1);
+
+			XYZ_TRACE("  {0} ({1}, {2})", name, descriptorSet, binding);
+		}
+	}
+	std::vector<VkDescriptorSetLayout> VulkanShader::GetAllDescriptorSetLayouts() const
+	{
+		std::vector<VkDescriptorSetLayout> result;
+		result.reserve(m_DescriptorSets.size());
+		for (auto& descrSet : m_DescriptorSets)
+			result.emplace_back(descrSet.DescriptorSetLayout);
+
+		return result;
+	}
 	void VulkanShader::compileOrGetVulkanBinaries(std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& outputBinary, bool forceCompile)
 	{
+		XYZ_INFO("Compiling shader {}", m_Name);
 		std::filesystem::path cacheDirectory = Utils::GetCacheDirectory();
 		for (auto [stage, source] : m_ShaderSources)
 		{
@@ -287,30 +515,203 @@ namespace XYZ {
 			m_ShaderSources[stageType] = source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos));
 		}
 	}
-	std::string VulkanShader::readFile(const std::string& filepath) const
+	
+	void VulkanShader::createUniformBufferWriteDescriptions()
 	{
-		std::string result;
-		std::ifstream in(filepath, std::ios::in | std::ios::binary); // ifstream closes itself due to RAII
-		if (in)
+		const uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;
+		m_UniformBufferWriteDescriptions.resize(framesInFlight);
+		for (uint32_t frame = 0; frame < framesInFlight; ++frame)
 		{
-			in.seekg(0, std::ios::end);
-			const size_t size = in.tellg();
-			if (size != -1)
+			auto& writeDescription = m_UniformBufferWriteDescriptions[frame];
+			for (size_t set = 0; set < m_DescriptorSets.size(); ++set)
 			{
-				result.resize(size);
-				in.seekg(0, std::ios::beg);
-				in.read(&result[0], size);
-			}
-			else
-			{
-				XYZ_ERROR("Could not read from file '{0}'", filepath);
+				const auto& descSet = m_DescriptorSets[set];
+				for (auto&& [binding, shaderUB] : descSet.ShaderDescriptorSet.UniformBuffers)
+				{
+					writeDescription.Bindings.push_back(binding);
+					writeDescription.DescriptorSets.push_back(AllocateDescriptorSet(set).DescriptorSets[0]);
+					auto& descriptorSet = writeDescription.DescriptorSets.back();
+					auto& shaderWriteDescription = writeDescription.WriteDescriptorSets.emplace_back();
+			
+					shaderWriteDescription.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+					shaderWriteDescription.pNext = nullptr;
+					shaderWriteDescription.dstSet = descriptorSet;
+					shaderWriteDescription.dstBinding = binding;
+					shaderWriteDescription.dstArrayElement = 0;
+					shaderWriteDescription.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+					shaderWriteDescription.descriptorCount = 1;
+					
+					shaderWriteDescription.pBufferInfo = VK_NULL_HANDLE;
+					shaderWriteDescription.pImageInfo = nullptr; // Optional
+					shaderWriteDescription.pTexelBufferView = nullptr; // Optional
+				}
 			}
 		}
-		else
-		{
-			XYZ_ERROR("Could not open file '{0}'", filepath);
-		}
+	}
 
-		return result;
+	void VulkanShader::createDescriptorSetLayout()
+	{
+		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+
+		for (uint32_t set = 0; set < m_DescriptorSets.size(); set++)
+		{
+			auto& shaderDescriptorSet = m_DescriptorSets[set].ShaderDescriptorSet;
+			std::vector<VkDescriptorSetLayoutBinding> layoutBindings;
+			for (auto& [binding, uniformBuffer] : shaderDescriptorSet.UniformBuffers)
+			{
+				VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back();
+				layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				layoutBinding.descriptorCount = 1;
+				layoutBinding.stageFlags = uniformBuffer->ShaderStage;
+				layoutBinding.pImmutableSamplers = nullptr;
+				layoutBinding.binding = binding;
+
+				VkWriteDescriptorSet& set = shaderDescriptorSet.WriteDescriptorSets[uniformBuffer->Name];
+				set = {};
+				set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				set.descriptorType = layoutBinding.descriptorType;
+				set.descriptorCount = 1;
+				set.dstBinding = layoutBinding.binding;
+			}
+
+			for (auto& [binding, strorageBuffer] : shaderDescriptorSet.StorageBuffers)
+			{
+				VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back();
+				layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+				layoutBinding.descriptorCount = 1;
+				layoutBinding.stageFlags = strorageBuffer->ShaderStage;
+				layoutBinding.pImmutableSamplers = nullptr;
+				layoutBinding.binding = binding;
+
+				VkWriteDescriptorSet& set = shaderDescriptorSet.WriteDescriptorSets[strorageBuffer->Name];
+				set = {};
+				set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				set.descriptorType = layoutBinding.descriptorType;
+				set.descriptorCount = 1;
+				set.dstBinding = layoutBinding.binding;
+			}
+
+			for (auto& [binding, imageSampler] : shaderDescriptorSet.ImageSamplers)
+			{
+				auto& layoutBinding = layoutBindings.emplace_back();
+				layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				layoutBinding.descriptorCount = imageSampler.ArraySize;
+				layoutBinding.stageFlags = imageSampler.ShaderStage;
+				layoutBinding.pImmutableSamplers = nullptr;
+				layoutBinding.binding = binding;
+
+				XYZ_ASSERT(shaderDescriptorSet.UniformBuffers.find(binding) == shaderDescriptorSet.UniformBuffers.end(), "Binding is already present!");
+				XYZ_ASSERT(shaderDescriptorSet.StorageBuffers.find(binding) == shaderDescriptorSet.StorageBuffers.end(), "Binding is already present!");
+
+				VkWriteDescriptorSet& set = shaderDescriptorSet.WriteDescriptorSets[imageSampler.Name];
+				set = {};
+				set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				set.descriptorType = layoutBinding.descriptorType;
+				set.descriptorCount = imageSampler.ArraySize;
+				set.dstBinding = layoutBinding.binding;
+			}
+
+			for (auto& [bindingAndSet, imageSampler] : shaderDescriptorSet.StorageImages)
+			{
+				auto& layoutBinding = layoutBindings.emplace_back();
+				layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+				layoutBinding.descriptorCount = 1;
+				layoutBinding.stageFlags = imageSampler.ShaderStage;
+				layoutBinding.pImmutableSamplers = nullptr;
+
+				uint32_t binding = bindingAndSet & 0xffffffff;
+				//uint32_t descriptorSet = (bindingAndSet >> 32);
+				layoutBinding.binding = binding;
+
+				XYZ_ASSERT(shaderDescriptorSet.UniformBuffers.find(binding) == shaderDescriptorSet.UniformBuffers.end(), "Binding is already present!");
+				XYZ_ASSERT(shaderDescriptorSet.StorageBuffers.find(binding) == shaderDescriptorSet.StorageBuffers.end(), "Binding is already present!");
+				XYZ_ASSERT(shaderDescriptorSet.ImageSamplers.find(binding) == shaderDescriptorSet.ImageSamplers.end(), "Binding is already present!");
+
+				VkWriteDescriptorSet& set = shaderDescriptorSet.WriteDescriptorSets[imageSampler.Name];
+				set = {};
+				set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				set.descriptorType = layoutBinding.descriptorType;
+				set.descriptorCount = 1;
+				set.dstBinding = layoutBinding.binding;
+			}
+
+			VkDescriptorSetLayoutCreateInfo descriptorLayout = {};
+			descriptorLayout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+			descriptorLayout.pNext = nullptr;
+			descriptorLayout.bindingCount = (uint32_t)(layoutBindings.size());
+			descriptorLayout.pBindings = layoutBindings.data();
+
+			XYZ_INFO("Creating descriptor set {0} with {1} ubo's, {2} ssbo's, {3} samplers and {4} storage images", set,
+				shaderDescriptorSet.UniformBuffers.size(),
+				shaderDescriptorSet.StorageBuffers.size(),
+				shaderDescriptorSet.ImageSamplers.size(),
+				shaderDescriptorSet.StorageImages.size()
+			);
+			if (set >= m_DescriptorSets.size())
+				m_DescriptorSets.resize(static_cast<size_t>(set) + 1);
+			
+			VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorLayout, nullptr, &m_DescriptorSets[set].DescriptorSetLayout));
+		}		
+	}
+
+	void VulkanShader::createDescriptorPools()
+	{
+		for (uint32_t set = 0; set < m_DescriptorSets.size(); set++)
+		{
+			auto& shaderDescriptorSet = m_DescriptorSets[set].ShaderDescriptorSet;
+			auto& descriptorPools = m_DescriptorSets[set].DescriptorPools;
+			if (!shaderDescriptorSet.UniformBuffers.empty())
+			{
+				VkDescriptorPoolSize& typeCount = descriptorPools.emplace_back();
+				typeCount.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				typeCount.descriptorCount = (uint32_t)(shaderDescriptorSet.UniformBuffers.size());
+			}
+			if (!shaderDescriptorSet.StorageBuffers.empty())
+			{
+				VkDescriptorPoolSize& typeCount = descriptorPools.emplace_back();
+				typeCount.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+				typeCount.descriptorCount = (uint32_t)(shaderDescriptorSet.StorageBuffers.size());
+			}
+			if (!shaderDescriptorSet.ImageSamplers.empty())
+			{
+				VkDescriptorPoolSize& typeCount = descriptorPools.emplace_back();
+				typeCount.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				typeCount.descriptorCount = (uint32_t)(shaderDescriptorSet.ImageSamplers.size());
+			}
+			if (!shaderDescriptorSet.StorageImages.empty())
+			{
+				VkDescriptorPoolSize& typeCount = descriptorPools.emplace_back();
+				typeCount.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+				typeCount.descriptorCount = (uint32_t)(shaderDescriptorSet.StorageImages.size());
+			}
+		}	
+	}
+
+	void VulkanShader::destroy()
+	{
+		auto stageInfos = m_PipelineShaderStageCreateInfos;
+		std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
+		descriptorSetLayouts.reserve(m_DescriptorSets.size());
+		for (const auto& descrSet : m_DescriptorSets)
+			descriptorSetLayouts.push_back(descrSet.DescriptorSetLayout);
+
+		
+			
+		Renderer::SubmitResourceFree([stageInfos, descriptorSetLayouts]() {
+			const VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			for (const auto& info : stageInfos)
+				vkDestroyShaderModule(device, info.module, nullptr);
+
+			for (const auto& descr : descriptorSetLayouts)
+				vkDestroyDescriptorSetLayout(device, descr, nullptr);
+		});
+	}
+	void VulkanShader::onReload()
+	{
+		for (size_t i = 0; i < m_ShaderReloadCallbacks.size(); ++i)
+			m_ShaderReloadCallbacks[i]();
+
 	}
 }
+
+

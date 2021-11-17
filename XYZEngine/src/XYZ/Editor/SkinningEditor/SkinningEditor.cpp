@@ -29,10 +29,10 @@ namespace XYZ {
 			{
 				if (m_Context.Raw())
 				{
-					Renderer::BeginRenderPass(m_Pass, true);
+					//Renderer::BeginRenderPass(m_Pass, true);
 
 
-					Renderer::EndRenderPass();
+					//Renderer::EndRenderPass();
 				}
 			}
 			ImGui::End();

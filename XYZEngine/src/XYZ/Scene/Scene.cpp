@@ -258,7 +258,7 @@ namespace XYZ {
 
 		sceneRenderer->GetOptions().ShowGrid = false;
 		sceneRenderer->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
-		sceneRenderer->BeginScene(this, renderCamera);
+		sceneRenderer->BeginScene(renderCamera);
 
 		auto renderView = m_ECS.CreateView<TransformComponent, SpriteRenderer>();
 		for (auto entity : renderView)
@@ -313,7 +313,7 @@ namespace XYZ {
 
 		updateHierarchy();
 		sceneRenderer->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
-		sceneRenderer->BeginScene(this, 
+		sceneRenderer->BeginScene(
 			camera.GetViewProjection(), 
 			camera.GetViewMatrix(),
 			camera.GetPosition()
