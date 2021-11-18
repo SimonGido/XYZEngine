@@ -69,6 +69,7 @@ namespace XYZ {
 
 		return m_UniformBuffers.at(frame).at(set).at(binding);
 	}
+	
 	const VulkanUniformBufferSet::ShaderWriteDescriptorSet& VulkanUniformBufferSet::GetDescriptors(size_t hash, uint32_t frame) const
 	{
 		return m_WriteDescriptors.at(hash)[frame];
