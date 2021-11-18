@@ -287,16 +287,7 @@ namespace XYZ {
 	
 			instance->createProgram();
 		});
-
-		for (size_t i = 0; i < m_ShaderReloadCallbacks.size(); ++i)
-			m_ShaderReloadCallbacks[i]();
 	}
-
-	void OpenGLShader::AddReloadCallback(Shader::ReloadCallback callback)
-	{
-		m_ShaderReloadCallbacks.emplace_back(std::move(callback));
-	}
-
 
 	void OpenGLShader::SetFloat(const std::string& name, float value)
 	{
@@ -456,6 +447,11 @@ namespace XYZ {
 		}
 	}
 	
+	size_t OpenGLShader::GetHash() const
+	{
+		return std::hash<std::string>{}(m_AssetPath);
+	}
+
 	void OpenGLShader::reflect(unsigned int stage, const std::vector<uint32_t>& shaderData)
 	{
 		const spirv_cross::Compiler compiler(shaderData);

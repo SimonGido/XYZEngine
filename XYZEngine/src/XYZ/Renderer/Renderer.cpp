@@ -16,29 +16,81 @@
 
 namespace XYZ {
 
+	
+	struct ShaderDependencies
+	{
+		void Clear() 
+		{ 
+			MaterialDependencies.clear(); 
+			PipelineDependencies.clear(); 
+		}
+		std::vector<Ref<Material>> MaterialDependencies;
+		std::vector<Ref<Pipeline>> PipelineDependencies;
+	};
+
+	struct ShaderDependencyMap
+	{
+		void OnReload(size_t hash)
+		{
+			auto it = m_Dependencies.find(hash);
+			if (it != m_Dependencies.end())
+			{
+				for (auto& material : it->second.MaterialDependencies)
+					material->Invalidate();
+				for (auto& pipeline : it->second.PipelineDependencies)
+					pipeline->Invalidate();
+			}
+		}
+		void Register(size_t hash, const Ref<Material>& material)
+		{
+			m_Dependencies[hash].MaterialDependencies.push_back(material);
+		}
+		void Register(size_t hash, const Ref<Pipeline>& pipeline)
+		{
+			m_Dependencies[hash].PipelineDependencies.push_back(pipeline);
+		}
+		void RemoveDependency(size_t hash)
+		{
+			auto it = m_Dependencies.find(hash);
+			if (it != m_Dependencies.end())
+				it->second.Clear();
+		}
+
+		void Clear()
+		{
+			for (auto&& [hash, dep] : m_Dependencies)
+				dep.Clear();
+		}
+	private:
+		std::unordered_map<size_t, ShaderDependencies> m_Dependencies;
+	};
 
 	struct RendererData
 	{
-		std::shared_ptr<ThreadPass<RenderCommandQueue>> m_CommandQueue;
-		RenderCommandQueue* m_ResourceFreeQueues;
-		ThreadPool									    m_Pool;
-		Ref<APIContext>									m_APIContext;
-		Ref<ShaderLibrary>								m_ShaderLibrary;
-		Ref<RenderPass>									m_ActiveRenderPass;
-		Ref<VertexArray>								m_FullscreenQuadVertexArray;
-		Ref<VertexBuffer>								m_FullscreenQuadVertexBuffer;
-		Ref<IndexBuffer>								m_FullscreenQuadIndexBuffer;
+		std::shared_ptr<ThreadPass<RenderCommandQueue>> CommandQueue;
+		RenderCommandQueue*								ResourceFreeQueues;
 
-		std::future<bool>							    m_RenderThreadFinished;
-		RendererStats									m_Stats;
-		RendererConfiguration							m_Configuration;
+		ThreadPool									    Pool;
+		Ref<APIContext>									APIContext;
+		Ref<ShaderLibrary>								ShaderLibrary;
+		Ref<RenderPass>									ActiveRenderPass;
+		Ref<VertexArray>								FullscreenQuadVertexArray;
+		Ref<VertexBuffer>								FullscreenQuadVertexBuffer;
+		Ref<IndexBuffer>								FullscreenQuadIndexBuffer;
+
+		std::future<bool>							    RenderThreadFinished;
+		RendererStats									Stats;
+		RendererConfiguration							Configuration;
+
+		ShaderDependencyMap								ShaderDependencies;
 	};
+
 	RendererAPI::API RendererAPI::s_API = RendererAPI::API::Vulkan;
 
 	static RendererData s_Data;
 	static RendererAPI* s_RendererAPI = nullptr;
 
-	static RendererAPI* InitRendererAPI()
+	static RendererAPI* CreateRendererAPI()
 	{
 		switch (RendererAPI::GetAPI())
 		{
@@ -52,7 +104,7 @@ namespace XYZ {
 
 	static void SetupFullscreenQuad()
 	{
-		s_Data.m_FullscreenQuadVertexArray = VertexArray::Create();
+		s_Data.FullscreenQuadVertexArray = VertexArray::Create();
 		const float x = -1;
 		const float y = -1;
 		const float width = 2, height = 2;
@@ -80,77 +132,75 @@ namespace XYZ {
 			{ 0, ShaderDataType::Float3, "a_Position" },
 			{ 1, ShaderDataType::Float2, "a_TexCoord" }
 		};
-		s_Data.m_FullscreenQuadVertexBuffer = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
-		s_Data.m_FullscreenQuadVertexBuffer->SetLayout(layout);
-		s_Data.m_FullscreenQuadVertexArray->AddVertexBuffer(s_Data.m_FullscreenQuadVertexBuffer);
+		s_Data.FullscreenQuadVertexBuffer = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
+		s_Data.FullscreenQuadVertexBuffer->SetLayout(layout);
+		s_Data.FullscreenQuadVertexArray->AddVertexBuffer(s_Data.FullscreenQuadVertexBuffer);
 
 		const uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
-		s_Data.m_FullscreenQuadIndexBuffer = IndexBuffer::Create(indices, 6);
-		s_Data.m_FullscreenQuadVertexArray->SetIndexBuffer(s_Data.m_FullscreenQuadIndexBuffer);
+		s_Data.FullscreenQuadIndexBuffer = IndexBuffer::Create(indices, 6);
+		s_Data.FullscreenQuadVertexArray->SetIndexBuffer(s_Data.FullscreenQuadIndexBuffer);
 	}
 
 	void Renderer::Init(const RendererConfiguration& config)
 	{
-		s_Data.m_Configuration = config;
-		s_Data.m_Pool.PushThread();
-		s_Data.m_CommandQueue = std::make_shared<ThreadPass<RenderCommandQueue>>();
-		s_Data.m_ResourceFreeQueues = new RenderCommandQueue[config.FramesInFlight];
-		s_Data.m_APIContext = APIContext::Create();
-		s_RendererAPI = InitRendererAPI();
+		s_Data.Configuration = config;
+		s_Data.Pool.PushThread();
+		s_Data.CommandQueue = std::make_shared<ThreadPass<RenderCommandQueue>>();
+		s_Data.ResourceFreeQueues = new RenderCommandQueue[config.FramesInFlight];
+		s_Data.APIContext = APIContext::Create();
+		s_RendererAPI = CreateRendererAPI();
 		s_RendererAPI->Init();
 	}
 
 	void Renderer::InitResources()
 	{
-		Renderer::Submit([=]() {
-			s_RendererAPI->Init();
-		});
 		//SetupFullscreenQuad();
 
-		s_Data.m_ShaderLibrary = Ref<ShaderLibrary>::Create();
-		s_Data.m_ShaderLibrary->Load("Assets/Shaders/RendererCore/CompositeShader.glsl");
-		s_Data.m_ShaderLibrary->Load("Assets/Shaders/RendererCore/LightShader.glsl");
-		s_Data.m_ShaderLibrary->Load("Assets/Shaders/RendererCore/Bloom.glsl");
-		s_Data.m_ShaderLibrary->Load("Assets/Shaders/RendererCore/Circle.glsl");
-		
-		s_Data.m_ShaderLibrary->Load("Assets/Shaders/DefaultLitShader.glsl");
-		s_Data.m_ShaderLibrary->Load("Assets/Shaders/DefaultShader.glsl");
-		s_Data.m_ShaderLibrary->Load("Assets/Shaders/LineShader.glsl");
-		s_Data.m_ShaderLibrary->Load("Assets/Shaders/MousePicker.glsl");
-		
-		s_Data.m_ShaderLibrary->Load("Assets/Shaders/Particle/ParticleShaderCPU.glsl");
+		//s_Data.ShaderLibrary = Ref<ShaderLibrary>::Create();
+		//s_Data.ShaderLibrary->Load("Assets/Shaders/RendererCore/CompositeShader.glsl");
+		//s_Data.ShaderLibrary->Load("Assets/Shaders/RendererCore/LightShader.glsl");
+		//s_Data.ShaderLibrary->Load("Assets/Shaders/RendererCore/Bloom.glsl");
+		//s_Data.ShaderLibrary->Load("Assets/Shaders/RendererCore/Circle.glsl");
+		//
+		//s_Data.ShaderLibrary->Load("Assets/Shaders/DefaultLitShader.glsl");
+		//s_Data.ShaderLibrary->Load("Assets/Shaders/DefaultShader.glsl");
+		//s_Data.ShaderLibrary->Load("Assets/Shaders/LineShader.glsl");
+		//s_Data.ShaderLibrary->Load("Assets/Shaders/MousePicker.glsl");
+		//
+		//s_Data.ShaderLibrary->Load("Assets/Shaders/Particle/ParticleShaderCPU.glsl");
 		WaitAndRender();
 		BlockRenderThread();
 	}
 
 	void Renderer::Shutdown()
 	{
-		s_Data.m_Pool.EraseThread(0);
-		s_Data.m_FullscreenQuadVertexArray.Reset();
-		s_Data.m_FullscreenQuadVertexBuffer.Reset();
-		s_Data.m_FullscreenQuadIndexBuffer.Reset();
-		s_Data.m_ShaderLibrary.Reset();
+		s_Data.Pool.EraseThread(0);
+		s_Data.FullscreenQuadVertexArray.Reset();
+		s_Data.FullscreenQuadVertexBuffer.Reset();
+		s_Data.FullscreenQuadIndexBuffer.Reset();
+		s_Data.ShaderLibrary.Reset();
+		s_Data.ShaderDependencies.Clear();
 		s_RendererAPI->Shutdown();
 
 		WaitAndRender();
-		const auto queue = s_Data.m_CommandQueue;
+		const auto queue = s_Data.CommandQueue;
 		queue->Swap();
 		WaitAndRender();
 		BlockRenderThread();
 		
-		for (uint32_t i = 0; i < s_Data.m_Configuration.FramesInFlight; i++)
+		for (uint32_t i = 0; i < s_Data.Configuration.FramesInFlight; i++)
 		{
 			auto& releaseQueue = Renderer::GetRenderResourceReleaseQueue(i);
 			releaseQueue.Execute();
 		}
-		delete[]s_Data.m_ResourceFreeQueues;
-		s_Data.m_ResourceFreeQueues = nullptr;
+		delete[]s_Data.ResourceFreeQueues;
+		s_Data.ResourceFreeQueues = nullptr;
 
 		
 		delete s_RendererAPI;
 		s_RendererAPI = nullptr;
 
-		s_Data.m_APIContext.Reset(); // Free context to make sure it is destroyed sooner than Logger;
+		s_Data.APIContext.Reset(); // Free context to make sure it is destroyed sooner than Logger;
 	}
 
 	void Renderer::Clear()
@@ -197,7 +247,7 @@ namespace XYZ {
 
 	void Renderer::DrawArrays(PrimitiveType type, uint32_t count)
 	{
-		s_Data.m_Stats.DrawArraysCount++;
+		s_Data.Stats.DrawArraysCount++;
 		Renderer::Submit([=]() {
 			s_RendererAPI->DrawArrays(type, count);
 		});
@@ -205,7 +255,7 @@ namespace XYZ {
 
 	void Renderer::DrawIndexed(PrimitiveType type, uint32_t indexCount, uint32_t queueType)
 	{
-		s_Data.m_Stats.DrawIndexedCount++;
+		s_Data.Stats.DrawIndexedCount++;
 		Renderer::Submit([=]() {
 			s_RendererAPI->DrawIndexed(type, indexCount);
 		}, queueType);
@@ -213,7 +263,7 @@ namespace XYZ {
 
 	void Renderer::DrawInstanced(PrimitiveType type, uint32_t indexCount, uint32_t instanceCount, uint32_t offset, uint32_t queueType)
 	{
-		s_Data.m_Stats.DrawInstancedCount++;
+		s_Data.Stats.DrawInstancedCount++;
 
 		Renderer::Submit([=]() {
 			s_RendererAPI->DrawInstanced(type, indexCount, instanceCount, offset);
@@ -222,7 +272,7 @@ namespace XYZ {
 
 	void Renderer::DrawElementsIndirect(void* indirect)
 	{
-		s_Data.m_Stats.DrawIndirectCount++;
+		s_Data.Stats.DrawIndirectCount++;
 		Renderer::Submit([=]() {
 			s_RendererAPI->DrawInstancedIndirect(indirect);
 		});
@@ -230,8 +280,8 @@ namespace XYZ {
 
 	void Renderer::SubmitFullscreenQuad()
 	{
-		s_Data.m_Stats.DrawFullscreenCount++;
-		s_Data.m_FullscreenQuadVertexArray->Bind();
+		s_Data.Stats.DrawFullscreenCount++;
+		s_Data.FullscreenQuadVertexArray->Bind();
 		Renderer::DrawIndexed(PrimitiveType::Triangles, 6);
 	}
 
@@ -249,7 +299,7 @@ namespace XYZ {
 		bool clear)
 	{
 		XYZ_ASSERT(renderPass.Raw(), "Render pass can not be null");
-		s_Data.m_ActiveRenderPass = renderPass;
+		s_Data.ActiveRenderPass = renderPass;
 		s_RendererAPI->BeginRenderPass(renderCommandBuffer, renderPass, clear);
 	}
 
@@ -264,16 +314,32 @@ namespace XYZ {
 		s_RendererAPI->RenderGeometry(renderCommandBuffer, pipeline, uniformBufferSet, vertexBuffer, indexBuffer, indexCount);
 	}
 
+	void Renderer::RegisterShaderDependency(const Ref<Shader>& shader, const Ref<Pipeline>& pipeline)
+	{
+		s_Data.ShaderDependencies.Register(shader->GetHash(), pipeline);
+	}
+	void Renderer::RegisterShaderDependency(const Ref<Shader>& shader, const Ref<Material>& material)
+	{
+		s_Data.ShaderDependencies.Register(shader->GetHash(), material);
+	}
+	void Renderer::RemoveShaderDependency(size_t hash)
+	{
+		s_Data.ShaderDependencies.RemoveDependency(hash);
+	}
+	void Renderer::OnShaderReload(size_t hash)
+	{
+		s_Data.ShaderDependencies.OnReload(hash);
+	}
 	void Renderer::BlockRenderThread()
 	{
 		#ifdef RENDER_THREAD_ENABLED
-		s_Data.m_RenderThreadFinished.wait();
+		s_Data.RenderThreadFinished.wait();
 		#endif
 	}
 
 	ThreadPool& Renderer::GetPool()
 	{
-		return s_Data.m_Pool;
+		return s_Data.Pool;
 	}
 
 	RendererAPI* Renderer::GetRendererAPI()
@@ -283,17 +349,17 @@ namespace XYZ {
 
 	const RendererStats& Renderer::GetStats()
 	{
-		return s_Data.m_Stats;
+		return s_Data.Stats;
 	}
 
 	void Renderer::WaitAndRender()
 	{
-		s_Data.m_Stats.Reset();
+		s_Data.Stats.Reset();
 
-		const auto queue = s_Data.m_CommandQueue;
+		const auto queue = s_Data.CommandQueue;
 		queue->Swap();
 		#ifdef RENDER_THREAD_ENABLED
-		s_Data.m_RenderThreadFinished = s_Data.m_Pool.PushJob<bool>([queue]() {
+		s_Data.RenderThreadFinished = s_Data.Pool.PushJob<bool>([queue]() {
 			XYZ_PROFILE_FUNC("Renderer::WaitAndRender Job");
 			auto val = queue->Read();
 			val->Execute();
@@ -315,11 +381,11 @@ namespace XYZ {
 	}
 	Ref<ShaderLibrary> Renderer::GetShaderLibrary()
 	{
-		return s_Data.m_ShaderLibrary;
+		return s_Data.ShaderLibrary;
 	}
 	Ref<APIContext> Renderer::GetAPIContext()
 	{
-		return s_Data.m_APIContext;
+		return s_Data.APIContext;
 	}
 	const RenderAPICapabilities& Renderer::GetCapabilities()
 	{
@@ -328,19 +394,19 @@ namespace XYZ {
 
 	const RendererConfiguration& Renderer::GetConfiguration()
 	{
-		return s_Data.m_Configuration;
+		return s_Data.Configuration;
 	}
 	RenderCommandQueue& Renderer::GetRenderResourceReleaseQueue(uint32_t index)
 	{
-		return s_Data.m_ResourceFreeQueues[index];
+		return s_Data.ResourceFreeQueues[index];
 	}
 	ScopedLock<RenderCommandQueue> Renderer::getRenderCommandQueue(uint8_t type)
 	{
-		return s_Data.m_CommandQueue->Write();
+		return s_Data.CommandQueue->Write();
 	}
 	RendererStats& Renderer::getStats()
 	{
-		return s_Data.m_Stats;
+		return s_Data.Stats;
 	}
 	RendererStats::RendererStats()
 		:

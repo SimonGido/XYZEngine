@@ -14,9 +14,17 @@ layout(std140, binding = 0) uniform Camera
 	vec4 u_ViewPosition;
 };
 
+layout(std140, set = 1, binding = 1) uniform Test
+{
+	mat4 u_ViewProjectionTest;
+	mat4 u_ViewMatrixTest;
+	vec4 u_ViewPositionTest;
+};
+
+
 void main() 
 {
-    gl_Position = u_ViewProjection * vec4(inPosition, 0.0, 1.0);
+    gl_Position = u_ViewProjectionTest * vec4(inPosition, 0.0, 1.0);
     fragColor = inColor;
 }
 

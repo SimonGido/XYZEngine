@@ -60,11 +60,10 @@ namespace XYZ {
 			operator bool() const { return !(StorageBuffers.empty() && UniformBuffers.empty() && ImageSamplers.empty() && StorageImages.empty()); }
 		};
 
-		struct Set
+		struct DescriptorSet
 		{
-			VkDescriptorSetLayout			  DescriptorSetLayout;
-			ShaderDescriptorSet				  ShaderDescriptorSet;
-			std::vector<VkDescriptorPoolSize> DescriptorPools;
+			VkDescriptorSetLayout DescriptorSetLayout;
+			ShaderDescriptorSet	  ShaderDescriptorSet;
 		};
 
 		struct ShaderMaterialDescriptorSet
@@ -74,10 +73,19 @@ namespace XYZ {
 
 		struct ShaderBufferWriteDescription
 		{
-			// Per set
-			std::vector<VkDescriptorSet>	  DescriptorSets;
-			std::vector<VkWriteDescriptorSet> WriteDescriptorSets;
-			std::vector<uint32_t>			  Bindings;
+			// Per set info
+			struct Set
+			{
+				// Per binding inside set info
+				struct Binding
+				{				
+					VkWriteDescriptorSet  WriteDescriptorSet;
+					uint32_t			  Binding;
+				};
+				VkDescriptorSet		  DescriptorSet;
+				std::vector<Binding>  Bindings;
+			};
+			std::vector<Set> Sets;
 		};
 
 	public:
@@ -86,16 +94,14 @@ namespace XYZ {
 		virtual ~VulkanShader() override;
 
 		virtual void Reload(bool forceCompile = false) override;
-		virtual void AddReloadCallback(Shader::ReloadCallback callback) override;
 
 		inline virtual const std::string& GetPath() const override { return m_AssetPath; };
 		inline virtual const std::string& GetName() const override { return m_Name; }
-
+		virtual size_t					  GetHash() const override;
 
 		ShaderMaterialDescriptorSet						   AllocateDescriptorSet(uint32_t set = 0);
 	
-		//const VkWriteDescriptorSet&						   GetUniformBufferWriteDescriptorSet(uint32_t binding, uint32_t frame) const;
-		const std::vector<Set>&							   GetDescriptorSets() const { return m_DescriptorSets; }
+		const std::vector<DescriptorSet>&				   GetDescriptorSets() const { return m_DescriptorSets; }
 		const std::vector<PushConstantRange>&			   GetPushConstantRanges()	 const { return m_PushConstantRanges; }
 		const std::vector<VkPipelineShaderStageCreateInfo> GetPipelineShaderStageCreateInfos() const { return m_PipelineShaderStageCreateInfos; }
 		const std::vector<ShaderBufferWriteDescription>&   GetUniformBufferWriteDescriptions() const { return m_UniformBufferWriteDescriptions; }
@@ -117,16 +123,13 @@ namespace XYZ {
 
 		void createUniformBufferWriteDescriptions();
 		void createDescriptorSetLayout();
-		void createDescriptorPools();
 
 		void destroy();	
-		void onReload();
-
 
 	private:
-		std::string		 m_Name;
-		std::string		 m_AssetPath;
-		std::vector<Set> m_DescriptorSets;
+		std::string				   m_Name;
+		std::string				   m_AssetPath;
+		std::vector<DescriptorSet> m_DescriptorSets;
 
 		std::vector<ShaderBufferWriteDescription>					m_UniformBufferWriteDescriptions;
 
@@ -136,7 +139,6 @@ namespace XYZ {
 		std::unordered_map<std::string, ShaderResourceDeclaration>	m_Resources;
 		std::vector<PushConstantRange>								m_PushConstantRanges;
 
-		std::vector<Shader::ReloadCallback>							m_ShaderReloadCallbacks;
 		std::unordered_map<std::string, ShaderBuffer>				m_Buffers;
 	};
 }

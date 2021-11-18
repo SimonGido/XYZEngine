@@ -17,8 +17,7 @@ namespace XYZ {
 
 
 		virtual void Reload(bool forceCompile = false) override;
-		virtual void AddReloadCallback(Shader::ReloadCallback callback) override;
-
+	
 		virtual void SetInt(const std::string& name, int value) override;
 		virtual void SetFloat(const std::string& name, float value) override;
 		virtual void SetFloat2(const std::string& name, const glm::vec2& value) override;
@@ -32,8 +31,8 @@ namespace XYZ {
 
 		inline virtual const std::string& GetPath() const override { return m_AssetPath; };
 		inline virtual const std::string& GetName() const override { return m_Name; }
-
-		virtual uint32_t GetRendererID() const override { return m_RendererID; }
+		virtual size_t					  GetHash() const override;
+		virtual uint32_t				  GetRendererID() const override { return m_RendererID; }
 	private:
 		void reflect(unsigned int stage, const std::vector<uint32_t>& shaderData);
 		void createProgram();
@@ -77,7 +76,6 @@ namespace XYZ {
 		UniformList		   m_FSUniformList;
 		TextureUniformList m_TextureList;
 
-		std::vector<Shader::ReloadCallback>	m_ShaderReloadCallbacks;
 
 		std::unordered_map<uint32_t, std::vector<uint32_t>> m_VulkanSPIRV;
 		std::unordered_map<uint32_t, std::vector<uint32_t>> m_OpenGLSPIRV;

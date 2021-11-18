@@ -11,6 +11,7 @@
 #include "RenderCommandQueue.h"
 #include "RenderPass.h"
 #include "Pipeline.h"
+#include "Material.h"
 
 namespace XYZ {
 
@@ -48,6 +49,7 @@ namespace XYZ {
 		static void InitResources();
 		static void Shutdown();
 
+		// Old API
 		static void Clear();
 		static void SetClearColor(const glm::vec4& color);
 		static void SetViewPort(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
@@ -60,6 +62,9 @@ namespace XYZ {
 		static void DrawInstanced(PrimitiveType type, uint32_t indexCount, uint32_t instanceCount, uint32_t offset = 0, uint32_t queueType = Default);
 		static void DrawElementsIndirect(void* indirect);
 		static void SubmitFullscreenQuad();
+		/////////////
+		
+
 
 		// New API //
 		static void BeginFrame();
@@ -68,6 +73,12 @@ namespace XYZ {
 		static void BeginRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer, const Ref<RenderPass>& renderPass, bool clear);
 		static void EndRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer);
 		static void RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint32_t indexCount = 0);
+		
+
+		static void RegisterShaderDependency(const Ref<Shader>& shader, const Ref<Pipeline>& pipeline);
+		static void RegisterShaderDependency(const Ref<Shader>& shader, const Ref<Material>& material);
+		static void RemoveShaderDependency(size_t hash);
+		static void OnShaderReload(size_t hash);
 		//////////////
 
 		static Ref<ShaderLibrary>			GetShaderLibrary();

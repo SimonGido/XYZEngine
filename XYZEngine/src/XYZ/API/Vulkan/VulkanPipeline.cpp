@@ -46,9 +46,8 @@ namespace XYZ {
 	{
 		XYZ_ASSERT(specs.Shader.Raw() && specs.RenderPass.Raw(), "");
 		Ref<VulkanPipeline> instance = this;
-		m_Specification.Shader->AddReloadCallback([instance]() mutable {
-			instance->RT_invalidate();
-		});
+
+		Renderer::RegisterShaderDependency(m_Specification.Shader, instance.As<Pipeline>());
 		Invalidate();
 	}
 	VulkanPipeline::~VulkanPipeline()

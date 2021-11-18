@@ -1,56 +1,76 @@
 #include "stdafx.h"
 #include "OpenGLRendererAPI.h"
 #include "XYZ/Renderer/Framebuffer.h"
+#include "XYZ/Renderer/Renderer.h"
+
 #include <GL/glew.h>
 
 namespace XYZ {
 	
 	void OpenGLRendererAPI::Init()
 	{
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glLineWidth(2.0f);
+		Renderer::Submit([]() {
+	
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			glLineWidth(2.0f);
 
-		auto& caps = RendererAPI::GetCapabilities();
+			auto& caps = RendererAPI::GetCapabilities();
 
-		caps.Vendor = (const char*)glGetString(GL_VENDOR);
-		caps.Renderer = (const char*)glGetString(GL_RENDERER);
-		caps.Version = (const char*)glGetString(GL_VERSION);
+			caps.Vendor = (const char*)glGetString(GL_VENDOR);
+			caps.Renderer = (const char*)glGetString(GL_RENDERER);
+			caps.Version = (const char*)glGetString(GL_VERSION);
 
-		glGetIntegerv(GL_MAX_SAMPLES, &caps.MaxSamples);
-		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &caps.MaxAnisotropy);
-		glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &caps.MaxTextureUnits);
-		glEnable(GL_PROGRAM_POINT_SIZE);
+			glGetIntegerv(GL_MAX_SAMPLES, &caps.MaxSamples);
+			glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &caps.MaxAnisotropy);
+			glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &caps.MaxTextureUnits);
+			glEnable(GL_PROGRAM_POINT_SIZE);
+		});
 	}
 	void OpenGLRendererAPI::SetDepth(bool enabled)
 	{
-		if (enabled)
-			glEnable(GL_DEPTH_TEST);
-		else
-			glDisable(GL_DEPTH_TEST);
+		Renderer::Submit([enabled]() {
+
+			if (enabled)
+				glEnable(GL_DEPTH_TEST);
+			else
+				glDisable(GL_DEPTH_TEST);
+		});
 	}
 
 	void OpenGLRendererAPI::SetScissor(bool enabled)
 	{
-		if (enabled)
-			glEnable(GL_SCISSOR_TEST);
-		else
-			glDisable(GL_SCISSOR_TEST);
+		Renderer::Submit([enabled]() {
+
+			if (enabled)
+				glEnable(GL_SCISSOR_TEST);
+			else
+				glDisable(GL_SCISSOR_TEST);
+		});
 	}
 
 	void OpenGLRendererAPI::SetLineThickness(float thickness)
 	{
-		glLineWidth(thickness);
+		Renderer::Submit([thickness]() {
+
+			glLineWidth(thickness);
+		});
 	}
 
 	void OpenGLRendererAPI::SetPointSize(float size)
 	{
-		glPointSize(size);
+		Renderer::Submit([size]() {
+
+			glPointSize(size);
+		});
 	}
 
 	void OpenGLRendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 	{
-		glViewport(x, y, width, height);
+		Renderer::Submit([x, y, width, height]() {
+
+			glViewport(x, y, width, height);
+		});
 	}
 
 	void OpenGLRendererAPI::SetClearColor(const glm::vec4& color)

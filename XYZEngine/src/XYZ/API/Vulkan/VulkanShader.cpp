@@ -147,8 +147,8 @@ namespace XYZ {
 	}
 	VulkanShader::~VulkanShader()
 	{
+		Renderer::RemoveShaderDependency(GetHash());
 		destroy();
-		m_ShaderReloadCallbacks.clear();
 	}
 	void VulkanShader::Reload(bool forceCompile)
 	{
@@ -167,14 +167,14 @@ namespace XYZ {
 			instance->reflectAllStages(shaderData);
 			instance->createProgram(shaderData);
 			instance->createDescriptorSetLayout();
-			instance->createDescriptorPools();
 			instance->createUniformBufferWriteDescriptions();
-			instance->onReload();
+			Renderer::OnShaderReload(instance->GetHash());
 		});		
 	}
-	void VulkanShader::AddReloadCallback(Shader::ReloadCallback callback)
-	{
-		m_ShaderReloadCallbacks.emplace_back(std::move(callback));
+
+	size_t VulkanShader::GetHash() const
+	{		
+		return std::hash<std::string>{}(m_AssetPath);
 	}
 
 	VulkanShader::ShaderMaterialDescriptorSet VulkanShader::AllocateDescriptorSet(uint32_t set)
@@ -185,11 +185,8 @@ namespace XYZ {
 		if (m_DescriptorSets.empty())
 			return result;
 
-		VkDescriptorSetAllocateInfo allocInfo = {};
-		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		allocInfo.descriptorSetCount = 1;
-		allocInfo.pSetLayouts = &m_DescriptorSets[set].DescriptorSetLayout;
-		VkDescriptorSet descriptorSet = VulkanRendererAPI::RT_AllocateDescriptorSet(allocInfo);
+
+		VkDescriptorSet descriptorSet = VulkanRendererAPI::RT_AllocateDescriptorSet(m_DescriptorSets[set].DescriptorSetLayout);
 		XYZ_ASSERT(descriptorSet, "");
 		result.DescriptorSets.push_back(descriptorSet);
 		return result;
@@ -522,28 +519,30 @@ namespace XYZ {
 		m_UniformBufferWriteDescriptions.resize(framesInFlight);
 		for (uint32_t frame = 0; frame < framesInFlight; ++frame)
 		{
-			auto& writeDescription = m_UniformBufferWriteDescriptions[frame];
+			ShaderBufferWriteDescription& shaderBufferWriteDescription = m_UniformBufferWriteDescriptions[frame];
 			for (size_t set = 0; set < m_DescriptorSets.size(); ++set)
 			{
 				const auto& descSet = m_DescriptorSets[set];
+
+				// Create new descriptor set
+				ShaderBufferWriteDescription::Set& descriptorSet = shaderBufferWriteDescription.Sets.emplace_back();
+				descriptorSet.DescriptorSet = AllocateDescriptorSet(set).DescriptorSets[0];		
 				for (auto&& [binding, shaderUB] : descSet.ShaderDescriptorSet.UniformBuffers)
 				{
-					writeDescription.Bindings.push_back(binding);
-					writeDescription.DescriptorSets.push_back(AllocateDescriptorSet(set).DescriptorSets[0]);
-					auto& descriptorSet = writeDescription.DescriptorSets.back();
-					auto& shaderWriteDescription = writeDescription.WriteDescriptorSets.emplace_back();
-			
-					shaderWriteDescription.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-					shaderWriteDescription.pNext = nullptr;
-					shaderWriteDescription.dstSet = descriptorSet;
-					shaderWriteDescription.dstBinding = binding;
-					shaderWriteDescription.dstArrayElement = 0;
-					shaderWriteDescription.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-					shaderWriteDescription.descriptorCount = 1;
+					// Create new write description for each uniform buffer
+					auto& shaderBufferSet = descriptorSet.Bindings.emplace_back();
+					shaderBufferSet.Binding = binding;
+					shaderBufferSet.WriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+					shaderBufferSet.WriteDescriptorSet.pNext = nullptr;
+					shaderBufferSet.WriteDescriptorSet.dstSet = descriptorSet.DescriptorSet;
+					shaderBufferSet.WriteDescriptorSet.dstBinding = binding;
+					shaderBufferSet.WriteDescriptorSet.dstArrayElement = 0;
+					shaderBufferSet.WriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+					shaderBufferSet.WriteDescriptorSet.descriptorCount = 1;
 					
-					shaderWriteDescription.pBufferInfo = VK_NULL_HANDLE;
-					shaderWriteDescription.pImageInfo = nullptr; // Optional
-					shaderWriteDescription.pTexelBufferView = nullptr; // Optional
+					shaderBufferSet.WriteDescriptorSet.pBufferInfo = VK_NULL_HANDLE;
+					shaderBufferSet.WriteDescriptorSet.pImageInfo = nullptr; // Optional
+					shaderBufferSet.WriteDescriptorSet.pTexelBufferView = nullptr; // Optional
 				}
 			}
 		}
@@ -654,38 +653,6 @@ namespace XYZ {
 		}		
 	}
 
-	void VulkanShader::createDescriptorPools()
-	{
-		for (uint32_t set = 0; set < m_DescriptorSets.size(); set++)
-		{
-			auto& shaderDescriptorSet = m_DescriptorSets[set].ShaderDescriptorSet;
-			auto& descriptorPools = m_DescriptorSets[set].DescriptorPools;
-			if (!shaderDescriptorSet.UniformBuffers.empty())
-			{
-				VkDescriptorPoolSize& typeCount = descriptorPools.emplace_back();
-				typeCount.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				typeCount.descriptorCount = (uint32_t)(shaderDescriptorSet.UniformBuffers.size());
-			}
-			if (!shaderDescriptorSet.StorageBuffers.empty())
-			{
-				VkDescriptorPoolSize& typeCount = descriptorPools.emplace_back();
-				typeCount.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-				typeCount.descriptorCount = (uint32_t)(shaderDescriptorSet.StorageBuffers.size());
-			}
-			if (!shaderDescriptorSet.ImageSamplers.empty())
-			{
-				VkDescriptorPoolSize& typeCount = descriptorPools.emplace_back();
-				typeCount.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				typeCount.descriptorCount = (uint32_t)(shaderDescriptorSet.ImageSamplers.size());
-			}
-			if (!shaderDescriptorSet.StorageImages.empty())
-			{
-				VkDescriptorPoolSize& typeCount = descriptorPools.emplace_back();
-				typeCount.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-				typeCount.descriptorCount = (uint32_t)(shaderDescriptorSet.StorageImages.size());
-			}
-		}	
-	}
 
 	void VulkanShader::destroy()
 	{
@@ -706,12 +673,7 @@ namespace XYZ {
 				vkDestroyDescriptorSetLayout(device, descr, nullptr);
 		});
 	}
-	void VulkanShader::onReload()
-	{
-		for (size_t i = 0; i < m_ShaderReloadCallbacks.size(); ++i)
-			m_ShaderReloadCallbacks[i]();
 
-	}
 }
 
 

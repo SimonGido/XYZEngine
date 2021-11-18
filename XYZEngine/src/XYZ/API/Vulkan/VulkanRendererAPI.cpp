@@ -9,84 +9,14 @@
 #include "VulkanVertexBuffer.h"
 #include "VulkanIndexBuffer.h"
 #include "VulkanUniformBuffer.h"
+#include "VulkanDescriptorAllocator.h"
 
 #include "XYZ/Core/Application.h"
 #include "XYZ/Debug/Profiler.h"
 
 namespace XYZ {
-	class DescriptorAllocator
-	{
-	public:
-		static constexpr uint32_t sc_NumPoolSizes = 11;
-		static constexpr uint32_t sc_MaxSets = 100000;
-
-		void Init()
-		{		
-			Renderer::Submit([this]() {
-
-				VkDescriptorPoolSize pool_sizes[sc_NumPoolSizes] =
-				{
-					{ VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
-					{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
-					{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
-					{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
-					{ VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
-					{ VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
-					{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
-					{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
-					{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
-					{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
-					{ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
-				};
-				VkDescriptorPoolCreateInfo pool_info = {};
-				pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-				pool_info.flags = 0;
-				pool_info.maxSets = sc_MaxSets;
-				pool_info.poolSizeCount = sc_NumPoolSizes;
-				pool_info.pPoolSizes = pool_sizes;
-				VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-
-				const uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;
-				m_DescriptorPools.resize(framesInFlight);
-				m_AllocationCount.resize(framesInFlight);
-				for (uint32_t i = 0; i < framesInFlight; i++)
-				{
-					VK_CHECK_RESULT(vkCreateDescriptorPool(device, &pool_info, nullptr, &m_DescriptorPools[i]));
-					m_AllocationCount[i] = 0;
-				}
-			});
-		}
-
-		void Shutdown()
-		{
-			Renderer::SubmitResourceFree([this]() {
-				VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-
-				for (const auto descr : m_DescriptorPools)
-					vkDestroyDescriptorPool(device, descr, nullptr);
-
-				m_DescriptorPools.clear();
-				m_AllocationCount.clear();
-			});
-		}
-
-		VkDescriptorSet RT_Allocate(VkDescriptorSetAllocateInfo& allocInfo)
-		{
-			uint32_t bufferIndex = Renderer::GetAPIContext()->GetCurrentFrame();
-			allocInfo.descriptorPool = m_DescriptorPools[bufferIndex];
-			VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-			VkDescriptorSet result;
-			VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &result));
-			m_AllocationCount[bufferIndex] += allocInfo.descriptorSetCount;
-			return result;
-		}
-
-	private:
-		std::vector<VkDescriptorPool> m_DescriptorPools;
-		std::vector<uint32_t>		  m_AllocationCount;
-	};
-
-	static DescriptorAllocator s_DescriptorAllocator;
+	
+	static VulkanDescriptorAllocator s_DescriptorAllocator;
 
 	void VulkanRendererAPI::Init()
 	{
@@ -214,17 +144,23 @@ namespace XYZ {
 
 
 			const auto& uniformBufferWriteDescription = vulkanShader->GetUniformBufferWriteDescriptions();
-			const auto& frameUniformBufferDescr = uniformBufferWriteDescription[frameIndex];
+			const auto& frameUniformBufferDescr		  = uniformBufferWriteDescription[frameIndex];
 
 			std::vector<VkWriteDescriptorSet> writeDescriptors;
-			const std::vector<VkDescriptorSet>& descriptorSets = frameUniformBufferDescr.DescriptorSets;
-			for (uint32_t set = 0; set < frameUniformBufferDescr.DescriptorSets.size(); ++set)
+			std::vector<VkDescriptorSet> descriptorSets;
+			for (uint32_t set = 0; set < frameUniformBufferDescr.Sets.size(); ++set)
 			{
-				uint32_t binding = frameUniformBufferDescr.Bindings[set];
-				VkWriteDescriptorSet writeDescriptor = frameUniformBufferDescr.WriteDescriptorSets[set];
-				Ref<VulkanUniformBuffer> uniformBuffer = uniformBufferSet->Get(binding, set, frameIndex);
-				writeDescriptor.pBufferInfo = &uniformBuffer->GetDescriptorBufferInfo();
-				writeDescriptors.push_back(writeDescriptor);
+				const auto& descSet = frameUniformBufferDescr.Sets[set];
+				descriptorSets.push_back(descSet.DescriptorSet);
+				for (uint32_t buffer = 0; buffer < descSet.Bindings.size(); ++buffer)
+				{
+					const auto& descBinding = descSet.Bindings[buffer];
+					uint32_t binding = descBinding.Binding;
+					VkWriteDescriptorSet writeDescriptor = descBinding.WriteDescriptorSet;
+					Ref<VulkanUniformBuffer> uniformBuffer = uniformBufferSet->Get(binding, set, frameIndex);
+					writeDescriptor.pBufferInfo = &uniformBuffer->GetDescriptorBufferInfo();
+					writeDescriptors.push_back(writeDescriptor);
+				}		
 			}
 
 			vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptors.size()), writeDescriptors.data(), 0, nullptr);
@@ -245,11 +181,10 @@ namespace XYZ {
 		});
 	}
 
-	VkDescriptorSet VulkanRendererAPI::RT_AllocateDescriptorSet(VkDescriptorSetAllocateInfo& allocInfo)
+	VkDescriptorSet VulkanRendererAPI::RT_AllocateDescriptorSet(const VkDescriptorSetLayout& layout)
 	{
-		return s_DescriptorAllocator.RT_Allocate(allocInfo);
+		return s_DescriptorAllocator.RT_Allocate(layout);
 	}
-
 
 	void VulkanRendererAPI::clearFramebuffer(Ref<VulkanFramebuffer> framebuffer, VkCommandBuffer commandBuffer)
 	{

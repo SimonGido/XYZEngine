@@ -56,7 +56,7 @@ namespace XYZ {
 		m_RenderCommandBuffer = context->GetRenderCommandBuffer();
 		m_UniformBufferSet = Ref<UniformBufferSet>::Create(Renderer::GetConfiguration().FramesInFlight);
 		m_UniformBufferSet->Create(sizeof(TestCamera), 0, 0);
-	
+		m_UniformBufferSet->Create(sizeof(TestCamera), 1, 1);
 		const uint32_t windowWidth = Application::Get().GetWindow().GetWidth();
 		const uint32_t windowHeight = Application::Get().GetWindow().GetHeight();
 		m_Camera.SetViewportSize((float)windowWidth, (float)windowHeight);
@@ -76,6 +76,7 @@ namespace XYZ {
 		m_Camera.OnUpdate(ts);
 		m_RenderCommandBuffer->Begin();
 		m_UniformBufferSet->Get(0, 0, currentFrame)->Update(&camera, sizeof(TestCamera), 0);
+		m_UniformBufferSet->Get(1, 1, currentFrame)->Update(&camera, sizeof(TestCamera), 0);
 		Renderer::BeginRenderPass(m_RenderCommandBuffer, m_RenderPass, false);
 		Renderer::RenderGeometry(m_RenderCommandBuffer, m_Pipeline, m_UniformBufferSet, m_VertexBuffer, m_IndexBuffer);
 		Renderer::EndRenderPass(m_RenderCommandBuffer);

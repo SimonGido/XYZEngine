@@ -119,8 +119,6 @@ namespace XYZ {
 	class Shader : public Asset
 	{
 	public:
-		using ReloadCallback = std::function<void()>;
-
 		virtual ~Shader() = default;
 
 		virtual void Bind() const {};
@@ -130,7 +128,6 @@ namespace XYZ {
 		virtual void SetFSUniforms(ByteBuffer buffer) const {};
 
 		virtual void Reload(bool forceCompile = false) = 0;
-		virtual void AddReloadCallback(Shader::ReloadCallback callback) = 0;
 
 		virtual void SetInt(const std::string& name, int value) {};
 		virtual void SetFloat(const std::string& name, float value) {};
@@ -147,7 +144,7 @@ namespace XYZ {
 		virtual const std::string& GetName() const = 0;
 		
 		virtual uint32_t GetRendererID() const { return 0; }
-		size_t			 GetHash() const;
+		virtual size_t	 GetHash() const = 0;
 
 		static Ref<Shader> Create(const std::string& path);
 		static Ref<Shader> Create(const std::string& name, const std::string& path);

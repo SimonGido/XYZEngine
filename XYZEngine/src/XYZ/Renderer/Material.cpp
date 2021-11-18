@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Material.h"
 
-
+#include "Renderer.h"
 
 namespace XYZ {
 	
@@ -15,9 +15,7 @@ namespace XYZ {
 		m_FSUniformBuffer.Allocate(m_Shader->GetFSUniformList().Size);
 
 		Ref<Material> instance = this;
-		m_Shader->AddReloadCallback([instance]() mutable {
-			instance->Invalidate();
-		});
+		Renderer::RegisterShaderDependency(shader, instance);
 	}
 
 	Material::~Material()
