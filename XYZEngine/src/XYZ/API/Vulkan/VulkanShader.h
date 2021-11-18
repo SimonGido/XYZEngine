@@ -71,23 +71,6 @@ namespace XYZ {
 			std::vector<VkDescriptorSet> DescriptorSets;
 		};
 
-		struct ShaderBufferWriteDescription
-		{
-			// Per set info
-			struct Set
-			{
-				// Per binding inside set info
-				struct Binding
-				{				
-					VkWriteDescriptorSet  WriteDescriptorSet;
-					uint32_t			  Binding;
-				};
-				VkDescriptorSet		  DescriptorSet;
-				std::vector<Binding>  Bindings;
-			};
-			std::vector<Set> Sets;
-		};
-
 	public:
 		VulkanShader(const std::string& path);
 		VulkanShader(const std::string& name, const std::string& path);
@@ -104,7 +87,7 @@ namespace XYZ {
 		const std::vector<DescriptorSet>&				   GetDescriptorSets() const { return m_DescriptorSets; }
 		const std::vector<PushConstantRange>&			   GetPushConstantRanges()	 const { return m_PushConstantRanges; }
 		const std::vector<VkPipelineShaderStageCreateInfo> GetPipelineShaderStageCreateInfos() const { return m_PipelineShaderStageCreateInfos; }
-		const std::vector<ShaderBufferWriteDescription>&   GetUniformBufferWriteDescriptions() const { return m_UniformBufferWriteDescriptions; }
+		
 		std::vector<VkDescriptorSetLayout>				   GetAllDescriptorSetLayouts() const;
 		
 	private:
@@ -121,9 +104,8 @@ namespace XYZ {
 		void reflectStorageImages(const spirv_cross::Compiler& compiler, VkShaderStageFlagBits stage, spirv_cross::SmallVector<spirv_cross::Resource>& storageImages);
 
 
-		void createUniformBufferWriteDescriptions();
-		void createDescriptorSetLayout();
 
+		void createDescriptorSetLayout();
 		void destroy();	
 
 	private:
@@ -131,14 +113,12 @@ namespace XYZ {
 		std::string				   m_AssetPath;
 		std::vector<DescriptorSet> m_DescriptorSets;
 
-		std::vector<ShaderBufferWriteDescription>					m_UniformBufferWriteDescriptions;
-
 		std::unordered_map<VkShaderStageFlagBits, std::string>		m_ShaderSources;
 		std::vector<VkPipelineShaderStageCreateInfo>				m_PipelineShaderStageCreateInfos;
 
 		std::unordered_map<std::string, ShaderResourceDeclaration>	m_Resources;
 		std::vector<PushConstantRange>								m_PushConstantRanges;
 
-		std::unordered_map<std::string, ShaderBuffer>				m_Buffers;
+		std::unordered_map<std::string, ShaderBuffer>				m_Buffers;						
 	};
 }

@@ -10,6 +10,7 @@
 #include "VulkanIndexBuffer.h"
 #include "VulkanUniformBuffer.h"
 #include "VulkanDescriptorAllocator.h"
+#include "VulkanUniformBufferSet.h"
 
 #include "XYZ/Core/Application.h"
 #include "XYZ/Debug/Profiler.h"
@@ -132,41 +133,28 @@ namespace XYZ {
 		Renderer::Submit([renderCommandBuffer, pipeline, uniformBufferSet, vertexBuffer, indexBuffer, indexCount]() mutable
 		{
 			XYZ_PROFILE_FUNC("VulkanRendererAPI::RenderGeometry");
-			const VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			const VkDevice device    = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 			const uint32_t frameIndex = VulkanContext::Get()->GetSwapChain().GetCurrentBufferIndex();
 			Ref<VulkanRenderCommandBuffer> vulkanCommandBuffer = renderCommandBuffer;
 			Ref<VulkanIndexBuffer>		   vulkanIndexBuffer = indexBuffer;
 			Ref<VulkanShader>			   vulkanShader = pipeline->GetSpecification().Shader;
 			Ref<VulkanPipeline>			   vulkanPipeline = pipeline;
+			Ref<VulkanUniformBufferSet>	   vulkanUniformBufferSet = uniformBufferSet;
 			const VkCommandBuffer		   commandBuffer = vulkanCommandBuffer->GetVulkanCommandBuffer(frameIndex);
 			const VkPipelineLayout		   layout = vulkanPipeline->GetVulkanPipelineLayout();
 			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.As<VulkanPipeline>()->GetVulkanPipeline());
 
 
-			const auto& uniformBufferWriteDescription = vulkanShader->GetUniformBufferWriteDescriptions();
-			const auto& frameUniformBufferDescr		  = uniformBufferWriteDescription[frameIndex];
+			const auto& uniformBufferDescriptor = vulkanUniformBufferSet->GetDescriptors(vulkanShader->GetHash(), frameIndex);
 
-			std::vector<VkWriteDescriptorSet> writeDescriptors;
-			std::vector<VkDescriptorSet> descriptorSets;
-			for (uint32_t set = 0; set < frameUniformBufferDescr.Sets.size(); ++set)
-			{
-				const auto& descSet = frameUniformBufferDescr.Sets[set];
-				descriptorSets.push_back(descSet.DescriptorSet);
-				for (uint32_t buffer = 0; buffer < descSet.Bindings.size(); ++buffer)
-				{
-					const auto& descBinding = descSet.Bindings[buffer];
-					uint32_t binding = descBinding.Binding;
-					VkWriteDescriptorSet writeDescriptor = descBinding.WriteDescriptorSet;
-					Ref<VulkanUniformBuffer> uniformBuffer = uniformBufferSet->Get(binding, set, frameIndex);
-					writeDescriptor.pBufferInfo = &uniformBuffer->GetDescriptorBufferInfo();
-					writeDescriptors.push_back(writeDescriptor);
-				}		
-			}
-
-			vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptors.size()), writeDescriptors.data(), 0, nullptr);
+			vkUpdateDescriptorSets(device, 
+				static_cast<uint32_t>(uniformBufferDescriptor.WriteDescriptors.size()), 
+				uniformBufferDescriptor.WriteDescriptors.data(), 0, nullptr
+			);
 			vkCmdBindDescriptorSets(
 				commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 
-				0, static_cast<uint32_t>(descriptorSets.size()), descriptorSets.data(), 0, nullptr
+				0, static_cast<uint32_t>(uniformBufferDescriptor.DescriptorSets.size()), 
+				uniformBufferDescriptor.DescriptorSets.data(), 0, nullptr
 			);
 
 			///////////////////////////////		

@@ -2,6 +2,7 @@
 #include "VulkanUniformBuffer.h"
 
 #include "VulkanContext.h"
+#include "VulkanRendererAPI.h"
 
 namespace XYZ {
 	VulkanUniformBuffer::VulkanUniformBuffer(uint32_t size, uint32_t binding)
@@ -38,6 +39,7 @@ namespace XYZ {
 		memcpy(pData, (const uint8_t*)data + offset, size);
 		allocator.UnmapMemory(m_MemoryAlloc);
 	}
+	
 	void VulkanUniformBuffer::RT_invalidate()
 	{
 		release();

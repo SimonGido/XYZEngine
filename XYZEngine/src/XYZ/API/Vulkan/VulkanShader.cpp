@@ -167,7 +167,6 @@ namespace XYZ {
 			instance->reflectAllStages(shaderData);
 			instance->createProgram(shaderData);
 			instance->createDescriptorSetLayout();
-			instance->createUniformBufferWriteDescriptions();
 			Renderer::OnShaderReload(instance->GetHash());
 		});		
 	}
@@ -513,40 +512,7 @@ namespace XYZ {
 		}
 	}
 	
-	void VulkanShader::createUniformBufferWriteDescriptions()
-	{
-		const uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;
-		m_UniformBufferWriteDescriptions.resize(framesInFlight);
-		for (uint32_t frame = 0; frame < framesInFlight; ++frame)
-		{
-			ShaderBufferWriteDescription& shaderBufferWriteDescription = m_UniformBufferWriteDescriptions[frame];
-			for (size_t set = 0; set < m_DescriptorSets.size(); ++set)
-			{
-				const auto& descSet = m_DescriptorSets[set];
-
-				// Create new descriptor set
-				ShaderBufferWriteDescription::Set& descriptorSet = shaderBufferWriteDescription.Sets.emplace_back();
-				descriptorSet.DescriptorSet = AllocateDescriptorSet(set).DescriptorSets[0];		
-				for (auto&& [binding, shaderUB] : descSet.ShaderDescriptorSet.UniformBuffers)
-				{
-					// Create new write description for each uniform buffer
-					auto& shaderBufferSet = descriptorSet.Bindings.emplace_back();
-					shaderBufferSet.Binding = binding;
-					shaderBufferSet.WriteDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-					shaderBufferSet.WriteDescriptorSet.pNext = nullptr;
-					shaderBufferSet.WriteDescriptorSet.dstSet = descriptorSet.DescriptorSet;
-					shaderBufferSet.WriteDescriptorSet.dstBinding = binding;
-					shaderBufferSet.WriteDescriptorSet.dstArrayElement = 0;
-					shaderBufferSet.WriteDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-					shaderBufferSet.WriteDescriptorSet.descriptorCount = 1;
-					
-					shaderBufferSet.WriteDescriptorSet.pBufferInfo = VK_NULL_HANDLE;
-					shaderBufferSet.WriteDescriptorSet.pImageInfo = nullptr; // Optional
-					shaderBufferSet.WriteDescriptorSet.pTexelBufferView = nullptr; // Optional
-				}
-			}
-		}
-	}
+	
 
 	void VulkanShader::createDescriptorSetLayout()
 	{
@@ -619,7 +585,6 @@ namespace XYZ {
 				layoutBinding.pImmutableSamplers = nullptr;
 
 				uint32_t binding = bindingAndSet & 0xffffffff;
-				//uint32_t descriptorSet = (bindingAndSet >> 32);
 				layoutBinding.binding = binding;
 
 				XYZ_ASSERT(shaderDescriptorSet.UniformBuffers.find(binding) == shaderDescriptorSet.UniformBuffers.end(), "Binding is already present!");

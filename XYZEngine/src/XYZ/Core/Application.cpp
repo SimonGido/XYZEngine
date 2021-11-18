@@ -76,10 +76,10 @@ namespace XYZ {
 				for (Layer* layer : m_LayerStack)
 					layer->OnUpdate(m_Timestep);
 						
+			
+				m_Window->BeginFrame();
 				if (m_Specification.EnableImGui)
 					onImGuiRender();
-
-				m_Window->BeginFrame();
 				Renderer::WaitAndRender();
 				m_Window->SwapBuffers();
 			}
