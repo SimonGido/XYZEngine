@@ -79,7 +79,7 @@ namespace XYZ {
 		m_RenderCommandBuffer->Begin();
 		m_UniformBufferSet->Get(0, 0, currentFrame)->Update(&camera, sizeof(TestCamera), 0);
 		m_UniformBufferSet->Get(1, 1, currentFrame)->Update(&camera, sizeof(TestCamera), 0);
-
+		
 		Renderer::BeginRenderPass(m_RenderCommandBuffer, m_RenderPass, false);
 		Renderer::RenderGeometry(m_RenderCommandBuffer, m_Pipeline, m_UniformBufferSet, m_VertexBuffer, m_IndexBuffer);
 		Renderer::EndRenderPass(m_RenderCommandBuffer);

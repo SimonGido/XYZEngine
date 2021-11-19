@@ -146,88 +146,91 @@ namespace XYZ
 
     	ImGui::Render();
 
-        const VulkanSwapChain& swapChain = VulkanContext::GetSwapChain();
-
-		VkClearValue clearValues[2];
-		clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
-		clearValues[1].depthStencil = { 1.0f, 0 };
-
-        const uint32_t width = swapChain.GetWidth();
-        const uint32_t height = swapChain.GetHeight();
-
-        const uint32_t commandBufferIndex = swapChain.GetCurrentBufferIndex();
-
-		VkCommandBufferBeginInfo drawCmdBufInfo = {};
-		drawCmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		drawCmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-		drawCmdBufInfo.pNext = nullptr;
-
-        const VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentCommandBuffer();
-		VK_CHECK_RESULT(vkBeginCommandBuffer(drawCommandBuffer, &drawCmdBufInfo));
-
-		VkRenderPassBeginInfo renderPassBeginInfo = {};
-		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassBeginInfo.pNext = nullptr;
-		renderPassBeginInfo.renderPass = swapChain.GetVulkanRenderPass();
-		renderPassBeginInfo.renderArea.offset.x = 0;
-		renderPassBeginInfo.renderArea.offset.y = 0;
-		renderPassBeginInfo.renderArea.extent.width = width;
-		renderPassBeginInfo.renderArea.extent.height = height;
-		renderPassBeginInfo.clearValueCount = 2; // Color + depth
-		renderPassBeginInfo.pClearValues = clearValues;
-		renderPassBeginInfo.framebuffer = swapChain.GetCurrentFramebuffer();
-
-		vkCmdBeginRenderPass(drawCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
-
-		VkCommandBufferInheritanceInfo inheritanceInfo = {};
-		inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-		inheritanceInfo.renderPass = swapChain.GetVulkanRenderPass();
-		inheritanceInfo.framebuffer = swapChain.GetCurrentFramebuffer();
-
-		VkCommandBufferBeginInfo cmdBufInfo = {};
-		cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		cmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
-		cmdBufInfo.pInheritanceInfo = &inheritanceInfo;
-
-		VK_CHECK_RESULT(vkBeginCommandBuffer(m_ImGuiCommandBuffers[commandBufferIndex], &cmdBufInfo));
-
-		VkViewport viewport = {};
-		viewport.x = 0.0f;
-		viewport.y = (float)height;
-		viewport.height = -(float)height;
-		viewport.width = (float)width;
-		viewport.minDepth = 0.0f;
-		viewport.maxDepth = 1.0f;
-		vkCmdSetViewport(m_ImGuiCommandBuffers[commandBufferIndex], 0, 1, &viewport);
-
-		VkRect2D scissor = {};
-		scissor.extent.width = width;
-		scissor.extent.height = height;
-		scissor.offset.x = 0;
-		scissor.offset.y = 0;
-		vkCmdSetScissor(m_ImGuiCommandBuffers[commandBufferIndex], 0, 1, &scissor);
-
-		ImDrawData* main_draw_data = ImGui::GetDrawData();
-		ImGui_ImplVulkan_RenderDrawData(main_draw_data, m_ImGuiCommandBuffers[commandBufferIndex]);
-
-		VK_CHECK_RESULT(vkEndCommandBuffer(m_ImGuiCommandBuffers[commandBufferIndex]));
-
-		std::vector<VkCommandBuffer> commandBuffers;
-		commandBuffers.push_back(m_ImGuiCommandBuffers[commandBufferIndex]);
-
-		vkCmdExecuteCommands(drawCommandBuffer, uint32_t(commandBuffers.size()), commandBuffers.data());
-
-		vkCmdEndRenderPass(drawCommandBuffer);
-
-		VK_CHECK_RESULT(vkEndCommandBuffer(drawCommandBuffer));
-
-		ImGuiIO& io = ImGui::GetIO(); (void)io;
-		// Update and Render additional Platform Windows
-		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		Renderer::Submit([this]()
 		{
-			ImGui::UpdatePlatformWindows();
-			ImGui::RenderPlatformWindowsDefault();
-		}
+			const VulkanSwapChain& swapChain = VulkanContext::GetSwapChain();
+
+			VkClearValue clearValues[2];
+			clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
+			clearValues[1].depthStencil = { 1.0f, 0 };
+
+			const uint32_t width = swapChain.GetWidth();
+			const uint32_t height = swapChain.GetHeight();
+
+			const uint32_t commandBufferIndex = swapChain.GetCurrentBufferIndex();
+
+			VkCommandBufferBeginInfo drawCmdBufInfo = {};
+			drawCmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			drawCmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+			drawCmdBufInfo.pNext = nullptr;
+
+			const VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentCommandBuffer();
+			VK_CHECK_RESULT(vkBeginCommandBuffer(drawCommandBuffer, &drawCmdBufInfo));
+
+			VkRenderPassBeginInfo renderPassBeginInfo = {};
+			renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+			renderPassBeginInfo.pNext = nullptr;
+			renderPassBeginInfo.renderPass = swapChain.GetVulkanRenderPass();
+			renderPassBeginInfo.renderArea.offset.x = 0;
+			renderPassBeginInfo.renderArea.offset.y = 0;
+			renderPassBeginInfo.renderArea.extent.width = width;
+			renderPassBeginInfo.renderArea.extent.height = height;
+			renderPassBeginInfo.clearValueCount = 2; // Color + depth
+			renderPassBeginInfo.pClearValues = clearValues;
+			renderPassBeginInfo.framebuffer = swapChain.GetCurrentFramebuffer();
+
+			vkCmdBeginRenderPass(drawCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+
+			VkCommandBufferInheritanceInfo inheritanceInfo = {};
+			inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+			inheritanceInfo.renderPass = swapChain.GetVulkanRenderPass();
+			inheritanceInfo.framebuffer = swapChain.GetCurrentFramebuffer();
+
+			VkCommandBufferBeginInfo cmdBufInfo = {};
+			cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			cmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+			cmdBufInfo.pInheritanceInfo = &inheritanceInfo;
+
+			VK_CHECK_RESULT(vkBeginCommandBuffer(m_ImGuiCommandBuffers[commandBufferIndex], &cmdBufInfo));
+
+			VkViewport viewport = {};
+			viewport.x = 0.0f;
+			viewport.y = (float)height;
+			viewport.height = -(float)height;
+			viewport.width = (float)width;
+			viewport.minDepth = 0.0f;
+			viewport.maxDepth = 1.0f;
+			vkCmdSetViewport(m_ImGuiCommandBuffers[commandBufferIndex], 0, 1, &viewport);
+
+			VkRect2D scissor = {};
+			scissor.extent.width = width;
+			scissor.extent.height = height;
+			scissor.offset.x = 0;
+			scissor.offset.y = 0;
+			vkCmdSetScissor(m_ImGuiCommandBuffers[commandBufferIndex], 0, 1, &scissor);
+
+			ImDrawData* main_draw_data = ImGui::GetDrawData();
+			ImGui_ImplVulkan_RenderDrawData(main_draw_data, m_ImGuiCommandBuffers[commandBufferIndex]);
+
+			VK_CHECK_RESULT(vkEndCommandBuffer(m_ImGuiCommandBuffers[commandBufferIndex]));
+
+			std::vector<VkCommandBuffer> commandBuffers;
+			commandBuffers.push_back(m_ImGuiCommandBuffers[commandBufferIndex]);
+
+			vkCmdExecuteCommands(drawCommandBuffer, uint32_t(commandBuffers.size()), commandBuffers.data());
+
+			vkCmdEndRenderPass(drawCommandBuffer);
+
+			VK_CHECK_RESULT(vkEndCommandBuffer(drawCommandBuffer));
+
+			ImGuiIO& io = ImGui::GetIO(); (void)io;
+			// Update and Render additional Platform Windows
+			if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+			{
+				ImGui::UpdatePlatformWindows();
+				ImGui::RenderPlatformWindowsDefault();
+			}
+		});
     }
 
     void VulkanImGuiLayer::OnImGuiRender()

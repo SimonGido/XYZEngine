@@ -4,6 +4,7 @@
 #include "CustomRenderer2D.h"
 #include "Renderer2D.h"
 #include "SceneRenderer.h"
+#include "Fence.h"
 
 #include "XYZ/Core/Application.h"
 #include "XYZ/Debug/Profiler.h"
@@ -11,8 +12,6 @@
 
 #include "XYZ/API/OpenGL/OpenGLRendererAPI.h"
 #include "XYZ/API/Vulkan/VulkanRendererAPI.h"
-
-#include <GL/glew.h>
 
 namespace XYZ {
 
@@ -174,7 +173,7 @@ namespace XYZ {
 
 	void Renderer::Shutdown()
 	{
-		s_Data.Pool.EraseThread(0);
+		
 		s_Data.FullscreenQuadVertexArray.Reset();
 		s_Data.FullscreenQuadVertexBuffer.Reset();
 		s_Data.FullscreenQuadIndexBuffer.Reset();
@@ -187,7 +186,8 @@ namespace XYZ {
 		queue->Swap();
 		WaitAndRender();
 		BlockRenderThread();
-		
+		s_Data.Pool.EraseThread(0);
+
 		for (uint32_t i = 0; i < s_Data.Configuration.FramesInFlight; i++)
 		{
 			auto& releaseQueue = Renderer::GetRenderResourceReleaseQueue(i);
@@ -364,12 +364,7 @@ namespace XYZ {
 			auto val = queue->Read();
 			val->Execute();
 
-			if (RendererAPI::GetAPI() == RendererAPI::API::OpenGL)
-			{
-				GLsync fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-				auto value = glClientWaitSync(fence, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
-				glDeleteSync(fence);
-			}
+			Fence::Create(UINT64_MAX);
 			return true;
 		});
 		#else
