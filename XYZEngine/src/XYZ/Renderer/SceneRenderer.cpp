@@ -318,7 +318,7 @@ namespace XYZ {
 			material->Bind();
 			shader->SetMat4("u_Transform", dc.Transform);
 			dc.Mesh->GetVertexArray()->Bind();
-			Renderer::DrawIndexed(PrimitiveType::Triangles, dc.Mesh->GetIndexCount(), 0);
+			Renderer::DrawIndexed(PrimitiveType::Triangles, dc.Mesh->GetIndexCount());
 		}
 		
 		m_Renderer2D->BeginScene();

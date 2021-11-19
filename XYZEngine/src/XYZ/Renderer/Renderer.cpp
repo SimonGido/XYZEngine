@@ -5,6 +5,7 @@
 #include "Renderer2D.h"
 #include "SceneRenderer.h"
 #include "Fence.h"
+#include "RendererQueueData.h"
 
 #include "XYZ/Core/Application.h"
 #include "XYZ/Debug/Profiler.h"
@@ -15,13 +16,13 @@
 
 namespace XYZ {
 
-	
+
 	struct ShaderDependencies
 	{
-		void Clear() 
-		{ 
-			MaterialDependencies.clear(); 
-			PipelineDependencies.clear(); 
+		void Clear()
+		{
+			MaterialDependencies.clear();
+			PipelineDependencies.clear();
 		}
 		std::vector<Ref<Material>> MaterialDependencies;
 		std::vector<Ref<Pipeline>> PipelineDependencies;
@@ -64,24 +65,22 @@ namespace XYZ {
 		std::unordered_map<size_t, ShaderDependencies> m_Dependencies;
 	};
 
+	
+
 	struct RendererData
 	{
-		std::shared_ptr<ThreadPass<RenderCommandQueue>> CommandQueue;
-		RenderCommandQueue*								ResourceFreeQueues;
-
-		ThreadPool									    Pool;
-		Ref<APIContext>									APIContext;
-		Ref<ShaderLibrary>								ShaderLibrary;
-		Ref<RenderPass>									ActiveRenderPass;
-		Ref<VertexArray>								FullscreenQuadVertexArray;
-		Ref<VertexBuffer>								FullscreenQuadVertexBuffer;
-		Ref<IndexBuffer>								FullscreenQuadIndexBuffer;
-
-		std::future<bool>							    RenderThreadFinished;
-		RendererStats									Stats;
-		RendererConfiguration							Configuration;
-
-		ShaderDependencyMap								ShaderDependencies;
+		RendererQueueData			   QueueData;
+		Ref<APIContext>				   APIContext;
+		Ref<ShaderLibrary>			   ShaderLibrary;
+		Ref<RenderPass>				   ActiveRenderPass;
+		Ref<VertexArray>			   FullscreenQuadVertexArray;
+		Ref<VertexBuffer>			   FullscreenQuadVertexBuffer;
+		Ref<IndexBuffer>			   FullscreenQuadIndexBuffer;
+									   
+		RendererStats				   Stats;
+		RendererConfiguration		   Configuration;
+									   
+		ShaderDependencyMap			   ShaderDependencies;
 	};
 
 	RendererAPI::API RendererAPI::s_API = RendererAPI::API::Vulkan;
@@ -99,7 +98,6 @@ namespace XYZ {
 		XYZ_ASSERT(false, "Unknown RendererAPI");
 		return nullptr;
 	}
-
 
 	static void SetupFullscreenQuad()
 	{
@@ -143,11 +141,11 @@ namespace XYZ {
 	void Renderer::Init(const RendererConfiguration& config)
 	{
 		s_Data.Configuration = config;
-		s_Data.Pool.PushThread();
-		s_Data.CommandQueue = std::make_shared<ThreadPass<RenderCommandQueue>>();
-		s_Data.ResourceFreeQueues = new RenderCommandQueue[config.FramesInFlight];
+	
 		s_Data.APIContext = APIContext::Create();
 		s_RendererAPI = CreateRendererAPI();
+
+		s_Data.QueueData.Init(config.FramesInFlight);
 		s_RendererAPI->Init();
 	}
 
@@ -172,31 +170,15 @@ namespace XYZ {
 	}
 
 	void Renderer::Shutdown()
-	{
-		
+	{	
 		s_Data.FullscreenQuadVertexArray.Reset();
 		s_Data.FullscreenQuadVertexBuffer.Reset();
 		s_Data.FullscreenQuadIndexBuffer.Reset();
 		s_Data.ShaderLibrary.Reset();
 		s_Data.ShaderDependencies.Clear();
 		s_RendererAPI->Shutdown();
+		s_Data.QueueData.Shutdown();
 
-		WaitAndRender();
-		const auto queue = s_Data.CommandQueue;
-		queue->Swap();
-		WaitAndRender();
-		BlockRenderThread();
-		s_Data.Pool.EraseThread(0);
-
-		for (uint32_t i = 0; i < s_Data.Configuration.FramesInFlight; i++)
-		{
-			auto& releaseQueue = Renderer::GetRenderResourceReleaseQueue(i);
-			releaseQueue.Execute();
-		}
-		delete[]s_Data.ResourceFreeQueues;
-		s_Data.ResourceFreeQueues = nullptr;
-
-		
 		delete s_RendererAPI;
 		s_RendererAPI = nullptr;
 
@@ -253,21 +235,21 @@ namespace XYZ {
 		});
 	}
 
-	void Renderer::DrawIndexed(PrimitiveType type, uint32_t indexCount, uint32_t queueType)
+	void Renderer::DrawIndexed(PrimitiveType type, uint32_t indexCount)
 	{
 		s_Data.Stats.DrawIndexedCount++;
 		Renderer::Submit([=]() {
 			s_RendererAPI->DrawIndexed(type, indexCount);
-		}, queueType);
+		});
 	}
 
-	void Renderer::DrawInstanced(PrimitiveType type, uint32_t indexCount, uint32_t instanceCount, uint32_t offset, uint32_t queueType)
+	void Renderer::DrawInstanced(PrimitiveType type, uint32_t indexCount, uint32_t instanceCount, uint32_t offset)
 	{
 		s_Data.Stats.DrawInstancedCount++;
 
 		Renderer::Submit([=]() {
 			s_RendererAPI->DrawInstanced(type, indexCount, instanceCount, offset);
-		}, queueType);
+		});
 	}
 
 	void Renderer::DrawElementsIndirect(void* indirect)
@@ -332,14 +314,12 @@ namespace XYZ {
 	}
 	void Renderer::BlockRenderThread()
 	{
-		#ifdef RENDER_THREAD_ENABLED
-		s_Data.RenderThreadFinished.wait();
-		#endif
+		s_Data.QueueData.BlockRenderThread();
 	}
 
 	ThreadPool& Renderer::GetPool()
 	{
-		return s_Data.Pool;
+		return s_Data.QueueData.GetThreadPool();
 	}
 
 	RendererAPI* Renderer::GetRendererAPI()
@@ -355,24 +335,15 @@ namespace XYZ {
 	void Renderer::WaitAndRender()
 	{
 		s_Data.Stats.Reset();
-
-		const auto queue = s_Data.CommandQueue;
-		queue->Swap();
-		#ifdef RENDER_THREAD_ENABLED
-		s_Data.RenderThreadFinished = s_Data.Pool.PushJob<bool>([queue]() {
-			XYZ_PROFILE_FUNC("Renderer::WaitAndRender Job");
-			auto val = queue->Read();
-			val->Execute();
-
-			Fence::Create(UINT64_MAX);
-			return true;
-		});
-		#else
+		s_Data.QueueData.ExecuteRenderQueue();
+	}
+	void Renderer::HandleResources()
+	{
+		if (s_RendererAPI->GetAPI() == RendererAPI::API::Vulkan)
 		{
-			auto val = queue->Read();
-			val->Execute();
+			const uint32_t currentFrame = s_Data.APIContext->GetCurrentFrame();
+			s_Data.QueueData.ExecuteResourceQueue(currentFrame);
 		}
-		#endif
 	}
 	Ref<ShaderLibrary> Renderer::GetShaderLibrary()
 	{
@@ -391,13 +362,13 @@ namespace XYZ {
 	{
 		return s_Data.Configuration;
 	}
-	RenderCommandQueue& Renderer::GetRenderResourceReleaseQueue(uint32_t index)
+	RenderCommandQueue& Renderer::GetRenderResourceQueue(uint32_t index)
 	{
-		return s_Data.ResourceFreeQueues[index];
+		return s_Data.QueueData.GetResourceCommandQueue(index);
 	}
-	ScopedLock<RenderCommandQueue> Renderer::getRenderCommandQueue(uint8_t type)
+	RenderCommandQueue& Renderer::getRenderCommandQueue()
 	{
-		return s_Data.CommandQueue->Write();
+		return s_Data.QueueData.GetRenderCommandQueue();
 	}
 	RendererStats& Renderer::getStats()
 	{

@@ -79,7 +79,7 @@ namespace XYZ {
 		m_LocalData.Destroy();
 		VkBuffer buffer = m_VulkanBuffer;
 		VmaAllocation allocation = m_MemoryAllocation;
-		Renderer::SubmitResourceFree([buffer, allocation]() {
+		Renderer::SubmitResource([buffer, allocation]() {
 
 			VulkanAllocator allocator("IndexBuffer");
 			allocator.DestroyBuffer(buffer, allocation);

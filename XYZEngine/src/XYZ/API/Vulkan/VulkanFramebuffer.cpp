@@ -61,7 +61,7 @@ namespace XYZ {
 		if (m_Framebuffer)
 		{
 			VkFramebuffer framebuffer = m_Framebuffer;
-			Renderer::SubmitResourceFree([framebuffer]() {
+			Renderer::SubmitResource([framebuffer]() {
 				const auto device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 				vkDestroyFramebuffer(device, framebuffer, nullptr);
 			});

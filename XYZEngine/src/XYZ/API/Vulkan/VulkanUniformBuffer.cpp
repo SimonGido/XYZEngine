@@ -69,7 +69,7 @@ namespace XYZ {
 		if (!m_MemoryAlloc)
 			return;
 
-		Renderer::SubmitResourceFree([buffer = m_Buffer, memoryAlloc = m_MemoryAlloc]()
+		Renderer::SubmitResource([buffer = m_Buffer, memoryAlloc = m_MemoryAlloc]()
 		{
 			VulkanAllocator allocator("UniformBuffer");
 			allocator.DestroyBuffer(buffer, memoryAlloc);

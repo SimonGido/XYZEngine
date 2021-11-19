@@ -72,17 +72,20 @@ namespace XYZ {
 			updateTimestep();	
 			m_Window->ProcessEvents();
 			if (!m_Minimized)
-			{						
+			{				
+				Renderer::BlockRenderThread(); // Sync before new frame
+				Renderer::HandleResources();
+				Renderer::WaitAndRender();
+				
+				m_Window->BeginFrame();
 				for (Layer* layer : m_LayerStack)
 					layer->OnUpdate(m_Timestep);
 				
 				if (m_Specification.EnableImGui)
 					onImGuiRender();
 				
-				Renderer::BlockRenderThread(); // Sync before rendering
-				m_Window->BeginFrame();
-				Renderer::WaitAndRender();
-				m_Window->SwapBuffers();
+				
+				m_Window->SwapBuffers();			
 			}
 		}
 		XYZ_PROFILER_SHUTDOWN;

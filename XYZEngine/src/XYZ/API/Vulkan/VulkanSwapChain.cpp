@@ -93,44 +93,46 @@ namespace XYZ {
 	}
 	void VulkanSwapChain::BeginFrame()
 	{
-		auto& queue = Renderer::GetRenderResourceReleaseQueue(m_CurrentBufferIndex);
-		queue.Execute();
+		Renderer::Submit([this]() {
 
-		const auto device = m_Device->GetVulkanDevice();
-		VK_CHECK_RESULT(vkWaitForFences(m_Device->GetVulkanDevice(), 1, &m_WaitFences[m_CurrentBufferIndex], VK_TRUE, UINT64_MAX));
-		VK_CHECK_RESULT(vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_Semaphores[m_CurrentBufferIndex].PresentComplete, VK_NULL_HANDLE, &m_CurrentImageIndex));
+			const auto device = m_Device->GetVulkanDevice();
+			VK_CHECK_RESULT(vkWaitForFences(m_Device->GetVulkanDevice(), 1, &m_WaitFences[m_CurrentBufferIndex], VK_TRUE, UINT64_MAX));
+			VK_CHECK_RESULT(vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_Semaphores[m_CurrentBufferIndex].PresentComplete, VK_NULL_HANDLE, &m_CurrentImageIndex));
+		});
 	}
 	void VulkanSwapChain::Present()
 	{
-		VkSubmitInfo submitInfo{};
-		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		Renderer::Submit([this]() {
 
-		const VkPipelineStageFlags waitStages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		submitInfo.waitSemaphoreCount = 1;
-		submitInfo.pWaitSemaphores = &m_Semaphores[m_CurrentBufferIndex].PresentComplete;
-		submitInfo.pWaitDstStageMask = &waitStages;
+			VkSubmitInfo submitInfo{};
+			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-		submitInfo.pSignalSemaphores = &m_Semaphores[m_CurrentBufferIndex].RenderComplete;
-		submitInfo.signalSemaphoreCount = 1;
-		submitInfo.pCommandBuffers = &m_CommandBuffers[m_CurrentBufferIndex];
-		submitInfo.commandBufferCount = 1;
+			const VkPipelineStageFlags waitStages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			submitInfo.waitSemaphoreCount = 1;
+			submitInfo.pWaitSemaphores = &m_Semaphores[m_CurrentBufferIndex].PresentComplete;
+			submitInfo.pWaitDstStageMask = &waitStages;
 
-		
-		VK_CHECK_RESULT(vkResetFences(m_Device->GetVulkanDevice(), 1, &m_WaitFences[m_CurrentBufferIndex]));
-		VK_CHECK_RESULT(vkQueueSubmit(m_Device->GetGraphicsQueue(), 1, &submitInfo, m_WaitFences[m_CurrentBufferIndex]));
-		const VkResult result = queuePresent(m_Device->GetGraphicsQueue(), m_CurrentImageIndex, m_Semaphores[m_CurrentBufferIndex].RenderComplete);
-		if (result != VK_SUCCESS || result == VK_SUBOPTIMAL_KHR)
-		{
-			if (result == VK_ERROR_OUT_OF_DATE_KHR)
+			submitInfo.pSignalSemaphores = &m_Semaphores[m_CurrentBufferIndex].RenderComplete;
+			submitInfo.signalSemaphoreCount = 1;
+			submitInfo.pCommandBuffers = &m_CommandBuffers[m_CurrentBufferIndex];
+			submitInfo.commandBufferCount = 1;
+
+
+			VK_CHECK_RESULT(vkResetFences(m_Device->GetVulkanDevice(), 1, &m_WaitFences[m_CurrentBufferIndex]));
+			VK_CHECK_RESULT(vkQueueSubmit(m_Device->GetGraphicsQueue(), 1, &submitInfo, m_WaitFences[m_CurrentBufferIndex]));
+			const VkResult result = queuePresent(m_Device->GetGraphicsQueue(), m_CurrentImageIndex, m_Semaphores[m_CurrentBufferIndex].RenderComplete);
+			if (result != VK_SUCCESS || result == VK_SUBOPTIMAL_KHR)
 			{
-				// Swap chain is no longer compatible with the surface and needs to be recreated
-				OnResize(m_Extent.width, m_Extent.height);
-				return;
+				if (result == VK_ERROR_OUT_OF_DATE_KHR)
+				{
+					// Swap chain is no longer compatible with the surface and needs to be recreated
+					OnResize(m_Extent.width, m_Extent.height);
+					return;
+				}
+				VK_CHECK_RESULT(result);
 			}
-			VK_CHECK_RESULT(result);
-		}
-		m_CurrentBufferIndex = (m_CurrentBufferIndex + 1) %  Renderer::GetConfiguration().FramesInFlight;;
-		
+			m_CurrentBufferIndex = (m_CurrentBufferIndex + 1) % Renderer::GetConfiguration().FramesInFlight;;
+		});
 	}
 	void VulkanSwapChain::Init(VkInstance instance, const Ref<VulkanDevice>& device)
 	{

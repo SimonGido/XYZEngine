@@ -171,7 +171,6 @@ namespace XYZ {
 
 	void WindowsWindow::SwapBuffers()
 	{
-		Renderer::BlockRenderThread();	
 		m_Context->SwapBuffers();
 	}
 

@@ -15,7 +15,7 @@ namespace XYZ {
 	class Application
 	{
 	public:
-		Application(const ApplicationSpecification& specification);
+		Application(const ApplicationSpecification& specification = {});
 		virtual ~Application();
 
 		void Run();

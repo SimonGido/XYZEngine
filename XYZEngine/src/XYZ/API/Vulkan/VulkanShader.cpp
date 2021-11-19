@@ -629,7 +629,7 @@ namespace XYZ {
 
 		
 			
-		Renderer::SubmitResourceFree([stageInfos, descriptorSetLayouts]() {
+		Renderer::SubmitResource([stageInfos, descriptorSetLayouts]() {
 			const VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 			for (const auto& info : stageInfos)
 				vkDestroyShaderModule(device, info.module, nullptr);

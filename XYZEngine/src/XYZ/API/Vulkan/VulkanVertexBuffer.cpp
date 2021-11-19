@@ -84,7 +84,7 @@ namespace XYZ {
 		}
 		VkBuffer buffer = m_VulkanBuffer;
 		VmaAllocation allocation = m_MemoryAllocation;
-		Renderer::SubmitResourceFree([buffer, allocation]()
+		Renderer::SubmitResource([buffer, allocation]()
 		{
 			VulkanAllocator allocator("VertexBuffer");
 			allocator.DestroyBuffer(buffer, allocation);

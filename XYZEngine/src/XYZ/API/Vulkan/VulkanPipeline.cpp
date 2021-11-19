@@ -54,7 +54,7 @@ namespace XYZ {
 	{
 		VkPipelineLayout pipelineLayout = m_PipelineLayout;
 		VkPipeline		 vulkanPipeline = m_VulkanPipeline;
-		Renderer::SubmitResourceFree([pipelineLayout, vulkanPipeline]() {		
+		Renderer::SubmitResource([pipelineLayout, vulkanPipeline]() {		
 			destroy(pipelineLayout, vulkanPipeline);
 		});	
 	}

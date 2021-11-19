@@ -4,6 +4,7 @@
 #include "XYZ/Core/ThreadPool.h"
 #include "XYZ/Utils/DataStructures/ThreadPass.h"
 
+
 #include "Shader.h"
 #include "Camera.h"
 #include "VertexArray.h"
@@ -34,14 +35,6 @@ namespace XYZ {
 		uint32_t FramesInFlight = 3;
 	};
 
-
-	enum RenderQueueType
-	{
-		Default,
-		Overlay,
-		NumTypes
-	};
-
 	class Renderer
 	{
 	public:
@@ -58,8 +51,8 @@ namespace XYZ {
 		static void SetDepthTest(bool val);
 
 		static void DrawArrays(PrimitiveType type, uint32_t count);
-		static void DrawIndexed(PrimitiveType type, uint32_t indexCount = 0, uint32_t queueType = Default);
-		static void DrawInstanced(PrimitiveType type, uint32_t indexCount, uint32_t instanceCount, uint32_t offset = 0, uint32_t queueType = Default);
+		static void DrawIndexed(PrimitiveType type, uint32_t indexCount = 0);
+		static void DrawInstanced(PrimitiveType type, uint32_t indexCount, uint32_t instanceCount, uint32_t offset = 0);
 		static void DrawElementsIndirect(void* indirect);
 		static void SubmitFullscreenQuad();
 		/////////////
@@ -87,32 +80,32 @@ namespace XYZ {
 		static const RendererConfiguration& GetConfiguration();
 
 		template<typename FuncT>
-		static void Submit(FuncT&& func, uint32_t type = Default);
+		static void Submit(FuncT&& func);
 
 		template<typename FuncT>
-		static void SubmitAndWait(FuncT&& func, uint32_t type = Default);
+		static void SubmitAndWait(FuncT&& func);
 
 		template<typename FuncT>
-		static void SubmitResourceFree(FuncT&& func);
+		static void SubmitResource(FuncT&& func);
 
 		static void BlockRenderThread();
 		static void WaitAndRender();
+		static void HandleResources();
 
 
-		static ThreadPool& GetPool();
+		static ThreadPool&			GetPool();
 		static RendererAPI::API		GetAPI() { return RendererAPI::GetAPI(); }
-		static RendererAPI* GetRendererAPI();
+		static RendererAPI*			GetRendererAPI();
 		static const RendererStats& GetStats();
-		static RenderCommandQueue& GetRenderResourceReleaseQueue(uint32_t index);
+		static RenderCommandQueue&	GetRenderResourceQueue(uint32_t index);
 
 	private:
-		static ScopedLock<RenderCommandQueue> getRenderCommandQueue(uint8_t type);
-
-		static RendererStats& getStats();
+		static RenderCommandQueue& getRenderCommandQueue();
+		static RendererStats&	   getStats();
 	};
 
 	template <typename FuncT>
-	void Renderer::Submit(FuncT&& func, uint32_t type)
+	void Renderer::Submit(FuncT&& func)
 	{
 		auto renderCmd = [](void* ptr) {
 
@@ -120,22 +113,22 @@ namespace XYZ {
 			(*pFunc)();
 			pFunc->~FuncT(); // Call destructor
 		};
-		auto queue = getRenderCommandQueue(type);
-		auto storageBuffer = queue->Allocate(renderCmd, sizeof(func));
+		auto& queue = getRenderCommandQueue();
+		auto storageBuffer = queue.Allocate(renderCmd, sizeof(func));
 		new (storageBuffer) FuncT(std::forward<FuncT>(func));
 		getStats().CommandsCount++;
 	}
 
 	template <typename FuncT>
-	void Renderer::SubmitAndWait(FuncT&& func, uint32_t type)
+	void Renderer::SubmitAndWait(FuncT&& func)
 	{
-		Submit(std::forward<FuncT>(func), type);
+		Submit(std::forward<FuncT>(func));
 		WaitAndRender();
 		BlockRenderThread();
 	}
 
 	template <typename FuncT>
-	void Renderer::SubmitResourceFree(FuncT&& func)
+	void Renderer::SubmitResource(FuncT&& func)
 	{
 		auto renderCmd = [](void* ptr) {
 			auto pFunc = static_cast<FuncT*>(ptr);
@@ -146,7 +139,7 @@ namespace XYZ {
 		Submit([renderCmd, func]()
 		{
 			const uint32_t index = Renderer::GetAPIContext()->GetCurrentFrame();
-			auto storageBuffer = GetRenderResourceReleaseQueue(index).Allocate(renderCmd, sizeof(func));
+			auto storageBuffer = GetRenderResourceQueue(index).Allocate(renderCmd, sizeof(func));
 			new (storageBuffer) FuncT(std::forward<FuncT>((FuncT&&)func));
 		});
 	}
