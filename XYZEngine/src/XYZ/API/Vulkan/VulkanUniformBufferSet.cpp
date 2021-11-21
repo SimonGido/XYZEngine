@@ -13,6 +13,7 @@ namespace XYZ {
 	void VulkanUniformBufferSet::CreateDescriptors(const Ref<Shader>& shader)
 	{
 		Ref<const VulkanShader> vulkanShader = shader;
+
 		Ref<VulkanUniformBufferSet> instance = this;
 		Renderer::Submit([instance, vulkanShader]() mutable {
 			auto it = instance->m_WriteDescriptors.find(vulkanShader->GetHash());
@@ -24,18 +25,17 @@ namespace XYZ {
 			writeDescriptor.resize(instance->m_Frames);
 			for (uint32_t frame = 0; frame < instance->m_Frames; ++frame)
 			{
+				writeDescriptor[frame].resize(descriptorSets.size());
 				for (size_t set = 0; set < descriptorSets.size(); ++set)
 				{
-					writeDescriptor[frame].DescriptorSets.push_back(VulkanRendererAPI::RT_AllocateDescriptorSet(descriptorSets[set].DescriptorSetLayout));
-					auto& descriptorSet = writeDescriptor[frame].DescriptorSets.back();
 					for (auto&& [binding, shaderUB] : descriptorSets[set].ShaderDescriptorSet.UniformBuffers)
 					{
 						// Create new write description for each uniform buffer
-						auto& writeDescr = writeDescriptor[frame].WriteDescriptors.emplace_back();
+						auto& writeDescr = writeDescriptor[frame][set].emplace_back();
 
 						writeDescr.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 						writeDescr.pNext = nullptr;
-						writeDescr.dstSet = descriptorSet;
+						writeDescr.dstSet = VK_NULL_HANDLE;
 						writeDescr.dstBinding = binding;
 						writeDescr.dstArrayElement = 0;
 						writeDescr.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -70,8 +70,9 @@ namespace XYZ {
 		return m_UniformBuffers.at(frame).at(set).at(binding);
 	}
 	
-	const VulkanUniformBufferSet::ShaderWriteDescriptorSet& VulkanUniformBufferSet::GetDescriptors(size_t hash, uint32_t frame) const
+	const std::vector<std::vector<std::vector<VkWriteDescriptorSet>>>& VulkanUniformBufferSet::GetDescriptors(size_t hash) const
 	{
-		return m_WriteDescriptors.at(hash)[frame];
+		XYZ_ASSERT(m_WriteDescriptors.find(hash) != m_WriteDescriptors.end(), "UniformBufferSet does not have descriptors");
+		return m_WriteDescriptors.at(hash);
 	}
 }

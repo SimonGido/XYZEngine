@@ -113,7 +113,7 @@ namespace XYZ {
 				m_PixelBuffer = nullptr;
 			}
 			m_Context = context;
-			m_Context->GetData(&m_PixelBuffer);
+			
 			m_SpriteRenderer.SubTexture = Ref<SubTexture>::Create(m_Context);
 			m_Output = Ref<SubTexture>::Create(m_Context);
 

@@ -226,15 +226,7 @@ namespace XYZ {
 
 		return TextureWrap::None;
 	}
-	static TextureParam IntToTextureParam(int param)
-	{
-		if (param == ToUnderlying(TextureParam::Nearest))
-			return TextureParam::Nearest;
-		if (param == ToUnderlying(TextureParam::Linear))
-			return TextureParam::Linear;
-
-		return TextureParam::None;
-	}
+	
 	static void SerializeUniformList(YAML::Emitter& out, const uint8_t* buffer, const std::vector<ShaderUniform>& uniformList)
 	{
 		for (auto& uniform : uniformList)
@@ -291,14 +283,14 @@ namespace XYZ {
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		
-		out << YAML::Key << "Texture" << YAML::Value << asset->FileName;
-		out << YAML::Key << "TextureFilePath" << YAML::Value << texture->GetFilepath();
-		out << YAML::Key << "Width" << YAML::Value << texture->GetWidth();
-		out << YAML::Key << "Height" << YAML::Value << texture->GetHeight();
-		out << YAML::Key << "Channels" << YAML::Value << texture->GetChannelSize();
-		out << YAML::Key << "Wrap" << YAML::Value << ToUnderlying(texture->GetSpecification().Wrap);
-		out << YAML::Key << "Param Min" << YAML::Value << ToUnderlying(texture->GetSpecification().MinParam);
-		out << YAML::Key << "Param Max" << YAML::Value << ToUnderlying(texture->GetSpecification().MagParam);
+		//out << YAML::Key << "Texture" << YAML::Value << asset->FileName;
+		//out << YAML::Key << "TextureFilePath" << YAML::Value << texture->GetFilepath();
+		//out << YAML::Key << "Width" << YAML::Value << texture->GetWidth();
+		//out << YAML::Key << "Height" << YAML::Value << texture->GetHeight();
+		//out << YAML::Key << "Channels" << YAML::Value << texture->GetChannelSize();
+		//out << YAML::Key << "Wrap" << YAML::Value << ToUnderlying(texture->GetSpecification().Wrap);
+		//out << YAML::Key << "Param Min" << YAML::Value << ToUnderlying(texture->GetSpecification().MinParam);
+		//out << YAML::Key << "Param Max" << YAML::Value << ToUnderlying(texture->GetSpecification().MagParam);
 		
 		std::ofstream fout(asset->FilePath);
 		fout << out.c_str();
@@ -344,11 +336,12 @@ namespace XYZ {
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		out << YAML::Key << "Material" << YAML::Value << asset->FileName;
-		out << YAML::Key << "ShaderAsset" << YAML::Value << material->GetShader()->Handle;
-		out << YAML::Key << "RenderQueueID" << YAML::Value << material->GetRenderQueueID();
+		//out << YAML::Key << "ShaderAsset" << YAML::Value << material->GetShader()->Handle;
+		//out << YAML::Key << "RenderQueueID" << YAML::Value << material->GetRenderQueueID();
 		out << YAML::Key << "Textures";
 		out << YAML::Value << YAML::BeginSeq;
 		uint32_t counter = 0;
+		/*
 		for (auto& texture : material->GetTextures())
 		{
 			if (!texture.Raw())
@@ -361,13 +354,14 @@ namespace XYZ {
 			out << YAML::Key << "TextureIndex" << YAML::Value << counter++;
 			out << YAML::EndMap;
 		}
+		*/
 		out << YAML::EndSeq;
 
 		out << YAML::Key << "Values";
 		out << YAML::Value << YAML::BeginSeq;
 
-		SerializeUniformList(out, material->GetVSUniformBuffer(), material->GetShader()->GetVSUniformList().Uniforms);
-		SerializeUniformList(out, material->GetFSUniformBuffer(), material->GetShader()->GetFSUniformList().Uniforms);
+		//SerializeUniformList(out, material->GetVSUniformBuffer(), material->GetShader()->GetVSUniformList().Uniforms);
+		//SerializeUniformList(out, material->GetFSUniformBuffer(), material->GetShader()->GetFSUniformList().Uniforms);
 
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
@@ -485,29 +479,29 @@ namespace XYZ {
 	template <>
 	Ref<Asset> AssetSerializer::deserialize<Texture2D>(const Ref<Asset>& asset)
 	{
-		std::ifstream stream(asset->FilePath);
-		TextureSpecs specs;
-		
-		std::stringstream strStream;
-		strStream << stream.rdbuf();
-		YAML::Node data = YAML::Load(strStream.str());
-	
-		XYZ_ASSERT(data["Texture"], "Incorrect file format");
-
-		uint32_t width = data["Width"].as<uint32_t>();
-		uint32_t height = data["Height"].as<uint32_t>();
-		uint32_t channels = data["Channels"].as<uint32_t>();
-
-		specs.Wrap = IntToTextureWrap(data["Wrap"].as<int>());
-		specs.MinParam = IntToTextureParam(data["Param Min"].as<int>());
-		specs.MagParam = IntToTextureParam(data["Param Max"].as<int>());
-			
-		std::string textureFilePath = data["TextureFilePath"].as<std::string>();
+		//std::ifstream stream(asset->FilePath);
+		//TextureSpecs specs;
+		//
+		//std::stringstream strStream;
+		//strStream << stream.rdbuf();
+		//YAML::Node data = YAML::Load(strStream.str());
+		//
+		//XYZ_ASSERT(data["Texture"], "Incorrect file format");
+		//
+		//uint32_t width = data["Width"].as<uint32_t>();
+		//uint32_t height = data["Height"].as<uint32_t>();
+		//uint32_t channels = data["Channels"].as<uint32_t>();
+		//
+		//specs.Wrap = IntToTextureWrap(data["Wrap"].as<int>());
+		//specs.MinParam = IntToTextureParam(data["Param Min"].as<int>());
+		//specs.MagParam = IntToTextureParam(data["Param Max"].as<int>());
+		//	
+		//std::string textureFilePath = data["TextureFilePath"].as<std::string>();
 		Ref<Texture2D> texture;
-		if (!textureFilePath.empty())
-		{
-			texture = Texture2D::Create(specs, textureFilePath);			
-		}
+		//if (!textureFilePath.empty())
+		//{
+		//	texture = Texture2D::Create(specs, textureFilePath);			
+		//}
 
 		CopyAsset(texture.As<Asset>(), asset);
 		return texture.As<Asset>();
@@ -557,43 +551,43 @@ namespace XYZ {
 
 		GUID shaderHandle(data["ShaderAsset"].as<std::string>());
 		auto shader = AssetManager::GetAsset<Shader>(shaderHandle);
-		Ref<Material> material = Ref<Material>::Create(shader);
+		Ref<Material> material = Material::Create(shader);
 		CopyAsset(material.As<Asset>(), asset);
-		material->SetRenderQueueID(data["RenderQueueID"].as<uint8_t>());
-		for (auto& seq : data["Textures"])
-		{
-			GUID textureHandle(seq["TextureAsset"].as<std::string>());
-			uint32_t index = seq["TextureIndex"].as<uint32_t>();
-			Ref<Texture2D> texture = AssetManager::GetAsset<Texture2D>(textureHandle);
-			material->SetTexture("u_Texture", texture, index);
-		}
-
-		for (auto& seq : data["Values"])
-		{
-			for (auto& val : seq)
-			{
-				std::stringstream ss;
-				ss << val.second;
-				auto type = FindType(ss.str());
-				switch (type)
-				{
-				case FieldType::Float:
-					material->Set(val.first.as<std::string>(), val.second.as<float>());
-					break;
-				case FieldType::Float2:
-					material->Set(val.first.as<std::string>(), val.second.as<glm::vec2>());
-					break;
-				case FieldType::Float3:
-					material->Set(val.first.as<std::string>(), val.second.as<glm::vec3>());
-					break;
-				case FieldType::Float4:
-					material->Set(val.first.as<std::string>(), val.second.as<glm::vec4>());
-					break;
-				case FieldType::None:
-					break;
-				}
-			}
-		}
+		//material->SetRenderQueueID(data["RenderQueueID"].as<uint8_t>());
+		//for (auto& seq : data["Textures"])
+		//{
+		//	GUID textureHandle(seq["TextureAsset"].as<std::string>());
+		//	uint32_t index = seq["TextureIndex"].as<uint32_t>();
+		//	Ref<Texture2D> texture = AssetManager::GetAsset<Texture2D>(textureHandle);
+		//	material->SetTexture("u_Texture", texture, index);
+		//}
+		//
+		//for (auto& seq : data["Values"])
+		//{
+		//	for (auto& val : seq)
+		//	{
+		//		std::stringstream ss;
+		//		ss << val.second;
+		//		auto type = FindType(ss.str());
+		//		switch (type)
+		//		{
+		//		case FieldType::Float:
+		//			material->Set(val.first.as<std::string>(), val.second.as<float>());
+		//			break;
+		//		case FieldType::Float2:
+		//			material->Set(val.first.as<std::string>(), val.second.as<glm::vec2>());
+		//			break;
+		//		case FieldType::Float3:
+		//			material->Set(val.first.as<std::string>(), val.second.as<glm::vec3>());
+		//			break;
+		//		case FieldType::Float4:
+		//			material->Set(val.first.as<std::string>(), val.second.as<glm::vec4>());
+		//			break;
+		//		case FieldType::None:
+		//			break;
+		//		}
+		//	}
+		//}
 		return material;
 	}
 	template <>

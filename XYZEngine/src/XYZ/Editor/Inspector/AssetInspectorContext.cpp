@@ -79,6 +79,7 @@ namespace XYZ {
 		void AssetInspectorContext::drawMaterial(Ref<Material>& material)
 		{
 			ImGui::Text("Values:");
+			/*
 			for (auto& uniform : material->GetShader()->GetFSUniformList().Uniforms)
 			{
 				std::string id = "##" + uniform.GetName();
@@ -119,6 +120,7 @@ namespace XYZ {
 				ImGui::PopItemWidth();
 				Helper::EndColumns();
 			}
+			*/
 			
 		}
 		void AssetInspectorContext::drawShader(Ref<Shader>& shader)
@@ -131,14 +133,14 @@ namespace XYZ {
 			Helper::BeginColumns("Image path:");
 			ImGui::PushItemWidth(ImGui::CalcItemWidth());
 
-			ImGui::Text("%s", texture->GetFilepath().c_str());
+			ImGui::Text("%s", texture->GetPath().c_str());
 
 			ImGui::PopItemWidth();
 			Helper::EndColumns();
 
 			float panelWidth = ImGui::GetContentRegionAvail().x;
 			const float aspect = (float)texture->GetHeight() / (float)texture->GetWidth();
-			ImGui::Image((void*)(uint64_t)texture->GetRendererID(), { panelWidth, panelWidth * aspect }, { 0, 1 }, { 1, 0 });
+			ImGui::Image((void*)(uint64_t)texture.Raw(), { panelWidth, panelWidth * aspect }, { 0, 1 }, { 1, 0 });
 		}
 	}
 }

@@ -1,6 +1,6 @@
 #pragma once
 #include "XYZ/Renderer/Shader.h"
-#include "XYZ/Renderer/ShaderResource.h"
+
 #include "XYZ/Renderer/Material.h"
 
 #include "Vulkan.h"
@@ -66,11 +66,6 @@ namespace XYZ {
 			ShaderDescriptorSet	  ShaderDescriptorSet;
 		};
 
-		struct ShaderMaterialDescriptorSet
-		{
-			std::vector<VkDescriptorSet> DescriptorSets;
-		};
-
 	public:
 		VulkanShader(const std::string& path);
 		VulkanShader(const std::string& name, const std::string& path);
@@ -81,15 +76,18 @@ namespace XYZ {
 		inline virtual const std::string& GetPath() const override { return m_AssetPath; };
 		inline virtual const std::string& GetName() const override { return m_Name; }
 		virtual size_t					  GetHash() const override;
+		virtual bool					  IsCompiled() const override;
 
-		ShaderMaterialDescriptorSet						   AllocateDescriptorSet(uint32_t set = 0);
-	
 		const std::vector<DescriptorSet>&				   GetDescriptorSets() const { return m_DescriptorSets; }
 		const std::vector<PushConstantRange>&			   GetPushConstantRanges()	 const { return m_PushConstantRanges; }
 		const std::vector<VkPipelineShaderStageCreateInfo> GetPipelineShaderStageCreateInfos() const { return m_PipelineShaderStageCreateInfos; }
-		
-		std::vector<VkDescriptorSetLayout>				   GetAllDescriptorSetLayouts() const;
-		
+		const VkWriteDescriptorSet*						   GetDescriptorSet(const std::string& name, uint32_t set) const;
+		std::pair<const VkWriteDescriptorSet*, uint32_t>   GetDescriptorSet(const std::string& name) const;
+
+		std::vector<VkDescriptorSetLayout>										  GetAllDescriptorSetLayouts() const;
+		virtual const std::unordered_map<std::string, ShaderBuffer>&			  GetBuffers() const override { return m_Buffers; }
+		virtual const std::unordered_map<std::string, ShaderResourceDeclaration>& GetResources() const override { return m_Resources; }
+	
 	private:
 		void compileOrGetVulkanBinaries(std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& outputBinary, bool forceCompile);
 		void createProgram(const std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& shaderData);
@@ -109,6 +107,7 @@ namespace XYZ {
 		void destroy();	
 
 	private:
+		bool					   m_Compiled;
 		std::string				   m_Name;
 		std::string				   m_AssetPath;
 		std::vector<DescriptorSet> m_DescriptorSets;

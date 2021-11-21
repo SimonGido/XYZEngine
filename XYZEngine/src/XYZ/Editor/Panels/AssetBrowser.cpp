@@ -35,7 +35,7 @@ namespace XYZ {
 			m_ViewportFocused(false)
 		{
 			registerFileTypeExtensions();
-			m_Texture = Texture2D::Create({}, "Assets/Textures/Gui/icons.png");
+			//m_Texture = Texture2D::Create({}, "Assets/Textures/Gui/icons.png");
 			const float divisor = 4.0f;
 			float width  = (float)m_Texture->GetWidth();
 			float height = (float)m_Texture->GetHeight();
@@ -71,7 +71,7 @@ namespace XYZ {
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 				glm::vec4 arrowColor = backArrowAvailable ? m_Colors[ArrowColor] : m_Colors[ArrowInvalidColor];
 				ImGui::PushID("BackArrow");
-				if (ImGui::ImageButton((void*)(uint64_t)m_Texture->GetRendererID(), { m_ArrowSize.x, m_ArrowSize.y }, { m_TexCoords[Arrow].z, m_TexCoords[Arrow].y }, { m_TexCoords[Arrow].x, m_TexCoords[Arrow].w }, -1, {}, { arrowColor.r, arrowColor.g, arrowColor.b, arrowColor.a })
+				if (ImGui::ImageButton((void*)(uint64_t)m_Texture.Raw(), { m_ArrowSize.x, m_ArrowSize.y }, { m_TexCoords[Arrow].z, m_TexCoords[Arrow].y }, { m_TexCoords[Arrow].x, m_TexCoords[Arrow].w }, -1, {}, { arrowColor.r, arrowColor.g, arrowColor.b, arrowColor.a })
 				 && backArrowAvailable)
 				{
 					m_DirectoriesVisited.push_front(m_CurrentDirectory);
@@ -82,7 +82,7 @@ namespace XYZ {
 				
 				arrowColor = frontArrowAvailable ? m_Colors[ArrowColor] : m_Colors[ArrowInvalidColor];
 				ImGui::PushID("FrontArrow");
-				if (ImGui::ImageButton((void*)(uint64_t)m_Texture->GetRendererID(), { m_ArrowSize.x, m_ArrowSize.y }, { m_TexCoords[Arrow].x, m_TexCoords[Arrow].y }, { m_TexCoords[Arrow].z, m_TexCoords[Arrow].w }, -1, {}, { arrowColor.r, arrowColor.g, arrowColor.b, arrowColor.a })
+				if (ImGui::ImageButton((void*)(uint64_t)m_Texture.Raw(), { m_ArrowSize.x, m_ArrowSize.y }, { m_TexCoords[Arrow].x, m_TexCoords[Arrow].y }, { m_TexCoords[Arrow].z, m_TexCoords[Arrow].w }, -1, {}, { arrowColor.r, arrowColor.g, arrowColor.b, arrowColor.a })
 				&& frontArrowAvailable)
 				{
 					m_CurrentDirectory = m_DirectoriesVisited.front();
@@ -224,7 +224,7 @@ namespace XYZ {
 				
 				if (it.is_directory())
 				{
-					if (ImGui::ImageButton((void*)(uint64_t)m_Texture->GetRendererID(), { m_IconSize.x, m_IconSize.y }, { m_TexCoords[Folder].x, m_TexCoords[Folder].y }, { m_TexCoords[Folder].z, m_TexCoords[Folder].w }))
+					if (ImGui::ImageButton((void*)(uint64_t)m_Texture.Raw(), { m_IconSize.x, m_IconSize.y }, { m_TexCoords[Folder].x, m_TexCoords[Folder].y }, { m_TexCoords[Folder].z, m_TexCoords[Folder].w }))
 					{
 						m_CurrentDirectory /= it.path().filename();
 						m_DirectoriesVisited.clear();
@@ -238,7 +238,7 @@ namespace XYZ {
 						ImGui::PopID();
 						continue;
 					}
-					if (ImGui::ImageButton((void*)(uint64_t)m_Texture->GetRendererID(), { m_IconSize.x, m_IconSize.y }, { m_TexCoords[index].x, m_TexCoords[index].y }, { m_TexCoords[index].z, m_TexCoords[index].w }))
+					if (ImGui::ImageButton((void*)(uint64_t)m_Texture.Raw(), { m_IconSize.x, m_IconSize.y }, { m_TexCoords[index].x, m_TexCoords[index].y }, { m_TexCoords[index].z, m_TexCoords[index].w }))
 					{
 						m_SelectedFile = name;
 						if (m_Callback)
@@ -291,7 +291,7 @@ namespace XYZ {
 
 							const std::string fullpath = getUniqueAssetName("New Texture", ".tex");
 							std::string fullImagePath = parentDir + "/" + fileName;
-							AssetManager::CreateAsset<Texture2D>(Utils::GetFilename(fullpath), parentDir, TextureSpecs{}, fullImagePath);
+							//AssetManager::CreateAsset<Texture2D>(Utils::GetFilename(fullpath), parentDir, TextureSpecs{}, fullImagePath);
 							ImGui::CloseCurrentPopup();
 						}
 					}

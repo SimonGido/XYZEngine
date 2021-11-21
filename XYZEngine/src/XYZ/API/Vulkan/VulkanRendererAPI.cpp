@@ -11,6 +11,7 @@
 #include "VulkanUniformBuffer.h"
 #include "VulkanDescriptorAllocator.h"
 #include "VulkanUniformBufferSet.h"
+#include "VulkanMaterial.h"
 
 #include "XYZ/Core/Application.h"
 #include "XYZ/Debug/Profiler.h"
@@ -127,10 +128,10 @@ namespace XYZ {
 		});
 	}
 
-	void VulkanRendererAPI::RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet,
-		Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint32_t indexCount)
+	void VulkanRendererAPI::RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, 
+		Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint32_t indexCount)
 	{
-		Renderer::Submit([renderCommandBuffer, pipeline, uniformBufferSet, vertexBuffer, indexBuffer, indexCount]() mutable
+		Renderer::Submit([renderCommandBuffer, pipeline, uniformBufferSet, material, vertexBuffer, indexBuffer, indexCount]() mutable
 		{
 			XYZ_PROFILE_FUNC("VulkanRendererAPI::RenderGeometry");
 			const VkDevice device    = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
@@ -140,23 +141,24 @@ namespace XYZ {
 			Ref<VulkanShader>			   vulkanShader = pipeline->GetSpecification().Shader;
 			Ref<VulkanPipeline>			   vulkanPipeline = pipeline;
 			Ref<VulkanUniformBufferSet>	   vulkanUniformBufferSet = uniformBufferSet;
+			Ref<VulkanMaterial>			   vulkanMaterial = material;
 			const VkCommandBuffer		   commandBuffer = vulkanCommandBuffer->GetVulkanCommandBuffer(frameIndex);
 			const VkPipelineLayout		   layout = vulkanPipeline->GetVulkanPipelineLayout();
 			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.As<VulkanPipeline>()->GetVulkanPipeline());
 
 
-			const auto& uniformBufferDescriptor = vulkanUniformBufferSet->GetDescriptors(vulkanShader->GetHash(), frameIndex);
+			const auto& uniformBufferDescriptors = vulkanUniformBufferSet->GetDescriptors(vulkanShader->GetHash());
+			vulkanMaterial->RT_UpdateForRendering(uniformBufferDescriptors);
+			
+			const auto& materialDescriptors = vulkanMaterial->GetDescriptors(frameIndex);
 
-			vkUpdateDescriptorSets(device, 
-				static_cast<uint32_t>(uniformBufferDescriptor.WriteDescriptors.size()), 
-				uniformBufferDescriptor.WriteDescriptors.data(), 0, nullptr
-			);
 			vkCmdBindDescriptorSets(
 				commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 
-				0, static_cast<uint32_t>(uniformBufferDescriptor.DescriptorSets.size()), 
-				uniformBufferDescriptor.DescriptorSets.data(), 0, nullptr
+				0, static_cast<uint32_t>(materialDescriptors.size()),
+				materialDescriptors.data(), 0, nullptr
 			);
 
+	
 			///////////////////////////////		
 			const VkBuffer vertexBuffers[] = { vertexBuffer.As<VulkanVertexBuffer>()->GetVulkanBuffer() };
 			const VkDeviceSize offsets[] = { 0 };
@@ -172,6 +174,159 @@ namespace XYZ {
 	VkDescriptorSet VulkanRendererAPI::RT_AllocateDescriptorSet(const VkDescriptorSetLayout& layout)
 	{
 		return s_DescriptorAllocator.RT_Allocate(layout);
+	}
+
+	void VulkanRendererAPI::InsertImageMemoryBarrier(VkCommandBuffer cmdbuffer, VkImage image, VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkImageSubresourceRange subresourceRange)
+	{
+		VkImageMemoryBarrier imageMemoryBarrier{};
+		imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+		imageMemoryBarrier.srcAccessMask = srcAccessMask;
+		imageMemoryBarrier.dstAccessMask = dstAccessMask;
+		imageMemoryBarrier.oldLayout = oldImageLayout;
+		imageMemoryBarrier.newLayout = newImageLayout;
+		imageMemoryBarrier.image = image;
+		imageMemoryBarrier.subresourceRange = subresourceRange;
+
+		vkCmdPipelineBarrier(
+			cmdbuffer,
+			srcStageMask,
+			dstStageMask,
+			0,
+			0, nullptr,
+			0, nullptr,
+			1, &imageMemoryBarrier);
+	}
+
+	void VulkanRendererAPI::SetImageLayout(VkCommandBuffer cmdbuffer, VkImage image, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, VkImageSubresourceRange subresourceRange, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask)
+	{
+		// Create an image barrier object
+		VkImageMemoryBarrier imageMemoryBarrier = {};
+		imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		imageMemoryBarrier.oldLayout = oldImageLayout;
+		imageMemoryBarrier.newLayout = newImageLayout;
+		imageMemoryBarrier.image = image;
+		imageMemoryBarrier.subresourceRange = subresourceRange;
+
+		// Source layouts (old)
+		// Source access mask controls actions that have to be finished on the old layout
+		// before it will be transitioned to the new layout
+		switch (oldImageLayout)
+		{
+		case VK_IMAGE_LAYOUT_UNDEFINED:
+			// Image layout is undefined (or does not matter)
+			// Only valid as initial layout
+			// No flags required, listed only for completeness
+			imageMemoryBarrier.srcAccessMask = 0;
+			break;
+
+		case VK_IMAGE_LAYOUT_PREINITIALIZED:
+			// Image is preinitialized
+			// Only valid as initial layout for linear images, preserves memory contents
+			// Make sure host writes have been finished
+			imageMemoryBarrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
+			break;
+
+		case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+			// Image is a color attachment
+			// Make sure any writes to the color buffer have been finished
+			imageMemoryBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			break;
+
+		case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+			// Image is a depth/stencil attachment
+			// Make sure any writes to the depth/stencil buffer have been finished
+			imageMemoryBarrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+			break;
+
+		case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+			// Image is a transfer source
+			// Make sure any reads from the image have been finished
+			imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+			break;
+
+		case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+			// Image is a transfer destination
+			// Make sure any writes to the image have been finished
+			imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			break;
+
+		case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+			// Image is read by a shader
+			// Make sure any shader reads from the image have been finished
+			imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			break;
+		default:
+			// Other source layouts aren't handled (yet)
+			break;
+		}
+
+		// Target layouts (new)
+		// Destination access mask controls the dependency for the new image layout
+		switch (newImageLayout)
+		{
+		case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+			// Image will be used as a transfer destination
+			// Make sure any writes to the image have been finished
+			imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			break;
+
+		case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+			// Image will be used as a transfer source
+			// Make sure any reads from the image have been finished
+			imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+			break;
+
+		case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+			// Image will be used as a color attachment
+			// Make sure any writes to the color buffer have been finished
+			imageMemoryBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			break;
+
+		case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+			// Image layout will be used as a depth/stencil attachment
+			// Make sure any writes to depth/stencil buffer have been finished
+			imageMemoryBarrier.dstAccessMask = imageMemoryBarrier.dstAccessMask | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+			break;
+
+		case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+			// Image will be read in a shader (sampler, input attachment)
+			// Make sure any writes to the image have been finished
+			if (imageMemoryBarrier.srcAccessMask == 0)
+			{
+				imageMemoryBarrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
+			}
+			imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			break;
+		default:
+			// Other source layouts aren't handled (yet)
+			break;
+		}
+
+		// Put barrier inside setup command buffer
+		vkCmdPipelineBarrier(
+			cmdbuffer,
+			srcStageMask,
+			dstStageMask,
+			0,
+			0, nullptr,
+			0, nullptr,
+			1, &imageMemoryBarrier);
+	}
+
+	void VulkanRendererAPI::SetImageLayout(VkCommandBuffer cmdbuffer, VkImage image, VkImageAspectFlags aspectMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask)
+	{
+		VkImageSubresourceRange subresourceRange = {};
+		subresourceRange.aspectMask = aspectMask;
+		subresourceRange.baseMipLevel = 0;
+		subresourceRange.levelCount = 1;
+		subresourceRange.layerCount = 1;
+		SetImageLayout(cmdbuffer, image, oldImageLayout, newImageLayout, subresourceRange, srcStageMask, dstStageMask);
+
 	}
 
 	void VulkanRendererAPI::clearFramebuffer(Ref<VulkanFramebuffer> framebuffer, VkCommandBuffer commandBuffer)

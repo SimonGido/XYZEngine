@@ -3,9 +3,10 @@
 
 layout(location = 0) in vec2 inPosition;
 layout(location = 1) in vec3 inColor;
+layout(location = 2) in vec2 inTexCoord;
 
 layout(location = 0) out vec3 fragColor;
-
+layout(location = 1) out vec2 texCoord;
 
 layout(std140, binding = 0) uniform Camera
 {
@@ -26,15 +27,18 @@ void main()
 {
     gl_Position = u_ViewProjectionTest * vec4(inPosition, 0.0, 1.0);
     fragColor = inColor;
+	texCoord = inTexCoord;
 }
 
 #type fragment
 #version 450
 layout(location = 0) in vec3 inColor;
+layout(location = 1) in vec2 inTexCoord;
 
 layout(location = 0) out vec4 outColor;
+layout(binding = 2) uniform sampler2D u_Texture;
 
 void main() 
 {
-    outColor = vec4(inColor, 1.0);
+    outColor = texture(u_Texture, inTexCoord);
 }

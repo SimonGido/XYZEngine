@@ -87,13 +87,9 @@ namespace XYZ {
 		}
 
 		m_Texture = Texture2D::Create( 
-			ImageFormat::RGBA8,(uint32_t)texWidth,(uint32_t)texHeight,
-			TextureSpecs{
-				TextureWrap::Clamp,
-				TextureParam::Linear,
-				TextureParam::Nearest
-			}
-			);
+			ImageFormat::RGBA, (uint32_t)texWidth,(uint32_t)texHeight, nullptr,
+			TextureProperties{TextureWrap::Clamp}
+		);
 
 		m_Texture->SetData(pngData, pngData.GetSize());
 		//stbi_write_png("font_output.png", texWidth, texHeight, 4, pngData, texWidth * 4);

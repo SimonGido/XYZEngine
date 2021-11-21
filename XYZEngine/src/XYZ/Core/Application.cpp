@@ -51,6 +51,8 @@ namespace XYZ {
 
 	Application::~Application()
 	{
+		// Finish all commands before destroying layers
+		Renderer::WaitAndRenderAll();
 		for (const auto layer : m_LayerStack) // Make sure that layers are deleted before window
 		{
 			layer->OnDetach();
@@ -75,13 +77,13 @@ namespace XYZ {
 			{				
 				Renderer::BlockRenderThread(); // Sync before new frame
 				Renderer::HandleResources();
-				Renderer::WaitAndRender();
+				Renderer::Render();
 				
 				m_Window->BeginFrame();
 				for (Layer* layer : m_LayerStack)
 					layer->OnUpdate(m_Timestep);
 				
-				if (m_Specification.EnableImGui)
+				if (!m_Specification.EnableImGui)
 					onImGuiRender();
 				
 				

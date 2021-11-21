@@ -1,6 +1,5 @@
 #pragma once
 #include "XYZ/Renderer/RenderPass.h"
-#include "XYZ/Renderer/RenderTexture.h"
 #include "XYZ/Renderer/VertexArray.h"
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Renderer/Shader.h"

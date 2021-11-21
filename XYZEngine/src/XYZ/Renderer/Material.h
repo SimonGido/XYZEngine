@@ -20,108 +20,73 @@ namespace XYZ {
 
 	class Material : public Asset
 	{
-		friend class MaterialInstance;
 	public:
-		Material(const Ref<Shader>& shader);
-		virtual ~Material() override;
+		virtual ~Material() {};
 
-		virtual void Bind() const;
-
-		void Invalidate();
-
-		template<typename T>
-		void Set(const std::string& name, const T& val);
+		virtual void Invalidate() = 0;
 		
-		template<typename T>
-		void Set(const std::string& name, const T& val, uint32_t size, uint32_t offset);
+		virtual void SetFlag(RenderFlags renderFlag, bool val = true) = 0;
+
+		virtual void Set(const std::string& name, float value) = 0;
+		virtual void Set(const std::string& name, int value) = 0;
+
+		virtual void Set(const std::string& name, const glm::vec2& value) = 0;
+		virtual void Set(const std::string& name, const glm::vec3& value) = 0;
+		virtual void Set(const std::string& name, const glm::vec4& value) = 0;
+		virtual void Set(const std::string& name, const glm::mat4& value) = 0;
+
+		virtual void Set(const std::string& name, const glm::ivec2& value) = 0;
+		virtual void Set(const std::string& name, const glm::ivec3& value) = 0;
+		virtual void Set(const std::string& name, const glm::ivec4& value) = 0;
+
+		virtual void Set(const std::string& name, const Ref<Texture2D>& texture) = 0;
+
+		virtual float&		   GetFloat(const std::string& name) = 0;
+		virtual int32_t&	   GetInt(const std::string& name) = 0;
+		virtual uint32_t&	   GetUInt(const std::string& name) = 0;
+		virtual bool&		   GetBool(const std::string& name) = 0;
+		virtual glm::vec2&	   GetVector2(const std::string& name) = 0;
+		virtual glm::vec3&	   GetVector3(const std::string& name) = 0;
+		virtual glm::vec4&	   GetVector4(const std::string& name) = 0;
+		virtual glm::mat3&	   GetMatrix3(const std::string& name) = 0;
+		virtual glm::mat4&	   GetMatrix4(const std::string& name) = 0;
+		virtual Ref<Texture2D> GetTexture2D(const std::string& name) = 0;
+		virtual uint64_t	   GetFlags() const = 0;
+		virtual Ref<Shader>	   GetShader() = 0;
 		
-		void SetTexture(const std::string& name, const Ref<Texture>& texture, uint32_t index = 0);
-
-		template <typename T>
-		T&	 Get(const std::string& name);
-		
-		bool HasProperty(const std::string& name) const;
-		
-		void ClearTextures()				   { m_Textures.clear(); }
-		void SetFlags(RenderFlags renderFlags) { m_Flags |= renderFlags; }
-		void SetRenderQueueID(uint8_t id)	   { m_RenderQueueID = id; }
-
-		uint64_t GetFlags() const { return m_Flags.ToUlong(); }
-		uint8_t  GetRenderQueueID() const { return m_RenderQueueID; }
-
-		const Ref<Shader>& GetShader() const { return m_Shader; }
-		const std::vector<Ref<Texture>>& GetTextures() const { return m_Textures; }
-
-		const uint8_t* GetVSUniformBuffer() const { return m_VSUniformBuffer; }
-		const uint8_t* GetFSUniformBuffer() const { return m_FSUniformBuffer; }
-		
-		bool operator ==(const Material& other) const;
-		bool operator != (const Material& other) const;
-
-		static AssetType GetStaticType() { return AssetType::Material; }
-	private:
-		ByteBuffer&			  getUniformBufferTarget(ShaderType type);
-		const TextureUniform* findTexture(const std::string& name) const;
-		std::pair<const ShaderUniform*, ShaderType> findUniform(const std::string& name) const;
-
-	private:
-		Ref<Shader>				  m_Shader;
-		std::vector<Ref<Texture>> m_Textures;
-		Flags<RenderFlags>		  m_Flags;
-
-		ByteBuffer m_VSUniformBuffer;
-		ByteBuffer m_FSUniformBuffer;
-		uint8_t    m_RenderQueueID;
+		static Ref<Material> Create(const Ref<Shader>& shader);
 	};
 
 
-	template<typename T>
-	inline void Material::Set(const std::string& name, const T& val)
-	{
-		static_assert((!std::is_same<T, Ref<Texture>>::value) && (!std::is_same<T, Ref<Texture2D>>::value), "Use SetTexture");
-		auto [uni, type] = findUniform(name);
-		XYZ_ASSERT(uni, "Material uniform does not exist ", name.c_str());
+	//template<typename T>
+	//inline void Material::Set(const std::string& name, const T& val)
+	//{
+	//	static_assert((!std::is_same<T, Ref<Texture>>::value) && (!std::is_same<T, Ref<Texture2D>>::value), "Use SetTexture");
+	//	auto [uni, type] = findUniform(name);
+	//	XYZ_ASSERT(uni, "Material uniform does not exist ", name.c_str());
+	//
+	//	auto& buffer = getUniformBufferTarget(type);
+	//	buffer.Write((unsigned char*)&val, uni->GetSize(), uni->GetOffset());
+	//}
+	//
+	//template<typename T>
+	//inline void Material::Set(const std::string& name, const T& val, uint32_t size, uint32_t offset)
+	//{
+	//	static_assert((!std::is_same<T, Ref<Texture>>::value) && (!std::is_same<T, Ref<Texture2D>>::value), "Use SetTexture");
+	//	auto [uni, type] = findUniform(name);
+	//	XYZ_ASSERT(uni, "Material uniform does not exist ", name.c_str());
+	//
+	//	auto& buffer = getUniformBufferTarget(type);
+	//	buffer.Write((unsigned char*)&val, size, uni->GetOffset() + offset);
+	//}
+	//
+	//template<typename T>
+	//inline T& Material::Get(const std::string& name)
+	//{
+	//	auto [uni, type] = findUniform(name);
+	//	XYZ_ASSERT(uni, "Material uniform does not exist ", name.c_str());
+	//	auto& buffer = getUniformBufferTarget(type);
+	//	return *(T*)&buffer[uni->GetOffset()];
+	//}
 
-		auto& buffer = getUniformBufferTarget(type);
-		buffer.Write((unsigned char*)&val, uni->GetSize(), uni->GetOffset());
-	}
-
-	template<typename T>
-	inline void Material::Set(const std::string& name, const T& val, uint32_t size, uint32_t offset)
-	{
-		static_assert((!std::is_same<T, Ref<Texture>>::value) && (!std::is_same<T, Ref<Texture2D>>::value), "Use SetTexture");
-		auto [uni, type] = findUniform(name);
-		XYZ_ASSERT(uni, "Material uniform does not exist ", name.c_str());
-
-		auto& buffer = getUniformBufferTarget(type);
-		buffer.Write((unsigned char*)&val, size, uni->GetOffset() + offset);
-	}
-
-	template<typename T>
-	inline T& Material::Get(const std::string& name)
-	{
-		auto [uni, type] = findUniform(name);
-		XYZ_ASSERT(uni, "Material uniform does not exist ", name.c_str());
-		auto& buffer = getUniformBufferTarget(type);
-		return *(T*)&buffer[uni->GetOffset()];
-	}
-
-
-
-	class MaterialInstance : public Material
-	{
-		friend class Material;
-	public:
-		MaterialInstance(const Ref<Material>& material);
-		virtual ~MaterialInstance() override;
-
-		virtual void Bind() const override;
-
-		Ref<Material>  GetParentMaterial() const { return m_Material; }
-
-		static Ref<MaterialInstance> Create(const Ref<Material>& material);
-
-	private:
-		Ref<Material> m_Material;
-	};
 }

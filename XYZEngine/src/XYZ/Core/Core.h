@@ -60,4 +60,10 @@ namespace XYZ {
 		seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 		(HashCombine(seed, rest), ...);
 	}
+
+	template <typename T>
+	using vector2D = std::vector<std::vector<T>>;
+
+	template <typename T>
+	using vector3D = std::vector<vector2D<T>>;
 }

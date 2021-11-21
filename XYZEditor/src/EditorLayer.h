@@ -32,9 +32,6 @@ namespace XYZ {
 
 	private:
 		void displayStats();
-		void gpuParticleExample(SceneEntity entity);
-		void cpuParticleExample(SceneEntity entity);
-		void animationExample(SceneEntity entity);
 
 	private:
 		enum Editors
@@ -61,7 +58,8 @@ namespace XYZ {
 		Ref<IndexBuffer>		 m_IndexBuffer;
 		Ref<RenderCommandBuffer> m_RenderCommandBuffer;
 		Ref<UniformBufferSet>    m_UniformBufferSet;
-
+		Ref<Texture2D>			 m_Texture;
+		Ref<Material>			 m_Material;
 		Editor::EditorCamera	 m_Camera;
 	};
 }

@@ -46,7 +46,7 @@ namespace XYZ {
 			{
 			case XYZ::ImageFormat::None:
 				break;
-			case XYZ::ImageFormat::RGBA8:
+			case XYZ::ImageFormat::RGBA:
 				return GL_RGBA8;
 				break;
 			case XYZ::ImageFormat::RGBA16F:
@@ -57,9 +57,6 @@ namespace XYZ {
 				break;
 			case XYZ::ImageFormat::RG32F:
 				return GL_RG32F;
-				break;
-			case XYZ::ImageFormat::R32I:
-				return GL_R32I;
 				break;
 			case XYZ::ImageFormat::DEPTH32F:
 				return GL_DEPTH32F_STENCIL8;
@@ -91,18 +88,6 @@ namespace XYZ {
 
 			glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, TextureTarget(multisampled), id, 0);
 		}
-
-		static bool IsDepthFormat(ImageFormat format)
-		{
-			switch (format)
-			{
-			case ImageFormat::DEPTH24STENCIL8:
-			case ImageFormat::DEPTH32F:
-				return true;
-			}
-			return false;
-		}
-
 	}
 
 

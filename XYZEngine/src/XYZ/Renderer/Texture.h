@@ -8,34 +8,6 @@
 
 
 namespace XYZ {
-	enum class TextureFormat
-	{
-		None = 0,
-		RGB = 1,
-		RGBA = 2,
-	};
-
-	enum class TextureWrap
-	{
-		None = 0,
-		Clamp = 1,
-		Repeat = 2
-	};
-
-	enum class TextureParam
-	{
-		None = 0,
-		Nearest = 1,
-		Linear = 2
-	};
-
-
-	struct TextureSpecs
-	{
-		TextureWrap  Wrap     = TextureWrap::Clamp;
-		TextureParam MinParam = TextureParam::Linear;
-		TextureParam MagParam = TextureParam::Nearest;
-	};
 
 	enum class BindImageType
 	{
@@ -43,56 +15,45 @@ namespace XYZ {
 		Write,
 		ReadWrite
 	};
-	/**
-	* @interface Texture
-	* pure virtual (interface) class.
-	*/
+
 	class Texture : public Asset
 	{
 	public:
 		virtual ~Texture() = default;
 	
-		virtual void Bind(uint32_t slot = 0) const = 0;
-		virtual void BindImage(uint32_t slot, uint32_t miplevel, BindImageType type) const = 0;
+		virtual void Bind(uint32_t slot = 0) const {};
+		virtual void BindImage(uint32_t slot, uint32_t miplevel, BindImageType type) const {};
+		
+		virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0) = 0;
 
-		virtual uint32_t GetWidth() const = 0;
-		virtual uint32_t GetHeight() const = 0;
-		virtual uint32_t GetChannelSize() const = 0;
+		virtual ImageFormat GetFormat() const = 0;
+		virtual uint32_t	GetWidth() const = 0;
+		virtual uint32_t	GetHeight() const = 0;
+		virtual uint32_t	GetMipLevelCount() const = 0;
+		virtual std::pair<uint32_t, uint32_t> GetMipSize(uint32_t mip) const = 0;
 
-		virtual uint32_t GetRendererID() const = 0;
-		virtual uint32_t GetMipLevelCount() const = 0;
-		virtual std::pair<uint32_t, uint32_t> GetMipSize(uint32_t index) const = 0;
 		static uint32_t CalculateMipMapCount(uint32_t width, uint32_t height);
 
 		static AssetType GetStaticType() { return AssetType::Texture; }
 	};
 
-	/**
-	* @class Texture2D
-	* @brief class Derived from Texture
-	*/
+
 	class Texture2D : public Texture
 	{
 	public:
-		virtual const TextureSpecs& GetSpecification() const = 0;
-		virtual void SetData(void* data, uint32_t size) = 0;
-		virtual void GetData(uint8_t** buffer) const = 0;
-		virtual const std::string& GetFilepath() const = 0;
+		virtual void Resize(uint32_t width, uint32_t height) = 0;
 
-		static Ref<Texture2D> Create(ImageFormat format, uint32_t width, uint32_t height, const TextureSpecs& specs);
-		static Ref<Texture2D> Create(const TextureSpecs& specs, const std::string& path);
+		virtual void Lock() = 0;
+		virtual void Unlock() = 0;
 
-		
-		static void BindStatic(uint32_t rendererID, uint32_t slot);
-	};
+		virtual bool Loaded() const = 0;
 
+		virtual const std::string& GetPath() const = 0;
+		virtual Ref<Image2D>	   GetImage() const = 0;
+		virtual ByteBuffer		   GetWriteableBuffer() = 0;
 
-	class Texture2DArray : public Texture
-	{
-	public:
-		virtual const TextureSpecs& GetSpecification() const = 0;
-		
-		static Ref<Texture2D> Create(const TextureSpecs& specs, const std::initializer_list<std::string>& paths);
-		static Ref<Texture2DArray> Create(uint32_t layerCount, uint32_t width, uint32_t height, uint32_t channels, const TextureSpecs& specs);
+		static Ref<Texture2D> Create(ImageFormat format, uint32_t width, uint32_t height, const void* data = nullptr, const TextureProperties& properties = TextureProperties());
+		static Ref<Texture2D> Create(const std::string& path, const TextureProperties& properties = TextureProperties());
+
 	};
 }

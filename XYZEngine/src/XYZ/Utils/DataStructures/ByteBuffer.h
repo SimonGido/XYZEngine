@@ -42,6 +42,11 @@ namespace XYZ {
 			memcpy(m_Data + offset, data, size);
 		}
 
+		template<typename T>
+		T& Read(uint32_t offset = 0)
+		{
+			return *(T*)((uint8_t*)m_Data + offset);
+		}
 		operator bool() const
 		{
 			return m_Data;
@@ -95,8 +100,6 @@ namespace XYZ {
 
 
 		uint32_t m_Size;
-
-	private:
 		uint8_t* m_Data;
 	};
 }

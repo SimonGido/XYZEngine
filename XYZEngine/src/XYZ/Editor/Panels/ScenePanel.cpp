@@ -194,7 +194,7 @@ namespace XYZ {
 			m_OldMousePosition(0.0f),
 			m_GizmoType(-1)
 		{
-			m_Texture = Texture2D::Create({}, "Assets/Textures/Gui/icons.png");
+			//m_Texture = Texture2D::Create({}, "Assets/Textures/Gui/icons.png");
 			const float divisor = 4.0f;
 			float width = (float)m_Texture->GetWidth();
 			float height = (float)m_Texture->GetHeight();
@@ -270,7 +270,7 @@ namespace XYZ {
 					if (m_Context->GetState() == SceneState::Edit)
 					{
 						ImGui::PushID("Play");
-						if (ImGui::ImageButton((void*)(uint64_t)m_Texture->GetRendererID(),
+						if (ImGui::ImageButton((void*)(uint64_t)m_Texture.Raw(),
 							{ m_ButtonSize.x, m_ButtonSize.y },
 							{ m_ButtonTexCoords[PlayButton].x, m_ButtonTexCoords[PlayButton].y },
 							{ m_ButtonTexCoords[PlayButton].z, m_ButtonTexCoords[PlayButton].w }
@@ -284,7 +284,7 @@ namespace XYZ {
 					else if (m_Context->GetState() == SceneState::Play)
 					{
 						ImGui::PushID("Stop");
-						if (ImGui::ImageButton((void*)(uint64_t)m_Texture->GetRendererID(),
+						if (ImGui::ImageButton((void*)(uint64_t)m_Texture.Raw(),
 							{ m_ButtonSize.x, m_ButtonSize.y },
 							{ m_ButtonTexCoords[StopButton].x, m_ButtonTexCoords[StopButton].y },
 							{ m_ButtonTexCoords[StopButton].z, m_ButtonTexCoords[StopButton].w }

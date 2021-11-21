@@ -153,18 +153,18 @@ namespace XYZ {
 
 	void SceneRenderer::SubmitSprite(Ref<Material> material, Ref<SubTexture> subTexture, uint32_t sortLayer, const glm::vec4& color, const glm::mat4& transform)
 	{
-		m_Queues[material->GetRenderQueueID()].m_SpriteDrawList.push_back({
-			   material, subTexture, sortLayer, color, transform
-			});
+		//m_Queues[material->GetRenderQueueID()].m_SpriteDrawList.push_back({
+		//	   material, subTexture, sortLayer, color, transform
+		//	});
 	}
 
 	void SceneRenderer::SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform)
 	{
-		m_Queues[mesh->GetMaterial()->GetRenderQueueID()].m_MeshCommandList.push_back({ mesh, transform });
+		//m_Queues[mesh->GetMaterial()->GetRenderQueueID()].m_MeshCommandList.push_back({ mesh, transform });
 	}
 	void SceneRenderer::SubmitMeshInstanced(Ref<Mesh> mesh, const glm::mat4& transform, uint32_t count)
 	{
-		m_Queues[mesh->GetMaterial()->GetRenderQueueID()].m_InstancedMeshCommandList.push_back({ mesh, transform, count });
+		//m_Queues[mesh->GetMaterial()->GetRenderQueueID()].m_InstancedMeshCommandList.push_back({ mesh, transform, count });
 	}
 	void SceneRenderer::SubmitMeshInstanced(Ref<Mesh> mesh, const std::vector<glm::mat4>& transforms, uint32_t count)
 	{
@@ -301,8 +301,8 @@ namespace XYZ {
 		XYZ_PROFILE_FUNC("SceneRenderer::sortQueue");
 		std::sort(queue.m_SpriteDrawList.begin(), queue.m_SpriteDrawList.end(),
 			[](const RenderQueue::SpriteDrawCommand& a, const RenderQueue::SpriteDrawCommand& b) {
-			if (a.SortLayer == b.SortLayer)
-				return a.Material->GetShader()->GetRendererID() < b.Material->GetShader()->GetRendererID();
+			//if (a.SortLayer == b.SortLayer)
+			//	return a.Material->GetShader()->GetRendererID() < b.Material->GetShader()->GetRendererID();
 			return a.SortLayer < b.SortLayer;
 		});
 	}
@@ -315,7 +315,7 @@ namespace XYZ {
 		{
 			auto material = dc.Mesh->GetMaterial();
 			auto shader = material->GetShader();
-			material->Bind();
+			
 			shader->SetMat4("u_Transform", dc.Transform);
 			dc.Mesh->GetVertexArray()->Bind();
 			Renderer::DrawIndexed(PrimitiveType::Triangles, dc.Mesh->GetIndexCount());
@@ -337,7 +337,7 @@ namespace XYZ {
 		{
 			auto& material = dc.Mesh->GetMaterial();
 			auto shader = material->GetShader();
-			material->Bind();
+	
 			shader->SetMat4("u_Transform", dc.Transform);
 			dc.Mesh->GetVertexArray()->Bind();
 			Renderer::DrawInstanced(PrimitiveType::Triangles, dc.Mesh->GetIndexCount(), dc.Count, 0);

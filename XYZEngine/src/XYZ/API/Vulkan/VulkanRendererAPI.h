@@ -14,9 +14,41 @@ namespace XYZ {
 
 		virtual void BeginRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer, const Ref<RenderPass>& renderPass, bool explicitClear = false) override;
 		virtual void EndRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer) override;
-		virtual void RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint32_t indexCount = 0) override;
+		virtual void RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint32_t indexCount = 0) override;
 
 		static VkDescriptorSet RT_AllocateDescriptorSet(const VkDescriptorSetLayout& layout);
+	
+		static void InsertImageMemoryBarrier(
+				VkCommandBuffer cmdbuffer,
+				VkImage image,
+				VkAccessFlags srcAccessMask,
+				VkAccessFlags dstAccessMask,
+				VkImageLayout oldImageLayout,
+				VkImageLayout newImageLayout,
+				VkPipelineStageFlags srcStageMask,
+				VkPipelineStageFlags dstStageMask,
+				VkImageSubresourceRange subresourceRange
+		);
+
+		static void SetImageLayout(
+				VkCommandBuffer cmdbuffer,
+				VkImage image,
+				VkImageLayout oldImageLayout,
+				VkImageLayout newImageLayout,
+				VkImageSubresourceRange subresourceRange,
+				VkPipelineStageFlags srcStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+				VkPipelineStageFlags dstStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT
+		);
+
+		static void SetImageLayout(
+				VkCommandBuffer cmdbuffer,
+				VkImage image,
+				VkImageAspectFlags aspectMask,
+				VkImageLayout oldImageLayout,
+				VkImageLayout newImageLayout,
+				VkPipelineStageFlags srcStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+				VkPipelineStageFlags dstStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT
+		);
 	private:
 		static void clearFramebuffer(Ref<VulkanFramebuffer> framebuffer, VkCommandBuffer commandBuffer);
 	};

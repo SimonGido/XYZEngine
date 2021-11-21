@@ -165,7 +165,7 @@ namespace XYZ {
 		//s_Data.ShaderLibrary->Load("Assets/Shaders/MousePicker.glsl");
 		//
 		//s_Data.ShaderLibrary->Load("Assets/Shaders/Particle/ParticleShaderCPU.glsl");
-		WaitAndRender();
+		Render();
 		BlockRenderThread();
 	}
 
@@ -291,9 +291,9 @@ namespace XYZ {
 	}
 
 	void Renderer::RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet,
-		Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint32_t indexCount)
+		Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint32_t indexCount)
 	{
-		s_RendererAPI->RenderGeometry(renderCommandBuffer, pipeline, uniformBufferSet, vertexBuffer, indexBuffer, indexCount);
+		s_RendererAPI->RenderGeometry(renderCommandBuffer, pipeline, uniformBufferSet, material, vertexBuffer, indexBuffer, indexCount);
 	}
 
 	void Renderer::RegisterShaderDependency(const Ref<Shader>& shader, const Ref<Pipeline>& pipeline)
@@ -317,6 +317,21 @@ namespace XYZ {
 		s_Data.QueueData.BlockRenderThread();
 	}
 
+	void Renderer::WaitAndRenderAll()
+	{
+		HandleResources();
+		Render();
+		BlockRenderThread();
+		Render();
+		BlockRenderThread();
+	}
+
+	void Renderer::WaitAndRender()
+	{
+		Render();
+		BlockRenderThread();
+	}
+
 	ThreadPool& Renderer::GetPool()
 	{
 		return s_Data.QueueData.GetThreadPool();
@@ -332,7 +347,7 @@ namespace XYZ {
 		return s_Data.Stats;
 	}
 
-	void Renderer::WaitAndRender()
+	void Renderer::Render()
 	{
 		s_Data.Stats.Reset();
 		s_Data.QueueData.ExecuteRenderQueue();

@@ -21,6 +21,7 @@ namespace XYZ {
 	}
 	void RendererQueueData::Shutdown()
 	{
+		BlockRenderThread();
 		std::future<bool> result = m_Pool.PushJob<bool>([this] {
 			m_RenderCommandQueue[0].Execute();
 			m_RenderCommandQueue[1].Execute();
@@ -46,11 +47,11 @@ namespace XYZ {
 		#ifdef RENDER_THREAD_ENABLED
 
 		m_RenderWriteIndex = m_RenderWriteIndex == 0 ? 1 : 0;
-		m_Pool.PushJob([this, queue]() {
+		m_RenderThreadFinished = m_Pool.PushJob<bool>([this, queue]() {
 			XYZ_PROFILE_FUNC("RendererQueueData::ExecuteRenderQueue Job");
-			std::scoped_lock lock(m_RenderMutex);
 			queue->Execute();
 			Fence::Create(UINT64_MAX);
+			return true;
 		});
 		#else
 			queue->Execute();
@@ -58,13 +59,15 @@ namespace XYZ {
 	}
 	void RendererQueueData::ExecuteResourceQueue(uint32_t frame)
 	{
+		XYZ_PROFILE_FUNC("RendererQueueData::ExecuteResourceQueue");
 		RenderCommandQueue* queue = &m_ResourceQueues[frame];
 		queue->Execute();
 	}
 	void RendererQueueData::BlockRenderThread()
 	{
 		#ifdef RENDER_THREAD_ENABLED
-		std::scoped_lock lock(m_RenderMutex);
+		XYZ_PROFILE_FUNC("RendererQueueData::BlockRenderThread");
+		m_RenderThreadFinished.wait();
 		#endif
 	}
 

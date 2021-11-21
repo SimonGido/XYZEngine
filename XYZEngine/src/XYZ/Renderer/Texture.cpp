@@ -3,43 +3,10 @@
 
 #include "Renderer.h"
 #include "XYZ/API/OpenGL/OpenGLTexture.h"
-
+#include "XYZ/API/Vulkan/VulkanTexture.h"
 
 namespace XYZ {
-	Ref<Texture2D> Texture2D::Create(ImageFormat format, uint32_t width, uint32_t height, const TextureSpecs& specs)
-	{
-		switch (Renderer::GetAPI())
-		{
-		case RendererAPI::API::None: XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
-		case RendererAPI::API::OpenGL: return Ref<OpenGLTexture2D>::Create(format, width, height, specs);
-		}
 
-		XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
-		return nullptr;
-	}
-	Ref<Texture2D> Texture2D::Create(const TextureSpecs& specs, const std::string& path)
-	{
-		switch (Renderer::GetAPI())
-		{
-		case RendererAPI::API::None: XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
-		case RendererAPI::API::OpenGL: return Ref<OpenGLTexture2D>::Create(specs, path);
-		}
-
-		XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
-		return nullptr;
-	}	
-
-	void Texture2D::BindStatic(uint32_t rendererID, uint32_t slot)
-	{
-		switch (Renderer::GetAPI())
-		{
-		case RendererAPI::API::None: XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
-		case RendererAPI::API::OpenGL: OpenGLTexture2D::Bind(rendererID, slot); return;
-		}
-
-		XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
-	}
-	
 	uint32_t Texture::CalculateMipMapCount(uint32_t width, uint32_t height)
 	{
 		uint32_t levels = 1;
@@ -50,28 +17,31 @@ namespace XYZ {
 
 	}
 
-	Ref<Texture2D> Texture2DArray::Create(const TextureSpecs& specs, const std::initializer_list<std::string>& paths)
+	Ref<Texture2D> Texture2D::Create(ImageFormat format, uint32_t width, uint32_t height, const void* data, const TextureProperties& properties)
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None: XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
-		case RendererAPI::API::OpenGL: return Ref<OpenGLTexture2DArray>::Create(specs, paths);
+		case RendererAPI::API::None:   XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
+		case RendererAPI::API::OpenGL: XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::OpenGL");
+		case RendererAPI::API::Vulkan: return Ref<VulkanTexture2D>::Create(format, width, height, data, properties);
 		}
 
 		XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
 		return nullptr;
 	}
 
-	Ref<Texture2DArray> Texture2DArray::Create(uint32_t count, uint32_t width, uint32_t height, uint32_t channels, const TextureSpecs& specs)
+	Ref<Texture2D> Texture2D::Create(const std::string& path, const TextureProperties& properties)
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None: XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
-		case RendererAPI::API::OpenGL: return Ref<OpenGLTexture2DArray>::Create(count, width, height, channels, specs);
+		case RendererAPI::API::None:   XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
+		case RendererAPI::API::OpenGL: XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::OpenGL");
+		case RendererAPI::API::Vulkan: return Ref<VulkanTexture2D>::Create(path, properties);
 		}
 
 		XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
 		return nullptr;
 	}
+
 
 }

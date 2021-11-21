@@ -1,13 +1,112 @@
 #pragma once
 #include "XYZ/Renderer/Material.h"
+#include "XYZ/Utils/DataStructures/ByteBuffer.h"
+
+#include "VulkanShader.h"
 
 namespace XYZ {
 	class VulkanMaterial : public Material
 	{
 	public:
+		VulkanMaterial(const Ref<Shader>& shader);
+
+		virtual ~VulkanMaterial() override;
+		virtual void Invalidate() override;
+
+		virtual void SetFlag(RenderFlags renderFlag, bool val = true) override;
+
+		virtual void Set(const std::string& name, float value) override;
+		virtual void Set(const std::string& name, int value) override;
+
+		virtual void Set(const std::string& name, const glm::vec2& value) override;
+		virtual void Set(const std::string& name, const glm::vec3& value) override;
+		virtual void Set(const std::string& name, const glm::vec4& value) override;
+		virtual void Set(const std::string& name, const glm::mat4& value) override;
+
+		virtual void Set(const std::string& name, const glm::ivec2& value) override;
+		virtual void Set(const std::string& name, const glm::ivec3& value) override;
+		virtual void Set(const std::string& name, const glm::ivec4& value) override;
+
+		virtual void Set(const std::string& name, const Ref<Texture2D>& texture) override;
+
+		virtual float&     GetFloat(const std::string& name) override;
+		virtual int32_t&   GetInt(const std::string& name) override;
+		virtual uint32_t&  GetUInt(const std::string& name) override;
+		virtual bool&	   GetBool(const std::string& name) override;
+		virtual glm::vec2& GetVector2(const std::string& name) override;
+		virtual glm::vec3& GetVector3(const std::string& name) override;
+		virtual glm::vec4& GetVector4(const std::string& name) override;
+		virtual glm::mat3& GetMatrix3(const std::string& name) override;
+		virtual glm::mat4& GetMatrix4(const std::string& name) override;
+
+		virtual Ref<Texture2D> GetTexture2D(const std::string& name) override;
+	
+		virtual uint64_t	   GetFlags() const override { return m_Flags.ToUlong(); }
+		virtual Ref<Shader>	   GetShader() override { return m_Shader; }
 
 
+		void RT_UpdateForRendering(const vector3D<VkWriteDescriptorSet>& descriptors);
+		const std::vector<VkWriteDescriptorSet>& GetWriteDescriptors(uint32_t frame) const { return m_WriteDescriptors[frame]; }
+		const std::vector<VkDescriptorSet>&      GetDescriptors(uint32_t frame) const { return m_DescriptorSets[frame]; }
+	private:
+		void allocateStorage();
+		void setDescriptor(const std::string& name, const Ref<Texture2D>& texture);
+
+		template <typename T>
+		void set(const std::string& name, const T& value);
+
+		template<typename T>
+		T& get(const std::string& name);
+
+
+		template<typename T>
+		Ref<T> getResource(const std::string& name);
+		
+
+		const ShaderUniform* findUniformDeclaration(const std::string& name);
+		const ShaderResourceDeclaration* findResourceDeclaration(const std::string& name);
 
 	private:
+		Ref<Shader>					   m_Shader;
+		ByteBuffer					   m_UniformsBuffer;
+		std::vector<Ref<Texture2D>>	   m_Textures;
+
+		// Per frame -> per set
+		vector2D<VkDescriptorSet>	   m_DescriptorSets;
+
+		// Per set
+		vector2D<VkWriteDescriptorSet> m_TextureDescriptors;
+
+		// Per frame
+		vector2D<VkWriteDescriptorSet> m_WriteDescriptors;
+
+		Flags<RenderFlags>			   m_Flags;
+		bool						   m_DescriptorsDirty;
 	};
+
+	template<typename T>
+	inline void VulkanMaterial::set(const std::string& name, const T& value)
+	{
+		auto decl = findUniformDeclaration(name);
+		XYZ_ASSERT(decl != nullptr, "Could not find uniform with name");
+		if (!decl)
+			return;
+		m_UniformsBuffer.Write((uint8_t*)&value, decl->GetSize(), decl->GetOffset());
+	}
+	template<typename T>
+	inline T& VulkanMaterial::get(const std::string& name)
+	{
+		auto decl = findUniformDeclaration(name);
+		XYZ_ASSERT(decl != nullptr, "Could not find uniform with name");
+		return m_UniformsBuffer.Read<T>(decl->GetOffset());
+	}
+	template<typename T>
+	inline Ref<T> VulkanMaterial::getResource(const std::string& name)
+	{
+		auto decl = findResourceDeclaration(name);
+		XYZ_ASSERT(decl, "Could not find uniform with name 'x'");
+		uint32_t slot = decl->GetRegister();
+		XYZ_ASSERT(slot < m_Textures.size(), "Texture slot is invalid!");
+		return Ref<T>(m_Textures[slot]);
+	}
 }

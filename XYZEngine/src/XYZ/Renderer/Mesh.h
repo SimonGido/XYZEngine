@@ -22,7 +22,7 @@ namespace XYZ {
 		void ClearVertexBuffers();
 
 		const Ref<VertexArray>& GetVertexArray() const { return m_VertexArray; }
-		const Ref<Material>&    GetMaterial()    const { return m_Material; }
+		Ref<Material>			GetMaterial()		   { return m_Material; }
 		uint32_t				GetIndexCount()  const { return m_IndexBuffer->GetCount(); }
 	private:
 		void updateVertexArray();

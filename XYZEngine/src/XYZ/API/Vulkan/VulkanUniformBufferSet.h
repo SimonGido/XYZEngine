@@ -7,12 +7,6 @@ namespace XYZ {
 	class VulkanUniformBufferSet : public UniformBufferSet
 	{
 	public:
-		struct ShaderWriteDescriptorSet
-		{
-			std::vector<VkWriteDescriptorSet> WriteDescriptors;
-			std::vector<VkDescriptorSet>	  DescriptorSets;
-		};
-	public:
 		VulkanUniformBufferSet(uint32_t frames);
 
 		virtual void CreateDescriptors(const Ref<Shader>& shader) override;
@@ -21,12 +15,12 @@ namespace XYZ {
 
 		virtual Ref<UniformBuffer> Get(uint32_t binding, uint32_t set = 0, uint32_t frame = 0) override;
 
-		const ShaderWriteDescriptorSet & GetDescriptors(size_t hash, uint32_t frame) const;
+		const std::vector<std::vector<std::vector<VkWriteDescriptorSet>>> & GetDescriptors(size_t hash) const;
 	private:
 		uint32_t m_Frames;
 
-		// shader hash -> per frame write data
-		std::unordered_map<size_t, std::vector<ShaderWriteDescriptorSet>> m_WriteDescriptors;
+		// shader hash -> per frame write data -> per set
+		std::unordered_map<size_t, std::vector<std::vector<std::vector<VkWriteDescriptorSet>>>> m_WriteDescriptors;
 		
 		// frame->set->binding
 		std::map<uint32_t, std::map<uint32_t, std::map<uint32_t, Ref<VulkanUniformBuffer>>>> m_UniformBuffers; 

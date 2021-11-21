@@ -5,6 +5,7 @@
 #include "XYZ/Renderer/Pipeline.h"
 #include "XYZ/Renderer/RenderCommandBuffer.h"
 #include "XYZ/Renderer/UniformBufferSet.h"
+#include "XYZ/Renderer/Material.h"
 
 namespace XYZ {
 
@@ -58,7 +59,7 @@ namespace XYZ {
 		virtual void EndFrame() {}
 		virtual void BeginRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer, const Ref<RenderPass>& renderPass, bool explicitClear = false) {};
 		virtual void EndRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer) {};
-		virtual void RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint32_t indexCount = 0) {};
+		virtual void RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint32_t indexCount = 0) {};
 
 		static RenderAPICapabilities& GetCapabilities()
 		{

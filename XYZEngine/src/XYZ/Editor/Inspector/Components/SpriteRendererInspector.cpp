@@ -96,7 +96,7 @@ namespace XYZ {
 					const Ref<Texture>& texture = subTexture->GetTexture();
 					const glm::vec4& texCoords = subTexture->GetTexCoords();
 					ImGui::PushID(subTexture->FileName.c_str());
-					if (ImGui::ImageButton((void*)(uint64_t)texture->GetRendererID(), { 50.0f, 50.0f }, { texCoords.x, texCoords.w }, { texCoords.z, texCoords.y }))
+					if (ImGui::ImageButton((void*)(uint64_t)texture.Raw(), { 50.0f, 50.0f }, { texCoords.x, texCoords.w }, { texCoords.z, texCoords.y }))
 					{
 						m_Context.GetComponent<SpriteRenderer>().SubTexture = subTexture;
 						m_DialogOpen = false;

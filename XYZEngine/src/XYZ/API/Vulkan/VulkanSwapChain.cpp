@@ -456,7 +456,7 @@ namespace XYZ {
 		{
 			m_RenderCommandBuffer = Ref<VulkanRenderCommandBuffer>::Create("SwapChainCommandBuffer");
 			FramebufferSpecs specs;
-			specs.Attachments = { ImageFormat::RGBA8 };
+			specs.Attachments = { ImageFormat::RGBA };
 			specs.SwapChainTarget = true;
 			specs.Width = m_Extent.width;
 			specs.Height = m_Extent.height;

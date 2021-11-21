@@ -2,6 +2,7 @@
 
 #include "XYZ/Asset/Asset.h"
 #include "XYZ/Utils/DataStructures/ByteBuffer.h"
+#include "XYZ/Renderer/ShaderResource.h"
 
 #include <unordered_map>
 #include <memory>
@@ -145,6 +146,10 @@ namespace XYZ {
 		
 		virtual uint32_t GetRendererID() const { return 0; }
 		virtual size_t	 GetHash() const = 0;
+		virtual const std::unordered_map<std::string, ShaderBuffer>& GetBuffers() const { return {}; }
+		virtual const std::unordered_map<std::string, ShaderResourceDeclaration>& GetResources() const { return {}; }
+
+		virtual bool IsCompiled() const { return false; };
 
 		static Ref<Shader> Create(const std::string& path);
 		static Ref<Shader> Create(const std::string& name, const std::string& path);

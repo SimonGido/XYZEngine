@@ -37,7 +37,6 @@ namespace XYZ {
 	private:
 		uint32_t		   m_FramesInFlight = 0;
 		RenderCommandQueue m_RenderCommandQueue[2];
-		std::mutex		   m_RenderMutex;
 		
 		RenderCommandQueue* m_ResourceQueues;
 

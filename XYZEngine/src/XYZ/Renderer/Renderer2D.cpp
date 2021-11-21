@@ -61,16 +61,16 @@ namespace XYZ {
 
 	Renderer2D::Renderer2D()
 	{
-		auto shaderLibrary	= Renderer::GetShaderLibrary();
-		m_DefaultQuadMaterial = Ref<Material>::Create(shaderLibrary->Get("DefaultShader"));
+		auto shaderLibrary	 = Renderer::GetShaderLibrary();
+		m_DefaultQuadMaterial = Material::Create(shaderLibrary->Get("DefaultShader"));
 		m_LineShader		  = shaderLibrary->Get("LineShader");
 		m_CollisionShader	  = shaderLibrary->Get("MousePicker");
 		m_CircleShader		  = shaderLibrary->Get("Circle");
-		m_WhiteTexture		  = Texture2D::Create(ImageFormat::RGBA8, 1, 1, {});
+		m_WhiteTexture		  = Texture2D::Create(ImageFormat::RGBA, 1, 1, {});
 
 		uint32_t whiteTextureData = 0xffffffff;
 		m_WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
-		m_DefaultQuadMaterial->SetTexture("u_Texture", m_WhiteTexture);
+		m_DefaultQuadMaterial->Set("u_Texture", m_WhiteTexture);
 		m_DefaultQuadMaterial->Set("u_Color", glm::vec4(1.0f));
 
 
@@ -118,28 +118,17 @@ namespace XYZ {
 
 	uint32_t Renderer2D::SetTexture(const Ref<Texture>& texture)
 	{
-		for (uint32_t i = 0; i < m_QuadMaterial->GetTextures().size(); ++i)
-		{
-			if (m_QuadMaterial->GetTextures()[i].Raw() && m_QuadMaterial->GetTextures()[i]->GetRendererID() == texture->GetRendererID())
-				return i;
-		}
-		for (uint32_t i = 0; i < m_TextureSlotIndex; ++i)
-		{
-			if (m_TextureSlots[i]->GetRendererID() == texture->GetRendererID())
-				return i + (uint32_t)m_QuadMaterial->GetTextures().size();
-		}
-
-		if (m_QuadMaterial->GetTextures().size() + m_TextureSlotIndex >= sc_MaxTextures + 1)
+	
 			Flush();
 		
 		m_TextureSlots[m_TextureSlotIndex++] = texture;
-		return m_TextureSlotIndex + (uint32_t)m_QuadMaterial->GetTextures().size() - 1;
+		return 0;
 	}
 
 	void Renderer2D::SetMaterial(const Ref<Material>& material)
 	{
 		XYZ_ASSERT(material.Raw(), "Material can not be null");
-		if (*material.Raw() != *m_QuadMaterial.Raw())
+	
 			Flush();
 		
 		m_QuadMaterial = material;
@@ -375,10 +364,7 @@ namespace XYZ {
 		{
 			XYZ_ASSERT(m_QuadMaterial.Raw(), "No material set");
 				
-			m_QuadMaterial->Bind();
-			const uint32_t textureSlotOffset = (uint32_t)m_QuadMaterial->GetTextures().size();
-			for (uint32_t i = 0; i < m_TextureSlotIndex; ++i)
-				m_TextureSlots[i]->Bind(i + textureSlotOffset);
+
 			
 			m_QuadBuffer.VertexBuffer->Update(m_QuadBuffer.BufferBase, dataSize);
 			m_QuadBuffer.VertexArray->Bind();

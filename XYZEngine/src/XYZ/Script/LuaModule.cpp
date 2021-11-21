@@ -107,8 +107,7 @@ namespace XYZ {
 		{
 			sol::usertype<Texture> type = m_L.new_usertype<Texture>("Texture",
 				"GetWidth", &Texture::GetWidth,
-				"GetHeight", &Texture::GetHeight,
-				"GetChannelSize", &Texture::GetChannelSize
+				"GetHeight", &Texture::GetHeight
 				);
 		}
 
@@ -119,21 +118,14 @@ namespace XYZ {
 				);
 		}
 		
-		// TextureSpecs
-		{
-			sol::usertype<TextureSpecs> type = m_L.new_usertype<TextureSpecs>("TextureSpecs");
-			type["Wrap"] = &TextureSpecs::Wrap;
-			type["MinParam"] = &TextureSpecs::MinParam;
-			type["MagParam"] = &TextureSpecs::MagParam;
-		}
-
+		
 		// RefTexture
 		{
-			sol::usertype<Ref<Texture>> type = m_L.new_usertype<Ref<Texture>>("RefTexture",
-				sol::call_constructor, sol::factories(
-					[](const TextureSpecs& specs, const std::string& path) { return Texture2D::Create(specs, path); }
-			));
-			type["Get"] = &Ref<Texture>::Get;
+			//sol::usertype<Ref<Texture>> type = m_L.new_usertype<Ref<Texture>>("RefTexture",
+			//	sol::call_constructor, sol::factories(
+			//		[](const TextureSpecification& specs, const std::string& path) { return Texture2D::Create(specs, path); }
+			//));
+			//type["Get"] = &Ref<Texture>::Get;
 		}
 
 		// SubTexture

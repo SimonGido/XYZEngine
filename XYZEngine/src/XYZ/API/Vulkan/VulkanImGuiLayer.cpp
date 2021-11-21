@@ -91,6 +91,7 @@ namespace XYZ
 			init_info.DescriptorPool = m_DescriptorPool;
 			init_info.Allocator = nullptr;
 			init_info.MinImageCount = 2;
+			init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 			const VulkanSwapChain& swapChain = vulkanContext->GetSwapChain();
 			init_info.ImageCount = swapChain.GetImageCount();
 			init_info.CheckVkResultFn = Utils::VulkanCheckResult;
@@ -139,14 +140,24 @@ namespace XYZ
     		beginDockspace();
     }
 
+	 static void CopyImDrawData(ImDrawData& copy, const ImDrawData* drawData)
+	 {
+		 copy = *drawData;
+		 copy.CmdLists = new ImDrawList * [drawData->CmdListsCount];
+		 for (int i = 0; i < drawData->CmdListsCount; ++i)
+			 copy.CmdLists[i] = drawData->CmdLists[i]->CloneOutput();
+	 }
+
     void VulkanImGuiLayer::End()
     {
     	if (m_EnableDockspace)
     		endDockspace();
 
     	ImGui::Render();
-
-		Renderer::Submit([this]()
+		ImDrawData copy;
+		CopyImDrawData(copy, ImGui::GetDrawData());
+		
+		Renderer::Submit([this, copy]() mutable
 		{
 			const VulkanSwapChain& swapChain = VulkanContext::GetSwapChain();
 
@@ -209,8 +220,11 @@ namespace XYZ
 			scissor.offset.y = 0;
 			vkCmdSetScissor(m_ImGuiCommandBuffers[commandBufferIndex], 0, 1, &scissor);
 
-			ImDrawData* main_draw_data = ImGui::GetDrawData();
-			ImGui_ImplVulkan_RenderDrawData(main_draw_data, m_ImGuiCommandBuffers[commandBufferIndex]);
+			ImGui_ImplVulkan_RenderDrawData(&copy, m_ImGuiCommandBuffers[commandBufferIndex]);
+			for (int i = 0; i < copy.CmdListsCount; ++i)
+				IM_DELETE(copy.CmdLists[i]);
+			delete[]copy.CmdLists;
+			copy.Clear();
 
 			VK_CHECK_RESULT(vkEndCommandBuffer(m_ImGuiCommandBuffers[commandBufferIndex]));
 

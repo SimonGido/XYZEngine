@@ -65,7 +65,7 @@ namespace XYZ {
 
 		static void BeginRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer, const Ref<RenderPass>& renderPass, bool clear);
 		static void EndRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer);
-		static void RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint32_t indexCount = 0);
+		static void RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint32_t indexCount = 0);
 		
 
 		static void RegisterShaderDependency(const Ref<Shader>& shader, const Ref<Pipeline>& pipeline);
@@ -89,7 +89,9 @@ namespace XYZ {
 		static void SubmitResource(FuncT&& func);
 
 		static void BlockRenderThread();
+		static void WaitAndRenderAll();
 		static void WaitAndRender();
+		static void Render();
 		static void HandleResources();
 
 

@@ -62,7 +62,7 @@ namespace XYZ {
     void SkeletalMesh::Render()
     {
         Ref<Shader> shader = m_Material->GetShader();
-        m_Material->Bind();
+   
         shader->SetMat4("u_Transform", glm::translate(glm::vec3(0.0f)));
         shader->SetFloat4("u_Color", glm::vec4(1.0f));
 

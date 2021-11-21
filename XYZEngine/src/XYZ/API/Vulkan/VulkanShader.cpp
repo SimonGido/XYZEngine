@@ -133,6 +133,7 @@ namespace XYZ {
 
 	VulkanShader::VulkanShader(const std::string& path)
 		:
+		m_Compiled(false),
 		m_Name(Utils::GetFilenameWithoutExtension(path)),
 		m_AssetPath(path)
 	{
@@ -140,6 +141,7 @@ namespace XYZ {
 	}
 	VulkanShader::VulkanShader(const std::string& name, const std::string& path)
 		:
+		m_Compiled(false),
 		m_Name(name),
 		m_AssetPath(path)
 	{
@@ -153,6 +155,7 @@ namespace XYZ {
 	void VulkanShader::Reload(bool forceCompile)
 	{
 		destroy();
+		
 		Ref<VulkanShader> instance = this;
 		Renderer::Submit([instance, forceCompile]() mutable {
 			
@@ -167,6 +170,7 @@ namespace XYZ {
 			instance->reflectAllStages(shaderData);
 			instance->createProgram(shaderData);
 			instance->createDescriptorSetLayout();
+			instance->m_Compiled = true;
 			Renderer::OnShaderReload(instance->GetHash());
 		});		
 	}
@@ -176,22 +180,10 @@ namespace XYZ {
 		return std::hash<std::string>{}(m_AssetPath);
 	}
 
-	VulkanShader::ShaderMaterialDescriptorSet VulkanShader::AllocateDescriptorSet(uint32_t set)
+	bool VulkanShader::IsCompiled() const
 	{
-		XYZ_ASSERT(set < m_DescriptorSets.size(), "");
-		ShaderMaterialDescriptorSet result;
-
-		if (m_DescriptorSets.empty())
-			return result;
-
-
-		VkDescriptorSet descriptorSet = VulkanRendererAPI::RT_AllocateDescriptorSet(m_DescriptorSets[set].DescriptorSetLayout);
-		XYZ_ASSERT(descriptorSet, "");
-		result.DescriptorSets.push_back(descriptorSet);
-		return result;
+		return m_Compiled;
 	}
-
-
 
 
 	void VulkanShader::reflectAllStages(const std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& shaderData)
@@ -398,6 +390,32 @@ namespace XYZ {
 			XYZ_TRACE("  {0} ({1}, {2})", name, descriptorSet, binding);
 		}
 	}
+	const VkWriteDescriptorSet* VulkanShader::GetDescriptorSet(const std::string& name, uint32_t set) const
+	{
+		XYZ_ASSERT(set < m_DescriptorSets.size(), "");
+		XYZ_ASSERT(m_DescriptorSets[set].ShaderDescriptorSet, "");
+		auto& shaderDescriptorSet = m_DescriptorSets.at(set).ShaderDescriptorSet;
+
+		if (shaderDescriptorSet.WriteDescriptorSets.find(name) == shaderDescriptorSet.WriteDescriptorSets.end())
+		{
+			XYZ_WARN("Shader {0} does not contain requested descriptor set {1}", m_Name, name);
+			return nullptr;
+		}
+		return &shaderDescriptorSet.WriteDescriptorSets.at(name);
+	}
+	std::pair<const VkWriteDescriptorSet*, uint32_t> VulkanShader::GetDescriptorSet(const std::string& name) const
+	{
+		for (uint32_t set = 0; set < m_DescriptorSets.size(); ++set)
+		{
+			auto& shaderDescriptorSet = m_DescriptorSets.at(set).ShaderDescriptorSet;
+			if (shaderDescriptorSet.WriteDescriptorSets.find(name) == shaderDescriptorSet.WriteDescriptorSets.end())
+				continue;
+			
+			return { &shaderDescriptorSet.WriteDescriptorSets.at(name), set };
+		}
+		XYZ_WARN("Shader {0} does not contain requested descriptor set {1}", m_Name, name);
+		return { nullptr, 0 };
+	}
 	std::vector<VkDescriptorSetLayout> VulkanShader::GetAllDescriptorSetLayouts() const
 	{
 		std::vector<VkDescriptorSetLayout> result;
@@ -534,6 +552,7 @@ namespace XYZ {
 				VkWriteDescriptorSet& set = shaderDescriptorSet.WriteDescriptorSets[uniformBuffer->Name];
 				set = {};
 				set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				set.pNext = nullptr;
 				set.descriptorType = layoutBinding.descriptorType;
 				set.descriptorCount = 1;
 				set.dstBinding = layoutBinding.binding;
@@ -550,6 +569,7 @@ namespace XYZ {
 
 				VkWriteDescriptorSet& set = shaderDescriptorSet.WriteDescriptorSets[strorageBuffer->Name];
 				set = {};
+				set.pNext = nullptr;
 				set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 				set.descriptorType = layoutBinding.descriptorType;
 				set.descriptorCount = 1;
@@ -637,6 +657,7 @@ namespace XYZ {
 			for (const auto& descr : descriptorSetLayouts)
 				vkDestroyDescriptorSetLayout(device, descr, nullptr);
 		});
+		m_Compiled = false;
 	}
 
 }
