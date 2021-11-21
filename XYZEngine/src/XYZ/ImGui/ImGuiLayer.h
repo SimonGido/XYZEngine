@@ -21,7 +21,7 @@ namespace XYZ {
 		void EnableDockspace(bool enable) { m_EnableDockspace = enable; }
 		bool GetBlockedEvents() const { return m_BlockEvents; }
 		static void SetDarkThemeColors();
-
+		static void SetDarkThemeSRGBColors();
 		static ImGuiLayer* Create();
 	
 	protected:

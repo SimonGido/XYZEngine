@@ -10,12 +10,25 @@
 
 
 namespace XYZ {
+	static inline float Convert_sRGB_ToLinear(float thesRGBValue)
+	{
+		return thesRGBValue <= 0.04045f
+			? thesRGBValue / 12.92f
+			: powf((thesRGBValue + 0.055f) / 1.055f, 2.2f);
+	}
+	static ImVec4 ConvertFromSRGB(ImVec4 colour)
+	{
+		return ImVec4(Convert_sRGB_ToLinear(colour.x),
+			Convert_sRGB_ToLinear(colour.y),
+			Convert_sRGB_ToLinear(colour.z),
+			colour.w);
+	}
+
 
 	ImGuiLayer::ImGuiLayer()
 	{
 	}
 
-	
 	void ImGuiLayer::SetDarkThemeColors()
 	{
 		auto& colors = ImGui::GetStyle().Colors;
@@ -47,6 +60,18 @@ namespace XYZ {
 		colors[ImGuiCol_TitleBg] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
 		colors[ImGuiCol_TitleBgActive] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
 		colors[ImGuiCol_TitleBgCollapsed] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
+	}
+	
+	void ImGuiLayer::SetDarkThemeSRGBColors()
+	{
+		auto& style = ImGui::GetStyle();
+		auto& colors = ImGui::GetStyle().Colors;
+
+		SetDarkThemeColors();
+		//========================================================
+		/// Colours
+		for (uint32_t i = 0; i < ImGuiCol_COUNT; ++i)
+			colors[i] = ConvertFromSRGB(colors[i]);
 	}
 
 	ImGuiLayer* ImGuiLayer::Create()

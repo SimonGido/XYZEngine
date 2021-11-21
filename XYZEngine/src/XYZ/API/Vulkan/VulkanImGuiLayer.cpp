@@ -46,8 +46,11 @@ namespace XYZ
             style.WindowRounding = 0.0f;
             style.Colors[ImGuiCol_WindowBg].w = 1.0f;
         }
+		if (VulkanContext::GetSwapChain().GetFormat().format == VkFormat::VK_FORMAT_B8G8R8A8_SRGB)
+			SetDarkThemeSRGBColors();
+		else
+			SetDarkThemeColors();
 
-        SetDarkThemeColors();
 		Renderer::Submit([this]()
 		{
 			Application& app = Application::Get();
@@ -96,7 +99,7 @@ namespace XYZ
 			init_info.ImageCount = swapChain.GetImageCount();
 			init_info.CheckVkResultFn = Utils::VulkanCheckResult;
 			ImGui_ImplVulkan_Init(&init_info, swapChain.GetVulkanRenderPass());
-
+			
 			// Upload Fonts
 			{
 				const VkCommandBuffer commandBuffer = vulkanContext->GetCurrentDevice()->GetCommandBuffer(true);
@@ -156,7 +159,13 @@ namespace XYZ
     	ImGui::Render();
 		ImDrawData copy;
 		CopyImDrawData(copy, ImGui::GetDrawData());
-		
+		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		// Update and Render additional Platform Windows
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			ImGui::UpdatePlatformWindows();
+			ImGui::RenderPlatformWindowsDefault();
+		}
 		Renderer::Submit([this, copy]() mutable
 		{
 			const VulkanSwapChain& swapChain = VulkanContext::GetSwapChain();
@@ -237,13 +246,7 @@ namespace XYZ
 
 			VK_CHECK_RESULT(vkEndCommandBuffer(drawCommandBuffer));
 
-			ImGuiIO& io = ImGui::GetIO(); (void)io;
-			// Update and Render additional Platform Windows
-			if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-			{
-				ImGui::UpdatePlatformWindows();
-				ImGui::RenderPlatformWindowsDefault();
-			}
+			
 		});
     }
 
