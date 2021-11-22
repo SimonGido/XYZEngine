@@ -96,13 +96,13 @@ namespace XYZ {
 	{
 		for (auto format : m_Specification.Attachments.Attachments)
 		{
-			if (!Utils::IsDepthFormat(format.TextureFormat))
+			if (!Utils::IsDepthFormat(format.Format))
 			{
-				m_ColorAttachmentFormats.emplace_back(format.TextureFormat);
+				m_ColorAttachmentFormats.emplace_back(format.Format);
 				m_ColorAttachments.push_back({ 0, format.GenerateMips });
 			}
 			else
-				m_DepthAttachmentFormat = format.TextureFormat;
+				m_DepthAttachmentFormat = format.Format;
 		}
 		Resize(specs.Width, specs.Height, true);
 	}

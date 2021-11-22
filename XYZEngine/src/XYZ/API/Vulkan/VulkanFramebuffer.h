@@ -18,11 +18,13 @@ namespace XYZ {
 		bool							 HasDepthAttachment() const { return false; }
 
 		void Invalidate();
-		void RT_Invalidate() const;
+		void RT_Invalidate();
 	private:
 		FramebufferSpecs m_Specification;
 		VkRenderPass	 m_RenderPass;
 		VkFramebuffer	 m_Framebuffer;
+		Ref<Image2D>	 m_DepthAttachmentImage;
+		std::vector<Ref<Image2D>> m_AttachmentImages;
 		std::vector<VkClearValue> m_ClearValues;
 
 		friend class VulkanSwapChain;
