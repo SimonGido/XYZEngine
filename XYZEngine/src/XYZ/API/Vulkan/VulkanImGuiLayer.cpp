@@ -237,10 +237,7 @@ namespace XYZ
 
 			VK_CHECK_RESULT(vkEndCommandBuffer(m_ImGuiCommandBuffers[commandBufferIndex]));
 
-			std::vector<VkCommandBuffer> commandBuffers;
-			commandBuffers.push_back(m_ImGuiCommandBuffers[commandBufferIndex]);
-
-			vkCmdExecuteCommands(drawCommandBuffer, uint32_t(commandBuffers.size()), commandBuffers.data());
+			vkCmdExecuteCommands(drawCommandBuffer, 1, &m_ImGuiCommandBuffers[commandBufferIndex]);
 
 			vkCmdEndRenderPass(drawCommandBuffer);
 
