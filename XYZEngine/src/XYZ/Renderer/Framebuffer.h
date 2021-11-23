@@ -14,9 +14,9 @@ namespace XYZ {
 	{
 		FramebufferTextureSpecs() = default;
 		FramebufferTextureSpecs(ImageFormat format, bool generateMips = false) 
-			: TextureFormat(format), GenerateMips(generateMips){}
+			: Format(format), GenerateMips(generateMips){}
 
-		ImageFormat TextureFormat;
+		ImageFormat Format;
 		bool		GenerateMips;
 	};
 
@@ -32,10 +32,11 @@ namespace XYZ {
 
 	struct FramebufferSpecs
 	{
-		uint32_t Width = 0;
-		uint32_t Height = 0;
-		uint32_t Samples = 1; // multisampling
+		uint32_t  Width = 0;
+		uint32_t  Height = 0;
+		uint32_t  Samples = 1; // multisampling
 		glm::vec4 ClearColor  = { 0.0f, 0.0f, 0.0f, 1.0f };
+		bool	  ClearOnLoad = true;
 		FramebufferAttachmentSpecs Attachments;
 
 		bool SwapChainTarget = false;

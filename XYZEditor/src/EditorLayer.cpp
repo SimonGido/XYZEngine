@@ -52,6 +52,14 @@ namespace XYZ {
 			0, 1, 2, 2, 3, 0
 		};
 
+		FramebufferSpecs specs;
+		specs.Attachments.Attachments.push_back({
+			ImageFormat::RGBA16F
+			});
+		specs.Attachments.Attachments.push_back({
+			ImageFormat::DEPTH24STENCIL8
+			});
+		m_RenderPass    = RenderPass::Create({ Framebuffer::Create(specs) });
 		m_VertexBuffer  = VertexBuffer::Create(vertices.data(), vertices.size() * sizeof(TestVertex));
 		m_IndexBuffer   = IndexBuffer::Create(indices.data(), indices.size(), IndexType::Uint16);
 		m_Pipeline		= Pipeline::Create({ m_Shader, layout, m_RenderPass });

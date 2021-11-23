@@ -83,7 +83,7 @@ namespace XYZ {
 				for (Layer* layer : m_LayerStack)
 					layer->OnUpdate(m_Timestep);
 				
-				if (!m_Specification.EnableImGui)
+				if (m_Specification.EnableImGui)
 					onImGuiRender();
 				
 				

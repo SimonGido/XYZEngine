@@ -9,7 +9,7 @@ namespace XYZ {
 
 	struct ApplicationSpecification
 	{
-		bool EnableImGui = false;
+		bool EnableImGui = true;
 	};
 	
 	class Application
