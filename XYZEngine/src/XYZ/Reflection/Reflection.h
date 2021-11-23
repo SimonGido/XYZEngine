@@ -54,7 +54,7 @@ namespace XYZ {
 	class Reflectables\
 	{\
 	public:\
-		static constexpr size_t		sc_NumClasses	   = NUMARGS(#__VA_ARGS__);\
+		static constexpr size_t		sc_NumClasses	   = sizeof...(Args);\
 		static constexpr const char	sc_ClassesString[] = #__VA_ARGS__;\
 		\
 		\
