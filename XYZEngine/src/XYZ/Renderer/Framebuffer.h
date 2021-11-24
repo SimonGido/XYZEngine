@@ -9,35 +9,35 @@
 #include <glm/glm.hpp>
 
 namespace XYZ {
-
-	struct FramebufferTextureSpecs
+	enum class FramebufferBlendMode
 	{
-		FramebufferTextureSpecs() = default;
-		FramebufferTextureSpecs(ImageFormat format, bool generateMips = false) 
-			: Format(format), GenerateMips(generateMips){}
+		None = 0,
+		OneZero,
+		SrcAlphaOneMinusSrcAlpha,
+		Additive,
+		Zero_SrcColor
+	};
+	struct FramebufferTextureSpecification
+	{
+		FramebufferTextureSpecification() = default;
+		FramebufferTextureSpecification(ImageFormat format, bool generateMips = false)
+			: Format(format), GenerateMips(generateMips) {}
 
-		ImageFormat Format;
-		bool		GenerateMips;
+		ImageFormat			 Format;
+		bool				 GenerateMips;
+		bool				 Blend = true;
+		FramebufferBlendMode BlendMode = FramebufferBlendMode::SrcAlphaOneMinusSrcAlpha;
 	};
 
-	struct FramebufferAttachmentSpecs
-	{
-		FramebufferAttachmentSpecs() = default;
-		FramebufferAttachmentSpecs(const std::initializer_list<FramebufferTextureSpecs>& attachments)
-			: Attachments(attachments) {}
 
-		std::vector<FramebufferTextureSpecs> Attachments;
-	};
-	
-
-	struct FramebufferSpecs
+	struct FramebufferSpecification
 	{
 		uint32_t  Width = 0;
 		uint32_t  Height = 0;
 		uint32_t  Samples = 1; // multisampling
 		glm::vec4 ClearColor  = { 0.0f, 0.0f, 0.0f, 1.0f };
 		bool	  ClearOnLoad = true;
-		FramebufferAttachmentSpecs Attachments;
+		std::vector<FramebufferTextureSpecification> Attachments;
 
 		bool SwapChainTarget = false;
 	};
@@ -56,18 +56,18 @@ namespace XYZ {
 
 		virtual void BindTexture(uint32_t attachmentIndex, uint32_t slot) const {};
 		virtual void BindImage(uint32_t attachmentIndex, uint32_t slot, uint32_t miplevel, BindImageType type) const {};
-		virtual void SetSpecification(const FramebufferSpecs& specs) {};
+		virtual void SetSpecification(const FramebufferSpecification& specs) {};
 
 		virtual const uint32_t GetColorAttachmentRendererID(uint32_t index) const { return 0; };
 		virtual const uint32_t GetDetphAttachmentRendererID() const { return 0; };
 		virtual const uint32_t GetNumColorAttachments() const { return 0; };
 
-		virtual const FramebufferSpecs& GetSpecification() const = 0;
+		virtual const FramebufferSpecification& GetSpecification() const = 0;
 		
 		virtual void ReadPixel(int32_t& pixel, uint32_t mx, uint32_t my, uint32_t attachmentIndex) const {};
 		virtual void ClearColorAttachment(uint32_t colorAttachmentIndex, void* clearValue) const {};
 
-		static Ref<Framebuffer> Create(const FramebufferSpecs& specs);
+		static Ref<Framebuffer> Create(const FramebufferSpecification& specs);
 	};
 
 }

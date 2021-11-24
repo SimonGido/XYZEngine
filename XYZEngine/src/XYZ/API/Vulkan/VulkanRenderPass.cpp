@@ -8,4 +8,7 @@ namespace XYZ {
 		m_Specification(spec)
 	{
 	}
+	VulkanRenderPass::~VulkanRenderPass()
+	{
+	}
 }

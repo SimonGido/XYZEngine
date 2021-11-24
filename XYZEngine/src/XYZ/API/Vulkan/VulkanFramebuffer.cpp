@@ -17,7 +17,7 @@ namespace XYZ {
 		}
 	}
 
-	VulkanFramebuffer::VulkanFramebuffer(const FramebufferSpecs& specs)
+	VulkanFramebuffer::VulkanFramebuffer(const FramebufferSpecification& specs)
 		:
 		m_Specification(specs),
 		m_RenderPass(VK_NULL_HANDLE),
@@ -30,18 +30,22 @@ namespace XYZ {
 		}
 
 		uint32_t attachmentIndex = 0;
+		uint32_t depthAttachmentIndex = 0;
 		if (!m_Specification.SwapChainTarget)
 		{
-			for (auto& attachmentSpec : m_Specification.Attachments.Attachments)
+			for (auto& attachmentSpec : m_Specification.Attachments)
 			{
 				if (Utils::IsDepthFormat(attachmentSpec.Format))
 				{
+					XYZ_ASSERT(m_DepthAttachmentImage.Raw() == nullptr, "");
 					ImageSpecification spec;
 					spec.Format = attachmentSpec.Format;
 					spec.Usage = ImageUsage::Attachment;
 					spec.Width = m_Specification.Width;
 					spec.Height = m_Specification.Height;
 					m_DepthAttachmentImage = Image2D::Create(spec);
+					if (attachmentIndex != m_Specification.Attachments.size() - 1) // Swap with last
+						std::swap(m_Specification.Attachments.back(), m_Specification.Attachments[attachmentIndex]);
 				}
 				else
 				{
@@ -56,6 +60,10 @@ namespace XYZ {
 			}
 		}
 		Resize(m_Specification.Width, m_Specification.Height, true);
+	}
+	VulkanFramebuffer::~VulkanFramebuffer()
+	{
+		release();
 	}
 	void VulkanFramebuffer::Resize(uint32_t width, uint32_t height, bool forceRecreate)
 	{
@@ -88,14 +96,7 @@ namespace XYZ {
 	void VulkanFramebuffer::RT_Invalidate()
 	{
 		auto device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-		if (m_Framebuffer)
-		{
-			VkFramebuffer framebuffer = m_Framebuffer;
-			Renderer::SubmitResource([framebuffer]() {
-				const auto device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-				vkDestroyFramebuffer(device, framebuffer, nullptr);
-			});
-		}
+		release();
 
 		VulkanAllocator allocator("Framebuffer");
 
@@ -104,14 +105,20 @@ namespace XYZ {
 		std::vector<VkAttachmentReference> colorAttachmentReferences;
 		VkAttachmentReference depthAttachmentReference;
 
-		m_ClearValues.resize(m_Specification.Attachments.Attachments.size());
-		
-		bool createImages = m_AttachmentImages.empty();
-
+		m_ClearValues.resize(m_Specification.Attachments.size());
 
 		uint32_t attachmentIndex = 0;
-		for (auto attachmentSpec : m_Specification.Attachments.Attachments)
+		for (auto attachmentSpec : m_Specification.Attachments)
 		{
+			VkAttachmentDescription& attachmentDescription = attachmentDescriptions.emplace_back();
+			attachmentDescription.flags = 0;
+			attachmentDescription.format = Utils::VulkanImageFormat(attachmentSpec.Format);
+			attachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+			attachmentDescription.loadOp = m_Specification.ClearOnLoad ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+			attachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE; // TODO: if sampling, needs to be store (otherwise DONT_CARE is fine)
+			attachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			attachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+
 			if (Utils::IsDepthFormat(attachmentSpec.Format))
 			{
 				Ref<VulkanImage2D> depthAttachmentImage = m_DepthAttachmentImage.As<VulkanImage2D>();
@@ -119,16 +126,6 @@ namespace XYZ {
 				spec.Width = m_Specification.Width;
 				spec.Height = m_Specification.Height;
 				depthAttachmentImage->RT_Invalidate(); // Create immediately
-				
-
-				VkAttachmentDescription& attachmentDescription = attachmentDescriptions.emplace_back();
-				attachmentDescription.flags = 0;
-				attachmentDescription.format = Utils::VulkanImageFormat(attachmentSpec.Format);
-				attachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
-				attachmentDescription.loadOp = m_Specification.ClearOnLoad ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
-				attachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE; // TODO: if sampling, needs to be store (otherwise DONT_CARE is fine)
-				attachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-				attachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 				attachmentDescription.initialLayout = m_Specification.ClearOnLoad ? VK_IMAGE_LAYOUT_UNDEFINED : VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 				if (attachmentSpec.Format == ImageFormat::DEPTH24STENCIL8) // Separate layouts requires a "separate layouts" flag to be enabled
 				{
@@ -151,17 +148,9 @@ namespace XYZ {
 				spec.Usage = ImageUsage::Attachment;
 				spec.Width = m_Specification.Width;
 				spec.Height = m_Specification.Height;
-				Ref<VulkanImage2D> colorAttachment = m_AttachmentImages.emplace_back(Image2D::Create(spec)).As<VulkanImage2D>();
-				
+				Ref<VulkanImage2D> colorAttachment = m_AttachmentImages[attachmentIndex];
+				colorAttachment->RT_Invalidate();
 
-				VkAttachmentDescription& attachmentDescription = attachmentDescriptions.emplace_back();
-				attachmentDescription.flags = 0;
-				attachmentDescription.format = Utils::VulkanImageFormat(attachmentSpec.Format);
-				attachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
-				attachmentDescription.loadOp = m_Specification.ClearOnLoad ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
-				attachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE; // TODO: if sampling, needs to be store (otherwise DONT_CARE is fine)
-				attachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-				attachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 				attachmentDescription.initialLayout = m_Specification.ClearOnLoad ? VK_IMAGE_LAYOUT_UNDEFINED : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 				attachmentDescription.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -251,7 +240,11 @@ namespace XYZ {
 			attachments[i] = image->GetImageInfo().ImageView;
 			XYZ_ASSERT(attachments[i], "");
 		}
-
+		if (m_DepthAttachmentImage.Raw())
+		{
+			Ref<VulkanImage2D> image = m_DepthAttachmentImage.As<VulkanImage2D>();
+			attachments.emplace_back(image->GetImageInfo().ImageView);
+		}
 		VkFramebufferCreateInfo framebufferCreateInfo = {};
 		framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		framebufferCreateInfo.renderPass = m_RenderPass;
@@ -262,5 +255,18 @@ namespace XYZ {
 		framebufferCreateInfo.layers = 1;
 
 		VK_CHECK_RESULT(vkCreateFramebuffer(device, &framebufferCreateInfo, nullptr, &m_Framebuffer));
+	}
+	void VulkanFramebuffer::release() const
+	{
+		if (m_Framebuffer)
+		{
+			VkFramebuffer framebuffer = m_Framebuffer;
+			VkRenderPass  renderPass = m_RenderPass;
+			Renderer::SubmitResource([framebuffer, renderPass]() {
+				const auto device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+				vkDestroyFramebuffer(device, framebuffer, nullptr);
+				vkDestroyRenderPass(device, renderPass, nullptr);
+			});
+		}
 	}
 }

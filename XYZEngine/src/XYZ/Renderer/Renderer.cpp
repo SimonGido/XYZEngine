@@ -72,7 +72,6 @@ namespace XYZ {
 		RendererQueueData			   QueueData;
 		Ref<APIContext>				   APIContext;
 		Ref<ShaderLibrary>			   ShaderLibrary;
-		Ref<RenderPass>				   ActiveRenderPass;
 		Ref<VertexArray>			   FullscreenQuadVertexArray;
 		Ref<VertexBuffer>			   FullscreenQuadVertexBuffer;
 		Ref<IndexBuffer>			   FullscreenQuadIndexBuffer;
@@ -281,7 +280,6 @@ namespace XYZ {
 		bool clear)
 	{
 		XYZ_ASSERT(renderPass.Raw(), "Render pass can not be null");
-		s_Data.ActiveRenderPass = renderPass;
 		s_RendererAPI->BeginRenderPass(renderCommandBuffer, renderPass, clear);
 	}
 
@@ -319,6 +317,7 @@ namespace XYZ {
 
 	void Renderer::WaitAndRenderAll()
 	{
+		BlockRenderThread();
 		HandleResources();
 		Render();
 		BlockRenderThread();

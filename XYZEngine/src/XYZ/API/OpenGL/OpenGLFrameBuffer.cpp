@@ -91,18 +91,18 @@ namespace XYZ {
 	}
 
 
-	OpenGLFramebuffer::OpenGLFramebuffer(const FramebufferSpecs& specs)
+	OpenGLFramebuffer::OpenGLFramebuffer(const FramebufferSpecification& specs)
 		: m_Specification(specs)
 	{
-		for (auto format : m_Specification.Attachments.Attachments)
+		for (const auto& attachment : m_Specification.Attachments)
 		{
-			if (!Utils::IsDepthFormat(format.Format))
+			if (!Utils::IsDepthFormat(attachment.Format))
 			{
-				m_ColorAttachmentFormats.emplace_back(format.Format);
-				m_ColorAttachments.push_back({ 0, format.GenerateMips });
+				m_ColorAttachmentFormats.emplace_back(attachment.Format);
+				m_ColorAttachments.push_back({ 0, attachment.GenerateMips });
 			}
 			else
-				m_DepthAttachmentFormat = format.Format;
+				m_DepthAttachmentFormat = attachment.Format;
 		}
 		Resize(specs.Width, specs.Height, true);
 	}
@@ -245,7 +245,7 @@ namespace XYZ {
 		});
 	}
 
-	void OpenGLFramebuffer::SetSpecification(const FramebufferSpecs& specs)
+	void OpenGLFramebuffer::SetSpecification(const FramebufferSpecification& specs)
 	{
 		Ref<OpenGLFramebuffer> instance = this;
 		Renderer::Submit([instance, specs]() mutable {

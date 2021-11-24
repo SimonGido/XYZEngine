@@ -29,6 +29,7 @@ namespace XYZ {
 	{
 		if (m_Info.Image == nullptr)
 			return;
+		
 
 		Renderer::SubmitResource([info = m_Info, layerViews = m_PerLayerImageViews]() mutable
 		{
@@ -243,16 +244,13 @@ namespace XYZ {
 		return samplerCreateInfo;
 	}
 	void VulkanImage2D::UpdateDescriptor()
-	{
-		if (m_Specification.Format == ImageFormat::DEPTH24STENCIL8 || m_Specification.Format == ImageFormat::DEPTH32F)
+	{	
+		if (Utils::IsDepthFormat(m_Specification.Format) && m_Specification.Usage != ImageUsage::Storage)
 			m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 		else if (m_Specification.Usage == ImageUsage::Storage)
 			m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 		else
 			m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-		if (m_Specification.Usage == ImageUsage::Storage)
-			m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 
 		m_DescriptorImageInfo.imageView = m_Info.ImageView;
 		m_DescriptorImageInfo.sampler = m_Info.Sampler;

@@ -153,6 +153,7 @@ namespace XYZ {
 			m_QueueFamilyIndices.Presentation
 		};
 		createQueuesInfo(familyIndices);
+		findDepthFormat();
 	}
 	VulkanPhysicalDevice::~VulkanPhysicalDevice()
 	{	

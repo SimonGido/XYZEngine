@@ -6,6 +6,7 @@ namespace XYZ {
 	{
 	public:
 		VulkanRenderPass(const RenderPassSpecification& spec);
+		virtual ~VulkanRenderPass() override;
 
 		virtual RenderPassSpecification& GetSpecification() override { return m_Specification; }
 		virtual const RenderPassSpecification& GetSpecification() const override { return m_Specification; }

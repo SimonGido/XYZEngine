@@ -22,20 +22,20 @@ namespace XYZ {
 	void RendererQueueData::Shutdown()
 	{
 		BlockRenderThread();
-		std::future<bool> result = m_Pool.PushJob<bool>([this] {
-			m_RenderCommandQueue[0].Execute();
-			m_RenderCommandQueue[1].Execute();
-			return true;
-		});
-		result.wait();
-		m_Pool.EraseThread(0);
-		
+		while (!RenderCommandQueuesEmpty())
+		{
+			ExecuteRenderQueue();
+			BlockRenderThread();
+			ExecuteRenderQueue();
+			BlockRenderThread();
+		};
+		m_Pool.EraseThread(0);	
 		
 		if (m_ResourceQueues != nullptr)
 		{
 			for (uint32_t i = 0; i < m_FramesInFlight; ++i)
 				m_ResourceQueues[i].Execute();
-			
+
 			delete[]m_ResourceQueues;
 			m_ResourceQueues = nullptr;
 		}
@@ -78,5 +78,9 @@ namespace XYZ {
 	RenderCommandQueue& RendererQueueData::GetResourceCommandQueue(uint32_t frame)
 	{
 		return m_ResourceQueues[frame];
+	}
+	bool RendererQueueData::RenderCommandQueuesEmpty() const
+	{
+		return m_RenderCommandQueue[0].GetCommandCount() == 0 && m_RenderCommandQueue[1].GetCommandCount() == 0;
 	}
 }

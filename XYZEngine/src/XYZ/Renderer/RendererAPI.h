@@ -57,7 +57,7 @@ namespace XYZ {
 		// New API
 		virtual void BeginFrame() {}
 		virtual void EndFrame() {}
-		virtual void BeginRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer, const Ref<RenderPass>& renderPass, bool explicitClear = false) {};
+		virtual void BeginRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<RenderPass> renderPass, bool explicitClear = false) {};
 		virtual void EndRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer) {};
 		virtual void RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint32_t indexCount = 0) {};
 

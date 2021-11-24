@@ -90,9 +90,6 @@ namespace XYZ {
 	}
 	VulkanTexture2D::~VulkanTexture2D()
 	{
-		if (m_Image.Raw())
-			m_Image->Release();
-
 		m_ImageData.Destroy();
 	}
 	void VulkanTexture2D::SetData(const void* data, uint32_t size, uint32_t offset)
@@ -151,9 +148,9 @@ namespace XYZ {
 			allocator.UnmapMemory(stagingBufferAllocation);
 
 			VkCommandBuffer copyCmd = device->GetCommandBuffer(true);
-			createImageBarrier(copyCmd);
+			transitionToSrcLayout(copyCmd);
 			copyBufferToImage(copyCmd, stagingBuffer);
-			createImageBarrier(copyCmd, mipCount);
+			transitionToDstLayout(copyCmd, mipCount);
 			device->FlushCommandBuffer(copyCmd);
 			allocator.DestroyBuffer(stagingBuffer, stagingBufferAllocation);
 		}
@@ -280,7 +277,7 @@ namespace XYZ {
 	{
 		return m_ImageData;
 	}
-	void VulkanTexture2D::createImageBarrier(VkCommandBuffer copyCmd) const
+	void VulkanTexture2D::transitionToSrcLayout(VkCommandBuffer copyCmd) const
 	{
 		Ref<VulkanImage2D> vulkanImage = m_Image.As<VulkanImage2D>();
 		auto& info = vulkanImage->GetImageInfo();
@@ -347,7 +344,7 @@ namespace XYZ {
 			&bufferCopyRegion
 		);
 	}
-	void VulkanTexture2D::createImageBarrier(VkCommandBuffer copyCmd, uint32_t mipCount) const
+	void VulkanTexture2D::transitionToDstLayout(VkCommandBuffer copyCmd, uint32_t mipCount) const
 	{
 		Ref<VulkanImage2D> vulkanImage = m_Image.As<VulkanImage2D>();
 		auto& info = vulkanImage->GetImageInfo();

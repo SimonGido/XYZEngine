@@ -33,7 +33,7 @@ namespace XYZ {
 		RenderCommandQueue& GetResourceCommandQueue(uint32_t frame);
 
 		ThreadPool& GetThreadPool() { return m_Pool; }
-
+		bool RenderCommandQueuesEmpty() const;
 	private:
 		uint32_t		   m_FramesInFlight = 0;
 		RenderCommandQueue m_RenderCommandQueue[2];

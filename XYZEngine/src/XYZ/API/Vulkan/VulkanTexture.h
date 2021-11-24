@@ -36,9 +36,9 @@ namespace XYZ {
 	
 		const VkDescriptorImageInfo& GetVulkanDescriptorInfo() const { return m_Image.As<VulkanImage2D>()->GetDescriptor(); }
 	private:
-		void				  createImageBarrier(VkCommandBuffer copyCmd) const;
+		void				  transitionToSrcLayout(VkCommandBuffer copyCmd) const;
 		void				  copyBufferToImage(VkCommandBuffer copyCmd, VkBuffer stagingBuffer);
-		void				  createImageBarrier(VkCommandBuffer copyCmd, uint32_t mipCount) const;
+		void				  transitionToDstLayout(VkCommandBuffer copyCmd, uint32_t mipCount) const;
 
 		bool				  loadImage(const std::string& path);
 		VmaAllocation		  allocateStagingBuffer(VulkanAllocator& allocator, VkBuffer& stagingBuffer) const;

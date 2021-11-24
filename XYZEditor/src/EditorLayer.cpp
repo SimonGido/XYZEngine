@@ -52,11 +52,11 @@ namespace XYZ {
 			0, 1, 2, 2, 3, 0
 		};
 
-		FramebufferSpecs specs;
-		specs.Attachments.Attachments.push_back({
+		FramebufferSpecification specs;
+		specs.Attachments.push_back({
 			ImageFormat::RGBA16F
 			});
-		specs.Attachments.Attachments.push_back({
+		specs.Attachments.push_back({
 			ImageFormat::DEPTH24STENCIL8
 			});
 		m_RenderPass    = RenderPass::Create({ Framebuffer::Create(specs) });

@@ -57,7 +57,7 @@ namespace XYZ {
 	}
 
 	void VulkanRendererAPI::BeginRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer,
-		const Ref<RenderPass>& renderPass, bool explicitClear)
+		Ref<RenderPass> renderPass, bool explicitClear)
 	{
 		Renderer::Submit([renderCommandBuffer, renderPass, explicitClear]()
 		{
@@ -71,6 +71,8 @@ namespace XYZ {
 			VkViewport viewport = {};
 			viewport.minDepth = 0.0f;
 			viewport.maxDepth = 1.0f;
+			viewport.width = width;
+			viewport.height = height;
 
 			VkRect2D scissor = {};
 			scissor.offset = { 0, 0 };
@@ -79,33 +81,25 @@ namespace XYZ {
 			renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 			renderPassBeginInfo.pNext = nullptr;
 			renderPassBeginInfo.renderPass = framebuffer->GetRenderPass();
-			renderPassBeginInfo.renderArea.offset.x = 0;
-			renderPassBeginInfo.renderArea.offset.y = 0;
+			renderPassBeginInfo.renderArea.offset = { 0, 0 };
 			renderPassBeginInfo.renderArea.extent.width = width;
 			renderPassBeginInfo.renderArea.extent.height = height;
+			renderPassBeginInfo.framebuffer = framebuffer->GetFramebuffer();
+			renderPassBeginInfo.clearValueCount = framebuffer->GetVulkanClearValues().size();
+			renderPassBeginInfo.pClearValues = framebuffer->GetVulkanClearValues().data();
+
 			if (framebuffer->GetSpecification().SwapChainTarget)
 			{
 				const VulkanSwapChain& swapChain = vulkanContext->GetSwapChain();
-				width = swapChain.GetWidth();
-				height = swapChain.GetHeight();
-				renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-				renderPassBeginInfo.pNext = nullptr;
-				renderPassBeginInfo.renderPass = framebuffer->GetRenderPass();
-				renderPassBeginInfo.renderArea.offset = { 0, 0 };
 				renderPassBeginInfo.renderArea.extent = swapChain.GetExtent();
 				renderPassBeginInfo.framebuffer = swapChain.GetCurrentFramebuffer();
 
 				viewport = { 0.0f, 0.0f };
 				viewport.width = static_cast<float>(width);
 				viewport.height = static_cast<float>(height);
-
 				scissor.extent = swapChain.GetExtent();
 			}
-
-
-			const VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
-			renderPassBeginInfo.clearValueCount = 1;
-			renderPassBeginInfo.pClearValues = &clearColor;
+			
 			const VkCommandBuffer commandBuffer = renderCommandBuffer.As<VulkanRenderCommandBuffer>()->GetVulkanCommandBuffer(frameIndex);
 			vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 			if (explicitClear)

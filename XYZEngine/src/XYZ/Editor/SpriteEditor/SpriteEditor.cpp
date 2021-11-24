@@ -49,11 +49,11 @@ namespace XYZ {
 			m_ViewSectionWidth(300.0f)
 		{
 			m_SpriteRenderer.Material = AssetManager::GetAsset<Material>(AssetManager::GetAssetHandle("Assets/Materials/Material.mat"));
-			FramebufferSpecs specs;
+			FramebufferSpecification specs;
 			specs.ClearColor = { 0.1f,0.1f,0.1f,1.0f };
 			specs.Attachments = {
-				FramebufferTextureSpecs(ImageFormat::RGBA16F),
-				FramebufferTextureSpecs(ImageFormat::DEPTH24STENCIL8)
+				FramebufferTextureSpecification(ImageFormat::RGBA16F),
+				FramebufferTextureSpecification(ImageFormat::DEPTH24STENCIL8)
 			};
 			m_RenderPass = RenderPass::Create({ Framebuffer::Create(specs) });
 			m_Camera.LockOrtho(true);

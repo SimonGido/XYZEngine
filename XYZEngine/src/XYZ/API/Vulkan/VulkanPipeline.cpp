@@ -159,7 +159,7 @@ namespace XYZ {
 	}
 	std::vector<VkPipelineColorBlendAttachmentState> VulkanPipeline::createColorBlendAttachments() const
 	{
-		Ref<Framebuffer> framebuffer = m_Specification.RenderPass->GetSpecification().TargetFramebuffer;
+		Ref<VulkanFramebuffer> framebuffer = m_Specification.RenderPass->GetSpecification().TargetFramebuffer;
 		const size_t colorAttachmentCount = framebuffer->GetSpecification().SwapChainTarget ? 1 : framebuffer->GetNumColorAttachments();
 		std::vector<VkPipelineColorBlendAttachmentState> blendAttachmentStates(colorAttachmentCount);
 		if (framebuffer->GetSpecification().SwapChainTarget)
@@ -175,49 +175,42 @@ namespace XYZ {
 		}
 		else
 		{
-			//for (size_t i = 0; i < colorAttachmentCount; i++)
-			//{
-			//	if (!framebuffer->GetSpecification().Blend)
-			//		break;
-			//
-			//	blendAttachmentStates[i].colorWriteMask = 0xf;
-			//	if (!framebuffer->GetSpecification().Blend)
-			//		break;
-			//
-			//	const auto& attachmentSpec = framebuffer->GetSpecification().Attachments.Attachments[i];
-			//	FramebufferBlendMode blendMode = framebuffer->GetSpecification().BlendMode == FramebufferBlendMode::None
-			//		? attachmentSpec.BlendMode
-			//		: framebuffer->GetSpecification().BlendMode;
-			//
-			//	blendAttachmentStates[i].blendEnable = attachmentSpec.Blend ? VK_TRUE : VK_FALSE;
-			//	if (blendMode == FramebufferBlendMode::SrcAlphaOneMinusSrcAlpha)
-			//	{
-			//		blendAttachmentStates[i].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-			//		blendAttachmentStates[i].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-			//		blendAttachmentStates[i].srcAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-			//		blendAttachmentStates[i].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-			//	}
-			//	else if (blendMode == FramebufferBlendMode::OneZero)
-			//	{
-			//		blendAttachmentStates[i].srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
-			//		blendAttachmentStates[i].dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-			//		blendAttachmentStates[i].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-			//		blendAttachmentStates[i].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-			//	}
-			//	else if (blendMode == FramebufferBlendMode::Zero_SrcColor)
-			//	{
-			//		blendAttachmentStates[i].srcColorBlendFactor = VK_BLEND_FACTOR_ZERO;
-			//		blendAttachmentStates[i].dstColorBlendFactor = VK_BLEND_FACTOR_SRC_COLOR;
-			//		blendAttachmentStates[i].srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-			//		blendAttachmentStates[i].dstAlphaBlendFactor = VK_BLEND_FACTOR_SRC_COLOR;
-			//	}
-			//	else
-			//	{
-			//		XYZ_ASSERT(false, "");
-			//	}
-			//	blendAttachmentStates[i].colorBlendOp = VK_BLEND_OP_ADD;
-			//	blendAttachmentStates[i].alphaBlendOp = VK_BLEND_OP_ADD;
-			//}
+			for (size_t i = 0; i < colorAttachmentCount; i++)
+			{
+				blendAttachmentStates[i].colorWriteMask = 0xf;
+
+				const auto& attachmentSpec = framebuffer->GetSpecification().Attachments[i];
+				FramebufferBlendMode blendMode = attachmentSpec.BlendMode;
+			
+				blendAttachmentStates[i].blendEnable = attachmentSpec.Blend ? VK_TRUE : VK_FALSE;
+				if (blendMode == FramebufferBlendMode::SrcAlphaOneMinusSrcAlpha)
+				{
+					blendAttachmentStates[i].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+					blendAttachmentStates[i].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+					blendAttachmentStates[i].srcAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+					blendAttachmentStates[i].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+				}
+				else if (blendMode == FramebufferBlendMode::OneZero)
+				{
+					blendAttachmentStates[i].srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+					blendAttachmentStates[i].dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+					blendAttachmentStates[i].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+					blendAttachmentStates[i].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+				}
+				else if (blendMode == FramebufferBlendMode::Zero_SrcColor)
+				{
+					blendAttachmentStates[i].srcColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+					blendAttachmentStates[i].dstColorBlendFactor = VK_BLEND_FACTOR_SRC_COLOR;
+					blendAttachmentStates[i].srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+					blendAttachmentStates[i].dstAlphaBlendFactor = VK_BLEND_FACTOR_SRC_COLOR;
+				}
+				else
+				{
+					XYZ_ASSERT(false, "");
+				}
+				blendAttachmentStates[i].colorBlendOp = VK_BLEND_OP_ADD;
+				blendAttachmentStates[i].alphaBlendOp = VK_BLEND_OP_ADD;
+			}
 		}
 		return blendAttachmentStates;
 	}

@@ -31,9 +31,9 @@ namespace XYZ {
 		VkFormat						  GetDepthFormat()			const { return m_DepthFormat; }
 		
 	
-		const QueueFamilyIndices&		  GetQueueFamilyIndices()								 const { return m_QueueFamilyIndices; }
-		const VkPhysicalDeviceProperties& GetProperties()										 const { return m_Properties; }
-		const VkPhysicalDeviceFeatures&   GetFeatures()											 const { return m_Features; }
+		const QueueFamilyIndices&		  GetQueueFamilyIndices()	const { return m_QueueFamilyIndices; }
+		const VkPhysicalDeviceProperties& GetProperties()			const { return m_Properties; }
+		const VkPhysicalDeviceFeatures&   GetFeatures()				const { return m_Features; }
 	private:
 		void setupQueueFamilyIndices(int flags);
 		void findPresentationQueue(VkSurfaceKHR surface);

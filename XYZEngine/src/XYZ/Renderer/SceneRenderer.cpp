@@ -40,11 +40,11 @@ namespace XYZ {
 
 		// Composite pass
 		{
-			FramebufferSpecs specs;
+			FramebufferSpecification specs;
 			specs.ClearColor = { 0.0f,0.0f,0.0f,1.0f };
 			specs.Attachments = {
-				FramebufferTextureSpecs(ImageFormat::RGBA16F),
-				FramebufferTextureSpecs(ImageFormat::DEPTH24STENCIL8)
+				FramebufferTextureSpecification(ImageFormat::RGBA16F),
+				FramebufferTextureSpecification(ImageFormat::DEPTH24STENCIL8)
 			};
 
 			specs.SwapChainTarget = m_Specification.SwapChainTarget;
@@ -54,34 +54,34 @@ namespace XYZ {
 
 		// Light pass
 		{
-			FramebufferSpecs specs;
+			FramebufferSpecification specs;
 			specs.ClearColor = { 0.0f,0.0f,0.0f,0.0f };
 			specs.Attachments = {
-				FramebufferTextureSpecs(ImageFormat::RGBA16F, true),
-				FramebufferTextureSpecs(ImageFormat::DEPTH24STENCIL8)
+				FramebufferTextureSpecification(ImageFormat::RGBA16F, true),
+				FramebufferTextureSpecification(ImageFormat::DEPTH24STENCIL8)
 			};
 			Ref<Framebuffer> fbo = Framebuffer::Create(specs);
 			m_LightPass = RenderPass::Create({ fbo });
 		}
 		// Geometry pass
 		{
-			FramebufferSpecs specs;
+			FramebufferSpecification specs;
 			specs.ClearColor = { 0.0f,0.0f,0.0f,0.0f };
 			specs.Attachments = {
-				FramebufferTextureSpecs(ImageFormat::RGBA16F),
-				FramebufferTextureSpecs(ImageFormat::RGBA16F),
-				FramebufferTextureSpecs(ImageFormat::DEPTH24STENCIL8)
+				FramebufferTextureSpecification(ImageFormat::RGBA16F),
+				FramebufferTextureSpecification(ImageFormat::RGBA16F),
+				FramebufferTextureSpecification(ImageFormat::DEPTH24STENCIL8)
 			};
 			Ref<Framebuffer> fbo = Framebuffer::Create(specs);
 			m_GeometryPass = RenderPass::Create({ fbo });
 		}
 		// Bloom pass
 		{
-			FramebufferSpecs specs;
+			FramebufferSpecification specs;
 			specs.ClearColor = { 0.0f,0.0f,0.0f, 0.0f };
 			specs.Attachments = {
-				FramebufferTextureSpecs(ImageFormat::RGBA16F),
-				FramebufferTextureSpecs(ImageFormat::DEPTH24STENCIL8)
+				FramebufferTextureSpecification(ImageFormat::RGBA16F),
+				FramebufferTextureSpecification(ImageFormat::DEPTH24STENCIL8)
 			};
 			Ref<Framebuffer> fbo = Framebuffer::Create(specs);
 			m_BloomPass = RenderPass::Create({ fbo });

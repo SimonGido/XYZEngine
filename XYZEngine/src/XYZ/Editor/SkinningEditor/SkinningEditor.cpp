@@ -12,11 +12,11 @@ namespace XYZ {
 		{
 			m_Shader = AssetManager::GetAsset<Shader>(AssetManager::GetAssetHandle("Assets/Shaders/Editor/SkinningEditor.glsl.shader"));
 			
-			FramebufferSpecs specs;
+			FramebufferSpecification specs;
 			specs.ClearColor = { 0.0f,0.0f,0.0f,0.0f };
 			specs.Attachments = {
-				FramebufferTextureSpecs(ImageFormat::RGBA16F),
-				FramebufferTextureSpecs(ImageFormat::DEPTH24STENCIL8)
+				FramebufferTextureSpecification(ImageFormat::RGBA16F),
+				FramebufferTextureSpecification(ImageFormat::DEPTH24STENCIL8)
 			};
 			m_Pass = RenderPass::Create({ Framebuffer::Create(specs) });
 		}
