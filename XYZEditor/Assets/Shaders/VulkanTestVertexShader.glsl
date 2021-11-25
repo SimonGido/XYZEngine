@@ -22,10 +22,14 @@ layout(std140, set = 1, binding = 1) uniform Test
 	vec4 u_ViewPositionTest;
 };
 
+layout(push_constant) uniform Transform
+{
+	mat4 Transform;
+} u_Renderer;
 
 void main() 
 {
-    gl_Position = u_ViewProjectionTest * vec4(inPosition, 0.0, 1.0);
+    gl_Position = u_ViewProjectionTest * u_Renderer.Transform * vec4(inPosition, 0.0, 1.0);
     fragColor = inColor;
 	texCoord = inTexCoord;
 }
@@ -38,7 +42,13 @@ layout(location = 1) in vec2 inTexCoord;
 layout(location = 0) out vec4 outColor;
 layout(binding = 2) uniform sampler2D u_Texture;
 
+layout(push_constant) uniform Uniforms
+{
+	layout(offset = 64) vec4 Color;
+
+} u_Uniforms;
+
 void main() 
 {
-    outColor = texture(u_Texture, inTexCoord);
+    outColor = texture(u_Texture, inTexCoord) * u_Uniforms.Color;
 }

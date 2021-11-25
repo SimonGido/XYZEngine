@@ -54,7 +54,7 @@ namespace XYZ {
 
 			// Copy data to staging buffer
 			uint8_t* destData = allocator.MapMemory<uint8_t>(stagingBufferAllocation);
-			memcpy(destData, instance->m_LocalData, instance->m_LocalData.m_Size);
+			memcpy(destData, instance->m_LocalData, instance->m_LocalData.Size);
 			allocator.UnmapMemory(stagingBufferAllocation);
 
 			VkBufferCreateInfo indexBufferCreateInfo = {};
@@ -66,7 +66,7 @@ namespace XYZ {
 			const VkCommandBuffer copyCmd = device->GetCommandBuffer(true);
 
 			VkBufferCopy copyRegion = {};
-			copyRegion.size = instance->m_LocalData.m_Size;
+			copyRegion.size = instance->m_LocalData.Size;
 			vkCmdCopyBuffer(copyCmd, stagingBuffer, instance->m_VulkanBuffer, 1, &copyRegion);
 
 			device->FlushCommandBuffer(copyCmd);

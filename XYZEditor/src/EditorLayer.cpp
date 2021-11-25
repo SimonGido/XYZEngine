@@ -57,7 +57,7 @@ namespace XYZ {
 			ImageFormat::RGBA32F
 			});
 
-		specs.ClearColor = { 0.0f, 1.0f, 0.0f, 1.0f };
+		specs.ClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
 		m_Framebuffer   = Framebuffer::Create(specs);
 
 		m_RenderPass    = RenderPass::Create({ m_Framebuffer });
@@ -75,6 +75,7 @@ namespace XYZ {
 
 		Renderer::WaitAndRenderAll();
 		m_Material->Set("u_Texture", m_Texture);
+		m_Material->Set("u_Uniforms.Color", glm::vec4(1.0f, 0.0f, 1.0f, 1.0f));
 
 		const uint32_t windowWidth = Application::Get().GetWindow().GetWidth();
 		const uint32_t windowHeight = Application::Get().GetWindow().GetHeight();
@@ -98,7 +99,11 @@ namespace XYZ {
 		m_UniformBufferSet->Get(1, 1, currentFrame)->Update(&camera, sizeof(TestCamera), 0);
 		
 		Renderer::BeginRenderPass(m_RenderCommandBuffer, m_RenderPass, false);
-		Renderer::RenderGeometry(m_RenderCommandBuffer, m_Pipeline, m_UniformBufferSet, m_Material, m_VertexBuffer, m_IndexBuffer);
+		
+		Renderer::BindPipeline(m_RenderCommandBuffer, m_Pipeline, m_UniformBufferSet, m_Material);
+		Renderer::RenderGeometry(m_RenderCommandBuffer, m_Pipeline, m_Material, m_VertexBuffer, m_IndexBuffer, glm::translate(glm::vec3(1.0f)));
+		Renderer::RenderGeometry(m_RenderCommandBuffer, m_Pipeline, m_Material, m_VertexBuffer, m_IndexBuffer, glm::translate(glm::vec3(-1.0f)));
+
 		Renderer::EndRenderPass(m_RenderCommandBuffer);
 		
 		m_RenderCommandBuffer->End();
@@ -115,7 +120,6 @@ namespace XYZ {
 		if (ImGui::Begin("Scene"))
 		{		
 			UI::Image(m_Framebuffer->GetImage(), ImVec2(500, 500));
-			//UI::Image(m_Texture->GetImage(), ImVec2(200, 200));
 		}
 		ImGui::End();
 

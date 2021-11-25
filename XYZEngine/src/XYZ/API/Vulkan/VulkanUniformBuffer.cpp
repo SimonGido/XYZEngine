@@ -55,14 +55,14 @@ namespace XYZ {
 		VkBufferCreateInfo bufferInfo = {};
 		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 		bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-		bufferInfo.size = m_LocalStorage.m_Size;
+		bufferInfo.size = m_LocalStorage.Size;
 
 		VulkanAllocator allocator("UniformBuffer");
 		m_MemoryAlloc = allocator.AllocateBuffer(bufferInfo, VMA_MEMORY_USAGE_CPU_ONLY, m_Buffer);
 
 		m_DescriptorInfo.buffer = m_Buffer;
 		m_DescriptorInfo.offset = 0;
-		m_DescriptorInfo.range = m_LocalStorage.m_Size;
+		m_DescriptorInfo.range = m_LocalStorage.Size;
 	}
 	void VulkanUniformBuffer::release()
 	{

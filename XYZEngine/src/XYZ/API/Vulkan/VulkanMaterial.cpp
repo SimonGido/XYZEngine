@@ -11,7 +11,7 @@ namespace XYZ {
 		m_WriteDescriptors(Renderer::GetConfiguration().FramesInFlight),
 		m_DescriptorsDirty(true)
 	{
-		allocateStorage();
+		allocateStorages();
 		Ref<VulkanMaterial> instance = this;
 		Renderer::Submit([instance]() mutable
 		{
@@ -21,10 +21,12 @@ namespace XYZ {
 	}
 	VulkanMaterial::~VulkanMaterial()
 	{
-		m_UniformsBuffer.Destroy();
+		m_FSUniformsBuffer.Destroy();
+		m_VSUniformsBuffer.Destroy();
 	}
 	void VulkanMaterial::Invalidate()
 	{
+		allocateStorages();
 		m_DescriptorsDirty = true;
 		Ref<VulkanShader> vulkanShader = m_Shader;
 		const auto& shaderDescriptorSets = vulkanShader->GetDescriptorSets();
@@ -163,17 +165,27 @@ namespace XYZ {
 		auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 		vkUpdateDescriptorSets(vulkanDevice, (uint32_t)m_WriteDescriptors[frameIndex].size(), m_WriteDescriptors[frameIndex].data(), 0, nullptr);
 	}
-	void VulkanMaterial::allocateStorage()
-	{
-		const auto& shaderBuffers = m_Shader->GetBuffers();
-		if (shaderBuffers.size() > 0)
-		{
-			uint32_t size = 0;
-			for (auto [name, shaderBuffer] : shaderBuffers)
-				size += shaderBuffer.Size;
 
-			m_UniformsBuffer.Allocate(size);
-			m_UniformsBuffer.ZeroInitialize();
+	void VulkanMaterial::allocateStorages()
+	{
+		allocateStorage(m_Shader->GetVSBuffers(), m_VSUniformsBuffer);
+		allocateStorage(m_Shader->GetFSBuffers(), m_FSUniformsBuffer);
+	}
+	void VulkanMaterial::allocateStorage(const std::unordered_map<std::string, ShaderBuffer>& buffers, ByteBuffer& buffer)
+	{
+		uint32_t size = 0;
+		for (auto [name, shaderBuffer] : buffers)
+			size += shaderBuffer.Size;
+
+		if (buffer.Size != size)
+		{
+			if (buffer)
+				buffer.Destroy();
+			if (size)
+			{
+				buffer.Allocate(size);
+				buffer.ZeroInitialize();
+			}
 		}
 	}
 	void VulkanMaterial::setDescriptor(const std::string& name, const Ref<Texture2D>& texture)
@@ -204,21 +216,27 @@ namespace XYZ {
 		m_DescriptorsDirty = true;
 	}
 
-	const ShaderUniform* VulkanMaterial::findUniformDeclaration(const std::string& name)
+	std::pair<const ShaderUniform*, ByteBuffer*> VulkanMaterial::findUniformDeclaration(const std::string& name)
 	{
-		const auto& shaderBuffers = m_Shader->GetBuffers();
+		const auto& vsShaderBuffers = m_Shader->GetVSBuffers();
+		const auto& fsShaderBuffers = m_Shader->GetFSBuffers();
 
-		XYZ_ASSERT(shaderBuffers.size() <= 1, "We currently only support ONE material buffer!");
+		XYZ_ASSERT(vsShaderBuffers.size() <= 1, "We currently only support ONE material buffer!");
+		XYZ_ASSERT(fsShaderBuffers.size() <= 1, "We currently only support ONE material buffer!");
 
-		if (shaderBuffers.size() > 0)
+		if (fsShaderBuffers.size() > 0)
 		{
-			const ShaderBuffer& buffer = (*shaderBuffers.begin()).second;
-			if (buffer.Uniforms.find(name) == buffer.Uniforms.end())
-				return nullptr;
-
-			return &buffer.Uniforms.at(name);
+			const ShaderBuffer& buffer = (*fsShaderBuffers.begin()).second;
+			if (buffer.Uniforms.find(name) != buffer.Uniforms.end())
+				return { &buffer.Uniforms.at(name), &m_FSUniformsBuffer };
 		}
-		return nullptr;
+		if (vsShaderBuffers.size() > 0)
+		{
+			const ShaderBuffer& buffer = (*vsShaderBuffers.begin()).second;
+			if (buffer.Uniforms.find(name) != buffer.Uniforms.end())			
+				return { &buffer.Uniforms.at(name), &m_VSUniformsBuffer };
+		}
+		return { nullptr, nullptr };
 	}
 	const ShaderResourceDeclaration* VulkanMaterial::findResourceDeclaration(const std::string& name)
 	{

@@ -73,10 +73,13 @@ namespace XYZ {
 
 		virtual void Reload(bool forceCompile = false) override;
 
-		inline virtual const std::string& GetPath() const override { return m_AssetPath; };
-		inline virtual const std::string& GetName() const override { return m_Name; }
-		virtual size_t					  GetHash() const override;
-		virtual bool					  IsCompiled() const override;
+		inline virtual const std::string&		GetPath() const override { return m_AssetPath; };
+		inline virtual const std::string&		GetName() const override { return m_Name; }
+		virtual size_t							GetHash() const override;
+		virtual bool							IsCompiled() const override;
+		virtual const std::unordered_map<std::string, ShaderBuffer>& GetFSBuffers() const override { return m_FSBuffers; }
+		virtual const std::unordered_map<std::string, ShaderBuffer>& GetVSBuffers() const override { return m_VSBuffers; }
+		virtual const std::unordered_map<std::string, ShaderResourceDeclaration>& GetResources() const override { return m_Resources; }
 
 		const std::vector<DescriptorSet>&				   GetDescriptorSets() const { return m_DescriptorSets; }
 		const std::vector<PushConstantRange>&			   GetPushConstantRanges()	 const { return m_PushConstantRanges; }
@@ -84,10 +87,9 @@ namespace XYZ {
 		const VkWriteDescriptorSet*						   GetDescriptorSet(const std::string& name, uint32_t set) const;
 		std::pair<const VkWriteDescriptorSet*, uint32_t>   GetDescriptorSet(const std::string& name) const;
 
-		std::vector<VkDescriptorSetLayout>										  GetAllDescriptorSetLayouts() const;
-		virtual const std::unordered_map<std::string, ShaderBuffer>&			  GetBuffers() const override { return m_Buffers; }
-		virtual const std::unordered_map<std::string, ShaderResourceDeclaration>& GetResources() const override { return m_Resources; }
-	
+		std::vector<VkDescriptorSetLayout>				   GetAllDescriptorSetLayouts() const;
+
+		
 	private:
 		void compileOrGetVulkanBinaries(std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& outputBinary, bool forceCompile);
 		void createProgram(const std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& shaderData);
@@ -95,7 +97,10 @@ namespace XYZ {
 		
 		void reflectAllStages(const std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& shaderData);
 		void reflectStage(VkShaderStageFlagBits stage, const std::vector<uint32_t>& shaderData);
-		void reflectConstantBuffers(const spirv_cross::Compiler& compiler, VkShaderStageFlagBits stage, spirv_cross::SmallVector<spirv_cross::Resource>& buffers);
+		void reflectConstantBuffers(const spirv_cross::Compiler& compiler, VkShaderStageFlagBits stage, 
+			spirv_cross::SmallVector<spirv_cross::Resource>& buffers,
+			std::unordered_map<std::string, ShaderBuffer>& shaderBuffers
+		);
 		void reflectStorageBuffers(const spirv_cross::Compiler& compiler, VkShaderStageFlagBits stage, spirv_cross::SmallVector<spirv_cross::Resource>& buffers);
 		void reflectUniformBuffers(const spirv_cross::Compiler& compiler, VkShaderStageFlagBits stage, spirv_cross::SmallVector<spirv_cross::Resource>& buffers);
 		void reflectSampledImages(const spirv_cross::Compiler& compiler, VkShaderStageFlagBits stage, spirv_cross::SmallVector<spirv_cross::Resource>& sampledImages);
@@ -118,6 +123,7 @@ namespace XYZ {
 		std::unordered_map<std::string, ShaderResourceDeclaration>	m_Resources;
 		std::vector<PushConstantRange>								m_PushConstantRanges;
 
-		std::unordered_map<std::string, ShaderBuffer>				m_Buffers;						
+		std::unordered_map<std::string, ShaderBuffer>				m_FSBuffers;		
+		std::unordered_map<std::string, ShaderBuffer>				m_VSBuffers;
 	};
 }

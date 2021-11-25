@@ -48,8 +48,12 @@ namespace XYZ {
 		void RT_UpdateForRendering(const vector3D<VkWriteDescriptorSet>& descriptors);
 		const std::vector<VkWriteDescriptorSet>& GetWriteDescriptors(uint32_t frame) const { return m_WriteDescriptors[frame]; }
 		const std::vector<VkDescriptorSet>&      GetDescriptors(uint32_t frame) const { return m_DescriptorSets[frame]; }
+		ByteBuffer	GetFSUniformsBuffer() const { return m_FSUniformsBuffer; }
+		ByteBuffer	GetVSUniformsBuffer() const { return m_VSUniformsBuffer; }
+
 	private:
-		void allocateStorage();
+		void allocateStorages();
+		void allocateStorage(const std::unordered_map<std::string, ShaderBuffer>& buffers, ByteBuffer& buffer);
 		void setDescriptor(const std::string& name, const Ref<Texture2D>& texture);
 
 		template <typename T>
@@ -63,12 +67,14 @@ namespace XYZ {
 		Ref<T> getResource(const std::string& name);
 		
 
-		const ShaderUniform* findUniformDeclaration(const std::string& name);
-		const ShaderResourceDeclaration* findResourceDeclaration(const std::string& name);
+		std::pair<const ShaderUniform*, ByteBuffer*> findUniformDeclaration(const std::string& name);
+		const ShaderResourceDeclaration*			 findResourceDeclaration(const std::string& name);
 
 	private:
 		Ref<Shader>					   m_Shader;
-		ByteBuffer					   m_UniformsBuffer;
+		ByteBuffer					   m_FSUniformsBuffer;
+		ByteBuffer					   m_VSUniformsBuffer;
+
 		std::vector<Ref<Texture2D>>	   m_Textures;
 
 		// Per frame -> per set
@@ -87,18 +93,18 @@ namespace XYZ {
 	template<typename T>
 	inline void VulkanMaterial::set(const std::string& name, const T& value)
 	{
-		auto decl = findUniformDeclaration(name);
+		auto [decl, buffer] = findUniformDeclaration(name);
 		XYZ_ASSERT(decl != nullptr, "Could not find uniform with name");
 		if (!decl)
 			return;
-		m_UniformsBuffer.Write((uint8_t*)&value, decl->GetSize(), decl->GetOffset());
+		buffer->Write((uint8_t*)&value, decl->GetSize(), decl->GetOffset());
 	}
 	template<typename T>
 	inline T& VulkanMaterial::get(const std::string& name)
 	{
-		auto decl = findUniformDeclaration(name);
+		auto [decl, buffer] = findUniformDeclaration(name);
 		XYZ_ASSERT(decl != nullptr, "Could not find uniform with name");
-		return m_UniformsBuffer.Read<T>(decl->GetOffset());
+		return buffer->Read<T>(decl->GetOffset());
 	}
 	template<typename T>
 	inline Ref<T> VulkanMaterial::getResource(const std::string& name)

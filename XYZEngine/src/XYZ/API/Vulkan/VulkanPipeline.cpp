@@ -316,7 +316,7 @@ namespace XYZ {
 		const auto descriptorSetLayouts = vulkanShader->GetAllDescriptorSetLayouts();
 		const auto& pushConstantRanges = vulkanShader->GetPushConstantRanges();
 
-		// TODO: should come from shader
+
 		std::vector<VkPushConstantRange> vulkanPushConstantRanges(pushConstantRanges.size());
 		for (uint32_t i = 0; i < pushConstantRanges.size(); i++)
 		{

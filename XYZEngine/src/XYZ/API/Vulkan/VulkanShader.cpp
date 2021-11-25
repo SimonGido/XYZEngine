@@ -162,7 +162,8 @@ namespace XYZ {
 			instance->m_PipelineShaderStageCreateInfos.clear();
 			instance->m_DescriptorSets.clear();
 			instance->m_PushConstantRanges.clear();
-			instance->m_Buffers.clear();
+			instance->m_VSBuffers.clear();
+			instance->m_FSBuffers.clear();
 
 			instance->preProcess(Utils::ReadFile(instance->m_AssetPath));
 			std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>> shaderData;
@@ -203,14 +204,17 @@ namespace XYZ {
 	{
 		const spirv_cross::Compiler compiler(shaderData);
 		spirv_cross::ShaderResources resources = compiler.get_shader_resources();
-			
-		reflectConstantBuffers(compiler, stage, resources.push_constant_buffers);
+		
+		bool vertexBuffer = (stage == VK_SHADER_STAGE_VERTEX_BIT || stage == VK_SHADER_STAGE_COMPUTE_BIT);
+		auto& shaderBuffers = vertexBuffer ? m_VSBuffers : m_FSBuffers;
+
+		reflectConstantBuffers(compiler, stage, resources.push_constant_buffers, shaderBuffers);
 		reflectStorageBuffers(compiler, stage, resources.storage_buffers);
 		reflectUniformBuffers(compiler, stage, resources.uniform_buffers);
 		reflectSampledImages(compiler, stage, resources.sampled_images);
 		reflectStorageImages(compiler, stage, resources.storage_images);
 	}
-	void VulkanShader::reflectConstantBuffers(const spirv_cross::Compiler& compiler, VkShaderStageFlagBits stage, spirv_cross::SmallVector<spirv_cross::Resource>& buffers)
+	void VulkanShader::reflectConstantBuffers(const spirv_cross::Compiler& compiler, VkShaderStageFlagBits stage, spirv_cross::SmallVector<spirv_cross::Resource>& buffers, std::unordered_map<std::string, ShaderBuffer>& shaderBuffers)
 	{
 		XYZ_TRACE("Push Constant Buffers:");
 		for (const auto& resource : buffers)
@@ -228,11 +232,8 @@ namespace XYZ {
 			pushConstantRange.Size = bufferSize - bufferOffset;
 			pushConstantRange.Offset = bufferOffset;
 
-			// Skip empty push constant buffers - these are for the renderer only
-			if (bufferName.empty() || bufferName == "u_Renderer")
-				continue;
 
-			ShaderBuffer& buffer = m_Buffers[bufferName];
+			ShaderBuffer& buffer = shaderBuffers[bufferName];
 			buffer.Name = bufferName;
 			buffer.Size = bufferSize - bufferOffset;
 

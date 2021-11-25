@@ -73,7 +73,7 @@ namespace XYZ {
 		if (data)
 		{
 			m_ImageData = ByteBuffer::Copy(data, size);
-			memcpy(m_ImageData.m_Data, data, m_ImageData.m_Size);
+			memcpy(m_ImageData.Data, data, m_ImageData.Size);
 		}
 
 		ImageSpecification imageSpec;
@@ -132,7 +132,7 @@ namespace XYZ {
 
 		if (m_ImageData)
 		{
-			VkDeviceSize size = m_ImageData.m_Size;
+			VkDeviceSize size = m_ImageData.Size;
 
 			VkMemoryAllocateInfo memAllocInfo{};
 			memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
@@ -143,8 +143,8 @@ namespace XYZ {
 			
 			// Copy data to staging buffer
 			uint8_t* destData = allocator.MapMemory<uint8_t>(stagingBufferAllocation);
-			XYZ_ASSERT(m_ImageData.m_Data, "");
-			memcpy(destData, m_ImageData.m_Data, size);
+			XYZ_ASSERT(m_ImageData.Data, "");
+			memcpy(destData, m_ImageData.Data, size);
 			allocator.UnmapMemory(stagingBufferAllocation);
 
 			VkCommandBuffer copyCmd = device->GetCommandBuffer(true);
@@ -383,20 +383,20 @@ namespace XYZ {
 
 		if (stbi_is_hdr(path.c_str()))
 		{
-			m_ImageData.m_Data = (uint8_t*)stbi_loadf(path.c_str(), &width, &height, &channels, 4);
-			m_ImageData.m_Size = width * height * 4 * sizeof(float);
+			m_ImageData.Data = (uint8_t*)stbi_loadf(path.c_str(), &width, &height, &channels, 4);
+			m_ImageData.Size = width * height * 4 * sizeof(float);
 			m_Format = ImageFormat::RGBA32F;
 		}
 		else
 		{
 			//stbi_set_flip_vertically_on_load(1);
-			m_ImageData.m_Data = stbi_load(path.c_str(), &width, &height, &channels, 4);
-			m_ImageData.m_Size = width * height * 4;
+			m_ImageData.Data = stbi_load(path.c_str(), &width, &height, &channels, 4);
+			m_ImageData.Size = width * height * 4;
 			m_Format = ImageFormat::RGBA;
 		}
 
-		XYZ_ASSERT(m_ImageData.m_Data, "Failed to load image!");
-		if (!m_ImageData.m_Data)
+		XYZ_ASSERT(m_ImageData.Data, "Failed to load image!");
+		if (!m_ImageData.Data)
 			return false;
 
 		m_Width = width;
@@ -406,7 +406,7 @@ namespace XYZ {
 
 	VmaAllocation VulkanTexture2D::allocateStagingBuffer(VulkanAllocator& allocator, VkBuffer& stagingBuffer) const
 	{
-		VkDeviceSize size = m_ImageData.m_Size;
+		VkDeviceSize size = m_ImageData.Size;
 
 		VkBufferCreateInfo bufferCreateInfo{};
 		bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
