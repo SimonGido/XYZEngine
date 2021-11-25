@@ -164,8 +164,8 @@ namespace XYZ {
 				if (m_Context.Raw() && !ImGui::IsWindowCollapsed())
 				{
 					handlePanelResize({ viewerPanelSize.x, viewerPanelSize.y });
-					const uint32_t renderID = m_RenderPass->GetSpecification().TargetFramebuffer->GetColorAttachmentRendererID(0);
-					ImGui::Image(reinterpret_cast<void*>((void*)(uint64_t)renderID), viewerPanelSize, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+					//const uint32_t renderID = m_RenderPass->GetSpecification().TargetFramebuffer->GetColorAttachmentRendererID(0);
+					//ImGui::Image(reinterpret_cast<void*>((void*)(uint64_t)renderID), viewerPanelSize, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 				}
 			}
 			ImGui::EndChild();

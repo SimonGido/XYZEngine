@@ -6,7 +6,7 @@
 #include "VulkanContext.h"
 #include "VulkanImage.h"
 #include "VulkanAllocator.h"
-
+#include "VulkanRendererAPI.h"
 
 namespace XYZ {
 	namespace Utils
@@ -53,7 +53,7 @@ namespace XYZ {
 					spec.Format = attachmentSpec.Format;
 					spec.Usage = ImageUsage::Attachment;
 					spec.Width = m_Specification.Width ;
-					spec.Height =m_Specification.Height;
+					spec.Height = m_Specification.Height;
 					m_AttachmentImages.emplace_back(Image2D::Create(spec));
 				}
 				attachmentIndex++;
@@ -84,6 +84,12 @@ namespace XYZ {
 			m_ClearValues.emplace_back().color = Utils::GlmColorToVkColor(m_Specification.ClearColor);
 		}
 	}
+
+	Ref<Image2D> VulkanFramebuffer::GetImage(uint32_t attachmentIndex) const
+	{	
+		return m_AttachmentImages[attachmentIndex];
+	}
+
 
 	void VulkanFramebuffer::Invalidate()
 	{
@@ -160,7 +166,7 @@ namespace XYZ {
 			}
 			attachmentIndex++;
 		}
-
+		
 		VkSubpassDescription subpassDescription = {};
 		subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 		subpassDescription.colorAttachmentCount = uint32_t(colorAttachmentReferences.size());
@@ -168,58 +174,9 @@ namespace XYZ {
 		if (m_DepthAttachmentImage.Raw())
 			subpassDescription.pDepthStencilAttachment = &depthAttachmentReference;
 
-		// TODO: do we need these?
 		// Use subpass dependencies for layout transitions
 		std::vector<VkSubpassDependency> dependencies;
-
-		if (m_AttachmentImages.size())
-		{
-			{
-				VkSubpassDependency& depedency = dependencies.emplace_back();
-				depedency.srcSubpass = VK_SUBPASS_EXTERNAL;
-				depedency.dstSubpass = 0;
-				depedency.srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-				depedency.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-				depedency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-				depedency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-				depedency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-			}
-			{
-				VkSubpassDependency& depedency = dependencies.emplace_back();
-				depedency.srcSubpass = 0;
-				depedency.dstSubpass = VK_SUBPASS_EXTERNAL;
-				depedency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-				depedency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-				depedency.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-				depedency.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-				depedency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-			}
-		}
-
-		if (m_DepthAttachmentImage.Raw())
-		{
-			{
-				VkSubpassDependency& depedency = dependencies.emplace_back();
-				depedency.srcSubpass = VK_SUBPASS_EXTERNAL;
-				depedency.dstSubpass = 0;
-				depedency.srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-				depedency.dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-				depedency.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-				depedency.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-				depedency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-			}
-
-			{
-				VkSubpassDependency& depedency = dependencies.emplace_back();
-				depedency.srcSubpass = 0;
-				depedency.dstSubpass = VK_SUBPASS_EXTERNAL;
-				depedency.srcStageMask = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-				depedency.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-				depedency.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-				depedency.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-				depedency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-			}
-		}
+		createDependencies(dependencies);
 
 		// Create the actual renderpass
 		VkRenderPassCreateInfo renderPassInfo = {};
@@ -267,6 +224,57 @@ namespace XYZ {
 				vkDestroyFramebuffer(device, framebuffer, nullptr);
 				vkDestroyRenderPass(device, renderPass, nullptr);
 			});
+		}
+	}
+	void VulkanFramebuffer::createDependencies(std::vector<VkSubpassDependency>& dependencies) const
+	{
+		if (m_AttachmentImages.size())
+		{
+			{
+				VkSubpassDependency& depedency = dependencies.emplace_back();
+				depedency.srcSubpass = VK_SUBPASS_EXTERNAL;
+				depedency.dstSubpass = 0;
+				depedency.srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+				depedency.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+				depedency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+				depedency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+				depedency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+			}
+			{
+				VkSubpassDependency& depedency = dependencies.emplace_back();
+				depedency.srcSubpass = 0;
+				depedency.dstSubpass = VK_SUBPASS_EXTERNAL;
+				depedency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+				depedency.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+				depedency.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+				depedency.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+				depedency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+			}
+		}
+
+		if (m_DepthAttachmentImage.Raw())
+		{
+			{
+				VkSubpassDependency& depedency = dependencies.emplace_back();
+				depedency.srcSubpass = VK_SUBPASS_EXTERNAL;
+				depedency.dstSubpass = 0;
+				depedency.srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+				depedency.dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+				depedency.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+				depedency.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+				depedency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+			}
+
+			{
+				VkSubpassDependency& depedency = dependencies.emplace_back();
+				depedency.srcSubpass = 0;
+				depedency.dstSubpass = VK_SUBPASS_EXTERNAL;
+				depedency.srcStageMask = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+				depedency.dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+				depedency.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+				depedency.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+				depedency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+			}
 		}
 	}
 }

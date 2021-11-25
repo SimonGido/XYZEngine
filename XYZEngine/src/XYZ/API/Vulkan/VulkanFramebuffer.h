@@ -12,7 +12,10 @@ namespace XYZ {
 
 		virtual void					Resize(uint32_t width, uint32_t height, bool forceRecreate = false) override;
 		virtual const uint32_t			GetNumColorAttachments()  const override { return m_Specification.SwapChainTarget ? 1 : m_AttachmentImages.size(); }
+		virtual Ref<Image2D>			GetImage(uint32_t attachmentIndex = 0) const override;
+		virtual Ref<Image2D>			GetDepthImage() const override { return m_DepthAttachmentImage; }
 		virtual const FramebufferSpecification& GetSpecification() const override { return m_Specification; }
+
 
 		VkRenderPass					 GetRenderPass() const { return m_RenderPass; }
 		VkFramebuffer					 GetFramebuffer() const { return m_Framebuffer; }
@@ -24,6 +27,7 @@ namespace XYZ {
 		void RT_Invalidate();
 	private:
 		void release() const;
+		void createDependencies(std::vector<VkSubpassDependency>& dependencies) const;
 
 	private:
 		FramebufferSpecification  m_Specification;

@@ -22,8 +22,6 @@ namespace XYZ {
 		virtual void SetSpecification(const FramebufferSpecification& specs) override;
 
 
-		virtual const uint32_t GetColorAttachmentRendererID(uint32_t index) const override { return m_ColorAttachments[index].ID; }
-		virtual const uint32_t GetDetphAttachmentRendererID() const override { return m_DepthAttachment; }
 		virtual const uint32_t GetNumColorAttachments() const override { return (uint32_t)m_ColorAttachments.size(); }
 	
 		virtual const FramebufferSpecification& GetSpecification() const override { return m_Specification; }

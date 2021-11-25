@@ -12,6 +12,7 @@
 #include "VulkanDescriptorAllocator.h"
 #include "VulkanUniformBufferSet.h"
 #include "VulkanMaterial.h"
+#include "VulkanImage.h"
 
 #include "XYZ/Core/Application.h"
 #include "XYZ/Debug/Profiler.h"
@@ -101,13 +102,15 @@ namespace XYZ {
 			}
 			
 			const VkCommandBuffer commandBuffer = renderCommandBuffer.As<VulkanRenderCommandBuffer>()->GetVulkanCommandBuffer(frameIndex);
+			
 			vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 			if (explicitClear)
 				clearFramebuffer(framebuffer, commandBuffer);
+			
 			// Update dynamic viewport state
 			vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 			// Update dynamic scissor state				
-			vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+			vkCmdSetScissor(commandBuffer, 0, 1, &scissor);			
 		});
 	}
 
@@ -326,15 +329,13 @@ namespace XYZ {
 	void VulkanRendererAPI::clearFramebuffer(Ref<VulkanFramebuffer> framebuffer, VkCommandBuffer commandBuffer)
 	{
 		const uint32_t colorAttachmentCount = framebuffer->GetNumColorAttachments();
-		const uint32_t totalAttachmentCount = colorAttachmentCount; // + depth
 		const auto& clearValues = framebuffer->GetVulkanClearValues();
-		XYZ_ASSERT(clearValues.size() == totalAttachmentCount, "");
-
+	
 
 		const uint32_t width = framebuffer->GetSpecification().Width;
 		const uint32_t height = framebuffer->GetSpecification().Height;
-		std::vector<VkClearAttachment> attachments(totalAttachmentCount);
-		std::vector<VkClearRect> clearRects(totalAttachmentCount);
+		std::vector<VkClearAttachment> attachments(colorAttachmentCount);
+		std::vector<VkClearRect> clearRects(colorAttachmentCount);
 		for (uint32_t i = 0; i < colorAttachmentCount; i++)
 		{
 			attachments[i].aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -349,6 +350,8 @@ namespace XYZ {
 
 		if (framebuffer->HasDepthAttachment())
 		{
+			attachments.push_back({});
+			clearRects.push_back({});
 			attachments[colorAttachmentCount].aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
 			attachments[colorAttachmentCount].clearValue = clearValues[colorAttachmentCount];
 			clearRects[colorAttachmentCount].rect.offset = { 0, 0 };
@@ -357,6 +360,6 @@ namespace XYZ {
 			clearRects[colorAttachmentCount].layerCount = 1;
 		}
 
-		vkCmdClearAttachments(commandBuffer, totalAttachmentCount, attachments.data(), totalAttachmentCount, clearRects.data());
+		vkCmdClearAttachments(commandBuffer, attachments.size(), attachments.data(), clearRects.size(), clearRects.data());
 	}
 }

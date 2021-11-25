@@ -232,7 +232,7 @@ namespace XYZ {
 
 	uint32_t SceneRenderer::GetFinalColorBufferRendererID()
 	{
-		return m_CompositePass->GetSpecification().TargetFramebuffer->GetColorAttachmentRendererID(0);
+		return 0;// m_CompositePass->GetSpecification().TargetFramebuffer->GetColorAttachmentRendererID(0);
 	}
 	SceneRendererOptions& SceneRenderer::GetOptions()
 	{

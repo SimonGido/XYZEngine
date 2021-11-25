@@ -10,7 +10,7 @@
 #define IMGUI_IMPL_API
 #endif
 
-#include <backends/imgui_impl_vulkan.h>
+#include <backends/imgui_impl_vulkan_with_textures.h>
 #include <backends/imgui_impl_glfw.h>
 
 

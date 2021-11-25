@@ -67,7 +67,6 @@ namespace XYZ {
 
 	void Application::Run()
 	{
-		bool test = false;
 		while (m_Running)
 		{				
 			XYZ_PROFILE_FRAME("MainThread");
@@ -79,8 +78,7 @@ namespace XYZ {
 				Renderer::BlockRenderThread(); // Sync before new frame
 				Renderer::HandleResources();
 				Renderer::Render();
-				if (test)
-					break;
+		
 				m_Window->BeginFrame();
 				for (Layer* layer : m_LayerStack)
 					layer->OnUpdate(m_Timestep);
@@ -90,7 +88,6 @@ namespace XYZ {
 				
 				
 				m_Window->SwapBuffers();
-				test = true;
 			}
 		}
 		XYZ_PROFILER_SHUTDOWN;

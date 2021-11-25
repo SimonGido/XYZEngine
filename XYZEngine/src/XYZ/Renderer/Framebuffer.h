@@ -58,8 +58,8 @@ namespace XYZ {
 		virtual void BindImage(uint32_t attachmentIndex, uint32_t slot, uint32_t miplevel, BindImageType type) const {};
 		virtual void SetSpecification(const FramebufferSpecification& specs) {};
 
-		virtual const uint32_t GetColorAttachmentRendererID(uint32_t index) const { return 0; };
-		virtual const uint32_t GetDetphAttachmentRendererID() const { return 0; };
+		virtual Ref<Image2D> GetImage(uint32_t attachmentIndex = 0) const { return Ref<Image2D>(); };
+		virtual Ref<Image2D> GetDepthImage() const { return Ref<Image2D>(); }
 		virtual const uint32_t GetNumColorAttachments() const { return 0; };
 
 		virtual const FramebufferSpecification& GetSpecification() const = 0;

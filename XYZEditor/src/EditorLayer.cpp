@@ -54,16 +54,18 @@ namespace XYZ {
 
 		FramebufferSpecification specs;
 		specs.Attachments.push_back({
-			ImageFormat::RGBA16F
+			ImageFormat::RGBA32F
 			});
-		specs.Attachments.push_back({
-			ImageFormat::DEPTH24STENCIL8
-			});
-		m_RenderPass    = RenderPass::Create({ Framebuffer::Create(specs) });
+
+		specs.ClearColor = { 0.0f, 1.0f, 0.0f, 1.0f };
+		m_Framebuffer   = Framebuffer::Create(specs);
+
+		m_RenderPass    = RenderPass::Create({ m_Framebuffer });
 		m_VertexBuffer  = VertexBuffer::Create(vertices.data(), vertices.size() * sizeof(TestVertex));
 		m_IndexBuffer   = IndexBuffer::Create(indices.data(), indices.size(), IndexType::Uint16);
 		m_Pipeline		= Pipeline::Create({ m_Shader, layout, m_RenderPass });
-		m_RenderCommandBuffer = context->GetRenderCommandBuffer();
+		m_RenderCommandBuffer = RenderCommandBuffer::Create(Renderer::GetConfiguration().FramesInFlight);
+
 		m_UniformBufferSet = UniformBufferSet::Create(Renderer::GetConfiguration().FramesInFlight);
 		m_UniformBufferSet->Create(sizeof(TestCamera), 0, 0);
 		m_UniformBufferSet->Create(sizeof(TestCamera), 1, 1);
@@ -98,16 +100,25 @@ namespace XYZ {
 		Renderer::BeginRenderPass(m_RenderCommandBuffer, m_RenderPass, false);
 		Renderer::RenderGeometry(m_RenderCommandBuffer, m_Pipeline, m_UniformBufferSet, m_Material, m_VertexBuffer, m_IndexBuffer);
 		Renderer::EndRenderPass(m_RenderCommandBuffer);
+		
 		m_RenderCommandBuffer->End();
+		m_RenderCommandBuffer->Submit();
 	}
 
 	void EditorLayer::OnEvent(Event& event)
 	{			
-		
+		m_Camera.OnEvent(event);
 	}
 
 	void EditorLayer::OnImGuiRender()
 	{
+		if (ImGui::Begin("Scene"))
+		{		
+			UI::Image(m_Framebuffer->GetImage(), ImVec2(500, 500));
+			//UI::Image(m_Texture->GetImage(), ImVec2(200, 200));
+		}
+		ImGui::End();
+
 		/*
 		if (ImGui::BeginMenuBar())
 		{

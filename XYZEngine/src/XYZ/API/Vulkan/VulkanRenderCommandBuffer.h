@@ -31,6 +31,7 @@ namespace XYZ {
 		std::string					 m_Name;
 		VkCommandPool				 m_CommandPool;
 		std::vector<VkCommandBuffer> m_CommandBuffers;
+		std::vector<VkFence>		 m_WaitFences;
 		bool						 m_OwnedBySwapchain;
 
 		friend class VulkanSwapChain;
