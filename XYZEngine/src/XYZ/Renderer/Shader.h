@@ -146,8 +146,7 @@ namespace XYZ {
 		
 		virtual uint32_t GetRendererID() const { return 0; }
 		virtual size_t	 GetHash()	     const = 0;
-		virtual const std::unordered_map<std::string, ShaderBuffer>& GetFSBuffers() const { return {}; }
-		virtual const std::unordered_map<std::string, ShaderBuffer>& GetVSBuffers() const { return {}; }
+		virtual const std::unordered_map<std::string, ShaderBuffer>& GetBuffers() const { return {}; }
 
 		virtual const std::unordered_map<std::string, ShaderResourceDeclaration>& GetResources() const { return {}; }
 

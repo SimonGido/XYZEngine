@@ -48,9 +48,8 @@ namespace XYZ {
 		void RT_UpdateForRendering(const vector3D<VkWriteDescriptorSet>& descriptors);
 		const std::vector<VkWriteDescriptorSet>& GetWriteDescriptors(uint32_t frame) const { return m_WriteDescriptors[frame]; }
 		const std::vector<VkDescriptorSet>&      GetDescriptors(uint32_t frame) const { return m_DescriptorSets[frame]; }
-		ByteBuffer	GetFSUniformsBuffer() const { return m_FSUniformsBuffer; }
-		ByteBuffer	GetVSUniformsBuffer() const { return m_VSUniformsBuffer; }
-
+		const ByteBuffer						 GetFSUniformsBuffer() const;
+		const ByteBuffer						 GetVSUniformsBuffer() const;
 	private:
 		void allocateStorages();
 		void allocateStorage(const std::unordered_map<std::string, ShaderBuffer>& buffers, ByteBuffer& buffer);
@@ -71,9 +70,8 @@ namespace XYZ {
 		const ShaderResourceDeclaration*			 findResourceDeclaration(const std::string& name);
 
 	private:
-		Ref<Shader>					   m_Shader;
-		ByteBuffer					   m_FSUniformsBuffer;
-		ByteBuffer					   m_VSUniformsBuffer;
+		Ref<VulkanShader>			   m_Shader;
+		ByteBuffer					   m_UniformsBuffer;
 
 		std::vector<Ref<Texture2D>>	   m_Textures;
 

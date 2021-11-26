@@ -21,8 +21,7 @@ namespace XYZ {
 	}
 	VulkanMaterial::~VulkanMaterial()
 	{
-		m_FSUniformsBuffer.Destroy();
-		m_VSUniformsBuffer.Destroy();
+		m_UniformsBuffer.Destroy();
 	}
 	void VulkanMaterial::Invalidate()
 	{
@@ -166,10 +165,23 @@ namespace XYZ {
 		vkUpdateDescriptorSets(vulkanDevice, (uint32_t)m_WriteDescriptors[frameIndex].size(), m_WriteDescriptors[frameIndex].data(), 0, nullptr);
 	}
 
+	const ByteBuffer VulkanMaterial::GetFSUniformsBuffer() const
+	{
+		const size_t vertexBufferSize = m_Shader->GetVertexBufferSize();
+		if (m_UniformsBuffer.Size - vertexBufferSize != 0)
+			return ByteBuffer(&m_UniformsBuffer.Data[vertexBufferSize], m_UniformsBuffer.Size - vertexBufferSize);
+		return ByteBuffer(nullptr, 0);
+	}
+
+	const ByteBuffer VulkanMaterial::GetVSUniformsBuffer() const
+	{
+		const size_t vertexBufferSize = m_Shader->GetVertexBufferSize();
+		return ByteBuffer(m_UniformsBuffer.Data, vertexBufferSize);
+	}
+
 	void VulkanMaterial::allocateStorages()
 	{
-		allocateStorage(m_Shader->GetVSBuffers(), m_VSUniformsBuffer);
-		allocateStorage(m_Shader->GetFSBuffers(), m_FSUniformsBuffer);
+		allocateStorage(m_Shader->GetBuffers(), m_UniformsBuffer);
 	}
 	void VulkanMaterial::allocateStorage(const std::unordered_map<std::string, ShaderBuffer>& buffers, ByteBuffer& buffer)
 	{
@@ -218,23 +230,15 @@ namespace XYZ {
 
 	std::pair<const ShaderUniform*, ByteBuffer*> VulkanMaterial::findUniformDeclaration(const std::string& name)
 	{
-		const auto& vsShaderBuffers = m_Shader->GetVSBuffers();
-		const auto& fsShaderBuffers = m_Shader->GetFSBuffers();
+		const auto& shaderBuffers = m_Shader->GetBuffers();
 
-		XYZ_ASSERT(vsShaderBuffers.size() <= 1, "We currently only support ONE material buffer!");
-		XYZ_ASSERT(fsShaderBuffers.size() <= 1, "We currently only support ONE material buffer!");
+		XYZ_ASSERT(shaderBuffers.size() <= 1, "We currently only support ONE material buffer!");
 
-		if (fsShaderBuffers.size() > 0)
+		if (shaderBuffers.size() > 0)
 		{
-			const ShaderBuffer& buffer = (*fsShaderBuffers.begin()).second;
-			if (buffer.Uniforms.find(name) != buffer.Uniforms.end())
-				return { &buffer.Uniforms.at(name), &m_FSUniformsBuffer };
-		}
-		if (vsShaderBuffers.size() > 0)
-		{
-			const ShaderBuffer& buffer = (*vsShaderBuffers.begin()).second;
+			const ShaderBuffer& buffer = (*shaderBuffers.begin()).second;
 			if (buffer.Uniforms.find(name) != buffer.Uniforms.end())			
-				return { &buffer.Uniforms.at(name), &m_VSUniformsBuffer };
+				return { &buffer.Uniforms.at(name), &m_UniformsBuffer };
 		}
 		return { nullptr, nullptr };
 	}

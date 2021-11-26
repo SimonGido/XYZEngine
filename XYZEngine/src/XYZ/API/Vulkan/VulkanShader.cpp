@@ -135,7 +135,8 @@ namespace XYZ {
 		:
 		m_Compiled(false),
 		m_Name(Utils::GetFilenameWithoutExtension(path)),
-		m_AssetPath(path)
+		m_AssetPath(path),
+		m_VertexBufferSize(0)
 	{
 		Reload(true);
 	}
@@ -143,7 +144,8 @@ namespace XYZ {
 		:
 		m_Compiled(false),
 		m_Name(name),
-		m_AssetPath(path)
+		m_AssetPath(path),
+		m_VertexBufferSize(0)
 	{
 		Reload(true);
 	}
@@ -162,8 +164,7 @@ namespace XYZ {
 			instance->m_PipelineShaderStageCreateInfos.clear();
 			instance->m_DescriptorSets.clear();
 			instance->m_PushConstantRanges.clear();
-			instance->m_VSBuffers.clear();
-			instance->m_FSBuffers.clear();
+			instance->m_Buffers.clear();
 
 			instance->preProcess(Utils::ReadFile(instance->m_AssetPath));
 			std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>> shaderData;
@@ -205,16 +206,16 @@ namespace XYZ {
 		const spirv_cross::Compiler compiler(shaderData);
 		spirv_cross::ShaderResources resources = compiler.get_shader_resources();
 		
-		bool vertexBuffer = (stage == VK_SHADER_STAGE_VERTEX_BIT || stage == VK_SHADER_STAGE_COMPUTE_BIT);
-		auto& shaderBuffers = vertexBuffer ? m_VSBuffers : m_FSBuffers;
+		if (stage == VK_SHADER_STAGE_FRAGMENT_BIT)
+			m_VertexBufferSize = getBuffersSize();
 
-		reflectConstantBuffers(compiler, stage, resources.push_constant_buffers, shaderBuffers);
+		reflectConstantBuffers(compiler, stage, resources.push_constant_buffers);
 		reflectStorageBuffers(compiler, stage, resources.storage_buffers);
 		reflectUniformBuffers(compiler, stage, resources.uniform_buffers);
 		reflectSampledImages(compiler, stage, resources.sampled_images);
 		reflectStorageImages(compiler, stage, resources.storage_images);
 	}
-	void VulkanShader::reflectConstantBuffers(const spirv_cross::Compiler& compiler, VkShaderStageFlagBits stage, spirv_cross::SmallVector<spirv_cross::Resource>& buffers, std::unordered_map<std::string, ShaderBuffer>& shaderBuffers)
+	void VulkanShader::reflectConstantBuffers(const spirv_cross::Compiler& compiler, VkShaderStageFlagBits stage, spirv_cross::SmallVector<spirv_cross::Resource>& buffers)
 	{
 		XYZ_TRACE("Push Constant Buffers:");
 		for (const auto& resource : buffers)
@@ -233,7 +234,7 @@ namespace XYZ {
 			pushConstantRange.Offset = bufferOffset;
 
 
-			ShaderBuffer& buffer = shaderBuffers[bufferName];
+			ShaderBuffer& buffer = m_Buffers[bufferName];
 			buffer.Name = bufferName;
 			buffer.Size = bufferSize - bufferOffset;
 
@@ -660,7 +661,13 @@ namespace XYZ {
 		});
 		m_Compiled = false;
 	}
-
+	size_t VulkanShader::getBuffersSize() const
+	{
+		size_t size = 0;
+		for (auto& [name, buffer] : m_Buffers)
+			size += buffer.Size;
+		return size;
+	}
 }
 
 

@@ -77,8 +77,7 @@ namespace XYZ {
 		inline virtual const std::string&		GetName() const override { return m_Name; }
 		virtual size_t							GetHash() const override;
 		virtual bool							IsCompiled() const override;
-		virtual const std::unordered_map<std::string, ShaderBuffer>& GetFSBuffers() const override { return m_FSBuffers; }
-		virtual const std::unordered_map<std::string, ShaderBuffer>& GetVSBuffers() const override { return m_VSBuffers; }
+		virtual const std::unordered_map<std::string, ShaderBuffer>& GetBuffers() const override { return m_Buffers; }
 		virtual const std::unordered_map<std::string, ShaderResourceDeclaration>& GetResources() const override { return m_Resources; }
 
 		const std::vector<DescriptorSet>&				   GetDescriptorSets() const { return m_DescriptorSets; }
@@ -88,7 +87,7 @@ namespace XYZ {
 		std::pair<const VkWriteDescriptorSet*, uint32_t>   GetDescriptorSet(const std::string& name) const;
 
 		std::vector<VkDescriptorSetLayout>				   GetAllDescriptorSetLayouts() const;
-
+		size_t GetVertexBufferSize() const { return m_VertexBufferSize; }
 		
 	private:
 		void compileOrGetVulkanBinaries(std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& outputBinary, bool forceCompile);
@@ -97,10 +96,7 @@ namespace XYZ {
 		
 		void reflectAllStages(const std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& shaderData);
 		void reflectStage(VkShaderStageFlagBits stage, const std::vector<uint32_t>& shaderData);
-		void reflectConstantBuffers(const spirv_cross::Compiler& compiler, VkShaderStageFlagBits stage, 
-			spirv_cross::SmallVector<spirv_cross::Resource>& buffers,
-			std::unordered_map<std::string, ShaderBuffer>& shaderBuffers
-		);
+		void reflectConstantBuffers(const spirv_cross::Compiler& compiler, VkShaderStageFlagBits stage, spirv_cross::SmallVector<spirv_cross::Resource>& buffers);
 		void reflectStorageBuffers(const spirv_cross::Compiler& compiler, VkShaderStageFlagBits stage, spirv_cross::SmallVector<spirv_cross::Resource>& buffers);
 		void reflectUniformBuffers(const spirv_cross::Compiler& compiler, VkShaderStageFlagBits stage, spirv_cross::SmallVector<spirv_cross::Resource>& buffers);
 		void reflectSampledImages(const spirv_cross::Compiler& compiler, VkShaderStageFlagBits stage, spirv_cross::SmallVector<spirv_cross::Resource>& sampledImages);
@@ -111,6 +107,7 @@ namespace XYZ {
 		void createDescriptorSetLayout();
 		void destroy();	
 
+		size_t getBuffersSize() const;
 	private:
 		bool					   m_Compiled;
 		std::string				   m_Name;
@@ -122,8 +119,8 @@ namespace XYZ {
 
 		std::unordered_map<std::string, ShaderResourceDeclaration>	m_Resources;
 		std::vector<PushConstantRange>								m_PushConstantRanges;
-
-		std::unordered_map<std::string, ShaderBuffer>				m_FSBuffers;		
-		std::unordered_map<std::string, ShaderBuffer>				m_VSBuffers;
+		
+		std::unordered_map<std::string, ShaderBuffer>				m_Buffers;
+		size_t														m_VertexBufferSize;
 	};
 }
