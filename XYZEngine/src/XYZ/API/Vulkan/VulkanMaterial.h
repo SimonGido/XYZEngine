@@ -42,7 +42,7 @@ namespace XYZ {
 		virtual Ref<Texture2D> GetTexture2D(const std::string& name) override;
 	
 		virtual uint64_t	   GetFlags() const override { return m_Flags.ToUlong(); }
-		virtual Ref<Shader>	   GetShader() override { return m_Shader; }
+		virtual Ref<Shader>	   GetShader() const override { return m_Shader; }
 
 
 		void RT_UpdateForRendering(const vector3D<VkWriteDescriptorSet>& descriptors);

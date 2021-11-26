@@ -11,11 +11,8 @@
 
 namespace XYZ {	
 
-
-
 	void Renderer2D::resetQuads()
 	{
-		m_QuadMaterial = m_DefaultQuadMaterial;
 		m_TextureSlotIndex = 0;
 		m_QuadBuffer.Reset();
 	}
@@ -25,9 +22,19 @@ namespace XYZ {
 		m_LineBuffer.Reset();
 	}
 
-	void Renderer2D::resetCollisions()
+	void Renderer2D::createRenderPass()
 	{
-		m_CollisionBuffer.Reset();
+		FramebufferSpecification framebufferSpec;
+		framebufferSpec.Attachments = { ImageFormat::RGBA32F, ImageFormat::Depth };
+		framebufferSpec.Samples = 1;
+		framebufferSpec.ClearOnLoad = false;
+		framebufferSpec.ClearColor = { 0.1f, 0.5f, 0.5f, 1.0f };
+
+		Ref<Framebuffer> framebuffer = Framebuffer::Create(framebufferSpec);
+
+		RenderPassSpecification renderPassSpec;
+		renderPassSpec.TargetFramebuffer = framebuffer;
+		m_RenderPass = RenderPass::Create(renderPassSpec);
 	}
 
 	static uint32_t* GenerateQuadIndices(uint32_t count)
@@ -59,23 +66,35 @@ namespace XYZ {
 		return indices;
 	}
 
-	Renderer2D::Renderer2D()
+	Renderer2D::Renderer2D(Renderer2DSpecification specification)
+		:
+		m_Specification(specification)
 	{
-		auto shaderLibrary	 = Renderer::GetShaderLibrary();
-		m_DefaultQuadMaterial = Material::Create(shaderLibrary->Get("DefaultShader"));
-		m_LineShader		  = shaderLibrary->Get("LineShader");
-		m_CollisionShader	  = shaderLibrary->Get("MousePicker");
-		m_CircleShader		  = shaderLibrary->Get("Circle");
-		m_WhiteTexture		  = Texture2D::Create(ImageFormat::RGBA, 1, 1, {});
+		if (specification.SwapChainTarget)
+			m_RenderCommandBuffer = Renderer::GetAPIContext()->GetRenderCommandBuffer();
+		else
+			m_RenderCommandBuffer = RenderCommandBuffer::Create(0, "Renderer2D");
+		
+		createRenderPass();
 
+		uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;
+		m_UniformBufferSet = UniformBufferSet::Create(framesInFlight);
+		m_UniformBufferSet->Create(sizeof(UBCamera), 0, 0);
+
+		auto shaderLibrary	 = Renderer::GetShaderLibrary();
+		
+		m_QuadMaterial = Material::Create(shaderLibrary->Get("DefaultShader"));
+		m_LineMaterial = Material::Create(shaderLibrary->Get("LineShader"));
+		m_CircleMaterial = Material::Create(shaderLibrary->Get("Circle"));
+
+		m_WhiteTexture = Texture2D::Create(ImageFormat::RGBA, 1, 1, {});
 		uint32_t whiteTextureData = 0xffffffff;
 		m_WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
-		m_DefaultQuadMaterial->Set("u_Texture", m_WhiteTexture);
-		m_DefaultQuadMaterial->Set("u_Color", glm::vec4(1.0f));
 
+		m_TextureSlots[0] = m_WhiteTexture;
 
 		uint32_t* quadIndices = GenerateQuadIndices(sc_MaxIndices);
-		m_QuadBuffer.Init(sc_MaxVertices, quadIndices, sc_MaxIndices, BufferLayout{
+		m_QuadBuffer.Init(m_RenderPass, m_QuadMaterial->GetShader(), sc_MaxVertices, quadIndices, sc_MaxIndices, BufferLayout{
 				{0, XYZ::ShaderDataType::Float4, "a_Color" },
 				{1, XYZ::ShaderDataType::Float3, "a_Position" },
 				{2, XYZ::ShaderDataType::Float2, "a_TexCoord" },
@@ -84,17 +103,12 @@ namespace XYZ {
 		});
 
 		uint32_t* lineIndices = GenerateLineIndices(sc_MaxLineIndices);
-		m_LineBuffer.Init(sc_MaxLineVertices, lineIndices, sc_MaxLineIndices, BufferLayout{
+		m_LineBuffer.Init(m_RenderPass, m_LineMaterial->GetShader(), sc_MaxLineVertices, lineIndices, sc_MaxLineIndices, BufferLayout{
 				{0, XYZ::ShaderDataType::Float3, "a_Position" },
 				{1, XYZ::ShaderDataType::Float4, "a_Color" },
 		});
 
-		m_CollisionBuffer.Init(sc_MaxCollisionVertices, quadIndices, sc_MaxIndices, BufferLayout{
-				{0, XYZ::ShaderDataType::Float3, "a_Position" },
-				{1, XYZ::ShaderDataType::Int,    "a_ObjectID" },
-			});
-
-		m_CircleBuffer.Init(sc_MaxVertices, quadIndices, sc_MaxIndices, BufferLayout{
+		m_CircleBuffer.Init(m_RenderPass, m_CircleMaterial->GetShader(), sc_MaxVertices, quadIndices, sc_MaxIndices, BufferLayout{
 				{0, XYZ::ShaderDataType::Float3, "a_WorldPosition" },
 				{1, XYZ::ShaderDataType::Float,  "a_Thickness" },
 				{2, XYZ::ShaderDataType::Float2, "a_LocalPosition" },
@@ -103,7 +117,6 @@ namespace XYZ {
 
 		delete[]quadIndices;
 		delete[]lineIndices;
-
 	}
 
 	Renderer2D::~Renderer2D()
@@ -113,31 +126,48 @@ namespace XYZ {
 
 	void Renderer2D::BeginScene()
 	{
-		m_QuadMaterial = m_DefaultQuadMaterial;
+		m_Stats.DrawCalls = 0;
+		m_Stats.LineDrawCalls = 0;
+		m_Stats.CollisionDrawCalls = 0;
+		m_Stats.FilledCircleDrawCalls = 0;
 	}
 
-	uint32_t Renderer2D::SetTexture(const Ref<Texture>& texture)
+	void Renderer2D::SetQuadMaterial(const Ref<Material>& material)
 	{
-	
-			Flush();
-		
-		m_TextureSlots[m_TextureSlotIndex++] = texture;
-		return 0;
-	}
-
-	void Renderer2D::SetMaterial(const Ref<Material>& material)
-	{
-		XYZ_ASSERT(material.Raw(), "Material can not be null");
-	
-			Flush();
-		
 		m_QuadMaterial = material;
+		setMaterial(m_QuadBuffer.Pipeline, material);
 	}
 
+	void Renderer2D::SetLineMaterial(const Ref<Material>& material)
+	{
+		m_LineMaterial = material;
+		setMaterial(m_LineBuffer.Pipeline, material);
+	}
+
+	void Renderer2D::SetCircleMaterial(const Ref<Material>& material)
+	{
+		m_CircleMaterial = material;
+		setMaterial(m_CircleBuffer.Pipeline, material);
+	}
+
+	void Renderer2D::SetTargetRenderPass(const Ref<RenderPass>& renderPass)
+	{
+		m_RenderPass = renderPass;
+		updateRenderPass(m_QuadBuffer.Pipeline);
+		updateRenderPass(m_LineBuffer.Pipeline);
+		updateRenderPass(m_CircleBuffer.Pipeline);
+	}
+
+	Ref<RenderPass> Renderer2D::GetTargetRenderPass()
+	{
+		return m_RenderPass;
+	}
+	
 	void Renderer2D::SubmitCircle(const glm::vec3& pos, float radius, uint32_t sides, const glm::vec4& color)
 	{
 		if (m_LineBuffer.IndexCount + (sides * 3) >= sc_MaxLineIndices)
-			FlushLines();
+			XYZ_ASSERT(false, "")
+
 		const int step = 360 / sides;
 		for (int a = step; a < 360 + step; a += step)
 		{
@@ -157,7 +187,7 @@ namespace XYZ {
 	void Renderer2D::SubmitFilledCircle(const glm::vec3& pos, float radius, float thickness, const glm::vec4& color)
 	{
 		if (m_CircleBuffer.IndexCount >= sc_MaxIndices)
-			FlushFilledCircles();
+			XYZ_ASSERT(false, "")
 
 		const glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos)
 			* glm::scale(glm::mat4(1.0f), { radius * 2.0f, radius * 2.0f, 1.0f });
@@ -178,7 +208,8 @@ namespace XYZ {
 	{
 		constexpr size_t quadVertexCount = 4;
 		if (m_QuadBuffer.IndexCount >= sc_MaxIndices)
-			Flush();
+			XYZ_ASSERT(false, "")
+
 		for (size_t i = 0; i < quadVertexCount; ++i)
 		{
 			m_QuadBuffer.BufferPtr->Position = transform * sc_QuadVertexPositions[i];
@@ -196,7 +227,7 @@ namespace XYZ {
 		constexpr size_t quadVertexCount = 4;
 
 		if (m_QuadBuffer.IndexCount + 6 >= sc_MaxIndices)
-			Flush();
+			XYZ_ASSERT(false, "")
 
 		const glm::vec2 texCoords[quadVertexCount] = {
 			{texCoord.x,texCoord.y},
@@ -221,7 +252,7 @@ namespace XYZ {
 		constexpr size_t quadVertexCount = 4;
 
 		if (m_QuadBuffer.IndexCount + 6 >= sc_MaxIndices)
-			Flush();
+			XYZ_ASSERT(false, "")
 
 		const glm::vec2 texCoords[quadVertexCount] = {
 			{texCoord.x, texCoord.y},
@@ -251,7 +282,7 @@ namespace XYZ {
 	{
 		constexpr size_t quadVertexCount = 4;
 		if (m_QuadBuffer.IndexCount >= sc_MaxIndices)
-			Flush();
+			XYZ_ASSERT(false, "")
 
 		const glm::vec3 vertices[quadVertexCount] = {
 			{  position.x - size.x / 2.0f,  position.y - size.y / 2.0f, 0.0f},
@@ -274,7 +305,7 @@ namespace XYZ {
 	void Renderer2D::SubmitLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color)
 	{
 		if (m_LineBuffer.IndexCount >= sc_MaxLineIndices)
-			FlushLines();
+			XYZ_ASSERT(false, "")
 
 		m_LineBuffer.BufferPtr->Position = p0;
 		m_LineBuffer.BufferPtr->Color = color;
@@ -300,28 +331,12 @@ namespace XYZ {
 		SubmitLine(p[3], p[0], color);
 	}
 
-	void Renderer2D::SubmitCollisionQuad(const glm::mat4& transform, uint32_t id)
-	{
-		constexpr size_t quadVertexCount = 4;
-
-		if (m_CollisionBuffer.IndexCount + 6 >= sc_MaxIndices)
-			FlushCollisions();
-
-		for (size_t i = 0; i < quadVertexCount; ++i)
-		{
-			m_CollisionBuffer.BufferPtr->Position = transform * sc_QuadVertexPositions[i];
-			m_CollisionBuffer.BufferPtr->CollisionID = (int)id;
-			m_CollisionBuffer.BufferPtr++;
-		}
-		m_CollisionBuffer.IndexCount += 6;
-	}
-
 	void Renderer2D::SubmitQuadNotCentered(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, uint32_t textureID, const glm::vec4& color, float tilingFactor)
 	{
 		constexpr size_t quadVertexCount = 4;
 
 		if (m_QuadBuffer.IndexCount + 6 >= sc_MaxIndices)
-			Flush();
+			XYZ_ASSERT(false, "")
 
 		const glm::vec2 texCoords[quadVertexCount] = {
 			{texCoord.x, texCoord.y},
@@ -349,38 +364,45 @@ namespace XYZ {
 	}
 
 
-	void Renderer2D::FlushAll()
+	void Renderer2D::EndScene()
 	{
-		Flush();
-		FlushLines();
-		FlushCollisions();
-		FlushFilledCircles();
+		m_RenderCommandBuffer->Begin();
+		Renderer::BeginRenderPass(m_RenderCommandBuffer, m_RenderPass, true);
+
+		flush();
+		flushLines();
+		flushFilledCircles();
+
+		Renderer::EndRenderPass(m_RenderPass);
+		m_RenderCommandBuffer->End();
+		m_RenderCommandBuffer->Submit();
 	}
 
-	void Renderer2D::Flush()
+	void Renderer2D::flush()
 	{
 		const uint32_t dataSize = (uint8_t*)m_QuadBuffer.BufferPtr - (uint8_t*)m_QuadBuffer.BufferBase;
 		if (dataSize)
 		{
 			XYZ_ASSERT(m_QuadMaterial.Raw(), "No material set");
-				
-
-			
+						
 			m_QuadBuffer.VertexBuffer->Update(m_QuadBuffer.BufferBase, dataSize);
-			m_QuadBuffer.VertexArray->Bind();
+
 			Renderer::DrawIndexed(PrimitiveType::Triangles, m_QuadBuffer.IndexCount);
+			Renderer::BindPipeline(m_RenderCommandBuffer, m_QuadBuffer.Pipeline, m_UniformBufferSet, m_QuadMaterial);
+			Renderer::RenderGeometry(m_RenderCommandBuffer, m_QuadBuffer.Pipeline, m_QuadMaterial, m_QuadBuffer.VertexBuffer, m_QuadBuffer.IndexBuffer, glm::mat4(1.0f));
 			m_Stats.DrawCalls++;
 			m_QuadBuffer.Reset();
 		}	
+
+		
 	}
-	void Renderer2D::FlushLines()
+	void Renderer2D::flushLines()
 	{
 		const uint32_t dataSize = (uint8_t*)m_LineBuffer.BufferPtr - (uint8_t*)m_LineBuffer.BufferBase;
 		if (dataSize)
 		{
-			m_LineShader->Bind();
 			m_LineBuffer.VertexBuffer->Update(m_LineBuffer.BufferBase, dataSize);
-			m_LineBuffer.VertexArray->Bind();
+
 			Renderer::DrawIndexed(PrimitiveType::Lines, m_LineBuffer.IndexCount);
 
 			m_Stats.LineDrawCalls++;
@@ -388,29 +410,14 @@ namespace XYZ {
 		}	
 	}
 
-	void Renderer2D::FlushCollisions()
-	{
-		const uint32_t dataSize = (uint8_t*)m_CollisionBuffer.BufferPtr - (uint8_t*)m_CollisionBuffer.BufferBase;
-		if (dataSize)
-		{
-			m_CollisionShader->Bind();
-			m_CollisionBuffer.VertexBuffer->Update(m_CollisionBuffer.BufferBase, dataSize);
-			m_CollisionBuffer.VertexArray->Bind();
-			Renderer::DrawIndexed(PrimitiveType::Triangles, m_CollisionBuffer.IndexCount);
 
-			m_Stats.CollisionDrawCalls++;
-			m_CollisionBuffer.Reset();
-		}
-	}
-
-	void Renderer2D::FlushFilledCircles()
+	void Renderer2D::flushFilledCircles()
 	{
 		const uint32_t dataSize = (uint8_t*)m_CircleBuffer.BufferPtr - (uint8_t*)m_CircleBuffer.BufferBase;
 		if (dataSize)
 		{
-			m_CircleShader->Bind();
 			m_CircleBuffer.VertexBuffer->Update(m_CircleBuffer.BufferBase, dataSize);
-			m_CircleBuffer.VertexArray->Bind();
+
 			Renderer::DrawIndexed(PrimitiveType::Triangles, m_CircleBuffer.IndexCount);
 
 			m_Stats.FilledCircleDrawCalls++;
@@ -418,14 +425,20 @@ namespace XYZ {
 		}
 	}
 
-
-	void Renderer2D::EndScene()
+	void Renderer2D::updateRenderPass(Ref<Pipeline>& pipeline) const
 	{
-		m_Stats.DrawCalls = 0;
-		m_Stats.LineDrawCalls = 0;
-		m_Stats.CollisionDrawCalls = 0;
-		m_Stats.FilledCircleDrawCalls = 0;
+		auto spec = pipeline->GetSpecification();
+		spec.RenderPass = m_RenderPass;
+		pipeline = Pipeline::Create(spec);
 	}
+
+	void Renderer2D::setMaterial(Ref<Pipeline>& pipeline, const Ref<Material>& material)
+	{
+		auto spec = pipeline->GetSpecification();
+		spec.Shader = material->GetShader();
+		pipeline = Pipeline::Create(spec);
+	}
+
 	const Renderer2DStats& Renderer2D::GetStats()
 	{
 		return m_Stats;

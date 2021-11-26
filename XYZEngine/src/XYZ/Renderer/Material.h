@@ -52,7 +52,7 @@ namespace XYZ {
 		virtual glm::mat4&	   GetMatrix4(const std::string& name) = 0;
 		virtual Ref<Texture2D> GetTexture2D(const std::string& name) = 0;
 		virtual uint64_t	   GetFlags() const = 0;
-		virtual Ref<Shader>	   GetShader() = 0;
+		virtual Ref<Shader>	   GetShader()const = 0;
 		
 		static Ref<Material> Create(const Ref<Shader>& shader);
 	};

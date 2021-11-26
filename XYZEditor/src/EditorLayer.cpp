@@ -65,7 +65,7 @@ namespace XYZ {
 		m_IndexBuffer   = IndexBuffer::Create(indices.data(), indices.size(), IndexType::Uint16);
 		m_Pipeline		= Pipeline::Create({ m_Shader, layout, m_RenderPass });
 		m_RenderCommandBuffer = RenderCommandBuffer::Create(Renderer::GetConfiguration().FramesInFlight);
-
+		
 		m_UniformBufferSet = UniformBufferSet::Create(Renderer::GetConfiguration().FramesInFlight);
 		m_UniformBufferSet->Create(sizeof(TestCamera), 0, 0);
 		m_UniformBufferSet->Create(sizeof(TestCamera), 1, 1);
