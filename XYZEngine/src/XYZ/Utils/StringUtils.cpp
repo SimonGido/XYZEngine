@@ -73,6 +73,13 @@ namespace XYZ::Utils {
 		return SplitString(string, std::string(1, delimiter));
 	}
 
+	std::string FirstSubString(const std::string& string, const char delimiter)
+	{
+		size_t start = 0;
+		size_t end = string.find_first_of(delimiter);
+		return string.substr(start, end);
+	}
+
 	const char* FindToken(const char* str, const std::string& token)
 	{
 		const char* t = str;

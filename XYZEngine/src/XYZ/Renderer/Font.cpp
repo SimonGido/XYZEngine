@@ -91,7 +91,7 @@ namespace XYZ {
 			TextureProperties{TextureWrap::Clamp}
 		);
 
-		m_Texture->SetData(pngData, pngData.Size);
+		//m_Texture->SetData(pngData, pngData.Size);
 		//stbi_write_png("font_output.png", texWidth, texHeight, 4, pngData, texWidth * 4);
 
 		FT_Done_Face(face);

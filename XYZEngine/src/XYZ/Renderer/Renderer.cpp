@@ -152,17 +152,17 @@ namespace XYZ {
 	{
 		//SetupFullscreenQuad();
 
-		//s_Data.ShaderLibrary = Ref<ShaderLibrary>::Create();
+		s_Data.ShaderLibrary = Ref<ShaderLibrary>::Create();
 		//s_Data.ShaderLibrary->Load("Assets/Shaders/RendererCore/CompositeShader.glsl");
 		//s_Data.ShaderLibrary->Load("Assets/Shaders/RendererCore/LightShader.glsl");
 		//s_Data.ShaderLibrary->Load("Assets/Shaders/RendererCore/Bloom.glsl");
-		//s_Data.ShaderLibrary->Load("Assets/Shaders/RendererCore/Circle.glsl");
-		//
+		s_Data.ShaderLibrary->Load("Assets/Shaders/RendererCore/Circle.glsl");
+		
 		//s_Data.ShaderLibrary->Load("Assets/Shaders/DefaultLitShader.glsl");
-		//s_Data.ShaderLibrary->Load("Assets/Shaders/DefaultShader.glsl");
-		//s_Data.ShaderLibrary->Load("Assets/Shaders/LineShader.glsl");
-		//s_Data.ShaderLibrary->Load("Assets/Shaders/MousePicker.glsl");
-		//
+		s_Data.ShaderLibrary->Load("Assets/Shaders/DefaultShader.glsl");
+		s_Data.ShaderLibrary->Load("Assets/Shaders/LineShader.glsl");
+
+		
 		//s_Data.ShaderLibrary->Load("Assets/Shaders/Particle/ParticleShaderCPU.glsl");
 		Render();
 		BlockRenderThread();

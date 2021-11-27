@@ -13,7 +13,7 @@ namespace XYZ {
 		VulkanTexture2D(ImageFormat format, uint32_t width, uint32_t height, const void* data, const TextureProperties& properties);
 		~VulkanTexture2D() override;
 
-		virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0) override;
+		
 		virtual void Resize(uint32_t width, uint32_t height) override;
 		virtual void Lock() override;
 		virtual void Unlock() override;

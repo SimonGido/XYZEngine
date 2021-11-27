@@ -92,9 +92,7 @@ namespace XYZ {
 	{
 		m_ImageData.Destroy();
 	}
-	void VulkanTexture2D::SetData(const void* data, uint32_t size, uint32_t offset)
-	{
-	}
+
 	void VulkanTexture2D::Resize(uint32_t width, uint32_t height)
 	{
 		m_Width = width;
@@ -171,7 +169,7 @@ namespace XYZ {
 		{
 			VkImageViewCreateInfo view = createImageViewCreateInfo(1, 0, mipCount, 0);
 			view.image = info.Image;
-			VK_CHECK_RESULT(vkCreateImageView(vulkanDevice, &view, nullptr, &info.ImageView));
+			VK_CHECK_RESULT(vkCreateImageView(vulkanDevice, &view, nullptr, &info.ImageView));		
 			vulkanImage->UpdateDescriptor();
 		}
 		if (m_ImageData && m_Properties.GenerateMips && mipCount > 1)

@@ -8,6 +8,7 @@
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/EditorRenderer.h"
 #include "XYZ/Utils/Math/Math.h"
+#include "XYZ/ImGui/ImGui.h"
 
 #include <imgui.h>
 #include <ImGuizmo.h>
@@ -194,7 +195,7 @@ namespace XYZ {
 			m_OldMousePosition(0.0f),
 			m_GizmoType(-1)
 		{
-			//m_Texture = Texture2D::Create({}, "Assets/Textures/Gui/icons.png");
+			m_Texture = Texture2D::Create("Assets/Textures/Gui/icons.png");
 			const float divisor = 4.0f;
 			float width = (float)m_Texture->GetWidth();
 			float height = (float)m_Texture->GetHeight();
@@ -225,7 +226,7 @@ namespace XYZ {
 				}
 			}
 		}
-		void ScenePanel::OnImGuiRender(uint32_t renderBufferID)
+		void ScenePanel::OnImGuiRender(const Ref<Image2D>& finalImage)
 		{
 			if (ImGui::Begin("Scene"))
 			{
@@ -250,8 +251,7 @@ namespace XYZ {
 					ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 					handlePanelResize({ viewportPanelSize.x, viewportPanelSize.y });
 
-					ImGui::Image(reinterpret_cast<void*>((void*)(uint64_t)renderBufferID), ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
-
+					UI::Image(finalImage, ImVec2{ m_ViewportSize.x, m_ViewportSize.y });
 					auto [mx, my] = getMouseViewportSpace();
 					if (m_ViewportHovered && m_ViewportFocused && m_Context->GetState() == SceneState::Edit)
 					{
@@ -269,8 +269,7 @@ namespace XYZ {
 					ImGui::SetCursorPos(startCursorPos);
 					if (m_Context->GetState() == SceneState::Edit)
 					{
-						ImGui::PushID("Play");
-						if (ImGui::ImageButton((void*)(uint64_t)m_Texture.Raw(),
+						if (UI::ImageButton("Play", m_Texture->GetImage(),
 							{ m_ButtonSize.x, m_ButtonSize.y },
 							{ m_ButtonTexCoords[PlayButton].x, m_ButtonTexCoords[PlayButton].y },
 							{ m_ButtonTexCoords[PlayButton].z, m_ButtonTexCoords[PlayButton].w }
@@ -279,12 +278,10 @@ namespace XYZ {
 							m_Context->SetState(SceneState::Play);
 							m_Context->OnPlay();
 						}
-						ImGui::PopID();
 					}
 					else if (m_Context->GetState() == SceneState::Play)
 					{
-						ImGui::PushID("Stop");
-						if (ImGui::ImageButton((void*)(uint64_t)m_Texture.Raw(),
+						if (UI::ImageButton("Stop", m_Texture->GetImage(),
 							{ m_ButtonSize.x, m_ButtonSize.y },
 							{ m_ButtonTexCoords[StopButton].x, m_ButtonTexCoords[StopButton].y },
 							{ m_ButtonTexCoords[StopButton].z, m_ButtonTexCoords[StopButton].w }
@@ -293,7 +290,6 @@ namespace XYZ {
 							m_Context->SetState(SceneState::Edit);
 							m_Context->OnStop();
 						}
-						ImGui::PopID();
 					}
 				}
 			}

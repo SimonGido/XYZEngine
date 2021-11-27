@@ -34,6 +34,9 @@ namespace XYZ {
 
 	void EditorLayer::OnAttach()
 	{
+		m_Scene = Ref<Scene>::Create("TestScene");
+		//m_ScenePanel.SetContext(m_Scene);
+
 		m_Shader = Shader::Create("Assets/Shaders/VulkanTestVertexShader.glsl");
 		Ref<APIContext> context = Renderer::GetAPIContext();
 		m_RenderPass = context->GetRenderPass();
@@ -72,6 +75,7 @@ namespace XYZ {
 		m_UniformBufferSet->CreateDescriptors(m_Shader);
 		m_Texture = Texture2D::Create("Assets/Textures/1_ORK_head.png");
 		m_Material = Material::Create(m_Shader);
+		m_SceneRenderer2D = Ref<Renderer2D>::Create(Renderer2DSpecification());
 
 		Renderer::WaitAndRenderAll();
 		m_Material->Set("u_Texture", m_Texture);
@@ -94,6 +98,7 @@ namespace XYZ {
 
 		uint32_t currentFrame = Renderer::GetAPIContext()->GetCurrentFrame();
 		m_Camera.OnUpdate(ts);
+		/*
 		m_RenderCommandBuffer->Begin();
 		m_UniformBufferSet->Get(0, 0, currentFrame)->Update(&camera, sizeof(TestCamera), 0);
 		m_UniformBufferSet->Get(1, 1, currentFrame)->Update(&camera, sizeof(TestCamera), 0);
@@ -108,6 +113,11 @@ namespace XYZ {
 		
 		m_RenderCommandBuffer->End();
 		m_RenderCommandBuffer->Submit();
+		*/
+		m_SceneRenderer2D->BeginScene(camera.ViewProjection);
+		m_SceneRenderer2D->SubmitQuad(glm::vec3(0.0f), glm::vec2(1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), m_Texture, glm::vec4(1.0f));
+		m_SceneRenderer2D->SubmitQuad(glm::vec3(3.0f), glm::vec2(1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), m_Texture, glm::vec4(1.0f));
+		m_SceneRenderer2D->EndScene();
 	}
 
 	void EditorLayer::OnEvent(Event& event)
@@ -119,11 +129,14 @@ namespace XYZ {
 	{
 		if (ImGui::Begin("Scene"))
 		{		
-			UI::Image(m_Framebuffer->GetImage(), ImVec2(500, 500));
+			auto renderPass = m_SceneRenderer2D->GetTargetRenderPass();
+			auto frameBuffer = renderPass->GetSpecification().TargetFramebuffer;
+			UI::Image(frameBuffer->GetImage(), ImVec2(700, 700));
 		}
 		ImGui::End();
 
-		/*
+		
+		
 		if (ImGui::BeginMenuBar())
 		{
 			if (ImGui::BeginMenu("File"))
@@ -145,6 +158,10 @@ namespace XYZ {
 
 			ImGui::EndMenuBar();
 		}
+
+		//m_ScenePanel.OnImGuiRender(m_SceneRenderer2D->GetTargetRenderPass()->GetSpecification().TargetFramebuffer->GetImage());
+
+		/*
 		m_Inspector.OnImGuiRender(m_EditorRenderer);
 		m_SceneHierarchy.OnImGuiRender();
 		m_SpriteEditor.OnImGuiRender(m_EditorOpen[SpriteEditor]);

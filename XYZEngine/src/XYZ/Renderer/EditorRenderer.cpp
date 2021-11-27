@@ -18,13 +18,11 @@ namespace XYZ {
 	void EditorRenderer::EndPass(Ref<Renderer2D> renderer2D, bool clear)
 	{
 		//Renderer::BeginRenderPass(m_Pass, clear);
-		renderer2D->BeginScene();
+		//renderer2D->BeginScene();
 
 		for (auto& dc : m_EditorSpriteDrawList)
 		{
-			renderer2D->SetMaterial(dc.Material);
-			const uint32_t textureID = renderer2D->SetTexture(dc.SubTexture->GetTexture());
-			renderer2D->SubmitQuad(dc.Transform, dc.SubTexture->GetTexCoords(), textureID, dc.Color);
+			renderer2D->SubmitQuad(dc.Transform, dc.SubTexture, dc.Color);
 		}
 		for (auto& dc : m_EditorAABBDrawList)
 		{
@@ -42,9 +40,8 @@ namespace XYZ {
 		{
 			renderer2D->SubmitLine(dc.P0, dc.P1, dc.Color);
 		}
-		renderer2D->Flush();
-		renderer2D->FlushLines();
-
+		renderer2D->EndScene();
+		
 		m_EditorSpriteDrawList.clear();
 		m_EditorAABBDrawList.clear();
 		m_EditorLineDrawList.clear();

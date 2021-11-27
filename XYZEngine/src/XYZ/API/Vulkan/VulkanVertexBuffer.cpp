@@ -104,8 +104,9 @@ namespace XYZ {
 		{
 			VulkanAllocator allocator("VulkanVertexBuffer");
 			uint8_t* pData = allocator.MapMemory<uint8_t>(instance->m_MemoryAllocation);
-			memcpy(pData, (uint8_t*)buffer + offset, size);
+			memcpy(pData, buffer.Data + offset, size);
 			allocator.UnmapMemory(instance->m_MemoryAllocation);
+			instance->m_Buffers.PushBack(buffer);
 		});
 	}
 	void VulkanVertexBuffer::Resize(const void* vertices, uint32_t size)

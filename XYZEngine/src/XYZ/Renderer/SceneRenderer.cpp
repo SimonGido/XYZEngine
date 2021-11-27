@@ -321,15 +321,13 @@ namespace XYZ {
 			Renderer::DrawIndexed(PrimitiveType::Triangles, dc.Mesh->GetIndexCount());
 		}
 		
-		m_Renderer2D->BeginScene();
+		//m_Renderer2D->BeginScene();
 		for (auto& dc : queue.m_SpriteDrawList)
 		{
-			m_Renderer2D->SetMaterial(dc.Material);
-			const uint32_t textureID = m_Renderer2D->SetTexture(dc.SubTexture->GetTexture());
-			m_Renderer2D->SubmitQuad(dc.Transform, dc.SubTexture->GetTexCoords(), textureID, dc.Color);		
+			const uint32_t textureID = 0;
+			m_Renderer2D->SubmitQuad(dc.Transform, dc.SubTexture, dc.Color);		
 		}
 
-		m_Renderer2D->FlushAll();
 		m_Renderer2D->EndScene();
 
 		// TODO: last should be renderer2D

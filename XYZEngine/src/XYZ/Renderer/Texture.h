@@ -24,8 +24,7 @@ namespace XYZ {
 		virtual void Bind(uint32_t slot = 0) const {};
 		virtual void BindImage(uint32_t slot, uint32_t miplevel, BindImageType type) const {};
 		
-		virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0) = 0;
-
+	
 		virtual ImageFormat GetFormat() const = 0;
 		virtual uint32_t	GetWidth() const = 0;
 		virtual uint32_t	GetHeight() const = 0;

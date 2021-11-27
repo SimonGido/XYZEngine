@@ -8,6 +8,7 @@
 #include "Pipeline.h"
 #include "RenderCommandBuffer.h"
 #include "UniformBufferSet.h"
+#include "SubTexture.h"
 
 namespace XYZ {
 	struct Renderer2DStats
@@ -46,7 +47,7 @@ namespace XYZ {
 		Renderer2D(Renderer2DSpecification specification);
 		~Renderer2D();
 
-		void BeginScene();
+		void BeginScene(const glm::mat4& viewProjectionMatrix);
 
 		void SetQuadMaterial(const Ref<Material>& material);
 		void SetLineMaterial(const Ref<Material>& material);
@@ -59,10 +60,15 @@ namespace XYZ {
 		void SubmitFilledCircle(const glm::vec3& pos, float radius, float thickness, const glm::vec4& color = glm::vec4(1.0f));
 		
 		void SubmitQuad(const glm::mat4& transform, const glm::vec4& color, float tilingFactor = 1.0f);
-		void SubmitQuad(const glm::mat4& transform, const glm::vec4& texCoord, uint32_t textureID, const glm::vec4& color = glm::vec4(1), float tilingFactor = 1.0f);
-		void SubmitQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, uint32_t textureID, const glm::vec4& color = glm::vec4(1), float tilingFactor = 1.0f);
-		void SubmitQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color = glm::vec4(1), float tilingFactor = 1.0f);
-		void SubmitQuadNotCentered(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, uint32_t textureID, const glm::vec4& color = glm::vec4(1), float tilingFactor = 1.0f);
+		void SubmitQuad(const glm::mat4& transform, const glm::vec4& texCoord, const Ref<Texture2D>& texture, const glm::vec4& color = glm::vec4(1), float tilingFactor = 1.0f);
+		void SubmitQuad(const glm::vec3& position,	const glm::vec2& size, const glm::vec4& texCoord, const Ref<Texture2D>& texture, const glm::vec4& color, float tilingFactor = 1.0f);
+		
+		void SubmitQuad(const glm::mat4& transform, const Ref<SubTexture>& subTexture, const glm::vec4& color = glm::vec4(1), float tilingFactor = 1.0f);
+		void SubmitQuad(const glm::vec3& position, const glm::vec2& size, const Ref<SubTexture>& subTexture, const glm::vec4& color, float tilingFactor = 1.0f);
+
+		
+		void SubmitQuad(const glm::vec3& position,	const glm::vec2& size, const glm::vec4& color, float tilingFactor);
+		void SubmitQuadNotCentered(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, const Ref<Texture2D>& texture, const glm::vec4& color = glm::vec4(1), float tilingFactor = 1.0f);
 
 		void SubmitLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color = glm::vec4(1.0f));
 		void SubmitLineQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color = glm::vec4(1));
@@ -83,7 +89,7 @@ namespace XYZ {
 		void updateRenderPass(Ref<Pipeline>& pipeline) const;
 		void setMaterial(Ref<Pipeline>& pipeline, const Ref<Material>& material);
 
-
+		uint32_t findTextureIndex(const Ref<Texture2D>& texture);
 	private:
 		struct Vertex2D
 		{
@@ -131,9 +137,9 @@ namespace XYZ {
 		Ref<Material>			 m_LineMaterial;
 		Ref<Material>			 m_CircleMaterial;
 								 
-		Ref<Texture2D>			 m_WhiteTexture;
-		Ref<Texture>			 m_TextureSlots[sc_MaxTextures];
-		uint32_t				 m_TextureSlotIndex = 0;
+		Ref<Texture2D>							 m_WhiteTexture;
+		std::array<Ref<Texture>, sc_MaxTextures> m_TextureSlots;
+		uint32_t								 m_TextureSlotIndex = 0;
 
 
 		Renderer2DBuffer<Vertex2D>		  m_QuadBuffer;

@@ -29,7 +29,7 @@ namespace XYZ {
 		Ref<VulkanUniformBuffer> instance = this;
 		Renderer::Submit([instance, size, offset]() mutable
 		{
-			instance->RT_Update(instance->m_LocalStorage, size, offset);
+			instance->RT_Update(instance->m_LocalStorage.Data, size, offset);
 		});
 	}
 	void VulkanUniformBuffer::RT_Update(const void* data, uint32_t size, uint32_t offset)

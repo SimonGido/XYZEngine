@@ -22,7 +22,7 @@ namespace XYZ {
 			void SetEntitySelectedCallback(const SceneEntitySelectedCallback& callback) { m_Callback = callback; }
 	
 			void OnUpdate(Timestep ts);
-			void OnImGuiRender(uint32_t renderBufferID);
+			void OnImGuiRender(const Ref<Image2D>& finalImage);
 
 			void OnEvent(Event& event);
 
@@ -42,7 +42,7 @@ namespace XYZ {
 			Ref<Scene>					m_Context;
 			glm::vec2				    m_ViewportSize;
 			glm::vec2				    m_ViewportBounds[2];
-			Ref<Texture>				m_Texture;
+			Ref<Texture2D>				m_Texture;
 
 			enum { PlayButton, StopButton, NumButtons};
 			glm::vec4 m_ButtonTexCoords[NumButtons];

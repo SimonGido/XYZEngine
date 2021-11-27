@@ -47,6 +47,7 @@ namespace XYZ {
 
 	private:	
 		SceneEntity m_SelectedEntity;
+		//Editor::ScenePanel m_ScenePanel;
 
 
 	private:

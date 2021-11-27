@@ -2,7 +2,8 @@
 #include "VulkanMaterial.h"
 
 #include "VulkanRendererAPI.h"
-#include "VulkanTexture.h"
+
+#include "XYZ/Utils/StringUtils.h"
 
 namespace XYZ {
 	VulkanMaterial::VulkanMaterial(const Ref<Shader>& shader)
@@ -29,9 +30,13 @@ namespace XYZ {
 		m_DescriptorsDirty = true;
 		Ref<VulkanShader> vulkanShader = m_Shader;
 		const auto& shaderDescriptorSets = vulkanShader->GetDescriptorSets();
-		m_TextureDescriptors.clear();
 		m_DescriptorSets.resize(Renderer::GetConfiguration().FramesInFlight);
+		
+		m_TextureDescriptors.clear();
+		m_TextureArraysDescriptors.clear();
 		m_TextureDescriptors.resize(shaderDescriptorSets.size());
+		m_TextureArraysDescriptors.resize(shaderDescriptorSets.size());
+
 		for (auto& descriptorSet : m_DescriptorSets) // Per frame
 		{
 			descriptorSet.resize(shaderDescriptorSets.size());
@@ -92,6 +97,10 @@ namespace XYZ {
 	{
 		setDescriptor(name, texture);
 	}
+	void VulkanMaterial::Set(const std::string& name, const Ref<Texture2D>& texture, uint32_t arrayIndex)
+	{
+		setDescriptor(name, texture, arrayIndex);
+	}
 	float& VulkanMaterial::GetFloat(const std::string& name)
 	{
 		return get<float>(name);
@@ -134,23 +143,45 @@ namespace XYZ {
 	}
 	void VulkanMaterial::RT_UpdateForRendering(const vector3D<VkWriteDescriptorSet>& descriptors)
 	{
+		vector3D<VkDescriptorImageInfo> arrayImageInfos;
 		if (m_DescriptorsDirty)
 		{
 			Ref<VulkanShader> vulkanShader = m_Shader;
 			const uint32_t numSets = vulkanShader->GetDescriptorSets().size();
+			const uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;
+			arrayImageInfos.resize(framesInFlight);
 			m_DescriptorsDirty = false;
-			for (uint32_t frame = 0; frame < Renderer::GetConfiguration().FramesInFlight; ++frame)
+
+			for (uint32_t frame = 0; frame < framesInFlight; ++frame)
 			{
 				m_WriteDescriptors[frame].clear();
-				
+				arrayImageInfos[frame].resize(numSets);
 				for (uint32_t set = 0; set < numSets; ++set)
 				{
 					for (auto& pending : m_TextureDescriptors[set])
 					{
-						m_WriteDescriptors[frame].push_back(pending);
-						auto& last = m_WriteDescriptors[frame].back();
-						last.dstSet = m_DescriptorSets[frame][set];
-					}			
+						if (pending.Texture.Raw())
+						{
+							pending.WriteDescriptor.pImageInfo = &pending.Texture->GetVulkanDescriptorInfo();
+							pending.WriteDescriptor.dstSet = m_DescriptorSets[frame][set];
+							m_WriteDescriptors[frame].push_back(pending.WriteDescriptor);
+						}
+					}	
+					for (auto& pending : m_TextureArraysDescriptors[set])
+					{
+						if (pending.Textures.empty())
+							continue;
+
+						for (auto& texture : pending.Textures)
+						{
+							arrayImageInfos[frame][set].push_back(texture->GetVulkanDescriptorInfo());
+						}
+						pending.WriteDescriptor.pImageInfo = arrayImageInfos[frame][set].data();
+						pending.WriteDescriptor.descriptorCount = arrayImageInfos[frame][set].size();
+						pending.WriteDescriptor.dstSet = m_DescriptorSets[frame][set];
+						m_WriteDescriptors[frame].push_back(pending.WriteDescriptor);
+					}
+
 					for (auto& desc : descriptors[frame][set])
 					{
 						m_WriteDescriptors[frame].push_back(desc);
@@ -214,34 +245,75 @@ namespace XYZ {
 			m_Textures.resize(static_cast<size_t>(binding) + 1);
 		m_Textures[binding] = texture;
 
-		auto [wds, set] = m_Shader.As<VulkanShader>()->GetDescriptorSet(name);
+		auto [wds, set] = m_Shader->GetDescriptorSet(name);
 		VkWriteDescriptorSet textureDescriptor = *wds;
 		uint32_t textureSet = set;
 
 		Ref<VulkanMaterial> instance = this;
 		Renderer::Submit([instance, textureDescriptor, textureSet, binding]() mutable {
-			instance->m_TextureDescriptors[textureSet].push_back(textureDescriptor);
-			auto& writeDesc = instance->m_TextureDescriptors[textureSet].back();
-			writeDesc.pImageInfo = &instance->m_Textures[binding].As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
+	
+			Ref<VulkanTexture2D> vulkanTexture = instance->m_Textures[binding];
+			if (instance->m_TextureDescriptors[textureSet].size() <= binding)
+				instance->m_TextureDescriptors[textureSet].resize(static_cast<size_t>(binding) + 1);
+
+			instance->m_TextureDescriptors[textureSet][binding].Texture = vulkanTexture;
+			instance->m_TextureDescriptors[textureSet][binding].WriteDescriptor = textureDescriptor;
+			instance->m_DescriptorsDirty = true;
 		});
-		
-		m_DescriptorsDirty = true;
+	}
+
+	void VulkanMaterial::setDescriptor(const std::string& name, const Ref<Texture2D>& texture, uint32_t index)
+	{
+		const ShaderResourceDeclaration* resource = findResourceDeclaration(name);
+		XYZ_ASSERT(resource, "");
+	
+		uint32_t binding = resource->GetRegister();
+		// Texture is already set
+		if (binding < m_TextureArrays.size() && m_TextureArrays[binding].size() < index && texture.Raw() == m_TextureArrays[binding][index].Raw())
+			return;
+
+		if (binding >= m_TextureArrays.size())
+			m_TextureArrays.resize(static_cast<size_t>(binding) + 1);
+		if (index >= m_TextureArrays[binding].size())
+			m_TextureArrays[binding].resize(static_cast<size_t>(index) + 1);
+
+		m_TextureArrays[binding][index] = texture;
+		auto [wds, set] = m_Shader->GetDescriptorSet(name);
+		VkWriteDescriptorSet textureDescriptor = *wds;
+		uint32_t textureSet = set;
+
+		Ref<VulkanMaterial> instance = this;
+		Renderer::Submit([instance, textureDescriptor, textureSet, binding, index]() mutable {
+			
+			Ref<VulkanTexture2D> vulkanTexture = instance->m_TextureArrays[binding][index];
+
+			if (instance->m_TextureArraysDescriptors[textureSet].size() <= binding)
+				instance->m_TextureArraysDescriptors[textureSet].resize(static_cast<size_t>(binding) + 1);
+			
+			if (instance->m_TextureArraysDescriptors[textureSet][binding].Textures.size() <= index)
+				instance->m_TextureArraysDescriptors[textureSet][binding].Textures.resize(static_cast<size_t>(index) + 1);
+
+			instance->m_TextureArraysDescriptors[textureSet][binding].Textures[index] = vulkanTexture;
+			instance->m_TextureArraysDescriptors[textureSet][binding].WriteDescriptor = textureDescriptor;
+			instance->m_DescriptorsDirty = true;
+		});
 	}
 
 	std::pair<const ShaderUniform*, ByteBuffer*> VulkanMaterial::findUniformDeclaration(const std::string& name)
 	{
+		std::string bufferName = Utils::FirstSubString(name, '.');
 		const auto& shaderBuffers = m_Shader->GetBuffers();
-
-		XYZ_ASSERT(shaderBuffers.size() <= 1, "We currently only support ONE material buffer!");
-
-		if (shaderBuffers.size() > 0)
+		auto itBuffer = shaderBuffers.find(bufferName);
+		if (itBuffer != shaderBuffers.end())
 		{
-			const ShaderBuffer& buffer = (*shaderBuffers.begin()).second;
-			if (buffer.Uniforms.find(name) != buffer.Uniforms.end())			
-				return { &buffer.Uniforms.at(name), &m_UniformsBuffer };
+			const ShaderBuffer& buffer = itBuffer->second;
+			auto itUniform = buffer.Uniforms.find(name);
+			if (itUniform != buffer.Uniforms.end())
+				return { &itUniform->second, &m_UniformsBuffer };
 		}
 		return { nullptr, nullptr };
 	}
+
 	const ShaderResourceDeclaration* VulkanMaterial::findResourceDeclaration(const std::string& name)
 	{
 		auto& resources = m_Shader->GetResources();

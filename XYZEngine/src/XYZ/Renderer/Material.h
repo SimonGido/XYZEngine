@@ -40,6 +40,7 @@ namespace XYZ {
 		virtual void Set(const std::string& name, const glm::ivec4& value) = 0;
 
 		virtual void Set(const std::string& name, const Ref<Texture2D>& texture) = 0;
+		virtual void Set(const std::string& name, const Ref<Texture2D>& texture, uint32_t arrayIndex) = 0;
 
 		virtual float&		   GetFloat(const std::string& name) = 0;
 		virtual int32_t&	   GetInt(const std::string& name) = 0;

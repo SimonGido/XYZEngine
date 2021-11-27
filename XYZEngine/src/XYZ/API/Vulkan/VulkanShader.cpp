@@ -159,17 +159,19 @@ namespace XYZ {
 		destroy();
 		
 		Ref<VulkanShader> instance = this;
-		Renderer::Submit([instance, forceCompile]() mutable {
-			
-			instance->m_PipelineShaderStageCreateInfos.clear();
-			instance->m_DescriptorSets.clear();
-			instance->m_PushConstantRanges.clear();
-			instance->m_Buffers.clear();
+		instance->m_PipelineShaderStageCreateInfos.clear();
+		instance->m_DescriptorSets.clear();
+		instance->m_PushConstantRanges.clear();
+		instance->m_Buffers.clear();
 
-			instance->preProcess(Utils::ReadFile(instance->m_AssetPath));
-			std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>> shaderData;
-			instance->compileOrGetVulkanBinaries(shaderData, forceCompile);
-			instance->reflectAllStages(shaderData);
+		instance->preProcess(Utils::ReadFile(instance->m_AssetPath));
+		std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>> shaderData;
+		instance->compileOrGetVulkanBinaries(shaderData, forceCompile);
+		instance->reflectAllStages(shaderData);
+
+		Renderer::Submit([instance, shaderData, forceCompile]() mutable {
+			
+			
 			instance->createProgram(shaderData);
 			instance->createDescriptorSetLayout();
 			instance->m_Compiled = true;
@@ -247,7 +249,7 @@ namespace XYZ {
 				const auto type = compiler.get_type(bufferType.member_types[i]);
 				const auto& memberName = compiler.get_member_name(bufferType.self, i);
 				const auto size = (uint32_t)compiler.get_declared_struct_member_size(bufferType, i);
-				const auto offset = compiler.type_struct_member_offset(bufferType, i) - bufferOffset;
+				const auto offset = compiler.type_struct_member_offset(bufferType, i);
 
 				std::string uniformName = fmt::format("{}.{}", bufferName, memberName);
 				buffer.Uniforms[uniformName] = ShaderUniform(uniformName, Utils::SPIRTypeToShaderUniformType(type), size, offset);

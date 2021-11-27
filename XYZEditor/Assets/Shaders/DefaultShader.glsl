@@ -22,16 +22,19 @@ layout (location = 2) out flat float   v_TextureID;
 layout(std140, binding = 0) uniform Camera
 {
 	mat4 u_ViewProjection;
-	mat4 u_ViewMatrix;
-	vec4 u_ViewPosition;
 };
+
+layout(push_constant) uniform Transform
+{
+	mat4 Transform;
+} u_Renderer;
 
 void main()
 {
 	v_Output.Color = a_Color;
 	v_Output.TexCoord = a_TexCoord * a_TilingFactor;
 	v_TextureID = a_TextureID;
-	gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
+	gl_Position = u_ViewProjection * u_Renderer.Transform * vec4(a_Position, 1.0);
 }
 
 #type fragment
@@ -50,11 +53,11 @@ layout (location = 2) in flat float   v_TextureID;
 
 layout(push_constant) uniform Uniforms
 {
-	vec4 Color;
+	layout(offset = 64) vec4 Color;
 
 } u_Uniforms;
 
-layout (binding = 1) uniform sampler2D u_Texture[32];
+layout(binding = 1) uniform sampler2D u_Texture[32];
 
 void main()
 {
