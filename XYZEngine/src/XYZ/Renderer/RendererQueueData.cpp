@@ -67,7 +67,8 @@ namespace XYZ {
 	{
 		#ifdef RENDER_THREAD_ENABLED
 		XYZ_PROFILE_FUNC("RendererQueueData::BlockRenderThread");
-		m_RenderThreadFinished.wait();
+		if (m_RenderThreadFinished.valid())
+			m_RenderThreadFinished.wait();
 		#endif
 	}
 

@@ -24,21 +24,21 @@ namespace XYZ {
         SceneHierarchyPanel::~SceneHierarchyPanel()
         {
         }
-        void SceneHierarchyPanel::OnImGuiRender()
+        void SceneHierarchyPanel::OnImGuiRender(bool& open)
         {
-            if (ImGui::Begin("Scene Hierarchy"))
+            if (ImGui::Begin("Scene Hierarchy", &open))
             {
                 if (m_Context.Raw())
-                {
+                {                  
                     drawEntityNode(SceneEntity(m_Context->m_SceneEntity, m_Context.Raw()));
                     if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && ImGui::IsWindowHovered())
                         m_Context->SetSelectedEntity(Entity());
-
+                    
                     if (ImGui::BeginPopupContextWindow(0, 1, false))
                     {
                         if (ImGui::MenuItem("Create Empty Entity"))
                             m_Context->CreateEntity("Empty Entity", GUID());
-
+                    
                         ImGui::EndPopup();
                     }                   
                 }
@@ -53,18 +53,17 @@ namespace XYZ {
 
         void SceneHierarchyPanel::drawEntityNode(const SceneEntity& entity)
         {
-            const auto& tag = entity.GetComponent<SceneTagComponent>().Name;
-            const auto& rel = entity.GetComponent<Relationship>();
+            const auto* tag = &entity.GetComponent<SceneTagComponent>().Name;
+            const auto* rel = &entity.GetComponent<Relationship>();
 
-            ImGuiTreeNodeFlags flags = ((m_Context->GetSelectedEntity() == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
+            ImGuiTreeNodeFlags flags = (m_Context->GetSelectedEntity() == entity ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
             flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
-            const bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
+            const bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag->c_str());
             dragAndDrop(entity);
+            
             if (ImGui::IsItemClicked())
             {
                 m_Context->SetSelectedEntity(entity);
-                if (m_Callback)
-                    m_Callback(m_Context->GetSelectedEntity());
             }
             
             bool entityDeleted = false;
@@ -80,21 +79,29 @@ namespace XYZ {
                 }
                 ImGui::EndPopup();
             }
+           
+            // it might be invalidated
+            tag = &entity.GetComponent<SceneTagComponent>().Name;
+            rel = &entity.GetComponent<Relationship>();
             if (opened)
             {
-                if (rel.GetFirstChild())
-                    drawEntityNode(SceneEntity(rel.GetFirstChild(), m_Context.Raw()));
+                if (rel->GetFirstChild())
+                    drawEntityNode(SceneEntity(rel->GetFirstChild(), m_Context.Raw()));
                 ImGui::TreePop();
             }
-            if (rel.GetNextSibling())
-                drawEntityNode(SceneEntity(rel.GetNextSibling(), m_Context.Raw()));
+
+            // it might be invalidated
+            tag = &entity.GetComponent<SceneTagComponent>().Name;
+            rel = &entity.GetComponent<Relationship>();
+            if (rel->GetNextSibling())
+                drawEntityNode(SceneEntity(rel->GetNextSibling(), m_Context.Raw()));
 
             if (entityDeleted)
             {
                 m_Context->DestroyEntity(entity);
             }
         }
-        void SceneHierarchyPanel::dragAndDrop(SceneEntity entity)
+        void SceneHierarchyPanel::dragAndDrop(const SceneEntity& entity)
         {
             if (ImGui::BeginDragDropSource())
             {

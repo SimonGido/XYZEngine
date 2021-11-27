@@ -132,7 +132,7 @@ namespace XYZ {
 				spec.Width = m_Specification.Width;
 				spec.Height = m_Specification.Height;
 				depthAttachmentImage->RT_Invalidate(); // Create immediately
-				attachmentDescription.initialLayout = m_Specification.ClearOnLoad ? VK_IMAGE_LAYOUT_UNDEFINED : VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+				attachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 				if (attachmentSpec.Format == ImageFormat::DEPTH24STENCIL8) // Separate layouts requires a "separate layouts" flag to be enabled
 				{
 					attachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL; // TODO: if not sampling
@@ -157,7 +157,7 @@ namespace XYZ {
 				Ref<VulkanImage2D> colorAttachment = m_AttachmentImages[attachmentIndex];
 				colorAttachment->RT_Invalidate();
 
-				attachmentDescription.initialLayout = m_Specification.ClearOnLoad ? VK_IMAGE_LAYOUT_UNDEFINED : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				attachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 				attachmentDescription.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 				const auto& clearColor = m_Specification.ClearColor;

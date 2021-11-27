@@ -11,7 +11,6 @@
 namespace XYZ {
 	namespace Editor {
 
-		using SceneEntitySelectedCallback = std::function<void(SceneEntity)>;
 		class ScenePanel
 		{
 		public:
@@ -19,8 +18,7 @@ namespace XYZ {
 			~ScenePanel();
 
 			void SetContext(const Ref<Scene>& context);
-			void SetEntitySelectedCallback(const SceneEntitySelectedCallback& callback) { m_Callback = callback; }
-	
+		
 			void OnUpdate(Timestep ts);
 			void OnImGuiRender(const Ref<Image2D>& finalImage);
 
@@ -28,24 +26,33 @@ namespace XYZ {
 
 			EditorCamera& GetEditorCamera() { return m_EditorCamera; }
 		private:
+			struct UV
+			{
+				glm::vec2 UV0{}, UV1{};
+			};
+
+		private:
 			bool onKeyPressed(KeyPressedEvent& e);
 
 			std::pair<glm::vec3, glm::vec3> castRay(float mx, float my) const;
-			std::pair<float, float>		    getMouseViewportSpace() const;
+			std::pair<float, float>		    getMouseViewportSpace()		const;
 			std::deque<SceneEntity>		    getSelection(const Ray& ray);
 
 			void handlePanelResize(const glm::vec2& newSize);
 			void handleSelection(const glm::vec2& mousePosition);
 			void handleEntityTransform(SceneEntity entity);
+
 		private:
-			SceneEntitySelectedCallback m_Callback;
 			Ref<Scene>					m_Context;
 			glm::vec2				    m_ViewportSize;
-			glm::vec2				    m_ViewportBounds[2];
+			std::array<glm::vec2, 2>	m_ViewportBounds;
 			Ref<Texture2D>				m_Texture;
 
 			enum { PlayButton, StopButton, NumButtons};
-			glm::vec4 m_ButtonTexCoords[NumButtons];
+			
+		
+
+			UV		  m_ButtonUVs[NumButtons];
 			glm::vec2 m_ButtonSize;
 
 			bool m_ViewportFocused;
@@ -53,6 +60,7 @@ namespace XYZ {
 
 			EditorCamera m_EditorCamera;
 
+			
 
 			enum ModifyFlags
 			{

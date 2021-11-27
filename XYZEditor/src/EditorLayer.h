@@ -36,7 +36,7 @@ namespace XYZ {
 	private:
 		enum Editors
 		{
-			SpriteEditor, AnimationEditor, NumEditors
+			SceneHierarchy, SpriteEditor, AnimationEditor, NumEditors
 		};
 		bool m_EditorOpen[NumEditors];
 		
@@ -46,21 +46,11 @@ namespace XYZ {
 		Ref<EditorRenderer>			m_EditorRenderer;
 
 	private:	
-		SceneEntity m_SelectedEntity;
-		//Editor::ScenePanel m_ScenePanel;
+		SceneEntity					m_SelectedEntity;
+		Editor::ScenePanel			m_ScenePanel;
+		Editor::SceneHierarchyPanel m_SceneHierarchyPanel;
 
 
-	private:
-		Ref<Shader>				 m_Shader;
-		Ref<RenderPass>			 m_RenderPass;
-		Ref<Pipeline>			 m_Pipeline;
-		Ref<Framebuffer>		 m_Framebuffer;
-		Ref<VertexBuffer>		 m_VertexBuffer;
-		Ref<IndexBuffer>		 m_IndexBuffer;
-		Ref<RenderCommandBuffer> m_RenderCommandBuffer;
-		Ref<UniformBufferSet>    m_UniformBufferSet;
 		Ref<Texture2D>			 m_Texture;
-		Ref<Material>			 m_Material;
-		Editor::EditorCamera	 m_Camera;
 	};
 }

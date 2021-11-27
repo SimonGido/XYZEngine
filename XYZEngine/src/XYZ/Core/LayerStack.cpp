@@ -5,11 +5,11 @@
 namespace XYZ {
 	LayerStack::~LayerStack()
 	{
-		for (int i = 0; i < m_Layers.size(); ++i)
-		{
-			m_Layers[i]->OnDetach();
-			delete m_Layers[i];
-		}
+		//for (int i = 0; i < m_Layers.size(); ++i)
+		//{
+		//	m_Layers[i]->OnDetach();
+		//	delete m_Layers[i];
+		//}
 	}
 
 	void LayerStack::PushLayer(Layer* layer)

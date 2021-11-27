@@ -23,8 +23,7 @@ namespace XYZ {
 
 	EditorLayer::EditorLayer()
 		:
-		m_EditorOpen{ true, true },
-		m_Camera(30.0f, 1.778f, 0.1f, 1000.0f)
+		m_EditorOpen{ true, true, true }
 	{			
 	}
 
@@ -35,55 +34,13 @@ namespace XYZ {
 	void EditorLayer::OnAttach()
 	{
 		m_Scene = Ref<Scene>::Create("TestScene");
-		//m_ScenePanel.SetContext(m_Scene);
+		m_ScenePanel.SetContext(m_Scene);
+		m_SceneHierarchyPanel.SetContext(m_Scene);
 
-		m_Shader = Shader::Create("Assets/Shaders/VulkanTestVertexShader.glsl");
-		Ref<APIContext> context = Renderer::GetAPIContext();
-		m_RenderPass = context->GetRenderPass();
-		BufferLayout layout {
-			{0, ShaderDataType::Float2, "inPosition"},
-			{1, ShaderDataType::Float3, "inColor"},
-			{2, ShaderDataType::Float2, "inTexCoord"}
-		};
-		const std::vector<TestVertex> vertices = {
-			{{-0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}},
-			{{ 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}},
-			{{ 0.5f,  0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
-			{{-0.5f,  0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
-		};
-		const std::vector<uint16_t> indices = {
-			0, 1, 2, 2, 3, 0
-		};
-
-		FramebufferSpecification specs;
-		specs.Attachments.push_back({
-			ImageFormat::RGBA32F
-			});
-
-		specs.ClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
-		m_Framebuffer   = Framebuffer::Create(specs);
-
-		m_RenderPass    = RenderPass::Create({ m_Framebuffer });
-		m_VertexBuffer  = VertexBuffer::Create(vertices.data(), vertices.size() * sizeof(TestVertex));
-		m_IndexBuffer   = IndexBuffer::Create(indices.data(), indices.size(), IndexType::Uint16);
-		m_Pipeline		= Pipeline::Create({ m_Shader, layout, m_RenderPass });
-		m_RenderCommandBuffer = RenderCommandBuffer::Create(Renderer::GetConfiguration().FramesInFlight);
-		
-		m_UniformBufferSet = UniformBufferSet::Create(Renderer::GetConfiguration().FramesInFlight);
-		m_UniformBufferSet->Create(sizeof(TestCamera), 0, 0);
-		m_UniformBufferSet->Create(sizeof(TestCamera), 1, 1);
-		m_UniformBufferSet->CreateDescriptors(m_Shader);
 		m_Texture = Texture2D::Create("Assets/Textures/1_ORK_head.png");
-		m_Material = Material::Create(m_Shader);
 		m_SceneRenderer2D = Ref<Renderer2D>::Create(Renderer2DSpecification());
 
 		Renderer::WaitAndRenderAll();
-		m_Material->Set("u_Texture", m_Texture);
-		m_Material->Set("u_Uniforms.Color", glm::vec4(1.0f, 0.0f, 1.0f, 1.0f));
-
-		const uint32_t windowWidth = Application::Get().GetWindow().GetWidth();
-		const uint32_t windowHeight = Application::Get().GetWindow().GetHeight();
-		m_Camera.SetViewportSize((float)windowWidth, (float)windowHeight);
 	}
 	
 	void EditorLayer::OnDetach()
@@ -91,30 +48,10 @@ namespace XYZ {
 	}
 	void EditorLayer::OnUpdate(Timestep ts)
 	{
-		TestCamera camera;
-		camera.ViewProjection = m_Camera.GetViewProjection();
-		camera.View = m_Camera.GetViewMatrix();
-		camera.Position = glm::vec4(m_Camera.GetPosition(), 1.0f);
+		auto& camera = m_ScenePanel.GetEditorCamera();
+		camera.OnUpdate(ts);
 
-		uint32_t currentFrame = Renderer::GetAPIContext()->GetCurrentFrame();
-		m_Camera.OnUpdate(ts);
-		/*
-		m_RenderCommandBuffer->Begin();
-		m_UniformBufferSet->Get(0, 0, currentFrame)->Update(&camera, sizeof(TestCamera), 0);
-		m_UniformBufferSet->Get(1, 1, currentFrame)->Update(&camera, sizeof(TestCamera), 0);
-		
-		Renderer::BeginRenderPass(m_RenderCommandBuffer, m_RenderPass, false);
-		
-		Renderer::BindPipeline(m_RenderCommandBuffer, m_Pipeline, m_UniformBufferSet, m_Material);
-		Renderer::RenderGeometry(m_RenderCommandBuffer, m_Pipeline, m_Material, m_VertexBuffer, m_IndexBuffer, glm::translate(glm::vec3(1.0f)));
-		Renderer::RenderGeometry(m_RenderCommandBuffer, m_Pipeline, m_Material, m_VertexBuffer, m_IndexBuffer, glm::translate(glm::vec3(-1.0f)));
-
-		Renderer::EndRenderPass(m_RenderCommandBuffer);
-		
-		m_RenderCommandBuffer->End();
-		m_RenderCommandBuffer->Submit();
-		*/
-		m_SceneRenderer2D->BeginScene(camera.ViewProjection);
+		m_SceneRenderer2D->BeginScene(camera.GetViewProjection());
 		m_SceneRenderer2D->SubmitQuad(glm::vec3(0.0f), glm::vec2(1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), m_Texture, glm::vec4(1.0f));
 		m_SceneRenderer2D->SubmitQuad(glm::vec3(3.0f), glm::vec2(1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), m_Texture, glm::vec4(1.0f));
 		m_SceneRenderer2D->EndScene();
@@ -122,21 +59,11 @@ namespace XYZ {
 
 	void EditorLayer::OnEvent(Event& event)
 	{			
-		m_Camera.OnEvent(event);
+		m_ScenePanel.OnEvent(event);
 	}
 
 	void EditorLayer::OnImGuiRender()
 	{
-		if (ImGui::Begin("Scene"))
-		{		
-			auto renderPass = m_SceneRenderer2D->GetTargetRenderPass();
-			auto frameBuffer = renderPass->GetSpecification().TargetFramebuffer;
-			UI::Image(frameBuffer->GetImage(), ImVec2(700, 700));
-		}
-		ImGui::End();
-
-		
-		
 		if (ImGui::BeginMenuBar())
 		{
 			if (ImGui::BeginMenu("File"))
@@ -158,12 +85,13 @@ namespace XYZ {
 
 			ImGui::EndMenuBar();
 		}
-
-		//m_ScenePanel.OnImGuiRender(m_SceneRenderer2D->GetTargetRenderPass()->GetSpecification().TargetFramebuffer->GetImage());
+		auto renderPass = m_SceneRenderer2D->GetTargetRenderPass();
+		auto frameBuffer = renderPass->GetSpecification().TargetFramebuffer;
+		m_ScenePanel.OnImGuiRender(frameBuffer->GetImage());
+		m_SceneHierarchyPanel.OnImGuiRender(m_EditorOpen[SceneHierarchy]);
 
 		/*
 		m_Inspector.OnImGuiRender(m_EditorRenderer);
-		m_SceneHierarchy.OnImGuiRender();
 		m_SpriteEditor.OnImGuiRender(m_EditorOpen[SpriteEditor]);
 		m_ScenePanel.OnImGuiRender(m_SceneRenderer->GetFinalColorBufferRendererID());
 		m_AnimationEditor.OnImGuiRender(m_EditorOpen[AnimationEditor]);

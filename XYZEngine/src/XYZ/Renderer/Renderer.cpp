@@ -164,8 +164,7 @@ namespace XYZ {
 
 		
 		//s_Data.ShaderLibrary->Load("Assets/Shaders/Particle/ParticleShaderCPU.glsl");
-		Render();
-		BlockRenderThread();
+		WaitAndRenderAll();
 	}
 
 	void Renderer::Shutdown()
