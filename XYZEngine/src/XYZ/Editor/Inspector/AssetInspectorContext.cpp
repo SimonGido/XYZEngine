@@ -27,7 +27,7 @@ namespace XYZ {
 		}
 	}
 	namespace Editor {
-		void AssetInspectorContext::OnImGuiRender(Ref<EditorRenderer> renderer)
+		void AssetInspectorContext::OnImGuiRender(Ref<Renderer2D> renderer)
 		{
 			if (m_Context.Raw())
 			{

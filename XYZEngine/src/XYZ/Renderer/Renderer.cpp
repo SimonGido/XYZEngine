@@ -72,13 +72,14 @@ namespace XYZ {
 		RendererQueueData			   QueueData;
 		Ref<APIContext>				   APIContext;
 		Ref<ShaderLibrary>			   ShaderLibrary;
-		Ref<VertexArray>			   FullscreenQuadVertexArray;
 		Ref<VertexBuffer>			   FullscreenQuadVertexBuffer;
 		Ref<IndexBuffer>			   FullscreenQuadIndexBuffer;
-									   
+
+		
+		
 		RendererStats				   Stats;
 		RendererConfiguration		   Configuration;
-									   
+		RendererResources			   Resources;
 		ShaderDependencyMap			   ShaderDependencies;
 	};
 
@@ -100,7 +101,6 @@ namespace XYZ {
 
 	static void SetupFullscreenQuad()
 	{
-		s_Data.FullscreenQuadVertexArray = VertexArray::Create();
 		const float x = -1;
 		const float y = -1;
 		const float width = 2, height = 2;
@@ -130,11 +130,9 @@ namespace XYZ {
 		};
 		s_Data.FullscreenQuadVertexBuffer = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
 		s_Data.FullscreenQuadVertexBuffer->SetLayout(layout);
-		s_Data.FullscreenQuadVertexArray->AddVertexBuffer(s_Data.FullscreenQuadVertexBuffer);
-
+	
 		const uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
 		s_Data.FullscreenQuadIndexBuffer = IndexBuffer::Create(indices, 6);
-		s_Data.FullscreenQuadVertexArray->SetIndexBuffer(s_Data.FullscreenQuadIndexBuffer);
 	}
 
 	void Renderer::Init(const RendererConfiguration& config)
@@ -150,18 +148,19 @@ namespace XYZ {
 
 	void Renderer::InitResources()
 	{
-		//SetupFullscreenQuad();
+		SetupFullscreenQuad();
 
 		s_Data.ShaderLibrary = Ref<ShaderLibrary>::Create();
-		//s_Data.ShaderLibrary->Load("Assets/Shaders/RendererCore/CompositeShader.glsl");
-		//s_Data.ShaderLibrary->Load("Assets/Shaders/RendererCore/LightShader.glsl");
-		//s_Data.ShaderLibrary->Load("Assets/Shaders/RendererCore/Bloom.glsl");
+		s_Data.ShaderLibrary->Load("Assets/Shaders/RendererCore/CompositeShader.glsl");
+		s_Data.ShaderLibrary->Load("Assets/Shaders/RendererCore/LightShader.glsl");
+		s_Data.ShaderLibrary->Load("Assets/Shaders/RendererCore/Bloom.glsl");
 		s_Data.ShaderLibrary->Load("Assets/Shaders/RendererCore/Circle.glsl");
 		
-		//s_Data.ShaderLibrary->Load("Assets/Shaders/DefaultLitShader.glsl");
+		s_Data.ShaderLibrary->Load("Assets/Shaders/DefaultLitShader.glsl");
 		s_Data.ShaderLibrary->Load("Assets/Shaders/DefaultShader.glsl");
 		s_Data.ShaderLibrary->Load("Assets/Shaders/LineShader.glsl");
 
+		s_Data.Resources.Init();
 		
 		//s_Data.ShaderLibrary->Load("Assets/Shaders/Particle/ParticleShaderCPU.glsl");
 		WaitAndRenderAll();
@@ -169,11 +168,11 @@ namespace XYZ {
 
 	void Renderer::Shutdown()
 	{	
-		s_Data.FullscreenQuadVertexArray.Reset();
 		s_Data.FullscreenQuadVertexBuffer.Reset();
 		s_Data.FullscreenQuadIndexBuffer.Reset();
 		s_Data.ShaderLibrary.Reset();
 		s_Data.ShaderDependencies.Clear();
+		s_Data.Resources.Shutdown();
 		s_RendererAPI->Shutdown();
 		s_Data.QueueData.Shutdown();
 
@@ -261,8 +260,7 @@ namespace XYZ {
 	void Renderer::SubmitFullscreenQuad()
 	{
 		s_Data.Stats.DrawFullscreenCount++;
-		s_Data.FullscreenQuadVertexArray->Bind();
-		Renderer::DrawIndexed(PrimitiveType::Triangles, 6);
+		
 	}
 
 	void Renderer::BeginFrame()
@@ -291,6 +289,11 @@ namespace XYZ {
 		Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const glm::mat4& transform, uint32_t indexCount)
 	{
 		s_RendererAPI->RenderGeometry(renderCommandBuffer, pipeline, material, vertexBuffer, indexBuffer, transform, indexCount);
+	}
+
+	void Renderer::SubmitFullscreenQuad(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material)
+	{
+		s_RendererAPI->RenderGeometry(renderCommandBuffer, pipeline, material, s_Data.FullscreenQuadVertexBuffer, s_Data.FullscreenQuadIndexBuffer);
 	}
 
 	void Renderer::BindPipeline(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<Material> material)
@@ -371,6 +374,11 @@ namespace XYZ {
 	{
 		return s_Data.APIContext;
 	}
+	const RendererResources& Renderer::GetDefaultResources()
+	{
+		return s_Data.Resources;
+	}
+
 	const RenderAPICapabilities& Renderer::GetCapabilities()
 	{
 		return s_RendererAPI->GetCapabilities();
@@ -405,5 +413,22 @@ namespace XYZ {
 		DrawFullscreenCount = 0;
 		DrawIndirectCount = 0;
 		CommandsCount = 0;
+	}
+	void RendererResources::Init()
+	{
+		auto shaderLibrary = Renderer::GetShaderLibrary();
+
+		uint32_t whiteTextureData = 0xffffffff;
+		WhiteTexture = Texture2D::Create(ImageFormat::RGBA, 1, 1, &whiteTextureData);
+		DefaultQuadMaterial = Material::Create(shaderLibrary->Get("DefaultShader"));
+		DefaultLineMaterial = Material::Create(shaderLibrary->Get("LineShader"));
+		DefaultCircleMaterial = Material::Create(shaderLibrary->Get("Circle"));
+	}
+	void RendererResources::Shutdown()
+	{
+		WhiteTexture.Reset();
+		DefaultQuadMaterial.Reset();
+		DefaultLineMaterial.Reset();
+		DefaultCircleMaterial.Reset();
 	}
 }

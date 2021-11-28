@@ -141,12 +141,20 @@ namespace XYZ {
 			return *this;
 		}
 
-
 		T* operator->() { return m_Instance; }
 		const T* operator->() const { return m_Instance; }
 
 		T& operator*() { return *m_Instance; }
 		const T& operator*() const { return *m_Instance; }
+
+
+		bool EqualsObject(const Ref<T>& other)
+		{
+			if (!m_Instance || !other.m_Instance)
+				return false;
+
+			return *m_Instance == *other.m_Instance;
+		}
 
 		T& Get() { return *m_Instance; }
 

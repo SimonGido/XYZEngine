@@ -71,7 +71,6 @@ namespace XYZ {
 
 		void Init();
 		void SetScene(Ref<Scene> scene);
-		void SetRenderer2D(const Ref<Renderer2D>& renderer2D);
 		void SetViewportSize(uint32_t width, uint32_t height);
 		void SetGridProperties(const GridProperties& props);
 		
@@ -90,8 +89,9 @@ namespace XYZ {
 
 		void UpdateViewportSize();
 
-		Ref<RenderPass>		  GetFinalRenderPass();
-		uint32_t			  GetFinalColorBufferRendererID();
+		Ref<Renderer2D>	      GetRenderer2D() const { return m_Renderer2D; }
+		Ref<RenderPass>		  GetFinalRenderPass() const;
+		Ref<Image2D>		  GetFinalPassImage() const;
 		SceneRendererOptions& GetOptions();
 	
 	private:
@@ -100,10 +100,13 @@ namespace XYZ {
 		void flushDefaultQueue();
 		void sortQueue(RenderQueue& queue);
 
-		void geometryPass(RenderQueue& queue, const Ref<RenderPass>& pass, bool clear);
+		void geometryPass2D(RenderQueue& queue, bool clear);
 		void lightPass();
 		void bloomPass();
 
+
+
+		void createCompositePipeline();
 	private:
 		struct PointLight
 		{
@@ -134,7 +137,12 @@ namespace XYZ {
 		SceneRendererSpecification m_Specification;
 		Ref<Scene>				   m_ActiveScene;
 		Ref<Renderer2D>			   m_Renderer2D;
-								   
+		
+		Ref<Pipeline>			   m_CompositePipeline;
+
+		Ref<Material>			   m_CompositeMaterial;
+
+
 		SceneRendererCamera		   m_SceneCamera;
 		SceneRendererOptions	   m_Options;
 		GridProperties			   m_GridProps;
@@ -142,31 +150,26 @@ namespace XYZ {
 
 		Ref<RenderCommandBuffer>   m_CommandBuffer;
 		// Passes
-		Ref<RenderPass>			   m_CompositePass;
 		Ref<RenderPass>			   m_LightPass;
 		Ref<RenderPass>			   m_GeometryPass;
 		Ref<RenderPass>			   m_BloomPass;
 		Ref<UniformBuffer>		   m_CameraUniformBuffer;
 								   
-		Ref<Shader>				   m_CompositeShader;
 		Ref<Shader>				   m_LightShader;
 		Ref<Shader>				   m_BloomComputeShader;
 		Ref<Texture2D>			   m_BloomTexture[3];
 
-		Ref<ShaderStorageBuffer> m_LightStorageBuffer;
-		Ref<ShaderStorageBuffer> m_SpotLightStorageBuffer;
+		Ref<ShaderStorageBuffer>   m_LightStorageBuffer;
+		Ref<ShaderStorageBuffer>   m_SpotLightStorageBuffer;
 
-		
+		CameraData				   m_CameraBuffer;
+		RenderQueue				   m_Queue;
 
-		enum { DefaultQueue, LightQueue, NumQueues };
-
-		CameraData				m_CameraBuffer;
-		RenderQueue				m_Queues[NumQueues];
-		std::vector<PointLight>	m_PointLightsList;
-		std::vector<SpotLight>	m_SpotLightsList;
-		
-		bool				    m_ViewportSizeChanged = false;
-		int32_t					m_ThreadIndex;
+		std::vector<PointLight>	   m_PointLightsList;
+		std::vector<SpotLight>	   m_SpotLightsList;
+								   
+		bool				       m_ViewportSizeChanged = false;
+		int32_t					   m_ThreadIndex;
 
 		static constexpr uint32_t sc_MaxNumberOfLights = 10 * 1024;
 	};

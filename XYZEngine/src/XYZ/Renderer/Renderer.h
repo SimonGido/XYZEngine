@@ -30,6 +30,17 @@ namespace XYZ {
 		uint32_t CommandsCount;
 	};
 
+	struct RendererResources
+	{
+		void Init();
+		void Shutdown();
+
+		Ref<Texture2D>	WhiteTexture;
+		Ref<Material>	DefaultQuadMaterial;
+		Ref<Material>	DefaultLineMaterial;
+		Ref<Material>	DefaultCircleMaterial;
+	};
+
 	struct RendererConfiguration
 	{
 		uint32_t FramesInFlight = 3;
@@ -66,6 +77,7 @@ namespace XYZ {
 		static void BeginRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer, const Ref<RenderPass>& renderPass, bool clear);
 		static void EndRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer);
 		static void RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline,  Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const glm::mat4& transform, uint32_t indexCount = 0);
+		static void SubmitFullscreenQuad(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material);
 		static void BindPipeline(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<Material> material);
 
 		static void RegisterShaderDependency(const Ref<Shader>& shader, const Ref<Pipeline>& pipeline);
@@ -76,6 +88,8 @@ namespace XYZ {
 
 		static Ref<ShaderLibrary>			GetShaderLibrary();
 		static Ref<APIContext>				GetAPIContext();
+		
+		static const RendererResources&		GetDefaultResources();
 		static const RenderAPICapabilities& GetCapabilities();
 		static const RendererConfiguration& GetConfiguration();
 

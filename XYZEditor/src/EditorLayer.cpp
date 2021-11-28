@@ -23,7 +23,7 @@ namespace XYZ {
 
 	EditorLayer::EditorLayer()
 		:
-		m_EditorOpen{ true, true, true }
+		m_PanelsOpen{ true, true, true }
 	{			
 	}
 
@@ -34,11 +34,14 @@ namespace XYZ {
 	void EditorLayer::OnAttach()
 	{
 		m_Scene = Ref<Scene>::Create("TestScene");
+		m_Scene->SetViewportSize(
+			Application::Get().GetWindow().GetWidth(),
+			Application::Get().GetWindow().GetHeight()
+		);
 		m_ScenePanel.SetContext(m_Scene);
 		m_SceneHierarchyPanel.SetContext(m_Scene);
 
-		m_Texture = Texture2D::Create("Assets/Textures/1_ORK_head.png");
-		m_SceneRenderer2D = Ref<Renderer2D>::Create(Renderer2DSpecification());
+		m_SceneRenderer = Ref<SceneRenderer>::Create(m_Scene, SceneRendererSpecification());
 
 		Renderer::WaitAndRenderAll();
 	}
@@ -48,13 +51,25 @@ namespace XYZ {
 	}
 	void EditorLayer::OnUpdate(Timestep ts)
 	{
-		auto& camera = m_ScenePanel.GetEditorCamera();
-		camera.OnUpdate(ts);
+		auto& editorCamera = m_ScenePanel.GetEditorCamera();
 
-		m_SceneRenderer2D->BeginScene(camera.GetViewProjection());
-		m_SceneRenderer2D->SubmitQuad(glm::vec3(0.0f), glm::vec2(1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), m_Texture, glm::vec4(1.0f));
-		m_SceneRenderer2D->SubmitQuad(glm::vec3(3.0f), glm::vec2(1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), m_Texture, glm::vec4(1.0f));
-		m_SceneRenderer2D->EndScene();
+		if (m_Scene->GetState() == SceneState::Edit)
+		{
+			m_ScenePanel.OnUpdate(ts);
+			m_Scene->OnRenderEditor(m_SceneRenderer, editorCamera, ts);
+		}
+		else
+		{
+			m_Scene->OnUpdate(ts);
+			m_Scene->OnRender(m_SceneRenderer);
+		}
+
+		if (m_SelectedEntity != m_Scene->GetSelectedEntity())
+		{
+			m_SelectedEntity = m_Scene->GetSelectedEntity();
+			m_SceneEntityInspectorContext.SetContext(m_SelectedEntity);
+			m_InspectorPanel.SetContext(&m_SceneEntityInspectorContext);
+		}
 	}
 
 	void EditorLayer::OnEvent(Event& event)
@@ -85,11 +100,10 @@ namespace XYZ {
 
 			ImGui::EndMenuBar();
 		}
-		auto renderPass = m_SceneRenderer2D->GetTargetRenderPass();
-		auto frameBuffer = renderPass->GetSpecification().TargetFramebuffer;
-		m_ScenePanel.OnImGuiRender(frameBuffer->GetImage());
-		m_SceneHierarchyPanel.OnImGuiRender(m_EditorOpen[SceneHierarchy]);
 
+		m_ScenePanel.OnImGuiRender(m_SceneRenderer->GetFinalPassImage());
+		m_SceneHierarchyPanel.OnImGuiRender(m_PanelsOpen[SceneHierarchy]);
+		m_InspectorPanel.OnImGuiRender(m_PanelsOpen[Inspector], m_SceneRenderer->GetRenderer2D());
 		/*
 		m_Inspector.OnImGuiRender(m_EditorRenderer);
 		m_SpriteEditor.OnImGuiRender(m_EditorOpen[SpriteEditor]);

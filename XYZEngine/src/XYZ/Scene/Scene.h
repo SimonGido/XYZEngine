@@ -26,7 +26,7 @@ namespace XYZ {
     };
 
 
-    class EditorRenderer;
+    class Renderer2D;
     class SceneRenderer;
     class SceneEntity;
 
@@ -50,7 +50,7 @@ namespace XYZ {
         void OnStop();
         void OnUpdate(Timestep ts);
         void OnRender(Ref<SceneRenderer> sceneRenderer);
-        void OnRenderEditor(Ref<SceneRenderer> sceneRenderer, Ref<EditorRenderer> editorRenderer, const Editor::EditorCamera& camera, Timestep ts);
+        void OnRenderEditor(Ref<SceneRenderer> sceneRenderer, const Editor::EditorCamera& camera, Timestep ts);
 
         SceneEntity GetEntity(uint32_t index);
         SceneEntity GetEntityByName(const std::string& name);

@@ -10,6 +10,7 @@
 #include "UniformBufferSet.h"
 #include "SubTexture.h"
 
+
 namespace XYZ {
 	struct Renderer2DStats
 	{
@@ -52,8 +53,9 @@ namespace XYZ {
 		void SetQuadMaterial(const Ref<Material>& material);
 		void SetLineMaterial(const Ref<Material>& material);
 		void SetCircleMaterial(const Ref<Material>& material);
+
 		void SetTargetRenderPass(const Ref<RenderPass>& renderPass);
-		Ref<RenderPass> GetTargetRenderPass();
+		Ref<RenderPass> GetTargetRenderPass() const;
 
 
 		void SubmitCircle(const glm::vec3& pos, float radius, uint32_t sides, const glm::vec4& color = glm::vec4(1.0f));
@@ -72,26 +74,17 @@ namespace XYZ {
 
 		void SubmitLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color = glm::vec4(1.0f));
 		void SubmitLineQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color = glm::vec4(1));
+		void SubmitAABB(const glm::vec3& min, const glm::vec3& max, const glm::vec4& color);
 
-	
+
 		void EndScene();
 		
 
 		const Renderer2DStats& GetStats();
 
 	private:
-		void resetQuads();
-		void resetLines();
-		void createRenderPass();
-		void flush();
-		void flushLines();
-		void flushFilledCircles();
-		void updateRenderPass(Ref<Pipeline>& pipeline) const;
-		void setMaterial(Ref<Pipeline>& pipeline, const Ref<Material>& material);
 
-		uint32_t findTextureIndex(const Ref<Texture2D>& texture);
-	private:
-		struct Vertex2D
+		struct QuadVertex
 		{
 			glm::vec4 Color;
 			glm::vec3 Position;
@@ -113,8 +106,23 @@ namespace XYZ {
 			glm::vec2 LocalPosition;
 			glm::vec4 Color;
 		};
+	private:
+		void resetQuads();
+		void resetLines();
 
+		void createRenderPass();
+		void createDefaultPipelineBuckets();
 
+		void flush();
+		void flushLines();
+		void flushFilledCircles();
+		void updateRenderPass(Ref<Pipeline>& pipeline) const;
+
+		Ref<Pipeline> setMaterial(std::map<size_t, Ref<Pipeline>>& pipelines, const Ref<Pipeline>& current, const Ref<Material>& material);
+
+		uint32_t findTextureIndex(const Ref<Texture2D>& texture);
+	
+	private:	
 		static constexpr uint32_t sc_MaxTextures = 32;
 		static constexpr uint32_t sc_MaxQuads = 10000;
 		static constexpr uint32_t sc_MaxVertices = sc_MaxQuads * 4;
@@ -133,6 +141,7 @@ namespace XYZ {
 		Renderer2DSpecification  m_Specification;
 		Ref<RenderCommandBuffer> m_RenderCommandBuffer;
 		Ref<RenderPass>			 m_RenderPass;
+
 		Ref<Material>			 m_QuadMaterial;
 		Ref<Material>			 m_LineMaterial;
 		Ref<Material>			 m_CircleMaterial;
@@ -141,10 +150,14 @@ namespace XYZ {
 		std::array<Ref<Texture>, sc_MaxTextures> m_TextureSlots;
 		uint32_t								 m_TextureSlotIndex = 0;
 
+		std::map<size_t, Ref<Pipeline>> m_QuadPipelines;
+		std::map<size_t, Ref<Pipeline>> m_LinePipelines;
+		std::map<size_t, Ref<Pipeline>> m_CirclePipelines;
 
-		Renderer2DBuffer<Vertex2D>		  m_QuadBuffer;
-		Renderer2DBuffer<LineVertex>	  m_LineBuffer;
-		Renderer2DBuffer<CircleVertex>	  m_CircleBuffer;
+		Renderer2DBuffer<QuadVertex>   m_QuadBuffer;
+		Renderer2DBuffer<LineVertex>   m_LineBuffer;
+		Renderer2DBuffer<CircleVertex> m_CircleBuffer;
+
 
 		Renderer2DStats		  m_Stats;	
 		Ref<UniformBufferSet> m_UniformBufferSet;
@@ -153,7 +166,6 @@ namespace XYZ {
 		{
 			glm::mat4 ViewProjection;
 		};
-
 	};
 
 	template<typename VertexType>

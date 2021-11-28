@@ -5,7 +5,7 @@
 #include "XYZ/Scene/Components.h"
 
 namespace XYZ {
-	bool ParticleComponentGPUInspector::OnEditorRender(Ref<EditorRenderer> renderer)
+	bool ParticleComponentGPUInspector::OnEditorRender(Ref<Renderer2D> renderer)
 	{
 		return EditorHelper::DrawComponent<ParticleComponentGPU>("Particle Component", m_Context, [&](auto& component) {
 

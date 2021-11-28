@@ -6,7 +6,7 @@ namespace XYZ {
 	class TransformInspector : public InspectorEditable
 	{
 	public:
-		virtual bool OnEditorRender(Ref<EditorRenderer> renderer) override;
+		virtual bool OnEditorRender(Ref<Renderer2D> renderer) override;
 
 		
 		SceneEntity m_Context;

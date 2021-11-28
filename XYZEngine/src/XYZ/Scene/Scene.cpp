@@ -7,7 +7,7 @@
 #include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/SceneRenderer.h"
-#include "XYZ/Renderer/EditorRenderer.h"
+#include "XYZ/Renderer/Renderer2D.h"
 
 #include "XYZ/Animation/Animator.h"
 
@@ -306,7 +306,7 @@ namespace XYZ {
 
 	
 
-	void Scene::OnRenderEditor(Ref<SceneRenderer> sceneRenderer, Ref<EditorRenderer> editorRenderer, const Editor::EditorCamera& camera, Timestep ts)
+	void Scene::OnRenderEditor(Ref<SceneRenderer> sceneRenderer, const Editor::EditorCamera& camera, Timestep ts)
 	{
 		XYZ_PROFILE_FUNC("Scene::OnRenderEditor");
 		m_PhysicsWorld.Step(ts);
@@ -327,13 +327,13 @@ namespace XYZ {
 					renderer.Material, renderer.SubTexture, renderer.SortLayer, renderer.Color, transform.WorldTransform
 				);
 		}
-		auto editorRenderView = m_ECS.CreateView<TransformComponent, EditorSpriteRenderer>();
-		for (auto entity : editorRenderView)
-		{
-			auto [transform, renderer] = editorRenderView.Get<TransformComponent, EditorSpriteRenderer>(entity);
-			if (renderer.SubTexture.Raw() && renderer.Material.Raw())
-				editorRenderer->SubmitEditorSprite(renderer.Material, renderer.SubTexture, renderer.Color, transform.WorldTransform);
-		}
+		//auto editorRenderView = m_ECS.CreateView<TransformComponent, EditorSpriteRenderer>();
+		//for (auto entity : editorRenderView)
+		//{
+		//	auto [transform, renderer] = editorRenderView.Get<TransformComponent, EditorSpriteRenderer>(entity);
+		//	if (renderer.SubTexture.Raw() && renderer.Material.Raw())
+		//		Renderer2D->SubmitSprite(renderer.Material, renderer.SubTexture, renderer.Color, transform.WorldTransform);
+		//}
 		//auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponentGPU>();
 		//for (auto entity : particleView)
 		//{
@@ -396,14 +396,14 @@ namespace XYZ {
 
 					glm::vec3 bottomLeft = { translation.x - width / 2.0f,translation.y - height / 2.0f, translation.z };
 					glm::vec3 topRight = { translation.x + width / 2.0f,translation.y + height / 2.0f, translation.z };
-					editorRenderer->SubmitEditorAABB(bottomLeft, topRight, glm::vec4(1.0f));
+					//Renderer2D->SubmitAABB(bottomLeft, topRight, glm::vec4(1.0f));
 				}
 			}
 			else
 			{
 				glm::vec3 bottomLeft = { translation.x - scale.x / 2.0f,translation.y - scale.y / 2.0f, translation.z };
 				glm::vec3 topRight = { translation.x + scale.x / 2.0f,translation.y + scale.y / 2.0f, translation.z };
-				editorRenderer->SubmitEditorAABB(bottomLeft, topRight, glm::vec4(1.0f));
+				//Renderer2D->SubmitAABB(bottomLeft, topRight, glm::vec4(1.0f));
 			}
 		}
 

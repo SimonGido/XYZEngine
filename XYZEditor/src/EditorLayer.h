@@ -34,23 +34,26 @@ namespace XYZ {
 		void displayStats();
 
 	private:
-		enum Editors
+		enum Panels
 		{
-			SceneHierarchy, SpriteEditor, AnimationEditor, NumEditors
+			SceneHierarchy, 
+			SpriteEditor, 
+			AnimationEditor, 
+			Inspector,
+			NumPanels
 		};
-		bool m_EditorOpen[NumEditors];
+		bool m_PanelsOpen[NumPanels];
 		
 		Ref<Scene>					m_Scene;
 		Ref<SceneRenderer>			m_SceneRenderer;
-		Ref<Renderer2D>				m_SceneRenderer2D;
-		Ref<EditorRenderer>			m_EditorRenderer;
-
+	
 	private:	
-		SceneEntity					m_SelectedEntity;
-		Editor::ScenePanel			m_ScenePanel;
-		Editor::SceneHierarchyPanel m_SceneHierarchyPanel;
-
-
-		Ref<Texture2D>			 m_Texture;
+		SceneEntity							m_SelectedEntity;
+		
+		Editor::ScenePanel					m_ScenePanel;
+		Editor::SceneHierarchyPanel			m_SceneHierarchyPanel;
+		Editor::InspectorPanel				m_InspectorPanel;
+		Editor::SceneEntityInspectorContext m_SceneEntityInspectorContext;
+		Editor::AssetInspectorContext	    m_AssetInspectorContext;
 	};
 }

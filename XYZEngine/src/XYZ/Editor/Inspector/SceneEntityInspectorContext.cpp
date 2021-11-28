@@ -11,6 +11,8 @@
 #include "XYZ/Utils/Math/Ray.h"
 #include "XYZ/Scene/Components.h"
 #include "XYZ/Editor/EditorHelper.h"
+#include "XYZ/Renderer/Renderer.h"
+
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -58,10 +60,10 @@ namespace XYZ {
 			:
 			m_IconSize(35.0f)
 		{
-			m_DefaultMaterial = AssetManager::GetAsset<Material>(AssetManager::GetAssetHandle("Assets/Materials/Material.mat"));
-			m_DefaultSubTexture = AssetManager::GetAsset<SubTexture>(AssetManager::GetAssetHandle("Assets/SubTextures/player.subtex"));
+			m_DefaultMaterial = Renderer::GetDefaultResources().DefaultQuadMaterial;
+			m_DefaultSubTexture = Ref<SubTexture>::Create(Renderer::GetDefaultResources().WhiteTexture);
 		}
-		void SceneEntityInspectorContext::OnImGuiRender(Ref<EditorRenderer> renderer)
+		void SceneEntityInspectorContext::OnImGuiRender(Ref<Renderer2D> renderer)
 		{
 			if (m_Context && m_Context.IsValid())
 			{		

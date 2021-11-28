@@ -3,14 +3,14 @@
 
 #include "XYZ/Editor/EditorHelper.h"
 #include "XYZ/Scene/Components.h"
-#include "XYZ/Renderer/EditorRenderer.h"
+#include "XYZ/Renderer/Renderer2D.h"
 
 namespace XYZ {
 	ParticleComponentCPUInspector::ParticleComponentCPUInspector()
 	{
 		
 	}
-	bool ParticleComponentCPUInspector::OnEditorRender(Ref<EditorRenderer> renderer)
+	bool ParticleComponentCPUInspector::OnEditorRender(Ref<Renderer2D> renderer)
 	{
 		return EditorHelper::DrawComponent<ParticleComponentCPU>("Particle Component CPU", m_Context, [&](auto& component) {
 			
@@ -168,7 +168,7 @@ namespace XYZ {
 			}, enabledEmitter);
 		});
 	}
-	void ParticleComponentCPUInspector::renderColliders(Ref<EditorRenderer>& renderer, const ParticleSystemCPU::ModuleData& moduleData)
+	void ParticleComponentCPUInspector::renderColliders(Ref<Renderer2D>& renderer, const ParticleSystemCPU::ModuleData& moduleData)
 	{
 		const auto& transform = m_Context.GetComponent<TransformComponent>().WorldTransform;
 		auto [translation, rotation, scale] = m_Context.GetComponent<TransformComponent>().GetWorldComponents();
@@ -179,7 +179,7 @@ namespace XYZ {
 			for (uint32_t i = 0; i < particles.GetAliveParticles(); ++i)
 			{
 				glm::vec4 position = transform * glm::vec4(particles.m_Particle[i].Position, 1.0f);
-				renderer->SubmitEditorCircle(position, physicsModule.m_Radius, 20, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+				renderer->SubmitCircle(position, physicsModule.m_Radius, 20, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
 			}
 		}
 		else
@@ -187,7 +187,7 @@ namespace XYZ {
 			for (uint32_t i = 0; i < particles.GetAliveParticles(); ++i)
 			{
 				glm::vec3 boxPos = translation + particles.m_Particle[i].Position - glm::vec3(physicsModule.m_BoxSize, 0.0f);
-				renderer->SubmitEditorLineQuad(boxPos, 2.0f * physicsModule.m_BoxSize, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+				renderer->SubmitLineQuad(boxPos, 2.0f * physicsModule.m_BoxSize, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
 			}
 		}
 	}

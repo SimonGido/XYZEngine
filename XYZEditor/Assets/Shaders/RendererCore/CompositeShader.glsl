@@ -31,7 +31,8 @@ struct VertexOutput
 
 layout(location = 0) in VertexOutput v_Input;
 
-layout(binding = 0) uniform sampler2D u_Texture[2];
+layout(binding = 0) uniform sampler2D u_GeometryTexture;
+layout(binding = 1) uniform sampler2D u_BloomTexture;
 
 const float c_Gamma = 2.2;
 
@@ -62,8 +63,8 @@ vec3 GammaCorrect(vec3 color, float gamma)
 
 void main()
 {    
-    vec3 color = texture(u_Texture[0], v_Input.TexCoord).rgb;
-	vec3 bloomColor = texture(u_Texture[1], v_Input.TexCoord).rgb;
+    vec3 color = texture(u_GeometryTexture, v_Input.TexCoord).rgb;
+	vec3 bloomColor = texture(u_BloomTexture, v_Input.TexCoord).rgb;
 	bloomColor = ACESTonemap(bloomColor);
 	bloomColor = GammaCorrect(bloomColor, c_Gamma);
 	o_Color = vec4(color + bloomColor, 1.0);

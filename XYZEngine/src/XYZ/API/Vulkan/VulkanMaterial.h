@@ -30,7 +30,7 @@ namespace XYZ {
 
 		virtual void Set(const std::string& name, const Ref<Texture2D>& texture) override;
 		virtual void Set(const std::string& name, const Ref<Texture2D>& texture, uint32_t arrayIndex) override;
-
+		virtual void Set(const std::string& name, const Ref<Image2D>& image) override;
 
 		virtual float&     GetFloat(const std::string& name) override;
 		virtual int32_t&   GetInt(const std::string& name) override;
@@ -57,6 +57,7 @@ namespace XYZ {
 		void allocateStorages();
 		void allocateStorage(const std::unordered_map<std::string, ShaderBuffer>& buffers, ByteBuffer& buffer);
 		void setDescriptor(const std::string& name, const Ref<Texture2D>& texture);
+		void setDescriptor(const std::string& name, const Ref<Image2D>& image);
 		void setDescriptor(const std::string& name, const Ref<Texture2D>& texture, uint32_t index);
 
 		template <typename T>
@@ -77,6 +78,7 @@ namespace XYZ {
 		Ref<VulkanShader>			   m_Shader;
 		ByteBuffer					   m_UniformsBuffer;
 
+		std::vector<Ref<Image2D>>				 m_Images;
 		std::vector<Ref<Texture2D>>			     m_Textures;
 		std::vector<std::vector<Ref<Texture2D>>> m_TextureArrays;
 		// Per frame -> per set
@@ -85,20 +87,20 @@ namespace XYZ {
 		struct PendingDescriptor
 		{
 			VkWriteDescriptorSet WriteDescriptor;
-			Ref<VulkanTexture2D> Texture;
+			Ref<VulkanImage2D> Image;
 		};
-
+	
 		struct PendingDescriptorArray
 		{
 			VkWriteDescriptorSet WriteDescriptor;
-			std::vector<Ref<VulkanTexture2D>> Textures;
+			std::vector<Ref<VulkanImage2D>> Images;
 		};
 
 		// Per set -> per binding
-		vector2D<PendingDescriptor> m_TextureDescriptors;
+		vector2D<PendingDescriptor> m_ImageDescriptors;
 
 		// Per set -> per binding
-		vector2D<PendingDescriptorArray> m_TextureArraysDescriptors;
+		vector2D<PendingDescriptorArray> m_ImageArraysDescriptors;
 
 		// Per frame
 		vector2D<VkWriteDescriptorSet> m_WriteDescriptors;

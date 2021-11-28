@@ -2,7 +2,7 @@
 #include "SpriteEditor.h"
 
 #include "XYZ/Asset/AssetManager.h"
-#include "XYZ/Renderer/EditorRenderer.h"
+#include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Core/Application.h"
 #include "XYZ/Editor/EditorHelper.h"
 #include "XYZ/Utils/StringUtils.h"
@@ -58,7 +58,7 @@ namespace XYZ {
 			m_RenderPass = RenderPass::Create({ Framebuffer::Create(specs) });
 			m_Camera.LockOrtho(true);
 		}
-		void SpriteEditor::OnUpdate(Ref<Renderer2D> renderer2D, Ref<EditorRenderer> renderer, Timestep ts)
+		void SpriteEditor::OnUpdate(Ref<Renderer2D> renderer2D, Ref<Renderer2D> renderer, Timestep ts)
 		{
 			if (m_Context.Raw())
 			{
@@ -73,11 +73,11 @@ namespace XYZ {
 
 				const glm::vec3 min = glm::vec3(glm::vec2((border.x - 0.5f) * aspect, border.y - 0.5f), 0.0f);
 				const glm::vec3 max = glm::vec3(glm::vec2((border.z - 0.5f) * aspect, border.w - 0.5f), 0.0f);
-				renderer->SubmitEditorAABB(min, max, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+				renderer->SubmitAABB(min, max, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
 				
-				renderer->SubmitEditorSprite(m_SpriteRenderer.Material, m_SpriteRenderer.SubTexture, m_SpriteRenderer.Color, m_Transform.WorldTransform);
-				renderer->BeginPass(m_RenderPass, m_Camera.GetViewProjection(), m_Camera.GetPosition());
-				renderer->EndPass(renderer2D, true);
+				//renderer->SubmitEditorSprite(m_SpriteRenderer.Material, m_SpriteRenderer.SubTexture, m_SpriteRenderer.Color, m_Transform.WorldTransform);
+				//renderer->BeginPass(m_RenderPass, m_Camera.GetViewProjection(), m_Camera.GetPosition());
+				//renderer->EndPass(renderer2D, true);
 			}
 		}
 

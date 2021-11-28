@@ -1,5 +1,5 @@
 #pragma once
-#include "XYZ/Renderer/EditorRenderer.h"
+#include "XYZ/Renderer/Renderer2D.h"
 
 namespace XYZ {
 
@@ -8,7 +8,7 @@ namespace XYZ {
 	public:
 		virtual ~InspectorEditable() = default;
 
-		virtual bool OnEditorRender(Ref<EditorRenderer> renderer) = 0;
+		virtual bool OnEditorRender(Ref<Renderer2D> renderer) = 0;
 	};
 
 }

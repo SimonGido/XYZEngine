@@ -103,8 +103,8 @@ namespace XYZ {
 
 				VulkanContext::GetCurrentDevice()->FlushCommandBuffer(commandBuffer);
 			}
-			UpdateDescriptor();
 		}
+		UpdateDescriptor();
 	}
 	void VulkanImage2D::RT_CreatePerLayerImageViews()
 	{

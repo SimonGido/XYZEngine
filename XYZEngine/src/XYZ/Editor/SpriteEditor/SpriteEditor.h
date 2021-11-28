@@ -18,7 +18,7 @@ namespace XYZ {
 		public:
 			SpriteEditor();
 
-			void OnUpdate(Ref<Renderer2D> renderer2D, Ref<EditorRenderer> renderer, Timestep ts);
+			void OnUpdate(Ref<Renderer2D> renderer2D, Ref<Renderer2D> renderer, Timestep ts);
 			void OnImGuiRender(bool &open);
 
 			void OnEvent(Event& event);

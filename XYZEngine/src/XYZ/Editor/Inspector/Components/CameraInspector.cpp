@@ -5,7 +5,7 @@
 #include "XYZ/Scene/Components.h"
 
 namespace XYZ {
-	bool CameraInspector::OnEditorRender(Ref<EditorRenderer> renderer)
+	bool CameraInspector::OnEditorRender(Ref<Renderer2D> renderer)
 	{
 		return EditorHelper::DrawComponent<CameraComponent>("Camera", m_Context, [&](auto& component) {
 

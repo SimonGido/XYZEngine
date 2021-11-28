@@ -11,31 +11,7 @@
 
 namespace XYZ {	
 
-	void Renderer2D::resetQuads()
-	{
-		m_TextureSlotIndex = 0;
-		m_QuadBuffer.Reset();
-	}
 	
-	void Renderer2D::resetLines()
-	{
-		m_LineBuffer.Reset();
-	}
-
-	void Renderer2D::createRenderPass()
-	{
-		FramebufferSpecification framebufferSpec;
-		framebufferSpec.Attachments = { ImageFormat::RGBA32F };
-		framebufferSpec.Samples = 1;
-		framebufferSpec.ClearOnLoad = true;
-		framebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
-
-		Ref<Framebuffer> framebuffer = Framebuffer::Create(framebufferSpec);
-
-		RenderPassSpecification renderPassSpec;
-		renderPassSpec.TargetFramebuffer = framebuffer;
-		m_RenderPass = RenderPass::Create(renderPassSpec);
-	}
 
 	static uint32_t* GenerateQuadIndices(uint32_t count)
 	{
@@ -71,6 +47,7 @@ namespace XYZ {
 		m_Specification(specification)
 	{
 		const uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;
+			
 		if (specification.SwapChainTarget)
 			m_RenderCommandBuffer = Renderer::GetAPIContext()->GetRenderCommandBuffer();
 		else
@@ -79,14 +56,11 @@ namespace XYZ {
 		createRenderPass();	
 		auto shaderLibrary = Renderer::GetShaderLibrary();
 		
-		uint32_t whiteTextureData = 0xffffffff;
-		//m_WhiteTexture = Texture2D::Create(ImageFormat::RGBA, 1, 1, &whiteTextureData);
-		m_WhiteTexture = Texture2D::Create("Assets/Textures/1_ORK_head.png");
-
-		m_QuadMaterial = Material::Create(shaderLibrary->Get("DefaultShader"));
-		m_LineMaterial = Material::Create(shaderLibrary->Get("LineShader"));
-		m_CircleMaterial = Material::Create(shaderLibrary->Get("Circle"));
-		m_QuadMaterial->Set("u_Uniforms.Color", glm::vec4(1.0f));
+		const auto& defaultResources = Renderer::GetDefaultResources();
+		m_WhiteTexture = defaultResources.WhiteTexture;
+		m_QuadMaterial = defaultResources.DefaultQuadMaterial;
+		m_LineMaterial = defaultResources.DefaultLineMaterial;
+		m_CircleMaterial = defaultResources.DefaultCircleMaterial;
 
 		m_UniformBufferSet = UniformBufferSet::Create(framesInFlight);
 		m_UniformBufferSet->Create(sizeof(UBCamera), 0, 0);
@@ -95,30 +69,7 @@ namespace XYZ {
 		m_UniformBufferSet->CreateDescriptors(m_CircleMaterial->GetShader());
 	
 
-		uint32_t* quadIndices = GenerateQuadIndices(sc_MaxIndices);
-		m_QuadBuffer.Init(m_RenderPass, m_QuadMaterial->GetShader(), sc_MaxVertices, quadIndices, sc_MaxIndices, BufferLayout{
-				{0, XYZ::ShaderDataType::Float4, "a_Color" },
-				{1, XYZ::ShaderDataType::Float3, "a_Position" },
-				{2, XYZ::ShaderDataType::Float2, "a_TexCoord" },
-				{3, XYZ::ShaderDataType::Float,  "a_TextureID" },
-				{4, XYZ::ShaderDataType::Float,  "a_TilingFactor" }
-		});
-
-		uint32_t* lineIndices = GenerateLineIndices(sc_MaxLineIndices);
-		m_LineBuffer.Init(m_RenderPass, m_LineMaterial->GetShader(), sc_MaxLineVertices, lineIndices, sc_MaxLineIndices, BufferLayout{
-				{0, XYZ::ShaderDataType::Float3, "a_Position" },
-				{1, XYZ::ShaderDataType::Float4, "a_Color" },
-		});
-
-		m_CircleBuffer.Init(m_RenderPass, m_CircleMaterial->GetShader(), sc_MaxVertices, quadIndices, sc_MaxIndices, BufferLayout{
-				{0, XYZ::ShaderDataType::Float3, "a_WorldPosition" },
-				{1, XYZ::ShaderDataType::Float,  "a_Thickness" },
-				{2, XYZ::ShaderDataType::Float2, "a_LocalPosition" },
-				{3, XYZ::ShaderDataType::Float4, "a_Color" }
-			});
-
-		delete[]quadIndices;
-		delete[]lineIndices;
+		createDefaultPipelineBuckets();
 	}
 
 	Renderer2D::~Renderer2D()
@@ -136,33 +87,46 @@ namespace XYZ {
 		m_UniformBufferSet->Get(0, 0, currentFrame)->Update(&viewProjectionMatrix, sizeof(UBCamera), 0);
 	}
 
+
 	void Renderer2D::SetQuadMaterial(const Ref<Material>& material)
 	{
-		m_QuadMaterial = material;
-		setMaterial(m_QuadBuffer.Pipeline, material);
+		if (m_QuadMaterial.Raw() != material.Raw())
+		{
+			m_QuadMaterial = material;
+			m_QuadBuffer.Pipeline = setMaterial(m_QuadPipelines, m_QuadBuffer.Pipeline, material);
+		}
 	}
 
 	void Renderer2D::SetLineMaterial(const Ref<Material>& material)
 	{
-		m_LineMaterial = material;
-		setMaterial(m_LineBuffer.Pipeline, material);
+		if (m_LineMaterial.Raw() != material.Raw())
+		{
+			m_LineMaterial = material;
+			m_LineBuffer.Pipeline = setMaterial(m_LinePipelines, m_LineBuffer.Pipeline, material);
+		}
 	}
 
 	void Renderer2D::SetCircleMaterial(const Ref<Material>& material)
 	{
-		m_CircleMaterial = material;
-		setMaterial(m_CircleBuffer.Pipeline, material);
+		if (m_CircleMaterial.Raw() != material.Raw())
+		{
+			m_CircleMaterial = material;
+			m_CircleBuffer.Pipeline = setMaterial(m_CirclePipelines, m_CircleBuffer.Pipeline, material);
+		}
 	}
 
 	void Renderer2D::SetTargetRenderPass(const Ref<RenderPass>& renderPass)
 	{
-		m_RenderPass = renderPass;
-		updateRenderPass(m_QuadBuffer.Pipeline);
-		updateRenderPass(m_LineBuffer.Pipeline);
-		updateRenderPass(m_CircleBuffer.Pipeline);
+		if (m_RenderPass.Raw() != renderPass.Raw())
+		{
+			m_RenderPass = renderPass;
+			updateRenderPass(m_QuadBuffer.Pipeline);
+			updateRenderPass(m_LineBuffer.Pipeline);
+			updateRenderPass(m_CircleBuffer.Pipeline);
+		}
 	}
 
-	Ref<RenderPass> Renderer2D::GetTargetRenderPass()
+	Ref<RenderPass> Renderer2D::GetTargetRenderPass() const
 	{
 		return m_RenderPass;
 	}
@@ -288,10 +252,12 @@ namespace XYZ {
 
 	void Renderer2D::SubmitQuad(const glm::mat4& transform, const Ref<SubTexture>& subTexture, const glm::vec4& color, float tilingFactor)
 	{
+		SubmitQuad(transform, subTexture->GetTexCoords(), subTexture->GetTexture(), color, tilingFactor);
 	}
 
 	void Renderer2D::SubmitQuad(const glm::vec3& position, const glm::vec2& size, const Ref<SubTexture>& subTexture, const glm::vec4& color, float tilingFactor)
 	{
+		SubmitQuad(position, size, subTexture->GetTexCoords(), subTexture->GetTexture(), color, tilingFactor);
 	}
 
 	void Renderer2D::SubmitQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color, float tilingFactor)
@@ -347,6 +313,20 @@ namespace XYZ {
 		SubmitLine(p[3], p[0], color);
 	}
 
+	void Renderer2D::SubmitAABB(const glm::vec3& min, const glm::vec3& max, const glm::vec4& color)
+	{
+		glm::vec3 topLeft = { min.x, max.y, min.z };
+		glm::vec3 topRight = { max.x, max.y, min.z };
+		glm::vec3 bottomLeft = { min.x, min.y, min.z };
+		glm::vec3 bottomRight = { max.x, min.y, min.z };
+
+		SubmitLine(topLeft, topRight, color);
+		SubmitLine(topRight, bottomRight, color);
+		SubmitLine(bottomRight, bottomLeft, color);
+		SubmitLine(bottomLeft, topLeft, color);
+	}
+
+
 	void Renderer2D::SubmitQuadNotCentered(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, const Ref<Texture2D>& texture, const glm::vec4& color, float tilingFactor)
 	{
 		constexpr size_t quadVertexCount = 4;
@@ -392,10 +372,72 @@ namespace XYZ {
 		flushFilledCircles();
 
 		Renderer::EndRenderPass(m_RenderCommandBuffer);
+
+
 		m_RenderCommandBuffer->End();
 		m_RenderCommandBuffer->Submit();
 	}
+	void Renderer2D::resetQuads()
+	{
+		m_TextureSlotIndex = 0;
+		m_QuadBuffer.Reset();
+	}
 
+	void Renderer2D::resetLines()
+	{
+		m_LineBuffer.Reset();
+	}
+
+	void Renderer2D::createRenderPass()
+	{
+		FramebufferSpecification framebufferSpec;
+		framebufferSpec.Attachments = { ImageFormat::RGBA32F };
+		framebufferSpec.Samples = 1;
+		framebufferSpec.ClearOnLoad = true;
+		framebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
+
+		Ref<Framebuffer> framebuffer = Framebuffer::Create(framebufferSpec);
+
+		RenderPassSpecification renderPassSpec;
+		renderPassSpec.TargetFramebuffer = framebuffer;
+		m_RenderPass = RenderPass::Create(renderPassSpec);
+	}
+
+	void Renderer2D::createDefaultPipelineBuckets()
+	{
+		uint32_t* quadIndices = GenerateQuadIndices(sc_MaxIndices);
+
+		m_QuadBuffer.Init(m_RenderPass, m_QuadMaterial->GetShader(), sc_MaxVertices, quadIndices, sc_MaxIndices, BufferLayout{
+				{0, XYZ::ShaderDataType::Float4, "a_Color" },
+				{1, XYZ::ShaderDataType::Float3, "a_Position" },
+				{2, XYZ::ShaderDataType::Float2, "a_TexCoord" },
+				{3, XYZ::ShaderDataType::Float,  "a_TextureID" },
+				{4, XYZ::ShaderDataType::Float,  "a_TilingFactor" }
+			});
+		const size_t quadShaderHash = m_QuadMaterial->GetShader()->GetHash();
+		m_QuadPipelines.emplace(quadShaderHash, m_QuadBuffer.Pipeline);
+
+		uint32_t* lineIndices = GenerateLineIndices(sc_MaxLineIndices);
+		m_LineBuffer.Init(m_RenderPass, m_LineMaterial->GetShader(), sc_MaxLineVertices, lineIndices, sc_MaxLineIndices, BufferLayout{
+				{0, XYZ::ShaderDataType::Float3, "a_Position" },
+				{1, XYZ::ShaderDataType::Float4, "a_Color" },
+			});
+		const size_t lineShaderHash = m_LineMaterial->GetShader()->GetHash();
+		m_LinePipelines.emplace(lineShaderHash, m_LineBuffer.Pipeline);
+
+
+		m_CircleBuffer.Init(m_RenderPass, m_CircleMaterial->GetShader(), sc_MaxVertices, quadIndices, sc_MaxIndices, BufferLayout{
+				{0, XYZ::ShaderDataType::Float3, "a_WorldPosition" },
+				{1, XYZ::ShaderDataType::Float,  "a_Thickness" },
+				{2, XYZ::ShaderDataType::Float2, "a_LocalPosition" },
+				{3, XYZ::ShaderDataType::Float4, "a_Color" }
+			});
+		const size_t circleShaderHash = m_CircleMaterial->GetShader()->GetHash();
+		m_CirclePipelines.emplace(circleShaderHash, m_CircleBuffer.Pipeline);
+
+		delete[]quadIndices;
+		delete[]lineIndices;
+	}
 	void Renderer2D::flush()
 	{
 		const uint32_t dataSize = (uint8_t*)m_QuadBuffer.BufferPtr - (uint8_t*)m_QuadBuffer.BufferBase;
@@ -458,11 +500,16 @@ namespace XYZ {
 		pipeline = Pipeline::Create(spec);
 	}
 
-	void Renderer2D::setMaterial(Ref<Pipeline>& pipeline, const Ref<Material>& material)
+	Ref<Pipeline> Renderer2D::setMaterial(std::map<size_t, Ref<Pipeline>>& pipelines, const Ref<Pipeline>& current, const Ref<Material>& material)
 	{
-		auto spec = pipeline->GetSpecification();
+		const size_t shaderHash = material->GetShader()->GetHash();
+		auto it = pipelines.find(shaderHash);
+		if (it != pipelines.end())
+			return it->second;
+		
+		auto spec = current->GetSpecification();
 		spec.Shader = material->GetShader();
-		pipeline = Pipeline::Create(spec);
+		return Pipeline::Create(spec);
 	}
 
 	uint32_t Renderer2D::findTextureIndex(const Ref<Texture2D>& texture)

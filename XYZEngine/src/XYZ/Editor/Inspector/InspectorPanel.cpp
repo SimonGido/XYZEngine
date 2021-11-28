@@ -23,9 +23,9 @@ namespace XYZ {
 			m_Context(nullptr)
 		{
 		}
-		void InspectorPanel::OnImGuiRender(Ref<EditorRenderer> renderer)
+		void InspectorPanel::OnImGuiRender(bool& open, Ref<Renderer2D> renderer)
 		{
-			if (ImGui::Begin("Inspector"))
+			if (ImGui::Begin("Inspector", &open))
 			{
 				if (m_Context)
 					m_Context->OnImGuiRender(renderer);

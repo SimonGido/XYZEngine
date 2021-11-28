@@ -8,13 +8,12 @@ namespace XYZ {
 		public:
 			InspectorPanel();
 			
-			void OnImGuiRender(Ref<EditorRenderer> renderer);
+			void OnImGuiRender(bool &open, Ref<Renderer2D> renderer);
 	
 			void SetContext(InspectorContext* context);
 
 		private:
 			InspectorContext* m_Context;
-
 		};
 	}
 }

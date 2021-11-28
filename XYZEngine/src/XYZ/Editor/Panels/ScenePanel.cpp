@@ -6,7 +6,7 @@
 
 #include "XYZ/Renderer/SceneRenderer.h"
 #include "XYZ/Renderer/Renderer2D.h"
-#include "XYZ/Renderer/EditorRenderer.h"
+#include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Utils/Math/Math.h"
 #include "XYZ/ImGui/ImGui.h"
 
