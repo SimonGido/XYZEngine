@@ -131,10 +131,10 @@ namespace XYZ {
 	}
 	void SceneRenderer::EndScene()
 	{
-		//m_CommandBuffer->Begin();
+		m_CommandBuffer->Begin();
 		flush();
-		//m_CommandBuffer->End();
-		//m_CommandBuffer->Submit();
+		m_CommandBuffer->End();
+		m_CommandBuffer->Submit();
 		flushDefaultQueue();
 	}
 
@@ -285,7 +285,7 @@ namespace XYZ {
 		sortQueue(queue);
 
 		geometryPass2D(queue, true);
-
+	
 		queue.m_SpriteDrawList.clear();
 		queue.m_MeshCommandList.clear();
 		queue.m_InstancedMeshCommandList.clear();

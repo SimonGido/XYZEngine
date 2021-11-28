@@ -10,37 +10,84 @@
 
 namespace XYZ {
 	namespace UI {
+		namespace Utils {
+
+			static uint32_t s_Counter = 0;
+			static char		s_IDBuffer[16];
+
+			static const char* GenerateID()
+			{
+				s_IDBuffer[0] = '#';
+				s_IDBuffer[1] = '#';
+				memset(s_IDBuffer + 2, 0, 14);
+				sprintf_s(s_IDBuffer + 2, 14, "%o", s_Counter++);
+
+				return &s_IDBuffer[0];
+			}
+			
+			static ImTextureID GetTextureID(const Ref<Image2D>& image)
+			{
+				if (RendererAPI::GetAPI() == RendererAPI::API::Vulkan)
+				{
+					Ref<VulkanImage2D> vulkanImage = image.As<VulkanImage2D>();
+					const auto& imageInfo = vulkanImage->GetImageInfo();
+					if (!imageInfo.ImageView)
+						return nullptr;
+
+					return ImGui_ImplVulkan_AddTexture(imageInfo.Sampler, imageInfo.ImageView, vulkanImage->GetDescriptor().imageLayout);
+				}
+			}
+			static ImGuiID GetImageID(const Ref<Image2D>& image)
+			{
+				if (RendererAPI::GetAPI() == RendererAPI::API::Vulkan)
+				{
+					Ref<VulkanImage2D> vulkanImage = image.As<VulkanImage2D>();
+					const auto& imageInfo = vulkanImage->GetImageInfo();
+					if (!imageInfo.ImageView)
+						return 0;
+
+					return (ImGuiID)((((uint64_t)imageInfo.ImageView) >> 32) ^ (uint32_t)imageInfo.ImageView);
+				}
+			}
+		}
 		void Image(const Ref<Image2D>& image, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1)
 		{
 			if (RendererAPI::GetAPI() == RendererAPI::API::Vulkan)
 			{
-				Ref<VulkanImage2D> vulkanImage = image.As<VulkanImage2D>();
-				const auto& imageInfo = vulkanImage->GetImageInfo();
-				if (!imageInfo.ImageView)
+				const auto textureID = Utils::GetTextureID(image);
+				if (textureID == nullptr)
 					return;
-
-				const auto textureID = ImGui_ImplVulkan_AddTexture(imageInfo.Sampler, imageInfo.ImageView, vulkanImage->GetDescriptor().imageLayout);
 				ImGui::Image(textureID, size, uv0, uv1);
 			}
 		}
 
-		bool ImageButton(const char* stringID, const Ref<Image2D>& image, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1, int frame_padding, const ImVec4& bg_col, const ImVec4& tint_col)
+		bool ImageButton(const char* stringID, const Ref<Image2D>& image, const ImVec2& size, const ImVec4& hoverColor, const ImVec4& clickColor, const ImVec4& tintColor, const ImVec2& uv0, const ImVec2& uv1)
 		{
 			if (RendererAPI::GetAPI() == RendererAPI::API::Vulkan)
 			{
-				Ref<VulkanImage2D> vulkanImage = image.As<VulkanImage2D>();
-				const auto& imageInfo = vulkanImage->GetImageInfo();
-				if (!imageInfo.ImageView)
+				const ImTextureID textureID = Utils::GetTextureID(image);
+				if (textureID == nullptr)
 					return false;
-				const auto textureID = ImGui_ImplVulkan_AddTexture(imageInfo.Sampler, imageInfo.ImageView, vulkanImage->GetDescriptor().imageLayout);
-				ImGuiID id = (ImGuiID)((((uint64_t)imageInfo.ImageView) >> 32) ^ (uint32_t)imageInfo.ImageView);
+
+				ImGuiID id = Utils::GetImageID(image);
 				if (stringID)
 				{
 					const ImGuiID strID = ImGui::GetID(stringID);
 					id = id ^ strID;
 				}
-	
-				return ImGui::ImageButtonEx(id, textureID, size, uv0, uv1, ImVec2{ (float)frame_padding, (float)frame_padding }, bg_col, tint_col);
+				ImVec2 cursorPos = ImGui::GetCursorPos();
+				ImGui::InvisibleButton(Utils::GenerateID(), size);
+				const bool clicked = ImGui::IsItemClicked();
+				const bool hoovered = ImGui::IsItemHovered();
+				ImGui::SetCursorPos(cursorPos);
+				if (clicked)
+					ImGui::Image(textureID, size, uv0, uv1, clickColor);
+				else if (hoovered)
+					ImGui::Image(textureID, size, uv0, uv1, hoverColor);
+				else
+					ImGui::Image(textureID, size, uv0, uv1, tintColor);
+
+				return clicked;
 			}
 		}
 	}

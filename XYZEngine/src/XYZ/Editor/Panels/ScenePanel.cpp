@@ -71,7 +71,7 @@ namespace XYZ {
 		ScenePanel::ScenePanel()
 			:
 			m_ViewportSize(0.0f),
-			m_ButtonSize(40.0f),
+			m_ButtonSize(30.0f),
 			m_EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f),
 			m_ViewportFocused(false),
 			m_ViewportHovered(false),
@@ -162,6 +162,9 @@ namespace XYZ {
 					{
 						if (UI::ImageButton("Play", m_Texture->GetImage(),
 							Utils::GlmToImVec2(m_ButtonSize),
+							ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
+							ImVec4(1.0f, 1.0f, 1.0f, 1.0f),
+							ImVec4(0.5f, 0.5f, 0.5f, 1.0f),
 							Utils::GlmToImVec2(m_ButtonUVs[PlayButton].UV0),
 							Utils::GlmToImVec2(m_ButtonUVs[PlayButton].UV1)
 						))
@@ -174,6 +177,9 @@ namespace XYZ {
 					{
 						if (UI::ImageButton("Stop", m_Texture->GetImage(),
 							Utils::GlmToImVec2(m_ButtonSize),
+							ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
+							ImVec4(1.0f, 1.0f, 1.0f, 1.0f),
+							ImVec4(0.5f, 0.5f, 0.5f, 1.0f),
 							Utils::GlmToImVec2(m_ButtonUVs[StopButton].UV0),
 							Utils::GlmToImVec2(m_ButtonUVs[StopButton].UV1)
 						))
