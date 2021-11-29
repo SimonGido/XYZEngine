@@ -12,12 +12,7 @@ namespace XYZ {
 	{
 		m_FramesInFlight = framesInFlight;
 		m_Pool.PushThread();
-
-		if (RendererAPI::GetAPI() == RendererAPI::API::Vulkan)
-		{
-			// Initialize queues for creating and destroying resources for each frame
-			m_ResourceQueues = new RenderCommandQueue[framesInFlight];
-		}
+		m_ResourceQueues = new ResourceCommandQueue[framesInFlight];
 	}
 	void RendererQueueData::Shutdown()
 	{
@@ -29,16 +24,11 @@ namespace XYZ {
 			ExecuteRenderQueue();
 			BlockRenderThread();
 		};
-		m_Pool.EraseThread(0);	
-		
-		if (m_ResourceQueues != nullptr)
-		{
-			for (uint32_t i = 0; i < m_FramesInFlight; ++i)
-				m_ResourceQueues[i].Execute();
+		m_Pool.EraseThread(0);
+		for (uint32_t i = 0; i < m_FramesInFlight; ++i)
+			ExecuteResourceQueue(i);
 
-			delete[]m_ResourceQueues;
-			m_ResourceQueues = nullptr;
-		}
+		delete[] m_ResourceQueues;
 	}
 
 	void RendererQueueData::ExecuteRenderQueue()
@@ -57,12 +47,13 @@ namespace XYZ {
 			queue->Execute();
 		#endif //  RENDER_THREAD_ENABLED	
 	}
-	void RendererQueueData::ExecuteResourceQueue(uint32_t frame)
+
+	void RendererQueueData::ExecuteResourceQueue(uint32_t index)
 	{
-		XYZ_PROFILE_FUNC("RendererQueueData::ExecuteResourceQueue");
-		RenderCommandQueue* queue = &m_ResourceQueues[frame];
-		queue->Execute();
+		std::scoped_lock lock(m_ResourceQueues[index].Mutex);
+		m_ResourceQueues[index].Queue.Execute();
 	}
+
 	void RendererQueueData::BlockRenderThread()
 	{
 		#ifdef RENDER_THREAD_ENABLED
@@ -76,10 +67,12 @@ namespace XYZ {
 	{
 		return m_RenderCommandQueue[m_RenderWriteIndex];
 	}
-	RenderCommandQueue& RendererQueueData::GetResourceCommandQueue(uint32_t frame)
+
+	ScopedLock<RenderCommandQueue> RendererQueueData::GetResourceQueue(uint32_t index)
 	{
-		return m_ResourceQueues[frame];
+		return ScopedLock<RenderCommandQueue>(&m_ResourceQueues[index].Mutex, m_ResourceQueues[index].Queue);
 	}
+
 	bool RendererQueueData::RenderCommandQueuesEmpty() const
 	{
 		return m_RenderCommandQueue[0].GetCommandCount() == 0 && m_RenderCommandQueue[1].GetCommandCount() == 0;

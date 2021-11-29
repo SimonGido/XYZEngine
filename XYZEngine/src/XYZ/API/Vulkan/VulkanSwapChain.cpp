@@ -97,6 +97,8 @@ namespace XYZ {
 
 			const auto device = m_Device->GetVulkanDevice();
 			VK_CHECK_RESULT(vkWaitForFences(m_Device->GetVulkanDevice(), 1, &m_WaitFences[m_CurrentBufferIndex], VK_TRUE, UINT64_MAX));
+			Renderer::ExecuteResources();
+
 			VK_CHECK_RESULT(vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_Semaphores[m_CurrentBufferIndex].PresentComplete, VK_NULL_HANDLE, &m_CurrentImageIndex));
 		});
 	}

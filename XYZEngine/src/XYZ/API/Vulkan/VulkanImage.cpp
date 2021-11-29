@@ -15,7 +15,11 @@ namespace XYZ {
 	VulkanImage2D::~VulkanImage2D()
 	{
 		m_ImageData.Destroy();
-		Release();
+		auto info = m_Info;
+		auto perLayerImageViews = m_PerLayerImageViews;
+		Renderer::SubmitResource([info, perLayerImageViews]() mutable {
+			RT_release(info, perLayerImageViews);
+		});
 	}
 	void VulkanImage2D::Invalidate()
 	{
@@ -27,30 +31,18 @@ namespace XYZ {
 	}
 	void VulkanImage2D::Release()
 	{
-		if (m_Info.Image == nullptr)
-			return;
-		
-
-		Renderer::SubmitResource([info = m_Info, layerViews = m_PerLayerImageViews]() mutable
+		Ref<VulkanImage2D> instance = this;
+		Renderer::SubmitResource([instance]() mutable
 		{
-			const auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-			vkDestroyImageView(vulkanDevice, info.ImageView, nullptr);
-			vkDestroySampler(vulkanDevice, info.Sampler, nullptr);
-
-			for (auto& view : layerViews)
-			{
-				if (view)
-					vkDestroyImageView(vulkanDevice, view, nullptr);
-			}
-			VulkanAllocator allocator("VulkanImage2D");
-			allocator.DestroyImage(info.Image, info.MemoryAlloc);
+			RT_release(instance->m_Info, instance->m_PerLayerImageViews);
+			instance->m_Info.Image = VK_NULL_HANDLE;
+			instance->m_Info.ImageView = VK_NULL_HANDLE;
+			instance->m_Info.Sampler = VK_NULL_HANDLE;
+			instance->m_PerLayerImageViews.clear();
+			instance->m_PerLayerImageViews.clear();
+			instance->m_MipImageViews.clear();
 		});
-		m_Info.Image	 = VK_NULL_HANDLE;
-		m_Info.ImageView = VK_NULL_HANDLE;
-		m_Info.Sampler   = VK_NULL_HANDLE;
-		m_PerLayerImageViews.clear();
-		m_PerLayerImageViews.clear();
-		m_MipImageViews.clear();
+		
 	}
 	void VulkanImage2D::CreatePerLayerImageViews()
 	{
@@ -65,45 +57,50 @@ namespace XYZ {
 		XYZ_ASSERT(layer < m_PerLayerImageViews.size(), "");
 		return m_PerLayerImageViews[layer];
 	}
-	void VulkanImage2D::RT_Invalidate(bool createDefault)
+	void VulkanImage2D::RT_Invalidate()
 	{
-		Release();
+		UpdateDescriptor();
+		VulkanImageInfo oldInfo = m_Info;
+		auto perLayerImageViews = m_PerLayerImageViews;
+		Renderer::SubmitResource([oldInfo, perLayerImageViews]() {
+			RT_release(oldInfo, perLayerImageViews);
+		});
+
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 		VulkanAllocator allocator("Image2D");
 	
 		m_Info.MemoryAlloc = allocator.AllocateImage(createImageCreateInfo(), VMA_MEMORY_USAGE_GPU_ONLY, m_Info.Image);
+		if (m_ImageData)
+			copyImageData();
+
 		
-		if (createDefault)
+		if (m_Specification.Usage == ImageUsage::Storage)
+		{
+			// Transition image to GENERAL layout
+			VkCommandBuffer commandBuffer = VulkanContext::GetCurrentDevice()->GetCommandBuffer(true);
+
+			VkImageSubresourceRange subresourceRange = {};
+			subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			subresourceRange.baseMipLevel = 0;
+			subresourceRange.levelCount = m_Specification.Mips;
+			subresourceRange.layerCount = m_Specification.Layers;
+			VulkanRendererAPI::SetImageLayout(commandBuffer, m_Info.Image, 
+				VK_IMAGE_LAYOUT_UNDEFINED, m_DescriptorImageInfo.imageLayout, 
+				subresourceRange
+			);
+			VulkanContext::GetCurrentDevice()->FlushCommandBuffer(commandBuffer);
+		}
+		else
 		{
 			VkImageViewCreateInfo imageViewCreateInfo = createImageViewCreateInfo(
 				m_Specification.Layers, 0, m_Specification.Mips, 0
 			);
 			imageViewCreateInfo.viewType = m_Specification.Layers > 1 ? VK_IMAGE_VIEW_TYPE_2D_ARRAY : VK_IMAGE_VIEW_TYPE_2D;
 			VK_CHECK_RESULT(vkCreateImageView(device, &imageViewCreateInfo, nullptr, &m_Info.ImageView));
-
-			VkSamplerCreateInfo samplerCreateInfo = createSamplerCreateInfo();
-			VK_CHECK_RESULT(vkCreateSampler(device, &samplerCreateInfo, nullptr, &m_Info.Sampler));
-
-			if (m_Specification.Usage == ImageUsage::Storage)
-			{
-				// Transition image to GENERAL layout
-				VkCommandBuffer commandBuffer = VulkanContext::GetCurrentDevice()->GetCommandBuffer(true);
-
-				VkImageSubresourceRange subresourceRange = {};
-				subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-				subresourceRange.baseMipLevel = 0;
-				subresourceRange.levelCount = m_Specification.Mips;
-				subresourceRange.layerCount = m_Specification.Layers;
-
-				VulkanRendererAPI::InsertImageMemoryBarrier(commandBuffer, m_Info.Image,
-					0, 0,
-					VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL,
-					VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-					subresourceRange);
-
-				VulkanContext::GetCurrentDevice()->FlushCommandBuffer(commandBuffer);
-			}
 		}
+		VkSamplerCreateInfo samplerCreateInfo = createSamplerCreateInfo();
+		VK_CHECK_RESULT(vkCreateSampler(device, &samplerCreateInfo, nullptr, &m_Info.Sampler));
+
 		UpdateDescriptor();
 	}
 	void VulkanImage2D::RT_CreatePerLayerImageViews()
@@ -158,7 +155,7 @@ namespace XYZ {
 		if (mip >= m_MipImageViews.size() || !m_MipImageViews[mip].Created)
 		{
 			if (mip >= m_MipImageViews.size())
-				m_MipImageViews.resize(mip + 1);
+				m_MipImageViews.resize(static_cast<size_t>(mip) + 1);
 
 			VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 			VkImageViewCreateInfo imageViewCreateInfo = createImageViewCreateInfo(1, 0, 1, mip);
@@ -167,6 +164,105 @@ namespace XYZ {
 			m_MipImageViews[mip].Created = true;
 		}
 		return m_MipImageViews[mip].View;
+	}
+	void VulkanImage2D::RT_release(const VulkanImageInfo& info, const std::vector<VkImageView>& views)
+	{
+		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+		if (info.Image == nullptr)
+			return;
+		
+		vkDestroyImageView(device, info.ImageView, nullptr);
+		vkDestroySampler(device, info.Sampler, nullptr);
+
+		for (auto& view : views)
+		{
+			if (view)
+				vkDestroyImageView(device, view, nullptr);
+		}
+		VulkanAllocator allocator("VulkanImage2D");
+		allocator.DestroyImage(info.Image, info.MemoryAlloc);
+	}
+	void VulkanImage2D::copyImageData()
+	{
+		// Create staging buffer
+		VulkanAllocator allocator("Image2D");
+		VkBuffer stagingBuffer;
+		VmaAllocation stagingBufferAllocation = allocateStagingBuffer(allocator, stagingBuffer);
+
+		// Copy data to staging buffer
+		uint8_t* destData = allocator.MapMemory<uint8_t>(stagingBufferAllocation);
+		XYZ_ASSERT(m_ImageData.Data, "");
+		memcpy(destData, m_ImageData.Data, m_ImageData.Size);
+		allocator.UnmapMemory(stagingBufferAllocation);
+
+		auto device = VulkanContext::GetCurrentDevice();
+		VkCommandBuffer copyCmd = device->GetCommandBuffer(true);
+
+		VulkanRendererAPI::SetImageLayout(
+			copyCmd, m_Info.Image, VK_IMAGE_ASPECT_COLOR_BIT,
+			VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			VK_PIPELINE_STAGE_HOST_BIT,
+			VK_PIPELINE_STAGE_TRANSFER_BIT
+		);
+
+		VkBufferImageCopy bufferCopyRegion = {};
+		bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		bufferCopyRegion.imageSubresource.mipLevel = 0;
+		bufferCopyRegion.imageSubresource.baseArrayLayer = 0;
+		bufferCopyRegion.imageSubresource.layerCount = 1;
+		bufferCopyRegion.imageExtent.width = m_Specification.Width;
+		bufferCopyRegion.imageExtent.height = m_Specification.Height;
+		bufferCopyRegion.imageExtent.depth = 1;
+		bufferCopyRegion.bufferOffset = 0;
+
+		vkCmdCopyBufferToImage(
+			copyCmd,
+			stagingBuffer,
+			m_Info.Image,
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			1,
+			&bufferCopyRegion
+		);
+
+		VkImageSubresourceRange subresourceRange = {};
+		// Image only contains color data
+		subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		// Start at first mip level
+		subresourceRange.baseMipLevel = 0;
+		subresourceRange.levelCount = 1;
+		subresourceRange.layerCount = 1;
+
+		if (m_Specification.Mips > 1)
+		{
+			VulkanRendererAPI::InsertImageMemoryBarrier(copyCmd, m_Info.Image,
+				VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT,
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+				subresourceRange
+			);
+		}
+		else
+		{
+			VulkanRendererAPI::InsertImageMemoryBarrier(copyCmd, m_Info.Image,
+				VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_SHADER_READ_BIT,
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, m_DescriptorImageInfo.imageLayout,
+				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+				subresourceRange
+			);
+		}
+		device->FlushCommandBuffer(copyCmd);
+		allocator.DestroyBuffer(stagingBuffer, stagingBufferAllocation);
+	}
+	VmaAllocation VulkanImage2D::allocateStagingBuffer(VulkanAllocator& allocator, VkBuffer& stagingBuffer) const
+	{
+		VkDeviceSize size = m_ImageData.Size;
+
+		VkBufferCreateInfo bufferCreateInfo{};
+		bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		bufferCreateInfo.size = size;
+		bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+		bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		return allocator.AllocateBuffer(bufferCreateInfo, VMA_MEMORY_USAGE_CPU_TO_GPU, stagingBuffer);
 	}
 	VkImageUsageFlags VulkanImage2D::findUsage() const
 	{

@@ -76,7 +76,6 @@ namespace XYZ {
 			if (!m_Minimized)
 			{				
 				Renderer::BlockRenderThread(); // Sync before new frame
-				Renderer::HandleResources();
 				Renderer::Render();
 		
 				m_Window->BeginFrame();

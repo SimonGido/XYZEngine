@@ -96,26 +96,28 @@ namespace XYZ {
 		template<typename FuncT>
 		static void Submit(FuncT&& func);
 
+		template <typename FuncT>
+		static void SubmitResource(FuncT&& func);
+
 		template<typename FuncT>
 		static void SubmitAndWait(FuncT&& func);
 
-		template<typename FuncT>
-		static void SubmitResource(FuncT&& func);
 
 		static void BlockRenderThread();
 		static void WaitAndRenderAll();
 		static void WaitAndRender();
+
 		static void Render();
-		static void HandleResources();
+		static void ExecuteResources();
 
 
 		static ThreadPool&			GetPool();
 		static RendererAPI::API		GetAPI() { return RendererAPI::GetAPI(); }
 		static RendererAPI*			GetRendererAPI();
 		static const RendererStats& GetStats();
-		static RenderCommandQueue&	GetRenderResourceQueue(uint32_t index);
 
 	private:
+		static ScopedLock<RenderCommandQueue> getResourceQueue();
 		static RenderCommandQueue& getRenderCommandQueue();
 		static RendererStats&	   getStats();
 	};
@@ -135,29 +137,26 @@ namespace XYZ {
 		getStats().CommandsCount++;
 	}
 
+	template<typename FuncT>
+	inline void Renderer::SubmitResource(FuncT&& func)
+	{
+		auto renderCmd = [](void* ptr) {
+
+			auto pFunc = static_cast<FuncT*>(ptr);
+			(*pFunc)();
+			pFunc->~FuncT(); // Call destructor
+		};
+		ScopedLock<RenderCommandQueue> resourceQueue = getResourceQueue();
+		auto storageBuffer = resourceQueue->Allocate(renderCmd, sizeof(func));
+		new (storageBuffer) FuncT(std::forward<FuncT>(func));
+	}
+
 	template <typename FuncT>
 	void Renderer::SubmitAndWait(FuncT&& func)
 	{
 		Submit(std::forward<FuncT>(func));
 		WaitAndRender();
 		BlockRenderThread();
-	}
-
-	template <typename FuncT>
-	void Renderer::SubmitResource(FuncT&& func)
-	{
-		auto renderCmd = [](void* ptr) {
-			auto pFunc = static_cast<FuncT*>(ptr);
-			(*pFunc)();
-			pFunc->~FuncT();
-		};
-
-		Submit([renderCmd, func]()
-		{
-			const uint32_t index = Renderer::GetAPIContext()->GetCurrentFrame();
-			auto storageBuffer = GetRenderResourceQueue(index).Allocate(renderCmd, sizeof(func));
-			new (storageBuffer) FuncT(std::forward<FuncT>((FuncT&&)func));
-		});
 	}
 
 	namespace Utils {

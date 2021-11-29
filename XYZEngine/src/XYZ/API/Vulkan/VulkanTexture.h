@@ -18,7 +18,7 @@ namespace XYZ {
 		virtual void Lock() override;
 		virtual void Unlock() override;
 		
-		virtual bool			   Loaded() const override { return m_ImageData; }
+		virtual bool			   Loaded() const override { return m_Image->GetBuffer(); }
 		virtual uint32_t		   GetMipLevelCount() const override;
 		virtual ByteBuffer		   GetWriteableBuffer() override;
 		virtual const std::string& GetPath() const override { return m_Path; };
@@ -36,21 +36,13 @@ namespace XYZ {
 	
 		const VkDescriptorImageInfo& GetVulkanDescriptorInfo() const { return m_Image.As<VulkanImage2D>()->GetDescriptor(); }
 	private:
-		void				  transitionToSrcLayout(VkCommandBuffer copyCmd) const;
-		void				  copyBufferToImage(VkCommandBuffer copyCmd, VkBuffer stagingBuffer);
-		void				  transitionToDstLayout(VkCommandBuffer copyCmd, uint32_t mipCount) const;
-
-		bool				  loadImage(const std::string& path);
-		VmaAllocation		  allocateStagingBuffer(VulkanAllocator& allocator, VkBuffer& stagingBuffer) const;
-		VkSamplerCreateInfo   createSamplerCreateInfo(uint32_t mipCount) const;
-		VkImageViewCreateInfo createImageViewCreateInfo(uint32_t layerCount, uint32_t baseLayer, uint32_t mipCount, uint32_t baseMip) const;
+		void loadImage(const std::string& path, ByteBuffer& imageData);
 
 	private:
 		std::string		  m_Path;
 		uint32_t		  m_Width;
 		uint32_t		  m_Height;
 		TextureProperties m_Properties;
-		ByteBuffer		  m_ImageData;
 		Ref<Image2D>	  m_Image;
 		ImageFormat		  m_Format = ImageFormat::None;
 	};

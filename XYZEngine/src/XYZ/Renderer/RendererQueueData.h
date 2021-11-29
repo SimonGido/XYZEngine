@@ -10,14 +10,6 @@
 namespace XYZ {
 
 
-
-	enum RenderQueueType
-	{
-		Default,
-		Overlay,
-		NumTypes
-	};
-
 	class RendererQueueData
 	{
 	public:
@@ -25,12 +17,13 @@ namespace XYZ {
 		void Shutdown();
 
 		void ExecuteRenderQueue();
-		void ExecuteResourceQueue(uint32_t frame);
+		void ExecuteResourceQueue(uint32_t index);
+
 		void BlockRenderThread();
 
 
-		RenderCommandQueue& GetRenderCommandQueue();
-		RenderCommandQueue& GetResourceCommandQueue(uint32_t frame);
+		RenderCommandQueue&			   GetRenderCommandQueue();
+		ScopedLock<RenderCommandQueue> GetResourceQueue(uint32_t index);
 
 		ThreadPool& GetThreadPool() { return m_Pool; }
 		bool RenderCommandQueuesEmpty() const;
@@ -38,7 +31,13 @@ namespace XYZ {
 		uint32_t		   m_FramesInFlight = 0;
 		RenderCommandQueue m_RenderCommandQueue[2];
 		
-		RenderCommandQueue* m_ResourceQueues;
+		struct ResourceCommandQueue
+		{
+			RenderCommandQueue  Queue;
+			std::shared_mutex   Mutex;
+		};
+
+		ResourceCommandQueue* m_ResourceQueues;
 
 		ThreadPool		   m_Pool;
 		uint32_t		   m_RenderWriteIndex = 0;

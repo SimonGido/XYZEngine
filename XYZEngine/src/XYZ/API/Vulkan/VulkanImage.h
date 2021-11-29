@@ -4,6 +4,7 @@
 
 #include "Vulkan.h"
 #include "VulkanContext.h"
+#include "VulkanAllocator.h"
 #include "VulkanMemoryAllocator/vk_mem_alloc.h"
 
 namespace XYZ {
@@ -40,7 +41,7 @@ namespace XYZ {
 
 
 		void    UpdateDescriptor();
-		void	RT_Invalidate(bool createDefault = true);
+		void	RT_Invalidate();
 		void	RT_CreatePerLayerImageViews();
 		void	RT_CreatePerSpecificLayerImageViews(const std::vector<uint32_t>& layerIndices);
 
@@ -54,6 +55,12 @@ namespace XYZ {
 		const VkDescriptorImageInfo& GetDescriptor() const { return m_DescriptorImageInfo; }
 
 	private:
+		static void RT_release(const VulkanImageInfo& info, const std::vector<VkImageView>& views);
+
+		void		  copyImageData();
+		VmaAllocation allocateStagingBuffer(VulkanAllocator& allocator, VkBuffer& stagingBuffer) const;
+		
+			
 		VkImageUsageFlags	  findUsage() const;
 		VkImageCreateInfo	  createImageCreateInfo() const;
 		VkImageViewCreateInfo createImageViewCreateInfo(uint32_t layerCount, uint32_t baseLayer, uint32_t mipCount, uint32_t baseMip) const;

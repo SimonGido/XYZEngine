@@ -325,7 +325,6 @@ namespace XYZ {
 	void Renderer::WaitAndRenderAll()
 	{
 		BlockRenderThread();
-		HandleResources();
 		Render();
 		BlockRenderThread();
 		Render();
@@ -358,13 +357,10 @@ namespace XYZ {
 		s_Data.Stats.Reset();
 		s_Data.QueueData.ExecuteRenderQueue();
 	}
-	void Renderer::HandleResources()
+	void Renderer::ExecuteResources()
 	{
-		if (s_RendererAPI->GetAPI() == RendererAPI::API::Vulkan)
-		{
-			const uint32_t currentFrame = s_Data.APIContext->GetCurrentFrame();
-			s_Data.QueueData.ExecuteResourceQueue(currentFrame);
-		}
+		uint32_t currentFrame = s_Data.APIContext->GetCurrentFrame();
+		s_Data.QueueData.ExecuteResourceQueue(currentFrame);
 	}
 	Ref<ShaderLibrary> Renderer::GetShaderLibrary()
 	{
@@ -388,10 +384,12 @@ namespace XYZ {
 	{
 		return s_Data.Configuration;
 	}
-	RenderCommandQueue& Renderer::GetRenderResourceQueue(uint32_t index)
+
+	ScopedLock<RenderCommandQueue> Renderer::getResourceQueue()
 	{
-		return s_Data.QueueData.GetResourceCommandQueue(index);
+		return s_Data.QueueData.GetResourceQueue(s_Data.APIContext->GetCurrentFrame());
 	}
+
 	RenderCommandQueue& Renderer::getRenderCommandQueue()
 	{
 		return s_Data.QueueData.GetRenderCommandQueue();
