@@ -71,7 +71,7 @@ namespace XYZ {
 		ScenePanel::ScenePanel()
 			:
 			m_ViewportSize(0.0f),
-			m_ButtonSize(15.0f),
+			m_ButtonSize(25.0f),
 			m_EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f),
 			m_ViewportFocused(false),
 			m_ViewportHovered(false),
@@ -123,7 +123,8 @@ namespace XYZ {
 		}
 		void ScenePanel::OnImGuiRender(const Ref<Image2D>& finalImage)
 		{
-			if (ImGui::Begin("Scene", nullptr, ImGuiWindowFlags_MenuBar))
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+			if (ImGui::Begin("Scene"))
 			{
 				if (m_Context.Raw())
 				{
@@ -139,8 +140,7 @@ namespace XYZ {
 
 
 					ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-					handlePanelResize({ viewportPanelSize.x, viewportPanelSize.y });
-
+				
 					UI::Image(finalImage, viewportPanelSize);
 					
 					auto [mx, my] = getMouseViewportSpace();
@@ -156,45 +156,44 @@ namespace XYZ {
 							handleSelection({ mx,my });
 						}
 					}
-					if (ImGui::BeginMenuBar())
+
+					handlePanelResize({ viewportPanelSize.x, viewportPanelSize.y });
+					
+					ImGui::SetCursorPos(startCursorPos);
+					if (m_Context->GetState() == SceneState::Edit)
 					{
-						
-						//ImGui::SetCursorPos(startCursorPos);
-						if (m_Context->GetState() == SceneState::Edit)
+						if (UI::ImageButtonTransparent("Play", m_Texture->GetImage(),
+							Utils::GlmToImVec2(m_ButtonSize),
+							ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
+							ImVec4(1.0f, 1.0f, 1.0f, 1.0f),
+							ImVec4(0.5f, 0.5f, 0.5f, 1.0f),
+							Utils::GlmToImVec2(m_ButtonUVs[PlayButton].UV0),
+							Utils::GlmToImVec2(m_ButtonUVs[PlayButton].UV1)
+						))
 						{
-							if (UI::ImageButton("Play", m_Texture->GetImage(),
-								Utils::GlmToImVec2(m_ButtonSize),
-								ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
-								ImVec4(1.0f, 1.0f, 1.0f, 1.0f),
-								ImVec4(0.5f, 0.5f, 0.5f, 1.0f),
-								Utils::GlmToImVec2(m_ButtonUVs[PlayButton].UV0),
-								Utils::GlmToImVec2(m_ButtonUVs[PlayButton].UV1)
-							))
-							{
-								m_Context->SetState(SceneState::Play);
-								m_Context->OnPlay();
-							}
+							m_Context->SetState(SceneState::Play);
+							m_Context->OnPlay();
 						}
-						else if (m_Context->GetState() == SceneState::Play)
-						{
-							if (UI::ImageButton("Stop", m_Texture->GetImage(),
-								Utils::GlmToImVec2(m_ButtonSize),
-								ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
-								ImVec4(1.0f, 1.0f, 1.0f, 1.0f),
-								ImVec4(0.5f, 0.5f, 0.5f, 1.0f),
-								Utils::GlmToImVec2(m_ButtonUVs[StopButton].UV0),
-								Utils::GlmToImVec2(m_ButtonUVs[StopButton].UV1)
-							))
-							{
-								m_Context->SetState(SceneState::Edit);
-								m_Context->OnStop();
-							}
-						}
-						ImGui::EndMenuBar();
 					}
+					else if (m_Context->GetState() == SceneState::Play)
+					{
+						if (UI::ImageButtonTransparent("Stop", m_Texture->GetImage(),
+							Utils::GlmToImVec2(m_ButtonSize),
+							ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
+							ImVec4(1.0f, 1.0f, 1.0f, 1.0f),
+							ImVec4(0.5f, 0.5f, 0.5f, 1.0f),
+							Utils::GlmToImVec2(m_ButtonUVs[StopButton].UV0),
+							Utils::GlmToImVec2(m_ButtonUVs[StopButton].UV1)
+						))
+						{
+							m_Context->SetState(SceneState::Edit);
+							m_Context->OnStop();
+						}
+					}								
 				}
 			}
-			ImGui::End();
+			ImGui::End();		
+			ImGui::PopStyleVar();
 		}
 		void ScenePanel::OnEvent(Event& event)
 		{

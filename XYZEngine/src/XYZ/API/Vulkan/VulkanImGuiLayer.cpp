@@ -50,7 +50,8 @@ namespace XYZ
 			SetDarkThemeSRGBColors();
 		else
 			SetDarkThemeColors();
-
+		
+		
 		Renderer::Submit([this]()
 		{
 			Application& app = Application::Get();
