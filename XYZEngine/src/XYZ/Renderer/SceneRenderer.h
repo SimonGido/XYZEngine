@@ -82,12 +82,16 @@ namespace XYZ {
 		void SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform);
 		void SubmitMeshInstanced(Ref<Mesh> mesh, const glm::mat4& transform, uint32_t count);
 		void SubmitMeshInstanced(Ref<Mesh> mesh, const std::vector<glm::mat4>& transforms, uint32_t count);
+		
+		// TODO: GetLights from current scene
 		void SubmitLight(const PointLight2D& light, const glm::mat4& transform);
 		void SubmitLight(const SpotLight2D& light, const glm::mat4& transform);
 		void SubmitLight(const PointLight2D& light, const glm::vec3& position);
 		void SubmitLight(const SpotLight2D& light, const glm::vec3& position);
 
 		void UpdateViewportSize();
+
+		void OnImGuiRender();
 
 		Ref<Renderer2D>	      GetRenderer2D() const { return m_Renderer2D; }
 		Ref<RenderPass>		  GetFinalRenderPass() const;
@@ -127,6 +131,8 @@ namespace XYZ {
 		private:
 			float Alignment[2];
 		};
+
+
 		struct CameraData
 		{
 			glm::mat4 ViewProjectionMatrix;
@@ -159,8 +165,8 @@ namespace XYZ {
 		Ref<Shader>				   m_BloomComputeShader;
 		Ref<Texture2D>			   m_BloomTexture[3];
 
-		Ref<ShaderStorageBuffer>   m_LightStorageBuffer;
-		Ref<ShaderStorageBuffer>   m_SpotLightStorageBuffer;
+		Ref<StorageBuffer>		   m_LightStorageBuffer;
+		Ref<StorageBuffer>		   m_SpotLightStorageBuffer;
 
 		CameraData				   m_CameraBuffer;
 		RenderQueue				   m_Queue;
@@ -172,5 +178,15 @@ namespace XYZ {
 		int32_t					   m_ThreadIndex;
 
 		static constexpr uint32_t sc_MaxNumberOfLights = 10 * 1024;
+
+
+		struct GPUTimeQueries
+		{
+			uint32_t Renderer2DPassQuery = 0;
+
+
+			static constexpr uint32_t Count() { return sizeof(GPUTimeQueries) / sizeof(uint32_t); }
+		};
+		GPUTimeQueries m_GPUTimeQueries;
 	};
 }

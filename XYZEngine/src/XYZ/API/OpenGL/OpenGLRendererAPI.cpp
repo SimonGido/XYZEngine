@@ -15,10 +15,10 @@ namespace XYZ {
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			glLineWidth(2.0f);
 
-			auto& caps = RendererAPI::GetCapabilities();
+			auto& caps = RendererAPI::getCapabilities();
 
 			caps.Vendor = (const char*)glGetString(GL_VENDOR);
-			caps.Renderer = (const char*)glGetString(GL_RENDERER);
+			caps.Device = (const char*)glGetString(GL_RENDERER);
 			caps.Version = (const char*)glGetString(GL_VERSION);
 
 			glGetIntegerv(GL_MAX_SAMPLES, &caps.MaxSamples);

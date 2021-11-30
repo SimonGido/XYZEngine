@@ -4,7 +4,9 @@
 #include "RendererAPI.h"
 #include "Fence.h"
 
+#include "XYZ/Core/Application.h"
 #include "XYZ/Debug/Profiler.h"
+#include "XYZ/Debug/Timer.h"
 
 
 namespace XYZ {
@@ -39,6 +41,8 @@ namespace XYZ {
 		m_RenderWriteIndex = m_RenderWriteIndex == 0 ? 1 : 0;
 		m_RenderThreadFinished = m_Pool.PushJob<bool>([this, queue]() {
 			XYZ_PROFILE_FUNC("RendererQueueData::ExecuteRenderQueue Job");
+			XYZ_SCOPE_PERF("RendererQueueData::ExecuteRenderQueue");
+
 			queue->Execute();
 			Fence::Create(UINT64_MAX);
 			return true;
@@ -58,6 +62,8 @@ namespace XYZ {
 	{
 		#ifdef RENDER_THREAD_ENABLED
 		XYZ_PROFILE_FUNC("RendererQueueData::BlockRenderThread");
+		XYZ_SCOPE_PERF("RendererQueueData::BlockRenderThread");
+
 		if (m_RenderThreadFinished.valid())
 			m_RenderThreadFinished.wait();
 		#endif

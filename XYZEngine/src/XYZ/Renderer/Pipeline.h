@@ -42,8 +42,6 @@ namespace XYZ {
 		uint64_t ClippingPrimitives = 0;
 		uint64_t FragmentShaderInvocations = 0;
 		uint64_t ComputeShaderInvocations = 0;
-
-		// TODO(Yan): tesselation shader stats when we have them
 	};
 
 	class Pipeline : public RefCount

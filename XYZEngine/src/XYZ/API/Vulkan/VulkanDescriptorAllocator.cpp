@@ -76,7 +76,7 @@ namespace XYZ {
 	{
 		{
 			std::scoped_lock<std::mutex> lock(m_PoolMutex);
-			uint32_t currentFrame = Renderer::GetAPIContext()->GetCurrentFrame();
+			uint32_t currentFrame = Renderer::GetCurrentFrame();
 			VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
 			VkDescriptorSet resultDescr;

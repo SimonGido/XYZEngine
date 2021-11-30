@@ -18,12 +18,31 @@
 #include "XYZ/Debug/Profiler.h"
 
 namespace XYZ {
-	
+	namespace Utils {
+
+		static const char* VulkanVendorIDToString(uint32_t vendorID)
+		{
+			switch (vendorID)
+			{
+			case 0x10DE: return "NVIDIA";
+			case 0x1002: return "AMD";
+			case 0x8086: return "INTEL";
+			case 0x13B5: return "ARM";
+			}
+			return "Unknown";
+		}
+
+	}
 	static VulkanDescriptorAllocator s_DescriptorAllocator;
 
 	void VulkanRendererAPI::Init()
 	{
 		s_DescriptorAllocator.Init();
+		auto& properties = VulkanContext::GetCurrentDevice()->GetPhysicalDevice()->GetProperties();
+		auto& caps = RendererAPI::getCapabilities();
+		caps.Vendor = Utils::VulkanVendorIDToString(properties.vendorID);
+		caps.Device = properties.deviceName;
+		caps.Version = std::to_string(properties.driverVersion);
 	}
 
 	void VulkanRendererAPI::Shutdown()
@@ -236,6 +255,7 @@ namespace XYZ {
 	{
 		return s_DescriptorAllocator.RT_Allocate(layout);
 	}
+
 
 	void VulkanRendererAPI::InsertImageMemoryBarrier(VkCommandBuffer cmdbuffer, VkImage image, VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkImageSubresourceRange subresourceRange)
 	{

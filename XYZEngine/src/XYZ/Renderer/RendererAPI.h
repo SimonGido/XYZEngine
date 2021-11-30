@@ -20,7 +20,7 @@ namespace XYZ {
 	struct RenderAPICapabilities
 	{
 		std::string Vendor;
-		std::string Renderer;
+		std::string Device;
 		std::string Version;
 
 		int   MaxSamples = 0;
@@ -32,7 +32,7 @@ namespace XYZ {
 	class RendererAPI
 	{
 	public:
-		enum class API
+		enum class Type
 		{
 			None = 0, OpenGL = 1, Vulkan = 2
 		};
@@ -63,17 +63,18 @@ namespace XYZ {
 		virtual void RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint32_t indexCount = 0) {};
 		virtual void BindPipeline(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<Material> material) {};
 
-		static RenderAPICapabilities& GetCapabilities()
-		{
-			static RenderAPICapabilities caps;
-			return caps;
-		}
 
-		static API GetAPI() { return s_API; }
-		/**
-		* @return unique_ptr to RendererAPI
-		*/
+		static const RenderAPICapabilities& GetCapabilities();
+		
+
+		static Type GetType() { return s_API; }
+		
+	protected:
+		static RenderAPICapabilities& getCapabilities();
+
+
 	private:
-		static API s_API;
+		static Type s_API;
+
 	};
 }

@@ -175,25 +175,26 @@ namespace XYZ {
 
 
 
-	class ShaderStorageBuffer : public RefCount
+	class StorageBuffer : public RefCount
 	{
 	public:
-		virtual ~ShaderStorageBuffer() = default;
-		virtual void BindBase(uint32_t binding) const = 0;
-		virtual void BindRange(uint32_t offset, uint32_t size) const = 0;
-		virtual void Bind() const = 0;
+		virtual ~StorageBuffer() = default;
+		virtual void BindBase(uint32_t binding) const {};
+		virtual void BindRange(uint32_t offset, uint32_t size) const {};
+		virtual void Bind() const {};
 		
-		virtual void Update(void* vertices, uint32_t size, uint32_t offset = 0) = 0;
-		virtual void Resize(void* vertices, uint32_t size) = 0;
-		virtual void GetSubData(void** buffer, uint32_t size, uint32_t offset = 0) = 0;
-		virtual void SetLayout(const BufferLayout& layout) = 0;
-		virtual const BufferLayout& GetLayout() const = 0;
-		virtual uint32_t GetRendererID() const = 0;
+		virtual void Update(const void* data, uint32_t size, uint32_t offset = 0) {};
+		virtual void Resize(const void* data, uint32_t size) {};
+		virtual void GetSubData(void** buffer, uint32_t size, uint32_t offset = 0) {};
+		virtual void SetLayout(const BufferLayout& layout) {};
+		virtual uint32_t GetBinding() const { return 0; }
+		virtual const BufferLayout& GetLayout() const { return BufferLayout(); };
+		virtual uint32_t GetRendererID() const { return 0; };
 		
 
-		static Ref<ShaderStorageBuffer> Create(uint32_t size, uint32_t binding);
+		static Ref<StorageBuffer> Create(uint32_t size, uint32_t binding);
 
-		static Ref<ShaderStorageBuffer> Create(const float* vertices, uint32_t size, uint32_t binding, BufferUsage usage = BufferUsage::Dynamic);
+		static Ref<StorageBuffer> Create(const void *data, uint32_t size, uint32_t binding, BufferUsage usage = BufferUsage::Dynamic);
 	};
 
 

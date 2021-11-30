@@ -8,11 +8,11 @@
 namespace XYZ {
 	Ref<RenderCommandBuffer> RenderCommandBuffer::Create(uint32_t count, const std::string& debugName)
 	{
-		switch (RendererAPI::GetAPI())
+		switch (RendererAPI::GetType())
 		{
-		case RendererAPI::API::None:    XYZ_ASSERT(false, "API is not supported") return nullptr;
-		case RendererAPI::API::OpenGL:  return Ref<OpenGLRenderCommandBuffer>::Create(count, debugName);
-		case RendererAPI::API::Vulkan:  return Ref<VulkanRenderCommandBuffer>::Create(count, debugName);
+		case RendererAPI::Type::None:    XYZ_ASSERT(false, "API is not supported") return nullptr;
+		case RendererAPI::Type::OpenGL:  return Ref<OpenGLRenderCommandBuffer>::Create(count, debugName);
+		case RendererAPI::Type::Vulkan:  return Ref<VulkanRenderCommandBuffer>::Create(count, debugName);
 		}
 		XYZ_ASSERT(false, "Unknown RendererAPI");
 		return nullptr;

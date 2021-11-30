@@ -42,16 +42,16 @@ namespace XYZ {
 		return indices;
 	}
 
-	Renderer2D::Renderer2D(Renderer2DSpecification specification)
+	Renderer2D::Renderer2D(const Ref<RenderCommandBuffer>& commandBuffer)
 		:
-		m_Specification(specification)
+		m_RenderCommandBuffer(commandBuffer)
 	{
 		const uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;
 			
-		if (specification.SwapChainTarget)
-			m_RenderCommandBuffer = Renderer::GetAPIContext()->GetRenderCommandBuffer();
-		else
-			m_RenderCommandBuffer = RenderCommandBuffer::Create(framesInFlight);
+		//if (specification.SwapChainTarget)
+		//	m_RenderCommandBuffer = Renderer::GetAPIContext()->GetRenderCommandBuffer();
+		//else
+		//	m_RenderCommandBuffer = RenderCommandBuffer::Create(framesInFlight);
 		
 		createRenderPass();	
 		auto shaderLibrary = Renderer::GetShaderLibrary();
@@ -364,7 +364,6 @@ namespace XYZ {
 
 	void Renderer2D::EndScene()
 	{
-		m_RenderCommandBuffer->Begin();
 		Renderer::BeginRenderPass(m_RenderCommandBuffer, m_RenderPass, false);
 
 		flush();
@@ -372,10 +371,6 @@ namespace XYZ {
 		flushFilledCircles();
 
 		Renderer::EndRenderPass(m_RenderCommandBuffer);
-
-
-		m_RenderCommandBuffer->End();
-		m_RenderCommandBuffer->Submit();
 	}
 	void Renderer2D::resetQuads()
 	{

@@ -12,7 +12,7 @@ namespace XYZ {
 		virtual void Bind() const override;
 
 		virtual void AddVertexBuffer(Ref<VertexBuffer> vertexBuffer) override;
-		virtual void AddShaderStorageBuffer(Ref<ShaderStorageBuffer> shaderBuffer)override;
+		virtual void AddStorageBuffer(Ref<StorageBuffer> shaderBuffer)override;
 		virtual void SetIndexBuffer(Ref<IndexBuffer> indexBuffer) override;
 
 		virtual inline const Ref<IndexBuffer>& GetIndexBuffer() const override { return m_IndexBuffer; };
@@ -22,7 +22,7 @@ namespace XYZ {
 		uint32_t m_RendererID = 0;
 		Ref<IndexBuffer> m_IndexBuffer;
 		std::vector<Ref<VertexBuffer>> m_VertexBuffers;
-		std::vector<Ref<ShaderStorageBuffer>> m_ShaderStorageBuffers;
+		std::vector<Ref<StorageBuffer>> m_StorageBuffers;
 	};
 
 }

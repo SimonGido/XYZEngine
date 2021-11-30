@@ -1,14 +1,17 @@
 #include "stdafx.h"
 #include "Application.h"
 
-
-#include "XYZ/Debug/Timer.h"
 #include "XYZ/Debug/Profiler.h"
 
 #include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Asset/AssetManager.h"
 #include "XYZ/Audio/Audio.h"
+
+
 #include "XYZ/API/Vulkan/VulkanContext.h"
+#include "XYZ/API/Vulkan/VulkanAllocator.h"
+#include "XYZ/API/Vulkan/VulkanRendererAPI.h"
+
 
 #include <GLFW/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -34,7 +37,7 @@ namespace XYZ {
 		Renderer::Init();
 		m_Window = Window::Create(Renderer::GetAPIContext());
 		m_Window->RegisterCallback(Hook(&Application::OnEvent, this));	
-		m_Window->SetVSync(0);
+		m_Window->SetVSync(false);
 		
 		m_ImGuiLayer = nullptr;
 		m_ImGuiLayer = ImGuiLayer::Create();
@@ -70,7 +73,6 @@ namespace XYZ {
 		while (m_Running)
 		{				
 			XYZ_PROFILE_FRAME("MainThread");
-			
 			updateTimestep();	
 			m_Window->ProcessEvents();
 			if (!m_Minimized)
@@ -79,9 +81,11 @@ namespace XYZ {
 				Renderer::Render();
 		
 				m_Window->BeginFrame();
-				for (Layer* layer : m_LayerStack)
-					layer->OnUpdate(m_Timestep);
-				
+				{
+					XYZ_SCOPE_PERF("Application Layer::OnUpdate");
+					for (Layer* layer : m_LayerStack)
+						layer->OnUpdate(m_Timestep);
+				}
 				if (m_Specification.EnableImGui)
 					onImGuiRender();
 				
@@ -141,20 +145,59 @@ namespace XYZ {
 
 	void Application::onImGuiRender()
 	{
+		XYZ_PROFILE_FUNC("Application::onImGuiRender");
+		XYZ_SCOPE_PERF("Application::onImGuiRender");
 		if (m_ImGuiLayer)
 		{
 			m_ImGuiLayer->Begin();
-			if (ImGui::Begin("Stats"))
-			{
-				ImGui::Text("Performance: %.2f ms", m_Timestep.GetMilliseconds());
-			}
-			ImGui::End();
-
+			displayPerformance();
+			displayRenderer();
 			for (Layer* layer : m_LayerStack)
 				layer->OnImGuiRender();
 
 			m_ImGuiLayer->End();
 		}
+	}
+
+	void Application::displayPerformance()
+	{
+		if (ImGui::Begin("Performance"))
+		{
+			ImGui::Text("Frame Time: %.2f ms", m_Timestep.GetMilliseconds());
+
+			
+			m_Profiler.LockData();
+			for (const auto [name, time] : m_Profiler.GetPerformanceData())
+			{
+				ImGui::Text("%s: %.3fms\n", name, time);
+			}
+			m_Profiler.UnlockData();
+		}
+		ImGui::End();
+	}
+
+	void Application::displayRenderer()
+	{
+		if (ImGui::Begin("Renderer"))
+		{
+			auto& caps = Renderer::GetCapabilities();
+			ImGui::Text("Vendor: %s", caps.Vendor.c_str());
+			ImGui::Text("Renderer: %s", caps.Device.c_str());
+			ImGui::Text("Version: %s", caps.Version.c_str());
+			ImGui::Separator();
+			if (RendererAPI::GetType() == RendererAPI::Type::Vulkan)
+			{
+				GPUMemoryStats memoryStats = VulkanAllocator::GetStats();
+				std::string used = Utils::BytesToString(memoryStats.Used);
+				std::string free = Utils::BytesToString(memoryStats.Free);
+				ImGui::Text("Used VRAM: %s", used.c_str());
+				ImGui::Text("Free VRAM: %s", free.c_str());
+			}
+			bool vSync = m_Window->IsVSync();
+			if (ImGui::Checkbox("Vsync", &vSync))
+				m_Window->SetVSync(vSync);
+		}
+		ImGui::End();
 	}
 
 

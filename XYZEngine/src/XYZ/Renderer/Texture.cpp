@@ -21,9 +21,9 @@ namespace XYZ {
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None:   XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
-		case RendererAPI::API::OpenGL: XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::OpenGL");
-		case RendererAPI::API::Vulkan: return Ref<VulkanTexture2D>::Create(format, width, height, data, properties);
+		case RendererAPI::Type::None:   XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
+		case RendererAPI::Type::OpenGL: XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::OpenGL");
+		case RendererAPI::Type::Vulkan: return Ref<VulkanTexture2D>::Create(format, width, height, data, properties);
 		}
 
 		XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
@@ -34,9 +34,9 @@ namespace XYZ {
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None:   XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
-		case RendererAPI::API::OpenGL: XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::OpenGL");
-		case RendererAPI::API::Vulkan: return Ref<VulkanTexture2D>::Create(path, properties);
+		case RendererAPI::Type::None:   XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
+		case RendererAPI::Type::OpenGL: XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::OpenGL");
+		case RendererAPI::Type::Vulkan: return Ref<VulkanTexture2D>::Create(path, properties);
 		}
 
 		XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");

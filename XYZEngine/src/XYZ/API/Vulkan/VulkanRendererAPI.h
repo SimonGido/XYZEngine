@@ -20,7 +20,7 @@ namespace XYZ {
 
 
 		static VkDescriptorSet RT_AllocateDescriptorSet(const VkDescriptorSetLayout& layout);
-	
+
 		static void InsertImageMemoryBarrier(
 				VkCommandBuffer cmdbuffer,
 				VkImage image,

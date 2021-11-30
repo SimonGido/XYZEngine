@@ -10,7 +10,7 @@ namespace XYZ {
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::Vulkan: return Ref<VulkanMaterial>::Create(shader);
+		case RendererAPI::Type::Vulkan: return Ref<VulkanMaterial>::Create(shader);
 		default:
 			break;
 		}

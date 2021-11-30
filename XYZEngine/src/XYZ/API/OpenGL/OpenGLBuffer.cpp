@@ -169,7 +169,7 @@ namespace XYZ {
 
 
 
-	OpenGLShaderStorageBuffer::OpenGLShaderStorageBuffer(const void* data, uint32_t size, uint32_t binding, BufferUsage usage)
+	OpenGLStorageBuffer::OpenGLStorageBuffer(const void* data, uint32_t size, uint32_t binding, BufferUsage usage)
 		:m_Size(size), m_Binding(binding), m_Usage(usage)
 	{
 		ByteBuffer buffer;
@@ -177,7 +177,7 @@ namespace XYZ {
 		if (data)
 			buffer.Write(data, size, 0);
 
-		Ref<OpenGLShaderStorageBuffer> instance = this;
+		Ref<OpenGLStorageBuffer> instance = this;
 		Renderer::Submit([instance, size, binding, buffer]() mutable {
 			glGenBuffers(1, &instance->m_RendererID);
 			glBindBuffer(GL_SHADER_STORAGE_BUFFER, instance->m_RendererID);
@@ -191,7 +191,7 @@ namespace XYZ {
 		});
 	}
 
-	OpenGLShaderStorageBuffer::~OpenGLShaderStorageBuffer()
+	OpenGLStorageBuffer::~OpenGLStorageBuffer()
 	{
 		while (!m_Buffers.Empty())
 		{
@@ -204,9 +204,9 @@ namespace XYZ {
 		});
 	}
 
-	void OpenGLShaderStorageBuffer::BindBase(uint32_t binding) const
+	void OpenGLStorageBuffer::BindBase(uint32_t binding) const
 	{
-		Ref<const OpenGLShaderStorageBuffer> instance = this;
+		Ref<const OpenGLStorageBuffer> instance = this;
 		Renderer::Submit([instance, binding]() {
 			glBindBuffer(GL_SHADER_STORAGE_BUFFER, instance->m_RendererID);
 			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding, instance->m_RendererID);
@@ -214,21 +214,21 @@ namespace XYZ {
 	}
 
 
-	void OpenGLShaderStorageBuffer::BindRange(uint32_t offset, uint32_t size) const
+	void OpenGLStorageBuffer::BindRange(uint32_t offset, uint32_t size) const
 	{
-		Ref<const OpenGLShaderStorageBuffer> instance = this;
+		Ref<const OpenGLStorageBuffer> instance = this;
 		Renderer::Submit([instance, offset, size]() {
 			glBindBufferRange(GL_SHADER_STORAGE_BUFFER, instance->m_Binding, instance->m_RendererID, offset, size);
 
 		});
 	}
 
-	void OpenGLShaderStorageBuffer::Bind()const
+	void OpenGLStorageBuffer::Bind()const
 	{
 		Renderer::Submit([=]() {glBindBuffer(GL_ARRAY_BUFFER, m_RendererID); });
 	}
 
-	void OpenGLShaderStorageBuffer::Update(void* data, uint32_t size, uint32_t offset)
+	void OpenGLStorageBuffer::Update(const void* data, uint32_t size, uint32_t offset)
 	{
 		ByteBuffer buffer;
 		if (m_Buffers.Empty())
@@ -238,7 +238,7 @@ namespace XYZ {
 
 		buffer.Write(data, size, offset);
 
-		Ref<OpenGLShaderStorageBuffer> instance = this;
+		Ref<OpenGLStorageBuffer> instance = this;
 		Renderer::Submit([instance, size, offset, buffer]() mutable {
 			glBindBuffer(GL_ARRAY_BUFFER, instance->m_RendererID);
 			glBufferSubData(GL_ARRAY_BUFFER, offset, size, buffer);
@@ -246,7 +246,7 @@ namespace XYZ {
 		});
 	}
 
-	void OpenGLShaderStorageBuffer::Resize(void* data, uint32_t size)
+	void OpenGLStorageBuffer::Resize(const void* data, uint32_t size)
 	{
 		while (!m_Buffers.Empty())
 		{
@@ -256,7 +256,7 @@ namespace XYZ {
 		ByteBuffer buffer;
 		buffer = ByteBuffer::Copy(data, size);
 
-		Ref<OpenGLShaderStorageBuffer> instance = this;
+		Ref<OpenGLStorageBuffer> instance = this;
 		Renderer::Submit([instance, size, buffer]() mutable {
 			glBindBuffer(GL_ARRAY_BUFFER, instance->m_RendererID);
 			switch (instance->m_Usage)
@@ -267,10 +267,10 @@ namespace XYZ {
 			instance->m_Buffers.PushBack(buffer);
 		});
 	}
-	void OpenGLShaderStorageBuffer::GetSubData(void** buffer, uint32_t size, uint32_t offset)
+	void OpenGLStorageBuffer::GetSubData(void** buffer, uint32_t size, uint32_t offset)
 	{
 		XYZ_ASSERT(size + offset <= m_Size, "Accesing data out of range");
-		Ref<OpenGLShaderStorageBuffer> instance = this;
+		Ref<OpenGLStorageBuffer> instance = this;
 		Renderer::Submit([instance, buffer, size, offset]() {
 			*buffer = new uint8_t[size];
 			glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, offset, size, buffer);

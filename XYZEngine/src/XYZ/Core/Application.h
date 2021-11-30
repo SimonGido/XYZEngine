@@ -4,6 +4,8 @@
 #include "ThreadPool.h"
 
 #include "XYZ/ImGui/ImGuiLayer.h"
+#include "XYZ/Debug/Timer.h"
+
 
 namespace XYZ {
 
@@ -23,16 +25,15 @@ namespace XYZ {
 		void PushOverlay(Layer* overlayer);
 		void PopLayer(Layer* layer);
 		void Stop();
-
-
 		bool OnEvent(Event& event);
 
-		Window&			   GetWindow() const		 { return *m_Window; }
-		ThreadPool&		   GetThreadPool()			 { return m_ThreadPool; }
-		ImGuiLayer*		   GetImGuiLayer()	const	 { return m_ImGuiLayer; }
-		const std::string& GetApplicationDir() const { return m_ApplicationDir; }
-		const ApplicationSpecification& GetSpecification() const { return m_Specification;}
-		inline static Application& Get() { return *s_Application; }
+		Window&							GetWindow() const		  { return *m_Window; }
+		ThreadPool&						GetThreadPool()			  { return m_ThreadPool; }
+		ImGuiLayer*						GetImGuiLayer()	const	  { return m_ImGuiLayer; }
+		PerformanceProfiler&			GetPerformanceProfiler()  { return m_Profiler; }
+		const std::string&				GetApplicationDir() const { return m_ApplicationDir; }
+		const ApplicationSpecification& GetSpecification() const  { return m_Specification;}
+		inline static Application&		Get() { return *s_Application; }
 
 		static Application* CreateApplication();
 
@@ -41,6 +42,9 @@ namespace XYZ {
 		bool onWindowClosed(WindowCloseEvent& event);
 		void updateTimestep();
 		void onImGuiRender();
+
+		void displayPerformance();
+		void displayRenderer();
 
 	private:
 		LayerStack m_LayerStack;
@@ -54,9 +58,10 @@ namespace XYZ {
 		Timestep   				 m_Timestep;
 		ThreadPool 				 m_ThreadPool;
 		ApplicationSpecification m_Specification;
+		PerformanceProfiler		 m_Profiler;
 		std::string				 m_ApplicationDir;
 
-		static Application* s_Application;
+		static Application*		 s_Application;
 	};
 
 }

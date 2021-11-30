@@ -112,9 +112,9 @@ namespace XYZ {
 
 
 		static ThreadPool&			GetPool();
-		static RendererAPI::API		GetAPI() { return RendererAPI::GetAPI(); }
-		static RendererAPI*			GetRendererAPI();
+		static RendererAPI::Type	GetAPI() { return RendererAPI::GetType(); }
 		static const RendererStats& GetStats();
+		static uint32_t			    GetCurrentFrame();
 
 	private:
 		static ScopedLock<RenderCommandQueue> getResourceQueue();
@@ -166,7 +166,7 @@ namespace XYZ {
 			auto& caps = Renderer::GetCapabilities();
 			XYZ_TRACE("GPU Info:");
 			XYZ_TRACE("  Vendor: {0}", caps.Vendor);
-			XYZ_TRACE("  Device: {0}", caps.Renderer);
+			XYZ_TRACE("  Device: {0}", caps.Device);
 			XYZ_TRACE("  Version: {0}", caps.Version);
 		}
 	}

@@ -83,17 +83,17 @@ namespace XYZ {
 		ShaderDependencyMap			   ShaderDependencies;
 	};
 
-	RendererAPI::API RendererAPI::s_API = RendererAPI::API::Vulkan;
+	RendererAPI::Type RendererAPI::s_API = RendererAPI::Type::Vulkan;
 
 	static RendererData s_Data;
 	static RendererAPI* s_RendererAPI = nullptr;
 
 	static RendererAPI* CreateRendererAPI()
 	{
-		switch (RendererAPI::GetAPI())
+		switch (RendererAPI::GetType())
 		{
-		case RendererAPI::API::OpenGL: return new OpenGLRendererAPI();
-		case RendererAPI::API::Vulkan: return new VulkanRendererAPI();
+		case RendererAPI::Type::OpenGL: return new OpenGLRendererAPI();
+		case RendererAPI::Type::Vulkan: return new VulkanRendererAPI();
 		}
 		XYZ_ASSERT(false, "Unknown RendererAPI");
 		return nullptr;
@@ -140,14 +140,15 @@ namespace XYZ {
 		s_Data.Configuration = config;
 	
 		s_Data.APIContext = APIContext::Create();
-		s_RendererAPI = CreateRendererAPI();
-
-		s_Data.QueueData.Init(config.FramesInFlight);
-		s_RendererAPI->Init();
+		s_RendererAPI = CreateRendererAPI();		
 	}
 
 	void Renderer::InitResources()
 	{
+		// It is called after window and context is created
+		s_Data.QueueData.Init(s_Data.Configuration.FramesInFlight);
+		s_RendererAPI->Init();
+		
 		SetupFullscreenQuad();
 
 		s_Data.ShaderLibrary = Ref<ShaderLibrary>::Create();
@@ -342,14 +343,14 @@ namespace XYZ {
 		return s_Data.QueueData.GetThreadPool();
 	}
 
-	RendererAPI* Renderer::GetRendererAPI()
-	{
-		return s_RendererAPI;
-	}
-
 	const RendererStats& Renderer::GetStats()
 	{
 		return s_Data.Stats;
+	}
+
+	uint32_t Renderer::GetCurrentFrame()
+	{
+		return s_Data.APIContext->GetCurrentFrame();
 	}
 
 	void Renderer::Render()

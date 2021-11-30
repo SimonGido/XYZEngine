@@ -9,7 +9,7 @@ namespace XYZ {
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::Vulkan: return Ref<VulkanUniformBufferSet>::Create(frames);
+		case RendererAPI::Type::Vulkan: return Ref<VulkanUniformBufferSet>::Create(frames);
 		default:
 			break;
 		}

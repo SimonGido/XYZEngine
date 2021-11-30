@@ -79,6 +79,7 @@ namespace XYZ {
 
 	void EditorLayer::OnImGuiRender()
 	{
+		m_SceneRenderer->OnImGuiRender();
 		if (ImGui::BeginMenuBar())
 		{
 			if (ImGui::BeginMenu("File"))

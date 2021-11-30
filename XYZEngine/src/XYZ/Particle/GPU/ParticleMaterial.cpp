@@ -364,9 +364,9 @@ namespace XYZ {
 					Buffer buf;
 					buf.Name = buffer.Name;
 					if (buffer.ParticleBuffer)
-						buf.Storage = ShaderStorageBuffer::Create(buffer.Size * m_MaxParticles, buffer.Binding);
+						buf.Storage = StorageBuffer::Create(buffer.Size * m_MaxParticles, buffer.Binding);
 					else
-						buf.Storage = ShaderStorageBuffer::Create(buffer.Size, buffer.Binding);
+						buf.Storage = StorageBuffer::Create(buffer.Size, buffer.Binding);
 
 					buf.ElementSize = buffer.Size;
 					buf.ElementCount = 0;
@@ -377,7 +377,7 @@ namespace XYZ {
 					if (buffer.RenderBuffer)
 					{
 						buf.Storage->SetLayout(BufferLayoutFromVariables(buffer.Variables, 1));
-						m_VertexArray->AddShaderStorageBuffer(buf.Storage);
+						m_VertexArray->AddStorageBuffer(buf.Storage);
 					}
 				}
 			}

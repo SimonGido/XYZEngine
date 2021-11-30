@@ -55,7 +55,7 @@ namespace XYZ {
 		struct Buffer
 		{
 			std::string				 Name;
-			Ref<ShaderStorageBuffer> Storage;
+			Ref<StorageBuffer> Storage;
 			uint32_t				 ElementSize;
 			uint32_t			     ElementCount;
 			bool					 RenderBuffer;

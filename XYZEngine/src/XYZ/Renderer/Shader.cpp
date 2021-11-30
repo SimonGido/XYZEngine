@@ -11,13 +11,13 @@ namespace XYZ {
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None:
+		case RendererAPI::Type::None:
 		{
 			XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
 			return nullptr;
 		}
-		case RendererAPI::API::OpenGL: return  Ref<OpenGLShader>::Create(path);
-		case RendererAPI::API::Vulkan: return Ref<VulkanShader>::Create(path);		
+		case RendererAPI::Type::OpenGL: return  Ref<OpenGLShader>::Create(path);
+		case RendererAPI::Type::Vulkan: return Ref<VulkanShader>::Create(path);		
 		}
 
 		XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
@@ -27,13 +27,13 @@ namespace XYZ {
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None:
+		case RendererAPI::Type::None:
 		{
 			XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
 			return nullptr;
 		}
-		case RendererAPI::API::OpenGL: return Ref<OpenGLShader>::Create(name, path);
-		case RendererAPI::API::Vulkan: return Ref<VulkanShader>::Create(name, path);
+		case RendererAPI::Type::OpenGL: return Ref<OpenGLShader>::Create(name, path);
+		case RendererAPI::Type::Vulkan: return Ref<VulkanShader>::Create(name, path);
 		}
 
 		XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");

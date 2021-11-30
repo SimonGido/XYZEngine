@@ -96,7 +96,7 @@ namespace XYZ {
 		});
 	}
 
-	void OpenGLVertexArray::AddShaderStorageBuffer(Ref<ShaderStorageBuffer> shaderBuffer)
+	void OpenGLVertexArray::AddStorageBuffer(Ref<StorageBuffer> shaderBuffer)
 	{
 		if (shaderBuffer->GetLayout().GetElements().size() == 0)
 			XYZ_ASSERT(false, "vertexBuffer->GetLayout().GetElements().size() = 0");
@@ -132,7 +132,7 @@ namespace XYZ {
 				glVertexAttribDivisor(element.Index, element.Divisor);
 			}
 
-			instance->m_ShaderStorageBuffers.push_back(shaderBuffer);
+			instance->m_StorageBuffers.push_back(shaderBuffer);
 			});
 	}
 

@@ -12,13 +12,13 @@ namespace XYZ {
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None:
+		case RendererAPI::Type::None:
 		{
 			XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
 			return nullptr;
 		}
-		case RendererAPI::API::OpenGL: return   Ref<OpenGLImage2D>::Create(specification);
-		case RendererAPI::API::Vulkan: return   Ref<VulkanImage2D>::Create(specification);
+		case RendererAPI::Type::OpenGL: return   Ref<OpenGLImage2D>::Create(specification);
+		case RendererAPI::Type::Vulkan: return   Ref<VulkanImage2D>::Create(specification);
 		}
 
 		XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");

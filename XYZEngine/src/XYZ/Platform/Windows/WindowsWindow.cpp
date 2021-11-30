@@ -28,7 +28,7 @@ namespace XYZ {
 			GLFWInitialized = true;
 		}
 
-		if (RendererAPI::GetAPI() == RendererAPI::API::Vulkan)
+		if (RendererAPI::GetType() == RendererAPI::Type::Vulkan)
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
 
@@ -179,20 +179,26 @@ namespace XYZ {
 		glfwPollEvents();
 	}
 
-	void WindowsWindow::SetVSync(int32_t frames)
+	void WindowsWindow::SetVSync(bool enable)
 	{
+		m_Data.VSync = enable;
 		#ifdef RENDER_THREAD_ENABLED
-		Renderer::GetPool().PushJob<void>([frames]() {
-			glfwSwapInterval(frames);
+		Renderer::GetPool().PushJob<void>([enable]() {
+			glfwSwapInterval(enable);
 		});
 		#else
 		glfwSwapInterval(frames);
 		#endif
 	}
 
-	bool WindowsWindow::IsClosed()
+	bool WindowsWindow::IsClosed() const
 	{
 		return glfwWindowShouldClose(m_Window);
+	}
+
+	bool WindowsWindow::IsVSync() const
+	{
+		return m_Data.VSync;
 	}
 
 	void WindowsWindow::SetStandardCursor(uint8_t cursor)

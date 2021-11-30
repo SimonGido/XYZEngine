@@ -27,7 +27,7 @@ namespace XYZ {
 
 			static ImTextureID GetTextureID(const Ref<Image2D>& image)
 			{
-				if (RendererAPI::GetAPI() == RendererAPI::API::Vulkan)
+				if (RendererAPI::GetType() == RendererAPI::Type::Vulkan)
 				{
 					Ref<VulkanImage2D> vulkanImage = image.As<VulkanImage2D>();
 					const auto& imageInfo = vulkanImage->GetImageInfo();
@@ -39,7 +39,7 @@ namespace XYZ {
 			}
 			static ImGuiID GetImageID(const Ref<Image2D>& image)
 			{
-				if (RendererAPI::GetAPI() == RendererAPI::API::Vulkan)
+				if (RendererAPI::GetType() == RendererAPI::Type::Vulkan)
 				{
 					Ref<VulkanImage2D> vulkanImage = image.As<VulkanImage2D>();
 					const auto& imageInfo = vulkanImage->GetImageInfo();
@@ -99,7 +99,7 @@ namespace XYZ {
 
 		void Image(const Ref<Image2D>& image, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1)
 		{
-			if (RendererAPI::GetAPI() == RendererAPI::API::Vulkan)
+			if (RendererAPI::GetType() == RendererAPI::Type::Vulkan)
 			{
 				Vulkan::VulkanImage(image, size, uv0, uv1);
 			}
@@ -107,7 +107,7 @@ namespace XYZ {
 
 		bool ImageButton(const char* stringID, const Ref<Image2D>& image, const ImVec2& size, int framePadding, const ImVec4& tintColor, const ImVec2& uv0, const ImVec2& uv1)
 		{
-			if (RendererAPI::GetAPI() == RendererAPI::API::Vulkan)
+			if (RendererAPI::GetType() == RendererAPI::Type::Vulkan)
 			{
 				return Vulkan::VulkanImageButton(stringID, image, size, framePadding, tintColor, uv0, uv1);
 			}
@@ -116,7 +116,7 @@ namespace XYZ {
 
 		bool ImageButtonTransparent(const char* stringID, const Ref<Image2D>& image, const ImVec2& size, const ImVec4& hoverColor, const ImVec4& clickColor, const ImVec4& tintColor, const ImVec2& uv0, const ImVec2& uv1)
 		{
-			if (RendererAPI::GetAPI() == RendererAPI::API::Vulkan)
+			if (RendererAPI::GetType() == RendererAPI::Type::Vulkan)
 			{
 				return Vulkan::VulkanImageButtonTransparent(stringID, image, size, hoverColor, clickColor, tintColor, uv0, uv1);
 			}

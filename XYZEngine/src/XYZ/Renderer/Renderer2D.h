@@ -20,10 +20,6 @@ namespace XYZ {
 		uint32_t FilledCircleDrawCalls = 0;
 	};
 
-	struct Renderer2DSpecification
-	{
-		bool SwapChainTarget = false;
-	};
 
 	template <typename VertexType>
 	struct Renderer2DBuffer
@@ -45,7 +41,7 @@ namespace XYZ {
 	class Renderer2D : public RefCount
 	{
 	public:
-		Renderer2D(Renderer2DSpecification specification);
+		Renderer2D(const Ref<RenderCommandBuffer>& commandBuffer);
 		~Renderer2D();
 
 		void BeginScene(const glm::mat4& viewProjectionMatrix);
@@ -138,7 +134,6 @@ namespace XYZ {
 			{ -0.5f,  0.5f, 0.0f, 1.0f }
 		};
 	private:
-		Renderer2DSpecification  m_Specification;
 		Ref<RenderCommandBuffer> m_RenderCommandBuffer;
 		Ref<RenderPass>			 m_RenderPass;
 

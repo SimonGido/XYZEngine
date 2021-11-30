@@ -10,6 +10,8 @@
 
 #include <glm/gtx/transform.hpp>
 
+#include <imgui/imgui.h>
+
 namespace XYZ {
 
 	static ThreadPool s_ThreadPool;
@@ -27,6 +29,7 @@ namespace XYZ {
 		s_ThreadPool.EraseThread(m_ThreadIndex);
 	}
 
+
 	void SceneRenderer::Init()
 	{
 		XYZ_PROFILE_FUNC("SceneRenderer::Init");
@@ -36,9 +39,11 @@ namespace XYZ {
 		else
 			m_CommandBuffer = RenderCommandBuffer::Create(0, "SceneRenderer");
 
-		m_Renderer2D = Ref<Renderer2D>::Create(
-			Renderer2DSpecification{m_Specification.SwapChainTarget}
-		);
+		m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
+		m_CommandBuffer->CreatePipelineStatisticsQueries(2);
+
+		m_Renderer2D = Ref<Renderer2D>::Create(m_CommandBuffer);
+	
 		createCompositePipeline();
 
 		// Light pass
@@ -84,8 +89,8 @@ namespace XYZ {
 		//m_BloomTexture[1] = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, {});
 		//m_BloomTexture[2] = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, {});
 
-		//m_LightStorageBuffer = ShaderStorageBuffer::Create(sc_MaxNumberOfLights * sizeof(SceneRenderer::PointLight), 1);
-		//m_SpotLightStorageBuffer = ShaderStorageBuffer::Create(sc_MaxNumberOfLights * sizeof(SceneRenderer::SpotLight), 2);
+		//m_LightStorageBuffer = StorageBuffer::Create(sc_MaxNumberOfLights * sizeof(SceneRenderer::PointLight), 1);
+		//m_SpotLightStorageBuffer = StorageBuffer::Create(sc_MaxNumberOfLights * sizeof(SceneRenderer::SpotLight), 2);
 		//m_CameraUniformBuffer = UniformBuffer::Create(sizeof(CameraData), 0);
 	}
 
@@ -133,9 +138,9 @@ namespace XYZ {
 	{
 		m_CommandBuffer->Begin();
 		flush();
+		flushDefaultQueue();
 		m_CommandBuffer->End();
 		m_CommandBuffer->Submit();
-		flushDefaultQueue();
 	}
 
 	void SceneRenderer::SubmitSprite(Ref<Material> material, Ref<SubTexture> subTexture, uint32_t sortLayer, const glm::vec4& color, const glm::mat4& transform)
@@ -209,6 +214,21 @@ namespace XYZ {
 			m_BloomTexture[1] = Texture2D::Create(ImageFormat::RGBA32F, width, height, {});
 			m_BloomTexture[2] = Texture2D::Create(ImageFormat::RGBA32F, width, height, {});
 			m_ViewportSizeChanged = false;
+		}
+	}
+
+	void SceneRenderer::OnImGuiRender()
+	{
+		XYZ_PROFILE_FUNC("SceneRenderer::OnImGuiRender");
+		if (ImGui::Begin("Scene Renderer"))
+		{
+			ImGui::Text("Viewport Size: %d, %d", m_ViewportSize.x, m_ViewportSize.y);
+
+			uint32_t frameIndex = Renderer::GetCurrentFrame();
+			// TODO: fix this
+			//ImGui::Text("GPU time: %.3fms", m_CommandBuffer->GetExecutionGPUTime(frameIndex));
+			//ImGui::Text("Renderer2D Pass: %.3fms", m_CommandBuffer->GetExecutionGPUTime(frameIndex, m_GPUTimeQueries.Renderer2DPassQuery));
+			ImGui::End();
 		}
 	}
 
@@ -305,6 +325,7 @@ namespace XYZ {
 	
 	void SceneRenderer::geometryPass2D(RenderQueue& queue, bool clear)
 	{
+		m_GPUTimeQueries.Renderer2DPassQuery = m_CommandBuffer->BeginTimestampQuery();
 		m_Renderer2D->BeginScene(m_CameraBuffer.ViewProjectionMatrix);
 		for (auto& dc : queue.m_SpriteDrawList)
 		{

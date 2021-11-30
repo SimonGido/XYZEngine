@@ -9,10 +9,7 @@
 
 
 namespace XYZ {
-/**	@class WindowsWindow
- *	Enables window management on Windows
- *
- */
+
 	class WindowsWindow : public Window
 	{
 	public:
@@ -23,12 +20,13 @@ namespace XYZ {
 		virtual void SwapBuffers() override;
 		virtual void ProcessEvents() override;
 		
-		virtual void SetVSync(int32_t frames) override;
-		virtual bool IsClosed() override;
-		virtual void SetStandardCursor(uint8_t cursor) override;
-		virtual void SetCustomCursor(void* cursor) override;
+		virtual void  SetVSync(bool enable) override;
+		virtual void  SetStandardCursor(uint8_t cursor) override;
+		virtual void  SetCustomCursor(void* cursor) override;
 		virtual void* CreateCustomCursor(uint8_t* pixels, uint32_t width, uint32_t height, int32_t xOffset = 0, int32_t yOffset = 0) override;
 
+		virtual bool  IsClosed() const override;
+		virtual bool  IsVSync() const override;
 		virtual void* GetWindow() const override;
 		virtual void* GetNativeWindow() const override;
 

@@ -12,9 +12,9 @@ namespace XYZ {
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None:   XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
-		case RendererAPI::API::OpenGL: return Ref<OpenGLFence>::Create(timeOut);
-		case RendererAPI::API::Vulkan: return Ref<VulkanFence>::Create(timeOut);
+		case RendererAPI::Type::None:   XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
+		case RendererAPI::Type::OpenGL: return Ref<OpenGLFence>::Create(timeOut);
+		case RendererAPI::Type::Vulkan: return Ref<VulkanFence>::Create(timeOut);
 		default:
 			break;
 		}
