@@ -11,6 +11,7 @@ namespace XYZ {
 		virtual ~VulkanContext() override;
 
 		virtual void Init(GLFWwindow* window) override;
+	
 		virtual void CreateSwapChain(uint32_t* width, uint32_t* height, bool vSync) override;
 		virtual void SwapBuffers() override;
 		virtual void BeginFrame() override;
@@ -18,7 +19,6 @@ namespace XYZ {
 		virtual uint32_t GetCurrentFrame() const override { return m_SwapChain.GetCurrentBufferIndex();}
 
 		virtual Ref<RenderCommandBuffer> GetRenderCommandBuffer() override;
-		virtual Ref<RenderPass>			 GetRenderPass() override;
 
 		Ref<VulkanDevice>				 GetDevice() const { return m_Device; }
 		static VkInstance				 GetInstance() { return s_VulkanInstance; }

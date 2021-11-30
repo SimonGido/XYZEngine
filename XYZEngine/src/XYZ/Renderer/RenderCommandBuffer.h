@@ -15,14 +15,14 @@ namespace XYZ {
 		virtual void RT_Begin(){};
 		virtual void RT_End() {}
 		
-		virtual void CreatePipelineStatisticsQueries(uint32_t count) = 0;
+		
 		virtual void CreateTimestampQueries(uint32_t count) = 0;
 
 		virtual float GetExecutionGPUTime(uint32_t frameIndex, uint32_t queryIndex = 0) const = 0;
 		virtual const PipelineStatistics& GetPipelineStatistics(uint32_t frameIndex) const = 0;
 
-		virtual uint64_t BeginTimestampQuery() = 0;
-		virtual void EndTimestampQuery(uint64_t queryID) = 0;
+		virtual uint32_t BeginTimestampQuery() = 0;
+		virtual void EndTimestampQuery(uint32_t queryID) = 0;;
 
 		static Ref<RenderCommandBuffer> Create(uint32_t count = 0, const std::string& debugName = "");
 	};

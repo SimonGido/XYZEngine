@@ -122,5 +122,19 @@ namespace XYZ {
 			}
 			return false;
 		}
+		bool BeginTreeNode(const char* name, bool defaultOpen)
+		{
+			ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding;
+			if (defaultOpen)
+				treeNodeFlags |= ImGuiTreeNodeFlags_DefaultOpen;
+
+			return ImGui::TreeNodeEx(name, treeNodeFlags);
+		}
+
+		void EndTreeNode()
+		{
+			ImGui::TreePop();
+		}
+
 	}
 }

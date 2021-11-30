@@ -182,6 +182,7 @@ namespace XYZ {
 
 		struct GPUTimeQueries
 		{
+			uint32_t GPUTime = 0;
 			uint32_t Renderer2DPassQuery = 0;
 
 

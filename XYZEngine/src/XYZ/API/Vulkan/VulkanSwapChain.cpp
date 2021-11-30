@@ -63,6 +63,7 @@ namespace XYZ {
 
 	void VulkanSwapChain::Destroy()
 	{
+		m_RenderCommandBuffer.Reset();
 		const VkDevice device = m_Device->GetVulkanDevice();
 		destroySwapChain(m_SwapChain);
 		if (m_Surface)
@@ -199,7 +200,7 @@ namespace XYZ {
 	}
 	Ref<RenderCommandBuffer> VulkanSwapChain::GetRenderCommandBuffer() const
 	{
-		return m_RenderCommandBuffer;
+		return Ref<RenderCommandBuffer>(m_RenderCommandBuffer);
 	}
 
 	VkFramebuffer VulkanSwapChain::GetFramebuffer(uint32_t index) const

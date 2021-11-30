@@ -10,7 +10,10 @@ namespace XYZ {
 		m_Name(std::move(debugName)),
 		m_CommandBuffers(VK_NULL_HANDLE),
 		m_CommandPool(VK_NULL_HANDLE),
-		m_OwnedBySwapchain(false)
+		m_OwnedBySwapchain(false),
+		m_TimestampQueryCount(0),
+		m_NextTimestampQueryID(0),
+		m_PipelineQueryCount(PipelineStatistics::Count())
 	{
 		auto device = VulkanContext::GetCurrentDevice();
 		uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;
@@ -40,13 +43,19 @@ namespace XYZ {
 		m_WaitFences.resize(framesInFlight);
 		for (auto& fence : m_WaitFences)
 			VK_CHECK_RESULT(vkCreateFence(device->GetVulkanDevice(), &fenceCreateInfo, nullptr, &fence));
+	
+		
+		createPipelineStatisticsQueries();
 	}
 
 	VulkanRenderCommandBuffer::VulkanRenderCommandBuffer(std::string debugName)
 		:
 		m_Name(std::move(debugName)),
 		m_CommandPool(VK_NULL_HANDLE),
-		m_OwnedBySwapchain(true)
+		m_OwnedBySwapchain(true),
+		m_TimestampQueryCount(0),
+		m_NextTimestampQueryID(0),
+		m_PipelineQueryCount(PipelineStatistics::Count())
 	{
 		const VulkanSwapChain& swapChain = VulkanContext::GetSwapChain();
 		auto device = swapChain.GetDevice();
@@ -54,20 +63,31 @@ namespace XYZ {
 
 		for (size_t frame = 0; frame < swapChain.GetNumCommandsBuffers(); frame++)
 			m_CommandBuffers[frame] = swapChain.GetCommandBuffer(frame);
+
+		createPipelineStatisticsQueries();
 	}
 	VulkanRenderCommandBuffer::~VulkanRenderCommandBuffer()
-	{
+	{	
+		if (m_OwnedBySwapchain)
+		{
+			// Renderer is no longer valid, and all rendering is finished, it can be safely released here
+			auto device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			for (const auto query : m_TimestampQueryPools)
+				vkDestroyQueryPool(device, query, nullptr);
+			for (const auto query : m_PipelineStatisticsQueryPools)
+				vkDestroyQueryPool(device, query, nullptr);
+
+			return;
+		}
+
 		destroyTimestampQueries();
 		destroyPipelineStatisticsQueries();
-		if (m_OwnedBySwapchain)
-			return;
 
 		VkCommandPool commandPool = m_CommandPool;
 		auto fences = m_WaitFences;
 		Renderer::SubmitResource([commandPool, fences]()
 		{
 			auto device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-
 			for (const auto fence : fences)
 				vkDestroyFence(device, fence, nullptr);
 
@@ -76,6 +96,7 @@ namespace XYZ {
 	}
 	void VulkanRenderCommandBuffer::Begin()
 	{
+		m_NextTimestampQueryID = 0;
 		Ref<VulkanRenderCommandBuffer> instance = this;
 		Renderer::Submit([instance]() mutable {
 			instance->RT_Begin();
@@ -109,6 +130,9 @@ namespace XYZ {
 			VK_CHECK_RESULT(vkWaitForFences(device->GetVulkanDevice(), 1, &instance->m_WaitFences[frameIndex], VK_TRUE, UINT64_MAX));
 			VK_CHECK_RESULT(vkResetFences(device->GetVulkanDevice(), 1, &instance->m_WaitFences[frameIndex]));
 			VK_CHECK_RESULT(vkQueueSubmit(device->GetGraphicsQueue(), 1, &submitInfo, instance->m_WaitFences[frameIndex]));
+			
+			instance->getTimestampQueryResults();
+			instance->getPipelineQueryResults();
 		});
 	}
 
@@ -123,40 +147,23 @@ namespace XYZ {
 		const VkCommandBuffer commandBuffer = m_CommandBuffers[frameIndex];
 		VK_CHECK_RESULT(vkBeginCommandBuffer(commandBuffer, &beginInfo));
 
-		// Timestamp query
 		if (!m_TimestampQueryPools.empty())
 		{
 			vkCmdResetQueryPool(commandBuffer, m_TimestampQueryPools[frameIndex], 0, m_TimestampQueryCount);
-			vkCmdWriteTimestamp(commandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, m_TimestampQueryPools[frameIndex], 0);
 		}
-		// Pipeline stats query
-		if (!m_PipelineStatisticsQueryPools.empty())
-		{
-			vkCmdResetQueryPool(commandBuffer, m_PipelineStatisticsQueryPools[frameIndex], 0, m_PipelineQueryCount);
-			vkCmdBeginQuery(commandBuffer, m_PipelineStatisticsQueryPools[frameIndex], 0, 0);
-		}
+		// Pipeline stats query		
+		vkCmdResetQueryPool(commandBuffer, m_PipelineStatisticsQueryPools[frameIndex], 0, m_PipelineQueryCount);
+		vkCmdBeginQuery(commandBuffer, m_PipelineStatisticsQueryPools[frameIndex], 0, 0);
 	}
 
 	void VulkanRenderCommandBuffer::RT_End() 
 	{
 		const uint32_t frameIndex = VulkanContext::Get()->GetCurrentFrame();
-
      	const VkCommandBuffer commandBuffer = m_CommandBuffers[frameIndex];
-		if (!m_TimestampQueryPools.empty())
-		{
-			vkCmdWriteTimestamp(commandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, m_TimestampQueryPools[frameIndex], 1);
-		}
-		if (!m_PipelineStatisticsQueryPools.empty())
-		{
-			vkCmdEndQuery(commandBuffer, m_PipelineStatisticsQueryPools[frameIndex], 0);
-		}
-		VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
-	}
 
-	void VulkanRenderCommandBuffer::CreatePipelineStatisticsQueries(uint32_t count)
-	{
-		destroyPipelineStatisticsQueries();
-		createPipelineStatisticsQueries(count);
+
+		vkCmdEndQuery(commandBuffer, m_PipelineStatisticsQueryPools[frameIndex], 0);
+		VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
 	}
 
 	void VulkanRenderCommandBuffer::CreateTimestampQueries(uint32_t count)
@@ -167,25 +174,23 @@ namespace XYZ {
 
 	float VulkanRenderCommandBuffer::GetExecutionGPUTime(uint32_t frameIndex, uint32_t queryIndex) const
 	{
-		if (queryIndex / 2 >= m_TimestampNextAvailableQuery / 2)
-			return 0.0f;
-
 		return m_ExecutionGPUTimes[frameIndex][queryIndex / 2];
 	}
-	uint64_t VulkanRenderCommandBuffer::BeginTimestampQuery()
+	uint32_t VulkanRenderCommandBuffer::BeginTimestampQuery()
 	{
-		uint64_t queryIndex = m_TimestampNextAvailableQuery;
-		m_TimestampNextAvailableQuery += 2;
+		XYZ_ASSERT(m_NextTimestampQueryID < m_TimestampQueryCount, "Using more queries than created");
+		uint32_t queryID = m_NextTimestampQueryID;
+		m_NextTimestampQueryID += 2;
 		Ref<VulkanRenderCommandBuffer> instance = this;
-		Renderer::Submit([instance, queryIndex]()
+		Renderer::Submit([instance, queryID]()
 		{
 			uint32_t frameIndex = Renderer::GetCurrentFrame();
 			VkCommandBuffer commandBuffer = instance->m_CommandBuffers[frameIndex];
-			vkCmdWriteTimestamp(commandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, instance->m_TimestampQueryPools[frameIndex], queryIndex);
+			vkCmdWriteTimestamp(commandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, instance->m_TimestampQueryPools[frameIndex], queryID);
 		});
-		return queryIndex;
+		return queryID;
 	}
-	void VulkanRenderCommandBuffer::EndTimestampQuery(uint64_t queryID)
+	void VulkanRenderCommandBuffer::EndTimestampQuery(uint32_t queryID)
 	{
 		Ref<VulkanRenderCommandBuffer> instance = this;
 		Renderer::Submit([instance, queryID]()
@@ -198,13 +203,14 @@ namespace XYZ {
 
 	void VulkanRenderCommandBuffer::createTimestampQueries(uint32_t count)
 	{
+		m_TimestampQueryCount = count * 2;
 		auto device = VulkanContext::GetCurrentDevice();
 		uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;
 		VkQueryPoolCreateInfo queryPoolCreateInfo = {};
 		queryPoolCreateInfo.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
 		queryPoolCreateInfo.pNext = nullptr;
 
-		m_TimestampQueryCount = 2 + 2 *count;
+		
 
 		queryPoolCreateInfo.queryType = VK_QUERY_TYPE_TIMESTAMP;
 		queryPoolCreateInfo.queryCount = m_TimestampQueryCount;
@@ -221,7 +227,7 @@ namespace XYZ {
 			executionGPUTimes.resize(m_TimestampQueryCount / 2);
 	}
 
-	void VulkanRenderCommandBuffer::createPipelineStatisticsQueries(uint32_t count)
+	void VulkanRenderCommandBuffer::createPipelineStatisticsQueries()
 	{
 		auto device = VulkanContext::GetCurrentDevice();
 		uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;
@@ -230,7 +236,7 @@ namespace XYZ {
 		queryPoolCreateInfo.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
 		queryPoolCreateInfo.pNext = nullptr;
 
-		m_PipelineQueryCount = count;
+		
 		queryPoolCreateInfo.queryType = VK_QUERY_TYPE_PIPELINE_STATISTICS;
 		queryPoolCreateInfo.queryCount = m_PipelineQueryCount;
 		queryPoolCreateInfo.pipelineStatistics =
@@ -261,7 +267,6 @@ namespace XYZ {
 
 			for (const auto query : timestampQueryPools)
 				vkDestroyQueryPool(device, query, nullptr);
-
 		});
 	}
 
@@ -279,4 +284,29 @@ namespace XYZ {
 		});
 	}
 
+	void VulkanRenderCommandBuffer::getTimestampQueryResults()
+	{
+		auto device = VulkanContext::GetCurrentDevice();
+		const uint32_t frameIndex = Renderer::GetCurrentFrame();
+
+
+		vkGetQueryPoolResults(device->GetVulkanDevice(), m_TimestampQueryPools[frameIndex], 0, m_TimestampQueryCount,
+			m_TimestampQueryCount * sizeof(uint64_t), m_TimestampQueryResults[frameIndex].data(), sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
+
+		for (uint32_t i = 0; i < m_TimestampQueryCount; i += 2)
+		{
+			uint64_t startTime = m_TimestampQueryResults[frameIndex][i];
+			uint64_t endTime = m_TimestampQueryResults[frameIndex][i + 1];
+			float nsTime = endTime > startTime ? (endTime - startTime) * device->GetPhysicalDevice()->GetLimits().timestampPeriod : 0.0f;
+			m_ExecutionGPUTimes[frameIndex][i / 2] = nsTime * 0.000001f; // Time in ms
+		}
+	}
+	void VulkanRenderCommandBuffer::getPipelineQueryResults()
+	{
+		auto device = VulkanContext::GetCurrentDevice();
+		const uint32_t frameIndex = Renderer::GetCurrentFrame();
+
+		vkGetQueryPoolResults(device->GetVulkanDevice(), m_PipelineStatisticsQueryPools[frameIndex], 0, 1,
+			sizeof(PipelineStatistics), &m_PipelineStatisticsQueryResults[frameIndex], sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
+	}
 }

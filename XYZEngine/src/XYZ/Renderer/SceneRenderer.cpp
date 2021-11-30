@@ -6,7 +6,7 @@
 
 #include "XYZ/Core/Input.h"
 #include "XYZ/Debug/Profiler.h"
-#include "XYZ/Renderer/Renderer.h"
+#include "XYZ/ImGui/ImGui.h"
 
 #include <glm/gtx/transform.hpp>
 
@@ -40,7 +40,6 @@ namespace XYZ {
 			m_CommandBuffer = RenderCommandBuffer::Create(0, "SceneRenderer");
 
 		m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
-		m_CommandBuffer->CreatePipelineStatisticsQueries(2);
 
 		m_Renderer2D = Ref<Renderer2D>::Create(m_CommandBuffer);
 	
@@ -137,8 +136,12 @@ namespace XYZ {
 	void SceneRenderer::EndScene()
 	{
 		m_CommandBuffer->Begin();
+
+		m_GPUTimeQueries.GPUTime = m_CommandBuffer->BeginTimestampQuery();
 		flush();
 		flushDefaultQueue();
+		m_CommandBuffer->EndTimestampQuery(m_GPUTimeQueries.GPUTime);
+
 		m_CommandBuffer->End();
 		m_CommandBuffer->Submit();
 	}
@@ -220,16 +223,33 @@ namespace XYZ {
 	void SceneRenderer::OnImGuiRender()
 	{
 		XYZ_PROFILE_FUNC("SceneRenderer::OnImGuiRender");
+		
 		if (ImGui::Begin("Scene Renderer"))
 		{
 			ImGui::Text("Viewport Size: %d, %d", m_ViewportSize.x, m_ViewportSize.y);
 
 			uint32_t frameIndex = Renderer::GetCurrentFrame();
-			// TODO: fix this
-			//ImGui::Text("GPU time: %.3fms", m_CommandBuffer->GetExecutionGPUTime(frameIndex));
-			//ImGui::Text("Renderer2D Pass: %.3fms", m_CommandBuffer->GetExecutionGPUTime(frameIndex, m_GPUTimeQueries.Renderer2DPassQuery));
-			ImGui::End();
+			if (UI::BeginTreeNode("GPU measurements"))
+			{
+				ImGui::Text("GPU time: %.3fms", m_CommandBuffer->GetExecutionGPUTime(frameIndex, m_GPUTimeQueries.GPUTime));
+				ImGui::Text("Renderer2D Pass: %.3fms", m_CommandBuffer->GetExecutionGPUTime(frameIndex, m_GPUTimeQueries.Renderer2DPassQuery));
+				
+				UI::EndTreeNode();
+			}
+			if (UI::BeginTreeNode("Pipeline Statistics"))
+			{
+				const PipelineStatistics& pipelineStats = m_CommandBuffer->GetPipelineStatistics(frameIndex);
+				ImGui::Text("Input Assembly Vertices: %llu", pipelineStats.InputAssemblyVertices);
+				ImGui::Text("Input Assembly Primitives: %llu", pipelineStats.InputAssemblyPrimitives);
+				ImGui::Text("Vertex Shader Invocations: %llu", pipelineStats.VertexShaderInvocations);
+				ImGui::Text("Clipping Invocations: %llu", pipelineStats.ClippingInvocations);
+				ImGui::Text("Clipping Primitives: %llu", pipelineStats.ClippingPrimitives);
+				ImGui::Text("Fragment Shader Invocations: %llu", pipelineStats.FragmentShaderInvocations);
+				ImGui::Text("Compute Shader Invocations: %llu", pipelineStats.ComputeShaderInvocations);
+				UI::EndTreeNode();
+			}
 		}
+		ImGui::End();
 	}
 
 	Ref<RenderPass> SceneRenderer::GetFinalRenderPass() const
@@ -333,6 +353,7 @@ namespace XYZ {
 			m_Renderer2D->SubmitQuad(dc.Transform, dc.SubTexture, dc.Color);
 		}
 		m_Renderer2D->EndScene();
+		m_CommandBuffer->EndTimestampQuery(m_GPUTimeQueries.Renderer2DPassQuery);
 	}
 	void SceneRenderer::lightPass()
 	{

@@ -107,6 +107,7 @@ namespace XYZ {
 		m_SwapChain.InitSurface(m_WindowHandle);
 		VulkanAllocator::Init(m_Device);
 	}
+	
 	void VulkanContext::CreateSwapChain(uint32_t* width, uint32_t* height, bool vSync)
 	{
 		m_SwapChain.Create(width, height, vSync);
@@ -127,10 +128,7 @@ namespace XYZ {
 	{
 		return m_SwapChain.GetRenderCommandBuffer();
 	}
-	Ref<RenderPass> VulkanContext::GetRenderPass()
-	{
-		return m_SwapChain.GetRenderPass();
-	}
+	
 	Ref<VulkanContext> VulkanContext::Get()
 	{
 		return Ref<VulkanContext>(Renderer::GetAPIContext());

@@ -34,6 +34,7 @@ namespace XYZ {
 		const QueueFamilyIndices&		  GetQueueFamilyIndices()	const { return m_QueueFamilyIndices; }
 		const VkPhysicalDeviceProperties& GetProperties()			const { return m_Properties; }
 		const VkPhysicalDeviceFeatures&   GetFeatures()				const { return m_Features; }
+		const VkPhysicalDeviceLimits&     GetLimits()				const { return m_Properties.limits; }
 	private:
 		void setupQueueFamilyIndices(int flags);
 		void findPresentationQueue(VkSurfaceKHR surface);

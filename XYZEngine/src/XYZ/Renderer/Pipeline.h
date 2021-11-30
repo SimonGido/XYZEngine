@@ -42,6 +42,8 @@ namespace XYZ {
 		uint64_t ClippingPrimitives = 0;
 		uint64_t FragmentShaderInvocations = 0;
 		uint64_t ComputeShaderInvocations = 0;
+
+		static constexpr uint32_t Count() { return sizeof(PipelineStatistics) / sizeof(uint64_t); }
 	};
 
 	class Pipeline : public RefCount

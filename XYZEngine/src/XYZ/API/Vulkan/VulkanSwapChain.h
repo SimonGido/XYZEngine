@@ -32,9 +32,8 @@ namespace XYZ {
 		void Create(uint32_t* width, uint32_t* height, bool vSync);
 
 		Ref<RenderCommandBuffer> GetRenderCommandBuffer() const;
-		Ref<RenderPass>			 GetRenderPass()	   const { return m_RenderPass; }
-		Ref<VulkanDevice>		 GetDevice()		   const { return m_Device; }
-		VkRenderPass			 GetVulkanRenderPass() const { return m_VulkanRenderPass; }
+		Ref<VulkanDevice>		 GetDevice()		      const { return m_Device; }
+		VkRenderPass			 GetVulkanRenderPass()    const { return m_VulkanRenderPass; }
 		
 		VkFramebuffer			 GetFramebuffer(uint32_t index) const;
 		VkFramebuffer			 GetCurrentFramebuffer()		const;
