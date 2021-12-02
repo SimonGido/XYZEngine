@@ -39,6 +39,7 @@
 #include "XYZ/Scene/EditorComponents.h"
 
 //---------Editor-----------//
+#include "XYZ/Editor/EditorManager.h"
 #include "XYZ/Editor/EditorCamera.h"
 #include "XYZ/Editor/OrthographicCameraController.h"
 #include "XYZ/Editor/Panels/ScenePanel.h"

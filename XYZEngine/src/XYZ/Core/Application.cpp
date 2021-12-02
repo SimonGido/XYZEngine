@@ -12,6 +12,7 @@
 #include "XYZ/API/Vulkan/VulkanAllocator.h"
 #include "XYZ/API/Vulkan/VulkanRendererAPI.h"
 
+#include "XYZ/ImGui/ImGui.h"
 
 #include <GLFW/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -163,15 +164,17 @@ namespace XYZ {
 	{
 		if (ImGui::Begin("Performance"))
 		{
-			ImGui::Text("Frame Time: %.2f ms", m_Timestep.GetMilliseconds());
-
-			
-			m_Profiler.LockData();
-			for (const auto [name, time] : m_Profiler.GetPerformanceData())
+			if (ImGui::BeginTable("##PerformanceTable", 2, ImGuiTableFlags_SizingFixedFit))
 			{
-				ImGui::Text("%s: %.3fms\n", name, time);
+				UI::TextTableRow("%s", "Frame Time:", "%.2f ms", m_Timestep.GetMilliseconds());
+				m_Profiler.LockData();
+				for (const auto [name, time] : m_Profiler.GetPerformanceData())
+				{
+					UI::TextTableRow("%s:", name, "%.3f ms", time);
+				}
+				m_Profiler.UnlockData();
+				ImGui::EndTable();
 			}
-			m_Profiler.UnlockData();
 		}
 		ImGui::End();
 	}
@@ -181,17 +184,28 @@ namespace XYZ {
 		if (ImGui::Begin("Renderer"))
 		{
 			auto& caps = Renderer::GetCapabilities();
-			ImGui::Text("Vendor: %s", caps.Vendor.c_str());
-			ImGui::Text("Renderer: %s", caps.Device.c_str());
-			ImGui::Text("Version: %s", caps.Version.c_str());
+			if (ImGui::BeginTable("##RendererTable", 2, ImGuiTableFlags_SizingFixedFit))
+			{
+				UI::TextTableRow("%s", "Vendor:", "%s", caps.Vendor.c_str());
+				UI::TextTableRow("%s", "Renderer:", "%s", caps.Device.c_str());
+				UI::TextTableRow("%s", "Version:", "%s", caps.Version.c_str());
+
+				ImGui::EndTable();
+			}
 			ImGui::Separator();
 			if (RendererAPI::GetType() == RendererAPI::Type::Vulkan)
 			{
-				GPUMemoryStats memoryStats = VulkanAllocator::GetStats();
-				std::string used = Utils::BytesToString(memoryStats.Used);
-				std::string free = Utils::BytesToString(memoryStats.Free);
-				ImGui::Text("Used VRAM: %s", used.c_str());
-				ImGui::Text("Free VRAM: %s", free.c_str());
+				if (ImGui::BeginTable("##VulkanAllocatorTable", 2, ImGuiTableFlags_SizingFixedFit))
+				{
+					GPUMemoryStats memoryStats = VulkanAllocator::GetStats();
+					std::string used = Utils::BytesToString(memoryStats.Used);
+					std::string free = Utils::BytesToString(memoryStats.Free);
+
+					UI::TextTableRow("%s", "Used VRAM:", "%s", used.c_str());
+					UI::TextTableRow("%s", "Free VRAM:", "%s", free.c_str());
+					
+					ImGui::EndTable();
+				}
 			}
 			bool vSync = m_Window->IsVSync();
 			if (ImGui::Checkbox("Vsync", &vSync))

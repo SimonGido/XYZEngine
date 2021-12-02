@@ -49,9 +49,9 @@ namespace XYZ {
 	
 	private:	
 		SceneEntity							m_SelectedEntity;
-		
-		Editor::ScenePanel					m_ScenePanel;
-		Editor::SceneHierarchyPanel			m_SceneHierarchyPanel;
+		Editor::EditorManager				m_EditorManager;
+
+
 		Editor::InspectorPanel				m_InspectorPanel;
 		Editor::SceneEntityInspectorContext m_SceneEntityInspectorContext;
 		Editor::AssetInspectorContext	    m_AssetInspectorContext;

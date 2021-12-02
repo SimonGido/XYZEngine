@@ -36,7 +36,7 @@ namespace XYZ {
 		{
 			if (storage)
 			{
-				if (Contains(entity, storage->ID()))
+				if (HasComponent(entity, storage->ID()))
 				{
 					storage->CopyEntity(entity, result);
 					signature.Set(storage->ID(), true);
@@ -70,7 +70,8 @@ namespace XYZ {
 		XYZ_ASSERT(IsValid(entity), "Entity is invalid");
 		return m_EntityManager.GetSignature(entity);
 	}
-	bool ECSManager::Contains(Entity entity, uint16_t componentID) const
+
+	bool ECSManager::HasComponent(Entity entity, uint16_t componentID) const
 	{
 		XYZ_ASSERT(IsValid(entity), "Entity is invalid");
 		auto& signature = m_EntityManager.GetSignature(entity);

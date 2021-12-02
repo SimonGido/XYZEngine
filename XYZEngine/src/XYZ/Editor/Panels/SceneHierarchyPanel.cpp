@@ -18,7 +18,9 @@ namespace XYZ {
         }
     }
     namespace Editor {
-        SceneHierarchyPanel::SceneHierarchyPanel()
+        SceneHierarchyPanel::SceneHierarchyPanel(std::string name)
+            :
+            EditorPanel(std::move(name))
         {
         }
         SceneHierarchyPanel::~SceneHierarchyPanel()
@@ -45,11 +47,17 @@ namespace XYZ {
             }
             ImGui::End();
         }
-     
-        void SceneHierarchyPanel::SetContext(const Ref<Scene>& context)
+
+        bool SceneHierarchyPanel::OnEvent(Event& e)
         {
-            m_Context = context;    
+            return false;
         }
+
+        void SceneHierarchyPanel::SetSceneContext(const Ref<Scene>& scene)
+        {
+            m_Context = scene;
+        }
+    
 
         void SceneHierarchyPanel::drawEntityNode(const SceneEntity& entity)
         {

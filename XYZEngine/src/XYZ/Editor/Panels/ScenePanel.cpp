@@ -11,6 +11,7 @@
 #include "XYZ/ImGui/ImGui.h"
 
 #include <imgui.h>
+#include <imgui_internal.h>
 #include <ImGuizmo.h>
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -68,18 +69,17 @@ namespace XYZ {
 			}
 		}
 	
-		ScenePanel::ScenePanel()
+		ScenePanel::ScenePanel(std::string name)
 			:
+			EditorPanel(std::move(name)),
 			m_ViewportSize(0.0f),
 			m_ButtonSize(25.0f),
 			m_EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f),
 			m_ViewportFocused(false),
 			m_ViewportHovered(false),
 			m_SelectionIndex(0),
-			m_ModifyFlags(0),
-			m_MoveSpeed(100.0f),
-			m_OldMousePosition(0.0f),
-			m_GizmoType(-1)
+			m_ModifyFlags(None),
+			m_GizmoType(sc_InvalidGizmoType)
 		{
 			m_Texture = Texture2D::Create("Assets/Textures/Gui/icons.png");
 			const float divisor = 4.0f;
@@ -102,52 +102,39 @@ namespace XYZ {
 			const uint32_t windowHeight = Application::Get().GetWindow().GetHeight();
 			m_EditorCamera.SetViewportSize((float)windowWidth, (float)windowHeight);
 		}
+	
 		ScenePanel::~ScenePanel()
 		{
 		}
-	
-		void ScenePanel::SetContext(const Ref<Scene>& context)
-		{
-			m_Context = context;
-		}
 
-		void ScenePanel::OnUpdate(Timestep ts)
-		{
-			if (m_Context.Raw())
-			{
-				if (m_ViewportHovered && m_Context->GetState() == SceneState::Edit)
-				{
-					m_EditorCamera.OnUpdate(ts);
-				}
-			}
-		}
-		void ScenePanel::OnImGuiRender(const Ref<Image2D>& finalImage)
+	
+		void ScenePanel::OnImGuiRender(bool& open)
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-			if (ImGui::Begin("Scene"))
+			if (ImGui::Begin("Scene", &open))
 			{
 				if (m_Context.Raw())
 				{
 					const ImVec2 startCursorPos = ImGui::GetCursorPos();
-					m_ViewportBounds = Utils::ImGuiViewportBounds();
+					const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+					m_ViewportBounds  = Utils::ImGuiViewportBounds();
 					m_ViewportFocused = ImGui::IsWindowFocused();
 					m_ViewportHovered = ImGui::IsWindowHovered();
 
 					ImGuiLayer* imguiLayer = Application::Get().GetImGuiLayer();
 					const bool blocked = imguiLayer->GetBlockedEvents();
-					if (blocked)
-						imguiLayer->BlockEvents(!m_ViewportFocused && !m_ViewportHovered);
+					// Only unlock possible here
+					imguiLayer->BlockEvents(blocked && !m_ViewportFocused && !m_ViewportHovered);
 
 
-					ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 				
-					UI::Image(finalImage, viewportPanelSize);
+					UI::Image(m_SceneRenderer->GetFinalPassImage(), viewportPanelSize);
 					
 					auto [mx, my] = getMouseViewportSpace();
 					if (m_ViewportHovered && m_ViewportFocused && m_Context->GetState() == SceneState::Edit)
 					{
 						const SceneEntity selectedEntity = m_Context->GetSelectedEntity();
-						if (selectedEntity && m_GizmoType != -1)
+						if (selectedEntity && m_GizmoType != sc_InvalidGizmoType)
 						{
 							handleEntityTransform(m_Context->GetSelectedEntity());
 						}
@@ -160,8 +147,15 @@ namespace XYZ {
 					handlePanelResize({ viewportPanelSize.x, viewportPanelSize.y });
 					
 					ImGui::SetCursorPos(startCursorPos);
-					if (m_Context->GetState() == SceneState::Edit)
+					if (m_Context->GetState() != SceneState::Edit)
 					{
+						ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+						ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+					}
+					{
+						//UI::ScopedItemFlags flags(ImGuiItemFlags_Disabled, m_Context->GetState() != SceneState::Edit);
+						//UI::ScopedStyleStack styleStack(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+						
 						if (UI::ImageButtonTransparent("Play", m_Texture->GetImage(),
 							Utils::GlmToImVec2(m_ButtonSize),
 							ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
@@ -175,7 +169,14 @@ namespace XYZ {
 							m_Context->OnPlay();
 						}
 					}
-					else if (m_Context->GetState() == SceneState::Play)
+					if (m_Context->GetState() != SceneState::Edit)
+					{
+						ImGui::PopItemFlag();
+						ImGui::PopStyleVar();
+					}
+					ImGui::SameLine();
+					
+					//else if (m_Context->GetState() == SceneState::Play)
 					{
 						if (UI::ImageButtonTransparent("Stop", m_Texture->GetImage(),
 							Utils::GlmToImVec2(m_ButtonSize),
@@ -195,12 +196,50 @@ namespace XYZ {
 			ImGui::End();		
 			ImGui::PopStyleVar();
 		}
-		void ScenePanel::OnEvent(Event& event)
+
+		void ScenePanel::OnUpdate(Timestep ts)
+		{
+			if (m_Context.Raw())
+			{
+				if (m_Context->GetState() == SceneState::Edit)
+				{
+					m_EditorCamera.OnUpdate(ts);
+					m_Context->OnRenderEditor(m_SceneRenderer, m_EditorCamera, ts);
+				}
+				else
+				{
+					m_Context->OnUpdate(ts);
+					m_Context->OnRender(m_SceneRenderer);
+				}
+			}
+		}
+
+		bool ScenePanel::OnEvent(Event& event)
 		{
 			EventDispatcher dispatcher(event);
 			dispatcher.Dispatch<KeyPressedEvent>(Hook(&ScenePanel::onKeyPressed, this));
 			if (m_ViewportHovered && m_ViewportFocused)
 				m_EditorCamera.OnEvent(event);
+			
+			return false;
+		}
+
+		void ScenePanel::SetSceneContext(const Ref<Scene>& context)
+		{
+			m_Context = context;
+			if (m_SceneRenderer.Raw())
+			{
+				m_SceneRenderer->SetScene(m_Context);
+			}
+		}
+
+		void ScenePanel::SetSceneRenderer(const Ref<SceneRenderer>& sceneRenderer)
+		{
+			m_SceneRenderer = sceneRenderer;
+			if (m_Context.Raw())
+			{
+				m_SceneRenderer->SetScene(m_Context);
+			}
 		}
 
 		bool ScenePanel::onKeyPressed(KeyPressedEvent& e)
@@ -210,7 +249,7 @@ namespace XYZ {
 				if (e.IsKeyPressed(KeyCode::KEY_Q))
 				{
 					if (!ImGuizmo::IsUsing())
-						m_GizmoType = -1;
+						m_GizmoType = sc_InvalidGizmoType;
 					return true;
 				}
 				else if (e.IsKeyPressed(KeyCode::KEY_W))
@@ -263,7 +302,7 @@ namespace XYZ {
 			return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f };
 		}
 
-		std::deque<SceneEntity> ScenePanel::getSelection(const Ray& ray)
+		std::deque<SceneEntity> ScenePanel::findSelection(const Ray& ray)
 		{
 			std::deque<SceneEntity> result;
 			for (const Entity entityID : m_Context->GetEntities())
@@ -306,7 +345,7 @@ namespace XYZ {
 				const Ray ray = { origin,direction };
 				m_Context->SetSelectedEntity(Entity());
 
-				std::deque<SceneEntity> newSelection = getSelection(ray);
+				std::deque<SceneEntity> newSelection = findSelection(ray);
 				if (!Utils::CompareDeques(m_Selection, newSelection))
 				{
 					m_Selection = std::move(newSelection);

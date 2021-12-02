@@ -180,7 +180,7 @@ namespace XYZ {
 		delete s_RendererAPI;
 		s_RendererAPI = nullptr;
 
-		s_Data.APIContext.Reset(); // Free context to make sure it is destroyed sooner than Logger;
+		s_Data.APIContext->Shutdown(); // Free context to make sure it is destroyed sooner than Logger;
 	}
 
 	void Renderer::Clear()

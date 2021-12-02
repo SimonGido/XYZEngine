@@ -231,21 +231,30 @@ namespace XYZ {
 			uint32_t frameIndex = Renderer::GetCurrentFrame();
 			if (UI::BeginTreeNode("GPU measurements"))
 			{
-				ImGui::Text("GPU time: %.3fms", m_CommandBuffer->GetExecutionGPUTime(frameIndex, m_GPUTimeQueries.GPUTime));
-				ImGui::Text("Renderer2D Pass: %.3fms", m_CommandBuffer->GetExecutionGPUTime(frameIndex, m_GPUTimeQueries.Renderer2DPassQuery));
+				if (ImGui::BeginTable("##GPUTime", 2, ImGuiTableFlags_SizingFixedFit))
+				{
+					UI::TextTableRow("%s", "GPU time:", "%.3fms", m_CommandBuffer->GetExecutionGPUTime(frameIndex, m_GPUTimeQueries.GPUTime));
+					UI::TextTableRow("%s", "Renderer2D Pass:", "%.3fms", m_CommandBuffer->GetExecutionGPUTime(frameIndex, m_GPUTimeQueries.Renderer2DPassQuery));
+					ImGui::EndTable();
+				}
 				
 				UI::EndTreeNode();
 			}
 			if (UI::BeginTreeNode("Pipeline Statistics"))
 			{
 				const PipelineStatistics& pipelineStats = m_CommandBuffer->GetPipelineStatistics(frameIndex);
-				ImGui::Text("Input Assembly Vertices: %llu", pipelineStats.InputAssemblyVertices);
-				ImGui::Text("Input Assembly Primitives: %llu", pipelineStats.InputAssemblyPrimitives);
-				ImGui::Text("Vertex Shader Invocations: %llu", pipelineStats.VertexShaderInvocations);
-				ImGui::Text("Clipping Invocations: %llu", pipelineStats.ClippingInvocations);
-				ImGui::Text("Clipping Primitives: %llu", pipelineStats.ClippingPrimitives);
-				ImGui::Text("Fragment Shader Invocations: %llu", pipelineStats.FragmentShaderInvocations);
-				ImGui::Text("Compute Shader Invocations: %llu", pipelineStats.ComputeShaderInvocations);
+				if (ImGui::BeginTable("##GPUTime", 2, ImGuiTableFlags_SizingFixedFit))
+				{
+					UI::TextTableRow("%s", "Input Assembly Vertices:", "%llu", pipelineStats.InputAssemblyVertices);		
+					UI::TextTableRow("%s", "Input Assembly Primitives:", "%llu", pipelineStats.InputAssemblyPrimitives);
+					UI::TextTableRow("%s", "Vertex Shader Invocations:", "%llu", pipelineStats.VertexShaderInvocations);
+					UI::TextTableRow("%s", "Clipping Invocations:", "%llu", pipelineStats.ClippingInvocations);
+					UI::TextTableRow("%s", "Clipping Primitives:", "%llu", pipelineStats.ClippingPrimitives);
+					UI::TextTableRow("%s", "Fragment Shader Invocations:", "%llu", pipelineStats.FragmentShaderInvocations);
+					UI::TextTableRow("%s", "Compute Shader Invocations:", "%llu", pipelineStats.ComputeShaderInvocations);
+
+					ImGui::EndTable();
+				}
 				UI::EndTreeNode();
 			}
 		}

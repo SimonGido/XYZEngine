@@ -38,9 +38,9 @@ namespace XYZ {
 		const Signature& GetEntitySignature(Entity entity) const;
 		
 		template <typename T>
-		bool Contains(Entity entity) const;
+		bool HasComponent(Entity entity) const;
 		
-		bool Contains(Entity entity, uint16_t componentID) const;
+		bool HasComponent(Entity entity, uint16_t componentID) const;
 		
 		bool IsValid(Entity entity) const;
 		
@@ -260,7 +260,7 @@ namespace XYZ {
 		return m_ComponentManager.GetComponent<T>(entity);
 	}
 	template<typename T>
-	inline bool ECSManager::Contains(Entity entity) const
+	inline bool ECSManager::HasComponent(Entity entity) const
 	{
 		XYZ_ASSERT(IsValid(entity), "Entity is invalid");
 		if (!Component<T>::Registered())

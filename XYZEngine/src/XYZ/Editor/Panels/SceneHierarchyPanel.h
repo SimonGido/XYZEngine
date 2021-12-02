@@ -1,18 +1,19 @@
 #pragma once
-
-#include "XYZ/Scene/Scene.h"
+#include "XYZ//Editor/EditorPanel.h"
 
 namespace XYZ {
 	namespace Editor {
-		class SceneHierarchyPanel
+		class SceneHierarchyPanel : public EditorPanel
 		{
 		public:
-			SceneHierarchyPanel();
+			SceneHierarchyPanel(std::string name);
 			~SceneHierarchyPanel();
+			
+			virtual void OnImGuiRender(bool& open) override;
+			virtual bool OnEvent(Event& e) override;
 
-			void OnImGuiRender(bool& open);
-			void SetContext(const Ref<Scene>& context);
-		
+			virtual void SetSceneContext(const Ref<Scene>& scene) override;
+
 		private:
 			void drawEntityNode(const SceneEntity& entity);
 			void dragAndDrop(const SceneEntity& entity);

@@ -22,6 +22,8 @@ namespace XYZ {
 		bool GetBlockedEvents() const { return m_BlockEvents; }
 		static void SetDarkThemeColors();
 		static void SetDarkThemeSRGBColors();
+		static void SetDarkThemeColorsTest();
+
 		static ImGuiLayer* Create();
 	
 	protected:

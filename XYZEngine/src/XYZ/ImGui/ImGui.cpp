@@ -122,6 +122,7 @@ namespace XYZ {
 			}
 			return false;
 		}
+
 		bool BeginTreeNode(const char* name, bool defaultOpen)
 		{
 			ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding;

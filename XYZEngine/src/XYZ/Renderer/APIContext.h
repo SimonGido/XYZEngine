@@ -13,6 +13,7 @@ namespace XYZ {
 		virtual ~APIContext() = default;
 
 		virtual void Init(GLFWwindow* window) = 0;
+		virtual void Shutdown() {};
 
 		virtual void CreateSwapChain(uint32_t* width, uint32_t* height, bool vSync) {};
 		virtual void SwapBuffers() = 0;

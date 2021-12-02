@@ -38,10 +38,12 @@ namespace XYZ {
 			Application::Get().GetWindow().GetWidth(),
 			Application::Get().GetWindow().GetHeight()
 		);
-		m_ScenePanel.SetContext(m_Scene);
-		m_SceneHierarchyPanel.SetContext(m_Scene);
-
 		m_SceneRenderer = Ref<SceneRenderer>::Create(m_Scene, SceneRendererSpecification());
+
+		m_EditorManager.SetSceneContext(m_Scene);
+		m_EditorManager.RegisterPanel<Editor::ScenePanel>("ScenePanel");
+		m_EditorManager.RegisterPanel<Editor::SceneHierarchyPanel>("SceneHierarchyPanel");
+		m_EditorManager.GetPanel<Editor::ScenePanel>("ScenePanel")->SetSceneRenderer(m_SceneRenderer);
 
 		Renderer::WaitAndRenderAll();
 	}
@@ -51,18 +53,7 @@ namespace XYZ {
 	}
 	void EditorLayer::OnUpdate(Timestep ts)
 	{
-		auto& editorCamera = m_ScenePanel.GetEditorCamera();
-
-		if (m_Scene->GetState() == SceneState::Edit)
-		{
-			m_ScenePanel.OnUpdate(ts);
-			m_Scene->OnRenderEditor(m_SceneRenderer, editorCamera, ts);
-		}
-		else
-		{
-			m_Scene->OnUpdate(ts);
-			m_Scene->OnRender(m_SceneRenderer);
-		}
+		m_EditorManager.OnUpdate(ts);
 
 		if (m_SelectedEntity != m_Scene->GetSelectedEntity())
 		{
@@ -74,7 +65,7 @@ namespace XYZ {
 
 	void EditorLayer::OnEvent(Event& event)
 	{			
-		m_ScenePanel.OnEvent(event);
+		m_EditorManager.OnEvent(event);
 	}
 
 	void EditorLayer::OnImGuiRender()
@@ -101,9 +92,7 @@ namespace XYZ {
 
 			ImGui::EndMenuBar();
 		}
-
-		m_ScenePanel.OnImGuiRender(m_SceneRenderer->GetFinalPassImage());
-		m_SceneHierarchyPanel.OnImGuiRender(m_PanelsOpen[SceneHierarchy]);
+		m_EditorManager.OnImGuiRender();
 		m_InspectorPanel.OnImGuiRender(m_PanelsOpen[Inspector], m_SceneRenderer->GetRenderer2D());
 		/*
 		m_Inspector.OnImGuiRender(m_EditorRenderer);

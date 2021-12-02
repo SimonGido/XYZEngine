@@ -34,17 +34,7 @@ namespace XYZ {
 	}
 	VulkanContext::~VulkanContext()
 	{
-		VK_CHECK_RESULT(vkDeviceWaitIdle(m_Device->GetVulkanDevice()));
-		VulkanAllocator::Shutdown();
-		m_SwapChain.Destroy();
-		m_Device->Destroy();
-		if (s_Validation)
-		{
-			const auto vkDestroyDebugReportCallbackEXT = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(s_VulkanInstance, "vkDestroyDebugReportCallbackEXT");
-			vkDestroyDebugReportCallbackEXT(s_VulkanInstance, m_DebugReportCallback, nullptr);
-		}		
-		vkDestroyInstance(s_VulkanInstance, nullptr);
-		s_VulkanInstance = nullptr;	
+		
 	}
 	void VulkanContext::Init(GLFWwindow* window)
 	{
@@ -106,6 +96,21 @@ namespace XYZ {
 		m_SwapChain.Init(s_VulkanInstance, m_Device);
 		m_SwapChain.InitSurface(m_WindowHandle);
 		VulkanAllocator::Init(m_Device);
+	}
+
+	void VulkanContext::Shutdown()
+	{
+		VK_CHECK_RESULT(vkDeviceWaitIdle(m_Device->GetVulkanDevice()));
+		VulkanAllocator::Shutdown();
+		m_SwapChain.Destroy();
+		m_Device->Destroy();
+		if (s_Validation)
+		{
+			const auto vkDestroyDebugReportCallbackEXT = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(s_VulkanInstance, "vkDestroyDebugReportCallbackEXT");
+			vkDestroyDebugReportCallbackEXT(s_VulkanInstance, m_DebugReportCallback, nullptr);
+		}
+		vkDestroyInstance(s_VulkanInstance, nullptr);
+		s_VulkanInstance = nullptr;
 	}
 	
 	void VulkanContext::CreateSwapChain(uint32_t* width, uint32_t* height, bool vSync)

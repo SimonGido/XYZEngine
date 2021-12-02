@@ -216,7 +216,7 @@ namespace XYZ {
 	template<typename T>
 	inline bool SceneEntity::HasComponent() const
 	{
-		return m_Scene->m_ECS.Contains<T>(m_ID);
+		return m_Scene->m_ECS.HasComponent<T>(m_ID);
 	}
 	template<typename FuncT, typename ...Args>
 	inline void SceneEntity::AddOnConstruction(FuncT&& func, Args && ...args)
