@@ -57,12 +57,6 @@ namespace XYZ {
 		const float width = ImGui::TableGetMaxColumnWidth(ImGui::GetCurrentTable(), ImGui::TableGetColumnIndex());
 		const float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 
-		UI::ScopedStyleStack style(ImGuiStyleVar_ItemSpacing, ImVec2{ 0.0f, 5.0f });
-		UI::ScopedColorStack color(
-			ImGuiCol_Button, ImVec4{ 0.5f, 0.5f, 0.5f, 1.0f },
-			ImGuiCol_ButtonHovered, ImVec4{ 0.6f, 0.6f, 0.6f, 1.0f },
-			ImGuiCol_ButtonActive, ImVec4{ 0.65f, 0.65f, 0.65f, 1.0f }
-		);
 		
 		ImGui::PushItemWidth((width / 3.0f) - lineHeight);
 		UI::FloatControls(

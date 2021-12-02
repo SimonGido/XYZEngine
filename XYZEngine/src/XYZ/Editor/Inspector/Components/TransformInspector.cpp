@@ -14,8 +14,15 @@ namespace XYZ {
 
 			if (ImGui::BeginTable("##TransformTable", 2, ImGuiTableFlags_SizingFixedFit))
 			{
+				UI::ScopedStyleStack style(ImGuiStyleVar_ItemSpacing, ImVec2{ 0.0f, 5.0f });
+				UI::ScopedColorStack color(
+					ImGuiCol_Button, ImVec4{ 0.5f, 0.5f, 0.5f, 1.0f },
+					ImGuiCol_ButtonHovered, ImVec4{ 0.6f, 0.6f, 0.6f, 1.0f },
+					ImGuiCol_ButtonActive, ImVec4{ 0.65f, 0.65f, 0.65f, 1.0f }
+				);
+
 				UI::TableRow(
-					[&]()  { ImGui::Text("Translation"); },
+					[]()  { ImGui::Text("Translation"); },
 					[&]() { EditorHelper::DrawVec3Control("Translation", component.Translation); }
 				);	
 				glm::vec3 rotation = glm::degrees(component.Rotation);
