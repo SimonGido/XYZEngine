@@ -20,21 +20,25 @@ namespace XYZ {
 					ImGuiCol_ButtonHovered, ImVec4{ 0.6f, 0.6f, 0.6f, 1.0f },
 					ImGuiCol_ButtonActive, ImVec4{ 0.65f, 0.65f, 0.65f, 1.0f }
 				);
+				const float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 
 				UI::TableRow(
 					[]()  { ImGui::Text("Translation"); },
-					[&]() { EditorHelper::DrawVec3Control("Translation", component.Translation); }
+					[&]() { UI::ScopedTableColumnAutoWidth scoped(3, lineHeight);
+							UI::Vec3Control({ "X", "Y", "Z" }, component.Translation); }
 				);	
 				glm::vec3 rotation = glm::degrees(component.Rotation);
 				UI::TableRow(
 					[]() { ImGui::Text("Rotation");},
-					[&]() {EditorHelper::DrawVec3Control("Rotation", rotation); }
+					[&]() { UI::ScopedTableColumnAutoWidth scoped(3, lineHeight); 
+							UI::Vec3Control({ "X", "Y", "Z" }, rotation); }
 				);
 				component.Rotation = glm::radians(rotation);
 			
 				UI::TableRow(
 					[]() { ImGui::Text("Scale");},
-					[&]() {EditorHelper::DrawVec3Control("Scale", component.Scale, 1.0f); }
+					[&]() { UI::ScopedTableColumnAutoWidth scoped(3, lineHeight); 
+							UI::Vec3Control({ "X", "Y", "Z" }, component.Scale, 1.0f); }
 				);
 				ImGui::EndTable();
 			}

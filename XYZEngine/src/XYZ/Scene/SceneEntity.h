@@ -42,6 +42,9 @@ namespace XYZ {
 		template <typename T>
 		bool HasComponent() const;
 		
+		template <typename T>
+		bool HasComponentFromReflection(Reflection<T> refl) const;
+
 		void Destroy();
 		
 		bool IsValid() const;
@@ -215,6 +218,11 @@ namespace XYZ {
 	}
 	template<typename T>
 	inline bool SceneEntity::HasComponent() const
+	{
+		return m_Scene->m_ECS.HasComponent<T>(m_ID);
+	}
+	template<typename T>
+	inline bool SceneEntity::HasComponentFromReflection(Reflection<T> refl) const
 	{
 		return m_Scene->m_ECS.HasComponent<T>(m_ID);
 	}

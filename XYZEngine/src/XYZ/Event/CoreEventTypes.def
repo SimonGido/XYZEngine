@@ -13,4 +13,6 @@ MouseButtonPressed,
 MouseButtonReleased,
 
 MouseScroll,
-MouseMoved
+MouseMoved,
+
+Editor

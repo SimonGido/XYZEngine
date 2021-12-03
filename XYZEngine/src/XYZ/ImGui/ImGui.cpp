@@ -137,5 +137,53 @@ namespace XYZ {
 			ImGui::TreePop();
 		}
 
+		bool Vec2Control(const std::array<const char*, 2>& names, glm::vec2& values, float resetValue, float speed)
+		{
+			return UI::FloatControls(
+				names[0], "##X", values.x, resetValue, speed,
+				names[1], "##Y", values.y, resetValue, speed
+			);
+		}
+		bool Vec3Control(const std::array<const char*, 3>& names, glm::vec3& values, float resetValue, float speed)
+		{
+			return UI::FloatControls(
+				names[0], "##X", values.x, resetValue, speed,
+				names[1], "##Y", values.y, resetValue, speed,
+				names[2], "##Z", values.z, resetValue, speed
+			);
+		}
+		bool Vec4Control(const std::array<const char*, 4>& names, glm::vec4& values, float resetValue, float speed)
+		{
+			return UI::FloatControls(
+				names[0], "##X", values.x, resetValue, speed,
+				names[1], "##Y", values.y, resetValue, speed,
+				names[2], "##Z", values.z, resetValue, speed,
+				names[3], "##W", values.w, resetValue, speed
+			);
+		}
+		bool IVec2Control(const std::array<const char*, 2>& names, glm::ivec2& values, float resetValue, float speed)
+		{
+			return UI::IntControls(
+				names[0], "##X", values.x, resetValue, speed,
+				names[1], "##Y", values.y, resetValue, speed
+			);
+		}
+		bool IVec3Control(const std::array<const char*, 3>& names, glm::ivec3& values, float resetValue, float speed)
+		{
+			return UI::IntControls(
+				names[0], "##X", values.x, resetValue, speed,
+				names[1], "##Y", values.y, resetValue, speed,
+				names[2], "##Z", values.z, resetValue, speed
+			);
+		}
+		bool IVec4Control(const std::array<const char*, 4>& names, glm::ivec4& values, float resetValue, float speed)
+		{
+			return UI::IntControls(
+				names[0], "##X", values.x, resetValue, speed,
+				names[1], "##Y", values.y, resetValue, speed,
+				names[2], "##Z", values.z, resetValue, speed,
+				names[3], "##W", values.w, resetValue, speed
+			);
+		}
 	}
 }

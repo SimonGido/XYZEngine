@@ -210,7 +210,7 @@ namespace XYZ {
 				}
 			}
 		}
-		void SceneEntityInspectorContext::SetContext(SceneEntity context)
+		void SceneEntityInspectorContext::SetContext(const SceneEntity& context)
 		{
 			m_Context = context;
 			m_InspectorEditables.clear();

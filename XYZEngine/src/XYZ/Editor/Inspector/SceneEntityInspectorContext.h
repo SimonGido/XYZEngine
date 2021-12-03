@@ -13,7 +13,7 @@ namespace XYZ {
 
 			virtual void OnImGuiRender(Ref<Renderer2D> renderer) override;
 
-			void SetContext(SceneEntity context);
+			void SetContext(const SceneEntity& context);
 		
 		private:
 			std::vector<InspectorEditable*> m_InspectorEditables;

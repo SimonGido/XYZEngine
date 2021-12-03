@@ -7,9 +7,7 @@
 namespace XYZ {
 	namespace UI {
 		namespace Utils {
-
 			const char* GenerateID();
-
 		}
 
 		void Image(const Ref<Image2D>& image, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1));
@@ -18,6 +16,15 @@ namespace XYZ {
 	
 		bool BeginTreeNode(const char* name, bool defaultOpen = true);		
 		void EndTreeNode();	
+
+		bool Vec2Control(const std::array<const char*, 2>& names, glm::vec2& values, float resetValue = 0.0f, float speed = 0.05f);
+		bool Vec3Control(const std::array<const char*, 3>& names, glm::vec3& values, float resetValue = 0.0f, float speed = 0.05f);
+		bool Vec4Control(const std::array<const char*, 4>& names, glm::vec4& values, float resetValue = 0.0f, float speed = 0.05f);
+
+		bool IVec2Control(const std::array<const char*, 2>& names, glm::ivec2& values, float resetValue = 0.0f, float speed = 0.05f);
+		bool IVec3Control(const std::array<const char*, 3>& names, glm::ivec3& values, float resetValue = 0.0f, float speed = 0.05f);
+		bool IVec4Control(const std::array<const char*, 4>& names, glm::ivec4& values, float resetValue = 0.0f, float speed = 0.05f);
+
 
 		template <typename ...Args>
 		bool FloatControl(const char* label, const char* dragLabel, float& value, float resetValue, float speed, Args&& ...args)
@@ -41,11 +48,42 @@ namespace XYZ {
 		template <typename ...Args>
 		bool FloatControls(Args&& ...args)
 		{
+			bool result = false;
 			if constexpr (sizeof... (args) != 0)
 			{
-				FloatControl(std::forward<Args>(args)...);			
+				result |= FloatControl(std::forward<Args>(args)...);			
 			}
-			return true;
+			return result;
+		}
+
+		template <typename ...Args>
+		bool IntControl(const char* label, const char* dragLabel, int& value, int resetValue, float speed, Args&& ...args)
+		{
+			const float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+			const ImVec2 buttonSize = { lineHeight , lineHeight };
+
+			if (ImGui::Button(label, buttonSize))
+				value = resetValue;
+			ImGui::SameLine();
+			bool result = ImGui::DragInt(dragLabel, &value, speed, 0.0f, 0.0f, "%d");
+
+			if constexpr (sizeof... (args) != 0)
+			{
+				ImGui::SameLine();
+				result |= IntControl(std::forward<Args>(args)...);
+			}
+			return result;
+		}
+
+		template <typename ...Args>
+		bool IntControls(Args&& ...args)
+		{
+			bool result = false;
+			if constexpr (sizeof... (args) != 0)
+			{
+				result |= IntControl(std::forward<Args>(args)...);
+			}
+			return result;
 		}
 
 		template <typename Value, typename ...Args>
@@ -81,7 +119,19 @@ namespace XYZ {
 			TableColumns(std::forward<Args>(args)...);
 		}
 
-		
+		class ScopedTableColumnAutoWidth
+		{
+		public:
+			ScopedTableColumnAutoWidth(uint32_t itemCount, float offset = 0.0f)
+			{
+				const float width = ImGui::TableGetMaxColumnWidth(ImGui::GetCurrentTable(), ImGui::TableGetColumnIndex());
+				ImGui::PushItemWidth((width / static_cast<float>(itemCount)) - offset);
+			}
+			~ScopedTableColumnAutoWidth()
+			{
+				ImGui::PopItemWidth();
+			}
+		};
 
 		class ScopedItemFlags
 		{
