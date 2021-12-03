@@ -19,18 +19,9 @@ namespace XYZ {
 		template<typename T, typename UIFunction, typename ConstructFunc>
 		static void DrawContainerControl(const std::string& name, T& container, UIFunction uiFunction, ConstructFunc constructFunc);
 
-		static void BeginColumns(const char* label, int count = 2, float width = 100.0f);	
-		static void EndColumns(int count = 1);
-		static void DrawFloatControl(const char* label, const char* dragLabel, float& value, float resetValue = 0.0f);
-		static void DrawVec2Control(const std::string& label, glm::vec2& values, float resetValue = 0.0f, float columnWidth = 100.0f);	
-		static void DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f);
-		static void DrawVec3ControlRGB(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f);
-		static void DrawVec4Control(const std::string& label, const char* names[4], glm::vec4& values, float resetValue = 0.0f, float columnWidth = 100.0f);
-		static void DrawVec4Control2x2(const std::string& label, const char* names[4], glm::vec4& values, float resetValue = 0.0f, float columnWidth = 100.0f);
-		static void DrawColorControl(const std::string& label, glm::vec4& values, float resetValue = 1.0f, float columnWidth = 100.0f);
+		
 		static void DrawSplitter(bool splitHorizontally, float thickness, float* size0, float* size1, float minSize0, float minSize1);
 	
-
 		static void PushDisabled();
 		static void PopDisabled();
 	};

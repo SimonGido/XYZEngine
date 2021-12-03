@@ -11,9 +11,10 @@
 namespace XYZ {
 	namespace UI {
 		namespace Utils {
-
+			static int		s_UIContextID = 0;
 			static uint32_t s_Counter = 0;
 			static char		s_IDBuffer[16];
+			static char		s_PathBuffer[_MAX_PATH];
 
 			const char* GenerateID()
 			{
@@ -23,6 +24,39 @@ namespace XYZ {
 				sprintf_s(s_IDBuffer + 2, 14, "%o", s_Counter++);
 
 				return &s_IDBuffer[0];
+			}
+
+			void SetPathBuffer(const char* value, size_t size)
+			{
+				memcpy(s_PathBuffer, value, size);
+				s_PathBuffer[size] = '\0';
+			}
+
+			void SetPathBuffer(const std::string& value)
+			{
+				memcpy(s_PathBuffer, value.c_str(), value.size());
+				s_PathBuffer[value.size()] = '\0';
+			}
+
+			char* GetPathBuffer()
+			{
+				return s_PathBuffer;
+			}
+
+			void PushID(uint32_t count)
+			{
+				for (uint32_t i = 0; i < count; ++i)
+					ImGui::PushID(s_UIContextID++);
+				s_Counter = 0;
+			}
+
+			void PopID(uint32_t count)
+			{
+				for (uint32_t i = 0; i < count; ++i)
+				{
+					ImGui::PopID();
+					s_UIContextID--;
+				}
 			}
 
 			static ImTextureID GetTextureID(const Ref<Image2D>& image)

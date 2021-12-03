@@ -15,7 +15,7 @@ namespace XYZ {
 		return EditorHelper::DrawComponent<ParticleComponentCPU>("Particle Component CPU", m_Context, [&](auto& component) {
 			
 			const float columnWidth = 200.0f;
-
+			/*
 			ParticleSystemCPU& system = component.System;
 			
 			EditorHelper::BeginColumns("Max Particles", 2, columnWidth);
@@ -166,6 +166,7 @@ namespace XYZ {
 					return BurstEmitter::Burst(0, 0.0f);
 				});
 			}, enabledEmitter);
+			*/
 		});
 	}
 	void ParticleComponentCPUInspector::renderColliders(Ref<Renderer2D>& renderer, const ParticleSystemCPU::ModuleData& moduleData)

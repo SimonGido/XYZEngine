@@ -8,8 +8,14 @@ namespace XYZ {
 	namespace UI {
 		namespace Utils {
 			const char* GenerateID();
+			void        SetPathBuffer(const char* value, size_t size);
+			void	    SetPathBuffer(const std::string& value);
+			char*	    GetPathBuffer();
+			void		PushID(uint32_t count = 1);
+			void		PopID(uint32_t count = 1);
 		}
 
+		
 		void Image(const Ref<Image2D>& image, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1));
 		bool ImageButton(const char* stringID, const Ref<Image2D>& image, const ImVec2& size, int framePadding, const ImVec4& tintColor = ImVec4(1, 1, 1, 1), const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1));
 		bool ImageButtonTransparent(const char* stringID, const Ref<Image2D>& image, const ImVec2& size, const ImVec4& hoverColor, const ImVec4& clickColor, const ImVec4& tintColor = ImVec4(1, 1, 1, 1), const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1));
@@ -31,12 +37,12 @@ namespace XYZ {
 		{		
 			const float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 			const ImVec2 buttonSize = { lineHeight , lineHeight };
-
+			
 			if (ImGui::Button(label, buttonSize))
 				value = resetValue;
 			ImGui::SameLine();
-			bool result = ImGui::DragFloat(dragLabel, &value, speed, 0.0f, 0.0f, "%.2f");
-
+	
+			bool result = ImGui::DragFloat(dragLabel, &value, speed, 0.0f, 0.0f, "%.2f");	
 			if constexpr (sizeof... (args) != 0)
 			{
 				ImGui::SameLine();
@@ -65,8 +71,7 @@ namespace XYZ {
 			if (ImGui::Button(label, buttonSize))
 				value = resetValue;
 			ImGui::SameLine();
-			bool result = ImGui::DragInt(dragLabel, &value, speed, 0.0f, 0.0f, "%d");
-
+			bool result = ImGui::DragInt(dragLabel, &value, speed, 0, 0, "%d");
 			if constexpr (sizeof... (args) != 0)
 			{
 				ImGui::SameLine();
@@ -113,10 +118,12 @@ namespace XYZ {
 		}
 
 		template <typename ...Args>
-		void TableRow(Args&& ...args)
+		void TableRow(const char* stringID, Args&& ...args)
 		{
+			ImGui::PushID(stringID);
 			ImGui::TableNextRow();
 			TableColumns(std::forward<Args>(args)...);
+			ImGui::PopID();
 		}
 
 		class ScopedTableColumnAutoWidth
@@ -131,6 +138,13 @@ namespace XYZ {
 			{
 				ImGui::PopItemWidth();
 			}
+		};
+
+		class ScopedWidth
+		{
+		public:
+			ScopedWidth(float width){ ImGui::PushItemWidth(width);}
+			~ScopedWidth() { ImGui::PopItemWidth(); }
 		};
 
 		class ScopedItemFlags

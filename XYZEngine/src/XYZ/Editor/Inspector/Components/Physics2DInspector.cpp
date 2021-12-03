@@ -45,7 +45,7 @@ namespace XYZ {
 	bool BoxCollider2DInspector::OnEditorRender(Ref<Renderer2D> renderer)
 	{
 		return EditorHelper::DrawComponent<BoxCollider2DComponent>("Box Collider2D", m_Context, [&](auto& component) {
-
+			/*
 			auto [translation, rotation, scale] = m_Context.GetComponent<TransformComponent>().GetWorldComponents();
 			const glm::vec3 boxTranslation =
 				translation + glm::vec3(component.Offset.x, component.Offset.y, 0.0f);
@@ -70,12 +70,13 @@ namespace XYZ {
 			ImGui::InputFloat("##Friction", &component.Friction);
 			ImGui::PopItemWidth();
 			EditorHelper::EndColumns();
+			*/
 		});
 	}
 	bool ChainCollider2DInspector::OnEditorRender(Ref<Renderer2D> renderer)
 	{
 		return EditorHelper::DrawComponent<ChainCollider2DComponent>("Chain Collider2D", m_Context, [&](auto& component) {
-
+			/*
 			const TransformComponent& transform = m_Context.GetComponent<TransformComponent>();
 			auto [translation, rotation, scale] = transform.GetWorldComponents();
 			glm::vec3 p0(0.0f);
@@ -114,6 +115,7 @@ namespace XYZ {
 				EditorHelper::DrawVec2Control(std::to_string(counter), point);
 				counter++;
 			}
+			*/
 		});
 	}
 	
@@ -122,6 +124,7 @@ namespace XYZ {
 		
 		return EditorHelper::DrawComponent<CircleCollider2DComponent>("Circle Collider2D", m_Context, [&](auto& component) {
 
+			/*
 			auto [translation, rotation, scale] = m_Context.GetComponent<TransformComponent>().GetWorldComponents();
 			const glm::vec3 circleTranslation =
 				translation + glm::vec3(component.Offset.x, component.Offset.y, 0.0f);
@@ -147,6 +150,7 @@ namespace XYZ {
 			ImGui::InputFloat("##Friction", &component.Friction);
 			ImGui::PopItemWidth();
 			EditorHelper::EndColumns();
+			*/
 		});
 	}
 

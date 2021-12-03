@@ -178,6 +178,7 @@ namespace XYZ {
 				bool enabled = true;
 				EditorHelper::DrawNodeControl("Sprite", m_Output, [&](auto& value) {
 
+					/*
 					glm::vec4 border = CalcBorders(value);
 					const char* names[4] = {
 						 "L", "B", "R", "T"
@@ -223,6 +224,7 @@ namespace XYZ {
 							XYZ_CORE_WARN("Asset can not have an empty name");
 						}
 					}
+					*/
 				}, enabled);
 			}
 			ImGui::EndChild();

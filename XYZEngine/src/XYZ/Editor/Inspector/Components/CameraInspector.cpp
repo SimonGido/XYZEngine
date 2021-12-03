@@ -30,38 +30,29 @@ namespace XYZ {
 			}
 
 			ImGui::SameLine();
+
 			if (camera.GetProjectionType() == CameraProjectionType::Orthographic)
 			{
 				ImGui::Text("Orthographic");
 				CameraOrthographicProperties props = camera.GetOrthographicProperties();
-				EditorHelper::BeginColumns("Size");
+				
 				ImGui::InputFloat("##Size", &props.OrthographicSize);
-				EditorHelper::EndColumns();
 
-				EditorHelper::BeginColumns("Near");
+
 				ImGui::InputFloat("##Near", &props.OrthographicNear);
-				EditorHelper::EndColumns();
 
-				EditorHelper::BeginColumns("Far");
 				ImGui::InputFloat("##Far", &props.OrthographicFar);
-				EditorHelper::EndColumns();
 				camera.SetOrthographic(props);
 			}
 			else
 			{
 				ImGui::Text("Perspective");
 				CameraPerspectiveProperties props = camera.GetPerspectiveProperties();
-				EditorHelper::BeginColumns("FOV");
 				ImGui::InputFloat("##FOV", &props.PerspectiveFOV);
-				EditorHelper::EndColumns();
 
-				EditorHelper::BeginColumns("Near");
 				ImGui::InputFloat("##Near", &props.PerspectiveNear);
-				EditorHelper::EndColumns();
 
-				EditorHelper::BeginColumns("Far");
 				ImGui::InputFloat("##Far", &props.PerspectiveFar);
-				EditorHelper::EndColumns();
 				camera.SetPerspective(props);
 			}
 		});

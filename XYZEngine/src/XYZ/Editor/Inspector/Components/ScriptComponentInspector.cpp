@@ -10,6 +10,7 @@ namespace XYZ {
 		return EditorHelper::DrawComponent<ScriptComponent>("Script", m_Context, [&](auto& component) {
 			for (const PublicField& field : component.GetFields())
 			{
+				/*
 				EditorHelper::BeginColumns(field.GetName().c_str(), 2, 200.0f);
 				std::string id = "##" + field.GetName();
 				if (field.GetType() == PublicFieldType::Float)
@@ -71,6 +72,7 @@ namespace XYZ {
 					}
 				}
 				EditorHelper::EndColumns();
+				*/
 			}
 		});
 	}

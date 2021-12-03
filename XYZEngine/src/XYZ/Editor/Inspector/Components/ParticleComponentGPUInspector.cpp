@@ -8,7 +8,7 @@ namespace XYZ {
 	bool ParticleComponentGPUInspector::OnEditorRender(Ref<Renderer2D> renderer)
 	{
 		return EditorHelper::DrawComponent<ParticleComponentGPU>("Particle Component", m_Context, [&](auto& component) {
-
+			/*
 			auto& material = component.System->m_Renderer->m_ParticleMaterial;
 			auto& shader = material->GetComputeShader();
 			for (auto& uniform : shader->GetVSUniformList().Uniforms)
@@ -40,7 +40,9 @@ namespace XYZ {
 					ImGui::InputFloat4(id.c_str(), glm::value_ptr(material->Get<glm::vec4>(uniform.GetName())));
 				}
 				EditorHelper::EndColumns();
+				
 			}
+			*/
 		});
 	}
 }

@@ -21,25 +21,27 @@ namespace XYZ {
 					ImGuiCol_ButtonActive, ImVec4{ 0.65f, 0.65f, 0.65f, 1.0f }
 				);
 				const float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-
-				UI::TableRow(
+				
+				UI::TableRow("Translation",
 					[]()  { ImGui::Text("Translation"); },
 					[&]() { UI::ScopedTableColumnAutoWidth scoped(3, lineHeight);
 							UI::Vec3Control({ "X", "Y", "Z" }, component.Translation); }
 				);	
+
 				glm::vec3 rotation = glm::degrees(component.Rotation);
-				UI::TableRow(
+				UI::TableRow("Rotation",
 					[]() { ImGui::Text("Rotation");},
 					[&]() { UI::ScopedTableColumnAutoWidth scoped(3, lineHeight); 
 							UI::Vec3Control({ "X", "Y", "Z" }, rotation); }
 				);
 				component.Rotation = glm::radians(rotation);
-			
-				UI::TableRow(
+	
+				UI::TableRow("Scale",
 					[]() { ImGui::Text("Scale");},
 					[&]() { UI::ScopedTableColumnAutoWidth scoped(3, lineHeight); 
 							UI::Vec3Control({ "X", "Y", "Z" }, component.Scale, 1.0f); }
 				);
+
 				ImGui::EndTable();
 			}
 		});

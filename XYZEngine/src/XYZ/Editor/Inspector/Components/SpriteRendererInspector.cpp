@@ -5,6 +5,8 @@
 #include "XYZ/Editor/EditorHelper.h"
 #include "XYZ/Scene/Components.h"
 
+#include "XYZ/ImGui/ImGui.h"
+
 namespace XYZ {
 	SpriteRendererInspector::SpriteRendererInspector()
 		:
@@ -15,6 +17,49 @@ namespace XYZ {
 	{
 		const bool result = EditorHelper::DrawComponent<SpriteRenderer>("Sprite Renderer", m_Context, [&](auto& component) {
 
+			UI::ScopedStyleStack style(ImGuiStyleVar_ItemSpacing, ImVec2{ 0.0f, 5.0f });
+			UI::ScopedColorStack color(
+				ImGuiCol_Button, ImVec4{ 0.5f, 0.5f, 0.5f, 1.0f },
+				ImGuiCol_ButtonHovered, ImVec4{ 0.6f, 0.6f, 0.6f, 1.0f },
+				ImGuiCol_ButtonActive, ImVec4{ 0.65f, 0.65f, 0.65f, 1.0f }
+			);
+			const float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+
+
+			if (ImGui::BeginTable("##SpriteRendererTable", 2, ImGuiTableFlags_SizingFixedFit))
+			{
+				UI::TableRow("Color",
+					[]() { ImGui::Text("Color"); },
+					[&]() { UI::ScopedTableColumnAutoWidth scoped(4, lineHeight);
+							UI::Vec4Control({ "R", "G", "B", "A"}, component.Color); }
+				);
+
+				UI::Utils::SetPathBuffer(component.Material->FileName);
+				UI::TableRow("Material",
+					[]() { ImGui::Text("Material"); },
+					[&]() { UI::ScopedWidth w(100.0f);
+						    ImGui::InputText("##Material", UI::Utils::GetPathBuffer(), _MAX_PATH); }
+				);
+
+				UI::Utils::SetPathBuffer(component.SubTexture->FileName);
+				UI::TableRow("SubTexture",
+					[]() { ImGui::Text("SubTexture"); },
+					[&]() { UI::ScopedWidth w(100.0f);
+							ImGui::InputText("##SubTexture", UI::Utils::GetPathBuffer(), _MAX_PATH); }
+				);
+
+				UI::TableRow("SortLayer",
+					[]() { ImGui::Text("Sort Layer"); },
+					[&]() { UI::ScopedWidth w(100.0f); ImGui::InputInt("##SortLayer", (int*)&component.SortLayer); }
+				);
+
+				UI::TableRow("Visible",
+					[]() { ImGui::Text("Visible"); },
+					[&]() { ImGui::Checkbox("##Visible", &component.Visible); }
+				);
+				ImGui::EndTable();
+			}
+			/*
 			EditorHelper::DrawColorControl("Color", component.Color);
 			// Material
 			{
@@ -75,6 +120,7 @@ namespace XYZ {
 				EditorHelper::EndColumns();
 			}
 			/////////////////
+			*/
 		});
 
 		if (m_Dialog && m_DialogOpen)
