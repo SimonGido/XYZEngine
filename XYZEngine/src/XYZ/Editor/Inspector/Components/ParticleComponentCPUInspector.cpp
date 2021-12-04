@@ -6,26 +6,28 @@
 #include "XYZ/Renderer/Renderer2D.h"
 
 namespace XYZ {
+
 	ParticleComponentCPUInspector::ParticleComponentCPUInspector()
+		:
+		InspectorEditable("ParticleComponentCPUInspector")
 	{
-		
 	}
-	bool ParticleComponentCPUInspector::OnEditorRender(Ref<Renderer2D> renderer)
+	bool ParticleComponentCPUInspector::OnEditorRender()
 	{
 		return EditorHelper::DrawComponent<ParticleComponentCPU>("Particle Component CPU", m_Context, [&](auto& component) {
-			
+
 			const float columnWidth = 200.0f;
 			/*
 			ParticleSystemCPU& system = component.System;
-			
+
 			EditorHelper::BeginColumns("Max Particles", 2, columnWidth);
 			int maxParticles = system.GetMaxParticles();
 			if (ImGui::InputInt("##MaxParticles", &maxParticles))
 				system.SetMaxParticles(maxParticles);
 			EditorHelper::EndColumns();
-		
+
 			EditorHelper::BeginColumns("Simulation Speed", 2, columnWidth);
-			float speed = system.GetSpeed();		
+			float speed = system.GetSpeed();
 			if (ImGui::DragFloat("##SimulationSpeed", &speed, 0.05f))
 				system.SetSpeed(speed);
 			EditorHelper::EndColumns();
@@ -48,7 +50,7 @@ namespace XYZ {
 
 			bool lightModuleEnabled = moduleData->m_LightModule.IsEnabled();
 			EditorHelper::DrawNodeControl("Light Module", moduleData->m_LightModule, [](auto& val) {
-				
+
 				int maxLights = val.m_MaxLights;
 				EditorHelper::BeginColumns("Max Lights");
 				if (ImGui::InputInt("##MaxLights", &maxLights))
@@ -140,21 +142,21 @@ namespace XYZ {
 			moduleData->m_PhysicsModule.SetEnabled(physicsEnabled);
 			if (physicsEnabled)
 				renderColliders(renderer, moduleData.As());
-			
+
 
 			bool enabledEmitter = true;
 			EditorHelper::DrawNodeControl("Emitter", moduleData->m_Emitter, [=](auto& val) {
-				
+
 				EditorHelper::BeginColumns("Emit rate", 2, 100.0f);
 				ImGui::DragFloat("##EmitRate", &val.m_EmitRate, 0.1f);
 				EditorHelper::EndColumns();
 				BurstEmitter& burstEmitter = val.m_BurstEmitter;
 				EditorHelper::DrawContainerControl("Bursts", burstEmitter.m_Bursts, [](BurstEmitter::Burst& burst, size_t index) {
-					                                   const std::string indexStr = std::to_string(index);
-					                                   const std::string burstCountID = "##BurstCount" + indexStr;
-					                                   const std::string timeID = "##Time" + indexStr;
+													   const std::string indexStr = std::to_string(index);
+													   const std::string burstCountID = "##BurstCount" + indexStr;
+													   const std::string timeID = "##Time" + indexStr;
 					ImGui::Text("Count:");
-					ImGui::SameLine();			
+					ImGui::SameLine();
 					int count = burst.m_Count;
 					if (ImGui::DragInt(burstCountID.c_str(), &count))
 						burst.m_Count = count;
@@ -169,6 +171,11 @@ namespace XYZ {
 			*/
 		});
 	}
+	void ParticleComponentCPUInspector::SetSceneEntity(const SceneEntity& entity)
+	{
+		m_Context = entity;
+	}
+
 	void ParticleComponentCPUInspector::renderColliders(Ref<Renderer2D>& renderer, const ParticleSystemCPU::ModuleData& moduleData)
 	{
 		const auto& transform = m_Context.GetComponent<TransformComponent>().WorldTransform;

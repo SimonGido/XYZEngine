@@ -84,10 +84,10 @@ namespace XYZ {
 		void SubmitMeshInstanced(Ref<Mesh> mesh, const std::vector<glm::mat4>& transforms, uint32_t count);
 		
 		// TODO: GetLights from current scene
-		void SubmitLight(const PointLight2D& light, const glm::mat4& transform);
-		void SubmitLight(const SpotLight2D& light, const glm::mat4& transform);
-		void SubmitLight(const PointLight2D& light, const glm::vec3& position);
-		void SubmitLight(const SpotLight2D& light, const glm::vec3& position);
+		//void SubmitLight(const PointLight2D& light, const glm::mat4& transform);
+		//void SubmitLight(const SpotLight2D& light, const glm::mat4& transform);
+		//void SubmitLight(const PointLight2D& light, const glm::vec3& position);
+		//void SubmitLight(const SpotLight2D& light, const glm::vec3& position);
 
 		void UpdateViewportSize();
 

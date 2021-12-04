@@ -9,11 +9,14 @@ namespace XYZ {
 	public:
 		ParticleComponentCPUInspector();
 
-		virtual bool OnEditorRender(Ref<Renderer2D> renderer) override;
+		virtual bool OnEditorRender() override;
+		virtual void SetSceneEntity(const SceneEntity& entity) override;
 
-
-		SceneEntity m_Context;
+		virtual Type GetType() const override { return InspectorEditable::Type::Entity; }
 	private:
 		void renderColliders(Ref<Renderer2D>& renderer, const ParticleSystemCPU::ModuleData& moduleData);
+		
+	private:
+		SceneEntity m_Context;
 	};
 }

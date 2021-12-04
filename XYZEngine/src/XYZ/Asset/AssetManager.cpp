@@ -6,7 +6,7 @@
 
 #include <yaml-cpp/yaml.h>
 
-
+#include "XYZ/Core/Ref/RefAllocator.h"
 
 
 namespace XYZ

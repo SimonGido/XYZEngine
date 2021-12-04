@@ -11,7 +11,6 @@ namespace XYZ {
 			bool OnEvent(Event& e);
 
 			void SetSceneContext(const Ref<Scene>& scene);
-
 		
 			template <typename T>
 			void RegisterPanel(std::string name, bool open = true);
@@ -19,8 +18,14 @@ namespace XYZ {
 			template <typename T>
 			Ref<T> GetPanel(const std::string& name) const;
 
+			void			   SetOpen(size_t index, bool open) { m_EditorPanels[index].Open = open; }
+			bool			   IsOpen(size_t index)		  const { return m_EditorPanels[index].Open; }
+			size_t			   GetNumEditorPanels()		  const { return m_EditorPanels.size(); }
+			const std::string& GetPanelName(size_t index) const { return m_EditorPanels[index].Panel->GetName(); }
 		private:
 			Ref<EditorPanel> getPanel(const std::string& name) const;
+
+			void displayMenuBar();
 
 		private:
 			struct View

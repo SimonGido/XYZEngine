@@ -14,6 +14,7 @@
 
 #include "XYZ/ImGui/ImGui.h"
 
+
 #include <GLFW/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
@@ -80,7 +81,7 @@ namespace XYZ {
 			{				
 				Renderer::BlockRenderThread(); // Sync before new frame
 				Renderer::Render();
-		
+
 				m_Window->BeginFrame();
 				{
 					XYZ_SCOPE_PERF("Application Layer::OnUpdate");

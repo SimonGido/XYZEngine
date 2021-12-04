@@ -164,40 +164,40 @@ namespace XYZ {
 	void SceneRenderer::SubmitMeshInstanced(Ref<Mesh> mesh, const std::vector<glm::mat4>& transforms, uint32_t count)
 	{
 	}
-	void SceneRenderer::SubmitLight(const PointLight2D& light, const glm::mat4& transform)
-	{
-		XYZ_ASSERT(m_PointLightsList.size() + 1 < sc_MaxNumberOfLights, "Max number of lights per scene is ", sc_MaxNumberOfLights);
-		SubmitLight(light, glm::vec3(transform[3][0], transform[3][1], 0.0f));
-	}
-	void SceneRenderer::SubmitLight(const SpotLight2D& light, const glm::mat4& transform)
-	{
-		XYZ_ASSERT(m_SpotLightsList.size() + 1 < sc_MaxNumberOfLights, "Max number of lights per scene is ", sc_MaxNumberOfLights);
-		SubmitLight(light, glm::vec3(transform[3][0], transform[3][1], 0.0f));
-	}
-	void SceneRenderer::SubmitLight(const PointLight2D& light, const glm::vec3& position)
-	{
-		XYZ_ASSERT(m_PointLightsList.size() + 1 < sc_MaxNumberOfLights, "Max number of lights per scene is ", sc_MaxNumberOfLights);
-
-		PointLight lightData;
-		lightData.Position = glm::vec2(position.x, position.y);
-		lightData.Color = glm::vec4(light.Color, 0.0f);
-		lightData.Radius = light.Radius;
-		lightData.Intensity = light.Intensity;
-		m_PointLightsList.push_back(lightData);
-	}
-	void SceneRenderer::SubmitLight(const SpotLight2D& light, const glm::vec3& position)
-	{
-		XYZ_ASSERT(m_SpotLightsList.size() + 1 < sc_MaxNumberOfLights, "Max number of lights per scene is ", sc_MaxNumberOfLights);
-
-		SpotLight lightData;
-		lightData.Position = glm::vec2(position.x, position.y);
-		lightData.Color = glm::vec4(light.Color, 0.0f);
-		lightData.Radius = light.Radius;
-		lightData.Intensity = light.Intensity;
-		lightData.InnerAngle = light.InnerAngle;
-		lightData.OuterAngle = light.OuterAngle;
-		m_SpotLightsList.push_back(lightData);
-	}
+	//void SceneRenderer::SubmitLight(const PointLight2D& light, const glm::mat4& transform)
+	//{
+	//	XYZ_ASSERT(m_PointLightsList.size() + 1 < sc_MaxNumberOfLights, "Max number of lights per scene is ", sc_MaxNumberOfLights);
+	//	SubmitLight(light, glm::vec3(transform[3][0], transform[3][1], 0.0f));
+	//}
+	//void SceneRenderer::SubmitLight(const SpotLight2D& light, const glm::mat4& transform)
+	//{
+	//	XYZ_ASSERT(m_SpotLightsList.size() + 1 < sc_MaxNumberOfLights, "Max number of lights per scene is ", sc_MaxNumberOfLights);
+	//	SubmitLight(light, glm::vec3(transform[3][0], transform[3][1], 0.0f));
+	//}
+	//void SceneRenderer::SubmitLight(const PointLight2D& light, const glm::vec3& position)
+	//{
+	//	XYZ_ASSERT(m_PointLightsList.size() + 1 < sc_MaxNumberOfLights, "Max number of lights per scene is ", sc_MaxNumberOfLights);
+	//
+	//	PointLight lightData;
+	//	lightData.Position = glm::vec2(position.x, position.y);
+	//	lightData.Color = glm::vec4(light.Color, 0.0f);
+	//	lightData.Radius = light.Radius;
+	//	lightData.Intensity = light.Intensity;
+	//	m_PointLightsList.push_back(lightData);
+	//}
+	//void SceneRenderer::SubmitLight(const SpotLight2D& light, const glm::vec3& position)
+	//{
+	//	XYZ_ASSERT(m_SpotLightsList.size() + 1 < sc_MaxNumberOfLights, "Max number of lights per scene is ", sc_MaxNumberOfLights);
+	//
+	//	SpotLight lightData;
+	//	lightData.Position = glm::vec2(position.x, position.y);
+	//	lightData.Color = glm::vec4(light.Color, 0.0f);
+	//	lightData.Radius = light.Radius;
+	//	lightData.Intensity = light.Intensity;
+	//	lightData.InnerAngle = light.InnerAngle;
+	//	lightData.OuterAngle = light.OuterAngle;
+	//	m_SpotLightsList.push_back(lightData);
+	//}
 	void SceneRenderer::SetGridProperties(const GridProperties& props)
 	{
 		m_GridProps = props;
@@ -226,8 +226,14 @@ namespace XYZ {
 		
 		if (ImGui::Begin("Scene Renderer"))
 		{
-			ImGui::Text("Viewport Size: %d, %d", m_ViewportSize.x, m_ViewportSize.y);
-
+			if (ImGui::BeginTable("##Viewport", 4, ImGuiTableFlags_SizingFixedFit))
+			{
+				UI::TextTableRow(
+					"%s", "Viewport Width:", "%llu", m_ViewportSize.x,
+					"%s", "Viewport Height:", "%llu", m_ViewportSize.y
+				);
+				ImGui::EndTable();
+			}
 			uint32_t frameIndex = Renderer::GetCurrentFrame();
 			if (UI::BeginTreeNode("GPU measurements"))
 			{

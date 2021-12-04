@@ -43,20 +43,50 @@ namespace XYZ {
 				return s_PathBuffer;
 			}
 
-			void PushID(uint32_t count)
+			void PushID()
 			{
-				for (uint32_t i = 0; i < count; ++i)
-					ImGui::PushID(s_UIContextID++);
+				ImGui::PushID(s_UIContextID++);
 				s_Counter = 0;
 			}
 
-			void PopID(uint32_t count)
+			void PopID()
 			{
-				for (uint32_t i = 0; i < count; ++i)
-				{
-					ImGui::PopID();
-					s_UIContextID--;
-				}
+				ImGui::PopID();
+				s_UIContextID--;
+			}
+
+			float Convert_Linear_ToSRGB(float theLinearValue)
+			{
+				return theLinearValue <= 0.0031308f
+					? theLinearValue * 12.92f
+					: powf(theLinearValue, 1.0f / 2.2f) * 1.055f - 0.055f;
+			}
+
+			float Convert_SRGB_ToLinear(float thesRGBValue)
+			{
+				return thesRGBValue <= 0.04045f
+					? thesRGBValue / 12.92f
+					: powf((thesRGBValue + 0.055f) / 1.055f, 2.2f);
+			}
+
+			ImVec4 ConvertToSRGB(const ImVec4& colour)
+			{
+				return ImVec4(
+					Convert_Linear_ToSRGB(colour.x),
+					Convert_Linear_ToSRGB(colour.y),
+					Convert_Linear_ToSRGB(colour.z),
+					colour.w
+				);
+			}
+
+			ImVec4 ConvertToLinear(const ImVec4& colour)
+			{
+				return ImVec4(
+					Convert_SRGB_ToLinear(colour.x),
+					Convert_SRGB_ToLinear(colour.y),
+					Convert_SRGB_ToLinear(colour.z),
+					colour.w
+				);
 			}
 
 			static ImTextureID GetTextureID(const Ref<Image2D>& image)

@@ -1,5 +1,5 @@
 #pragma once
-#include "XYZ/Core/Ref.h"
+#include "XYZ/Core/Ref/Ref.h"
 #include "XYZ/Core/Timestep.h"
 #include "XYZ/Event/Event.h"
 #include "XYZ/Scene/Scene.h"
@@ -13,9 +13,9 @@ namespace XYZ {
 
 			virtual void OnImGuiRender(bool& open) = 0;
 			virtual void OnUpdate(Timestep ts) {};
-			virtual bool OnEvent(Event& e) = 0;
+			virtual bool OnEvent(Event& e) { return false; };
 
-			virtual void SetSceneContext(const Ref<Scene>& scene) = 0;
+			virtual void SetSceneContext(const Ref<Scene>& scene) {};
 			const std::string& GetName() const { return m_Name; }
 
 		protected:

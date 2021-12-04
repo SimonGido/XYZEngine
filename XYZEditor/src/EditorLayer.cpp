@@ -22,8 +22,6 @@ namespace XYZ {
 	};
 
 	EditorLayer::EditorLayer()
-		:
-		m_PanelsOpen{ true, true, true }
 	{			
 	}
 
@@ -42,7 +40,9 @@ namespace XYZ {
 
 		m_EditorManager.SetSceneContext(m_Scene);
 		m_EditorManager.RegisterPanel<Editor::ScenePanel>("ScenePanel");
+		m_EditorManager.RegisterPanel<Editor::InspectorPanel>("InspectorPanel");
 		m_EditorManager.RegisterPanel<Editor::SceneHierarchyPanel>("SceneHierarchyPanel");
+		m_EditorManager.RegisterPanel<Editor::ImGuiStylePanel>("ImGuiStylePanel");
 		m_EditorManager.GetPanel<Editor::ScenePanel>("ScenePanel")->SetSceneRenderer(m_SceneRenderer);
 
 		Renderer::WaitAndRenderAll();
@@ -58,8 +58,6 @@ namespace XYZ {
 		if (m_SelectedEntity != m_Scene->GetSelectedEntity())
 		{
 			m_SelectedEntity = m_Scene->GetSelectedEntity();
-			m_SceneEntityInspectorContext.SetContext(m_SelectedEntity);
-			m_InspectorPanel.SetContext(&m_SceneEntityInspectorContext);
 		}
 	}
 
@@ -71,29 +69,8 @@ namespace XYZ {
 	void EditorLayer::OnImGuiRender()
 	{
 		m_SceneRenderer->OnImGuiRender();
-		if (ImGui::BeginMenuBar())
-		{
-			if (ImGui::BeginMenu("File"))
-			{
-				if (ImGui::MenuItem("Open...", "Ctrl+O"))
-				{
-				}
-
-				if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S"))
-				{
-				}
-
-				if (ImGui::MenuItem("Exit"))
-				{
-					Application::Get().Stop();
-				}
-				ImGui::EndMenu();
-			}
-
-			ImGui::EndMenuBar();
-		}
 		m_EditorManager.OnImGuiRender();
-		m_InspectorPanel.OnImGuiRender(m_PanelsOpen[Inspector], m_SceneRenderer->GetRenderer2D());
+		
 		/*
 		m_Inspector.OnImGuiRender(m_EditorRenderer);
 		m_SpriteEditor.OnImGuiRender(m_EditorOpen[SpriteEditor]);

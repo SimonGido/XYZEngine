@@ -8,12 +8,14 @@
 #include "XYZ/ImGui/ImGui.h"
 
 namespace XYZ {
+
 	SpriteRendererInspector::SpriteRendererInspector()
 		:
+		InspectorEditable("SpriteRendererInspector"),
 		m_DialogOpen(false)
 	{
 	}
-	bool SpriteRendererInspector::OnEditorRender(Ref<Renderer2D> renderer)
+	bool SpriteRendererInspector::OnEditorRender()
 	{
 		const bool result = EditorHelper::DrawComponent<SpriteRenderer>("Sprite Renderer", m_Context, [&](auto& component) {
 
@@ -127,6 +129,11 @@ namespace XYZ {
 			m_Dialog();
 
 		return result;
+	}
+
+	void SpriteRendererInspector::SetSceneEntity(const SceneEntity& entity)
+	{
+		m_Context = entity;
 	}
 
 	void SpriteRendererInspector::selectSubTextureDialog()

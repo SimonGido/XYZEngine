@@ -34,26 +34,12 @@ namespace XYZ {
 		void displayStats();
 
 	private:
-		enum Panels
-		{
-			SceneHierarchy, 
-			SpriteEditor, 
-			AnimationEditor, 
-			Inspector,
-			NumPanels
-		};
-		bool m_PanelsOpen[NumPanels];
-		
+	
 		Ref<Scene>					m_Scene;
 		Ref<SceneRenderer>			m_SceneRenderer;
 	
 	private:	
 		SceneEntity							m_SelectedEntity;
 		Editor::EditorManager				m_EditorManager;
-
-
-		Editor::InspectorPanel				m_InspectorPanel;
-		Editor::SceneEntityInspectorContext m_SceneEntityInspectorContext;
-		Editor::AssetInspectorContext	    m_AssetInspectorContext;
 	};
 }

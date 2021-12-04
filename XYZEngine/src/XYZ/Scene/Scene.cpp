@@ -288,18 +288,18 @@ namespace XYZ {
 			sceneRenderer->SubmitMeshInstanced(mesh.Mesh, transform.WorldTransform, renderData->m_InstanceCount);
 		}
 		
-		auto lightView = m_ECS.CreateView<TransformComponent, PointLight2D>();
-		for (auto entity : lightView)
-		{
-			auto [transform, light] = lightView.Get<TransformComponent, PointLight2D>(entity);
-			sceneRenderer->SubmitLight(light, transform.WorldTransform);
-		}
-		auto spotLightView = m_ECS.CreateView<TransformComponent, SpotLight2D>();
-		for (auto entity : spotLightView)
-		{
-			auto [transform, light] = spotLightView.Get<TransformComponent, SpotLight2D>(entity);
-			sceneRenderer->SubmitLight(light, transform.WorldTransform);
-		}
+		//auto lightView = m_ECS.CreateView<TransformComponent, PointLight2D>();
+		//for (auto entity : lightView)
+		//{
+		//	auto [transform, light] = lightView.Get<TransformComponent, PointLight2D>(entity);
+		//	sceneRenderer->SubmitLight(light, transform.WorldTransform);
+		//}
+		//auto spotLightView = m_ECS.CreateView<TransformComponent, SpotLight2D>();
+		//for (auto entity : spotLightView)
+		//{
+		//	auto [transform, light] = spotLightView.Get<TransformComponent, SpotLight2D>(entity);
+		//	sceneRenderer->SubmitLight(light, transform.WorldTransform);
+		//}
 
 		sceneRenderer->EndScene();
 	}
@@ -362,19 +362,19 @@ namespace XYZ {
 		}
 	
 		
-		auto lightView = m_ECS.CreateView<TransformComponent, PointLight2D>();
-		for (auto entity : lightView)
-		{
-			auto [transform, light] = lightView.Get<TransformComponent, PointLight2D>(entity);
-			sceneRenderer->SubmitLight(light, transform.WorldTransform);
-		}	
-
-		auto spotLightView = m_ECS.CreateView<TransformComponent, SpotLight2D>();
-		for (auto entity : spotLightView)
-		{
-			auto [transform, light] = spotLightView.Get<TransformComponent, SpotLight2D>(entity);
-			sceneRenderer->SubmitLight(light, transform.WorldTransform);
-		}
+		//auto lightView = m_ECS.CreateView<TransformComponent, PointLight2D>();
+		//for (auto entity : lightView)
+		//{
+		//	auto [transform, light] = lightView.Get<TransformComponent, PointLight2D>(entity);
+		//	sceneRenderer->SubmitLight(light, transform.WorldTransform);
+		//}	
+		//
+		//auto spotLightView = m_ECS.CreateView<TransformComponent, SpotLight2D>();
+		//for (auto entity : spotLightView)
+		//{
+		//	auto [transform, light] = spotLightView.Get<TransformComponent, SpotLight2D>(entity);
+		//	sceneRenderer->SubmitLight(light, transform.WorldTransform);
+		//}
 
 		if (m_SelectedEntity)
 		{

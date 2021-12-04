@@ -2,8 +2,12 @@
 #include "SceneHierarchyPanel.h"
 
 #include "XYZ/Core/Input.h"
+#include "XYZ/Core/Application.h"
+
 #include "XYZ/Scene/SceneEntity.h"
 #include "XYZ/Scene/Components.h"
+
+#include "XYZ/Editor/Event/EditorEvents.h"
 
 #include <imgui.h>
 
@@ -34,8 +38,10 @@ namespace XYZ {
                 {                  
                     drawEntityNode(SceneEntity(m_Context->m_SceneEntity, m_Context.Raw()));
                     if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && ImGui::IsWindowHovered())
+                    {
                         m_Context->SetSelectedEntity(Entity());
-                    
+                        Application::Get().OnEvent(EntitySelectedEvent(SceneEntity()));
+                    }
                     if (ImGui::BeginPopupContextWindow(0, 1, false))
                     {
                         if (ImGui::MenuItem("Create Empty Entity"))
@@ -72,6 +78,7 @@ namespace XYZ {
             if (ImGui::IsItemClicked())
             {
                 m_Context->SetSelectedEntity(entity);
+                Application::Get().OnEvent(EntitySelectedEvent(entity));
             }
             
             bool entityDeleted = false;

@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Ref.h"
+#include "RefAllocator.h"
 
 #include "XYZ/Utils/DataStructures/MemoryPool.h"
 
@@ -13,7 +13,7 @@ namespace XYZ {
 		s_Pool = pool;
 		s_Initialized = true;
 	}
-	
+
 	void* RefAllocator::allocate(uint32_t size)
 	{
 		return s_Pool->AllocateRaw(size);

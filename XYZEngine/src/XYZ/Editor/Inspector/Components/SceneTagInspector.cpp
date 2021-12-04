@@ -7,7 +7,13 @@
 
 
 namespace XYZ {
-	bool SceneTagInspector::OnEditorRender(Ref<Renderer2D> renderer)
+
+	SceneTagInspector::SceneTagInspector()
+		:
+		InspectorEditable("SceneTagInspector")
+	{
+	}
+	bool SceneTagInspector::OnEditorRender()
 	{
 		return EditorHelper::DrawComponent<SceneTagComponent>("Scene Tag", m_Context, [&](auto& component) {
 
@@ -20,5 +26,9 @@ namespace XYZ {
 				tag = std::string(buffer);
 			}
 		});
+	}
+	void SceneTagInspector::SetSceneEntity(const SceneEntity& entity)
+	{
+		m_Context = entity;
 	}
 }

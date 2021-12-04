@@ -11,8 +11,16 @@ namespace XYZ {
 			void        SetPathBuffer(const char* value, size_t size);
 			void	    SetPathBuffer(const std::string& value);
 			char*	    GetPathBuffer();
-			void		PushID(uint32_t count = 1);
-			void		PopID(uint32_t count = 1);
+			void		PushID();
+			void		PopID();
+
+			float Convert_Linear_ToSRGB(float theLinearValue);
+			
+			float Convert_SRGB_ToLinear(float thesRGBValue);
+			
+			ImVec4 ConvertToSRGB(const ImVec4& colour);
+			
+			ImVec4 ConvertToLinear(const ImVec4& colour);		
 		}
 
 		

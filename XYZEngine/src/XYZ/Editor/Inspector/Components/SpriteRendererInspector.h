@@ -8,15 +8,17 @@ namespace XYZ {
 	public:
 		SpriteRendererInspector();
 
-		virtual bool OnEditorRender(Ref<Renderer2D> renderer) override;
+		virtual bool OnEditorRender() override;
+		virtual void SetSceneEntity(const SceneEntity& entity) override;
 
-
-		SceneEntity m_Context;
+		virtual Type GetType() const override { return InspectorEditable::Type::Entity; }
 	private:
 		void selectSubTextureDialog();
 		void selectMaterialDialog();
 
 	private:
+		SceneEntity			  m_Context;
+
 		std::function<void()> m_Dialog;
 		bool				  m_DialogOpen;
 	};

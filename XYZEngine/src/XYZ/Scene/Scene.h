@@ -1,5 +1,6 @@
 #pragma once
-#include "XYZ/Core/Ref.h"
+#include "XYZ/Core/Ref/Ref.h"
+#include "XYZ/Core/Ref/WeakRef.h"
 #include "XYZ/Core/Timestep.h"
 #include "XYZ/ECS/ECSManager.h"
 

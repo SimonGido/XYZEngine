@@ -35,7 +35,7 @@ namespace XYZ
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
         //io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
 
-
+		io.FontDefault = io.Fonts->AddFontFromFileTTF("Assets/Fonts/Roboto/Roboto-Regular.ttf", 15.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
         // Setup Dear ImGui style
         ImGui::StyleColorsDark();
 
@@ -46,12 +46,9 @@ namespace XYZ
             style.WindowRounding = 0.0f;
             style.Colors[ImGuiCol_WindowBg].w = 1.0f;
         }
-		if (VulkanContext::GetSwapChain().GetFormat().format == VkFormat::VK_FORMAT_B8G8R8A8_SRGB)
-			SetDarkThemeSRGBColors();
-		else
-			SetDarkThemeColors();
-		
-		
+		m_SRGBColorSpace = VulkanContext::GetSwapChain().GetFormat().format == VkFormat::VK_FORMAT_B8G8R8A8_SRGB;	
+		SetDarkThemeColors();
+
 		Renderer::Submit([this]()
 		{
 			Application& app = Application::Get();
@@ -160,6 +157,7 @@ namespace XYZ
     	ImGui::Render();
 		ImDrawData copy;
 		CopyImDrawData(copy, ImGui::GetDrawData());
+		
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		// Update and Render additional Platform Windows
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
@@ -168,7 +166,7 @@ namespace XYZ
 			ImGui::RenderPlatformWindowsDefault();
 		}
 		Renderer::Submit([this, copy]() mutable
-		{
+		{			
 			const VulkanSwapChain& swapChain = VulkanContext::GetSwapChain();
 
 			VkClearValue clearValues[2];
@@ -243,8 +241,6 @@ namespace XYZ
 			vkCmdEndRenderPass(drawCommandBuffer);
 
 			VK_CHECK_RESULT(vkEndCommandBuffer(drawCommandBuffer));
-
-			
 		});
     }
 

@@ -6,9 +6,13 @@ namespace XYZ {
 	class ParticleComponentGPUInspector : public InspectorEditable
 	{
 	public:
-		virtual bool OnEditorRender(Ref<Renderer2D> renderer) override;
+		ParticleComponentGPUInspector();
+		
+		virtual bool OnEditorRender() override;
 
-
+		virtual void SetSceneEntity(const SceneEntity& entity) override;
+		virtual Type GetType() const override { return InspectorEditable::Type::Entity; }
+	private:
 		SceneEntity m_Context;
 	};
 }

@@ -3,12 +3,25 @@
 
 namespace XYZ {
 
-	class InspectorEditable
+	class InspectorEditable : public RefCount
 	{
 	public:
+		enum class Type { None, Entity, Asset };
+
+		InspectorEditable(std::string name)
+			: m_Name(name)
+		{}
 		virtual ~InspectorEditable() = default;
 
-		virtual bool OnEditorRender(Ref<Renderer2D> renderer) = 0;
+		virtual bool OnEditorRender() = 0;
+		virtual void SetSceneEntity(const SceneEntity& entity) {};
+		virtual void SetAsset(const Ref<Asset>& asset) {};
+
+		virtual Type GetType() const { return Type::None; }
+
+		const std::string& GetName() const { return m_Name; }
+	private:
+		std::string m_Name;
 	};
 
 }

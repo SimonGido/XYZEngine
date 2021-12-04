@@ -1,5 +1,5 @@
 #pragma once
-#include "XYZ//Editor/EditorPanel.h"
+#include "XYZ/Editor/EditorPanel.h"
 
 namespace XYZ {
 	namespace Editor {

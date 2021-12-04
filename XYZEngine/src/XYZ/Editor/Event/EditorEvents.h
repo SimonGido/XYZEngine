@@ -36,4 +36,21 @@ namespace XYZ {
 	private:
 		SceneEntity m_Entity;
 	};
+
+	class AssetSelectedEvent : public EditorEvent
+	{
+	public:
+		AssetSelectedEvent(const Ref<Asset>& asset)
+			: m_Asset(asset)
+		{}
+
+		virtual EditorEventType GetEditorEventType() const override { return EditorEventType::AssetSelected; }
+		
+		const Ref<Asset>& GetAsset() const { return m_Asset; }
+
+		static EditorEventType GetStaticType() { return EditorEventType::AssetSelected; }
+
+	private:
+		Ref<Asset> m_Asset;
+	};
 }

@@ -122,6 +122,18 @@ namespace XYZ {
 	{
 		return get<bool>(name);
 	}
+	glm::ivec2& VulkanMaterial::GetIVector2(const std::string& name)
+	{
+		return get<glm::ivec2>(name);
+	}
+	glm::ivec3& VulkanMaterial::GetIVector3(const std::string& name)
+	{
+		return get<glm::ivec3>(name);
+	}
+	glm::ivec4& VulkanMaterial::GetIVector4(const std::string& name)
+	{
+		return get<glm::ivec4>(name);
+	}
 	glm::vec2& VulkanMaterial::GetVector2(const std::string& name)
 	{
 		return get<glm::vec2>(name);
@@ -148,6 +160,9 @@ namespace XYZ {
 	}
 	void VulkanMaterial::RT_UpdateForRendering(const vector3D<VkWriteDescriptorSet>& descriptors)
 	{
+		// TODO: do this only when descriptor sets are reset
+		allocateDescriptorSets();
+
 		vector3D<VkDescriptorImageInfo> arrayImageInfos;
 		if (m_DescriptorsDirty)
 		{
@@ -215,6 +230,19 @@ namespace XYZ {
 	{
 		const size_t vertexBufferSize = m_Shader->GetVertexBufferSize();
 		return ByteBuffer(m_UniformsBuffer.Data, vertexBufferSize);
+	}
+
+	void VulkanMaterial::allocateDescriptorSets()
+	{
+		Ref<VulkanShader> vulkanShader = m_Shader;
+		const auto& shaderDescriptorSets = vulkanShader->GetDescriptorSets();
+		for (auto& descriptorSet : m_DescriptorSets) // Per frame
+		{
+			for (uint32_t set = 0; set < descriptorSet.size(); ++set)
+			{
+				descriptorSet[set] = VulkanRendererAPI::RT_AllocateDescriptorSet(shaderDescriptorSets[set].DescriptorSetLayout);
+			}
+		}
 	}
 
 	void VulkanMaterial::allocateStorages()

@@ -5,7 +5,13 @@
 #include "XYZ/Scene/Components.h"
 
 namespace XYZ {
-	bool ParticleComponentGPUInspector::OnEditorRender(Ref<Renderer2D> renderer)
+
+	ParticleComponentGPUInspector::ParticleComponentGPUInspector()
+		:
+		InspectorEditable("ParticleComponentGPUInspector")
+	{
+	}
+	bool ParticleComponentGPUInspector::OnEditorRender()
 	{
 		return EditorHelper::DrawComponent<ParticleComponentGPU>("Particle Component", m_Context, [&](auto& component) {
 			/*
@@ -40,9 +46,13 @@ namespace XYZ {
 					ImGui::InputFloat4(id.c_str(), glm::value_ptr(material->Get<glm::vec4>(uniform.GetName())));
 				}
 				EditorHelper::EndColumns();
-				
+
 			}
 			*/
 		});
+	}
+	void ParticleComponentGPUInspector::SetSceneEntity(const SceneEntity& entity)
+	{
+		m_Context = entity;
 	}
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include "Core.h"
-#include "Ref.h"
+#include "XYZ/Core/Ref/Ref.h"
+#include "XYZ/Core/Ref/WeakRef.h"
 
 #include <fstream>
 #include <iostream>

@@ -5,7 +5,13 @@
 #include "XYZ/Scene/Components.h"
 
 namespace XYZ {
-	bool ScriptComponentInspector::OnEditorRender(Ref<Renderer2D> renderer)
+
+	ScriptComponentInspector::ScriptComponentInspector()
+		:
+		InspectorEditable("ScriptComponentInspector")
+	{
+	}
+	bool ScriptComponentInspector::OnEditorRender()
 	{
 		return EditorHelper::DrawComponent<ScriptComponent>("Script", m_Context, [&](auto& component) {
 			for (const PublicField& field : component.GetFields())
@@ -75,5 +81,9 @@ namespace XYZ {
 				*/
 			}
 		});
+	}
+	void ScriptComponentInspector::SetSceneEntity(const SceneEntity& entity)
+	{
+		m_Context = entity;
 	}
 }

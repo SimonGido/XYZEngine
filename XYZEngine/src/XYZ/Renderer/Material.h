@@ -47,6 +47,11 @@ namespace XYZ {
 		virtual int32_t&	   GetInt(const std::string& name) = 0;
 		virtual uint32_t&	   GetUInt(const std::string& name) = 0;
 		virtual bool&		   GetBool(const std::string& name) = 0;
+
+		virtual glm::ivec2&	   GetIVector2(const std::string& name) = 0;
+		virtual glm::ivec3&	   GetIVector3(const std::string& name) = 0;
+		virtual glm::ivec4&	   GetIVector4(const std::string& name) = 0;
+
 		virtual glm::vec2&	   GetVector2(const std::string& name) = 0;
 		virtual glm::vec3&	   GetVector3(const std::string& name) = 0;
 		virtual glm::vec4&	   GetVector4(const std::string& name) = 0;

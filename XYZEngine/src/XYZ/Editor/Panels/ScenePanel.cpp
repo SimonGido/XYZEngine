@@ -10,6 +10,8 @@
 #include "XYZ/Utils/Math/Math.h"
 #include "XYZ/ImGui/ImGui.h"
 
+#include "XYZ/Editor/Event/EditorEvents.h"
+
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <ImGuizmo.h>
@@ -363,6 +365,7 @@ namespace XYZ {
 				if (!m_Selection.empty())
 				{
 					m_Context->SetSelectedEntity(m_Selection[m_SelectionIndex]);
+					Application::Get().OnEvent(EntitySelectedEvent(m_Selection[m_SelectionIndex]));
 				}
 			}
 		}

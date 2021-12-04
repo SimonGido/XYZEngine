@@ -36,6 +36,11 @@ namespace XYZ {
 		virtual int32_t&   GetInt(const std::string& name) override;
 		virtual uint32_t&  GetUInt(const std::string& name) override;
 		virtual bool&	   GetBool(const std::string& name) override;
+
+		virtual glm::ivec2& GetIVector2(const std::string& name) override;
+		virtual glm::ivec3& GetIVector3(const std::string& name) override;
+		virtual glm::ivec4& GetIVector4(const std::string& name) override;
+
 		virtual glm::vec2& GetVector2(const std::string& name) override;
 		virtual glm::vec3& GetVector3(const std::string& name) override;
 		virtual glm::vec4& GetVector4(const std::string& name) override;
@@ -54,6 +59,7 @@ namespace XYZ {
 		const ByteBuffer						 GetFSUniformsBuffer() const;
 		const ByteBuffer						 GetVSUniformsBuffer() const;
 	private:
+		void allocateDescriptorSets();
 		void allocateStorages();
 		void allocateStorage(const std::unordered_map<std::string, ShaderBuffer>& buffers, ByteBuffer& buffer);
 		void setDescriptor(const std::string& name, const Ref<Texture2D>& texture);

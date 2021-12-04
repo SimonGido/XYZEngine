@@ -1,12 +1,10 @@
 #pragma once
-
+#include "RefTracker.h"
 
 #include <stdint.h>
 #include <atomic>
-#include <vector>
 
 namespace XYZ {
-
 	class RefCount
 	{
 	public:
@@ -20,45 +18,13 @@ namespace XYZ {
 		{
 			m_RefCount--;
 		}
-	
+
 		uint32_t GetRefCount() const { return m_RefCount; }
 	private:
 		mutable std::atomic<uint32_t> m_RefCount = 0;
-		
-	};
 
-	template<uint32_t BlockSize, bool StoreSize>
-	class MemoryPool;
-
-	template <typename T>
-	class Ref;
-
-	class RefAllocator
-	{
-	public:
-		static void  Init(MemoryPool<1024 * 1024, true>* pool);
-
-		static bool  Initialized() { return s_Initialized; }
-		template <typename T>
-		static void Deallocate(const T* instance)
-		{
-			instance->~T();
-			deallocate(instance);
-		}
-
-	private:
-		static void* allocate(uint32_t size);
-		static void  deallocate(const void* handle);
-
-		static MemoryPool<1024 * 1024, true>* s_Pool;
-		static bool							  s_Initialized;
+	};	
 	
-		template <typename T>
-		friend class Ref;
-
-		friend class RefCollector;
-	};
-
 	template<typename T>
 	class Ref
 	{
@@ -67,7 +33,7 @@ namespace XYZ {
 			: m_Instance(nullptr)
 		{
 		}
-		
+
 		Ref(std::nullptr_t n)
 			: m_Instance(nullptr)
 		{
@@ -182,12 +148,9 @@ namespace XYZ {
 		template<typename... Args>
 		static Ref<T> Create(Args&&... args)
 		{
-			if (RefAllocator::s_Pool)
-			{
-				void*  handle = RefAllocator::allocate((uint32_t)sizeof(T));
-				return Ref<T>(new (handle)T(std::forward<Args>(args)...));
-			}
-			return Ref<T>(new T(std::forward<Args>(args)...));
+			T* instance = new T(std::forward<Args>(args)...);
+			RefTracker::addToLiveReferences(instance);
+			return Ref<T>(instance);
 		}
 	private:
 		void IncRef() const
@@ -203,10 +166,8 @@ namespace XYZ {
 				m_Instance->DecRefCount();
 				if (m_Instance->GetRefCount() == 0)
 				{
-					if (RefAllocator::Initialized())
-						RefAllocator::Deallocate(m_Instance);
-					else
-						delete m_Instance;
+					RefTracker::removeFromLiveReferences((void*)m_Instance);
+					delete m_Instance;
 				}
 			}
 		}
@@ -215,5 +176,4 @@ namespace XYZ {
 		template<class T2>
 		friend class Ref;
 	};
-
 }

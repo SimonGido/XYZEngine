@@ -5,7 +5,13 @@
 #include "XYZ/Scene/Components.h"
 
 namespace XYZ {
-	bool CameraInspector::OnEditorRender(Ref<Renderer2D> renderer)
+
+	CameraInspector::CameraInspector()
+		:
+		InspectorEditable("CameraInspector")
+	{
+	}
+	bool CameraInspector::OnEditorRender()
 	{
 		return EditorHelper::DrawComponent<CameraComponent>("Camera", m_Context, [&](auto& component) {
 
@@ -35,7 +41,7 @@ namespace XYZ {
 			{
 				ImGui::Text("Orthographic");
 				CameraOrthographicProperties props = camera.GetOrthographicProperties();
-				
+
 				ImGui::InputFloat("##Size", &props.OrthographicSize);
 
 
@@ -56,5 +62,9 @@ namespace XYZ {
 				camera.SetPerspective(props);
 			}
 		});
+	}
+	void CameraInspector::SetSceneEntity(const SceneEntity& entity)
+	{
+		m_Context = entity;
 	}
 }

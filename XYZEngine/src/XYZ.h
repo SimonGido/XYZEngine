@@ -5,7 +5,8 @@
 #include "XYZ/Core/KeyCodes.h"
 #include "XYZ/Core/MouseCodes.h" 
 #include "XYZ/Core/WindowCodes.h"
-#include "XYZ/Core/Ref.h"
+#include "XYZ/Core/Ref/Ref.h"
+#include "XYZ/Core/Ref/WeakRef.h"
 #include "XYZ/Debug/Timer.h"
 
 
@@ -45,13 +46,12 @@
 #include "XYZ/Editor/Panels/ScenePanel.h"
 #include "XYZ/Editor/Panels/SceneHierarchyPanel.h"
 #include "XYZ/Editor/Inspector/InspectorPanel.h"
-#include "XYZ/Editor/Inspector/SceneEntityInspectorContext.h"
-#include "XYZ/Editor/Inspector/AssetInspectorContext.h"
 
 #include "XYZ/Editor/Panels/AssetBrowser.h"
 #include "XYZ/Editor/SkinningEditor/SkinningEditor.h"
 #include "XYZ/Editor/AnimationEditor/AnimationEditor.h"
 #include "XYZ/Editor/SpriteEditor/SpriteEditor.h"
+#include "XYZ/Editor/Panels/ImGuiStylePanel.h"
 
 //------ECS-----//
 #include "XYZ/ECS/ECSManager.h"

@@ -111,8 +111,8 @@ namespace XYZ {
 				const std::vector<glm::vec3>& lights = lightModule.GetLights();
 				const PointLight2D& light = lightModule.m_LightEntity.GetComponent<PointLight2D>();
 				const TransformComponent& transform = lightModule.m_TransformEntity.GetComponent<TransformComponent>();
-				for (const glm::vec3& l : lights)
-					renderer->SubmitLight(light, transform.WorldTransform * glm::translate(l));
+				//for (const glm::vec3& l : lights)
+				//	renderer->SubmitLight(light, transform.WorldTransform * glm::translate(l));
 			}
 		}
 	}

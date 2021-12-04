@@ -1,7 +1,7 @@
 #pragma once
 #include "Buffer.h"
 
-#include "XYZ/Core/Ref.h"
+#include "XYZ/Core/Ref/Ref.h"
 
 namespace XYZ {
 	/**

@@ -7,7 +7,14 @@
 #include "XYZ/Renderer/Renderer2D.h"
 
 namespace XYZ {
-	bool RigidBody2DInspector::OnEditorRender(Ref<Renderer2D> renderer)
+
+	RigidBody2DInspector::RigidBody2DInspector()
+		:
+		InspectorEditable("RigidBody2DInspector")
+	{
+	}
+
+	bool RigidBody2DInspector::OnEditorRender()
 	{
 		return EditorHelper::DrawComponent<RigidBody2DComponent>("Rigid Body2D", m_Context, [&](auto& component) {
 
@@ -42,7 +49,19 @@ namespace XYZ {
 				ImGui::Text("Kinematic");
 		});
 	}
-	bool BoxCollider2DInspector::OnEditorRender(Ref<Renderer2D> renderer)
+
+	void RigidBody2DInspector::SetSceneEntity(const SceneEntity& entity)
+	{
+		m_Context = entity;
+	}
+
+	BoxCollider2DInspector::BoxCollider2DInspector()
+		:
+		InspectorEditable("BoxCollider2DInspector")
+	{
+	}
+
+	bool BoxCollider2DInspector::OnEditorRender()
 	{
 		return EditorHelper::DrawComponent<BoxCollider2DComponent>("Box Collider2D", m_Context, [&](auto& component) {
 			/*
@@ -51,7 +70,7 @@ namespace XYZ {
 				translation + glm::vec3(component.Offset.x, component.Offset.y, 0.0f);
 			renderer->SubmitAABB(
 				boxTranslation - glm::vec3(component.Size / 2.0f, 0.0f),
-				boxTranslation + glm::vec3(component.Size / 2.0f, 0.0f), 
+				boxTranslation + glm::vec3(component.Size / 2.0f, 0.0f),
 				sc_ColliderColor
 			);
 
@@ -73,7 +92,64 @@ namespace XYZ {
 			*/
 		});
 	}
-	bool ChainCollider2DInspector::OnEditorRender(Ref<Renderer2D> renderer)
+
+	void BoxCollider2DInspector::SetSceneEntity(const SceneEntity& entity)
+	{
+		m_Context = entity;
+	}
+
+	CircleCollider2DInspector::CircleCollider2DInspector()
+		:
+		InspectorEditable("CircleCollider2DInspector")
+	{
+	}
+
+	bool CircleCollider2DInspector::OnEditorRender()
+	{
+		return EditorHelper::DrawComponent<CircleCollider2DComponent>("Circle Collider2D", m_Context, [&](auto& component) {
+
+			/*
+			auto [translation, rotation, scale] = m_Context.GetComponent<TransformComponent>().GetWorldComponents();
+			const glm::vec3 circleTranslation =
+				translation + glm::vec3(component.Offset.x, component.Offset.y, 0.0f);
+
+			renderer->SubmitCircle(circleTranslation, component.Radius, 20, sc_ColliderColor);
+			EditorHelper::DrawVec2Control("Offset", component.Offset);
+
+			EditorHelper::BeginColumns("Radius");
+			ImGui::PushItemWidth(75.0f);
+			ImGui::InputFloat("##Radius", &component.Radius);
+			ImGui::PopItemWidth();
+			EditorHelper::EndColumns();
+
+			EditorHelper::BeginColumns("Density");
+			ImGui::PushItemWidth(75.0f);
+			ImGui::InputFloat("##Density", &component.Density);
+			ImGui::PopItemWidth();
+			EditorHelper::EndColumns();
+
+
+			EditorHelper::BeginColumns("Friction");
+			ImGui::PushItemWidth(75.0f);
+			ImGui::InputFloat("##Friction", &component.Friction);
+			ImGui::PopItemWidth();
+			EditorHelper::EndColumns();
+			*/
+		});
+	}
+
+	void CircleCollider2DInspector::SetSceneEntity(const SceneEntity& entity)
+	{
+		m_Context = entity;
+	}
+
+	ChainCollider2DInspector::ChainCollider2DInspector()
+		:
+		InspectorEditable("ChainCollider2DInspector")
+	{
+	}
+
+	bool ChainCollider2DInspector::OnEditorRender()
 	{
 		return EditorHelper::DrawComponent<ChainCollider2DComponent>("Chain Collider2D", m_Context, [&](auto& component) {
 			/*
@@ -118,40 +194,10 @@ namespace XYZ {
 			*/
 		});
 	}
-	
-	bool CircleCollider2DInspector::OnEditorRender(Ref<Renderer2D> renderer)
+
+	void ChainCollider2DInspector::SetSceneEntity(const SceneEntity& entity)
 	{
-		
-		return EditorHelper::DrawComponent<CircleCollider2DComponent>("Circle Collider2D", m_Context, [&](auto& component) {
-
-			/*
-			auto [translation, rotation, scale] = m_Context.GetComponent<TransformComponent>().GetWorldComponents();
-			const glm::vec3 circleTranslation =
-				translation + glm::vec3(component.Offset.x, component.Offset.y, 0.0f);
-			
-			renderer->SubmitCircle(circleTranslation, component.Radius, 20, sc_ColliderColor);
-			EditorHelper::DrawVec2Control("Offset", component.Offset);
-
-			EditorHelper::BeginColumns("Radius");
-			ImGui::PushItemWidth(75.0f);
-			ImGui::InputFloat("##Radius", &component.Radius);
-			ImGui::PopItemWidth();
-			EditorHelper::EndColumns();
-
-			EditorHelper::BeginColumns("Density");
-			ImGui::PushItemWidth(75.0f);
-			ImGui::InputFloat("##Density", &component.Density);
-			ImGui::PopItemWidth();
-			EditorHelper::EndColumns();
-
-
-			EditorHelper::BeginColumns("Friction");
-			ImGui::PushItemWidth(75.0f);
-			ImGui::InputFloat("##Friction", &component.Friction);
-			ImGui::PopItemWidth();
-			EditorHelper::EndColumns();
-			*/
-		});
+		m_Context = entity;
 	}
 
 }
