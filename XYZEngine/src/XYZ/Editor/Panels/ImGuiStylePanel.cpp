@@ -16,45 +16,65 @@
 namespace XYZ {
 	namespace Editor {
 	
-		void ValueControl(const char* stringID, bool& value)
+		bool ValueControl(const char* stringID, bool& value)
 		{
 			std::string valueID = "##";
 			valueID += stringID;
+			bool result = false;
 
 			UI::TableRow(stringID,
 				[&]() { ImGui::Text(stringID); },
-				[&]() { ImGui::Checkbox(valueID.c_str(), &value); });
+				[&]() { result = ImGui::Checkbox(valueID.c_str(), &value); });
+
+			return result;
 		}
-		void ValueControl(const char* stringID, float& value)
+		bool ValueControl(const char* stringID, float& value)
 		{
 			std::string valueID = "##";
 			valueID += stringID;
+			bool result = false;
 
 			UI::TableRow(stringID,
 				[&]() { ImGui::Text(stringID); },
-				[&]() { ImGui::InputFloat(valueID.c_str(), &value); });
+				[&]() { result = ImGui::DragFloat(valueID.c_str(), &value, 0.05f); });
+			if (value <= 0.0f)
+				value = 0.1f;
+
+			return result;
 		}
-		void ValueControl(const char* stringID, int& value)
+		bool ValueControl(const char* stringID, int& value)
 		{
 			std::string valueID = "##";
 			valueID += stringID;
+			bool result = false;
 
 			UI::TableRow(stringID,
 				[&]() { ImGui::Text(stringID); },
-				[&]() { ImGui::InputInt(valueID.c_str(), &value); });
+				[&]() { result = ImGui::DragInt(valueID.c_str(), &value, 0.05f); });
+
+			return result;
 		}
-		void ValueControl(const char* stringID, ImVec2& value)
+		bool ValueControl(const char* stringID, ImVec2& value)
 		{
 			std::string valueID = "##";
 			valueID += stringID;
+			bool result = false;
 
 			UI::TableRow(stringID,
 				[&]() { ImGui::Text(stringID); },
-				[&]() { ImGui::InputFloat2(valueID.c_str(), (float*)&value); });
+				[&]() { result = ImGui::DragFloat2(valueID.c_str(), (float*)&value, 0.05f); });
+
+			if (value.x <= 0.0f)
+				value.x = 0.1f;
+
+			if (value.y <= 0.0f)
+				value.y = 0.1f;
+
+			return result;
 		}
-		void ValueControl(const char* stringID, ImVec4* value)
+		bool ValueControl(const char* stringID, ImVec4* value)
 		{
-			// DO nothing
+			return false;
 		}
 
 		ImGuiStylePanel::ImGuiStylePanel(std::string name)
@@ -91,14 +111,33 @@ namespace XYZ {
 					if (std::filesystem::exists(filepath))
 						imguiLayer->LoadStyle(filepath);
 				}
+				ImGui::SameLine();
+				if (ImGui::Checkbox("Autosave", &m_AutoSave))
+				{
+					if (m_AutoSave)
+					{
+						void* window = Application::Get().GetWindow().GetNativeWindow();
+						std::string filepath = FileSystem::OpenFile(window, "imxyz");
+						if (std::filesystem::exists(filepath))
+							m_AutoSaveFile = filepath;
+						else
+							m_AutoSave = false;
+					}
+				}
+				if (m_AutoSave)
+				{
+					ImGui::SameLine();
+					ImGui::Text(m_AutoSaveFile.c_str());
+				}
 
+				bool modified = false;
 				if (ImGui::BeginTable("Colors", 2, ImGuiTableFlags_SizingFixedSame))
 				{
 					for (uint32_t i = 0; i < ImGuiCol_COUNT; ++i)
 					{
 						UI::TableRow(ImGuiStyleReflection::ImGuiColorIDText[i],
 							[i]() { ImGui::Text(ImGuiStyleReflection::ImGuiColorIDText[i]); },
-							[&]() { ImGui::ColorEdit4("##ColorEdit", (float*)&style.Colors[i]); });
+							[&]() { modified |= ImGui::ColorEdit4("##ColorEdit", (float*)&style.Colors[i]); });
 					}
 					ImGui::EndTable();
 				}		
@@ -107,16 +146,37 @@ namespace XYZ {
 					auto styleTuple = ImGuiStyleReflection::StyleToTuple();
 					Reflect::For<ImGuiStyleReflection::ImGuiStyleVariableCount>([&](auto j) 
 					{
-						ValueControl(ImGuiStyleReflection::ImGuiStyleVariables[j.value], std::get<j.value>(styleTuple));
+						modified |= ValueControl(ImGuiStyleReflection::ImGuiStyleVariables[j.value], std::get<j.value>(styleTuple));
 					});
 
-					if (style.Alpha < 0.1f)
-						style.Alpha = 0.1f;
-					
+					handleLimits();
 					ImGui::EndTable();
+				}
+				if (modified && m_AutoSave)
+				{
+					imguiLayer->SaveStyle(m_AutoSaveFile);
 				}
 			}
 			ImGui::End();
+		}
+		void ImGuiStylePanel::handleLimits() const
+		{
+			ImGuiStyle& style = ImGui::GetStyle();
+			if (style.Alpha > 1.0f)
+				style.Alpha = 1.0f;
+
+			if (style.DisabledAlpha > 1.0f)
+				style.DisabledAlpha = 1.0f;
+			
+			if (style.WindowMenuButtonPosition < ImGuiDir_None)
+				style.WindowMenuButtonPosition = ImGuiDir_None;
+			if (style.WindowMenuButtonPosition >= ImGuiDir_COUNT)
+				style.WindowMenuButtonPosition = ImGuiDir_COUNT - 1;
+			
+			if (style.ColorButtonPosition < ImGuiDir_None)
+				style.ColorButtonPosition = ImGuiDir_None;
+			if (style.ColorButtonPosition >= ImGuiDir_COUNT)
+				style.ColorButtonPosition = ImGuiDir_COUNT - 1;
 		}
 	}
 }

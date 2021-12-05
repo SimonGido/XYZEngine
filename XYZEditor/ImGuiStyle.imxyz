@@ -111,35 +111,35 @@ Colors:
     Color: [0.800000012, 0.800000012, 0.800000012, 0.349999994]
 Variables:
   - Index: 0
-    Alpha: 1
+    Alpha: 0.75
   - Index: 1
-    DisabledAlpha: 0.600000024
+    DisabledAlpha: 0.550000012
   - Index: 2
     WindowPadding: [8, 8]
   - Index: 3
-    WindowRounding: 0
+    WindowRounding: 0.100000001
   - Index: 4
     WindowBorderSize: 1
   - Index: 5
-    WindowMinSize: [370, 32]
+    WindowMinSize: [32, 32]
   - Index: 6
-    WindowTitleAlign: [0, 0.5]
+    WindowTitleAlign: [0.100000001, 0.5]
   - Index: 7
     WindowMenuButtonPosition: 0
   - Index: 8
-    ChildRounding: 0
+    ChildRounding: 0.100000001
   - Index: 9
     ChildBorderSize: 1
   - Index: 10
-    PopupRounding: 0
+    PopupRounding: 0.100000001
   - Index: 11
     PopupBorderSize: 1
   - Index: 12
     FramePadding: [4, 3]
   - Index: 13
-    FrameRounding: 0
+    FrameRounding: 0.100000001
   - Index: 14
-    FrameBorderSize: 0
+    FrameBorderSize: 0.100000001
   - Index: 15
     ItemSpacing: [8, 4]
   - Index: 16
@@ -147,7 +147,7 @@ Variables:
   - Index: 17
     CellPadding: [4, 2]
   - Index: 18
-    TouchExtraPadding: [0, 0]
+    TouchExtraPadding: [0.100000001, 0.100000001]
   - Index: 19
     IndentSpacing: 21
   - Index: 20
@@ -159,21 +159,21 @@ Variables:
   - Index: 23
     GrabMinSize: 10
   - Index: 24
-    GrabRounding: 0
+    GrabRounding: 0.100000001
   - Index: 25
     LogSliderDeadzone: 4
   - Index: 26
     TabRounding: 4
   - Index: 27
-    TabBorderSize: 0
+    TabBorderSize: 0.100000001
   - Index: 28
-    TabMinWidthForCloseButton: 0
+    TabMinWidthForCloseButton: 0.100000001
   - Index: 29
     ColorButtonPosition: 1
   - Index: 30
     ButtonTextAlign: [0.5, 0.5]
   - Index: 31
-    SelectableTextAlign: [0, 0]
+    SelectableTextAlign: [0.100000001, 0.100000001]
   - Index: 32
     DisplayWindowPadding: [19, 19]
   - Index: 33

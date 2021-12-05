@@ -37,44 +37,32 @@ namespace XYZ {
 		{
 			std::scoped_lock<std::mutex> lock(m_PoolMutex);
 			const uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;	
-			m_InUsePools.resize(framesInFlight);
-			m_FullPools.resize(framesInFlight);
-			m_ReusablePools.resize(framesInFlight);
+			m_Allocators.resize(framesInFlight);
 			for (uint32_t frame = 0; frame < framesInFlight; ++frame)
 			{
-				m_InUsePools[frame] = createPool();
+				m_Allocators[frame].InUsePool = createPool();
 			}
 		});
 	}
 
 	void VulkanDescriptorAllocator::Shutdown()
 	{
-		std::vector<VkDescriptorPool> inUsePools;
-		vector2D<VkDescriptorPool> fullPools;
-		vector2D<VkDescriptorPool> reusablePools;
+		std::vector<Allocator> allocators;
 		{
 			std::scoped_lock<std::mutex> lock(m_PoolMutex);
-			inUsePools = std::move(m_InUsePools);
-			fullPools = std::move(m_FullPools);
-			reusablePools = std::move(m_ReusablePools);
+			allocators = std::move(m_Allocators);
 		}
-		Renderer::SubmitResource([inUsePools, fullPools, reusablePools]() {
+		Renderer::SubmitResource([allocators]() {
 			VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
-			for (const auto& pool : inUsePools)
+			for (auto& allocator : allocators)
 			{
-				vkDestroyDescriptorPool(device, pool, nullptr);
-			}
-			for (const auto& framePools : fullPools)
-			{
-				for (auto& pool : framePools)
+				vkDestroyDescriptorPool(device, allocator.InUsePool, nullptr);
+				for (auto& pool : allocator.FullPools)
 				{
 					vkDestroyDescriptorPool(device, pool, nullptr);
 				}
-			}
-			for (const auto& framePools : reusablePools)
-			{
-				for (auto& pool : framePools)
+				for (auto& pool : allocator.ReusablePools)
 				{
 					vkDestroyDescriptorPool(device, pool, nullptr);
 				}
@@ -83,8 +71,8 @@ namespace XYZ {
 	}
 	VkDescriptorSet VulkanDescriptorAllocator::RT_Allocate(const VkDescriptorSetLayout& layout)
 	{
-		uint32_t currentFrame = Renderer::GetCurrentFrame();
-		tryResetFull(currentFrame);
+		uint32_t frame = Renderer::GetCurrentFrame();
+		RT_TryResetFull(frame);
 
 		{
 			std::scoped_lock<std::mutex> lock(m_PoolMutex);		
@@ -94,7 +82,7 @@ namespace XYZ {
 			VkDescriptorSetAllocateInfo allocInfo;
 			allocInfo.pNext = nullptr;
 			allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-			allocInfo.descriptorPool = m_InUsePools[currentFrame];
+			allocInfo.descriptorPool = m_Allocators[frame].InUsePool;
 			allocInfo.descriptorSetCount = 1;
 			allocInfo.pSetLayouts = &layout;
 
@@ -105,10 +93,10 @@ namespace XYZ {
 			//we reallocate pools on memory error
 			if (IsMemoryError(result))
 			{
-				m_FullPools[currentFrame].push_back(m_InUsePools[currentFrame]);
+				m_Allocators[frame].FullPools.push_back(m_Allocators[frame].InUsePool);
 				// Find reusable pool if exists
-				if (!getReusablePool(m_InUsePools[currentFrame], currentFrame))
-					m_InUsePools[currentFrame] = createPool();
+				if (!getReusablePool(m_Allocators[frame].InUsePool, frame))
+					m_Allocators[frame].InUsePool = createPool();
 			}
 			else
 			{
@@ -117,17 +105,23 @@ namespace XYZ {
 		}
 		return RT_Allocate(layout);
 	}
-	void VulkanDescriptorAllocator::RT_ResetFull(uint32_t frame)
+	void VulkanDescriptorAllocator::RT_TryResetFull(uint32_t frame)
 	{
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 		{
 			std::scoped_lock<std::mutex> lock(m_PoolMutex);
-			for (const auto& pool : m_FullPools[frame])
+			auto& fullPools = m_Allocators[frame].FullPools;
+			if (fullPools.size() >= sc_AutoResetCount)
 			{
-				vkResetDescriptorPool(device, pool, VkDescriptorPoolResetFlags{ 0 });
-				m_ReusablePools[frame].push_back(pool);
+				XYZ_WARN("Reseting full VulkanDescriptor pools frame {}", frame);
+				while (fullPools.size() != 1)
+				{
+					VkDescriptorPool pool = fullPools.front();
+					fullPools.pop_front();
+					VK_CHECK_RESULT(vkResetDescriptorPool(device, pool, VkDescriptorPoolResetFlags{ 0 }));
+					m_Allocators[frame].ReusablePools.push_back(pool);
+				}
 			}
-			m_FullPools.clear();
 		}
 	}
 	VkDescriptorPool VulkanDescriptorAllocator::createPool() const
@@ -135,7 +129,7 @@ namespace XYZ {
 		VkDescriptorPool result;
 		VkDescriptorPoolCreateInfo pool_info = {};
 		pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		pool_info.flags = 0;
+		pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 		pool_info.maxSets = sc_MaxSets;
 		pool_info.poolSizeCount = std::size(s_PoolSizes);
 		pool_info.pPoolSizes = s_PoolSizes;
@@ -146,32 +140,13 @@ namespace XYZ {
 	}
 	bool VulkanDescriptorAllocator::getReusablePool(VkDescriptorPool& pool, uint32_t frame)
 	{
-		if (!m_ReusablePools[frame].empty())
+		if (!m_Allocators[frame].ReusablePools.empty())
 		{
-			pool = m_ReusablePools[frame].back();
-			m_ReusablePools[frame].pop_back();
+			pool = m_Allocators[frame].ReusablePools.back();
+			m_Allocators[frame].ReusablePools.pop_back();
 			return true;
 		}
 		return false;
 	}
-	void VulkanDescriptorAllocator::tryResetFull(uint32_t frame)
-	{
-		{
-			std::scoped_lock<std::mutex> lock(m_PoolMutex);
-			if (m_FullPools[frame].size() <= sc_AutoResetCount)
-				return;
-		}
 
-		Renderer::SubmitResource([this, frame, fullPools = std::move(m_FullPools[frame])]() {
-			XYZ_WARN("Reseting full VulkanDescriptor pools");
-			std::scoped_lock<std::mutex> lock(m_PoolMutex);
-			VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-			for (const auto& pool : fullPools)
-			{
-				vkResetDescriptorPool(device, pool, VkDescriptorPoolResetFlags{ 0 });
-				m_ReusablePools[frame].push_back(pool);
-			}
-		});
-		
-	}
 }

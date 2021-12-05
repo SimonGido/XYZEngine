@@ -79,7 +79,7 @@ namespace XYZ {
 			m_Window->ProcessEvents();
 			if (!m_Minimized)
 			{				
-				Renderer::BlockRenderThread(); // Sync before new frame
+				Renderer::BlockRenderThread(); // Sync before new frame				
 				Renderer::Render();
 
 				m_Window->BeginFrame();

@@ -13,10 +13,6 @@
 
 namespace XYZ {
 
-
-
-
-
 	ImGuiLayer::ImGuiLayer()
 	{
 	}
@@ -99,9 +95,6 @@ namespace XYZ {
 
 		// DockSpace
 		ImGuiIO& io = ImGui::GetIO();
-		ImGuiStyle& style = ImGui::GetStyle();
-		float minWinSizeX = style.WindowMinSize.x;
-		style.WindowMinSize.x = 370.0f;
 		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 		{
 			const ImGuiID dockspace_id = ImGui::GetID("DockSpace");

@@ -13,6 +13,12 @@ namespace XYZ {
 
 			virtual void OnImGuiRender(bool& open) override;
 
+		private:
+			void handleLimits() const;
+
+		private:
+			bool m_AutoSave = false;
+			std::string m_AutoSaveFile;
 		};
 	}
 }
