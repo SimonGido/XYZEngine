@@ -3,15 +3,31 @@
 #include "XYZ/Utils/DataStructures/MemoryPool.h"
 
 #include "XYZ/Utils/StringUtils.h"
+#include "XYZ/Utils/FileSystem.h"
+
 #include "XYZ/Renderer/Shader.h"
 #include "XYZ/Renderer/Texture.h"
 #include "XYZ/Renderer/SkeletalMesh.h"
+
+
 #include "AssetSerializer.h"
+#include "AssetImporter.h"
 #include "Asset.h"
+
+namespace std {
+	template <>
+	struct hash<std::filesystem::path>
+	{
+		std::size_t operator()(const std::filesystem::path& path) const
+		{
+			return hash_value(path);
+		}
+	};
+}
 
 namespace XYZ {
 
-	namespace Helper {
+	namespace Utils {
 
 		template <typename T, typename...Args>
 		inline typename std::enable_if<
@@ -40,37 +56,46 @@ namespace XYZ {
 		}
 	}
 
+	namespace Editor {
+		class AssetManagerViewPanel;
+		class AssetBrowser;
+	}
+
 	class AssetManager
 	{
 	public:
 		static void Init();
 		static void Shutdown();
 
-
-		static void		 DisplayMemory();
-		static AssetType GetAssetTypeFromExtension(const std::string& extension);
-		static GUID		 GetAssetHandle(const std::string& filepath);
-		static GUID		 GetDirectoryHandle(const std::string& filepath);
-		static std::vector<Ref<Asset>> FindAssetsByType(AssetType type);
-		static bool	     IsValidExtension(const std::string& extension);
-		static void      CreateDirectory(const std::string& dirName);
-		
+	
 		template<typename T, typename... Args>
 		static Ref<T> CreateAsset(const std::string& filename, const std::string& directoryPath, Args&&... args);
 			
 		template<typename T>
-		static Ref<T> GetAsset(const GUID& assetHandle, bool loadData = true);
-		
-	private:
-		static void processDirectory(const std::string& path, AssetDirectory& directory);
-		static void importAsset(const std::string& path);
+		static Ref<T> GetAsset(const GUID& assetHandle);
 		
 
+
+		static const AssetMetadata& GetMetadata(const GUID& handle);
+		static const AssetMetadata& GetMetadata(const std::filesystem::path& filepath);
+		static const AssetMetadata& GetMetadata(const Ref<Asset>& asset) { return GetMetadata(asset->m_Handle); }
+	
 	private:
-		static MemoryPool<1024 * 1024, true>			  s_Pool;
-		static std::unordered_map<GUID, Ref<Asset>>       s_LoadedAssets;
-		static std::unordered_map<GUID, AssetDirectory>   s_Directories;
-		static std::unordered_map<std::string, AssetType> s_AssetTypes;
+		static AssetMetadata& getMetadata(const GUID& handle);
+
+		static void loadAssetMetadata(const std::filesystem::path& filepath);
+		static void writeAssetMetadata(const AssetMetadata& metadata);
+
+		static void processDirectory(const std::filesystem::path& path);
+
+	private:
+		static MemoryPool<1024 * 1024, true>							s_Pool;
+		static std::unordered_map<GUID, WeakRef<Asset>>					s_LoadedAssets;
+		static std::unordered_map<std::filesystem::path, AssetMetadata> s_AssetMetadata;
+
+	private:
+		friend Editor::AssetBrowser;
+		friend Editor::AssetManagerViewPanel;
 	};
 	
 	
@@ -78,34 +103,38 @@ namespace XYZ {
 	inline Ref<T> AssetManager::CreateAsset(const std::string& filename, const std::string& directoryPath, Args && ...args)
 	{
 		static_assert(std::is_base_of<Asset, T>::value, "CreateAsset only works for types derived from Asset");
+		AssetMetadata metadata;
+		metadata.FilePath	  = directoryPath + "/" + filename;
+		metadata.Type		  = T::GetStaticType();
 
-		const GUID directoryHandle = GetDirectoryHandle(directoryPath);
-		const auto& directory = s_Directories[directoryHandle];
-		Ref<T> asset = Helper::CreateRef<T>(std::forward<Args>(args)...);
-		asset->Type = T::GetStaticType();
-		asset->FilePath = directory.FilePath + "/" + filename;
-		asset->FileName = Utils::RemoveExtension(Utils::GetFilename(asset->FilePath));
-		asset->FileExtension = Utils::GetFilename(filename);
-		asset->DirectoryHandle = directoryHandle;
-		asset->Handle = GUID();
-		asset->IsLoaded = true;
-		s_LoadedAssets[asset->Handle] = asset;
+		XYZ_ASSERT(FileSystem::Exists(metadata.FilePath), "File already exists");
+		s_AssetMetadata[metadata.FilePath] = metadata;
+
+		Ref<T> asset = Utils::CreateRef<T>(std::forward<Args>(args)...);
+		asset->m_Handle = metadata.Handle;
+
+		s_LoadedAssets[asset->m_Handle] = asset;
 		AssetSerializer::SerializeAsset(asset);
 		return asset;
 	}
 
 
 	template<typename T>
-	inline Ref<T> AssetManager::GetAsset(const GUID& assetHandle, bool loadData)
+	inline Ref<T> AssetManager::GetAsset(const GUID& assetHandle)
 	{
-		XYZ_ASSERT(s_LoadedAssets.find(assetHandle) != s_LoadedAssets.end(), "");
-		Ref<Asset> asset = s_LoadedAssets[assetHandle];
-
-		if (!asset->IsLoaded && loadData)
+		auto& metadata = getMetadata(assetHandle);
+		Ref<Asset> asset = nullptr;
+		if (!s_LoadedAssets[assetHandle].IsValid())
 		{
-			asset = AssetSerializer::LoadAsset(asset);
-			asset->IsLoaded = true;
+			bool loaded = AssetImporter::TryLoadData(metadata, asset);
+			if (!loaded)
+				return nullptr;
+
 			s_LoadedAssets[assetHandle] = asset;
+		}
+		else
+		{
+			asset = s_LoadedAssets[assetHandle].Raw();
 		}
 		return asset.As<T>();
 	}

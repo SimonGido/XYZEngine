@@ -29,6 +29,8 @@ namespace XYZ {
 		
 		operator bool() const { return IsValid(); }
 	
+		T* Raw() { return m_Instance; }
+		const T* Raw() const { return m_Instance; }
 	private:
 		T* m_Instance = nullptr;
 	};

@@ -10,8 +10,8 @@ namespace XYZ {
 	public:
 		SceneSerializer(const Ref<Scene>& scene);
 
-		void Serialize();
-		Ref<Scene> Deserialize();
+		void Serialize(const std::string& filepath);
+		Ref<Scene> Deserialize(const std::string& filepath);
 
 	private:
 		template <typename T>

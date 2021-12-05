@@ -8,6 +8,7 @@
 #include "XYZ/Renderer/Font.h"
 #include "XYZ/Animation/Animation.h"
 #include "XYZ/Utils/FileSystem.h"
+#include "XYZ/ImGui/ImGui.h"
 
 #include <imgui.h>
 
@@ -35,7 +36,8 @@ namespace XYZ {
 			m_ViewportFocused(false)
 		{
 			registerFileTypeExtensions();
-			//m_Texture = Texture2D::Create({}, "Assets/Textures/Gui/icons.png");
+			m_Texture = Texture2D::Create("Assets/Textures/Gui/icons.png");
+
 			const float divisor = 4.0f;
 			float width  = (float)m_Texture->GetWidth();
 			float height = (float)m_Texture->GetHeight();
@@ -71,6 +73,7 @@ namespace XYZ {
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 				glm::vec4 arrowColor = backArrowAvailable ? m_Colors[ArrowColor] : m_Colors[ArrowInvalidColor];
 				ImGui::PushID("BackArrow");
+
 				if (ImGui::ImageButton((void*)(uint64_t)m_Texture.Raw(), { m_ArrowSize.x, m_ArrowSize.y }, { m_TexCoords[Arrow].z, m_TexCoords[Arrow].y }, { m_TexCoords[Arrow].x, m_TexCoords[Arrow].w }, -1, {}, { arrowColor.r, arrowColor.g, arrowColor.b, arrowColor.a })
 				 && backArrowAvailable)
 				{
@@ -112,8 +115,7 @@ namespace XYZ {
 				{
 					m_RightClickedFile.clear();
 					m_SelectedFile.clear();
-					if (m_Callback)
-						m_Callback(GetSelectedAsset());
+					
 				}
 			}
 			ImGui::End();
@@ -124,42 +126,42 @@ namespace XYZ {
 			{
 				std::string fullFilePath = m_CurrentDirectory.string() + "/" + m_SelectedFile.string();
 				std::replace(fullFilePath.begin(), fullFilePath.end(), '\\', '/');
-				const AssetType type = AssetManager::GetAssetTypeFromExtension(Utils::GetExtension(m_SelectedFile.string()));
-				if (type == AssetType::None)
-					return Ref<Asset>();
+				//const AssetType type = AssetManager::GetAssetTypeFromExtension(Utils::GetExtension(m_SelectedFile.string()));
+				//if (type == AssetType::None)
+				//	return Ref<Asset>();
 
-				const auto assetHandle = AssetManager::GetAssetHandle(fullFilePath);			
-				switch (type)
-				{
-				case XYZ::AssetType::Scene:
-					return AssetManager::GetAsset<XYZ::Scene>(assetHandle);
-					break;
-				case XYZ::AssetType::Texture:
-					return AssetManager::GetAsset<XYZ::Texture>(assetHandle);
-					break;
-				case XYZ::AssetType::SubTexture:
-					return AssetManager::GetAsset<XYZ::SubTexture>(assetHandle);
-					break;
-				case XYZ::AssetType::Material:
-					return AssetManager::GetAsset<XYZ::Material>(assetHandle);
-					break;
-				case XYZ::AssetType::Shader:
-					return AssetManager::GetAsset<XYZ::Shader>(assetHandle);
-					break;
-				case XYZ::AssetType::Font:
-					return AssetManager::GetAsset<XYZ::Font>(assetHandle);
-					break;
-				case XYZ::AssetType::Audio:				
-					break;
-				case XYZ::AssetType::Script:		
-					break;
-				case XYZ::AssetType::SkeletalMesh:
-					break;
-				case XYZ::AssetType::None:
-					break;
-				default:
-					break;
-				}
+				//const auto assetHandle = AssetManager::GetAssetHandle(fullFilePath);			
+				//switch (type)
+				//{
+				//case XYZ::AssetType::Scene:
+				//	return AssetManager::GetAsset<XYZ::Scene>(assetHandle);
+				//	break;
+				//case XYZ::AssetType::Texture:
+				//	return AssetManager::GetAsset<XYZ::Texture>(assetHandle);
+				//	break;
+				//case XYZ::AssetType::SubTexture:
+				//	return AssetManager::GetAsset<XYZ::SubTexture>(assetHandle);
+				//	break;
+				//case XYZ::AssetType::Material:
+				//	return AssetManager::GetAsset<XYZ::Material>(assetHandle);
+				//	break;
+				//case XYZ::AssetType::Shader:
+				//	return AssetManager::GetAsset<XYZ::Shader>(assetHandle);
+				//	break;
+				//case XYZ::AssetType::Font:
+				//	return AssetManager::GetAsset<XYZ::Font>(assetHandle);
+				//	break;
+				//case XYZ::AssetType::Audio:				
+				//	break;
+				//case XYZ::AssetType::Script:		
+				//	break;
+				//case XYZ::AssetType::SkeletalMesh:
+				//	break;
+				//case XYZ::AssetType::None:
+				//	break;
+				//default:
+				//	break;
+				//}
 			}
 			return Ref<Asset>();
 		}
@@ -181,25 +183,25 @@ namespace XYZ {
 			{
 				const std::string fullpath = getUniqueAssetName("New Folder", nullptr);
 				FileSystem::CreateFolder(fullpath);
-				AssetManager::CreateDirectory(fullpath);
+				//AssetManager::CreateDirectory(fullpath);
 				ImGui::CloseCurrentPopup();
 			}
 			if (ImGui::MenuItem("Create Scene"))
 			{
 				const std::string fullpath = getUniqueAssetName("New Scene", ".xyz");
 				Ref<XYZ::Scene> scene = Ref<XYZ::Scene>::Create("");
-				scene->FilePath = fullpath;
-				scene->Type = AssetType::Scene;
-				AssetSerializer::SerializeAsset(scene);
+				//scene->FilePath = fullpath;
+				//scene->Type = AssetType::Scene;
+				//AssetSerializer::SerializeAsset(scene);
 				ImGui::CloseCurrentPopup();
 			}
 			else if (ImGui::MenuItem("Create Animation"))
 			{
 				const std::string fullpath = getUniqueAssetName("New Animation", ".anim");
 				Ref<XYZ::Animation> animation = Ref<XYZ::Animation>::Create();
-				animation->FilePath = fullpath;
-				animation->Type = AssetType::Animation;
-				AssetSerializer::SerializeAsset(animation);
+				//animation->FilePath = fullpath;
+				//animation->Type = AssetType::Animation;
+				//AssetSerializer::SerializeAsset(animation);
 				ImGui::CloseCurrentPopup();
 			}
 		}
@@ -241,8 +243,6 @@ namespace XYZ {
 					if (ImGui::ImageButton((void*)(uint64_t)m_Texture.Raw(), { m_IconSize.x, m_IconSize.y }, { m_TexCoords[index].x, m_TexCoords[index].y }, { m_TexCoords[index].z, m_TexCoords[index].w }))
 					{
 						m_SelectedFile = name;
-						if (m_Callback)
-							m_Callback(GetSelectedAsset());
 					}
 					if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
 					{

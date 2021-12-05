@@ -12,138 +12,103 @@
 namespace XYZ
 {
 
-	MemoryPool<1024 * 1024, true>				AssetManager::s_Pool;
-	std::unordered_map<GUID, Ref<Asset>>		AssetManager::s_LoadedAssets;
-	std::unordered_map<GUID, AssetDirectory>	AssetManager::s_Directories;
-	std::unordered_map<std::string, AssetType>	AssetManager::s_AssetTypes;
+	MemoryPool<1024 * 1024, true>							 AssetManager::s_Pool;
+	std::unordered_map<GUID, WeakRef<Asset>>				 AssetManager::s_LoadedAssets;
+	std::unordered_map<std::filesystem::path, AssetMetadata> AssetManager::s_AssetMetadata;
 
 	void AssetManager::Init()
 	{
-		s_AssetTypes["xyz"]    = AssetType::Scene;
-		s_AssetTypes["tex"]    = AssetType::Texture;
-		s_AssetTypes["font"]   = AssetType::Font;
-		s_AssetTypes["subtex"] = AssetType::SubTexture;
-		s_AssetTypes["mat"]    = AssetType::Material;
-		s_AssetTypes["shader"] = AssetType::Shader;
-		s_AssetTypes["cs"]     = AssetType::Script;
-		s_AssetTypes["skm"]    = AssetType::SkeletalMesh;
-		s_AssetTypes["anim"]   = AssetType::Animation;
-
-		RefAllocator::Init(&s_Pool);
-		AssetDirectory newDirectory;
-		newDirectory.FilePath = "Assets";
-		s_Directories[newDirectory.Handle] = newDirectory;
-		processDirectory("Assets", newDirectory);
+		AssetImporter::Init();
+		processDirectory("Assets");
 	}
 	void AssetManager::Shutdown()
 	{
 		s_LoadedAssets.clear();
 	}
 
-	void AssetManager::DisplayMemory()
+	//void AssetManager::DisplayMemory()
+	//{
+	//	MemoryPoolDebug<1024 * 1024, true> memoryDebug;
+	//	memoryDebug.SetContext(&s_Pool);
+	//	memoryDebug.OnImGuiRender();
+	//}
+
+
+	const AssetMetadata& AssetManager::GetMetadata(const GUID& handle)
 	{
-		MemoryPoolDebug<1024 * 1024, true> memoryDebug;
-		memoryDebug.SetContext(&s_Pool);
-		memoryDebug.OnImGuiRender();
+		return getMetadata(handle);
 	}
 
-	AssetType AssetManager::GetAssetTypeFromExtension(const std::string& extension)
+	const AssetMetadata& AssetManager::GetMetadata(const std::filesystem::path& filepath)
 	{
-		auto it = s_AssetTypes.find(extension);
-		if (it != s_AssetTypes.end())
+		auto it = s_AssetMetadata.find(filepath);
+		if (it != s_AssetMetadata.end())
 			return it->second;
-		return AssetType::None;
+		XYZ_WARN("Meta data not found");
+		return AssetMetadata();
 	}
 
-	GUID AssetManager::GetAssetHandle(const std::string& filepath)
+	AssetMetadata& AssetManager::getMetadata(const GUID& handle)
 	{
-		for (auto& [id, asset] : s_LoadedAssets)
+		for (auto& [filepath, metadata] : s_AssetMetadata)
 		{
-			if (asset->FilePath == filepath)
-				return id;
+			if (metadata.Handle == handle)
+				return metadata;
 		}
-
-		XYZ_ASSERT(false, "");
-		return GUID();
+		XYZ_WARN("Meta data not found");
+		return AssetMetadata();
 	}
 
-	GUID AssetManager::GetDirectoryHandle(const std::string& filepath)
+	void AssetManager::loadAssetMetadata(const std::filesystem::path& filepath)
 	{
-		for (auto& [id, dir] : s_Directories)
+		std::ifstream stream(filepath);
+		std::stringstream strStream;
+		strStream << stream.rdbuf();
+
+		YAML::Node data = YAML::Load(strStream.str());
+
+		auto handle = data["Handle"];
+		auto filePath = data["FilePath"];
+		auto type = data["Type"];
+
+		if (handle && filePath && type)
 		{
-			if (dir.FilePath == filepath)
-				return id;
+			AssetMetadata& metadata = s_AssetMetadata[filepath];
+			metadata.Handle = GUID(handle.as<std::string>());
+			metadata.FilePath = filePath.as<std::string>();
+			metadata.Type = Utils::AssetTypeFromString(type.as<std::string>());
 		}
-
-		XYZ_ASSERT(false, "");
-		return GUID();
-	}
-
-	std::vector<Ref<Asset>> AssetManager::FindAssetsByType(AssetType type)
-	{
-		std::vector<Ref<Asset>> assets;
-		for (auto& [id, asset] : s_LoadedAssets)
+		else
 		{
-			if (asset->Type == type)
-				assets.push_back(asset);
+			XYZ_WARN("Failed to load asset meta data {0}", filepath);
 		}
-		return assets;
 	}
 
-	bool AssetManager::IsValidExtension(const std::string& extension)
+	void AssetManager::writeAssetMetadata(const AssetMetadata& metadata)
 	{
-		return s_AssetTypes.find(extension) != s_AssetTypes.end();
+		std::string filepath = metadata.FilePath.string();
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+		out << YAML::Key << "Handle" << YAML::Value << (std::string)metadata.Handle;
+		out << YAML::Key << "FilePath" << YAML::Value << filepath;
+		out << YAML::Key << "Type" << YAML::Value << Utils::AssetTypeToString(metadata.Type);
+		out << YAML::EndMap;
+
+		std::ofstream fout(filepath + ".meta");
+		fout << out.c_str();
 	}
-
-
-	void AssetManager::CreateDirectory(const std::string& dirName)
-	{
-		AssetDirectory directory;
-		directory.FilePath = dirName;
-		std::replace(directory.FilePath.begin(), directory.FilePath.end(), '\\', '/');
-		directory.ParentHandle = directory.ParentHandle;
-		directory.SubDirectoryHandles.push_back(directory.Handle);
-		s_Directories[directory.Handle] = directory;
-	}
-
-	void AssetManager::processDirectory(const std::string& path, AssetDirectory& directory)
+	void AssetManager::processDirectory(const std::filesystem::path& path)
 	{
 		for (auto it : std::filesystem::directory_iterator(path))
 		{
 			if (it.is_directory())
 			{
-				AssetDirectory newDirectory;
-				newDirectory.FilePath = it.path().string();
-				std::replace(newDirectory.FilePath.begin(), newDirectory.FilePath.end(), '\\', '/');
-				newDirectory.ParentHandle = directory.ParentHandle;
-				directory.SubDirectoryHandles.push_back(newDirectory.Handle);
-				s_Directories[newDirectory.Handle] = newDirectory;
-
-				processDirectory(it.path().string(), s_Directories[newDirectory.Handle]);
+				processDirectory(it.path());
 			}
-			else
+			else if (Utils::GetExtension(it.path().string()) == "meta")
 			{
-				importAsset(it.path().string());
+				loadAssetMetadata(it.path());
 			}
 		}
-	}
-	void AssetManager::importAsset(const std::string& path)
-	{
-		std::string extension = Utils::GetExtension(path);
-		if (extension == "meta")
-			return;
-		if (s_AssetTypes.find(extension) == s_AssetTypes.end())
-			return;
-
-		const AssetType type = s_AssetTypes[extension];
-		Ref<Asset> asset = AssetSerializer::LoadAssetMeta(path, GUID(), type);
-		if (s_LoadedAssets.find(asset->Handle) != s_LoadedAssets.end())
-		{
-			if (s_LoadedAssets[asset->Handle]->IsLoaded)
-			{
-				asset = AssetSerializer::LoadAsset(asset);
-			}
-		}
-		s_LoadedAssets[asset->Handle] = asset;
 	}
 }

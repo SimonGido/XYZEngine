@@ -39,6 +39,14 @@
 
 
 namespace XYZ {
+	template<typename T>
+	using Scope = std::unique_ptr<T>;
+
+	template<typename T, typename ... Args>
+	constexpr Scope<T> CreateScope(Args&& ... args)
+	{
+		return std::make_unique<T>(std::forward<Args>(args)...);
+	}
 
 	template<typename R, typename T, typename U, typename... Args>
 	constexpr std::function<R(Args...)> Hook(R(T::* f)(Args...), U p)

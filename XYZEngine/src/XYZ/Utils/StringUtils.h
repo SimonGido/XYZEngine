@@ -1,6 +1,8 @@
 #pragma once
 
 namespace XYZ::Utils {
+	std::string& ToLower(std::string& string);
+	std::string ToLowerCopy(const std::string& string);
 	std::string GetFilename(const std::string& filepath);
 	std::string GetFilenameWithoutExtension(const std::string& filepath);
 	std::string GetDirectoryPath(const std::string& filepath);

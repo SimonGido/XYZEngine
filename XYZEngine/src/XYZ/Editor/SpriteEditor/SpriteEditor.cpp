@@ -48,7 +48,7 @@ namespace XYZ {
 			m_ToolSectionWidth(300.0f),
 			m_ViewSectionWidth(300.0f)
 		{
-			m_SpriteRenderer.Material = AssetManager::GetAsset<Material>(AssetManager::GetAssetHandle("Assets/Materials/Material.mat"));
+			//m_SpriteRenderer.Material = AssetManager::GetAsset<Material>(AssetManager::GetAssetHandle("Assets/Materials/Material.mat"));
 			FramebufferSpecification specs;
 			specs.ClearColor = { 0.1f,0.1f,0.1f,1.0f };
 			specs.Attachments = {
@@ -140,10 +140,10 @@ namespace XYZ {
 					const char* assetPath = (char*)payload->Data;
 					const std::string strPath(assetPath);
 					
-					if (AssetManager::GetAssetTypeFromExtension(Utils::GetExtension(strPath)) == AssetType::Texture)
-					{
-						SetContext(AssetManager::GetAsset<Texture2D>(AssetManager::GetAssetHandle(strPath)));
-					}
+					//if (AssetManager::GetAssetTypeFromExtension(Utils::GetExtension(strPath)) == AssetType::Texture)
+					//{
+					//	SetContext(AssetManager::GetAsset<Texture2D>(AssetManager::GetAssetHandle(strPath)));
+					//}
 				}
 				ImGui::EndDragDropTarget();
 			}

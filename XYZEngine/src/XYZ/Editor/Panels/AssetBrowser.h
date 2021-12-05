@@ -8,15 +8,13 @@ namespace XYZ {
 	namespace Editor {
 		class AssetBrowser
 		{
-			using AssetSelectedCallback = std::function<void(const Ref<Asset>&)>;
 		public:
 			AssetBrowser();
 
 			void SetPath(const std::string& path);
 			void OnImGuiRender();
 
-			void SetAssetSelectedCallback(const AssetSelectedCallback& callback) { m_Callback = callback; }
-			
+		
 			Ref<Asset> GetSelectedAsset() const;
 
 		private:
@@ -30,9 +28,7 @@ namespace XYZ {
 			size_t      extensionToTexCoordsIndex(const std::string& extension) const;
 			std::string getUniqueAssetName(const char* fileName, const char* extension) const;
 		
-		private:
-			AssetSelectedCallback m_Callback;
-			
+		private:	
 			bool m_ViewportHovered;
 			bool m_ViewportFocused;
 
@@ -55,8 +51,8 @@ namespace XYZ {
 				NumTypes
 			};
 
-			glm::vec4		  m_TexCoords[NumTypes];
-			Ref<XYZ::Texture> m_Texture;
+			glm::vec4		    m_TexCoords[NumTypes];
+			Ref<XYZ::Texture2D> m_Texture;
 
 			glm::vec2 m_IconSize;
 			glm::vec2 m_ArrowSize;

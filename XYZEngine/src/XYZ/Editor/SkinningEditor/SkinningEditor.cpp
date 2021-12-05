@@ -10,7 +10,7 @@ namespace XYZ {
 	namespace Editor {
 		SkinningEditor::SkinningEditor()
 		{
-			m_Shader = AssetManager::GetAsset<Shader>(AssetManager::GetAssetHandle("Assets/Shaders/Editor/SkinningEditor.glsl.shader"));
+			//m_Shader = AssetManager::GetAsset<Shader>(AssetManager::GetAssetHandle("Assets/Shaders/Editor/SkinningEditor.glsl.shader"));
 			
 			FramebufferSpecification specs;
 			specs.ClearColor = { 0.0f,0.0f,0.0f,0.0f };

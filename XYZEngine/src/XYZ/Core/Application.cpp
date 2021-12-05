@@ -46,7 +46,7 @@ namespace XYZ {
 		m_LayerStack.PushOverlay(m_ImGuiLayer);
 
 		Renderer::InitResources();
-		//AssetManager::Init();
+		AssetManager::Init();
 
 		TCHAR NPath[MAX_PATH];
 		GetCurrentDirectory(MAX_PATH, NPath);

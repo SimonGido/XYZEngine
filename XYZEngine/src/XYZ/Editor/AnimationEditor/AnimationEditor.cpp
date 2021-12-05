@@ -82,10 +82,10 @@ namespace XYZ {
 			{
 				if (m_Context.Raw() && m_Scene.Raw())
 				{
-					if (ImGui::Button("SAVE ME"))
-					{
-						AssetSerializer::SerializeAsset(m_Context);
-					}
+					//if (ImGui::Button("SAVE ME"))
+					//{
+					//	AssetSerializer::SerializeAsset(m_Context);
+					//}
 					
 					if (m_SelectedEntity != m_Context->GetSceneEntity())
 					{

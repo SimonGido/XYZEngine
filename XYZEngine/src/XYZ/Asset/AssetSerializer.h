@@ -1,28 +1,20 @@
 #pragma once
 #include "Asset.h"
 
-
-
-
 namespace XYZ {
+
 	class AssetSerializer
 	{
 	public:
-		static void SerializeAsset(const Ref<Asset>& asset);
-			
-		static Ref<Asset> LoadAsset(Ref<Asset>& asset);
-		
-		static Ref<Asset> LoadAssetMeta(const std::string& filepath, const GUID& directoryHandle, AssetType type);
+		virtual void Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const = 0;
+		virtual bool TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const = 0;
+	};
 
-	private:
-		template <typename T>
-		static Ref<Asset> deserialize(const Ref<Asset>& asset);
 
-		template <typename T>
-		static void serialize(const Ref<Asset>& asset);
-
-		
-		static void loadMetaFile(Ref<Asset>& asset);
-		static void createMetaFile(const Ref<Asset>& asset);
+	class SceneAssetSerializer : public AssetSerializer
+	{
+	public:
+		virtual void Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const override;
+		virtual bool TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const override;
 	};
 }

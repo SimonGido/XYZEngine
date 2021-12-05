@@ -32,7 +32,10 @@ namespace XYZ {
 
 		operator std::string() const;
 		operator std::string();
-
+		std::string ToString() const
+		{
+			return (std::string)*this;
+		}
 		inline size_t Hash() const
 		{
 			size_t seed = 0;

@@ -2,6 +2,18 @@
 #include "StringUtils.h"
 
 namespace XYZ::Utils {
+	std::string& ToLower(std::string& string)
+	{
+		std::transform(string.begin(), string.end(), string.begin(),
+			[](unsigned char c) { return std::tolower(c); });
+		return string;
+	}
+	std::string ToLowerCopy(const std::string& string)
+	{
+		std::string result = string;
+		ToLower(result);
+		return result;
+	}
 	std::string GetFilename(const std::string& filepath)
 	{
 		std::vector<std::string> parts = SplitString(filepath, "/\\");

@@ -83,8 +83,8 @@ namespace XYZ {
 		out << YAML::Key << "SpriteRenderer";
 		out << YAML::BeginMap; // SpriteRenderer
 
-		out << YAML::Key << "MaterialAsset" << YAML::Value << val.Material->Handle;
-		out << YAML::Key << "SubTextureAsset" << YAML::Value << val.SubTexture->Handle;
+		//out << YAML::Key << "MaterialAsset" << YAML::Value << val.Material->Handle;
+		//out << YAML::Key << "SubTextureAsset" << YAML::Value << val.SubTexture->Handle;
 		out << YAML::Key << "Color" << YAML::Value << val.Color;
 		out << YAML::Key << "SortLayer" << YAML::Value << val.SortLayer;
 		out << YAML::Key << "Visible" << YAML::Value << val.Visible;
@@ -534,7 +534,7 @@ namespace XYZ {
 		m_Scene(scene)
 	{
 	}
-	void SceneSerializer::Serialize()
+	void SceneSerializer::Serialize(const std::string& filepath)
 	{
 		YAML::Emitter out;
 		
@@ -552,15 +552,15 @@ namespace XYZ {
 		}
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
-		std::ofstream fout(m_Scene->FilePath);
+		std::ofstream fout(filepath);
 		fout << out.c_str();
 	}
 
 
 
-	Ref<Scene> SceneSerializer::Deserialize()
+	Ref<Scene> SceneSerializer::Deserialize(const std::string& filepath)
 	{
-		std::ifstream stream(m_Scene->FilePath);
+		std::ifstream stream(filepath);
 		std::stringstream strStream;
 		strStream << stream.rdbuf();
 		YAML::Node data = YAML::Load(strStream.str());
