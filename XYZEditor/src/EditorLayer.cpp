@@ -44,7 +44,7 @@ namespace XYZ {
 		m_EditorManager.RegisterPanel<Editor::SceneHierarchyPanel>("SceneHierarchyPanel");
 		m_EditorManager.RegisterPanel<Editor::ImGuiStylePanel>("ImGuiStylePanel");
 		m_EditorManager.RegisterPanel<Editor::AssetManagerViewPanel>("AssetManagerViewPanel");
-
+		m_EditorManager.RegisterPanel<Editor::AssetBrowser>("AssetBrowser");
 		m_EditorManager.GetPanel<Editor::ScenePanel>("ScenePanel")->SetSceneRenderer(m_SceneRenderer);
 
 		Renderer::WaitAndRenderAll();

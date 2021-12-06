@@ -19,6 +19,9 @@ namespace  XYZ
         virtual void OnImGuiRender() override;
 
     private:
+        void uploadFonts();
+
+    private:
         VkDescriptorPool m_DescriptorPool;
         std::vector<VkCommandBuffer> m_ImGuiCommandBuffers;
     };

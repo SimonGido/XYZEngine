@@ -1,19 +1,20 @@
 #pragma once
 #include "XYZ/Renderer/SubTexture.h"
+#include "XYZ/Editor/EditorPanel.h"
 
 #include <deque>
 #include <filesystem>
 
 namespace XYZ {
 	namespace Editor {
-		class AssetBrowser
+		class AssetBrowser : public EditorPanel
 		{
 		public:
-			AssetBrowser();
+			AssetBrowser(std::string name);
+
+			virtual void OnImGuiRender(bool& open) override;
 
 			void SetPath(const std::string& path);
-			void OnImGuiRender();
-
 		
 			Ref<Asset> GetSelectedAsset() const;
 
@@ -24,7 +25,6 @@ namespace XYZ {
 			void		rightClickMenu() const;
 			void		dragAndDrop(const std::filesystem::path& path) const;
 
-			size_t		assetTypeToTexCoordsIndex(AssetType type) const;
 			size_t      extensionToTexCoordsIndex(const std::string& extension) const;
 			std::string getUniqueAssetName(const char* fileName, const char* extension) const;
 		
@@ -32,46 +32,13 @@ namespace XYZ {
 			bool m_ViewportHovered;
 			bool m_ViewportFocused;
 
-			enum Type
-			{
-				Arrow,
-				Folder, 
-				Scene,
-				Texture,
-				SubTexture,
-				Material,
-				Shader,
-				Font,
-				Audio,
-				Script,
-				Mesh,
-				Animation,
-				Png,
-				Jpg,
-				NumTypes
-			};
-
-			glm::vec4		    m_TexCoords[NumTypes];
 			Ref<XYZ::Texture2D> m_Texture;
-
-			glm::vec2 m_IconSize;
-			glm::vec2 m_ArrowSize;
 
 			std::filesystem::path			  m_SelectedFile;
 			std::filesystem::path			  m_RightClickedFile;
 			std::filesystem::path			  m_CurrentDirectory;
 			std::deque<std::filesystem::path> m_DirectoriesVisited;
 
-			
-
-			enum Color
-			{
-				ArrowColor,
-				ArrowInvalidColor,
-				FolderColor,
-				NumColors
-			};
-			glm::vec4 m_Colors[NumColors];
 
 			std::unordered_map<std::string, size_t> m_FileTypeExtensions;
 		};

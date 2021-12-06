@@ -33,10 +33,11 @@ namespace XYZ
         ImGuiIO& io = ImGui::GetIO(); (void)io;
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
-        //io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
+        //io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
 
 		io.FontDefault = io.Fonts->AddFontFromFileTTF("Assets/Fonts/Roboto/Roboto-Regular.ttf", 15.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
-        // Setup Dear ImGui style
+
+		// Setup Dear ImGui style
         ImGui::StyleColorsDark();
 
         // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
@@ -99,14 +100,7 @@ namespace XYZ
 			ImGui_ImplVulkan_Init(&init_info, swapChain.GetVulkanRenderPass());
 			
 			// Upload Fonts
-			{
-				const VkCommandBuffer commandBuffer = vulkanContext->GetCurrentDevice()->GetCommandBuffer(true);
-				ImGui_ImplVulkan_CreateFontsTexture(commandBuffer);
-				vulkanContext->GetCurrentDevice()->FlushCommandBuffer(commandBuffer);
-				
-				VK_CHECK_RESULT(vkDeviceWaitIdle(device));
-				ImGui_ImplVulkan_DestroyFontUploadObjects();
-			}
+			uploadFonts();
 
 			const uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;
 			m_ImGuiCommandBuffers.resize(framesInFlight);
@@ -247,4 +241,17 @@ namespace XYZ
     void VulkanImGuiLayer::OnImGuiRender()
     {
     }
+	void VulkanImGuiLayer::uploadFonts()
+	{
+		// Upload Fonts
+		auto vulkanContext = VulkanContext::Get();
+		const auto device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+
+		const VkCommandBuffer commandBuffer = vulkanContext->GetCurrentDevice()->GetCommandBuffer(true);
+		ImGui_ImplVulkan_CreateFontsTexture(commandBuffer);
+		vulkanContext->GetCurrentDevice()->FlushCommandBuffer(commandBuffer);
+
+		VK_CHECK_RESULT(vkDeviceWaitIdle(device));
+		ImGui_ImplVulkan_DestroyFontUploadObjects();
+	}
 }
