@@ -28,6 +28,9 @@ namespace XYZ {
 			size_t      extensionToTexCoordsIndex(const std::string& extension) const;
 			std::string getUniqueAssetName(const char* fileName, const char* extension) const;
 		
+
+			void		renderTopPanel();
+
 		private:	
 			bool m_ViewportHovered;
 			bool m_ViewportFocused;

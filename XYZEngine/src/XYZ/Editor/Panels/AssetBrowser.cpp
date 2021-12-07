@@ -63,57 +63,37 @@ namespace XYZ {
 		{
 			if (ImGui::Begin("Asset Browser", &open))
 			{
-				m_ViewportFocused = ImGui::IsWindowFocused();
-				m_ViewportHovered = ImGui::IsWindowHovered();
-
-				const bool backArrowAvailable = m_CurrentDirectory != std::filesystem::path(s_AssetPath);
-				const bool frontArrowAvailable = !m_DirectoriesVisited.empty();
-
-				const ImVec4 backArrowColor = backArrowAvailable ? m_Colors[ArrowColor] : m_Colors[DisabledColor];
-				const ImVec4 frontArrowColor = frontArrowAvailable ? m_Colors[ArrowColor] : m_Colors[DisabledColor];
-		
-				ImGui::PushItemFlag(ImGuiItemFlags_Disabled, !backArrowAvailable);
-				const bool backArrowPressed = UI::ImageButtonTransparent("##BackArrow",m_Texture->GetImage(), m_ArrowSize, m_Colors[HoverColor], m_Colors[ClickColor], backArrowColor,
-					m_TexCoords[LeftArrow].UV0, m_TexCoords[LeftArrow].UV1);
-				ImGui::PopItemFlag();
-				ImGui::SameLine();
-
-
-				ImGui::PushItemFlag(ImGuiItemFlags_Disabled, !frontArrowAvailable);
-				const bool frontArrowPressed = UI::ImageButtonTransparent("##FrontArrow", m_Texture->GetImage(), m_ArrowSize, m_Colors[HoverColor], m_Colors[ClickColor], frontArrowColor,
-					m_TexCoords[RightArrow].UV0, m_TexCoords[RightArrow].UV1);
-				ImGui::PopItemFlag();
-				ImGui::SameLine();
-
-
-				if (backArrowPressed && backArrowAvailable)
+				renderTopPanel();
+				const ImGuiTableFlags tableFlags = ImGuiTableFlags_Resizable
+					| ImGuiTableFlags_SizingFixedFit
+					| ImGuiTableFlags_BordersInnerV;
+				if (ImGui::BeginTable("##DirectoryTable", 2, tableFlags, ImVec2(0.0f, 0.0f)))
 				{
-					m_DirectoriesVisited.push_front(m_CurrentDirectory);
-					m_CurrentDirectory = m_CurrentDirectory.parent_path();
-				}
-						
-				if (frontArrowPressed && frontArrowAvailable)
-				{
-					m_CurrentDirectory = m_DirectoriesVisited.front();
-					m_DirectoriesVisited.pop_front();
-				}
-				
-			
-				UI::Utils::SetPathBuffer(m_CurrentDirectory.string());
-				if (ImGui::InputText("###", UI::Utils::GetPathBuffer(), _MAX_PATH))
-				{
-					m_CurrentDirectory = UI::Utils::GetPathBuffer();
-					m_DirectoriesVisited.clear();
-				}
+					ImGui::TableSetupColumn("Outliner", 0, 300.0f);
+					ImGui::TableSetupColumn("Directory Structure", ImGuiTableColumnFlags_WidthStretch);
+					UI::TableRow("#Rows",
+						[]() {},
+						[&]() {
+						if (ImGui::BeginChild("##Directory"))
+						{
+							m_ViewportFocused = ImGui::IsWindowFocused();
+							m_ViewportHovered = ImGui::IsWindowHovered();
 
-				processDirectory();
+							
 
-				if (ImGui::GetIO().MouseReleased[ImGuiMouseButton_Left]
-					&& m_ViewportFocused
-					&& m_ViewportHovered)
-				{
-					m_RightClickedFile.clear();
-					m_SelectedFile.clear();			
+							processDirectory();
+
+							if (ImGui::GetIO().MouseReleased[ImGuiMouseButton_Left]
+								&& m_ViewportFocused
+								&& m_ViewportHovered)
+							{
+								m_RightClickedFile.clear();
+								m_SelectedFile.clear();
+							}
+							ImGui::EndChild();
+						}
+					});			
+					ImGui::EndTable();
 				}
 			}
 			ImGui::End();
@@ -362,6 +342,49 @@ namespace XYZ {
 				}
 			}
 			return fullpath;
+		}
+
+		void AssetBrowser::renderTopPanel()
+		{
+			const bool backArrowAvailable = m_CurrentDirectory != std::filesystem::path(s_AssetPath);
+			const bool frontArrowAvailable = !m_DirectoriesVisited.empty();
+
+			const ImVec4 backArrowColor = backArrowAvailable ? m_Colors[ArrowColor] : m_Colors[DisabledColor];
+			const ImVec4 frontArrowColor = frontArrowAvailable ? m_Colors[ArrowColor] : m_Colors[DisabledColor];
+
+			ImGui::PushItemFlag(ImGuiItemFlags_Disabled, !backArrowAvailable);
+			const bool backArrowPressed = UI::ImageButtonTransparent("##BackArrow", m_Texture->GetImage(), m_ArrowSize, m_Colors[HoverColor], m_Colors[ClickColor], backArrowColor,
+				m_TexCoords[LeftArrow].UV0, m_TexCoords[LeftArrow].UV1);
+			ImGui::PopItemFlag();
+			ImGui::SameLine();
+
+
+			ImGui::PushItemFlag(ImGuiItemFlags_Disabled, !frontArrowAvailable);
+			const bool frontArrowPressed = UI::ImageButtonTransparent("##FrontArrow", m_Texture->GetImage(), m_ArrowSize, m_Colors[HoverColor], m_Colors[ClickColor], frontArrowColor,
+				m_TexCoords[RightArrow].UV0, m_TexCoords[RightArrow].UV1);
+			ImGui::PopItemFlag();
+			ImGui::SameLine();
+
+
+			if (backArrowPressed && backArrowAvailable)
+			{
+				m_DirectoriesVisited.push_front(m_CurrentDirectory);
+				m_CurrentDirectory = m_CurrentDirectory.parent_path();
+			}
+
+			if (frontArrowPressed && frontArrowAvailable)
+			{
+				m_CurrentDirectory = m_DirectoriesVisited.front();
+				m_DirectoriesVisited.pop_front();
+			}
+
+
+			UI::Utils::SetPathBuffer(m_CurrentDirectory.string());
+			if (ImGui::InputText("###", UI::Utils::GetPathBuffer(), _MAX_PATH))
+			{
+				m_CurrentDirectory = UI::Utils::GetPathBuffer();
+				m_DirectoriesVisited.clear();
+			}
 		}
 		
 		AssetBrowser::UV AssetBrowser::UV::Calculate(const glm::vec2& coords, const glm::vec2& cellSize, const glm::vec2& textureSize)

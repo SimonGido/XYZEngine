@@ -35,14 +35,6 @@ namespace XYZ {
 				return true;
 			}
 
-			static std::pair<glm::vec2, glm::vec2> CalculateTexCoords(const glm::vec2& coords, const glm::vec2& size, const glm::vec2& textureSize)
-			{
-				return {
-					glm::vec2((coords.x * size.x) / textureSize.x, (coords.y * size.y) / textureSize.y),
-					glm::vec2(((coords.x + 1) * size.x) / textureSize.x, ((coords.y + 1) * size.y) / textureSize.y)
-				};
-			}
-
 			static AABB SceneEntityAABB(const SceneEntity& entity)
 			{
 				const TransformComponent& transformComponent = entity.GetComponent<TransformComponent>();
@@ -87,21 +79,16 @@ namespace XYZ {
 			const float divisor = 4.0f;
 			float width = (float)m_Texture->GetWidth();
 			float height = (float)m_Texture->GetHeight();
-			const glm::vec2 size = glm::vec2(width / divisor, height / divisor);
+			const glm::vec2 cellSize = glm::vec2(width / divisor, height / divisor);
+			const glm::vec2 textureSize = { width, height };
 
-			{
-				auto [uv0, uv1] = Utils::CalculateTexCoords(glm::vec2(0, 1), size, { width, height });
-				m_ButtonUVs[PlayButton].UV0 = uv0;
-				m_ButtonUVs[PlayButton].UV1 = uv1;
-			}
-			{
-				auto [uv0, uv1] = Utils::CalculateTexCoords(glm::vec2(3, 1), size, { width, height });
-				m_ButtonUVs[StopButton].UV0 = uv0;
-				m_ButtonUVs[StopButton].UV1 = uv1;
-			}
+
+			m_ButtonUVs[PlayButton] = UV::Calculate(glm::vec2(0, 2), cellSize, textureSize);
+			m_ButtonUVs[StopButton] = UV::Calculate(glm::vec2(3, 2), cellSize, textureSize);
 
 			const uint32_t windowWidth = Application::Get().GetWindow().GetWidth();
 			const uint32_t windowHeight = Application::Get().GetWindow().GetHeight();
+			
 			m_EditorCamera.SetViewportSize((float)windowWidth, (float)windowHeight);
 		}
 	
@@ -399,6 +386,17 @@ namespace XYZ {
 			{
 				tc.DecomposeTransform(transform);
 			}
+		}
+
+		ScenePanel::UV ScenePanel::UV::Calculate(const glm::vec2& coords, const glm::vec2& cellSize, const glm::vec2& textureSize)
+		{
+			UV uv;
+			uv.UV0 = { (coords.x * cellSize.x) / textureSize.x,
+					 ((coords.y + 1) * cellSize.y) / textureSize.y };
+			uv.UV1 = { ((coords.x + 1) * cellSize.x) / textureSize.x,
+					   (coords.y * cellSize.y) / textureSize.y };
+
+			return uv;
 		}
 	}
 }

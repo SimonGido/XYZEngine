@@ -28,12 +28,7 @@ namespace XYZ {
 			void SetSceneRenderer(const Ref<SceneRenderer>& sceneRenderer);
 
 			EditorCamera& GetEditorCamera() { return m_EditorCamera; }
-		private:
-			struct UV
-			{
-				glm::vec2 UV0{}, UV1{};
-			};
-
+			
 		private:
 			bool onKeyPressed(KeyPressedEvent& e);
 
@@ -53,8 +48,13 @@ namespace XYZ {
 			Ref<Texture2D>				m_Texture;
 
 			enum { PlayButton, StopButton, NumButtons};
-			
-		
+				
+			struct UV
+			{
+				glm::vec2 UV0{}, UV1{};
+
+				static UV Calculate(const glm::vec2& coords, const glm::vec2& size, const glm::vec2& textureSize);
+			};
 
 			UV		  m_ButtonUVs[NumButtons];
 			glm::vec2 m_ButtonSize;
