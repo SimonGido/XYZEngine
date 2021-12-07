@@ -53,6 +53,9 @@ namespace XYZ {
 		std::vector<VkQueueFamilyProperties> m_QueueFamilyProperties;
 		std::vector<VkDeviceQueueCreateInfo> m_QueueCreateInfos;
 	
+
+		const float m_DefaultQueuePriority = 0.0f;
+
 		friend class VulkanDevice;
 	};
 

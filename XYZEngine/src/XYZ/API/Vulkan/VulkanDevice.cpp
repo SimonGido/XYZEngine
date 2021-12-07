@@ -260,14 +260,13 @@ namespace XYZ {
 	}
 	void VulkanPhysicalDevice::createQueuesInfo(const std::set<uint32_t>& familyIndices)
 	{
-		const float defaultQueuePriority(0.0f);
 		for (const auto index : familyIndices)
 		{
 			VkDeviceQueueCreateInfo queueInfo{};
 			queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 			queueInfo.queueFamilyIndex = index;
 			queueInfo.queueCount = 1;
-			queueInfo.pQueuePriorities = &defaultQueuePriority;
+			queueInfo.pQueuePriorities = &m_DefaultQueuePriority;
 			m_QueueCreateInfos.push_back(queueInfo);
 		}
 	}

@@ -147,6 +147,7 @@ namespace XYZ {
 
 				ImVec2 cursorPos = ImGui::GetCursorPos();
 				ImGui::InvisibleButton(Utils::GenerateID(), size);
+				ImGui::SetItemAllowOverlap();
 				const bool clicked = ImGui::IsItemClicked();
 				const bool hoovered = ImGui::IsItemHovered();
 				ImGui::SetCursorPos(cursorPos);

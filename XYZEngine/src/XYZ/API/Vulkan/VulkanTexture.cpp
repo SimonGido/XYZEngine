@@ -233,6 +233,7 @@ namespace XYZ {
 	void VulkanTexture2D::loadImage(const std::string& path, ByteBuffer& imageData)
 	{
 		int width, height, channels;
+		stbi_set_flip_vertically_on_load(1);
 		if (stbi_is_hdr(path.c_str()))
 		{
 			imageData.Data = (uint8_t*)stbi_loadf(path.c_str(), &width, &height, &channels, 4);
@@ -240,8 +241,7 @@ namespace XYZ {
 			m_Format = ImageFormat::RGBA32F;
 		}
 		else
-		{
-			//stbi_set_flip_vertically_on_load(1);
+		{		
 			imageData.Data = stbi_load(path.c_str(), &width, &height, &channels, 4);
 			imageData.Size = width * height * 4;
 			m_Format = ImageFormat::RGBA;

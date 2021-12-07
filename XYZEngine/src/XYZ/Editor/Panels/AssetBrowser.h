@@ -41,6 +41,49 @@ namespace XYZ {
 
 
 			std::unordered_map<std::string, size_t> m_FileTypeExtensions;
+
+
+
+		private:
+			// Style
+			enum FileType
+			{
+				LeftArrow,
+				RightArrow,
+				Folder,
+				Scene,
+				Texture,
+				SubTexture,
+				Material,
+				Shader,
+				Font,
+				Audio,
+				Script,
+				Mesh,
+				Animation,
+				Png,
+				Jpg,
+				NumTypes
+			};
+			enum Color
+			{
+				ArrowColor,
+				IconColor,
+				DisabledColor,
+				HoverColor,
+				ClickColor,
+				NumColors
+			};
+			struct UV
+			{
+				glm::vec2 UV0, UV1;
+
+				static UV Calculate(const glm::vec2& coords, const glm::vec2& size, const glm::vec2& textureSize);
+			};
+			glm::vec2 m_IconSize;
+			glm::vec2 m_ArrowSize;
+			UV		  m_TexCoords[NumTypes];
+			glm::vec4 m_Colors[NumColors];
 		};
 	}
 }

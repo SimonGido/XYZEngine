@@ -39,6 +39,30 @@ namespace XYZ {
 		bool IVec3Control(const std::array<const char*, 3>& names, glm::ivec3& values, float resetValue = 0.0f, float speed = 0.05f);
 		bool IVec4Control(const std::array<const char*, 4>& names, glm::ivec4& values, float resetValue = 0.0f, float speed = 0.05f);
 
+		template <typename T>
+		bool DragDropSource(const char* type, const T& data, size_t size, ImGuiCond flags = ImGuiCond_Once)
+		{
+			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+			{
+				ImGui::SetDragDropPayload(type,(const void*)&data, size, flags);
+				ImGui::EndDragDropSource();
+				return true;
+			}
+			return false;
+		}
+
+		template <typename T>
+		bool DragDropTarget(const char* type, T& out, ImGuiDragDropFlags flags = 0)
+		{
+			bool result = false;
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(type, flags))
+			{
+				out = *(T*)payload->Data;
+				result = true;
+			}
+			ImGui::EndDragDropTarget();
+			return result;
+		}
 
 		template <typename ...Args>
 		bool FloatControl(const char* label, const char* dragLabel, float& value, float resetValue, float speed, Args&& ...args)

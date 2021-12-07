@@ -8,15 +8,7 @@
 #include "XYZ/Utils/YamlUtils.h"
 
 namespace XYZ {
-	static glm::vec4 ConvertImVec4ToGlm(const ImVec4& val)
-	{
-		return glm::vec4{ val.x, val.y, val.z ,val.w };
-	}
-	static ImVec4 ConvertGlmVec4ToIm(const glm::vec4& val)
-	{
-		return ImVec4{ val.x, val.y, val.z ,val.w };
-	}
-
+	
 	static void ParseValue(float& val, const YAML::Node& node)
 	{
 		val = node.as<float>();
@@ -61,7 +53,7 @@ namespace XYZ {
 			ImVec4 linearColor = m_SRGBColorSpace ? UI::Utils::ConvertToSRGB(style.Colors[i]) : style.Colors[i];
 			out << YAML::BeginMap;
 			out << YAML::Key << "Index" << YAML::Value << i;
-			out << YAML::Key << "Color" << YAML::Value << ConvertImVec4ToGlm(linearColor);
+			out << YAML::Key << "Color" << YAML::Value << (glm::vec4)linearColor;
 			out << YAML::EndMap;
 		}
 		out << YAML::EndSeq;
@@ -101,7 +93,7 @@ namespace XYZ {
 		for (auto& color : colors)
 		{
 			uint32_t index = color["Index"].as<uint32_t>();
-			style.Colors[index] = ConvertGlmVec4ToIm(color["Color"].as<glm::vec4>());
+			style.Colors[index] = (ImVec4)color["Color"].as<glm::vec4>();
 		}
 		auto variables = data["Variables"];
 		for (auto& var : variables)
