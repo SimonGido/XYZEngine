@@ -125,7 +125,7 @@ namespace XYZ
 		});
     }
 
-	 void VulkanImGuiLayer::Begin()
+	void VulkanImGuiLayer::Begin()
     {
         ImGui_ImplVulkan_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -134,14 +134,14 @@ namespace XYZ
     	if (m_EnableDockspace)
     		beginDockspace();
     }
-
-	 static void CopyImDrawData(ImDrawData& copy, const ImDrawData* drawData)
-	 {
-		 copy = *drawData;
-		 copy.CmdLists = new ImDrawList * [drawData->CmdListsCount];
-		 for (int i = 0; i < drawData->CmdListsCount; ++i)
-			 copy.CmdLists[i] = drawData->CmdLists[i]->CloneOutput();
-	 }
+	
+	static void CopyImDrawData(ImDrawData& copy, const ImDrawData* drawData)
+	{
+		copy = *drawData;
+		copy.CmdLists = new ImDrawList * [drawData->CmdListsCount];
+		for (int i = 0; i < drawData->CmdListsCount; ++i)
+		 copy.CmdLists[i] = drawData->CmdLists[i]->CloneOutput();
+	}
 
     void VulkanImGuiLayer::End()
     {
