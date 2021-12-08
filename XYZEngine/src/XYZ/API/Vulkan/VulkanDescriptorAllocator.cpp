@@ -3,6 +3,8 @@
 
 #include "VulkanContext.h"
 
+#include "XYZ/Debug/Profiler.h"
+
 namespace XYZ {
 	static bool IsMemoryError(VkResult errorResult) 
 	{
@@ -33,6 +35,7 @@ namespace XYZ {
 	{
 		XYZ_ASSERT(!m_Initialized, "Vulkan Descriptor Allocator is already initialized");
 		m_Initialized = true;
+		m_AllocatorVersion = 0;
 		Renderer::Submit([this]() 
 		{
 			std::scoped_lock<std::mutex> lock(m_PoolMutex);
@@ -71,6 +74,7 @@ namespace XYZ {
 	}
 	VkDescriptorSet VulkanDescriptorAllocator::RT_Allocate(const VkDescriptorSetLayout& layout)
 	{
+		XYZ_PROFILE_FUNC("VulkanDescriptorAllocator::RT_Allocate");
 		uint32_t frame = Renderer::GetCurrentFrame();
 		RT_TryResetFull(frame);
 
@@ -107,9 +111,10 @@ namespace XYZ {
 	}
 	void VulkanDescriptorAllocator::RT_TryResetFull(uint32_t frame)
 	{
+		XYZ_PROFILE_FUNC("VulkanDescriptorAllocator::RT_TryResetFull");
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 		{
-			std::scoped_lock<std::mutex> lock(m_PoolMutex);
+			std::scoped_lock<std::mutex> poolLock(m_PoolMutex);
 			auto& fullPools = m_Allocators[frame].FullPools;
 			if (fullPools.size() >= sc_AutoResetCount)
 			{
@@ -121,8 +126,15 @@ namespace XYZ {
 					VK_CHECK_RESULT(vkResetDescriptorPool(device, pool, VkDescriptorPoolResetFlags{ 0 }));
 					m_Allocators[frame].ReusablePools.push_back(pool);
 				}
+				std::scoped_lock<std::mutex> versionLock(m_VersionMutex);
+				m_AllocatorVersion++;
 			}
 		}
+	}
+	VulkanDescriptorAllocator::Version VulkanDescriptorAllocator::GetVersion() const
+	{
+		std::scoped_lock<std::mutex> versionLock(m_VersionMutex);
+		return m_AllocatorVersion;
 	}
 	VkDescriptorPool VulkanDescriptorAllocator::createPool() const
 	{

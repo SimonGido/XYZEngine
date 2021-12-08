@@ -1,5 +1,6 @@
 #pragma once
 #include "VulkanFramebuffer.h"
+#include "VulkanDescriptorAllocator.h"
 #include "XYZ/Renderer/RendererAPI.h"
 
 namespace XYZ {
@@ -19,7 +20,8 @@ namespace XYZ {
 		virtual void BindPipeline(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<Material> material) override;
 
 
-		static VkDescriptorSet RT_AllocateDescriptorSet(const VkDescriptorSetLayout& layout);
+		static VkDescriptorSet					  RT_AllocateDescriptorSet(const VkDescriptorSetLayout& layout);
+		static VulkanDescriptorAllocator::Version GetDescriptorAllocatorVersion();
 
 		static void InsertImageMemoryBarrier(
 				VkCommandBuffer cmdbuffer,

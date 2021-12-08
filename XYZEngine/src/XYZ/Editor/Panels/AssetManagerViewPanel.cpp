@@ -24,7 +24,6 @@ namespace XYZ {
 		{
 			if (ImGui::Begin("Asset View", &open))
 			{
-
 				static char searchBuffer[_MAX_PATH];
 				ImGui::InputTextWithHint("##search", "Search...", searchBuffer, _MAX_PATH);
 

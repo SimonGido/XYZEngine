@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "VulkanMaterial.h"
 
-#include "VulkanRendererAPI.h"
+
 
 #include "XYZ/Utils/StringUtils.h"
 
@@ -12,7 +12,7 @@ namespace XYZ {
 		m_WriteDescriptors(Renderer::GetConfiguration().FramesInFlight),
 		m_DescriptorsDirty(true)
 	{
-		allocateStorages();
+		allocateStorage(m_Shader->GetBuffers(), m_UniformsBuffer);
 		Ref<VulkanMaterial> instance = this;
 		Renderer::Submit([instance]() mutable
 		{
@@ -26,7 +26,7 @@ namespace XYZ {
 	}
 	void VulkanMaterial::Invalidate()
 	{
-		allocateStorages();
+		allocateStorage(m_Shader->GetBuffers(), m_UniformsBuffer);
 		m_DescriptorsDirty = true;
 		Ref<VulkanShader> vulkanShader = m_Shader;
 		const auto& shaderDescriptorSets = vulkanShader->GetDescriptorSets();
@@ -42,10 +42,9 @@ namespace XYZ {
 		{
 			descriptorSet.resize(shaderDescriptorSets.size());
 			for (uint32_t set = 0; set < descriptorSet.size(); ++set)
-			{
 				descriptorSet[set] = VulkanRendererAPI::RT_AllocateDescriptorSet(shaderDescriptorSets[set].DescriptorSetLayout);
-			}
 		}
+		m_DescriptorsVersion = VulkanRendererAPI::GetDescriptorAllocatorVersion();
 	}
 	void VulkanMaterial::SetFlag(RenderFlags renderFlag, bool val)
 	{
@@ -160,8 +159,8 @@ namespace XYZ {
 	}
 	void VulkanMaterial::RT_UpdateForRendering(const vector3D<VkWriteDescriptorSet>& descriptors)
 	{
-		// TODO: do this only when descriptor sets are reset
-		allocateDescriptorSets();
+
+		tryAllocateDescriptorSets();
 
 		vector3D<VkDescriptorImageInfo> arrayImageInfos;
 		if (m_DescriptorsDirty)
@@ -232,24 +231,25 @@ namespace XYZ {
 		return ByteBuffer(m_UniformsBuffer.Data, vertexBufferSize);
 	}
 
-	void VulkanMaterial::allocateDescriptorSets()
+	void VulkanMaterial::tryAllocateDescriptorSets()
 	{
-		Ref<VulkanShader> vulkanShader = m_Shader;
-		const auto& shaderDescriptorSets = vulkanShader->GetDescriptorSets();
-		for (auto& descriptorSet : m_DescriptorSets) // Per frame
+		VulkanDescriptorAllocator::Version newVersion = VulkanRendererAPI::GetDescriptorAllocatorVersion();
+		if (newVersion != m_DescriptorsVersion)
 		{
-			for (uint32_t set = 0; set < descriptorSet.size(); ++set)
+			m_DescriptorsVersion = newVersion;
+			Ref<VulkanShader> vulkanShader = m_Shader;
+			const auto& shaderDescriptorSets = vulkanShader->GetDescriptorSets();
+			for (auto& descriptorSet : m_DescriptorSets) // Per frame
 			{
-				descriptorSet[set] = VulkanRendererAPI::RT_AllocateDescriptorSet(shaderDescriptorSets[set].DescriptorSetLayout);
+				for (uint32_t set = 0; set < descriptorSet.size(); ++set)
+				{
+					descriptorSet[set] = VulkanRendererAPI::RT_AllocateDescriptorSet(shaderDescriptorSets[set].DescriptorSetLayout);
+				}
 			}
 		}
 	}
 
-	void VulkanMaterial::allocateStorages()
-	{
-		allocateStorage(m_Shader->GetBuffers(), m_UniformsBuffer);
-	}
-	void VulkanMaterial::allocateStorage(const std::unordered_map<std::string, ShaderBuffer>& buffers, ByteBuffer& buffer)
+	void VulkanMaterial::allocateStorage(const std::unordered_map<std::string, ShaderBuffer>& buffers, ByteBuffer& buffer) const
 	{
 		uint32_t size = 0;
 		for (auto [name, shaderBuffer] : buffers)

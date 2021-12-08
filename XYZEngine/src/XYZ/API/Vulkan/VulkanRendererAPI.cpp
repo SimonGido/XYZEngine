@@ -9,7 +9,7 @@
 #include "VulkanVertexBuffer.h"
 #include "VulkanIndexBuffer.h"
 #include "VulkanUniformBuffer.h"
-#include "VulkanDescriptorAllocator.h"
+
 #include "VulkanUniformBufferSet.h"
 #include "VulkanMaterial.h"
 #include "VulkanImage.h"
@@ -254,6 +254,11 @@ namespace XYZ {
 	VkDescriptorSet VulkanRendererAPI::RT_AllocateDescriptorSet(const VkDescriptorSetLayout& layout)
 	{
 		return s_DescriptorAllocator.RT_Allocate(layout);
+	}
+
+	VulkanDescriptorAllocator::Version VulkanRendererAPI::GetDescriptorAllocatorVersion()
+	{
+		return s_DescriptorAllocator.GetVersion();
 	}
 
 

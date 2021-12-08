@@ -3,6 +3,8 @@
 #include "VulkanContext.h"
 #include "VulkanRendererAPI.h"
 
+#include "XYZ/Debug/Profiler.h"
+
 #include <stb_image.h>
 
 namespace XYZ {
@@ -232,6 +234,7 @@ namespace XYZ {
 	
 	void VulkanTexture2D::loadImage(const std::string& path, ByteBuffer& imageData)
 	{
+		XYZ_PROFILE_FUNC("VulkanTexture2D::loadImage");
 		int width, height, channels;
 		stbi_set_flip_vertically_on_load(1);
 		if (stbi_is_hdr(path.c_str()))
@@ -254,42 +257,4 @@ namespace XYZ {
 		m_Width = width;
 		m_Height = height;
 	}
-
-	//VkSamplerCreateInfo VulkanTexture2D::createSamplerCreateInfo(uint32_t mipCount) const
-	//{
-	//	VkSamplerCreateInfo sampler{};
-	//	sampler.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-	//	sampler.maxAnisotropy = 1.0f;
-	//	sampler.magFilter = Utils::VulkanSamplerFilter(m_Properties.SamplerFilter);
-	//	sampler.minFilter = Utils::VulkanSamplerFilter(m_Properties.SamplerFilter);
-	//	sampler.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-	//	sampler.addressModeU = Utils::VulkanSamplerWrap(m_Properties.SamplerWrap);
-	//	sampler.addressModeV = Utils::VulkanSamplerWrap(m_Properties.SamplerWrap);
-	//	sampler.addressModeW = Utils::VulkanSamplerWrap(m_Properties.SamplerWrap);
-	//	sampler.mipLodBias = 0.0f;
-	//	sampler.compareOp = VK_COMPARE_OP_NEVER;
-	//	sampler.minLod = 0.0f;
-	//	sampler.maxLod = (float)mipCount;
-	//	sampler.maxAnisotropy = 1.0;
-	//	sampler.anisotropyEnable = VK_FALSE;
-	//	sampler.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-	//	return sampler;
-	//}
-	//
-	//VkImageViewCreateInfo VulkanTexture2D::createImageViewCreateInfo(uint32_t layerCount, uint32_t baseLayer, uint32_t mipCount, uint32_t baseMip) const
-	//{
-	//	VkImageViewCreateInfo view{};
-	//	view.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-	//	view.viewType = VK_IMAGE_VIEW_TYPE_2D;
-	//	view.format = Utils::VulkanImageFormat(m_Format);
-	//	view.components = { VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A };
-	//	// The subresource range describes the set of mip levels (and array layers) that can be accessed through this image view
-	//	// It's possible to create multiple image views for a single image referring to different (and/or overlapping) ranges of the image
-	//	view.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	//	view.subresourceRange.baseMipLevel = baseMip;
-	//	view.subresourceRange.baseArrayLayer = baseLayer;
-	//	view.subresourceRange.layerCount = layerCount;
-	//	view.subresourceRange.levelCount = mipCount;
-	//	return view;
-	//}	
 }

@@ -2,6 +2,7 @@
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Utils/DataStructures/ByteBuffer.h"
 
+#include "VulkanRendererAPI.h"
 #include "VulkanShader.h"
 #include "VulkanTexture.h"
 
@@ -59,9 +60,9 @@ namespace XYZ {
 		const ByteBuffer						 GetFSUniformsBuffer() const;
 		const ByteBuffer						 GetVSUniformsBuffer() const;
 	private:
-		void allocateDescriptorSets();
-		void allocateStorages();
-		void allocateStorage(const std::unordered_map<std::string, ShaderBuffer>& buffers, ByteBuffer& buffer);
+		void tryAllocateDescriptorSets();
+
+		void allocateStorage(const std::unordered_map<std::string, ShaderBuffer>& buffers, ByteBuffer& buffer) const;
 		void setDescriptor(const std::string& name, const Ref<Texture2D>& texture);
 		void setDescriptor(const std::string& name, const Ref<Image2D>& image);
 		void setDescriptor(const std::string& name, const Ref<Texture2D>& texture, uint32_t index);
@@ -81,14 +82,15 @@ namespace XYZ {
 		const ShaderResourceDeclaration*			 findResourceDeclaration(const std::string& name);
 
 	private:
-		Ref<VulkanShader>			   m_Shader;
-		ByteBuffer					   m_UniformsBuffer;
+		Ref<VulkanShader>						 m_Shader;
+		ByteBuffer								 m_UniformsBuffer;
 
 		std::vector<Ref<Image2D>>				 m_Images;
 		std::vector<Ref<Texture2D>>			     m_Textures;
 		std::vector<std::vector<Ref<Texture2D>>> m_TextureArrays;
 		// Per frame -> per set
-		vector2D<VkDescriptorSet>	   m_DescriptorSets;
+		vector2D<VkDescriptorSet>				 m_DescriptorSets;
+		VulkanDescriptorAllocator::Version		 m_DescriptorsVersion;
 
 		struct PendingDescriptor
 		{
