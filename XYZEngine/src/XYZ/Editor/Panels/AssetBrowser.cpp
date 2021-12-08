@@ -79,8 +79,6 @@ namespace XYZ {
 							m_ViewportFocused = ImGui::IsWindowFocused();
 							m_ViewportHovered = ImGui::IsWindowHovered();
 
-							
-
 							processDirectory();
 
 							if (ImGui::GetIO().MouseReleased[ImGuiMouseButton_Left]
@@ -90,8 +88,8 @@ namespace XYZ {
 								m_RightClickedFile.clear();
 								m_SelectedFile.clear();
 							}
-							ImGui::EndChild();
 						}
+						ImGui::EndChild();
 					});			
 					ImGui::EndTable();
 				}

@@ -162,6 +162,19 @@ namespace XYZ {
 			}
 		}
 
+		void HelpMarker(const char* desc)
+		{
+			ImGui::TextDisabled("(?)");
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::BeginTooltip();
+				ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+				ImGui::TextUnformatted(desc);
+				ImGui::PopTextWrapPos();
+				ImGui::EndTooltip();
+			}
+		}
+
 		void Image(const Ref<Image2D>& image, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1)
 		{
 			if (RendererAPI::GetType() == RendererAPI::Type::Vulkan)

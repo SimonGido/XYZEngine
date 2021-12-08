@@ -16,7 +16,7 @@
 namespace XYZ {
 	namespace Editor {
 	
-		bool ValueControl(const char* stringID, bool& value)
+		bool ValueControl(const char* stringID, bool* value)
 		{
 			std::string valueID = "##";
 			valueID += stringID;
@@ -24,11 +24,11 @@ namespace XYZ {
 
 			UI::TableRow(stringID,
 				[&]() { ImGui::Text(stringID); },
-				[&]() { result = ImGui::Checkbox(valueID.c_str(), &value); });
+				[&]() { result = ImGui::Checkbox(valueID.c_str(), value); });
 
 			return result;
 		}
-		bool ValueControl(const char* stringID, float& value)
+		bool ValueControl(const char* stringID, float* value)
 		{
 			std::string valueID = "##";
 			valueID += stringID;
@@ -36,13 +36,13 @@ namespace XYZ {
 
 			UI::TableRow(stringID,
 				[&]() { ImGui::Text(stringID); },
-				[&]() { result = ImGui::DragFloat(valueID.c_str(), &value, 0.05f); });
-			if (value <= 0.0f)
-				value = 0.1f;
+				[&]() { result = ImGui::DragFloat(valueID.c_str(), value, 0.05f); });
+			if ((*value) <= 0.0f)
+				*value = 0.1f;
 
 			return result;
 		}
-		bool ValueControl(const char* stringID, int& value)
+		bool ValueControl(const char* stringID, int* value)
 		{
 			std::string valueID = "##";
 			valueID += stringID;
@@ -50,11 +50,11 @@ namespace XYZ {
 
 			UI::TableRow(stringID,
 				[&]() { ImGui::Text(stringID); },
-				[&]() { result = ImGui::DragInt(valueID.c_str(), &value, 0.05f); });
+				[&]() { result = ImGui::DragInt(valueID.c_str(), value, 0.05f); });
 
 			return result;
 		}
-		bool ValueControl(const char* stringID, ImVec2& value)
+		bool ValueControl(const char* stringID, ImVec2* value)
 		{
 			std::string valueID = "##";
 			valueID += stringID;
@@ -62,17 +62,17 @@ namespace XYZ {
 
 			UI::TableRow(stringID,
 				[&]() { ImGui::Text(stringID); },
-				[&]() { result = ImGui::DragFloat2(valueID.c_str(), (float*)&value, 0.05f); });
+				[&]() { result = ImGui::DragFloat2(valueID.c_str(), (float*)value, 0.05f); });
 
-			if (value.x <= 0.0f)
-				value.x = 0.1f;
+			if ((*value).x <= 0.0f)
+				(*value).x = 0.1f;
 
-			if (value.y <= 0.0f)
-				value.y = 0.1f;
+			if ((*value).y <= 0.0f)
+				(*value).y = 0.1f;
 
 			return result;
 		}
-		bool ValueControl(const char* stringID, ImVec4* value)
+		bool ValueControl(const char* stringID, ImVec4(*value)[ImGuiCol_COUNT])
 		{
 			return false;
 		}
@@ -88,10 +88,11 @@ namespace XYZ {
 		{
 		}
 
+	
+
 		void ImGuiStylePanel::OnImGuiRender(bool& open)
 		{
-			ImGuiLayer* imguiLayer = Application::Get().GetImGuiLayer();
-			
+			ImGuiLayer* imguiLayer = Application::Get().GetImGuiLayer();		
 			ImGuiStyle& style = ImGui::GetStyle();
 		
 			if (ImGui::Begin("ImGui Style", &open))
@@ -130,6 +131,7 @@ namespace XYZ {
 					ImGui::Text(m_AutoSaveFile.c_str());
 				}
 
+			
 				bool modified = false;
 				if (ImGui::BeginTable("Colors", 2, ImGuiTableFlags_SizingFixedSame))
 				{
@@ -146,7 +148,7 @@ namespace XYZ {
 					auto styleTuple = ImGuiStyleReflection::StyleToTuple();
 					Reflect::For<ImGuiStyleReflection::ImGuiStyleVariableCount>([&](auto j) 
 					{
-						modified |= ValueControl(ImGuiStyleReflection::ImGuiStyleVariables[j.value], std::get<j.value>(styleTuple));
+						modified |= ValueControl(ImGuiStyleReflection::ImGuiStyleVariables[j.value], &std::get<j.value>(styleTuple));
 					});
 
 					handleLimits();
