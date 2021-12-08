@@ -7,10 +7,13 @@ namespace XYZ {
 	public:
 		ImGuiStyleSerializer(bool srgb);
 
-		void SaveStyle(const std::string& filepath);
-		void LoadStyle(const std::string& filepath);
+	private:
+		void saveStyle(const std::string& filepath);
+		void loadStyle(const std::string& filepath);
 
 	private:
 		bool m_SRGBColorSpace;
+
+		friend class ImGuiLayer;
 	};
 }

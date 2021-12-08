@@ -151,7 +151,7 @@ namespace XYZ {
 		}
 
 		template <typename ...Args>
-		void TableRow(const char* stringID, Args&& ...args)
+		void TableRow(const void* stringID, Args&& ...args)
 		{
 			ImGui::PushID(stringID);
 			ImGui::TableNextRow();

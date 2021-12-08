@@ -109,11 +109,11 @@ namespace XYZ {
 	void ImGuiLayer::LoadStyle(const std::string& filepath)
 	{
 		ImGuiStyleSerializer serializer(m_SRGBColorSpace);
-		serializer.LoadStyle(filepath);
+		serializer.loadStyle(filepath);
 	}
 	void ImGuiLayer::SaveStyle(const std::string& filepath)
 	{
 		ImGuiStyleSerializer serializer(m_SRGBColorSpace);
-		serializer.SaveStyle(filepath);
+		serializer.saveStyle(filepath);
 	}
 }

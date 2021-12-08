@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "ImGuiStyleSerializer.h"
 
+#include "XYZ/Core/Application.h"
 #include "XYZ/ImGui/ImGuiStyleReflection.h"
 #include "XYZ/ImGui/ImGui.h"
 
@@ -38,10 +39,10 @@ namespace XYZ {
 	{
 	}
 
-	void ImGuiStyleSerializer::SaveStyle(const std::string& filepath)
+	void ImGuiStyleSerializer::saveStyle(const std::string& filepath)
 	{
 		ImGuiStyle& style = ImGui::GetStyle();
-
+		const ImGuiLayer* imguiLayer = Application::Get().GetImGuiLayer();
 		YAML::Emitter out;
 		out << YAML::BeginMap; // Style
 
@@ -71,14 +72,23 @@ namespace XYZ {
 		});
 		out << YAML::EndSeq;
 		//////////////////////
-
-
-		out << YAML::EndMap; // Style
+		//////////////////////
+		out << YAML::Key << "Fonts";
+		out << YAML::Value << YAML::BeginSeq;
+		for (const auto& fontConfig : imguiLayer->GetLoadedFonts())
+		{
+			out << YAML::BeginMap;
+			out << YAML::Key << "FilePath" << YAML::Value << fontConfig.Filepath;
+			out << YAML::Key << "SizePixels" << YAML::Value << fontConfig.SizePixels;
+			out << YAML::EndMap;
+		}
+		out << YAML::EndSeq;
+		out << YAML::EndMap; // Fonts
 
 		std::ofstream fout(filepath);
 		fout << out.c_str();
 	}
-	void ImGuiStyleSerializer::LoadStyle(const std::string& filepath)
+	void ImGuiStyleSerializer::loadStyle(const std::string& filepath)
 	{
 		std::ifstream stream(filepath);
 		std::stringstream strStream;
@@ -88,6 +98,8 @@ namespace XYZ {
 		YAML::Node data = YAML::Load(strStream.str());
 
 		ImGuiStyle& style = ImGui::GetStyle();
+		ImGuiLayer* imguiLayer = Application::Get().GetImGuiLayer();
+
 		auto styleTuple = ImGuiStyleReflection::StyleToTuple();
 		auto colors = data["Colors"];
 		for (auto& color : colors)
@@ -107,6 +119,14 @@ namespace XYZ {
 				}
 			});
 		}
+		auto fonts = data["Fonts"];
+		for (auto& font : fonts)
+		{
+			std::string filePath = font["FilePath"].as<std::string>();
+			float sizePixels = font["SizePixels"].as<float>();
+			imguiLayer->AddFont({ filepath, sizePixels, ImGui::GetIO().Fonts->GetGlyphRangesCyrillic() });
+		}
+
 		if (m_SRGBColorSpace)
 		{
 			for (uint32_t i = 0; i < ImGuiCol_COUNT; ++i)

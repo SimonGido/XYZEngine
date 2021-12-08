@@ -1,10 +1,12 @@
 ﻿#include "stdafx.h"
 #include "VulkanImGuiLayer.h"
-#include "XYZ/Core/Application.h"
-#include "XYZ/Renderer/Renderer.h"
 #include "VulkanContext.h"
 
-#include <imgui.h>
+#include "XYZ/Core/Application.h"
+#include "XYZ/Renderer/Renderer.h"
+
+#include "XYZ/Utils/StringUtils.h"
+
 #include <ImGuizmo.h>
 #ifndef IMGUI_IMPL_API
 #define IMGUI_IMPL_API
@@ -30,11 +32,16 @@ namespace XYZ
     {
     	IMGUI_CHECKVERSION();
         ImGui::CreateContext();
-        ImGuiIO& io = ImGui::GetIO(); (void)io;
+        ImGuiIO& io = ImGui::GetIO();
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
         //io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
 
+
+		io.Fonts->AddFontFromFileTTF("Assets/Fonts/Roboto/Roboto-Black.ttf", 15.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
+		io.Fonts->AddFontFromFileTTF("Assets/Fonts/Roboto/Roboto-Light.ttf", 15.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
+		io.Fonts->AddFontFromFileTTF("Assets/Fonts/Roboto/Roboto-Medium.ttf", 15.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
+		io.Fonts->AddFontFromFileTTF("Assets/Fonts/Roboto/Roboto-Thin.ttf", 15.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
 		io.FontDefault = io.Fonts->AddFontFromFileTTF("Assets/Fonts/Roboto/Roboto-Regular.ttf", 15.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
 
 		// Setup Dear ImGui style
@@ -100,7 +107,7 @@ namespace XYZ
 			ImGui_ImplVulkan_Init(&init_info, swapChain.GetVulkanRenderPass());
 			
 			// Upload Fonts
-			uploadFonts();
+			RT_uploadFonts();
 
 			const uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;
 			m_ImGuiCommandBuffers.resize(framesInFlight);
@@ -127,6 +134,7 @@ namespace XYZ
 
 	void VulkanImGuiLayer::Begin()
     {
+		addWaitingFonts();
         ImGui_ImplVulkan_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
@@ -238,10 +246,47 @@ namespace XYZ
 		});
     }
 
+	void VulkanImGuiLayer::AddFont(const ImGuiFontConfig& config)
+	{
+		ImGuiIO& io = ImGui::GetIO();
+		ImFontAtlas* atlas = io.Fonts;
+		for (int i = 0; i < atlas->Fonts.Size; i++)
+		{
+			ImFont* font = atlas->Fonts[i];
+			std::string fontName = font->ConfigData ? font->ConfigData[0].Name : "";
+			std::string newFontName = Utils::GetFilename(config.Filepath);
+			if (newFontName == fontName )
+			{
+				if (font->ConfigData && font->ConfigData->SizePixels == config.SizePixels)
+				{
+					XYZ_WARN("Font with name {} and pixel size {} already exists", fontName.c_str(), config.SizePixels);
+					return;
+				}
+			}
+		}
+		m_AddFonts.push(config);
+	}
+
     void VulkanImGuiLayer::OnImGuiRender()
     {
     }
-	void VulkanImGuiLayer::uploadFonts()
+	void VulkanImGuiLayer::addWaitingFonts()
+	{
+		if (!m_AddFonts.empty())
+		{
+			Renderer::SubmitAndWait([this]() {
+				while (!m_AddFonts.empty())
+				{
+					const auto fontConfig = m_AddFonts.back();
+					m_AddFonts.pop();
+					ImGui::GetIO().Fonts->AddFontFromFileTTF(fontConfig.Filepath.c_str(), fontConfig.SizePixels, nullptr, fontConfig.GlyphRange);
+					m_FontsLoaded.push_back(fontConfig);
+				}
+				RT_uploadFonts();
+			});
+		}
+	}
+	void VulkanImGuiLayer::RT_uploadFonts()
 	{
 		// Upload Fonts
 		auto vulkanContext = VulkanContext::Get();

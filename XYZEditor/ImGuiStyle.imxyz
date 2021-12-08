@@ -111,9 +111,9 @@ Colors:
     Color: [0.800000012, 0.800000012, 0.800000012, 0.349999994]
 Variables:
   - Index: 0
-    Alpha: 0.75
+    Alpha: 1
   - Index: 1
-    DisabledAlpha: 0.550000012
+    DisabledAlpha: 0.600000024
   - Index: 2
     WindowPadding: [8, 8]
   - Index: 3
@@ -192,3 +192,6 @@ Variables:
     CircleTessellationMaxError: 0.300000012
   - Index: 40
     Colors
+Fonts:
+  - FilePath: Assets/Fonts/Roboto/Roboto-Italic.ttf
+    SizePixels: 15
