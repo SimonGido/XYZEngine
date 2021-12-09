@@ -10,6 +10,7 @@
 #include "UniformBufferSet.h"
 #include "SubTexture.h"
 
+#include <glm/glm.hpp>
 
 namespace XYZ {
 	struct Renderer2DStats

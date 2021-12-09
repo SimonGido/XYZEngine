@@ -178,7 +178,7 @@ namespace XYZ {
 		VkDescriptorPool result;
 		VkDescriptorPoolCreateInfo pool_info = {};
 		pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+		pool_info.flags = 0;// VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 		pool_info.maxSets = sc_MaxSets;
 		pool_info.poolSizeCount = std::size(s_PoolSizes);
 		pool_info.pPoolSizes = s_PoolSizes;

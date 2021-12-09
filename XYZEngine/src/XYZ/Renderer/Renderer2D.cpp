@@ -5,9 +5,9 @@
 #include "Renderer.h"
 
 #include <glm/gtc/type_ptr.hpp>
-#include <array>
-
 #include <glm/gtc/matrix_transform.hpp>
+
+#include <array>
 
 namespace XYZ {	
 
@@ -134,7 +134,7 @@ namespace XYZ {
 	void Renderer2D::SubmitCircle(const glm::vec3& pos, float radius, uint32_t sides, const glm::vec4& color)
 	{
 		if (m_LineBuffer.IndexCount + (sides * 3) >= sc_MaxLineIndices)
-			XYZ_ASSERT(false, "")
+			XYZ_ASSERT(false, "");
 
 		const int step = 360 / sides;
 		for (int a = step; a < 360 + step; a += step)
@@ -155,7 +155,7 @@ namespace XYZ {
 	void Renderer2D::SubmitFilledCircle(const glm::vec3& pos, float radius, float thickness, const glm::vec4& color)
 	{
 		if (m_CircleBuffer.IndexCount >= sc_MaxIndices)
-			XYZ_ASSERT(false, "")
+			XYZ_ASSERT(false, "");
 
 		const glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos)
 			* glm::scale(glm::mat4(1.0f), { radius * 2.0f, radius * 2.0f, 1.0f });
@@ -176,7 +176,7 @@ namespace XYZ {
 	{
 		constexpr size_t quadVertexCount = 4;
 		if (m_QuadBuffer.IndexCount >= sc_MaxIndices)
-			XYZ_ASSERT(false, "")
+			XYZ_ASSERT(false, "");
 
 		for (size_t i = 0; i < quadVertexCount; ++i)
 		{
@@ -195,7 +195,7 @@ namespace XYZ {
 		constexpr size_t quadVertexCount = 4;
 
 		if (m_QuadBuffer.IndexCount + 6 >= sc_MaxIndices)
-			XYZ_ASSERT(false, "")
+			XYZ_ASSERT(false, "");
 
 		const glm::vec2 texCoords[quadVertexCount] = {
 			{texCoord.x,texCoord.y},
@@ -222,7 +222,7 @@ namespace XYZ {
 		constexpr size_t quadVertexCount = 4;
 
 		if (m_QuadBuffer.IndexCount + 6 >= sc_MaxIndices)
-			XYZ_ASSERT(false, "")
+			XYZ_ASSERT(false, "");
 
 		const glm::vec2 texCoords[quadVertexCount] = {
 			{texCoord.x, texCoord.y},
@@ -264,7 +264,7 @@ namespace XYZ {
 	{
 		constexpr size_t quadVertexCount = 4;
 		if (m_QuadBuffer.IndexCount >= sc_MaxIndices)
-			XYZ_ASSERT(false, "")
+			XYZ_ASSERT(false, "");
 
 		const glm::vec3 vertices[quadVertexCount] = {
 			{  position.x - size.x / 2.0f,  position.y - size.y / 2.0f, 0.0f},
@@ -332,7 +332,7 @@ namespace XYZ {
 		constexpr size_t quadVertexCount = 4;
 
 		if (m_QuadBuffer.IndexCount + 6 >= sc_MaxIndices)
-			XYZ_ASSERT(false, "")
+			XYZ_ASSERT(false, "");
 
 		const glm::vec2 texCoords[quadVertexCount] = {
 			{texCoord.x, texCoord.y},

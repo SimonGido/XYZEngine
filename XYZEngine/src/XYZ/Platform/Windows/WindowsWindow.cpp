@@ -187,7 +187,7 @@ namespace XYZ {
 			glfwSwapInterval(enable);
 		});
 		#else
-		glfwSwapInterval(frames);
+		glfwSwapInterval(enable);
 		#endif
 	}
 
