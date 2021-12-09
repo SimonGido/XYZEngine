@@ -2,8 +2,10 @@
 #include "ImGui.h"
 
 #include "XYZ/API/Vulkan/VulkanImage.h"
+#include "XYZ/API/Vulkan/VulkanRendererAPI.h"
+#include "XYZ/API/Vulkan/VulkanImGuiLayer.h"
 
-#include "XYZ/Renderer/RendererAPI.h"
+#include "XYZ/Core/Application.h"
 
 #include <imgui_internal.h>
 #include <backends/imgui_impl_vulkan_with_textures.h>
@@ -15,6 +17,7 @@ namespace XYZ {
 			static uint32_t s_Counter = 0;
 			static char		s_IDBuffer[16];
 			static char		s_PathBuffer[_MAX_PATH];
+
 
 			const char* GenerateID()
 			{
@@ -89,18 +92,6 @@ namespace XYZ {
 				);
 			}
 
-			static ImTextureID GetTextureID(const Ref<Image2D>& image)
-			{
-				if (RendererAPI::GetType() == RendererAPI::Type::Vulkan)
-				{
-					Ref<VulkanImage2D> vulkanImage = image.As<VulkanImage2D>();
-					const auto& imageInfo = vulkanImage->GetImageInfo();
-					if (!imageInfo.ImageView)
-						return nullptr;
-
-					return ImGui_ImplVulkan_AddTexture(imageInfo.Sampler, imageInfo.ImageView, vulkanImage->GetDescriptor().imageLayout);
-				}
-			}
 			static ImGuiID GetImageID(const Ref<Image2D>& image)
 			{
 				if (RendererAPI::GetType() == RendererAPI::Type::Vulkan)
@@ -113,6 +104,21 @@ namespace XYZ {
 					return (ImGuiID)((((uint64_t)imageInfo.ImageView) >> 32) ^ (uint32_t)imageInfo.ImageView);
 				}
 			}
+
+			static ImTextureID GetTextureID(const Ref<Image2D>& image)
+			{
+				if (RendererAPI::GetType() == RendererAPI::Type::Vulkan)
+				{
+					Ref<VulkanImage2D> vulkanImage = image.As<VulkanImage2D>();
+					const auto& imageInfo = vulkanImage->GetImageInfo();
+					if (!imageInfo.ImageView)
+						return nullptr;
+					
+					VulkanImGuiLayer* vulkanImGuiLayer = static_cast<VulkanImGuiLayer*>(Application::Get().GetImGuiLayer());
+					return vulkanImGuiLayer->AddImage(image);
+					//return ImGui_ImplVulkan_AddTexture(imageInfo.Sampler, imageInfo.ImageView, vulkanImage->GetDescriptor().imageLayout);
+				}
+			}		
 		}
 
 		namespace Vulkan {

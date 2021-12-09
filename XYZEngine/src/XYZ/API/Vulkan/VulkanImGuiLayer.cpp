@@ -6,6 +6,7 @@
 #include "XYZ/Renderer/Renderer.h"
 
 #include "XYZ/Utils/StringUtils.h"
+#include "XYZ/ImGui/ImGui.h"
 
 #include <ImGuizmo.h>
 #ifndef IMGUI_IMPL_API
@@ -16,8 +17,17 @@
 #include <backends/imgui_impl_glfw.h>
 
 
-namespace XYZ
-{
+namespace XYZ {
+
+	static ImGuiID GetImageID(const Ref<VulkanImage2D>& image)
+	{
+		const auto& imageInfo = image->GetImageInfo();
+		if (!imageInfo.ImageView)
+			return 0;
+
+		return (ImGuiID)((((uint64_t)imageInfo.ImageView) >> 32) ^ (uint32_t)imageInfo.ImageView);
+	}
+
     VulkanImGuiLayer::VulkanImGuiLayer()
 	    :
 		m_DescriptorPool(VK_NULL_HANDLE)
@@ -134,6 +144,7 @@ namespace XYZ
 
 	void VulkanImGuiLayer::Begin()
     {
+		m_CurrentFrame = Renderer::GetCurrentFrame();
 		addWaitingFonts();
         ImGui_ImplVulkan_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -167,6 +178,17 @@ namespace XYZ
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();
 		}
+
+		
+		Renderer::Submit([this]() {
+			//vkDeviceWaitIdle(VulkanContext::GetCurrentDevice()->GetVulkanDevice());
+			auto& descriptors = m_ImGuiImageDescriptors[m_CurrentFrame];
+			for (auto& [id, desc] : descriptors)
+			{
+				const auto& imageInfo = desc.Image->GetImageInfo();
+				ImGui_ImplVulkan_UpdateTextureInfo(desc.Descriptor, imageInfo.Sampler, imageInfo.ImageView, desc.Image->GetDescriptor().imageLayout);
+			}
+		});
 		Renderer::Submit([this, copy]() mutable
 		{			
 			const VulkanSwapChain& swapChain = VulkanContext::GetSwapChain();
@@ -179,15 +201,16 @@ namespace XYZ
 			const uint32_t height = swapChain.GetHeight();
 
 			const uint32_t commandBufferIndex = swapChain.GetCurrentBufferIndex();
-
+			
 			VkCommandBufferBeginInfo drawCmdBufInfo = {};
 			drawCmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 			drawCmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 			drawCmdBufInfo.pNext = nullptr;
-
+		
 			const VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentCommandBuffer();
 			VK_CHECK_RESULT(vkBeginCommandBuffer(drawCommandBuffer, &drawCmdBufInfo));
 
+			
 			VkRenderPassBeginInfo renderPassBeginInfo = {};
 			renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 			renderPassBeginInfo.pNext = nullptr;
@@ -229,7 +252,7 @@ namespace XYZ
 			scissor.offset.x = 0;
 			scissor.offset.y = 0;
 			vkCmdSetScissor(m_ImGuiCommandBuffers[commandBufferIndex], 0, 1, &scissor);
-
+		
 			ImGui_ImplVulkan_RenderDrawData(&copy, m_ImGuiCommandBuffers[commandBufferIndex]);
 			for (int i = 0; i < copy.CmdListsCount; ++i)
 				IM_DELETE(copy.CmdLists[i]);
@@ -270,6 +293,25 @@ namespace XYZ
     void VulkanImGuiLayer::OnImGuiRender()
     {
     }
+	VkDescriptorSet VulkanImGuiLayer::AddImage(const Ref<VulkanImage2D>& image)
+	{
+		std::scoped_lock lock(m_UpdateQueueLock);
+		const uint32_t frame = m_CurrentFrame;
+		
+		const VulkanDescriptorAllocator::Version newVersion = VulkanRendererAPI::GetDescriptorAllocatorVersion();
+		const ImGuiID id = GetImageID(image);
+		auto it = m_ImGuiImageDescriptors[frame].find(id);
+		if (it != m_ImGuiImageDescriptors[frame].end())
+		{
+			if (it->second.Version == newVersion)
+			{
+				return it->second.Descriptor;
+			}
+		}
+		VkDescriptorSet newImageDescriptor = VulkanRendererAPI::RT_AllocateDescriptorSet(ImGui_ImplVulkan_GetDescriptorSetLayout());
+		m_ImGuiImageDescriptors[frame][id] = { image, newImageDescriptor, newVersion };	
+		return newImageDescriptor;
+	}
 	void VulkanImGuiLayer::addWaitingFonts()
 	{
 		if (!m_AddFonts.empty())
