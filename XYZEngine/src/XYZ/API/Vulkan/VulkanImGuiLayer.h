@@ -23,7 +23,7 @@ namespace  XYZ
         const std::vector<ImGuiFontConfig>& GetLoadedFonts() const override { return m_FontsLoaded; }
     private:
         void addWaitingFonts();
-        void RT_uploadFonts();
+        static void RT_uploadFonts();
 
     private:
         VkDescriptorPool m_DescriptorPool;

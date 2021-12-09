@@ -14,14 +14,13 @@ namespace XYZ {
 
 			virtual void OnImGuiRender(bool& open) override;
 
-			void SetPath(const std::string& path);
+			void SetBaseDirectory(const std::string& path);
 		
 			Ref<Asset> GetSelectedAsset() const;
 
 		private:
 			void		registerFileTypeExtensions();
 			void		createAsset() const;
-			void		processDirectory();
 			void		rightClickMenu() const;
 			void		dragAndDrop(const std::filesystem::path& path) const;
 
@@ -30,7 +29,8 @@ namespace XYZ {
 		
 
 			void		renderTopPanel();
-
+			void		processCurrentDirectory();
+			void		processDirectoryTree(const std::filesystem::path& dirPath) const;
 		private:	
 			bool m_ViewportHovered;
 			bool m_ViewportFocused;
@@ -39,6 +39,7 @@ namespace XYZ {
 
 			std::filesystem::path			  m_SelectedFile;
 			std::filesystem::path			  m_RightClickedFile;
+			std::filesystem::path			  m_BaseDirectory;
 			std::filesystem::path			  m_CurrentDirectory;
 			std::deque<std::filesystem::path> m_DirectoriesVisited;
 

@@ -1,8 +1,6 @@
 #include "stdafx.h"
 #include "VulkanMaterial.h"
 
-
-
 #include "XYZ/Utils/StringUtils.h"
 
 namespace XYZ {
@@ -37,6 +35,7 @@ namespace XYZ {
 
 		m_ImageDescriptors.resize(shaderDescriptorSets.size());
 		m_ImageArraysDescriptors.resize(shaderDescriptorSets.size());
+
 
 		for (auto& descriptorSet : m_DescriptorSets) // Per frame
 		{

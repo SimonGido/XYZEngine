@@ -292,10 +292,11 @@ namespace XYZ
 		auto vulkanContext = VulkanContext::Get();
 		const auto device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
+		ImGui_ImplVulkan_DestroyFontImage();
 		const VkCommandBuffer commandBuffer = vulkanContext->GetCurrentDevice()->GetCommandBuffer(true);
 		ImGui_ImplVulkan_CreateFontsTexture(commandBuffer);
 		vulkanContext->GetCurrentDevice()->FlushCommandBuffer(commandBuffer);
-
+		
 		VK_CHECK_RESULT(vkDeviceWaitIdle(device));
 		ImGui_ImplVulkan_DestroyFontUploadObjects();
 	}

@@ -31,6 +31,7 @@ namespace XYZ {
 	
 		bool BeginTreeNode(const char* name, bool defaultOpen = true);		
 		void EndTreeNode();	
+		
 
 		bool Vec2Control(const std::array<const char*, 2>& names, glm::vec2& values, float resetValue = 0.0f, float speed = 0.05f);
 		bool Vec3Control(const std::array<const char*, 3>& names, glm::vec3& values, float resetValue = 0.0f, float speed = 0.05f);

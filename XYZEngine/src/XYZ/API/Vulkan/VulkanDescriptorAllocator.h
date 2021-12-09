@@ -10,6 +10,7 @@ namespace XYZ {
 		void Init();
 		void Shutdown();
 
+		VkDescriptorSet RT_Allocate(VkDescriptorSetAllocateInfo& allocInfo);
 		VkDescriptorSet RT_Allocate(const VkDescriptorSetLayout& layout);
 		void			RT_TryResetFull(uint32_t frame);
 		Version			GetVersion() const;
@@ -33,7 +34,7 @@ namespace XYZ {
 		mutable std::mutex		  m_VersionMutex;
 		Version					  m_AllocatorVersion;
 
-		static constexpr uint32_t sc_MaxSets = 2000;
-		static constexpr size_t	  sc_AutoResetCount = 200;
+		static constexpr uint32_t sc_MaxSets = 10000;
+		static constexpr size_t	  sc_AutoResetCount = 3;
 	};
 }

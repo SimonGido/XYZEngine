@@ -173,7 +173,7 @@ namespace XYZ {
 						//		ImGui::CloseCurrentPopup();
 						//	}
 						//}
-						//ImGui::EndMenu();
+						ImGui::EndMenu();
 					}
 				}
 				if (!m_SelectedEntity.HasComponent<RigidBody2DComponent>())

@@ -31,8 +31,8 @@ namespace XYZ {
 			}
 			return "Unknown";
 		}
-
 	}
+
 	static VulkanDescriptorAllocator s_DescriptorAllocator;
 
 	void VulkanRendererAPI::Init()
@@ -251,8 +251,14 @@ namespace XYZ {
 		});
 	}
 
-	VkDescriptorSet VulkanRendererAPI::RT_AllocateDescriptorSet(const VkDescriptorSetLayout& layout)
+	VkDescriptorSet VulkanRendererAPI::RT_AllocateDescriptorSet(VkDescriptorSetAllocateInfo& allocInfo)
 	{
+		XYZ_PROFILE_FUNC("VulkanRendererAPI::RT_AllocateDescriptorSet");
+		return s_DescriptorAllocator.RT_Allocate(allocInfo);
+	}
+
+	VkDescriptorSet VulkanRendererAPI::RT_AllocateDescriptorSet(const VkDescriptorSetLayout& layout)
+	{	
 		return s_DescriptorAllocator.RT_Allocate(layout);
 	}
 

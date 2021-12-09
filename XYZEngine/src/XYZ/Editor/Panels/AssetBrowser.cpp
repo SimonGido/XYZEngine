@@ -2,13 +2,16 @@
 #include "AssetBrowser.h"
 
 #include "XYZ/Utils/StringUtils.h"
+#include "XYZ/Utils/FileSystem.h"
+
 #include "XYZ/Asset/AssetManager.h"
 #include "XYZ/Scene/Scene.h"
 #include "XYZ/Scene/SceneSerializer.h"
 #include "XYZ/Renderer/Font.h"
 #include "XYZ/Animation/Animation.h"
-#include "XYZ/Utils/FileSystem.h"
 #include "XYZ/ImGui/ImGui.h"
+
+#include "XYZ/Debug/Profiler.h"
 
 #include <imgui.h>
 
@@ -21,6 +24,7 @@ namespace XYZ {
 		AssetBrowser::AssetBrowser(std::string name)
 			:
 			EditorPanel(std::move(name)),
+			m_BaseDirectory(s_AssetPath),
 			m_CurrentDirectory(s_AssetPath),
 			m_ViewportHovered(false),
 			m_ViewportFocused(false)
@@ -61,9 +65,13 @@ namespace XYZ {
 	
 		void AssetBrowser::OnImGuiRender(bool& open)
 		{
+			XYZ_PROFILE_FUNC("AssetBrowser::OnImGuiRender");
 			if (ImGui::Begin("Asset Browser", &open))
 			{
+				m_ViewportFocused = ImGui::IsWindowFocused();
+				m_ViewportHovered = ImGui::IsWindowHovered();
 				renderTopPanel();
+
 				const ImGuiTableFlags tableFlags = ImGuiTableFlags_Resizable
 					| ImGuiTableFlags_SizingFixedFit
 					| ImGuiTableFlags_BordersInnerV;
@@ -72,32 +80,37 @@ namespace XYZ {
 					ImGui::TableSetupColumn("Outliner", 0, 300.0f);
 					ImGui::TableSetupColumn("Directory Structure", ImGuiTableColumnFlags_WidthStretch);
 					UI::TableRow("#Rows",
-						[]() {},
 						[&]() {
-						if (ImGui::BeginChild("##Directory"))
+						if (ImGui::BeginChild("##DirectoryTree"))
 						{
-							m_ViewportFocused = ImGui::IsWindowFocused();
-							m_ViewportHovered = ImGui::IsWindowHovered();
-
-							processDirectory();
-
-							if (ImGui::GetIO().MouseReleased[ImGuiMouseButton_Left]
-								&& m_ViewportFocused
-								&& m_ViewportHovered)
-							{
-								m_RightClickedFile.clear();
-								m_SelectedFile.clear();
-							}
+							XYZ_PROFILE_FUNC("AssetBrowser::processDirectoryTree");
+							processDirectoryTree(m_BaseDirectory);
+						}
+						ImGui::EndChild();
+						},
+						[&]() {
+						if (ImGui::BeginChild("##CurrentDirectory"))
+						{
+							XYZ_PROFILE_FUNC("AssetBrowser::processCurrentDirectory");
+							processCurrentDirectory();						
 						}
 						ImGui::EndChild();
 					});			
 					ImGui::EndTable();
 				}
+
+				if (ImGui::GetIO().MouseReleased[ImGuiMouseButton_Left]
+					&& m_ViewportFocused
+					&& m_ViewportHovered)
+				{
+					m_RightClickedFile.clear();
+					m_SelectedFile.clear();
+				}
 			}
 			ImGui::End();
 		}
 
-		void AssetBrowser::SetPath(const std::string& path)
+		void AssetBrowser::SetBaseDirectory(const std::string& path)
 		{
 			m_CurrentDirectory = path;
 		}
@@ -172,85 +185,17 @@ namespace XYZ {
 			{
 				const std::string fullpath = getUniqueAssetName("New Scene", ".xyz");
 				Ref<XYZ::Scene> scene = Ref<XYZ::Scene>::Create("");
-				//scene->FilePath = fullpath;
-				//scene->Type = AssetType::Scene;
-				//AssetSerializer::SerializeAsset(scene);
+
 				ImGui::CloseCurrentPopup();
 			}
 			else if (ImGui::MenuItem("Create Animation"))
 			{
 				const std::string fullpath = getUniqueAssetName("New Animation", ".anim");
 				Ref<XYZ::Animation> animation = Ref<XYZ::Animation>::Create();
-				//animation->FilePath = fullpath;
-				//animation->Type = AssetType::Animation;
-				//AssetSerializer::SerializeAsset(animation);
 				ImGui::CloseCurrentPopup();
 			}
 		}
-		void AssetBrowser::processDirectory()
-		{
-			if (!std::filesystem::is_directory(m_CurrentDirectory))
-				return;
-
-			static float padding = 32.0f;
-			const float cellSize = m_IconSize.x + padding;
-
-			const float panelWidth = ImGui::GetContentRegionAvail().x;
-			int columnCount = (int)(panelWidth / cellSize);
-			if (columnCount < 1)
-				columnCount = 1;
-
-			ImGui::Columns(columnCount, 0, false);
-			for (auto& it : std::filesystem::directory_iterator(m_CurrentDirectory))
-			{				
-				std::string name = it.path().filename().string();
 		
-				if (it.is_directory())
-				{
-					const bool dirPressed = UI::ImageButtonTransparent(name.c_str(), m_Texture->GetImage(), m_IconSize, m_Colors[HoverColor], m_Colors[ClickColor], m_Colors[IconColor],
-						m_TexCoords[Folder].UV0, m_TexCoords[Folder].UV1);
-
-					if (dirPressed)
-					{
-						m_CurrentDirectory /= it.path().filename();
-						m_DirectoriesVisited.clear();
-						break;
-					}
-				}
-				else
-				{
-					const size_t index = extensionToTexCoordsIndex(Utils::GetExtension(name));
-					if (index == FileType::NumTypes)
-						continue;
-
-
-					const bool iconPressed = UI::ImageButtonTransparent(name.c_str(), m_Texture->GetImage(), m_IconSize, m_Colors[HoverColor], m_Colors[ClickColor], m_Colors[IconColor],
-						m_TexCoords[index].UV0, m_TexCoords[index].UV1);
-										
-					if (iconPressed)
-					{
-						m_SelectedFile = name;
-					}
-					if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
-					{
-						m_RightClickedFile = name;
-					}
-
-
-					std::string fullPath = it.path().string();
-					std::replace(fullPath.begin(), fullPath.end(), '\\', '/');
-
-					UI::DragDropSource("AssetDragAndDrop", fullPath.c_str(), fullPath.size() + 1);
-				}
-				rightClickMenu();
-
-				//char newName[64];
-				//ImGui::InputText("##Renamed", newName, 64);
-				ImGui::TextWrapped(name.c_str());
-				ImGui::NextColumn();
-			}
-			ImGui::Columns(1);
-		}
 		void AssetBrowser::rightClickMenu() const
 		{		
 			if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && m_ViewportHovered)
@@ -382,6 +327,90 @@ namespace XYZ {
 			{
 				m_CurrentDirectory = UI::Utils::GetPathBuffer();
 				m_DirectoriesVisited.clear();
+			}
+		}
+
+		void AssetBrowser::processCurrentDirectory()
+		{
+			if (!std::filesystem::is_directory(m_CurrentDirectory))
+				return;
+
+			static float padding = 32.0f;
+			const float cellSize = m_IconSize.x + padding;
+
+			const float panelWidth = ImGui::GetContentRegionAvail().x;
+			int columnCount = (int)(panelWidth / cellSize);
+			if (columnCount < 1)
+				columnCount = 1;
+
+			ImGui::Columns(columnCount, 0, false);
+			for (auto& it : std::filesystem::directory_iterator(m_CurrentDirectory))
+			{
+				std::string name = it.path().filename().string();
+
+				if (it.is_directory())
+				{
+					const bool dirPressed = UI::ImageButtonTransparent(name.c_str(), m_Texture->GetImage(), m_IconSize, m_Colors[HoverColor], m_Colors[ClickColor], m_Colors[IconColor],
+						m_TexCoords[Folder].UV0, m_TexCoords[Folder].UV1);
+
+					if (dirPressed)
+					{
+						m_CurrentDirectory /= it.path().filename();
+						m_DirectoriesVisited.clear();
+						break;
+					}
+				}
+				else
+				{
+					const size_t index = extensionToTexCoordsIndex(Utils::GetExtension(name));
+					if (index == FileType::NumTypes)
+						continue;
+
+
+					const bool iconPressed = UI::ImageButtonTransparent(name.c_str(), m_Texture->GetImage(), m_IconSize, m_Colors[HoverColor], m_Colors[ClickColor], m_Colors[IconColor],
+						m_TexCoords[index].UV0, m_TexCoords[index].UV1);
+
+					if (iconPressed)
+					{
+						m_SelectedFile = name;
+					}
+					if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+					{
+						m_RightClickedFile = name;
+					}
+
+					std::string fullPath = it.path().string();
+					std::replace(fullPath.begin(), fullPath.end(), '\\', '/');
+					UI::DragDropSource("AssetDragAndDrop", fullPath.c_str(), fullPath.size() + 1);
+				}
+				rightClickMenu();
+
+				ImGui::TextWrapped(name.c_str());
+				ImGui::NextColumn();
+			}
+			ImGui::Columns(1);
+		}
+
+		void AssetBrowser::processDirectoryTree(const std::filesystem::path& dirPath) const
+		{
+			const ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow;
+			for (auto& it : std::filesystem::directory_iterator(dirPath))
+			{
+				if (it.is_directory())
+				{
+					std::string folderName = it.path().string();
+					std::string folderID = "##" + folderName;
+					const bool opened = ImGui::TreeNodeEx(folderID.c_str(), flags);
+					ImGui::SameLine();
+					UI::Image(m_Texture->GetImage(), { GImGui->Font->FontSize , GImGui->Font->FontSize }, m_TexCoords[Folder].UV0, m_TexCoords[Folder].UV1);
+					ImGui::SameLine();
+					ImGui::Text(Utils::GetFilename(folderName).c_str());
+					if (opened)
+					{
+						processDirectoryTree(it.path());
+						ImGui::TreePop();
+					}
+				}
 			}
 		}
 		
