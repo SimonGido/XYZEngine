@@ -76,75 +76,22 @@ namespace XYZ {
 	VkDescriptorSet VulkanDescriptorAllocator::RT_Allocate(VkDescriptorSetAllocateInfo& allocInfo)
 	{
 		XYZ_PROFILE_FUNC("VulkanDescriptorAllocator::RT_Allocate");
-		uint32_t frame = Renderer::GetCurrentFrame();
-		RT_TryResetFull(frame);
-
-		{
-			std::scoped_lock<std::mutex> lock(m_PoolMutex);
-			VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-			allocInfo.descriptorPool = m_Allocators[frame].InUsePool;
-			VkDescriptorSet resultDescr;
-			VkResult result;
-			{
-				XYZ_PROFILE_FUNC("VulkanDescriptorAllocator::vkAllocateDescriptorSets");
-				result = vkAllocateDescriptorSets(device, &allocInfo, &resultDescr);
-				if (result == VK_SUCCESS)
-					return resultDescr;
-			}
-			//we reallocate pools on memory error
-			if (IsMemoryError(result))
-			{
-				m_Allocators[frame].FullPools.push_back(m_Allocators[frame].InUsePool);
-				// Find reusable pool if exists
-				if (!getReusablePool(m_Allocators[frame].InUsePool, frame))
-					m_Allocators[frame].InUsePool = createPool();
-			}
-			else
-			{
-				Utils::VulkanCheckResult(result);
-			}
-		}
-		return RT_Allocate(allocInfo);
+		return RT_allocate(allocInfo);
 	}
 	VkDescriptorSet VulkanDescriptorAllocator::RT_Allocate(const VkDescriptorSetLayout& layout)
 	{
 		XYZ_PROFILE_FUNC("VulkanDescriptorAllocator::RT_Allocate");
-		uint32_t frame = Renderer::GetCurrentFrame();
-		RT_TryResetFull(frame);
+		const uint32_t frame = Renderer::GetCurrentFrame();
+		VkDescriptorSetAllocateInfo allocInfo;
+		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
-		{
-			std::scoped_lock<std::mutex> lock(m_PoolMutex);		
-			VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+		VkDescriptorSet resultDescr;
+		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		allocInfo.pNext = nullptr;
+		allocInfo.descriptorSetCount = 1;
+		allocInfo.pSetLayouts = &layout;
 
-			VkDescriptorSet resultDescr;
-			VkDescriptorSetAllocateInfo allocInfo;
-			allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-			allocInfo.pNext = nullptr;
-			allocInfo.descriptorPool = m_Allocators[frame].InUsePool;
-			allocInfo.descriptorSetCount = 1;
-			allocInfo.pSetLayouts = &layout;
-
-			VkResult result;
-			{
-				XYZ_PROFILE_FUNC("VulkanDescriptorAllocator::vkAllocateDescriptorSets");
-				result = vkAllocateDescriptorSets(device, &allocInfo, &resultDescr);
-				if (result == VK_SUCCESS)
-					return resultDescr;
-			}
-			//we reallocate pools on memory error
-			if (IsMemoryError(result))
-			{
-				m_Allocators[frame].FullPools.push_back(m_Allocators[frame].InUsePool);
-				// Find reusable pool if exists
-				if (!getReusablePool(m_Allocators[frame].InUsePool, frame))
-					m_Allocators[frame].InUsePool = createPool();
-			}
-			else
-			{
-				Utils::VulkanCheckResult(result);
-			}
-		}
-		return RT_Allocate(layout);
+		return RT_allocate(allocInfo);
 	}
 	void VulkanDescriptorAllocator::RT_TryResetFull(uint32_t frame)
 	{
@@ -186,6 +133,37 @@ namespace XYZ {
 
 		VK_CHECK_RESULT(vkCreateDescriptorPool(device, &pool_info, nullptr, &result));
 		return result;
+	}
+	VkDescriptorSet VulkanDescriptorAllocator::RT_allocate(VkDescriptorSetAllocateInfo& allocInfo)
+	{
+		XYZ_PROFILE_FUNC("VulkanDescriptorAllocator::RT_allocate");
+		const uint32_t frame = Renderer::GetCurrentFrame();
+		{
+			std::scoped_lock<std::mutex> lock(m_PoolMutex);
+			VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			allocInfo.descriptorPool = m_Allocators[frame].InUsePool;
+			VkDescriptorSet resultDescr;
+			VkResult result;
+			{
+				XYZ_PROFILE_FUNC("VulkanDescriptorAllocator::vkAllocateDescriptorSets");
+				result = vkAllocateDescriptorSets(device, &allocInfo, &resultDescr);
+				if (result == VK_SUCCESS)
+					return resultDescr;
+			}
+			//we reallocate pools on memory error
+			if (IsMemoryError(result))
+			{
+				m_Allocators[frame].FullPools.push_back(m_Allocators[frame].InUsePool);
+				// Find reusable pool if exists
+				if (!getReusablePool(m_Allocators[frame].InUsePool, frame))
+					m_Allocators[frame].InUsePool = createPool();
+			}
+			else
+			{
+				Utils::VulkanCheckResult(result);
+			}
+		}
+		return RT_allocate(allocInfo);
 	}
 	bool VulkanDescriptorAllocator::getReusablePool(VkDescriptorPool& pool, uint32_t frame)
 	{

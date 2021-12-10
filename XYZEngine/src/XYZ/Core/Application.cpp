@@ -82,7 +82,9 @@ namespace XYZ {
 				Renderer::BlockRenderThread(); // Sync before new frame				
 				Renderer::Render();
 
+
 				m_Window->BeginFrame();
+				Renderer::BeginFrame();
 				{
 					XYZ_SCOPE_PERF("Application Layer::OnUpdate");
 					for (Layer* layer : m_LayerStack)
@@ -92,6 +94,7 @@ namespace XYZ {
 					onImGuiRender();
 				
 				
+				Renderer::EndFrame();
 				m_Window->SwapBuffers();
 			}
 		}

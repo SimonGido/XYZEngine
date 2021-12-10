@@ -103,7 +103,7 @@ namespace XYZ {
 			
 			Renderer::ExecuteResources();
 			VK_CHECK_RESULT(vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_Semaphores[m_CurrentBufferIndex].PresentComplete, VK_NULL_HANDLE, &m_CurrentImageIndex));
-			
+	
 		});
 	}
 	void VulkanSwapChain::Present()
@@ -122,7 +122,6 @@ namespace XYZ {
 			submitInfo.signalSemaphoreCount = 1;
 			submitInfo.pCommandBuffers = &m_CommandBuffers[m_CurrentBufferIndex];
 			submitInfo.commandBufferCount = 1;
-
 
 			VK_CHECK_RESULT(vkResetFences(m_Device->GetVulkanDevice(), 1, &m_WaitFences[m_CurrentBufferIndex]));
 			VK_CHECK_RESULT(vkQueueSubmit(m_Device->GetGraphicsQueue(), 1, &submitInfo, m_WaitFences[m_CurrentBufferIndex]));

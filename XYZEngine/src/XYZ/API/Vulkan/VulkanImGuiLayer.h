@@ -23,15 +23,17 @@ namespace  XYZ
         virtual void OnDetach() override;
         virtual void OnImGuiRender() override;
 
-        VkDescriptorSet AddImage(const Ref<VulkanImage2D>& image);
+        ImTextureID AddImage(const Ref<VulkanImage2D>& image);
         const std::vector<ImGuiFontConfig>& GetLoadedFonts() const override { return m_FontsLoaded; }
     private:
         void addWaitingFonts();
         static void RT_uploadFonts();
 
     private:
-        VkDescriptorPool m_DescriptorPool;
-        std::vector<VkCommandBuffer> m_ImGuiCommandBuffers;
+        VkDescriptorPool               m_DescriptorPool;
+        Ref<VulkanRenderCommandBuffer> m_CommandBuffer;
+        Ref<VulkanRenderPass>          m_RenderPass;
+
 
         std::queue<ImGuiFontConfig>  m_AddFonts;
         std::vector<ImGuiFontConfig> m_FontsLoaded;
@@ -43,10 +45,7 @@ namespace  XYZ
             VulkanDescriptorAllocator::Version Version;
         };
 
-        std::unordered_map<ImGuiID, ImageDescriptorSet> m_ImGuiImageDescriptors[3];
-        
-        std::mutex m_UpdateQueueLock;
-        uint32_t m_CurrentFrame;
+        std::unordered_map<ImGuiID, ImageDescriptorSet> m_ImGuiImageDescriptors;
     };
 }
 

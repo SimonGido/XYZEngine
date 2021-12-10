@@ -52,16 +52,10 @@ namespace XYZ {
 
 	void VulkanRendererAPI::BeginFrame()
 	{
-		Renderer::Submit([]()
+		Renderer::Submit([this]()
 		{
-			Ref<VulkanContext> context = Renderer::GetAPIContext();
-			VulkanSwapChain& swapChain = context->GetSwapChain();
-			const VkCommandBuffer commandBuffer = swapChain.GetCurrentCommandBuffer();
-			VkCommandBufferBeginInfo cmdBufInfo = {};
-			cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-			cmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-			cmdBufInfo.pNext = nullptr;
-			VK_CHECK_RESULT(vkBeginCommandBuffer(commandBuffer, &cmdBufInfo));
+			const uint32_t frame = Renderer::GetCurrentFrame();
+			s_DescriptorAllocator.RT_TryResetFull(frame);
 		});
 	}
 
@@ -69,10 +63,6 @@ namespace XYZ {
 	{
 		Renderer::Submit([]()
 		{
-			Ref<VulkanContext> context = Renderer::GetAPIContext();
-			VulkanSwapChain& swapChain = context->GetSwapChain();
-			const VkCommandBuffer commandBuffer = swapChain.GetCurrentCommandBuffer();
-			VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
 		});
 	}
 

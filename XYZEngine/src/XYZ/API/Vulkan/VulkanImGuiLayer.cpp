@@ -67,6 +67,10 @@ namespace XYZ {
 		m_SRGBColorSpace = VulkanContext::GetSwapChain().GetFormat().format == VkFormat::VK_FORMAT_B8G8R8A8_SRGB;	
 		SetDarkThemeColors();
 
+		const VulkanSwapChain& swapChain = VulkanContext::GetSwapChain();
+
+		m_CommandBuffer = swapChain.GetRenderCommandBuffer().As<VulkanRenderCommandBuffer>();
+		m_RenderPass = swapChain.GetRenderPass().As<VulkanRenderPass>();
 		Renderer::Submit([this]()
 		{
 			Application& app = Application::Get();
@@ -74,7 +78,7 @@ namespace XYZ {
 
 			auto vulkanContext = VulkanContext::Get();
 			const auto device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-
+					
 			// Create Descriptor Pool
 			const VkDescriptorPoolSize pool_sizes[] =
 			{
@@ -109,22 +113,17 @@ namespace XYZ {
 			init_info.PipelineCache = nullptr;
 			init_info.DescriptorPool = m_DescriptorPool;
 			init_info.Allocator = nullptr;
-			init_info.MinImageCount = 2;
-			init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+
 			const VulkanSwapChain& swapChain = vulkanContext->GetSwapChain();
+			init_info.MinImageCount = swapChain.GetImageCount();
+			init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 			init_info.ImageCount = swapChain.GetImageCount();
 			init_info.CheckVkResultFn = Utils::VulkanCheckResult;
 			ImGui_ImplVulkan_Init(&init_info, swapChain.GetVulkanRenderPass());
 			
 			// Upload Fonts
 			RT_uploadFonts();
-
-			const uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;
-			m_ImGuiCommandBuffers.resize(framesInFlight);
-			for (uint32_t i = 0; i < framesInFlight; i++)
-				m_ImGuiCommandBuffers[i] = VulkanContext::GetCurrentDevice()->CreateSecondaryCommandBuffer();
 		});
-
     }
 
     void VulkanImGuiLayer::OnDetach()
@@ -144,7 +143,6 @@ namespace XYZ {
 
 	void VulkanImGuiLayer::Begin()
     {
-		m_CurrentFrame = Renderer::GetCurrentFrame();
 		addWaitingFonts();
         ImGui_ImplVulkan_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -166,11 +164,11 @@ namespace XYZ {
     {
     	if (m_EnableDockspace)
     		endDockspace();
-
-    	ImGui::Render();
+	
+		ImGui::Render();
 		ImDrawData copy;
 		CopyImDrawData(copy, ImGui::GetDrawData());
-		
+
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
 		// Update and Render additional Platform Windows
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
@@ -179,94 +177,28 @@ namespace XYZ {
 			ImGui::RenderPlatformWindowsDefault();
 		}
 
-		
-		Renderer::Submit([this]() {
-			//vkDeviceWaitIdle(VulkanContext::GetCurrentDevice()->GetVulkanDevice());
-			auto& descriptors = m_ImGuiImageDescriptors[m_CurrentFrame];
+	
+		m_CommandBuffer->Begin();
+		Renderer::BeginRenderPass(m_CommandBuffer, m_RenderPass, true);
+
+		Ref<VulkanRenderCommandBuffer> instance = m_CommandBuffer;
+		Renderer::Submit([this, copy, instance, descriptors = std::move(m_ImGuiImageDescriptors)]() mutable
+		{
 			for (auto& [id, desc] : descriptors)
 			{
 				const auto& imageInfo = desc.Image->GetImageInfo();
 				ImGui_ImplVulkan_UpdateTextureInfo(desc.Descriptor, imageInfo.Sampler, imageInfo.ImageView, desc.Image->GetDescriptor().imageLayout);
 			}
-		});
-		Renderer::Submit([this, copy]() mutable
-		{			
-			const VulkanSwapChain& swapChain = VulkanContext::GetSwapChain();
-
-			VkClearValue clearValues[2];
-			clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
-			clearValues[1].depthStencil = { 1.0f, 0 };
-
-			const uint32_t width = swapChain.GetWidth();
-			const uint32_t height = swapChain.GetHeight();
-
-			const uint32_t commandBufferIndex = swapChain.GetCurrentBufferIndex();
-			
-			VkCommandBufferBeginInfo drawCmdBufInfo = {};
-			drawCmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-			drawCmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-			drawCmdBufInfo.pNext = nullptr;
-		
-			const VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentCommandBuffer();
-			VK_CHECK_RESULT(vkBeginCommandBuffer(drawCommandBuffer, &drawCmdBufInfo));
-
-			
-			VkRenderPassBeginInfo renderPassBeginInfo = {};
-			renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-			renderPassBeginInfo.pNext = nullptr;
-			renderPassBeginInfo.renderPass = swapChain.GetVulkanRenderPass();
-			renderPassBeginInfo.renderArea.offset.x = 0;
-			renderPassBeginInfo.renderArea.offset.y = 0;
-			renderPassBeginInfo.renderArea.extent.width = width;
-			renderPassBeginInfo.renderArea.extent.height = height;
-			renderPassBeginInfo.clearValueCount = 2; // Color + depth
-			renderPassBeginInfo.pClearValues = clearValues;
-			renderPassBeginInfo.framebuffer = swapChain.GetCurrentFramebuffer();
-
-			vkCmdBeginRenderPass(drawCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
-
-			VkCommandBufferInheritanceInfo inheritanceInfo = {};
-			inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-			inheritanceInfo.renderPass = swapChain.GetVulkanRenderPass();
-			inheritanceInfo.framebuffer = swapChain.GetCurrentFramebuffer();
-
-			VkCommandBufferBeginInfo cmdBufInfo = {};
-			cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-			cmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
-			cmdBufInfo.pInheritanceInfo = &inheritanceInfo;
-
-			VK_CHECK_RESULT(vkBeginCommandBuffer(m_ImGuiCommandBuffers[commandBufferIndex], &cmdBufInfo));
-
-			VkViewport viewport = {};
-			viewport.x = 0.0f;
-			viewport.y = (float)height;
-			viewport.height = -(float)height;
-			viewport.width = (float)width;
-			viewport.minDepth = 0.0f;
-			viewport.maxDepth = 1.0f;
-			vkCmdSetViewport(m_ImGuiCommandBuffers[commandBufferIndex], 0, 1, &viewport);
-
-			VkRect2D scissor = {};
-			scissor.extent.width = width;
-			scissor.extent.height = height;
-			scissor.offset.x = 0;
-			scissor.offset.y = 0;
-			vkCmdSetScissor(m_ImGuiCommandBuffers[commandBufferIndex], 0, 1, &scissor);
-		
-			ImGui_ImplVulkan_RenderDrawData(&copy, m_ImGuiCommandBuffers[commandBufferIndex]);
+			const uint32_t currentFrame = Renderer::GetCurrentFrame();
+			auto drawCommandBuffer = instance->GetVulkanCommandBuffer(currentFrame);
+			ImGui_ImplVulkan_RenderDrawData(&copy, drawCommandBuffer);
 			for (int i = 0; i < copy.CmdListsCount; ++i)
 				IM_DELETE(copy.CmdLists[i]);
 			delete[]copy.CmdLists;
 			copy.Clear();
-
-			VK_CHECK_RESULT(vkEndCommandBuffer(m_ImGuiCommandBuffers[commandBufferIndex]));
-
-			vkCmdExecuteCommands(drawCommandBuffer, 1, &m_ImGuiCommandBuffers[commandBufferIndex]);
-
-			vkCmdEndRenderPass(drawCommandBuffer);
-
-			VK_CHECK_RESULT(vkEndCommandBuffer(drawCommandBuffer));
 		});
+		Renderer::EndRenderPass(m_CommandBuffer);
+		m_CommandBuffer->End();
     }
 
 	void VulkanImGuiLayer::AddFont(const ImGuiFontConfig& config)
@@ -293,23 +225,19 @@ namespace XYZ {
     void VulkanImGuiLayer::OnImGuiRender()
     {
     }
-	VkDescriptorSet VulkanImGuiLayer::AddImage(const Ref<VulkanImage2D>& image)
-	{
-		std::scoped_lock lock(m_UpdateQueueLock);
-		const uint32_t frame = m_CurrentFrame;
-		
+
+	ImTextureID VulkanImGuiLayer::AddImage(const Ref<VulkanImage2D>& image)
+	{	
 		const VulkanDescriptorAllocator::Version newVersion = VulkanRendererAPI::GetDescriptorAllocatorVersion();
 		const ImGuiID id = GetImageID(image);
-		auto it = m_ImGuiImageDescriptors[frame].find(id);
-		if (it != m_ImGuiImageDescriptors[frame].end())
+		auto it = m_ImGuiImageDescriptors.find(id);
+		if (it != m_ImGuiImageDescriptors.end())
 		{
 			if (it->second.Version == newVersion)
-			{
 				return it->second.Descriptor;
-			}
 		}
 		VkDescriptorSet newImageDescriptor = VulkanRendererAPI::RT_AllocateDescriptorSet(ImGui_ImplVulkan_GetDescriptorSetLayout());
-		m_ImGuiImageDescriptors[frame][id] = { image, newImageDescriptor, newVersion };	
+		m_ImGuiImageDescriptors[id] = { image, newImageDescriptor, newVersion };	
 		return newImageDescriptor;
 	}
 	void VulkanImGuiLayer::addWaitingFonts()

@@ -17,6 +17,7 @@ namespace XYZ {
 
 	private:
 		VkDescriptorPool createPool() const;
+		VkDescriptorSet	 RT_allocate(VkDescriptorSetAllocateInfo& allocInfo);
 		bool			 getReusablePool(VkDescriptorPool& pool, uint32_t frame);
 
 	private:
@@ -34,7 +35,7 @@ namespace XYZ {
 		mutable std::mutex		  m_VersionMutex;
 		Version					  m_AllocatorVersion;
 
-		static constexpr uint32_t sc_MaxSets = 10000;
+		static constexpr uint32_t sc_MaxSets = 100;
 		static constexpr size_t	  sc_AutoResetCount = 3;
 	};
 }

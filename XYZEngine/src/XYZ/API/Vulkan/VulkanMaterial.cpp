@@ -158,7 +158,6 @@ namespace XYZ {
 	}
 	void VulkanMaterial::RT_UpdateForRendering(const vector3D<VkWriteDescriptorSet>& descriptors)
 	{
-
 		tryAllocateDescriptorSets();
 
 		vector3D<VkDescriptorImageInfo> arrayImageInfos;
