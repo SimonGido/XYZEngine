@@ -152,18 +152,18 @@ namespace XYZ {
 		SetupFullscreenQuad();
 
 		s_Data.ShaderLibrary = Ref<ShaderLibrary>::Create();
-		s_Data.ShaderLibrary->Load("Assets/Shaders/RendererCore/CompositeShader.glsl");
-		s_Data.ShaderLibrary->Load("Assets/Shaders/RendererCore/LightShader.glsl");
-		s_Data.ShaderLibrary->Load("Assets/Shaders/RendererCore/Bloom.glsl");
-		s_Data.ShaderLibrary->Load("Assets/Shaders/RendererCore/Circle.glsl");
+		s_Data.ShaderLibrary->Load("Resources/Shaders/CompositeShader.glsl");
+		s_Data.ShaderLibrary->Load("Resources/Shaders/LightShader.glsl");
+		s_Data.ShaderLibrary->Load("Resources/Shaders/Bloom.glsl");
+		s_Data.ShaderLibrary->Load("Resources/Shaders/Circle.glsl");
 		
-		s_Data.ShaderLibrary->Load("Assets/Shaders/DefaultLitShader.glsl");
-		s_Data.ShaderLibrary->Load("Assets/Shaders/DefaultShader.glsl");
-		s_Data.ShaderLibrary->Load("Assets/Shaders/LineShader.glsl");
+		s_Data.ShaderLibrary->Load("Resources/Shaders/DefaultLitShader.glsl");
+		s_Data.ShaderLibrary->Load("Resources/Shaders/DefaultShader.glsl");
+		s_Data.ShaderLibrary->Load("Resources/Shaders/LineShader.glsl");
 
 		s_Data.Resources.Init();
 		
-		//s_Data.ShaderLibrary->Load("Assets/Shaders/Particle/ParticleShaderCPU.glsl");
+		//s_Data.ShaderLibrary->Load("Resources/Shaders/Particle/ParticleShaderCPU.glsl");
 		WaitAndRenderAll();
 	}
 

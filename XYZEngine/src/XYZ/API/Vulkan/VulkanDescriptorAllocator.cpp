@@ -37,29 +37,27 @@ namespace XYZ {
 		XYZ_ASSERT(!m_Initialized, "Vulkan Descriptor Allocator is already initialized");
 		m_Initialized = true;
 		m_AllocatorVersion = 0;
-		Renderer::Submit([this]() 
+		Ref<VulkanDescriptorAllocator> instance = this;
+		Renderer::Submit([instance]() mutable 
 		{
-			std::scoped_lock<std::mutex> lock(m_PoolMutex);
+			std::scoped_lock<std::mutex> lock(instance->m_PoolMutex);
 			const uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;	
-			m_Allocators.resize(framesInFlight);
+			instance->m_Allocators.resize(framesInFlight);
 			for (uint32_t frame = 0; frame < framesInFlight; ++frame)
 			{
-				m_Allocators[frame].InUsePool = createPool();
+				instance->m_Allocators[frame].InUsePool = instance->createPool();
 			}
 		});
 	}
 
 	void VulkanDescriptorAllocator::Shutdown()
 	{
-		std::vector<Allocator> allocators;
-		{
-			std::scoped_lock<std::mutex> lock(m_PoolMutex);
-			allocators = std::move(m_Allocators);
-		}
-		Renderer::SubmitResource([allocators]() {
+		Ref<VulkanDescriptorAllocator> instance = this;
+		Renderer::SubmitResource([instance]() mutable {
+			std::scoped_lock<std::mutex> lock(instance->m_PoolMutex);
 			VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
-			for (auto& allocator : allocators)
+			for (auto& allocator : instance->m_Allocators)
 			{
 				vkDestroyDescriptorPool(device, allocator.InUsePool, nullptr);
 				for (auto& pool : allocator.FullPools)
@@ -93,6 +91,15 @@ namespace XYZ {
 
 		return RT_allocate(allocInfo);
 	}
+	void VulkanDescriptorAllocator::TryResetFull()
+	{
+		Ref<VulkanDescriptorAllocator> instance = this;
+		Renderer::SubmitResource([instance]() mutable {
+			const uint32_t frame = Renderer::GetCurrentFrame();
+			instance->RT_TryResetFull(frame);
+
+		});
+	}
 	void VulkanDescriptorAllocator::RT_TryResetFull(uint32_t frame)
 	{
 		XYZ_PROFILE_FUNC("VulkanDescriptorAllocator::RT_TryResetFull");
@@ -102,8 +109,10 @@ namespace XYZ {
 			auto& fullPools = m_Allocators[frame].FullPools;
 			if (fullPools.size() >= sc_AutoResetCount)
 			{
+				XYZ_PROFILE_FUNC("VulkanDescriptorAllocator::RT_TryResetFull - while loop");
 				while (fullPools.size() != 1)
 				{
+					XYZ_PROFILE_FUNC("VulkanDescriptorAllocator::vkResetDescriptorPool");
 					VkDescriptorPool pool = fullPools.front();
 					fullPools.pop_front();
 					VK_CHECK_RESULT(vkResetDescriptorPool(device, pool, VkDescriptorPoolResetFlags{ 0 }));

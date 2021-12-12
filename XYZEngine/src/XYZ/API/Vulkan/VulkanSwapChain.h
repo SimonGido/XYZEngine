@@ -44,6 +44,7 @@ namespace XYZ {
 		VkSemaphore				 GetRenderCompleteSemaphore()		   const { return m_Semaphores[m_CurrentBufferIndex].RenderComplete; }
 		VkExtent2D				 GetExtent()						   const { return m_Extent; }
 		VkSurfaceFormatKHR		 GetFormat()						   const { return m_Format; }
+		VkResult				 GetFenceStatus(uint32_t frameIndex)   const;
 		size_t					 GetNumCommandsBuffers()			   const { return m_CommandBuffers.size(); }
 		uint32_t				 GetCurrentImageIndex()				   const { return m_CurrentImageIndex; }
 		uint32_t				 GetCurrentBufferIndex()			   const { return m_CurrentBufferIndex; }

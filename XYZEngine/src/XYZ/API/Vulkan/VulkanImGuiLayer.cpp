@@ -71,6 +71,8 @@ namespace XYZ {
 
 		m_CommandBuffer = swapChain.GetRenderCommandBuffer().As<VulkanRenderCommandBuffer>();
 		m_RenderPass = swapChain.GetRenderPass().As<VulkanRenderPass>();
+		m_DescriptorAllocator = Ref<VulkanDescriptorAllocator>::Create();
+		m_DescriptorAllocator->Init();
 		Renderer::Submit([this]()
 		{
 			Application& app = Application::Get();
@@ -129,6 +131,7 @@ namespace XYZ {
     void VulkanImGuiLayer::OnDetach()
     {
     	VkDescriptorPool descriptorPool = m_DescriptorPool;
+		m_DescriptorAllocator->Shutdown();
     	Renderer::Submit([descriptorPool]()
 		{
 			const auto device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
@@ -150,6 +153,8 @@ namespace XYZ {
         ImGuizmo::BeginFrame();
     	if (m_EnableDockspace)
     		beginDockspace();
+
+		m_DescriptorAllocator->TryResetFull();
     }
 	
 	static void CopyImDrawData(ImDrawData& copy, const ImDrawData* drawData)
@@ -228,7 +233,7 @@ namespace XYZ {
 
 	ImTextureID VulkanImGuiLayer::AddImage(const Ref<VulkanImage2D>& image)
 	{	
-		const VulkanDescriptorAllocator::Version newVersion = VulkanRendererAPI::GetDescriptorAllocatorVersion();
+		const VulkanDescriptorAllocator::Version newVersion = m_DescriptorAllocator->GetVersion();
 		const ImGuiID id = GetImageID(image);
 		auto it = m_ImGuiImageDescriptors.find(id);
 		if (it != m_ImGuiImageDescriptors.end())
@@ -236,7 +241,7 @@ namespace XYZ {
 			if (it->second.Version == newVersion)
 				return it->second.Descriptor;
 		}
-		VkDescriptorSet newImageDescriptor = VulkanRendererAPI::RT_AllocateDescriptorSet(ImGui_ImplVulkan_GetDescriptorSetLayout());
+		VkDescriptorSet newImageDescriptor = m_DescriptorAllocator->RT_Allocate(ImGui_ImplVulkan_GetDescriptorSetLayout());
 		m_ImGuiImageDescriptors[id] = { image, newImageDescriptor, newVersion };	
 		return newImageDescriptor;
 	}

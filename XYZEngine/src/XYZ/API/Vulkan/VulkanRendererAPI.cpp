@@ -33,11 +33,12 @@ namespace XYZ {
 		}
 	}
 
-	static VulkanDescriptorAllocator s_DescriptorAllocator;
+	static Ref<VulkanDescriptorAllocator> s_DescriptorAllocator;
 
 	void VulkanRendererAPI::Init()
 	{
-		s_DescriptorAllocator.Init();
+		s_DescriptorAllocator = Ref<VulkanDescriptorAllocator>::Create();
+		s_DescriptorAllocator->Init();
 		auto& properties = VulkanContext::GetCurrentDevice()->GetPhysicalDevice()->GetProperties();
 		auto& caps = RendererAPI::getCapabilities();
 		caps.Vendor = Utils::VulkanVendorIDToString(properties.vendorID);
@@ -47,16 +48,13 @@ namespace XYZ {
 
 	void VulkanRendererAPI::Shutdown()
 	{
-		s_DescriptorAllocator.Shutdown();
+		s_DescriptorAllocator->Shutdown();
+		s_DescriptorAllocator.Reset();
 	}
 
 	void VulkanRendererAPI::BeginFrame()
 	{
-		Renderer::Submit([this]()
-		{
-			const uint32_t frame = Renderer::GetCurrentFrame();
-			s_DescriptorAllocator.RT_TryResetFull(frame);
-		});
+		s_DescriptorAllocator->TryResetFull();
 	}
 
 	void VulkanRendererAPI::EndFrame()
@@ -244,17 +242,17 @@ namespace XYZ {
 	VkDescriptorSet VulkanRendererAPI::RT_AllocateDescriptorSet(VkDescriptorSetAllocateInfo& allocInfo)
 	{
 		XYZ_PROFILE_FUNC("VulkanRendererAPI::RT_AllocateDescriptorSet");
-		return s_DescriptorAllocator.RT_Allocate(allocInfo);
+		return s_DescriptorAllocator->RT_Allocate(allocInfo);
 	}
 
 	VkDescriptorSet VulkanRendererAPI::RT_AllocateDescriptorSet(const VkDescriptorSetLayout& layout)
 	{	
-		return s_DescriptorAllocator.RT_Allocate(layout);
+		return s_DescriptorAllocator->RT_Allocate(layout);
 	}
 
 	VulkanDescriptorAllocator::Version VulkanRendererAPI::GetDescriptorAllocatorVersion()
 	{
-		return s_DescriptorAllocator.GetVersion();
+		return s_DescriptorAllocator->GetVersion();
 	}
 
 

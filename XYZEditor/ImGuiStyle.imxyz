@@ -4,7 +4,7 @@ Colors:
   - Index: 1
     Color: [0.5, 0.5, 0.5, 1]
   - Index: 2
-    Color: [0.0749999955, 0.0749999955, 0.0749999955, 1]
+    Color: [0.0494117588, 0.103016652, 0.131602138, 1]
   - Index: 3
     Color: [0, 0, 0, 0]
   - Index: 4
@@ -14,9 +14,9 @@ Colors:
   - Index: 6
     Color: [0, 0, 0, 0]
   - Index: 7
-    Color: [0.199999988, 0.204999983, 0.209999979, 1]
+    Color: [0.0259612799, 0.0651503727, 0.0929367617, 1]
   - Index: 8
-    Color: [0.300000012, 0.305000007, 0.310000002, 1]
+    Color: [0.123114593, 0.179386199, 0.222805053, 1]
   - Index: 9
     Color: [0.150000006, 0.1505, 0.150999993, 1]
   - Index: 10
@@ -30,7 +30,7 @@ Colors:
   - Index: 14
     Color: [0.0199999996, 0.0199999996, 0.0199999996, 0.529999971]
   - Index: 15
-    Color: [0.310000002, 0.310000002, 0.310000002, 1]
+    Color: [0.144708514, 0.210955441, 0.261614293, 1]
   - Index: 16
     Color: [0.409999996, 0.409999996, 0.409999996, 1]
   - Index: 17
@@ -127,21 +127,21 @@ Variables:
   - Index: 7
     WindowMenuButtonPosition: 0
   - Index: 8
-    ChildRounding: 0.100000001
+    ChildRounding: 0.150000006
   - Index: 9
     ChildBorderSize: 1
   - Index: 10
-    PopupRounding: 0.100000001
+    PopupRounding: 10.5500002
   - Index: 11
-    PopupBorderSize: 1
+    PopupBorderSize: 5.5999999
   - Index: 12
-    FramePadding: [4, 3]
+    FramePadding: [8.60000038, 3]
   - Index: 13
     FrameRounding: 0.100000001
   - Index: 14
     FrameBorderSize: 0.100000001
   - Index: 15
-    ItemSpacing: [8, 4]
+    ItemSpacing: [4.05000019, 4]
   - Index: 16
     ItemInnerSpacing: [4, 4]
   - Index: 17
@@ -153,13 +153,13 @@ Variables:
   - Index: 20
     ColumnsMinSpacing: 6
   - Index: 21
-    ScrollbarSize: 14
+    ScrollbarSize: 12.5500002
   - Index: 22
     ScrollbarRounding: 9
   - Index: 23
-    GrabMinSize: 10
+    GrabMinSize: 9.75
   - Index: 24
-    GrabRounding: 0.100000001
+    GrabRounding: 19.5499992
   - Index: 25
     LogSliderDeadzone: 4
   - Index: 26
@@ -193,5 +193,4 @@ Variables:
   - Index: 40
     Colors
 Fonts:
-  - FilePath: Assets/Fonts/Roboto/Roboto-Italic.ttf
-    SizePixels: 15
+  []

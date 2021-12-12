@@ -115,6 +115,8 @@ namespace XYZ {
 						return nullptr;
 					
 					VulkanImGuiLayer* vulkanImGuiLayer = static_cast<VulkanImGuiLayer*>(Application::Get().GetImGuiLayer());
+					
+
 					return vulkanImGuiLayer->AddImage(image);
 					//return ImGui_ImplVulkan_AddTexture(imageInfo.Sampler, imageInfo.ImageView, vulkanImage->GetDescriptor().imageLayout);
 				}

@@ -2,7 +2,7 @@
 #include "Vulkan.h"
 
 namespace XYZ {
-	class VulkanDescriptorAllocator
+	class VulkanDescriptorAllocator : public RefCount
 	{
 	public:
 		using Version = uint32_t;
@@ -12,6 +12,7 @@ namespace XYZ {
 
 		VkDescriptorSet RT_Allocate(VkDescriptorSetAllocateInfo& allocInfo);
 		VkDescriptorSet RT_Allocate(const VkDescriptorSetLayout& layout);
+		void			TryResetFull();
 		void			RT_TryResetFull(uint32_t frame);
 		Version			GetVersion() const;
 
@@ -35,7 +36,7 @@ namespace XYZ {
 		mutable std::mutex		  m_VersionMutex;
 		Version					  m_AllocatorVersion;
 
-		static constexpr uint32_t sc_MaxSets = 100;
+		static constexpr uint32_t sc_MaxSets = 1024;
 		static constexpr size_t	  sc_AutoResetCount = 3;
 	};
 }

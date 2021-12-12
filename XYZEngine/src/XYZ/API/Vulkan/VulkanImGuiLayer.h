@@ -2,6 +2,7 @@
 #include "XYZ/ImGui/ImGuiLayer.h"
 #include "VulkanRendererAPI.h"
 #include "VulkanImage.h"
+#include "VulkanDescriptorAllocator.h"
 
 #include <vulkan/vulkan_core.h>
 
@@ -24,12 +25,14 @@ namespace  XYZ
         virtual void OnImGuiRender() override;
 
         ImTextureID AddImage(const Ref<VulkanImage2D>& image);
+        Ref<VulkanDescriptorAllocator> GetDescriptorAllocator() const { return m_DescriptorAllocator; }
         const std::vector<ImGuiFontConfig>& GetLoadedFonts() const override { return m_FontsLoaded; }
     private:
         void addWaitingFonts();
         static void RT_uploadFonts();
 
     private:
+        Ref<VulkanDescriptorAllocator> m_DescriptorAllocator;
         VkDescriptorPool               m_DescriptorPool;
         Ref<VulkanRenderCommandBuffer> m_CommandBuffer;
         Ref<VulkanRenderPass>          m_RenderPass;
@@ -45,7 +48,7 @@ namespace  XYZ
             VulkanDescriptorAllocator::Version Version;
         };
 
-        std::unordered_map<ImGuiID, ImageDescriptorSet> m_ImGuiImageDescriptors;
+        std::map<ImGuiID, ImageDescriptorSet> m_ImGuiImageDescriptors;
     };
 }
 

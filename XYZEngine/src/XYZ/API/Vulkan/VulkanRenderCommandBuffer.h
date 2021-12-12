@@ -27,6 +27,7 @@ namespace XYZ {
 		virtual uint32_t BeginTimestampQuery() override;
 		virtual void EndTimestampQuery(uint32_t queryID) override;
 
+		VkResult		GetFenceStatus(uint32_t index) const;
 		VkCommandBuffer GetVulkanCommandBuffer(uint32_t index) const { return m_CommandBuffers[index]; }
 	private:
 		void createTimestampQueries(uint32_t count);

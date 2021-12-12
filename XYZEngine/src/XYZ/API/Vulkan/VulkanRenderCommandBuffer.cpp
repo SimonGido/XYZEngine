@@ -201,6 +201,17 @@ namespace XYZ {
 		});
 	}
 
+	VkResult VulkanRenderCommandBuffer::GetFenceStatus(uint32_t index) const
+	{
+		const VulkanSwapChain& swapChain = VulkanContext::GetSwapChain();
+		if (m_OwnedBySwapchain)
+		{
+			return swapChain.GetFenceStatus(index);
+		}
+		const auto device = swapChain.GetDevice()->GetVulkanDevice();
+		return vkGetFenceStatus(device, m_WaitFences[index]);
+	}
+
 	void VulkanRenderCommandBuffer::createTimestampQueries(uint32_t count)
 	{
 		m_TimestampQueryCount = count * 2;

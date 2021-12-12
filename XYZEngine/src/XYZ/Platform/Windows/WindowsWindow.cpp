@@ -4,6 +4,8 @@
 #include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Core/Application.h"
 
+#include <stb_image.h>
+
 #include <GL/glew.h>
 
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -156,6 +158,15 @@ namespace XYZ {
 			glfwGetWindowSize(m_Window, &width, &height);
 			m_Data.Width = width;
 			m_Data.Height = height;
+		}
+
+		// Set icon
+		{
+			GLFWimage icon;
+			int channels;
+			icon.pixels = stbi_load("Resources/Editor/XYZLogoSquare.png", &icon.width, &icon.height, &channels, 4);
+			glfwSetWindowIcon(m_Window, 1, &icon);
+			stbi_image_free(icon.pixels);
 		}
 	}
 

@@ -224,6 +224,12 @@ namespace XYZ {
 		return m_CommandBuffers[frameIndex];
 	}
 
+	VkResult VulkanSwapChain::GetFenceStatus(uint32_t frameIndex) const
+	{
+		const auto device = m_Device->GetVulkanDevice();
+		return vkGetFenceStatus(device, m_WaitFences[frameIndex]);
+	}
+
 	void VulkanSwapChain::findSurfaceFormat()
 	{
 		for (const auto& availableFormat : m_SwapChainDetails.Formats)
