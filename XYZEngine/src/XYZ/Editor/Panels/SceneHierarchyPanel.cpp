@@ -114,6 +114,7 @@ namespace XYZ {
             if (entityDeleted)
             {
                 m_Context->DestroyEntity(entity);
+                Application::Get().OnEvent(EntitySelectedEvent(SceneEntity()));
             }
         }
         void SceneHierarchyPanel::dragAndDrop(const SceneEntity& entity)

@@ -312,9 +312,8 @@ namespace XYZ {
 		m_PhysicsWorld.Step(ts);
 
 		updateHierarchy();
-		sceneRenderer->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 		sceneRenderer->BeginScene(
-			camera.GetViewProjection(), 
+			camera.GetViewProjection(),
 			camera.GetViewMatrix(),
 			camera.GetPosition()
 		);
@@ -374,38 +373,7 @@ namespace XYZ {
 		//{
 		//	auto [transform, light] = spotLightView.Get<TransformComponent, SpotLight2D>(entity);
 		//	sceneRenderer->SubmitLight(light, transform.WorldTransform);
-		//}
-
-		if (m_SelectedEntity)
-		{
-			SceneEntity entity(m_SelectedEntity, this);
-			const auto& transformComponent = entity.GetComponent<TransformComponent>();
-			auto [translation, rotation, scale] = transformComponent.GetWorldComponents();
-			if (entity.HasComponent<CameraComponent>())
-			{
-				auto& camera = entity.GetComponent<CameraComponent>().Camera;
-				camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
-			
-				
-				if (camera.GetProjectionType() == CameraProjectionType::Orthographic)
-				{
-					float size = camera.GetOrthographicProperties().OrthographicSize;
-					float aspect = (float)camera.GetViewportWidth() / (float)camera.GetViewportHeight();
-					float width = size * aspect;
-					float height = size;
-
-					glm::vec3 bottomLeft = { translation.x - width / 2.0f,translation.y - height / 2.0f, translation.z };
-					glm::vec3 topRight = { translation.x + width / 2.0f,translation.y + height / 2.0f, translation.z };
-					//Renderer2D->SubmitAABB(bottomLeft, topRight, glm::vec4(1.0f));
-				}
-			}
-			else
-			{
-				glm::vec3 bottomLeft = { translation.x - scale.x / 2.0f,translation.y - scale.y / 2.0f, translation.z };
-				glm::vec3 topRight = { translation.x + scale.x / 2.0f,translation.y + scale.y / 2.0f, translation.z };
-				//Renderer2D->SubmitAABB(bottomLeft, topRight, glm::vec4(1.0f));
-			}
-		}
+		//}		
 
 		sceneRenderer->EndScene();
 	}

@@ -45,7 +45,7 @@ namespace XYZ {
 		Renderer2D(const Ref<RenderCommandBuffer>& commandBuffer);
 		~Renderer2D();
 
-		void BeginScene(const glm::mat4& viewProjectionMatrix);
+		void BeginScene(const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix);
 
 		void SetQuadMaterial(const Ref<Material>& material);
 		void SetLineMaterial(const Ref<Material>& material);
@@ -65,7 +65,11 @@ namespace XYZ {
 		void SubmitQuad(const glm::mat4& transform, const Ref<SubTexture>& subTexture, const glm::vec4& color = glm::vec4(1), float tilingFactor = 1.0f);
 		void SubmitQuad(const glm::vec3& position, const glm::vec2& size, const Ref<SubTexture>& subTexture, const glm::vec4& color, float tilingFactor = 1.0f);
 
-		
+		void SubmitQuadBillboard(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color);
+		void SubmitQuadBillboard(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, const Ref<Texture2D>& texture, const glm::vec4& color = glm::vec4(1.0f), float tilingFactor = 1.0f);
+		void SubmitQuadBillboard(const glm::vec3& position, const glm::vec2& size, const Ref<SubTexture>& subTexture, const glm::vec4& color = glm::vec4(1.0f), float tilingFactor = 1.0f);
+
+
 		void SubmitQuad(const glm::vec3& position,	const glm::vec2& size, const glm::vec4& color, float tilingFactor);
 		void SubmitQuadNotCentered(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, const Ref<Texture2D>& texture, const glm::vec4& color = glm::vec4(1), float tilingFactor = 1.0f);
 
@@ -74,7 +78,7 @@ namespace XYZ {
 		void SubmitAABB(const glm::vec3& min, const glm::vec3& max, const glm::vec4& color);
 
 
-		void EndScene();
+		void EndScene(bool clear = true);
 		
 
 		const Renderer2DStats& GetStats();
@@ -162,6 +166,7 @@ namespace XYZ {
 		{
 			glm::mat4 ViewProjection;
 		};
+		glm::mat4 m_ViewMatrix;
 	};
 
 	template<typename VertexType>

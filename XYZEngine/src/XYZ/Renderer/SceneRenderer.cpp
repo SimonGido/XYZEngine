@@ -131,12 +131,11 @@ namespace XYZ {
 		m_CameraBuffer.ViewMatrix = viewMatrix;
 		m_CameraBuffer.ViewPosition = glm::vec4(viewPosition, 0.0f);
 
-		//m_CameraUniformBuffer->Update(&m_CameraBuffer, sizeof(CameraData), 0);
+		//m_CameraUniformBuffer->Update(&m_CameraBuffer, sizeof(CameraData), 0);		
 	}
 	void SceneRenderer::EndScene()
 	{
 		m_CommandBuffer->Begin();
-
 		m_GPUTimeQueries.GPUTime = m_CommandBuffer->BeginTimestampQuery();
 		flush();
 		flushDefaultQueue();
@@ -146,22 +145,30 @@ namespace XYZ {
 		m_CommandBuffer->Submit();
 	}
 
-	void SceneRenderer::SubmitSprite(Ref<Material> material, Ref<SubTexture> subTexture, uint32_t sortLayer, const glm::vec4& color, const glm::mat4& transform)
+	void SceneRenderer::SubmitSprite(const Ref<Material>& material, const Ref<SubTexture>& subTexture, uint32_t sortLayer, const glm::vec4& color, const glm::mat4& transform)
 	{
 		m_Queue.m_SpriteDrawList.push_back({
 			   material, subTexture, sortLayer, color, transform
 			});
 	}
 
-	void SceneRenderer::SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform)
+	void SceneRenderer::SubmitBillboard(const Ref<Material>& material, const Ref<SubTexture>& subTexture, uint32_t sortLayer, const glm::vec4& color, const glm::vec3& position, const glm::vec2& size)
+	{
+		m_Queue.m_BillboardDrawList.push_back({
+			   material,subTexture, sortLayer, color, position, size
+			});
+	}
+
+
+	void SceneRenderer::SubmitMesh(const Ref<Mesh>& mesh, const glm::mat4& transform)
 	{
 		//m_Queues[mesh->GetMaterial()->GetRenderQueueID()].m_MeshCommandList.push_back({ mesh, transform });
 	}
-	void SceneRenderer::SubmitMeshInstanced(Ref<Mesh> mesh, const glm::mat4& transform, uint32_t count)
+	void SceneRenderer::SubmitMeshInstanced(const Ref<Mesh>& mesh, const glm::mat4& transform, uint32_t count)
 	{
 		//m_Queues[mesh->GetMaterial()->GetRenderQueueID()].m_InstancedMeshCommandList.push_back({ mesh, transform, count });
 	}
-	void SceneRenderer::SubmitMeshInstanced(Ref<Mesh> mesh, const std::vector<glm::mat4>& transforms, uint32_t count)
+	void SceneRenderer::SubmitMeshInstanced(const Ref<Mesh>& mesh, const std::vector<glm::mat4>& transforms, uint32_t count)
 	{
 	}
 	//void SceneRenderer::SubmitLight(const PointLight2D& light, const glm::mat4& transform)
@@ -269,13 +276,14 @@ namespace XYZ {
 
 	Ref<RenderPass> SceneRenderer::GetFinalRenderPass() const
 	{	
-		return m_CompositePipeline->GetSpecification().RenderPass;
+		// TODO: temporary;
+		return m_Renderer2D->GetTargetRenderPass();
+		//return m_CompositePipeline->GetSpecification().RenderPass;
 	}
 
 	Ref<Image2D> SceneRenderer::GetFinalPassImage() const
 	{
-		auto geometryImage = m_Renderer2D->GetTargetRenderPass()->GetSpecification().TargetFramebuffer->GetImage();
-		return geometryImage;
+		return m_Renderer2D->GetTargetRenderPass()->GetSpecification().TargetFramebuffer->GetImage();
 		//return m_CompositePipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer->GetImage();
 	}
 	SceneRendererOptions& SceneRenderer::GetOptions()
@@ -342,6 +350,7 @@ namespace XYZ {
 		geometryPass2D(queue, true);
 	
 		queue.m_SpriteDrawList.clear();
+		queue.m_BillboardDrawList.clear();
 		queue.m_MeshCommandList.clear();
 		queue.m_InstancedMeshCommandList.clear();
 	}
@@ -361,12 +370,18 @@ namespace XYZ {
 	void SceneRenderer::geometryPass2D(RenderQueue& queue, bool clear)
 	{
 		m_GPUTimeQueries.Renderer2DPassQuery = m_CommandBuffer->BeginTimestampQuery();
-		m_Renderer2D->BeginScene(m_CameraBuffer.ViewProjectionMatrix);
+		m_Renderer2D->BeginScene(m_CameraBuffer.ViewProjectionMatrix, m_CameraBuffer.ViewMatrix);
 		for (auto& dc : queue.m_SpriteDrawList)
 		{
 			m_Renderer2D->SetQuadMaterial(dc.Material);
 			m_Renderer2D->SubmitQuad(dc.Transform, dc.SubTexture, dc.Color);
 		}
+		for (auto& dc : queue.m_BillboardDrawList)
+		{
+			m_Renderer2D->SetQuadMaterial(dc.Material);
+			m_Renderer2D->SubmitQuadBillboard(dc.Position, dc.Size, dc.SubTexture, dc.Color);
+		}
+
 		m_Renderer2D->EndScene();
 		m_CommandBuffer->EndTimestampQuery(m_GPUTimeQueries.Renderer2DPassQuery);
 	}

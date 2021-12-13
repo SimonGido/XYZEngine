@@ -30,16 +30,32 @@ namespace XYZ {
 		bool onKeyPress(KeyPressedEvent& event);
 		bool onKeyRelease(KeyReleasedEvent& event);
 
+		void renderOverlay();
+
+		std::pair<glm::vec3, glm::vec3> cameraToAABB(const TransformComponent& transform, const SceneCamera& camera) const;
 	private:
 		void displayStats();
 
-	private:
-	
+	private:	
 		Ref<Scene>					m_Scene;
 		Ref<SceneRenderer>			m_SceneRenderer;
-	
+		
+		Ref<RenderCommandBuffer>	m_CommandBuffer;
+		Ref<Renderer2D>				m_OverlayRenderer2D;
+		Ref<Texture2D>				m_CameraTexture;
+		Ref<Material>				m_BillboardMaterial;
+		Editor::EditorCamera*		m_EditorCamera = nullptr;
 	private:	
-		SceneEntity							m_SelectedEntity;
-		Editor::EditorManager				m_EditorManager;
+		SceneEntity					m_SelectedEntity;
+		Editor::EditorManager		m_EditorManager;
+
+
+		struct GPUTimeQueries
+		{
+			uint32_t GPUTime = 0;
+
+			static constexpr uint32_t Count() { return sizeof(GPUTimeQueries) / sizeof(uint32_t); }
+		};
+		GPUTimeQueries m_GPUTimeQueries;
 	};
 }

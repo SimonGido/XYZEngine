@@ -33,6 +33,7 @@ namespace XYZ {
 
 	struct RenderQueue
 	{
+		// TODO: this is not really a draw command
 		struct SpriteDrawCommand
 		{
 			Ref<Material>   Material;
@@ -40,6 +41,16 @@ namespace XYZ {
 			uint32_t		SortLayer;
 			glm::vec4		Color;
 			glm::mat4		Transform;
+		};
+		// TODO: this is not really a draw command
+		struct BillboardDrawCommand
+		{
+			Ref<Material>   Material;
+			Ref<SubTexture> SubTexture;
+			uint32_t		SortLayer;
+			glm::vec4		Color;
+			glm::vec3		Position;
+			glm::vec2	    Size;
 		};
 		struct DrawMeshCommand
 		{
@@ -54,6 +65,7 @@ namespace XYZ {
 		};
 
 		std::vector<SpriteDrawCommand>	      m_SpriteDrawList;		
+		std::vector<BillboardDrawCommand>	  m_BillboardDrawList;
 		std::vector<DrawMeshCommand>	      m_MeshCommandList;
 		std::vector<InstancedDrawMeshCommand> m_InstancedMeshCommandList;
 	};
@@ -73,15 +85,16 @@ namespace XYZ {
 		void SetScene(Ref<Scene> scene);
 		void SetViewportSize(uint32_t width, uint32_t height);
 		void SetGridProperties(const GridProperties& props);
-		
+	
 		void BeginScene(const SceneRendererCamera& camera);
 		void BeginScene(const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix, const glm::vec3& viewPosition);
 		void EndScene();
 		
-		void SubmitSprite(Ref<Material> material, Ref<SubTexture> subTexture, uint32_t sortLayer, const glm::vec4& color, const glm::mat4& transform);
-		void SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform);
-		void SubmitMeshInstanced(Ref<Mesh> mesh, const glm::mat4& transform, uint32_t count);
-		void SubmitMeshInstanced(Ref<Mesh> mesh, const std::vector<glm::mat4>& transforms, uint32_t count);
+		void SubmitSprite(const Ref<Material>& material, const Ref<SubTexture>& subTexture, uint32_t sortLayer, const glm::vec4& color, const glm::mat4& transform);
+		void SubmitBillboard(const Ref<Material>& material, const Ref<SubTexture>& subTexture, uint32_t sortLayer, const glm::vec4& color, const glm::vec3& position, const glm::vec2& size);
+		void SubmitMesh(const Ref<Mesh>& mesh, const glm::mat4& transform);
+		void SubmitMeshInstanced(const Ref<Mesh>& mesh, const glm::mat4& transform, uint32_t count);
+		void SubmitMeshInstanced(const Ref<Mesh>& mesh, const std::vector<glm::mat4>& transforms, uint32_t count);
 		
 		// TODO: GetLights from current scene
 		//void SubmitLight(const PointLight2D& light, const glm::mat4& transform);
@@ -107,8 +120,6 @@ namespace XYZ {
 		void geometryPass2D(RenderQueue& queue, bool clear);
 		void lightPass();
 		void bloomPass();
-
-
 
 		void createCompositePipeline();
 	private:

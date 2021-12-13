@@ -48,11 +48,6 @@ namespace XYZ {
 	{
 		const uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;
 			
-		//if (specification.SwapChainTarget)
-		//	m_RenderCommandBuffer = Renderer::GetAPIContext()->GetRenderCommandBuffer();
-		//else
-		//	m_RenderCommandBuffer = RenderCommandBuffer::Create(framesInFlight);
-		
 		createRenderPass();	
 		auto shaderLibrary = Renderer::GetShaderLibrary();
 		
@@ -76,7 +71,7 @@ namespace XYZ {
 	{
 	}
 
-	void Renderer2D::BeginScene(const glm::mat4& viewProjectionMatrix)
+	void Renderer2D::BeginScene(const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix)
 	{
 		m_Stats.DrawCalls = 0;
 		m_Stats.LineDrawCalls = 0;
@@ -85,6 +80,7 @@ namespace XYZ {
 
 		const uint32_t currentFrame = Renderer::GetAPIContext()->GetCurrentFrame();
 		m_UniformBufferSet->Get(0, 0, currentFrame)->Update(&viewProjectionMatrix, sizeof(UBCamera), 0);
+		m_ViewMatrix = viewMatrix;
 	}
 
 
@@ -260,6 +256,99 @@ namespace XYZ {
 		SubmitQuad(position, size, subTexture->GetTexCoords(), subTexture->GetTexture(), color, tilingFactor);
 	}
 
+	void Renderer2D::SubmitQuadBillboard(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
+	{
+		if (m_QuadBuffer.IndexCount >= sc_MaxIndices)
+			XYZ_ASSERT(false, "");
+
+		const float textureIndex = 0.0f; // White Texture
+		const float tilingFactor = 1.0f;
+
+		glm::vec3 camRightWS = { m_ViewMatrix[0][0], m_ViewMatrix[1][0], m_ViewMatrix[2][0] };
+		glm::vec3 camUpWS = { m_ViewMatrix[0][1], m_ViewMatrix[1][1], m_ViewMatrix[2][1] };
+
+		m_QuadBuffer.BufferPtr->Position = position + camRightWS * (sc_QuadVertexPositions[0].x) * size.x + camUpWS * sc_QuadVertexPositions[0].y * size.y;
+		m_QuadBuffer.BufferPtr->Color = color;
+		m_QuadBuffer.BufferPtr->TexCoord = { 0.0f, 0.0f };
+		m_QuadBuffer.BufferPtr->TextureID = textureIndex;
+		m_QuadBuffer.BufferPtr->TilingFactor = tilingFactor;
+		m_QuadBuffer.BufferPtr++;
+
+		m_QuadBuffer.BufferPtr->Position = position + camRightWS * sc_QuadVertexPositions[1].x * size.x + camUpWS * sc_QuadVertexPositions[1].y * size.y;
+		m_QuadBuffer.BufferPtr->Color = color;
+		m_QuadBuffer.BufferPtr->TexCoord = { 1.0f, 0.0f };
+		m_QuadBuffer.BufferPtr->TextureID = textureIndex;
+		m_QuadBuffer.BufferPtr->TilingFactor = tilingFactor;
+		m_QuadBuffer.BufferPtr++;
+
+		m_QuadBuffer.BufferPtr->Position = position + camRightWS * sc_QuadVertexPositions[2].x * size.x + camUpWS * sc_QuadVertexPositions[2].y * size.y;
+		m_QuadBuffer.BufferPtr->Color = color;
+		m_QuadBuffer.BufferPtr->TexCoord = { 1.0f, 1.0f };
+		m_QuadBuffer.BufferPtr->TextureID = textureIndex;
+		m_QuadBuffer.BufferPtr->TilingFactor = tilingFactor;
+		m_QuadBuffer.BufferPtr++;
+
+		m_QuadBuffer.BufferPtr->Position = position + camRightWS * sc_QuadVertexPositions[3].x * size.x + camUpWS * sc_QuadVertexPositions[3].y * size.y;
+		m_QuadBuffer.BufferPtr->Color = color;
+		m_QuadBuffer.BufferPtr->TexCoord = { 0.0f, 1.0f };
+		m_QuadBuffer.BufferPtr->TextureID = textureIndex;
+		m_QuadBuffer.BufferPtr->TilingFactor = tilingFactor;
+		m_QuadBuffer.BufferPtr++;
+
+		m_QuadBuffer.IndexCount += 6;
+	}
+	void Renderer2D::SubmitQuadBillboard(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, const Ref<Texture2D>& texture, const glm::vec4& color, float tilingFactor)
+	{
+		if (m_QuadBuffer.IndexCount >= sc_MaxIndices)
+			XYZ_ASSERT(false, "");
+
+		const float textureIndex = static_cast<float>(findTextureIndex(texture));
+
+		const glm::vec2 texCoords[4] = {
+			{texCoord.x,texCoord.y},
+			{texCoord.z,texCoord.y},
+			{texCoord.z,texCoord.w},
+			{texCoord.x,texCoord.w}
+		};
+
+		glm::vec3 camRightWS = { m_ViewMatrix[0][0], m_ViewMatrix[1][0], m_ViewMatrix[2][0] };
+		glm::vec3 camUpWS = { m_ViewMatrix[0][1], m_ViewMatrix[1][1], m_ViewMatrix[2][1] };
+
+		m_QuadBuffer.BufferPtr->Position = position + camRightWS * (sc_QuadVertexPositions[0].x) * size.x + camUpWS * sc_QuadVertexPositions[0].y * size.y;
+		m_QuadBuffer.BufferPtr->Color = color;
+		m_QuadBuffer.BufferPtr->TexCoord = texCoords[0];
+		m_QuadBuffer.BufferPtr->TextureID = textureIndex;
+		m_QuadBuffer.BufferPtr->TilingFactor = tilingFactor;
+		m_QuadBuffer.BufferPtr++;
+
+		m_QuadBuffer.BufferPtr->Position = position + camRightWS * sc_QuadVertexPositions[1].x * size.x + camUpWS * sc_QuadVertexPositions[1].y * size.y;
+		m_QuadBuffer.BufferPtr->Color = color;
+		m_QuadBuffer.BufferPtr->TexCoord = texCoords[1];
+		m_QuadBuffer.BufferPtr->TextureID = textureIndex;
+		m_QuadBuffer.BufferPtr->TilingFactor = tilingFactor;
+		m_QuadBuffer.BufferPtr++;
+
+		m_QuadBuffer.BufferPtr->Position = position + camRightWS * sc_QuadVertexPositions[2].x * size.x + camUpWS * sc_QuadVertexPositions[2].y * size.y;
+		m_QuadBuffer.BufferPtr->Color = color;
+		m_QuadBuffer.BufferPtr->TexCoord = texCoords[2];
+		m_QuadBuffer.BufferPtr->TextureID = textureIndex;
+		m_QuadBuffer.BufferPtr->TilingFactor = tilingFactor;
+		m_QuadBuffer.BufferPtr++;
+
+		m_QuadBuffer.BufferPtr->Position = position + camRightWS * sc_QuadVertexPositions[3].x * size.x + camUpWS * sc_QuadVertexPositions[3].y * size.y;
+		m_QuadBuffer.BufferPtr->Color = color;
+		m_QuadBuffer.BufferPtr->TexCoord = texCoords[3];
+		m_QuadBuffer.BufferPtr->TextureID = textureIndex;
+		m_QuadBuffer.BufferPtr->TilingFactor = tilingFactor;
+		m_QuadBuffer.BufferPtr++;
+
+		m_QuadBuffer.IndexCount += 6;
+	}
+	void Renderer2D::SubmitQuadBillboard(const glm::vec3& position, const glm::vec2& size, const Ref<SubTexture>& subTexture, const glm::vec4& color, float tilingFactor)
+	{
+		SubmitQuadBillboard(position, size, subTexture->GetTexCoords(), subTexture->GetTexture(), color, tilingFactor);
+	}
+
 	void Renderer2D::SubmitQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color, float tilingFactor)
 	{
 		constexpr size_t quadVertexCount = 4;
@@ -362,9 +451,9 @@ namespace XYZ {
 	}
 
 
-	void Renderer2D::EndScene()
+	void Renderer2D::EndScene(bool clear)
 	{
-		Renderer::BeginRenderPass(m_RenderCommandBuffer, m_RenderPass, false);
+		Renderer::BeginRenderPass(m_RenderCommandBuffer, m_RenderPass, clear);
 
 		flush();
 		flushLines();
@@ -388,7 +477,7 @@ namespace XYZ {
 		FramebufferSpecification framebufferSpec;
 		framebufferSpec.Attachments = { ImageFormat::RGBA32F };
 		framebufferSpec.Samples = 1;
-		framebufferSpec.ClearOnLoad = true;
+		framebufferSpec.ClearOnLoad = false;
 		framebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 
 		Ref<Framebuffer> framebuffer = Framebuffer::Create(framebufferSpec);

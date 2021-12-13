@@ -192,7 +192,7 @@ namespace XYZ {
 			{
 				if (m_Context->GetState() == SceneState::Edit)
 				{
-					m_EditorCamera.OnUpdate(ts);
+					m_EditorCamera.OnUpdate(ts);			
 					m_Context->OnRenderEditor(m_SceneRenderer, m_EditorCamera, ts);
 				}
 				else
@@ -321,7 +321,8 @@ namespace XYZ {
 			{
 				m_ViewportSize = newSize;
 				m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
-				m_Context->SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+				m_Context->SetViewportSize(static_cast<uint32_t>(m_ViewportSize.x), static_cast<uint32_t>(m_ViewportSize.y));
+				m_SceneRenderer->SetViewportSize(static_cast<uint32_t>(m_ViewportSize.x), static_cast<uint32_t>(m_ViewportSize.y));
 			}
 		}
 
