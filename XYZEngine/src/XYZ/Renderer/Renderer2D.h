@@ -28,7 +28,7 @@ namespace XYZ {
 		Renderer2DBuffer() = default;
 		~Renderer2DBuffer();
 
-		void Init(const Ref<RenderPass>& renderPass, const Ref<Shader>& shader, uint32_t maxVertices, uint32_t* indices, uint32_t indexCount, const BufferLayout& layout);
+		void Init(const Ref<RenderPass>& renderPass, const Ref<Shader>& shader, uint32_t maxVertices, uint32_t* indices, uint32_t indexCount, const BufferLayout& layout, PrimitiveTopology topology = PrimitiveTopology::Triangles);
 		void Reset();
 
 		Ref<Pipeline>	  Pipeline;
@@ -180,7 +180,7 @@ namespace XYZ {
 
 
 	template<typename VertexType>
-	inline void Renderer2DBuffer<VertexType>::Init(const Ref<RenderPass>& renderPass, const Ref<Shader>& shader, uint32_t maxVertices, uint32_t* indices, uint32_t indexCount, const BufferLayout& layout)
+	inline void Renderer2DBuffer<VertexType>::Init(const Ref<RenderPass>& renderPass, const Ref<Shader>& shader, uint32_t maxVertices, uint32_t* indices, uint32_t indexCount, const BufferLayout& layout, PrimitiveTopology topology)
 	{
 		this->BufferBase = new VertexType[maxVertices];
 		
@@ -191,6 +191,7 @@ namespace XYZ {
 		specification.Shader = shader;
 		specification.Layout = layout;
 		specification.RenderPass = renderPass;
+		specification.Topology = topology;
 		this->Pipeline = Pipeline::Create(specification);
 		Reset();
 	}

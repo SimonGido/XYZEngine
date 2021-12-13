@@ -236,6 +236,9 @@ namespace XYZ {
 				0, static_cast<uint32_t>(materialDescriptors.size()),
 				materialDescriptors.data(), 0, nullptr
 			);
+
+			if (vulkanPipeline->GetSpecification().Topology == PrimitiveTopology::Lines)
+				vkCmdSetLineWidth(commandBuffer, vulkanPipeline->GetSpecification().LineWidth);
 		});
 	}
 

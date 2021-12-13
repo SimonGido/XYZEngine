@@ -41,8 +41,10 @@ namespace XYZ {
 		m_CommandBuffer = RenderCommandBuffer::Create(0, "Overlay");
 		m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
 		m_OverlayRenderer2D = Ref<Renderer2D>::Create(m_CommandBuffer);
-		m_BillboardMaterial = Material::Create(Shader::Create("Resources/Shaders/DefaultShader.glsl"));
-		m_OverlayRenderer2D->SetQuadMaterial(m_BillboardMaterial);
+		m_QuadMaterial = Material::Create(Shader::Create("Resources/Shaders/DefaultShader.glsl"));
+		m_OverlayRenderer2D->SetQuadMaterial(m_QuadMaterial);
+		m_LineMaterial = Material::Create(Shader::Create("Resources/Shaders/LineShader.glsl"));
+		m_OverlayRenderer2D->SetLineMaterial(m_LineMaterial);
 
 		m_EditorManager.SetSceneContext(m_Scene);
 		m_EditorManager.RegisterPanel<Editor::ScenePanel>("ScenePanel");
@@ -133,7 +135,7 @@ namespace XYZ {
 			auto [transform, camera] = cameraView.Get(entity);
 			auto [min, max] = cameraToAABB(transform, camera.Camera);
 			auto [translation, rotation, scale] = transform.GetWorldComponents();
-			//m_OverlayRenderer->SubmitAABB(min, max, glm::vec4(1.0f));
+			m_OverlayRenderer2D->SubmitAABB(min, max, glm::vec4(1.0f));
 			m_OverlayRenderer2D->SubmitQuadBillboard(translation, glm::vec2(scale.x, scale.y), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), m_CameraTexture);
 		}
 

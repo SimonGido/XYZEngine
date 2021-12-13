@@ -505,7 +505,7 @@ namespace XYZ {
 		m_LineBuffer.Init(m_RenderPass, m_LineMaterial->GetShader(), sc_MaxLineVertices, lineIndices, sc_MaxLineIndices, BufferLayout{
 				{0, XYZ::ShaderDataType::Float3, "a_Position" },
 				{1, XYZ::ShaderDataType::Float4, "a_Color" },
-			});
+			}, PrimitiveTopology::Lines);
 		const size_t lineShaderHash = m_LineMaterial->GetShader()->GetHash();
 		m_LinePipelines.emplace(lineShaderHash, m_LineBuffer.Pipeline);
 

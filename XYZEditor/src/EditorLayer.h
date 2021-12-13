@@ -43,7 +43,8 @@ namespace XYZ {
 		Ref<RenderCommandBuffer>	m_CommandBuffer;
 		Ref<Renderer2D>				m_OverlayRenderer2D;
 		Ref<Texture2D>				m_CameraTexture;
-		Ref<Material>				m_BillboardMaterial;
+		Ref<Material>				m_QuadMaterial;
+		Ref<Material>				m_LineMaterial;
 		Editor::EditorCamera*		m_EditorCamera = nullptr;
 	private:	
 		SceneEntity					m_SelectedEntity;
