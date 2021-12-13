@@ -76,7 +76,7 @@ namespace XYZ {
 			uint32_t width = framebuffer->GetSpecification().Width;
 			uint32_t height = framebuffer->GetSpecification().Height;
 
-			VkViewport viewport = {0.0f, static_cast<float>(height)};
+			VkViewport viewport = {0.0f, static_cast<float>(height) };
 			viewport.minDepth = 0.0f;
 			viewport.maxDepth = 1.0f;
 			viewport.width = width;

@@ -2,6 +2,7 @@
 // or project specific include files that are used frequently, but
 // are changed infrequently
 #pragma once
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
 #include <stdio.h>
 #include <string>

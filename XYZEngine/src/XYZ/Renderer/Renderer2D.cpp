@@ -404,15 +404,36 @@ namespace XYZ {
 
 	void Renderer2D::SubmitAABB(const glm::vec3& min, const glm::vec3& max, const glm::vec4& color)
 	{
-		glm::vec3 topLeft = { min.x, max.y, min.z };
-		glm::vec3 topRight = { max.x, max.y, min.z };
-		glm::vec3 bottomLeft = { min.x, min.y, min.z };
-		glm::vec3 bottomRight = { max.x, min.y, min.z };
+		glm::vec3 topFrontLeft = { min.x, max.y, min.z };
+		glm::vec3 topFrontRight = { max.x, max.y, min.z };
+		glm::vec3 bottomFrontLeft = { min.x, min.y, min.z };
+		glm::vec3 bottomFrontRight = { max.x, min.y, min.z };
 
-		SubmitLine(topLeft, topRight, color);
-		SubmitLine(topRight, bottomRight, color);
-		SubmitLine(bottomRight, bottomLeft, color);
-		SubmitLine(bottomLeft, topLeft, color);
+
+		glm::vec3 topBackLeft = { min.x, max.y, max.z };
+		glm::vec3 topBackRight = { max.x, max.y, max.z };
+		glm::vec3 bottomBackLeft = { min.x, min.y, max.z };
+		glm::vec3 bottomBackRight = { max.x, min.y, max.z };
+
+
+		// Front
+		SubmitLine(topFrontLeft, topFrontRight, color);
+		SubmitLine(topFrontRight, bottomFrontRight, color);
+		SubmitLine(bottomFrontRight, bottomFrontLeft, color);
+		SubmitLine(bottomFrontLeft, topFrontLeft, color);
+
+
+		//Back
+		SubmitLine(topBackLeft, topBackRight, color);
+		SubmitLine(topBackRight, bottomBackRight, color);
+		SubmitLine(bottomBackRight, bottomBackLeft, color);
+		SubmitLine(bottomBackLeft, topBackLeft, color);
+
+		// Sides
+		SubmitLine(topFrontLeft, topBackLeft, color);
+		SubmitLine(topFrontRight, topBackRight, color);
+		SubmitLine(bottomFrontLeft,  bottomBackLeft, color);
+		SubmitLine(bottomFrontRight, bottomBackRight, color);
 	}
 
 

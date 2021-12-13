@@ -29,7 +29,7 @@ namespace XYZ {
 		bool			  DepthTest = true;
 		bool			  DepthWrite = true;
 		bool			  Wireframe = false;
-		float			  LineWidth = 1.0f;
+		float			  LineWidth = 2.0f;
 		std::string		  DebugName;
 	};
 

@@ -135,12 +135,28 @@ namespace XYZ {
 			auto [transform, camera] = cameraView.Get(entity);
 			auto [min, max] = cameraToAABB(transform, camera.Camera);
 			auto [translation, rotation, scale] = transform.GetWorldComponents();
-			m_OverlayRenderer2D->SubmitAABB(min, max, glm::vec4(1.0f));
 			m_OverlayRenderer2D->SubmitQuadBillboard(translation, glm::vec2(scale.x, scale.y), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), m_CameraTexture);
 		}
 
-		m_OverlayRenderer2D->EndScene(false);
+		const SceneEntity selected = m_Scene->GetSelectedEntity();
+		if (selected && selected != m_Scene->GetSceneEntity())
+		{
+			if (selected.HasComponent<CameraComponent>())
+			{
+				auto& transform = selected.GetComponent<TransformComponent>();
+				auto& camera = selected.GetComponent<CameraComponent>();
+				auto [min, max] = cameraToAABB(transform, camera.Camera);
+				m_OverlayRenderer2D->SubmitAABB(min, max, glm::vec4(1.0f));
+			}
+			else
+			{
+				auto& transform = selected.GetComponent<TransformComponent>();
+				auto [min, max] = transformToAABB(transform);
+				m_OverlayRenderer2D->SubmitAABB(min, max, glm::vec4(1.0f));
+			}
+		}
 
+		m_OverlayRenderer2D->EndScene(false);
 		m_CommandBuffer->EndTimestampQuery(m_GPUTimeQueries.GPUTime);
 
 		m_CommandBuffer->End();
@@ -152,20 +168,28 @@ namespace XYZ {
 		auto [translation, rotation, scale] = transform.GetWorldComponents();
 		if (camera.GetProjectionType() == CameraProjectionType::Orthographic)
 		{
-			float size = camera.GetOrthographicProperties().OrthographicSize;
+			auto& orthoProps = camera.GetOrthographicProperties();
+			float size = orthoProps.OrthographicSize;
 			float aspect = (float)camera.GetViewportWidth() / (float)camera.GetViewportHeight();
 			float width = size * aspect;
 			float height = size;
 		
-			glm::vec3 bottomLeft = { translation.x - width / 2.0f,translation.y - height / 2.0f, translation.z };
-			glm::vec3 topRight = { translation.x + width / 2.0f,translation.y + height / 2.0f, translation.z };
-			return { bottomLeft, topRight };
+			glm::vec3 min = { translation.x - width / 2.0f,translation.y - height / 2.0f, translation.z + orthoProps.OrthographicNear };
+			glm::vec3 max = { translation.x + width / 2.0f,translation.y + height / 2.0f, translation.z + orthoProps.OrthographicFar };
+			return { min, max };
 		}
 		else
 		{
 
 		}
 		return std::pair<glm::vec3, glm::vec3>();
+	}
+
+	std::pair<glm::vec3, glm::vec3> EditorLayer::transformToAABB(const TransformComponent& transform) const
+	{
+		auto [translation, rotation, scale] = transform.GetWorldComponents();	
+		scale.z = 0.0f; // 2D
+		return { translation - (scale / 2.0f),translation + (scale / 2.0f) };
 	}
 
 	void EditorLayer::displayStats()
