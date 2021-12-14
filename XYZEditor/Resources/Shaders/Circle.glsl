@@ -9,10 +9,12 @@ layout(location = 3) in vec4 a_Color;
 layout (std140, binding = 0) uniform Camera
 {
 	mat4 u_ViewProjection;
-	mat4 u_ViewMatrix;
-	vec4 u_ViewPosition;
 };
 
+layout(push_constant) uniform Transform
+{
+	mat4 Transform;
+} u_Renderer;
 
 struct VertexOutput
 {
@@ -28,7 +30,7 @@ void main()
 	v_Output.LocalPosition = a_LocalPosition;
 	v_Output.Thickness = a_Thickness;
 	v_Output.Color = a_Color;
-	gl_Position = u_ViewProjection * vec4(a_WorldPosition, 1.0);
+	gl_Position = u_ViewProjection * u_Renderer.Transform * vec4(a_WorldPosition, 1.0);
 }
 
 #type fragment

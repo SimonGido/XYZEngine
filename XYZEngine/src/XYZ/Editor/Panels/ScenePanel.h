@@ -36,6 +36,9 @@ namespace XYZ {
 			std::pair<float, float>		    getMouseViewportSpace()		const;
 			std::deque<SceneEntity>		    findSelection(const Ray& ray);
 
+			void playBar();
+			void toolsBar();
+
 			void handlePanelResize(const glm::vec2& newSize);
 			void handleSelection(const glm::vec2& mousePosition);
 			void handleEntityTransform(SceneEntity entity);

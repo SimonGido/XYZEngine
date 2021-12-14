@@ -44,12 +44,6 @@ namespace XYZ {
 					translation + (scale / 2.0f)
 				);
 			}
-	
-			static ImVec2 GlmToImVec2(const glm::vec2& val)
-			{
-				return ImVec2(val.x, val.y);
-			}
-
 			static std::array<glm::vec2, 2> ImGuiViewportBounds()
 			{
 				const auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
@@ -99,12 +93,11 @@ namespace XYZ {
 	
 		void ScenePanel::OnImGuiRender(bool& open)
 		{
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-			if (ImGui::Begin("Scene", &open))
+			UI::ScopedStyleStack styleStack(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+			if (ImGui::Begin("Scene", &open, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
 			{
 				if (m_Context.Raw())
-				{
-					const ImVec2 startCursorPos = ImGui::GetCursorPos();
+				{		
 					const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 					m_ViewportBounds  = Utils::ImGuiViewportBounds();
 					m_ViewportFocused = ImGui::IsWindowFocused();
@@ -113,12 +106,11 @@ namespace XYZ {
 					ImGuiLayer* imguiLayer = Application::Get().GetImGuiLayer();
 					const bool blocked = imguiLayer->GetBlockedEvents();
 					// Only unlock possible here
-					imguiLayer->BlockEvents(blocked && !m_ViewportFocused && !m_ViewportHovered);
-
-
-				
-					UI::Image(m_SceneRenderer->GetFinalPassImage(), viewportPanelSize);
+					imguiLayer->BlockEvents(blocked && !m_ViewportFocused && !m_ViewportHovered);				
+									
 					
+					UI::Image(m_SceneRenderer->GetFinalPassImage(), viewportPanelSize);
+
 					auto [mx, my] = getMouseViewportSpace();
 					if (m_ViewportHovered && m_ViewportFocused && m_Context->GetState() == SceneState::Edit)
 					{
@@ -132,58 +124,12 @@ namespace XYZ {
 							handleSelection({ mx,my });
 						}
 					}
-
 					handlePanelResize({ viewportPanelSize.x, viewportPanelSize.y });
-					
-					ImGui::SetCursorPos(startCursorPos);
-					if (m_Context->GetState() != SceneState::Edit)
-					{
-						ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-						ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-					}
-					{
-						//UI::ScopedItemFlags flags(ImGuiItemFlags_Disabled, m_Context->GetState() != SceneState::Edit);
-						//UI::ScopedStyleStack styleStack(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-						
-						if (UI::ImageButtonTransparent("Play", m_Texture->GetImage(),
-							Utils::GlmToImVec2(m_ButtonSize),
-							ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
-							ImVec4(1.0f, 1.0f, 1.0f, 1.0f),
-							ImVec4(0.5f, 0.5f, 0.5f, 1.0f),
-							Utils::GlmToImVec2(m_ButtonUVs[PlayButton].UV0),
-							Utils::GlmToImVec2(m_ButtonUVs[PlayButton].UV1)
-						))
-						{
-							m_Context->SetState(SceneState::Play);
-							m_Context->OnPlay();
-						}
-					}
-					if (m_Context->GetState() != SceneState::Edit)
-					{
-						ImGui::PopItemFlag();
-						ImGui::PopStyleVar();
-					}
-					ImGui::SameLine();
-					
-					//else if (m_Context->GetState() == SceneState::Play)
-					{
-						if (UI::ImageButtonTransparent("Stop", m_Texture->GetImage(),
-							Utils::GlmToImVec2(m_ButtonSize),
-							ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
-							ImVec4(1.0f, 1.0f, 1.0f, 1.0f),
-							ImVec4(0.5f, 0.5f, 0.5f, 1.0f),
-							Utils::GlmToImVec2(m_ButtonUVs[StopButton].UV0),
-							Utils::GlmToImVec2(m_ButtonUVs[StopButton].UV1)
-						))
-						{
-							m_Context->SetState(SceneState::Edit);
-							m_Context->OnStop();
-						}
-					}								
+					playBar();
+					toolsBar();
 				}
 			}
 			ImGui::End();		
-			ImGui::PopStyleVar();
 		}
 
 		void ScenePanel::OnUpdate(Timestep ts)
@@ -314,6 +260,64 @@ namespace XYZ {
 			return result;
 		}
 
+		void ScenePanel::playBar()
+		{
+			const float toolbarWidth = 4.0f + 2.0f * m_ButtonSize.x;
+			const float toolbarPositionX = (ImGui::GetWindowContentRegionWidth() - toolbarWidth) / 2.0f;
+			UI::Toolbar(glm::vec2(toolbarPositionX, 8.0f), glm::vec2(4.0f, 0.0f), false,
+				[&]() {
+				UI::ScopedItemFlags flags(ImGuiItemFlags_Disabled, m_Context->GetState() == SceneState::Play);
+				if (UI::ImageButtonTransparent("Play", m_Texture->GetImage(),
+					m_ButtonSize,
+					ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
+					ImVec4(1.0f, 1.0f, 1.0f, 1.0f),
+					ImVec4(0.5f, 0.5f, 0.5f, 1.0f),
+					m_ButtonUVs[PlayButton].UV0,
+					m_ButtonUVs[PlayButton].UV1
+				))
+				{
+					m_Context->SetState(SceneState::Play);
+					m_Context->OnPlay();
+				}
+			},
+				[&]() {
+				UI::ScopedItemFlags flags(ImGuiItemFlags_Disabled, m_Context->GetState() == SceneState::Edit);
+				if (UI::ImageButtonTransparent("Stop", m_Texture->GetImage(),
+					m_ButtonSize,
+					ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
+					ImVec4(1.0f, 1.0f, 1.0f, 1.0f),
+					ImVec4(0.5f, 0.5f, 0.5f, 1.0f),
+					m_ButtonUVs[StopButton].UV0,
+					m_ButtonUVs[StopButton].UV1
+				))
+				{
+					m_Context->SetState(SceneState::Edit);
+					m_Context->OnStop();
+				}
+			});
+		}
+
+		void ScenePanel::toolsBar()
+		{
+			UI::Toolbar(glm::vec2(8.0f, 8.0f), glm::vec2(0.0f, 0.0f), false,
+				[&]() {
+					UI::ImageButton("##Tmp", m_Texture->GetImage(), m_ButtonSize, 0,
+					ImVec4(0.7f, 0.7f, 0.7f, 1.0f), m_ButtonUVs[StopButton].UV0, m_ButtonUVs[StopButton].UV1);
+				},
+				[&]() {
+					UI::ImageButton("##Tmp", m_Texture->GetImage(), m_ButtonSize, 0,
+						ImVec4(0.7f, 0.7f, 0.7f, 1.0f), m_ButtonUVs[StopButton].UV0, m_ButtonUVs[StopButton].UV1);
+				},
+				[&]() {
+					UI::ImageButton("##Tmp", m_Texture->GetImage(), m_ButtonSize, 0,
+						ImVec4(0.7f, 0.7f, 0.7f, 1.0f), m_ButtonUVs[StopButton].UV0, m_ButtonUVs[StopButton].UV1);
+				},
+				[&]() {
+					UI::ImageButton("##Tmp", m_Texture->GetImage(), m_ButtonSize, 0,
+						ImVec4(0.7f, 0.7f, 0.7f, 1.0f), m_ButtonUVs[StopButton].UV0, m_ButtonUVs[StopButton].UV1);
+				}
+			);
+		}
 
 		void ScenePanel::handlePanelResize(const glm::vec2& newSize)
 		{

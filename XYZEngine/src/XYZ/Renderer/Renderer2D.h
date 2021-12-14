@@ -56,7 +56,7 @@ namespace XYZ {
 
 
 		void SubmitCircle(const glm::vec3& pos, float radius, uint32_t sides, const glm::vec4& color = glm::vec4(1.0f));
-		void SubmitFilledCircle(const glm::vec3& pos, float radius, float thickness, const glm::vec4& color = glm::vec4(1.0f));
+		void SubmitFilledCircle(const glm::vec3& pos, const glm::vec2& size, float thickness, const glm::vec4& color = glm::vec4(1.0f));
 		
 		void SubmitQuad(const glm::mat4& transform, const glm::vec4& color, float tilingFactor = 1.0f);
 		void SubmitQuad(const glm::mat4& transform, const glm::vec4& texCoord, const Ref<Texture2D>& texture, const glm::vec4& color = glm::vec4(1), float tilingFactor = 1.0f);
@@ -74,7 +74,8 @@ namespace XYZ {
 		void SubmitQuadNotCentered(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, const Ref<Texture2D>& texture, const glm::vec4& color = glm::vec4(1), float tilingFactor = 1.0f);
 
 		void SubmitLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color = glm::vec4(1.0f));
-		void SubmitLineQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color = glm::vec4(1));
+		void SubmitRect(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color = glm::vec4(1.0f));
+		void SubmitRect(const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
 		void SubmitAABB(const glm::vec3& min, const glm::vec3& max, const glm::vec4& color);
 
 

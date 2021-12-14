@@ -41,6 +41,37 @@ namespace XYZ {
 		bool IVec3Control(const std::array<const char*, 3>& names, glm::ivec3& values, float resetValue = 0.0f, float speed = 0.05f);
 		bool IVec4Control(const std::array<const char*, 4>& names, glm::ivec4& values, float resetValue = 0.0f, float speed = 0.05f);
 
+
+		template <typename ...Args>
+		void Toolbar(glm::vec2 offset, glm::vec2 spacing, bool vertical, Args&& ...args)
+		{
+			const ImVec2 oldCursorPos = ImGui::GetCursorPos();
+			const ImVec2 newCursorPos = {
+				ImGui::GetWindowContentRegionMin().x + offset.x,
+				ImGui::GetWindowContentRegionMin().y + offset.y
+			};
+			ImGui::SetCursorPos(newCursorPos);
+			auto sameLineFunc = [](auto callable, size_t& counter) {
+				callable();
+				if (counter > 1)
+					ImGui::SameLine();
+				counter--;
+			};
+
+			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, spacing);
+			if (vertical)
+			{
+				(args(), ...);
+			}
+			else
+			{
+				size_t counter = sizeof... (args);
+				(sameLineFunc(std::forward<Args>(args), counter), ...);
+			}
+			ImGui::PopStyleVar();
+			ImGui::SetCursorPos(oldCursorPos);
+		}
+
 		template <typename T>
 		bool DragDropSource(const char* type, const T& data, size_t size, ImGuiCond flags = ImGuiCond_Once)
 		{
@@ -186,8 +217,12 @@ namespace XYZ {
 		public:
 			ScopedItemFlags(const ScopedItemFlags&) = delete;
 			ScopedItemFlags operator=(const ScopedItemFlags&) = delete;
-			ScopedItemFlags(const ImGuiItemFlags flags, const bool enable = true) { ImGui::PushItemFlag(flags, enable); }
-			~ScopedItemFlags() { ImGui::PopItemFlag(); }
+			ScopedItemFlags(const ImGuiItemFlags flags, const bool enable = true) 
+				: m_Enable(enable) { if (m_Enable) ImGui::PushItemFlag(flags, true); }
+			~ScopedItemFlags() { if (m_Enable) ImGui::PopItemFlag(); }
+
+		private:
+			const bool m_Enable;
 		};
 
 		class ScopedStyleStack

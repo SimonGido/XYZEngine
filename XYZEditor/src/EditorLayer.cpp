@@ -45,6 +45,8 @@ namespace XYZ {
 		m_OverlayRenderer2D->SetQuadMaterial(m_QuadMaterial);
 		m_LineMaterial = Material::Create(Shader::Create("Resources/Shaders/LineShader.glsl"));
 		m_OverlayRenderer2D->SetLineMaterial(m_LineMaterial);
+		m_CircleMaterial = Material::Create(Shader::Create("Resources/Shaders/Circle.glsl"));
+		m_OverlayRenderer2D->SetCircleMaterial(m_CircleMaterial);
 
 		m_EditorManager.SetSceneContext(m_Scene);
 		m_EditorManager.RegisterPanel<Editor::ScenePanel>("ScenePanel");
@@ -111,33 +113,88 @@ namespace XYZ {
 
 	void EditorLayer::renderOverlay()
 	{
-		auto& ecs = m_Scene->GetECS();
 		
 		m_CommandBuffer->Begin();
 		m_GPUTimeQueries.GPUTime = m_CommandBuffer->BeginTimestampQuery();
 		m_OverlayRenderer2D->BeginScene(m_EditorCamera->GetViewProjection(), m_EditorCamera->GetViewMatrix());
 		m_OverlayRenderer2D->SetTargetRenderPass(m_SceneRenderer->GetFinalRenderPass());
 
-		auto box2DColliderView = ecs.CreateView<TransformComponent, BoxCollider2DComponent>();
+		renderSelected();
+		renderColliders();
+		renderCameras();
+		renderLights();
 
+		m_OverlayRenderer2D->EndScene(false);
+		m_CommandBuffer->EndTimestampQuery(m_GPUTimeQueries.GPUTime);
 
-		auto circle2DColliderView = ecs.CreateView<TransformComponent, CircleCollider2DComponent>();
+		m_CommandBuffer->End();
+		m_CommandBuffer->Submit();
+	}
 
-
-		auto spotLight2DView = ecs.CreateView<TransformComponent, SpotLight2D>();
-		
-		
-		auto pointLight2DView = ecs.CreateView<TransformComponent, PointLight2D>();
-
-		auto cameraView = ecs.CreateView<TransformComponent, CameraComponent>();
-		for (auto entity : cameraView)
+	void EditorLayer::renderColliders()
+	{
+		if (m_ShowColliders)
 		{
-			auto [transform, camera] = cameraView.Get(entity);
-			auto [min, max] = cameraToAABB(transform, camera.Camera);
-			auto [translation, rotation, scale] = transform.GetWorldComponents();
-			m_OverlayRenderer2D->SubmitQuadBillboard(translation, glm::vec2(scale.x, scale.y), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), m_CameraTexture);
-		}
+			auto& ecs = m_Scene->GetECS();
+			auto box2DColliderView = ecs.CreateView<TransformComponent, BoxCollider2DComponent>();
+			for (auto entity : box2DColliderView)
+			{
+				auto [transformComp, boxCollider] = box2DColliderView.Get(entity);
+				auto [translation, rotation, scale] = transformComp.GetWorldComponents();
+				translation += glm::vec3(boxCollider.Offset, 0.0f);
+				scale *= glm::vec3(boxCollider.Size, 1.0f);
 
+				glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation)
+					* glm::rotate(glm::mat4(1.0f), rotation.z, glm::vec3(0.0f, 0.0f, 1.0f))
+					* glm::scale(glm::mat4(1.0f), scale);
+
+				m_OverlayRenderer2D->SubmitRect(transform, m_Preferences.Collider2DColor);
+			}
+
+			auto circle2DColliderView = ecs.CreateView<TransformComponent, CircleCollider2DComponent>();
+			for (auto entity : circle2DColliderView)
+			{
+				auto [transformComp, circleCollider] = circle2DColliderView.Get(entity);
+				auto [translation, rotation, scale] = transformComp.GetWorldComponents();
+				translation += glm::vec3(circleCollider.Offset, 0.0f);
+				scale *= glm::vec3(circleCollider.Radius * 2.0f);
+				m_OverlayRenderer2D->SubmitFilledCircle(translation, glm::vec2(scale.x, scale.y), 0.01f, m_Preferences.Collider2DColor);
+			}
+		}
+	}
+
+	void EditorLayer::renderCameras()
+	{
+		if (m_ShowCameras)
+		{
+			auto& ecs = m_Scene->GetECS();
+
+			auto cameraView = ecs.CreateView<TransformComponent, CameraComponent>();
+			for (auto entity : cameraView)
+			{
+				auto [transform, camera] = cameraView.Get(entity);
+				auto [min, max] = cameraToAABB(transform, camera.Camera);
+				auto [translation, rotation, scale] = transform.GetWorldComponents();
+				m_OverlayRenderer2D->SubmitQuadBillboard(translation, glm::vec2(scale.x, scale.y), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), m_CameraTexture);
+			}
+		}
+	}
+
+	void EditorLayer::renderLights()
+	{
+		if (m_ShowLights)
+		{
+			auto& ecs = m_Scene->GetECS();
+
+			auto spotLight2DView = ecs.CreateView<TransformComponent, SpotLight2D>();
+
+
+			auto pointLight2DView = ecs.CreateView<TransformComponent, PointLight2D>();
+		}
+	}
+
+	void EditorLayer::renderSelected()
+	{
 		const SceneEntity selected = m_Scene->GetSelectedEntity();
 		if (selected && selected != m_Scene->GetSceneEntity())
 		{
@@ -146,21 +203,15 @@ namespace XYZ {
 				auto& transform = selected.GetComponent<TransformComponent>();
 				auto& camera = selected.GetComponent<CameraComponent>();
 				auto [min, max] = cameraToAABB(transform, camera.Camera);
-				m_OverlayRenderer2D->SubmitAABB(min, max, glm::vec4(1.0f));
+				m_OverlayRenderer2D->SubmitAABB(min, max, m_Preferences.BoundingBoxColor);
 			}
 			else
 			{
 				auto& transform = selected.GetComponent<TransformComponent>();
 				auto [min, max] = transformToAABB(transform);
-				m_OverlayRenderer2D->SubmitAABB(min, max, glm::vec4(1.0f));
+				m_OverlayRenderer2D->SubmitAABB(min, max, m_Preferences.BoundingBoxColor);
 			}
 		}
-
-		m_OverlayRenderer2D->EndScene(false);
-		m_CommandBuffer->EndTimestampQuery(m_GPUTimeQueries.GPUTime);
-
-		m_CommandBuffer->End();
-		m_CommandBuffer->Submit();
 	}
 
 	std::pair<glm::vec3, glm::vec3> EditorLayer::cameraToAABB(const TransformComponent& transform, const SceneCamera& camera) const

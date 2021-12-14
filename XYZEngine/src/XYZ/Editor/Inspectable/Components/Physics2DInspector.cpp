@@ -6,6 +6,8 @@
 
 #include "XYZ/Renderer/Renderer2D.h"
 
+#include "XYZ/ImGui/ImGui.h"
+
 namespace XYZ {
 
 	RigidBody2DInspector::RigidBody2DInspector()
@@ -64,6 +66,42 @@ namespace XYZ {
 	bool BoxCollider2DInspector::OnEditorRender()
 	{
 		return EditorHelper::DrawComponent<BoxCollider2DComponent>("Box Collider2D", m_Context, [&](auto& component) {
+
+			
+			if (ImGui::BeginTable("##TransformTable", 2, ImGuiTableFlags_SizingStretchProp))
+			{
+				UI::ScopedStyleStack style(ImGuiStyleVar_ItemSpacing, ImVec2{ 0.0f, 5.0f });
+				UI::ScopedColorStack color(
+					ImGuiCol_Button, ImVec4{ 0.5f, 0.5f, 0.5f, 1.0f },
+					ImGuiCol_ButtonHovered, ImVec4{ 0.6f, 0.6f, 0.6f, 1.0f },
+					ImGuiCol_ButtonActive, ImVec4{ 0.65f, 0.65f, 0.65f, 1.0f }
+				);
+				const float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+
+				UI::TableRow("Size",
+					[]() { ImGui::Text("Size"); },
+					[&]() { UI::ScopedTableColumnAutoWidth scoped(2, lineHeight);
+							UI::Vec2Control({ "X", "Y" }, component.Size); }
+				);
+				UI::TableRow("Offset",
+					[]() { ImGui::Text("Offset"); },
+					[&]() { UI::ScopedTableColumnAutoWidth scoped(2, lineHeight);
+							UI::Vec2Control({ "X", "Y" }, component.Offset); }
+				);
+				UI::TableRow("Density",
+					[]() { ImGui::Text("Density"); },
+					[&]() { UI::ScopedTableColumnAutoWidth scoped(1, lineHeight);
+							UI::FloatControl("##Density", "##DensityDrag", component.Density, 1.0f, 0.05f); }
+				);
+				UI::TableRow("Friction",
+					[]() { ImGui::Text("Friction"); },
+					[&]() { UI::ScopedTableColumnAutoWidth scoped(1, lineHeight);
+					UI::FloatControl("##Friction", "##FrictionDrag", component.Friction, 1.0f, 0.05f); }
+				);
+				ImGui::EndTable();
+			};
+
+
 			/*
 			auto [translation, rotation, scale] = m_Context.GetComponent<TransformComponent>().GetWorldComponents();
 			const glm::vec3 boxTranslation =

@@ -148,13 +148,13 @@ namespace XYZ {
 		}
 	}
 
-	void Renderer2D::SubmitFilledCircle(const glm::vec3& pos, float radius, float thickness, const glm::vec4& color)
+	void Renderer2D::SubmitFilledCircle(const glm::vec3& pos, const glm::vec2& size, float thickness, const glm::vec4& color)
 	{
 		if (m_CircleBuffer.IndexCount >= sc_MaxIndices)
 			XYZ_ASSERT(false, "");
 
 		const glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos)
-			* glm::scale(glm::mat4(1.0f), { radius * 2.0f, radius * 2.0f, 1.0f });
+			* glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
 
 		for (int i = 0; i < 4; i++)
 		{
@@ -388,7 +388,7 @@ namespace XYZ {
 		m_LineBuffer.IndexCount += 2;
 	}
 
-	void Renderer2D::SubmitLineQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
+	void Renderer2D::SubmitRect(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
 	{
 		const glm::vec3 p[4] = {
 			position,
@@ -400,6 +400,18 @@ namespace XYZ {
 		SubmitLine(p[1], p[2], color);
 		SubmitLine(p[2], p[3], color);
 		SubmitLine(p[3], p[0], color);
+	}
+
+	void Renderer2D::SubmitRect(const glm::mat4& transform, const glm::vec4& color)
+	{
+		glm::vec3 lineVertices[4];
+		for (size_t i = 0; i < 4; i++)
+			lineVertices[i] = transform * sc_QuadVertexPositions[i];
+
+		SubmitLine(lineVertices[0], lineVertices[1], color);
+		SubmitLine(lineVertices[1], lineVertices[2], color);
+		SubmitLine(lineVertices[2], lineVertices[3], color);
+		SubmitLine(lineVertices[3], lineVertices[0], color);
 	}
 
 	void Renderer2D::SubmitAABB(const glm::vec3& min, const glm::vec3& max, const glm::vec4& color)

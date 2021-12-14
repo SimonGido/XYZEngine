@@ -11,6 +11,12 @@
 
 namespace XYZ {
 	
+	struct Preferences
+	{
+		glm::vec4 BoundingBoxColor = glm::vec4(1.0f);
+		glm::vec4 Collider2DColor = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+	};
+
 	class EditorLayer : public Layer
 	{
 	public:
@@ -31,6 +37,10 @@ namespace XYZ {
 		bool onKeyRelease(KeyReleasedEvent& event);
 
 		void renderOverlay();
+		void renderColliders();
+		void renderCameras();
+		void renderLights();
+		void renderSelected();
 
 		std::pair<glm::vec3, glm::vec3> cameraToAABB(const TransformComponent& transform, const SceneCamera& camera) const;
 		std::pair<glm::vec3, glm::vec3> transformToAABB(const TransformComponent& transform) const;
@@ -47,12 +57,17 @@ namespace XYZ {
 		Ref<Texture2D>				m_CameraTexture;
 		Ref<Material>				m_QuadMaterial;
 		Ref<Material>				m_LineMaterial;
+		Ref<Material>				m_CircleMaterial;
 		Editor::EditorCamera*		m_EditorCamera = nullptr;
+
+		bool m_ShowColliders = true;
+		bool m_ShowCameras = true;
+		bool m_ShowLights = true;
 		/////////////////////
 	private:	
 		SceneEntity					m_SelectedEntity;
+		Preferences					m_Preferences;
 		Editor::EditorManager		m_EditorManager;
-
 
 		struct GPUTimeQueries
 		{

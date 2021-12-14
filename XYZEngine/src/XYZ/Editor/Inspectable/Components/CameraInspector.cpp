@@ -19,7 +19,7 @@ namespace XYZ {
 
 			auto& camera = component.Camera;
 
-			if (ImGui::BeginTable("##TransformTable", 2, ImGuiTableFlags_SizingFixedFit))
+			if (ImGui::BeginTable("##TransformTable", 2, ImGuiTableFlags_SizingStretchProp))
 			{
 				UI::TableRow("Projection",
 					[&]() { 

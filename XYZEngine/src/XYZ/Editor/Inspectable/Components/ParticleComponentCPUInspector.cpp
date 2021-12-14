@@ -195,7 +195,7 @@ namespace XYZ {
 			for (uint32_t i = 0; i < particles.GetAliveParticles(); ++i)
 			{
 				glm::vec3 boxPos = translation + particles.m_Particle[i].Position - glm::vec3(physicsModule.m_BoxSize, 0.0f);
-				renderer->SubmitLineQuad(boxPos, 2.0f * physicsModule.m_BoxSize, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+				renderer->SubmitRect(boxPos, 2.0f * physicsModule.m_BoxSize, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
 			}
 		}
 	}
