@@ -43,5 +43,38 @@ namespace XYZ {
 		return nullptr;
 	}
 
+	void Texture2D::Create(Ref<Texture2D>& texture, ImageFormat format, uint32_t width, uint32_t height, const void* data, const TextureProperties& properties)
+	{
+		switch (Renderer::GetAPI())
+		{
+		case RendererAPI::Type::None:   XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
+		case RendererAPI::Type::OpenGL: XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::OpenGL");
+		case RendererAPI::Type::Vulkan:
+		{
+			texture.As<Asset>()->~Asset();
+			new (texture.Raw())VulkanTexture2D(format, width, height, data, properties);
+			return;
+		}
+		}
+
+		XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
+	}
+
+	void Texture2D::Create(Ref<Texture2D>& texture, const std::string& path, const TextureProperties& properties)
+	{
+		switch (Renderer::GetAPI())
+		{
+		case RendererAPI::Type::None:   XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
+		case RendererAPI::Type::OpenGL: XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::OpenGL");
+		case RendererAPI::Type::Vulkan:
+		{
+			texture.Construct<VulkanTexture2D>(path, properties);
+			return;
+		}
+		}
+
+		XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
+	}
+
 
 }

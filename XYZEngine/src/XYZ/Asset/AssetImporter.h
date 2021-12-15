@@ -9,7 +9,7 @@ namespace XYZ {
 		static void Init();
 		static void Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset);
 		static void Serialize(const Ref<Asset>& asset);
-		static bool TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset);
+		static bool TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset, bool allocate = true);
 
 	private:
 		static std::array<Scope<AssetSerializer>, ToUnderlying(AssetType::NumTypes)> s_Serializers;

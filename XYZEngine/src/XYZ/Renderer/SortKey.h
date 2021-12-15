@@ -6,9 +6,9 @@ namespace XYZ {
 	template <typename Integral, typename Fl>
 	struct SortKey
 	{
-		void Set(Flags flag, Integral num)
+		void Set(Fl flag, Integral num)
 		{
-			key |= (num << flag);
+			m_Key |= (num << flag);
 		}
 
 		Integral GetKey() const { return m_Key; }

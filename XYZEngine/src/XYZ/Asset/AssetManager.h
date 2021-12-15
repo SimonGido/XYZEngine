@@ -87,7 +87,7 @@ namespace XYZ {
 		static void writeAssetMetadata(const AssetMetadata& metadata);
 
 		static void processDirectory(const std::filesystem::path& path);
-
+		static void reloadAsset(const AssetMetadata& metadata, Ref<Asset>& asset);
 	private:
 		static MemoryPool<1024 * 1024, true>							s_Pool;
 		static std::unordered_map<GUID, WeakRef<Asset>>					s_LoadedAssets;

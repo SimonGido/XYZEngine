@@ -111,4 +111,8 @@ namespace XYZ
 			}
 		}
 	}
+	void AssetManager::reloadAsset(const AssetMetadata& metadata, Ref<Asset>& asset)
+	{
+		AssetImporter::TryLoadData(metadata, asset, false);
+	}
 }
