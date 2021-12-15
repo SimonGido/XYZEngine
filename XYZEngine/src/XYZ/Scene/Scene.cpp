@@ -8,11 +8,11 @@
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/SceneRenderer.h"
 #include "XYZ/Renderer/Renderer2D.h"
+#include "XYZ/Renderer/SortKey.h"
 
 #include "XYZ/Animation/Animator.h"
 
 #include "XYZ/Script/ScriptEngine.h"
-
 #include "SceneEntity.h"
 #include "XYZ/Debug/Profiler.h"
 
@@ -24,6 +24,10 @@ namespace XYZ {
 
 	static std::vector<TransformComponent> s_EditTransforms;
 
+	enum RenderSortFlags
+	{
+		Material = 32
+	};
 	Scene::Scene(const std::string& name)
 		:
 		m_PhysicsWorld({ 0.0f, -9.8f }),
@@ -504,9 +508,9 @@ namespace XYZ {
 			auto [transform, renderer] = renderView.Get<TransformComponent, SpriteRenderer>(entity);
 			if (renderer.Visible)
 			{
-				uint64_t sortKey = 0;
-				sortKey |= static_cast<uint64_t>(renderer.Material->GetID()) << 32;
-				m_SpriteRenderData.push_back({ &renderer, &transform, sortKey });
+				SortKey<uint64_t, RenderSortFlags> sortKey;
+				sortKey.Set(RenderSortFlags::Material, static_cast<uint64_t>(renderer.Material->GetID()));
+				m_SpriteRenderData.push_back({ &renderer, &transform, sortKey.GetKey() });
 			}
 		}
 		std::sort(m_SpriteRenderData.begin(), m_SpriteRenderData.end(), [](const SpriteRenderData& a, const SpriteRenderData& b) {
