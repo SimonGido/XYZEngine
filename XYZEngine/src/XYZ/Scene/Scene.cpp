@@ -496,6 +496,7 @@ namespace XYZ {
 	}
 	void Scene::processSpriteRenderers(Ref<SceneRenderer>& sceneRenderer)
 	{
+		XYZ_PROFILE_FUNC("Scene::processSpriteRenderers");
 		m_SpriteRenderData.clear();
 		auto renderView = m_ECS.CreateView<TransformComponent, SpriteRenderer>();
 		for (auto entity : renderView)
