@@ -113,7 +113,7 @@ namespace XYZ {
 		m_SceneCamera = camera;
 
 		// Viewport size is changed at the beginning of the frame, so we do not delete texture that is currently use for rendering
-		UpdateViewportSize();
+		updateViewportSize();
 		m_CameraBuffer.ViewProjectionMatrix = m_SceneCamera.Camera.GetProjectionMatrix() * m_SceneCamera.ViewMatrix;
 		m_CameraBuffer.ViewMatrix = m_SceneCamera.ViewMatrix;
 		m_CameraBuffer.ViewPosition = glm::vec4(camera.ViewPosition, 0.0f);
@@ -125,7 +125,7 @@ namespace XYZ {
 		XYZ_ASSERT(m_ActiveScene.Raw(), "No Scene set");
 
 		// Viewport size is changed at the beginning of the frame, so we do not delete texture that is currently use for rendering
-		UpdateViewportSize();
+		updateViewportSize();
 
 		m_CameraBuffer.ViewProjectionMatrix = viewProjectionMatrix;
 		m_CameraBuffer.ViewMatrix = viewMatrix;
@@ -145,12 +145,6 @@ namespace XYZ {
 		m_CommandBuffer->Submit();
 	}
 
-	void SceneRenderer::SubmitSprite(const Ref<Material>& material, const Ref<SubTexture>& subTexture, uint32_t sortLayer, const glm::vec4& color, const glm::mat4& transform)
-	{
-		m_Queue.m_SpriteDrawList.push_back({
-			   material, subTexture, sortLayer, color, transform
-			});
-	}
 
 	void SceneRenderer::SubmitBillboard(const Ref<Material>& material, const Ref<SubTexture>& subTexture, uint32_t sortLayer, const glm::vec4& color, const glm::vec3& position, const glm::vec2& size)
 	{
@@ -159,7 +153,10 @@ namespace XYZ {
 			});
 	}
 
-
+	void SceneRenderer::SubmitSprite(const Ref<Material>& material, const Ref<SubTexture>& subTexture, const glm::vec4& color, const glm::mat4& transform)
+	{
+		m_Queue.m_SpriteDrawList.push_back({ material, subTexture, color, transform });
+	}
 	void SceneRenderer::SubmitMesh(const Ref<Mesh>& mesh, const glm::mat4& transform)
 	{
 		//m_Queues[mesh->GetMaterial()->GetRenderQueueID()].m_MeshCommandList.push_back({ mesh, transform });
@@ -171,60 +168,10 @@ namespace XYZ {
 	void SceneRenderer::SubmitMeshInstanced(const Ref<Mesh>& mesh, const std::vector<glm::mat4>& transforms, uint32_t count)
 	{
 	}
-	//void SceneRenderer::SubmitLight(const PointLight2D& light, const glm::mat4& transform)
-	//{
-	//	XYZ_ASSERT(m_PointLightsList.size() + 1 < sc_MaxNumberOfLights, "Max number of lights per scene is ", sc_MaxNumberOfLights);
-	//	SubmitLight(light, glm::vec3(transform[3][0], transform[3][1], 0.0f));
-	//}
-	//void SceneRenderer::SubmitLight(const SpotLight2D& light, const glm::mat4& transform)
-	//{
-	//	XYZ_ASSERT(m_SpotLightsList.size() + 1 < sc_MaxNumberOfLights, "Max number of lights per scene is ", sc_MaxNumberOfLights);
-	//	SubmitLight(light, glm::vec3(transform[3][0], transform[3][1], 0.0f));
-	//}
-	//void SceneRenderer::SubmitLight(const PointLight2D& light, const glm::vec3& position)
-	//{
-	//	XYZ_ASSERT(m_PointLightsList.size() + 1 < sc_MaxNumberOfLights, "Max number of lights per scene is ", sc_MaxNumberOfLights);
-	//
-	//	PointLight lightData;
-	//	lightData.Position = glm::vec2(position.x, position.y);
-	//	lightData.Color = glm::vec4(light.Color, 0.0f);
-	//	lightData.Radius = light.Radius;
-	//	lightData.Intensity = light.Intensity;
-	//	m_PointLightsList.push_back(lightData);
-	//}
-	//void SceneRenderer::SubmitLight(const SpotLight2D& light, const glm::vec3& position)
-	//{
-	//	XYZ_ASSERT(m_SpotLightsList.size() + 1 < sc_MaxNumberOfLights, "Max number of lights per scene is ", sc_MaxNumberOfLights);
-	//
-	//	SpotLight lightData;
-	//	lightData.Position = glm::vec2(position.x, position.y);
-	//	lightData.Color = glm::vec4(light.Color, 0.0f);
-	//	lightData.Radius = light.Radius;
-	//	lightData.Intensity = light.Intensity;
-	//	lightData.InnerAngle = light.InnerAngle;
-	//	lightData.OuterAngle = light.OuterAngle;
-	//	m_SpotLightsList.push_back(lightData);
-	//}
+	
 	void SceneRenderer::SetGridProperties(const GridProperties& props)
 	{
 		m_GridProps = props;
-	}
-
-	void SceneRenderer::UpdateViewportSize()
-	{
-		if (m_ViewportSizeChanged)
-		{
-			const uint32_t width = (uint32_t)m_ViewportSize.x;
-			const uint32_t height = (uint32_t)m_ViewportSize.y;
-			m_GeometryPass->GetSpecification().TargetFramebuffer->Resize(width, height);
-			m_LightPass->GetSpecification().TargetFramebuffer->Resize(width, height);
-			m_BloomPass->GetSpecification().TargetFramebuffer->Resize(width, height);
-
-			m_BloomTexture[0] = Texture2D::Create(ImageFormat::RGBA32F, width, height, {});
-			m_BloomTexture[1] = Texture2D::Create(ImageFormat::RGBA32F, width, height, {});
-			m_BloomTexture[2] = Texture2D::Create(ImageFormat::RGBA32F, width, height, {});
-			m_ViewportSizeChanged = false;
-		}
 	}
 
 	void SceneRenderer::OnImGuiRender()
@@ -317,8 +264,6 @@ namespace XYZ {
 	{
 		XYZ_PROFILE_FUNC("SceneRenderer::flushLightQueue");
 		RenderQueue& queue = m_Queue;
-		sortQueue(queue);
-
 
 		if (m_PointLightsList.size())
 		{
@@ -344,37 +289,23 @@ namespace XYZ {
 	void SceneRenderer::flushDefaultQueue()
 	{
 		XYZ_PROFILE_FUNC("SceneRenderer::flushDefaultQueue");
-		RenderQueue& queue = m_Queue;
-		sortQueue(queue);
-
-		geometryPass2D(queue, true);
+		geometryPass2D(m_Queue, true);
 	
-		queue.m_SpriteDrawList.clear();
-		queue.m_BillboardDrawList.clear();
-		queue.m_MeshCommandList.clear();
-		queue.m_InstancedMeshCommandList.clear();
+		m_Queue.m_SpriteDrawList.clear();
+		m_Queue.m_BillboardDrawList.clear();
+		m_Queue.m_MeshCommandList.clear();
+		m_Queue.m_InstancedMeshCommandList.clear();
 	}
-
-	void SceneRenderer::sortQueue(RenderQueue& queue)
-	{
-		XYZ_PROFILE_FUNC("SceneRenderer::sortQueue");
-		std::sort(queue.m_SpriteDrawList.begin(), queue.m_SpriteDrawList.end(),
-			[](const RenderQueue::SpriteDrawCommand& a, const RenderQueue::SpriteDrawCommand& b) {
-			if (a.SortLayer == b.SortLayer)
-				return a.Material->GetShader()->GetHash() < b.Material->GetShader()->GetHash();
-			return a.SortLayer < b.SortLayer;
-		});
-	}
-
 	
 	void SceneRenderer::geometryPass2D(RenderQueue& queue, bool clear)
 	{
 		m_GPUTimeQueries.Renderer2DPassQuery = m_CommandBuffer->BeginTimestampQuery();
 		m_Renderer2D->BeginScene(m_CameraBuffer.ViewProjectionMatrix, m_CameraBuffer.ViewMatrix);
-		for (auto& dc : queue.m_SpriteDrawList)
+		
+		for (auto& data : queue.m_SpriteDrawList)
 		{
-			m_Renderer2D->SetQuadMaterial(dc.Material);
-			m_Renderer2D->SubmitQuad(dc.Transform, dc.SubTexture, dc.Color);
+			m_Renderer2D->SetQuadMaterial(data.Material);
+			m_Renderer2D->SubmitQuad(data.Transform, data.SubTexture, data.Color);
 		}
 		for (auto& dc : queue.m_BillboardDrawList)
 		{
@@ -503,5 +434,22 @@ namespace XYZ {
 		
 		m_CompositePipeline = Pipeline::Create(pipelineSpecification);
 		m_CompositeMaterial = Material::Create(shaderLibrary->Get("CompositeShader"));
+	}
+
+	void SceneRenderer::updateViewportSize()
+	{
+		if (m_ViewportSizeChanged)
+		{
+			const uint32_t width = (uint32_t)m_ViewportSize.x;
+			const uint32_t height = (uint32_t)m_ViewportSize.y;
+			m_GeometryPass->GetSpecification().TargetFramebuffer->Resize(width, height);
+			m_LightPass->GetSpecification().TargetFramebuffer->Resize(width, height);
+			m_BloomPass->GetSpecification().TargetFramebuffer->Resize(width, height);
+
+			m_BloomTexture[0] = Texture2D::Create(ImageFormat::RGBA32F, width, height, {});
+			m_BloomTexture[1] = Texture2D::Create(ImageFormat::RGBA32F, width, height, {});
+			m_BloomTexture[2] = Texture2D::Create(ImageFormat::RGBA32F, width, height, {});
+			m_ViewportSizeChanged = false;
+		}
 	}
 }

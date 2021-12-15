@@ -8,6 +8,8 @@
 #include <thread>
 #include <mutex>
 
+#include "XYZ/Utils/DataStructures/ThreadPass.h"
+
 namespace XYZ {
 
 	class Scopewatch
@@ -59,31 +61,22 @@ namespace XYZ {
 	class PerformanceProfiler
 	{
 	public:
+		using PerformanceMap = std::unordered_map<const char*, float>;
+
 		void PushMeasurement(const char* name, float value)
 		{
-			std::scoped_lock lock(m_DataMutex);
+			std::unique_lock lock(m_DataMutex);	
 			m_PerFrameData[name] = value;
 		}
-		void LockData()
+
+		ScopedLockRead<PerformanceMap> GetPerformanceData() const
 		{
-			m_DataMutex.lock();
-			m_IsLocked = true;
-		}
-		void UnlockData()
-		{
-			m_DataMutex.unlock();
-			m_IsLocked = false;
-		}
-		const std::unordered_map<const char*, float>& GetPerformanceData() const
-		{
-			XYZ_ASSERT(m_IsLocked, "Data must be locked before access");
-			return m_PerFrameData;
+			return ScopedLockRead<PerformanceMap>(&m_DataMutex, m_PerFrameData);
 		}
 
 	private:
-		std::unordered_map<const char*, float> m_PerFrameData;
-		std::mutex				 m_DataMutex;
-		bool				     m_IsLocked = false;
+		PerformanceMap			   m_PerFrameData;
+		mutable std::shared_mutex  m_DataMutex;
 	};
 
 

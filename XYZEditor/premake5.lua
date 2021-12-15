@@ -15,6 +15,7 @@ project "XYZEditor"
 		
 		includedirs
 		{
+			"src",
 			"%{wks.location}/XYZEngine/vendor/spdlog/include",
 			"%{wks.location}/XYZEngine/vendor",
 			"%{wks.location}/XYZEngine/src",
@@ -27,6 +28,7 @@ project "XYZEditor"
 			"%{IncludeDir.Sol}",
 			"%{IncludeDir.box2d}",
 			"%{IncludeDir.Vulkan}",
+			"%{IncludeDir.optick}"
 		}
 		
 		links

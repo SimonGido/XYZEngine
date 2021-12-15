@@ -37,23 +37,7 @@
 #include "XYZ/Scene/SceneCamera.h"
 #include "XYZ/Scene/SceneEntity.h"
 #include "XYZ/Scene/Scene.h"
-#include "XYZ/Scene/EditorComponents.h"
 
-//---------Editor-----------//
-#include "XYZ/Editor/EditorManager.h"
-#include "XYZ/Editor/EditorCamera.h"
-#include "XYZ/Editor/OrthographicCameraController.h"
-
-#include "XYZ/Editor/Panels/ScenePanel.h"
-#include "XYZ/Editor/Panels/SceneHierarchyPanel.h"
-#include "XYZ/Editor/Panels/InspectorPanel.h"
-#include "XYZ/Editor/Panels/ImGuiStylePanel.h"
-#include "XYZ/Editor/Panels/AssetBrowser.h"
-#include "XYZ/Editor/Panels/AssetManagerViewPanel.h"
-
-#include "XYZ/Editor/SkinningEditor/SkinningEditor.h"
-#include "XYZ/Editor/AnimationEditor/AnimationEditor.h"
-#include "XYZ/Editor/SpriteEditor/SpriteEditor.h"
 
 //------ECS-----//
 #include "XYZ/ECS/ECSManager.h"

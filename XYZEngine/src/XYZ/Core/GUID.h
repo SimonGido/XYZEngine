@@ -30,6 +30,28 @@ namespace XYZ {
 				&& m_Data4[7] == other.m_Data4[7];
 		}
 
+		bool operator<(const GUID& other) const
+		{
+			if (m_Data1 != other.m_Data1)
+				return m_Data1 < other.m_Data1;
+			if (m_Data2 != other.m_Data2)
+				return m_Data2 < other.m_Data2;
+			if (m_Data3 != other.m_Data3)
+				return m_Data3 < other.m_Data3;
+
+			for (uint32_t i = 0; i < 8; ++i)
+			{
+				if (m_Data4[i] != other.m_Data4[i])
+					return m_Data4[i] < other.m_Data4[i];
+			}
+			return false;
+		}
+
+		bool operator >(const GUID& other) const
+		{
+			return !(*this < other);
+		}
+
 		operator std::string() const;
 		operator std::string();
 		std::string ToString() const

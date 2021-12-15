@@ -1,6 +1,6 @@
 #pragma once
 #include "XYZ/Utils/DataStructures/ThreadPass.h"
-#include "XYZ/Scene/SceneEntity.h"
+#include "XYZ/Physics/PhysicsWorld2D.h"
 #include "ParticleDataBuffer.h"
 
 #include <glm/glm.hpp>
@@ -34,8 +34,9 @@ namespace XYZ {
 		bool IsEnabled() const { return m_Enabled; }
 		const std::vector<glm::vec3>& GetLights() const { return m_Lights; }
 
-		SceneEntity	m_LightEntity;
-		SceneEntity	m_TransformEntity;
+		// TODO: use prefabs instead
+		//SceneEntity	m_LightEntity;
+		//SceneEntity	m_TransformEntity;
 		
 		uint32_t	m_MaxLights;
 		

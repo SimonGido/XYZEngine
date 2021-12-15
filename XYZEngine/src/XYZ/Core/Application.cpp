@@ -171,12 +171,11 @@ namespace XYZ {
 			if (ImGui::BeginTable("##PerformanceTable", 2, ImGuiTableFlags_SizingFixedFit))
 			{
 				UI::TextTableRow("%s", "Frame Time:", "%.2f ms", m_Timestep.GetMilliseconds());
-				m_Profiler.LockData();
-				for (const auto [name, time] : m_Profiler.GetPerformanceData())
+				auto scopeLockedData = m_Profiler.GetPerformanceData();
+				for (const auto [name, time] : scopeLockedData.As())
 				{
 					UI::TextTableRow("%s:", name, "%.3f ms", time);
 				}
-				m_Profiler.UnlockData();
 				ImGui::EndTable();
 			}
 		}

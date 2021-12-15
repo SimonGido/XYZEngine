@@ -2,11 +2,11 @@
 #include "Camera.h"
 #include "RenderPass.h"
 #include "Renderer2D.h"
+#include "Mesh.h"
+#include "RenderCommandBuffer.h"
+
 #include "XYZ/Scene/Scene.h"
 #include "XYZ/Scene/Components.h"
-#include "XYZ/Renderer/Mesh.h"
-#include "XYZ/Scene/EditorComponents.h"
-#include "XYZ/Renderer/RenderCommandBuffer.h"
 
 
 namespace XYZ {
@@ -27,21 +27,27 @@ namespace XYZ {
 	struct SceneRendererCamera
 	{
 		XYZ::Camera Camera;
-		glm::mat4 ViewMatrix;
-		glm::vec3 ViewPosition;
+		glm::mat4 ViewMatrix{};
+		glm::vec3 ViewPosition{};
+	};
+
+	struct SpriteRenderData
+	{
+		Ref<SubTexture> SubTexture;
+		glm::vec4		Color;
+		glm::mat4		Transform;
 	};
 
 	struct RenderQueue
 	{
-		// TODO: this is not really a draw command
-		struct SpriteDrawCommand
+		struct SpriteDrawData
 		{
-			Ref<Material>   Material;
-			Ref<SubTexture> SubTexture;
-			uint32_t		SortLayer;
+			Ref<Material>	Material;
+			Ref<SubTexture>	SubTexture;
 			glm::vec4		Color;
 			glm::mat4		Transform;
 		};
+
 		// TODO: this is not really a draw command
 		struct BillboardDrawCommand
 		{
@@ -52,6 +58,7 @@ namespace XYZ {
 			glm::vec3		Position;
 			glm::vec2	    Size;
 		};
+
 		struct DrawMeshCommand
 		{
 			Ref<Mesh> Mesh;
@@ -64,7 +71,7 @@ namespace XYZ {
 			uint32_t  Count;
 		};
 
-		std::vector<SpriteDrawCommand>	      m_SpriteDrawList;		
+		std::vector<SpriteDrawData>			  m_SpriteDrawList;		
 		std::vector<BillboardDrawCommand>	  m_BillboardDrawList;
 		std::vector<DrawMeshCommand>	      m_MeshCommandList;
 		std::vector<InstancedDrawMeshCommand> m_InstancedMeshCommandList;
@@ -90,8 +97,9 @@ namespace XYZ {
 		void BeginScene(const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix, const glm::vec3& viewPosition);
 		void EndScene();
 		
-		void SubmitSprite(const Ref<Material>& material, const Ref<SubTexture>& subTexture, uint32_t sortLayer, const glm::vec4& color, const glm::mat4& transform);
 		void SubmitBillboard(const Ref<Material>& material, const Ref<SubTexture>& subTexture, uint32_t sortLayer, const glm::vec4& color, const glm::vec3& position, const glm::vec2& size);
+		
+		void SubmitSprite(const Ref<Material>& material, const Ref<SubTexture>& subTexture, const glm::vec4& color, const glm::mat4& transform);	
 		void SubmitMesh(const Ref<Mesh>& mesh, const glm::mat4& transform);
 		void SubmitMeshInstanced(const Ref<Mesh>& mesh, const glm::mat4& transform, uint32_t count);
 		void SubmitMeshInstanced(const Ref<Mesh>& mesh, const std::vector<glm::mat4>& transforms, uint32_t count);
@@ -102,7 +110,6 @@ namespace XYZ {
 		//void SubmitLight(const PointLight2D& light, const glm::vec3& position);
 		//void SubmitLight(const SpotLight2D& light, const glm::vec3& position);
 
-		void UpdateViewportSize();
 
 		void OnImGuiRender();
 
@@ -115,13 +122,14 @@ namespace XYZ {
 		void flush();
 		void flushLightQueue();
 		void flushDefaultQueue();
-		void sortQueue(RenderQueue& queue);
+
 
 		void geometryPass2D(RenderQueue& queue, bool clear);
 		void lightPass();
 		void bloomPass();
 
 		void createCompositePipeline();
+		void updateViewportSize();
 	private:
 		struct PointLight
 		{

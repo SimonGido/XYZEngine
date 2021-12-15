@@ -87,10 +87,10 @@ namespace XYZ {
 		return *this;
 	}
 
-	void ParticleSystemCPU::SetSceneEntity(const SceneEntity& entity)
-	{
-		m_Entity = entity;
-	}
+	//void ParticleSystemCPU::SetSceneEntity(const SceneEntity& entity)
+	//{
+	//	m_Entity = entity;
+	//}
 
 	void ParticleSystemCPU::SetPhysicsWorld(PhysicsWorld2D* world)
 	{
@@ -102,19 +102,19 @@ namespace XYZ {
 		XYZ_PROFILE_FUNC("ParticleSystemCPU::SubmitLights");
 		auto moduleData = m_ModuleThreadPass.GetRead<ModuleData>();
 		const auto& lightModule = moduleData->m_LightModule;
-		if (lightModule.m_TransformEntity.IsValid()
-			&& lightModule.m_LightEntity.IsValid()
-			&& lightModule.m_LightEntity.HasComponent<PointLight2D>())
-		{
-			if (lightModule.IsEnabled())
-			{
-				const std::vector<glm::vec3>& lights = lightModule.GetLights();
-				const PointLight2D& light = lightModule.m_LightEntity.GetComponent<PointLight2D>();
-				const TransformComponent& transform = lightModule.m_TransformEntity.GetComponent<TransformComponent>();
-				//for (const glm::vec3& l : lights)
-				//	renderer->SubmitLight(light, transform.WorldTransform * glm::translate(l));
-			}
-		}
+		//if (lightModule.m_TransformEntity.IsValid()
+		//	&& lightModule.m_LightEntity.IsValid()
+		//	&& lightModule.m_LightEntity.HasComponent<PointLight2D>())
+		//{
+		//	if (lightModule.IsEnabled())
+		//	{
+		//		const std::vector<glm::vec3>& lights = lightModule.GetLights();
+		//		const PointLight2D& light = lightModule.m_LightEntity.GetComponent<PointLight2D>();
+		//		const TransformComponent& transform = lightModule.m_TransformEntity.GetComponent<TransformComponent>();
+		//		//for (const glm::vec3& l : lights)
+		//		//	renderer->SubmitLight(light, transform.WorldTransform * glm::translate(l));
+		//	}
+		//}
 	}
 
 	void ParticleSystemCPU::Update(Timestep ts)
@@ -204,17 +204,17 @@ namespace XYZ {
 	void ParticleSystemCPU::particleThreadUpdate(float timestep)
 	{
 		float speed = m_Speed;
-		glm::mat4 transform = m_Entity.GetComponent<TransformComponent>().WorldTransform;
-		Application::Get().GetThreadPool().PushJob<void>([this, timestep, transform, speed]() {
-			XYZ_PROFILE_FUNC("ParticleSystemCPU::particleThreadUpdate Job");
-			{			
-				ScopedLock<ModuleData> moduleData = m_ModuleThreadPass.Get<ModuleData>();
-				emit(timestep, moduleData.As(), transform, speed);
-				update(timestep, moduleData.As(), transform);
-				buildRenderData(moduleData.As());
-			}
-			m_RenderThreadPass.AttemptSwap();		
-		});
+		//glm::mat4 transform = m_Entity.GetComponent<TransformComponent>().WorldTransform;
+		//Application::Get().GetThreadPool().PushJob<void>([this, timestep, transform, speed]() {
+		//	XYZ_PROFILE_FUNC("ParticleSystemCPU::particleThreadUpdate Job");
+		//	{			
+		//		ScopedLock<ModuleData> moduleData = m_ModuleThreadPass.Get<ModuleData>();
+		//		emit(timestep, moduleData.As(), transform, speed);
+		//		update(timestep, moduleData.As(), transform);
+		//		buildRenderData(moduleData.As());
+		//	}
+		//	m_RenderThreadPass.AttemptSwap();		
+		//});
 	}
 	void ParticleSystemCPU::update(Timestep timestep, ModuleData& data, const glm::mat4& transform)
 	{

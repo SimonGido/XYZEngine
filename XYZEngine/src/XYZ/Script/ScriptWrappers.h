@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ScriptEngine.h"
+#include "XYZ/Core/KeyCodes.h"
 
 #include <glm/glm.hpp>
 

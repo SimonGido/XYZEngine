@@ -3,6 +3,7 @@
 
 #include "XYZ/Core/Timestep.h"
 #include "XYZ/Core/Ref/Ref.h"
+
 #include "ParticleDataBuffer.h"
 #include "ParticleModule.h"
 #include "ParticleGenerator.h"
@@ -59,7 +60,7 @@ namespace XYZ {
 		ParticleSystemCPU& operator=(const ParticleSystemCPU& other);
 		ParticleSystemCPU& operator=(ParticleSystemCPU&& other) noexcept;
 
-		void SetSceneEntity(const SceneEntity& entity);
+		//void SetSceneEntity(const SceneEntity& entity);
 		void SetPhysicsWorld(PhysicsWorld2D* world);
 		void SetupForRender(Ref<SceneRenderer> renderer);
 
@@ -92,7 +93,8 @@ namespace XYZ {
 		uint32_t							 m_MaxParticles;
 		bool								 m_Play;
 		float								 m_Speed;
-		SceneEntity							 m_Entity;
+		//TODO: use prefabs instead
+		//SceneEntity						 m_Entity;
 	};
 
 }

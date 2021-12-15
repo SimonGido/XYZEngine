@@ -61,15 +61,15 @@ namespace XYZ {
 		{
 			m_Lights.clear();
 			const uint32_t aliveParticles = data.GetAliveParticles();
-			if (m_TransformEntity.IsValid()
-				&& m_LightEntity.IsValid()
-				&& m_LightEntity.HasComponent<PointLight2D>())
-			{
-				for (uint32_t i = 0; i < aliveParticles && i < m_MaxLights; ++i)
-				{
-					m_Lights.push_back(data.m_Particle[i].Position);
-				}
-			}
+			//if (m_TransformEntity.IsValid()
+			//	&& m_LightEntity.IsValid()
+			//	&& m_LightEntity.HasComponent<PointLight2D>())
+			//{
+			//	for (uint32_t i = 0; i < aliveParticles && i < m_MaxLights; ++i)
+			//	{
+			//		m_Lights.push_back(data.m_Particle[i].Position);
+			//	}
+			//}
 		}
 	}
 

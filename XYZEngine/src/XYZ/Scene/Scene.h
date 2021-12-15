@@ -2,6 +2,7 @@
 #include "XYZ/Core/Ref/Ref.h"
 #include "XYZ/Core/Ref/WeakRef.h"
 #include "XYZ/Core/Timestep.h"
+
 #include "XYZ/ECS/ECSManager.h"
 
 #include "XYZ/Event/Event.h"
@@ -10,11 +11,12 @@
 #include "XYZ/Physics/ContactListener.h"
 #include "XYZ/Physics/PhysicsWorld2D.h"
 
-#include "XYZ/Editor/EditorCamera.h"
-#include "SceneCamera.h"
-
 #include "XYZ/Utils/DataStructures/ThreadPass.h"
 #include "XYZ/Asset/Asset.h"
+
+#include "SceneCamera.h"
+#include "Components.h"
+
 #include <box2d/box2d.h>
 
 namespace XYZ {
@@ -51,7 +53,7 @@ namespace XYZ {
         void OnStop();
         void OnUpdate(Timestep ts);
         void OnRender(Ref<SceneRenderer> sceneRenderer);
-        void OnRenderEditor(Ref<SceneRenderer> sceneRenderer, const Editor::EditorCamera& camera, Timestep ts);
+        void OnRenderEditor(Ref<SceneRenderer> sceneRenderer, const glm::mat4& viewProjection, const glm::mat4& view, const glm::vec3& camPos, Timestep ts);
 
         SceneEntity GetEntity(uint32_t index);
         SceneEntity GetEntityByName(const std::string& name);
@@ -71,6 +73,16 @@ namespace XYZ {
         void updateHierarchy();
         void setupPhysics();
 
+        void processSpriteRenderers(Ref<SceneRenderer>& sceneRenderer);
+
+        struct SpriteRenderData
+        {
+            const SpriteRenderer*     Renderer;
+            const TransformComponent* Transform;
+            uint64_t				  SortKey;
+        };
+
+        std::vector<SpriteRenderData> m_SpriteRenderData;
 
     private:
         PhysicsWorld2D      m_PhysicsWorld;
@@ -91,6 +103,7 @@ namespace XYZ {
 
         uint32_t m_ViewportWidth;
         uint32_t m_ViewportHeight;
+
 
         friend class SceneEntity;
         friend class SceneSerializer;

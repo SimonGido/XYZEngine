@@ -12,10 +12,8 @@
 #include "XYZ/Animation/Animator.h"
 
 #include "XYZ/Script/ScriptEngine.h"
-#include "EditorComponents.h"
-#include "Components.h"
-#include "SceneEntity.h"
 
+#include "SceneEntity.h"
 #include "XYZ/Debug/Profiler.h"
 
 #include <glm/glm.hpp>
@@ -260,16 +258,8 @@ namespace XYZ {
 		sceneRenderer->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 		sceneRenderer->BeginScene(renderCamera);
 
-		auto renderView = m_ECS.CreateView<TransformComponent, SpriteRenderer>();
-		for (auto entity : renderView)
-		{
-			auto [transform, renderer] = renderView.Get<TransformComponent, SpriteRenderer>(entity);
-			if (renderer.Visible && renderer.SubTexture.Raw() && renderer.Material.Raw())
-				sceneRenderer->SubmitSprite(
-				renderer.Material, renderer.SubTexture, renderer.SortLayer, renderer.Color, transform.WorldTransform
-			);
-		}
-
+		processSpriteRenderers(sceneRenderer);
+		
 		//auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponentGPU>();
 		//for (auto entity : particleView)
 		//{
@@ -305,34 +295,17 @@ namespace XYZ {
 	}
 
 	
+	
 
-	void Scene::OnRenderEditor(Ref<SceneRenderer> sceneRenderer, const Editor::EditorCamera& camera, Timestep ts)
+	void Scene::OnRenderEditor(Ref<SceneRenderer> sceneRenderer, const glm::mat4& viewProjection, const glm::mat4& view, const glm::vec3& camPos, Timestep ts)
 	{
 		XYZ_PROFILE_FUNC("Scene::OnRenderEditor");
 		m_PhysicsWorld.Step(ts);
 
 		updateHierarchy();
-		sceneRenderer->BeginScene(
-			camera.GetViewProjection(),
-			camera.GetViewMatrix(),
-			camera.GetPosition()
-		);
-		auto renderView = m_ECS.CreateView<TransformComponent, SpriteRenderer>();
-		for (auto entity : renderView)
-		{
-			auto [transform, renderer] = renderView.Get<TransformComponent, SpriteRenderer>(entity);
-			if (renderer.Visible && renderer.SubTexture.Raw() && renderer.Material.Raw())
-				sceneRenderer->SubmitSprite(
-					renderer.Material, renderer.SubTexture, renderer.SortLayer, renderer.Color, transform.WorldTransform
-				);
-		}
-		//auto editorRenderView = m_ECS.CreateView<TransformComponent, EditorSpriteRenderer>();
-		//for (auto entity : editorRenderView)
-		//{
-		//	auto [transform, renderer] = editorRenderView.Get<TransformComponent, EditorSpriteRenderer>(entity);
-		//	if (renderer.SubTexture.Raw() && renderer.Material.Raw())
-		//		Renderer2D->SubmitSprite(renderer.Material, renderer.SubTexture, renderer.Color, transform.WorldTransform);
-		//}
+		sceneRenderer->BeginScene(viewProjection, view, camPos);
+		processSpriteRenderers(sceneRenderer);
+		
 		//auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponentGPU>();
 		//for (auto entity : particleView)
 		//{
@@ -519,6 +492,29 @@ namespace XYZ {
 				chainCollider.RuntimeFixture = body->CreateFixture(&fixture);
 			}
 			counter++;
+		}
+	}
+	void Scene::processSpriteRenderers(Ref<SceneRenderer>& sceneRenderer)
+	{
+		m_SpriteRenderData.clear();
+		auto renderView = m_ECS.CreateView<TransformComponent, SpriteRenderer>();
+		for (auto entity : renderView)
+		{
+			auto [transform, renderer] = renderView.Get<TransformComponent, SpriteRenderer>(entity);
+			if (renderer.Visible)
+			{
+				uint64_t sortKey = 0;
+				sortKey |= static_cast<uint64_t>(renderer.Material->GetID()) << 32;
+				m_SpriteRenderData.push_back({ &renderer, &transform, sortKey });
+			}
+		}
+		std::sort(m_SpriteRenderData.begin(), m_SpriteRenderData.end(), [](const SpriteRenderData& a, const SpriteRenderData& b) {
+			return a.SortKey < b.SortKey;
+		});
+
+		for (const auto& data : m_SpriteRenderData)
+		{
+			sceneRenderer->SubmitSprite(data.Renderer->Material, data.Renderer->SubTexture, data.Renderer->Color, data.Transform->WorldTransform);
 		}
 	}
 }
