@@ -82,15 +82,17 @@ namespace XYZ {
 		FileWatcher(dir)
 	{
 	}
+
 	void WindowsFileWatcher::Start()
 	{
-		m_Running = true;
 		m_FileWatcherThread = std::unique_ptr<std::thread>(new std::thread(FileWatcherThread, this->shared_from_this()));
-		m_FileWatcherThread->detach();
+		m_Running = true;
 	}
+
 	void WindowsFileWatcher::Stop()
 	{
 		m_Running = false;
+		m_FileWatcherThread->join();
 	}
 
 	std::shared_ptr<FileWatcher> FileWatcher::Create(const std::wstring& dir)

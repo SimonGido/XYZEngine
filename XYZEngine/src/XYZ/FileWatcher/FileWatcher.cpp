@@ -8,7 +8,7 @@ namespace XYZ {
 		m_Directory(dir)
 	{
 	}
-	void FileWatcher::AddListener(IFileWatcherListener* listener)
+	void FileWatcher::AddListener(FileWatcherListener* listener)
 	{
 		m_Listeners.push_back(listener);
 	}

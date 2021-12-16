@@ -11,7 +11,7 @@
 
 namespace XYZ {
 
-	class LuaModule : public IFileWatcherListener
+	class LuaModule : public FileWatcherListener
 	{
 	public:
 		LuaModule(const std::string& directory, const std::string& filename);

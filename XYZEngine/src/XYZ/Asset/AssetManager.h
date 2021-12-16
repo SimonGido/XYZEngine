@@ -8,10 +8,11 @@
 #include "XYZ/Renderer/Shader.h"
 #include "XYZ/Renderer/Texture.h"
 #include "XYZ/Renderer/SkeletalMesh.h"
-
+#include "XYZ/FileWatcher/FileWatcher.h"
 
 #include "AssetSerializer.h"
 #include "AssetImporter.h"
+#include "AssetFileListener.h"
 #include "Asset.h"
 
 namespace std {
@@ -73,13 +74,17 @@ namespace XYZ {
 			
 		template<typename T>
 		static Ref<T> GetAsset(const GUID& assetHandle);
-		
 
+		template <typename T>
+		static Ref<T> GetAsset(const std::filesystem::path& filepath);
+		
+		static void ReloadAsset(const std::filesystem::path& filepath);
 
 		static const AssetMetadata& GetMetadata(const GUID& handle);
 		static const AssetMetadata& GetMetadata(const std::filesystem::path& filepath);
 		static const AssetMetadata& GetMetadata(const Ref<Asset>& asset) { return GetMetadata(asset->m_Handle); }
-	
+		
+		static const std::string&	GetDirectory();
 	private:
 		static AssetMetadata& getMetadata(const GUID& handle);
 
@@ -89,10 +94,13 @@ namespace XYZ {
 		static void processDirectory(const std::filesystem::path& path);
 		static void reloadAsset(const AssetMetadata& metadata, Ref<Asset>& asset);
 	private:
-		static MemoryPool<1024 * 1024, true>							s_Pool;
-		static std::unordered_map<GUID, WeakRef<Asset>>					s_LoadedAssets;
-		static std::unordered_map<std::filesystem::path, AssetMetadata> s_AssetMetadata;
-
+		static MemoryPool<1024 * 1024, true>					s_Pool;
+		static std::unordered_map<GUID, WeakRef<Asset>>			s_LoadedAssets;
+		static std::unordered_map<GUID, AssetMetadata>			s_AssetMetadata;
+		static std::unordered_map<std::filesystem::path, GUID>	s_AssetHandleMap;
+		
+		static std::shared_ptr<FileWatcher>						s_FileWatcher;
+		static AssetFileListener*								s_FileListener;
 	private:
 		friend Editor::AssetBrowser;
 		friend Editor::AssetManagerViewPanel;
@@ -121,11 +129,11 @@ namespace XYZ {
 
 	template<typename T>
 	inline Ref<T> AssetManager::GetAsset(const GUID& assetHandle)
-	{
-		auto& metadata = getMetadata(assetHandle);
+	{	
 		Ref<Asset> asset = nullptr;
 		if (!s_LoadedAssets[assetHandle].IsValid())
 		{
+			auto& metadata = getMetadata(assetHandle);
 			bool loaded = AssetImporter::TryLoadData(metadata, asset);
 			if (!loaded)
 				return nullptr;
@@ -137,5 +145,11 @@ namespace XYZ {
 			asset = s_LoadedAssets[assetHandle].Raw();
 		}
 		return asset.As<T>();
+	}
+	template<typename T>
+	inline Ref<T> AssetManager::GetAsset(const std::filesystem::path& filepath)
+	{
+		auto& metadata = GetMetadata(filepath);
+		return GetAsset<T>(metadata.Handle);
 	}
 }

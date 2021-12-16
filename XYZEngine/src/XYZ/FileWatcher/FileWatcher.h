@@ -9,7 +9,7 @@ namespace XYZ {
 	{
 	public:
 		FileWatcher(const std::wstring& dir);
-		void AddListener(IFileWatcherListener* listener);
+		void AddListener(FileWatcherListener* listener);
 
 		virtual void Start() = 0;
 		virtual void Stop() = 0;
@@ -26,6 +26,6 @@ namespace XYZ {
 		static std::shared_ptr<FileWatcher> Create(const std::wstring& dir);
 	protected:
 		std::wstring m_Directory;
-		std::vector<IFileWatcherListener*> m_Listeners;
+		std::vector<FileWatcherListener*> m_Listeners;
 	};
 }

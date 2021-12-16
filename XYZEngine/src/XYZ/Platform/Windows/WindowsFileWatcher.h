@@ -16,6 +16,6 @@ namespace XYZ {
 
 	private:
 		std::unique_ptr<std::thread> m_FileWatcherThread;
-		std::atomic<bool> m_Running;
+		std::atomic<bool>			 m_Running;
 	};
 }

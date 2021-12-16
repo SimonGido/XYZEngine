@@ -12,18 +12,30 @@
 namespace XYZ
 {
 
-	MemoryPool<1024 * 1024, true>							 AssetManager::s_Pool;
-	std::unordered_map<GUID, WeakRef<Asset>>				 AssetManager::s_LoadedAssets;
-	std::unordered_map<std::filesystem::path, AssetMetadata> AssetManager::s_AssetMetadata;
+	MemoryPool<1024 * 1024, true>					AssetManager::s_Pool;
+	std::unordered_map<GUID, WeakRef<Asset>>		AssetManager::s_LoadedAssets;
+	std::unordered_map<GUID, AssetMetadata>			AssetManager::s_AssetMetadata;
+	std::unordered_map<std::filesystem::path, GUID>	AssetManager::s_AssetHandleMap;
+	std::shared_ptr<FileWatcher>					AssetManager::s_FileWatcher;
+	AssetFileListener*								AssetManager::s_FileListener;
+	
+	static std::string s_Directory = "Assets";
 
 	void AssetManager::Init()
 	{
 		AssetImporter::Init();
-		processDirectory("Assets");
+		processDirectory(s_Directory);
+		std::wstring wdir = std::wstring(s_Directory.begin(), s_Directory.end());
+		s_FileWatcher = FileWatcher::Create(wdir);
+		s_FileListener = new AssetFileListener();
+		s_FileWatcher->AddListener(s_FileListener);
+		s_FileWatcher->Start();
 	}
 	void AssetManager::Shutdown()
 	{
 		s_LoadedAssets.clear();
+		s_FileWatcher->Stop();
+		delete s_FileListener;
 	}
 
 	//void AssetManager::DisplayMemory()
@@ -34,6 +46,12 @@ namespace XYZ
 	//}
 
 
+	void AssetManager::ReloadAsset(const std::filesystem::path& filepath)
+	{
+		const auto& metadata = GetMetadata(filepath);
+		GetAsset<Asset>(metadata.Handle);
+	}
+
 	const AssetMetadata& AssetManager::GetMetadata(const GUID& handle)
 	{
 		return getMetadata(handle);
@@ -41,20 +59,26 @@ namespace XYZ
 
 	const AssetMetadata& AssetManager::GetMetadata(const std::filesystem::path& filepath)
 	{
-		auto it = s_AssetMetadata.find(filepath);
-		if (it != s_AssetMetadata.end())
-			return it->second;
+		auto it = s_AssetHandleMap.find(filepath);
+		if (it != s_AssetHandleMap.end())
+		{
+			return s_AssetMetadata.find(it->second)->second;
+		}
 		XYZ_WARN("Meta data not found");
 		return AssetMetadata();
 	}
 
+	const std::string& AssetManager::GetDirectory()
+	{
+		// TODO: insert return statement here
+	}
+
 	AssetMetadata& AssetManager::getMetadata(const GUID& handle)
 	{
-		for (auto& [filepath, metadata] : s_AssetMetadata)
-		{
-			if (metadata.Handle == handle)
-				return metadata;
-		}
+		auto it = s_AssetMetadata.find(handle);
+		if (it != s_AssetMetadata.end())
+			return it->second;
+
 		XYZ_WARN("Meta data not found");
 		return AssetMetadata();
 	}
@@ -73,8 +97,10 @@ namespace XYZ
 
 		if (handle && filePath && type)
 		{
-			AssetMetadata& metadata = s_AssetMetadata[filepath];
-			metadata.Handle = GUID(handle.as<std::string>());
+			GUID guid(handle.as<std::string>());
+			s_AssetHandleMap[filepath] = guid;
+			AssetMetadata& metadata = s_AssetMetadata[guid];
+			metadata.Handle = guid;
 			metadata.FilePath = filePath.as<std::string>();
 			metadata.Type = Utils::AssetTypeFromString(type.as<std::string>());
 		}
