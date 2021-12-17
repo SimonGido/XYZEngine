@@ -85,6 +85,7 @@ namespace XYZ {
 		static const AssetMetadata& GetMetadata(const Ref<Asset>& asset) { return GetMetadata(asset->m_Handle); }
 		
 		static const std::string&	GetDirectory();
+		static const MemoryPool&    GetMemoryPool() { return s_Pool; }
 	private:
 		static AssetMetadata& getMetadata(const GUID& handle);
 

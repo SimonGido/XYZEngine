@@ -24,25 +24,32 @@ namespace XYZ {
 		{
 			if (ImGui::Begin("Asset View", &open))
 			{
-				static char searchBuffer[_MAX_PATH];
-				ImGui::InputTextWithHint("##search", "Search...", searchBuffer, _MAX_PATH);
+				MemoryPoolView view(AssetManager::GetMemoryPool());
+				view.OnImGuiRender();
 
-				const ImGuiTableFlags tableFlags = ImGuiTableFlags_SizingFixedFit;
-
-				if (ImGui::BeginTable("Asset Metadata", 2, tableFlags))
+				if (UI::BeginTreeNode("Asset Metadata"))
 				{
-					if (searchBuffer[0] != 0)
-					{
-						std::string searchString = searchBuffer;
-						displaySearchedMetadata(searchString);
-					}
-					else
-					{
-						displayAllMetadata();
-					}
+					static char searchBuffer[_MAX_PATH];
+					ImGui::InputTextWithHint("##search", "Search...", searchBuffer, _MAX_PATH);
 
-					ImGui::EndTable();
-				}
+					const ImGuiTableFlags tableFlags = ImGuiTableFlags_SizingFixedFit;
+
+					if (ImGui::BeginTable("##AssetMetadata", 2, tableFlags))
+					{
+						if (searchBuffer[0] != 0)
+						{
+							std::string searchString = searchBuffer;
+							displaySearchedMetadata(searchString);
+						}
+						else
+						{
+							displayAllMetadata();
+						}
+
+						ImGui::EndTable();
+					}	
+					UI::EndTreeNode();
+				}		
 			}
 			ImGui::End();
 		}

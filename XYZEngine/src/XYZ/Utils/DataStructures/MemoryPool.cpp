@@ -13,7 +13,7 @@ namespace XYZ {
 	MemoryPool::MemoryPool(const uint32_t blockSize)
 		:
 		m_BlockSize(blockSize),
-		m_ElementCounter(0),
+		m_NumAllocations(0),
 		m_MemoryUsed(0)
 	{
 		createBlock();
@@ -24,15 +24,15 @@ namespace XYZ {
 		m_FreeChunks(std::move(other.m_FreeChunks)),
 		m_BlockInUse(other.m_BlockInUse),
 		m_BlockSize(other.m_BlockSize),
-		m_ElementCounter(other.m_ElementCounter),
+		m_NumAllocations(other.m_NumAllocations),
 		m_MemoryUsed(other.m_MemoryUsed),
 		m_Dirty(other.m_Dirty)
 	{
 	}
 	MemoryPool::~MemoryPool()
 	{
-		if (m_ElementCounter == 0 || m_MemoryUsed == 0)
-			XYZ_WARN("Memory not released, number of elements: {} not released memory: {}", m_ElementCounter, m_MemoryUsed);
+		if (m_NumAllocations == 0 || m_MemoryUsed == 0)
+			XYZ_WARN("Memory not released, number of elements: {} not released memory: {}", m_NumAllocations, m_MemoryUsed);
 
 		#ifdef XYZ_DEBUG
 		for (int32_t i = 0; i < m_Allocations.Range(); ++i)
@@ -54,7 +54,7 @@ namespace XYZ {
 		m_FreeChunks = std::move(other.m_FreeChunks);
 		m_BlockInUse = other.m_BlockInUse;
 		m_BlockSize = other.m_BlockSize;
-		m_ElementCounter = other.m_ElementCounter;
+		m_NumAllocations = other.m_NumAllocations;
 		m_MemoryUsed = other.m_MemoryUsed;
 		m_Dirty = other.m_Dirty;
 		return *this;
@@ -64,7 +64,7 @@ namespace XYZ {
 	{
 		XYZ_PROFILE_FUNC("MemoryPool::Allocate");
 		const uint32_t sizeReq = size + Metadata::SizeTight();
-		m_ElementCounter++;
+		m_NumAllocations++;
 		m_MemoryUsed += sizeReq;
 
 		if (m_Dirty)
@@ -84,7 +84,7 @@ namespace XYZ {
 	{
 		XYZ_PROFILE_FUNC("MemoryPool::Deallocate");
 		Metadata metadata = readMetadata(val);
-		m_ElementCounter--;
+		m_NumAllocations--;
 		m_Dirty = true;
 
 		const uint32_t chunkSize = metadata.Size + Metadata::SizeTight();
@@ -150,6 +150,7 @@ namespace XYZ {
 	MemoryPool::Block* MemoryPool::createBlock()
 	{
 		XYZ_PROFILE_FUNC("MemoryPool::createBlock");
+		XYZ_ASSERT(m_Blocks.size() + 1 <= sc_MaxNumberOfBlocks, "Maximum number of blocks is {}", sc_MaxNumberOfBlocks);
 		m_Blocks.push_back(Block());
 		m_Blocks.back().Data = new uint8_t[m_BlockSize];
 		memset(m_Blocks.back().Data, 0, m_BlockSize);

@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "AssetManager.h"
-#include "XYZ/Debug/MemoryPoolDebug.h"
 
 #include <filesystem>
 
@@ -11,7 +10,6 @@
 
 namespace XYZ
 {
-
 	MemoryPool										AssetManager::s_Pool = MemoryPool(1024 * 1024 * 10);
 	std::unordered_map<GUID, WeakRef<Asset>>		AssetManager::s_LoadedAssets;
 	std::unordered_map<GUID, AssetMetadata>			AssetManager::s_AssetMetadata;
@@ -37,14 +35,6 @@ namespace XYZ
 		s_FileWatcher->Stop();
 		delete s_FileListener;
 	}
-
-	//void AssetManager::DisplayMemory()
-	//{
-	//	MemoryPoolDebug<1024 * 1024, true> memoryDebug;
-	//	memoryDebug.SetContext(&s_Pool);
-	//	memoryDebug.OnImGuiRender();
-	//}
-
 
 	void AssetManager::ReloadAsset(const std::filesystem::path& filepath)
 	{

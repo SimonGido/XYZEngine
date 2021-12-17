@@ -1,5 +1,7 @@
 #pragma once
 #include "Editor/EditorPanel.h"
+#include "Editor/MemoryPoolView.h"
+
 
 namespace XYZ {
 	namespace Editor {

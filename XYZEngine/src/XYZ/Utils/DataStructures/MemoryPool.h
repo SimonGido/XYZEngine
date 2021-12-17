@@ -6,18 +6,6 @@ namespace XYZ {
 	class MemoryPool
 	{
 	public:
-		MemoryPool(const uint32_t blockSize);
-		MemoryPool(const MemoryPool& other) = delete;
-		MemoryPool(MemoryPool&& other) noexcept;
-		~MemoryPool();
-
-		MemoryPool& operator=(const MemoryPool& other) = delete;
-		MemoryPool& operator=(MemoryPool&& other) noexcept;
-
-		void* Allocate(uint32_t size, const char* debugName = "");
-		void  Deallocate(const void* val);
-
-	private:
 		struct Block
 		{
 			uint8_t* Data = nullptr;
@@ -32,7 +20,6 @@ namespace XYZ {
 			uint32_t ChunkIndex{}; // Index in block memory ( starts at the position of metadata )
 			uint8_t  BlockIndex{}; // Index of block
 		};
-
 		struct Metadata
 		{
 			#ifdef XYZ_DEBUG
@@ -46,6 +33,27 @@ namespace XYZ {
 		};
 
 
+		MemoryPool(const uint32_t blockSize);
+		MemoryPool(const MemoryPool& other) = delete;
+		MemoryPool(MemoryPool&& other) noexcept;
+		~MemoryPool();
+
+		MemoryPool& operator=(const MemoryPool& other) = delete;
+		MemoryPool& operator=(MemoryPool&& other) noexcept;
+
+		void* Allocate(uint32_t size, const char* debugName = "");
+		void  Deallocate(const void* val);
+
+
+
+		const FreeList<const char*>& GetAllocations()    const { return m_Allocations; }
+		const std::vector<Chunk>&	 GetFreeChunks()     const { return m_FreeChunks; }
+		uint32_t					 GetMemoryUsed()     const { return m_MemoryUsed; }
+		uint32_t					 GetNumAllocations() const { return m_NumAllocations; }
+		uint32_t					 GetBlockSize()      const { return m_BlockSize; }
+		uint32_t					 GetNumBlocks()      const { return static_cast<uint32_t>(m_Blocks.size()); }
+	
+	private:
 		void   cleanUp();
 		void   sortFreeChunks();
 		void   mergeFreeChunks();
@@ -63,13 +71,11 @@ namespace XYZ {
 
 		uint8_t			   m_BlockInUse;
 		uint32_t		   m_BlockSize;
-		uint32_t		   m_ElementCounter;
+		uint32_t		   m_NumAllocations;
 		uint32_t		   m_MemoryUsed;
 
 		bool m_Dirty = false;
 		static constexpr size_t sc_MaxNumberOfBlocks = 255;
-
-		friend class MemoryPoolDebug;
 	};
 
 }
