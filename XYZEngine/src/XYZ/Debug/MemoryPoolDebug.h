@@ -6,32 +6,31 @@
 
 namespace XYZ {
 
-	template <uint32_t BlockSize, bool StoreSize = false>
 	class MemoryPoolDebug
 	{
 	public:
 		MemoryPoolDebug();
 
-		void SetContext(MemoryPool<BlockSize, StoreSize>* pool);
+		void SetContext(MemoryPool* pool);
 		void OnImGuiRender();
 
 	private:
-		MemoryPool<BlockSize, StoreSize>* m_MemoryPool;
-		float							  m_AverageAllocationTime;
+		MemoryPool* m_MemoryPool;
+		float		m_AverageAllocationTime;
 	};
-	template<uint32_t BlockSize, bool StoreSize>
-	inline MemoryPoolDebug<BlockSize, StoreSize>::MemoryPoolDebug()
+
+	inline MemoryPoolDebug::MemoryPoolDebug()
 		:
 		m_MemoryPool(nullptr)
 	{
 	}
-	template<uint32_t BlockSize, bool StoreSize>
-	inline void MemoryPoolDebug<BlockSize, StoreSize>::SetContext(MemoryPool<BlockSize, StoreSize>* pool)
+
+	inline void MemoryPoolDebug::SetContext(MemoryPool* pool)
 	{
 		m_MemoryPool = pool;
 	}
-	template<uint32_t BlockSize, bool StoreSize>
-	inline void MemoryPoolDebug<BlockSize, StoreSize>::OnImGuiRender()
+
+	inline void MemoryPoolDebug::OnImGuiRender()
 	{
 		if (ImGui::Begin("Memory Pool"))
 		{

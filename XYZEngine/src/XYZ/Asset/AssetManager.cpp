@@ -12,7 +12,7 @@
 namespace XYZ
 {
 
-	MemoryPool<1024 * 1024, true>					AssetManager::s_Pool;
+	MemoryPool										AssetManager::s_Pool = MemoryPool(1024 * 1024 * 10);
 	std::unordered_map<GUID, WeakRef<Asset>>		AssetManager::s_LoadedAssets;
 	std::unordered_map<GUID, AssetMetadata>			AssetManager::s_AssetMetadata;
 	std::unordered_map<std::filesystem::path, GUID>	AssetManager::s_AssetHandleMap;
@@ -71,6 +71,7 @@ namespace XYZ
 	const std::string& AssetManager::GetDirectory()
 	{
 		// TODO: insert return statement here
+		return s_Directory;
 	}
 
 	AssetMetadata& AssetManager::getMetadata(const GUID& handle)

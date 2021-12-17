@@ -5,10 +5,10 @@
 
 namespace XYZ {
 
-	MemoryPool<1024 * 1024, true>* RefAllocator::s_Pool = nullptr;
-	bool						   RefAllocator::s_Initialized = false;
+	MemoryPool* RefAllocator::s_Pool = nullptr;
+	bool		RefAllocator::s_Initialized = false;
 
-	void RefAllocator::Init(MemoryPool<1024 * 1024, true>* pool)
+	void RefAllocator::Init(MemoryPool* pool)
 	{
 		s_Pool = pool;
 		s_Initialized = true;
@@ -16,11 +16,11 @@ namespace XYZ {
 
 	void* RefAllocator::allocate(uint32_t size)
 	{
-		return s_Pool->AllocateRaw(size);
+		return s_Pool->Allocate(size);
 	}
 	void RefAllocator::deallocate(const void* handle)
 	{
-		s_Pool->DeallocateRaw(handle);
+		s_Pool->Deallocate(handle);
 	}
 
 }
