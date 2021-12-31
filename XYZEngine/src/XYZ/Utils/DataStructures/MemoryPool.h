@@ -65,9 +65,9 @@ namespace XYZ {
 		static void	    writeMetadata(void* data, const Metadata& metadata);
 
 	private:
-		std::vector<Block> m_Blocks;
-		std::vector<Chunk> m_FreeChunks;
-		FreeList<const char*> m_Allocations;
+		std::vector<Block>    m_Blocks;
+		std::vector<Chunk>    m_FreeChunks;
+		FreeList<std::string> m_Allocations;
 
 		uint8_t			   m_BlockInUse;
 		uint32_t		   m_BlockSize;
