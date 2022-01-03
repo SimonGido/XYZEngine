@@ -9,7 +9,7 @@ namespace XYZ {
 		static void removeFromLiveReferences(void* instance);
 		static bool isLive(void* instance);
 
-		template <typename T>
+		template <typename T, typename Allocator>
 		friend class Ref;
 
 		template <typename T>

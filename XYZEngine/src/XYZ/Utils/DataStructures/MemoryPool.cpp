@@ -37,7 +37,7 @@ namespace XYZ {
 		#ifdef XYZ_DEBUG
 		for (int32_t i = 0; i < m_Allocations.Range(); ++i)
 		{
-			if (m_Allocations.Valid(i) && m_Allocations[i])
+			if (m_Allocations.Valid(i))
 				XYZ_WARN("Allocation with name {} not released", m_Allocations[i]);
 		}
 		#endif //  XYZ_DEBUG

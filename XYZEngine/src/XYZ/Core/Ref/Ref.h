@@ -1,5 +1,6 @@
 #pragma once
 #include "RefTracker.h"
+#include "RefAllocator.h"
 
 #include <stdint.h>
 #include <atomic>
@@ -25,7 +26,7 @@ namespace XYZ {
 
 	};	
 	
-	template<typename T>
+	template<typename T, typename Allocator = RefPoolAllocator>
 	class Ref
 	{
 	public:
@@ -148,9 +149,10 @@ namespace XYZ {
 		template<typename... Args>
 		static Ref<T> Create(Args&&... args)
 		{
-			T* instance = new T(std::forward<Args>(args)...);
+			void* instance = Allocator::Allocate(sizeof(T));
+			new(instance)T(std::forward<Args>(args)...);
 			RefTracker::addToLiveReferences(instance);
-			return Ref<T>(instance);
+			return Ref<T>((T*)instance);
 		}
 
 		template <typename T2, typename ...Args>
@@ -178,13 +180,13 @@ namespace XYZ {
 				if (m_Instance->GetRefCount() == 0)
 				{
 					RefTracker::removeFromLiveReferences((void*)m_Instance);
-					delete m_Instance;
+					Allocator::Deallocate(m_Instance);
 				}
 			}
 		}
 		T* m_Instance;
 
-		template<class T2>
+		template<class T2, typename Allocator>
 		friend class Ref;
 	};
 }

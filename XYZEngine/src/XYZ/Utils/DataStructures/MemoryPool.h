@@ -33,7 +33,7 @@ namespace XYZ {
 		};
 
 
-		MemoryPool(const uint32_t blockSize);
+		MemoryPool(const uint32_t blockSize = 1024);
 		MemoryPool(const MemoryPool& other) = delete;
 		MemoryPool(MemoryPool&& other) noexcept;
 		~MemoryPool();
@@ -46,7 +46,7 @@ namespace XYZ {
 
 
 
-		const FreeList<const char*>& GetAllocations()    const { return m_Allocations; }
+		const FreeList<std::string>& GetAllocations()    const { return m_Allocations; }
 		const std::vector<Chunk>&	 GetFreeChunks()     const { return m_FreeChunks; }
 		uint32_t					 GetMemoryUsed()     const { return m_MemoryUsed; }
 		uint32_t					 GetNumAllocations() const { return m_NumAllocations; }

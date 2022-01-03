@@ -3,32 +3,24 @@
 
 namespace XYZ {
 
-	template <typename T>
-	class Ref;
-
-	class MemoryPool;
-
 	class RefAllocator
 	{
 	public:
-		static void Init(MemoryPool* pool);
+		static void* Allocate(uint32_t size, const char* debugName = "");
+		static void  Deallocate(const void* handle);
+	};
 
-		static bool  Initialized() { return s_Initialized; }
-		template <typename T>
-		static void Deallocate(const T* instance)
-		{
-			instance->~T();
-			deallocate(instance);
-		}
+
+	class MemoryPool;
+	class RefPoolAllocator
+	{
+	public:
+		static void  Init(uint32_t blockSize);
+	
+		static void* Allocate(uint32_t size, const char* debugName = "");
+		static void  Deallocate(const void* handle);
 
 	private:
-		static void* allocate(uint32_t size);
-		static void  deallocate(const void* handle);
-
-		static MemoryPool* s_Pool;
-		static bool		  s_Initialized;
-
-		template <typename T>
-		friend class Ref;
+		static MemoryPool s_Pool;
 	};
 }

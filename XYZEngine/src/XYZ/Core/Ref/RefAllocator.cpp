@@ -5,22 +5,28 @@
 
 namespace XYZ {
 
-	MemoryPool* RefAllocator::s_Pool = nullptr;
-	bool		RefAllocator::s_Initialized = false;
-
-	void RefAllocator::Init(MemoryPool* pool)
+	void* RefAllocator::Allocate(uint32_t size, const char* debugName)
 	{
-		s_Pool = pool;
-		s_Initialized = true;
+		return new std::byte[size];
 	}
 
-	void* RefAllocator::allocate(uint32_t size)
+	void RefAllocator::Deallocate(const void* handle)
 	{
-		return s_Pool->Allocate(size);
-	}
-	void RefAllocator::deallocate(const void* handle)
-	{
-		s_Pool->Deallocate(handle);
+		delete[]handle;
 	}
 
+	MemoryPool  RefPoolAllocator::s_Pool = MemoryPool(1024 * 1024 * 10);
+
+	void RefPoolAllocator::Init(uint32_t blockSize)
+	{
+		s_Pool = MemoryPool(blockSize);
+	}
+	void* RefPoolAllocator::Allocate(uint32_t size, const char* debugName)
+	{
+		return s_Pool.Allocate(size, debugName);
+	}
+	void RefPoolAllocator::Deallocate(const void* handle)
+	{
+		s_Pool.Deallocate(handle);
+	}
 }

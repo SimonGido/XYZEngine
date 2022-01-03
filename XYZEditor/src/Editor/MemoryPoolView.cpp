@@ -30,7 +30,7 @@ namespace XYZ {
 					const auto& allocations = m_Pool.GetAllocations();
 					for (int32_t i = 0; i < allocations.Range(); ++i)
 					{
-						if (allocations.Valid(i) && allocations[i])
+						if (allocations.Valid(i))
 							UI::TextTableRow("%s", "Allocation:", "%s", allocations[i]);
 					}
 					ImGui::EndTable();
