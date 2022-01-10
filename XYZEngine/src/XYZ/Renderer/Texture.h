@@ -47,9 +47,10 @@ namespace XYZ {
 
 		virtual bool Loaded() const = 0;
 
-		virtual const std::string& GetPath() const = 0;
-		virtual Ref<Image2D>	   GetImage() const = 0;
-		virtual ByteBuffer		   GetWriteableBuffer() = 0;
+		virtual const std::string&		 GetPath() const = 0;
+		virtual Ref<Image2D>			 GetImage() const = 0;
+		virtual ByteBuffer				 GetWriteableBuffer() = 0;
+		virtual const TextureProperties& GetProperties() const = 0;
 
 		static Ref<Texture2D> Create(ImageFormat format, uint32_t width, uint32_t height, const void* data = nullptr, const TextureProperties& properties = TextureProperties());
 		static Ref<Texture2D> Create(const std::string& path, const TextureProperties& properties = TextureProperties());

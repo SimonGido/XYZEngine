@@ -57,8 +57,8 @@ namespace XYZ {
 		TextureWrap   SamplerWrap   = TextureWrap::Repeat;
 		TextureFilter SamplerFilter = TextureFilter::Linear;
 		bool		  GenerateMips = true;
-		bool		  SRGB = false;
-		bool		  Storage = false;
+		bool		  SRGB		   = false;
+		bool		  Storage	   = false;
 
 		std::string DebugName;
 	};

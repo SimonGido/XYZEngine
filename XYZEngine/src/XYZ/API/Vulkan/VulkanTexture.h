@@ -27,7 +27,8 @@ namespace XYZ {
 		virtual uint32_t		   GetWidth() const override { return m_Width; }
 		virtual uint32_t		   GetHeight() const override { return m_Height; }
 
-		virtual Ref<Image2D>	   GetImage() const override { return m_Image; }
+		virtual Ref<Image2D>				  GetImage() const override { return m_Image; }
+		virtual const TextureProperties&	  GetProperties() const override { return m_Properties; }
 		virtual std::pair<uint32_t, uint32_t> GetMipSize(uint32_t mip) const override;
 	
 		void Invalidate();
