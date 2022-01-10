@@ -31,7 +31,7 @@ namespace XYZ {
 	}
 	MemoryPool::~MemoryPool()
 	{
-		if (m_NumAllocations == 0 || m_MemoryUsed == 0)
+		if (m_NumAllocations != 0 || m_MemoryUsed != 0)
 			XYZ_WARN("Memory not released, number of elements: {} not released memory: {}", m_NumAllocations, m_MemoryUsed);
 
 		#ifdef XYZ_DEBUG

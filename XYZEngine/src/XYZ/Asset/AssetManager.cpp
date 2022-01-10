@@ -15,7 +15,6 @@ namespace XYZ
 	std::unordered_map<GUID, AssetMetadata>			AssetManager::s_AssetMetadata;
 	std::unordered_map<std::filesystem::path, GUID>	AssetManager::s_AssetHandleMap;
 	std::shared_ptr<FileWatcher>					AssetManager::s_FileWatcher;
-	AssetFileListener*								AssetManager::s_FileListener;
 	
 	static std::string s_Directory = "Assets";
 
@@ -24,16 +23,14 @@ namespace XYZ
 		AssetImporter::Init();
 		processDirectory(s_Directory);
 		std::wstring wdir = std::wstring(s_Directory.begin(), s_Directory.end());
-		s_FileWatcher = FileWatcher::Create(wdir);
-		s_FileListener = new AssetFileListener();
-		s_FileWatcher->AddListener(s_FileListener);
+		s_FileWatcher = std::make_shared<FileWatcher>(wdir);
+		s_FileWatcher->AddListener<AssetFileListener>();
 		s_FileWatcher->Start();
 	}
 	void AssetManager::Shutdown()
 	{
 		s_LoadedAssets.clear();
 		s_FileWatcher->Stop();
-		delete s_FileListener;
 	}
 
 	void AssetManager::ReloadAsset(const std::filesystem::path& filepath)

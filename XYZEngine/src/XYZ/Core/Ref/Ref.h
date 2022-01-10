@@ -180,6 +180,7 @@ namespace XYZ {
 				if (m_Instance->GetRefCount() == 0)
 				{
 					RefTracker::removeFromLiveReferences((void*)m_Instance);
+					m_Instance->~T();
 					Allocator::Deallocate(m_Instance);
 				}
 			}

@@ -3,6 +3,7 @@
 
 namespace XYZ {
 
+	// TODO: this is probably temporary
 	class RefAllocator
 	{
 	public:

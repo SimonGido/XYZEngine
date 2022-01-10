@@ -49,9 +49,9 @@ namespace XYZ {
 		m_FileName(filename)
 	{
 		std::wstring unicodeDir(m_Directory.begin(), m_Directory.end());
-		m_FileWatcher = FileWatcher::Create(unicodeDir);
-		m_FileWatcher->AddListener(this);
-		m_FileWatcher->Start();
+		//m_FileWatcher = FileWatcher::Create(unicodeDir);
+		//m_FileWatcher->AddListener(this);
+		//m_FileWatcher->Start();
 
 		m_L.open_libraries(sol::lib::base, sol::lib::package, sol::lib::os);
 		SetLuaPath(m_L, Application::Get().GetApplicationDir().c_str());

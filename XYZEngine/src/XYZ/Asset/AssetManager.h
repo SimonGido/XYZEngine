@@ -101,7 +101,6 @@ namespace XYZ {
 		static std::unordered_map<std::filesystem::path, GUID>	s_AssetHandleMap;
 		
 		static std::shared_ptr<FileWatcher>						s_FileWatcher;
-		static AssetFileListener*								s_FileListener;
 	private:
 		friend Editor::AssetBrowser;
 		friend Editor::AssetManagerViewPanel;

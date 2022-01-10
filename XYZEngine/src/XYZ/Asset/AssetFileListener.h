@@ -10,6 +10,5 @@ namespace XYZ {
 		virtual void OnFileAdded(const std::wstring& path) override;
 		virtual void OnFileRemoved(const std::wstring& path) override;
 		virtual void OnFileRenamed(const std::wstring& path) override;
-
 	};
 }
