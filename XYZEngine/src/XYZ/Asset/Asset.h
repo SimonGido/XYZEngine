@@ -69,16 +69,18 @@ namespace XYZ {
 		}
 	}
 
+	using AssetHandle = GUID;
+
 	class Asset : public RefCount
 	{
 	public:
 		virtual ~Asset() = default;
 	
-		const GUID& GetHandle() const { return m_Handle; }
+		const AssetHandle& GetHandle() const { return m_Handle; }
 
 		static AssetType GetStaticType() { return AssetType::None; }
 	private:
-		GUID m_Handle;
+		AssetHandle m_Handle;
 
 		friend class AssetManager;
 		friend class AssetImporter;
@@ -87,7 +89,7 @@ namespace XYZ {
 
 	struct AssetMetadata
 	{
-		GUID				  Handle;
+		AssetHandle			  Handle;
 		AssetType			  Type;
 		std::filesystem::path FilePath;
 	};

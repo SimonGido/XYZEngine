@@ -73,14 +73,14 @@ namespace XYZ {
 		static Ref<T> CreateAsset(const std::string& filename, const std::string& directoryPath, Args&&... args);
 			
 		template<typename T>
-		static Ref<T> GetAsset(const GUID& assetHandle);
+		static Ref<T> GetAsset(const AssetHandle& assetHandle);
 
 		template <typename T>
 		static Ref<T> GetAsset(const std::filesystem::path& filepath);
 		
 		static void ReloadAsset(const std::filesystem::path& filepath);
 
-		static const AssetMetadata& GetMetadata(const GUID& handle);
+		static const AssetMetadata& GetMetadata(const AssetHandle& handle);
 		static const AssetMetadata& GetMetadata(const std::filesystem::path& filepath);
 		static const AssetMetadata& GetMetadata(const Ref<Asset>& asset) { return GetMetadata(asset->m_Handle); }
 		
@@ -95,12 +95,12 @@ namespace XYZ {
 		static void processDirectory(const std::filesystem::path& path);
 		static void reloadAsset(const AssetMetadata& metadata, Ref<Asset>& asset);
 	private:
-		static MemoryPool										s_Pool;
-		static std::unordered_map<GUID, WeakRef<Asset>>			s_LoadedAssets;
-		static std::unordered_map<GUID, AssetMetadata>			s_AssetMetadata;
-		static std::unordered_map<std::filesystem::path, GUID>	s_AssetHandleMap;
+		static MemoryPool											  s_Pool;
+		static std::unordered_map<AssetHandle, WeakRef<Asset>>		  s_LoadedAssets;
+		static std::unordered_map<AssetHandle, AssetMetadata>		  s_AssetMetadata;
+		static std::unordered_map<std::filesystem::path, AssetHandle> s_AssetHandleMap;
 		
-		static std::shared_ptr<FileWatcher>						s_FileWatcher;
+		static std::shared_ptr<FileWatcher>							  s_FileWatcher;
 	private:
 		friend Editor::AssetBrowser;
 		friend Editor::AssetManagerViewPanel;
@@ -128,7 +128,7 @@ namespace XYZ {
 
 
 	template<typename T>
-	inline Ref<T> AssetManager::GetAsset(const GUID& assetHandle)
+	inline Ref<T> AssetManager::GetAsset(const AssetHandle& assetHandle)
 	{	
 		Ref<Asset> asset = nullptr;
 		if (!s_LoadedAssets[assetHandle].IsValid())

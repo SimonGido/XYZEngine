@@ -10,11 +10,11 @@
 
 namespace XYZ
 {
-	MemoryPool										AssetManager::s_Pool = MemoryPool(1024 * 1024 * 10);
-	std::unordered_map<GUID, WeakRef<Asset>>		AssetManager::s_LoadedAssets;
-	std::unordered_map<GUID, AssetMetadata>			AssetManager::s_AssetMetadata;
-	std::unordered_map<std::filesystem::path, GUID>	AssetManager::s_AssetHandleMap;
-	std::shared_ptr<FileWatcher>					AssetManager::s_FileWatcher;
+	MemoryPool												AssetManager::s_Pool = MemoryPool(1024 * 1024 * 10);
+	std::unordered_map<AssetHandle, WeakRef<Asset>>			AssetManager::s_LoadedAssets;
+	std::unordered_map<AssetHandle, AssetMetadata>			AssetManager::s_AssetMetadata;
+	std::unordered_map<std::filesystem::path, AssetHandle>	AssetManager::s_AssetHandleMap;
+	std::shared_ptr<FileWatcher>							AssetManager::s_FileWatcher;
 	
 	static std::string s_Directory = "Assets";
 
@@ -39,7 +39,7 @@ namespace XYZ
 		GetAsset<Asset>(metadata.Handle);
 	}
 
-	const AssetMetadata& AssetManager::GetMetadata(const GUID& handle)
+	const AssetMetadata& AssetManager::GetMetadata(const AssetHandle& handle)
 	{
 		return getMetadata(handle);
 	}
@@ -85,7 +85,7 @@ namespace XYZ
 
 		if (handle && filePath && type)
 		{
-			GUID guid(handle.as<std::string>());
+			AssetHandle guid(handle.as<std::string>());
 			s_AssetHandleMap[filepath] = guid;
 			AssetMetadata& metadata = s_AssetMetadata[guid];
 			metadata.Handle = guid;
@@ -127,6 +127,6 @@ namespace XYZ
 	}
 	void AssetManager::reloadAsset(const AssetMetadata& metadata, Ref<Asset>& asset)
 	{
-		AssetImporter::TryLoadData(metadata, asset, false);
+		AssetImporter::TryLoadData(metadata, asset);
 	}
 }

@@ -11,10 +11,11 @@
 #include "XYZ/Renderer/SortKey.h"
 
 #include "XYZ/Animation/Animator.h"
+#include "XYZ/Asset/AssetManager.h"
 
 #include "XYZ/Script/ScriptEngine.h"
-#include "SceneEntity.h"
 #include "XYZ/Debug/Profiler.h"
+#include "SceneEntity.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
@@ -26,8 +27,9 @@ namespace XYZ {
 
 	enum RenderSortFlags
 	{
-		Material = 32
+		MaterialFlag = 32
 	};
+
 	Scene::Scene(const std::string& name)
 		:
 		m_PhysicsWorld({ 0.0f, -9.8f }),
@@ -262,8 +264,12 @@ namespace XYZ {
 		sceneRenderer->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 		sceneRenderer->BeginScene(renderCamera);
 
-		processSpriteRenderers(sceneRenderer);
-		
+		sortSpriteRenderers(sceneRenderer);
+		for (const auto& data : m_SpriteRenderData)
+		{
+			sceneRenderer->SubmitSprite(data.Renderer->Material, data.Renderer->SubTexture, data.Renderer->Color, data.Transform->WorldTransform);
+		}
+
 		//auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponentGPU>();
 		//for (auto entity : particleView)
 		//{
@@ -308,8 +314,17 @@ namespace XYZ {
 
 		updateHierarchy();
 		sceneRenderer->BeginScene(viewProjection, view, camPos);
-		processSpriteRenderers(sceneRenderer);
 		
+		sortSpriteRenderers(sceneRenderer);
+		for (auto& data : m_SpriteRenderData)
+		{
+			// Assets could be reloaded by AssetManager, update references
+			data.Renderer->Material = AssetManager::GetAsset<Material>(data.Renderer->Material->GetHandle());
+			data.Renderer->SubTexture = AssetManager::GetAsset<SubTexture>(data.Renderer->SubTexture->GetHandle());
+
+			sceneRenderer->SubmitSprite(data.Renderer->Material, data.Renderer->SubTexture, data.Renderer->Color, data.Transform->WorldTransform);
+		}
+
 		//auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponentGPU>();
 		//for (auto entity : particleView)
 		//{
@@ -498,7 +513,7 @@ namespace XYZ {
 			counter++;
 		}
 	}
-	void Scene::processSpriteRenderers(Ref<SceneRenderer>& sceneRenderer)
+	void Scene::sortSpriteRenderers(Ref<SceneRenderer>& sceneRenderer)
 	{
 		XYZ_PROFILE_FUNC("Scene::processSpriteRenderers");
 		m_SpriteRenderData.clear();
@@ -509,17 +524,12 @@ namespace XYZ {
 			if (renderer.Visible)
 			{
 				SortKey<uint64_t, RenderSortFlags> sortKey;
-				sortKey.Set(RenderSortFlags::Material, static_cast<uint64_t>(renderer.Material->GetID()));
+				sortKey.Set(RenderSortFlags::MaterialFlag, static_cast<uint64_t>(renderer.Material->GetID()));
 				m_SpriteRenderData.push_back({ &renderer, &transform, sortKey.GetKey() });
 			}
 		}
 		std::sort(m_SpriteRenderData.begin(), m_SpriteRenderData.end(), [](const SpriteRenderData& a, const SpriteRenderData& b) {
 			return a.SortKey < b.SortKey;
 		});
-
-		for (const auto& data : m_SpriteRenderData)
-		{
-			sceneRenderer->SubmitSprite(data.Renderer->Material, data.Renderer->SubTexture, data.Renderer->Color, data.Transform->WorldTransform);
-		}
 	}
 }

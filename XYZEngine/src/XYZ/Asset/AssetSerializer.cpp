@@ -76,7 +76,7 @@ namespace XYZ {
 		SceneSerializer serializer(asset.As<Scene>());
 		serializer.Serialize(metadata.FilePath.string());
 	}
-	bool SceneAssetSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset, bool allocate) const
+	bool SceneAssetSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
 		SceneSerializer serializer(asset.As<Scene>());
 		asset = serializer.Deserialize(metadata.FilePath.string());
@@ -85,16 +85,9 @@ namespace XYZ {
 	void MaterialAssetSerializer::Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const
 	{
 	}
-	bool MaterialAssetSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset, bool allocate) const
+	bool MaterialAssetSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
-		if (allocate)
-		{
-			// asset = Material::Create() ...
-		}
-		else
-		{
-			
-		}
+
 		return false;
 	}
 
@@ -123,7 +116,7 @@ namespace XYZ {
 		std::ofstream fout(metadata.FilePath);
 		fout << out.c_str();
 	}
-	bool TextureAssetSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset, bool allocate) const
+	bool TextureAssetSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
 		std::ifstream stream(metadata.FilePath);
 		std::stringstream strStream;
@@ -133,16 +126,8 @@ namespace XYZ {
 		std::string imagePath;
 
 
-
-		if (allocate)
-		{
-			
-		}
-		else
-		{
-			TextureProperties properties{}; // Load properties from file
-			Texture2D::Create(asset.As<Texture2D>(), "blabla", properties);
-		}
-		return false;
+		TextureProperties properties{}; // Load properties from file
+		asset = Texture2D::Create( "blabla", properties);
+		return true;
 	}
 }

@@ -76,7 +76,7 @@ namespace XYZ {
 		Serialize(metadata, asset);
 	}
 
-	bool AssetImporter::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset, bool allocate)
+	bool AssetImporter::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset)
 	{
 		if (!s_Serializers[ToUnderlying(metadata.Type)])
 		{
@@ -84,7 +84,7 @@ namespace XYZ {
 			return false;
 		}
 
-		bool result = s_Serializers[ToUnderlying(metadata.Type)]->TryLoadData(metadata, asset, allocate);
+		bool result = s_Serializers[ToUnderlying(metadata.Type)]->TryLoadData(metadata, asset);
 		if (result)
 			asset->m_Handle = metadata.Handle;
 		return result;

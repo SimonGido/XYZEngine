@@ -54,8 +54,5 @@ namespace XYZ {
 
 		static Ref<Texture2D> Create(ImageFormat format, uint32_t width, uint32_t height, const void* data = nullptr, const TextureProperties& properties = TextureProperties());
 		static Ref<Texture2D> Create(const std::string& path, const TextureProperties& properties = TextureProperties());
-
-		static void Create(Ref<Texture2D>& texture, ImageFormat format, uint32_t width, uint32_t height, const void* data = nullptr, const TextureProperties& properties = TextureProperties());
-		static void Create(Ref<Texture2D>& texture, const std::string& path, const TextureProperties& properties = TextureProperties());
 	};
 }

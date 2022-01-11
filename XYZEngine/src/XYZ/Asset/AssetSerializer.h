@@ -7,7 +7,7 @@ namespace XYZ {
 	{
 	public:
 		virtual void Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const = 0;
-		virtual bool TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset, bool allocate = true) const = 0;
+		virtual bool TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const = 0;
 	};
 
 
@@ -15,7 +15,7 @@ namespace XYZ {
 	{
 	public:
 		virtual void Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const override;
-		virtual bool TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset, bool allocate = true) const override;
+		virtual bool TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const override;
 	};
 
 
@@ -23,7 +23,7 @@ namespace XYZ {
 	{
 	public:
 		virtual void Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const override;
-		virtual bool TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset, bool allocate = true) const override;
+		virtual bool TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const override;
 	};
 
 
@@ -31,6 +31,6 @@ namespace XYZ {
 	{
 	public:
 		virtual void Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const override;
-		virtual bool TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset, bool allocate = true) const override;
+		virtual bool TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const override;
 	};
 }

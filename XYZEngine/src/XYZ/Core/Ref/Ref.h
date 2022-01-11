@@ -155,16 +155,6 @@ namespace XYZ {
 			return Ref<T>((T*)instance);
 		}
 
-		template <typename T2, typename ...Args>
-		void Construct(Args&& ...args)
-		{
-			const uint32_t instanceCount = m_Instance->GetRefCount();
-			m_Instance->~T();
-			new(m_Instance)T2(std::forward<Args>(args)...);
-			while (m_Instance->GetRefCount() != instanceCount)
-				IncRef();
-		}
-
 	private:
 		void IncRef() const
 		{

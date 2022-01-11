@@ -73,13 +73,13 @@ namespace XYZ {
         void updateHierarchy();
         void setupPhysics();
 
-        void processSpriteRenderers(Ref<SceneRenderer>& sceneRenderer);
+        void sortSpriteRenderers(Ref<SceneRenderer>& sceneRenderer);
 
         struct SpriteRenderData
         {
-            const SpriteRenderer*     Renderer;
-            const TransformComponent* Transform;
-            uint64_t				  SortKey;
+            SpriteRenderer*     Renderer;
+            TransformComponent* Transform;
+            uint64_t			SortKey;
         };
 
         std::vector<SpriteRenderData> m_SpriteRenderData;
