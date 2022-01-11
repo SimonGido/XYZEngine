@@ -35,40 +35,56 @@ namespace XYZ
 
 	void AssetManager::ReloadAsset(const std::filesystem::path& filepath)
 	{
-		const auto& metadata = GetMetadata(filepath);
-		GetAsset<Asset>(metadata.Handle);
+		const auto metadata = getMetadata(filepath);
+		if (metadata)
+		{
+			Ref<Asset> asset = nullptr;
+			bool loaded = AssetImporter::TryLoadData(*metadata, asset);
+			if (!loaded)
+			{
+				XYZ_WARN("Could not load asset {}", filepath);
+				return;
+			}
+			s_LoadedAssets[asset->GetHandle()] = asset;
+		}
 	}
 
 	const AssetMetadata& AssetManager::GetMetadata(const AssetHandle& handle)
 	{
-		return getMetadata(handle);
+		auto metadata = getMetadata(handle);
+		XYZ_ASSERT(metadata, "Metadata does not exist");
+		return *metadata;
 	}
 
 	const AssetMetadata& AssetManager::GetMetadata(const std::filesystem::path& filepath)
 	{
-		auto it = s_AssetHandleMap.find(filepath);
-		if (it != s_AssetHandleMap.end())
-		{
-			return s_AssetMetadata.find(it->second)->second;
-		}
-		XYZ_WARN("Meta data not found");
-		return AssetMetadata();
+		auto metadata = getMetadata(filepath);
+		XYZ_ASSERT(metadata, "Metadata does not exist");
+		return *metadata;
 	}
 
 	const std::string& AssetManager::GetDirectory()
 	{
-		// TODO: insert return statement here
 		return s_Directory;
 	}
-
-	AssetMetadata& AssetManager::getMetadata(const GUID& handle)
+	
+	AssetMetadata* AssetManager::getMetadata(const GUID& handle)
 	{
 		auto it = s_AssetMetadata.find(handle);
 		if (it != s_AssetMetadata.end())
-			return it->second;
+			return &it->second;
 
-		XYZ_WARN("Meta data not found");
-		return AssetMetadata();
+		return nullptr;
+	}
+
+	AssetMetadata* AssetManager::getMetadata(const std::filesystem::path& filepath)
+	{
+		auto it = s_AssetHandleMap.find(filepath);
+		if (it != s_AssetHandleMap.end())
+		{
+			return &s_AssetMetadata.find(it->second)->second;
+		}
+		return nullptr;
 	}
 
 	void AssetManager::loadAssetMetadata(const std::filesystem::path& filepath)

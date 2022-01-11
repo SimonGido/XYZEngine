@@ -87,7 +87,8 @@ namespace XYZ {
 		static const std::string&	GetDirectory();
 		static const MemoryPool&    GetMemoryPool() { return s_Pool; }
 	private:
-		static AssetMetadata& getMetadata(const GUID& handle);
+		static AssetMetadata* getMetadata(const GUID& handle);
+		static AssetMetadata* getMetadata(const std::filesystem::path& filepath);
 
 		static void loadAssetMetadata(const std::filesystem::path& filepath);
 		static void writeAssetMetadata(const AssetMetadata& metadata);
@@ -122,7 +123,8 @@ namespace XYZ {
 		asset->m_Handle = metadata.Handle;
 
 		s_LoadedAssets[asset->m_Handle] = asset;
-		AssetSerializer::SerializeAsset(asset);
+		writeAssetMetadata(metadata);
+		AssetImporter::SerializeAsset(asset);
 		return asset;
 	}
 
@@ -133,8 +135,8 @@ namespace XYZ {
 		Ref<Asset> asset = nullptr;
 		if (!s_LoadedAssets[assetHandle].IsValid())
 		{
-			auto& metadata = getMetadata(assetHandle);
-			bool loaded = AssetImporter::TryLoadData(metadata, asset);
+			auto metadata = getMetadata(assetHandle);
+			bool loaded = AssetImporter::TryLoadData(*metadata, asset);
 			if (!loaded)
 				return nullptr;
 

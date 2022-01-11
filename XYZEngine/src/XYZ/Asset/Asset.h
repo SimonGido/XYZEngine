@@ -90,7 +90,7 @@ namespace XYZ {
 	struct AssetMetadata
 	{
 		AssetHandle			  Handle;
-		AssetType			  Type;
+		AssetType			  Type = AssetType::None;
 		std::filesystem::path FilePath;
 	};
 }

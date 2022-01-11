@@ -108,7 +108,7 @@ namespace XYZ {
 		out << YAML::Key << "SamplerWrap" << static_cast<uint32_t>(props.SamplerWrap);
 		out << YAML::Key << "SamplerFilter" << static_cast<uint32_t>(props.SamplerFilter);
 		out << YAML::Key << "GenerateMips" << props.GenerateMips;
-		out << YAML::Key << "SRGB" << props.GenerateMips;
+		out << YAML::Key << "SRGB" << props.SRGB;
 		out << YAML::Key << "Storage" << props.Storage;
 
 		out << YAML::EndMap;
@@ -123,11 +123,21 @@ namespace XYZ {
 		strStream << stream.rdbuf();
 		YAML::Node data = YAML::Load(strStream.str());
 
-		std::string imagePath;
+		std::string imagePath = data["Image Path"].as<std::string>();
+		uint32_t width = data["Width"].as<uint32_t>();
+		uint32_t height = data["Height"].as<uint32_t>();
+		
+		TextureProperties props{};
+		ImageFormat format = static_cast<ImageFormat>(data["Format"].as<uint32_t>());
+		props.SamplerWrap = static_cast<TextureWrap>(data["SamplerWrap"].as<uint32_t>());
+		props.SamplerFilter = static_cast<TextureFilter>(data["SamplerFilter"].as<uint32_t>());
 
+		props.GenerateMips = data["GenerateMips"].as<bool>();
+		props.SRGB = data["SRGB"].as<bool>();
+		props.Storage = data["Storage"].as<bool>();
 
-		TextureProperties properties{}; // Load properties from file
-		asset = Texture2D::Create( "blabla", properties);
+		
+		asset = Texture2D::Create(imagePath, props);
 		return true;
 	}
 }

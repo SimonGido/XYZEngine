@@ -144,7 +144,6 @@ namespace XYZ {
 				sol::call_constructor, sol::factories(
 					[](const Ref<Texture>& texture, const glm::vec4& texCoords) { return Ref<SubTexture>::Create(texture, texCoords); }
 			));
-			type["Get"] = &Ref<SubTexture>::Get;
 		}
 
 
