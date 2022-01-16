@@ -37,8 +37,8 @@ namespace XYZ {
 			std::pair<float, float>		    getMouseViewportSpace()		const;
 			std::deque<SceneEntity>		    findSelection(const Ray& ray);
 
-			void playBar();
-			void toolsBar();
+			bool playBar();
+			bool toolsBar();
 
 			void handlePanelResize(const glm::vec2& newSize);
 			void handleSelection(const glm::vec2& mousePosition);
@@ -48,19 +48,10 @@ namespace XYZ {
 			Ref<SceneRenderer>			m_SceneRenderer;
 			Ref<Scene>					m_Context;
 			glm::vec2				    m_ViewportSize;
-			std::array<glm::vec2, 2>	m_ViewportBounds;
-			Ref<Texture2D>				m_Texture;
+			std::array<glm::vec2, 2>	m_ViewportBounds{};
 
-			enum { PlayButton, StopButton, NumButtons};
+			enum { MoveButton = 0, RotateButton, ScaleButton, CursorButton, PlayButton = 8, StopButton = 11};
 				
-			struct UV
-			{
-				glm::vec2 UV0{}, UV1{};
-
-				static UV Calculate(const glm::vec2& coords, const glm::vec2& size, const glm::vec2& textureSize);
-			};
-
-			UV		  m_ButtonUVs[NumButtons];
 			glm::vec2 m_ButtonSize;
 
 			bool m_ViewportFocused;
@@ -68,22 +59,9 @@ namespace XYZ {
 
 			EditorCamera m_EditorCamera;
 
-			
-
-			enum ModifyFlags
-			{
-				None   = 0,
-				Move   = BIT(0),
-				Rotate = BIT(1),
-				Scale  = BIT(2),
-				X	   = BIT(3),
-				Y	   = BIT(4),
-				Z	   = BIT(5)
-			};
 
 			std::deque<SceneEntity> m_Selection;
 			uint32_t				m_SelectionIndex;
-			uint8_t					m_ModifyFlags;
 			int						m_GizmoType;
 
 			static constexpr int    sc_InvalidGizmoType = -1;

@@ -1,4 +1,5 @@
 #include "EditorLayer.h"
+#include "Editor/EditorData.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
@@ -18,6 +19,8 @@ namespace XYZ {
 
 		void EditorLayer::OnAttach()
 		{
+			EditorData::Init();
+
 			m_Scene = Ref<Scene>::Create("TestScene");
 			m_Scene->SetViewportSize(
 				Application::Get().GetWindow().GetWidth(),
@@ -52,6 +55,7 @@ namespace XYZ {
 
 		void EditorLayer::OnDetach()
 		{
+			EditorData::Shutdown();
 		}
 		void EditorLayer::OnUpdate(Timestep ts)
 		{

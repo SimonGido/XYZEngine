@@ -1,5 +1,7 @@
 #pragma once
 #include "XYZ/Renderer/SubTexture.h"
+#include "XYZ/Renderer/SpriteSheet.h"
+
 #include "Editor/EditorPanel.h"
 
 #include <deque>
@@ -24,8 +26,8 @@ namespace XYZ {
 			void		rightClickMenu() const;
 			void		dragAndDrop(const std::filesystem::path& path) const;
 
-			size_t      extensionToTexCoordsIndex(const std::string& extension) const;
-			std::string getUniqueAssetName(const char* fileName, const char* extension) const;
+			uint32_t    extensionToTexCoordsIndex(const std::string& extension) const;
+			std::string createUniqueAssetName(const char* fileName, const char* extension) const;
 		
 
 			void		renderTopPanel();
@@ -35,8 +37,6 @@ namespace XYZ {
 			bool m_ViewportHovered;
 			bool m_ViewportFocused;
 
-			Ref<XYZ::Texture2D> m_Texture;
-
 			std::filesystem::path			  m_SelectedFile;
 			std::filesystem::path			  m_RightClickedFile;
 			std::filesystem::path			  m_BaseDirectory;
@@ -44,31 +44,26 @@ namespace XYZ {
 			std::deque<std::filesystem::path> m_DirectoriesVisited;
 
 
-			std::unordered_map<std::string, size_t> m_FileTypeExtensions;
-
-
-
+			std::unordered_map<std::string, uint32_t> m_FileTypeExtensions;
 		private:
 			// Style
 			enum FileType
 			{
-				LeftArrow,
-				RightArrow,
-				Folder,
+				Animation = 4,
 				Scene,
+				Jpg,
+				Png,
+				Arrow,
+				Mesh,
 				Texture,
 				SubTexture,
-				Material,
+				Folder,
 				Shader,
-				Font,
-				Audio,
+				Material,
 				Script,
-				Mesh,
-				Animation,
-				Png,
-				Jpg,
 				NumTypes
 			};
+
 			enum Color
 			{
 				ArrowColor,
@@ -78,16 +73,14 @@ namespace XYZ {
 				ClickColor,
 				NumColors
 			};
-			struct UV
-			{
-				glm::vec2 UV0, UV1;
-
-				static UV Calculate(const glm::vec2& coords, const glm::vec2& size, const glm::vec2& textureSize);
-			};
+			
 			glm::vec2 m_IconSize;
 			glm::vec2 m_ArrowSize;
-			UV		  m_TexCoords[NumTypes];
+
+			
 			glm::vec4 m_Colors[NumColors];
+
+			float m_Widths[2] = { 300.0f, 400.0f };
 		};
 	}
 }

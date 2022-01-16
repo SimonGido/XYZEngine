@@ -11,6 +11,7 @@
 #include "XYZ/ImGui/ImGui.h"
 
 #include "Editor/Event/EditorEvents.h"
+#include "Editor/EditorData.h"
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -66,20 +67,8 @@ namespace XYZ {
 			m_ViewportFocused(false),
 			m_ViewportHovered(false),
 			m_SelectionIndex(0),
-			m_ModifyFlags(None),
 			m_GizmoType(sc_InvalidGizmoType)
 		{
-			m_Texture = Texture2D::Create("Assets/Textures/Gui/icons.png");
-			const float divisor = 4.0f;
-			float width = (float)m_Texture->GetWidth();
-			float height = (float)m_Texture->GetHeight();
-			const glm::vec2 cellSize = glm::vec2(width / divisor, height / divisor);
-			const glm::vec2 textureSize = { width, height };
-
-
-			m_ButtonUVs[PlayButton] = UV::Calculate(glm::vec2(0, 2), cellSize, textureSize);
-			m_ButtonUVs[StopButton] = UV::Calculate(glm::vec2(3, 2), cellSize, textureSize);
-
 			const uint32_t windowWidth = Application::Get().GetWindow().GetWidth();
 			const uint32_t windowHeight = Application::Get().GetWindow().GetHeight();
 			
@@ -110,8 +99,10 @@ namespace XYZ {
 									
 					
 					UI::Image(m_SceneRenderer->GetFinalPassImage(), viewportPanelSize);
-
-					auto [mx, my] = getMouseViewportSpace();
+					
+					bool handled = playBar();
+					handled		|= toolsBar();
+					
 					if (m_ViewportHovered && m_ViewportFocused && m_Context->GetState() == SceneState::Edit)
 					{
 						const SceneEntity selectedEntity = m_Context->GetSelectedEntity();
@@ -119,14 +110,13 @@ namespace XYZ {
 						{
 							handleEntityTransform(m_Context->GetSelectedEntity());
 						}
-						else
+						else if (!handled)
 						{
+							auto [mx, my] = getMouseViewportSpace();
 							handleSelection({ mx,my });
 						}
 					}
-					handlePanelResize({ viewportPanelSize.x, viewportPanelSize.y });
-					playBar();
-					toolsBar();
+					handlePanelResize({ viewportPanelSize.x, viewportPanelSize.y });			
 				}
 			}
 			ImGui::End();		
@@ -260,63 +250,98 @@ namespace XYZ {
 			return result;
 		}
 
-		void ScenePanel::playBar()
+		bool ScenePanel::playBar()
 		{
+			bool handled = false;
+			const ImVec4 colors[3] = {
+				ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
+				ImVec4(1.0f, 1.0f, 1.0f, 1.0f),
+				ImVec4(0.5f, 0.5f, 0.5f, 1.0f)
+			};
+
+			const UV& playButtonTexCoords = EditorData::IconsSpriteSheet->GetTexCoords(PlayButton);
+			const UV& stopButtonTexCoords = EditorData::IconsSpriteSheet->GetTexCoords(StopButton);
+
 			const float toolbarWidth = 4.0f + 2.0f * m_ButtonSize.x;
 			const float toolbarPositionX = (ImGui::GetWindowContentRegionWidth() - toolbarWidth) / 2.0f;
 			UI::Toolbar(glm::vec2(toolbarPositionX, 8.0f), glm::vec2(4.0f, 0.0f), false,
 				[&]() {
 				UI::ScopedItemFlags flags(ImGuiItemFlags_Disabled, m_Context->GetState() == SceneState::Play);
-				if (UI::ImageButtonTransparent("Play", m_Texture->GetImage(),
-					m_ButtonSize,
-					ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
-					ImVec4(1.0f, 1.0f, 1.0f, 1.0f),
-					ImVec4(0.5f, 0.5f, 0.5f, 1.0f),
-					m_ButtonUVs[PlayButton].UV0,
-					m_ButtonUVs[PlayButton].UV1
+				if (UI::ImageButtonTransparent("Play", EditorData::IconsTexture->GetImage(),
+					m_ButtonSize, colors[0], colors[1], colors[2],
+					playButtonTexCoords.UV0,
+					playButtonTexCoords.UV1
 				))
 				{
 					m_Context->SetState(SceneState::Play);
 					m_Context->OnPlay();
+					handled = true;
 				}
 			},
 				[&]() {
 				UI::ScopedItemFlags flags(ImGuiItemFlags_Disabled, m_Context->GetState() == SceneState::Edit);
-				if (UI::ImageButtonTransparent("Stop", m_Texture->GetImage(),
-					m_ButtonSize,
-					ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
-					ImVec4(1.0f, 1.0f, 1.0f, 1.0f),
-					ImVec4(0.5f, 0.5f, 0.5f, 1.0f),
-					m_ButtonUVs[StopButton].UV0,
-					m_ButtonUVs[StopButton].UV1
+				if (UI::ImageButtonTransparent("Stop", EditorData::IconsTexture->GetImage(),
+					m_ButtonSize, colors[0], colors[1], colors[2],
+					stopButtonTexCoords.UV0,
+					stopButtonTexCoords.UV1
 				))
 				{
 					m_Context->SetState(SceneState::Edit);
 					m_Context->OnStop();
+					handled = true;
 				}
 			});
+			return handled;
 		}
 
-		void ScenePanel::toolsBar()
+		bool ScenePanel::toolsBar()
 		{
+			bool handled = false;
+			const UV& cursorTexCoords = EditorData::IconsSpriteSheet->GetTexCoords(CursorButton);
+			const UV& moveTexCoords   = EditorData::IconsSpriteSheet->GetTexCoords(MoveButton);
+			const UV& rotateTexCoords = EditorData::IconsSpriteSheet->GetTexCoords(RotateButton);
+			const UV& scaleTexCoords  = EditorData::IconsSpriteSheet->GetTexCoords(ScaleButton);
+			const ImVec4 colors[3] = {
+				ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
+				ImVec4(1.0f, 1.0f, 1.0f, 1.0f),
+				ImVec4(0.5f, 0.5f, 0.5f, 1.0f)
+			};
+
 			UI::Toolbar(glm::vec2(8.0f, 8.0f), glm::vec2(0.0f, 0.0f), false,
 				[&]() {
-					UI::ImageButton("##Tmp", m_Texture->GetImage(), m_ButtonSize, 0,
-					ImVec4(0.7f, 0.7f, 0.7f, 1.0f), m_ButtonUVs[StopButton].UV0, m_ButtonUVs[StopButton].UV1);
+					if (UI::ImageButtonTransparent("##Cursor", EditorData::IconsTexture->GetImage(), m_ButtonSize,
+						colors[0], colors[1], colors[2], cursorTexCoords.UV0, cursorTexCoords.UV1))
+					{
+						m_GizmoType = sc_InvalidGizmoType;
+						handled = true;
+					}
 				},
 				[&]() {
-					UI::ImageButton("##Tmp", m_Texture->GetImage(), m_ButtonSize, 0,
-						ImVec4(0.7f, 0.7f, 0.7f, 1.0f), m_ButtonUVs[StopButton].UV0, m_ButtonUVs[StopButton].UV1);
+					if (UI::ImageButtonTransparent("##Move", EditorData::IconsTexture->GetImage(), m_ButtonSize,
+						colors[0], colors[1], colors[2], moveTexCoords.UV0, moveTexCoords.UV1))
+					{
+						m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+						handled = true;
+					}
 				},
 				[&]() {
-					UI::ImageButton("##Tmp", m_Texture->GetImage(), m_ButtonSize, 0,
-						ImVec4(0.7f, 0.7f, 0.7f, 1.0f), m_ButtonUVs[StopButton].UV0, m_ButtonUVs[StopButton].UV1);
+					if (UI::ImageButtonTransparent("##Rotate", EditorData::IconsTexture->GetImage(), m_ButtonSize,
+						colors[0], colors[1], colors[2], rotateTexCoords.UV0, rotateTexCoords.UV1))
+					{
+						m_GizmoType = ImGuizmo::OPERATION::ROTATE;
+						handled = true;
+					}
 				},
 				[&]() {
-					UI::ImageButton("##Tmp", m_Texture->GetImage(), m_ButtonSize, 0,
-						ImVec4(0.7f, 0.7f, 0.7f, 1.0f), m_ButtonUVs[StopButton].UV0, m_ButtonUVs[StopButton].UV1);
+					if (UI::ImageButtonTransparent("##Scale", EditorData::IconsTexture->GetImage(), m_ButtonSize,
+						colors[0], colors[1], colors[2], scaleTexCoords.UV0, scaleTexCoords.UV1))
+					{
+						m_GizmoType = ImGuizmo::OPERATION::SCALE;
+						handled = true;
+					}
 				}
 			);
+			return handled;
 		}
 
 		void ScenePanel::handlePanelResize(const glm::vec2& newSize)
@@ -391,17 +416,6 @@ namespace XYZ {
 			{
 				tc.DecomposeTransform(transform);
 			}
-		}
-
-		ScenePanel::UV ScenePanel::UV::Calculate(const glm::vec2& coords, const glm::vec2& cellSize, const glm::vec2& textureSize)
-		{
-			UV uv;
-			uv.UV0 = { (coords.x * cellSize.x) / textureSize.x,
-					 ((coords.y + 1) * cellSize.y) / textureSize.y };
-			uv.UV1 = { ((coords.x + 1) * cellSize.x) / textureSize.x,
-					   (coords.y * cellSize.y) / textureSize.y };
-
-			return uv;
 		}
 	}
 }

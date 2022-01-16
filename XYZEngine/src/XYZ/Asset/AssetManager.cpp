@@ -68,7 +68,12 @@ namespace XYZ
 		return s_Directory;
 	}
 	
-	AssetMetadata* AssetManager::getMetadata(const GUID& handle)
+	bool AssetManager::Exist(const AssetHandle& handle)
+	{
+		return getMetadata(handle) != nullptr;
+	}
+
+	AssetMetadata* AssetManager::getMetadata(const AssetHandle& handle)
 	{
 		auto it = s_AssetMetadata.find(handle);
 		if (it != s_AssetMetadata.end())

@@ -31,6 +31,7 @@ namespace XYZ {
 	
 		bool BeginTreeNode(const char* name, bool defaultOpen = true);		
 		void EndTreeNode();	
+
 		
 
 		bool Vec2Control(const std::array<const char*, 2>& names, glm::vec2& values, float resetValue = 0.0f, float speed = 0.05f);
@@ -40,7 +41,39 @@ namespace XYZ {
 		bool IVec2Control(const std::array<const char*, 2>& names, glm::ivec2& values, float resetValue = 0.0f, float speed = 0.05f);
 		bool IVec3Control(const std::array<const char*, 3>& names, glm::ivec3& values, float resetValue = 0.0f, float speed = 0.05f);
 		bool IVec4Control(const std::array<const char*, 4>& names, glm::ivec4& values, float resetValue = 0.0f, float speed = 0.05f);
+		
+		
+		template <typename Func0, typename Func1>
+		void SplitterV(float* size, const char* stringID0, const char* stringID1, const Func0& func0, const Func1& func1)
+		{
+			ImVec2 spacing = ImGui::GetStyle().ItemSpacing;
+			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+			ImGui::BeginChild(stringID0, ImVec2(*size, 0), true);
+			
+			{
+				ScopedStyleStack style(ImGuiStyleVar_ItemSpacing, spacing);
+				func0();
+			}
+			
+			float h = ImGui::GetWindowHeight();
+			ImGui::EndChild();
 
+			ImGui::SameLine();
+
+			ImGui::InvisibleButton("vsplitter", ImVec2(8.0f, h));
+			if (ImGui::IsItemActive())
+				*size += ImGui::GetIO().MouseDelta.x;
+
+			ImGui::SameLine();
+		
+			ImGui::BeginChild(stringID1, ImVec2(0, 0), true);			
+			{
+				ScopedStyleStack style(ImGuiStyleVar_ItemSpacing, spacing);
+				func1();
+			}
+			ImGui::EndChild();	
+			ImGui::PopStyleVar();
+		}
 
 		template <typename ...Args>
 		void Toolbar(glm::vec2 offset, glm::vec2 spacing, bool vertical, Args&& ...args)

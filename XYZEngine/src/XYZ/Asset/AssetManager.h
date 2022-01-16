@@ -78,7 +78,7 @@ namespace XYZ {
 		template <typename T>
 		static Ref<T> GetAsset(const std::filesystem::path& filepath);
 		
-		static void ReloadAsset(const std::filesystem::path& filepath);
+		static void   ReloadAsset(const std::filesystem::path& filepath);
 
 		static const AssetMetadata& GetMetadata(const AssetHandle& handle);
 		static const AssetMetadata& GetMetadata(const std::filesystem::path& filepath);
@@ -86,6 +86,8 @@ namespace XYZ {
 		
 		static const std::string&	GetDirectory();
 		static const MemoryPool&    GetMemoryPool() { return s_Pool; }
+
+		static bool Exist(const AssetHandle& handle);
 	private:
 		static AssetMetadata* getMetadata(const GUID& handle);
 		static AssetMetadata* getMetadata(const std::filesystem::path& filepath);

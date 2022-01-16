@@ -319,9 +319,14 @@ namespace XYZ {
 		for (auto& data : m_SpriteRenderData)
 		{
 			// Assets could be reloaded by AssetManager, update references
-			data.Renderer->Material = AssetManager::GetAsset<Material>(data.Renderer->Material->GetHandle());
-			data.Renderer->SubTexture = AssetManager::GetAsset<SubTexture>(data.Renderer->SubTexture->GetHandle());
-
+			if (AssetManager::Exist(data.Renderer->Material->GetHandle()))
+			{
+				data.Renderer->Material = AssetManager::GetAsset<Material>(data.Renderer->Material->GetHandle());
+			}
+			if (AssetManager::Exist(data.Renderer->SubTexture->GetHandle()))
+			{
+				data.Renderer->SubTexture = AssetManager::GetAsset<SubTexture>(data.Renderer->SubTexture->GetHandle());
+			}
 			sceneRenderer->SubmitSprite(data.Renderer->Material, data.Renderer->SubTexture, data.Renderer->Color, data.Transform->WorldTransform);
 		}
 
