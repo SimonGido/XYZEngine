@@ -13,8 +13,7 @@
 
 #include "XYZ/Debug/Profiler.h"
 
-
-#include "Editor/EditorData.h"
+#include "EditorLayer.h"
 
 #include <imgui.h>
 
@@ -24,24 +23,23 @@ namespace XYZ {
 
 		static std::filesystem::path s_AssetPath = "Assets";
 
+
+
 		AssetBrowser::AssetBrowser(std::string name)
 			:
 			EditorPanel(std::move(name)),
 			m_BaseDirectory(s_AssetPath),
-			m_CurrentDirectory(s_AssetPath),
+			m_DirTree(s_AssetPath),
 			m_ViewportHovered(false),
-			m_ViewportFocused(false)
+			m_ViewportFocused(false),
+			m_SplitterWidth(200.0f)
 		{
 			registerFileTypeExtensions();
 
 			m_IconSize = ImVec2(50.0f, 50.0f);
 			m_ArrowSize = ImVec2(25.0f, 25.0f);
 
-			m_Colors[ArrowColor]	= glm::vec4(0.6f, 0.6f, 0.6f, 1.0f);
-			m_Colors[IconColor]		= glm::vec4(0.6f, 0.6f, 0.6f, 1.0f);
-			m_Colors[DisabledColor] = glm::vec4(0.5f, 0.5f, 0.5f, 0.3f);
-			m_Colors[HoverColor]    = glm::vec4(0.8f, 0.8f, 0.8f, 1.0f);
-			m_Colors[ClickColor]	= glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+		
 		}
 	
 		void AssetBrowser::OnImGuiRender(bool& open)
@@ -53,33 +51,12 @@ namespace XYZ {
 				m_ViewportHovered = ImGui::IsWindowHovered();
 				renderTopPanel();
 
-				static float w = 200.0f;
-				UI::SplitterV(&w, "##DirectoryTree", "##CurrentDirectory",
+				UI::SplitterV(&m_SplitterWidth, "##DirectoryTree", "##CurrentDirectory",
 					[&]() { XYZ_PROFILE_FUNC("AssetBrowser::processDirectoryTree");
 							processDirectoryTree(m_BaseDirectory); },
 					[&]() { XYZ_PROFILE_FUNC("AssetBrowser::processCurrentDirectory");
 							processCurrentDirectory(); });
 				
-				//ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
-				//if (ImGui::BeginChild("##DirectoryTree", ImVec2(w, 0), true))
-				//{
-				//	XYZ_PROFILE_FUNC("AssetBrowser::processDirectoryTree");
-				//	processDirectoryTree(m_BaseDirectory);
-				//}
-				//float h = ImGui::GetWindowHeight();
-				//ImGui::EndChild();
-				//ImGui::SameLine();
-				//ImGui::InvisibleButton("vsplitter", ImVec2(8.0f, h));
-				//if (ImGui::IsItemActive())
-				//	w += ImGui::GetIO().MouseDelta.x;
-				//ImGui::SameLine();
-				//if (ImGui::BeginChild("##CurrentDirectory", ImVec2(0, 0), true))
-				//{
-				//	XYZ_PROFILE_FUNC("AssetBrowser::processCurrentDirectory");
-				//	processCurrentDirectory();						
-				//}
-				//ImGui::EndChild();
-				//ImGui::PopStyleVar();
 
 				if (ImGui::GetIO().MouseReleased[ImGuiMouseButton_Left]
 					&& m_ViewportFocused
@@ -94,14 +71,15 @@ namespace XYZ {
 
 		void AssetBrowser::SetBaseDirectory(const std::string& path)
 		{
-			m_CurrentDirectory = path;
+			m_BaseDirectory = path;
+			m_DirTree = DirectoryTree(path);
 		}
 
 		Ref<Asset> AssetBrowser::GetSelectedAsset() const
 		{
 			if (!m_SelectedFile.empty())
 			{
-				std::string fullFilePath = m_CurrentDirectory.string() + "/" + m_SelectedFile.string();
+				std::string fullFilePath = m_DirTree.GetCurrentNode().GetPath().string() + "/" + m_SelectedFile.string();
 				std::replace(fullFilePath.begin(), fullFilePath.end(), '\\', '/');
 				//const AssetType type = AssetManager::GetAssetTypeFromExtension(Utils::GetExtension(m_SelectedFile.string()));
 				//if (type == AssetType::None)
@@ -194,7 +172,7 @@ namespace XYZ {
 					}
 					if (ImGui::MenuItem("Delete"))
 					{
-						const std::string parentDir = m_CurrentDirectory.string();
+						const std::string parentDir = m_DirTree.GetCurrentNode().GetPath().string();
 						std::string fullPath  = parentDir + "\\" + fileName;
 						//FileSystem::DeleteFileAtPath(fullPath);
 						ImGui::CloseCurrentPopup();
@@ -203,7 +181,7 @@ namespace XYZ {
 					{
 						if (ImGui::MenuItem("Create Texture"))
 						{
-							std::string parentDir = m_CurrentDirectory.string();
+							std::string parentDir = m_DirTree.GetCurrentNode().GetPath().string();
 							std::replace(parentDir.begin(), parentDir.end(), '\\', '/');
 
 							const std::string fullpath = createUniqueAssetName("New Texture", ".tex");
@@ -239,7 +217,7 @@ namespace XYZ {
 		std::string AssetBrowser::createUniqueAssetName(const char* fileName, const char* extension) const
 		{
 			char fileNameTmp[60];
-			std::string fullpath = m_CurrentDirectory.string() + "/" + fileName;
+			std::string fullpath = m_DirTree.GetCurrentNode().GetPath().string() + "/" + fileName;
 			std::replace(fullpath.begin(), fullpath.end(), '\\', '/');
 			if (extension)
 				fullpath += extension;
@@ -252,7 +230,7 @@ namespace XYZ {
 				else
 					sprintf(fileNameTmp, "%s%d", fileName, index);
 
-				fullpath = m_CurrentDirectory.string() + "/" + fileNameTmp;
+				fullpath = m_DirTree.GetCurrentNode().GetPath().string() + "/" + fileNameTmp;
 				std::replace(fullpath.begin(), fullpath.end(), '\\', '/');
 				while (std::filesystem::exists(fullpath))
 				{
@@ -260,7 +238,7 @@ namespace XYZ {
 						sprintf(fileNameTmp, "%s%d%s", fileName, index, extension);
 					else
 						sprintf(fileNameTmp, "%s%d", fileName, index);
-					fullpath = m_CurrentDirectory.string() + "/" + fileNameTmp;
+					fullpath = m_DirTree.GetCurrentNode().GetPath().string() + "/" + fileNameTmp;
 					std::replace(fullpath.begin(), fullpath.end(), '\\', '/');
 					index++;
 				}
@@ -270,118 +248,91 @@ namespace XYZ {
 
 		void AssetBrowser::renderTopPanel()
 		{
-			const bool backArrowAvailable = m_CurrentDirectory != std::filesystem::path(s_AssetPath);
-			const bool frontArrowAvailable = !m_DirectoriesVisited.empty();
+			const auto& preferences = EditorLayer::GetData();
+			const bool backArrowAvailable = !m_DirTree.UndoEmpty();
+			const bool frontArrowAvailable = !m_DirTree.RedoEmpty();
 
-			const ImVec4 backArrowColor = backArrowAvailable ? m_Colors[ArrowColor] : m_Colors[DisabledColor];
-			const ImVec4 frontArrowColor = frontArrowAvailable ? m_Colors[ArrowColor] : m_Colors[DisabledColor];
+			const ImVec4 backArrowColor = backArrowAvailable ? preferences.Color[ED::IconColor] : preferences.Color[ED::DisabledColor];
+			const ImVec4 frontArrowColor = frontArrowAvailable ? preferences.Color[ED::IconColor] : preferences.Color[ED::DisabledColor];
 
-			const UV& rightArrowTexCoords = EditorData::IconsSpriteSheet->GetTexCoords(Arrow);
+			const UV& rightArrowTexCoords = EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(Arrow);
 			UV leftArrowTexCoords = rightArrowTexCoords;
-			std::swap(leftArrowTexCoords.UV0.x, leftArrowTexCoords.UV1.x);
+			std::swap(leftArrowTexCoords[0].x, leftArrowTexCoords[1].x);
 
 			ImGui::PushItemFlag(ImGuiItemFlags_Disabled, !backArrowAvailable);
 
-			const bool backArrowPressed = UI::ImageButtonTransparent("##BackArrow", EditorData::IconsTexture->GetImage(), m_ArrowSize, m_Colors[HoverColor], m_Colors[ClickColor], backArrowColor,
-				leftArrowTexCoords.UV0, leftArrowTexCoords.UV1);
+			const bool backArrowPressed = UI::ImageButtonTransparent("##BackArrow", preferences.IconsTexture->GetImage(), m_ArrowSize, preferences.Color[ED::IconHoverColor], preferences.Color[ED::IconClickColor], backArrowColor,
+				leftArrowTexCoords[0], leftArrowTexCoords[1]);
 			ImGui::PopItemFlag();
 			ImGui::SameLine();
 
 
 			ImGui::PushItemFlag(ImGuiItemFlags_Disabled, !frontArrowAvailable);
-			const bool frontArrowPressed = UI::ImageButtonTransparent("##FrontArrow", EditorData::IconsTexture->GetImage(), m_ArrowSize, m_Colors[HoverColor], m_Colors[ClickColor], frontArrowColor,
-				rightArrowTexCoords.UV0, rightArrowTexCoords.UV1);
+			const bool frontArrowPressed = UI::ImageButtonTransparent("##FrontArrow", preferences.IconsTexture->GetImage(), m_ArrowSize, preferences.Color[ED::IconHoverColor], preferences.Color[ED::IconClickColor], frontArrowColor,
+				rightArrowTexCoords[0], rightArrowTexCoords[1]);
 			ImGui::PopItemFlag();
 			ImGui::SameLine();
 
 
 			if (backArrowPressed && backArrowAvailable)
-			{
-				m_DirectoriesVisited.push_front(m_CurrentDirectory);
-				m_CurrentDirectory = m_CurrentDirectory.parent_path();
-			}
-
+				m_DirTree.Undo();
+			
 			if (frontArrowPressed && frontArrowAvailable)
-			{
-				m_CurrentDirectory = m_DirectoriesVisited.front();
-				m_DirectoriesVisited.pop_front();
-			}
+				m_DirTree.Redo();
 
 
-			UI::Utils::SetPathBuffer(m_CurrentDirectory.string());
+			UI::Utils::SetPathBuffer(m_DirTree.GetCurrentNode().GetPath().string());
 			if (ImGui::InputText("###", UI::Utils::GetPathBuffer(), _MAX_PATH))
-			{
-				m_CurrentDirectory = UI::Utils::GetPathBuffer();
-				m_DirectoriesVisited.clear();
-			}
+				m_DirTree.SetCurrentNode(UI::Utils::GetPathBuffer());
 		}
 
 		void AssetBrowser::processCurrentDirectory()
 		{
-			if (!std::filesystem::is_directory(m_CurrentDirectory))
-				return;
-
+			const auto&  preferences = EditorLayer::GetData();
 			static float padding = 32.0f;
-			const float cellSize = m_IconSize.x + padding;
+			const float  cellSize = m_IconSize.x + padding;
 
 			const float panelWidth = ImGui::GetContentRegionAvail().x;
 			int columnCount = (int)(panelWidth / cellSize);
-			if (columnCount < 1)
-				columnCount = 1;
-
-			const UV& folderTexCoords = EditorData::IconsSpriteSheet->GetTexCoords(Folder);
-
+			columnCount = std::max(1, columnCount);
+			
 			ImGui::Columns(columnCount, 0, false);
-			for (auto& it : std::filesystem::directory_iterator(m_CurrentDirectory))
+			for (const auto& node : m_DirTree.GetCurrentNode())
 			{
-				std::string name = it.path().filename().string();
-
-				if (it.is_directory())
+				const bool pressed = node.OnImGuiRender(m_IconSize);
+				if (node.IsDirectory())
 				{
-					const bool dirPressed = UI::ImageButtonTransparent(name.c_str(), EditorData::IconsTexture->GetImage(), m_IconSize, m_Colors[HoverColor], m_Colors[ClickColor], m_Colors[IconColor],
-						folderTexCoords.UV0, folderTexCoords.UV1);
-
-					if (dirPressed)
+					if (pressed)
 					{
-						m_CurrentDirectory /= it.path().filename();
-						m_DirectoriesVisited.clear();
+						m_DirTree.SetCurrentNode(node);
 						break;
 					}
 				}
 				else
 				{
-					const uint32_t index = extensionToTexCoordsIndex(Utils::GetExtension(name));
-					if (index == FileType::NumTypes)
-						continue;
-					const UV& fileTexCoords = EditorData::IconsSpriteSheet->GetTexCoords(index);
-
-					const bool iconPressed = UI::ImageButtonTransparent(name.c_str(), EditorData::IconsTexture->GetImage(), m_IconSize, m_Colors[HoverColor], m_Colors[ClickColor], m_Colors[IconColor],
-						fileTexCoords.UV0, fileTexCoords.UV1);
-
-					if (iconPressed)
+					if (pressed)
 					{
-						m_SelectedFile = name;
+						m_SelectedFile = node.GetName();
 					}
-					if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+					else if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
 					{
-						m_RightClickedFile = name;
+						m_RightClickedFile = node.GetName();
 					}
-
-					std::string fullPath = it.path().string();
+					std::string fullPath = node.GetPath().string();
 					std::replace(fullPath.begin(), fullPath.end(), '\\', '/');
 					UI::DragDropSource("AssetDragAndDrop", fullPath.c_str(), fullPath.size() + 1);
 				}
 				rightClickMenu();
-
-				ImGui::TextWrapped(name.c_str());
+				ImGui::TextWrapped(node.GetName().c_str());
 				ImGui::NextColumn();
 			}
 			ImGui::Columns(1);
 		}
 
-		void AssetBrowser::processDirectoryTree(const std::filesystem::path& dirPath) const
+		void AssetBrowser::processDirectoryTree(const std::filesystem::path& dirPath)
 		{
-			const UV& folderTexCoords = EditorData::IconsSpriteSheet->GetTexCoords(Folder);
+			const auto& preferences = EditorLayer::GetData();
+			const UV& folderTexCoords = EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(Folder);
 
 			const ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow;
 			for (auto& it : std::filesystem::directory_iterator(dirPath))
@@ -391,8 +342,11 @@ namespace XYZ {
 					std::string folderName = it.path().string();
 					std::string folderID = "##" + folderName;
 					const bool opened = ImGui::TreeNodeEx(folderID.c_str(), flags);
+					if (ImGui::IsItemClicked())
+						m_DirTree.SetCurrentNode(it.path());
+					
 					ImGui::SameLine();
-					UI::Image(EditorData::IconsTexture->GetImage(), { GImGui->Font->FontSize , GImGui->Font->FontSize }, folderTexCoords.UV0, folderTexCoords.UV1);
+					UI::Image(preferences.IconsTexture->GetImage(), { GImGui->Font->FontSize , GImGui->Font->FontSize }, folderTexCoords[0], folderTexCoords[1]);
 					ImGui::SameLine();
 					ImGui::Text(Utils::GetFilename(folderName).c_str());
 					if (opened)
@@ -403,5 +357,7 @@ namespace XYZ {
 				}
 			}
 		}
+
+
 	}
 }

@@ -4,12 +4,12 @@
 
 namespace XYZ {
 
-	UV UV::Calculate(const glm::vec2& coords, const glm::vec2& cellSize, const glm::vec2& textureSize)
+	UV Calculate(const glm::vec2& coords, const glm::vec2& cellSize, const glm::vec2& textureSize)
 	{
 		UV uv;
-		uv.UV0 = { (coords.x * cellSize.x) / textureSize.x,
+		uv[0] = { (coords.x * cellSize.x) / textureSize.x,
 				 ((coords.y + 1) * cellSize.y) / textureSize.y };
-		uv.UV1 = { ((coords.x + 1) * cellSize.x) / textureSize.x,
+		uv[1] = { ((coords.x + 1) * cellSize.x) / textureSize.x,
 				   (coords.y * cellSize.y) / textureSize.y };
 
 		return uv;
@@ -30,7 +30,7 @@ namespace XYZ {
 		for (uint32_t row = 0; row < m_Rows; ++row)
 		{
 			for (uint32_t column = 0; column < m_Columns; ++column)
-				m_UVs.push_back(UV::Calculate(glm::vec2(column, row), cellSize, textureSize));
+				m_UVs.push_back(Calculate(glm::vec2(column, row), cellSize, textureSize));
 		}
 	}
 	const UV& SpriteSheet::GetTexCoords(uint32_t index) const
@@ -41,5 +41,5 @@ namespace XYZ {
 	{
 		return m_UVs[(m_Columns * row) + column];
 	}
-	
+
 }

@@ -4,13 +4,11 @@
 
 
 namespace XYZ {
-	struct UV
-	{
-		glm::vec2 UV0, UV1;
-
-		static UV Calculate(const glm::vec2& coords, const glm::vec2& size, const glm::vec2& textureSize);
-	};
-
+	using UV = std::array<glm::vec2, 2>;
+	
+	UV Calculate(const glm::vec2& coords, const glm::vec2& size, const glm::vec2& textureSize);
+	
+	
 	class SpriteSheet : public RefCount
 	{
 	public:

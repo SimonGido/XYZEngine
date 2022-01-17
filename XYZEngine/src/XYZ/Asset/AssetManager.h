@@ -118,15 +118,17 @@ namespace XYZ {
 		metadata.FilePath	  = directoryPath + "/" + filename;
 		metadata.Type		  = T::GetStaticType();
 
-		XYZ_ASSERT(FileSystem::Exists(metadata.FilePath), "File already exists");
-		s_AssetMetadata[metadata.FilePath] = metadata;
+		XYZ_ASSERT(!FileSystem::Exists(metadata.FilePath.string()), "File already exists");
+		
+		s_AssetMetadata[metadata.Handle] = metadata;
+		s_AssetHandleMap[metadata.FilePath] = metadata.Handle;
 
 		Ref<T> asset = Utils::CreateRef<T>(std::forward<Args>(args)...);
 		asset->m_Handle = metadata.Handle;
 
-		s_LoadedAssets[asset->m_Handle] = asset;
+		s_LoadedAssets[asset->m_Handle] = asset.Raw();
 		writeAssetMetadata(metadata);
-		AssetImporter::SerializeAsset(asset);
+		AssetImporter::Serialize(asset);
 		return asset;
 	}
 
@@ -153,7 +155,8 @@ namespace XYZ {
 	template<typename T>
 	inline Ref<T> AssetManager::GetAsset(const std::filesystem::path& filepath)
 	{
-		auto& metadata = GetMetadata(filepath);
+		std::string metaDataPath = filepath.string() + ".meta";
+		auto& metadata = GetMetadata(std::filesystem::path(metaDataPath));
 		return GetAsset<T>(metadata.Handle);
 	}
 }

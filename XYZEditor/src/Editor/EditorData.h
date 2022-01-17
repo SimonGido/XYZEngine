@@ -1,16 +1,31 @@
 #pragma once
+#include <glm/glm.hpp>
+
 #include "XYZ/Renderer/SpriteSheet.h"
 
 namespace XYZ {
 	namespace Editor {
-		class EditorData
+		
+		struct EditorData
 		{
-		public:
-			static void Init();
-			static void Shutdown();
+			void Init();
+			void Shutdown();
 
-			inline static Ref<Texture2D>   IconsTexture;
-			inline static Ref<SpriteSheet> IconsSpriteSheet;
+			Ref<Texture2D>   IconsTexture;
+			Ref<SpriteSheet> IconsSpriteSheet;
+
+			enum Colors
+			{
+				BoundingBox,
+				Collider2D,
+				IconColor,
+				IconHoverColor,
+				IconClickColor,
+				DisabledColor,
+				NumColors
+			};
+			glm::vec4 Color[NumColors];
 		};
+		using ED = EditorData;
 	}
 }

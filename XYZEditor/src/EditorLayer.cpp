@@ -1,5 +1,4 @@
 #include "EditorLayer.h"
-#include "Editor/EditorData.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
@@ -19,8 +18,7 @@ namespace XYZ {
 
 		void EditorLayer::OnAttach()
 		{
-			EditorData::Init();
-
+			s_Data.Init();
 			m_Scene = Ref<Scene>::Create("TestScene");
 			m_Scene->SetViewportSize(
 				Application::Get().GetWindow().GetWidth(),
@@ -51,11 +49,12 @@ namespace XYZ {
 			m_EditorCamera = &scenePanel->GetEditorCamera();
 
 			Renderer::WaitAndRenderAll();
+			//AssetManager::CreateAsset<Texture2D>("Checkerboard.tex", "Assets/Textures", "Assets/Textures/checkerboard.png");
 		}
 
 		void EditorLayer::OnDetach()
 		{
-			EditorData::Shutdown();
+			s_Data.Shutdown();
 		}
 		void EditorLayer::OnUpdate(Timestep ts)
 		{
@@ -139,7 +138,7 @@ namespace XYZ {
 						* glm::rotate(glm::mat4(1.0f), rotation.z, glm::vec3(0.0f, 0.0f, 1.0f))
 						* glm::scale(glm::mat4(1.0f), scale);
 
-					m_OverlayRenderer2D->SubmitRect(transform, m_Preferences.Collider2DColor);
+					m_OverlayRenderer2D->SubmitRect(transform, s_Data.Color[ED::Collider2D]);
 				}
 
 				auto circle2DColliderView = ecs.CreateView<TransformComponent, CircleCollider2DComponent>();
@@ -149,7 +148,7 @@ namespace XYZ {
 					auto [translation, rotation, scale] = transformComp.GetWorldComponents();
 					translation += glm::vec3(circleCollider.Offset, 0.0f);
 					scale *= glm::vec3(circleCollider.Radius * 2.0f);
-					m_OverlayRenderer2D->SubmitFilledCircle(translation, glm::vec2(scale.x, scale.y), 0.01f, m_Preferences.Collider2DColor);
+					m_OverlayRenderer2D->SubmitFilledCircle(translation, glm::vec2(scale.x, scale.y), 0.01f, s_Data.Color[ED::Collider2D]);
 				}
 			}
 		}
@@ -194,13 +193,13 @@ namespace XYZ {
 					auto& transform = selected.GetComponent<TransformComponent>();
 					auto& camera = selected.GetComponent<CameraComponent>();
 					auto [min, max] = cameraToAABB(transform, camera.Camera);
-					m_OverlayRenderer2D->SubmitAABB(min, max, m_Preferences.BoundingBoxColor);
+					m_OverlayRenderer2D->SubmitAABB(min, max, s_Data.Color[ED::BoundingBox]);
 				}
 				else
 				{
 					auto& transform = selected.GetComponent<TransformComponent>();
 					auto [min, max] = transformToAABB(transform);
-					m_OverlayRenderer2D->SubmitAABB(min, max, m_Preferences.BoundingBoxColor);
+					m_OverlayRenderer2D->SubmitAABB(min, max, s_Data.Color[ED::BoundingBox]);
 				}
 			}
 		}

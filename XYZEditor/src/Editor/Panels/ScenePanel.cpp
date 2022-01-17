@@ -11,7 +11,7 @@
 #include "XYZ/ImGui/ImGui.h"
 
 #include "Editor/Event/EditorEvents.h"
-#include "Editor/EditorData.h"
+#include "EditorLayer.h"
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -252,25 +252,21 @@ namespace XYZ {
 
 		bool ScenePanel::playBar()
 		{
+			const auto& preferences = EditorLayer::GetData();
 			bool handled = false;
-			const ImVec4 colors[3] = {
-				ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
-				ImVec4(1.0f, 1.0f, 1.0f, 1.0f),
-				ImVec4(0.5f, 0.5f, 0.5f, 1.0f)
-			};
-
-			const UV& playButtonTexCoords = EditorData::IconsSpriteSheet->GetTexCoords(PlayButton);
-			const UV& stopButtonTexCoords = EditorData::IconsSpriteSheet->GetTexCoords(StopButton);
+			const UV& playButtonTexCoords = preferences.IconsSpriteSheet->GetTexCoords(PlayButton);
+			const UV& stopButtonTexCoords = preferences.IconsSpriteSheet->GetTexCoords(StopButton);
 
 			const float toolbarWidth = 4.0f + 2.0f * m_ButtonSize.x;
 			const float toolbarPositionX = (ImGui::GetWindowContentRegionWidth() - toolbarWidth) / 2.0f;
+			
 			UI::Toolbar(glm::vec2(toolbarPositionX, 8.0f), glm::vec2(4.0f, 0.0f), false,
 				[&]() {
 				UI::ScopedItemFlags flags(ImGuiItemFlags_Disabled, m_Context->GetState() == SceneState::Play);
-				if (UI::ImageButtonTransparent("Play", EditorData::IconsTexture->GetImage(),
-					m_ButtonSize, colors[0], colors[1], colors[2],
-					playButtonTexCoords.UV0,
-					playButtonTexCoords.UV1
+				if (UI::ImageButtonTransparent("Play", preferences.IconsTexture->GetImage(),m_ButtonSize, 
+					preferences.Color[ED::IconHoverColor], preferences.Color[ED::IconClickColor], preferences.Color[ED::IconColor],
+					playButtonTexCoords[0],
+					playButtonTexCoords[1]
 				))
 				{
 					m_Context->SetState(SceneState::Play);
@@ -280,10 +276,10 @@ namespace XYZ {
 			},
 				[&]() {
 				UI::ScopedItemFlags flags(ImGuiItemFlags_Disabled, m_Context->GetState() == SceneState::Edit);
-				if (UI::ImageButtonTransparent("Stop", EditorData::IconsTexture->GetImage(),
-					m_ButtonSize, colors[0], colors[1], colors[2],
-					stopButtonTexCoords.UV0,
-					stopButtonTexCoords.UV1
+				if (UI::ImageButtonTransparent("Stop", preferences.IconsTexture->GetImage(),m_ButtonSize, 
+					preferences.Color[ED::IconHoverColor], preferences.Color[ED::IconClickColor], preferences.Color[ED::IconColor],
+					stopButtonTexCoords[0],
+					stopButtonTexCoords[1]
 				))
 				{
 					m_Context->SetState(SceneState::Edit);
@@ -296,45 +292,46 @@ namespace XYZ {
 
 		bool ScenePanel::toolsBar()
 		{
+			const auto& preferences = EditorLayer::GetData();
 			bool handled = false;
-			const UV& cursorTexCoords = EditorData::IconsSpriteSheet->GetTexCoords(CursorButton);
-			const UV& moveTexCoords   = EditorData::IconsSpriteSheet->GetTexCoords(MoveButton);
-			const UV& rotateTexCoords = EditorData::IconsSpriteSheet->GetTexCoords(RotateButton);
-			const UV& scaleTexCoords  = EditorData::IconsSpriteSheet->GetTexCoords(ScaleButton);
-			const ImVec4 colors[3] = {
-				ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
-				ImVec4(1.0f, 1.0f, 1.0f, 1.0f),
-				ImVec4(0.5f, 0.5f, 0.5f, 1.0f)
-			};
-
+			const UV& cursorTexCoords = preferences.IconsSpriteSheet->GetTexCoords(CursorButton);
+			const UV& moveTexCoords   = preferences.IconsSpriteSheet->GetTexCoords(MoveButton);
+			const UV& rotateTexCoords = preferences.IconsSpriteSheet->GetTexCoords(RotateButton);
+			const UV& scaleTexCoords  = preferences.IconsSpriteSheet->GetTexCoords(ScaleButton);
+			
+	
 			UI::Toolbar(glm::vec2(8.0f, 8.0f), glm::vec2(0.0f, 0.0f), false,
 				[&]() {
-					if (UI::ImageButtonTransparent("##Cursor", EditorData::IconsTexture->GetImage(), m_ButtonSize,
-						colors[0], colors[1], colors[2], cursorTexCoords.UV0, cursorTexCoords.UV1))
+					if (UI::ImageButtonTransparent("##Cursor", preferences.IconsTexture->GetImage(), m_ButtonSize,
+						preferences.Color[ED::IconHoverColor], preferences.Color[ED::IconClickColor], preferences.Color[ED::IconColor],
+						cursorTexCoords[0], cursorTexCoords[1]))
 					{
 						m_GizmoType = sc_InvalidGizmoType;
 						handled = true;
 					}
 				},
 				[&]() {
-					if (UI::ImageButtonTransparent("##Move", EditorData::IconsTexture->GetImage(), m_ButtonSize,
-						colors[0], colors[1], colors[2], moveTexCoords.UV0, moveTexCoords.UV1))
+					if (UI::ImageButtonTransparent("##Move", preferences.IconsTexture->GetImage(), m_ButtonSize,
+						preferences.Color[ED::IconHoverColor], preferences.Color[ED::IconClickColor], preferences.Color[ED::IconColor],
+						moveTexCoords[0], moveTexCoords[1]))
 					{
 						m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
 						handled = true;
 					}
 				},
 				[&]() {
-					if (UI::ImageButtonTransparent("##Rotate", EditorData::IconsTexture->GetImage(), m_ButtonSize,
-						colors[0], colors[1], colors[2], rotateTexCoords.UV0, rotateTexCoords.UV1))
+					if (UI::ImageButtonTransparent("##Rotate", preferences.IconsTexture->GetImage(), m_ButtonSize,
+						preferences.Color[ED::IconHoverColor], preferences.Color[ED::IconClickColor], preferences.Color[ED::IconColor],
+						rotateTexCoords[0], rotateTexCoords[1]))
 					{
 						m_GizmoType = ImGuizmo::OPERATION::ROTATE;
 						handled = true;
 					}
 				},
 				[&]() {
-					if (UI::ImageButtonTransparent("##Scale", EditorData::IconsTexture->GetImage(), m_ButtonSize,
-						colors[0], colors[1], colors[2], scaleTexCoords.UV0, scaleTexCoords.UV1))
+					if (UI::ImageButtonTransparent("##Scale", preferences.IconsTexture->GetImage(), m_ButtonSize,
+						preferences.Color[ED::IconHoverColor], preferences.Color[ED::IconClickColor], preferences.Color[ED::IconColor],
+						scaleTexCoords[0], scaleTexCoords[1]))
 					{
 						m_GizmoType = ImGuizmo::OPERATION::SCALE;
 						handled = true;

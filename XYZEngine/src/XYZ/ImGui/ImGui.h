@@ -47,7 +47,7 @@ namespace XYZ {
 		void SplitterV(float* size, const char* stringID0, const char* stringID1, const Func0& func0, const Func1& func1)
 		{
 			ImVec2 spacing = ImGui::GetStyle().ItemSpacing;
-			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+			ScopedStyleStack styleSpacing(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
 			ImGui::BeginChild(stringID0, ImVec2(*size, 0), true);
 			
 			{
@@ -60,7 +60,7 @@ namespace XYZ {
 
 			ImGui::SameLine();
 
-			ImGui::InvisibleButton("vsplitter", ImVec2(8.0f, h));
+			ImGui::InvisibleButton("splitterButton", ImVec2(8.0f, h));
 			if (ImGui::IsItemActive())
 				*size += ImGui::GetIO().MouseDelta.x;
 
@@ -72,7 +72,6 @@ namespace XYZ {
 				func1();
 			}
 			ImGui::EndChild();	
-			ImGui::PopStyleVar();
 		}
 
 		template <typename ...Args>

@@ -5,7 +5,7 @@
 
 #include "Editor/EditorCamera.h"
 #include "Editor/EditorManager.h"
-#include "Editor/EditorPreferences.h"
+#include "Editor/EditorData.h"
 
 #include "Editor/Panels/ScenePanel.h"
 #include "Editor/Panels/InspectorPanel.h"
@@ -37,6 +37,7 @@ namespace XYZ {
 			virtual void OnEvent(Event& event) override;
 			virtual void OnImGuiRender() override;
 
+			static const EditorData& GetData() { return s_Data; }
 		private:
 			bool onMouseButtonPress(MouseButtonPressEvent& event);
 			bool onMouseButtonRelease(MouseButtonReleaseEvent& event);
@@ -74,7 +75,6 @@ namespace XYZ {
 			/////////////////////
 		private:
 			SceneEntity					m_SelectedEntity;
-			EditorPreferences			m_Preferences;
 			EditorManager				m_EditorManager;
 
 			struct GPUTimeQueries
@@ -84,6 +84,9 @@ namespace XYZ {
 				static constexpr uint32_t Count() { return sizeof(GPUTimeQueries) / sizeof(uint32_t); }
 			};
 			GPUTimeQueries m_GPUTimeQueries;
+
+
+			inline static EditorData s_Data;
 		};
 	}
 }

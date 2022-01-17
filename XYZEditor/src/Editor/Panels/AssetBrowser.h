@@ -3,12 +3,15 @@
 #include "XYZ/Renderer/SpriteSheet.h"
 
 #include "Editor/EditorPanel.h"
+#include "Editor/Asset/DirectoryTree.h"
+
 
 #include <deque>
 #include <filesystem>
 
 namespace XYZ {
 	namespace Editor {
+
 		class AssetBrowser : public EditorPanel
 		{
 		public:
@@ -32,17 +35,17 @@ namespace XYZ {
 
 			void		renderTopPanel();
 			void		processCurrentDirectory();
-			void		processDirectoryTree(const std::filesystem::path& dirPath) const;
-		private:	
+			void		processDirectoryTree(const std::filesystem::path& dirPath);
+
+		private:
 			bool m_ViewportHovered;
 			bool m_ViewportFocused;
 
 			std::filesystem::path			  m_SelectedFile;
 			std::filesystem::path			  m_RightClickedFile;
 			std::filesystem::path			  m_BaseDirectory;
-			std::filesystem::path			  m_CurrentDirectory;
-			std::deque<std::filesystem::path> m_DirectoriesVisited;
-
+			
+			DirectoryTree					  m_DirTree;
 
 			std::unordered_map<std::string, uint32_t> m_FileTypeExtensions;
 		private:
@@ -63,24 +66,11 @@ namespace XYZ {
 				Script,
 				NumTypes
 			};
-
-			enum Color
-			{
-				ArrowColor,
-				IconColor,
-				DisabledColor,
-				HoverColor,
-				ClickColor,
-				NumColors
-			};
 			
 			glm::vec2 m_IconSize;
 			glm::vec2 m_ArrowSize;
 
-			
-			glm::vec4 m_Colors[NumColors];
-
-			float m_Widths[2] = { 300.0f, 400.0f };
+			float m_SplitterWidth;
 		};
 	}
 }
