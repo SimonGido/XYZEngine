@@ -18,29 +18,9 @@ namespace XYZ {
 			return Input::IsKeyPressed(key);
 		}
 
-		void XYZ_Entity_GetTransform(uint32_t entity, glm::mat4* outTransform)
-		{
-			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
-			XYZ_ASSERT(scene.Raw(), "No active scene!");
-			
-			SceneEntity ent(entity, scene.Raw());
+		
 
-			const auto& transformComponent = ent.GetComponent<TransformComponent>();
-			memcpy(outTransform, glm::value_ptr(transformComponent.GetTransform()), sizeof(glm::mat4));
-		}
 
-		void XYZ_Entity_SetTransform(uint32_t entity, glm::mat4* inTransform)
-		{
-			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
-			XYZ_ASSERT(scene.Raw(), "No active scene!");
-
-			SceneEntity ent(entity, scene.Raw());
-
-			glm::mat4 transform;
-			memcpy(glm::value_ptr(transform), inTransform, sizeof(glm::mat4));
-			auto& transformComponent = ent.GetComponent<TransformComponent>();
-			transformComponent.DecomposeTransform(transform);
-		}
 		void XYZ_RigidBody2D_ApplyForce(uint32_t entity, glm::vec2* impulse, glm::vec2* point)
 		{
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();

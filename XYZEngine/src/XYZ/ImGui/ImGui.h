@@ -237,6 +237,14 @@ namespace XYZ {
 			}
 		};
 
+		class ScopedID
+		{
+		public:
+			template <typename T>
+			ScopedID(T id) { ImGui::PushID(id); }
+			~ScopedID() { ImGui::PopID(); }
+		};
+
 		class ScopedWidth
 		{
 		public:

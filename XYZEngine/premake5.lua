@@ -72,8 +72,6 @@ project "XYZEngine"
 			"%{IncludeDir.MiniMp3}",	
 			"%{IncludeDir.FreeType}/include",
 			"%{IncludeDir.Asio}",
-			"%{IncludeDir.Lua}",
-			"%{IncludeDir.Sol}",
 			"%{IncludeDir.mono}",
 			"%{IncludeDir.TrianglePP}",
 			"%{IncludeDir.box2d}",

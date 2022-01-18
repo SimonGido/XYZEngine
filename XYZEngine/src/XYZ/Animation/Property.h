@@ -35,13 +35,14 @@ namespace XYZ {
 
 
 	template <typename T>
-	using SetPropertyRefFn = void(*)(SceneEntity entity, T** ref, const uint16_t varIndex);
+	using SetPropertyRefFn = void(*)(SceneEntity entity, T** ref);
 	
 	template <typename T>
 	class Property : public IProperty
 	{
 	public:	
-		Property(const SetPropertyRefFn<T>& callback, 
+		Property(
+			const SetPropertyRefFn<T>& callback, 
 			const std::string& path, 
 			const std::string& valueName, 
 			const std::string& componentName, 
@@ -201,7 +202,7 @@ namespace XYZ {
 	template<typename T>
 	inline void Property<T>::SetReference()
 	{
-		m_SetPropertyCallback(m_Entity, &m_Value, m_ValueIndex);
+		m_SetPropertyCallback(m_Entity, &m_Value);
 	}
 	template<typename T>
 	inline void Property<T>::SetCurrentKey(uint32_t frame)

@@ -12,5 +12,7 @@ namespace XYZ {
 		static std::string Rename(const std::string& filepath, const std::string& newName);
 		static bool DeleteFileAtPath(const std::string& filepath);
 		static bool MoveFileToPath(const std::string& filepath, const std::string& dest);
+
+		static std::string UniqueFilePath(const std::string& dir, const std::string& fileName, const char* extension);
 	};
 }

@@ -5,7 +5,10 @@
 #include "XYZ/Scene/Components.h"
 #include "XYZ/Animation/Animation.h"
 #include "XYZ/Animation/Animator.h"
+
+
 #include "ScriptWrappers.h"
+#include "Components/TransformComponentWrappers.h"
 
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
@@ -76,12 +79,20 @@ namespace XYZ {
 
 		mono_add_internal_call("XYZ.Input::IsKeyPressed_Native", XYZ::Script::XYZ_Input_IsKeyPressed);
 
-		mono_add_internal_call("XYZ.Entity::GetTransform_Native", XYZ::Script::XYZ_Entity_GetTransform);
-		mono_add_internal_call("XYZ.Entity::SetTransform_Native", XYZ::Script::XYZ_Entity_SetTransform);
-		
 		mono_add_internal_call("XYZ.Entity::HasComponent_Native", XYZ::Script::XYZ_Entity_HasComponent);
 		mono_add_internal_call("XYZ.Entity::CreateComponent_Native", XYZ::Script::XYZ_Entity_CreateComponent);
-		
+
+		// Transform component
+		mono_add_internal_call("XYZ.TransformComponent::GetTransform_Native", XYZ::Script::XYZ_TransformComponent_GetTransform);
+		mono_add_internal_call("XYZ.TransformComponent::SetTransform_Native", XYZ::Script::XYZ_TransformComponent_SetTransform);
+		mono_add_internal_call("XYZ.TransformComponent::GetTranslation_Native", XYZ::Script::XYZ_TransformComponent_GetTranslation);
+		mono_add_internal_call("XYZ.TransformComponent::SetTranslation_Native", XYZ::Script::XYZ_TransformComponent_SetTranslation);
+		mono_add_internal_call("XYZ.TransformComponent::GetRotation_Native", XYZ::Script::XYZ_TransformComponent_GetRotation);
+		mono_add_internal_call("XYZ.TransformComponent::SetRotation_Native", XYZ::Script::XYZ_TransformComponent_SetRotation);
+		mono_add_internal_call("XYZ.TransformComponent::GetScale_Native", XYZ::Script::XYZ_TransformComponent_GetScale);
+		mono_add_internal_call("XYZ.TransformComponent::SetScale_Native", XYZ::Script::XYZ_TransformComponent_SetScale);
+		////////////////////////
+
 		mono_add_internal_call("XYZ.RigidBody2DComponent::ApplyForce_Native", XYZ::Script::XYZ_RigidBody2D_ApplyForce);
 	}
 }

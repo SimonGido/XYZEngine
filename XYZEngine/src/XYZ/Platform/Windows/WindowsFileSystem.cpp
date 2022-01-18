@@ -137,6 +137,27 @@ namespace XYZ {
 		return result != 0;
 	}
 
+	std::string FileSystem::UniqueFilePath(const std::string& dir, const std::string& fileName, const char* extension)
+	{
+		char fileNameTmp[60];
+		std::string fullpath = dir + "\\" + fileName;
+		if (extension)
+			fullpath += extension;
+
+		uint32_t counter = 0;
+		while (std::filesystem::exists(fullpath))
+		{
+			if (extension)
+				sprintf_s(fileNameTmp, "%s%d%s", fileName, counter, extension);
+			else
+				sprintf_s(fileNameTmp, "%s%d", fileName, counter);
+			fullpath = dir + "\\" + fileNameTmp;
+			counter++;
+		}
+		std::replace(fullpath.begin(), fullpath.end(), '\\', '/');
+		return fullpath;
+	}
+
 	bool FileSystem::DeleteFileAtPath(const std::string& filepath)
 	{
 		s_IgnoreNextChange = true;

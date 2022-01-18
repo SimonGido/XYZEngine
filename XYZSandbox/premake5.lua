@@ -23,8 +23,6 @@ project "XYZSandbox"
 			"%{IncludeDir.ImGuizmo}",
 			"%{IncludeDir.glm}",
 			"%{IncludeDir.Asio}",
-			"%{IncludeDir.Lua}",
-			"%{IncludeDir.Sol}",
 			"%{IncludeDir.box2d}"
 		}
 		

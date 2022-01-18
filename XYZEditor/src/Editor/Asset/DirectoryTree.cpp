@@ -27,11 +27,12 @@ namespace XYZ {
 			return DirectoryTree::FileType::NumTypes;
 		}
 
-		DirectoryNode::DirectoryNode(std::filesystem::path path, const UV& texCoords, const Ref<Texture2D>& texture)
+		DirectoryNode::DirectoryNode(std::filesystem::path path, const UV& texCoords, const Ref<Texture2D>& texture, const uint32_t depth)
 			:
 			m_Path(std::move(path)),
 			m_TexCoords(texCoords),
-			m_Texture(texture)
+			m_Texture(texture),
+			m_Depth(depth)
 		{
 			m_Name = m_Path.filename().string();
 		}
@@ -52,10 +53,10 @@ namespace XYZ {
 		}
 		DirectoryTree::DirectoryTree(const std::filesystem::path& path)
 			:
-			m_Root(path, {}, nullptr)
+			m_Root(path, {}, nullptr, 0)
 		{
 			m_CurrentNode = &m_Root;
-			processDirectory(m_Root.m_Nodes, path);
+			processDirectory(m_Root.m_Nodes, path, 1);
 		}
 		void DirectoryTree::SetCurrentNode(const DirectoryNode& node)
 		{
@@ -85,15 +86,15 @@ namespace XYZ {
 			m_CurrentNode = m_RedoDirectories.back();
 			m_RedoDirectories.pop_back();
 		}
-		void DirectoryTree::processDirectory(std::vector<DirectoryNode>& nodes, const std::filesystem::path& dirPath)
+		void DirectoryTree::processDirectory(std::vector<DirectoryNode>& nodes, const std::filesystem::path& dirPath, const uint32_t depth)
 		{
 			for (auto& it : std::filesystem::directory_iterator(dirPath))
 			{
 				if (it.is_directory())
 				{
 					const UV& folderTexCoords = EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(Folder);
-					nodes.emplace_back(it.path(), folderTexCoords, EditorLayer::GetData().IconsTexture);		
-					processDirectory(nodes.back().m_Nodes, it.path());
+					nodes.emplace_back(it.path(), folderTexCoords, EditorLayer::GetData().IconsTexture, depth);		
+					processDirectory(nodes.back().m_Nodes, it.path(), depth + 1);
 				}
 				else
 				{
@@ -102,12 +103,12 @@ namespace XYZ {
 					{
 						const UV textureCoords = { glm::vec2(0.0f), glm::vec2(1.0f) };
 						Ref<Texture2D> texture = AssetManager::GetAsset<Texture2D>(it.path());
-						nodes.emplace_back(it.path(), textureCoords, texture);
+						nodes.emplace_back(it.path(), textureCoords, texture, depth);
 					}
 					else if (type != FileType::NumTypes) // Unknown file
 					{
 						const UV& fileTexCoords = EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(type);
-						nodes.emplace_back(it.path(), fileTexCoords, EditorLayer::GetData().IconsTexture);
+						nodes.emplace_back(it.path(), fileTexCoords, EditorLayer::GetData().IconsTexture, depth);
 					}
 				}
 			}

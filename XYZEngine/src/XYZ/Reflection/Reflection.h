@@ -113,6 +113,12 @@ namespace XYZ {
 			auto tmp = ToReferenceTuple(s);\
 			return std::get<Index>(tmp);\
 		}\
+		template <uint16_t Index>\
+		static const auto& Get(const Type& s)\
+		{\
+			auto tmp = ToReferenceTuple(s);\
+			return std::get<Index>(tmp);\
+		}\
 		template <typename T>\
 		static T& GetByIndex(uint16_t index, Type& s)\
 		{\

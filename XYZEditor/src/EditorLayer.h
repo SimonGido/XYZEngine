@@ -11,8 +11,8 @@
 #include "Editor/Panels/InspectorPanel.h"
 #include "Editor/Panels/ImGuiStylePanel.h"
 #include "Editor/Panels/SceneHierarchyPanel.h"
-#include "Editor/Panels/AssetManagerViewPanel.h"
-#include "Editor/Panels/AssetBrowser.h"
+#include "Editor/Asset/AssetManagerViewPanel.h"
+#include "Editor/Asset/AssetBrowser.h"
 
 
 #define GLM_ENABLE_EXPERIMENTAL

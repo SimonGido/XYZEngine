@@ -25,7 +25,7 @@ namespace Example
 
         public void OnUpdate(float ts)
         {
-            Matrix4 transform = GetTransform();
+            TransformComponent transform = GetComponent<TransformComponent>();
             Vector3 translation = transform.Translation;
             Vector2 point = new Vector2(translation.X, translation.Y);
 

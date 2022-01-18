@@ -14,8 +14,8 @@ namespace XYZ {
 		Animation();
 		virtual ~Animation() override;
 
-		template <typename ComponentType, typename ValueType>
-		void AddProperty(const std::string& path, const std::string& valueName, uint16_t valIndex);
+		template <typename ComponentType, typename ValueType, uint16_t valIndex>
+		void AddProperty(const std::string& path, const std::string& valueName);
 
 		template <typename ComponentType, typename ValueType>
 		void RemoveProperty(const std::string& path, const std::string& valueName);
@@ -96,12 +96,12 @@ namespace XYZ {
 	};
 	
 
-	template<typename ComponentType, typename ValueType>
-	inline void Animation::AddProperty(const std::string& path, const std::string& valueName, uint16_t valIndex)
+	template<typename ComponentType, typename ValueType, uint16_t valIndex>
+	inline void Animation::AddProperty(const std::string& path, const std::string& valueName)
 	{
-		SetPropertyRefFn<ValueType> callback = [](SceneEntity ent, ValueType** ref, const uint16_t varIndex) {
+		SetPropertyRefFn<ValueType> callback = [](SceneEntity ent, ValueType** ref) {
 			if (ent.IsValid() && ent.HasComponent<ComponentType>())
-				*ref = &Reflection<ComponentType>::GetByIndex<ValueType>(varIndex, ent.GetComponent<ComponentType>());
+				*ref = &Reflection<ComponentType>::Get<valIndex>(ent.GetComponent<ComponentType>());
 			else
 				*ref = nullptr;
 		};

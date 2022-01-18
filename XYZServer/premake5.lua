@@ -23,8 +23,6 @@ project "XYZServer"
 			"%{IncludeDir.yaml}",
 			"%{IncludeDir.glm}",
 			"%{IncludeDir.Asio}",
-			"%{IncludeDir.Lua}",
-			"%{IncludeDir.Sol}",
 			"%{IncludeDir.box2d}"
 		}
 		
