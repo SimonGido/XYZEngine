@@ -32,7 +32,7 @@ namespace XYZ {
 		XYZ_ASSERT(IsValid(entity), "Accesing invalid entity");
 		Entity result = m_EntityManager.CreateEntity();
 
-		for (const auto storage : m_ComponentManager.m_Storages)
+		for (const auto storage : m_ComponentManager.GetIStorages())
 		{
 			if (storage)
 			{

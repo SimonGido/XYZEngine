@@ -127,8 +127,7 @@ namespace XYZ {
 		uint32_t GetEntityVersion(Entity entity) const { return m_EntityManager.GetVersion(entity); }
 		uint32_t GetNumberOfEntities() const		   { return m_EntityManager.GetNumEntities(); }
 
-		uint16_t		GetNumberOfCreatedStorages() const { return m_ComponentManager.GetNumberOfCreatedStorages(); }
-		static uint16_t GetNumberOfRegisteredComponents() { return ComponentManager::s_NextComponentTypeID; }
+		static uint16_t GetNumberOfRegisteredComponents() { return ComponentManager::GetNextComponentID(); }
 	
 	private:
 		void executeOnConstruction(Entity entity);
@@ -152,9 +151,6 @@ namespace XYZ {
 	inline T& ECSManager::EmplaceComponent(Entity entity, Args && ...args)
 	{
 		XYZ_ASSERT(IsValid(entity), "Entity is invalid");
-		// Make sure storage for component exists
-		m_ComponentManager.CreateStorage<T>();
-	
 		XYZ_ASSERT(!HasComponent<T>(entity), "Entity already contains component");
 
 		auto& result = m_ComponentManager.EmplaceComponent<T>(entity, std::forward<Args>(args)...);
@@ -166,9 +162,6 @@ namespace XYZ {
 	inline T& ECSManager::AddComponent(Entity entity, const T& component)
 	{
 		XYZ_ASSERT(IsValid(entity), "Entity is invalid");
-		// Make sure storage for component exists
-		m_ComponentManager.CreateStorage<T>();
-
 		XYZ_ASSERT(!HasComponent<T>(entity), "Entity already contains component");
 
 		auto& result = m_ComponentManager.AddComponent<T>(entity, component);

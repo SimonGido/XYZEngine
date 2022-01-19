@@ -7,13 +7,9 @@ namespace XYZ {
 	uint16_t ComponentManager::s_NextComponentTypeID = 0;
 
 	ComponentManager::ComponentManager()
-		:
-		m_StoragesCreated(0)
 	{
 	}
 	ComponentManager::ComponentManager(const ComponentManager& other)
-		:
-		m_StoragesCreated(other.m_StoragesCreated)
 	{
 		size_t counter = 0;
 		m_Storages.resize(other.m_Storages.size());
@@ -27,8 +23,6 @@ namespace XYZ {
 		}
 	}
 	ComponentManager::ComponentManager(ComponentManager&& other) noexcept
-		:
-		m_StoragesCreated(other.m_StoragesCreated)
 	{
 		size_t counter = 0;
 		m_Storages.resize(other.m_Storages.size());

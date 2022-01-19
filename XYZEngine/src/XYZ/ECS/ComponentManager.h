@@ -35,7 +35,7 @@ namespace XYZ {
 		}
 
 		template <typename T>
-		void CreateStorage()
+		void CreateStorage() const
 		{
 			registerComponentType<T>();
 			createStorage<T>();
@@ -65,15 +65,15 @@ namespace XYZ {
 		template <typename T>
 		ComponentStorage<T>& GetStorage()
 		{
-			XYZ_ASSERT(m_Storages[(size_t)Component<T>::ID()], "Storage is not initialized");
-			return *static_cast<ComponentStorage<T>*>(m_Storages[(size_t)Component<T>::ID()]);
+			CreateStorage<T>();
+			return *static_cast<ComponentStorage<T>*>(m_Storages[static_cast<size_t>(Component<T>::ID())]);
 		}
 
 		template <typename T>
 		const ComponentStorage<T>& GetStorage() const
 		{
-			XYZ_ASSERT(m_Storages[(size_t)Component<T>::ID()], "Storage is not initialized");
-			return *static_cast<ComponentStorage<T>*>(m_Storages[(size_t)Component<T>::ID()]);
+			CreateStorage<T>();
+			return *static_cast<ComponentStorage<T>*>(m_Storages[static_cast<size_t>(Component<T>::ID())]);
 		}
 
 		IComponentStorage* GetIStorage(uint16_t index)
@@ -96,25 +96,26 @@ namespace XYZ {
 			return storage.GetComponentIndex(entity);
 		}
 
-		uint16_t GetNumberOfCreatedStorages() const { return m_StoragesCreated; }
-
 		const std::vector<IComponentStorage*>& GetIStorages() const { return m_Storages; }
+
+		static uint16_t GetNextComponentID() { return s_NextComponentTypeID; }
 	private:
 		template <typename T>
-		void createStorage()
+		void createStorage() const
 		{
 			const size_t oldSize = m_Storages.size();
 			const size_t id = (size_t)Component<T>::ID();
 			
 			if (oldSize <= id)
 				m_Storages.resize(id + 1);		
-			for (size_t i = oldSize; i < m_Storages.size(); ++i)
-				m_Storages[i] = nullptr;		
+			
 			if (m_Storages[id]) // Storage already exists
 				return;
 
+			for (size_t i = oldSize; i < m_Storages.size(); ++i)
+				m_Storages[i] = nullptr;		
+			
 			m_Storages[id] = new ComponentStorage<T>();
-			m_StoragesCreated++;
 		}
 
 		template <typename T>
@@ -127,12 +128,9 @@ namespace XYZ {
 		void destroyStorages();
 
 	private:
-		std::vector<IComponentStorage*> m_Storages;
-		uint16_t						m_StoragesCreated;
+		mutable std::vector<IComponentStorage*> m_Storages;
 
-		static uint16_t				    s_NextComponentTypeID;
-
-		friend class ECSManager;
+		static uint16_t							s_NextComponentTypeID;
 	};
 	
 }
