@@ -9,28 +9,46 @@
 
 #include "ScriptWrappers.h"
 #include "Components/TransformComponentWrappers.h"
+#include "XYZ/Utils/Delegate.h"
 
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
 
 
-namespace XYZ {
-	
-	std::unordered_map<MonoType*, std::function<bool(SceneEntity&)>> s_HasComponentFuncs;
-	std::unordered_map<MonoType*, std::function<void(SceneEntity&)>> s_CreateComponentFuncs;
+namespace XYZ {	
+	namespace Utils {
+		template <typename T>
+		bool HasComponent(SceneEntity& entity)
+		{
+			return entity.HasComponent<T>();
+		}
+
+		template <typename T>
+		void CreateComponent(SceneEntity& entity)
+		{
+			entity.EmplaceComponent<T>();
+		}
+	}
+
+
+	std::unordered_map<MonoType*, Delegate<bool(SceneEntity&)>> s_HasComponentFuncs;
+	std::unordered_map<MonoType*, Delegate<void(SceneEntity&)>> s_CreateComponentFuncs;
 	extern MonoImage* s_CoreAssemblyImage;
+
 
 #define REGISTER_COMPONENT_TYPE(Type) \
 	{\
 		MonoType* type = mono_reflection_type_from_name("XYZ." #Type, s_CoreAssemblyImage);\
-		if (type) {\
-			uint32_t id = mono_type_get_type(type);\
-			s_HasComponentFuncs[type] = [](SceneEntity& entity) { return entity.HasComponent<Type>(); };\
-			s_CreateComponentFuncs[type] = [](SceneEntity& entity) { entity.AddComponent<Type>(Type()); };\
-		} else {\
-			XYZ_ASSERT(false, "No C# component class found for " #Type "!");\
-		}\
+	    XYZ_ASSERT(type != nullptr, "No C# component class found for " #Type "!");\
+		Delegate<bool(SceneEntity&)> hasComponentDeleg;\
+		Delegate<void(SceneEntity&)> createComponentDeleg;\
+		hasComponentDeleg.Connect<&Utils::HasComponent<Type>>();\
+		createComponentDeleg.Connect<&Utils::CreateComponent<Type>>();\
+		s_HasComponentFuncs[type] = hasComponentDeleg;\
+		s_CreateComponentFuncs[type] = createComponentDeleg;\
 	}
+
+	
 
 	static void InitComponentTypes()
 	{
