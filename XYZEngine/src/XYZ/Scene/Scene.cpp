@@ -269,7 +269,7 @@ namespace XYZ {
 		sceneRenderer->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 		sceneRenderer->BeginScene(renderCamera);
 
-		sortSpriteRenderers(sceneRenderer);
+		sortSpriteRenderers();
 		for (const auto& data : m_SpriteRenderData)
 		{
 			sceneRenderer->SubmitSprite(data.Renderer->Material, data.Renderer->SubTexture, data.Renderer->Color, data.Transform->WorldTransform);
@@ -320,7 +320,7 @@ namespace XYZ {
 		updateHierarchy();
 		sceneRenderer->BeginScene(viewProjection, view, camPos);
 		
-		sortSpriteRenderers(sceneRenderer);
+		sortSpriteRenderers();
 		for (auto& data : m_SpriteRenderData)
 		{
 			// Assets could be reloaded by AssetManager, update references
@@ -532,7 +532,7 @@ namespace XYZ {
 			counter++;
 		}
 	}
-	void Scene::sortSpriteRenderers(Ref<SceneRenderer>& sceneRenderer)
+	void Scene::sortSpriteRenderers()
 	{
 		XYZ_PROFILE_FUNC("Scene::processSpriteRenderers");
 		m_SpriteRenderData.clear();

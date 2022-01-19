@@ -76,7 +76,7 @@ namespace XYZ {
         void updateHierarchy();
         void setupPhysics();
 
-        void sortSpriteRenderers(Ref<SceneRenderer>& sceneRenderer);
+        void sortSpriteRenderers();
 
         struct SpriteRenderData
         {
