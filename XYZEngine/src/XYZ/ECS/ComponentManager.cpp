@@ -62,12 +62,12 @@ namespace XYZ {
 		other.m_Storages.clear();
 		return *this;
 	}
-	void ComponentManager::EntityDestroyed(Entity entity, const Signature& signature)
+	void ComponentManager::EntityDestroyed(Entity entity)
 	{
 		uint32_t counter = 0;
 		for (const auto storage : m_Storages)
 		{
-			if (storage && signature[counter])
+			if (storage && storage->HasEntity(entity))
 			{
 				storage->EntityDestroyed(entity);
 			}

@@ -27,6 +27,7 @@ namespace XYZ {
 
 		virtual size_t			   Size() const = 0;
 		virtual uint16_t		   ID() const = 0;
+		virtual bool			   HasEntity(Entity entity) const = 0;
 
 		virtual const std::vector<uint32_t>& GetDataEntityMap() const = 0;
 
@@ -86,6 +87,8 @@ namespace XYZ {
 		
 		virtual size_t   Size() const override;	
 		virtual uint16_t ID() const override;
+		virtual bool	 HasEntity(Entity entity) const override;
+
 		virtual const std::vector<uint32_t>& GetDataEntityMap() const override;
 	
 		template <typename ...Args>
@@ -183,6 +186,12 @@ namespace XYZ {
 	inline uint16_t ComponentStorage<T>::ID() const
 	{
 		return Component<T>::ID();
+	}
+
+	template<typename T>
+	inline bool ComponentStorage<T>::HasEntity(Entity entity) const
+	{
+		return m_Data.IsValid(entity);
 	}
 
 	template<typename T>

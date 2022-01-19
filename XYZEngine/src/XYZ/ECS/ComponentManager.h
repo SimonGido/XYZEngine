@@ -3,7 +3,7 @@
 #include "Component.h"
 #include "Types.h"
 #include "Entity.h"
-#include "Signature.h"
+
 
 namespace XYZ {
 
@@ -17,7 +17,7 @@ namespace XYZ {
 
 		ComponentManager& operator=(ComponentManager&& other) noexcept;
 
-		void EntityDestroyed(Entity entity, const Signature& signature);	
+		void EntityDestroyed(Entity entity);	
 		void Clear();
 
 		template <typename T, typename ...Args>
@@ -42,7 +42,7 @@ namespace XYZ {
 		}	
 
 		template <typename T>
-		void RemoveComponent(Entity entity, const Signature& signature)
+		void RemoveComponent(Entity entity)
 		{
 			ComponentStorage<T>& storage = GetStorage<T>();
 			storage.RemoveComponent(entity);
@@ -98,6 +98,7 @@ namespace XYZ {
 
 		uint16_t GetNumberOfCreatedStorages() const { return m_StoragesCreated; }
 
+		const std::vector<IComponentStorage*>& GetIStorages() const { return m_Storages; }
 	private:
 		template <typename T>
 		void createStorage()

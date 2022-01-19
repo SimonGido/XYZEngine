@@ -31,7 +31,7 @@ namespace XYZ {
 	{
 		XYZ_ASSERT(IsValid(entity), "Accesing invalid entity");
 		Entity result = m_EntityManager.CreateEntity();
-		Signature& signature = m_EntityManager.GetSignature(result);
+
 		for (const auto storage : m_ComponentManager.m_Storages)
 		{
 			if (storage)
@@ -39,7 +39,6 @@ namespace XYZ {
 				if (HasComponent(entity, storage->ID()))
 				{
 					storage->CopyEntity(entity, result);
-					signature.Set(storage->ID(), true);
 				}
 			}
 		}
@@ -53,8 +52,7 @@ namespace XYZ {
 	void ECSManager::DestroyEntity(Entity entity)
 	{ 
 		XYZ_ASSERT(IsValid(entity), "Entity is invalid");
-		const auto& signature = m_EntityManager.GetSignature(entity);
-		m_ComponentManager.EntityDestroyed(entity, signature);
+		m_ComponentManager.EntityDestroyed(entity);
 		m_EntityManager.DestroyEntity(entity); 
 		executeOnDestruction(entity);
 	}
@@ -65,19 +63,11 @@ namespace XYZ {
 		m_OnConstruction.clear();
 		m_OnDestruction.clear();
 	}
-	const Signature& ECSManager::GetEntitySignature(Entity entity) const
-	{
-		XYZ_ASSERT(IsValid(entity), "Entity is invalid");
-		return m_EntityManager.GetSignature(entity);
-	}
 
 	bool ECSManager::HasComponent(Entity entity, uint16_t componentID) const
 	{
 		XYZ_ASSERT(IsValid(entity), "Entity is invalid");
-		auto& signature = m_EntityManager.GetSignature(entity);
-		if (signature.Size() <= componentID)
-			return false;
-		return signature[componentID];
+		return GetIStorage(componentID)->HasEntity(entity);
 	}
 	bool ECSManager::IsValid(Entity entity) const
 	{

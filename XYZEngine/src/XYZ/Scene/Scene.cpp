@@ -119,7 +119,7 @@ namespace XYZ {
 	void Scene::OnPlay()
 	{
 		s_EditTransforms.clear();
-		s_EditTransforms.resize((size_t)m_ECS.GetHighestID() + 1);
+		//s_EditTransforms.resize((size_t)m_ECS.GetHighestID() + 1);
 		
 		// Find Camera
 		m_ECS.CreateStorage<CameraComponent>();
