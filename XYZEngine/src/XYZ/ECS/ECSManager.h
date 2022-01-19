@@ -381,7 +381,7 @@ namespace XYZ {
 	template<typename T>
 	inline void ECSManager::eraseFromVector(std::vector<T>& vec, const T& value)
 	{
-		for (auto it = vec.begin(); it != vec.end(); ++it)
+		for (auto it = vec.begin(); it != vec.end();)
 		{
 			if ((*it) == value)
 			{
