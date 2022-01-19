@@ -49,10 +49,15 @@ namespace XYZ {
 
 		ScopedLock<b2World> physicsWorld = m_PhysicsWorld.GetWorld();
 		physicsWorld->SetContactListener(&m_ContactListener);
+
+		m_ECS.AddOnConstruction<ScriptComponent, &Scene::onScriptComponentConstruct>(this);
+		m_ECS.AddOnDestruction<ScriptComponent, &Scene::onScriptComponentDestruct>(this);
 	}
 
 	Scene::~Scene()
 	{
+		m_ECS.RemoveOnConstruction<ScriptComponent, &Scene::onScriptComponentConstruct>(this);
+		m_ECS.RemoveOnDestruction<ScriptComponent, &Scene::onScriptComponentDestruct>(this);
 	}
 
 	SceneEntity Scene::CreateEntity(const std::string& name, const GUID& guid)
@@ -145,9 +150,9 @@ namespace XYZ {
 		for (size_t i = 0; i < scriptStorage.Size(); ++i)
 		{
 			ScriptComponent& script = scriptStorage.GetComponentAtIndex(i);
-			for (auto& field : script.GetFields())
-				field.CopyStoredValueToRuntime();
-			ScriptEngine::OnCreateEntity({ scriptStorage.GetEntityAtIndex(i), this });
+			SceneEntity entity(scriptStorage.GetEntityAtIndex(i), this);
+			ScriptEngine::InstantiateEntityClass(entity);
+			ScriptEngine::OnCreateEntity(entity);
 		}
 
 		auto& storageParticleCPU = m_ECS.GetStorage<ParticleComponentCPU>();
@@ -398,6 +403,15 @@ namespace XYZ {
 	SceneEntity Scene::GetSelectedEntity()
 	{
 		return { m_SelectedEntity, this };
+	}
+
+	void Scene::onScriptComponentConstruct(Entity entity)
+	{
+		ScriptEngine::InitScriptEntity({ entity, this });
+	}
+
+	void Scene::onScriptComponentDestruct(Entity entity)
+	{
 	}
 
 	void Scene::updateHierarchy()

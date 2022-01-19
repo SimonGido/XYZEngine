@@ -8,6 +8,11 @@ namespace XYZ
     {
         public uint ID { get; private set; }
 
+        internal Entity(uint id)
+        {
+            ID = id;
+        }
+        protected Entity() { ID = 0; }
         ~Entity()
         {
         }

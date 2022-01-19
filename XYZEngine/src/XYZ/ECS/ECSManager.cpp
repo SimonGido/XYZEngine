@@ -43,7 +43,7 @@ namespace XYZ {
 				}
 			}
 		}
-		executeOnConstruction();
+		executeOnConstruction(entity);
 		return result;
 	}
 	Entity ECSManager::CreateEntity()
@@ -56,7 +56,7 @@ namespace XYZ {
 		const auto& signature = m_EntityManager.GetSignature(entity);
 		m_ComponentManager.EntityDestroyed(entity, signature);
 		m_EntityManager.DestroyEntity(entity); 
-		executeOnDestruction();
+		executeOnDestruction(entity);
 	}
 	void ECSManager::Clear()
 	{
@@ -91,14 +91,14 @@ namespace XYZ {
 	{
 		return m_ComponentManager.GetIStorage(index);
 	}
-	void ECSManager::executeOnConstruction()
+	void ECSManager::executeOnConstruction(Entity entity)
 	{
 		for (auto& callback : m_OnConstruction)
-			callback.Callable();
+			callback(entity);
 	}
-	void ECSManager::executeOnDestruction()
+	void ECSManager::executeOnDestruction(Entity entity)
 	{
 		for (auto& callback : m_OnDestruction)
-			callback.Callable();
+			callback(entity);
 	}
 }

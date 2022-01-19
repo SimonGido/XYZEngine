@@ -232,7 +232,7 @@ namespace XYZ {
 		const std::vector<PublicField>& GetFields() const { return Fields; }
 
 	private:
-		EntityScriptClass* ScriptClass = nullptr;
+		EntityScriptClass*		 ScriptClass = nullptr;
 		std::vector<PublicField> Fields;
 
 		friend class ScriptEngine;

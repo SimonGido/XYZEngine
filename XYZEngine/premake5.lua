@@ -85,7 +85,6 @@ project "XYZEngine"
 			"GLFW",
 			"OpenAL-Soft",
 			"FreeType",
-			"Lua",
 			"opengl32",
 			"TrianglePP",
 			"ImGui",

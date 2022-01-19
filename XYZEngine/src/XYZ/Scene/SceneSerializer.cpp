@@ -272,8 +272,6 @@ namespace XYZ {
 		ScriptComponent scriptComponent;
 		scriptComponent.ModuleName = data["ModuleName"].as<std::string>();
 		entity.AddComponent(scriptComponent);
-		ScriptEngine::InitScriptEntity(entity);
-		ScriptEngine::InstantiateEntityClass(entity);
 
 		const auto& component = entity.GetComponent<ScriptComponent>();
 		for (auto& field : component.GetFields())

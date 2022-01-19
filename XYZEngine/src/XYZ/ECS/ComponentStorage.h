@@ -2,6 +2,7 @@
 #include "Types.h"
 #include "Entity.h"
 #include "XYZ/Utils/DataStructures/SparseArray.h"
+#include "XYZ/Utils/Delegate.h"
 
 namespace XYZ {
 
@@ -29,50 +30,39 @@ namespace XYZ {
 
 		virtual const std::vector<uint32_t>& GetDataEntityMap() const = 0;
 
-		template <typename FuncT, typename ...Args>
-		void	 AddOnConstruction(FuncT&& func, Args&& ...args);
-
-		template <typename Type>
-		void	 AddOnConstruction(void(Type::* func)(), Type* instance);
-
-		template <typename FuncT>
-		void	 RemoveOnConstruction(FuncT&& func);
-
-		template <typename Type>
-		void	 RemoveOnConstruction(void(Type::* func)(), Type* instance);
-
-		template <typename Type>
-		void	 RemoveOnConstructionOfInstance(Type* instance);
+		template <auto Callable>
+		void AddOnConstruction();
+		
+		template <auto Callable, typename Type>
+		void AddOnConstruction(Type* instance);
+		
+		template <auto Callable>
+		void RemoveOnConstruction();
+		
+		template <auto Callable, typename Type>
+		void RemoveOnConstruction(Type* instance);
+		
 
 
-		template <typename FuncT, typename ...Args>
-		void	 AddOnDestruction(FuncT&& func, Args&& ...args);
+		template <auto Callable>
+		void AddOnDestruction();
+		
+		template <auto Callable, typename Type>
+		void AddOnDestruction(Type* instance);
 
-		template <typename Type>
-		void	 AddOnDestruction(void(Type::* func)(), Type* instance);
+		template <auto Callable>
+		void RemoveOnDestruction();
 
-		template <typename FuncT>
-		void	 RemoveOnDestruction(FuncT&& func);
-
-		template <typename Type>
-		void	 RemoveOnDestruction(void(Type::* func)(), Type* instance);
-
-		template <typename Type>
-		void	 RemoveOnDestructionOfInstance(Type* instance);
+		template <auto Callable, typename Type>
+		void RemoveOnDestruction(Type* instance);
+	
+	private:
+		template <typename T>
+		void eraseFromVector(std::vector<T>& vec, const T& value);
 
 	protected:
-		struct Callback
-		{
-			Callback() = default;
-			Callback(const std::function<void()>& callable, void* funcPtr, void* instance);
-
-			std::function<void()> Callable;
-			void* FunctionPointer = nullptr;
-			void* Instance = nullptr;
-		};
-
-		std::vector<Callback> m_OnConstruction;
-		std::vector<Callback> m_OnDestruction;
+		std::vector<Delegate<void(Entity)>> m_OnConstruction;
+		std::vector<Delegate<void(Entity)>> m_OnDestruction;
 	};
 
 	template <typename T>
@@ -122,134 +112,7 @@ namespace XYZ {
 		SparseArray<T> m_Data;
 	};
 
-	template<typename FuncT, typename ...Args>
-	inline void IComponentStorage::AddOnConstruction(FuncT&& func, Args && ...args)
-	{
-		m_OnConstruction.emplace_back([=]() {
-			func((args)...);
-		}, func, nullptr);
-	}
-
-
-	template<typename Type>
-	inline void IComponentStorage::AddOnConstruction(void(Type::* func)(), Type* instance)
-	{
-		m_OnConstruction.emplace_back([=]() {
-			(instance->*func)();
-		}, &func, instance);
-	}
-
-	template<typename FuncT>
-	inline void IComponentStorage::RemoveOnConstruction(FuncT&& func)
-	{
-		for (size_t i = 0; i < m_OnConstruction.size(); ++i)
-		{
-			if (m_OnConstruction[i].FunctionPointer == func)
-			{
-				m_OnConstruction.erase(m_OnConstruction.begin() + i);
-				return;
-			}
-		}
-	}
-
-	template<typename Type>
-	inline void IComponentStorage::RemoveOnConstruction(void(Type::* func)(), Type* instance)
-	{
-		for (size_t i = 0; i < m_OnConstruction.size(); ++i)
-		{
-			if (m_OnConstruction[i].FunctionPointer == &func && m_OnConstruction[i].Instance == instance)
-			{
-				m_OnConstruction.erase(m_OnConstruction.begin() + i);
-				return;
-			}
-		}
-	}
-
-	template<typename Type>
-	inline void IComponentStorage::RemoveOnConstructionOfInstance(Type* instance)
-	{
-		for (auto it = m_OnConstruction.begin(); it != m_OnConstruction.end();)
-		{
-			if (it->Instance == instance)
-			{
-				it = m_OnConstruction.erase(it);
-			}
-			else
-			{
-				it++;
-			}
-		}
-	}
-
-	template<typename FuncT, typename ...Args>
-	inline void IComponentStorage::AddOnDestruction(FuncT&& func, Args && ...args)
-	{
-		m_OnDestruction.emplace_back([=]() {
-			func((args)...);
-		}, func, nullptr);
-	}
-
-	template<typename Type>
-	inline void IComponentStorage::AddOnDestruction(void(Type::* func)(), Type* instance)
-	{
-		m_OnDestruction.emplace_back([=]() {
-			(instance->*func)();
-		}, &func, instance);
-	}
-
-
-	template<typename FuncT>
-	inline void IComponentStorage::RemoveOnDestruction(FuncT&& func)
-	{
-		for (size_t i = 0; i < m_OnDestruction.size(); ++i)
-		{
-			if (m_OnDestruction[i].FunctionPointer == func)
-			{
-				m_OnDestruction.erase(m_OnDestruction.begin() + i);
-				return;
-			}
-		}
-	}
-
-	template<typename Type>
-	inline void IComponentStorage::RemoveOnDestruction(void(Type::* func)(), Type* instance)
-	{
-		for (size_t i = 0; i < m_OnDestruction.size(); ++i)
-		{
-			if (m_OnDestruction[i].FunctionPointer == &func && m_OnDestruction[i].Instance == instance)
-			{
-				m_OnDestruction.erase(m_OnDestruction.begin() + i);
-				return;
-			}
-		}
-	}
-
-	template<typename Type>
-	inline void IComponentStorage::RemoveOnDestructionOfInstance(Type* instance)
-	{
-		for (auto it = m_OnDestruction.begin(); it != m_OnDestruction.end();)
-		{
-			if (it->Instance == instance)
-			{
-				it = m_OnDestruction.erase(it);
-			}
-			else
-			{
-				it++;
-			}
-		}
-	}
-
-
-	inline IComponentStorage::Callback::Callback(const std::function<void()>& callable, void* funcPtr, void* instance)
-		:
-		Callable(callable),
-		FunctionPointer(funcPtr),
-		Instance(instance)
-	{
-	}
-
-
+	
 
 	template<typename T>
 	inline ComponentStorage<T>::ComponentStorage(const ComponentStorage<T>& other)
@@ -334,7 +197,7 @@ namespace XYZ {
 	{
 		m_Data.Emplace(entity, std::forward<Args>(args)...);
 		for (auto& callback : m_OnConstruction)
-			callback.Callable();
+			callback(entity);
 		return m_Data.Back();
 	}
 
@@ -343,7 +206,7 @@ namespace XYZ {
 	{
 		m_Data.Push(entity, component);
 		for (auto& callback : m_OnConstruction)
-			callback.Callable();
+			callback(entity);
 		return m_Data.Back();
 	}
 
@@ -352,7 +215,7 @@ namespace XYZ {
 	{
 		m_Data.Erase(entity);
 		for (auto& callback : m_OnDestruction)
-			callback.Callable();
+			callback(entity);
 	}
 
 	template<typename T>
@@ -393,5 +256,85 @@ namespace XYZ {
 	
 
 
+
+	template<auto Callable>
+	inline void IComponentStorage::AddOnConstruction()
+	{
+		Delegate<void(Entity)> deleg;
+		deleg.Connect<Callable>();
+		m_OnConstruction.push_back(deleg);
+	}
+
+	template<auto Callable, typename Type>
+	inline void IComponentStorage::AddOnConstruction(Type* instance)
+	{
+		Delegate<void(Entity)> deleg;
+		deleg.Connect<Callable>(instance);
+		m_OnConstruction.push_back(deleg);
+	}
+
+	template<auto Callable>
+	inline void IComponentStorage::RemoveOnConstruction()
+	{
+		Delegate<void(Entity)> deleg;
+		deleg.Connect<Callable>();
+		eraseFromVector(m_OnConstruction, deleg);
+	}
+
+	template<auto Callable, typename Type>
+	inline void IComponentStorage::RemoveOnConstruction(Type* instance)
+	{
+		Delegate<void(Entity)> deleg;
+		deleg.Connect<Callable>(instance);
+		eraseFromVector(m_OnConstruction, deleg);
+	}
+
+	template<auto Callable>
+	inline void IComponentStorage::AddOnDestruction()
+	{
+		Delegate<void(Entity)> deleg;
+		deleg.Connect<Callable>();
+		m_OnDestruction.push_back(deleg);
+	}
+
+	template<auto Callable, typename Type>
+	inline void IComponentStorage::AddOnDestruction(Type* instance)
+	{
+		Delegate<void(Entity)> deleg;
+		deleg.Connect<Callable>(instance);
+		m_OnDestruction.push_back(deleg);
+	}
+
+	template<auto Callable>
+	inline void IComponentStorage::RemoveOnDestruction()
+	{
+		Delegate<void(Entity)> deleg;
+		deleg.Connect<Callable>();
+		eraseFromVector(m_OnDestruction, deleg);
+	}
+
+	template<auto Callable, typename Type>
+	inline void IComponentStorage::RemoveOnDestruction(Type* instance)
+	{
+		Delegate<void(Entity)> deleg;
+		deleg.Connect<Callable>(instance);
+		eraseFromVector(m_OnDestruction, deleg);
+	}
+
+	template<typename T>
+	inline void IComponentStorage::eraseFromVector(std::vector<T>& vec, const T& value)
+	{
+		for (auto it = vec.begin(); it != vec.end(); ++it)
+		{
+			if ((*it) == value)
+			{
+				it = vec.erase(it);
+			}
+			else
+			{
+				it++;
+			}
+		}
+	}
 
 }

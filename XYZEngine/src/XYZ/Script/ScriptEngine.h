@@ -29,6 +29,7 @@ namespace XYZ {
 		static void OnCreateEntity(SceneEntity entity);
 		static void OnDestroyEntity(SceneEntity entity);
 		static void OnUpdateEntity(SceneEntity entity, Timestep ts);
+		static MonoObject* Construct(const std::string& fullName, bool callConstructor = true, void** parameters = nullptr);
 
 		static bool ModuleExists(const std::string& moduleName);
 		static void InitScriptEntity(SceneEntity entity);

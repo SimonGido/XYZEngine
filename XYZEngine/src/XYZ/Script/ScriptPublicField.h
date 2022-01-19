@@ -100,13 +100,13 @@ namespace XYZ {
 		void getRuntimeString_Internal(char** outValue) const;
 
 	private:
-		MonoClassField* m_MonoClassField;
+		MonoClassField*  m_MonoClassField;
 		mutable uint8_t* m_StoredValueBuffer = nullptr;
 		mutable uint32_t m_Size;
-		uint32_t m_Handle;
+		uint32_t	     m_Handle;
 		
-		std::string m_Name;
-		PublicFieldType m_Type;
+		std::string		 m_Name;
+		PublicFieldType  m_Type;
 
 		friend class ScriptEngine;
 	};

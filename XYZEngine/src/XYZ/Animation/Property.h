@@ -80,7 +80,8 @@ namespace XYZ {
 		const std::vector<KeyFrame<T>>& GetKeyFrames()     const { return m_Keys; }
 	private:
 		bool   isKeyInRange() const { return m_CurrentKey + 1 < m_Keys.size(); }
-		
+		void   setReference(Entity entity);
+
 	private:
 		T*						 m_Value;
 		SceneEntity				 m_Entity;
@@ -121,8 +122,10 @@ namespace XYZ {
 	{
 		if (m_Entity.IsValid())
 		{
-			m_Entity.RemoveOnComponentConstructionOfInstance(m_ComponentID, this);
-			m_Entity.RemoveOnComponentDestructionOfInstance(m_ComponentID, this);
+			//auto ecs = m_Entity.GetECS();
+			//ecs->RemoveOnConstruction
+			//m_Entity.RemoveOnComponentConstructionOfInstance(m_ComponentID, this);
+			//m_Entity.RemoveOnComponentDestructionOfInstance(m_ComponentID, this);
 		}
 	}
 	template<typename T>
@@ -142,8 +145,8 @@ namespace XYZ {
 		SetReference();
 		if (m_Entity.IsValid())
 		{
-			m_Entity.AddOnComponentConstruction(m_ComponentID, &Property<T>::SetReference, this);
-			m_Entity.AddOnComponentDestruction(m_ComponentID, &Property<T>::SetReference, this);
+			//m_Entity.AddOnComponentConstruction(m_ComponentID, &Property<T>::setReference, this);
+			//m_Entity.AddOnComponentDestruction(m_ComponentID, &Property<T>::setReference, this);
 		}
 	}
 	template<typename T>
@@ -163,8 +166,8 @@ namespace XYZ {
 		SetReference();
 		if (m_Entity.IsValid())
 		{
-			m_Entity.AddOnComponentConstruction(m_ComponentID, &Property<T>::SetReference, this);
-			m_Entity.AddOnComponentDestruction(m_ComponentID, &Property<T>::SetReference, this);
+			//m_Entity.AddOnComponentConstruction(m_ComponentID, &Property<T>::setReference, this);
+			//m_Entity.AddOnComponentDestruction(m_ComponentID, &Property<T>::setReference, this);
 		}
 	}
 	template<typename T>
@@ -309,5 +312,11 @@ namespace XYZ {
 		if (!m_Keys.empty())
 			return m_Keys.size() - 1;
 		return 0;
+	}
+	template<typename T>
+	inline void Property<T>::setReference(Entity entity)
+	{
+		XYZ_ASSERT(m_Entity.ID() == entity, "");
+		m_SetPropertyCallback(m_Entity, &m_Value);
 	}
 }
