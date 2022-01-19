@@ -133,7 +133,6 @@ namespace XYZ {
 				Entity result = relationship.FindByName(*ecs, path);
 				prop.SetSceneEntity({ result, m_Entity.GetScene() });
 			}
-			prop.SetReference();
 		}
 	}
 

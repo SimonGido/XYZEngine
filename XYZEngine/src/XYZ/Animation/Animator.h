@@ -13,20 +13,20 @@ namespace XYZ {
 		void SetSceneEntity(const SceneEntity& entity);
 		void UpdateAnimationEntities();
 
-		SceneEntity			  GetSceneEntity() { return m_Entity; }
+		SceneEntity			  GetSceneEntity()		 { return m_Entity; }
 		const SceneEntity&	  GetSceneEntity() const { return m_Entity; }
-		const Ref<Animation>& GetAnimation() const { return m_Animation;}
+		const Ref<Animation>& GetAnimation()   const { return m_Animation;}
 
 		static AssetType GetStaticType() { return AssetType::Animator; }
 	private:
-		void buildEntityPropertyPairs();
+		void buildEntityPropertyTree();
 
 	private:
 		Ref<Animation> m_Animation;
 		SceneEntity	   m_Entity;
 
-		using EntityPropertyPair = std::pair<SceneEntity, IProperty*>;
+		using EntityPropertyTree = std::vector<std::pair<SceneEntity, IProperty*>>;
 
-		std::vector<EntityPropertyPair> m_Properties;
+		EntityPropertyTree m_Properties;
 	};
 }

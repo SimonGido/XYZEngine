@@ -27,12 +27,10 @@ namespace XYZ {
 		virtual ~IProperty() = default;
 
 		virtual bool Update(uint32_t frame) = 0;
-		virtual void SetReference() = 0;
 		virtual void SetCurrentKey(uint32_t frame) = 0;
 		virtual void SetSceneEntity(const SceneEntity& entity) = 0;
 		virtual void Reset() = 0;
 	};
-
 
 	template <typename T>
 	using SetPropertyRefFn = void(*)(SceneEntity entity, T** ref);
@@ -56,9 +54,7 @@ namespace XYZ {
 		Property<T>& operator=(const Property<T>& other);
 		Property<T>& operator=(Property<T>&& other) noexcept;
 
-
 		virtual bool Update(uint32_t frame) override;
-		virtual void SetReference() override;
 		virtual void SetCurrentKey(uint32_t frame) override;
 		virtual void SetSceneEntity(const SceneEntity& entity) override;
 		virtual void Reset() override { m_CurrentKey = 0; }
@@ -80,7 +76,6 @@ namespace XYZ {
 		const std::vector<KeyFrame<T>>& GetKeyFrames()     const { return m_Keys; }
 	private:
 		bool   isKeyInRange() const { return m_CurrentKey + 1 < m_Keys.size(); }
-		void   setReference(Entity entity);
 
 	private:
 		T*						 m_Value;
@@ -120,13 +115,6 @@ namespace XYZ {
 	template<typename T>
 	inline Property<T>::~Property()
 	{
-		if (m_Entity.IsValid())
-		{
-			//auto ecs = m_Entity.GetECS();
-			//ecs->RemoveOnConstruction
-			//m_Entity.RemoveOnComponentConstructionOfInstance(m_ComponentID, this);
-			//m_Entity.RemoveOnComponentDestructionOfInstance(m_ComponentID, this);
-		}
 	}
 	template<typename T>
 	inline Property<T>::Property(const Property<T>& other)
@@ -142,12 +130,6 @@ namespace XYZ {
 		m_Keys(other.m_Keys),
 		m_CurrentKey(other.m_CurrentKey)
 	{
-		SetReference();
-		if (m_Entity.IsValid())
-		{
-			//m_Entity.AddOnComponentConstruction(m_ComponentID, &Property<T>::setReference, this);
-			//m_Entity.AddOnComponentDestruction(m_ComponentID, &Property<T>::setReference, this);
-		}
 	}
 	template<typename T>
 	inline Property<T>::Property(Property<T>&& other) noexcept
@@ -163,12 +145,6 @@ namespace XYZ {
 		m_Keys(std::move(other.m_Keys)),
 		m_CurrentKey(other.m_CurrentKey)
 	{
-		SetReference();
-		if (m_Entity.IsValid())
-		{
-			//m_Entity.AddOnComponentConstruction(m_ComponentID, &Property<T>::setReference, this);
-			//m_Entity.AddOnComponentDestruction(m_ComponentID, &Property<T>::setReference, this);
-		}
 	}
 	template<typename T>
 	inline Property<T>& Property<T>::operator=(const Property<T>& other)
@@ -183,7 +159,6 @@ namespace XYZ {
 		m_SetPropertyCallback = other.m_SetPropertyCallback;
 		m_Keys				  = other.m_Keys;
 		m_CurrentKey		  = other.m_CurrentKey;
-		SetReference();
 		return *this;
 	}
 	template<typename T>
@@ -199,14 +174,9 @@ namespace XYZ {
 		m_SetPropertyCallback = std::move(other.m_SetPropertyCallback);
 		m_Keys				  = std::move(other.m_Keys);
 		m_CurrentKey		  = other.m_CurrentKey;
-		SetReference();
 		return *this;
 	}
-	template<typename T>
-	inline void Property<T>::SetReference()
-	{
-		m_SetPropertyCallback(m_Entity, &m_Value);
-	}
+
 	template<typename T>
 	inline void Property<T>::SetCurrentKey(uint32_t frame)
 	{
@@ -221,11 +191,7 @@ namespace XYZ {
 	template<typename T>
 	inline void Property<T>::SetSceneEntity(const SceneEntity& entity)
 	{
-		if (m_Entity != entity)
-		{
-			m_Entity = entity;
-			SetReference();
-		}
+		m_Entity = entity;
 	}
 
 	template<typename T>
@@ -312,11 +278,5 @@ namespace XYZ {
 		if (!m_Keys.empty())
 			return m_Keys.size() - 1;
 		return 0;
-	}
-	template<typename T>
-	inline void Property<T>::setReference(Entity entity)
-	{
-		XYZ_ASSERT(m_Entity.ID() == entity, "");
-		m_SetPropertyCallback(m_Entity, &m_Value);
 	}
 }

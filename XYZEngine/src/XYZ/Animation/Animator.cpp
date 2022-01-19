@@ -22,17 +22,21 @@ namespace XYZ {
 	}
 	void Animator::SetSceneEntity(const SceneEntity& entity)
 	{
-		m_Entity = entity;
-		buildEntityPropertyPairs();
-		if (m_Animation.Raw())
-			m_Animation->setSceneEntity(m_Entity);
+		if (m_Entity != entity)
+		{
+			m_Entity = entity;
+			buildEntityPropertyTree();
+			if (m_Animation.Raw())
+				m_Animation->setSceneEntity(m_Entity);
+		}
 	}
 	void Animator::UpdateAnimationEntities()
 	{
-		buildEntityPropertyPairs();
+		buildEntityPropertyTree();
 	}
-	void Animator::buildEntityPropertyPairs()
+	void Animator::buildEntityPropertyTree()
 	{
+
 		m_Properties.clear();
 		const ECSManager& ecs    = *m_Entity.GetECS();
 		const Relationship& rel  = m_Entity.GetComponent<Relationship>();

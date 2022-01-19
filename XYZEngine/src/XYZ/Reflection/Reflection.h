@@ -3,26 +3,39 @@
 
 namespace XYZ {
 	namespace Reflect {
-		template <size_t N>
-		static std::array<std::string, N> SplitString(const std::string& string, const std::string& delimiters)
+		template <std::size_t N, typename ...Args>
+		constexpr std::array<std::string_view, N> SplitString(std::string_view str, Args ...delimiters)
 		{
-			std::array<std::string, N> result;
-			size_t start = 0;
-			size_t end = string.find_first_of(delimiters);
-			size_t counter = 0;
-			while (end <= std::string::npos)
+			auto compare = [](char a, char b) -> bool {
+				return a == b;
+			};
+			std::array<std::string_view, N> arr{};
+			std::size_t start = 0, end = 0;
+
+			while ((compare(str[start], delimiters) || ...))
+				start++;
+
+			for (std::size_t i = 0; i < N && end != std::string_view::npos; i++)
 			{
-				std::string token = string.substr(start, end - start);
-				if (!token.empty())
-					result[counter++] = token;
+				end = std::string_view::npos;
+				for (std::size_t j = start; j < str.length(); j++)
+				{
+					if ((compare(str[j], delimiters) || ...))
+					{
+						end = j;
+						break;
+					}
+				}
 
-				if (end == std::string::npos)
-					break;
+				arr[i] = str.substr(start, end - start);
+				std::size_t newStart = end + 1;
+				while (newStart < str.length() && (compare(str[newStart], delimiters) || ...))
+					newStart++;
 
-				start = end + 1;
-				end = string.find_first_of(delimiters, start);
+				start = newStart;
 			}
-			return result;
+
+			return arr;
 		}
 
 		constexpr size_t CountOccurances(const char* str, char c)
@@ -54,19 +67,15 @@ namespace XYZ {
 	class Reflectables\
 	{\
 	public:\
-		static constexpr size_t		sc_NumClasses	   = sizeof...(Args);\
-		static constexpr const char	sc_ClassesString[] = #__VA_ARGS__;\
+		static constexpr size_t										 sc_NumClasses	   = sizeof...(Args);\
+		static constexpr const char									 sc_ClassesString[] = #__VA_ARGS__;\
+		static constexpr std::array<std::string_view, sc_NumClasses> sc_ClassNames = Reflect::SplitString<sc_NumClasses>(#__VA_ARGS__, ',', ' ');\
 		\
 		\
 		template <size_t Index>\
 		static auto Get()\
 		{\
 			return std::get<Index>(sc_RegisteredClasses);\
-		}\
-		static std::array<std::string, sc_NumClasses>& GetClasses() \
-		{\
-			static auto classes = Reflect::SplitString<sc_NumClasses>(#__VA_ARGS__, ", ");\
-			return classes;\
 		}\
 	private:\
 		static constexpr std::tuple<Reflection<Args>...> sc_RegisteredClasses = {}; \
@@ -82,9 +91,10 @@ namespace XYZ {
 	template<> \
 	struct Reflection<Type> \
 	{ \
-		static constexpr size_t		 sc_NumVariables = NUMARGS(#__VA_ARGS__);\
-		static constexpr const char* sc_VariablesString = #__VA_ARGS__;\
-		static constexpr const char* sc_ClassName = #Type;\
+		static constexpr size_t										   sc_NumVariables = NUMARGS(#__VA_ARGS__);\
+		static constexpr const char*								   sc_VariablesString = #__VA_ARGS__;\
+		static constexpr const char*								   sc_ClassName = #Type;\
+		static constexpr std::array<std::string_view, sc_NumVariables> sc_VariableNames = Reflect::SplitString<sc_NumVariables>(#__VA_ARGS__, ',', ' ');\
 	public:\
 		static auto ToTuple(Type&& s) \
 		{\
@@ -152,11 +162,6 @@ namespace XYZ {
 			}, tmp);\
 			return *result;\
 		}\
-		static std::array<std::string, sc_NumVariables>& GetVariables() \
-		{\
-			static auto variables = Reflect::SplitString<Reflection<Type>::sc_NumVariables>(#__VA_ARGS__, ", ");\
-			return variables;\
-		}\
 	private:\
 		static bool stringsEqual(const char* a, const char* b, size_t length)\
 		{\
@@ -166,7 +171,7 @@ namespace XYZ {
 		}\
 		static void assignFromName(const char* name, void** result, size_t& counter, void* val)\
 		{\
-			if (GetVariables()[counter++] == name)\
+			if (sc_VariableNames[counter++] == name)\
 				*result = val;\
 		}\
 	};

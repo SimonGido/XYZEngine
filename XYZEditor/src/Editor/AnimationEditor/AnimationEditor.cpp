@@ -31,10 +31,11 @@ namespace XYZ {
 				{
 					std::vector<std::string> tmpVariables;
 					const char* className = refl.sc_ClassName;
-					for (const auto& variable : refl.GetVariables())
+					for (const auto variable : refl.sc_VariableNames)
 					{
-						if (!anim->PropertyHasVariable(className, variable.c_str(), entityName))
-							tmpVariables.push_back(variable);
+						std::string tmpVar{ variable };
+						if (!anim->PropertyHasVariable(className, tmpVar.c_str(), entityName))
+							tmpVariables.push_back(tmpVar);
 					}
 					if (!tmpVariables.empty())
 					{
@@ -144,7 +145,8 @@ namespace XYZ {
 									if (i.value == variableIndex)
 									{
 										auto& val = reflClass.Get<i.value>(m_SelectedEntity.GetComponentFromReflection(reflClass));
-										addReflectedProperty<i.value>(reflClass, path, val, reflClass.GetVariables()[i.value]);
+										std::string variableName{ reflClass.sc_VariableNames[i.value] };
+										addReflectedProperty<i.value>(reflClass, path, val, variableName);
 										m_Context->UpdateAnimationEntities();
 									}
 								});
@@ -382,12 +384,12 @@ namespace XYZ {
 								if (ImGui::MenuItem(it->c_str()))
 								{
 									path = pathName;
-									classIndex = FindIndex(ReflectedClasses::GetClasses(), classData.ClassName);
+									classIndex = FindIndex(ReflectedClasses::sc_ClassNames, classData.ClassName);
 									Reflect::For([&](auto j) {
 										if (j.value == classIndex)
 										{
 											auto reflClass = ReflectedClasses::Get<j.value>();
-											variableIndex = FindIndex(reflClass.GetVariables(), *it);
+											variableIndex = FindIndex(reflClass.sc_VariableNames, *it);
 										}
 									}, std::make_index_sequence<ReflectedClasses::sc_NumClasses>());
 
@@ -407,13 +409,13 @@ namespace XYZ {
 		}
 		bool AnimationEditor::getClassAndVariableFromNames(std::string_view className, std::string_view variableName, size_t& classIndex, size_t& variableIndex)
 		{
-			int64_t tmpClassIndex = FindIndex(ReflectedClasses::GetClasses(), className);
+			int64_t tmpClassIndex = FindIndex(ReflectedClasses::sc_ClassNames, className);
 			int64_t tmpVariableIndex = -1;
 			Reflect::For([&](auto j) {
 				if (j.value == tmpClassIndex)
 				{
 					auto reflClass = ReflectedClasses::Get<j.value>();
-					tmpVariableIndex = FindIndex(reflClass.GetVariables(), variableName);
+					tmpVariableIndex = FindIndex(reflClass.sc_VariableNames, variableName);
 				}
 			}, std::make_index_sequence<ReflectedClasses::sc_NumClasses>());
 
